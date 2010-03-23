@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# updates files with new one if different
+
+if [ $# -ne 2 ]; then
+  echo "Usage: update file1 file2"
+  echo "         updates file1 with file2 if different"
+  exit 1
+fi
+
+cmp $1 $2 > /dev/null 2>&1
+status=$?
+
+if [ $status -eq 1 ]; then
+  echo "$2 -> $1"
+  cp $2 $1
+elif [ $status -eq 2 ]; then
+  if [ -f $2 ]; then
+    echo "$2 -> $1"
+    cp $2 $1
+  fi
+fi
+

@@ -1,0 +1,17 @@
+
+first run regress.sh on the two versions to be compared
+
+	regress.sh -a 4.73
+	regress.sh -a 4.74
+
+then run regdiff.sh to compare output
+
+	regdiff.sh 4.73 4.74
+
+or do the same with the actual version
+
+	regress.sh -a 4.73
+	regress.sh -a actual
+
+	regdiff.sh 4.73 
+

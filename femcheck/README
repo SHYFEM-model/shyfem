@@ -1,0 +1,24 @@
+commands for software installation
+
+apt-get update		# updates installation list
+apt-get upgrade		# upgrades all packages if available
+apt-get -u upgrade	# upgrades all packages if available (show first)
+apt-get dist-upgrade	# upgrades all packages if available (intelligent)
+apt-get install pck	# installs package pck
+apt-get remove pck	# removes package pck
+
+apt-show-versions	# shows newer versions
+dselect			# low level
+
+apt-cache search term	# looks for term in packages
+apt-cache show pck	# get info on package pck
+apt-cache showpkg pck	# get more info on package pck
+apt-cache depends pck	# shows dependecy
+
+dpkg -S file		# in what package is file
+dpkg -s pck		# show status of package pck
+dpkg -l			# list installed packages
+apt-file search file	# in what package is file (also uninstalled pcks)
+apt-file list pck	# list contents of package pck
+apt-file update		# update the list for apt-file
+

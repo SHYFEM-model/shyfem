@@ -1,0 +1,100 @@
+
+Data neede for model application
+================================
+
+
+
+GRD files
+=========
+
+all pre-processing routines work on GRD files.
+These routines are:
+
+	grid
+	mesh
+	reduce
+	regularize
+
+For the application of the FEM model this GRD file
+has to be converted into a BAS file (see later).
+
+
+BAS files
+=========
+
+The BAS file is a binary representation
+of the GRD file suitable for the FEM model with re-numbered
+nodes in order to optimize band width of the system matrix.
+It must be produced by the program vpgrd that transforms the GRD file
+into a BAS file. The FEM model only works on these binary files.
+
+
+STR files
+=========
+
+STR files are the control files for the FEM model and also
+for the plot routines. In these files all parameters needed
+for the progam run are set. With a STR file and the data files
+used for input, a simulation can be reproduced easily.
+
+
+Time series files
+=================
+
+Very often the model needs time series files for input.
+These files consist in its simplest form in a a file with
+2 columns, where the first column represents time in seconds
+and the second column represent the parameter value. This
+might be the water level, the discharge etc.
+
+Time series files can also contain more then 2 columns. For example,
+the wind file contains 3 columns, where the last two columns
+either represent the components of the wind speed in x and y direction
+or the wind speed and direction.
+
+The water quality model uses a time series file with 9 parameters.
+Therefore the input file for the water quality program contains
+10 columns (1 time column and 9 parameter columns). The meaning
+of the various columns can be found in the manual or in the
+header of file bio3d.f.
+
+
+Output files
+============
+
+The model creates various output files. These are normally binary files
+that have to be read with the appropriate programs. The meaning of
+the various extensions is as follows:
+
+EXT	extra file with time series of water levels and velocities
+	in specified points ($extra in STR file)
+OUS	hydrodynamic output files with a complete set of values for
+	each time step written. These include the water level, the
+	transports in the various layers (that can then be converted into
+	velocities with the depth and the water level).
+FLX	fluxes through specified sections ($flux in STR file)
+NOS	Scalar nodal value files. These files contain various sets
+	of values for each time step. They can be distinguished by the
+	id of the scalar. Here is an (imcomplete) list of id's used
+	in the program:
+
+		10	generic concentration (tracer)
+		11	salinity
+		12	temperature
+
+		18	rms (root mean square) velocity
+
+		31	wave height
+		32	wave period
+		33	wave direction
+
+		71	nh3
+		72	no3
+		73	opo4
+		74	phyto
+		75	cbod
+		76	do
+		77	on
+		78	op
+		79	zoo
+

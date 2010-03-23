@@ -1,0 +1,110 @@
+#!/bin/sh
+#
+# runs basbathy
+
+FEMDIR=${FEMDIR:-$HOME/fem}
+BINDIR=$FEMDIR/fem3d
+
+basbathy=basbathy
+
+Usage()
+{
+  echo "Usage: basbathy [-h|-help] [-options] basin bathy"
+}
+
+FullUsage()
+{
+  Usage
+  echo "  -h|-help     this help screen"
+  echo "  -u           use uniform interpolation"
+  echo "  -e           use exponential interpolation (default)"
+  echo "  -n           interpolate on nodes (default is on elements)"
+  echo "  -t           interpolate everywhere (default is only where missing)"
+  echo "  -ufact  #    factor for size of sigma (default 1)"
+  echo "  -umfact #    factor for maximum radius (default 2)"
+  echo "  basin        name of the basin for which interpolation is done"
+  echo "  bathy        name of the file containing the bathymetry data"
+  echo ""
+  echo "  basin is a grd file (basin.grd) containing the basin for which the"
+  echo "  interpolation has to be executed."
+  echo "  bathy is a grd file (bathy.grd) that contains only single"
+  echo "  points with depth values."
+  echo "  The parameters ufact and umfact are used for exponential"
+  echo "  interpolation. Their exact meaning can be inferred from"
+  echo "  the explaination in the program code. If in doubt you can leave"
+  echo "  the defaults values or change them slightly."
+  echo "  The results are written to file basbathy.grd. The original basin"
+  echo "  is not altered."
+}
+
+ErrorOption()
+{
+  echo "No such option : $1"
+}
+
+if [ $# -le 0 ]; then
+  Usage
+  exit 1
+fi
+
+mode=1
+ike=1
+idepth=1
+ufact=1
+umfact=2
+
+while [ -n "$1" ]
+do
+   case $1 in
+        -e)             mode="1";;
+        -u)             mode="2";;
+        -n)             ike="2";;
+        -t)             idepth="2";;
+        -ufact)         ufact=$1; shift;;
+        -umfact)        umfact=$1; shift;;
+        -h|-help)       FullUsage; exit 0;;
+        -*)             ErrorOption $1; exit 1;;
+        *)              break;;
+   esac
+   shift
+done
+
+if [ $# -le 1 ]; then
+  Usage
+  exit 1
+else
+  basin=$1
+  bathy=$2
+fi
+
+bathy=`basename $bathy .grd`
+basin=`basename $basin .bas`
+
+echo "basin:  $basin"
+echo "bathy:  $bathy"
+echo "mode:   $mode"
+echo "ike:    $ike"
+echo "idepth: $idepth"
+echo "ufact:  $ufact"
+echo "umfact: $umfact"
+
+if [ ! -x $BINDIR/$basbathy ]; then
+  pushd $BINDIR
+  make basbathy
+  popd
+fi
+if [ ! -x $BINDIR/$basbathy ]; then
+  echo "Cannot find or make basbathy."
+  exit 1
+fi
+
+$BINDIR/$basbathy <<EOI
+$basin.grd
+$bathy.grd
+$mode
+$idepth
+$ike
+$ufact $umfact
+EOI
+
+

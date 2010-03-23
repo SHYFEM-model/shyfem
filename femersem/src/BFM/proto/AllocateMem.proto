@@ -1,0 +1,111 @@
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL
+!	   BFM - Biogeochemical Flux Model version 2.50-g
+!
+! SUBROUTINE
+!   AllocateMem
+!
+! FILE
+!   AllocateMem
+!
+! DESCRIPTION
+!   Allocation of memory for Global State variables and other Variables
+!  
+!   This file is generated directly from OpenSesame model code, using a code 
+!   generator which transposes from the sesame meta language into F90.
+!   F90 code generator written by P. Ruardij.
+!   structure of the code based on ideas of M. Vichi.
+!
+! AUTHORS
+!   mfstep/ERSEM team
+!
+! CHANGE_LOG
+!   ---
+!
+! COPYING
+!   
+!   Copyright (C) 2004 P. Ruardij, the mfstep group, the ERSEM team 
+!   (rua@nioz.nl, vichi@bo.ingv.it)
+!
+!   This program is free software; you can redistribute it and/or modify
+!   it under the terms of the GNU General Public License as published by
+!   the Free Software Foundation;
+!   This program is distributed in the hope that it will be useful,
+!   but WITHOUT ANY WARRANTY; without even the implied warranty of
+!   MERCHANTEABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!   GNU General Public License for more details.
+!
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!
+!
+  subroutine AllocateMem
+  !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+  !  use (import) other modules
+  !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+  use global_mem
+  use mem
+  use mem_Param
+  !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+  ! Implicit typing is never allowed
+  !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+  IMPLICIT NONE
+  integer:: status
+  !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+  !Start the allocation of pelagic state global
+  ! matrix and pointers
+  !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+  write(LOGUNIT,*) "#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-"
+  write(LOGUNIT,*) "# Allocating State Variables and Rates array ..."
+
+#ifndef NOT_STANDALONE
+ %3d-state-alloc
+ %2d-state-alloc
+ %3d-diagnos-alloc
+ %2d-diagnos-alloc
+#endif
+
+%1d-variables-alloc
+%1d-intvar-alloc
+
+  !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+  ! Allocation of Pelagic variables
+  !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%3d-state-alloc-pointer
+
+  !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+  ! Allocation of Benthic variables
+  !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%2d-state-alloc-pointer
+
+  !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+  ! Start the allocation of other pelagic states
+  !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+  write(LOGUNIT,*) "#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-"
+  write(LOGUNIT,*) "# Allocating Other Global Variables .."
+
+%3d-diaggrp-assign-pp
+%3d-diagnos-alloc-pointer
+%3d-diaggrp-alloc-pointer
+
+%2d-diaggrp-assign-pp
+%2d-diagnos-alloc-pointer
+%2d-diaggrp-alloc-pointer
+
+%3d-variable-alloc
+
+%2d-variable-alloc
+%2d-intvar-alloc
+  !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+  ! Start the allocation of vars for calculation of combined fluxes for output
+  !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+%! Do not change the sequence of the following lines!!
+%dd-flux-alloc
+%3d-flux-fill
+%2d-flux-fill
+
+  end subroutine
+

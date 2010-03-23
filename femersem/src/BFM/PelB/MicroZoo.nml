@@ -1,0 +1,100 @@
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50-g
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!BOP
+!
+! !ROUTINE: MicroZoo
+!
+! DESCRIPTION
+!   List of parameters values
+
+!   This file is generated directly from OpenSesame model code, using a code 
+!   generator which transposes from the sesame meta language into F90.
+!   F90 code generator written by P. Ruardij.
+!   structure of the code based on ideas of M. Vichi.
+!
+! !INTERFACE
+! parameter values for mem_MicroZoo filled by InitMicroZoo
+!
+
+!  
+!
+! !AUTHORS
+!   mfstep/ERSEM team
+!
+! !REVISION_HISTORY
+!   ---
+!
+! COPYING
+!   
+!   Copyright (C) 2006 P. Ruardij, the mfstep group, the ERSEM team 
+!   (rua@nioz.nl, vichi@bo.ingv.it)
+!
+!   This program is free software; you can redistribute it and/or modify
+!   it under the terms of the GNU General Public License as published by
+!   the Free Software Foundation;
+!   This program is distributed in the hope that it will be useful,
+!   but WITHOUT ANY WARRANTY; without even the implied warranty of
+!   MERCHANTEABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!   GNU General Public License for more details.
+!
+!EOP
+!-------------------------------------------------------------------------!
+!BOC
+!
+!
+!        :
+!        :  	 The variable Z5 represents microozooplankton and Z6 represents
+!        :  	 heterotrophic nanoflagellates (HNAN)
+!        :
+!        :
+!  p_q10:  	 Q10 value
+!  p_srs:  	 Respiration rate at 10 degrees Celsius
+!  p_sum:  	 Max. rel daily uptake as a fraction of biomass
+!  p_sdo:  	 Mortality due to oxygen limitation
+!  p_sd:  	 Temperature independent mortality
+!  p_pu_ra:  	 Activity respiration
+!  p_pu_ea:  	 Activity excretion
+!  p_chro:  	 Oxygen saturation where respiration is 0.5
+!  p_chuc:  	 Food concentration where total uptake rate is 0.5
+!  p_minfood:  	 Concentration below which feeding on a particular
+!        :  	 foodsource is depressed
+!  p_suB1:  	 /day   #relative B1 uptake by zoo
+!  p_qn_mz:  	 Maximum quotum P
+!  p_qp_mz:  	 Maximum quotum N
+!  p_suPI(P1):  	 /day   #relative P1 uptake by zoo
+!  p_suPI(P2):  	 /day   #relative P2 uptake by zoo
+!  p_suPI(P3):  	 /day   #relative P3 uptake by zoo
+!  p_suPI(P4):  	 /day   #relative P4 uptake by zoo
+!  p_suZI(Z5):  	 /day   #relative Z5 uptake by zoo
+!  p_suZI(Z6):  	 /day   #relative Z6 uptake by zoo
+
+&MicroZoo_parameters
+p_q10 = 2.0,2.0,
+p_srs = 0.02,0.02,
+p_sum = 3.5,6.5,
+p_sdo = 0.05,0.05,
+p_sd = 0.000000e+00,0.000000e+00,
+p_pu_ra = 0.25,0.35,
+p_pu_ea = 0.25,0.35,
+p_chro = 7.8,7.8,
+p_chuc = 50.0,30.0,
+p_minfood = 30.0,30.0,
+p_suPI = 0.5,0.0,
+         1.0,0.25,
+         0.0,1.0,
+         0.25,0.0,
+p_suZI = 1.0,1.0,
+         0.0,0.25,
+p_suB1 = 0.0,1.0,
+p_qp_mz = 0.00185,0.00185,
+p_qn_mz = 0.0167,0.0167
+/
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!END namelist
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+!BOP
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

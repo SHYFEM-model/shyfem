@@ -1,0 +1,119 @@
+#!/usr/bin/perl -w
+#
+# make histogram from time series
+#
+#----------------------------------------------------------
+
+use strict;
+
+my $col = 2;
+my $col = 5;
+my $nbins = 100;
+
+#----------------------------------------------------------
+
+$col--;
+
+my ($min,$max,$aver,$data) = get_ts($col);
+my $n = @$data;
+
+print STDERR "$min  $max  $aver $n\n";
+
+$min = 0;
+
+my ($binmin,$binmax,$dbin) = make_bins($nbins,$min,$max);
+my $histo = make_histo($binmin,$binmax,$nbins,$dbin,$data);
+print_histo($n,$binmin,$binmax,$dbin,$histo);
+    
+###############################################################
+
+sub make_bins
+{
+    my ($nbins,$min,$max) = @_;
+
+    my $dbin = ($max-$min)/$nbins;
+
+    return($min,$max,$dbin);
+}
+
+sub print_histo
+{
+    my ($n,$binmin,$binmax,$dbin,$histo) = @_;
+
+    my $bin = $binmin - $dbin;
+    my $reltot = 0.;
+    my $ntot = 0.;
+    my $i = 0;
+
+    foreach my $nh (@$histo) {
+	    my $up = $bin + $dbin;
+	    $nh = 0 unless $nh;
+	    $ntot += $nh;
+	    my $rel = 100. * $nh / $n;
+	    #$reltot += $rel;
+	    $reltot = 100. * $ntot / $n;
+	    print "$i ($bin-$up) $ up  $nh   $rel    $reltot\n";
+	    $bin = $up;
+	    $i++;
+    }
+
+    print STDERR "ntot: $ntot - $n\n";
+}
+
+sub make_histo
+{
+    my ($binmin,$binmax,$nbins,$dbin,$data) = @_;
+
+    print STDERR "making histo: $binmin,$binmax,$dbin\n";
+
+    my @histo = ();
+    my $i;
+
+    foreach my $val (@$data) {
+	if( $val < $binmin ) {
+	    $i = 0;
+	} elsif( $val > $binmax ) {
+	    $i = $nbins+1;
+	} else {
+	    $i = 1 + int( ($val - $binmin)/$dbin );
+	}
+	$histo[$i]++;
+    }
+
+    return \@histo;
+}
+
+###############################################################
+
+sub get_ts
+{
+    my ($col) = @_;
+
+    my $n = 0;
+    my $total = 0;
+    my $aver = 0;
+    my $min = +1.e30;
+    my $max = -1.e30;
+    my @data = ();
+
+    while(<>) {
+	chomp;
+	s/^\s+//;
+	my @f = split;
+	my $value = $f[$col];
+	push(@data,$value);
+	$min = $value if $value < $min;
+	$max = $value if $value > $max;
+
+	$n++;
+	$total += $value;
+    }
+
+    $aver = $total / $n if $n;
+
+    return ($min,$max,$aver,\@data);
+}
+
+###############################################################
+
+	

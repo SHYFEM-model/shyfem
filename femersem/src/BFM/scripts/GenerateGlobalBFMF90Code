@@ -1,0 +1,1428 @@
+#!/bin/sh
+# the next line restarts using tclsh \
+exec tclsh "$0" "$@"
+
+#-------------------------------------------------------------------------
+#BOP
+#
+# !ROUTINE: ReadFileContent
+#
+  proc ReadFileContent file {
+# !INTERFACE:
+#
+# !INPUT PARAMETERS:
+#               file : filename
+# !OUTPUT PARAMETERS:
+#               filecontent
+# !DESCRIPTION:
+#          Procedure to read whole file in memory
+# !REVISION HISTORY:
+#
+#EOP
+#-------------------------------------------------------------------------
+#BOC
+	set f1 [ open $file r ]
+	set content [ read $f1]
+	close $f1
+	return $content
+  }
+
+#EOC
+#-------------------------------------------------------------------------
+#BOP
+#
+# !ROUTINE:  readm
+#
+  proc readm file  {
+# !INTERFACE:
+global VARS
+#
+# !INPUT PARAMETERS:
+#                file : file with global definitions for model
+# !OUTPUT PARAMETERS:
+#
+# !DESCRIPTION:
+#      This routine read and digest all info read from a fiel which include
+#       all info on state, output and other global vairables.
+#       For state variables and output additional info is read to make it possible
+#       to output the variables in netcdf files
+# !REVISION HISTORY:
+#
+#EOP
+#-------------------------------------------------------------------------
+#BOC
+
+
+  catch { array unset VARS }
+  set content [ ReadFileContent $file ]
+
+  foreach jtem {state variable intvar } {
+    foreach item {1d 3d 2d } {
+     lappend VARS(reserved_words) $item-$jtem
+    }
+  }
+  foreach jtem {state variable intvar flux } {
+    foreach item {1d 3d 2d } {
+     if {  [ regexp "state|flux" $item ] &&  $item=="1d" } continue
+     set start 0
+     set mode 0
+     while { [ regexp -start $start -indices -line "^ *$item-$jtem+.*$" $content r ] } {
+        set mode 1
+        set start [ expr [ lindex $r 1 ] +1 ]
+        if { [ regexp  {[A-Za-z0-9]+} [ lindex [ eval string range [ list $content ] $r ] 1 ] tmp ] } {
+           set VARS(option) $tmp  
+        } {  catch { unset VARS(option) } }
+        set t 1
+        while { $t } {
+          # find end of actual line
+          regexp -start $start -indices -line {^.*$} $content r
+          # set starting point for search after last line feed
+          set start [ expr [ lindex $r 1 ] +1 ]
+          # get a line:
+          set line [ eval string range [ list $content ] $r ]
+          # do not use empty lines and line starting with a comment
+          if { ![ regexp {^ *$|^ *#|^ *!} $line ] } {
+             if { [ regexp  {^ *group} $line ] } {
+             # check on group states:
+                incr mode 1
+                if { [ set i [ ReadLine $mode $item group $line ]] > 0 } { return $i }
+             } elseif { [ regexp {^ *end} $line  ] } {
+                incr mode -1
+                set t $mode
+             } else {
+                if { [ set i [ ReadLine $mode $item $jtem $line ]] > 0 } { return $i }
+             }
+          }
+        }
+     }
+    }
+  }
+  set type variable
+  foreach dim {3d 2d} {
+    set ready 0
+    set j 0
+    while { !$ready } {
+      set unit [ lindex $VARS($dim,$type,unit) $j ]
+      set name [ lindex $VARS($dim,$type,name) $j ]
+      if { $unit !="" } {
+       if { ![regexp {\(} $name ] } {
+           lappend VARS($dim,diagnos,name) $name
+           lappend VARS($dim,diagnos,extname) [ lindex $VARS($dim,$type,extname) $j ]
+           lappend VARS($dim,diagnos,unit) $unit
+       } else {
+           lappend VARS($dim,diaggrp,name) $name
+           lappend VARS($dim,diaggrp,extname) [ lindex $VARS($dim,$type,extname) $j ]
+           lappend VARS($dim,diaggrp,unit) $unit
+       }
+       lset VARS($dim,$type,unit) $j @
+       lset VARS($dim,$type,extname) $j @
+       lset VARS($dim,$type,name) $j @
+      }
+      incr j
+      set ready [ expr $j >=  [llength $VARS($dim,$type,unit) ] ]
+    }
+    foreach jtem {name extname unit} {
+      regsub -all {\@|\@$} $VARS($dim,$type,$jtem) "" VARS($dim,$type,$jtem)
+    }
+  }
+}
+#EOC
+#-------------------------------------------------------------------------
+#BOP
+#
+# !ROUTINE:  ReadLine
+#
+
+# !INTERFACE:
+#
+proc ReadLine { mode dim type line } {
+
+# !USES:
+global VARS
+
+# !INPUT PARAMETERS:
+#             mode = 0 : waiting/searching for a new dim-type --- end section in Global-Def file
+#             mode = 1 : with in a dim-type -ened section.
+#             mode = 2 : within in a group section
+#             dim  = 1d , 2d or 3d
+#             type = state, variable,  int-var
+#             line  = line with info
+# !OUTPUT PARAMETERS:
+#
+# !DESCRIPTION:
+#    Read a line of info and digest and save digested info in VARS
+# !REVISION HISTORY:
+#
+#EOP
+#-------------------------------------------------------------------------
+#BOC
+
+#check if state
+
+set extname ""
+set units ""
+set constituents ""
+set ifstate [ regexp state|group $type ]
+set incldesc [ regexp -indices : $line r ]
+if { $ifstate && !$incldesc } {
+   puts stdout "error 1: all state var. must have a description"
+   puts stdout "         In line no info found between ':'-characters"
+   puts stdout "         info-line= $line"
+   return 1
+} elseif { !$incldesc } {
+   if { [ regexp -indices \!|\# $line  r ] } {
+      set extname [ string range $line [ expr [ lindex $r 1 ] +1 ] end ]
+      set def [ string range $line 0 [ expr [ lindex $r 1 ] -1 ] ]
+   } else {
+      set def $line
+   }
+   regsub -all {\t|^ +|[\t ]+$} $def "" def
+} else {
+   set def [ string range $line 0 [ expr [ lindex $r 1 ] -1 ] ]
+   regsub -all {\t|^ +|[\t ]+$} $def "" def
+   if { $type == "flux" } {
+      set tmp [ split $def = ] 
+      set def [ lindex $tmp 0 ]
+      set sum [ lindex $tmp 1 ]
+      if { [ set i [ eval_selec -check $sum ] ] >0 } { return $i }
+      set selec [ eval_selec -eval $sum ]
+      set selec [ expand_selec_fluxes $dim $selec ]
+   }
+   if { [ set i [ check_def_on_reserved_words_wrong_char $def ] ] > 0 } { return $i }
+   set tmp [ string range $line [ expr [ lindex $r 1 ] +1 ] end ]
+   regsub -all {\t|^ +| +$} $tmp "" tmp
+   regsub -all {[\t ]*:[\t ]*} $tmp ":" tmp
+   set units [ split $tmp : ]
+   if { ![regexp group $type ] } {
+	set extname [ lindex $units 0 ]
+        set units [ lrange $units 1 end ]
+   }
+}
+
+# get rid of the square brackets :
+set nr_of_defs 0
+set array  ""
+if { [ set with_brackets [ regsub -all {\[|\]} $def " " tmp ] ] == 2 } {
+   # with square brackets
+   regsub -all {^\t*|^ *| *$|\t*$} $tmp "" tmp
+   set tmp [ split $tmp ]
+   set j [ regexp group $type ]
+   regsub -all { +$|\t+$} [ lindex $tmp $j ] "" name
+   set constituents  [ lindex $tmp [ incr j ] ]
+   set array  [ lindex $tmp [ incr j ] ]
+   set nr_of_defs [ string length $constituents ]
+   if { $mode< 2 && $nr_of_defs >1 \
+       && [ string length $constituents ] != [ llength $units ] } {
+	puts stdout "error 2: list of units differs from the length of units"
+        return 2
+   }
+} elseif { !$with_brackets } {
+   # without square brackets
+   regsub -all {^\t*|^ *| *$|\t*$} $def "" name
+} else {
+  puts stdout "error 3: constituents NOT between square bracketes "
+  return 3
+}
+if  { $nr_of_defs ==0 && $mode < 2 } {
+   if { $type =="flux" } {
+     set option normal 
+     if { [ info exists VARS(option) ] } { 
+       if { [ set tmp $VARS(option) ] == "perm2" } {
+         if {$dim == "3d" } { set dim "2d" ; set option $tmp }
+       } else { set option $tmp }
+     } 
+     lappend VARS($dim,$type,option) $option
+     lappend VARS($dim,$type,sum) $sum
+     lappend VARS($dim,$type,selec) $selec
+   }
+   lappend VARS($dim,$type,name) $name
+   lappend VARS($dim,$type,extname) $extname
+   lappend VARS($dim,$type,unit) [ join $units]
+} elseif {$mode < 2 }  {
+   regsub -all {.} $constituents "& " tmp
+   foreach item $tmp jtem $units {
+#    puts stdout "$name$item\t:$extname\t:$jtem"
+     lappend VARS($dim,$type,name) $name$item$array
+     lappend VARS($dim,$type,extname) $extname
+     lappend VARS($dim,$type,unit) $jtem
+   }
+} elseif { [regexp group $type ] } {
+   set VARS(thisgroup,constituents) $constituents
+   set VARS(thisgroup,units) $units
+   lappend VARS($dim,group) $name
+   lappend VARS($dim,member) ""
+   lappend VARS($dim,constituents) $constituents
+   if { [ info exists VARS(maxcon) ] } {
+      set j 0
+      if { [ regexp ^$constituents $VARS(maxcon) ] \
+          || [ set j [ regexp ^$VARS(maxcon) $constituents ] ]  } {
+          if { $j } {  set VARS(maxcon) $constituents }
+      }
+   } else {
+     set VARS(maxcon) $constituents
+   }
+} else {
+   lset VARS($dim,member) end [ eval list [ lindex $VARS($dim,member) end ] $name ]
+   set tmp $VARS(thisgroup,constituents)
+   if { [ regsub -all -- - $constituents "" remove ] } {
+     if { ![ regsub $remove$ $tmp "" tmp ] } {
+        puts stdout "error 4: constituent $constituents not at the end of group def."
+        return 4
+     }
+     lappend VARS($dim,$type,excluded) $name$remove
+   }
+   regsub -all {.} $tmp "& " tmp
+   set i 0
+
+   foreach item $tmp {
+     set jtem [ lindex  $VARS(thisgroup,units) $i ]
+     lappend VARS($dim,$type,name) $name$item
+     lappend VARS($dim,$type,extname) $extname
+     lappend VARS($dim,$type,unit) $jtem
+     incr i
+   }
+}
+
+return 0
+}
+
+#EOC
+#-------------------------------------------------------------------------
+#BOP
+#
+# !ROUTINE:  make_f90
+#
+# !INTERFACE:
+proc check_def_on_reserved_words_wrong_char { def } {
+
+# !USES:
+global VARS
+# !INPUT PARAMETERS:
+#                def
+# !DESCRIPTION:
+#      function to check variable name on reserved words and wrong chracters
+#      into files of the BFM-tree.
+# !REVISION HISTORY:
+#
+#EOP
+#-------------------------------------------------------------------------
+#BOC
+   regsub -all {group |\[[\-a-z]+\]} $def "" tmp
+   if { [ lsearch $VARS(reserved_words) $tmp ] >=0 } {
+      puts stdout "error 10: found a reserved word on the wrong place"
+      puts stdout "($tmp). Probably an 'end'-statement is missing!"
+      return 10
+   } elseif { [ regexp {[^A-Za-z0-9_()]} $tmp ] } {
+      puts stdout "error 7: wrong chracter in name \"$def\""
+      return 7
+   }
+}
+
+#EOC
+#-------------------------------------------------------------------------
+#BOP
+#
+# !ROUTINE:  make_f90
+#
+# !INTERFACE:
+proc make_f90 args {
+
+# !INPUT PARAMETERS:
+#               mode = statemem    MoeuleMem.F90 is setupped
+#               mode = allocmem    AllocateMem.f90 is setupped
+#               mode = netcdfmem   set_var_info_bfm.F90 is setupped
+#               mode = headerm     INLUCDE.h is setupped
+# !DESCRIPTION:
+#      function to combine info from .proto file with info derived from global definition file
+#      into files of the BFM-tree.
+# !REVISION HISTORY:
+#
+#EOP
+#-------------------------------------------------------------------------
+#BOC
+
+
+foralloptions item jtem $args {
+   switch -- $item {
+      -read    { set mfile $jtem }
+      -from    { set fromdir $jtem }
+      -to      { set todir $jtem }
+      -actions { set todo $jtem }
+   }
+}
+
+if  { ![ file exists $mfile ] } {
+   puts stdout "error 12:file $mfile does not exist!"
+   return
+}
+if {  [ set i [ readm $mfile ] ] >0 }  { return $i }
+
+foreach mode $todo {
+  set ext F90
+  switch -- $mode {
+     statemem  { set infile ModuleMem.proto }
+     allocmem  { set infile AllocateMem.proto; set ext F90 }
+     netcdfmem { set infile set_var_info_bfm.proto }
+     headermem { set infile INCLUDE.proto ; set ext h }
+  }
+
+  # delete existing file with F90 or f90 extension
+  if { ![catch {glob [ file join $todir [file rootname $infile].\[fF\]90 ] }  tmp ] } \
+                           { file delete $tmp }
+  regsub proto$ $infile $ext outfile
+  if { [ info exists todir ] } {
+    if { ![file exists $todir] } {
+        puts stdout "error 11: directory $todir does not exist"
+        return 11
+    }
+    set outfile [ file join $todir $outfile ]
+  }
+  PrintSetup -openfile $outfile
+
+  Section -reset
+  Section -incr
+  Section -incr
+  Section -incr
+
+
+  if { [ info exists fromdir ] } \
+     { set infile [ file join $fromdir $infile ] }
+  set proto [ ReadFileContent $infile ]
+
+  set start 0
+  while { [ regexp -indices -start $start -- {\%[a-zA-Z0-9\-\!]+} $proto r ] } {
+   PrintLine  -block "[ string range $proto $start [ expr [ lindex $r 0 ] -1 ] ]"
+   set tmp [ eval string range [ list $proto ] $r ]
+   if { [ regexp {^\%\!} $tmp ] } { 
+     # remove comment lines ( lines starting with %!) in the proto files
+     # these line include information for the programmers
+     regexp -line -indices -start [ lindex $r 1 ] -- {.*$} $proto r
+   } else {
+     make_output $tmp
+   }
+   set start [ expr [ lindex $r 1 ] +1 ]
+  }
+  PrintLine -block [ string range $proto $start end ]
+  PrintSetup -closefile
+}
+
+}
+
+#EOC
+#-------------------------------------------------------------------------
+#BOP
+#
+# !ROUTINE:
+#
+proc make_output input {
+
+# !INTERFACE:
+#
+global VARS
+
+# !INPUT PARAMETERS:
+#	input= command which describe which code have to be generated
+#
+# !OUTPUT PARAMETERS:
+#
+# !DESCRIPTION:
+#            generate lines with code for ModuleMem.F90,AllocateMem.f90, set_var_bio.F90 and INCLUDE.h
+# !REVISION HISTORY:
+#
+#EOP
+#-------------------------------------------------------------------------
+#BOC
+
+
+regsub \% $input "" mode
+set tmp [ split $mode - ]
+set dim [ lindex $tmp 0]
+set type [ lindex $tmp 1 ]
+switch -- $mode {
+   3d-diagnos-desc -
+   2d-diagnos-desc -
+   3d-state-desc -
+   2d-state-desc {
+     set tmp [ format "! %10s %60s %15s" "$dim name" "description" "unit" ]
+     PrintLine -block $tmp; PrintLine -print ""
+     set tmp "! [string repeat - 10 ] [string repeat - 60 ] [ string repeat - 15 ]"
+     PrintLine -block $tmp; PrintLine -print ""
+     foreach name $VARS($dim,$type,name) extname $VARS($dim,$type,extname) unit $VARS($dim,$type,unit) {
+       set tmp [ format "! %10s %60s %15s" $name $extname $unit ]
+       PrintLine -block  "$tmp";PrintLine -print ""
+     }
+
+   }
+   3d-diaggrp-desc -
+   2d-diaggrp-desc {
+     foreach name $VARS($dim,$type,name) extname $VARS($dim,$type,extname) unit $VARS($dim,$type,unit) {
+       regsub -all {\(|\)} $name " " tmp
+       set grpname [ lindex $tmp 1 ] ;set root [ lindex $tmp 0 ]
+       set memberlist [ searchforgroup $dim $grpname ]
+       regsub $grpname $extname "\%(&)" sext
+       foreach member $memberlist {
+         regsub % $sext $member tmp
+         set tmp [ format "! %10s %60s %15s" ${root}(ii$member) $tmp $unit ]
+         PrintLine -block  "$tmp";PrintLine -print ""
+       }
+     }
+   }
+   3d-flux-nr -
+   2d-flux-nr -
+   3d-diagnos-nr -
+   2d-diagnos-nr -
+   3d-state-nr -
+   2d-state-nr {
+     if { [ info exists VARS($dim,$type,name) ] } {
+        if { $type == "diagnos" } {
+          set l  [ llength $VARS($dim,$type,name) ]
+          foreach name $VARS($dim,diaggrp,name) {
+             regsub -all {\(|\)} $name " " tmp; set grpname [ lindex $tmp 1 ] 
+             incr l [ llength [ searchforgroup $dim $grpname  ] ]
+          }
+          PrintLine -print  $l
+        } else {
+          PrintLine -print [ llength $VARS($dim,$type,name) ]
+        }
+     } else {
+         PrintLine -print 0
+     }
+   }
+   3d-state-array -
+   2d-state-array -
+   3d-diagnos-array -
+   2d-diagnos-array {
+      if { [ info exists VARS($dim,$type,name) ] } {
+        set TYPE [ string toupper $type ]
+        regsub d $dim "" i
+        PrintLine -print "real(RLEN),public,pointer,dimension(:,:)  :: D${i}${TYPE}"
+        if { $type == "state" } {
+          set tmp SOURCE
+          PrintLine -print "real(RLEN),public,pointer,dimension(:,:,:)  :: D${i}${tmp}"
+          set tmp SINK
+          PrintLine -print "real(RLEN),public,pointer,dimension(:,:,:)  :: D${i}${tmp}"
+          set tmp STATETYPE
+          PrintLine -print "integer,public,pointer,dimension(:)  :: D${i}${tmp}"
+        }
+      }
+   }
+   3d-diaggrp-pp -
+   2d-diaggrp-pp {
+     regsub -all {^| } $VARS($dim,$type,name) "&pp" tmp
+     regsub -all {\(} $tmp "(ii" tmp
+     PrintLine -print "integer,public       :: [join $tmp {, } ]"
+   }
+
+   3d-diagnos-pp -
+   2d-diagnos-pp -
+   3d-state-pp -
+   2d-state-pp {
+     regsub -all {^| } $VARS($dim,$type,name) "&pp" tmp
+     set i 0 ; set n  [ llength $VARS($dim,$type,name) ]
+     while { $i <$n } { lset tmp  $i "[lindex $tmp $i]=[ incr i ]" }
+     if { [ info exists VARS($dim,$type,excluded) ] } { 
+        regsub -all {^| } $VARS($dim,$type,excluded) "&pp" excl 
+        regsub -all { |$} $excl "=0&" excl 
+        eval lappend tmp $excl
+     }
+     PrintLine -print "integer,parameter,public       :: [join $tmp {, } ]"
+   }
+   3d-diaggrp-pointer -
+   2d-diaggrp-pointer {
+     foreach name $VARS($dim,$type,name) {
+       regsub -all {\(|\)} $name " " tmp; lappend pplist [ lindex $tmp 0 ]
+     }
+     PrintLine -print "real(RLEN),public,dimension(:,:),pointer   :: [join $pplist {, } ]"
+   }
+   3d-diagnos-pointer -
+   2d-diagnos-pointer -
+   3d-state-pointer -
+   2d-state-pointer {
+     set tmp $VARS($dim,$type,name)
+     PrintLine -print "real(RLEN),public,dimension(:),pointer   :: [join $tmp {, } ]"
+   }
+   3d-diaggrp-assign-pp -
+   2d-diaggrp-assign-pp {
+     set i  [ llength $VARS($dim,diagnos,name) ]
+     foreach name $VARS($dim,$type,name) {
+       regsub -all {\(|\)} $name " " tmp
+       set grpname [ lindex $tmp 1 ] ;set root [ lindex $tmp 0 ]
+       set memberlist [ searchforgroup $dim $grpname ]
+       foreach member $memberlist {
+          PrintLine -print "pp${root}(ii$member)=[ incr i ]"
+       }
+     }
+   }
+   3d-diaggrp-alloc-pointer -
+   2d-diaggrp-alloc-pointer {
+      regsub d $dim "" i
+      set TYPE DIAGNOS
+      foreach name $VARS($dim,diaggrp,name) {
+          regsub -all {\(|\)} $name " " tmp
+          set root [ lindex $tmp 0 ]; set grpname [ lindex $tmp 1 ] 
+          set memberlist [ searchforgroup $dim $grpname ]
+          PrintLine -print "$root => D$i${TYPE}(pp${root}(ii[ lindex $memberlist 0 ]):\
+                                                pp${root}(ii[ lindex $memberlist end ]),:)"
+          PrintLine -print "$root=ZERO"
+      }
+   }
+   3d-diagnos-alloc-pointer -
+   2d-diagnos-alloc-pointer -
+   3d-state-alloc-pointer -
+   2d-state-alloc-pointer {
+      regsub d $dim "" i
+      set TYPE [ string toupper $type ]
+      foreach name $VARS($dim,$type,name) {
+         PrintLine -print  "$name => D$i${TYPE}(pp$name,:); $name=ZERO"
+      }
+   }
+   3d-diaggrp-header -
+   2d-diaggrp-header {
+      regsub d $dim "" i
+      set TYPE DIAGNOS
+      foreach name $VARS($dim,diaggrp,name) {
+          regsub -all {\(|\)} $name " " tmp
+          set root [ lindex $tmp 0 ]; set grpname [ lindex $tmp 1 ] 
+          set memberlist [ searchforgroup $dim $grpname ]
+          PrintLine -block "#define ${root}(A,B) D$i${TYPE}(pp${root}(A),B)"
+          PrintLine -print ""
+      }
+   }
+   3d-diagnos-header -
+   2d-diagnos-header -
+   3d-state-header -
+   2d-state-header {
+      regsub d $dim "" i
+      set TYPE [ string toupper $type ]
+      foreach name $VARS($dim,$type,name) {
+         PrintLine -block "#define ${name}(A) D$i${TYPE}(pp${name},A)"
+         PrintLine -print ""
+      }
+   }
+   3d-group-header -
+   2d-group-header {
+     regsub d $dim "" i
+     set TYPE STATE
+     foreach name $VARS($dim,group) {
+         PrintLine -block "#define ${name}(A,B) D$i${TYPE}(pp${name}(A,B),:)"
+         PrintLine -print ""
+     }
+   }
+   3d-diaggrp-string -
+   2d-diaggrp-string {
+      set type_nr [ llength $VARS(string,index) ]
+      set i [ expr 1 + 3* [ lsearch {3d 2d} $dim ] + 2 ] 
+      if { $type_nr != $i } {
+        puts stdout "error with sequence"
+        return 201
+      }
+      set var var_names 
+      set extvar var_long 
+      set unitv var_units 
+      set i [ lindex $VARS(string,index) end ] 
+      foreach name $VARS($dim,$type,name) extname $VARS($dim,$type,extname) \
+                                    unit $VARS($dim,$type,unit) {
+        regsub -all {\(|\)} $name " " tmp
+        set grpname [ lindex $tmp 1 ] ;set root [ lindex $tmp 0 ]
+        set memberlist [ searchforgroup $dim $grpname ]
+        regsub $grpname $extname "\%(&)" sext
+        foreach member $memberlist {
+          regsub % $sext $member tmp
+          incr i
+          PrintLine -print "${var}($i)=\"${root}(ii$member)\""
+          PrintLine -print "${extvar}($i)=\"$tmp\""
+          PrintLine -print "${unitv}($i)=\"$unit\""
+        }
+      }
+      if { $i > 0 } {
+        lset VARS(string,index) end $i
+      }
+   }
+   3d-flux-string -
+   2d-flux-string -
+   3d-diagnos-string -
+   2d-diagnos-string -
+   3d-state-string -
+   2d-state-string {
+     if { ![ info exists VARS(string,index) ] } {
+          set VARS(string,index) 0 
+     }
+     set type_nr [ llength $VARS(string,index) ]
+     set i [ expr 1 + 3* [ lsearch {3d 2d} $dim ] + [ lsearch {state diagnos flux} $type ] ] 
+     if { $type_nr != $i } {
+        puts stdout "error with sequence"
+        return 201
+     }
+     if { ![ info exists VARS($dim,$type,name) ] } {
+        lappend VARS(string,index) [ lindex $VARS(string,index) end ]  
+     } else {
+#       set tmp [ lindex {Pel Ben} [ lsearch {3d 2d} $dim ] ]
+#       set vartype_index vv${tmp}[string toupper $type 0]
+        set var var_names 
+        set extvar var_long 
+        set unitv var_units 
+        set i [ lindex $VARS(string,index) end ]
+        foreach name $VARS($dim,$type,name) extname $VARS($dim,$type,extname) \
+                                    unit $VARS($dim,$type,unit) {
+           incr i
+           PrintLine -print "${var}($i)=\"$name\""
+           PrintLine -print "${extvar}($i)=\"$extname\""
+           PrintLine -print "${unitv}($i)=\"$unit\""
+        }
+        lappend VARS(string,index) $i
+     }
+   }
+   dd-string-index {
+       set j 0
+       set i 0
+       foreach item {Pel Ben} {
+          foreach jtem  {State Diag Flux} {
+            incr j
+            incr i
+            PrintLine -print "st${item}${jtem}S=$j"
+            set j [lindex $VARS(string,index) $i ]
+            PrintLine -print "st${item}${jtem}E=$j"
+          }
+       }
+   }
+   3d-diagnos-alloc -
+   2d-diagnos-alloc -
+   3d-state-alloc -
+   2d-state-alloc {
+     if { [ info exist VARS($dim,$type,name) ] } { 
+       Section -incr
+       set TYPE [ string toupper $type ]
+       regsub d $dim "" i
+       set j "" ; if { $dim =="2d" } { set j "_XY" }
+       PrintLine -print ""
+       PrintLine -print "allocate(D$i${TYPE}(1:NO_D${i}_BOX_${TYPE}S,1:NO_BOXES$j),stat=status)"
+       PrintLine -print "if (status /= 0) call error_msg_prn(ALLOC,\"AllocateMem\", \"D$i$TYPE\")"
+       PrintLine -print "D$i${TYPE} = ZERO"
+       if { $type == "state" } {
+         set tmp SOURCE 
+         PrintLine -print "allocate(D$i${tmp}(1:NO_D${i}_BOX_STATES,1:NO_D${i}_BOX_STATES,1:NO_BOXES$j),stat=status)"
+         PrintLine -print "if (status /= 0) call error_msg_prn(ALLOC,\"AllocateMem\", \"D$i$tmp\")"
+         PrintLine -print "D$i$tmp = ZERO"
+         set tmp SINK 
+         PrintLine -print "allocate(D$i${tmp}(1:NO_D${i}_BOX_STATES,1:NO_D${i}_BOX_STATES,1:NO_BOXES$j) ,stat=status)"
+         PrintLine -print "if (status /= 0) call error_msg_prn(ALLOC,\"AllocateMem\", \"D$i$tmp\")"
+         PrintLine -print "D$i$tmp = ZERO"
+         set tmp STATETYPE
+         PrintLine -print "allocate(D$i${tmp}(1:NO_D${i}_BOX_${TYPE}S ),stat=status)"
+         PrintLine -print "if (status /= 0) call error_msg_prn(ALLOC,\"AllocateMem\",\"D$i$tmp\")"
+         PrintLine -print "D$i$tmp = ZERO"
+       }
+       Section -decr
+     }
+   }
+   1d-intvar-alloc -
+   2d-intvar-alloc -
+   3d-intvar-alloc -
+   3d-variable-alloc -
+   2d-variable-alloc -
+   1d-variable-alloc {
+      set i "" ; if { $dim =="2d" } { set i "_XY" }
+      foreach name $VARS($dim,$type,name) {
+         set m [ expr [ regsub -all {\(|\)} $name " " tmp ]/2 + 2* [ regexp 2|3 $dim ] ]
+         if { $m > 0 } {
+            set base [ lindex $tmp 0 ]
+            set indexname [ lindex $tmp 1 ]
+            if { [ set l [ lsearch $VARS(2d,group) $indexname ]] <0  } {
+                set l [ lsearch $VARS(3d,group) $indexname ]
+            }
+            if { $l >=0  } { set l ii } { set l "" }
+         }
+         switch -- $m {
+            3 { PrintLine -print "allocate(${base}(1:$l$indexname,\
+                                 1:NO_BOXES$i),stat=status);  ${base} = ZERO"
+            }
+            2 { PrintLine -print "allocate(${name}(1:NO_BOXES$i),\
+                                      stat=status);  $name = ZERO"
+            }
+            1 { PrintLine -print "allocate(${base}(1:$l$indexname\
+                               ),stat=status);  ${base} = ZERO"
+            }
+         }
+      }
+   }
+   dd-flux-alloc {
+     set nn 0
+     set mm 0
+     foreach dim {2d 3d} {
+        if { [ info exists VARS($dim,$type,selec) ] } {
+          incr nn  [ llength $VARS($dim,$type,selec) ]
+          foreach jtem $VARS($dim,$type,selec) {
+             incr mm [ llength  [ lindex $jtem 0 ] ]
+          }
+        }
+     }
+     PrintLine -print "allocate(flx_calc_nr(0:$nn),stat=status)"
+     PrintLine -print "allocate(flx_CalcIn(1:$nn),stat=status)" 
+     PrintLine -print "allocate(flx_option(1:$nn),stat=status)"
+     PrintLine -print "allocate(flx_t(1:$mm),stat=status)" 
+     PrintLine -print "allocate(flx_SS(1:$mm),stat=status)" 
+     PrintLine -print "allocate(flx_states(1:$mm),stat=status)" 
+     PrintLine -print "allocate(flx_ostates(1:$mm),stat=status)" 
+     PrintLine -print "flx_calc_nr(0)=0" 
+     if { [ info exists VARS(3d,$type,selec) ] } { set i [ llength $VARS(3d,$type,selec) ] } { set i 0 }
+     PrintLine -print "flx_cal_ben_start=$i" 
+   }
+   3d-flux-fill -
+   2d-flux-fill {
+
+#    Important:
+#    In the AllocMem.proto file first 3d-flux-fill have to be called!
+#   
+
+     set i 0; set j 0 
+     if { [ info exist VARS($dim,$type,selec) ] } {
+       if { [ info exists VARS(alloc,flux) ] } { scan $VARS(alloc,flux) "%d %d" i j }
+       foreach item $VARS($dim,$type,selec) jtem $VARS($dim,$type,name) \
+               ktem $VARS($dim,$type,sum) ltem $VARS($dim,$type,option) {
+         incr i 
+         set tmp [ lindex {iiPel iiBen} [ lsearch {3d 2d} $dim ] ]
+         set tmp2 [ lindex {0 1 2} [ lsearch {normal specific perm2} $ltem ] ]
+         if {$ltem == "perm2" } { set tmp iiPel } 
+         PrintLine -print ""
+         PrintLine -cprint "! $jtem=$ktem        ($ltem flux): "
+         PrintLine -print ""
+         PrintLine -print "flx_calc_nr($i)= [ expr $j + [ llength [ lindex $item 0 ] ] ];\
+                           flx_CalcIn($i)=$tmp; flx_option($i)=$tmp2"
+         foreach t [ lindex $item  0] SS [ lindex $item 1 ] \
+                           states [ lindex $item 2 ] ostates [ lindex $item 3] {
+            incr j
+            set tmp [ lindex {1 0} [ lsearch {sink source} $SS ] ]
+            PrintLine -print "flx_t($j)=${t}1.00;flx_SS($j)=$tmp;\
+                              flx_states($j)=pp$states;flx_ostates($j)=pp$ostates"
+         }
+       }
+     }
+     set VARS(alloc,flux) [ list $i $j ]
+   }
+   constituent {
+      regsub -all {.} $VARS(maxcon) "& " tmp
+      set tmp [ string toupper $tmp ]
+      set i 0 ; set n  [ llength $tmp ]
+      while { $i <$n  } { lset tmp  $i "ii[lindex $tmp $i]=[ incr i ]" }
+      PrintLine -print "integer,parameter,public       :: [join $tmp {, } ]"
+   }
+   3d-group-parameter -
+   2d-group-parameter {
+     foreach item $VARS($dim,group) jtem $VARS($dim,member) {
+      set tmp $jtem
+      set i 0 ; set n  [ llength $tmp ]
+      while { $i <$n } { lset tmp  $i "ii[lindex $tmp $i]=[ incr i ]" }
+      PrintLine -print "integer,parameter,public       :: ii$item=[ llength $jtem], [join $tmp {, } ]"
+     }
+   }
+   3d-group-function-name -
+   2d-group-function-name {
+     regsub -all {^| } $VARS($dim,group) "&pp" tmp
+     set tmp [ eval list $tmp  $VARS($dim,group) ]
+     PrintLine -print "public [join $tmp {, } ]"
+   }
+   3d-groupfunctions -
+   2d-groupfunctions {
+      make_group_function $dim "pp"
+      make_group_function $dim ""
+   }
+   1d-intvar -
+   3d-intvar -
+   2d-intvar -
+   1d-variable -
+   3d-variable -
+   2d-variable {
+     set m -1
+     set j 0 ;  set n [ llength  $VARS($dim,$type,name) ]
+     foreach item $VARS($dim,$type,name) jtem $VARS($dim,$type,extname) ktem $VARS($dim,$type,unit) {
+       set mold $m
+       set m [ expr [ regexp  {\(} $item ] + [ regexp 2|3 $dim ] ]
+       if { $m != $mold } {
+           if {$mold>=0} {
+              PrintLine -block "      \!$keepextname"
+              PrintLine -print ""
+              Section -decr
+           }
+           set tmp "real(RLEN)"; if { [regexp intvar $type ] } { set tmp integer }
+           switch -- $m {
+              0 { PrintLine -print  "$tmp,public                                      :: &" }
+              1 { PrintLine -print  "$tmp,public,dimension(:),allocatable             :: &" }
+              2 { PrintLine -print  "$tmp,public,dimension(:,:),allocatable           :: &" }
+           }
+           Section -incr
+       } else {
+          PrintLine -print ",  &   \!$keepextname"
+       }
+       incr j
+       regexp {[0-9A-Za-z_]+} $item tmp
+       PrintLine -nonewline $tmp
+       set keepextname $jtem
+       if { $ktem !="" } { append keepextname " ($ktem)" }
+     }
+     if {$m>=0} {
+         PrintLine -block "      \!$keepextname"
+         PrintLine -print ""
+         Section -decr
+     }
+   }
+}
+
+}
+#EOC
+#-------------------------------------------------------------------------
+#BOP
+#
+# !ROUTINE: make_group_function
+#
+# !INTERFACE:
+#
+proc make_group_function { dim pre } {
+
+# !USES:
+#
+global VARS
+
+# !INPUT PARAMETERS:
+#                   dim = 2d ,3d
+#                   pre = "", pp  ( stands resp. for pointer function, index function )
+# !OUTPUT PARAMETERS:
+#
+# !DESCRIPTION:
+#        function are printed in file with which index of an array can be caluclated of pointer can be
+#        set.
+# !REVISION HISTORY:
+#
+#EOP
+#-------------------------------------------------------------------------
+#BOC
+
+foreach groupname $VARS($dim,group) members $VARS($dim,member) {
+  set representative [lindex $members 0 ]
+  set components [ lfind -glob -all $VARS($dim,state,name) \
+					$representative\[$VARS(maxcon)\] ]
+# set components [ lfind -glob -all $VARS($dim,state,name) \
+#				$representative\[cnpsli\] ]
+  regsub $representative [ lindex $components 0 ] "" firstc
+  if { $components == "" } continue
+  PrintLine -print ""
+  PrintLine -print "function $pre${groupname}(n,constituent)"
+  Section -incr body
+  PrintLine -print ""
+  PrintLine -crepeat "-="
+  PrintLine -print " ! Implicit typing is never allowed"
+  PrintLine -crepeat "-="
+  PrintLine -print "IMPLICIT NONE"
+  PrintLine -print ""
+  if { $pre == "pp" } {
+    PrintLine -print "integer  ::$pre$groupname"
+   } else {
+    PrintLine -print "real(RLEN),dimension(:),pointer  ::$pre$groupname"
+   }
+  PrintLine -print "integer, intent(IN)  ::n"
+  PrintLine -print "integer, intent(IN)  ::constituent"
+  PrintLine -print ""
+  PrintLine -print "integer i"
+  PrintLine -print ""
+  PrintLine -print "SELECT CASE (n)"
+  foreach ltem $members {
+    regsub $representative $ltem "" cc
+#   set s [ string index  $VARS(maxcon) [ string first $VARS(maxcon) $cc ] ]
+#   set s "ii[ string toupper $cc ]"
+    Section -incr case
+    PrintLine -print "CASE (ii$ltem)"
+    Section -incr  body
+    PrintLine -print "i = pp${ltem}$firstc"
+    Section -decr body
+    Section -decr case	
+  }
+  PrintLine -print "END SELECT"
+  PrintLine -print "i=i+ (constituent -ii[string toupper $firstc ] )"
+  PrintLine -print ""
+  if { $pre == "pp" } {
+    PrintLine -print "$pre$groupname = i"
+  } else {
+    regsub d $dim "" dim2
+    PrintLine -print "$pre$groupname => D${dim2}STATE(i,:)"
+  }
+  Section -decr body
+  PrintLine -print "END function"
+}
+
+}
+#EOC
+#-------------------------------------------------------------------------
+#BOP
+#
+# !ROUTINE:   lfind
+#
+# !INTERFACE 
+proc lfind args {
+
+# !DESCRIPTION:
+#    Routine to select all elements of an row  found with a lsearch-command
+# !REVISION HISTORY:
+#
+#EOP
+#-------------------------------------------------------------------------
+#BOC
+	set l [ eval lsearch $args ]
+	set n [ llength $l ]
+	if { $n > 0 } {
+	  set list [ lindex $args [ expr [ llength $args ] -2 ]]
+	  if { $n > 1 } {
+		foreach item $l {
+		  lappend r [ lindex $list $item ]
+		}
+		return $r
+	  } else {
+ 		return [ lindex $list $l ]
+	  }
+	}
+	return
+}
+#EOC
+#-------------------------------------------------------------------------
+#BOP
+#
+# !ROUTINE:  Section
+#
+# !INTERFACE 
+
+proc Section { mode { text  "" } } {
+
+# !USES:
+#
+global VARS
+
+# !INPUT PARAMETERS:
+#
+# !DESCRIPTION:
+#    Set indetation for output
+# !REVISION HISTORY:
+#
+#EOP
+#-------------------------------------------------------------------------
+#BOC
+
+  switch -- $mode {
+    -reset { set VARS(section) "" }
+    -incr { lappend VARS(section) $text }
+    -decr {
+   	    set ret [ lindex $VARS(section) end ]
+	    set VARS(section) [ lreplace $VARS(section) end end ]
+	    return $ret
+	  }
+     -nr  {
+            return [ llength $VARS(section) ]
+          }
+  }
+}
+#EOC
+#-------------------------------------------------------------------------
+#BOP
+#
+# !ROUTINE:
+#
+# !INTERFACE:
+proc PrintSetup { mode { file  "" } } {
+
+# !USES:
+#
+global VARS
+
+# !INPUT PARAMETERS:
+#
+# !OUTPUT PARAMETERS:
+#
+# !DESCRIPTION:
+#
+# !REVISION HISTORY:
+#
+#EOP
+#-------------------------------------------------------------------------
+#BOC
+
+  switch -- $mode {
+        -openfile {
+           set VARS(nonewline) 0
+           set VARS(file) [ open $file w ]
+           return
+        }
+        -closefile {
+           close $VARS(file)
+           set VARS(file) stdout
+           return
+        }
+        -stdout {
+           set VARS(nonewline) 0
+           Section -reset
+           set VARS(file) stdout
+           return
+         }
+  }
+}
+#EOC
+#-------------------------------------------------------------------------
+#BOP
+#
+# !ROUTINE PrintLine
+#
+# !INTERFACE:
+proc PrintLine { mode args } {
+
+# !USES:
+#
+global VARS
+
+# !INPUT PARAMETERS:
+#
+# !OUTPUT PARAMETERS:
+#
+# !DESCRIPTION:
+#
+# !REVISION HISTORY:
+#
+#EOP
+#-------------------------------------------------------------------------
+#BOC
+
+  set k "puts $VARS(file)"
+  set blank ""
+
+
+  if { $mode == "-block" || $VARS(nonewline)==1 } {
+    set ll [ join $args ]
+    set lbl 0
+  } else {
+    set lbl [ expr [ Section -nr ] +1 ]
+    if { $mode == "-ninsert" } { incr lbl 2 }
+    set blank [ string repeat "  " $lbl ]
+    set ll [ string trim [ join $args  ]  ]
+  }
+
+  switch -- $mode {
+        -block { set k "puts -nonewline $VARS(file)" }
+        -print {}
+  	-crepeat {
+		  set i [ expr  ( 79 - [ string length $blank ] ) / \
+					[  string length $ll ] ]
+ 	          set ll "\![string repeat $ll $i]"
+                }
+        -nonewline { set k "puts -nonewline $VARS(file)" }
+	default { set SESCOM(nonewline) 1
+		  set k "puts -nonewline $VARS(file)" 
+  		}
+  }
+
+  if {  ![ regexp -- {-block|-nobreak} $mode ] } {
+    set cont &
+    set l [ expr 80 - 2*$lbl ]
+    set comm ""
+    # first character is the start character of comment line..
+    if { $mode == "-cprint" } { regexp ^. $ll comm ;append comm " " }
+    set chr " "
+    if { [regexp \; $ll ] && [ set i [ string length $ll ] ] > $l } {
+      set ll [ split $ll \; ]; set chr "\;"
+    }
+    while { [ set i [ string length $ll ] ] > $l  && \
+       					[ set j [ llength $ll ] ] > 2 } {
+      set mm [ join [ lrange $ll 0 [ set m [ expr int( $l.0 /$i * $j -1) ] ] ] $chr ]
+      while { [ set i [ string length $mm ] ] > $l && \
+       					[ set j [ llength $mm ] ] > 2 } {
+         set mm [ join [ lrange $mm 0 [ set m [ expr int( $l.0 /$i * $j -1) ] ] ] $chr ]
+      }
+      if {$chr=="\;" } { eval $k [ list $blank$mm ] } {  eval $k [ list $blank$mm$cont ] }
+      if { ![ regexp -- {-print|-num} $mode ] } { puts $VARS(file) "" }
+#     if { $mode != "-print" } { puts $VARS(file) "" }
+      set ll $comm[ join [ lrange $ll [incr m ] end ] ]	
+      if { $mode != "-cprint" && $chr == " " } {
+        set blank [ string repeat "  " [ expr $lbl +1 ] ]
+      }
+    }
+
+  }
+  set VARS(nonewline) 0
+  if { $ll != "" } {
+#    if { [regexp nonewline $k ] } {
+#      puts stderr "[ regexp {\n$} $ll ]"
+#      gets stdin aap
+#    }
+     if { [regexp nonewline $k ] && ![ regexp {\n$} $ll ] } {
+        set VARS(nonewline) 1
+     }
+     if { $mode == "-num" } {
+         set i [ string length [ set tmp [ lindex $ll 0 ] ] ]
+         set tmp [ string replace $blank 0 $i " $tmp" ]
+         eval $k [ list $tmp[lrange $ll 1 end ] ]
+     } else {
+	eval $k [ list $blank$ll ]
+     }
+  } else {
+	eval $k [ list {} ]
+  }
+
+}
+#EOC
+#-------------------------------------------------------------------------
+#BOP
+#
+# !ROUTINE:   foall options
+#
+proc foralloptions { uoption uvalues list script } {
+
+# !INTERFACE:
+#
+upvar $uoption option $uvalues values
+
+# !INPUT PARAMETERS:
+#
+# !OUTPUT PARAMETERS:
+#
+# !DESCRIPTION:
+#         Clever script to read in easely parameters to a tcl-function
+# !REVISION HISTORY:
+#
+#EOP
+#-------------------------------------------------------------------------
+#BOC
+
+  foreach item [ eval splitargs $list ] {
+	set option [ lindex $item 0 ]
+	set values [ join [ lrange $item 1 end ] ]
+	uplevel $script
+  }
+}
+#EOC
+#-------------------------------------------------------------------------
+#BOP
+#
+# !ROUTINE:   splitargs
+#
+proc splitargs args {
+
+#
+# !DESCRIPTION:
+#             See previous routine~
+# !REVISION HISTORY:
+#
+#EOP
+#-------------------------------------------------------------------------
+#BOC
+
+  if { $args == "" } return
+  foreach item $args {
+	if { ![ regsub ^- $item "|-" t ] } { set t $item }
+	lappend tmp $t
+   }
+  return [ lrange [ split $tmp | ] 1 end ]
+}
+
+
+#EOC
+#-------------------------------------------------------------------------
+#BOP
+#
+# !ROUTINE:   searchforgroup
+#
+# !INTERFACE
+
+proc searchforgroup { dim grpname } {
+
+# !USES
+global VARS
+#
+# !DESCRIPTION:
+#             See previous routine~
+# !REVISION HISTORY:
+#
+#EOP
+#-------------------------------------------------------------------------
+#BOC
+   set  index [ lsearch $VARS($dim,group) $grpname ] 
+   if { $index < 0 } {
+      set dx "2d" ; if { $dim == "2d"} { set dx "3d" }
+      set  index [ lsearch $VARS($dx,group) $grpname ] 
+   } else {
+     set dx $dim
+   }
+   set l [ lindex $VARS($dx,member) $index ] 
+
+  return $l
+}
+
+proc eval_selec { mode string } {
+
+set k "*+a-zA-Z0-9_. "
+set l [ format "\[%s\]+-\>\[%s\]+|\[%s\]+\<-\[%s\]+"  $k $k $k $k ]
+switch -- $mode { 
+   -check {
+      if { [ set i [regexp -all $l $string ] ] >=2 } {
+          regsub -all $l $string "" tmp
+          set j [ regsub -all {\(\)} $tmp "" tmp ]
+          if { $j > $i } {
+            puts stdout "Error: too many brackets in: $string"
+            return 101
+          } elseif { $j < $i } {
+            puts stdout "Error: ther are no brackets around each flux statement "
+            puts stdout "or brackets within flux statement :  $string"
+            return 101
+          } elseif { [ regexp {\(|\)} $tmp ] } {
+            puts stdout "Error: brackets on unexpected places in flux statement '$string'"
+          } elseif { [ expr $i - [ regexp -all {[-+]} $tmp ] ] != 1  } {
+             puts stdout " error in sum: between flux statements no - or + sign"
+             puts stdout "in flux statement  $string"
+             return 102
+          } else {
+             regexp {[+a-zA-Z0-9_.]+} $string tmp 
+             regsub {\+} $tmp \\+ tmp
+             if { [ regexp -all "${tmp} *->|${tmp} *<-" $string ] != $i } {
+               puts stdout "error: left hand of fluxes does not same variable name"
+               return 104
+             } 
+          }
+      } elseif { [ regexp {\<-+ *\(|-\>+ *\(} $string ] } {
+          puts stdout "Error with brackets: within a flux stament no brackets"
+          puts stdout "are allowed! In flux statement: $string"
+          return 106
+      }
+      return 0
+   }
+    -eval {
+       set t +
+       set i 0
+       set status 1
+       while { $status > 0   } {
+         if { $status==1 } {
+            set j [ regexp -indices -start $i $l $string r ]
+            set status 0
+            if { $j } {
+              set status 2
+              set tmp [ eval string range [ list $string ] $r ]
+              regexp -- {->|<-} $tmp ss
+              regsub -- $ss $tmp " " tmp
+              set cstate [ lindex $tmp 0 ]
+              set ss [ lindex {sink source} [ lsearch {-> <-}  $ss ] ]
+              if { ![ info exist coll ] } { lappend coll $cstate }
+              set coll2 [ list $t $ss ]
+              set ostates [ split [ lindex $tmp 1 ] + ]
+              eval lappend coll2 $ostates
+              lappend coll $coll2
+              set i [ lindex $r 1 ]
+            } 
+          } else {
+            set j [ regexp -indices -start $i {[-+]} $string r ]
+            set status 0
+            if { $j } { 
+               set status 1
+               set t [ eval string range [ list $string ] $r ]
+               set i [ lindex $r 1 ]
+            }   
+          }
+          
+       }
+       return $coll
+   }
+}
+return
+
+}
+
+proc expand_selec_fluxes { dim string } {
+global VARS
+
+
+#test on sum: if so split lines:
+set coll [ list $string ]
+foreach item $coll {
+    if { [ set i [ lsearch -regexp $item {[^ ]+ [^ ]+ [^ ]+ [^ ]+} ] ] >0 } {
+      set fluxdesc [ lindex $item $i ]
+      set statesrow [ lrange $fluxdesc 2 end ]
+      set rest [ lreplace $item $i $i ]
+      foreach jtem $statesrow {
+        set tmp [ lreplace $fluxdesc 2 end $jtem ] 
+        lappend rest $tmp 
+      }
+      lappend coll2 $rest
+    }
+}
+if { [ info exists coll2 ] } {
+  set coll $coll2
+  unset coll2
+}
+
+# check on pattern and split lines:
+set j 1
+while { $j } {
+  foreach jtem $coll {
+    set item [ lrange  $jtem 1 end ]
+    if { [set i [ lsearch -regexp $item {[.]} ] ] >=0 } { 
+        set fluxdesc [ lindex $item $i ]
+        set state [ lindex $fluxdesc 2 ]
+        incr i
+        set rest [ lreplace $jtem $i $i ]
+        set l [ lsearch -all -inline -regexp $VARS($dim,state,name) $state ]
+        if { [ llength $l ]==0  } {
+          puts stdout "State var $state does not exist"
+          return 105
+        }
+        foreach ktem $l {
+          set tmp [ lreplace $fluxdesc 2 2 $ktem ] 
+          lappend rest $tmp
+        }
+        lappend coll2 $rest 
+    } else {
+      set j 0
+    }
+  }
+  if { [ info exists coll2 ] } {
+    set coll $coll2
+    unset coll2
+  }
+}
+
+set states [ lindex $string 0 ]
+if { [ regexp {[+]} $states ] } { set states [ split $states + ] }
+foreach jtem $states {
+  set l [ lsearch -all -inline -regexp $VARS($dim,state,name) $jtem ]
+  if { [ llength $l ] == 0  } {
+    puts stdout "State var $state does not exist"
+    return 105
+  }
+  # add line for each state var and replace * with state varname
+  foreach ktem $l {
+    foreach item $coll {
+      set tmp [ lreplace $item 0 0 $ktem ]
+      regsub -all -- {[*]} $tmp $ktem tmp
+      lappend coll2 $tmp
+    }
+  }
+}
+if { [ info exists coll2 ] } {
+  set coll $coll2
+  unset coll2
+}
+
+#reorganize:
+unset states
+foreach item $coll {
+  set state [ lindex $item 0 ]
+  foreach jtem [ lrange $item 1 end ] {
+    lappend states $state 
+    lappend t [ lindex $jtem 0 ]
+    lappend ss [ lindex $jtem 1 ]
+    lappend ostates [ lindex $jtem 2 ]
+  }
+}
+  return [ list $t $ss $states $ostates ]
+
+}
+
+
+
+#-------------------------------------------------------------------------
+#    Copyright Piet Ruardij, NIOZ,NL (rua@nioz.nl) and BFM-team   2006
+#-------------------------------------------------------------------------
+
+
+ eval make_f90 $argv
+

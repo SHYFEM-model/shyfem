@@ -1,0 +1,79 @@
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50-g
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!BOP
+!
+! !ROUTINE: BenSilica
+!
+! DESCRIPTION
+!   List of parameters values
+
+!   This file is generated directly from OpenSesame model code, using a code 
+!   generator which transposes from the sesame meta language into F90.
+!   F90 code generator written by P. Ruardij.
+!   structure of the code based on ideas of M. Vichi.
+!
+! !INTERFACE
+! parameter values for mem_BenSilica filled by InitBenSilica
+!
+
+!  
+!
+! !AUTHORS
+!   mfstep/ERSEM team
+!
+! !REVISION_HISTORY
+!   ---
+!
+! COPYING
+!   
+!   Copyright (C) 2006 P. Ruardij, the mfstep group, the ERSEM team 
+!   (rua@nioz.nl, vichi@bo.ingv.it)
+!
+!   This program is free software; you can redistribute it and/or modify
+!   it under the terms of the GNU General Public License as published by
+!   the Free Software Foundation;
+!   This program is distributed in the hope that it will be useful,
+!   but WITHOUT ANY WARRANTY; without even the implied warranty of
+!   MERCHANTEABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!   GNU General Public License for more details.
+!
+!EOP
+!-------------------------------------------------------------------------!
+!BOC
+!
+!
+!  p_clD1m:  	minimal thickness oxic layer
+!  p_clD2m:  	minimal thickness denitrification layer
+!  p_chD2m:  	 max. depth in model.
+!  p_diff:  	m2/d # molecular diffusion constant
+!  p_p:  	 -   # adsorption distribution coefficient
+!  p_smQ6:  	 /d  # dissolution coefficient of silica
+!  p_chM5s:  	 mmol Si/m3  # concentration of dissolved
+!        :  	 silica at saturation with biogenic silica
+!        :  	 (T=10degC)
+!  p_cvM5s:  	 mmol Si/m3  # coefficient of the T-dependence
+!        :  	 of the saturation value
+!  p_q10:  	 -   # Q10 of the T-dependence
+
+&BenSilica_parameters
+p_clD1m = 0.001,
+p_clD2m = 0.04,
+p_chD2m = 0.15,
+p_diff = 2.07e-05,
+p_p = 0.0,
+p_smQ6 = 0.08,
+p_chM5s = 600.0,
+p_cvM5s = 400.0,
+p_q10 = 2.0,
+N_layers = 2,
+N_coeff = 4
+/
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!END namelist
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+!BOP
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

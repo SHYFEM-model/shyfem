@@ -1,0 +1,182 @@
+
+Post Processing
+===============
+
+
+Generation of time series
+=========================
+
+Time series can be generated with the commands splitext and splitflx.
+These two commands take the files EXT and FLX and create files
+z.1, z.2 etc  u.*, v.*, m.*, p.*.
+
+	EXT file:
+
+	z	water levels
+	u	velocity in x direction
+	v	velocity in y direction
+	m	modulus of velocity (speed)
+
+	FLX file:
+
+	p	discharge
+
+The numbers after the letter give the number of the points or the section
+for which this value has been computed. Therefore, if there is the
+following section in the STR file
+
+$extra
+	100 245 1243 2599
+$end
+
+flux
+	0 121 134 154 0
+	0 453 764 345 0
+$end
+
+then running splitext returns z.1, z.2, z.3, z.4 and similar for
+u.*, v.*, m.*, where z.1 it the water level of node 100 and
+z.4 the water level of node 2599.
+
+Running splitext gives p.1 and p.2 which refer to the first and second
+section in the $flux section.
+
+
+Plotting time series
+====================
+
+
+In pricipal any program that plots time series can be used for
+the generation of plots. However, in the SHYFEM framework the program
+gnuplot is used to generate time series plots.
+
+The command is gp. So, if the 4 time series of water level of the above
+points have to be plotted, it is enough to write "gp z.*" which
+creates a file out.ps that can be viewed with ghostview (gv).
+
+gp -help gives the exact calling command for gp. It is possible to specify
+the scaling of axes, the line type, legneds for the axis and color plots.
+
+
+Plotting maps
+=============
+
+
+All plotting of maps can be done through the program plots. This program
+calls internally the program plotsim in fem/femplot.
+With this program the files *.bas, *.ous, *.nos *.con *.bio etc..
+can be plotted.
+
+With this program the following maps can be created:
+	- basin (grid, bathymetry, etc..)
+	- hydrodynamics: water levels, velocities, transports
+	- scalar values: T/S, generic concentration, biological variables
+		wave parameters, sediments, etc..
+
+Please see "plots -help" for more information.
+
+The program needs to know some information:
+
+	- what to plot (-what)
+	- simulation name (-bas)
+	- basin name (-sim)
+	- time information (-time)
+	- the vertical level (-lev3d)
+	- in case of scalar plotting the id of the variable (-var)
+	- constrol files that specify more exactly what and how
+	  the plot has to be created (please refer to the manual
+	  for this part)
+
+The easiest way to specify the simulation name and basin is through the program
+"memory":
+
+	memory -s simul		sets simulation to simul
+	memory -b basnew	sets basin to basnew
+
+In this case the names do not have to be specified in the call to plots.
+
+Plotting for example the water levels (with simulation and basin already
+specified through memory) would be:
+
+	plots -zeta
+
+and the barotropic velocities would be created through
+
+	plots -vel
+
+If velocities in different layers have to be plotted we can use
+
+	plots -vel -lev3d 1
+
+for the surface layer and
+
+	plots -vel -lev3d 3
+
+for the 3rd layer.
+
+In the above examples all time records that are present in the output file
+will be plotted. With the -time switch this behavior can be changed.
+If only every 3rd record should be plotted, then "-time 3" does the
+job. Giving two values sets the initial and final value of the time to be
+plotted. So "-time 60000,67200" produces a plot between seconds
+60000 and 67200, and "-time 60000,67200,2" does the same thing but plots
+only every second record.
+
+The switch -var defines what type of scalar has to be plotted
+in case the simulation file contains more than one type.
+Below some typical types are given:
+
+		10	generic concentration (tracer)
+		11	salinity
+		12	temperature
+
+		18	rms (root mean square) velocity
+
+		31	wave height
+		32	wave period
+		33	wave direction
+
+		71	nh3
+		72	no3
+		73	opo4
+		74	phyto
+		75	cbod
+		76	do
+		77	on
+		78	op
+		79	zoo
+
+Therefore, with the command "plots -nos -var 11" the salinity
+is plotted. However, for some often used parameters a specific
+switch exists for the plotting:
+
+	plots -conz	generic concentration
+	plots -salt	salinity
+	plots -temp	temperature
+	plots -rms	rms velocity
+
+
+Example of creating graphics
+============================
+
+memory -s test01  -b hue3
+
+splitext
+gp z.*
+	-> in out.ps are water level time series
+splitflx
+gp p.*
+	-> in out.ps are discharge time series
+
+plots -bath
+	-> in plot.ps is grid and bathymetry
+
+plots -zeta
+	-> in plot.ps is water level
+
+plots -vel -lev3d 1
+	-> in plot.ps is surface layer velocity of current
+
+plots -salt -lev3d 3
+	-> in plot.ps is salinity of 3rd layer
+

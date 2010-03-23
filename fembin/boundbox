@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# changes bounding box in ps/eps file
+
+file=$1
+bakfile=$file.bak
+
+if [ $# -le 1 ]; then
+  echo "Usage: boundbox file llx lly urx ury"
+  exit 1
+fi
+
+shift
+
+mv $file $bakfile
+
+perl -p -e "s/^%%BoundingBox: .*\n$/%%BoundingBox: $*\n/" $bakfile > $file
+
+

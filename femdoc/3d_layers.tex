@@ -1,0 +1,99 @@
+
+The basic way to run the model is in 2D, computing for each element of the
+grid one value for the whole water column.  All the variables are computed
+in the center of the layer, halfway down the total depth.  Deeper basins
+or highly variable bathymetry can require for the correct reproduction
+of the velocities, temperature and salinity the need for 3D computation.
+
+The 3D computation is performed on the basis of z layers. In this
+representation each layer horizontally has constant depth over the whole
+basin, but vertically the layer thickness may vary between different
+layers. However, the first layer (surface layer) is of varying thickness
+because of the water level variation, and the last layer of an element
+might be only partially present due to the bathymetry.
+
+Layers are counted from the the surface layer (layer 1) down to the
+maximum layer, depending again on the local depth. Therefore, elements
+(and nodes) normally have a different total number of layers from one to
+each other. This is opposed to sigma layers where the number of total
+layers is constant all over the basin, but the thickness of each layer
+varies between different elements.
+
+In order to use layers for 3D computations a new section |$layers|
+has to be introduced into the |STR| file, where the sequence of depth
+values of the bottom of the layers has to be declared.  Please, make sure
+that in the file |Rules.make|, the number of allowed levels |nlvdim| is
+greater or equal than the ones actually used in the |STR| file. Layer
+depths must be declared in increasing order. An example of a |$layer|
+section is given in figure \figref{layers}. Please note that the maximum
+depth of the basin in the example must not exceed 20 m.
+
+\begin{figure}[ht]
+\begin{verbatim}
+$layers
+	2 4 6 8 10 13 16 20
+$end
+\end{verbatim}
+\caption{Example of section {\tt \$layers}. The maximum depth of 
+the basin is 20 meters. The first 5 layers have constant thickness 
+of 2 m, while the last three vary between 3 and 4 m.}
+\label{fig:layers}
+\end{figure}
+
+A specific treatment for the bottom layer has to be carried out.  In fact,
+if the model runs on basins with variable bathymetry, for each element
+there will be a different total number of layers. The bathymetric value
+normally does not coincide with one of the layer depths, and therefore
+the last layer must be treated seperately.
+
+To declare how to treat the last layer two parameters have to be
+inserted in the |$para| section. The first is |hlvmin|, the minimum
+depth, expressed as a percentage with respect to the full layer depth,
+ranging between 0 and 1, This is the fraction that the last layer
+must have in order to be maintained as a seperate layer.  The second
+parameter is |ilytyp| and it defines the kind of adjustment done on the
+last layer. If it is set to 0 no adjustment is done, if it is set to 1
+the depth of the last layer is adjusted to the one declared in the |STR|
+file (full layer change).  If it is 2 the adjustment to the previous layer
+is done only if the fraction of the last layer is smaller than |hlvmin|
+(change of depth).  If it is 3 (default) the bathymetric depth is kept
+and added to the last but one layer. Therefore with a value of 0 or 3
+the total depth will never be changed, whereas with the other levels
+the total depth might be adjusted.
+
+As an example, take the layer definition of \Fig\figref{layers}. Let |hlvmin|
+be set to 0.5, and let an element have a depth of 6.5 m. The total number
+of layers is 4, where the first 3 have each a thickness of 2 m and the
+last layer of this element (layer 4) is 0.5 m. However, the nominal
+thickness of layer 4 is 2 m and therefore its relative thickness is 0.25
+which is smaller than |hlvmin|. With |ilytyp|=0 no adjustment will be
+done and the total number of layers in this element will be 4 and the
+last layer will have a thickness of 0.5 m.  With |ilytyp|=1 the total
+number of layers will be changed to 3 (all of them with 2 m thickness)
+and the total depth will be adjusted to 6 m. The same will happen with
+|ilytyp|=2, because the relative thickness in layer 4 is smaller than
+|hlvmin|.  Finally, with |ilytyp|=3 the total number of layers will be
+changed to 3 but the remaining depth of 0.5 m will be added to layer 3
+that will become 2.5 m.
+
+In the case the element has a depth of 7.5 m, the relative thickness is
+now 0.75 and greater than |hlvmin|.  In this case, with |ilytyp|=0, 2
+and 3 no adjustment will be done and the total number of layers in this
+element will be 4 and the last layer will have a thickness of 1.5 m.
+With |ilytyp|=1 the total number of layers will be kept as 4 but the
+total depth will be adjusted to 8 m. This will make all layers equal to
+2 m thickness.
+
+The introduction of layers requires also to define the values of
+vertical eddy viscosity and eddy diffusivity.  In any case a value of
+these two parameters has to be set if the 3D run is performed. This
+could be done by setting a constant value of the parameters |vistur|
+(vertical viscosity) and |diftur| (vertical diffusivity). In this case
+possible values are between 1\ten{-2} and 1\ten{-5}, depending on the
+stability of the water column. Higher values (1\ten{-2}) indicate higher
+stability and a stronger barotropic behavior.
+
+The other possibility is to compute the vertical eddy coeficients through
+a turbulence closure scheme. This usage will be described in the scetion
+on turbulence.
+

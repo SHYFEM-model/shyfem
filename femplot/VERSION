@@ -1,0 +1,741 @@
+version  1.66    11-03-2010    VERS_1_66
+
+compiler errors (line too long)
+
+========================================================== 11-03-2010 - 1.66
+
+No revision log.
+
+==========================================================
+
+version  1.65    26-02-2010    VERS_1_65
+
+new generic color table
+new BW frame around plot
+
+========================================================== 26-02-2010 - 1.65
+
+c plotsim.f:
+c 23.02.2010	ggu	new call to set_default_color_table()
+c
+c supano.f:
+c 23.02.2010  ggu     for colorbar switch to generic color table
+c
+c supbas.f:
+c 22.02.2010  ggu     new routine bw_frame() to plot bw scale around plot
+c
+c supcol.f:
+c 23.02.2010    ggu     new set_default_color_table(), renamed qchsc()
+c
+c supiso.f:
+c 23.02.2010    ggu     restructured and commented, use generic color table
+c
+c supout.f:
+c 23.02.2010  ggu     change in reading wind file
+
+==========================================================
+
+version  1.64    18-11-2009    VERS_1_64
+
+new routines for section plot:
+        in plotsim.f new arrays for section plot
+        in supano.f changes to colbar, new inbox routines
+        in supdep.f new routine mkht3 to set depth structure
+        in supout.f set nlv once file is read
+        in supsim.f section plot for velocities in plosim
+        in suplin.f vertical plot finished (scalar and velocities)
+        new files basin.h line_nodes.f suplin1.f
+
+========================================================== 18-11-2009 - 1.64
+
+c plotsim.f:
+c 13.10.2009	ggu	new arrays for velocity section plot
+c
+c supano.f:
+c 13.10.2009  ggu     changes to colbar, new inbox routines
+c
+c supdep.f:
+c 13.10.2009    ggu     new routine mkht3
+c
+c suplin.f:
+c 14.10.2009    ggu     vertical plot finished (scalar and velocities)
+c
+c suplin1.f:
+c 13.10.2009    ggu     routines written from scratch
+c
+c supout.f:
+c 13.10.2009  ggu     set nlv once file is read
+c
+c supsim.f:
+c 13.10.2009	ggu	section plot for velocities in plosim
+
+==========================================================
+
+version  1.63b    09-10-2009    VERS_1_63b
+
+plotting of atmos. pressure
+sclvel
+vertical section
+color bar
+
+========================================================== 09-10-2009 - 1.63b
+
+c plotsim.f:
+c 09.10.2009	ggu	plotting of atmos. pressure
+c
+c supano.f:
+c 09.10.2009  ggu     sclvel for scaling arrow, lots of changes in color bar
+c
+c suplin.f:
+c 09.10.2009    ggu     vertical plot nearly ready
+c
+c supout.f:
+c 09.10.2009  ggu     read also pressure from wind file
+c
+c supsim.f:
+c 09.10.2009	ggu	new routine plopres() for atmos. pressure
+
+==========================================================
+
+version  1.63a    14-09-2009    VERS_1_63a
+
+more on section
+
+========================================================== 14-09-2009 - 1.63a
+
+No revision log.
+
+==========================================================
+
+version  1.63    14-09-2009    VERS_1_63
+
+new section plot
+
+========================================================== 14-09-2009 - 1.63
+
+c supbas.f:
+c 14.09.2009  ggu     new routine divdist()
+c
+c supint.f:
+c 14.09.2009  ggu     new way to determine if section plot in getisec()
+c
+c suplin.f:
+c 14.09.2009    ggu     routines written from scratch
+c
+c supsim.f:
+c 14.09.2009	ggu	section plot for scalars in plonos
+
+==========================================================
+
+version  1.62    19-06-2009    VERS_1_62
+
+regular grid plotting
+
+========================================================== 19-06-2009 - 1.62
+
+c supbas.f:
+c 12.06.2009  ggu     new routines to handle spherical coords. & regular grid
+c 15.06.2009  ggu     call to reggrid() changeed -> pass in gray value
+
+==========================================================
+
+version  1.61    29-05-2009    VERS_1_61
+
+bug fix for grid and color plotting
+
+========================================================== 29-05-2009 - 1.61
+
+c col.f:
+c 21.04.2009    ggu     allow for constant values (make 2 isolines)
+c
+c supano.f:
+c 21.04.2009  ggu     allow just one isoline (bug)
+c
+c supsim.f:
+c 07.05.2009	ggu	bug fix for grid and color plotting (plobas)
+
+==========================================================
+
+version  1.60a    21-04-2009    VERS_1_60a
+
+problems tagging
+
+========================================================== 21-04-2009 - 1.60a
+
+No revision log.
+
+==========================================================
+
+version  1.60    21-04-2009    VERS_1_60
+
+remove level.h from files (use param.h)
+remove arc from CVS tree
+DIFFS file
+
+========================================================== 21-04-2009 - 1.60
+
+c plotsim.f:
+c 20.04.2009	ggu	level.h eliminated
+
+==========================================================
+
+version  1.59    07-04-2009    VERS_1_59
+
+new param.h structure
+
+========================================================== 07-04-2009 - 1.59
+
+c plotsim.f:
+c 06.04.2009	ggu	new param.h structure
+c
+c subrgf.f:
+c 10.03.2009    ggu     finished coding
+c 27.03.2009    ggu     bug fix ITACT (itact was not adjourned)
+c 31.03.2009    ggu     changed header of regular files (x0,.., description)
+
+==========================================================
+
+version  1.58    02-02-2009    VERS_1_58
+
+Better error handling for lagrangian module
+Bug in plonos (ivar)
+
+========================================================== 02-02-2009 - 1.58
+
+c suplag.f:
+c 27.01.2009    ggu     better error check reading particles, routines deleted
+c
+c supsim.f:
+c 27.01.2009	ggu	bug in plonos (input variable ivar has been changed)
+
+==========================================================
+
+version  1.57a    26-01-2009    VERS_1_57a
+
+minor
+
+========================================================== 26-01-2009 - 1.57a
+
+No revision log.
+
+==========================================================
+
+version  1.57    26-01-2009    VERS_1_57
+
+new makedepend
+some more color tables
+
+========================================================== 26-01-2009 - 1.57
+
+c plotsim.f:
+c 26.01.2009	ggu	new makedepend
+c supcol.f:
+c 26.01.2009    ggu     some more color tables
+
+==========================================================
+
+version  1.56    12-01-2009    VERS_1_56
+
+minor changes
+possible plot of single isolines
+reformatting and cleaning
+
+========================================================== 12-01-2009 - 1.56
+
+c supano.f:
+c 09.01.2009  ggu     allow any factor in velsh, no traref etc..
+c
+c supcol.f:
+c 09.01.2009    ggu     some re-formatting
+c 09.01.2009    ggu     deleted setcol(), new make_single_isolines()
+c
+c supiso.f:
+c 09.01.2009    ggu     deleted plcol0 (not used), new set_fxy_vals()
+c 09.01.2009    ggu     plot only part of isolines using make_single_isolines()
+
+==========================================================
+
+version  1.55    09-12-2008    VERS_1_55
+
+changes from Malta integrated (annotation)
+
+========================================================== 09-12-2008 - 1.55
+
+c plotsim.f:
+c 09.12.2008    ggu     changes from Malta integrated (annotation)
+c
+c supano.f:
+c 06.12.2008  ggu     new routine blank_window(), in velsh handle wind/waves
+c 06.12.2008  ggu     male colbar smaller than box size
+c
+c supint.f:
+c 06.12.2008  ggu     in extlev set not-existing values to flag
+c
+c supiso.f:
+c 06.12.2008    ggu     plot isolines only where area is existing (bplot)
+c
+c supsim.f:
+c 06.12.2008	ggu	new routine get_minmax_flag(), bvel -> ivel for velsh
+c
+c suptim.f:
+c 06.12.2008  ggu     in oktime() set itact to actual time
+
+==========================================================
+
+version  1.54    20-11-2008    VERS_1_54
+
+some more debug messages
+
+========================================================== 20-11-2008 - 1.54
+
+c supcol.f:
+c 19.11.2008    ggu     new routine coltst()
+
+==========================================================
+
+version  1.53    17-11-2008    VERS_1_53
+
+minor release
+
+========================================================== 17-11-2008 - 1.53
+
+c suptim.f:
+c 13.11.2008  ggu     in oktime() increase irec only for new time
+
+==========================================================
+
+version  1.52    10-10-2008    VERS_1_52
+
+Allow plot of bottom velocity
+
+========================================================== 10-10-2008 - 1.52
+
+c supdep.f:
+c 17.09.2008    ggu     routine mkht changed for layer = -1
+c
+c supint.f:
+c 17.09.2008  ggu     comments for level = -1
+c
+c suplag.f:
+c 17.09.2008    ggu     new version for plotting lagrangian particles in color
+c
+c supout.f:
+c 17.09.2008  ggu     new routine level_e2k to compute ilhkv from ilhv
+c
+c supsim.f:
+c 17.09.2008	ggu	plot last layer
+
+==========================================================
+
+version  1.51    16-07-2008    VERS_1_51
+
+new color table
+use z for plotting lagrange
+
+========================================================== 16-07-2008 - 1.51
+
+c supcol.f:
+c 06.06.2008    ggu     new colortable introduced
+c
+c suplag.f:
+c 13.06.2008    ggu     use also z for plotting
+
+==========================================================
+
+version  1.50    16-04-2008    VERS_1_50
+
+New Makefile structure
+
+========================================================== 16-04-2008 - 1.50
+
+c plotsim.f:
+c 16.04.2008    ggu     new Makefile structure
+
+==========================================================
+
+version  1.43    18-01-2008    VERS_1_43
+
+Minor changes.
+
+========================================================== 18-01-2008 - 1.43
+
+No revision log.
+
+==========================================================
+
+version  1.42    08-06-2007    VERS_1_42
+
+Minor changes.
+
+========================================================== 08-06-2007 - 1.42
+
+c supano.f:
+c 06.06.2007  ggu     new mode for idate (4)
+c
+c suplag.f:
+c 05.06.2007    ggu     plot lagrangian particles in color (LAG_COLOR)
+
+==========================================================
+
+version  1.41    14-03-2007    VERS_1_41
+
+Wave plotting
+
+========================================================== 14-03-2007 - 1.41
+
+c plotsim.f:
+c 14.03.2007    ggu     wave plotting
+c
+c supout.f:
+c 14.03.2007  ggu     new routines for wave plotting
+c
+c supsim.f:
+c 14.03.2007	ggu	wave plotting with plowave
+
+==========================================================
+
+version  1.40a    18-10-2006    VERS_1_40a
+
+Minor
+
+========================================================== 18-10-2006 - 1.40a
+
+c supano.f:
+c 18.10.2006  ggu     may give relative coords for date/time
+
+==========================================================
+
+version  1.40    01-02-2006    VERS_1_40
+
+FEMDIR is relative
+
+========================================================== 01-02-2006 - 1.40
+
+No revision log.
+
+==========================================================
+
+version  1.39    04-11-2005    VERS_1_39
+
+Minor changes
+
+========================================================== 04-11-2005 - 1.39
+
+c plotsim.f:
+c 18.10.2005    ggu     data structures introduced to call set_geom
+c
+c supano.f:
+c 27.05.2005  ggu     new routines to make absolute coordinates (for text)
+c
+c suptim.f:
+c 27.05.2005  ggu     increase nrec always in oktime (even when it is the same)
+
+==========================================================
+
+version  1.38    15-03-2005    VERS_1_38
+
+New lagrangian plotting and wind/date routines
+
+========================================================== 15-03-2005 - 1.38
+
+c supano.f:
+c 11.03.2005  ggu     date and wind are now specified in STR file
+c
+c suplag.f:
+c 03.03.2005    ggu     revised lagrangian plotting routines
+c
+c supsim.f:
+c 04.03.2005	ggu	grey plot over bathy
+
+==========================================================
+
+version  1.37    03-03-2005    VERS_1_37
+
+Do not plot in areas where no layer is present.
+
+========================================================== 03-03-2005 - 1.37
+
+c plotsim.f:
+c 02.03.2005    ggu     introduced flag for scalar plot
+c
+c supano.f:
+c 02.03.2005  ggu     new format for exffil
+c
+c supbas.f:
+c 02.03.2005  ggu     in bash: bug fix -> get size of grid if not given
+c
+c supint.f:
+c 02.03.2005  ggu     new routines set_flag and get_flag
+c
+c supiso.f:
+c 02.03.2005    ggu     in isoline: only plot if not flag
+
+==========================================================
+
+version  1.36    17-01-2005    VERS_1_36
+
+Regular net on bathymetry output
+
+========================================================== 17-01-2005 - 1.36
+
+c supbas.f:
+c 16.12.2004  ggu     changed reggrid to plot regular grid
+c
+c supsim.f:
+c 16.12.2004	ggu	plot also regular net
+
+==========================================================
+
+version  1.35b    06-12-2004    VERS_1_35b
+
+========================================================== 06-12-2004 - 1.35b
+
+Dummy new version
+
+No revision log.
+
+==========================================================
+
+version  1.35a    06-12-2004    VERS_1_35a
+
+========================================================== 06-12-2004 - 1.35a
+
+Dummy new version
+
+No revision log.
+
+==========================================================
+
+version  1.35    06-12-2004    VERS_1_35
+
+legwind and legdate updated
+copyright statement
+
+========================================================== 06-12-2004 - 1.35
+
+c col.f:
+c 04.10.2004    ggu     adjust amin and decimal point in colauto
+c
+c=====================================================================
+c
+c---------------------------------------------------------------------
+c
+c	integer isodim
+c	parameter(isodim=256)
+c
+c        integer isopar,isoanz,niso,ncol
+c        real fnull
+c        real fiso(isodim)
+c        real ciso(isodim+1)
+c
+c        common /isolin/ isopar,isoanz,niso,ncol
+c        common /fsolin/ fnull
+c        common /isofol/ fiso
+c        common /isocol/ ciso
+c
+c---------------------------------------------------------------------
+c plotsim.f:
+c 04.10.2004	ggu	temp and salt from nos file
+c 02.12.2004    ggu     copyright statement added
+c
+c supano.f:
+c 05.10.2004  ggu     changes in legdate and legwind
+c 02.12.2004  ggu     legwind and legdate prepared for str input
+c
+c supout.f:
+c 05.10.2004  ggu     adjustments -> use always 3D data structure
+c
+c supsim.f:
+c 05.10.2004	ggu	use znv instead xv
+c 05.10.2004	ggu	inorm instead ivert, overlay over z/h, comp_scale()
+
+==========================================================
+
+version  1.34    28-09-2004    VERS_1_34
+
+update for lagrangian
+wind vector
+switch from OUV to OUS format
+
+========================================================== 28-09-2004 - 1.34
+
+c supano.f:
+c 22.09.2004  ggu     small bug fix in legwind, qlwidth(0.) for reset
+c
+c supout.f:
+c 22.09.2004  ggu     new routines for handling ous file
+c 22.09.2004  ggu     use OUS file for 3D, try to use alsways 3D (level=0)
+
+==========================================================
+
+version  1.33    21-09-2004    VERS_1_33
+
+lagrangian plotting
+wind vector
+
+========================================================== 21-09-2004 - 1.33
+
+c plotsim.f:
+c 22.03.2004	ggu	lagrang model output added (mode 12)
+c
+c supano.f:
+c 05.10.2003  ggu     new routines to plot vectors autonomously
+c 08.03.2004  ggu     legdate to write date to plot (called in legplo)
+c 03.09.2004  ggu     legwind to write wind data (preliminary)
+c
+c supint.f:
+c 17.03.2004  ggu     new routine okvar()
+c
+c supiso.f:
+c 05.12.2003    ggu     filling is done in fill_area()
+c 05.12.2003    ggu     is_r_nan() introduced for BUG search
+c 11.03.2004    ggu     debugging in fill_area()
+c
+c supout.f:
+c 31.10.2003  ggu     new routines velclose(), resetsim()
+c 31.10.2003  ggu     new routines for handling wind
+c
+c supsim.f:
+c 05.10.2003	ggu	changes to allow for automatical plotting of vector
+c 31.10.2003	ggu	subroutine plowind()
+c suputi.f:
+c 05.10.2003    ggu     bug fix S_IS_0 in pfeil
+
+==========================================================
+
+version  1.32    04-09-2003    VERS_1_32
+
+New routines to read legend
+
+========================================================== 04-09-2003 - 1.32
+
+c supano.f:
+c 04.09.2003  ggu     new routines to read legend, legend.h
+c
+c suputi.f:
+c 03.09.2003    ggu     bug fix XBXT in fpfeil
+
+==========================================================
+
+version  1.31    01-09-2003    VERS_1_31
+
+use of occupy to place color bar
+
+========================================================== 01-09-2003 - 1.31
+
+c col.f:
+c 20.08.2003    ggu     some more comments
+c 21.08.2003    ggu     colini is called in colsetup
+c
+c supano.f:
+c 21.08.2003  ggu     uses occupy to decide where to put color bar
+c
+c supbas.f:
+c 21.08.2003  ggu     occupy is called elsewhere
+
+==========================================================
+
+version  1.3    19-08-2003    VERS_1_3
+
+various changes
+
+========================================================== 19-08-2003 - 1.3
+
+c
+c col.f:
+c 05.08.2003    ggu     changed adjcoltab, new cfast, init_cfast
+c
+c supano.f:
+c 21.05.2003  ggu     various changes in legend
+c
+c supcol.f:
+c 26.10.2001    ggu     in colrd allow only one array to be given
+c
+c supint.f:
+c 29.01.2002  ggu     new routine getisec()
+c
+c supiso.f:
+c 17.10.2001    ggu     use parameter isolin in isoline()
+c
+c supsim.f:
+c 30.01.2002	ggu	better debug info, allow for vertical plotting
+c 30.01.2002	ggu	new routines mkvarline, aspecial, traxy, rdspecial
+c
+c suputi.f:
+c 16.10.2001    ggu     new routine fpfeil()
+c
+
+==========================================================
+
+version  1.2    19-02-2001    VERS_1_2
+
+Better color bar and arrows.
+Color conversion routines.
+
+========================================================== 19-02-2001 - 1.2
+
+c
+c supano.f:
+c 12.06.2000  ggu     ndim renamed into legdim
+c 04.02.2001  ggu     color bar legend now works with nctick
+c
+c supbas.f:
+c 12.06.2000  ggu     get gray value for basin mode 3 from str file
+c 11.02.2001  ggu     routine to compute typical length scale
+c
+
+==========================================================
+
+version  1.1    26-05-2000    VERS_1_1
+
+========================================================== 26-05-2000 - 1.1
+
+Last version of lagoon.
+
+c
+c plotsim.f:
+c 12.02.1999	ggu	adapted to auto mode
+c
+c supano.f:
+c 09.02.2000  ggu     use inboxdim to compute box to plot
+c 07.04.2000  ggu     new format for legend read
+c
+c supbas.f:
+c 16.02.1999  ggu     bpixel: write bounding box to ps file (as comment)
+c 09.02.2000  ggu     use inboxdim to compute box to plot
+c
+c supint.f:
+c 12.02.1999  ggu     adapted to auto mode
+c
+c supsim.f:
+c 24.02.1999	ggu	in plobas() plot also type of elements (eltype0)
+c
+c suptim.f:
+c 12.02.1999  ggu     adapted to auto mode
+c
+c windrose.f:
+c 13.04.1999	ggu	written from scratch
+c
+
+==========================================================
+
+version  1.01    10-02-1999    VERS_1_01
+
+========================================================== 10-02-1999 - 1.01
+
+New files VERSION and COMMIT.
+
+==========================================================
+
+version  1.00    10-02-1999    VERS_1_00
+
+========================================================== 10-02-1999 - 1.00
+
+Source for femplot imported.
+
+==========================================================
+
+==========================================================
+Do not delete last line - needed for logging.
+==========================================================
+plotsim.f

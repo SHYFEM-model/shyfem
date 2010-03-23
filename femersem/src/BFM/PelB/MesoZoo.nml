@@ -1,0 +1,90 @@
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50-g
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!BOP
+!
+! !ROUTINE: MesoZoo
+!
+! DESCRIPTION
+!   List of parameters values
+
+!   This file is generated directly from OpenSesame model code, using a code 
+!   generator which transposes from the sesame meta language into F90.
+!   F90 code generator written by P. Ruardij.
+!   structure of the code based on ideas of M. Vichi.
+!
+! !INTERFACE
+! parameter values for mem_MesoZoo filled by InitMesoZoo
+!
+
+!  
+!
+! !AUTHORS
+!   mfstep/ERSEM team
+!
+! !REVISION_HISTORY
+!   ---
+!
+! COPYING
+!   
+!   Copyright (C) 2006 P. Ruardij, the mfstep group, the ERSEM team 
+!   (rua@nioz.nl, vichi@bo.ingv.it)
+!
+!   This program is free software; you can redistribute it and/or modify
+!   it under the terms of the GNU General Public License as published by
+!   the Free Software Foundation;
+!   This program is distributed in the hope that it will be useful,
+!   but WITHOUT ANY WARRANTY; without even the implied warranty of
+!   MERCHANTEABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!   GNU General Public License for more details.
+!
+!EOP
+!-------------------------------------------------------------------------!
+!BOC
+!
+!
+!        :
+!        :  	 The variable Z3 represents carnivorous mesozooplankton and Z4 represents
+!        :  	 omnivorous mesozooplankton.
+!        :
+!  p_q10:  	 Doubling temperature
+!  p_srs:  	 Respiration rate at 10 degrees C
+!  p_sum:  	 Maximal productivity at 10 degrees C
+!  p_sd:  	 Background natural mortality
+!  p_vum:  	 Specific search volume
+!  p_puI_u:  	 Assimilation efficiency
+!  p_peI_R6:  	 Faeces production
+!  p_sdo:  	 Fractional density-dependent mortality
+!  p_sds:  	 Exponent of density-dependent mortality
+!  p_qpc:  	 Quotum phosphate
+!  p_qnc:  	 Quotum nitrate
+
+&MesoZoo_parameters
+p_q10 = 2.0,2.0,
+p_srs = 0.01,0.02,
+p_puPI = 0.0,1.0,
+         0.0,0.75,
+         0.0,0.0,
+         0.0,1.0,
+p_puMIZ = 0.0,1.0,
+         0.0,0.0,
+p_puMEZ = 1.0,0.0,
+         1.0,1.0,
+p_sd = 0.01,0.01,
+p_sum = 2.0,2.0,
+p_vum = 0.008,0.008,
+p_puI_u = 0.6,0.6,
+p_peI_R6 = 0.3,0.35,
+p_sdo = 0.0004,0.0004,
+p_sds = 2.0,2.0,
+p_qpc = 0.00167,0.00167,
+p_qnc = 0.015,0.015
+/
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!END namelist
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+!BOP
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

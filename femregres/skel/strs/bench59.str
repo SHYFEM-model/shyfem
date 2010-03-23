@@ -1,0 +1,63 @@
+
+$title
+	benchmark test for venice lagoon - bas059
+	bench
+	bas059
+$end
+
+	idtout = 3600  itmout = 43200
+	idtout = 3600  itmout = 129600
+	itend = 7200
+	href = 0.23
+
+&para
+	itanf = 0  itend = 86400  idt = 300 
+	idtout = 3600  itmout = 0
+	idtext = 300   itmext = 0
+	ireib = 2  ilin = 1
+	iczv = 1
+&end
+
+$bound1     ---- chioggia ----
+	kbound = 73 74 76
+	ampli = 0.40  period = 43200.  phase = 10800.  zref = 0.
+$end
+
+$bound2    ---- malamocco ----
+	kbound = 353 350 349
+	iqual = 1
+$end
+
+$bound3   ---- lido ----
+	kbound = 1374 1154 1160 1161
+	iqual = 1
+$end
+
+-------------- MAREOGRAFI PER TARATURA--------------
+13,133,99,259,328,772,419,1141,1195,1070,1064,942,468,1154
+------- MAREOGRAFI + SEZIONI PER TARATURA------------
+13,133,99,259,328,772,419,1141,1195,1070,1064,942,468,1154
+73,74,76,353,350,349,1374,1154,1160,1161,408,409,786,795,797
+------- MAREOGRAFI + SEZIONI BOCCHE + NODES INSIDE -----------
+13,133,99,259,328,772,419,1141,1195,1070,1064,942,468,1154
+73,74,76,353,350,349,1374,1154,1160,1161,1153,346,75
+------------ OSZILLATING LAGOON -------------------
+5,1,282,468,1278,905
+-----------------------------------------------------
+
+$extra ------- MAREOGRAFI PER TARATURA------------
+13,133,99,259,328,772,419,1141,1195,1070,1064,942,468,1154
+$end
+
+&area
+         0  30.
+         1  30.  30.    74    75
+         2  30.  30.   350   346
+         3  35.  35.  1154  1153
+         4  40.
+         5  40.
+         6  40.
+&end
+
+$name
+$end

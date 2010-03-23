@@ -1,0 +1,170 @@
+#!/bin/bash
+#
+# shows changes of file with respect to last checked in version
+
+cvsadm=CVS
+tmpdir=cvsdiff_tmp
+
+#----------------------------------------------------------------
+
+Usage()
+{
+  echo "Usage: cvsdiff [-h|-help] [options] file(s)"
+}
+
+FullUsage()
+{
+  Usage
+  echo "   -h|-help    this help screen"
+  echo "   -gui        uses tkdiff to show changes"
+  echo "   -header     only checks header for differences"
+  echo "   -nowhite    check only no-white space"
+  echo "   -norcs      do not check RCS header"
+  echo "   -ifdiff     show only if differing"
+  echo "   -quiet      do not show warnings for dirs or non CVS files"
+  echo "   -rev        revisions to compare (ex: 1.23  or 1.18:1.19)"
+}
+
+ErrorOption()
+{
+  echo "No such option : $1"
+}
+
+# todo: 
+#	* rev1 is newer one, rev2 is older one
+#	* specify revisions on command line (-r)
+#		only one rev -> rev2
+#		two revs: rev1:rev2
+#	accept also model version number, not file revision (-R)
+#		transform to file version number using symbols in file,v
+
+SetRevisions()
+{
+  # format is:  $rev2  or  $rev2:$rev1
+
+  [ -z "$rev" ] && return
+
+  rev1=`echo $rev | sed -e 's/.*://'`
+  if [ "$rev1" = "$rev" ]; then
+    rev1=""
+    rev2=$rev
+  else
+    rev2=`echo $rev | sed -e 's/:.*//'`
+  fi
+
+  echo "revisions are: |$rev| |$rev1| |$rev2|" >&2
+}
+
+#----------------------------------------------------------------
+
+gui="NO"
+header="NO"
+ifdiff="NO"
+quiet="NO"
+options=""
+
+while [ -n "$1" ]
+do
+   case $1 in
+        -gui)           gui="YES";;
+        -header)        header="YES";;
+        -nowhite)       options="$options -w";;
+        -norcs)         options="$options -I \$Id:";;
+        -ifdiff)        ifdiff="YES";;
+        -quiet)         quiet="YES";;
+        -rev)           rev=$2; shift;;
+        -h|-help)       FullUsage; exit 0;;
+        -*)             ErrorOption $1; exit 1;;
+        *)              break;;
+   esac
+   shift
+done
+
+if [ $# -lt 1 ]; then
+  Usage
+  exit 0
+elif [ ! -d $cvsadm ]; then
+  echo "No CVS repository found... exiting" >&2
+  exit 1
+fi
+
+mkdir -p $tmpdir
+
+repo=`cat $cvsadm/Repository`
+root=`cat $cvsadm/Root`
+base=$root/$repo
+
+echo "looking for file in $base" >&2
+
+#----------------------------------------------- loop on files
+
+for file
+do
+
+  if [ -d $file ]; then
+    [ $quiet = "YES" ] && continue
+    echo "*** $file is directory ... skipping" >&2
+    continue
+  elif [ ! -f $file ]; then
+    [ $quiet = "YES" ] && continue
+    echo "*** Cannot find file $file in current directory" >&2
+    continue
+  fi
+
+  SetRevisions
+
+  #------------------------------------- get old file (normally last committed)
+
+  file2=$tmpdir/${file}_last
+  [ -n "$rev2" ] && file2=$tmpdir/${file}_$rev2
+
+  co -r$rev2 -p $base/$file > $file2 2> $tmpdir/rcs_info2
+  status=$?
+  if [ $status -ne 0 ]; then
+    [ $quiet = "YES" ] && continue
+    echo "*** Cannot find $file or revision $rev2 in repository $base" >&2
+    continue
+  fi
+
+  #------------------------------------- get new file (normally actual file)
+
+  file1=$file
+  if [ -n "$rev1" ]; then
+    file1=$tmpdir/${file}_$rev1
+    co -r$rev1 -p $base/$file > $file1 2> $tmpdir/rcs_info1
+    status=$?
+    if [ $status -ne 0 ]; then
+      [ $quiet = "YES" ] && continue
+      echo "*** Cannot find $file or revision $rev1 in repository $base" >&2
+      continue
+    fi
+  fi
+
+  if [ $header = "YES" ]; then
+    getheader.pl $file1 > $tmpdir/header1_$file
+    getheader.pl $file2 > $tmpdir/header2_$file
+    file1=$tmpdir/header1_$file
+    file2=$tmpdir/header2_$file
+  fi
+
+  if [ $ifdiff = "YES" ]; then
+    diff -q $options $file2 $file1 > /dev/null
+    [ $? -eq 0 ] && continue		#not differing -> skip rest
+  fi
+
+  echo "-------------------------------------------------------------"
+  ls -la $file
+  [ -n "$rev1" ] && tail -1 $tmpdir/rcs_info1
+  tail -1 $tmpdir/rcs_info2
+
+  if [ $gui = "YES" ]; then
+    tkdiff $options $file2 $file1
+  else
+    diff $options $file2 $file1
+  fi
+  echo "-------------------------------------------------------------"
+
+done
+
+#----------------------------------------------- end of routine
+

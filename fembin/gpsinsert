@@ -1,0 +1,55 @@
+#!/bin/sh
+#
+# inserts eps file into other ps/eps files
+
+#--------------------------------------------------------------
+
+NoFile()
+{
+  echo "No such file: $1"
+  Usage
+}
+
+Usage()
+{
+  echo "Usage: gpsinsert [-relative] \"x1 y1 x2 y2\" eps-insert-file ps-file(s)"
+  exit 1
+}
+
+#--------------------------------------------------------------
+
+relative=""
+if [ "$1" = "-relative" ]; then
+  relative="-relative"
+  shift
+fi
+
+if [ $# -lt 3 ]; then
+  Usage
+fi
+
+#--------------------------------------------------------------
+
+prefix="incl_"
+where=$1
+epsfile=$2
+shift
+shift
+
+#--------------------------------------------------------------
+
+[ -f $epsfile ] || NoFile $epsfile
+
+echo "Insert file $epsfile into: $where"
+
+for file
+do
+  [ -f $file ] || NoFile $file
+  echo $file
+  gpsinsert.pl $relative "$where" $epsfile $file > tmp.tmp
+  [ -z "$prefix" ] && mv $file $file.bak
+  mv tmp.tmp $prefix$file
+done
+
+#--------------------------------------------------------------
+

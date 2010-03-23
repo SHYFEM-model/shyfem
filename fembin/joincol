@@ -1,0 +1,95 @@
+#!/usr/bin/perl
+
+# joins columns
+
+###########################################################
+
+&handle_args;
+if( $help || !@ARGV ) {
+  print "Usage: joincol [-help|-h] files\n";
+}
+exit 0 if $help;
+
+###########################################################
+
+while( $file = shift ) {
+
+  ($tref,$dref) = &readfile($file);
+
+  push(@tref,$tref);
+  push(@dref,$dref);
+}
+
+$nfiles = @tref;
+$ref = $tref[0];
+@tbasic = @$ref;
+$ref = $dref[0];
+@dbasic = @$ref;
+
+while( defined ($t0 = shift(@tbasic)) ) {
+
+  $d = shift(@dbasic);
+  $line = "$t0 $d";
+
+  for($i=1;$i<$nfiles;$i++) {
+    $ref = $tref[$i];
+    $t = shift(@$ref);
+    if( $t != $t0 ) {
+	print "different times: $t0 $t\n";
+	die "error\n";
+    }
+    $ref = $dref[$i];
+    $d = shift(@$ref);
+    $line .= " $d";
+  }
+
+  print "$line\n";
+}
+
+###########################################################
+
+sub readfile {
+
+  my $file = shift;
+  my $t,$r;
+  my @rest;
+  my @t = ();
+  my @r = ();
+
+  open(FILE,"<$file");
+
+  while(<FILE>) {
+
+    s/^\s+//;
+
+    ($t,@rest) = split;
+    $r = join(" ",@rest);
+
+    push(@t,$t);
+    push(@r,$r);
+  }
+
+  close(FILE);
+
+  return (\@t,\@r);
+}
+
+###########################################################
+
+sub handle_args {
+
+  while( $arg = $ARGV[0] ) {
+
+    if( $arg =~ /^-h/ ) {
+	$help = 1;
+    } elsif( $arg =~ /^-/ ) {
+	die "Unknown command line argument: $arg\n";
+    } else {
+	last;
+    }
+
+    shift @ARGV;
+  }
+
+}
+

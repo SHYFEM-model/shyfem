@@ -1,0 +1,217 @@
+#!/bin/bash
+#
+# computes differences of files relative to a different directory
+
+################################################################
+
+all="YES"
+ok="NO"
+diff="NO"
+noex="NO"
+size="NO"
+realdiff="NO"
+update="NO"
+confirm="NO"
+rcs="NO"
+debug="NO"
+nodir="NO"
+
+################################################################ functions
+
+Usage()
+{
+  echo "Usage: diffs [-h|-help] [-options] dir files"
+}
+
+Help()
+{
+  echo
+  Usage
+  echo
+  echo "  dir        remote directory to compare to"
+  echo "  files      list of files to compare"
+  echo
+  echo "Options:"
+  echo
+  echo "  -h|-help   show this help screen"
+  echo "  -debug     show debug information"
+  echo "  -nodir     do not compare directories"
+  echo "  -o         show only files that are identical"
+  echo "  -d         show only file that differ"
+  echo "  -n         show only files that do not exist in dir"
+  echo "  -s         if files differ show size of difference"
+  echo "  -r         do not show differences due to rcs $Id: line"
+  echo "  -D         if files differ show difference"
+  echo "  -u         update remote dir with differing or missing" \
+			"files from local dir"
+  echo "  -U         update local dir with differing or missing" \
+			"files from remote dir"
+  echo "  -C         confirm before updating"
+  echo
+}
+
+ErrorOption()
+{
+  echo "Error: No such option $1"
+}
+
+Update()
+{
+  if [ $1 = "LOCAL" ]; then
+    if [ -f $remdir/$2 ]; then
+      echo "updating  $locdir  with  $remdir/$2"
+      cp $remdir/$2 $locdir
+    fi
+  elif [ $1 = "REMOTE" ]; then
+    if [ -f $locdir/$2 ]; then
+      echo "updating  $remdir  with  $2"
+      cp $locdir/$2 $remdir
+    fi
+  fi
+}
+
+Compare()
+{
+  if [ $size = "YES" ]; then
+    echo -n "$1: " 
+    diff -wn $remdir/$1 $locdir/$1 | d+.pl
+  elif [ $realdiff = "YES" ]; then
+    echo "$1: " 
+    diff -w $remdir/$1 $locdir/$1
+  else
+    echo $1 
+  fi
+}
+
+################################################################
+
+YesNo()
+{
+  echo -n "Ok ? (y/n) : " | cat >&2
+  read yesno
+  echo "$yesno"
+}
+
+Confirm()		#must confirm before anything else
+{
+  if [ $confirm = "NO" ]; then
+    return
+  fi
+
+  if [ $update = "LOCAL" ]; then
+      echo "updating  $locdir  with files from  $remdir"
+  elif [ $update = "REMOTE" ]; then
+      echo "updating  $remdir  with files from  $locdir"
+  else
+      return
+  fi
+
+  ok=`YesNo`
+
+  if [ "$ok" = "y" ]; then
+    echo "updating..."
+    return
+  else
+    echo "aborting..."
+    exit 1
+  fi
+}
+
+Ok()
+{
+  echo $1
+}
+
+Differing()
+{
+  Compare $1
+  Update $update $1
+}
+
+Nonexisting()
+{
+  echo $1
+  Update $update $1
+}
+
+################################################################ options
+
+while [ $# -gt 0 ]
+do
+  case $1 in
+	-o)		ok="YES";all="NO";;
+	-d)		diff="YES";all="NO";;
+	-n)		noex="YES";all="NO";;
+	-s)		size="YES";diff="YES";all="NO";;
+	-r)		rcs="YES";;
+	-D)		realdiff="YES";diff="YES";all="NO";;
+	-u)		update="REMOTE";;
+	-U)		update="LOCAL";;
+	-C)		confirm="YES";;
+	-nodir)		nodir="YES";;
+	-debug)		debug="YES";;
+	-h|-help)	Help; exit 0;;
+	-*)		ErrorOption $1; Usage; exit 1;;
+	*)		break;;
+  esac
+  shift
+done
+
+################################################################ need help ?
+
+if [ $# -lt 2 ]; then
+  Usage
+  exit 1
+else
+  locdir=`pwd`
+  remdir=$1
+  shift
+fi
+
+if [ $debug = "YES" ]; then
+  echo "ok=$ok   diff=$diff  noex=$noex  size=$size  update=$update"
+  echo "confirm=$confirm  debug=$debug  all=$all  remdir=$remdir"
+fi
+
+################################################################ confirm
+
+Confirm
+
+#echo "end of confirm"
+#exit 1
+
+################################################################ compare
+
+#echo "directories: $locdir $remdir"
+
+for file
+do
+  if [ $nodir = "YES" ]; then		# only compare files, not dirs
+    if [ ! -f $locdir/$file ]; then
+      continue
+    fi
+  fi
+
+  if [ $rcs = "NO" ]; then
+    cmp $locdir/$file $remdir/$file > /dev/null 2>&1
+    status=$?
+  else
+    diff -I '$Id:' $locdir/$file $remdir/$file > /dev/null 2>&1
+    status=$?
+  fi
+
+  case $status in
+	0)	if [ $ok   = "YES" ]; then Ok $file; fi;;
+	1)	if [ $diff = "YES" ]; then Differing $file; fi;;
+	2)	if [ $noex = "YES" ]; then Nonexisting $file; fi;;
+  esac
+  if [ $all = "YES" ]; then
+    echo $file $status
+    if [ $status -ne 0 ]; then
+      Update $update $file
+    fi
+  fi
+done
+
+################################################################ end
+

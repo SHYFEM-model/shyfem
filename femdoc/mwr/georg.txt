@@ -1,0 +1,46 @@
+Before discretizing we first multiply the continuity
+equation by the form function $\phi_N$ and integrate
+over one element to obtain
+\[
+\int \Phi_N \tdif{\zeta} + \int \Phi_N \xdif{U} + \int \Phi_N \ydif{V} = 0.
+\]
+The terms containing the spatial differentiation can now be transformed
+by partial integration in the following way
+\[ \label[eq:conti1]
+        \int \Phi_N \xdif{U} + \int \Phi_N \ydif{V} =
+        - \int \xdif[Phi_N] U - \int \ydif[Phi_N] V +
+                \int_[\partial\Omega] \Phi_N U_n ds =
+        - \int b_N U - \int c_N V +
+                \int_[\partial\Omega] \Phi_N U_n ds.
+\]
+Here the last integral is a line integral over the border of
+the element and $U_n$ the transport normal to the border. Once the
+various contributions of the elements are summed the terms of the last
+integral are equal in modulus but of inverse sign and therefore
+cancel out. The only terms that do not cancel out are the
+line integral over the border of the domain.
+
+In case of a material boundary the trasnport noram lto the boundary
+vanishes, and therefore the line integral over these elements
+is again zero. The only contribution different from zero is therefore
+at the open boundaries. In this case the line integral is exactly
+the discharge over the open boundary out of the domain. It is
+therefore natural to specify a flux boundary condition with finite elements.
+However, in case the water levels are specified this boundary
+condition is not needed and is substituted with a level
+boundary condition. We will not further consider this
+term from now on.
+
+
+The integrated continuity equation is now discretized in time
+in the following way
+\[
+        \int \frac[\zetan-\zetao][\dt] \dO =
+                b_N \int ( \az \Un + \azt \Uo ) \dO +  
+                c_N \int ( \az \Vn + \azt \Vo ) \dO
+\]
+
+
+
+
+

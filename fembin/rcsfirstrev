@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# exports first revision of all files in RCS dir
+
+files=`ls RCS`
+
+for file in $files
+do
+  f=`basename $file ,v`
+  echo "$file $f"
+  co -f -l1.1 $f
+done

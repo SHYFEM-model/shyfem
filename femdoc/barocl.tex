@@ -1,0 +1,49 @@
+
+The baroclinic pressure gradient term permits to compute
+the variation of velocity due to the horizontal
+gradients of temperature and/or salinity. These gradients
+act on the horizontal variation of density. 
+
+If the variations of temperature and salinity and the
+baroclinic pressure gradient term has to be computed, 
+the parameter |ibarcl| (in section |$para|)
+must be set different from 0.
+
+Setting |ibarcl| to a value different from 0 will simulate the
+transport and diffusion of temperature and salinity in the basin. A value of 1
+will compute the full baroclinic pressure terms. A value of 2
+will do diagnostic simulations. This means that baroclinic pressure terms
+are still included in the hydrodynamic equations, 
+but temperature and salinity will not be computed
+but will be read from a file. Finally for |ibarcl|=3 temperature and salinity
+will be computed but no baroclinic pressure term will be used. In this case
+the hydrodynamic equations and the equations for temperature and
+salinity are decoupled and there is no feed back from the density field
+to the currents.
+
+In any case, if temperature and salinity are computed,
+first they must be initialized either with
+constant values or with variable 3D matrices.
+In the first case
+the reference values have to be imposed in
+|temref| and |salref|. An example of this type of simulation is given
+in \Fig\figref{baroc}.
+
+If the temperature and salinity are given as 3D matrices files,
+they must be provided in the |$name| section, giving the file 
+names in |tempin| and |saltin|. In case of diagnostic simulations the
+matrices of temperature and salinity have to be provided in the
+files named |tempd| and |saltd| and data must be available for
+the whole period of simulation.
+
+\begin{figure}[ht]
+\begin{verbatim}
+$para
+        ibarcl = 1   temref = 18.    salref = 35.
+$end
+\end{verbatim}
+\caption{Example of baroclinic simulation. The initial values for temperature
+and salinity are set to 18 C and 35.}
+\label{fig:baroc}
+\end{figure}
+

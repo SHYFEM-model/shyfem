@@ -1,0 +1,105 @@
+#!/bin/sh
+#
+# registers new simulation/basin/parameter file in memory file
+#
+#----------------------------------------------
+memfil=.memory
+#----------------------------------------------
+
+quiet="NO"
+ask="NO"
+
+######################################################### functions
+
+FullUsage() {
+  Usage
+}
+
+Usage() {
+  echo "Usage: memory [-h|-help] [-q] [-a] [-s sim] [-b bas]"
+}
+
+WriteMem() {
+
+  cat > $1 << EOI
+$sim
+$bas
+EOI
+}
+
+ReadMem() {
+
+  if [ -r "$1" ]; then
+    exec 4<&0	# save original stdin
+    exec < $1
+    read sim
+    read bas
+    exec 0<&4	# restore original stdin
+  fi
+
+  sim=${sim:-UNKNOWN}
+  bas=${bas:-UNKNOWN}
+}
+
+HandleOpt() {			# option old new 
+
+  if [ $ask = "YES" ]; then
+    echo -n "Enter name of $1: "
+    read arg
+    return
+  fi
+
+  if [ $args -eq 1 ]; then	# only one argument -> write to stdout
+    echo $2
+    exit 0
+  fi
+
+  if [ -z "$arg" ]; then		# argument is empty -> complain
+    echo "Error: option $opt needs argument in this context"
+    exit 2
+  fi
+}
+
+############################################## save total number of arguments
+
+args=$#
+
+######################################################### read memory file
+
+ReadMem $memfil		# now $sim #bas is populated
+
+######################################################### process arguments
+
+while [ $# -gt 0 ]
+do
+
+  opt=$1
+  arg=$2
+
+  case $opt in
+	-s)       HandleOpt simulation $sim; sim=$arg; shift;;
+	-b)       HandleOpt basin      $bas; bas=$arg; shift;;
+	-q)       quiet="YES";;
+	-a)       ask="YES";;
+	-h|-help) FullUsage; exit 0;;
+	 *)       echo "Unknown option: $opt"; exit 1;;
+  esac
+
+  shift
+done
+
+######################################################### rewrite memory file
+
+if [ $args -gt 0 ]; then
+  WriteMem $memfil
+fi
+
+######################################################### write to terminal
+
+if [ $quiet = "NO" ]; then
+  echo "simulation : $sim"
+  echo "basin      : $bas"
+fi
+
+######################################################### end of script
+

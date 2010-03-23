@@ -1,0 +1,69 @@
+#
+# $Id:$
+#
+#------------------------------------------------------
+
+DIR =	spline
+
+include ../Rules.make
+
+#------------------------------------------------------
+
+OBJS =	subgrd.o subscn.o subfil.o subsss.o hash.o spline.o sort.o
+SOBJS =  sgauss.o
+VOBJS =  subrnd.o
+
+EXES =	gridr sss ven circle
+
+SPECIAL = Makefile README
+ZIPFILES   = *.[fFh] $(SPECIAL)
+
+#------------------------------------------------------
+
+default: fem
+
+all: gridr gridf grids
+
+fem: gridr
+
+gridr:	gridr.o $(OBJS)
+	$(LINKER) $(LFLAGS) -o $@ $@.o $(OBJS)
+
+sss:	sss.o $(SOBJS)
+	$(LINKER) $(LFLAGS) -o $@ $@.o $(SOBJS)
+
+ven:	ven.o $(VOBJS)
+	$(LINKER) $(LFLAGS) -o $@ $@.o $(VOBJS)
+
+circle:	circle.o $(VOBJS)
+	$(LINKER) $(LFLAGS) -o $@ $@.o $(VOBJS)
+
+#------------------------------------------------------
+
+clean:
+	-rm -f *.o
+	-rm -f $(EXES) a.out
+	-rm -f ggg hhh
+	-rm -f fort.*
+	-rm -f out.ps plot.ps
+	-rm -f *.tmp *.bak *.gnu
+	-rm -f *.dat
+	-rm -f *~
+
+cleanall: clean cleangrd
+	-rm -f $(DIR).zip
+
+cleangrd:
+	-rm -f *.grd
+
+zip: save
+save: cleanall
+	zip $(DIR) $(ZIPFILES)
+
+#--------------------------------------------- rules
+
+.f.o:
+	$(F77) -c $(FFLAGS) $<
+
+#------------------------------------------------------
+

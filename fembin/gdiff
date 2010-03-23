@@ -1,0 +1,5 @@
+#!/bin/sh
+#
+# diff with ++-- of modifications
+
+diff -n $* | d+.pl

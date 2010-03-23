@@ -1,0 +1,157 @@
+
+find elements by number from keyboard -> bug
+	(el 430 or 740 with venlag61)
+	-> probably due to roundoff errors passing from 
+	float to int to float
+	-> call Tentative directly
+
+	similar element 14356 of rosa27.grd
+
+* (not necessary) giving depth by element -> interpolate to nodes
+
+* exit - cancel - exit exits the program
+
+* passage to more than 3 vertices :
+	WriteToMesWindow -> think about something better
+	317 in gridhs ???
+	CheckConnection
+	is AreaElement ok ?
+	InvertIndex ?
+	maximum for element vetices -> handle more kindly
+		(ELEMNODE_DIM...)
+	look also for lines (vertex=2) in FindElement
+
+* does not find identical elements -> control
+
+* segmentation fault when plotting with colors
+
+* may be a new structure -> line (consisting of many nodes , not closed contour)
+
+* if nothing read, clicking in plot window gives a segmentation fault
+
+* do not ask for filename, if nothing changed
+
+* write comments
+
+specify colors for different types 
+
+* new default file type is 0
+
+* check use of nodes only with option
+
+minimum vertices : for line 2 (closed contour 4)   for elem 3
+                       ^       ^                   ^
+                       done    ????                done
+
+splitline : increment use for node where splitted (may already done?)
+
+move node : plot new line (?)
+
+better way of finding line (jump to nearest point)
+
+* if nothing, clicking in plot window gives segmentaion fault (?)
+
+* Change : must operate also on nodes and lines depending on
+	show type chosen
+
+* Complete new Menu system : Menu bar, Pop up, Drag down
+
+in graph : - get back Biggest Viewport useable (as in X11)
+		-> change fixed values in gridmu.c
+	   - include Save/RestorePixels as functions
+
+* files not needed : gridma.c, gridgg.c, gridhs1.c, readgrd.c
+
+for new version :
+
+save, print, make element/line without existing nodes, change
+
+* do not make element with only 2 nodes
+* do not make element with double nodes
+
+avoid blinking on Maximizing window 
+	-> XCheckTypedEvent, XCheckMaskEvent
+
+buttons get smaller after max and minimizing area 
+if window too small -> will not plot anything anymore
+
+accept DEL from keyboard
+
+find good way to write float to message window (not too many decimals)
+
+set AREAMIN in relation to min/max of nodes
+
+* do not accept element with only two nodes
+
+* handle elements with not unique nodes gracefully
+
+colortable size of 2 gives segmentation fault
+
+new command : 
+	- Unify node -> to melt two nodes in one
+	- Save (in file menu)
+
+Number_list_type -> only used in gridhs
+	maybe substitute with Numbertable_type
+	(maybe Coord_type also ?)
+
+in GfMakeElement/Line -> substitute static array with
+	dynamically allocated nodes !!
+
+InElement only for convex area -> extend to any area
+
+do not accept line with only one vertex at read
+	(closed contour ???)
+
+* zoom window with same point -> floating point exception
+
+* size of cross for single points
+
+* elements with null depth -> gray (gridco.c, gridpl.c)
+
+Nodelist, NTotList, NODELIST_DIM -> make better
+	(creating element/line)
+
+DOS/UNIX needed ? (may be substitute)
+
+options :
+	- n,e,l,v to start up in node/element/line/vector mode
+	- to use nodal depths for colors
+
+* use in Node_type -> put in extra slot
+
+clean from following routines and items :
+	- Fence, FENCE_DIM, DelBlock, Undo...
+	- Chart
+	- Wind, OpWind (grid, bu, mu, ma2, op, ut)
+	- level
+
+plot line while creating
+
+adjust vector according to given direction
+
+change type also for vectors
+
+implement special keyboard keys for tcc - and linux X11
+
+move element
+
+move line
+
+close line
+
+============================================================
+
+for new version...
+
+move MakeGridMenu() to subroutine
+eliminate XctX/Y, ActMode, ActString
+ProcessMenuInput() should be called from a more general routine
+menu routines in more than one file -> menu, pulldown, ...
+	general event loop
+	layout item 
+	make plotfield a canvas
+screen -> rewrite to use directly integer coordinates for plotting
+spurious lines in popping up of second pulldown
+	-> also after a redraw event
+

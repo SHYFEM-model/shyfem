@@ -1,0 +1,65 @@
+
+
+In order to have a more meaningfull simulation, we need to specify
+boundary conditions. In this section we will deal with the open boundary
+conditions, e.g., the conditions at the place where the basin comunicates
+with other water bodies.  For lagoons it would be the inlets.
+
+For every boundary condition one section |$bound| must be specified. Since
+you can have more than one open boundary you must specify also the number
+of your boundary, e.g., |$bound1|, |$bound2| etc. Inside every section
+you can then specify the various parameters that characterize your boundary.
+
+Basically there two types of open boundary conditions. Either the water
+level or the discharges (fluxes) can be specified. The parameter that
+decides the type of boundary is |ibtyp|. A value of one indicates water
+levels, instead a value of 2 or 3 indicates fluxes. If you specify
+discharges entering at the border of the domain, |ibtyp| = 2 should be
+specified. Otherwise, if there are internal sources in the basin then
+|ibtyp| = 3 must be used. If you do not define this parameter, a value of 1
+will be used and water levels will be specified.
+
+The only compulsary parameter in this section is the list of boundary
+nodes.  You do this with the parameter |kbound|. 
+In the case of |ibtype| 1 or 2 at least two nodes must be
+specified, in order to give an extension of the boundary. The numeration
+of the boundary nodes must be consecutive and with the basin on its
+left side when going along the boundary nodes.  In the case of |ibtyp|
+= 3 even a single point can be given.
+
+The boundary values you want to give are normally specified through 
+a a file with a time series. You give the name of the file that contains
+the time series with the parameter |boundn|. 
+An example with two boundaries can again be found in 
+\Fig\figref{example}. Here water levels are prescribed and the values
+for the water levels are read from a file |levels1.dat|.
+
+If the values on the boundary
+you want to impose can be described through a simple sinus function, you
+can also give the bounadry values specifying the parameters for the
+sinus function. An example of a water level boundary with a tide of
+$\pm 70 cm$ and a period of 12 hours (semi-diurnal) is given in
+\Fig\figref{bound}. Note thet |zref| gives the average water level of the
+boundary. If you specify |ampli|=0 you get a constant boundary value
+of |zref|.
+
+\begin{figure}[ht]
+\begin{verbatim}
+$bound1
+      ibtyp = 1   kbound = 23 25 28
+      ampli = 0.70  period = 43200  phase = 10800  zref = 0.
+$end
+\end{verbatim}
+\caption{Example of a boundary with regular sinusoidal water levels.
+The pahse of 10800 (3 hours) makes sure that the simulation starts at
+slack tide when the basin is completely full.}
+\label{fig:bound}
+\end{figure}
+
+
+
+
+
+
+
+

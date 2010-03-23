@@ -1,0 +1,12 @@
+# Set options for the NECSX6 Fortran compiler.
+ifeq ($(FORTRAN_COMPILER),NECSX6)
+FC=f90
+DEFINES += 
+can_do_F90=true
+MODULES=-module $(MODDIR)
+EXTRAS	= 
+DEBUG_FLAGS = -g 
+PROF_FLAGS  = -p -ftrace
+PROD_FLAGS  = -O3
+REAL_4B	= 
+endif

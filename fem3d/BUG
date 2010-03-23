@@ -1,0 +1,10 @@
+
+BUG_2010_03	bajo	5.36	17.03.2010
+	plotting section -> color scale change does not work
+
+BUG_2010_02	bajo	5.36	12.03.2010
+	initial instability with black sea grid
+
+BUG_2010_01	fra	5.36	12.03.2010	22.03.2010
+	evaporation is wrong (no evaporation)
+

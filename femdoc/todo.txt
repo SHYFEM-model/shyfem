@@ -1,0 +1,5 @@
+
+where gotmturb.nml
+
+new names saltd tempd
+

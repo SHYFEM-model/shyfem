@@ -1,0 +1,198 @@
+Index: compilers/compiler.IFORT
+===================================================================
+RCS file: /public/cvs/gotm/compilers/compiler.IFORT,v
+retrieving revision 1.2
+diff -u -p -r1.2 compiler.IFORT
+--- compilers/compiler.IFORT	23 Mar 2006 12:13:33 -0000	1.2
++++ compilers/compiler.IFORT	10 Sep 2006 09:56:13 -0000
+@@ -6,8 +6,8 @@ can_do_F90=true
+ F90_to_f90=
+ MODULES=
+ MODULES=-module $(MODDIR)
+-EXTRAS  = -w95 -e95
+-DEBUG_FLAGS = -g -C
++EXTRAS  = -w95
++DEBUG_FLAGS = -g -C -traceback
+ PROF_FLAGS  = -qp -p
+ PROD_FLAGS  = -O3
+ DEFINES += -DREAL_4B=real\(4\)
+Index: src/Rules.make
+===================================================================
+RCS file: /public/cvs/gotm/src/Rules.make,v
+retrieving revision 1.16
+diff -u -p -r1.16 Rules.make
+--- src/Rules.make	23 Mar 2006 12:13:33 -0000	1.16
++++ src/Rules.make	10 Sep 2006 09:56:14 -0000
+@@ -19,9 +19,11 @@ NetCDF=true
+ SEDIMENT=false
+ #SEDIMENT=true
+ SEAGRASS=false
+-SEAGRASS=true
+-BIO=false
+-#BIO=true
++#SEAGRASS=true
++#BIO=false
++BIO=true
++BFM=true
++#BFM=false
+ 
+ FEATURES	=
+ FEATURE_LIBS	=
+@@ -56,6 +58,7 @@ CPP	= /lib/cpp
+ 
+ # Here you can put defines for the [c|f]pp - some will also be set depending
+ # on compilation mode.
++
+ ifeq ($(NetCDF),true)
+ DEFINES += -DNETCDF_FMT
+ EXTRA_LIBS += $(NETCDFLIB)
+@@ -75,6 +78,17 @@ DEFINES += -DBIO
+ FEATURES += extras/bio
+ FEATURE_LIBS += -lbio$(buildtype)
+ endif
++ifeq ($(BFM),true)
++# BFM compilation
++# path is relative to the extras/bio directory 
++# assuming that BFM is located at the same level of GOTM
++ifndef BFMDIR
++BFMDIR 	:= $(HOME)/bfm
++endif
++BIOINCDIR = $(BFMDIR)/src/BFM/include
++DEFINES += -DNOT_STANDALONE -DBFM_GOTM 
++INCDIRS += -I$(BIOINCDIR)
++endif
+ 
+ # Directory related settings.
+ 
+@@ -146,6 +160,8 @@ LDFLAGS		+= $(FFLAGS) $(LINKDIR)
+ ifeq  ($(can_do_F90),true)
+ %.o: %.F90
+ 	$(FC) $(F90FLAGS) $(EXTRA_FFLAGS) -c $< -o $@
++%.o: %.f90
++	$(FC) $(F90FLAGS) $(EXTRA_FFLAGS) -c $< -o $@
+ else
+ %.f90: %.F90
+ #	$(CPP) $(CPPFLAGS) $< -o $@
+Index: src/airsea/airsea.F90
+===================================================================
+RCS file: /public/cvs/gotm/src/airsea/airsea.F90,v
+retrieving revision 1.12
+diff -u -p -r1.12 airsea.F90
+--- src/airsea/airsea.F90	15 Nov 2005 11:42:33 -0000	1.12
++++ src/airsea/airsea.F90	10 Sep 2006 09:56:19 -0000
+@@ -49,6 +49,7 @@
+ !  (m/s)
+    REALTYPE, public                    :: p_e
+ 
++
+ !  sea surface temperature (degC) and
+ !  sea surface salinity (psu)
+    REALTYPE, public                    :: sst,sss
+@@ -141,7 +142,13 @@
+    character(len=PATH_MAX)   :: sst_file
+ 
+    REALTYPE                  :: wx,wy
++#ifdef BFM_GOTM
++!  wind velocity
++!  (m/s)
++   REALTYPE, public          :: w
++#else
+    REALTYPE                  :: w
++#endif
+    REALTYPE                  :: airp
+    REALTYPE                  :: airt,twet,tdew
+    REALTYPE                  :: cloud
+Index: src/extras/bio/Makefile
+===================================================================
+RCS file: /public/cvs/gotm/src/extras/bio/Makefile,v
+retrieving revision 1.11
+diff -u -p -r1.11 Makefile
+--- src/extras/bio/Makefile	27 Dec 2005 06:51:49 -0000	1.11
++++ src/extras/bio/Makefile	10 Sep 2006 09:56:19 -0000
+@@ -5,7 +5,16 @@
+ 
+ include ../../Rules.make
+ 
+-LIB	= $(LIBDIR)/libbio$(buildtype).a
++LIB     = $(LIBDIR)/libbio$(buildtype).a
++
++ifeq ($(BFM),true)
++
++# BFM compilation
++# BFMDIR is defined in Rules.make
++# assuming that BFM is located at the same level of GOTM
++include $(BFMDIR)/src/gotm/BFM.make
++
++else
+ 
+ DOCSRC	=  bio.F90 \
+ bio_var.F90 bio_template.F90 bio_npzd.F90 bio_iow.F90 \
+@@ -29,6 +38,7 @@ ${LIB}(bio.o)
+ 
+ all: ${OBJ}
+ 	$(MOVE_MODULES_COMMAND)
++endif
+ 
+ doc:    $(DOCSRC)
+ 	$(PROTEX) $(DOCSRC) > ../../../doc/bio.tex 
+Index: src/gotm/gotm.F90
+===================================================================
+RCS file: /public/cvs/gotm/src/gotm/gotm.F90,v
+retrieving revision 1.26
+diff -u -p -r1.26 gotm.F90
+--- src/gotm/gotm.F90	27 Dec 2005 11:23:04 -0000	1.26
++++ src/gotm/gotm.F90	10 Sep 2006 09:56:20 -0000
+@@ -42,6 +42,9 @@
+    use airsea,      only: set_sst,integrated_fluxes
+    use airsea,      only: calc_fluxes
+    use airsea,      only: tx,ty,I_0,heat,p_e
++#ifdef BFM_GOTM
++   use airsea,      only: w_wind=>w                                               !BFM
++#endif
+ 
+    use turbulence,  only: turb_method
+    use turbulence,  only: init_turbulence,do_turbulence
+@@ -279,6 +282,9 @@
+ #ifdef BIO
+    call init_bio(namlst,'bio.inp',unit_bio,nlev,h)
+    call init_bio_fluxes()
++#ifdef BFM_GOTM
++   call prepare_bio_output(0,nlev,h)
++#endif
+ #endif
+    LEVEL2 'done.'
+    STDERR LINE
+@@ -396,8 +402,12 @@
+ 
+ #ifdef BIO
+       call do_bio_fluxes(julianday,secondsofday)
++#ifdef BFM_GOTM
++      call do_bio(nlev,I_0,w_wind,dt,h,t,s,nuh,rad,bioshade)
++#else
+       call do_bio(nlev,I_0,dt,h,t,s,nuh,rad,bioshade)
+ #endif
++#endif
+ 
+ !    compute turbulent mixing
+       select case (turb_method)
+@@ -426,12 +436,20 @@
+       end select
+ 
+ !     do the output
++#ifdef BFM_GOTM
++      call prepare_bio_output(10,nlev,h)
++      call prepare_bio_output(11,nlev,h)
++      call prepare_bio_output(12,nlev,h)
++#endif
+       if (write_results) then
+          if (turb_method .ne. 99) then
+             call variances(nlev,SSU,SSV)
+          endif
+          call do_output(n,nlev)
+ #ifdef BIO
++#ifdef BFM_GOTM
++         call prepare_bio_output(1,nlev,h)
++#endif
+          call bio_save(nlev,h,_ZERO_)
+ #endif
+       end if

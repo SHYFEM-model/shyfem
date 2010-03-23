@@ -1,0 +1,128 @@
+NUL       0        0                  SOH        1        1
+STX       2        2                  ETX        3        3
+EOT       4        4                  ENQ        5        5
+ACK       6        6                  BEL        7        7
+BS        8        8                   HT        9        9
+NL       10        a                   VT       11        b
+NP       12        c                   CR       13        d
+SO       14        e                   SI       15        f
+DLE      16       10                  DC1       17       11
+DC2      18       12                  DC3       19       13
+DC4      20       14                  NAK       21       15
+SYN      22       16                  ETB       23       17
+CAN      24       18                   EM       25       19
+SUB      26       1a                  ESC       27       1b
+FS       28       1c                   GS       29       1d
+RS       30       1e                   US       31       1f
+SP       32       20                    !       33       21
+"        34       22     &amp;quot;         #       35       23
+$        36       24                    %       37       25
+&amp;        38       26      &amp;amp;         '       39       27
+(        40       28                    )       41       29
+*        42       2a                    +       43       2b
+,        44       2c                    -       45       2d
+.        46       2e                    /       47       2f
+0        48       30                    1       49       31
+2        50       32                    3       51       33
+4        52       34                    5       53       35
+6        54       36                    7       55       37
+8        56       38                    9       57       39
+:        58       3a                    ;       59       3b
+&lt;        60       3c       &amp;lt;         =       61       3d
+&gt;        62       3e       &amp;gt;         ?       63       3f
+@        64       40                    A       65       41
+B        66       42                    C       67       43
+D        68       44                    E       69       45
+F        70       46                    G       71       47
+H        72       48                    I       73       49
+J        74       4a                    K       75       4b
+L        76       4c                    M       77       4d
+N        78       4e                    O       79       4f
+P        80       50                    Q       81       51
+R        82       52                    S       83       53
+T        84       54                    U       85       55
+V        86       56                    W       87       57
+X        88       58                    Y       89       59
+Z        90       5a                    [       91       5b
+\        92       5c                    ]       93       5d
+^        94       5e                    _       95       5f
+`        96       60                    a       97       61
+b        98       62                    c       99       63
+d       100       64                    e       101       65
+f       102       66                    g       103       67
+h       104       68                    i       105       69
+j       106       6a                    k       107       6b
+l       108       6c                    m       109       6d
+n       110       6e                    o       111       6f
+p       112       70                    q       113       71
+r       114       72                    s       115       73
+t       116       74                    u       117       75
+v       118       76                    w       119       77
+x       120       78                    y       121       79
+z       122       7a                    {       123       7b
+|       124       7c                    }       125       7d
+~       126       7e                  DEL       127       7f
+--      128       80                   --       129       81
+--      130       82                   --       131       83
+--      132       84                   --       133       85
+--      134       86                   --       135       87
+--      136       88                   --       137       89
+--      138       8a                   --       139       8b
+--      140       8c                   --       141       8d
+--      142       8e                   --       143       8f
+--      144       90                   --       145       91
+--      146       92                   --       147       93
+--      148       94                   --       149       95
+--      150       96                   --       151       97
+--      152       98                   --       153       99
+--      154       9a                   --       155       9b
+--      156       9c                   --       157       9d
+--      158       9e                   --       159       9f
+        160       a0     <em>&amp;nbsp;</em>         ¡       161       a1     <em>&amp;iexcl;</em>
+¢       162       a2     <em>&amp;cent;</em>         £       163       a3     <em>&amp;pound;</em>
+¤       164       a4     <em>&amp;curren;</em>       ¥       165       a5     <em>&amp;yen;</em>
+¦       166       a6     <em>&amp;brvbar;</em>       §       167       a7     <em>&amp;sect;</em>
+¨       168       a8     <em>&amp;uml;</em>          ©       169       a9     <em>&amp;copy;</em>
+ª       170       aa     <em>&amp;ordf;</em>         «       171       ab     <em>&amp;laquo;</em>
+¬       172       ac     <em>&amp;not;</em>          ­       173       ad     <em>&amp;shy;</em>
+®       174       ae     <em>&amp;reg;</em>          ¯       175       af     <em>&amp;macr;</em>
+°       176       b0     <em>&amp;deg;</em>          ±       177       b1     <em>&amp;plusmn;</em>
+²       178       b2     <em>&amp;sup2;</em>         ³       179       b3     <em>&amp;sup3;</em>
+´       180       b4     <em>&amp;acute;</em>        µ       181       b5     <em>&amp;micro;</em>
+¶       182       b6     <em>&amp;para;</em>         ·       183       b7     <em>&amp;middot;</em>
+¸       184       b8     <em>&amp;cedil;</em>        ¹       185       b9     <em>&amp;sup1;</em>
+º       186       ba     <em>&amp;ordm;</em>         »       187       bb     <em>&amp;raquo;</em>
+¼       188       bc     <em>&amp;frac14;</em>       ½       189       bd     <em>&amp;frac12;</em>
+¾       190       be     <em>&amp;frac34;</em>       ¿       191       bf     <em>&amp;iquest;</em>
+À       192       c0       &amp;Agrave;     Á       193       c1       &amp;Aacute;
+Â       194       c2       &amp;Acirc;      Ã       195       c3       &amp;Atilde;
+Ä       196       c4       &amp;Auml;       Å       197       c5       &amp;Aring;
+Æ       198       c6       &amp;AElig;      Ç       199       c7       &amp;Ccedil;
+È       200       c8       &amp;Egrave;     É       201       c9       &amp;Eacute;
+Ê       202       ca       &amp;Ecirc;      Ë       203       cb       &amp;Euml;
+Ì       204       cc       &amp;Igrave;     Í       205       cd       &amp;Iacute;
+Î       206       ce       &amp;Icirc;      Ï       207       cf       &amp;Iuml;
+Ð       208       d0     <em>&amp;ETH;</em>          Ñ       209       d1       &amp;Ntilde;
+Ò       210       d2       &amp;Ograve;     Ó       211       d3       &amp;Oacute;
+Ô       212       d4       &amp;Ocirc;      Õ       213       d5       &amp;Otilde;
+Ö       214       d6       &amp;Ouml;       ×       215       d7     <em>&amp;times;</em>
+Ø       216       d8       &amp;Oslash;     Ù       217       d9       &amp;Ugrave;
+Ú       218       da       &amp;Uacute;     Û       219       db       &amp;Ucirc;
+Ü       220       dc       &amp;Uuml;       Ý       221       dd       &amp;Yacute;
+Þ       222       de       &amp;THORN;      ß       223       df       &amp;szlig;
+à       224       e0       &amp;agrave;     á       225       e1       &amp;aacute;
+â       226       e2       &amp;acirc;      ã       227       e3       &amp;atilde;
+ä       228       e4       &amp;auml;       å       229       e5       &amp;aring;
+æ       230       e6       &amp;aelig;      ç       231       e7       &amp;ccedil;
+è       232       e8       &amp;egrave;     é       233       e9       &amp;eacute;
+ê       234       ea       &amp;ecirc;      ë       235       eb       &amp;euml;
+ì       236       ec       &amp;igrave;     í       237       ed       &amp;iacute;
+î       238       ee       &amp;icirc;      ï       239       ef       &amp;iuml;
+ð       240       f0       &amp;eth;        ñ       241       f1       &amp;ntilde;
+ò       242       f2       &amp;ograve;     ó       243       f3       &amp;oacute;
+ô       244       f4       &amp;ocirc;      õ       245       f5       &amp;otilde;
+ö       246       f6       &amp;ouml;       ÷       247       f7     <em>&amp;divide;</em>
+ø       248       f8       &amp;oslash;     ù       249       f9       &amp;ugrave;
+ú       250       fa       &amp;uacute;     û       251       fb       &amp;ucirc;
+ü       252       fc       &amp;uuml;       ý       253       fd       &amp;yacute;
+þ       254       fe       &amp;thorn;      ÿ       255       ff       &amp;yuml;

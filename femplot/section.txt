@@ -1,0 +1,28 @@
+
+usage of vertical section
+=========================
+
+create a line that describes the section with "grid"
+
+run make_line_nodes.sh on the grid that contains the line
+
+	output will be a file line_2.nod that contains the node list
+	to be used with apn*.str files
+	you will also have to specify the basin (or use default in memory)
+
+customize apn*.str file
+
+	$sect
+        vsect='line_2.nod'
+        vtitle='Malta section'
+        ltitle='A'
+        rtitle='B'
+        ivgrid=1
+        ivert=2
+	$end
+
+	obligatorio e' solo vsect
+	per una spiegazione dei parametri si puo' vedere la routine
+	nlsina_sect in subsys.f
+
+

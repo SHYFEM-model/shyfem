@@ -1,0 +1,234 @@
+%
+% $Id: discret.tex,v 1.13 2004/03/29 13:46:19 georg Exp georg $
+%
+% todo:
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%% basic heading for Latex %%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[a4paper]{report}
+%\documentclass[a4paper]{book}
+%\documentclass[a4paper,draft]{book}
+
+%\usepackage{natbib}
+\usepackage{graphicx}
+
+%\usepackage{showkeys,layout}
+%\usepackage{amssymb}
+\usepackage{ifthen}
+
+\usepackage{fancyvrb}
+%\usepackage{shortvrb}
+%\usepackage{alltt}              % as verbatim, but interpret \ { }
+
+\newcommand{\shy}{{\tt SHYFEM}}
+\newcommand{\FFF}{{\tt FORTRAN}}
+%\newcommand{\VERSION}{4.31}
+
+\newcommand{\descrpsep}{\vspace{0.2cm}}
+\newcommand{\descrpitem}[1]{\descrpsep\parbox[t]{2cm}{#1}}
+\newcommand{\descrptext}[1]{\parbox[t]{10cm}{#1}\descrpsep}
+\newcommand{\densityunit}{kg\,m${}^{-3}$}
+\newcommand{\accelunit}{m\,s${}^{-2}$}
+\newcommand{\maccelunit}{m${}^{4}$\,s${}^{-2}$}
+\newcommand{\dischargeunit}{m${}^3$\,s${}^{-1}$}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%% user commands %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\newcommand{\filedir}{../eps/}		%file directory
+\newcommand{\fileprefix}{}              %file prefix
+
+\newcommand{\filesize}{}
+%\newcommand{\filesize}{_small}
+
+\newcommand{\fileid}{\fileprefix\filesize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\input{figs}
+%\input{formulas}
+
+\newcommand{\powm}[1]{${}^{#1}$}
+\newcommand{\subm}[1]{${}_{#1}$}
+\newcommand{\subrm}[1]{_{\mathrm #1}}
+\newcommand{\timesm}{$\times$}
+\newcommand{\pmm}{$\pm$}
+\newcommand{\degm}{${}^o$}
+\newcommand{\missing}{{\bf MISSING}}
+
+\newcommand{\Celsius} {${}^{o}$C}
+\newcommand{\power} [1] {${}^{#1}$}
+\newcommand{\mod} [1] {|#1|}
+\newcommand{\text} [1] {\textrm{#1}}
+\newcommand{\ttggu} [1] {\texttt{#1}}
+\newcommand{\ital} [1] {{\it #1}}
+\newcommand{\ksunits} {m${}^{1/3}$s${}^{-1}$}
+
+\newcommand{\beq} {\begin{equation}}
+\newcommand{\eeq} {\end{equation}}
+\newcommand{\beqa} {\begin{eqnarray}}
+\newcommand{\eeqa} {\end{eqnarray}}
+\newcommand{\beqas} {\begin{eqnarray*}}
+\newcommand{\eeqas} {\end{eqnarray*}}
+
+%----------------------------------------------------
+\DefineVerbatimEnvironment%
+{code}{Verbatim}
+{numbers=left,numbersep=5pt,
+frame=lines,framerule=0.8mm}
+\newcommand{\str} [1] {\VerbatimInput{#1}}
+%----------------------------------------------------
+
+\newcommand{\eqref} [1] {\ref{eq:#1}}
+\newcommand{\tabref} [1] {\ref{tab:#1\fileprefix}}
+\newcommand{\figref} [1] {\ref{fig:#1\fileprefix}}
+\newcommand{\sectref} [1] {\ref{sect:#1}}
+%\newcommand{\pageref} [1] {\ref{page:#1}}
+
+\newcommand{\bibref} [1] {\citep{#1}}   %(name, year)
+\newcommand{\bibnref} [1] {\cite{#1}}   %name (year)
+
+\newcommand{\Tab} {Tab.~}
+\newcommand{\Fig} {Fig.~}
+\newcommand{\Figs} {Figs.~}
+\newcommand{\Tabs} {Tabs.~}
+\newcommand{\tab} {Tab.~}
+\newcommand{\fig} {Fig.~}
+\newcommand{\figs} {Figs.~}
+\newcommand{\tabs} {Tabs.~}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\singlespacing} {\def\baselinestretch{1}}
+\newcommand{\doublespacing} {\def\baselinestretch{1.7}}
+
+\newcommand{\PTF}{15\%}		%percentage of tidal flats
+\newcommand{\PFF}{18\%}		%percentage of fishing farms
+
+\newcommand{\stacco}[1]{\vspace{0.5cm}{\noindent\bf #1}\vspace{0.5cm}}
+
+\hyphenation{ ca-li-bra-tion }
+\hyphenation{ eli-mi-na-tion eli-mi-na-ted }
+
+\parindent 0cm
+
+\DefineShortVerb{\|}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%% end of user commands %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{%
+	Software Development Guide for SHYFEM
+}
+
+\author{%
+Georg Umgiesser
+\\Istituto di Scienze Marine, ISMAR-CNR,
+\\Castello 1364/A, 30122 Venezia, Italy
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Start of document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Main chapters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Introduction}
+
+This document describes some techniques for developing
+software for the SHYFEM program. However, many, if not most of the
+guidelines given in this report can be applied to general 
+software development in FORTRAN. 
+
+It describes how you should write clear programs that other people will
+be able to read, debug, correct and extend. 
+
+\chapter{General Rules}
+
+This chapter gives general guidelines how to develop programs in
+FORTRAN. Often you will find that the guidelines will be applicable 
+to other programming languages.
+
+
+\section{Overall rules}
+
+\subsection{Always use explicit {\tt implicit} type declaration}
+
+Even if \FFF{} can do without declaration of variables, please always
+use the |implicit none| specification statement. It might be tempting to
+leave out this statement and save some seconds in typing all the vriables that
+you have used in your routine, but this is a terrible error. The seconds
+you save from typing the declarations will be certainly be outweight by
+the hours you will spend in debugging programs with subtil errors due
+to non declaring your variables.
+
+See for example this code fragment:
+
+\begin{code}
+	integer icount
+	...
+	if( a .eq. b ) then icount = icount + 1
+\end{code}
+
+If you have enabled type checking with |implicit none| your compiler
+will signal you immediately the problem. But if not it might take
+you hours to find out why |icount| is not incremented properly.
+
+If you have type check enabled, the compiler will tell you that you are
+using a variable |thenicount| which has not been declared, and you
+will be able to eliminate the error from the beginning and correct the 
+statement to
+
+\begin{code}
+	if( a .eq. b ) icount = icount + 1
+\end{code}
+
+Otherwise, you might have a nice debugging session.
+
+
+\str{basic.str}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
+
+
+
+comment your code
+always use the same delimiters
+do not use obsolete and deprecated features
+indent your code consistently
+how to read a file with unknown length
+dimension check
+assertions
+
+how to inset new features
+
+	create a new file or files
+	limit the insertion point to the absolute minimum
+
+refactor
+
+	if more changes are needed
+		-> first implement the changes
+		-> check if all works
+		-> then implement the new feature
+
+
+
+
+
+

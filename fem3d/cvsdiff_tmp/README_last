@@ -1,0 +1,188 @@
+
+============================================================
+
+things to be done for a new version:
+
+	make cleanall	#cleanout old stuff
+	cvschange -r	#see what has changed (nice format without -r)
+	make test	#test-compile everything
+	cvschange -r	#see what has changed (nice format without -r)
+	cvs diff	#check if changes are documented
+	make test	#test-compile everything one more time if changes
+	cvscommit	#commit changes
+
+	cvstag		#if a new version is to be released (optional)
+
+============================================================
+
+modules to be modified:
+
+- sublgr
+- close
+- delwaq
+
+============================================================
+
+IMPORTANT changes:
+
+- ibndim = 100 (dimension of bnd)
+
+- apnpar.str only read from local directory
+
+- parameter file is read from stdin
+
+- variable names modified:
+
+	- usnv,vsnv	-> unv,vnv
+	- zev		-> zenv
+
+- some modules deleted:
+
+	- close
+	- float
+	- delwaq
+
+- name of common block changed:
+
+	- /time/	-> /femtim/
+	- /float/	-> /ffloat/
+	- /inout/	-> deleted
+
+- no default for basdir... (befor: '[not defined...]')
+
+- following common blocks eliminated
+
+	/semimp/	-> routines in subnsh.f
+	/trock/
+	/ffloat/ (/float)
+
+- new flux module
+
+	/kfluxc/, /iflux/	-> implement in ht08	!FIXME
+
+- no iextpo anymore
+
+- xv eliminated
+
+	look for occurenc of xv with:
+
+	grep xv *.f | grep -v [aduw]xv | grep -v xv[m]
+
+	still to do:
+
+		subout,subouta,outinf
+		subn36,sublgr
+		subext,subexta,readext
+
+	remaining xv structure:
+
+		hp,ht
+		newtra,sub555,subini
+============================================================
+
+things to implement:
+
+	*- give wind in STR
+	- better and more robust flux
+	- distributed rain (also from file)
+
+============================================================
+
+to check:
+
+	- differences Delft - Technital
+
+============================================================
+
+DOS:
+
+subsys.f:  delete cdos#
+makefile:  delete #dos#
+
+LAHEY:
+
+subfil.f:  delete clahey#
+
+============================================================
+
+keywords used in fortran headers:
+
+contents 
+notes 
+revision log 
+
+============================================================
+
+date and time functions:
+
+	subdts
+	subdat
+
+============================================================
+
+to run T/S module:
+
+	set qflux in $name 
+	set ibarcl > 0 in $para
+
+if no salinity is needed:
+
+	set isalt = 0 in $para
+
+use 3D boundaries
+
+	file:	(see read_3_time_series in subsse.f)
+
+		time,lmax,nk,nvar
+		1,var_1
+		2,var_2
+		..
+		nk,var_nk
+
+	ip = 0
+        do ivar=1,nvars
+          do k=1,nk
+            read(unit,*,iostat=ierr) kn,(values(ip+j),j=1,lmax)
+            if( kn .ne. k ) goto 98
+            ip = ip + lmax
+          end do
+        end do
+
+	$para
+		nbdim = 3
+	$end
+
+============================================================
+
+Open boundary conditions:
+
+set_c_bound	sets cbound(l,k) for flux boundary conditions
+		uses rbc and internal concentration
+
+rcv(nlvbnd,k)	boundary conditions
+
+r3tv,r3sv	t/s BC		-> rcv
+
+
+LEVELBC
+
+in Debora version look for DEBHELP
+2 changes:
+
+	in subcon1.f	con3bnd		do for all BCs
+	in subbndo.f	bndo_adjbc	LEVELBC -> do also for ibtyp .eq. 2
+
+
+in subbndo.f and in subcon1.f
+
+if ibtyp 1 or 2 then T/S given value is constant for boundary nodes, for each level. It is assigned at the first level and then copied on the other ones.
+
+============================================================
+
+02.10.2007:
+
+	revise computation of time step -> very small stab index
+	semi-lagrangian still broken
+
+============================================================
+

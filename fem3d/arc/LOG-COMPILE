@@ -1,0 +1,884 @@
+sub555.f: In subroutine `sp156b':
+sub555.f:174: warning: unused variable `rstabmax'
+sub555.f:174: warning: unused variable `rstab'
+sub555.f: In subroutine `uvzchk':
+sub555.f:1225: warning: unused variable `ieext'
+sub555.f:1223: warning: unused variable `htot'
+sub555.f:1223: warning: unused variable `hm'
+sub555.f:1223: warning: unused variable `zm'
+sub555.f:1222: warning: unused variable `uv'
+subn35.f: In subroutine `bofric':
+subn35.f:110: warning: unused variable `k'
+subn11.f: In subroutine `sp111':
+subn11.f:103: warning: unused variable `iround'
+subn11.f:94: warning: unused variable `kk'
+subn11.f:92: warning: unused variable `krend'
+subn11.f:92: warning: unused variable `kranf'
+subn11.f:96: warning: `rw' might be used uninitialized in this function
+subn11.f: In subroutine `tilt':
+subn11.f:324: warning: unused variable `iround'
+subn11.f:323: warning: unused variable `getpar'
+subn11.f: In subroutine `initilt':
+subn11.f:391: warning: unused variable `iround'
+subn11.f: In subroutine `iniflux':
+subn11.f:443: warning: `kk1' might be used uninitialized in this function
+subn11.f:443: warning: `kk2' might be used uninitialized in this function
+subn11.f:443: warning: `ii1' might be used uninitialized in this function
+subn11.f:443: warning: `ii2' might be used uninitialized in this function
+subn11.f: In subroutine `bvalue':
+subn11.f:604: warning: unused variable `iround'
+subn11.f:603: warning: unused variable `rrit'
+subn11.f:599: warning: unused variable `iy'
+subn11.f:599: warning: unused variable `ix'
+subnsh.f: In subroutine `comp3d':
+subnsh.f:302: warning: unused variable `ii'
+sublnk.f: In subroutine `ntlink':
+sublnk.f:519: warning: `ipe' might be used uninitialized in this function
+sublnk.f: In subroutine `newlnk':
+sublnk.f:1172: warning: unused variable `ifileo'
+sublnk.f:1168: warning: unused variable `file'
+sublnk.f:1168: warning: unused variable `dir'
+sublnk.f:1168: warning: unused variable `nam'
+subnev.f: In subroutine `sp110a':
+subnev.f:41: warning: unused variable `ii'
+subres.f: In subroutine `rmsvel':
+subres.f:256: warning: unused variable `nvers'
+subres.f:247: warning: unused variable `ierr'
+subres.f:245: warning: unused variable `file'
+subres.f:245: warning: unused variable `dir'
+subres.f:245: warning: unused variable `nam'
+subcon.f: In subroutine `massconc':
+subcon.f:738: warning: unused variable `ibase'
+subcon.f:736: warning: unused variable `n'
+subcon.f:736: warning: unused variable `nlev'
+subcon.f:734: warning: unused variable `l'
+Warning: Mixed CHARACTER and non-CHARACTER types via COMMON/EQUIVALENCE -- for example, `snum' and `sname'
+Warning: Mixed CHARACTER and non-CHARACTER types via COMMON/EQUIVALENCE -- for example, `snum' and `sname'
+Warning: Mixed CHARACTER and non-CHARACTER types via COMMON/EQUIVALENCE -- for example, `snum' and `sname'
+Warning: Mixed CHARACTER and non-CHARACTER types via COMMON/EQUIVALENCE -- for example, `snum' and `sname'
+subnls.f: In function `nrdnum':
+subnls.f:978: warning: `ffac' might be used uninitialized in this function
+subpar.f: In subroutine `pripar':
+subpar.f:420: warning: `flag' might be used uninitialized in this function
+subfnm.f: In function `manfnm':
+subfnm.f:154: warning: `ianf' might be used uninitialized in this function
+subfnm.f:155: warning: `iend' might be used uninitialized in this function
+subout.f: In function `rdout':
+subout.f:210: warning: `ios' might be used uninitialized in this function
+subext.f: In subroutine `rfext':
+subext.f:402: warning:
+           common /extcom/ mtype,maxver,nverso,npoext
+                   1
+subext.f:443: (continued):
+           common /extcom/ mtype,maxver,nverso,npoext
+                   2
+Common block `extcom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subext.f: In subroutine `wfext':
+subext.f:402: warning:
+           common /extcom/ mtype,maxver,nverso,npoext
+                   1
+subext.f:536: (continued):
+           common /extcom/ mtype,maxver,nverso,npoext
+                   2
+Common block `extcom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subext.f: In subroutine `rsext':
+subext.f:402: warning:
+           common /extcom/ mtype,maxver,nverso,npoext
+                   1
+subext.f:588: (continued):
+           common /extcom/ mtype,maxver,nverso,npoext
+                   2
+Common block `extcom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subext.f: In subroutine `wsext':
+subext.f:402: warning:
+           common /extcom/ mtype,maxver,nverso,npoext
+                   1
+subext.f:627: (continued):
+           common /extcom/ mtype,maxver,nverso,npoext
+                   2
+Common block `extcom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subext.f: In subroutine `rdext':
+subext.f:402: warning:
+           common /extcom/ mtype,maxver,nverso,npoext
+                   1
+subext.f:658: (continued):
+           common /extcom/ mtype,maxver,nverso,npoext
+                   2
+Common block `extcom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subext.f: In subroutine `wrext':
+subext.f:402: warning:
+           common /extcom/ mtype,maxver,nverso,npoext
+                   1
+subext.f:707: (continued):
+           common /extcom/ mtype,maxver,nverso,npoext
+                   2
+Common block `extcom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f: In subroutine `ckwnds':
+subwin.f:535: warning:
+           common /winpar/ nwdi,nwind,iwtype
+                   1
+subwin.f:579: (continued):
+           common /winpar/ nwdi,nwind,iwtype
+                   2
+Common block `winpar' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f:537: warning:
+           common /wintim/ itwin
+                   1
+subwin.f:581: (continued):
+           common /wintim/ itwin
+                   2
+Common block `wintim' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f:539: warning:
+           common /windat/ winx, winy, pres
+                   1
+subwin.f:583: (continued):
+           common /windat/ winx, winy, pres
+                   2
+Common block `windat' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f: In subroutine `prwnds':
+subwin.f:535: warning:
+           common /winpar/ nwdi,nwind,iwtype
+                   1
+subwin.f:649: (continued):
+           common /winpar/ nwdi,nwind,iwtype
+                   2
+Common block `winpar' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f:537: warning:
+           common /wintim/ itwin
+                   1
+subwin.f:651: (continued):
+           common /wintim/ itwin
+                   2
+Common block `wintim' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f:539: warning:
+           common /windat/ winx, winy, pres
+                   1
+subwin.f:653: (continued):
+           common /windat/ winx, winy, pres
+                   2
+Common block `windat' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f: In subroutine `tswnds':
+subwin.f:535: warning:
+           common /winpar/ nwdi,nwind,iwtype
+                   1
+subwin.f:686: (continued):
+           common /winpar/ nwdi,nwind,iwtype
+                   2
+Common block `winpar' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f: In function `nwndget':
+subwin.f:535: warning:
+           common /winpar/ nwdi,nwind,iwtype
+                   1
+subwin.f:708: (continued):
+           common /winpar/ nwdi,nwind,iwtype
+                   2
+Common block `winpar' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f: In subroutine `nwndset':
+subwin.f:535: warning:
+           common /winpar/ nwdi,nwind,iwtype
+                   1
+subwin.f:725: (continued):
+           common /winpar/ nwdi,nwind,iwtype
+                   2
+Common block `winpar' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f: In subroutine `gtwnds':
+subwin.f:535: warning:
+           common /winpar/ nwdi,nwind,iwtype
+                   1
+subwin.f:746: (continued):
+           common /winpar/ nwdi,nwind,iwtype
+                   2
+Common block `winpar' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f:537: warning:
+           common /wintim/ itwin
+                   1
+subwin.f:748: (continued):
+           common /wintim/ itwin
+                   2
+Common block `wintim' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f:539: warning:
+           common /windat/ winx, winy, pres
+                   1
+subwin.f:750: (continued):
+           common /windat/ winx, winy, pres
+                   2
+Common block `windat' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f: In subroutine `rdwnda':
+subwin.f:535: warning:
+           common /winpar/ nwdi,nwind,iwtype
+                   1
+subwin.f:850: (continued):
+           common /winpar/ nwdi,nwind,iwtype
+                   2
+Common block `winpar' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f: In subroutine `rdwndl':
+subwin.f:535: warning:
+           common /winpar/ nwdi,nwind,iwtype
+                   1
+subwin.f:880: (continued):
+           common /winpar/ nwdi,nwind,iwtype
+                   2
+Common block `winpar' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f:537: warning:
+           common /wintim/ itwin
+                   1
+subwin.f:882: (continued):
+           common /wintim/ itwin
+                   2
+Common block `wintim' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subwin.f:539: warning:
+           common /windat/ winx, winy, pres
+                   1
+subwin.f:884: (continued):
+           common /windat/ winx, winy, pres
+                   2
+Common block `windat' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subsse.f: In subroutine `exfinfo':
+subsse.f:969: warning: unused variable `i'
+subsse.f:962: warning: unused variable `rint'
+subsse.f:961: warning: unused variable `t'
+submir.f: In subroutine `gelb':
+submir.f:1053: warning: `jj' might be used uninitialized in this function
+submir.f:1054: warning: `j' might be used uninitialized in this function
+submir.f: In subroutine `dgelb':
+submir.f:1190: warning: `jj' might be used uninitialized in this function
+submir.f:1191: warning: `j' might be used uninitialized in this function
+submir.f: In subroutine `mchb':
+submir.f:1311: warning: `piv' might be used uninitialized in this function
+submir.f: In subroutine `dmchb':
+submir.f:1427: warning: `piv' might be used uninitialized in this function
+subsss.f: In function `iscan0':
+subsss.f:224: warning: `ffac' might be used uninitialized in this function
+subsss.f: In function `ialfa0':
+subsss.f:451: warning: `izahlf' might be used uninitialized in this function
+subsss.f: In function `rnext':
+subsss.f:1055: warning: `rrold' might be used uninitialized in this function
+subscn.f: In function `ialfa':
+subscn.f:432: warning: `izahlf' might be used uninitialized in this function
+subcus.f: In subroutine `fluxw':
+subcus.f:180: warning: unused variable `ii'
+subcus.f: In subroutine `bocche':
+subcus.f:323: warning: unused variable `ii'
+subcus.f: In subroutine `anpa':
+subcus.f:494: warning: unused variable `czmax'
+subcus.f: In subroutine `concmass1':
+subcus.f:909: warning:
+           call massconc(cnv,nlvdim,res)
+                1
+subcus.f:949: (continued):
+             call massconc(0,coev,res)                     !2D
+                  2
+Argument #1 of `massconc' is one type at (2) but is some other type at (1) [info -f g77 M GLOBALS]
+subcus.f:909: warning:
+           call massconc(cnv,nlvdim,res)
+                1
+subcus.f:949: (continued):
+             call massconc(0,coev,res)                     !2D
+                  2
+Argument #2 of `massconc' is one type at (2) but is some other type at (1) [info -f g77 M GLOBALS]
+subcus.f:937: warning: unused variable `i'
+subdwq.f: In subroutine `finvul':
+subdwq.f:167: warning: unused variable `hm'
+subdwq.f:167: warning: unused variable `zm'
+subqfxa.f: In subroutine `qflux2d':
+subqfxa.f:43: warning:
+           common /qflxi/ iunit,itfold,itfnew
+                   1
+subqfxa.f:176: (continued):
+           common /qflxi/ iunit,itfold,itfnew
+                   2
+Common block `qflxi' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subqfxa.f:46: warning:
+           common /qflxra/ qs,ta,tb,uw,cc
+                   1
+subqfxa.f:178: (continued):
+           common /qflxra/ qs,ta,tb,uw,cc
+                   2
+Common block `qflxra' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subqfxa.f:181: warning: unused variable `vol'
+subqfxa.f:181: warning: unused variable `aj'
+subqfxa.f:180: warning: unused variable `ii'
+subqfxa.f: In subroutine `qflux3d':
+subqfxa.f:43: warning:
+           common /qflxi/ iunit,itfold,itfnew
+                   1
+subqfxa.f:228: (continued):
+           common /qflxi/ iunit,itfold,itfnew
+                   2
+Common block `qflxi' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subqfxa.f:46: warning:
+           common /qflxra/ qs,ta,tb,uw,cc
+                   1
+subqfxa.f:230: (continued):
+           common /qflxra/ qs,ta,tb,uw,cc
+                   2
+Common block `qflxra' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subqfxa.f: In subroutine `qfnext':
+subqfxa.f:43: warning:
+           common /qflxi/ iunit,itfold,itfnew
+                   1
+subqfxa.f:332: (continued):
+           common /qflxi/ iunit,itfold,itfnew
+                   2
+Common block `qflxi' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subqfx1.f: In subroutine `decl':
+subqfx1.f:306: warning: unused variable `idmon'
+subcon1.f: In subroutine `diffstab1':
+subcon1.f:335: warning: unused variable `rkmax'
+subcon1.f:335: warning: unused variable `rkmin'
+subcon1.f: In subroutine `difflimit':
+subcon1.f:393: warning: unused variable `bmax'
+subcon1.f:393: warning: unused variable `bmin'
+subcon1.f:393: warning: unused variable `area'
+subnos.f: In subroutine `setnos':
+subnos.f:91: warning:
+           common /nosvar/nositem,nosvar
+                   1
+subnos.f:133: (continued):
+           common /nosvar/nositem,nosvar
+                   2
+Common block `nosvar' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subnos.f: In subroutine `getnos':
+subnos.f:91: warning:
+           common /nosvar/nositem,nosvar
+                   1
+subnos.f:166: (continued):
+           common /nosvar/nositem,nosvar
+                   2
+Common block `nosvar' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subnos.f: In subroutine `dimnos':
+subnos.f:198: warning: unused variable `k'
+subnos.f:198: warning: unused variable `l'
+subnos.f: In subroutine `rfnos':
+subnos.f:89: warning:
+           common /noscom/ mtype,maxver
+                   1
+subnos.f:239: (continued):
+           common /noscom/ mtype,maxver
+                   2
+Common block `noscom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subnos.f: In subroutine `wfnos':
+subnos.f:89: warning:
+           common /noscom/ mtype,maxver
+                   1
+subnos.f:343: (continued):
+           common /noscom/ mtype,maxver
+                   2
+Common block `noscom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subnos.f: In subroutine `rsnos':
+subnos.f:89: warning:
+           common /noscom/ mtype,maxver
+                   1
+subnos.f:387: (continued):
+           common /noscom/ mtype,maxver
+                   2
+Common block `noscom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subnos.f: In subroutine `wsnos':
+subnos.f:89: warning:
+           common /noscom/ mtype,maxver
+                   1
+subnos.f:448: (continued):
+           common /noscom/ mtype,maxver
+                   2
+Common block `noscom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subnos.f: In subroutine `rdnos':
+subnos.f:89: warning:
+           common /noscom/ mtype,maxver
+                   1
+subnos.f:489: (continued):
+           common /noscom/ mtype,maxver
+                   2
+Common block `noscom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subnos.f: In subroutine `wrnos':
+subnos.f:89: warning:
+           common /noscom/ mtype,maxver
+                   1
+subnos.f:547: (continued):
+           common /noscom/ mtype,maxver
+                   2
+Common block `noscom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+flux.f: In subroutine `setflux':
+regflux.h:58: warning: unused variable `iby'
+regflux.h:57: warning: unused variable `ibx'
+regflux.h:13: warning: unused variable `value'
+flux.f: In subroutine `flxstore':
+flux.f:318: warning: unused variable `inext'
+flux.f: In subroutine `flxcheck':
+flux.f:374: warning: unused variable `flxtype'
+flux.f:368: warning: unused variable `rerr'
+flux.f:368: warning: unused variable `tot'
+flux.f:361: warning: unused variable `k'
+flux.f: In subroutine `flxwrtype':
+flux.f:456: warning: unused variable `areat'
+flux.f:454: warning: unused variable `a2'
+flux.f:454: warning: unused variable `a1'
+flux.f:448: warning: unused variable `ilast'
+flux.f: In subroutine `flxfill':
+regflux.h:58: warning: unused variable `iby'
+regflux.h:57: warning: unused variable `ibx'
+regflux.h:13: warning: unused variable `value'
+flux.f: In subroutine `addsmx':
+flux.f:753: warning: unused variable `k'
+flux.f:753: warning: unused variable `i'
+regflux.h:58: warning: unused variable `iby'
+regflux.h:57: warning: unused variable `ibx'
+regflux.h:13: warning: unused variable `value'
+flux.f: In subroutine `addmx':
+regflux.h:58: warning: unused variable `iby'
+regflux.h:57: warning: unused variable `ibx'
+regflux.h:13: warning: unused variable `value'
+flux.f: In subroutine `chckmx':
+regflux.h:58: warning: unused variable `iby'
+regflux.h:57: warning: unused variable `ibx'
+regflux.h:13: warning: unused variable `value'
+flux.f: In subroutine `alexb':
+regflux.h:58: warning: unused variable `iby'
+regflux.h:57: warning: unused variable `ibx'
+regflux.h:13: warning: unused variable `value'
+flux.f: In subroutine `side2dxdy':
+regflux.h:58: warning: unused variable `iby'
+regflux.h:57: warning: unused variable `ibx'
+regflux.h:13: warning: unused variable `value'
+flux.f:1330: warning: `dxy' might be used uninitialized in this function
+matrix49.f: In subroutine `wf49':
+regflux.h:58: warning: unused variable `iby'
+regflux.h:57: warning: unused variable `ibx'
+matrix49.f: In subroutine `rf49':
+regflux.h:58: warning: unused variable `iby'
+regflux.h:57: warning: unused variable `ibx'
+matrix49.f: In subroutine `wr49':
+regflux.h:58: warning: unused variable `iby'
+regflux.h:57: warning: unused variable `ibx'
+matrix49.f: In subroutine `rd49':
+regflux.h:58: warning: unused variable `iby'
+regflux.h:57: warning: unused variable `ibx'
+matrix49.f: In subroutine `mx2indx':
+regflux.h:58: warning: unused variable `iby'
+regflux.h:57: warning: unused variable `ibx'
+regflux.h:13: warning: unused variable `value'
+matrix49.f: In subroutine `indx2mx':
+regflux.h:58: warning: unused variable `iby'
+regflux.h:57: warning: unused variable `ibx'
+regflux.h:13: warning: unused variable `value'
+matrix49.f: In subroutine `rdsind':
+regflux.h:58: warning: unused variable `iby'
+regflux.h:57: warning: unused variable `ibx'
+regflux.h:13: warning: unused variable `value'
+subvola.f: In subroutine `ckvola':
+subvola.f:155: warning: unused variable `ii'
+subvola.f:155: warning: unused variable `k'
+subvola.f: In subroutine `prvola':
+subvola.f:185: warning: unused variable `ii'
+subvola.f: In subroutine `tsvola':
+subvola.f:268: warning: unused variable `ii'
+subvola.f: In subroutine `wrvola':
+subvola.f:304: warning: unused variable `getaza'
+subvola.f:301: warning: unused variable `az'
+subvola.f: In subroutine `volinf':
+subvola.f:631: warning: unused variable `ieext'
+subgeo.f: In function `inpoly':
+subgeo.f:523: warning: unused variable `yn'
+subgeo.f:523: warning: unused variable `xn'
+subgeo.f:523: warning: unused variable `ym'
+subgeo.f:523: warning: unused variable `xm'
+bio2d.f: In subroutine `bio2d':
+bio2d.f:102: warning: unused variable `stp'
+bio2d.f:98: warning: unused variable `sod'
+bio2d.f:98: warning: unused variable `krear'
+bio2d.f:98: warning: unused variable `nh3'
+bio2d.f:98: warning: unused variable `cbod'
+bio2d.f:87: warning: unused variable `aapar'
+bio2d.f:87: warning: unused variable `adpar'
+bio2d.f:87: warning: unused variable `rvpar'
+bio2d.f:85: warning: unused variable `lux'
+bio2d.f:83: warning: unused variable `iunit'
+bio2d.f:82: warning: unused variable `ebriver'
+bio2d.f:75: warning: unused variable `lmax'
+bio2d.f:75: warning: unused variable `l'
+bio2d.f: In subroutine `setload':
+bio2d.f:526: warning: unused variable `getpar'
+weutro.f: In subroutine `param':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `source':
+weutro.f:334: warning: unused variable `n'
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `wmeteo':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `wturbid':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `wlight':
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `icecover':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `grazing':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `sedflux':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `settopseg':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.f: In subroutine `setbotseg':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `setsedseg':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `segtype':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `eutroint':
+weutro.f:593: warning: unused variable `mxseg'
+weutro.f:592: warning: unused variable `phimax'
+weutro.h:353: warning: unused variable `itotmp'
+weutro.f: In subroutine `ammonia':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `nitrate':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `inorganp':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `phyto':
+weutro.f:907: warning: unused variable `ttr1'
+weutro.f:907: warning: unused variable `ttr'
+weutro.f:906: warning: unused variable `xdiff'
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `zoop':
+weutro.f:1045: warning: unused variable `gra'
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `cbodsv':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f:1080: warning: `grc' might be used uninitialized in this function
+weutro.f: In subroutine `dissoxyg':
+weutro.f:1135: warning: unused variable `xarg2'
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `organicn':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `organop':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `ditoro':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `smith':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `kawind':
+weutro.f:1507: warning: unused variable `cont1'
+weutro.f:1506: warning: unused variable `xwdiff'
+weutro.f:1506: warning: unused variable `xarg2'
+weutro.f:1506: warning: unused variable `xarg1'
+weutro.f: In subroutine `kahydra':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `bentflux':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+weutro.f: In subroutine `steele':
+weutro.h:353: warning: unused variable `itotmp'
+weutro.h:13: warning: unused variable `botseg'
+weutro.h:12: warning: unused variable `topseg'
+subsed.f: In subroutine `sed2sh':
+subsed.f:90: warning: unused variable `iut'
+subsed.f:90: warning: unused variable `ius'
+subsed.f:87: warning: unused variable `isalt'
+subsed.f:87: warning: unused variable `itemp'
+subsed.f:86: warning: unused variable `bsalt'
+subsed.f:86: warning: unused variable `btemp'
+subsed.f:86: warning: unused variable `bconz'
+subsed.f:83: warning: unused variable `salref'
+subsed.f:83: warning: unused variable `temref'
+subsed.f:79: warning: unused variable `ii'
+subsed.f:79: warning: unused variable `ie'
+subsed.f: In subroutine `kim':
+subsed.f:222: warning: unused variable `tkmax'
+subsed.f:222: warning: unused variable `tkmin'
+subsed.f:222: warning: unused variable `tken'
+subsed.f:220: warning: unused variable `tau'
+subsed.f:219: warning: unused variable `frac'
+subsed.f:218: warning: `conznew' might be used uninitialized in this function
+subsed.f: In subroutine `sinking':
+subsed.f:319: warning: unused variable `frac'
+subsed.f:322: warning: `tkmin' might be used uninitialized in this function
+subsed.f:322: warning: `tkmax' might be used uninitialized in this function
+subbndo.f: In subroutine `bndo_setbc':
+subbndo.f:345: warning: `bgrad0' might be used uninitialized in this function
+subbndo.f:354: warning: `tweight' might be used uninitialized in this function
+bdist.f: In subroutine `shdist':
+bdist.f:46: warning: unused variable `nbnds'
+bdist.f:45: warning: unused variable `ipint'
+bdist.f:45: warning: unused variable `iapini'
+bdist.f:40: warning: unused variable `kk'
+links.f: In subroutine `mklenk':
+links.f:29: warning: `ipe' might be used uninitialized in this function
+new3di.f: In subroutine `sp256v':
+new3di.f:887: warning: unused variable `imax'
+new3di.f:887: warning: unused variable `imin'
+new3di.f:886: warning: unused variable `xmax'
+new3di.f:886: warning: unused variable `xmin'
+new3di.f:882: warning: unused variable `vvadv'
+new3di.f:882: warning: unused variable `vuadv'
+new3di.f:882: warning: unused variable `uvadv'
+new3di.f:882: warning: unused variable `uuadv'
+new3di.f:868: warning: unused variable `hlh_new__'
+new3di.f: In subroutine `sp256n':
+new3di.f:1392: warning: unused variable `hact_new__'
+newcra.f: In subroutine `gwi':
+newcra.f:567: warning: `bltest' might be used uninitialized in this function
+newcra.f:568: warning: `ib' might be used uninitialized in this function
+newcra.f:568: warning: `ib1' might be used uninitialized in this function
+newcra.f:568: warning: `ib2' might be used uninitialized in this function
+newcra.f:568: warning: `ii' might be used uninitialized in this function
+newcra.f:568: warning: `ii1' might be used uninitialized in this function
+newcra.f:568: warning: `ii2' might be used uninitialized in this function
+newcon.f: In subroutine `conz3d':
+newcon.f:304: warning: unused variable `rv'
+newcon.f:290: warning: unused variable `rkmax'
+newcon.f:290: warning: unused variable `rkmin'
+newbcl.f: In subroutine `barocl':
+newbcl.f:95: warning: unused variable `mm'
+newbcl.f:95: warning: unused variable `v2'
+newbcl.f:95: warning: unused variable `v1'
+newbcl.f:84: warning: unused variable `xmax'
+newbcl.f:84: warning: unused variable `xmin'
+newbcl.f:83: warning: unused variable `imax'
+newbcl.f:83: warning: unused variable `imin'
+newbcl.f:82: warning: unused variable `itmext'
+newbcl.f:82: warning: unused variable `idtext'
+newbcl.f:79: warning: unused variable `ie'
+newbcl.f: In subroutine `convectivecorr':
+newbcl.f:474: warning: unused variable `jl'
+newbcl.f:473: warning: unused variable `test'
+newbcl.f:472: warning: unused variable `prex'
+newbcl.f:470: warning: unused variable `dpresc'
+newbcl.f:473: warning: `amtempstab' might be used uninitialized in this function
+newbcl.f:473: warning: `amsaltstab' might be used uninitialized in this function
+newbcl.f:474: warning: `lstab' might be used uninitialized in this function
+newini.f: In subroutine `sp211':
+newini.f:92: warning: unused variable `ipext'
+newini.f:86: warning: unused variable `hmin'
+newini.f:85: warning: unused variable `hm'
+newini.f:83: warning: unused variable `ielem'
+newini.f:83: warning: unused variable `nelem'
+newini.f:81: warning: unused variable `iee'
+newini.f:81: warning: unused variable `m'
+newini.f:81: warning: unused variable `n'
+newini.f:81: warning: unused variable `j'
+newini.f: In subroutine `sp212':
+newini.f:443: warning: unused variable `iround'
+newini.f:442: warning: unused variable `getpar'
+newini.f:440: warning: unused variable `bcolin'
+newini.f:439: warning: unused variable `z'
+newini.f:439: warning: unused variable `zm'
+newini.f:439: warning: unused variable `h'
+newini.f:438: warning: unused variable `ii'
+newini.f:438: warning: unused variable `ie'
+newini.f:438: warning: unused variable `ilevel'
+newchk.f: In subroutine `contst':
+newchk.f:207: warning: unused variable `haux1'
+newchk.f:206: warning: unused variable `haux'
+newchk.f: In subroutine `tstvol':
+newchk.f:865: warning: unused variable `areanode'
+newchk.f: In subroutine `mimafem':
+newchk.f:1271: warning: unused variable `ieext'
+newchk.f:1271: warning: unused variable `ipext'
+newchk.f:1268: warning: unused variable `h1vmax'
+newchk.f:1263: warning: unused variable `c'
+newchk.f:1263: warning: unused variable `t'
+newchk.f:1263: warning: unused variable `s'
+newchk.f:1263: warning: unused variable `w'
+newflx.f: In function `fluxs':
+newflx.f:39: warning: `n' might be used uninitialized in this function
+reactor.f: In subroutine `rtest':
+reactor.f:61: warning: unused variable `ebound'
+reactor.f: In subroutine `reactor':
+reactor.f:273: warning: unused variable `icall'
+reactor.f:268: warning: unused variable `x'
+reactor.f:262: warning: unused variable `kdecn'
+reactor.f:262: warning: unused variable `knitn'
+reactor.f:260: warning: unused variable `kfl2'
+reactor.f:260: warning: unused variable `kfl1'
+reactor.f:259: warning: unused variable `fsedp'
+reactor.f:259: warning: unused variable `fsedc'
+reactor.f: In subroutine `biocos':
+reactor.f:518: warning: unused variable `pmass1'
+reactor.f:518: warning: unused variable `pmass0'
+reactor.f:518: warning: unused variable `rmass1'
+reactor.f:518: warning: unused variable `rmass0'
+reactor.f:512: warning: unused variable `iunit'
+tideg.f: In subroutine `tidenew':
+tideg.f:29: warning:
+           common /tidcom/ rtide
+                   1
+tideg.f:86: (continued):
+           common /tidcom/ rtide
+                   2
+Common block `tidcom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+tide1.f: In subroutine `tidesc':
+tide1.f:21: warning: unused variable `init'
+tide1.f:17: warning: unused variable `cosi'
+subzzz.f: In subroutine `g2c':
+subzzz.f:61: warning:
+           common /mercom/ e,mu,rea,pi,rad,co,n0,ta0log,phi0,omega0,scale0
+                   1
+subzzz.f:96: (continued):
+           common /mercom/ e,mu,rea,pi,rad,co,n0,ta0log,phi0,omega0,scale0
+                   2
+Common block `mercom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subzzz.f: In subroutine `c2g':
+subzzz.f:61: warning:
+           common /mercom/ e,mu,rea,pi,rad,co,n0,ta0log,phi0,omega0,scale0
+                   1
+subzzz.f:129: (continued):
+           common /mercom/ e,mu,rea,pi,rad,co,n0,ta0log,phi0,omega0,scale0
+                   2
+Common block `mercom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subzzz.f: In function `phidis':
+subzzz.f:61: warning:
+           common /mercom/ e,mu,rea,pi,rad,co,n0,ta0log,phi0,omega0,scale0
+                   1
+subzzz.f:189: (continued):
+           common /mercom/ e,mu,rea,pi,rad,co,n0,ta0log,phi0,omega0,scale0
+                   2
+Common block `mercom' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subgotm.f: In subroutine `gotm':
+subgotm.f:132: warning: unused variable `areaele'
+subgotm.f:129: warning: unused variable `utb'
+subgotm.f:129: warning: unused variable `uts'
+subgotm.f:128: warning: unused variable `nnll'
+subgotm.f:128: warning: unused variable `iitt'
+subgotm.f:111: warning: unused variable `baux'
+subgotm.f:110: warning: unused variable `saux'
+subgotm.f:106: warning: unused variable `taubot'
+subgotm.f:105: warning: unused variable `dv'
+subgotm.f:105: warning: unused variable `du'
+subgotm.f:105: warning: unused variable `dh'
+subgotm.f:104: warning: unused variable `arean'
+subgotm.f:104: warning: unused variable `area'
+subgotm.f:103: warning: unused variable `dbuoy'
+subgotm.f:103: warning: unused variable `m2'
+subgotm.f:102: warning: unused variable `vol'
+subgotm.f:98: warning: unused variable `ibase'
+subgotm.f:98: warning: unused variable `n'
+subgotm.f:97: warning: unused variable `ie'
+subgotm.f:97: warning: unused variable `ii'
+subgotm.f:97: warning: unused variable `j'
+subgotm.f:97: warning: unused variable `i'
+subgotm.f: In subroutine `checkb':
+subgotm.f:960: warning: unused variable `amax'
+subgotm.f:960: warning: unused variable `amin'
+subssc.f: In function `minmax':
+subssc.f:31: warning: `i' might be used uninitialized in this function
+subssc.f: In function `integm':
+subssc.f:105: warning: `xn' might be used uninitialized in this function
+subreg.f: In subroutine `av2am':
+subreg.f:63: warning:
+           common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+                   1
+subreg.f:130: (continued):
+           common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+                   2
+Common block `ppp20' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subreg.f: In subroutine `av2amk':
+subreg.f:63: warning:
+           common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+                   1
+subreg.f:233: (continued):
+           common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+                   2
+Common block `ppp20' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subreg.f: In subroutine `am2av':
+subreg.f:63: warning:
+           common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+                   1
+subreg.f:384: (continued):
+           common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+                   2
+Common block `ppp20' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subreg.f: In function `am2val':
+subreg.f:63: warning:
+           common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+                   1
+subreg.f:451: (continued):
+           common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+                   2
+Common block `ppp20' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subreg.f: In subroutine `ave2am':
+subreg.f:63: warning:
+           common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+                   1
+subreg.f:518: (continued):
+           common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+                   2
+Common block `ppp20' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subreg.f: In subroutine `mimareg':
+subreg.f:63: warning:
+           common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+                   1
+subreg.f:729: (continued):
+           common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+                   2
+Common block `ppp20' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subreg.f: In subroutine `a2char':
+subreg.f:63: warning:
+           common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+                   1
+subreg.f:767: (continued):
+           common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+                   2
+Common block `ppp20' is SAVEd, explicitly or implicitly, at (1) but not SAVEd at (2)
+subrnd.f: In function `ran3':
+subrnd.f:151: warning: `inext' might be used uninitialized in this function
+subrnd.f:152: warning: `inextp' might be used uninitialized in this function
+vp.f: In subroutine `gtest':
+vp.f:1208: warning: unused variable `k'
+subros.f: In subroutine `rosen':
+subros.f:56: warning: `msloop' might be used uninitialized in this function
+subapn.f: In subroutine `assnam':
+subapn.f:49: warning: unused variable `bdo'
+subapn.f: In function `iapini':
+subapn.f:171: warning: unused variable `f'
+subapn.f:166: warning: unused variable `line'
+subnsa.f: In subroutine `sp158k':
+subnsa.f:124: warning: `iturn' might be used uninitialized in this function
+subnsa.f:138: warning: `ieact' might be used uninitialized in this function
+subnsa.f:239: warning: `kaus' might be used uninitialized in this function
+subnsa.f: In subroutine `nlsa':
+subnsa.f:303: warning: unused variable `nrdlin'
+subnsa.f:300: warning: unused variable `line'

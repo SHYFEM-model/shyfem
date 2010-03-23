@@ -1,0 +1,8 @@
+#!/bin/sh
+#
+# makes complete header files
+
+getheaders.sh $* > head.html
+h2t.pl head.html > head.txt
+rvlog.pl head.txt > revlog.txt
+

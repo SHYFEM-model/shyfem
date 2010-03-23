@@ -1,0 +1,68 @@
+
+This section explains typical usage of the model. It will show how the
+model can be run doing basic 2D simulations, compute T/S, do 3D simulations,
+set up the turbulence module etc. This section is conceived as
+a simple HOWTO document. For the exact meaning and usage of the single
+parameters, please see the section on input parameters.
+
+\subsubsection{2D Hydrodynamic Simulation}
+
+To run a simulation, two things are needed. The first is the description
+of the basin and the numerical grid, which must be prepared beforehand
+and then must be compiled in a form that the model can use. This is typically
+done by the routine |vp| that, starting from a file |.grd| creates a file
+|.bas|. This will be called the basin file from now on.
+
+The second thing that is needed is a description of the simulation and
+the forcings that have to be applied. This is done through a 
+input parameter description file. Here we call it a |STR| file, because
+historically these files always ended with an extension of |.str|. However,
+any extension can be used.
+
+\begin{figure}
+\begin{alltt}
+\input{basic.str}
+\end{alltt}
+\caption{Example of a basic parameter input file ({\tt STR} file)}
+\label{fig:str_basic}
+\end{figure}
+
+A basic version of an |STR| file can be found in \ref{fig:str_basic}. In
+fact, it is so basic, it really does not do anything. Here only the
+compulsory parameters have been inserted. These are:
+
+\begin{itemize}
+
+\item An introductory section |$title| where on three lines the following information is given:
+
+\begin{enumerate}
+\item A description of the run. This can be any text that fits on one line.
+\item The name of the simulation. This name is used for all files that 
+the simulation produces. These files differ from each other only by 
+their extension.
+\item The name of the basin. This is the basin file without the extension
+|.ext|.
+\end{enumerate}
+
+\item A section |$para| that contains all necessary parameters for the
+simulation to be run. The only compulsory parameters are the ones that
+specify the start of the simulation |itanf|, its end |itend| and its 
+time step |idt|.
+
+\end{itemize}
+
+In order to be more helpful, some more information must be added to the
+|STR| file. As an example let's have a look on \ref{fig:str_example}. Here
+we have added two parameters that deal with the type of friction
+to be used. |ireib| specifies the bottom friction formulation, here
+through a simple quadratic bulk formula. (For the exact meaning of the
+parameters, please refer to the section lateron where all parameters
+are listed.) The parameter |czdef| specifies the value to use for the
+bottom drag coefficient.
+
+The lats parameter in the |$para| section is |dragco| which is the
+drag coefficient to use for the wind file specified later. If n
+
+ggugguggu
+
+do with 

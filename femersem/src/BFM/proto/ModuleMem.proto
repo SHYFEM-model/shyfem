@@ -1,0 +1,594 @@
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL
+!	   BFM - Biogeochemical Flux Model version 2.50-g
+!
+! MODULE
+!   ModuleMem
+!
+! FILE
+!   ModuleMem
+!
+! DESCRIPTION
+!   Definition of Global Shared Memory
+!  
+!   This module contains all the structural definitions of the BFM
+!   and sets up the memory layout.
+!   It is automatically generated from the prototype file 
+!   BFM/proto/ModuleMem.proto by including the information from 
+!   BFM/General/GlobalDefsBFM.model
+!   Do not directly edit this code because changes will be lost at
+!   any new compilation.
+!
+! AUTHORS
+!   Piet Ruardij and Marcello Vichi
+!
+! CHANGE_LOG
+!   ---
+!
+! COPYING
+!   
+!   Copyright (C) 2006 P. Ruardij, the BFM team
+!   (rua@nioz.nl, vichi@bo.ingv.it)
+!
+!   This program is free software; you can redistribute it and/or modify
+!   it under the terms of the GNU General Public License as published by
+!   the Free Software Foundation;
+!   This program is distributed in the hope that it will be useful,
+!   but WITHOUT ANY WARRANTY; without even the implied warranty of
+!   MERCHANTEABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!   GNU General Public License for more details.
+!
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!
+!
+!
+!! IMPORTANT NOTE:
+!! Do not change the lines starting with two comment characters "!" 
+!! These lines are used by the parser to generate the final module file
+
+!
+
+#include"cppdefs.h"
+#include "DEBUG.h"
+
+      module mem
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        ! Modules can optionally use (import) other modules
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        use global_mem, only:RLEN, ZERO
+#ifdef DEBUG && BFM_GOTM
+        use gotm_error_msg, only: gotm_error
+#endif
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        ! Implicit typing is never allowed
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        IMPLICIT NONE
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        ! Default all is private
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        private
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        ! State variables Info
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+        %3d-state-desc
+
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+        %2d-state-desc
+
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        ! GLOBAL system CONSTANTS
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+        integer,parameter,public  ::NO_D3_BOX_STATES= %3d-state-nr
+        integer,parameter,public  ::NO_D2_BOX_STATES= %2d-state-nr
+        integer,parameter,public  ::NO_D3_BOX_DIAGNOSS= %3d-diagnos-nr
+        integer,parameter,public  ::NO_D2_BOX_DIAGNOSS= %2d-diagnos-nr
+        integer,parameter,public  ::NO_D3_BOX_FLUX= %3d-flux-nr
+        integer,parameter,public  ::NO_D2_BOX_FLUX= %2d-flux-nr
+        integer,public  ::NO_BOXES
+        integer,public  ::NO_BOXES_X
+        integer,public  ::NO_BOXES_Y
+        integer,public  ::NO_BOXES_Z
+        integer,public  ::NO_STATES
+        integer,public  ::NO_BOXES_XY
+        integer,parameter,public  ::iiPel= 0
+        integer,parameter,public  ::iiBen= 1000
+        integer,parameter,public  ::iiRESET= -1000
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        ! Specification of State variables
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+%3d-state-array
+%2d-state-array
+%3d-diagnos-array
+%2d-diagnos-array
+
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        !! GLOBAL definition of Pelagic (D3) state variables
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+%3d-state-pp
+
+%3d-state-pointer
+
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        !! GLOBAL definition of Benthic (D2) state variables
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%2d-state-pp
+
+%2d-state-pointer
+
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        ! Constituent parameters:
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%constituent
+
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        ! Group parameters:
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+%3d-group-parameter
+
+%2d-group-parameter
+
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        !  Global Variables
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        integer,public  :: BoxNumber
+        integer,public  :: BoxNumberX
+        integer,public  :: BoxNumberY
+        integer,public  :: BoxNumberZ
+        integer,public  :: BoxNumberXY
+
+%1d-variable 
+%1d-intvar
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+        !! GLOBAL definition of Pelagic (D3) variables which can be outputted in netcdf
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-
+
+%3d-diagnos-desc
+%3d-diaggrp-desc
+%3d-diagnos-pp
+%3d-diaggrp-pp
+%3d-diagnos-pointer
+%3d-diaggrp-pointer
+
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        !!  GLOBAL definition of Benthic (D2) variables which can be outputted in netcdf
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+%2d-diagnos-desc
+%2d-diaggrp-desc
+%2d-diagnos-pp
+%2d-diaggrp-pp
+%2d-diagnos-pointer
+%2d-diaggrp-pointer
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        !  Other 3d-Global Variables 
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+%3d-variable
+
+
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        !  Other 2d-Global Variables 
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+%2d-variable
+%2d-intvar
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        !  variables to generate flux_output 
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+           real(RLEN), public,dimension(:),allocatable ::flx_t
+           integer,    public,dimension(:),allocatable ::flx_SS
+           integer,    public,dimension(:),allocatable ::flx_states
+           integer,    public,dimension(:),allocatable ::flx_ostates
+           integer,    public,dimension(:),allocatable ::flx_calc_nr
+           integer,    public,dimension(:),allocatable ::flx_CalcIn
+           integer,    public,dimension(:),allocatable ::flx_option
+           integer,    public                          ::flx_cal_ben_start
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        !! SHARED GLOBAL FUNCTIONS (must be below contains)
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        public flux, flux_vector, Source, Source_D3_vector, Source_D2_vector , &  
+               make_flux_output
+%3d-group-function-name
+%2d-group-function-name
+
+        contains
+
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+          !! Group Pelagic (D3) state functions
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+%3d-groupfunctions
+
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+          !! Group Benthic (D2) state functions
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+%2d-groupfunctions
+
+
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+          ! flux functions
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+          subroutine flux_vector(iiSub,origin,destination,flux)
+
+            !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+            use constants, ONLY: RLEN, ZERO,  SEC_PER_DAY
+            use global_mem, ONLY: LOGUNIT
+            !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+            ! Implicit typing is never allowed
+            !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+            IMPLICIT NONE
+
+            integer,intent(IN) :: iiSub
+            integer,intent(IN) :: origin
+            integer,intent(IN) :: destination
+            real(RLEN),intent(IN) :: flux(:)
+
+            integer :: i
+            character :: D23*8
+
+            !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+            !BEGIN compute
+            !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+            TESTNANVECTOR(flux,origin,destination)
+            CHECKFLUX(-1,iiSub,origin,destination)
+
+            IF ( origin /= destination )  THEN
+              IF ( minval(flux) < ZERO) then
+                do i=1,size(flux)
+                  if (flux(i)< 0.0D+00) write(LOGUNIT,'(''at level:'',I4)') i
+                enddo
+                D23="Pelagic"
+                if ( iiSub == iiBen) D23="Benthic"
+                write(LOGUNIT,'(''In '',A,'':origin='',i4,'' destination='',i4)') &
+                  D23, origin,destination
+                write(LOGUNIT,'(''In '',A,'':origin='',i4,'' &
+                  destination='',i4)') D23, origin,destination
+                write(LOGUNIT,'(''flux='',(G16.8))') flux
+                STDERR  "Error in flux_vector function: negative flux !"
+#ifdef DEBUG && BFM_GOTM
+                call gotm_error("flux_vector","negative flux")
+#endif
+              ENDIF ! minval<0
+              SELECT CASE ( iiSub )
+                case (iiPel)
+                  D3SINK(origin,destination,:)  =  flux/SEC_PER_DAY
+                  D3SOURCE(destination,origin,:)=  flux/SEC_PER_DAY
+                case (iiBen)
+                  D2SINK(origin,destination,:) =  flux/SEC_PER_DAY
+                  D2SOURCE(destination,origin,:)   = flux/SEC_PER_DAY
+              end select
+            ELSE
+              SELECT CASE ( iiSub )
+                CASE (iiPel)
+                  WHERE (flux > 0.0D+00 )
+                    D3SOURCE(origin,destination,:) =D3SOURCE(origin,destination,:) &
+                      + flux/SEC_PER_DAY
+                  ELSEWHERE
+                    D3SINK(destination,origin,:) =D3SINK(destination,origin,:) - &
+                      flux/SEC_PER_DAY
+                  END WHERE
+                CASE (iiBen)
+                  WHERE (flux > 0.0D+00 )
+                    D2SOURCE(destination,origin,:) =D2SOURCE(destination,origin,:) &
+                      + flux/SEC_PER_DAY
+                  ELSEWHERE
+                    D2SINK(origin,destination,:) =D2SINK(origin,destination,:) - &
+                      flux/SEC_PER_DAY
+                  END WHERE
+              end select
+            ENDIF !origin <> destination
+
+            !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+            !END compute
+            !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+            RETURN
+          END subroutine flux_vector
+
+#ifdef DEBUG
+          subroutine testnan_vector(array,origin,destination)
+          use global_mem, ONLY: LOGUNIT
+
+            real(RLEN),intent(IN)    :: array(:)
+            integer,intent(IN) :: origin
+            integer,intent(IN) :: destination
+            integer:: i=0
+            do i=1,size(array)
+              if (isnan(array(i))== .TRUE. ) then
+                write(LOGUNIT,'(''at level:'',I4)') i
+                write(LOGUNIT,'(''origin='',i4,'' destination='',i4)') &
+                  origin,destination
+                write(*,'(''at level:'',I4)') i
+                write(*,'(''origin='',i4,'' destination='',i4)') &
+                  origin,destination
+                STDERR 'Nan value in flux'
+                stop 1002
+              endif
+            enddo
+          END subroutine testnan_vector
+
+          subroutine testnan(scalar,origin,destination)
+
+            real(RLEN),intent(IN)    :: scalar
+            integer,intent(IN) :: origin
+            integer,intent(IN) :: destination
+            if (isnan(scalar)== .TRUE. ) then
+            write(*,'(''origin='',i4,'' destination='',i4)') origin,destination
+            STDERR 'Nan value in scalar flux'
+            stop 1003
+          endif
+        END subroutine testnan
+#endif
+
+        subroutine flux(grid_nr,iiSub,origin,destination,flow)
+
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+          use constants, ONLY: RLEN, ZERO, SEC_PER_DAY
+          use global_mem, ONLY: LOGUNIT
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+          ! Implicit typing is never allowed
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+          IMPLICIT NONE
+
+          integer,intent(IN)    :: grid_nr
+          integer,intent(IN)    :: iiSub
+          integer,intent(IN)    :: origin
+          integer,intent(IN)    :: destination
+          real(RLEN),intent(IN) :: flow
+
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+          character    :: D23*8
+          !BEGIN compute
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+          TESTNAN(flow,origin,destination)
+          CHECKFLUX(grid_nr,iiSub,origin,destination)
+
+          IF ( origin /= destination ) THEN
+            IF ( flow < ZERO) then
+              D23="Pelagic"
+              if ( iiSub == iiBen) D23="Benthic"
+              write(LOGUNIT,'(''In '',A,'':origin='',i4,'' destination='',i4)') &
+                D23, origin,destination
+              write(LOGUNIT,*) "Error in (scalar) vector  function: negative flux!"
+              write(LOGUNIT,*) "origin,destination:", origin,destination
+              write(LOGUNIT,*) flow
+              STDERR "Error in (scalar)flux function:negative flux !"
+#ifdef DEBUG && BFM_GOTM
+              call gotm_error("flux","negative flux")
+#endif
+            ENDIF ! flow<0
+            SELECT CASE ( iiSub )
+              CASE (iiPel)
+                D3SINK(origin,destination,grid_nr)=  flow/SEC_PER_DAY
+                D3SOURCE(destination,origin,grid_nr)= flow/SEC_PER_DAY
+              CASE (iiBen)
+                D2SINK(origin,destination,grid_nr)=  flow/SEC_PER_DAY
+                D2SOURCE(destination,origin,grid_nr)= flow/SEC_PER_DAY
+            END SELECT
+          ELSE
+            SELECT CASE ( iiSub )
+              CASE (iiPel)
+                if (flow > 0.0 ) then
+                  D3SOURCE(destination,origin,grid_nr)= & 
+                    D3SOURCE(destination,origin,grid_nr) + flow/SEC_PER_DAY
+                ELSE
+                  D3SINK(origin,destination,grid_nr)= &
+                     D3SINK(origin,destination,grid_nr) - flow/SEC_PER_DAY
+                ENDIF
+              CASE (iiBen)
+                if (flow > 0.0 ) then
+                  D2SOURCE(destination,origin,grid_nr)= &
+                    D2SOURCE(destination,origin,grid_nr) + flow/SEC_PER_DAY
+                ELSE
+                  D2SINK(origin,destination,grid_nr)= &
+                    D2SINK(origin,destination,grid_nr) - flow/SEC_PER_DAY
+                ENDIF
+            END SELECT
+          ENDIF
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+          !END compute
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+          return
+        end subroutine flux
+
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        ! vector function to get actual rate of change in the pelagic
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+        function Source_D3_vector(iistate)
+          use constants, ONLY: RLEN, ZERO, SEC_PER_DAY
+
+          IMPLICIT NONE
+
+          integer, intent(IN) ::iistate
+          real(RLEN) ::Source_D3_vector(size(D3SOURCE,DIM=3))
+          ! Array in sum is by sum seen as 2D-array: DIM=1 and NOT 2
+          Source_D3_vector=(sum(D3SOURCE(iistate,:,:),DIM=1)- &
+             sum(D3SINK(iistate,:,:),DIM=1))*SEC_PER_DAY
+        end function Source_D3_vector
+
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        ! vector function to get actual rate of change in the benthic
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+        function Source_D2_vector(iistate)
+          use constants, ONLY: RLEN, ZERO, SEC_PER_DAY
+
+          IMPLICIT NONE
+
+          integer, intent(IN) ::iistate
+          real(RLEN) ::Source_D2_vector(size(D2SOURCE,DIM=3))
+          ! Array in sum is by sum seen as 2D-array: DIM=1 and NOT 2
+          Source_D2_vector=(sum(D2SOURCE(iistate,:,:),DIM=1)- &
+            sum(D2SINK(iistate,:,:),DIM=1))*SEC_PER_DAY
+        end function Source_D2_vector
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        ! function to get actual rate of change
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+        function source(iiSub,iibox,iistate)
+          use constants, ONLY: RLEN, ZERO, SEC_PER_DAY
+
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+          ! Implicit typing is never allowed
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+          IMPLICIT NONE
+
+          real(RLEN)  ::Source
+          integer, intent(IN)  ::iiSub
+          integer, intent(IN)  ::iibox
+          integer, intent(IN)  ::iistate
+          IF ( iiSub == iiPel )  THEN
+            Source = (sum(D3SOURCE(iistate,:,iibox))- &
+              sum(D3SINK(iistate,:,iibox)))*SEC_PER_DAY
+          ELSEIF ( iiSub == iiBen )  THEN
+            Source = (sum(D2SOURCE(iistate,:,iibox))- &
+              sum(D2SINK(iistate,:,iibox)))*SEC_PER_DAY
+          ENDIF
+        end function source
+
+        subroutine unicflux(grid_nr,iiSub,origin,destination)
+        use constants, ONLY: RLEN
+
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+          use global_mem, ONLY: LOGUNIT
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+          ! Implicit typing is never allowed
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+          IMPLICIT NONE
+
+          integer,intent(IN)    :: grid_nr
+          integer,intent(IN)    :: origin
+          integer,intent(IN)    :: iiSub
+          integer,intent(IN)    :: destination
+
+          real(RLEN) :: tot
+          character*20:: type
+
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+          !BEGIN compute
+          !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
+          SELECT CASE ( iiSub )
+            CASE (iiPel)
+              type="D3"
+              IF ( grid_nr <=0  ) THEN
+                tot=sum(D3SINK(origin,destination,:))
+              ELSE
+                tot=D3SINK(origin,destination,grid_nr)
+              ENDIF
+            CASE (iiBen)
+              type="D2"
+              IF ( grid_nr <=0  ) THEN
+                tot=sum(D2SINK(origin,destination,:))
+              ELSE
+                tot=D2SINK(origin,destination,grid_nr)
+              ENDIF
+            CASE (iiReset)
+              D3SINK(:,:,:)=0.0D+00
+              D2SINK(:,:,:)=0.0D+00
+          END SELECT
+          IF ( tot > 0.0D+00  ) THEN
+            write(LOGUNIT,'(''Double defintion '',A2,''-flux'')')type
+            write(LOGUNIT,'(''origin:'',I3,'' destination:'',I3)') origin, destination
+            IF ( origin /= destination ) THEN
+              STDERR 'double definition of fluxes'
+              stop 1006
+            ENDIF
+          ENDIF
+        !END compute
+        !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+        return
+      end subroutine unicflux
+
+      subroutine make_flux_output(mode, nr0,nlev, h, out)
+      use constants, ONLY: RLEN, SEC_PER_DAY
+
+      implicit none
+      integer,intent(IN)                  ::mode
+      integer,intent(IN)                  ::nr0
+      integer,intent(IN)                  ::nlev
+      real(RLEN),intent(IN),dimension(0:nlev)  :: h
+      real(RLEN),intent(OUT),dimension(0:nlev)  :: out
+
+
+      integer      ::nr
+      integer      ::i
+      integer      ::k
+      integer      ::klev
+      real(RLEN),dimension(0:nlev):: tot
+      real(RLEN)   :: r
+
+      nr=nr0;if ( mode == 2 ) nr=nr0+flx_cal_ben_start
+      klev=nlev ; if ( flx_CalcIn(nr) == iiBen)  klev=1 
+      out(:)=0.0
+      if ( flx_CalcIn(nr) == iiBen) then
+        do i=flx_calc_nr(nr-1)+1,flx_calc_nr(nr)
+          if (flx_SS(i) ==1 ) then
+             out(1:klev)= out(1:klev) + flx_t(i) * D2SINK(flx_states(i),flx_ostates(i),:)
+          else
+             out(1:klev)= out(1:klev) + flx_t(i) * D2SOURCE(flx_states(i),flx_ostates(i),:)
+          endif
+        enddo
+      else
+        do i=flx_calc_nr(nr-1)+1,flx_calc_nr(nr)
+          if (flx_SS(i) ==1 ) then
+             out(1:klev)= out(1:klev) + flx_t(i) * D3SINK(flx_states(i),flx_ostates(i),:)
+          else
+             out(1:klev)= out(1:klev) + flx_t(i) * D3SOURCE(flx_states(i),flx_ostates(i),:)
+          endif
+        enddo
+      endif
+
+      out=out*SEC_PER_DAY        
+
+      SELECT CASE ( flx_option(nr) )
+        CASE(1) !Specific rate
+          tot=1.0D-80;
+          k=0
+          if ( flx_CalcIn(nr) == iiBen) then
+             do i=flx_calc_nr(nr-1)+1,flx_calc_nr(nr)
+               if ( k.ne. flx_states(i) ) then
+                  k=flx_states(i)
+                  tot(1:klev)=tot(1:klev) + D2STATE(k,:)
+               endif
+              enddo
+          else 
+             do i=flx_calc_nr(nr-1)+1,flx_calc_nr(nr)
+               if ( k.ne. flx_states(i) ) then
+                 k=flx_states(i)
+                 tot(1:klev)=tot(1:klev) + D3STATE(k,:)
+               endif
+             enddo
+          endif
+          out(1:klev)=out(1:klev)/tot(1:klev)
+        CASE(2) ! summing the column :perm2
+          ! d3 -->d2 var.
+          r=sum(out(1:klev) *h(1:klev))
+          out=0.0
+          out(1)=r
+      END SELECT
+
+
+      return
+      end subroutine make_flux_output
+    !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    ! end of contain section
+    !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+  end module
+

@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# distributes one file remotely
+
+#############################################################
+
+if [ $# -lt 2 ]; then
+  echo "Usage remotecopy file remotedir(s)"
+  exit 1
+fi
+
+file=$1
+shift
+
+#############################################################
+
+if [ ! -f $file ]; then
+  echo "No such file: $file"
+  exit 1
+fi
+
+#############################################################
+
+for remotedir
+do
+  if [ ! -d $remotedir ]; then
+    echo "No such directory: $remotedir"
+    continue
+  fi
+
+  echo "$file -> $remotedir"
+  cp $file $remotedir
+
+done
+
+#############################################################
+

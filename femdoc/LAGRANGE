@@ -1,0 +1,66 @@
+
+Ciao Georg
+In allegato c'? la directory fem3d, femplot e il comando plots, il resto
+non ? stato modificato
+Per usarlo bisogna inserire questo nel *.str:
+
+$lagrg
+        itlanf = 6814800 itlend = 12960000 !tempo inizio rislacio e tempo
+
+                                        fine del calcolo delle traiettorie
+        idtlgr = 3600 itmlgr = 6814800 ! t-step e t inizio scrittura
+                                        posizioni dei flottanti nel file
+                                        runname.lgr
+        nbdy=70000 ! numero di particelle per il rilascio
+        idtl= 0 ! frequenza (sec) del rilascio, se 0 solo la prima volta
+artype= 20 ! type degli elementi all'interno dell'area da cui
+                    calcolare il tempo di transito
+$end
+$name
+        lagra='line.bnd' ! linea chiusa all'interno di cui rilasciare
+                         le particelle, il numero di particelle
+                        specificato in nbdy va a riempire in modo regolare
+                        l'area del quadrato circoscritto all'area definita
+                        da linea.bnd
+$end
+
+
+
+Output: RUNNAME.lgr - contiene le coordinate x e y dei traccianti ad ogni
+                time step, il numeratore delle singole particelle il
+                numero espresso in % sul totale delle particelle uscite
+                dal dominio o dall'area individuata da artype, l'intensit?
+                e le componenti x e y del vento in un punto del dominio.
+                Ex.
+
+                ! inizio t-step
+                x y i   ! coord. e numeratore
+                .. .. ..
+                .. .. ..
+                 0    0  ! flag
+                45      ! numero % part. uscite
+                21600   ! tempo dal momento del rilascio
+                10      ! intensit? del vento
+                7 3     ! coord. x e y
+                ! fine t-step
+                x y i
+                .. .. ..
+
+                Per modifiche subroutine set_output(..) file lagrange.f
+                in fem3d.
+                Per inserire coord. nodo per dati di vento modificare
+                linee 229-230 di lagrange.f.
+
+        RUNNAME.trt: contiene i tempi di transito, il file ? strutturato
+                come : coordinate iniziali x y particella, elemento
+                iniziale in cui si trova la particella, elemento di uscita
+                della particella, tempo di transito.
+
+Per plottare: POSIZIONI - memory -s RUNNAME.lgr
+                          plots -lgr *.str
+              per modificare le scritte e altro nel plot.ps
+              modificare in ../fem/femplot/plotlag.f linea da 76 a 97
+
+              TEMPI DI TRANSITO - se vuoi ho dei file per creare i *.nos
+              ma non sono automatizzati, fammi sapere se ti servono
+

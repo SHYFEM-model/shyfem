@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# iterate into sub dirs (only one level) and execute command
+
+if [ $# -lt 1 ]; then
+  echo "Usage: iterate1dir command sub-dirs"
+  exit 1
+fi
+
+command=$1
+shift
+
+home=`pwd`
+dirs=$*
+
+echo $home
+echo $dirs
+
+#echo "command: $command"
+#echo "files:   $*"
+
+for dir in $dirs
+do
+  echo $dir
+  cd $dir
+  $command 
+  cd $home
+done

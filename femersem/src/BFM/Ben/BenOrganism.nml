@@ -1,0 +1,96 @@
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50-g
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!BOP
+!
+! !ROUTINE: BenOrganism
+!
+! DESCRIPTION
+!   List of parameters values
+
+!   This file is generated directly from OpenSesame model code, using a code 
+!   generator which transposes from the sesame meta language into F90.
+!   F90 code generator written by P. Ruardij.
+!   structure of the code based on ideas of M. Vichi.
+!
+! !INTERFACE
+! parameter values for mem_BenOrganism filled by InitBenOrganism
+!
+
+!  
+!
+! !AUTHORS
+!   mfstep/ERSEM team
+!
+! !REVISION_HISTORY
+!   ---
+!
+! COPYING
+!   
+!   Copyright (C) 2006 P. Ruardij, the mfstep group, the ERSEM team 
+!   (rua@nioz.nl, vichi@bo.ingv.it)
+!
+!   This program is free software; you can redistribute it and/or modify
+!   it under the terms of the GNU General Public License as published by
+!   the Free Software Foundation;
+!   This program is distributed in the hope that it will be useful,
+!   but WITHOUT ANY WARRANTY; without even the implied warranty of
+!   MERCHANTEABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!   GNU General Public License for more details.
+!
+!EOP
+!-------------------------------------------------------------------------!
+!BOC
+!
+!
+!  p_q10:
+!  p_su:
+!  p_chu:
+!  p_clu:
+!  p_pue:
+!  p_pur:
+!  p_pudil:
+!  p_sr:
+!  p_sd:
+!  p_Yn(Y1):  	 Y1 > YI
+!  p_Yn(Y2):  	 Y2 > YI
+!  p_Yn(Y3):  	 Y3 > YI
+!  p_Yn(Y4):  	 Y4 > YI
+!  p_Yn(Y5):  	 Y5 > YI
+!  p_Hn(H1):  	 H1 > YI
+!  p_Hn(H2):  	 H2 > YI
+!  p_puQ6:  	 H2 > YI
+
+&BenOrganism_parameters
+p_q10 = 2.0,2.0,0.000000e+00,2.0,2.0,
+p_su = 0.03,0.11,0.000000e+00,0.4,0.08,
+p_chu = 2000.0,2000.0,0.000000e+00,2000.0,2000.0,
+p_clu = 50.0,125.0,0.000000e+00,50.0,100.0,
+p_pue = 0.3,0.35,0.000000e+00,0.25,0.3,
+p_pur = 0.25,0.35,0.000000e+00,0.45,0.3,
+p_pudil = 0.8,0.8,0.000000e+00,0.8,0.8,
+p_sr = 0.0027,0.0027,0.000000e+00,0.01,0.0027,
+p_puQ6 = 0.0,0.1,0.000000e+00,0.1,0.0,
+p_pueQ6 = 0.0,0.8,0.000000e+00,0.4,0.0,
+p_cm = 0.0,0.2,0.000000e+00,0.03,0.0,
+p_clm = 0.0,0.003,0.000000e+00,0.0,0.0,
+p_sd = 0.002,0.001,0.000000e+00,0.01,0.003,
+p_sdm = 0.005,0.005,0.000000e+00,0.005,0.005,
+p_qn = 0.0119,0.0119,0.000000e+00,0.0119,0.0119,
+p_qp = 0.000793,0.000793,0.000000e+00,0.000793,0.000793,
+p_Yn = 1.0,0.0,0.0,0.0,0.0,
+         0.7,0.0,0.0,0.0,1.0,
+         1.0,0.0,0.0,0.0,0.0,
+         0.0,1.0,0.0,1.0,0.5,
+         0.5,0.0,0.0,0.0,1.0,
+p_Hn = 0.0,1.0,0.0,1.0,0.0,
+         0.0,1.0,0.0,1.0,0.0
+/
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!END namelist
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+!BOP
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

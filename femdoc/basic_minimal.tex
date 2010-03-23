@@ -1,0 +1,38 @@
+
+\importstr{basic}
+{Example of a basic parameter input file ({\tt STR} file)}
+
+A basic version of an |STR| file can be found in \ref{fig:basic}. In
+fact, it is so basic, it really does not do anything. Here only the
+compulsory parameters have been inserted. These are:
+
+\begin{itemize}
+
+\item An introductory section |$title| where on three lines the following
+information is given:
+
+\begin{enumerate}
+\item A description of the run. This can be any text that fits on one line.
+\item The name of the simulation. This name is used for all files that 
+the simulation produces. These files differ from each other only by 
+their extension.
+\item The name of the basin. This is the basin file without the extension
+|.bas|.
+\end{enumerate}
+
+\item A section |$para| that contains all necessary parameters for the
+simulation to be run. The only compulsory parameters are the ones that
+specify the start of the simulation |itanf|, its end |itend| and its 
+time step |idt|.
+
+\end{itemize}
+
+In order to be more helpful, some more information must be added to the
+|STR| file. As an example let's have a look on \figref{example}. Here
+we have added two parameters that deal with the type of friction
+to be used. |ireib| specifies the bottom friction formulation, here
+through a simple quadratic bulk formula. (For the exact meaning of the
+parameters, please refer to the appendix where all parameters
+are listed.) The parameter |czdef| specifies the value to use for the
+bottom drag coefficient.
+

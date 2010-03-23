@@ -1,0 +1,27 @@
+#!/bin/sh
+#
+# executes make on remote host(s)
+
+#############################################################
+
+if [ $# -lt 3 ]; then
+  echo "Usage remotemake target subdir remotehost(s)"
+  exit 1
+fi
+
+target=$1
+subdir=$2
+shift 2
+
+#############################################################
+
+for remotehost
+do
+
+  echo "executing make $target in $subdir on host $remotehost"
+  rsh $remotehost ". .profile 2> /dev/null; cd $subdir; make $target"
+
+done
+
+#############################################################
+

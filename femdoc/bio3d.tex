@@ -1,0 +1,458 @@
+%\documentclass{report}
+%\begin{document}
+                                                                              
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+\newcommand{\tab}{\hspace{5mm}}
+
+\newcommand{\Tone}{\ref{MassBalance}}
+\newcommand{\Ttwoa}{\ref{FuncDesc}}
+\newcommand{\Ttwob}{\ref{Paras}}
+\newcommand{\Ttwoc}{\ref{Vars}}
+
+\newcommand{\STone}{\ref{SMassBalance}}
+\newcommand{\STtwoa}{\ref{SFuncDesc}}
+\newcommand{\STtwob}{\ref{SParas}}
+\newcommand{\STtwoc}{\ref{SVars}}
+
+
+
+
+by Donata Melaku Canu, Georg Umgiesser, Cosimo Solidoro
+
+\vspace{1cm}
+
+The coupling between EUTRO and FEM constitute a structure which 
+is meant to be a generic water quality for full eutrophication 
+dynamics.
+The Water Quality model is described fully in
+Umgiesser et al. (2003).
+
+
+
+\section{General Description}
+
+
+
+The water quality model has been derived from the EUTRO module 
+of WASP (released by the U.S. Environmental Protection Agency 
+(EPA) (Ambrose et al., 1993) and modified. It simulates the evolution 
+of nine state variables in the water column and sediment bed, 
+including dissolved oxygen (DO), carbonaceous biochemical oxygen 
+demand (CBOD), phytoplankton carbon and chlorophyll a (PHY), 
+ammonia (NH3), nitrate (NOX), organic nitrogen (ON), organic 
+phosphorus (OP), orthophosphate (OPO4) and zooplankton (ZOO). 
+The interacting nine state variables can be considered as four 
+interacting systems: the carbon cycle, the phosphorous cycle, 
+the nitrogen cycle and the dissolved oxygen balance (Fig. ??). 
+Different levels of complexity can be selected by switching the 
+eight variables on and off, in order to address the specific 
+topics.
+
+The evolution of phytoplankton concentration (Reaction 1, 
+Table \Tone)
+is described by the anabolic and the catabolic terms, plus 
+a grazing term related to zooplankton concentration (Reaction 
+10, 11 and 12, Table \Ttwoa), which however is treated as a constant
+in the original version. 
+The anabolic term (Reaction 10, Table \Ttwoa) is related to light 
+intensity, temperature and concentration of nutrients in water, 
+while the catabolic term (Reaction 11, Table \Ttwoa) depends on temperature.
+
+Phytoplankton growth is described by combining a maximum growth 
+rate under optimal conditions, and a number of dimensionless 
+factors, each ranging from 0 to 1, and each one referring to 
+a specific environmental factor (nutrient, light availability), 
+which reduces the phytoplanktonic growth insofar as environmental 
+conditions are at sub-optimal levels. Phytoplankton stochiometry 
+is fixed at the user-specified ratio, so that no luxury uptake 
+mechanisms are considered, and the uptake of nutrients is directly 
+linked to the phytoplankton growth, and described by the same 
+one-step kinetic law. More specifically, the influence of inorganic 
+phosphorous and nitrogen availability on phytoplankton growth/nutrients 
+uptake is simulated by means of Michealis-Menten-Monod kinetics 
+(Reactions 42 and 43, Table \Ttwoa). Phytoplankton uptakes nitrogen 
+both in the forms of ammonia and nitrate, but ammonia is assimilated 
+preferentially, as indicated in the ammonia preference relation 
+(Reaction 38, Table \Ttwoa). The influence of temperature is given 
+by an exponential relation (Reaction 13, Table \Ttwoa), while the 
+functional forms for the limitation due to sub-optimal light 
+condition can be chosen between three alternative options, namely 
+the formulation proposed by Di Toro et al. (1971) and the one 
+proposed by Smith (1980) (Di Toro and Smith subroutines, Reaction 
+44, Table \Ttwoa) and the Steele formulation (Steele, 1962) that 
+can use hourly light input values. The 
+choice between different available functional forms (Ditoro, 
+Smith, and Steele) is made by setting the index |LGHTSW| equal 
+to 1, 2 or 3. The new version is therefore able to simulate diurnal 
+variations depending on light intensity, such as night anoxia 
+due to phytoplankton respiration during nighttime.
+
+Finally, the two frequently used models for combining maximum 
+growth and limiting factors, the multiplicative and the minimum 
+(or Liebig's) model, are both implemented, and the user can choose 
+which one to adopt (Reaction 41, Table \Ttwoa).
+
+Nitrogen and phosphorous are then returned to the organic compartment 
+(ON, OP) via phytoplankton and zooplankton respiration and death. 
+After mineralization, the organic form is again converted into
+the dissolved inorganic form available for phytoplankton growth. 
+
+The DO mass balance is influenced by almost all of the processes 
+going on in the system. The reaeration process acts to restore 
+the thermodynamic equilibrium level, the saturation value, while 
+respirations activities and mineralization of particulated and 
+dissolved organic matter consume DO and, of course, photosynthetic 
+activity produces it. Other terms included in the DO mass balance 
+are the ones referring to redox reactions such as nitrification 
+and denitrification. The reaeration rate is computed from the 
+model in agreement with either the flow-induced rate or the wind-induced 
+rate, whichever is larger. The wind-induced reaeration rate is 
+determined as a function of wind speed, water and air temperature, 
+in agreement with O'Connor (1983), while the flow-induced reaeration 
+is based on the Covar method (Covar, 1976), i.e., it is calculated 
+as a function of current velocity, depth and temperature.
+
+The dynamic of a generic herbivorous zooplankton compartment 
+(ZOO), meant to be representative of the pool of all the herbivorous 
+zooplankton species, is followed and accordingly the subroutines 
+relative to phytoplankton, organic matter, nutrients, and dissolved 
+oxygen, which were influenced by such a modification. 
+
+The grazing has been described by means of a type II functional 
+relationship, as it is usually done for aquatic ecosystems. However, 
+the possibility to select a type III relationship, as well as 
+to maintain the original parameterisation of constant zooplankton, 
+has been included.  
+
+The zooplankton assimilates the ingested phytoplankton with an 
+efficiency EFF, and the fraction not assimilated, ecologically 
+representative of faecal pellets and sloppy feeding, is transferred 
+to the organic matter compartments (dotted lines Fig. ??). Finally, 
+zooplankton mortality is described by a first order kinetics. 
+The code has been written by adopting the standard WASP nomenclature 
+system, and the choice between the different available functional 
+forms is performed by setting the index |IGRAZ|. A choice of 0 
+(the default value) corresponds to the original EUTRO version, 
+giving the user the ability to chose easily between the extended 
+version or revert to the original one.
+
+
+\input{bio3d_t.tex}
+
+
+\section{The coupling}
+
+
+Mathematical models usually describe the coupling between ecological 
+and physical process by suitable implementation of an advection/diffusion 
+equation for a generic tracer, reads 
+
+\begin{equation} \label{AdvDif}
+\frac{\partial \,\Theta _{i} }{\partial \,t} \,\,+U\cdot \nabla \,\Theta
+_{i} -\,w^{s}_{i} \,\frac{\partial \,\Theta _{i} }{\partial \,z} \,=\,\,K_{h}
+\,\nabla _{H}^{2} \Theta _{i} \,+\,\frac{\partial \,}{\partial \,z}
+\,\left[ K_{v} \,\frac{\partial \,\Theta _{i} }{\partial \,z} \right]
+\,+\,F\,\left( \Theta \,,\,T,\,I\,,\,\,..\right)
+\end{equation}
+
+where $U$ is the (average components of the) velocity, 
+the $\Theta_{i}$ are the tracers which compose the entire 
+vector of the biological state variable $\Theta$ and 
+$F$ is a source term. $T$ and $I$ indicate, respectively, 
+water temperature and Irradiance level, while $w^{s}_{i}$ represent 
+the downward flux rates (sinking velocity) for the tracer 
+$\Theta_{i}$, 
+and $K_{h}$ and $K_{v}$ are the eddy coefficients for 
+horizontal and vertical turbulent diffusion.
+
+The term $F$ includes the contributions of the biological/biogeochemical 
+activities, and the whole biological state vector $\Theta$ 
+is explicitly considered in the last term of equation \ref{AdvDif}, without 
+a spatial operator. As far as the biologically induced variations 
+are regarded, the fate of each tracer in every location $x,y,z$ 
+is tightly coupled to other tracers in the same location, but 
+is not directly influenced by processes going on elsewhere. 
+
+Therefore, in this approximation the global temporal variation 
+of any tracer (state variable, conservative or not) can be split 
+into the sum of two independent contributions: 
+
+\begin{equation}
+\frac{\partial \,\Theta _{i} }{\partial \,t} \,=\,\,\left. \frac{\partial
+\,\Theta _{i} }{\partial \,t} \right\arrowvert_{phys} +\left. \frac{\partial
+\,\Theta _{i} }{\partial \,t} \right\arrowvert_{biol}
+\end{equation}
+
+and it might be convenient, in writing a computer code, to devote 
+independent modules to computation of each of them. Indeed, most 
+of the modern water quality programs do have, at least conceptually, 
+a modular structure. In this way the same code can be used for 
+simulating different situations: by switching off the module 
+referring to the reactor term the transport of a purely passive 
+tracer is reproduced, while a 0D, close and uniformly stirred 
+biological system is simulated if the module referring to the 
+physical term is not included. Finally, the inclusion of both 
+modules gives the evolution of tracers subjected to both physical 
+and biogeochemical transformation, in a representation that, 
+depending upon the parameterisation of the physical module, can 
+be 1, 2 or 3 dimensional.
+
+The whole water quality module is contained in a file
+|weutro.f| and the call to EUTRO is made through a subroutine call
+that is done from the main program through an appropriate 
+interface. There is a clean division between the hydrodynamic 
+motor, parameters used by the model and the resolution of the 
+differential equations and the ecological model as evidenced 
+by the overall structure of the modules. 
+
+It is the responsibility of the main module to implement the 
+time loop administration, the advective and diffusive transport 
+of the state variables, both in the horizontal and vertical direction 
+and the application of the boundary conditions. 
+
+The typical use of the new EUTRO module is as follows: the main 
+program first sets all parameters needed in EUTRO through the 
+call to |EUTRO_INI|. These parameters are the kinetic constants 
+of the reactions that are described in EUTRO and are considered 
+constant for a site. They have to be set therefore only once 
+at the beginning of the simulation. Once set, these parameters 
+are available to the EUTRO module as global parameters.
+
+For every box in the discretized domain (horizontal and vertical), 
+and for every time step, the main program calls the subroutine 
+|EUTRO0D|. Inside |EUTRO0D| the differential equations that describe 
+the bio-chemical reactions are solved with a simple Euler scheme.
+
+The values passed into |EUTRO0D| can be roughly divided into 4 
+groups. The first group is made out of the aforementioned constants 
+that represent the kinetic constants and other parameters that 
+do not vary in time and space. The second group represents the 
+state variables that are actually modified by |EUTRO0D| through 
+the bio-chemical reactions. These variables are transported and 
+diffused by the main routine and are just passed into |EUTRO0D| 
+for the description of the processes. After the call no memory 
+remains in |EUTRO0D| of these state variables. They must therefore 
+be stored away by the main routine to be used in the next time 
+step again. The third and fourth groups of values have to do 
+with the forcing terms. They have been divided in order to account 
+for the different nature of the forcing terms. The third group 
+consists of the hydrodynamic forcing terms that are directly 
+computed by the hydrodynamic model and parameters related to 
+the box discretization. They consist of water temperature, salinity, 
+current velocity, and depth and type of the box. Here the type 
+identifies the position of the box (surface, water column, sediment), 
+which is needed for some of the forcings to be applied. These 
+variables are passed directly into EUTRO through a parameter 
+list. The last group contains other forcing terms that are not 
+directly related to the hydrodynamic model. These consist of 
+the meteorological forcings (wind speed, air temperature, ice 
+cover), light climate (surface light intensity, day length) and 
+sediment fluxes. These parameters are set through a number of 
+commodity functions that are called by the main routine. The 
+reason why the last two parameter groups are handled differently 
+from each other has also to do with the fact that the third group 
+is highly variable in time and space. Variables like current 
+velocity change with every time step and are normally different 
+from element to element. The fourth group is very often only 
+slowly variable in time (light, wind) and can very often be set 
+constant in space. Therefore these values can be set at larger 
+intervals, and do not have to be changed when looping over all 
+the elements in the domain.
+
+The overall flow of information during one time step is the following: 
+First the hydrodynamic model resolves the momentum and continuity 
+equation to update the current velocities and water levels. After 
+that the physical (temperature and salinity) and bio-chemical 
+scalars are advected and diffused. Once this advection step has 
+been handled the new loadings and forcing terms are set-up and 
+then |EUTRO0D| is called for the bio-chemical reactions. 
+
+
+Note that the operator splitting technique, which decouples the 
+advective and diffusive transport from the source term, allows 
+for different time steps of the two processes for a more efficient 
+use of the computer resources. 
+
+
+Default values of the water quality parameters are already set 
+in the code. Owner specific parameters for the water quality 
+model should be written in the subroutine |param_user|.
+
+
+
+
+
+\section{Light limitation}
+
+\input steele.tex
+
+
+
+\section{Initialization}
+
+
+
+This section describes
+the interpolation of data for the initialisation of the model.
+
+To create a file with initial conditions the program
+|laplap| can be used. The program is called as
+|laplap < namefile.dat|.
+This makes a laplacian interpolation of specified data contained in 
+the |namefile.dat|.
+This data file should have the first line empty and shold contain 
+two colums containing, respectively, node number and data values for
+the node.
+
+It generates two files, |laplap.nos| and |laplap.dat|. The first 
+one can be used to check if the procedure has been conducted 
+well, creating a map with the plotting procedure (see Postprocessing 
+section). The |.dat| file name should be given in the section
+|$name| 
+of the |.str| file to initialize the model.
+
+You can create initialisation files for temperature, salinity, 
+wind field and biological variables.
+If you want to initialise the biological model with biological 
+data you should create a single data file merging the 9 data 
+files (one for each variable) using the |inputmerge.f| routine.
+
+
+
+
+\newcommand{\listroutine}[1]{\paragraph{\texttt{#1}}}
+\newcommand{\lt}{$<$}
+\newcommand{\gt}{$>$}
+
+
+
+\section{Post processing}
+
+This section shows how to generate derivate variables.
+
+The post processing routines elaborate the water quality outputs 
+to generate derivate variables. They allow to generate variables 
+such as averages, (both, in time and in space), sum differences, 
+and water quality variables such us Vismara, TRIX and BOD5.
+
+The routines and their usage are the following:
+
+\listroutine{nosmaniav.f}
+It generates a file containing, for each node of the spatial 
+domani, average, minimum and maximum values of the specified 
+variable of the whole simulation.
+
+\listroutine{nosmaniqual.f}
+It generates a water quality file from the elaboration of the 
+state variable.
+It computes, for each node, and at each time step a water quality 
+index that can be chosen between two suggested indexes: Vismara 
+QualityV and TRIX a well known quality index applied to the 
+water quality definition at coastal seas and estuaries.
+
+These indices can be computed using the definitions
+in Table \ref{ClassWQI} and
+the following equations:
+
+\begin{center}
+\begin{verb}
+QualityV = class(O2sat) + class(BOD5) + class(NH3)
+\\
+auxt1 = (phyto/30.)*1000\\
+auxt2 = (nh3+nox)*1000\\
+auxt3 = (opo4+op)*1000\\
+TRIX = log10(auxt1*o2satp*auxt2*auxt3+1.5)/1.2
+\end{verb}
+\end{center}
+
+
+\begin{table}\centering
+\begin{tabular}{lccccc}
+\hline
+
+Class(Var) & 1 & 2 & 3 & 4 & 5\\
+O2sat & 90-110 & 70-90 or 110-120 & 50-70 or 120-130 & 30-50 & \lt30 or \gt130\\
+BOD5 & \lt3 & 3-6 & 6-9 & 9-15 & \gt15\\
+NH3 & \lt0.4 & 0.4-1 & 1-2 & 2-5 & \lt5\\
+
+\hline
+\end{tabular}
+\caption{Classification of Water Quality Indices}
+\label{ClassWQI}
+\end{table}
+
+
+
+
+\listroutine{nosmanintot.f}
+generates a file of total inorganic Nitrogen as sum of NH3 and 
+NOx
+
+\listroutine{nosdif.f}
+computer for the chosen state variable, the difference between 
+the values at two times step. 
+
+
+\listroutine{nosdiff.f}
+computer the difference between the variable outputs of two simulations 
+
+
+
+\listroutine{nosmanibod5.f}
+computes the BOD5 values from the CBOD outputs as:
+
+\begin{center}
+\begin{verb}
+bod5 = cbod*(1. - exp( -5. * par1 ))
+\\
+        + (64./14.) * nh3 * (1. - exp( -5. * par2 ))
+\end{verb}
+\end{center}
+
+To run one of the postprocessing routine write the name of the 
+routine and enter.
+
+
+
+
+\section{The Sediment Module}
+
+The sediment buffer action on the biogeochemical cycles could 
+be very important, especially in the shallow water basins and 
+during the storm surge events.
+
+The routine |wsedim| (introduced in April 2004) aims to address 
+the resuspention/sinking dynamics of nitrogen and phosphorous.
+This routine can be switched on and off as needed by the user, 
+setting the |bsedim| parameter |true| or |false| in the |bio3d| 
+routine. It is called after the the eutrophication subroutine.
+
+It allows to follow the dynamics of two additional variables, 
+OPsed and ONsed that simulate the evolution of Nitrogen and Phosphorous 
+detritus in sediment that are not subjected to advection-diffusion 
+processes.
+
+These two variables interact with the Nitrogen and Phosphorous 
+cycle as decribed by the equations in Table \STone. When 
+the |wsedim| subroutine is switched on, OP, ON, NH3 and OPO4 are 
+updated at each time step in agreement with those equations.
+
+The resuspension is a linear function of the water velocity calculated 
+by the hydrodynamic model at each box, as written in Table \STtwoa. 
+The amount of the sinking nutrients depends on specific prossess 
+parameters, as given in Table \STtwoa, and on the depth of the underlying 
+column.
+
+
+\input{bio3d_st.tex}
+
+
+%\end{document}

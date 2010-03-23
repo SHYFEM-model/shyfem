@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# calles make recursively (to be used from within makefile)
+#
+# example:
+#
+# clean:
+#	recursivemake $@ $(SUBDIRS)
+#
+
+if [ $# -lt 1 ]; then
+  echo "Usage: recursivemake target dirs"
+  exit 1
+fi
+
+target=$1
+shift
+
+home=`pwd`
+
+echo "making target $target in subdirectories..."
+echo "$*"
+
+for dir
+do
+  echo $dir
+  if [ -d $dir ]; then
+    cd $dir
+    make $target
+    cd $home
+  else
+    echo "*** no such directory: $dir ... skipping"
+  fi
+done
+

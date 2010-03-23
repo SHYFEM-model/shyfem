@@ -1,0 +1,51 @@
+
+c This files contains utility routines to generate a Taylor
+c diagram as described in
+"Taylor, K. E., Summarizing multiple
+aspects of model performance in a single diagram, JGR, 106 (D7),
+7183-7192, 2001."
+A short description of how to use the routines is given below.
+A short example of usage can be found at the end of this file
+in the routine "taylor_example". Uncommenting the last three
+lines in this file the example can be tested.
+
+The plotting session must be opened by a call to "qopen" and
+must be closed with "qclose". In between the plotting session
+multiple taylor diagrams can be plotted. Every diagram will be
+plotted on a new page, and must be bracketed by calls to
+"taylor_start" and "taylor_end". Therefore, a session for
+producing two taylor diagrams will be:
+
+        call qopen
+
+        call taylor_start
+        ...
+        call taylor_end
+
+        call taylor_start
+        ...
+        call taylor_end
+
+        call qclose
+
+where ... denotes the real plotting described below.
+
+The following subroutines are available:
+
+	subroutine taylor_set(sigma_tot,sigma_r,d_sigma,ndec)
+        real sigma_tot      !maximum of sigma to plot
+        real sigma_r        !sigma of reference point
+        real d_sigma        !plot marker every d_s sigma
+        integer ndec        !decimals for sigma value
+
+	subroutine taylor_set_text(std_text,cor_text)
+        character*(*) std_text         !text to be written for std
+        character*(*) cor_text         !text to be written for cor
+
+        subroutine taylor_full
+        subroutine taylor_quart
+
+        subroutine taylor_data(sigma_f,r_corr,text)
+        subroutine taylor_point(sigma_f,r_corr,text)
+
+

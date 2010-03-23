@@ -1,0 +1,132 @@
+#!/bin/sh
+
+#----------------------------------------
+
+plotTS() {
+  if [ $# -gt 0 ]; then
+    gp -t "$title"  -tx "$tx"  -ty "$ty"  -l "gnuplot." $*
+  else
+    gp -t "$title"  -tx "$tx"  -ty "$ty"  -l "gnuplot." gnuplot.*
+  fi
+}
+
+plotZ() {
+  ty="water level [m]"
+  plotTS $*
+  mv out.ps z.ps
+}
+
+plotU() {
+  ty="current velocity in x [m/s]"
+  plotTS $*
+  mv out.ps u.ps
+}
+
+plotV() {
+  ty="current velocity in y [m/s]"
+  plotTS $*
+  mv out.ps v.ps
+}
+
+plotM() {
+  ty="current velocity [m/s]"
+  plotTS $*
+  mv out.ps m.ps
+}
+
+#----------------------------------------
+
+transf() {		#makes files gnuplot.* and scales in time
+  what=$1
+  files=$what.[1-9]*
+  rm -f gnuplot.$what.*
+
+  echo "...scaling $what..."
+
+  for file in $files
+  do
+    #newfile=`echo $file | sed -e "s/$what\./gnuplot./"`
+    #echo "$file -> $newfile"
+    #cp $file $newfile
+    newfile="gnuplot.$file"
+    echo "$file -> $newfile"
+    s2s -$times $file > $newfile
+  done
+}
+
+timescale() {		#finds appropriate time scale
+  line=`tail -1 z.1`
+  time=`echo $line | sed -e "s/ .*$//"`
+  #echo "$line | $time"
+
+  if [ $time -gt 300000 ]; then
+    times=d
+    timeu=days
+  elif [ $time -gt 20000 ]; then
+    times=h
+    timeu=hours
+  else
+    times=s
+    timeu=seconds
+  fi
+  tx="time [$timeu]"
+  export times timeu tx
+}
+
+settitle() {		#sets title from .memory file
+  simul=`head -1 .memory`
+  title="Simulation:  $simul" 
+  export title
+}
+
+TotalPoints()
+{
+  ls -1 z.[1-9]* | cut -c 3- | sort -n | tail -1
+}
+  
+###################################################################
+
+tot=`TotalPoints`
+
+timescale
+settitle
+
+echo "Total number of points: $tot"
+echo "time scale: $timeu ($times)"
+echo "title: $title"
+
+#--------------------------------- scaling
+
+transf z
+transf u
+transf v
+transf m
+
+#--------------------------------- single plots
+
+rm -f [1-9]*.ps
+
+for i in `range $tot`
+do
+  echo "... $i"
+  plotU gnuplot.u.$i
+  plotV gnuplot.v.$i
+  plotM gnuplot.m.$i
+  plotZ gnuplot.z.$i
+  gpsmerge [muvz].ps > tmp.ps
+  mpage -4 -bA4 -P- tmp.ps > $i.ps
+done
+
+gpsmerge [1-9]*.ps > all_nodes.ps
+
+#--------------------------------- all in one plots
+
+plotZ gnuplot.z.*
+plotU gnuplot.u.*
+plotV gnuplot.v.*
+plotM gnuplot.m.*
+
+gpsmerge [muvz].ps > all.ps
+
+###################################################################
+

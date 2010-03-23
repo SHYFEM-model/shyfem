@@ -1,0 +1,35 @@
+#!/bin/sh
+
+stdout="NO"
+if [ "$1" = -o ]; then
+  shift
+  stdout="YES"
+fi
+
+if [ $# -eq 0 ]; then
+  echo "Usage: gifcrop [-o] file(s)"
+  exit 0
+fi
+
+b=5	#border
+
+for file
+do
+  name=`basename $file .gif`
+  new=${name}_.gif
+  
+  giftopnm $file > g1.pnm  2> /dev/null
+  pnmcrop g1.pnm > g2.pnm
+  #pnmpad -white -l$b -r$b -t$b -b$b g2.pnm > g3.pnm
+  pnmpad -white -left $b -right $b -top $b -bottom $b g2.pnm > g3.pnm
+  ppmtogif g3.pnm > $new  2> /dev/null
+
+  if [ $stdout = "YES" ]; then
+    cat $new
+    rm -f $new
+  fi
+
+done
+
+rm -f g[1-3].pnm
+

@@ -1,0 +1,35 @@
+
+Ecco un esempio.
+ 
+$color
+        legcol = 'Salinity [psu]'
+        ndccol = 1  faccol = 1.
+        icolor = 1
+        colmin = .7   colmax = .1
+        valmin = 30.    valmax = 33.
+        niso = 50  nisomx = 50
+        nctick = 4
+$end
+ 
+Spiegazione: Invece di utilizzare
+ 
+        color = -1. .85 .7 .5 .3 .1
+        isoval = 1 5 10 15 20
+ 
+o simile, dove dai esplicitamente i colori e i valori di isolinee,
+qui specifichi il min/max del colore e il min/max del valore delle
+isolinee. Percio', nel esempio sopra tutto quello che e' sotto
+30 sara' colore .7, tutto quello che e' sopra 33 sara' colore .1,
+e in mezzo sara' linearmente interpolato. Come vedi i colori min/max
+possono anche essere scambiati (da .7 a .1) come possono essere
+in ordine ascendete (da .3 a .6 per esempio).
+ 
+Questo non ti da ancora le sfumature, perche' se utilizzi solo 5
+isolinee (niso=5) avrai solo 6 colori. Percio' devi alzare niso,
+e anche nisomx, che da il massimo di isolinee accettabili.
+Last not least devi decidere dove disegnare delle tacche e numeri
+alla scala di colori. Con nctick specifichi il numero di tacche.
+Sopra sono 4, percio' vengono disegnati tacche a 30 31 32 33.
+Se non specifichi nctick il programma ti mette una tacca per ogni
+isolinea, percio' sopra 50.
+

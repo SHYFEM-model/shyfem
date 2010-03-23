@@ -1,0 +1,92 @@
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50-g
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!BOP
+!
+! !ROUTINE: FilterFeeder
+!
+! DESCRIPTION
+!   List of parameters values
+
+!   This file is generated directly from OpenSesame model code, using a code 
+!   generator which transposes from the sesame meta language into F90.
+!   F90 code generator written by P. Ruardij.
+!   structure of the code based on ideas of M. Vichi.
+!
+! !INTERFACE
+! parameter values for mem_FilterFeeder filled by InitFilterFeeder
+!
+
+!  
+!
+! !AUTHORS
+!   mfstep/ERSEM team
+!
+! !REVISION_HISTORY
+!   ---
+!
+! COPYING
+!   
+!   Copyright (C) 2006 P. Ruardij, the mfstep group, the ERSEM team 
+!   (rua@nioz.nl, vichi@bo.ingv.it)
+!
+!   This program is free software; you can redistribute it and/or modify
+!   it under the terms of the GNU General Public License as published by
+!   the Free Software Foundation;
+!   This program is distributed in the hope that it will be useful,
+!   but WITHOUT ANY WARRANTY; without even the implied warranty of
+!   MERCHANTEABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!   GNU General Public License for more details.
+!
+!EOP
+!-------------------------------------------------------------------------!
+!BOC
+!
+!
+!  p_dwat:  	 Food layer in the water
+!  p_su:  	 Growth rate
+!  p_q10:  	 q10
+!  p_R6:  	 Food matrix detritus on pelagic det. (R6)
+!  p_clu:  	 Lower limit of availability of a food source
+!  p_chu:  	 Upper limit of total food
+!  p_pue:  	 Excreted fraction of uptake
+!  p_pueQ6:  	 Excreted fraction of uptake
+!  p_pudsil:  	 Selectvity for nutrients
+!  p_sr:  	 Relative respiration rate
+!  p_pur:  	 Part of uptake which is used for respiration
+!  p_sd:  	 Specific Mortality
+!  p_qn:  	 Fixed nutrient quotum N:C
+!  p_qp:  	 Fixed nutrient quotum P:C
+!  p_clm:  	 Upper depth of accessed sediment layer
+!  p_cm:  	 Lower  depth of accessed sediment layer
+!  p_puQ6:  	 Food matrix detritus on the sediment (Q6)
+!  p_PI:  	 Food matrix Y3 on diatoms
+
+&FilterFeeder_parameters
+p_dwat = 1.0,
+p_su = 0.13,
+p_q10 = 2.0,
+p_R6 = 0.1,
+p_clu = 50.0,
+p_chu = 300.0,
+p_pue = 0.25,
+p_pueQ6 = 0.7,
+p_pudsil = 0.8,
+p_sr = 0.0027,
+p_pur = 0.15,
+p_sd = 0.0025,
+p_qn = 0.0119,
+p_qp = 0.000792,
+p_clm = 0.0,
+p_cm = 0.001,
+p_puQ6 = 0.065,
+p_PI = 1.0
+/
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!END namelist
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+!BOP
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

@@ -1,0 +1,31 @@
+
+==================================================================
+
+for DJGPP:
+
+- environment variables that must be set:
+
+DJGPP=c:\djgpp\djgpp.env
+GRX20DRV=VESA gw 800 gh 600 nc 256
+GRXFONT=c:\djgpp\fonts
+
+- directory that must be in the path:
+
+PATH=C:\DJGPP\BIN
+
+==================================================================
+
+- for coloring of nodes and lines: 		grid -C file
+
+- to extract lines and single nodes from file: 	exgrd -Es file
+
+==================================================================
+
+Line types:
+
+	1	external boundary line
+	2	internal boundary line (island)
+	4	internal fault line (not closed)
+
+==================================================================
+

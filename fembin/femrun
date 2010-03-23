@@ -1,0 +1,175 @@
+#!/bin/sh 
+#
+# femrun : runs FEM model
+#
+# basic directories setting
+
+#---------------------------------------------------------------
+FEMDIR=${FEMDIR:-$HOME/fem}
+BINDIR=$FEMDIR/fembin
+#---------------------------------------------------------------
+fembat="$BINDIR/fembat"
+fembatch="$BINDIR/fembatch"
+
+tmpdir="$HOME/tmp/hp"
+overall_dir="$HOME/adm"
+
+overall_log="$overall_dir/overall.log"
+batch_log="$overall_dir/batch.log"
+#---------------------------------------------------------------
+at=at
+notify=dnotify
+#---------------------------------------------------------------
+
+RunNotify()
+{
+  local status
+  local infodir=$1
+
+  $notify --version > /dev/null 2>&1
+  status=$?
+
+  if [ $status -ne 0 ]; then
+    echo "Cannot run command $notify. Please install."
+    exit 1
+  fi
+
+  ps x | grep dnotify | grep hpinfo > /dev/null
+  status=$?
+
+  #echo "status of RunNotify is: $status"
+  if [ $status -eq 0 ]; then
+    echo "$notify is already running. Not executing"
+  else
+    echo "$notify is not running. Starting"
+    dnotify -b $infodir -e $fembatch
+  fi
+}
+
+####################################################### are there 2 arguments ?
+
+batch="NO"
+if [ "$1" = "-b" ]; then
+  batch="YES"
+  shift
+fi
+
+if [ $# -lt 2 ]; then
+	echo "Usage : femrun [-b]  HP-routine   STR-file   [time]"
+	echo "   time     :  HH:MM, midnight, noon, 1am tomorrow"
+	echo "   date     :  Dec 12, MMDDYY, MM/DD/YY, DD.MM.YY"
+	echo "   relative :  now + # [minutes, hours, days, or weeks]"
+	echo "   (date must follow time)"
+	exit 1
+fi
+
+if [ $# -gt 2 ]; then
+	givenattime=YES
+else
+	givenattime=NO
+fi
+
+################################################################# set variables
+
+hpfile=$1
+strfile=$2
+
+strname=`basename $strfile .str`
+strdir=`dirname $strfile`
+if [ "$strdir" = "." ]; then
+  strfile=$strname.str
+else
+  strfile=$strdir/$strname.str
+fi
+
+hostname=`hostname | sed -e 's/\..*//'`
+actdate=`date "+%d.%m.%y %H:%M:%S"`
+
+shift 2
+
+if [ $givenattime = "YES" ]; then
+	attime="$*"
+else
+	attime="now+0minutes"
+fi
+
+##################################################### control if files do exist
+
+if [ ! -f $hpfile ]; then
+	echo "No such file : $hpfile"
+	exit 1
+elif [ ! -x $hpfile ]; then
+	echo "Program not executable : $hpfile"
+	exit 1
+elif [ ! -f $strfile ]; then
+	echo "No such file : $strfile"
+	exit 1
+fi
+
+############################## find name of simulation and set name of log-file
+
+simulation=`simnam $strfile`
+
+if [ "$simulation" = "" ]; then
+	echo "Cannot get simulation name from file $strfile"
+	exit 1
+fi
+
+logfile=$simulation.log
+
+######################################################## echo names to terminal
+
+echo " "
+echo "FEM routine          : " $hpfile
+echo "input parameter file : " $strfile
+echo "name of simulation   : " $simulation
+echo "name of log file     : " $logfile
+echo "time                 : " $attime
+echo " "
+
+##################################################### write to overall log file
+
+mkdir -p $overall_dir
+mkdir -p $tmpdir/hpat
+mkdir -p $tmpdir/hpbatch
+mkdir -p $tmpdir/hpinfo
+
+echo $actdate $simulation $simname $hpfile $hostname $attime >> $overall_log
+
+############################################################### remove log file
+
+if [ -f $logfile ]; then
+  rm $logfile
+fi
+
+##################################################################### run model
+
+  actdir=`pwd`
+  aux=`date +%Y_%m_%d.%H_%M_%S`
+
+  if [ $batch = "NO" ]; then
+    tmpfil=$tmpdir/hpat/hpat.$aux.$$
+    echo "cd $actdir" > $tmpfil
+    echo "nohup $fembat $tmpfil $hpfile $strfile > $logfile 2>&1 &" >> $tmpfil
+
+    $at -f $tmpfil $attime > /dev/null 2>&1
+
+    status=$?
+  else
+    RunNotify $tmpdir/hpinfo
+
+    tmpfil=$tmpdir/hpbatch/hpbatch.$aux.$$
+    echo "cd $actdir" > $tmpfil
+    echo "nohup $fembat $tmpfil $hpfile $strfile > $logfile 2>&1 &" >> $tmpfil
+
+    $fembatch
+
+    status=$?
+  fi
+
+  if [ $status -ne 0 ]; then	#error in previous at command -> repeat for xfem
+    $at -f $tmpfil $attime 
+  fi
+
+########################################################### now we are finished
+

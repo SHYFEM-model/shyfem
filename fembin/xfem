@@ -1,0 +1,237 @@
+#!/usr/bin/X11/wish -f
+#
+# todo:
+#
+# file check
+# must do error checking and sure to read also &title... with blanks ahead
+
+#puts $auto_path
+#set auto_path "$tk_library/demos $auto_path"
+set auto_path "/usr/users/georg/bin/tcl $auto_path"
+#puts $auto_path
+
+set memfile .femmem
+set memdir [pwd]	;# directory of last selection (changed in select)
+set defdir $memdir	;# directory where xfem is launched
+
+proc Tab {list} {
+    set i [lsearch $list [focus]]
+    if {$i < 0} {
+        set i 0
+    } else {
+        incr i
+        if {$i >= [llength $list]} {
+            set i 0
+        }
+    }
+    focus [lindex $list $i]
+}
+
+proc dpos w {
+    wm geometry $w +300+300
+}
+
+proc mkHelp {{w .l1}} {
+    global tk_library
+    global memfile
+    catch {destroy $w}
+    toplevel $w
+    dpos $w
+    wm title $w "Help"
+    wm iconname $w "Help"
+
+    frame $w.top
+    pack $w.top -side top -fill x
+    label $w.top.title -text "Help Page:" -width 20 -anchor center \
+            -font -Adobe-helvetica-medium-r-normal--*-180*
+    pack $w.top.title -side left -padx 1m -pady 1m -ipadx 2m
+    mkBitmap $w.top.bitmap
+
+    message $w.msg1 -font -Adobe-times-medium-r-normal--*-120* -width 100m \
+	-text "This menu launches the 2D Fem model. You just have to fill in the entries (the Time entry is optional). To write in the entry boxes, click with the mouse in the box and start writing. You can switch between the entry fields with the <TAB> key. When you're done, click on the \"OK\" button. This will launch the model."
+    message $w.msg2 -font -Adobe-times-medium-r-normal--*-120* -width 100m \
+	-text "Use \"Cancel\" if you do not want to launch the model and use \"View\" to see the details of the simulation (title, run name, basin) befor you run it (Recommended). With \"Edit\" you can change the parameter file interactively."
+    message $w.msg2a -font -Adobe-times-medium-r-normal--*-120* -width 100m \
+	-text "Use \"Browse\" to find a specific parameter file. Directories and STR files are presented. Double clicking on a directory changes directory in the new directory. Double clicking on a STR file views the file. If you found the parameter file you were searching, just choose \"Select\". To return to the previous menu without selecting a file choose \"Quit\"."
+    message $w.msg3 -font -Adobe-times-medium-r-normal--*-120* -width 100m \
+	-text "There is a file \"$memfile\" that is maintained in every directory from where the model is launched. It will record your last choices and fill them in for you in the form."
+    message $w.msg4 -font -Adobe-times-medium-r-normal--*-120* -width 100m \
+	-text "Specify time in the following formats: 15:30, 15:30 tomorrow, 9:50 friday, 12:00 jan 24."
+
+    button $w.ok -text OK -command "destroy $w"
+    pack $w.msg1 -side top
+    pack $w.msg2 -side top
+    pack $w.msg2a -side top
+    pack $w.msg3 -side top
+    pack $w.msg4 -side top
+    pack $w.ok -side bottom -padx 1m -pady 1m -ipadx 2m
+}
+
+proc mkBitmap {w} {
+    label $w -bitmap @/usr/include/X11/bitmaps/cnr \
+	    -borderwidth 2 -relief ridge \
+	    -bg white -fg blue
+    pack $w -side right -padx 1m -pady 1m -ipadx 2m
+}
+
+
+proc showVars {args} {
+    global femtitle femrun fembasin
+    set w ".dialog"
+    catch {destroy $w}
+    toplevel $w
+    wm title $w "Simulation Info"
+    frame $w.top
+    pack $w.top -side top -fill x
+    label $w.top.title -text "Simulation Info:" -width 20 -anchor center \
+            -font -Adobe-helvetica-medium-r-normal--*-180*
+    pack $w.top.title -side left -padx 1m -pady 1m -ipadx 2m
+    mkBitmap $w.top.bitmap
+    foreach i $args {
+        frame $w.$i
+        label $w.$i.name -text "$i: "
+        label $w.$i.value -textvar $i
+        pack $w.$i.name $w.$i.value -side left
+        pack $w.$i -side top -anchor w
+    }
+    button $w.ok -text OK -command "destroy $w"
+    pack $w.ok -side bottom -padx 1m -pady 1m -ipadx 2m
+}
+
+proc mkEdit {file} {
+
+    set fullfile [getFullStrfile $file]
+
+    if [file isfile $fullfile] {
+        exec xedit $fullfile &
+    } else {
+        puts stdout "\"$fullfile\" isn't a directory or regular file"
+    }
+}
+
+proc mkView {w file} {
+
+    global femtitle femrun fembasin
+
+    set fullfile [getFullStrfile $file]
+
+    set fid [open $fullfile r]
+
+    set line [gets $fid]
+    while { $line != "\$title" } {
+	set line [gets $fid]
+    }
+
+    if { $line == "\$title" } {
+      set femtitle [gets $fid]
+      set femrun [gets $fid]
+      set fembasin [gets $fid]
+#      puts "$femtitle $femrun $fembasin"
+    }
+
+    showVars  femtitle femrun fembasin
+
+    close $fid
+}
+
+proc getFullStrfile {strfile} {
+
+    return [file root $strfile].str
+}
+
+proc getBaseStrfile {strfile} {
+
+    return [file root $strfile]
+}
+
+proc mkUpdate {} {
+
+    puts $str_file
+}
+
+proc mkOk {} {
+
+    global str_entry prog_entry time_entry memfile
+
+    set basefile [getBaseStrfile $str_entry]
+    set fullfile [getFullStrfile $str_entry]
+
+    set time_entry [string trim $time_entry]
+
+    puts "$str_entry $prog_entry $time_entry"
+    set fid [open $memfile w]
+    puts $fid $basefile
+    puts $fid $prog_entry
+    puts $fid $time_entry
+    close $fid
+
+    if { $time_entry == "" } {
+        exec testrun $prog_entry $basefile
+    } else {
+        exec testrun $prog_entry $basefile $time_entry
+    }
+
+    exit
+}
+
+# main starts here ###############################################
+
+    set w ""
+
+
+    if [file isfile $memfile] {
+	set fid [open $memfile r]
+	set str_entry [gets $fid]
+	set prog_entry [gets $fid]
+	set time_entry [gets $fid]
+	close $fid
+    }
+
+    dpos .
+    wm title . "FEM Launch"
+    wm iconname . "FEM"
+    frame $w.top
+    message $w.top.msg -font -Adobe-times-medium-r-normal--*-180* -width 140m \
+	    -text "This menu launches the 2D Fem model."
+    foreach i {str prog time} {
+	frame $w.$i -bd 1m
+	entry $w.$i.entry -relief sunken -width 40
+	bind $w.$i.entry <Tab> "Tab \$tabList"
+	bind $w.$i.entry <Return> "Tab \$tabList"
+	label $w.$i.label
+	pack $w.$i.entry -side right
+	pack $w.$i.label -side left
+    }
+    $w.str.label config -text "Parameter file (STR):"
+    $w.prog.label config -text Program:
+    $w.time.label config -text Time:
+
+    $w.str.entry config -textvariable str_entry
+    $w.prog.entry config -textvariable prog_entry
+    $w.time.entry config -textvariable time_entry
+
+    frame $w.bottom -bd 1m 
+
+    pack $w.top $w.str $w.prog $w.time $w.bottom -side top -fill x
+    pack $w.top.msg -side left -padx 1m -pady 1m -ipadx 2m
+    mkBitmap $w.top.bitmap
+
+    button $w.bottom.ok -text OK -command "mkOk"
+    button $w.bottom.view -text View \
+	-command {mkView $w.dialog [$w.str.entry get]}
+    button $w.bottom.edit -text Edit \
+	-command {mkEdit [$w.str.entry get]}
+    button $w.bottom.sel -text Browse -command "brstr"
+    button $w.bottom.cancel -text Cancel -command "exit"
+    button $w.bottom.help -text Help -command "mkHelp"
+
+    pack $w.bottom.ok $w.bottom.view $w.bottom.edit \
+	$w.bottom.sel $w.bottom.cancel \
+	-side left -padx 1m -pady 1m -ipadx 2m
+    pack $w.bottom.help -side right \
+	-padx 1m -pady 1m -ipadx 2m
+
+    set tabList "$w.str.entry $w.prog.entry $w.time.entry"
+
+
+

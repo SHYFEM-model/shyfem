@@ -1,0 +1,936 @@
+
+% $Id: pspost.tex,v 1.7 2003/08/19 09:47:49 georg Exp $
+
+\documentclass{article}
+
+\usepackage{shortvrb}
+
+\newcommand{\psp}{{\tt pspost}}
+\newcommand{\VERSION}{1.5}
+
+\MakeShortVerb{\|}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% front matter
+
+\title{%
+        \psp
+        \\Doing Graphics in PostScript
+        \\with Fortran and C
+        }
+
+\author{%
+        Georg Umgiesser
+        \\ISMAR-CNR, S. Polo 1364
+        \\30125 Venezia, Italy
+        \vspace{1cm}
+        \\Version \VERSION
+        }
+
+%\address{ISDGM-CNR}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% document
+
+\begin{document}
+
+\pagenumbering{roman}
+\pagestyle{plain}
+
+\maketitle
+
+\begin{abstract}
+A simple graphic plotting package is presented that can be used for
+the creation of PostScript graphics. The routines are callable from
+Fortran and C.
+
+Only the basic plotting commands have been implemented. The library
+allows you to plot lines and points, fill arbitrary shapes
+with arbitrary color and write text with an arbitrary point size.
+It also allows for producing more pages in one plot. Color can be
+used as gray scale or through the RGB and HSB color spaces.
+The coordinate system may be set to best adjust to the drawing.
+Clipping graphics in a given rectangle is implemented.
+\end{abstract}
+
+\thispagestyle{empty}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section*{Disclaimer}
+\addcontentsline{toc}{section}{Disclaimer}
+
+
+\begin{quotation}
+ 
+   Copyright (c) 1992-2003 by Georg Umgiesser 
+  
+   Permission to use, copy, modify, and distribute this software 
+   and its documentation for any purpose and without fee is hereby 
+   granted, provided that the above copyright notice appear in all 
+   copies and that both that copyright notice and this permission 
+   notice appear in supporting documentation. 
+  
+   This file is provided AS IS with no warranties of any kind.
+   The author shall have no liability with respect to the
+   infringement of copyrights, trade secrets or any patents by
+   this file or any part thereof.  In no event will the author
+   be liable for any lost revenue or profits or other special,
+   indirect and consequential damages.
+  
+   Comments and additions should be sent to the author:
+
+        \begin{verbatim}
+              Georg Umgiesser
+              ISMAR-CNR
+              S. Polo 1364
+              30125 Venezia
+              Italy
+ 
+              Tel.   : ++39-041-5216875
+              Fax    : ++39-041-2602340
+              E-Mail : georg.umgiesser@ismar.cnr.it
+        \end{verbatim}
+\end{quotation}
+
+\section*{Availability}
+\addcontentsline{toc}{section}{Availability}
+
+
+The library \psp{} is available free of charge bye anonymous ftp.
+Connect to
+|ftp.ve.ismar.cnr.it| and look in the directory |/pub/|\psp{}.
+Please read the README file of the distribution. Only source code
+is available.
+
+The library should compile out of the box for nearly all Unix-like
+systems. Please follow the instructions in the README file.
+
+Please send bug reports to the author (|georg.umgiesser@ismar.cnr.it|).
+
+
+\newpage
+
+\pagenumbering{arabic}
+
+
+
+\section{Introduction}
+
+
+The plotting package \psp{} has been designed for Fortran and C
+programmers to take advantage of the powerful PostScript language. With
+\psp{} graphics can be easily generated and printed on any PostScript
+printer and, with the aid of the program |ghostscript|, also on many
+non PostScript printers. Moreover, with the programs |ghostview|
+and |ghostscript|, the plot files may be viewed on the screen of your 
+computer.
+
+The \psp{} package has been kept voluntarily simple. There are no high
+level plotting commands. Only the basic plotting commands are
+implemented.  This was done in order to keep the code simple and
+understandable.  However, it should be no problem to build higher level
+graphics around the basic commands found in the \psp{} package.
+
+The routines in the \psp{} package handle all the low level graphics,
+such as switching to an other gray tone or color, plotting a line,
+filling a rectangle with a color, setting the line width and writing
+text in an arbitrary point size and font to the output device, mostly a
+file. The routines are callable in Fortran and C.
+
+
+\section{A Fortran Example}
+
+\label{Example}
+
+The following code shows a complete Fortran program
+with the creation of two pages of output. The first
+page contains a line, that runs across the page. The second line
+contains the sentence ``Hello World!'', written in the current points
+size and font.
+
+\begin{verbatim}
+        call qopen
+        call qstart
+        call qline(1.,1.,10.,10.)
+        call qend
+        call qstart
+        call qtext(2.,2.,'Hello World!')
+        call qend
+        call qclose
+        end
+\end{verbatim}
+
+Some comments can be made on this small program:
+\begin{itemize}
+
+\item   The whole code containing the graphics is bracketed by the
+        sequence |call qopen| $\ldots$ |call qclose|. The call to
+        |qopen| initializes the graphics library, |qclose| closes the
+        file and does some cleaning up.
+
+\item   Every page is started by a call to |qstart| and ended
+        by |qend|.
+
+\item   The call to |qline| plots a line from the point
+        (1,1) to (10,10) using the actual color (black).  The
+        coordinate system used is initially set to encompass the whole
+        page (A4). The user coordinates are in centimeters. However,
+        these values can be changed easily.
+
+\item   The call to |qtext| writes the phrase
+        ``Hello World!'' to the second page starting at the point
+        (2,2). The default font used is ``Courier'' and the default
+        point size is 12 pt.
+
+\end{itemize}
+
+
+\section{Description of the Plotting Package}
+
+\label{Descrip}
+
+In the following a description of the plotting package is given.  This
+should put you in a position to use the package \psp{} with your own
+routines.
+
+Only the code for Fortran is shown. Here the typical usage of the
+routines are shown. For the exact calling sequence please consult
+section \ref{ForSeq}.
+
+It is trivial to substitute the various Fortran routines with their
+equivalent in C.  How this is done is shown in section \ref{CSeq}.
+
+\subsection{Initialization}
+
+
+All plotting code must be bracketed by a call to |qopen| and |qclose|.
+The routine |qopen| initializes the plotting routines and opens the
+file |plot.ps|. All output will then go to this file. The routine
+|qclose| closes the graphic routines, does some cleaning up and closes
+the file |plot.ps|.
+
+% ?? how to change the plot file name
+
+\subsection{Plotting Pages}
+
+
+During one plotting session, more pages of output can be produced.
+Every page must be opened, however, explicitly. You do this with a call
+to |qstart|. After that call, all output goes to the actual page.
+Every page has also to be closed explicitly with a call to |qend|.
+This flushes the buffer, writes all remaining output to the file and
+resets some parameters.
+
+The structure of a plot is therefore the following:
+
+\begin{verbatim}
+        call qopen
+        call qstart
+         ...plotting commands for first page
+        call qend
+        call qstart
+         ...plotting commands for second page
+        call qend
+         ...more pages
+        call qclose
+\end{verbatim}
+
+
+\subsection{Coordinate System}
+
+
+Two different coordinate systems are used for this graphic package.
+One describes the physical position of the plot on the page (viewport
+coordinates). The other coordinate system is used for the plotting
+commands to actually plot the graphics (world coordinates).
+
+
+\subsubsection{Viewport}
+
+A viewport is a part of the actual page where the graphic routines may
+place graphical marks, i.e., may plot. Outside the viewport,
+nothing is plotted. If necessary, the lines and text will be clipped at
+the boundary of the viewport.
+
+At the beginning of each page, the viewport is described by a Cartesian
+coordinate system with the origin in the lower left corner. The unit of
+the coordinate system is in centimeters. For the paper size A4, the
+usable portion of the page extends from 0 to 19 cm in $x$ direction and
+from 0 to 28 cm in $y$ direction.
+
+Three calls directly manipulate viewports. The first one is |qgetvp|,
+which returns the dimension of the actual viewport in use.  On the
+other hand, |qsetvp| sets the viewport to a new window on the current
+page. Finally, |qclrvp| clears the viewport. This need be only called,
+if the actual viewport overlapps with an old viewport that already has
+put some graphics on the page, and if these graphical elements must be
+deleted in the new viewport. In such a case, if you do not call
+|qclrvp| the old graphics will remain on the page.
+
+Viewport coordinates are used to place the plotting window on the
+page.  However, they are not used for the plotting commands.  Note that
+viewport coordinates are always in centimeters.
+
+
+\subsubsection{World Coordinates}
+
+To do the real plotting, the so called world coordinates are used.
+These world coordinates can be adjusted so that they will fit to your
+particular problem. World coordinates are established with a call to
+|qworld|. The call takes 4 arguments, which are the coordinates of the
+lower left and the upper right corner. These two points are made
+coincident with the two corner points of the actual viewport.
+
+An example will suffice:
+
+\begin{verbatim}
+        call qopen
+        call qstart
+        call qsetvp(4.,4.,10.,10.)
+        call qworld(0.,0.,1000.,1000.)
+          ...plotting commands
+        call qend
+        call qclose
+\end{verbatim}
+
+After initializing the graphics with |qopen| and opening the page with
+|qstart|, the viewport window is set to a window of size $6\times6$ cm.
+The lower left point of the viewport is at (4,4) cm and the upper right
+point at (10,10) cm.  All plotting commands that place drawings outside
+this window will be clipped.
+
+The next call to |qworld| sets the world coordinates of the plotting
+window.  After that call moving to point (0,0) will move the actual
+position of the plotting pen to the coordinate (4,4) cm on the page,
+and moving to (1000,1000) will move to (10,10) cm on the page.
+
+More then one call can be made to |qworld| without changing the
+viewport.  This corresponds to different plotting coordinate systems,
+that all place their plotting marks into the window given by the
+viewport.  Note that, if you never call the routine |qworld|, your
+world coordinates are identical to the viewport coordinates. This is,
+you can give your plotting commands in centimeters. In the above
+example, without the call to |qworld|, you could plot in a window with
+world coordinates between (4,4) and (10,10).
+
+
+\subsubsection{Distortion}
+
+If your scale factor, i.e., the ratio of the window size in $x$
+and in $y$ direction, of the viewport window and the world window
+differ, there will be a distortion of the drawing. Sometimes this is
+just what is wanted. For example if a time series is to be plotted with
+time on the $x$ axis and some arbitrary value on the $y$ axis the units
+in $x$ and $y$ direction are normally different. However, if you are
+plotting a horizontal map, you probably want the unit in $x$ and $y$
+direction to be the same, e.g., kilometers. Now, if your scale
+factor between the viewport and the world window is different, you will
+have distortion.
+
+This distortion can be avoided with a call to |qrcfy|, after you have
+called |qworld|. This call adjusts the scaling factors in order for
+your units to be the same in both direction. This frees you from
+computing in your programs the scaling factor and adjust the world
+coordinates for distortionless plotting.
+
+
+\subsection{Plotting Commands}
+
+
+In this part all plotting commands that actually plot something on the
+page will be discussed. These are the line plotting commands, the
+filling routines and the text routines.
+
+
+\subsubsection{Line Plotting}
+
+A line can be plotted with the routine |qline|. This routine takes 4
+arguments, the $(x,y)$ coordinates of the starting point and the end
+point. The line is plotted with the color and width that is actually in
+use.
+
+To plot a line you can also use the commands |qmove| and |qplot|.
+|qmove| moves to a given point, called the actual position. |qplot|
+plots a line from the actual position to the point given in the
+arguments.
+
+Therefore, the following statements are equivalent:
+
+\begin{verbatim}
+        call qline(x1,y1,x2,y2)
+          ... is the same as
+        call qmove(x1,y1)
+        call qplot(x2,y2)
+\end{verbatim}
+
+The last routine is |qpoint| that plots a point at the specified
+position. The size of the point is according to the actual line width.
+
+Please note that these 4 routines are the only routines that actually
+set the actual position. It is set to the endpoint of the line
+plotted, or, in case of |qpoint|, to the coordinate of the point.
+In order to use the call to |qplot|, one of
+these routines must have been called before. Specifically, the filling
+routines and the text routines do not reset the actual position.
+Calling |qplot| after one of these routines will give unpredictable
+results.
+
+\subsubsection{Filling}
+
+Two routines can be used for filling a shape. With |qafill| you can
+fill an arbitrary shape with the actual color. You have to pass a
+vector of $x$ and $y$ coordinates and the length of the vector.
+
+If you have to fill a rectangle, you can directly use |qrfill|. Two
+points, the lower left and the upper right point of the rectangle must
+be specified. For a rectangle this call is easier then setting up a
+vector of size 4 and passing it to |qafill|. Moreover, the call to
+|qrfill| is optimized for speed and size of the plot file. 
+If possible, you should use this routine for plotting rectangles.
+
+\subsubsection{Text}
+
+Text can be written to the page with a call to |qtext|. This routine
+takes 3 arguments, an $(x,y)$ coordinate of the position where the text
+should start, and a string that has to be written.
+
+The text is written in the actual text size (default 12 points) and
+font (Courier). However, you can change the default. A call to |qtxts|
+changes the actual text size, whereas a call to |qfont| changes the
+actual font.
+
+\begin{verbatim}
+        call qtext(3.,3.,'This is a test in Courier, 12 pt')
+        call qtxts(20)
+        call qfont('Times-Roman')
+        call qtext(3.,5.,'This is Times-Roman, 20 pt')
+\end{verbatim}
+
+The call to |qtext| also takes two special arguments for the $(x,y)$
+position. If one of the coordinates is exactly 999.0, then this
+coordinate is not changed and the new text is appended to the last
+coordinate. You can use this effect, if you want to continue a string
+at the end of the old string. Here is an example:
+
+\begin{verbatim}
+        call qtxts(10)
+        call qfont('Times-Roman')
+        call qtext(1.,1.,'Just a test')
+        call qtext(999.,999.,' continue after the old string')
+        call qtext(999.,2.,' continue in x, but one cm higher')
+        call qtext(15.,999.,' same y, but at x=15')
+\end{verbatim}
+
+Hopefully you will never need to write text exactly to the coordinate
+999.0. If you have to, you are in a bad shape
+
+The availability of certain fonts depends on the type of
+your PostScript printer.
+However, there are 13 fonts that are guaranteed to be available on
+every PostScript interpreter. These fonts are
+
+\begin{itemize}
+  \item Times Family
+  \begin{itemize}
+        \item Times-Roman
+        \item Times-Italic
+        \item Times-Bold
+        \item Times-BoldItalic
+  \end{itemize}
+  \item Helvetica Family
+  \begin{itemize}
+        \item Helvetica
+        \item Helvetica-Oblique
+        \item Helvetica-Bold
+        \item Helvetica-BoldOblique
+  \end{itemize}
+  \item Courier Family
+  \begin{itemize}
+        \item Courier
+        \item Courier-Oblique
+        \item Courier-Bold
+        \item Courier-BoldOblique
+  \end{itemize}
+  \item Symbol
+\end{itemize}
+
+
+
+\subsection{Attributes}
+
+
+In this part the attributes of the plotting commands are discussed.
+These are the color of the plotted lines, text and filled shapes, and
+the line width of the lines.
+
+\subsubsection{Color}
+
+
+At the start of a page, the actual color is always set to black.  This
+means, that when drawing a line, point, writing some text or filling
+some shape, black is used as the drawing color.
+
+There are more color spaces available for manipulating the color of a
+plot. These color spaces are discussed in turn.  Please note that, if
+you do not have a color printer, the color shows up in your block as
+some sort of gray.
+
+\paragraph{Gray Color Space}
+
+The routine |qgray(gray)| sets the gray tone for the subsequent plots.
+The call takes one argument |gray|, which is the gray tone to be used
+for the actual color. The value must be between 0 and 1, where 0 means
+black, and 1 means white. Intermediate values result in various shades
+of gray.
+
+\paragraph{RGB Color Space}
+
+Color in the RGB (Red, Green, Blue) color space may be set with a call
+to |qrgb(red,green,blue)|, where |red,green,blue| are the fraction of red,
+green and blue color that are used to create the actual color.  Values
+of these arguments are between 0 and 1, where 0 means no such color,
+and 1 means full color. So a call |qrgb(1.,0.,0.)| will give you a
+bright red, |qrgb(0.,1.,1.)| will give you bright cyan and
+|qrgb(0.5,0.5,0.5)| will give you an intermediate gray tone.
+
+\paragraph{HSB Color Space}
+
+Color in the HSB (Hue, Saturation, Brightness) color space may be set
+with a call to |qhsb(hue,sat,bri)|. Values for the arguments are again
+between 0 and 1. If you just need to build a simple color scale, then
+you can also use a call to |qhue(hue)|. This adjusts only the value of
+the hue (type of color), setting implicitly the values for saturation
+and brightness to 1. You can then use this color scale as you would use
+a simple gray scale with calls to |qgray(gray)|. But, instead of gray,
+you will get color.
+
+\paragraph{Plotting with White}
+
+If you use the gray color space, plotting with the white color 
+(|call qgray(1.)|) is inhibited. This means that all plotting commands that
+use white as the actual color are not actually executed. This done in
+order to avoid unnecessary big plot files.
+
+If you need to plot with white, because of some special effects or some
+over-plotting, you must call routine |qwhite| with the argument set to
+1, so: |call qwhite(1)|. From then on, plotting with white is enabled.
+If you want to disable white plotting, you must |call qwhite(0)|
+again.
+
+
+\subsubsection{Line Width}
+
+You can change the line width with a call to |qlwidth(width)|.  Here
+|width| is the width in centimeters. It defaults to 0.01 cm.
+
+
+\subsection{Various}
+
+For debugging reasons, you can include in your plot file some comments
+that explain what you are doing. These comments show up in the plot
+file, but not when you print the graphics.
+
+You place your comments with |call qcomm('This is a comment')|. Note
+that comments are completely optional for the graphics, but may be
+useful for you.
+
+
+\section{Fortran Subroutines}
+
+\label{ForSeq}
+
+
+In this section all available Fortran routines are listed, with their 
+arguments. For their usage please refer to section \ref{Descrip}.
+
+
+\subsection{Initialization and Page Commands}
+
+
+\begin{verbatim}
+        subroutine qopen
+c       opens output file and initializes graphics
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qclose
+c       closes output file and graphics routines
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qstart
+c       opens new page
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qend
+c       closes actual page and flushes buffer to file
+        end
+\end{verbatim}
+
+
+\subsection{Coordinate System}
+
+
+\begin{verbatim}
+        subroutine qgetvp(xmin,ymin,xmax,ymax)
+c       gets viewport dimensions (in cm)
+c       ... note that xmin,ymin,xmax,ymax are returned values
+        real xmin,ymin   !lower left coordinates of viewport
+        real xmax,ymax   !upper right coordinates of viewport
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qsetvp(xmin,ymin,xmax,ymax)
+c       sets viewport dimensions (in cm)
+        real xmin,ymin   !lower left coordinates of viewport
+        real xmax,ymax   !upper right coordinates of viewport
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qclrvp
+c       clears actual viewport
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qworld(xmin,ymin,xmax,ymax)
+c       sets world coordinates
+        real xmin,ymin   !lower left values of world coordinates
+        real xmax,ymax   !upper right values of world coordinates
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qrcfy
+c       adjusts scale factor
+        end
+\end{verbatim}
+
+
+\subsection{Plotting Commands}
+
+
+\begin{verbatim}
+        subroutine qline(x1,y1,x2,y2)
+c       plots line between two points
+        real x1,y1     !starting point of line
+        real x2,y2     !ending point of line
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qmove(x,y)
+c       moves to point
+        real x,y       !coordinates of point to move to
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qplot(x,y)
+c       plots to point
+        real x,y       !coordinates of point to draw line to
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qpoint(x,y)
+c       plots point
+        real x,y       !coordinates of point to plot
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qafill(n,x,y)
+c       fills arbitrary shape
+        integer n      !total number of points given
+        real x,y       !vector of points defining shape
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qrfill(x1,y1,x2,y2)
+c       fills rectangle
+        real xmin,ymin   !lower left values of rectangle
+        real xmax,ymax   !upper right values of rectangle
+        end
+\end{verbatim}
+
+
+\subsection{Text Commands}
+
+
+\begin{verbatim}
+        subroutine qtxts(ip)
+c       sets text size in points
+        integer ip      !text size in points
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qfont(font)
+c       sets font for text
+        character*(*) font      !font name
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qtext(x,y,s)
+c       writes text s at (x,y)
+        real x,y          !coordinates to start writing text
+        character*(*) s   !string of text to write
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qtsize(s,w,h)
+c       computes width and height of string
+        character*(*) s   !string of text
+        real w,h          !computed width and height of string s
+        end
+\end{verbatim}
+
+
+\subsection{Color Management}
+
+
+\begin{verbatim}
+        subroutine qgray(gray)
+c       sets actual color to gray tone
+        real gray         !shade of gray [0,1] (0=black, 1=white)
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qrgb(red,green,blue)
+c       sets actual color to rgb value
+        real red,green,blue    !value for colors rgb [0,1]
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qhsb(hue,sat,bri)
+c       sets actual color to hsb value
+        real hue,sat,bri       !value for colors hsb [0,1]
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qhue(hue)
+c       sets hue of actual color (bri=sat=1)
+        real hue               !value for hue [0,1]
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qwhite(ipaint)
+c       en/dis-ables plotting with white
+        integer ipaint         !0=disable/1=enable white plotting
+        end
+\end{verbatim}
+
+
+\subsection{Color Table}
+
+
+\begin{verbatim}
+        subroutine qinitct(n)
+c       initializes color table
+        integer n               !size of color table
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qsetct(i,itype,c1,c2,c3)
+c       sets color i in color table
+        integer i               !color to set [1-n]
+        integer itype           !type of color: 0=HSB  1=RGB
+        real c1,c2,c3           !color value (either hsb or rgb) [0-1]
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qsetcpen(i)
+c       sets actual color from color table
+        integer i               !color to use [1-n]
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qsetcrange(c)
+c       sets actual color from color table
+        real c                  !color to use [0-1]
+        end
+\end{verbatim}
+
+
+\subsection{Attributes}
+
+
+\begin{verbatim}
+        subroutine qlwidth(width)
+c       sets line width
+        real width             !line width
+        end
+\end{verbatim}
+
+\begin{verbatim}
+        subroutine qpsize(size)
+c       sets point size
+        real size              !point size
+        end
+\end{verbatim}
+
+
+\subsection{Various}
+
+
+\begin{verbatim}
+        subroutine qcomm(s)
+c       writes comment to output file
+        character*(*) s   !string of comment
+        end
+\end{verbatim}
+
+
+\section{C Routines}
+
+\label{CSeq}
+
+In this section the prototypes of the C routines are given.
+The C routines are completely equivalent to their Fortran counterpart.
+For the meaning of the C routines please refer to section \ref{Descrip}
+and \ref{ForSeq}. We also include a short table that shows the 
+correspondence between the C and Fortran routines.
+
+\DeleteShortVerb{\|}
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|l|l|} \hline
+
+Fortran routine & C routine \\ \hline \hline
+
+qopen   & PsGraphOpen           \\ \hline
+qclose  & PsGraphClose          \\ \hline
+qstart  & PsStartPage           \\ \hline
+qend    & PsEndPage             \\ \hline
+                                   \hline
+qgetvp  & PsGetViewport         \\ \hline
+qsetvp  & PsSetViewport         \\ \hline
+qclrvp  & PsClearViewport       \\ \hline
+qworld  & PsSetWorld            \\ \hline
+qrcfy   & PsRectifyScale        \\ \hline
+                                   \hline
+qline   & PsLine                \\ \hline
+qmove   & PsMove                \\ \hline
+qplot   & PsPlot                \\ \hline
+qpoint  & PsPoint               \\ \hline
+                                   \hline
+qafill  & PsAreaFill            \\ \hline
+qrfill  & PsRectFill            \\ \hline
+                                   \hline
+qtxts   & PsTextPointSize       \\ \hline
+qfont   & PsTextFont            \\ \hline
+qtext   & PsText                \\ \hline
+qtsize  & PsTextDimensions      \\ \hline
+                                   \hline
+qgray   & PsSetGray             \\ \hline
+qrgb    & PsSetRGB              \\ \hline
+qhsb    & PsSetHSB              \\ \hline
+qhue    & PsSetHue              \\ \hline
+qwhite  & PsPaintWhite          \\ \hline
+                                   \hline
+qinittc    & PsInitColorTable   \\ \hline
+qsettc     & PsSetColorTable    \\ \hline
+qsetcpen   & PsSetColorPen      \\ \hline
+qsetcrange & PsSetColorRange    \\ \hline
+                                   \hline
+qlwidth & PsSetLineWidth        \\ \hline
+qpsize  & PsSetPointSize        \\ \hline
+                                   \hline
+qcomm   & PsComment             \\ \hline
+
+\end{tabular}
+\end{center}
+\caption{Corresponding calls for Fortran and C}
+\end{table}
+
+\MakeShortVerb{\|}
+
+For reasons of completeness we first give the example of section
+\ref{Example} in C.
+
+\begin{verbatim}
+#include "pspost.h"
+
+void main( void )
+
+{
+        PsGraphOpen();
+        PsStartPage();
+        PsLine(1.,1.,10.,10.);
+        PsEndPage();
+        PsStartPage();
+        PsText(2.,2.,"Hello World!");
+        PsEndPage();
+        PsGraphClose();
+}
+\end{verbatim}
+
+This example generates exactly the same output as does the
+Fortran example.  The C prototypes are the following.
+
+\begin{verbatim}
+
+void PsGraphOpen(void);
+void PsGraphClose(void);
+void PsStartPage(void);
+void PsEndPage(void);
+
+void PsGetViewport(float *left,float *bottom
+                             ,float *right,float *top);
+void PsSetViewport(float left,float bottom
+                             ,float right,float top);
+void PsClearViewport(void);
+void PsSetWorld(float xmin,float ymin,float xmax,float ymax);
+void PsRectifyScale(void);
+
+void PsLine(float x1,float y1,float x2,float y2);
+void PsMove(float x,float y);
+void PsPlot(float x,float y);
+void PsPoint(float x,float y);
+
+void PsAreaFill(int ndim,float *x,float *y);
+void PsRectFill(float x1,float y1,float x2,float y2);
+
+void PsTextPointSize(int size);
+void PsTextFont(char *font);
+void PsText(float x,float y,char *s);
+void PsTextDimensions(char *s, float *width, float *height);
+
+void PsSetGray(float gray);
+void PsSetRGB(float red,float green,float blue);
+void PsSetHSB(float hue,float sat,float bri);
+void PsSetHue(float hue);
+void PsPaintWhite(int ipaint);
+
+void PsSetLineWidth(float width);
+void PsSetPointSize(float size);
+
+void PsComment(char *s);
+
+\end{verbatim}
+
+\DeleteShortVerb{\|}
+
+
+\end{document}

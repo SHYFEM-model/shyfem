@@ -1,0 +1,131 @@
+
+look for ggu for changes by Georg
+
+look for GGU for the same
+
+-------------------------------------------------------------------
+
+18.12.2008		bug fix for 2 layer system:
+
+	in diff_face.F90 (look for GGU_BUG_FIX)
+
+	test executed in ~/appl/christian/bug_518
+
+-------------------------------------------------------------------
+
+Dear All,
+
+I think I found the problem. Hans was right: the problem appears if
+you have only two layers (which can happen in coastal areas with
+Z-levels. Actually, in the Venice lagoon there are a lot of these
+nodes around.)
+
+The error is in diff_face (and maybe also in other parts). Here is the code
+that is wrong:
+
+
+!   set up upper boundary condition
+  select case(Bcup)
+  case(Neumann)
+     a     = dt*( nuY(N-1) + nuY(N-2) )  / ( h(N-1)+h(N) ) / h(N-1)
+     l     = dt*Lsour(N-1)
+
+and
+
+!   set up lower boundary condition
+  select case(Bcdw)
+  case(Neumann)
+     c     = dt*( nuY(2) + nuY(1) )  / ( h(1)+h(2) ) / h(2)
+     l     = dt*Lsour(1)
+
+In the case of only two layers, nuY(2) and nuY(N-2) (which is nuY(0)
+are not defined nor computed. Anything that happens in the memory
+locations from
+other calculations is used.
+
+I guess the best thing would be to set these two values to the one
+immediately below/above. I will try this out and let you know.
+
+Ciao, Georg
+
+-------------------------------------------------------------------
+
+Dear All,
+
+this should be my last message before Christmas. I have two things yet
+to discuss.
+The first is a quick and dirty solution to the problem. In diff_face,
+right at the beginning of the executable code I inserted:
+
+!BOC
+!
+!  in case of two layers set nuY
+
+  if( N .eq. 2 ) then
+     nuY(0) = nuY(1)
+     nuY(N) = nuY(1)
+  end if
+
+!  set up matrix
+  do i=2,N-2
+
+In order for this to work, also the intent(in) when declaring nuY has
+to be removed.
+I know that this is not very elegant, but it works. Otherwise I would
+have to change the code in more points (dissipationeq, genericeq,
+kbeq, lengthscaleeq, q2over2eq, tkeeq). I guess Karsten will come up
+with a more elegant solution.
+
+Next point: I still see in some cases very high values of the
+lenghtscale (and turbulent viscosities). After checking I found out
+that in these cases the shear frequency was negative. I use the
+formulation of Burchard (2002) that can be also found in shear.F90
+(meanflow):
+
+
+     SSU(i)= 0.5*(                                                     &
+                 (cnpar*(u(i+1)-u(i))*(u(i+1)-uo(i))+                  &
+                 (1.-cnpar)*(uo(i+1)-uo(i))*(uo(i+1)-u(i)))            &
+                 /(0.5*(h(i+1)+h(i)))/h(i)                             &
+                +(cnpar*(u(i+1)-u(i))*(uo(i+1)-u(i))+                  &
+                 (1.-cnpar)*(uo(i+1)-uo(i))*(u(i+1)-uo(i)))            &
+                 /(0.5*(h(i+1)+h(i)))/h(i+1)                           &
+                 )
+
+     SSV(i)= 0.5*( &
+                 (cnpar*(v(i+1)-v(i))*(v(i+1)-vo(i))+                  &
+                 (1.-cnpar)*(vo(i+1)-vo(i))*(vo(i+1)-v(i)))            &
+                 /(0.5*(h(i+1)+h(i)))/h(i)                             &
+                +(cnpar*(v(i+1)-v(i))*(vo(i+1)-v(i))+                  &
+                 (1.-cnpar)*(vo(i+1)-vo(i))*(v(i+1)-vo(i)))            &
+                 /(0.5*(h(i+1)+h(i)))/h(i+1)                           &
+                 )
+
+Clearly, if there is current reversal between two time steps, this can
+become negative. And in effect, it does close to the bottom. This is
+not limited to 2 layers. Actually, this happens in deeper water (9 m
+for the lagoon is deep, for others this may be shallow).
+
+What to do? Inserting some abs() statements does avoid the problem. Is
+this the right way to do, Hans?
+
+Merry Christmas, Georg
+
+-------------------------------------------------------------------
+
+30.10.2008		another bug fix for 2 layer system:
+
+	in diff_face.F90 (look for GGU_BUG_FIX_1)
+
+dissipationeq.F90	eps
+genericeq.F90		psi
+kbeq.F90		kb
+lengthscaleeq.F90	q2l
+q2over2eq.F90		tke
+tkeeq.F90		tke
+
+eps, kb, tke are global
+psi, q2l are local -> psi is set (0 and N0, but eps not
+
+-------------------------------------------------------------------
+

@@ -1,0 +1,61 @@
+
+
+The model reads one input file that determines the behavior of the
+simulation. All possible parameters can and must be set in this file.
+If other data files are to be read, here is the place where to specify
+them.
+
+The model reads this parameter file from standard input. Thus, if
+the model binary is called |hp| and the parameter file |param.str|, 
+then the following line starts the simulation
+\begin{verbatim}
+	ht < param.str
+\end{verbatim}
+and runs the model.
+
+\subsection{The General Structure of the Parameter Input File}
+
+The input parameter file is the file that guides program
+performance. It contains all necessary information for the main routine
+to execute the model. Nearly all parameters that can
+be given have a default value which is used when the parameter
+is not listed in the file. Only some time parameters are compulsory
+and must be present in the file.
+
+The format of the file looks very like a namelist format, but is
+not dependent on the compiler used. Values of parameters are given
+in the form :  
+|name = value|  or  |name = 'text'|.  If |name|
+is an array the following format is used : 
+\begin{verbatim}
+          name = value1 , value2, ... valueN
+\end{verbatim}
+The list can continue on the following lines. Blanks before and after
+the equal sign are ignored. More then one parameter can be present
+on one line. As separator blank, tab and comma can be used.
+
+Parameters, arrays and data must be given in between certain sections.
+A section starts with the character {\tt \$} followed by a keyword and
+ends with {\tt \$end}. The {\tt \$keyword} and {\tt \$end} must not
+contain any blank characters and must be the first non blank characters
+in the line. Other characters following the keyword on the same line
+separated by a valid separator are ignored.
+
+Several sections of data may be present in the input parameter file.
+Further ahead all sections are presented and the possible
+parameters that can be specified are explained. The sequence in
+which the sections appear is of no importance. However, the first 
+section must always be section |\$title|, the section that
+determines the name of simulation and the basin file to use and
+gives a one line description of the simulation.
+
+Lines outside of the sections are ignored. This gives
+the possibility to comment the parameter input file.
+
+Figure \ref{fig:example} shows an example of a typical input
+parameter file and the use of the sections and definition of
+parameters.
+
+\importstr{example}
+{Example of a parameter input file ({\tt STR} file)}
+

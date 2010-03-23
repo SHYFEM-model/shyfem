@@ -1,0 +1,47 @@
+#!/usr/bin/perl -si.bak
+#
+# autoconfig [ -reset ] target file(s)
+
+die "autoconfig [ -reset ] target file(s)\n" unless $ARGV[0];
+
+$target = shift;
+
+$host = `hostname`;
+chomp($host);
+$host =~ s/\..*$//;
+
+$startpattern = '# AUTOCONFIG ';
+$pattern  = $startpattern . "$target" . ' \((.*)\) #';
+
+print STDERR "autoconfig: $host $target\n";
+
+while(<>) {
+
+  if( $reset && /$pattern$/ ) {
+    $match = $&;
+    $start = $`;
+    $start = &trim($start);
+    $_ = "$match $start\n";
+  } elsif( !$reset && /^$pattern/ ) {
+    $hosts = $1;
+    $match = $&;
+    $rest = $';
+    if( $hosts =~ /$host/ ) {
+	$rest = &trim($rest);
+	$_ = "$rest $match\n";
+    }
+  }
+
+  print;
+}
+
+sub trim {
+
+  $_ = $_[0];
+
+  chomp $_;
+  s/^\s+//;
+  s/\s+$//;
+
+  $_;
+}

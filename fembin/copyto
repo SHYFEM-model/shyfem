@@ -1,0 +1,16 @@
+#!/bin/sh
+
+file=$1
+shift
+
+echo "copying $file to subdirs $*"
+
+for dir
+do
+  echo "copying $file to subdir $dir"
+  if [ -d $dir ]; then
+    cp $file $dir
+  else
+    echo "no such directory $dir ... skipping"
+  fi
+done

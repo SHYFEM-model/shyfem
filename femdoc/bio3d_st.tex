@@ -1,0 +1,279 @@
+%\documentclass{report}
+%\usepackage{a4}
+%\usepackage{shortvrb}
+%\begin{document}
+%
+%\newcommand{\Degree}{${}^{o}$}
+%\newcommand{\power}[1]{${}^{#1}$}
+%
+%\newcommand{\VSPGB}{\vspace{0.2cm}}
+%\newcommand{\HSP}{\hspace*{1.5cm}}
+%\newcommand{\HHSP}{\hspace*{0.5cm}}
+%\newcommand{\GBox}[2]{\parbox{#1 cm}{\VSPGB #2 \VSPGB}}
+%\newcommand{\GDBox}[1]{\GBox{5}{#1}}
+%\newcommand{\GEBox}[1]{\GBox{7}{#1}}
+%\newcommand{\GFBox}[1]{\GBox{7}{#1}}
+\newcommand{\GHBox}[1]{\GBox{5.2}{#1}}
+%
+%\newcommand{\opn}[1]{\, #1 \,}
+%\newcommand{\opn}{ {} }
+%\newcommand{\opn}[1]{#1}
+
+
+
+\begin{table}\centering
+\begin{tabular}{lll}
+\hline
+
+
+& & \\
+$\frac{\partial S}{\partial t} =Q(S)_{sed}$
+& &
+General Reactor Equation
+\\
+& & \\
+
+$Q(NH3)_{sed}= NH3_{res}$
+& 3 &
+Ammonia NH3 [mg N/L]
+\\
+
+$Q(ON)_{sed} = (ON_{res} - ON_{sink})$
+& 5 &
+Organic Nitrogen ON [mg N/L]
+\\
+
+$Q(OPO4)_{sed}= OPO4_{res}$
+& 6 &
+\GBox{5}{
+Inorganic Phosphorous \\
+\HHSP OPO4 [mg P/L]
+}
+\\
+
+$Q(OP)_{sed}= (OP_{res}-OP_{sink})$
+& 7 &
+Organic Phosphorous OP [mg P/L]
+\\
+
+\GBox{5}{
+$Q(ON_{sed})= ON_{sink} - ON_{res} $
+\HSP $\opn - NH3_{res}$
+}
+& 1sed &
+\GBox{5}{
+Sediment Organic Nitrogen \\
+\HHSP ON${}_{sed}$ [mg N/L]
+}
+\\
+
+\GBox{5}{
+$Q(OP_{sed})= OP_{sink}- OP_{res}$
+\HSP $\opn - OPO4_{res}$
+}
+& 2sed &
+\GBox{5}{
+Sediment Organic Phosphorous \\
+\HHSP OP${}_{sed}$ [mg N/L]
+}
+\\
+
+
+\hline
+\end{tabular}
+\caption{Sediment Mass balances}
+\label{SMassBalance}
+\end{table}
+
+
+
+
+\begin{table}\centering
+\begin{tabular}{lll}
+\hline
+
+\GBox{5}{
+$NH3_{res}= Vol_{sed}*KNC_{sed}$
+\HSP $\opn *KNT^{(T-T_0)}* ON_{sed}$
+}
+& 1 &
+\GHBox{
+Mineralization of organic nitrogen in sediment
+}
+\\
+
+$ON_{res} = Vol_{sed}*KN_{res}*F_{vel}*ON_{sed}$
+& 2 &
+\GHBox{
+Resuspention of organic nitrogen in sediment
+}
+\\
+
+\GBox{5}{
+$ON_{sink}= Vol*\frac{(1-exp(-dt/\tau_N))}{dt}$
+\HSP $\opn *ON*FPON$
+}
+& 3 &
+\GHBox{
+Sink of organic nitrogen from the water column
+}
+\\
+
+\GBox{5}{
+$OPO4_{res}= Vol_{sed}*KPC_{sed}$
+\HSP $\opn *KPT^{(T-T_0)}*OP_{sed}$
+}
+& 4 &
+\GHBox{
+Mineralization of organic phosphorous in sediment
+}
+\\
+
+$OP_{res}= Vol_{sed} * KP_{res} * F_{vel} * OP_{sed}$
+& 5 &
+\GHBox{
+Resuspention of organic phosphorous in sediment
+}
+\\
+
+\GBox{5}{
+$OP_{sink}= Vol*\frac{(1-exp(-dt/\tau_P))}{dt}$
+\HSP $\opn *OP*FPOP$
+}
+& 6 &
+\GHBox{
+Sink of organic phosphorous from the water column
+}
+\\
+
+$\tau_N = H/w_s$
+& 7 &
+\GHBox{
+Time scale for sinking processes of organic N
+}
+\\
+
+$\tau_P = H/w_s$
+& 8 &
+\GHBox{
+Time scale for sinking processes of organic P
+}
+\\
+
+\hline
+\end{tabular}
+\caption{Sediment functional expressions}
+\label{SFuncDesc}
+\end{table}
+
+
+
+
+
+
+
+\begin{table}\centering
+\begin{tabular}{lll}
+\hline
+
+$KNC_{sed} = 0.075$
+&
+Mineralization of sediment ON rate constant
+\\
+
+$KNT = 1.08$
+&
+Mineralization of sediment ON rate temperature constant
+\\
+
+$KPC_{sed} = 0.22$
+&
+Mineralization of sediment OP rate constant
+\\
+
+$KPT = 1.08$
+&
+Mineralization of sediment OP rate temperature constant
+\\
+
+$KN_{res} = 0.1$
+&
+Fraction of sediment depth resuspended/day
+\\
+
+$KP_{res} = 0.1$
+&
+Fraction of sediment depth resuspended/day
+\\
+
+$FPON = 0.5$
+&
+Fraction of particulate organic N
+\\
+
+$FPOP = 0.5$
+&
+Fraction of particulate organic P
+\\
+
+$F_{vel} = 1$
+&
+Velocity coefficient
+\\
+
+$w_s = 10$ m/day
+&
+Sinking velocity
+\\
+
+$T_0 = 20$ \Degree C
+&
+Optimal temperature value
+\\
+
+\hline
+\end{tabular}
+\caption{Sediment parameters}
+\label{SParas}
+\end{table}
+
+
+
+
+\begin{table}\centering
+\begin{tabular}{lll}
+\hline
+
+$Vol$
+& [m\power{3}] &
+volume
+\\
+
+$Vol_{sed}$
+& [m\power{3}] &
+sediment volume
+\\
+
+$H$
+& [m] &
+total depth of water column
+\\
+
+$dt$
+& [sec] &
+time step
+\\
+
+\hline
+\end{tabular}
+\caption{Sediment variables}
+\label{SVars}
+\end{table}
+
+
+
+
+
+
+
+%\end{document}

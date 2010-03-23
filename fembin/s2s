@@ -1,0 +1,33 @@
+#!/usr/bin/perl -s
+
+# converts seconds to hours
+
+if( $help ) {
+  print "Usage: s2s [ -help ] [ -s | -h | -d ] [ -t0 time ] file\n";
+  exit;
+}
+
+$fact = 1.;
+if( $s ) {
+  $fact = 1.;
+}
+if( $h ) {
+  $fact = 1./3600.;
+}
+if( $d ) {
+  $fact = 1./86400.;
+}
+if( $t0 ) {
+  $t0 = shift;
+}
+
+while(<>) {
+
+  s/^\s*//;
+  @data = split;
+  $data[0] *= $fact;
+  $data[0] += $t0;
+  $_ = join(" ",@data);
+
+  print "$_\n";
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/perl -pi
+#
+# toggles landscape - portrait
+
+if( /^%%Orientation: Portrait/ ) {
+  s/Portrait/Landscape/;
+} elsif( /^%%Orientation: Landscape/ ) {
+  s/Landscape/Portrait/;
+}
+

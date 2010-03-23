@@ -1,0 +1,94 @@
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50-g
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!BOP
+!
+! !ROUTINE: BenBac
+!
+! DESCRIPTION
+!   List of parameters values
+
+!   This file is generated directly from OpenSesame model code, using a code 
+!   generator which transposes from the sesame meta language into F90.
+!   F90 code generator written by P. Ruardij.
+!   structure of the code based on ideas of M. Vichi.
+!
+! !INTERFACE
+! parameter values for mem_BenBac filled by InitBenBac
+!
+
+!  
+!
+! !AUTHORS
+!   mfstep/ERSEM team
+!
+! !REVISION_HISTORY
+!   ---
+!
+! COPYING
+!   
+!   Copyright (C) 2006 P. Ruardij, the mfstep group, the ERSEM team 
+!   (rua@nioz.nl, vichi@bo.ingv.it)
+!
+!   This program is free software; you can redistribute it and/or modify
+!   it under the terms of the GNU General Public License as published by
+!   the Free Software Foundation;
+!   This program is distributed in the hope that it will be useful,
+!   but WITHOUT ANY WARRANTY; without even the implied warranty of
+!   MERCHANTEABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!   GNU General Public License for more details.
+!
+!EOP
+!-------------------------------------------------------------------------!
+!BOC
+!
+!
+!  p_cdm:  	 Half mortality layer        (m)
+!  p_qnc:  	 Optimal Internal N quota
+!  p_qpc:  	 Optimal Internal P quota
+!  p_qlnc:  	 Optimal Internal N quota
+!  p_qlpc:  	 Optimal Internal P quota
+!  p_q10:  	 Q10
+!  p_suhQ6:  	 Specific (high) uptake rate (1/d)
+!  p_sulQ6:  	 Specific (slow) uptake rate (1/d)
+!  p_sum:  	 Potential uptake rate       (1/d)
+!  p_pue:  	 Fraction of Q6 degradated as Q1
+!  p_suQ1:  	 Specific uptakte rate of Q1 (1/d)
+!  p_pur:  	 Fraction of uptake respired
+!  p_srr:  	 Specific respiration        (1/d)
+!  p_sumKIn:  	 max. uptake of KIn (mmN/m2)
+!  p_sumKIp:  	 max. uptake of KIp (mmP/m2)
+!  p_sd:  	 Specific mortality          (1/d)
+!  p_iK4:  	 BenthicAmmonium(p_IK4) =1,2 --> K4n K14n
+!  p_iK1:  	 BenthicPhosphate(p_IK1) =1,2 --> K1p K11p
+!  p_iQ1:  	 BenDetritus(p_IQ1) =1,2 --> Q1 Q11
+
+&BenBac_parameters
+p_cdm = 0.001,0.01,
+p_qpc = 0.00125,0.00125,
+p_qlpc = 0.00063,0.00063,
+p_qnc = 0.0167,0.0167,
+p_qlnc = 0.0083,0.0083,
+p_q10 = 2.0,2.0,
+p_suhQ6 = 0.01,0.01,
+p_sulQ6 = 0.002,0.002,
+p_sum = 8.38,8.38,
+p_pue = 0.1,0.1,
+p_suQ1 = 0.5,0.5,
+p_pur = 0.3,0.6,
+p_srr = 0.02,0.02,
+p_sumKIn = 0.2,0.2,
+p_sumKIp = 0.2,0.2,
+p_sd = 0.05,0.05,
+p_iK4 = 1,2,
+p_iK1 = 1,2,
+p_iQ1 = 1,2
+/
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!END namelist
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+!BOP
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

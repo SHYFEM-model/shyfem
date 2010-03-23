@@ -1,0 +1,9 @@
+#!/bin/sh
+#
+# makes rcs id headers
+
+for file
+do
+  echo "$file"
+  rcsmakeid.pl $file
+done

@@ -1,0 +1,415 @@
+version  1.77    11-03-2010    VERS_1_77
+
+new way to compute area of polygon (stable for 64 bit)
+
+========================================================== 11-03-2010 - 1.77
+
+ * meshge.c:
+ * 10-Mar-2010: new way to compute area of polygon (stable for 64 bit)	*
+ * meshvs.c:
+ * 10-Mar-2010: version 1.77                                            *
+
+==========================================================
+
+version  1.76    21-04-2009    VERS_1_76
+
+DIFFS file
+
+========================================================== 21-04-2009 - 1.76
+
+ * meshvs.c:
+ * 21-Apr-2009: version 1.75                                            *
+
+==========================================================
+
+version  1.75    13-02-2009    VERS_1_75
+
+new linker flags
+
+========================================================== 13-02-2009 - 1.75
+
+No revision log.
+
+==========================================================
+
+version  1.74    26-01-2009    VERS_1_74
+
+new makedepend
+
+========================================================== 26-01-2009 - 1.74
+
+ * meshvs.c:
+ * 21-Jan-2009: version 1.74                                            *
+
+==========================================================
+
+version  1.73a    14-01-2009    VERS_1_73a
+
+minor point
+
+========================================================== 14-01-2009 - 1.73a
+
+ * meshvs.c:
+ * 14-Jan-2009: version 1.73a                                           *
+
+==========================================================
+
+version  1.73    14-01-2009    VERS_1_73
+
+included into SHYFEM tree
+
+========================================================== 14-01-2009 - 1.73
+
+ * exgrdvs.c:
+ * 14-Jan-2009: version 1.25 (SHYFEM tree)				*
+ * meshvs.c:
+ * 14-Jan-2009: version 1.73                                            *
+
+==========================================================
+
+version  1.72    14-01-2009    VERS_1_72
+
+new stuff:
+        handle clockwise lines (also change to anti-clockwise)
+        handle extension
+        depth for line
+
+========================================================== 14-01-2009 - 1.72
+
+No revision log.
+
+==========================================================
+
+version  1.71    14-01-2009    VERS_1_71
+
+minor changes
+
+========================================================== 14-01-2009 - 1.71
+
+ * meshvs.c:
+ * 23-Oct-2005: version 1.71                                            *
+
+==========================================================
+
+version  1.70    19-08-2003    VERS_1_70
+
+New tagged version
+
+========================================================== 19-08-2003 - 1.70
+
+c
+ * args.h:
+ * 08-May-94: created from former routines                              *
+ * backg.c:
+ * 17-Nov-97: routines written from scratch				*
+ * backg.h:
+ * 17-Nov-97: routines written from scratch				*
+ * debug.c:
+ * 31-Dec-94: routines written from scratch				*
+ * debug.h:
+ * 31-Dec-94: routines written from scratch				*
+ * exgrd.c:
+ * 17-Jan-98: algorithm changed for UnifyNodes()                        *
+ * 05-May-97: CompressNumbers() added                                   *
+ * 17-Aug-95: routines written from scratch				*
+ * exgrd.h:
+ * 17-Aug-95: routines written from scratch				*
+ * exgrdop.c:
+ * 17-Aug-95: routines copied from meshop.c				*
+ * exgrdop.h:
+ * 17-Aug-95: routines copied from meshop.c                             *
+ * exgrdvs.c:
+ * 15-Jul-1998: version 1.22 (Number Ranges)                            *
+ * 17-Jan-98: version 1.21 (UnifyNodes)                                 *
+ * 05-May-97: version 1.20 (CompressNumbers)                            *
+ * 18-Aug-95: version 1.10 (manip./unify nodes, command line options)   *
+ * 17-Aug-95: version 1.00                                              *
+ * fund.h:
+ * 12-Apr-94: Extracted from grid.h -> new header file                  *
+ * general.c:
+ * 11-Feb-94: copyright notice added to all files			*
+ * ..-...-92: routines written from scratch				*
+ * general.h:
+ * 20-Mar-1998: ASSERT_DEBUG introduced                                 *
+ * 20-Mar-1998: MIN, MAX, ROUND included in header                      *
+ * 13-Feb-1998: test automatically if unix or dos                       *
+ * 14-Sep-95: ABS included in header                                    *
+ * 11-Feb-94: copyright notice added to all files			*
+ * ..-...-92: routines written from scratch				*
+ * grd.h:
+ * 17-Aug-95: routines written from scratch				*
+ * grdhs.c:
+ * 17-Aug-95: routines copied from meshhs				*
+ * grdhs.h:
+ * 17-Aug-95: routines copied from meshhs                               *
+ * grdio.c:
+ * 17-Aug-95: split from meshfi to make own file                        *
+ *            NTotNodes... are static to file and accessed in           *
+ *              grdut via GetTotNodes...                                *
+ * 10-Feb-95: closefile calls fclose only if file opened                *
+ * 08-Oct-94: reading/writing comments (QueueTable routines)            *
+ * 07-May-94: new routines for opening and reading file                 *
+ * grdio.h:
+ * 17-Aug-95: routines copied from meshgd                               *
+ * grdut.c:
+ * 17-Aug-95: routines copied from meshut                               *
+ * grdut.h:
+ * 17-Aug-95: routines copied from meshut                               *
+ * gustd.c:
+ * 21-Mar-94: gcc-warnings (minor changes)				*
+ * 11-Feb-94: copyright notice added to all files			*
+ * ..-...-88: routines written from scratch				*
+ * gustd.h:
+ * 11-Feb-94: copyright notice added to all files			*
+ * ..-...-88: routines written from scratch				*
+ * hash.c:
+ * 11-Oct-97: FreeHashTable: bug - using VisitHashTableG used deleted   *
+ *              pointer and crashed Linux -> use for-loop               *
+ * 07-Dec-95: MakeHashPointer, VisitHashTableG now defined static (bug) *
+ * 11-Mar-95: some comments added                                       *
+ * 13-Apr-94: completely restructured -> independent routines           *
+ * 06-Apr-94: copyright notice added to file				*
+ * ..-...-92: routines written from scratch				*
+ * hash.h:
+ * 13-Apr-94: completely restructured -> independent routines           *
+ * 06-Apr-94: copyright notice added to file                            *
+ * ..-...-92: routines written from scratch                             *
+ * heap.c:
+ * 25-Jul-95: routines written from scratch				*
+ * heap.h:
+ * 11-Aug-95: HeapList renamed in HeapTable                             *
+ *            in HeapItem *item renamed to *info                        *
+ * 25-Jul-95: routines written from scratch				*
+ * intgrd.c:
+ * 13-Nov-97: copied from maskgrd.c                                     *
+ * 04-Nov-97: new routine to compute area of all elements               *
+ * 28-Aug-95: routines written from scratch				*
+ * list.c:
+ * 11-Aug-95: NumberTable routines transfered to this file              *
+ *            Listtable_type renamed to ListTable                       *
+ * 08-Oct-94: ResetListTable initializes pact to NULL (bug)             *
+ * 17-Apr-94: NumberTable routines added                                *
+ * 13-Apr-94: completely restructured -> independent routines           *
+ * 12-Apr-94: Listtable_type created and routines written from scratch  *
+ * list.h:
+ * 11-Aug-95: NumberTable routines transfered to this file              *
+ *            Listtable_type renamed to ListTable                       *
+ * 17-Apr-94: NumberTable types added                                   *
+ * 13-Apr-94: completely restructured -> independent routines           *
+ * 06-Apr-94: copyright notice added to file				*
+ * ..-...-92: routines written from scratch				*
+ * maskgrd.c:
+ * 28-Aug-95: routines written from scratch				*
+ * 04-Nov-97: new routine to compute area of all elements               *
+ * mesh.c:
+ * 14-Aug-2002: InterpolRes uses cubic to compute resolution            *
+ * 03-Feb-2000: different algorithm to compute resolution in bckgrid    *
+ * 05-May-1999: check for zero area in SetFEMParam                      *
+ * 25-Nov-97: new names for .grd files -> M_*.grd                       *
+ * 12-Nov-97: new routine MarkOuterNodes() to get rid of unused nodes   *
+ *            MarkOuterElements() and MarkOuterNodes() are called       *
+ *              after internal refining -> internal nodes can be        *
+ *              inserted even if outer element has to be changed        *
+ *              -> whole routine gets more flexible                     *
+ *            RecoverBoundaryNodes() is called after internal refining  *
+ *            in InterpolRes() the standard resolution (OpResolution)   *
+ *              is returned if no background triangle is found          *
+ * 16-Oct-97: call CopyBoundaryLine() in main instead RefineBoundary()  *
+ *            new call to RecoverBoundaryNodes() introduced             *
+ * 15-Oct-97: MarkOuterElements: use InClosedLine() for inside check    *
+ *              use MakeCoordsFromLine() to make coordinate list        *
+ * 08-Oct-97: insert given points in domain delimited by line           *
+ *            introduced pointer to background grid                     *
+ *            use new mesh type                                         *
+ * 25-Jul-95: routines written from scratch				*
+ * mesh.h:
+ * 08-Oct-97: standard structures uniformed                             *
+ *            new extra structures Extra_N/E/L_type                     *
+ *            new node type N_GIVEN                                     *
+ * 25-Jul-95: routines written from scratch				*
+ * meshbd.c:
+ * 12-Nov-97: in RecoverBoundaryNodes() interpolate also depth          *
+ *              -> MakeMidPoint() also returns interpolated depth       *
+ * 16-Oct-97: in RefineBoundary() use always new line and delete old    *
+ *            new routines RecoverBoundaryNodes(), FindElemToSide()     *
+ *              MakeMidPoint()                                          *
+ * 08-Oct-97: uses new mesh type                                        *
+ * 01-Aug-95: routines written from scratch				*
+ * meshbd.h:
+ * 16-Oct-97: new routines RecoverBoundaryNodes(), FindElemToSide()     *
+ * 01-Aug-95: routines written from scratch				*
+ * meshck.c:
+ * 12-Nov-97: check for not unique coordinates in CheckInput()          *
+ * 17-Oct-97: in CheckInput() check for couter-clockwise line turning   *
+ * 08-Oct-97: uses new mesh type                                        *
+ *            check for closed line only for L_EXTERNAL/L_INTERNAL      *
+ * 27-Jul-95: routines written from scratch				*
+ * meshck.h:
+ * 27-Jul-95: routines written from scratch				*
+ * meshcv.c:
+ * 08-Oct-97: uses new mesh type                                        *
+ * 27-Jul-95: routines written from scratch				*
+ * meshcv.h:
+ * 27-Jul-95: routines written from scratch				*
+ * meshfi.c:
+ * 15-Oct-97: in WriteFile: write also lines with type L_NONE           *
+ * 08-Oct-97: routine ReadBnd deleted                                   *
+ *            if depth is given -> write it                             *
+ *            uses mesh type to decide which elements to write          *
+ * 01-Aug-95: writing routines transfered from gridck.c                 *
+ * 27-Jul-95: routines written from scratch				*
+ * meshfi.h:
+ * 27-Jul-95: routines written from scratch				*
+ * meshgd.c:
+ * 11-Aug-95: split from gridfi to make own file                        *
+ * 10-Feb-95: closefile calls fclose only if file opened                *
+ * 21-Oct-94: Changed introduced -> write only if file is changed       *
+ * 08-Oct-94: reading/writing comments (QueueTable routines)            *
+ * 07-May-94: new routines for opening and reading file                 *
+ * 06-May-94: new file ff created for old read/write                    *
+ *              filetype 0 is now the "official" filetype               *
+ * 14-Apr-94: use GetActFileType to determine file type                 *
+ * 13-Apr-94: use new hash routines                                     *
+ * 06-Apr-94: copyright notice added to file				*
+ * ..-...-92: routines written from scratch				*
+ * meshgd.h:
+ * 11-Aug-95: routines copied from gridfi.c                             *
+ * meshge.c:
+ * 03-Jul-2000: in ControlCircumCircle() only warning			*
+ * 17-Oct-97: new routine TurnClosedLine()                              *
+ * 16-Oct-97: new routine FindElement()                                 *
+ * 15-Oct-97: new routine InClosedLine()                                *
+ * 08-Oct-97: error message for identical nodes in MakeCircumCircle()   *
+ * 01-Aug-95: routines written from scratch				*
+ * meshge.h:
+ * 17-Oct-97: new routine TurnClosedLine()                              *
+ * 16-Oct-97: new routine FindElement()                                 *
+ * 15-Oct-97: new routine InClosedLine()                                *
+ * 01-Aug-95: routines written from scratch				*
+ * meshhs.c:
+ * 01-Aug-95: routines copied from meshut				*
+ * meshhs.h:
+ * 01-Aug-95: routines copied from meshut                               *
+ * meshin.c:
+ * 15-Oct-97: in GivenNodes: insert given nodes only if internal        *
+ * 08-Oct-97: uses new mesh type                                        *
+ *            commented sections deleted                                *
+ *            new routines InsertNodes(), GivenNodes()                  *
+ * 01-Aug-95: routines written from scratch				*
+ * meshin.h:
+ * 08-Oct-97: new routine prototypes InsertNodes(), GivenNodes()        *
+ * 01-Aug-95: routines written from scratch				*
+ * meshop.c:
+ * 02-Aug-95: routines copied from gridop.c				*
+ * meshop.h:
+ * 02-Aug-95: routines copied from gridop.c                             *
+ * meshty.c:
+ * 08-Oct-97: routine written from scratch                              *
+ * meshty.h:
+ * 08-Oct-97: routine written from scratch                              *
+ * meshut.c:
+ * 12-May-1999: bug fix in InsertInIndex() -> insert only once          *
+ * 12-May-1999: new routine PrintLine() to print one line               *
+ * 16-Oct-97: new routines PrintLineList(), MakeNewLine()               *
+ *              InsertInIndex(), InsertNodeInLine()                     *
+ * 15-Oct-97: in MakeNode(): set depth to NULLDEPTH (bug)               *
+ *            new routine MakeCoordsFromLine()                          *
+ * 08-Oct-97: routines slighlty restructured                            *
+ *            extra structure introduced -> holds use, type, ...        *
+ *            new items are created with type 0, but adeguate mesh type *
+ * 01-Aug-95: new routines inserted and hash routines transfered    	*
+ * 25-Jul-95: routines written from scratch				*
+ * meshut.h:
+ * 16-Oct-97: new routines PrintLineList(), MakeNewLine()               *
+ *              InsertInIndex(), InsertNodeInLine()                     *
+ * 15-Oct-97: new routine MakeCoordsFromLine()                          *
+ * 01-Aug-95: new routines inserted and hash routines transfered        *
+ * 25-Jul-95: routines written from scratch				*
+ * meshvs.c:
+ * 19-Aug-2003: version 1.70                                            *
+ * 14-Aug-2002: version 1.66                                            *
+ * 03-Jul-2000: version 1.65                                            *
+ * 03-Feb-2000: version 1.64                                            *
+ * 12-May-99: version 1.63                                              *
+ * 05-May-99: version 1.62                                              *
+ * 25-Nov-97: version 1.61                                              *
+ * 12-Nov-97: version 1.60                                              *
+ * 17-Oct-97: version 1.51                                              *
+ * 16-Oct-97: version 1.50                                              *
+ * 15-Oct-97: version 1.41                                              *
+ * 08-Oct-97: version 1.40                                              *
+ * 17-Aug-95: version 1.31                                              *
+ * 14-Aug-95: version 1.30                                              *
+ * 11-Aug-95: version 1.20                                              *
+ * 11-Aug-95: version 1.11                                              *
+ * 10-Aug-95: version 1.10                                              *
+ * 07-Aug-95: version 1.01                                              *
+ * 02-Aug-95: version 1.00                                              *
+ * 01-Aug-95: version 0.80                                              *
+ * 31-Jul-95: version 0.70                                              *
+ * 28-Jul-95: version 0.50                                              *
+ * 27-Jul-95: version 0.40                                              *
+ * 26-Jul-95: version 0.20                                              *
+ * 25-Jul-95: version 0.10                                              *
+ * nlist.c:
+ * 08-Oct-97: handle 0 list correctly                                   *
+ * 11-Aug-95: Nodelist renamed to NodeList                              *
+ *            Nodelist_type * substituted by NodeList                   *
+ * 27-Jul-95: routines written from scratch				*
+ * nlist.h:
+ * 11-Aug-95: Nodelist renamed to NodeList                              *
+ *            Nodelist_type * substituted by NodeList                   *
+ * 27-Jul-95: routines written from scratch				*
+ * nmblist.c:
+ * 11-Aug-95: NumberTable routines transfered to this file              *
+ *            Numbertable_type renamed in NumberTable                   *
+ * 08-Oct-94: ResetListTable initializes pact to NULL (bug)             *
+ * 17-Apr-94: NumberTable routines added                                *
+ * 13-Apr-94: completely restructured -> independent routines           *
+ * 12-Apr-94: Listtable_type created and routines written from scratch  *
+ * nmblist.h:
+ * 11-Aug-95: NumberTable routines transfered to this file              *
+ *            Numbertable_type renamed in NumberTable                   *
+ * 17-Apr-94: NumberTable types added                                   *
+ * 13-Apr-94: completely restructured -> independent routines           *
+ * 06-Apr-94: copyright notice added to file				*
+ * ..-...-92: routines written from scratch				*
+ * options.c:
+ * 17-Aug-95: routines copied from meshop.c				*
+ * options.h:
+ * 17-Aug-95: routines copied from meshop.h                             *
+ * queue.c:
+ * 11-Aug-95: Queuetable_type renamed in QueueTable                     *
+ * 07-Oct-94: Queuetable_type created and routines written from scratch *
+ * queue.h:
+ * 11-Aug-95: Queuetable_type renamed in QueueTable                     *
+ * 07-Oct-94: routines written from scratch                             *
+ * spgrd.c:
+ * 17-Jan-98: algorithm changed for UnifyNodes()                        *
+ * 05-May-97: CompressNumbers() added                                   *
+ * 17-Aug-95: routines written from scratch				*
+ * spgrdop.c:
+ * 17-Aug-95: routines copied from meshop.c				*
+ * spgrdop.h:
+ * 17-Aug-95: routines copied from meshop.c                             *
+ * spgrdut.c:
+ * 17-Oct-97: in CheckInput() check for couter-clockwise line turning   *
+ * 08-Oct-97: uses new mesh type                                        *
+ *            check for closed line only for L_EXTERNAL/L_INTERNAL      *
+ * 27-Jul-95: routines written from scratch				*
+ * spgrdvs.c:
+ * 12-Feb-1998: version 1.01                                            *
+ * ..-Feb-1998: version 1.00                                            *
+ * stack.c:
+ * 11-Aug-95: Stacktable_type renamed in StackTable                     *
+ * 25-Jul-95: Stacktable_type created and routines written from scratch *
+ * stack.h:
+ * 11-Aug-95: Stacktable_type renamed in StackTable                     *
+ * 25-Jul-95: routines written from scratch				*
+
+==========================================================
+
+==========================================================
+Do not delete last line - needed for logging.
+==========================================================
+meshvs.c exgrdvs.c

@@ -1,0 +1,64 @@
+
+$title
+	M2 semidiurnal 40 cm
+	regres62
+	venlag62
+$end
+
+&para
+	itanf = 0  itend = 86400  idt = 300 
+	idtout = 0  itmout = 0
+	idtext = 300  itmext = 0
+	ireib = 2  ilin = 1  iterad = 1
+	href = 0.0
+	iczv = 1
+	levdbg = 5
+	dragco = 3.2e-3  iwtype = 3
+	ampar = 0.60   azpar = 0.60
+&end
+
+$bound1     ---- chioggia ----
+	kbound = 150 173 172 151
+        ampli = 0.40  period = 43200.  phase = 10800.  zref = 0.
+$end
+
+$bound2    ---- malamocco ----
+	kbound = 4311 4315 4314 4309
+	iqual = 1
+$end
+
+$bound3   ---- lido ----
+	kbound = 2750 2757 2758 2751
+	iqual = 1
+$end
+
+dsl  pts  btz  cfg  pbo  vgr  tso  fus  pov  ser  tre  gbo  vdg  lsl
+2750 2449 19   919  533  1385 936  2174 2032 3140 3342 4086 4343 3971
+
+$extra 
+2750 2449 19   919  533  1385 936  2174 2032 3140 3342 4086 4343 3971
+$end
+
+0  lagoon   1  barene    2  channels 
+3  chioggia 4  malamocco 5  lido
+6  treporti 7  la salina 8  burano
+
+&area
+         0  36.                  
+         1  36.                  
+         2  36.                  
+         3  32.  19.   173   175 
+         4  36.  17.  4314  4313 
+         5  36.  20.  2757  2759 
+         6  42.                  
+         7  36.                  
+         8  36.                  
+	 9  39.  42.  2758  2760
+&end
+
+$wind
+	0.	10.0	45.0
+$end
+
+$name
+$end

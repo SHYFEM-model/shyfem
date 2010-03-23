@@ -1,0 +1,314 @@
+
+#------------------------------------------------------------------------
+
+11.03.2010
+	check for negative volumes (node and element) in newtra.f
+	min/max property not for ibtyp=1 (newcon.f)
+	write also vertical velocity for restart
+
+10.03.2010
+	bug fix in new3di.f
+		-> compute vertical velocities also for ibtyp=2
+		-> otherwise tracer over/under-shoot can happen
+
+08.03.2010
+	use bformat to decide on initial read in newbcl.f
+	bug fix in newstab.f, newexpl.f
+		-> only run down to avail levels
+
+01.03.2010
+	new map_influence.f
+	tramp in subn11.f
+	grid quality in basinf.f
+	some changes in newtra.f
+	new routine jamal_fra in subcus.f
+
+26.02.2010
+	new computation of stability for advection in momentum equation
+	bug fix in make_scal_flux() (subn11.f)
+	compilor warnings eliminated
+
+22.02.2010
+	new file for stability condition computation -> simplified
+		viscous_stability for dt=1
+	subwin.f restructured
+		new arrays wxv, wyv
+		new itdrag for smith and Banke etc..
+		computes wind if stress is given
+	new routine for tidal potential
+
+16.02.2010
+	new stability constraints for T/D (with point sources)
+	new diffusion matrix
+	new method for imposing BC on T/D (fluxes and concentrations)
+
+18.11.2009
+	in jamal correct residence time
+
+13.11.2009
+	in restart keep track of what has been read
+	only initialize T/S if no restart file has been read
+	(rhov and bpresv might need special treatment)
+
+12.11.2009
+	problems of negative tracers at negative discharge boundary condition
+	-> solved by moving make_scal_flux() into time loop (newcon.f)
+	now it uses always the right ambient tracer concentration
+	added new routine is_zeta_bound(k) to subbndo.f
+
+11.11.2009
+	handle abosrption of short rad in more than one layer (subqfxt.f)
+
+13.10.2009
+	new section $sect to plot vertical section has been introduced
+
+29.05.2009
+	new ityrst for options in restarting
+
+26.05.2009
+	basic projection in subcoord.f
+	use new projection in submeteo.f (to be finished)
+	scalar interpolation (not finished) in new3di.f
+	new setting for lat/lon coordinates in subnev.f
+
+21.05.2009
+	new basbathy (interpolation on nodes, latlon)
+	new bastreat (still to be finished)
+
+30.04.2009
+	new routines to read grd and not bnd file 
+		(still to finish implementation)
+
+29.04.2009
+	links restructured 
+		(subwat,subuti,sublin,sedi3d,bdist)
+		(subflxa,flux,lagrange_flux)
+		(links,sublnka,sublnka,sublnku)
+
+27.04.2009
+	ktilt and ztilt together (subn11,subbnd)
+
+24.04.2009
+	new routine rdgrd implemented (basbathy,vp,subgrd,adjele)
+	test for parallel execution (newcon)
+
+21.04.2009
+	new inic2fill() (newini)
+	in femplot allow for constant value in color plot (supano,col)
+
+20.04.2009	version  5.28
+	ztilt implemented
+	check again for band width
+	delete level.h in femplot
+
+06.04.2009	version  5.27
+	bug fix in newtvd
+		instead of testing (conc==cond) now (abs(conc-cond) < eps)
+		created NaN in 64 bit architecture
+	adjust param.h from Rules.make
+	all files now read param.h
+	new routines in newchk.f for checking nodes/elems
+	nlidim renamed to nlkdim
+
+03.04.2009	version  5.26b
+	bug fix for lagrangian interpolation (unstable)
+		use of lagrangian interpolation routine with "strange"
+		data (times 1,2,120000,30000000) would lead to
+		unrealistic results on 64 bit architecture
+	intpol default is 0 (4 for ibtyp=1, 2 else)
+	eliminated compiler warnings for gfortran
+	in sparskit routines substituted assigned goto with if
+
+31.03.2009	version  5.26
+	tvd scheme integrated 
+		for general use itvd=2 is recommended
+	sparskit integrated
+	gauss elimination tested with double precision (see simsys_lp.f)
+	some changes to code for regular matrices
+
+27.03.2009
+	bug fix for dry nodes -> call adjust_mass_flux()
+		results was a mass conservation error
+
+13.03.2009
+	bug fix in subsys.f -> for some parameters wrong default section
+
+11.03.2009
+	new code for regular matrices:
+		new: submeteo, subrgf, subcoord
+		new calls to: meteo_regular, meteo_set_matrix, meteo_get_values
+		changed: subqfxf, subqfxt, subn11, subsys
+
+27.01.2009
+	new routine scal_intp to interpolate scalar variables
+	bug fix in post routines
+	routines from Andrea integrated (TVD, semi-lagrangian)
+
+18.12.2008
+	bugfix in GOTM modul -> problem for 2 layers -> viscosity
+	bugfix in subgotm.f -> ss can be negative -> abs() statements used
+	new rfricv for bottom friction in new3di.f (computed in subn35.f)
+
+08.11.2008
+	bugfix in conz3d (newcon) -> 
+		must compute vertical velocity on right time
+		both for mass and tracer conservation
+
+08.10.2008
+	data flow for boundary conditions:
+
+                call scal_bnd('temp',t,bnd3_temp)
+	        	call bnds_set(what,t,nb3dim,bnd3,bnd3_aux)
+				call exfintp(array(1,ibc),t,aaux)
+				call exfset(array(1,ibc),t,aaux)
+                call scal_adv
+        		call bnds_trans
+        		call scal3sh
+				call make_scal_flux
+				call conz3d
+				call bndo_setbc
+
+
+03.09.2008
+	in STR use nbdim as number of levels given in data file
+		-> must be equal to lmax given in file
+
+30.04.2008
+	for profiling: Intel thread profiler
+		-openmp-profile
+		-openmp-report{1|2}
+
+	could make better structure for diagnostic variables:
+		T/S, bio
+		maybe use time series
+
+	should condense some subroutines:
+		concmass, concmass1
+		massconc
+		tsmass
+		scalmass
+		totcon
+
+18.01.2008
+	* bio3d still broken
+	* ousaver.f still broken
+	lagrange with continuous release (lagrange_cont.f)
+	new file nosdiff_deb.f in var
+
+25-01-2005
+	bug in advective terms (BUGADV) -> fixed in new3di.f
+
+15-10-2004
+	checkerboard plots derive from wrong write (nlvdim) of confil
+
+22-09-2004
+	newdat.f substituted by subdts.f
+
+15-08-2003
+	structure of ht file:
+
+		set dimensions
+
+		read STR file
+
+		check dimensions
+		check STR file
+
+		set up ev and geom arrays
+
+		initialize vertical levels
+		initialize coriolis, eddy, austausch
+
+		initialize chezy
+
+		initialize boundary conditions (sp111)
+		initialize z
+
+		set depth arrays
+
+		update geom, iwegv, inodv
+
+		initialize u
+
+		other modules
+
+11-04-2003
+	albedo introduced in file subqfxt
+	
+10-04-2003
+	problems with negative temp solved -> new routine wbt in subqfxu1.f
+	
+14-10-2002
+	atpar, adpar,aapar -> default is now 1.0 (fully implicit)
+	thdif = shdif in barcl (FIXME)
+	diffset introduced eberywhere and largely commented
+	use itsmed (subroutine tsmed) to produce min/max/med of S/T in file tsa
+	
+03-09-2002
+	averaging for TS introduced (tsmed)
+	sanity_check introduced into ht (newchk.f)
+	bug in subflxa.f (ggu99) -> reproduce ???
+
+07-12-2001
+	version 4.63
+
+05-12-2001
+	fixed compiler error with -Wall -pedantic
+	new routines diffstab,diffstab1,difflimit
+	variable horizontal diffusion, limit on dif.coef.
+	horizontal diffusion variable, limit diffusion coef.
+	compute istot, more debug info
+	always execute tstvol, more debug info
+	subbndo.f: NTBC - BUG -> has not been set before
+
+03-12-2001
+	new arrays [cst]difhv
+	subbndo.f: LEVMX - look out for missing level of near node
+
+21-11-2001
+	Handle ambient input of water with ibtyp=3 -> -999.
+	routines to handle advective index (aix)
+
+19-11-2001
+	eliminated h1hv,ulv,vlv - centralized hlhv, hldv
+
+16-11-2001
+	version 4.62
+
+16-11-2001
+	subroutine conmima and diffstab
+	dynamic computation of istot (rstot) introduced
+
+14-11-2001
+	all compiler directives have been eliminated
+	no .F files left
+	makefile renamed into Makefile
+
+12-11-2001
+	rcv in subcon was not in common block -> who removed it
+	baroxv, baroyv, adauxv, adauxv commented out in ht (not used)
+
+08-01-2001
+	hp from sediment (4.56) faster than hp from stream (4.60) (ht?)
+	ht is not computing flx in mass conserving way
+	hp explodes on M2 with venlag62 -> ilin = 1 must be set
+
+09-01-2001
+	ht is not conserving tracer (conz)
+
+12-01-2001
+	mass conservation has been restored passing from dz computation
+	to direct znv computation (only three small changes in new3di.F).
+	Problem was that zn = zo + dz was violated when levels of zo
+	were not the same (just before re-including a dry element).
+	Direct computation of zn bypasses this problem.
+	The erroneous FLX computation was due to the failure of
+	mass conservation of ht
+
+	speed of ht depends on the call of valtest which slows down
+	the computation
+
+	conservation of tracers in ht must still be looked at
+
+#------------------------------------------------------------------------
+

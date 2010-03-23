@@ -1,0 +1,156 @@
+
+Modellistica
+============
+
+
+Introduzione
+
+
+La laguna di Venezia e da secoli interessato in primo piano dai
+processi di idrodinamica e sedimentazione. La prima garantisce
+alla laguna attraverso l'azione delle maree il ricambio d'acqua
+e la conseguente pulizzia dall'inquinamento, ma comporta anche il
+fenomeno delle "acque alte".
+
+Dall'altro canto sono i fenomeni collegati con il trasporto dei
+sedimenti quelli che maggiormente hanno inciso sui cambiamenti
+morfologici nella laguna. Sono questi i processi che hanno permesso che
+la laguna in principio si e' potuto formare anche in seguito si e'
+potuto trasformare nella attuale forma.
+
+I processi di sedimentazione sono di vario tipo. Da una parte c'e'
+il continuo erodersi delle zone sottoposte a grande "stress" idrodinamico
+che fa si' che il materiale sul fondo va messo in sospensione 
+e poi' trasportato dalle correnti in altre zone. Dall'altra parte la
+deposizione dei sedimenti in sospensione in zone con minor idrodinamica
+dove il materiale, messo in sospensione in un altro luogo, si accumula
+di nuovo sul fondo.
+
+Le forzanti che agiscono sui processi di sedimentazione sono principalmente
+tre: le maree, il vento e le onde. La marea crea delle correnti 
+alternate che, se superano una certa soglia, mettono in sospensione 
+i sedimenti dei fondali. Lo stesso vale anche per l'azione del vento,
+dove pero' sara' piu accentuato l'effetto sulle parti poco profondi,
+visto che in quelle zone la forza totale sulla colonna d'acqua e'
+piu' forte. La terza forzante delle onde, specialmente per la ri-sospensione
+dei sedimenti, e forse la piu' importante nelle acque basse.
+Essendo un movimento ?? (Mauro...)
+
+La laguna riceve contributi dei sedimenti anche dall'Adriatico attraverso
+le bocche e dai fiumi che sfociano nella laguna. Questi contributi sono
+molto importanti perche' entrano nel bilancio della massa dei sedimenti,
+e occorre percio' descrivere adeguatamente l'apporto di questi fenomeni.
+
+
+?? Modellistica accoppiata
+
+
+
+
+Modello di sedimentazione
+
+
+Ultimamante e' stato acquisito e migliorato all'ISDGM un modello 
+che descrive tutti i processi di sedimentazione all'interfaccia
+acqua-sedimenti. Questo modello, SEDTRANS, e' stato sviluppato al
+Geological Survey di Halifax da Carl Amos. 
+
+I processi descritti da questo modello sono la ri-sospensione, deposizione,
+"bed-load" e sospensione dei sedimenti. L'effetto delle correnti,
+delle onde e anche la loro azione congiunta viene descritto adeguatamente.
+Il modello fornisce velocita' di sedimentazione, tempi dei sedimenti
+in fase di "bed load" e sospensione, stress critico per la messa in
+"bed load" e sospensione e anche forma dei fondali.
+
+Il modello puo' essere impiegato in versione "stand-alone" per descrivere
+la situazione dei sedimenti nella colonna d'acqua in un punto prescelto
+della laguna di Venezia. Fornito lo stato delle onde e della corrente
+il modello e' in grado di stimare il flusso di sedimenti fra il fondo,
+il "bed" e la colonna d'acqua.
+
+
+
+Modello di circolazione
+
+
+Per la descrizione dei fenomeni collegati al trasporto dei sedimenti e'
+assolutamente indispensabile una accurata descrizione della circolazione
+del corpo idrico. A parte i processi veri e propri di sedimentazione
+e ri-sospensione l'accumulo e' il trasporto avvettivo delle correnti
+che determina in gran parte i cambiamenti della morfologia.
+
+Non solo e' il modello di circolazione responsabile a ri-distribuire
+i sedimenti all'interno della laguna, ma anche tutto l'apporto dei
+sedimenti che provengono dai fiumi e dal mare sono controllati dal modello
+di circolazione. Una volta immessi questi contributi questi
+possono poi essere trasportati con la correnti ed accumulati all'interno
+della laguna. Anche la perdita' dei sedimenti attraverso le bocche
+viene descritto con un modello di circolazione.
+
+Esiste al ISDGM un modello di circolazione ben tarato che viene utilizzato
+per una varieta' di attivita' (progetti della EU, progetti nazionali).
+Il modello consiste in un pacchetto integrato che risolve le equazioni
+di acque basse (conservazione di massa e di momento). Le variabili
+calcolate sono le due componenti orizzontali della velocita' e il
+livello d'acqua. Questo modello e' disponibile in una versione
+sia 2D e 3D.
+ 
+La risoluzione nel tempo viene ottenuto con uno schema semi-implicito
+che consente una riduzione del tempo di calcolo rispetto ai modelli
+impliciti senza una perdita di accuratezza. Il passo di integrazione
+nel tempo non e' limitato da un criterio di stabilita' numerica come
+nel caso dei modelli espliciti.
+ 
+Per la risoluzione nello spazio viene adoperato la tecnica degli
+elementi finiti. Questo procedimento permette di discretizzare anche
+aree con geometria e topografia molto complesse. In piu' non si e'
+limitati come nel caso delle differenze finite a una maglia
+rettangolare equi spaziata. Si possono invece adoperare triangoli di
+diversa grandezza in modo da discretizzare l'area con la risoluzione
+desiderata.
+ 
+Per l'applicazione del modello devono essere specificate delle
+condizioni al contorno appropriate. Queste possono essere o il livello
+d'acqua (proveniente da mareografi) o le portate (misure
+correntometriche) al contorno aperto (mare). Il modello consente anche
+di tenere in considerazione l'influsso del vento (variabile sia nello
+spazio che nel tempo) sulle correnti e la circolazione.
+ 
+Fenomeni di trasporto e diffusione di sostanze conservative disciolte
+nell'acqua possono essere simulate attraverso il modulo di trasporto e
+diffusione. Questo modulo garantisce la conservazione della massa della
+sostanza disciolta e simula la sua dispersione attraverso meccanismi di
+"mixing turbulente" e la sua avvezione.
+
+La griglia di base della laguna di Venezia utilizzata per le simulazioni
+e' la griglia del ISDGM-CNR. E' stata costruita senza ausilio di programmi
+di generazione automatica della griglia, data la complicata geometria
+dei contorni e la batimetria altamente variabile dei canali.
+Attualmente questa griglia consiste di circa 4000 nodi e 8000 elementi.
+
+La griglia puo' essere vista in figura 1. La griglia e' piu' fitta nei
+punti di forte variazione geometrica, come nei canali della laguna e
+attorno al centro storico di Venezia.  In queste zone la risoluzione e'
+di circa 150 metri.
+
+Basandosi su questa griglia sono stati assegnati i valori batimetrici nei
+triangoli attraverso le carte della Regione Veneta digitalizzata. La mappa
+delle profondita' puo' essere vista in figura 2.  La massima profondita'
+di circa 30 metri si trova nelle vicinanze della bocca di Malamocco.
+
+
+
+Figura 1: La griglia ad elementi finiti del modello della 
+Laguna di Venezia
+
+Figura 2: La batimetria della Laguna di Venezia come viene 
+rappresentata dal modello agli elementi finiti.
+
+
+
+
+Modello di onde ??
+
+
+Modello accoppiato ??
+

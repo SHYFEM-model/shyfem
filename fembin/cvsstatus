@@ -1,0 +1,88 @@
+#!/usr/bin/perl -s
+#
+# shows status of files with respect of CVS archive
+
+$files = join(" ",@ARGV);
+
+if( $h || $help ) {
+  die "Usage: cvsstatus [-h|-help] [-r|-c|-t] [files]\n";
+}
+
+if( $t ) {		#only tag
+  ;
+} elsif( $c ) {		#only commit
+  ;
+} elsif( $r ) {		#raw (all)
+  $c = $t = $o = 1;
+} else {		#default (c,t)
+  $c = $t = 1;
+}
+
+#---------------------------------------------
+
+system("cvs status -v $files > CVSRAWSTATUS 2> /dev/null");
+
+open(CVS,"CVSRAWSTATUS");
+open(CVSOUT,">CVSSTATUS");
+
+while(<CVS>) {
+
+  if( /^File:\s+(\S+)\s+Status:\s+(\S+)/ ) {
+    &write_info;
+    $file = $1;
+    $status = $2;
+    $tag = "";
+  }
+
+  if( /^\s*Working revision:\s+(\S+)/ ) {
+    $wrev = $1;
+  }
+
+  if( /^\s*Repository revision:\s+(\S+)/ ) {
+    $rrev = $1;
+  }
+
+  if( /^\s*Existing Tags:/ ) {
+    $_ = <CVS>;
+    if( /^\s*(\S+)\s+\(revision:\s+(\S+)\)/ ) {
+      $tag = $1;
+      $trev = $2;
+    }
+  }
+}
+
+&write_info;
+
+close(CVS);
+close(CVSOUT);
+
+system("align CVSSTATUS");
+
+
+#############################################################
+
+sub write_info {
+
+  return unless $file;
+
+  my $print = 0;
+
+  if( $rrev ne $wrev || $status ne "Up-to-date" ) {
+    $comment = "commit";
+    $print = 1 if $c;
+  } elsif( $rrev ne $trev ) {
+    $comment = "tag";
+    $print = 1 if $t;
+  } else {
+    $comment = "ok";
+    $print = 1 if $o;
+  }
+
+  if( $print ) {
+    print CVSOUT "$file  $status  $wrev  $rrev  $tag  $trev  $comment\n";
+  }
+
+}
+
+#############################################################
+

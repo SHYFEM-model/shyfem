@@ -1,0 +1,1076 @@
+ In file BFM/Bennut/ModuleBenNutInterface.f90:47
+
+      REAL(RLEN) FUNCTION bess_exp(X,labda,FN)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:48
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:49
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:50
+
+      REAL(RLEN),intent(IN)    ::X
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:51
+
+      REAL(RLEN),intent(IN)    ::labda(2)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:52
+
+      INTERFACE
+              1
+Error: Unexpected INTERFACE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:53
+
+         REAL(RLEN) FUNCTION FN(X)
+             1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:54
+
+         USE global_mem, ONLY:RLEN
+                                 1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:55
+
+         REAL(RLEN),INTENT(IN)   ::X
+             1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:56
+
+      END FUNCTION
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:58
+
+      end FUNCTION bess_exp
+        1
+Error: Expecting END MODULE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:59
+
+      end INTERFACE
+        1
+Error: Expecting END MODULE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:63
+
+      REAL(RLEN) FUNCTION BESSI0(X)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:64
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:65
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:66
+
+      REAL(RLEN),intent(IN) ::x
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:67
+
+      end FUNCTION BESSI0
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:72
+
+      REAL(RLEN) FUNCTION BESSI1(X)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:73
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:74
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:75
+
+      REAL(RLEN),intent(IN) ::x
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:76
+
+      end FUNCTION BESSI1
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:81
+
+      REAL(RLEN) FUNCTION BESSK0(X)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:82
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:83
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:84
+
+      REAL(RLEN),intent(IN) ::x
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:85
+
+      end FUNCTION BESSK0
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:90
+
+      REAL(RLEN) FUNCTION BESSK1(X)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:91
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:92
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:93
+
+      REAL(RLEN),intent(IN) ::x
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:94
+
+      end FUNCTION BESSK1
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:112
+
+      REAL(RLEN) FUNCTION CalculateFromCondition(irow,C,Y,nn)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:113
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:114
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:115
+
+      integer,intent(IN) ::irow
+                              1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:116
+
+      integer,intent(IN) ::nn
+                            1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:117
+
+      REAL(RLEN),intent(IN) ::c(nn,nn)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:118
+
+      REAL(RLEN),intent(IN) ::y(nn)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:119
+
+      end FUNCTION CalculateFromCondition
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:124
+
+      REAL(RLEN) FUNCTION calculate_equation(mode,xinput,coeffs,&
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:126
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:127
+
+      USE bennut_type, ONLY:ty_coeff
+                                   1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:128
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:129
+
+      integer,intent(IN) ::mode
+                              1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:130
+
+      integer,intent(IN) ::nn
+                            1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:132
+
+      type (ty_coeff),intent(IN) ::coeffs(nn)
+                    1
+Error: Derived type 'ty_coeff' at (1) is being used before it is defined
+ In file BFM/Bennut/ModuleBenNutInterface.f90:133
+
+      REAL(RLEN),intent(IN) ::xinput
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:134
+
+      REAL(RLEN),intent(IN) ::b
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:135
+
+      REAL(RLEN),intent(IN) ::factor(nn)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:136
+
+      end FUNCTION calculate_equation
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:154
+
+      REAL(RLEN) FUNCTION calculate_one_term(mode,option,xinput, &
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:156
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:157
+
+      USE bennut_type
+                    1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:158
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:159
+
+      integer,intent(IN) ::mode
+                              1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:160
+
+      integer,intent(IN) ::option
+                                1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:161
+
+      type (ty_coeff),intent(IN) ::coeff
+                    1
+Error: Derived type 'ty_coeff' at (1) is being used before it is defined
+ In file BFM/Bennut/ModuleBenNutInterface.f90:162
+
+      REAL(RLEN),intent(IN) ::xinput
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:163
+
+      REAL(RLEN),intent(IN) ::b
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:164
+
+      end FUNCTION calculate_one_term
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:169
+
+      REAL(RLEN) FUNCTION CalculateTau(sMI,xdiffMI,ptMI,DXm)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:170
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:171
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:172
+
+      REAL(RLEN),intent(IN) ::smi
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:173
+
+      REAL(RLEN),intent(IN) ::xdiffmi
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:174
+
+      REAL(RLEN),intent(IN) ::ptmi
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:175
+
+      REAL(RLEN),intent(IN) ::dxm
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:176
+
+      end FUNCTION CalculateTau
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:181
+
+      REAL(RLEN) FUNCTION chebev(a,b,c,m,x)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:182
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:183
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:184
+
+      integer,intent(IN) ::m
+                           1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:185
+
+      REAL(RLEN),intent(IN) ::a
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:186
+
+      REAL(RLEN),intent(IN) ::b
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:187
+
+      REAL(RLEN),intent(IN) ::x
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:188
+
+      REAL(RLEN),intent(IN) ::c(m)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:189
+
+      end FUNCTION chebev
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:262
+
+      REAL(RLEN) FUNCTION find_zero_c(k,NUTR,modx,option,bar,xnn,nn,a, &
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:264
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:265
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:266
+
+      integer,intent(IN) ::nn
+                            1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:267
+
+      integer,intent(IN) ::k
+                           1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:268
+
+      REAL(RLEN),intent(IN) ::a
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:269
+
+      REAL(RLEN),intent(IN) ::x1
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:270
+
+      REAL(RLEN),intent(IN) ::x2
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:271
+
+      REAL(RLEN),intent(IN) ::acc
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:272
+
+      integer,intent(IN) ::nutr(nn)
+                                  1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:273
+
+      integer,intent(IN) ::modx(nn)
+                                  1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:274
+
+      integer,intent(IN) ::option(nn)
+                                    1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:275
+
+      REAL(RLEN),intent(IN) ::bar(nn)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:276
+
+      REAL(RLEN),intent(IN) ::xnn(2,nn)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:277
+
+      end FUNCTION find_zero_c
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:282
+
+      REAL(RLEN) FUNCTION find_zero(NUTR1,NUTR2,mode,k,a,b,X1,X2,acc)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:283
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:284
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:285
+
+      integer,intent(IN) ::nutr1
+                               1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:286
+
+      integer,intent(IN) ::nutr2
+                               1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:287
+
+      integer,intent(IN) ::mode
+                              1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:288
+
+      integer,intent(IN) ::k
+                           1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:289
+
+      REAL(RLEN),intent(IN) ::a
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:290
+
+      REAL(RLEN),intent(IN) ::b
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:291
+
+      REAL(RLEN),intent(IN) ::x1
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:292
+
+      REAL(RLEN),intent(IN) ::x2
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:293
+
+      REAL(RLEN),intent(IN) ::acc
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:294
+
+      end FUNCTION find_zero
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:299
+
+      REAL(RLEN) FUNCTION funcalc(mode,termx,coeff,xx,x)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:300
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:301
+
+      USE bennut_type
+                    1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:302
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:303
+
+      integer,intent(IN) ::mode
+                              1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:304
+
+      integer,intent(IN) ::termx
+                               1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:305
+
+      type (ty_coeff),intent(IN) ::coeff
+                    1
+Error: Derived type 'ty_coeff' at (1) is being used before it is defined
+ In file BFM/Bennut/ModuleBenNutInterface.f90:306
+
+      REAL(RLEN),intent(IN) ::xx
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:307
+
+      REAL(RLEN),intent(IN) ::x
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:308
+
+      end FUNCTION funcalc
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:366
+
+      REAL(RLEN) FUNCTION noutput(NUTR,mode,option,input,xinput,yinput)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:367
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:368
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:369
+
+      integer,intent(IN) ::mode
+                              1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:370
+
+      integer,intent(IN) ::option
+                                1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:371
+
+      integer,intent(IN) ::input
+                               1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:372
+
+      integer,intent(IN) ::nutr
+                              1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:373
+
+      REAL(RLEN),intent(IN) ::xinput
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:374
+
+      REAL(RLEN),intent(IN) ::yinput
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:375
+
+      end FUNCTION noutput
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:380
+
+      REAL(RLEN) FUNCTION QGAUS_EXP(A,B,labda,FN)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:381
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:382
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:383
+
+      REAL(RLEN),intent(IN) ::a
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:384
+
+      REAL(RLEN),intent(IN) ::b
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:385
+
+      REAL(RLEN),intent(IN) ::labda(2)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:386
+
+      INTERFACE
+              1
+Error: Unexpected INTERFACE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:387
+
+        REAL(RLEN) FUNCTION FN(Y)
+            1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:388
+
+          USE global_mem, ONLY:RLEN
+                                  1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:389
+
+          REAL(RLEN),INTENT(IN)   ::Y
+              1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:390
+
+        END FUNCTION
+          1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:392
+
+      end FUNCTION QGAUS_EXP
+        1
+Error: Expecting END MODULE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:393
+
+      end INTERFACE
+        1
+Error: Expecting END MODULE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:405
+
+      REAL(RLEN) FUNCTION rtsafe(k,NUTR,mode,option,b,XNN,NN,a,X1,X2,acc)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:406
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:407
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:408
+
+      integer,intent(IN) ::nn
+                            1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:409
+
+      integer,intent(IN) ::nutr(nn)
+                                  1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:410
+
+      integer,intent(IN) ::mode(nn)
+                                  1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:411
+
+      integer,intent(IN) ::option(nn)
+                                    1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:412
+
+      integer,intent(IN) ::k
+                           1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:413
+
+      REAL(RLEN),intent(IN) ::b(NN)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:414
+
+      REAL(RLEN),intent(IN) ::xnn(2,NN)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:415
+
+      REAL(RLEN),intent(IN) ::a
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:416
+
+      REAL(RLEN),intent(IN) ::x1
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:417
+
+      REAL(RLEN),intent(IN) ::x2
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:418
+
+      REAL(RLEN),intent(IN) ::acc
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:419
+
+      end FUNCTION rtsafe
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:463
+
+      REAL(RLEN) FUNCTION GetInfoFromSet(NUTR,option,input,term,x1,y1)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:464
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:465
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:466
+
+      integer,intent(IN) ::nutr
+                              1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:467
+
+      integer,intent(IN) ::term
+                              1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:468
+
+      integer,intent(IN) ::option
+                                1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:469
+
+      integer,intent(IN) ::input
+                               1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:470
+
+      REAL(RLEN),intent(IN) ::x1
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:471
+
+      REAL(RLEN),intent(IN) ::y1
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:472
+
+      end FUNCTION GetInfoFromSet
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:518
+
+      REAL(RLEN) FUNCTION transfer(mode,coeff,input,diff)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:519
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:520
+
+      USE bennut_type
+                    1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:521
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:522
+
+      integer,intent(IN) ::mode
+                              1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:523
+
+      type (ty_coeff),intent(IN) ::coeff
+                    1
+Error: Derived type 'ty_coeff' at (1) is being used before it is defined
+ In file BFM/Bennut/ModuleBenNutInterface.f90:524
+
+      REAL(RLEN),intent(IN) ::diff
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:525
+
+      REAL(RLEN),intent(IN) ::input
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:526
+
+      end FUNCTION transfer
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:531
+
+      REAL(RLEN) FUNCTION zbrent(k,NUTR,mode,option,bar,xnn,nn,a1,X1,X2,acc)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:532
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:533
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:534
+
+      integer,intent(IN) ::k
+                           1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:535
+
+      integer,intent(IN) ::nn
+                            1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:536
+
+      integer,intent(IN) ::nutr(nn)
+                                  1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:537
+
+      integer,intent(IN) ::mode(nn)
+                                  1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:538
+
+      integer,intent(IN) ::option(nn)
+                                    1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:539
+
+      REAL(RLEN),intent(IN) ::a1
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:540
+
+      REAL(RLEN),intent(IN) ::bar(nn)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:541
+
+      REAL(RLEN),intent(IN) ::xnn(nn)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:542
+
+      REAL(RLEN),intent(IN) ::x1
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:543
+
+      REAL(RLEN),intent(IN) ::x2
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:544
+
+      REAL(RLEN),intent(IN) ::acc
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:545
+
+      end FUNCTION zbrent
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:550
+
+      REAL(RLEN) FUNCTION CalculateFromSet(NUTR,mode,input,xh,xh1)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:551
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:552
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:553
+
+      integer,intent(IN) ::NUTR
+                              1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:554
+
+      integer,intent(IN) ::mode
+                              1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:555
+
+      integer,intent(IN) ::input
+                               1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:556
+
+      REAL(RLEN),intent(IN) ::xh
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:557
+
+      REAL(RLEN),intent(IN) ::xh1
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:558
+
+      end FUNCTION CalculateFromSet
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:563
+
+      REAL(RLEN) FUNCTION CalculateShift(NUTR,input,xh,xh1)
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:564
+
+      USE global_mem, ONLY:RLEN
+                              1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:565
+
+      implicit none
+                  1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:566
+
+      integer,intent(IN) ::NUTR
+                              1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:567
+
+      integer,intent(IN) ::input
+                               1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:568
+
+      REAL(RLEN),intent(IN) ::xh
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:569
+
+      REAL(RLEN),intent(IN) ::xh1
+          1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:570
+
+      end FUNCTION CalculateShift
+        1
+Error: Expecting END INTERFACE statement at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:625
+
+        REAL(RLEN) FUNCTION CalculateSet(NUTR, mode,option,input,&
+            1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:627
+
+        USE global_mem, ONLY:RLEN
+                                1
+Error: Unexpected USE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:628
+
+        IMPLICIT  NONE
+                     1
+Error: Unexpected IMPLICIT NONE statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:629
+
+        integer,intent(IN) ::NUTR ! Specification
+                                                1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:630
+
+        integer,intent(IN) ::mode ! Specification
+                                                1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:631
+
+        integer,intent(IN) ::input ! Specification
+                                                 1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:632
+
+        integer,intent(IN) ::option ! Specification
+                                                  1
+Error: Unexpected data declaration statement in INTERFACE block at (1)
+ In file BFM/Bennut/ModuleBenNutInterface.f90:633
+
+        REAL(RLEN),intent(IN) ::xinput ! Specification
+            1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:634
+
+        REAL(RLEN),intent(IN) ::yinput ! Specification
+            1
+Error: Parameter 'rlen' at (1) has not been declared or is a variable, which does not reduce to a constant expression
+ In file BFM/Bennut/ModuleBenNutInterface.f90:635
+
+       END FUNCTION CalculateSet
+         1
+Error: Expecting END INTERFACE statement at (1)
+make: *** [BFM/Bennut/ModuleBenNutInterface.o] Error 1

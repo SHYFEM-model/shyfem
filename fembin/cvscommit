@@ -1,0 +1,123 @@
+#!/bin/sh
+#
+# commits changes to cvs
+
+#################################################################
+
+ok()
+{
+  if [ -z "$1" ]; then
+    question="Is this ok (y/N) : "
+  else
+    question=$1
+  fi
+
+  echo
+  echo -n "$question"
+  read answer
+
+  if [ x.$answer = x."y" ]; then
+    :
+  else
+    exit 0
+  fi
+}
+
+#################################################################
+
+commitfile=COMMIT
+logfile=LOG
+tmpfile=tmp0.tmp
+tmpfile1=tmp1.tmp
+tmpfile2=tmp2.tmp
+tmpfile3=tmp3.tmp
+
+#################################################################
+
+logmessage=""
+auto="NO"
+log="YES"
+if [ "$1" = "-auto" ]; then
+  auto="YES"
+  shift
+fi
+if [ "$1" = "-nolog" ]; then
+  log="NO"
+  shift
+fi
+if [ "$1" = "-m" ]; then
+  logmessage=$2
+  shift; shift
+  echo "Using this log message: $logmessage"
+fi
+
+#################################################################
+
+cvs -n update $* 2> /dev/null | cvs-format-update.pl -detail > $tmpfile
+if [ ! -s $tmpfile ]; then	#no change
+  rm -f tmp*.tmp
+  exit 11
+fi
+
+#################################################################
+
+perl -n -e 'print "CVS $_";' $tmpfile > $tmpfile3
+
+echo "CVS ------------ Put your log message after this line :" > $tmpfile2
+[ -n "$logmessage" ] && echo "$logmessage" >> $tmpfile2
+echo "CVS ------------" >> $tmpfile2
+echo "CVS" >> $tmpfile2
+cat $tmpfile3 >> $tmpfile2
+[ -n "$logmessage" ] || vi $tmpfile2
+
+cat $tmpfile2 | grep -v '^CVS' > $tmpfile3
+
+#################################################################
+
+if [ $auto = "NO" ]; then
+  ok "Shall I commit ? (y/N) : "
+fi
+
+#################################################################
+
+exec 4<&1		#save stdout
+exec > $tmpfile1	#write to file
+
+echo "============================================================"
+echo ""
+date
+echo ""
+cat $tmpfile3
+echo ""
+cat $tmpfile
+echo ""
+
+exec 1<&4		#reassign stdout
+
+#################################################################
+
+if [ $log = "YES" ]; then
+  touch $logfile
+  date=`date +%d.%m.%Y`
+  message="COMMIT"
+  [ -n "$logmessage" ] && message=$logmessage
+  echo "" > $tmpfile
+  echo "$date  $message" >> $tmpfile
+  cat $logfile >> $tmpfile
+  mv $tmpfile $logfile
+fi
+
+touch $commitfile
+cat $tmpfile1 $commitfile > $tmpfile
+mv $tmpfile $commitfile
+
+#################################################################
+
+cvs commit -F $tmpfile3 $*
+
+#################################################################
+
+rm -f tmp*.tmp
+
+#################################################################
+

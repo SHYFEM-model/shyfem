@@ -1,0 +1,132 @@
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50-g
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!BOP
+!
+! !ROUTINE: Param
+!
+! DESCRIPTION
+!   List of parameters values
+
+!   This file is generated directly from OpenSesame model code, using a code 
+!   generator which transposes from the sesame meta language into F90.
+!   F90 code generator written by P. Ruardij.
+!   structure of the code based on ideas of M. Vichi.
+!
+! !INTERFACE
+! parameter values for mem_Param filled by InitParam
+!
+
+!  
+!
+! !AUTHORS
+!   mfstep/ERSEM team
+!
+! !REVISION_HISTORY
+!   ---
+!
+! COPYING
+!   
+!   Copyright (C) 2006 P. Ruardij, the mfstep group, the ERSEM team 
+!   (rua@nioz.nl, vichi@bo.ingv.it)
+!
+!   This program is free software; you can redistribute it and/or modify
+!   it under the terms of the GNU General Public License as published by
+!   the Free Software Foundation;
+!   This program is distributed in the hope that it will be useful,
+!   but WITHOUT ANY WARRANTY; without even the implied warranty of
+!   MERCHANTEABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!   GNU General Public License for more details.
+!
+!EOP
+!-------------------------------------------------------------------------!
+!BOC
+!
+!
+!  p_q10diff:  	 Temperature-dependency porewater diffusion
+!  p_qro:  	 stoichiometry O2-->S2-
+!  p_qon_dentri:  	 stoichiometry O2-->N denitrification
+!  p_qon_nitri:  	 stoichiometry O2-->N nitrification
+!  p_clDxm:  	 minimal value of D?.m for calculation of the alpha
+!        :  	 alpha is used in expo.func and values > 1/0.001 leadt
+!  CalcPelagicFlag:  	 Switch for pelagic system
+!  CalcBenthicFlag:  	 Switch for benthic system
+!  CalcPhytoPlankton:  	 Switches to turn on/off the calculation of pelagic groups
+!  CalcBacteria:
+!  CalcMesoZooPlankton:
+!  CalcMicroZooPlankton:
+!  CalcPelChemistry:
+!  CalcBenOrganisms:  	 Switches to turn on/off the calculation of benthic organisms
+!  CalcBenBacteria:
+!  AssignPelBenFluxesInBFMFlag:  	 Switches to make choice to define boundary
+!  AssignAirPelFluxesInBFMFlag:  	 fluxes in physical of biological model
+!        :  	     dim2D%
+!  XLatitude:  	 Latitude
+!  p_PAR:  	 Photosynthetically available radiation
+!  ChlLightFlag:  	 Switch between light prop.(=1) or Chla.(=2) as a state
+!  LightForcingFlag:  	 Switch between instantaneous light and day light average
+!  p_qchlc(PhytoPlankton):  	 Fixed/Maximum quotum Chla:C dependent on ChlLightFlag [mg Chla (mg C)-1]
+!        :  	p_qchlc%   0.05, 0.03,  0.07,  0.02
+!  p_eps0:  	 Background extinction (abiotic)
+!  p_epsESS:  	 Inorg. suspended matter extinction coeff. (abiotic)
+!  p_InitSink:  	 parameter to Initialize BenthicSInk var.
+!  p_d_tot:  	 m # Thickness of modelled benthic sediment layers
+!  p_clD1D2m:  	 m # minimum distancebetween D1m and D2m
+!  p_pe_R1c:  	 Fraction of excretion going to PLOC
+!  p_pe_R1n:  	 Fraction of excretion going to PLOC
+!  p_pe_R1p:  	 Fraction of excretion going to PLOC
+!  p_epsChla:  	 Chla-contribution to extinction
+!  p_epsR6:  	 (m2/mgC) # Detritus-contribution to extinction
+
+&Param_parameters
+p_small = 1.0e-80,
+p_q10diff = 1.49,
+p_qro = 0.5,
+p_qon_dentri = 1.25,
+p_qon_nitri = 2.0,
+p_clDxm = 0.001,
+CalcPelagicFlag = .TRUE.,
+CalcBenthicFlag = 0,
+CalcPhytoPlankton(1) = .TRUE.,
+CalcPhytoPlankton(2) = .TRUE.,
+CalcPhytoPlankton(3) = .TRUE.,
+CalcPhytoPlankton(4) = .TRUE.,
+CalcBacteria = .TRUE.,
+CalcMesoZooPlankton(1) = .TRUE.,
+CalcMesoZooPlankton(2) = .TRUE.,
+CalcMicroZooPlankton(1) = .TRUE.,
+CalcMicroZooPlankton(2) = .TRUE.,
+CalcPelChemistry = .TRUE.,
+CalcBenOrganisms(1) = .TRUE.,
+CalcBenOrganisms(2) = .TRUE.,
+CalcBenOrganisms(3) = .TRUE.,
+CalcBenOrganisms(4) = .TRUE.,
+CalcBenOrganisms(5) = .TRUE.,
+CalcBenBacteria(1) = .TRUE.,
+CalcBenBacteria(2) = .TRUE.,
+AssignPelBenFluxesInBFMFlag = .TRUE.,
+AssignAirPelFluxesInBFMFlag = .TRUE.,
+p_PAR = 0.50,
+ChlLightFlag = 2,
+LightForcingFlag = 1,
+p_qchlc = 0.05,0.03,0.07,0.02,
+p_eps0 = 0.04,
+p_epsESS = 0.04e-3,
+p_InitSink = 100.0,
+p_d_tot = 0.30,
+p_clD1D2m = 0.01,
+p_pe_R1c = 0.60,
+p_pe_R1n = 0.72,
+p_pe_R1p = 0.832,
+p_pe_R1s = 0.06,
+p_epsChla = 10.0e-3,
+p_epsR6 = 0.1e-3
+/
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!END namelist
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+!BOP
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

@@ -1,0 +1,723 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%% user commands %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\paren}[1]	{ \left( #1 \right) }
+\newcommand{\mez}{\mbox{$\frac{1}{2}$}}
+\newcommand{\dpp}{\mbox{$\partial$}}
+\newcommand{\zz}{\zeta}
+\newcommand{\un}{\mbox{$U^{n+1}$}}
+\newcommand{\uo}{\mbox{$U^{n}$}}
+\newcommand{\vn}{\mbox{$V^{n+1}$}}
+\newcommand{\vo}{\mbox{$V^{n}$}}
+\newcommand{\zn}{\mbox{$\zz^{n+1}$}}
+\newcommand{\zo}{\mbox{$\zz^{n}$}}
+\newcommand{\up}{\mbox{$U^{\prime}$}}
+\newcommand{\vp}{\mbox{$V^{\prime}$}}
+\newcommand{\zp}{\mbox{$\zz^{\prime}$}}
+\newcommand{\dzxp}{\mez \frac{\dpp (\zn + \zo)}{\dpp x}}
+\newcommand{\dzyp}{\mez \frac{\dpp (\zn + \zo)}{\dpp y}}
+\newcommand{\dzxn}{\mbox{$\frac{\dpp \zn}{\dpp x}$}}
+\newcommand{\dzyn}{\mbox{$\frac{\dpp \zn}{\dpp y}$}}
+\newcommand{\dzxo}{\mbox{$\frac{\dpp \zo}{\dpp x}$}}
+\newcommand{\dzyo}{\mbox{$\frac{\dpp \zo}{\dpp y}$}}
+
+\newcommand{\tdif}[1] {\frac{\partial #1}{\partial t}}
+\newcommand{\xdif}[1] {\frac{\partial #1}{\partial x}}
+\newcommand{\ydif}[1] {\frac{\partial #1}{\partial y}}
+\newcommand{\zdif}[1] {\frac{\partial #1}{\partial z}}
+\newcommand{\dt} {\mbox{$\Delta t$}}
+\newcommand{\dthalf} {\mbox{$\frac{\Delta t}{2}$}}
+\newcommand{\dtt} {\mbox{$\frac{\Delta t}{2}$}}
+\newcommand{\dx} {\mbox{$\Delta x$}}
+\newcommand{\dy} {\mbox{$\Delta y$}}
+
+\newcommand{\beq} {\begin{equation}}
+\newcommand{\eeq} {\end{equation}}
+\newcommand{\beqa} {\begin{eqnarray}}
+\newcommand{\eeqa} {\end{eqnarray}}
+
+\newcommand{\olds} {\mbox{$\scriptstyle (0)$}}
+\newcommand{\news} {\mbox{$\scriptstyle (1)$}}
+\newcommand{\meds} {\mbox{$\scriptscriptstyle (\frac{1}{2})$}}
+\newcommand{\half} {\mbox{$\scriptstyle \frac{1}{2}$}}
+
+\newcommand{\nsz} {\normalsize}
+\newcommand{\uold} {\mbox{$U^{\olds}$}}
+\newcommand{\vold} {\mbox{$V^{\olds}$}}
+\newcommand{\unew} {\mbox{$U^{\news}$}}
+\newcommand{\vnew} {\mbox{$V^{\news}$}}
+\newcommand{\zold} {\zeta^{(0)}}
+\newcommand{\znew} {\zeta^{(1)}}
+\newcommand{\resr} {{\cal R}}
+\newcommand{\drho} {\frac{1}{\rho_{0}}}
+\newcommand{\fracs}[2] {\mbox{$\frac{#1}{#2}$}}
+%\newcommand{\deltat} {\mbox{$\tilde{\delta}$}}
+%\newcommand{\gammat} {\mbox{$\tilde{\gamma}$}}
+\newcommand{\ffxx} {\tilde{f_x}}
+\newcommand{\ffyy} {\tilde{f_y}}
+
+\newcommand{\uv} {{\bf U}}
+\newcommand{\uvold} {{\bf U^{(0)}}}
+\newcommand{\uvnew} {{\bf U^{(1)}}}
+\newcommand{\af} {\alpha_{f}}
+\newcommand{\ac} {\alpha_{c}}
+\newcommand{\am} {\alpha_{m}}
+\newcommand{\duv} {\Delta {\bf U}}
+\newcommand{\dzeta} {\Delta \zeta}
+\newcommand{\iv} {{\bf I}}
+\newcommand{\ivh} {\hat{\bf I}}
+\newcommand{\fv} {{\bf F}}
+\newcommand{\uvh} {\hat{\bf U}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%% hyphenation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Equations and Boundary Conditions}
+
+The equations used in the model are the well known vertically integrated
+shallow water equations in their formulation with water levels and
+transports.
+
+\beq \label{ubar}
+\tdif{U} + gH \xdif{\zeta} + RU + X = 0
+\eeq
+\beq
+\tdif{V} + gH \ydif{\zeta} + RV + Y = 0
+\eeq
+\beq \label{zcon}
+\tdif{\zeta} + \xdif{U} + \ydif{V} = 0
+\eeq
+where $\zeta$ is the water level, $u,v$ the velocities in $x$ and $y$
+direction,
+$U,V$ the vertical integrated velocities (total  or barotropic
+transports)
+\[
+ U = \int_{-h}^{\zeta} u \: dz \; \hspace{1.cm}
+ V = \int_{-h}^{\zeta} v \: dz \;
+\]
+$g$ the gravitational acceleration, $H=h+\zeta$ the total water
+depth, $h$ the undisturbed water depth,
+$t$ the time and $R$ the friction coefficient. The terms $X,Y$ contain
+all other terms that may be added to the equations like the wind stress or
+the nonlinear terms and that need not be treated implicitly in the
+time discretization.
+following treatment.
+
+The friction coefficient has been expressed as
+\begin{equation}
+	R = \frac{g \sqrt{u^{2}+v^{2}}}{C^{2} H}
+\end{equation}
+with $C$ the Chezy coefficient. The Chezy term is itself not retained
+constant but varies with the water depth as
+\begin{equation}
+	C = k_{s} H^{1/6}
+\end{equation}
+where $k_{s}$ is the Strickler coefficient.
+
+In this version of the model the Coriolis term, the turbulent friction term
+and the nonlinear advective terms have not been implemented.
+
+At open boundaries the water levels are prescribed. At closed boundaries
+the normal velocity component is set to zero whereas the tangential velocity
+is a free parameter. This corresponds to a full slip condition.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+\section{The Model}
+
+The model uses the semi-implicit time discretization to accomplish
+the time integration. In the space the finite element method has
+been used, not in its standard formulation, but using staggered finite
+elements. In the following a description of the method is given.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\subsection{Discretization in Time - The Semi-Implicit Method}
+
+Looking for an efficient time integration method
+a semi-implicit scheme has been chosen.
+The semi-implicit scheme combines the advantages of
+the explicit and the implicit scheme. It is unconditionally stable for any
+time step $\dt$ chosen and allows the two momentum equations to be
+solved explicitly without solving a linear system. 
+
+The only equation
+that has to be solved implicitly is the continuity equation. Compared
+to a fully implicit solution of the shallow water equations the dimensions
+of the matrix are reduced to one third. Since the solution of a linear
+system is roughly proportional to the cube of the dimension of the system
+the saving in computing time is approximately a factor of 30.
+
+It has to be pointed out that it is important not to be limited with the time
+step by the CFL criterion for the speed of the external gravity waves
+\[
+        \dt < \frac{\dx}{\sqrt{gH}}
+\]
+where $\dx$ is the minimum distance between the nodes in an element.
+With the discretization described below in most parts of the lagoon
+we have $\dx \approx$ 500m and $H \approx$ 1m, so $\dt \approx 200$ sec.
+But the limitation of the time step is determined by the worst case.
+For example, for $\dx = 100$ m and $H = 40$ m
+the time step criterion would be $\dt < 5$ sec, a
+prohibitive small value.
+
+The equations (1)-(3) are discretized as follows
+\begin{equation}
+\label{zn}
+\frac{\zn-\zo}{\dt}
+                        + \mez \frac{\dpp (\un + \uo)}{\dpp x}
+                        + \mez \frac{\dpp (\vn + \vo)}{\dpp y} = 0
+\end{equation}
+\begin{equation}
+\frac{\un-\uo}{\dt} + gH \dzxp + R \un + X = 0
+\end{equation}
+\begin{equation}
+\frac{\vn-\vo}{\dt} + gH \dzyp + R \vn + Y = 0
+\end{equation}
+
+With this time discretization the friction term has been formulated
+fully implicit, $X,Y$ fully explicit and all the other terms
+have been centered in time. The reason for the implicit treatment
+of the friction term is to avoid a sign inversion in the term when
+the friction parameter gets too high. An example of this behavior is
+given in Backhaus \cite{Backhaus83}.
+
+If the two momentum equations are solved for the unknowns $\un$ and $\vn$
+we have
+\begin{equation}
+\label{un}
+\un = \frac{1}{1+\dt R} \paren{ \uo - \dt gH \dzxp - \dt X }
+\end{equation}
+\begin{equation}
+\label{vn}
+\vn = \frac{1}{1+\dt R} \paren{ \vo - \dt gH \dzyp - \dt Y }
+\end{equation}
+
+If $\zn$ were known, the solution for
+$\un$ and $\vn$ could directly be given. To find $\zn$ we insert
+(\ref{un}) and (\ref{vn}) in (\ref{zn}). After some transformations
+(\ref{zn}) reads
+\begin{eqnarray} \label{zsys}
+        \zn
+    & - &
+        (\dt/2)^{2} \frac{g}{1+\dt R}         \nonumber
+	\paren{ \frac{\dpp}{\dpp x}(H \dzxn) + \frac{\dpp}{\dpp y}(H \dzyn) } \\
+    & = &
+        \zo + (\dt/2)^{2} \frac{g}{1+\dt R}
+	\paren{ \frac{\dpp}{\dpp x}(H \dzxo) + \frac{\dpp}{\dpp y}(H \dzyo) } \\
+    & - & (\dt/2) \paren{ \frac{2+\dt R}{1+\dt R} }
+        \paren{                               \nonumber
+          \frac{\dpp \uo}{\dpp x}
+        + \frac{\dpp \vo}{\dpp y}
+        } \\
+    & + & \frac{\dt^{2}}{2(1+\dt R)}            \nonumber
+                \paren{ \frac{\dpp X}{\dpp x} + \frac{\dpp Y}{\dpp y} }
+\end{eqnarray}
+
+The terms on the left hand side contain the unknown $\zn$, the right hand
+contains only known values of the old time level. If the spatial derivatives
+are now expressed by the finite element method a linear system with the unknown
+$\zn$ is obtained and can be solved by standard methods. Once the solution
+for $\zn$ is obtained it can be substituted into (\ref{un}) and (\ref{vn})
+and these two equations can be solved explicitly. In this way all unknowns
+of the new time step have been found.
+
+Note that the variable $H$ also contains the water level through
+$H=h+\zz$. In order to avoid the equations to become nonlinear $\zz$
+is evaluated at the old time level so $H=h+\zo$ and $H$ is a known quantity.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\subsection{Discretization in Space - The Finite Element Method}
+
+
+While the time discretization has been explained above, the discretization
+in space has still to be carried out. This is done 
+using staggered finite elements. 
+With the semi-implicit method described above
+it is shown below that using linear triangular elements
+for all unknowns 
+will not be mass conserving. Furthermore the resulting model
+will have propagation properties that introduce high numeric damping
+in the solution of the equations.
+
+For these reasons a quite new approach has been adopted here. The water
+levels and the velocities (transports) are described by using form
+functions of different order, being the standard linear form functions
+for the water levels but stepwise constant form functions for the
+transports. This will result in a grid that resembles more a staggered
+grid in finite difference discretizations.
+
+\subsubsection{Formalism}
+
+Let $u$ be an approximate solution of a linear differential
+equation $L$. We expand $u$ with the help of basis functions $\phi_{m}$
+as
+\begin{equation}
+\label{exp}
+	u=\phi_{m} u_{m} \mbox{\hspace{1cm}} m=1,K
+\end{equation}
+where $u_{m}$ is the coefficient of the function $\phi_{m}$ and $K$
+is the order of the approximation.
+In case of linear finite
+elements it will just be the number of nodes of the grid used to
+discretize the domain.
+
+To find the values $u_{m}$ we try to minimize the residual
+that arises when $u$ is introduced into $L$ multiplying the equation $L$
+by some weighting functions $\Psi_{n}$ and
+integrating over the whole domain leading to
+\begin{equation}
+\label{int}
+\int_{\Omega} \psi_{n} L(u) \: d\Omega \; = 
+\int_{\Omega} \psi_{n} L(\phi_{m} u_{m}) \: d\Omega \;
+= u_{m} \int_{\Omega} \psi_{n} L(\phi_{m}) \: d\Omega \;
+\end{equation}
+
+If the integral is identified with the elements of a matrix $a_{nm}$
+we can write (\ref{int}) also as a linear system
+\begin{equation} \label{sys}
+	a_{nm}u_{m} = 0 \mbox{\hspace{1cm}} n=1,K \hspace{0.5cm} m=1,K
+\end{equation}
+
+Once the basis and weighting functions have been specified the system
+may be set up and (\ref{sys}) may be solved for the unknowns $u_{m}$.
+
+
+
+
+
+
+\subsubsection{Staggered Finite Elements}
+
+For decades finite elements have been used in fluid mechanics in
+a standardized manner.
+The form functions $\phi_{m}$ were chosen as continuous piecewise linear
+functions allowing a subdivision of the whole area of interest into small
+triangular elements specifying the coefficients $u_{m}$ at the vertices
+(called nodes)
+of the triangles. The functions $\phi_{m}$ are 1 at node
+$m$ and 0 at all other nodes and thus different from 0 only in the
+triangles containing the node $m$.
+An example is given in the upper left part of Fig. 1a
+where the form function for node $i$ is shown. The full circle indicates
+the node where the function $\phi_{i}$ take the value
+1 and the hollow circles where they are 0.
+
+
+\begin{figure}
+\vspace{5.cm}
+\caption{a) form functions in domain \hspace{1.cm} b) domain of
+influence of node $i$}
+%\end{figure}
+
+\begin{picture}(300,10)
+
+\put(10,30){
+\begin{picture}(1,1)
+\put(80,90){\line(0,1){30}}
+\put(80,90){\line(3,1){30}}
+\put(80,90){\line(2,-3){20}}
+\put(80,90){\line(-2,-3){20}}
+\put(80,90){\line(-3,1){30}}
+\put(60,60){\line(1,0){40}}
+\put(60,60){\line(1,-2){20}}
+\put(60,60){\line(-2,-3){20}}
+\put(60,60){\line(-4,1){40}}
+\put(60,60){\line(-1,4){10}}
+\put(50,100){\line(-1,-1){30}}
+\put(50,100){\line(-3,1){30}}
+\put(50,100){\line(-1,4){10}}
+\put(50,100){\line(3,2){30}}
+\put(80,120){\line(-2,1){40}}
+\put(80,120){\line(1,3){10}}
+\put(80,120){\line(3,-2){30}}
+\put(110,100){\line(-2,5){20}}
+\put(110,100){\line(1,1){30}}
+\put(110,100){\line(1,-1){30}}
+\put(110,100){\line(-1,-4){10}}
+\put(100,60){\line(4,1){40}}
+\put(100,60){\line(3,-4){30}}
+\put(100,60){\line(-1,-2){20}}
+\put(130,20){\line(1,5){10}}
+\put(130,20){\line(-1,0){50}}
+\put(140,130){\line(0,-1){60}}
+\put(140,130){\line(-5,2){50}}
+\put(40,140){\line(5,1){50}}
+\put(40,140){\line(-2,-3){20}}
+\put(20,110){\line(0,-4){40}}
+\put(40,30){\line(-1,2){20}}
+\put(40,30){\line(4,-1){40}}
+\thicklines
+\put(50,120){\line(1,-1){30}}
+\put(50,120){\line(1,0){30}}
+\put(50,120){\line(-1,2){10}}
+\put(50,120){\line(-3,-1){30}}
+\put(50,120){\line(-3,-5){30}}
+\put(50,120){\line(1,-6){10}}
+\put(50,120){\line(0,-1){20}}
+\put(100,80){\line(-1,-2){20}}
+\put(100,80){\line(3,-4){30}}
+\put(100,80){\line(0,-2){20}}
+\put(80,40){\line(0,-2){20}}
+\put(80,40){\line(1,0){50}}
+\put(130,40){\line(0,-2){20}}
+\thinlines
+\put(100,30){$n$}
+\put(45,88){$i$}
+\put(5,90){$\phi_{i}$}
+\put(100,10){$\psi_{n}$}
+%\put(80,90){\circle*{5}}
+%\put(60,60){\circle*{5}}
+\put(50,100){\circle*{5}}
+%\put(80,120){\circle*{5}}
+%\put(110,100){\circle*{5}}
+%\put(100,60){\circle*{5}}
+\put(100,60){\circle*{5}}
+\put(80,20){\circle*{5}}
+\put(130,20){\circle*{5}}
+%\put(50,100){\circle{7}}
+\put(80,90){\circle{7}}
+\put(80,120){\circle{7}}
+\put(60,60){\circle{7}}
+\put(20,70){\circle{7}}
+\put(20,110){\circle{7}}
+\put(40,140){\circle{7}}
+\end{picture}}
+%\end{center}
+
+
+
+%\put(250,30){
+\put(200,30){
+\begin{picture}(1,1)
+\put(80,90){\line(0,1){30}}
+\put(80,90){\line(3,1){30}}
+\put(80,90){\line(2,-3){20}}
+\put(80,90){\line(-2,-3){20}}
+\put(80,90){\line(-3,1){30}}
+\put(60,60){\line(1,0){40}}
+\put(60,60){\line(1,-2){20}}
+\put(60,60){\line(-2,-3){20}}
+\put(60,60){\line(-4,1){40}}
+\put(60,60){\line(-1,4){10}}
+\put(50,100){\line(-1,-1){30}}
+\put(50,100){\line(-3,1){30}}
+\put(50,100){\line(-1,4){10}}
+\put(50,100){\line(3,2){30}}
+\put(80,120){\line(-2,1){40}}
+\put(80,120){\line(1,3){10}}
+\put(80,120){\line(3,-2){30}}
+\put(110,100){\line(-2,5){20}}
+\put(110,100){\line(1,1){30}}
+\put(110,100){\line(1,-1){30}}
+\put(110,100){\line(-1,-4){10}}
+\put(100,60){\line(4,1){40}}
+\put(100,60){\line(3,-4){30}}
+\put(100,60){\line(-1,-2){20}}
+\put(130,20){\line(1,5){10}}
+\put(130,20){\line(-1,0){50}}
+\put(140,130){\line(0,-1){60}}
+\put(140,130){\line(-5,2){50}}
+\put(40,140){\line(5,1){50}}
+\put(40,140){\line(-2,-3){20}}
+\put(20,110){\line(0,-4){40}}
+\put(40,30){\line(-1,2){20}}
+\put(40,30){\line(4,-1){40}}
+\put(85,95){$i$}
+\put(53,107){$j$}
+\put(80,90){\circle*{5}}
+\put(60,60){\circle*{5}}
+\put(50,100){\circle*{5}}
+\put(80,120){\circle*{5}}
+\put(110,100){\circle*{5}}
+\put(100,60){\circle*{5}}
+\put(50,100){\circle{7}}
+\put(80,90){\circle{7}}
+\put(80,120){\circle{7}}
+\put(60,60){\circle{7}}
+\put(20,70){\circle{7}}
+\put(20,110){\circle{7}}
+\put(40,140){\circle{7}}
+\end{picture}}
+
+\end{picture}
+
+
+\end{figure}
+
+
+The contributions $a_{nm}$ to the system matrix
+are therefore different from 0 only in
+elements containing node $m$ and the evaluation of the matrix elements
+can be performed on an element basis where all coefficients and unknowns
+are linear functions of $x$ and $y$.
+
+This approach is straightforward but not very satisfying with the
+semi-implicit time stepping scheme for reasons explained below.
+Therefore
+an other way has been followed in the present formulation. The fluid domain
+is still divided in triangles and the water levels are still defined
+at the nodes of the grid
+and represented by piecewise linear interpolating functions
+in the internal of each element, i.e.
+\[
+        \zeta = \zeta_{m} \phi_{m} \hspace{1cm} m=1,K
+\]
+However, the transports are now
+expanded, over each triangle, with piecewise constant
+(non continuous) form functions $\psi_{n}$ over the whole domain. We therefore
+write
+\[
+        U = U_{n} \psi_{n} \hspace{1cm} n=1,J
+\]
+where $n$ is now running over all
+triangles and $J$ is the total number of triangles.
+An example of $\psi_{n}$ is given in the lower right part of Fig. 1a.
+Note that the form function is constant 1 over the whole element,
+but outside the element identically 0. Thus it is discontinuous
+at the element borders.
+
+Since we may
+identify the center of gravity of the triangle with the point where
+the transports $U_{n}$ are defined (contrary to the water levels
+$\zeta_{m}$ which are defined on the vertices of the triangles), the
+resulting grid may be seen as a staggered grid where the unknowns
+are defined on different locations. This kind of grid is usually used
+with the finite difference method. With the form functions used here
+the grid of the finite element model resembles
+very much an Arakawa B-grid that defines the water levels on the center
+and the velocities on the four vertices of a square.
+
+Staggered finite elements have been first introduced into
+fluid mechanics by Schoenstadt \cite{Schoenstadt80}. 
+He showed that the un-staggered
+finite element formulation of the shallow water equations has very
+poor geostrophic adjustment properties. Williams 
+\cite{Williams81a, Williams81b}
+proposed a similar algorithm, the one
+actually used in this paper, introducing constant form functions for the
+velocities. He showed the excellent propagation and geostrophic
+adjustment properties of this scheme.
+
+
+\subsubsection{The Practical Realization}
+
+The integration of the partial differential equation is now performed by
+using the subdivision of the domain in elements (triangles). The
+water levels $\zeta$ are expanded in piecewise linear functions
+$\phi_{m}, \; m=1,K$ and
+the transports are expanded in piecewise constant functions
+$\psi_{n}, \; n=1,J$ where $K$ and $J$ are the total number of nodes
+and elements respectively.
+
+As weighting functions we use $\psi_{n}$ for the momentum equations
+and $\phi_{m}$ for the continuity equation. In this way there will
+be $K$ equations for the unknowns $\zeta$ (one for each node) and
+$J$ equations for the transports (one for each element).
+
+In all cases the consistent mass matrix has been substituted with
+the their lumped equivalent. This was mainly done
+to avoid solving a linear system in the case of the momentum equations.
+But it was of use also in the solution of the continuity equation
+because the amount of mass relative to 
+one node does not depend on the surrounding
+nodes. This was important especially for the flood and dry mechanism
+in order to conserve mass.
+
+
+\subsubsection{Finite Element Equations}
+
+If equations (\ref{un},\ref{vn},\ref{zsys}) are multiplied with their
+weighting functions and integrated over an element we can write down
+the finite element equations. But the solution of the water levels does
+actually not use the continuity equation in the form (\ref{zsys}), but
+a slightly different formulation. Starting from equation (\ref{zn}),
+multiplied by the weighting function $\Phi_{M}$ and integrated over one
+element yields
+
+
+\[
+          \int_{\Omega} \Phi_{N} (\zn-\zo) \: d\Omega \;
++ (\dthalf) \int_{\Omega} 
+	  \left( 
+	   \Phi_{N} \frac{\dpp (\un + \uo)}{\dpp x} 
++          \Phi_{N} \frac{\dpp (\vn + \vo)}{\dpp y} 
+          \right)
+	  \: d\Omega \;
+= 0
+\]
+If we integrate by parts the last two integrals we obtain
+\[
+          \int_{\Omega} \Phi_{N} (\zn-\zo) \: d\Omega \;
+- (\dthalf) \int_{\Omega} 
+	  \left( 
+	    \frac{\dpp \Phi_{N}}{\dpp x} (\un+\uo) 
++           \frac{\dpp \Phi_{N}}{\dpp y} (\vn+\vo)
+	  \right)
+	  \: d\Omega \;
+= 0
+\]
+plus two line integrals, not shown, over the boundary of each element
+that specify the normal flux over the three element
+sides. In the interior of the domain,
+once all contributions of all elements have
+been summed, these terms cancel at every node,
+leaving only the contribution of the
+line integral on the boundary of the domain. There, however, the
+boundary condition to impose is exactly no normal flux over
+material boundaries. Thus, the contribution of these line integrals
+is zero.
+
+If now the expressions for $\un,\vn$ are introduced, we obtain a system
+with again only the water levels as unknowns
+\beqa
+\int_{\Omega} \Phi_{N} \zn \: d\Omega \;
+ & + & (\dt/2)^{2} \alpha g 
+\int_{\Omega} H ( \xdif{\Phi_{N}} \xdif{\zn}  \nonumber
+ + \ydif{\Phi_{N}} \ydif{\zn} ) \: d\Omega \; \\
+ & = &
+\int_{\Omega} \Phi_{N} \zo \: d\Omega \;	\nonumber
++ (\dt/2)^{2} \alpha g 
+\int_{\Omega} H ( \xdif{\Phi_{N}} \xdif{\zo} 
+ + \ydif{\Phi_{N}} \ydif{\zo} ) \: d\Omega \;  \\
+ & + &
+ (\dt/2)(1+\alpha) \int_{\Omega}  
+  ( \xdif{\Phi_{N}} \uo + \ydif{\Phi_{N}} \vo ) \: d\Omega \; \\
+ & - & (\dt^{2}/2) \alpha \nonumber
+\int_{\Omega} ( \xdif{\Phi_{N}} X + \ydif{\Phi_{N}} Y ) \: d\Omega \; 
+\eeqa
+Here we have introduced the symbol $\alpha$ as a shortcut for
+\[
+\alpha = \frac{1}{1+\dt R}
+\]
+The variables and unknowns may now be expanded with their basis
+functions and the complete system may be set up.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Mass Conservation}
+
+It should be pointed out that only through the use of this staggered grid
+the semi-implicit time discretization may be implemented in a feasible
+manner. If the Galerkin method is applied
+ in a naive way to the resulting equation
+(\ref{zsys}) (introducing the linear form functions for transports
+and water levels and setting up the system matrix),
+the model is not mass conserving.
+This may be seen in the following way (see Fig. 1b for reference).
+In the computation of the water level at
+node $i$, only $\zeta$ and transport values
+belonging to triangles that contain node $i$ enter the computation
+(full circles in Fig. 1b).
+But when, in a second step, the barotropic transports
+of node $j$ are computed, water levels of nodes that lie further apart
+from the original node $i$ are used
+(hollow circles in Fig. 1b).
+These water levels have not been included in
+the computation of $\zeta_i$, the water level at node $i$.
+So the computed transports are actually different
+from the transports inserted formally in the continuity equation.
+The continuity equation is therefore not satisfied.
+
+These contributions of nodes lying further apart could in principle
+be accounted for. In this case
+not only the triangles
+$\Omega_{i}$ around node $i$ but also all the triangles that have
+nodes in common with the triangles $\Omega_{i}$ would give
+contributions to node $i$, namely all nodes and elements shown
+in Fig. 1b.
+The result would be
+an increase of the bandwidth of the matrix for the $\zeta$ computation
+disadvantageous in terms of memory and time requirements.
+
+Using instead the approach of the staggered finite elements, actually
+only the water levels of elements around node $i$ are needed for
+the computation of the transports in the triangles $\Omega_i$.
+In this case the model satisfies the
+continuity equation and is perfectly mass conserving.
+
+
+
+\subsection{Inter-tidal Flats}
+
+Part of a basin may consist of areas that are
+flooded during high tides and emerge as islands at ebb tide. These
+inter-tidal flats are quite difficult to handle numerically because
+the elements that represent these areas are neither
+islands nor water elements. The boundary line defining their
+contours is wandering during the evolution
+of time and a mathematical model must reproduce this features.
+
+For reasons of computer time savings a simplified algorithm has been chosen
+to represent the inter-tidal flats. When the water level in at least
+one of the three nodes of an element falls below a minimum value (5 cm)
+the element is considered an island and is taken out of the system.
+It will be reintroduced only when in all three
+nodes the water level is again higher then the minimum value.
+Because in dry nodes no water level is computed anymore, an estimate
+of the water level has to be given with some sort of extrapolation mechanism
+using the water nodes nearby.
+
+This algorithm has the advantage that it is very easy to
+implement and very fast. The dynamical features close to the
+inter-tidal flats are of course not well reproduced but the
+behavior of the method for the rest of the lagoon
+gave satisfactory results.
+
+In any case, since the method stores the water levels of the
+last time step, before the element is switched off, introducing the
+element in a later moment with the same water levels conserves the
+mass balance. This method showed a much better performance
+than the one where the new elements were introduced with the water
+levels taken from the extrapolation of the surrounding nodes.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

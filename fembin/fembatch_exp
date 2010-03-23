@@ -1,0 +1,21 @@
+#!/bin/sh
+
+n=40
+rmax=32768
+tmin=32
+tmax=4096
+
+t=$tmin
+
+while [ $n -gt 0 ] 
+do
+  ran=$RANDOM
+  (( n = n - 1 ))
+#  (( t = t * 2 ))
+  [ $t -gt $tmax ] && t=$tmax
+  (( twait = (ran * t / rmax) + (t / 2) ))
+  echo $n $t $ran $twait
+  echo "sleeping for $twait seconds..."
+  sleep $twait
+done
+

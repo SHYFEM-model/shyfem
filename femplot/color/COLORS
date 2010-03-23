@@ -1,0 +1,117 @@
+From brando@unive.it Tue Jun  1 15:41:53 1999
+Received: from helios.unive.it by lagoon.isdgm.ve.cnr.it; (5.65/1.1.8.2/22Nov94-0422PM)
+	id AA06017; Tue, 1 Jun 1999 15:41:50 +0200
+Received: from unive.it ([150.178.40.185]) by helios.unive.it (8.7.5/8.7.5) with ESMTP id PAA05159 for <georg@lagoon.isdgm.ve.cnr.it>; Tue, 1 Jun 1999 15:41:40 +0200 (METDST)
+Message-Id: <3753E2F8.30BE959A@unive.it>
+Date: Tue, 01 Jun 1999 15:41:12 +0200
+From: vittorio brando <brando@unive.it>
+Organization: universita' di venezia
+X-Mailer: Mozilla 4.5 [en] (Win95; I)
+X-Accept-Language: en
+Mime-Version: 1.0
+To: Georg Umgiesser <georg@lagoon.isdgm.ve.cnr.it>
+Subject: colori
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Status: RO
+
+8.2 - HSI, HSL, HSV, and related color spaces 
+
+The representation of the colors in the RGB and CMY(K) color spaces are
+designed for specific devices. But for a human observer, they are not
+useful definitions. For user interfaces a more intuitive color space,
+designed for the way we actually think about color is to be preferred.
+Such a
+color space is HSI; Hue, Saturation and Intensity, which can be thought
+of as a RGB cube tipped up onto one corner. The line from RGB=min to
+RGB=max becomes verticle and is the intensity axis. The position of a
+point on the circumference of a circle around this axis is the hue and
+the
+saturation is the radius from the central intensity axis to the color. 
+
+                 Green
+                  /\
+                /    \    ^
+              /V=1 x   \   \ Hue (angle, so that Hue(Red)=0, 
+       Blue -------------- Red       Hue(Green)=120, and Hue(blue)=240
+deg)
+            \      |     /
+             \     |-> Saturation (distance from the central axis)
+              \    |   /
+               \   |  /
+                \  | /
+                 \ |/
+               V=0 x (Intensity=0 at the top of the apex and =1 at the
+base of the cone)
+
+The big disadvantage of this model is the conversion which is mainly
+because the hue is expressed as an angle. The transforms are given
+below: 
+
+    Hue = (Alpha-arctan((Red-intensity)*(3^0.5)/(Green-Blue)))/(2*PI)
+    with { Alpha=PI/2 if Green>Blue
+         { Aplha=3*PI/2 if Green<Blue
+         { Hue=1 if Green=Blue
+    Saturation =
+(Red^2+Green^2+Blue^2-Red*Green-Red*Blue-Blue*Green)^0.5
+    Intensity = (Red+Green+Blue)/3
+
+Note that you have to compute Intensity *before* Hue. If not, you must
+assume that: 
+
+    Hue =
+(Alpha-arctan((2*Red-Green-Blue)/((Green-Blue)*(3^0.5))))/(2*PI).
+
+I assume that H, S, L, R, G, and B are within the range of [0;1].
+Another point of view of this cone is to project the coordinates onto
+the base.
+The 2D projection is: 
+
+    Red:   (1;0)
+    Green: (cos(120 deg);sin(120 deg)) = (-0.5; 0.866)
+    Blue:  (cos(240 deg);sin(240 deg)) = (-0.5;-0.866)
+    Now you need intermediate coordinates:
+    x = Red-0.5*(Green+Blue)
+    y = 0.866*(Green-Blue)
+
+Finally, you have: 
+
+    Hue = arctan2(x,y)/(2*PI) ; Just one formula, always in the correct
+quadrant
+    Saturation = (x^2+y^2)^0.5
+    Intensity = (Red+Green+Blue)/3
+
+Another model close to HSI is HSL. It's actually a double cone with
+black and white points placed at the two apexes of the double cone. I
+don't
+provide formula, but feel free to send me the formula you could find.
+;-) 
+
+    we got this from Fabrice Lestideau :
+    Hi,
+    I give you the formula of the HLS color space:
+    L= (max+min)/2
+    if L<=0.5     S=(max-min)/(max+min)
+    else               S=(max-min)/(2-max-min)
+
+    if (max=R)        H=(G-B)/(max-min)
+    if (max+G)        H=(2+(B-R)/(max-min))
+    if (max+B)        H=(4+(R-G)/(max-min))
+
+    thank you for your color faq.
+
+    you're welcome.
+
+Actually, here are many variations on HSI, e.g. HSL, HSV, HCI (chroma /
+colorfulness), HVC, TSD (hue saturation and darkness) etc. But they
+all do basically the same thing. 
+
+-- 
+Vittorio E. Brando
+brando@unive.it			CNR-ISDGM:  tel ++39+0415216813
+--------------------------------------------------------------------
+Universita' di Venezia  Dip. Scienze Ambientali |tel ++39-0412577701
+Dorsoduro 2137          30123 Venezia ITALIA    |fax ++39-0412578584
+--------------------------------------------------------------------
+Private: S.Marco, 3536  30124 Venezia ITALIA     tel ++39-0415207043
+

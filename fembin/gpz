@@ -1,0 +1,48 @@
+#!/bin/sh
+
+Usage()
+{
+  echo "Usage: gpz [-hour|-day] [title] file(s)"
+  exit 0
+}
+
+[ $# -eq 0 ] && Usage
+
+if [ "$1" = "-hour" ]; then
+  conv="-h"
+  xtitle="time [hours]"
+  shift
+elif [ "$1" = "-day" ]; then
+  conv="-d"
+  xtitle="time [days]"
+  shift
+else
+  xtitle="time [sec]"
+  conv=""
+fi
+
+ytitle="water level [m]"
+
+[ $# -eq 0 ] && Usage
+
+if [ ! -f "$1" ]; then
+  title=$1
+  shift
+else
+  title="Water levels"
+fi
+
+[ $# -eq 0 ] && Usage
+
+files=""
+
+for file
+do
+  newfile="conv.$file"
+  s2s $conv $file > $newfile
+  files="$files $newfile"
+done
+
+gp -t "$title" -tx "$xtitle" -ty "$ytitle" -l "conv." $files
+
+

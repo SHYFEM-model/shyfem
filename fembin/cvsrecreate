@@ -1,0 +1,129 @@
+#!/bin/bash
+#
+# exports all files from repository for a given version
+#
+# new dir is named repository_$version
+#
+#################################################################
+
+base=$HOME/CVS
+
+#----------------------------------------------------
+# functions
+#----------------------------------------------------
+
+FullUsage()
+{
+  Usage
+  echo "  -h|-help          this help screen"
+  echo ""
+  echo "Creates all files of version of repository."
+  echo "Puts them in directory repository_version."
+}
+
+Usage()
+{
+  echo "Usage: cvsrecreate [-h|-help] [-options] repository version"
+}
+
+GetRepos()	#strips Attic and gets all subdirs of repository
+{
+  local rcsdir newdirs base lastbase repos dirs dir full
+
+  rcsdir=$1
+  newdirs=""
+  
+  base=`dirname $rcsdir`
+  lastbase=`basename $base`	#we need this for sed (HACK)
+
+  repos=`du $rcsdir | sed -e 's/^[0-9]* *//' | sed -e 's/^\t*//'`
+
+  for dirs in $repos
+  do
+    dir=`basename $dirs`
+    full=`echo $dirs | sed -e "s/^.*\/$lastbase\///"`
+    echo "$base ($lastbase)  $dir  $full"
+    [ $dir = "Attic" ] || newdirs="$newdirs $full"
+  done
+
+  echo "repositories found: $newdirs"
+
+  reposdirs=$newdirs	#this is global and given back
+}
+
+ExtractFiles()
+{
+  local newdir rcsdir version
+  local vfile file rcsfile
+
+  newdir=$1
+  rcsdir=$2
+  version=$3
+
+  echo "==================================================="
+  echo "extracting from repository: $rcsdir"
+  echo "==================================================="
+
+  for vfile in `ls $rcsdir/*,v`
+  do
+    file=`basename $vfile ",v"`
+    rcsfile=$rcsdir/$file
+    Find_rev_to_version $rcsfile $version
+    if [ -z "$revision" ]; then
+      revision="***"
+    else
+      co -p -r$revision $rcsfile > $newdir/$file 2> /dev/null
+    fi
+    echo "file:   $file   $version   $revision"
+  done
+}
+
+#----------------------------------------------------
+
+. cvs_utils.sh
+
+#----------------------------------------------------
+# arguments and options
+#----------------------------------------------------
+
+while [ -n "$1" ]
+do
+   case $1 in
+        -h|-help)       FullUsage; exit 0;;
+        -*)             no such option: $1; exit 1;;
+        *)              break;;
+   esac
+   shift
+done
+
+if [ $# -lt 2 ]; then
+  Usage
+  exit 1
+fi
+
+repos=$1
+version=$2
+
+#----------------------------------------------------
+# set up arguments
+#----------------------------------------------------
+
+rcsdir=$base/$repos
+GetRepos $rcsdir		#sets reposdirs
+
+newbasedir=${repos}_$version
+mkdir -p $newbasedir
+
+for rep in $reposdirs
+do
+  rcsdir=$base/$rep
+  newdir=$newbasedir/$rep
+  mkdir -p $newdir
+  ExtractFiles $newdir $rcsdir $version
+  ExtractFiles $newdir $rcsdir/Attic $version
+done
+
+#----------------------------------------------------
+# end of routine
+#----------------------------------------------------
+

@@ -1,0 +1,117 @@
+
+% $Id: pspost.tex,v 1.6 1998/03/19 11:01:54 georg Exp $
+
+\documentclass{article}
+
+\usepackage{shortvrb}
+
+\newcommand{\psp}{{\tt pspost}}
+\newcommand{\VERSION}{1.2}
+
+\MakeShortVerb{\|}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% front matter
+
+\title{%
+	\psp
+	\\Doing Graphics in PostScript
+	\\with Fortran and C
+	}
+
+\author{%
+	Georg Umgiesser
+	\\ISDGM-CNR, S. Polo 1364
+	\\30125 Venezia, Italy
+	\vspace{1cm}
+	\\Version \VERSION
+	}
+
+%\address{ISDGM-CNR}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% document
+
+\begin{document}
+
+\pagenumbering{roman}
+\pagestyle{plain}
+
+\maketitle
+
+\begin{abstract}
+A simple graphic plotting package is presented that can be used for
+the creation of PostScript graphics. The routines are callable from
+Fortran and C.
+
+Only the basic plotting commands have been implemented. The library
+allows you to plot lines and points, fill arbitrary shapes
+with arbitrary color and write text with an arbitrary point size.
+It also allows for producing more pages in one plot. Color can be
+used as gray scale or through the RGB and HSB color spaces.
+The coordinate system may be set to best adjust to the drawing.
+Clipping graphics in a given rectangle is implemented.
+\end{abstract}
+
+\thispagestyle{empty}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section*{Disclaimer}
+\addcontentsline{toc}{section}{Disclaimer}
+
+
+\begin{quotation}
+  									 
+   Copyright (c) 1992-1997 by Georg Umgiesser				 
+  									 
+   Permission to use, copy, modify, and distribute this software	 
+   and its documentation for any purpose and without fee is hereby	 
+   granted, provided that the above copyright notice appear in all	 
+   copies and that both that copyright notice and this permission	 
+   notice appear in supporting documentation.				 
+  									 
+   This file is provided AS IS with no warranties of any kind.		 
+   The author shall have no liability with respect to the		 
+   infringement of copyrights, trade secrets or any patents by		 
+   this file or any part thereof.  In no event will the author		 
+   be liable for any lost revenue or profits or other special,		 
+   indirect and consequential damages.					 
+  									 
+   Comments and additions should be sent to the author:			 
+  									 
+	\begin{verbatim}
+  			Georg Umgiesser					 
+  			ISDGM/CNR					 
+  			S. Polo 1364					 
+  			30125 Venezia					 
+  			Italy						 
+  									 
+  			Tel.   : ++39-41-5216875			 
+  			Fax    : ++39-41-2602340			 
+  			E-Mail : georg@lagoon.isdgm.ve.cnr.it		 
+	\end{verbatim}
+\end{quotation}
+
+\section*{Availability}
+\addcontentsline{toc}{section}{Availability}
+
+
+The library \psp{} is available free of charge bye anonymous ftp.
+Connect to
+|ftp.isdgm.ve.cnr.it| and look in the directory |/pub/|\psp{}.
+Please read the README file of the distribution. Only source code
+is available.
+
+The library should compile out of the box for nearly all Unix-like
+systems. Please follow the instructions in the README file.
+
+Please send bug reports to the author (|georg@lagoon.isdgm.ve.cnr.it|).
+
+
+\newpage
+
+\pagenumbering{arabic}
+

@@ -1,0 +1,36 @@
+
+$title
+    apnconz
+$end
+
+        x0 =  -5000.  y0 = -4000.
+        x1 = 5000.  y1 = 4000.
+    
+        x0leg =  2000.  y0leg = -4000.
+        x1leg = 4500.  y1leg = -3000.
+
+
+        x0 =  20000.  y0 = 30000.
+        x1 =  27000.  y1 = 37000.
+
+$para
+        velfac = 2000.
+        trafac = 300.
+
+        x0 =  -0.1  y0 = -0.1
+        x1 =  1.1  y1 = 1.1
+
+$end
+
+$color
+        x0col = 0.5  y0col = 0.1
+        x1col = 0.8  y1col = 0.2
+        legcol = 'nodal value'
+        ndccol = 1  faccol = 1.
+        icolor = 1
+	colmin = 0.1  colmax = 0.9
+        isoval =  1.5 2.5 3.5 4.5
+	isolin = 1
+$end
+
+        color =  .65   .7   .75  .8   .85  .9   .95   1.

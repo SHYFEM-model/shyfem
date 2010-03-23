@@ -1,0 +1,36 @@
+#!/bin/sh
+
+batchdir=/$HOME/tmp/hp/hpbatch
+infodir=/$HOME/tmp/hp/hpinfo
+overall_dir="$HOME/adm"
+batch_log="$overall_dir/batch.log"
+
+ninfo=`ls -1 $infodir | wc -l`
+nbatch=`ls -1 $batchdir | wc -l`
+
+exe=""
+line=""
+
+if [ $ninfo -eq 0 ]; then
+  if [ $nbatch -ne 0 ]; then
+    exe=`ls -1 $batchdir | head -1`
+    line="executing $exe"
+  else
+    line="nothing to execute"
+  fi
+else
+  line="waiting for other process to finish"
+fi
+
+if [ -n "$exe" ]; then
+  sh $batchdir/$exe
+fi
+
+echo "==================================="	>> $batch_log
+echo "changes in directory $batchdir"		>> $batch_log
+echo "ninfo = $ninfo   nbatch = $nbatch"	>> $batch_log
+echo "$line"					>> $batch_log
+date						>> $batch_log
+ls -la $batchdir				>> $batch_log
+echo "==================================="	>> $batch_log
+

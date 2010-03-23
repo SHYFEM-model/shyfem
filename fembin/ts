@@ -1,0 +1,81 @@
+#!/bin/sh
+#
+# time series manipulation routine
+#
+# time series must be in columns with blanks between fields
+
+Usage()
+{
+  echo "Usage: ts [-h|-help] [options] file(s)"
+}
+
+UnknownOption()
+{
+  echo "Unknown option: $1"
+  echo "Usage: ts [-h|-help] [options] file(s)"
+}
+
+#------------------------------------------------------------
+
+timecol=NO
+timeinc=1
+time0=0
+min=0
+max=0
+cols=1		#later 1-	0 is time column
+add=0
+mult=1
+transform=NO
+scale=NO
+inline=NO
+
+#------------------------------------------------------------
+
+new=/tmp/tmp.ts.$$.tmp
+
+#------------------------------------------------------------
+
+while [ -n "$1" ]
+do
+     case $1 in
+          -h|-help)     Usage; exit 1;;
+          -t)           timecol=YES;;
+          -dt)          timeinc=$2; shift;;
+          -t0)          time0=$2; shift;;
+          -c)           cols=$2; shift;;
+          -a)           add=$2; transform=YES; shift;;
+          -m)           mult=$2; transform=YES; shift;;
+	  -i)		inline="YES";;
+          -min)         min=$2; scale=YES; shift;;
+          -max)         max=$2; scale=YES; shift;;
+          -*)           UnknownOption $1; exit 1;;
+          *)            break;;
+     esac
+     shift
+done
+
+[ $# -le 0 ] && (Usage; exit 1)
+
+for file
+do
+
+  if [ $transform = "YES" ]; then
+    ts.pl -transform $cols $add $mult $file | align > $new
+  fi
+
+  if [ $scale = "YES" ]; then
+    ts.pl -scale $cols $min $max $file | align > $new
+  fi
+
+  if [ $inline = "YES" ]; then
+    cp $file $file.bak	#just to be sure
+    mv --backup=numbered $new $file
+  else
+    cat $new
+    rm -f $new
+  fi
+
+done
+
+#------------------------------------------------------------
+

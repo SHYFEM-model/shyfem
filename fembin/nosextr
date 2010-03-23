@@ -1,0 +1,72 @@
+#!/bin/sh
+
+Usage()
+{
+  echo "nosextr [-h|-help] {-nodes|-records|-gis} data"
+  echo "    -nodes      extract nodes given in data"
+  echo "    -records    extract records given in data"
+  echo "    -gis        extract records given in data in gis format"
+  echo "    data        file containing node/record numbers (one on each line)"
+  echo "    either -nodes, -reocrds, -gis must be specified"
+  exit 0
+}
+
+#-------------------------------------------------- options
+
+if [ $# -eq 0 ]; then
+  Usage
+elif [ $1 = "-h" -o $1 = "-help" ]; then
+  Usage
+fi
+
+if [ $1 = "-nodes" ]; then
+  what=nodes
+elif [ $1 = "-records" ]; then
+  what=records
+elif [ $1 = "-gis" ]; then
+  what=gis
+else
+  Usage
+fi
+
+shift
+
+if [ $# -eq 0 ]; then
+  Usage
+fi
+
+datafile=$1
+femdir=$HOME/fem
+bindir=$femdir/fem3d
+tmpfile=extr.tmp
+
+if [ ! -f $datafile ]; then
+  echo "*** datafile $datafile is not existing ... aborting"
+  exit 1
+fi
+
+#-------------------------------------------------- prepare input file
+
+if [ $what = "nodes" ]; then
+  echo ""  > $tmpfile
+  echo "" >> $tmpfile
+  cat $datafile >> $tmpfile
+  echo "0" >> $tmpfile
+
+  $bindir/nosextr_nodes < $tmpfile
+elif [ $what = "gis" ]; then
+  echo ""  > $tmpfile
+  echo "" >> $tmpfile
+  cat $datafile >> $tmpfile
+  echo "0" >> $tmpfile
+
+  $bindir/nosextr_gis < $tmpfile
+else
+  echo ""  > $tmpfile
+  cat $datafile >> $tmpfile
+  echo "0" >> $tmpfile
+
+  $bindir/nosextr_records < $tmpfile
+fi
+
+#-------------------------------------------------- run programs

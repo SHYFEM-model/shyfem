@@ -1,0 +1,74 @@
+#!/usr/bin/perl
+#
+# computes time difference
+#
+# Usage: timediff time1 time2
+#
+# where time is given in standard date format: 
+#
+# Tue Jun  9 13:33:49 MET DST 1998
+
+%months = (
+                Jan => 1,
+                Feb => 2,
+                Mar => 3,
+                Apr => 4,
+                May => 5,
+                Jun => 6,
+                Jul => 7,
+                Aug => 8,
+                Sep => 9,
+                Oct => 10,
+                Nov => 11,
+                Dec => 12
+           );
+
+@days = ( 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 );
+
+
+$t1 = shift;
+$t2 = shift;
+
+#print "$t1 - $t2\n";
+
+$s1 = &make_seconds($t1);
+$s2 = &make_seconds($t2);
+
+$s = $s2 - $s1;
+
+print "$s\n";
+
+########################
+
+sub make_seconds {
+
+  $_ = $_[0];
+
+  s/^\s*//;
+
+  my @f = split;
+
+  my $year = $f[6];
+  my $day = $f[2];
+  my $month = $f[1];
+  my $time = $f[3];
+
+  my ($hour,$min,$sec) = split(":",$time);
+
+  my $aux = $months{$month};
+  die "Unknown month: $month\n" if ( $aux < 1 || $aux > 12 );
+  $month = $aux;
+
+#  print "$year $month $day $hour $min $sec\n";
+
+  $time = $sec + 60 * $min + 3600 * $hour;
+
+  my $days = $day - 1;
+  for($i=0;$i<$month;$i++) {
+    $days += $days[$i];
+  }
+  $time += 86400 * $days;
+
+  $year -= 2000;		# relative year 2000
+  $time += $year * 365 * 86400;
+}

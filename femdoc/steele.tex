@@ -1,0 +1,128 @@
+%\documentclass{article}
+%\usepackage{a4}
+%\usepackage{shortvrb}
+%
+%\MakeShortVerb{\|}
+%\newcommand{\beq}{\begin{equation}}
+%\newcommand{\eeq}{\end{equation}}
+%
+%\begin{document}
+
+\newcommand{\IL}{\frac{I}{I_o}}
+\newcommand{\IiL}{\frac{I_i}{I_o}}
+\newcommand{\IiS}{\frac{I_i}{I_s}}
+\newcommand{\IaL}{\frac{I_a}{I_o}}
+\newcommand{\ekz}{e^{-kz}}
+\newcommand{\ekH}{e^{-kH}}
+\newcommand{\PO}{\overline{P(t)}}
+\newcommand{\POO}{\overline{P}}
+
+
+
+\subsection{Light attenuation formula by Steele and Di Toro}
+
+The well known light limitation function proposed by Steele
+is given as:
+
+\beq \label{SteeleOrig}
+P = \IL e^{1-\IL}
+\eeq
+where $I$ is the light intensity and $I_o$ the optimal light
+intensity. $P$ is the limiting function and takes values
+between 0 and 1.
+
+In this form, $P$ is a function of depth $z$ and of time $t$
+($P = P(z,t)$) since the light intensity depends on depth and time
+($I = I(z,t)$). The depth dependence of $I$ can be written as
+\beq \label{DepthExt}
+I(z) = I_i e^{-kz}
+\eeq
+where $I_i$ is the incident light intensity 
+on the surface (still dependent on time) and
+$k$ is an extinction coefficient. Inserting (\ref{DepthExt})
+into (\ref{SteeleOrig}) gives the equation
+\beq \label{start}
+P(z,t) = \IiL \ekz e^{1-\IiL\ekz} = e \IiL \ekz e^{\IiL\ekz}.
+\eeq
+
+We now compute the average of $P$ over the water column.
+This gives
+\[
+\PO = \frac{1}{H} \int_0^H P(z,t) dz = 
+	\frac{e \IiL}{H} \int_0^H \ekz e^{-\IiL\ekz} dz.
+\]
+With the substitution $x = \ekz$ and therefore 
+$dx/dz = -k \ekz = -kx$ the integral can be transformed into
+\[
+\PO = \frac{e \IiL}{H} \int_0^H x e^{-\IiL x} \frac{-1}{kx} dx
+	= - \frac{e \IiL}{kH} \int_0^H e^{-\IiL x} dx.
+\]
+Solving this integral gives finally
+\beq \label{Steele}
+\PO = \frac{e}{kH} \left[ e^{-\IiL x} \right]_0^H
+	= \frac{e}{kH} \left[ e^{-\IiL \ekz} \right]_0^H
+	= \frac{e}{kH} \left[ e^{-\IiL \ekH} - e^{-\IiL} \right].
+\eeq
+This is the depth integrated form of the Steele limiting function
+for instantaneous light.
+
+If we want to work with the average light over one day, then
+equation (\ref{Steele}) can be easily averaged over one day.
+If $T$ is the averaging period (one day), $f$ the fraction of the day with
+daylight and $I_i$ is approximated with a step function, 0 at night
+and $I_a$ during daytime, then we can write
+\beq \label{DiToro}
+\POO = \frac{1}{T} \int \PO dt 
+	= \frac{1}{T} fT \frac{e}{kH} \left[ e^{-\IaL \ekH} - e^{-\IaL} \right]
+	= \frac{e}{kH} f \left[ e^{-\IaL \ekH} - e^{-\IaL} \right].
+\eeq
+Equation (\ref{DiToro}) represents the limiting function given by Di Toro
+and used in the EUTRO program of WASP. Therefore, equation (\ref{DiToro})
+is just the Steele limiting function, but using $I_a$, the average 
+incident light intensity over daylight hours instead the 
+instantaneous incident light intensity $I_i$ used in the original
+Steele formula (\ref{Steele}).
+
+
+\subsection{Light attenuation formula by Smith}
+
+EUTRO uses also a light limitation formula by Smith. In the manual
+this is given as 
+\beq \label{Smith}
+\PO = \frac{e}{kH} \left[ e^{-\IiS \ekH} - e^{-\IiS} \right].
+\eeq
+where now $I_S$ is the optimal light intensity which is not a constant but is
+continuously adjourned by the program. Again, $I_i$ is
+the instantaneous light intensity at the surface.
+
+$I_i$ is given as
+\beq \label{IncLight}
+I_i = \frac{\pi I_t}{2f} \sin (\frac{\pi t}{f})
+\eeq
+between 0 and $f$ (daylight) and $I_i=0$ otherwise.
+Averaging (\ref{IncLight}) over one whole day (0--1) gives
+\[
+\overline{I_i}^{day} = \int_0^f \frac{\pi I_t}{2f} \sin (\frac{\pi t}{f}) dt
+	= I_t
+\]
+and averaging only over daylight hours gives
+\[
+\overline{I_i}^{daylight} = 
+	\frac{1}{f} \int_0^f \frac{\pi I_t}{2f} \sin (\frac{\pi t}{f}) dt
+	= \frac{I_t}{f} = I_a.
+\]
+This shows that $I_t$ in equation (\ref{IncLight}) is the average
+light intensity at the surface over one whole day (|ITOT| in Eutro)
+and that $I_a = I_t/f$ is the average light intensity at the surface
+over daylight hours. This must be taken into account when the
+Di Toro formulation is used.
+
+Note that in EUTRO the actual formula used is 
+$I_a = 0.9 I_t/f$ where the parameter 0.9 probably accounts
+for some losses during the integration. The corresponding
+variables in EUTRO are |FDAY| for $f$ and |IAV| for $I_a$.
+
+
+
+
+%\end{document}

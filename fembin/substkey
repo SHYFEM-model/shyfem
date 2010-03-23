@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+#
+# substitutes keywords in Makefile file
+#
+# keywords looks like :  KEYWORD = value
+#
+
+$args = @ARGV;
+
+if( $args < 3 ) {
+  print STDERR "Usage: substkey keyword value file\n";
+  exit 1;
+}
+
+$key = shift( @ARGV );
+$value = shift( @ARGV );
+$file = shift( @ARGV );
+
+#print STDERR "$key $value $file\n";
+
+####################################### read and substitute STR file
+
+open(FILE,"< $file");
+&subst_keys;
+close(FILE);
+
+###################################### subroutines
+
+sub subst_keys {
+
+  my $var;
+
+  while( $_ = <FILE> ) {
+
+    if( /^\s*$key\s*=\s*/ ) {
+      s/^(\s*$key\s*=\s*)(.*)/$1$value/;
+    }
+
+    print;
+  }
+}
+

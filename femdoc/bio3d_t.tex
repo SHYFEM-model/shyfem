@@ -1,0 +1,622 @@
+%\documentclass{report}
+%\usepackage{a4}
+%\usepackage{shortvrb}
+%\begin{document}
+
+
+
+\newcommand{\Otwo}{O${}_{2}$}
+\newcommand{\Degree}{${}^{o}$}
+\newcommand{\power}[1]{${}^{#1}$}
+
+\newcommand{\opn}{ {} }
+
+
+\newcommand{\VSPGB}{\vspace{0.2cm}}
+\newcommand{\HSP}{\hspace*{1.5cm}}
+\newcommand{\HHSP}{\hspace*{0.5cm}}
+\newcommand{\GBox}[2]{\parbox{#1 cm}{\VSPGB#2\VSPGB}}
+\newcommand{\GDBox}[1]{\GBox{5}{#1}}
+\newcommand{\GEBox}[1]{\GBox{7}{#1}}
+\newcommand{\GFBox}[1]{\GBox{7}{#1}}
+
+
+
+\begin{table}\centering
+\begin{tabular}{lll}
+\hline
+
+
+& & \\
+$\frac{\partial S}{\partial t} =Q(S)$
+& &
+General Reactor Equation
+\\
+& & \\
+
+$Q(PHY) = GPP - DPP - GRZ$
+& 1 & 
+Phytoplankton PHY [mg C/L]
+\\
+
+$Q(ZOO) = GZ - DZ$
+& 2 &
+Zooplankton ZOO [mg C/L]
+\\
+
+$Q(NH3) = N_{alg1} + ON1 - N_{alg2} - N1$
+& 3 &
+Ammonia NH3 [mg N/L]
+\\
+
+$Q(NOX) = N1 - NO_{alg} - NIT1$
+& 4 &
+Nitrate NOX [mg N/L]
+\\
+
+$Q(ON) = ON_{alg} - ON1$
+& 5 &
+Organic Nitrogen ON [mg N/L]
+\\
+
+$Q(OPO4) = OP_{alg1} + OP1 - OP_{alg2}$ 
+& 6 &
+\GBox{5}{
+Inorganic Phosphorous OPO4 \\
+\HHSP [mg P/L]
+}
+\\
+
+$Q(OP) = OP_{alg3} - OP1$
+& 7 &
+Organic Phosphorous OP [mg P/L]
+\\
+
+$Q(CBOD) = C1 - OX - NIT2$
+& 8 &
+\GBox{5}{
+Carbonaceous Biological Oxygen \\
+\HHSP Demand CBOD [mg \Otwo/L]
+}
+\\
+
+\GBox{6}{
+$Q(DO) = DO1 + DO2 + DO3 $\\
+\HSP $\opn - DO4 - N2 - OX - SOD$
+}
+& 9 &
+Dissolved Oxygen DO [mg \Otwo/L]
+\\
+
+
+\hline
+\end{tabular}
+\caption{Mass balances}
+\label{MassBalance}
+\end{table}
+
+
+
+
+
+
+\begin{table}\centering
+\begin{tabular}{lll}
+\hline
+
+
+$GPP=GP1*PHY $
+& 10 &
+phytoplankton growth
+\\
+
+$DPP=DP1*PHY $
+& 11 &
+phytoplankton death 
+\\
+
+$GRZ=KGRZ*\frac{PHY}{PHY+KPZ}*ZOO$
+& 12 &
+grazing rate coefficient
+\\
+
+$GP1=L_{nut} *L_{light} *K1C*K1T^{(T-T_{0} )} $
+& 13 &
+\GDBox{
+phytoplankton growth rate with nutrient and light limitation
+}
+\\
+
+$DP1=RES+K1D$ 
+& 14 &
+\GDBox{
+phytoplankton respiration and death rate
+}
+\\
+
+$GZ=EFF*GRZ$ 
+& 15 &
+zooplankton growth rate
+\\
+
+$DZ=KDZ*ZOO$ 
+& 16 &
+zooplankton death rate
+\\
+
+$Z_{ineff} = (1-EFF)*GRZ $
+& 17 &
+grazing inefficiency on phytoplankton
+\\
+
+$Z_{sink} = Z_{ineff}+DZ $
+& 18 &
+sink of zooplankton
+\\
+
+$N_{alg1}= NC*DPP*(1-FON) $
+& 19 &
+source of ammonia from algal 
+death
+\\
+
+$N_{alg2}=PN*NC*GPP $
+& 20 &
+sink of ammonia for algal growth
+\\
+
+$NO_{alg}= (1. - PN)*NC*GPP $
+& 21 &
+sink of nitrate for algal growth
+\\
+
+$ON_{alg}= NC*(DPP*FON+Z_{sink}) $
+& 22 &
+\GDBox{
+source of organic nitrogen from phytoplankton and zooplankton death
+}
+\\
+
+\GBox{5}{
+$N1=KC_{nit} *KT_{nit}^{(T-T_{0})} *NH3$
+\HSP $\opn *\frac{DO}{K_{nit}+DO}$
+}
+& 23 &
+nitrification
+\\
+
+\GBox{5}{
+$NIT1=KC_{denit} KT_{denit}^{(T-T_{0})}$
+\HSP $\opn *NOX*\frac{K_{denit}}{K_{denit}+DO}$
+}
+& 24 &
+denitrification
+\\
+
+$ON1=KNC_{\min } *KNT_{\min }^{(T-T_{0})} *ON$
+& 25 &
+mineralization of ON
+\\
+
+$OP1=KPC_{\min } *KPT_{\min } ^{(T-T_{0})} *OP$
+& 26 &
+mineralization of OP
+\\
+
+$OP_{alg1}=PC*DPP*(1. - FOP) $
+& 27 &
+\GDBox{
+source of inorganic phosphorous from algal death
+}
+\\
+
+$OP_{alg2}=PC*GPP $
+& 28 &
+\GDBox{
+sink of inorganic phosphorous for algal growth
+}
+\\
+
+$OP_{alg3}=PC*(DPP*FOP+Z_{sink}) $
+& 29 &
+\GDBox{
+source of organic phosphorous from phytoplankton and zooplankton death
+}
+\\
+
+\GBox{5}{
+$OX=KDC*KDT^{(T-T_{0} )} $
+\HSP $\opn *CBOD*\frac{DO}{KBOD+DO} $
+}
+& 30 &
+oxidation of CBOD
+\\
+
+\hline
+\end{tabular}
+\caption{Functional Expression Description}
+\label{FuncDesc}
+\end{table}
+
+\begin{table}\centering
+\begin{tabular}{lll}
+\hline
+
+$C1=OC*(K1D*PHY+Z_{sink}) $
+& 31 &
+\GDBox{
+source of CBOD from phytoplankton and zooplankton death
+}
+\\
+
+$NIT2=\left( \frac{5}{4} *\frac{32}{14} *NIT1\right) $
+& 32 &
+sink of CBOD due to denitrification
+\\
+
+$DO1=KA*(O_{sat} - DO) $
+& 33 &
+reareation term
+\\
+
+$DO2=PN*GP1*PHY*OC $
+& 34 &
+\GDBox{
+dissolved oxygen produced by phytoplankton using NH3
+}
+\\
+
+\GBox{5}{
+$DO3=(1-PN)*GP1*PHY$
+\HSP $\opn * 32*\left( \frac{1}{12} +1.5*\frac{NC}{14} \right) $
+}
+& 35 &
+growth of phytoplankton using NOX
+\\
+
+$DO4 = OC*RES*PHY$ 
+& 36 &
+respiration term
+\\
+
+$N2=\left( \frac{64}{14} *N1\right) $
+& 37 &
+oxygen consumption due to nitrification
+\\
+
+\GBox{6}{
+$PN=\frac{NH3*NOX}{(KN+NH3)*(KN+NOX)}$ 
+\HSP $\opn +\frac{NH3*KN}{(NH3+NOX)*(KN+NOX)} $
+}
+& 38 &
+ammonia preference
+\\
+
+$RES=K1RC*K1RT^{(T-T_{0})} $
+& 39 &
+algal respiration
+\\
+
+$SOD=\frac{SOD1}{H} *SODT^{(T-T_{0})} $
+& 40 &
+sediment oxygen demand
+\\
+
+$L_{nut}= min(X1,X2) \, , \,  mult(X1,X2) $
+& 41 &
+\GDBox{
+minimum or multiplicative nutrient limitation for phytoplankton growth
+}
+\\
+
+$X1=\frac{NH3+NOX}{KN+NH3+NOX} $
+& 42 &
+\GDBox{
+nitrogen limitation for phytoplankton growth
+}
+\\
+
+$X2=\frac{OPO4}{\frac{KP}{FOPO4} +OPO4} $
+& 43 &
+\GDBox{
+phosphorous limitation for phytoplankton growth
+}
+\\
+
+$L_{light} =\frac{I_{0} }{I_{s} } *e^{-(KE*H)} *e^{(1-\frac{I_{0} }{I_{s}
+} *e^{(-KE*H)} )} $
+& 44 &
+\GDBox{
+light limitation for phytoplankton growth
+}
+\\
+
+$KA=F(Wind,Vel,T,T_{air},H) $
+& 45 &
+re-areation coefficient 
+\\
+
+
+\hline
+\end{tabular}
+\addtocounter{table}{-1}
+\caption{(continued) Functional Expression Description}
+\label{FuncDesc1}
+\end{table}
+
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{table}\centering
+\begin{tabular}{ll}
+\hline
+
+
+$K1D=0.12$ day\power{-1}  
+&
+phytoplankton death rate constant
+\\
+
+$KGRZ=1.2$ day\power{-1}  
+&
+grazing rate constant
+\\
+
+$KPZ=0.5$ mg C/L 
+&
+\GFBox{
+half saturation constant for phytoplankton in grazing
+}
+\\
+
+$KDZ=0.168$ day\power{-1} 
+&
+zooplankton death rate
+\\
+
+$K1C=2.88$ day\power{-1} 
+&
+phytoplankton growth rate constant
+\\
+
+$K1T=1.068$ 
+&
+\GFBox{
+phytoplankton growth rate temperature constant
+}
+\\
+
+$KN=0.05$ mg N/L 
+&
+\GFBox{
+nitrogen half saturation constant for phytoplankton growth
+}
+\\
+
+$KP=0.01$ mg P/L 
+&
+\GFBox{
+phosphorous half saturation constant for phytoplankton growth
+}
+\\
+
+$KC_{nit}=0.05$ day\power{-1} 
+&
+nitrification rate constant
+\\
+
+$KT_{nit}=1.08$ 
+&
+nitrification rate temperature constant
+\\
+
+$K_{nit}=2.0$ mg \Otwo/L 
+&
+half saturation constant for nitrification
+\\
+
+$KC_{denit}=0.09$ day\power{-1} 
+&
+denitrification rate constant
+\\
+
+$KT_{denit}=1.045$ 
+&
+denitrification rate temperature constant
+\\
+
+$K_{denit}=0.1$ mg \Otwo/L 
+&
+half saturation constant for denitrification
+\\
+
+$KNC_{min}=0.075$ day\power{-1} 
+&
+mineralization of dissolved ON rate constant
+\\
+
+$KNT_{min}=1.08$ 
+&
+\GFBox{
+mineralization of dissolved ON rate temperature constant
+}
+\\
+
+$KDC=0.18$ day\power{-1}
+&
+oxidation of CBOD rate constant
+\\
+
+$KDT= 1.047$ 
+&
+oxidation of CBOD rate temperature constant
+\\
+
+$NC=0.115$ mg N/mg C 
+&
+N/C ratio
+\\
+
+$PC=0.025$ mg P/mg 
+&
+C P/C ratio
+\\
+
+$OC=32/12$ mg \Otwo/mg C 
+&
+O/C ratio
+\\
+
+$EFF=0.5$ 
+&
+grazing efficiency
+\\
+
+$FON=0.5$ 
+&
+fraction of ON from algal death
+\\
+
+$FOP=0.5$ 
+&
+fraction of OP from algal death
+\\
+
+$FOPO4=0.9$ 
+&
+fraction of dissolved inorganic phosphorous
+\\
+
+$KPC_{min}=0.0004$ day\power{-1}  
+&
+mineralization of dissolved OP rate constant
+\\
+
+$KPT_{min}=1.08$ 
+&
+\GFBox{
+mineralization of dissolved OP rate temperature constant
+}
+\\
+
+$KBOD=0.5$ mg \Otwo/L
+&
+CBOD half saturation constant for oxidation
+\\
+
+$K1RC=0.096$ day\power{-1}  
+&
+algal respiration rate constant
+\\
+
+$K1RT=1.068$ 
+&
+algal respiration rate temperature constant
+\\
+
+$I_{s}=1200000$ lux/day
+&
+\GFBox{
+optimal value of light intensity for phytoplankton growth
+}
+\\
+
+$KE=1.0$ m\power{-1}
+&
+light extinction coefficient
+\\
+
+\GBox{5}{
+$SOD1=2.0$ mg \Otwo/L \\
+\HSP day\power{-1} m 
+}
+&
+sediment oxygen demand rate constant
+\\
+
+$SODT=1.08$ 
+&
+sediment oxygen demand temperature constant
+\\
+
+$T_{0}=20$ \Degree C 
+&
+optimal temperature value
+\\
+
+
+\hline
+\end{tabular}
+\caption{Parameters}
+\label{Paras}
+\end{table}
+
+
+
+
+
+\begin{table}\centering
+\begin{tabular}{lll}
+\hline
+
+
+$T$ 
+& [\Degree C] &
+water temperature
+\\
+
+$T_{air}$ 
+& [\Degree C] &
+air temperature
+\\
+
+$O_{sat}$  
+& [mg/L] &
+DO concentration value at saturation
+\\
+
+$I_{0}$ 
+& [lux/day] &
+incident light intensity at the surface
+\\
+
+$H$ 
+& [m] &
+depth
+\\
+
+$Vol$ 
+& [m\power{3}] &
+volume
+\\
+
+$Vel$ 
+& [m/sec] &
+current speed
+\\
+
+$Wind$ 
+& [m/sec] &
+wind speed
+\\
+
+
+\hline
+\end{tabular}
+\caption{Variables}
+\label{Vars}
+\end{table}
+
+
+
+
+%\end{document}

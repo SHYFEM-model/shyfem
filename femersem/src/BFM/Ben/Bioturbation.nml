@@ -1,0 +1,85 @@
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50-g
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!BOP
+!
+! !ROUTINE: Bioturbation
+!
+! DESCRIPTION
+!   List of parameters values
+
+!   This file is generated directly from OpenSesame model code, using a code 
+!   generator which transposes from the sesame meta language into F90.
+!   F90 code generator written by P. Ruardij.
+!   structure of the code based on ideas of M. Vichi.
+!
+! !INTERFACE
+! parameter values for mem_Bioturbation filled by InitBioturbation
+!
+
+!  
+!
+! !AUTHORS
+!   mfstep/ERSEM team
+!
+! !REVISION_HISTORY
+!   ---
+!
+! COPYING
+!   
+!   Copyright (C) 2006 P. Ruardij, the mfstep group, the ERSEM team 
+!   (rua@nioz.nl, vichi@bo.ingv.it)
+!
+!   This program is free software; you can redistribute it and/or modify
+!   it under the terms of the GNU General Public License as published by
+!   the Free Software Foundation;
+!   This program is distributed in the hope that it will be useful,
+!   but WITHOUT ANY WARRANTY; without even the implied warranty of
+!   MERCHANTEABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!   GNU General Public License for more details.
+!
+!EOP
+!-------------------------------------------------------------------------!
+!BOC
+!
+!
+!  p_q10:  	 -       # temperature dependency
+!  p_chtur:  	 mgC/m2  # MM-constant describing control
+!        :  	 of biomass YI on bioturbation
+!  p_chirr:  	 mgC/m2  # MM-constant describing control
+!        :  	 of biomass YI on bioirrigation
+!  p_turY1:  	 -       # Multiplication factor to correct
+!        :  	 influence of a group of YI on
+!        :  	 bioturbation
+!  p_irrY4:  	 -       # Multiplication factor to correct
+!        :  	 influence of a group of YI on
+!        :  	 bioirrigation
+!  p_Etur:  	 m2/d    # Potential turbation constant
+!  p_cturm:  	 m       # Average depth where the
+!        :  	 bioturbation activity is
+!        :  	 located
+!  p_cmtur:  	 -       # maximum enhancement of detritus
+!        :  	 penetration due to
+!        :  	 bioturbation
+!  p_cmirr:  	 -       # maximum enhancement of diffusion
+!        :  	 due to bioirrigation
+
+&Bioturbation_parameters
+p_q10 = 2.0,
+p_chtur = 10000.0,
+p_chirr = 10000.0,
+p_turY1 = 1.0,
+p_irrY4 = 0.1,
+p_Etur = 2.0e-06,
+p_cturm = 0.02,
+p_cmtur = 10.0,
+p_cmirr = 10.0
+/
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!END namelist
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+!BOP
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

@@ -1,0 +1,311 @@
+
+
+ +------------------------------------------------+
+ |                                                |
+ |           log file for project grid            |
+ |                                                |
+ +------------------------------------------------+
+
+======================================================= 13.09.93
+
+CompressNumbers() to compress node and element numbers
+
+Defined in gridfi.c and called in WriteFiles (gridfi)
+
+new functions DeleteNode(pn) and DeleteElem(pe) that delete a 
+	node and element structure
+
+redefined functions DeleteByElemNumber(H,elem) and
+	DeleteByNodeNumber(H,node) -> they only take out the node
+	or elem structure from the hash table and give back
+	this structure. They do not delete the information in
+	the structure.
+
+======================================================= ??.10.93
+
+PlotPoint(Node_type *p) instead of PlotPoint(x,y,ntype) !!!
+	--> still some old programs that have to be adjusted
+		like inside,interpol (ok,14.10.93)
+
+======================================================= 11.10.93
+
+OpShowType introduced ( 0 -> show depth, 1 -> show element type )
+
+	1 is chosen with -T on command line
+
+	- PlotElem plots according to OpShowType
+	- WriteToMesWin ...
+	- Colortable 0 set up according to OpShowType
+
+in Elem_type introduced   short int type;
+
+ReadDepth3, WriteDepth3 : handle type 2 in depth file
+
+CHANGE_TYPE, ActType, String..., ... introduced -> CHANGE_TYPE and
+	CHANGE_DEPTH are mutually exclusive 
+
+also KeyboardInput has been changed for CHANGE_TYPE
+
+======================================================= 12.10.93
+
+ReadBas reads also area code in element structure, may use with -T option
+
+ColTab for OpShowType=1 LightGray removed, is equal to PlotCol
+
+======================================================= 14.10.93
+
+WriteNodes7 for wind (type 7) data - extension .wsc
+	grid, gridfi & griddi changed
+	ReadNodes7 moved from griddi to gridfi
+	ReadNodes7 does not anymore scale x/y coordinates
+	PlotPoint: arrow is drawn with new factor
+
+======================================================= 19.10.93
+
+wind files for 2 directions implemented :
+	new Wind_type structure that holds wind data
+		...(not anymore in depth,inumber)
+		...(direction not anymore integer)
+	in Node_type structure new entry void *extra, an entry
+		that holds a pointer to a special structure
+	MakeWind makes new Wind_type structure
+	new GetWind that gets Wind_type structure
+	all changes to arrow are made in ChangeWindDir
+
+======================================================= 20.10.93
+
+wind files for 2 directions :
+	DeleteWind -> deletes wind structure
+	DeleteNode -> calles DeleteWind
+	AdjustDWind -> argument is now Node_type * and not List_type *
+	AdjustDWind -> arrow with smallest angle is chosen
+	extra -> access is limited to few functions
+	WriteToMesWindow -> write speed in case of OpWind > 0
+		...(in this version does not write type)
+	PlotPoint -> factor in PfeilUV set to 400 (old 200)
+	DeleteByNodeNumber, DeleteByElemNumber -> no return value
+		are called now by DeleteNode, DeleteElem
+	Wind_type -> structure changed : total,flag,speed[4],dir[4]
+	GetWindData(), GetOtherWindData() to access wind data
+	DeleteWind() to delete one arrow
+	DeleteWindType() to free structure
+	- data is not exchanged anymore but a flag is set to show
+		...what data is valid
+
+======================================================= 21.10.93
+
+wind files for 2 directions :
+	ERROR !!! in AdjustDWind : Node_type *pn was passed
+		but also declared as local -> local declaration
+		had precedence and no valid pointer was
+		available
+
+======================================================= 27.10.93
+
+new makefile for cleaning directory
+
+grid compiled with new X11R5 (ok)
+
+grid5.tar backuped to bck
+
+======================================================= 12.11.93
+
+makefile -> install grid into a public area $(PUBLIC)
+
+======================================================= 23.03.94
+
+new directory installed which is self-contained 
+
+======================================================= 06.04.94
+
+copyright information in every file
+
+======================================================= 16.04.94
+
+new version for pc (turbo c)
+
+======================================================= 04.05.94
+
+new Line_type and routines to support it
+
+======================================================= 05.05.94
+
+PlotElements() does not erase plot window anymore
+	-> is done by ErasePlot()
+
+======================================================= 06.05.94
+
+new file gridff.c -> old read/write routines
+	-> in gridfi.c only the official filetype 0
+	   and the read/write administration routines
+	   (old 0 is now 8)
+
+======================================================= 07.05.94
+
+MouseHide(),MouseShow() in gridwi.c to protect
+	window plottting routines
+
+======================================================= 06.10.94
+
+ColTab only local to gridop
+gridma.c split in gridma1.c gridma2.c (tc compiler 
+	out of memry)
+
+======================================================= 21.10.94
+
+new files gridps.c, gridps.h for print to postscript
+	file
+also new psgraph.c, psgraph.h from pgraph.c/h that
+	handle the interface to the Postscript
+	driver (had to change names since Q names
+	already in use with xgraph)
+actually ps print is done by clicking on Cancel
+	(there is no command button free)
+introduced in grid Changed and PsPlot
+	Changed : asks only for output filename
+	  if something has changed
+	PsPlot : may plot more than one snapshot
+	  and close file only at end -> gridfi.c
+
+======================================================= 30.10.94
+
+Implementation of Popup menu system in gridmu.c/h
+Following files have changed :
+	gridma2.c -> KeyboardInput : warning gcc about 
+		tolower (define) (line 152)
+		  -> write to monitor deleted
+	gustd.c/h -> (r)index renamed to g(r)index
+	queue.c/h -> missing end of line
+	mouse.c   -> include "mouse.h", not <>
+	graph.h   -> GetTextDimensionsI() as prototype
+	gridop.c  -> new write to terminal for options
+	grid_ty.h -> new Button_type entries (VIEW,...)
+	gridma1.c -> call to PopupMenu(), MakePopups must
+		be transfered to where buttons are initilized
+	gridbu.c  -> new button names on menu bar
+Other changes :
+	Need click on EXIT only once
+
+======================================================= 13.02.95
+
+eliminated special file formats in gridfi, grid, gridma2
+(can be compiled in defining SPECIAL_FILES_GGU)
+
+files eliminated : gridbl.c griddi.c gridss.c gridff.c
+
+======================================================= 02.12.95
+
+eliminated files removed from distribution
+	last distribution containing files is 2.04
+	also gridli.c file eliminated (nodelist)
+Number list and Coord in extra file gridnl.c/h
+	-> moved from gridut.c
+error, error2 removed from gridut.c
+	-> calls substituted with Error, Error2
+Simulation eliminated from distribution
+	OpSim, SIMMODE, Simu
+	BasData, OutData, OutHead, GeoHead, DepHead
+	LMask
+	Coord_list_type
+Bilinear interpolation eliminated
+	AdjustBiLinear, UndoBiLinear
+internal number removed (inumber)
+
+- gridma1.c:	PlotPlot() renamed to PlotAll()
+- gridma2.c:	AdjustBiLinear, UndoBiLinear removed
+		  PlotPlot() renamed to PlotAll()
+- gridnl.c:	Number list and Coord routines transferred
+- gridpl.c:	PlotPoints(), PlotPoint() moved from gridma2 to here
+- gridut.c:	Number list and Coord routines to gridnl
+		  error, error2 eliminated
+- fund.h:	Number_list_type cancelled from fundamental types
+- gridnl.h:	Number list and Coord routines transferred
+
+======================================================= 04.12.95
+
+vector routines implemented in grid:
+
+- gridbu.c:	new functions for Vector registered
+- gridfi.c:	ReadVect added, ReadStandard modified
+- gridma1.c:	PlotFieldInput restructured (Tentative...)
+- gridmu.c:	new popup menus for Vector added
+- gridut.c:	MakeVect, MakeFloat, DeleteVect, ChangeVect introduced
+- grid_df.h:	VECTMODE added
+- grid_ex.h:	NTotVects, ActVect, HVC added
+- grid_fp.h:	new prototypes for Vector routines
+- grid_ty.h:	Button_type changed, Vect_type added
+
+======================================================= 05.12.95
+
+vector routines implemented in grid:
+
+- grid.c:	adjusted for new vector routines
+- gridma1.c:	Arrow Up/Down to scale Node/Vect introduced
+		  control special keys from keyboard
+- gridma2.c:	MakeVectActive EvidenceNone introduced
+- gridpl.c:	EvidenceVect, PlotVectors, PlotVect introduced
+- gridpl.c:	ScaleFactor for OpNodeFact, OpVectFact
+- xevents.c:	handle special keys from keyboard (arrows, return...)
+- xgraph.c:	changes (Widget, Cursor, ...) included
+- graph.h:	changes (Background, Save/RestorePixel ...) included
+		  (QGetViewport, QGetWindow, QBell...)
+- xgraph.h:	changes (Widget, Cursor, ...) included
+
+======================================================= 06.12.95
+
+Wind routines and variables eliminated
+        (OpWind)
+Chart routines and variables eliminated
+        (CO, CP, ActLevel, Chart_type)
+entry level eliminated from Node_type
+        -> changed MakeNode()
+Fence routines and variables eliminated
+        (FENCE_DIM, DelBlock)
+
+vector routines implemented in grid:
+
+- gevents.c:	TranslateKeyboardEvent for special keys
+- grid.c:	new routines to compute min/max of rectangle
+- gridfi.c:	In WriteStandard write for vector
+- gridge.c:	IsDegenerateRect()
+- gridge.c:	new routine for computing min/max of rectangle
+- gridma1.c:	IsDegenerateRect() introduced in ZoomWindow
+- gridma2.c:	write to message window for vector
+- gridop.c:	OpWind, OpIntern, options 0,1,2... eliminated
+- gridpl.c:	ScaleFactor modified to scale with vector length
+- gridut.c:	MakeNode() without level (eliminated)
+- grid_ty.h:	ScaleUp/DownVect
+- grid_ty.h:	Wind_type removed, level from Node_type removed
+
+======================================================= 07.12.95
+
+cleaning up version 2.10 for distribution
+
+- hash.c:       MakeHashPointer, VisitHashTableG now defined static (bug)
+- psgraph.c:    PPageHeader() now declared and defined static (bug)
+
+======================================================= 10.10.1997
+
+new version 2.20	(see gridvs.c for details)
+
+======================================================= 13.03.2003
+
+new version 3.02	(see gridvs.c for details)
+
+======================================================= 
+======================================================= 
+======================================================= 
+======================================================= 
+======================================================= 
+======================================================= 
+======================================================= 
+======================================================= 
+======================================================= 
+======================================================= 
+======================================================= 
+======================================================= 
+======================================================= 
+======================================================= 
+======================================================= 
+
+

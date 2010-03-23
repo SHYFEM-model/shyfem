@@ -1,0 +1,430 @@
+c
+c $Id: lagrange_init.f,v 1.1 2008-07-16 15:41:39 georg Exp $
+c
+c simulates continuous release over open boundaries
+c
+c revision log :
+c
+c 12.12.2007    ggu	written from scratch
+c
+c*******************************************************************
+
+	subroutine lgr_init_shell
+
+c manages release of particles
+
+	implicit none
+
+	integer npoints
+	real getpar
+
+	npoints = nint(getpar('nbdy'))
+
+	call lgr_init_all(npoints)
+
+	call rprs  !lunghezza lati prisma
+
+	end
+
+c*******************************************************************
+
+	subroutine lgr_init_bound
+
+c manages release of particles
+
+	implicit none
+
+	integer ndim
+	parameter (ndim=100)
+
+	real x(ndim),y(ndim)
+
+	integer npoints,iunit,n
+	real tot_area,dxy
+	real getpar
+	logical lagbound_read_next
+
+	npoints = nint(getpar('nbdy'))
+
+	call lagbound_get_area(tot_area)
+        dxy = sqrt( tot_area / npoints )
+
+	call lagbound_open_file(iunit)
+	do while( lagbound_read_next(iunit,ndim,n,x,y) )
+	  call lagbound_seed_particles(dxy,n,x,y)
+	end do
+	call lagbound_close_file(iunit)
+
+	stop
+
+	call rprs  !lunghezza lati prisma
+
+	end
+
+c*******************************************************************
+c*******************************************************************
+c*******************************************************************
+
+	subroutine lagbound_get_area(arealine)
+
+	implicit none
+
+	real arealine
+
+	integer ndim
+	parameter (ndim=100)
+
+	real x(ndim),y(ndim)
+
+	logical lagbound_read_next
+	integer iunit,n,i
+	real area,areatot
+	real areapoly
+
+	areatot = 0.
+
+	call lagbound_open_file(iunit)
+
+	do while( lagbound_read_next(iunit,ndim,n,x,y) )
+	  area = areapoly(n,x,y)
+	  areatot = areatot + area
+	  write(6,*) 'new line ',n,area
+	  do i=1,n
+	    write(6,*) i,x(i),y(i)
+	  end do
+	end do
+
+	call lagbound_close_file(iunit)
+
+	write(6,*) 'total area: ',areatot
+
+	arealine = areatot
+
+	end
+
+c*******************************************************************
+
+	subroutine lagbound_open_file(iunit)
+
+	implicit none
+
+	integer iunit
+	character*80 line
+	integer ifileo
+
+	call getfnm('lagra',line)
+        iunit=ifileo(0,line,'form','old')
+
+	if( iunit .le. 0 ) stop 'error stop open_lagbound_file'
+
+	end
+
+c*******************************************************************
+
+	subroutine lagbound_close_file(iunit)
+
+	implicit none
+
+	integer iunit
+
+	close(iunit)
+
+	end
+
+c*******************************************************************
+
+	function lagbound_read_next(iunit,ndim,n,x,y)
+
+	implicit none
+
+	logical lagbound_read_next
+	integer iunit
+	integer ndim,n
+	real x(1),y(1)
+
+	integer iflag
+	real xa,ya
+
+	integer isave
+	real xsave,ysave
+	save isave,xsave,ysave
+	data isave /0/
+
+	n = 0
+	lagbound_read_next = .true.
+
+	if( isave .eq. -1 ) then	!EOF already encountered
+	  lagbound_read_next = .false.
+	  isave = 0			!next read would succeed
+	  return
+	else if( isave .eq. 1 ) then	!first point already read
+	  n = 1
+	  x(n) = xsave
+	  y(n) = ysave
+	end if
+
+    1	continue
+	  read(iunit,*,end=2) xa,ya,iflag
+	  if( iflag .ne. 0 .and. n .gt. 0 ) goto 2
+	  n = n + 1
+	  if( n .gt. ndim ) stop 'error stop lagbound_read_next: ndim'
+	  x(n) = xa
+	  y(n) = ya
+	  goto 1
+    2	continue
+
+	if( iflag .eq. 1 ) then
+	  xsave = xa
+	  ysave = ya
+	  isave = 1
+	else
+	  isave = -1
+	end if
+
+	if( x(1) .eq. x(n) .and. y(1) .eq. y(n) ) n = n - 1	!closed line
+
+	end
+
+c*******************************************************************
+c*******************************************************************
+c*******************************************************************
+
+	subroutine lagbound_seed_particles(dxy,n,x,y)
+
+	implicit none
+
+	real dxy
+	integer n
+	real x(1),y(1)
+
+	call xy_center(n,x,y,xm,ym)
+
+	nin = 0
+	x0 = xm - dxy/2.
+	y0 = ym - dxy/2.
+
+	end
+
+c*******************************************************************
+
+	subroutine lgr_init_all(npoints)
+
+c release in total area
+
+	implicit none
+
+	integer npoints		!total number of particles in basin
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	integer nen3v(3,1)
+	common /nen3v/nen3v
+	include 'ev.h'
+	real xgv(1)
+	common /xgv/xgv
+	real ygv(1)
+	common /ygv/ygv
+
+	integer ie,ii,k,i,j
+	integer nin,iin
+	integer imin,imax,jmin,jmax
+	real area,rect_area
+	real xmin,xmax,ymin,ymax
+	real x0,y0,dxy
+	real xp,yp
+	real x(3),y(3)
+	double precision tot_area
+
+	integer intri
+
+c------------------------------------------------------------------
+c compute areas and step size
+c------------------------------------------------------------------
+
+	tot_area = 0.
+	do ie=1,nel
+	  area = 12. * ev(10,ie)
+	  tot_area = tot_area + area
+	end do
+
+	xmin = xgv(1)
+	xmax = xgv(1)
+	ymin = ygv(1)
+	ymax = ygv(1)
+
+	do k=1,nkn
+	  xp = xgv(k)
+	  yp = ygv(k)
+	  xmin = min(xmin,xp)
+	  xmax = max(xmax,xp)
+	  ymin = min(ymin,yp)
+	  ymax = max(ymax,yp)
+	end do
+
+	rect_area = (xmax-xmin) * (ymax-ymin)
+
+	dxy = sqrt( tot_area / npoints )
+
+c------------------------------------------------------------------
+c compute regular mesh and insert particles
+c------------------------------------------------------------------
+
+	nin = 0
+	x0 = xmin - dxy/2.
+	y0 = ymin - dxy/2.
+
+	do ie=1,nel
+
+	  do ii=1,3
+            k=nen3v(ii,ie)
+            x(ii)=xgv(k)
+            y(ii)=ygv(k)
+          end do
+
+          xmax=max(x(1),x(2),x(3))
+          xmin=min(x(1),x(2),x(3))
+          ymin=min(y(1),y(2),y(3))
+          ymax=max(y(1),y(2),y(3))
+
+          imin=(xmin-x0)/dxy + 0.99
+          imax=(xmax-x0)/dxy + 0.01
+          jmin=(ymin-y0)/dxy + 0.99
+          jmax=(ymax-y0)/dxy + 0.01
+
+	  do i=imin,imax
+            do j=jmin,jmax
+              xp=i*dxy+x0
+              yp=j*dxy+y0
+
+              iin=intri(x,y,xp,yp)
+
+	      if( iin .ne. 0 ) then
+		nin = nin + 1
+	  	call insert_particle(ie,xp,yp)
+	      end if
+	    end do
+	  end do
+
+	end do
+
+	write(6,*) 'lagr_init_all: ',nin,' particles inserted'
+
+c------------------------------------------------------------------
+c end of routine
+c------------------------------------------------------------------
+
+	end
+
+c*******************************************************************
+
+	subroutine lgr_output(iu,it)
+
+c if body has exited the element number is negativ (last element)
+c once it has been written to output with negative ie, it is set to 0
+
+	implicit none
+
+        include 'param.h'
+        include 'lagrange.h'
+
+	integer iu,it
+
+	integer nvers,mtype
+	parameter ( nvers = 2 , mtype = 367265 )
+
+	integer nn,nout,ie,i
+	real x,y,z
+	real getpar
+
+	integer itmlgr,idtlgr,itnext
+	save itmlgr,idtlgr,itnext
+
+	integer icall
+	save icall
+	data icall / 0 /
+
+c----------------------------------------------------------------
+c initialize params
+c----------------------------------------------------------------
+
+	if( icall .eq. 0 ) then
+          itmlgr = nint(getpar('itmlgr'))
+          idtlgr = nint(getpar('idtlgr'))
+	  itnext = itmlgr
+	  write(iu) mtype,nvers
+	  write(6,*) 'lgr file initialized...'
+	end if
+
+	icall = icall + 1
+
+c----------------------------------------------------------------
+c is it time to write ?
+c----------------------------------------------------------------
+
+	if( it .lt. itnext ) return
+
+	itnext = itnext + idtlgr
+
+c----------------------------------------------------------------
+c count active particles
+c----------------------------------------------------------------
+
+	nn = 0
+	nout = 0
+	do i=1,nbdy
+	  ie = ie_body(i)
+	  if( ie .ne. 0 ) nn = nn + 1
+	  if( ie .lt. 0 ) nout = nout + 1
+	end do
+	  
+c----------------------------------------------------------------
+c write to file
+c----------------------------------------------------------------
+
+	write(iu) it,nbdy,nn,nout
+
+	do i=1,nbdy
+          x = x_body(i)
+          y = y_body(i)
+          z = z_body(i)
+	  ie = ie_body(i)
+	  if( ie .ne. 0 ) then
+	    write(iu) i,x,y,z,ie,xst(i),yst(i),zst(i),est(i)
+	  end if
+	  if( ie .lt. 0 ) ie_body(i) = 0		!flag as out
+	end do
+
+c----------------------------------------------------------------
+c initialize params
+c----------------------------------------------------------------
+
+	end
+
+c*******************************************************************
+
+	subroutine xy_center(n,x,y,xm,ym)
+
+	implicit none
+
+	integer n
+	real x(1),y(1)
+	real xm,ym
+
+	integer i
+
+	xm = 0.
+	ym = 0.
+
+	do i=1,n
+	  xm = xm + x(i)
+	  ym = ym + y(i)
+	end do
+
+	xm = xm / n
+	ym = ym / n
+
+	end
+
+c*******************************************************************
+

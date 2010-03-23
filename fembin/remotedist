@@ -1,0 +1,61 @@
+#!/bin/sh
+#
+#distributes directory tree remotely
+
+#############################################################
+
+if [ $# -lt 3 ]; then
+  echo "Usage remotedist dirname localbase remotebase(s)"
+  exit 1
+fi
+
+dirname=$1
+localbase=$2
+shift 2
+
+#############################################################
+
+if [ ! -d $localbase ]; then
+  echo "No such directory: $localbase"
+  exit 1
+fi
+
+if [ ! -d $localbase/$dirname ]; then
+  echo "No such directory: $localbase/$dirname"
+  exit 1
+fi
+
+#############################################################
+
+echo "Zipping $dirname in $localbase ..."
+
+cd $localbase
+rm -f $dirname.zip
+zip -r $dirname $dirname/*
+
+#############################################################
+
+for remotebase
+do
+  if [ ! -d $remotebase ]; then
+    echo "No such directory: $remotebase"
+    continue
+  fi
+
+  echo -n "Copying $dirname.zip to $remotebase ..."
+  cd $localbase
+  cp $dirname.zip $remotebase
+  echo "... done"
+
+  cd $remotebase
+  rm -rf $dirname
+  unzip -qq $dirname
+done
+
+#############################################################
+
+cd $localbase
+rm -f $dirname.zip
+
+#############################################################
+

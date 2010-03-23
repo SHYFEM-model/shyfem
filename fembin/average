@@ -1,0 +1,139 @@
+#!/usr/bin/perl -w
+#
+# computes average
+
+use warnings;
+use strict;
+
+# handle options
+
+my $move = 0;
+
+for(;;) {
+  my $arg = $ARGV[0];
+  if( $arg eq "-m" or $arg eq "-move" ) {
+    shift;
+    $move = shift;
+  } else {
+    last;
+  }
+}
+
+my @files = @ARGV;
+my $nfiles = @files;
+print STDERR "total number of files: $nfiles\n";
+
+my $total = 0;
+
+if( $move ) {
+    my @new = <>;
+    my @cols = read_cols(\@new);
+    print STDERR "computing moving average with $move\n";
+    $cols[1] = maver($move,$cols[1]);
+    print_cols(@cols);
+} else {
+    my @new = <>;
+    my @cols = read_cols(\@new);
+    my $aver = aver($cols[1]);
+    print "$aver\n";
+}
+
+###############################################################
+
+sub aver
+{
+    my $ra = shift;
+
+    my $total = 0;
+    my $n = 0;
+
+    foreach (@$ra) {
+	$n++;
+	$total += $_;
+    }
+
+    $total = $total / $n if $n;
+
+    return $total;
+}
+
+###############################################################
+
+sub maver
+{
+    my ($move,$ra) = @_;
+
+    my $n = @$ra;
+    my $n1 = $n - 1;
+
+    my @new = ();
+
+    for(my $i=0;$i<$n;$i++) {
+      #print STDERR "moving average $i\n" if $i%100 == 0;
+      my $low = $i - $move;
+      $low = 0 if $low < 0;
+      my $high = $i + $move;
+      $high = $n1 if $high > $n1;
+      my $m = 0;
+      my $v = 0;
+      #print STDERR "moving average $i ($low,$high)\n" if $i%100 == 0;
+      for(my $j=$low;$j<=$high;$j++) {
+	$m++;
+	$v += $$ra[$j];
+      }
+      $v /= $m if $m;
+      #print STDERR "moving average $i ($low,$high) $m -> $v\n" if $i%100 == 0;
+      push(@new,$v);
+    }
+
+    return \@new;
+}
+
+###############################################################
+
+sub print_cols
+{
+    my @cols = @_;
+
+    my $col = $cols[0];
+    my $nrows = @$col;
+
+    for(my $i=0;$i<$nrows;$i++) {
+      foreach $col (@cols) {
+        my $value = $$col[$i];
+        print "$value ";
+      }
+      print "\n";
+    }
+}
+
+
+###############################################################
+
+sub read_cols
+{
+    my $lines = shift;
+
+    my @cols = ();
+
+    foreach (@$lines) {
+	s/^\s+//;
+	my @f = split;
+        my $ncols = @f;
+        for(my $i=0;$i<$ncols;$i++) {
+          my $ra = $cols[$i];
+	  unless( $ra ) {
+            my @new = ();
+	    $cols[$i] = \@new;
+            $ra = $cols[$i];
+	  }
+          push(@$ra,$f[$i]);
+        }
+    }
+
+    return @cols;
+}
+
+###############################################################
+
+	

@@ -1,0 +1,591 @@
+
+% $Id$
+
+\documentclass{report}
+
+\usepackage{a4}
+\usepackage{shortvrb}
+\usepackage{pslatex}
+\usepackage{alltt}		% as verbatim, but interpret \ { }
+
+\usepackage{version}
+%\newenvironment{comment}{}{}
+
+\newcommand{\shy}{{\tt SHYFEM}}
+\newcommand{\psp}{{\tt SHYFEM}}
+%\newcommand{\VERSION}{4.31}
+
+\input{P_version.tex}
+
+\newcommand{\descrpsep}{\vspace{0.2cm}}
+\newcommand{\descrpitem}[1]{\descrpsep\parbox[t]{2cm}{#1}}
+\newcommand{\descrptext}[1]{\parbox[t]{10cm}{#1}\descrpsep}
+\newcommand{\densityunit}{kg\,m${}^{-3}$}
+\newcommand{\accelunit}{m\,s${}^{-2}$}
+\newcommand{\maccelunit}{m${}^{4}$\,s${}^{-2}$}
+\newcommand{\dischargeunit}{m${}^3$\,s${}^{-1}$}
+
+\newcommand{\ten}[1]{$\cdot 10^{#1}$}
+\newcommand{\degrees}{${}^o$}
+
+\newcommand{\figref}[1]{\ref{fig:#1}}
+\newcommand{\Fig}{Fig.~}
+
+\newcommand{\todo}[1]{This section still has to be written by #1}
+
+\parindent 0cm
+
+\newcommand{\importstr}[2]{%
+\begin{figure}
+\begin{alltt}
+\input{#1.str}
+\end{alltt}
+\caption{#2}
+\label{fig:#1}
+\end{figure}
+}
+
+\MakeShortVerb{\|}
+
+\hyphenation{ ba-thy-me-try }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% front matter
+
+\title{%
+	\shy{} 
+	\\Finite Element Model for Coastal Seas
+	\\~
+	\\User Manual
+	}
+
+\author{%
+	The SHYFEM Group \\
+	Georg Umgiesser
+	\\ISMAR-CNR, Castello 1364/A
+	\\30122 Venezia, Italy
+	\vspace{0.5cm}
+	\\georg.umgiesser@ismar.cnr.it
+	\vspace{1cm}
+	\\Version \VERSION
+	}
+
+%\address{ISDGM-CNR}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% document
+
+\begin{document}
+
+\bibliographystyle{plain}
+
+\pagenumbering{roman}
+\pagestyle{plain}
+
+\maketitle
+
+%\begin{abstract}
+%A simple graphic plotting package is presented that can be used for
+%the creation of PostScript graphics. The routines are callable from
+%Fortran and C.
+%
+%Only the basic plotting commands have been implemented. The library
+%allows you to plot lines and points, fill arbitrary shapes
+%with arbitrary color and write text with an arbitrary point size.
+%It also allows for producing more pages in one plot. Color can be
+%used as gray scale or through the RGB and HSB color spaces.
+%The coordinate system may be set to best adjust to the drawing.
+%Clipping graphics in a given rectangle is implemented.
+%\end{abstract}
+
+\thispagestyle{empty}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+
+
+
+
+\chapter*{Disclaimer}
+\addcontentsline{toc}{chapter}{Disclaimer}
+
+
+\begin{quotation}
+  									 
+   Copyright (c) 1992-2009 by Georg Umgiesser				 
+  									 
+   Permission to use, copy, modify, and distribute this software	 
+   and its documentation for any purpose and without fee is hereby	 
+   granted, provided that the above copyright notice appear in all	 
+   copies and that both that copyright notice and this permission	 
+   notice appear in supporting documentation.				 
+  									 
+   This file is provided AS IS with no warranties of any kind.		 
+   The author shall have no liability with respect to the		 
+   infringement of copyrights, trade secrets or any patents by		 
+   this file or any part thereof.  In no event will the author		 
+   be liable for any lost revenue or profits or other special,		 
+   indirect and consequential damages.					 
+  									 
+   Comments and additions should be sent to the author:			 
+  									 
+	\begin{verbatim}
+  			Georg Umgiesser					 
+  			ISMAR-CNR					 
+  			Castello 1364/A
+  			30122 Venezia					 
+  			Italy						 
+  									 
+  			Tel.   : ++39-41-2404773			 
+  			Fax    : ++39-41-5204126			 
+  			E-Mail : georg.umgiesser@ismar.cnr.it
+	\end{verbatim}
+\end{quotation}
+
+
+
+
+\newpage
+
+\pagenumbering{arabic}
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Overview}
+
+\section{What is it}
+\input{over_what}
+
+%\section{Why use it}
+%\todo{Georg}
+
+%\section{How to use it}
+%\todo{Georg}
+
+%\section{Where to get it}
+%\todo{Georg}
+
+%\section{Features}
+%\todo{Georg}
+
+%\section{License}
+%\todo{Georg}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Installing SHYFEM}
+
+	\section{Installation}
+	\input{installation}
+
+%	\section{Needed software}
+%	\todo{Marco}
+
+%	\section{Choice of external software}
+%	\todo{Marco}
+
+%	\section{Compilation}
+%	\todo{Marco}
+
+%	\section{Compatibility problems}
+%	\todo{Marco}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Preprocessing: The grid}
+
+%	\section{Overview}
+%	\todo{Georg}
+
+%	\section{Boundary line: smoothing and reducing}
+%	\todo{Francesca}
+
+%	\section{Manipulating nodes, lines and elements: grid}
+%	\todo{Francesca}
+
+%	\section{Creating the mesh: mesh}
+%	\todo{Francesca}
+
+%	\section{Other programs to create a mesh}
+%	\todo{Marco o Christian}
+
+%	\section{Interpolating the bathymetry}
+%	\todo{Francesca}
+
+	\section{Creating the basin file}
+	\input{pre_basin}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Running SHYFEM}
+
+
+In the following an overview is given on running the model
+\shy{}. The model needs a parameter input file that is read 
+on standard input. Moreover, it needs some external files that
+are specified in this parameter input file. The model produces
+several external files with the results of the simulation. Again,
+the name of this files can be influenced by the parameter input file
+
+\section{How to run: the Parameter Input File (STR)}
+\input{model_how_to_run}
+
+%\section{Adjusting to the basin}
+%\todo{Georg}
+
+%\section{Basic file formats}
+%\todo{Georg}
+
+\section{Basic usages}
+
+This section explains typical usage of the model. It will show how
+the model can be run doing basic 2D hydrodynamic simulations, simulate
+a passive tracer, compute T/S, use the Coriolis force and apply wind
+forcing. More advanced usages of the model, like 3D simulations and the
+use of the turbulence module will be presented later. This section is
+conceived as a simple HOWTO document. For the exact meaning and usage
+of the single parameters, please see the section on input parameters.
+
+To run a simulation, two things are needed. The first is the description
+of the basin and the numerical grid, which must be prepared beforehand and
+then must be compiled in a form that the model can use. How this is been
+done has already been described in the chapter dealing with preprocessing.
+
+The second thing that is needed is a description of the simulation and the
+forcings that have to be applied. This is done through a parameter input
+file. Here we call it |STR| file, because historically these files always
+ended with an extension of |.str|. However, any extension can be used.
+
+	\subsection{Minimal simulation}
+	\input{basic_minimal}
+
+	\subsection{Boundary conditions}
+	\input{bound_cond}
+
+%	\subsection{Writing output}
+%	\todo{Georg}
+
+%	\subsection{Simulating passive tracers}
+%	\todo{Georg}
+
+%	\subsection{Temperature and salinity}
+%	\todo{Georg}
+
+%	\subsection{Linear and non-linear simulations}
+%	\todo{Georg}
+
+%	\subsection{Coriolis force}
+%	\todo{Georg}
+
+%	\subsection{Wind forcing}
+%	\todo{Georg}
+
+\section{Advanced usages}
+
+	\subsection{Variable time step}
+	\input{var_time_step}
+
+	\subsection{3D computations}
+	\input{3d_layers}
+
+	\subsection{Baroclinic terms}
+	\input{barocl}
+
+%	\subsection{Restart}
+%	\todo{Marco}
+
+	\subsection{Turbulence}
+	\input{turbulence}
+
+%	\subsection{Meteo forcing}
+%	\todo{Debora}
+
+%	\subsection{Lagrangian module}
+%	\todo{Andrea}
+
+%	\subsection{Large grids and projections}
+%	\todo{Debora}
+
+%	\subsection{Coupling to the wave model}
+%	\todo{Andrea o Christian}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\chapter{Other modules}
+%	\section{Residence times}
+%	\todo{Andrea}
+%	\section{Sediment transport}
+%	\todo{Christian}
+
+%	\section{Ecological module (EUTRO)}
+%	\todo{Michol (c'e' gia' una descrizione di Donata)}
+
+%	\input{bio3d.tex}
+%	\subsection{Parameters for the Water Quality Module}
+%	\input{S_biopar_h.tex}
+
+
+%\input{usage.tex}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\chapter{Postprocessing}
+%
+%Da qui in poi pensiamo piu' tardi...
+%
+%\section{Running the post processing routines}
+%\section{Time series: gnuplot}
+%\section{Plotting spatial data: plots}
+%	\subsection{Basic usage}
+%	\subsection{Advanced usage}
+%\section{Exporting data}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\chapter{Final thoughts}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\appendix
+
+
+\chapter{Hydrodynamic equations and resolution techniques}
+
+\input{equat.tex}
+
+%\chapter{File formats}
+%
+%\section{STR file}
+%\section{GRD file}
+%\section{Time series}
+%\section{Output file formats}
+
+
+
+
+
+\chapter{Parameter list}
+
+
+\section{Parameter list for the SHYFEM model}
+
+
+\subsection{Section {\tt \$title}}
+
+This section must be always the first section in the parameter input file.
+It contains only three lines. An example is given in 
+figure \ref{fig:titleexample}.
+
+\begin{figure}[ht]
+\begin{verbatim}
+$title
+        free one line description of simulation
+        name_of_simulation
+        name_of_basin
+$end
+\end{verbatim}
+\caption{Example of section {\tt \$title}}
+\label{fig:titleexample}
+\end{figure}
+
+The first line of this section is a free one line description of
+the simulation that is to be carried out. The next line contains
+the name of the simulation.
+All created files will use this name in the main part of the file name
+with different extensions. Therefore the hydrodynamic output file
+(extension |out|) will be named |name_of_simulation.out|.
+The last line gives the name of the basin file to be used. This
+is the pre-processed file of the basin with extension |bas|.
+In our example the basin file |name_of_basin.bas| is used.
+
+The directory where this files are read from or written to depends
+on the settings in section {\tt \$name}. Using the default
+the program will read from and write to the current directory.
+
+\subsection{Section {\tt \$para}}
+
+This section defines the general behavior of the simulation,
+gives various constants of parameters and determines what
+output files are written. In the following the meaning of
+all possible parameters is given.
+
+Note that the only compulsory parameters in this section are 
+the ones that chose the duration of the simulation and the
+integration time step. All other parameters are optional.
+
+\input{S_para_h.tex}
+
+\subsection{Section {\tt \$name}}
+
+In this sections names of directories or input files can be
+given. All directories default to the current directory,
+whereas all file names are empty, i.e., no input files are
+given.
+
+\input{S_name.tex}
+\input{S_name_h.tex}
+
+\subsection{Section {\tt \$bound}}
+
+\input{S_bound.tex}
+
+
+\subsection{Section {\tt \$wind}}
+
+\input{S_wind.tex}
+
+
+
+\subsection{Section {\tt \$extra}}
+
+In this section the node numbers of so called ``extra'' points are given. 
+These are points where water level and velocities are written to create
+a time series that can be elaborated later. The output for these ``extra''
+points consumes little memory and can be therefore written with a
+much higher frequency (typically the same as the integration time step)
+than the complete hydrodynamical output. The output is written
+to file EXT.
+
+The node numbers are specified in a free format on one ore more lines.
+An example can be seen in figure \ref{fig:example}. No keywords
+are expected in this section.
+
+
+\subsection{Section {\tt \$flux}}
+
+In this section transects are specified through which the discharge
+of water is computed by the program and written to file FLX.
+The transects are defined by their nodes through which they run.
+All nodes in one transect must be adjacent, i.e., they must form a
+continuous line in the FEM network.
+
+The nodes of the transects are specified in free format. Between
+two transects one or more 0's must be inserted. An example is given in
+figure \ref{fig:fluxexample}.
+
+\begin{figure}[ht]
+\begin{verbatim}
+$flux
+	1001 1002 1004 0
+	35 37 46 0 0 56 57 58 0
+	407
+	301
+	435 0 89 87
+$end
+\end{verbatim}
+\caption{Example of section {\tt \$flux}}
+\label{fig:fluxexample}
+\end{figure}
+
+The example shows the definition of 5 transects. As can be seen, the 
+nodes of the transects can be given on one line alone (first transect),
+two transects on one line (transect 2 and 3), spread over more lines
+(transect 4) and a last transect.
+
+
+
+\section{Parameter list for the post processing routines}
+
+The format of the parameter input file is the same as the one for
+the main routine. Please see this section for more information
+on the format of the parameter input file.
+
+Some sections of the parameter input file are identical to the 
+sections used in the main routine. For easier reference we will
+repeat the possible parameters of these section here.
+
+
+
+
+
+
+\subsection{Section {\tt \$title}}
+
+This section must be always the first section in the parameter input file.
+It contains only three lines. An example has been given already in 
+figure \ref{fig:titleexample}.
+
+The only difference with respect to the {\tt \$para} section of the main
+routine is the first line. Here any description of the output can be used.
+It is just a way to label the parameter file.  The other two line with
+the name of simulation and the basin are used to open the files needed
+for plotting.
+
+
+\subsection{Section {\tt \$para}}
+
+\input{S_para_a.tex}
+
+
+\subsection{Section {\tt \$color}}
+
+\input{S_color.tex}
+
+
+\subsection{Section {\tt \$arrow}}
+
+\input{S_arrow.tex}
+
+
+\subsection{Section {\tt \$legend}}
+
+\input{S_legend.tex}
+
+
+\subsection{Section {\tt \$legvar}}
+
+\input{S_legvar.tex}
+
+
+\subsection{Section {\tt \$name}}
+
+\input{S_name.tex}
+
+
+
+
+
+
+
+\bibliography{abbrev,lag}
+\addcontentsline{toc}{chapter}{Bibliography}
+
+
+
+\end{document}
+
+
+
+

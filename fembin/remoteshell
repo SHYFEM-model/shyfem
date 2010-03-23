@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# executes one command on remotes host(s)
+
+#############################################################
+
+if [ $# -lt 2 ]; then
+  echo "Usage remoteshell command remotehost(s)"
+  exit 1
+fi
+
+command=$1
+shift
+
+#############################################################
+
+for remotehost
+do
+
+  echo "$remotehost"
+  rsh $remotehost "$command"
+
+done
+
+#############################################################
+

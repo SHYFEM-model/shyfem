@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# writes extra comments into ps/eps files
+
+#--------------------------------------------------------------
+
+NoFile()
+{
+  echo "No such file: $1"
+  Usage
+}
+
+Usage()
+{
+  echo "Usage: gpswrite \"(text) x y points\" file(s)"
+  exit 1
+}
+
+#--------------------------------------------------------------
+
+string=$1
+shift
+
+#--------------------------------------------------------------
+
+if [ $# -eq 0 ]; then
+  Usage
+fi
+
+echo "String used: $string"
+
+for file
+do
+  [ -f $file ] || NoFile $file
+  echo $file
+  gpswrite.pl "$string AW" $file > tmp.tmp
+  mv $file $file.bak
+  mv tmp.tmp $file
+done
+
+#--------------------------------------------------------------
+

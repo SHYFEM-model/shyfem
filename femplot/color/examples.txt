@@ -1,0 +1,88 @@
+# Example 8 -- Demonstrate various image palettes (Color)
+#
+# Contributed 10 Aug 1994 by Dan Kelley .
+
+`Panel \label'
+{
+    set y margin .y.
+    draw axes none
+    set clip postscript on
+    draw image
+    set clip postscript off
+    draw axes frame
+    draw image palette                                                  \
+        left {rpn .min. .inc. -}                                        \
+        right {rpn .max.  .inc. +}                                      \
+        increment .inc.                                                 \
+        box                                                             \
+        {rpn ..xmargin.. ..xsize.. + .space. +}                         \
+        {rpn ..ymargin.. ..ysize.. 2 / + .ph. 2 / -}                    \
+        {rpn ..xmargin.. ..xsize.. + .space. + .pw. +}                  \
+        {rpn ..ymargin.. ..ysize.. 2 / + .ph. 2 / +}
+    draw label "\.word1." at                                            \
+        {rpn ..xmargin.. ..xsize.. + .space. + .pw. + "M" width +}      \
+        {rpn ..ymargin.. ..ysize.. 2 / + "M" ascent 2 / -} cm
+    .y. += {rpn ..ysize.. .space. +}
+}
+.w. = 5                         # image width
+.h. = 2.5                       # image height
+.pw. = 5                        # palette width
+.ph. = 1                        # palette height
+.space. = 0.5                   # space between things
+set x margin 1
+set x size .w.
+set y size .h.
+# Planar data
+set x grid 0 1 /5
+set y grid 0 1 /6
+read grid data 6 5
+1 2 3 4  5
+2 3 4 5  6
+3 4 5 6  7
+4 5 6 7  8
+5 6 7 8  9
+6 7 8 9 10
+.min. = 1
+.max. = 9
+.inc. = 1
+set image range .min. .max.
+convert grid to image
+
+.y. = 1                         # start at bottom
+# Each panel is adjusted to lie above last
+
+#
+# (1) HSB schemes (like mixing light sources)
+
+# Ugly and useless
+set image colorscale hsb 0.0   1.0 1.0 .min. hsb 1.    1.0 1.0 .max.
+Panel "1. Full spectrum (HSB blending)"
+
+# Nicer, but a lot of green
+set image colorscale hsb 0.0   1.0 1.0 .min. hsb 0.666 1.0 1.0 .max.
+Panel "2a. Spectrum from red to blue (HSB blending)"
+
+set image colorscale hsb 0.0   1.0 1.0 .min. hsb 0.666 1.0 1.0 .max.
+image colorscale ^= 0.5
+Panel "2b. As 2a but colorscale to 1/2 power"
+
+set image colorscale hsb 0.0   1.0 1.0 .min. hsb 0.666 1.0 1.0 .max.
+image colorscale ^= 0.25
+Panel "2c. As 2a but colorscale to 1/4 power"
+
+set image colorscale hsb 0.0   1.0 1.0 .min. hsb 0.666 0.80 0.5 .max.
+Panel "2d. As 2a but with blue being dirty"
+
+set image colorscale hsb 0.666 0.0 1.0 .min. hsb 0.666 1.0 1.0 .max.
+Panel "3. White-blue (HSB blending)"
+
+# (2) RGB schemes (like mixing paints)
+.y. += .space.
+
+set image colorscale rgb 1.0 0.0 0.0 .min. rgb 0.0 0.0 1.0 .max.
+Panel "4a. Red-blue (RGB blending)"
+
+set image colorscale rgb 1.0 0.0 0.0 .min. rgb 0.0 0.0 1.0 .max. increment 2
+Panel "4b. As 4a but quantized"
+
+quit

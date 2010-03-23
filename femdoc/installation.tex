@@ -1,0 +1,143 @@
+
+The source code of the model is provided in a file named 
+|fem_VERS_N_nn.tar.gz|, with |N| and |nn| the
+number of version and subversion of the code.
+The file can be downloaded by the SHYFEM 
+web-site\footnote{http://www.ve.ismar.cnr.it/shyfem/}, or
+by contacting directly its authors.
+
+The source code is composed mainly by Fortran 77 files, but
+files written in C, Fortran 90, Perl and Shell scripts
+are also present.
+
+In order to use the model you have to compile it in a
+Linux Operating System. Several software products must be present
+in order to be able to compile the model. Please refer to
+the documentation of your Linux distribution for installing these programs.
+
+Please see the next section for software that is
+helpful for running and using the model.
+However, the software absolutely necessary is the following:
+
+\begin{itemize}
+\item A Fortran 77 and 90 compiler. Supported compilers are
+the Gnu |g77| and |g90| compilers, the new Gnu compiler |gfortran|,
+the Intel Fortran compiler |ifort| or the Portland group Fortran compiler.
+\item The package |make| is required for compilation.
+\item The |perl| interpreter, the |bash| shell and the |gcc| c compiler
+are necessary for compiling.
+\end{itemize}
+Please note that you might already have everything available in your
+Linux distribution, except might be from the fortran compiler.
+Please see the section on ``Needed software'' for more information
+on the recommended software you should have installed on your computer.
+
+Once you have downloaded the model open a shell as 
+a normal user, go to your home directory and run the
+following command:
+
+\begin{citation}
+\item |tar -xzvf path_to_file/fem_VERS_N_nn.tar.gz|
+\end{citation}
+
+where |path_to_file| is the directory where you have downloaded the
+zipped model file.
+
+At this point a new folder named |fem_VERS_N_nn|
+has been created. Move into this directory (|cd fem_VERS_N_nn|) 
+and open the file
+|Rules.make| with a text editor.
+In this file all the compilation options can be set.
+These are the sections inside it:
+
+\begin{itemize}
+\item |Parameters|. In this section you have to set the
+maximum number of nodes (|NKNDIM|) and elements (|NELDIM|)
+used by your grids. You might also have to set also the maximum number 
+of elements attached to
+a node (|NGRDIM|) and the maximum bandwidth (|MBWDIM|) of the
+z-level matrix. You can find these numbers when you create the basin file
+with |vpgrd|. Finally you have to specify
+the maximum number of vertical levels (|NLVDIM|).
+It is advisable to set this value close to the desired number of
+vertical levels, since it affects the model speed performance. So, if
+you want to run the model in 2D mode, please set |NLVDIM| to 1.
+\item |Compiler|. Set the compiler you want to use.
+\item |Parallel compilation|. Some parts of the code are parallelized
+with OpenMP statements. Here you can set if you want to use it or not.
+Intel and Gnu gfortran compilers accept OpenMP statements.
+\item |Solver for matrix solution|. There are three different solvers
+implemented. 
+The |GAUSS| solver is the most robust and best tested solver,
+but it is quite slow. The |PARDISO| solver needs an
+external library available at the Intel 
+web-site\footnote{http://software.intel.com/en-us/articles/code-downloads/},
+that is freely downloadable for non-commercial use. 
+The Pardiso solver is parallelized,
+but it seems to be a little slower than |SPARSKIT| solver.
+The |SPARSKIT| solver is suggested solver, since it seems to be the 
+fastest one. However, if you are ever in doubt about your results you might
+to revert back to the |GAUSS| solver and check the results.
+\item |NetCDF library|. If you want the output files in NetCDF format
+you need the NetCDF library.
+\item |GOTM library|. The GOTM turbulence model is already included
+in the code. However, a newer and better tested version is available as
+an external module. In oreder to use it please
+the flag to true. This is the recommended choice.
+\item |ERSEM library|. The ERSEM ecological model. 
+It is still experimental. Use it at your own risk.
+\item |Compiler options|. Here several sections are present, 
+one for each supported compiler. Normally it should not be necessary to 
+change anything beyond this point.
+\end{itemize}
+
+Once you have set all these options you can run the command
+
+\begin{citation}
+\verb|make fem|
+\end{citation}
+
+to compile everything.
+
+Another useful command is |make clean| to delete files of previous compilations.
+
+It is advisable to make in your home directory a symbolic link named |fem|
+to the fem main directory, otherwise some of the commands and shell scripts
+might not work properly. This can be done with the command
+
+\begin{citation}
+\verb|ln -s fem_VERS_N_nn fem|
+\end{citation}
+
+from your home directory. If there is already such a link existing you first
+have to delete it (|rm fem|).
+
+Another useful option is to add the fembin path to your default paths
+to have the main utility commands always available. To do this
+open your |.bashrc| file in the home directory
+and add the following lines at the end of the file:
+
+\begin{verbatim}
+FEMDIR=$HOME/fem
+PATH=$PATH:$FEMDIR/fembin
+export FEMDIR PATH
+\end{verbatim}
+
+If you have not set a symbolic link from |fem| to the actual model directory,
+please substitute |fem| with the appropriate directory |fem_VERS_N_nn|.
+
+Summarizing, the following steps have to be taken in order to
+properly install the model on your computer:
+\begin{itemize}
+\item download the model and unpack it into your home directory
+\item |cd| to the model directory and adjust |Rules.make|
+\item compile the model with |make fem|
+\end{itemize}
+
+In addition, you also might
+\begin{itemize}
+\item set a symbolic link from |fem| to the model directory
+		|ln -s fem_VERS_N_nn fem|
+\item adjust the file |.bashrc| adding the |FEMDIR| shell variable 
+	and a new entry for the |PATH|
+\end{itemize}

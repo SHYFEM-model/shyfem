@@ -1,0 +1,25 @@
+#!/usr/bin/env perl
+#
+# creates range
+
+$n = @ARGV;
+
+$start = 1;
+$stop = 0;
+$step = 1;
+
+if( $n == 1 ) {
+  $stop = shift;
+} elsif( $n == 2 ) {
+  $start = shift;
+  $stop = shift;
+} elsif( $n == 3 ) {
+  $start = shift;
+  $stop = shift;
+  $step = shift;
+}
+
+for( $i = $start ; $i <= $stop ; $i += $step ) {
+  print "$i\n";
+}
+

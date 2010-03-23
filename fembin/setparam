@@ -1,0 +1,25 @@
+#!/bin/sh
+
+if [ $# -eq 0 ]; then
+  echo "Usage: setparam param [value]"
+  exit 1
+fi
+
+param=$1
+value=$2
+files=*.[fFh]
+
+if [ $# -eq 1 ]; then
+  grep -i $param $files | grep -i parameter
+else
+  echo "  $param -> $value"
+  files1=`grep -il $param $files`
+  files=`grep -il parameter $files1`
+  for file in $files
+  do
+    echo "$file"
+    setparam.pl $param $value $file
+  done
+fi
+
+

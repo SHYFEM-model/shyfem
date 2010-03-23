@@ -1,0 +1,188 @@
+
+The input parameter file is the file that guides program
+performance. It containes all necessary information for the main routine
+to execute the model. Nearly all parameters that can
+be given have a default value which is used when the parameter
+is not listed in the file. Only some time parameters are compulsory
+and must be present in the file.
+
+The format of the file looks very like a namelist format, but is
+not dependent on the compiler used. Values of parameters are given
+in the form :  
+|name = value|  or  |name = 'text'|.  If |name|
+is an array the following format is used : 
+|name = value1 , value2, ... valueN|.
+The list can continue on the following lines. Blanks befor and after
+the equal sign are ignored. More then one parameter can be present
+on one line. As seperator blank, tab and comma can be used.
+
+Parameters, arrays and data must be given inbetween certain sections.
+A section starts with the character {\tt $} followed by a keyword
+and ends with {\tt $end}. {\tt $keyword} and {\tt $end} must not contain
+any blank characters and must be the first
+non blank characters in the line. Other characters following
+the keyword on the same line seperated by a valid seperator are ignored.
+
+Several sections of data may be present in the input parameter file.
+Further ahead all sections are presented and the possible
+parameters that can be specified are explained.
+
+Lines outside of the sections are ignored. This gives
+the possibility to comment the parameter input file.
+
+Figure 1 shows an example of a typical input parameter file
+and the use of the sections and definition of parameters.
+
+$title
+	benchmark test for venice lagoon
+	bench
+	venlag
+$end
+
+$para
+	itanf = 0  itend = 86400  idt = 300 
+	ireib = 2  ilin = 0
+	href = 0.23  
+	iczv = 1
+$end
+
+$bound1     ---- chioggia ----
+	kbound = 73 74 76
+	ampli = 0.50  period = 43200.  phase = 10800.  zref = 0.
+$end
+
+$bound2    ---- malamocco ----
+	kbound = 353,350, 349
+	iqual = 1
+$end
+
+$bound3   ---- lido ----
+	kbound = 1374 1154 1160 1161
+	iqual = 1
+$end
+
+$file
+	wind='win18sep.win'
+$end
+
+-------------- MAREOGRAFI PER TARATURA--------------
+13,133,99,259,328,772,419,1141,1195,1070,1064,942,468,1154
+------------ OSZILLATING LAGOON -------------------
+5,1,282,468,1278,905
+-----------------------------------------------------
+
+$extra ------- MAREOGRAFI + SEZIONI PER TARATURA------------
+13,133,99,259,328,772,419,1141,1195,1070,1064,942,468,1154
+73,74,76,353,350,349,1374,1154,1160,1161,408,409,786,795,797
+$end
+
+$area ------- old chezy values ----------
+         0  33.
+         1  25.  27.    74    75
+         2  21.  23.   350   346
+         3  20.  25.  1154  1153
+         4  27.
+         5  27.
+         6  27.
+$end
+
+
+.header level 2 section PARA
+
+
+.header level 2 section EXTRA
+
+The node numbers of the extra points have to be specified here.
+Output for these extra points is written every time step to file 7.
+Format of this section is :
+.b
+IEXTRA1,IEXTRA2,...IEXTRAN
+.b
+where N is the number of the points given.
+
+.header level 2 section CHEZY
+
+In this section to the various areas defined in file 3 can
+be associated the corresponding Chezy values. The format for the 
+input is :
+.b;.lt
+	AREA0 CHEZYa0 CHEZYb0 NODEa0 NODEb0
+	AREA1 CHEZYa1 CHEZYb1 NODEa1 NODEb1
+	...
+	AREAn CHEZYan CHEZYbn NODEan NODEbn
+.el;.b
+where AREA is the area code (0-n), CHEZYa is the main Chezy value
+associated with the area code, CHEZYb is the second Chezy value
+for the area code. CHEZYb is compulsory, but if present then also
+NODEa and NODEb must be present. If the flow is in the direction of
+NODEa to NODEb then
+CHEZYa is used, else CHEZYb is used. If CHEZYb is not present
+thenCHEZYa is used for all situations.
+
+.header level 2 section FILE
+
+File names for external files.
+.b
+.ls 1,"-"
+.le;BOUND###file name of initial water level distribution (default=' ').
+For the format of the file see file 10.
+.le;WIND####file name of wind data (default=' '). For the format of
+the file see file 15.
+.le;FDNAME##file name of initial particle coordinates for float
+diffusion routine (default=' '). For the format of
+the file see file 17.
+.els
+
+
+.header level 2 section BOUND
+
+This section defines the boundary conditions for the open boundaries.
+There are as many sections BOUND as there are open boundaries.
+Every new section has to be opened by $BOUND<number> where number is
+the number of the inlet. The numbers must be contigous starting
+from 1. Thus the first boundary section would be opened by $BOUND1
+and the last by $BOUND4 assuming 4 inlets.
+.b
+Normally the boundary conditions are read from an external file
+given in BOUNDN. But if BOUNDN=' ' then the program uses
+a sinusoidal input that can be tuned by the parameters 
+AMPLI, PERIOD, PHASE and ZREF. If a file name is given
+in BOUNDN these parameters are of no importance.
+
+.b
+.ls 1,"-"
+.le;BOUNDN##name of the file in which the boundary values
+can be found (default=' '). for more information on the
+format of the file see file 30.. in the chapter about
+external files.
+.le;KBOUND##array of the boundary node numbers the boundary consists off.
+At least two nodes must be given in this array. The order of the
+nodes for one inlet must be anti-clockwise e.g. the elements must
+be to the left of the line defined by the nodes.
+.le;IQUAL###same boundary condition as other inlet (default=0).
+If IQUAL=0 all boundary conditions may be given for this inlet,
+else IQUAL is the number of the inlet where the boundary
+conditions have to be taken from. The number of the other inlet must 
+be less then the actual inlet number. This parameter is
+used if two inlets have exactly the same boundary conditions to
+avoid the doubling of the boundary file because only one
+inlet can read its data from a file with boundary data.
+.le;IFLUX###type of boundary (default=0). If IFLUX=0 on the
+boundary the water levels are specified, if IFLUX=1 the
+discharges have to be given.
+.le;AMPLI###amplitude of sinusoidal input (default=0.)
+.le;PERIOD##period of sinusoidal input (default=12*3600).
+.le;PHASE###initial phase of sinusoidal input (default=0.).
+.le;ZREF####reference level (bias) of sinusoidal input (default=0.).
+.els
+
+.header level 2 section FLOAT
+
+This section specifies the input for the float tracking mechanism.
+Only the initial locations of the particles have to be given in the form:
+.b
+X1, Y1, X2, Y2, ...Xn, Yn
+.b
+where X, Y are the initial coordinates of the particle and n is the
+total number of particles given (see NFLOAT in /FLOAT/).
+

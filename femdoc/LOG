@@ -1,0 +1,8 @@
+
+boundary conditions with fluxes not working in 3D
+
+boundn is interpolated with cubic !!
+look out for concentration (negative)
+
+stability index -> compute only once !!!
+

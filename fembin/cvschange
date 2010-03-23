@@ -1,0 +1,57 @@
+#!/bin/sh
+#
+# checks what has changed after the last commit
+
+raw="NO"
+tag="NO"
+detail=""
+
+Help()
+{
+  echo "Usage: cvschange [-h|-help] [-r] [-d] [-s] [-t]"
+  echo "          -r         raw output from cvs"
+  echo "          -d         detail for modified files"
+  echo "          -s         detail with time stamp for modified files"
+  echo "          -t         check for need of tagging"
+  echo "          -l date    print revision log after date (YYYYMMDD)"
+}
+
+while [ $# -gt 0 ]
+do
+  case $1 in
+        -r)     raw="YES";;
+        -d)     detail="-detail";;
+        -s)     detail="-detail -with_date";;
+        -t)     tag="YES";;
+        -l)     comparedate=$2; shift;;
+        -help)  Help; exit 1;;
+        -h)     Help; exit 1;;
+         *)     break;;
+  esac
+  shift
+done
+
+if [ -n "$comparedate" ]; then
+  revisionlog -after $comparedate *.[cfFh]
+  exit 0
+  #revisionlog -after $comparedate *.[cfFh] > $tmpfile
+  #if [ -f VERSION ]; then
+  #  revisionlog_adjust.pl $tmpfile VERSION > $tmpfile2
+  #fi
+  #cat $tmpfile2
+fi
+
+if [ $raw = "YES" ]; then
+  cvs -n update $*
+else
+  cvs -n update $* 2> /dev/null | cvs-format-update.pl $detail
+fi
+
+if [ $tag = "YES" ]; then
+  #echo "  determining tag situation"
+  if [ COMMIT -nt VERSION ]; then
+    echo "  ...module needs tagging..."
+  fi
+fi
+
+

@@ -1,0 +1,146 @@
+#!/bin/bash
+#
+# exports revisions from repository
+#
+# files are named $file_1.17.rev etc..
+#
+#################################################################
+
+base=$HOME/CVS
+
+#----------------------------------------------------
+# functions
+#----------------------------------------------------
+
+FullUsage()
+{
+  Usage
+  echo "   if revision is not given use last revision"
+  echo "  -h|-help          this help screen"
+  echo "  -info             shows information on all available versions"
+  echo "  -all              exports all versions from revision on"
+  echo "  -tag              use tag instead of revision"
+  echo "  -compare          with -all compares exported files"
+}
+
+Usage()
+{
+  echo "Usage: cvsgetrevs [-h|-help] [-options] repository file [revision]"
+}
+
+. cvs_utils.sh
+
+#----------------------------------------------------
+# arguments and options
+#----------------------------------------------------
+
+info="NO"
+compare="NO"
+all="NO"
+tag="NO"
+
+while [ -n "$1" ]
+do
+   case $1 in
+        -info)          info="YES";;
+        -compare)       compare="YES";;
+        -all)           all="YES";;
+        -tag)           tag="YES";;
+        -h|-help)       FullUsage; exit 0;;
+        -*)             no such option: $1; exit 1;;
+        *)              break;;
+   esac
+   shift
+done
+
+if [ $# -lt 2 ]; then
+  Usage
+  exit 1
+fi
+
+repos=$1
+file=$2
+rev=$3
+
+#----------------------------------------------------
+# set up arguments
+#----------------------------------------------------
+
+rcsfile=$base/$repos/$file
+
+if [ $tag = "YES" ]; then
+  Find_rev_to_version $rcsfile $rev	#inside $revision is set
+  if [ -z "$revision" ]; then
+    echo "no revision found to tag $rev"
+    exit 5
+  fi
+  rev=$revision
+fi
+
+act=`rlog -r $rcsfile | grep '^revision'`
+act=`echo $act | sed -e 's/^revision //'`
+
+ract=`echo $act | sed -e 's/.*\.//'`
+rmain=`echo $act | sed -e 's/\..*//'`
+
+echo "Retrieving file $rcsfile"
+echo "actual revision: $act"
+echo "looking for revision: $rev"
+echo "main: $rmain   revision: $ract"
+
+rmin=${rev:-$ract}			#if none is given use actual revision
+rmin=`echo $rmin | sed -e 's/.*\.//'`	#strip main branch
+
+rmax=$rmin
+[ $all = "YES" ] && rmax=$ract
+
+#----------------------------------------------------
+# if info only print revision info
+#----------------------------------------------------
+
+if [ $info = "YES" ]; then
+  rlog -r $rcsfile
+  exit 0
+fi
+
+#----------------------------------------------------
+# check out revisions
+#----------------------------------------------------
+
+r=$rmin
+
+while [ $r -le $rmax ]
+do
+  rev=$rmain.$r
+  new="${file}_$rev.rev"
+  echo "$r  ->  $rev  -> $new"
+  co -p -r$rev $rcsfile > $new
+  r=`expr $r + 1`
+done
+
+#----------------------------------------------------
+# compare revisions
+#----------------------------------------------------
+
+[ $compare = "NO" ] && exit 0
+
+r=$rmin
+rold=$r
+r=`expr $r + 1`
+
+while [ $r -le $rmax ]
+do
+  old="${file}_$rmain.$r.rev"
+  new="${file}_$rmain.$rold.rev"
+
+  echo -n "$new - $old: "
+  diff -wn $new $old | d+.pl
+
+  rold=$r
+  r=`expr $r + 1`
+done
+
+#----------------------------------------------------
+# end of routine
+#----------------------------------------------------
+

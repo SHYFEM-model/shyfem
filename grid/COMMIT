@@ -1,0 +1,232 @@
+============================================================
+
+Tue Apr 21 12:24:42 CEST 2009
+
+New version 3.10
+
+   Modified files:
+      VERSION    11 ++
+     gridvs.c     9 +-
+
+============================================================
+
+Tue Apr 21 12:23:05 CEST 2009
+
+DIFFS file
+
+   Modified files:
+     Makefile     7 +
+
+============================================================
+
+Fri Feb 13 18:04:26 CET 2009
+
+New version 3.09
+
+   Modified files:
+      VERSION    11 ++
+     gridvs.c     8 +-
+
+============================================================
+
+Fri Feb 13 18:03:11 CET 2009
+
+Linker options for c
+
+   Modified files:
+      VERSION     4 +
+
+============================================================
+
+Fri Feb 13 18:00:42 CET 2009
+
+Linker options for c files
+
+   Modified files:
+     Makefile    26 ++--
+
+============================================================
+
+Mon Jan 26 13:39:26 CET 2009
+
+New version 3.08
+
+   Modified files:
+      VERSION    10 +
+     gridvs.c     8 +-
+
+============================================================
+
+Mon Jan 26 13:37:52 CET 2009
+
+new makedepend
+
+   Modified files:
+     Makefile   474 +++++++-----------------------------------------
+
+============================================================
+
+Wed Jan 14 18:37:51 CET 2009
+
+New version 3.07
+
+   Modified files:
+      VERSION    11 ++
+     gridvs.c    15 ++-
+
+============================================================
+
+Wed Jan 14 18:36:28 CET 2009
+
+imported into SHYFEM tree
+
+   Modified files:
+     Makefile    76 ++++----
+   Removed files:
+      after gf.bat gmake.bat gmstd.bat grid.prj gridd plot.bat 
+      ps2hp.bat setup.bat 
+   Added files:
+      BUGS after.sh gridd.sh 
+
+============================================================
+
+Wed Jan 14 18:28:49 CET 2009
+
+New version 3.06
+
+   Modified files:
+      VERSION    10 +
+     gridvs.c     9 +-
+
+============================================================
+
+Wed Jan 14 18:27:15 CET 2009
+
+changes to include depth in line type
+
+   Modified files:
+     Makefile   442 ++++++++++++++++++++++++++++++++++++++++-----
+     gridfi.c    13 ++-
+    gridma1.c    27 +++-
+    gridma2.c     7 +
+     gridut.c     1 +
+
+============================================================
+
+Wed Jan 14 18:19:17 CET 2009
+
+New version 3.05
+
+   Modified files:
+      VERSION    22 +++
+     gridvs.c    18 ++-
+
+============================================================
+
+Wed Jan 14 18:16:37 CET 2009
+
+Changes for computing depth, bug in line plotting
+
+   Modified files:
+     Makefile     5 +
+     assert.c     2 +-
+     assert.h     2 +-
+    general.c     2 +-
+    general.h     2 +-
+    grid_fp.h     1 +
+    grid_ty.h     1 +
+     gridco.c     7 +-
+     gridge.c    41 +++++
+     gridhs.c     5 +
+     gridhs.h     5 +
+     gridop.c     3 +-
+     gridps.c     6 +-
+       hash.h     2 +-
+       menu.h     2 +-
+     screen.c     2 +-
+     screen.h     2 +-
+      stack.c     2 +-
+      stack.h     2 +-
+
+============================================================
+
+Fri Sep 24 14:44:04 CEST 2004
+
+new routines for PostScript
+
+   Modified files:
+    gridps.c:    60 ++++---
+    gridvs.c:    16 ++-
+   psgraph.c:   987 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   psgraph.h:   135 ++++++--------
+
+============================================================
+
+Fri Sep 24 13:58:03 CEST 2004
+
+Minor changes
+Bigger hash table
+
+   Modified files:
+    gridco.c:     7 +-
+    gridhs.c:     2 +-
+   gridma2.c:    12 ++-
+      hash.c:     5 +
+      menu.c:    68 ++++----
+   Added files:
+      VERSION 
+
+============================================================
+
+Tue Aug 19 15:22:32 CEST 2003
+
+version that compiles (3.02) and is tagged (3.03)
+
+   Modified files:
+     GRIDLOG:     4 +
+      grid.c:    27 ++--
+   grid_fp.h:     6 +-
+    gridmu.c:     2 +-
+    gridvs.c:    41 ++++-
+     gustd.c:     2 +-
+      menu.c:     1 +
+   Removed files:
+      makefile 
+   Added files:
+      Makefile 
+
+============================================================
+
+Fri May 26 14:48:33 MET DST 2000
+
+New file COMMIT
+
+   Added files:
+      COMMIT 
+
+============================================================
+
+Fri May 26 14:48:03 MET DST 2000
+
+New file COMMIT
+
+
+============================================================
+
+Fri May 26 14:47:31 MET DST 2000
+
+Version 3.01
+
+   Modified files:
+   grid_fp.h:     7 +-
+   grid_ty.h:     7 +-
+    gridfi.c:    12 +-
+    gridlo.c:     9 +-
+   gridma1.c:     6 +-
+    gridut.c:    11 +-
+    gridvs.c:    18 ++-
+    makefile:    28 ++--
+      menu.c:    33 +++-
+   psgraph.c:     3 +-
+    xgraph.c:    19 ++
+

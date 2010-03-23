@@ -1,0 +1,120 @@
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50-g
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!BOP
+!
+! !ROUTINE: Phyto
+!
+! DESCRIPTION
+!   List of parameters values
+
+!   This file is generated directly from OpenSesame model code, using a code 
+!   generator which transposes from the sesame meta language into F90.
+!   F90 code generator written by P. Ruardij.
+!   structure of the code based on ideas of M. Vichi.
+!
+! !INTERFACE
+! parameter values for mem_Phyto filled by InitPhyto
+!
+
+!  
+!
+! !AUTHORS
+!   mfstep/ERSEM team
+!
+! !REVISION_HISTORY
+!   ---
+!
+! COPYING
+!   
+!   Copyright (C) 2006 P. Ruardij, the mfstep group, the ERSEM team 
+!   (rua@nioz.nl, vichi@bo.ingv.it)
+!
+!   This program is free software; you can redistribute it and/or modify
+!   it under the terms of the GNU General Public License as published by
+!   the Free Software Foundation;
+!   This program is distributed in the hope that it will be useful,
+!   but WITHOUT ANY WARRANTY; without even the implied warranty of
+!   MERCHANTEABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!   GNU General Public License for more details.
+!
+!EOP
+!-------------------------------------------------------------------------!
+!BOC
+!
+!
+!        :
+!        :  	 ---------------- Physiological parameters -----------------
+!        :
+!  p_q10:  	 Doubling temperature
+!  p_sum:  	 Maximal productivity at 10 degrees C
+!  p_srs:  	 Respiration rate at 10 degrees C
+!  p_sdmo:  	 Max.specific nutrient-stress lysis rate
+!  p_thdo:  	 Half value for nutrient stress lysis
+!  p_seo:  	 Extra lysis rate for P4
+!  p_pu_ea:  	 Fraction of pp excreted as PLOC/PDET
+!  p_pu_ra:  	 Activity respiration rate
+!        :
+!        :  	 ---------------- Nutrient parameters in phytoplankton -----------------
+!        :
+!  p_limnut:  	 switch for nut. limitation (Liebig is default)
+!  p_chPs:  	 half-value of SIO4-lim (mmol Si m-3)
+!  p_qslc:  	 Minimum quotum Si in PI
+!  p_qsRc:  	 Reference quotum Si in PI
+!  p_xqs:  	 factor for max quotum S
+!  p_qus:  	 affinity of PI for Si
+!  p_alpha_chl:  	 Initial slope P-I curve
+!        :
+!        :  	 ------------- Chlorophyll parameters -----------
+!        :  	 skel: Skeletonema costatum pav: Pavlova lutheri
+!        :  	 syn: Synechoccus sp. (significant alpha decrease with irradiance)
+!        :  	 gyr: Gyrodinium sp. iso: Isochrysis galbana
+!        :  	             skel     iso      syn      gyr
+!  p_sdchl:  	 Specific turnover rate for Chla (d-1)
+!        :  	p_qchlc =    0.03,    0.025,   0.1,     0.02    # Maximum quotum Chla:C
+!        :  	            +-0.024  +-0.001  +-0.003  +-0.004
+!        :  	 Thalassiosira sp. (0.05+-0.01)
+!        :  	             skel     pav      syn      gyr
+!  p_esNI:  	 Nutrient stress threshold for Sinking
+!        :  	p_alpha_chl = 1.0e-5, 0.46e-5*2.0, 2.0e-5, 0.68e-5 # Initial slope P-I curve
+!        :  	 Thalassiosira sp. (0.48-0.63)
+!  p_res:  	 Sinking velocity (m/d)
+!        :  	  p_qchlc  = 0.05,      0.03,      0.07,      0.02 # Maximum quotum Chla:C
+
+&Phyto_parameters
+p_q10 = 2.0,2.0,2.0,2.0,
+p_sum = 2.5,3.0,3.5,1.5,
+p_srs = 0.1,0.05,0.1,0.1,
+p_sdmo = 0.0,0.0,0.0,0.0,
+p_seo = 0.0,0.0,0.0,0.0,
+p_pu_ea = 0.05,0.1,0.1,0.15,
+p_pu_ra = 0.1,0.1,0.2,0.1,
+p_qnlc = 0.00687,0.00687,0.00687,0.00687,
+p_qplc = 0.0004288,0.0004288,0.0004288,0.0004288,
+p_qslc = 0.007,0.0,0.0,0.0,
+p_qnRc = 0.0126,0.0126,0.0126,0.0126,
+p_qpRc = 0.0007862,0.0007862,0.0007862,0.0007862,
+p_qsRc = 0.01,0.0,0.0,0.0,
+p_qun = 0.025,0.025,0.025,0.025,
+p_qup = 0.0025,0.0025,0.0025,0.0025,
+p_qus = 0.0025,0.0,0.0,0.0,
+p_xqn = 2.0,2.0,2.0,2.0,
+p_xqp = 2.0,2.0,2.0,2.0,
+p_xqs = 1.5,0.0,0.0,0.0,
+p_esNI = 0.7,0.75,0.75,0.75,
+p_thdo = 0.0,0.0,0.0,0.0,
+p_res = 5.0,0.0,0.0,2.5,
+p_chPs = 1.0,0.0,0.0,0.0,
+p_lN4 = 1.0,0.5,0.1,1.0,
+p_limnut = 1,1,1,1,
+p_alpha_chl = 1.38e-05,1.1e-05,1.1e-05,6.8e-06,
+p_sdchl = 0.2,0.2,0.2,0.2
+/
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+!END namelist
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+!BOP
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+! MODEL  BFM - Biogeochemical Flux Model version 2.50
+!-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

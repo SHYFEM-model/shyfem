@@ -1,0 +1,1235 @@
+Index: src/3d/bdy_3d.F90
+===================================================================
+RCS file: /public/cvs/getm-src/src/3d/bdy_3d.F90,v
+retrieving revision 1.11
+diff -u -p -r1.11 bdy_3d.F90
+--- src/3d/bdy_3d.F90	25 Aug 2006 09:00:19 -0000	1.11
++++ src/3d/bdy_3d.F90	1 Oct 2006 13:45:17 -0000
+@@ -54,6 +54,10 @@
+ ! salinity and temperature, respectively, are allocated.
+ !
+ ! !USES:
++#ifdef GETM_BIO
++   use bio, only: bio_calc
++   use bio_var, only: numc
++#endif
+    IMPLICIT NONE
+ !
+ ! !INPUT PARAMETERS:
+@@ -79,6 +83,13 @@
+ 
+    allocate(T_bdy(0:kmax,nsbv),stat=rc)
+    if (rc /= 0) stop 'init_init_bdy_3d: Error allocating memory (T_bdy)'
++#ifdef GETM_BIO
++   if ( bio_calc) then
++       allocate(cc3d_bdy(1:numc,0:kmax,nsbv),stat=rc)
++       if (rc /= 0) stop 'init_init_cc3b_bdy_3d: Error allocating memory (T_bdy)'
++       cc3d_bdy=_ZERO_
++   endif
++#endif
+ 
+ #ifdef DEBUG
+    write(debug,*) 'Leaving init_bdy_3d()'
+@@ -104,6 +115,10 @@
+ ! by means of the flow relaxation scheme by \cite{MARTINSENea87}.
+ !
+ ! !USES:
++#ifdef GETM_BIO
++   use bio, only: bio_calc
++   use bio_var, only: numc
++#endif
+    IMPLICIT NONE
+ !
+ ! !INPUT PARAMETERS:
+@@ -115,7 +130,7 @@
+ ! !OUTPUT PARAMETERS:
+ !
+ ! !LOCAL VARIABLES:
+-   integer                   :: i,j,k,l,n,ii,jj
++   integer                   :: i,j,k,l,m,n,ii,jj,ib
+    REALTYPE                  :: sp(1:4),rat
+ !EOP
+ !-----------------------------------------------------------------------
+@@ -158,93 +173,161 @@
+    sp(4)=0.0625
+ 
+    l = 0
+-   k = 0
++   m = 0
+    do n=1,NWB
+       l = l+1
+-      k = bdy_index(l)
++      m = bdy_index(l)
+       i = wi(n)
+       do j=wfj(n),wlj(n)
+          do ii=1,4
+             if (az(i-1+ii,j).gt.0) then
+-               S(i-1+ii,j,:) = sp(ii)*S_bdy(:,k)+(1.-sp(ii))*S(i-1+ii,j,:)
+-               T(i-1+ii,j,:) = sp(ii)*T_bdy(:,k)+(1.-sp(ii))*T(i-1+ii,j,:)
++               S(i-1+ii,j,:) = sp(ii)*S_bdy(:,m)+(1.-sp(ii))*S(i-1+ii,j,:)
++               T(i-1+ii,j,:) = sp(ii)*T_bdy(:,m)+(1.-sp(ii))*T(i-1+ii,j,:)
+             end if
++         end do
+ #ifdef GETM_BIO
+-            if ( allocated(cc3d) ) then
+-               cc3d(:,i,j,:) = cc3d(:,i+1,j,:)
+-            end if
++         if ( bio_calc) then
++            do ib=1,numc
++               !no boundaries present......
++               if ( cc3d_bdy(ib,1,1) < -1.0D+08 ) then
++                 cc3d(ib,i,j,:) = cc3d(ib,i+1,j,:)
++               else
++                 do k=1,kmax
++                   if ( cc3d_bdy(ib,k,m) < 0.0 ) then
++                       cc3d(ib,i,j,k)=cc3d(ib,i+1,j,k)
++                   else 
++                      do ii=1,4
++                         if (az(i-1+ii,j).gt.0) then
++                             cc3d(ib,i-1+ii,j,k) = sp(ii)*cc3d_bdy(ib,k,m) &
++                                              +(1.-sp(ii))*cc3d(ib,i-1+ii,j,k)
++                         endif
++                      enddo
++                   endif
++                 enddo
++               endif
++            enddo
++         endif
+ #endif
+-         end do
+-         k = k+1
++         m = m+1
+       end do
+    end do
+ 
+    do n = 1,NNB
+       l = l+1
+-      k = bdy_index(l)
++      m = bdy_index(l)
+       j = nj(n)
+       do i = nfi(n),nli(n)
+          do jj=1,4
+             if (az(i,j+1-jj).gt.0) then
+-               S(i,j+1-jj,:) = sp(jj)*S_bdy(:,k)+(1.-sp(jj))*S(i,j+1-jj,:)
+-               T(i,j+1-jj,:) = sp(jj)*T_bdy(:,k)+(1.-sp(jj))*T(i,j+1-jj,:)
++               S(i,j+1-jj,:) = sp(jj)*S_bdy(:,m)+(1.-sp(jj))*S(i,j+1-jj,:)
++               T(i,j+1-jj,:) = sp(jj)*T_bdy(:,m)+(1.-sp(jj))*T(i,j+1-jj,:)
+             end if
++         end do
+ #ifdef GETM_BIO
+-            if ( allocated(cc3d) ) then
+-               cc3d(:,i,j,:) = cc3d(:,i,j-1,:)
+-            end if
++         if ( bio_calc) then
++            do ib=1,numc
++               if ( cc3d_bdy(ib,1,1) < -1.0D+08 ) then
++                 cc3d(ib,i,j,:) = cc3d(ib,i,j-1,:)
++               else
++                  do k=1,kmax
++                     if ( cc3d_bdy(ib,k,m) < 0.0 ) then
++                        cc3d(ib,i,j,k)=cc3d(ib,i,j-1,k)
++                     else 
++                        do jj=1,4
++                           if (az(i,j+1-jj).gt.0) then
++                             cc3d(ib,i,j+1-jj,k) = sp(jj)*cc3d_bdy(ib,k,m) &
++                                                    +(1.-sp(jj))*cc3d(ib,i,j+1-jj,k)
++                           endif
++                        enddo
++                     endif
++                  enddo
++               endif
++            enddo
++         endif
++
+ #endif
+-         end do
+-         k = k+1
++         m = m+1
+       end do
+    end do
+ 
+    do n=1,NEB
+       l = l+1
+-      k = bdy_index(l)
++      m = bdy_index(l)
+       i = ei(n)
+       do j=efj(n),elj(n)
+          do ii=1,4
+             if (az(i+1-ii,j).gt.0) then
+-               S(i+1-ii,j,:) = sp(ii)*S_bdy(:,k)+(1.-sp(ii))*S(i+1-ii,j,:)
+-               T(i+1-ii,j,:) = sp(ii)*T_bdy(:,k)+(1.-sp(ii))*T(i+1-ii,j,:)
++               S(i+1-ii,j,:) = sp(ii)*S_bdy(:,m)+(1.-sp(ii))*S(i+1-ii,j,:)
++               T(i+1-ii,j,:) = sp(ii)*T_bdy(:,m)+(1.-sp(ii))*T(i+1-ii,j,:)
+             end if
++         end do
+ #ifdef GETM_BIO
+-            if ( allocated(cc3d) ) then
+-               cc3d(:,i,j,:) = cc3d(:,i-1,j,:)
+-            end if
++         if ( bio_calc) then
++            do ib=1,numc
++               if ( cc3d_bdy(ib,1,1) < -1.0D+08 ) then
++                 cc3d(ib,i,j,:) = cc3d(ib,i-1,j,:)
++               else
++                  do k=1,kmax
++                    if ( cc3d_bdy(ib,k,m) < 0.0 ) then
++                       cc3d(ib,i,j,k)=cc3d(ib,i-1,j,k)
++                    else 
++                       do ii=1,4
++                          if (az(i+1-ii,j).gt.0) then
++                            cc3d(ib,i+1-ii,j,k) = sp(ii)*cc3d_bdy(ib,k,m) &
++                                              +(1.-sp(ii))*cc3d(ib,i+1-ii,j,k)
++                          endif
++                       enddo
++                    endif
++                  enddo
++               endif
++            enddo
++         endif
+ #endif
+-         end do
+-         k = k+1
++         m = m+1
+       end do
+    end do
+ 
+    do n = 1,NSB
+       l = l+1
+-      k = bdy_index(l)
++      m = bdy_index(l)
+       j = sj(n)
+       do i = sfi(n),sli(n)
+          do jj=1,4
+             if (az(i,j-1+jj).gt.0) then
+-               S(i,j-1+jj,:) = sp(jj)*S_bdy(:,k)+(1.-sp(jj))*S(i,j-1+jj,:)
+-               T(i,j-1+jj,:) = sp(jj)*T_bdy(:,k)+(1.-sp(jj))*T(i,j-1+jj,:)
++               S(i,j-1+jj,:) = sp(jj)*S_bdy(:,m)+(1.-sp(jj))*S(i,j-1+jj,:)
++               T(i,j-1+jj,:) = sp(jj)*T_bdy(:,m)+(1.-sp(jj))*T(i,j-1+jj,:)
+             end if
++         end do
+ #ifdef GETM_BIO
+-            if ( allocated(cc3d) ) then
+-               cc3d(:,i,j,:) = cc3d(:,i,j+1,:)
+-            end if
++         if ( bio_calc) then
++            do ib=1,numc
++               if ( cc3d_bdy(ib,1,1) < -1.0D+08 ) then
++                 cc3d(ib,i,j,:) = cc3d(ib,i,j+1,:)
++               else
++                  do k=1,kmax
++                     if ( cc3d_bdy(ib,k,m) < 0.0 ) then
++                        cc3d(ib,i,j,k)=cc3d(ib,i,j+1,k)
++                     else 
++                        do jj=1,4
++                           if (az(i,j-1+jj).gt.0) then
++                             cc3d(ib,i,j-1+jj,k) = sp(jj)*cc3d_bdy(ib,k,m) &
++                                              +(1.-sp(jj))*cc3d(ib,i,j-1+jj,k)
++                           endif
++                        enddo
++                     endif
++                  enddo
++               endif
++            enddo
++         endif
+ #endif
+-         end do
+-         k = k+1
++         m = m+1
+       end do
+    end do
+ 
+ #ifdef GETM_BIO
+-   if ( allocated(cc3d) ) then
+-      do n=1,size(cc3d,1)
+-         call mirror_bdy_3d(cc3d(n,:,:,:),H_TAG)
+-      end do
+-   end if
++   do n=1,numc
++      call mirror_bdy_3d(cc3d(n,:,:,:),H_TAG)
++   end do
+ #endif
+ 
+ 
+Index: src/3d/m3d.F90
+===================================================================
+RCS file: /public/cvs/getm-src/src/3d/m3d.F90,v
+retrieving revision 1.32
+diff -u -p -r1.32 m3d.F90
+--- src/3d/m3d.F90	25 Aug 2006 09:00:19 -0000	1.32
++++ src/3d/m3d.F90	1 Oct 2006 13:45:17 -0000
+@@ -36,10 +36,10 @@
+    use internal_pressure, only: init_internal_pressure, do_internal_pressure
+    use internal_pressure, only: ip_method
+ #endif
+-#ifdef GETM_BIO
+-   use bio, only: bio_calc
+-   use getm_bio, only: init_getm_bio, do_getm_bio
+-#endif
++!#ifdef GETM_BIO
++!   use bio, only: bio_calc
++!   use getm_bio, only: init_getm_bio, do_getm_bio
++!#endif
+    use variables_3d
+    use advection_3d, only: init_advection_3d
+    use bdy_3d, only: init_bdy_3d, do_bdy_3d
+@@ -250,10 +250,10 @@
+    end if
+ #endif
+ 
+-#ifdef GETM_BIO
+-!KBK      if(bio_calc) call init_getm_bio()
+-      call init_getm_bio()
+-#endif
++!#ifdef GETM_BIO
++!!KBK      if(bio_calc) call init_getm_bio()
++!      call init_getm_bio()
++!#endif
+ 
+    if (bdy3d) call init_bdy_3d()
+ 
+@@ -272,11 +272,12 @@
+ ! \label{sec-integrate-3d}
+ !
+ ! !INTERFACE:
+-   subroutine integrate_3d(runtype,n)
++   subroutine integrate_3d(runtype,n,write_3d)           !BFM
+    IMPLICIT NONE
+ !
+ ! !INPUT PARAMETERS:
+    integer, intent(in)                 :: runtype,n
++   logical write_3d                                      !BFM
+ !
+ ! !INPUT/OUTPUT PARAMETERS:
+ !
+@@ -451,9 +452,9 @@
+    end if
+ #endif
+ 
+-#ifdef GETM_BIO
+-   if (bio_calc) call do_getm_bio(dt)
+-#endif
++!#ifdef GETM_BIO
++!   if (bio_calc) call do_getm_bio(dt,write_3d)
++!#endif
+ 
+    UEx=_ZERO_ ; VEx=_ZERO_
+    if (kmax .gt. 1) then
+Index: src/3d/variables_3d.F90
+===================================================================
+RCS file: /public/cvs/getm-src/src/3d/variables_3d.F90,v
+retrieving revision 1.11
+diff -u -p -r1.11 variables_3d.F90
+--- src/3d/variables_3d.F90	17 Mar 2006 17:19:54 -0000	1.11
++++ src/3d/variables_3d.F90	1 Oct 2006 13:45:18 -0000
+@@ -125,8 +125,20 @@
+ #endif
+ 
+ #ifdef GETM_BIO
+-   REALTYPE, allocatable               :: cc3d(:,:,:,:)
+-   REALTYPE, allocatable               :: ws3d(:,:,:,:)
++   REALTYPE, allocatable,target    :: cc3d(:,:,:,:)
++!  REALTYPE, allocatable           :: ws3d(:,:,:,:)
++   REALTYPE, allocatable,target    :: ccb3d(:,:,:,:)
++   REALTYPE, allocatable,target    :: diag3d(:,:,:,:)
++   REALTYPE, allocatable,target    :: diagb3d(:,:,:,:)
++   REALTYPE, allocatable,target    :: cc3d_out(:,:,:,:)
++   REALTYPE, allocatable,target    :: ccb3d_out(:,:,:,:)
++   integer, allocatable            :: counter_ave(:,:)
++   integer                         :: flag_out=0
++   REALTYPE,allocatable            :: p_poro_2d(:,:)
++   REALTYPE,allocatable            :: p_p_ae_2d(:,:)
++   REALTYPE                        :: p_poro_default
++   REALTYPE                        :: p_p_ae_default
++   character(len=64)               :: ben_init_file
+ #endif
+    integer                             :: size3d_field
+    integer                             :: mem3d
+Index: src/getm/integration.F90
+===================================================================
+RCS file: /public/cvs/getm-src/src/getm/integration.F90,v
+retrieving revision 1.7
+diff -u -p -r1.7 integration.F90
+--- src/getm/integration.F90	25 Aug 2006 09:34:10 -0000	1.7
++++ src/getm/integration.F90	1 Oct 2006 13:45:18 -0000
+@@ -109,7 +109,7 @@
+    use getm_bio, only: do_getm_bio
+ #endif
+    use input,    only: do_input
+-   use output,   only: do_output,meanout
++   use output,   only: do_output,test_if3doutput,meanout
+ #ifdef TEST_NESTING
+    use nesting,   only: nesting_file
+ #endif
+@@ -127,6 +127,7 @@
+ !
+ ! !LOCAL VARIABLES
+    logical                   :: do_3d
++   logical                   :: write_3d
+    integer                   :: n
+    integer                   :: progress=100
+ !EOP
+@@ -144,6 +145,7 @@
+ 
+    do n=MinN,MaxN
+ 
++      call test_if3doutput(n,timestep,write_3d)
+       if (progress .gt. 0 .and. mod(n,progress) .eq. 0) LEVEL2 n
+ 
+ #ifndef NO_3D
+Index: src/ncdf/Makefile
+===================================================================
+RCS file: /public/cvs/getm-src/src/ncdf/Makefile,v
+retrieving revision 1.6
+diff -u -p -r1.6 Makefile
+--- src/ncdf/Makefile	7 Feb 2006 07:16:22 -0000	1.6
++++ src/ncdf/Makefile	1 Oct 2006 13:45:18 -0000
+@@ -13,10 +13,11 @@ MODSRC	= ncdf_common.F90 grid_ncdf.F90 n
+ 
+ LIBSRC	= set_attributes.F90 init_grid_ncdf.F90 save_grid_ncdf.F90   \
+           init_2d_ncdf.F90 save_2d_ncdf.F90                          \
+-          init_3d_ncdf.F90 save_3d_ncdf.F90                          \
++          init_2dbio_ncdf.F90 init_3d_ncdf.F90 save_3d_ncdf.F90      \
+           get_field_ncdf.F90 read_field_ncdf.F90                     \
+           ncdf_close.F90 init_mean_ncdf.F90 save_mean_ncdf.F90
+ 
++
+ SRC	= $(MODSRC) $(LIBSRC)
+ 
+ MOD	= 	                \
+@@ -40,7 +41,8 @@ ${LIB}(set_attributes.o)	\
+ ${LIB}(init_grid_ncdf.o)	\
+ ${LIB}(save_grid_ncdf.o)	\
+ ${LIB}(init_2d_ncdf.o)		\
+-${LIB}(save_2d_ncdf.o)
++${LIB}(save_2d_ncdf.o)		\
++${LIB}(init_2dbio_ncdf.o)
+ ifneq ($(GETM_NO_3D),true)
+ OBJ	+= 	\
+ ${LIB}(init_3d_ncdf.o)		\
+Index: src/ncdf/init_3d_ncdf.F90
+===================================================================
+RCS file: /public/cvs/getm-src/src/ncdf/init_3d_ncdf.F90,v
+retrieving revision 1.11
+diff -u -p -r1.11 init_3d_ncdf.F90
+--- src/ncdf/init_3d_ncdf.F90	17 Mar 2006 11:06:33 -0000	1.11
++++ src/ncdf/init_3d_ncdf.F90	1 Oct 2006 13:45:18 -0000
+@@ -21,7 +21,11 @@
+    use suspended_matter, only: spm_save
+ #endif
+ #ifdef GETM_BIO
+-   use bio_var, only: numc,var_names,var_units,var_long
++   use bio, only:bio_calc
++   use bio_var, only: bio_setup  
++   use bio_var, only: stPelStateS,stPelDiagS,stPelFluxS,stBenStateS,stBenDiagS,stBenFluxS
++   use bio_var, only: stPelStateE,stPelDiagE,stPelFluxE,stBenStateE,stBenDiagE,stBenFluxE
++
+ #endif
+ 
+    IMPLICIT NONE
+@@ -202,7 +206,6 @@
+ 
+ 
+ 
+-
+    if (save_vel) then
+       fv = vel_missing
+       mv = vel_missing
+@@ -334,21 +337,17 @@
+ #endif
+ 
+ #ifdef GETM_BIO
+-   allocate(bio_ids(numc),stat=rc)
+-   if (rc /= 0) stop 'init_3d_ncdf(): Error allocating memory (bio_ids)'
+-   STDERR numc
+-   fv = bio_missing
+-   mv = bio_missing
+-   vr(1) = _ZERO_
+-   vr(2) = 9999.
+-   do n=1,numc
+-      err = nf_def_var(ncid,var_names(n),NF_REAL,4,f4_dims,bio_ids(n))
+-      if (err .NE.  NF_NOERR) go to 10
+-      call set_attributes(ncid,bio_ids(n), &
+-                          long_name=trim(var_long(n)), &
+-                          units=trim(var_units(n)), &
+-                          FillValue=fv,missing_value=mv,valid_range=vr)
+-   end do
++    if ( bio_calc) then
++      if ( bio_setup /=2 ) then
++        call init_3d_ncdf_biovars(stPelStateS,stPelFluxE, 4,f4_dims,err)
++        if (err .NE.  NF_NOERR) go to 10
++      endif
++      if ( bio_setup >=2 ) then
++        call init_3d_ncdf_biovars(stBenStateS,stBenFluxE, 3,f3_dims,err)
++        if (err .NE.  NF_NOERR) go to 10
++      endif
++    endif
++!END_BFM
+ #endif
+ 
+ !  globals
+@@ -368,7 +367,64 @@
+    stop 'init_3d_ncdf'
+    end subroutine init_3d_ncdf
+ !EOC
++!-------------------------------------------------------------------------
++#ifdef GETM_BIO
++!BOP
++!
++! !IROUTINE: Initialise 3D netCDF variables
++!
++! !INTERFACE:
++   subroutine init_3d_ncdf_biovars(from,to,n_dims,f_dims,err)
++!
++! !USES:
++   use exceptions
++   use ncdf_common
++   use ncdf_3d
++! !DESCRIPTION:
++!
++   use bio_var, only: var_names,var_units,var_long,var_ids       !BFM
++   IMPLICIT NONE
++! !INPUT PARAMETERS:
++   integer,intent(IN)                           :: from
++   integer,intent(IN)                           :: to
++   integer,intent(IN)                           :: n_dims
++   integer,intent(IN)                           :: f_dims(n_dims)
++! !OUTPUT PARAMETERS:
++   integer,intent(OUT)                          :: err
++! !LOCAL PARAMETERS:
++   REALTYPE               :: fv,mv,vr(2)
++   integer                :: n
++!EOP
++!-------------------------------------------------------------------------
++!BOC
++   include "netcdf.inc"
++
++
++
++   fv = bio_missing
++   mv = bio_missing
++   vr(1) = _ZERO_
++   vr(2) = 1.0D+10
++   do n= from, to
++     if (var_ids(n) /= 0) then                                          !BFM
++       err = nf_def_var(ncid,var_names(n),NF_REAL,n_dims,f_dims,var_ids(n))
++       if (err /=  NF_NOERR)  return
+ 
++       call set_attributes(ncid,var_ids(n), &
++                          long_name=trim(var_long(n)), &
++                          units=trim(var_units(n)), &
++                          FillValue=fv,missing_value=mv,valid_range=vr)
++     end if                                                              !BFM
++   end do
++
++   err=0
++   return
++
++   end subroutine init_3d_ncdf_biovars
++#endif
++
++
++!EOC
+ !-----------------------------------------------------------------------
+ ! Copyright (C) 2001 - Hans Burchard and Karsten Bolding (BBH)         !
+ !-----------------------------------------------------------------------
+Index: src/ncdf/ncdf_3d.F90
+===================================================================
+RCS file: /public/cvs/getm-src/src/ncdf/ncdf_3d.F90,v
+retrieving revision 1.7
+diff -u -p -r1.7 ncdf_3d.F90
+--- src/ncdf/ncdf_3d.F90	25 Apr 2005 09:32:34 -0000	1.7
++++ src/ncdf/ncdf_3d.F90	1 Oct 2006 13:45:18 -0000
+@@ -29,9 +29,6 @@
+ #ifdef SPM
+    integer                             :: spmpool_id,spm_id
+ #endif
+-#ifdef GETM_BIO
+-   integer, allocatable                :: bio_ids(:)
+-#endif
+ 
+    REAL_4B, dimension(:), allocatable  :: ws
+ 
+Index: src/ncdf/ncdf_3d_bdy.F90
+===================================================================
+RCS file: /public/cvs/getm-src/src/ncdf/ncdf_3d_bdy.F90,v
+retrieving revision 1.10
+diff -u -p -r1.10 ncdf_3d_bdy.F90
+--- src/ncdf/ncdf_3d_bdy.F90	4 May 2005 11:50:57 -0000	1.10
++++ src/ncdf/ncdf_3d_bdy.F90	1 Oct 2006 13:45:19 -0000
+@@ -18,6 +18,12 @@
+    use m2d, only: dtm
+    use variables_3d, only: hn
+    use bdy_3d, only: T_bdy,S_bdy
++#ifdef GETM_BIO
++   use bdy_3d, only: cc3d_bdy
++   use bio, only: bio_calc
++   use bio_var, only: numc,var_names
++#endif
++
+    use time, only: string_to_julsecs,time_diff,julianday,secondsofday
+    use time, only: write_time_string,timestr
+    IMPLICIT NONE
+@@ -42,6 +48,10 @@
+    REALTYPE, allocatable, dimension(:,:)   :: S_old, S_new
+    REAL_4B,  allocatable, dimension(:,:)   :: S_wrk
+    REALTYPE, allocatable, dimension(:,:,:) :: T_bdy_clim,S_bdy_clim
++#ifdef GETM_BIO
++   integer,dimension(:),allocatable    :: cc3d_id
++   REALTYPE, allocatable, dimension(:,:,:,:) :: cc3d_bdy_clim
++#endif
+ !
+ ! !REVISION HISTORY:
+ !  Original author(s): Karsten Bolding & Hans Burchard
+@@ -94,6 +104,9 @@
+ !  kurt,kurt
+ !
+ ! !USES:
++    use bio_var, only: numc,var_names
++
++
+    IMPLICIT NONE
+ !
+ ! !INPUT PARAMETERS:
+@@ -115,7 +128,8 @@
+    integer, allocatable, dimension(:):: dim_ids,dim_len
+    character(len=16), allocatable :: dim_name(:)
+    integer                   :: rc,err
+-   integer                   :: i,j,k,l,m,n,id
++   integer                   :: i,j,k,l,m,n,id,ib
++   integer                   :: bio_bounds
+ !EOP
+ !-------------------------------------------------------------------------
+ !BOC
+@@ -196,6 +210,23 @@
+    err = nf_inq_varid(ncid,'salt',salt_id)
+    if (err .NE. NF_NOERR) go to 10
+ 
++#ifdef GETM_BIO
++   if ( bio_calc) then 
++     allocate(cc3d_id(numc),stat=rc)
++     bio_bounds=0
++     do ib=1,numc
++        err =  nf_inq_varid(ncid,trim(var_names(ib)),cc3d_id(ib))
++        if (err .ne. NF_NOERR) cc3d_id(ib) = -1
++        if ( cc3d_id(ib) .ne. -1 ) then
++              bio_bounds=bio_bounds+1
++              LEVEL4 'boundaries for: ',trim(var_names(ib))
++         end if
++     enddo
++   endif
++#endif
++
++
++
+    if (climatology) then
+ 
+       allocate(T_bdy_clim(time_len,0:kmax,nsbv),stat=rc)
+@@ -204,6 +235,12 @@
+       allocate(S_bdy_clim(time_len,0:kmax,nsbv),stat=rc)
+       if (rc /= 0) stop 'init_3d_bdy_ncdf: Error allocating memory (S_bdy_clim)'
+ 
++#ifdef GETM_BIO
++      if ( bio_calc) then 
++        allocate(cc3d_bdy_clim(1:bio_bounds,time_len,0:kmax,nsbv),stat=rc)
++        if (rc /= 0) stop 'init_3d_bdy_ncdf: Error allocating memory (cc3d_bdy_clim)'
++      endif
++#endif
+ !     we read each boundary column individually
+ !     here we can read from both a 3D field and from a
+ !     special boundary data file - only the arguments 'start' and 'edges'
+@@ -244,6 +281,20 @@
+                if (err .ne. NF_NOERR) go to 10
+                call interpol(zax_len,zlev,wrk,H(i,j),kmax,hn(i,j,:), &
+                              T_bdy_clim(m,:,k))
++#ifdef GETM_BIO
++               if ( bio_calc) then
++                 bio_bounds=0
++                 do ib=1,numc
++                   if ( cc3d_id(i) > 0 ) then
++                     bio_bounds=bio_bounds+1 
++                     err = nf_get_vara_real(ncid,cc3d_id(ib),start,edges,wrk)
++                     if (err .ne. NF_NOERR) go to 10
++                     call interpol(zax_len,zlev,wrk,H(i,j),kmax,hn(i,j,:), &
++                             cc3d_bdy_clim(bio_bounds,m,:,k))
++                   endif
++                 enddo
++               endif
++#endif
+                k = k+1
+             end do
+          end do
+@@ -266,6 +317,20 @@
+                if (err .ne. NF_NOERR) go to 10
+                call interpol(zax_len,zlev,wrk,H(i,j),kmax,hn(i,j,:), &
+                              T_bdy_clim(m,:,k))
++#ifdef GETM_BIO
++               if ( bio_calc) then
++                 bio_bounds=0
++                 do ib=1,numc
++                   if ( cc3d_id(ib) > 0 ) then
++                     bio_bounds=bio_bounds+1
++                     err = nf_get_vara_real(ncid,cc3d_id(ib),start,edges,wrk)
++                     if (err .ne. NF_NOERR) go to 10
++                     call interpol(zax_len,zlev,wrk,H(i,j),kmax,hn(i,j,:), &
++                             cc3d_bdy_clim(bio_bounds,m,:,k))
++                   endif
++                 enddo
++               endif
++#endif
+                k = k+1
+             end do
+          end do
+@@ -288,6 +353,20 @@
+                if (err .ne. NF_NOERR) go to 10
+                call interpol(zax_len,zlev,wrk,H(i,j),kmax,hn(i,j,:), &
+                              T_bdy_clim(m,:,k))
++#ifdef GETM_BIO
++               if ( bio_calc) then
++                 bio_bounds=0
++                 do ib=1,numc
++                   if ( cc3d_id(ib) > 0 ) then
++                     bio_bounds=bio_bounds+1
++                     err = nf_get_vara_real(ncid,cc3d_id(ib),start,edges,wrk)
++                     if (err .ne. NF_NOERR) go to 10
++                     call interpol(zax_len,zlev,wrk,H(i,j),kmax,hn(i,j,:), &
++                             cc3d_bdy_clim(bio_bounds,m,:,k))
++                   endif
++                 enddo
++               endif
++#endif
+                k = k+1
+             end do
+          end do
+@@ -310,6 +389,20 @@
+                if (err .ne. NF_NOERR) go to 10
+                call interpol(zax_len,zlev,wrk,H(i,j),kmax,hn(i,j,:), &
+                              T_bdy_clim(m,:,k))
++#ifdef GETM_BIO
++               if ( bio_calc) then
++                 bio_bounds=0
++                 do ib=1,numc
++                   if ( cc3d_id(ib) > 0 ) then
++                     bio_bounds=bio_bounds+1
++                     err = nf_get_vara_real(ncid,cc3d_id(ib),start,edges,wrk)
++                     if (err .ne. NF_NOERR) go to 10
++                     call interpol(zax_len,zlev,wrk,H(i,j),kmax,hn(i,j,:), &
++                             cc3d_bdy_clim(bio_bounds,m,:,k))
++                   endif
++                 enddo
++               endif
++#endif
+                k = k+1
+             end do
+          end do
+@@ -505,7 +598,8 @@
+    integer, save   :: loop0
+    REALTYPE        :: t
+    REALTYPE, save  :: t1=_ZERO_,t2=-_ONE_
+-   integer         :: i,j,k,l,n
++   integer         :: i,j,k,l,n,ib
++   integer         :: bio_bounds=0
+ !EOP
+ !-------------------------------------------------------------------------
+ !BOC
+@@ -532,6 +626,22 @@
+          +     rat*0.5*(S_bdy_clim(next,:,:)+S_bdy_clim(this,:,:))
+       T_bdy=(1.-rat)*0.5*(T_bdy_clim(prev,:,:)+T_bdy_clim(this,:,:))  &
+          +     rat*0.5*(T_bdy_clim(next,:,:)+T_bdy_clim(this,:,:))
++#ifdef GETM_BIO
++      if ( bio_calc) then
++        bio_bounds=0
++        do ib=1,numc
++         if ( cc3d_id(ib) > 0 ) then
++            bio_bounds=bio_bounds+1 
++            cc3d_bdy(ib,:,:)=(1.-rat)*0.5*(cc3d_bdy_clim(bio_bounds,prev,:,:)  &
++                                  +cc3d_bdy_clim(bio_bounds,this,:,:))   &
++                      +rat*0.5*(cc3d_bdy_clim(bio_bounds,next,:,:) &
++                               +cc3d_bdy_clim(bio_bounds,this,:,:))
++         else
++             cc3d_bdy(ib,1,1)=-1.0D+9
++         endif
++        enddo
++      endif
++#endif
+    else
+ 
+       if (first) then
+@@ -668,11 +778,17 @@
+    end do
+ 
+    do k=kmax,1,-1
+-      if (zmodel(k) .ge. zlev(1)) col(k) = wrk(1)
++      if (zmodel(k) .ge. zlev(1)) then
++           col(k) = wrk(1)
++           if ( wrk(1)< 0.0 ) col(k)=-1.0D+80
++      endif
+    end do
+ 
+    do k=1,kmax
+-      if (zmodel(k) .le. zlev(nlev)) col(k) = wrk(nlev)
++      if (zmodel(k) .le. zlev(nlev)) then
++           col(k) = wrk(nlev)
++           if ( wrk(nlev)< 0.0 ) col(k)=-1.0D+80
++      endif
+    end do
+ 
+    do k=1,kmax
+@@ -681,11 +797,17 @@
+ 224      nn=nn-1
+          if(zlev(nn) .le. zmodel(k)) goto 224
+          rat = (zmodel(k)-zlev(nn+1))/(zlev(nn)-zlev(nn+1))
+-         col(k) = (_ONE_-rat)*wrk(nn+1)+rat*wrk(nn)
++         if ( wrk(nn+1) < 0.0 .or. wrk(nn) < 0.0 ) then
++           col(k)= -1.0D+80
++         else 
++           col(k) = (_ONE_-rat)*wrk(nn+1)+rat*wrk(nn)
++         endif
+       end if
+    end do
+    col(0)=col(1)
+    end subroutine interpol
++
++
+ !-----------------------------------------------------------------------
+ 
+    end module ncdf_3d_bdy
+Index: src/ncdf/ncdf_topo.F90
+===================================================================
+RCS file: /public/cvs/getm-src/src/ncdf/ncdf_topo.F90,v
+retrieving revision 1.12
+diff -u -p -r1.12 ncdf_topo.F90
+--- src/ncdf/ncdf_topo.F90	29 Jan 2006 20:32:34 -0000	1.12
++++ src/ncdf/ncdf_topo.F90	1 Oct 2006 13:45:20 -0000
+@@ -74,6 +74,7 @@
+ !
+ ! !PUBLIC MEMBER FUNCTIONS:
+   public                                ncdf_check_grid,ncdf_get_grid
++  public                                ncdf_read_2d
+ !
+ ! !PUBLIC DATA MEMBERS:
+ !
+@@ -114,7 +115,6 @@
+ !EOP
+ !
+ ! !LOCAL VARIABLES:
+-  private                                 ncdf_read_2d
+   integer, private                     :: ncbathy
+   integer, private                     :: grid_type_id, proj_type_id
+   integer, private                     :: proj_lon_id,proj_lat_id,proj_rot_id
+Index: src/ncdf/save_3d_ncdf.F90
+===================================================================
+RCS file: /public/cvs/getm-src/src/ncdf/save_3d_ncdf.F90,v
+retrieving revision 1.12
+diff -u -p -r1.12 save_3d_ncdf.F90
+--- src/ncdf/save_3d_ncdf.F90	17 Mar 2006 11:06:33 -0000	1.12
++++ src/ncdf/save_3d_ncdf.F90	1 Oct 2006 13:45:21 -0000
+@@ -31,8 +31,14 @@
+    use suspended_matter, only: spm_save
+ #endif
+ #ifdef GETM_BIO
+-   use bio_var, only: numc
+-   use variables_3d, only: cc3d,ws3d
++  use bio, only:bio_calc
++  use bio_var, only: var_ids, var_ave,c1dim
++  use variables_3d, only: cc3d,ccb3d,cc3d_out,ccb3d_out                       !BFM
++  use bio_var, only: stPelStateS,stPelDiagS,stPelFluxS,stBenStateS,stBenDiagS,stBenFluxS
++  use bio_var, only: stPelStateE,stPelDiagE,stPelFluxE,stBenStateE,stBenDiagE,stBenFluxE
++
++
++   use getm_bio, only: ffp, ffb, fill_diag                !BFM
+ #endif
+    use parameters,   only: g,rho_0
+    IMPLICIT NONE
+@@ -47,6 +53,10 @@
+ !  Original author(s): Karsten Bolding & Hans Burchard
+ !
+ !  $Log: save_3d_ncdf.F90,v $
++!  
++!  Revision PR 2006-06-21
++!  cleaner inclusions of GETM_BIO
++!
+ !  Revision 1.12  2006-03-17 11:06:33  kbk
+ !  cleaner inclusion of SPM module
+ !
+@@ -97,7 +107,7 @@
+ !
+ !
+ ! !LOCAL VARIABLES:
+-   integer                   :: err,n
++   integer                   :: err,n,k,j
+    integer                   :: start(4),edges(4)
+    integer, save             :: n3d=0
+    REALTYPE, parameter       :: x=-rho_0/g
+@@ -122,10 +132,10 @@
+       call cnv_3d(imin,jmin,imax,jmax,iimin,jjmin,iimax,jjmax,kmax, &
+                   kmin,az,hcc,-_ONE_,ws)
+       err = nf_put_vara_real(ncid,hcc_id,start,edges,ws)
+-      if (err .NE. NF_NOERR) go to 10
++      if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving hcc')
+ 
+       err = nf_sync(ncid)
+-      if (err .NE. NF_NOERR) go to 10
++      if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when syncing')
+ 
+    end if ! (n3d .eq. 1)
+ 
+@@ -145,19 +155,19 @@
+    call eta_mask(imin,jmin,imax,jmax,az,H,D,z,min_depth,elev_missing, &
+                  iimin,jmin,iimax,jjmax,ws)
+    err = nf_put_vara_real(ncid,elev_id,start,edges,ws)
+-   if (err .NE. NF_NOERR) go to 10
++   if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving elevations')
+ 
+ !  depth integrated zonal velocity
+    call to_2d_vel(imin,jmin,imax,jmax,au,U,DU,vel_missing, &
+                   imin,jmin,imax,jmax,ws)
+    err = nf_put_vara_real(ncid,u_id,start,edges,ws)
+-   if (err .NE. NF_NOERR) go to 10
++   if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving depth integrated zonal velocity')
+ 
+ !  depth integrated meridional velocity
+    call to_2d_vel(imin,jmin,imax,jmax,av,V,DV,vel_missing, &
+                   imin,jmin,imax,jmax,ws)
+    err = nf_put_vara_real(ncid,v_id,start,edges,ws)
+-   if (err .NE. NF_NOERR) go to 10
++   if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving depth integrated meridional velocity')
+ 
+    start(1) = 1
+    start(2) = 1
+@@ -172,7 +182,7 @@
+       call cnv_3d(imin,jmin,imax,jmax,iimin,jjmin,iimax,jjmax,kmax,    &
+                   kmin,az,hn,hh_missing,ws)
+       err = nf_put_vara_real(ncid,h_id,start,edges,ws)
+-      if (err .NE. NF_NOERR) go to 10
++      if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving hn')
+    end if
+ 
+    if (save_vel) then
+@@ -188,7 +198,7 @@
+       endif
+ 
+       err = nf_put_vara_real(ncid,uu_id,start,edges,ws)
+-      if (err .NE. NF_NOERR) go to 10
++      if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving uu')
+ 
+ 
+       if (destag) then
+@@ -202,11 +212,11 @@
+       endif
+ 
+       err = nf_put_vara_real(ncid,vv_id,start,edges,ws)
+-      if (err .NE. NF_NOERR) go to 10
++      if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving vv')
+ 
+       call tow(ws,ww,iimin,jjmin,0,iimax,jjmax,kmax)
+       err = nf_put_vara_real(ncid,w_id,start,edges,ws)
+-      if (err .NE. NF_NOERR) go to 10
++      if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving ww')
+ 
+    end if
+ 
+@@ -217,21 +227,21 @@
+          call cnv_3d(imin,jmin,imax,jmax,iimin,jjmin,iimax,jjmax,kmax, &
+                      kmin,az,S,salt_missing,ws)
+          err = nf_put_vara_real(ncid, salt_id, start, edges, ws)
+-         if (err .NE. NF_NOERR) go to 10
++         if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving S')
+       end if
+ 
+       if (save_t) then
+          call cnv_3d(imin,jmin,imax,jmax,iimin,jjmin,iimax,jjmax,kmax, &
+                      kmin,az,T,temp_missing,ws)
+          err = nf_put_vara_real(ncid, temp_id, start, edges, ws)
+-         if (err .NE. NF_NOERR) go to 10
++         if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving T')
+       end if
+ 
+       if (save_rho) then
+          call cnv_3d(imin,jmin,imax,jmax,iimin,jjmin,iimax,jjmax,kmax, &
+                      kmin,az,x*rho+rho_0-1000.,rho_missing,ws)
+          err = nf_put_vara_real(ncid, sigma_t_id, start, edges, ws)
+-         if (err .NE. NF_NOERR) go to 10
++         if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving rho')
+       end if
+    end if ! save_strho
+ #endif
+@@ -242,37 +252,37 @@
+          call cnv_3d(imin,jmin,imax,jmax,iimin,jjmin,iimax,jjmax,kmax, &
+                      kmin,az,tke,tke_missing,ws)
+          err = nf_put_vara_real(ncid,tke_id,start,edges,ws)
+-         if (err .NE. NF_NOERR) go to 10
++         if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving tke')
+       end if
+ 
+       if (save_num) then
+          call cnv_3d(imin,jmin,imax,jmax,iimin,jjmin,iimax,jjmax,kmax, &
+                      kmin,az,num,num_missing,ws)
+          err = nf_put_vara_real(ncid,num_id,start,edges,ws)
+-         if (err .NE. NF_NOERR) go to 10
++         if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving num')
+       end if
+ 
+       if (save_nuh) then
+          call cnv_3d(imin,jmin,imax,jmax,iimin,jjmin,iimax,jjmax,kmax, &
+                      kmin,az,nuh,nuh_missing,ws)
+          err = nf_put_vara_real(ncid,nuh_id,start,edges,ws)
+-         if (err .NE. NF_NOERR) go to 10
++         if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving nuh')
+       end if
+ 
+       if (save_eps) then
+          call cnv_3d(imin,jmin,imax,jmax,iimin,jjmin,iimax,jjmax,kmax, &
+                      kmin,az,eps,eps_missing,ws)
+          err = nf_put_vara_real(ncid, eps_id, start, edges, ws)
+-         if (err .NE. NF_NOERR) go to 10
++         if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving eps')
+       end if
+    end if ! save_turb
+ 
+ #ifdef SPM
+-   if (spm_save) then
++   if (save_spm) then
+       call cnv_3d(imin,jmin,imax,jmax,iimin,jjmin,iimax,jjmax,kmax,    &
+                   kmin,az,spm,spm_missing,ws)
+       err = nf_put_vara_real(ncid, spm_id, start, edges, ws)
+-      if (err .NE. NF_NOERR) go to 10
++      if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving spm')
+       !spm pool is a 2d magnitude
+       start(1) = 1
+       start(2) = 1
+@@ -283,12 +293,14 @@
+       call cnv_2d(imin,jmin,imax,jmax,az,spm_pool,spmpool_missing,    &
+                   imin,jmin,imax,jmax,ws)
+       err = nf_put_vara_real(ncid, spmpool_id, start, edges, ws)
+-      if (err .NE. NF_NOERR) go to 10
++      if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when saving spm_pool')
+    end if
+ #endif
+ 
+ #ifdef GETM_BIO
+-!   if (save_bio) then
++   if ( bio_calc) then
++      call fill_diag( 2,.true., 0,0,c1dim ,kmax )
++ 
+       start(1) = 1
+       start(2) = 1
+       start(3) = 1
+@@ -297,17 +309,79 @@
+       edges(2) = ylen
+       edges(3) = zlen
+       edges(4) = 1
+-      do n=1,numc
+-         call cnv_3d(imin,jmin,imax,jmax,iimin,jjmin,iimax,jjmax,kmax, &
+-                     kmin,az,cc3d(n,:,:,:),bio_missing,ws)
+-         err = nf_put_vara_real(ncid, bio_ids(n), start, edges, ws)
+-         if (err .NE.  NF_NOERR) go to 10
++      k=0
++      do n=stPelStateS, stPelFluxE
++         if (var_ids(n) /= 0  .and. var_ave(n)== 1) then   !BFM 
++           ! Only values to be stored are copied in the diagnostic 4d-array
++           k=k+1
++           ffp=cc3d_out(k,:,:,:)
++           call cnv_3d(imin,jmin,imax,jmax,iimin,jjmin,iimax,jjmax,kmax, &
++                     kmin,az,ffp,bio_missing,ws)
++           err = nf_put_vara_real(ncid, var_ids(n), start, edges, ws)    !BFM
++           if (err .NE.  NF_NOERR) call netcdf_error(err, &
++                                        'save_3d_ncf','when saving Pel.Diagnos')
++         end if                                                             !BFM
++      end do
++      do n=stPelStateS, stPelFluxE
++         if (var_ids(n) /= 0  .and. var_ave(n)== 0) then   !BFM 
++           if ( n <=stPelStateE) then
++             ffp=cc3d(n,:,:,:)
++           else
++             ! Only values to be stored are copied in the diagnostic 4d-array
++              k=k+1
++              ffp=cc3d_out(k,:,:,:)
++           endif
++           call cnv_3d(imin,jmin,imax,jmax,iimin,jjmin,iimax,jjmax,kmax, &
++                     kmin,az,ffp,bio_missing,ws)
++           err = nf_put_vara_real(ncid, var_ids(n), start, edges, ws)    !BFM
++           if (err .NE.  NF_NOERR) call netcdf_error(err, &
++                                        'save_3d_ncf','when saving Pel.Diagnos')
++         end if                                                             !BFM
++      end do
++
++      start(1) = 1
++      start(2) = 1
++      start(3) = n3d
++      edges(1) = xlen
++      edges(2) = ylen
++      edges(3) = 1
++      k=0
++      do n=stBenStateS, stBenFluxE
++         if (var_ids(n) /= 0  .and. var_ave(n)== 1) then   !BFM 
++            ! Only values to be stored are copied in the diagnostic 4d-array
++            k=k+1
++            ffb=ccb3d_out(k,:,:,1)
++            call cnv_2d(imin,jmin,imax,jmax,az,ffb,bio_missing, &
++                  imin,jmin,imax,jmax,ws)
++            err = nf_put_vara_real(ncid, var_ids(n), start, edges, ws)    !BFM
++            if (err .NE.  NF_NOERR) call netcdf_error(err, &
++                                 'save_3d_ncf','when saving ben_diagvar')
++         end if                                                          !BFM
+       end do
+-!   end if
++      j=0
++      do n=stBenStateS, stBenFluxE
++         j=j+1
++         if (var_ids(n) /= 0  .and. var_ave(n)== 0) then   !BFM 
++           if ( n <=stBenStateE) then
++              ffb=ccb3d(j,:,:,1)
++           else 
++              ! Only values to be stored are copied in the diagnostic 4d-array
++              k=k+1
++              ffb=ccb3d_out(k,:,:,1)
++           endif
++           call cnv_2d(imin,jmin,imax,jmax,az,ffb,bio_missing, &
++                  imin,jmin,imax,jmax,ws)
++           err = nf_put_vara_real(ncid, var_ids(n), start, edges, ws)    !BFM
++           if (err .NE.  NF_NOERR) call netcdf_error(err, &
++                                 'save_3d_ncf','when saving ben_diagvar')
++         end if                                                          !BFM
++      end do
++      call fill_diag( 0,.true., 0,0,c1dim ,kmax )
++   endif
+ #endif
+ 
+    err = nf_sync(ncid)
+-   if (err .NE. NF_NOERR) go to 10
++   if (err .NE. NF_NOERR) call netcdf_error(err,'save_3d_ncf','when syncing')
+ 
+    return
+ 
+@@ -319,5 +393,7 @@
+ !EOC
+ 
+ !-----------------------------------------------------------------------
++!-----------------------------------------------------------------------
+ ! Copyright (C) 2001 - Hans Burchard and Karsten Bolding (BBH)         !
+ !-----------------------------------------------------------------------
++
+Index: src/output/output.F90
+===================================================================
+RCS file: /public/cvs/getm-src/src/output/output.F90,v
+retrieving revision 1.17
+diff -u -p -r1.17 output.F90
+--- src/output/output.F90	3 Jun 2006 11:56:02 -0000	1.17
++++ src/output/output.F90	1 Oct 2006 13:45:21 -0000
+@@ -43,6 +43,8 @@
+    logical                             :: save_eps=.true.
+    logical                             :: save_num=.true.
+    logical                             :: save_nuh=.true.
++   logical                             :: restart_force=.false.
++
+    integer                             :: first_2d=1
+    integer                             :: step_2d=1
+    integer                             :: first_3d=1
+@@ -168,7 +170,7 @@
+              save_strho,save_s,save_t,save_rho, &
+              save_turb,save_tke,save_eps,save_num,save_nuh, &
+              first_2d,step_2d,first_3d,step_3d,hotout,meanout, &
+-             save_meteo
++             save_meteo,restart_force
+ !   logical :: nesting=.true.
+ !EOP
+ !-------------------------------------------------------------------------
+@@ -264,6 +266,51 @@
+    end subroutine init_output
+ 
+ !EOC
++!-----------------------------------------------------------------------
++!BOP
++!
++! !IROUTINE: test_if3doutput - test if output is written at this timestep
++!
++! !INTERFACE:
++   subroutine test_if3doutput(n,timestep,write_3d)
++!
++! !DESCRIPTION:
++!  test if output is written at this timestep
++!
++! !USES:
++   IMPLICIT NONE
++!
++! !INPUT PARAMETERS:
++   integer, intent(in)                 :: n
++   REALTYPE, intent(in)                :: timestep
++!
++! !INPUT/OUTPUT PARAMETERS:
++!
++! !OUTPUT PARAMETERS:
++   logical,intent(out)                  :: write_3d
++!
++! !REVISION HISTORY:
++!  22Nov Author name Initial code
++!
++! !LOCAL VARIABLES:
++!
++!EOP
++!-------------------------------------------------------------------------
++!BOC
++#ifdef DEBUG
++   integer, save :: Ncall = 0
++   Ncall = Ncall+1
++   write(debug,*) 'do_output() # ',Ncall
++#endif
++
++   write_3d = save_3d .and. n .ge. first_3d .and. mod(n,step_3d).eq.0
++
++   return
++   end subroutine test_if3doutput
++
++!EOC
++
++
+ 
+ !-----------------------------------------------------------------------
+ !BOP
+@@ -384,10 +431,10 @@
+   use variables_3d, only: spm,spm_pool
+ #endif
+ #ifdef GETM_BIO
+-  use bio, only: bio_calc
+-  use bio_var, only: numc
+-  use getm_bio, only: hotstart_bio
+-  use variables_3d,  only: cc3d
++  use bio, only: bio_calc                    !BFM
++  use bio_var, only: numc,numbc,bio_setup    !BFM
++  use getm_bio, only: hotstart_bio           !BFM
++  use variables_3d,  only: cc3d,ccb3d        !BFM
+ #endif
+    IMPLICIT NONE
+ !
+@@ -455,7 +502,14 @@
+ #ifdef GETM_BIO
+          if(bio_calc) then
+             LEVEL3 'saving bio variables'
+-            write(RESTART) cc3d
++           if ( bio_setup /= 2 ) then                  !BFM
++                LEVEL4 'saving 3d/pelagic variabls'    !BFM
++                write(RESTART) cc3d                    !BFM
++            endif                                      !BFM
++            if ( bio_setup  > 2 ) then                 !BFM
++                LEVEL4 'saving 2d/benthic variabls'    !BFM
++                write(RESTART) ccb3d                   !BFM
++            endif                                      !BFM
+          end if
+ #endif
+       end if
+@@ -504,7 +558,14 @@
+ #ifdef GETM_BIO
+          if(bio_calc .and. hotstart_bio) then
+             LEVEL3 'reading bio variables'
+-            read(RESTART) cc3d
++            if ( bio_setup /= 2 ) then             !BFM
++                LEVEL4 'read 3d/pelagic variables' !BFM
++                read(RESTART) cc3d                 !BFM
++            endif                                  !BFM
++            if ( bio_setup  > 2 ) then             !BFM
++                LEVEL4 'read 2d/benthic variabls'  !BFM
++                read(RESTART) ccb3d                !BFM
++            endif
+          end if
+ #endif
+       end if

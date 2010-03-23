@@ -1,0 +1,51 @@
+			HOWTO: PARDISO SOLVER
+
+- Install the MKL package and the Fortran compiler of Intel. They are freely available
+  for non-commercial use (http://www.intel.com/cd/software/products/asmo-na/eng/).
+
+- Open the file "Rule.make" in the main SHYFEM directory and set the flag 
+  PARDISO=true and the COMPILER=INTEL
+
+- Check that the compiler optimisation flags are good for your cpu.
+
+- Open the file "fem3d/common.h" and set the parameter "iprec". Set it =0 to
+  use the direct method, =121 to use the direct-iterative method.
+
+- make clean
+
+- make fem
+
+
+NOTES:
+
+- The solver choose the number of threads depending on the numbers of cores
+  or cpus of your machine. To set a different number use the enviromental
+  variable OMP_NUM_THREADS.
+  Ex: env OMP_NUM_THREADS=1 ./ht < lagoon.str
+      Will launch a simulation with 1 thread.
+  The speedup you will have with more threads will be higher for heavy
+  computational grids and with the direct-iterative method.
+
+- The old solver (PARDISO=false) colud be faster for light grids (ex:venlag62).
+
+- The direct method (PARDISO=true; iprec=0) could be faster with heavy 
+  grids with many dry zones.
+
+- The direct-iterative method (PARDISO=true; iprec=121) should be
+  faster in all the other cases.
+
+- The parameter iprec is the Pardiso parameter iparm(4) (see Pardiso
+  manual). 
+  To use the direct-iterative method set it with values like: 31,61,91,121,151,...
+  The higher the value is the more accurate is the matrix solution. If you set
+  it too low and you have a very irregular grid (ex: venlag62) you could
+  have strong mass conservation warnings. However the SHYFEM model will
+  stop if the mass conservation error will be too high. 121 should be a good
+  choice for all the cases. Moreover the speedup with smaller values is very
+  small.
+
+- To have a good speedup it is VERY important to set in param.h the parameter
+  nlvdim with the right value. Ex: For 2-dimensional simulations set it =1.
+
+- Also the GNU compiler gfortran should work. However it is better to use
+  the Intel compiler.

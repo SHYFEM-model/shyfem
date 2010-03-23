@@ -1,0 +1,85 @@
+
+-----------------------------------------
+The modeling framework SHYFEM
+-----------------------------------------
+
+Overview
+
+	Why use it
+	How to use it
+	Where to get it
+	Features
+	License
+
+Installing SHYFEM
+
+	Installation
+	Needed software
+	Choice of external software
+	Compilation
+	Compatibility problems
+
+Preprocessing: The grid
+
+	Overview	
+	Boundary line: smoothing and reducing
+	Manipulating nodes, lines and elements: grid
+	Creating the mesh: mesh
+	Other programs to create a mesh
+	Interpolating the bathymetry
+
+Running SHYFEM
+
+	How to run: STR file
+	Adjusting to the basin
+	Basic file formats
+	Basic usages
+		Minimal simulation
+		Boundary conditions
+		Writing output
+		Simulating passive tracers
+		Temperature and salinity
+		Linear and non-linear simulations
+		Coriolis force
+		Wind forcing
+	Advanced usages
+		Variable time step
+		3D computations
+		Baroclinic terms
+		Turbulence
+		Meteo forcing
+		Lagrangian module
+		Large grids and projections
+		Coupling to the wave model
+	Other modules
+		Residence times
+		Sediment transport
+		Ecological module (EUTRO)
+
+Postprocessing
+
+	Running the post post processing routines
+	Time series: gnuplot
+	Plotting spatial data: plots
+		Basic usage
+		Advanced usage
+	Exporting data
+
+Conclusions
+
+-----------------------------------------
+Appendix
+-----------------------------------------
+
+Hydrodynamic equations
+
+File formats
+	STR file
+	GRD file
+	Time series
+	Output file formats
+
+List of parameters
+	SHYFEM
+	Postprocessing
+

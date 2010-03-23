@@ -1,0 +1,44 @@
+#!/bin/sh
+#
+# shell for ttt
+
+if [ -x ./ttt ]; then
+  ttt=./ttt
+elif [ -x ./ttt/ttt ]; then
+  ttt=./ttt/ttt
+elif [ -x $HOME/appl/ttt/ttt ]; then
+  ttt=$HOME/appl/ttt/ttt
+else
+  echo "Cannot find executable: ttt"
+  exit 1
+fi
+
+#ttt=./ttt/ttt
+
+if [ $# -gt 2 ]; then
+  slow=$1
+  fact=$2
+  file=$3
+elif [ $# -eq 2 ]; then
+  slow=$1
+  file=$2
+elif [ $# -eq 1 ]; then
+  slow=0
+  file=$1
+else
+  echo "Usage: xt [slow [fact]] file"
+  exit 1
+fi
+
+echo "$slow  $fact  $file"
+
+$ttt << EOI
+$slow  
+$fact
+$file
+
+
+
+EOI
+
+echo ""

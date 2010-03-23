@@ -1,0 +1,21 @@
+#!/bin/sh
+
+exts="log inf ext flx vol ccc cc1 cls nos tem sal"
+
+if [ $# -le 0 ]; then
+  echo "Usage: rmsim [sims]"
+  exit 0
+fi
+
+for sim
+do
+  echo "$sim"
+  for ext in $exts
+  do
+    file=$sim.$ext
+    if [ -f $file ]; then
+      echo "      removing $file"
+      rm -f $file
+    fi
+  done
+done

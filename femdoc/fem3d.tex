@@ -1,0 +1,636 @@
+
+% $Id$
+
+\documentclass{report}
+
+\usepackage{a4}
+\usepackage{shortvrb}
+\usepackage{pslatex}
+\usepackage{alltt}		% as verbatim, but interpret \ { }
+
+\usepackage{version}
+%\newenvironment{comment}{}{}
+
+\newcommand{\shy}{{\tt SHYFEM}}
+\newcommand{\psp}{{\tt SHYFEM}}
+%\newcommand{\VERSION}{4.31}
+
+\input{P_version.tex}
+
+\newcommand{\descrpsep}{\vspace{0.2cm}}
+\newcommand{\descrpitem}[1]{\descrpsep\parbox[t]{2cm}{#1}}
+\newcommand{\descrptext}[1]{\parbox[t]{10cm}{#1}\descrpsep}
+\newcommand{\densityunit}{kg\,m${}^{-3}$}
+\newcommand{\accelunit}{m\,s${}^{-2}$}
+\newcommand{\maccelunit}{m${}^{4}$\,s${}^{-2}$}
+\newcommand{\dischargeunit}{m${}^3$\,s${}^{-1}$}
+
+\newcommand{\ten}[1]{$\cdot 10^{#1}$}
+\newcommand{\degrees}{${}^o$}
+
+\parindent 0cm
+
+\MakeShortVerb{\|}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% front matter
+
+\title{%
+	\shy{} 
+	\\Finite Element Model for Coastal Seas
+	\\~
+	\\User Manual
+	}
+
+\author{%
+	Georg Umgiesser
+	\\ISDGM-CNR, Castello 1364/A
+	\\30122 Venezia, Italy
+	\vspace{0.5cm}
+	\\georg.umgiesser@ismar.cnr.it
+	\vspace{1cm}
+	\\Version \VERSION
+	}
+
+%\address{ISDGM-CNR}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% document
+
+\begin{document}
+
+\bibliographystyle{plain}
+
+\pagenumbering{roman}
+\pagestyle{plain}
+
+\maketitle
+
+%\begin{abstract}
+%A simple graphic plotting package is presented that can be used for
+%the creation of PostScript graphics. The routines are callable from
+%Fortran and C.
+%
+%Only the basic plotting commands have been implemented. The library
+%allows you to plot lines and points, fill arbitrary shapes
+%with arbitrary color and write text with an arbitrary point size.
+%It also allows for producing more pages in one plot. Color can be
+%used as gray scale or through the RGB and HSB color spaces.
+%The coordinate system may be set to best adjust to the drawing.
+%Clipping graphics in a given rectangle is implemented.
+%\end{abstract}
+
+\thispagestyle{empty}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+
+
+
+
+\chapter*{Disclaimer}
+\addcontentsline{toc}{chapter}{Disclaimer}
+
+
+\begin{quotation}
+  									 
+   Copyright (c) 1992-1998 by Georg Umgiesser				 
+  									 
+   Permission to use, copy, modify, and distribute this software	 
+   and its documentation for any purpose and without fee is hereby	 
+   granted, provided that the above copyright notice appear in all	 
+   copies and that both that copyright notice and this permission	 
+   notice appear in supporting documentation.				 
+  									 
+   This file is provided AS IS with no warranties of any kind.		 
+   The author shall have no liability with respect to the		 
+   infringement of copyrights, trade secrets or any patents by		 
+   this file or any part thereof.  In no event will the author		 
+   be liable for any lost revenue or profits or other special,		 
+   indirect and consequential damages.					 
+  									 
+   Comments and additions should be sent to the author:			 
+  									 
+	\begin{verbatim}
+  			Georg Umgiesser					 
+  			ISDGM/CNR					 
+  			S. Polo 1364					 
+  			30125 Venezia					 
+  			Italy						 
+  									 
+  			Tel.   : ++39-41-5216875			 
+  			Fax    : ++39-41-2602340			 
+  			E-Mail : georg@lagoon.isdgm.ve.cnr.it		 
+	\end{verbatim}
+\end{quotation}
+
+
+
+\begin{comment}
+
+\chapter*{Availability}
+\addcontentsline{toc}{chapter}{Availability}
+
+
+The library \shy{} is available free of charge bye anonymous ftp.
+Connect to
+|ftp.isdgm.ve.cnr.it| and look in the directory |/pub/|\shy{}.
+Please read the README file of the distribution. Only source code
+is available.
+
+The model should compile out of the box for nearly all Unix-like
+systems. Please follow the instructions in the README file.
+
+Please send bug reports to the author (|georg@lagoon.isdgm.ve.cnr.it|).
+
+\end{comment}
+
+
+\newpage
+
+\pagenumbering{arabic}
+
+
+
+
+
+
+
+
+
+
+\chapter{Introduction}
+
+
+The finite element program \shy{} is a program package that can be used
+to resolve the hydrodynamic equations in lagoons, coastal seas,
+estuaries and lakes. The program uses finite elements for the
+resolution of the hydrodynamic equations. These finite elements,
+together with an effective semi-implicit time resolution algorithm,
+makes this program especially suitable for application to a complicated
+geometry and bathymetry.
+
+This version of the program \shy{} resolves the depth integrated
+shallow water equations. It is therefore recommended for the
+application of very shallow basins or well mixed estuaries. Storm surge
+phenomena can be investigated also.  This two-dimensional version of
+the program is not suited for the application to baroclinic driven
+flows or large scale flows where the the Coriolis acceleration is
+important.
+
+Finite elements are superior to finite differences when dealing with
+complex bathymetric situations and geometries. Finite differences are
+limited to a regular outlay of their grids. This will be a problem if
+only parts of a basin need high resolution.  The finite element method
+has an advantage in this case allowing more flexibility with its
+subdivision of the system in triangles varying in form and size.
+
+This model is especially adapted to run in very shallow basins. It is
+possible to simulate shallow water flats, i.e., tidal marshes that in a
+tidal cycle may be covered with water during high tide and then fall
+dry during ebb tide. This phenomenon is handled by the model in a mass
+conserving way.
+
+Finite element methods have been introduced into hydrodynamics since
+1973 and have been extensively applied to shallow water equations by
+numerous authors \cite{Grotkop73, Taylor75, Herrling77, Herrling78, Holz82}.
+
+The model presented here \cite{Umgies86, Umgies93} uses the mathematical
+formulation of the semi-implicit algorithm that decouples the solution
+of the water levels and velocity components from each other leading to
+smaller systems to solve. Models of this type have been presented from
+1971 on by many authors \cite{Kwizak71, Duwe82, Backhaus83}.
+
+
+
+\chapter{Equations and resolution techniques}
+
+\input{equat.tex}
+
+\chapter{Pre-Processing}
+
+
+The pre-processing routine |vp| is used to generate an
+optimized version of the file that describes the basin
+where the main program is to be run. In the following a
+short introduction in using this program is given.
+
+\section{The pre-processing routine {\tt vp}}
+
+The main routine |hp| reads the basin file generated by
+the pre-processing routine |vp| and uses it as the description
+of the domain where the hydrodynamic equations have to be
+solved.
+
+The program |vp| is started by typing |vp| on the command line.
+From this point on the program is interactive, asking you about
+the basin file name and other options. Please follow the online
+instructions.
+
+The routine |vp| reads a file of type GRD. This type of file
+can be generated and manipulated by the program |grid| which
+is not described here. In short, the file GRD consists of
+nodes and elements that describe the geometrical layout
+of the basin. Moreover, the elements have a type and a depth.
+
+The depth is needed by the main program |hp| to run the model.
+The type of the element is used by |hp| to determine
+the friction parameter on the bottom, since this parameter
+may be assigned differently, depending on the various situations
+of the bottom roughness.
+
+This file GRD is read by |vp| and transformed into an
+unformatted file BAS. It is this file that is then read
+by the main routine |hp|. Therefore, if the name of the
+basin is |lagoon|, then the file GRD is called |lagoon.grd|
+and the output of the pre-processing routine |vp| is
+called |lagoon.bas|.
+
+The program |vp| normally uses the depths assigned to the
+elements in the file GRD to determine the depth of the
+finite elements to use in the program |hp|. In the case
+that these depth values are not complete, and that all nodes
+have depths assigned in the GRD file, the nodal values of the
+depths are used and interpolated onto the elements. However,
+if also these nodal depth values are incomplete or are missing
+altogether, the program terminates with an error.
+
+\section{Optimization of the bandwidth}
+
+The main task of routine |vp| is the optimization of the 
+internal numbering of the nodes and elements.
+Re-numbering the elements is just a mere convenience. When
+assembling the system matrix the contribution of
+one element after the other has to be added to the system matrix.
+If the elements are numbered in terms of lowest node numbers,
+then the access of the nodal pointers is more regular in 
+computer memory and paging is more likely to be inhibited.
+
+However, re-numbering the nodes is absolutely necessary.
+The system matrix to be solved is of band-matrix type.
+I.e., non-zero entries are all concentrated along the
+main diagonal in a more or less narrow band. The larger this
+band is, the larger the amount of cpu time spent to
+solve the system. The time to solve a band matrix
+is of order $n \cdot m^2$, where $n$ is the size of the
+matrix and $m$ is the bandwidth. Note that $m$ is normally
+much smaller than $n$.
+
+If the nodes are left with the original numbering, it is very likely
+that the bandwidth is very high, unless the nodes in the
+file GRD are by chance already optimized. Since the bandwidth $m$
+is entering the above formula quadratically, the amount
+of time spent solving the matrix will be prohibitive.
+E.g., halving the bandwidth will speed up computations by
+a factor of 4.
+
+The bandwidth is equal to the maximum difference of node numbers
+in one element. It is therefore important to re-number the
+nodes in order to minimize this number. However, there exist
+only heuristic algorithms for the minimization of this number.
+
+The two main algorithms used in the routine |vp| are
+the Cuthill McGee algorithm and the algorithm of Rosen. The first
+one, starting from one node, tries to number all neighbors in
+a greedy way, optimizing only this step. From the points
+numbered in this step, the next neighbors are numbered.
+
+This procedure is tried from more than one node, possibly
+from all boundary nodes. The numbering resulting from this
+algorithm is normally very good and needs only slight
+enhancements to be optimum.
+
+Once all nodes are numbered, the Rosen algorithm tries to
+exchange these node numbers, where the highest difference
+can be found. This normally gives only a slight improvement
+of the bandwidth. It has been seen, however, that, if the
+node numbers coming out from the Cuthill McGee algorithm
+are reversed, before feeding them into the Rosen algorithm, 
+the results tend to be slightly better. This step is also
+performed by the program.
+
+All these steps are performed by the program without
+intervention by the operator, if the automatic optimization
+of bandwidth is chosen in the program |vp|. The choices
+are to not perform the bandwidth optimization at all
+(GRD file has already optimized node numbering), perform
+it automatically or perform it manually. It is suggested
+to always perform automatic optimization of the bandwidth.
+This choice will lead to a nearly optimum numbering of the
+nodes and will be by all means good results.
+
+If, however, you decide to do a manual optimization, please
+follow the online instructions in the program.
+
+\section{Internal and external node numbering}
+
+As explained above, the elements and nodes of the basin are re-numbered 
+in order to optimize the bandwidth of the system matrix and so
+the execution speed of the program. 
+
+However, this re-numbering of the node and elements is transparent
+to the user. The program keeps pointers from the original numbering
+(external numbers) to the optimized numbering (internal numbers).
+The user has to deal only with external numbers, even if the 
+program uses internally the other number system.
+
+Moreover, the internal numbers are generated consecutively.
+Therefore, if there are a total of 4000 nodes in the system, the internal
+nodes run from 1 to 4000. The external node numbers,
+on the other side, can be anything the user likes. They just must be
+unique. This allows for insertion and deletion of nodes without
+having to re-number over and over again the basin.
+
+The nodes that have to be specified in the input parameter file
+use again external numbers. In this way, changing the structure of
+the basin does not at all change the node and element numbers in the
+input parameter file. Except in the case, where modifications
+actually touch nodes and elements that are specified in the 
+parameter file.
+
+
+
+\chapter{The Model}
+
+In the following an overview is given on running the model
+\shy{}. The model needs a parameter input file that is read 
+on standard input. Moreover, it needs some external files that
+are specified in this parameter input file. The model produces
+several external files with the results of the simulation. Again,
+the name of this files can be influenced by the parameter input file
+
+
+\section{The Parameter Input File}
+
+The model reads one input file that determines the behavior of the
+simulation. All possible parameters can and must be set in this file.
+If other data files are to be read, here is the place where to specify
+them.
+
+The model reads this parameter file from standard input. Thus, if
+the model binary is called |hp| and the parameter file |param.str|, 
+then the following line starts the simulation
+\begin{verbatim}
+	hp < param.str
+\end{verbatim}
+and runs the model.
+
+\subsection{The General Structure of the Parameter Input File}
+
+The input parameter file is the file that guides program
+performance. It contains all necessary information for the main routine
+to execute the model. Nearly all parameters that can
+be given have a default value which is used when the parameter
+is not listed in the file. Only some time parameters are compulsory
+and must be present in the file.
+
+The format of the file looks very like a namelist format, but is
+not dependent on the compiler used. Values of parameters are given
+in the form :  
+|name = value|  or  |name = 'text'|.  If |name|
+is an array the following format is used : 
+\begin{verbatim}
+          name = value1 , value2, ... valueN
+\end{verbatim}
+The list can continue on the following lines. Blanks before and after
+the equal sign are ignored. More then one parameter can be present
+on one line. As separator blank, tab and comma can be used.
+
+Parameters, arrays and data must be given in between certain sections.
+A section starts with the character {\tt \$} followed by a keyword and
+ends with {\tt \$end}. The {\tt \$keyword} and {\tt \$end} must not
+contain any blank characters and must be the first non blank characters
+in the line. Other characters following the keyword on the same line
+separated by a valid separator are ignored.
+
+Several sections of data may be present in the input parameter file.
+Further ahead all sections are presented and the possible
+parameters that can be specified are explained. The sequence in
+which the sections appear is of no importance. However, the first 
+section must always be section |\$title|, the section that
+determines the name of simulation and the basin file to use and
+gives a one line description of the simulation.
+
+Lines outside of the sections are ignored. This gives
+the possibility to comment the parameter input file.
+
+Figure \ref{fig:str_example} shows an example of a typical input
+parameter file and the use of the sections and definition of
+parameters.
+
+\begin{figure}
+\begin{alltt}
+\input{example.str}
+\end{alltt}
+\caption{Example of a parameter input file ({\tt STR} file)}
+\label{fig:str_example}
+\end{figure}
+
+\subsection{Typical Usage of the model}
+
+\input{usage.tex}
+
+\subsection{The Single Sections of the Parameter Input File}
+
+\subsubsection{Section {\tt \$title}}
+
+This section must be always the first section in the parameter input file.
+It contains only three lines. An example is given in 
+figure \ref{fig:titleexample}.
+
+\begin{figure}[ht]
+\begin{verbatim}
+$title
+        free one line description of simulation
+        name_of_simulation
+        name_of_basin
+$end
+\end{verbatim}
+\caption{Example of section {\tt \$title}}
+\label{fig:titleexample}
+\end{figure}
+
+The first line of this section is a free one line description of
+the simulation that is to be carried out. The next line contains
+the name of the simulation (in this case |name_of_simulation|).
+All created files will use this name in the main part of the file name
+with different extensions. Therefore the hydrodynamic output file
+(extension |out|) will be named |name_of_simulation.out|.
+The last line gives the name of the basin file to be used. This
+is the pre-processed file of the basin with extension |bas|.
+In our example the basin file |name_of_basin.bas| is used.
+
+The directory where this files are read from or written to depends
+on the settings in section {\tt \$name}. Using the default
+the program will read from and write to the current directory.
+
+\subsubsection{Section {\tt \$para}}
+
+This section defines the general behavior of the simulation,
+gives various constants of parameters and determines what
+output files are written. In the following the meaning of
+all possible parameters is given.
+
+Note that the only compulsory parameters in this section are 
+the ones that chose the duration of the simulation and the
+integration time step. All other parameters are optional.
+
+\input{S_para_h.tex}
+
+\subsubsection{Section {\tt \$name}}
+
+In this sections names of directories or input files can be
+given. All directories default to the current directory,
+whereas all file names are empty, i.e., no input files are
+given.
+
+\input{S_name.tex}
+\input{S_name_h.tex}
+
+\subsubsection{Section {\tt \$bound}}
+
+\input{S_bound.tex}
+
+
+\subsubsection{Section {\tt \$wind}}
+
+\input{S_wind.tex}
+
+
+
+\subsubsection{Section {\tt \$extra}}
+
+In this section the node numbers of so called ``extra'' points are given. 
+These are points where water level and velocities are written to create
+a time series that can be elaborated later. The output for these ``extra''
+points consumes little memory and can be therefore written with a
+much higher frequency (typically the same as the integration time step)
+than the complete hydrodynamical output. The output is written
+to file EXT.
+
+The node numbers are specified in a free format on one ore more lines.
+An example can be seen in figure \ref{fig:str_example}. No keywords
+are expected in this section.
+
+
+\subsubsection{Section {\tt \$flux}}
+
+In this section transects are specified through which the discharge
+of water is computed by the program and written to file FLX.
+The transects are defined by their nodes through which they run.
+All nodes in one transect must be adjacent, i.e., they must form a
+continuous line in the FEM network.
+
+The nodes of the transects are specified in free format. Between
+two transects one or more 0's must be inserted. An example is given in
+figure \ref{fig:fluxexample}.
+
+\begin{figure}[ht]
+\begin{verbatim}
+$flux
+	1001 1002 1004 0
+	35 37 46 0 0 56 57 58 0
+	407
+	301
+	435 0 89 87
+$end
+\end{verbatim}
+\caption{Example of section {\tt \$flux}}
+\label{fig:fluxexample}
+\end{figure}
+
+The example shows the definition of 5 transects. As can be seen, the 
+nodes of the transects can be given on one line alone (first transect),
+two transects on one line (transect 2 and 3), spread over more lines
+(transect 4) and a last transect.
+
+
+\chapter{Post-Processing}
+
+
+There are several routines that do a post-processing of the results of the 
+main routine. The most important are described in this chapter.
+Note that in the model framework no program is supplied to do
+time series plots. However, there are utility routines that will extract
+data from the output files. These data will be written in a way
+that it can be imported into a spreadsheet or any other plotting
+program that does the nice plotting.
+
+
+\section{Plotting of maps with {\tt plotmap}}
+
+\subsection{The parameter input file for {\tt plotmap}}
+
+The format of the parameter input file is the same as the one for
+the main routine. Please see this section for more information
+on the format of the parameter input file.
+
+Some sections of the parameter input file are identical to the 
+sections used in the main routine. For easier reference we will
+repeat the possible parameters of these section here.
+
+
+\subsubsection{Section {\tt \$title}}
+
+This section must be always the first section in the parameter input file.
+It contains only three lines. An example has been given already in 
+figure \ref{fig:titleexample}.
+
+The only difference respect to the {\tt \$para} section of the main routine
+is the first line. Here any description of the output can be used.
+It is just a way to label the parameter file.
+The other two line with the name of simulation and the basin are used
+to open the files needed for plotting.
+
+
+\subsubsection{Section {\tt \$para}}
+
+\input{S_para_a.tex}
+
+
+\subsubsection{Section {\tt \$color}}
+
+\input{S_color.tex}
+
+
+\subsubsection{Section {\tt \$arrow}}
+
+\input{S_arrow.tex}
+
+
+\subsubsection{Section {\tt \$legend}}
+
+\input{S_legend.tex}
+
+
+\subsubsection{Section {\tt \$legvar}}
+
+\input{S_legvar.tex}
+
+
+\subsubsection{Section {\tt \$name}}
+
+\input{S_name.tex}
+
+
+\chapter{The Water Quality Module}
+
+\input{bio3d.tex}
+
+\subsection{Parameters for the Water Quality Module}
+
+\input{S_biopar_h.tex}
+
+
+
+
+
+\bibliography{abbrev,lag}
+\addcontentsline{toc}{chapter}{Bibliography}
+
+
+
+\end{document}

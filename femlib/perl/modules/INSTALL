@@ -1,0 +1,34 @@
+
+-------------------------------------------------------------
+
+gzip -d yourmodule.tar.gz
+tar -xof yourmodule.tar
+( or gzip -dc yourmodule.tar.gz | tar -xof - )
+cd yourmodule
+
+perl Makefile.PL
+make
+make test
+
+make install
+
+CPAN from: http://www.perl.com/CPAN/modules/by-module/CPAN/
+
+-------------------------------------------------------------
+
+use MIME::Base64;
+
+$encoded = encode_base64('Aladdin:open sesame');
+$decoded = decode_base64($encoded);
+
+-------------------------------------------------------------
+
+$ perl -MCPAN -e shell
+
+cpan shell -- CPAN exploration and modules installation (v1.59_54)
+ReadLine support enabled
+
+cpan> install Some::Module
+
+-------------------------------------------------------------
+

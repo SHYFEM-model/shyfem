@@ -1,0 +1,10 @@
+
+include large map of area
+
+* wind direction
+
+eliminate selected vectors (by position, by size, ...)
+
+vector length's should be same with FEM and regular grid
+	(see appl/abras  cab01.str  apnbath+apnvel)
+

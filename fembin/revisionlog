@@ -1,0 +1,64 @@
+#!/bin/sh
+#
+# processes revision log from fortran files
+
+###############################################################
+
+FEMDIR=${FEMDIR:-$HOME/fem}
+export FEMDIR
+
+###############################################################
+
+usage()
+{
+  echo 'Usage: revisionlog [-h|-help] [options] files'
+}
+
+help()
+{
+  usage
+  echo '  -help           show this help screen'
+  echo '  -after date     show only dates after date'
+  echo '  -befor date     show only dates befor date'
+  echo '  -noname         do not show file name'
+  echo '  -sepname        seperate visually file name'
+  echo 'give date in format YYYYMMDD'
+}
+
+###############################################################
+
+tmpfile=tmp.tmp
+after=0
+befor=30000000
+
+if [ $# -eq 0 ]; then
+  usage
+  exit 0
+fi
+
+options=""
+
+while [ $# -gt 0 ]
+do
+
+  case $1 in
+        -h|-help) help; exit 0;;
+        -after) after=$2; shift 2;;
+        -befor) befor=$2; shift 2;;
+        -noname) options="$options -noname"; shift;;
+        -sepname) options="$options -sepname"; shift;;
+        -*) echo "Unknown option: $1"; exit 1;;
+        *) break;;
+  esac
+done
+
+files=$*
+
+for file in $files
+do
+  getheader.pl $file | revisionlog.pl \
+		$options -file $file -after $after -befor $befor
+done
+
+###############################################################
+

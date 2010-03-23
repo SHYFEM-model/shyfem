@@ -1,0 +1,267 @@
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c share/netcdf_bfm.F90 -o share/netcdf_bfm.o
+ar rv ../../femlib/libbfm.a share/netcdf_bfm.o
+r - share/netcdf_bfm.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c share/string_functions.F90 -o share/string_functions.o
+ar rv ../../femlib/libbfm.a share/string_functions.o
+r - share/string_functions.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c share/init_var_bfm.F90 -o share/init_var_bfm.o
+ar rv ../../femlib/libbfm.a share/init_var_bfm.o
+r - share/init_var_bfm.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c share/init_cnps.F90 -o share/init_cnps.o
+ar rv ../../femlib/libbfm.a share/init_cnps.o
+r - share/init_cnps.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c share/calcmean_bfm.F90 -o share/calcmean_bfm.o
+ar rv ../../femlib/libbfm.a share/calcmean_bfm.o
+r - share/calcmean_bfm.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/General/set_var_info_bfm.F90 -o BFM/General/set_var_info_bfm.o
+ar rv ../../femlib/libbfm.a BFM/General/set_var_info_bfm.o
+r - BFM/General/set_var_info_bfm.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c standalone/time.F90 -o standalone/time.o
+ar rv ../../femlib/libbfm.a standalone/time.o
+r - standalone/time.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c standalone/standalone.F90 -o standalone/standalone.o
+ar rv ../../femlib/libbfm.a standalone/standalone.o
+r - standalone/standalone.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c standalone/integration-efw.F90 -o standalone/integration-efw.o
+ar rv ../../femlib/libbfm.a standalone/integration-efw.o
+r - standalone/integration-efw.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c standalone/integration-lf.F90 -o standalone/integration-lf.o
+ar rv ../../femlib/libbfm.a standalone/integration-lf.o
+r - standalone/integration-lf.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c standalone/integration-RK2.F90 -o standalone/integration-RK2.o
+ar rv ../../femlib/libbfm.a standalone/integration-RK2.o
+r - standalone/integration-RK2.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c standalone/D3toD1.f90 -o standalone/D3toD1.o
+ar rv ../../femlib/libbfm.a standalone/D3toD1.o
+r - standalone/D3toD1.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c standalone/D2toD1.f90 -o standalone/D2toD1.o
+ar rv ../../femlib/libbfm.a standalone/D2toD1.o
+r - standalone/D2toD1.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c standalone/ResetFluxes.F90 -o standalone/ResetFluxes.o
+ar rv ../../femlib/libbfm.a standalone/ResetFluxes.o
+r - standalone/ResetFluxes.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c standalone/GetDelta.f90 -o standalone/GetDelta.o
+ar rv ../../femlib/libbfm.a standalone/GetDelta.o
+r - standalone/GetDelta.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/General/AllocateMem.F90 -o BFM/General/AllocateMem.o
+ar rv ../../femlib/libbfm.a BFM/General/AllocateMem.o
+r - BFM/General/AllocateMem.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/General/Ecology.F90 -o BFM/General/Ecology.o
+ar rv ../../femlib/libbfm.a BFM/General/Ecology.o
+r - BFM/General/Ecology.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/General/InitBoxParams.f90 -o BFM/General/InitBoxParams.o
+ar rv ../../femlib/libbfm.a BFM/General/InitBoxParams.o
+r - BFM/General/InitBoxParams.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/General/Initialize.f90 -o BFM/General/Initialize.o
+ar rv ../../femlib/libbfm.a BFM/General/Initialize.o
+r - BFM/General/Initialize.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/General/InitTransportStateTypes.f90 -o BFM/General/InitTransportStateTypes.o
+ar rv ../../femlib/libbfm.a BFM/General/InitTransportStateTypes.o
+r - BFM/General/InitTransportStateTypes.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/General/eTq.F90 -o BFM/General/eTq.o
+ar rv ../../femlib/libbfm.a BFM/General/eTq.o
+r - BFM/General/eTq.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Light/LightAdaptation.F90 -o BFM/Light/LightAdaptation.o
+ar rv ../../femlib/libbfm.a BFM/Light/LightAdaptation.o
+r - BFM/Light/LightAdaptation.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Light/PhotoAvailableRadiation.F90 -o BFM/Light/PhotoAvailableRadiation.o
+ar rv ../../femlib/libbfm.a BFM/Light/PhotoAvailableRadiation.o
+r - BFM/Light/PhotoAvailableRadiation.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Oxygen/WindOxReaeration_3.F90 -o BFM/Oxygen/WindOxReaeration_3.o
+ar rv ../../femlib/libbfm.a BFM/Oxygen/WindOxReaeration_3.o
+r - BFM/Oxygen/WindOxReaeration_3.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Oxygen/CalcOxygenSaturation_3.F90 -o BFM/Oxygen/CalcOxygenSaturation_3.o
+ar rv ../../femlib/libbfm.a BFM/Oxygen/CalcOxygenSaturation_3.o
+r - BFM/Oxygen/CalcOxygenSaturation_3.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Oxygen/CalcSchmidtNumberOx.F90 -o BFM/Oxygen/CalcSchmidtNumberOx.o
+ar rv ../../femlib/libbfm.a BFM/Oxygen/CalcSchmidtNumberOx.o
+r - BFM/Oxygen/CalcSchmidtNumberOx.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/PelB/CalcChlorophylla.F90 -o BFM/PelB/CalcChlorophylla.o
+ar rv ../../femlib/libbfm.a BFM/PelB/CalcChlorophylla.o
+r - BFM/PelB/CalcChlorophylla.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/PelB/CalcVerticalExtinction.F90 -o BFM/PelB/CalcVerticalExtinction.o
+ar rv ../../femlib/libbfm.a BFM/PelB/CalcVerticalExtinction.o
+r - BFM/PelB/CalcVerticalExtinction.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/PelB/MicroZoo.F90 -o BFM/PelB/MicroZoo.o
+ar rv ../../femlib/libbfm.a BFM/PelB/MicroZoo.o
+r - BFM/PelB/MicroZoo.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/PelB/MesoZoo.F90 -o BFM/PelB/MesoZoo.o
+ar rv ../../femlib/libbfm.a BFM/PelB/MesoZoo.o
+r - BFM/PelB/MesoZoo.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/PelB/PelBac.F90 -o BFM/PelB/PelBac.o
+ar rv ../../femlib/libbfm.a BFM/PelB/PelBac.o
+r - BFM/PelB/PelBac.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/PelB/PelChem.F90 -o BFM/PelB/PelChem.o
+ar rv ../../femlib/libbfm.a BFM/PelB/PelChem.o
+r - BFM/PelB/PelChem.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/PelB/PelGlobal.F90 -o BFM/PelB/PelGlobal.o
+ar rv ../../femlib/libbfm.a BFM/PelB/PelGlobal.o
+r - BFM/PelB/PelGlobal.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/PelB/PelagicSystem.F90 -o BFM/PelB/PelagicSystem.o
+ar rv ../../femlib/libbfm.a BFM/PelB/PelagicSystem.o
+r - BFM/PelB/PelagicSystem.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/PelB/Phyto.F90 -o BFM/PelB/Phyto.o
+ar rv ../../femlib/libbfm.a BFM/PelB/Phyto.o
+r - BFM/PelB/Phyto.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Ben/ResetTotMassVar.F90 -o BFM/Ben/ResetTotMassVar.o
+ar rv ../../femlib/libbfm.a BFM/Ben/ResetTotMassVar.o
+r - BFM/Ben/ResetTotMassVar.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/PelBen/BentoPelCoup.F90 -o BFM/PelBen/BentoPelCoup.o
+ar rv ../../femlib/libbfm.a BFM/PelBen/BentoPelCoup.o
+r - BFM/PelBen/BentoPelCoup.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/PelBen/PelForcingForBen.F90 -o BFM/PelBen/PelForcingForBen.o
+ar rv ../../femlib/libbfm.a BFM/PelBen/PelForcingForBen.o
+r - BFM/PelBen/PelForcingForBen.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/PelBen/Sedimentation.F90 -o BFM/PelBen/Sedimentation.o
+ar rv ../../femlib/libbfm.a BFM/PelBen/Sedimentation.o
+r - BFM/PelBen/Sedimentation.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/PelBen/Settling.F90 -o BFM/PelBen/Settling.o
+ar rv ../../femlib/libbfm.a BFM/PelBen/Settling.o
+r - BFM/PelBen/Settling.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/PelBen/ControlBenPartNutrientBuffers.F90 -o BFM/PelBen/ControlBenPartNutrientBuffers.o
+ar rv ../../femlib/libbfm.a BFM/PelBen/ControlBenPartNutrientBuffers.o
+r - BFM/PelBen/ControlBenPartNutrientBuffers.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Ben/BenBac.F90 -o BFM/Ben/BenBac.o
+ar rv ../../femlib/libbfm.a BFM/Ben/BenBac.o
+r - BFM/Ben/BenBac.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Ben/BenOrganism.F90 -o BFM/Ben/BenOrganism.o
+ar rv ../../femlib/libbfm.a BFM/Ben/BenOrganism.o
+r - BFM/Ben/BenOrganism.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Ben/BenthicSystem.F90 -o BFM/Ben/BenthicSystem.o
+ar rv ../../femlib/libbfm.a BFM/Ben/BenthicSystem.o
+r - BFM/Ben/BenthicSystem.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Ben/Bioturbation.F90 -o BFM/Ben/Bioturbation.o
+ar rv ../../femlib/libbfm.a BFM/Ben/Bioturbation.o
+r - BFM/Ben/Bioturbation.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Ben/FilterFeeder.F90 -o BFM/Ben/FilterFeeder.o
+ar rv ../../femlib/libbfm.a BFM/Ben/FilterFeeder.o
+r - BFM/Ben/FilterFeeder.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Ben/BenCheckMassConservation.F90 -o BFM/Ben/BenCheckMassConservation.o
+ar rv ../../femlib/libbfm.a BFM/Ben/BenCheckMassConservation.o
+r - BFM/Ben/BenCheckMassConservation.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/BenAmmonium.F90 -o BFM/Bennut/BenAmmonium.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/BenAmmonium.o
+r - BFM/Bennut/BenAmmonium.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/BenAnoxic.F90 -o BFM/Bennut/BenAnoxic.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/BenAnoxic.o
+r - BFM/Bennut/BenAnoxic.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/BenDenitriDepth.F90 -o BFM/Bennut/BenDenitriDepth.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/BenDenitriDepth.o
+r - BFM/Bennut/BenDenitriDepth.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/BenNitrate.F90 -o BFM/Bennut/BenNitrate.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/BenNitrate.o
+r - BFM/Bennut/BenNitrate.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/BenNitrogenShifting.F90 -o BFM/Bennut/BenNitrogenShifting.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/BenNitrogenShifting.o
+r - BFM/Bennut/BenNitrogenShifting.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/BenOxygen.F90 -o BFM/Bennut/BenOxygen.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/BenOxygen.o
+r - BFM/Bennut/BenOxygen.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/BenPhosphate.F90 -o BFM/Bennut/BenPhosphate.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/BenPhosphate.o
+r - BFM/Bennut/BenPhosphate.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/BenQ1Transport.F90 -o BFM/Bennut/BenQ1Transport.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/BenQ1Transport.o
+r - BFM/Bennut/BenQ1Transport.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/BenSilica.F90 -o BFM/Bennut/BenSilica.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/BenSilica.o
+r - BFM/Bennut/BenSilica.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/BenthicNutrient2.F90 -o BFM/Bennut/BenthicNutrient2.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/BenthicNutrient2.o
+r - BFM/Bennut/BenthicNutrient2.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/BenthicNutrient3.F90 -o BFM/Bennut/BenthicNutrient3.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/BenthicNutrient3.o
+r - BFM/Bennut/BenthicNutrient3.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/BenthicReturn1.F90 -o BFM/Bennut/BenthicReturn1.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/BenthicReturn1.o
+r - BFM/Bennut/BenthicReturn1.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/BenthicReturn2.F90 -o BFM/Bennut/BenthicReturn2.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/BenthicReturn2.o
+r - BFM/Bennut/BenthicReturn2.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/CalculateFromSet.f90 -o BFM/Bennut/CalculateFromSet.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/CalculateFromSet.o
+r - BFM/Bennut/CalculateFromSet.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/CalculateSet.f90 -o BFM/Bennut/CalculateSet.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/CalculateSet.o
+r - BFM/Bennut/CalculateSet.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/CalculateShift.f90 -o BFM/Bennut/CalculateShift.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/CalculateShift.o
+r - BFM/Bennut/CalculateShift.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/CalculateTau.f90 -o BFM/Bennut/CalculateTau.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/CalculateTau.o
+r - BFM/Bennut/CalculateTau.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/CompleteSet.f90 -o BFM/Bennut/CompleteSet.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/CompleteSet.o
+r - BFM/Bennut/CompleteSet.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/InitializeSet.f90 -o BFM/Bennut/InitializeSet.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/InitializeSet.o
+r - BFM/Bennut/InitializeSet.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/DefineSet.f90 -o BFM/Bennut/DefineSet.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/DefineSet.o
+r - BFM/Bennut/DefineSet.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/GetInfoFromSet.f90 -o BFM/Bennut/GetInfoFromSet.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/GetInfoFromSet.o
+r - BFM/Bennut/GetInfoFromSet.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/PrintSet.f90 -o BFM/Bennut/PrintSet.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/PrintSet.o
+r - BFM/Bennut/PrintSet.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/bess_exp.f90 -o BFM/Bennut/bess_exp.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/bess_exp.o
+r - BFM/Bennut/bess_exp.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/bessi0.f90 -o BFM/Bennut/bessi0.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/bessi0.o
+r - BFM/Bennut/bessi0.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/bessi1.f90 -o BFM/Bennut/bessi1.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/bessi1.o
+r - BFM/Bennut/bessi1.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/bessk0.f90 -o BFM/Bennut/bessk0.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/bessk0.o
+r - BFM/Bennut/bessk0.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/bessk1.f90 -o BFM/Bennut/bessk1.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/bessk1.o
+r - BFM/Bennut/bessk1.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/calculate_equation.f90 -o BFM/Bennut/calculate_equation.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/calculate_equation.o
+r - BFM/Bennut/calculate_equation.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/calculatelayer.f90 -o BFM/Bennut/calculatelayer.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/calculatelayer.o
+r - BFM/Bennut/calculatelayer.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/funcalc.f90 -o BFM/Bennut/funcalc.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/funcalc.o
+r - BFM/Bennut/funcalc.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/input_para.f90 -o BFM/Bennut/input_para.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/input_para.o
+r - BFM/Bennut/input_para.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/kfind.f90 -o BFM/Bennut/kfind.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/kfind.o
+r - BFM/Bennut/kfind.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/lubksb.f90 -o BFM/Bennut/lubksb.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/lubksb.o
+r - BFM/Bennut/lubksb.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/ludcmp.f90 -o BFM/Bennut/ludcmp.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/ludcmp.o
+r - BFM/Bennut/ludcmp.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/manage_coeff.f90 -o BFM/Bennut/manage_coeff.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/manage_coeff.o
+r - BFM/Bennut/manage_coeff.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/noutput.f90 -o BFM/Bennut/noutput.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/noutput.o
+r - BFM/Bennut/noutput.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/qgaus_exp.f90 -o BFM/Bennut/qgaus_exp.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/qgaus_exp.o
+r - BFM/Bennut/qgaus_exp.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/re_store.f90 -o BFM/Bennut/re_store.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/re_store.o
+r - BFM/Bennut/re_store.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/set_max_sing.f90 -o BFM/Bennut/set_max_sing.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/set_max_sing.o
+r - BFM/Bennut/set_max_sing.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/svbksb.f90 -o BFM/Bennut/svbksb.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/svbksb.o
+r - BFM/Bennut/svbksb.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/svdcmp.f90 -o BFM/Bennut/svdcmp.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/svdcmp.o
+r - BFM/Bennut/svdcmp.o
+ifort  -CU -d1 -DREAL_4B=real\(4\) -DFORTRAN95  -DPRODUCTION  -w95 -O3 -assume 2underscores -module ..//modules/IFORT -I/usr/local/include -I..//include -I..//modules/IFORT -I..//src/BFM/include  -c BFM/Bennut/transfer.f90 -o BFM/Bennut/transfer.o
+ar rv ../../femlib/libbfm.a BFM/Bennut/transfer.o
+r - BFM/Bennut/transfer.o

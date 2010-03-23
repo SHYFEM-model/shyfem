@@ -1,0 +1,59 @@
+#!/usr/bin/perl
+#
+# computes average
+#
+# $size is the size of the moving average
+
+$size = shift;
+$size = int($size);
+$hsize = int($size/2);
+
+while(<>) {
+    s/^\s*//;
+    @f = split;
+    push(@time,$f[0]);
+    push(@data,$f[1]);
+}
+
+$ntot = @data;
+@new = ();
+
+print STDERR "total data: $ntot\n";
+
+for($i=0;$i<$ntot;$i++) {
+	$ilow = $i - $hsize;
+	$ihigh = $ilow + $size;
+	$aver = &aver($ntot,$ilow,$ihigh,\@data);
+	$new[$i] = $aver;
+}
+
+for($i=0;$i<$ntot;$i++) {
+	print "$time[$i]   $new[$i]\n";
+}
+
+
+###############################################################
+
+sub aver
+{
+    my ($ntot,$ilow,$ihigh,$ra) = @_;
+
+    my $aver = 0;
+    my $total = 0;
+    my $n = 0;
+
+    for(my $i=$ilow;$i<$ihigh;$i++) {
+	    my $ip = $i % $ntot;
+	    $total += $$ra[$ip];
+	    $n++;
+    }
+
+    $aver = $total / $n if $n;
+    #print STDERR "aver data: $n $ilow $ihigh $total $aver\n";
+
+    return $aver;
+}
+
+###############################################################
+
+	

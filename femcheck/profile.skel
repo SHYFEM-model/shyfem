@@ -1,0 +1,7 @@
+# .profile for FEM model
+
+FEMDIR=$HOME/fem
+FEMINSTALL=$FEMDIR
+PATH=$PATH:$FEMDIR/bin
+PATH=$PATH:.
+

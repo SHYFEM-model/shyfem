@@ -1,0 +1,15 @@
+#ifdef BFM_NOPOINTERS 1
+
+
+#define NOPOINTERS 1
+%3d-state-header
+%2d-state-header
+%3d-group-header
+%2d-group-header
+%3d-diagnos-header
+%2d-diagnos-header
+%3d-diaggrp-header
+%2d-diaggrp-header
+
+
+#endif

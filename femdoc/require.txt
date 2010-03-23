@@ -1,0 +1,51 @@
+
+Requirements for the application of the coastal lagoon model
+============================================================
+
+Requirements for computer
+=========================
+
+Linux PC or Unix Workstation
+
+if PC:
+
+Pentium III or higher
+Clock 500 MH or higher
+Ram 128 or higher
+Harddisk 20 GB or higher
+Linux kernel 2.4
+Software: Fortran, C, Perl. Python, Gnuplot, Bash
+
+
+Data requirements for hydrodynamic model
+========================================
+
+- general setting: geometry, bathymetry, coast line, 
+			digital maps, satellite images,
+			names of locations
+
+- open boundary data: tides (water level), T/S in the open ocean
+
+- meteo forcing: wind, solar radiation, relative humidity, cloud cover,
+			air temperature, wet bulb temperature,
+			precipitation, evaporation
+
+- input data: river discharge, treatment plants, fresh water sources
+
+- validation data: tide gauge data, currents, T/S
+
+
+Data requirements for water quality model
+=========================================
+
+- variables: phytoplankton, zooplankton, 
+		nutrients (PO4, NH4, Nitrate), 
+		organic matter (P,N), detritus, 
+		CBOD, dissolved oxygen
+
+- values at open boundary (open ocean) and internal inputs (rivers)
+
+- sediment sources and sinks
+
+- internal loadings
+

@@ -1,0 +1,86 @@
+#!/usr/bin/perl
+#
+# substitutes keywords in str file
+#
+# keywords must start in column 1
+# a blank in column 1 indicates a continuation line
+# the = (equal sign) in the definition of the keyword is mandatory
+#
+
+$args = @ARGV;
+
+if( $args < 2 ) {
+  print STDERR "Usage: subststr keyword-files str-file\n";
+  exit 1;
+}
+
+$strfile = pop( @ARGV );
+
+####################################### read definitions of keywords
+
+while( $keyfile = shift ) {
+
+  open(KEY,"< $keyfile");
+  &read_keys;
+  close(KEY);
+
+}
+
+####################################### read and substitute STR file
+
+# &print_keys;
+
+open(STR,"< $strfile");
+&subst_keys;
+close(STR);
+
+###################################### subroutines
+
+sub read_keys {
+
+  my $key;
+
+  while( $_ = <KEY> ) {
+
+    s/\#.*$//;						#comment
+
+    if( / ^ (\w+) \s* = \s* (.*) \s*\n$ /x ) {		#definition line
+      $key = $1;
+      $keys{$key} = $2;
+    } elsif( / ^\s*\n$ /x ) {				#empty line
+      #nothing
+    } elsif( / ^\s+ /x ) {				#continuation line
+      s/\s*\n$//;
+      $keys{$key} .= "\n$_";
+    } else {						#error
+      die "error in input file $keyfile: $_";
+    }
+  }
+
+}
+
+sub print_keys {
+
+  my $var;
+
+  print STDERR "------------- keys read ------------------\n";
+  foreach $var (keys %keys) {
+    print STDERR "$var  $keys{$var}\n";
+  }
+  print STDERR "------------------------------------------\n";
+}
+
+sub subst_keys {
+
+  my $var;
+
+  while( $_ = <STR> ) {
+
+    foreach $var (keys %keys) {
+      s/\b$var\b/$keys{$var}/g;
+    }
+
+    print;
+  }
+}
+

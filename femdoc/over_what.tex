@@ -1,0 +1,42 @@
+
+
+The finite element program \shy{} is a program package that can be used
+to resolve the hydrodynamic equations in lagoons, coastal seas,
+estuaries and lakes. The program uses finite elements for the
+resolution of the hydrodynamic equations. These finite elements,
+together with an effective semi-implicit time resolution algorithm,
+makes this program especially suitable for application to a complicated
+geometry and bathymetry.
+
+This version of the program \shy{} resolves the depth integrated
+shallow water equations. It is therefore recommended for the
+application of very shallow basins or well mixed estuaries. Storm surge
+phenomena can be investigated also.  This two-dimensional version of
+the program is not suited for the application to baroclinic driven
+flows or large scale flows where the the Coriolis acceleration is
+important.
+
+Finite elements are superior to finite differences when dealing with
+complex bathymetric situations and geometries. Finite differences are
+limited to a regular outlay of their grids. This will be a problem if
+only parts of a basin need high resolution.  The finite element method
+has an advantage in this case allowing more flexibility with its
+subdivision of the system in triangles varying in form and size.
+
+This model is especially adapted to run in very shallow basins. It is
+possible to simulate shallow water flats, i.e., tidal marshes that in a
+tidal cycle may be covered with water during high tide and then fall
+dry during ebb tide. This phenomenon is handled by the model in a mass
+conserving way.
+
+Finite element methods have been introduced into hydrodynamics since
+1973 and have been extensively applied to shallow water equations by
+numerous authors \cite{Grotkop73, Taylor75, Herrling77, Herrling78, Holz82}.
+
+The model presented here \cite{Umgies86, Umgies93} uses the mathematical
+formulation of the semi-implicit algorithm that decouples the solution
+of the water levels and velocity components from each other leading to
+smaller systems to solve. Models of this type have been presented from
+1971 on by many authors \cite{Kwizak71, Duwe82, Backhaus83}.
+
+

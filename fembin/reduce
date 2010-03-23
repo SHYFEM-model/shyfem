@@ -1,0 +1,93 @@
+#!/bin/sh
+#
+# runs gridr
+
+FEMDIR=${FEMDIR:-$HOME/fem}
+BINDIR=$FEMDIR/femspline
+
+gridr=$BINDIR/gridr
+
+Usage()
+{
+	echo "Usage: reduce [-h|-help] [-s sigma] [-r reduct] grd-file"
+}
+
+FullUsage()
+{
+  Usage
+  echo "  -h|-help     this help screen"
+  echo "  -s sigma     use smoothing with standard deviation of sigma"
+  echo "  -s reduct    use reduction with length scale reduct"
+  echo "  grd-file     name of the grd file containing the lines"
+  echo ""
+  echo "  The value of sigma gives the width of the smoothing "
+  echo "  operator in meters."
+  echo "  The bigger it is, the stronger the lines will be smoothed"
+  echo "  All points in the lines will be retained."
+  echo "  The value of reduct gives the length scale that is used"
+  echo "  to decide if points can be eliminated or must be retained."
+  echo "  All line segments are supposed to be longer than reduct."
+  echo "  The special depth value of -1 can be used to indicate"
+  echo "  that the node does not need smoothing or should not be eliminated."
+  echo "  The default value for sigma and reduct are 0, which means"
+  echo "  no smoothing and no reduction (elimination)."
+  echo "  The smoothed lines will be in smooth.grd and the lines"
+  echo "  after the subsequent reduction will be in reduct.grd."
+  echo ""
+}
+
+ErrorOption()
+{
+  echo "No such option : $1"
+  Usage
+}
+
+if [ $# -eq 0 ]; then
+  Usage
+  exit 1
+fi
+
+sigma=0
+reduct=0
+
+while [ -n "$1" ]
+do
+   case $1 in
+        -s)             sigma=$2; shift;;
+        -r)             reduct=$2; shift;;
+        -h|-help)       FullUsage; exit 0;;
+        -*)             ErrorOption $1; exit 1;;
+        *)              break;;
+   esac
+   shift
+done
+
+if [ $# -eq 0 ]; then
+  Usage
+  exit 1
+else
+  grid=$1
+fi
+
+grid=`basename $grid .grd`
+
+echo "smooth:  $smooth"
+echo "reduct:  $reduct"
+echo "grid:    $grid"
+
+if [ ! -x $gridr ]; then
+  pushd $BINDIR
+  make gridr
+  popd
+fi
+if [ ! -x $gridr ]; then
+  echo "Cannot find or make $gridr."
+  exit 1
+fi
+
+$gridr <<EOI
+$grid.grd
+$sigma $reduct
+EOI
+
+

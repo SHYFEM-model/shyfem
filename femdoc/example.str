@@ -1,0 +1,32 @@
+$title
+        benchmark test for test lagoon
+        bench
+        venlag
+$end
+
+$para
+        itanf = 0  itend = 86400  idt = 300 
+        ireib = 5  czdef = 2.5E-3
+        dragco = 2.5E-3
+$end
+
+$bound1
+        kbound = 73 74 76
+        boundn = 'levels1.dat'
+$end
+
+$bound2
+        kbound = 150 157 97 101
+        boundn = 'levels1.dat'
+$end
+
+$name
+        wind='win18sep.win'
+$end
+
+   next are tide gauges used in calibration
+
+$extra ------- tide gauges for calibration ---------
+13,133,99,259,328,772,419,1141,1195,1070,1064,942,468,1154
+73,74,76,353,350,349,1374,1154,1160,1161,408,409,786,795
+$end

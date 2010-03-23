@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# adjusts time in first column of time series
+
+file=$1
+
+first=`head -1 $file`
+last=`tail -1 $file`
+
+t0=`echo $first | sed -e 's/^ *//' | sed -e 's/ .*$//'`
+t1=`echo $last  | sed -e 's/^ *//' | sed -e 's/ .*$//'`
+
+if [ $t1 -le 900 ]; then	#ok -> leave seconds
+  conv=""
+elif [ $t1 -le 172800 ]; then	#hours
+  conv="-h"
+else				#days
+  conv="-d"
+fi
+
+echo $first
+echo $last
+echo " |$t0|$t1|$conv| "
+
+for file
+do
+  s2s $conv $file > conf.$file
+done
+

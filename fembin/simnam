@@ -1,0 +1,8 @@
+#!/bin/sh 
+#
+# finds name of simulation in .str file
+# ... awk extracts title block
+# ... sed extracts name of simulation
+#
+awk '/\$title|\&title/,/\$end|\&end/{print $0}' $1 | \
+		sed -n 3p | sed -e 's/^[ 	]*//'

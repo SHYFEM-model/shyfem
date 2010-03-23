@@ -1,0 +1,305 @@
+#!/bin/sh
+#
+# shell for gnuplot
+#
+# needed programs:
+#
+# parr (with option -A)
+# gps2eps
+# psresetbb.sh
+# gifcrop (needs netpbm routines)
+#
+# epstopdf	(/usr/bin/epstopdf)
+#
+# convert	(Imagemagick)
+# gifsicle	(gifsicle)
+#
+######################################################### copyright
+
+copy2="gps - shell for generation of plot files"
+copy3="Copyright (c) 1998-2002 Georg Umgiesser - ISDGM/CNR"
+copy4="e-mail: georg@isdgm.ve.cnr.it"
+
+######################################################### help - usage
+
+Copy()
+{
+  echo "$copy2"
+  echo "$copy3"
+}
+
+Usage()
+{
+  echo "Usage: gps [ -h | -help ] [ -options ] file[s]"
+}
+
+FullUsage()
+{
+  echo ""
+
+  Copy
+  echo ""
+  Usage
+
+  echo ""
+  echo "Available options:"
+  echo "  -h|-help         this help"
+  echo "  -split           split ps file into single pages"
+  echo "  -eps             convert ps files into eps files"
+  echo "  -pdf             convert (e)ps files into pdf files"
+  echo "  -gif             convert files into gif files"
+  echo "  -jpg             convert files into jpg files"
+  echo "  -png             convert files into png files"
+  echo "  -bmp             convert files into bmp files"
+  echo "  -dpi #           for raster files use this resolution in dpi"
+  echo ""
+}
+
+ErrorOption()
+{
+  echo "No such option : $1"
+}
+
+Extension()
+{
+  file=$1
+  ext=`echo $file | sed -e 's/^.*\././'`
+  echo $ext
+}
+
+Basename()
+{
+  file=$1
+  ext=`Extension $file`
+  base=`basename $file $ext`
+  echo $base
+}
+
+CleanExtra()
+{
+  # cleans up files like "plot.png.1" etc...
+
+  name=$1
+  if [ -f $name.0 ]; then
+    mv $name.0 $name
+    rm -f $name.[1-9]*
+  fi
+}
+
+RotateEps()
+{
+  name=$1
+  ext=$2
+
+  if [ $ext = ".eps" -o $ext = ".ps" ]; then
+    grep "^%%Orientation: Landscape" $name > /dev/null
+    status=$?
+    #echo "eps or ps: $name   -  $status"
+    if [ $status -eq 0 ]; then
+      echo "-rotate 90"
+    fi
+  else
+    echo ""
+  fi
+}
+
+ReduceGif()
+{
+  # this has to be done since convert creates too big GIF files
+  # this also eliminates the second (useless) frame from a gif image
+
+  newext=".gif"
+
+  for file in $*
+  do
+    base=`Basename $file`
+    target=$base$newext
+
+    echo "reducing  $target"
+
+    gifcrop -o $target > tmp.gif
+    mv tmp.gif $target
+    gifsicle $target '#0' > tmp.gif
+    if [ $? -eq 0 ]; then
+      mv tmp.gif $target
+    fi
+  done
+}
+
+Convert()
+{
+  # in $format is the file type if needed (only for jpeg...)
+
+  newext=$1
+  shift
+
+  for file in $*
+  do
+    base=`Basename $file`
+    ext=`Extension $file`
+    source=$base$ext
+    target=$base$newext
+
+    echo "$source  ->  $target"
+
+    rotate=`RotateEps $source $ext`	# this rotates Landscape ps/eps files
+
+    CleanExtra $target
+    convert $dpi $rotate $source $format$target
+    CleanExtra $target
+  done
+}
+
+ConvertPDF()
+{
+  newext=$1
+  shift
+
+  for file in $*
+  do
+    base=`Basename $file`
+    ext=`Extension $file`
+    source=$base$ext
+    target=$base$newext
+
+    echo "$source  ->  $target"
+
+    epstopdf $source
+  done
+}
+
+######################################################### end
+
+#########################################################################
+#########################################################################
+#########################################################################
+#########################################################################
+#########################################################################
+
+######################################################### defaults
+
+split="NO"
+eps="NO"
+pdf="NO"
+gif="NO"
+jpg="NO"
+png="NO"
+bmp="NO"
+dpi=""
+
+######################################################### read options
+
+while [ -n "$1" ]
+do
+   case $1 in
+	-split)		split="YES";;
+	-eps)		eps="YES";;
+	-pdf)		pdf="YES";;
+	-gif)		gif="YES";;
+	-jpg)		jpg="YES";;
+	-png)		png="YES";;
+	-bmp)		bmp="YES";;
+	-dpi)		dpi=$2; shift;;
+	-h|-help)	FullUsage; exit 0;;
+	-*)		ErrorOption $1; exit 1;;
+	*)		break;;
+   esac
+   shift
+done
+
+if [ -n "$dpi" ]; then
+  dpi="-units PixelsPerInch -density $dpi"
+fi
+
+######################################################### no file -> write help
+
+if [ $# -le 0 ]; then
+  Usage
+  exit 1;
+fi
+
+######################################################### split files
+
+newfiles=""
+
+if [ $split = "YES" ]; then
+  for file in $*
+  do
+    filename=`basename $file .ps`
+    rm -f $filename.[0-9]*.ps
+    parr -A $file
+    newfile=`ls -m $filename.[0-9]*.ps`
+    echo "$file -> $newfile"
+    newfiles="$newfiles $newfile"
+  done
+else
+  newfiles=`ls -m $*`
+fi
+
+newfiles=`echo $newfiles | sed -e 's/,/ /g' | sed -e 's/  */ /g'`
+
+echo "$newfiles"
+
+######################################################### look for 0 size files
+
+auxfiles=""
+for file in $newfiles
+do
+  if [ -s $file ]; then
+    auxfiles="$auxfiles $file"
+  else
+    echo "file $file has size 0 ... ignoring"
+  fi
+done
+newfiles=$auxfiles
+
+######################################################### ps -> eps
+
+if [ $eps = "YES" ]; then
+  auxfiles=""
+  for file in $newfiles
+  do
+    basefile=`Basename $file`
+    ext=`Extension $file`
+    psfile=$basefile$ext
+    epsfile=$basefile.eps
+
+    echo "$psfile  ->  $epsfile"
+
+    #ps2eps $psfile -o$epsfile  2> /dev/null
+    gps2eps $psfile > $epsfile
+    psresetbb.sh $epsfile
+    auxfiles="$auxfiles $epsfile"
+  done
+  newfiles=$auxfiles
+fi
+
+# $newfiles 	->	files to convert
+
+######################################################### 
+
+if [ $gif = "YES" ]; then
+  Convert ".gif" $newfiles
+  ReduceGif $newfiles
+fi
+
+if [ $jpg = "YES" ]; then
+  format="jpeg:"
+  Convert ".jpg" $newfiles
+  format=""
+fi
+
+if [ $png = "YES" ]; then
+  Convert ".png" $newfiles
+fi
+
+if [ $bmp = "YES" ]; then
+  Convert ".bmp" $newfiles
+fi
+
+if [ $pdf = "YES" ]; then
+  ConvertPDF ".pdf" $newfiles
+fi
+
+######################################################### end
+

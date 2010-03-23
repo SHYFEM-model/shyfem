@@ -1,0 +1,49 @@
+#!/usr/bin/perl -s
+#
+# extracts title from STR file
+
+$basin = 1 if( $b );	# -b || -basin
+$simul = 1 if( $s );	# -s || -simul
+$title = 1 if( $t );	# -t || -title
+$help  = 1 if( $h );	# -h || -help
+
+if( $help ) {
+  die "Usage: strtitle [-b|-s|-h] str-file(s)\n"
+}
+
+while(<>) {
+
+  if( /^\s*[\$\&]title\s*$/i ) {
+    $tit   = &readline;
+    $sim   = &readline;
+    $bas   = &readline;
+    $end   = &readline;
+    $_ = $end;
+    if( /^\s*[\$\&]end\s*$/i ) {
+	last;
+    } else {
+	print STDERR "Wrong structure in STR file $ARGV:\n";
+    }
+  }
+}
+
+if( $title ) {
+	print "$tit\n";
+} elsif( $simul ) {
+	print "$sim\n";
+} elsif( $basin ) {
+	print "$bas\n";
+} else {
+	print "====================================================";
+	print "====== $ARGV\n";
+	print "$tit\n$bas\n$sim\n";
+}
+
+sub readline {
+
+  $_ = <>;
+  chop;
+  s/^\s+//;
+
+  return $_;
+}

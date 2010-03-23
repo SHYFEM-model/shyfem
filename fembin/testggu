@@ -1,0 +1,22 @@
+#!/bin/sh
+
+dir=$HOME/appl
+
+if [ -d $dir ]; then
+  echo "dir $dir exists"
+fi
+
+if [ -L $dir ]; then
+  echo "link $dir exists"
+fi
+
+dir=$HOME/work
+
+if [ -d $dir ]; then
+  echo "dir $dir exists"
+fi
+
+if [ -L $dir ]; then
+  echo "link $dir exists"
+fi
+

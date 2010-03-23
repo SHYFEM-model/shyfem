@@ -1,0 +1,75 @@
+#!/usr/bin/perl
+#
+# extracts column
+
+$newfile = "col";
+
+&handle_args;
+
+if( $help || !@ARGV ) {
+  print "Usage: extractcol [-help|-h] [-f newfile] file\n";
+}
+
+exit 0 if $help;
+
+while(<>) {
+
+  chomp;
+  s/^\s+//;		#crop leading white space
+  next if /^\#.*/;	#comment line -> ignore
+  s/#.*//;		#comment -> delete
+  #print STDERR "$_\n";
+
+  @data = split;
+
+  $nfiles = &openfiles unless( $openfile );
+
+  for($i=1;$i<$nfiles;$i++) {
+    print $i "$data[0]  $data[$i]\n";
+  }
+}
+
+for($i=1;$i<$nfiles;$i++) {
+  close($i);
+}
+
+
+
+sub handle_args {
+
+  while( $arg = $ARGV[0] ) {
+
+    if( $arg =~ /^-f/ ) {
+	$newfile = $ARGV[1];
+	shift @ARGV;
+    } elsif( $arg =~ /^-h/ ) {
+	$help = 1;
+    } elsif( $arg =~ /^-/ ) {
+	die "Unknown command line argument: $arg\n";
+    } else {
+	last;
+    }
+
+    shift @ARGV;
+  }
+
+}
+
+sub openfiles {
+
+  my $n = @data;
+  my $file;
+  my $i;
+
+  return $n if $n == 0;
+
+  for($i=1;$i<$n;$i++) {
+    $file = "$newfile.$i";
+    open($i,">$file");
+  }
+
+  $openfile = 1;
+
+  return $n;
+}
+  

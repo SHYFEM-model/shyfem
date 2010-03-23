@@ -1,0 +1,92 @@
+grid.c:
+162c162
+< void main(int argc, char *argv[])
+---
+> int main(int argc, char *argv[])
+209a210,211
+> 
+> 	return 0;
+215c217
+< 	Menu_entry *main;
+---
+> 	Menu_entry *menubar;
+222c224
+< 	main = MakeMenuArea();
+---
+> 	menubar = MakeMenuArea();
+227c229
+< 	AddMenuItem( main , file );
+---
+> 	AddMenuItem( menubar , file );
+238c240
+< 	AddMenuItem( main , view );
+---
+> 	AddMenuItem( menubar , view );
+249c251
+< 	AddMenuItem( main , show );
+---
+> 	AddMenuItem( menubar , show );
+259c261
+< 	AddMenuItem( main , node );
+---
+> 	AddMenuItem( menubar , node );
+269c271
+< 	AddMenuItem( main , elem );
+---
+> 	AddMenuItem( menubar , elem );
+278c280
+< 	AddMenuItem( main , line );
+---
+> 	AddMenuItem( menubar , line );
+289c291
+< 	AddMenuItem( main , vect );
+---
+> 	AddMenuItem( menubar , vect );
+297c299
+< 	AddMenuItem( main , change );
+---
+> 	AddMenuItem( menubar , change );
+305c307
+< 	AddMenuItem( main , test );
+---
+> 	AddMenuItem( menubar , test );
+grid_fp.h:
+49a50,51
+> #include "menu.h"
+> 
+110a113,114
+> 
+> void ExecuteMenuCommand( FP fp );
+gridvs.c:
+33c33
+<  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
+---
+>  *			E-Mail : georg@isdgm.ve.cnr.it			*
+35a36
+>  * 13-Mar-2003: version 3.02                                            *
+64,65c65,66
+< char* SGrid  = "GRID - Graphic Finite Element Utility  Version 3.01 ";
+< char* SGeorg = "       1992-1998 (c) Georg Umgiesser - ISDGM/CNR    ";
+---
+> char* SGrid  = "GRID - Graphic Finite Element Utility  Version 3.02 ";
+> char* SGeorg = "       1992-2003 (c) Georg Umgiesser - ISDGM/CNR    ";
+79a81,96
+> ==========================================================
+> 
+> version 3.02                            13 Mar 2003
+> 
+> 	Eliminated erroneous Makefile (did not compile)
+> 
+> Makefile:
+>  link with menu, screen, stack
+>  do not link with gridmu.o gridbu.o
+> grid_fp.h:
+>  some more function prototypes
+> menu.c:
+>  some more function prototypes
+> grid.c:
+>  eliminate compiler warnings
+> 
+menu.c:
+56a57
+> #include "grid_fp.h"	/* HACK */

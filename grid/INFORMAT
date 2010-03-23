@@ -1,0 +1,57 @@
+
+format of input file for grid utility
+
+=============================================================
+
+legend :
+
+nn	node number
+ne	element number
+nl	line number
+nl	vector number
+t	type
+d	depth
+x,y	coordinates
+ntot	number of following nodes
+n1,n2	node numbers
+nstot	number of following speed/direction pairs
+s1,d1	speed/direction
+a	actual s/d pair to use (default 1)
+
+=============================================================
+
+format of lines in input file :
+
+comment:
+
+0 [anything]
+
+node:
+
+1	nn	t	x	y	[d]
+
+element:
+
+2	ne	t	ntot	n1 n2 n3 ... 	[d]
+
+line:
+
+3	nl	t	ntot	n1 n2 n3 ...
+
+vector:
+
+4	nv	t	x	y	nstot	s1 d1 s2 d2 ...	[a]
+
+=============================================================
+
+explanation :
+
+lines may be split at any point, except befor optional argument
+d,a must not be on seperate line
+if d is not specified -999. will be used
+if a is not specified 1 will be used
+use t=0 if you do not know what to use
+nn,ne,nl,nv must all be unique in themselves
+
+=============================================================
+

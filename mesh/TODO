@@ -1,0 +1,57 @@
+
+- if elements are given in input file -> segmentation fault
+	-> what to do with elements?
+
+- if no boundary line given -> insert hull as boundary line
+
+- try to insert point not at CM, but in an other place
+
+- in MakeNode/Elem/Line -> routine to make extra structure
+
+- better placement of boundary nodes with refinement
+	- relax spacing between nodes
+	- position on spline
+
+- use heap structure to find next element
+
+- final check on grid quality -> edge swapping
+
+- after insertion of boundary nodes NEL is not used anymore
+	-> what to do with it
+
+*- refining internal points -> 
+	sometimes external element must be deleted
+	-> this is not done
+	-> no point is inserted, so the element remains very big
+	-> to solve: maybe try to insert point not at CM, but in
+		an other place
+
+*- inserting boundary nodes:
+	make sure original boundary line is retained
+	-> maybe insert points at boundary where this is not given
+	(the error is already in orgbound.grd)
+
+*- controll if lines are in anti-clockwise order and correct
+
+*- ensure boundary integrity
+
+*- background mesh (maybe with depths)
+
+*- smoothing of inserted internal points
+
+*- eliminate also internal boundaries
+
+*- error with refining interior nodes : mesh -s50 -o0.25 -r3.2 elips
+	-> after smoothing must retriangulate completly
+	-> circumcircles are wrong for all triangles
+
+*- adjourn help screen
+
+- profiling
+
+- look for memory sinks
+
+*- better input file for mesh
+	-> maybe use grd file structure
+
+*- no file -> segmentation fault

@@ -1,0 +1,214 @@
+
+$title
+	3D, 2m layers, 1998 forcing, 0.8 heat fluxes, no diffusion, full year
+	haka314
+	hakata22
+$end
+
+	itanf = 0  itend = 172800  idt = 300 
+	itanf = 0  itend = 31532400  idt = 300 
+	itanf = 0  itend = 31536000  idt = 300 
+	itanf = 0  itend = 5184000  idt = 300 
+	itanf = 0  itend = 15552000  idt = 300 
+	itanf = 600000  itend = 800000  idt = 300 
+	itanf = 600000  itend = 800000  idt = 150 
+	itanf = 0  itend = 15552000  idt = 150 
+
+	idtout = 3600  itmout = 15500000
+	vistur = 2.e-4   diftur = 2.e-4
+
+	itanf = 0  itend = 31536000  idt = 150 
+	itanf = 0  itend = 86400  idt = 300 
+	itanf = 0  itend = 31536000  idt = 300 
+
+&para
+	itanf = 0  itend = 172800  idt = 300 
+	idtout = 0  itmout = 0
+	idtext = 300  itmext = 0
+	idtflx = 300  itmflx = 0
+	idtrms = 2592000  itmrms = 0
+	idtres = 2592000  itmres = 0
+	ireib = 5  czdef = 0.0025
+	ilin = 0  iterad = 1  nadist = 10
+	icor = 1  dlat = 33.
+	href = 0.0
+	iczv = 0
+	ampar = 0.60   azpar = 0.60
+	atpar = 1.0    adpar = 1.0   aapar = 1.0
+
+	icust = 21
+	vistur = 2.e-4   diftur = 2.e-4
+
+	dragco = 2.5e-3   iwtype = 3
+
+	ibarcl = 3   igotm = 1
+
+	levdbg = 0
+
+        idtcon = 86400  itmcon = 0
+	chpar = 0  shpar = 0  thpar = 0  istot = 1  rstot = 1.0
+        iconz = 1  conref = 1
+	isalt = 1  salref = 33.9
+	itemp = 1  temref = 15.07
+&end
+
+levels
+	2 4 6 8 10 12 14 16 18 20 22 24
+end
+
+        ampli = 0.70  period = 43200.  phase = 10800.  zref = 0.
+
+$bound1 
+	kbound = 1745 1593 1594 1595 1596 1597 1599 1600 1601 1602
+			1603 1604 1605 1606 1607 1608 1759
+	conz = 0    
+	boundn = 'arm4ex.mar'
+	tempn  = '9899.temp'
+	saltn  = '9899.salt'
+$end
+
+$bound2 
+	kbound = 1818 1609 1610 1611 1612 1613 1614 1615 1725
+	conz = 0 
+	boundn = 'arm4ex.mar'
+	tempn  = '9899.temp'
+	saltn  = '9899.salt'
+$end
+
+$bound3
+     kbound = 814    zref = 0.44
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound4
+     kbound = 426    zref = 1.81
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound5
+     kbound = 432    zref = 0.3
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound6
+     kbound = 862    zref = 1.08
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound7
+     kbound = 461    zref = 0.26
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound8
+     kbound = 466    zref = 0.62
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound9
+     kbound = 473    zref = 2.3
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound10
+     kbound = 1114    zref = 0.34
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound11
+     kbound = 1161    zref = 0.74
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound12
+     kbound = 1218    zref = 0.66
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound13
+     kbound = 695    zref = 0.2
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound14
+     kbound = 1337    zref = 2.61
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound15
+     kbound = 1370    zref = 0.42
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound16
+     kbound = 743    zref = 0.72
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound17
+     kbound = 1503    zref = 0.24
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound18
+     kbound = 528    zref = 0.1
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+$bound19
+     kbound = 1764    zref = 0.14
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+ 
+$bound20
+     kbound = 1798    zref = 0.03
+     ibtyp = 3  conz = 0  salt = 0
+	temp = -999
+$end
+
+775     old bound
+1262    central basin
+1541    reclamation area
+1601    east bound
+1612    west bound
+1233    tide gauge, harbor
+ 
+$extra
+        775 1262 1541 1601 1612 1233
+$end
+
+$flux
+	291 766 768 769 771 773 775 778 781 
+			784 787 790 793 796 799 801 367 0
+        1546 644 583 185 345 540 70 355 529 712 902 0
+        894 127 1021 503 1036 489 1279 405 0
+$end
+
+$wind
+	0	-3.5	-3.5
+$end
+	0	5.0	0.0
+	0	-1.5	1.5
+	0	-3.5	-3.5
+
+$name
+	wind = '1998.win'
+	qflux = '1998.qfx'
+$end

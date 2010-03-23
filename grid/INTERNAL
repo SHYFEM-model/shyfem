@@ -1,0 +1,63 @@
+
+internal hints for programming :
+
+Adding a new item (e.g. Vect_type)
+
+	global variabels & constants : (in grid.c and grid_*.h)
+		- Vect_type
+		- HVC (Hash table)
+		- NTotVects
+		- ActVect
+		- VECTMODE
+
+	menus and buttons :
+		- gridbu.c, gridmu.c
+
+	file read :
+		- gridfi.c
+
+	real stuff :
+		- gridut.c (MakeVect, DeleteVect, ChangeVect)
+		- gridpl.c (EvidenceVect, PlotVectors, PlotVect)
+		- gridma1.c (in PlotFieldInput, MenuFieldInput, KeyboardInput
+				add VECTMODE and handling routines,
+				TentativeVect, 
+				GfDelVect, GfChangeVect)
+		- gridma2.c (in PlotAll, RedrawAll insert Vect routines,
+				in WriteToMesWindow add VECTMODE,
+				in EvidenceNone insert EvidenceVect,
+				MakeVectActive)
+
+Adding a new menu choice:
+
+	menus and buttons :
+                - gridbu.c, gridmu.c
+
+	version :
+		- gridvs.c
+
+        real stuff :
+                - gridma1.c (Gf... commands)
+                - gridma2.c (utilities for commands)
+		- grid_ty.h (Button_type)
+		- grid_fp.h (prototypes)
+
+
+important files :
+
+	- gridma1.c	commands
+	- gridma2.c	utilities for commands
+	- gridpl.c	plot routines
+	- gridut.c	utilities for plot routines
+
+files in distribution :
+
+	- *.c
+	- *.h
+	- *.bat
+	- *.prj
+	- *.grd
+	- gridlog informat internal todo
+	- makefile
+	- gridd
+

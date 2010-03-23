@@ -1,0 +1,169 @@
+
+lahey compilation warnings:
+
+hp80.lst:WARNING - INTEGER VARIABLE (NVERS) assigned a value, never used,  line 173.
+ht08.lst:WARNING - INTEGER VARIABLE (NVERS) assigned a value, never used,  line 199.
+ht08.lst:WARNING - INTEGER VARIABLE (IZEIT) assigned a value, never used,  line 201.
+new11.lst:WARNING - REAL VARIABLE (DRAGCO) assigned a value, never used,  line 149.
+new11.lst:WARNING - REAL VARIABLE (HLVMIN) assigned a value, never used,  line 152.
+new11.lst:WARNING - INTEGER VARIABLE (IWIN) assigned a value, never used,  line 203.
+new11.lst:WARNING - REAL VARIABLE (UV) assigned a value, never used,  line 1039.
+new3di.lst:WARNING - INTEGER VARIABLE (NITERM) assigned a value, never used,  line 338.
+new3di.lst:WARNING - REAL VARIABLE (EPSIT) assigned a value, never used,  line 339.
+new3di.lst:WARNING - REAL VARIABLE (EPSIT) assigned a value, never used,  line 340.
+new3di.lst:WARNING - REAL VARIABLE (RES) assigned a value, never used,  line 404.
+new3di.lst:WARNING - REAL VARIABLE (DRAGCO) assigned a value, never used,  line 600.
+new3di.lst:WARNING - REAL VARIABLE (CZDEF) assigned a value, never used,  line 601.
+new3di.lst:WARNING - LOGICAL VARIABLE (BAROC) assigned a value, never used,  line 603.
+new3di.lst:WARNING - REAL VARIABLE (AF) assigned a value, never used,  line 607.
+new3di.lst:WARNING - REAL VARIABLE (RDT) assigned a value, never used,  line 977.
+new3di.lst:WARNING - REAL VARIABLE (DTGRAV) assigned a value, never used,  line 983.
+new3di.lst:WARNING - REAL VARIABLE (UT) assigned a value, never used,  line 986.
+new3di.lst:WARNING - REAL VARIABLE (VT) assigned a value, never used,  line 987.
+new3di.lst:WARNING - REAL VARIABLE (AJ12) assigned a value, never used,  line 1011.
+new3di.lst:WARNING - LOGICAL VARIABLE (DEBUG) assigned a value, never used,  line 1027.
+new3di.lst:WARNING - REAL VARIABLE (HT) assigned a value, never used,  line 1058.
+new3di.lst:WARNING - REAL VARIABLE (HT) assigned a value, never used,  line 1060.
+new3di.lst:WARNING - REAL VARIABLE (UT) assigned a value, never used,  line 1196.
+new3di.lst:WARNING - REAL VARIABLE (VT) assigned a value, never used,  line 1197.
+new3di.lst:WARNING - LOGICAL VARIABLE (BCOLIN) assigned a value, never used,  line 1408.
+newbcl.lst:WARNING - INTEGER VARIABLE (IDTEXT) assigned a value, never used,  line 167.
+newbcl.lst:WARNING - INTEGER VARIABLE (ITMEXT) assigned a value, never used,  line 168.
+newbcl.lst:WARNING - LOGICAL VARIABLE (BDEBUG) assigned a value, never used,  line 350.
+newcon.lst:WARNING - LOGICAL VARIABLE (BDEBUG) assigned a value, never used,  line 324.
+newcon.lst:WARNING - LOGICAL VARIABLE (BERROR) assigned a value, never used,  line 325.
+newcon.lst:WARNING - REAL ARRAY (HREAL) assigned a value, never used,  line 365.
+newcon.lst:WARNING - REAL ARRAY (HREAL) assigned a value, never used,  line 432.
+newcon.lst:WARNING - REAL ARRAY (HREAL) assigned a value, never used,  line 456.
+newcon0.lst:WARNING - INTEGER VARIABLE (NLV), a dummy argument, is never used,  line 124.
+newcon0.lst:WARNING - INTEGER VARIABLE (NY), a dummy argument, is never used,  line 398.
+newcon1.lst:WARNING - INTEGER VARIABLE (ICONZ), a dummy argument, is never used,  line 15.
+newcon1.lst:WARNING - INTEGER VARIABLE (KMAX) assigned a value, never used,  line 346.
+newcon1.lst:WARNING - REAL VARIABLE (DT) assigned a value, never used,  line 433.
+newcra.lst:WARNING - REAL ARRAY (B), a dummy argument, is never used,  line 553.
+newdry.lst:WARNING - LOGICAL VARIABLE (DEBUG) assigned a value, never used,  line 67.
+newdry.lst:WARNING - INTEGER VARIABLE (NNN) assigned a value, never used,  line 188.
+newdry.lst:WARNING - INTEGER VARIABLE (ITMIN) assigned a value, never used,  line 189.
+newdry.lst:WARNING - INTEGER VARIABLE (ITMIN) assigned a value, never used,  line 190.
+newflx.lst:WARNING - REAL VARIABLE (DUMMY) assigned a value, never used,  line 206.
+newpr.lst:WARNING - INTEGER VARIABLE (NVERS), a dummy argument, is never used,  line 83.
+newpr.lst:WARNING - REAL VARIABLE (HREF) assigned a value, never used,  line 252.
+newpr.lst:WARNING - REAL VARIABLE (HZMIN) assigned a value, never used,  line 253.
+newpr.lst:WARNING - REAL VARIABLE (HLVMIN) assigned a value, never used,  line 254.
+newut.lst:WARNING - REAL VARIABLE (DZ) assigned a value, never used,  line 251.
+sub555.lst:WARNING - REAL VARIABLE (AC2) assigned a value, never used,  line 180.
+sub555.lst:WARNING - REAL VARIABLE (GDT22) assigned a value, never used,  line 192.
+subcon.lst:WARNING - REAL VARIABLE (CC) assigned a value, never used,  line 115.
+subcon.lst:WARNING - REAL VARIABLE (CNMAX) assigned a value, never used,  line 236.
+subcon.lst:WARNING - INTEGER VARIABLE (KERROR) assigned a value, never used,  line 237.
+subcon.lst:WARNING - LOGICAL VARIABLE (BERROR) assigned a value, never used,  line 238.
+subcon.lst:WARNING - DOUBLE PRECISION VARIABLE (VTTOT) assigned a value, never used,  line 260.
+subcon.lst:WARNING - DOUBLE PRECISION VARIABLE (FTOT) assigned a value, never used,  line 261.
+subcon.lst:WARNING - REAL VARIABLE (HNM) assigned a value, never used,  line 344.
+subcon.lst:WARNING - INTEGER VARIABLE (ITECON) assigned a value, never used,  line 760.
+subcon.lst:WARNING - INTEGER VARIABLE (ITECON) assigned a value, never used,  line 857.
+subdim.lst:WARNING - INTEGER VARIABLE (INDDIM), a dummy argument, is never used,  line 124.
+subdim.lst:WARNING - INTEGER ARRAY (INDEX), a dummy argument, is never used,  line 124.
+subflx.lst:WARNING - INTEGER VARIABLE (IE1) assigned a value, never used,  line 120.
+subflx.lst:WARNING - INTEGER VARIABLE (IE2) assigned a value, never used,  line 121.
+subflx.lst:WARNING - INTEGER VARIABLE (IE1) assigned a value, never used,  line 123.
+subflx.lst:WARNING - INTEGER VARIABLE (IE2) assigned a value, never used,  line 124.
+subflxa.lst:WARNING - REAL VARIABLE (DUMMY) assigned a value, never used,  line 123.
+subgrd.lst:WARNING - CHARACTER*(*) VARIABLE (LINE), a dummy argument, is never used,  line 154.
+subgrd.lst:WARNING - INTEGER VARIABLE (K) assigned a value, never used,  line 246.
+subgrd.lst:WARNING - INTEGER VARIABLE (K) assigned a value, never used,  line 309.
+subn11.lst:WARNING - INTEGER VARIABLE (IBTYP) assigned a value, never used,  line 571.
+subres.lst:WARNING - INTEGER VARIABLE (ITERES) assigned a value, never used,  line 265.
+subres.lst:WARNING - REAL VARIABLE (HREF) assigned a value, never used,  line 266.
+subres.lst:WARNING - REAL VARIABLE (HZOFF) assigned a value, never used,  line 267.
+subres.lst:WARNING - INTEGER VARIABLE (ITERES) assigned a value, never used,  line 447.
+subres.lst:WARNING - REAL VARIABLE (HREF) assigned a value, never used,  line 448.
+subres.lst:WARNING - REAL VARIABLE (HZOFF) assigned a value, never used,  line 449.
+vpn6.lst:WARNING - INTEGER VARIABLE (NB1) assigned a value, never used,  line 72.
+vpn6.lst:WARNING - INTEGER VARIABLE (NB3) assigned a value, never used,  line 74.
+vpn6.lst:WARNING - INTEGER VARIABLE (NB4) assigned a value, never used,  line 75.
+vpn6.lst:WARNING - INTEGER VARIABLE (NB9) assigned a value, never used,  line 76.
+
+
+
+
+new lahey warnings - compiler 5.20
+
+
+
+
+hp80.lst:Warning - INTEGER variable (NVERS) assigned a value, never used, File hp80.for, line 192.
+sub555.lst:Warning - REAL variable (AC2) assigned a value, never used, File sub555.for, line 191.
+sub555.lst:Warning - REAL variable (GDT22) assigned a value, never used, File sub555.for, line 201.
+sub555.lst:Warning - INTEGER variable (ISYM) possibly assigned new value before former value used.
+subcon.lst:Warning - INTEGER variable (IE) is declared but never used, File subcon.for, line 66.
+subcon.lst:Warning - INTEGER variable (II) is declared but never used, File subcon.for, line 66.
+subcon.lst:Warning - INTEGER variable (K) is declared but never used, File subcon.for, line 66.
+subcon.lst:Warning - INTEGER variable (IDTEXT) assigned a value, never used, File subcon.for, line 115.
+subcon.lst:Warning - INTEGER variable (ITMEXT) assigned a value, never used, File subcon.for, line 116.
+subcon.lst:Warning - INTEGER variable (IESPEZ) possibly assigned new value before former value used.
+subcon.lst:Warning - REAL variable (CNMAX) assigned a value, never used, File subcon.for, line 276.
+subcon.lst:Warning - INTEGER variable (KERROR) assigned a value, never used, File subcon.for, line 277.
+subcon.lst:Warning - LOGICAL variable (BERROR) assigned a value, never used, File subcon.for, line 278.
+subcon.lst:Warning - DOUBLE PRECISION variable (VTTOT) assigned a value, never used, File subcon.for, line 300.
+subcon.lst:Warning - DOUBLE PRECISION variable (FTOT) assigned a value, never used, File subcon.for, line 301.
+subcon.lst:Warning - REAL variable (HNM) assigned a value, never used, File subcon.for, line 384.
+subcon.lst:Warning - INTEGER variable (ITECON) assigned a value, never used, File subcon.for, line 810.
+subcon.lst:Warning - INTEGER variable (ITECON) assigned a value, never used, File subcon.for, line 904.
+subcus.lst:Warning - INTEGER variable (IT), a dummy argument, is never used, File subcus.for, line 19.
+subdim.lst:Warning - INTEGER variable (INDDIM), a dummy argument, is never used, File subdim.for, line 126.
+subdim.lst:Warning - INTEGER array (INDEX), a dummy argument, is never used, File subdim.for, line 126.
+subflxa.lst:Warning - INTEGER variable (II) is declared but never used, File subflxa.for, line 333.
+subflxa.lst:Warning - INTEGER variable (IE) is declared but never used, File subflxa.for, line 333.
+subflxa.lst:Warning - INTEGER variable (IP) is declared but never used, File subflxa.for, line 333.
+subflxa.lst:Warning - INTEGER variable (IPF) is declared but never used, File subflxa.for, line 333.
+subflxa.lst:Warning - INTEGER variable (IPL) is declared but never used, File subflxa.for, line 333.
+subflxa.lst:Warning - INTEGER variable (IPEXT) is declared but never used, File subflxa.for, line 337.
+subflxa.lst:Warning - INTEGER variable (IGTNSC) is declared but never used, File subflxa.for, line 337.
+subflxa.lst:Warning - INTEGER variable (NNODE) is declared but never used, File subflxa.for, line 383.
+subflxa.lst:Warning - INTEGER variable (IFIRST) is declared but never used, File subflxa.for, line 383.
+subflxa.lst:Warning - INTEGER variable (ILAST) is declared but never used, File subflxa.for, line 383.
+subflxa.lst:Warning - LOGICAL variable (BSTOP) is declared but never used, File subflxa.for, line 389.
+subflxa.lst:Warning - INTEGER variable (J) is declared but never used, File subflxa.for, line 600.
+subfnm.lst:Warning - LOGICAL variable (BDEBUG) assigned a value, never used, File subfnm.for, line 76.
+subfnm.lst:Warning - INTEGER variable (ISCFNM) assigned a value, never used, File subfnm.for, line 449.
+sublnk.lst:Warning - INTEGER variable (KRANF) is declared but never used, File sublnk.for, line 344.
+sublnk.lst:Warning - INTEGER variable (KREND) is declared but never used, File sublnk.for, line 344.
+sublnk.lst:Warning - INTEGER variable (IROUND) is declared but never used, File sublnk.for, line 346.
+sublnk.lst:Warning - INTEGER variable (NNKN) is declared but never used, File sublnk.for, line 1159.
+sublnk.lst:Warning - INTEGER variable (NNEL) is declared but never used, File sublnk.for, line 1159.
+sublnk.lst:Warning - INTEGER variable (NNBN) is declared but never used, File sublnk.for, line 1159.
+sublnk.lst:Warning - INTEGER variable (NNLI) is declared but never used, File sublnk.for, line 1159.
+sublnk.lst:Warning - INTEGER variable (NNIS) is declared but never used, File sublnk.for, line 1159.
+sublnk.lst:Warning - INTEGER variable (NNOD) is declared but never used, File sublnk.for, line 1159.
+sublnk.lst:Warning - INTEGER variable (ITMIN) possibly assigned new value before former value used.
+subn11.lst:Warning - INTEGER variable (IBTYP) assigned a value, never used, File subn11.for, line 620.
+subn36.lst:Warning - INTEGER variable (IPFUL) assigned a value, never used, File subn36.for, line 326.
+subn36.lst:Warning - INTEGER variable (IVFUL) assigned a value, never used, File subn36.for, line 327.
+subn36.lst:Warning - REAL variable (HM) assigned a value, never used, File subn36.for, line 544.
+subn36.lst:Warning - INTEGER variable (IVDIM) assigned a value, never used, File subn36.for, line 829.
+subn36.lst:Warning - INTEGER variable (IVFUL) assigned a value, never used, File subn36.for, line 831.
+subn36.lst:Warning - INTEGER variable (IPFUL) assigned a value, never used, File subn36.for, line 1064.
+subn36.lst:Warning - INTEGER variable (IVFUL) assigned a value, never used, File subn36.for, line 1065.
+subres.lst:Warning - This program unit needs at least 255952 bytes of stack.  Use the "-stack" linker switch (See Section 2.8.3 in 
+subres.lst:Warning - INTEGER variable (ITERES) assigned a value, never used, File subres.for, line 275.
+subres.lst:Warning - REAL variable (HREF) assigned a value, never used, File subres.for, line 276.
+subres.lst:Warning - REAL variable (HZOFF) assigned a value, never used, File subres.for, line 277.
+subsss.lst:Warning - LOGICAL variable (BDIF) possibly assigned new value before former value used.
+subwat.lst:Warning - COMMON /nen3v/ is larger than an earlier program unit declaration (See Section 6.4 in Lahey Language Reference), 
+subwat.lst:Warning - COMMON /hm3v/ is larger than an earlier program unit declaration (See Section 6.4 in Lahey Language Reference), 
+
+
+
+Cleaned warnings:
+
+
+subcus.lst:Warning - INTEGER variable (IT), a dummy argument, is never used, File subcus.for, line 19.
+
+subn36.lst:Warning - INTEGER variable (IPFUL) assigned a value, never used, File subn36.for, line 326.
+subn36.lst:Warning - INTEGER variable (IVFUL) assigned a value, never used, File subn36.for, line 327.
+subn36.lst:Warning - REAL variable (HM) assigned a value, never used, File subn36.for, line 544.
+subn36.lst:Warning - INTEGER variable (IVDIM) assigned a value, never used, File subn36.for, line 829.
+subn36.lst:Warning - INTEGER variable (IVFUL) assigned a value, never used, File subn36.for, line 831.
+subn36.lst:Warning - INTEGER variable (IPFUL) assigned a value, never used, File subn36.for, line 1064.
+subn36.lst:Warning - INTEGER variable (IVFUL) assigned a value, never used, File subn36.for, line 1065.

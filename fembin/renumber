@@ -1,0 +1,38 @@
+#!/usr/bin/perl
+
+@files = @ARGV;
+
+foreach (@files) {
+  if( /(.*)\.(\d+)\.(.*)/ ) {
+    $num = &ren($2);
+    #print "$1 - $2 - $3\n";
+    #print "$num\n";
+    $file = "$1.$num.$3";
+    print "$_ -> $file\n";
+    rename $_, $file;
+  } else {
+    print "$_ ... not changed\n";
+  }
+}
+
+sub ren {
+
+  my $num = shift;
+  my $zero = '0000000000';
+  my $str;
+
+  if( $num < 10 ) {
+    $pad = substr($zero,0,2);
+  } elsif( $num < 100 ) {
+    $pad = substr($zero,0,1);
+  } elsif( $num < 1000 ) {
+    $pad = substr($zero,0,0);
+  } else {
+    die "Number too big: $num\n";
+  }
+
+  $str = $pad . $num;
+
+  return $str
+}
+

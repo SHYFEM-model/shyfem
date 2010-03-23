@@ -1,0 +1,80 @@
+#!/bin/sh
+#
+# combines apn files into one file for plotsim
+
+#--------------------------------
+outfil=apnstd.str
+outfil=""
+#--------------------------------
+
+####################################################### functions
+
+FullUsage() {
+  Usage
+  echo "     -o           specify output file (default stdout)"
+  echo "     -d           use apnstd.str as output file"
+  echo "     -h|-help     this screen"
+  echo "     str-file(s)  str-files that are con-catenated"
+}
+
+Usage() {
+  echo "Usage: apnmake [-o outfile] [-d] [-h|-help] str-file(s)"
+}
+
+####################################################### no argument -> help
+
+if [ $# -eq 0 ]; then
+  Usage
+  exit 0
+fi
+
+####################################################### process arguments
+
+while [ $# -gt 0 ]
+do
+
+  opt=$1
+  arg=$2
+
+  case $opt in
+        -o)       outfil=$arg; shift;;
+        -h|-help) FullUsage; exit 0;;
+        -*)       echo "Unknown option: $opt"; exit 1;;
+         *)       break;;
+  esac
+
+  if [ $# -eq 0 ]; then		#avoid error if -o is without argument
+    echo "Error: option -o without argument"
+  fi
+
+  shift
+done
+
+####################################################### remove output file
+
+if [ -n "$outfil" -a -f "$outfil" ]; then
+  rm -f $outfil
+fi
+
+####################################################### copy files
+
+while [ $# -gt 0 ]
+do
+  file=`basename $1 .str`
+  next=$file.str
+
+  if [ -f $next ]; then
+    if [ -n "$outfil" ]; then
+      cat $next >> $outfil
+    else
+      cat $next
+    fi
+  else
+    echo >&2 "Cannot read $next"
+  fi
+
+  shift
+done
+
+####################################################### end of script
+

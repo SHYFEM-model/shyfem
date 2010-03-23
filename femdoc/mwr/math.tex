@@ -1,0 +1,125 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%<MATH_ABBREV>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% differential operators
+
+\newcommand{\tdif}[1] {\frac{\partial #1}{\partial t}}
+
+\newcommand{\xdif}[1] {\frac{\partial #1}{\partial x}}
+\newcommand{\ydif}[1] {\frac{\partial #1}{\partial y}}
+\newcommand{\zdif}[1] {\frac{\partial #1}{\partial z}}
+
+\newcommand{\xxdif}[1] {\frac{\partial^2 #1}{\partial x^2}}
+\newcommand{\yydif}[1] {\frac{\partial^2 #1}{\partial y^2}}
+\newcommand{\zzdif}[1] {\frac{\partial^2 #1}{\partial z^2}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% time and spatial steps
+
+\newcommand{\dt} {\Delta t}
+\newcommand{\dx} {\Delta x}
+\newcommand{\dy} {\Delta y}
+\newcommand{\dz} {\Delta z}
+
+\newcommand{\dzeta} {\Delta \zeta}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% discretization
+
+\newcommand{\olds} {\scriptstyle (0)}
+\newcommand{\news} {\scriptstyle (1)}
+\newcommand{\meds} {\scriptscriptstyle (\frac{1}{2})}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% hydrodynamic variables (discretized)
+
+\newcommand{\uold} {u^{\olds}}
+\newcommand{\vold} {v^{\olds}}
+\newcommand{\unew} {u^{\news}}
+\newcommand{\vnew} {v^{\news}}
+
+\newcommand{\Uold} {U^{(\olds)}}
+\newcommand{\Unew} {U^{(\news)}}
+\newcommand{\Vold} {V^{(\olds)}}
+\newcommand{\Vnew} {V^{(\news)}}
+
+\newcommand{\zold} {\zeta^{(\olds)}}
+\newcommand{\znew} {\zeta^{(\news)}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% hydrodynamic variables (discretized) 3D
+
+\newcommand{\uzl} {\zdif{u_{l}}}
+\newcommand{\vzl} {\zdif{v_{l}}}
+
+\newcommand{\Uzl} {\zdif{U_{l}}}
+\newcommand{\Vzl} {\zdif{V_{l}}}
+
+\newcommand{\uzold}[1] {u_{{#1}}^{\olds}}
+\newcommand{\vzold}[1] {v_{{#1}}^{\olds}}
+\newcommand{\Uzold}[1] {U_{{#1}}^{\olds}}
+\newcommand{\Vzold}[1] {V_{{#1}}^{\olds}}
+
+\newcommand{\uznew}[1] {u_{{#1}}^{\news}}
+\newcommand{\vznew}[1] {v_{{#1}}^{\news}}
+\newcommand{\Uznew}[1] {U_{{#1}}^{\news}}
+\newcommand{\Vznew}[1] {V_{{#1}}^{\news}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% hydrodynamic parameters
+
+\newcommand{\rhon} {\rho_0}
+\newcommand{\drho} {\frac{1}{\rhon}}
+\newcommand{\aush} {A_H}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FEM
+
+\newcommand{\AO} {A_{\Omega}}
+\newcommand{\dO} {d \Omega}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% vectors
+
+\newcommand{\resr} {{\cal R}}
+
+\newcommand{\uv} {{\bf U}}
+\newcommand{\uvold} {{\bf U^{\olds}}}
+\newcommand{\uvnew} {{\bf U^{\news}}}
+
+\newcommand{\duv} {\Delta {\bf U}}
+\newcommand{\iv} {{\bf I}}
+\newcommand{\ivh} {\hat{\bf I}}
+\newcommand{\fv} {{\bf F}}
+\newcommand{\uvh} {\hat{\bf U}}
+
+\newcommand{\Xb} {\hat{X}}
+\newcommand{\Yb} {\hat{Y}}
+\newcommand{\ffxx} {\tilde{f_x}}
+\newcommand{\ffyy} {\tilde{f_y}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% weighting factors
+
+\newcommand{\az} {\alpha_{z}}
+\newcommand{\am} {\alpha_{m}}
+\newcommand{\ar} {\alpha_{r}}
+\newcommand{\azt} {\tilde{\az}}
+\newcommand{\amt} {\tilde{\am}}
+\newcommand{\art} {\tilde{\ar}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%</MATH_ABBREV>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\vect}[2]   {       \mbox{$
+					\left(  \begin{array}{c}
+					#1 \\ #2
+					\end{array}     \right)
+				$}
+			}
+\newcommand{\paren}[1]  { \left( #1 \right) }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\beq} {\begin{equation}}
+\newcommand{\eeq} {\end{equation}}
+\newcommand{\beqa} {\begin{eqnarray}}
+\newcommand{\eeqa} {\end{eqnarray}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

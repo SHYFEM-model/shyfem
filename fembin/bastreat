@@ -1,0 +1,100 @@
+#!/bin/sh
+#
+# runs bastreat
+
+FEMDIR=${FEMDIR:-$HOME/fem}
+BINDIR=$FEMDIR/fem3d
+
+bastreat=$BINDIR/bastreat
+
+Usage()
+{
+  echo "Usage: bastreat [-h|-help] [-options] basin"
+}
+
+FullUsage()
+{
+  Usage
+  echo "  -h|-help     this help screen"
+  echo "  -hmin #      minimum depth ofr basin"
+  echo "  -hmax #      minimum depth ofr basin"
+  echo "  -n    #      number of iterations for smoothing (default 0 for none)"
+  echo "  -p    #      parameters for smoothing (default 0.5)"
+  echo "  basin        name of the basin for which interpolation is done"
+  echo ""
+  echo "  basin is a grd file (basin.grd) containing the basin for which the"
+  echo "  changes have to be carried out."
+  echo "  The format for the parameters is either alpha (one value between"
+  echo "  0 and 1) that gives the influence of the surrounding points for"
+  echo "  the smoothing (0 for no influence, no smoothing) or 4 values"
+  echo "  a1,h1,a2,h2 that are two values for alpha (a1,a2) and for depth"
+  echo "  (h1,h2). Between the two depth values the alpha values are"
+  echo "  interpolated linearly, outside they are kept constant."
+  echo "  If 4 values are given please do not leave spaces between them"
+  echo "  or enclose them in quotation marks."
+  echo "  The results are written to file bastreat.grd. The original basin"
+  echo "  is not altered."
+}
+
+ErrorOption()
+{
+  echo "No such option : $1"
+}
+
+if [ $# -eq 0 ]; then
+  Usage
+  exit 1
+fi
+
+hmin=-99999.
+hmax=+99999.
+niter=0
+params=0.5
+
+while [ -n "$1" ]
+do
+   case $1 in
+	-hmin) 		hmin=$2; shift;;
+	-hmax) 		hmax=$2; shift;;
+	-n) 		niter=$2; shift;;
+	-p) 		params="$2"; shift;;
+        -h|-help)       FullUsage; exit 0;;
+        -*)             ErrorOption $1; exit 1;;
+        *)              break;;
+   esac
+   shift
+done
+
+if [ $# -eq 0 ]; then
+  Usage
+  exit 1
+else
+  basin=$1
+fi
+
+basin=`basename $basin .bas`
+
+echo "hmin:   $hmin"
+echo "hmax:   $hmax"
+echo "niter:  $niter"
+echo "params: $params"
+echo "basin:  $basin"
+
+if [ ! -x $bastreat ]; then
+  pushd $BINDIR
+  make bastreat
+  popd
+fi
+if [ ! -x $bastreat ]; then
+  echo "Cannot find or make bastreat."
+  exit 1
+fi
+
+$bastreat <<EOI
+$basin
+$hmin $hmax
+$niter
+$params
+EOI
+
+

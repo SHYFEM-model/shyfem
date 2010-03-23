@@ -1,0 +1,90 @@
+#!/bin/bash
+#
+# fembat : runs FEM model
+#
+####################################################
+
+#---------------------------------------------------
+# check command line options
+#---------------------------------------------------
+
+if [ $# -ne 3 ]; then
+	echo "Usage : $0   tmpfile   HP-routine   STR-file"
+	echo "$#: $*"
+	exit 1
+fi
+
+tmpfile=$1
+program=$2
+strfile=$3
+
+#---------------------------------------------------
+# set parameters
+#---------------------------------------------------
+
+timecommand="time"
+#timecommand="ggutime"
+datecommand="date"
+infodir=$HOME/tmp/hp/hpinfo
+host=`hostname`
+actdir=`pwd`
+
+#---------------------------------------------------
+# test time command
+#---------------------------------------------------
+
+$timecommand ls > /dev/null 2>&1
+status=$?
+[ $status -ne 0 ] && timecommand=""
+#echo "status of time command: $status $timecommand"
+
+#---------------------------------------------------
+# set some variables
+#---------------------------------------------------
+
+auxfile=`basename $tmpfile`
+infofile=$infodir/$auxfile
+echo "creating info file $infofile"
+cp -f $tmpfile $infofile
+
+date=`$datecommand`
+start=$date
+
+#---------------------------------------------------
+# write to terminal
+#---------------------------------------------------
+
+echo " "
+echo "$date - $host"
+echo " "
+echo "actual directory     :  $actdir"
+echo " "
+echo "FEM routine          :  $program"
+echo "input parameter file :  $strfile"
+echo " "
+
+#---------------------------------------------------
+# run program
+#---------------------------------------------------
+
+$timecommand $program < $strfile
+
+date=`$datecommand`
+
+echo " "
+echo "$date - $host"
+echo " "
+echo "start:  $start"
+echo "end:    $date"
+echo " "
+
+#---------------------------------------------------
+# clean up
+#---------------------------------------------------
+
+rm -f $infofile $tmpfile
+
+#---------------------------------------------------
+# end of routine
+#---------------------------------------------------
+
