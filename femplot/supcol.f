@@ -372,8 +372,8 @@ c gets color table used
 
 	integer icolor
 
-	integer icol
-	common /colgry/ icol
+	integer icol,iauto
+	common /colgry/ icol,iauto
 	save /colgry/
 
 	icolor = icol
@@ -390,12 +390,45 @@ c sets color table to be used
 
 	integer icolor
 
-	integer icol
-	common /colgry/ icol
+	integer icol,iauto
+	common /colgry/ icol,iauto
 	save /colgry/
 
 	icol = icolor
 	call qsetc(0.) 		!try if color table exists
+
+	end
+
+c*****************************************************************
+
+	subroutine set_auto_color_table
+
+c changes to automatic (default) color table (-1) and saves old color table
+
+	implicit none
+
+	integer icol,iauto
+	common /colgry/ icol,iauto
+	save /colgry/
+
+	iauto = icol
+	icol = -1
+
+	end
+
+c*****************************************************************
+
+	subroutine reset_auto_color_table
+
+c changes back to old (saved) color table
+
+	implicit none
+
+	integer icol,iauto
+	common /colgry/ icol,iauto
+	save /colgry/
+
+	icol = iauto
 
 	end
 
@@ -417,8 +450,8 @@ c changes color using the actual color table
 
 	real color
 
-	integer icol
-	common /colgry/ icol
+	integer icol,iauto
+	common /colgry/ icol,iauto
 	save /colgry/
 
 	if( icol .eq. -1 ) then
