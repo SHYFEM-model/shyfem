@@ -449,7 +449,12 @@ c-------------------------------------------------------------
      +          ,nlvdi,nlv
      +               )
 
-	  call assert_min_max_property(cnv,saux,sbconz,gradxv,gradyv,eps)
+c	  ------------------------------------------
+c	  the next call can be uncommented after evaporation 
+c	  is not a treated as a point but a distributed source
+c	  ------------------------------------------
+
+	  !call assert_min_max_property(cnv,saux,sbconz,gradxv,gradyv,eps)
 
           call bndo_setbc(it,what,nlvdi,cnv,rcv,uprv,vprv)
 
