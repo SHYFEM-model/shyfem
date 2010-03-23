@@ -12,6 +12,7 @@ c 19.11.2008    ggu     new routine coltst()
 c 09.01.2009    ggu     some re-formatting
 c 09.01.2009    ggu     deleted setcol(), new make_single_isolines()
 c 23.02.2010    ggu     new set_default_color_table(), renamed qchsc()
+c 23.03.2010    ggu     make it easier to change between color tables
 c
 c************************************************************
 

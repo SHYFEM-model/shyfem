@@ -650,8 +650,7 @@ c position of colorbar on plot (colorbar is a little smaller than box)
 
 c plot single boxes - dxc/dyc are width/height of single color box
 
-	call get_color_table(icsave)
-	call set_color_table(-1)
+	call set_auto_color_table
 
 	xlow = x0
 	ylow = y0
@@ -678,7 +677,7 @@ c plot single boxes - dxc/dyc are width/height of single color box
 	  end if
 	end do
 
-	call set_color_table(icsave)
+	call reset_auto_color_table
 
 c write legend
 
