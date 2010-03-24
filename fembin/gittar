@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if [ $# -ne 1 ]; then
+  echo "Usage: gittar vers"
+  exit 1
+fi
+
+name=shyfem
+
+vers=`echo $1 | sed -e s/^v//`
+tag=v$vers
+prefix=$name-$vers/
+tarfile=$name-$vers.tar.gz
+
+echo "vers=$vers  tag=$tag  prefix=$prefix  tarfile=$tarfile"
+
+git archive --format=tar --prefix=$prefix $tag | gzip > $tarfile
+

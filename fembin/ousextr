@@ -1,0 +1,64 @@
+#!/bin/sh
+
+Usage()
+{
+  echo "ousextr [-h|-help] {-nodes|-records} data"
+  echo "    -nodes      extract nodes given in data"
+  echo "    -records    extract records given in data"
+  echo "    data        file containing node/record numbers (one on each line)"
+  echo "    either -nodes, -records must be specified"
+  exit 0
+}
+
+#-------------------------------------------------- options
+
+if [ $# -eq 0 ]; then
+  Usage
+elif [ $1 = "-h" -o $1 = "-help" ]; then
+  Usage
+fi
+
+if [ $1 = "-nodes" ]; then
+  echo "*** -nodes: feature not yet implemented... aborting"
+  exit 1
+  what=nodes
+elif [ $1 = "-records" ]; then
+  what=records
+else
+  Usage
+fi
+
+shift
+
+if [ $# -eq 0 ]; then
+  Usage
+fi
+
+datafile=$1
+femdir=$HOME/fem
+bindir=$femdir/fem3d
+tmpfile=extr.tmp
+
+if [ ! -f $datafile ]; then
+  echo "*** datafile $datafile is not existing ... aborting"
+  exit 1
+fi
+
+#-------------------------------------------------- prepare input file
+
+if [ $what = "nodes" ]; then
+  echo ""  > $tmpfile
+  echo "" >> $tmpfile
+  cat $datafile >> $tmpfile
+  echo "0" >> $tmpfile
+
+  $bindir/ousextr_nodes < $tmpfile
+else
+  echo ""  > $tmpfile
+  cat $datafile >> $tmpfile
+  echo "0" >> $tmpfile
+
+  $bindir/ousextr_records < $tmpfile
+fi
+
+#-------------------------------------------------- run programs
