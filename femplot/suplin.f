@@ -190,7 +190,7 @@ c--------------------------------------------------------------------
 	  if( ivert .eq. 1 ) y2 = -ltot 
 	  if( ivert .eq. 2 ) y2 = -hlog(htot,rd)
 	  call qgray(0.5)
-	  call qrfill(x1,y1,x2,y2)
+	  call qrfill(x1,y1,x2,y2)	!land (bottom)
 	  htop = 0.
 	  do l=1,ltot
 	    hbot = hlv(l)
@@ -362,14 +362,17 @@ c************************************************************************
 	include 'color.h'
 
 	logical bfirst
+	integer icsave
 	real xm,ym,vm
 	real x(3),y(3),f(3)
 
-	bfirst = .false.
+	bfirst = .false.	!what is this?
 
 	xm = (x1+x2)/2.
 	ym = (y1+y2)/2.
 	vm = (v1(2)+v2(2))/2.
+
+	call set_auto_color_table
 
 	if( bfirst ) then
 
@@ -400,6 +403,8 @@ c************************************************************************
 	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
 
 	end if
+
+	call reset_auto_color_table
 
 	end
 

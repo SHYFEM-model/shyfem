@@ -79,6 +79,7 @@ SPECIAL =	Makefile \
 		ACTUAL LOG
 
 NOSEXTR = nosextr_nodes nosextr_gis nosextr_records nosextr_custom
+OUSEXTR = ousextr_records 
 
 EXES	= ht hp vp \
 	  ousinf whdf whdfs \
@@ -88,9 +89,9 @@ EXES	= ht hp vp \
 	  splitext outintp volinf extinf bastreat basbathy baschk \
 	  nosdiff nostransf mkgeom lagint splitflx \
 	  laplap lapwin nosinit ousintp nosexport \
-	  bascomp ousextr rstinf nosresidence ousaver ousvdiff \
+	  bascomp rstinf nosresidence ousaver ousvdiff \
 	  lgrelab lgrinf qflux_test bedload scal_intp \
-	  $(NOSEXTR) map_influence
+	  $(NOSEXTR) $(OUSEXTR) map_influence
 
 MAKEDEPEND = $(FEMBIN)/mkdp.pl
 
@@ -230,7 +231,7 @@ main:	param ht vp
 info:	param ousinf flxinf volinf basinf nosinf wininf extinf
 util:	param nossplit splitext ousinf splitflx laplap lapwin \
 	nosinit bastreat basbathy scal_intp nosresidence rstinf \
-	$(NOSEXTR)
+	$(NOSEXTR) $(OUSEXTR)
 
 #--------------------------------------------- EXES
 
@@ -310,8 +311,8 @@ bascomp:  bascomp.o subgeo.o $(OUTOBJS)
 ousinf:  ousinf.o subous.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subous.o $(OUTOBJS) -o $@
 
-ousextr:  ousextr.o subous.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subous.o $(OUTOBJS) -o $@
+#ousextr:  ousextr.o subous.o $(OUTOBJS) 
+#	$(LINKER) $(LFLAGS) $@.o subous.o $(OUTOBJS) -o $@
 
 ousintp:  ousintp.o subous.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subous.o $(OUTOBJS) -o $@
@@ -331,7 +332,12 @@ concinf:  concinf.o subnos.o $(OUTOBJS)
 nosinf2:  nosinf2.o subnos.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
 
-.PHONY: nosextr
+.PHONY: nosextr ousextr
+
+ousextr: $(OUSEXTR)
+
+ousextr_records:  ousextr_records.o subous.o $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o subous.o $(OUTOBJS) -o $@
 
 nosextr: $(NOSEXTR)
 
@@ -628,7 +634,8 @@ nosmaniq.o: param.h
 nosresidence.o: param.h ev.h basin.h evmain.h
 nossplit.o: param.h
 ousaver.o: param.h
-ousextr.o: param.h
+ousextr_nodes.o: param.h
+ousextr_records.o: param.h
 ousinf.o: param.h evmain.h
 ousintp.o: param.h
 ousvdiff.o: param.h

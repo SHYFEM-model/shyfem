@@ -7,7 +7,7 @@ Usage()
   echo "    -records    extract records given in data"
   echo "    -gis        extract records given in data in gis format"
   echo "    data        file containing node/record numbers (one on each line)"
-  echo "    either -nodes, -reocrds, -gis must be specified"
+  echo "    either -nodes, -records, -gis must be specified"
   exit 0
 }
 
