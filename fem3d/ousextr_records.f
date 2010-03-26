@@ -8,6 +8,7 @@ c
 c 02.09.2003	ggu	adapted to new OUS format
 c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
 c 23.03.2010	ggu	extracts reocrds
+c 26.03.2010	ggu	bug fix: set nkn and nel
 c
 c***************************************************************
 
@@ -119,6 +120,8 @@ c--------------------------------------------------------------------
         write(6,*) ' nlv          : ',nlvous
         write(6,*)
 
+	nkn=nknous
+	nel=nelous
 	nlv=nlvous
 	call dimous(nin,nkndim,neldim,nlvdim)
 

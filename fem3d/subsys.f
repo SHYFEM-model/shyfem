@@ -87,6 +87,7 @@ c 09.10.2009	ggu	new parameter sclvel
 c 13.10.2009	ggu	documentation is $sect, new hvmax, lvmax
 c 22.02.2010	ggu	new parameter itdrag
 c 23.02.2010	ggu	new parameter regdst
+c 26.03.2010	ggu	new parameters for arrows in section plot
 c
 c************************************************************************
 
@@ -1529,6 +1530,34 @@ c |vtitle|		Title for end point of the line. (No default)
 	call addfnm('ytitle','Depth [m]')	!title for y-axis
 	call addfnm('ltitle','')		!title for left point
 	call addfnm('rtitle','')		!title for right point
+
+c When plotting velocities the normal velocitiy accross the section is
+c used for the color plot. In order to visualize also the veloctiy
+c tangent to the section arrwos are used. The next parameters deal with
+c the scaling od these arrows.
+
+c |avscal|	This parameter defines the horizontal scale for the 
+c		velocity vector. It defines the length scale 
+c		in units of x-coordinates of the vertical section so
+c		that a velocity of 1 m/s fits comfortably
+c		into the plot. If 0 the scale is computed automatically.
+c		Please note that in this case the velocities will be
+c		scaled differently for every plot. Setting |avscal| 
+c		therefore guarantees that the velocity arrows will
+c		be comparable between plots. (Default 0)
+c |rvscal|	Extra factor that multiplies the scale factor. If your
+c		automatic scale gives you vectors which are too small, you
+c		can use |rvscal| to increase them. (Default 1)
+c |svtip|	The (relative) tip size of the arrow. It specifies how
+c		big the arrow will be drawn. A value of 0 only draws the
+c		arrow line without tip, and a negative value inhibits
+c		drawing arrows at all. (Default 0.3)
+
+	call addpar('avscal',0.)
+	call addpar('rvscal',1.)
+	call addpar('svtip',0.3)
+
+cc still to do: plot vector legend
 
 c DOCS	END
 

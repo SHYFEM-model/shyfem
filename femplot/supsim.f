@@ -52,6 +52,7 @@ c 07.05.2009	ggu	bug fix for grid and color plotting (plobas)
 c 14.09.2009	ggu	section plot for scalars in plonos
 c 09.10.2009	ggu	new routine plopres() for atmos. pressure
 c 13.10.2009	ggu	section plot for velocities in plosim
+c 26.03.2010	ggu	section plot for velocities in plosim adapted
 c
 c**********************************************************
 c**********************************************************
@@ -108,7 +109,7 @@ c 3D concentrations
 	      call ploval(nkn,parray,line)
             else
 	      write(6,*) '..........vertical plotting'
-              call plot_sect(p3)
+              call plot_sect(.false.,p3)
             end if
 	  end if
 	end do
@@ -349,9 +350,8 @@ c**********************************************************
 	      call plovel(ivel)
             else
 	      write(6,*) '..........vertical plotting'
-	      write(6,*) '..........arrows not yet ready...'
 	      call prepare_vel(p3)
-              call plot_sect(p3)
+              call plot_sect(.true.,p3)
             end if
 	  end if
 	end do

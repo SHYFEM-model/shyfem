@@ -8,10 +8,11 @@ c
 c 14.09.2009    ggu     routines written from scratch
 c 09.10.2009    ggu     vertical plot nearly ready
 c 14.10.2009    ggu     vertical plot finished (scalar and velocities)
+c 26.03.2010    ggu     vertical plot for velocity finished 
 c
 c************************************************************************
 
-	subroutine plot_sect(sv)
+	subroutine plot_sect(bvel,sv)
 
 c plots section
 
@@ -19,6 +20,7 @@ c plots section
 
         include 'param.h'
 
+	logical bvel			!plot velocities
 	real sv(nlvdim,nkndim)		!scalar to be plotted
 
 	integer nldim
@@ -35,7 +37,15 @@ c plots section
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
-	real val(0:2*nlvdim,nldim)
+c elems(1) is not used, etc..
+
+	real val(0:2*nlvdim,nldim)	!scalar value along line
+	real vel(3,0:2*nlvdim,nldim)	!projected velocities along line
+	integer nodes(nldim)		!nodes along line
+	integer elems(nldim)		!elements along line
+	integer lelems(nldim)		!levels in element
+	real helems(nldim)		!depth in elements
+	real dxy(2,nldim)		!direction of projection line
 
 	character*80 file
 	character*80 string,line
@@ -48,25 +58,31 @@ c plots section
 	real d,dd,dx,dy,htop,htot,hbot
 	real x0,y0,x1,x2,y1,y2
 	real vmin,vmax
+	real vhmin,vhmax
 	real rrl,rrd,x,y,xtick,ytick,ylast,rdist,rmax
 	real xcm,ycm
 	real fact
 	integer ndec,nctick
 
-	character*80 vtitle,xtitle,ytitle,rtitle,ltitle
+	real x0s,y0s,x1s,y1s
+	real xmid,hmid,umid,wmid
+	real scale
+
+	integer n
+	save n,nodes,elems,helems,lelems,dxy
+
+	integer ll,lvmax
+	save ll,lvmax
+	real rl,rd,hvmax
+	save rl,rd,hvmax
 	logical bgrid
 	integer ivert
-	integer n
-	integer nodes(nldim)
-	integer elems(nldim)
-	integer lelems(nldim)
-	real helems(nldim)
-	integer ll,lvmax
-	real rl,rd,hvmax
-	real x0s,y0s,x1s,y1s
-	save n,nodes,elems,helems,lelems,rl,rd,ll
-	save bgrid,ivert,hvmax,lvmax
+	save bgrid,ivert
+
+	character*80 vtitle,xtitle,ytitle,ltitle,rtitle
 	save vtitle,xtitle,ytitle,ltitle,rtitle
+	real ascale,rscale,stip
+	save ascale,rscale,stip
 
 	logical inboxdim_noabs
 	integer gettime
@@ -87,6 +103,7 @@ c----------------------------------------------------------------
 	  call line_read_nodes(file,nldim,n,nodes)
 	  call line_find_elements(n,nodes,hev,hlv,elems,helems,lelems)
 	  call line_find_min_max(n,nodes,helems,lelems,xgv,ygv,rl,rd,ll)
+	  call make_proj_dir(n,nodes,xgv,ygv,dxy)
 
 	  bgrid = nint(getpar('ivgrid')) .ne. 0
 	  ivert = nint(getpar('ivert'))
@@ -100,6 +117,10 @@ c----------------------------------------------------------------
 	  call getfnm('ytitle',ytitle)
 	  call getfnm('ltitle',ltitle)
 	  call getfnm('rtitle',rtitle)
+
+	  ascale = getpar('avscal')	!absolute scale
+	  rscale = getpar('rvscal')	!relative scale
+	  stip = getpar('svtip')	!arrow tip size
 	end if
 
 	icall = icall + 1
@@ -116,7 +137,11 @@ c----------------------------------------------------------------
 
 	write(6,*) 'plotting section: ',it,n,rl,rd
 
-	call line_insert_scalars(n,nodes,ilhkv,nlvdim,sv,val,vmin,vmax)
+	if( bvel ) then
+	  call proj_velox(n,nodes,ilhkv,dxy,vel,val,vmin,vmax,vhmin,vhmax)
+	else
+	  call line_insert_scalars(n,nodes,ilhkv,nlvdim,sv,val,vmin,vmax)
+	end if
 	call colauto(vmin,vmax)
 	write(6,*) 'min/max on line: ',vmin,vmax
 
@@ -203,8 +228,61 @@ c--------------------------------------------------------------------
 	      hbot = hlog(hbot,rd)
 	    end if
 	    call plot_rect(x1,-htop,x2,-hbot,val(ltop,i-1),val(ltop,i))
-	    call qgray(0.5)
-	    if( bgrid ) call pbox(x1,-htop,x2,-hbot)
+	    htop = hbot
+	  end do
+	  d = d + dd
+	end do
+
+c--------------------------------------------------------------------
+c plot vector
+c--------------------------------------------------------------------
+
+	vhmax = max(abs(vhmin),abs(vhmax))
+	scale = rscale*rl/(2.*vhmax*(n-1))
+	if( ascale .gt. 0. ) scale = ascale * rscale / 2.
+	write(6,*) 'arrow scale: ',vhmax,ascale,rscale,scale
+
+	d = 0.
+	do i=2,n
+	  k1 = nodes(i-1)
+	  k2 = nodes(i)
+	  htot = helems(i)
+	  ltot = lelems(i)
+	  htot = min(htot,hvmax)
+	  ltot = min(ltot,lvmax)
+	  ie = elems(i)
+	  dx = xgv(k2) - xgv(k1)
+	  dy = ygv(k2) - ygv(k1)
+	  dd = sqrt( dx**2 + dy**2 )
+	  x1 = d
+	  x2 = d + dd
+	  y1 = yrmin
+	  y2 = -htot
+	  if( ivert .eq. 1 ) y2 = -ltot 
+	  if( ivert .eq. 2 ) y2 = -hlog(htot,rd)
+	  htop = 0.
+	  do l=1,ltot
+	    hbot = hlv(l)
+	    ltop = 2*l - 2
+	    if( hbot .gt. htot ) hbot = htot
+	    if( ivert .eq. 1 ) then
+	      htop = l-1
+	      hbot = l
+	    else if( ivert .eq. 2 ) then
+	      hbot = hlog(hbot,rd)
+	    end if
+	    if( bvel .and. stip .ge. 0. ) then
+	      hmid = 0.5*(htop+hbot)
+	      xmid = 0.5*(x1+x2)
+	      umid = 0.5*(vel(2,ltop+1,i-1)+vel(2,ltop+1,i))
+	      wmid = 0.5*(vel(3,ltop+1,i-1)+vel(3,ltop+1,i))
+	      call qgray(0.0)
+	      call plot_arrow(xmid,-hmid,umid,wmid,scale,stip)
+	    end if
+	    if( bgrid ) then
+	      call qgray(0.5)
+	      call pbox(x1,-htop,x2,-hbot)
+	    end if
 	    htop = hbot
 	  end do
 	  d = d + dd
@@ -366,7 +444,7 @@ c************************************************************************
 	real xm,ym,vm
 	real x(3),y(3),f(3)
 
-	bfirst = .false.	!what is this?
+	bfirst = .false.	!what is this? -> old way: no middle point
 
 	xm = (x1+x2)/2.
 	ym = (y1+y2)/2.
@@ -387,6 +465,8 @@ c************************************************************************
 	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
 
 	else
+
+	!first plot upper triangles, than lower ones
 
 	call setxyf(x1,x1,xm,y1,ym,ym,v1(1),v1(2),vm,x,y,f)
 	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
@@ -425,6 +505,145 @@ c************************************************************************
 
 c************************************************************************
 
+	subroutine plot_arrow(x,y,u,w,scale,stip)
+
+	implicit none
+
+	real x,y,u,w,scale,stip
+
+	real uu,ww,s
+
+	uu = x + u*scale
+	ww = y + w*scale
+	s = stip
+
+	call fcmpfeil(x,y,uu,ww,s)
+
+	end
+
+c************************************************************************
+
+	subroutine make_proj_dir(n,nodes,xgv,ygv,dxy)
+
+c computes projection line for nodes
+
+	implicit none
+
+	integer n
+	integer nodes(n)
+	real xgv(1), ygv(1)
+	real dxy(2,n)			!direction of line (for projection)
+
+	integer i,i1,i2,k1,k2
+	real dx,dy,dd
+
+	do i=1,n
+	  i1 = max(1,i-1)
+	  i2 = min(n,i+1)
+	  k1 = nodes(i1)
+	  k2 = nodes(i2)
+	  dx = xgv(k2) - xgv(k1)
+	  dy = ygv(k2) - ygv(k1)
+	  dd = sqrt( dx*dx + dy*dy )
+	  dxy(1,i) = dx/dd
+	  dxy(2,i) = dy/dd
+	end do
+
+	end
+
+c************************************************************************
+
+	subroutine proj_velox(n,nodes,ilhkv,dxy,vel,val
+     +				,vmin,vmax,vhmin,vhmax)
+
+	implicit none
+
+	include 'param.h'
+
+	integer n
+	integer nodes(n)
+	integer ilhkv(1)		!number of layers in node
+	real dxy(2,n)			!direction of line (for projection)
+	real vel(3,0:2*nlvdim,n)	!projected velocities along line
+	real val(0:2*nlvdim,n)
+	real vmin,vmax
+	real vhmin,vhmax
+
+        real uprv(nlvdim,nkndim)
+        common /uprv/uprv
+        real vprv(nlvdim,nkndim)
+        common /vprv/vprv
+        real wprv(nlvdim,nkndim)
+        common /wprv/wprv
+
+	integer i,k,l,lmax,llayer
+	real ut,un,w
+
+	do i=1,n
+	  k = nodes(i)
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+	    llayer = 2*l-1
+	    ut =  dxy(1,i)*uprv(l,k) + dxy(2,i)*vprv(l,k)	!tangent
+	    un = -dxy(2,i)*uprv(l,k) + dxy(1,i)*vprv(l,k)	!normal
+	    w  =  wprv(l,k)
+	    val(llayer,i) = un
+	    vel(1,llayer,i) = un
+	    vel(2,llayer,i) = ut
+	    vel(3,llayer,i) = w
+	  end do
+	  call insert_between_layers(3,2*lmax,vel(1,0,i))
+	  call insert_between_layers(1,2*lmax,val(0,i))
+	end do
+
+	i=5
+	k = nodes(i)
+	lmax = ilhkv(k)
+	write(66,*) (vel(1,l,i),l=0,2*lmax)
+	write(66,*) (vel(2,l,i),l=0,2*lmax)
+	write(66,*) (vel(3,l,i),l=0,2*lmax)
+	write(66,*) '---- proj_velox ---------'
+
+	vmin = val(0,1)
+	vmax = val(0,1)
+	vhmin = vel(2,0,1)
+	vhmax = vel(2,0,1)
+	do i=1,n
+	  k = nodes(i)
+	  lmax = ilhkv(k)
+	  do l=0,2*lmax
+	    vmin = min(vmin,val(l,i))
+	    vmax = max(vmax,val(l,i))
+	    vhmin = min(vhmin,vel(2,l,i))
+	    vhmax = max(vhmax,vel(2,l,i))
+	  end do
+	end do
+
+	end
+
+c************************************************************************
+
+	subroutine insert_between_layers(nd,nl,vals)
+
+	implicit none
+
+	integer nd,nl
+	real vals(nd,0:2*nl)
+
+	integer i,l
+
+	do i=1,nd
+	  vals(i,0) = vals(i,1)
+	  do l=2,2*(nl-1),2
+	    vals(i,l) = 0.5 * (vals(i,l-1)+vals(i,l+1))
+	  end do
+	  vals(i,2*nl) = vals(i,2*nl-1)
+	end do
+
+	end
+
+c************************************************************************
+
 	subroutine line_insert_scalars(n,nodes,ilhkv,nlvdim,sv
      +					,values,vmin,vmax)
 
@@ -445,9 +664,6 @@ c inserts scalar values into matrix section
 
 	vmin = 1.e+30
 	vmax = -1.e+30
-
-	!write(6,*) 'line_insert_scalars'
-	!write(6,*) n,nlvdim
 
 	do i=1,n
 	  k = nodes(i)
@@ -514,6 +730,8 @@ c************************************************************************
      +					,elems,helems,lelems)
 
 c finds elements along line given by nodes
+c
+c deepest element is chosen
 
 	implicit none
 

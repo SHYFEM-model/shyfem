@@ -2,7 +2,11 @@ c
 c $Id: supver.f,v 1.4 2009-04-20 08:13:29 georg Exp $
 c
 c Vertical velocities
-
+c
+c revision log :
+c
+c 26.03.2010    ggu     HACK for bwater -> compute always
+c
 c******************************************************************
 
         subroutine vertical
@@ -68,6 +72,7 @@ c common
 c local
         integer k,ie,ii,kk,l
         integer ilevel
+	integer inwater
         real aj,wbot,wtop,ff
 
         if(nlvdim.ne.nlvdi) then
@@ -88,8 +93,11 @@ c compute difference of velocities for each layer
 c
 c f(ii) > 0 ==> flux into node ii
 
+	inwater = 0
+
         do ie=1,nel
-         if( bwater(ie) ) then           !FIXME
+         !if( bwater(ie) ) then           !FIXME	!not working
+	  inwater = inwater + 1
           aj=4.*ev(10,ie)               !area of triangle / 3
           ilevel = ilhv(ie)
           do l=1,ilevel
@@ -100,8 +108,10 @@ c f(ii) > 0 ==> flux into node ii
                 wauxv(l,kk)=wauxv(l,kk)+aj
             end do
           end do
-         end if
+         !end if
         end do
+
+	!write(6,*) '******** inwater = ',inwater
 
 c from vel difference get absolute velocity (w_bottom = 0)
 c       -> wlnv(nlv,k) is already in place !

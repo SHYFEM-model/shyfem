@@ -2,11 +2,13 @@ c
 c $Id: suputi.f,v 1.5 2004/03/09 17:28:09 georg Exp $
 c
 c general utilities for plot routines
+c
 c revision log :
 c
 c 16.10.2001    ggu     new routine fpfeil()
 c 03.09.2003    ggu     bug fix XBXT in fpfeil
 c 05.10.2003    ggu     bug fix S_IS_0 in pfeil
+c 26.03.2010    ggu     new routine fcmpfeil for distorted scales
 c
 c**************************************************
 
@@ -144,6 +146,108 @@ c s             size of tip (in fraction, 1 -> whole length)
         !call qplot(x1,y1)
         !call qplot(x2,y2)
         !call qplot(xt,yt)
+
+        end
+
+c**************************************************
+
+        subroutine fcmpfeil(xb,yb,xt,yt,s)
+
+c draws full arrow - adjusts for distortion
+c
+c xb,yb         coordinates of arrow base
+c xt,yt         coordinates of arrow tip
+c s             size of tip (in fraction, 1 -> whole length)
+c		... 0: only line, no arrow tip, <0: do not plot anything
+c		...good value is 0.3
+
+        implicit none
+
+        real xb,yb,xt,yt
+        real s
+
+        real cos,sin
+        parameter (cos=.866025,sin=.5)  !cos(30), sin(30)
+
+        real u,v
+        real d,dd,rl,ddd
+        real xs,ys,xn,yn,xa,ya
+        real x1,y1,x2,y2
+        real x3(3),y3(3)
+	real xcm,ycm
+
+c	---------------------------------------------
+c	check if we have to plot anything
+c	---------------------------------------------
+
+        if( xb .eq. xt .and. yb .eq. yt ) return	!bug fix XBXT
+	if( d .lt. 0 ) return				!negative -> no arrow
+
+c	---------------------------------------------
+c	first only line is plotted
+c	---------------------------------------------
+
+        u = xt - xb
+        v = yt - yb
+
+        d=s
+	xs = xt - d*u
+	ys = yt - d*v
+
+        call qmove(xb,yb)
+        call qplot(xs,ys)
+
+	if( d .le. 0 ) return
+
+c	---------------------------------------------
+c	we still have to plot the tip 
+c	(x1,y1) and (x2,y2) are lateral coords of tip
+c	---------------------------------------------
+
+	call qcm(xcm,ycm)
+	dd = xcm/ycm
+
+c	---------------------------------------------
+c	do all computations in plotting coordinates
+c	---------------------------------------------
+
+	v = v * dd	!account for distortion
+
+	xn = -v		!normal vector
+	yn = u
+
+	rl = 0.5 * d * sqrt( (u*u+v*v) / (xn*xn+yn*yn) )
+
+	x1 = rl * xn
+	y1 = rl * yn
+	x2 = rl * xn
+	y2 = rl * yn
+
+c	---------------------------------------------
+c	now get final points in world coordinates
+c	---------------------------------------------
+
+	x1 = xs + x1
+	y1 = ys + y1/dd
+	x2 = xs - x2
+	y2 = ys - y2/dd
+
+c	---------------------------------------------
+c	prepare and plot tip
+c	---------------------------------------------
+
+        x3(1) = xt
+        y3(1) = yt
+        x3(2) = x1
+        y3(2) = y1
+        x3(3) = x2
+        y3(3) = y2
+
+        call qafill(3,x3,y3)
+
+c	---------------------------------------------
+c	end of routine
+c	---------------------------------------------
 
         end
 
