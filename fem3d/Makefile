@@ -113,7 +113,8 @@ NEWOBJS = \
 
 SOBJS   = \
 	  subnsv.o subsst.o \
-          subcmv.o subdry.o subpar.o subssv.o \
+          subcmv.o subdry.o subssv.o \
+          $(PARMOD) \
           sublst.o subsys.o \
           subcst.o submir.o subros.o \
           subn11.o subsrt.o \
@@ -121,7 +122,7 @@ SOBJS   = \
           subbas.o subnev.o subdim.o \
           subnls.o subsse.o subwat.o \
           subfil.o subn35.o subout.o subous.o subssg.o \
-          subfnm.o subnsh.o subssm.o subzzz.o \
+          subnsh.o subssm.o subzzz.o \
           subnsu.o subsss.o subscn.o subres.o \
           subapn.o subnsa.o \
           subgrd.o subreg.o \
@@ -142,7 +143,7 @@ HTOBJS = \
 	subbas.o subdim.o subnev.o \
 	subnsu.o subn35.o subdep.o \
 	subdef.o subfil.o subnls.o \
-	subpar.o subfnm.o \
+	$(PARMOD) \
 	subsss.o subscn.o subssv.o subsse.o subssm.o \
 	submir.o \
 	subext.o subexta.o \
@@ -177,14 +178,14 @@ VPOBJS = \
         subros.o subcmv.o \
         subdef.o subbas.o subdim.o \
         subfil.o \
-        subpar.o subfnm.o \
+        $(PARMOD) \
         subsrt.o subgrd.o \
         subsss.o subscn.o subnsu.o \
 	subapn.o subnsa.o subnls.o subsys.o subdum.o subbnd.o
 
 # objects for output routines
 
-OUTOBJS = subpar.o subfnm.o subnls.o subsss.o subscn.o \
+OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subfil.o subdef.o subnsu.o subssv.o \
 	  subbas.o subsys.o subdim.o \
 	  subapn.o subnsa.o subdum.o \
@@ -212,6 +213,9 @@ QFLUX_TEST = subqfxf.o \
 	subqfxm1.o subqfxm2.o subqfxm3.o \
 	subqfxu1.o subqfxu2.o subqfxu3.o subqfxu4.o \
 	subfil.o
+
+PARMOD = subpar1.o
+PARMOD = subpar.o subfnm.o
 
 # objects for interpolation
 
@@ -689,4 +693,5 @@ weutro.o: donata.h weutro.h
 weutro_sedim.o: donata.h weutro.h
 wininf.o: param.h
 zinit.o: param.h
+subpar1.o: subpar.h
 

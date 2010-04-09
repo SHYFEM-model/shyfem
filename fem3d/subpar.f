@@ -520,11 +520,13 @@ c intpar        1 if name is integer, 0 if not
 
 c*****************************************************
 
-	subroutine pripar
+	subroutine pripar(iunit)
 
 c prints parameter values
 
 	implicit none
+
+	integer iunit
 
 	logical bflag
 	character*80 line	!BUGFIX (was 79)
@@ -570,16 +572,18 @@ c prints parameter values
 		end if
 	  end if
 	  if(imod.eq.4) then
-		write(6,*) line(1:79)
+		write(iunit,*) line(1:79)
 		line=' '
 		imod=0
 	  end if
     1     continue
 	end do
 
-	if(imod.ne.4) write(6,*) line
+	if(imod.ne.4) write(iunit,*) line
 
 	end
 
 c**********************************************************
 
+	subroutine check_parameter_values
+	end

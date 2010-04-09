@@ -386,7 +386,7 @@ c
 	lparam=.true.
 c
 	do while(lparam)
-		call prifnm
+		call prifnm(6)
 c
 		write(6,*) 'Enter name of string :'
 		read(5,'(a)') name
@@ -422,11 +422,13 @@ c
 
 c*****************************************************
 
-	subroutine prifnm
+	subroutine prifnm(iunit)
 
 c prints parameter values
 
 	implicit none
+
+	integer iunit
 
 c common
 c-------------------------------------------
@@ -449,7 +451,7 @@ c function
 	    nlen=manfnm(name,text,0,'sect')	!nlen is dummy
 	    nlen=ichanm(text)
 	    if(nlen.le.0) nlen=1
-	    write(6,2345) i,nlen,name,auxsec,text(1:nlen)
+	    write(iunit,2345) i,nlen,name,auxsec,text(1:nlen)
           end if
 	end do
 

@@ -274,6 +274,7 @@ c puts parameter dvalue in name
 
 	i = check_entry_par(name,' ',1)
 
+	write(15,*) 'putpar: ',name,'  ',i,dvalue
 	valpar(i) = dvalue
 
 	end
@@ -350,6 +351,9 @@ c adds text into parameter name
 
 	i = add_entry_par(name,' ',3)
 	incha = incha + 1
+	if( incha .gt. nichdi ) then
+	  stop 'error stop addfnm: dimension error in nichdi'
+	end if
 	valpar(i) = incha
 	ip_chapar(1,incha) = 0
 	ip_chapar(2,incha) = 0
@@ -567,7 +571,7 @@ c**************************************************************
 c**************************************************************
 c**************************************************************
 
-	subroutine pripar
+	subroutine pripar(iunit)
 
 c prints parameter values
 
@@ -575,11 +579,13 @@ c prints parameter values
 
 	include 'subpar.h'
 
+	integer iunit
+
 	logical bflag
 	character*80 line	!BUGFIX (was 79)
 	character*6 name
 
-	integer npara,imod,i
+	integer npara,imod,i,itype
 	integer ianf,iend
 	integer itspar,infpar,intpar
 	real getpar
@@ -598,6 +604,8 @@ c prints parameter values
 	do i=1,npara
 	  name = nampar(i)
 	  value = valpar(i)
+	  itype = itypar(i)
+	  if(itype.ne.1) goto 1
 	  if(bflag.and.value.eq.flag) goto 1
 	  imod=imod+1
 	  ianf=20*(imod-1)+1
@@ -610,14 +618,14 @@ c prints parameter values
 	    write(line(ianf:iend),2346) name,' =',value,'  '
 	  end if
 	  if(imod.eq.4) then
-		write(6,*) line(1:79)
+		write(iunit,*) line(1:79)
 		line=' '
 		imod=0
 	  end if
     1     continue
 	end do
 
-	if(imod.ne.4) write(6,*) line
+	if(imod.ne.4) write(iunit,*) line
 
 	return
  2346   format(a6,a2,e10.2,a2)
@@ -626,18 +634,114 @@ c prints parameter values
 
 c**********************************************************
 
-	function ichanm(text)
-	integer ichanm
-	character*(*) text
-	ichanm=0
+        subroutine prifnm(iunit)
+
+c prints parameter values
+
+        implicit none
+
+        integer iunit
+
+	include 'subpar.h'
+
+        character*80 text
+        character*6 name
+        integer i,j,nlen,itype
+
+	integer check_entry_par
+        integer ichanm
+
+        do i=1,nentry
+	  name = nampar(i)
+	  itype = itypar(i)
+          if(itype.eq.3) then
+	    j = check_entry_par(name,' ',3)
+	    call copy_to_text(j,text)
+            nlen=max(1,ichanm(text))
+            write(iunit,2345) i,nlen,name,auxsec,text(1:nlen)
+          end if
+        end do
+
+        return
+ 2345   format(1x,2i4,2(1x,a6,1x),3x,a)
+        end
+ 
+c**********************************************************
+
+	subroutine chkparam(iunit)
+
+	implicit none
+
+	include 'subpar.h'
+
+	integer iunit
+
+        character*80 text
+        character*6 name,sect
+        integer i,j,nlen,itype
+	real value
+
+        integer ichanm
+	integer check_entry_par
+
+        do i=1,nentry
+	  name = nampar(i)
+	  sect = secpar(i)
+	  value = valpar(i)
+	  itype = itypar(i)
+          if(itype.eq.1) then
+            write(iunit,2345) i,name,sect,itype,value
+          else if(itype.eq.3) then
+	    j = check_entry_par(name,' ',3)
+	    call copy_to_text(j,text)
+            nlen=max(1,ichanm(text))
+            write(iunit,2345) i,name,sect,itype,value,nlen,text(1:nlen)
+	  else
+            write(iunit,2345) i,name,sect,itype,value
+          end if
+        end do
+
+        return
+ 2345   format(1x,i4,2(1x,a6,1x),i4,e12.4,i4,1x,a)
+
 	end
 
-	subroutine test_par
+c**********************************************************
+
+	subroutine check_parameter_values
+
+	implicit none
+
+	include 'subpar.h'
+
+	integer iunit
+
+	iunit = 15
+
+	write(iunit,*) 'info on parameters: ',nentry
+
+	write(iunit,*) '--------------------------------'
+	call chkparam(iunit)
+	write(iunit,*) '--------------------------------'
+        call pripar(iunit)
+        call prifnm(iunit)
+
 	end
 
-	program main_test_par
-	call test_par
-	end
-
+c**********************************************************
+c
+c	function ichanm(text)
+c	integer ichanm
+c	character*(*) text
+c	ichanm=0
+c	end
+c
+c	subroutine test_par
+c	end
+c
+c	program main_test_par
+c	call test_par
+c	end
+c
 c**********************************************************
 

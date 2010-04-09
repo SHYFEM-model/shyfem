@@ -692,6 +692,14 @@ c see if 2D application
 
 c set hlvmin
 
+c============================================================
+c ilytyp: 
+c	  0=no adjustment  
+c	  1=adjust to full layers (change depth)
+c         2=adjust only if h<hlvmin (change depth)
+c         3=add to last layer (keep depth but change layer)
+c============================================================
+
 	hlvmin = getpar('hlvmin')		!min percentage of last layer
 	ilytyp = nint(getpar('ilytyp'))
 

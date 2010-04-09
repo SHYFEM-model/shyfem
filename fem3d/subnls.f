@@ -462,6 +462,7 @@ c reads next parameter in section and inserts value
    93	continue
 	write(6,*) 'no parameter with this name:'
 	write(6,*) name
+	call check_parameter_values
 	stop 'error stop : nrdpar'
    94	continue
 	write(6,*) 'parameter is in wrong section:'
@@ -471,8 +472,8 @@ c reads next parameter in section and inserts value
 	write(6,*) 'text:    ',text
 	call get_sect_of(name,sect)
 	write(6,*) 'section found: ',sect
-	if( iweich .ge. 3 ) call prifnm
-	if( iweich .le. 2 ) call pripar
+	if( iweich .ge. 3 ) call prifnm(6)
+	if( iweich .le. 2 ) call pripar(6)
 	stop 'error stop : nrdpar'
    98	continue
 	stop 'error stop : nrdpar (internal error (1))'

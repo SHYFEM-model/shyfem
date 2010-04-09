@@ -112,7 +112,7 @@ c writes output to terminal or log file
 	write(6,*) '     Values from parameter file :'
 	write(6,*)
 
-	call pripar
+	call pripar(6)
 
 	call prbnds		!prints boundary info
 

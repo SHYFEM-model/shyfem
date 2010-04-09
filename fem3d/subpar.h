@@ -9,7 +9,7 @@ c-------------------------------------------
 
 	parameter (nnamdi=200)
 	parameter (niardi=20)
-	parameter (nichdi=10)
+	parameter (nichdi=100)
 	parameter (narrdi=1000)
 	parameter (nchadi=1000)
 
@@ -18,6 +18,8 @@ c-------------------------------------------
 	character*6 nampar(nnamdi)      	!names of parameters
 	character*6 secpar(nnamdi)      	!section names
 	integer itypar(nnamdi)			!type of parameters
+
+c itypar:  1: numeric  2: numeric array  3: string
 
 	double precision valpar(nnamdi) 	!parameter values
 
@@ -30,9 +32,9 @@ c-------------------------------------------
 	common /d_par/valpar,arrpar
 	common /i_par/itypar,ip_arrpar,ip_chapar
 	common /c6_par/nampar,secpar
-	common /c_par/chapar
+	common /c1_par/chapar
 
-	save /d_par/, /i_par/, /c6_par/, /c_par/
+	save /d_par/, /i_par/, /c6_par/, /c1_par/
 
 c-------------------------------------------
 

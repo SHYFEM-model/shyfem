@@ -1,0 +1,14 @@
+#!/bin/sh
+
+basedir=~/fem/
+
+tagdir=.git/refs/tags
+
+cd $basedir/$tagdir
+
+for tag in `ls *`
+do
+  echo -n "$tag  "
+  cat $tag
+done
+

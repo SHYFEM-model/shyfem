@@ -21,6 +21,7 @@ c 23.03.2006    ggu     changed time step to real
 c 27.01.2009    ggu     diffset() deleted
 c 12.02.2010    ggu     diffweight() has new method -> idtype=0,1,2
 c 17.02.2010    ggu     bug fix in diffweight()
+c 08.04.2010    ggu     better error reporting in diffweight()
 c
 c*****************************************************************
 
@@ -165,6 +166,7 @@ c weights in main diagonal are positive => weights out of diag are negative
 	real bc_orig(3,3)
 	real bc_adj(3,3)
 	real bc(3,3)
+	real wacu_aux(3)
 	double precision wacu
 
 	real getpar
@@ -173,11 +175,12 @@ c-----------------------------------------------------------------
 c initialization
 c-----------------------------------------------------------------
 
-	idtype = 2	!0: original  1: adjust  2: new sym weights
+	idtype = 1	!0: original  1: adjust  2: new sym weights
 	idtype = nint(getpar('idtype'))	!delete after tests
         nchange = 0
 	fact = 2./3.
 	eps = 1.e-6
+	eps = 1.e-3
 	bdebug = .false.
 
         write(6,*) 'diffweight: computing weights'
@@ -278,11 +281,16 @@ c	  -----------------------------------------------------------------
 	      end if
 	      wdifhv(ii,iii,ie) = bc(ii,iii)
 	    end do
-	    if( wacu .gt. eps ) berror = .true.
+	    if( abs(wacu) .gt. eps ) berror = .true.
+	    wacu_aux(ii) = wacu
 	  end do
 
 	  !if( berror .and. idtype .ne. 0 ) then
 	  if( berror ) then
+	    write(6,*) 'diffweight: idtype = ',idtype
+	    write(6,*) '   ie (intern) = ',ie
+	    write(6,*) '   eps = ',eps
+	    write(6,*) '   wacu = ',wacu_aux
 	    do ii=1,3
 	      write(6,*) (bc(iii,ii),iii=1,3)
 	    end do

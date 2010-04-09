@@ -48,6 +48,7 @@ c 23.03.2009    ggu     more debug for vrerr, new routine check_node()
 c 02.04.2009    ggu     new routine check_elem()
 c 06.04.2009    ggu     new check_elems_around_node, check_nodes_in_elem
 c 26.02.2010    ggu     in test3d() write also meteo data
+c 08.04.2010    ggu     more info in checks (depth and area)
 c
 c*************************************************************
 
@@ -978,12 +979,20 @@ c writes debug information on node k
 	real difv(0:nlvdim,1)
 	common /difv/difv
 
+        real hdknv(nlvdim,1)
+        common /hdknv/hdknv
+        real hdkov(nlvdim,1)
+        common /hdkov/hdkov
+        real areakv(nlvdim,1)
+        common /areakv/areakv
+
 	integer iu
 	integer l,lmax,kk
 
 	integer ipext
 	real volnode
 
+	iu = 16
 	iu = 6
 	lmax = ilhkv(k)
 
@@ -992,6 +1001,9 @@ c writes debug information on node k
 	write(iu,*) 'lmax,inodv: ',lmax,inodv(k)
 	write(iu,*) 'xgv,ygv:    ',xgv(k),ygv(k)
 	write(iu,*) 'zov,znv:    ',zov(k),znv(k)
+	write(iu,*) 'hdkov:      ',(hdkov(l,k),l=1,lmax)
+	write(iu,*) 'hdknv:      ',(hdknv(l,k),l=1,lmax)
+	write(iu,*) 'areakv:     ',(areakv(l,k),l=1,lmax)
 	write(iu,*) 'volold:     ',(volnode(l,k,-1),l=1,lmax)
 	write(iu,*) 'volnew:     ',(volnode(l,k,+1),l=1,lmax)
 	write(iu,*) 'wlnv:       ',(wlnv(l,k),l=0,lmax)
@@ -1016,6 +1028,7 @@ c writes debug information on element ie
 	integer ie
 
 	include 'param.h'
+	include 'ev.h'
 
         integer itanf,itend,idt,nits,niter,it
         common /femtim/ itanf,itend,idt,nits,niter,it
@@ -1053,21 +1066,30 @@ c writes debug information on element ie
         real wlnv(0:nlvdim,1)
         common /wlnv/wlnv
 
+        real hdenv(nlvdim,1)
+        common /hdenv/hdenv
+        real hdeov(nlvdim,1)
+        common /hdeov/hdeov
+
 	integer iu
 	integer l,lmax,ii
 
 	integer ieext
 
+	iu = 16
 	iu = 6
 	lmax = ilhv(ie)
 
 	write(iu,*) '-------------------------------- check_elem'
 	write(iu,*) 'it,ie,ieext: ',it,ie,ieext(ie)
 	write(iu,*) 'lmax,iwegv:  ',lmax,iwegv(ie)
+	write(iu,*) 'area:        ',ev(10,ie)*12.
 	write(iu,*) 'nen3v  :     ',(nen3v(ii,ie),ii=1,3)
 	write(iu,*) 'hev,hlhv:    ',hev(ie),hlhv(ie)
 	write(iu,*) 'zeov:        ',(zeov(ii,ie),ii=1,3)
 	write(iu,*) 'zenv:        ',(zenv(ii,ie),ii=1,3)
+	write(iu,*) 'hdeov:       ',(hdeov(l,ie),l=1,lmax)
+	write(iu,*) 'hdenv:       ',(hdenv(l,ie),l=1,lmax)
 	write(iu,*) 'utlov:       ',(utlov(l,ie),l=1,lmax)
 	write(iu,*) 'vtlov:       ',(vtlov(l,ie),l=1,lmax)
 	write(iu,*) 'utlnv:       ',(utlnv(l,ie),l=1,lmax)

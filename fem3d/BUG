@@ -1,4 +1,13 @@
 
+BUG_2010_05	chris	6.1.2	08.04.2010
+	for 3D -> instability in lower layer (Marano Grado)
+	-> must use explicit vertical advection for tracer
+	-> fix: use for stability absoliute maximum flux
+
+BUG_2010_04	chris	6.1.2	08.04.2010
+	for small grids eps in diffweight must be lower (flume.grd)
+	-> should depend on size of elements
+
 BUG_2010_03	bajo	5.36	17.03.2010
 	plotting section -> color scale change does not work
 

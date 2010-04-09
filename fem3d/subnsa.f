@@ -359,7 +359,7 @@ c loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 c end of read %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	if( bdebug ) call prifnm
+	if( bdebug ) call prifnm(6)
 
 	return
    97	continue
