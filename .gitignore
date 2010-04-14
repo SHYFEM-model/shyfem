@@ -1,6 +1,8 @@
 *.o
 *.a
 *.mod
+*.tmp
+*.bak
 
 fem3d/basbathy
 fem3d/basinf

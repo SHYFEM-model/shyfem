@@ -86,6 +86,7 @@ c 26.02.2010    ggu     bug fix in make_scal_flux() - sconz was out of l-loop
 c 01.03.2010    deb     tramp introduced
 c 10.03.2010    ggu     new routine check_scal_flux()
 c 22.03.2010    ggu     in make_scal_flux() forgotten to initialize sconz
+c 14.04.2010    ggu     account for negative levmin/max
 c
 c***************************************************************
 
@@ -1098,8 +1099,10 @@ c------------------------------------------------------------------
             k = kbnds(ibc,i)
 	    lmax = ilhkv(k)
 	    if( levmax .gt. 0 ) lmax = min(lmax,levmax)
+	    if( levmax .lt. 0 ) lmax = min(lmax,lmax+1+levmax)
 	    lmin = 1
 	    if( levmin .gt. 0 ) lmin = max(lmin,levmin)
+	    if( levmin .lt. 0 ) lmin = max(lmin,lmax+1+levmin)
 
 	    if( lmin .gt. lmax ) goto 98
 

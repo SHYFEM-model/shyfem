@@ -9,6 +9,7 @@ c 14.09.2009    ggu     routines written from scratch
 c 09.10.2009    ggu     vertical plot nearly ready
 c 14.10.2009    ggu     vertical plot finished (scalar and velocities)
 c 26.03.2010    ggu     vertical plot for velocity finished 
+c 13.04.2010    ggu     adapted also to spherical coordinates
 c
 c************************************************************************
 
@@ -46,6 +47,7 @@ c elems(1) is not used, etc..
 	integer lelems(nldim)		!levels in element
 	real helems(nldim)		!depth in elements
 	real dxy(2,nldim)		!direction of projection line
+	real xy(nldim)			!linear distance
 
 	character*80 file
 	character*80 string,line
@@ -59,17 +61,18 @@ c elems(1) is not used, etc..
 	real x0,y0,x1,x2,y1,y2
 	real vmin,vmax
 	real vhmin,vhmax
-	real rrl,rrd,x,y,xtick,ytick,ylast,rdist,rmax
+	real rrl,rrd,x,y,xtick,ytick,ylast,rdist,rmax,xs
 	real xcm,ycm
 	real fact
 	integer ndec,nctick
+	integer isphe
 
 	real x0s,y0s,x1s,y1s
 	real xmid,hmid,umid,wmid
 	real scale
 
 	integer n
-	save n,nodes,elems,helems,lelems,dxy
+	save n,nodes,elems,helems,lelems,dxy,xy
 
 	integer ll,lvmax
 	save ll,lvmax
@@ -100,10 +103,12 @@ c----------------------------------------------------------------
 
 	if( icall .eq. 0 ) then
 	  call getfnm('vsect',file)
+	  isphe = nint(getpar('isphe'))
 	  call line_read_nodes(file,nldim,n,nodes)
 	  call line_find_elements(n,nodes,hev,hlv,elems,helems,lelems)
-	  call line_find_min_max(n,nodes,helems,lelems,xgv,ygv,rl,rd,ll)
-	  call make_proj_dir(n,nodes,xgv,ygv,dxy)
+	  call line_find_min_max(n,nodes,helems,lelems,xgv,ygv
+     +			,isphe,rl,rd,ll,xy)
+	  call make_proj_dir(n,isphe,nodes,xgv,ygv,dxy)
 
 	  bgrid = nint(getpar('ivgrid')) .ne. 0
 	  ivert = nint(getpar('ivert'))
@@ -196,7 +201,6 @@ c--------------------------------------------------------------------
 c plot scalar
 c--------------------------------------------------------------------
 
-	d = 0.
 	do i=2,n
 	  k1 = nodes(i-1)
 	  k2 = nodes(i)
@@ -205,11 +209,8 @@ c--------------------------------------------------------------------
 	  htot = min(htot,hvmax)
 	  ltot = min(ltot,lvmax)
 	  ie = elems(i)
-	  dx = xgv(k2) - xgv(k1)
-	  dy = ygv(k2) - ygv(k1)
-	  dd = sqrt( dx**2 + dy**2 )
-	  x1 = d
-	  x2 = d + dd
+	  x1 = xy(i-1)
+	  x2 = xy(i)
 	  y1 = yrmin
 	  y2 = -htot
 	  if( ivert .eq. 1 ) y2 = -ltot 
@@ -230,7 +231,6 @@ c--------------------------------------------------------------------
 	    call plot_rect(x1,-htop,x2,-hbot,val(ltop,i-1),val(ltop,i))
 	    htop = hbot
 	  end do
-	  d = d + dd
 	end do
 
 c--------------------------------------------------------------------
@@ -238,11 +238,11 @@ c plot vector
 c--------------------------------------------------------------------
 
 	vhmax = max(abs(vhmin),abs(vhmax))
-	scale = rscale*rl/(2.*vhmax*(n-1))
-	if( ascale .gt. 0. ) scale = ascale * rscale / 2.
+	scale = rl/(vhmax*(n-1))
+	if( ascale .gt. 0. ) scale = ascale
+	scale = scale * rscale / 2.		!adjust scale
 	write(6,*) 'arrow scale: ',vhmax,ascale,rscale,scale
 
-	d = 0.
 	do i=2,n
 	  k1 = nodes(i-1)
 	  k2 = nodes(i)
@@ -251,11 +251,8 @@ c--------------------------------------------------------------------
 	  htot = min(htot,hvmax)
 	  ltot = min(ltot,lvmax)
 	  ie = elems(i)
-	  dx = xgv(k2) - xgv(k1)
-	  dy = ygv(k2) - ygv(k1)
-	  dd = sqrt( dx**2 + dy**2 )
-	  x1 = d
-	  x2 = d + dd
+	  x1 = xy(i-1)
+	  x2 = xy(i)
 	  y1 = yrmin
 	  y2 = -htot
 	  if( ivert .eq. 1 ) y2 = -ltot 
@@ -285,7 +282,6 @@ c--------------------------------------------------------------------
 	    end if
 	    htop = hbot
 	  end do
-	  d = d + dd
 	end do
 
 c--------------------------------------------------------------------
@@ -305,8 +301,9 @@ c--------------------------------------------------------------------
 	ytick = 0.1 * ycm
 
 	do i=0,nr			!x-axis
-	  x = i * rrl
-	  ir = ialfa(x,string,nc,mode)
+	  xs = i * rrl			!number to be written
+	  x = xs			!x-position
+	  ir = ialfa(xs,string,nc,mode)
 	  call qline(x,y,x,y-ytick)
           call qtxtcr(0.,+2.5)
           call qtext(x,y,string(1:ir))
@@ -523,19 +520,21 @@ c************************************************************************
 
 c************************************************************************
 
-	subroutine make_proj_dir(n,nodes,xgv,ygv,dxy)
+	subroutine make_proj_dir(n,isphe,nodes,xgv,ygv,dxy)
 
 c computes projection line for nodes
 
 	implicit none
 
 	integer n
+	integer isphe
 	integer nodes(n)
 	real xgv(1), ygv(1)
 	real dxy(2,n)			!direction of line (for projection)
 
 	integer i,i1,i2,k1,k2
 	real dx,dy,dd
+	real y,xfact,yfact
 
 	do i=1,n
 	  i1 = max(1,i-1)
@@ -544,6 +543,10 @@ c computes projection line for nodes
 	  k2 = nodes(i2)
 	  dx = xgv(k2) - xgv(k1)
 	  dy = ygv(k2) - ygv(k1)
+	  y = ( ygv(k2) + ygv(k1) ) / 2.
+	  call make_dist_fact(isphe,y,xfact,yfact)
+	  dx = xfact * dx
+	  dy = yfact * dy
 	  dd = sqrt( dx*dx + dy*dy )
 	  dxy(1,i) = dx/dd
 	  dxy(2,i) = dy/dd
@@ -690,8 +693,8 @@ c inserts scalar values into matrix section
 
 c************************************************************************
 
-	subroutine line_find_min_max(n,nodes,helems,lelems
-     +					,xgv,ygv,rl,rd,ll)
+	subroutine line_find_min_max(n,nodes,helems,lelems,xgv,ygv
+     +					,isphe,rl,rd,ll,xy)
 
 c finds length and max depth of line
 
@@ -702,25 +705,59 @@ c finds length and max depth of line
 	real helems(n)		!depth in chosen elements
 	integer lelems(n)
 	real xgv(1), ygv(1)
+	integer isphe		!spherical coords?
 	real rl,rd		!length and depth (return)
 	integer ll
+	real xy(n)		!distance of nodes from first node
 
 	integer i,k1,k2
 	real dx,dy
+	real y,xfact,yfact
 
 	rl = 0.
 	rd = 0.
 	ll = 0
+	xy(1) = 0.
 
 	do i=2,n
 	  k1 = nodes(i-1)
 	  k2 = nodes(i)
 	  dx = xgv(k2) - xgv(k1)
 	  dy = ygv(k2) - ygv(k1)
+	  y = (ygv(k1)+ygv(k2))/2.
+	  call make_dist_fact(isphe,y,xfact,yfact)
+	  dx = xfact * dx
+	  dy = yfact * dy
 	  rl = rl + sqrt( dx**2 + dy**2 )
+	  xy(i) = rl
 	  rd = max(rd,helems(i))
 	  ll = max(ll,lelems(i))
 	end do
+
+	end
+
+c************************************************************************
+
+	subroutine make_dist_fact(isphe,y,xfact,yfact)
+
+c computes factor for transformation from spherical to cartesian coordinates
+
+	implicit none
+
+	integer isphe			!spherical coordinates?
+	real y				!average y coordinate
+	real xfact,yfact		!factors for transformation
+
+	real r,pi,rad
+	parameter ( r = 6378206.4 , pi = 3.14159 , rad = pi/180. )
+
+	if( isphe .ne. 0 ) then		!handle sperical coordinates
+	  yfact = rad*r
+	  xfact = yfact*cos(y*rad)
+	else
+	  xfact = 1.
+	  yfact = 1.
+	end if
 
 	end
 

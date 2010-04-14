@@ -32,7 +32,7 @@ c 08.03.2010	ggu	run only down to avail layers (bug fix)
 c
 c notes :
 c
-c explicit term is on left side
+c explicit term is on left hand side
 c
 c******************************************************************
 

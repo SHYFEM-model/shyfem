@@ -31,6 +31,7 @@ c 19.11.2008	ggu	helper routines to compute area/aomega
 c 22.05.2009	ggu	new routine set_coords_ev() and ev_blockdata
 c 12.06.2009	ggu	more stable computation of area (bug_f_64bit)
 c 05.02.2010	ggu	bug fix for aj (division with 24 too early)
+c 14.04.2010	ggu	new routines get_coords_ev() and check_spheric_ev()
 c
 c***********************************************************
 
@@ -70,6 +71,8 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 
 	double precision xlon1,ylat1,xlon2,ylat2,xlon3,ylat3	!lat/long [rad]
 	double precision dlat0,dlon0			!center of projection
+
+	call check_spheric_ev	!checks and sets isphe_ev
 
 	isphe = isphe_ev
 
@@ -176,15 +179,23 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	end
 
 c****************************************************************
+c****************************************************************
+c****************************************************************
 
 	blockdata ev_blockdata
+
+c initializes isphe_ev
+c
+c -1	value not given -> try to determine automatically
+c  0	cartesian
+c  1	spherical (lat/lon)
 
 	implicit none
 
 	integer isphe_ev
 	common /evcommon/ isphe_ev
 	save /evcommon/
-	data isphe_ev / 0 /
+	data isphe_ev / -1 /
 
 	end
 
@@ -193,9 +204,6 @@ c****************************************************************
 	subroutine set_coords_ev(isphe)
 
 c sets type of coordinates to use with ev module
-c
-c 0 : cartesian coordinates (default)
-c 1 : lat/lon coordinates
 
 	implicit none
 
@@ -208,6 +216,90 @@ c 1 : lat/lon coordinates
 
 	end
 
+c****************************************************************
+
+	subroutine get_coords_ev(isphe)
+
+c gets type of coordinates that is used with ev module
+
+	implicit none
+
+	integer isphe
+
+	integer isphe_ev
+	common /evcommon/ isphe_ev
+	
+	isphe = isphe_ev
+
+	end
+
+c****************************************************************
+
+	subroutine check_spheric_ev
+
+c checks if coordinates are lat/lon
+
+	implicit none
+
+	include 'param.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        real xgv(1), ygv(1)
+        common /xgv/xgv, /ygv/ygv
+
+	integer isphe_ev
+	common /evcommon/ isphe_ev
+
+	integer k,isphe
+	real xmin,xmax,ymin,ymax
+
+	xmin = xgv(1)
+	xmax = xgv(1)
+	ymin = ygv(1)
+	ymax = ygv(1)
+
+	do k=1,nkn
+	  xmin = min(xmin,xgv(k))
+	  xmax = max(xmax,xgv(k))
+	  ymin = min(ymin,ygv(k))
+	  ymax = max(ymax,ygv(k))
+	end do
+
+	isphe = 1
+	if( xmin .lt. -180. .or. xmax .gt. 360. ) isphe = 0
+	if( ymin .lt.  -90. .or. ymax .gt.  90. ) isphe = 0
+
+	if( isphe_ev .eq. -1 ) then	!determine automatically
+	  if( isphe .eq. 1 ) then
+	    write(6,*) 'Cannot determine type of coordinates.'
+	    write(6,*) 'coodinates seem lat/lon'
+	    write(6,*) 'but are not flagged as such.'
+	    write(6,*) 'Please set parameter isphe to the desired value'
+	    stop 'error stop check_spheric_ev: coord type'
+	  end if
+	else if( isphe_ev .ne. isphe ) then	!not the same
+	  if( isphe .eq. 0 ) then	!not possible -> coords out of range
+	    write(6,*) 'coodinates are flaged as lat/lon'
+	    write(6,*) 'but are out of range.'
+	    write(6,*) 'Please set parameter isphe = 0'
+	    write(6,*) 'or adjust the grid'
+	    write(6,*) 'xmin,xmax: ',xmin,xmax
+	    write(6,*) 'ymin,ymax: ',ymin,ymax
+	    stop 'error stop check_spheric_ev: not lat/lon coordinates'
+	  end if
+	  isphe = isphe_ev	!take desired value
+	end if
+
+	isphe_ev = isphe
+
+	write(6,*) 'setting for coordinates: ',isphe
+	if( isphe .ne. 0 ) write(6,*) 'using lat/lon coordinates'
+
+	end
+
+c****************************************************************
+c****************************************************************
 c****************************************************************
 
 	subroutine check_ev

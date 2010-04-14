@@ -158,6 +158,7 @@ c 06.04.2009    ggu	deleted routine write_elem_vel_info()
 c 07.05.2009    ggu	new routines for scalar interpolation (not finished)
 c 10.03.2010    ggu	bug fix in sp256w() for ibtyp=2
 c 11.03.2010    ggu	new routine check_volume() to check for negative vol
+c 12.04.2010    ggu	ad hoc routine for Yaron
 c
 c******************************************************************
 
@@ -900,6 +901,7 @@ c-------new compatition explicit part----------------------------------
 
 	call bottom_friction	!set bottom friction
         call set_explicit       !new HYDRO deb
+	call set_yaron
 
 c-------result: arrays fxv(l,ie),fyv(l,ie)-----------------------------
 
@@ -1840,6 +1842,61 @@ c in hia(i,j),hik(i),i,j=1,3 is system
 	end do
 
         end
+
+c*******************************************************************
+
+	subroutine set_yaron
+
+c momentum input for yaron
+
+	implicit none
+
+	include 'param.h'
+	include 'ev.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer ilhv(1)
+        common /ilhv/ilhv
+        integer nen3v(3,1)
+        common /nen3v/nen3v
+        real hdeov(nlvdim,1)
+        common /hdeov/hdeov
+        real fxv(nlvdim,1)
+        real fyv(nlvdim,1)
+        common /fxv/fxv
+        common /fyv/fyv
+
+	integer kin,lin,ie,ii,k,lmax,nelem
+	real rnx,rny,rfact,q,area,h,fact
+
+	kin = 3935
+	kin = 0
+	lin = 8
+	nelem = 6
+	rnx = -1
+	rny = 0.
+	rfact = 1.1
+	q = 10.
+
+	if( kin .le. 0 ) return
+
+        do ie=1,nel
+          lmax = ilhv(ie)
+          area = 12. * ev(10,ie)
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    if( k .eq. kin .and. lmax .le. lin ) then
+	      h = hdeov(lin,ie)
+	      fact = rfact * q*q / (h*area*sqrt(area)*nelem)
+	write(17,*) ie,k,fact,fxv(lin,ie)
+	      fxv(lin,ie) = fxv(lin,ie) - fact * rnx
+	      fyv(lin,ie) = fyv(lin,ie) - fact * rny
+	    end if
+	  end do
+	end do
+
+	end
 
 c*******************************************************************
 

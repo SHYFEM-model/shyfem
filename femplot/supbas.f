@@ -44,6 +44,7 @@ c 12.06.2009  ggu     new routines to handle spherical coords. & regular grid
 c 15.06.2009  ggu     call to reggrid() changeed -> pass in gray value
 c 14.09.2009  ggu     new routine divdist()
 c 22.02.2010  ggu     new routine bw_frame() to plot bw scale around plot
+c 09.04.2010  ggu     bug fix in frac_pos() -> maybe compiler error
 c
 c*************************************************************
 
@@ -827,16 +828,27 @@ c computes number of fractional digits of real r
 	real r
 	integer np
 
-	real rr
+	real rr,ri
+	real eps
+
+	eps = 1.e-5
 
 	rr = r
-
+	ri = float(int(rr))
 	np = 0
-	do while( rr .ne. float(int(rr)) )
-	  rr = rr * 10.
+
+	do while( abs(rr-ri) .gt. eps )
+	  !write(6,*) np,r,rr
 	  np = np + 1
+	  if( np .gt. 5 ) goto 99
+	  rr = rr * 10.
+	  ri = float(int(rr))
 	end do
 
+	return
+   99	continue
+	write(6,*) np,r,rr,ri,rr-ri
+	stop 'error stop frac_pos: internal error'
 	end
 
 c**************************************************************
@@ -884,6 +896,8 @@ c handles plotting of regular grid
 
 	real getpar
 
+	write(6,*) 'starting plot_reg_grid...'
+
 	reggrd = getpar('reggrd')
 	reggry = getpar('reggry')
 
@@ -892,6 +906,8 @@ c handles plotting of regular grid
 
 	ngrid = 0
 	call reggrid(ngrid,reggrd,reggry)
+
+	write(6,*) 'ending plot_reg_grid...'
 
 	end
 
@@ -921,6 +937,8 @@ c handles labeling of regular grid
 	integer ialfa
 
 	call basinit
+
+	write(6,*) 'starting label_reg_grid...'
 
 	size = 0.5	!leave this space around plot for labeling
 	ftext = 2.8	!factor to shift text vertically
@@ -996,6 +1014,8 @@ c here labeling
 	call bw_frame(imicro,x0,y0,dx,dy,xmin,xmax,ymin,ymax)
 
 	call qsetvp(xvmin,yvmin,xvmax,yvmax)
+
+	write(6,*) 'ending label_reg_grid...'
 
 	end
 

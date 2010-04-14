@@ -32,7 +32,7 @@ export NELDIM = 22000
 export NLVDIM = 33
 
 export NGRDIM = 15
-export MBWDIM = 80
+export MBWDIM = 125
 
 ##############################################
 # Compiler

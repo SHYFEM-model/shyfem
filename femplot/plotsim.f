@@ -144,7 +144,7 @@ c vertical velocity
 c local
 	integer mode
 	integer ie,ii,k,l
-	integer icolor
+	integer icolor,isphe
 	integer iapini
 	real sflag
 	real getpar
@@ -190,6 +190,8 @@ c set up elements
 c----------------------------------------------
 
 	call setdim('nlkdim',nlkdim)
+	isphe = nint(getpar('isphe'))
+	call set_coords_ev(isphe)
 	call set_ev
 	call set_geom
 

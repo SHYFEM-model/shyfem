@@ -1,5 +1,13 @@
 
-BUG_2010_05	chris	6.1.2	08.04.2010
+BUG_2010_07	fra	5.36	12.04.2010
+	writes flux too often (syncronizing time step?)
+
+BUG_2010_06	ggu	6.1.3	09.04.2010	09.04.2010
+	infinite loop while plotting
+	-> in frac_pos do not compare for equality
+	-> is probably a compiler bug
+
+BUG_2010_05	chris	6.1.2	08.04.2010	09.04.2010
 	for 3D -> instability in lower layer (Marano Grado)
 	-> must use explicit vertical advection for tracer
 	-> fix: use for stability absoliute maximum flux

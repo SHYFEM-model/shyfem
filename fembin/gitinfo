@@ -1,0 +1,34 @@
+#!/bin/sh
+
+cat <<EOI
+
+status			check status of changed files
+log			all commits
+log --pretty=oneline	one line per commit
+show <name>		shows commit or tag <name>
+diff <file>		shows diff for <file>
+diff --chached
+diff HEAD
+
+add <files>		add <files> to next commit
+add .			add all changed files to next commit
+commit			commit changes that have been added
+tag <tag>		tags with <tag>, if no <tag> shows tags
+
+branch <branch>		creates new <branch>, if non given shows branches
+checkout <start>	checks out branch <start>
+checkout -b <new> <start>	checks out <start> and creates new branch <new>
+
+HEAD			actual commit
+HEAD^			parent of actual commit
+HEAD^^			grand-parent
+HEAD~4			4th grade
+
+commands:
+
+gitinfo			this help file
+gittags			shows commits corresponding to tags
+gittar			makes tar file fo given version
+
+EOI
+
