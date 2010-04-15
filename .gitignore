@@ -4,6 +4,10 @@
 *.tmp
 *.bak
 
+arc
+bin
+lib
+
 fem3d/basbathy
 fem3d/basinf
 fem3d/bastreat

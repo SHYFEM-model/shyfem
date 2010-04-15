@@ -10,6 +10,7 @@ c 09.10.2009    ggu     vertical plot nearly ready
 c 14.10.2009    ggu     vertical plot finished (scalar and velocities)
 c 26.03.2010    ggu     vertical plot for velocity finished 
 c 13.04.2010    ggu     adapted also to spherical coordinates
+c 15.04.2010    ggu     fix bug where lower layer is plotted with value 0
 c
 c************************************************************************
 
@@ -45,6 +46,7 @@ c elems(1) is not used, etc..
 	integer nodes(nldim)		!nodes along line
 	integer elems(nldim)		!elements along line
 	integer lelems(nldim)		!levels in element
+	integer lnodes(nldim)		!levels in nodes
 	real helems(nldim)		!depth in elements
 	real dxy(2,nldim)		!direction of projection line
 	real xy(nldim)			!linear distance
@@ -72,7 +74,7 @@ c elems(1) is not used, etc..
 	real scale
 
 	integer n
-	save n,nodes,elems,helems,lelems,dxy,xy
+	save n,nodes,elems,helems,lelems,lnodes,dxy,xy
 
 	integer ll,lvmax
 	save ll,lvmax
@@ -105,7 +107,8 @@ c----------------------------------------------------------------
 	  call getfnm('vsect',file)
 	  isphe = nint(getpar('isphe'))
 	  call line_read_nodes(file,nldim,n,nodes)
-	  call line_find_elements(n,nodes,hev,hlv,elems,helems,lelems)
+	  call line_find_elements(n,nodes,hev,hlv
+     +			,elems,helems,lelems,lnodes)
 	  call line_find_min_max(n,nodes,helems,lelems,xgv,ygv
      +			,isphe,rl,rd,ll,xy)
 	  call make_proj_dir(n,isphe,nodes,xgv,ygv,dxy)
@@ -143,9 +146,11 @@ c----------------------------------------------------------------
 	write(6,*) 'plotting section: ',it,n,rl,rd
 
 	if( bvel ) then
-	  call proj_velox(n,nodes,ilhkv,dxy,vel,val,vmin,vmax,vhmin,vhmax)
+	  call proj_velox(n,nodes,lnodes,ilhkv,dxy,vel,val
+     +					,vmin,vmax,vhmin,vhmax)
 	else
-	  call line_insert_scalars(n,nodes,ilhkv,nlvdim,sv,val,vmin,vmax)
+	  call line_insert_scalars(n,nodes,lnodes,ilhkv,nlvdim
+     +					,sv,val,vmin,vmax)
 	end if
 	call colauto(vmin,vmax)
 	write(6,*) 'min/max on line: ',vmin,vmax
@@ -556,7 +561,7 @@ c computes projection line for nodes
 
 c************************************************************************
 
-	subroutine proj_velox(n,nodes,ilhkv,dxy,vel,val
+	subroutine proj_velox(n,nodes,lnodes,ilhkv,dxy,vel,val
      +				,vmin,vmax,vhmin,vhmax)
 
 	implicit none
@@ -565,6 +570,7 @@ c************************************************************************
 
 	integer n
 	integer nodes(n)
+	integer lnodes(n)
 	integer ilhkv(1)		!number of layers in node
 	real dxy(2,n)			!direction of line (for projection)
 	real vel(3,0:2*nlvdim,n)	!projected velocities along line
@@ -597,15 +603,17 @@ c************************************************************************
 	  end do
 	  call insert_between_layers(3,2*lmax,vel(1,0,i))
 	  call insert_between_layers(1,2*lmax,val(0,i))
-	end do
 
-	i=5
-	k = nodes(i)
-	lmax = ilhkv(k)
-	write(66,*) (vel(1,l,i),l=0,2*lmax)
-	write(66,*) (vel(2,l,i),l=0,2*lmax)
-	write(66,*) (vel(3,l,i),l=0,2*lmax)
-	write(66,*) '---- proj_velox ---------'
+	  if( lnodes(i) .gt. lmax ) then	!more layers
+	    do l=2*lmax+1,2*lnodes(i)
+	      val(l,i) = val(2*lmax,i)
+	      vel(1,l,i) = vel(1,2*lmax,i)
+	      vel(2,l,i) = vel(2,2*lmax,i)
+	      vel(3,l,i) = vel(3,2*lmax,i)
+	    end do
+	  end if
+
+	end do
 
 	vmin = val(0,1)
 	vmax = val(0,1)
@@ -647,7 +655,7 @@ c************************************************************************
 
 c************************************************************************
 
-	subroutine line_insert_scalars(n,nodes,ilhkv,nlvdim,sv
+	subroutine line_insert_scalars(n,nodes,lnodes,ilhkv,nlvdim,sv
      +					,values,vmin,vmax)
 
 c inserts scalar values into matrix section
@@ -656,6 +664,7 @@ c inserts scalar values into matrix section
 
 	integer n
 	integer nodes(n)
+	integer lnodes(n)
 	integer ilhkv(1)		!number of layers in node
 	integer nlvdim
 	real sv(nlvdim,1)
@@ -683,6 +692,11 @@ c inserts scalar values into matrix section
 	    vmax = max(vmax,sv(l,k))
 	  end do
 	  values(2*lmax,i) = sv(lmax,k)
+	  if( lnodes(i) .gt. lmax ) then	!more layers
+	    do l=2*lmax+1,2*lnodes(i)
+	      values(l,i) = values(2*lmax,i)
+	    end do
+	  end if
 	  !write(78,*) k,ipext(k),lmax
 	  !write(78,*) (sv(l,k),l=1,lmax)
 	  !write(79,*) k,ipext(k),lmax,2*lmax
@@ -764,7 +778,7 @@ c computes factor for transformation from spherical to cartesian coordinates
 c************************************************************************
 
 	subroutine line_find_elements(n,nodes,hev,hlv
-     +					,elems,helems,lelems)
+     +					,elems,helems,lelems,lnodes)
 
 c finds elements along line given by nodes
 c
@@ -778,11 +792,16 @@ c deepest element is chosen
 	real hlv(1)		!layer structure
 	integer elems(n)	!element number of chosen elements
 	real helems(n)		!depth in chosen elements
-	integer lelems(n)	!layers in element number of 
+	integer lelems(n)	!layers in element
+	integer lnodes(n)	!layers in node
 
 	integer i,k1,k2,ie1,ie2,l
 	real h
 	integer ipext,ieext
+
+c------------------------------------------------------------------
+c set up depth structure in line (elements)
+c------------------------------------------------------------------
 
 	do i=2,n
 	  k1 = nodes(i-1)
@@ -798,6 +817,10 @@ c deepest element is chosen
 	  !write(6,*) '                    ',ieext(ie1),ieext(ie2)
 	end do
 
+c------------------------------------------------------------------
+c compute total layers in line (elements)
+c------------------------------------------------------------------
+
 	do i=2,n
 	  h = helems(i)
 	  l = 1
@@ -807,6 +830,20 @@ c deepest element is chosen
 	  lelems(i) = l
 	end do
 	  
+c------------------------------------------------------------------
+c compute total layers in line (nodes)
+c------------------------------------------------------------------
+
+	lnodes(1) = lelems(2)
+	do i=2,n-1
+	  lnodes(i) = max(lelems(i),lelems(i+1))
+	end do
+	lnodes(n) = lelems(n)
+	  
+c------------------------------------------------------------------
+c end of routine
+c------------------------------------------------------------------
+
 	end
 
 c************************************************************************

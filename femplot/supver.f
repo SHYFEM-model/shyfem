@@ -70,6 +70,7 @@ c common
         logical bwater(1)
         common /bwater/bwater
 c local
+	logical byaron
         integer k,ie,ii,kk,l
         integer ilevel
 	integer inwater
@@ -81,6 +82,9 @@ c local
 	end if
 
 c initialize
+
+	byaron = .true.
+	byaron = .false.
 
         do k=1,nkn
           do l=0,nlv
@@ -104,6 +108,9 @@ c f(ii) > 0 ==> flux into node ii
             do ii=1,3
                 kk=nen3v(ii,ie)
                 ff = utlnv(l,ie)*ev(ii+3,ie) + vtlnv(l,ie)*ev(ii+6,ie)
+	if( byaron .and. kk .eq. 2088 .and. l .eq. 8 ) then
+		ff = ff + 10./(6.*3.*aj)
+	end if
                 wlnv(l,kk) = wlnv(l,kk) + 3. * aj * ff
                 wauxv(l,kk)=wauxv(l,kk)+aj
             end do

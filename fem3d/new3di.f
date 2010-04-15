@@ -901,7 +901,7 @@ c-------new compatition explicit part----------------------------------
 
 	call bottom_friction	!set bottom friction
         call set_explicit       !new HYDRO deb
-	call set_yaron
+	!call set_yaron
 
 c-------result: arrays fxv(l,ie),fyv(l,ie)-----------------------------
 
@@ -1872,8 +1872,10 @@ c momentum input for yaron
 
 	kin = 3935
 	kin = 0
+	kin = 2088
 	lin = 8
 	nelem = 6
+	nelem = 4
 	rnx = -1
 	rny = 0.
 	rfact = 1.1
@@ -1889,7 +1891,7 @@ c momentum input for yaron
 	    if( k .eq. kin .and. lmax .le. lin ) then
 	      h = hdeov(lin,ie)
 	      fact = rfact * q*q / (h*area*sqrt(area)*nelem)
-	write(17,*) ie,k,fact,fxv(lin,ie)
+	write(17,*) 'yaron: ',ie,k,fact,fxv(lin,ie)
 	      fxv(lin,ie) = fxv(lin,ie) - fact * rnx
 	      fyv(lin,ie) = fyv(lin,ie) - fact * rny
 	    end if
