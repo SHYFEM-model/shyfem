@@ -30,6 +30,17 @@ commands:
 gitinfo			this help file
 gittags			shows commits corresponding to tags
 gittar			makes tar file fo given version
+gitcommit		makes commit writing to COMMIT
+
+todo:
+
+git status
+git diff <file>
+git add -u
+
+git diff --cached --stat	-> write to COMMIT
+git commit
+git tag
 
 EOI
 
