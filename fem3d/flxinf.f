@@ -4,6 +4,7 @@ c
 c revision log :
 c
 c 06.04.1999	ggu	cosmetic changes
+c 21.04.2010	ggu	comments, write all files
 c
 c notes :
 c
@@ -67,16 +68,19 @@ c---------------------------------------------------------------
      +				,(ppppm(1,i),ppppm(2,i),i=1,nsect)
 	  end if
 
+c in ppppm(1,*) are positive fluxes
+c in ppppm(2,*) are negative fluxes
+
 c	  write(6,*) it,nsect
 c	  write(6,*) (ppp(i),i=1,nsect)
 
 	  write(6,'(i10,10i7)') it,(nint(ppp(i)),i=1,nsect)
-	  write(67,'(i10,20f10.2)') it,(ppp(i),i=1,nsect)
+	  write(66,'(i10,20f10.2)') it,(ppp(i),i=1,nsect)	!real
 
-	  !write(68,'(i10,20f10.2)') it,(ppppm(1,i),i=1,nsect)
-	  !write(68,'(i10,20f10.2)') it,(ppppm(2,i),i=1,nsect)
+	  write(67,'(i10,20f10.2)') it,(ppppm(1,i),i=1,nsect)	!positive
+	  write(68,'(i10,20f10.2)') it,(ppppm(2,i),i=1,nsect)	!negative
 
-          write(69,'(i10,20f10.2)') it,(ppppm(1,i)+ppppm(2,i)
+          write(69,'(i10,20f10.2)') it,(ppppm(1,i)+ppppm(2,i)	!total (abs)
      +						,i=1,nsect)
 
 	end do

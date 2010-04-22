@@ -1,5 +1,19 @@
 ============================================================
 
+Thu Apr 22 14:41:50 CEST 2010
+
+bilinear interpolation added
+
+ .gitignore     |    2 +
+ fem3d/COMMIT   |   54 +++++++
+ fem3d/bilin.f  |  457 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/flxinf.f |   12 +-
+ fem3d/new3di.f |    2 +-
+ fembin/gitinfo |    3 +-
+ 6 files changed, 524 insertions(+), 6 deletions(-)
+
+============================================================
+
 Mon Mar 22 16:32:47 CET 2010
 
 New version 5.37

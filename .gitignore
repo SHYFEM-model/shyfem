@@ -3,8 +3,10 @@
 *.mod
 *.tmp
 *.bak
+*.swp
 
 arc
+test
 bin
 lib
 

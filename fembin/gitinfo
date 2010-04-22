@@ -7,7 +7,8 @@ log			all commits
 log --pretty=oneline	one line per commit
 show <name>		shows commit or tag <name>
 diff <file>		shows diff for <file>
-diff --chached
+diff --cached
+diff --stat		summary of all changes
 diff HEAD
 
 add <files>		add <files> to next commit

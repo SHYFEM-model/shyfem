@@ -897,7 +897,7 @@ c
 
 	nbcount = 0
 
-c-------new compatition explicit part----------------------------------
+c-------new computation of explicit part----------------------------------
 
 	call bottom_friction	!set bottom friction
         call set_explicit       !new HYDRO deb
