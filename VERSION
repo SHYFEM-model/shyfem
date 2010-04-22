@@ -1,0 +1,4915 @@
+version  6.1.5    22-04-2010    VERS_6_1_5
+
+check for spheric coordinates
+account for negative levmin/max
+momentum input (unfinished) for Yaron
+better git handling
+vertical plot finished
+updating new files COMMIT and VERSION
+
+========================================================== 22-04-2010 - 6.1.5
+
+c ./fem3d/flxinf.f:
+c 21.04.2010	ggu	comments, write all files
+c
+c ./fem3d/new3di.f:
+c 12.04.2010    ggu	ad hoc routine for Yaron
+c
+c ./fem3d/newchk.f:
+c 08.04.2010    ggu     more info in checks (depth and area)
+c
+c ./fem3d/subdif.f:
+c 08.04.2010    ggu     better error reporting in diffweight()
+c
+c ./fem3d/subn11.f:
+c 14.04.2010    ggu     account for negative levmin/max
+c
+c ./fem3d/subnev.f:
+c 14.04.2010	ggu	new routines get_coords_ev() and check_spheric_ev()
+c
+c ./fem3d/subsys.f:
+c 26.03.2010	ggu	new parameters for arrows in section plot
+c
+c ./fem3d/subver.f:
+c 26.03.2010	ggu	version 6.1.2
+c 22.04.2010	ggu	version 6.1.5
+c
+c ./fem3d/ousextr_records.f:
+c 23.03.2010	ggu	extracts reocrds
+c 26.03.2010	ggu	bug fix: set nkn and nel
+c
+c ./femplot/supcol.f:
+c 23.03.2010    ggu     make it easier to change between color tables
+c
+c ./femplot/supbas.f:
+c 09.04.2010  ggu     bug fix in frac_pos() -> maybe compiler error
+c
+c ./femplot/supsim.f:
+c 26.03.2010	ggu	section plot for velocities in plosim adapted
+c
+c ./femplot/suputi.f:
+c 26.03.2010    ggu     new routine fcmpfeil for distorted scales
+c
+c ./femplot/supver.f:
+c 26.03.2010    ggu     HACK for bwater -> compute always
+c
+c ./femplot/suplin.f:
+c 26.03.2010    ggu     vertical plot for velocity finished 
+c 13.04.2010    ggu     adapted also to spherical coordinates
+c 15.04.2010    ggu     fix bug where lower layer is plotted with value 0
+
+==========================================================
+
+version  5.37    22-03-2010    VERS_5_37
+
+        bug fix for evaporation in newcon.f:
+                evaporation was not computed correctly due to the
+                treatment of negative fluxes in a way appropriate only
+                for open boundary nodes -> check for OBC
+        small bug in subn11:
+                forgotten to initialize sconz
+        new inpoly in subgeo.f:
+                faster way to compute in-poly check for arbitrary polygons
+
+========================================================== 22-03-2010 - 5.37
+
+c basinf.f:
+c 22.03.2010    ggu     write external element number in basqual()
+c
+c newcon.f:
+c 12.03.2010    ggu     in assert_min_max_property() limit error messages
+c 22.03.2010    ggu     bug fix for evaporation (distr. sources) BUG_2010_01
+c
+c subgeo.f:
+c 22.03.2010	ggu	new routine inpoly has been implemented
+c
+c subn11.f:
+c 22.03.2010    ggu     in make_scal_flux() forgotten to initialize sconz
+c
+c subnsh.f:
+c 22.03.2010    ggu     some comments for better readability
+c
+c subspk.f:
+c 22.03.2010    ggu     change of some parameters
+c
+c subver.f:
+c 22.03.2010	ggu	version 5.37
+
+==========================================================
+
+version  5.36    11-03-2010    VERS_5_36
+
+11.03.2010
+        check for negative volumes (node and element) in newtra.f
+        min/max property not for ibtyp=1 (newcon.f)
+        write also vertical velocity for restart
+
+10.03.2010
+        bug fix in new3di.f
+                -> compute vertical velocities also for ibtyp=2
+                -> otherwise tracer over/under-shoot can happen
+
+08.03.2010
+        use bformat to decide on initial read in newbcl.f
+        bug fix in newstab.f, newexpl.f
+                -> only run down to avail levels
+
+01.03.2010
+        new map_influence.f
+        tramp in subn11.f
+        grid quality in basinf.f
+        some changes in newtra.f
+        new routine jamal_fra in subcus.f
+
+========================================================== 11-03-2010 - 5.36
+
+c basinf.f:
+c 01.03.2010    ggu     new routine basqual() to compute grid quality
+c
+c lagrange_init.f:
+c 11.03.2010    ggu	small bug fix in lagbound_seed_particles() -> init np
+c 11.03.2010    ggu	in lgr_init_line() check if at least one line is read
+c
+c map_influence.f:
+c 01.03.2010    ggu     adjusted and cleaned up
+c
+c new3di.f:
+c 10.03.2010    ggu	bug fix in sp256w() for ibtyp=2
+c 11.03.2010    ggu	new routine check_volume() to check for negative vol
+c
+c newcon.f:
+c 10.03.2010    ggu     in assert_min_max_property() check all nodes (also BC)
+c 11.03.2010    ggu     in assert_min_max_property() do not check ibtyp=1
+c
+c newexpl.f:
+c 08.03.2010	ggu	run only down to avail layers (bug fix)
+c
+c newstab.f:
+c 08.03.2010    ggu     run only down to avail layers in stability (bug fix)
+c
+c newtra.f:
+c 01.03.2010	ggu	new version of n2e3d()
+c 11.03.2010	ggu	new routine check_volume(); init w only if no restart
+c
+c subcus.f:
+c 01.03.2010	ggu	new routines jamal_fra() to reset conz
+c
+c subn11.f:
+c 01.03.2010    deb     tramp introduced
+c 10.03.2010    deb     new routine check_scal_flux()
+c
+c subrst.f:
+c 11.03.2010    ggu     write also vertical velocity
+c
+c subver.f:
+c 11.03.2010	ggu	version 5.36
+
+==========================================================
+
+version  5.35    26-02-2010    VERS_5_35
+
+new stability for momentum equation
+bug fix in make_scal_flux
+compilor warnings eliminated
+
+========================================================== 26-02-2010 - 5.35
+
+c ht.f:
+c 26.02.2010    ggu	new arrays sauxe1/2
+c
+c newchk.f:
+c 26.02.2010    ggu     in test3d() write also meteo data
+c
+c newexpl.f:
+c 26.02.2010	ggu	new call to momentum_viscous_stability()
+c 26.02.2010	ggu	set_advective() cleaned up
+c 26.02.2010	ggu	new momentum_advective_stability()
+c
+c newstab.f:
+c 26.02.2010    ggu     internal_stability restructured (on element)
+c
+c submeteo.f:
+c 23.02.2010    ggu	call to wstress changed (new wxv,wyv)
+c
+c subn11.f:
+c 26.02.2010    ggu     bug fix in make_scal_flux() - sconz was out of l-loop
+c
+c subnsh.f:
+c 26.02.2010    ggu     in set_timestep compute and write ri with old dt
+c
+c subsys.f:
+c 23.02.2010	ggu	new parameter regdst
+c
+c subver.f:
+c 26.02.2010	ggu	version 5.35
+
+==========================================================
+
+version  5.34    22-02-2010    VERS_5_34
+
+        new file for stability condition computation -> simplified
+                viscous_stability for dt=1
+        subwin.f restructured
+                new arrays wxv, wyv
+                new itdrag for smith and Banke etc..
+                computes wind if stress is given
+        new routine for tidal potential
+
+========================================================== 22-02-2010 - 5.34
+
+c ht.f:
+c 19.02.2010    ggu	init_stability() changed to reset_stability()
+c 22.02.2010    ggu	new arrays wxv, wyv
+c
+c newcon.f:
+c 19.02.2010    ggu     restructured, stab routines into newstab.f
+c
+c newdum.f:
+c 19.02.2010	ggu	massconc eliminated
+c
+c newexpl.f:
+c 19.02.2010	ggu	in viscous_stability() for dt=1
+c
+c newpr.f:
+c 22.02.2010	ccf	new routine for tidal pot. (tideforc), locaus deleted
+c
+c newstab.f:
+c 19.02.2010    ggu     new file to contain stability computations
+c
+c subnsh.f:
+c 22.02.2010    ggu     new call to hydro_stability to compute time step
+c
+c subsys.f:
+c 22.02.2010	ggu	new parameter itdrag
+c
+c subver.f:
+c 22.02.2010	ggu	version 5.34
+c
+c subwin.f:
+c 22.02.2010	ggu&ccf	restructured, new formulas Smith&Banke, Large&Pond
+
+==========================================================
+
+version  5.33a    17-02-2010    VERS_5_33a
+
+small bugfix in diffweight
+
+========================================================== 17-02-2010 - 5.33a
+
+c subdif.f:
+c 17.02.2010    ggu     bug fix in diffweight()
+c
+c subver.f:
+c 17.02.2010	ggu	version 5.33a
+
+==========================================================
+
+version  5.33    16-02-2010    VERS_5_33
+
+new stability constraints for T/D (with point sources)
+new diffusion matrix
+new method for imposing BC on T/D (fluxes and concentrations)
+
+========================================================== 16-02-2010 - 5.33
+
+c newbcl.f:
+c 19.01.2010    ggu     different call to has_restart() 
+c
+c newcon.f:
+c 16.02.2010    ggu     use wdiff also in stab, use point sources in stab
+c 16.02.2010    ggu     min/max property, sbconz is passed to conz3d
+c
+c newconz.f:
+c 19.01.2010    ggu     handle restart of conzentrations
+c
+c subcus.f:
+c 12.02.2010	ggu	new routines for horizontal diffusion tests (diffus2d)
+c
+c subdif.f:
+c 12.02.2010    ggu     diffweight() has new method -> idtype=0,1,2
+c
+c subn11.f:
+c 19.01.2010    ggu     in make_scal_flux() return also sconz at bound
+c
+c subnev.f:
+c 05.02.2010	ggu	bug fix for aj (division with 24 too early)
+c
+c subrst.f:
+c 19.01.2010    ggu     initialize also conz, has_restart() is function
+c
+c subver.f:
+c 16.02.2010	ggu	version 5.33
+c
+c subwin.f:
+c 09.02.2010	ggu	less diagnostics, only write wind data if read from STR
+
+==========================================================
+
+version  5.32    18-01-2010    VERS_5_32
+
+Minor changes.
+
+========================================================== 18-01-2010 - 5.32
+
+c bastreat.f:
+c 20.11.2009    ggu     possibility to smooth only on specific areas
+c
+c ht.f:
+c 30.11.2009    ggu	write output file for successfull completion
+c
+c newcon.f:
+c 14.01.2010    ggu     better check_scal (possibility to stop or go on)
+c
+c nosresidence.f:
+c 12.01.2010    ggu     lots of changes
+c
+c ousintp.f:
+c 24.11.2009	ggu	commented and cleaned
+c
+c subcon1.f:
+c 20.11.2009    ggu	in conwrite only write needed (nlv) layers
+c
+c subrst.f:
+c 27.11.2009    ggu     deal with empty file, rdrst() restructured
+c
+c subver.f:
+c 18.01.2010	ggu	version 5.32
+
+==========================================================
+
+version  5.31    18-11-2009    VERS_5_31
+
+changes in:
+
+        in jamal correct residence time
+
+        in restart keep track of what has been read
+        only initialize T/S if no restart file has been read
+        (rhov and bpresv might need special treatment)
+
+        problems of negative tracers at negative discharge boundary condition
+        -> solved by moving make_scal_flux() into time loop (newcon.f)
+        now it uses always the right ambient tracer concentration
+        added new routine is_zeta_bound(k) to subbndo.f
+
+        handle abosrption of short rad in more than one layer (subqfxt.f)
+
+        new section $sect to plot vertical section has been introduced
+
+========================================================== 18-11-2009 - 5.31
+
+c newbcl.f:
+c 13.10.2009    ggu     in rhoset bug computing pres
+c 13.11.2009    ggu     only initialize T/S if no restart, new rhoset_shell
+c
+c newcon.f:
+c 13.10.2009    ggu     write_elem_info() substituted with check_elem()
+c 12.11.2009    ggu     make_scal_flux() into internal time loop for stability
+c 12.11.2009    ggu     in conz_stab loop over all k that are not z-boundaries
+c
+c nosresidence.f:
+c 29.10.2009    ggu     compute and write 2D fields, use log to compute restime
+c
+c ousinf.f:
+c 27.10.2009    ggu     include evmain.h, compute volume
+c
+c subbndo.f:
+c 12.11.2009    ggu     new array itynod and is_zeta_bound()
+c
+c subcus.f:
+c 16.10.2009	ggu	some changes and documentation for traccia
+c 18.11.2009	ggu	residence time computation in jamal with correction
+c
+c subnsh.f:
+c 18.11.2009    ggu     new format in pritime (write also time step)
+c
+c subqfxt.f:
+c 11.11.2009    ggu     handle abosrption of short rad in more than one layer
+c
+c subqfxu4.f:
+c 11.11.2009    ggu     new routine make_albedo(), pass albedo to heat2t
+c
+c subrst.f:
+c 13.11.2009    ggu     keep track of restart: /rstrst/ and has_restart()
+c
+c subsys.f:
+c 13.10.2009	ggu	documentation is $sect, new hvmax, lvmax
+c
+c subver.f:
+c 18.11.2009	ggu	version 5.31
+
+==========================================================
+
+version  5.30b    09-10-2009    VERS_5_30b
+
+minor changes
+
+========================================================== 09-10-2009 - 5.30b
+
+c subsys.f:
+c 09.10.2009	ggu	new parameter sclvel
+c
+c subver.f:
+c 09.10.2009	ggu	version 5.30b
+
+==========================================================
+
+version  5.30a    14-09-2009    VERS_5_30a
+
+more on section
+
+========================================================== 14-09-2009 - 5.30a
+
+c subver.f:
+c 14.09.2009	ggu	version 5.30a
+
+==========================================================
+
+version  5.30    14-09-2009    VERS_5_30
+
+new heatflux formulation (AREG)
+bug fix in lagrangian
+new vertical section
+
+========================================================== 14-09-2009 - 5.30
+
+c lagrange_cont.f:
+c 28.08.2009    ggu	new call to find_elems_to_segment (before line_elems)
+c
+c lagrange_init.f:
+c 11.09.2009    ggu	more checks for initial seeding (linepoint_in_element)
+c
+c lagrange_main.f:
+c 11.09.2009    ggu     little bug fix for output and release of particles
+c
+c sublnku.f:
+c 28.08.2009	ggu	routine line_elems renamed to find_elems_to_segment
+c 28.08.2009	ggu	new routines get_elems_around, get_nodes_around
+c 09.09.2009	ggu	bug fix in find_elems_to_segment (BUGip2)
+c
+c subnls.f:
+c 26.08.2009	ggu	allow '_' for names (USE_)
+c
+c subnsa.f:
+c 11.09.2009	ggu	new section $sect
+c
+c subqfxf.f:
+c 27.08.2009	ggu	set itperiod and irhumid from outside
+c
+c subqfxm2.f:
+c 27.08.2009    ggu     call to heatgill changed (pass ur, and not e,q)
+c
+c subqfxm3.f:
+c 27.08.2009    dbf&ggu	integrated into model
+c
+c subqfxt.f:
+c 27.08.2009    ggu     new call to heatgill, new routine heatareg
+c
+c subsys.f:
+c 11.09.2009	ggu	new section $sect
+c
+c subver.f:
+c 14.09.2009	ggu	version 5.30
+
+==========================================================
+
+version  5.29    19-06-2009    VERS_5_29
+
+bug in subreg.f -> 64bit
+bug in submeteo (no wind speed interpolation
+change in subnev.f for 64bit bug
+
+========================================================== 19-06-2009 - 5.29
+
+c basinf.f:
+c 12.06.2009    ggu     areatr in double precision - new algorithm
+c
+c map_influence.f:
+c 18.06.2009    ggu     re-written for map of influence
+c
+c submeteo.f:
+c 18.06.2009    ggu&dbf bug fix -> wind speed not interpolated on metws
+c
+c subnev.f:
+c 12.06.2009	ggu	more stable computation of area (bug_f_64bit)
+c
+c subreg.f:
+c 12.06.2009	ggu	passing to double precision, intrid, bug bug_f_64bit
+c
+c subspk.f:
+c 05.06.2009    ggu     some routines cleaned
+c
+c subsys.f:
+c 15.06.2009	ggu	new parameters for plot: isphe, reggrd, reggry
+c
+c subver.f:
+c 19.06.2009	ggu	version 5.29
+
+==========================================================
+
+version  5.28b    29-05-2009    VERS_5_28b
+
+        new ityrst for options in restarting
+        basic projection in subcoord.f
+        use new projection in submeteo.f (to be finished)
+        scalar interpolation (not finished) in new3di.f
+        new setting for lat/lon coordinates in subnev.f
+        new basbathy (interpolation on nodes, latlon)
+        new bastreat (still to be finished)
+
+========================================================== 29-05-2009 - 5.28b
+
+c bastreat.f:
+c 29.05.2009    ggu     does only depth limiting and smoothing
+c
+c subcus.f:
+c 23.05.2009	ggu	bug fix in jamal - reset also outer area
+c
+c subnev.f:
+c 22.05.2009	ggu	new routine set_coords_ev() and ev_blockdata
+c
+c subrst.f:
+c 29.05.2009    ggu     use closest record for restart (if ityrst=2)
+c
+c subver.f:
+c 29.05.2009	ggu	version 5.28b
+
+==========================================================
+
+version  5.28a    21-05-2009    VERS_5_28a
+
+        new basbathy (interpolation on nodes, latlon)
+        new bastreat (still to be finished)
+        new routines to read grd and not bnd file
+        links restructured
+        ktilt and ztilt together (subn11,subbnd)
+        new routine rdgrd implemented (basbathy,vp,subgrd,adjele)
+        test for parallel execution (newcon)
+        new inic2fill() (newini)
+        in femplot allow for constant value in color plot (supano,col)
+
+========================================================== 21-05-2009 - 5.28a
+
+c basbathy.f:
+c 24.04.2009	ggu	new call to rdgrd()
+c 21.05.2009	ggu	restructured to allow for nodal interpolation
+c
+c bdist.f:
+c 28.04.2009    ggu     links re-structured
+c
+c flux.f:
+c 28.04.2009    ggu     links re-structured
+c
+c lagrange_flux.f:
+c 28.04.2009    ggu     links re-structured
+c
+c newini.f:
+c 21.04.2009    ggu	new routine inic2fil()
+c
+c subflxa.f:
+c 28.04.2009    ggu     links re-structured
+c
+c subgrd.f:
+c 22.04.2009    ggu     changes from spline integrated (read lines)
+c 24.04.2009    ggu     newly restructured
+c
+c sublin.f:
+c 28.04.2009    ggu     links re-structured
+c
+c sublnks.f:
+c 28.04.2009    ggu     links re-structured
+c
+c subn11.f:
+c 27.04.2009    ggu     can use ktilt with ztilt
+c
+c subuti.f:
+c 28.04.2009    ggu     links re-structured
+c
+c subver.f:
+c 21.05.2009	ggu	version 5.28a
+c
+c subwat.f:
+c 28.04.2009    ggu     links re-structured 
+c
+c vp.f:
+c 24.04.2009    ggu     new call to rdgrd()
+
+==========================================================
+
+version  5.28    21-04-2009    VERS_5_28
+
+        ztilt implemented
+        check again for band width
+        delete level.h in femplot
+
+========================================================== 21-04-2009 - 5.28
+
+c subbnd.f:
+c 20.04.2009	ggu	new variable ztilt, ndim substituted with nbvdim
+c
+c subdim.f:
+c 21.04.2009    ggu     new routine sp131m() for band width
+c
+c subn11.f:
+c 20.04.2009    ggu     new routine z_tilt (tilting around a fixed value)
+c
+c subver.f:
+c 20.04.2009	ggu	version 5.28
+
+==========================================================
+
+version  5.27    07-04-2009    VERS_5_27
+
+all files now read param.h
+new routines in newchk.f for checking nodes/elems
+nlidim renamed to nlkdim
+adjust param.h from Rules.make
+
+========================================================== 07-04-2009 - 5.27
+
+c ht.f:
+c 06.04.2009    ggu	renamed nlidim to nlkdim
+c
+c links.f:
+c 06.04.2009    ggu	changed nlidim to nlkdim
+c
+c new3di.f:
+c 06.04.2009    ggu	deleted routine write_elem_vel_info()
+c
+c newchk.f:
+c 06.04.2009    ggu     new check_elems_around_node, check_nodes_in_elem
+c
+c newtvd.f:
+c 06.04.2009	ggu&ccf	bug fix: in tvd_fluxes() do not test for conc==cond
+c
+c subdim.f:
+c 06.04.2009    ggu     nlidim -> nlkdim
+c
+c sublnka.f:
+c 06.04.2009    ggu     nlidim -> nlkdim
+c
+c subver.f:
+c 06.04.2009	ggu	version 5.27
+
+==========================================================
+
+version  5.26b    03-04-2009    VERS_5_26b
+
+        bug fix for lagrangian interpolation (unstable)
+        intpol default is 0 (4 for ibtyp=1, 2 else)
+        eliminated compiler warnings for gfortran
+        in sparskit routines substituted assigned goto with if
+
+========================================================== 03-04-2009 - 5.26b
+
+c newchk.f:
+c 02.04.2009    ggu     new routine check_elem()
+c
+c subbas.f:
+c 02.04.2009	ggu	error messages changed
+c
+c subbnd.f:
+c 02.04.2009	ggu	intpol default is 0, some unused routines deleted
+c
+c subn11.f:
+c 02.04.2009    ggu     use get_bnd_(i)par() for special routines
+c 03.04.2009    ggu     set intpol depending on ibtyp if intpol==0
+c
+c subsse.f:
+c 02.04.2009	ggu	if less data given lower interpolation (REDINT)
+c 03.04.2009	ggu	new routine intp_neville() (stable lagrange interpol.)
+c
+c subver.f:
+c 03.04.2009	ggu	version 5.26b
+
+==========================================================
+
+version  5.26a    31-03-2009    VERS_5_26a
+
+	stupid bug fix in subspk.f
+
+========================================================== 31-03-2009 - 5.26a
+
+c subver.f:
+c 31.03.2009	ggu	version 5.26a
+
+==========================================================
+
+version  5.26    31-03-2009    VERS_5_26
+
+        tvd scheme integrated
+                for general use itvd=2 is recommended
+        sparskit integrated
+        gauss elimination tested with double precision (see simsys_lp.f)
+        some changes to code for regular matrices
+        bug fix for dry nodes -> call adjust_mass_flux()
+                results was a mass conservation error
+
+========================================================== 31-03-2009 - 5.26
+
+c new3di.f:
+c 27.03.2009    ggu	call new routine adjust_mass_flux() for dry nodes
+c
+c newcon.f:
+c 31.03.2009    ggu     TVD algorithm tested and cleaned
+c
+c newtvd.f:
+c 30.03.2009	ggu	bug fix: ilhv was real in tvd_get_upwind()
+c 31.03.2009	ggu	bug fix: do not use internal gradient (undershoot)
+c
+c subn11.f:
+c 27.03.2009    ggu     new routine adjust_mass_flux() for dry nodes
+c 31.03.2009    ggu     in make_scal_flux() bug fix for negative fluxes
+c
+c subrgf.f:
+c 27.03.2009    ggu     bug fix ITACT (itact was not adjourned)
+c 31.03.2009    ggu     changed header of regular files (x0,.., description)
+c
+c subver.f:
+c 31.03.2009	ggu	version 5.26
+
+==========================================================
+
+version  5.25    24-03-2009    VERS_5_25
+
+various bugfixes:
+        tvd
+        regular meteo
+        fix and sigma
+        depth initialization
+
+========================================================== 24-03-2009 - 5.25
+
+c ht.f:
+c 11.03.2009    ggu	new arrays for meteo data
+c
+c newchk.f:
+c 23.03.2009    ggu     more debug for vrerr, new routine check_node
+c
+c newcon.f:
+c 24.03.2009    ggu     more bugs in TVD scheme fixed
+c
+c newfix.f:
+c 23.03.2009    ggu     tramp from start of simulation
+c
+c newini.f:
+c 24.03.2009    ggu	bug fix: in set_last_layer() do not adjust for 2D
+c
+c newsigma.f:
+c 24.03.2009    ggu     use nsigma to check if initialized
+c
+c newtvd.f:
+c 24.03.2009	ggu	bug fix: isum -> 6; declaration of cl() was missing 0
+c
+c subcus.f:
+c 24.03.2009	ggu	new zinit, tvd_test
+c
+c submeteo.f:
+c 24.03.2009    ggu     use metrain instead rqdsv
+c
+c subn11.f:
+c 24.03.2009    ggu     bug fix for rain; rain0d; new rain2distributed()
+c
+c subqfxt.f:
+c 11.03.2009    ggu     new routine qflux_compute()
+c
+c subreg.f:
+c 11.03.2009	ggu	new helper routine getgeoflag()
+c
+c subrst.f:
+c 23.03.2009    ggu     bugfix in admrst - itmrst=itanf if itmrst<itanf
+c
+c subsys.f:
+c 13.03.2009	ggu	bugfix: some parameters had default section not set
+c
+c subver.f:
+c 24.03.2009	ggu	version 5.25
+c
+c tideg.f:
+c 11.03.2009    ggu     not adjusted for new x/ygeov -> still to be handled
+
+==========================================================
+
+version  5.24    11-03-2009    VERS_5_24
+
+matrix amat is local
+restructured lagrangian
+introduced regular fluxes
+
+========================================================== 11-03-2009 - 5.24
+
+c ht.f:
+c 04.03.2009    ggu	matrix amat into solver routines
+c
+c lagrange.h:
+c 15.02.2009    ggu     cleaned version
+c
+c lagrange_main.f:
+c 15.02.2009    ggu     call to track_body has changed -> pass time to advect
+c
+c laplap.f:
+c 11.03.2009	ggu	bug fix -> declare hev() here
+c
+c new3di.f:
+c 04.03.2009    ggu	matrix amat deleted from file -> only locally used
+c
+c subqfxf.f:
+c 10.03.2009	ggu	call to meteo_set_matrix() for 2D arrays
+c
+c subqfxt.f:
+c 10.03.2009    ggu     new qflux_read(), new call to meteo_get_values()
+c
+c subqfxu1.f:
+c 18.02.2009    ggu     dew point introduced into psy()
+c
+c subver.f:
+c 11.03.2009	ggu	version 5.24
+
+==========================================================
+
+version  5.23b    13-02-2009    VERS_5_23b
+
+new lagrangian files
+minor bugs
+
+========================================================== 13-02-2009 - 5.23b
+
+c lagrange_back.f:
+c 04.02.2009    aac     cleaned up
+c
+c lagrange_decay.f:
+c 05.02.2009    ggu     copied from other files
+c
+c lagrange_flux.f:
+c 05.02.2009    ggu     copied from other files
+c
+c lagrange_inout.f:
+c 05.02.2009    ggu	copied from lagrange_cont.f and integrated from others
+c
+c lagrange_main.f:
+c 05.02.2009    ggu     re-arranged whole lagrangian module
+c
+c lagrange_track.f:
+c 05.02.2009    ggu     copied from other files
+c
+c lagrange_util.f:
+c 05.02.2009    ggu     copied from other files
+c
+c lagrange_util_tr.f:
+c 05.02.2009    ggu     copied from other files (lagrange.f)
+c
+c nosresidence.f:
+c 13.02.2009    ggu     compute min/max of residence time
+c
+c splitext.f:
+c 13.02.2009	ggu	big arrays in common for parallel environment
+c
+c subcst.f:
+c 11.02.2009    ggu     in cstfile set fixed name for STR file
+c
+c subver.f:
+c 13.02.2009	ggu	version 5.23b
+
+==========================================================
+
+version  5.23a    04-02-2009    VERS_5_23a
+
+        new routine scal_intp to interpolate scalar variables
+        bug fix in post routines
+        routines from Andrea integrated (TVD, semi-lagrangian)
+	TVD scheme is still broken
+
+========================================================== 04-02-2009 - 5.23a
+
+c lagrange.f:
+c 29.01.2009	aac	changes in write to file
+c
+c lagrback.f:
+c 27.01.2009    aac     inertial effects from high vel to low vel
+c
+c newcon.f:
+c 27.01.2009    aac     bugs in TVD scheme fixed
+c
+c newini.f:
+c 27.01.2009    ggu	mzreg and hlvmax deleted (not used)
+c
+c newtvd.f:
+c 02.02.2009	ggu&aac	all tvd routines into seperate file
+c
+c scal_intp.f:
+c 27.01.2009	ggu	new routine scal_intp from laplap
+c
+c subcus.f:
+c 28.01.2009	aac	new routine andreac()
+c
+c subdif.f:
+c 27.01.2009    ggu     diffset() deleted
+c
+c subn35.f:
+c 29.01.2009    ggu     ausdef eliminated (chezy(5,.) is not used anymore)
+c
+c subnsu.f:
+c 27.01.2009	ggu	new subroutine coord
+c
+c subsys.f:
+c 29.01.2009	ggu	various changes, better documentation
+c
+c subver.f:
+c 04.02.2009	ggu	version 5.23a
+
+==========================================================
+
+version  5.23    26-01-2009    VERS_5_23
+
+new makedepend
+handling of mass error
+new routine to read 3D initialization files
+precision for pardiso in common.h
+
+========================================================== 26-01-2009 - 5.23
+
+c newbcl.f:
+c 13.01.2009    ggu&deb changes in reading file in read_next_record()
+c
+c newchk.f:
+c 21.01.2009    ggu     new var vrerr to stop if mass error is too high
+c
+c newfix.f:
+c 19.01.2009    ggu     no error stop in initializing when nbfix=0
+c
+c newini.f:
+c 21.01.2009    ggu	cleaned up, new read_scalar()
+c
+c subsss.f:
+c 26.01.2009	ggu	minor changes to avoid compiler warnings
+c
+c subsys.f:
+c 21.01.2009	ggu	new variable vrerr (stop if mass error)
+c
+c subver.f:
+c 26.01.2009	ggu	version 5.23
+
+==========================================================
+
+version  5.22    13-01-2009    VERS_5_22
+
+Pardiso lib integrated
+
+========================================================== 13-01-2009 - 5.22
+
+c new3di.f:
+c 13.01.2009    ggu	Pardiso lib integrated
+c
+c subver.f:
+c 13.01.2009	ggu	version 5.22
+
+==========================================================
+
+version  5.21    12-01-2009    VERS_5_21
+
+bug in subrst (restart)
+documentation, re-formatting
+
+========================================================== 12-01-2009 - 5.21
+
+c subfil.f:
+c 09.01.2009	ggu	re-formatted, safeguard units 5 and 6
+c
+c subrst.f:
+c 09.01.2009    ggu     bugfix in inirst - file opened with status=new
+c
+c subsys.f:
+c 09.01.2009	ggu	documentation
+c
+c subver.f:
+c 12.01.2009	ggu	version 5.21
+
+==========================================================
+
+version  5.20a    19-12-2008    VERS_5_20a
+
+minor change in new3di.f (friction)
+
+========================================================== 19-12-2008 - 5.20a
+
+c subver.f:
+c 19.12.2008	ggu	version 5.20a
+
+==========================================================
+
+version  5.20    18-12-2008    VERS_5_20
+
+Bug fix in GOTM module and subgotm
+rfricv used now for bottom friction
+
+========================================================== 18-12-2008 - 5.20
+
+c ht.f:
+c 10.12.2008    ggu	new array rfricv for bottom friction
+c 18.12.2008    ggu	new routine debug_output(), might be removed later
+c
+c new3di.f:
+c 10.12.2008    ggu	use rfricv for bottom friction -> other can be deleted
+c 18.12.2008    ggu	more debug info for error in vertical system
+c
+c subgotm.f:
+c 18.12.2008    ggu     bug in GOTM module and setm2n2() corrected
+c
+c subn35.f:
+c 10.12.2008    ggu     re-organized, deleted sp135r(), use bottom_friction()
+c
+c subver.f:
+c 18.12.2008	ggu	version 5.20
+
+==========================================================
+
+version  5.19    09-12-2008    VERS_5_19
+
+Some bug fix - changes from Malta
+
+========================================================== 09-12-2008 - 5.19
+
+c bastreat.f:
+c 06.12.2008    ggu     smoothing introduced
+c
+c debug.f:
+c 06.12.2008    ggu     check for NaN changed (Portland compiler)
+c
+c newchk.f:
+c 06.12.2008    ggu     read vreps from STR file
+c
+c newcon.f:
+c 06.12.2008    ggu     in conzstab changed wprv, new routine write_elem_info()
+c
+c newfix.f:
+c 06.12.2008    ggu     read nbfix from STR
+c
+c newini.f:
+c 06.12.2008    ggu&ccf small bug fix in set_last_layer()
+c
+c newsigma.f:
+c 06.12.2008    ggu     bsigma set from STR (nsigma)
+c
+c subcus.f:
+c 06.12.2008	ggu	new routine vdiffus()
+c
+c subgotm.f:
+c 02.12.2008    ggu     bug in gotm_init: no limiting values for initialization
+c
+c subnls.f:
+c 02.12.2008	ggu	bug in nrdnum: kexp was double precision
+c
+c subnsh.f:
+c 20.11.2008    ggu     init_3d deleted, nlv initialized to 0
+c
+c subsys.f:
+c 24.11.2008	ggu	new variable vreps (mass error)
+c 06.12.2008	ggu	new variables nbfix and nsigma
+c
+c subver.f:
+c 09.12.2008	ggu	version 5.19
+
+==========================================================
+
+version  5.18    20-11-2008    VERS_5_18
+
+new version with lots of changes:
+        sigma level read
+        initialization of T/S from file
+        BUGFIX in conz3d (vertical velocity)
+        test on set_barocl_new, new set_diff_horizontal_new1, viscous_stability
+        set_last_layer() rewritten
+        qfcheck
+
+========================================================== 20-11-2008 - 5.18
+
+c ht.f:
+c 12.11.2008    ggu	new sigma level initialization
+c
+c newbcl.f:
+c 12.11.2008    ggu     new initialization, check_layers, initial nos file
+c
+c newcon.f:
+c 08.11.2008    ggu     BUGFIX in conz3d (vertical velocity)
+c 11.11.2008    ggu     conzstab cleaned
+c 19.11.2008    ggu     changes in advect_stability() - incomplete
+c
+c newexpl.f:
+c 03.11.2008    ggu&dbf nudging implemented (call to bclnudge)
+c 09.11.2008	ggu	set_barocl_new (cleaned version of set_barocl)
+c 19.11.2008	ggu	new set_diff_horizontal_new1(), viscous_stability()
+c
+c newfix.f:
+c 03.11.2008    ggu&dbf nudging implemented
+c 12.11.2008    ggu     handle sigma coordinates
+c
+c newini.f:
+c 12.11.2008    ggu     set_last_layer() rewritten, new adjust_k_depth()
+c
+c newsigma.f:
+c 07.11.2008    ggu     program written from scratch
+c
+c subbndo.f:
+c 06.11.2008    ggu     better error handling
+c
+c subcus.f:
+c 12.11.2008	ggu	new routine joel
+c 19.11.2008	ggu	new routine viscos
+c
+c subele.f:
+c 07.11.2008    ggu     new helper routine make_new_depth()
+c
+c sublnka.f:
+c 06.11.2008    ggu     better error handling
+c
+c subnev.f:
+c 18.11.2008	ggu	new routine adjust_bc() to adjust sum to 0
+c 19.11.2008	ggu	helper routines to compute area/aomega
+c
+c subqfxf.f:
+c 12.11.2008	ggu	checks for unrealistic values in qfcheck
+c
+c subqfxt.f:
+c 17.11.2008    ggu     new call to qfcheck_file() before opening
+c
+c subsse.f:
+c 08.11.2008	ggu	better error handling
+c
+c subsys.f:
+c 10.11.2008	ggu	new variable ilytyp, cleaned
+c 19.11.2008	ggu	new variable noslip
+c
+c subver.f:
+c 20.11.2008	ggu	version 5.18
+
+==========================================================
+
+version  5.17a    03-11-2008    VERS_5_17a
+
+small bug fixes
+prepare for pardiso solver
+zfranco added
+
+========================================================== 03-11-2008 - 5.17a
+
+c intp.f:
+c 11.10.2008	ggu	franco passed in
+c
+c new36.f:
+c 11.10.2008	ggu	bug in call to nrdnxt (real instead of double p.)
+c
+c new3di.f:
+c 10.10.2008	ggu&mbj	prepared for pardiso -> modify system (gguexclude)
+c
+c subcus.f:
+c 11.10.2008	ggu	pass zfranco into subroutine
+c
+c subsys.f:
+c 11.10.2008	ggu	zfranco added
+c
+c subver.f:
+c 03.11.2008	ggu	version 5.17a
+
+==========================================================
+
+version  5.17    10-10-2008    VERS_5_17
+
+changes in call to confop
+bug fix for gotm
+new boundary condition for velocities
+subsse and subfil independent from external files
+
+========================================================== 10-10-2008 - 5.17
+
+c atoxi3d.f:
+c 09.10.2008    ggu     new call to confop
+c
+c bio3d.f:
+c 09.10.2008    ggu     new call to confop
+c
+c bio3d_util.f:
+c 09.10.2008    ggu     new call to confop
+c
+c newbcl.f:
+c 09.10.2008    ggu     new call to confop
+c
+c newconz.f:
+c 09.10.2008    ggu     new call to confop
+c
+c newfix.f:
+c 15.09.2008    ggu     written from scratch
+c
+c subcon1.f:
+c 09.10.2008    ggu&ccf call to confop changed -> nlv
+c
+c subcus.f:
+c 09.10.2008    ggu     new call to confop
+c
+c subgotm.f:
+c 18.09.2008    ccf     bug fix for m2 in setm2n2
+c
+c subqfxu3.f:
+c 08.10.2008    ggu     jdmon0 and bises0 re-introduced
+c
+c subres.f:
+c 09.10.2008    ggu     new call to confop
+c
+c subsse.f:
+c 08.10.2008	ggu	introduced matinv0 for independence
+c
+c subsys.f:
+c 17.09.2008    ggu     new interpretation for level (-1 = bottom)
+c
+c subver.f:
+c 10.10.2008	ggu	version 5.17
+c
+c subwaves.f:
+c 09.10.2008    ggu     new call to confop
+c
+c subwwm.f:
+c 09.10.2008    ggu     new call to confop
+
+==========================================================
+
+version  5.16a    04-09-2008    VERS_5_16a
+
+Bug fix in subsse
+
+========================================================== 04-09-2008 - 5.16a
+
+c subbndo.f:
+c 03.09.2008    ggu     new routine bndo_info_file()
+c
+c subnls.f:
+c 03.09.2008	ggu	nrdvecr slightly changed return value
+c
+c subnsh.f:
+c 03.09.2008    ggu     in nlsh2d different error message
+c
+c subsse.f:
+c 03.09.2008	ggu	bug fix in intp_ts, bug fix in exfini (aux array)
+c
+c subver.f:
+c 03.09.2008	ggu	version 5.16a
+
+==========================================================
+
+version  5.16    22-07-2008    VERS_5_16
+
+integrated changes in lagrange diff from andrea
+recursivemake adjusted
+lib points to femlib
+
+========================================================== 22-07-2008 - 5.16
+
+c subver.f:
+c 22.07.2008	ggu	version 5.16
+
+==========================================================
+
+version  5.15    16-07-2008    VERS_5_15
+
+Lot of small changes
+changes in restart
+massive changes in subbnd
+scattered changes for ev (ev.h introduced)
+
+========================================================== 16-07-2008 - 5.15
+
+c lagrange.f:
+c 24.06.2008	ggu	new z var, new initialization
+c
+c lagrange_cont.f:
+c 12.06.2008    ggu	initialize also z
+c
+c lagrange_in.f:
+c 13.06.2008	ggu	use insert_particle, bugfix for multiple lines
+c
+c new3di.f:
+c 24.06.2008    ggu	bpresv deleted
+c
+c newbcl.f:
+c 12.06.2008    ggu     s/tdifhv deleted
+c
+c newchk.f:
+c 24.06.2008    ggu     bpresv deleted
+c
+c newcon.f:
+c 24.06.2008    ggu     rstol re-introduced
+c
+c newconz.f:
+c 24.06.2008    ggu     changes in dacay for multiple concentrations
+c
+c newexpl.f:
+c 14.07.2008	ggu&ccf	ahpar is real in set_diff_horizontal_new
+c
+c subbfm.f:
+c 30.04.2008    ggu     double to real (BUG)
+c
+c subbnd.f:
+c 30.05.2008	ggu	eliminated numbers for parameters
+c 03.06.2008	ggu	new parameters levmin, kref
+c 06.06.2008	ggu	completely restructured
+c
+c subcus.f:
+c 26.06.2008    ggu     routien for testing diffusion
+c
+c subn11.f:
+c 03.06.2008    ggu     levmin introduced
+c
+c subnev.f:
+c 24.06.2008	ggu	compute and store also distances beteween nodes
+c
+c subrst.f:
+c 13.06.2008    ggu     new version 5 -> S/T/rho
+c
+c subsys.f:
+c 16.06.2008    ggu     old parts deleted, new documentation
+c
+c subver.f:
+c 16.07.2008	ggu	version 5.15
+
+==========================================================
+
+version  5.14a    29-04-2008    VERS_5_14a
+
+ERSEM model included
+
+========================================================== 29-04-2008 - 5.14a
+
+c ht.f:
+c 29.04.2008    ggu&aac new BMF ERSEM model
+c
+c lagrange.f:
+c 29.04.2008	ggu	bug fix for parallel version
+c
+c subbfm.f:
+c 29.04.2008    ggu     bfm model integrated in main branch
+c
+c subbfm_dummy.f:
+c 29.04.2008    ggu     bfm model integrated in main branch
+c
+c subbnd.f:
+c 29.04.2008    ggu&aac new boundary arrays for ERSEM
+c
+c subsys.f:
+c 29.04.2008    ggu&aac new vars for ERSEM
+c
+c subver.f:
+c 29.04.2008	ggu	version 5.14a
+
+==========================================================
+
+version  5.14    29-04-2008    VERS_5_14
+
+new stability computation
+in subnls and subpar use double precision
+new multivar concentration in new file
+
+========================================================== 29-04-2008 - 5.14
+
+c ht.f:
+c 28.04.2008    ggu     new routine init_stability(), new conzm3sh()
+c
+c newcon.f:
+c 28.04.2008    ggu     rstol deleted
+c 28.04.2008    ggu     new routines for stability, s/getistot deleted
+c 28.04.2008    ggu     conz3sh into own file
+c
+c newconz.f:
+c 28.04.2008    ggu     conz3sh into own file
+c 28.04.2008    ggu     new conzm3sh for multiple concentrations
+c
+c subbnd.f:
+c 28.04.2008    ggu     call to nrdpar in double precision
+c
+c subnls.f:
+c 28.04.2008	ggu	all routines changed to double precision
+c
+c subnsh.f:
+c 28.04.2008    ggu     in set_timestep new call to advect_stability()
+c
+c subpar.f:
+c 28.04.2008    ggu     all routines changed to double precision
+c 28.04.2008    ggu     three new routines: dgetpar, dputpar, daddpar
+c
+c subsys.f:
+c 28.04.2008    ggu     rstot deleted, contau introduced
+c
+c subver.f:
+c 29.04.2008	ggu	version 5.14
+
+==========================================================
+
+version  5.13    24-04-2008    VERS_5_13
+
+Small changes, Parallelization
+
+========================================================== 24-04-2008 - 5.13
+
+c atoxi3d.f:
+c 23.04.2008    ggu     call to bnds_set_def() changed
+c
+c bio3d.f:
+c 23.04.2008    ggu     call to bnds_set_def() changed
+c
+c ht.f:
+c 23.04.2008    ggu     deleted r3{c|t|s}v
+c
+c lagrange.f:
+c 23.04.2008	ggu	drogue() parallelized
+c
+c newbcl.f:
+c 23.04.2008    ggu     call to bnds_set_def() changed
+c
+c newcon.f:
+c 23.04.2008    ggu     call to bnds_set_def() changed
+c
+c subbnds.f:
+c 23.04.2008    ggu     in bnds_set_def() eliminated aaux
+c
+c subver.f:
+c 23.04.2008	ggu	version 5.13
+
+==========================================================
+
+version  5.12    22-04-2008    VERS_5_12
+
+Changes due to parallelization
+
+========================================================== 22-04-2008 - 5.12
+
+c atoxi3d.f:
+c 22.04.2008    ggu     advection parallelized
+c
+c bio3d.f:
+c 22.04.2008    ggu     advection parallelized
+c
+c ht.f:
+c 22.04.2008    ggu     gradx/yv non global due to parallelization
+c
+c newbcl.f:
+c 22.04.2008    ggu     advection parallelized, no saux1v...
+c
+c newcon.f:
+c 22.04.2008    ggu     parallelization: scal_adv, scal_bnd
+c 22.04.2008    ggu     local saux, sbflux, no explh, cl{c|m|p}e
+c 22.04.2008    ggu     new routine scal_adv_fact for cohesive sediments
+c
+c subinv.f:
+c 22.04.2008    ggu     new SAXPY_NEW for parallelization trial
+c
+c subn11.f:
+c 22.04.2008    ggu     in make_scal_flux do not alter mfluxv (parallel code)
+c
+c subver.f:
+c 22.04.2008	ggu	version 5.12
+
+==========================================================
+
+version  5.11a    18-04-2008    VERS_5_11a
+
+bugfix in rain
+bugfix in subsse
+weutro_sedim cleaned
+
+========================================================== 18-04-2008 - 5.11a
+
+c bio3d_util.f:
+c 18.04.2008    ggu     copied from weutro_sedim.f
+c
+c subn11.f:
+c 18.04.2008    ggu     rain simplified, bugfix
+c
+c subsse.f:
+c 18.04.2008	ggu	new exffild, adjusted exffil, bugfix in exfini, exfintp
+c
+c subver.f:
+c 18.04.2008	ggu	version 5.11a
+
+==========================================================
+
+version  5.11    17-04-2008    VERS_5_11
+
+levmax negative
+evaporation
+
+========================================================== 17-04-2008 - 5.11
+
+c atoxi3d.f:
+c 17.04.2008    ggu     new open boundary conditions 
+c
+c ht.f:
+c 16.04.2008    ggu     evaporation mass flux (evapv)
+c
+c subbnd.f:
+c 17.04.2008    ggu     deleted infobnd(), levbnd()
+c
+c subbndo.f:
+c 17.04.2008    ggu     calls to infobnd deleted (subst by get_bnd_ipar)
+c
+c subbnds.f:
+c 17.04.2008    ggu     deleted bnds_set_global
+c
+c subn11.f:
+c 17.04.2008    ggu     lmin introduced in set_mass_flux (negative levmax)
+c 17.04.2008    ggu     evaporation introduced, rain adjusted
+c
+c subqfxt.f:
+c 17.04.2008    ggu     save evaporation in evapv for later use
+c
+c subsys.f:
+c 17.04.2008    ggu     new param ievap (to compute evaporation mass flux)
+c
+c subver.f:
+c 17.04.2008	ggu	version 5.11
+
+==========================================================
+
+version  5.10    16-04-2008    VERS_5_10
+
+New Makefile structure
+new ousaver.f
+
+========================================================== 16-04-2008 - 5.10
+
+c newexpl.f:
+c 16.04.2008	ggu	bugfix in set_barocl (real do indices!!)
+c
+c ousaver.f:
+c 14.04.2008	ggu	commented, blank area problems resolved
+c
+c subpar.f:
+c 16.04.2008    ggu     bugfix in pripar (character*79 -> *80)
+c
+c subver.f:
+c 16.04.2008	ggu	version 5.10
+
+==========================================================
+
+version  5.06    11-04-2008    VERS_5_06
+
+Changes from Christian integrated
+Many changes
+sediments, z0bk, ireib=8, isphe, upro, waveov, stokes
+still old gotm, dummy netcdf, old Makefile
+
+========================================================== 11-04-2008 - 5.06
+
+c ht.f:
+c 10.04.2008    ggu&ccf	upro, waveov, stokes, z0bk
+c
+c kepsd.f:
+c 10.04.2008	ggu&ccf	new gotm routine call integrated
+c
+c newini.f:
+c 10.04.2008    ggu     initialize upro/vpro and z0bk (init_z0b)
+c
+c newtra.f:
+c 10.04.2008	ggu	copy velocities at nodes in copy_uvz()
+c
+c subgotm.f:
+c 10.04.2008    ggu     integrated in main branch
+c
+c subn11.f:
+c 10.04.2008    ggu&ccf new call to init_z0b()
+c
+c subnsh.f:
+c 10.04.2008    ccf     output in netcdf format
+c
+c subsys.f:
+c 10.04.2008    ccf     netcdf and gotmpa parameters
+c
+c subver.f:
+c 11.04.2008	ggu	version 5.06
+c
+c subwaves.f:
+c 10.04.2008    ccf     check for p > 0
+c
+c subwwm.f:
+c 10.04.2008    ccf     added waveov and stokesx/y
+
+==========================================================
+
+version  5.05c    10-04-2008    VERS_5_05c
+
+minor changes
+in subbnds array is intialized directly
+
+========================================================== 10-04-2008 - 5.05c
+
+c subver.f:
+c 10.04.2008	ggu	version 5.05c
+
+==========================================================
+
+version  5.05b    09-04-2008    VERS_5_05b
+
+Treatment of open boundaries
+
+========================================================== 09-04-2008 - 5.05b
+
+c bio3d.f:
+c 08.04.2008    ggu     treatment of boundaries slightly changed
+c
+c newbcl.f:
+c 08.04.2008    ggu     treatment of boundaries slightly changed
+c
+c newcon.f:
+c 08.04.2008    ggu     treatment of boundaries changed
+c
+c newini.f:
+c 07.04.2008    ggu     deleted surinl, volinl, voldist
+c
+c subbndo.f:
+c 08.04.2008    ggu     file cleaned (new bndo_setbc, bndo_impbc)
+c
+c subcon1.f:
+c 07.04.2008    ggu     deleted set_c_bound
+c 08.04.2008    ggu     cleaned, deleted distribute_vertically, open_b_flux
+c
+c subn11.f:
+c 07.04.2008    ggu     deleted c2dvalue, set_scal_bc
+c 07.04.2008    ggu     differential input introduced (-5555)
+c 09.04.2008    ggu     only level boundary array, re-arranged
+c
+c subver.f:
+c 09.04.2008	ggu	version 5.05b
+
+==========================================================
+
+version  5.05a    01-04-2008    VERS_5_05a
+
+Changes to unit number distribution.
+Always call ifileo with unit number = 0
+
+========================================================== 01-04-2008 - 5.05a
+
+c subfil.f:
+c 31.03.2008	ggu	in ifileo remember last unit number
+c
+c subver.f:
+c 31.03.2008	ggu	version 5.05a
+
+==========================================================
+
+version  5.05    17-03-2008    VERS_5_05
+
+New open boundary conditions introduced.
+
+========================================================== 17-03-2008 - 5.05
+
+c bio3d.f:
+c 17.03.2008    ggu     new open boundary routines introduced
+c
+c loading.f:
+c 14.03.2008	ggu     new routine set_surface_load
+c
+c newbcl.f:
+c 17.03.2008    ggu     new open boundary routines introduced
+c
+c newcon.f:
+c 17.03.2008    ggu     new open boundary routines introduced
+c
+c newini.f:
+c 17.03.2008    ggu     better error message if missing levels
+c
+c subbnds.f:
+c 17.03.2008    ggu     routines re-arranged, new bnds_trans, bnds_set_def
+c
+c subcus.f:
+c 12.03.2008    ggu     jamal restructured -> computes projected res time
+c 17.03.2008    ggu     new routines zinit, cprint
+c
+c subn11.f:
+c 17.03.2008    ggu     name of some variables changed, new scalar values
+c
+c subsse.f:
+c 29.02.2008	ggu	name change: exxp -> intp_lagr, extrp -> intp_lsqr
+c 29.02.2008	ggu	deleted exxqq, exxqq9
+c 17.03.2008	ggu	completely restructured
+c
+c subver.f:
+c 17.03.2008	ggu	version 5.05
+
+==========================================================
+
+version  5.04    18-01-2008    VERS_5_04
+
+lagrange continuous release
+
+========================================================== 18-01-2008 - 5.04
+
+c lagrange.f:
+c 10.11.2007	ggu	new routine ggrand, new call to lagr_release
+c
+c lagrange_cont.f:
+c 12.12.2007    ggu	written from scratch
+c
+c lagrange_dif.f:
+c 10.11.2007	ggu	renamed random routine from ran1 to ran9 (conflict)
+c
+c lagrange_in.f:
+c 10.11.2007	ggu	renamed ran0 to ran8 (conflict, not used here)
+c
+c sublnku.f:
+c 10.11.2007	ggu	new routine line_elems
+c
+c subrnd.f:
+c 11.12.2007	ggu	new routine ggrand
+c
+c subver.f:
+c 18.01.2008	ggu	version 5.04
+
+==========================================================
+
+version  5.03    08-11-2007    VERS_5_03
+
+some bug fixes
+
+========================================================== 08-11-2007 - 5.03
+
+c new3di.f:
+c 28.09.2007    ggu	deleted chao, semi-lagrange to newexp.f, no indov
+c
+c newbcl.f:
+c 04.10.2007    ggu     bug fix -> call qflux3d with dt real
+c
+c newcon.f:
+c 01.10.2007    ggu     Hack for ssurface -> set to 0 or -999 (temp)
+c
+c newexpl.f:
+c 28.09.2007	ggu	semi-lagrangian part introduced
+c
+c subbnds.f:
+c 05.10.2007    ggu     definition of array(ndim,1) changed to array(ndim,0:1)
+c
+c subflxa.f:
+c 28.09.2007    ggu     use testbndo to determine boundary node in flxtype
+c
+c subn11.f:
+c 02.10.2007    ggu     bug fix in make_scal_flux: surface flux only in layer 1
+c
+c subnsh.f:
+c 02.10.2007    ggu     bug fix in set_timestep for very small rindex
+c
+c subver.f:
+c 08.11.2007	ggu	version 5.03
+
+==========================================================
+
+version  5.02    27-09-2007    VERS_5_02
+
+Completely new treatment of scalar boundary values:
+
+new boundary value treatment
+new mass check
+new vertical velocities
+scalar boundary treatament out of subn11
+rain and evaporation (incomplete)
+spherical grid (incomplete)
+
+========================================================== 27-09-2007 - 5.02
+
+c basinf.f:
+c 24.08.2007	ggu	added new routine write_grd_from_bas
+c
+c ht.f:
+c 26.09.2007    ggu     deleted arrays rcv,rtv,rsv
+c 27.09.2007    ggu     deleted call to tstvol,tstvol1
+c
+c newchk.f:
+c 23.08.2007    ggu     test for boundary nodes using routines in testbndo.h
+c 27.09.2007    ggu     deleted tstvol,tstvol1,contst, new mass_conserve
+c
+c newcon.f:
+c 23.08.2007    ggu     test for boundary nodes using routines in testbndo.h
+c 18.09.2007    ggu     new subroutine check_scal
+c
+c newini.f:
+c 27.08.2007    ccf     coriolis from spherical coordinates
+c
+c subbndo.f:
+c 23.08.2007    ggu     use iopbnd as indicator for ext/int boundary nodes
+c
+c subn11.f:
+c 18.09.2007    ggu     new set_mass_flux, bug fix in dist_3d
+c 25.09.2007    ggu     routines deleted: [mbc]value, testbc
+c
+c subnev.f:
+c 27.08.2007    ccf     dlon and isphe (=1)  for spherical coordinate system
+c
+c subsys.f:
+c 27.08.2007    ccf     dlon and isphe = 1  for spherical coordinate system
+c
+c subver.f:
+c 27.09.2007	ggu	version 5.02
+
+==========================================================
+
+version  5.01    23-08-2007    VERS_5_01
+
+Some bug fixes.
+
+========================================================== 23-08-2007 - 5.01
+
+c lagrange_in.f:
+c 22.06.2007    ggu     in posit use xydif to avoid endless loop
+c
+c newcon.f:
+c 08.08.2007    ggu     new parameter istot_max
+c
+c subcus.f:
+c 03.08.2007    ggu     in jamal reset introduced...
+c
+c subqfxt.f:
+c 20.08.2007    ggu     prepared for evaporation - salinity feedback
+c
+c subqfxu1.f:
+c 21.08.2007    ggu     bug fix for wbt -> account for rh = 0
+c
+c subver.f:
+c 23.08.2007	ggu	version 5.01
+
+==========================================================
+
+version  5.00    08-06-2007    VERS_5_00
+
+New algorithm:
+	no operator splitting
+	new advective scheme
+	new baroclinic contribution
+	new treatment of horizontal viscous terms
+
+========================================================== 08-06-2007 - 5.00
+
+c basinf.f:
+c 31.05.2007	ggu	added area and volume frequency curve
+c
+c ht.f:
+c 02.04.2007    ggu     changes in algorithm (ASYM)
+c 31.05.2007    deb     new arrays bpresxv, bclevvar (debora)
+c
+c lagrange.f:
+c 06.06.2007    ggu     use of lcust commented (?)
+c
+c new3di.f:
+c 02.04.2007    ggu     new algorithm (look for ASYM)
+c 08.06.2007    ggu&deb restructured for new explicit terms
+c
+c subbndo.f:
+c 31.05.2007    ggu     reset BC for flux to old type (DEBHELP)
+c
+c subcon1.f:
+c 31.05.2007    ggu     reset BC of flux type to old way (DEBHELP)
+c
+c subcus.f:
+c 23.05.2007    ggu     new routines oscillation, kreis, debora
+c 08.06.2007    ggu     new routines from debora
+c
+c subinv.f:
+c 02.04.2007    ggu     assembled from lapack
+c 06.06.2007    ggu     new routines for back substitution and initialization
+c
+c subn35.f:
+c 02.04.2007    ggu     in check -> warning only for cz=0 and Chezy/Strickler
+c
+c subnsh.f:
+c 23.05.2007    ggu     recall variable time step pars at every time step
+c
+c subqfxf.f:
+c 20.05.2007	ggu	itperiod may be 0 -> no periodic BC
+c
+c subver.f:
+c 08.06.2007	ggu	version 5.00
+
+==========================================================
+
+version  4.99    20-03-2007    VERS_4_99
+
+Minor upgrade
+
+Lagrange routines prepared for Oil
+Some NOS routines adjourned
+
+========================================================== 20-03-2007 - 4.99
+
+c subcus.f:
+c 22.02.2007    ggu     traccie routines updated
+c
+c subdef.f:
+c 07.03.2007	ggu	new routine ifem_open_file
+c
+c subnos.f:
+c 07.03.2007	ggu	new routines rhnos, whnos
+c
+c subsys.f:
+c 29.11.2006    ggu     rwhpar for horizontal diffusion in lagrangian model
+c
+c subver.f:
+c 20.03.2007	ggu	version 4.99
+
+==========================================================
+
+version  4.98b    29-11-2006    VERS_4_98b
+
+Lagrangian integrated.
+
+========================================================== 29-11-2006 - 4.98b
+
+c lagrange.f:
+c 29.11.2006    ggu     lots of small changes, integrated into main model
+c
+c lagrange.h:
+c 29.11.2006    ggu     new version integrated into main model
+c
+c lagrange_dif.f:
+c 29.11.2006    ggu     new version integrated into main model
+c
+c lagrange_in.f:
+c 29.11.2006    ggu     new version integrated into main model
+c
+c lagrback.f:
+c 29.11.2006    ggu	new version with different backtrace possibilities
+c
+c new3di.f:
+c 28.11.2006    ggu     in u/vadv is now difference and not absolute transport
+c
+c subele.f:
+c 29.11.2006    ggu     in copydepth do not set to 0 old depths
+c
+c subver.f:
+c 29.11.2006	ggu	version 4.98b
+
+==========================================================
+
+version  4.98a    20-11-2006    VERS_4_98a
+
+New version with keps (not yet finished)
+
+========================================================== 20-11-2006 - 4.98a
+
+c ht.f:
+c 10.11.2006    ggu     initialize depth values after restart
+c 16.11.2006    ggu     turbulence values included
+c
+c newbcl.f:
+c 16.11.2006    ggu     use itemp, isalt to decide about advection
+c
+c newini.f:
+c 15.11.2006    ggu     new parameters to construct streched vert. coordinates
+c
+c subgotm.f:
+c 20.11.2006    ggu     new version of keps, for gotm changed common blocks
+c
+c subsys.f:
+c 15.11.2006    ggu     new parameters to construct streched vert. coordinates
+c 16.11.2006    ggu     use itemp,isalt to decide about advection
+c
+c subver.f:
+c 20.11.2006	ggu	version 4.98a
+
+==========================================================
+
+version  4.98    18-10-2006    VERS_4_98
+
+New WWM wave model
+Radiation stress
+Changes in sedtrans05
+Restart nvers=4
+
+========================================================== 18-10-2006 - 4.98
+
+c ht.f:
+c 18.10.2006    ccf     radiation stress and waves included (with pipe)
+c
+c new3di.f:
+c 18.10.2006    ccf     radx,rady for radiation stress introduced
+c
+c subdep.f:
+c 18.10.2006	ccf	bug in makehkv -> no area multiplication
+c
+c subrst.f:
+c 18.10.2006    ggu     included hm3v in restart file -> nvers = 4
+c
+c subsys.f:
+c 18.10.2006    ccf     new params iwave and dtwave for wave model
+c
+c subver.f:
+c 18.10.2006	ggu	version 4.98
+c
+c subwaves.f:
+c 18.10.2006    ccf     modified, walues on nodes
+c
+c subwwm.f:
+c 18.10.2006    ccf     integrated into main tree
+
+==========================================================
+
+version  4.97    18-10-2006    VERS_4_97
+
+Customization of residence time routines
+
+========================================================== 18-10-2006 - 4.97
+
+c bio3d.f:
+c 18.10.2006    ggu     new routine custom_restime
+c 18.10.2006    ggu     introduce bresi,breact,bdecay
+c
+c nosresidence.f:
+c 18.10.2006    ggu     heavily commented
+c
+c subcus.f:
+c 18.10.2006    ggu     jamal has been updated and comented
+c
+c subver.f:
+c 18.10.2006	ggu	version 4.97
+
+==========================================================
+
+version  4.96b    28-09-2006    VERS_4_96b
+
+New version to monitor progress with concentration.
+
+========================================================== 28-09-2006 - 4.96b
+
+c newcon.f:
+c 28.09.2006    ggu     iprogr to write conz output to single file
+c
+c subnos.f:
+c 28.09.2006	ggu	new routine delnos to close nos file explicitly
+c 28.09.2006	ggu	check if nos file is already open
+c
+c subnosa.f:
+c 28.09.2006    ggu     new routines wrnos2d_it, wrnos2d_index, extract_level
+c
+c subsys.f:
+c 28.09.2006    ggu     new iprogr for progress of simulation
+c
+c subver.f:
+c 28.09.2006	ggu	version 4.96b
+
+==========================================================
+
+version  4.96a    22-09-2006    VERS_4_96a
+
+New version with time and date.
+
+========================================================== 22-09-2006 - 4.96a
+
+c subpar.f:
+c 11.09.2006    ggu     routine chapar removed
+c
+c subsys.f:
+c 12.09.2006    ggu     time and date introduced
+c
+c subver.f:
+c 22.09.2006	ggu	version 4.96a
+
+==========================================================
+
+version  4.96    09-06-2006    VERS_4_96
+
+New version with time step unit.
+
+========================================================== 09-06-2006 - 4.96
+
+c atoxi3d.f:
+c 23.03.2006    ggu     ntot eliminated
+c 23.03.2006    ggu     changed time step to real
+c
+c bio3d.f:
+c 23.03.2006    ggu     ntot eliminated
+c 23.03.2006    ggu     changed time step to real
+c
+c flux.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c ht.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c lagrback.f:
+c 24.03.2006    aac	use flxtype in lagr_vel to avoid backtracing at OB
+c
+c new3di.f:
+c 23.03.2006    ggu     changed time step to real
+c 31.05.2006    ggu     new friction type ireib=7
+c
+c newbcl.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c newchk.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c newcon.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c newcon_sed.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c newcra.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c subbnds.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c subcon1.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c subcst.f:
+c 23.03.2006    ggu     use routine set_timeunit() to set time unit
+c
+c subcus.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c subdif.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c subdry.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c subflxa.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c subgotm.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c subn11.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c subnsh.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c subqfxm1.f:
+c 23.03.2006	ggu	changed time step to real
+c
+c subqfxt.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c subqfxu4.f:
+c 23.03.2006    ggu     changed time step to real
+c
+c subsys.f:
+c 23.03.2006    ggu     new variable itunit for unit of time step
+c
+c subver.f:
+c 09.06.2006	ggu	version 4.96
+
+==========================================================
+
+version  4.95    22-03-2006    VERS_4_95
+
+New routines for TOXI.
+Several bug fixes.
+
+========================================================== 22-03-2006 - 4.95
+
+c atoxi.f:
+c 15.02.2006    ggu&fdp new routine atoxi for ARPAV (from scratch)
+c
+c atoxi3d.f:
+c 15.02.2006    ggu&fdp new routine atoxi3d for ARPAV (from bio3d)
+c
+c basinf.f:
+c 24.02.2006	ggu	bug: makehkv needs ev array -> call set_ev()
+c
+c bio3d.f:
+c 17.02.2006    ggu     pass what to subroutines to see calling routine
+c
+c ht.f:
+c 16.02.2006    ggu     new routine atoxi3d (TOXI)
+c
+c newcon.f:
+c 16.02.2006    ggu     set w to zero at surface and bottom (WZERO)
+c
+c newini.f:
+c 16.02.2006    ggu     describe file format in inicfil()
+c
+c subbnd.f:
+c 16.02.2006    ggu     introduced tox3dn
+c
+c subbnds.f:
+c 17.02.2006	ggu	included text for debug, new call to get_bflux()
+c
+c subdep.f:
+c 24.02.2006	ggu	bug in makehkv -> haux was integer
+c
+c sublnks.f:
+c 17.02.2006	ggu	do not all anymore zvbnds()
+c
+c subn11.f:
+c 17.02.2006	ggu	new routine get_bflux()
+c
+c subsse.f:
+c 17.02.2006	ggu	set iunit to -1 if no file given (exffil)
+c
+c subsys.f:
+c 16.02.2006    ggu     new flag itoxi and file toxi
+c
+c subver.f:
+c 22.03.2006	ggu	version 4.95
+c
+c weutro.f:
+c 15.02.2006    ggu&mcg some comments inserted for denitrification (SK18D,SK14D)
+
+==========================================================
+
+version  4.94b    09-02-2006    VERS_4_94b
+
+dummy version
+
+========================================================== 09-02-2006 - 4.94b
+
+c subver.f:
+c 09.02.2006	ggu	version 4.94b
+
+==========================================================
+
+version  4.94a    08-02-2006    VERS_4_94a
+
+final bug fix for subbnds
+
+========================================================== 08-02-2006 - 4.94a
+
+c subbnds.f:
+c 01.02.2006	ggu	bugfix -> nextra was 3 -> not used anymore
+c 03.02.2006	ggu	bugfix -> calling exfpres
+c
+c subqfxf.f:
+c 01.02.2006	ggu	distinguish between humidity and wet bulb temp - bhumid
+c
+c subqfxu1.f:
+c 01.02.2006    ggu     new routine twb2rh(db,wb,rh)
+c
+c subver.f:
+c 08.02.2006	ggu	version 4.94a
+
+==========================================================
+
+version  4.94    01-02-2006    VERS_4_94
+
+bad bug fix in subbnds.f -> specification of scalar boundary value was broken
+
+========================================================== 01-02-2006 - 4.94
+
+c bascomp.f:
+c 01.12.2005    ggu     created from basinf
+c
+c basinf.f:
+c 28.11.2005	ggu	new call to makehkv
+c
+c lagrange.f:
+c 20.12.2005    aac&gg  bug in track_body corrected
+c
+c newcon.f:
+c 11.11.2005    ggu     bug fix in grad_tvd (ggx/ggy in layer loop now)
+c 11.11.2005    ggu     new routine grad_2d()
+c
+c newini.f:
+c 28.11.2005    ggu     in set_depth use makehkv to compute hkv
+c
+c subcus.f:
+c 01.12.2005    ggu     more changes in traccia
+c
+c subdep.f:
+c 28.11.2005	ggu	makehkv changed (uses real aux value, area weight)
+c
+c subdif.f:
+c 08.11.2005    ggu     fixed wrong debug statement in austau()
+c
+c subdts.f:
+c 13.11.2005    ggu     small bug fix (UNPACK)
+c 01.12.2005    ggu     new routine dts_initialized and block data
+c
+c subnls.f:
+c 07.11.2005	ggu	better debugging output in nrdpar
+c
+c subpar.f:
+c 07.11.2005    ggu     helper routine get_sect_of()
+c
+c subsse.f:
+c 01.02.2006	ggu	new routine exfpres() for pointer to results
+c
+c subsys.f:
+c 08.11.2005    ggu     do not set old parameters, some in nlsina_para
+c 08.11.2005    ggu     more documentation
+c
+c subver.f:
+c 01.02.2006	ggu	version 4.94
+c
+c wininf.f:
+c 08.11.2005	ggu	read also with pressure data
+
+==========================================================
+
+version  4.93    07-11-2005    VERS_4_93
+
+New version of Sedtrans 2005 integrated
+
+========================================================== 07-11-2005 - 4.93
+
+c bio3d.f:
+c 07.11.2005    ggu     sinking velocity wsink introduced in call to scal3sh
+c
+c ht.f:
+c 07.11.2005    ggu     new array sed2dn introduced (file name for sediments)
+c
+c newbcl.f:
+c 07.11.2005    ggu     sinking velocity wsink introduced in call to scal3sh
+c
+c newcon.f:
+c 07.11.2005    ggu     sinking velocity wsink introduced in call to scal3sh
+c
+c subbnd.f:
+c 07.11.2005    ccf     introduce sed2dn
+c
+c subnsh.f:
+c 07.11.2005    ggu     handle new section sedtr for sediments
+c
+c subsys.f:
+c 07.11.2005    ggu     parameters deleted: isedi,sedref,sedgrs
+c
+c subver.f:
+c 07.11.2005	ggu	version 4.93
+c
+c subwaves.f:
+c 07.11.2005    ggu     changes from Christian integrated
+
+==========================================================
+
+version  4.92    07-11-2005    VERS_4_92
+
+Changes from Andrea integrated.
+
+========================================================== 07-11-2005 - 4.92
+
+c lagrange.f:
+c 07.11.2005    ggu     diffusion integrated
+c
+c lagrange_dif.f:
+c 07.11.2005    ggu     last version integrated in main tree
+c
+c lagrange_in.f:
+c 07.11.2005    ggu     last version integrated in main tree
+c
+c new3di.f:
+c 04.11.2005    ggu     use itlin to decide about semi-lagrangian advection
+c
+c newcon.f:
+c 04.11.2005    ggu     TVD changes from andrea integrated
+c 07.11.2005    ggu     parameter itvd introduced for TVD
+c
+c subsys.f:
+c 04.11.2005    ggu     new parameter itlin (semi-lagrangian), some corrections
+c 07.11.2005    ggu     new parameter itvd (TVD)
+c
+c subver.f:
+c 07.11.2005	ggu	version 4.92
+
+==========================================================
+
+version  4.91    03-11-2005    VERS_4_91
+
+some big changes:
+	TVD introduced
+	lagrange routines cleaned
+	semi-lagrangian routines for momentum advection
+	limit computation of baroclinic terms
+	some minor bug fixes
+
+========================================================== 03-11-2005 - 4.91
+
+c basbathy.f:
+c 12.05.2005    ggu     pass hmin to interpolation functions
+c
+c ht.f:
+c 12.08.2005    ggu     minimum level index, TVD arrays
+c
+c lagrange.f:
+c 29.04.2005    ggu     routines cleaned
+c
+c lagrange.h:
+c 29.04.2005    ggu     arrays for backtracking
+c
+c links.f:
+c 18.10.2005    ggu	more debug output, new routines get_link, get_lenk
+c
+c new3di.f:
+c 29.04.2005    ggu     semi-lagrangian advection (backadv)
+c 29.04.2005    ggu     no baroclinic terms close to step (ilevmin)
+c
+c newbcl.f:
+c 05.04.2005    ggu     some changes in routine diagnostic
+c
+c newcon.f:
+c 16.08.2005    ggu     TVD algorithm implemented (gradxv,gradyv,grad_tvd,btvd)
+c
+c newini.f:
+c 05.04.2005    ggu     minimum levels (for baroclinic terms) -> set_min_levels
+c
+c newtra.f:
+c 27.06.2005	ggu	bug in vtot corrected
+c
+c nosinit.f:
+c 17.06.2005    ggu     write level structure only up to nlv
+c
+c subcus.f:
+c 30.06.2005    ggu     traccia changed, new routines jamal, sedimt
+c
+c subdim.f:
+c 18.10.2005    ggu     error messages slightly changed
+c
+c subele.f:
+c 25.08.2005    ggu     bug in dvanode fixed (use * instead of +)
+c
+c subgrd.f:
+c 18.10.2005    ggu     error messages slightly changed
+c
+c subousa.f:
+c 18.05.2005	ggu	initial itmout is changed (now itanf)
+c
+c subsse.f:
+c 16.05.2005	ggu	more debug and new error messages
+c
+c subsys.f:
+c 19.05.2005    ggu     added time for custom routine (tcust)
+c
+c subver.f:
+c 03.11.2005	ggu	version 4.91
+c
+c vp.f:
+c 18.10.2005    ggu     some error messages slightly changed
+
+==========================================================
+
+version  4.90    15-03-2005    VERS_4_90
+
+big changes:
+	horizontal diffusion
+	3d boundary conditions
+	diagnostic simulations
+	traccia
+
+========================================================== 15-03-2005 - 4.90
+
+c ht.f:
+c 03.03.2005    ggu     smagorinski uses difhv, inserted in subdif.f
+c 03.03.2005    ggu     new 3d boundary arrays for C/T/S
+c
+c new3di.f:
+c 15.03.2005    ggu     austv,aust eliminated, austau() in diff_h_set()
+c
+c newbcl.f:
+c 15.03.2005    ggu     new diagnostic routines implemented (diagnostic)
+c 15.03.2005    ggu     new 3d boundary conditions implemented
+c
+c newchk.f:
+c 15.03.2005    ggu     call to check_austausch() eliminated
+c
+c newcon.f:
+c 03.03.2005    ggu     new 3d boundary arrays implemented
+c
+c newini.f:
+c 15.03.2005    ggu     set_austausch() and check_austausch() eliminated
+c
+c newtra.f:
+c 24.02.2005	ggu	smagorinsky into subdif.f
+c 15.03.2005	ggu	austv eliminated, austau() into subdif.f
+c
+c ousintp.f:
+c 04.03.2005	ggu	computes 3D velocities
+c
+c subbnd.f:
+c 02.03.2005    ggu     new nbdim for 3D boundary values
+c 02.03.2005    ggu     some new helper functions
+c
+c subcus.f:
+c 14.03.2005    ggu     subroutine traccia
+c
+c subdif.f:
+c 23.02.2005    ggu     new routines for smagorinski and green
+c 15.03.2005    ggu     austau() from newtra copied here
+c
+c subdts.f:
+c 11.03.2005    ggu     new test added
+c
+c subn11.f:
+c 11.03.2005	ggu	new boundary routines b3dvalue, c3dvalue (3D bounds)
+c
+c subnls.f:
+c 11.03.2005	ggu	work in double precision in nrdnum()
+c
+c subnsa.f:
+c 11.03.2005	ggu	write section title to stdout
+c
+c subnsh.f:
+c 14.03.2005    ggu     syncronize idt with end of simulation (set_timestep)
+c
+c subreg.f:
+c 14.03.2005	ggu	new routines for interpolation in element
+c
+c subsse.f:
+c 11.03.2005	ggu	new interpolation also for 3D time series
+c
+c subsys.f:
+c 15.03.2005    ggu     cleaned horiz. diff., read new section legvar
+c
+c subver.f:
+c 15.03.2005	ggu	version 4.90
+
+==========================================================
+
+version  4.89    23-02-2005    VERS_4_89
+
+cleaning up
+smagorinski
+green
+
+========================================================== 23-02-2005 - 4.89
+
+c ht.f:
+c 24.02.2005    ggu     new routine smagorinski and common smagv
+c
+c new3di.f:
+c 24.02.2005    ggu     new reynolds stresses -> green
+c
+c subcus.f:
+c 22.02.2005    ggu     subroutines deleted: salt
+c
+c subele.f:
+c 22.02.2005    ggu     routines deleted: tempvele saltvele conzvele
+c
+c subqfxt.f:
+c 22.02.2005    ggu     subroutine qflux2d deleted
+c
+c subver.f:
+c 24.02.2005	ggu	version 4.89
+c
+c subvola.f:
+c 22.02.2005    ggu     iflag substituted by v3v
+
+==========================================================
+
+version  4.88    26-01-2005    VERS_4_88
+
+Bugfix for advective terms
+
+========================================================== 26-01-2005 - 4.88
+
+c new3di.f:
+c 25.01.2005    ggu     BUGADV - bugfix for advective terms
+c
+c ousinf.f:
+c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
+c
+c subver.f:
+c 26.01.2005	ggu	version 4.88
+
+==========================================================
+
+version  4.87    17-01-2005    VERS_4_87
+
+new horizontal diffusion
+
+========================================================== 17-01-2005 - 4.87
+
+c bdist.f:
+c 05.01.2005    ggu     routines for writing nos file into subnsoa.f
+c 07.01.2005    ggu     documentation for shdist
+c
+c bio3d.f:
+c 17.01.2005    ggu	new horizontal diffusion
+c
+c ht.f:
+c 17.01.2005    ggu     new routine diff_h_set, new difhv, ausv deleted
+c
+c new3di.f:
+c 10.01.2005    ggu     BAROC_DIST - scale baroclinic term with distance
+c
+c newbcl.f:
+c 17.01.2005    ggu     new difhv implemented
+c
+c newcon.f:
+c 17.12.2005    ggu     new routines with difhv
+c 17.12.2005    ggu     get_stability and get_stab_index in this file
+c
+c newtra.f:
+c 14.01.2005	ccf	bug (nlvdim) in n2e3d fixed
+c
+c subcon1.f:
+c 05.01.2005    ggu     routine to write 2d nos file into subnosa.f
+c 07.01.2005    ggu     routine diffwrite deleted
+c 14.01.2005    ggu     new file for diffusion routines (subdif.f)
+c
+c subdif.f:
+c 05.01.2005    ggu     routine to write 2d nos file into subnosa.f
+c 07.01.2005    ggu     routine diffwrite deleted
+c 14.01.2005    ggu     new file for diffusion routines (subdif.f)
+c
+c subn35.f:
+c 11.01.2005    ggu     ausv eliminated (was not used anymore)
+c
+c subnosa.f:
+c 05.01.2005    ggu     new routine wrnos2d() to write 2d nos file
+c
+c subnsh.f:
+c 17.01.2005    ggu     get_stab_index to newcon.f, error stop in set_timestep
+c
+c subsys.f:
+c 17.01.2005    ggu     new parameters for horizontal diffusion
+c
+c subver.f:
+c 17.01.2005	ggu	version 4.87
+
+==========================================================
+
+version  4.86a    06-12-2004    VERS_4_86a
+
+new section legvar
+
+========================================================== 06-12-2004 - 4.86a
+
+c subnsa.f:
+c 06.12.2004	ggu	new section legvar
+c
+c subsys.f:
+c 06.12.2004    ggu     new subroutine nlsina_legvar
+c
+c subver.f:
+c 06.12.2004	ggu	version 4.86a
+
+==========================================================
+
+version  4.86    02-12-2004    VERS_4_86
+
+Changes from Malta and Vietnam implemented.
+Variable time step.
+
+========================================================== 02-12-2004 - 4.86
+
+c basbathy.f:
+c 23.09.2004    ggu     interpolq() changed for bathy interpolation
+c 02.10.2004    ggu     interpole() for exponential interpolation
+c
+c bastreat.f:
+c 23.09.2004    ggu     interpolq() changed for bathy interpolation
+c 02.10.2004    ggu     interpole() for exponential interpolation
+c 01.11.2004    ggu     whole program simplyfied
+c
+c ht.f:
+c 15.10.2004    ggu     gotm substituted by general turbulence closure
+c 02.12.2004    ggu     variable time step implemented
+c
+c newcon.f:
+c 15.10.2004    ggu     boundary conditions back to old
+c 02.12.2004    ggu     return also sindex in conzstab
+c
+c newpr.f:
+c 25.11.2004	ggu	locous not called anymore
+c
+c newtra.f:
+c 15.10.2004	ccf	new routine smagorinsky started
+c
+c subbnd.f:
+c 15.10.2004    ggu     new boundary types and sedin
+c
+c subbndo.f:
+c 05.10.2004    ggu     new routine bndo_radiat, ibtyp=31
+c
+c subcus.f:
+c 05.10.2004    ggu     new routine aldo to set conz in area
+c
+c subdry.f:
+c 22.09.2004    ggu     debug in setweg()
+c
+c subdts.f:
+c 22.09.2004    ggu     rewritten, integrated file newdat.f
+c 05.10.2004    ggu     dtsadj got some FIXME
+c
+c subgotm.f:
+c 05.10.2004    ggu     new administration routine turb_closure, Munk-And.
+c
+c subn11.f:
+c 11.10.2004	ggu	new ibtyp=31, multiply with zfact also for sin (ZFACT)
+c
+c subnsh.f:
+c 28.09.2004    ggu     read lagrangian section
+c 01.12.2004    ggu     new routine set_timestep for variable time step
+c
+c subous.f:
+c 22.09.2004	ggu	bug fix in rdous/wrous -> ie instead of k
+c
+c subousa.f:
+c 25.11.2004	ggu	in new file subousa.f
+c
+c subouta.f:
+c 25.11.2004	ggu	wrousa in new file
+c
+c subqfxu3.f:
+c 22.09.2004    ggu     bug fix for idmon/jdmon
+c
+c subreg.f:
+c 25.11.2004	ggu	new routines femintp and elemintp for interpolation
+c
+c subres.f:
+c 25.11.2004	ggu	resid converted to 3D (not tested)
+c
+c subsys.f:
+c 22.09.2004    ggu     nlsina_3d(): always use 3d file for plot (level=0)
+c 28.09.2004    ggu     lagrangian routines integrated (LAGR)
+c 05.10.2004    ggu     some more documentation
+c 02.12.2004    ggu     documentation for variable time step
+c
+c subver.f:
+c 02.12.2004	ggu	version 4.86
+c
+c subvola.f:
+c 26.11.2004    ggu     routine volstats commented (use only if needed)
+c
+c subwaves.f:
+c 26.11.2004    ggu     no idt passed to subwaves
+
+==========================================================
+
+version  4.85    21-09-2004    VERS_4_85
+
+Minor changes.
+
+========================================================== 21-09-2004 - 4.85
+
+c intp.f:
+c 04.09.2004    ggu     franco added (zfranco)
+c
+c subver.f:
+c 21.09.2004	ggu	version 4.85
+c
+c subwin.f:
+c 16.09.2004	ggu	new routine convert_wind()
+
+==========================================================
+
+version  4.84    03-09-2004    VERS_4_84
+
+Changes to closure routines
+Restart implemented
+
+========================================================== 03-09-2004 - 4.84
+
+c ht.f:
+c 03.09.2004    ggu     restart now in ht
+c
+c intp.f:
+c 02.09.2004    ggu     new classification routine
+c
+c newini.f:
+c 02.09.2004    ggu     rdrst transfered to subrst.f
+c
+c subdry.f:
+c 03.09.2004    ggu     setznv: do not stop if znv is not unique (restart)
+c
+c subn11.f:
+c 03.09.2004	ggu	restart taken out to ht
+c
+c subnsh.f:
+c 03.09.2004    ggu     call admrst, comp3d renamed to init_3d (not used)
+c 03.09.2004    ggu     nlv, hlv initialized in nlsh2d (FIXME)
+c
+c subrst.f:
+c 02.09.2004    ggu     started with routine rdrst()
+c
+c subsys.f:
+c 03.09.2004    ggu     restart variables
+c
+c subver.f:
+c 03.09.2004	ggu	version 4.84
+c
+c weutro.f:
+c 30.08.2004    ggu     cleanup of settopseg, setbotseg
+
+==========================================================
+
+version  4.83    26-08-2004    VERS_4_83
+
+Changes to weutro and bio3d
+New files in repository
+
+========================================================== 26-08-2004 - 4.83
+
+c bio3d.f:
+c 24.08.2004    ggu	new version from donata (jeanmichel)
+c                       new check_es, changes in check_bio
+c                       ivect(8) in bio_av_shell, 
+c                       sedload deleted -> substituted by setload_new
+c			loicz moved to sediment routine
+c 25.08.2004    ggu	setsedload moved to sedim routines
+c			light routines deleted
+c                       new call to eutro0d implemented, read lux
+c                       rluxaux introduced (for ntot>0)
+c
+c subqfxt.f:
+c 16.08.2004    ggu     some comments on usage, heat2t copied to subqfxu4.f
+c
+c subqfxu3.f:
+c 17.08.2004    ggu     bises and jdmon deleted (now in newdat.f)
+c
+c subres.f:
+c 10.08.2004	ggu	cmed_init, cmed_accum adjusted also for 2D
+c
+c subver.f:
+c 26.08.2004	ggu	version 4.83
+c
+c weutro.f:
+c 09.08.2004    ggu     marked changes from Donata with GGU
+c 17.08.2004    ggu     new routines for debug (eutro_replay)
+c 21.08.2004    ggu     rearangments, renaming ($LGA)
+c 24.08.2004    ggu     all changes incorporated (see check history 1-11)
+c
+c weutro.h:
+c 24.08.2004    ggu     some new variables (idbox, wdebug etc)
+c
+c--------------------------------------------------------------
+c--------------------------------------------------------------
+c	EUTRO.CMN	
+c--------------------------------------------------------------
+c--------------------------------------------------------------
+c
+c weutro_light.f:
+c 20.08.2004    ggu	written from scratch
+c 26.08.2004    ggu	new linstant (same as rintens from weutro.f)
+
+==========================================================
+
+version  4.82    09-08-2004    VERS_4_82
+
+Intermediate changes
+
+========================================================== 09-08-2004 - 4.82
+
+c bio3d.f:
+c 22.03.2004    ggu	change in call to massconc (bug)
+c 30.03.2004    ggu	bug fix -> call to confil with nlvdim
+c
+c newbcl.f:
+c 15.03.2004    ggu     general clean-up, bclint() deleted, new scal3sh
+c
+c newchk.f:
+c 13.03.2004    ggu     write total volume to inf file
+c
+c newcon.f:
+c 13.03.2004    ggu     new boundary conditions through flux (cbound)
+c 18.03.2004    ggu     started new way of computing T/D equation
+c
+c subbndo.f:
+c 13.03.2004    ggu     in bndo_adjbc only for level BC (LEVELBC)
+c
+c subcon1.f:
+c 13.03.2004    ggu     new routines set_c_bound, distribute_vertically
+c 13.03.2004    ggu     exec routine con3bnd() only for level BC (LEVELBC)
+c 14.03.2004    ggu     new routines open_b_flux
+c
+c subhisto.f:
+c 16.03.2004    ggu     routines written from scratch
+c
+c sublnku.f:
+c 16.03.2004	ggu	new routine node_links() and link_fill()
+c
+c subver.f:
+c 09.08.2004	ggu	version 4.82
+
+==========================================================
+
+version  4.81    11-03-2004    VERS_4_81
+
+Various changes
+	bio3d, weutro -> integrated changes from Donata
+	initialization of T/S, bio
+
+========================================================== 11-03-2004 - 4.81
+
+c bio3d.f:
+c 19.12.2003    ggu	sediments added, init for taranto
+c 14.01.2004    dmk     call tsmass per calcolo conserv massa
+c 03.03.2004    ggu	decay function for bacteria decad_bio()
+c 04.03.2004    ggu	changes from donata integrated
+c 05.03.2004    ggu	initialization from file
+c
+c debug.f:
+c 05.12.2003    ggu     in check[12]Dr only check val if vmin!=vmax
+c
+c ht.f:
+c 04.12.2003    ggu     integration of wave and sediment module
+c
+c laplap.f:
+c 04.03.2004	ggu	writes also number of variables (1)
+c
+c new36.f:
+c 09.12.2003    ggu     fix for icl=10 (FIX)
+c
+c newbcl.f:
+c 04.03.2004    ggu     in init for T/S pass number of vars (inicfil)
+c
+c newcon.f:
+c 10.03.2004    ggu     call conwrite() to write stability param to nos file
+c
+c newini.f:
+c 04.03.2004    ggu     change in inicfil() for more variables
+c 05.03.2004    ggu     LMAX - changed bound from 0 to 1
+c
+c newtra.f:
+c 04.12.2003    ggu     new routine n2e2d
+c
+c nosinit.f:
+c 05.03.2004    ggu     copied from nosextr
+c
+c subcon1.f:
+c 10.03.2004    ggu     new routine conwrite()
+c
+c subdts.f:
+c 01.12.2003    ggu     new routine month_from_name(), make_lower_case()
+c 09.03.2004    ggu     new routine month_name()
+c
+c subele.f:
+c 23.01.2004    ggu     new routines scalcontkh and scalmass
+c                       -> FIXME: scalmass should go to other file
+c
+c subnos.f:
+c 10.03.2004	ggu	in wfnos make title 80 chars long
+c
+c subres.f:
+c 04.03.2004	ggu	bug fix in cmed_accum() for array with more variables
+c
+c subsys.f:
+c 04.12.2003    ggu     sediment and wave module integrated
+c 05.03.2004    ggu     bio variable for initialization
+c
+c subver.f:
+c 10.03.2004	ggu	version 4.81
+c
+c weutro.f:
+c 04.03.2004    ggu     changes from donata integrated
+
+==========================================================
+
+version  4.80a    14-11-2003    VERS_4_80a
+
+change in documentation
+
+========================================================== 14-11-2003 - 4.80a
+
+c subver.f:
+c 14.11.2003	ggu	version 4.80a
+c
+c subwin.f:
+c 03.11.2003	ggu	bug in documentation (stress without rho_0)
+
+==========================================================
+
+version  4.80    31-10-2003    VERS_4_80
+
+new laplacian interpolation for winds
+
+========================================================== 31-10-2003 - 4.80
+
+c laplap.f:
+c 30.10.2003	ggu	subroutine prepare_bc included in this file
+c
+c lapwin.f:
+c 30.10.2003	ggu	subroutine prepare_bc included in this file
+c 31.10.2003	ggu	wind interpolation is finished
+c
+c newtra.f:
+c 18.09.2003    ggu     new routine e2n2d
+c
+c sublpl.f:
+c 30.10.2003    ggu     routine prepare_bc moved to laplap.f file
+c
+c subsys.f:
+c 05.10.2003    ggu     changes in color handling of post routines
+c
+c subver.f:
+c 31.10.2003	ggu	version 4.80
+
+==========================================================
+
+version  4.78c    12-09-2003    VERS_4_78c
+
+bug fix for T/D algorithm -> boundary conditions
+
+========================================================== 12-09-2003 - 4.78c
+
+c bastreat.f:
+c 08.09.2003	ggu	mode 5 -> write depth values from elements
+c
+c bio3d.f:
+c 09.09.2003    ggu	call to scal3sh changed -> 3D version
+c
+c newcon.f:
+c 09.09.2003    ggu     call to scal3sh changed -> new arg nlvbnd
+c
+c subcon1.f:
+c 09.09.2003    ggu     new routine con3bnd
+c
+c subver.f:
+c 12.09.2003	ggu	version 4.78c
+
+==========================================================
+
+version  4.78b    04-09-2003    VERS_4_78b
+
+small bug fix for anpa
+
+========================================================== 04-09-2003 - 4.78b
+
+c subcus.f:
+c 04.09.2003    ggu     some fixes in routine anpa
+c
+c subn35.f:
+c 04.09.2003    ggu     bug fix for missing return in get_chezy_values
+c
+c subver.f:
+c 04.09.2003	ggu	version 4.78b
+
+==========================================================
+
+version  4.78a    04-09-2003    VERS_4_78a
+
+New routines is_digit etc.
+
+========================================================== 04-09-2003 - 4.78a
+
+c subisd.f:
+c 03.09.2003	ggu	new routines written
+c
+c subver.f:
+c 04.09.2003	ggu	version 4.78a
+
+==========================================================
+
+version  4.78    03-09-2003    VERS_4_78
+
+bugfix in bio3d.f -> origin produced NaN -> saved es
+
+========================================================== 03-09-2003 - 4.78
+
+c bio3d.f:
+c 03.09.2003    ggu	bug fix for sediments -> not saved (SAVESED)
+c 03.09.2003    ggu	new routine check_bio
+c
+c debug.f:
+c 03.09.2003    ggu     check routines customized
+c
+c subver.f:
+c 03.09.2003	ggu	version 4.78
+c
+c subzzz.f:
+c 03.09.2003	ggu	changed for compiler warnings on origin
+
+==========================================================
+
+version  4.77d    03-09-2003    VERS_4_77d
+
+Better check for strange values
+
+========================================================== 03-09-2003 - 4.77d
+
+c newchk.f:
+c 03.09.2003    ggu     routines check and sanity_check deleted
+c 03.09.2003    ggu     renamed value_check to check_values, new check_all
+c
+c newini.f:
+c 03.09.2003    ggu     some more checks for check_ilevels
+c
+c subver.f:
+c 03.09.2003	ggu	version 4.77d
+
+==========================================================
+
+version  4.77c    03-09-2003    VERS_4_77c
+
+adapted for new file OUS
+bug fixes in VOL
+may initialize T/S from file
+
+========================================================== 03-09-2003 - 4.77c
+
+c laplap.f:
+c 02.09.2003	ggu	some comments, write to .dat file
+c
+c newini.f:
+c 02.09.2003    ggu     routine inicfil restructured for lmax=0
+c
+c ousinf.f:
+c 02.09.2003	ggu	adapted to new OUS format
+c
+c subcus.f:
+c 02.09.2003    ggu     new routine lago (76)
+c
+c subous.f:
+c 02.09.2003	ggu	last bug fixes (nvers=3 -> nvers=1)
+c
+c subouta.f:
+c 02.09.2003	ggu	bug fix in wrousa: save nbout
+c
+c subver.f:
+c 02.09.2003	ggu	version 4.77c
+c
+c subvola.f:
+c 02.09.2003    ggu     bug fix $$BUGVOLT in wrvola -> summation on tot vol
+
+==========================================================
+
+version  4.77b    02-09-2003    VERS_4_77b
+
+========================================================== 02-09-2003 - 4.77b
+
+added subous.f
+
+==========================================================
+
+version  4.77a    02-09-2003    VERS_4_77a
+
+Cleanup and support for OUS files
+
+========================================================== 02-09-2003 - 4.77a
+
+c newpr.f:
+c 21.08.2003	ggu	deleted locspc
+c
+c subnsh.f:
+c 01.09.2003    ggu     call wrousa
+c
+c subous.f:
+c 21.08.2003	ggu	version 1 implemented
+c 01.09.2003	ggu	first revision
+c
+c subouta.f:
+c 01.09.2003	ggu	new routine wrousa
+c
+c subver.f:
+c 01.09.2003	ggu	version 4.77a
+
+==========================================================
+
+version  4.77    20-08-2003    VERS_4_77
+
+Laplacian interpolation
+
+========================================================== 20-08-2003 - 4.77
+
+c bdist.f:
+c 20.08.2003    ggu     new routine wr2dn()
+c
+c laplap.f:
+c 20.08.2003	ggu	new laplacian interpolation
+c
+c sublpl.f:
+c 20.08.2003    ggu     new routines lapint and lapl_assemble
+c 20.08.2003    ggu     new routine prepare_bc
+c
+c subver.f:
+c 20.08.2003	ggu	version 4.77
+
+==========================================================
+
+version  4.76    20-08-2003    VERS_4_76
+
+New routines to compute average/min/max of nodal values.
+Applied to bio routine.
+
+========================================================== 20-08-2003 - 4.76
+
+c bio3d.f:
+c 20.08.2003    ggu	new routine bio_av_shell (aver/min/max)
+c
+c subnsh.f:
+c 20.08.2003    ggu     tsmed substituted by ts_shell
+c
+c subres.f:
+c 19.08.2003	ggu	some cleanup in subroutine rmsvel
+c 19.08.2003	ggu	new routines cmed_init, cmed_accum, ts_shell
+c
+c subver.f:
+c 14.08.2003	ggu	version 4.75e (now version has increased)
+c 20.08.2003	ggu	version 4.76
+
+==========================================================
+
+version  4.75e    14-08-2003    VERS_4_75e
+
+Forgot to increase version...
+
+========================================================== 14-08-2003 - 4.75e
+
+c
+c ht.f:
+c 14.08.2003    ggu     even more restructuring and cleaning up
+c
+c newini.f:
+c 14.08.2003    ggu     error in check_ilevels (integer instead of real)
+c 14.08.2003    ggu     error in check_ilevels (must test .lt.)
+c 14.08.2003    ggu     new routine set_depth -> transferred from cstcheck
+c 14.08.2003    ggu     renamed sp211 into init_vertical and init_others
+c 14.08.2003    ggu     new routines init_z, init_const_z, init_file_z
+c 14.08.2003    ggu     new routines init_uvt
+c
+c subcst.f:
+c 14.08.2003    ggu     set depth values transferred to newini
+c
+c subcus.f:
+c 14.08.2003    ggu     new routines test_hakata (icust=26) and node3d
+c 14.08.2003    ggu     only 3D in concmass1
+c
+c subn11.f:
+c 14.08.2003	ggu	initialization of z and uv made explicit
+c
+c subnev.f:
+c 14.08.2003	ggu     sp110a -> set_ev
+c
+c subnsh.f:
+c 14.08.2003    ggu     femver transfered to subver, not called in nlsh2d
+c
+c subver.f:
+c 14.08.2003	ggu	version 4.75b
+c 14.08.2003	ggu	version 4.75c
+c 14.08.2003	ggu	new routines copyright, femver (from subnsh)
+c 14.08.2003	ggu	removed routine hvers
+c 14.08.2003	ggu	version 4.75d
+c
+
+==========================================================
+
+version  4.75d    14-08-2003    VERS_4_75d
+
+More restructuring
+
+========================================================== 14-08-2003 - 4.75d
+
+c
+c ht.f:
+c 14.08.2003    ggu     even more restructuring and cleaning up
+c
+c newini.f:
+c 14.08.2003    ggu     error in check_ilevels (integer instead of real)
+c 14.08.2003    ggu     error in check_ilevels (must test .lt.)
+c 14.08.2003    ggu     new routine set_depth -> transferred from cstcheck
+c 14.08.2003    ggu     renamed sp211 into init_vertical and init_others
+c 14.08.2003    ggu     new routines init_z, init_const_z, init_file_z
+c 14.08.2003    ggu     new routines init_uvt
+c
+c subcst.f:
+c 14.08.2003    ggu     set depth values transferred to newini
+c
+c subcus.f:
+c 14.08.2003    ggu     new routines test_hakata (icust=26) and node3d
+c 14.08.2003    ggu     only 3D in concmass1
+c
+c subn11.f:
+c 14.08.2003	ggu	initialization of z and uv made explicit
+c
+c subnev.f:
+c 14.08.2003	ggu     sp110a -> set_ev
+c
+c subnsh.f:
+c 14.08.2003    ggu     femver transfered to subver, not called in nlsh2d
+c
+c subver.f:
+c 14.08.2003	ggu	version 4.75b
+c 14.08.2003	ggu	version 4.75c
+c 14.08.2003	ggu	new routines copyright, femver (from subnsh)
+c 14.08.2003	ggu	removed routine hvers
+c
+
+==========================================================
+
+version  4.75c    14-08-2003    VERS_4_75c
+
+Small errors eliminated
+
+========================================================== 14-08-2003 - 4.75c
+
+c
+
+==========================================================
+
+version  4.75b    14-08-2003    VERS_4_75b
+
+Some more restructuring.
+
+========================================================== 14-08-2003 - 4.75b
+
+c
+c ht.f:
+c 13.08.2003    ggu     some more restructuring
+c
+c new3di.f:
+c 13.08.2003    ggu     delete useless vars (nrand, epsit), no iteration
+c 13.08.2003    ggu     call setnod, set_link_info
+c
+c subdry.f:
+c 13.08.2003    ggu     new routine setznv
+c
+c sublnka.f:
+c 13.08.2003    ggu     in update_geom do not call setweg and setnod
+c
+c sublnks.f:
+c 13.08.2003	ggu	new name set_link_info for newlnk
+c
+
+==========================================================
+
+version  4.75a    12-08-2003    VERS_4_75a
+
+Big restructuring.
+
+========================================================== 12-08-2003 - 4.75a
+
+c
+c ht.f:
+c 10.08.2003    ggu     big restructuring
+c
+c new3di.f:
+c 10.08.2003    ggu     deleted commented parts (radiation, etc..)
+c 10.08.2003    ggu     some code in new subroutines: make_prvel, copy_uvz
+c
+c newbcl.f:
+c 10.08.2003    ggu     qfluxr eliminated (now in subn11.f)
+c 10.08.2003    ggu     rhov and bpresv are initialized here
+c
+c newchk.f:
+c 10.08.2003    ggu     new routine check_fem
+c
+c newini.f:
+c 07.08.2003    ggu     deleted sp212
+c 09.08.2003    ggu     cleaned up (sp211 is completely different)
+c
+c newtra.f:
+c 10.08.2003    ggu     new routines copy_uvz, make_prvel, init_uvz
+c
+c subbnd.f:
+c 07.08.2003    ggu     check for nrbdim in rdbnds
+c
+c subcus.f:
+c 10.08.2003    ggu     use accessor routines for chezy values in anpa()
+c
+c subdim.f:
+c 10.08.2003    ggu     new dimension nlidim added
+c
+c subflxa.f:
+c 10.08.2003	ggu	do not call setweg, setnod, setkan
+c
+c subgotm.f:
+c 10.08.2003    ggu     call gotm_init
+c
+c sublnka.f:
+c 01.08.2003    ggu     created from sublnk.f
+c
+c sublnks.f:
+c 01.08.2003	ggu	created from sublnk.f
+c
+c sublnku.f:
+c 01.08.2003	ggu	created from sublnk.f
+c
+c subn11.f:
+c 10.08.2003	ggu	better commented, new routines meteo_init, meteo_force
+c
+c subn35.f:
+c 09.08.2003    ggu     bofric now returns array with friction
+c 10.08.2003    ggu     completely restructured, counter from 0 to nczdum
+c
+c subnev.f:
+c 10.08.2003	ggu     new routine check_ev
+c
+c subnls.f:
+c 05.08.2003	ggu	accept string enclosed in '..' and ".."
+c
+c subnsh.f:
+c 10.08.2003    ggu     call adjust_chezy instead sp135r
+c
+c subvola.f:
+c 10.08.2003    ggu     do not call setweg, setnod, setkan
+c
+
+==========================================================
+
+version  4.75    31-07-2003    VERS_4_75
+
+Cleaning up.
+
+========================================================== 31-07-2003 - 4.75
+
+c
+c ht.f:
+c 31.07.2003    ggu     array winv eliminated
+c
+c newchk.f:
+c 31.07.2003    ggu     eliminate compiler warnings
+c 31.07.2003    ggu     eliminate useless variables
+c
+c sublnk.f:
+c 31.07.2003    ggu     eliminated setwnv and winv(1)
+c 31.07.2003    ggu     comodity functions is_internal_node etc.
+c
+c subvola.f:
+c 31.07.2003    ggu	some comments and little restructuring
+c
+
+==========================================================
+
+version  4.74    30-07-2003    VERS_4_74
+
+bugfix in subdim.f
+compiler errors on Origin
+
+========================================================== 30-07-2003 - 4.74
+
+c
+c subdim.f:
+c 24.06.2003    ggu     new routines to list entries in dimensions
+c 24.06.2003    ggu     bugfix NFILL
+c
+c subqfxu1.f:
+c 30.07.2003    ggu     new routine test_wbt added
+c
+
+==========================================================
+
+version  4.73    20-06-2003    VERS_4_73
+
+new debug routines
+subflxa.f prepared for lagrangian routines
+some changes in heat flux routines
+
+========================================================== 20-06-2003 - 4.73
+
+c
+c debug.f:
+c 27.03.2003    ggu     new routines for NaN check and value test
+c
+c newchk.f:
+c 27.03.2003    ggu     new routine value_check
+c
+c subbndo.f:
+c 27.03.2003    ggu     in bndo_adjbc use ambient value (bamb)
+c
+c subflxa.f:
+c 26.05.2003	ggu	in flxnov substituted a,b with b,c
+c 26.05.2003	ggu	new routine make_fluxes (for lagrangian)
+c
+c subqfx1.f:
+c 28.03.2003    ggu     new function wbt for wet bulb temperature (converges)
+c
+c subqfxt.f:
+c 11.04.2003    ggu     albedo introduced in heat2t
+c
+c subqfxu1.f:
+c 28.03.2003    ggu     new routine wbt substituted in rh2twb
+c
+c subqfxu3.f:
+c 09.04.2003    ggu     new routines for day light
+c
+
+==========================================================
+
+version  4.72    25-03-2003    VERS_4_72
+
+new way to deal with changing implicit factor
+some enhancements in interpolation
+some new files
+
+========================================================== 25-03-2003 - 4.72
+
+c
+c subnsh.f:
+c 07.02.2003    ggu     routine added: changeimp, getaz; deleted getaza
+c
+c subsse.f:
+c 12.02.2003	ggu	return constant if t is out of range in exxqq
+c
+
+==========================================================
+
+version  4.71    09-01-2003    VERS_4_71
+
+========================================================== 09-01-2003 - 4.71
+
+Bug report from Donata -> TODO
+
+==========================================================
+
+version  4.70    12-12-2002    VERS_4_70
+
+========================================================== 12-12-2002 - 4.70
+
+New heat flux module integrated
+
+c
+c newcon.f:
+c 14.10.2002    ggu     rstot re-introduced as rstol
+c
+c subqfxm1.f:
+c 09.12.2002	ggu	cleaned and re-arranged
+c
+c subqfxu1.f:
+c 09.12.2002    ggu     radiation routines taken out
+c
+c subqfxu3.f:
+c 09.12.2002    ggu     new import into file
+c
+c subsys.f:
+c 14.10.2002    ggu     atpar,adpar,aapar -> default set to 1.0 (implicit)
+c
+
+==========================================================
+
+version  4.65    11-10-2002    VERS_4_65
+
+========================================================== 11-10-2002 - 4.65
+
+Horizontal diffusion revised
+Some code cleanup
+
+c
+c newbcl.f:
+c 11.10.2002    ggu     diffset introduced, shpar = thpar
+c
+c newchk.f:
+c 11.10.2002    ggu     call to setaix deleted
+c
+c newcon.f:
+c 11.10.2002    ggu     file cleaned, t/shdif are set equal
+c 11.10.2002    ggu     con3sh removed, conzstab better commented
+c
+c newpr.f:
+c 11.10.2002	ggu	write OUV file to variable unit (not 88 anymore)
+c
+c subcon.f:
+c 11.10.2002	ggu	massconc renamed into massconc2d
+c
+c subcon1.f:
+c 11.10.2002    ggu     commented diffset
+c
+c subdef.f:
+c 11.10.2002	ggu	new subroutine deffile
+c
+c subnsh.f:
+c 11.10.2002    ggu     aix routines deleted
+c
+c subres.f:
+c 10.10.2002	ggu	subroutine tsmed to compute min/max of T/S
+c
+c subsys.f:
+c 11.10.2002    ggu     rstot new meaning
+c
+
+==========================================================
+
+version  4.64    09-10-2002    VERS_4_64
+
+========================================================== 09-10-2002 - 4.64
+
+New version with added files etc...
+
+c
+c ht.f:
+c 21.08.2002    ggu     new arrays /kvolc/, /ivol/ copied from hp
+c
+c subdep.f:
+c 25.03.2002	ggu	new routines makehkv (before makehv) and makehev
+c
+c subfil.f:
+c 10.12.2001	ggu	filna still revisited, new routine useunit
+c
+c sublnk.f:
+c 27.12.2001    ggu     use info unit number in newlnk
+c
+c subscn.f:
+c 30.01.2002	ggu	bug fix for rounding 9.9 -> 10 for ndec=-1 (ROUND)
+c
+
+==========================================================
+
+version  4.63    07-12-2001    VERS_4_63
+
+========================================================== 07-12-2001 - 4.63
+
+New debugged version. Works well with Hakata Bay
+
+c
+c ht.f:
+c 19.11.2001    ggu     h1hv eliminated, ulv, vlv eliminated
+c 03.12.2001    ggu     new arrays [cst]difhv
+c
+c newbcl.f:
+c 05.12.2001    ggu     horizontal diffusion variable, limit diffusion coef.
+c 05.12.2001    ggu     compute istot, more debug info
+c
+c newchk.f:
+c 05.12.2001    ggu     always execute tstvol, more debug info
+c
+c newcon.f:
+c 05.12.2001    ggu     variable horizontal diffusion, limit on dif.coef.
+c
+c nosextr.f:
+c 03.12.2001    ggu     cleaned up, hakata bay
+c
+c subapn.f:
+c 05.12.2001	ggu	fixed compiler error with -Wall -pedantic
+c
+c subbndo.f:
+c 03.12.2001    ggu     LEVMX - look out for missing level of near node
+c 05.12.2001    ggu     NTBC - BUG -> has not been set before
+c
+c subcon1.f:
+c 05.12.2001    ggu     new routines diffstab,diffstab1,difflimit
+c
+c subcus.f:
+c 05.12.2001    ggu     fixed compiler error with -Wall -pedantic
+c
+c subdef.f:
+c 27.11.2001	ggu     error message rewritten
+c
+c subdry.f:
+c 21.11.2001    ggu     extra bdebug in setweg
+c 21.11.2001    ggu     more debug information in setuvd
+c
+c sublnk.f:
+c 27.12.2001    ggu     use info unit number in newlnk
+c
+c subn36.f:
+c 05.12.2001    ggu     fixed compiler error with -Wall -pedantic
+c
+c subnsh.f:
+c 21.11.2001    ggu     routines to handle advective index (aix)
+c 27.11.2001    ggu     routine to handle info file (getinfo)
+c
+c subqfxa.f:
+c 28.11.2001	ggu	less debug output
+c
+c subsys.f:
+c 03.12.2001    ggu     new parameters (rlhdif)
+c
+c subwat.f:
+c 20.11.2001    ggu     input concentration with ambient value ($AMB0)
+c
+c subwin.f:
+c 03.12.2001	ggu	write only first 100 records of wind data to stdout
+c
+
+==========================================================
+
+version  4.62    16-11-2001    VERS_4_62
+
+========================================================== 16-11-2001 - 4.62
+
+Syncronizing with development version.
+Big changes.
+New h arrays (subele) preparing for sigma coordinates.
+
+c
+c new3di.f:
+c 09.11.2001    ggu     BCHAO commented out, no compiler directives
+c 14.11.2001    ggu     all compiler directives eliminated
+c
+c newbcl.f:
+c 30.01.2001    ggu     eliminated compile directives
+c
+c newchao.f:
+c 09.11.2001    ggu     compiler directives removed
+c
+c subbnd.f:
+c 07.05.2001    ggu     introduced new variable zfact
+c 25.09.2001    ggu     introduced bio2dn
+c
+c subcon.f:
+c 16.11.2001	ggu	some old routines deleted
+c
+c subcon1.f:
+c 16.11.2001    ggu     subroutine conmima and diffstab
+c
+c subcst.f:
+c 24.10.2001    ggu     Write on use of Coriolis
+c
+c subgeo.f:
+c 06.02.2001	ggu	new routine angle
+c
+c subgrd.f:
+c 27.03.2001    ggu     assign depth -999. to depth not set
+c 09.10.2001    ggu     read from stdin
+c 09.10.2001    ggu     read node type (ianv)
+c
+c subn11.f:
+c 07.05.2001	ggu	introduced variable zfact
+c 24.10.2001	ggu	ignore boundary with type 0
+c
+c subnev.f:
+c 12.11.2001	ggu     cosmetic changes
+c
+c subqfx.f:
+c 30.04.2001	ggu	new routine qtotal_tb
+c
+c subscn.f:
+c 03.05.2001	ggu	bug fix in ialfa -> avoid -0.0 (MINUS0)
+c 30.10.2001	ggu	bug fix for tab: not recognized as parameter
+c
+c subsse.f:
+c 31.05.2001	ggu	revised exxp (style) and exxpp (error fix and grade)
+c
+c vp.f:
+c 17.10.2001    ggu     accept also grd files with some missing data
+c
+
+==========================================================
+
+version  4.61    15-01-2001    VERS_4_61
+
+========================================================== 15-01-2001 - 4.61
+
+Big commit on stream.
+Mass conservation with ht fixed.
+
+c
+c ht.f:
+c 20.06.2000    ggu     alv -> visv    slv -> difv
+c
+c new3di.F:
+c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
+c
+c newcon.F:
+c 20.06.2000    ggu     pass difmol to conz3d and use it
+c
+c newini.f:
+c 20.06.2000    ggu     useless parts deleted
+c 21.06.2000    ggu     dzreg introduced
+c 08.08.2000    ggu     hlvmin is now percentage of last layer thickness
+c
+c subdef.f:
+c 08.08.2000	ggu     new routine ifemop
+c
+c subnls.f:
+c 06.11.2000	ggu	bug found in reading sections ($NRDLIN)
+c
+c subsys.f:
+c 08.08.2000    ggu     hlvmin is now percentage of last layer thickness
+c
+
+==========================================================
+
+version  4.60    26-05-2000    VERS_4_60
+
+========================================================== 26-05-2000 - 4.60
+
+Integration of stream.
+Addition of new files.
+
+c
+c ht.f:
+c 07.03.2000    ggu     arrays for vertical turbulent diffusion coefficient
+c
+c new3di.F:
+c 07.03.2000    ggu     eliminated VERT_AUST_ADJUST
+c 07.03.2000    ggu     arrays for vertical turbulent diffusion coefficient
+c
+c newchk.f:
+c 07.03.2000    ggu     arrays for vertical turbulent diffusion coefficient
+c
+c newcon.F:
+c 07.03.2000    ggu     constant vertical eddy coefficient subst. with slv
+c
+c newini.f:
+c 07.03.2000    ggu     arrays for vertical turbulent diffusion coefficient
+c 07.03.2000    ggu     useless parts commented
+c
+c subbnd.f:
+c 07.04.2000    ggu     new subroutine setbc
+c
+c subnsh.f:
+c 15.05.2000    ggu     hm3v substituted
+c
+c subnsv.f:
+c 15.05.2000    ggu     subroutine sp191 removed
+c
+c subqfxa.f:
+c 24.05.2000	ggu	no details in element treatment, 3D algorithm
+c
+c subrnd.f:
+c 30.03.2000    ggu     pause statement eliminated, variables saved (bug)
+c
+c subuti.f:
+c 29.03.2000	ggu	new routine getxy and getexy
+c 16.05.2000	ggu	routine volel removed
+c
+c subwin.f:
+c 05.04.2000	ggu	nwdim increased to 1000
+c
+
+==========================================================
+
+version  4.56    02-03-2000    VERS_4_56
+
+========================================================== 02-03-2000 - 4.56
+
+Bug fixes.
+Regular data support for output.
+Modules introduced.
+
+c
+c hp.f:
+c 20.01.2000    ggu     common block /dimdim/ eliminated
+c
+c ht.f:
+c 20.01.2000    ggu     common block /dimdim/ eliminated
+c
+c newouv.f:
+c 01.03.2000    ggu	bug in call to wfouv - hev was not passed
+c
+c newpr.f:
+c 04.02.2000	ggu	no prious, dobefor/after3d,
+c 04.02.2000	ggu	wrrc77 to subext
+c
+c subbnd.f:
+c 20.01.2000    ggu     call to rdbnds without dimension -> use getdim
+c
+c subcst.f:
+c 04.01.2000    ggu     cstset -> cstcheck, new cstsetup
+c
+c subdim.f:
+c 20.01.2000    ggu     common block /dimdim/ eliminated
+c
+c subext.f:
+c 04.02.2000	ggu	wrrc77 from newpr to here
+c
+c subexta.f:
+c 20.01.2000    ggu     common block /dimdim/ eliminated
+c 01.02.2000    ggu     module framework introduced
+c
+c subflxa.f:
+c 20.01.2000	ggu	old routines substituted, new routine extrsect
+c 20.01.2000    ggu     common block /dimdim/ eliminated
+c
+c sublin.f:
+c 20.01.2000    ggu	new routine revline
+c
+c subn35.f:
+c 20.01.2000    ggu     common block /dimdim/ eliminated
+c
+c subnls.f:
+c 01.02.2000	ggu	new routine setsec
+c
+c subnsh.f:
+c 20.01.2000    ggu     common block /dimdim/ eliminated
+c 04.02.2000    ggu     no priout, dobefor/after, pritime, endtime
+c
+c subqfx.f:
+c 18.12.1999    ggu     /iweich/ -> /iwegv/ (bug)
+c
+c subuti.f:
+c 18.12.1999	ggu	/iweich/ -> /iwegv/ (bug)
+c
+c subvola.f:
+c 20.01.2000    ggu	common block /dimdim/ eliminated
+c
+
+==========================================================
+
+version  4.55    09-12-1999    VERS_4_55
+
+========================================================== 09-12-1999 - 4.55
+
+Lots of changes...
+
+c
+c hp.f:
+c 14.09.1999    ggu     call to setflux introduced, new hlhv
+c 19.11.1999    ggu     new routines for section vol
+c
+c ht.f:
+c 22.10.1999    ggu     igrv, ngrv eliminated (subst by ilinkv, lenkv)
+c
+c new3di.F:
+c 24.06.1999    ggu     call to rescur commented (use 2D call resid)
+c
+c newchk.f:
+c 22.10.1999    ggu     igrv, ngrv eliminated (subst by ilinkv, lenkv)
+c
+c newcon.F:
+c 28.10.1999    ggu     names changed
+c
+c newini.f:
+c 22.10.1999	ggu	igrv, ngrv eliminated (subst by ilinkv, lenkv)
+c
+c readext.f:
+c 16.09.1999    ggu	writes u/v/z/m.dat files + fort.76
+c
+c splitext.f:
+c 28.09.1999	ggu	reads now all data and then writes it
+c
+c sub555.f:
+c 14.10.1999    ggu     central discretization of advective terms (bcenter)
+c 14.10.1999    ggu     in mass conservation control compute advective index
+c
+c subbnd.f:
+c 08.07.1999    ggu     bug with iqual -> ibtyp not respected
+c
+c subcon.f:
+c 28.10.1999	ggu	names changed
+c
+c subdep.f:
+c 19.10.1999	ggu	new routine makehv from subutl
+c
+c subflxa.f:
+c 13.09.1999    ggu	type of node computed in own routine flxtype
+c 19.11.1999    ggu	iskadj into sublin
+c
+c subgeo.f:
+c 19.11.1999	ggu	new routines inpoly and winding
+c
+c sublin.f:
+c 19.11.1999    ggu	isolated from subflxa
+c 02.12.1999    ggu	new routine extrline, nextline substitutes extrli
+c
+c subn11.f:
+c 01.12.1999	ggu	handle negative boundary type
+c
+c subn36.f:
+c 22.10.1999    ggu     volag copied to this file (only used here)
+c
+c subnsh.f:
+c 11.08.1999	ggu	new compatibility array hlhv initialized
+c 19.11.1999	ggu	new routines for section vol
+c
+c subnsu.f:
+c 19.11.1999	ggu	new subroutine e2int
+c
+c subreg.f:
+c 19.10.1999	ggu	routine mkmask added from subutl
+c
+c subres.f:
+c 18.10.1999	ggu	function resi copied from newres
+c
+c subsys.f:
+c 28.09.1999    ggu     new flag regflx
+c 19.11.1999    ggu     new parameters for section vol
+c
+c subvola.f:
+c 13.09.1999    ggu	type of node computed in own routine voltype
+c
+c subwat.f:
+c 22.10.1999    ggu     file cleaned, added 3D routines
+c
+c subwin.f:
+c 08.07.1999    ggu     bug fix in documentation
+c
+
+==========================================================
+
+version  4.54    22-06-1999    VERS_4_54
+
+========================================================== 22-06-1999 - 4.54
+
+Some bug fixes.
+
+c
+c basinf.f:
+c 04.06.1999	ggu	new statistics are computed
+c
+c subcon.f:
+c 07.06.1999	ggu	bug fix -> bconz... not saved
+c
+c subcus.f:
+c 27.05.1999    ggu     use icust to call custom routines
+c
+c subscn.f:
+c 31.05.1999	ggu	bug fix in ialfa -> negative numbers (idigs)
+c
+c subssm.f:
+c 04.06.1999    ggu     new routine matstru
+c 22.06.1999    ggu     headers in new routine matstru
+c
+c subssv.f:
+c 31.05.1999    ggu	new comodity routine mima2i
+c
+c subsys.f:
+c 27.05.1999    ggu     icust introduced
+c 31.05.1999    ggu     dval default changed
+c
+c subwin.f:
+c 31.05.1999    ggu     bug fix -> n was not set to nkn (twice)
+c
+
+==========================================================
+
+version  4.53    26-05-1999    VERS_4_53
+
+========================================================== 26-05-1999 - 4.53
+
+Some modifications to equilibrium tide.
+Wind arrays substituted by stress.
+
+c
+c hp.f:
+c 20.04.1999    ggu     converted to stress instead of wind (tauxnv...)
+c
+c ht.f:
+c 19.04.1999    ggu     subroutine custom called
+c
+c new3di.F:
+c 20.04.1999    ggu     converted to stress instead of wind (tauxnv...)
+c
+c sub555.f:
+c 20.04.1999    ggu     converted to stress instead of wind (tauxnv...)
+c
+c subcus.f:
+c 19.04.1999    ggu     subroutine impli to change weighting factor
+c
+c subn11.f:
+c 20.04.1999	ggu	converted to stress instead of wind (tauxnv...)
+c
+c subn35.f:
+c 25.05.1999	ggu	new routine bofric
+c
+c subsys.f:
+c 19.04.1999    ggu     itide changed to rtide
+c
+c subwin.f:
+c 20.04.1999    ggu     converted to stress instead of wind (tauxnv...)
+c
+c subzzz.f:
+c 24.05.1999	ggu	new routines xy2geo and geo2xy
+c
+c tideg.f:
+c 19.04.1999	ggu	itide changed to rtide
+c
+
+==========================================================
+
+version  4.52    13-04-1999    VERS_4_52
+
+========================================================== 13-04-1999 - 4.52
+
+Equilibrium tide in 3D model.
+Cosmetic changes.
+
+c
+c basinf.f:
+c 06.04.1999	ggu	completely restructured
+c
+c flxinf.f:
+c 06.04.1999	ggu	cosmetic changes
+c
+c ht.f:
+c 08.04.1999    ggu     equilibrium tide (tidal potential) introduced
+c
+c new3di.F:
+c 08.04.1999	ggu	equilibrium tide introduced (zeqv)
+c
+c oxygen.f:
+c 06.04.1999	ggu	do not print anything if ioxy = 0
+c
+c splitext.f:
+c 09.04.1999	ggu	restructured from readext
+c
+c subsys.f:
+c 13.04.1999    ggu     new parameter itide
+c
+c tideg.f:
+c 08.04.1999	ggu	written from scratch
+c 13.04.1999	ggu	itide introduced
+c
+c wininf.f:
+c 06.04.1999	ggu	cosmetic changes
+c
+
+==========================================================
+
+version  4.51    31-03-1999    VERS_4_51
+
+========================================================== 31-03-1999 - 4.51
+
+Minor changes, some fixes.
+Some changes to file naming in post-processing routines.
+
+c
+c nosextr.f:
+c 24.02.1999    ggu     use n2int for node number translation
+c
+c oxygen.f:
+c 17.02.1999	ggu	tested and changed for special areas
+c 18.02.1999	ggu	array knoxy -> read it and treat it in check routine
+c 24.02.1999	ggu	different parameters, subroutine outoxy
+c
+c subapn.f:
+c 12.02.1999	ggu	useless data structures deleted in iapini
+c 12.02.1999	ggu	in assnam do not ask for apn file
+c 12.02.1999	ggu	honor auto mode
+c 12.02.1999	ggu	read runnam from memfil only if not in apn file
+c
+c subn11.f:
+c 18.02.1999	ggu	allow for boundary type 0
+c
+c subnsa.f:
+c 12.02.1999	ggu	reading title from own subroutine (with sim and bas)
+c
+c subnsu.f:
+c 24.02.1999	ggu	new subroutine n2int
+c
+c subsss.f:
+c 12.02.1999	ggu	new routine triml
+c
+c subsys.f:
+c 12.02.1999    ggu     default of parameter file changed to apnstd.str
+c 12.02.1999    ggu     new parameters for plotting
+c
+
+==========================================================
+
+version  4.50    27-01-1999    VERS_4_50
+
+========================================================== 27-01-1999 - 4.50
+
+File format for scalar quantities (concentrations) unified -> NOS.
+Some more on oxygen module.
+3D compatibility arrays introduced.
+newcon1.f renamed to subcon1.f.
+
+c
+c hp.f:
+c 26.01.1999    ggu     new 3D compatibility arrays
+c
+c oxygen.f:
+c 26.01.1999	ggu	new write to file with 3D NOS routines
+c
+c subcon.f:
+c 26.01.1999	ggu	new routines (3D) to write files NOS
+c
+c subcon1.f:
+c 26.01.1999    ggu     can be used also with 2D routines
+c
+c subnos.f:
+c 26.01.1999	ggu	some comments
+c
+c subnsh.f:
+c 26.01.1999	ggu	new comp3d added
+c
+c subres.f:
+c 26.01.1999	ggu	use 3D NOS routines for rms velocity
+c
+
+==========================================================
+
+version  4.43    25-01-1999    VERS_4_43
+
+========================================================== 25-01-1999 - 4.43
+
+Some minor bug fixes.
+Oxygen module integrated into 2D version.
+Some changes to NOS file handling routines.
+More helper functions in subbnd.
+Better regular grid interpolation support.
+User friendly Mercator projection routines.
+New random generator routines (Numerical receipes).
+
+c
+c hp.f:
+c 06.11.1998    ggu     new arrays hkv and hev
+c 22.01.1999    ggu     new oxygen module
+c
+c ht.f:
+c 06.11.1998    ggu     hv renamed into hkv
+c
+c newdum.f:
+c 22.01.1999	ggu	oxygen module added
+c
+c newini.f:
+c 06.11.1998	ggu	computation of hkv/hev taken out of sp211 -> cstset
+c
+c nosextr.f:
+c 18.11.1998    ggu     check dimensions with dimnos
+c
+c oxygen.f:
+c 20.01.1999	ggu	adapted from reactor Cosimo
+c
+c reactor.f:
+c 08.09.1998	ggu	some cleaning
+c 24.11.1998	ggu	use switch ibio to see if reactor has to be run
+c 22.01.1999	ggu	save some not yet saved variables in biocos
+c
+c sub555.f:
+c 04.10.1998    ggu     uvzchk -> increased error logging - continuing
+c
+c subbnd.f:
+c 22.01.1999    ggu     new subroutine setbnd
+c
+c subcst.f:
+c 06.11.1998    ggu     call to huniqu to set up hkv and hev
+c 22.01.1999    ggu     oxygen modules introduced
+c
+c subcus.f:
+c 03.10.1998    ggu     subroutine salt to check salt
+c
+c subdep.f:
+c 06.11.1998	ggu	new huniqu to compute hev and hkv
+c
+c subini.f:
+c 03.10.1998    ggu     initialize uov/vov during restart
+c
+c subn11.f:
+c 05.11.1998	ggu	slightly restructured restart
+c
+c subnos.f:
+c 18.11.1998	ggu	subroutines setnos, getnos, dimnos added
+c
+c subnsh.f:
+c 22.01.1999	ggu	oxygen section added
+c
+c subreg.f:
+c 18.11.1998	ggu	routine commented
+c 18.11.1998	ggu	routine setgeo introduced
+c 19.11.1998	ggu	routines a2char, prchar added
+c
+c subrnd.f:
+c 19.11.1998    ggu     routines copied from numerical receipies
+c 23.11.1998    ggu     test routines and comments
+c
+c subsys.f:
+c 24.11.1998    ggu     switch for biological reactor introduced
+c
+c subutl.f:
+c 06.11.1998    ggu     minor changes in makehv
+c
+c subwin.f:
+c 11.11.1998	ggu	nwdim increased to 200
+c
+c subzzz.f:
+c 19.11.1998	ggu	completly re-written -> user friendly
+c
+
+==========================================================
+
+version  4.42    07-09-1998    VERS_4_42
+
+========================================================== 07-09-1998 - 4.42
+
+3D model restructured.
+Biological reactor implemented.
+Minor changes.
+
+c
+c hp.f:
+c 20.08.1998    ggu     iextpo finally eliminated
+c 21.08.1998    ggu     routine setczg removed
+c 21.08.1998    ggu     new arrays zov, znv, up0v, vp0v to substitute xv
+c 21.08.1998    ggu     xv eliminated
+c
+c ht.f:
+c 20.08.1998	ggu	iextpo finally eliminated, momentum arrays added
+c 20.08.1998	ggu	spb11 -> sp111
+c 21.08.1998    ggu     xv eliminated
+c 03.09.1998    ggu     biological reactor integratated
+c
+c new3di.F:
+c 20.08.1998	ggu	some documentation for sp256w
+c
+c newbcl.F:
+c 19.08.1998    ggu     call to barcfi changed
+c 20.08.1998    ggu     can initialize S/T from file
+c 24.08.1998    ggu     levdbg used for debug
+c 26.08.1998    ggu     init, bnd and file routines substituted with con..
+c
+c newbcl0.f:
+c 19.08.1998	ggu	new routines to write NOS file
+c 19.08.1998	ggu	call to barcfi changed
+c 26.08.1998	ggu	call to bclini changed
+c 26.08.1998	ggu	routines deleted: barcpr, chkuvw, vmima
+c 26.08.1998	ggu	routines mimari transferred to subssv
+c 26.08.1998    ggu     subroutine tsmass transferred to newchk
+c 26.08.1998    ggu     subroutine stmima transferred to newut
+c 26.08.1998    ggu     subroutines bclini, barcfi, bclbnd deleted
+c
+c newchk.f:
+c 24.08.1998    ggu     levdbg used for debug
+c 26.08.1998    ggu     subroutine tsmass transferred from newbcl0
+c 26.08.1998    ggu     subroutine convol, tstvol transferred from newcon1
+c
+c newcon.F:
+c 19.08.1998    ggu     call to conzfi changed
+c 26.08.1998    ggu     cleaned up conzsh
+c 26.08.1998    ggu     conz uses zeov,zenv for water level
+c
+c newcon1.f:
+c 19.08.1998	ggu	call to conzfi changed
+c 20.08.1998	ggu	makew removed (routine used is sp256w)
+c 24.08.1998    ggu     levdbg used for debug
+c 26.08.1998    ggu     subroutine convol, tstvol transferred to newchk
+c 26.08.1998    ggu     all subroutines re-written more generally
+c
+c newini.f:
+c 20.08.1998	ggu	initialization routines copied from subn11/new11
+c 20.08.1998	ggu	new routine inicfil to init nodal values from file
+c
+c newpr.f:
+c 24.08.1998	ggu	new write to terminal
+c
+c newut.f:
+c 19.08.1998	ggu	new routines volco0, volno0
+c 26.08.1998	ggu	subroutine stmima transferred from newbcl0
+c
+c reactor.f:
+c 27.08.1998	ggu	light included
+c 28.08.1998	ggu	new boundary condition handeling
+c
+c sub555.f:
+c 19.08.1998	ggu	use radv to compute advective terms (bug fix)
+c 20.08.1998    ggu     iextpo finally eliminated
+c 21.08.1998    ggu     xv eliminated
+c 03.09.1998    ggu     some changes to avoid compiler warnings
+c
+c subbnd.f:
+c 24.08.1998    ggu     BC for concentration is bnd(20,..)
+c 24.08.1998    ggu     BC for maximum input level is bnd(12,..) -> levmax
+c 27.08.1998    ggu     accessor function levbnd for levmax
+c
+c subcst.f:
+c 03.09.1998    ggu     call bocche to adjust depth at Venice inlets
+c
+c subcus.f:
+c 21.08.1998    ggu     xv eliminated
+c 03.09.1998    ggu     subroutine bocche to adjust depth at Venice inlets
+c
+c subdry.f:
+c 21.08.1998	ggu	file sublnk splitted into lnk/dry
+c 21.08.1998	ggu	routine setczg removed
+c 21.08.1998    ggu     xv eliminated
+c
+c subfila.f:
+c 24.08.1998	ggu	written from scratch
+c
+c subini.f:
+c 21.08.1998    ggu     copied from subn11.f
+c 21.08.1998    ggu     xv eliminated
+c
+c sublnk.f:
+c 21.08.1998    ggu     file sublnk splitted into lnk/dry
+c
+c subn11.f:
+c 20.08.1998    ggu     iextpo finally eliminated
+c 20.08.1998    ggu     2d dependent routines copied to subini.f
+c 21.08.1998    ggu     xv eliminated
+c 24.08.1998	ggu	BC for concentration is bnd(20,..)
+c 24.08.1998	ggu	BC for maximum input level is bnd(12,..) -> levmax
+c
+c subn35.f:
+c 21.08.1998	ggu	xv eliminated
+c
+c subnos.f:
+c 19.08.1998	ggu	version 3 implemented
+c
+c subsse.f:
+c 21.08.1998	ggu	xv renamed to xx
+c
+c subssv.f:
+c 26.08.1998    ggu	routines mimari transferred from newbcl0
+c
+c subsys.f:
+c 02.09.1998    ggu     hack: change depth in Venice inlets (hlido,...)
+c
+c subwat.f:
+c 21.08.1998    ggu     xv eliminated
+c
+
+==========================================================
+
+version  4.41    18-08-1998    VERS_4_41
+
+========================================================== 18-08-1998 - 4.41
+
+In 2D version advective terms, horizontal diffusion, Coriolis
+terms implemented (not yet completely tested).
+Some other minor changes.
+
+c
+c hp.f:
+c 12.08.1998	ggu	uedif, vedif for horizontal diffusion (no dudxv...)
+c
+c ht.f:
+c 14.08.1998	ggu	call to biocos (biological model) introduced
+c
+c new11.F:
+c 14.08.1998	ggu	no ib66 (write for rad condition)
+c 14.08.1998	ggu	BC for salt and temp inverted (bug)
+c
+c new3di.F:
+c 14.08.1998	ggu	set w = 0 at open boundary nodes
+c
+c newbcl0.f:
+c 14.08.1998	ggu	new routine tsmass
+c
+c newcon.F:
+c 14.08.1998	ggu	rkpar/rvpar -> chpar/cvpar
+c 14.08.1998	ggu	use ilhkv to scan vertical levels on node
+c 14.08.1998	ggu	$$LEV0 - bug fix : vertical level 0 used
+c
+c sub555.f:
+c 03.08.1998	ggu	uvzchk introduced to stop unrealistic computation
+c 03.08.1998	ggu	$$aust - austausch term was wrong (wrong sign and
+c			   missing depth (dudx etc are velocities!!!)
+c 03.08.1998	ggu	non linear advective term introduced
+c 13.08.1998	ggu	no dudxv... -> now use uediff...
+c 13.08.1998	ggu	nodav only for nodal average -> hor. diff. in hdiff
+c 13.08.1998	ggu	new routines upstrm, uvzchk, hdiff
+c 13.08.1998	ggu	coriolis term implemented
+c
+c subapn.f:
+c 07.08.1998	ggu	handles negative mode -> do not change names
+c
+c subbnd.f:
+c 23.07.1998	ggu	documentation
+c
+c subcst.f:
+c 12.08.1998    ggu     new parameter dlat -> specify latitude for coriolis
+c
+c subnls.f:
+c 06.08.1998	ggu	nrdtst changed due to compiler warning of AIX
+c
+c subsys.f:
+c 23.07.1998	ggu	documentation
+c 12.08.1998    ggu     new parameter dlat -> specify latitude for coriolis
+c
+c subwin.f:
+c 23.07.1998	ggu	documentation
+c
+
+==========================================================
+
+version  4.40    22-07-1998    VERS_4_40
+
+========================================================== 22-07-1998 - 4.40
+
+Some bug fixes. 
+Boundary type 4 (momentum input) implemented.
+sub555.f totally restructured.
+
+c
+c sub555.f:
+c 21.07.1998	ggu	ireib = 4 introduced
+c 22.07.1998	ggu	documentation for friction
+c
+c sublnk.f:
+c 14.07.1998	ggu	$$ibtyp4 - boundary type 4 integrated
+c
+c subn11.f:
+c 14.07.1998    ggu     finally momentum input finished -> new exxqq
+c
+c subsse.f:
+c 14.07.1998	ggu	new routine exxqq
+c
+c subsys.f:
+c 22.07.1998	ggu	more on documentation
+c
+c subwin.f:
+c 14.07.1998	ggu	function binwin rewritten (gave no error on linux)
+c 22.07.1998	ggu	documentation
+c
+
+==========================================================
+
+version  4.36    13-07-1998    VERS_4_36
+
+========================================================== 13-07-1998 - 4.36
+
+Some small bug fixes. More on momentum input (ruv.. is nodal value).
+c
+c hp.f:
+c 13.07.1998	ggu	ruv, rvv treated as node arrays (nkndim)
+c
+c subbnd.f:
+c 13.07.1998	ggu	implemented ibtyp = 4
+c
+c subfil.f:
+c 29.06.1998	ggu	filna revisited
+c
+c subn11.f:
+c 29.06.1998    ggu     !$$momin1 - bug fix for momentum input
+c 13.07.1998    ggu     !initialize ruv, rvv by node
+c
+c subsse.f:
+c 29.06.1998	ggu	error check in exxqq9
+c
+c subwin.f:
+c 13.07.1998	ggu	compiler error: define nwndget as nwndget()
+c
+
+==========================================================
+
+version  4.35    25-06-1998    VERS_4_35
+
+========================================================== 25-06-1998 - 4.35
+
+General cleanup of some routines ( Lahey compiler warnings ).
+Module qflux working.
+Momentum input not yet working.
+Some useless files removed.
+
+c
+c hp.f:
+c 20.06.1998	ggu	nvers eliminated definitly
+c
+c subapn.f:
+c 20.06.1998	ggu	general clean up
+c
+c subbnd.f:
+c 20.06.1998	ggu	documentation for momentum input
+c
+c subcon.f:
+c 20.06.1998	ggu	general cleanup
+c 24.06.1998	ggu	heat flux enabled
+c
+c subcus.f:
+c 25.06.1998	ggu	test for q-flux
+c
+c subn11.f:
+c 20.06.1998    ggu     more on momentum input (mvalue)
+c
+c subqfx.f:
+c 24.06.1998	ggu&lz	subroutines from lucia integrated
+c
+c subsys.f:
+c 24.06.1998	ggu	qflux (heat flux) added
+c
+c subwat.f:
+c 20.06.1998    ggu     two dimensional common blocks regolarized (nen3v,...)
+c
+
+==========================================================
+
+version  4.34b    19-06-1998    VERS_4_34b
+
+========================================================== 19-06-1998 - 4.34b
+
+Version number is character 
+
+Changes in subsys.f subnsh.f subver.f
+
+==========================================================
+
+version  4.34a    19-06-1998    VERS_4_34a
+
+========================================================== 19-06-1998 - 4.34a
+
+Small bug fix in subcon.f
+
+c
+c subcon.f:
+c 19.06.1998	ggu	bug fix (ifileo nor declared)
+c
+
+==========================================================
+
+version  4.34    18-06-1998    VERS_4_34
+
+========================================================== 18-06-1998 - 4.34
+
+Lots of small fixes.
+New documentation.
+New imposed fluxes in momentum equation (incomplete).
+New ASCII wind filei and stress.
+New heat flux module (incomplete).
+New scanning procedures in own file (subscn.f).
+
+c
+c hp.f:
+c 28.05.1998    ggu     no iamat, inddim,..., new call to sp131g()
+c 28.05.1998    ggu     new ruv, rvv (momentum input)
+c 17.06.1998	ggu	restructured for documentation
+c
+c ht.f:
+c 28.05.1998	ggu	call to sp131g changed
+c
+c newdum.f:
+c 22.05.1998	ggu	created
+c
+c newlnk.f:
+c 22.05.1998    ggu     new routine pntfla -> absolute element index (copied)
+c
+c sub555.f:
+c 25.05.1998	ggu	$$stress - wind in stress
+c 17.06.1998	ggu	no iamat, isym
+c
+c subbnd.f:
+c 25.05.1998	ggu	documentation (DOCS)
+c
+c subcmv.f:
+c 05.06.1998	ggu	avoid write to terminal
+c
+c subcon.f:
+c 16.06.1998	ggu	new names for some parameters
+c			rkpar -> chpar , cref -> conref
+c
+c subdim.f:
+c 28.05.1998	ggu     call to sp131g changed (no index,...)
+c
+c subdum.f:
+c 17.06.1998	ggu	nrdskp introduced (needed to skip section)
+c
+c subfil.f:
+c 21.05.1998	ggu	unit 0 is ok in ifileo()
+c
+c subgrd.f:
+c 22.05.1998    ggu     bug fix (ifileo not declared)
+c
+c subn11.f:
+c 22.05.1998	ggu	local variable t introduced
+c 22.05.1998	ggu	corrected bug for rain (surel called twice)
+c 28.05.1998    ggu     new ruv, rvv (momentum input) (incomplete)
+c
+c subn35.f:
+c 25.05.1998	ggu	documentation started
+c
+c subqfx.f:
+c 01.06.1998	ggu&lz	written from scratch (nearly)
+c
+c subros.f:
+c 05.06.1998    ggu     avoid write to terminal
+c
+c subscn.f:
+c 01.06.1998	ggu	adapted from subsss.f and sbscan.f
+c
+c subsss.f:
+c 01.06.1998	ggu	new routines iscan... into own file (subscn.f)
+c 17.06.1998	ggu	old routines with new name (iscan0,ialfa0)
+c
+c subsys.f:
+c 25.05.1998	ggu	documentation added
+c 26.05.1998	ggu	documentation for wind file added
+c
+c subwin.f:
+c 25.05.1998	ggu	more documentation, stress implemented
+c 26.05.1998	ggu	ASCII format implemeted
+c 01.06.1998	ggu	ignore after 3rd value for ASCII read
+c 17.06.1998	ggu	no debug write
+c
+
+==========================================================
+
+version  4.33    20-05-1998    VERS_4_33
+
+========================================================== 20-05-1998 - 4.33
+
+Dummy version.
+
+==========================================================
+
+version  4.32    20-05-1998    VERS_4_32
+
+========================================================== 20-05-1998 - 4.32
+
+Eliminate explicit open() calls in model.
+Simplify interactivity for vpn6 (no description).
+
+c
+c subdwq.f:
+c 13.05.1998    ggu     irv not declared anymore
+c 20.05.1998    ggu     open files through ifileo; save nvol, nflow, narea
+c
+c subext.f:
+c 20.05.1998	ggu	cleaned up a bit
+c
+c subgrd.f:
+c 20.05.1998    ggu     open file with ifileo()
+c
+c sublnk.f:
+c 20.05.1998	ggu	hard coded unit 88 substituted (use ifileo)
+c
+c subres.f:
+c 20.05.1998	ggu	use ifileo to open file
+c
+c vpn6.f:
+c 18.05.1998    ggu     always process depths elementwise
+c			don't ask for description anymore
+c
+
+==========================================================
+
+version  4.31    11-05-1998    VERS_4_31
+
+========================================================== 11-05-1998 - 4.31
+
+New routines for fluxes checked and tested.
+
+c
+c ht08.f:
+c 05.05.1998	ggu	izeit eliminated
+c
+c subcus.f:
+c 08.05.1998	ggu	new custom routine to check for mass balance
+c
+c subexta.f:
+c 08.05.1998	ggu	changed read of node numbers through nrdveci
+c
+c subfil.f:
+c 07.05.1998	ggu	new subroutine filext
+c
+c subflxa.f:
+c 07.05.1998    ggu	check nrdveci on return for error
+c 08.05.1998    ggu	restructured with new comodity routines
+c
+c sublnk.f:
+c 08.05.1998	ggu	new routine pntfla -> absolute element index
+c
+c subnls.f:
+c 07.05.1998	ggu	nrdveci, nrdvecr return -1 on error
+c
+c subnsh.f:
+c 07.05.1998	ggu	check for error on return of nrdvecr
+c
+c subout.f:
+c 08.05.1998	ggu	$$id81 - constant 81 replaced with variable id=81 (bug)
+c
+c vpn6.f:
+c 08.05.1998    ggu     always process whole file (idepth = 0)
+c
+
+==========================================================
+
+version  4.30    04-05-1998    VERS_4_30
+
+========================================================== 04-05-1998 - 4.30
+
+New module for fluxes through section.
+New module for heat flux (subqfx.f)
+New makefile for Lahey.
+
+c
+c hp80.f:
+c 27.04.1998    ggu     sp110a and tstlnk befor calling cstset -> cancelled
+c 28.04.1998    ggu     new /kfluxc/, /iflux/, call to flxini
+c 29.04.1998    ggu     uses module for semi-implicit time-step
+c 30.04.1998    ggu     finally eliminated /semimp/, /trock/, /ffloat/
+c
+c ht08.f:
+c 03.04.1998	ggu	$$DESCRP BUG overwriting descrp with boundary vals.
+c			 -> conzn,tempn,saltn were not declared character
+c 30.04.1998    ggu     finally eliminated /semimp/, /trock/, /ffloat/
+c
+c newlnk.f:
+c 27.03.1998    ggu     eliminated /bnd/, /irv/
+c
+c sub555.f:
+c 29.04.1998	ggu	uses module for semi-implicit time-step
+c 04.05.1998	ggu	integrated close and delwaq
+c
+c subapn.f:
+c 01.05.1998	ggu	$$IMEM - close file only for imem > 0
+c 01.05.1998	ggu	interactive questions beautified
+c
+c subbnd.f:
+c 27.03.1998	ggu	new utility routines
+c
+c subcst.f:
+c 29.04.1998    ggu     module for semi-implicit time-step in own routine
+c
+c subdwq.f:
+c 27.03.1998	ggu	integrated changes from Technital/Delft
+c			eliminated /bnd/, /irv/
+c 29.04.1998    ggu     uses module for semi-implicit time-step
+c 04.05.1998    ggu     keyword access introduced
+c
+c subfil.f:
+c 02.05.1998	ggu	new format binary for ifileo
+c
+c subflxa.f:
+c 30.04.1998    ggu	newly written routines (subpor deleted)
+c
+c sublnk.f:
+c 27.03.1998	ggu	eliminated /bnd/, /irv/
+c 27.04.1998	ggu	$$NKNEL - do not call nknel in tstlnk
+c
+c subn36.f:
+c 27.03.1998	ggu	utility routines for reading etc...
+c 27.03.1998	ggu	dead code deleted, xv(1) -> xv(3,1)
+c			/bnd/ substituted by utility routine
+c 29.04.1998    ggu     uses module for semi-implicit time-step
+c
+c subnsa.f:
+c 27.03.1998	ggu	eliminated /bnd/, /irv/
+c
+c subnsh.f:
+c 29.04.1998	ggu	new module for semi-implicit time-step
+c
+c subres.f:
+c 28.04.1998	ggu	dischar deleted
+c
+c subsys.f:
+c 30.04.1998	ggu	some changes for flux sections
+c
+c subwat.f:
+c 30.04.1998    ggu     routines from subflx.f merged into this file
+c
+
+==========================================================
+
+version  4.23    26-03-1998    VERS_4_23
+
+========================================================== 26-03-1998 - 4.23
+
+Integrated changes from old source of Technital.
+Minor changes in headers of fortran files.
+	(Elimination of redundant keywords and date corrections)
+
+c
+c sub555.f:
+c 25.03.1998	ggu	integrated changes from technital (minor)
+c
+c subdat.f:
+c 23.03.1998	ggu	hfroms, sectod integrated
+c
+c sublgr.f:
+c 25.03.1998	ggu	$$new25.03.98 - initialize iefdv
+c 25.03.1998	ggu	integrated changes from technital
+c
+c subn36.f:
+c 25.03.1998	ggu	integrated changes from technital version
+c
+c subsys.f:
+c 22.03.1998	ggu	some changes for Technital integrated
+c
+
+==========================================================
+
+version   4.22    20-03-1998    VERS_4_22
+
+========================================================== 20-03-1998 - 4.22
+
+Undocumented changes.
+
+ccccccccccccccccccccccccccccccccccccccccccccccccccccc 22.01.1998 - version 4.21
+c
+c minor modifications
+c
+c apnpar.str only read from local directory
+c in 3D: adjust ibndim to 100 in new11.F
+c
+c hp80.f:   custom routine called at end of time step
+c new11.F:  ibndim = 100 (50 before)
+c subapn.f: $$APNPAR - only look for apn file in local directory
+c subdef.f: idefop reintroduced -> to avoid link error
+c subdef.f: in mkname: give extension with or without dot
+c subsys.f: no more strdir, apndir -> read apnpar.str from local
+c subver.f: version 4.21
+c subwin.f: better warnings
+c
+ccccccccccccccccccccccccccccccccccccccccccccccccccccc 04.12.1997 - version 4.20
+c
+c new variables for temp/salt/conz
+c introduced tempn,saltn (see conzn)
+c specify wind in STR file
+c version number of 3D unified with 2D
+c
+ccccccccccccccccccccccccccccccccccccccccccccccccccccc 23.09.1997 - version 4.10
+c
+c specify concentration at boundaries through file
+c
+c       subbnd.f subn11.f
+c       /conzn/
+c
+c read param.h for parameters
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc version 4.00
+c
+c integration of 2D and 3D model
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+
+-------------------------------------------------------------------- 08.08.1997
+
+all:		param.h -> defines.h
+		param.gen -> param.h
+
+-------------------------------------------------------------------- 25.07.1997
+
+ht08:		call to sp135r in main -> we need chezy again
+			old model can run with this, czv is just
+			not needed
+
+-------------------------------------------------------------------- 23.07.1997
+
+newini:		substituted iclin with bcolin (harmless change)
+
+
+-------------------------------------------------------------------- 21.07.1997
+
+new3di:		substitutes new3d just the algorithm changes,
+			not the data structures
+makefile:	link with new objects (old objects have been
+			saved in NEW_OBJS, HP_OBJS)
+
+-------------------------------------------------------------------- 19.06.1996
+
+last version of old model : 19 June 1996
+
+--------------------------------------------------------------------
+
+==========================================================
+Do not delete last line - needed for logging.
+==========================================================
+fem3d/subver.f

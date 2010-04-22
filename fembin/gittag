@@ -44,7 +44,6 @@ editfiles()
   if [ -n "$lastline" ]; then
     echo "Recommended files: $lastline"
   fi
-  #echo "Example: subver.f or similar."
   echo
 
   while :
@@ -84,6 +83,8 @@ tmpfile1=tmp1.tmp
 tmpfile2=tmp2.tmp
 #########################################################
 
+cd $FEMDIR
+
 if [ ! -f $version_file ]; then
   #echo "No file $version_file -> please create first"
   #exit 2
@@ -95,14 +96,16 @@ fi
 
 if [ $# -ne 1 ]; then
   Usage $firstline
+  git tag
   exit 1
 else
-  newvers=$1
+  newvers=`echo $1 | sed 's/^v//'`
 fi
 
 #########################################################
 
 v=`echo $newvers | sed 's/\./_/g'`
+newtag=v$v
 newtag=VERS_$v
 
 newdate=`date +"%d-%m-%Y"`
@@ -112,10 +115,6 @@ actdate=`echo $firstline | cut -d" " -f3`
 acttag=`echo $firstline | cut -d" " -f4`
 
 comparedate=`date2num $actdate`
-#comparedate=`expr $comparedate + 1`
-
-#echo $newdate $actdate $comparedate
-#echo $newvers $newtag - $actvers $acttag
 
 #########################################################
 
@@ -127,12 +126,14 @@ echo "New version :"
 echo $newvers "     " $newdate
 echo 
 
+git status
+
 ok
 
 #########################################################
 
-cvscommit -nolog
-editfiles
+#cvscommit -nolog
+#editfiles
 #cvscommit -m "New version $newvers"
 
 #########################################################
@@ -141,7 +142,8 @@ echo
 echo "Checking revision log ..."
 echo 
 
-revisionlog -after $comparedate *.[cfFh] > $tmpfile
+files=`find . -name "*.[cfFh]"`
+revisionlog -after $comparedate $files > $tmpfile
 if [ -f $version_file ]; then
   revisionlog_adjust.pl $tmpfile $version_file > $tmpfile2
 fi
@@ -171,13 +173,17 @@ vi $tmpfile1
 
 #########################################################
 
+echo "new version: $newvers"
+echo "new tag    : $newtag"
+
 ok "Shall I tag now ? (y/N) : "
 
 cp $tmpfile1 $version_file
 
-cvscommit -auto -m "New version $newvers"
-touch $version_file
-cvs tag $newtag
+git add -u
+git commit -m "New version $newvers" --no-verify
+#touch $version_file
+git tag $newtag
 
 rm -f $tmpfile $tmpfile1 $tmpfile2
 
