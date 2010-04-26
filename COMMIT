@@ -1,5 +1,17 @@
 ============================================================
 
+Mon Apr 26 17:07:33 CEST 2010
+
+subcoord.f was broken ... fixed
+
+ fem3d/subcoord.f |    6 ++--
+ fembin/gittag    |    2 +-
+ fembin/gittags   |   59 +++++++++++++++++++++++++++++++++++++++++++++--------
+ fembin/gittar    |   16 ++++++++++++-
+ 4 files changed, 68 insertions(+), 15 deletions(-)
+
+============================================================
+
 Mon Apr 26 12:33:03 CEST 2010
 
 new UTM projection added

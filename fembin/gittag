@@ -133,7 +133,7 @@ ok
 #########################################################
 
 #cvscommit -nolog
-#editfiles
+editfiles
 #cvscommit -m "New version $newvers"
 
 #########################################################

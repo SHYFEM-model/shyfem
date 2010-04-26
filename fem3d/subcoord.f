@@ -2111,6 +2111,6 @@ c*******************************************************************
 	write(6,*) '================================================='
 	end
 
-	program main_test
-	call all_test
-	end
+c	program main_test
+c	call all_test
+c	end

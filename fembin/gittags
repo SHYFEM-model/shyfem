@@ -1,14 +1,55 @@
-#!/bin/sh
+#!/usr/bin/perl
 
-basedir=~/fem/
+$basedir = "~/fem/";
+$tagdir   = ".git/refs/tags";
 
-tagdir=.git/refs/tags
+$dir = $basedir . $tagdir;
 
-cd $basedir/$tagdir
+$tags = `cd $dir; ls *`;
+@tags = split(/\s+/,$tags);
 
-for tag in `ls *`
-do
-  echo -n "$tag  "
-  cat $tag
-done
+foreach $tag (@tags) {
+  $ref = `cat $dir/$tag`;
+  chomp $ref;
+  $tags{$ref} = $tag;
+  #print "$ref  $tag\n";
+}
+
+$coms = `git log --pretty=oneline`;
+@coms = split(/\n+/,$coms);
+
+foreach $com (@coms) {
+  ($hash,@mess) = split(/\s+/,$com);
+  $mess = join(" ",@mess);
+  $shorthash = substr($hash,0,10);
+  $shortmess = substr($mess,0,55);
+  $tag = format_tag($tags{$hash});
+  print "$shorthash $tag $shortmess\n";
+}
+
+#-------------------------------------------------------------
+
+sub format_tag {
+
+  my ($tag,$size) = shift;
+
+  $tag = "      " unless( $tag );
+
+  my $line = sprintf("%12s",$tag);
+
+  return $line;
+}
+
+sub get_object {
+
+  my $tag = shift;
+
+  open(TAG,"<$dir/$tag") || die "cannot open file: $dir/$tag";
+  my $ref = <TAG>;
+  close(TAG);
+
+  chomp($ref);
+
+  return $ref;
+}
 

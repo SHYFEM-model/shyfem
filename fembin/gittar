@@ -7,8 +7,20 @@ fi
 
 name=shyfem
 
-vers=`echo $1 | sed -e s/^v//`
-tag=v$vers
+version=$1
+first=`echo $version | cut -b 1`
+
+if [ "$first" = "V" ]; then
+  vers=`echo $version | sed -e s/^VERS_//`
+  tag=VERS_$vers
+elif [ "$first" = "v" ]; then
+  vers=`echo $version | sed -e s/^v//`
+  tag=v$vers
+else
+  echo "cannot parse version... first: $first"
+  exit 1
+fi
+
 prefix=$name-$vers/
 tarfile=$name-$vers.tar.gz
 
