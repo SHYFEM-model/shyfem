@@ -105,7 +105,6 @@ fi
 #########################################################
 
 v=`echo $newvers | sed 's/\./_/g'`
-newtag=v$v
 newtag=VERS_$v
 
 newdate=`date +"%d-%m-%Y"`
@@ -126,6 +125,7 @@ echo "New version :"
 echo $newvers "     " $newdate
 echo 
 
+git branch
 git status
 
 ok
@@ -173,6 +173,7 @@ vi $tmpfile1
 
 #########################################################
 
+echo ""
 echo "new version: $newvers"
 echo "new tag    : $newtag"
 

@@ -6,6 +6,7 @@ c
 c revision log :
 c
 c 07.05.2009    ggu     new framework (to be finished), new basic projection
+c 26.05.2010    ggu     new utm, bs renamed to cpp
 c
 c********************************************************************
 
@@ -15,39 +16,49 @@ c initialization of transformation routines
 c
 c please note: the coordinates (xtrans,ytrans) are subtracted from the 
 c	computed cartesian grid and are in meters
-
-	implicit none
-
-	integer iproj			!1: gauss-boaga  2: UTM
-        double precision c_param(9)     !parameters for projection
-
-	integer zone
-	double precision xtrans,ytrans
-	double precision lon0,lat0,phi
-
+c
+c iproj:
+c
+c	1	gauss-boaga
+c	2	UTM
+c	3	equidistant cylindrical, carte parallelogrammatique (CPP)
+c
 c if GB, zone (fuse) must be 1 or 2
 c if UTM, zone must be 1-60
 c
 c GB: Venice is in fuse 2, central meridian is 15
 c UTM: Venice is in zone 33, central meridian is 15
 
+	implicit none
+
+	integer iproj			!type of projection
+        double precision c_param(9)     !parameters for projection
+
+	integer fuse,zone
+	double precision xtrans,ytrans
+	double precision lon0,lat0,phi
+
 	integer proj
 	common /coords1/ proj
 	save /coords1/
 
 	if( iproj .eq. 1 ) then		!GB
-          zone = nint( c_param(1) )     !fuse for gauss-boaga, zone for UTM
+          fuse = nint( c_param(1) )     !fuse for gauss-boaga
           xtrans = c_param(2)           !extra shift in x [m]
           ytrans = c_param(3)           !extra shift in y [m]
-	  call gb_init(zone)
+	  call gb_init(fuse)
 	  call gb_trans(xtrans,ytrans)
 	else if( iproj .eq. 2 ) then	!UTM
-	  stop 'error stop init_coords: UTM not yet implemented'
-	else if( iproj .eq. 3 ) then	!basic projection
+          zone = nint( c_param(1) )     !zone for UTM
+          xtrans = c_param(2)           !extra shift in x [m]
+          ytrans = c_param(3)           !extra shift in y [m]
+	  call utm_init(zone)
+	  call utm_trans(xtrans,ytrans)
+	else if( iproj .eq. 3 ) then	!equidistant cylindrical
           lon0 = c_param(1)             !longitude of origin
           lat0 = c_param(2)             !latitude of origin
           phi  = c_param(3)             !central latitude
-	  call bs_init(lon0,lat0,phi)
+	  call cpp_init(lon0,lat0,phi)
 	else
 	  write(6,*) 'iproj = ',iproj
 	  stop 'error stop init_coords: unknown projection'
@@ -71,7 +82,8 @@ c conversion of coordinates
 	real xg(1),yg(1)	! geographical coordinates 
 
         external gb_c2g,gb_g2c
-        external bs_c2g,bs_g2c
+        external utm_c2g,utm_g2c
+        external cpp_c2g,cpp_g2c
 
 	integer proj
 	common /coords1/ proj
@@ -79,21 +91,36 @@ c conversion of coordinates
 	integer i
 	double precision east,north,lon,lat
 
+	write(6,*) 'using projection = ',proj
+
 	if( mode .eq. 1 ) then
-	  write(6,*) 'using projection = ',proj
+
 	  if( proj .eq. 1 ) then
             call apply_coords(n,xc,yc,xg,yg,gb_c2g)
+	  else if( proj .eq. 2 ) then
+            call apply_coords(n,xc,yc,xg,yg,utm_c2g)
 	  else if( proj .eq. 3 ) then
-            call apply_coords(n,xc,yc,xg,yg,bs_c2g)
+            call apply_coords(n,xc,yc,xg,yg,cpp_c2g)
+	  else
+	    stop 'error stop convert_coords: internal error'
 	  end if
+
 	else if( mode .eq. -1 ) then
+
 	  if( proj .eq. 1 ) then
             call apply_coords(n,xg,yg,xc,yc,gb_g2c)
+	  else if( proj .eq. 2 ) then
+            call apply_coords(n,xc,yc,xg,yg,utm_g2c)
 	  else if( proj .eq. 3 ) then
-            call apply_coords(n,xc,yc,xg,yg,bs_g2c)
+            call apply_coords(n,xc,yc,xg,yg,cpp_g2c)
+	  else
+	    stop 'error stop convert_coords: internal error'
 	  end if
+
 	else
+
 	  stop 'error stop convert_coords: unknown mode'
+
 	end if
 
 	end
@@ -135,13 +162,20 @@ c         end
 
 c********************************************************************
 
-	subroutine bs_init(lon0,lat0,phi)
+c
+c equidistant cylindrical projection
+c
+c carte parallelogrammatique projection or CPP (Marinus of Tyre)
+c
+c********************************************************************
+
+	subroutine cpp_init(lon0,lat0,phi)
 
         double precision lon0,lat0,phi
 
 	double precision lon_0,lat_0,phi_0,xfact,yfact
-	common /bs_param1/ lon_0,lat_0,phi_0,xfact,yfact
-	save /bs_param1/
+	common /cpp_param1/ lon_0,lat_0,phi_0,xfact,yfact
+	save /cpp_param1/
 
         double precision pi, rad
 
@@ -159,7 +193,7 @@ c********************************************************************
 
 c********************************************************************
 
-	subroutine bs_g2c(lon,lat,x,y)
+	subroutine cpp_g2c(lon,lat,x,y)
 
 c transformation from (lon/lat) to cartesian (x,y)
 
@@ -169,8 +203,8 @@ c transformation from (lon/lat) to cartesian (x,y)
 	double precision x,y  !cartesian coordinates (return)
 
 	double precision lon_0,lat_0,phi_0,xfact,yfact
-	common /bs_param1/ lon_0,lat_0,phi_0,xfact,yfact
-	save /bs_param1/
+	common /cpp_param1/ lon_0,lat_0,phi_0,xfact,yfact
+	save /cpp_param1/
 
         x = (lon-lon_0) * xfact
         y = (lat-lat_0) * yfact
@@ -179,7 +213,7 @@ c transformation from (lon/lat) to cartesian (x,y)
 
 c********************************************************************
 
-	subroutine bs_c2g(x,y,lon,lat)
+	subroutine cpp_c2g(x,y,lon,lat)
 
 c transformation from to cartesian (x,y) to (lon/lat)
 
@@ -189,13 +223,24 @@ c transformation from to cartesian (x,y) to (lon/lat)
 	double precision lon,lat !geographical coordinates (return)
 
 	double precision lon_0,lat_0,phi_0,xfact,yfact
-	common /bs_param1/ lon_0,lat_0,phi_0,xfact,yfact
-	save /bs_param1/
+	common /cpp_param1/ lon_0,lat_0,phi_0,xfact,yfact
+	save /cpp_param1/
 
         lon =  lon_0 + x / xfact
         lat =  lat_0 + y / yfact
 
         end
+
+c********************************************************************
+
+	subroutine cpp_all_test
+	end
+
+c********************************************************************
+
+c	program cpp_main
+c	call cpp_all_test
+c	end
 
 c********************************************************************
 
@@ -534,8 +579,6 @@ c	 include 'proj.h'
 	 x = east - x0 + xtrans0
 	 y = north + ytrans0
 	
-	 !write(6,*) x,y,x0,xtrans0,ytrans0,east,north
-
 	 aux = y / a1
 	 auxr = aux * rad
 	 xi = aux + b2*sin(2.*auxr) + b4*sin(4.*auxr) + b6*sin(6.*auxr)
@@ -783,6 +826,606 @@ c	 call gb_all_test
 c	 end
 
 c****************************************
+c
+c utm transformations
+c
+c contents :
+c
+c utm core routines
+c
+c subroutine utm_init(zone)
+c		intializes gaus-boaga routines
+c
+c subroutine utm_trans(xtrans,ytrans)
+c		intializes translation of utm coordinates
+c subroutine utm_set_zone(zone)
+c		changes zone of UTM - must have already been initialized
+c
+c subroutine utm_compute_zone(lon,zone)
+c		computes and sets zone of UTM given longitude
+c subroutine utm_compute_band(lat,band)
+c		computes band of UTM given latitude
+c subroutine utm_east_north(bsouth)
+c		use false easting/northing (bsouth true for south)
+c
+c subroutine utm_g2c(lon,lat,x,y)
+c		transformation from (lon/lat) to utm (east,north)
+c subroutine utm_c2g(x,y,lon,lat)
+c		transformation from utm (east,north) to (lon/lat)
+c
+c ...other test routines...
+c
+c usage :
+c
+c utm_init(zone) must be called at beginning to set zone and initialize
+c	auxiliary variables
+c utm_trans(xtrans,ytrans) may be called if different origin is desired
+c	if not called no translation will be performed
+c
+c no false easting and northing is performed in order to non decrease
+c accuracy. if you want to have traditional UTM coordinates you have to
+c do one of the following:
+c
+c 1)
+c	add 500000 to x
+c	if in southern hemisphere add 10000000 to y
+c 2)
+c	call utm_trans(-500000.d+0,+0.d+0)	!northern hemisphere
+c	call utm_trans(-500000.d+0,-1.d+7)	!southern hemisphere
+c 3)
+c	call utm_east_north(.false.)		!northern hemisphere
+c	call utm_east_north(.true.)		!southern hemisphere
+c
+c example: in order to pass from lat/lon to x/y close to Venice lagoon:
+c
+c
+c Venice is in zone 33, band T
+c
+c	call utm_init(33)
+c	call utm_east_north(.false.)	!if false easting/northing is desired
+c
+c	call utm_g2c(lon,lat,x,y)
+c
+c revision log :
+c
+c 22.04.2010    ggu     written starting from GB routines
+c 25.04.2010    ggu     finished and tested
+c
+c**********************************************************************
+
+	subroutine utm_init(zone)
+
+c intializes utm routines
+
+	implicit none
+
+	integer zone			!UTM zone [1-60]
+
+
+c---------------------------------------------------------------- 
+c proj.h
+c----------------------------------------------------------------
+
+	double precision aearth,bearth,flat,rflat,e,es
+	common /proj_param01/ aearth,bearth,flat,rflat,e,es
+	save /proj_param01/
+
+	double precision k0
+	common /proj_param02/ k0
+	save /proj_param02/
+
+	double precision zero,one,two,four,half
+	common /proj_param11/ zero,one,two,four,half
+	save /proj_param11/
+
+	double precision pi,half_pi,quarter_pi,rad,rrad
+	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
+	save /proj_param12/
+
+	double precision eps,tol
+	common /proj_param13/ eps,tol
+	save /proj_param13/
+
+	logical debug
+	common /proj_param21/ debug
+	save /proj_param21/
+
+c---------------------------------------------------------------- 
+
+c	include 'proj.h'
+
+	integer utm_zone		!1-60
+	common /utm_param1/ utm_zone
+	double precision lambda0,xtrans0,ytrans0
+	common /utm_param2/ lambda0,xtrans0,ytrans0
+	double precision ep2,dn,es_4,es_6,z1,z2,z3,z4,j1,j2,j3,j4
+	common /utm_param3/ ep2,dn,es_4,es_6,z1,z2,z3,z4,j1,j2,j3,j4
+	save /utm_param1/,/utm_param2/,/utm_param3/
+
+	double precision e1
+
+	call proj_init
+	call utm_set_zone(zone)
+
+	k0 = 0.9996
+
+	xtrans0 = 0.		! change origin of utm coordinates
+	ytrans0 = 0.
+
+	ep2 = es / (1.-es)
+	dn = (aearth-bearth)/(aearth+bearth)
+
+	es_4 = es*es
+	es_6 = es_4*es
+
+	z1 = 1. - es/4. - 3.*es_4/64. - 5.*es_6/256.
+	z2 = 3.*es/8. + 3.*es_4/32. + 45.*es_6/1024.
+	z3 = 15.*es_4/256. + 45.*es_6/1024.
+	z4 = 35.*es_6/3072
+
+	e1 = (1.-sqrt(1.-es)) / (1.+sqrt(1.-es))
+
+	j1 = 3.*e1/2. - 27.*(e1**3)/32.
+	j2 = 21.*(e1**2)/16. - 55.*(e1**4)/32.
+	j3 = 151.*(e1**3)/96.
+	j4 = 1097.*(e1**4)/512.
+
+        if( .not. debug ) return
+        write(6,*) 'utm_init:'
+        write(6,*) zone,lambda0
+        write(6,*) aearth,k0
+        write(6,*) e,es
+
+	end
+
+c**********************************************************************
+
+	subroutine utm_trans(xtrans,ytrans)
+
+c intializes translation of utm coordinates
+c
+c (xtrans,ytrans) are the coordinates of the GB system that
+c will be the new origin of the translation
+c -> so these coordinates will be subtracted from the GB coordinates
+
+	implicit none
+
+	double precision xtrans,ytrans
+
+	double precision lambda0,xtrans0,ytrans0
+	common /utm_param2/ lambda0,xtrans0,ytrans0
+
+	xtrans0 = xtrans
+	ytrans0 = ytrans
+
+	end
+
+c**********************************************************************
+
+	subroutine utm_set_zone(zone)
+
+c changes zone of UTM - must have already been initialized
+
+	implicit none
+
+	integer zone
+
+	integer utm_zone		!1-60
+	common /utm_param1/ utm_zone
+	double precision lambda0,xtrans0,ytrans0
+	common /utm_param2/ lambda0,xtrans0,ytrans0
+
+	if( zone .lt. 1 .or. zone .gt. 60 ) then
+	  write(6,*) 'zone = ',zone
+	  stop 'error stop utm_set_zone: zone out of bounds [1-60]'
+	end if
+
+	utm_zone = zone
+	lambda0 = (zone-1)*6 - 180 + 3	!3 centers inside zone
+
+	end
+
+c**********************************************************************
+
+	subroutine utm_compute_zone(lon,zone)
+
+c computes and sets zone of UTM given longitude
+
+	implicit none
+
+	double precision lon
+	integer zone
+
+	integer long
+
+	if( lon .lt. -180. .or. lon .gt. 180. ) then
+	  write(6,*) 'lon = ',lon
+	  stop 'error stop utm_compute_zone: lon out of bounds'
+	end if
+
+	long = 180 + lon
+	zone = min(60,1+long/6)
+
+	call utm_set_zone(zone)
+
+	end
+
+c**********************************************************************
+
+	subroutine utm_compute_band(lat,band)
+
+c computes band of UTM given latitude (no exceptions)
+
+	implicit none
+
+	double precision lat
+	character*1 band
+
+	integer lati,index
+
+	character*20 bands
+	save bands
+	data bands /'CDEFGHJKLMNPQRSTUVWX'/
+
+	if( lat .lt. -80. .or. lat .gt. 84. ) then
+	  write(6,*) 'lat = ',lat
+	  stop 'error stop utm_compute_band: lat out of bounds'
+	end if
+
+	lati = 80 + lat
+	index = min(20,1+lati/8)
+
+	band = bands(index:index)
+
+	end
+
+c**********************************************************************
+
+	subroutine utm_east_north(bsouth)
+
+c use false easting/northing (bsouth must be true for southern hemisphere)
+
+	implicit none
+
+	logical bsouth
+
+	if( bsouth ) then
+	  call utm_trans( -500000.d+0 , -1.d+7 )	!southern hemisphere
+	else
+	  call utm_trans( -500000.d+0 , 0.d+0 )		!northern hemisphere
+	end if
+
+	end
+
+c**********************************************************************
+c**********************************************************************
+c**********************************************************************
+
+	subroutine utm_g2c(lon,lat,x,y)
+
+c transformation from (lon/lat) to utm (x,y)
+
+	implicit none
+
+	double precision lon,lat	!geographical coordinates
+	double precision x,y		!coordinates UTM (return)
+
+
+c---------------------------------------------------------------- 
+c proj.h
+c----------------------------------------------------------------
+
+	double precision aearth,bearth,flat,rflat,e,es
+	common /proj_param01/ aearth,bearth,flat,rflat,e,es
+	save /proj_param01/
+
+	double precision k0
+	common /proj_param02/ k0
+	save /proj_param02/
+
+	double precision zero,one,two,four,half
+	common /proj_param11/ zero,one,two,four,half
+	save /proj_param11/
+
+	double precision pi,half_pi,quarter_pi,rad,rrad
+	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
+	save /proj_param12/
+
+	double precision eps,tol
+	common /proj_param13/ eps,tol
+	save /proj_param13/
+
+	logical debug
+	common /proj_param21/ debug
+	save /proj_param21/
+
+c---------------------------------------------------------------- 
+
+c	include 'proj.h'
+
+	double precision lambda0,xtrans0,ytrans0
+	common /utm_param2/ lambda0,xtrans0,ytrans0
+	double precision ep2,dn,es_4,es_6,z1,z2,z3,z4,j1,j2,j3,j4
+	common /utm_param3/ ep2,dn,es_4,es_6,z1,z2,z3,z4,j1,j2,j3,j4
+
+	double precision long,phi,p,nu,M
+	double precision k1,k2,k3,k4,k5
+	 
+	long = lon
+	if( long .gt. 180. ) long = long - 180.
+	phi = rad * lat
+	p = rad * (long - lambda0)
+	nu = aearth / sqrt( 1.-es*(sin(phi)**2) )
+	
+	M = z1*phi - z2*sin(2.*phi) + z3*sin(4.*phi) - z4*sin(6.*phi)
+	M = aearth * M
+
+	k1 = M * k0
+	k2 = k0 * nu * sin(2.*phi)/4.
+	k3 = k0 * nu * sin(phi)*((cos(phi)**3)/24.)
+     +			* (5. - tan(phi)**2 + 9.*ep2*cos(phi)**2 
+     +			+ 4.*ep2*ep2*cos(phi)**4)
+	k4 = k0 * nu * cos(phi)
+	k5 = k0 * nu * ((cos(phi)**3)/6.) 
+     +			* (1. - tan(phi)**2 + ep2*cos(phi)**2)
+
+	y = k1 + k2*p**2 + k3*p**4
+	x = k4*p + k5*p**3
+
+	x = x - xtrans0
+	y = y - ytrans0
+
+	if( .not. debug ) return
+	write(6,*) '======================='
+	write(6,*) 'utm_g2c:'
+	write(6,*) 'lambda0: ',lambda0
+	write(6,*) 'lat: ',lat
+	write(6,*) 'lon: ',lon
+	write(6,*) 'phi: ',phi
+	write(6,*) 'ep2: ',ep2
+	write(6,*) 'es: ',es
+	write(6,*) 'nu: ',nu
+	write(6,*) 'M: ',M
+	write(6,*) '======================='
+
+	end
+	
+c**********************************************************************
+	
+	subroutine utm_c2g(x,y,lon,lat)
+	
+c transformation from utm (x,y) to (lon/lat)
+	
+	implicit none
+	
+	double precision x,y  !coordinates utm
+	double precision lon,lat !geographical coordinates (return)
+	
+
+c---------------------------------------------------------------- 
+c proj.h
+c----------------------------------------------------------------
+
+	double precision aearth,bearth,flat,rflat,e,es
+	common /proj_param01/ aearth,bearth,flat,rflat,e,es
+	save /proj_param01/
+
+	double precision k0
+	common /proj_param02/ k0
+	save /proj_param02/
+
+	double precision zero,one,two,four,half
+	common /proj_param11/ zero,one,two,four,half
+	save /proj_param11/
+
+	double precision pi,half_pi,quarter_pi,rad,rrad
+	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
+	save /proj_param12/
+
+	double precision eps,tol
+	common /proj_param13/ eps,tol
+	save /proj_param13/
+
+	logical debug
+	common /proj_param21/ debug
+	save /proj_param21/
+
+c---------------------------------------------------------------- 
+
+c	include 'proj.h'
+
+	double precision lambda0,xtrans0,ytrans0
+	common /utm_param2/ lambda0,xtrans0,ytrans0
+	double precision ep2,dn,es_4,es_6,z1,z2,z3,z4,j1,j2,j3,j4
+	common /utm_param3/ ep2,dn,es_4,es_6,z1,z2,z3,z4,j1,j2,j3,j4
+
+	double precision xx,yy,M,mu,fp
+	double precision c1,t1,r1,n1
+	double precision d,d2,d4,d6
+	double precision q1,q2,q3,q4,q5,q6,q7
+	 
+	xx = x  + xtrans0
+	yy = y  + ytrans0
+	
+	M = yy / k0
+	mu = M / (aearth * z1)
+
+	fp = mu + j1*sin(2.*mu) + j2*sin(4.*mu) 
+     +			+ j3*sin(6.*mu) + j4*sin(8.*mu)
+
+	c1 = ep2 * cos(fp)**2
+	t1 = tan(fp)**2
+	r1 = aearth*(1.-es)/(1.-es*sin(fp)**2)**(1.5)
+	n1 = aearth/sqrt(1.-es*sin(fp)**2)
+
+	d  = xx / (n1*k0)
+	d2 = d*d
+	d4 = d2*d2
+	d6 = d4*d2
+	
+	q1 = n1 * tan(fp) / r1
+	q2 = d2/2.
+	q3 = (5. + 3.*t1 + 10.*c1 - 4.*c1*c1 - 9.*ep2)*d4/24.
+	q4 = (61. + 90.*t1 + 298.*c1 + 45.*t1*t1 
+     +			- 3.*c1*c1 - 252.*ep2) * d6 / 720.
+	q5 = d
+	q6 = (1. + 2.*t1 + c1) * d2*d / 6.
+	q7 = (5. - 2.*c1 + 28.*t1 - 3.*c1*c1 
+     +			+ 8.*ep2 + 24.*t1*t1) * d4 * d / 120.
+
+	lat = rrad * (fp - q1*(q2-q3+q4))
+	lon = lambda0 + rrad * (q5-q6+q7)/cos(fp)
+	
+	if( .not. debug ) return
+	write(6,*) '======================='
+	write(6,*) 'utm_c2g:'
+	write(6,*) 'M: ',M
+	write(6,*) 'mu: ',mu
+	write(6,*) 'fp: ',fp
+	write(6,*) 'n1: ',n1
+	write(6,*) 't1: ',t1
+	write(6,*) 'r1: ',r1
+	write(6,*) 'c1: ',c1
+	write(6,*) '======================='
+
+	end
+	
+c**********************************************************************
+c**********************************************************************
+c**********************************************************************
+c**********************************************************************
+c**********************************************************************
+
+	 subroutine utm_sl_test
+	
+c test somma lombardo and other
+
+c FIXME -> find expected values and insert them
+	
+	 implicit none
+	
+	 integer fuso
+	 double precision deg,min,sec,sign
+	 double precision phi_sl,lamb_sl,lon,lat,x,y
+	 double precision xa,xe,ye
+
+	 write(6,*) 'test somma lombardo...'
+
+	 call utm_init(32)
+
+	 call dms2dec(45.d0,41.d0,0.d0,1.d0,phi_sl)
+	 call dms2dec(8.d0,42.d0,0.d0,1.d0,lamb_sl)
+
+	 lon = lamb_sl
+	 lat = phi_sl
+	
+	 call utm_g2c(lon,lat,x,y)
+	 write(6,*) 'somma lombardo:'
+	 write(6,*) 'lat/lon: ',lon,lat
+	 write(6,*) 'raw utm: ',x,y
+	 write(6,*) 'adjusted: ',x+500000.,y
+	 write(6,*) 'expected: ',476638.,5058908.
+	 call utm_c2g(x,y,lon,lat)
+	 write(6,*) 'inverse: ',lon,lat
+
+	 lat = 47.3782
+	 lon = 8.2325
+
+	 call utm_g2c(lon,lat,x,y)
+	 write(6,*) 'other point:'
+	 write(6,*) 'lat/lon: ',lon,lat
+	 write(6,*) 'raw utm: ',x,y
+	 write(6,*) 'adjusted: ',x+500000.,y
+	 write(6,*) 'expected: ',442063.49206,5247475.33300
+	 call utm_c2g(x,y,lon,lat)
+	 write(6,*) 'inverse: ',lon,lat
+
+	 write(6,*) 'end of test somma lombardo...'
+
+	 end 
+ 
+c****************************************
+
+	 subroutine utm_rand_test
+
+	 implicit none
+
+	 integer i,idum,nerr,ndim,zone
+	 double precision eps,res,resmax
+	 double precision x,y,lon,lat,lon1,lat1
+	 real r
+	 real proj_ran1
+
+	 write(6,*) 'test random utm...'
+
+	 idum = 98765
+	 eps = 1.e-6
+	 resmax = 0.
+	 nerr = 0
+	 ndim = 100000
+
+	 call utm_init(1)	!initialize with any zone
+
+	 do i=1,ndim
+	   lon = 360.*proj_ran1(idum) - 180.
+	   lat = 180.*proj_ran1(idum) - 90
+
+	   call utm_compute_zone(lon,zone)
+	   call utm_g2c(lon,lat,x,y)
+	   call utm_c2g(x,y,lon1,lat1)
+
+	   res = sqrt( (lat-lat1)**2 + (lon-lon1)**2 )
+	   resmax = max(resmax,res)
+	   if( res .gt. eps ) then
+	     write(6,*) '*** ',i,zone,lon,lon1,lat,lat1,res
+	     write(6,*) '***   ',x,y
+	     nerr = nerr + 1
+	   end if
+	   !write(6,*) i,zone,lon,lon1,lat,lat1,res
+	   !write(6,*) '      ',x,y
+	 end do
+
+	 write(6,*) 'finished testing ',ndim,' loops '
+	 write(6,*) 'number of errors:   ',nerr
+	 write(6,*) 'maximum difference: ',resmax
+	 write(6,*) 'end of test random utm...'
+
+	 end
+ 
+c****************************************
+
+	 subroutine utm_band_test
+
+	 implicit none
+
+	 double precision lat
+	 character*1 band
+
+	 lat = -79.5
+
+	 do while( lat .le. 84. )
+	   call utm_compute_band(lat,band)
+	   write(6,*) lat,'  ',band
+	   lat = lat + 1.
+	 end do
+
+	 end
+
+c****************************************
+
+	 subroutine utm_all_test
+	 !call utm_band_test
+	 call utm_sl_test
+	 call utm_rand_test
+	 end
+
+c****************************************
+
+c	 program utm_main
+c	 call utm_all_test
+c	 end
+
+c****************************************
 
 c*******************************************************************
 c
@@ -799,7 +1442,7 @@ c International 1924 				6,378,388 	297
 c Krasovsky 1940 				6,378,245 	298.3
 c International Astronomical Union 1968		6,378,160 	298.25
 c WGS 72 (1972) 				6,378,135 	298.26
-c GRS 80 (1980) 				6,378,137 	298.26
+c GRS 80 (1980) 				6,378,137 	298.25722
 c WGS 84 (1984) 				6,378,137 	298.25722 
 c
 c Datum:
@@ -818,6 +1461,13 @@ c*******************************************************************
 c sets parameters for ellipse
 c
 c as second parameter any of e, e2=es, f, 1/f, b can be given
+c
+c a		equatorial radius [m]
+c b		polar radius [m]
+c phi		phi = b/a
+c f		flattening, f = (a-b)/a = 1 - phi
+c e2 (=es)	eccentricity squared, e2 = 1 - (b/a)**2
+c e		eccentricity, e = sqrt(e2)
 
 	implicit none
 
@@ -872,7 +1522,7 @@ c first compute phi = b / a
 	  phi = sqrt( 1. - aux*aux )
 	else
 	  write(6,*) 'second variable: ',aux
-	  stop 'error stop proj_set_ellipse: variable out of range'
+	  stop 'error stop proj_set_ellipse: second variable out of range'
 	end if
 
 c now compute all parameters
@@ -1451,12 +2101,16 @@ c*******************************************************************
 	write(6,*) '================================================='
 	call genproj_all_test
 	write(6,*) '================================================='
+	call cpp_all_test
+	write(6,*) '================================================='
 	call gb_all_test
+	write(6,*) '================================================='
+	call utm_all_test
 	write(6,*) '================================================='
 	call proj_all_test
 	write(6,*) '================================================='
 	end
 
-c	program main_test
-c	call all_test
-c	end
+	program main_test
+	call all_test
+	end

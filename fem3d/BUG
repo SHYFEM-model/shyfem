@@ -1,4 +1,7 @@
 
+BUG_2010_08	fra	5.37	23.04.2010
+	heat flux is areg -> make choosable
+
 BUG_2010_07	fra	5.36	12.04.2010
 	writes flux too often (syncronizing time step?)
 

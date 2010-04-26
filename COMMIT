@@ -1,5 +1,24 @@
 ============================================================
 
+Mon Apr 26 12:33:03 CEST 2010
+
+new UTM projection added
+
+ Rules.make             |    6 +-
+ fem3d/BUG              |    3 +
+ fem3d/param.h          |    4 +-
+ fem3d/subcoord.f       |  720 +++++++++++++++++++++++++++++++++++++++++++++---
+ femadj/param.h         |    4 +-
+ fembin/clean_time      |  Bin 0 -> 8290 bytes
+ fembin/clean_time.f    |   25 ++
+ fembin/get_timestep.sh |   28 ++
+ fembin/gittag          |    3 +-
+ femplot/param.h        |    4 +-
+ param.h                |    4 +-
+ 11 files changed, 757 insertions(+), 44 deletions(-)
+
+============================================================
+
 Thu Apr 22 14:46:10 CEST 2010
 
 COMMIT file in base dir
