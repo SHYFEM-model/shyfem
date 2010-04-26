@@ -1,3 +1,14 @@
+version  6.1.6    26-04-2010    VERS_6_1_6
+
+new UTM projection
+
+========================================================== 26-04-2010 - 6.1.6
+
+c ./fem3d/subcoord.f:
+c 26.05.2010    ggu     new utm, bs renamed to cpp
+
+==========================================================
+
 version  6.1.5    22-04-2010    VERS_6_1_5
 
 check for spheric coordinates
