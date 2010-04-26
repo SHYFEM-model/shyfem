@@ -99,7 +99,9 @@ if [ $# -ne 1 ]; then
   git tag
   exit 1
 else
-  newvers=`echo $1 | sed 's/^v//'`
+  newvers=$1
+  newvers=`echo $newvers | sed 's/^v//'`
+  newvers=`echo $newvers | sed 's/^VERS_//'`
 fi
 
 #########################################################
