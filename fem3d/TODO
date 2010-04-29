@@ -103,3 +103,9 @@ delete: bnds_set_global volno0 infobnd
 
 =======================================================================
 
+general routine for flx/ext/etc to decide when to output
+routine to limit processors for parallel computation
+eliminate big matrix (matdim) when using sparskit
+
+=======================================================================
+

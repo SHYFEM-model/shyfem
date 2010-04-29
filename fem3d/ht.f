@@ -72,6 +72,7 @@ c 30.11.2009    ggu	write output file for successfull completion
 c 19.02.2010    ggu	init_stability() changed to reset_stability()
 c 22.02.2010    ggu	new arrays wxv, wyv
 c 26.02.2010    ggu	new arrays sauxe1/2
+c 29.04.2010    ggu	write volumes (wrfvla)
 c
 c*****************************************************************
 
@@ -513,6 +514,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            call read_pipe(ipipe,it,idcoup)
 	   
 	   call sp259f			!hydro
+
+	   call wrfvla(it)		!write finite volume
 
 	   call conz3sh			!concentration (for iconz == 1)
 	   call conzm3sh		!multi concentration (for iconz > 1)

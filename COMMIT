@@ -1,5 +1,28 @@
 ============================================================
 
+Thu Apr 29 18:44:46 CEST 2010
+
+nosaver_*, nosresidence, use volumes
+
+ .gitignore            |    5 +
+ fem3d/BUG             |    3 +
+ fem3d/Makefile        |  113 +++++++-----
+ fem3d/TODO            |    6 +
+ fem3d/ht.f            |    3 +
+ fem3d/nosaver.f       |  211 --------------------
+ fem3d/nosaver_basin.f |  168 ++++++++++++++++
+ fem3d/nosaver_time.f  |  217 ++++++++++++++++++++
+ fem3d/nosaver_vert.f  |  169 ++++++++++++++++
+ fem3d/nosaverf.f      |  238 ----------------------
+ fem3d/nosresidence.f  |  521 +++++++++++++------------------------------------
+ fem3d/nosutil.f       |  261 +++++++++++++++++++++++++
+ fem3d/subdef.f        |   34 +++-
+ fem3d/subfvl.f        |   79 ++++++++
+ fem3d/subnsh.f        |   38 ++++
+ 15 files changed, 1184 insertions(+), 882 deletions(-)
+
+============================================================
+
 Mon Apr 26 17:07:33 CEST 2010
 
 subcoord.f was broken ... fixed

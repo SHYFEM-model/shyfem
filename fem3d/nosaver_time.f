@@ -4,10 +4,11 @@ c
 c 18.11.1998    ggu     check dimensions with dimnos
 c 07.03.2007    ggu     easier calls
 c 10.04.2008    ggu     copied from nosaver -> frequency introduced
+c 29.04.2010    ggu     some changes
 c
 c**********************************************************
 
-	program nosaverf
+	program nosaver_time
 
 c averages records from nos file (with frequence given)
 c
@@ -210,28 +211,6 @@ c-----------------------------------------------------------------
    91	continue
 	write(6,*) 'error ivar : ',ivar,ivarold
 	stop 'error stop nosaver'
-	end
-
-c***************************************************************
-
-	subroutine open_nos_file(name,status,nunit)
-
-	implicit none
-
-	character*(*) name,status
-	integer nunit
-
-	integer nb
-	character*80 file
-
-        integer ifileo
-
-	call mkname(' ',name,'.nos',file)
-	nb = ifileo(0,file,'unform',status)
-	if( nb .le. 0 ) stop 'error stop open_nos_file: opening file'
-
-	nunit = nb
-
 	end
 
 c***************************************************************

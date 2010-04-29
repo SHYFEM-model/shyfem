@@ -85,7 +85,7 @@ EXES	= ht hp vp \
 	  ousinf whdf whdfs \
 	  zlevel ttt readext zinit wincrea outinf \
 	  basinf flxinf wininf nosinf nossplit nosintp \
-	  nosaver nosaverf nosmaniq \
+	  nosmaniq $(NOSAVER) \
 	  splitext outintp volinf extinf bastreat basbathy baschk \
 	  nosdiff nostransf mkgeom lagint splitflx \
 	  laplap lapwin nosinit ousintp nosexport \
@@ -133,7 +133,7 @@ SOBJS   = \
 	  subnos.o subcon1.o subrnd.o sublin.o \
 	  submod.o subuti.o subele.o subgeo.o subdts.o \
 	  links.o sublnka.o sublnks.o sublnku.o subisd.o \
-	  debug.o subhisto.o subnosa.o
+	  debug.o subhisto.o subnosa.o subfvl.o
 
 # general objects for 3D model ht
 
@@ -170,7 +170,7 @@ HTOBJS = \
 	subrst.o subnosa.o subdif.o subreg.o \
 	atoxi3d.o atoxi.o subwwm.o kepsd.o keps_util.o \
 	subinv.o newexpl.o subrnd.o \
-	submeteo.o subrgf.o subcoord.o subgrd.o sort.o
+	submeteo.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o
 
 # objects for pre-processor vp
 
@@ -191,6 +191,8 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subapn.o subnsa.o subdum.o \
 	  subbnd.o subdts.o subdep.o \
 	  debug.o subreg.o subnev.o subrst.o
+
+NOSOBJS = subnos.o nosutil.o
 
 LAPLACE = sublpl.o submir.o subnos.o links.o sublnku.o \
 	  subwin.o subnosa.o
@@ -235,7 +237,7 @@ main:	param ht vp
 info:	param ousinf flxinf volinf basinf nosinf wininf extinf
 util:	param nossplit splitext ousinf splitflx laplap lapwin \
 	nosinit bastreat basbathy scal_intp nosresidence rstinf \
-	$(NOSEXTR) $(OUSEXTR)
+	$(NOSEXTR) $(OUSEXTR) $(NOSAVER)
 
 #--------------------------------------------- EXES
 
@@ -327,16 +329,16 @@ ousaver:  ousaver.o subous.o $(OUTOBJS)
 ousvdiff:  ousvdiff.o subous.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subous.o $(OUTOBJS) -o $@
 
-nosinf:  nosinf.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+nosinf:  nosinf.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-concinf:  concinf.o subnos.o $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+concinf:  concinf.o $(NOSOBJS) $(OUTOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nosinf2:  nosinf2.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+nosinf2:  nosinf2.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-.PHONY: nosextr ousextr
+.PHONY: nosextr ousextr 
 
 ousextr: $(OUSEXTR)
 
@@ -345,56 +347,69 @@ ousextr_records:  ousextr_records.o subous.o $(OUTOBJS)
 
 nosextr: $(NOSEXTR)
 
-nosextr_nodes:  nosextr_nodes.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+nosextr_nodes:  nosextr_nodes.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nosextr_records:  nosextr_records.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+nosextr_records:  nosextr_records.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nosextr_gis:  nosextr_gis.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+nosextr_gis:  nosextr_gis.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nosextr_custom:  nosextr_custom.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+nosextr_custom:  nosextr_custom.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-map_influence:  map_influence.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+map_influence:  map_influence.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nossplit:  nossplit.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+nossplit:  nossplit.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nosaver:  nosaver.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+#-------------------------------------------------------
 
-nosaverf:  nosaverf.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+.PHONY: nosaver
+NOSAVER = nosaver_basin nosaver_vert nosaver_time
+NOSOBJS = subnos.o nosutil.o
 
-nosresidence:  nosresidence.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+nosaver: $(NOSAVER)
 
-nosmaniq:  nosmaniq.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+nosaver_basin:  nosaver_basin.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nostransf:  nostransf.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+nosaver_vert:  nosaver_vert.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nosdiff:  nosdiff.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+nosaver_time:  nosaver_time.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nosinit:  nosinit.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+nosresidence:  nosresidence.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nosexport:  nosexport.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+#-------------------------------------------------------
 
-nos_elab:  nos_elab.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+nosmaniq:  nosmaniq.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-lgrelab:  lgrelab.o subnos.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(OUTOBJS) -o $@
+nostransf:  nostransf.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nosintp:  nosintp.o subnos.o $(INTP) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subnos.o $(INTP) $(OUTOBJS) -o $@
+nosdiff:  nosdiff.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+nosinit:  nosinit.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+nosexport:  nosexport.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+nos_elab:  nos_elab.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+lgrelab:  lgrelab.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+nosintp:  nosintp.o $(NOSOBJS) $(INTP) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(INTP) $(OUTOBJS) -o $@
 
 outintp:  outintp.o subout.o $(INTP) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subout.o $(INTP) $(OUTOBJS) -o $@
@@ -624,6 +639,9 @@ newtra.o: param.h ev.h
 newtvd.o: param.h ev.h tvd.h
 nos_elab.o: param.h
 nosaver.o: param.h
+nosaver_basin.o: param.h basin.h
+nosaver_time.o: param.h
+nosaver_vert.o: param.h basin.h
 nosaverf.o: param.h
 nosdiff.o: param.h
 nosexport.o: param.h
@@ -663,6 +681,7 @@ subdwq.o: param.h
 subele.o: param.h ev.h
 subexta.o: modules.h
 subflxa.o: testbndo.h modules.h links.h ev.h
+subfvl.o: param.h
 subgotm.o: param.h
 sublin.o: links.h
 sublnka.o: ev.h links.h
@@ -673,9 +692,10 @@ subn11.o: param.h ev.h
 subn35.o: param.h chezy.h
 subnetcdf_admin.o: param.h
 subnetcdf_hydro.o: netcdf.inc
-subnev.o: ev.h
+subnev.o: param.h ev.h
 subnsh.o: modules.h
 subousa.o: param.h
+subpar1.o: subpar.h
 subpard.o: param.h common.h
 subqfxf.o: subqfx.h
 subreg.o: ev.h
@@ -693,5 +713,4 @@ weutro.o: donata.h weutro.h
 weutro_sedim.o: donata.h weutro.h
 wininf.o: param.h
 zinit.o: param.h
-subpar1.o: subpar.h
 

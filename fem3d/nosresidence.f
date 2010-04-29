@@ -10,6 +10,7 @@ c 18.10.2006    ggu     heavily commented
 c 13.02.2009    ggu     compute min/max of residence time
 c 29.10.2009    ggu     compute and write 2D fields, use log to compute restime
 c 12.01.2010    ggu     lots of changes
+c 29.04.2010    ggu     completely changed
 c
 c****************************************************************
 
@@ -35,7 +36,13 @@ c--------------------------------------------------
 	real cvres3(nlvdim,nkndim)
 	real cvres2(nkndim)
 	real cvrestot(nlvdim,nkndim)
+	real vol3(nlvdim,nkndim)
         double precision cvacu(nlvdim,nkndim)
+
+	integer ilhkv2(nkndim)
+	integer ilhv2(neldim)
+	real hev2(neldim)
+	real hlv2(nlvdim)
 
 	integer ilhkv(nkndim)
 	integer ilhv(neldim)
@@ -48,7 +55,9 @@ c--------------------------------------------------
 	common /hlv/hlv
 
 	logical bminmax,balways,breset
-	logical blog,badj
+	logical blog,badj,bvol
+	integer nvol,nbres3,nbres2
+	integer nkn1,nkn2,nel1,nel2,nlv1,nlv2
         integer l,lmax,k
 	integer itstart,itend
 	integer nin,nvers,nlv,nvar
@@ -61,9 +70,11 @@ c--------------------------------------------------
 	real rl,clog,cl
 	real ctop,ccut
 	real res
+	real cmin,cmax,cmed,vtot
         double precision tacu
 
 	integer iapini,ideffi
+	integer ifem_test_file,ifem_open_file
 
 c---------------------------------------------------------------
 c parameters to be changed
@@ -127,31 +138,46 @@ c---------------------------------------------------------------
 
 	call set_ev
 
-c---------------------------------------------------------------
-c open input file and read headers
-c---------------------------------------------------------------
+        nvers=3
 
-	nin=ideffi('datdir','runnam','.con','unform','old')
+c       ----------------------------------------------------------
+c       file containing volumes
+c       ----------------------------------------------------------
+
+        nvol = ifem_test_file('.fvl','old')
+        bvol = nvol .gt. 0
+
+        if( bvol ) then
+          call rhnos(nvol,nvers,nkndim,neldim,nlvdim,nkn2,nel2,nlv2,nvar
+     +                          ,ilhkv2,hlv2,hev2,title)
+        else
+          write(6,*) 'cannot open volume file... doing without'
+        end if
+
+c       ----------------------------------------------------------
+c	file containing concentrations
+c       ----------------------------------------------------------
+
+	nin = ifem_open_file('.con','old')
 	if(nin.le.0) goto 100
 
-        nvers=3
-	call rfnos(nin,nvers,nkn,nel,nlv,nvar,title,ierr)
-        if(ierr.ne.0) goto 100
+        call rhnos(nin,nvers,nkndim,neldim,nlvdim,nkn1,nel1,nlv,nvar
+     +                          ,ilhkv,hlv,hev,title)
 
-        write(6,*) 'nvers    : ',nvers
-        write(6,*) 'nkn,nel  : ',nkn,nel
-        write(6,*) 'nlv,nvar : ',nlv,nvar
-        write(6,*) 'title    : ',title
+c-----------------------------------------------------------------
+c check compatibility
+c-----------------------------------------------------------------
 
-        call dimnos(nin,nkndim,neldim,nlvdim)
+        if( nkn .ne. nkn1 ) goto 96
+        if( nel .ne. nel1 ) goto 96
 
-	call rsnos(nin,ilhkv,hlv,hev,ierr)
-        if(ierr.ne.0) goto 100
-
-	write(6,*) 'Available levels: ',nlv
-	write(6,*) (hlv(l),l=1,nlv)
-
-	call set_ilhv_post(nlv,nkn,nel,hlv,hev,nen3v,ilhkv,ilhv)
+        if( bvol ) then
+          if( nkn .ne. nkn2 ) goto 95
+          if( nel .ne. nel2 ) goto 95
+          call check_equal_i('ilhkv',nkn,ilhkv,ilhkv2)
+          call check_equal_r('hlv',nlv,hlv,hlv2)
+          call check_equal_r('hev',nel,hev,hev2)
+        end if
 
 c---------------------------------------------------------------
 c initialize variables and arrays
@@ -159,12 +185,12 @@ c---------------------------------------------------------------
 
         it = 0
         ivar = 99
-        open(3,file='nosres.nos',status='unknown',form='unformatted')
-        call wfnos(3,3,nkn,nel,nlv,1,title,ierr)
-        call wsnos(3,ilhkv,hlv,hev,ierr)
-        open(2,file='nosres2d.nos',status='unknown',form='unformatted')
-        call wfnos(2,3,nkn,nel,1,1,title,ierr)
-        call wsnos(2,ilhkv,hlv,hev,ierr)
+
+        call open_nos_file('nosres','new',nbres3)
+        call whnos(nbres3,nvers,nkn,nel,nlv,1,ilhkv,hlv,hev,title)
+
+        call open_nos_file('nosres','new',nbres2)
+        call whnos(nbres2,nvers,nkn,nel,1,1,ilhkv,hlv,hev,title)
 
 	balways = .not. bminmax
 
@@ -195,6 +221,8 @@ c---------------------------------------------------------------
         if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
         if(ierr.ne.0) goto 100
 
+        if( bvol ) call get_volume(nvol,it,nlvdim,ilhkv,vol3)
+
 	nread=nread+1
 	!write(6,*) 'time : ',it,ivar
 
@@ -202,24 +230,24 @@ c---------------------------------------------------------------
 
 	  nused = nused + 1
 
-	  call acu_aver(conz,cv3,ilhkv,hlv)
-          call mima3d(cv3d,nlvdim,nkn,ilhkv,xmin,xmax)
-	  write(68,*) it,conz,xmin,xmax
+	  call make_aver(nlvdim,nkn,ilhkv,cv3,vol3,cmin,cmax,cmed,vtot)
+	  conz = cmed
+	  write(68,*) it,cmin,cmed,cmax
+
+c	  -----------------------------------------
+c	  compute residence times
+c	  -----------------------------------------
+
 	  if( conz - conzold .gt. eps ) then	!reset
 	    write(6,*) '-------------------------------------------'
 	    write(6,*) 'computing res time: ',it,conzold,conz,nused
 	    write(6,*) '-------------------------------------------'
 	    if( nused .gt. minused ) then
-	      call acu_comp(blog,badj,it,dt,c0,ccut,ilhkv,hlv,tacu,cvacu
-     +				,cv3d,cvres3,cvres2)
-	      call acu_freq(it,ctop,ilhkv,cvres3)
+	      call acu_comp(blog,badj,it,dt,c0,ccut,ilhkv,tacu,cvacu
+     +				,cv3d,vol3,cvres3,cvres2)
+	      call acu_freq(it,ctop,ilhkv,cvres3,vol3)
 	      nrepl = nrepl + 1
-              do k=1,nkn
-                lmax = ilhkv(k)
-                do l=1,lmax
-                  cvrestot(l,k) = cvrestot(l,k) + cvres3(l,k)
-	        end do
-	      end do
+	      call make_acumulate(nlvdim,nkn,ilhkv,cvres3,cvrestot)
 	    end if
 	    call acu_reset(tacu,cvacu,ilhkv)
 	    it0 = it
@@ -227,6 +255,10 @@ c---------------------------------------------------------------
 	  end if
 	  !write(68,*) it,conz,conzold
 	  conzold = conz
+
+c	  -----------------------------------------
+c	  accumulate for residence time
+c	  -----------------------------------------
 
 	  tacu = tacu + (it-it0)
 
@@ -271,15 +303,10 @@ c---------------------------------------------------------------
 
 	    if( nused .gt. minused ) then
 	      nrepl = nrepl + 1
-	      call acu_comp(blog,badj,it,dt,c0,ccut,ilhkv,hlv,tacu,cvacu
-     +				,cv3d,cvres3,cvres2)
-	      call acu_freq(it,ctop,ilhkv,cvres3)
-              do k=1,nkn
-                lmax = ilhkv(k)
-                do l=1,lmax
-                  cvrestot(l,k) = cvrestot(l,k) + cvres3(l,k)
-	        end do
-	      end do
+	      call acu_comp(blog,badj,it,dt,c0,ccut,ilhkv,tacu,cvacu
+     +				,cv3d,vol3,cvres3,cvres2)
+	      call acu_freq(it,ctop,ilhkv,cvres3,vol3)
+	      call make_acumulate(nlvdim,nkn,ilhkv,cvres3,cvrestot)
 	    end if
 
 	    write(6,*) '-------------------------------------------'
@@ -288,8 +315,8 @@ c---------------------------------------------------------------
 
 	    if( nrepl .gt. 0 ) then
 	      it = 0
-	      call acu_final(it,ilhkv,hlv,nrepl,cvrestot,cv2)
-	      call acu_freq(it,ctop,ilhkv,cvrestot)
+	      call acu_final(it,ilhkv,nrepl,cvrestot,vol3,cv2)
+	      call acu_freq(it,ctop,ilhkv,cvrestot,vol3)
 	    end if
 
 c---------------------------------------------------------------
@@ -310,267 +337,23 @@ c---------------------------------------------------------------
 c end of routine
 c---------------------------------------------------------------
 
+	stop
+   95   continue
+        write(6,*) 'error parameters in fvl file : '
+        write(6,*) 'nkn: ',nkn,nkn2
+        write(6,*) 'nel: ',nel,nel2
+        stop 'error stop nosaver: nkn,nel'
+   96   continue
+        write(6,*) 'error parameters in nos file: '
+        write(6,*) 'nkn: ',nkn,nkn1
+        write(6,*) 'nel: ',nel,nel1
+        stop 'error stop nosaver: nkn,nel'
 	end
 
 c***************************************************************
-
-	subroutine average_residence_time(nlvdi,nkn,ilhkv,hlv,rl,res)
-
-c averages residence time for whole basin
-
-	implicit none
-
-	integer nlvdi,nkn
-	integer ilhkv(1)
-	real hlv(1)
-	real rl(nlvdi,1)
-	real res
-
-	include 'ev.h'
-
-	integer k,lmax,l
-	real htop,hbot,htot,h
-	real ctot,cg,r
-	double precision rtot
-
-	rtot = 0.
-        do k=1,nkn
-          lmax = min(nlvdi,ilhkv(k))
-          htop = 0.
-          htot = 0.
-          ctot = 0.
-          do l=1,lmax
-            hbot = hlv(l)
-            h = hbot - htop
-            cg = rl(l,k)
-            ctot = ctot + h * cg
-            htot = htot + h
-            htop = hbot
-          end do
-          r = ctot / htot
-	  rtot = rtot + r
-        end do
-
-	res = rtot / nkn
-
-	end
-
-
-c***************************************************************
-
-	subroutine make_2D(nlvdi,nkn,ilhkv,hlv,cv3,cv2)
-
-c convert 3D field to 2D
-
-	implicit none
-
-	integer nlvdi,nkn
-	integer ilhkv(1)
-	real hlv(1)
-	real cv3(nlvdi,1)
-	real cv2(1)
-
-	integer k,lmax,l
-	real htop,hbot,htot,h
-	real ctot,cg
-
-        do k=1,nkn
-          lmax=ilhkv(k)
-          htop = 0.
-          htot = 0.
-          ctot = 0.
-          do l=1,lmax
-            hbot = hlv(l)
-            h = hbot - htop
-            cg = cv3(l,k)
-            ctot = ctot + h * cg
-            htot = htot + h
-            htop = hbot
-          end do
-          cv2(k) = ctot / htot
-        end do
-
-	end
-
-c***************************************************************
-
-        subroutine mima3d(xx,nlvdim,nkn,ilhkv,xmin,xmax)
-
-c computes min/max of 3d matrix
-c
-c xx            matrix
-c nlvdim	dimension of levels
-c nkn           total number of nodes
-c ilhkv		number of layers in node
-c xmin,xmax     min/max value in matrix
-
-	implicit none
-
-	integer nlvdim,nkn
-	real xx(nlvdim,nkn)
-	integer ilhkv(nkn)
-	real xmin,xmax
-
-	integer k,l,lmax
-	real c
-
-	xmin = 1.e+30
-	xmax = -xmin
-
-	do k=1,nkn
-	  lmax = ilhkv(k)
-	  do l=1,lmax
-	    c = xx(l,k)
-	    xmin = min(xmin,c)
-	    xmax = max(xmax,c)
-	  end do
-	end do
-
-	end
-
-c***************************************************************
-
-        subroutine mimar(xx,n,xmin,xmax,rnull)
-
-c computes min/max of vector
-c
-c xx            vector
-c n             dimension of vector
-c xmin,xmax     min/max value in vector
-c rnull		invalid value
-
-        implicit none
-
-        integer n,i,nmin
-        real xx(n)
-        real xmin,xmax,x,rnull
-
-	do i=1,n
-	  if(xx(i).ne.rnull) goto 1
-	end do
-    1	continue
-
-	if(i.le.n) then
-	  xmax=xx(i)
-	  xmin=xx(i)
-	else
-	  xmax=rnull
-	  xmin=rnull
-	end if
-
-	nmin=i+1
-
-        do i=nmin,n
-          x=xx(i)
-	  if(x.ne.rnull) then
-            if(x.gt.xmax) xmax=x
-            if(x.lt.xmin) xmin=x
-	  end if
-        end do
-
-        end
-
 c***************************************************************
 c***************************************************************
 c***************************************************************
-c***************************************************************
-c***************************************************************
-
-	subroutine acu_aver_elem(conz,cv)
-
-	implicit none
-
-	include 'param.h'
-	include 'ev.h'
-
-	real conz
-	real cv(nlvdim,nkndim)
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-	integer nen3v(3,neldim)
-	common /nen3v/nen3v
-	integer ilhv(neldim)
-	common /ilhv/ilhv
-
-	logical bdebug
-	integer k,lmax,l,ie,ii
-	real h,area
-	real hd(nlvdim)
-	double precision cc,hh
-
-	cc = 0.
-	hh = 0.
-
-        do ie=1,nel
-	  bdebug = ie .eq. -1
-          lmax = ilhv(ie)
-	  area = 4. * ev(10,ie)
-	  call get_elem_depth(ie,hd)
-	if( bdebug ) write(6,*) ie,lmax,area
-	  do ii=1,3
-	    k = nen3v(ii,ie)
-	    do l=1,lmax
-	      h = hd(l)
-	      cc = cc + cv(l,k) * h * area
-	      hh = hh + h * area
-	if( bdebug ) write(6,*) l,k,h,cc,hh
-	    end do
-	  end do
-	end do
-
-	conz = cc / hh
-
-	end
-
-c***************************************************************
-
-	subroutine acu_aver(conz,cv,ilhkv,hlv)
-
-	implicit none
-
-	include 'param.h'
-
-	real conz
-	real cv(nlvdim,nkndim)
-	integer ilhkv(nkndim)
-	real hlv(nlvdim)
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-	logical busedep
-	integer k,lmax,l,n
-	real hup,hbot,h
-	double precision cc,hh
-
-	busedep = .false.
-	busedep = .true.
-
-	cc = 0.
-	hh = 0.
-	h = 1.
-	n = 0
-
-        do k=1,nkn
-          lmax = ilhkv(k)
-	  hup = 0.
-          do l=1,lmax
-	    hbot = hlv(l)
-	    if( busedep ) h = hbot - hup
-	    cc = cc + cv(l,k) * h
-	    hh = hh + h
-	    n = n + 1
-	    hup = hbot
-	  end do
-	end do
-
-	conz = cc / hh
-	!conz = cc / n
-
-	end
-
 c***************************************************************
 
 	subroutine acu_reset(tacu,cvacu,ilhkv)
@@ -600,8 +383,8 @@ c***************************************************************
 
 c***************************************************************
 
-	subroutine acu_comp(blog,badj,it,dt,c0,ccut,ilhkv,hlv,tacu,cvacu
-     +				,cv3d,cv3,cv2)
+	subroutine acu_comp(blog,badj,it,dt,c0,ccut,ilhkv,tacu,cvacu
+     +				,cv3d,vol3,cv3,cv2)
 
 c compute residence time
 
@@ -615,19 +398,19 @@ c compute residence time
 	real c0
 	real ccut  !cut residence time at this level (cor res time computation)
 	integer ilhkv(nkndim)
-	real hlv(nlvdim)
 	double precision tacu
-	double precision cvacu(nlvdim,nkndim)
-	real cv3d(nlvdim,nkndim)
-	real cv3(nlvdim,nkndim)
-	real cv2(nkndim)
+	double precision cvacu(nlvdim,nkndim)		!accumulated conz
+	real cv3d(nlvdim,nkndim)			!last concentration
+	real vol3(nlvdim,nkndim)			!volumes
+	real cv3(nlvdim,nkndim)				!computed RT 3D
+	real cv2(nkndim)				!computed RT 2D
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
 	integer k,lmax,l,ivar,ierr
 	real conz,conze,res,rese
-	real xmin,xmax,cmax
+	real cmin,cmax,cmed,vtot
 	real secs_in_day,ddt
 
 c---------------------------------------------------------------
@@ -640,7 +423,7 @@ c---------------------------------------------------------------
 	ddt = dt / secs_in_day
 
 c---------------------------------------------------------------
-c compute residence times
+c compute residence times -> put in cv3
 c---------------------------------------------------------------
 
         do k=1,nkn
@@ -669,17 +452,10 @@ c---------------------------------------------------------------
 
 	write(6,*) 'basin wide residence times:'
 
-	call acu_aver_elem(rese,cv3)
-	call average_residence_time(nlvdim,nkn,ilhkv,hlv,cv3,res)
-        call mima3d(cv3,nlvdim,nkn,ilhkv,xmin,xmax)
-	write(6,*) ' (aver/min/max): ',res,rese,xmin,xmax
-	cmax = xmax
+	call make_aver(nlvdim,nkn,ilhkv,cv3,vol3,cmin,cmax,cmed,vtot)
+	call make_vert_aver(nlvdim,nkn,ilhkv,cv3,vol3,cv2)
 
-	call make_2D(nlvdim,nkn,ilhkv,hlv,cv3,cv2)
-
-	call average_residence_time(1,nkn,ilhkv,hlv,cv2,res)
-        call mima3d(cv2,1,nkn,ilhkv,xmin,xmax)
-	write(6,*) '  original 2D  (aver/min/max): ',res,xmin,xmax
+	write(6,*) ' (aver/min/max): ',cmed,cmin,cmax
 
 c---------------------------------------------------------------
 c write to file and terminal
@@ -698,7 +474,7 @@ c---------------------------------------------------------------
 
 c**********************************************************************
 
-	subroutine acu_final(it,ilhkv,hlv,nrepl,cv3,cv2)
+	subroutine acu_final(it,ilhkv,nrepl,cv3,vol3,cv2)
 
 	implicit none
 
@@ -706,17 +482,16 @@ c**********************************************************************
 
 	integer it
 	integer ilhkv(nkndim)
-	real hlv(nlvdim)
 	integer nrepl
 	real cv3(nlvdim,nkndim)
+	real vol3(nlvdim,nkndim)			!volumes
 	real cv2(nkndim)
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
 	integer k,lmax,l,ivar,ierr
-	real conz,conze,res,rese
-	real xmin,xmax,cmax
+	real cmin,cmax,cmed,vtot
 
 c---------------------------------------------------------------
 c compute residence times
@@ -735,17 +510,10 @@ c---------------------------------------------------------------
 
 	write(6,*) 'basin wide residence times (average):'
 
-	call acu_aver_elem(rese,cv3)
-	call average_residence_time(nlvdim,nkn,ilhkv,hlv,cv3,res)
-        call mima3d(cv3,nlvdim,nkn,ilhkv,xmin,xmax)
-	write(6,*) ' (aver/min/max): ',res,rese,xmin,xmax
-	cmax = xmax
+	call make_aver(nlvdim,nkn,ilhkv,cv3,vol3,cmin,cmax,cmed,vtot)
+	call make_vert_aver(nlvdim,nkn,ilhkv,cv3,vol3,cv2)
 
-	call make_2D(nlvdim,nkn,ilhkv,hlv,cv3,cv2)
-
-	call average_residence_time(1,nkn,ilhkv,hlv,cv2,res)
-        call mima3d(cv2,1,nkn,ilhkv,xmin,xmax)
-	write(6,*) '  original 2D  (aver/min/max): ',res,xmin,xmax
+	write(6,*) ' (aver/min/max): ',cmed,cmin,cmax
 
 c---------------------------------------------------------------
 c write to file and terminal
@@ -763,8 +531,12 @@ c---------------------------------------------------------------
 	end
 
 c**********************************************************************
+c**********************************************************************
+c**********************************************************************
 
-	subroutine acu_freq(it,ctop,ilhkv,cv3)
+	subroutine acu_freq(it,ctop,ilhkv,cv3,vol3)
+
+c write histogram
 
 	implicit none
 
@@ -774,6 +546,7 @@ c**********************************************************************
 	real ctop			!cut at this value of residence time
 	integer ilhkv(nkndim)
 	real cv3(nlvdim,nkndim)
+	real vol3(nlvdim,nkndim)
 
 	integer ndim
 	parameter (ndim=100)
@@ -783,7 +556,9 @@ c**********************************************************************
 
 	integer k,lmax,l,i,ic
 	integer icount(0:ndim)
+	double precision dcount(0:ndim)
 	real conz,c,amax,dc,val,tot,cmax
+	real v,dw
 	character*50 file
 
 c---------------------------------------------------------------
@@ -806,19 +581,26 @@ c compute frequency curve
 c---------------------------------------------------------------
 
 	ic = 0
+	dc = 0.
 	do i=0,ndim
 	  icount(i) = 0
+	  dcount(i) = 0.
 	end do
 
         do k=1,nkn
           lmax = ilhkv(k)
           do l=1,lmax
 	    conz = cv3(l,k)
+	    v = vol3(l,k)
+
 	    i = nint(ndim*conz/amax)
 	    if (i .lt. 0) i = 0
 	    if (i .gt. ndim) i = ndim
+
 	    icount(i) = icount(i) + 1
 	    ic = ic + 1
+	    dcount(i) = dcount(i) + v
+	    dc = dc + v
 	  end do
 	end do
 
@@ -826,29 +608,43 @@ c---------------------------------------------------------------
 c write frequency curve to file
 c---------------------------------------------------------------
 
-	dc = 1.
+	dw = 1.
 	tot = 0.
 	call make_name(it,file,'freq_by_bin_','.his')
 	write(6,*) 'writing to file: ',file
 	open(11,file=file,status='unknown',form='formatted')
 	do i=0,ndim
 	  c = i*amax/ndim
-	  val = 100.*icount(i)/float(ic)
-	  tot = tot + val*dc
+	  val = 100.*icount(i)/(float(ic)*dw)
+	  tot = tot + val*dw
 	  write(11,*) i,val,icount(i)
 	end do
 	close(11)
 	write(6,*) 'writing finished: ',tot
 
-	dc = amax/100.
+	dw = amax/100.
 	tot = 0.
 	call make_name(it,file,'freq_by_res_','.his')
 	write(6,*) 'writing to file: ',file
 	open(11,file=file,status='unknown',form='formatted')
 	do i=0,ndim
 	  c = i*amax/ndim
-	  val = 100.*icount(i)/(float(ic)*dc)
-	  tot = tot + val*dc
+	  val = 100.*icount(i)/(float(ic)*dw)
+	  tot = tot + val*dw
+	  write(11,*) c,val,icount(i)
+	end do
+	close(11)
+	write(6,*) 'writing finished: ',tot
+
+	dw = amax/100.
+	tot = 0.
+	call make_name(it,file,'freq_by_vol_','.his')
+	write(6,*) 'writing to file: ',file
+	open(11,file=file,status='unknown',form='formatted')
+	do i=0,ndim
+	  c = i*amax/ndim
+	  val = 100.*dcount(i)/(dc*dw)
+	  tot = tot + val*dw
 	  write(11,*) c,val,icount(i)
 	end do
 	close(11)
@@ -930,43 +726,4 @@ c simplicistic
 	end
 
 c**********************************************************************
-
-	subroutine get_elem_depth(ie,hd)
-
-	implicit none
-
-	include 'param.h'
-
-	integer ie
-	real hd(1)
-
-	integer l,lmax
-	real hmax,htop,hbot
-
-	integer ilhkv(nkndim)
-	integer ilhv(neldim)
-	real hev(neldim)
-	real hlv(nlvdim)
-
-	common /ilhkv/ilhkv
-	common /ilhv/ilhv
-	common /hev/hev
-	common /hlv/hlv
-
-	lmax = ilhv(ie)
-	hmax = hev(ie)
-
-	htop = 0.
-	do l=1,lmax
-	  hbot = hlv(l)
-	  if( l .eq. lmax ) hbot = hmax
-	  hd(l) = hbot - htop
-	  htop = hbot
-	end do
-
-	end
-
-c**********************************************************************
-
-
 

@@ -58,6 +58,7 @@ c 18.11.2009    ggu     new format in pritime (write also time step)
 c 22.02.2010    ggu     new call to hydro_stability to compute time step
 c 26.02.2010    ggu     in set_timestep compute and write ri with old dt
 c 22.03.2010    ggu     some comments for better readability
+c 29.04.2010    ggu     new routine set_output_frequency() ... not finished
 c
 c************************************************************
 c
@@ -902,6 +903,43 @@ c sets time unit
 	save /femtimu/
 
 	itunit = itu
+
+	end
+
+c********************************************************************
+
+	subroutine set_output_frequency(itm_out,idt_out,ia_out)
+
+c sets-up array for output frequency
+
+	implicit none
+
+	integer itm_out		!minimum time for output
+	integer idt_out		!time step for output
+	integer ia_out(1)	!array where info is stored
+
+	integer itanf,itend,idt
+	integer itmout,idtout,itout
+	real getpar
+
+	itanf = nint(getpar('itanf'))
+	itend = nint(getpar('itend'))
+	idt = nint(getpar('idt'))
+
+	itmout = itm_out
+	idtout = idt_out
+
+	if( idtout .lt. idt .and. idtout .gt. 0 ) idtout = idt
+	if( itmout .lt. itanf ) itmout = itanf
+
+	itout = itmout
+	if( itmout .eq. itanf ) itout = itout + idtout
+
+	if( itout .gt. itend ) idtout = 0
+
+	ia_out(1) = idtout
+	ia_out(2) = itout
+	ia_out(3) = itmout
 
 	end
 

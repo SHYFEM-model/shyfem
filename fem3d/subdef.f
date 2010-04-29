@@ -13,6 +13,7 @@ c function ideffi(defdir,defnam,ext,form,status)  opens file in default dir
 c function ifemop(ext,form,status)		  opens file with default name
 c function ifemopa(text,ext,form,status)	  opens file with default name
 c function ifem_open_file(ext,status)		  opens unformated file
+c function ifem_test_file(ext,status)		  tries to open unformated file
 c
 c revision log :
 c
@@ -24,6 +25,7 @@ c 08.08.2000	ggu     new routine ifemop
 c 27.11.2001	ggu     error message rewritten
 c 11.10.2002	ggu	new subroutine deffile
 c 07.03.2007	ggu	new routine ifem_open_file
+c 29.04.2010	ggu	new routine ifem_open_file
 c
 c****************************************************************
 c
@@ -287,6 +289,30 @@ c status open status
 	integer ifem_open_file
         character*(*) ext,status
 
+	integer ifem_test_file
+
+	ifem_open_file = ifem_test_file(ext,status)
+
+	if( ifem_open_file .le. 0 ) then
+	  stop 'error stop ifem_open_file'
+	end if
+
+	end
+
+c**************************************************************
+
+        function ifem_test_file(ext,status)
+
+c tries to open unformated file with default name (run) and extension given
+
+c ext		extension (with dot)
+c status	open status
+
+        implicit none
+
+	integer ifem_test_file
+        character*(*) ext,status
+
 	character*80 file,defdir,defnam
 	character*80 form
 	integer ifileo
@@ -295,11 +321,11 @@ c status open status
 	defdir = ' '
 	defnam = 'runnam'
 	call defmak(defdir,defnam,ext,file)
-	ifem_open_file = ifileo(0,file,form,status)
 
-	if( ifem_open_file .le. 0 ) then
-	  write(6,*) 'error opening file ',file
-	  stop 'error stop ifem_open_file'
+	ifem_test_file = ifileo(0,file,form,status)
+
+	if( ifem_test_file .le. 0 ) then
+	  write(6,*) 'cannot open file ',file
 	end if
 
 	end
