@@ -1,3 +1,27 @@
+version  6_1_8    03-05-2010    VERS_6_1_8
+
+changes to nosresidence and nosaver
+
+========================================================== 03-05-2010 - 6_1_8
+
+c ./fem3d/ht.f:
+c 29.04.2010    ggu	write volumes (wrfvla)
+c
+c ./fem3d/nosresidence.f:
+c 29.04.2010    ggu     completely changed
+c
+c ./fem3d/subdef.f:
+c 29.04.2010	ggu	new routine ifem_open_file
+c 03.05.2010	ggu	new routine ifem_choose_file() and add_extension()
+c
+c ./fem3d/subnsh.f:
+c 29.04.2010    ggu     new routine set_output_frequency() ... not finished
+c
+c ./fem3d/subver.f:
+c 03.05.2010	ggu	version 6.1.8
+
+==========================================================
+
 version  6_1_7    26-04-2010    VERS_6_1_7
 
 fixed broken subcoords.f

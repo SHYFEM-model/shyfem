@@ -7,6 +7,7 @@
 FEMDIR=${FEMDIR:-$HOME/fem}
 export FEMDIR
 version_file="VERSION"
+commit_file="COMMIT"
 
 #########################################################
 
@@ -75,6 +76,24 @@ Usage()
     echo "   Tag     : $4"
     echo ""
   fi
+}
+
+AddCommitMessage()
+{
+  message="New version $newvers"
+
+  echo "============================================================" > log.tmp
+  echo ""                                 >> log.tmp
+  date                                    >> log.tmp
+  echo ""                                 >> log.tmp
+  echo "$message"                         >> log.tmp
+  echo ""                                 >> log.tmp
+  git diff --cached --stat                >> log.tmp
+  echo ""                                 >> log.tmp
+
+  cat log.tmp $commit_file > com.tmp
+  mv -f com.tmp $commit_file
+  rm -f log.tmp
 }
 
 #########################################################
@@ -182,6 +201,7 @@ echo "new tag    : $newtag"
 ok "Shall I tag now ? (y/N) : "
 
 cp $tmpfile1 $version_file
+AddCommitMessage
 
 git add -u
 git commit -m "New version $newvers" --no-verify
