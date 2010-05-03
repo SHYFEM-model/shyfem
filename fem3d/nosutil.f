@@ -126,7 +126,7 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-	subroutine init_volume(nlvdim,nkn,nel,nlv,ilhkv,hlv,hev,vol3)
+	subroutine init_volume(nlvdim,nkn,nel,nlv,nen3v,ilhkv,hlv,hev,vol3)
 
 c initializes volumes just in case no volume file is found
 c
@@ -137,12 +137,47 @@ c we could do better using information on node area and depth structure
 
 	integer nlvdim
 	integer nkn,nel,nlv
+	integer nen3v(3,1)
 	integer ilhkv(1)
 	real hlv(1)
 	real hev(1)
 	real vol3(nlvdim,1)
 
-	integer k,l,lmax
+        include 'ev.h'
+
+	logical belem
+	integer ie,ii,k,l,lmax
+	real area,helem,hup,hbot,h
+
+	belem = .true.
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,nlv
+	    vol3(l,k) = 0.
+	  end do
+	end do
+
+	if( belem ) then
+
+	do ie=1,nel
+	  area = 4. * ev(10,ie)
+	  helem = hev(ie)
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    lmax = ilhkv(k)
+	    hup = 0.
+	    do l=1,lmax
+	      hbot = hlv(l)
+	      if( hbot .gt. helem ) hbot = helem
+	      h = hbot - hup
+	      vol3(l,k) = vol3(l,k) + area * h
+	      hup = hbot
+	    end do
+	  end do
+	end do
+
+	else
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
@@ -150,6 +185,8 @@ c we could do better using information on node area and depth structure
 	    vol3(l,k) = 1.
 	  end do
 	end do
+
+	end if
 
 	end
 
@@ -191,18 +228,18 @@ c reads volumes
 	return
    92	continue
 	write(6,*) ivar,66
-	stop 'error stop nosaver: wrong variable'
+	stop 'error stop get_volume: wrong variable'
    93	continue
-	stop 'error stop nosaver: EOF found reading nos file'
+	stop 'error stop get_volume: EOF found reading nos file'
    94	continue
-	stop 'error stop nosaver: error reading nos file'
+	stop 'error stop get_volume: error reading nos file'
    95	continue
 	write(6,*) 'it in vol file is higher than requested: ',itold,it
 	return		!FIXME -> should signal error
-	stop 'error stop nosaver: it too small'
+	stop 'error stop get_volume: it too small'
    96	continue
 	write(6,*) it,itold
-	stop 'error stop nosaver: no vol record for it'
+	stop 'error stop get_volume: no vol record for it'
 	end
 
 c***************************************************************

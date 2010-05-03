@@ -39,7 +39,7 @@ c averages vertically records
         integer nvers
 	real cmin,cmax,cmed,vtot
 
-        integer iapini,ideffi,ifileo,ifem_open_file
+        integer iapini,ideffi,ifileo,ifem_open_file,ifem_choose_file
 
 c-----------------------------------------------------------------
 c initialize params
@@ -61,10 +61,11 @@ c	----------------------------------------------------------
 c	file containing volumes
 c	----------------------------------------------------------
 
-        nvol = ifem_open_file('.fvl','old')
+        nvol = ifem_choose_file('.fvl','old')
 	bvol = nvol .gt. 0
 
 	if( bvol ) then
+	  write(6,*) 'volume file opened... using it'
           call rhnos(nvol,nvers,nkndim,neldim,nlvdim,nkn2,nel2,nlv2,nvar
      +                          ,ilhkv2,hlv2,hev2,title)
 	else
@@ -79,7 +80,7 @@ c	----------------------------------------------------------
         call rhnos(nin,nvers,nkndim,neldim,nlvdim,nkn1,nel1,nlv,nvar
      +                          ,ilhkv,hlv,hev,title)
 
-	call init_volume(nlvdim,nkn,nel,nlv,ilhkv,hlv,hev,vol3)
+        call init_volume(nlvdim,nkn,nel,nlv,nen3v,ilhkv,hlv,hev,vol3)
 
 c	----------------------------------------------------------
 c	output file
@@ -141,6 +142,11 @@ c end of loop on input records
 c-----------------------------------------------------------------
 
   100	continue
+
+        if( .not. bvol ) then
+          write(6,*)
+          write(6,*) 'no volume file found: average done without'
+        end if
 
 	write(6,*)
 	write(6,*) nread,' records read in total'

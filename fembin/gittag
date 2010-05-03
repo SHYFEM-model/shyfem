@@ -64,9 +64,9 @@ editfiles()
 Usage()
 {
   echo ""
-  echo "Usage: cvstag version"
+  echo "Usage: gittag version"
   echo ""
-  echo "   (example: cvstag 3.51  or  cvstag 3.51a)"
+  echo "   (example: gittag 6.1.7  or  gittag 6.1.7a)"
   echo ""
   if [ $# -ne 1 ]; then
     echo "Actual version : "

@@ -27,10 +27,11 @@ HEAD~4			4th grade
 
 commands:
 
-gitinfo			this help file
-gittags			shows commits corresponding to tags
-gittar			makes tar file fo given version
 gitcommit		makes commit writing to COMMIT
+gitinfo			this help file
+gittag			tags actual commit writing to VERSION
+gittags			shows commits and corresponding tags
+gittar			makes tar file for given version
 
 todo:
 

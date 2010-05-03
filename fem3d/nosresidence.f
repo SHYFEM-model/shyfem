@@ -56,7 +56,7 @@ c--------------------------------------------------
 
 	logical bminmax,balways,breset
 	logical blog,badj,bvol
-	integer nvol,nbres3,nbres2
+	integer nvol,nb3,nb2
 	integer nkn1,nkn2,nel1,nel2,nlv1,nlv2
         integer l,lmax,k
 	integer itstart,itend
@@ -74,7 +74,7 @@ c--------------------------------------------------
         double precision tacu
 
 	integer iapini,ideffi
-	integer ifem_test_file,ifem_open_file
+	integer ifem_test_file,ifem_open_file,ifem_choose_file
 
 c---------------------------------------------------------------
 c parameters to be changed
@@ -144,10 +144,11 @@ c       ----------------------------------------------------------
 c       file containing volumes
 c       ----------------------------------------------------------
 
-        nvol = ifem_test_file('.fvl','old')
+        nvol = ifem_choose_file('.fvl','old')
         bvol = nvol .gt. 0
 
         if( bvol ) then
+	  write(6,*) 'volume file opened... using it'
           call rhnos(nvol,nvers,nkndim,neldim,nlvdim,nkn2,nel2,nlv2,nvar
      +                          ,ilhkv2,hlv2,hev2,title)
         else
@@ -161,8 +162,11 @@ c       ----------------------------------------------------------
 	nin = ifem_open_file('.con','old')
 	if(nin.le.0) goto 100
 
+	write(6,*) 'reading file with concentrations: '
         call rhnos(nin,nvers,nkndim,neldim,nlvdim,nkn1,nel1,nlv,nvar
      +                          ,ilhkv,hlv,hev,title)
+
+	call init_volume(nlvdim,nkn,nel,nlv,nen3v,ilhkv,hlv,hev,vol3)
 
 c-----------------------------------------------------------------
 c check compatibility
@@ -186,11 +190,11 @@ c---------------------------------------------------------------
         it = 0
         ivar = 99
 
-        call open_nos_file('nosres','new',nbres3)
-        call whnos(nbres3,nvers,nkn,nel,nlv,1,ilhkv,hlv,hev,title)
+        call open_nos_file('nosres','new',nb3)
+        call whnos(nb3,nvers,nkn,nel,nlv,1,ilhkv,hlv,hev,title)
 
-        call open_nos_file('nosres','new',nbres2)
-        call whnos(nbres2,nvers,nkn,nel,1,1,ilhkv,hlv,hev,title)
+        call open_nos_file('nosres2d','new',nb2)
+        call whnos(nb2,nvers,nkn,nel,1,1,ilhkv,hlv,hev,title)
 
 	balways = .not. bminmax
 
@@ -244,6 +248,7 @@ c	  -----------------------------------------
 	    write(6,*) '-------------------------------------------'
 	    if( nused .gt. minused ) then
 	      call acu_comp(blog,badj,it,dt,c0,ccut,ilhkv,tacu,cvacu
+     +				,nb3,nb2
      +				,cv3d,vol3,cvres3,cvres2)
 	      call acu_freq(it,ctop,ilhkv,cvres3,vol3)
 	      nrepl = nrepl + 1
@@ -304,6 +309,7 @@ c---------------------------------------------------------------
 	    if( nused .gt. minused ) then
 	      nrepl = nrepl + 1
 	      call acu_comp(blog,badj,it,dt,c0,ccut,ilhkv,tacu,cvacu
+     +				,nb3,nb2
      +				,cv3d,vol3,cvres3,cvres2)
 	      call acu_freq(it,ctop,ilhkv,cvres3,vol3)
 	      call make_acumulate(nlvdim,nkn,ilhkv,cvres3,cvrestot)
@@ -315,7 +321,7 @@ c---------------------------------------------------------------
 
 	    if( nrepl .gt. 0 ) then
 	      it = 0
-	      call acu_final(it,ilhkv,nrepl,cvrestot,vol3,cv2)
+	      call acu_final(it,ilhkv,nrepl,nb3,nb2,cvrestot,vol3,cv2)
 	      call acu_freq(it,ctop,ilhkv,cvrestot,vol3)
 	    end if
 
@@ -332,6 +338,11 @@ c---------------------------------------------------------------
 	write(6,*)
 	write(6,*) 'output written to nosres.nos and nosres2d.nos'
 	write(6,*)
+
+        if( .not. bvol ) then
+          write(6,*) 'no volume file found: average done without'
+          write(6,*)
+        end if
 
 c---------------------------------------------------------------
 c end of routine
@@ -384,6 +395,7 @@ c***************************************************************
 c***************************************************************
 
 	subroutine acu_comp(blog,badj,it,dt,c0,ccut,ilhkv,tacu,cvacu
+     +				,nb3,nb2
      +				,cv3d,vol3,cv3,cv2)
 
 c compute residence time
@@ -400,6 +412,7 @@ c compute residence time
 	integer ilhkv(nkndim)
 	double precision tacu
 	double precision cvacu(nlvdim,nkndim)		!accumulated conz
+	integer nb3,nb2
 	real cv3d(nlvdim,nkndim)			!last concentration
 	real vol3(nlvdim,nkndim)			!volumes
 	real cv3(nlvdim,nkndim)				!computed RT 3D
@@ -463,8 +476,8 @@ c---------------------------------------------------------------
 
 	ivar = 99
 
-        call wrnos(3,it,ivar,nlvdim,ilhkv,cv3,ierr)
-        call wrnos(2,it,ivar,1,ilhkv,cv2,ierr)
+        call wrnos(nb3,it,ivar,nlvdim,ilhkv,cv3,ierr)
+        call wrnos(nb2,it,ivar,1,ilhkv,cv2,ierr)
 
 c---------------------------------------------------------------
 c end of routine
@@ -474,7 +487,7 @@ c---------------------------------------------------------------
 
 c**********************************************************************
 
-	subroutine acu_final(it,ilhkv,nrepl,cv3,vol3,cv2)
+	subroutine acu_final(it,ilhkv,nrepl,nb3,nb2,cv3,vol3,cv2)
 
 	implicit none
 
@@ -483,6 +496,7 @@ c**********************************************************************
 	integer it
 	integer ilhkv(nkndim)
 	integer nrepl
+	integer nb3,nb2
 	real cv3(nlvdim,nkndim)
 	real vol3(nlvdim,nkndim)			!volumes
 	real cv2(nkndim)
@@ -521,8 +535,8 @@ c---------------------------------------------------------------
 
 	ivar = 99
 
-        call wrnos(3,it,ivar,nlvdim,ilhkv,cv3,ierr)
-        call wrnos(2,it,ivar,1,ilhkv,cv2,ierr)
+        call wrnos(nb3,it,ivar,nlvdim,ilhkv,cv3,ierr)
+        call wrnos(nb2,it,ivar,1,ilhkv,cv2,ierr)
 
 c---------------------------------------------------------------
 c end of routine
@@ -554,12 +568,16 @@ c write histogram
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
+	logical bdebug
 	integer k,lmax,l,i,ic
 	integer icount(0:ndim)
 	double precision dcount(0:ndim)
 	real conz,c,amax,dc,val,tot,cmax
 	real v,dw
 	character*50 file
+
+	bdebug = .true.
+	bdebug = .false.
 
 c---------------------------------------------------------------
 c compute maximum
@@ -611,7 +629,6 @@ c---------------------------------------------------------------
 	dw = 1.
 	tot = 0.
 	call make_name(it,file,'freq_by_bin_','.his')
-	write(6,*) 'writing to file: ',file
 	open(11,file=file,status='unknown',form='formatted')
 	do i=0,ndim
 	  c = i*amax/ndim
@@ -620,12 +637,11 @@ c---------------------------------------------------------------
 	  write(11,*) i,val,icount(i)
 	end do
 	close(11)
-	write(6,*) 'writing finished: ',tot
+	if( bdebug ) write(6,*) 'writing his: ',tot,file
 
 	dw = amax/100.
 	tot = 0.
 	call make_name(it,file,'freq_by_res_','.his')
-	write(6,*) 'writing to file: ',file
 	open(11,file=file,status='unknown',form='formatted')
 	do i=0,ndim
 	  c = i*amax/ndim
@@ -634,12 +650,11 @@ c---------------------------------------------------------------
 	  write(11,*) c,val,icount(i)
 	end do
 	close(11)
-	write(6,*) 'writing finished: ',tot
+	if( bdebug ) write(6,*) 'writing his: ',tot,file
 
 	dw = amax/100.
 	tot = 0.
 	call make_name(it,file,'freq_by_vol_','.his')
-	write(6,*) 'writing to file: ',file
 	open(11,file=file,status='unknown',form='formatted')
 	do i=0,ndim
 	  c = i*amax/ndim
@@ -648,7 +663,7 @@ c---------------------------------------------------------------
 	  write(11,*) c,val,icount(i)
 	end do
 	close(11)
-	write(6,*) 'writing finished: ',tot
+	if( bdebug ) write(6,*) 'writing his: ',tot,file
 
 c---------------------------------------------------------------
 c write out all data to file (for debug and median)

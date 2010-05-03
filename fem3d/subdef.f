@@ -26,6 +26,7 @@ c 27.11.2001	ggu     error message rewritten
 c 11.10.2002	ggu	new subroutine deffile
 c 07.03.2007	ggu	new routine ifem_open_file
 c 29.04.2010	ggu	new routine ifem_open_file
+c 03.05.2010	ggu	new routine ifem_choose_file() and add_extension()
 c
 c****************************************************************
 c
@@ -130,9 +131,15 @@ c function
        		nall=nall+nend-nstart+1
 	end if
 
+	call add_extension(file,ext,.false.)
+
+	return	!FIXME
+
 c new code: if extension given in name do not add default extension
 c		extension MUST have 3 chars	$$EXTENS
 c FIXME
+c
+c this should be deleted
 
 	naux = nall - 4
 	if( naux .gt. 0 .and. file(naux:naux) .eq. '.' ) return
@@ -326,6 +333,84 @@ c status	open status
 
 	if( ifem_test_file .le. 0 ) then
 	  write(6,*) 'cannot open file ',file
+	end if
+
+	end
+
+c**************************************************************
+
+        function ifem_choose_file(ext,status)
+
+c tries to open unformated file with default name (run) and extension given
+c insists on extension -> if name has extension substitute it with ext
+
+c ext		extension (with dot)
+c status	open status
+
+        implicit none
+
+	integer ifem_choose_file
+        character*(*) ext,status
+
+	character*80 file,defdir,defnam
+	character*80 form
+	integer ifileo
+
+	form = 'unform'
+	defdir = ' '
+	defnam = 'runnam'
+	call defmak(defdir,defnam,ext,file)
+	call add_extension(file,ext,.true.)
+
+	ifem_choose_file = ifileo(0,file,form,status)
+
+	if( ifem_choose_file .le. 0 ) then
+	  write(6,*) 'cannot open file ',file
+	end if
+
+	end
+
+c**************************************************************
+
+	subroutine add_extension(name,ext,bforce)
+
+c substitutes extension with given one
+c
+c if bforce is true substitutes given extension
+c otherwise only adds if not already there
+c
+c extension must have 3 chars
+
+	implicit none
+
+	character*(*) name
+	character*(*) ext
+	logical bforce
+
+	integer nall,n,nstart,nend
+
+        integer ichafs,ichanm
+
+	nall = 1 + ichanm(name)
+
+	n = nall - 4		!here should be the dot
+	if( n .gt. 0 .and. name(n:n) .eq. '.' ) then	!has extension
+	  if( bforce ) then	!substitute extension
+	    nall = n
+	  else
+	    return		!leave extension
+	  end if
+	end if
+
+        nstart=ichafs(ext)
+        nend=ichanm(ext)
+
+	if( nend .gt. 0 ) then
+	   if( ext(nstart:nstart) .ne. '.' ) then !add dot if not in ext
+		name(nall:nall) = '.'
+		nall = nall + 1
+	   end if
+	   name(nall:)=ext(nstart:nend)
 	end if
 
 	end
