@@ -2,6 +2,7 @@ c
 c utility routines
 c
 c 29.04.2010    ggu     new file from nosaver
+c 07.05.2010    ggu     new routines qopen_nos_file(), checks ev initialization
 c
 c***************************************************************
 
@@ -123,6 +124,27 @@ c***************************************************************
 	end
 
 c***************************************************************
+
+        subroutine qopen_nos_file(text,status,nunit)
+
+c asks for name and opens nos file
+
+        implicit none
+
+        character*(*) text,status
+        integer nunit
+
+        character*80 name
+
+        write(6,*) text
+        read(5,'(a)') name
+        write(6,*) name
+
+        call open_nos_file(name,status,nunit)
+
+        end
+
+c***************************************************************
 c***************************************************************
 c***************************************************************
 
@@ -149,7 +171,7 @@ c we could do better using information on node area and depth structure
 	integer ie,ii,k,l,lmax
 	real area,helem,hup,hbot,h
 
-	belem = .true.
+	call is_init_ev(belem)		!use ev if initialized
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
@@ -246,7 +268,7 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-	subroutine check_equal_i(text,n,ia1,ia2)
+	subroutine check_equal_i(text,n,a1,a2)
 
 c tests array to be equal
 
@@ -254,24 +276,30 @@ c tests array to be equal
 
 	character*(*) text
 	integer n
-	integer ia1(1)
-	integer ia2(1)
+	integer a1(1)
+	integer a2(1)
 
-	integer i
+	integer i,imin,imax
 
 	do i=1,n
-	  if( ia1(i) .ne. ia2(i) ) goto 99
+	  if( a1(i) .ne. a2(i) ) goto 99
 	end do
 
 	return
    99	continue
+	imin = max(1,i-5)
+	imax = min(n,i-5)
+	write(6,*) 'first array: ',imin,i,imax
+	write(6,*) (a1(i),i=imin,imax)
+	write(6,*) 'second array: ',imin,i,imax
+	write(6,*) (a2(i),i=imin,imax)
 	write(6,*) 'arrays are not equal: ',text
-	stop 'error stop check_iqual: arrays differ'
+	stop 'error stop check_iqual_i: arrays differ'
 	end
 
 c***************************************************************
 
-	subroutine check_equal_r(text,n,ra1,ra2)
+	subroutine check_equal_r(text,n,a1,a2)
 
 c tests array to be equal
 
@@ -279,19 +307,25 @@ c tests array to be equal
 
 	character*(*) text
 	integer n
-	real ra1(1)
-	real ra2(1)
+	real a1(1)
+	real a2(1)
 
-	integer i
+	integer i,imin,imax
 
 	do i=1,n
-	  if( ra1(i) .ne. ra2(i) ) goto 99
+	  if( a1(i) .ne. a2(i) ) goto 99
 	end do
 
 	return
    99	continue
+	imin = max(1,i-5)
+	imax = min(n,i-5)
+	write(6,*) 'first array: ',imin,i,imax
+	write(6,*) (a1(i),i=imin,imax)
+	write(6,*) 'second array: ',imin,i,imax
+	write(6,*) (a2(i),i=imin,imax)
 	write(6,*) 'arrays are not equal: ',text
-	stop 'error stop check_iqual: arrays differ'
+	stop 'error stop check_iqual_r: arrays differ'
 	end
 
 c***************************************************************

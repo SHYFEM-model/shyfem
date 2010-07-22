@@ -333,7 +333,7 @@ c control newest version number for call
    95	continue
 	write(6,*) 'wfous: Old function call ',nvers
 	write(6,*) 'wfous: should be maxver = ',maxver
-	write(6,*) 'Please adjust call to rfous and recompile'
+	write(6,*) 'Please adjust call to wfous and recompile'
 	ierr=95
 	return
 	end

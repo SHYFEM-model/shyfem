@@ -28,6 +28,7 @@ c 18.12.1999	ggu	/iweich/ -> /iwegv/ (bug)
 c 29.03.2000	ggu	new routine getxy and getexy
 c 16.05.2000	ggu	routine volel removed
 c 28.04.2009    ggu     links re-structured
+c 08.06.2010    ggu     new routine for computing 3D kin/pot energy
 c
 c******************************************
 
@@ -299,6 +300,78 @@ c
 	kenerg=6.*kin		! 6 = 12 / 2
 c
 	return
+	end
+
+c***************************************************************
+
+	subroutine energ3d(kenergy,penergy)
+
+c computation of kinetic & potential energy (per unit mass) in element ielem
+c
+c for ielem=0 --> total kinetic & potential energy
+c
+c	pot = (g/2) * aj * 4  * z(m)*z(m)
+c	kin = (1/2) * aj * 12 * u*u/h
+
+	implicit none
+
+	real kenergy,penergy
+
+	include 'param.h'
+	include 'ev.h'
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	real grav,fcor,dcor,dirn,rowass,roluft
+	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+
+	integer ilhv(1)
+	common /ilhv/ilhv
+        real hdenv(nlvdim,neldim)
+        common /hdenv/hdenv
+
+        real zeov(3,neldim),zenv(3,neldim)
+        common /zeov/zeov, /zenv/zenv
+        real utlnv(nlvdim,neldim)
+        common /utlnv/utlnv
+        real vtlnv(nlvdim,neldim)
+        common /vtlnv/vtlnv
+
+c local
+	integer ie,ii,l,lmax
+	double precision area,pot,kin,z,zz
+	double precision h,uu,vv
+
+	kin=0.
+	pot=0.
+
+	do ie=1,nel
+
+	  area = 12. * ev(10,ie)
+
+	  z=0.
+	  do ii=1,3
+	    zz = zenv(ii,ie)
+	    z = z + zz*zz
+	  end do
+          pot=pot+area*z/3.
+
+	  lmax = ilhv(ie)
+	  do l=1,lmax
+	    h = hdenv(l,ie)
+	    uu = utlnv(l,ie)
+	    vv = vtlnv(l,ie)
+	    kin = kin + area * (uu*uu + vv*vv) / h
+	    !write(13,*) ie,l,uu,vv,h,kin
+	  end do
+
+	end do
+
+        penergy = 0.5*grav*pot      ! 0.5 = 1 / 2
+        kenergy = 0.5*kin           ! 0.5 = 1 / 2
+
+	!write(6,*) kenergy,penergy
+
 	end
 
 c***************************************************************

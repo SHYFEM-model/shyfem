@@ -45,34 +45,19 @@ c next n lines give (u,v,z) for every node written.
 	!parameter (noddim=35)
 	parameter (noddim=60)
 	!parameter (noddim=20)
-	integer datdim			!total number of data records
-	!parameter (datdim=120000)
-	!parameter (datdim=80000)
-	parameter (datdim=100000)
 
 	integer nkndim,neldim
 
 	character*80 line,file
 	integer nvers,knausm
-	integer nrec,it,i,nin,kn,in,nout
+	integer nrec,it,i,nin,kn,in,nout,itold
 	real href,hzmin
-	real err
+	real err,rm
 	character*80 descrp
 
 	integer knaus(noddim)
 	real xv(3*noddim)
 	real h(noddim)
-
-	integer itime(datdim)
-	real udata(datdim,noddim)
-	real vdata(datdim,noddim)
-	real zdata(datdim,noddim)
-	real mdata(datdim,noddim)
-
-	common /udata/udata
-	common /vdata/vdata
-	common /zdata/zdata
-	common /mdata/mdata
 
 	integer iapini, ideffi, ifileo
 	real read7,rdrc7
@@ -125,20 +110,16 @@ c	write(6,*) nin,nvers,it,knausm
 	if( err .ne. 0. ) goto 98
 	nrec = nrec + 1
 
-	if( nrec .gt. datdim ) then
-	  write(6,*) 'Cannot read more than ',datdim,' data records'
-	  nrec = nrec - 1
-	  goto 100
-	end if
 	if(mod(nrec,100).eq.0) write(6,*) nrec,' data records read'
 
-	itime(nrec) = it
+	itold = it
 
 	do i=1,knausm
-	  udata(nrec,i) = xv(i)
-	  vdata(nrec,i) = xv(i+knausm)
-	  zdata(nrec,i) = xv(i+2*knausm)
-	  mdata(nrec,i) = sqrt( udata(nrec,i)**2 + vdata(nrec,i)**2 )
+	  write(100+i,*) it,xv(i)
+	  write(200+i,*) it,xv(i+knausm)
+	  write(300+i,*) it,xv(i+2*knausm)
+	  rm = sqrt( xv(i+knausm)**2 + xv(i+2*knausm)**2 )
+	  write(400+i,*) it,rm
 	end do
 
 	goto 10
@@ -150,19 +131,12 @@ c---------------------------------------------------------------
 
 	write(6,*)
 	write(6,*) 'Total number of data records read : ',nrec
-	write(6,*) 'Last time value read: ',itime(nrec)
+	write(6,*) 'Last time value read: ',itold
 	write(6,*)
 
 c---------------------------------------------------------------
 c writing files
 c---------------------------------------------------------------
-
-	do i=1,knausm
-	  call wrts(nrec,itime,udata(1,i),'u',i)
-	  call wrts(nrec,itime,vdata(1,i),'v',i)
-	  call wrts(nrec,itime,zdata(1,i),'z',i)
-	  call wrts(nrec,itime,mdata(1,i),'m',i)
-	end do
 
 c---------------------------------------------------------------
 c end of routine
@@ -171,8 +145,6 @@ c---------------------------------------------------------------
 	stop
    88	continue
 	stop 'error stop: noddim'
-   89	continue
-	stop 'error stop: datdim'
    99	continue
 	stop 'Error reading header of EXT file'
    98	continue

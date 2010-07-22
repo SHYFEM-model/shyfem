@@ -6,6 +6,7 @@ c 06.04.1999    ggu     some cosmetic changes
 c 03.12.2001    ggu     some extra output -> place of min/max
 c 09.12.2003    ggu     check for NaN introduced
 c 10.04.2008    ggu     finished program
+c 07.05.2010    ggu     some utils transfered to nosutil.f
 c
 c**************************************************************
 
@@ -129,6 +130,8 @@ c--------------------------------------------------------------
   100	continue
 
 	write(6,*)
+	write(6,*) 'output written to file diff.nos'
+	write(6,*)
 	write(6,*) nread,' records read'
 	write(6,*)
 
@@ -148,50 +151,6 @@ c--------------------------------------------------------------
 	write(6,*) 'nvar,nvar2: ',nvar,nvar2
 	stop 'error stop nosdiff: simulation are different'
 	end
-
-c***************************************************************
-
-        subroutine qopen_nos_file(text,status,nunit)
-
-c asks for name and opens nos file
-
-        implicit none
-
-        character*(*) text,status
-        integer nunit
-
-        character*80 name
-
-        write(6,*) text
-        read(5,'(a)') name
-
-        call open_nos_file(name,status,nunit)
-
-	end
-
-c***************************************************************
-
-        subroutine open_nos_file(name,status,nunit)
-
-c opens nos file
-
-        implicit none
-
-        character*(*) name,status
-        integer nunit
-
-        integer nb
-        character*80 file
-
-        integer ifileo
-
-        call mkname(' ',name,'.nos',file)
-        nb = ifileo(0,file,'unform',status)
-        if( nb .le. 0 ) stop 'error stop open_nos_file: opening file'
-
-        nunit = nb
-
-        end
 
 c***************************************************************
 

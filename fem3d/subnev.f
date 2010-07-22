@@ -32,6 +32,7 @@ c 22.05.2009	ggu	new routine set_coords_ev() and ev_blockdata
 c 12.06.2009	ggu	more stable computation of area (bug_f_64bit)
 c 05.02.2010	ggu	bug fix for aj (division with 24 too early)
 c 14.04.2010	ggu	new routines get_coords_ev() and check_spheric_ev()
+c 07.05.2010	ggu	initialization of ev routines
 c
 c***********************************************************
 
@@ -51,8 +52,8 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
 	include 'ev.h'
-	integer isphe_ev		!if 1, use spherical coordinate system
-	common /evcommon/ isphe_ev
+	integer isphe_ev,init_ev
+	common /evcommon/ isphe_ev,init_ev
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v
@@ -75,6 +76,7 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	call check_spheric_ev	!checks and sets isphe_ev
 
 	isphe = isphe_ev
+	init_ev = 1
 
         one = 1.
         two = 2.
@@ -186,16 +188,35 @@ c****************************************************************
 
 c initializes isphe_ev
 c
+c isphe_ev:
+c
 c -1	value not given -> try to determine automatically
 c  0	cartesian
 c  1	spherical (lat/lon)
 
 	implicit none
 
-	integer isphe_ev
-	common /evcommon/ isphe_ev
+	integer isphe_ev,init_ev
+	common /evcommon/ isphe_ev,init_ev
 	save /evcommon/
-	data isphe_ev / -1 /
+	data isphe_ev,init_ev / -1 , 0 /
+
+	end
+
+c****************************************************************
+
+	subroutine is_init_ev(binit)
+
+c checks if ev module has been initialized
+
+	implicit none
+
+	logical binit
+
+	integer isphe_ev,init_ev
+	common /evcommon/ isphe_ev,init_ev
+	
+	binit = init_ev .gt. 0
 
 	end
 
@@ -209,8 +230,8 @@ c sets type of coordinates to use with ev module
 
 	integer isphe
 
-	integer isphe_ev
-	common /evcommon/ isphe_ev
+	integer isphe_ev,init_ev
+	common /evcommon/ isphe_ev,init_ev
 	
 	isphe_ev = isphe
 
@@ -226,8 +247,8 @@ c gets type of coordinates that is used with ev module
 
 	integer isphe
 
-	integer isphe_ev
-	common /evcommon/ isphe_ev
+	integer isphe_ev,init_ev
+	common /evcommon/ isphe_ev,init_ev
 	
 	isphe = isphe_ev
 
@@ -248,8 +269,8 @@ c checks if coordinates are lat/lon
         real xgv(1), ygv(1)
         common /xgv/xgv, /ygv/ygv
 
-	integer isphe_ev
-	common /evcommon/ isphe_ev
+	integer isphe_ev,init_ev
+	common /evcommon/ isphe_ev,init_ev
 
 	integer k,isphe
 	real xmin,xmax,ymin,ymax
@@ -304,7 +325,7 @@ c****************************************************************
 
 	subroutine check_ev
 
-c tests if ev is set up
+c tests if ev is set up correctly
 
 	implicit none
 

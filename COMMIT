@@ -1,5 +1,43 @@
 ============================================================
 
+minor bugfixes
+nosdiff
+gridut.c	-> 64 bit bug
+
+Thu Jul 22 12:01:04 CEST 2010
+
+minor bug fixes, nosdiff
+
+ .gitignore             |    4 +
+ Rules.make             |    6 +-
+ fem3d/Makefile         |   15 ++-
+ fem3d/ht.f             |    1 +
+ fem3d/nosaver_time.f   |    2 +
+ fem3d/nosaver_vert.f   |    5 +-
+ fem3d/nosdiff.f        |   47 +------
+ fem3d/nosutil.f        |   60 +++++++--
+ fem3d/param.h          |    6 +-
+ fem3d/splitext.f       |    6 +-
+ fem3d/splitext_big.f   |  191 ++++++++++++++++++++++++++
+ fem3d/subgeo.f         |   58 ++++++++-
+ fem3d/subnev.f         |   45 +++++--
+ fem3d/subnsh.f         |   29 ++++
+ fem3d/subous.f         |    2 +-
+ fem3d/subuti.f         |   73 ++++++++++
+ fem3d/test.sh          |   26 ----
+ fem3d/windcrea.f       |  251 ++++++++++++++++++++++++++++++++++
+ femadj/param.h         |    6 +-
+ fembin/average         |    8 +-
+ fembin/gitinfo         |    3 +-
+ fembin/nosaver         |   63 +++++++++
+ femlib/perl/ts_util.pl |  348 ++++++++++++++++++++++++++++++++++++++++++++++++
+ femplot/param.h        |    6 +-
+ grid/gridut.c          |    4 +-
+ param.h                |    6 +-
+ 26 files changed, 1147 insertions(+), 124 deletions(-)
+
+============================================================
+
 Mon May  3 18:15:29 CEST 2010
 
 New version 6_1_8

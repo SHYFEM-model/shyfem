@@ -12,7 +12,8 @@ diff --stat		summary of all changes
 diff HEAD
 
 add <files>		add <files> to next commit
-add .			add all changed files to next commit
+add -u			add all changed and tracked files to next commit
+add .			add all changed files to next commit (also untracked)
 commit			commit changes that have been added
 tag <tag>		tags with <tag>, if no <tag> shows tags
 

@@ -204,6 +204,8 @@ c end of routine
 c-----------------------------------------------------------------
 
 	write(6,*)
+	write(6,*) 'frequency used',nfreq
+	write(6,*)
 	write(6,*) nread,' records read in total'
 	write(6,*)
 

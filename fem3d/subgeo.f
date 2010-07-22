@@ -18,6 +18,8 @@ c function between(x1,y1,x2,y2,x3,y3)
 c function betweens(x1,y1,x2,y2,x3,y3)
 c function angle(x1,y1,x2,y2,x3,y3)
 c
+c subroutine dist_point_to_line(px,py,ax,ay,bx,by,qx,qy,d)
+c
 c function segsegint(x1,y1,x2,y2,x3,y3,x4,y4,xi,yi)
 c function parallelint(x1,y1,x2,y2,x3,y3,x4,y4,xi,yi)
 c
@@ -25,7 +27,9 @@ c function isconvex(n,x,y)
 c function inconvex(n,x,y,x0,y0)
 c function polyinpoly(n1,x1,y1,n2,x2,y2)
 c
-c function inpoly(n,x,y,x0,y0)
+c function inpoly(n,x,y,x0,y0)		!shell for inpoly0 or inpoly1
+c function inpoly1(n,x,y,x0,y0)		!fast algorithm
+c function inpoly0(n,x,y,x0,y0)		!using winding number
 c function winding(n,x,y,x0,y0)
 c
 c subroutine c2p(u,v,s,d)		converts cartesian to polar coordinates
@@ -38,7 +42,8 @@ c 28.03.1999	ggu	new routine polyinpoly
 c 29.03.1999	ggu	segsegint is working with double precision internally
 c 19.11.1999	ggu	new routines inpoly and winding
 c 06.02.2001	ggu	new routine angle
-c 22.03.2010	ggu	new routine inpoly has been implemented
+c 22.03.2010	ggu	new routine inpoly() has been implemented
+c 05.07.2010	ggu	new routine dist_point_to_line(), bug fix in inpoly1()
 c
 c**************************************************************
 
@@ -264,6 +269,38 @@ c a > 180 => left turn
 	angle = ang
 
 	end
+
+c**************************************************************
+
+        subroutine dist_point_to_line(px,py,ax,ay,bx,by,qx,qy,d)
+
+c computes distance from point P to line given by A - B
+c returns point Q on line closest to P and its distance d
+
+        implicit none
+
+        real px,py              ! single point P
+        real ax,ay              ! point A defining line
+        real bx,by              ! point B defining line
+        real qx,qy              ! closest point Q on line to P (return)
+        real d                  ! distance between Q and P (return)
+
+        real rx,ry,sx,sy
+        real lambda
+
+        rx = bx - ax
+        ry = by - ay
+        sx = px - ax
+        sy = py - ay
+
+        lambda = (rx*sx + ry*sy) / (rx*rx + ry*ry)
+
+        qx = ax + lambda * rx
+        qy = ay + lambda * ry
+
+        d = sqrt( (qx-px)**2 + (qy-py)**2 )
+
+        end
 
 c**************************************************************
 
@@ -525,7 +562,13 @@ c shell for in-polygon check
 	logical inpoly0	!old routine -> use classical winding number
 	logical inpoly1	!new routine -> uses new algorithm from Dan Sunday
 
-	inpoly = inpoly0(n,x,y,x0,y0)
+	if( n .gt. 0 ) then
+	  inpoly = inpoly1(n,x,y,x0,y0)		!use new by default
+	else if( n .lt. 0 ) then
+	  inpoly = inpoly0(-n,x,y,x0,y0)
+	else
+	  inpoly = .false.
+	end if
 
 	end
 
@@ -548,6 +591,7 @@ c http://softsurfer.com/Archive/algorithm_0103/algorithm_0103.htm
 
 	integer i,iw
 	real xo,yo,xn,yn
+	real area
 
 	real areat
 
@@ -558,16 +602,20 @@ c http://softsurfer.com/Archive/algorithm_0103/algorithm_0103.htm
 	do i=1,n
 	  xn=x(i)
 	  yn=y(i)
+	  area = areat(xo,yo,xn,yn,x0,y0)
 
 	  if( yo .le. y0 ) then
 	    if( yn .gt. y0 ) then
-	      if( areat(xo,yo,xn,yn,x0,y0) .gt. 0. ) iw = iw + 1
+	      if( area .gt. 0. ) iw = iw + 1
 	    end if
 	  else
 	    if( yn .le. y0 ) then
-	      if( areat(xo,yo,xn,yn,x0,y0) .lt. 0. ) iw = iw - 1
+	      if( area .lt. 0. ) iw = iw - 1
 	    end if
 	  end if
+
+	  xo = xn
+	  yo = yn
 	end do
 
 	inpoly1 = iw .ne. 0

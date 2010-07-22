@@ -5,6 +5,7 @@ c 18.11.1998    ggu     check dimensions with dimnos
 c 07.03.2007    ggu     easier calls
 c 10.04.2008    ggu     copied from nosaver -> frequency introduced
 c 29.04.2010    ggu     new from nosaver_basin (using volumes)
+c 07.05.2010    ggu     call whnos with nlv=1 (bug)
 c
 c**********************************************************
 
@@ -87,7 +88,7 @@ c	output file
 c	----------------------------------------------------------
 
         call open_nos_file('nos2d','new',nb2)
-        call whnos(nb2,nvers,nkn,nel,nlv,nvar,ilhkv,hlv,hev,title)
+        call whnos(nb2,nvers,nkn,nel,1,nvar,ilhkv,hlv,hev,title)
 
 c-----------------------------------------------------------------
 c check compatibility
@@ -148,6 +149,8 @@ c-----------------------------------------------------------------
           write(6,*) 'no volume file found: average done without'
         end if
 
+	write(6,*)
+	write(6,*) 'new 2D file written to nos2d.nos'
 	write(6,*)
 	write(6,*) nread,' records read in total'
 	write(6,*)

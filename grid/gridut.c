@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 16-Jun-2010: new way to compute area of polygon (stable for 64 bit)  *
  * 07-May-1998: type is now integer                                     *
  * 14-Oct-97: DeleteElem/Line(): do not decrement use of nodes          *
  *              must be done befor routines are called                  *
@@ -335,7 +336,8 @@ float AreaElement( Hashtable_type H , Elem_type *pe )
         for(i=0;i<nvert;i++) {
                 pn = RetrieveByNodeNumber(H,pe->index[i]);
                 cn = &pn->coord;
-                area += co->x * cn->y - cn->x * co->y;
+                /* area += co->x * cn->y - cn->x * co->y; */
+                area += (co->x + cn->x) * (cn->y - co->y);
 		co = cn;
         }
 

@@ -28,6 +28,12 @@ LIBFFEM    = $(DIRLIB)/lib$(LIBFEM).a
 
 LIBLS      = -L$(DIRLIB) -L$(DIRLIB_NETCDF)
 
+LIBFS   = -L$(DIRLIB) -l$(LIBFEM)
+LIBIFS  = $(DIRLIB)/lib$(LIBFEM).a
+
+LIBPS   = -L$(DIRLIB) -l$(LIBPOST)
+LIBIPS  = $(DIRLIB)/lib$(LIBPOST).a
+
 #------------------------------------------------------------
 
 LIBG_MKL =
@@ -91,7 +97,8 @@ EXES	= ht hp vp \
 	  laplap lapwin nosinit ousintp nosexport \
 	  bascomp rstinf nosresidence ousaver ousvdiff \
 	  lgrelab lgrinf qflux_test bedload scal_intp \
-	  $(NOSEXTR) $(OUSEXTR) map_influence
+	  $(NOSEXTR) $(OUSEXTR) map_influence \
+	  splitext_big windcrea
 
 MAKEDEPEND = $(FEMBIN)/mkdp.pl
 
@@ -264,6 +271,9 @@ readext:  readext.o subext.o $(OUTOBJS)
 splitext:  splitext.o subext.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o subext.o $(OUTOBJS) -o $@
 
+splitext_big:  splitext_big.o subext.o $(OUTOBJS)
+	$(LINKER) $(LFLAGS) $@.o subext.o $(OUTOBJS) -o $@
+
 splitflx:  splitflx.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
 
@@ -284,6 +294,9 @@ zinit:  zinit.o $(OUTOBJS)
 
 wincrea:   wincrea.o
 	$(LINKER) $(LFLAGS) $@.o -o $@
+
+windcrea:  windcrea.o $(OUTOBJS) subgeo.o
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) subgeo.o -o $@
 
 wininf:   wininf.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@

@@ -59,6 +59,7 @@ c 22.02.2010    ggu     new call to hydro_stability to compute time step
 c 26.02.2010    ggu     in set_timestep compute and write ri with old dt
 c 22.03.2010    ggu     some comments for better readability
 c 29.04.2010    ggu     new routine set_output_frequency() ... not finished
+c 04.05.2010    ggu     shell to compute energy
 c
 c************************************************************
 c
@@ -940,6 +941,34 @@ c sets-up array for output frequency
 	ia_out(1) = idtout
 	ia_out(2) = itout
 	ia_out(3) = itmout
+
+	end
+
+c********************************************************************
+
+        subroutine total_energy
+
+c writes info on total energy to info file
+
+	implicit none
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	real kenergy,penergy,tenergy
+
+	integer iuinfo
+	save iuinfo
+	data iuinfo / 0 /
+
+	if( iuinfo .eq. 0 ) then
+          call getinfo(iuinfo)  !unit number of info file
+	end if
+
+	call energ3d(kenergy,penergy)
+	tenergy = kenergy + penergy
+
+	write(iuinfo,*) 'energy: ',it,kenergy,penergy,tenergy
 
 	end
 

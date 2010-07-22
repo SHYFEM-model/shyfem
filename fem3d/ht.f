@@ -538,6 +538,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	   call pritime			!output to terminal
 
+	   call total_energy
 	   call check_all
 	   !call check_special
 

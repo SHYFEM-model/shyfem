@@ -34,8 +34,12 @@ if( $move ) {
 } else {
     my @new = <>;
     my @cols = read_cols(\@new);
-    my $aver = aver($cols[1]);
-    print "$aver\n";
+    my $n = @cols;
+    for(my $i=1;$i<$n;$i++) {
+      my $aver = aver($cols[$i]);
+      print "$aver ";
+    }
+    print "\n";
 }
 
 ###############################################################

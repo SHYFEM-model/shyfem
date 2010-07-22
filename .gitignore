@@ -24,6 +24,7 @@ fem3d/nosextr_nodes
 fem3d/nosextr_records
 fem3d/nosinf
 fem3d/nosinit
+fem3d/nosdiff
 fem3d/nosresidence
 fem3d/nossplit
 fem3d/ousextr_records
@@ -31,12 +32,15 @@ fem3d/ousinf
 fem3d/rstinf
 fem3d/scal_intp
 fem3d/splitext
+fem3d/splitext_big
 fem3d/splitflx
 fem3d/tmp0.tmp
 fem3d/tmp2.tmp
 fem3d/volinf
 fem3d/vp
 fem3d/wininf
+fem3d/windcrea
+
 femadj/adjele
 fembin/extDiff
 fembin/extMerge
