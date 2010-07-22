@@ -147,6 +147,7 @@ c 26.03.2010	ggu	version 6.1.2
 c 22.04.2010	ggu	version 6.1.5
 c 26.04.2010	ggu	version 6.1.7
 c 03.05.2010	ggu	version 6.1.8
+c 22.07.2010	ggu	version 6.1.9
 c
 c*****************************************************************
 
@@ -154,13 +155,13 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{6.1.8}
+c \newcommand{\VERSION}{6.1.9}
 c
 c DOCS	END
 
 	implicit none
 
-        call addfnm('versio','6.1.8')      !version of model 
+        call addfnm('versio','6.1.9')      !version of model 
 
 	end
 

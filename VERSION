@@ -1,3 +1,30 @@
+version  6.1.9    22-07-2010    VERS_6_1_9
+
+minor bug fixes
+nosdiff
+bug fix in gridut.c for 64 bit
+
+========================================================== 22-07-2010 - 6.1.9
+
+ * ./grid/gridut.c:
+ * 16-Jun-2010: new way to compute area of polygon (stable for 64 bit)  *
+c ./fem3d/subgeo.f:
+c 05.07.2010	ggu	new routine dist_point_to_line(), bug fix in inpoly1()
+c
+c ./fem3d/subnev.f:
+c 07.05.2010	ggu	initialization of ev routines
+c
+c ./fem3d/subnsh.f:
+c 04.05.2010    ggu     shell to compute energy
+c
+c ./fem3d/subuti.f:
+c 08.06.2010    ggu     new routine for computing 3D kin/pot energy
+c
+c ./fem3d/subver.f:
+c 22.07.2010	ggu	version 6.1.9
+
+==========================================================
+
 version  6_1_8    03-05-2010    VERS_6_1_8
 
 changes to nosresidence and nosaver
