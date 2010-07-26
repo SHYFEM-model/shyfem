@@ -1,0 +1,8 @@
+arc
+bin
+lib
+tmp
+
+femlib/*.a
+femgotm/*.mod
+

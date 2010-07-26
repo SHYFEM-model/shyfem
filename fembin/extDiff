@@ -1,0 +1,4 @@
+#!/bin/sh
+
+[ $# -eq 7 ] && ~/work/shyfem/fembin/extMerge "$2" "$5"
+
