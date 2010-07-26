@@ -9,6 +9,7 @@ arc
 test
 bin
 lib
+tmp
 
 fem3d/basbathy
 fem3d/basinf

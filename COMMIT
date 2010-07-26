@@ -1,5 +1,84 @@
 ============================================================
 
+Mon Jul 26 11:38:53 CEST 2010
+
+deleted old CVS and other files
+
+ .gitignore                    |    1 +
+ fem3d/CVS/Entries             |  257 ---
+ fem3d/CVS/Repository          |    1 -
+ fem3d/CVS/Root                |    1 -
+ fem3d/bin/CVS/Entries         |   21 -
+ fem3d/bin/CVS/Repository      |    1 -
+ fem3d/bin/CVS/Root            |    1 -
+ fem3d/save/simsys_coo.f.save  |  127 --
+ fem3d/save/simsys_lp.f.save   |  120 --
+ fem3d/save/subnls.f           | 1127 ----------
+ fem3d/save/subpar.f           |  583 -----
+ fem3d/tmp/newcon.f            | 2001 -----------------
+ femadj/CVS/Entries            |   24 -
+ femadj/CVS/Repository         |    1 -
+ femadj/CVS/Root               |    1 -
+ fembin/tmp/extractgrd.pl      |  172 --
+ fembin/tmp/extractgrd.pl.bak  |  172 --
+ fembin/tmp/extractgrd1.pl     |  172 --
+ fembin/tmp/extractgrd1.pl.bak |  172 --
+ fembin/tmp/grd2bnd.pl         |   25 -
+ fembin/tmp/grd2bnd.pl.bak     |   25 -
+ fembin/tmp/grd_bline.pl       |  157 --
+ fembin/tmp/grd_bline.pl.bak   |  157 --
+ fembin/tmp/grd_check.pl       |  280 ---
+ fembin/tmp/grd_check.pl.bak   |  280 ---
+ fembin/tmp/grd_inf.pl         |   27 -
+ fembin/tmp/grd_inf.pl.bak     |   27 -
+ fembin/tmp/grd_modify.pl      |  299 ---
+ fembin/tmp/grd_modify.pl.bak  |  299 ---
+ fembin/tmp/grd_smooth.pl      |   40 -
+ fembin/tmp/grd_smooth.pl.bak  |   40 -
+ fembin/tmp/grd_transl.pl      |   39 -
+ fembin/tmp/grd_transl.pl.bak  |   39 -
+ fembin/tmp/grid.pl            | 4739 -----------------------------------------
+ fembin/tmp/grid.pl.bak        | 4739 -----------------------------------------
+ fembin/tmp/makebline.pl       |   94 -
+ fembin/tmp/makebline.pl.bak   |   94 -
+ femplot/CVS/Entries           |   40 -
+ femplot/CVS/Repository        |    1 -
+ femplot/CVS/Root              |    1 -
+ femplot/taylor/CVS/Entries    |    6 -
+ femplot/taylor/CVS/Repository |    1 -
+ femplot/taylor/CVS/Root       |    1 -
+ femspline/test/INPUT          |    2 -
+ femspline/test/all.pl         |    1 -
+ femspline/test/base.grd       |  877 --------
+ femspline/test/base1.grd      |  877 --------
+ femspline/test/base2.grd      |  879 --------
+ femspline/test/e6.grd         |  877 --------
+ femspline/test/e7.grd         |  402 ----
+ femspline/test/grid.pl        |    1 -
+ femspline/test/out.grd        |   42 -
+ femspline/test/reduce.grd     |  691 ------
+ femspline/test/smooth.grd     |  839 --------
+ grid/CVS/Entries              |   94 -
+ grid/CVS/Repository           |    1 -
+ grid/CVS/Root                 |    1 -
+ grid/tmp/DIFF_3.01_3.02       |   92 -
+ grid/tmp/gg.txt               |   80 -
+ grid/tmp/menu.zip             |  Bin 7218 -> 0 bytes
+ mesh/CVS/Entries              |   84 -
+ mesh/CVS/Repository           |    1 -
+ mesh/CVS/Root                 |    1 -
+ mesh/bugs/CVS/Entries         |    4 -
+ mesh/bugs/CVS/Repository      |    1 -
+ mesh/bugs/CVS/Root            |    1 -
+ post/CVS/Entries              |   29 -
+ post/CVS/Repository           |    1 -
+ post/CVS/Root                 |    1 -
+ post/tmp/take_char.c          |   10 -
+ post/tmp/test_char.f          |    3 -
+ 71 files changed, 1 insertions(+), 22296 deletions(-)
+
+============================================================
+
 Thu Jul 22 12:04:05 CEST 2010
 
 New version 6.1.9

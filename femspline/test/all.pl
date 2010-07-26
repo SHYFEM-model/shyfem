@@ -1,1 +1,0 @@
-/home/georg/work/code/perltk/grid/all.pl
