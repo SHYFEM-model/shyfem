@@ -418,6 +418,10 @@ cccccccccccccccccccccccccccccccccccccccccccccccccc
 
 	!call check_bnd(ibc)
 
+	call check_parameter_values('before deleting section')
+	call delete_section('bound')
+	call check_parameter_values('after deleting section')
+
 	return
    76	continue
 	write(6,*) 'Dimension error for nrbdim'

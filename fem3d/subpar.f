@@ -585,5 +585,12 @@ c prints parameter values
 
 c**********************************************************
 
-	subroutine check_parameter_values
+	subroutine check_parameter_values(text)
+	character*(*) text
 	end
+        subroutine delete_section(sect)
+        character*(*) sect
+	end
+
+c**********************************************************
+

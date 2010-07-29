@@ -50,12 +50,12 @@ c set up constants and parameters
 c parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	call nlsinh
-	call check_parameter_values
+	call check_parameter_values('after nlsinh')
 
 c default names %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	call fnminh
-	call check_parameter_values
+	call check_parameter_values('after fnminh')
 
 c /mkonst/ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

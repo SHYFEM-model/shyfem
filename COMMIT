@@ -1,5 +1,19 @@
 ============================================================
 
+Thu Jul 29 14:38:58 CEST 2010
+
+new subpar1
+
+ fem3d/subbnd.f  |    4 +
+ fem3d/subcst.f  |    4 +-
+ fem3d/subnls.f  |    2 +-
+ fem3d/subnsh.f  |    1 +
+ fem3d/subpar.f  |    9 +++-
+ fem3d/subpar1.f |  167 +++++++++++++++++++++++++++++++++++++++++++++++++------
+ 6 files changed, 166 insertions(+), 21 deletions(-)
+
+============================================================
+
 Mon Jul 26 11:40:44 CEST 2010
 
 New version 6.1.10

@@ -115,6 +115,7 @@ c writes output to terminal or log file
 	write(6,*)
 
 	call pripar(6)
+	call check_parameter_values('prilog')
 
 	call prbnds		!prints boundary info
 

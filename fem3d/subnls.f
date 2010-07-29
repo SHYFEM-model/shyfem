@@ -462,7 +462,7 @@ c reads next parameter in section and inserts value
    93	continue
 	write(6,*) 'no parameter with this name:'
 	write(6,*) name
-	call check_parameter_values
+	call check_parameter_values('nrdpar')
 	stop 'error stop : nrdpar'
    94	continue
 	write(6,*) 'parameter is in wrong section:'

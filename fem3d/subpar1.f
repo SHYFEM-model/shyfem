@@ -38,6 +38,7 @@ c 11.09.2006    ggu     routine chapar removed
 c 16.04.2008    ggu     bugfix in pripar (character*79 -> *80)
 c 28.04.2008    ggu     all routines changed to double precision
 c 28.04.2008    ggu     three new routines: dgetpar, dputpar, daddpar
+c 28.07.2010    ggu     new routines (par and fnm together) -> subst. old ones
 c
 c**************************************************************
 c**************************************************************
@@ -45,15 +46,17 @@ c**************************************************************
 
 	subroutine init_par
 
+c initializes parameter structure
+
 	implicit none
 
 	include 'subpar.h'
 
-	nentry = 0
-	inarr = 0
-	incha = 0
-	infarr = 0
-	infcha = 0
+	nentry = 0		!total number of values
+	inarr = 0		!total number of arrays
+	incha = 0		!total number of char strings
+	infarr = 0		!filling of arrays
+	infcha = 0		!filling of chars
 
 	actsec = ' '
 	defsec = 'para'
@@ -85,6 +88,9 @@ c**************************************************************
 	function find_entry_par(name,sect)
 
 c finds entry for name (internal routine)
+c
+c returns index where name has been found (negative if none found)
+c if section is given, looks for it, else takes first good name
 
 	implicit none
 
@@ -123,6 +129,8 @@ c***********************************************************
 	function check_entry_par(name,sect,itype)
 
 c finds and checks entry for name (internal routine)
+c
+c checks if type is compatible
 
 	implicit none
 
@@ -269,13 +277,16 @@ c puts parameter dvalue in name
 	character*(*) name
 	double precision dvalue
 
-	integer i
+	integer i,ls
 	integer check_entry_par
+	integer ichanm
 
 	i = check_entry_par(name,' ',1)
-
-	write(15,*) 'putpar: ',name,'  ',i,dvalue
 	valpar(i) = dvalue
+
+	!ls = max(6,ichanm(name))
+	!ls = min(ls,len(name))
+	!write(15,*) 'putpar: ',name(1:ls),'  ',i,dvalue
 
 	end
 
@@ -367,7 +378,7 @@ c**************************************************************
 
 	subroutine copy_to_text(ientry,text)
 
-c copies character string "i" to text
+c copies character string "ientry" to text
 
 	implicit none
 
@@ -409,7 +420,7 @@ c**************************************************************
 
 	subroutine copy_from_text(ientry,text)
 
-c copies text to character string "i"
+c copies text to character string "ientry"
 
 	implicit none
 
@@ -429,7 +440,7 @@ c copies text to character string "i"
 	iend = ip_chapar(2,ip)
 
 	string = text
-	ls = ichanm(string)
+	ls = max(1,ichanm(string))
 	le = iend-ianf+1
 
 	if( iend .le. 0 .or. ls .gt. le ) then
@@ -453,6 +464,117 @@ c copies text to character string "i"
 	  chapar(ip) = text(j:j)
 	end do
 
+	end
+
+c**************************************************************
+
+	subroutine delete_section(sect)
+
+c deletes whole section -> works only if section is last
+
+	implicit none
+
+	include 'subpar.h'
+
+	character*(*) sect
+
+	integer i,istart,ity
+	integer ip,ianf,iend,imax
+	character*6 name
+
+c-----------------------------------------------
+c find first entry for section sect -> istart
+c-----------------------------------------------
+
+	istart = 0
+	do i=1,nentry
+	  if( sect .eq. secpar(i) .and. istart .eq. 0 ) istart = i
+	  if( sect .ne. secpar(i) .and. istart .gt. 0 ) goto 99
+	end do
+	if( istart .eq. 0 ) return		!nothing to delete
+
+c-----------------------------------------------
+c now delete parameters, arrays and strings
+c-----------------------------------------------
+
+	do i=nentry,istart,-1
+	  name = nampar(i)
+	  ity = itypar(i)
+	  ip = nint(valpar(i))
+	  if( ity .eq. 2 ) then			!numeric array
+	    if( ip .ne. inarr ) goto 98
+	    inarr = inarr - 1
+	    !ianf = ip_arrpar(1,ip)
+	    !iend = ip_arrpar(2,ip)
+	    !if( iend .ne. infarr ) goto 97
+	    !infarr = ianf - 1
+	  else if( ity .eq. 3 ) then		!string
+	    if( ip .ne. incha ) goto 96
+	    incha = incha - 1
+	    !ianf = ip_chapar(1,ip)
+	    !iend = ip_chapar(2,ip)
+	    !if( iend .ne. infcha ) goto 95
+	    !infcha = ianf - 1
+	  end if
+	  nampar(i) = 'delete'
+	  secpar(i) = 'delete'
+	  itypar(i) = -1
+	  valpar(i) = -999.
+	end do
+
+c-----------------------------------------------
+c check new filling of arrays and strings
+c-----------------------------------------------
+
+	imax = 0
+	do ip=1,inarr
+	  iend = ip_arrpar(2,ip)
+	  imax = max(imax,iend)
+	end do
+	!write(15,*) 'delete_section (array): ',infarr,imax
+	infarr = imax
+
+	imax = 0
+	do ip=1,incha
+	  iend = ip_chapar(2,ip)
+	  imax = max(imax,iend)
+	end do
+	!write(15,*) 'delete_section (string): ',infcha,imax
+	infcha = imax
+
+c-----------------------------------------------
+c adjourn total number of parameters
+c-----------------------------------------------
+
+	nentry = istart - 1
+
+	!write(15,*) 'delete_section: ',nentry,inarr,incha,infarr,infcha
+
+c-----------------------------------------------
+c end of routine
+c-----------------------------------------------
+
+	return
+   95	continue
+	write(6,*) 'deleting ',name
+	write(6,*) i,ip,incha,ianf,iend,infcha
+	stop 'error stop delete_section: string'
+   96	continue
+	write(6,*) 'deleting ',name
+	write(6,*) i,ip,incha
+	stop 'error stop delete_section: string'
+   97	continue
+	write(6,*) 'deleting ',name
+	write(6,*) i,ip,inarr,ianf,iend,infarr
+	stop 'error stop delete_section: numeric array'
+   98	continue
+	write(6,*) 'deleting ',name
+	write(6,*) i,ip,inarr
+	stop 'error stop delete_section: numeric array'
+   99	continue
+	write(6,*) 'section must be the last one inserted'
+	write(6,*) i,nentry,istart,sect,secpar(i)
+	stop 'error stop delete_section: not last section'
 	end
 
 c**************************************************************
@@ -679,6 +801,7 @@ c**********************************************************
         character*80 text
         character*6 name,sect
         integer i,j,nlen,itype
+	integer ip,ianf,iend
 	real value
 
         integer ichanm
@@ -695,7 +818,11 @@ c**********************************************************
 	    j = check_entry_par(name,' ',3)
 	    call copy_to_text(j,text)
             nlen=max(1,ichanm(text))
-            write(iunit,2345) i,name,sect,itype,value,nlen,text(1:nlen)
+	    ip = nint(value)
+	    ianf = ip_chapar(1,ip)
+	    iend = ip_chapar(2,ip)
+            write(iunit,2346) i,name,sect,itype
+     +				,ip,ianf,iend,nlen,text(1:nlen)
 	  else
             write(iunit,2345) i,name,sect,itype,value
           end if
@@ -703,14 +830,16 @@ c**********************************************************
 
         return
  2345   format(1x,i4,2(1x,a6,1x),i4,e12.4,i4,1x,a)
-
+ 2346   format(1x,i4,2(1x,a6,1x),i4,4i4,1x,a)
 	end
 
 c**********************************************************
 
-	subroutine check_parameter_values
+	subroutine check_parameter_values(text)
 
 	implicit none
+
+	character*(*) text
 
 	include 'subpar.h'
 
@@ -718,13 +847,17 @@ c**********************************************************
 
 	iunit = 15
 
-	write(iunit,*) 'info on parameters: ',nentry
+	return
 
 	write(iunit,*) '--------------------------------'
+	write(iunit,*) 'info on parameters: ',nentry,'  ',text
 	call chkparam(iunit)
 	write(iunit,*) '--------------------------------'
-        call pripar(iunit)
-        call prifnm(iunit)
+	!write(iunit,*) '...printing with pripar...'
+        !call pripar(iunit)
+	!write(iunit,*) '...printing with prifnm...'
+        !call prifnm(iunit)
+	!write(iunit,*) '...end of printing in check_parameter_values'
 
 	end
 
