@@ -494,7 +494,10 @@ c-----------------------------------------------------------------
 	  return
         else if(n.ne.ndim .and. n.ne.1) then	!wrong number of data
           read(iunit,iostat=ierr)       !dummy read
-	  write(6,*) 'rdwin: ',n,ndim
+	  write(6,*) '*** rdwin: ',n,ndim
+	  write(6,*) '*** not the value I was expecting'
+	  write(6,*) 'n = ',n
+	  write(6,*) 'expecting either 1 or ',ndim
           ierr=999
 	  return
 	end if

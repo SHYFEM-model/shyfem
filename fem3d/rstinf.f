@@ -1,6 +1,8 @@
 
 c info on restart file
 
+	program rstinf
+
 	implicit none
 
 	integer iunit,it,nvers,nrec,nkn,nel,nlv,ierr

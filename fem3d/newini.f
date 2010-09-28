@@ -49,6 +49,7 @@ c 21.01.2009    ggu	cleaned up, new read_scalar()
 c 27.01.2009    ggu	mzreg and hlvmax deleted (not used)
 c 24.03.2009    ggu	bug fix: in set_last_layer() do not adjust for 2D
 c 21.04.2009    ggu	new routine inic2fil()
+c 28.09.2010    ggu	bug fix in init_coriolis() for isphe=1
 c
 c**************************************************************
 
@@ -878,8 +879,22 @@ c sets coriolis parameter
 	real aux1,aux2,rad
 	real getpar
 
-	icor=nint(getpar('icor'))
-	isphe=nint(getpar('isphe'))
+c if coordinates are cartesian (isphe=0) then icor determines 
+c how Coriolis is used:
+c
+c 0:	no Coriolis (default)
+c 1:	beta-plane (linear varying Coriolis parameter)
+c 2:	f-plane (constant Coriolis parameter)
+c
+c please note that in case of icor=1 or 2 also the parameter dlat (the average 
+c latitude of the basin) has to be set
+c
+c with spherical coordinates (isphe=1) the default is to always use
+c Coriolis. If you really do not want to use Coriolis, then please set
+c icor = -1. The parameter dlat is not needed.
+
+	icor=nint(getpar('icor'))	!flag how to use Coriolis
+	isphe=nint(getpar('isphe'))	!flag if coordinates are spherical
 
 	rad = pi / 180.
 
@@ -894,14 +909,14 @@ c sets coriolis parameter
 	end do
 	yc=yc/nkn
 
+	aux1 = 0.
+	aux2 = 0.
+
 	if(icor.eq.1) then	!beta plane
 		aux1 = omega2 * sin(dcor*rad)
 		aux2 = omega2 * cos(dcor*rad) / rearth
 	else if(icor.eq.2) then	!f plane
 		aux1 = omega2 * sin(dcor*rad)
-		aux2 = 0.
-	else			!no coriolis
-		aux1 = 0.
 		aux2 = 0.
 	end if
 
@@ -910,14 +925,21 @@ c sets coriolis parameter
 	write(6,*) 'yc,ymin,ymax : ',yc,ymin,ymax
 
 	do ie=1,nel
-	  ym=0.
-	  do ii=1,3
-	    ym=ym+ygv(nen3v(ii,ie))
-	  end do
-	  ym=ym/3.
-	  fcorv(ie)=aux1+aux2*(ym-yc)
-	  !if( isphe .eq. 1 ) fcorv(ie) = omega2*cos(ym*rad)	!BUG
-	  if( isphe .eq. 1 ) fcorv(ie) = omega2*sin(ym*rad)
+	  if( isphe .eq. 0 ) then	!cartesian
+	    ym=0.
+	    do ii=1,3
+	      ym=ym+ygv(nen3v(ii,ie))
+	    end do
+	    ym=ym/3.
+	    fcorv(ie)=aux1+aux2*(ym-yc)
+	  else				!spherical
+	    if( icor .lt. 0 ) then	! -> do not use
+	      fcorv(ie) = 0.
+	    else
+	      !fcorv(ie) = omega2*cos(ym*rad)	!BUG
+	      fcorv(ie) = omega2*sin(ym*rad)
+	    end if
+	  end if
 	end do
 
 	end

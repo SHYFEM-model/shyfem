@@ -7,9 +7,12 @@
 
 arc
 test
-bin
-lib
 tmp
+
+./bin
+./lib
+
+a.out
 
 fem3d/basbathy
 fem3d/basinf
@@ -41,6 +44,8 @@ fem3d/volinf
 fem3d/vp
 fem3d/wininf
 fem3d/windcrea
+fem3d/winmerge
+fem3d/winshift
 
 femadj/adjele
 fembin/extDiff

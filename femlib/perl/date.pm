@@ -12,8 +12,9 @@
 ##############################################################
 #
 # 10.03.2010	ggu	bug in adjust_mod() -> account for negative values
+# 28.09.2010	ggu	new test routine test_femdate()
 #
-# version 2.0
+# version 2.1
 #
 ##############################################################
 
@@ -832,6 +833,22 @@ sub test_weekday
 	  my ($year,$month,$day) = $date->unpack_date($line);
 	  my $wd = $date->weekday($year,$month,$day);
 	  print "($line)  $year $month $day    $wd\n";
+	}
+}
+
+sub test_femdate
+{
+	my $date = new date;
+
+	while( 1 ) {
+	  print "Please enter date (YYYYMMDD): ";
+	  my $line = <>;
+	  chomp($line);
+	  last unless $line;
+	  my ($year,$month,$day) = $date->unpack_date($line);
+	  $date->init_year($year);
+	  my $it = $date->convert_to_it($year,$month,$day,0,0,0);
+	  print "($line)  $year $month $day    $it\n";
 	}
 }
 

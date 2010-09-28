@@ -1,5 +1,26 @@
 ============================================================
 
+Tue Sep 28 13:33:18 CEST 2010
+
+new value for icor and new winmerge/shift
+
+ .gitignore                |    9 ++-
+ fem3d/Makefile            |    8 ++-
+ fem3d/bin/check_header.pl |   96 ++++++++++++++++++++++++++
+ fem3d/newbcl0.f           |    4 +-
+ fem3d/newini.f            |   48 ++++++++++----
+ fem3d/rstinf.f            |    2 +
+ fem3d/subnsh.f            |    2 +-
+ fem3d/subsys.f            |    8 ++-
+ fem3d/subwin.f            |    5 +-
+ fem3d/wininf.f            |    2 +-
+ fem3d/winmerge.f          |  165 +++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/winshift.f          |  133 ++++++++++++++++++++++++++++++++++++
+ femlib/perl/date.pm       |   19 +++++-
+ 13 files changed, 478 insertions(+), 23 deletions(-)
+
+============================================================
+
 Thu Jul 29 14:38:58 CEST 2010
 
 new subpar1

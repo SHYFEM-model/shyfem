@@ -98,7 +98,7 @@ EXES	= ht hp vp \
 	  bascomp rstinf nosresidence ousaver ousvdiff \
 	  lgrelab lgrinf qflux_test bedload scal_intp \
 	  $(NOSEXTR) $(OUSEXTR) map_influence \
-	  splitext_big windcrea
+	  splitext_big windcrea winshift winmerge
 
 MAKEDEPEND = $(FEMBIN)/mkdp.pl
 
@@ -299,6 +299,12 @@ windcrea:  windcrea.o $(OUTOBJS) subgeo.o
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) subgeo.o -o $@
 
 wininf:   wininf.o $(OUTOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
+
+winshift:   winshift.o $(OUTOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
+
+winmerge:   winmerge.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
 
 mkgeom:   mkgeom.o

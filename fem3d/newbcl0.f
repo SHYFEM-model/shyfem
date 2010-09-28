@@ -84,8 +84,8 @@ c
 c
 	stop
  1000	format('       salinity    temperature       pressure',
-     +		'        density',
-     +		'    ref-density')
+     +         '        density',
+     +         '    ref-density')
  1010	format(5f15.6)
 	end
 c

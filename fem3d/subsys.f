@@ -88,6 +88,7 @@ c 13.10.2009	ggu	documentation is $sect, new hvmax, lvmax
 c 22.02.2010	ggu	new parameter itdrag
 c 23.02.2010	ggu	new parameter regdst
 c 26.03.2010	ggu	new parameters for arrows in section plot
+c 28.09.2010	ggu	new value for icor
 c
 c************************************************************************
 
@@ -362,9 +363,14 @@ c		compute the Coriolis parameter $f$. If not given
 c		the latitude in the basin file is used. If given
 c		the value of |dlat| in the input parameter file
 c		effectively substitues the value given in the
-c		basin file.
+c		basin file. This parameter is not used if spherical
+c		coordinates are used (|isphe|=1).
 c |isphe|	If 0 a cartesian coordinate system is used (default),
 c		if 1 the coordinates are in the spherical system (lat/lon).
+c		Please note that in case of spherical coordinates the
+c		Coriolis term is always included in the computation, even
+c		with |icor| = 0. If you really do not want to use the
+c		Coriolis term, then please set |icor| = -1.
 
 	call addpar('icor',0.)
 	call addpar('dlat',100.)
