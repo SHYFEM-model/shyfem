@@ -1,3 +1,30 @@
+version  6.1.11    28-09-2010    VERS_6_1_11
+
+new value for icor
+new files winshift, winmerge
+
+========================================================== 28-09-2010 - 6.1.11
+
+c ./fem3d/newini.f:
+c 28.09.2010    ggu	bug fix in init_coriolis() for isphe=1
+c
+c ./fem3d/subsys.f:
+c 28.09.2010	ggu	new value for icor
+c
+c ./fem3d/subver.f:
+c 28.09.2010	ggu	version 6.1.11
+c
+c ./fem3d/subpar1.f:
+c 28.07.2010    ggu     new routines (par and fnm together) -> subst. old ones
+c
+c ./fem3d/winshift.f:
+c 08.09.2010	ggu	new program winshift
+c
+c ./fem3d/winmerge.f:
+c 08.09.2010	ggu	new program winmerge
+
+==========================================================
+
 version  6.1.10    26-07-2010    VERS_6_1_10
 
 deleted old CVS files etc..
