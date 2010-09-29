@@ -89,6 +89,7 @@ c 22.02.2010	ggu	new parameter itdrag
 c 23.02.2010	ggu	new parameter regdst
 c 26.03.2010	ggu	new parameters for arrows in section plot
 c 28.09.2010	ggu	new value for icor
+c 29.09.2010	ggu	new param vmode,rxscal,ryscal
 c
 c************************************************************************
 
@@ -1537,11 +1538,16 @@ c |vtitle|		Title for end point of the line. (No default)
 	call addfnm('ltitle','')		!title for left point
 	call addfnm('rtitle','')		!title for right point
 
-c When plotting velocities the normal velocitiy accross the section is
-c used for the color plot. In order to visualize also the veloctiy
+c When plotting velocities you can decide if using for the color the normal 
+c velocitiy accross the section or the tangent velocity.
+c In any case, in order to visualize also the veloctiy
 c tangent to the section arrwos are used. The next parameters deal with
-c the scaling od these arrows.
+c the scaling of these arrows.
 
+c |vmode|	When plotting velocities as default the normal velocitiy 
+c		accross the section is used for the color plot (|vmode|=0).
+c		If you want to use the tangential velocity, please set
+c		|vmode|=1. (Default 0)
 c |avscal|	This parameter defines the horizontal scale for the 
 c		velocity vector. It defines the length scale 
 c		in units of x-coordinates of the vertical section so
@@ -1558,10 +1564,20 @@ c |svtip|	The (relative) tip size of the arrow. It specifies how
 c		big the arrow will be drawn. A value of 0 only draws the
 c		arrow line without tip, and a negative value inhibits
 c		drawing arrows at all. (Default 0.3)
+c |rxscal,ryscal|	In case arrows are plotted, also a reference
+c			vector is plotted. The size of this reference
+c			vector s computed automatically, but can be 
+c			controlled addidionally by the parameters
+c			|rxscal,ryscal|, which are in relative units
+c			with respect to the reference box plotted.
+c			(Default 0.6)
 
+	call addpar('vmode',0.)
 	call addpar('avscal',0.)
 	call addpar('rvscal',1.)
 	call addpar('svtip',0.3)
+	call addpar('rxscal',0.6)
+	call addpar('ryscal',0.6)
 
 cc still to do: plot vector legend
 

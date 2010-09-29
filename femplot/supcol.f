@@ -226,6 +226,25 @@ c returns info on color table
  
 c************************************************************
 
+	subroutine colminmax(vmin,vmax)
+
+c returns minimum and maximum value in color table
+
+	implicit none
+
+	real vmin,vmax
+
+	include 'color.h'
+
+	call colini
+
+	vmin = fiso(1)
+	vmax = fiso(isoanz)
+
+	end
+
+c************************************************************
+
 	subroutine colentry(icol,viso,color)
 
 c returns entry of color table

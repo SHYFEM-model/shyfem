@@ -1,5 +1,26 @@
 ============================================================
 
+Wed Sep 29 18:07:04 CEST 2010
+
+reference arrow for section plot
+
+ .gitignore       |    5 +-
+ Rules.make       |    8 +-
+ fem3d/param.h    |    6 +-
+ fem3d/subsys.f   |   24 +++++-
+ femadj/param.h   |    6 +-
+ femplot/param.h  |    6 +-
+ femplot/supcol.f |   19 +++++
+ femplot/suplin.f |  218 ++++++++++++++++++++++++++++++++++++++++++++++++++----
+ femplot/suputi.f |   49 ++++++++++++
+ param.h          |    6 +-
+ post/psgraph.c   |   28 +++++--
+ post/psgraph.h   |    1 +
+ post/psgraphf.c  |    9 ++-
+ 13 files changed, 341 insertions(+), 44 deletions(-)
+
+============================================================
+
 Tue Sep 28 13:36:52 CEST 2010
 
 New version 6.1.11

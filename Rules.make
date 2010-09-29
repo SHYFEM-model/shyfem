@@ -29,11 +29,11 @@ LIBX = -L/usr/X11R6/lib -L/usr/X11/lib -L/usr/lib/X11  -lX11
 
 export NKNDIM = 11000
 export NELDIM = 22000
-export NLVDIM = 20
+export NLVDIM = 33
 
-export NKNDIM = 81000
-export NELDIM = 145000
-export NLVDIM = 1
+#export NKNDIM = 81000
+#export NELDIM = 145000
+#export NLVDIM = 1
 
 export NGRDIM = 15
 export MBWDIM = 300

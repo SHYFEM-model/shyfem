@@ -49,6 +49,7 @@ void PsAreaFill( int ndim , float *x , float *y );
 void PsRectFill( float x1 , float y1 , float x2 , float y2 );
 
 void PsArc( float x0, float y0, float r, float ang1, float ang2 );
+void PsArcFill( float x0, float y0, float r, float ang1, float ang2 );
 
 void PsTextPointSize( int size );
 void PsTextRealSize( float size );

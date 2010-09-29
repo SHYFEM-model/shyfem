@@ -31,6 +31,7 @@
  *			E-Mail : georg.umgiesser@ismar.cnr.it		*
  *									*
  * Revision History:							*
+ * 29-Sep-2010: new routine PsArcFill()					*
  * 23-Feb-2010: change color table in PS file, default color table	*
  * 22-Feb-2010: new flag NoClip and routine PsSetNoClip()		*
  * 14-Sep-2009: new routine PsCmLength() to get length in cm		*
@@ -66,7 +67,7 @@
 \************************************************************************/
 
 /**********************************************/
-static char  VERSION [7] ="1.77";
+static char  VERSION [7] ="1.78";
 /**********************************************/
 
 #include <stdio.h>
@@ -1027,18 +1028,31 @@ void PsArc( float x0, float y0, float r, float ang1, float ang2 )
         vx=PsxWtoV(x0);
         vy=PsyWtoV(y0);
         vr=SxWtoV*r;            /* problem if scale x != y */
-        vr=SxVtoW*r;            /* problem if scale x != y */
+
+        if( ISWHITE ) return;
+        PsStroke(FLUSH);
+        SETCOLOR;
+
+        fprintf(FP,"N %1.3f %1.3f %1.3f %1.3f %1.3f",vx,vy,vr,ang1,ang2);
+        fprintf(FP," arc S\n");
+        NPlot++;
+}
+
+void PsArcFill( float x0, float y0, float r, float ang1, float ang2 )
+
+{
+        float vx,vy,vr;
+
+        vx=PsxWtoV(x0);
+        vy=PsyWtoV(y0);
         vr=SxWtoV*r;            /* problem if scale x != y */
 
         if( ISWHITE ) return;
         PsStroke(FLUSH);
         SETCOLOR;
 
-        /*
-        fprintf(FP,"%% %1.3f %1.3f %1.3f %1.3f %1.3f arc\n",vx,vy,r,ang1,ang2);
-        fprintf(FP,"%% %1.3f %1.3f \n",SxWtoV,SxVtoW);
-        */
-        fprintf(FP,"N %1.3f %1.3f %1.3f %1.3f %1.3f arc S\n",vx,vy,vr,ang1,ang2);
+        fprintf(FP,"N %1.3f %1.3f %1.3f %1.3f %1.3f",vx,vy,vr,ang1,ang2);
+        fprintf(FP," arc CP F\n");
         NPlot++;
 }
 

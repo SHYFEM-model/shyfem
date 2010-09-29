@@ -9,8 +9,9 @@ arc
 test
 tmp
 
-./bin
-./lib
+lib
+bin
+!fem3d/bin
 
 a.out
 

@@ -52,6 +52,55 @@ c mode != 0 -> plot outline
 
 c**************************************************
 
+	subroutine pcircle(x,y,r)
+
+c plots circle around (x,y) with radius r
+
+	implicit none
+
+	real x,y,r
+
+	call qarc(x,y,r,0.,360.)
+
+	end
+
+c**************************************************
+
+	subroutine pcirclefill(x,y,r)
+
+c fill circle around (x,y) with radius r with actual color
+
+	implicit none
+
+	real x,y,r
+
+	call qarcf(x,y,r,0.,360.)
+
+	end
+
+c**************************************************
+
+	subroutine pcross(x,y,r)
+
+c plots cross at (x,y) with size r
+
+	implicit none
+
+	real x,y,r
+
+	real dxy
+
+	dxy = r / sqrt(2.)
+
+	call qline(x-dxy,y-dxy,x+dxy,y+dxy)
+	call qline(x+dxy,y-dxy,x-dxy,y+dxy)
+
+	end 
+
+c**************************************************
+c**************************************************
+c**************************************************
+
         subroutine pfeil(x,y,u,v,s)
 
 c draws arrow

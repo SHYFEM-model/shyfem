@@ -75,7 +75,8 @@
  *	qafill(n,x,y)		fills x,y (n points) with actual color
  *	qrfill(x1,y1,x2,y2)	fills rectangle with actual color
  *
- *	qarc(x0,y0,r,ang1,ang2) draws arc with radius r around x0,y0
+ *	qarc(x0,y0,r,ang1,ang2)		draws arc with radius r around x0,y0
+ *	qarcf(x0,y0,r,ang1,ang2)	fills arc with radius r around x0,y0
  *
  *	qtxts(ip)		sets text size in points
  *	qtxtr(angle)		rotate text strings with angle
@@ -275,6 +276,12 @@ void qarc_( float *x0 , float *y0 , float *r , float *ang1, float *ang2 )
 
 {
 	        PsArc( *x0 , *y0 , *r , *ang1, *ang2 );
+}
+
+void qarcf_( float *x0 , float *y0 , float *r , float *ang1, float *ang2 )
+
+{
+	        PsArcFill( *x0 , *y0 , *r , *ang1, *ang2 );
 }
 
 /*****************************************************************/

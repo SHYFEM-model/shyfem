@@ -11,6 +11,7 @@ c 14.10.2009    ggu     vertical plot finished (scalar and velocities)
 c 26.03.2010    ggu     vertical plot for velocity finished 
 c 13.04.2010    ggu     adapted also to spherical coordinates
 c 15.04.2010    ggu     fix bug where lower layer is plotted with value 0
+c 29.09.2010    ggu     finished velocity plot with reference arrow
 c
 c************************************************************************
 
@@ -53,19 +54,21 @@ c elems(1) is not used, etc..
 
 	character*80 file
 	character*80 string,line
-	logical bhoriz
+	logical bhoriz,barrow,btwo
 	integer it,i,k1,k2,ie,l,lbot,ltop,j
 	integer ltot
 	integer nr,nc,mode,ir
 	real xmin,ymin,xmax,ymax
 	real xrmin,yrmin,xrmax,yrmax
+	real xrrmin,yrrmin,xrrmax,yrrmax
 	real d,dd,dx,dy,htop,htot,hbot
 	real x0,y0,x1,x2,y1,y2
+	real u,v
 	real vmin,vmax
 	real vhmin,vhmax
 	real rrl,rrd,x,y,xtick,ytick,ylast,rdist,rmax,xs
 	real xcm,ycm
-	real fact
+	real fact,r
 	integer ndec,nctick
 	integer isphe
 
@@ -88,6 +91,12 @@ c elems(1) is not used, etc..
 	save vtitle,xtitle,ytitle,ltitle,rtitle
 	real ascale,rscale,stip
 	save ascale,rscale,stip
+	integer vmode
+	save vmode
+	real faccol
+	save faccol
+	real rxscal,ryscal
+	save rxscal,ryscal
 
 	logical inboxdim_noabs
 	integer gettime
@@ -129,7 +138,18 @@ c----------------------------------------------------------------
 	  ascale = getpar('avscal')	!absolute scale
 	  rscale = getpar('rvscal')	!relative scale
 	  stip = getpar('svtip')	!arrow tip size
+	  vmode = getpar('vmode')	!0=normal vel  1=tang vel as overlay
+
+	  rxscal = getpar('rxscal')	!x scale for reference vector
+	  ryscal = getpar('ryscal')	!y scale for reference vector
+
+	  faccol = getpar('faccol')	!factor for velocity (for legend)
 	end if
+
+	btwo = .false.				!plot two arrows
+	btwo = .true.				!plot two arrows
+
+	barrow = bvel .and. stip .ge. 0.	!plot arrow
 
 	icall = icall + 1
 
@@ -146,7 +166,7 @@ c----------------------------------------------------------------
 	write(6,*) 'plotting section: ',it,n,rl,rd
 
 	if( bvel ) then
-	  call proj_velox(n,nodes,lnodes,ilhkv,dxy,vel,val
+	  call proj_velox(vmode,n,nodes,lnodes,ilhkv,dxy,vel,val
      +					,vmin,vmax,vhmin,vhmax)
 	else
 	  call line_insert_scalars(n,nodes,lnodes,ilhkv,nlvdim
@@ -273,7 +293,7 @@ c--------------------------------------------------------------------
 	    else if( ivert .eq. 2 ) then
 	      hbot = hlog(hbot,rd)
 	    end if
-	    if( bvel .and. stip .ge. 0. ) then
+	    if( barrow ) then
 	      hmid = 0.5*(htop+hbot)
 	      xmid = 0.5*(x1+x2)
 	      umid = 0.5*(vel(2,ltop+1,i-1)+vel(2,ltop+1,i))
@@ -288,6 +308,68 @@ c--------------------------------------------------------------------
 	    htop = hbot
 	  end do
 	end do
+
+c--------------------------------------------------------------------
+c plot reference vector
+c--------------------------------------------------------------------
+
+	if( barrow ) then
+	
+	xrrmin = xrmax 
+	xrrmax = xrmax + 2.5*(xrmax-xrmin)/(xmax-xmin)
+	yrrmax = yrmin
+	yrrmin = yrmin + 2.18*(yrmax-yrmin)/(ymax-ymin)
+
+	xrrmin = xrrmin + 0.1*(xrrmax-xrrmin)
+	xrrmax = xrrmax - 0.1*(xrrmax-xrrmin)
+	yrrmin = yrrmin + 0.1*(yrrmax-yrrmin)
+	!yrrmax = yrrmax - 0.1*(yrrmax-yrrmin)
+
+        call qgray(0.0)
+	!call pbox(xrrmin,yrrmin,xrrmax,yrrmax)		!debug
+
+	dx = rxscal*(xrrmax-xrrmin)
+	dy = ryscal*(yrrmax-yrrmin)
+	u = dx/scale
+	v = dy/scale
+	u = roundm(u,-1)
+	v = roundm(v,-1)
+	dx = u*scale
+	dy = v*scale
+
+	x = xrrmin + (xrrmax-xrrmin-dx)/2.
+	y = yrrmax - (yrrmax-yrrmin-dy)/2.
+
+	if( btwo ) then
+	 call plot_arrow(x,y,u,0.,scale,stip)
+	 call plot_arrow(x,y,0.,-v,scale,stip)
+	else
+	  call plot_arrow(x,y,u,-v,scale,stip)
+	end if
+
+	mode = -1	!left flushing
+        call qfont('Times-Roman')
+	call qtxts(10)
+
+	call find_nc(u,nc)
+	ir = ialfa(u,string,nc,mode)
+	write(6,*) 'label x: ',u,nc,ir,string
+        call qtxtcr(-1.,0.)
+        if( btwo ) call qtxtcr(0.,2.5)
+        call qtext(x+dx,y,string(1:ir))
+
+	call find_nc(-v,nc)
+	ir = ialfa(-v,string,nc,mode)
+	write(6,*) 'label x: ',-v,nc,ir,string
+        call qtxtcr(0.,-1.)
+        if( btwo ) call qtxtcr(0.,-1.5)
+        call qtext(x,y-dy,string(1:ir))
+
+	call get_vel_unit(faccol,string)
+        call qtxtcr(0.,2.5)
+        call qtext(x,y,string(1:ir))
+
+	end if
 
 c--------------------------------------------------------------------
 c labeling
@@ -386,6 +468,10 @@ c--------------------------------------------------------------------
 	  ymin = ymin + dy
 	  xmax = xmax + 2.5 - dx
 	  ymax = ymax - dy
+	  if( barrow ) then	!make space for reference arrow)
+	    ymin = ymin + 0.99
+	    ymax = ymax + 0.99
+	  end if
 	end if
 
 	xrmin = 0.
@@ -397,7 +483,7 @@ c--------------------------------------------------------------------
 	call qworld(xrmin,yrmin,xrmax,yrmax)
 
 	call qcomm('Color Bar')
-	call pbox(x0,y0,x1,y1)
+	!call pbox(xrmin,yrmin,xrmax,yrmax)	!for debug
 
         fact = getpar('faccol')
         ndec = nint(getpar('ndccol'))
@@ -406,6 +492,46 @@ c--------------------------------------------------------------------
 
 	call qgray(0.0)
 	call colbar(line,bhoriz,nctick,ndec,fact,xrmin,yrmin,xrmax,yrmax)
+
+c--------------------------------------------------------------------
+c plot in/out indicator
+c--------------------------------------------------------------------
+
+	if( bvel .and. vmode .eq. 0 ) then
+	  call qcomm('in/out indicator')
+	  if( bhoriz ) then
+	    dy = (ymax-ymin)/(xmax-xmin)
+	    call qworld(xrmin,-dy/2.,xrmax,dy/2.)
+	    x1 = 0.05
+	    y1 = 0.
+	    x2 = 0.95
+	    y2 = 0.
+	  else
+	    dx = (xmax-xmin)/(ymax-ymin)
+	    call qworld(-dx/2.,yrmin,dx/2.,yrmax)
+	    x1 = 0.
+	    y1 = 0.05
+	    x2 = 0.
+	    y2 = 0.95
+	  end if
+	  r = 0.03
+	  call qgray(0.0)
+	  call colminmax(vmin,vmax)
+	  if( vmin .lt. 0. ) then
+	    call pcircle(x1,y1,r)
+	    call pcirclefill(x1,y1,r/10.)
+	  else if( vmin .gt. 0. ) then
+	    call pcircle(x1,y1,r)
+	    call pcross(x1,y1,r)
+	  end if
+	  if( vmax .lt. 0. ) then
+	    call pcircle(x2,y2,r)
+	    call pcirclefill(x2,y2,r/10.)
+	  else if( vmax .gt. 0. ) then
+	    call pcircle(x2,y2,r)
+	    call pcross(x2,y2,r)
+	  end if
+	end if
 
 c--------------------------------------------------------------------
 c end of routine
@@ -561,22 +687,28 @@ c computes projection line for nodes
 
 c************************************************************************
 
-	subroutine proj_velox(n,nodes,lnodes,ilhkv,dxy,vel,val
+	subroutine proj_velox(mode,n,nodes,lnodes,ilhkv,dxy,vel,val
      +				,vmin,vmax,vhmin,vhmax)
 
+c computes vel (vector) and val (scalar) for section
+c in vel is normal/tangential/vertical velocity
+c in val is scalar velocity used for overlay
+c modes: 0=use normal vel   1=use tangent vel   as scalar velocity
+ 
 	implicit none
 
 	include 'param.h'
 
-	integer n
-	integer nodes(n)
-	integer lnodes(n)
+	integer mode			!what to use as scalar vel
+	integer n			!total number of nodes
+	integer nodes(n)		!node numbers
+	integer lnodes(n)		!total nuber of layers
 	integer ilhkv(1)		!number of layers in node
 	real dxy(2,n)			!direction of line (for projection)
-	real vel(3,0:2*nlvdim,n)	!projected velocities along line
-	real val(0:2*nlvdim,n)
-	real vmin,vmax
-	real vhmin,vhmax
+	real vel(3,0:2*nlvdim,n)	!projected velocities along line (ret)
+	real val(0:2*nlvdim,n)		!scalar velocity for overlay (ret)
+	real vmin,vmax			!min/max of scalar vel (ret)
+	real vhmin,vhmax		!min/max of tangent vel (ret)
 
         real uprv(nlvdim,nkndim)
         common /uprv/uprv
@@ -596,7 +728,11 @@ c************************************************************************
 	    ut =  dxy(1,i)*uprv(l,k) + dxy(2,i)*vprv(l,k)	!tangent
 	    un = -dxy(2,i)*uprv(l,k) + dxy(1,i)*vprv(l,k)	!normal
 	    w  =  wprv(l,k)
-	    val(llayer,i) = un
+	    if( mode .eq. 0 ) then
+	      val(llayer,i) = un		!use normal vel for overlay
+	    else
+	      val(llayer,i) = sqrt(ut**2+w**2)	!use tang vel for overlay
+	    end if
 	    vel(1,llayer,i) = un
 	    vel(2,llayer,i) = ut
 	    vel(3,llayer,i) = w
@@ -930,6 +1066,60 @@ c sets hvmax and lvmax
           hvmax = rd
           lvmax = ll
         end if
+
+	end
+
+c************************************************************************
+
+	subroutine find_nc(x,nc)
+
+c finds first significant position of x after decimal point - returns in nc
+
+c 0.3 -> 2    0.03 -> 3       3 -> 0   30 -> 0
+
+	implicit none
+
+	real x
+	integer nc
+
+	real y
+
+	nc = -1
+	nc = +1
+	y = abs(x)
+	!write(6,*) 'find_nc: ',x,y,nc
+	if( y .ge. 1. .or. y .eq. 0. ) return
+	!write(6,*) 'find_nc: ',x,y,nc
+
+	nc = 0
+	do while( y .lt. 1. .or. nc .gt. 100 )
+	  y = y * 10.
+	  nc = nc + 1
+	end do
+
+	if( nc .gt. 100 ) stop 'error stop find_nc: too many iterations'
+
+	end
+
+c************************************************************************
+
+	subroutine get_vel_unit(fact,string)
+
+	implicit none
+
+	real fact
+	character*(*) string
+
+	if( fact .eq. 1. ) then
+	  string = 'm/s'
+	else if( fact .eq. 100. ) then
+	  string = 'cm/s'
+	else if( fact .eq. 1000. ) then
+	  string = 'mm/s'
+	else
+	  write(6,*) 'Cannot determine unit for fact = ',fact
+	  string = ' '
+	end if
 
 	end
 
