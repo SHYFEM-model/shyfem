@@ -1,3 +1,22 @@
+version  6_1_12    29-09-2010    VERS_6_1_12
+
+reference arrow for section plot
+
+========================================================== 29-09-2010 - 6_1_12
+
+ * ./post/psgraph.c:
+ * 29-Sep-2010: new routine PsArcFill()					*
+c ./fem3d/subsys.f:
+c 29.09.2010	ggu	new param vmode,rxscal,ryscal
+c
+c ./fem3d/subver.f:
+c 29.09.2010	ggu	version 6.1.12
+c
+c ./femplot/suplin.f:
+c 29.09.2010    ggu     finished velocity plot with reference arrow
+
+==========================================================
+
 version  6.1.11    28-09-2010    VERS_6_1_11
 
 new value for icor
