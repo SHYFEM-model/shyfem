@@ -100,7 +100,7 @@ c elems(1) is not used, etc..
 
 	logical inboxdim_noabs
 	integer gettime
-	integer ialfa
+	integer ialfa,ichanm
 	real getpar
 	real hlog,divdist,roundm
 
@@ -263,9 +263,13 @@ c plot vector
 c--------------------------------------------------------------------
 
 	vhmax = max(abs(vhmin),abs(vhmax))
-	scale = rl/(vhmax*(n-1))
+	scale = rl/(2.*vhmax*(n-1))
 	if( ascale .gt. 0. ) scale = ascale
-	scale = scale * rscale / 2.		!adjust scale
+	if( ascale .lt. 0. ) then		!scale in cm
+	  call qcm(xcm,ycm)
+	  scale = -ascale * xcm			!not yet documented
+	end if
+	scale = scale * rscale 			!adjust scale
 	write(6,*) 'arrow scale: ',vhmax,ascale,rscale,scale
 
 	do i=2,n
@@ -351,22 +355,30 @@ c--------------------------------------------------------------------
         call qfont('Times-Roman')
 	call qtxts(10)
 
+	u = u * faccol
 	call find_nc(u,nc)
 	ir = ialfa(u,string,nc,mode)
 	write(6,*) 'label x: ',u,nc,ir,string
         call qtxtcr(-1.,0.)
         if( btwo ) call qtxtcr(0.,2.5)
-        call qtext(x+dx,y,string(1:ir))
+        !call qtext(x+dx,y,string(1:ir))
+        call qtext(x+dx/2.,y,string(1:ir))	!center in x
 
+	v = v * faccol
 	call find_nc(-v,nc)
 	ir = ialfa(-v,string,nc,mode)
 	write(6,*) 'label x: ',-v,nc,ir,string
         call qtxtcr(0.,-1.)
         if( btwo ) call qtxtcr(0.,-1.5)
+        if( btwo ) call qtxtcr(0.,-1.5)
         call qtext(x,y-dy,string(1:ir))
 
+	x = xrrmin + (xrrmax-xrrmin)/2.
+	y = yrrmax - (yrrmax-yrrmin)/2.
 	call get_vel_unit(faccol,string)
+	ir = ichanm(string)
         call qtxtcr(0.,2.5)
+        call qtxtcr(0.,0.)
         call qtext(x,y,string(1:ir))
 
 	end if

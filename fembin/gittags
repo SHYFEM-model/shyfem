@@ -1,4 +1,8 @@
 #!/usr/bin/perl
+#
+# shows all tags and commits available
+#
+#--------------------------------------------------------------
 
 $basedir = "~/fem/";
 $tagdir   = ".git/refs/tags";

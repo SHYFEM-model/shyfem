@@ -1,9 +1,24 @@
 
+BUG_2010_13     ggu     6.1.12   08.10.2010
+	bug fix in init_coriolis() -> ym not set for isphe=1 (newini.f)
+
+BUG_2010_12     ggu     6.1.11   28.09.2010
+        bug fix in init_coriolis() for isphe=1, new value for icor
+
+BUG_2010_11     ggu     6.1.9   05.07.2010
+        bug fix in inpoly1() (subgeo.f)
+
+BUG_2010_10     ggu     6.1.9   16.06.2010
+	new way to compute area of polygon (stable for 64 bit)  (gridut.c)
+
 BUG_2010_09	ggu	6.1.5 	29.04.2010
 	even for ilin=1 advect stability is computed (newstab.f)
 
 BUG_2010_08	fra	5.37	23.04.2010
 	heat flux is areg -> make choosable
+
+BUG_2010_07a    ggu     6.1.5   14.04.2010
+	bug fix in frac_pos() -> maybe compiler error (supbas.f)
 
 BUG_2010_07	fra	5.36	12.04.2010
 	writes flux too often (syncronizing time step?)

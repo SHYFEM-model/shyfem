@@ -50,6 +50,7 @@ c 27.01.2009    ggu	mzreg and hlvmax deleted (not used)
 c 24.03.2009    ggu	bug fix: in set_last_layer() do not adjust for 2D
 c 21.04.2009    ggu	new routine inic2fil()
 c 28.09.2010    ggu	bug fix in init_coriolis() for isphe=1
+c 08.10.2010    ggu	bug fix in init_coriolis() -> ym not set for isphe=1
 c
 c**************************************************************
 
@@ -925,12 +926,12 @@ c icor = -1. The parameter dlat is not needed.
 	write(6,*) 'yc,ymin,ymax : ',yc,ymin,ymax
 
 	do ie=1,nel
+	  ym=0.
+	  do ii=1,3
+	    ym=ym+ygv(nen3v(ii,ie))
+	  end do
+	  ym=ym/3.
 	  if( isphe .eq. 0 ) then	!cartesian
-	    ym=0.
-	    do ii=1,3
-	      ym=ym+ygv(nen3v(ii,ie))
-	    end do
-	    ym=ym/3.
 	    fcorv(ie)=aux1+aux2*(ym-yc)
 	  else				!spherical
 	    if( icor .lt. 0 ) then	! -> do not use

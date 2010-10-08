@@ -12,7 +12,7 @@
 
 !****************************************************************
 
-	integer function istof(line,f,ioff)
+	function istof(line,f,ioff)
 
 ! converts string to number (reads exactly one number)
 !
@@ -26,6 +26,7 @@
 
 	implicit none
 
+	integer istof
 	character*(*) line
 	real f
 	integer ioff

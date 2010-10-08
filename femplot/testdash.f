@@ -7,7 +7,7 @@ c 13.04.1999	ggu	written from scratch
 c
 c*************************************************************
 
-	programm windrose
+	program windrose
 
 c plots simulation
 

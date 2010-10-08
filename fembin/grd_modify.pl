@@ -1,4 +1,11 @@
 #!/usr/bin/perl -w -s
+#
+# version = 2.0
+#
+# 07.10.2010	ggu	act on all items if no line is given
+# 07.10.2010	ggu	translate nodes
+#
+#----------------------------------------------------------------
 
 use lib "$ENV{HOME}/fem/femlib/perl";
 use grd;
@@ -29,6 +36,12 @@ $::print = 0 unless $::print;
 $::delete = 0 unless $::delete;
 $::type = $::flag unless defined($::type);
 $::depth = $::flag unless defined($::depth);
+$::trans = "" unless defined($::trans);
+
+if( $::trans ) {
+  ($::trans_x,$::trans_y) = split(",",$::trans);
+  print STDERR "Translating with $::trans_x $::trans_y\n";
+}
 
 $::inside = 1;		#if true delete inside
 $::outside = 0;		#if true delete outside
@@ -41,9 +54,13 @@ if( $::invert ) {
 if( $::h or $::help ) {
   FullUsage();
   exit 0;
-} elsif( not $ARGV[1] ) {
+} elsif( not $ARGV[0] ) {
   Usage();
   exit 1;
+} elsif( not $ARGV[1] ) {
+  #Usage();
+  #exit 1;
+  print STDERR "No line given -> applying selection to all items\n";
 }
 
 print STDERR "in: $::inside  out: $::outside  exclude: $::exclude\n";
@@ -55,11 +72,15 @@ print STDERR "n: $::n  e: $::e  l: $::l\n";
 
 my $grid = new grd;
 my $file = $ARGV[0];
+$grid->readgrd($file);				#FEM grid
+
 my $gline = new grd;
 my $gfile = $ARGV[1];
-
-$grid->readgrd($file);				#FEM grid
-$gline->readgrd($gfile);			#grid with lines
+if( $gfile ) {
+  $gline->readgrd($gfile);			#grid with lines
+} else {
+  make_dummy_line($grid,$gline);		# dummy line around all nodes
+}
 
 #-------------------------------------------------- main ----------------
 
@@ -87,12 +108,15 @@ sub FullUsage {
   print STDERR "                                    \n";
   print STDERR "  Selects and modifies items of grid contained in line\n";
   print STDERR "                                    \n";
+  print STDERR "  If no line is given acts on all items of grid\n";
+  print STDERR "                                    \n";
   print STDERR "  -h|-help     this help screen\n";
   print STDERR "                                    \n";
   print STDERR "  {-n|-e|-l}   modify nodes,elements,lines (default: all)\n";
   print STDERR "  -print       print selected items\n";
   print STDERR "  -type=type   set type of selected items to type\n";
   print STDERR "  -depth=depth set depth of selected items to depth\n";
+  print STDERR "  -trans=dx,dy translate selected nodes by dx/dy\n";
   print STDERR "  -delete      delete selected items\n";
   print STDERR "                                    \n";
   print STDERR "  -invert      invert selection - modify outer area\n";
@@ -101,7 +125,7 @@ sub FullUsage {
 }
 
 sub Usage {
-  print STDERR "Usage: grd_modify.pl [-h|-help] [-options] grid line\n";
+  print STDERR "Usage: grd_modify.pl [-h|-help] [-options] grid [line]\n";
 }
 
 #----------------------------------------------------------
@@ -198,6 +222,9 @@ sub modify_node {
     $grid->delete_node($node) unless $node->{used};
   } elsif( $::depth != $::flag ) {
     $node->{h} = $::depth;
+  } elsif( $::trans ) {
+    $node->{x} += $::trans_x;
+    $node->{y} += $::trans_y;
   }
 }
 
@@ -293,6 +320,29 @@ sub make_xy_array {
   }
 
   return (\@x,\@y);
+}
+
+#-----------------------------------------------------------------
+
+sub make_dummy_line {
+
+  my ($grid,$gline) = @_;
+
+  my ($xmin,$ymin,$xmax,$ymax) = $grid->get_xy_minmax();
+
+  print STDERR "xy_minmax: $xmin $ymin $xmax $ymax \n";
+
+  $xmin -= 0.1*($xmax-$xmin);
+  $xmax += 0.1*($xmax-$xmin);
+  $ymin -= 0.1*($ymax-$ymin);
+  $ymax += 0.1*($ymax-$ymin);
+
+  $gline->make_node(1,0,$xmin,$ymin);
+  $gline->make_node(2,0,$xmax,$ymin);
+  $gline->make_node(3,0,$xmax,$ymax);
+  $gline->make_node(4,0,$xmin,$ymax);
+
+  $gline->make_line(1,0,0,1,2,3,4,1);
 }
 
 #-----------------------------------------------------------------

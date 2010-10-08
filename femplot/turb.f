@@ -1,7 +1,7 @@
 
 c*************************************************************
 
-	programm plotturb
+	program plotturb
 
 c plots turbidity
 

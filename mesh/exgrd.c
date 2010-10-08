@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 08-Oct-2010: new routines for purging nodes after unifying		*
  * 17-Jan-98: algorithm changed for UnifyNodes()                        *
  * 05-May-97: CompressNumbers() added                                   *
  * 17-Aug-95: routines written from scratch				*
@@ -88,6 +89,9 @@ void SetUse( int ini );
 void UnifyNodes( void );
 void SubstNodeInElements( Hashtable_type HE , int old , int new );
 void SubstNodeInLines( Hashtable_type HL , int old , int new );
+void PurgeNodesInElements( Hashtable_type HE, Hashtable_type HN );
+void PurgeNodesInLines( Hashtable_type HL, Hashtable_type HN );
+int purge_number( int n, int *index );
 void CompressNumbers( void );
 void MakeAntiClockwise( void );
 
@@ -600,6 +604,9 @@ void UnifyNodes( void )
 
 	}
 
+	PurgeNodesInElements(HEL,HNN);
+	PurgeNodesInLines(HLI,HNN);
+
 	FreeStackTable(unify);
 }
 
@@ -634,6 +641,64 @@ void SubstNodeInLines( Hashtable_type HL , int old , int new )
 		}
 	}
 }
+
+void PurgeNodesInElements( Hashtable_type HE, Hashtable_type HN )
+
+{
+	Elem_type *pe;
+	int new;
+	
+	ResetHashTable(HE);
+	while( (pe=VisitHashTableE(HE)) != NULL ) {
+		if( (new=purge_number(pe->vertex,pe->index)) != 0 ) {
+			/* remalloc new index list */
+			pe->vertex = new;
+		}
+	}
+}
+
+void PurgeNodesInLines( Hashtable_type HL, Hashtable_type HN )
+
+{
+	Line_type *pl;
+	int new;
+	
+	ResetHashTable(HL);
+	while( (pl=VisitHashTableL(HL)) != NULL ) {
+		if( (new=purge_number(pl->vertex,pl->index)) != 0 ) {
+			/* remalloc new index list */
+			pl->vertex = new;
+		}
+	}
+}
+
+int purge_number( int n, int *index )
+
+{
+	int i,old;
+	int shift = 0;		/* flag if nodes are to be copied */
+
+	old = 0;
+	for(i=1;i<n;i++) {
+	    if( index[i] == index[old] ) {
+		shift = 1;
+	    } else {
+		old++;
+		if( shift ) {
+		    index[old] = index[i];   
+		}
+	    }
+	}
+
+	old++;
+
+	fprintf(stderr,"Purging %d %d %d\n",n,old,shift);
+
+	if( shift ) shift = old;
+
+	return shift;
+}
+
 void CompressNumbers( void )
 
 {

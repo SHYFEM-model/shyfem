@@ -1,5 +1,100 @@
 ============================================================
 
+        bug fix in init_coriolis() -> ym not set for isphe=1 (newini.f)
+        new routines for purging nodes after unifying (exgrd.c)
+        general cleaning of directories
+
+Fri Oct  8 15:06:53 CEST 2010
+
+Bug fix for Coriolis, general cleaning
+
+ .gitignore                |    1 +
+ BUG                       |   48 +
+ LOG                       |  368 ++++
+ fem3d/ACTUAL              |   20 -
+ fem3d/BUG                 |   33 -
+ fem3d/COMMIT              | 4417 -----------------------------------------
+ fem3d/LOG                 |  328 ---
+ fem3d/README              |  188 --
+ fem3d/TESTLOG             |   43 -
+ fem3d/TODO                |  111 -
+ fem3d/VERSION             | 4853 ---------------------------------------------
+ fem3d/WARNINGS            |  169 --
+ fem3d/bin/check_header.pl |   11 +
+ fem3d/debug.f             |    2 +-
+ fem3d/info/INTERNAL_MEMO  |  188 ++
+ fem3d/info/TODO           |  111 +
+ fem3d/info/WARNINGS       |  169 ++
+ fem3d/new3di.f            |    2 -
+ fem3d/newini.f            |   11 +-
+ fem3d/ousintp.f           |   56 +-
+ fem3d/sedi3d.f            |    2 +-
+ fem3d/sedtrans05.f        |    5 +-
+ fem3d/subqfxf.f           |    4 +-
+ fem3d/subqfxm1.f          |    2 +-
+ fem3d/subwaves.f          |    2 -
+ fem3d/weutro.f            |    4 +-
+ femadj/COMMIT             |  363 ----
+ femadj/DIFFS              |   16 -
+ femadj/TODO               |    8 -
+ femadj/VERSION            |  207 --
+ femadj/info/TODO          |    8 +
+ fembin/.fempub.sh.swp     |  Bin 12288 -> 0 bytes
+ fembin/g95                |    1 -
+ fembin/gitinfo            |    9 +-
+ fembin/gittags            |    4 +
+ fembin/gpsinsert          |   30 +-
+ fembin/gpsinsert.pl       |   35 +-
+ fembin/grd_modify.pl      |   60 +-
+ fembin/revision_last      |   35 +
+ femlib/perl/grd.pm        |   26 +-
+ femplot/COMMIT            | 1004 ----------
+ femplot/DIFFS             |   16 -
+ femplot/LOG               |   14 -
+ femplot/README            |   35 -
+ femplot/TODO              |   10 -
+ femplot/VERSION           |  741 -------
+ femplot/info/README       |   35 +
+ femplot/info/TODO         |   10 +
+ femplot/ousinfo.f         |    2 +-
+ femplot/plotsim.f         |    2 +-
+ femplot/sbscan.f          |    3 +-
+ femplot/suplin.f          |   20 +-
+ femplot/testdash.f        |    2 +-
+ femplot/turb.f            |    2 +-
+ femplot/windrose.f        |    2 +-
+ grid/BUGS                 |    3 -
+ grid/COMMIT               |  232 ---
+ grid/GRIDLOG              |  311 ---
+ grid/INFORMAT             |   57 -
+ grid/INTERNAL             |   63 -
+ grid/TODO                 |  157 --
+ grid/VERSION              |  136 --
+ grid/info/BUGS            |    3 +
+ grid/info/GRIDLOG         |  311 +++
+ grid/info/INFORMAT        |   57 +
+ grid/info/INTERNAL        |   63 +
+ grid/info/TODO            |  157 ++
+ mesh/COMMIT               |  262 ---
+ mesh/README               |   31 -
+ mesh/TODO                 |   57 -
+ mesh/VERSION              |  415 ----
+ mesh/exgrd.c              |   65 +
+ mesh/info/README          |   31 +
+ mesh/info/TODO            |   57 +
+ mesh/meshck.c             |    4 +-
+ post/CALCOMP              |   17 -
+ post/COMMIT               |  338 ----
+ post/EPS                  |   29 -
+ post/LOG                  |   24 -
+ post/VERSION              |  204 --
+ post/info/CALCOMP         |   17 +
+ post/info/EPS             |   29 +
+ post/info/LOG             |   24 +
+ 83 files changed, 2021 insertions(+), 14981 deletions(-)
+
+============================================================
+
 Wed Sep 29 18:09:11 CEST 2010
 
 New version 6_1_12

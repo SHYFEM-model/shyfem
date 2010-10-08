@@ -3,8 +3,6 @@ c $Id: subwaves.f,v 1.10 2008-10-10 09:29:54 georg Exp $
 c
 c waves subroutines
 c
-c description :
-c
 c This routine is used to calculate the wave height and period
 c from wind speed, fetch and depth using the EMPIRICAL PREDICTION
 c EQUATIONS FOR SHALLOW WATER (Shore Protection Manual, 1984).

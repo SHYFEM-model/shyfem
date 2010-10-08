@@ -8,7 +8,7 @@ c 03.09.2003    ggu     check routines customized
 c 05.12.2003    ggu     in check[12]Dr only check val if vmin!=vmax
 c 06.12.2008    ggu     check for NaN changed (Portland compiler)
 c
-c note :
+c notes :
 c
 c use of debug routines:
 c

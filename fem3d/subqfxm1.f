@@ -24,7 +24,7 @@ c 30.04.2001	ggu	new routine qtotal_tb
 c 09.12.2002	ggu	cleaned and re-arranged
 c 23.03.2006	ggu	changed time step to real
 c
-c comments :
+c notes :
 c
 c qs	net solar radiation (reflection already subtracted)
 c ta	air temperature

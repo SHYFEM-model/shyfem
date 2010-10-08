@@ -9,6 +9,7 @@ show <name>		shows commit or tag <name>
 diff <file>		shows diff for <file>
 diff --cached
 diff --stat		summary of all changes
+git diff --cached --stat	-> this output is written to COMMIT (gitcommit)
 diff HEAD
 
 add <files>		add <files> to next commit
@@ -34,15 +35,15 @@ gittag			tags actual commit writing to VERSION
 gittags			shows commits and corresponding tags
 gittar			makes tar file for given version
 
-todo:
+todo for a new version:
 
 git status
 git diff <file>
+revision_last		-> output should go into LOG and BUG
 git add -u
 
-git diff --cached --stat	-> write to COMMIT
-git commit
-git tag
+gitcommit
+gittag
 
 EOI
 

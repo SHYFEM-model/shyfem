@@ -22,7 +22,7 @@ c 23.02.2010	ggu	new call to set_default_color_table()
 c
 c*************************************************************
 
-	programm plotsim
+	program plotsim
 
 c plots simulation
 

@@ -21,6 +21,7 @@ sub treat_files {
   open(FILE,"<$file");
   my $text = get_header($file);
   my $rhash = get_keywords($text);
+  my $rlist = get_revision($text);
   print "no keywords in: $file\n" unless $rhash;
   insert_hash($rhash);
   close(FILE);
@@ -28,6 +29,15 @@ sub treat_files {
 
 #---------------------------------------------------------
 
+sub get_revision {
+
+  my $text = shift;
+
+  my $n = 0;
+  my %hash = ();
+
+  foreach my $line (@$text) {
+    if( $line =~ /^[!cC]\s+(.*)\s+:\s*$/ ) {
 sub get_keywords {
 
   my $text = shift;
@@ -61,6 +71,7 @@ sub get_header {
       my $name = lc($1);
       $::first{$name}++;
       #print STDERR "******* $file\n" if $name eq "include";
+      #print STDERR "******* $file\n" if $name eq "integer";
       last;
     }
 

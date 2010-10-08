@@ -24,7 +24,7 @@ c 24.08.2004    ggu     all changes incorporated (see check history 1-11)
 c 30.08.2004    ggu     cleanup of settopseg, setbotseg
 c 15.02.2006    ggu&mcg some comments inserted for denitrification (SK18D,SK14D)
 c
-c check history :
+c notes :
 c
 c 1
 c       debug routines
@@ -93,8 +93,6 @@ c       the results for weutro.f of Donata, August 2004
 c       (../7/weutro_test.f) can be reproduced by using
 c       lux.dat as light file with scaling 300/86400 and
 c       uncommenting the two lines in steele() marked $WRONG_FORMULA
-c
-c notes :
 c
 c State variables used: (Wasp)
 c

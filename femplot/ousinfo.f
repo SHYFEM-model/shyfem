@@ -1,7 +1,7 @@
 c
 c $Id: ousinfo.f,v 1.2 2009-04-07 09:33:35 georg Exp $
 c
-	programm ousinfo
+	program ousinfo
 
 c reads ous file
 c

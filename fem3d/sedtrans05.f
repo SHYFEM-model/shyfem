@@ -24,9 +24,10 @@ C This program is distributed in the hope that it will be useful,
 C but WITHOUT ANY WARRANTY; without even the implied warranty of
 C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 C GNU General Public License for more details.
-C **********************************************************************
+C**********************************************************************
 C
-C Revision Log:
+C revision log :
+C
 C 01-08-05      changes in FRICFAC, compute ripple if USTC<USTCRB
 C               no ripple prediction in case of cohesive sediment
 C 14-02-06      compute C0 with Van Rijn instead of Smith and McLean

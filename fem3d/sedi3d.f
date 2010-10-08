@@ -11,7 +11,7 @@
 !
 C 16/11/2004 Christian Ferrarin ISMAR-CNR
 C
-C Revision Log :
+C revision log :
 C
 C Mar, 2005     ccf     (sedi3d_f1.f) coming from sedi3d_e3_multi7.f
 C                       	new cohesive routine

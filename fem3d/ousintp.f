@@ -9,6 +9,7 @@ c 02.09.2003	ggu	adapted to new OUS format
 c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
 c 04.03.2005	ggu	computes 3D velocities
 c 24.11.2009	ggu	commented and cleaned
+c 30.09.2010	ggu	cleaned, new vars itmin/itmax to limit writing
 c
 c***************************************************************
 
@@ -67,6 +68,7 @@ c we would not even need to read basin
 	real xpn(ndim), ypn(ndim)
 	integer ielv(ndim)
 
+	logical btime
 	integer n,nx,ny
 
         integer nvers,nin,nlv
@@ -97,23 +99,30 @@ c adriatic sea
         !parameter (ymin=1000.0)           ! lower left point of matrix
         !parameter (xmax=7000.0)           ! lower left point of matrix
         !parameter (ymax=3000.0)           ! lower left point of matrix
-        parameter (xmin=14.03)           ! lower left point of matrix
-        parameter (ymin=35.65)           ! lower left point of matrix
-        parameter (xmax=14.73)           ! lower left point of matrix
-        parameter (ymax=36.23)           ! lower left point of matrix
-        parameter (dx=.01)         ! grid spacing (longitude)
-        parameter (dy=.01)         ! grid spacing (latitude)
-        !parameter (xmin=-2000.0)           ! lower left point of matrix
-        !parameter (ymin=-2000.0)           ! lower left point of matrix
-        !parameter (xmax=62000.0)           ! lower left point of matrix
-        !parameter (ymax=62000.0)           ! lower left point of matrix
-        !parameter (dx=1000.)         ! grid spacing (longitude)
-        !parameter (dy=1000.)         ! grid spacing (latitude)
+        !parameter (xmin=14.03)           ! lower left point of matrix
+        !parameter (ymin=35.65)           ! lower left point of matrix
+        !parameter (xmax=14.73)           ! lower left point of matrix
+        !parameter (ymax=36.23)           ! lower left point of matrix
+        !parameter (dx=.01)         ! grid spacing (longitude)
+        !parameter (dy=.01)         ! grid spacing (latitude)
+        parameter (xmin=12000.0)           ! lower left point of matrix
+        parameter (ymin=2000.0)           ! lower left point of matrix
+        parameter (xmax=54000.0)           ! lower left point of matrix
+        parameter (ymax=54000.0)           ! lower left point of matrix
+        parameter (dx=1000.)         ! grid spacing (longitude)
+        parameter (dy=1000.)         ! grid spacing (latitude)
 
         logical blatlon
         parameter ( blatlon = .false. )
-        logical bwritevel,bwritezeta
-        parameter ( bwritevel = .false. , bwritezeta = .true. )
+        logical bwritevel,bwritezeta,bwritegeom
+        parameter (bwritevel=.true.,bwritezeta=.true.,bwritegeom=.true.)
+	integer itmin,itmax
+	!parameter (itmin=0,itmax=0)
+	parameter (itmin=30672000,itmax=30931200)
+
+c (19941222)  1994 12 22    30672000
+c (19941225)  1994 12 25    30931200
+
         real flag
         parameter ( flag = -999.0 )
 
@@ -153,6 +162,14 @@ c---------------------------------------------------------------------
 
 	!call read_points('nome_file.dat',ndim,n,xpn,ypn)
 	!call get_elements(n,xpn,ypn,ielv)
+
+	if( bwritegeom ) then
+	  it = 0
+          call av2am(xgv,cm,nx,ny)
+          call writec('__x ',it,flag,nx,ny,cm)
+          call av2am(ygv,cm,nx,ny)
+          call writec('__y ',it,flag,nx,ny,cm)
+	end if
 
 c---------------------------------------------------------------------
 c prepare file name and read header of OUS file
@@ -200,12 +217,14 @@ c---------------------------------------------------------------------
 
 	nread=nread+1
 
+	btime = itmin.ge.itmax .or. ( it.ge.itmin .and. it.le.itmax )
+
 c	---------------------------------------------
 c handle water levels
 c	---------------------------------------------
 
-	if( bwritezeta ) then
-	  call mima(znv,nknous,zmin,zmax)
+	call mima(znv,nknous,zmin,zmax)
+	if( btime .and. bwritezeta ) then
           call av2am(znv,cm,nx,ny)
           call writec('__z ',it,flag,nx,ny,cm)
           call writefem('__z ',it,znv)
@@ -224,7 +243,7 @@ c	---------------------------------------------
 	  vvel(k) = vprv(1,k)
 	end do
 
-	if( bwritevel ) then
+	if( btime .and. bwritevel ) then
           call av2am(uvel,cm,nx,ny)
           call writec('__u ',it,flag,nx,ny,cm)
           call av2am(vvel,cm,nx,ny)
@@ -235,8 +254,7 @@ c	---------------------------------------------
 c write message to terminal
 c	---------------------------------------------
 
-	write(6,*) 
-	write(6,*) 'time : ',it,'  zmin/zmax : ',zmin,zmax
+	write(6,*) 'time : ',it,'  zmin/zmax : ',zmin,zmax, ' write : ',btime
 
 	goto 300
 

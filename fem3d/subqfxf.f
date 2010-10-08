@@ -28,15 +28,13 @@ c 12.11.2008	ggu	checks for unrealistic values in qfcheck
 c 10.03.2009	ggu	call to meteo_set_matrix() for 2D arrays
 c 27.08.2009	ggu	set itperiod and irhumid from outside
 c
-c comments :
+c notes :
 c
 c qs	net solar radiation (reflection already subtracted)
 c ta	air temperature
 c tb	wet bulb temperature
 c uw	wind speed
 c cc	cloud cover (0 clear sky, 1 totally covered)
-c
-c notes :
 c
 c to initialize call qfinit
 c at every time step call qfmake -> reads if necessary new record

@@ -18,8 +18,6 @@ c ASYM			passage to asymmetrix matrix
 c ASYM_OPSPLT		new version without operator splitting (can leave)
 c ASYM_OPSPLT_CH	new version -> change here
 c
-c common variables : 
-c
 c nkndim	dimension for total number of nodes
 c neldim	dimension for total number of elements
 c nrbdim	dimension for total number of boundary condition nodes

@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 07-Oct-2010: better error message in CheckInput()			*
  * 12-Nov-97: check for not unique coordinates in CheckInput()          *
  * 17-Oct-97: in CheckInput() check for couter-clockwise line turning   *
  * 08-Oct-97: uses new mesh type                                        *
@@ -146,7 +147,8 @@ int CheckInput( void )
 
 	        for(i=1;i<ndim;i++) {
 		  if( pl->index[i-1] == pl->index[i] ) {
-		    printf("Identical nodes in line %d\n",pl->number);
+		    printf("Identical node %d in line %d\n"
+				,pl->index[i],pl->number);
 		    bstop = YES;
 	          } else if( xe[i-1] == xe[i] && ye[i-1] == ye[i] ) {
 		    printf("Identical coordinates in line %d - ",pl->number);

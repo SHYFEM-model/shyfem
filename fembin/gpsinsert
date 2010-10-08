@@ -8,15 +8,40 @@ NoFile()
 {
   echo "No such file: $1"
   Usage
+  exit 1
 }
 
 Usage()
 {
-  echo "Usage: gpsinsert [-relative] \"x1 y1 x2 y2\" eps-insert-file ps-file(s)"
-  exit 1
+  echo "Usage: gpsinsert [-h|-help] [-options] where eps-file ps-file(s)"
+}
+
+FullUsage()
+{
+  echo ""
+  Usage
+  echo ""
+  echo "  options:"
+  echo "    -h|-help        this help screen"
+  echo "    -relative       use relative coordinates for insert [0-1]"
+  echo ""
+  echo "  where             \"x1 y1 x2 y2\" which defines box where to insert"
+  echo "  eps-file          file to be inserted (must be eps)"
+  echo "  ps-file(s)        file(s) where eps-file is inserted"
+  echo ""
+  echo "  if one of x2,y2 is 0 the aspect ratio of eps-file is retained"
+  echo ""
+  echo "  example:"
+  echo "    gpsinsert -relative \"0.8 0.8 0.9 0\" logo.eps plot.ps"
+  echo ""
 }
 
 #--------------------------------------------------------------
+
+if [ "$1" = "-h" -o "$1" = "-help" ]; then
+  FullUsage
+  exit 0
+fi
 
 relative=""
 if [ "$1" = "-relative" ]; then
@@ -26,6 +51,7 @@ fi
 
 if [ $# -lt 3 ]; then
   Usage
+  exit 1
 fi
 
 #--------------------------------------------------------------

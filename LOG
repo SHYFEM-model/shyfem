@@ -1,9 +1,40 @@
 
-still to be implemented...
+08.10.2010
+	bug fix in init_coriolis() -> ym not set for isphe=1 (newini.f)
+	new routines for purging nodes after unifying (exgrd.c)
+	general cleaning of directories
 
-22.03.2010  New version 5.37
+30.09.2010
+	new vars itmin/itmax to limit writing in ousintp.f
 
-22.03.2010  COMMIT
+29.09.2010
+	new routine PsArcFill()
+	finished velocity plot with reference arrow
+
+28.09.2010
+	bug fix in init_coriolis() for isphe=1, new value for icor
+
+05.07.2010
+	new routine dist_point_to_line(), bug fix in inpoly1() (subgeo.f)
+	shell to compute energy, new routine for computing 3D kin/pot energy
+	new way to compute area of polygon (stable for 64 bit)  (gridut.c)
+
+29.04.2010
+	write volumes (wrfvla)
+
+26-04-2010
+	new UTM projection
+
+14.04.2010
+	account for negative levmin/max
+	ad hoc routine for Yaron (momentum input, unfinished) (new3di.f)
+	spheric coordinates: new routines get_coords_ev(), check_spheric_ev()
+	bug fix in frac_pos() -> maybe compiler error (supbas.f)
+
+26.03.2010
+	vertical plot for velocity finished (also spherical coordinates)
+	new parameters for arrows in section plot
+	make it easier to change between color tables
 
 22.03.2010
 	bug fix for evaporation in newcon.f:
@@ -72,6 +103,15 @@ still to be implemented...
 
 11.11.2009
 	handle abosrption of short rad in more than one layer (subqfxt.f)
+
+14.10.2009
+        in plotsim.f new arrays for section plot
+        in supano.f changes to colbar, new inbox routines
+        in supdep.f new routine mkht3 to set depth structure
+        in supout.f set nlv once file is read
+        in supsim.f section plot for velocities in plosim
+        in suplin.f vertical plot finished (scalar and velocities)
+        new files basin.h line_nodes.f suplin1.f
 
 13.10.2009
 	new section $sect to plot vertical section has been introduced

@@ -4,13 +4,14 @@
 #
 ##############################################################
 #
-# version 1.5
+# version 1.6
 #
 # 19.08.2005		unify_nodes, if defined $depth
 # 24.08.2005		connect_lines, split_line, contains_node
 # 26.08.2005		make_xy, node_info, elem_info
 # 20.10.2005		version control introduced
 # 01.03.2010		preserve order of written items if needed
+# 07.10.2010		new routine get_xy_minmax()
 #
 ##############################################################
 
@@ -461,6 +462,29 @@ sub compress_node_list
       }
       $item->{vert} = \@new_nodes;
     }
+}
+
+sub get_xy_minmax
+{
+    my $self = shift;
+
+    my $nodes = $self->{nodes};
+
+    my $xmin = 1.e+30;
+    my $ymin = 1.e+30;
+    my $xmax = -1.e+30;
+    my $ymax = -1.e+30;
+
+    foreach my $item (values %$nodes) {
+      my $x = $item->{x};
+      my $y = $item->{y};
+      $xmin = $x if $x < $xmin;
+      $ymin = $y if $y < $ymin;
+      $xmax = $x if $x > $xmax;
+      $ymax = $y if $y > $ymax;
+   }
+
+  return ($xmin,$ymin,$xmax,$ymax);
 }
 
 ###############################################################################
