@@ -1,3 +1,26 @@
+version  6_1_13    08-10-2010    VERS_6_1_13
+
+        bug fix in init_coriolis() -> ym not set for isphe=1 (newini.f)
+        new routines for purging nodes after unifying (exgrd.c)
+        general cleaning of directories
+
+========================================================== 08-10-2010 - 6_1_13
+
+ * ./mesh/exgrd.c:
+ * 08-Oct-2010: new routines for purging nodes after unifying		*
+ * ./mesh/meshck.c:
+ * 07-Oct-2010: better error message in CheckInput()			*
+c ./fem3d/newini.f:
+c 08.10.2010    ggu	bug fix in init_coriolis() -> ym not set for isphe=1
+c
+c ./fem3d/subver.f:
+c 08.10.2010	ggu	version 6.1.13
+c
+c ./fem3d/ousintp.f:
+c 30.09.2010	ggu	cleaned, new vars itmin/itmax to limit writing
+
+==========================================================
+
 version  6_1_12    29-09-2010    VERS_6_1_12
 
 reference arrow for section plot

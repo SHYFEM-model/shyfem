@@ -1,5 +1,12 @@
 ============================================================
 
+Fri Oct  8 15:09:20 CEST 2010
+
+New version 6_1_13
+
+
+============================================================
+
         bug fix in init_coriolis() -> ym not set for isphe=1 (newini.f)
         new routines for purging nodes after unifying (exgrd.c)
         general cleaning of directories
