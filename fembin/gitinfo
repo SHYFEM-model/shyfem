@@ -45,5 +45,7 @@ git add -u
 gitcommit
 gittag
 
+gittar
+
 EOI
 

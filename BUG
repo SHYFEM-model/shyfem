@@ -1,5 +1,5 @@
 
-BUG_2010_13     ggu     6.1.12   08.10.2010
+BUG_2010_13     ggu     6.1.13   08.10.2010
 	bug fix in init_coriolis() -> ym not set for isphe=1 (newini.f)
 
 BUG_2010_12     ggu     6.1.11   28.09.2010

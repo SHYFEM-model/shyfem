@@ -121,7 +121,7 @@ and one smaller than 1 decreses it. Therefore, in areas where
 resolution should be higher than average you can set it to
 2 or higher, and in other areas, where you want lower resolution,
 you can set it to 0.5 or lower. All nodes of the background grid
-need to have a depth (resolution) value. In side each background
+need to have a depth (resolution) value. Inside each background
 element the resolution is interpolated between the three nodes
 (vertices).
 
@@ -159,7 +159,7 @@ With this parameters the call to mesh would be
 	"mesh -I2000 -g99 coast-new bck1".
 The created mesh can be found in final.grd.
 
-Please note that you can specify mor than one file for the coast line,
+Please note that you can specify more than one file for the coast line,
 so you could keep the domain line and the island lines in seperate files.
 You can also have different background grid for different areas in
 different files. So a call like this is also possible:

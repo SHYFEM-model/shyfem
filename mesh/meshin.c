@@ -274,6 +274,7 @@ void InsertBoundaryNodes( NodeList nlist )
 	int n;
 	int node;
 	float x,y;
+	/* float area; */
 	Node_type *pn;
 	Elem_type *pe;
 	StackTable deleted,visited,created;
@@ -303,6 +304,10 @@ void InsertBoundaryNodes( NodeList nlist )
 		printf("InsertBP: %d %d %d %f %f\n",node,pn->type
 					,pe->number,x,y);
 #endif
+		/*
+		area = AreaElement(HNN,pe);
+		printf("area: %f\n",area);
+		*/
 		InsertNode(node,pe,x,y,deleted,visited,created);
 	}
 	FreeStackTable(visited);

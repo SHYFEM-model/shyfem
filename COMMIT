@@ -1,5 +1,28 @@
 ============================================================
 
+Mon Oct 11 14:51:36 CEST 2010
+
+minor points, better error messages
+
+ BUG                       |    2 +-
+ FAQ                       |   89 +++++++++++++++++++++++++++++++++++++++++++++
+ LOG                       |   24 ++++++++++++
+ fem3d/nosutil.f           |    6 ++-
+ fem3d/subcoord.f          |    2 +-
+ fem3d/subnsh.f            |    2 +-
+ fem3d/subsys.f            |   12 +++++-
+ fem3d/subuti.f            |    6 ++-
+ fembin/gitinfo            |    2 +
+ femdoc/GridGeneration.txt |    4 +-
+ femdoc/grd_format.txt     |   78 +++++++++++++++++++++++++++++++++++++++
+ femplot/suplin.f          |   29 ++++++++-------
+ femplot/suptim.f          |   19 ++++++----
+ mesh/meshge.c             |   38 +++++++++++--------
+ mesh/meshin.c             |    5 +++
+ 15 files changed, 271 insertions(+), 47 deletions(-)
+
+============================================================
+
 Fri Oct  8 15:09:20 CEST 2010
 
 New version 6_1_13

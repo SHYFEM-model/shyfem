@@ -918,7 +918,7 @@ c sets-up array for output frequency
 
 	integer itm_out		!minimum time for output
 	integer idt_out		!time step for output
-	integer ia_out(1)	!array where info is stored
+	integer ia_out(3)	!array where info is stored
 
 	integer itanf,itend,idt
 	integer itmout,idtout,itout

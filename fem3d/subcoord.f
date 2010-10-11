@@ -1522,7 +1522,7 @@ c first compute phi = b / a
 	  phi = sqrt( 1. - aux*aux )
 	else
 	  write(6,*) 'second variable: ',aux
-	  stop 'error stop proj_set_ellipse: second variable out of range'
+	  stop 'error stop proj_set_ellipse: 2. var out of range'
 	end if
 
 c now compute all parameters

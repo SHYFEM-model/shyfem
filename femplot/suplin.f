@@ -12,6 +12,7 @@ c 26.03.2010    ggu     vertical plot for velocity finished
 c 13.04.2010    ggu     adapted also to spherical coordinates
 c 15.04.2010    ggu     fix bug where lower layer is plotted with value 0
 c 29.09.2010    ggu     finished velocity plot with reference arrow
+c 09.10.2010    ggu     better labeling of reference arrow
 c
 c************************************************************************
 
@@ -61,6 +62,7 @@ c elems(1) is not used, etc..
 	real xmin,ymin,xmax,ymax
 	real xrmin,yrmin,xrmax,yrmax
 	real xrrmin,yrrmin,xrrmax,yrrmax
+	real xfmin,yfmin,xfmax,yfmax
 	real d,dd,dx,dy,htop,htot,hbot
 	real x0,y0,x1,x2,y1,y2
 	real u,v
@@ -343,12 +345,16 @@ c--------------------------------------------------------------------
 
 	x = xrrmin + (xrrmax-xrrmin-dx)/2.
 	y = yrrmax - (yrrmax-yrrmin-dy)/2.
+	xfmin = xrrmin + 0.1*(xrrmax-xrrmin)
+	yfmin = yrrmax - 0.1*(yrrmax-yrrmin)
+	xfmax = xrrmin + 0.9*(xrrmax-xrrmin)
+	yfmax = yrrmax - 0.9*(yrrmax-yrrmin)
 
 	if( btwo ) then
-	 call plot_arrow(x,y,u,0.,scale,stip)
-	 call plot_arrow(x,y,0.,-v,scale,stip)
+	 call plot_arrow(xfmin,yfmin,u,0.,scale,stip)
+	 call plot_arrow(xfmin,yfmin,0.,-v,scale,stip)
 	else
-	  call plot_arrow(x,y,u,-v,scale,stip)
+	  call plot_arrow(xfmin,yfmin,u,-v,scale,stip)
 	end if
 
 	mode = -1	!left flushing
@@ -359,27 +365,24 @@ c--------------------------------------------------------------------
 	call find_nc(u,nc)
 	ir = ialfa(u,string,nc,mode)
 	write(6,*) 'label x: ',u,nc,ir,string
-        call qtxtcr(-1.,0.)
-        if( btwo ) call qtxtcr(0.,2.5)
+        call qtxtcr(1.,-2.5)
         !call qtext(x+dx,y,string(1:ir))
-        call qtext(x+dx/2.,y,string(1:ir))	!center in x
+        !call qtext(x+dx/2.,y,string(1:ir))	!center in x
+        call qtext(xfmax,yfmin,string(1:ir))	!center in x
 
 	v = v * faccol
 	call find_nc(-v,nc)
 	ir = ialfa(-v,string,nc,mode)
 	write(6,*) 'label x: ',-v,nc,ir,string
-        call qtxtcr(0.,-1.)
-        if( btwo ) call qtxtcr(0.,-1.5)
-        if( btwo ) call qtxtcr(0.,-1.5)
-        call qtext(x,y-dy,string(1:ir))
+        call qtxtcr(-1.,-1.5)
+        call qtext(xfmin,yfmin-dy,string(1:ir))
 
 	x = xrrmin + (xrrmax-xrrmin)/2.
 	y = yrrmax - (yrrmax-yrrmin)/2.
 	call get_vel_unit(faccol,string)
 	ir = ichanm(string)
-        call qtxtcr(0.,2.5)
-        call qtxtcr(0.,0.)
-        call qtext(x,y,string(1:ir))
+        call qtxtcr(1.,-1.)
+        call qtext(xfmax,yfmin-dy,string(1:ir))
 
 	end if
 

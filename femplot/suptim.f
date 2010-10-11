@@ -7,6 +7,7 @@ c 12.02.1999  ggu     adapted to auto mode
 c 27.05.2005  ggu     increase nrec always in oktime (even when it is the same)
 c 13.11.2008  ggu     in oktime() increase irec only for new time
 c 06.12.2008  ggu     in oktime() set itact to actual time
+c 09.10.2010  ggu     in oktime() handle negative itfreq
 c
 c******************************************************
 
@@ -95,7 +96,7 @@ c functions
 	  itfreq = nint(getpar('nout'))
 	end if
 
-        if( itfreq .le. 0 ) itfreq = 1
+        if( itfreq .eq. 0 ) itfreq = 1
 
 	write(6,*) 'Using time parameters : ',itmin,itmax,itfreq
 	write(6,*)
@@ -133,12 +134,16 @@ c common
 
 c        write(6,*) 'oktime: ',it,nrec,itmin,itmax,itfreq
 
-	if( it .lt. itmin .or. it .gt. itmax ) then
-	  oktime = .false.
-	else if( mod(nrec,itfreq) .ne. 0 ) then
-	  oktime = .false.
-	else
-	  oktime = .true.
+	oktime = .false.
+
+	if( it .ge. itmin .and. it .le. itmax ) then
+	  if( itfreq .gt. 0 .and. mod(nrec,itfreq) .eq. 0 ) then
+	    oktime = .true.
+	  else if( itfreq .eq. 0 ) then
+	    oktime = .true.
+	  else if( itfreq .lt. 0 .and. mod(nrec-1,-itfreq) .eq. 0 ) then
+	    oktime = .true.
+	  end if
 	end if
 
 	end

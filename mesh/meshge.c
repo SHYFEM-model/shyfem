@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 09-Oct-2010: better error handling for CircumCircle Error		*
  * 10-Mar-2010: new way to compute area of polygon (stable for 64 bit)	*
  * 03-Jul-2000: in ControlCircumCircle() only warning			*
  * 17-Oct-97: new routine TurnClosedLine()                              *
@@ -51,6 +52,7 @@
 
 #include "mesh.h"
 #include "meshge.h"
+#include "meshfi.h"
 #include "meshhs.h"
 
 
@@ -59,7 +61,7 @@ void MakeCircumCircle( Elem_type *pe )
 /*\
  *  Find radius and center of circumcircle
  *
- *  Center at intersection of "Mittelsenkrschten (MSR)".
+ *  Center at intersection of "Mittelsenkrechten (MSR)".
  *
  *  use formula : (nx,ny)*(x-x0,y-y0) = 0
  *  where (nx,ny) is normal to MSR (side of triangle) and
@@ -71,10 +73,16 @@ void MakeCircumCircle( Elem_type *pe )
 
 {
 	int i;
+/*
 	float x[3],y[3];
 	float a1,b1,c1,a2,b2,c2;
 	float det;
 	float x0,y0,rho;
+*/
+	double x[3],y[3];
+	double a1,b1,c1,a2,b2,c2;
+	double det;
+	double x0,y0,rho;
 	Node_type *pn;
 
 	for(i=0;i<3;i++) {
@@ -101,10 +109,16 @@ void MakeCircumCircle( Elem_type *pe )
 		
 	det = a1*b2 - a2*b1;
 	if( det == 0 ) {
-	  printf("Maybe not unique node coordinates.\n");
+	  printf("*** error in MakeCircumCircle\n");
 	  for(i=0;i<3;i++) {
 	    printf("node: %d, x/y: (%f,%f)\n",pe->index[i],x[i],y[i]);
 	  }
+	  printf("Maybe the node coordinates are not unique\n");
+	  printf("or the relative distance between the nodes\n");
+	  printf("is too small with respect to the absolute\n");
+	  printf("values of the coordinates or the three nodes\n");
+	  printf("are collinear.\n");
+	  WriteAll("M_error.grd",NULL);
 	  Error("MakeCircumCircle: Error making element");
 	}
 	det = 1. / det;
@@ -113,14 +127,6 @@ void MakeCircumCircle( Elem_type *pe )
 	y0 = (c1*a2-c2*a1)*det;
 
 	rho = (x0-x[0])*(x0-x[0])+(y0-y[0])*(y0-y[0]);
-
-/*
-	printf("           %f",rho);
-	rho = (x0-x[1])*(x0-x[1])+(y0-y[1])*(y0-y[1]);
-	printf(" %f",rho);
-	rho = (x0-x[2])*(x0-x[2])+(y0-y[2])*(y0-y[2]);
-	printf(" %f\n",rho);
-*/
 
 	pe->rc.x = x0;
 	pe->rc.y = y0;
@@ -501,17 +507,17 @@ int TurnClosedLine( int ndim , float *xl , float *yl )
 
 	for(i=0;i<ndim;i++) {
 	    a = angle(xold,yold,xl[i],yl[i],xl[i+1],yl[i+1]);
+	    /*
+	    if( a < 0. ) {
+		printf("*** angle negative: %d %f\n",i,a);
+	    }
+	    */
 	    if( a < 0. ) a += pi2;	/* ensure the angle is positive */
-/*	    alpha += a;	*/
 	    alpha += a - pi;
-	  printf("angle: %d  %f\n",i,alpha);
+	    /* printf("angle: %d  %f\n",i,alpha); */
 	    xold = xl[i];
 	    yold = yl[i];
 	}
-
-/*
-	alpha -= pi * ndim;
-*/
 
 	if( alpha > 0. ) {
 		loops = ( alpha + 0.5 ) / pi2;

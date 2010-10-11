@@ -39,7 +39,8 @@ c***************************************************************
 
 c***************************************************************
 
-	subroutine make_aver(nlvdim,nkn,ilhkv,cv3,vol3,cmin,cmax,cmed,vtot)
+	subroutine make_aver(nlvdim,nkn,ilhkv,cv3,vol3
+     +					,cmin,cmax,cmed,vtot)
 
 	implicit none
 
@@ -148,7 +149,8 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-	subroutine init_volume(nlvdim,nkn,nel,nlv,nen3v,ilhkv,hlv,hev,vol3)
+	subroutine init_volume(nlvdim,nkn,nel,nlv,nen3v,ilhkv
+     +					,hlv,hev,vol3)
 
 c initializes volumes just in case no volume file is found
 c

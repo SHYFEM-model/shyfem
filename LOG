@@ -1,4 +1,12 @@
 
+09.10.2010
+
+	better error handling for CircumCircle Error (meshge.c)
+	better labeling of reference arrow in vertical plot
+	in oktime() handle negative itfreq (suptim.f)
+
+========================================================== 08-10-2010 - 6_1_13
+
 08.10.2010
 	bug fix in init_coriolis() -> ym not set for isphe=1 (newini.f)
 	new routines for purging nodes after unifying (exgrd.c)
@@ -7,23 +15,39 @@
 30.09.2010
 	new vars itmin/itmax to limit writing in ousintp.f
 
+========================================================== 29-09-2010 - 6_1_12
+
 29.09.2010
 	new routine PsArcFill()
 	finished velocity plot with reference arrow
 
+========================================================== 28-09-2010 - 6.1.11
+
 28.09.2010
 	bug fix in init_coriolis() for isphe=1, new value for icor
+
+========================================================== 26-07-2010 - 6.1.10
+
+========================================================== 22-07-2010 - 6.1.9
 
 05.07.2010
 	new routine dist_point_to_line(), bug fix in inpoly1() (subgeo.f)
 	shell to compute energy, new routine for computing 3D kin/pot energy
 	new way to compute area of polygon (stable for 64 bit)  (gridut.c)
 
+========================================================== 03-05-2010 - 6_1_8
+
 29.04.2010
 	write volumes (wrfvla)
 
+========================================================== 26-04-2010 - 6_1_7
+
+========================================================== 26-04-2010 - 6.1.6
+
 26-04-2010
 	new UTM projection
+
+========================================================== 22-04-2010 - 6.1.5
 
 14.04.2010
 	account for negative levmin/max

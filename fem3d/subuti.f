@@ -246,7 +246,9 @@ c	pot = (g/2) * aj * 4  * z(m)*z(m)
 c	kin = (1/2) * aj * 12 * u*u/h
 c
 	implicit none
-c
+
+	include 'param.h'
+
 c arguments
 	integer ielem
 	real kenerg,penerg
@@ -263,7 +265,7 @@ c common
 	common /unv/unv ,/vnv/vnv
 	include 'ev.h'
 
-        real zeov(3,1),zenv(3,1)
+        real zeov(3,neldim),zenv(3,neldim)
         common /zeov/zeov, /zenv/zenv
 
 c local

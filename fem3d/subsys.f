@@ -926,7 +926,10 @@ c |itend|		Final time for plotting. (Default is
 c			last data record)
 c |nout|		Frequency for plotting. A value of 0 or 1
 c			plots every record, 2 plots every other record etc.
-c			(Default 0) 
+c			A negative value works as a positive one,
+c			but starts plotting from the first record. So
+c			-2 plots records 1,3,5,etc.
+c			(Default 1) 
 
 	call addpar('itanf',-1.)	!time start
 	call addpar('itend',-1.)	!time end
@@ -1556,7 +1559,12 @@ c		into the plot. If 0 the scale is computed automatically.
 c		Please note that in this case the velocities will be
 c		scaled differently for every plot. Setting |avscal| 
 c		therefore guarantees that the velocity arrows will
-c		be comparable between plots. (Default 0)
+c		be comparable between plots. If |avscal| is negative,
+c		instead of using x-coordinates units, the legth scale is
+c		in [cm]. Therefore, a value of -1 will represent a
+c		velocity of 1 m/s with 1 cm on the plot. This unit for
+c		the length scale is sometimes easier to understand. 
+c		(Default 0)
 c |rvscal|	Extra factor that multiplies the scale factor. If your
 c		automatic scale gives you vectors which are too small, you
 c		can use |rvscal| to increase them. (Default 1)
