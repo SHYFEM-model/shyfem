@@ -19,6 +19,17 @@ c 24.03.2009	ggu	bug fix: isum -> 6; declaration of cl() was missing 0
 c 30.03.2009	ggu	bug fix: ilhv was real in tvd_get_upwind()
 c 31.03.2009	ggu	bug fix: do not use internal gradient (undershoot)
 c 06.04.2009	ggu&ccf	bug fix: in tvd_fluxes() do not test for conc==cond
+c 15.12.2012	ggu	new routines for vertical tvd: vertical_flux_*()
+c
+c*****************************************************************
+c
+c notes :
+c
+c itvd = 0	no tvd
+c itvd = 1	run tvd with gradient information using average
+c itvd = 2	run tvd with gradient computed from up/down wind nodes
+c
+c itvd == 2 is the better scheme
 c
 c*****************************************************************
 
@@ -53,7 +64,7 @@ c*****************************************************************
 
         subroutine tvd_grad_3d(cc,gx,gy,aux,nlvdi,nlv)
 
-c computes gradients for scalar cc
+c computes gradients for scalar cc (average gradient information)
 
         implicit none
 
@@ -183,7 +194,7 @@ c*****************************************************************
 
         subroutine tvd_get_upwind_c(ie,l,ic,id,cu,cv)
 
-c computes concentration of upwind node
+c computes concentration of upwind node (using info on upwind node)
 
         implicit none
 
@@ -226,6 +237,8 @@ c*****************************************************************
         subroutine tvd_upwind_init
 
 c initializes position of upwind node
+c
+c sets position and element of upwind node
 
         implicit none
 
@@ -357,11 +370,11 @@ c computes tvd fluxes for one element
 
             do ii=1,3
               if( ii .ne. ip ) then
-                if( itot .eq. 1 ) then
+                if( itot .eq. 1 ) then			!flux out of one node
                   ic = ip
                   id = ii
                   fact = 1.
-                else
+                else					!flux into one node
                   id = ip
                   ic = ii
                   fact = -1.
@@ -419,6 +432,188 @@ c               psi = max(0.,min(1.,rf))                ! minmod
 	  write(6,*) 'tvd: ',ic,id,kc,kd
 	  write(6,*) 'tvd: --------------'
 	end if
+
+	end
+
+c*****************************************************************
+
+	subroutine vertical_flux_k(k,dt,wsink,cv,vvel,vflux)
+
+c computes vertical fluxes of concentration - nodal version
+
+c do not use this version !!!!!!!!!!!!
+
+c ------------------- l-2 -----------------------
+c      u              l-1
+c ------------------- l-1 -----------------------
+c      c               l     ^        d
+c ---------------+---  l  ---+-------------------
+c      d         v    l+1             c
+c ------------------- l+1 -----------------------
+c                     l+2             u
+c ------------------- l+2 -----------------------
+
+	implicit none
+
+	include 'param.h'
+
+	integer k			!node of vertical
+	real dt				!time step
+	real wsink			!sinking velocity (positive downwards)
+	real cv(nlvdim,nkndim)		!scalar to be advected
+	real vvel(0:nlvdim)		!velocities at interface (return)
+	real vflux(0:nlvdim)		!fluxes at interface (return)
+
+	integer ilhkv(1)
+	common /ilhkv/ilhkv
+	real wprv(0:nlvdim,1)
+	common /wprv/wprv
+        real hdknv(nlvdim,1)
+        common /hdknv/hdknv
+
+        real eps
+        parameter (eps=1.e-8)
+
+	logical btvdv
+	integer l,lmax,lu
+	real w,fl
+	real conc,cond,conu,conf
+	real hdis,alfa,rf,psi
+
+	btvdv = .false.			!use tvd ?
+
+	lmax = ilhkv(k)
+
+	do l=1,lmax-1
+	  w = wprv(l,k) - wsink
+
+	  if( w .gt. 0. ) then
+	    conc = cv(l+1,k)
+	  else
+	    conc = cv(l,k)
+	  end if
+
+	  conf = conc
+
+	  if( btvdv ) then
+	    if( w .gt. 0. ) then
+	      !conc = cv(l+1,k)
+	      cond = cv(l,k)
+	      conu = cond
+	      lu = l + 2
+	      if( lu .le. lmax ) conu = cv(lu,k)
+	    else
+	      !conc = cv(l,k)
+	      cond = cv(l+1,k)
+	      conu = cond
+	      lu = l - 1
+	      if( lu .ge. 1 ) conu = cv(lu,k)
+	    end if
+
+	    hdis = 0.5*(hdknv(l,k)+hdknv(l+1,k))
+	    alfa = dt * abs(w) / hdis
+            if( abs(conc-cond) .lt. eps ) then
+              rf = -1.
+            else
+              rf = (cond-conu) / (cond-conc) - 1.
+            end if
+            psi = max(0.,min(1.,2.*rf),min(2.,rf))  ! superbee
+            conf = conc + 0.5*psi*(cond-conc)*(1.-alfa)
+	  end if
+
+	  vvel(l) = w
+	  vflux(l) = w * conf
+	end do
+
+	vvel(0) = 0.			!surface
+	vflux(0) = 0.
+	vvel(lmax) = 0.			!bottom
+	vflux(lmax) = 0.
+
+	end
+
+c*****************************************************************
+
+	subroutine vertical_flux_ie(btvdv,ie,lmax,dt,wsink
+     +					,cl,wvel,hold,vflux)
+
+c computes vertical fluxes of concentration - element version
+
+c ------------------- l-2 -----------------------
+c      u              l-1
+c ------------------- l-1 -----------------------
+c      c               l     ^        d
+c ---------------+---  l  ---+-------------------
+c      d         v    l+1             c
+c ------------------- l+1 -----------------------
+c                     l+2             u
+c ------------------- l+2 -----------------------
+
+	implicit none
+
+	include 'param.h'
+
+	logical btvdv				!use tvd?
+	integer ie				!element
+	integer lmax				!total number of layers
+	double precision dt			!time step
+	double precision wsink			!sinking velocity (+ downwards)
+	double precision cl(0:nlvdim+1,3)	!scalar to be advected
+	double precision hold(0:nlvdim+1,3)	!depth of layers
+	double precision wvel(0:nlvdim+1,3)	!velocities at interface
+	double precision vflux(0:nlvdim+1,3)	!fluxes at interface (return)
+
+        double precision eps
+        parameter (eps=1.e-8)
+
+	integer ii,l,lu
+	double precision w,fl
+	double precision conc,cond,conu,conf
+	double precision hdis,alfa,rf,psi
+
+	do ii=1,3
+	 do l=1,lmax-1
+	  w = wvel(l,ii) - wsink
+
+	  if( w .gt. 0. ) then
+	    conc = cl(l+1,ii)
+	  else
+	    conc = cl(l,ii)
+	  end if
+
+	  conf = conc
+
+	  if( btvdv ) then
+	    if( w .gt. 0. ) then
+	      !conc = cl(l+1,ii)
+	      cond = cl(l,ii)
+	      conu = cond
+	      lu = l + 2
+	      if( lu .le. lmax ) conu = cl(lu,ii)
+	    else
+	      !conc = cl(l,ii)
+	      cond = cl(l+1,ii)
+	      conu = cond
+	      lu = l - 1
+	      if( lu .ge. 1 ) conu = cl(lu,ii)
+	    end if
+
+	    hdis = 0.5*(hold(l,ii)+hold(l+1,ii))
+	    alfa = dt * abs(w) / hdis
+            if( abs(conc-cond) .lt. eps ) then
+              rf = -1.
+            else
+              rf = (cond-conu) / (cond-conc) - 1.
+            end if
+            psi = max(0.,min(1.,2.*rf),min(2.,rf))  ! superbee
+            conf = conc + 0.5*psi*(cond-conc)*(1.-alfa)
+	  end if
+
+	  vflux(l,ii) = w * conf
+	 end do
+	 vflux(0,ii) = 0.
+	 vflux(lmax,ii) = 0.
+	end do
 
 	end
 

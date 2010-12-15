@@ -59,8 +59,13 @@ grid/grid
 mesh/exgrd
 mesh/mesh
 
+femcheck/CHECKLOG
+femcheck/test.c
+femcheck/test.f
+
 fem3d/nosaver_basin
 fem3d/nosaver_time
 fem3d/nosaver_vert
 fem3d/nosaverf
+fem3d/ousextr_gis
 

@@ -16,6 +16,8 @@ c*********************************************************************
 	subroutine meteo_regular
 
 c administers regular meteo files
+c
+c in order to use these routines, please set imreg = 1 in the STR file
 
 	implicit none
 
@@ -90,7 +92,11 @@ c dws		wind speed (1)
 	real val0
 	real valmin,valmax
 
-	integer iumet,nfreq	!set nfreq > 0 for debug output
+c values for debug: set nfreq and iumet > 0 for debug output
+c	nfreq	debug output frequency
+c	iumet	debug output unit
+
+	integer iumet,nfreq
 	save iumet,nfreq
 	data iumet,nfreq / 0 , 0 /
 
@@ -109,7 +115,11 @@ c------------------------------------------------------------------
 	  write(6,*) 'initialization of regular surface forcing'
 
 c	  ---------------------------------------------------------
-c	  initialization of geometry
+c	  initialization of geometry - please customize
+c	  ---------------------------------------------------------
+
+c	  ---------------------------------------------------------
+c	  geometry of regular matrix: lower left point and step size
 c	  ---------------------------------------------------------
 
 	  x0 = 11.
@@ -119,6 +129,12 @@ c	  ---------------------------------------------------------
 	  flag = -999.
 
 	  call setgeo(x0,y0,dx,dy,flag)
+
+c	  ---------------------------------------------------------
+c	  projection to be used: 0: none  1: Gauss-Boaga  2: UTM  3: basic CPP
+c	  ---------------------------------------------------------
+
+	  mode = 0	!no projection
 
 	  mode = 3	!basic
           lon0 = 14.047
@@ -163,6 +179,10 @@ c	  ---------------------------------------------------------
 	  call meteo_init_array(nkn,val0,metwbt)
 	  call meteo_init_array(nkn,val0,metrain)
 	end if
+
+c------------------------------------------------------------------
+c end of initialization - do not change anything beyond this point
+c------------------------------------------------------------------
 
 	icall = icall + 1
 

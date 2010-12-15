@@ -85,7 +85,7 @@ SPECIAL =	Makefile \
 		ACTUAL LOG
 
 NOSEXTR = nosextr_nodes nosextr_gis nosextr_records nosextr_custom
-OUSEXTR = ousextr_records 
+OUSEXTR = ousextr_records ousextr_gis
 
 EXES	= ht hp vp \
 	  ousinf whdf whdfs \
@@ -177,7 +177,8 @@ HTOBJS = \
 	subrst.o subnosa.o subdif.o subreg.o \
 	atoxi3d.o atoxi.o subwwm.o kepsd.o keps_util.o \
 	subinv.o newexpl.o subrnd.o \
-	submeteo.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o
+	submeteo.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o \
+	subtrace.o
 
 # objects for pre-processor vp
 
@@ -336,9 +337,6 @@ bascomp:  bascomp.o subgeo.o $(OUTOBJS)
 ousinf:  ousinf.o subous.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subous.o $(OUTOBJS) -o $@
 
-#ousextr:  ousextr.o subous.o $(OUTOBJS) 
-#	$(LINKER) $(LFLAGS) $@.o subous.o $(OUTOBJS) -o $@
-
 ousintp:  ousintp.o subous.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subous.o $(OUTOBJS) -o $@
 
@@ -362,6 +360,9 @@ nosinf2:  nosinf2.o $(NOSOBJS) $(OUTOBJS)
 ousextr: $(OUSEXTR)
 
 ousextr_records:  ousextr_records.o subous.o $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o subous.o $(OUTOBJS) -o $@
+
+ousextr_gis:  ousextr_gis.o subous.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subous.o $(OUTOBJS) -o $@
 
 nosextr: $(NOSEXTR)

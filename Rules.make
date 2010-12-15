@@ -31,6 +31,10 @@ export NKNDIM = 11000
 export NELDIM = 22000
 export NLVDIM = 33
 
+#export NKNDIM = 14000
+#export NELDIM = 28000
+#export NLVDIM = 15
+
 #export NKNDIM = 81000
 #export NELDIM = 145000
 #export NLVDIM = 1

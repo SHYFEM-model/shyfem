@@ -7,6 +7,7 @@ c revision log :
 c
 c 07.05.2009    ggu     new framework (to be finished), new basic projection
 c 26.05.2010    ggu     new utm, bs renamed to cpp
+c 07.12.2010    ggu     bug fix in convert_coords for mode=-1
 c
 c********************************************************************
 
@@ -42,7 +43,9 @@ c UTM: Venice is in zone 33, central meridian is 15
 	common /coords1/ proj
 	save /coords1/
 
-	if( iproj .eq. 1 ) then		!GB
+	if( iproj .eq. 0 ) then		!no projection
+	  !nothing to be done
+	else if( iproj .eq. 1 ) then		!GB
           fuse = nint( c_param(1) )     !fuse for gauss-boaga
           xtrans = c_param(2)           !extra shift in x [m]
           ytrans = c_param(3)           !extra shift in y [m]
@@ -95,7 +98,12 @@ c conversion of coordinates
 
 	if( mode .eq. 1 ) then
 
-	  if( proj .eq. 1 ) then
+	  if( proj .eq. 0 ) then
+	    do i=1,n
+	      xg(i) = xc(i)
+	      yg(i) = yc(i)
+	    end do
+	  else if( proj .eq. 1 ) then
             call apply_coords(n,xc,yc,xg,yg,gb_c2g)
 	  else if( proj .eq. 2 ) then
             call apply_coords(n,xc,yc,xg,yg,utm_c2g)
@@ -107,12 +115,17 @@ c conversion of coordinates
 
 	else if( mode .eq. -1 ) then
 
-	  if( proj .eq. 1 ) then
+	  if( proj .eq. 0 ) then
+	    do i=1,n
+	      xc(i) = xg(i)
+	      yc(i) = yg(i)
+	    end do
+	  else if( proj .eq. 1 ) then
             call apply_coords(n,xg,yg,xc,yc,gb_g2c)
 	  else if( proj .eq. 2 ) then
-            call apply_coords(n,xc,yc,xg,yg,utm_g2c)
+            call apply_coords(n,xg,yg,xc,yc,utm_g2c)
 	  else if( proj .eq. 3 ) then
-            call apply_coords(n,xc,yc,xg,yg,cpp_g2c)
+            call apply_coords(n,xg,yg,xc,yc,cpp_g2c)
 	  else
 	    stop 'error stop convert_coords: internal error'
 	  end if

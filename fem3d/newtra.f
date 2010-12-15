@@ -428,7 +428,9 @@ c common
 	  if( h .le. 0. ) then
 	    z = znv(k)
 	    ke = ipext(k)
-	    write(6,*) 'negative depth in node (layer 1): ',k,ke,h,z
+	    write(6,*) 'negative depth in node (layer 1): '
+	    write(6,*) '   node (int/ext): ',k,ke
+	    write(6,*) '   depth,zeta    : ',h,z
 	    bstop = .true.
 	  end if
 	end do
@@ -437,7 +439,9 @@ c common
 	  h = hdenv(1,ie)
 	  if( h .le. 0. ) then
 	    iee = ieext(ie)
-	    write(6,*) 'negative depth in elem (layer 1): ',ie,iee,h
+	    write(6,*) 'negative depth in elem (layer 1): '
+	    write(6,*) '   element (int/ext): ',ie,iee
+	    write(6,*) '   depth: ',h
 	    write(6,*) '   water levels: ',(zenv(ii,ie),ii=1,3)
 	    bstop = .true.
 	  end if

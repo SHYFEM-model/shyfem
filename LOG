@@ -1,4 +1,16 @@
 
+15.12.2010
+
+	bug fix in convert_coords for mode=-1 (subcoord.f)
+	bug fix in vert_aver() (map_influence.f)
+
+	new routine vertical_flux_ie() for vertical tvd
+	traccia routines moved to subtrace.f
+
+	ousvdiff.f prepared to use for water level differences
+	ousextr_gis.f new for 3D gis output
+	in map_influence.f write all conz to one file
+
 09.10.2010
 
 	better error handling for CircumCircle Error (meshge.c)

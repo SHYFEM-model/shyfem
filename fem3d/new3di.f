@@ -320,7 +320,7 @@ c---------------------------------------------------------- end of z solution
 
 	!call check_node(kspecial)
 
-	call sp256n	!new velocities
+	call sp256n	!new velocities (also barotropic)
 
 c end of solution %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

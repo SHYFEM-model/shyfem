@@ -1,4 +1,6 @@
-
+c
+c routines for sigma levels
+c
 c********************************************************************
 
 	subroutine init_sigma_vertical

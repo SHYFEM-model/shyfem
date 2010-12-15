@@ -62,6 +62,7 @@ CheckCommand make "make -v"
 CheckCommand perl "perl -v"
 CheckCommand g77 "g77 -v"
 CheckCommand gcc "gcc -v"
+CheckCommand g++ "g++ -v"
 CheckCommand bash "bash --version"
 CheckCommand X11 "gcc -L/usr/X11/lib -L/usr/X11R6/lib -lXt -lX11 test.c"
 

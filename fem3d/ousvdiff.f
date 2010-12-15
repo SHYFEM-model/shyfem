@@ -8,14 +8,13 @@ c
 c 02.09.2003	ggu	adapted to new OUS format
 c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
 c 04.03.2005	ggu	computes 3D velocities
+c 03.11.2010	ggu	prepared to use for water level differences
 c
 c***************************************************************
 
-	program ousintp
+	program ousdiff
 
-c reads ous file and interpolates velocities
-c
-c we would not even need to read basin
+c reads ous files and computes difference
 
 	implicit none
 
@@ -78,9 +77,11 @@ c we would not even need to read basin
 	integer ii,l,lmax,nbout,nb1,nb2
 	integer ifileo
 
+	logical bnew
         integer nvers,nin,nlv
         integer itanf,itend,idt,idtous
 	integer it,ie,i,k
+	integer it1,it2
         integer ierr,nread,ndry
         integer nknous,nelous,nlvous
         real href,hzoff,hlvmin
@@ -95,6 +96,12 @@ c	integer rdous,rfous
 	double precision zacum(3,neldim)
 	double precision uacum(nlvdim,neldim)
 	double precision vacum(nlvdim,neldim)
+
+c-------------------------------------
+
+	write(6,*) 'This program computes the difference of two ous files.'
+	write(6,*) 'It needs the name of the basin and the two ous files.'
+	write(6,*) 'The first is subtracted from the second.'
 
 c-------------------------------------
 
@@ -147,25 +154,41 @@ c-------------------------------------
 
 c-------------------------------------
 
+	it1 = -1024*1024*1024
+	it2 = it1
+
   300   continue
 
-        call rdous(nb1,it,nlvdim,ilhv,zn1v,zen1v,utln1v,vtln1v,ierr)
-	if( ierr .gt. 0 ) goto 96	!error
-	if( ierr .lt. 0 ) goto 100	!EOF
-
-        call rdous(nb2,it,nlvdim,ilhv,zn2v,zen2v,utln2v,vtln2v,ierr)
-	if( ierr .gt. 0 ) goto 96	!error
-	if( ierr .lt. 0 ) goto 100	!EOF
+	bnew = .true.
+	do while( bnew .or. it1 .ne. it2 )
+	  do while( bnew .or. it1 .lt. it2 )
+            call rdous(nb1,it1,nlvdim,ilhv
+     +			,zn1v,zen1v,utln1v,vtln1v,ierr)
+	    if( ierr .gt. 0 ) goto 96	!error
+	    if( ierr .lt. 0 ) goto 100	!EOF
+	    bnew = .false.
+	  end do
+	  do while( bnew .or. it2 .lt. it1 )
+            call rdous(nb2,it2,nlvdim,ilhv
+     +			,zn2v,zen2v,utln2v,vtln2v,ierr)
+	    if( ierr .gt. 0 ) goto 96	!error
+	    if( ierr .lt. 0 ) goto 100	!EOF
+	    bnew = .false.
+	  end do
+	end do
 
 	nread=nread+1
+	write(6,*) nread,it1,it2
 
 	do k=1,nkn
-	  zn1v(k) = 0.5 * ( zn1v(k) + zn2v(k) )
+	  !zn1v(k) = 0.5 * ( zn2v(k) + zn1v(k) )
+	  zn1v(k) = zn2v(k) - zn1v(k)
 	end do
 
 	do ie=1,nel
 	  do ii=1,3
-	    zen1v(ii,ie) = 0.5 * ( zen1v(ii,ie) + zen2v(ii,ie) )
+	    !zen1v(ii,ie) = 0.5 * ( zen2v(ii,ie) + zen1v(ii,ie) )
+	    zen1v(ii,ie) = zen2v(ii,ie) - zen1v(ii,ie)
 	  end do
 	  lmax = ilhv(ie)
 	  do l=1,lmax
@@ -174,7 +197,7 @@ c-------------------------------------
 	  end do
 	end do
 
-        call wrous(nbout,it,nlvdim,ilhv,zn1v,zen1v,utln1v,vtln1v,ierr)
+        call wrous(nbout,it1,nlvdim,ilhv,zn1v,zen1v,utln1v,vtln1v,ierr)
         if(ierr.ne.0.) goto 95
 
 	write(6,*) 

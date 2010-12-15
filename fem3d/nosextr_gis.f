@@ -3,6 +3,7 @@ c $Id: nosextr_gis.f,v 1.2 2008-11-20 10:51:34 georg Exp $
 c
 c 18.11.1998    ggu     check dimensions with dimnos
 c 13.11.2008    ggu     write all records with ball=.true.
+c 23.11.2010    ggu     new routine wrgis_3d() to extract 3d info
 c
 c**********************************************************
 
@@ -74,8 +75,8 @@ c-------------------------------------------------------------------
 c initialize params
 c-------------------------------------------------------------------
 
-	ball = .true.
-	ball = .false.		!write all records
+	ball = .true.		!write all records
+	ball = .false.
 
 	nread=0
 	nextr=0
@@ -148,13 +149,15 @@ c-------------------------------------------------------------------
         if( ivar .ne. ivarold ) goto 91
 
 	nread=nread+1
+        if( nread .gt. nrdim ) goto 100
 	write(6,*) 'time : ',nread,it,ivar
 
-	bwrite = ball .or. (nread .le. nrdim .and. irec(nread) .ne. 0)
+	bwrite = ball .or. irec(nread) .ne. 0
 
 	if( bwrite ) then
-	  call wrgis(nb,it,ivar,nkn,cv3)
-	  call wrgis_sep(nb,it,ivar,nkn,cv3)
+	  !call wrgis(nb,it,ivar,nkn,cv3)
+	  !call wrgis_sep(it,ivar,nkn,cv3)
+	  call wrgis_3d(nb,it,ivar,nkn,ilhkv,cv3)
 	  nextr = nextr + 1
 	end if
 
@@ -169,7 +172,7 @@ c-------------------------------------------------------------------
 	write(6,*)
 	write(6,*) nread,' records read'
 	write(6,*) nextr,' records written to file extract.gis'
-	write(6,*) nextr,' files extract__*.gis created'
+	!write(6,*) nextr,' files extract__*.gis created'
 	write(6,*)
 
         if( nextr .le. 0 ) stop 'no file written'
@@ -284,7 +287,46 @@ c gets records to extract from stdin
 
 c***************************************************************
 
+	subroutine wrgis_3d(nb,it,ivar,nkn,ilhkv,cv3)
+
+c writes one record to file nb (3D)
+
+	implicit none
+
+	include 'param.h'
+
+	integer nb,it,ivar,nkn
+	integer ilhkv(nlvdim)
+	real cv3(nlvdim,nkndim)
+
+        double precision x0,y0
+        !parameter ( x0 = 2330000.-50000., y0 = 5000000. )
+        parameter ( x0 = 0., y0 = 0. )
+
+        real xgv(nkndim), ygv(nkndim)
+        common /xgv/xgv, /ygv/ygv
+
+	integer k,l,lmax
+	real x,y
+
+	write(nb,*) it,nkn,ivar
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  x = xgv(k) + x0
+	  y = ygv(k) + y0
+
+	  write(nb,*) x,y,lmax
+	  write(nb,*) (cv3(l,k),l=1,lmax)
+	end do
+
+	end
+
+c***************************************************************
+
 	subroutine wrgis(nb,it,ivar,nkn,cv3)
+
+c writes one record to file nb (2D)
 
 	implicit none
 
@@ -319,13 +361,15 @@ c***************************************************************
 
 c***************************************************************
 
-	subroutine wrgis_sep(nb,it,ivar,nkn,cv3)
+	subroutine wrgis_sep(it,ivar,nkn,cv3)
+
+c writes one record to single files
 
 	implicit none
 
 	include 'param.h'
 
-	integer nb,it,ivar,nkn
+	integer it,ivar,nkn
 	real cv3(nlvdim,nkndim)
 
         double precision x0,y0

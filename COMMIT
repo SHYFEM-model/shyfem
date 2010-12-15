@@ -1,5 +1,37 @@
 ============================================================
 
+vertical tvd
+minor bug fixes
+
+Wed Dec 15 11:09:39 CET 2010
+
+vertical tvd
+
+ .gitignore              |    5 +
+ LOG                     |   12 +
+ Rules.make              |    4 +
+ fem3d/Makefile          |   11 +-
+ fem3d/map_influence.f   |   39 +++-
+ fem3d/new3di.f          |    2 +-
+ fem3d/newcon.f          |  185 +++++++++++-----
+ fem3d/newsig.f          |    4 +-
+ fem3d/newtra.f          |    8 +-
+ fem3d/newtvd.f          |  203 +++++++++++++++++-
+ fem3d/nosextr_gis.f     |   60 +++++-
+ fem3d/nosinf.f          |   51 +++++
+ fem3d/ousextr_gis.f     |  402 +++++++++++++++++++++++++++++++++
+ fem3d/ousvdiff.f        |   51 +++--
+ fem3d/subcoord.f        |   23 ++-
+ fem3d/subcus.f          |  431 +------------------------------------
+ fem3d/submeteo.f        |   24 ++-
+ fem3d/subtrace.f        |  561 +++++++++++++++++++++++++++++++++++++++++++++++
+ fembin/simnam           |   11 +-
+ femcheck/check_setup.sh |    1 +
+ femlib/perl/html.pm     |  124 ++++++++++-
+ 21 files changed, 1668 insertions(+), 544 deletions(-)
+
+============================================================
+
 Mon Oct 11 14:51:36 CEST 2010
 
 minor points, better error messages

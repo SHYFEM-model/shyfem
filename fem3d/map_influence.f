@@ -7,7 +7,7 @@ c 18.11.1998    ggu     check dimensions with dimnos
 c 24.02.1999    ggu     use n2int for node number translation
 c 03.12.2001    ggu     cleaned up, hakata bay
 c 18.06.2009    ggu     re-written for map of influence
-c 01.03.2010    ggu     adjusted and cleaned up
+c 05.11.2010    ggu     write all conz to one file, bug fix in vert_aver()
 c
 c****************************************************************
 
@@ -19,7 +19,7 @@ c creates map of influence
 	include 'param.h'
 	
 	integer nsdim
-	parameter (nsdim=9)	!number of tracers
+	parameter (nsdim=3)	!number of tracers
 
 c--------------------------------------------------
         character*80 descrr
@@ -45,6 +45,7 @@ c--------------------------------------------------
 	real cvv_sum(nlvdim,nsdim,nkndim)
 	real cv2d(nsdim,nkndim)
 	real cv3(nlvdim,nkndim)
+	real cv3_all(nlvdim,nkndim)
 	real valri(nlvdim,nkndim)
 	real valri2d(nkndim)
         
@@ -62,7 +63,7 @@ c--------- local variables ----------------------
 	integer nin
 	integer nunit,nout,it,nvers,ivar,nvar,ierr
 	integer iapini,ideffi
-	integer nout2,nvarnew
+	integer nout2,nvarnew,nout3
 	integer i,nread,k,l,is
 	integer nstate
     
@@ -76,11 +77,13 @@ c set important parameters
 c---------------------------------------------------------------
 
 	ptresh = 30.	!threshold on percentage
-	ctresh = 100.	!threshold on concentration - 0 for everywhere
 	ctresh = 0.	!threshold on concentration - 0 for everywhere
 	ctresh = 0.001	!threshold on concentration - 0 for everywhere
 	ctresh = 0.	!threshold on concentration - 0 for everywhere
 	ctresh = 1.e-7	!threshold on concentration - 0 for everywhere
+	ctresh = 10.	!threshold on concentration - 0 for everywhere
+	ctresh = 1.	!threshold on concentration - 0 for everywhere
+	ctresh = 100.	!threshold on concentration - 0 for everywhere
 
 c---------------------------------------------------------------
 c open simulation and basin
@@ -105,6 +108,12 @@ c---------------------------------------------------------------
             end do
           end do
 	end do
+
+	do l=1,nlvdim
+          do k=1,nkn
+	    cv3_all(l,k)=0.
+          end do
+        end do
 
 c-------------------------------------------------------------
 c open input file and read headers
@@ -153,12 +162,12 @@ c---------------------------------------------------------------
 	call wfnos(nout2,nvers,nkn,nel,1,nvarnew,title,ierr)
         call wsnos(nout2,ilhkv,hlv,hev,ierr)
 	
-c	nout3 = 69
-c       open(nout3,file='conz2d.nos',status='unknown'
-c     +				,form='unformatted')
+	nout3 = 69
+        open(nout3,file='conz_all.nos',status='unknown'
+     +				,form='unformatted')
 
-c	call wfnos(nout3,nvers,nkn,nel,1,nvar,title,ierr)
-c       call wsnos(nout3,ilhkv,hlv,hev,ierr)
+	call wfnos(nout3,nvers,nkn,nel,nlvdim,nvar,title,ierr)
+        call wsnos(nout3,ilhkv,hlv,hev,ierr)
 	
 c---------------------------------------------------------------
 c time loop
@@ -179,12 +188,13 @@ c---------------------------------------------------------------
 	 do k=1,nkn
            cvv_sum(l,is,k) = cvv_sum(l,is,k) + cv3(l,k)
 	   cvv(l,is,k) = cv3(l,k)
+	   cv3_all(l,k) = cv3_all(l,k) + cv3(l,k)
 	 end do
 	end do
 
 	icheck = mod(nread,nstate)
 	if( icheck .eq. 0 ) icheck = nstate
-	if( icheck .ne. is ) ) goto 98
+	if( icheck .ne. is ) goto 98
 
 	if( is .eq. nstate ) then
 
@@ -197,6 +207,13 @@ c	   -------------------------------------------------------
 	   call vert_aver(nstate,nlvdim,nkn,cvv,cv2d,ilhkv,hlv,hev)
 	   call comp_conz(nstate,1,nkn,ptresh,ctresh,cv2d,valri2d)
            call wrnos(nout2,it,367,1,ilhkv,valri2d,ierr)
+           call wrnos(nout3,it,30,nlvdim,ilhkv,cv3_all,ierr)
+
+	   do l=1,nlvdim
+             do k=1,nkn
+	       cv3_all(l,k)=0.
+             end do
+           end do
 
 	end if
 
@@ -294,7 +311,7 @@ c vertical averaging
 
 	integer nstate,nkn,nlvdim
 	real cv1(nlvdim,nstate,1)
-	real cv2d(nlvdim,1)
+	real cv2d(nstate,1)
 	integer ilhkv(1)
 	real hlv(1),hev(1)
 

@@ -150,6 +150,7 @@ c 10.03.2010    ggu     in assert_min_max_property() check all nodes (also BC)
 c 11.03.2010    ggu     in assert_min_max_property() do not check ibtyp=1
 c 12.03.2010    ggu     in assert_min_max_property() limit error messages
 c 22.03.2010    ggu     bug fix for evaporation (distr. sources) BUG_2010_01
+c 15.12.2010    ggu     new routine vertical_flux_ie() for vertical tvd
 c
 c*********************************************************************
 
@@ -608,8 +609,8 @@ c common
         common /mfluxv/mfluxv
 
 c local
-	logical bdebug,bdebug1,debug
-	integer k,ie,ii,l,iii
+	logical bdebug,bdebug1,debug,btvdv
+	integer k,ie,ii,l,iii,ll
 	integer lstart
 	integer ilevel
 	integer itot,isum	!$$flux
@@ -643,12 +644,14 @@ c	double precision explh(nlvdim,nlkdim)
 	double precision cbm,ccm
 	double precision fw(3),fd(3)
 	double precision fl(3)
+	double precision flux_tot,flux_tot1,flux_top,flux_bot
         double precision wdiff(3),waux
 c local (new)
 	double precision clc(nlvdim,3), clm(nlvdim,3), clp(nlvdim,3)
 c	double precision clce(nlvdim,3), clme(nlvdim,3), clpe(nlvdim,3)
 	double precision cl(0:nlvdim+1,3)
 	double precision wl(0:nlvdim+1,3)
+	double precision vflux(0:nlvdim+1,3)
 
 	double precision hdv(0:nlvdim+1)
 	double precision haver(0:nlvdim+1)
@@ -686,12 +689,18 @@ c	integer ipint,ieint
 
         if(nlvdim.ne.nlvdi) stop 'error stop conz3d: level dimension'
 
+c----------------------------------------------------------------
+c initialize variables and parameters
+c----------------------------------------------------------------
+
         bdebug1 = .true.
         bdebug1 = .false.
         debug = .false.
         debug = .true.
 	bdebug=.false.
 	berror=.false.
+	btvdv =.true.		!use vertical tvd
+	btvdv =.false.
 
 	btvd = itvd .gt. 0
 	bgradup = itvd .eq. 2	!use upwind gradient for tvd scheme
@@ -713,7 +722,9 @@ c	integer ipint,ieint
 
 	dt=ddt/rstot
 
-c these are the global arrays for accumulation of implicit terms
+c	----------------------------------------------------------------
+c	global arrays for accumulation of implicit terms
+c	----------------------------------------------------------------
 
 	do k=1,nkn
           do l=1,nlv
@@ -726,8 +737,12 @@ c these are the global arrays for accumulation of implicit terms
           end do
 	end do
 
-c these are aux arrays (bigger than needed) to avoid checking for
-c what layer we are in -> we never get out of bounds
+c	----------------------------------------------------------------
+c	aux elements inside element
+c	----------------------------------------------------------------
+
+c	these are aux arrays (bigger than needed) to avoid checking for
+c	what layer we are in -> we never get out of bounds
 
         do l=0,nlvdim+1
 	  hdv(l) = 0.		!layer thickness
@@ -738,12 +753,13 @@ c what layer we are in -> we never get out of bounds
 	    hold(l,ii) = 0.	!as hreal but with zeta_old
 	    cl(l,ii) = 0.	!concentration in layer
 	    wl(l,ii) = 0.	!vertical velocity
+	    vflux(l,ii) = 0.	!vertical velocity
 	  end do
 	end do
 
-c these are the local arrays for accumulation of implicit terms
-c (maybe we do not need them, but just to be sure...)
-c after accumulation we copy them on the global arrays
+c	these are the local arrays for accumulation of implicit terms
+c	(maybe we do not need them, but just to be sure...)
+c	after accumulation we copy them onto the global arrays
 
         do l=1,nlvdim
 	  do ii=1,3
@@ -753,7 +769,9 @@ c after accumulation we copy them on the global arrays
 	  end do
 	end do
 
-c vertical velocities
+c	----------------------------------------------------------------
+c	define vertical velocities
+c	----------------------------------------------------------------
 
 	do k=1,nkn
 	  do l=0,nlv
@@ -783,7 +801,9 @@ c----------------------------------------------------------------
 	aj12=12.*aj
         ilevel=ilhv(ie)
 
-c set up vectors for use in assembling contributions
+c	----------------------------------------------------------------
+c	set up vectors for use in assembling contributions
+c	----------------------------------------------------------------
 
         do l=1,ilevel
 	  hdv(l) = hdeov(l,ie)		!use old time step -> FIXME
@@ -807,8 +827,10 @@ c set up vectors for use in assembling contributions
 	  present(l) = 0.
 	end do
 
+c	----------------------------------------------------------------
 c	set vertical velocities in surface and bottom layer
-c
+c	----------------------------------------------------------------
+
 c	we do not set wl(0,ii) because otherwise we loose concentration
 c	through surface
 c
@@ -821,7 +843,15 @@ c	  wl(0,ii) = wprv(0,kn(ii))
 	  wl(ilevel,ii) = 0.
 	end do
 
+c	----------------------------------------------------------------
+c	compute vertical fluxes (w/o vertical TVD scheme)
+c	----------------------------------------------------------------
+
+	call vertical_flux_ie(btvdv,ie,ilevel,dt,wws,cl,wl,hold,vflux)
+
+c----------------------------------------------------------------
 c loop over levels
+c----------------------------------------------------------------
 
         do l=1,ilevel
 
@@ -844,7 +874,18 @@ c loop over levels
 	  cbm=cbm+b(ii)*cl(l,ii)
 	  ccm=ccm+c(ii)*cl(l,ii)
 
-c new weights for horizontal diffusion
+c	  ----------------------------------------------------------------
+c	  initialization to be sure we are in a clean state
+c	  ----------------------------------------------------------------
+
+	  fw(ii) = 0.
+	  clc(l,ii) = 0.
+	  clm(l,ii) = 0.
+	  clp(l,ii) = 0.
+
+c	  ----------------------------------------------------------------
+c	  contributions from horizontal diffusion
+c	  ----------------------------------------------------------------
 
           waux = 0.
           do iii=1,3
@@ -852,48 +893,10 @@ c new weights for horizontal diffusion
           end do
           wdiff(ii) = waux
 
-c	  initialization to be sure we are in a clean state
-
-	  fw(ii) = 0.
-	  clc(l,ii) = 0.
-	  clm(l,ii) = 0.
-	  clp(l,ii) = 0.
-
-c	  contributions from vertical advection
-c
-c	  in fw(ii) is explicit contribution
-c	  the sign is for the term on the left side, therefore
-c	  fw(ii) must be subtracted from the right side
-c
-c	  if we are in last layer, w(l,ii) is zero
-c	  if we are in first layer, w(l-1,ii) is zero (see above)
-
-	  w = wl(l-1,ii) - wws		!top of layer
-	  if( l .eq. 1 ) w = 0.		!surface -> no transport (WZERO)
-	  if( w .gt. 0. ) then
-	    fw(ii) = aat*w*cl(l,ii)
-c	    clce(l,ii) = clce(l,ii) - aat*w
-	    clc(l,ii) = clc(l,ii) + aa*w
-	  else
-	    fw(ii) = aat*w*cl(l-1,ii)
-c	    clme(l,ii) = clme(l,ii) - aat*w
-	    clm(l,ii) = clm(l,ii) + aa*w
-	  end if
-
-	  w = wl(l,ii) - wws		!bottom of layer
-	  if( l .eq. ilevel ) w = 0.	!bottom -> handle flux elsewhere (WZERO)
-	  if( w .gt. 0. ) then
-	    fw(ii) = fw(ii) - aat*w*cl(l+1,ii)
-c	    clpe(l,ii) = clpe(l,ii) + aat*w
-	    clp(l,ii) = clp(l,ii) - aa*w
-	  else
-	    fw(ii) = fw(ii) - aat*w*cl(l,ii)
-c	    clce(l,ii) = clce(l,ii) + aat*w
-	    clc(l,ii) = clc(l,ii) - aa*w
-	  end if
-
+c	  ----------------------------------------------------------------
 c	  contributions from vertical diffusion
-c
+c	  ----------------------------------------------------------------
+
 c	  in fd(ii) is explicit contribution
 c	  the sign is for the term on the left side, therefore
 c	  fd(ii) must be subtracted from the right side
@@ -918,16 +921,74 @@ c	  clpe(l,ii) = clpe(l,ii) + adt * ( hmbot )
 	  clm(l,ii) = clm(l,ii) - ad * ( hmtop )
 	  clp(l,ii) = clp(l,ii) - ad * ( hmbot )
 
+c	  ----------------------------------------------------------------
+c	  contributions from vertical advection
+c	  ----------------------------------------------------------------
+
+c	  in fw(ii) is explicit contribution
+c	  the sign is for the term on the left side, therefore
+c	  fw(ii) must be subtracted from the right side
+c
+c	  if we are in last layer, w(l,ii) is zero
+c	  if we are in first layer, w(l-1,ii) is zero (see above)
+
+	  w = wl(l-1,ii) - wws		!top of layer
+	  if( l .eq. 1 ) w = 0.		!surface -> no transport (WZERO)
+	  if( w .gt. 0. ) then
+	    fw(ii) = aat*w*cl(l,ii)
+	    flux_top = w*cl(l,ii)
+c	    clce(l,ii) = clce(l,ii) - aat*w
+	    clc(l,ii) = clc(l,ii) + aa*w
+	  else
+	    fw(ii) = aat*w*cl(l-1,ii)
+	    flux_top = w*cl(l-1,ii)
+c	    clme(l,ii) = clme(l,ii) - aat*w
+	    clm(l,ii) = clm(l,ii) + aa*w
+	  end if
+
+	  w = wl(l,ii) - wws		!bottom of layer
+	  if( l .eq. ilevel ) w = 0.	!bottom -> handle flux elsewhere (WZERO)
+	  if( w .gt. 0. ) then
+	    fw(ii) = fw(ii) - aat*w*cl(l+1,ii)
+	    flux_bot = w*cl(l+1,ii)
+c	    clpe(l,ii) = clpe(l,ii) + aat*w
+	    clp(l,ii) = clp(l,ii) - aa*w
+	  else
+	    fw(ii) = fw(ii) - aat*w*cl(l,ii)
+	    flux_bot = w*cl(l,ii)
+c	    clce(l,ii) = clce(l,ii) + aat*w
+	    clc(l,ii) = clc(l,ii) - aa*w
+	  end if
+
+	  flux_tot1 = aat * ( flux_top - flux_bot )
+	  flux_tot = aat * ( vflux(l-1,ii) - vflux(l,ii) )
+
+	  if( .not. btvdv ) then
+	  if( flux_tot .ne. flux_tot1 .or. flux_tot .ne. fw(ii) ) then
+	   !if( ie .eq. 100 ) then
+	    write(6,*) '********** vflux   ',ie,ii,l,ilevel
+	    write(6,*) fw(ii),flux_tot1,flux_tot
+	    write(6,*) flux_top,flux_bot
+	    do ll=0,ilevel
+	    write(6,*) ll,vflux(ll,ii)
+	    end do
+	   !end if
+	  end if
+	  end if
+
+	  fw(ii) = flux_tot
 	end do
 
-c contribution from horizontal advection (only explicit)
+c	----------------------------------------------------------------
+c	contributions from horizontal advection (only explicit)
+c	----------------------------------------------------------------
 c
-c f(ii) > 0 ==> flux into node ii
-c itot=1 -> flux out of one node
-c	compute flux with concentration of this node
-c itot=2 -> flux into one node
-c	for flux use conz. of the other two nodes and
-c	minus the sum of these nodes for the flux of this node
+c	f(ii) > 0 ==> flux into node ii
+c	itot=1 -> flux out of one node
+c		compute flux with concentration of this node
+c	itot=2 -> flux into one node
+c		for flux use conz. of the other two nodes and
+c		minus the sum of these nodes for the flux of this node
 
 	if(itot.eq.1) then	!$$flux
           k = kn(isum)
@@ -948,9 +1009,9 @@ c	minus the sum of these nodes for the flux of this node
 	  fl(3)=0.
 	end if
 
-c-------------------------------------------------
-c TVD scheme  !aac modified
-c-------------------------------------------------
+c	----------------------------------------------------------------
+c	TVD scheme start
+c	----------------------------------------------------------------
 
         if( btvd ) then
 	  iext = 0
@@ -964,11 +1025,13 @@ c-------------------------------------------------
 	  end if
 	end if
 
-c-------------------------------------------------
-c TVD scheme finish
-c-------------------------------------------------
+c	----------------------------------------------------------------
+c	TVD scheme finish
+c	----------------------------------------------------------------
 
-c sum explicit contributions
+c	----------------------------------------------------------------
+c	sum explicit contributions
+c	----------------------------------------------------------------
 
 	do ii=1,3
 	  k=kn(ii)
@@ -988,8 +1051,14 @@ c     +					  - rk3*hmed*c(ii)*ccm
 
 	end do		! loop over l
 
+c----------------------------------------------------------------
+c end of loop over l
+c----------------------------------------------------------------
+
+c----------------------------------------------------------------
 c set up implicit contributions
-c
+c----------------------------------------------------------------
+
 c cdiag is diagonal of tri-diagonal system
 c chigh is high (right) part of tri-diagonal system
 c clow is low (left) part of tri-diagonal system

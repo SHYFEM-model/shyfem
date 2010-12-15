@@ -7,6 +7,7 @@ c 03.12.2001    ggu     some extra output -> place of min/max
 c 09.12.2003    ggu     check for NaN introduced
 c 07.03.2007    ggu     easier call
 c 08.11.2008    ggu     do not compute min/max in non-existing layers
+c 07.12.2010    ggu     write statistics on depth distribution (depth_stats)
 c
 c**************************************************************
 
@@ -57,6 +58,8 @@ c--------------------------------------------------------------
         nvers=3
 	call rhnos(nin,nvers,nkndim,neldim,nlvdim,nkn,nel,nlv,nvar
      +				,ilhkv,hlv,hev,title)
+
+	call depth_stats(nkn,ilhkv)
 
 c--------------------------------------------------------------
 c loop on data
@@ -175,6 +178,54 @@ c rnull		invalid value
         end do
 
         end
+
+c***************************************************************
+
+	subroutine depth_stats(nkn,ilhkv)
+
+c	computes statistics on levels
+
+	implicit none
+
+	include 'param.h'
+
+	integer nkn
+	integer ilhkv(1)
+
+	integer count(nlvdim)
+	integer ccount(nlvdim)
+
+	integer nlv,lmax,l,k,nc,ll
+
+	nlv = 0
+	do l=1,nlvdim
+	  count(l) = 0
+	  ccount(l) = 0
+	end do
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+		if( lmax .gt. nlvdim ) stop 'error stop depth_stats: lmax'
+		count(lmax) = count(lmax) + 1
+		nlv = max(nlv,lmax)
+	end do
+
+	do l=nlv,1,-1
+		nc = count(l)
+	  do ll=1,l
+			ccount(ll) = ccount(ll) + nc
+		end do
+	end do
+
+	nc = 0
+	write(6,*) 'statistics for depth: ',nlv
+	do l=1,nlv
+	  write(6,*) l,count(l),ccount(l)
+		nc = nc + count(l)
+	end do
+	write(6,*) 'total count: ',nc
+
+	end
 
 c***************************************************************
 
