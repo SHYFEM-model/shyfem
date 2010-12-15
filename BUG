@@ -1,4 +1,10 @@
 
+BUG_2010_15     ggu     6.1.14   15.12.2010
+        bug fix in convert_coords for mode=-1 (subcoord.f)
+
+BUG_2010_14     ggu     6.1.14   15.12.2010
+        bug fix in vert_aver() (map_influence.f)
+
 BUG_2010_13     ggu     6.1.13   08.10.2010
 	bug fix in init_coriolis() -> ym not set for isphe=1 (newini.f)
 
