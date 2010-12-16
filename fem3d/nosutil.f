@@ -3,6 +3,7 @@ c utility routines
 c
 c 29.04.2010    ggu     new file from nosaver
 c 07.05.2010    ggu     new routines qopen_nos_file(), checks ev initialization
+c 15.12.2010    ggu     volume computation also for sigma layers
 c
 c***************************************************************
 
@@ -169,11 +170,12 @@ c we could do better using information on node area and depth structure
 
         include 'ev.h'
 
-	logical belem
+	logical belem,bsigma
 	integer ie,ii,k,l,lmax
 	real area,helem,hup,hbot,h
 
 	call is_init_ev(belem)		!use ev if initialized
+	bsigma = hlv(nlv) .eq. -1.	!sigma layers
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
@@ -193,6 +195,7 @@ c we could do better using information on node area and depth structure
 	    hup = 0.
 	    do l=1,lmax
 	      hbot = hlv(l)
+	      if( bsigma ) hbot = - hbot * helem
 	      if( hbot .gt. helem ) hbot = helem
 	      h = hbot - hup
 	      vol3(l,k) = vol3(l,k) + area * h

@@ -1,4 +1,23 @@
 
+========================================================== 16-12-2010 - 6_1_15
+
+16.12.2010
+
+	sigma layers partially finished
+		./fem3d/newbcl.f:
+		./fem3d/newini.f:
+		./fem3d/newexpl.f:
+		./fem3d/subele.f:
+		./fem3d/subsys.f:
+		./fem3d/newsig.f:
+	bug fix in copy_depth (basbathy.f)
+	in depadj() do not set hm3v to constant (subdep.f)
+	nsigma and bsigma renamed
+		./fem3d/newfix.f:
+		./fem3d/newbsig.f:
+	new file ousutil.f
+	map_influence.f restructured to use volume file
+
 ========================================================== 15-12-2010 - 6_1_14
 
 15.12.2010

@@ -29,6 +29,7 @@ c 26.02.2010	ggu	new call to momentum_viscous_stability()
 c 26.02.2010	ggu	set_advective() cleaned up
 c 26.02.2010	ggu	new momentum_advective_stability()
 c 08.03.2010	ggu	run only down to avail layers (bug fix)
+c 16.12.2010	ggu	barocl preconditioned for sigma layers, but not finshed
 c
 c notes :
 c
@@ -811,6 +812,8 @@ c**********************************************************************
 	common /bpresv/bpresv
         real hdeov(nlvdim,1)
         common /hdeov/hdeov
+	real hev(1)
+	common /hev/hev
 	real hldv(1)
 	common /hldv/hldv
         integer ilhv(1)
@@ -820,6 +823,7 @@ c**********************************************************************
         integer nen3v(3,1)
         common /nen3v/nen3v
 
+	logical bsigma
         integer k,l,ie,ii,lmax,lmin
         double precision hlayer,hhi
         double precision xbcl,ybcl
@@ -829,6 +833,7 @@ c**********************************************************************
         if(nlvdim.ne.nlvdi) stop 'error stop set_barocl_new: nlvdi'
 
         raux=grav/rowass
+	bsigma = hldv(1) .lt. 0.
 
         do ie=1,nel
           presbcx = 0.
@@ -838,6 +843,7 @@ c**********************************************************************
           do l=1,lmax
             hhi = hdeov(l,ie)
             hhi = hldv(l)
+	    if( bsigma ) hhi = - hhi * hev(ie)
             hlayer = 0.5 * hhi
                 
 	    br = 0.
@@ -868,7 +874,9 @@ c**********************************************************************
 
 c**********************************************************************
 
-        subroutine set_barocl_new1
+        subroutine set_barocl_old
+
+c do not use !!!
 
         implicit none
          
@@ -892,6 +900,8 @@ c**********************************************************************
 	common /bpresv/bpresv
         real hdeov(nlvdim,1)
         common /hdeov/hdeov
+	real hev(1)
+	common /hev/hev
 	real hldv(1)
 	common /hldv/hldv
         integer ilhv(1)
@@ -901,6 +911,7 @@ c**********************************************************************
         integer nen3v(3,1)
         common /nen3v/nen3v
 
+	logical bsigma
         integer k,l,ie,ii,lmax,lmin
         double precision hlayer,hhi
         double precision xbcl,ybcl
@@ -913,6 +924,7 @@ c**********************************************************************
         if(nlvdim.ne.nlvdi) stop 'error stop set_barocl_new: nlvdi'
 
         raux=grav/rowass
+	bsigma = hldv(1) .lt. 0.
 
         do ie=1,nel
           presbcx = 0.
@@ -925,6 +937,7 @@ c**********************************************************************
           do l=1,lmax
             hhi = hdeov(l,ie)
             hhi = hldv(l)
+	    if( bsigma ) hhi = - hhi * hev(ie)
             hlayer = 0.5 * hhi
             hlayer = hhi
                 

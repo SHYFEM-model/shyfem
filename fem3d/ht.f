@@ -640,12 +640,8 @@ c*****************************************************************
 
 	integer ilhv(neldim)
 	integer ilhkv(nkndim)
-	real hlv(nlvdim), hldv(nlvdim)
-	real hlhv(neldim)
 	common /ilhv/ilhv
 	common /ilhkv/ilhkv
-	common /hlv/hlv, /hldv/hldv
-	common /hlhv/hlhv
 
 	real hev(neldim)
 	common /hev/hev

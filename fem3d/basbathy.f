@@ -12,6 +12,7 @@ c 12.05.2005    ggu     pass hmin to interpolation functions
 c 06.04.2005    ggu     read param.h
 c 24.04.2009	ggu	new call to rdgrd()
 c 21.05.2009	ggu	restructured to allow for nodal interpolation
+c 16.12.2010	ggu	bug fix in copy_depth()
 c
 c****************************************************************
 
@@ -294,6 +295,7 @@ c copies depth values from elems/nodes to nodes/elems
 	    do ii=1,3
 	      k = nen3v(ii,ie)
 	      hkv(k) = hkv(k) + hev(ie)
+	      ic(k) = ic(k) + 1			!BUG - this was missing
 	    end do
 	  end do
 

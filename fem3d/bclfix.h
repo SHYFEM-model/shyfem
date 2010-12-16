@@ -6,12 +6,12 @@
 	parameter (nlxdim = nlvdim)
 
 	character*80 fixfile
-	logical bfix,bsigma
+	logical bfix,bosigma
 	integer nbfix,lbmax
 	real tramp,tnudge
 
 	common /fixfile/fixfile
-	common /fixlog/bfix,bsigma
+	common /fixlog/bfix,bosigma
 	common /fixint/nbfix,lbmax
 	common /fixreal/tramp,tnudge
 

@@ -90,6 +90,7 @@ c 23.02.2010	ggu	new parameter regdst
 c 26.03.2010	ggu	new parameters for arrows in section plot
 c 28.09.2010	ggu	new value for icor
 c 29.09.2010	ggu	new param vmode,rxscal,ryscal
+c 15.12.2010	ggu	nsigma renamed to nbsig, nsigma used for sigma layers
 c
 c************************************************************************
 
@@ -471,6 +472,7 @@ cc         3=add to last layer (keep depth but change layer)
 	call addpar('ilytyp',3.00)	!type of depth adjustment
 	call addpar('hlvmin',0.25)	!min percentage of last layer thickness
 
+	call addpar('nsigma',0.)	!number of sigma layers	!FIXME
 
 cc baroclinic model
 cc
@@ -783,7 +785,7 @@ cc new for scaling time step
 cc experimental stuff
 
         call addpar('nbfix',0.)         !vel at boundary
-        call addpar('nsigma',0.)        !sigma layers to read in?
+        call addpar('nbsig',0.)         !sigma layers to read in for OBC
 
 	end
 

@@ -1,6 +1,10 @@
 c
 c routines for sigma levels
 c
+c revision log :
+c
+c 16.12.2010    ggu     program partially finished
+c
 c********************************************************************
 
 	subroutine init_sigma_vertical
@@ -98,7 +102,18 @@ c********************************************************************
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
+        integer ilhv(1)
+        common /ilhv/ilhv
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+
+        real hlv(1)
+        common /hlv/hlv
+
+
+	integer i,k,ie
 	integer nsiglv
+	real ds
 
 	real getpar
 

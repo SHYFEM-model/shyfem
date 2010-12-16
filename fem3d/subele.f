@@ -67,6 +67,7 @@ c 22.02.2005    ggu     routines deleted: tempvele saltvele conzvele
 c 25.08.2005    ggu     bug in dvanode fixed (use * instead of +)
 c 29.11.2006    ggu     in copydepth do not set to 0 old depths
 c 07.11.2008    ggu     new helper routine make_new_depth()
+c 16.12.2010    ggu     setdepth() changed for sigma levels
 c
 c****************************************************************
 
@@ -863,9 +864,12 @@ c	real zenv(1)
 c	common /zenv/zenv
 
         logical bdebug
+        logical bsigma
 	integer k,l,ie,ii
 	integer nlev,n,ibase
 	real hfirst,hlast,h,htot,z,zmed
+	real hacu,hlevel,hlast_aux
+
 	real areael,areafv
 	real areaele
 
@@ -892,6 +896,7 @@ c compute volumes at node
 c----------------------------------------------------------------
 
 	hfirst = hldv(1)
+	bsigma = hfirst .lt. 0.
 
 	do ie=1,nel
 
@@ -914,16 +919,29 @@ c	  -------------------------------------------------------
 	    z = zenv(ibase+ii)
 	    zmed = zmed + z
 
-	    if( nlev .eq. 1 ) then
+	    if( bsigma ) then
+	      h = htot + z
+	      do l=1,nlev
+	        hdkn(l,k) = - h * hldv(l)
+	      end do
+	    else if( nlev .eq. 1 ) then
 	      h = htot + z
 	      hdkn(1,k) = hdkn(1,k) + areafv * h
 	    else
 	      h = hfirst + z
+	      hacu = hfirst
 	      hdkn(1,k) = hdkn(1,k) + areafv * h
 	      do l=2,nlev-1
-	        hdkn(l,k) = hdkn(l,k) + areafv * hldv(l)
+	        hlevel = hldv(l)
+	        hdkn(l,k) = hdkn(l,k) + areafv * hlevel
+		hacu = hacu + hlevel
 	      end do
+	      hlast_aux = htot - hacu
 	      hdkn(nlev,k) = hdkn(nlev,k) + areafv * hlast
+	      if( hlast_aux .ne. hlast ) then
+		write(6,*) '**** hlast node: ',ie,ii,nlev
+		write(6,*) hfirst,htot,hacu,hlast,hlast_aux
+	      end if
 	    end if
 
 	  end do
@@ -933,15 +951,29 @@ c	  element values
 c	  -------------------------------------------------------
 
 	  zmed = zmed / n
+	  htot = hev(ie)
 
-	  if( nlev .eq. 1 ) then
-	    hden(1,ie) = hev(ie) + zmed
+	  if( bsigma ) then
+	    h = htot + zmed
+	    do l=1,nlev
+	      hden(l,ie) = - h * hldv(l)
+	    end do
+	  else if( nlev .eq. 1 ) then
+	    hden(1,ie) = htot + zmed
 	  else
 	    hden(1,ie) = hfirst + zmed
+	    hacu = hfirst
 	    do l=2,nlev-1
-	      hden(l,ie) = hldv(l)
+	      hlevel = hldv(l)
+	      hden(l,ie) = hlevel
+	      hacu = hacu + hlevel
 	    end do
+	    hlast_aux = htot - hacu
 	    hden(nlev,ie) = hlast
+	    if( hlast_aux .ne. hlast ) then
+		write(6,*) '**** hlast elem: ',ie,nlev
+		write(6,*) hfirst,htot,hacu,hlast,hlast_aux
+	    end if
 	  end if
 
 	end do
@@ -950,7 +982,8 @@ c----------------------------------------------------------------
 c compute depth at nodes
 c----------------------------------------------------------------
 
-	do k=1,nkn
+	if( .not. bsigma ) then
+	 do k=1,nkn
 	  do l=1,levdim
 	    areafv = area(l,k)
 	    if( areafv .gt. 0. ) then
@@ -960,7 +993,8 @@ c----------------------------------------------------------------
 	    end if
 	  end do
     1	  continue
-	end do
+	 end do
+	end if
 
 c----------------------------------------------------------------
 c end of routine

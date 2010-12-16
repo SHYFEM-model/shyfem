@@ -18,6 +18,7 @@ c 12.11.2008    ggu     handle sigma coordinates
 c 06.12.2008    ggu     read nbfix from STR
 c 19.01.2009    ggu     no error stop in initializing when nbfix=0
 c 23.03.2009    ggu     tramp from start of simulation
+c 16.12.2010    ggu     bsigma renamed to bosigma
 
 c*****************************************************************
 
@@ -43,8 +44,8 @@ c-------------------------------------------------------------
 	bfix = .true.		!fix velocities at boundary
 	bfix = .false.		!nudge velocities at boundary
 
-	bsigma = .false.	!boundary data is on z levels
-	bsigma = .true.		!boundary data is on sigma levels
+	bosigma = .false.	!boundary data is on z levels
+	bosigma = .true.	!boundary data is on sigma levels
 
 	lbmax = 15		!how many levels to read from boundary file
 	lbmax = 5		!how many levels to read from boundary file
@@ -190,7 +191,7 @@ c------------------------------------------------------------------
 	  if( n .gt. 0 ) then
 
 	    lmax = ilhv(ie)
-	    if( .not. bsigma .and. lmax .gt. lbmax ) goto 99
+	    if( .not. bosigma .and. lmax .gt. lbmax ) goto 99
 
 	    do l=1,lmax
 	      u(l) = 0.
@@ -199,7 +200,7 @@ c------------------------------------------------------------------
 
 	    do i=1,n
 	      k = ielfix(i,ie)
-	      if( bsigma ) then
+	      if( bosigma ) then
 	        call add_sigma_to_element(ie,k,ifact,nlxdim
      +                          ,ubound,vbound,u,v)
 	      else
@@ -351,7 +352,7 @@ c------------------------------------------------------------------
 	  if( n .gt. 0 ) then
 
 	    lmax = ilhv(ie)
-	    if( .not. bsigma .and. lmax .gt. lbmax ) goto 99
+	    if( .not. bosigma .and. lmax .gt. lbmax ) goto 99
 
 	    do l=1,lmax
 	      u(l) = 0.
@@ -360,7 +361,7 @@ c------------------------------------------------------------------
 
 	    do i=1,n
 	      k = ielfix(i,ie)
-	      if( bsigma ) then
+	      if( bosigma ) then
 	        call add_sigma_to_element(ie,k,ifact,nlxdim
      +                          ,ubound,vbound,u,v)
 	      else
@@ -503,7 +504,7 @@ c------------------------------------------------------------------
 
 	write(6,*) '-------------'
 	write(6,*) 'bclfix_ini has found ',n,' elements to be fixed'
-	write(6,*) 'bfix,bsigma: ',bfix,bsigma
+	write(6,*) 'bfix,bosigma: ',bfix,bosigma
 	write(6,*) 'nbfix,lbmax: ',nbfix,lbmax
 	write(6,*) 'nbadim,nlxdim: ',nbadim,nlxdim
 	write(6,*) '-------------'

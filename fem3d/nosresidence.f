@@ -40,17 +40,14 @@ c--------------------------------------------------
         double precision cvacu(nlvdim,nkndim)
 
 	integer ilhkv2(nkndim)
-	integer ilhv2(neldim)
 	real hev2(neldim)
 	real hlv2(nlvdim)
 
 	integer ilhkv(nkndim)
-	integer ilhv(neldim)
 	real hev(neldim)
 	real hlv(nlvdim)
 
 	common /ilhkv/ilhkv
-	common /ilhv/ilhv
 	common /hev/hev
 	common /hlv/hlv
 
@@ -705,40 +702,5 @@ c**********************************************************************
 c**********************************************************************
 c**********************************************************************
 c**********************************************************************
-c**********************************************************************
-
-	subroutine set_ilhv_post(nlv,nkn,nel,hlv,hev,nen3v,ilhkv,ilhv)
-
-c simplicistic
-
-	implicit none
-
-	integer nlv,nkn,nel
-	real hlv(1)
-	real hev(1)
-	integer nen3v(3,1)
-	integer ilhkv(1)
-	integer ilhv(1)
-
-	integer ie,ii,k,l
-	integer lmin,lmax
-
-	do ie=1,nel
-	  lmin = nlv
-	  do ii=1,3
-	    k = nen3v(ii,ie)
-	    lmin = min(lmin,ilhkv(k))
-	  end do
-	  l = 1
-	  do while( hlv(l) .lt. hev(ie) )
-	    l = l + 1
-	  end do
-	  lmax = l
-	  if( lmax .gt. lmin ) lmax = lmin
-	  ilhv(ie) = lmax
-	end do
-
-	end
-
 c**********************************************************************
 

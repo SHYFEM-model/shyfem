@@ -21,6 +21,7 @@ c 25.03.2002	ggu	new routines makehkv (before makehv) and makehev
 c 28.11.2005	ggu	makehkv changed (uses real aux value, area weight)
 c 24.02.2006	ggu	bug in makehkv -> haux was integer
 c 18.10.2006	ccf	bug in makehkv -> no area multiplication
+c 16.12.2010	ggu	in depadj() do not set hm3v to constant
 c
 c********************************************************************
 
@@ -328,16 +329,16 @@ c adjusts depth to reference and min/max values
 
 c adjust depth to constant in element %%%%%%%%%%%%%%%%%%%%%%
 
-        do ie=1,nel
-          hmed=0.
-          do ii=1,3
-            hmed=hmed+hm3v(ii,ie)
-          end do
-          hmed=hmed/3.
-          do ii=1,3
-            hm3v(ii,ie)=hmed
-          end do
-        end do
+c        do ie=1,nel
+c          hmed=0.
+c          do ii=1,3
+c            hmed=hmed+hm3v(ii,ie)
+c          end do
+c          hmed=hmed/3.
+c          do ii=1,3
+c            hm3v(ii,ie)=hmed
+c          end do
+c        end do
 
 c adjust depth to minimum depth %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

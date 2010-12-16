@@ -8,8 +8,9 @@ c
 c revision log :
 c
 c 07.11.2008    ggu     program written from scratch
-c 06.12.2008    ggu     bsigma set from STR (nsigma)
-c 24.03.2009    ggu     use nsigma to check if initialized
+c 06.12.2008    ggu     bbsig set from STR (nbsig)
+c 24.03.2009    ggu     use nbsig to check if initialized
+c 16.12.2010    ggu     adjusted for sigma levels, renamed sigma.h to bsig.h
 c
 c*****************************************************************
 
@@ -20,22 +21,22 @@ c initializes u/v/z from sigma level data
 	implicit none
 
 	include 'param.h'
-	include 'sigma.h'
+	include 'bsig.h'
 
 	character*(60) sigma_l,sigma_d,sigma_u,sigma_v,sigma_z,sigma_b
-	logical bsigma
+	logical bbsig
         integer nsig
         real getpar
 
-        nsig = nint(getpar('nsigma'))
+        nsig = nint(getpar('nbsig'))
 
-	bsigma = .false.		!if true read in sigma data
-	bsigma = .true.			!if true read in sigma data
-        bsigma = nsig .gt. 0
+	bbsig = .false.		!if true read in sigma data
+	bbsig = .true.		!if true read in sigma data
+        bbsig = nsig .gt. 0
 
-	nsigma = 0			!number of sigma levels read (init)
+	nbsig = 0			!number of sigma levels read (init)
 
-	if( .not. bsigma ) return	!no initialization with sigma data
+	if( .not. bbsig ) return	!no initialization with sigma data
 
 	sigma_l = 'RosSigmas.txt'
 	sigma_d = 'PtsBathyAll.txt'
@@ -45,15 +46,15 @@ c initializes u/v/z from sigma level data
 	sigma_v = 'Vvelocities_init.txt'
 	sigma_z = 'elevation_init.txt'
 
-	call set_sigma_levels(sigma_l)
-	call set_sigma_depths(sigma_d)
+	call set_bsigma_levels(sigma_l)
+	call set_bsigma_depths(sigma_d)
 	call init_vel_from_sigma(sigma_u,sigma_v,sigma_z)
 
 	end
 
 c*****************************************************************
 
-	subroutine set_sigma_levels(file)
+	subroutine set_bsigma_levels(file)
 
 c read in sigma levels
 
@@ -62,51 +63,51 @@ c read in sigma levels
 	character*(*) file
 
 	include 'param.h'
-	include 'sigma.h'
+	include 'bsig.h'
 
 	integer i
 
-	nsigma = 0
+	nbsig = 0
 
 	open(1,file=file)
-	read(1,*) nsigma
-	nsigma = nsigma - 1		!number of layers, not levels
+	read(1,*) nbsig
+	nbsig = nbsig - 1		!number of layers, not levels
 
-	if( nsigma .gt. nsidim ) goto 98
+	if( nbsig .gt. nsidim ) goto 98
 
-	do i=0,nsigma
+	do i=0,nbsig
 	  read(1,*) siglev(i)
 	end do
 
 	close(1)
 
 	if( siglev(0) .ne. 0. ) goto 99
-	if( siglev(nsigma) .ne. 1. ) goto 99
+	if( siglev(nbsig) .ne. 1. ) goto 99
 
-	write(6,*) nsigma,' sigma layers read from file ',file
+	write(6,*) nbsig,' sigma layers read from file ',file
 
 	return
    98	continue
 	write(6,*) 'too many sigma levels'
-	write(6,*) 'nsigma = ',nsigma,'    nsidim = ',nsidim
-	stop 'error stop set_sigma_levels: nsidim'
+	write(6,*) 'nbsig = ',nbsig,'    nsidim = ',nsidim
+	stop 'error stop set_bsigma_levels: nsidim'
    99	continue
 	write(6,*) 'problems in sigma levels...'
-	write(6,*) nsigma
-	write(6,*) (siglev(i),i=0,nsigma)
-	stop 'error stop set_sigma_levels: sigma'
+	write(6,*) nbsig
+	write(6,*) (siglev(i),i=0,nbsig)
+	stop 'error stop set_bsigma_levels: sigma'
 	end
 
 c*****************************************************************
 
-	subroutine set_sigma_depths(file)
+	subroutine set_bsigma_depths(file)
 
 c read in depth file for sigma layers
 
 	implicit none
 
 	include 'param.h'
-	include 'sigma.h'
+	include 'bsig.h'
 
 	character*(*) file
 
@@ -142,7 +143,7 @@ c read in depth file for sigma layers
    98	continue
 	write(6,*) 'not compatible number of total nodes'
 	write(6,*) 'nknaux = ',nknaux,'    nkn = ',nkn
-	stop 'error stop set_sigma_depths: nkn'
+	stop 'error stop set_bsigma_depths: nkn'
 	end
 
 c*****************************************************************
@@ -154,7 +155,7 @@ c initializes u/v/z from sigma level data
 	implicit none
 
 	include 'param.h'
-	include 'sigma.h'
+	include 'bsig.h'
 
 	character*(*) fileu,filev,filez
 
@@ -187,7 +188,7 @@ c initializes u/v/z from sigma level data
 
 	integer ipext
 
-	if( nsigma .gt. nsidim ) goto 99
+	if( nbsig .gt. nsidim ) goto 99
 
 c----------------------------------------------------------
 c read in water levels
@@ -298,7 +299,7 @@ c----------------------------------------------------------
 	stop 'error stop init_vel_from_sigma: nkn'
    99	continue
 	write(6,*) 'too many sigma levels'
-	write(6,*) 'nsigma = ',nsigma,'    nsidim = ',nsidim
+	write(6,*) 'nbsig = ',nbsig,'    nsidim = ',nsidim
 	stop 'error stop init_vel_from_sigma: nsidim'
 	end
 
@@ -309,7 +310,7 @@ c*****************************************************************
 	implicit none
 
 	include 'param.h'
-	include 'sigma.h'
+	include 'bsig.h'
 
 	integer ie,k,ifact,ndim
 	real uval(ndim,nkndim)
@@ -331,36 +332,45 @@ c*****************************************************************
 	real siguval(nsidim+1)
 	real sigvval(nsidim+1)
 
+	logical bsigma
 	integer l,lmax
 	real hfem,hfd,zfem
 	real fact
 
-	if( nsigma .le. 0 ) goto 98
+	if( nbsig .le. 0 ) goto 98
 
 	hfem = hev(ie)
 	lmax = ilhv(ie)
+	bsigma = hlv(lmax) .eq. -1.
 
 	hfd = sigdep(k)
 	zfem = znv(k)		!this might not be set at the boundary
 
-	hlfem(0) = -zfem
-	do l=1,lmax-1
-	  hlfem(l) = hlv(l)
-	end do
-	hlfem(lmax) = hfem
+	if( bsigma ) then
+	  hlfem(0) = -zfem
+	  do l=1,lmax
+	    hlfem(l) = -zfem - (hfem+zfem) * hlv(l)
+	  end do
+	else
+	  hlfem(0) = -zfem
+	  do l=1,lmax-1
+	    hlfem(l) = hlv(l)
+	  end do
+	  hlfem(lmax) = hfem
+	end if
 
 	fact = 1.
 	if( ifact .ne. 0 ) fact = (hfd+zfem) / (hfem+zfem)
 
-	call make_sigma_layer_bottom(nsigma,siglev,hfem,zfem,hsig)
+	call make_sigma_layer_bottom(nbsig,siglev,hfem,zfem,hsig)
 
-	do l=1,nsigma
+	do l=1,nbsig
 	  siguval(l) = uval(l,k)
 	  sigvval(l) = vval(l,k)
 	end do
 
-	call intp_vert(nsigma,hsig,siguval,lmax,hlfem,femuval)
-	call intp_vert(nsigma,hsig,sigvval,lmax,hlfem,femvval)
+	call intp_vert(nbsig,hsig,siguval,lmax,hlfem,femuval)
+	call intp_vert(nbsig,hsig,sigvval,lmax,hlfem,femvval)
 
 	do l=1,lmax
 	  u(l) = u(l) + fact * femuval(l)
@@ -374,20 +384,20 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine make_sigma_layer_thickness(nsigma,siglev,h,z,hlayer)
+	subroutine make_sigma_layer_thickness(nbsig,siglev,h,z,hlayer)
 
 c compute layer thickness for depth h and water level z
 
 	implicit none
 
-	integer nsigma
-	real siglev(0:nsigma)
+	integer nbsig
+	real siglev(0:nbsig)
 	real h,z
-	real hlayer(nsigma)
+	real hlayer(nbsig)
 
 	integer l
 
-	do l=1,nsigma
+	do l=1,nbsig
 	  hlayer(l) = (h+z) * (siglev(l) - siglev(l-1))
 	end do
 
@@ -395,20 +405,20 @@ c compute layer thickness for depth h and water level z
 
 c*****************************************************************
 
-	subroutine make_sigma_layer_bottom(nsigma,siglev,h,z,hbottom)
+	subroutine make_sigma_layer_bottom(nbsig,siglev,h,z,hbottom)
 
 c compute bottom of layers for depth h and water level z
 
 	implicit none
 
-	integer nsigma
-	real siglev(0:nsigma)
+	integer nbsig
+	real siglev(0:nbsig)
 	real h,z
-	real hbottom(0:nsigma)
+	real hbottom(0:nbsig)
 
 	integer l
 
-	do l=0,nsigma
+	do l=0,nbsig
 	  hbottom(l) = - z - (h+z) * siglev(l)
 	end do
 

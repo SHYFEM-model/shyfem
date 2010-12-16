@@ -44,6 +44,7 @@ c 13.01.2009    ggu&deb changes in reading file in read_next_record()
 c 13.10.2009    ggu     in rhoset bug computing pres
 c 13.11.2009    ggu     only initialize T/S if no restart, new rhoset_shell
 c 19.01.2010    ggu     different call to has_restart() 
+c 16.12.2010    ggu     sigma layers introduced (maybe not finished)
 c
 c*****************************************************************
 
@@ -432,6 +433,8 @@ c common
 	common /ilhkv/ilhkv
 	real bpresv(nlvdim,1),rhov(nlvdim,1)
 	common /bpresv/bpresv, /rhov/rhov
+	real hkv(1)
+	common /hkv/hkv
 	real hldv(1)
 	common /hldv/hldv
 
@@ -439,10 +442,10 @@ c common
         common /hdkov/hdkov
 
 c local
-	logical bdebug,debug
+	logical bdebug,debug,bsigma
 	integer k,l,lmax
 	real sigma0,rho0,pres
-	real depth,hlayer,h
+	real depth,hlayer,h,htot
 	real rhop,presbt,presbc,dpresc
 	double precision dresid
 c functions
@@ -454,6 +457,8 @@ c functions
 	debug=.false.
 	bdebug=.false.
 
+	bsigma = hldv(1) .lt. 0.
+
 	if(debug) write(6,*) sigma0,rowass,rho0
 
 	dresid = 0.
@@ -462,10 +467,12 @@ c functions
 	  depth = 0.
 	  presbc = 0.
 	  lmax=ilhkv(k)
+	  htot = hkv(k)
 
 	  do l=1,lmax
 	    h = hdkov(l,k)
 	    h = hldv(l)
+	    if( bsigma ) h = -h * htot
 	    hlayer = 0.5 * h
 	    depth = depth + hlayer
 	    rhop = rhov(l,k)			!rho^prime

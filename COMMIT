@@ -1,5 +1,45 @@
 ============================================================
 
+Thu Dec 16 15:04:53 CET 2010
+
+prepared for sigma layers
+
+ .gitignore              |    1 +
+ BUG                     |    3 +
+ LOG                     |   19 ++
+ fem3d/Makefile          |   61 ++----
+ fem3d/basbathy.f        |    2 +
+ fem3d/bclfix.h          |    4 +-
+ fem3d/bsig.h            |   16 ++
+ fem3d/concinf.f         |  378 ---------------------------------
+ fem3d/ht.f              |    4 -
+ fem3d/map_influence.f   |  185 +++++++++-------
+ fem3d/newbcl.f          |   11 +-
+ fem3d/newbsig.f         |  541 +++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/newexpl.f         |   15 ++-
+ fem3d/newfix.f          |   15 +-
+ fem3d/newini.f          |  134 ++++++++++---
+ fem3d/newsig.f          |   15 ++
+ fem3d/newsigma.f        |  531 ----------------------------------------------
+ fem3d/nosexport.f       |  188 ----------------
+ fem3d/nosintp.f         |  298 --------------------------
+ fem3d/nosresidence.f    |   38 ----
+ fem3d/nosutil.f         |    5 +-
+ fem3d/ousextr_gis.f     |  148 +-------------
+ fem3d/ousextr_nodes.f   |  128 ++---------
+ fem3d/ousextr_records.f |   44 ----
+ fem3d/ousintp.f         |   75 +-------
+ fem3d/ousutil.f         |  169 +++++++++++++++
+ fem3d/outinf.f          |  453 ---------------------------------------
+ fem3d/outintp.f         |  341 -----------------------------
+ fem3d/sigma.h           |   16 --
+ fem3d/subdep.f          |   21 +-
+ fem3d/subele.f          |   48 ++++-
+ fem3d/subsys.f          |    4 +-
+ 32 files changed, 1115 insertions(+), 2796 deletions(-)
+
+============================================================
+
 Wed Dec 15 11:12:35 CET 2010
 
 New version 6_1_14

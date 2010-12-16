@@ -51,6 +51,7 @@ c 24.03.2009    ggu	bug fix: in set_last_layer() do not adjust for 2D
 c 21.04.2009    ggu	new routine inic2fil()
 c 28.09.2010    ggu	bug fix in init_coriolis() for isphe=1
 c 08.10.2010    ggu	bug fix in init_coriolis() -> ym not set for isphe=1
+c 16.12.2010    ggu	big restructering for sigma levels (look for bsigma)
 c
 c**************************************************************
 
@@ -229,19 +230,29 @@ c sets up depth arrays and adjusts depth values
         common /hkv/hkv, /hev/hev
 	real v1v(1)
 	common /v1v/v1v
+	real hldv(1)
+	common /hldv/hldv
 
+	logical bsigma
 	real hmin,hmax,href
 	real getpar
 
 c       call bocche     !FIXME
+
+	bsigma = hldv(1) .lt. 0.
 
         hmin=getpar('hmin')
         hmax=getpar('hmax')
         href=getpar('href')
 
         call depadj(hmin,hmax,href)	!adjusts h=h-href and hmax<h<hmin
-        call huniqu(hev,hkv)		!computes hev and reassignes to hm3v
-        call makehkv(hkv,v1v)		!computes hkv as average
+
+	if( bsigma ) then
+	  call set_sigma_hkhe
+	else
+          call huniqu(hev,hkv)		!computes hev and reassignes to hm3v
+          call makehkv(hkv,v1v)		!computes hkv as average
+	end if
 
 	end
 
@@ -315,9 +326,9 @@ c common
 	common /hldv/hldv, /hlv/hlv
 
 c local
-	logical bstop
-	integer l
-	real dzreg,hbot
+	logical bstop,bsigma
+	integer l,nsigma
+	real dzreg,hbot,hl,fact
 	real getpar
 
 c--------------------------------------------------------------
@@ -325,9 +336,17 @@ c create hlv values
 c--------------------------------------------------------------
 
 	dzreg = getpar('dzreg')
+	nsigma = nint(getpar('nsigma'))
 
-	if( nlv .le. 0 ) then	!no level section given
-	  if( dzreg .gt. 0. ) then	!see if regular grid
+	if( nlv .le. 0 ) then		!no level section given
+	  if( nsigma .gt. 0 ) then	!sigma layers
+	    nlv = nsigma
+	    hl = -1. / nlv
+	    do l=1,nlv
+	      hbot = hbot + dzreg
+	      hlv(l) = l * hl
+	    end do
+	  else if( dzreg .gt. 0. ) then	!regular grid
 	    nlv = nlvdi
 	    hbot = 0.
 	    do l=1,nlv
@@ -347,8 +366,13 @@ c check hlv values
 c--------------------------------------------------------------
 
 	bstop = .false.
+	bsigma = hlv(nlv) .eq. -1.	!sigma levels
+
+	fact = 1.
+	if( bsigma ) fact = -1.
+
 	do l=2,nlv
-	  if( hlv(l) .le. hlv(l-1) ) then
+	  if( fact*hlv(l) .le. fact*hlv(l-1) ) then
 	    write(6,*) 'Error in level values for level : ',l
 	    write(6,*) '   hlv(l-1),hlv(l) :',hlv(l-1),hlv(l)
 	    bstop = .true.
@@ -386,9 +410,13 @@ c common
 	common /hldv/hldv, /hlv/hlv
 
 c local
-	logical bstop
+	logical bstop,bsigma
 	integer l
-	real h,hd
+	real h,hd,fact
+
+	bsigma = hldv(1) .lt. 0.
+	fact = 1.
+	if( bsigma ) fact = -1.		!sigma levels
 
 c--------------------------------------------------------------
 c check hlv values
@@ -396,7 +424,7 @@ c--------------------------------------------------------------
 
 	bstop = .false.
 	do l=2,nlv
-	  if( hlv(l) .le. hlv(l-1) ) then
+	  if( fact*hlv(l) .le. fact*hlv(l-1) ) then
 	    write(6,*) 'Error in level values for level : ',l
 	    write(6,*) '   hlv(l-1),hlv(l) :',hlv(l-1),hlv(l)
 	    bstop = .true.
@@ -447,11 +475,14 @@ c sets array ilhv
 	common /hev/hev
 
 c local
+	logical bsigma
 	integer ie,l,lmax
 	real h,hmax
 
 	lmax=0
 	hmax = 0.
+
+	bsigma = hlv(nlv) .eq. -1.
 
 	do ie=1,nel
 	  hmax = max(hmax,hev(ie))
@@ -461,16 +492,14 @@ c local
 
 	  h=hev(ie)
 
-	  do l=1,nlv
-	    if(hlv(l).ge.h) goto 1
-	  end do
-    1	  continue
-
-	  if( l .gt. nlv ) then
-	    write(6,*) ie,l,nlv,h,hlv(nlv)
-	    write(6,*) 'maximum basin depth: ',hmax
-	    write(6,*) 'maximum layer depth: ',hlv(nlv)
-	    stop 'error stop set_ilhv: not enough layers'
+	  if( bsigma ) then
+	    l = nlv
+	  else
+	    do l=1,nlv
+	      if(hlv(l).ge.h) goto 1
+	    end do
+    1	    continue
+	    if( l .gt. nlv ) goto 99
 	  end if
 
 	  ilhv(ie)=l
@@ -480,6 +509,12 @@ c local
 
 	nlv = lmax
 
+	return
+   99	continue
+	write(6,*) ie,l,nlv,h,hlv(nlv)
+	write(6,*) 'maximum basin depth: ',hmax
+	write(6,*) 'maximum layer depth: ',hlv(nlv)
+	stop 'error stop set_ilhv: not enough layers'
 	end
 
 c*****************************************************************
@@ -600,19 +635,26 @@ c checks arrays ilhv and ilhkv
 	common /hev/hev
 	real hlv(1)
 	common /hlv/hlv
+	real hldv(1)
+	common /hldv/hldv
 	real hlhv(1)
 	common /hlhv/hlhv
 
+	logical bsigma
+	integer nsigma
 	integer ie,ii,k,lmax,lk
 	real h,hlev
+
+	bsigma = hldv(1) .lt. 0.
+	nsigma = ilhv(1)
 
 	do ie=1,nel
 	  lmax = ilhv(ie)
 	  hlev = hlv(lmax)
 	  h = hev(ie)
 	  if( lmax .le. 0 ) goto 99
-	  !if( h .gt. hlev ) goto 99
-	  if( lmax .gt. 1 ) then
+	  !if( h .gt. hlev ) goto 99		!might have changed
+	  if( .not. bsigma .and. lmax .gt. 1 ) then
 	    if( hlv(lmax-1) + hlhv(ie) - h .ne. 0. ) goto 99
 	  end if
 	end do
@@ -625,14 +667,19 @@ c checks arrays ilhv and ilhkv
 	    if( lk .le. 0 ) goto 98
 	    if( lk .lt. lmax ) goto 98
 	  end do
+	  if( bsigma .and. lmax .ne. nsigma ) goto 96
 	end do
 
 	do k=1,nkn
 	  lmax=ilhkv(k)
 	  if( lmax .le. 0 ) goto 97
+	  if( bsigma .and. lmax .ne. nsigma ) goto 96
 	end do
 
 	return
+   96	continue
+	write(6,*) ie,k,lmax,nsigma
+	stop 'error stop check_ilevels: error in vertical structure (4)'
    97	continue
 	write(6,*) k,lmax
 	stop 'error stop check_ilevels: error in vertical structure (3)'
@@ -674,7 +721,7 @@ c adjusts hev, hm3v, ilhv - sets up hlhv
 
 c local
 	logical bwrite
-	logical badjust,b2d
+	logical badjust,b2d,bsigma
 	integer ie,l,ii
 	integer ihtot,lmax
 	integer ilytyp
@@ -688,26 +735,44 @@ c local
 
 	bwrite = .false.
 
+c------------------------------------------------------------
 c see if 2D application
+c------------------------------------------------------------
 
 	b2d = nlv .eq. 1			!2D application
 
-c set hlvmin
+c------------------------------------------------------------
+c check if sigma levels
+c------------------------------------------------------------
 
-c============================================================
-c ilytyp: 
+	bsigma = hldv(1) .lt. 0.
+	if( bsigma ) then		!sigma layers
+	  do ie=1,nel
+	    hlhv(ie) = 0.
+	  end do
+	  write(6,*) 'set_last_layer (nlv used) : ',nlv
+	  write(6,*) 'sigma layers detected'
+	  return
+	end if
+
+c------------------------------------------------------------
+c set hlvmin
+c------------------------------------------------------------
+
+c	ilytyp: 
 c	  0=no adjustment  
 c	  1=adjust to full layers (change depth)
 c         2=adjust only if h<hlvmin (change depth)
 c         3=add to last layer (keep depth but change layer)
-c============================================================
 
 	hlvmin = getpar('hlvmin')		!min percentage of last layer
 	ilytyp = nint(getpar('ilytyp'))
 
 	if( hlvmin .gt. 1. .or. hlvmin .lt. 0. ) goto 98
 
+c------------------------------------------------------------
 c adjust last layer thickness and store it in hlhv
+c------------------------------------------------------------
 
 	ic1 = 0
 	ic2 = 0
@@ -776,6 +841,10 @@ c		no adjustment
 	  if( l .eq. 1 ) ic3 = ic3 + 1
 	end do
 
+c------------------------------------------------------------
+c adjust nlv and write final statistics
+c------------------------------------------------------------
+
 	nlv=lmax
 
 	write(6,*) 'set_last_layer (nlv used) : ',nlv
@@ -784,6 +853,10 @@ c		no adjustment
 	write(6,*) 'Incomplete depth:     ',ic1
 	write(6,*) 'Differing last layer: ',ic2
 	write(6,*) 'One layer elements:   ',ic3
+
+c------------------------------------------------------------
+c end of routine
+c------------------------------------------------------------
 
 	return
    98	continue
@@ -817,11 +890,13 @@ c checks depth structure
 
 c local
 	logical bstop
+	logical bsigma
 	integer ie,l
 	integer lmax
 	real h
 
 	bstop = .false.
+	bsigma = hldv(1) .lt. 0.
 
 	do ie=1,nel
 
@@ -831,6 +906,11 @@ c local
 	  do l=1,lmax-1
 	    h=h+hldv(l)
 	  end do
+
+	  if( bsigma ) then
+	    h = h + hldv(lmax)
+	    h = - h * hev(ie)
+	  end if
 
 c	  if(abs(h-hev(ie)).gt.1.e-4) then
 	  if(abs(h-hev(ie)).gt.0.) then

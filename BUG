@@ -1,4 +1,7 @@
 
+BUG_2010_16     ggu     6.1.15   16.12.2010
+	bug fix in copy_depth (basbathy.f)
+
 BUG_2010_15     ggu     6.1.14   15.12.2010
         bug fix in convert_coords for mode=-1 (subcoord.f)
 
