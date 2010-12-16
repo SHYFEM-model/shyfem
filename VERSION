@@ -1,3 +1,56 @@
+version  6_1_15    16-12-2010    VERS_6_1_15
+
+sigma layers
+
+========================================================== 16-12-2010 - 6_1_15
+
+c ./fem3d/basbathy.f:
+c 16.12.2010	ggu	bug fix in copy_depth()
+c
+c ./fem3d/newbcl.f:
+c 16.12.2010    ggu     sigma layers introduced (maybe not finished)
+c
+c ./fem3d/newini.f:
+c 16.12.2010    ggu	big restructering for sigma levels (look for bsigma)
+c
+c ./fem3d/newexpl.f:
+c 16.12.2010	ggu	barocl preconditioned for sigma layers, but not finshed
+c
+c ./fem3d/subdep.f:
+c 16.12.2010	ggu	in depadj() do not set hm3v to constant
+c
+c ./fem3d/subele.f:
+c 16.12.2010    ggu     setdepth() changed for sigma levels
+c
+c ./fem3d/subsys.f:
+c 15.12.2010	ggu	nsigma renamed to nbsig, nsigma used for sigma layers
+c
+c ./fem3d/subver.f:
+c 16.12.2010	ggu	version 6.1.15
+c
+c ./fem3d/newfix.f:
+c 16.12.2010    ggu     bsigma renamed to bosigma
+c
+c ./fem3d/ousintp.f:
+c 16.12.2010	ggu	transp2vel moved to ousutil.f
+c
+c ./fem3d/map_influence.f:
+c 16.12.2010    ggu     restructured to use volume file
+c
+c ./fem3d/newsig.f:
+c 16.12.2010    ggu     program partially finished
+c
+c ./fem3d/newbsig.f:
+c 16.12.2010    ggu     adjusted for sigma levels, renamed sigma.h to bsig.h
+c
+c ./fem3d/ousutil.f:
+c 16.12.2010	ggu	copied from ousextr_gis.f
+c
+c ./fem3d/ousextr_gis.f:
+c 16.12.2010	ggu	aux routines copied to ousutil.f
+
+==========================================================
+
 version  6_1_14    15-12-2010    VERS_6_1_14
 
 vertical tvd
