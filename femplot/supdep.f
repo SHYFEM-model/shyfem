@@ -5,27 +5,30 @@ c routines for averaging depth
 c
 c contents :
 c
-c subroutine mkhv(hv,auxv,nkn,nel)	makes hv (nodewise depth)
+c subroutine mkhkv(hkv,auxv,nkn,nel)	makes hkv (nodewise depth)
 c subroutine mkhev(hev,nel)		makes hev (elementwise depth)
 c subroutine mkht(hetv,href)		makes hetv (elem depth of actual layer)
 c subroutine mkht3(nlvdim,het3v,href)	makes het3v (3D depth structure)
+c function hlthick(bsigma,l,lmax,zeta,helem,hlv)	layer thickness
 c
 c revision log :
 c
 c 26.05.2000    ggu     routines written from scratch
 c 17.09.2008    ggu     routine mkht changed for layer = -1
 c 13.10.2009    ggu     new routine mkht3
+c 13.10.2009    ggu     new routine mkht3
+c 17.12.2010    ggu     substituted hv with hkv, new routine hlthick()
 c
 c******************************************************************
 
-	subroutine mkhv(hv,auxv,nkn,nel)
+	subroutine mkhkv(hkv,auxv,nkn,nel)
 
-c makes hv (nodewise depth)
+c makes hkv (nodewise depth)
 
 	implicit none
 
 c arguments
-	real hv(1)
+	real hkv(1)
 	real auxv(1)
 	integer nkn,nel
 c common
@@ -36,19 +39,19 @@ c local
 	integer ie,ii,k,kn
 
         do k=1,nkn
-          hv(k) = 0.
+          hkv(k) = 0.
         end do
 
         do ie=1,nel
           do ii=1,3
             kn=nen3v(ii,ie)
-            hv(kn)=hv(kn)+hm3v(ii,ie)
+            hkv(kn)=hkv(kn)+hm3v(ii,ie)
 	    auxv(kn)=auxv(kn)+1.
           end do
         end do
 
         do k=1,nkn
-          hv(k) = hv(k) / auxv(k)
+          hkv(k) = hkv(k) / auxv(k)
         end do
 
 	return
@@ -109,11 +112,13 @@ c common
         common /vev/vev
 c local
 	logical bdebug
+	logical bsigma
 	integer ie,ii
 	integer level,lmax
-	real z
+	real z,h
 c functions
 	integer getlev
+	real hlthick
 
 c-------------------------------------------------------------------
 c initialization
@@ -121,6 +126,9 @@ c-------------------------------------------------------------------
 
         bdebug = .true.
         bdebug = .false.
+
+	lmax = ilhv(1)
+	bsigma = hlv(lmax) .eq. -1.
 
 	level = getlev()
 
@@ -143,46 +151,15 @@ c-------------------------------------------------------------------
 c handle different kind of levels
 c-------------------------------------------------------------------
 
-	if( level .eq. 0 ) then			! barotropic integrated
+	do ie=1,nel
 
-          do ie=1,nel
-	    z = vev(ie)
-            hetv(ie) = hev(ie) + z
-          end do
+	  lmax = ilhv(ie)
+	  z = vev(ie)
+	  h = hev(ie)
 
-	else if( level .eq. 1 ) then		! surface layer
+	  hetv(ie) = hlthick(bsigma,level,lmax,z,h,hlv)
 
-          do ie=1,nel
-            z = vev(ie)
-	    if( ilhv(ie) .eq. 1 ) then
-              hetv(ie) = hev(ie) + z
-	    else
-              hetv(ie) = hlv(1) + z
-	    end if
-	  end do
-
-	else if( level .eq. -1 ) then		! bottom layer
-
-          do ie=1,nel
-	    lmax = ilhv(ie)
-	    if( lmax .eq. 1 ) then
-              hetv(ie) = hev(ie) + z
-	    else
-              hetv(ie) = hev(ie) - hlv(lmax-1)
-	    end if
-	  end do
-
-	else					! inner layer
-
-          do ie=1,nel
-	    if( ilhv(ie) .eq. level ) then
-              hetv(ie) = hev(ie) - hlv(level-1)
-	    else
-              hetv(ie) = hlv(level) - hlv(level-1)
-	    end if
-	  end do
-
-	end if
+	end do
 
 c-------------------------------------------------------------------
 c debug output
@@ -228,9 +205,12 @@ c common
         common /vev/vev
 c local
 	logical bdebug
+	logical bsigma
 	integer ie,ii
 	integer l,lmax
-	real z
+	real z,h
+
+	real hlthick
 
 c-------------------------------------------------------------------
 c initialization
@@ -238,6 +218,9 @@ c-------------------------------------------------------------------
 
         bdebug = .true.
         bdebug = .false.
+
+	lmax = ilhv(1)
+	bsigma = hlv(lmax) .eq. -1.
 
 c-------------------------------------------------------------------
 c compute water level variation -> store in vev
@@ -258,23 +241,76 @@ c-------------------------------------------------------------------
 
 	do ie=1,nel
 	  z = vev(ie)
+	  h = hev(ie)
 	  lmax = ilhv(ie)
 	  do l=1,lmax
-	    if( lmax .eq. 1 ) then			!only one layer
-              het3v(l,ie) = hev(ie) + z
-	    else if( l .eq. 1 ) then			!surface layer
-              het3v(l,ie) = hlv(1) + z
-	    else if( l .eq. lmax ) then			!bottom layer
-              het3v(l,ie) = hev(ie) - hlv(lmax-1)
-	    else					!inner layer
-              het3v(l,ie) = hlv(l) - hlv(l-1)
-	    end if
+	    het3v(l,ie) = hlthick(bsigma,l,lmax,z,h,hlv)
 	  end do
 	end do
 
 c-------------------------------------------------------------------
 c end of routine
 c-------------------------------------------------------------------
+
+	end
+
+c******************************************************************
+
+	function hlthick(bsigma,l,lmax,zeta,helem,hlv)
+
+c computes thickness of layer l
+c
+c works also for sigma layers
+
+	implicit none
+
+	real hlthick		! layer thickness (return)
+	logical bsigma		! sigma layers ?
+	integer l		! layer to compute thickness
+	integer lmax		! maximum layers
+	real zeta		! water level
+	real helem		! total water depth (excluding water level)
+	real hlv(1)		! depth structure
+
+	real htot
+
+	htot = helem + zeta
+
+	if( l .eq. 0 ) then			! total layer
+
+	  hlthick = htot
+
+	else if( l .eq. 1 ) then		! surface layer
+
+	  if( lmax .eq. 1 ) then		! only one layer
+            hlthick = htot
+	  else if( bsigma ) then
+            hlthick = -htot * hlv(l)
+	  else
+            hlthick = hlv(1) + zeta
+	  end if
+
+	else if( l .eq. -1 ) then		! bottom layer
+
+	  if( lmax .eq. 1 ) then		! only one layer
+            hlthick = htot
+	  else if( bsigma ) then
+            hlthick = -htot * (hlv(lmax)-hlv(lmax-1))
+	  else
+            hlthick = helem - hlv(lmax-1)
+	  end if
+
+	else if( l .gt. 1 ) then		! inner layer
+
+	  if( bsigma ) then
+            hlthick = -htot * (hlv(l)-hlv(l-1))
+	  else if( lmax .eq. l ) then		! last layer
+            hlthick = helem - hlv(lmax-1)
+	  else
+            hlthick = hlv(l) - hlv(l-1)
+	  end if
+
+	end if
 
 	end
 

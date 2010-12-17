@@ -157,6 +157,7 @@ c 07.05.2009    ggu	new routines for scalar interpolation (not finished)
 c 10.03.2010    ggu	bug fix in sp256w() for ibtyp=2
 c 11.03.2010    ggu	new routine check_volume() to check for negative vol
 c 12.04.2010    ggu	ad hoc routine for Yaron
+c 16.12.2010    ggu	in sp256w() account for changing volume (sigma)
 c
 c******************************************************************
 
@@ -1512,12 +1513,14 @@ c local
 	real b,c
 	real am,az,azt,azpar,ampar
 	real ffn,ffo
+	real volo,voln,dt,dvdt
 c statement functions
 	logical isein
         isein(ie) = iwegv(ie).eq.0
 	include 'testbndo.h'
 
 	logical is_zeta_bound
+	real volnode
 
 	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp256w'
 
@@ -1527,6 +1530,7 @@ c initialize
 	az=azpar
 	am=ampar
 	azt = 1. - az
+	call get_timestep(dt)
 
 	do k=1,nkn
 	  do l=1,nlv
@@ -1576,11 +1580,15 @@ c =>  w(l-1) = flux(l-1) / a_i(l-1)  =>  w(l-1) = flux(l-1) / a(l)
 	  wlnv(lmax,k) = 0.
 	  debug = k .eq. 0
 	  do l=lmax,1,-1
+            voln = volnode(l,k,+1)
+            volo = volnode(l,k,-1)
+	    dvdt = (voln-volo)/dt
 	    wdiv = vf(l,k) + mfluxv(l,k)
-	    wlnv(l-1,k) = wlnv(l,k) + wdiv
+	    wlnv(l-1,k) = wlnv(l,k) + wdiv - dvdt
 	    if( debug ) write(6,*) k,l,wdiv,wlnv(l,k),wlnv(l-1,k)
 	  end do
-	  wlnv(0,k) = 0.	! ensure no flux across surface
+	  !write(68,*) k,wlnv(0,k)
+	  wlnv(0,k) = 0.	! ensure no flux across surface - is very small
 	end do
 
 	do k=1,nkn

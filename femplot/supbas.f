@@ -169,10 +169,9 @@ c mode	0: only scaling  1: net  2: boundary  3: net in gray
 	integer nen3v(3,1)
 	integer ipev(1), ipv(1)
 	real xgv(1), ygv(1)
-	real hm3v(3,1)
 	integer kantv(2,1)
 	common /xgv/xgv, /ygv/ygv
-	common /nen3v/nen3v, /hm3v/hm3v
+	common /nen3v/nen3v
 	common /ipev/ipev, /ipv/ipv
 	common /kantv/kantv
 

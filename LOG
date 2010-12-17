@@ -1,7 +1,14 @@
 
+17.12.2010	plot of sigma layers
+
+	in sp256w() account for changing volume (sigma)
+
+	substituted hv with hkv
+	new routine hlthick() (supdep.f)
+
 ========================================================== 16-12-2010 - 6_1_15
 
-16.12.2010
+16.12.2010	sigma layers (first implementation)
 
 	sigma layers partially finished
 		./fem3d/newbcl.f:
@@ -20,7 +27,7 @@
 
 ========================================================== 15-12-2010 - 6_1_14
 
-15.12.2010
+15.12.2010	vertical TVD
 
 	bug fix in convert_coords for mode=-1 (subcoord.f)
 	bug fix in vert_aver() (map_influence.f)

@@ -10,27 +10,11 @@ c this program demonstrates how to use the routines ousopen etc..
         implicit none
 
 	include 'param.h'
+	include 'basin.h'
 
-	character*80 descrp
-	common /descrp/ descrp
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real  grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
-        real hm3v(neldim,1)
-        common /hm3v/hm3v
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-        integer nen3v(neldim,1), iarv(neldim)
-        common /nen3v/nen3v, /iarv/iarv
-        integer ipv(nkndim), ipev(neldim)
-        common /ipv/ipv, /ipev/ipev
-
-        real hlv(nlvdim), hev(neldim)
-        common /hlv/hlv, /hev/hev
         integer ilhv(neldim)
         common /ilhv/ilhv
         real zenv(3,neldim)

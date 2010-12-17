@@ -177,7 +177,7 @@ c
 c	nlv,nlvdi    		nlv=1 for 2d
 c	hlv			hlv(1) = 10000 for 2d
 c
-c	hev			is set after basin read, newly set by 3d
+c	hev			is set after basin read, newly set by 3d read
 c	ilhv			ilhv(ie) = 1 for 2d
 c	znv,utlnv,vtlnv 	-> set zenv, usnv, vsnv
 
@@ -849,13 +849,6 @@ c read second header
 c initialize time
 
 	call timeset(0,0,0)
-
-c        write(66,*) nvers,nknaux,nelaux,nlvaux
-c        write(66,*) href,hzmin
-c        write(66,*) descrp
-c        write(66,*) (hlv(i),i=1,nlvaux)
-c        write(66,*) (ilhv(i),i=1,nelaux)
-c        write(66,*) (hev(i),i=1,nelaux)
 
 c end
 

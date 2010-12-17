@@ -18,7 +18,7 @@ c subroutine plo3vel(bvel)
 c subroutine por2vel(n,up,vp,uv,vv,ht)
 c subroutine plobas
 c
-c subroutine elkdep(nkn,hv)
+c subroutine elkdep(nkn,hkv)
 c subroutine eltype0(nel,iarv)
 c subroutine eldepth(nel,hm3v,auxv,color,title)
 c subroutine eltype(nel,iarv,color,title)
@@ -53,6 +53,7 @@ c 14.09.2009	ggu	section plot for scalars in plonos
 c 09.10.2009	ggu	new routine plopres() for atmos. pressure
 c 13.10.2009	ggu	section plot for velocities in plosim
 c 26.03.2010	ggu	section plot for velocities in plosim adapted
+c 17.12.2010    ggu     substituted hv with hkv
 c
 c**********************************************************
 c**********************************************************
@@ -494,8 +495,8 @@ c ivel = 4	waves
 	real uv(1), vv(1)
 	common /uv/uv, /vv/vv
 
-        real hv(1)
-        common /hv/hv
+        real hkv(1)
+        common /hkv/hkv
         real znv(1)
         common /znv/znv
 
@@ -692,7 +693,7 @@ c------------------------------------------------------------------
 	    end do
           else if( ioverl .eq. 4 ) then		!bathymetry
 	    do k=1,nkn
-	      v1v(k) = hv(k)
+	      v1v(k) = hkv(k)
 	    end do
           else if( ioverl .ne. 1 ) then		!not horizontal velocity
             write(6,*) 'ioverl = ',ioverl
@@ -935,8 +936,8 @@ c**********************************************************
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
-	real hv(1), hev(1)
-	common /hv/hv, /hev/hev
+	real hkv(1)
+	common /hkv/hkv
 	integer iarv(1)
 	common /iarv/iarv
 
@@ -965,16 +966,16 @@ c grid with gray
 
 c bathymetry (gray or color)
 
-	call ploval(nkn,hv,'basin')
+	call ploval(nkn,hkv,'basin')
 
 c bathymetry with grid
 
 	call qstart
 	call bash(0)
 
-	call mima(hv,nkn,pmin,pmax)
+	call mima(hkv,nkn,pmin,pmax)
 	call colauto(pmin,pmax)
-        call isoline(hv,nkn,0.,2)
+        call isoline(hkv,nkn,0.,2)
 
         call qcomm('before basin overlay');
         call qlwidth(0.001)
@@ -989,9 +990,9 @@ c bathymetry with grid (gray)
 	call qstart
 	call bash(0)
 
-	call mima(hv,nkn,pmin,pmax)
+	call mima(hkv,nkn,pmin,pmax)
 	call colauto(pmin,pmax)
-        call isoline(hv,nkn,0.,2)
+        call isoline(hkv,nkn,0.,2)
 
         call qcomm('before basin overlay');
         call qlwidth(0.001)
@@ -1019,19 +1020,19 @@ c end of routine
 
 c**************************************************************
 
-	subroutine elkdep(nkn,hv)
+	subroutine elkdep(nkn,hkv)
 
 	implicit none
 
 	integer nkn
-	real hv(1)
+	real hkv(1)
 
 	call qstart
 
 	call bash(0)
 
         call qcomm('Plotting isolines')
-	call isoline(hv,nkn,0.,2)
+	call isoline(hkv,nkn,0.,2)
 	call colsh
 
         call bash(2)

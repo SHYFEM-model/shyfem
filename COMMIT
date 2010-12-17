@@ -1,5 +1,28 @@
 ============================================================
 
+Fri Dec 17 18:02:02 CET 2010
+
+plotting sigma layers
+
+ LOG               |   11 +++-
+ Rules.make        |   12 ++--
+ fem3d/new3di.f    |   12 ++++-
+ fem3d/newchk.f    |   20 +++++++-
+ fem3d/param.h     |    6 +-
+ fem3d/subnos.f    |   11 +++--
+ femadj/param.h    |    6 +-
+ femplot/ousinfo.f |   18 +------
+ femplot/param.h   |    6 +-
+ femplot/plotsim.f |   26 ++-------
+ femplot/supbas.f  |    3 +-
+ femplot/supdep.f  |  146 +++++++++++++++++++++++++++++++++--------------------
+ femplot/supout.f  |    9 +---
+ femplot/supsim.f  |   29 ++++++-----
+ param.h           |    6 +-
+ 15 files changed, 177 insertions(+), 144 deletions(-)
+
+============================================================
+
 Thu Dec 16 15:06:16 CET 2010
 
 New version 6_1_15

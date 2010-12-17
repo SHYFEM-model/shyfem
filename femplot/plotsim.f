@@ -19,6 +19,7 @@ c 20.04.2009	ggu	level.h eliminated
 c 09.10.2009	ggu	plotting of atmos. pressure
 c 13.10.2009	ggu	new arrays for velocity section plot
 c 23.02.2010	ggu	new call to set_default_color_table()
+c 17.12.2010	ggu	substituted hv with hkv
 c
 c*************************************************************
 
@@ -33,33 +34,18 @@ c parameters
         parameter(version='1.66')
 
 	include 'param.h'
+	include 'basin.h'
 	include 'evmain.h'
 
 	integer matdim
 	parameter (matdim=nkndim*ngrdim)
 
 c description
-	character*80 descrr,descrp
+	character*80 descrr
 	common /descrr/ descrr
-	common /descrp/ descrp
 c FEM parameters
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	real eps,eps2,pi,flag,high
-	real grav,fcor,dcor,dirn,rowass,roluft
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /mkonst/ eps,eps2,pi,flag,high
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-c basin
-	real xgv(nkndim), ygv(nkndim)
-	real hm3v(3,neldim)
-	integer nen3v(3,neldim)
-	integer ipev(neldim), ipv(nkndim)
-	integer iarv(neldim)
-	common /xgv/xgv, /ygv/ygv
-	common /hm3v/hm3v
-	common /nen3v/nen3v
-	common /ipev/ipev, /ipv/ipv
-	common /iarv/iarv
 c OUT
 	real xv(3,nkndim)
 	common /xv/xv
@@ -109,10 +95,10 @@ c boundary etc.
         common /ilinkv/ilinkv, /lenkv/lenkv, /linkv/linkv
         integer ieltv(3,neldim)
         common /ieltv/ieltv
-	real hv(nkndim)
+	real hkv(nkndim)
 	real hetv(neldim)
 	real parray(nkndim)
-	common /hv/hv
+	common /hkv/hkv
 	common /hetv/hetv
 	common /parray/parray
 c auxiliary
@@ -199,7 +185,7 @@ c----------------------------------------------
 c make depth on nodes and elements
 c----------------------------------------------
 
-	call mkhv(hv,v1v,nkn,nel)
+	call mkhkv(hkv,v1v,nkn,nel)
 	call mkhev(hev,nel)
 
 c----------------------------------------------

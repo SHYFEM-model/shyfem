@@ -917,6 +917,7 @@ c	vrlmax 		!relative error for each box
 	  write(6,*) 'mass error: ',vbmax,vlmax,vrbmax,vrlmax
 	  if( vrlmax .gt. vrerr ) then
 	    write(6,*) 'mass error of matrix solution is very high'
+	    write(6,*) 'the relative mass error is = ',vrlmax
 	    write(6,*) 'the limit of the mass error is vrerr = ',vrerr
 	    write(6,*) 'Probably there is some problem with the solution'
 	    write(6,*) 'of the system matrix. However, if you think'
@@ -1113,7 +1114,14 @@ c writes debug information on nodes in element ie
         integer nen3v(3,1)
         common /nen3v/nen3v
 
-	integer ii,k
+	integer ii,k,iu
+	integer ieext
+
+	iu = 16
+	iu = 6
+	write(iu,*) '-------------------------------------------'
+	write(iu,*) 'checking nodes in element: ',ie,ieext(ie)
+	write(iu,*) '-------------------------------------------'
 
 	do ii=1,3
 	  k = nen3v(ii,ie)
@@ -1138,8 +1146,16 @@ c writes debug information on elements around node k
         integer nen3v(3,1)
         common /nen3v/nen3v
 
-	integer ie,ii,kk
+	integer ie,ii,kk,iu
 	logical bdebug
+
+	integer ipext
+
+	iu = 16
+	iu = 6
+	write(iu,*) '-------------------------------------------'
+	write(iu,*) 'checking elements around node: ',k,ipext(k)
+	write(iu,*) '-------------------------------------------'
 
 	do ie=1,nel
 	  bdebug = .false.

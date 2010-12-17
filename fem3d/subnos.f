@@ -665,7 +665,7 @@ c local
 	integer ierr,l
 
         call rfnos(iunit,nvers,nkn,nel,nlv,nvar,title,ierr)
-        if(ierr.ne.0) goto 1
+        if(ierr.ne.0) goto 99
 
         write(6,*) 'nvers    : ',nvers
         write(6,*) 'nkn,nel  : ',nkn,nel
@@ -675,15 +675,18 @@ c local
         call dimnos(iunit,nkndim,neldim,nlvdim)
 
         call rsnos(iunit,ilhkv,hlv,hev,ierr)
-        if(ierr.ne.0) goto 1
+        if(ierr.ne.0) goto 98
 
         write(6,*) 'Available levels: ',nlv
         write(6,*) (hlv(l),l=1,nlv)
 
 	return
-    1	continue
+   98	continue
 	write(6,*) 'ierr: ',ierr
-	stop 'error stop rhnos'
+	stop 'error stop rhnos: error reading second header'
+   99	continue
+	write(6,*) 'ierr: ',ierr
+	stop 'error stop rhnos: error reading first header'
 	end
 
 c************************************************************
