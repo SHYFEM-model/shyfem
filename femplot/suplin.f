@@ -32,10 +32,14 @@ c plots section
 
 	real hev(1)
 	common /hev/hev
+	real hm3v(3,1)
+	common /hm3v/hm3v
 	real xgv(1), ygv(1)
 	common /xgv/xgv, /ygv/ygv
 	real hlv(1)
 	common /hlv/hlv
+	integer nen3v(3,1)
+	common /nen3v/nen3v
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
         integer nlvdi,nlv
@@ -49,13 +53,16 @@ c elems(1) is not used, etc..
 	integer elems(nldim)		!elements along line
 	integer lelems(nldim)		!levels in element
 	integer lnodes(nldim)		!levels in nodes
-	real helems(nldim)		!depth in elements
+	real helems(2,nldim)		!depth in elements (for both nodes)
 	real dxy(2,nldim)		!direction of projection line
 	real xy(nldim)			!linear distance
 
+	real ya(2,0:nlvdim)
+
 	character*80 file
 	character*80 string,line
-	logical bhoriz,barrow,btwo
+	logical bhoriz,barrow,btwo,bsigma
+	logical blayer,blog
 	integer it,i,k1,k2,ie,l,lbot,ltop,j
 	integer ltot
 	integer nr,nc,mode,ir
@@ -68,7 +75,9 @@ c elems(1) is not used, etc..
 	real u,v
 	real vmin,vmax
 	real vhmin,vhmax
-	real rrl,rrd,x,y,xtick,ytick,ylast,rdist,rmax,xs
+	real rrlmax,rrdmax,x,y,xtick,ytick,ylast,rdist,rmax,xs
+	real h1,h2,yb1,yb2,yt1,yt2,yt
+	real ytaux,ymid
 	real xcm,ycm
 	real fact,r
 	integer ndec,nctick
@@ -81,10 +90,10 @@ c elems(1) is not used, etc..
 	integer n
 	save n,nodes,elems,helems,lelems,lnodes,dxy,xy
 
-	integer ll,lvmax
-	save ll,lvmax
-	real rl,rd,hvmax
-	save rl,rd,hvmax
+	integer llmax,lvmax
+	save llmax,lvmax
+	real rlmax,rdmax,hvmax
+	save rlmax,rdmax,hvmax
 	logical bgrid
 	integer ivert
 	save bgrid,ivert
@@ -118,10 +127,10 @@ c----------------------------------------------------------------
 	  call getfnm('vsect',file)
 	  isphe = nint(getpar('isphe'))
 	  call line_read_nodes(file,nldim,n,nodes)
-	  call line_find_elements(n,nodes,hev,hlv
+	  call line_find_elements(n,nodes,nlv,nen3v,hev,hm3v,hlv
      +			,elems,helems,lelems,lnodes)
 	  call line_find_min_max(n,nodes,helems,lelems,xgv,ygv
-     +			,isphe,rl,rd,ll,xy)
+     +			,isphe,rlmax,rdmax,llmax,xy)
 	  call make_proj_dir(n,isphe,nodes,xgv,ygv,dxy)
 
 	  bgrid = nint(getpar('ivgrid')) .ne. 0
@@ -129,7 +138,7 @@ c----------------------------------------------------------------
 	  lvmax = nint(getpar('lvmax'))
 	  hvmax = getpar('hvmax')
 
-	  call set_max_dep_lay(nlv,hlv,rd,ll,hvmax,lvmax) !vertical range
+	  call set_max_dep_lay(nlv,hlv,rdmax,llmax,hvmax,lvmax) !vertical range
 
 	  call getfnm('vtitle',vtitle)
 	  call getfnm('xtitle',xtitle)
@@ -148,12 +157,25 @@ c----------------------------------------------------------------
 	  faccol = getpar('faccol')	!factor for velocity (for legend)
 	end if
 
+	icall = icall + 1
+
+c----------------------------------------------------------------
+c prepare logical variables
+c----------------------------------------------------------------
+
 	btwo = .false.				!plot two arrows
 	btwo = .true.				!plot two arrows
 
 	barrow = bvel .and. stip .ge. 0.	!plot arrow
 
-	icall = icall + 1
+	bsigma = hlv(nlv) .eq. -1.
+
+	blayer = abs(ivert) .eq. 1
+	blog = ivert .eq. 2
+
+c----------------------------------------------------------------
+c start plot
+c----------------------------------------------------------------
 
 	it = gettime()
 
@@ -165,7 +187,7 @@ c----------------------------------------------------------------
 c prepare data
 c----------------------------------------------------------------
 
-	write(6,*) 'plotting section: ',it,n,rl,rd
+	write(6,*) 'plotting section: ',it,n,rlmax,rdmax
 
 	if( bvel ) then
 	  call proj_velox(vmode,n,nodes,lnodes,ilhkv,dxy,vel,val
@@ -215,12 +237,14 @@ c-----------------------------------------------------------------
 c set world coordinates
 c-----------------------------------------------------------------
 
+c	hvmax == rdmax
+
 	xrmin = 0.
-	xrmax = rl
-	yrmin = -rd
+	xrmax = rlmax
+	yrmin = -rdmax
 	yrmax = 0.
 
-	if( ivert .eq. 1 ) yrmin = -ll
+	if( blayer ) yrmin = -llmax
 
 	call qworld(xrmin,yrmin,xrmax,yrmax)
 
@@ -231,32 +255,58 @@ c--------------------------------------------------------------------
 	do i=2,n
 	  k1 = nodes(i-1)
 	  k2 = nodes(i)
-	  htot = helems(i)
+	  h1 = helems(1,i)
+	  h2 = helems(2,i)
+	  h1 = min(h1,hvmax)
+	  h2 = min(h2,hvmax)
+	  htot = min(max(h1,h2),hvmax)
 	  ltot = lelems(i)
-	  htot = min(htot,hvmax)
 	  ltot = min(ltot,lvmax)
 	  ie = elems(i)
 	  x1 = xy(i-1)
 	  x2 = xy(i)
-	  y1 = yrmin
-	  y2 = -htot
-	  if( ivert .eq. 1 ) y2 = -ltot 
-	  if( ivert .eq. 2 ) y2 = -hlog(htot,rd)
+	  yb1 = yrmin
+	  yb2 = yrmin
+	  yt1 = -h1
+	  yt2 = -h2
+	  if( blayer ) then
+	    yt1 = -ltot 
+	    yt2 = -ltot 
+	  end if
+	  if( blog ) then
+	    yt1 = -hlog(h1,rdmax)
+	    yt2 = -hlog(h2,rdmax)
+	  end if
 	  call qgray(0.5)
-	  call qrfill(x1,y1,x2,y2)	!land (bottom)
+	  yt = max(yt1,yt2)		!might be too big, but gets overpainted
+	  call qrfill(x1,yb1,x2,yt)	!land (bottom)
+
+	  call make_segment_depth(ivert,ltot,helems(1,i),hvmax,hlv,ya)
+	  write(6,*) 'make_segment_depth: ',i
+	  write(6,*) (ya(1,l),l=1,ltot)
+	  write(6,*) (ya(2,l),l=1,ltot)
+	  ytaux = max(ya(1,ltot),ya(2,ltot))
+	  if( yt .ne. ytaux ) then
+		write(6,*) '*** yt diff: ',yt,ytaux
+		write(6,*) x1,yb1,x2,yt,yt1,yt2
+	  end if
+
 	  htop = 0.
+	  h1 = helems(1,i)
+	  h2 = helems(2,i)
 	  do l=1,ltot
-	    hbot = hlv(l)
 	    ltop = 2*l - 2
-	    if( hbot .gt. htot ) hbot = htot
-	    if( ivert .eq. 1 ) then
-	      htop = l-1
-	      hbot = l
-	    else if( ivert .eq. 2 ) then
-	      hbot = hlog(hbot,rd)
+	    yt1 = ya(1,l-1)
+	    yt2 = ya(2,l-1)
+	    yb1 = ya(1,l)
+	    yb2 = ya(2,l)
+	    if( bsigma ) then
+	if( l .eq. ltot ) write(6,*) 'last layer: ',yt1,yb1,yt2,yb2
+	      call plot_scal(x1,yt1,yb1,x2,yt2,yb2
+     +				,val(ltop,i-1),val(ltop,i))
+	    else
+	      call plot_rect(x1,yt1,x2,yb1,val(ltop,i-1),val(ltop,i))
 	    end if
-	    call plot_rect(x1,-htop,x2,-hbot,val(ltop,i-1),val(ltop,i))
-	    htop = hbot
 	  end do
 	end do
 
@@ -265,7 +315,7 @@ c plot vector
 c--------------------------------------------------------------------
 
 	vhmax = max(abs(vhmin),abs(vhmax))
-	scale = rl/(2.*vhmax*(n-1))
+	scale = rlmax/(2.*vhmax*(n-1))
 	if( ascale .gt. 0. ) scale = ascale
 	if( ascale .lt. 0. ) then		!scale in cm
 	  call qcm(xcm,ycm)
@@ -277,7 +327,7 @@ c--------------------------------------------------------------------
 	do i=2,n
 	  k1 = nodes(i-1)
 	  k2 = nodes(i)
-	  htot = helems(i)
+	  htot = helems(2,i)
 	  ltot = lelems(i)
 	  htot = min(htot,hvmax)
 	  ltot = min(ltot,lvmax)
@@ -286,34 +336,36 @@ c--------------------------------------------------------------------
 	  x2 = xy(i)
 	  y1 = yrmin
 	  y2 = -htot
-	  if( ivert .eq. 1 ) y2 = -ltot 
-	  if( ivert .eq. 2 ) y2 = -hlog(htot,rd)
+	  if( blayer ) y2 = -ltot 
+	  if( blog ) y2 = -hlog(htot,rdmax)
+
+	  call make_segment_depth(ivert,ltot,helems(1,i),hvmax,hlv,ya)
 	  htop = 0.
 	  do l=1,ltot
-	    hbot = hlv(l)
 	    ltop = 2*l - 2
-	    if( hbot .gt. htot ) hbot = htot
-	    if( ivert .eq. 1 ) then
-	      htop = l-1
-	      hbot = l
-	    else if( ivert .eq. 2 ) then
-	      hbot = hlog(hbot,rd)
-	    end if
+	    yt1 = ya(1,l-1)
+	    yt2 = ya(2,l-1)
+	    yb1 = ya(1,l)
+	    yb2 = ya(2,l)
+	if( l .eq. ltot ) write(6,*) 'last layer: ',yt1,yb1,yt2,yb2
+
 	    if( barrow ) then
-	      hmid = 0.5*(htop+hbot)
+	      ymid = 0.25*(yt1+yt2+yb1+yb2)
 	      xmid = 0.5*(x1+x2)
 	      umid = 0.5*(vel(2,ltop+1,i-1)+vel(2,ltop+1,i))
 	      wmid = 0.5*(vel(3,ltop+1,i-1)+vel(3,ltop+1,i))
 	      call qgray(0.0)
-	      call plot_arrow(xmid,-hmid,umid,wmid,scale,stip)
+	      call plot_arrow(xmid,ymid,umid,wmid,scale,stip)
 	    end if
 	    if( bgrid ) then
 	      call qgray(0.5)
-	      call pbox(x1,-htop,x2,-hbot)
+	      call trapez(x1,yt1,yb1,x2,yt2,yb2)
 	    end if
 	    htop = hbot
 	  end do
 	end do
+
+	write(6,*) 'blayer: ',blayer,ivert
 
 c--------------------------------------------------------------------
 c plot reference vector
@@ -395,15 +447,15 @@ c--------------------------------------------------------------------
 	call qtxts(9)
 	call qcm(xcm,ycm)
 
-	rrl = divdist(rl,5,0)
-	nr = rl/rrl
+	rrlmax = divdist(rlmax,5,0)
+	nr = rlmax/rrlmax
 	nc = -1		!do not write decimal point
 	mode = -1	!left flushing
 	y = yrmin
 	ytick = 0.1 * ycm
 
 	do i=0,nr			!x-axis
-	  xs = i * rrl			!number to be written
+	  xs = i * rrlmax		!number to be written
 	  x = xs			!x-position
 	  ir = ialfa(xs,string,nc,mode)
 	  call qline(x,y,x,y-ytick)
@@ -415,24 +467,24 @@ c--------------------------------------------------------------------
 	x = xrmin
 	xtick = 0.1 * xcm
 	rmax = -yrmin
-	rrd = 0.
-	rdist = max(1,nint(ll/7.))	!for ivert == 1
+	rrdmax = 0.
+	rdist = max(1,nint(llmax/7.))	!for blayer
 
-	do while( rrd .le. rmax )
-	  y = rrd
-	  if( ivert .eq. 2 ) y = hlog(y,rmax)
-	  !write(6,*) rmax,rrd,y
-          if( rrd .ne. 0.5 .and. y-ylast .gt. rmax/50. ) then
-	    ir = ialfa(rrd,string,nc,mode)
+	do while( rrdmax .le. rmax )
+	  y = rrdmax
+	  if( blog ) y = hlog(y,rmax)
+	  !write(6,*) rmax,rrdmax,y
+          if( rrdmax .ne. 0.5 .and. y-ylast .gt. rmax/50. ) then
+	    ir = ialfa(rrdmax,string,nc,mode)
 	    call qline(x,-y,x-xtick,-y)
             call qtxtcr(+1.,0.)
             call qtext(x-2*xtick,-y,string(1:ir))
 	    ylast = y
 	  end if
-	  if( ivert .eq. 1 ) then
-	    rrd = rrd + rdist
+	  if( blayer ) then
+	    rrdmax = rrdmax + rdist
 	  else
-	    rrd = roundm(rrd+0.5,1)
+	    rrdmax = roundm(rrdmax+0.5,1)
 	  end if
 	end do
 
@@ -444,24 +496,24 @@ c--------------------------------------------------------------------
         call qtxtcr(0.,0.)
 
 	call qtxts(15)
-        call qtext(rl/2.,-yrmin/15.,vtitle)	!title
+        call qtext(rlmax/2.,-yrmin/15.,vtitle)	!title
 
 	call qtxts(12)
-        call qtext(rl/2.,yrmin*1.1,xtitle)	!x-axis
+        call qtext(rlmax/2.,yrmin*1.1,xtitle)	!x-axis
 
         call qtxtcr(+1.,0.)
         call qtxtcr(0.,0.)
         call qtext(0.,yrmin*1.07,ltitle)	!left point
         call qtxtcr(-1.,0.)
         call qtxtcr(0.,0.)
-        call qtext(rl,yrmin*1.07,rtitle)	!right point
+        call qtext(rlmax,yrmin*1.07,rtitle)	!right point
 
         call qtxtr(90.)
         call qtxtcr(0.,0.)
-	if( ivert .eq. 1 .and. ytitle .eq. 'Depth [m]' ) then
+	if( blayer .and. ytitle .eq. 'Depth [m]' ) then
 		ytitle = 'Layers'
 	end if
-        call qtext(-rl/15.,yrmin*0.5,ytitle)	!y-axis
+        call qtext(-rlmax/15.,yrmin*0.5,ytitle)	!y-axis
 
 	call pbox(xrmin,yrmin,xrmax,yrmax)
 
@@ -573,6 +625,56 @@ c************************************************************************
 
 c************************************************************************
 
+	subroutine plot_scal(x1,yt1,yb1,x2,yt2,yb2,v1,v2)
+
+c x coords must be the same, but y coords may be different
+
+	implicit none
+
+	real x1,yt1,yb1,x2,yt2,yb2
+	real v1(3),v2(3)
+
+	include 'color.h'
+
+	!integer icsave
+	real xm,ym1,ym2,ym,vm
+	real x(3),y(3),f(3)
+
+	xm = (x1+x2)/2.
+	ym1 = (yb1+yt1)/2.
+	ym2 = (yb2+yt2)/2.
+	ym = (ym1+ym2)/2.
+	vm = (v1(2)+v2(2))/2.
+
+	!write(6,*) '--------- plot_scal ---------'
+	!write(6,*) x1,yt1,yb1
+	!write(6,*) x2,yt2,yb2
+	!write(6,*) xm,ym1,ym2,ym
+	
+	call set_auto_color_table
+
+	!first plot upper triangles, than lower ones
+
+	call setxyf(x1,x1,xm,yt1,ym1,ym,v1(1),v1(2),vm,x,y,f)
+	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+	call setxyf(x1,xm,x2,yt1,ym,yt2,v1(1),vm,v2(1),x,y,f)
+	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+	call setxyf(xm,x2,x2,ym,ym2,yt2,vm,v2(2),v2(1),x,y,f)
+	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+
+	call setxyf(x1,x1,xm,ym1,yb1,ym,v1(2),v1(3),vm,x,y,f)
+	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+	call setxyf(x1,xm,x2,yb1,ym,yb2,v1(3),vm,v2(3),x,y,f)
+	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+	call setxyf(xm,x2,x2,ym,yb2,ym2,vm,v2(3),v2(2),x,y,f)
+	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+
+	call reset_auto_color_table
+
+	end
+
+c************************************************************************
+
 	subroutine plot_rect(x1,y1,x2,y2,v1,v2)
 
 	implicit none
@@ -583,7 +685,7 @@ c************************************************************************
 	include 'color.h'
 
 	logical bfirst
-	integer icsave
+	!integer icsave
 	real xm,ym,vm
 	real x(3),y(3),f(3)
 
@@ -859,7 +961,7 @@ c inserts scalar values into matrix section
 c************************************************************************
 
 	subroutine line_find_min_max(n,nodes,helems,lelems,xgv,ygv
-     +					,isphe,rl,rd,ll,xy)
+     +					,isphe,rlmax,rdmax,llmax,xy)
 
 c finds length and max depth of line
 
@@ -867,21 +969,21 @@ c finds length and max depth of line
 
 	integer n
 	integer nodes(n)
-	real helems(n)		!depth in chosen elements
-	integer lelems(n)
-	real xgv(1), ygv(1)
+	real helems(2,n)	!depth in chosen elements
+	integer lelems(n)	!maximum layer in element
+	real xgv(1), ygv(1)	!coordinates
 	integer isphe		!spherical coords?
-	real rl,rd		!length and depth (return)
-	integer ll
+	real rlmax,rdmax	!length and depth (return)
+	integer llmax		!maximum layer
 	real xy(n)		!distance of nodes from first node
 
 	integer i,k1,k2
 	real dx,dy
 	real y,xfact,yfact
 
-	rl = 0.
-	rd = 0.
-	ll = 0
+	rlmax = 0.
+	rdmax = 0.
+	llmax = 0
 	xy(1) = 0.
 
 	do i=2,n
@@ -893,10 +995,11 @@ c finds length and max depth of line
 	  call make_dist_fact(isphe,y,xfact,yfact)
 	  dx = xfact * dx
 	  dy = yfact * dy
-	  rl = rl + sqrt( dx**2 + dy**2 )
-	  xy(i) = rl
-	  rd = max(rd,helems(i))
-	  ll = max(ll,lelems(i))
+	  rlmax = rlmax + sqrt( dx**2 + dy**2 )
+	  xy(i) = rlmax
+	  rdmax = max(rdmax,helems(1,i))
+	  rdmax = max(rdmax,helems(2,i))
+	  llmax = max(llmax,lelems(i))
 	end do
 
 	end
@@ -928,7 +1031,7 @@ c computes factor for transformation from spherical to cartesian coordinates
 
 c************************************************************************
 
-	subroutine line_find_elements(n,nodes,hev,hlv
+	subroutine line_find_elements(n,nodes,nlv,nen3v,hev,hm3v,hlv
      +					,elems,helems,lelems,lnodes)
 
 c finds elements along line given by nodes
@@ -939,16 +1042,23 @@ c deepest element is chosen
 
 	integer n
 	integer nodes(n)
+	integer nlv		!number of layers
+	integer nen3v(3,1)	!element index
 	real hev(1)		!depth in elements
+	real hm3v(3,1)		!depth in elements (on vertices)
 	real hlv(1)		!layer structure
-	integer elems(n)	!element number of chosen elements
-	real helems(n)		!depth in chosen elements
-	integer lelems(n)	!layers in element
-	integer lnodes(n)	!layers in node
+	integer elems(n)	!element number of chosen elements (return)
+	real helems(2,n)	!depth in chosen elements (return)
+	integer lelems(n)	!layers in element (return)
+	integer lnodes(n)	!layers in node (return)
 
+	logical bsigma
 	integer i,k1,k2,ie1,ie2,l
+	integer ii,ie
 	real h
 	integer ipext,ieext
+
+	bsigma = hlv(nlv) .eq. -1.
 
 c------------------------------------------------------------------
 c set up depth structure in line (elements)
@@ -962,8 +1072,14 @@ c------------------------------------------------------------------
 	  if( ie2 .gt. 0 ) then
 	    if( hev(ie2) .gt. hev(ie1) ) elems(i) = ie2
 	  end if
-	  helems(i) = hev(elems(i))
-	  !write(6,*) 'line_find_elements: ',k1,k2,ie1,ie2,hev(ie1)
+	  ie = elems(i)
+	  do ii=1,3
+	    if( k1 .eq. nen3v(ii,ie) ) helems(1,i) = hm3v(ii,ie)
+	    if( k2 .eq. nen3v(ii,ie) ) helems(2,i) = hm3v(ii,ie)
+	  end do
+	  !write(6,*) 'line_find_elements: ',k1,k2,ie1,ie2,ie
+	  !write(6,*) '                    ',hev(ie)
+	  !write(6,*) '                    ',helems(1,i),helems(2,i)
 	  !write(6,*) '                    ',ipext(k1),ipext(k2)
 	  !write(6,*) '                    ',ieext(ie1),ieext(ie2)
 	end do
@@ -973,12 +1089,13 @@ c compute total layers in line (elements)
 c------------------------------------------------------------------
 
 	do i=2,n
-	  h = helems(i)
+	  h = max(helems(1,i),helems(2,i))
 	  l = 1
 	  do while( hlv(l) .lt. h ) 
 	    l = l + 1
 	  end do
 	  lelems(i) = l
+	  if( bsigma ) lelems(i) = nlv
 	end do
 	  
 c------------------------------------------------------------------
@@ -1040,7 +1157,7 @@ c reads line given by nodes
 
 c************************************************************************
 
-	subroutine set_max_dep_lay(nlv,hlv,rd,ll,hvmax,lvmax)
+	subroutine set_max_dep_lay(nlv,hlv,rdmax,llmax,hvmax,lvmax)
 
 c sets hvmax and lvmax
 
@@ -1048,8 +1165,8 @@ c sets hvmax and lvmax
 
 	integer nlv
 	real hlv(1)
-	real rd
-	integer ll
+	real rdmax
+	integer llmax
 	real hvmax
 	integer lvmax
 
@@ -1061,25 +1178,25 @@ c sets hvmax and lvmax
           stop 'error stop set_max_dep_lay: hvmax/lvmax'
         end if
 
-        if( hvmax .gt. 0. ) then
+        if( hvmax .gt. 0. ) then	!works also for sigma layers -> max
           do l=1,nlv
             if( hlv(l) .gt. hvmax ) goto 7
           end do
     7     continue
           lvmax = l             !could be one higher than max layer
-          ll = lvmax
-          rd = hvmax
+          llmax = lvmax
+          rdmax = hvmax
         else if( lvmax .gt. 0 ) then
-          if( lvmax .gt. nlv .and. nlv .gt. 1 ) then
-            hvmax = hlv(nlv) + hlv(nlv) - hlv(nlv-1)
+          if( lvmax .gt. nlv .and. nlv .gt. 1 ) then	!more than available
+            hvmax = hlv(nlv) + hlv(nlv) - hlv(nlv-1)	!add last layer
           else
             hvmax = hlv(lvmax)
           end if
-          ll = lvmax
-          rd = hvmax
+          llmax = lvmax
+          rdmax = hvmax
         else
-          hvmax = rd
-          lvmax = ll
+          hvmax = rdmax
+          lvmax = llmax
         end if
 
 	end
@@ -1135,6 +1252,67 @@ c************************************************************************
 	  write(6,*) 'Cannot determine unit for fact = ',fact
 	  string = ' '
 	end if
+
+	end
+
+c************************************************************************
+
+	subroutine make_segment_depth(ivert,nlv,hdep,hvmax,hlv,ya)
+
+	implicit none
+
+	integer ivert
+	integer nlv
+	real hdep(2)		!depth on two nodes
+	real hvmax		!maximum depth
+	real hlv(1)
+	real ya(2,0:1)		!bottom depth of layers
+
+	logical blayer,blog,bsigma
+	integer i,l
+	real hd,h
+	real hlog
+
+	bsigma = hlv(nlv) .eq. -1
+	blayer = abs(ivert) .eq. 1
+	blog = ivert .eq. 2
+
+	do i=1,2
+	  hd = hdep(i)
+	  ya(i,0) = 0.
+	  do l=1,nlv
+	    h = hlv(l)
+	    if( blayer ) then
+	      if( bsigma .and. ivert .eq. -1 ) then
+		h = hlv(l) * l
+	      else
+		h = l
+	      end if
+	    else if( bsigma ) then
+	      h = -hd * hlv(l)
+	    else
+	      h = hlv(l)
+	    end if
+	    if( blog ) h = hlog(h,hvmax)
+	    if( .not. blayer .and. h .gt. hvmax ) h = hvmax
+	    ya(i,l) = -h
+	  end do
+	end do
+
+	end
+
+c************************************************************************
+
+	subroutine trapez(x1,yt1,yb1,x2,yt2,yb2)
+
+	implicit none
+
+	real x1,yt1,yb1,x2,yt2,yb2
+
+	call qline(x1,yt1,x1,yb1)
+	call qline(x1,yb1,x2,yb2)
+	call qline(x2,yb2,x2,yt2)
+	call qline(x2,yt2,x1,yt1)
 
 	end
 

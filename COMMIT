@@ -1,5 +1,20 @@
 ============================================================
 
+Mon Dec 20 17:56:26 CET 2010
+
+plotting sigma layers (suplin.f)
+
+ LASTTAR          |    2 +-
+ Rules.make       |   12 +-
+ fem3d/param.h    |    6 +-
+ femadj/param.h   |    6 +-
+ femplot/param.h  |    6 +-
+ femplot/suplin.f |  378 +++++++++++++++++++++++++++++++++++++++--------------
+ param.h          |    6 +-
+ 7 files changed, 297 insertions(+), 119 deletions(-)
+
+============================================================
+
 Fri Dec 17 18:02:02 CET 2010
 
 plotting sigma layers
