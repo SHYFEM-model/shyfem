@@ -1,3 +1,33 @@
+version  6_1_16    20-12-2010    VERS_6_1_16
+
+========================================================== 20-12-2010 - 6_1_16
+
+c ./fem3d/new3di.f:
+c 16.12.2010    ggu	in sp256w() account for changing volume (sigma)
+c
+c ./femplot/plotsim.f:
+c 17.12.2010	ggu	substituted hv with hkv
+c
+c ./femplot/supdep.f:
+c 17.12.2010    ggu     substituted hv with hkv, new routine hlthick()
+c
+c ./femplot/supsim.f:
+c 17.12.2010    ggu     substituted hv with hkv
+c
+c ./tmp/fem_/fem3d/new3di.f:
+c 16.12.2010    ggu	in sp256w() account for changing volume (sigma)
+c
+c ./tmp/fem_/femplot/plotsim.f:
+c 17.12.2010	ggu	substituted hv with hkv
+c
+c ./tmp/fem_/femplot/supdep.f:
+c 17.12.2010    ggu     substituted hv with hkv, new routine hlthick()
+c
+c ./tmp/fem_/femplot/supsim.f:
+c 17.12.2010    ggu     substituted hv with hkv
+
+==========================================================
+
 version  6_1_15    16-12-2010    VERS_6_1_15
 
 sigma layers
