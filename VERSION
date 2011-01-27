@@ -1,3 +1,60 @@
+version  6_1_17    27-01-2011    VERS_6_1_17
+
+nudging for T/S
+
+========================================================== 27-01-2011 - 6_1_17
+
+c ./tmp/fem_/fem3d/subsys.f:
+c 21.12.2010	ggu	new parameter rwscal
+c
+c ./femplot/suplin.f:
+c 21.12.2010    ggu     plotting vertical vector of sigma (not finished)
+c
+c ./fem3d/submeteo.f:
+c 26.01.2011    ggu	write wind filed to debug output (iumetw)
+c
+c ./fem3d/grdutil.f:
+c 24.01.2011    ggu     written from scratch
+c
+c ./fem3d/subver.f:
+c 27.01.2011	ggu	version 6.1.17
+c
+c ./fem3d/newcon.f:
+c 26.01.2011    ggu     nudging implemented (scal_adv_nudge, cobs, robs)
+c
+c ./fem3d/newbcl.f:
+c 26.01.2011    ggu     read in obs for t/s (tobsv,sobsv)
+c
+c ./fem3d/subnev.f:
+c 25.01.2011	ggu	default to lat/lon if small coordinates are given
+c
+c ./fem3d/subreg.f:
+c 26.01.2011	ggu&mb	handling extrapolation in am2av()
+c 27.01.2011	ggu&ccf	bug fix in find_elem_from_old() BUG_27.01.2011
+c
+c ./fem3d/subsys.f:
+c 21.12.2010	ggu	new parameter rwscal
+c
+c ./fem3d/ht.f:
+c 26.01.2011    ggu	new arrays for observations and nudging
+c
+c ./fem3d/subcus.f:
+c 26.01.2011	ggu	set rtauv for black sea (black_sea_nudge)
+c
+c ./fem3d/basres.f:
+c 24.01.2011    ggu     written from scratch
+c
+c ./fem3d/newstab.f:
+c 26.01.2011    ggu     robs for nudging implemented
+c
+c ./fem3d/subbas.f:
+c 12.01.2011	ggu	debug routine introduced (sp13ts)
+c
+c ./fem3d/basproj.f:
+c 24.01.2011    ggu     written from scratch
+
+==========================================================
+
 version  6_1_16    20-12-2010    VERS_6_1_16
 
 ========================================================== 20-12-2010 - 6_1_16
