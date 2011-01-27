@@ -85,7 +85,7 @@ SPECIAL =	Makefile \
 		ACTUAL LOG
 
 NOSEXTR = nosextr_nodes nosextr_gis nosextr_records nosextr_custom
-OUSEXTR = ousextr_records ousextr_gis
+OUSEXTR = ousextr_nodes ousextr_records ousextr_gis
 
 EXES	= ht hp vp \
 	  ousinf whdf whdfs \
@@ -202,6 +202,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 
 NOSOBJS = subnos.o nosutil.o
 OUSOBJS = subous.o ousutil.o
+GRDOBJS = subgrd.o grdutil.o subsrt.o subcoord.o
 
 LAPLACE = sublpl.o submir.o subnos.o links.o sublnku.o \
 	  subwin.o subnosa.o
@@ -326,6 +327,12 @@ baschk:  baschk.o subnev.o $(OUTOBJS)
 basbathy:  basbathy.o subgeo.o subgrd.o subsrt.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subgeo.o subgrd.o subsrt.o $(OUTOBJS) -o $@
 
+basres:  basres.o $(OUTOBJS) $(NOSOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(NOSOBJS) -o $@
+
+basproj:  basproj.o $(OUTOBJS) $(GRDOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(GRDOBJS) -o $@
+
 bastreat:  bastreat.o subgeo.o subgrd.o subsrt.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subgeo.o subgrd.o subsrt.o $(OUTOBJS) -o $@
 
@@ -356,6 +363,9 @@ nosinf2:  nosinf2.o $(NOSOBJS) $(OUTOBJS)
 .PHONY: nosextr ousextr 
 
 ousextr: $(OUSEXTR)
+
+ousextr_nodes:  ousextr_nodes.o $(OUSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
 
 ousextr_records:  ousextr_records.o $(OUSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
@@ -595,6 +605,8 @@ basbathy.o: param.h evmain.h
 baschk.o: param.h evmain.h
 bascomp.o: param.h evmain.h
 basinf.o: param.h evmain.h
+basproj.o: param.h basin.h
+basres.o: param.h basin.h
 bastreat.o: param.h evmain.h
 bdist.o: param.h links.h
 bedload.o: param.h evmain.h
@@ -625,6 +637,7 @@ matrix49.o: regflux.h
 new36.o: close.h
 new3di.o: testbndo.h param.h ev.h
 newbcl.o: param.h
+newbsig.o: bsig.h param.h
 newchao.o: param.h
 newchk.o: testbndo.h param.h ev.h
 newcon.o: testbndo.h param.h ev.h
@@ -634,16 +647,13 @@ newcra.o: ev.h
 newexpl.o: param.h ev.h
 newfix.o: param.h bclfix.h
 newini.o: param.h
-newbsig.o: param.h bsig.h
 newstab.o: param.h
 newtra.o: param.h ev.h
 newtvd.o: param.h ev.h tvd.h
 nos_elab.o: param.h
-nosaver.o: param.h
 nosaver_basin.o: param.h basin.h
 nosaver_time.o: param.h
 nosaver_vert.o: param.h basin.h
-nosaverf.o: param.h
 nosdiff.o: param.h
 nosextr_custom.o: param.h
 nosextr_gis.o: param.h
@@ -652,9 +662,11 @@ nosextr_records.o: param.h
 nosinf.o: param.h
 nosinit.o: param.h
 nosmaniq.o: param.h
-nosresidence.o: param.h ev.h basin.h evmain.h
+nosresidence.o: param.h basin.h evmain.h
 nossplit.o: param.h
+nosutil.o: ev.h
 ousaver.o: param.h
+ousextr_gis.o: param.h
 ousextr_nodes.o: param.h
 ousextr_records.o: param.h
 ousinf.o: param.h evmain.h
@@ -699,7 +711,8 @@ subreg.o: ev.h
 subres.o: param.h
 subrst.o: param.h
 subspk.o: param.h common.h
-subuti.o: ev.h links.h
+subtrace.o: param.h
+subuti.o: param.h ev.h links.h
 subvola.o: modules.h
 subwat.o: links.h ev.h
 subwaves.o: param.h
@@ -708,6 +721,9 @@ tideg.o: param.h
 vp.o: param.h
 weutro.o: donata.h weutro.h
 weutro_sedim.o: donata.h weutro.h
+windcrea.o: param.h evmain.h
 wininf.o: param.h
+winmerge.o: param.h
+winshift.o: param.h
 zinit.o: param.h
 

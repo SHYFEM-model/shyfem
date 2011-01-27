@@ -91,6 +91,7 @@ c 26.03.2010	ggu	new parameters for arrows in section plot
 c 28.09.2010	ggu	new value for icor
 c 29.09.2010	ggu	new param vmode,rxscal,ryscal
 c 15.12.2010	ggu	nsigma renamed to nbsig, nsigma used for sigma layers
+c 21.12.2010	ggu	new parameter rwscal
 c
 c************************************************************************
 
@@ -1570,6 +1571,11 @@ c		(Default 0)
 c |rvscal|	Extra factor that multiplies the scale factor. If your
 c		automatic scale gives you vectors which are too small, you
 c		can use |rvscal| to increase them. (Default 1)
+c |rwscal|	Extra factor for the vertical scale. Normaly the
+c		vertical scale is computed automatically, If you dont
+c		like the size of the vertical vectors you can controll
+c		it with this parameter. A value of 2 will give you
+c		a vertical vector twice as big a the default. (Default 1)
 c |svtip|	The (relative) tip size of the arrow. It specifies how
 c		big the arrow will be drawn. A value of 0 only draws the
 c		arrow line without tip, and a negative value inhibits
@@ -1585,6 +1591,7 @@ c			(Default 0.6)
 	call addpar('vmode',0.)
 	call addpar('avscal',0.)
 	call addpar('rvscal',1.)
+	call addpar('rwscal',1.)
 	call addpar('svtip',0.3)
 	call addpar('rxscal',0.6)
 	call addpar('ryscal',0.6)

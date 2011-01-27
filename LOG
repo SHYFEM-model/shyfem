@@ -1,4 +1,26 @@
 
+27.01.2011	nudging
+
+	nudging (t/s/cobs, bobs)
+		./fem3d/newcon.f:
+		./fem3d/newbcl.f:
+		./fem3d/ht.f:
+		./fem3d/newstab.f:
+	new routines for maniploating grd/bas files
+		./fem3d/basres.f:
+		./fem3d/basproj.f:
+		./fem3d/grdutil.f:
+	new default for isphe for lat/lon
+		./fem3d/subnev.f:
+	./fem3d/subreg.f:
+		handling extrapolation in am2av(
+		bug fix in find_elem_from_old() BUG_27.01.2011
+
+21.12.2010	plot of sigma layers
+
+	vertical velocity section plotting with sigma
+		./femplot/suplin.f:
+
 17.12.2010	plot of sigma layers
 
 	in sp256w() account for changing volume (sigma)

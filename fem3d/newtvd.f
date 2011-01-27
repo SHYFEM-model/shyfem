@@ -19,7 +19,7 @@ c 24.03.2009	ggu	bug fix: isum -> 6; declaration of cl() was missing 0
 c 30.03.2009	ggu	bug fix: ilhv was real in tvd_get_upwind()
 c 31.03.2009	ggu	bug fix: do not use internal gradient (undershoot)
 c 06.04.2009	ggu&ccf	bug fix: in tvd_fluxes() do not test for conc==cond
-c 15.12.2012	ggu	new routines for vertical tvd: vertical_flux_*()
+c 15.12.2010	ggu	new routines for vertical tvd: vertical_flux_*()
 c
 c*****************************************************************
 c

@@ -13,6 +13,7 @@ c 13.04.2010    ggu     adapted also to spherical coordinates
 c 15.04.2010    ggu     fix bug where lower layer is plotted with value 0
 c 29.09.2010    ggu     finished velocity plot with reference arrow
 c 09.10.2010    ggu     better labeling of reference arrow
+c 21.12.2010    ggu     plotting vertical vector of sigma (not finished)
 c
 c************************************************************************
 
@@ -75,8 +76,9 @@ c elems(1) is not used, etc..
 	real u,v
 	real vmin,vmax
 	real vhmin,vhmax
+	real wscale,vv
 	real rrlmax,rrdmax,x,y,xtick,ytick,ylast,rdist,rmax,xs
-	real h1,h2,yb1,yb2,yt1,yt2,yt
+	real h1,h2,yb1,yb2,yt1,yt2,yt,yb
 	real ytaux,ymid
 	real xcm,ycm
 	real fact,r
@@ -100,8 +102,8 @@ c elems(1) is not used, etc..
 
 	character*80 vtitle,xtitle,ytitle,ltitle,rtitle
 	save vtitle,xtitle,ytitle,ltitle,rtitle
-	real ascale,rscale,stip
-	save ascale,rscale,stip
+	real ascale,rscale,stip,rwscal
+	save ascale,rscale,stip,rwscal
 	integer vmode
 	save vmode
 	real faccol
@@ -148,6 +150,7 @@ c----------------------------------------------------------------
 
 	  ascale = getpar('avscal')	!absolute scale
 	  rscale = getpar('rvscal')	!relative scale
+	  rwscal = getpar('rwscal')	!extra scale for vertical
 	  stip = getpar('svtip')	!arrow tip size
 	  vmode = getpar('vmode')	!0=normal vel  1=tang vel as overlay
 
@@ -253,47 +256,18 @@ c plot scalar
 c--------------------------------------------------------------------
 
 	do i=2,n
-	  k1 = nodes(i-1)
-	  k2 = nodes(i)
-	  h1 = helems(1,i)
-	  h2 = helems(2,i)
-	  h1 = min(h1,hvmax)
-	  h2 = min(h2,hvmax)
-	  htot = min(max(h1,h2),hvmax)
 	  ltot = lelems(i)
 	  ltot = min(ltot,lvmax)
-	  ie = elems(i)
 	  x1 = xy(i-1)
 	  x2 = xy(i)
-	  yb1 = yrmin
-	  yb2 = yrmin
-	  yt1 = -h1
-	  yt2 = -h2
-	  if( blayer ) then
-	    yt1 = -ltot 
-	    yt2 = -ltot 
-	  end if
-	  if( blog ) then
-	    yt1 = -hlog(h1,rdmax)
-	    yt2 = -hlog(h2,rdmax)
-	  end if
-	  call qgray(0.5)
-	  yt = max(yt1,yt2)		!might be too big, but gets overpainted
-	  call qrfill(x1,yb1,x2,yt)	!land (bottom)
 
 	  call make_segment_depth(ivert,ltot,helems(1,i),hvmax,hlv,ya)
-	  write(6,*) 'make_segment_depth: ',i
-	  write(6,*) (ya(1,l),l=1,ltot)
-	  write(6,*) (ya(2,l),l=1,ltot)
-	  ytaux = max(ya(1,ltot),ya(2,ltot))
-	  if( yt .ne. ytaux ) then
-		write(6,*) '*** yt diff: ',yt,ytaux
-		write(6,*) x1,yb1,x2,yt,yt1,yt2
-	  end if
 
-	  htop = 0.
-	  h1 = helems(1,i)
-	  h2 = helems(2,i)
+	  call qgray(0.5)
+	  yb = yrmin
+	  yt = max(ya(1,ltot),ya(2,ltot))
+	  call qrfill(x1,yb,x2,yt)	!land (bottom)
+
 	  do l=1,ltot
 	    ltop = 2*l - 2
 	    yt1 = ya(1,l-1)
@@ -301,7 +275,6 @@ c--------------------------------------------------------------------
 	    yb1 = ya(1,l)
 	    yb2 = ya(2,l)
 	    if( bsigma ) then
-	if( l .eq. ltot ) write(6,*) 'last layer: ',yt1,yb1,yt2,yb2
 	      call plot_scal(x1,yt1,yb1,x2,yt2,yb2
      +				,val(ltop,i-1),val(ltop,i))
 	    else
@@ -324,30 +297,21 @@ c--------------------------------------------------------------------
 	scale = scale * rscale 			!adjust scale
 	write(6,*) 'arrow scale: ',vhmax,ascale,rscale,scale
 
+	wscale = rwscal
+	if( blayer ) wscale = wscale / llmax
+
 	do i=2,n
-	  k1 = nodes(i-1)
-	  k2 = nodes(i)
-	  htot = helems(2,i)
 	  ltot = lelems(i)
-	  htot = min(htot,hvmax)
-	  ltot = min(ltot,lvmax)
-	  ie = elems(i)
 	  x1 = xy(i-1)
 	  x2 = xy(i)
-	  y1 = yrmin
-	  y2 = -htot
-	  if( blayer ) y2 = -ltot 
-	  if( blog ) y2 = -hlog(htot,rdmax)
-
 	  call make_segment_depth(ivert,ltot,helems(1,i),hvmax,hlv,ya)
-	  htop = 0.
 	  do l=1,ltot
 	    ltop = 2*l - 2
 	    yt1 = ya(1,l-1)
 	    yt2 = ya(2,l-1)
 	    yb1 = ya(1,l)
 	    yb2 = ya(2,l)
-	if( l .eq. ltot ) write(6,*) 'last layer: ',yt1,yb1,yt2,yb2
+	    if( l .eq. ltot ) write(6,*) 'last layer: ',yt1,yb1,yt2,yb2
 
 	    if( barrow ) then
 	      ymid = 0.25*(yt1+yt2+yb1+yb2)
@@ -355,7 +319,7 @@ c--------------------------------------------------------------------
 	      umid = 0.5*(vel(2,ltop+1,i-1)+vel(2,ltop+1,i))
 	      wmid = 0.5*(vel(3,ltop+1,i-1)+vel(3,ltop+1,i))
 	      call qgray(0.0)
-	      call plot_arrow(xmid,ymid,umid,wmid,scale,stip)
+	      call plot_arrow(xmid,ymid,umid,wscale*wmid,scale,stip)
 	    end if
 	    if( bgrid ) then
 	      call qgray(0.5)
@@ -364,8 +328,6 @@ c--------------------------------------------------------------------
 	    htop = hbot
 	  end do
 	end do
-
-	write(6,*) 'blayer: ',blayer,ivert
 
 c--------------------------------------------------------------------
 c plot reference vector
@@ -390,6 +352,7 @@ c--------------------------------------------------------------------
 	dy = ryscal*(yrrmax-yrrmin)
 	u = dx/scale
 	v = dy/scale
+	v = v * wscale
 	u = roundm(u,-1)
 	v = roundm(v,-1)
 	dx = u*scale

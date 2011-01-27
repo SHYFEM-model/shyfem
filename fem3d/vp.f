@@ -216,6 +216,7 @@ c
 
 c end reading ----------------------------------------------------
 
+	call ketest(nel,nen3v)
 	call gtest('end read',neldim,nkn,nel,nen3v)
 
         bstop=.false.
@@ -253,6 +254,7 @@ c end reading ----------------------------------------------------
 
 	write(nat,*) ' ...testing sense of nodes in index'
 
+	call ketest(nel,nen3v)
 	call gtest('end sense',neldim,nkn,nel,nen3v)
 
         call clockw(nkn,nel,nen3v,ipev,xgv,ygv,ner,bstop)
@@ -290,6 +292,7 @@ c bandwidth optimization -------------------------------------------
 
 c ------------------------------------------------------------------
 
+	call ketest(nel,nen3v)
 	call gtest('end bandwidth',neldim,nkn,nel,nen3v)
 
 	write(nat,*) ' ...renumbering elements'
@@ -310,6 +313,7 @@ c save pointers for depth ------------------------------------------
 
 c write to nb2 -----------------------------------------------------
 
+	call ketest(nel,nen3v)
 	call gtest('write',neldim,nkn,nel,nen3v)
 
 	call sp13uw(nb2)
@@ -351,6 +355,7 @@ c
      +                      ,hm3v,hkv,ner,bstop)
 	end if
 
+	call ketest(nel,nen3v)
 c
 c get description of data file
 c
@@ -1289,4 +1294,35 @@ c**********************************************************
 
 c**********************************************************
 
+	subroutine ketest(nel,nen3v)
+
+c checks uniquness of nodes in elements
+
+	implicit none
+
+	integer nel
+	integer nen3v(3,1)
+
+	integer ie,ii
+	integer kn1,kn2,kn3
+
+	do ie=1,nel
+	  kn1 = nen3v(1,ie)
+	  kn2 = nen3v(2,ie)
+	  kn3 = nen3v(3,ie)
+	  if( kn1 .eq. kn2 .or. kn1 .eq. kn3 .or. kn2 .eq. kn3 ) then
+	    write(6,*) ie,kn1,kn2,kn3
+	    stop 'error stop ketest: not unique nodes in element'
+	  end if
+	end do
+
+	!write(77,*)
+	!do ie=1,10
+	!  write(77,*) ie,(nen3v(ii,ie),ii=1,3)
+	!end do
+
+	return
+	end
+
+c**********************************************************
 

@@ -33,6 +33,7 @@ c 12.06.2009	ggu	more stable computation of area (bug_f_64bit)
 c 05.02.2010	ggu	bug fix for aj (division with 24 too early)
 c 14.04.2010	ggu	new routines get_coords_ev() and check_spheric_ev()
 c 07.05.2010	ggu	initialization of ev routines
+c 25.01.2011	ggu	default to lat/lon if small coordinates are given
 c
 c***********************************************************
 
@@ -60,7 +61,7 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	real xgv(1),ygv(1)
 	common /xgv/xgv,/ygv/ygv
 
-	integer i,ii,kn1,kn2,kn3
+	integer ie,i,ii,kn1,kn2,kn3
 	integer isphe
         double precision one,two,four,twofour,rad
 	double precision x1,x2,x3,y1,y2,y3
@@ -77,6 +78,11 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 
 	isphe = isphe_ev
 	init_ev = 1
+
+c        write(6,*)
+c        do ie=1,10
+c          write(6,*) ie,(nen3v(ii,ie),ii=1,3)
+c        end do
 
         one = 1.
         two = 2.
@@ -174,9 +180,11 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	return
    99	continue
         write(6,*) 'set_ev : nodes not in anticlockwise sense'
-        write(6,*) aj,i
-        write(6,*) kn1,kn2,kn3
-        write(6,*) x1,y1,x2,y2,x3,y3
+        write(6,*) 'elem = ',i,'  area = ',aj
+        write(6,*) 'nodes  x  y'
+        write(6,*) kn1,x1,y1
+        write(6,*) kn2,x2,y2
+        write(6,*) kn3,x3,y3
 	stop 'error stop set_ev'
 	end
 
@@ -293,11 +301,12 @@ c checks if coordinates are lat/lon
 
 	if( isphe_ev .eq. -1 ) then	!determine automatically
 	  if( isphe .eq. 1 ) then
-	    write(6,*) 'Cannot determine type of coordinates.'
-	    write(6,*) 'coodinates seem lat/lon'
-	    write(6,*) 'but are not flagged as such.'
-	    write(6,*) 'Please set parameter isphe to the desired value'
-	    stop 'error stop check_spheric_ev: coord type'
+	    write(6,*) 'Unsure about type of coordinates.'
+	    write(6,*) 'Coodinates seem lat/lon but are not flagged as such.'
+	    write(6,*) 'Using lat/lon coordinates.'
+	    write(6,*) 'If this is an error, then please set'
+	    write(6,*) 'parameter isphe to the desired value.'
+	    !stop 'error stop check_spheric_ev: coord type'
 	  end if
 	else if( isphe_ev .ne. isphe ) then	!not the same
 	  if( isphe .eq. 0 ) then	!not possible -> coords out of range

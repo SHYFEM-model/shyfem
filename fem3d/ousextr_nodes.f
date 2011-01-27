@@ -15,6 +15,8 @@ c***************************************************************
 c reads ous file and extracts nodes
 c
 c we would not even need to read basin
+c
+c still to be revised...
 
 	implicit none
 

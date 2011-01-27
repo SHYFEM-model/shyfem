@@ -65,7 +65,7 @@ c-------------------------------------------
         ilin = nint(getpar('ilin'))
         itlin = nint(getpar('itlin'))
         ibarcl = nint(getpar('ibarcl'))
-        bbarcl = ibarcl .eq. 1 .or. ibarcl .eq. 2
+        bbarcl = ibarcl .gt. 0 .and. ibarcl .ne. 3
 
 c-------------------------------------------
 c initialization
@@ -699,7 +699,6 @@ c******************************************************************
         real rhov(nlvdim,1)
         common /rhov/rhov
         !integer itanf,itend,idt,nits,niter,it
-        !integer itemp,isalt
         !real k,l,ie,ii				!BUG
         integer k,l,ie,ii			!BUG
         real dt

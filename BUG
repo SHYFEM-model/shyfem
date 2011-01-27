@@ -1,4 +1,7 @@
 
+BUG_2010_17     ggu&ccf 6.1.17   27.01.2011
+        bug fix in find_elem_from_old() BUG_27.01.2011 (subreg.f)
+
 BUG_2010_16     ggu     6.1.15   16.12.2010
 	bug fix in copy_depth (basbathy.f)
 

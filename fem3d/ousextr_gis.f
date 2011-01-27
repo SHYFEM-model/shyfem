@@ -151,10 +151,10 @@ c-------------------------------------------------------------------
 
 
 c-------------------------------------------------------------------
-c open OUS output file
+c open output file
 c-------------------------------------------------------------------
 
-        call mkname(' ','extract_ous','.gis',file)
+        call mkname(' ','extract','.gis',file)
         write(6,*) 'writing file ',file(1:50)
         nb = ifileo(55,file,'form','new')
         if( nb .le. 0 ) goto 98
@@ -180,7 +180,8 @@ c-------------------------------------------------------------------
 	  call transp2vel(nel,nkn,nlv,nlvdim,hev,zenv,nen3v
      +                          ,ilhv,hlv,utlnv,vtlnv
      +                          ,uprv,vprv,weight)
-          call wrgis_3d(nb,it,nkn,ilhkv,znv,uprv,vprv)
+          !call wrgis_3d(nb,it,nkn,ilhkv,znv,uprv,vprv)
+          call wrgis_3d_surf(nb,it,nkn,ilhkv,znv,uprv,vprv)
           nextr = nextr + 1
         end if
 
@@ -194,7 +195,7 @@ c-------------------------------------------------------------------
 
 	write(6,*)
 	write(6,*) nread,' records read'
-        write(6,*) nextr,' records written to file extract.ous'
+        write(6,*) nextr,' records written to file extract.gis'
 	write(6,*)
 
         if( nextr .le. 0 ) stop 'no file written'
@@ -248,6 +249,61 @@ c writes one record to file nb (3D)
           write(nb,*) x,y,lmax,znv(k)
           write(nb,*) (uprv(l,k),l=1,lmax)
           write(nb,*) (vprv(l,k),l=1,lmax)
+        end do
+
+        end
+
+c******************************************************************
+
+        subroutine wrgis_3d_surf(nb,it,nkn,ilhkv,znv,uprv,vprv)
+
+c writes one record to file nb (3D)
+
+        implicit none
+
+        include 'param.h'
+
+        integer nb,it,nkn
+        integer ilhkv(nkndim)
+        real znv(nkndim)
+        real uprv(nlvdim,nkndim)
+        real vprv(nlvdim,nkndim)
+
+        double precision x0,y0
+        parameter ( x0 = 2330000.-50000., y0 = 5000000. )
+        !parameter ( x0 = 0., y0 = 0. )
+
+        real xgv(nkndim), ygv(nkndim)
+        common /xgv/xgv, /ygv/ygv
+
+	logical bwrite
+        integer k,l,lmax,n
+        real x,y
+
+	n = 0
+        do k=1,nkn
+          x = xgv(k)
+          y = ygv(k)
+	  bwrite = x .le. 50000. .and. y .ge. 0.	!only lagoon
+	  if( bwrite ) n = n + 1
+	end do
+
+        write(nb,*) it,n
+
+        do k=1,nkn
+          lmax = ilhkv(k)
+          x = xgv(k)
+          y = ygv(k)
+
+	  bwrite = x .le. 50000. .and. y .ge. 0.	!only lagoon
+
+          x = x + x0
+          y = y + y0
+
+          if( bwrite ) write(nb,*) x,y,uprv(1,k),vprv(1,k)
+          !write(nb,*) x,y,lmax,znv(k)
+          !write(nb,*) (uprv(l,k),l=1,lmax)
+          !write(nb,*) (vprv(l,k),l=1,lmax)
         end do
 
         end

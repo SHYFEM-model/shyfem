@@ -73,6 +73,7 @@ c 19.02.2010    ggu	init_stability() changed to reset_stability()
 c 22.02.2010    ggu	new arrays wxv, wyv
 c 26.02.2010    ggu	new arrays sauxe1/2
 c 29.04.2010    ggu	write volumes (wrfvla)
+c 26.01.2011    ggu	new arrays for observations and nudging
 c
 c*****************************************************************
 
@@ -246,6 +247,9 @@ c concentration, salinity and temperature
 
 	common /saltv/saltv(nlvdim,nkndim)
 	common /tempv/tempv(nlvdim,nkndim)
+	common /sobsv/sobsv(nlvdim,nkndim)
+	common /tobsv/tobsv(nlvdim,nkndim)
+	common /rtauv/rtauv(nlvdim,nkndim)	!relaxation time
 
 	common /rhov/rhov(nlvdim,nkndim)
 	common /bpresv/bpresv(nlvdim,nkndim)

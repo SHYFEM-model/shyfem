@@ -10,6 +10,7 @@ c 24.03.2009    ggu     use metrain instead rqdsv
 c 07.05.2009    ggu     new call to init_coords()
 c 18.06.2009    ggu&dbf bug fix -> wind speed not interpolated on metws
 c 23.02.2010    ggu	call to wstress changed (new wxv,wyv)
+c 26.01.2011    ggu	write wind filed to debug output (iumetw)
 c
 c*********************************************************************
 
@@ -80,8 +81,8 @@ c dws		wind speed (1)
 	character*60 windfile,heatfile,rainfile
 	save windfile,heatfile,rainfile
 
-	integer nvar,nx,ny
-	integer mode,i
+	integer nvar,nx,ny,i
+	integer mode,iproj,modehum
 	integer nvarm,nid,nlev
 	integer fuse
 	real x0,y0,dx,dy
@@ -92,13 +93,15 @@ c dws		wind speed (1)
 	real val0
 	real valmin,valmax
 
+	integer ifileo
+
 c values for debug: set nfreq and iumet > 0 for debug output
 c	nfreq	debug output frequency
 c	iumet	debug output unit
 
-	integer iumet,nfreq
-	save iumet,nfreq
-	data iumet,nfreq / 0 , 0 /
+	integer iumet,iumetw,nfreq
+	save iumet,iumetw,nfreq
+	data iumet,iumetw,nfreq / 0 , 0 , 0 /
 
 	integer icall
 	save icall
@@ -134,9 +137,9 @@ c	  ---------------------------------------------------------
 c	  projection to be used: 0: none  1: Gauss-Boaga  2: UTM  3: basic CPP
 c	  ---------------------------------------------------------
 
-	  mode = 0	!no projection
+	  iproj = 0	!no projection
 
-	  mode = 3	!basic
+	  iproj = 3	!basic
           lon0 = 14.047
           lat0 = 35.672
           phi = 36.
@@ -144,7 +147,7 @@ c	  ---------------------------------------------------------
           c_param(2) = lat0
           c_param(3) = phi
 
-	  mode = 1	!gauss-boaga
+	  iproj = 1	!gauss-boaga
 	  fuse = 2
 	  xtrans = 2798930.
 	  ytrans = 4617760.
@@ -152,7 +155,7 @@ c	  ---------------------------------------------------------
           c_param(2) = xtrans
           c_param(3) = ytrans
 
-	  call init_coords(mode,c_param)
+	  call init_coords(iproj,c_param)
 
 	  mode = 1	!from cartesian to lat/lon
 	  call convert_coords(mode,nkn,xgv,ygv,xgeov,ygeov)
@@ -198,8 +201,8 @@ c------------------------------------------------------------------
 c convert some variables to needed ones (humidity, wet bulb, wind speed)
 c------------------------------------------------------------------
 
-	mode = 1	! 1: hum -> wetbulb   2: wetbulb -> hum
-	call meteo_convert_hum(mode,flag,iheat,dheat,dextra)
+	modehum = 1	! 1: hum -> wetbulb   2: wetbulb -> hum
+	call meteo_convert_hum(modehum,flag,iheat,dheat,dextra)
 
 	call meteo_convert_ws(flag,iwind,dwind,dws)
 
@@ -251,6 +254,9 @@ c------------------------------------------------------------------
 c debug output
 c------------------------------------------------------------------
 
+	if( nfreq .gt. 0 .and. icall .eq. 1 ) then
+	  iumetw = ifileo(0,'wind_debug.win','unform','new')
+	end if
 	if( nfreq .gt. 0 .and. mod(icall,nfreq) .eq. 0 ) then
 	  nvarm = 7	!total number of vars that are written
 	  nid = 600
@@ -262,6 +268,7 @@ c------------------------------------------------------------------
 	  call conwrite(iumet,'.met',nvarm,nid+5,nlev,methum)
 	  call conwrite(iumet,'.met',nvarm,nid+6,nlev,metcc)
 	  call conwrite(iumet,'.met',nvarm,nid+7,nlev,metrain)
+	  call wrwin(iumetw,it,nkn,wxv,wyv,ppv)
 	end if
 
 c------------------------------------------------------------------

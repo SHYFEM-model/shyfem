@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-$FEMDIR=$ENV{FEMDIR}?$ENV{FEMDIR}:$ENV{HOME}/fem;
+$FEMDIR=$ENV{FEMDIR}?$ENV{FEMDIR}:"$ENV{HOME}/fem";
 push(@INC,"$FEMDIR/fembin");
 
 require "revision_getdate.pl";

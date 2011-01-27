@@ -12,6 +12,13 @@ c     +                          ,scal,bnd3
 c     +                          ,rkpar,wsink
 c     +                          ,difhv,difv,difmol)
 c		shell for scalar (for parallel version)
+
+c subroutine scal_adv_nudge(what,ivar
+c     +				,scal,bnd3
+c     +				,rkpar,wsink
+c     +                          ,difhv,difv,difmol
+c     +				,sobs,robs)
+c		shell for scalar with nudging (for parallel version)
 c
 c subroutine scal_adv_fact(what,ivar,fact
 c     +                          ,scal,bnd3
@@ -25,7 +32,7 @@ c		sets boundary conditions for scalar
 c
 c-------------------------------------------------------------
 c
-c subroutine scal3sh(what,cnv,nlvbnd,rcv,rkpar,wsink
+c subroutine scal3sh(what,cnv,nlvbnd,rcv,cobs,robs,rkpar,wsink
 c     +                                  ,difhv,difv,difmol)
 c		shell for scalar T/D
 c
@@ -34,6 +41,7 @@ c     +                  ,ddt
 c     +                  ,rkpar,difhv,difv
 c     +                  ,difmol,cbound
 c     +                  ,itvd,gradxv,gradyv
+c     +                  ,cobs,robs
 c     +                  ,wsink
 c     +                  ,azpar,adpar,aapar
 c     +                  ,istot,isact
@@ -41,6 +49,7 @@ c     +                  ,nlvdi,nlv)
 c
 c subroutine conzstab(cn1,co1
 c     +                  ,ddt
+c     +                  ,robs
 c     +                  ,rkpar,difhv,difv
 c     +                  ,difmol,azpar
 c     +                  ,adpar,aapar
@@ -151,6 +160,7 @@ c 11.03.2010    ggu     in assert_min_max_property() do not check ibtyp=1
 c 12.03.2010    ggu     in assert_min_max_property() limit error messages
 c 22.03.2010    ggu     bug fix for evaporation (distr. sources) BUG_2010_01
 c 15.12.2010    ggu     new routine vertical_flux_ie() for vertical tvd
+c 26.01.2011    ggu     nudging implemented (scal_adv_nudge, cobs, robs)
 c
 c*********************************************************************
 
@@ -173,6 +183,75 @@ c shell for scalar (for parallel version)
         real difhv(nlvdim,1)
 	real difv(0:nlvdim,1)
         real difmol
+
+	real bnd3_aux(nb3dim)
+        real r3v(nlvdim,nkndim)
+
+	real robs
+        integer iwhat,ichanm
+	character*10 whatvar,whataux
+
+	robs = 0.
+
+c--------------------------------------------------------------
+c make identifier for variable
+c--------------------------------------------------------------
+
+	whatvar = what
+	if( ivar .ne. 0 ) then
+          write(whataux,'(i2)') ivar
+          whatvar = what // whataux
+	end if
+        iwhat = ichanm(whatvar)
+
+c--------------------------------------------------------------
+c transfer boundary conditions of var ivar to 3d matrix r3v
+c--------------------------------------------------------------
+
+	call bnds_trans(whatvar(1:iwhat)
+     +				,nb3dim,bnd3,bnd3_aux
+     +                          ,ivar,nlvdim,r3v)
+
+c--------------------------------------------------------------
+c do advection and diffusion
+c--------------------------------------------------------------
+
+        call scal3sh(whatvar(1:iwhat)
+     +				,scal,nlvdim
+     +                          ,r3v,scal,robs
+     +				,rkpar,wsink
+     +                          ,difhv,difv,difmol)
+
+c--------------------------------------------------------------
+c end of routine
+c--------------------------------------------------------------
+
+	end
+
+c*********************************************************************
+
+	subroutine scal_adv_nudge(what,ivar
+     +				,scal,bnd3
+     +				,rkpar,wsink
+     +                          ,difhv,difv,difmol
+     +				,sobs,robs)
+
+c shell for scalar with nudging (for parallel version)
+
+        include 'param.h'
+
+        character*(*) what
+	integer ivar
+        real scal(nlvdim,1)
+        real bnd3(nb3dim,0:nbcdim)
+
+        real rkpar
+	real wsink
+        real difhv(nlvdim,1)
+	real difv(0:nlvdim,1)
+        real difmol
+	real sobs(nlvdim,1)		!observations
+	real robs
 
 	real bnd3_aux(nb3dim)
         real r3v(nlvdim,nkndim)
@@ -205,7 +284,7 @@ c--------------------------------------------------------------
 
         call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdim
-     +                          ,r3v
+     +                          ,r3v,sobs,robs
      +				,rkpar,wsink
      +                          ,difhv,difv,difmol)
 
@@ -243,7 +322,11 @@ c special version for cohesive sediments with factor
 	real bnd3_aux(nb3dim)
         real r3v(nlvdim,nkndim)
 
+	real robs
+        integer iwhat,ichanm
 	character*20 whatvar,whataux
+
+	robs = 0.
 
 c--------------------------------------------------------------
 c make identifier for variable
@@ -254,12 +337,13 @@ c--------------------------------------------------------------
           write(whataux,'(i2)') ivar
           whatvar = what // whataux
 	end if
+        iwhat = ichanm(whatvar)
 
 c--------------------------------------------------------------
 c transfer boundary conditions of var ivar to 3d matrix r3v
 c--------------------------------------------------------------
 
-	call bnds_trans(whatvar
+	call bnds_trans(whatvar(1:iwhat)
      +				,nb3dim,bnd3,bnd3_aux
      +                          ,ivar,nlvdim,r3v)
 
@@ -273,9 +357,9 @@ c--------------------------------------------------------------
 c do advection and diffusion
 c--------------------------------------------------------------
 
-        call scal3sh(whatvar
+        call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdim
-     +                          ,r3v
+     +                          ,r3v,scal,robs
      +				,rkpar,wsink
      +                          ,difhv,difv,difmol)
 
@@ -309,7 +393,7 @@ c*********************************************************************
 c*********************************************************************
 c*********************************************************************
 
-	subroutine scal3sh(what,cnv,nlvbnd,rcv,rkpar,wsink
+	subroutine scal3sh(what,cnv,nlvbnd,rcv,cobs,robs,rkpar,wsink
      +					,difhv,difv,difmol)
 
 c shell for scalar T/D
@@ -323,6 +407,8 @@ c arguments
         real cnv(nlvdim,1)
 	integer nlvbnd		!vertical dimension of boundary condition
         real rcv(nlvbnd,1)	!boundary condition (value of scalar)
+	real cobs(nlvdim,1)	!observations (for nudging)
+	real robs		!use nudging
         real rkpar
 	real wsink
         real difhv(nlvdim,1)
@@ -396,7 +482,7 @@ c-------------------------------------------------------------
 
 	call get_timestep(dt)
 
-	call make_stability(dt,rkpar,sindex,istot,saux)
+	call make_stability(dt,robs,rkpar,sindex,istot,saux)
 
         write(iuinfo,*) 'stability_',what,':',it,sindex,istot
 
@@ -444,6 +530,7 @@ c-------------------------------------------------------------
      +          ,rkpar,difhv,difv,difmol
      +          ,sbconz
      +		,itvd,gradxv,gradyv
+     +		,cobs,robs
      +		,wsink
      +		,azpar,adpar,aapar
      +          ,istot,isact
@@ -486,7 +573,8 @@ c**************************************************************
      +			,ddt
      +                  ,rkpar,difhv,difv
      +			,difmol,cbound
-     +			,itvd,gradxv,gradyv
+     +		 	,itvd,gradxv,gradyv
+     +			,cobs,robs
      +			,wsink
      +			,azpar,adpar,aapar
      +			,istot,isact
@@ -507,6 +595,8 @@ c difmol vertical molecular diffusivity
 c cbound boundary condition (mass flux) [kg/s] -> now concentration [kg/m**3]
 c itvd	 type of transport algorithm used
 c gradxv,gradyv  gradient vectors for TVD algorithm
+c cobs	 observations for nudging
+c robs	 use observations for nuding (real)
 c wsink	 settling velocity [m/s]
 c azpar  time weighting parameter
 c adpar  time weighting parameter for vertical diffusion (ad)
@@ -559,6 +649,8 @@ c arguments
 	integer itvd
 	real gradxv(nlvdi,1)
 	real gradyv(nlvdi,1)
+	real cobs(nlvdi,1)
+	real robs
 	real wsink
         real ddt,rkpar,azpar,adpar,aapar			!$$azpar
 	integer istot,isact
@@ -580,6 +672,8 @@ c common
         common /wlov/wlov, /wlnv/wlnv
 	integer ilhv(1), ilhkv(1)
 	common /ilhv/ilhv, /ilhkv/ilhkv
+	real rtauv(nlvdim,1)
+	common /rtauv/rtauv
 
         real zeov(3,1),zenv(3,1)
         common /zeov/zeov, /zenv/zenv
@@ -643,7 +737,7 @@ c	double precision explh(nlvdim,nlkdim)
 	double precision cdummy
 	double precision cbm,ccm
 	double precision fw(3),fd(3)
-	double precision fl(3)
+	double precision fl(3),fnudge(3)
 	double precision flux_tot,flux_tot1,flux_top,flux_bot
         double precision wdiff(3),waux
 c local (new)
@@ -652,6 +746,8 @@ c	double precision clce(nlvdim,3), clme(nlvdim,3), clpe(nlvdim,3)
 	double precision cl(0:nlvdim+1,3)
 	double precision wl(0:nlvdim+1,3)
 	double precision vflux(0:nlvdim+1,3)
+	double precision cob(0:nlvdim+1,3)
+	double precision rtau(0:nlvdim+1,3)
 
 	double precision hdv(0:nlvdim+1)
 	double precision haver(0:nlvdim+1)
@@ -818,6 +914,8 @@ c	----------------------------------------------------------------
 	    hold(l,ii) = rso * hn + rsot * ho
 	    hnew(l,ii) = rsn * hn + rsnt * ho
 	    cl(l,ii) = co(l,k)
+	    cob(l,ii) = cobs(l,k)	!observations
+	    rtau(l,ii) = rtauv(l,k)	!observations
 	    wl(l,ii) = wprv(l,k)
 	    !wl(l,ii) = 0.				!DDD
 	  end do
@@ -1030,6 +1128,14 @@ c	TVD scheme finish
 c	----------------------------------------------------------------
 
 c	----------------------------------------------------------------
+c	contributions from nudging
+c	----------------------------------------------------------------
+
+	do ii=1,3
+	  fnudge(ii) = robs * rtau(l,ii) * ( cob(l,ii) - cl(l,ii) )
+	end do
+
+c	----------------------------------------------------------------
 c	sum explicit contributions
 c	----------------------------------------------------------------
 
@@ -1038,7 +1144,9 @@ c	----------------------------------------------------------------
           hmed = hold(l,ii)                      !new ggu   !HACK
           !hmed = haver(l)                      !new ggu   !HACK
 	  cdummy = aj4 * ( hold(l,ii)*cl(l,ii)
-     +				+ dt *  ( 3.*fl(ii) 
+     +				+ dt *  ( 
+     +					    hold(l,ii)*fnudge(ii)
+     +					  + 3.*fl(ii) 
      +					  - fw(ii)
 c     +					  - rk3*hmed*b(ii)*cbm
 c     +					  - rk3*hmed*c(ii)*ccm
@@ -1171,6 +1279,7 @@ c*****************************************************************
 
         subroutine conzstab(cn1,co1
      +			,ddt
+     +			,robs
      +                  ,rkpar,difhv,difv
      +			,difmol,azpar
      +			,adpar,aapar
@@ -1186,6 +1295,7 @@ c caux   aux vector
 c clow	 lower diagonal of vertical system
 c chig	 upper diagonal of vertical system
 c ddt    time step
+c robs	 factor for nudging
 c rkpar  horizontal turbulent diffusivity
 c difhv  horizontal turbulent diffusivity (variable between elements)
 c difv   vertical turbulent diffusivity
@@ -1239,6 +1349,7 @@ c arguments
         real difhv(nlvdi,1)
 	real difmol
         real ddt,rkpar,azpar,adpar,aapar			!$$azpar
+	real robs
 	integer istot,isact
 c common
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -1286,6 +1397,9 @@ c common
 
 	real saux1(nlvdim,nkndim)
         common /saux1/saux1
+
+	real rtauv(nlvdim,1)
+        common /rtauv/rtauv
 
 c local
 	logical bdebug,bdebug1,debug
@@ -1600,6 +1714,7 @@ c sum explicit contributions
 	    chigh(l,k) = chigh(l,k) + cdummy
           end if
           cn(l,k) = cn(l,k) + dt * aj4 * ( fw(ii) + fd(ii) )
+          co(l,k) = co(l,k) + dt * aj4 * hmed * robs * rtauv(l,k) !nudging
 	end do
 
 	end do		! loop over l
@@ -1636,7 +1751,7 @@ c cdiag		volume of cell
 c chigh		flux due to horizontal advection
 c clow		flux due to horizontal diffusion
 c cn		flux due to vertical advection and diffusion (explicit)
-c co		flux due to point sources
+c co		flux due to point sources and nudging
 c-----------------------------------------------------------------
 
         stabind = 0.		!total max stability index

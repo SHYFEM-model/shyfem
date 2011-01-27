@@ -2,11 +2,12 @@
 
 Usage()
 {
-  echo "ousextr [-h|-help] {-nodes|-records} data"
+  echo "ousextr [-h|-help] {-nodes|-records|-gis} data"
   echo "    -nodes      extract nodes given in data"
   echo "    -records    extract records given in data"
+  echo "    -gis        extract records given in data in gis format"
   echo "    data        file containing node/record numbers (one on each line)"
-  echo "    either -nodes, -records must be specified"
+  echo "    either -nodes, -records, -gis must be specified"
   exit 0
 }
 
@@ -24,6 +25,8 @@ if [ $1 = "-nodes" ]; then
   what=nodes
 elif [ $1 = "-records" ]; then
   what=records
+elif [ $1 = "-gis" ]; then
+  what=gis
 else
   Usage
 fi
@@ -51,14 +54,21 @@ if [ $what = "nodes" ]; then
   echo "" >> $tmpfile
   cat $datafile >> $tmpfile
   echo "0" >> $tmpfile
-
   $bindir/ousextr_nodes < $tmpfile
-else
+elif [ $what = "records" ]; then
   echo ""  > $tmpfile
   cat $datafile >> $tmpfile
   echo "0" >> $tmpfile
-
   $bindir/ousextr_records < $tmpfile
+elif [ $what = "gis" ]; then
+  echo ""  > $tmpfile
+  echo "" >> $tmpfile
+  cat $datafile >> $tmpfile
+  echo "0" >> $tmpfile
+  $bindir/ousextr_gis < $tmpfile
+else
+  echo "internal error..."
+  exit 1
 fi
 
 #-------------------------------------------------- run programs

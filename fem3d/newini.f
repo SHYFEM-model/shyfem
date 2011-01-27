@@ -912,8 +912,8 @@ c local
 	    h = - h * hev(ie)
 	  end if
 
-c	  if(abs(h-hev(ie)).gt.1.e-4) then
-	  if(abs(h-hev(ie)).gt.0.) then
+	  if(abs(h-hev(ie)).gt.1.e-4) then
+c	  if(abs(h-hev(ie)).gt.0.) then
 		write(6,*) 'ie,htot,hsum,lmax : ',ie,hev(ie),h,lmax
 		bstop = .true.
 	  end if

@@ -1,5 +1,45 @@
 ============================================================
 
+Thu Jan 27 14:45:36 CET 2011
+
+nudging for T/S
+
+ .gitignore                   |    4 +
+ BUG                          |    3 +
+ LOG                          |   22 +++
+ Rules.make                   |   15 ++-
+ fem3d/Makefile               |   28 +++-
+ fem3d/basproj.f              |   95 ++++++++++++++
+ fem3d/basres.f               |  168 ++++++++++++++++++++++++
+ fem3d/grdutil.f              |  295 ++++++++++++++++++++++++++++++++++++++++++
+ fem3d/ht.f                   |    4 +
+ fem3d/newbcl.f               |  234 +++++++++++++++++++++++++++++----
+ fem3d/newcon.f               |  137 ++++++++++++++++++--
+ fem3d/newexpl.f              |    3 +-
+ fem3d/newini.f               |    4 +-
+ fem3d/newstab.f              |   11 +-
+ fem3d/newtvd.f               |    2 +-
+ fem3d/ousextr_gis.f          |   64 +++++++++-
+ fem3d/ousextr_nodes.f        |    2 +
+ fem3d/param.h                |    6 +-
+ fem3d/subbas.f               |   61 +++++++++
+ fem3d/subcus.f               |   76 +++++++++++
+ fem3d/submeteo.f             |   29 +++--
+ fem3d/subnev.f               |   27 +++--
+ fem3d/subreg.f               |   17 +++
+ fem3d/subsys.f               |    7 +
+ fem3d/vp.f                   |   36 +++++
+ femadj/param.h               |    6 +-
+ fembin/ousextr               |   20 ++-
+ fembin/revisionlog_adjust.pl |    2 +-
+ femlib/perl/convert_date.pl  |   44 ++++++
+ femplot/param.h              |    6 +-
+ femplot/suplin.f             |   73 +++--------
+ param.h                      |    6 +-
+ 32 files changed, 1352 insertions(+), 155 deletions(-)
+
+============================================================
+
 Mon Dec 20 17:57:36 CET 2010
 
 New version 6_1_16

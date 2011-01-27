@@ -61,6 +61,8 @@ c 25.11.2004	ggu	new routines femintp and elemintp for interpolation
 c 14.03.2005	ggu	new routines for interpolation in element
 c 11.03.2009	ggu	new helper routine getgeoflag()
 c 12.06.2009	ggu	passing to double precision, intrid, bug bug_f_64bit
+c 26.01.2011	ggu&mb	handling extrapolation in am2av()
+c 27.01.2011	ggu&ccf	bug fix in find_elem_from_old() BUG_27.01.2011
 c
 c notes :
 c
@@ -530,10 +532,13 @@ c common
 	common /xgv/xgv, /ygv/ygv
 	common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
 c local
+	logical bextra
 	integer k
 	integer imin,jmin
 	real xx,yy,z1,z2,z3,z4,x1,y1,t,u
  
+	bextra = .false.   !extrapolate if out of regular domain (else error)
+
 	do k=1,nkn
 	    xx=xgv(k)
 	    yy=ygv(k)
@@ -547,6 +552,16 @@ c local
 
 	    if( imin.lt.1 .or. jmin.lt.1 ) goto 1
 	    if( imin+1.gt.ip .or. jmin+1.gt.jp ) goto 1
+
+	    if( bextra ) then
+	      if( imin.lt.1 ) imin = 1
+	      if( jmin.lt.1 ) jmin = 1
+	      if( imin+1.gt.ip ) imin = ip - 1
+	      if( jmin+1.gt.jp ) jmin = jp - 1
+	    else
+	      if( imin.lt.1 .or. jmin.lt.1 ) goto 1
+	      if( imin+1.gt.ip .or. jmin+1.gt.jp ) goto 1
+	    end if
 
 	    z1=am(imin,jmin)
 	    z2=am(imin+1,jmin)
@@ -1073,7 +1088,9 @@ c start from old element going upwards and downwards
 c-------------------------------------------------------------
 
 	iem = ieold-1
+	if( iem .lt. 1 ) iem = nel		!BUG_27.01.2011
 	iep = ieold+1
+	if( iep .gt. nel ) iep = 1		!BUG_27.01.2011
 
 	do while( iem .ne. ieold .and. iep .ne. ieold )
 	  if( in_element(iem,xp,yp) ) then

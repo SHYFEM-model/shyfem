@@ -8,6 +8,7 @@ c
 c 19.02.2010    ggu     new file to contain stability computations
 c 26.02.2010    ggu     internal_stability restructured (on element)
 c 08.03.2010    ggu     run only down to avail layers in stability (bug fix)
+c 26.01.2011    ggu     robs for nudging implemented
 c
 c*****************************************************************
 c*****************************************************************
@@ -20,7 +21,7 @@ c call make_stability before advection of similar variables
 c
 c*****************************************************************
 
-	subroutine compute_stability(rkpar,azpar,rindex,saux)
+	subroutine compute_stability(robs,rkpar,azpar,rindex,saux)
 
 c computes stability index
 
@@ -28,6 +29,7 @@ c computes stability index
 
         include 'param.h'
 
+	real robs
         real rkpar
         real azpar
         real rindex
@@ -68,7 +70,7 @@ c call conzstab
 c----------------------------------------------------------------
 
         call conzstab(cnv,saux
-     +          ,ddt,rkpar,difhv,difv
+     +          ,ddt,robs,rkpar,difhv,difv
      +		,difmol,azpar,adpar,aapar
      +          ,rindex,istot,isact,nlvdi,nlv)
 
@@ -80,7 +82,7 @@ c----------------------------------------------------------------
 
 c*****************************************************************
 
-        subroutine make_stability(dt,rkpar,rindex,istot,saux)
+        subroutine make_stability(dt,robs,rkpar,rindex,istot,saux)
 
 c gets stability index (if necessary computes it)
 
@@ -89,6 +91,7 @@ c gets stability index (if necessary computes it)
 	include 'param.h'
 
 	real dt
+	logical robs
         real rkpar
         real rindex
         integer istot
@@ -108,7 +111,7 @@ c compute stability index
 c----------------------------------------------------------------
 
 	call getaz(azpar)
-	call compute_stability(rkpar,azpar,rindex,saux)
+	call compute_stability(robs,rkpar,azpar,rindex,saux)
 
 c----------------------------------------------------------------
 c insert stability index

@@ -56,6 +56,7 @@ c 18.11.2009	ggu	residence time computation in jamal with correction
 c 12.02.2010	ggu	new routines for horizontal diffusion tests (diffus2d)
 c 01.03.2010	ggu	new routines jamal_fra() to reset conz
 c 15.12.2010	ggu	traccia routines moved to subtrace.f
+c 26.01.2011	ggu	set rtauv for black sea (black_sea_nudge)
 c
 c******************************************************************
 
@@ -107,6 +108,7 @@ c custom routines
 	if( icall .eq. 92 ) call vdiffus(1)
 	if( icall .eq. 93 ) call vdiffus(2)
 	if( icall .eq. 94 ) call diffus2d
+	if( icall .eq. 101 ) call black_sea_nudge
         if( icall .eq. 883 ) call debora(it)
         if( icall .eq. 884 ) call tsinitdebora(it)
         if( icall .eq. 888 ) call uv_bottom
@@ -3551,3 +3553,77 @@ c********************************************************************
 
 c**********************************************************************
 
+	subroutine black_sea_nudge
+
+	implicit none
+
+	include 'param.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	real xgv(1), ygv(1)
+	common /xgv/xgv, /ygv/ygv
+	real rtauv(nlvdim,nkndim)
+	common /rtauv/rtauv
+
+	integer k,l
+	real xc1,yc1,xc2,yc2
+	real xm1,ym1,xm2,ym2
+	real tc,tm
+	real scalc,scalm
+	real ncx,ncy,nmx,nmy
+	real x,y
+	real tau
+
+	integer icall
+	save icall
+	data icall / 0 /
+
+	if( icall .ne. 0 ) return
+	icall = 1
+
+	xc1 = 29.
+	yc1 = 43.5
+	xc2 = 30.5
+	yc2 = 45.5
+
+	xm1 = 29.5
+	ym1 = 43.5
+	xm2 = 31.
+	ym2 = 45.5
+
+	tc = 86400.
+	tm = 3600.
+
+	ncx = -(yc2-yc1)
+	ncy = +(xc2-xc1)
+	nmx = -(ym2-ym1)
+	nmy = +(xm2-xm1)
+
+	do k=1,nkn
+	  x = xgv(k)
+	  y = ygv(k)
+
+	  scalc = ncx * (x-xc1) + ncy * (y-yc1)
+	  scalm = nmx * (x-xm1) + nmy * (y-ym1)
+
+	  if( scalc .gt. 0. ) then		!coast
+	    tau = tc
+	  else if( scalm .lt. 0. ) then		!open sea
+	    tau = tm
+	  else					!intermediate
+	    tau = 0.5 * (tc+tm)
+	  end if
+
+	  if( tau .gt. 0. ) tau = 1. / tau
+
+	  do l=1,nlvdim
+	    rtauv(l,k) = tau
+	  end do
+	end do
+
+	write(6,*) 'relaxation time for nudging set up'
+
+	end
+
+c**********************************************************************

@@ -14,6 +14,7 @@ bin
 !fem3d/bin
 
 a.out
+DIFFS
 
 fem3d/basbathy
 fem3d/basinf
@@ -49,6 +50,9 @@ fem3d/winmerge
 fem3d/winshift
 fem3d/ousintp
 fem3d/map_influence
+fem3d/basproj
+fem3d/basres
+fem3d/ousextr_nodes
 
 femadj/adjele
 fembin/extDiff

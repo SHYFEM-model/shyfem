@@ -45,6 +45,7 @@ c 13.10.2009    ggu     in rhoset bug computing pres
 c 13.11.2009    ggu     only initialize T/S if no restart, new rhoset_shell
 c 19.01.2010    ggu     different call to has_restart() 
 c 16.12.2010    ggu     sigma layers introduced (maybe not finished)
+c 26.01.2011    ggu     read in obs for t/s (tobsv,sobsv)
 c
 c*****************************************************************
 
@@ -96,7 +97,13 @@ c common
         common /difhv/difhv
         real xgv(1), ygv(1)
 	common /xgv/xgv, /ygv/ygv
-        integer ib
+
+	real tobsv(nlvdim,1)
+	common /tobsv/tobsv
+	real sobsv(nlvdim,1)
+	common /sobsv/sobsv
+	real rtauv(nlvdim,1)
+	common /rtauv/rtauv
                       
         character*80 saltn(nbcdim)
         character*80 tempn(nbcdim)
@@ -106,6 +113,7 @@ c common
 c local
 	logical debug
 	logical badvect
+	logical bobs
 	logical bgdebug
         logical binfo
         logical bstop
@@ -127,6 +135,7 @@ c local
         real gamma,gammax
 	real mass
 	real wsink
+	real robs
 	integer isact,l,k,lmax
 	integer kspec
 	integer icrst
@@ -158,7 +167,7 @@ c save
         integer ninfo
         save ninfo
 
-	save badvect
+	save badvect,bobs
 	save salref,temref
 	save difmol
         save itemp,isalt
@@ -183,10 +192,11 @@ c initialization
 
 		ibarcl=iround(getpar('ibarcl'))
 		if(ibarcl.le.0) icall = -1
-		if(ibarcl.gt.3) goto 99
+		if(ibarcl.gt.4) goto 99
 		if(icall.eq.-1) return
 
-		badvect = ibarcl .eq. 1 .or. ibarcl .eq. 3
+		badvect = ibarcl .ne. 2
+		bobs = ibarcl .eq. 4
 
 		salref=getpar('salref')
 		temref=getpar('temref')
@@ -198,8 +208,6 @@ c initialization
                 itemp=iround(getpar('itemp'))
                 isalt=iround(getpar('isalt'))
 
-		!dt=idt
-
 c		--------------------------------------------
 c		initialize saltv,tempv
 c		--------------------------------------------
@@ -210,10 +218,26 @@ c		--------------------------------------------
 
 		  if( ibarcl .eq. 1 .or. ibarcl .eq. 3) then
 		    call ts_file_init(it,nlvdim,nlv,nkn,tempv,saltv)
-		  else
+		  else if( ibarcl .eq. 2 ) then
 	            call diagnostic(it,nlvdim,nlv,nkn,tempv,saltv)
+		  else if( ibarcl .eq. 4 ) then		!interpolate to T/S
+	  	    call ts_nudge(it,nlvdim,nlv,nkn,tempv,saltv)
+		  else
+		    goto 99
 		  end if
 		end if
+
+c		--------------------------------------------
+c		initialize observations and relaxation times
+c		--------------------------------------------
+
+		do k=1,nkn
+		  do l=1,nlv
+		    tobsv(l,k) = 0.
+		    sobsv(l,k) = 0.
+		    rtauv(l,k) = 0.
+		  end do
+		end do
 
 c		--------------------------------------------
 c		initialize open boundary conditions
@@ -267,12 +291,16 @@ c normal call
 	wsink = 0.
 	ivar = 1
 	t = it
+	robs = 0.
+	if( bobs ) robs = 1.
 
 	shpar=getpar('shpar')   !out of initialization because changed
 	thpar=getpar('thpar')
 
 	if( ibarcl .eq. 2 ) then
 	  call diagnostic(it,nlvdim,nlv,nkn,tempv,saltv)
+	else if( ibarcl .eq. 4 ) then
+	  call ts_nudge(it,nlvdim,nlv,nkn,tobsv,sobsv)
 	end if
 
 c salt and temperature transport & diffusion
@@ -290,10 +318,10 @@ c	  write(6,*) 'number of thread of temp: ',tid
 		!call check_layers('temp before bnd',tempv)
 		call scal_bnd('temp',t,bnd3_temp)
 		!call check_layers('temp after bnd',tempv)
-                call scal_adv('temp',0
+                call scal_adv_nudge('temp',0
      +                          ,tempv,bnd3_temp
      +                          ,thpar,wsink
-     +                          ,difhv,difv,difmol)
+     +                          ,difhv,difv,difmol,tobsv,robs)
 		!call check_layers('temp after adv',tempv)
 	  end if
 
@@ -306,10 +334,10 @@ c	  write(6,*) 'number of thread of salt: ',tid
 		!call check_layers('salt before bnd',saltv)
 		call scal_bnd('salt',t,bnd3_salt)
 		!call check_layers('salt after bnd',saltv)
-                call scal_adv('salt',0
+                call scal_adv_nudge('salt',0
      +                          ,saltv,bnd3_salt
      +                          ,shpar,wsink
-     +                          ,difhv,difv,difmol)
+     +                          ,difhv,difv,difmol,sobsv,robs)
 		!call check_layers('salt after adv',saltv)
           end if
 
@@ -342,7 +370,7 @@ c compute rhov and bpresv
 
 	call rhoset_shell
 
-c min/max
+c compute min/max
 
 	call stmima(saltv,nkn,nlvdi,ilhkv,smin,smax)
 	call stmima(tempv,nkn,nlvdi,ilhkv,tmin,tmax)
@@ -359,6 +387,8 @@ c print of results
 	stop 'error stop barocl: ibarcl'
 	end
 
+c********************************************************
+c********************************************************
 c********************************************************
 
 	subroutine rhoset_shell
@@ -500,26 +530,157 @@ c functions
 	return
 	end
 
-c******************************************************************
+c*******************************************************************	
+c*******************************************************************	
+c*******************************************************************	
 
-	subroutine getts(l,k,t,s)
+	subroutine ts_nudge(it,nkn,nlv,tobsv,sobsv)
 
-c accessor routine to get T/S
-
-        implicit none
-
-        integer k,l
-        real t,s
+	implicit none
 
 	include 'param.h'
 
-	real saltv(nlvdim,1),tempv(nlvdim,1),rhov(nlvdim,1)
-	common /saltv/saltv, /tempv/tempv, /rhov/rhov
+	integer it
+	integer nlv
+	integer nkn
+	real tobsv(nlvdim,1)
+	real sobsv(nlvdim,1)
 
-        t = tempv(l,k)
-        s = saltv(l,k)
+	character*80 tempf,saltf
 
-        end
+	integer iutemp,iusalt
+	save iutemp,iusalt
+	integer ittold,itsold,ittnew,itsnew
+	save ittold,itsold,ittnew,itsnew
+
+	real toldv(nlvdim,nkndim)
+	real soldv(nlvdim,nkndim)
+	real tnewv(nlvdim,nkndim)
+	real snewv(nlvdim,nkndim)
+	save toldv,soldv,tnewv,snewv
+
+	integer icall
+	save icall
+	data icall / 0 /
+
+	if( icall .eq. -1 ) return
+
+c-------------------------------------------------------------
+c initialization (open files etc...)
+c-------------------------------------------------------------
+
+	if( icall .eq. 0 ) then
+	  tempf = 'temp_obs.dat'
+	  saltf = 'salt_obs.dat'
+
+	  call ts_file_open(tempf,iutemp)
+	  call ts_file_open(saltf,iusalt)
+
+	  call read_next_record(ittold,iutemp,nkn,nlvdim,nlv,toldv)
+	  call read_next_record(itsold,iusalt,nkn,nlvdim,nlv,soldv)
+	  write(6,*) 'ts_nudge: new record read ',ittold,itsold
+
+	  call read_next_record(ittnew,iutemp,nkn,nlvdim,nlv,tnewv)
+	  call read_next_record(itsnew,iusalt,nkn,nlvdim,nlv,snewv)
+	  write(6,*) 'ts_nudge: new record read ',ittnew,itsnew
+
+	  if( ittold .ne. itsold ) goto 98
+	  if( ittnew .ne. itsnew ) goto 98
+	  if( it .lt. ittold ) goto 99
+
+	  icall = 1
+	end if
+
+c-------------------------------------------------------------
+c read new files if necessary
+c-------------------------------------------------------------
+
+	do while( it .gt. ittnew )
+
+	  ittold = ittnew
+	  call copy_record(nkn,nlvdim,nlv,toldv,tnewv)
+	  itsold = itsnew
+	  call copy_record(nkn,nlvdim,nlv,soldv,snewv)
+
+	  call read_next_record(ittnew,iutemp,nkn,nlvdim,nlv,tnewv)
+	  call read_next_record(itsnew,iusalt,nkn,nlvdim,nlv,snewv)
+	  write(6,*) 'ts_nudge: new record read ',ittnew
+
+	  if( ittnew .ne. itsnew ) goto 98
+
+	end do
+
+c-------------------------------------------------------------
+c interpolate to new time step
+c-------------------------------------------------------------
+
+	call intp_record(nkn,nlvdim,nlv,ittold,ittnew,it
+     +				,toldv,tnewv,tobsv)
+	call intp_record(nkn,nlvdim,nlv,itsold,itsnew,it
+     +				,soldv,snewv,sobsv)
+
+c-------------------------------------------------------------
+c end of routine
+c-------------------------------------------------------------
+
+	return
+   98	continue
+	write(6,*) ittold,itsold,ittnew,itsnew
+	stop 'error stop ts_nudge: mismatch time of temp/salt records'
+   99	continue
+	write(6,*) it,ittold
+	stop 'error stop ts_nudge: no wind file for start of simulation'
+	end
+
+c*******************************************************************	
+
+	subroutine intp_record(nkn,nlvdim,nlv,itold,itnew,it
+     +				,voldv,vnewv,vintpv)
+
+c interpolates records to actual time
+
+	implicit none
+
+	integer nkn,nlvdim,nlv
+	integer itold,itnew,it
+	real voldv(nlvdim,1)
+	real vnewv(nlvdim,1)
+	real vintpv(nlvdim,1)
+
+	integer k,l
+	real rt
+
+        rt = (it-itold) / float(itnew-itold)
+
+	do k=1,nkn
+	  do l=1,nlv
+	    vintpv(l,k) = voldv(l,k) + rt * (vnewv(l,k) - voldv(l,k))
+	  end do
+	end do
+
+	end
+
+c*******************************************************************	
+
+	subroutine copy_record(nkn,nlvdim,nlv,voldv,vnewv)
+
+c copies new record to old one
+
+	implicit none
+
+	integer nkn,nlvdim,nlv
+	real voldv(nlvdim,1)
+	real vnewv(nlvdim,1)
+
+	integer k,l
+
+	do k=1,nkn
+	  do l=1,nlv
+	    voldv(l,k) = vnewv(l,k)
+	  end do
+	end do
+
+	end
 
 c*******************************************************************	
 
@@ -539,8 +700,6 @@ c*******************************************************************
 	integer itt,its
 	integer iutemp,iusalt,itnext,idtnext
 	save iutemp,iusalt,itnext,idtnext
-
-	integer ifileo
 
 	integer icall
 	save icall
@@ -709,6 +868,29 @@ c opens T/S file
 	end
 
 c*******************************************************************	
+c*******************************************************************	
+c*******************************************************************	
+
+	subroutine getts(l,k,t,s)
+
+c accessor routine to get T/S
+
+        implicit none
+
+        integer k,l
+        real t,s
+
+	include 'param.h'
+
+	real saltv(nlvdim,1),tempv(nlvdim,1),rhov(nlvdim,1)
+	common /saltv/saltv, /tempv/tempv, /rhov/rhov
+
+        t = tempv(l,k)
+        s = saltv(l,k)
+
+        end
+
+c******************************************************************
 
 	subroutine check_layers(what,vals)
 
