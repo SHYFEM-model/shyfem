@@ -34,6 +34,7 @@ c 05.02.2010	ggu	bug fix for aj (division with 24 too early)
 c 14.04.2010	ggu	new routines get_coords_ev() and check_spheric_ev()
 c 07.05.2010	ggu	initialization of ev routines
 c 25.01.2011	ggu	default to lat/lon if small coordinates are given
+c 28.01.2011	ggu	new entry in ev for distance of nodes (17-19)
 c
 c***********************************************************
 
@@ -156,22 +157,25 @@ c        end do
 	dd2 = aj * sqrt( b2*b2 + c2*c2 )
 	dd3 = aj * sqrt( b3*b3 + c3*c3 )
 
-	ev(1,i)=a1
+	ev(1,i)=a1		!a values for interpolation
 	ev(2,i)=a2
 	ev(3,i)=a3
-	ev(4,i)=b1
+	ev(4,i)=b1		!b values (gradient in x)
 	ev(5,i)=b2
 	ev(6,i)=b3
-	ev(7,i)=c1
+	ev(7,i)=c1		!c values (gradient in y)
 	ev(8,i)=c2
 	ev(9,i)=c3
-	ev(10,i)=aj/twofour
-	ev(11,i)=d1
+	ev(10,i)=aj/twofour	!aera * 12
+	ev(11,i)=d1		!angle on vertex
 	ev(12,i)=d2
 	ev(13,i)=d3
-	ev(14,i)=dd1
+	ev(14,i)=dd1		!for horizontal diffusion (?)
 	ev(15,i)=dd2
 	ev(16,i)=dd3
+	ev(17,i)=s1		!distance between vertices
+	ev(18,i)=s2
+	ev(19,i)=s3
 
         !write(96,*) i,(ev(ii,i),ii=1,evdim)
 

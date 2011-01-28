@@ -46,6 +46,7 @@ c 13.11.2009    ggu     only initialize T/S if no restart, new rhoset_shell
 c 19.01.2010    ggu     different call to has_restart() 
 c 16.12.2010    ggu     sigma layers introduced (maybe not finished)
 c 26.01.2011    ggu     read in obs for t/s (tobsv,sobsv)
+c 28.01.2011    ggu     parameters changed in call to ts_nudge()
 c
 c*****************************************************************
 
@@ -221,7 +222,7 @@ c		--------------------------------------------
 		  else if( ibarcl .eq. 2 ) then
 	            call diagnostic(it,nlvdim,nlv,nkn,tempv,saltv)
 		  else if( ibarcl .eq. 4 ) then		!interpolate to T/S
-	  	    call ts_nudge(it,nlvdim,nlv,nkn,tempv,saltv)
+	  	    call ts_nudge(it,nlv,nkn,tempv,saltv)
 		  else
 		    goto 99
 		  end if
@@ -300,7 +301,7 @@ c normal call
 	if( ibarcl .eq. 2 ) then
 	  call diagnostic(it,nlvdim,nlv,nkn,tempv,saltv)
 	else if( ibarcl .eq. 4 ) then
-	  call ts_nudge(it,nlvdim,nlv,nkn,tobsv,sobsv)
+	  call ts_nudge(it,nlv,nkn,tobsv,sobsv)
 	end if
 
 c salt and temperature transport & diffusion
@@ -534,7 +535,7 @@ c*******************************************************************
 c*******************************************************************	
 c*******************************************************************	
 
-	subroutine ts_nudge(it,nkn,nlv,tobsv,sobsv)
+	subroutine ts_nudge(it,nlv,nkn,tobsv,sobsv)
 
 	implicit none
 

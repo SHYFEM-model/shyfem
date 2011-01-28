@@ -1,5 +1,21 @@
 ============================================================
 
+Fri Jan 28 11:40:50 CET 2011
+
+short bug fixes for tvd and nudging
+
+ fem3d/ev.h       |    2 +-
+ fem3d/evmain.h   |    2 +-
+ fem3d/newbcl.f   |    7 ++++---
+ fem3d/newtvd.f   |   21 ++++++++++++++++-----
+ fem3d/subcus.f   |    4 ++--
+ fem3d/subnev.f   |   16 ++++++++++------
+ femplot/ev.h     |    4 ++--
+ femplot/evmain.h |    4 ++--
+ 8 files changed, 38 insertions(+), 22 deletions(-)
+
+============================================================
+
 Thu Jan 27 14:47:44 CET 2011
 
 New version 6_1_17

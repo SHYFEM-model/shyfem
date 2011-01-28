@@ -20,6 +20,7 @@ c 30.03.2009	ggu	bug fix: ilhv was real in tvd_get_upwind()
 c 31.03.2009	ggu	bug fix: do not use internal gradient (undershoot)
 c 06.04.2009	ggu&ccf	bug fix: in tvd_fluxes() do not test for conc==cond
 c 15.12.2010	ggu	new routines for vertical tvd: vertical_flux_*()
+c 28.01.2011	ggu	bug fix for distance with lat/lon (tvd_fluxes)
 c
 c*****************************************************************
 c
@@ -310,6 +311,7 @@ c computes tvd fluxes for one element
 
 	include 'param.h'
         include 'tvd.h'
+        include 'ev.h'
 
 	integer ie,l
 	integer itot,isum
@@ -336,13 +338,13 @@ c computes tvd fluxes for one element
         logical bgradup
         logical bdebug
 	integer ii,k
-        integer ic,kc,id,kd,ip
+        integer ic,kc,id,kd,ip,iop
         real term,fact,grad
         real conc,cond,conf,conu
         real gcx,gcy,dx,dy
         real u,v
         real rf,psi
-        real alfa,dis
+        real alfa,dis,aj
         real vel
         real gdx,gdy
 
@@ -364,6 +366,7 @@ c computes tvd fluxes for one element
 
 	  u = ulnv(l,ie)
           v = vlnv(l,ie)
+	  aj = 24 * ev(10,ie)
 
             ip = isum
             if( itot .eq. 2 ) ip = 6 - ip		!bug fix
@@ -384,9 +387,17 @@ c computes tvd fluxes for one element
                 kd = nen3v(id,ie)
                 cond = cl(l,id)
 
-                dx = xgv(kd) - xgv(kc)
-                dy = ygv(kd) - ygv(kc)
-                dis = sqrt(dx**2 +dy**2)
+                !dx = xgv(kd) - xgv(kc)
+                !dy = ygv(kd) - ygv(kc)
+                !dis = sqrt(dx**2 +dy**2)
+		! next is bug fix for lat/lon
+		iop = 6 - (id+ic)			!opposite node of id,ic
+		dx = aj * ev(6+iop,ie)
+		if( 1+mod(iop,3) .eq. id ) dx = -dx
+		dy = aj * ev(3+iop,ie)
+		if( 1+mod(iop,3) .eq. ic ) dy = -dy
+		dis = ev(16+iop,ie)
+
                 !vel = sqrt(u**2 + v**2)                !total velocity
                 vel = abs( u*dx + v*dy ) / dis          !projected velocity
                 alfa = ( dt * vel  ) / dis

@@ -6,7 +6,7 @@ c
 c please change this info also in main
 
 	integer evdim
-	parameter ( evdim = 16 )
+	parameter ( evdim = 19 )
 
 	!real ev(evdim,neldim)
 	double precision ev(evdim,neldim)

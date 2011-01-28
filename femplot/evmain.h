@@ -3,10 +3,10 @@ c------------------------------------------------
 c finite element information for each element
 c------------------------------------------------
 c
-c please change this info also in ev.h
+c please change this info also in main
 
 	integer evdim
-	parameter ( evdim = 16 )
+	parameter ( evdim = 19 )
 
 	!real ev(evdim,neldim)
 	double precision ev(evdim,neldim)
