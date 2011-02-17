@@ -1,3 +1,96 @@
+version  6_1_18    17-02-2011    VERS_6_1_18
+
+========================================================== 17-02-2011 - 6_1_18
+
+ * ./grid/gridut.c:
+ * 16-Feb-2011: pass type into routines for creation of items		*
+ * ./grid/gridma1.c:
+ * 16-Feb-2011: use OpItemType for new items				*
+ * ./grid/grid.c:
+ * 16-Feb-2011: new options OpOutFile, OpItemType                       *
+ * ./grid/grid_ex.h:
+ * 16-Feb-2011: new options OpOutFile, OpItemType			*
+ * ./grid/gridfi.c:
+ * 16-Feb-2011: write to given file with OpOutFile			*
+ * ./grid/grid_fp.h:
+ * 16-Feb-2011: in MakeElem/Line() pass also type			*
+ * ./grid/gustd.c:
+ * 16-Feb-2011: new routine savestr()					*
+ * ./grid/gridop.c:
+ * 16-Feb-2011: new options OpOutFile and OpItemType implemented	*
+c ./fem3d/subcoord.f:
+c 16.02.2011    ggu     new proj=4 (non standard UTM) implemented
+c
+c ./fem3d/newtra.f:
+c 16.02.2011	ggu	new routine e2n3d() and e2n3d_minmax()
+c
+c ./fem3d/submeteo.f:
+c 05.02.2011    ggu	changed order of records in dfile (actual is first)
+c 16.02.2011    ggu	pass idata to files, use geo info from files
+c
+c ./fem3d/newtvd.f:
+c 28.01.2011	ggu	bug fix for distance with lat/lon (tvd_fluxes)
+c 29.01.2011	ccf	insert ISPHE for lat-long coordinates
+c
+c ./fem3d/subver.f:
+c 17.02.2011	ggu	version 6.1.18
+c
+c ./fem3d/subgotm.f:
+c 16.02.2011    ggu     write n2max to info file, profiles in special node
+c
+c ./fem3d/submet.f:
+c 16.02.2011    ggu     created by copying mainly from subn11.f
+c
+c ./fem3d/newcon.f:
+c 16.02.2011    ggu     pass robs to info_stability()
+c
+c ./fem3d/subn35.f:
+c 16.02.2011    ggu     new routines to deal with nodal area code
+c
+c ./fem3d/newbcl.f:
+c 28.01.2011    ggu     parameters changed in call to ts_nudge()
+c
+c ./fem3d/subqfxu1.f:
+c 16.02.2011    ggu     conversion from specific humidity (not working)
+c
+c ./fem3d/subnev.f:
+c 28.01.2011	ggu	new entry in ev for distance of nodes (17-19)
+c
+c ./fem3d/subsys.f:
+c 16.02.2011	ggu	new default for isphe, new routine fnm_aquabc_init()
+c
+c ./fem3d/ht.f:
+c 16.02.2011    ggu	new iarnv, call to aquabc
+c
+c ./fem3d/subn11.f:
+c 16.02.2011    ggu     copied meteo routines to submet.f
+c
+c ./fem3d/subqfxm1.f:
+c 16.02.2011	ggu	pstd introduced
+c
+c ./fem3d/subdif.f:
+c 16.02.2011    ggu     in diffweight() use double precision
+c
+c ./fem3d/newstab.f:
+c 16.02.2011    ggu     pass robs to subroutines, write stb-ind to nos file
+c
+c ./fem3d/subqfxm3.f:
+c 16.02.2011    ggu	pstd introduced
+c
+c ./fem3d/subqfxu3.f:
+c 16.02.2011    ggu     decl() commented
+c
+c ./fem3d/subwin.f:
+c 16.02.2011	ggu	set std pressure if pressure not given
+c
+c ./fem3d/subrgf.f:
+c 16.02.2011    ggu     completely restructured - store geo information
+c
+c ./fem3d/subsss.f:
+c 16.02.2011	ggu	new routine trimline()
+
+==========================================================
+
 version  6_1_17    27-01-2011    VERS_6_1_17
 
 nudging for T/S
