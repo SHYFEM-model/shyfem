@@ -79,6 +79,7 @@ c 03.11.2003	ggu	bug in documentation (stress without rho_0)
 c 16.09.2004	ggu	new routine convert_wind()
 c 09.02.2010	ggu	less diagnostics, only write wind data if read from STR
 c 22.02.2010	ggu&ccf	restructured, new formulas Smith&Banke, Large&Pond
+c 16.02.2011	ggu	set std pressure if pressure not given
 c
 c*************************************************************************
 
@@ -178,6 +179,9 @@ c administers read of wind file
         common /ppv/ppv
         real pov(1), pnv(1)
         common /pov/pov, /pnv/pnv
+
+        real metws(1)
+        common /metws/metws
 
 	character*80 name
 	real rit
@@ -357,6 +361,7 @@ c	write(6,*) it,itwold,itwnew
 	  wxv(i)=rit*(wxnv(i)-wxov(i))+wxov(i)
 	  wyv(i)=rit*(wynv(i)-wyov(i))+wyov(i)
 	  ppv(i)=rit*(pnv(i)-pov(i))+pov(i)
+	  metws(i) = sqrt( wxv(i)**2 + wyv(i)**2 )
 	end do
 
 c-----------------------------------------------------------------
@@ -473,6 +478,9 @@ c reads unformatted wind record
 	real u(1),v(1)		!wind speed [m/s]
 	real p(1)		!pressure [Pa]
 
+	real pstd
+	parameter ( pstd = 1013.25 )
+
         integer i,n
 	logical bpress,bconst
 
@@ -520,7 +528,7 @@ c-----------------------------------------------------------------
 
         if( .not. bpress ) then
           do i=1,ndim
-            p(i)=0.
+            p(i)=100.*pstd		!set to standard pressure (in Pa)
           end do
 	end if
 
@@ -869,6 +877,9 @@ c reads one line of wind data
 	real winx(nwdim), winy(nwdim), pres(nwdim)
 	common /windat/ winx, winy, pres
 
+	real pstd
+	parameter ( pstd = 1013.25 )
+
 	character*(*) line
 	integer ianz
 	integer iscanf,iround
@@ -887,7 +898,7 @@ c reads one line of wind data
 	itwin(nwind) = iround(f(1))
 	winx(nwind) = f(2)
 	winy(nwind) = f(3)
-	pres(nwind) = 0.
+	pres(nwind) = 100. * pstd	!pressure in Pa
 
 c	write(6,*) 'rdwndl: ',itwin(nwind),winx(nwind),winy(nwind)
 

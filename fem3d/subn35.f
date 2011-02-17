@@ -32,6 +32,7 @@ c 11.01.2005    ggu     ausv eliminated (was not used anymore)
 c 02.04.2007    ggu     in check -> warning only for cz=0 and Chezy/Strickler
 c 10.12.2008    ggu     re-organized, deleted sp135r(), use bottom_friction()
 c 29.01.2009    ggu     ausdef eliminated (chezy(5,.) is not used anymore)
+c 16.02.2011    ggu     new routines to deal with nodal area code
 c
 c***********************************************************
 c
@@ -242,6 +243,65 @@ c computes cd from h and z0
         cdf = cds*cds
 
         end
+
+c***********************************************************
+
+	subroutine init_nodal_area_code
+
+c interpolates area codes from elements to nodes (min or max)
+
+	implicit none
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer nen3v(3,1)
+        common /nen3v/nen3v
+        integer iarv(1)
+        common /iarv/iarv
+	integer iarnv(1)
+        common /iarnv/iarnv
+
+	integer init,mode
+	integer k,ie,ii,ia
+
+	mode = -1		! -1: use minimum   +1: use maximum
+
+	init = 99999999
+	if( mode .gt. 0 ) init = -init
+
+	do k=1,nkn
+	  iarnv(k) = init
+	end do
+
+	do ie=1,nel
+	  ia = iarv(ie)
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    if( mode .eq. -1 ) then
+		iarnv(k) = min(iarnv(k),ia)
+	    else
+		iarnv(k) = max(iarnv(k),ia)
+	    end if
+	  end do
+	end do
+
+	end
+
+c***********************************************************
+
+	subroutine get_nodal_area_code(k,ncode)
+
+	implicit none
+
+	integer k	!node number
+	integer ncode	!nodal area code (return)
+
+	integer iarnv(1)
+        common /iarnv/iarnv
+
+	ncode = iarnv(k)
+
+	end
 
 c***********************************************************
 c***********************************************************

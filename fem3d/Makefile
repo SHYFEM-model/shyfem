@@ -98,7 +98,8 @@ EXES	= ht hp vp \
 	  bascomp rstinf nosresidence ousaver ousvdiff \
 	  lgrelab lgrinf qflux_test bedload scal_intp \
 	  $(NOSEXTR) $(OUSEXTR) map_influence \
-	  splitext_big windcrea winshift winmerge
+	  splitext_big windcrea winshift winmerge \
+	  basres basproj
 
 MAKEDEPEND = $(FEMBIN)/mkdp.pl
 
@@ -177,8 +178,9 @@ HTOBJS = \
 	subrst.o subnosa.o subdif.o subreg.o \
 	atoxi3d.o atoxi.o subwwm.o kepsd.o keps_util.o \
 	subinv.o newexpl.o subrnd.o \
-	submeteo.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o \
-	subtrace.o
+	submet.o submeteo.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o \
+	subtrace.o \
+	$(AQUABC)
 
 # objects for pre-processor vp
 
@@ -225,6 +227,9 @@ QFLUX_TEST = subqfxf.o \
 	subqfxm1.o subqfxm2.o subqfxm3.o \
 	subqfxu1.o subqfxu2.o subqfxu3.o subqfxu4.o \
 	subfil.o
+
+AQUABC = aquabc_fem_interface.o alukas.o aquabc.o aquabc_sediment_model_1.o \
+		aquabc_util.o
 
 PARMOD = subpar1.o
 PARMOD = subpar.o subfnm.o
@@ -527,7 +532,7 @@ cleanvar:
 	-rm -f *.rev
 	-rm -f CVSSTATUS CVSRAWSTATUS
 	-rm -f COMMONF COMMONL
-	-rm -f gmon.out
+	-rm -f gmon.out tags
 
 cleandiff:
 	-rm -f DIFFS
@@ -600,6 +605,8 @@ last:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
+aquabc.o: param.h
+aquabc_fem_interface.o: param.h aquabc_aout.h aquabc.h
 atoxi3d.o: param.h
 basbathy.o: param.h evmain.h
 baschk.o: param.h evmain.h
@@ -614,6 +621,7 @@ bio3d.o: param.h
 bio3d_util.o: param.h donata.h
 flux.o: regflux.h param.h links.h ev.h
 gotm3d.o: gotmturb.i
+grdutil.o: param.h basin.h
 ht.o: param.h evmain.h
 lagrange_back.o: param.h lagrange.h
 lagrange_decay.o: param.h lagrange.h

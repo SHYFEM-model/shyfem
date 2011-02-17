@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 16-Feb-2011: write to given file with OpOutFile			*
  * 07-May-1998: type is now integer                                     *
  * 12-Feb-1998: New routine stripgrd() -> strips .grd from file name    *
  *                is used in ReadFiles()                                *
@@ -222,6 +223,13 @@ void WriteFiles( void )
 	if( FileType == 4 ) FileType=3;
 
 	ClosePS();
+
+	if( OpOutFile ) {	/* output file name already given -> force */
+		s=strcpy(sfile,OpOutFile);
+		s=strcat(s,".grd");
+		WriteStandard(s,HNN,HEL,HLI,HVC,CM);
+		return;
+	}
 
 	for(;;) {
 		if( Changed ) {

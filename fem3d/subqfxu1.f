@@ -20,6 +20,7 @@ c 30.07.2003    ggu     new routine test_wbt added
 c 01.02.2006    ggu     new routine twb2rh(db,wb,rh)
 c 21.08.2007    ggu     bug fix for wbt -> account for rh = 0
 c 18.02.2009    ggu     dew point introduced into psy()
+c 16.02.2011    ggu     conversion from specific humidity (not working)
 c
 c*****************************************************************************
 
@@ -69,6 +70,8 @@ c*****************************************************************************
 
 c grandezze psicrometriche 
 c
+c temperatures in Celsius, pressure in Pascal
+c
 C     DB Temp. a bulbo asciutto 0C
 C     WB Temp. a bulbo umido 0C,
 C     DP Temp. di rugiada 0C
@@ -81,7 +84,10 @@ C     RH Umidita' relativa % [0-100]
 
       REAL H
   
-      PB=101325			!std pressure [pa]
+      real pstd
+      parameter ( pstd = 1013.0 )
+
+      PB=pstd*100.			!std pressure [pa]
       
       IF(ISEL .EQ. 0) GO TO 9	!nothing
 
@@ -111,6 +117,46 @@ C     RH Umidita' relativa % [0-100]
       END
        
 c*****************************************************************************
+
+	subroutine convert_humidity(mode,rh,w,tair)
+
+c converts specific from/to relative humidity
+
+	implicit none
+
+	integer mode	! 0: relative to specific  1: specific to relative
+	real rh		! relative humidity [%]
+	real w		! specific humidity
+	real tair	! air temperature [Celsius]
+
+	real DB,WB,DP,PB,PV,H,V
+
+	db = tair
+
+	if( mode .eq. 0 ) then
+	  CALL PSDBRH(DB,WB,DP,PB,PV,W,H,V,RH)
+	else if( mode .eq. 1 ) then
+	  CALL PSDBW(DB,WB,DP,PB,PV,W,H,V,RH)
+	else
+	  stop 'error stop humidity: mode value not allowed'
+	end if
+
+	end
+
+c*****************************************************************************
+
+	subroutine rh2w(rh,w)
+
+	w = 0.622 * rh * rhows / ( rho - rhows) * 100.
+
+c    w = specific humidity of air vapor mixture (kg/kg)
+c    rh = relative humidity (%)
+c    rhows = density of water vapor (kg/m3)
+c    rho = density of the moist or humid air (kg/m3)
+
+	end
+
+c*****************************************************************************
        
 c the next routine compute a series of values from two input values (and PB)
 c
@@ -120,15 +166,15 @@ c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
       PVP=PVSF(WB)
       IF (DB-WB)1,4,7
     1 WRITE(*,10)DB,WB
-   10 FORMAT(5X,'ERRORE IN PSDBWB : DB=',F6.2,'  WB=',F6.2,'   WB maggi
-     *ore di DB')
+   10 FORMAT(5X,'ERROR IN PSDBWB : DB=',F6.2,'  WB=',F6.2
+     *			,'   WB greater than DB')
       STOP
     7 HDB0=1.006*DB
       WB1=WBFF(0.0,DB)
       IF (WB .GE. WB1) GO TO 5
       WRITE(*,11)DB,WB
-   11 FORMAT(5X,'ERRORE IN PSDBWB : DB=',F6.2,'  WB=',F6.2,'   temperatu
-     *re non compatibili')
+   11 FORMAT(5X,'ERROR IN PSDBWB : DB=',F6.2,'  WB=',F6.2
+     *			,'   temperatures not compatible')
       STOP
     4 PV=PVP
       GO TO 3
@@ -148,8 +194,8 @@ c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
       SUBROUTINE PSDBDP(DB,WB,DP,PB,PV,W,H,V,RH)
       IF(DP .LE. DB) GO TO 1
       WRITE(*,10)DB,DP
-   10 FORMAT(5X,'ERRORE IN PSDBDP : DB=',F6.2,'  DP=',F6.2,'   DP maggio
-     *re di DB')
+   10 FORMAT(5X,'ERROR IN PSDBDP : DB=',F6.2,'  DP=',F6.2
+     *			,'   DP greater than DB')
       STOP
     1 PV=PVSF(DP)
       PVS=PVSF(DB)
@@ -165,8 +211,8 @@ c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
       IF (RH .EQ. 0.0)RH=0.001
       IF (RH .GE. 0.001 .AND. RH .LE. 100) GO TO 1
       WRITE(*,11)DB,RH
-   11 FORMAT(5X,'ERRORE IN PSDBRH : DB=',F6.2,'  RH=',F6.2,'   umidita
-     *relativa non compatibile')
+   11 FORMAT(5X,'ERROR IN PSDBRH : DB=',F6.2,'  RH=',F6.2
+     *			,'   relative humidity not compatible')
       STOP
     1 PVS=PVSF(DB)
       X=RH-100.
@@ -187,8 +233,8 @@ c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
       H2=(1.006*DP+(2501.+1.83*DP)*W)-0.0001
       IF(H .GE. H2)GO TO 1
       WRITE(*,10)DP,H
-   10 FORMAT(5X,'ERRORE IN PSDPH : DP=',F6.2,'  H=',F6.3,'   dati non c
-     *ompatibili')
+   10 FORMAT(5X,'ERROR IN PSDPH : DP=',F6.2,'  H=',F6.3
+     *			,'   data not compatible')
       STOP
     1 DB=(H-2501*W)/(1.006+1.83*W)
       WB=WBFF(W,DB)
@@ -202,8 +248,8 @@ c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
       IF(W .EQ. 0.0)W=1.E-07
       IF(W .GE. 1.E-07)GO TO 2
       WRITE(*,11)DB,W
-   11 FORMAT(5X,'ERRORE IN PSDBW : DB=',F6.2,' W=',E10.3,' umidita spe
-     *cifica non compatibile')
+   11 FORMAT(5X,'ERROR IN PSDBW : DB=',F6.2,' W=',E10.3
+     *			,'   specific humidity not compatible')
       STOP
     2 XS=0.62198*PVSF(DB)/(PB-PVSF(DB))
       IF (W .LE. XS)GO TO 3
@@ -229,7 +275,9 @@ c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
       END
       
       FUNCTION PVSF(TEMP)
-      PRIF=101325.
+      real pstd
+      parameter ( pstd = 1013.0 )
+      PRIF=pstd*100.
       T=TEMP+273.16
       Z=273.16/T
       IF (T .LT. 273.16)GO TO 3
@@ -397,9 +445,36 @@ c -14.70000       76.00000
 
 c***********************************************************************
 
+	subroutine test_specific
+
+	tair = 25.
+	rh = 70.
+	call convert_humidity(0,rh,w,tair)
+	write(6,*) tair,w,rh
+	call convert_humidity(1,rh1,w,tair)
+	write(6,*) tair,w,rh,rh1
+
+	tair = -1.
+	tair = 25.
+	w = 2.e-3
+	call convert_humidity(1,rh,w,tair)
+	call convert_humidity(0,rh,w1,tair)
+	write(6,*) tair,rh,w,w1
+
+	rh = 70.
+	tair = 20.
+	call convert_humidity(0,rh,w,tair)
+	call convert_humidity(1,rh1,w,tair)
+	write(6,*) tair,w,rh,rh1
+
+	end
+
+c***********************************************************************
+
 c	program main_test_wbt
 c	call test_wbt
 c	call test_wbt2
+c	call test_specific
 c	end
 
 c***********************************************************************

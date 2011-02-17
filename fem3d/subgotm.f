@@ -16,6 +16,7 @@ c 10.04.2008    ggu     integrated in main branch
 c 18.09.2008    ccf     bug fix for m2 in setm2n2
 c 02.12.2008    ggu     bug in gotm_init: no limiting values for initialization
 c 18.12.2008    ggu     bug in GOTM module and setm2n2() corrected
+c 16.02.2011    ggu     write n2max to info file, profiles in special node
 c
 c**************************************************************
 
@@ -251,6 +252,7 @@ c---------------------------------------------------------------
 	real difv(0:nlvdim,nkndim)
 	common /difv/difv
 
+	integer ioutfreq,ks
 	integer k,l
 	integer laux
 	integer nlev
@@ -491,6 +493,13 @@ c           ------------------------------------------------------
 	call checka(nlvdim,shearf2,buoyf2,taub)
  
 	!write(70,*) 'rlmax: ',it,rlmax,nltot
+
+	ks = 0			!internal node number
+	ioutfreq = 3600		!output frequency
+	if( ks .gt. 0 .and. mod(it,ioutfreq) .eq. 0 ) then
+	  write(188,*) it,nlev,(visv(l,ks),l=1,nlev)
+	  write(189,*) it,nlev,(difv(l,ks),l=1,nlev)
+	end if
 
 c------------------------------------------------------
 c end of routine
@@ -803,6 +812,8 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         real grav,fcor,dcor,dirn,rowass,roluft
         common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
 
         real rhov(nlvdim,nkndim)
         common /rhov/rhov                                                       
@@ -819,18 +830,27 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 	real aux,dh,du,dv,m2,dbuoy
 	real h(nlvdim)
 	real cnpar			!numerical "implicitness" parameter
+	real n2max,n2
+	real nfreq,nperiod
+
+	integer iuinfo
+	save iuinfo
+	data iuinfo / 0 /
  
 	if( nldim .ne. nlvdim ) stop 'error stop setbuoyf: dimension'
 
         aux = -grav / rowass
 	cnpar = 1
+	n2max = 0.
  
         do k=1,nkn
           call dep3dnod(k,+1,nlev,h)
           do l=1,nlev-1
             dh = 0.5 * ( h(l) + h(l+1) )
             dbuoy = aux * ( rhov(l,k) - rhov(l+1,k) )
-            buoyf2(l,k) = dbuoy / dh
+            n2 = dbuoy / dh
+	    n2max = max(n2max,n2)
+            buoyf2(l,k) = n2
 
             du = 0.5*(
      &       (cnpar*abs((uprv(l+1,k)-uprv(l,k))
@@ -863,6 +883,12 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
             shearf2(l,k) = m2
           end do
         end do
+
+	nfreq = sqrt(n2max)
+	nperiod = 0.
+	if( nfreq .gt. 0. ) nperiod = 1. / nfreq
+	if( iuinfo .le. 0 ) call getinfo(iuinfo)
+	write(iuinfo,*) 'n2max: ',it,n2max,nfreq,nperiod
 
 	end
 
@@ -1066,7 +1092,7 @@ c checks arrays for nan or other strange values
         real vprv(nlvdim,nkndim)
         common /vprv/vprv
         real tauxnv(1),tauynv(1)
-        common /tauxnv/tauxnv,/tauynv/tauynv                                    
+        common /tauxnv/tauxnv,/tauynv/tauynv
 
 	if( nlvdim .ne. nldim ) stop 'error stop checka'
 
@@ -1127,7 +1153,7 @@ c checks arrays for strange values
         real vprv(nlvdim,nkndim)
         common /vprv/vprv
         real tauxnv(1),tauynv(1)
-        common /tauxnv/tauxnv,/tauynv/tauynv                                    
+        common /tauxnv/tauxnv,/tauynv/tauynv
 
 	integer one,three
 	real zero,valmax

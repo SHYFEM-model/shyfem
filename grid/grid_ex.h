@@ -8,6 +8,7 @@
  * see grid.c for copying information					*
  *									*
  * Revision History:							*
+ * 16-Feb-2011: new options OpOutFile, OpItemType			*
  * 02-Apr-1998: no Button_type, Function_type                           *
  * 09-Feb-1998: ActArgument eliminated                                  *
  * 04-Dec-95: NTotVects, ActVect, HVC added                             *
@@ -48,6 +49,8 @@ extern float OpVectFact;
 extern float OpNodeFact;
 extern float OpVectScal;
 extern float OpNodeScal;
+extern char* OpOutFile;
+extern int OpItemType;
 
 
 

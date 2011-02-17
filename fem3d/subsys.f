@@ -92,6 +92,7 @@ c 28.09.2010	ggu	new value for icor
 c 29.09.2010	ggu	new param vmode,rxscal,ryscal
 c 15.12.2010	ggu	nsigma renamed to nbsig, nsigma used for sigma layers
 c 21.12.2010	ggu	new parameter rwscal
+c 16.02.2011	ggu	new default for isphe, new routine fnm_aquabc_init()
 c
 c************************************************************************
 
@@ -352,7 +353,7 @@ cc------------------------------------------------------------------------
 c DOCS	CORIOLIS	Coriolis parameters
 c
 c The next parameters define the parameters to be used
-c in the Coriolis terms.
+c with the Coriolis terms.
 c
 c |icor|	If this parameter is 0, the Coriolis terms are
 c		not included in the computation. A value of 1
@@ -367,17 +368,19 @@ c		the latitude in the basin file is used. If given
 c		the value of |dlat| in the input parameter file
 c		effectively substitues the value given in the
 c		basin file. This parameter is not used if spherical
-c		coordinates are used (|isphe|=1).
-c |isphe|	If 0 a cartesian coordinate system is used (default),
+c		coordinates are used (|isphe|=1). (Default 0)
+c |isphe|	If 0 a cartesian coordinate system is used,
 c		if 1 the coordinates are in the spherical system (lat/lon).
 c		Please note that in case of spherical coordinates the
 c		Coriolis term is always included in the computation, even
 c		with |icor| = 0. If you really do not want to use the
-c		Coriolis term, then please set |icor| = -1.
+c		Coriolis term, then please set |icor| = -1. The default is
+c		-1, which means that the type of coordinate system will 
+c		be determined automatically.
 
 	call addpar('icor',0.)
 	call addpar('dlat',100.)
-	call addpar('isphe',0.)
+	call addpar('isphe',-1.)
 
 cc------------------------------------------------------------------------
 
@@ -1694,6 +1697,10 @@ cc non-documented -> try first	HACK	-> initial conditions
         call addfnm('saltin',' ')
         call addfnm('tempin',' ')
 
+cc ACQUBC
+
+	call fnm_aquabc_init
+
 cc DOCS	DELWAQ		delwaq model
 
 	call addfnm('voldwq',' ')
@@ -1722,6 +1729,25 @@ clahey#	call putfnm('memfil','_memory')
 	call addfnm('pltfil','plot')
 
 	end
+
+c************************************************************************
+
+        subroutine fnm_aquabc_init
+
+        implicit none
+
+cc for model aquabc (curonian)
+
+        call addfnm('biocon',' ')
+        call addfnm('bioscon',' ')
+        call addfnm('biolight',' ')
+        call addfnm('bioaow',' ')  !ascii output for WC
+        call addfnm('bioaos',' ')  !ascii output for BS
+        call addfnm('bioph',' ')
+        call addfnm('biotemp',' ')
+        call addfnm('bioload',' ')
+
+        end
 
 c************************************************************************
 

@@ -22,6 +22,7 @@ c 27.01.2009    ggu     diffset() deleted
 c 12.02.2010    ggu     diffweight() has new method -> idtype=0,1,2
 c 17.02.2010    ggu     bug fix in diffweight()
 c 08.04.2010    ggu     better error reporting in diffweight()
+c 16.02.2011    ggu     in diffweight() use double precision
 c
 c*****************************************************************
 
@@ -161,13 +162,13 @@ c weights in main diagonal are positive => weights out of diag are negative
         integer k,ie,ii,iii,i
 	integer ia,ib
         integer nchange,idtype
-        real w,fact,eps
-        real b(3),c(3)
-	real bc_orig(3,3)
-	real bc_adj(3,3)
-	real bc(3,3)
-	real wacu_aux(3)
-	double precision wacu
+        double precision w,fact,eps
+        double precision b(3),c(3)
+	double precision bc_orig(3,3)
+	double precision bc_adj(3,3)
+	double precision bc(3,3)
+	double precision wacu_aux(3)
+	double precision wacu,wacu_max
 
 	real getpar
 
@@ -182,6 +183,7 @@ c-----------------------------------------------------------------
 	eps = 1.e-6
 	eps = 1.e-3
 	bdebug = .false.
+	wacu_max = 0.
 
         write(6,*) 'diffweight: computing weights'
 
@@ -282,6 +284,7 @@ c	  -----------------------------------------------------------------
 	      wdifhv(ii,iii,ie) = bc(ii,iii)
 	    end do
 	    if( abs(wacu) .gt. eps ) berror = .true.
+	    wacu_max = max(wacu_max,abs(wacu))
 	    wacu_aux(ii) = wacu
 	  end do
 
@@ -319,6 +322,7 @@ c-----------------------------------------------------------------
 
         write(6,*) 'diffweight: total weights changed = ', nchange
         write(6,*) 'diffweight: type of hor diffus    = ', idtype
+        write(6,*) 'diffweight: maximum error         = ', wacu_max
 
 c-----------------------------------------------------------------
 c end of routine

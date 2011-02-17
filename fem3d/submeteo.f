@@ -11,6 +11,8 @@ c 07.05.2009    ggu     new call to init_coords()
 c 18.06.2009    ggu&dbf bug fix -> wind speed not interpolated on metws
 c 23.02.2010    ggu	call to wstress changed (new wxv,wyv)
 c 26.01.2011    ggu	write wind filed to debug output (iumetw)
+c 05.02.2011    ggu	changed order of records in dfile (actual is first)
+c 16.02.2011    ggu	pass idata to files, use geo info from files
 c
 c*********************************************************************
 
@@ -23,7 +25,7 @@ c in order to use these routines, please set imreg = 1 in the STR file
 	implicit none
 
 	integer ndim
-	parameter (ndim=400)
+	parameter (ndim=4650)
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -68,9 +70,12 @@ c drain		rain (1)
 c dextra	humidity (1) and wetbulb temperature (2)
 c dws		wind speed (1)
 
-	integer iheat(7)
-	integer iwind(7)
-	integer irain(7)
+	integer ifidim
+	parameter( ifidim = 13 )
+
+	integer iheat(ifidim)
+	integer iwind(ifidim)
+	integer irain(ifidim)
 	real dheat(4*ndim,3)
 	real dwind(3*ndim,3)
 	real drain(1*ndim,3)
@@ -81,7 +86,7 @@ c dws		wind speed (1)
 	character*60 windfile,heatfile,rainfile
 	save windfile,heatfile,rainfile
 
-	integer nvar,nx,ny,i
+	integer nvar,nx,ny,i,iunit
 	integer mode,iproj,modehum
 	integer nvarm,nid,nlev
 	integer fuse
@@ -125,11 +130,17 @@ c	  ---------------------------------------------------------
 c	  geometry of regular matrix: lower left point and step size
 c	  ---------------------------------------------------------
 
-	  x0 = 11.
-	  y0 = 38.
+	  x0 =  26.25
+	  y0 = 39.070499
 	  dx = 0.5
 	  dy = 0.5
 	  flag = -999.
+
+          x0 = 9.900000
+          y0 = 37.95000
+          dx = 0.150000
+          dy = 0.150000
+          flag = -999.
 
 	  call setgeo(x0,y0,dx,dy,flag)
 
@@ -155,6 +166,7 @@ c	  ---------------------------------------------------------
           c_param(2) = xtrans
           c_param(3) = ytrans
 
+	  iproj = 0
 	  call init_coords(iproj,c_param)
 
 	  mode = 1	!from cartesian to lat/lon
@@ -174,6 +186,8 @@ c	  ---------------------------------------------------------
 	  val0 = 0.
 	  call meteo_init_array(nkn,val0,tauxnv)
 	  call meteo_init_array(nkn,val0,tauynv)
+	  call meteo_init_array(nkn,val0,wxv)
+	  call meteo_init_array(nkn,val0,wyv)
 	  call meteo_init_array(nkn,val0,ppv)
 	  call meteo_init_array(nkn,val0,metrad)
 	  call meteo_init_array(nkn,val0,mettair)
@@ -201,54 +215,59 @@ c------------------------------------------------------------------
 c convert some variables to needed ones (humidity, wet bulb, wind speed)
 c------------------------------------------------------------------
 
-	modehum = 1	! 1: hum -> wetbulb   2: wetbulb -> hum
-	call meteo_convert_hum(modehum,flag,iheat,dheat,dextra)
+	iunit = iheat(1)
+	if( iunit .gt. 0 ) then
+	  modehum = 1	! 1: hum -> wetbulb   2: wetbulb -> hum
+	  call meteo_convert_hum(modehum,flag,iheat,dheat,dextra)
+	end if
 
-	call meteo_convert_ws(flag,iwind,dwind,dws)
+	iunit = iwind(1)
+	if( iunit .gt. 0 ) then
+	  call meteo_convert_ws(flag,iwind,dwind,dws)
+	end if
 
 c------------------------------------------------------------------
 c spatial interpolation of wind data
 c------------------------------------------------------------------
 
-        nvar  = iwind(5)
-        nx    = iwind(6)
-        ny    = iwind(7)
+	iunit = iwind(1)
+	if( iunit .gt. 0 ) then
+	  call meteo_intp(1,iwind,dwind,nkn,xgeov,ygeov,wxv)
+	  call meteo_intp(2,iwind,dwind,nkn,xgeov,ygeov,wyv)
+	  call meteo_intp(3,iwind,dwind,nkn,xgeov,ygeov,ppv)
 
-	call meteo_intp(1,nvar,nx,ny,dwind(1,3),nkn,xgeov,ygeov,wxv)
-	call meteo_intp(2,nvar,nx,ny,dwind(1,3),nkn,xgeov,ygeov,wyv)
-	call meteo_intp(3,nvar,nx,ny,dwind(1,3),nkn,xgeov,ygeov,ppv)
+	  nvar = 1
+	  call meteo_intp(1,iwind,dws,nkn,xgeov,ygeov,metws)
 
-	nvar = 1
-	call meteo_intp(1,nvar,nx,ny,dws,nkn,xgeov,ygeov,metws)
-
-	call wstress(nkn,wxv,wyv,tauxnv,tauynv)
+	  call wstress(nkn,wxv,wyv,tauxnv,tauynv)
+	end if
 
 c------------------------------------------------------------------
 c spatial interpolation of heat data
 c------------------------------------------------------------------
 
-        nvar  = iheat(5)
-        nx    = iheat(6)
-        ny    = iheat(7)
+	iunit = iheat(1)
+	if( iunit .gt. 0 ) then
+	  !if( iwind(1) .le. 0 ) goto 99	!we need wind data for heat
 
-	call meteo_intp(1,nvar,nx,ny,dheat(1,3),nkn,xgeov,ygeov,metrad)
-	call meteo_intp(2,nvar,nx,ny,dheat(1,3),nkn,xgeov,ygeov,mettair)
-	!call meteo_intp(3,nvar,nx,ny,dheat(1,3),nkn,xgeov,ygeov,methum)
-	call meteo_intp(4,nvar,nx,ny,dheat(1,3),nkn,xgeov,ygeov,metcc)
+	  call meteo_intp(1,iheat,dheat,nkn,xgeov,ygeov,metrad)
+	  call meteo_intp(2,iheat,dheat,nkn,xgeov,ygeov,mettair)
+	  !call meteo_intp(3,iheat,dheat,nkn,xgeov,ygeov,methum)
+	  call meteo_intp(4,iheat,dheat,nkn,xgeov,ygeov,metcc)
 
-	nvar = 2
-	call meteo_intp(1,nvar,nx,ny,dextra,nkn,xgeov,ygeov,methum)
-	call meteo_intp(2,nvar,nx,ny,dextra,nkn,xgeov,ygeov,metwbt)
+	  nvar = 2
+	  call meteo_intp(1,iheat,dextra,nkn,xgeov,ygeov,methum)
+	  call meteo_intp(2,iheat,dextra,nkn,xgeov,ygeov,metwbt)
+	end if
 
 c------------------------------------------------------------------
 c spatial interpolation of rain data
 c------------------------------------------------------------------
 
-        nvar  = irain(5)
-        nx    = irain(6)
-        ny    = irain(7)
-
-	call meteo_intp(1,nvar,nx,ny,drain(1,3),nkn,xgeov,ygeov,metrain)
+	iunit = iheat(1)
+	if( iunit .gt. 0 ) then
+	  call meteo_intp(1,irain,drain,nkn,xgeov,ygeov,metrain)
+	end if
 
 c------------------------------------------------------------------
 c debug output
@@ -275,30 +294,45 @@ c------------------------------------------------------------------
 c end of routine
 c------------------------------------------------------------------
 
+	return
+   99	continue
+	stop 'error stop meteo_regular: need wind data for heat module'
 	end
 
 c*********************************************************************
 
-	subroutine meteo_intp(ivar,nvar,nx,ny,dfile,nkn,xv,yv,valfem)
+	subroutine meteo_intp(ivar,ifile,dfile,nkn,xv,yv,valfem)
 
 c interpolates files spatially
 
 	implicit none
 
-	integer ivar
-	integer nvar
-	integer nx,ny
-	real dfile(nx,ny,nvar)
+	integer ifidim
+	parameter( ifidim = 13 )
+
+	integer ivar		!number of actual variable to interpolate
+	integer ifile(ifidim)
+	real dfile(1)
 	integer nkn
 	real xv(1), yv(1)
 	real valfem(1)
 
-	integer k
-	real val,flag
+	integer k,ip
+	integer nvar,n
+	integer nx,ny
+	real val
 	real x,y
+	real x0,y0,dx,dy,flag
 	real am2val
 
-	if( nvar .le. 0 ) return	!no data has been read
+        nvar  = ifile(5)
+        nx    = ifile(6)
+        ny    = ifile(7)
+        n     = ifile(8)
+
+	ip = 1 + nx*ny*(ivar-1)
+
+	if( n .le. 0 ) return	!no data has been read
 
 	!write(6,*) 'meteo_intp: ',nvar,ivar,nx,ny
 
@@ -307,15 +341,20 @@ c interpolates files spatially
 	  stop 'error stop meteo_intp: ivar out of range'
 	end if
 
-	call getgeoflag(flag)
+	call rgf_get_geo(ifile,x0,y0,dx,dy,flag)
+	call setgeo(x0,y0,dx,dy,flag)
 
 	do k=1,nkn
 	  x = xv(k)
 	  y = yv(k)
-	  val = am2val(dfile(1,1,ivar),nx,ny,x,y)
-	  !if( mod(k,100) .eq. 0 ) write(6,*) x,y,valfem(k)
+	  val = am2val(dfile(ip),nx,ny,x,y)
 	  if( val .eq. flag ) then
 	    write(6,*) nx,ny,x,y,val
+	    write(6,*) 'no value has been found for node (internal) ',k
+	    write(6,*) 'coordinates: ',x,y
+	    write(6,*) 'dimensions of domain: '
+	    write(6,*) 'x0,y0: ',x0,y0
+	    write(6,*) 'x1,y1: ',x0+(nx-1)*dx,y0+(ny-1)*dy
 	    stop 'error stop meteo_intp: flag found'
 	  end if
 	  valfem(k) = val
@@ -351,8 +390,11 @@ c interpolates files spatially
 
 	implicit none
 
+	integer ifidim
+	parameter( ifidim = 13 )
+
 	real flag
-	integer ifile(7)
+	integer ifile(ifidim)
 	real dfile(1)
 	real dws(1)
 
@@ -390,9 +432,12 @@ c interpolates files spatially
 
 	implicit none
 
+	integer ifidim
+	parameter( ifidim = 13 )
+
 	integer mode
 	real flag
-	integer ifile(7)
+	integer ifile(ifidim)
 	real dfile(1)
 	real dextra(1)
 
@@ -469,12 +514,23 @@ c*********************************************************************
 
 	subroutine meteo_get_values(k,qs,ta,rh,wb,uw,cc,p)
 
-c interpolates files spatially
+c returns meteo parameters for one node
+c
+c pressure is returned in [mb]
 
 	implicit none
 
-	integer k
-	real qs,ta,rh,wb,uw,cc,p
+        integer k                       !node number
+        real qs                         !solar radiation [W/m**2]
+        real ta                         !air temperature [Celsius]
+        real rh                         !relative humidity [%, 0-100]
+        real wb                         !wet bulb temperature [Celsius]
+        real uw                         !wind speed [m/s]
+        real cc                         !cloud cover [0-1]
+        real p                          !atmospheric pressure [mbar, hPa]
+
+	real pstd
+	parameter ( pstd = 1013.25 )
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -496,8 +552,8 @@ c interpolates files spatially
 	uw = metws(k)
 	cc = metcc(k)
 
-	p = ppv(k)
-	if( p .lt. 800. .or. p .gt. 1100. ) p = 1013.	!850.0 - 1085.6 mb
+	p = 0.01 * ppv(k)				!Pascal to mb
+	if( p .lt. 800. .or. p .gt. 1100. ) p = pstd	!850.0 - 1085.6 mb
 
 	end
 

@@ -306,7 +306,8 @@ c checks if coordinates are lat/lon
 	if( isphe_ev .eq. -1 ) then	!determine automatically
 	  if( isphe .eq. 1 ) then
 	    write(6,*) 'Unsure about type of coordinates.'
-	    write(6,*) 'Coodinates seem lat/lon but are not flagged as such.'
+	    write(6,*) 'Coodinates seem as lat/lon'
+	    write(6,*) 'but are not flagged as such.'
 	    write(6,*) 'Using lat/lon coordinates.'
 	    write(6,*) 'If this is an error, then please set'
 	    write(6,*) 'parameter isphe to the desired value.'

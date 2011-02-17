@@ -42,6 +42,7 @@ c 01.06.1998	ggu	new routines iscan... into own file (subscn.f)
 c 17.06.1998	ggu	old routines with new name (iscan0,ialfa0)
 c 12.02.1999	ggu	new routine triml
 c 26.01.2009	ggu	minor changes to avoid compiler warnings
+c 16.02.2011	ggu	new routine trimline()
 c
 c***********************************************************
 c
@@ -1239,14 +1240,31 @@ c
 	end
 c
 c************************************************************
-c
+
 	subroutine triml(line)
 
-c trims line (deleting leading spaces
+c trims line (deleting leading spaces)
 
 	implicit none
 
 	character*(*) line
+
+	integer il
+
+	call trimline(line,il)
+
+	end
+
+c************************************************************
+
+	subroutine trimline(line,il)
+
+c trims line (deleting leading spaces) and gives back length
+
+	implicit none
+
+	character*(*) line
+	integer il
 
 	integer i,j,n,length
 
@@ -1267,8 +1285,9 @@ c trims line (deleting leading spaces
 	end do
 
 	line(n+1:length) = ' '
+	il = n
 
 	end
-c
+
 c************************************************************
-c
+

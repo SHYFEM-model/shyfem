@@ -37,13 +37,28 @@ LIBX = -L/usr/X11R6/lib -L/usr/X11/lib -L/usr/lib/X11  -lX11
 #export NLVDIM = 52
 #export NLVDIM = 1
 
-# kassandra
-export NKNDIM = 81000
-export NELDIM = 145000
+# curonian
+export NKNDIM = 130000
+export NELDIM = 260000
 export NLVDIM = 1
 
-export NGRDIM = 15
-export MBWDIM = 300
+export NKNDIM = 13000
+export NELDIM = 26000
+export NLVDIM = 1
+
+# kassandra
+#export NKNDIM = 81000
+#export NELDIM = 145000
+#export NLVDIM = 1
+#export NGRDIM = 15
+#export MBWDIM = 300
+
+#adriatico_DEFB_nolag
+#export NKNDIM = 23660
+#export NELDIM = 43768
+#export NLVDIM = 27
+#export NGRDIM = 9
+#export MBWDIM = 295
 
 ##############################################
 # Compiler
@@ -144,6 +159,12 @@ ERSEM=false
 
 #------------------------------------------------------------
 # Normally it should not be necessary to change anything beyond here.
+#------------------------------------------------------------
+
+ifeq ($(COMPILER),GNU_G77)
+  GOTM=false	# g77 cannot compile fortran 90
+endif
+
 #------------------------------------------------------------
 
 ##############################################
@@ -298,7 +319,8 @@ FINTEL_NOOPT = -w $(FFNCDF) -Cu -traceback
 
 # FINTEL_OPT   = 
 # FINTEL_OPT   = -O -g -Mprof=time
-FINTEL_OPT   = -O -g 
+# FINTEL_OPT   = -O3 -g -axSSE4.2 #-mcmodel=medium -shared-intel
+FINTEL_OPT   = -O -g
 
 FINTEL_OMP   =
 ifeq ($(PARALLEL),true)

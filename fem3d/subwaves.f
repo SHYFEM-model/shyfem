@@ -74,8 +74,8 @@ c**************************************************************
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real wxnv(1),wynv(1)	!x and y wind component [m/s]
-        common /wxnv/wxnv,/wynv/wynv
+        real wxv(1),wyv(1)	!x and y wind component [m/s]
+        common /wxv/wxv,/wyv/wyv
 
 c --- input variable
         real wis		!wind speed at 10m [m/s]
@@ -185,7 +185,7 @@ c -------------------------------------------------------------------
 
 c --- get the wind speed and direction
 
-        call c2p(wxnv(1),wynv(1),wis,wid)
+        call c2p(wxv(1),wyv(1),wis,wid)
 
 c --- get the wind fetch
 

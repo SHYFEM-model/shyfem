@@ -161,6 +161,7 @@ c 12.03.2010    ggu     in assert_min_max_property() limit error messages
 c 22.03.2010    ggu     bug fix for evaporation (distr. sources) BUG_2010_01
 c 15.12.2010    ggu     new routine vertical_flux_ie() for vertical tvd
 c 26.01.2011    ggu     nudging implemented (scal_adv_nudge, cobs, robs)
+c 16.02.2011    ggu     pass robs to info_stability()
 c
 c*********************************************************************
 
@@ -487,7 +488,7 @@ c-------------------------------------------------------------
         write(iuinfo,*) 'stability_',what,':',it,sindex,istot
 
         if( istot .gt. istot_max ) then
-	    call info_stability(dt,rkpar,sindex,istot,saux)
+	    call info_stability(robs,dt,rkpar,sindex,istot,saux)
             write(6,*) 'istot  = ',istot,'   sindex = ',sindex
             stop 'error stop scal3sh: istot index too high'
         end if

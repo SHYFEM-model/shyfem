@@ -87,6 +87,7 @@ c 01.03.2010    deb     tramp introduced
 c 10.03.2010    ggu     new routine check_scal_flux()
 c 22.03.2010    ggu     in make_scal_flux() forgotten to initialize sconz
 c 14.04.2010    ggu     account for negative levmin/max
+c 16.02.2011    ggu     copied meteo routines to submet.f
 c
 c***************************************************************
 
@@ -498,13 +499,9 @@ c tilting of boundary surface
         real xgv(1),ygv(1)
         common /xgv/xgv,/ygv/ygv
 
-        real tauxnv(1),tauynv(1)
-        common /tauxnv/tauxnv,/tauynv/tauynv
-        real ppv(1)
-        common /ppv/ppv
-
 	integer ibc,ibtyp,kranf,krend,ktilt,k,kn1,kn2
 	real roinv,f,ginv,dx,dy,taux,tauy
+	real taux1,taux2,tauy1,tauy2,wx,wy
 	real u,v,z,h,p1,p2,b,hh,ztilt
 	real getpar
 	integer iround,itybnd
@@ -527,14 +524,14 @@ c tilting of boundary surface
 		kn1=irv(k-1)
 		dx=xgv(kn2)-xgv(kn1)
 		dy=ygv(kn2)-ygv(kn1)
-		taux=(tauxnv(kn1)+tauxnv(kn2))*.5
-		tauy=(tauynv(kn1)+tauynv(kn2))*.5
+		call get_meteo_forcing(kn1,wx,wy,taux1,tauy1,p1)
+		call get_meteo_forcing(kn2,wx,wy,taux2,tauy2,p2)
+		taux = 0.5*(taux1+taux2)
+		tauy = 0.5*(tauy1+tauy2)
 		u=(up0v(kn1)+up0v(kn2))*.5
 		v=(vp0v(kn1)+vp0v(kn2))*.5
 		z=(znv(kn1)+znv(kn2))*.5
 		h=(rhv(k-1)+rhv(k))*.5
-		p1=ppv(kn1)
-		p2=ppv(kn2)
 		b=1./(h+z)
 		hh=-roinv*(p2-p1)+b*(taux*dx+tauy*dy)+f*(v*dx-u*dy)
 		rzv(kn2)=rzv(kn1)+ginv*hh
@@ -545,14 +542,14 @@ c tilting of boundary surface
 		kn1=irv(k)
 		dx=xgv(kn2)-xgv(kn1)
 		dy=ygv(kn2)-ygv(kn1)
-		taux=(tauxnv(kn1)+tauxnv(kn2))*.5
-		tauy=(tauynv(kn1)+tauynv(kn2))*.5
+		call get_meteo_forcing(kn1,wx,wy,taux1,tauy1,p1)
+		call get_meteo_forcing(kn2,wx,wy,taux2,tauy2,p2)
+		taux = 0.5*(taux1+taux2)
+		tauy = 0.5*(tauy1+tauy2)
 		u=(up0v(kn1)+up0v(kn2))*.5
 		v=(vp0v(kn1)+vp0v(kn2))*.5
 		z=(znv(kn1)+znv(kn2))*.5
 		h=(rhv(k+1)+rhv(k))*.5
-		p1=ppv(kn1)
-		p2=ppv(kn2)
 		b=1./(h+z)
 		hh=-roinv*(p2-p1)+b*(taux*dx+tauy*dy)+f*(v*dx-u*dy)
 		rzv(kn1)=rzv(kn2)-ginv*hh
@@ -694,248 +691,6 @@ c initializes flux boundary
 	do i=kranf+1,krend-1
 	   rhv(i)=rhv(i)/2.
 	end do
-
-	end
-
-c*********************************************************************
-
-	subroutine rain0d( it )
-
-c simulates rain (0D) increasing the water level
-
-	implicit none
-
-	integer it
-
-	integer ndim
-	parameter (ndim=100)
-	real barray(ndim)
-	save barray
-
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real metrain(1)
-	common /metrain/metrain
-
-	character*(80)	file
-	integer k
-	real rw
-	real t,zdist
-
-	real getpar
-
-	integer icall
-	save icall
-	data icall / 0 /
-
-	if( icall .eq. -1 ) return
-
-c---------------------------------------------------------------
-c initialization
-c---------------------------------------------------------------
-
-	if( icall .eq. 0 ) then		!initialize
-	   
-	   zdist = getpar('zdist')
-	   call getfnm('rain',file)
-
-	   if( zdist .eq. 0. .and. file .eq. ' ' ) icall = -1
-	   if( icall .eq. -1 ) return
-
-	   call exffild(file,ndim,barray,zdist)
-
-	   icall = 1
-
-	end if
-
-c---------------------------------------------------------------
-c normal call
-c---------------------------------------------------------------
-
-	t = it
-	call exfintp(barray,t,rw)
-
-	do k=1,nkn
-	  metrain(k) = rw
-	end do
-
-c---------------------------------------------------------------
-c end of routine
-c---------------------------------------------------------------
-
-	end
-
-c*******************************************************************
-
-	subroutine rain2distributed
-
-c adjustes distributed source with rain
-
-	implicit none
-
-	integer it
-
-	real zconv
-	parameter( zconv = 1.e-3 / 86400. )
-
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real metrain(1)
-	common /metrain/metrain
-	real rqdsv(1)
-	common /rqdsv/rqdsv
-
-	integer k
-
-c---------------------------------------------------------------
-c rain is in mm/day -> convert to m/s (water level change)
-c---------------------------------------------------------------
-
-	do k=1,nkn
-	  rqdsv(k) = rqdsv(k) + metrain(k) * zconv
-	end do
-
-c---------------------------------------------------------------
-c end of routine
-c---------------------------------------------------------------
-
-	end
-
-c*******************************************************************
-
-	subroutine convert_distributed
-
-c converts distributed source from [m/s] to [m**3/s]
-
-	implicit none
-
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-	real rqpsv(1), rqdsv(1)
-	common /rqpsv/rqpsv, /rqdsv/rqdsv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	include 'ev.h'
-	real v1v(1)
-	common /v1v/v1v
-
-	integer k,ie,ii
-	real area3
-
-	do k=1,nkn
-	  v1v(k) = 0.
-	end do
-
-	do ie=1,nel
-	  area3 = 4. * ev(10,ie)
-	  do ii=1,3
-	    k = nen3v(ii,ie)
-	    v1v(k) = v1v(k) + area3
-	  end do
-	end do
-
-	do k=1,nkn
-	  rqdsv(k) = rqdsv(k) * v1v(k)
-	end do
-
-	end
-
-c*******************************************************************
-
-	subroutine evap_init
-
-c initializes evaporation mass flux
-
-	implicit none
-
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real evapv(1)
-	common /evapv/evapv
-
-	integer k
-
-	do k=1,nkn
-	  evapv(k) = 0.	
-	end do
-
-	end
-
-c*******************************************************************
-
-	subroutine evap_set
-
-c adds evaporation mass flux to distributed source
-
-	implicit none
-
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real evapv(1)
-	common /evapv/evapv
-	real rqdsv(1)
-	common /rqdsv/rqdsv
-
-	integer k,ievap
-	real getpar
-
-	ievap = nint(getpar('ievap'))
-	if( ievap .le. 0 ) return
-
-	do k=1,nkn
-	  rqdsv(k) = rqdsv(k) - evapv(k)
-	end do
-
-	end
-
-c*******************************************************************
-
-	subroutine meteo_init
-
-c initializes meteo variables
-
-	integer imreg
-	real getpar
-
-	imreg = nint(getpar('imreg'))
-
-	if( imreg .eq. 1 ) then
-	  call meteo_regular
-	else
-	  call windad
-	  call qflux_init
-	end if
-
-	call evap_init
-
-	end
-
-c*******************************************************************
-
-	subroutine meteo_force
-
-c update meteo variables and admin rain/evaporation
-
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
-
-	integer imreg
-	real getpar
-
-	imreg = nint(getpar('imreg'))
-
-	if( imreg .eq. 1 ) then
-	  call meteo_regular
-	else
-	  call windad			!wind
-	  call qflux_read(it)		!heat flux
-	  call rain0d(it)			!rain
-	end if
-
-	call rain2distributed		!copy rain to distributed source
-	call evap_set			!add evaporation
-	call convert_distributed	!convert from [m/s] to [m**3/s]
 
 	end
 

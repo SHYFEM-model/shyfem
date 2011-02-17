@@ -241,8 +241,6 @@ c---------------------------------------------------------------
 	common /uprv/uprv
 	real vprv(nlvdim,nkndim)
 	common /vprv/vprv
-        real tauxnv(1),tauynv(1)
-        common /tauxnv/tauxnv,/tauynv/tauynv
 
 	real visv(0:nlvdim,nkndim)
 	common /visv/visv

@@ -17,6 +17,7 @@ c
 c revision log :
 c
 c 27.08.2009    dbf&ggu	integrated into model
+c 16.02.2011    ggu	pstd introduced
 c
 c*******************************************************************
 
@@ -302,7 +303,8 @@ c	initialize qsw
 c	cavaleri??????
 c
 c---------------------------------------------------------------------
-      parameter (const = 0.622/1013.)
+      parameter ( pstd = 1013.25 )
+      parameter (const = 0.622/pstd)
       parameter (cgs = 1.e-4/4.19)
       parameter (cavaleri=1.00)
 c ---- DENSITY OF PURE WATER ---------
@@ -315,7 +317,7 @@ c --- turbulent exchange coefficients
       data  ce,ch  / 1.1e-3, 1.1e-3/    
 c  
 c --- surface air pressure, expsi, dry air gas constant
-      data ps,expsi,rd / 1013., 0.622, 287./
+      data ps,expsi,rd / pstd, 0.622, 287./
 c
 c --- air density, Stefan-Boltzmann constant , ocean emissivity 
       data airden,stefbolz ,emiss   /1.2,   5.67e-8, .97/
@@ -460,7 +462,7 @@ c	print*,'ha  ',rhom,'cp',cp,'ch ',ch,'sp ',speed,'delt ',deltemp
 c
 c ------------------ (iv)  latent heat
 c
-c     const = .622/1013.
+c     const = .622/pstd
 
 c
 c --- calculates the term :      esat(Ts)-r*esat(Ta)
@@ -468,7 +470,7 @@ c
       evap  = esatoce - rhnow*0.01*esatair
       dsatp = evap
 c
-c --- calculates the term :      Ce*|V|*[esat(Ts)-r*esat(Ta)]0.622/1013
+c --- calculates the term :      Ce*|V|*[esat(Ts)-r*esat(Ta)]0.622/pstd
 c
 c --- evap is not the evaporation 
       evap = ce*speed*evap*const
@@ -478,7 +480,7 @@ c
 c      WFLUX =  evap - precip
 c
 c --- calculates the LATENT HEAT FLUX  LEa ( watt/m*m )
-c ---     LEa = L*rho*Ce*|V|*[esat(Ts)-r*esat(Ta)]0.622/1013
+c ---     LEa = L*rho*Ce*|V|*[esat(Ts)-r*esat(Ta)]0.622/pstd
 c
 c      ELAT = airden*evap*heatlat(sst)
       elat = rhom*evap*heatlat(sst)

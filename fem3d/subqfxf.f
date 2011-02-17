@@ -291,6 +291,9 @@ c it qs ta ur uw cc
 
         include 'subqfx.h'
 
+        real pstd
+        parameter ( pstd = 1013.25 )
+
 	logical bdebug
 	logical bhumid
 	integer ios
@@ -347,7 +350,7 @@ c-------------------------------------------------------
 	  call twb2rh(ta,tb,ur)
 	end if
 
-        p = 1013.
+        p = pstd
         call vapor(ta,p,ur,e,r,q)
 
 	call meteo_set_matrix(qs,ta,ur,tb,uw,cc)	!set 2D matrices
@@ -394,6 +397,7 @@ c checks heat flux values for unrealistic values
 	return
    99	continue
 	write(6,*) 'Unrealistic values in heat flux file for time: ',it
+	write(6,*) 'qs,ta,tb,ur,uw,cc,p'
 	write(6,*) qs,ta,tb,ur,uw,cc,p
 	stop 'error stop qfcheck: unrealistic values'
 	end

@@ -172,6 +172,7 @@ c save
 	save salref,temref
 	save difmol
         save itemp,isalt
+	save ibarcl
 c data
 	integer icall
 	save icall

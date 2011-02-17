@@ -74,6 +74,7 @@ c 22.02.2010    ggu	new arrays wxv, wyv
 c 26.02.2010    ggu	new arrays sauxe1/2
 c 29.04.2010    ggu	write volumes (wrfvla)
 c 26.01.2011    ggu	new arrays for observations and nudging
+c 16.02.2011    ggu	new iarnv, call to aquabc
 c
 c*****************************************************************
 
@@ -158,6 +159,8 @@ c static geometry information
 	common /ieltv/ieltv(3,neldim)
 	common /kantv/kantv(2,nkndim)
 	common /dxv/dxv(nkndim), /dyv/dyv(nkndim)
+
+	common /iarnv/iarnv(nkndim)	!area code information on nodes
 
 c dynamic geometry information
 
@@ -472,6 +475,7 @@ c-----------------------------------------------------------
 
 	call init_others
 	call init_chezy
+	call init_nodal_area_code	!area codes on nodes
         call diffweight
         call diff_h_set
 	call tideini
@@ -530,9 +534,10 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            call subwaves(it,dt)         !wave model
            call sedi(it,dt)             !sediment transport
 
-           call bio3d(it,dt)		!eutro
-           call atoxi3d(it,dt)		!toxi
-	   !call bfm_module(it,dt)	!ersem
+           call bio3d(it,dt)			!eutro
+           call aquabc_fem_interface(it,dt)	!alukas
+           call atoxi3d(it,dt)			!toxi
+	   !call bfm_module(it,dt)		!ersem
 
            call lagrange
 

@@ -9,6 +9,7 @@ c 19.02.2010    ggu     new file to contain stability computations
 c 26.02.2010    ggu     internal_stability restructured (on element)
 c 08.03.2010    ggu     run only down to avail layers in stability (bug fix)
 c 26.01.2011    ggu     robs for nudging implemented
+c 16.02.2011    ggu     pass robs to subroutines, write stb-ind to nos file
 c
 c*****************************************************************
 c*****************************************************************
@@ -91,7 +92,7 @@ c gets stability index (if necessary computes it)
 	include 'param.h'
 
 	real dt
-	logical robs
+	real robs
         real rkpar
         real rindex
         integer istot
@@ -135,7 +136,7 @@ c----------------------------------------------------------------
 
 c*****************************************************************
 
-        subroutine info_stability(dt,rkpar,rindex,istot,saux)
+        subroutine info_stability(robs,dt,rkpar,rindex,istot,saux)
 
 c gets stability index (if necessary computes it)
 
@@ -143,6 +144,7 @@ c gets stability index (if necessary computes it)
 
 	include 'param.h'
 
+	real robs
         real dt
         real rkpar
         real rindex
@@ -165,7 +167,7 @@ c compute stability index
 c----------------------------------------------------------------
 
 	call getaz(azpar)
-	call compute_stability(rkpar,azpar,rindex,saux)
+	call compute_stability(robs,rkpar,azpar,rindex,saux)
 	rindex = dt * rindex
 	istot = 1 + rindex
 
@@ -368,7 +370,7 @@ c computes stability index for hydro timestep (internal)
 	  end do
 	end do
 
-	!call compute_stability(rkpar,azpar,rindex,saux1)
+	!call compute_stability(robs,rkpar,azpar,rindex,saux1)
 	call momentum_advective_stability(aindex,sauxe1)
 	call momentum_viscous_stability(ahpar,dindex,sauxe2)
 
@@ -409,6 +411,7 @@ c outputs stability index for hydro timestep (internal)
         real dt
 	real sauxe1(nlvdim,neldim)
 	real sauxe2(nlvdim,neldim)
+	real sauxn(nlvdim,nkndim)
 
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
@@ -417,10 +420,18 @@ c outputs stability index for hydro timestep (internal)
 	integer ilhv(1)
 	common /ilhv/ilhv
 
+	logical bnos
 	integer ie,l,lmax
 	integer ia,id,it
-	integer iustab
 	real aindex,dindex,tindex
+
+c set ifnos in order to have output to nos file
+
+	integer icall,iustab,ifnos
+	save icall,iustab,ifnos
+	data icall,iustab,ifnos /0,0,0/
+
+	icall = icall + 1
 
 	ia = 0
 	id = 0
@@ -462,15 +473,19 @@ c outputs stability index for hydro timestep (internal)
 	  call check_elem(it)
 	end if
 
-	!iustab = 0
-	!call conwrite(iustab,'.sta',1,778,nlvdi,saux1)
-	!call conwrite(iustab,'.sta',1,778,nlvdi,saux2)
-	!do k=1,nkn
-	!  do l=1,nlv
-	!    saux1(l,k) = saux1(l,k) + saux2(l,k)
-	!  end do
-	!end do
-	!call conwrite(iustab,'.sta',1,778,nlvdi,saux1)
+	if( ifnos .gt. 0 .and. mod(icall,ifnos) .eq. 0 ) then
+	  call e2n3d_minmax(+1,nlvdim,sauxe1,sauxn)
+	  call conwrite(iustab,'.sta',1,778,nlvdi,sauxn)
+	  call e2n3d_minmax(+1,nlvdim,sauxe2,sauxn)
+	  call conwrite(iustab,'.sta',1,778,nlvdi,sauxn)
+	  do ie=1,nel
+	    do l=1,nlv
+	      sauxe1(l,ie) = sauxe1(l,ie) + sauxe2(l,ie)
+	    end do
+	  end do
+	  call e2n3d_minmax(+1,nlvdim,sauxe1,sauxn)
+	  call conwrite(iustab,'.sta',1,778,nlvdi,sauxn)
+	end if
 
 	end
 
@@ -493,7 +508,7 @@ c tests parallel implementation
 	rkpar = 0.
 
 	write(6,*) 'parallel test...'
-	call compute_stability(rkpar,azpar,rindex,saux)
+	call compute_stability(0.,rkpar,azpar,rindex,saux)
 	write(6,*) 'parallel is ok.'
 
 	end

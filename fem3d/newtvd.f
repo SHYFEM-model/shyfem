@@ -21,6 +21,7 @@ c 31.03.2009	ggu	bug fix: do not use internal gradient (undershoot)
 c 06.04.2009	ggu&ccf	bug fix: in tvd_fluxes() do not test for conc==cond
 c 15.12.2010	ggu	new routines for vertical tvd: vertical_flux_*()
 c 28.01.2011	ggu	bug fix for distance with lat/lon (tvd_fluxes)
+c 29.01.2011	ccf	insert ISPHE for lat-long coordinates
 c
 c*****************************************************************
 c
@@ -258,11 +259,45 @@ c sets position and element of upwind node
         common /xgv/xgv
         real ygv(1)
         common /ygv/ygv
+        double precision xlon1,ylat1,xlon2,ylat2,xlon3,ylat3    !lat/long [rad]
+        double precision dlat0,dlon0                    !center of projection
+        double precision xx,yy
+        double precision one,four,rad,pi
+        integer isphe_ev,init_ev
+        common /evcommon/ isphe_ev,init_ev
+        integer kn1,kn2,kn3
+        integer isphe
 
         write(6,*) 'setting up tvd upwind information...'
 
+        one = 1.
+        four = 4.
+
+        pi=four*atan(one)
+        rad = 180./pi
+
+        call check_spheric_ev   !checks and sets isphe_ev
+
+        isphe = isphe_ev
+
         do ie=1,nel
+
+          if ( isphe .eq. 1 ) then
+            kn1=nen3v(1,ie)
+            kn2=nen3v(2,ie)
+            kn3=nen3v(3,ie)
+            xlon1=xgv(kn1)/rad
+            ylat1=ygv(kn1)/rad
+            xlon2=xgv(kn2)/rad
+            ylat2=ygv(kn2)/rad
+            xlon3=xgv(kn3)/rad
+            ylat3=ygv(kn3)/rad
+            dlon0 = (xlon1+xlon2+xlon3) / 3.
+            dlat0 = (ylat1+ylat2+ylat3) / 3.
+          end if
+
           do ii=1,3
+
             k = nen3v(ii,ie)
             xc = xgv(k)
             yc = ygv(k)
@@ -271,6 +306,20 @@ c sets position and element of upwind node
             k = nen3v(j,ie)
             xd = xgv(k)
             yd = ygv(k)
+
+	    if ( isphe .eq. 1 ) then
+              xc = xc/rad
+              yc = yc/rad
+              call cpp(xx,yy,xc,yc,dlon0,dlat0)
+              xc = xx
+              yc = yy
+              xd = xd/rad
+              yd = yd/rad
+              call cpp(xx,yy,xd,yd,dlon0,dlat0)
+              xd = xx
+              yd = yy
+	    end if
+
             xu = 2*xc - xd
             yu = 2*yc - yd
             call find_elem_from_old(ie,xu,yu,ienew)
@@ -282,6 +331,15 @@ c sets position and element of upwind node
             k = nen3v(j,ie)
             xd = xgv(k)
             yd = ygv(k)
+
+	    if ( isphe .eq. 1 ) then
+              xd = xd/rad
+              yd = yd/rad
+              call cpp(xx,yy,xd,yd,dlon0,dlat0)
+              xd = xx
+              yd = yy
+	    end if
+
             xu = 2*xc - xd
 	    yu = 2*yc - yd
 

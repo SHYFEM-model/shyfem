@@ -50,6 +50,7 @@ int strsize(char *s);
 char *saveword(char *s);
 char *isolword(char *s);
 char *savestring(char *s , int len);
+char *savestr(char *s);
 void squeeze(char *s , int c);
 double power(double d , int p);
 char *itos( int i );

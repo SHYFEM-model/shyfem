@@ -48,6 +48,11 @@ c---------------------------------------------------------------
 	mode = 1		!+1: cart to geo  -1: geo to cart
 	if( isphe .eq. 1 ) mode = -1
 	write(6,*) 'isphe,mode: ',isphe,mode
+	if( mode .eq. 1 ) then
+	  write(6,*) 'converting from cartesian to geographical'
+	else
+	  write(6,*) 'converting from geographical to cartesian'
+	end if
 
 c---------------------------------------------------------------
 c do projection
@@ -66,6 +71,15 @@ c black sea
         c_param(1) = 34.             !longitude of origin (lon0)
         c_param(2) = 43.5            !latitude of origin (lat0)
         c_param(3) = 43.5            !central latitude (phi)
+
+c Klaipeda
+
+	iproj = 4
+
+        c_param(1) = 24.             !longitude of origin (lon0)
+        c_param(2) = -500000.        !false easting
+        c_param(3) = 0.           !false northing
+        c_param(4) = 0.9998          !scale factor
 
 	call init_coords(iproj,c_param)
 

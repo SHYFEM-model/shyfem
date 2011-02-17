@@ -8,6 +8,46 @@ c
 c 10.03.2009    ggu     finished coding
 c 27.03.2009    ggu     bug fix ITACT (itact was not adjourned)
 c 31.03.2009    ggu     changed header of regular files (x0,.., description)
+c 16.02.2011    ggu     completely restructured - store geo information
+c
+c notes :
+c
+c structure of ifile:
+c	  ifile(1)   iunit
+c	  ifile(2)   itold
+c	  ifile(3)   itnew
+c	  ifile(4)   itact
+c	  ifile(5)   nvar
+c	  ifile(6)   nx
+c	  ifile(7)   ny
+c	  ifile(8)   n (=nvar*nx*ny)
+c
+c	  ifile(9)   x0
+c	  ifile(10)  y0
+c	  ifile(11)  dx
+c	  ifile(12)  yy
+c	  ifile(13)  flag
+c 
+c in dfile are three records:
+c	1	actual timestep
+c	2	old timestep
+c	3	new timestep
+c
+c every record may contain more than one variable
+c
+c	dile(ix,iy,ivar)
+c	first data point is lower left corner, then rowwise
+c	after this new variable
+c
+c format of regular meteo forcing file (one time record):
+c
+c (data is rowwise, lower left corner is first point)
+c
+c	read(iunit,*,end=1) it,nvar,nx,ny,x0,y0,dx,dy,flag
+c	do i=1var,nvar
+c	  read(iunit,'(a)') description
+c	  read(iunit,*) ((data(ix,iy,ivar),ix=1,nx),iy=1,ny)
+c	end do
 c
 c*********************************************************************
 
@@ -21,18 +61,21 @@ c ifile and dfile are returned and contain all needed information
 
 	implicit none
 
+	integer ifidim
+	parameter ( ifidim = 13 )
+
 	integer it		!time for interpolation
 	character*(*) file	!name of file (only needed for first call)
 	integer nvar0		!how many variables are expected
 	integer ndim		!dimension of dfile
-	integer ifile(7)	!info on regular field data
+	integer ifile(ifidim)	!info on regular field data
 	real dfile(ndim,3)	!data of regular field
 	
 	integer iunit
 	integer itact,itold,itnew
 	integer i
 	integer nvar
-	integer nx,ny
+	integer nx,ny,n
 
 	integer ifileo
 
@@ -47,7 +90,7 @@ c-------------------------------------------------------------
 
 	if( iunit .lt. 0 ) then
 
-	  do i=1,7
+	  do i=1,ifidim
 	    ifile(i) = 0
 	  end do
 
@@ -59,14 +102,15 @@ c-------------------------------------------------------------
 	  iunit = ifileo(0,file,'form','old')
 	  if( iunit .le. 0 ) goto 99
 
-	  iunit = -iunit
+	  iunit = -iunit	!force initialization
 
-	  nvar = 0
-	  nx = 0
-	  ny = 0
-	  call rgf_intp(iunit,ndim,itact,itold,itnew,nvar,nx,ny
-     +				,dfile(1,1),dfile(1,2),dfile(1,3))
+	  call rgf_intp(iunit,ndim,itact,itold,itnew,ifile
+     +				,dfile(1,2),dfile(1,3),dfile(1,1))
 
+	  nvar  = ifile(5)
+	  nx    = ifile(6)
+	  ny    = ifile(7)
+	  n     = ifile(8)
 	  if( nvar .ne. nvar0 ) goto 97
 
 	  write(6,*) 'regular file opened :',iunit,nvar,nx,ny
@@ -75,9 +119,6 @@ c-------------------------------------------------------------
 	  ifile(2) = itold
 	  ifile(3) = itnew
 	  ifile(4) = itact
-	  ifile(5) = nvar
-	  ifile(6) = nx
-	  ifile(7) = ny
 	end if
 
 c-------------------------------------------------------------
@@ -87,13 +128,10 @@ c-------------------------------------------------------------
 	itold = ifile(2)
 	itnew = ifile(3)
 	itact = ifile(4)
-	nvar  = ifile(5)
-	nx    = ifile(6)
-	ny    = ifile(7)
 
 	if( it .ne. itact ) then
 	  itact = it			!bugfix ITACT
-	  call rgf_intp(iunit,ndim,itact,itold,itnew,nvar,nx,ny
+	  call rgf_intp(iunit,ndim,itact,itold,itnew,ifile
      +				,dfile(1,1),dfile(1,2),dfile(1,3))
 	end if
 
@@ -118,7 +156,7 @@ c-------------------------------------------------------------
 c*********************************************************************
 
 	subroutine rgf_intp(iunit,ndim,it,itold,itnew
-     +                          ,nvar,nx,ny,dold,dnew,dact)
+     +                          ,ifile,dold,dnew,dact)
 
 c handles time interpolation of regular fields
 c
@@ -128,14 +166,16 @@ c sets iunit = 0 if EOF has been found
 
 	implicit none
 
+	integer ifidim
+	parameter ( ifidim = 13 )
+
 	integer iunit
 	integer ndim
 	integer it,itold,itnew
-	integer nvar
-	integer nx,ny
-	real dold(nx,ny,nvar)
-	real dnew(nx,ny,nvar)
-	real dact(nx,ny,nvar)
+	integer ifile(ifidim)
+	real dold(1)
+	real dnew(1)
+	real dact(1)
 
 	logical bdata
 
@@ -147,14 +187,12 @@ c--------------------------------------------------------------
 
 	if( iunit .lt. 0 ) then
 	  iunit = -iunit
-	  call rgf_read(iunit,ndim,itnew,nvar,nx,ny,dnew,bdata)
+	  call rgf_read(iunit,ndim,itnew,ifile,dnew,bdata)
 	  if( .not. bdata ) goto 99
 
 	  itold = itnew
-	  call rgf_copy(nvar,nx,ny,dnew,dold)
+	  call rgf_copy(ifile,dnew,dold)
 	end if
-
-	if( nx*ny*nvar .le. 0 ) goto 98
 
 c--------------------------------------------------------------
 c read new record
@@ -162,8 +200,8 @@ c--------------------------------------------------------------
 
 	do while( it .gt. itnew )
 	  itold = itnew
-	  call rgf_copy(nvar,nx,ny,dnew,dold)
-	  call rgf_read(iunit,ndim,itnew,nvar,nx,ny,dnew,bdata)
+	  call rgf_copy(ifile,dnew,dold)
+	  call rgf_read(iunit,ndim,itnew,ifile,dnew,bdata)
 	  if( .not. bdata ) then
 	    itnew = it
 	    iunit = 0
@@ -175,16 +213,13 @@ c interpolate
 c--------------------------------------------------------------
 
 	call rgf_time_interpolate(it,itold,itnew
-     +				,nvar,nx,ny,dold,dnew,dact)
+     +				,ifile,dold,dnew,dact)
 
 c--------------------------------------------------------------
 c end of routine
 c--------------------------------------------------------------
 
 	return
-   98	continue
-	write(6,*) 'nvar,nx,ny: ',nvar,nx,ny
-	stop 'error stop rgf_intp: parameters are zero'
    99	continue
 	stop 'error stop rgf_intp: no data'
 	end
@@ -192,20 +227,22 @@ c--------------------------------------------------------------
 c*********************************************************************
 
 	subroutine rgf_time_interpolate(it,itold,itnew
-     +				,nvar,nx,ny,dold,dnew,dact)
+     +				,ifile,dold,dnew,dact)
 
 c time interpolation of regular field data
 
 	implicit none
 
-	integer it,itold,itnew
-	integer nvar
-	integer nx,ny
-	real dold(nx,ny,nvar)
-	real dnew(nx,ny,nvar)
-	real dact(nx,ny,nvar)
+	integer ifidim
+	parameter ( ifidim = 13 )
 
-	integer i,ix,iy
+	integer it,itold,itnew
+	integer ifile(ifidim)
+	real dold(1)
+	real dnew(1)
+	real dact(1)
+
+	integer i,n
 	real rit,do,dn
 
         if( itnew .gt. itold ) then
@@ -214,14 +251,12 @@ c time interpolation of regular field data
           rit = 0.
         end if
 
-	do i=1,nvar
-	  do iy=1,ny
-	    do ix=1,nx
-		do = dold(ix,iy,i)
-		dn = dnew(ix,iy,i)
-		dact(ix,iy,i) = rit*(dn-do) + do
-	    end do
-	  end do
+	n = ifile(8)
+
+	do i=1,n
+	  do = dold(i)
+	  dn = dnew(i)
+	  dact(i) = rit*(dn-do) + do
 	end do
 
 	end
@@ -230,25 +265,25 @@ c*********************************************************************
 c*********************************************************************
 c*********************************************************************
 
-	subroutine rgf_copy(nvar,nx,ny,dsource,dtarget)
+	subroutine rgf_copy(ifile,dsource,dtarget)
 
 c copy regular field record
 
 	implicit none
 
-	integer nvar
-	integer nx,ny
-	real dsource(nx,ny,nvar)
-	real dtarget(nx,ny,nvar)
+	integer ifidim
+	parameter ( ifidim = 13 )
 
-	integer i,ix,iy
+	integer ifile(ifidim)
+	real dsource(1)
+	real dtarget(1)
 
-	do i=1,nvar
-	  do iy=1,ny
-	    do ix=1,nx
-		dtarget(ix,iy,i) = dsource(ix,iy,i)
-	    end do
-	  end do
+	integer i,n
+
+	n = ifile(8)
+
+	do i=1,n
+	  dtarget(i) = dsource(i)
 	end do
 
 	end
@@ -257,47 +292,40 @@ c*********************************************************************
 c*********************************************************************
 c*********************************************************************
 
-	subroutine rgf_read(iunit,ndim,it,nvar,nx,ny,data,bdata)
+	subroutine rgf_read(iunit,ndim,it,ifile,data,bdata)
 
 c read complete record of regular field
 
 	implicit none
 
+	integer ifidim
+	parameter ( ifidim = 13 )
+
 	integer iunit
 	integer ndim
 	integer it
-	integer nvar
-	integer nx,ny
+	integer ifile(ifidim)
 	real data(ndim)
 	logical bdata
 
-	integer nvar0,nx0,ny0
+	integer n,i
 
 c------------------------------------------------------------
 c read header
 c------------------------------------------------------------
 
-	call rgf_read_header(iunit,it,nvar0,nx0,ny0,bdata)
+	call rgf_read_header(iunit,it,ifile,bdata)
 
 c------------------------------------------------------------
 c check for errors
 c------------------------------------------------------------
 
-	if( .not. bdata ) then			!no more data
-	  return
-	else if( nvar*nx*ny .le. 0 ) then	!first call
-	  nvar = nvar0
-	  nx = nx0
-	  ny = ny0
-	else if( nvar.ne.nvar0 .or. nx.ne.nx0 .or. ny.ne.ny0 ) then
-	  write(6,*) 'nvar,nx,ny:    ',nvar,nx,ny
-	  write(6,*) 'nvar0,nx0,ny0: ',nvar0,nx0,ny0
-	  stop 'error stop rgf_read: incompatible parameters'
-	end if
+	if( .not. bdata ) return		!no more data
 
-	if( nx*ny*nvar .gt. ndim ) then
-	  write(6,*) 'nx,ny,nvar:  ',nx,ny,nvar
-	  write(6,*) 'ndim,needed: ',ndim,nx*ny*nvar
+	n = ifile(8)
+	if( n .gt. ndim ) then
+	  write(6,*) 'nvar,nx,ny,n:  ',(ifile(i),i=5,8)
+	  write(6,*) 'ndim,needed: ',ndim,n
 	  stop 'error stop rgf_read: ndim'
 	end if
 
@@ -305,7 +333,7 @@ c------------------------------------------------------------
 c read data
 c------------------------------------------------------------
 
-	call rgf_read_data(iunit,nvar,nx,ny,data)
+	call rgf_read_data(iunit,ifile,data)
 
 c------------------------------------------------------------
 c end of routine
@@ -315,48 +343,207 @@ c------------------------------------------------------------
 
 c*********************************************************************
 
-	subroutine rgf_read_header(iunit,it,nvar,nx,ny,bdata)
+	subroutine rgf_read_header(iunit,it,ifile,bdata)
 
 c reads header of regular field
 
 	implicit none
 
+	integer ifidim
+	parameter ( ifidim = 13 )
+
 	integer iunit
 	integer it
-	integer nvar
-	integer nx,ny
+	integer ifile(ifidim)
 	logical bdata
+
+	integer nvar
+	integer n,nx,ny
+	integer i
 	real x0,y0,dx,dy,flag
 
-	!read(iunit,*,end=1) it,nvar,nx,ny
-	read(iunit,*,end=1) it,nvar,nx,ny,x0,y0,dx,dy,flag
 	bdata = .true.
+        n = ifile(8)	!total number of data expected - if 0 -> initialize
+
+	read(iunit,*,end=1) it,nvar,nx,ny,x0,y0,dx,dy,flag
+
+	if( n .le. 0 ) then	!initialize
+	  call rgf_set_header(ifile,nvar,nx,ny,x0,y0,dx,dy,flag)
+	else
+	  call rgf_check_header(ifile,nvar,nx,ny,x0,y0,dx,dy,flag)
+	end if
+
+        n = ifile(8)	!total number of data read
+	if( n .le. 0 ) goto 98
 
 	return
     1	continue
 	bdata = .false.
+	return
+   98	continue
+	write(6,*) 'nvar,nx,ny,n: ',(ifile(i),i=5,8)
+	stop 'error stop rgf_intp: parameters are zero'
 	end
 
 c*********************************************************************
 
-	subroutine rgf_read_data(iunit,nvar,nx,ny,data)
+	subroutine rgf_read_data(iunit,ifile,data)
 
 c reads data of regular field
 
 	implicit none
 
-	integer iunit
-	integer nvar
-	integer nx,ny
-	real data(nx,ny,nvar)
+	integer ifidim
+	parameter ( ifidim = 13 )
 
-	integer i,ix,iy
+	integer iunit
+	integer ifile(ifidim)
+	real data(1)
+
+	integer nvar,nx,ny,nxy
+	integer ivar,j,ip
 	character*80 description
 
-	do i=1,nvar
+        nvar  = ifile(5)
+        nx    = ifile(6)
+        ny    = ifile(7)
+	nxy = nx * ny
+
+	do ivar=1,nvar
+	  ip = (ivar-1) * nxy
 	  read(iunit,'(a)') description
-	  read(iunit,*) ((data(ix,iy,i),ix=1,nx),iy=1,ny)
+	  read(iunit,*) (data(ip+j),j=1,nxy)
 	end do
+
+	end
+
+c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+
+	subroutine rgf_set_header(ifile,nvar,nx,ny,x0,y0,dx,dy,flag)
+
+c sets header information
+
+	implicit none
+
+	integer ifidim
+	parameter ( ifidim = 13 )
+
+	integer ifile(ifidim)
+	integer nvar
+	integer nx,ny
+	real x0,y0,dx,dy,flag
+
+	ifile(5) = nvar
+	ifile(6) = nx
+	ifile(7) = ny
+	ifile(8) = nx*ny*nvar
+
+	call rgf_set_geo(ifile,x0,y0,dx,dy,flag)
+
+	end
+
+c*********************************************************************
+
+	subroutine rgf_check_header(ifile,nvar,nx,ny,x0,y0,dx,dy,flag)
+
+c checks header information
+
+	implicit none
+
+	integer ifidim
+	parameter ( ifidim = 13 )
+
+	integer ifile(ifidim)
+	integer nvar
+	integer nx,ny
+	real x0,y0,dx,dy,flag
+
+	integer i
+	real x0_a,y0_a,dx_a,dy_a,flag_a
+
+	call rgf_set_geo(ifile,x0_a,y0_a,dx_a,dy_a,flag_a)
+
+	if( ifile(5) .ne. nvar ) goto 99
+	if( ifile(6) .ne. nx ) goto 99
+	if( ifile(7) .ne. ny ) goto 99
+	if( ifile(8) .ne. nx*ny*nvar ) goto 99
+
+	if( x0 .ne. x0_a ) goto 99
+	if( y0 .ne. y0_a ) goto 99
+	if( dx .ne. dx_a ) goto 99
+	if( dy .ne. dy_a ) goto 99
+	if( flag .ne. flag_a ) goto 99
+
+	return
+   99	continue
+	write(6,*) nvar,nx,ny,nx*ny*nvar
+	write(6,*) (ifile(i),i=5,8)
+	write(6,*) x0,y0,dx,dy,flag
+	write(6,*) x0_a,y0_a,dx_a,dy_a,flag_a
+	stop 'error stop rgf_check_header: parameter mismatch'
+	end
+
+c*********************************************************************
+
+	subroutine rgf_set_geo(ifile,x0,y0,dx,dy,flag)
+
+c set geo information
+
+	implicit none
+
+	integer ifidim
+	parameter ( ifidim = 13 )
+
+	integer ifile(ifidim)
+	real x0,y0,dx,dy,flag
+
+	integer i
+	integer ia(5)
+	real ra(5)
+	equivalence(ra(1),ia(1))
+
+	ra(1) = x0
+	ra(2) = y0
+	ra(3) = dx
+	ra(4) = dy
+	ra(5) = flag
+
+	do i=1,5
+	  ifile(8+i) = ia(i)
+	end do
+
+	end
+
+c*********************************************************************
+
+	subroutine rgf_get_geo(ifile,x0,y0,dx,dy,flag)
+
+c get geo information
+
+	implicit none
+
+	integer ifidim
+	parameter ( ifidim = 13 )
+
+	integer ifile(ifidim)
+	real x0,y0,dx,dy,flag
+
+	integer i
+	integer ia(5)
+	real ra(5)
+	equivalence(ra(1),ia(1))
+
+	do i=1,5
+	  ia(i) = ifile(8+i)
+	end do
+
+	x0 = ra(1)
+	y0 = ra(2)
+	dx = ra(3)
+	dy = ra(4)
+	flag = ra(5)
 
 	end
 
@@ -370,15 +557,22 @@ c prints info of regular field to unit nout
 
 	implicit none
 
+	integer ifidim
+	parameter ( ifidim = 13 )
+
 	integer nout
-	integer ifile(7)
+	integer ifile(ifidim)
 
 	integer unit,i
+	real x0,y0,dx,dy,flag
 
 	unit = nout
 	if( nout .le. 0 ) unit = 6
 
-	write(unit,*) 'rgf_info: ',(ifile(i),i=1,7)
+	call rgf_get_geo(ifile,x0,y0,dx,dy,flag)
+
+	write(unit,*) 'rgf_info: ',(ifile(i),i=1,8)
+	write(unit,*) 'x0,y0,dx,dy,flag: ',x0,y0,dx,dy,flag
 
 	end
 
@@ -390,22 +584,25 @@ c prints data of regular field to unit nout
 
 	implicit none
 
+	integer ifidim
+	parameter ( ifidim = 13 )
+
 	integer nout
-	integer ifile(7)
+	integer ifile(ifidim)
 	real dfile(1)
 
 	integer unit,i
 	integer nvar,nx,ny,n
+	real x0,y0,dx,dy,flag
 
 	unit = nout
 	if( nout .le. 0 ) unit = 6
 
-        nvar  = ifile(5)
-        nx    = ifile(6)
-        ny    = ifile(7)
-        n = nx * ny * nvar
+        n     = ifile(8)
+	call rgf_get_geo(ifile,x0,y0,dx,dy,flag)
 
-	write(unit,*) 'rgf_info: ',(ifile(i),i=1,7)
+	write(unit,*) 'rgf_print: ',(ifile(i),i=1,8)
+	write(unit,*) 'x0,y0,dx,dy,flag: ',x0,y0,dx,dy,flag
 	write(unit,*) (dfile(i),i=1,n)
 
 	end
@@ -418,7 +615,10 @@ c gets value of regular field
 
 	implicit none
 
-	integer ifile(7)
+	integer ifidim
+	parameter ( ifidim = 13 )
+
+	integer ifile(ifidim)
 	real dfile(1)
 	integer ivar		!variable to get
 	integer i,j		!coordinates of variable in grid

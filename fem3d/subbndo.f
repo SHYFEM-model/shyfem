@@ -196,6 +196,8 @@ c	  -------------------------------
 	  else
 	    write(6,*) 'One node open boundary not permitted'
 	    write(6,*) i,k,ipext(k)
+	    write(6,*) 'node number (external): ',ipext(k)
+	    write(6,*) 'boundary: ',ibc
 	    stop 'error stop bndo'
 	  end if
 

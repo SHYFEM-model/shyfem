@@ -12,6 +12,7 @@ c 09.04.2003    ggu     new routines for day light
 c 17.08.2004    ggu     bises and jdmon deleted (now in newdat.f)
 c 22.09.2004    ggu     bug fix for idmon/jdmon
 c 08.10.2008    ggu     jdmon0 and bises0 re-introduced
+c 16.02.2011    ggu     decl() commented
 c
 c*****************************************************************************
 
@@ -104,23 +105,31 @@ c**************************************************************************
 
       subroutine decl(iy,im,id,ad,rr)
 
-c input: id,im,iy (day,month,year)
-c output:
-c  ad = declinazione solare [rad]
-c  rr = ??
-c
-c 1 Jan ==> nd = 1
+c computes declination and relative distance from sun
 
-      integer jdmon0           !bug fix 22.09.2004
+	implicit none
 
-      pi=4*atan(1.)
+	integer iy		!year
+	integer im		!month
+	integer id		!day
+	real ad			!declination [rad] (return)
+	real rr			!relative distance (return)
 
-      nd=id+jdmon0(iy,im-1)
+	integer nd
+	real pi
+	real b
 
-      ad=(23.45*pi/180.)*sin(2.*pi*(284+nd)/365.)
-      rr = 1. + 0.033*cos(2.*pi*nd/365.)
+        integer jdmon0		! bug fix 22.09.2004
 
-      end
+        pi=4*atan(1.)
+
+        nd=id+jdmon0(iy,im-1)	! Julian day (1 Jan => nd = 1)
+	b = 2.*pi*(284.+nd)/365.
+
+        ad=(23.45*pi/180.)*sin(2.*pi*(284.+nd)/365.)
+        rr = 1. + 0.033*cos(b)
+
+        end
 
 c**************************************************************************
 

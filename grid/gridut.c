@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 16-Feb-2011: pass type into routines for creation of items		*
  * 16-Jun-2010: new way to compute area of polygon (stable for 64 bit)  *
  * 07-May-1998: type is now integer                                     *
  * 14-Oct-97: DeleteElem/Line(): do not decrement use of nodes          *
@@ -173,7 +174,7 @@ void ChangeVect( Vect_type *p )
 
 /****************************************************************/
 
-Node_type *MakeNode( int n , int ntype , Point *c )
+Node_type *MakeNode( int n , int type , Point *c )
 
 {
         Node_type *new;
@@ -183,7 +184,7 @@ Node_type *MakeNode( int n , int ntype , Point *c )
         if( !new ) Error("MakeNode : Cannot allocate node");
 
 	new->number = n;
-	new->type = ntype;
+	new->type = type;
 	new->use = 0;
 	new->coord.x = c->x;
 	new->coord.y = c->y;
@@ -202,7 +203,7 @@ void DeleteNode( Node_type *p )
 
 /****************************************************************/
 
-Elem_type *MakeElem( int n , int *c , int vertex )
+Elem_type *MakeElem( int n , int type , int *c , int vertex )
 
 {
 	int *index;
@@ -213,11 +214,11 @@ Elem_type *MakeElem( int n , int *c , int vertex )
 	for( i=0 ; i<vertex ; i++ )
 		index[i] = c[i];
 
-        return MakeElemWithIndex(n,0,vertex,index);
+        return MakeElemWithIndex(n,type,vertex,index);
 }
 
 
-Elem_type *MakeElemWithIndex( int n , int ntype , int vertex , int *index )
+Elem_type *MakeElemWithIndex( int n , int type , int vertex , int *index )
 
 {
 	Elem_type *new;
@@ -227,7 +228,7 @@ Elem_type *MakeElemWithIndex( int n , int ntype , int vertex , int *index )
 
         new->number = n;
         new->vertex = vertex;
-	new->type     = ntype;
+	new->type     = type;
 	new->index  = index;
 	new->depth    = NULLDEPTH;
 
@@ -245,7 +246,7 @@ void DeleteElem( Elem_type *p )
 
 /****************************************************************/
 
-Line_type *MakeLine( int n , int *c , int vertex )
+Line_type *MakeLine( int n , int type , int *c , int vertex )
 
 {
 	int *index;
@@ -256,10 +257,10 @@ Line_type *MakeLine( int n , int *c , int vertex )
 	for( i=0 ; i<vertex ; i++ )
 		index[i] = c[i];
 
-        return MakeLineWithIndex(n,0,vertex,index);
+        return MakeLineWithIndex(n,type,vertex,index);
 }
 
-Line_type *MakeLineWithIndex( int n , int ntype , int vertex , int *index )
+Line_type *MakeLineWithIndex( int n , int type , int vertex , int *index )
 
 {
 	Line_type *new;
@@ -269,7 +270,7 @@ Line_type *MakeLineWithIndex( int n , int ntype , int vertex , int *index )
 
         new->number = n;
         new->vertex = vertex;
-	new->type     = ntype;
+	new->type     = type;
 	new->index  = index;
 	new->depth    = NULLDEPTH;
 

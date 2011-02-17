@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 16-Feb-2011: new options OpOutFile and OpItemType implemented	*
  * 01-Oct-2004: set default for OpMaxColDepth to -1 (not given)         *
  * 17-Dec-97: OpColor - color nodes and lines (...was compress...)      *
  * 06-Dec-95: OpWind, OpIntern, options 0,1,2... eliminated             *
@@ -189,7 +190,7 @@ void SetOptions(int argc, char *argv[])
 
 {
 	int c;
-	char *options = "CTM:S:kfoahw:c:g:d:uDV:N:";
+	char *options = "CTM:S:kfoahw:c:g:d:uDV:N:O:t:";
 
 	      OpCheck = 0;    /* do more checks */
 	       OpFill = 0;    /* fill elements */
@@ -207,6 +208,8 @@ void SetOptions(int argc, char *argv[])
 	   OpNodeFact = 1.;   /* factor for node not in use */
 	   OpVectScal = 1.;   /* scaling for vector */
 	   OpNodeScal = 1.;   /* scaling for node not in use */
+	   OpOutFile  = NULL; /* name of output file (ask if not given) */
+	   OpItemType = 0.;   /* default type for created items */
 
 	while( (c=GetOpt(argc,argv,options)) != EOF ) {
 		switch(c) {
@@ -255,6 +258,12 @@ void SetOptions(int argc, char *argv[])
 			break;
         case 'c' :              /* c - number of color table */
 			OpCol = *optarg - '0';
+			break;
+        case 'O' :              /* O - name of output file */
+			OpOutFile = savestr(optarg);
+			break;
+        case 't' :              /* t - default type of items */
+			OpItemType = atoi(optarg);
 			break;
 #if __GUG_UNIX_
         case 'd' :              /* d - display name */
@@ -308,21 +317,23 @@ void Help( void )
 
 {
 	printf("Options :\n");
-	printf("  -o   do not outline elements     ");
-	printf("  -f   fill elements with color  \n");
-	printf("  -k   do extra checking           ");
-	printf("  -u   check if nodes are used   \n");
-	printf("  -T   show type instead of depth  ");
-	printf("  -c#  use color table #         \n");
-	printf("  -h   print this help screen      ");
-	printf("  -a   ask for file names        \n");
-	printf("  -d   display  (only X11)         ");
-	printf("  -g   geometry (only X11)       \n");
-	printf("  -M#  scale color to depth #      ");
-	printf("  -S#  size of color table is #  \n");
-	printf("  -N#  scale factor for nodes is # ");
+	printf("  -o   do not outline elements        ");
+	printf("  -f   fill elements with color     \n");
+	printf("  -k   do extra checking              ");
+	printf("  -u   check if nodes are used      \n");
+	printf("  -T   show type instead of depth     ");
+	printf("  -c#  use color table #            \n");
+	printf("  -h   print this help screen         ");
+	printf("  -a   ask for file names           \n");
+	printf("  -d   display  (only X11)            ");
+	printf("  -g   geometry (only X11)          \n");
+	printf("  -M#  scale color to depth #         ");
+	printf("  -S#  size of color table is #     \n");
+	printf("  -N#  scale factor for nodes is #    ");
 	printf("  -V#  scale factor for vectors is #\n");
-	printf("  -C   color nodes and lines     \n");
+	printf("  -C   color nodes and lines          ");
+	printf("  -On  use n as output file name    \n");
+	printf("  -t#  use type # for new items     \n");
 	printf("\n");
 }
 

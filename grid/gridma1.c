@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 16-Feb-2011: use OpItemType for new items				*
  * 02-Apr-1998: new functio integrated -> no gridmu.h, no ActCommand    *
  *                call ExitEventLoop() in GfExit to exit loop           *
  *                new GetActFunction(), SetActFunction()                *
@@ -628,7 +629,7 @@ void GfMakeNode( void )
         c.x = ActX;
         c.y = ActY;
         NTotNodes++;
-        pn = MakeNode(NTotNodes,0,&c);
+        pn = MakeNode(NTotNodes,OpItemType,&c);
         InsertByNodeNumber(HNN,pn);
         ActNode = NTotNodes;
     }
@@ -762,7 +763,7 @@ void GfMakeElement( void )
                     ActString = StringMakeElemErr;
 		  } else {		/* ok -> make */
                     NTotElems++;
-                    pe = MakeElem(NTotElems,NodeList,NTotList);
+                    pe = MakeElem(NTotElems,OpItemType,NodeList,NTotList);
                     InsertByElemNumber(HEL,pe);
                     AddUseE(HNN,pe);
                     MakeElemActive(NTotElems);
@@ -774,7 +775,7 @@ void GfMakeElement( void )
 		c.x = ActX;
 		c.y = ActY;
 		NTotNodes++;
-		pn = MakeNode(NTotNodes,0,&c);
+		pn = MakeNode(NTotNodes,OpItemType,&c);
 		InsertByNodeNumber(HNN,pn);
 		ActNode = NTotNodes;
 		if( NTotList == 0 )
@@ -866,7 +867,7 @@ void GfMakeLine( void )
                     ActString = StringMakeLineErr;
 		  } else {		/* ok -> make */
                     NTotLines++;
-                    pl = MakeLine(NTotLines,NodeList
+                    pl = MakeLine(NTotLines,OpItemType,NodeList
                             ,NTotList);
                     InsertByLineNumber(HLI,pl);
                     AddUseL(HNN,pl);
@@ -879,7 +880,7 @@ void GfMakeLine( void )
 		c.x = ActX;
 		c.y = ActY;
 		NTotNodes++;
-		pn = MakeNode(NTotNodes,0,&c);
+		pn = MakeNode(NTotNodes,OpItemType,&c);
 		InsertByNodeNumber(HNN,pn);
 		ActNode = NTotNodes;
                 NodeList[NTotList++] = ActNode;

@@ -263,7 +263,7 @@ c-------------------------------------------------------------------
 
 	if( icall .eq. 0 ) then
 	  ibio = iround(getpar('ibio'))
-	  if( ibio .le. 0 ) icall = -1
+	  if( ibio .ne. 1 ) icall = -1
 	  if( icall .le. -1 ) return
 	  icall = 1
 

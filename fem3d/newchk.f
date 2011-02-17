@@ -120,9 +120,9 @@ c common
         integer iwegv(1)
         common /iwegv/iwegv
 
-        real tauxnv(nkndim), tauynv(nkndim)
-        real wxv(nkndim), wyv(nkndim)
-        real ppv(nkndim)
+        real tauxnv(1), tauynv(1)
+        real wxv(1), wyv(1)
+        real ppv(1)
         common /tauxnv/tauxnv, /tauynv/tauynv
         common /wxv/wxv, /wyv/wyv
         common /ppv/ppv
@@ -844,7 +844,8 @@ c----------------------------------------------------------------
 	    vrmax = max(vrmax,vrdiff)
 	    if( vrdiff .gt. vrerr ) then
 		berror = .true.
-	        write(6,*) l,k,volo,voln,vdiff,vrdiff
+	        write(6,*) 'mass_conserve: ',l,k
+	        write(6,*) volo,voln,vdiff,vrdiff
 	    end if
 	  end do
 	  if( berror ) call check_node(k)

@@ -4,7 +4,7 @@
 #
 ##############################################################
 #
-# version 1.6
+# version 1.7
 #
 # 19.08.2005		unify_nodes, if defined $depth
 # 24.08.2005		connect_lines, split_line, contains_node
@@ -12,9 +12,10 @@
 # 20.10.2005		version control introduced
 # 01.03.2010		preserve order of written items if needed
 # 07.10.2010		new routine get_xy_minmax()
+# 10.02.2011		new routine make_central_point()
 #
 ##############################################################
-
+#
 # example of usage:
 #
 # use lib "$ENV{HOME}/lib/perl";
@@ -486,6 +487,33 @@ sub get_xy_minmax
 
   return ($xmin,$ymin,$xmax,$ymax);
 }
+
+sub make_central_point 
+{
+    my ($self,$item) = @_;	#item must be element or line
+
+    my $xm = 0;
+    my $ym = 0;
+
+    my $verts = $item->{vert};
+    foreach my $nnode (@$verts) {
+      my $node = $self->get_node($nnode);
+      my $x = $node->{x};
+      my $y = $node->{y};
+      $xm += $x;
+      $ym += $y;
+    }
+    my $nverts = $item->{nvert};
+    if( $verts->[0] == $verts->[-1] ) {
+      $nverts -= 1;
+    }
+
+    $xm /= $nverts;
+    $ym /= $nverts;
+
+    return ($xm,$ym);
+}
+
 
 ###############################################################################
 

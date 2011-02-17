@@ -32,15 +32,16 @@ SUBDIRS   = `ls -dF * | grep  '/' | sed -e 's/\///'`
 FEMLIBS   = femcheck post
 FEMC      = grid mesh
 FEMPROG   = fem3d femplot femadj femspline
-FEMUTIL   = femregres femdoc fembin femlib
+FEMUTIL   = femregres femdoc fembin femlib femanim
 FEMOPT    = femgotm femersem
 FEMEXTRA  = 
 PARAMDIRS = fem3d femplot femadj #femspline
 
 SPECIAL   = Makefile Rules.make param.h README LASTTAR CHANGES
-SPECIAL   = Makefile Rules.make param.h README LASTTAR
+SPECIAL   = Makefile Rules.make param.h \
+		BUG COMMIT FAQ LASTTAR LOG README VERSION
 
-VERSION = `head -1 $(FEMSRC)/VERSION | sed -e 's/  */ /g' | cut -f4 -d" "`
+VERSION = `head -1 $(FEMDIR)/VERSION | sed -e 's/  */ /g' | cut -f4 -d" "`
 DATE = `date "+%F"`
 TARNAME  = $(VERSION)
 BETANAME = $(VERSION)_beta_$(DATE)
@@ -138,7 +139,7 @@ links:
 tar:
 	@echo "Please use targets vers or beta"
 
-beta: cleanall cleandiff diff
+beta: cleanall
 	date > LASTTAR
 	rm -rf $(TMPDIR)/fem.tar $(TMPDIR)/fem_VERS_*; mkdir -p $(BETADIR)
 	cp -al $(FEMTOTS) $(SPECIAL) $(BETADIR)
@@ -148,7 +149,7 @@ beta: cleanall cleandiff diff
 	rm -rf $(TMPDIR)/fem.tar $(BETADIR)
 	mv fem.tar.gz shyfem_$(BETANAME).tar.gz
 
-vers: cleanall cleandiff diff
+vers: cleanall
 	date > LASTTAR
 	rm -rf $(TMPDIR)/fem.tar $(TMPDIR)/fem_VERS_*; mkdir -p $(TARDIR)
 	cp -al $(FEMTOTS) $(SPECIAL) $(TARDIR)

@@ -374,7 +374,8 @@ cat > gnu.tmp <<EOI
 set terminal $terminal $orientation $type
 set output "$output"
 
-set data style lines
+set style data lines
+#set data style lines		#old call
 #set data style linespoints
 set title "$title"
 

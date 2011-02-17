@@ -1,4 +1,47 @@
 
+16.02.2011
+
+	lat/lon
+		changed default for isphe -> always automatic (subsys.f)
+	meteo restructured
+		subrgf.f completely restructured - store geo information
+		pstd introduced (subqfxm3.f subqfxm1.f,subwin.f)
+		pass idata to files, use geo info from files (submeteo.f)
+		new file submet.f (from subn11.f)
+		conversion from specific humidity (not working) (subqfxu1.f)
+	projection
+		new projection 4 (non standard UTM)
+	aquabc
+		new files included
+		some helper routines to deal with nodal area code (subn35.f)
+	nudging
+		pass robs to subroutines (newcon.f, newstab.f)
+	grid
+		pass type into routines for creation of items
+		new options OpOutFile, OpItemType
+		new routine savestr()
+	minor
+		new routine trimline() (subsss.f)
+		in diffweight() use double precision (subdif.f)
+		new routines e2n3d() and e2n3d_minmax() (newtra.f)
+		write n2max to info file (subgotm.f)
+
+05.02.2011	submeteo restructured
+
+	changed order of records in dfile (actual is first) (submeteo.f)
+
+28.01.2011	tvd for lat/lon
+
+	tvd for lat/lon
+		bug fix for distance with lat/lon (tvd_fluxes) (newtvd.f)
+		insert ISPHE for lat-long coordinates
+		new entry in ev for distance of nodes (17-19) (subnev.f)
+
+	nudging
+		parameters changed in call to ts_nudge() (newbcl.f)
+
+========================================================== 27-01-2011 - 6_1_17
+
 27.01.2011	nudging
 
 	nudging (t/s/cobs, bobs)
@@ -20,6 +63,8 @@
 
 	vertical velocity section plotting with sigma
 		./femplot/suplin.f:
+
+========================================================== 20-12-2010 - 6_1_16
 
 17.12.2010	plot of sigma layers
 

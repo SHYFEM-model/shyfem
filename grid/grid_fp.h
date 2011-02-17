@@ -8,6 +8,7 @@
  * see grid.c for copying information					*
  *									*
  * Revision History:                                                    *
+ * 16-Feb-2011: in MakeElem/Line() pass also type			*
  * 13-May-2003: new include menu.h and prototype ExecuteMenuCommand()	*
  * 02-Apr-1998: no SetNewCommand() & Buttons, new ExitEventLoop()       *
  * 09-Feb-1998: ActArgument eliminated, new functions GfZoom, GfShow    *
@@ -248,12 +249,12 @@ Vect_type *MakeVect( int total , int actual , float *s , float *d );
 void DeleteVect( Node_type *p );
 void ChangeVect( Vect_type *p );
 
-Node_type *MakeNode( int n , int ntype , Point *c );
+Node_type *MakeNode( int n , int type , Point *c );
 void DeleteNode( Node_type *p );
-Elem_type *MakeElem( int n , int *c , int vertex );
+Elem_type *MakeElem( int n , int type , int *c , int vertex );
 Elem_type *MakeElemWithIndex( int n , int ntype , int vertex , int *index );
 void DeleteElem( Elem_type *p );
-Line_type *MakeLine( int n , int *c , int vertex );
+Line_type *MakeLine( int n , int type , int *c , int vertex );
 Line_type *MakeLineWithIndex( int n , int ntype , int vertex , int *index );
 void DeleteLine( Line_type *p );
 

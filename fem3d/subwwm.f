@@ -234,8 +234,8 @@ c write to PIPE
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
-        real wxnv(nkndim),wynv(nkndim)    !x and y wind component [m/s]
-        common /wxnv/wxnv,/wynv/wynv
+        real wxv(1),wyv(1)    !x and y wind component [m/s]
+        common /wxv/wxv,/wyv/wyv
         real uprv(nlvdim,1), vprv(nlvdim,1)
         common /uprv/uprv, /vprv/vprv
         real znv(1)
@@ -256,8 +256,8 @@ c           -----------------------------------------------
               write(111) vprv(1,k)
               write(112) znv(k)
               write(113) hkv(k)
-              write(114) wxnv(k)
-              write(115) wynv(k)
+              write(114) wxv(k)
+              write(115) wyv(k)
             end do
 
             write(*,*) 'SHYFEM write vel and water level', it

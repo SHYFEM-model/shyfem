@@ -36,6 +36,7 @@ c 27.06.2005	ggu	bug in vtot corrected
 c 10.04.2008	ggu	copy velocities at nodes in copy_uvz()
 c 01.03.2010	ggu	new version of n2e3d()
 c 11.03.2010	ggu	new routine check_volume(); init w only if no restart
+c 16.02.2011	ggu	new routine e2n3d() and e2n3d_minmax()
 c
 c****************************************************************************
 c
@@ -710,6 +711,8 @@ c initializes uvz values from zenv, utlnv, vtlnv, hdenv
 	end
 
 c******************************************************************
+c******************************************************************
+c******************************************************************
 
 	subroutine e2n2d(elv,nov,aux)
 
@@ -774,6 +777,157 @@ c-----------------------------------------------------------
 
         end
 
+c******************************************************************
+
+	subroutine e2n3d(nlvdim,elv,nov,aux)
+
+c transforms element values to nodal values (weights are area)
+c
+c (3D version)
+
+	implicit none
+
+c arguments
+	integer nlvdim
+        real elv(nlvdim,1)     !array with element values (in)
+        real nov(nlvdim,1)     !array with nodal values (out)
+        real aux(nlvdim,1)     !aux array (nkndim)
+
+c common
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer nen3v(3,1)
+	common /nen3v/nen3v
+        integer ilhv(1),ilhkv(1)
+        common /ilhv/ilhv, /ilhkv/ilhkv
+	include 'ev.h'
+
+c local
+        integer k,ie,ii,l,lmax
+        real area,value
+
+c-----------------------------------------------------------
+c initialize arrays
+c-----------------------------------------------------------
+
+        do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+            nov(l,k) = 0.
+            aux(l,k) = 0.
+	  end do
+        end do
+
+c-----------------------------------------------------------
+c accumulate values
+c-----------------------------------------------------------
+
+        do ie=1,nel
+          area = 4.*ev(10,ie)
+	  lmax = ilhv(ie)
+	  do l=1,lmax
+            value = elv(l,ie)
+            do ii=1,3
+              k = nen3v(ii,ie)
+              nov(l,k) = nov(l,k) + area*value
+              aux(l,k) = aux(l,k) + area
+	    end do
+          end do
+        end do
+
+c-----------------------------------------------------------
+c compute final value
+c-----------------------------------------------------------
+
+        do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+            if( aux(l,k) .gt. 0. ) then
+              nov(l,k) = nov(l,k) / aux(l,k)
+            end if
+	  end do
+        end do
+
+c-----------------------------------------------------------
+c end of routine
+c-----------------------------------------------------------
+
+        end
+
+c******************************************************************
+
+	subroutine e2n3d_minmax(mode,nlvdim,elv,nov)
+
+c transforms element values to nodal values (no weights - use min/max)
+c
+c (3D version)
+
+	implicit none
+
+c arguments
+	integer mode		!min (-1) or max (+1)
+	integer nlvdim		!vertical dimension
+        real elv(nlvdim,1)      !array with element values (in)
+        real nov(nlvdim,1)      !array with nodal values (out)
+
+c common
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer nen3v(3,1)
+	common /nen3v/nen3v
+        integer ilhv(1),ilhkv(1)
+        common /ilhv/ilhv, /ilhkv/ilhkv
+
+c local
+        integer k,ie,ii,l,lmax
+        real rinit,value
+
+c-----------------------------------------------------------
+c initialize arrays
+c-----------------------------------------------------------
+
+	if( mode .eq. -1) then
+	  rinit = 1.e+30
+	else if( mode .eq. 1 ) then
+	  rinit = -1.e+30
+	else
+	  stop 'error stop e2n3d_minmax: unknown mode'
+	end if
+
+        do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+            nov(l,k) = rinit
+	  end do
+        end do
+
+c-----------------------------------------------------------
+c accumulate values
+c-----------------------------------------------------------
+
+        do ie=1,nel
+	  lmax = ilhv(ie)
+	  do l=1,lmax
+            value = elv(l,ie)
+            do ii=1,3
+              k = nen3v(ii,ie)
+	      if( mode .eq. 1 ) then
+                nov(l,k) = max(nov(l,k),value)
+	      else
+                nov(l,k) = min(nov(l,k),value)
+	      end if
+	    end do
+          end do
+        end do
+
+c-----------------------------------------------------------
+c end of routine
+c-----------------------------------------------------------
+
+        end
+
+c******************************************************************
+c******************************************************************
 c******************************************************************
 
         subroutine n2e2d(nov,elv)

@@ -8,6 +8,7 @@ c
 c 07.05.2009    ggu     new framework (to be finished), new basic projection
 c 26.05.2010    ggu     new utm, bs renamed to cpp
 c 07.12.2010    ggu     bug fix in convert_coords for mode=-1
+c 16.02.2011    ggu     new proj=4 (non standard UTM) implemented
 c
 c********************************************************************
 
@@ -23,6 +24,7 @@ c
 c	1	gauss-boaga
 c	2	UTM
 c	3	equidistant cylindrical, carte parallelogrammatique (CPP)
+c	4	UTM non standard
 c
 c if GB, zone (fuse) must be 1 or 2
 c if UTM, zone must be 1-60
@@ -38,6 +40,7 @@ c UTM: Venice is in zone 33, central meridian is 15
 	integer fuse,zone
 	double precision xtrans,ytrans
 	double precision lon0,lat0,phi
+	double precision lambda,k
 
 	integer proj
 	common /coords1/ proj
@@ -62,6 +65,14 @@ c UTM: Venice is in zone 33, central meridian is 15
           lat0 = c_param(2)             !latitude of origin
           phi  = c_param(3)             !central latitude
 	  call cpp_init(lon0,lat0,phi)
+	else if( iproj .eq. 4 ) then	!UTM (non standard)
+          lambda = c_param(1)           !central meridian for UTM
+          xtrans = c_param(2)           !extra shift in x [m]
+          ytrans = c_param(3)           !extra shift in y [m]
+          k = c_param(4)                !scale factor
+	  call utm_init_nonstd(lambda)
+	  call utm_set_scale_factor(k)
+	  call utm_trans(xtrans,ytrans)
 	else
 	  write(6,*) 'iproj = ',iproj
 	  stop 'error stop init_coords: unknown projection'
@@ -109,6 +120,8 @@ c conversion of coordinates
             call apply_coords(n,xc,yc,xg,yg,utm_c2g)
 	  else if( proj .eq. 3 ) then
             call apply_coords(n,xc,yc,xg,yg,cpp_c2g)
+	  else if( proj .eq. 4 ) then
+            call apply_coords(n,xc,yc,xg,yg,utm_c2g)
 	  else
 	    stop 'error stop convert_coords: internal error'
 	  end if
@@ -126,6 +139,8 @@ c conversion of coordinates
             call apply_coords(n,xg,yg,xc,yc,utm_g2c)
 	  else if( proj .eq. 3 ) then
             call apply_coords(n,xg,yg,xc,yc,cpp_g2c)
+	  else if( proj .eq. 4 ) then
+            call apply_coords(n,xg,yg,xc,yc,utm_g2c)
 	  else
 	    stop 'error stop convert_coords: internal error'
 	  end if
@@ -908,12 +923,39 @@ c**********************************************************************
 
 	subroutine utm_init(zone)
 
-c intializes utm routines
+c standard call to initialize UTM routines
 
 	implicit none
 
 	integer zone			!UTM zone [1-60]
 
+	call utm_set_zone(zone)
+	call utm_init_internal
+
+	end
+
+c**********************************************************************
+
+	subroutine utm_init_nonstd(lambda)
+
+c non-standard call to initialize UTM routines -> give central meridian
+
+	implicit none
+
+	double precision lambda		!central meridian
+
+	call utm_set_central_meridian(lambda)
+	call utm_init_internal
+
+	end
+
+c**********************************************************************
+
+	subroutine utm_init_internal
+
+c intializes utm routines
+
+	implicit none
 
 c---------------------------------------------------------------- 
 c proj.h
@@ -958,7 +1000,7 @@ c	include 'proj.h'
 	double precision e1
 
 	call proj_init
-	call utm_set_zone(zone)
+	!call utm_set_zone(zone)	!done outside
 
 	k0 = 0.9996
 
@@ -985,9 +1027,23 @@ c	include 'proj.h'
 
         if( .not. debug ) return
         write(6,*) 'utm_init:'
-        write(6,*) zone,lambda0
+        write(6,*) lambda0
         write(6,*) aearth,k0
         write(6,*) e,es
+
+	end
+
+c**********************************************************************
+
+	subroutine utm_set_scale_factor(k)
+
+c sets scale factor in UTM (for non standard applications)
+
+	implicit none
+
+	double precision k
+
+	call proj_set_scale_factor(k)
 
 	end
 
@@ -1035,6 +1091,26 @@ c changes zone of UTM - must have already been initialized
 
 	utm_zone = zone
 	lambda0 = (zone-1)*6 - 180 + 3	!3 centers inside zone
+
+	end
+
+c**********************************************************************
+
+	subroutine utm_set_central_meridian(lambda)
+
+c sets central meridian directly (for non standard UTM projections)
+
+	implicit none
+
+	double precision lambda
+
+	integer utm_zone		!1-60
+	common /utm_param1/ utm_zone
+	double precision lambda0,xtrans0,ytrans0
+	common /utm_param2/ lambda0,xtrans0,ytrans0
+
+	utm_zone = 0		! not valid
+	lambda0 = lambda
 
 	end
 

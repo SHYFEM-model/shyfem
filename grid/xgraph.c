@@ -98,7 +98,7 @@ static char *MyColorNames[] =
 		 "IndianRed","LightPink","yellow","white"
 		};
 
-static char *savestr(char *s );
+static char *Qsavestr(char *s );
 
 
 /*****************************************************************/
@@ -864,7 +864,7 @@ void QSetDisplay( char *s )
 
 {
 	if( s != NULL )
-		MyDisplayName = savestr(s);
+		MyDisplayName = Qsavestr(s);
 }
 
 void QSetWidget( Widget w )
@@ -877,11 +877,11 @@ void QSetTitle( char *s )
 
 {
 	if( s != NULL )
-		MyTitle = savestr(s);
+		MyTitle = Qsavestr(s);
 }
 
 
-static char *savestr(char *s )
+static char *Qsavestr( char *s )
 
 {
 	int len;
@@ -892,7 +892,7 @@ static char *savestr(char *s )
 	p = (char *) malloc( len+1 );
 
 	if(p == NULL) { 
-		printf("savest : No memory left to allocate string");
+		printf("Qsavestr : No memory left to allocate string (%d)",len);
 		exit(3);
 	}
 

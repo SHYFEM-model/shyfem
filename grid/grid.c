@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 16-Feb-2011: new options OpOutFile, OpItemType                       *
  * 13-May-2003: main changed to menubar in routine MakeGridMenu()	*
  * 02-Apr-1998: no Button_type, Function_type                           *
  * 02-Apr-1998: new function MakeGridMenu() (temporarily here)          *
@@ -92,6 +93,8 @@ float OpVectFact;
 float OpNodeFact;
 float OpVectScal;
 float OpNodeScal;
+char* OpOutFile;
+int OpItemType;
 
 
 /* definitions for colors */

@@ -320,6 +320,8 @@ c variables of concentration, temperature and salinity. In this case
 c no file with boundary values has to be supplied. The default for all
 c values is 0, i.e., if no file with boundary values is supplied and
 c no constant is set the value of 0 is imposed on the open boundary.
+c A special value of -999 is also allwoed. In this case the value
+c imposed is the ambient value of the parameter close to the boundary.
 
 c |conz, temp, salt|	Constant boundary values for concentration,
 c			temperature and salinity respectively. If these

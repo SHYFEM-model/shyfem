@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 16-Feb-2011: new routine savestr()					*
  * 21-Mar-94: gcc-warnings (minor changes)				*
  * 11-Feb-94: copyright notice added to all files			*
  * ..-...-88: routines written from scratch				*
@@ -306,6 +307,14 @@ char *savestring(char *s , int len)
 	p[len] = '\0';
 
 	return(p);
+}
+
+/**************************************************************************/
+
+char *savestr(char *s)
+
+{
+	return savestring(s,-1);
 }
 
 /**************************************************************************/

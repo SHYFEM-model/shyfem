@@ -79,7 +79,7 @@ c---------------------------------------------------------------
 	  call mima(wy,nkn,wymin,wymax)
 	  call mima(s,nkn,smin,smax)
 	  call mima(p,nkn,pmin,pmax)
-	  write(6,'(2i8,5f7.2,2f9.1)') it,nkn
+	  write(6,'(2i10,5f7.2,2f9.1)') it,nkn
      +			,wxmin,wxmax,wymin,wymax,sqrt(smax)
      +			,pmin,pmax
 	  !if( node .gt. 0 ) call special(it,node,wx,wy)
