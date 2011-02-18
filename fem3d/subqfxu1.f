@@ -167,14 +167,14 @@ c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
       IF (DB-WB)1,4,7
     1 WRITE(*,10)DB,WB
    10 FORMAT(5X,'ERROR IN PSDBWB : DB=',F6.2,'  WB=',F6.2
-     *			,'   WB greater than DB')
+     *                  ,'   WB greater than DB')
       STOP
     7 HDB0=1.006*DB
       WB1=WBFF(0.0,DB)
       IF (WB .GE. WB1) GO TO 5
       WRITE(*,11)DB,WB
    11 FORMAT(5X,'ERROR IN PSDBWB : DB=',F6.2,'  WB=',F6.2
-     *			,'   temperatures not compatible')
+     *                  ,'   temperatures not compatible')
       STOP
     4 PV=PVP
       GO TO 3
@@ -195,7 +195,7 @@ c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
       IF(DP .LE. DB) GO TO 1
       WRITE(*,10)DB,DP
    10 FORMAT(5X,'ERROR IN PSDBDP : DB=',F6.2,'  DP=',F6.2
-     *			,'   DP greater than DB')
+     *                  ,'   DP greater than DB')
       STOP
     1 PV=PVSF(DP)
       PVS=PVSF(DB)
@@ -212,7 +212,7 @@ c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
       IF (RH .GE. 0.001 .AND. RH .LE. 100) GO TO 1
       WRITE(*,11)DB,RH
    11 FORMAT(5X,'ERROR IN PSDBRH : DB=',F6.2,'  RH=',F6.2
-     *			,'   relative humidity not compatible')
+     *                  ,'   relative humidity not compatible')
       STOP
     1 PVS=PVSF(DB)
       X=RH-100.
@@ -234,7 +234,7 @@ c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
       IF(H .GE. H2)GO TO 1
       WRITE(*,10)DP,H
    10 FORMAT(5X,'ERROR IN PSDPH : DP=',F6.2,'  H=',F6.3
-     *			,'   data not compatible')
+     *                  ,'   data not compatible')
       STOP
     1 DB=(H-2501*W)/(1.006+1.83*W)
       WB=WBFF(W,DB)
@@ -249,7 +249,7 @@ c example: PSDBWB uses DB and WB to compute DP,PV,W,H,V,RH
       IF(W .GE. 1.E-07)GO TO 2
       WRITE(*,11)DB,W
    11 FORMAT(5X,'ERROR IN PSDBW : DB=',F6.2,' W=',E10.3
-     *			,'   specific humidity not compatible')
+     *                  ,'   specific humidity not compatible')
       STOP
     2 XS=0.62198*PVSF(DB)/(PB-PVSF(DB))
       IF (W .LE. XS)GO TO 3

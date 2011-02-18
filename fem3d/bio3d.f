@@ -107,9 +107,24 @@ c det		83	3
 c dop		84	4
 c dip		85	5
 c
-c***********************************************
+c********************************************************************
 
-	subroutine bio3d(it,dt)
+        subroutine ecological_module(it,dt)
+
+c general interface to ecological module
+
+        implicit none
+
+        integer it
+        real dt
+
+        call bio3d_eutro(it,dt)
+
+        end
+
+c********************************************************************
+
+	subroutine bio3d_eutro(it,dt)
 
 c eco-model cosimo
 
@@ -263,7 +278,7 @@ c-------------------------------------------------------------------
 
 	if( icall .eq. 0 ) then
 	  ibio = iround(getpar('ibio'))
-	  if( ibio .ne. 1 ) icall = -1
+	  if( ibio .le. 0 ) icall = -1
 	  if( icall .le. -1 ) return
 	  icall = 1
 

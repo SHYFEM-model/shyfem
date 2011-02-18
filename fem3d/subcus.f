@@ -3401,13 +3401,16 @@ c introduce le condizioni iniziali per la concentrazione
         real cnv(nlvdim,nkndim)
         common /cnv/cnv
 
+	integer ks
+
         integer icall
         save icall
         data icall / 0 /
 
-        if(icall.eq.0)then
-          cnv(1,4311)=100.
-          cnv(1,4312)=100.
+	ks = 4312
+        if( icall .eq. 0 .and. nkndim .ge. ks )then
+          cnv(1,ks-1)=100.
+          cnv(1,ks)=100.
        	  icall=1
         end if
 

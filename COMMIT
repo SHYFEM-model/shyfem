@@ -1,5 +1,39 @@
 ============================================================
 
+Fri Feb 18 14:34:07 CET 2011
+
+new framework for ecological model
+
+ BUG                            |    3 +
+ LOG                            |    8 +
+ Makefile                       |    2 +-
+ Rules.make                     |   32 ++-
+ fem3d/Makefile                 |   33 ++-
+ fem3d/aquabc_fem_interface.f   |   94 ++++++++-
+ fem3d/bio3d.f                  |   21 ++-
+ fem3d/ecological_dummy.f       |   53 +++++
+ fem3d/ht.f                     |    8 +-
+ fem3d/param.h                  |    6 +-
+ fem3d/subbfm.f                 |   15 ++
+ fem3d/subbfm_dummy.f           |   42 ----
+ fem3d/subcus.f                 |    9 +-
+ fem3d/submeteo.f               |    2 +-
+ fem3d/subqfxu1.f               |   12 +-
+ fem3d/subrgf.f                 |    3 +-
+ fem3d/subwwm.f                 |  501 +++++++++++++++++++++++++++++-----------
+ femadj/param.h                 |    6 +-
+ femersem/src/constants.mod     |  Bin 12899 -> 11076 bytes
+ femersem/src/global_mem.mod    |  Bin 3565 -> 3136 bytes
+ femersem/src/mem_globalfun.mod |  Bin 5043 -> 6186 bytes
+ femgotm/turbulence.F90         |    2 +-
+ femplot/Makefile               |    4 +-
+ femplot/param.h                |    6 +-
+ mesh/Makefile                  |    4 +-
+ param.h                        |    6 +-
+ 26 files changed, 634 insertions(+), 238 deletions(-)
+
+============================================================
+
 Thu Feb 17 11:52:10 CET 2011
 
 New version 6_1_18

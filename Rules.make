@@ -38,13 +38,14 @@ LIBX = -L/usr/X11R6/lib -L/usr/X11/lib -L/usr/lib/X11  -lX11
 #export NLVDIM = 1
 
 # curonian
-export NKNDIM = 130000
-export NELDIM = 260000
-export NLVDIM = 1
-
 export NKNDIM = 13000
 export NELDIM = 26000
 export NLVDIM = 1
+
+# ginevra
+export NKNDIM = 1100
+export NELDIM = 2200
+export NLVDIM = 200
 
 # kassandra
 #export NKNDIM = 81000
@@ -53,7 +54,7 @@ export NLVDIM = 1
 #export NGRDIM = 15
 #export MBWDIM = 300
 
-#adriatico_DEFB_nolag
+# adriatico_DEFB_nolag
 #export NKNDIM = 23660
 #export NELDIM = 43768
 #export NLVDIM = 27
@@ -145,20 +146,29 @@ NETCDFDIR = /usr/local/netcdf
 GOTM=true
 
 ##############################################
-# ERSEM library
+# Ecological models
 ##############################################
 #
-# The model also comes with code for the ERSEM
-# ecological model. You can activiate it here.
-# This is still experimental.
+# The model also comes with code for some
+# ecological models. You can activiate this
+# code here. Choices are between EUTRO
+# ERSEM and AQUABC. These choices have to be 
+# integrated explicitly.
+# This feature is still experimental.
 #
 ##############################################
 
-ERSEM=false
-#ERSEM=true
+ECOLOGICAL = NONE
+#ECOLOGICAL = EUTRO
+#ECOLOGICAL = ERSEM
+#ECOLOGICAL = AQUABC
 
 #------------------------------------------------------------
+#------------------------------------------------------------
+#------------------------------------------------------------
 # Normally it should not be necessary to change anything beyond here.
+#------------------------------------------------------------
+#------------------------------------------------------------
 #------------------------------------------------------------
 
 ifeq ($(COMPILER),GNU_G77)

@@ -1,40 +1,51 @@
-c
-c $Id: subwwm.f,v 1.4 2008-10-10 09:29:54 georg Exp $
-c
-c fifo pipe routines for WWM wave model
-c
-c routines for reading and writing data from the SHYFEM and the WWM model
-c througth the FIFO PIPE mechanism
-c file format: binary file with each value per node
-c
-c file unit to write:
-c 	110 ---> velocity u				(velx)
-c 	111 ---> velocity v				(vely)
-c	112 ---> water level (z)			(lev)
-c	113 ---> bathymetry (hkv) 			(bot)
-c	114 ---> x wind component			(windx)
-c	115 ---> y wind component			(windy)
-c file unit to read:
-c 	101 ---> x gradient of the radiation stresses	(stressx)
-c 	102 ---> y gradient of the radiation stresses	(stressy)
-c	103 ---> significant wave heigh			(waveh)
-c	104 ---> significant wave period		(wavet)
-c	105 ---> significant wave direction		(waved)
-c	106 ---> orbital velocity			(orbit)
-c	107 ---> stokes drift x				(stokesx)
-c	108 ---> stokes drift y				(stokesy)
-c
-c revision log :
-c
-c 18.10.2006    ccf     integrated into main tree
-c 10.04.2008    ccf     added waveov and stokesx/y
-c 09.10.2008    ggu     new call to confop
-c
-c**************************************************************
+!
+! $Id: subwwm.f,v 1.1 2006/10/18 15:35:13 georg Exp $
+!
+! fifo pipe routines for WWM wave model
+!
+! routines for reading and writing data from the SHYFEM and the WWM model
+! througth the FIFO PIPE mechanism
+! file format: binary file with each value per node
+!
+! IWAVE:
+!   - 1: the parametric wave model is called (see subwave.f)
+!   - >2: the spectral wave model is called (WWM)
+!        - 2: wind is elaborated by SHYFEM and passed to WWM 
+!	 - 3: wind is elaborated by WWM and passed to SHYFEM 
+!
+! file unit to write:
+! 	120 ---> velocity u
+! 	121 ---> velocity v
+!	122 ---> water level (z)
+!	123 ---> bathymetry (hkv) & number of layers
+!	124 ---> x wind component
+!	125 ---> y wind component
+!       126 ---> 3D layer depth (in the middle of layer)
+! file unit to read:
+! 	101 ---> x gradient of the radiation stresses (radx)
+! 	102 ---> y gradient of the radiation stresses (rady)
+!	103 ---> significant wave heigh
+!	104 ---> mean period
+!	105 ---> significant wave direction
+!	106 ---> KME
+!	107 ---> peak period
+!	108 ---> KP
+!	109 ---> orbital velocity
+!	110 ---> stokes drift x
+!	111 ---> stokes drift y
+!
+! revision log :
+!
+! 18.10.2006    ccf     integrated into main tree
+! 19.06.2008    aac&ccf udate to 3D version
+! 16.04.2009	ccf	update to new WWMII-2 version, both 2D and 3D
+! 18.02.2011	ggu	compiler warnings/errors adjusted
+!
+!**************************************************************
 
         subroutine init_pipe(ipipe,idcoup)
 
-c open pipes
+! open pipes
 
 	implicit none
 
@@ -43,7 +54,7 @@ c open pipes
         integer ipipe		!call for coupling with pipe
 	integer idcoup		!time step for sincronizing with wwm [s]
 
-        real radx(neldim),rady(neldim)
+        real radx(nlvdim,neldim),rady(nlvdim,neldim)
         common /radx/radx,/rady/rady
         real waveh(nkndim)      !wave height [m]
         real wavep(nkndim)      !wave period [s]
@@ -51,20 +62,23 @@ c open pipes
         real waveov(nkndim)	!orbital velocity
         common /waveh/waveh, /wavep/wavep, /waved/waved, /waveov/waveov
 
-        real dtwave             !WWM wave model time step [s]
+	real ddl(nlvdim,nkndim)
+	common /ddl/ddl
+
+        integer ius,itmcon,idtcon
 	integer iwave 		!call for wave model [2=wwm]
 	real getpar		!get parameter function
-	integer k,ie
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer k,ie,l
 
-c-------------------------------------------------------------
-c initialize wave parameters
-c-------------------------------------------------------------
+!-------------------------------------------------------------
+! initialize wave parameters
+!-------------------------------------------------------------
 
         do ie = 1,neldim
-          radx(ie) = 0.
-          rady(ie) = 0.
+  	  do l = 1,nlvdim
+            radx(l,ie) = 0.
+            rady(l,ie) = 0.
+	  end do
         end do
 
 	do k = 1,nkndim
@@ -72,59 +86,82 @@ c-------------------------------------------------------------
           wavep(k) = 0.
           waved(k) = 0.
           waveov(k) = 0.
+	  do l = 1,nlvdim
+	    ddl(l,k) = 0.
+	  end do
         end do
 
-c-------------------------------------------------------------
-c find out what to do
-c-------------------------------------------------------------
+!-------------------------------------------------------------
+! find out what to do
+!-------------------------------------------------------------
 
-	ipipe = 0
 	idcoup = 0
 
         iwave = nint(getpar('iwave'))
-        if( iwave .eq. 2 ) ipipe = 1
+        if( iwave .eq. 2 ) then
+	  ipipe = 1	!wind from SHYFEM
+	elseif ( iwave .eq. 3) then
+	  ipipe = 2	!wind from WWM
+	else
+	  ipipe = 0	!no SHYFEM-WWM coupling
+	end if
+
         if( ipipe .le. 0 ) return
 
-c-------------------------------------------------------------
-c open pipe files
-c-------------------------------------------------------------
+!-------------------------------------------------------------
+! open pipe files
+!-------------------------------------------------------------
         
-        open(110,file='p_velx.dat',form='unformatted')
-        open(111,file='p_vely.dat',form='unformatted')
-        open(112,file='p_lev.dat',form='unformatted')
-        open(113,file='p_bot.dat',form='unformatted')
-        open(114,file='p_windx.dat',form='unformatted')
-        open(115,file='p_windy.dat',form='unformatted')
+        open(120,file='p_velx.dat',form='unformatted')
+        open(121,file='p_vely.dat',form='unformatted')
+        open(122,file='p_lev.dat',form='unformatted')
+        open(123,file='p_bot.dat',form='unformatted')
+        open(124,file='p_windx.dat',form='unformatted')
+        open(125,file='p_windy.dat',form='unformatted')
+        open(126,file='p_zeta3d.dat',form='unformatted')
 
         open(101,file='p_stressx.dat',form='unformatted')
         open(102,file='p_stressy.dat',form='unformatted')
+        open(142,file='p_stresxy.dat',form='unformatted')
         open(103,file='p_waveh.dat',form='unformatted')
         open(104,file='p_wavet.dat',form='unformatted')
         open(105,file='p_waved.dat',form='unformatted')
-        open(106,file='p_orbit.dat',form='unformatted')
-        open(107,file='p_stokesx.dat',form='unformatted')
-        open(108,file='p_stokesy.dat',form='unformatted')
+        open(106,file='p_wavekm.dat',form='unformatted')
+        open(107,file='p_wavetp.dat',form='unformatted')
+        open(108,file='p_wavekp.dat',form='unformatted')
+        open(109,file='p_orbit.dat',form='unformatted')
+        open(110,file='p_stokesx.dat',form='unformatted')
+        open(111,file='p_stokesy.dat',form='unformatted')
 
-c-------------------------------------------------------------
-c set coupling time step 
-c-------------------------------------------------------------
-       
-        dtwave = getpar('dtwave')
-	idcoup = dtwave
+!-------------------------------------------------------------
+! open output file 
+!-------------------------------------------------------------
+
+        ius = 31
+        itmcon = nint(getpar('itmcon'))
+        idtcon = nint(getpar('idtcon'))
+        call confop(ius,itmcon,idtcon,1,3,'wav')
+
+!-------------------------------------------------------------
+! set coupling time step 
+!-------------------------------------------------------------
+
+        idcoup = nint(getpar('dtwave'))
 
         write(6,*) 'spectral wave module has been initialized'
+ 	!call getwwmbound
 
-c-------------------------------------------------------------
-c end of routine
-c-------------------------------------------------------------
+!-------------------------------------------------------------
+! end of routine
+!-------------------------------------------------------------
         
 	end
 
-c**************************************************************
+!**************************************************************
 
 	subroutine read_pipe(ipipe,it,idcoup)
 
-c read from PIPE
+! read from PIPE
 
         implicit none
 
@@ -136,91 +173,171 @@ c read from PIPE
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer k
+        integer k,l
 
         real waveh(nkndim)      !wave height [m]
-        real wavep(nkndim)      !wave period [s]
+        real wavep(nkndim)      !wave mean period [s]
         real waved(nkndim)      !wave direction
-        real waveov(nkndim)	!orbital velocity
+        real wavekm(nkndim)     !wave KME
+        real wavepp(nkndim)     !wave peak period [s]
+        real wavekp(nkndim)     !wave KP
+        real waveov(nkndim)	!wave orbital velocity
         real stokesx(nkndim)	!stokes velocity x
         real stokesy(nkndim)	!stokes velocity y
         common /waveh/waveh, /wavep/wavep, /waved/waved, /waveov/waveov
 	common /stokesx/stokesx, /stokesy/stokesy
 
-	real forcex(nkndim)	!gradient of the radiation stress
-        real forcey(nkndim)
+	real forcex(nlvdim,nkndim)	!gradient of the radiation stress
+        real forcey(nlvdim,nkndim)
+	real SXX3D(nlvdim,nkndim)
+	real SYY3D(nlvdim,nkndim)
+	real SXY3D(nlvdim,nkndim)
 
-        real radx(neldim),rady(neldim)
+        real radx(nlvdim,neldim),rady(nlvdim,neldim)
         common /radx/radx,/rady/rady
+
+        real wxv(nkndim),wyv(nkndim)    !x and y wind component [m/s]
+        common /wxv/wxv,/wyv/wyv
+        real tauxnv(nkndim),tauynv(nkndim)
+        common /tauxnv/tauxnv,/tauynv/tauynv
+        real ppv(nkndim)
+        common /ppv/ppv
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
 
 	real getpar		!get parameter function
         integer ius,itmcon,idtcon
         save ius,itmcon,idtcon
- 
+
         integer icall           !initialization parameter                        
         save icall
         data icall /0/
 
         if (ipipe .le. 0 ) return
 
-c       -----------------------------------------------
-c       open output file for waves
-c       -----------------------------------------------
+!       -----------------------------------------------
+!       open output file for waves
+!       -----------------------------------------------
 
         if( icall .eq. 0 ) then
+            ius = 31
             itmcon = nint(getpar('itmcon'))
             idtcon = nint(getpar('idtcon'))
-            call confop(0,itmcon,idtcon,1,3,'wav')
+            do k = 1,nkndim
+              do l = 1,nlvdim
+                 forcex(l,k) = 0.
+                 forcey(l,k) = 0.
+		 SXX3D(l,k) = 0.
+		 SXY3D(l,k) = 0.
+		 SYY3D(l,k) = 0.
+              end do
+            end do
             icall = 1
         end if
-                    
-c       -----------------------------------------------
-c       same time step, fix me
-c       -----------------------------------------------
+
+!       -----------------------------------------------
+!       same time step, fix me
+!       -----------------------------------------------
 
         if (mod(it,idcoup) .eq. 0 ) then
  
-c           -----------------------------------------------
-c           read stress and wave characteristics
-c           -----------------------------------------------
+!         -----------------------------------------------
+!         read stress and wave characteristics
+!         -----------------------------------------------
 
-            do k = 1,nkn 
-              read(101) forcex(k)
-              read(102) forcey(k)
+  	  if (ipipe .eq. 1) then 	!do not read wind from WWM
+
+            do k = 1,nkn
+
+	      do l = 1,nlv 
+                 !read(101) forcex(l,k)
+                 !read(102) forcey(l,k)
+                 read(101) SXX3D(l,k)
+                 read(102) SYY3D(l,k)
+                 read(142) SXY3D(l,k)
+	      end do
+
               read(103) waveh(k)
               read(104) wavep(k)
               read(105) waved(k)
-              read(106) waveov(k)
-              read(107) stokesx(k)
-              read(108) stokesx(k)
+              read(106) wavekm(k)
+              read(107) wavepp(k)
+              read(108) wavekp(k)
+              read(109) waveov(k)
+              read(110) stokesx(k)
+              read(111) stokesy(k)
+
             end do
 
-c           -----------------------------------------------
-c           writes output to the file.wav 
-c           -----------------------------------------------
-            
-            call confil(ius,itmcon,idtcon,31,1,waveh)
-            call confil(ius,itmcon,idtcon,32,1,wavep)
-            call confil(ius,itmcon,idtcon,33,1,waved)
-            
-c           -----------------------------------------------
-c           convert node stress value to element value
-c           -----------------------------------------------
+	  elseif (ipipe .eq. 2) then	!read wind from WWM
 
-            call n2e2d(forcex,radx)
-            call n2e2d(forcey,rady)
+            do k = 1,nkn
 
-            write(*,*) 'SHYFEM read stress and wave ',it
+	      do l = 1,nlv 
+                 !read(101) forcex(l,k)
+                 !read(102) forcey(l,k)
+                 read(101) SXX3D(l,k)
+                 read(102) SYY3D(l,k)
+                 read(142) SXY3D(l,k)
+	      end do
+
+              read(103) waveh(k)
+              read(104) wavep(k)
+              read(105) waved(k)
+              read(106) wavekm(k)
+              read(107) wavepp(k)
+              read(108) wavekp(k)
+              read(109) waveov(k)
+              read(110) stokesx(k)
+              read(111) stokesy(k)
+              read(124) wxv(k)
+              read(125) wyv(k)
+              ppv(k) = 0.
+
+            end do
+
+            call wstress(nkn,wxv,wyv,tauxnv,tauynv)
+
+	  end if
+
+!         -----------------------------------------------
+!         check for NaN in radiation stresses
+!         -----------------------------------------------
+
+	  !call nantest(nkn*nlvdim,forcex,'forcex')
+	  !call nantest(nkn*nlvdim,forcey,'forcey')
+	  call nantest(nkn*nlvdim,SXX3D,'SXX3D')
+	  call nantest(nkn*nlvdim,SXY3D,'SXY3D')
+	  call nantest(nkn*nlvdim,SYY3D,'SYY3D')
+
+!         -----------------------------------------------
+!         convert node stress value to element value
+!         -----------------------------------------------
+ 
+          !call n2e3d(nlvdim,forcex,radx)
+          !call n2e3d(nlvdim,forcey,rady)
+
+	  call diffxy(SXX3D,SYY3D,SXY3D,radx,rady)
+
+          write(*,*) 'SHYFEM read stress and wave ',it
 
         end if
 
+!       -----------------------------------------------
+!       writes output to the file.wav 
+!       -----------------------------------------------
+            
+        call confil(ius,itmcon,idtcon,31,1,waveh)
+        call confil(ius,itmcon,idtcon,32,1,wavep)
+        call confil(ius,itmcon,idtcon,33,1,waved)
+ 
         end
 
-c**************************************************************
+!**************************************************************
 
         subroutine write_pipe(ipipe,it,idcoup)
 
-c write to PIPE
+! write to PIPE
 
         implicit none
 
@@ -230,48 +347,162 @@ c write to PIPE
         integer it              !time [s]
 	integer idcoup		!time step for sincronizing with wwm [s]
 
-        integer k
+        integer k,l,nlev,lmax
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
-        real wxv(1),wyv(1)    !x and y wind component [m/s]
+        real wxv(nkndim),wyv(nkndim)    !x and y wind component [m/s]
         common /wxv/wxv,/wyv/wyv
-        real uprv(nlvdim,1), vprv(nlvdim,1)
-        common /uprv/uprv, /vprv/vprv
-        real znv(1)
+        real up0v(nkndim), vp0v(nkndim)
+        common /up0v/up0v, /vp0v/vp0v
+        real znv(nkndim)
         common /znv/znv
-        real hkv(1)
+        real hkv(nkndim)
         common /hkv/hkv
+        integer ilhkv(nkndim)           !number of node level
+        common /ilhkv/ilhkv
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
+	real ddl(nlvdim,nkndim)		!3D layer depth (in the middle of layer)
+	common /ddl/ddl
+	real h(nlvdim)
 
         if (ipipe .le. 0 ) return
 
         if (mod(it,idcoup) .eq. 0 ) then
 
-c           -----------------------------------------------
-c           write velocities and water level
-c           -----------------------------------------------
+          do k = 1,nkn
+	    call dep3dnod(k,+1,nlev,h)
+            ddl(1,k) = - 0.5 * h(1)
+            do l = 2,nlev
+              ddl(l,k) = ddl(l-1,k) - 0.5 * (h(l) + h(l-1))
+            end do
+          end do
+
+!         -----------------------------------------------
+!         write velocities and water level
+!         -----------------------------------------------
+
+	  if (ipipe .eq. 1) then	! write wind to wwm
 
             do k = 1,nkn 
-              write(110) uprv(1,k)
-              write(111) vprv(1,k)
-              write(112) znv(k)
-              write(113) hkv(k)
-              write(114) wxv(k)
-              write(115) wyv(k)
+              write(120) up0v(k)
+              write(121) vp0v(k)
+              write(122) znv(k)
+              write(123) hkv(k)
+              write(123) ilhkv(k)
+              write(124) wxv(k)
+              write(125) wyv(k)
+
+              do l = 1,nlv
+                write(126) ddl(l,k)
+	      end do 
+	    end do 
+
+	  elseif (ipipe .eq. 2) then	! do not write wind to wwm
+
+            do k = 1,nkn 
+              write(120) up0v(k)
+              write(121) vp0v(k)
+              write(122) znv(k)
+              write(123) hkv(k)
+              write(123) ilhkv(k)
+
+              do l = 1,nlv
+                write(126) ddl(l,k)
+	      end do 
             end do
 
-            write(*,*) 'SHYFEM write vel and water level', it
+	  end if
+
+          write(*,*) 'SHYFEM write vel and water level', it
  
         end if
 
         end
 
-c**************************************************************************
+!**************************************************************************
 
-c first is HS, Period, Wave Direction, Directional Spreading = cos^MS you give MS 
-c and the spectral type is ...
-c 1 PM spectrum
-c 2 JONSWAP spectrum
-c 3 Single bin
-c 4 Gaussian Distribution
+        subroutine getwwmbound
 
+!routine to write boundary node file for wwm (fort.22)
+
+        implicit none
+
+        integer ibndim
+        parameter (ibndim=100)
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        real bnd(ibndim,1)
+        common /bnd/bnd
+        integer irv(1)
+        common /irv/irv
+        real xgv(1), ygv(1)
+        common /xgv/xgv, /ygv/ygv
+        real hkv(1)
+        common /hkv/hkv
+	integer i,k,knode,kranf,krend,nn
+
+        do i=1,nbc
+         kranf=nint(bnd(3,i))
+         krend=nint(bnd(4,i))
+	 nn = krend-kranf+1
+
+	 write(26,*)nn
+
+         do k=kranf,krend
+            knode=irv(k)
+            write(26,25)knode,xgv(knode),ygv(knode),hkv(knode)
+	 end do
+	enddo
+
+25	format(i10,3e14.4)
+
+	end
+
+!**************************************************************************
+!differenzation of radiation stresses
+
+        subroutine diffxy(SXX3D,SYY3D,SXY3D,radx,rady)
+
+        implicit none
+
+        include 'param.h'
+        include 'evmain.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer ilhv(neldim)
+        common /ilhv/ilhv
+        integer nen3v(3,neldim)        !node number
+        common /nen3v/nen3v
+        real radx(nlvdim,neldim),rady(nlvdim,neldim)
+        double precision b,c           !x and y derivated form function [1/m]
+	integer k,ie,ii,l,ilevel
+	real radsx,radsy
+
+	real SXX3D(nlvdim,nkndim)
+	real SYY3D(nlvdim,nkndim)
+	real SXY3D(nlvdim,nkndim)
+
+	do ie = 1,nel
+	  ilevel = ilhv(ie)
+	  do l=1,ilevel
+	    radsx = 0.
+	    radsy = 0.
+	    do ii = 1,3
+	      k = nen3v(ii,ie)
+              b = ev(3+ii,ie)
+              c = ev(6+ii,ie)
+	      radsx = radsx -(SXX3D(l,k)*b + SXY3D(l,k)*c)
+	      radsy = radsy -(SXY3D(l,k)*b + SYY3D(l,k)*c)
+	    end do
+	  radx(l,ie) = radsx
+	  rady(l,ie) = radsy
+          end do
+	enddo
+
+	end
+
+!**************************************************************************

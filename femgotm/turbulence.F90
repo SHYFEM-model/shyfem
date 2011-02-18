@@ -597,7 +597,7 @@
 
    return
 
-80 FATAL 'I could not open "gotmturb.nml"'
+80 FATAL 'I could not open GOTM parameter file ',fn	!ggu
    stop 'init_turbulence'
 81 FATAL 'I could not read "turbulence" namelist'
    stop 'init_turbulence'

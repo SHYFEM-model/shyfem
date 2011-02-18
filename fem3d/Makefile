@@ -65,12 +65,24 @@ ifeq ($(GOTM),true)
   LIBF_GOTM      = $(DIRLIB)/lib$(LIBGOTM).a
 endif
 
-ERSEM_OBJ = subbfm_dummy.o
-ifeq ($(ERSEM),true)
-  ERSEM_OBJ	 = subbfm.o
+ECOLOGICAL_OBJ = ecological_dummy.f
+
+ifeq ($(ECOLOGICAL),EUTRO)
+  ECOLOGICAL_OBJ = bio3d.o bio3d_util.o \
+		weutro.o weutro_sedim.o weutro_light.o
+endif
+
+ifeq ($(ECOLOGICAL),ERSEM)
+  ECOLOGICAL_OBJ = subbfm.o
   LIBG_ERSEM     = -l$(LIBERSEM)
   LIBF_ERSEM     = $(DIRLIB)/lib$(LIBERSEM).a
 endif
+
+ifeq ($(ECOLOGICAL),AQUABC)
+  ECOLOGICAL_OBJ = aquabc_fem_interface.o alukas.o aquabc.o \
+		aquabc_sediment_model_1.o aquabc_util.o
+endif
+
 
 #------------------------------------------------------------
 
@@ -167,20 +179,19 @@ HTOBJS = \
 	$(QFLUX) \
 	subgotm.o $(GOTM_OBJ) \
 	$(NETCDF_OBJ) \
-	$(ERSEM_OBJ) \
 	subbndo.o subbnds.o \
-	weutro.o bio3d.o bio3d_util.o new36.o intp.o subssf.o \
+	new36.o intp.o subssf.o \
 	bdist.o links.o sublnka.o sublnks.o sublnku.o \
 	sedi3d.o sedtrans05.o subwaves.o \
 	subhisto.o \
 	$(LAGRANGE) \
-	weutro_sedim.o weutro_light.o subdts.o loading.o \
+	subdts.o loading.o \
 	subrst.o subnosa.o subdif.o subreg.o \
 	atoxi3d.o atoxi.o subwwm.o kepsd.o keps_util.o \
 	subinv.o newexpl.o subrnd.o \
 	submet.o submeteo.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o \
 	subtrace.o \
-	$(AQUABC)
+	$(ECOLOGICAL_OBJ)
 
 # objects for pre-processor vp
 
@@ -227,9 +238,6 @@ QFLUX_TEST = subqfxf.o \
 	subqfxm1.o subqfxm2.o subqfxm3.o \
 	subqfxu1.o subqfxu2.o subqfxu3.o subqfxu4.o \
 	subfil.o
-
-AQUABC = aquabc_fem_interface.o alukas.o aquabc.o aquabc_sediment_model_1.o \
-		aquabc_util.o
 
 PARMOD = subpar1.o
 PARMOD = subpar.o subfnm.o
@@ -705,7 +713,8 @@ sublnka.o: ev.h links.h
 sublnks.o: ev.h links.h
 sublnku.o: links.h
 sublpl.o: ev.h
-subn11.o: param.h ev.h
+submet.o: ev.h
+subn11.o: param.h
 subn35.o: param.h chezy.h
 subnetcdf_admin.o: param.h
 subnetcdf_hydro.o: netcdf.inc
@@ -724,7 +733,7 @@ subuti.o: param.h ev.h links.h
 subvola.o: modules.h
 subwat.o: links.h ev.h
 subwaves.o: param.h
-subwwm.o: param.h
+subwwm.o: param.h evmain.h
 tideg.o: param.h
 vp.o: param.h
 weutro.o: donata.h weutro.h

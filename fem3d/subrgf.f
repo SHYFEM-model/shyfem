@@ -9,6 +9,7 @@ c 10.03.2009    ggu     finished coding
 c 27.03.2009    ggu     bug fix ITACT (itact was not adjourned)
 c 31.03.2009    ggu     changed header of regular files (x0,.., description)
 c 16.02.2011    ggu     completely restructured - store geo information
+c 18.02.2011    ggu     bug fix in rgf_check_header() -> get instead of set
 c
 c notes :
 c
@@ -463,7 +464,7 @@ c checks header information
 	integer i
 	real x0_a,y0_a,dx_a,dy_a,flag_a
 
-	call rgf_set_geo(ifile,x0_a,y0_a,dx_a,dy_a,flag_a)
+	call rgf_get_geo(ifile,x0_a,y0_a,dx_a,dy_a,flag_a)
 
 	if( ifile(5) .ne. nvar ) goto 99
 	if( ifile(6) .ne. nx ) goto 99

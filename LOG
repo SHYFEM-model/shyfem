@@ -1,4 +1,12 @@
 
+18.02.2011
+
+	general framework for ecological model
+		ecological_dummy.f
+	new radiation stress in 3D
+		ht.f, subwwm.f
+	./fem3d/subrgf.f: bug fix in rgf_check_header() -> get instead of set
+
 16.02.2011
 
 	lat/lon

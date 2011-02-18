@@ -94,8 +94,25 @@ c
 c***********************************************
 c***********************************************
 c***********************************************
-	subroutine aquabc_fem_interface(it,dt)
 
+c**************************************************************
+
+        subroutine ecological_module(it,dt)
+
+c general interface to ecological module
+
+        implicit none
+
+        integer it
+        real dt
+
+        call aquabc_fem_interface(it,dt)
+
+        end
+
+c**************************************************************
+
+	subroutine aquabc_fem_interface(it,dt)
 
       implicit none
 
@@ -368,7 +385,7 @@ c----------------------------------------------------------
        if( icall .eq. 0 ) then    
 
 	    ibio = iround(getpar('ibio'))
-	    if( ibio .ne. 2 ) icall = -1
+	    if( ibio .le. 0 ) icall = -1
 	    if( icall .le. -1 ) return
 
 	    icall = 1
@@ -5007,3 +5024,76 @@ c
 c DOCS	END
 c
 c*******************************************************************
+
+        subroutine bio_av_shell(e)
+
+c computes and writes average/min/max of bio variables
+c
+c id = 260
+c
+c e(1) average  == 261
+c e(1) min      == 262
+c e(1) max      == 263
+c e(2) average  == 264
+c ...
+
+        implicit none
+
+c parameter
+
+        include 'param.h'
+        include 'aquabc.h'
+
+        !integer nstate
+        !parameter( nstate = 9 )
+
+        real e(nlvdim,nkndim,nstate)    !state vector
+
+c local
+        integer idtc,itmc,itsmed
+        integer id,nvar
+c function
+        real getpar
+c save
+        double precision bioacu(nlvdim,nkndim,nstate)
+        real biomin(nlvdim,nkndim,nstate)
+        real biomax(nlvdim,nkndim,nstate)
+
+        integer ivect(8)
+
+        save bioacu,biomin,biomax
+        save ivect
+
+        integer icall
+        save icall
+
+        data icall / 0 /
+
+        if( icall .lt. 0 ) return
+
+        if( icall .eq. 0 ) then
+
+          itsmed=nint(getpar('itsmed'))
+          if( itsmed .le. 0 ) then
+            icall = -1
+            return
+          end if
+
+          idtc=nint(getpar('idtcon'))
+          itmc=nint(getpar('itmcon'))
+
+          nvar = nstate
+
+          id = 260
+          call cmed_init('bav',id,nvar,nlvdim,idtc,itmc
+     +                          ,bioacu,biomin,biomax,ivect)
+
+          icall = 1
+        end if
+
+        call cmed_accum(nlvdim,e,bioacu,biomin,biomax,ivect)
+
+        end
+
+c*************************************************************
+

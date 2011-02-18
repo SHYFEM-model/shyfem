@@ -61,6 +61,21 @@ c cosa fanno tutte le variabili di gotm qui???
 c 
 c**************************************************************
 
+	subroutine ecological_module(it,dt)
+
+c general interface to ecological module
+
+	implicit none
+
+	integer it
+	real dt
+
+	call bfm_module(it,dt)
+
+	end
+
+c**************************************************************
+
 	subroutine bfm_module(it,dt)
 
 c administers bfm ecological model

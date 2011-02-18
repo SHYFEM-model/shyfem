@@ -170,8 +170,8 @@ strip:	$(EXES)
 
 col.o: color.h
 line_nodes.o: param.h basin.h
-ousinfo.o: param.h
-plotsim.o: param.h evmain.h
+ousinfo.o: param.h basin.h
+plotsim.o: param.h evmain.h basin.h
 supano.o: color.h legend.h
 supcol.o: color.h
 supiso.o: color.h

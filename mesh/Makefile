@@ -192,8 +192,8 @@ meshin.o: mesh.h meshin.h meshge.h list.h meshut.h stack.h \
 meshbd.o: mesh.h meshin.h meshge.h list.h meshbd.h meshut.h \
 		meshty.h stack.h queue.h meshop.h hash.h fund.h \
 		heap.h nlist.h meshhs.h general.h 
-meshge.o: queue.h gustd.h hash.h mesh.h heap.h fund.h nlist.h \
-		meshhs.h meshge.h list.h general.h 
+meshge.o: queue.h gustd.h hash.h mesh.h heap.h fund.h meshfi.h \
+		nlist.h meshhs.h meshge.h list.h general.h 
 meshhs.o: queue.h fund.h list.h hash.h mesh.h
 meshop.o: queue.h gustd.h options.h meshop.h hash.h mesh.h fund.h \
 		list.h general.h 

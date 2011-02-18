@@ -57,7 +57,7 @@ ifeq ($(GOTM),true)
   FEMEXTRA += femgotm
 endif
 
-ifeq ($(ERSEM),true)
+ifeq ($(ECOLOGICAL),ERSEM)
   SUBDIRS += femersem/src
   FEMEXTRA += femersem/src
 endif

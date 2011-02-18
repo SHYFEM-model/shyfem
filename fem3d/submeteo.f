@@ -10,7 +10,7 @@ c 24.03.2009    ggu     use metrain instead rqdsv
 c 07.05.2009    ggu     new call to init_coords()
 c 18.06.2009    ggu&dbf bug fix -> wind speed not interpolated on metws
 c 23.02.2010    ggu	call to wstress changed (new wxv,wyv)
-c 26.01.2011    ggu	write wind filed to debug output (iumetw)
+c 26.01.2011    ggu	write wind field to debug output (iumetw)
 c 05.02.2011    ggu	changed order of records in dfile (actual is first)
 c 16.02.2011    ggu	pass idata to files, use geo info from files
 c

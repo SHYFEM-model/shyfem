@@ -75,6 +75,7 @@ c 26.02.2010    ggu	new arrays sauxe1/2
 c 29.04.2010    ggu	write volumes (wrfvla)
 c 26.01.2011    ggu	new arrays for observations and nudging
 c 16.02.2011    ggu	new iarnv, call to aquabc
+c 17.02.2011    ccf	new radiation stress in 3D
 c
 c*****************************************************************
 
@@ -334,7 +335,7 @@ c variables for pipe
 
 c radiation stress
 
-        real radx(neldim),rady(neldim)
+        real radx(nlvdim,neldim),rady(nlvdim,neldim)
         common /radx/radx,/rady/rady
 	save /radx/,/rady/
 
@@ -496,6 +497,7 @@ c        call bclevvar_ini       !chao debora
 	call bclfix_ini
 
 	call init_pipe(ipipe,idcoup)
+	call read_pipe(ipipe,it,idcoup)
         call write_pipe(ipipe,it,idcoup)
 
 	!call custom(it)		!call for initialization
@@ -534,10 +536,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            call subwaves(it,dt)         !wave model
            call sedi(it,dt)             !sediment transport
 
-           call bio3d(it,dt)			!eutro
-           call aquabc_fem_interface(it,dt)	!alukas
+	   call ecological_module(it,dt)	!ecological model
            call atoxi3d(it,dt)			!toxi
-	   !call bfm_module(it,dt)		!ersem
 
            call lagrange
 
