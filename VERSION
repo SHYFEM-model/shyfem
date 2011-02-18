@@ -1,3 +1,24 @@
+version  6_1_19    18-02-2011    VERS_6_1_19
+
+========================================================== 18-02-2011 - 6_1_19
+
+c ./fem3d/subver.f:
+c 18.02.2011	ggu	version 6.1.19
+c
+c ./fem3d/ecological_dummy.f:
+c 18.02.2011    ggu     general framework for ecological model
+c
+c ./fem3d/ht.f:
+c 17.02.2011    ccf	new radiation stress in 3D
+c
+c ./fem3d/subwwm.f:
+! 18.02.2011	ggu	compiler warnings/errors adjusted
+c
+c ./fem3d/subrgf.f:
+c 18.02.2011    ggu     bug fix in rgf_check_header() -> get instead of set
+
+==========================================================
+
 version  6_1_18    17-02-2011    VERS_6_1_18
 
 ========================================================== 17-02-2011 - 6_1_18
