@@ -29,7 +29,7 @@ FEMBIN    = $(FEMDIR)/fembin
 TMPDIR    = $(HOME)/fem/tmp
 
 SUBDIRS   = `ls -dF * | grep  '/' | sed -e 's/\///'`
-FEMLIBS   = femcheck post
+FEMLIBS   = femcheck post hcbs
 FEMC      = grid mesh
 FEMPROG   = fem3d femplot femadj femspline
 FEMUTIL   = femregres femdoc fembin femlib femanim

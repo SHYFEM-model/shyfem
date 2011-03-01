@@ -90,6 +90,7 @@ c	call sp13ts(nvers,79,0)
 	write(6,*) 'Dimension error'
 	write(6,*) 'nkndim,neldim :',nkndim,neldim
 	write(6,*) 'nkn,nel       :',nkn,nel
+	write(6,*) 'ngr,mbw       :',ngr,mbw
 	stop 'error stop : sp13rr'
 	end
 

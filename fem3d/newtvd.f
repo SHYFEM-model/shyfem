@@ -506,7 +506,7 @@ c               psi = max(0.,min(1.,rf))                ! minmod
 
 c*****************************************************************
 
-	subroutine vertical_flux_k(k,dt,wsink,cv,vvel,vflux)
+	subroutine vertical_flux_k(btvdv,k,dt,wsink,cv,vvel,vflux)
 
 c computes vertical fluxes of concentration - nodal version
 
@@ -526,6 +526,7 @@ c ------------------- l+2 -----------------------
 
 	include 'param.h'
 
+	logical btvdv			!use vertical tvd?
 	integer k			!node of vertical
 	real dt				!time step
 	real wsink			!sinking velocity (positive downwards)
@@ -543,13 +544,10 @@ c ------------------- l+2 -----------------------
         real eps
         parameter (eps=1.e-8)
 
-	logical btvdv
 	integer l,lmax,lu
 	real w,fl
 	real conc,cond,conu,conf
 	real hdis,alfa,rf,psi
-
-	btvdv = .false.			!use tvd ?
 
 	lmax = ilhkv(k)
 
@@ -622,7 +620,7 @@ c ------------------- l+2 -----------------------
 
 	include 'param.h'
 
-	logical btvdv				!use tvd?
+	logical btvdv				!use vertical tvd?
 	integer ie				!element
 	integer lmax				!total number of layers
 	double precision dt			!time step

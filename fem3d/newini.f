@@ -52,6 +52,7 @@ c 21.04.2009    ggu	new routine inic2fil()
 c 28.09.2010    ggu	bug fix in init_coriolis() for isphe=1
 c 08.10.2010    ggu	bug fix in init_coriolis() -> ym not set for isphe=1
 c 16.12.2010    ggu	big restructering for sigma levels (look for bsigma)
+c 21.02.2011    ggu	error check for dzreg, nsigma and levels
 c
 c**************************************************************
 
@@ -356,6 +357,17 @@ c--------------------------------------------------------------
 	  else				!just one layer
 	    nlv = 1
 	    hlv(1) = 10000.
+	  end if
+	else
+	  if( dzreg .gt. 0. ) then
+	    write(6,*) 'nlv,dzreg: ',nlv,dzreg
+	    write(6,*) 'You cannot give both levels and dzreg.'
+	    stop 'error stop adjust_levels: dzreg'
+	  end if
+	  if( nsigma .gt. 0 ) then
+	    write(6,*) 'nlv,nsigma: ',nlv,nsigma
+	    write(6,*) 'You cannot give both levels and nsigma.'
+	    stop 'error stop adjust_levels: nsigma'
 	  end if
 	end if
 

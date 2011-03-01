@@ -33,6 +33,7 @@ fem3d/nosinit
 fem3d/nosdiff
 fem3d/nosresidence
 fem3d/nossplit
+fem3d/nossum
 fem3d/ousextr_records
 fem3d/ousinf
 fem3d/rstinf

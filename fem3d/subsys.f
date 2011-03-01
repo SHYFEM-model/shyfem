@@ -93,6 +93,7 @@ c 29.09.2010	ggu	new param vmode,rxscal,ryscal
 c 15.12.2010	ggu	nsigma renamed to nbsig, nsigma used for sigma layers
 c 21.12.2010	ggu	new parameter rwscal
 c 16.02.2011	ggu	new default for isphe, new routine fnm_aquabc_init()
+c 25.02.2011	ggu	new param wsmax to catch errors in wind type
 c
 c************************************************************************
 
@@ -452,6 +453,7 @@ c \input{P_wind.tex}
         call addpar('iwtype',1.)
 	call addpar('itdrag',0.)
 	call addpar('dragco',0.)
+	call addpar('wsmax',50.)
 
 cc------------------------------------------------------------------------
 

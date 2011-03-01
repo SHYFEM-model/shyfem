@@ -1,4 +1,25 @@
 
+25.02.2011
+
+	new param wsmax to catch errors in wind type (subwin.f, subsys.f)
+	new routine decay_conz_variable(), add t90 time scale (newconz.f)
+	new routine nossum.f
+	new directory hcbs -> libgrappa
+
+23.02.2011
+
+	new parameters tramp and levflx implemented (subn11.f, subbnd.f)
+	smoothing for levflx
+	new routine call write_node_fluxes() for special output (subflxa.f)
+	in pritime() new write to terminal (subnsh.f)
+	error check for dzreg, nsigma and levels (newini.f)
+
+19.02.2011
+
+	3D radiation stress (new3di.f)
+
+========================================================== 18-02-2011 - 6_1_19
+
 18.02.2011
 
 	general framework for ecological model
@@ -6,6 +27,8 @@
 	new radiation stress in 3D
 		ht.f, subwwm.f
 	./fem3d/subrgf.f: bug fix in rgf_check_header() -> get instead of set
+
+========================================================== 17-02-2011 - 6_1_18
 
 16.02.2011
 

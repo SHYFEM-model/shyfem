@@ -88,6 +88,8 @@ c 10.03.2010    ggu     new routine check_scal_flux()
 c 22.03.2010    ggu     in make_scal_flux() forgotten to initialize sconz
 c 14.04.2010    ggu     account for negative levmin/max
 c 16.02.2011    ggu     copied meteo routines to submet.f
+c 23.02.2011    ggu     new parameters tramp and levflx implemented
+c 01.03.2011    ggu     implement smoothing for levflx
 c
 c***************************************************************
 
@@ -142,6 +144,7 @@ c		2 : read in b.c.
         integer nbdim,nsize
         integer iunrad,ktilt
 	integer ip,l
+	integer levflx
 	real rw,const,aux
 	real dt
 	real conz,temp,salt
@@ -156,7 +159,7 @@ c	real dz
 
 	integer ipext,kbndind
 
-	tramp = 0.
+	!tramp = 0.	!is now handled in str
 	!tramp = 86400. !DEB
 
 	call get_timestep(dt)
@@ -287,6 +290,8 @@ c	-----------------------------------------------------
 
           call get_bnd_ipar(ibc,'ibtyp',ibtyp)
           call get_bnd_ipar(ibc,'nbdim',nbdim)
+          call get_bnd_ipar(ibc,'levflx',levflx)
+          call get_bnd_par(ibc,'tramp',tramp)
 
           nk = nkbnds(ibc)   !total number of nodes of this boundary
 
@@ -323,6 +328,7 @@ c	-----------------------------------------------------
 	     if(ibtyp.eq.1) then		!z boundary
                rzv(kn)=rw
 	     else if(ibtyp.eq.2) then		!q boundary
+	       call level_flux(it,levflx,kn,rw)	!zeta to flux
 	       kindex = kbndind(ibc,i)
                rqpsv(kn)=alpha*rw*rrv(kindex)	!BUGFIX 21-08-2002, RQVDT
              else if(ibtyp.eq.3) then		!$$ibtyp3 - volume inlet
@@ -1276,6 +1282,79 @@ c returns boundary flux of node k
 	common /rqv/rqv
 
 	flux = rqv(k)
+
+	end
+
+c**********************************************************************
+
+	subroutine level_flux(it,levflx,kn,rw)
+
+c compute discharge from water level
+
+	implicit none
+
+	integer it		!type of function
+	integer levflx		!type of function
+	integer kn		!node number
+	real rw			!discharge computed
+
+	real znv(1)
+	common /znv/znv
+
+	real z,a,c,z0
+
+	if( levflx .eq. 0 ) then
+	  !nothing changed -> return same rw
+	else if( levflx .eq. 1 ) then
+	  z0 = 5.		!reference level
+	  z = z0 + znv(kn)
+	  call z_smooth(z)
+	  a = 1808
+	  c = -2875
+	  !a = 1648		!no outliers
+	  !c = --2684		!no outliers
+	  rw = a*log(z) + c
+	  rw = -rw
+	  write(134,*) it,z,rw
+	else
+	  write(6,*) 'levflx = ',levflx
+	  stop 'error stop level_flux: levflx'
+	end if
+
+	end
+
+c**********************************************************************
+
+	subroutine z_smooth(z)
+
+c smooths z values
+
+	implicit none
+
+	integer ndim
+	parameter (ndim=86400/300)
+
+	real z
+
+	integer i
+
+	integer ipz
+	real za(0:ndim)
+	save ipz,za
+	data ipz / 0 /
+
+	if( ipz .le. 0 ) then	!initialize
+	  do i=0,ndim
+	    za(i) = z
+	  end do
+	  ipz = 1
+	end if
+
+	za(0) = za(0) + (z-za(ipz))/ndim
+	za(ipz) = z
+	ipz = mod(ipz,ndim) + 1
+
+	z = za(0)
 
 	end
 

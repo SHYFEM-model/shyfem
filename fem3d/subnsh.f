@@ -60,6 +60,7 @@ c 26.02.2010    ggu     in set_timestep compute and write ri with old dt
 c 22.03.2010    ggu     some comments for better readability
 c 29.04.2010    ggu     new routine set_output_frequency() ... not finished
 c 04.05.2010    ggu     shell to compute energy
+c 22.02.2011    ggu     in pritime() new write to terminal
 c
 c************************************************************
 c
@@ -648,6 +649,30 @@ c prints time after time step
         integer nit1,nit2,naver
         real perc
 
+	integer time,date
+	integer year,month,day,hour,min,sec
+	double precision dgetpar
+
+	save date
+
+	integer icall
+	save icall
+	data icall / 0 /
+
+c---------------------------------------------------------------
+c initialize date
+c---------------------------------------------------------------
+
+	if( icall .eq. 0 ) then
+	  date = nint(dgetpar('date'))
+	  time = nint(dgetpar('time'))
+	  call dtsini(date,time)
+	end if
+
+	if( date .ne. 0 ) then
+	  call dts2dt(it,year,month,day,hour,min,sec)
+	end if
+
 c---------------------------------------------------------------
 c set parameters and compute percentage of simulation
 c---------------------------------------------------------------
@@ -671,7 +696,17 @@ c---------------------------------------------------------------
 c write to terminal
 c---------------------------------------------------------------
 
-        write(6,1001) it,idt,niter,nits,perc
+	if( date .eq. 0 ) then
+          write(6,1001) it,idt,niter,nits,perc
+	else
+	  if( mod(icall,50) .eq. 0 ) then
+            write(6,1003)
+	  end if
+          write(6,1002) it,year,month,day,hour,min,sec
+     +			,idt,niter,nits,perc
+	end if
+
+	icall = icall + 1
 
 c---------------------------------------------------------------
 c end of routine
@@ -681,6 +716,9 @@ c---------------------------------------------------------------
  1000   format(' time =',i10,'   iterations =',i6,' / ',i6,f9.2,' %')
  1001   format(' time =',i12,'    dt =',i5,'    iterations ='
      +                 ,i8,' /',i8,f10.2,' %')
+ 1002   format(i12,i9,5i3,i9,i8,' /',i8,f10.2,' %')
+ 1003   format(8x,'time',13x,'date',14x,'dt',8x,'iterations'
+     +			,5x,'percent')
 	end
 
 c********************************************************************

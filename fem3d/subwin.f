@@ -80,6 +80,7 @@ c 16.09.2004	ggu	new routine convert_wind()
 c 09.02.2010	ggu	less diagnostics, only write wind data if read from STR
 c 22.02.2010	ggu&ccf	restructured, new formulas Smith&Banke, Large&Pond
 c 16.02.2011	ggu	set std pressure if pressure not given
+c 25.02.2011	ggu	new param wsmax to catch errors in wind type
 c
 c*************************************************************************
 
@@ -147,6 +148,9 @@ c |dragco|	Drag coefficient used in the above formula. The default value
 c		is 0 so it must be specified. Please note also that in case
 c		of |iwtype| = 2 this value is of no interest, since the
 c		stress is specified directly.
+c |wsmax|	Maximum wind speed allowed in [m/s]. This is in order to avoid
+c		errors if the wind data is given in a different format
+c		from the one spwecified by |iwtype|. (Default 50)
 c
 c DOCS	END
 
@@ -948,15 +952,15 @@ c stress ==>          wc = 1 / rho_0
 
 	integer k
 	real roluft,rowass
-	real aux,wxy,txy
+	real aux,wxy,txy,wxymax
 
 	real getpar
 
 	logical bstress			!true if wind data is in stress
 	integer iwtype,itdrag
-	real dragco,wfact
+	real dragco,wfact,wsmax
 	save bstress,iwtype,itdrag
-	save dragco,wfact
+	save dragco,wfact,wsmax
 
 	integer icall
 	save icall
@@ -968,6 +972,7 @@ c-----------------------------------------------------------------
 
 	if( icall .eq. 0 ) then
 	  iwtype = nint(getpar('iwtype'))
+	  wsmax = getpar('wsmax')
 	  bstress = iwtype .eq. 2
 	  itdrag = nint(getpar('itdrag'))
 	  dragco = getpar('dragco')
@@ -990,6 +995,8 @@ c-----------------------------------------------------------------
 c compute normalized stress
 c-----------------------------------------------------------------
 
+	wxymax = 0.
+
 	if( bstress ) then		!data is stress -> normalize it
 	  if( dragco .le. 0 ) dragco = 2.5E-3	!use standard value
 	  do k=1,n
@@ -997,16 +1004,30 @@ c-----------------------------------------------------------------
 	    ty(k) = wfact * wy(k)
 	    txy = sqrt( tx(k)**2 + ty(k)**2 )
 	    wxy = sqrt(txy/dragco)
+	    wxymax = max(wxymax,wxy)
 	    wx(k) = tx(k) / (dragco*wxy)
 	    wy(k) = ty(k) / (dragco*wxy)
 	  end do
 	else				!data is wind velocity [m/s]
 	  do k=1,n
 	    wxy = sqrt( wx(k)**2 + wy(k)**2 )
+	    wxymax = max(wxymax,wxy)
 	    if( itdrag .gt. 0 ) call get_drag(itdrag,wxy,dragco)
 	    tx(k) = wfact * dragco * wxy * wx(k)
 	    ty(k) = wfact * dragco * wxy * wy(k)
 	  end do
+	end if
+
+c-----------------------------------------------------------------
+c check wind speed
+c-----------------------------------------------------------------
+
+	if( wxymax .gt. wsmax ) then
+	  write(6,*) 'maximum wind speed: ',wxymax
+	  write(6,*) 'maximum allowed wind speed: ',wsmax
+	  write(6,*) 'Are you sure the wind is in the correct format?'
+	  write(6,*) 'If no, please set iwtype, else increase wsmax.'
+	  stop 'error stop wstress: wind speed too high'
 	end if
 
 c-----------------------------------------------------------------

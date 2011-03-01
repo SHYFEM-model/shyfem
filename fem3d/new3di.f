@@ -158,6 +158,7 @@ c 10.03.2010    ggu	bug fix in sp256w() for ibtyp=2
 c 11.03.2010    ggu	new routine check_volume() to check for negative vol
 c 12.04.2010    ggu	ad hoc routine for Yaron
 c 16.12.2010    ggu	in sp256w() account for changing volume (sigma)
+c 19.02.2011    ccf	3D radiation stress
 c
 c******************************************************************
 
@@ -806,7 +807,7 @@ c	real bb,bbt,cc,cct,aa,aat,ppx,ppy,aux,aux1,aux2
         common /fyv/fyv
 	real rraux,cdf
 
-        real radx(neldim),rady(neldim)
+        real radx(nlvdim,neldim),rady(nlvdim,neldim)
         common /radx/radx,/rady/rady
 
 	real ss
@@ -1172,10 +1173,10 @@ c compute baroclinic contribution
 
 	ppx = ppx + aat*uui - bbt*uuip - cct*uuim - gammat*vvi 
      +			+ grav*hhi*bz + (hhi/rowass)*bpres + xexpl 
-     +  		- (1/rowass)*radx(ie)
+     +  		- radx(l,ie)
 	ppy = ppy + aat*vvi - bbt*vvip - cct*vvim + gammat*uui 
      +			+ grav*hhi*cz + (hhi/rowass)*cpres + yexpl 
-     +  		- (1/rowass)*rady(ie)
+     +  		- rady(l,ie)
 
 	jv=l+l
 	ju=jv-1

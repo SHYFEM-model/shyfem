@@ -33,9 +33,10 @@ c reads wind file for info
 	logical bpres
 
 c---------------------------------------------------------------
-	node = -1		! -1 for no special node output
 	node = 1620
 	node = 100
+	node = 678
+	node = -1		! -1 for no special node output
 c---------------------------------------------------------------
 
 	wxmin=0.
@@ -82,7 +83,7 @@ c---------------------------------------------------------------
 	  write(6,'(2i10,5f7.2,2f9.1)') it,nkn
      +			,wxmin,wxmax,wymin,wymax,sqrt(smax)
      +			,pmin,pmax
-	  !if( node .gt. 0 ) call special(it,node,wx,wy)
+	  if( node .gt. 0 ) call special(it,node,wx,wy)
 	  itot=itot+1
 	end do
 

@@ -108,6 +108,7 @@ c custom routines
 	if( icall .eq. 92 ) call vdiffus(1)
 	if( icall .eq. 93 ) call vdiffus(2)
 	if( icall .eq. 94 ) call diffus2d
+        if( icall .eq. 95 ) call ggu_ginevra
 	if( icall .eq. 101 ) call black_sea_nudge
         if( icall .eq. 883 ) call debora(it)
         if( icall .eq. 884 ) call tsinitdebora(it)
@@ -3630,3 +3631,64 @@ c**********************************************************************
 	end
 
 c**********************************************************************
+
+        subroutine ggu_ginevra
+
+	implicit none
+
+	include 'param.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+        real uprv(nlvdim,1),vprv(nlvdim,1)
+        common /uprv/uprv, /vprv/vprv
+	real tempv(nlvdim,1)
+	common /tempv/tempv
+        real visv(0:nlvdim,nkndim)
+        common /visv/visv
+        real difv(0:nlvdim,nkndim)
+        common /difv/difv
+	real znv(1)
+	common /znv/znv
+
+        real hlv(1)
+        common /hlv/hlv
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+
+	integer ks,lmax,l
+
+	integer icall
+	save icall
+	data icall / 0 /
+
+	if( icall .eq. -1 ) return
+
+	ks = 678
+
+	if( icall .eq. 0 ) then
+	  icall = -1
+	  if( ks .le. 0 ) return
+	  lmax = ilhkv(ks)
+	  write(177,*) lmax
+	  do l=1,lmax
+	    write(177,*) l,hlv(l)
+	  end do
+	  icall = 1
+	end if
+
+	lmax = ilhkv(ks)
+	write(185,*) it,lmax,(uprv(l,ks),l=1,lmax)
+	write(186,*) it,lmax,(vprv(l,ks),l=1,lmax)
+	write(187,*) it,lmax,(tempv(l,ks),l=1,lmax)
+	write(188,*) it,lmax,(visv(l,ks),l=1,lmax)
+	write(189,*) it,lmax,(difv(l,ks),l=1,lmax)
+	write(190,*) it,znv(ks)
+
+	end
+
+c**********************************************************************
+

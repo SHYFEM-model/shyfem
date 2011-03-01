@@ -111,7 +111,7 @@ EXES	= ht hp vp \
 	  lgrelab lgrinf qflux_test bedload scal_intp \
 	  $(NOSEXTR) $(OUSEXTR) map_influence \
 	  splitext_big windcrea winshift winmerge \
-	  basres basproj
+	  basres basproj nossum
 
 MAKEDEPEND = $(FEMBIN)/mkdp.pl
 
@@ -371,6 +371,9 @@ nosinf:  nosinf.o $(NOSOBJS) $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 nosinf2:  nosinf2.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+nossum:  nossum.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 .PHONY: nosextr ousextr 

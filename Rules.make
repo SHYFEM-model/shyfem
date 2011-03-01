@@ -61,6 +61,14 @@ export NLVDIM = 200
 #export NGRDIM = 9
 #export MBWDIM = 295
 
+# isabella
+#export NKNDIM = 14000
+#export NELDIM = 26000
+#export NLVDIM = 16
+#export MBWDIM = 200
+#export NGRDIM = 10
+
+
 ##############################################
 # Compiler
 ##############################################

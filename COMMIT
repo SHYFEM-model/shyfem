@@ -1,5 +1,49 @@
 ============================================================
 
+Tue Mar  1 16:03:56 CET 2011
+
+minor improvements, new hcbs, 3D rad stress
+
+ .gitignore      |    1 +
+ LOG             |   23 ++
+ Makefile        |    2 +-
+ Rules.make      |    8 +
+ fem3d/Makefile  |    5 +-
+ fem3d/new3di.f  |    7 +-
+ fem3d/newconz.f |   80 ++++-
+ fem3d/newini.f  |   12 +
+ fem3d/newtvd.f  |    8 +-
+ fem3d/nossum.f  |  340 +++++++++++++++++
+ fem3d/param.h   |    4 +-
+ fem3d/subbas.f  |    1 +
+ fem3d/subbnd.f  |   18 +-
+ fem3d/subcus.f  |   62 +++
+ fem3d/subflxa.f |   29 ++
+ fem3d/subn11.f  |   81 ++++-
+ fem3d/subnsh.f  |   40 ++-
+ fem3d/subqfxf.f |   13 +
+ fem3d/subsys.f  |    2 +
+ fem3d/subwin.f  |   27 ++-
+ fem3d/wininf.f  |    5 +-
+ femadj/param.h  |    4 +-
+ femplot/param.h |    4 +-
+ hcbs/Makefile   |  117 ++++++
+ hcbs/general.c  |   90 +++++
+ hcbs/general.h  |   52 +++
+ hcbs/generalx.h |   34 ++
+ hcbs/graph.h    |   89 +++++
+ hcbs/gustd.c    |  395 +++++++++++++++++++
+ hcbs/gustd.h    |   60 +++
+ hcbs/ttt.f      |  270 +++++++++++++
+ hcbs/xgraph.c   | 1135 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ hcbs/xgraph.h   |   57 +++
+ hcbs/xgraphf.c  |  300 +++++++++++++++
+ hcbs/xhcbs.f    |  198 ++++++++++
+ param.h         |    4 +-
+ 36 files changed, 3542 insertions(+), 35 deletions(-)
+
+============================================================
+
 Fri Feb 18 14:35:22 CET 2011
 
 New version 6_1_19

@@ -70,6 +70,7 @@ c 03.06.2008	ggu	new parameters levmin, kref
 c 06.06.2008	ggu	completely restructured
 c 02.04.2009	ggu	intpol default is 0, some unused routines deleted
 c 20.04.2009	ggu	new variable ztilt, ndim substituted with nbvdim
+c 23.02.2011    ggu     new parameters tramp and levflx implemented
 c
 c************************************************************************
 
@@ -358,7 +359,10 @@ cc undocumented
 	call addpar('ktilt',0.)
 	call addpar('ztilt',0.)
 	call addpar('kref',0.)
-	call addpar('igrad0',0.)		!use 0 gradient for scalars
+	call addpar('igrad0',0.)	!use 0 gradient for scalars
+
+	call addpar('tramp',0.)		!start smoothly for discharge
+	call addpar('levflx',0.)	!use level-discharge relationship
 
 c DOCS	END
 
@@ -1230,6 +1234,8 @@ c********************************************************************
         end
 
 c********************************************************************
+c********************************************************************
+c********************************************************************
 
 	subroutine get_nbnd(nbnd)
 
@@ -1238,7 +1244,7 @@ c********************************************************************
 	integer nbnd
 
         integer nbvdim
-        parameter(nbvdim=21)
+        parameter(nbvdim=23)
 
 	nbnd = nbvdim
 
@@ -1254,7 +1260,7 @@ c********************************************************************
         character*(*) name
 
         integer nbvdim
-        parameter(nbvdim=21)
+        parameter(nbvdim=23)
 
         integer id
         character*6 bname
@@ -1284,7 +1290,7 @@ c********************************************************************
         character*(*) name
 
         integer nbvdim
-        parameter(nbvdim=21)
+        parameter(nbvdim=23)
 
         character*6 names(nbvdim)
         save names
@@ -1293,7 +1299,7 @@ c********************************************************************
      +                  ,'ampli','period','phase','zref','ktilt'
      +                  ,'intpol','levmax','igrad0','zfact','nbdim'
      +			,'conz','temp','salt','levmin','kref'
-     +			,'ztilt'
+     +			,'ztilt','tramp','levflx'
      +                  /
 
 	if( id .gt. nbvdim ) then
@@ -1313,7 +1319,7 @@ c********************************************************************
 	integer ibc
 
         integer nbvdim
-        parameter(nbvdim=21)
+        parameter(nbvdim=23)
 
         integer i
 	real value

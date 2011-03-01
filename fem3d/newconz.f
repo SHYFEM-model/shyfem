@@ -14,6 +14,7 @@ c 28.04.2008    ggu     new conzm3sh for multiple concentrations
 c 24.06.2008    ggu     changes in dacay for multiple concentrations
 c 09.10.2008    ggu     new call to confop
 c 19.01.2010    ggu     handle restart of conzentrations
+c 25.02.2011    ggu     new routine decay_conz_variable(), add t90 time scale
 c
 c*********************************************************************
 
@@ -217,11 +218,11 @@ c--------------------------------------------
 c isabella
 c--------------------------------------------
 	integer ndim
-	parameter (ndim=7)
+	parameter (ndim=10)
 	real massv(ndim)
 	real taupar(ndim)
 	save taupar
-        data taupar /1.,1.,1.,1.,2.,2.,1./
+        data taupar /1.,1.,1.,1.,2.,2.,1.,0.5,0.1,3./
 
 c local
         integer istot
@@ -343,6 +344,7 @@ c-------------------------------------------------------------
 	  end if
 	  !write(6,*) 'decay : ',i,tau
           call decay_conz(ncsdim,nvar,i,dt,tau,conzv)
+          !call decay_conz_variable(nsdim,nvar,ivar,dt,tau,e)
 	end do
 
 c-------------------------------------------------------------
@@ -381,6 +383,9 @@ c simulates decay for concentration
 
         include 'param.h'
 
+	real alpha_t90
+	parameter( alpha_t90 = 1./2.302585 )	!-1./ln(0.1)
+
 	integer nsdim			!dimension of state variables for e
 	integer nvar			!actual number of state variables
 	integer ivar			!state variable to use
@@ -394,15 +399,82 @@ c simulates decay for concentration
         common /ilhkv/ilhkv
 
         integer k,l,i,lmax
-        real aux
+        real aux,tauaux
 
         if( tau .le. 0. ) return	!tau is 0 => no decay
 
-        aux = exp(-dt/(tau*86400))
+	!tauaux = tau			!e-folding time
+	tauaux = tau * alpha_t90	!t_90
+        aux = exp(-dt/(tauaux*86400))
 
         do k=1,nkn
           lmax = ilhkv(k)
           do l=1,lmax
+            e(l,k,ivar) = aux * e(l,k,ivar)
+          end do
+        end do
+
+        end
+
+c*********************************************************************
+
+        subroutine decay_conz_variable(nsdim,nvar,ivar,dt,tau,e)
+
+c simulates decay for concentration
+
+        implicit none
+
+        include 'param.h'
+
+	real alpha_t90
+	parameter( alpha_t90 = 1./2.302585 )	!-1./ln(0.1)
+
+	integer nsdim			!dimension of state variables for e
+	integer nvar			!actual number of state variables
+	integer ivar			!state variable to use
+        real dt				!time step in seconds
+	real tau			!decay time in days (0 for no decay)
+        real e(nlvdim,nkndim,nsdim)     !state vector
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+
+        real hdknv(nlvdim,nkndim)
+        common /hdknv/hdknv
+        real saltv(nlvdim,1),tempv(nlvdim,1)
+        common /saltv/saltv, /tempv/tempv
+        real metrad(nkndim)
+        common /metrad/metrad
+
+        integer k,l,i,lmax
+        real aux,dtt,rk,alpha
+	real solrad,hdep,h,z
+	real t,s,kappa
+
+        if( tau .le. 0. ) return	!tau is 0 => no decay
+
+	dtt = dt / 86400		!change time step to days
+
+	rk = 1.				!extinction depth [m]
+	alpha = 1./tau			!e-folding time
+	!alpha = 1./(tau*alpha_t90)	!t_90
+
+        do k=1,nkn
+          lmax = ilhkv(k)
+	  solrad = metrad(k)		!solar radiation [W/m**2]
+	  solrad = 500.
+	  hdep = 0.
+          do l=1,lmax
+	    h = hdknv(l,k)
+	    z = hdep + 0.5 * h
+	    hdep = hdep + h
+	    t = tempv(l,k)
+	    s = saltv(l,k)
+	    kappa = alpha * 1.040**(t-20.) * 1.012**s +
+     +			0.113 * solrad * exp(-z/rk)
+            aux = exp(-dtt*kappa)
             e(l,k,ivar) = aux * e(l,k,ivar)
           end do
         end do

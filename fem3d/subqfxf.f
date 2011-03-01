@@ -121,6 +121,17 @@ c***********************************************************
 
 c gets actual values for air
 
+c qs	solar radiation [W/m**2]
+c ta	air temperature [C]
+c tb	wet bulb temperature [C]
+c ur	relative humidity [%], ([0-100])
+c uw	wind speed [m/s]
+c cc	cloud cover [0-1], 0 no clouds
+c p     pressure [mb]
+c e     vapor pressure [mb]
+c r     mixing ratio [0-1]
+c q     specific humidity [0-1]
+
         implicit none
 
 	real qs,ta,tb,uw,cc,ur,p,e,r,q
@@ -450,6 +461,8 @@ c*****************************************************************************
 	subroutine qfrhumid(irh)
 
 c sets irhumid - can be called at any time
+c
+c irh==1  =>  relative humidity is given (default)
 
 	implicit none
 

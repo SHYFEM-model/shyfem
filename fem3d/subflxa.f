@@ -52,6 +52,7 @@ c 10.08.2003	ggu	do not call setweg, setnod, setkan
 c 23.03.2006    ggu     changed time step to real
 c 28.09.2007    ggu     use testbndo to determine boundary node in flxtype
 c 28.04.2009    ggu     links re-structured
+c 23.02.2011    ggu     new routine call write_node_fluxes() for special output
 c
 c notes :
 c
@@ -456,6 +457,7 @@ c computes flux through one section
 		else
 		  tm = tm - port
 		end if
+		!call write_node_fluxes(k,port)		!special output
 	end do
 
 	fluxp = tp
@@ -1147,6 +1149,33 @@ c computes fluxes over sides (tflux) from fluxes into node (rflux)
 	else
 		stop 'error stop make_fluxes: internal error (1)'
 	end if
+
+	end
+
+c**********************************************************************
+
+	subroutine write_node_fluxes(k,port)
+
+c special routine to write single fluxes (and water level) at nodes
+c
+c please uncomment the call to this subroutine if needed
+
+	implicit none
+
+	integer k	!node number
+	real port	!discharge through finite volume k
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	real znv(1)
+	common /znv/znv
+
+	real z
+
+	z = znv(k)
+
+	write(155,*) it,k,z,port
 
 	end
 
