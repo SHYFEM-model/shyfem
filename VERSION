@@ -1,3 +1,43 @@
+version  6_1_20    01-03-2011    VERS_6_1_20
+
+========================================================== 01-03-2011 - 6_1_20
+
+c ./fem3d/subnsh.f:
+c 22.02.2011    ggu     in pritime() new write to terminal
+c
+c ./fem3d/subver.f:
+c 01.03.2011	ggu	version 6.1.20
+c
+c ./fem3d/newconz.f:
+c 25.02.2011    ggu     new routine decay_conz_variable(), add t90 time scale
+c
+c ./fem3d/subbnd.f:
+c 23.02.2011    ggu     new parameters tramp and levflx implemented
+c
+c ./fem3d/subflxa.f:
+c 23.02.2011    ggu     new routine call write_node_fluxes() for special output
+c
+c ./fem3d/subsys.f:
+c 25.02.2011	ggu	new param wsmax to catch errors in wind type
+c
+c ./fem3d/new3di.f:
+c 19.02.2011    ccf	3D radiation stress
+c
+c ./fem3d/nossum.f:
+c 25.02.2011    ggu     restructured for Isabella to sum over concentrations
+c
+c ./fem3d/subn11.f:
+c 23.02.2011    ggu     new parameters tramp and levflx implemented
+c 01.03.2011    ggu     implement smoothing for levflx
+c
+c ./fem3d/newini.f:
+c 21.02.2011    ggu	error check for dzreg, nsigma and levels
+c
+c ./fem3d/subwin.f:
+c 25.02.2011	ggu	new param wsmax to catch errors in wind type
+
+==========================================================
+
 version  6_1_19    18-02-2011    VERS_6_1_19
 
 ========================================================== 18-02-2011 - 6_1_19
