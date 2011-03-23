@@ -9,6 +9,8 @@ c********************************************************************
 
 	subroutine init_sigma_vertical
 
+c this is not called anywhere
+
 	implicit none
 
 	call check_nlv
@@ -20,6 +22,8 @@ c********************************************************************
 c********************************************************************
 
 	subroutine set_sigma_hkhe
+
+c this is called in newini.f
 
 	implicit none
 
@@ -95,6 +99,8 @@ c********************************************************************
 
 	subroutine set_sigma_levels
 
+c this is not called anywhere
+
 	implicit none
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -117,7 +123,7 @@ c********************************************************************
 
 	real getpar
 
-	nsiglv = nint(getpar('nsiglv'))
+	nsiglv = nint(getpar('nsiglv'))		!this is not existing
 
 	if( nsiglv .gt. 0 .and. nlv .gt. 0 ) then
 	  write(6,*) 'nsiglv,nlv: ',nsiglv,nlv

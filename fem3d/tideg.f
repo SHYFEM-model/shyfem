@@ -47,7 +47,7 @@ c-----------------------------------------------------------
 c-----------------------------------------------------------
 
 	rtide = getpar('rtide')
-        isphe = nint(getpar('isphe'))
+	call get_coords_ev(isphe)
 
 	do k=1,nkn
 	  zeqv(k) = 0.

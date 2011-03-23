@@ -27,6 +27,11 @@ LIBX = -L/usr/X11R6/lib -L/usr/X11/lib -L/usr/lib/X11  -lX11
 #
 ##############################################
 
+export MBWDIM = 300
+export NGRDIM = 12
+
+#-----------------------
+
 #export NKNDIM = 11000
 #export NELDIM = 22000
 #export NLVDIM = 33
@@ -38,9 +43,16 @@ LIBX = -L/usr/X11R6/lib -L/usr/X11/lib -L/usr/lib/X11  -lX11
 #export NLVDIM = 1
 
 # curonian
-export NKNDIM = 13000
-export NELDIM = 26000
-export NLVDIM = 1
+#export NKNDIM = 13000
+#export NELDIM = 26000
+#export NLVDIM = 1
+
+# curonian petras
+#export NKNDIM = 12900
+#export NELDIM = 22900
+#export NLVDIM = 20
+#export MBWDIM = 173
+#export NGRDIM = 11
 
 # ginevra
 export NKNDIM = 1100

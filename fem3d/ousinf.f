@@ -9,6 +9,7 @@ c 02.09.2003	ggu	adapted to new OUS format
 c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
 c 16.10.2007	ggu	new debug routine
 c 27.10.2009    ggu     include evmain.h, compute volume
+c 23.03.2011    ggu     compute real u/v-min/max of first level
 c
 c***************************************************************
 
@@ -127,7 +128,8 @@ c-----------------------------------------------------------------
 	nread=nread+1
 
 	call mima(znv,nknous,zmin,zmax)
-        call comp_vel(1,nel,hev,zenv,nlvdim,utlnv,vtlnv,umax,vmax)
+        call comp_vel(1,nel,hev,zenv,nlvdim,utlnv,vtlnv
+     +			,umin,vmin,umax,vmax)
 	call compute_volume(nel,zenv,hev,volume)
 
 c        call debug_write_node(it,nread,nkndim,neldim,nlvdim,nkn,nel,nlv
@@ -137,8 +139,8 @@ c     +          ,nen3v,zenv,znv,utlnv,vtlnv)
 	write(6,*) 'time : ',it
 	write(6,*) 
 	write(6,*) 'zmin/zmax : ',zmin,zmax
-	write(6,*) 'umin/umax : ',0.,umax
-	write(6,*) 'vmin/vmax : ',0.,vmax
+	write(6,*) 'umin/umax : ',umin,umax
+	write(6,*) 'vmin/vmax : ',vmin,vmax
 	write(6,*) 'volume    : ',volume
 
 	goto 300
@@ -199,7 +201,7 @@ c******************************************************************
 c******************************************************************
 
         subroutine comp_vel(level,nel,hev,zenv,nlvdim,utlnv,vtlnv
-     +                          ,umax,vmax)
+     +			,umin,vmin,umax,vmax)
 
         implicit none
 
@@ -210,13 +212,16 @@ c******************************************************************
         integer nlvdim
         real utlnv(nlvdim,1)
         real vtlnv(nlvdim,1)
+        real umin,vmin
         real umax,vmax
 
         integer ie,ii
         real zmed,hmed,u,v
 
-        umax = 0.
-        vmax = 0.
+	umin =  1.e+30
+	vmin =  1.e+30
+        umax = -1.e+30
+        vmax = -1.e+30
 
         do ie=1,nel
           zmed = 0.
@@ -230,6 +235,8 @@ c******************************************************************
           u = utlnv(level,ie) / hmed
           v = vtlnv(level,ie) / hmed
 
+          umin = min(umin,u)
+          vmin = min(vmin,v)
           umax = max(umax,u)
           vmax = max(vmax,v)
         end do

@@ -47,6 +47,7 @@ c 19.01.2010    ggu     different call to has_restart()
 c 16.12.2010    ggu     sigma layers introduced (maybe not finished)
 c 26.01.2011    ggu     read in obs for t/s (tobsv,sobsv)
 c 28.01.2011    ggu     parameters changed in call to ts_nudge()
+c 04.03.2011    ggu     better error message for rhoset_shell
 c
 c*****************************************************************
 
@@ -423,6 +424,7 @@ c sets rho iterating to real solution
 
 	if( iter .gt. itermax ) then
 	  write(6,*) '*** warning: max iterations in rhoset_shell ',resid
+	  call tsrho_check
 	end if
 
 	end
@@ -476,6 +478,7 @@ c common
 c local
 	logical bdebug,debug,bsigma
 	integer k,l,lmax
+	integer nresid
 	real sigma0,rho0,pres
 	real depth,hlayer,h,htot
 	real rhop,presbt,presbc,dpresc
@@ -493,6 +496,7 @@ c functions
 
 	if(debug) write(6,*) sigma0,rowass,rho0
 
+	nresid = 0
 	dresid = 0.
 
 	do k=1,nkn
@@ -517,6 +521,7 @@ c functions
 	
 	    rhop = sigma(saltv(l,k),tempv(l,k),pres) - sigma0
 
+	    nresid = nresid + 1
 	    dresid = dresid + (rhov(l,k)-rhop)**2
 
 	    rhov(l,k) = rhop
@@ -527,9 +532,50 @@ c functions
 	  end do
 	end do
 
-	resid = dresid
+	resid = dresid/nresid
 
 	return
+	end
+
+c*******************************************************************	
+
+	subroutine tsrho_check
+
+c checks values of t/s/rho
+
+	implicit none
+
+	include 'param.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	real saltv(nlvdim,1),tempv(nlvdim,1)
+	common /saltv/saltv, /tempv/tempv
+	real rhov(nlvdim,1)
+	common /rhov/rhov
+	integer ilhkv(1)
+	common /ilhkv/ilhkv
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
+
+	real smin,smax,tmin,tmax,rmin,rmax
+	character*30 text
+
+	text = '*** tsrho_check'
+
+	call stmima(saltv,nkn,nlvdim,ilhkv,smin,smax)
+	call stmima(tempv,nkn,nlvdim,ilhkv,tmin,tmax)
+	call stmima(rhov,nkn,nlvdim,ilhkv,rmin,rmax)
+
+	write(6,*) 'S   min/max: ',smin,smax
+	write(6,*) 'T   min/max: ',tmin,tmax
+	write(6,*) 'Rho min/max: ',rmin,rmax
+
+	write(6,*) 'checking for Nans...'
+        call check2Dr(nlvdim,nlv,nkn,saltv,-1.,+70.,text,'saltv')
+        call check2Dr(nlvdim,nlv,nkn,tempv,-10.,+50.,text,'tempv')
+        call check2Dr(nlvdim,nlv,nkn,rhov,-2000.,+2000.,text,'rhov')
+
 	end
 
 c*******************************************************************	

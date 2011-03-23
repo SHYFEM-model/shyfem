@@ -23,6 +23,7 @@ c 17.10.2001    ggu     accept also grd files with some missing data
 c 18.10.2005    ggu     some error messages slightly changed
 c 06.04.2009    ggu     read param.h
 c 24.04.2009    ggu     new call to rdgrd()
+c 04.03.2011    ggu     new routine test_grade()
 c
 c notes :
 c
@@ -262,6 +263,7 @@ c end reading ----------------------------------------------------
 
 	write(nat,*) ' ...setting up side index'
 
+        call test_grade(nkn,nel,nen3v,ng,ngrdim)
         call sidei(nkn,nel,nen3v,ng,iknot,ngrdim,ngr)
 	call knscr(nkn,ngr,ngrdim,iknot)
 
@@ -703,6 +705,46 @@ c test for anti-clockwise sense of nodes
 
         return
         end
+
+c*****************************************************************
+
+        subroutine test_grade(nkn,nel,nen3v,ng,ngrdim)
+
+c tests if ngrdim is big enough
+
+        implicit none
+
+        integer nkn,nel
+        integer ngrdim
+        integer nen3v(3,nel)
+        integer ng(nkn)
+
+        integer i,ii,ie,k,ngr
+
+	do i=1,nkn
+          ng(i)=0
+	end do
+
+	do ie=1,nel
+          do ii=1,3
+	    k = nen3v(ii,ie)
+	    ng(k) = ng(k) + 1
+	  end do
+	end do
+
+	ngr = 0
+	do i=1,nkn
+          ngr = max(ngr,ng(i))
+	end do
+	ngr = ngr + 1		!account for boundary nodes
+
+	if( ngr .gt. ngrdim ) then
+	  write(6,*) 'ngr grade possibly too small...'
+	  write(6,*) 'estimated ngr = ',ngr,'   ngrdim = ',ngrdim
+	  stop 'error stop test_grade: ngrdim'
+	end if
+
+	end
 
 c*****************************************************************
 

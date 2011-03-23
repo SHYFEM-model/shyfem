@@ -53,6 +53,7 @@ c 28.09.2010    ggu	bug fix in init_coriolis() for isphe=1
 c 08.10.2010    ggu	bug fix in init_coriolis() -> ym not set for isphe=1
 c 16.12.2010    ggu	big restructering for sigma levels (look for bsigma)
 c 21.02.2011    ggu	error check for dzreg, nsigma and levels
+c 23.03.2011    ggu	new routine adjust_spherical(), error check isphe
 c
 c**************************************************************
 
@@ -987,7 +988,7 @@ c Coriolis. If you really do not want to use Coriolis, then please set
 c icor = -1. The parameter dlat is not needed.
 
 	icor=nint(getpar('icor'))	!flag how to use Coriolis
-	isphe=nint(getpar('isphe'))	!flag if coordinates are spherical
+	call get_coords_ev(isphe)
 
 	rad = pi / 180.
 
@@ -1025,13 +1026,17 @@ c icor = -1. The parameter dlat is not needed.
 	  ym=ym/3.
 	  if( isphe .eq. 0 ) then	!cartesian
 	    fcorv(ie)=aux1+aux2*(ym-yc)
-	  else				!spherical
+	  else if( isphe .eq. 1 ) then	!spherical
 	    if( icor .lt. 0 ) then	! -> do not use
 	      fcorv(ie) = 0.
 	    else
 	      !fcorv(ie) = omega2*cos(ym*rad)	!BUG
 	      fcorv(ie) = omega2*sin(ym*rad)
 	    end if
+	  else
+	    write(6,*) 'isphe = ',isphe
+	    if( isphe .eq. -1 ) write(6,*) '...not initialized'
+	    stop 'error stop init_coriolis: value for isphe not allowed'
 	  end if
 	end do
 
@@ -1464,6 +1469,21 @@ c*******************************************************************
 
 	isphe = nint(getpar('isphe'))
 	call set_coords_ev(isphe)
+
+	end
+
+c*******************************************************************
+
+	subroutine adjust_spherical
+
+	implicit none
+
+	integer isphe
+	real rsphe
+
+	call get_coords_ev(isphe)
+	rsphe = isphe
+	call putpar('isphe',rsphe)
 
 	end
 

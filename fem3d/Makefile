@@ -231,7 +231,7 @@ LAGRANGE =	lagrange_main.o \
 # heat flux module
 
 QFLUX = subqfxt.o subqfxf.o \
-	subqfxm1.o subqfxm2.o subqfxm3.o \
+	subqfxm1.o subqfxm2.o subqfxm3.o subqfxm4.o \
 	subqfxu1.o subqfxu2.o subqfxu3.o subqfxu4.o
 
 QFLUX_TEST = subqfxf.o \

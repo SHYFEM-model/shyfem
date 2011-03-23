@@ -162,6 +162,7 @@ c 22.03.2010    ggu     bug fix for evaporation (distr. sources) BUG_2010_01
 c 15.12.2010    ggu     new routine vertical_flux_ie() for vertical tvd
 c 26.01.2011    ggu     nudging implemented (scal_adv_nudge, cobs, robs)
 c 16.02.2011    ggu     pass robs to info_stability()
+c 23.03.2011    ggu     new parameter itvdv
 c
 c*********************************************************************
 
@@ -445,6 +446,7 @@ c local
 	integer isact
 	integer istot
 	integer itvd
+	integer itvdv
 	integer iuinfo
         real dt
 	real eps
@@ -468,7 +470,8 @@ c-------------------------------------------------------------
 	call getaz(azpar)
 	adpar=getpar('adpar')
 	aapar=getpar('aapar')
-	itvd=nint(getpar('itvd'))
+	itvd=nint(getpar('itvd'))	!horizontal tvd scheme
+	itvdv=nint(getpar('itvdv'))	!vertical tvd scheme
 	btvd = itvd .gt. 0
 	btvd1 = itvd .eq. 1
 
@@ -530,7 +533,7 @@ c-------------------------------------------------------------
      +          ,dt
      +          ,rkpar,difhv,difv,difmol
      +          ,sbconz
-     +		,itvd,gradxv,gradyv
+     +		,itvd,itvdv,gradxv,gradyv
      +		,cobs,robs
      +		,wsink
      +		,azpar,adpar,aapar
@@ -574,7 +577,7 @@ c**************************************************************
      +			,ddt
      +                  ,rkpar,difhv,difv
      +			,difmol,cbound
-     +		 	,itvd,gradxv,gradyv
+     +		 	,itvd,itvdv,gradxv,gradyv
      +			,cobs,robs
      +			,wsink
      +			,azpar,adpar,aapar
@@ -594,7 +597,8 @@ c difhv  horizontal turbulent diffusivity (variable between elements)
 c difv   vertical turbulent diffusivity
 c difmol vertical molecular diffusivity
 c cbound boundary condition (mass flux) [kg/s] -> now concentration [kg/m**3]
-c itvd	 type of transport algorithm used
+c itvd	 type of horizontal transport algorithm used
+c itvdv	 type of vertical transport algorithm used
 c gradxv,gradyv  gradient vectors for TVD algorithm
 c cobs	 observations for nudging
 c robs	 use observations for nuding (real)
@@ -648,6 +652,7 @@ c arguments
 	real difmol
         real cbound(nlvdi,1)
 	integer itvd
+	integer itvdv
 	real gradxv(nlvdi,1)
 	real gradyv(nlvdi,1)
 	real cobs(nlvdi,1)
@@ -796,11 +801,12 @@ c----------------------------------------------------------------
         debug = .true.
 	bdebug=.false.
 	berror=.false.
-	btvdv =.true.		!use vertical tvd
-	btvdv =.false.
+	!btvdv =.false.
+	!btvdv =.true.		!use vertical tvd
 
 	btvd = itvd .gt. 0
 	bgradup = itvd .eq. 2	!use upwind gradient for tvd scheme
+	btvdv = itvdv .gt. 0
 
 	az=azpar		!$$azpar
 	azt=1.-az

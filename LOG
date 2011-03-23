@@ -1,4 +1,29 @@
 
+23.03.2011	heatgotm, siphe, itvdv
+
+	itvdv
+		new parameter itvdv (newcon.f,subsys.f)
+	heat fluxes
+		bug in heatgotm() -> avoid wind speed == 0 (subqfxm4.f)
+		new routine check_heat() to check for Nan (subqfxt.f)
+		new iheat (subqfxt.f)
+	isphe (bug)
+		new routine adjust_spherical() (newini.f,ht.f)
+		get isphe through get_coords_ev() (newtvd.f)
+		better set-up and error check for isphe_ev and isphe 
+			(newini.f, subnev.f)
+
+04.03.2011	heatgotm
+
+	heat module from gotm extracted (subqfxm4.f)
+	new routine heatgotm (subqfxt.f)
+
+========================================================== 01-03-2011 - 6_1_20
+
+01.03.2011	levflx
+
+	implement smoothing for levflx (subn11.f)
+
 25.02.2011
 
 	new param wsmax to catch errors in wind type (subwin.f, subsys.f)

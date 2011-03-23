@@ -254,6 +254,7 @@ c tests array for nan and strange values
 
         bval = vmin .lt. vmax
 	debug = .true.
+	debug = .false.
 	inan = 0
 	iout = 0
 
@@ -262,14 +263,19 @@ c tests array for nan and strange values
 	  if( is_r_nan(val) ) then
 	    inan = inan + 1
 	    if( debug ) write(6,*) 'nan ',inan,i,val
+	    write(999,*) 'nan: ',inan,i,val
 	  else if( bval .and. (val .lt. vmin .or. val .gt. vmax) ) then
 	    iout = iout + 1
 	    if( debug ) write(6,*) 'out ',iout,i,val
+	    write(999,*) 'out of range: ',iout,i,val
 	  end if
 	end do
 
 	if( inan .gt. 0 .or. iout .gt. 0 ) then
-	  write(6,*) '*** check1Dr: ',textgen," (",text,") ",inan,iout
+	  write(6,*) '*** check1Dr: ',textgen," (",text,") "
+	  write(6,*) 'total number of Nan found:       ',inan
+	  write(6,*) 'total number out of range found: ',iout
+	  write(6,*) 'full list can be found in file fort.999'
           stop 'error stop check1Dr'
 	end if
 
@@ -296,6 +302,7 @@ c tests array for nan and strange values
 
         bval = vmin .lt. vmax
 	debug = .true.
+	debug = .false.
 	inan = 0
 	iout = 0
 
@@ -305,15 +312,20 @@ c tests array for nan and strange values
 	    if( is_r_nan(val) ) then
 	      inan = inan + 1
 	      if( debug ) write(6,*) 'nan: ',inan,l,i,val
+	      write(999,*) 'nan: ',inan,l,i,val
 	    else if( bval .and. (val .lt. vmin .or. val .gt. vmax) ) then
 	      iout = iout + 1
 	      if( debug ) write(6,*) 'out of range: ',iout,l,i,val
+	      write(999,*) 'out of range: ',iout,l,i,val
 	    end if
 	  end do
 	end do
 
 	if( inan .gt. 0 .or. iout .gt. 0 ) then
-	  write(6,*) '*** check2Dr: ',textgen," (",text,") ",inan,iout
+	  write(6,*) '*** check2Dr: ',textgen," (",text,") "
+	  write(6,*) 'total number of Nan found:       ',inan
+	  write(6,*) 'total number out of range found: ',iout
+	  write(6,*) 'full list can be found in file fort.999'
           stop 'error stop check2Dr'
 	end if
 

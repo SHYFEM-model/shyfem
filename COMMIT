@@ -1,5 +1,42 @@
 ============================================================
 
+Wed Mar 23 16:50:02 CET 2011
+
+bug fix isphe, heatgotm, itvdv
+
+ BUG                          |    9 ++
+ LASTTAR                      |    2 +-
+ LOG                          |   25 ++++
+ Rules.make                   |   18 ++-
+ fem3d/Makefile               |    2 +-
+ fem3d/aquabc_fem_interface.f |    3 +-
+ fem3d/debug.f                |   16 ++-
+ fem3d/ht.f                   |    2 +
+ fem3d/newbcl.f               |   48 +++++++-
+ fem3d/newcon.f               |   18 ++-
+ fem3d/newini.f               |   24 +++-
+ fem3d/newsig.f               |    8 +-
+ fem3d/newtvd.f               |    9 +-
+ fem3d/ousinf.f               |   19 ++-
+ fem3d/param.h                |    4 +-
+ fem3d/subnev.f               |   13 +--
+ fem3d/subqfxm4.f             |  299 ++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subqfxm4.h             |   25 ++++
+ fem3d/subqfxt.f              |  102 ++++++++++++--
+ fem3d/subsys.f               |   16 ++-
+ fem3d/subver.f               |    2 +-
+ fem3d/subwin.f               |   36 +++++-
+ fem3d/tideg.f                |    2 +-
+ fem3d/vp.f                   |   42 ++++++
+ femadj/param.h               |    4 +-
+ fembin/apnmake               |    8 +
+ fembin/plots                 |    1 +
+ femplot/param.h              |    4 +-
+ param.h                      |    4 +-
+ 29 files changed, 696 insertions(+), 69 deletions(-)
+
+============================================================
+
 Tue Mar  1 16:05:29 CET 2011
 
 New version 6_1_20

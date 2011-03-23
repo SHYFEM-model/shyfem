@@ -985,8 +985,7 @@ C     eload(3,neldim,nstate) -----> eload(nlvdim,nkndim,nstate)
       integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
       common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
-	real ev(13,1)
-	common /ev/ev
+	include 'ev.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 	real hm3v(3,1)

@@ -22,6 +22,7 @@ c 06.04.2009	ggu&ccf	bug fix: in tvd_fluxes() do not test for conc==cond
 c 15.12.2010	ggu	new routines for vertical tvd: vertical_flux_*()
 c 28.01.2011	ggu	bug fix for distance with lat/lon (tvd_fluxes)
 c 29.01.2011	ccf	insert ISPHE for lat-long coordinates
+c 23.03.2011	ccf	get isphe through get_coords_ev()
 c
 c*****************************************************************
 c
@@ -263,8 +264,6 @@ c sets position and element of upwind node
         double precision dlat0,dlon0                    !center of projection
         double precision xx,yy
         double precision one,four,rad,pi
-        integer isphe_ev,init_ev
-        common /evcommon/ isphe_ev,init_ev
         integer kn1,kn2,kn3
         integer isphe
 
@@ -276,9 +275,7 @@ c sets position and element of upwind node
         pi=four*atan(one)
         rad = 180./pi
 
-        call check_spheric_ev   !checks and sets isphe_ev
-
-        isphe = isphe_ev
+	call get_coords_ev(isphe)
 
         do ie=1,nel
 
@@ -510,7 +507,7 @@ c*****************************************************************
 
 c computes vertical fluxes of concentration - nodal version
 
-c do not use this version !!!!!!!!!!!!
+c do not use this version - use the element version instead !!!!
 
 c ------------------- l-2 -----------------------
 c      u              l-1

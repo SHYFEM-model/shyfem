@@ -24,6 +24,8 @@ c 10.03.2009    ggu     new qflux_read(), new call to meteo_get_values()
 c 11.03.2009    ggu     new routine qflux_compute()
 c 27.08.2009    ggu     new call to heatgill, new routine heatareg
 c 11.11.2009    ggu     handle abosrption of short rad in more than one layer
+c 04.03.2011    ggu     new routine heatgotm
+c 23.03.2011    ggu     new routine check_heat() to check for Nan, new iheat
 c
 c notes :
 c
@@ -120,8 +122,9 @@ c computes new temperature (forced by heat flux) - 3d version
 c local
 	integer k
 	integer l,lmax,kspec
-	integer mode,level
+	integer mode
         integer yes
+	integer iheat
 	real tm,tnew,hm
 	real albedo
 	real hdecay,adecay,qsbottom,botabs
@@ -142,22 +145,24 @@ c save
 	call qflux_compute(yes)
 	if( yes .le. 0 ) return
 
-	!call qfget(qs,ta,tb,uw,cc,ur,p,e,r,q)
-
-	row = 1026.
-
-	mode = +1	!use new time step for depth
-	level = 1	!heat transfer only to first layer
-
 c---------------------------------------------------------
+c iheat		1=areg  2=pom  3=gill  4=dejak  5=gotm
 c botabs	1. ->	bottom absorbs remaining radiation
 c		0. ->	everything is absorbed in last layer
 c hdecay	depth of e-folding decay of radiation
 c		0. ->	everything is absorbed in first layer
 c---------------------------------------------------------
 
+	iheat = 5
 	hdecay = 0.
 	botabs = 0.
+
+c---------------------------------------------------------
+c set other parameters
+c---------------------------------------------------------
+
+	row = 1026.
+	mode = +1	!use new time step for depth
 
 	adecay = 0.
 	if( hdecay .gt. 0. ) adecay = 1. / hdecay
@@ -170,18 +175,29 @@ c---------------------------------------------------------
 
 	do k=1,nkn
 
-	  hm = depnode(level,k,mode)
-	  tm = temp(level,k)
-	  area = areanode(level,k)
+	  tm = temp(1,k)
+	  area = areanode(1,k)
 	  lmax = ilhkv(k)
 	  if( hdecay .le. 0. ) lmax = 1
 
 	  call meteo_get_values(k,qs,ta,ur,tb,uw,cc,p)
 
-	   call heatareg (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
-	  !call heatpom  (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
-	  !call heatgill (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
-	  !call heatlucia(ta,p,uw,tb,cc,tm,qsens,qlat,qlong,evap)
+	  if( iheat .eq. 1 ) then
+	    call heatareg (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
+	  else if( iheat .eq. 2 ) then
+	    call heatpom  (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
+	  else if( iheat .eq. 3 ) then
+	    call heatgill (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
+	  else if( iheat .eq. 4 ) then
+	    call heatlucia(ta,p,uw,tb,cc,tm,qsens,qlat,qlong,evap)
+	  else if( iheat .eq. 5 ) then
+	    call heatgotm (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
+	  else
+	    write(6,*) 'iheat = ',iheat
+	    stop 'error stop qflux3d: value for iheat not allowed'
+	  end if
+
+	  call check_heat(k,tm,qsens,qlat,qlong,evap)
 
           qrad = - ( qlong + qlat + qsens )
 	  rtot = qs + qrad
@@ -197,6 +213,7 @@ c---------------------------------------------------------
 		if( l .eq. lmax ) qsbottom = botabs * qsbottom
 	    end if
             call heat2t(dt,hm,qs-qsbottom,qrad,albedo,tm,tnew)
+	    !call check_heat2(k,l,qs,qsbottom,qrad,albedo,tm,tnew)
 	    temp(l,k) = tnew
 	    albedo = 0.
 	    qrad = 0.
@@ -217,6 +234,8 @@ c	  -----------------------
 
 	end do
 
+	!call check2Dr(nlvdi,nlvdi,nkn,temp,-10.,+50.,'qflux','tempv')
+
 	dq = ddq
 
 c---------------------------------------------------------
@@ -236,6 +255,59 @@ c---------------------------------------------------------
 c end of routine
 c---------------------------------------------------------
 
+	end
+
+c*****************************************************************************
+
+	subroutine check_heat(k,tm,qsens,qlat,qlong,evap)
+
+	implicit none
+
+	integer k
+	real tm,qsens,qlat,qlong,evap
+
+	logical is_r_nan
+
+	if( is_r_nan(tm) ) goto 98
+	if( is_r_nan(qsens) ) goto 98
+	if( is_r_nan(qlat) ) goto 98
+	if( is_r_nan(qlong) ) goto 98
+	if( is_r_nan(evap) ) goto 98
+
+	return
+   98	continue
+	write(6,*) k,tm,qsens,qlat,qlong,evap
+	stop 'error stop check_heat: Nan found'
+	end
+
+c*****************************************************************************
+
+	subroutine check_heat2(k,l,qs,qsbottom,qrad,albedo,tm,tnew)
+
+	implicit none
+
+	integer k,l
+	real qs,qsbottom,qrad,albedo,tm,tnew
+
+	logical is_r_nan
+
+	if( is_r_nan(qs) ) goto 98
+	if( is_r_nan(qsbottom) ) goto 98
+	if( is_r_nan(qrad) ) goto 98
+	if( is_r_nan(albedo) ) goto 98
+	if( is_r_nan(tm) ) goto 98
+	if( is_r_nan(tnew) ) goto 98
+
+	if( abs(tm) .gt. 100. ) goto 97
+	if( abs(tnew) .gt. 100. ) goto 97
+
+	return
+   97	continue
+	write(6,*) k,l,tm,tnew
+	stop 'error stop check_heat2: t out of range'
+   98	continue
+	write(6,*) k,l,qs,qsbottom,qrad,albedo,tm,tnew
+	stop 'error stop check_heat2: Nan found'
 	end
 
 c*****************************************************************************

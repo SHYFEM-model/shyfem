@@ -81,6 +81,7 @@ c 09.02.2010	ggu	less diagnostics, only write wind data if read from STR
 c 22.02.2010	ggu&ccf	restructured, new formulas Smith&Banke, Large&Pond
 c 16.02.2011	ggu	set std pressure if pressure not given
 c 25.02.2011	ggu	new param wsmax to catch errors in wind type
+c 23.03.2011	ggu	better error message in binwin()
 c
 c*************************************************************************
 
@@ -416,12 +417,16 @@ c test if wind file is unformatted
 	character*(*) file
 
 	integer nwin,ios,it,n,na
+	real u,v
 	integer ifileo
 
 	binwin = .false.
 
-	nwin = ifileo(0,file,'unformatted','old')
+c-----------------------------------------------------------------
+c try unformatted
+c-----------------------------------------------------------------
 
+	nwin = ifileo(0,file,'unformatted','old')
 	if( nwin .le. 0 ) return		!error opening wind file
 
 	read(nwin,iostat=ios) it,n
@@ -434,10 +439,39 @@ c	does not flag an error...
 	    na = abs(n)
 	    if( na .eq. nkn .or. na .eq. 1 ) then
 		binwin = .true.			!no error -> unformatted
+	  	write(6,*) 'the wind file is unformated: ',file
+		return
 	    end if
 	end if
 
 	close( nwin )
+
+c-----------------------------------------------------------------
+c try formatted
+c-----------------------------------------------------------------
+
+	nwin = ifileo(0,file,'formatted','old')
+	if( nwin .le. 0 ) return		!error opening wind file
+
+	read(nwin,*,iostat=ios) it,u,v
+
+	if( ios .ne. 0 ) then
+	  write(6,*) 'The wind file is not ASCII'
+	  write(6,*) 'However there was an error reading it'
+	  write(6,*) 'as unformatted.'
+	  write(6,*) 'The total number of nodes could be not'
+	  write(6,*) 'compatible with the basin file.'
+	  write(6,*) 'nkn = ',nkn,'  nwind = ',na
+	  stop 'error stop binwin: wind file not compatible'
+	end if
+
+	close( nwin )
+
+	write(6,*) 'the wind file is ASCII: ',file
+
+c-----------------------------------------------------------------
+c end of routine
+c-----------------------------------------------------------------
 
 	end
 

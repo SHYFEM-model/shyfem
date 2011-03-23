@@ -58,6 +58,8 @@ fi
 
 ####################################################### copy files
 
+error="NO"
+
 while [ $# -gt 0 ]
 do
   file=`basename $1 .str`
@@ -71,10 +73,16 @@ do
     fi
   else
     echo >&2 "Cannot read $next"
+    error="YES"
   fi
 
   shift
 done
+
+if [ $error = "YES" ]; then
+  echo >&2 "Cannot read some STR files... aborting"
+  exit 9
+fi
 
 ####################################################### end of script
 

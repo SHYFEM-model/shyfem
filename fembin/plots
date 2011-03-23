@@ -167,6 +167,7 @@ WriteTitle > apnstd.str
 WritePara  >> apnstd.str
 
 apnmake $* >> apnstd.str
+[ $? -ne 0 ] && exit 1
 
 ######################################################### write to terminal
 

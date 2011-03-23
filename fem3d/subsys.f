@@ -94,6 +94,7 @@ c 15.12.2010	ggu	nsigma renamed to nbsig, nsigma used for sigma layers
 c 21.12.2010	ggu	new parameter rwscal
 c 16.02.2011	ggu	new default for isphe, new routine fnm_aquabc_init()
 c 25.02.2011	ggu	new param wsmax to catch errors in wind type
+c 23.03.2011	ggu	new parameter itvdv
 c
 c************************************************************************
 
@@ -517,12 +518,23 @@ c		(Default 0)
 
 cc controlling scalar transport and diffusion
 
-c |itvd|	Type of advection scheme used for the transport and diffusion
+c |itvd|	Type of the horizontal advection scheme used for 
+c		the transport and diffusion
+c		equation. Normally an upwind scheme is used (0), but setting
+c		the parameter |itvd| to a value greater than 0 
+c		choses a TVD scheme. A value of 1 will use a TVD scheme
+c		based on the average gradient, and a value of 2 will use
+c		the gradient of the upwind node (recommended).
+c		This feature
+c		is still experimental, so use with care. (Default 0)
+c |itvdv|	Type of the vertical advection scheme used for 
+c		the transport and diffusion
 c		equation. Normally an upwind scheme is used (0), but setting
 c		the parameter |itvd| to 1 choses a TVD scheme. This feature
 c		is still experimental, so use with care. (Default 0)
 
-	call addpar('itvd',0.)		!TVD scheme?
+	call addpar('itvd',0.)		!horizontal TVD scheme?
+	call addpar('itvdv',0.)		!vertical TVD scheme?
 
 	call addpar('rstol',1.)		!limit time step to this Courant number
 

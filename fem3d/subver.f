@@ -192,7 +192,7 @@ c writes copyright and version/dimension
         write(6,*) ' ----------------------------------------------'
         write(6,*)
         write(6,*) ' SHYFEM - Finite Element Model for coastal seas'
-        write(6,*) ' Copyright (c) Georg Umgiesser 1985-2010'
+        write(6,*) ' Copyright (c) Georg Umgiesser 1985-2011'
         write(6,*)
         write(6,'(i3,a,a10)') idim,'D FEM model,  version ',vers
         write(6,*)

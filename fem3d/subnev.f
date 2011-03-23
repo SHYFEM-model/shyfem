@@ -35,6 +35,7 @@ c 14.04.2010	ggu	new routines get_coords_ev() and check_spheric_ev()
 c 07.05.2010	ggu	initialization of ev routines
 c 25.01.2011	ggu	default to lat/lon if small coordinates are given
 c 28.01.2011	ggu	new entry in ev for distance of nodes (17-19)
+c 23.03.2011	ggu	better set-up for isphe_ev
 c
 c***********************************************************
 
@@ -54,8 +55,6 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
 	include 'ev.h'
-	integer isphe_ev,init_ev
-	common /evcommon/ isphe_ev,init_ev
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v
@@ -76,14 +75,7 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	double precision dlat0,dlon0			!center of projection
 
 	call check_spheric_ev	!checks and sets isphe_ev
-
-	isphe = isphe_ev
-	init_ev = 1
-
-c        write(6,*)
-c        do ie=1,10
-c          write(6,*) ie,(nen3v(ii,ie),ii=1,3)
-c        end do
+	call get_coords_ev(isphe)
 
         one = 1.
         two = 2.
@@ -327,6 +319,7 @@ c checks if coordinates are lat/lon
 	end if
 
 	isphe_ev = isphe
+	init_ev = 1
 
 	write(6,*) 'setting for coordinates: ',isphe
 	if( isphe .ne. 0 ) write(6,*) 'using lat/lon coordinates'
