@@ -1,3 +1,52 @@
+version  6_1_21    23-03-2011    VERS_6_1_21
+
+bug fix isphe, heatgotm, itvdv
+
+========================================================== 23-03-2011 - 6_1_21
+
+c ./fem3d/newtvd.f:
+c 23.03.2011	ccf	get isphe through get_coords_ev()
+c
+c ./fem3d/vp.f:
+c 04.03.2011    ggu     new routine test_grade()
+c
+c ./fem3d/subver.f:
+c 23.03.2011	ggu	version 6.1.21
+c
+c ./fem3d/newcon.f:
+c 23.03.2011    ggu     new parameter itvdv
+c
+c ./fem3d/newbcl.f:
+c 04.03.2011    ggu     better error message for rhoset_shell
+c
+c ./fem3d/subnev.f:
+c 23.03.2011	ggu	better set-up for isphe_ev
+c
+c ./fem3d/subqfxm4.f:
+c 04.03.2011    ggu     heat module from gotm extracted
+c 23.03.2011    ggu     bug in heatgotm() -> avoid wind speed == 0
+c
+c ./fem3d/ousinf.f:
+c 23.03.2011    ggu     compute real u/v-min/max of first level
+c
+c ./fem3d/subsys.f:
+c 23.03.2011	ggu	new parameter itvdv
+c
+c ./fem3d/subqfxt.f:
+c 04.03.2011    ggu     new routine heatgotm
+c 23.03.2011    ggu     new routine check_heat() to check for Nan, new iheat
+c
+c ./fem3d/ht.f:
+c 23.03.2011    ggu	new call to adjust_spherical()
+c
+c ./fem3d/newini.f:
+c 23.03.2011    ggu	new routine adjust_spherical(), error check isphe
+c
+c ./fem3d/subwin.f:
+c 23.03.2011	ggu	better error message in binwin()
+
+==========================================================
+
 version  6_1_20    01-03-2011    VERS_6_1_20
 
 ========================================================== 01-03-2011 - 6_1_20
