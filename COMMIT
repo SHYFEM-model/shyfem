@@ -1,5 +1,21 @@
 ============================================================
 
+Fri Mar 25 12:55:08 CET 2011
+
+small fixes
+
+ BUG                  |    7 +++++--
+ LOG                  |    8 ++++++++
+ fem3d/lagrange_oil.f |    2 +-
+ fem3d/newcon.f       |   18 ++++++++++++++++++
+ fem3d/subbndo.f      |    4 ++++
+ fem3d/subn35.f       |    2 +-
+ fem3d/subqfxt.f      |   27 ++++++++++++++++++---------
+ fem3d/subsys.f       |   21 ++++++++++++++++++++-
+ 8 files changed, 75 insertions(+), 14 deletions(-)
+
+============================================================
+
 Wed Mar 23 16:51:38 CET 2011
 
 New version 6_1_21

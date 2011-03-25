@@ -71,6 +71,7 @@ c 17.04.2008    ggu     calls to infobnd deleted (subst by get_bnd_ipar)
 c 03.09.2008    ggu     new routine bndo_info_file()
 c 06.11.2008    ggu     better error handling
 c 12.11.2009    ggu     new array itynod and is_zeta_bound()
+c 25.03.2011    ggu     bug fix in bndo_impbc() -> ibcold not initialized
 c
 c***********************************************************************
 
@@ -487,6 +488,8 @@ c imposes boundary conditions on open boundary
         bdebug = .true.
         bdebug = .false.
 
+	ibcold = 0
+
         do i=1,nbndo
 
           k = kbcnod(i)
@@ -560,6 +563,7 @@ c adjusts for ambient value, no gradient or outgoing flow
 
 	bdebug = .true.
 	bdebug = .false.
+
 	ibcold = 0
 
 	if( bdebug ) then

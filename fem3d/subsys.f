@@ -95,6 +95,7 @@ c 21.12.2010	ggu	new parameter rwscal
 c 16.02.2011	ggu	new default for isphe, new routine fnm_aquabc_init()
 c 25.02.2011	ggu	new param wsmax to catch errors in wind type
 c 23.03.2011	ggu	new parameter itvdv
+c 24.03.2011	ggu	new parameters iheat,hdecay,botabs
 c
 c************************************************************************
 
@@ -625,13 +626,32 @@ cc------------------------------------------------------------------------
 cc still to be commented below here
 cc------------------------------------------------------------------------
 
+cc waves
+
         call addpar('iwave',0.)         !wave module: 1 = SPM empirical
                                         !             2 = WWM FEM
                                         !             spectral
 
         call addpar('dtwave',0.)        !WWM wave module time step
 
+cc------------------------------------------------------------------------
+
+cc meteo and heat flux
+cc
+cc iheat         type of heat flux routine
+cc               1=areg  2=pom  3=gill  4=dejak  5=gotm
+cc hdecay        depth of e-folding decay of radiation [m]
+cc               0. ->   everything is absorbed in first layer
+cc botabs        heat absorption at bottom [fraction]
+cc               1. ->   bottom absorbs remaining radiation
+cc               0. ->   everything is absorbed in last layer
+
 	call addpar('imreg',0.)		!regular meteo data
+	call addpar('ievap',0.)		!compute evaporation mass flux
+
+	call addpar('iheat',1.)		!type of heat flux routine
+	call addpar('hdecay',0.)	!depth of e-folding decay of radiation
+	call addpar('botabs',0.)	!heat absorption at bottom
 
 cc------------------------------------------------------------------------
 
@@ -663,7 +683,6 @@ cc custom call
 cc rain
 
 	call addpar('zdist',0.)		!distributed water level
-	call addpar('ievap',0.)		!compute evaporation mass flux
 
 	end
 

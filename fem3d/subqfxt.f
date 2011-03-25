@@ -26,6 +26,7 @@ c 27.08.2009    ggu     new call to heatgill, new routine heatareg
 c 11.11.2009    ggu     handle abosrption of short rad in more than one layer
 c 04.03.2011    ggu     new routine heatgotm
 c 23.03.2011    ggu     new routine check_heat() to check for Nan, new iheat
+c 25.03.2011    ggu     new parameters iheat,hdecay,botabs
 c
 c notes :
 c
@@ -135,27 +136,35 @@ c local
 	real area
 	double precision ddq
 c functions
-	real depnode,areanode
+	real depnode,areanode,getpar
 	integer ifemopa
 c save
-	integer n93
-	save n93
-	data n93 / 0 /
+	integer n93,icall
+	save n93,icall
+	data n93,icall / 0 , 0 /
 
 	call qflux_compute(yes)
 	if( yes .le. 0 ) return
 
 c---------------------------------------------------------
 c iheat		1=areg  2=pom  3=gill  4=dejak  5=gotm
-c botabs	1. ->	bottom absorbs remaining radiation
-c		0. ->	everything is absorbed in last layer
 c hdecay	depth of e-folding decay of radiation
 c		0. ->	everything is absorbed in first layer
+c botabs	1. ->	bottom absorbs remaining radiation
+c		0. ->	everything is absorbed in last layer
 c---------------------------------------------------------
 
-	iheat = 5
-	hdecay = 0.
-	botabs = 0.
+	!iheat = 1
+	!hdecay = 0.
+	!botabs = 0.
+	iheat = nint(getpar('iheat'))
+	hdecay = getpar('hdecay')
+	botabs = getpar('botabs')
+
+	if( icall .eq. 0 ) then
+	  write(6,*) 'qflux3d: iheat,hdecay,botabs: ',iheat,hdecay,botabs  
+	end if
+	icall = 1
 
 c---------------------------------------------------------
 c set other parameters

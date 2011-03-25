@@ -28,7 +28,7 @@ c*******************************************************************
         include 'param.h'
         include 'lagrange.h'
 
-	inlcude 'ev.h'
+	include 'ev.h'
 
 	real v1v(1)
 	common /v1v/v1v

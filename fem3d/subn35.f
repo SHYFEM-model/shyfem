@@ -759,7 +759,7 @@ c prints chezy values to log file
 
 	return
  1007   format(' area,cz1,cz2,k1,k2 : ')
- 1008   format(i5,2f7.1,2i7,e12.4)
+ 1008   format(i5,2e12.4,2i7,e12.4)
 	end
 
 c***********************************************************

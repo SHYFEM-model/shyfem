@@ -1,4 +1,12 @@
 
+25.03.2011	small changes
+
+	new parameters iheat,hdecay,botabs (subsys.f,subqfxt.f)
+	error check for aapar and itvdv(newcon.f)
+	bug fix in bndo_impbc() -> ibcold not initialized (subbndo.f)
+
+========================================================== 01-03-2011 - 6_1_21
+
 23.03.2011	heatgotm, siphe, itvdv
 
 	itvdv

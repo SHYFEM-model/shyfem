@@ -163,6 +163,7 @@ c 15.12.2010    ggu     new routine vertical_flux_ie() for vertical tvd
 c 26.01.2011    ggu     nudging implemented (scal_adv_nudge, cobs, robs)
 c 16.02.2011    ggu     pass robs to info_stability()
 c 23.03.2011    ggu     new parameter itvdv
+c 25.03.2011    ggu     error check for aapar and itvdv
 c
 c*********************************************************************
 
@@ -824,6 +825,15 @@ c----------------------------------------------------------------
 	wws = wsink
 
 	dt=ddt/rstot
+
+	if( btvdv .and. aa .ne. 0. ) then
+	  write(6,*) 'aapar = ',aapar,'  itvdv = ',itvdv
+	  write(6,*) 'Cannot use implicit vertical advection'
+	  write(6,*) 'together with vertical TVD scheme.'
+	  write(6,*) 'Please set either aapar = 0 (explicit) or'
+	  write(6,*) 'itvdv = 0 (no vertical TVD) in the STR file.'
+	  stop 'error stop conz3d: vertical tvd scheme'
+	end if
 
 c	----------------------------------------------------------------
 c	global arrays for accumulation of implicit terms
@@ -1500,6 +1510,14 @@ c-----------------------------------------------------------------
 	adt=1.-ad
 	aa=aapar
 	aat=1.-aa
+
+	if( aa .ne. 0. ) then
+	  write(6,*) 'aapar = ',aapar
+	  write(6,*) 'Cannot use implicit vertical advection.'
+	  write(6,*) 'This might be resolved in a future version.'
+	  write(6,*) 'Please set aapar = 0 in the STR file.'
+	  stop 'error stop conzstab: implicit vertical advection'
+	end if
 
 c	-----------------------------------------------------------------
 c	 fractional time step

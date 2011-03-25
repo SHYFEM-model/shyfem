@@ -1,8 +1,11 @@
 
-BUG_2010_20     ggu	6.1.20   23.03.2011
+BUG_2010_21     ggu	6.1.22   25.03.2011
+        bug fix in bndo_impbc() -> ibcold not initialized (subbndo.f)
+
+BUG_2010_20     ggu	6.1.21   23.03.2011
 	heatgotm could not deal with wind speed == 0
 
-BUG_2010_19     ggu	6.1.20   23.03.2011
+BUG_2010_19     ggu	6.1.21   23.03.2011
 	isphe was not set automatically
 	all versions 6.1.18-6.1.20 are hit
 	wrong coriolis parameter is computed
