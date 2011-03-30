@@ -296,7 +296,7 @@ c	-----------------------------------------------------
           nk = nkbnds(ibc)   !total number of nodes of this boundary
 
 	  if( ibtyp .le. 3 ) then
-	   if( nbdim .eq. 0 ) then
+	    if( nbdim .eq. 0 ) then
 	      nsize = 0
 	      call b3dvalue(ibc,it,nsize,nb3dim,bnd3(1,ibc),rwv)
               rw = rwv(1)

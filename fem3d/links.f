@@ -10,6 +10,7 @@ c
 c 10.08.2003    ggu	new routines for ieltv, kantv
 c 18.10.2005    ggu	more debug output, new routines get_link, get_lenk
 c 06.04.2009    ggu	changed nlidim to nlkdim
+c 30.03.2011    ggu	bverbose introduced
 c
 c****************************************************************
 
@@ -84,6 +85,7 @@ c-------------------------------------------------------------------
         do ie=1,nel
           do i=1,3
             k=nen3v(i,ie)
+	    if( k .gt. nkn ) goto 97
             ip=ilinkv(k)+1      !first entry
             ip1=ilinkv(k+1)     !last possible entry
             do while(ip.le.ip1.and.lenkv(ip).ne.0)
@@ -201,12 +203,20 @@ c end of routine
 c-------------------------------------------------------------------
 
         return
+   97   continue
+        write(6,*) 'node: ',k,'  nkn: ',nkn
+        stop 'error stop mklenk : internal error (2)'
    98   continue
         write(6,*) n,nlkdim
         write(6,*) nkn,nel,2*nkn+nel
         stop 'errro stop mklenk: nlkdim'
    99   continue
-        write(6,*) k,k1,ilinkv(k),ip,ip1
+        !write(6,*) k,ilinkv(k),ip,ip1
+        write(6,*) 'node: ',k
+        write(6,*) 'element: ',ie
+        write(6,*) 'first entry: ',ilinkv(k)+1
+        write(6,*) 'last entry: ',ip1
+        write(6,*) 'actual pointer: ',ip
         stop 'error stop mklenk : internal error (1)'
         end
 
@@ -228,6 +238,9 @@ c local
 	integer ip,ip0,ip1
 	integer i
 	integer kbhnd,knext,kthis
+	logical bverbose
+
+	bverbose = .false.
 
         nbnd = 0        !total number of boundary nodes
         nnull = 0       !total number of 0 entries
@@ -276,7 +289,9 @@ c-------------------------------------------------------------------
 
         end do
 
-        write(6,*) 'checklenk: ',nnull,nbnd,nkn
+	if( bverbose ) then
+          write(6,*) 'checklenk: ',nnull,nbnd,nkn
+	end if
 
 c-------------------------------------------------------------------
 c end of routine
@@ -365,6 +380,9 @@ c local
 	integer k,k1,i
 	integer ip,ip0,ip1
 	integer ipk,ipk0,ipk1
+	logical bverbose
+
+	bverbose = .false.
 
 c-------------------------------------------------------------------
 c loop over nodes
@@ -398,7 +416,9 @@ c-------------------------------------------------------------------
 	  end do
         end do
 
-        write(6,*) 'checklink: ',nkn
+	if( bverbose ) then
+          write(6,*) 'checklink: ',nkn
+	end if
 
 c-------------------------------------------------------------------
 c end of routine
@@ -464,6 +484,9 @@ c arguments
 c local
 	integer k,k1,k2
 	integer nbnd,nint
+	logical bverbose
+
+	bverbose = .false.
 
 	nbnd = 0
 	nint = 0
@@ -490,7 +513,9 @@ c-------------------------------------------------------------------
 	  end if
         end do
 
-	write(6,*) 'checkkant: ',nkn,nint,nbnd
+	if( bverbose ) then
+	  write(6,*) 'checkkant: ',nkn,nint,nbnd
+	end if
 
 c-------------------------------------------------------------------
 c end of routine
@@ -579,10 +604,13 @@ c local
 	integer kn,inn,ien,ienn
         integer nbnd,nobnd,nintern
 	integer inext,knext,kthis
+	logical bverbose
 
 c-------------------------------------------------------------------
 c initialize
 c-------------------------------------------------------------------
+
+	bverbose = .false.
 
         nbnd = 0
         nobnd = 0
@@ -613,11 +641,13 @@ c-------------------------------------------------------------------
           end do
         end do
 
-        write(6,*) 'checkielt is ok'
-        write(6,*) '  internal sides =      ',nintern
-        write(6,*) '  boundary sides =      ',nbnd
-        write(6,*) '  open boundary sides = ',nobnd
-        write(6,*) '  total sides =         ',nintern+nbnd+nobnd
+	if( bverbose ) then
+          write(6,*) 'checkielt is ok'
+          write(6,*) '  internal sides =      ',nintern
+          write(6,*) '  boundary sides =      ',nbnd
+          write(6,*) '  open boundary sides = ',nobnd
+          write(6,*) '  total sides =         ',nintern+nbnd+nobnd
+	end if
 
 c-------------------------------------------------------------------
 c end of routine

@@ -15,6 +15,7 @@ c 17.09.2008  ggu     new routine level_e2k to compute ilhkv from ilhv
 c 09.10.2009  ggu     read also pressure from wind file
 c 13.10.2009  ggu     set nlv once file is read
 c 23.02.2010  ggu     change in reading wind file
+c 30.03.2011  ggu     new routines to handle fvl files (not yet integrated)
 c
 c**********************************************************
 c**********************************************************
@@ -1101,6 +1102,200 @@ c end
 	end
 
 c******************************************************
+c******************************************************
+c******************************************************
+c routines to read fvl file
+c******************************************************
+c******************************************************
+c******************************************************
+
+	subroutine fvlini
+
+c initializes internal data structure for NOS file
+
+	implicit none
+
+	integer nunit
+	common /fvlfvl/ nunit
+	save /fvlfvl/
+
+	integer icall
+	save icall
+	data icall /0/
+
+	if( icall .ne. 0 ) return
+
+	icall = 1
+
+	nunit = 0
+
+	end
+
+c******************************************************
+
+	subroutine fvlclose
+
+c closes NOS file
+
+	implicit none
+
+	integer nunit
+	common /fvlfvl/ nunit
+
+	if( nunit .gt. 0 ) close(nunit)
+	nunit = 0
+
+	end
+
+c******************************************************
+
+	subroutine fvlopen(type)
+
+c opens NOS file and reads header
+
+	implicit none
+
+	character*(*) type
+
+        include 'param.h'
+
+	integer nunit
+	common /fvlfvl/ nunit
+
+	character*80 descrp
+        common /descrp/ descrp
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
+
+        real hlv(1), hev(1)
+        common /hlv/hlv, /hev/hev
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+
+        real hlv1(nlvdim), hev1(neldim)
+        integer ilhkv1(nkndim)
+
+	character*80 file
+
+	integer nvers
+	integer nknaux,nelaux,nlvaux,nvar
+	integer ierr
+	integer ideffi
+
+c initialize routines
+
+	call fvlini
+
+c open file
+
+	nunit = ideffi('datdir','runnam',type,'unform','old')
+	if( nunit .le. 0 ) then
+		stop 'error stop conopen: cannot open NOS file'
+        else
+                write(6,*) 'File opened :'
+                inquire(nunit,name=file)
+                write(6,*) file
+                write(6,*) 'Reading file ...'
+	end if
+
+c read first header
+
+	nvers = 3
+	call rfnos(nunit,nvers,nknaux,nelaux,nlvaux,nvar,descrp,ierr)
+
+	if( ierr .ne. 0 ) then
+		stop 'error stop nosopen: error reading first header'
+	end if
+
+        write(6,*)
+        write(6,*)   descrp
+        write(6,*)
+        write(6,*) ' nvers = ', nvers
+        write(6,*) '   nkn = ',nknaux, '   nel = ',nelaux
+        write(6,*) '   nlv = ',nlvaux, '  nvar = ',  nvar
+        write(6,*)
+
+	if( nkn .ne. nknaux ) goto 99
+	if( nelaux .ne. 0 .and. nel .ne. nelaux ) goto 99
+	if( nlv .ne. nlvaux ) goto 99
+	if( nvar .ne. 1 ) goto 99
+
+c read second header
+
+	call rsnos(nunit,ilhkv,hlv,hev,ierr)
+
+	if( ierr .ne. 0 ) then
+		stop 'error stop nosopen: error reading second header'
+	end if
+
+	call array_check(nkn,ilhkv1,ilhkv,'ilhkv')
+	call array_check(nlv,hlv1,hlv,'hlv')
+	call array_check(nel,hev1,hev,'hev')
+
+c initialize time
+
+	call timeset(0,0,0)
+
+c end
+
+	return
+   99	continue
+	write(6,*) 'error in parameters :'
+	write(6,*) 'nkn : ',nkn,nknaux
+	write(6,*) 'nel : ',nel,nelaux
+	write(6,*) 'nlv : ',nlv,nlvaux
+	write(6,*) 'nvar: ',nvar
+	stop 'error stop fvlopen'
+	end
+
+c******************************************************
+
+	function fvlnext(it,ivar,nlvdim,array)
+
+c reads next NOS record - is true if a record has been read, false if EOF
+
+	implicit none
+
+	logical fvlnext		!true if record read, flase if EOF
+	integer it		!time of record
+	integer ivar		!type of variable
+	integer nlvdim		!dimension of vertical coordinate
+	real array(nlvdim,1)	!values for variable
+
+	integer nunit
+	common /fvlfvl/ nunit
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+
+	integer ierr
+
+	if( nlvdim .ne. nlvdi ) stop 'error stop fvlnext: nlvdim'
+
+	call rdnos(nunit,it,ivar,nlvdim,ilhkv,array,ierr)
+
+c set return value
+
+	if( ierr .gt. 0 ) then
+		!stop 'error stop fvlnext: error reading data record'
+		write(6,*) '*** fvlnext: error reading data record'
+		fvlnext = .false.
+	else if( ierr .lt. 0 ) then
+		fvlnext = .false.
+	else
+		fvlnext = .true.
+	end if
+
+c end
+
+	end
+
+c******************************************************
+c******************************************************
+c******************************************************
 
 	subroutine level_e2k
 
@@ -1128,6 +1323,30 @@ c computes max level at nodes from elements
 	    k = nen3v(ii,ie)
 	    ilhkv(k) = max(ilhkv(k),lmax)
 	  end do
+	end do
+
+	end
+
+c******************************************************
+
+	subroutine array_check(n,a1,a2,text)
+
+c checks if arrays are equal
+
+	implicit none
+
+	integer n
+	real a1(n)
+	real a2(n)
+	character*(*) text
+
+	integer i
+
+	do i=1,n
+	  if( a1(i) .ne. a2(i) ) then
+	    write(6,*) text,' : arrays differ'
+	    stop 'error stop array_check: arrays differ'
+	  end if
 	end do
 
 	end

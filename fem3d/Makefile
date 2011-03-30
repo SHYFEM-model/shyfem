@@ -213,6 +213,8 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subbnd.o subdts.o subdep.o \
 	  debug.o subreg.o subnev.o subrst.o
 
+BASEXTRA = subgeo.o subgrd.o subsrt.o sublnka.o links.o sublnku.o
+
 NOSOBJS = subnos.o nosutil.o
 OUSOBJS = subous.o ousutil.o
 GRDOBJS = subgrd.o grdutil.o subsrt.o subcoord.o
@@ -346,8 +348,8 @@ basres:  basres.o $(OUTOBJS) $(NOSOBJS)
 basproj:  basproj.o $(OUTOBJS) $(GRDOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(GRDOBJS) -o $@
 
-bastreat:  bastreat.o subgeo.o subgrd.o subsrt.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subgeo.o subgrd.o subsrt.o $(OUTOBJS) -o $@
+bastreat:  bastreat.o $(BASEXTRA) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(BASEXTRA) $(OUTOBJS) -o $@
 
 scal_intp:  scal_intp.o subgeo.o $(OUTOBJS) $(LAPLACE)
 	$(LINKER) $(LFLAGS) $@.o subgeo.o $(OUTOBJS) $(LAPLACE) -o $@

@@ -3691,4 +3691,88 @@ c**********************************************************************
 	end
 
 c**********************************************************************
+c**********************************************************************
+c**********************************************************************
 
+        subroutine skadar
+
+	implicit none
+
+	call limit_temp
+	call write_meteo
+
+	end
+
+c**********************************************************************
+
+        subroutine write_meteo
+
+	implicit none
+
+	include 'param.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+	real tempv(nlvdim,1)
+	common /tempv/tempv
+
+	integer l,k,lmax,ks
+	real qs,ta,rh,wb,uw,cc,p
+
+	integer icall
+	save icall
+	data icall /0/
+
+	integer ipint
+
+	ks = 7741
+	if( icall .eq. 0 ) ks = ipint(ks)
+
+	call meteo_get_values(k,qs,ta,rh,wb,uw,cc,p)
+
+	if( mod(it,21600) .eq. 0 ) write(565,*) it,qs,ta,rh,uw,cc
+	write(566,*) it,qs,ta,rh,uw,cc
+	write(567,*) it,tempv(1,ks)
+
+	icall = 1
+
+	end
+
+c**********************************************************************
+
+        subroutine limit_temp
+
+	implicit none
+
+	include 'param.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+	real tempv(nlvdim,1)
+	common /tempv/tempv
+
+	integer l,k,lmax
+	real tmin
+
+	tmin = 0.
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+	    if( tempv(l,k) .lt. tmin ) tempv(l,k) = tmin
+	  end do
+	end do
+
+	end
+
+c**********************************************************************

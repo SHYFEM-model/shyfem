@@ -13,6 +13,7 @@ c 06.12.2008    ggu     smoothing introduced
 c 06.04.2005    ggu     read param.h
 c 29.05.2009    ggu     does only depth limiting and smoothing
 c 20.11.2009    ggu     possibility to smooth only on specific areas
+c 30.03.2011    ggu     new routines to delete elements
 c
 c****************************************************************
 
@@ -25,28 +26,9 @@ c takes care of lat/lon coordinates
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
 
 	integer ndim
-
-        character*80 descrp
-        common /descrp/ descrp
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
 
         real hev(neldim)
         common /hev/hev
@@ -58,6 +40,15 @@ c takes care of lat/lon coordinates
         integer ipaux(nkndim)
 
 	include 'evmain.h'
+
+        integer ilinkv(nkndim+1)
+        common /ilinkv/ilinkv
+        integer lenkv(nlkdim)
+        common /lenkv/lenkv
+        integer linkv(nlkdim)
+        common /linkv/linkv
+        integer ieltv(3,neldim)
+        common /ieltv/ieltv
 
         character*40 bfile,gfile,nfile
         character*60 line
@@ -199,6 +190,10 @@ c-----------------------------------------------------------------
 	call node_test
 	call sp110a
 
+        call mklenk(nlkdim,nkn,nel,nen3v,ilinkv,lenkv)
+        call mklink(nkn,ilinkv,lenkv,linkv)
+        call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
+
 c-----------------------------------------------------------------
 c smooth
 c-----------------------------------------------------------------
@@ -209,7 +204,13 @@ c-----------------------------------------------------------------
 	  call smooth_bathy(ike,niter,f)
 	end if
 
-	call copy_depth(ike)	!copyt to nodes/elements
+	call copy_depth(ike)	!copy to nodes/elements
+
+c-----------------------------------------------------------------
+c special
+c-----------------------------------------------------------------
+
+	call delete_elements(0.)
 
 c-----------------------------------------------------------------
 c write
@@ -841,6 +842,340 @@ c*******************************************************************
 
 	alpha = 0.0
 
+	end
+
+c*******************************************************************
+c*******************************************************************
+c*******************************************************************
+
+	subroutine delete_elements(hmin)
+
+c deletes elements with depth lower then hmin
+
+	implicit none
+
+	real hmin
+
+	include 'param.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+        real xgv(nkndim), ygv(nkndim)
+        common /xgv/xgv, /ygv/ygv
+
+        integer nen3v(3,neldim)
+        integer ipev(neldim), ipv(nkndim)
+        integer iarv(neldim)
+        common /nen3v/nen3v
+        common /ipev/ipev, /ipv/ipv
+        common /iarv/iarv
+
+        real hev(neldim)
+        common /hev/hev
+        real hkv(nkndim)
+        common /hkv/hkv
+
+        integer ilinkv(nkndim+1)
+        common /ilinkv/ilinkv
+        integer lenkv(nlkdim)
+        common /lenkv/lenkv
+        integer linkv(nlkdim)
+        common /linkv/linkv
+        integer ieltv(3,neldim)
+        common /ieltv/ieltv
+
+	integer icon(neldim)
+
+	integer icol,ibig,ie
+
+	write(6,*)
+	write(6,*) 'deleting elements with depth <= ',hmin
+	write(6,*)
+
+	call delete_elements_depth(hmin)
+
+	call sp110a
+        call mklenk(nlkdim,nkn,nel,nen3v,ilinkv,lenkv)
+        call mklink(nkn,ilinkv,lenkv,linkv)
+        call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
+
+	write(6,*)
+	write(6,*) 'checking connectivity of basin'
+	write(6,*)
+
+	call check_connection(icon,icol,ibig)
+
+	do ie=1,nel
+	  if( icon(ie) .ne. ibig ) then
+	    hev(ie) = hmin - 1.
+	  end if
+	end do
+
+	write(6,*)
+	write(6,*) 'deleting not connected areas'
+	write(6,*)
+
+	call delete_elements_depth(hmin)
+
+	call sp110a
+        call mklenk(nlkdim,nkn,nel,nen3v,ilinkv,lenkv)
+        call mklink(nkn,ilinkv,lenkv,linkv)
+        call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
+
+	write(6,*)
+	write(6,*) 'final check'
+	write(6,*)
+
+	call check_connection(icon,icol,ibig)
+
+	write(6,*)
+	write(6,*) 'end deleting elements'
+	write(6,*)
+
+	end
+
+c*******************************************************************
+
+	subroutine delete_elements_depth(hmin)
+
+c deletes elements with depth lower then hmin
+
+	implicit none
+
+	real hmin
+
+	include 'param.h'
+	include 'basin.h'
+
+        real hev(neldim)
+        common /hev/hev
+        real hkv(nkndim)
+        common /hkv/hkv
+
+	integer ie,ii,k
+	integer n,ieh,kh
+
+	integer ind(neldim)		!index for nodes/elements to substitute
+	integer rind(neldim)		!reverse index
+
+c-----------------------------------------
+c delete elements
+c-----------------------------------------
+
+	n = nel
+	call determine_shift(n,ind,hev,hmin)
+
+	do ie=1,nel
+	  ieh = ind(ie)
+	  if( ieh .gt. 0 ) then
+	    ipev(ie) = ipev(ieh)
+	    iarv(ie) = iarv(ieh)
+	    hev(ie) = hev(ieh)
+	    do ii=1,3
+	      nen3v(ii,ie) = nen3v(ii,ieh)
+	    end do
+	  end if
+	end do
+
+	write(6,*) 'new elements: ',nel,n
+	nel = n
+
+c-----------------------------------------
+c flag unused nodes and delete (using hkv)
+c-----------------------------------------
+
+	do k=1,nkn
+	  hkv(k) = hmin - 1
+	  rind(k) = 0
+	end do
+
+	do ie=1,nel
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    hkv(k) = 1
+	  end do
+	end do
+
+	n = nkn
+	call determine_shift(n,ind,hkv,hmin)
+
+	do k=1,nkn
+	  kh = ind(k)
+	  if( kh .gt. 0 ) then
+	    ipv(k) = ipv(kh)
+	    xgv(k) = xgv(kh)
+	    ygv(k) = ygv(kh)
+	  end if
+	  rind(kh) = k
+	end do
+
+	write(6,*) 'new nodes: ',nkn,n
+	nkn = n
+
+c-----------------------------------------
+c adjust element index
+c-----------------------------------------
+
+	do ie=1,nel
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    kh = rind(k)
+	    if( kh .gt. 0 ) nen3v(ii,ie) = kh
+	  end do
+	end do
+
+c-----------------------------------------
+c end of routine
+c-----------------------------------------
+
+	end
+
+c*******************************************************************
+
+	subroutine determine_shift(n,ind,h,hmin)
+
+c determines what element/nodes must be shifted
+
+	implicit none
+
+	integer n
+	integer ind(n)
+	real h(n)
+	real hmin
+
+	integer i,ih
+	logical bfound
+
+	do i=1,n
+	  ind(i) = 0
+	end do
+
+	bfound = .true.
+	i = 0
+	ih = n+1
+	do while( i+1 .lt. ih )
+	  i = i + 1
+	  if( h(i) .le. hmin ) then
+	    bfound = .false.
+	    do while( ih-1 .gt. i .and. .not. bfound )
+	      ih = ih - 1
+	      if( h(ih) .gt. hmin ) then
+	        bfound = .true.
+		ind(i) = ih
+	      end if
+	    end do
+	    !write(6,*) i,ih
+	  end if
+	end do
+
+	if( .not. bfound ) i = i - 1	!last element to be excluded
+	n = i
+
+	end
+
+c*******************************************************************
+
+	subroutine check_connection(icon,icol,ibig)
+
+	implicit none
+
+	include 'param.h'
+        include 'links.h'
+
+	integer icon(neldim)
+	integer icol,ibig
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer nen3v(3,neldim)
+        common /nen3v/nen3v
+        integer ieltv(3,neldim)
+        common /ieltv/ieltv
+
+	integer ie
+	integer i,nc,ic
+	integer icolor(neldim)
+
+	do ie=1,nel
+	  icon(ie) = 0
+	end do
+
+	icol = 0
+
+	do ie=1,nel
+	  if( icon(ie) .eq. 0 ) then
+	    icol = icol + 1
+	    call color_area(ie,icol,icon)
+	  end if
+	end do
+
+	do i=1,icol
+	  icolor(i) = 0
+	end do
+
+	do ie=1,nel
+	  i = icon(ie)
+	  icolor(i) = icolor(i) + 1
+	end do
+	
+	nc = 0
+	do i=1,icol
+	  ic = icolor(i)
+	  if( ic .gt. nc ) then
+	    ibig = i
+	    nc = ic
+	  end if
+	end do
+
+	write(6,*) 'number of connected areas: ',icol
+	write(6,*) 'biggest area: ',ibig,nc
+
+	end
+
+c*******************************************************************
+
+	subroutine color_area(iestart,icol,icon)
+
+	implicit none
+
+	include 'param.h'
+        include 'links.h'
+
+	integer iestart,icol
+	integer icon(neldim)
+
+        integer ieltv(3,neldim)
+        common /ieltv/ieltv
+
+	integer ip,ien,ii,ie
+	integer list(neldim)
+
+	ip = 1
+	list(ip) = iestart
+
+	do while( ip .gt. 0 ) 
+	  ie = list(ip)
+	  icon(ie) = icol
+	  !write(6,*) icol,ip,ie
+	  ip = ip -1
+	  do ii=1,3
+	    ien = ieltv(ii,ie)
+	    if( ien .gt. 0 ) then
+	      if( icon(ien) .eq. 0 ) then
+	        ip = ip + 1
+	        list(ip) = ien
+	      else if( icon(ien) .ne. icol ) then
+	        goto 99
+	      end if
+	    end if
+	  end do
+	end do
+
+	return
+   99	continue
+	write(6,*) ip,ie,ien,icol,icon(ien)
+	stop 'error stop color_area: internal error (1)'
 	end
 
 c*******************************************************************

@@ -1,4 +1,11 @@
 
+30.03.2011	heatgotm, small changes
+
+	bug in heatgotm() -> convert pressure to Pascal (subqfxm4.f)
+	more sanity tests in pre-processing (vp.f, subcmv.f)
+	new routines to delete elements (bastreat.f)
+	in plot new routines to handle fvl files ( supout.f)
+	
 25.03.2011	small changes
 
 	new parameters iheat,hdecay,botabs (subsys.f,subqfxt.f)

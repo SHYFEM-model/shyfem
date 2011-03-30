@@ -1,4 +1,7 @@
 
+BUG_2010_22     ggu	6.1.22   30.03.2011
+        bug in heatgotm() -> convert pressure to Pascal (subqfxm4.f)
+
 BUG_2010_21     ggu	6.1.22   25.03.2011
         bug fix in bndo_impbc() -> ibcold not initialized (subbndo.f)
 

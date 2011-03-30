@@ -18,12 +18,13 @@ c revised on  08.09.97  by ggu  introduce raux,neaux for compiler warnings
 c 20.03.1998    ggu     automatic optimization of bandwidth introduced
 c 08.05.1998    ggu     always process whole file (idepth = 0)
 c 18.05.1998    ggu     always process depths elementwise
-c 18.05.1998	ggu	don't ask for description anymore
+c 18.05.1998	ggu	dont ask for description anymore
 c 17.10.2001    ggu     accept also grd files with some missing data
 c 18.10.2005    ggu     some error messages slightly changed
 c 06.04.2009    ggu     read param.h
 c 24.04.2009    ggu     new call to rdgrd()
 c 04.03.2011    ggu     new routine test_grade()
+c 30.03.2011    ggu     new routine check_sidei(), text in optest()
 c
 c notes :
 c
@@ -265,6 +266,7 @@ c end reading ----------------------------------------------------
 
         call test_grade(nkn,nel,nen3v,ng,ngrdim)
         call sidei(nkn,nel,nen3v,ng,iknot,ngrdim,ngr)
+        call check_sidei(nkn,nel,nen3v,ipv,ng,iknot,ngrdim,iaux)
 	call knscr(nkn,ngr,ngrdim,iknot)
 
 	write(nat,*) ' Maximum grade of nodes is ',ngr
@@ -748,6 +750,51 @@ c tests if ngrdim is big enough
 
 c*****************************************************************
 
+        subroutine check_sidei(nkn,nel,nen3v,ipv,ng,iknot,ngrdim,iaux)
+
+c set up side index and find grade
+
+        implicit none
+
+        integer nkn,nel,ngr
+        integer ngrdim
+        integer nen3v(3,nel)
+        integer ipv(nkn)
+        integer ng(nkn)
+        integer iknot(ngrdim,nkn)
+        integer iaux(nkn)
+
+        integer ii,ie,k
+	integer igr,iel
+	logical bstop
+
+	bstop = .false.
+	do k=1,nkn
+	  iaux(k) = 0
+	end do
+
+	do ie=1,nel
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    iaux(k) = iaux(k) + 1
+	  end do
+	end do
+
+	do k=1,nkn
+	  igr = ng(k)
+	  iel = iaux(k)
+	  if( igr .gt. iel + 1 .or. igr .lt. iel ) then
+	    write(6,*) 'node not regular: ',ipv(k),igr,iel
+	    bstop = .true.
+	  end if
+	end do
+
+	if( bstop ) stop 'error stop check_sidei: node not regular'
+
+	end
+
+c*****************************************************************
+
         subroutine sidei(nkn,nel,nen3v,ng,iknot,ngrdim,ngr)
 
 c set up side index and find grade
@@ -879,13 +926,13 @@ c optimize band width
         bauto = iantw(' Automatic optimization ?') .gt. 0
 	if( bauto ) then
 	  call ininum(nkn,iphv,kphv)
-	  call optest(nkn,iphv,kphv)
+	  call optest('before optimization: ',nkn,iphv,kphv)
 	  call cmgrade(nkn,ngrdim,ipv,iphv,kphv,ng,iknot,1,4)
-	  call optest(nkn,iphv,kphv)
+	  call optest('after Cuthill McKee: ',nkn,iphv,kphv)
 	  call revnum(nkn,iphv,kphv)
-	  call optest(nkn,iphv,kphv)
+	  call optest('after reversing nodes: ',nkn,iphv,kphv)
           call rosen(nkn,ngrdim,iphv,kphv,ng,iknot,kvert)
-	  call optest(nkn,iphv,kphv)
+	  call optest('after Rosen: ',nkn,iphv,kphv)
 	  return
 	end if
 
@@ -1309,10 +1356,11 @@ c**********************************************************
 
 c**********************************************************
 
-	subroutine optest(nkn,iphv,kphv)
+	subroutine optest(text,nkn,iphv,kphv)
 
 	implicit none
 
+	character*(*) text
 	integer nkn
 	integer iphv(1)
 	integer kphv(1)
@@ -1328,7 +1376,9 @@ c**********************************************************
 
 	return
    99	continue
+	write(6,*) text
 	write(6,*) 'error in pointers...'
+	write(6,*) 'node (internal): ',i
 	write(6,*) i,nkn
 	write(6,*) iphv(i),kphv(i)
 	stop 'error stop optest: pointers'

@@ -1,5 +1,34 @@
 ============================================================
 
+Wed Mar 30 12:06:48 CEST 2011
+
+bug fix in heatgotm, minor changes
+
+ BUG               |    3 +
+ LASTTAR           |    2 +-
+ LOG               |    7 +
+ Rules.make        |    4 +
+ fem3d/Makefile    |    6 +-
+ fem3d/basinf.f    |    6 +-
+ fem3d/bastreat.f  |  377 ++++++++++++++++++++++++++++++++++++++++++++++++++---
+ fem3d/ht.f        |    1 +
+ fem3d/links.f     |   48 ++++++--
+ fem3d/newini.f    |   19 +++
+ fem3d/param.h     |    6 +-
+ fem3d/subcmv.f    |    2 +-
+ fem3d/subcus.f    |   84 ++++++++++++
+ fem3d/subn11.f    |    2 +-
+ fem3d/subqfxm4.f  |  128 +++++++++---------
+ fem3d/vp.f        |   62 ++++++++-
+ femadj/param.h    |    6 +-
+ femplot/param.h   |    6 +-
+ femplot/plotsim.f |    2 +-
+ femplot/supout.f  |  219 +++++++++++++++++++++++++++++++
+ param.h           |    6 +-
+ 21 files changed, 878 insertions(+), 118 deletions(-)
+
+============================================================
+
 Fri Mar 25 12:55:08 CET 2011
 
 small fixes

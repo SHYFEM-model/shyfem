@@ -409,6 +409,7 @@ c-----------------------------------------------------------
 	call set_spherical
 	call set_ev
 	call adjust_spherical
+	call print_spherical
 	call set_geom
 
 c-----------------------------------------------------------

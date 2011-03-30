@@ -297,7 +297,7 @@ c writes copyright
         write(6,*) ' -------------------------------------------'
         write(6,*)
         write(6,*) ' PLOTSIM - Plot maps on finite element grids'
-        write(6,*) ' Copyright (c)  Georg Umgiesser 1985-2010'
+        write(6,*) ' Copyright (c)  Georg Umgiesser 1985-2011'
         write(6,*)
         write(6,*) ' version ',version
         write(6,*)

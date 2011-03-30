@@ -1489,3 +1489,22 @@ c*******************************************************************
 
 c*******************************************************************
 
+        subroutine print_spherical
+
+        implicit none
+
+        integer isphe
+
+	call get_coords_ev(isphe)
+
+        write(6,*) 'setting for coordinates: ',isphe
+        if( isphe .eq. 0 ) then
+          write(6,*) 'using cartesian coordinates'
+        else
+          write(6,*) 'using lat/lon coordinates'
+        end if
+
+        end
+
+c*******************************************************************
+

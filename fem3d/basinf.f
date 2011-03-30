@@ -540,9 +540,13 @@ c area code
 c-----------------------------------------------------------------
 
 	hmin = -1.
-	hmax = 40.
+	hmax = 10.
 	dh = 0.10
+
+	hmin = -1.
+	hmax = 40.
 	dh = 0.01
+
 	imax = (hmax-hmin)/dh
 	if( imax .gt. ndim ) then
 	  write(6,*) imax,ndim,hmin,hmax,dh

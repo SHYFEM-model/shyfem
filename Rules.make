@@ -80,6 +80,10 @@ export NLVDIM = 200
 #export MBWDIM = 200
 #export NGRDIM = 10
 
+# skadar
+export NKNDIM = 12000
+export NELDIM = 24000
+export NLVDIM = 20
 
 ##############################################
 # Compiler

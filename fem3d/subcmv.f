@@ -304,7 +304,7 @@ c        write(6,'(16x,a,7x,a,3x,a)') 'node','grade','bandwidth'
               call nodnum(nkn,iphv,kphv,i,knum)
               call cmalg(nkn,ngrdim,knum,m,iphv,kphv,ng,iknot)
 	      !write(6,*) 'ggu... ',i,ng(i),m
-	call optest(nkn,iphv,kphv)
+	      call optest('in cmgrade',nkn,iphv,kphv)
 c              write(6,'(8x,3i12)') ipv(i),ng(i),m
               if(m.lt.mmin) then
                 mmin=m
