@@ -1,3 +1,61 @@
+version  6_1_22    14-04-2011    VERS_6_1_22
+
+no plot in dry areas
+heatgotm
+
+========================================================== 14-04-2011 - 6_1_22
+
+c ./femplot/plotsim.f:
+c 31.03.2011	ggu	new arrays fvlv, arfvlv for scalar plotting
+c
+c ./femplot/supsim.f:
+c 31.03.2011    ggu     no plotting in dry nodes implemented - read fvl file
+c
+c ./femplot/supout.f:
+c 30.03.2011  ggu     new routines to handle fvl files (not yet integrated)
+c 31.03.2011  ggu     use fvl routines to exclude areas from plot
+c
+c ./femplot/supdep.f:
+c 30.03.2011    ggu     new routine mkareafvl()
+c
+c ./fem3d/vp.f:
+c 30.03.2011    ggu     new routine check_sidei(), text in optest()
+c
+c ./fem3d/subbndo.f:
+c 25.03.2011    ggu     bug fix in bndo_impbc() -> ibcold not initialized
+c
+c ./fem3d/subver.f:
+c 14.04.2011	ggu	version 6.1.22
+c
+c ./fem3d/newcon.f:
+c 25.03.2011    ggu     error check for aapar and itvdv
+c
+c ./fem3d/newbcl.f:
+c 31.03.2011    ggu     only write temp/salt if computed
+c
+c ./fem3d/links.f:
+c 30.03.2011    ggu	bverbose introduced
+c
+c ./fem3d/subqfxm4.f:
+c 29.03.2011    ggu     bug in heatgotm() -> convert pressure to Pascal
+c
+c ./fem3d/subreg.f:
+c 31.03.2011	ggu	new routine elemmask()
+c
+c ./fem3d/subsys.f:
+c 24.03.2011	ggu	new parameters iheat,hdecay,botabs
+c
+c ./fem3d/subqfxt.f:
+c 25.03.2011    ggu     new parameters iheat,hdecay,botabs
+c
+c ./fem3d/ht.f:
+c 31.03.2011    ggu	write finite volumes at initial time step
+c
+c ./fem3d/bastreat.f:
+c 30.03.2011    ggu     new routines to delete elements
+
+==========================================================
+
 version  6_1_21    23-03-2011    VERS_6_1_21
 
 bug fix isphe, heatgotm, itvdv
