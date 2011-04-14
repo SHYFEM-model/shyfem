@@ -117,6 +117,8 @@ cleanexe:
 cleanobj:
 	-rm -f *.o
 	-rm -f *.stb
+	-rm -f *.mod
+	-rm -f *_genmod.f90
 
 cleanvar:
 	-rm -f a.out core

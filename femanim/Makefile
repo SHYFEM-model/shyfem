@@ -1,6 +1,8 @@
 
 default:
 
+fem:
+
 all: anim
 anim:
 	./makeanim.sh

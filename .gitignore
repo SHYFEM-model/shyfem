@@ -1,9 +1,12 @@
 *.o
 *.a
 *.mod
+*.stp
 *.tmp
 *.bak
 *.swp
+
+*__genmod.f90
 
 arc
 test
@@ -11,7 +14,7 @@ tmp
 
 lib
 bin
-!fem3d/bin
+#fem3d/bin
 
 a.out
 DIFFS

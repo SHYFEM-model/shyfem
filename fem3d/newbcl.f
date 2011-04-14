@@ -48,6 +48,7 @@ c 16.12.2010    ggu     sigma layers introduced (maybe not finished)
 c 26.01.2011    ggu     read in obs for t/s (tobsv,sobsv)
 c 28.01.2011    ggu     parameters changed in call to ts_nudge()
 c 04.03.2011    ggu     better error message for rhoset_shell
+c 31.03.2011    ggu     only write temp/salt if computed
 c
 c*****************************************************************
 
@@ -270,13 +271,20 @@ c		-> we iterate to the real solution)
 		call rhoset_shell
 
         	iu = 0
+		nvar = 0
+		if( itemp .gt. 0 ) nvar = nvar + 1
+		if( isalt .gt. 0 ) nvar = nvar + 1
         	itmcon = iround(getpar('itmcon'))
         	idtcon = iround(getpar('idtcon'))
-        	call confop(iu,itmcon,idtcon,nlv,2,'nos')
+        	call confop(iu,itmcon,idtcon,nlv,nvar,'nos')
 
 		if( binitial_nos ) then
-		  call confil(iu,itmcon,idtcon,11,nlvdi,saltv)
-		  call confil(iu,itmcon,idtcon,12,nlvdi,tempv)
+		  if( isalt .gt. 0 ) then
+		    call confil(iu,itmcon,idtcon,11,nlvdi,saltv)
+		  end if
+		  if( isalt .gt. 0 ) then
+		    call confil(iu,itmcon,idtcon,12,nlvdi,tempv)
+		  end if
 		end if
 
                 call getinfo(ninfo)
@@ -381,8 +389,12 @@ c compute min/max
 
 c print of results
 
-	call confil(iu,itmcon,idtcon,11,nlvdi,saltv)
-	call confil(iu,itmcon,idtcon,12,nlvdi,tempv)
+	if( isalt .gt. 0 ) then
+	  call confil(iu,itmcon,idtcon,11,nlvdi,saltv)
+	end if
+	if( itemp .gt. 0 ) then
+	  call confil(iu,itmcon,idtcon,12,nlvdi,tempv)
+	end if
 
 	return
    99	continue

@@ -280,7 +280,7 @@ c       ------------------------------------------------
 c       compute total radiation - positive if into water
 c       ------------------------------------------------
 
-        call heatgotm(t,p,w,ur,cc,ts,qsens,qlat,qlong,evap,cddrag)
+        call heatgotm(t,p,w,ur,cc,ts,qsens,qlat,qlong,evap)
         write(67,*) qsol,-qsens,-qlat,-qlong
 
         rtot = qsol - ( qsens + qlat + qlong )

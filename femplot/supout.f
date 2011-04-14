@@ -16,6 +16,7 @@ c 09.10.2009  ggu     read also pressure from wind file
 c 13.10.2009  ggu     set nlv once file is read
 c 23.02.2010  ggu     change in reading wind file
 c 30.03.2011  ggu     new routines to handle fvl files (not yet integrated)
+c 31.03.2011  ggu     use fvl routines to exclude areas from plot
 c
 c**********************************************************
 c**********************************************************
@@ -117,7 +118,7 @@ c******************************************************
 
 	subroutine prepsim
 
-c prepares simulation for use
+c prepares simulation for use - computes wet and dry areas
 
 	implicit none
 
@@ -131,39 +132,81 @@ c prepares simulation for use
 	common /znv/znv
 
 	integer level
-	real href,hzmin
+	real href,hzmin,hdry
 
-	logical is2d
+	logical fvl_is_available
 	integer getlev
 	real getpar
-
-c---------------------------------------------------
-c copy data structures -> we use only 3D
-c---------------------------------------------------
-
-	if( is2d() ) then
-	  !call from2to3
-	else
-	  !call from3to2
-	end if
 
 c---------------------------------------------------
 c set up mask of water points
 c---------------------------------------------------
 
+	hdry = -1.e+30				!no drying
+	hdry = 0.05
+
         href = getpar('href')
         hzmin = getpar('hzmin')
 	level = getlev()
 
-        call initmask(bwater)			!true for all elements
-        call drymask(bwater,znv,href,hzmin)	!false if znv/zenv not equal
-        call levelmask(bwater,ilhv,level)	!element has this level
-
-	call nodemask(bwater,bkwater)		!copy element to nodal mask
+	if( fvl_is_available() ) then		!...handle on nodes
+	  write(6,*) 'using fvl file for dry areas: ',hdry
+	  call volume_mask(bkwater,hdry)	!guess if dry using h of node
+	  call elemmask(bwater,bkwater)		!copy node to element mask
+          !call levelmask(bwater,ilhv,level)	!element has this level
+	  !call nodemask(bwater,bkwater)	!copy element to node mask
+	else					!...handle on elements
+	  write(6,*) 'using zeta for dry areas'
+          call initmask(bwater)			!true for all elements
+          call drymask(bwater,znv,href,hzmin)	!false if znv/zenv not equal
+          call levelmask(bwater,ilhv,level)	!element has this level
+	  call nodemask(bwater,bkwater)		!copy element to node mask
+	end if
 
 c---------------------------------------------------
 c end of routine
 c---------------------------------------------------
+
+	end
+
+c******************************************************
+
+	subroutine volume_mask(bkwater,hdry)
+
+	implicit none
+
+	logical bkwater(1)
+	real hdry
+
+	include 'param.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+        real fvlv(nlvdim,nkndim)
+        common /fvlv/fvlv
+        real arfvlv(nkndim)
+        common /arfvlv/arfvlv
+
+	integer k,idry
+	real vol,area,h
+	real hhmin,hhmax
+
+	hhmin = 1.e+30
+	hhmax = -1.e+30
+	idry = 0
+
+	do k=1,nkn
+	  vol = fvlv(1,k)
+	  area = arfvlv(k)
+	  h = vol/area
+	  hhmin = min(hhmin,h)
+	  hhmax = max(hhmax,h)
+	  bkwater(k) = h .ge. hdry
+	  if( .not. bkwater(k) ) idry = idry + 1
+	end do
+
+	write(6,*) 'min/max depth: ',hhmin,hhmax,hdry,idry
 
 	end
 
@@ -1133,6 +1176,21 @@ c initializes internal data structure for NOS file
 
 c******************************************************
 
+	function fvl_is_available()
+
+c checks if file is opened
+
+	logical fvl_is_available
+
+	integer nunit
+	common /fvlfvl/ nunit
+
+	fvl_is_available = nunit .gt. 0
+
+	end
+
+c******************************************************
+
 	subroutine fvlclose
 
 c closes NOS file
@@ -1192,7 +1250,10 @@ c open file
 
 	nunit = ideffi('datdir','runnam',type,'unform','old')
 	if( nunit .le. 0 ) then
-		stop 'error stop conopen: cannot open NOS file'
+		write(6,*) 'Cannot open flv file ... doing without...'
+		nunit = 0
+		return
+		!stop 'error stop conopen: cannot open NOS file'
         else
                 write(6,*) 'File opened :'
                 inquire(nunit,name=file)
@@ -1224,7 +1285,7 @@ c read first header
 
 c read second header
 
-	call rsnos(nunit,ilhkv,hlv,hev,ierr)
+	call rsnos(nunit,ilhkv1,hlv1,hev1,ierr)
 
 	if( ierr .ne. 0 ) then
 		stop 'error stop nosopen: error reading second header'
@@ -1252,15 +1313,13 @@ c end
 
 c******************************************************
 
-	function fvlnext(it,ivar,nlvdim,array)
+	subroutine fvlnext(it,nlvdim,array)
 
-c reads next NOS record - is true if a record has been read, false if EOF
+c reads next NOS record
 
 	implicit none
 
-	logical fvlnext		!true if record read, flase if EOF
 	integer it		!time of record
-	integer ivar		!type of variable
 	integer nlvdim		!dimension of vertical coordinate
 	real array(nlvdim,1)	!values for variable
 
@@ -1272,25 +1331,53 @@ c reads next NOS record - is true if a record has been read, false if EOF
         common /ilhkv/ilhkv
 
 	integer ierr
+	integer ivar		!type of variable
+
+	integer itfvl
+	save itfvl
+	data itfvl / -1 /
 
 	if( nlvdim .ne. nlvdi ) stop 'error stop fvlnext: nlvdim'
 
-	call rdnos(nunit,it,ivar,nlvdim,ilhkv,array,ierr)
+	if( nunit .eq. 0 ) return	!file closed
+	if( it .eq. itfvl ) return	!already read
+
+	if( itfvl .eq. -1 ) itfvl = it - 1	!force first read
+	nunit = abs(nunit)
+	ierr = 0
+	ivar = 66
+
+	do while( ierr .eq. 0 .and. itfvl .lt. it )
+	  call rdnos(nunit,itfvl,ivar,nlvdim,ilhkv,array,ierr)
+	  write(6,*) 'flv file read...',itfvl,ivar
+	end do
 
 c set return value
 
-	if( ierr .gt. 0 ) then
+	if( ierr .ne. 0 ) then
+	  if( ierr .gt. 0 ) then
 		!stop 'error stop fvlnext: error reading data record'
 		write(6,*) '*** fvlnext: error reading data record'
-		fvlnext = .false.
-	else if( ierr .lt. 0 ) then
-		fvlnext = .false.
-	else
-		fvlnext = .true.
+	
+	  else if( ierr .lt. 0 ) then
+		write(6,*) '*** fvlnext: EOF encountered'
+	  end if
+	  itfvl = -1
+	  nunit = 0
+	  return
 	end if
+
+c check results
+
+	if( it .ne. itfvl ) nunit = -abs(nunit)
+	if( ivar .ne. 66 ) goto 99
 
 c end
 
+	return
+   99	continue
+	write(6,*) it,itfvl,ivar
+	stop 'error stop fvlnext: time or variable'
 	end
 
 c******************************************************
@@ -1345,6 +1432,7 @@ c checks if arrays are equal
 	do i=1,n
 	  if( a1(i) .ne. a2(i) ) then
 	    write(6,*) text,' : arrays differ'
+	    write(6,*) n,i,a1(i),a2(i)
 	    stop 'error stop array_check: arrays differ'
 	  end if
 	end do

@@ -355,6 +355,9 @@ FINTEL_NOOPT = -w $(FFNCDF) -Cu -traceback
 # FINTEL_OPT   = -O -g -Mprof=time
 # FINTEL_OPT   = -O3 -g -axSSE4.2 #-mcmodel=medium -shared-intel
 FINTEL_OPT   = -O -g
+FINTEL_OPT   = -O -g -warn interfaces -check uninit -check bounds
+FINTEL_OPT   = -O -g -warn interfaces -check uninit
+
 
 FINTEL_OMP   =
 ifeq ($(PARALLEL),true)

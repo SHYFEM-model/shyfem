@@ -20,6 +20,7 @@ c 09.10.2009	ggu	plotting of atmos. pressure
 c 13.10.2009	ggu	new arrays for velocity section plot
 c 23.02.2010	ggu	new call to set_default_color_table()
 c 17.12.2010	ggu	substituted hv with hkv
+c 31.03.2011	ggu	new arrays fvlv, arfvlv for scalar plotting
 c
 c*************************************************************
 
@@ -87,6 +88,11 @@ c 3d
 
         real p3(nlvdim,nkndim)
         common /p3/p3
+
+        real fvlv(nlvdim,nkndim)
+        common /fvlv/fvlv
+        real arfvlv(nkndim)
+        common /arfvlv/arfvlv
 
 c boundary etc.
 	integer kantv(2,nkndim)
@@ -187,6 +193,7 @@ c----------------------------------------------
 
 	call mkhkv(hkv,v1v,nkn,nel)
 	call mkhev(hev,nel)
+	call mkareafvl			!area of finite volumes
 
 c----------------------------------------------
 c interactive set up

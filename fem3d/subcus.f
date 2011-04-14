@@ -3647,9 +3647,9 @@ c**********************************************************************
         common /uprv/uprv, /vprv/vprv
 	real tempv(nlvdim,1)
 	common /tempv/tempv
-        real visv(0:nlvdim,nkndim)
+        real visv(0:nlvdim,1)
         common /visv/visv
-        real difv(0:nlvdim,nkndim)
+        real difv(0:nlvdim,1)
         common /difv/difv
 	real znv(1)
 	common /znv/znv

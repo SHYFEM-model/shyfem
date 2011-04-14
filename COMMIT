@@ -1,5 +1,36 @@
 ============================================================
 
+Thu Apr 14 16:04:25 CEST 2011
+
+no plot in dry areas
+
+ .gitignore         |    5 ++-
+ LOG                |   16 +++++-
+ Makefile           |    1 +
+ Rules.make         |    3 +
+ fem3d/Makefile     |    2 +
+ fem3d/ht.f         |    4 +-
+ fem3d/newbcl.f     |   22 ++++++--
+ fem3d/newcon.f     |    2 +-
+ fem3d/subcus.f     |    4 +-
+ fem3d/subfvl.f     |    4 +-
+ fem3d/subnsh.f     |    2 +-
+ fem3d/subqfxm4.f   |    2 +-
+ fem3d/subreg.f     |   57 +++++++++++++++++++-
+ femadj/Makefile    |    2 +
+ femanim/Makefile   |    2 +
+ femgotm/Makefile   |    2 +
+ femplot/Makefile   |    2 +
+ femplot/plotsim.f  |    7 +++
+ femplot/supdep.f   |   35 ++++++++++++
+ femplot/supout.f   |  150 +++++++++++++++++++++++++++++++++++++++++-----------
+ femplot/supsim.f   |   20 +++++--
+ femspline/Makefile |    2 +
+ post/Makefile      |    2 +
+ 23 files changed, 295 insertions(+), 53 deletions(-)
+
+============================================================
+
 Wed Mar 30 12:06:48 CEST 2011
 
 bug fix in heatgotm, minor changes

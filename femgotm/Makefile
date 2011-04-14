@@ -114,6 +114,8 @@ doc:    $(DOCSRC)
 
 clean:
 	$(RM) -f ${LIB} $(MODDIR)/turbulence.{m,mod} $(MODDIR)/kpp.{m,mod} doc
+	$(RM) -f *.mod *_genmod.f90
+
 
 realclean: clean
 	$(RM) -f *.o *~ *.stb

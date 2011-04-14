@@ -1511,7 +1511,7 @@ c-----------------------------------------------------------------
 	aa=aapar
 	aat=1.-aa
 
-	if( aa .ne. 0. ) then
+	if( aa .ne. 0. .and. nlv .gt. 1 ) then
 	  write(6,*) 'aapar = ',aapar
 	  write(6,*) 'Cannot use implicit vertical advection.'
 	  write(6,*) 'This might be resolved in a future version.'

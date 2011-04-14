@@ -18,6 +18,7 @@ c 17.09.2008    ggu     routine mkht changed for layer = -1
 c 13.10.2009    ggu     new routine mkht3
 c 13.10.2009    ggu     new routine mkht3
 c 17.12.2010    ggu     substituted hv with hkv, new routine hlthick()
+c 30.03.2011    ggu     new routine mkareafvl()
 c
 c******************************************************************
 
@@ -311,6 +312,40 @@ c works also for sigma layers
 	  end if
 
 	end if
+
+	end
+
+c******************************************************************
+
+	subroutine mkareafvl
+
+c makes area of finite volume
+
+	implicit none
+
+c common
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer nen3v(3,1)
+	common /nen3v/nen3v
+	real arfvlv(1)
+	common /arfvlv/arfvlv
+	include 'ev.h'
+c local
+	integer ie,ii,k
+	real afvl
+
+	do k=1,nkn
+	  arfvlv(k) = 0.
+	end do
+
+	do ie=1,nel
+	  afvl = 4. * ev(10,ie)
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    arfvlv(k) = arfvlv(k) + afvl
+	  end do
+	end do
 
 	end
 

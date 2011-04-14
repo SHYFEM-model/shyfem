@@ -77,6 +77,7 @@ c 26.01.2011    ggu	new arrays for observations and nudging
 c 16.02.2011    ggu	new iarnv, call to aquabc
 c 17.02.2011    ccf	new radiation stress in 3D
 c 23.03.2011    ggu	new call to adjust_spherical()
+c 31.03.2011    ggu	write finite volumes at initial time step
 c
 c*****************************************************************
 
@@ -472,6 +473,7 @@ c-----------------------------------------------------------
 
 	call init_uv            !set vel, w, pr, ... from transports
 	call barocl(0)
+	call wrfvla		!write finite volume
 
 c-----------------------------------------------------------
 c initialize modules
@@ -528,7 +530,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   
 	   call sp259f			!hydro
 
-	   call wrfvla(it)		!write finite volume
+	   call wrfvla			!write finite volume
 
 	   call conz3sh			!concentration (for iconz == 1)
 	   call conzm3sh		!multi concentration (for iconz > 1)

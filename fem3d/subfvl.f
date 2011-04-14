@@ -5,15 +5,13 @@ c 28.04.2010    ggu     written from scratch
 c
 c******************************************************************
 
-	subroutine wrfvla(it)
+	subroutine wrfvla
 
 c write of finite volume data
 
 	implicit none
 
 	include 'param.h'
-
-	integer it
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw

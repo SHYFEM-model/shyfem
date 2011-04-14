@@ -49,6 +49,8 @@ clean:
 	-rm -f *.tmp *.bak *.gnu
 	-rm -f *.dat
 	-rm -f *~
+	-rm -f *.mod
+	-rm -f *_genmod.f90
 
 cleanall: clean cleangrd
 	-rm -f $(DIR).zip

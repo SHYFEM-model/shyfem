@@ -63,6 +63,7 @@ c 11.03.2009	ggu	new helper routine getgeoflag()
 c 12.06.2009	ggu	passing to double precision, intrid, bug bug_f_64bit
 c 26.01.2011	ggu&mb	handling extrapolation in am2av()
 c 27.01.2011	ggu&ccf	bug fix in find_elem_from_old() BUG_27.01.2011
+c 31.03.2011	ggu	new routine elemmask()
 c
 c notes :
 c
@@ -757,7 +758,6 @@ c common
 	common /nen3v/nen3v, /hm3v/hm3v
 	common /zenv/zenv
 c local
-	integer idry,idry1,idryd
 	integer itot,itot1
 	integer ie,ii
 
@@ -849,6 +849,10 @@ c common
 	common /nen3v/nen3v
 c local
 	integer ie,ii,k
+	integer nndry,nedry
+
+	nndry = 0
+	nedry = 0
 
 	do k=1,nkn
 	  bkwater(k) = .false.
@@ -860,8 +864,59 @@ c local
 	      k = nen3v(ii,ie)
 	      bkwater(k) = .true.
 	    end do
+	  else
+	    nedry = nedry + 1
 	  end if
 	end do
+
+	do k=1,nkn
+	  if( .not. bkwater(k) ) nndry = nndry + 1
+	end do
+
+	write(6,*) 'nodemask: dry elements =',nedry,nel
+	write(6,*) 'nodemask: dry nodes    =',nndry,nkn
+
+	end
+
+c******************************************************
+
+	subroutine elemmask(bwater,bkwater)
+
+c makes elem mask from node mask
+c
+c bwater is elementwise mask:	true = water point
+
+	implicit none
+
+c arguments
+	logical bwater(1)
+	logical bkwater(1)
+c common
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer nen3v(3,1)
+	common /nen3v/nen3v
+c local
+	integer ie,ii,k
+	integer nedry
+
+	nedry = 0
+
+	do ie=1,nel
+	  bwater(ie) = .true.
+	end do
+
+	do ie=1,nel
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    if( .not. bkwater(k) ) then
+	      bwater(ie) = .false.
+	    end if
+	  end do
+	  if( .not. bwater(ie) ) nedry = nedry + 1
+	end do
+
+	write(6,*) 'elemmask: dry elements =',nedry,nel
 
 	end
 

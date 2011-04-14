@@ -54,6 +54,7 @@ c 09.10.2009	ggu	new routine plopres() for atmos. pressure
 c 13.10.2009	ggu	section plot for velocities in plosim
 c 26.03.2010	ggu	section plot for velocities in plosim adapted
 c 17.12.2010    ggu     substituted hv with hkv
+c 31.03.2011    ggu     no plotting in dry nodes implemented - read fvl file
 c
 c**********************************************************
 c**********************************************************
@@ -76,6 +77,8 @@ c 3D concentrations
 	common /p3/p3
 	real parray(1)
 	common /parray/parray
+	real fvlv(nlvdim,1)	!finite volume
+	common /fvlv/fvlv
 
         character*80 line
 	integer nrec,it
@@ -90,6 +93,7 @@ c 3D concentrations
 	ivar = ivar_in
 
 	call nosopen(type)
+	call fvlopen('.fvl')
 	call timeask
 	if( ivar .gt. 0 ) then
 	  call setvar(ivar)
@@ -103,10 +107,12 @@ c 3D concentrations
 	do while( nosnext(it,ivaria,nlvdim,p3) )
 	  nrec = nrec + 1
 	  write(6,*) nrec,it,ivaria,ivar
+	  call fvlnext(it,nlvdim,fvlv)
 	  if( oktime(it) .and. okvar(ivaria) ) then
             if( isect .eq. 0 ) then
 	      write(6,*) '..........horizontal plotting'
 	      call extlev(level,nlvdim,nkn,p3,parray)
+	      call prepsim
 	      call ploval(nkn,parray,line)
             else
 	      write(6,*) '..........vertical plotting'
@@ -371,23 +377,27 @@ c**********************************************************
 	real parray(1)
         character*(*) title
 
-	real pmin,pmax
+        logical bwater(1)		!mask for elements
+        common /bwater/bwater
+        logical bkwater(1)		!mask for nodes
+        common /bkwater/bkwater
+
+	real pmin,pmax,flag
 	real getpar
         integer gettime
+
+        call get_flag(flag)
 
 	call qstart
         call annotes(gettime(),title)
 	call bash(0)
 
 	call get_minmax_flag(parray,nkn,pmin,pmax)
-	!call mima(parray,nkn,pmin,pmax)
         write(6,*) 'min/max: ',nkn,pmin,pmax
+	call aplymask(bkwater,parray,nkn,flag)	!applies flag to dry nodes
 	call colauto(pmin,pmax)
-c	call setcol(nkn,parray,getpar('dval'))
 
         call qcomm('Plotting isolines')
-        !call check1Dr(nkn,parray,0.,10.,"ploval","parray")
-        !write(6,*) 'min/max: ',nkn,pmin,pmax
         call isoline(parray,nkn,0.,2)
         call colsh
 

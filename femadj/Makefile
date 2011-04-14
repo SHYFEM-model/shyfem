@@ -57,6 +57,8 @@ clean: cleanobj cleanexe cleanvar cleantex
 cleanobj:
 	-rm -f *.o
 	-rm -f *.stb
+	-rm -f *.mod
+	-rm -f *_genmod.f90
 
 cleanexe:
 	-rm -f $(EXES)
