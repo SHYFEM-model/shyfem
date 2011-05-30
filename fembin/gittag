@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# shell for tagging cvs modules in a consistent way
+# shell for tagging git modules in a consistent way
 
 #########################################################
 
@@ -153,9 +153,7 @@ ok
 
 #########################################################
 
-#cvscommit -nolog
 editfiles
-#cvscommit -m "New version $newvers"
 
 #########################################################
 

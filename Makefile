@@ -42,11 +42,12 @@ SPECIAL   = Makefile Rules.make param.h \
 		BUG COMMIT FAQ LASTTAR LOG README VERSION
 
 VERSION = `head -1 $(FEMDIR)/VERSION | sed -e 's/  */ /g' | cut -f4 -d" "`
+VERSNAME = `head -1 $(FEMDIR)/VERSION | sed -e 's/  */ /g' | cut -f4 -d" " | sed -e 's/VERS_//'`
 DATE = `date "+%F"`
 TARNAME  = $(VERSION)
-BETANAME = $(VERSION)_beta_$(DATE)
+BETANAME = $(VERSNAME)_beta_$(DATE)
 TARDIR   = $(TMPDIR)/fem_$(TARNAME)
-BETADIR  = $(TMPDIR)/fem_$(BETANAME)
+BETADIR  = $(TMPDIR)/shyfem-$(BETANAME)
 
 #---------------------------------------------------------------
 
@@ -142,15 +143,20 @@ tar:
 
 beta: cleanall
 	date > LASTTAR
-	rm -rf $(TMPDIR)/fem.tar $(TMPDIR)/fem_VERS_*; mkdir -p $(BETADIR)
+	echo "$(BETANAME)"
+	rm -rf $(TMPDIR)/fem.tar $(TMPDIR)/fem_VERS_* $(TMPDIR)/shyfem-*
+	mkdir -p $(BETADIR)
 	cp -al $(FEMTOTS) $(SPECIAL) $(BETADIR)
-	cd $(TMPDIR); tar cvf fem.tar fem_VERS_*
+	cd $(TMPDIR); tar cvf fem.tar shyfem-*
 	mv -f $(TMPDIR)/fem.tar .
 	gzip -f fem.tar
 	rm -rf $(TMPDIR)/fem.tar $(BETADIR)
-	mv fem.tar.gz shyfem_$(BETANAME).tar.gz
+	mv fem.tar.gz shyfem-$(BETANAME).tar.gz
 
-vers: cleanall
+vers: 
+	@echo "please do not use this command - use gittar instead"
+
+versold: cleanall
 	date > LASTTAR
 	rm -rf $(TMPDIR)/fem.tar $(TMPDIR)/fem_VERS_*; mkdir -p $(TARDIR)
 	cp -al $(FEMTOTS) $(SPECIAL) $(TARDIR)

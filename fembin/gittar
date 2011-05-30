@@ -23,7 +23,7 @@ else
   status=$?
   if [ $status -eq 0 ]; then
     echo "commit found ... using this version"
-    date=`git show --pretty=format:"%ci" | head -1 | cut -d " " -f 1`
+    date=`git show --pretty=format:"%ci" $version | head -1 | cut -d " " -f 1`
     echo "commit date: $date"
     vers=${version}_$date
     tag=${version}

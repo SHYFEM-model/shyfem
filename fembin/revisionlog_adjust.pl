@@ -24,11 +24,12 @@ foreach $line (@rev) {
 }
 
 #--------------------------------------------------
-# open VERSION file
+# read VERSION file 
+#	extract dates of already inserted logs
+#	cancel these from new revision log
 #--------------------------------------------------
 
 $version = shift;
-#print STDERR "opening file $version...\n";
 open(VERS,"<$version");
 
 while($line = <VERS>) {
@@ -37,12 +38,10 @@ while($line = <VERS>) {
   if( $date ) {
     if( $rev{$line} ) {
       $rev{$line} = 0;
-      #print STDERR "**double** $line";
     }
   }
 }
 
-#print STDERR "closing file $version...\n";
 close(VERS);
 
 @new = ();
@@ -50,11 +49,12 @@ foreach $line (@rev) {
   if( $rev{$line} ) {
     push(@new,$line);
   }
-
   #analyse_line($line);
 }
 
-#print @new;
+#--------------------------------------------------
+# adjust output
+#--------------------------------------------------
 
 $has_date = 0;
 @rev = ();
@@ -88,7 +88,9 @@ if( $nref <= 0 ) {
 
 print @rev;
 
-
+#--------------------------------------------------
+# subroutines
+#--------------------------------------------------
 
 sub analyse_line {
 
@@ -104,4 +106,8 @@ sub analyse_line {
     print STDERR "*** other:\n$line"
   }
 }
+
+#--------------------------------------------------
+# end of routine
+#--------------------------------------------------
 

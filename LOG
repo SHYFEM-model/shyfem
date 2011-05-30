@@ -1,4 +1,29 @@
 
+30.05.2001	administrative changes
+
+	routines on regular files in reg directory (fem3d)
+	cvs routines moved to cvs directory (fembin)
+	changes in git* routines
+
+17.05.2011	minor enhancements
+
+	compiler warnings in qfcheck() (subqfxf.f)
+	new routine check_set_unit() to set output unit (newchk.f)
+	new routines skadar_debug() and wet_dry() (subcus.f)
+	new routines to adjourn depth (subdep.f)
+
+17.05.2011	plotting of node/element number
+
+	in plobas may plot node and element numbers (supsim.f)
+	new routine basin_number() (supbas.f)
+
+
+19.04.2011	compiler warnings in MACOSX
+
+	introduced HAVE_WIDGET for compiler errors (xgraph.[ch], general.h)
+
+========================================================== 14-04-2011 - 6_1_22
+
 31.03.2011	check in vp, write of temp/salt
 
 	new routine check_sidei(), text in optest() (vp.f)

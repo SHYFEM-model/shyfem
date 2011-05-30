@@ -1,5 +1,45 @@
 ============================================================
 
+Mon May 30 17:50:03 CEST 2011
+
+adminstrative changes
+
+ LASTTAR                         |    2 +-
+ LOG                             |   25 +++++
+ Makefile                        |   18 +++--
+ fem3d/reg/cat_reg_input.f       |  183 ++++++++++++++++++++++++++++++++++++++
+ fem3d/reg/cat_ts_input.f        |  185 +++++++++++++++++++++++++++++++++++++++
+ fem3d/reg/check_rain.f          |  100 +++++++++++++++++++++
+ fem3d/reg/check_reg_input.f     |  110 +++++++++++++++++++++++
+ fem3d/reg/clean_reg_input.f     |  111 +++++++++++++++++++++++
+ fem3d/reg/extract_reg_input.f   |  126 ++++++++++++++++++++++++++
+ fembin/cvs-format-update.pl     |  128 ---------------------------
+ fembin/cvs/cvs-format-update.pl |  128 +++++++++++++++++++++++++++
+ fembin/cvs/cvs_utils.sh         |   76 ++++++++++++++++
+ fembin/cvs/cvschange            |   57 ++++++++++++
+ fembin/cvs/cvscommit            |  123 ++++++++++++++++++++++++++
+ fembin/cvs/cvsdiff              |  170 +++++++++++++++++++++++++++++++++++
+ fembin/cvs/cvsgetrevs           |  146 ++++++++++++++++++++++++++++++
+ fembin/cvs/cvsrecreate          |  129 +++++++++++++++++++++++++++
+ fembin/cvs/cvsstatus            |   88 ++++++++++++++++++
+ fembin/cvs/cvstag               |  185 +++++++++++++++++++++++++++++++++++++++
+ fembin/cvs_utils.sh             |   76 ----------------
+ fembin/cvschange                |   57 ------------
+ fembin/cvscommit                |  123 --------------------------
+ fembin/cvsdiff                  |  170 -----------------------------------
+ fembin/cvsgetrevs               |  146 ------------------------------
+ fembin/cvsrecreate              |  129 ---------------------------
+ fembin/cvsstatus                |   88 ------------------
+ fembin/cvstag                   |  185 ---------------------------------------
+ fembin/gitcommit                |   13 +++-
+ fembin/gittag                   |    4 +-
+ fembin/gittar                   |    2 +-
+ fembin/revisionlog_adjust.pl    |   20 +++--
+ fembin/shyfem_version.pl        |   22 +++++
+ 32 files changed, 2003 insertions(+), 1122 deletions(-)
+
+============================================================
+
 Mon May 30 12:17:25 CEST 2011
 
 minor changes, MACOSX, plot numnbers
