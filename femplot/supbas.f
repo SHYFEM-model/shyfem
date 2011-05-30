@@ -45,6 +45,7 @@ c 15.06.2009  ggu     call to reggrid() changeed -> pass in gray value
 c 14.09.2009  ggu     new routine divdist()
 c 22.02.2010  ggu     new routine bw_frame() to plot bw scale around plot
 c 09.04.2010  ggu     bug fix in frac_pos() -> maybe compiler error
+c 17.05.2011  ggu     new routine basin_number()
 c
 c*************************************************************
 
@@ -231,6 +232,90 @@ c mode	0: only scaling  1: net  2: boundary  3: net in gray
 	end if
 
 c	call boundline
+
+	end
+
+c*************************************************************
+
+	subroutine basin_number(mode)
+
+c plots basin with node and element numbers
+c
+c mode	1: node number   2: element number
+c	positive: external    negative: internal
+
+	implicit none
+
+	integer mode
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer nen3v(3,1)
+	integer ipev(1), ipv(1)
+	real xgv(1), ygv(1)
+	integer kantv(2,1)
+	common /xgv/xgv, /ygv/ygv
+	common /nen3v/nen3v
+	common /ipev/ipev, /ipv/ipv
+	common /kantv/kantv
+
+	real xmin,ymin,xmax,ymax
+	common /bamima/ xmin,ymin,xmax,ymax
+
+	integer ie,kn,ii,k,ke,iee,i
+	real gray,x,y
+	character*10 s
+
+	integer ialfa,ipext,ieext
+
+	write(6,*) '======================================='
+	write(6,*) '======================================='
+	write(6,*) '======================================='
+	write(6,*) 'debug print of node and element numbers'
+	write(6,*) 'please remove in production code'
+	write(6,*) '======================================='
+	write(6,*) '======================================='
+	write(6,*) '======================================='
+
+	call qgray(0.)
+	call qtxts(12)
+
+	if( abs(mode) .eq. 1 ) then
+
+	  do k=1,nkn
+	    ke = k
+	    if( mode .gt. 0 ) ke = ipext(k)
+	    x = xgv(k)
+	    y = ygv(k)
+	    i = ialfa(float(ke),s,-1,-1)
+	    call qtext(x,y,s)
+	  end do
+
+	else if( abs(mode) .eq. 2 ) then
+
+	  call qtxtcc(0,0)
+	  do ie=1,nel
+	    x = 0.
+	    y = 0.
+	    do ii=1,3
+	      k = nen3v(ii,ie)
+	      x = x + xgv(k)
+	      y = y + ygv(k)
+	    end do
+	    x = x / 3.
+	    y = y / 3.
+	    iee = ie
+	    if( mode .gt. 0 ) iee = ieext(ie)
+	    i = ialfa(float(iee),s,-1,-1)
+	    call qtext(x,y,s)
+	  end do
+	  call qtxtcc(-1,-1)
+	else
+
+	  write(6,*) mode
+	  stop 'error stop basin_number: mode'
+
+	end if
 
 	end
 

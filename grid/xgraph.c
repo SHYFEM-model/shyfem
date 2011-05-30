@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 19-Apr-2011: introduced HAVE_WIDGET for compiler errors in Mac	*
  * 07-Jul-98: can use without Xt library                                *
  * 05-Dec-95: changes (Widget, Cursor, ...) included                    *
  * 01-Sep-95: QGetViewport, QGetWindow, QBell routines added            *
@@ -64,7 +65,8 @@
 #define QyVtoW(y) (SyVtoW*((y)-ViewBottom)+WinYmin)
 
 
-#define HAVE_XT	0	/* 1 if Xt lib is available */
+#define HAVE_XT	0		/* 1 if Xt lib is available */
+#define HAVE_WIDGET	1	/* 1 if Widget is available */
 
 /* definitions for colors */
 
@@ -144,7 +146,15 @@ static Window        MyRootWindow;
 static Window        MyWindow;
 static GC            MyGc;
 static unsigned int  MyDepth;
+
+#if HAVE_WIDGET == 0
+typedef void *Widget;
+Display *XtDisplay(Widget MyWidget);
+Window XtWindow(Widget MyWidget);
+#endif
+
 static Widget        MyWidget=NULL;
+
 /*
 static XEvent        MyEvent;
 static KeySym        MyKey;

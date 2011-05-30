@@ -121,6 +121,7 @@ cleanbck:
 #---------------------------------------------------------------
 
 directories:
+	-mkdir -p tmp
 
 directories_old:
 	-mkdir -p $(HOME)/lib
@@ -132,7 +133,6 @@ install:
 	cd femcheck; make install
 
 links:
-	-mkdir -p tmp
 	-rm -f bin lib
 	-ln -sf fembin bin
 	-ln -sf femlib lib

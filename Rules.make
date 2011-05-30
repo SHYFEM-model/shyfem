@@ -55,9 +55,9 @@ export NGRDIM = 12
 #export NGRDIM = 11
 
 # ginevra
-export NKNDIM = 1100
-export NELDIM = 2200
-export NLVDIM = 200
+#export NKNDIM = 1100
+#export NELDIM = 2200
+#export NLVDIM = 200
 
 # kassandra
 #export NKNDIM = 81000
@@ -81,9 +81,34 @@ export NLVDIM = 200
 #export NGRDIM = 10
 
 # skadar
-export NKNDIM = 12000
-export NELDIM = 24000
-export NLVDIM = 20
+#export NKNDIM = 12000
+#export NELDIM = 24000
+#export NLVDIM = 20
+
+# Skadar new
+export NKNDIM = 20610
+export NELDIM = 39170
+export NLVDIM = 10
+export NGRDIM = 15
+export MBWDIM = 220
+export NBCDIM = 50
+
+# trieste
+#export NKNDIM = 26000
+#export NELDIM = 51000
+#export NLVDIM = 17
+
+# Venice
+#export NKNDIM = 5000
+#export NELDIM = 8000
+#export NLVDIM = 1
+#export MBWDIM = 70
+
+# Marano-Grado
+#export NKNDIM = 12000
+#export NELDIM = 22000
+#export NLVDIM = 1
+#export MBWDIM = 300
 
 ##############################################
 # Compiler
@@ -357,6 +382,8 @@ FINTEL_NOOPT = -w $(FFNCDF) -Cu -traceback
 FINTEL_OPT   = -O -g
 FINTEL_OPT   = -O -g -warn interfaces -check uninit -check bounds
 FINTEL_OPT   = -O -g -warn interfaces -check uninit
+FINTEL_OPT   = -O -g -check uninit
+#FINTEL_OPT   = -O -g -fp-model precise -no-prec-div
 
 
 FINTEL_OMP   =

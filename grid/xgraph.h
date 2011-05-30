@@ -18,6 +18,7 @@
 
 #ifndef __GUH_XGRAPH_
 #define __GUH_XGRAPH_
+
 #if __GUG_UNIX_
 
 #include "generalx.h"
@@ -26,6 +27,8 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/Intrinsic.h>
+
+#endif /* __GUG_UNIX_ */
 
 
 /*
@@ -47,5 +50,4 @@ void QSetWidget( Widget w );
 void QSetTitle( char *s );
 void QSetGeometry( char *s );
 
-#endif /* __GUG_UNIX_ */
 #endif /* __GUH_GRAPH_ */

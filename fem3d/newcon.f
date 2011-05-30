@@ -561,6 +561,7 @@ c-------------------------------------------------------------
 	write(iuinfo,1000) 'scal3sh_',what,':'
      +                          ,it,niter,mass,massold,massdiff
 
+	!check_set_unit(6)
 	!call check_elem(9914)
 
 c-------------------------------------------------------------
@@ -1821,6 +1822,7 @@ c			  write(6,*) is_external_boundary(k)
 c			  write(6,*) is_internal_boundary(k)
 c			  write(6,*) is_inner(k)
 c			  write(6,*) stabind,stabadv,stabdiff,stabvert
+c			  call check_set_unit(6)
 c			  call check_node(k)
 c		  end if
 
@@ -2162,7 +2164,7 @@ c writes histogram info about stability index
           end do
         end do
 
-        call histo_final(nbin,ic)
+        call histo_final(ic)
 
         write(98,*) it,ic
 

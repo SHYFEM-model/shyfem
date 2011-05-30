@@ -166,7 +166,7 @@ c	  ---------------------------------------------------------
           c_param(2) = xtrans
           c_param(3) = ytrans
 
-	  iproj = 0
+	  !iproj = 0
 	  call init_coords(iproj,c_param)
 
 	  mode = 1	!from cartesian to lat/lon

@@ -55,6 +55,7 @@ c 13.10.2009	ggu	section plot for velocities in plosim
 c 26.03.2010	ggu	section plot for velocities in plosim adapted
 c 17.12.2010    ggu     substituted hv with hkv
 c 31.03.2011    ggu     no plotting in dry nodes implemented - read fvl file
+c 17.05.2011    ggu     in plobas may plot node and element numbers
 c
 c**********************************************************
 c**********************************************************
@@ -400,6 +401,8 @@ c**********************************************************
         call qcomm('Plotting isolines')
         call isoline(parray,nkn,0.,2)
         call colsh
+
+	!call bash(3)	! overlays grid (for debug)
 
 	call bash(2)
 	call qend
@@ -951,7 +954,11 @@ c**********************************************************
 	integer iarv(1)
 	common /iarv/iarv
 
+	logical bnumber
         real pmin,pmax
+
+	bnumber = .true.	! plot node and element numbers
+	bnumber = .false.
 
 c only boundary line
 
@@ -976,6 +983,7 @@ c grid with gray
 
 c bathymetry (gray or color)
 
+	call resetsim
 	call ploval(nkn,hkv,'basin')
 
 c bathymetry with grid
@@ -1023,6 +1031,36 @@ c boundary line with net
 	call bash(2)
         call reggrid(10,0.,0.5)
 	call qend
+
+c here only debug (node and element numbers)
+
+	if( bnumber ) then
+
+	call qstart
+	call bash(0)
+	call bash(3)
+	call basin_number(1)
+	call qend
+
+	call qstart
+	call bash(0)
+	call bash(3)
+	call basin_number(2)
+	call qend
+
+	call qstart
+	call bash(0)
+	call bash(3)
+	call basin_number(-1)
+	call qend
+
+	call qstart
+	call bash(0)
+	call bash(3)
+	call basin_number(-2)
+	call qend
+
+	end if
 
 c end of routine
 

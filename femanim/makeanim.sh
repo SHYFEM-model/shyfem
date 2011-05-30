@@ -18,7 +18,8 @@ rm -f plot.*.ps
 
 #--------------------------- rename in numerical order
 
-./rename.pl plot.*.eps
+#./rename.pl plot.*.eps
+./rename-petras.pl plot.*.eps
 
 #--------------------------- create gifs
 

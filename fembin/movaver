@@ -23,6 +23,8 @@ print STDERR "total data: $ntot\n";
 for($i=0;$i<$ntot;$i++) {
 	$ilow = $i - $hsize;
 	$ihigh = $ilow + $size;
+	$ilow = 0 if $ilow < 0;
+	$ihigh = $ntot-1 if $ihigh > $ntot-1;
 	$aver = &aver($ntot,$ilow,$ihigh,\@data);
 	$new[$i] = $aver;
 }
@@ -30,7 +32,6 @@ for($i=0;$i<$ntot;$i++) {
 for($i=0;$i<$ntot;$i++) {
 	print "$time[$i]   $new[$i]\n";
 }
-
 
 ###############################################################
 
@@ -56,4 +57,3 @@ sub aver
 
 ###############################################################
 
-	

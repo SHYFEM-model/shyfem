@@ -1301,19 +1301,26 @@ c compute discharge from water level
 	real znv(1)
 	common /znv/znv
 
-	real z,a,c,z0
+	real z,a,b,c,z0
 
 	if( levflx .eq. 0 ) then
 	  !nothing changed -> return same rw
 	else if( levflx .eq. 1 ) then
-	  z0 = 5.		!reference level
-	  z = z0 + znv(kn)
-	  call z_smooth(z)
+	  !z0 = 5.		!reference level
+	  !z = z0 + znv(kn)
+	  !call z_smooth(z)
 	  a = 1808
 	  c = -2875
 	  !a = 1648		!no outliers
 	  !c = --2684		!no outliers
-	  rw = a*log(z) + c
+	  !rw = a*log(z) + c
+
+	  z = znv(kn)
+	  call z_smooth(z)
+	  a = 211.521555200211
+	  b = 0.855968510497031     
+	  rw = a * z**b
+
 	  rw = -rw
 	  write(134,*) it,z,rw
 	else
@@ -1332,7 +1339,7 @@ c smooths z values
 	implicit none
 
 	integer ndim
-	parameter (ndim=86400/300)
+	parameter (ndim=86400/100)
 
 	real z
 

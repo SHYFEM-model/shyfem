@@ -5,6 +5,7 @@
 
 version=1.44
 
+# 1.50	05.05.2011	new option -sy (not yet working)
 # 1.46	23.10.2009	new option -verbose
 # 1.45	24.08.2009	new option -bw (is already default)
 # 1.44	20.08.2009	better handling of -png option
@@ -33,6 +34,7 @@ verbose="NO"
 nolegend="xyz*^+="	# something very unlikely
 ppp="0"			# plots per page
 xfact="1"		# scaling of x axis
+yfact="1"		# scaling of y axis
 style=""
 xtics=""
 outfile=""
@@ -94,6 +96,7 @@ FullUsage()
   echo "  -rx xmin:xmax    give x-range of plot"
   echo "  -ry ymin:ymax    give y-range of plot"
   echo "  -sx xfact        scale x-coordinate with xfact"
+  echo "  -sy yfact        scale y-coordinate with yfact"
   echo "  -l  string       string that is removed from legend if found"
   echo "  -verbose         writes some diagnostic messages"
   echo ""
@@ -336,6 +339,7 @@ do
 	-rx)		xrange=$2; shift;;
 	-ry)		yrange=$2; shift;;
 	-sx)		xfact=$2; shift;;
+	-sy)		yfact=$2; shift;;
 	-l)		nolegend=$2; shift;;
 	-verbose)	verbose="YES";;
 	-h|-help)	FullUsage; exit 0;;

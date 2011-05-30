@@ -21,6 +21,7 @@ foreach $tag (@tags) {
 
 $coms = `git log --pretty=oneline`;
 @coms = split(/\n+/,$coms);
+@lines = ();
 
 foreach $com (@coms) {
   ($hash,@mess) = split(/\s+/,$com);
@@ -28,7 +29,13 @@ foreach $com (@coms) {
   $shorthash = substr($hash,0,10);
   $shortmess = substr($mess,0,55);
   $tag = format_tag($tags{$hash});
-  print "$shorthash $tag $shortmess\n";
+  my $line = "$shorthash $tag $shortmess";
+  push(@lines,$line);
+  #print "$line\n";
+}
+
+foreach my $line (reverse @lines) {
+  print "$line\n";
 }
 
 #-------------------------------------------------------------

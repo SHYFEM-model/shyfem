@@ -29,10 +29,12 @@
 /*****************************************/
 
 
+#ifndef __GUG_UNIX_
 #ifdef  __unix__
 #define __GUG_UNIX_    1
 #else
 #define __GUG_UNIX_    0
+#endif
 #endif
 
 #if __GUG_UNIX_

@@ -27,6 +27,7 @@ c 20.05.2007	ggu	itperiod may be 0 -> no periodic BC
 c 12.11.2008	ggu	checks for unrealistic values in qfcheck
 c 10.03.2009	ggu	call to meteo_set_matrix() for 2D arrays
 c 27.08.2009	ggu	set itperiod and irhumid from outside
+c 17.05.2011	ggu	compiler warnings in qfcheck()
 c
 c notes :
 c
@@ -397,13 +398,13 @@ c checks heat flux values for unrealistic values
 	integer it
 	real qs,ta,tb,ur,uw,cc,p
 
-	if( qs < 0. .or. qs > 1500. ) goto 99
-	if( ta < -100. .or. ta > 100. ) goto 99
-	if( tb < -100. .or. tb > 100. ) goto 99
-	if( ur < 0. .or. ur > 100. ) goto 99
-	if( uw < 0. .or. uw > 100. ) goto 99
-	if( cc < 0. .or. cc > 1. ) goto 99
-	if( p < 900. .or. p > 1100. ) goto 99
+	if( qs .lt. 0.    .or. qs .gt. 1500. ) goto 99
+	if( ta .lt. -100. .or. ta .gt. 100.  ) goto 99
+	if( tb .lt. -100. .or. tb .gt. 100.  ) goto 99
+	if( ur .lt. 0.    .or. ur .gt. 100.  ) goto 99
+	if( uw .lt. 0.    .or. uw .gt. 100.  ) goto 99
+	if( cc .lt. 0.    .or. cc .gt. 1.    ) goto 99
+	if(  p .lt. 900.  .or.  p .gt. 1100. ) goto 99
 
 	return
    99	continue

@@ -7,7 +7,7 @@ c contents :
 c
 c subroutine histo_init(nbin,bin0,dbin,rbin)
 c subroutine histo_insert(value)
-c subroutine histo_final(nbin,ic)
+c subroutine histo_final(ic)
 c 
 c revision log :
 c
@@ -90,11 +90,10 @@ c****************************************************************
 
 c****************************************************************
 
-        subroutine histo_final(nbin,ic)
+        subroutine histo_final(ic)
 
         implicit none
 
-        integer nbin
         integer ic(1)
 
         integer ndim,nid

@@ -49,6 +49,7 @@ c 02.04.2009    ggu     new routine check_elem()
 c 06.04.2009    ggu     new check_elems_around_node, check_nodes_in_elem
 c 26.02.2010    ggu     in test3d() write also meteo data
 c 08.04.2010    ggu     more info in checks (depth and area)
+c 17.05.2011    ggu     new routine check_set_unit() to set output unit
 c
 c*************************************************************
 
@@ -942,6 +943,34 @@ c*************************************************************
 c*************************************************************
 c*************************************************************
 
+	blockdata check_blockdata
+
+	implicit none
+
+	integer iucheck
+	common /iucheck/iucheck
+	save /iucheck/
+	data iucheck / 6 /
+
+	end
+
+c*************************************************************
+
+	subroutine check_set_unit(iu)
+
+	implicit none
+
+	integer iu
+
+	integer iucheck
+	common /iucheck/iucheck
+
+	iucheck = iu
+
+	end
+
+c*************************************************************
+
 	subroutine check_node(k)
 
 c writes debug information on node k
@@ -951,6 +980,9 @@ c writes debug information on node k
 	integer k
 
 	include 'param.h'
+
+	integer iucheck
+	common /iucheck/iucheck
 
         integer itanf,itend,idt,nits,niter,it
         common /femtim/ itanf,itend,idt,nits,niter,it
@@ -994,26 +1026,25 @@ c writes debug information on node k
 	integer ipext
 	real volnode
 
-	iu = 16
-	iu = 6
+	iu = iucheck
 	lmax = ilhkv(k)
 
 	write(iu,*) '-------------------------------- check_node'
-	write(iu,*) 'it,k,kext:  ',it,k,ipext(k)
-	write(iu,*) 'lmax,inodv: ',lmax,inodv(k)
-	write(iu,*) 'xgv,ygv:    ',xgv(k),ygv(k)
-	write(iu,*) 'zov,znv:    ',zov(k),znv(k)
-	write(iu,*) 'hdkov:      ',(hdkov(l,k),l=1,lmax)
-	write(iu,*) 'hdknv:      ',(hdknv(l,k),l=1,lmax)
-	write(iu,*) 'areakv:     ',(areakv(l,k),l=1,lmax)
-	write(iu,*) 'volold:     ',(volnode(l,k,-1),l=1,lmax)
-	write(iu,*) 'volnew:     ',(volnode(l,k,+1),l=1,lmax)
-	write(iu,*) 'wlnv:       ',(wlnv(l,k),l=0,lmax)
-	write(iu,*) 'mfluxv:     ',(mfluxv(l,k),l=1,lmax)
-	write(iu,*) 'tempv:      ',(tempv(l,k),l=1,lmax)
-	write(iu,*) 'saltv:      ',(saltv(l,k),l=1,lmax)
-	write(iu,*) 'visv:       ',(visv(l,k),l=1,lmax)
-	write(iu,*) 'difv:       ',(difv(l,k),l=1,lmax)
+	write(iu,*) 'it,idt,k,kext: ',it,idt,k,ipext(k)
+	write(iu,*) 'lmax,inodv:    ',lmax,inodv(k)
+	write(iu,*) 'xgv,ygv:       ',xgv(k),ygv(k)
+	write(iu,*) 'zov,znv:       ',zov(k),znv(k)
+	write(iu,*) 'hdkov:         ',(hdkov(l,k),l=1,lmax)
+	write(iu,*) 'hdknv:         ',(hdknv(l,k),l=1,lmax)
+	write(iu,*) 'areakv:        ',(areakv(l,k),l=1,lmax)
+	write(iu,*) 'volold:        ',(volnode(l,k,-1),l=1,lmax)
+	write(iu,*) 'volnew:        ',(volnode(l,k,+1),l=1,lmax)
+	write(iu,*) 'wlnv:          ',(wlnv(l,k),l=0,lmax)
+	write(iu,*) 'mfluxv:        ',(mfluxv(l,k),l=1,lmax)
+	write(iu,*) 'tempv:         ',(tempv(l,k),l=1,lmax)
+	write(iu,*) 'saltv:         ',(saltv(l,k),l=1,lmax)
+	write(iu,*) 'visv:          ',(visv(l,k),l=1,lmax)
+	write(iu,*) 'difv:          ',(difv(l,k),l=1,lmax)
 	write(iu,*) '-------------------------------------------'
 
 	end
@@ -1032,6 +1063,9 @@ c writes debug information on element ie
 	include 'param.h'
 	include 'ev.h'
 
+	integer iucheck
+	common /iucheck/iucheck
+
         integer itanf,itend,idt,nits,niter,it
         common /femtim/ itanf,itend,idt,nits,niter,it
 
@@ -1043,6 +1077,8 @@ c writes debug information on element ie
 	common /ilhkv/ilhkv
 	integer iwegv(1)
 	common /iwegv/iwegv
+	integer iwetv(1)
+	common /iwetv/iwetv
 
 	real hev(1)
 	common /hev/hev
@@ -1078,26 +1114,27 @@ c writes debug information on element ie
 
 	integer ieext
 
-	iu = 16
-	iu = 6
+	iu = iucheck
 	lmax = ilhv(ie)
 
 	write(iu,*) '-------------------------------- check_elem'
-	write(iu,*) 'it,ie,ieext: ',it,ie,ieext(ie)
-	write(iu,*) 'lmax,iwegv:  ',lmax,iwegv(ie)
-	write(iu,*) 'area:        ',ev(10,ie)*12.
-	write(iu,*) 'nen3v  :     ',(nen3v(ii,ie),ii=1,3)
-	write(iu,*) 'hev,hlhv:    ',hev(ie),hlhv(ie)
-	write(iu,*) 'zeov:        ',(zeov(ii,ie),ii=1,3)
-	write(iu,*) 'zenv:        ',(zenv(ii,ie),ii=1,3)
-	write(iu,*) 'hdeov:       ',(hdeov(l,ie),l=1,lmax)
-	write(iu,*) 'hdenv:       ',(hdenv(l,ie),l=1,lmax)
-	write(iu,*) 'utlov:       ',(utlov(l,ie),l=1,lmax)
-	write(iu,*) 'vtlov:       ',(vtlov(l,ie),l=1,lmax)
-	write(iu,*) 'utlnv:       ',(utlnv(l,ie),l=1,lmax)
-	write(iu,*) 'vtlnv:       ',(vtlnv(l,ie),l=1,lmax)
-	write(iu,*) 'ulnv:        ',(ulnv(l,ie),l=1,lmax)
-	write(iu,*) 'vlnv:        ',(vlnv(l,ie),l=1,lmax)
+	write(iu,*) 'it,idt,ie,ieext:  ',it,idt,ie,ieext(ie)
+	write(iu,*) 'lmax,iwegv,iwetv: ',lmax,iwegv(ie),iwetv(ie)
+	write(iu,*) 'area:             ',ev(10,ie)*12.
+	write(iu,*) 'nen3v  :          ',(nen3v(ii,ie),ii=1,3)
+	write(iu,*) 'hev,hlhv:         ',hev(ie),hlhv(ie)
+	write(iu,*) 'zeov:             ',(zeov(ii,ie),ii=1,3)
+	write(iu,*) 'zenv:             ',(zenv(ii,ie),ii=1,3)
+	write(iu,*) 'zov:              ',(zov(nen3v(ii,ie)),ii=1,3)
+	write(iu,*) 'znv:              ',(znv(nen3v(ii,ie)),ii=1,3)
+	write(iu,*) 'hdeov:            ',(hdeov(l,ie),l=1,lmax)
+	write(iu,*) 'hdenv:            ',(hdenv(l,ie),l=1,lmax)
+	write(iu,*) 'utlov:            ',(utlov(l,ie),l=1,lmax)
+	write(iu,*) 'vtlov:            ',(vtlov(l,ie),l=1,lmax)
+	write(iu,*) 'utlnv:            ',(utlnv(l,ie),l=1,lmax)
+	write(iu,*) 'vtlnv:            ',(vtlnv(l,ie),l=1,lmax)
+	write(iu,*) 'ulnv:             ',(ulnv(l,ie),l=1,lmax)
+	write(iu,*) 'vlnv:             ',(vlnv(l,ie),l=1,lmax)
 	write(iu,*) '-------------------------------------------'
 
 	end
@@ -1112,14 +1149,17 @@ c writes debug information on nodes in element ie
 
 	integer ie
 
+	integer iucheck
+	common /iucheck/iucheck
+
         integer nen3v(3,1)
         common /nen3v/nen3v
 
 	integer ii,k,iu
 	integer ieext
 
-	iu = 16
-	iu = 6
+	iu = iucheck
+
 	write(iu,*) '-------------------------------------------'
 	write(iu,*) 'checking nodes in element: ',ie,ieext(ie)
 	write(iu,*) '-------------------------------------------'
@@ -1141,6 +1181,9 @@ c writes debug information on elements around node k
 
 	integer k
 
+	integer iucheck
+	common /iucheck/iucheck
+
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
@@ -1152,8 +1195,8 @@ c writes debug information on elements around node k
 
 	integer ipext
 
-	iu = 16
-	iu = 6
+	iu = iucheck
+
 	write(iu,*) '-------------------------------------------'
 	write(iu,*) 'checking elements around node: ',k,ipext(k)
 	write(iu,*) '-------------------------------------------'

@@ -31,6 +31,8 @@ c*****************************************************************
 
 c computes parameters about total numbers
 c
+c all numbers are refered to actual elements and nodes inside system
+c
 c nnkn   total number of nodes
 c nnel   total number of elements
 c nnbn   total number of boundary nodes
@@ -139,8 +141,8 @@ c save
 
         call nknel(nnkn,nnel,nnbn,nnli,nnis,nnod)
 
-        call setnar(nnar)
-        call setwnk(wink)
+        call setnar(nnar)	!number of areas
+        call setwnk(wink)	!total angle at boundary nodes
 
         nnnis = iround( (wink-nnbn*180.)/360. ) + nnar
 

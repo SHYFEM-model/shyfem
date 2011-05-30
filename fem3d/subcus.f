@@ -57,6 +57,7 @@ c 12.02.2010	ggu	new routines for horizontal diffusion tests (diffus2d)
 c 01.03.2010	ggu	new routines jamal_fra() to reset conz
 c 15.12.2010	ggu	traccia routines moved to subtrace.f
 c 26.01.2011	ggu	set rtauv for black sea (black_sea_nudge)
+c 17.05.2011	ggu	new routines skadar_debug() and wet_dry()
 c
 c******************************************************************
 
@@ -115,6 +116,8 @@ c custom routines
         if( icall .eq. 888 ) call uv_bottom
         if( icall .eq. 601 ) call andreac
         if( icall .eq. 602 ) call tvd_test(it)
+        if( icall .eq. 603 ) call wet_dry
+        if( icall .eq. 604 ) call skadar_debug
 
 c	call totvol(it)
 c	call georg(it)
@@ -3694,6 +3697,34 @@ c**********************************************************************
 c**********************************************************************
 c**********************************************************************
 
+        subroutine skadar_debug
+
+c debugging skadar application
+
+	implicit none
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	integer ie,it0
+
+	it0 = 16917074
+	ie = 8964
+
+	it0 = 15551273
+	ie = 4426
+
+	if( it .lt. it0 ) return
+	return
+
+	call check_set_unit(345)
+        call check_elem(ie)
+        call check_nodes_in_elem(ie)
+
+	end
+
+c**********************************************************************
+
         subroutine skadar
 
 	implicit none
@@ -3776,3 +3807,113 @@ c**********************************************************************
 	end
 
 c**********************************************************************
+
+	subroutine wet_dry
+
+c time of inundation for theseus
+
+	implicit none
+
+	include 'param.h'
+	include 'ev.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+        integer iwegv(1)
+        common /iwegv/iwegv
+        real hdenv(nlvdim,neldim)
+        common /hdenv/hdenv
+	real hev(1)
+	common /hev/hev
+
+	logical binit
+	integer ie,n
+	real area,sedim,dt,h
+
+	integer idry(nkndim)
+	save idry
+
+	integer icall
+	save icall
+	data icall /0/
+
+	if( icall .eq. 0 ) then
+	  area = 0.
+	  do ie=1,nel
+	    idry(ie) = 0
+	    area = area + ev(10,ie)
+	  end do
+	  area = area * 12.
+	  write(122,*) icall,nel,area
+	  write(122,*) (12.*ev(10,ie),ie=1,nel)
+	end if
+
+	do ie=1,nel
+	  if( iwegv(ie) .ne. 0 ) then
+	    idry(ie) = idry(ie) + 1
+	  end if
+	end do
+
+	!write(123,*) it,itend
+	if( it .eq. itend ) then
+	  write(123,*) icall,nel
+	  write(123,*) (idry(ie),ie=1,nel)
+	end if
+
+	if( mod(it,86400) .eq. 0 ) then
+	  write(124,*) icall,nel,it,86400
+	  write(124,*) (idry(ie),ie=1,nel)
+	end if
+
+c-----------------------------------------
+c modify depth
+c-----------------------------------------
+
+	binit = .false.		! initialize hev from file
+	sedim = 2.		! mm/y
+
+	call get_timestep(dt)
+	sedim = sedim*0.001/(365*86400)
+	sedim = sedim * dt
+
+	do ie=1,nel
+	  if( iwegv(ie) .eq. 0 ) then	!only for flooded elements
+	    h = hdenv(1,ie)
+	    if( h .lt. 0.50 ) then	!only for shallow areas
+		hev(ie) = hev(ie) - sedim
+	    end if
+	  end if
+	end do
+
+	call adjourne_depth_from_hev
+	!call set_last_layer
+
+c-----------------------------------------
+c read or write hev
+c-----------------------------------------
+
+	if( binit .and. icall .eq. 0 ) then
+	  call read_in_hev('in_hev.dat')
+	  call adjourne_depth_from_hev
+	  call set_last_layer
+          call setweg(0,n)
+          call setznv             ! -> change znv since zenv has changed
+	end if
+
+	if( it .eq. itend ) then
+	  call write_out_hev('out_hev.dat')
+	end if
+
+c-----------------------------------------
+c end of routine
+c-----------------------------------------
+
+	icall = icall + 1
+
+	end
+
+c**********************************************************************
+

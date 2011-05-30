@@ -27,6 +27,13 @@ HEAD^			parent of actual commit
 HEAD^^			grand-parent
 HEAD~4			4th grade
 
+diffs:
+
+git diff file			differences of changed files
+git diff --staged file		differences of staged but not committed file
+git diff VERS_6_1_5 -- file	differences between VERS_6_1_5 and now
+git diff v6.1.1 v6.1.4 file	differences between v6.1.1 and v6.1.4
+
 commands:
 
 gitcommit		makes commit writing to COMMIT

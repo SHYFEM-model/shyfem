@@ -22,6 +22,7 @@ c 28.11.2005	ggu	makehkv changed (uses real aux value, area weight)
 c 24.02.2006	ggu	bug in makehkv -> haux was integer
 c 18.10.2006	ccf	bug in makehkv -> no area multiplication
 c 16.12.2010	ggu	in depadj() do not set hm3v to constant
+c 17.05.2011	ggu	new routines to adjourn depth
 c
 c********************************************************************
 
@@ -393,6 +394,101 @@ c adjust depth to reference level %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	  hm3v(ii,ie)=hm3v(ii,ie)-href
 	 end do
 	end do
+
+	end
+
+c********************************************************************
+
+	subroutine adjourne_depth_from_hm3v
+
+c adjourns hev and hkv from hm3v (if it has been changed)
+
+	real hev(1)
+	common /hev/hev
+	real hkv(1)
+	common /hkv/hkv
+	real v1v(1)
+	common /v1v/v1v
+
+        call makehev(hev)
+        call makehkv(hkv,v1v)
+        !call set_last_layer		!FIXME
+
+	end
+
+c********************************************************************
+
+	subroutine adjourne_depth_from_hev
+
+c adjourns hev and hkv from hm3v (if it has been changed)
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	real hm3v(3,1)
+	common /hm3v/hm3v
+	real hev(1)
+	common /hev/hev
+	real hkv(1)
+	common /hkv/hkv
+	real v1v(1)
+	common /v1v/v1v
+
+	integer ie,ii
+
+	do ie=1,nel
+	  do ii=1,3
+	    hm3v(ii,ie) = hev(ie)
+	  end do
+	end do
+
+        call makehkv(hkv,v1v)
+        !call set_last_layer		!FIXME
+
+	end
+
+c********************************************************************
+
+	subroutine read_in_hev(file)
+
+	character(*) file
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	real hev(1)
+	common /hev/hev
+
+	integer ie
+
+	open(1,file=file,status='old',form='formatted')
+	read(1,*) nelaux
+	if( nel .ne. nelaux ) stop 'error stop read_in_hev: nel'
+	read(1,*) (hev(ie),ie=1,nel)
+	close(1)
+
+	write(6,*) '======================================'
+	write(6,*) 'hev data read from file: ',file
+	write(6,*) '======================================'
+
+	end
+
+c********************************************************************
+
+	subroutine write_out_hev(file)
+
+	character(*) file
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	real hev(1)
+	common /hev/hev
+
+	integer ie
+
+	open(1,file=file,status='unknown',form='formatted')
+	write(1,*) nel
+	write(1,*) (hev(ie),ie=1,nel)
+	close(1)
 
 	end
 

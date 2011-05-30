@@ -2,11 +2,14 @@
 #
 # str utility routines
 #
+# version 	1.2	11.05.2011	restructured and commented
+# version 	1.1	?
+#
 # Usage:
 #
 # #!/usr/bin/env perl
 #
-# use lib "$ENV{HOME}/lib/perl";
+# use lib "$ENV{HOME}/fem/lib/perl";
 # use str;
 # 
 # my $file = $ARGV[0];
@@ -14,6 +17,7 @@
 # my $str = new str;
 # $str->read_str($file);
 # $str->print_sections();
+# $str->write_str();
 #
 ##############################################################
 
@@ -47,17 +51,20 @@ sub new
     return $self;
 }
 
-##############################################################
+#-----------------------------------------------------------------
+# internal routines
+#-----------------------------------------------------------------
+
 
 sub make_arrays {
 
   my ($self) = @_;
 
   my @param_sections = qw/ para bound name color legvar /;
-  my @number_sections = qw / extra levels /;
-  my @table_sections = qw / area /;
-  my @title_sections = qw / title /;
-  my @comment_sections = qw / comment /;
+  my @number_sections = qw/ extra flux levels /;
+  my @table_sections = qw/ area /;
+  my @title_sections = qw/ title /;
+  my @comment_sections = qw/ comment /;
 
   my %sections = ();
 
@@ -79,13 +86,6 @@ sub insert_arrays {
   }
 }
 
-sub set_verbose {
-
-  my ($self,$value) = @_;
-
-  $self->{verbose} = $value;
-}
-
 sub delete_str {
 
   my ($self) = @_;
@@ -96,6 +96,15 @@ sub delete_str {
 }
 
 #-----------------------------------------------------------------
+# accessor routines
+#-----------------------------------------------------------------
+
+sub set_verbose {
+
+  my ($self,$value) = @_;
+
+  $self->{verbose} = $value;
+}
 
 # section defaults to "para"
 # number defaults to undef
@@ -171,6 +180,8 @@ sub get_section {
 }
 
 #-----------------------------------------------------------------
+# prepare sections and comments
+#-----------------------------------------------------------------
 
 sub make_section {
 
@@ -188,7 +199,9 @@ sub make_section {
                         ,name           =>      $name
                         ,number         =>      $number
                         ,info           =>      $info
-                        ,data           =>      []
+                        ,data           =>      []	# original lines
+                        ,hash           =>      {}	# hash of items
+                        ,items          =>      []	# names of items
                 };
 
   my $sections = $self->{sections};
@@ -218,6 +231,8 @@ sub make_comment {
   return $number;
 }
 
+#-----------------------------------------------------------------
+# read str and sections
 #-----------------------------------------------------------------
 
 sub read_str {
@@ -285,6 +300,8 @@ sub read_section {
 }
 
 #-----------------------------------------------------------------
+# parse sections
+#-----------------------------------------------------------------
 
 sub parse_section {
 
@@ -297,7 +314,7 @@ sub parse_section {
   if( $type ) {
     #print STDERR "The section is of type $type\n";
   } else {
-    die "*** Unknown section type of section $section_name\n";
+    die "*** Unknown type of section: $section_name\n";
   }
 
   if( $type eq "param" ) {
@@ -311,10 +328,6 @@ sub parse_section {
   } else {
     die "*** Cannot yet parse section type $type\n";
   }
-
-  #my $hash = parse_line($dline);
- 
-  #return $hash;
 }
 
 sub parse_param_section {
@@ -325,6 +338,7 @@ sub parse_param_section {
   my $item;
   my $debug = 0;
   my $data = $sect->{data};
+  my $items = $sect->{items};
   my $dline = join(" ",@$data);
   $dline .= "  ";	# just to be sure that there is some ws at the end
 
@@ -340,6 +354,7 @@ sub parse_param_section {
 	my $n = @val;
 	if( $n == 1 ) {		#only one value
 	  $hash{$name} = $val[0];
+	  push(@$items,$name);
 	  print "new value: $name  $val[0]\n" if $debug;
 	} elsif( $n > 1 ) {	#array
 	  my $line = join(" ",@val);
@@ -352,23 +367,6 @@ sub parse_param_section {
   }
 
   $sect->{hash} = \%hash;
-}
-
-sub write_param_section {
-
-  my ($self,$sect) = @_;
-
-  my $hash = $sect->{hash};
-
-  foreach my $name (sort keys %$hash) {
-    my $value = $hash->{$name};
-    if( ref($value) eq "ARRAY" ) {
-      #print "\t$name = array reference...\n";
-      write_array($value,"\t$name = ");
-    } else {
-      print "\t$name = $value\n";
-    }
-  }
 }
 
 sub get_next_value {
@@ -410,17 +408,6 @@ sub parse_title_section {
   $self->{basin} = $data->[2];
 }
 
-sub write_title_section {
-
-  my ($self,$sect) = @_;
-
-  my $hash = $sect->{hash};
-
-  print "$self->{title}\n";
-  print "$self->{simul}\n";
-  print "$self->{basin}\n";
-}
-
 sub parse_number_section {
 
   my ($self,$sect) = @_;
@@ -437,30 +424,6 @@ sub parse_number_section {
   $sect->{array} = \@f;
 }
 
-sub write_number_section {
-
-  my ($self,$sect) = @_;
-
-  my $data = $sect->{array};
-
-  write_array($data);
-}
-
-sub write_array {
-
-  my ($array,$extra) = @_;
-
-  print "$extra" if $extra;
-
-  my $i = 0;
-  foreach my $item (@$array) {
-    $i++;
-    print "   $item";
-    print "\n" if $i%5 == 0;
-  }
-  print "\n" unless $i%5 == 0;
-}
-
 sub parse_table_section {
 
   my ($self,$sect) = @_;
@@ -468,69 +431,8 @@ sub parse_table_section {
   # no parsing
 }
 
-sub write_table_section {
-
-  my ($self,$sect) = @_;
-
-  my $data = $sect->{data};
-
-  foreach my $line (@$data) {
-    print "$line\n";
-  }
-}
-
-#-----------------------------------------------------------
-
-sub get_section_old {		# not used
-
-  my ($self,$section_id) = @_;
-
-  return $self->{sections}->{$section_id};
-}
-
-sub parse_line {
-
-  my $line = shift;
-
-  my %hash = ();
-  my ($var,$val);
-
-  $line =~ s/^\s*//;
-  $line =~ s/\s*$//;
-  my $rest = $line;
-  #print STDERR "line: $line\n";
-
-  while( $rest ) {
-    if( $rest =~ /^(\w+)\s*=\s*/ ) {
-	$var = $1;
-	$rest = $';
-    } else {
-	die "(parse_line 1) Cannot parse: $rest\n";
-    }
-    if( $rest =~ /^([^=]+)\s+(\w+)\s*=\s*/ ) {	#strings are not handled prop
-	$val = $1;
-	$rest = "$2 = " . $';
-    } else {
-	$val = $rest;
-	$rest = "";
-    }
-    $val =~ s/,/ /g;
-    $val =~ s/^\s+//;
-    $val =~ s/\s+$//;
-    $val =~ s/\s+/ /g;
-    #print STDERR "$var : |$val|\n";
-    my @vals = split(/\s+/,$val);
-    my $nvals = @vals;
-    if( $nvals > 1 ) {
-      $val = \@vals;
-    }
-    $hash{$var} = $val;
-  }
-
-
-  return \%hash;
-}
-
+#-----------------------------------------------------------------
+# apply function to sections
 #-----------------------------------------------------------------
 
 sub apply_sections {
@@ -544,8 +446,11 @@ sub apply_sections {
 	  my $sect = $sections->{$section};
 	  &$func($self,$sect);
   }
-
 }
+
+#-----------------------------------------------------------------
+# print sections (for debug)
+#-----------------------------------------------------------------
 
 sub print_sections {
 
@@ -576,9 +481,10 @@ sub print_section {
   foreach my $line (@$data) {
 	  print "$line\n";
   }
-
 }
 
+#-----------------------------------------------------------------
+# write str and sections
 #-----------------------------------------------------------------
 
 sub write_str {
@@ -683,9 +589,74 @@ sub write_comment_section {
   }
 }
 
-#-----------------------------------------------------------------
+sub write_param_section {
 
-###################################
+  my ($self,$sect) = @_;
+
+  my $hash = $sect->{hash};
+
+  #my @items = sort keys %$hash;
+  my @items = @{$sect->{items}};
+
+  foreach my $name (@items) {
+    my $value = $hash->{$name};
+    if( ref($value) eq "ARRAY" ) {
+      write_array($value,"\t$name = ");
+    } else {
+      print "\t$name = $value\n";
+    }
+  }
+}
+
+sub write_title_section {
+
+  my ($self,$sect) = @_;
+
+  my $hash = $sect->{hash};
+
+  print "$self->{title}\n";
+  print "$self->{simul}\n";
+  print "$self->{basin}\n";
+}
+
+sub write_number_section {
+
+  my ($self,$sect) = @_;
+
+  my $data = $sect->{array};
+
+  write_array($data);
+}
+
+sub write_array {
+
+  my ($array,$extra) = @_;
+
+  print "$extra" if $extra;
+
+  my $i = 0;
+  foreach my $item (@$array) {
+    $i++;
+    print "   $item";
+    print "\n" if $i%5 == 0;
+  }
+  print "\n" unless $i%5 == 0;
+}
+
+sub write_table_section {
+
+  my ($self,$sect) = @_;
+
+  my $data = $sect->{data};
+
+  foreach my $line (@$data) {
+    print "$line\n";
+  }
+}
+
+#-----------------------------------------------------------------
+# testing
+#-----------------------------------------------------------------
 
 sub test_str
 {
@@ -699,9 +670,15 @@ sub test_str
     $str->print_sections;
 }
 
-###################################
 #&test_str(@ARGV);
-###################################
+
+#-----------------------------------------------------------------
+# return 1;
+#-----------------------------------------------------------------
+
 1;
-###################################
+
+#-----------------------------------------------------------------
+# end of routine
+#-----------------------------------------------------------------
 

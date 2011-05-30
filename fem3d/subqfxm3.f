@@ -517,15 +517,15 @@ c
 c       TAUX= airden*cdx*speed*unow
 c       TAUY= airden*cdx*speed*vnow
         
-        taux = rhom*cdx*speedC*unow*cavaleri
-        tauy = rhom*cdx*speedC*vnow*cavaleri
+c        taux = rhom*cdx*speedC*unow*cavaleri
+c        tauy = rhom*cdx*speedC*vnow*cavaleri
 c
 c --- convert in CGS ---
-        taux = cgstau*taux
-        tauy = cgstau*tauy
+c        taux = cgstau*taux
+c        tauy = cgstau*tauy
 c
 c --- calculates wind stress modulus ---
-      rmod=sqrt(taux**2+tauy**2)
+c      rmod=sqrt(taux**2+tauy**2)
 c
       return
 c     else

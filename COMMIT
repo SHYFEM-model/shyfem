@@ -1,5 +1,49 @@
 ============================================================
 
+Mon May 30 12:17:25 CEST 2011
+
+minor changes, MACOSX, plot numnbers
+
+ LASTTAR                  |    2 +-
+ Makefile                 |    2 +-
+ Rules.make               |   39 ++++++-
+ fem3d/basinf.f           |   47 ++++++---
+ fem3d/newchk.f           |  119 ++++++++++++++-------
+ fem3d/newcon.f           |    4 +-
+ fem3d/ousextr_nodes.f    |   11 ++-
+ fem3d/param.h            |   12 +-
+ fem3d/subcus.f           |  141 +++++++++++++++++++++++++
+ fem3d/subdep.f           |   96 +++++++++++++++++
+ fem3d/subhisto.f         |    5 +-
+ fem3d/sublnks.f          |    6 +-
+ fem3d/submeteo.f         |    2 +-
+ fem3d/subn11.f           |   19 +++-
+ fem3d/subqfxf.f          |   15 ++--
+ fem3d/subqfxm3.f         |   10 +-
+ fem3d/subwin.f           |   10 +-
+ fem3d/wininf.f           |    4 +-
+ femadj/param.h           |   12 +-
+ femanim/makeanim.sh      |    3 +-
+ femanim/rename-petras.pl |   27 +++++
+ fembin/dtinf.pl          |   61 +++++++++++
+ fembin/gitinfo           |    7 ++
+ fembin/gittags           |    9 ++-
+ fembin/gp                |    4 +
+ fembin/grd2nod.pl        |   31 ++++++
+ fembin/movaver           |    4 +-
+ fembin/strparse.pl       |  180 ++++++++++++++++++++++++++++++++
+ femlib/perl/str.pm       |  259 +++++++++++++++++++++-------------------------
+ femplot/param.h          |   12 +-
+ femplot/supbas.f         |   85 +++++++++++++++
+ femplot/supsim.f         |   38 +++++++
+ grid/general.h           |    2 +
+ grid/xgraph.c            |   12 ++-
+ grid/xgraph.h            |    4 +-
+ param.h                  |   12 +-
+ 36 files changed, 1039 insertions(+), 267 deletions(-)
+
+============================================================
+
 Thu Apr 14 16:06:42 CEST 2011
 
 New version 6_1_22

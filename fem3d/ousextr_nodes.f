@@ -81,10 +81,14 @@ c	integer rdous,rfous
 	logical berror
 
 	integer ndim
-	parameter (ndim=4)
+	!parameter (ndim=4)
+        parameter (ndim=3)
         integer nodese(ndim)    !external numbers
         integer nodes(ndim)     !internal numbers
-        data nodese /1316,1843,1623,1871/
+        !data nodese /1316,1843,1623,1871/
+        !data nodese /7899,6177,2489/            !Skadar centro, Plavnica, Ckla
+        data nodese /299,6177,2489/            !Skadar centro, Plavnica, Ckla
+
 
 	nread=0
 
@@ -170,6 +174,9 @@ c	call mima(vnv,nelout,vmin,vmax)
           write(79,*) (uprv(l,k),l=1,lmax)
           write(79,*) (vprv(l,k),l=1,lmax)
         end do
+
+	write(80,*) it,znv(7899),znv(6177),znv(2489)	! skadar
+	!write(80,*) it,znv(2256),znv(6177),znv(2489)	! skadar
 
         write(85,*) it,nel
 	do ie=1,nel

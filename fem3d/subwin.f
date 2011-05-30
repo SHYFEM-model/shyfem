@@ -595,7 +595,7 @@ c**************************************************************
 	implicit none
 
 	integer nwdim
-	parameter(nwdim=60000)
+	parameter(nwdim=100000)
 
 	integer nwdi,nwind,iwtype,iwsect
 	common /winpar/ nwdi,nwind,iwtype,iwsect
@@ -644,7 +644,7 @@ c speed [m/s] = rnodes * speed [nodes]
 	real rnodes
 	parameter( rnodes = 1852. / 3600. )	! n. miles / hour
 	integer nwdim
-	parameter(nwdim=60000)
+	parameter(nwdim=100000)
 
 	integer nwdi,nwind,iwtype,iwsect
 	common /winpar/ nwdi,nwind,iwtype,iwsect
@@ -706,7 +706,7 @@ c**************************************************************
 	implicit none
 
 	integer nwdim
-	parameter(nwdim=60000)
+	parameter(nwdim=100000)
 
 	integer nwdi,nwind,iwtype,iwsect
 	common /winpar/ nwdi,nwind,iwtype,iwsect
@@ -804,7 +804,7 @@ c gets wind data from section (or ASCII file already read)
 	real u(1),v(1),p(1)
 
 	integer nwdim
-	parameter(nwdim=60000)
+	parameter(nwdim=100000)
 
 	integer nwdi,nwind,iwtype,iwsect
 	common /winpar/ nwdi,nwind,iwtype,iwsect
@@ -904,7 +904,7 @@ c reads one line of wind data
 	implicit none
 
 	integer nwdim
-	parameter(nwdim=60000)
+	parameter(nwdim=100000)
 	integer ndim
 	parameter(ndim=3)	!how many values to read on line
 
