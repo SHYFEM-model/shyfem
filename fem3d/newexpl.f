@@ -30,6 +30,7 @@ c 26.02.2010	ggu	set_advective() cleaned up
 c 26.02.2010	ggu	new momentum_advective_stability()
 c 08.03.2010	ggu	run only down to avail layers (bug fix)
 c 16.12.2010	ggu	barocl preconditioned for sigma layers, but not finshed
+c 20.05.2011	ggu	compute statistics of stability, no stab in dry elemes
 c
 c notes :
 c
@@ -601,20 +602,24 @@ c computes courant number of advective terms in momentum equation
         common /ilhv/ilhv
         integer nen3v(3,1)
         common /nen3v/nen3v
+        integer iwegv(1)
+        common /iwegv/iwegv
 
-	integer ie,l,ii,k,lmax
+	integer ie,l,ii,k,lmax,iweg
 	real cc,cmax
 	real ut,vt
 	real area,h,vol
 	real b,c,f,ftot
 
 	cmax = 0.
+	call compute_stability_stats(-1,cc)
 
 	do ie=1,nel
+	  area = 12. * ev(10,ie)
 	  lmax = ilhv(ie)
+	  iweg = iwegv(ie)
 	  do l=1,lmax
 
-	    area = 12. * ev(10,ie)
             h = hdenv(l,ie)
 	    vol = area * h
 
@@ -631,14 +636,60 @@ c computes courant number of advective terms in momentum equation
             end do
 
 	    cc = area*ftot/vol
+	    if( iweg .gt. 0 ) cc = 0.	! dry element
 	    astab(l,ie) = cc
 	    cmax = max(cmax,cc)
+	    call compute_stability_stats(0,cc)
 
 	  end do
 	end do
 
 	rindex = cmax
+	!call compute_stability_stats(1,cc)
 
+	end
+
+c******************************************************************
+
+	subroutine compute_stability_stats(what,cc)
+
+c computes histogram of stability of elements
+
+	implicit none
+
+	integer what
+	real cc
+
+	integer ndim,dbin
+	parameter( ndim = 10 , dbin = 10 )
+	real eps
+	parameter( eps = 1.e-5 )
+
+	integer i,idt,it
+	integer bin(0:ndim)
+	save bin
+
+	if( what .lt. 0 ) then		!initialize
+	  do i=0,ndim
+	    bin(i) = 0
+	  end do
+	else if( what .eq. 0 ) then	!accumulate
+	  if( cc .gt. eps ) then
+	    idt = 1. / cc
+	  else
+	    idt = 9999999
+	  end if
+	  i = idt / dbin
+	  i = max(i,0)
+	  i = min(i,ndim)
+	  bin(i) = bin(i) + 1
+	else				!write out
+	  call get_time(it)
+	  write(567,1000) it,(bin(i),i=0,ndim)
+	end if
+	
+	return
+ 1000	format(i10,11i6)
 	end
 
 c******************************************************************

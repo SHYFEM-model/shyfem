@@ -1,5 +1,26 @@
 ============================================================
 
+Tue May 31 11:59:31 CEST 2011
+
+changes in wetting and drying
+
+ LASTTAR                  |    2 +-
+ Makefile                 |    1 +
+ fem3d/ht.f               |    5 +
+ fem3d/new3di.f           |    6 +-
+ fem3d/newbcl.f           |    2 +-
+ fem3d/newchk.f           |    2 +-
+ fem3d/newexpl.f          |   55 ++++++++++++-
+ fem3d/newstab.f          |   49 ++++++++++-
+ fem3d/subdry.f           |  206 +++++++++++++++++++++++++++++++++++-----------
+ fem3d/subn11.f           |   68 +++++++++++++---
+ fem3d/subnsh.f           |   58 +++++++++++--
+ fembin/shyfem_beta.sh    |   32 +++++++
+ fembin/shyfem_version.pl |    2 +-
+ 13 files changed, 409 insertions(+), 79 deletions(-)
+
+============================================================
+
 Mon May 30 17:50:03 CEST 2011
 
 adminstrative changes

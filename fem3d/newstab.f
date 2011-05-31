@@ -10,6 +10,7 @@ c 26.02.2010    ggu     internal_stability restructured (on element)
 c 08.03.2010    ggu     run only down to avail layers in stability (bug fix)
 c 26.01.2011    ggu     robs for nudging implemented
 c 16.02.2011    ggu     pass robs to subroutines, write stb-ind to nos file
+c 20.05.2011    ggu     allow for elimination of elems due to high rstab
 c
 c*****************************************************************
 c*****************************************************************
@@ -329,9 +330,31 @@ c computes stability index for hydro timestep - with error output
 
 c**********************************************************************
 
+        subroutine eliminate_stability(rmax)
+
+c eliminates elements with stability index higher than rmax
+
+        implicit none
+
+        real rmax
+
+        real rindex,dt
+
+	dt = 0.
+	rindex = rmax
+	call internal_stability(2,dt,rindex)
+
+	end
+
+c**********************************************************************
+
         subroutine internal_stability(mode,dt,rindex)
 
 c computes stability index for hydro timestep (internal)
+c
+c mode = 0		normal call, compute stability
+c mode = 1		error call, compute stability and write error message
+c mode = 2		eliminate elements with r>rindex
 
         implicit none
 
@@ -353,11 +376,13 @@ c computes stability index for hydro timestep (internal)
 	integer ilhv(1)
 	common /ilhv/ilhv
 
-	integer ie,l,lmax
+	integer ie,l,lmax,iweg
         real rkpar,azpar,ahpar
-	real dindex,aindex,tindex
+	real dindex,aindex,tindex,sindex
+	real rmax
 
 	real getpar
+	logical is_i_nan
 
         rkpar = 0.
 	azpar = 1.
@@ -370,6 +395,12 @@ c computes stability index for hydro timestep (internal)
 	  end do
 	end do
 
+	rmax = 1.e+30
+	if( mode .eq. 2 ) rmax = rindex
+	if( mode .eq. 2 ) then
+		write(6,*) 'eliminating rmax: ',rmax
+	end if
+
 	!call compute_stability(robs,rkpar,azpar,rindex,saux1)
 	call momentum_advective_stability(aindex,sauxe1)
 	call momentum_viscous_stability(ahpar,dindex,sauxe2)
@@ -380,10 +411,21 @@ c computes stability index for hydro timestep (internal)
 	tindex = 0.
 	do ie=1,nel
 	  lmax = ilhv(ie)
+	  iweg = 0
 	  do l=1,lmax
-	    tindex = max(tindex,sauxe1(l,ie)+sauxe2(l,ie))
+	    sindex = sauxe1(l,ie)+sauxe2(l,ie)
+	    if( sindex .ge. rmax ) iweg = 1
+	    tindex = max(tindex,sindex)
 	  end do
+	  if( iweg .gt. 0 ) then
+	    write(6,*) 'eliminating element for stability: ',ie
+	    write(569,*) 'eliminating element for stability: ',ie
+	    call check_set_unit(570)
+	    call check_elem(ie)
+	    call set_element_dry(ie)
+	  end if
 	end do
+
 	tindex = tindex*dt
 
 	if( mode .eq. 1 ) then		!error output
@@ -463,6 +505,7 @@ c set ifnos in order to have output to nos file
 	write(6,*) 'diffusive: ',id,dindex,dindex*dt
 	write(6,*) 'total:     ',it,tindex,tindex*dt
 
+	call check_set_unit(6)
 	if( ia .ne. 0 ) then
 	  call check_elem(ia)
 	end if

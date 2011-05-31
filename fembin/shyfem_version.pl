@@ -7,7 +7,7 @@ chomp;
 $n = @f;
 
 if( $noextra ) {
-  s/\w+\s*$// if $n >= 5;
+  s/\S+\s*$// if $n >= 5;
 } elsif( $version ) {
   $_ = $f[1];
 } elsif( $date ) {

@@ -78,6 +78,7 @@ c 16.02.2011    ggu	new iarnv, call to aquabc
 c 17.02.2011    ccf	new radiation stress in 3D
 c 23.03.2011    ggu	new call to adjust_spherical()
 c 31.03.2011    ggu	write finite volumes at initial time step
+c 20.05.2011    ggu	iwetv introduced, wet and dry from main
 c
 c*****************************************************************
 
@@ -168,6 +169,7 @@ c static geometry information
 c dynamic geometry information
 
 	common /iwegv/iwegv(neldim)
+	common /iwetv/iwetv(neldim)
         common /inodv/inodv(nkndim)
 
 c boundary arrays
@@ -517,10 +519,13 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	   !if( it .eq. 1429200 ) call test3d(66,100)
 
+	   call set_dry
+
 	   call reset_stability
 
            call set_timestep
            call get_timestep(dt)
+	   call compute_stability_stats(1,aux)
 
 	   call dobefor3d
 

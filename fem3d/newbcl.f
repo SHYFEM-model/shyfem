@@ -585,7 +585,7 @@ c checks values of t/s/rho
 
 	write(6,*) 'checking for Nans...'
         call check2Dr(nlvdim,nlv,nkn,saltv,-1.,+70.,text,'saltv')
-        call check2Dr(nlvdim,nlv,nkn,tempv,-10.,+50.,text,'tempv')
+        call check2Dr(nlvdim,nlv,nkn,tempv,-30.,+70.,text,'tempv')
         call check2Dr(nlvdim,nlv,nkn,rhov,-2000.,+2000.,text,'rhov')
 
 	end

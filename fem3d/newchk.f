@@ -353,7 +353,7 @@ c checks important variables
 	call check2Dr(nlvdim,nlv,nkn,ulnv,-10.,+10.,text,'ulnv')
 	call check2Dr(nlvdim,nlv,nkn,vlnv,-10.,+10.,text,'vlnv')
 
-	call check2Dr(nlvdim,nlv,nkn,tempv,-10.,+50.,text,'tempv')
+	call check2Dr(nlvdim,nlv,nkn,tempv,-30.,+70.,text,'tempv')
 	call check2Dr(nlvdim,nlv,nkn,saltv,-1.,+50.,text,'saltv')
 
 	call check2Dr(nlvdim,nlv,nkn,hdknv,0.,+10000.,text,'hdknv')

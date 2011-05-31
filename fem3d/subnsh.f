@@ -61,6 +61,7 @@ c 22.03.2010    ggu     some comments for better readability
 c 29.04.2010    ggu     new routine set_output_frequency() ... not finished
 c 04.05.2010    ggu     shell to compute energy
 c 22.02.2011    ggu     in pritime() new write to terminal
+c 20.05.2011    ggu     changes in set_timestep(), element removal, idtmin
 c
 c************************************************************
 c
@@ -752,10 +753,12 @@ c controls time step
         integer idtdone,idtrest,idts
         real dt
         real ri,rindex,rindex1,riold
-        real    cmax
-        integer iloop
-        integer idtsync,isplit
+	real perc
+        real    cmax,rmax
+        integer iloop,itloop
+        integer idtsync,isplit,idtmin
 	integer itunit
+	logical bsync
 
         real getpar
 
@@ -802,6 +805,12 @@ c----------------------------------------------------------------------
         isplit  = getpar('itsplt')
         cmax    = getpar('coumax')
         idtsync = getpar('idtsyn')
+
+	idtmin = 10	! minimum time step allowed
+	itloop = 0
+
+    1	continue
+	itloop = itloop + 1
 
         if( isplit .ge. 0 ) then
           dt = idtorig
@@ -858,13 +867,28 @@ c ri     is used stability index
 c istot  is number of internal time steps (only for isplit = 1)
 c----------------------------------------------------------------------
 
+	bsync = .false.		!true if time step has been syncronized
         if( idts .gt. 0 ) then               !syncronize time step
             idtdone = mod(it-itanf,idts)     !already done
             idtrest = idts - idtdone         !still to do
-            if( idt .gt. idtrest ) idt = idtrest
+            if( idt .gt. idtrest ) then
+	      idt = idtrest
+	      bsync = .true.
+	    end if
         end if
 
         ri = idt*rindex/idtorig
+
+	if( itloop .gt. 10 ) then
+	  stop 'error stop set_timestep: too many loops'
+	end if
+
+        if( .not. bsync .and. idt .lt. idtmin ) then     !should be customized
+	  rmax = (1./idtmin)*cmax
+	  call eliminate_stability(rmax)
+	  write(6,*) 'repeating time step for low idt: ',idt,rmax
+	  goto 1
+	end if
 
         if( idt .lt. 1 ) then           !should never happen
           call error_stability(dt,rindex)
@@ -883,12 +907,32 @@ c----------------------------------------------------------------------
         niter=niter+1
         it=it+idt
 
-        write(iuinfo,*) '--------------------- new timestep: ',it,idt
-        write(iuinfo,1000) 'set_timestep: ',it,ri,riold,rindex,istot,idt
+	perc = (100.*(it-itanf))/(itend-itanf)
+
+        write(iuinfo,1001) '----- new timestep: ',it,idt,perc
+        write(iuinfo,1002) 'set_timestep: ',it,ri,riold,rindex,istot,idt
 
         return
- 1000   format(a,i10,3f12.4,2i8)
+ 1001   format(a,i12,i8,f8.2)
+ 1002   format(a,i12,3f12.4,2i8)
         end
+
+c**********************************************************************
+
+        subroutine get_time(itact)
+
+c returns actual time
+
+        implicit none
+
+	integer itact
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	itact = it
+
+	end
 
 c**********************************************************************
 

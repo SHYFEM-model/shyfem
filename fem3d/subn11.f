@@ -1303,23 +1303,40 @@ c compute discharge from water level
 
 	real z,a,b,c,z0
 
+c use fit 1 for compatibility to old simulations
+c use fit 3 for best results without using piecewise fit
+
 	if( levflx .eq. 0 ) then
 	  !nothing changed -> return same rw
 	else if( levflx .eq. 1 ) then
-	  !z0 = 5.		!reference level
-	  !z = z0 + znv(kn)
-	  !call z_smooth(z)
-	  a = 1808
-	  c = -2875
-	  !a = 1648		!no outliers
-	  !c = --2684		!no outliers
-	  !rw = a*log(z) + c
-
 	  z = znv(kn)
 	  call z_smooth(z)
-	  a = 211.521555200211
-	  b = 0.855968510497031     
-	  rw = a * z**b
+
+	  !a = 1648		!no outliers
+	  !c = -2684		!no outliers
+
+c-------------- old fit ----------------------------	1
+	  z0 = 5.		!reference level
+	  a = 1808
+	  c = -2875
+	  rw = a*log(z0+z) + c
+c---------------------------------------------------
+
+c-------------- fit based on mass balance -------------  2
+	  !a = 211.521555200211
+	  !b = 0.855968510497031     
+	  !rw = a * z**b
+c---------------------------------------------------
+
+c-------------- new fit based on mass balance ----------  3
+	  !a = 223.529239458563		!new calibration
+	  !b = 0.862816507081288
+	  !rw = a * z**b
+c---------------------------------------------------
+
+c-------------- best fit based on mass balance -----------  4
+          !call flow_out_piece_new(z,rw)	!this is best (if it works)
+c---------------------------------------------------
 
 	  rw = -rw
 	  write(134,*) it,z,rw
@@ -1364,6 +1381,35 @@ c smooths z values
 	z = za(0)
 
 	end
+
+c**********************************************************************
+
+        subroutine flow_out_piece_new(z,rout)
+
+        implicit none
+
+        real z,rout
+        real rw,a,b
+
+        if( z .le. 1. ) then
+          a = 100.594731852550
+          b = 78.7626400203164
+        else if( z .le. 2. ) then
+          a = -123.192333413729
+          b = 285.797516554523
+        else if( z .le. 3. ) then
+          a = 21.2143155529982
+          b = 207.240814424064
+        else
+          a = 468.988395301776
+          b = 102.075378828782
+        end if
+
+        rw = a + z*b
+        !rout = -rw
+        rout = rw
+
+        end
 
 c**********************************************************************
 

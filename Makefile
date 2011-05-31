@@ -147,6 +147,7 @@ beta: cleanall
 	rm -rf $(TMPDIR)/fem.tar $(TMPDIR)/fem_VERS_* $(TMPDIR)/shyfem-*
 	mkdir -p $(BETADIR)
 	cp -al $(FEMTOTS) $(SPECIAL) $(BETADIR)
+	cd $(BETADIR); ./fembin/shyfem_beta.sh
 	cd $(TMPDIR); tar cvf fem.tar shyfem-*
 	mv -f $(TMPDIR)/fem.tar .
 	gzip -f fem.tar

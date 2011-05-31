@@ -29,7 +29,46 @@ c 13.08.2003    ggu     new routine setznv
 c 03.09.2004    ggu     setznv: do not stop if znv is not unique (restart)
 c 22.09.2004    ggu     debug in setweg()
 c 23.03.2006    ggu     changed time step to real
+c 20.05.2011    ggu     different algorithm for element removal (wet&dry)
+c 20.05.2011    ggu     new routines set_dry() and set_element_dry(ie)
 c
+c*****************************************************************
+
+	subroutine set_dry
+
+c sets dry elements
+
+	implicit none
+
+	integer iwa
+
+        call setweg(2,iwa)
+        call setweg(3,iwa)
+
+	end
+
+c*****************************************************************
+
+	subroutine set_element_dry(ie)
+
+c sets dry elements
+
+	implicit none
+
+	integer ie
+
+        integer iwegv(1)
+        common /iwegv/iwegv
+        integer iwetv(1)
+        common /iwetv/iwetv
+
+	if( iwegv(ie) .eq. 0 ) then
+	  iwegv(ie) = 3
+	  iwetv(ie) = 0
+	end if
+	
+	end
+
 c*****************************************************************
 c
         subroutine setweg(iweich,iw)
@@ -49,19 +88,35 @@ c 2 is just to switch off an element in time, so no iteration
 c	has to be repeated
 c generally it is true that : 0 <= hzmin <= zmin <= hzoff <= hzon
 c
+c				in			out
+c			   element was inside	   element was outside
+c	+---------------------------------------------------------------+
+c  h4	|		|	-		|	include		|
+c	+- hzon  -------------------------------------------------------+
+c  h3	|		|	-		|	-		|
+c	+- hzoff -------------------------------------------------------+
+c  h2	|		|	exclude		|	-		|
+c	+- hzmin -------------------------------------------------------+
+c  h1	|		|    exclude, repeat	|	error		|
+c	+- zero  -------------------------------------------------------+
+c
 c iwegv   0:all nodes wet   >0:number of nodes dry -> out of system
 c
 c revised 12.01.94 by ggu   $$hzon  - use new variable hzon
 c
         implicit none
-c
+
 c arguments
         integer iweich,iw
 c common
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer iwegv(1),nen3v(3,1)
-        common /iwegv/iwegv, /nen3v/nen3v
+        integer iwegv(1)
+        common /iwegv/iwegv
+        integer iwetv(1)
+        common /iwetv/iwetv
+        integer nen3v(3,1)
+        common /nen3v/nen3v
         real hm3v(3,1)
         common /hm3v/hm3v
         real zenv(3,1)
@@ -70,42 +125,62 @@ c common
 	common /znv/znv
 	include 'ev.h'
 c local
-        integer ie,ii,iwh,iweg,k
-        integer iespec
+        integer ie,ii,iwh,iweg,k,iu
+        integer iespec,iwait,iwet
         real hzg,hzmin,hzoff,hzon,volmin,aomega,zmin
+	real hzlim,hztot
+	character*10 text
 c functions
         real getpar
 c	integer ieint,iround,ipint
 c aux
 	logical debug,bnodry
-        logical bdebug
+        logical bdebug,bbdebug
+        logical bnewalg,binclude
+	logical bnewtime
+
 c	real rz,rh,rx,rxmin
 c	integer k,iex
 c	integer iz(30),ih(30),izh(30),ix(30),ixx(30)
         integer itanf,itend,idt,nits,niter,it
 	common /femtim/ itanf,itend,idt,nits,niter,it
-c
+
+	integer itold
+	save itold
+	data itold / -1 /
+
 	debug=.false.
 	bnodry=.true.		!drying is not allowd (for debug)
 	bnodry=.false.
         bdebug=.true.
         bdebug=.false.
 
+        bnewalg=.false.
+        bnewalg=.true.		!new algorithm to include elements
+
+	bnewtime = it .ne. itold
+
+	iu = 156
         iespec = 4574
+        iespec = 19417
         iespec = -1
-c
+	bbdebug = .true.
+	bbdebug = .false.
+	iwait = 5		!wait so long before including
+
 	if( iweich .ge. 0 ) then
           hzmin=getpar('hzmin')
           hzoff=getpar('hzoff')
           hzon=getpar('hzon')			!$$hzon
           volmin=getpar('volmin')
 	end if
-c
+
         iwh=0
-c
+
         if(iweich.eq.-1) then                   !initialize iwegv
           do ie=1,nel
             iwegv(ie)=0
+            iwetv(ie)=0
           end do
         else if(iweich.eq.0) then               !first call
           do ie=1,nel
@@ -113,52 +188,46 @@ c
             zmin=hzmin+volmin/(4.*aomega)
 c            zmin=hzoff+volmin/(4.*aomega)   !$$new 24.07.92
             if(zmin.gt.hzoff) zmin=hzmin+0.5*(hzmin+hzoff) !just in case...
-c
+
             iweg=0
             do ii=1,3
               hzg = zenv(ii,ie) + hm3v(ii,ie)
               if(hzg.lt.hzoff) iweg=iweg+1
               if(hzg.lt.zmin) zenv(ii,ie)=zmin-hm3v(ii,ie)
               if(bdebug.and.hzg.lt.hzoff) then
-                      write(6,*) 'setweg 0: ',ie,iweg,hzg
-                      write(6,*) znv(nen3v(ii,ie)),hm3v(ii,ie)
+                      write(iu,*) 'setweg 0: ',ie,iweg,hzg
+                      write(iu,*) znv(nen3v(ii,ie)),hm3v(ii,ie)
               end if
             end do
             iwegv(ie)=iweg
+	    if( iweg .eq. 0 ) iwetv(ie) = 1
           end do
-        else if(iweich.eq.1) then               !only take away (hzmin)
+        else if(iweich.eq.1.or.iweich.eq.2) then  !only take away
+	  if( iweich .eq. 1 ) then
+	    hzlim = hzmin
+	    text = 'setweg 1: '
+	  else
+	    hzlim = hzoff
+	    text = 'setweg 2: '
+	  end if
           do ie=1,nel
             debug = ie .eq. iespec
             iweg=0
             do ii=1,3
               hzg = znv(nen3v(ii,ie)) + hm3v(ii,ie)
-              if(hzg.lt.hzmin) iweg=iweg+1
-              if(debug .or. bdebug.and.hzg.lt.hzmin) then
-                      write(6,*) 'setweg 1: ',ie,iweg,hzg
-                      write(6,*) znv(nen3v(ii,ie)),hm3v(ii,ie)
+              if(hzg.lt.hzlim) iweg=iweg+1
+              if(debug .or. bdebug.and.hzg.lt.hzlim) then
+                      write(iu,*) text,ie,iweg,hzg
+                      write(iu,*) znv(nen3v(ii,ie)),hm3v(ii,ie)
               end if
             end do
-            if(iweg.gt.0) then
-              if(iwegv(ie).eq.0) iwh=iwh+1
+            if(iweg.gt.0) then		!case h1/h2
 	      if( bnodry ) goto 77
-              iwegv(ie)=iweg
-            end if
-          end do
-        else if(iweich.eq.2) then               !only take away (hzoff)
-          do ie=1,nel
-            debug = ie .eq. iespec
-            iweg=0
-            do ii=1,3
-              hzg = znv(nen3v(ii,ie)) + hm3v(ii,ie)
-              if(hzg.lt.hzoff) iweg=iweg+1
-              if(debug .or. bdebug.and.hzg.lt.hzoff) then
-                      write(6,*) 'setweg 2: ',ie,iweg,hzg
-                      write(6,*) znv(nen3v(ii,ie)),hm3v(ii,ie)
-              end if
-            end do
-            if(iweg.gt.0) then
-              if(iwegv(ie).eq.0) iwh=iwh+1
-	      if( bnodry ) goto 77
+              !if(iwegv(ie).gt.0 .and.iweich.eq.1) goto 78	case h1out
+              if(iwegv(ie).eq.0) then	!element was inside - case h1/h2in
+		iwh=iwh+1
+                iwetv(ie)=0
+	      end if
               iwegv(ie)=iweg
             end if
           end do
@@ -166,23 +235,56 @@ c
           do ie=1,nel
             debug = ie .eq. iespec
             iweg=0
+	    hztot = 0.
             do ii=1,3
               hzg = znv(nen3v(ii,ie)) + hm3v(ii,ie)
+	      hztot = hztot + hzg
               if(hzg.lt.hzon) iweg=iweg+1 !$$hzon ...(220792)
-              if(debug .or. bdebug.and.hzg.lt.hzoff) then
-                      write(6,*) 'setweg 3: ',ie,iweg,hzg
-                      write(6,*) znv(nen3v(ii,ie)),hm3v(ii,ie)
+              if(debug .or. bdebug.and.hzg.lt.hzon) then
+		      k = nen3v(ii,ie)
+                      write(iu,*) 'setweg 3: ',ie,ii,k,iweg,hzg
+                      write(iu,*) znv(nen3v(ii,ie)),hm3v(ii,ie)
               end if
             end do
-            if(iweg.eq.0) then
-              if(iwegv(ie).gt.0) iwh=iwh+1
+	    hztot = hztot / 3.
+	    !binclude = hztot .ge. hzon
+	    binclude = hztot .ge. hzon .and. iwetv(ie) .lt. -iwait
+c %%%%%%%%% this is wrong -> test also for iweg > 0	!FIXME
+	    if( bnewalg .and. binclude ) then		!new algorithm
+	      iweg = 0
+              if(bdebug) then
+                      write(iu,*) 'setweg 3a: ',ie,iweg,hztot
+	      end if
+	    end if
+            if(iweg.eq.0) then		!case h4
+              if(iwegv(ie).gt.0) then	!element was out - case h4out
+		iwh=iwh+1
+                iwetv(ie)=0
+	      end if
               iwegv(ie)=0
             end if
           end do
         end if
-c
+
+	do ie=1,nel
+	  iweg = iwegv(ie)
+	  iwet = iwetv(ie)
+	  if( bnewtime .or. iwet .eq. 0 ) then	!new time step or changed
+	    if( iweg .eq. 0 ) then
+	      iwetv(ie) = iwetv(ie) + 1
+	    else
+	      iwetv(ie) = iwetv(ie) - 1
+	    end if
+	  end if
+	end do
+
+	itold = it
         iw=iwh
-c
+
+	if( bbdebug ) then
+	  write(iu,*) '++++ ',iweich,iw,iwegv(19417),iwegv(19428)
+	end if
+
         return
    77	continue
 	write(6,*) 'drying is not allowed...'
@@ -196,7 +298,7 @@ c
 	end do
 	stop 'error stop setweg'
         end
-c
+
 c****************************************************************
 c
         subroutine setuvd
@@ -414,19 +516,23 @@ c
         write(6,*) '---------------------'
 	write(6,*) 'error log setuvd (z computation)'
         write(6,*) 'time: ',it
-        write(6,*) 'element number: ',ieext(ie)
+        write(6,*) 'element number (int/ext): ',ie,ieext(ie)
         write(6,*) ie,itot,isum
         write(6,*) zmed,zm,hzmin
         write(6,*) (hm3v(ii,ie),ii=1,3)
         write(6,*) (zenv(ii,ie),ii=1,3)
         write(6,*) (z(ii),ii=1,3)
         write(6,*) '---------------------'
+	call check_set_unit(6)
+	call check_elem(ie)
+	call check_nodes_in_elem(ie)
+        write(6,*) '---------------------'
         stop 'error stop setuvd : z computation'
    97   continue
         write(6,*) '---------------------'
 	write(6,*) 'error log setuvd (u/v computation)'
         write(6,*) 'time: ',it
-        write(6,*) 'element number: ',ieext(ie)
+        write(6,*) 'element number (int/ext): ',ie,ieext(ie)
         write(6,*) ie,itot,isum
         write(6,*) zmed,zm,hzmin
         write(6,*) uo,vo,u,v
@@ -434,6 +540,10 @@ c
         write(6,*) (zenv(ii,ie),ii=1,3)
         write(6,*) (z(ii),ii=1,3)
         write(6,*) (zn(ii),ii=1,3)
+        write(6,*) '---------------------'
+	call check_set_unit(6)
+	call check_elem(ie)
+	call check_nodes_in_elem(ie)
         write(6,*) '---------------------'
         stop 'error stop setuvd : u/v computation'
         end

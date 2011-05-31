@@ -277,10 +277,7 @@ c dry areas
 	iw=0
 	call sp136(iw)
 
-        call setweg(2,iwa)   !$$weg	!ZEONV
-        iw=iw+iwa
-        call setweg(3,iwa)
-        iw=iw+iwa
+	!call set_dry
 
 	call copy_uvz		!copies uvz to old time level
 
@@ -1264,6 +1261,7 @@ c
 	end do
 	write(6,*) 'hact: ',(hact(l),l=0,ilevel)
 	write(6,*) 'alev: ',(alev(l),l=0,ilevel)
+	call check_set_unit(6)
 	call check_elem(ie)
 	call check_nodes_in_elem(ie)
 	stop 'error stop : sp256v'
