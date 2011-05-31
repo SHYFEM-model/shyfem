@@ -149,15 +149,15 @@
       rutQ1c(BoxNumberXY)  =   0.0D+00
       rutQ1n(BoxNumberXY)  =   0.0D+00
       rutQ1p(BoxNumberXY)  =   0.0D+00
-
+	
 
       if ( CalcBenthicFlag> 0) then
         do i = 1 , ( iiPhytoPlankton)
 
           sedi  =   sediPI(i,BoxNumber)
           if ( sedi> 0.0D+00) then
-
-
+	
+	 print*,' ok '
             lcl_PhytoPlankton => PhytoPlankton(i,iiC)
             ruQIc  =   sedi* lcl_PhytoPlankton(BoxNumber)
             ruQ1c  =   p_pe_R1c* ruQIc

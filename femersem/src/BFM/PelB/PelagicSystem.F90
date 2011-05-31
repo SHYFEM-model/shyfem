@@ -122,8 +122,8 @@
 
   call  CalcOxygenSaturation( )
 
-
   call OxygenReaerationDynamics
+
 
   if ( ChlLightFlag== 1) then
     if ( CalcPhytoPlankton(iiP1)) then
@@ -211,7 +211,6 @@
     totpeln(1) =sum( (P1n+ P2n+ P3n+ P4n+ B1n+ Z3n+ Z4n+ Z5n+ Z6n+ R1n+ R6n+ &
       N3n+ N4n+ O4n)* Depth)
     totpels(1)  = sum( (P1s+ R6s+ N5s)* Depth)
-
 
 
   end

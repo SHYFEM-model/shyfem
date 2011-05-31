@@ -60,22 +60,22 @@ c
 c cosa fanno tutte le variabili di gotm qui???
 c 
 c**************************************************************
+c**************************************************************
 
-	subroutine ecological_module(it,dt)
+        subroutine ecological_module(it,dt)
 
 c general interface to ecological module
 
-	implicit none
+        implicit none
 
-	integer it
-	real dt
+        integer it
+        real dt
 
-	call bfm_module(it,dt)
+        call bfm_module(it,dt)
 
-	end
+        end
 
 c**************************************************************
-
 	subroutine bfm_module(it,dt)
 
 c administers bfm ecological model
@@ -158,6 +158,17 @@ c computes ecological scalars with BFM  model
 	real rhov(nlvdim,nkndim)
 	common /rhov/rhov
 
+	real hkv(nkndim)
+	common /hkv/hkv
+	
+	real znv(nkndim)
+        common /znv/znv
+
+
+	
+	real wxnv(nkndim),wynv(nkndim)    !x and y wind component [m/s]
+        common /wxnv/wxnv,/wynv/wynv
+
 ! OBC ARRAY AND VARIABLES
 
 	character*80 bfm1bc(1)
@@ -175,10 +186,22 @@ c computes ecological scalars with BFM  model
         parameter (nbfmv2 = 9)
         integer nbfmv3   	!number of essudates transported var
         parameter (nbfmv3 = 4)
+	
 
  	real b1cn(nlvdim,nkndim,nbfmv1)
         real b2cn(nlvdim,nkndim,nbfmv2)
+	real b2cn_a(nlvdim,nkndim,nbfmv2)
+	real b2cn_b(nlvdim,nkndim,nbfmv2)
+	real b2cn_c(nlvdim,nkndim,nbfmv2)
+	real b2cn_d(nlvdim,nkndim,nbfmv2)
+
         real b3cn(nlvdim,nkndim,nbfmv3)
+	real b3cn_a(nlvdim,nkndim,nbfmv3)
+	real b3cn_b(nlvdim,nkndim,nbfmv3)
+	real b3cn_c(nlvdim,nkndim,nbfmv3)
+
+
+
 
  	real bfm1(nb3dim,nbcdim)   !boundary state for solutes
         real bfm2(nb3dim,nbcdim)   !boundary state for fitozoo
@@ -201,9 +224,55 @@ c computes ecological scalars with BFM  model
 
 	data b3bound /17.0 , 0.1 , 17.0 , 1.0/
 
+
+	real fc2_a(nbfmv2),fc2_b(nbfmv2),fc2_c(nbfmv2)
+     +  ,fc2_d(nbfmv2),fc3_a,fc3_b,fc3_c
+
+	data fc2_a / 0.017,
+     +             0.0126,
+     +             0.0126,
+     +             0.0126,
+     +             0.0126,
+     +             0.015,
+     +             0.015,
+     +             0.0167,
+     + 	 	   0.0167 /
+	data fc2_b / 0.0019,
+     +             0.0007862,
+     +             0.0007862,
+     +             0.0007862,
+     +             0.0007862,
+     +             0.00167,
+     +             0.00167,
+     +             0.00185,
+     +             0.00185 /
+	data fc2_c / 0,
+     +             0.05,
+     +             0.03,
+     +             0.07,
+     +             0.02,
+     +             0.,
+     +             0.,
+     +             0.,
+     +             0. /
+	data fc2_d / 0.,
+     +             0.01,
+     +             0.,
+     +             0.,
+     +             0.,
+     +             0.,
+     +             0.,
+     +             0.,
+     +             0. /
+
+	
+
+	parameter( fc3_a =0.0126,fc3_b =0.0007862,fc3_c =0.01 )
+
+	real fct
 !----------------------------------------------------------------------
 !
-!	Solutes & nutrients
+!	Solutes & nutrients  ONP
 !
 ! 41     O2o            Oxgen                                  mmol O2/m3
 ! 42     N1p            Phosphate    			       mmol P/m3        
@@ -213,7 +282,7 @@ c computes ecological scalars with BFM  model
 ! 46     N5s            Silicate         		       mmol Si/m3
 ! 47     N6r            Reduction Equivalents         	       mmol S--/m3
 !
-!	Bacteria Fito & Zoo plankton
+!	Bacteria Fito & Zoo plankton  BFZ
 !
 ! 51     B1c            Pelagic Bacteria         	       mg C/m3
 ! 52     P1c            Diatoms         		       mg C/m3
@@ -225,12 +294,55 @@ c computes ecological scalars with BFM  model
 ! 58     Z5c            Microzooplankton         	       mg C/m3
 ! 59     Z6c            Heterotrophic nanoflagellates (HNAN)   mg C/m3
 !
-!	Essudates and methabolic solutes
+!       Bacteria Fito & Zoo plankton  NP -- nooutput ---
+!         
+!	
+!	B1n	qnB1c*B1c		
+!	P1n	fqnPc(1)*P1c	
+!	P2n	fqnPc(2)*P2c	
+!	P3n	fqnPc(3)*P3c	
+!	P4n 	fqnPc(4)*P4c	
+!	Z3n	fqnZc(1)*Z3c	
+!	Z4n	fqnZc(2)*Z4c	
+!	Z5n	fqnZc(3)*Z5c	
+!	Z6n 	fqnZc(4)*Z6c	
+
+!       B1p     qpB1c*B1c               
+!       P1p     fqpPc(1)*P1c    
+!       P2p     fqpPc(2)*P2c    
+!       P3p     fqpPc(3)*P3c    
+!       P4p     fqpPc(4)*P4c    
+!       Z3p     fqpZc(1)*Z3c    
+!       Z4p     fqpZc(2)*Z4c    
+!       Z5p     fqpZc(3)*Z5c    
+!       Z6p     fqpZc(4)*Z6c    
+
+!       P1l     fqlPc(1)*P1c    
+!       P2l     fqlPc(2)*P2c    
+!       P3l     fqlPc(3)*P3c    
+!       P4l     fqlPc(4)*P4c    
+
+!       P1s     fqsPc(1)*P1c    
+
+!	
+!
+!	Essudates and methabolic solutes POC
 !
 ! 61     R1c            Labile Organic Carbon (LOC)            mg C/m3
 ! 62     R2c            CarboHydrates (sugars)                 mg C/m3
 ! 63     R6c            Particulate Organic Carbon (POC)       mg C/m3
 ! 64     R7c            Refractory DOC         		       mg C/m3
+!
+!
+!	Essudates and methabolic solutes NP -- nooutput ---
+!
+!	R1n	?*R1c
+!	R1p 	?*R1c
+!	R6n	fqnR6c*R6c
+!	R6p	fqpR6c*R6c
+!
+!	R6s	fqsR6c*R6c
+
 !---------------------------------------------------------------------
 
 !---------------OUTPUT--------------------------
@@ -256,6 +368,8 @@ c---------------------------------------------------------------
 	common /uprv/uprv
 	real vprv(nlvdim,nkndim)
 	common /vprv/vprv
+        real tauxnv(1),tauynv(1)
+        common /tauxnv/tauxnv,/tauynv/tauynv
 
 	real visv(0:nlvdim,nkndim)
 	common /visv/visv
@@ -271,14 +385,17 @@ c---------------------------------------------------------------
 	real czdef,taubot
 	save czdef
 
-	real ddepth(nlvdim,nkndim)
+	real ddepth(nkndim)
 	common /ddepth/ddepth
 
-	real h(nlvdim),depth(nlvdim,nkndim),tdepth 
 	double precision z0s,z0b	!surface and bottom roughness length (m)
 
 	real dtreal
 	real areale
+
+	real drr
+        common /drr/drr
+
 
 ! function
 
@@ -289,7 +406,7 @@ c---------------------------------------------------------------
 	real wsink
 	real t
 
-	integer namlst,ll,is,i
+	integer namlst,ll,is1,is2,is3,i
 	integer icall
 	integer nintp
 
@@ -300,20 +417,40 @@ c---------------------------------------------------------------
 	data icall / 0 /
 	data wsink / 0. /
 
+	real tempv(nlvdim,nkndim)
+	common /tempv/tempv
+
+	real saltv(nlvdim,nkndim)
+        common /saltv/saltv
+
 	! LIGTH DUMMY CALL TO BE CLEANED
 
-	integer ligthflag
-   	common /ligthflag/ligthflag
+	real r1,s1,ss1,tt1,t1
 
-	real lig
-	common /lig/lig
-	real ligth(100000000)
-        common /ligth/ligth
-	integer itrt(100000000)
-        common /itrt/itrt
-	integer ioi
-	save ioi	
+	real rtmp
+        common /rtmp/rtmp
+	
+	real rsal
+        common /rsal/rsal
 
+        integer ilp,ivar
+
+
+	integer ioi,iio
+	save ioi,iio	
+
+	real tto(1,nkndim)
+	save tto
+
+	real sto(1,nkndim)
+        save sto
+
+
+	real rtr
+	save rtr
+	real nkk,krf
+
+	integer ok
 c------------------------------------------------------
 c documentation
 c------------------------------------------------------
@@ -328,24 +465,46 @@ c------------------------------------------------------
 
 	if( icall .eq. 0 ) then
 	  ioi=1 ! DUMMY FOR LIGTH
+	  iio=2
 	  rkpar=getpar('chpar')
           difmol=getpar('difmol')
 	  itmbfm = iround(getpar('itmbfm'))
           idtbfm = iround(getpar('idtbfm'))
-	  ligthflag = iround(getpar('blight'))
+
+          open(101,file='../data/temfile.dat')
+
+          read(101,*)rtr,nkk
+          print*,rtr,nkk
+          do k=1,nkk
+           read(101,*)krf,tto(1,k)
+           tempv(1,k)=tto(1,k)
+	   
+          end do
+
+          open(102,file='../data/salfile.dat')
+
+          read(102,*)rtr,nkk
+          print*,rtr,nkk
+          do k=1,nkk
+           read(102,*)krf,sto(1,k)
+           saltv(1,k)=sto(1,k)
+          end do
+
+!	  print*,1,tempv(1,1),saltv(1,1)
 
 !         --------------------------------------------------------
 !         Initializes HYBRID HYDRO-BFM arrays
 !         --------------------------------------------------------
        
-	  call bfm_init(nbfmv1,b1cn,nbfmv2,b2cn,nbfmv3,b3cn)
+	  call bfm_init(nbfmv1,b1cn,nbfmv2,b2cn
+     +,b2cn_a,b2cn_b,b2cn_c,b2cn_d,nbfmv3,b3cn,b3cn_a,b3cn_b,b3cn_c)
 
 !         --------------------------------------------------------
 !         Initializes STANDALONE BFM arrays 
 !         --------------------------------------------------------
 
-          call feminit_bio
-
+          call feminit_bio(b1cn,nbfmv1,b2cn,nbfmv2,b2cn_a,
+     +   b2cn_b,b2cn_c,b2cn_d,b3cn,nbfmv3,b3cn_a,b3cn_b,b3cn_c)
 !	  --------------------------------------------------
 !	  Initialize HYBRID HYDRO-BFM arrays from external file 
 !	  ---------------------------------------------------
@@ -355,8 +514,10 @@ c------------------------------------------------------
 !	  ----------------------------------------------------
 !	  Initialize lux data DUMMY VERSION
 !	  ----------------------------------------------------
-
-	  call setlux     
+!	  call setlux
+!         ----------------------------------------------------
+!         Initialize temp data DUMMY VERSION
+!         ----------------------------------------------------
 
 !         --------------------------------------------------
 !         Initialize boundary conditions for all state variables
@@ -367,7 +528,6 @@ c------------------------------------------------------
  	  call bnds_init(what,bfm1bc,nintp,nbfmv1,nb3dim,bfm1,b1bound)
    	  call bnds_init(what,bfm2bc,nintp,nbfmv2,nb3dim,bfm2,b2bound)
    	  call bnds_init(what,bfm3bc,nintp,nbfmv3,nb3dim,bfm3,b3bound)
-	
 !         ---------------------------------------------------------
 !         INITIALIZES OUPUT
 !         ---------------------------------------------------------
@@ -376,7 +536,7 @@ c------------------------------------------------------
           call confop(ivs1,itmbfm,idtbfm,1,7,'onp')
 
           ivs2 = 0
-          call confop(ivs2,itmbfm,idtbfm,1,9,'bfz')
+          call confop(ivs2,itmbfm,idtbfm,1,11,'bfz')
 
 	  ivs3 = 0
 	  call confop(ivs3,itmbfm,idtbfm,1,4,'poc')
@@ -388,24 +548,41 @@ c------------------------------------------------------
 !------------------------------------------------------
 
 	icall = icall + 1
-
 	t = it
 
 !------------------------------------------------------
 ! light ?? (dove viene utilizzato?)
 !------------------------------------------------------
 
-	if(it.eq.real(itrt(ioi+1)))then   ! DUMMY
-	  lig=ligth(ioi+1)
-	  ioi=ioi+1
-	else
-	  lig=ligth(ioi)
-	end if				   ! DUMMY
 
+!------------------------------------------------------
+! temp ?? (dove viene utilizzato?)
+!------------------------------------------------------
+	if(it.gt.rtr)then
+	read(101,*)rtr,nkk 
+ 	 do k=1,nkk
+          read(101,*)krf,tto(1,k)
+	  tempv(1,k)=tto(1,k)
+         end do
+	 read(102,*)rtr,nkk
+	 do k=1,nkk
+          read(102,*)krf,sto(1,k)
+          saltv(1,k)=sto(1,k)
+         end do
+	else
+	 do k=1,nkn
+ 	  tempv(1,k)=tto(1,k)
+	 end do
+	 do k=1,nkn
+          saltv(1,k)=sto(1,k)
+         end do
+	end if
+
+! print*,k,tempv(1,1),saltv(1,1),' ooooooo'
 !-------------------------------------------------------
 ! compute OBC for transported vars (HYBRID HYDRO-BFM arrays)
 !-------------------------------------------------------
-
+	
 	call scal_bnd(what,t,bfm1)
 	call scal_bnd(what,t,bfm2)
 	call scal_bnd(what,t,bfm3)
@@ -413,52 +590,57 @@ c------------------------------------------------------
 !-----------------------------------------------------------
 ! advection and diffusion of hybrid hydro-bfm var
 !-----------------------------------------------------------
-
-!$OMP PARALLEL PRIVATE(is)
+!$OMP PARALLEL PRIVATE(is1,is2,is3)
 !$OMP DO SCHEDULE(DYNAMIC)
 
- 	do is=1,nbfmv1
-  	    call scal_adv(what,is,b1cn(1,1,is),bfm1
+ 	do is1=1,nbfmv1
+  	    call scal_adv(what,is1,b1cn(1,1,is1),bfm1
      +                          ,rkpar,wsink,difhv,difv,difmol)
  	end do
 
 !$OMP END DO NOWAIT
 !$OMP DO SCHEDULE(DYNAMIC)
 
- 	do is=1,nbfmv2
-  	    call scal_adv(what,is,b2cn(1,1,is),bfm2
+ 	do is2=1,nbfmv2
+  	    call scal_adv(what,is2,b2cn(1,1,is2),bfm2
      +                          ,rkpar,wsink,difhv,difv,difmol)
         end do
 
 !$OMP END DO NOWAIT
 !$OMP DO SCHEDULE(DYNAMIC)
- 	do is=1,nbfmv3
-  	    call scal_adv(what,is,b3cn(1,1,is),bfm3
+
+ 	do is3=1,nbfmv3
+  	    call scal_adv(what,is3,b3cn(1,1,is3),bfm3
      +                          ,rkpar,wsink,difhv,difv,difmol)
         end do
 
 !$OMP END DO NOWAIT
 !$OMP END PARALLEL
 
+
+
+
 !------------------------------------------------------
-! compute layer thickness and total depth ?? (a cosa serve ??)
+! ASSIGN DEPTH TO NODE
 !------------------------------------------------------
 
 	do k=1,nkn
-	   call dep3dnod(k,+1,nlev,h)
-	   do l=1,nlev
-             ddepth(l,k)=0
-	     do ll= 1,l
-               ddepth(l,k)=ddepth(l,k)+h(ll)
-             end do
-           end do
+              ddepth(k) = hkv(k) + znv(k)
 	end do
+
+
+	
 
 !------------------------------------------------------
 ! call BFM ecological routine
 !------------------------------------------------------
 
-	call do_BFM_ECO(b1cn,nbfmv1,b2cn,nbfmv2,b3cn,nbfmv3)
+	do k=1,nkn
+	call do_BFM_ECO(k,b1cn,nbfmv1,b2cn,nbfmv2,b2cn_a,
+     +   b2cn_b,b2cn_c,b2cn_d,b3cn,nbfmv3,b3cn_a,b3cn_b,b3cn_c)
+	end do
+
+
 
 !------------------------------------------------------
 ! compute output for ecological scalars
@@ -482,7 +664,8 @@ c------------------------------------------------------
 
 c**************************************************************
 
-	subroutine bfm_init(nbfmv1,b1cn,nbfmv2,b2cn,nbfmv3,b3cn)
+	subroutine bfm_init(nbfmv1,b1cn,nbfmv2,b2cn
+     +,b2cn_a,b2cn_b,b2cn_c,b2cn_d,nbfmv3,b3cn,b3cn_a,b3cn_b,b3cn_c)
 
 c initializes bfm  arrays
 
@@ -499,8 +682,17 @@ c initializes bfm  arrays
 	real b1cn(nlvdim,nkndim,nbfmv1)
 	integer nbfmv2
         real b2cn(nlvdim,nkndim,nbfmv2)
+        real b2cn_a(nlvdim,nkndim,nbfmv2)
+	real b2cn_b(nlvdim,nkndim,nbfmv2)
+	real b2cn_c(nlvdim,nkndim,nbfmv2)
+	real b2cn_d(nlvdim,nkndim,nbfmv2)
 	integer nbfmv3
         real b3cn(nlvdim,nkndim,nbfmv3)
+        real b3cn_a(nlvdim,nkndim,nbfmv3)
+	real b3cn_b(nlvdim,nkndim,nbfmv3)
+	real b3cn_c(nlvdim,nkndim,nbfmv3)
+
+
 
 	save  /fO2o/,/fN1p/,/fN3n/,/fN4n/,/fO4n/,/fN5s/,/fN6r/,
      + /fB1c/,/fB1n/,/fB1p/,/fP1c/,/fP1n/,/fP1p/,/fP1l/,/fP1s/,
@@ -519,9 +711,16 @@ c initializes bfm  arrays
 	   end do
 	   do is=1,nbfmv2
            b2cn(l,k,is)=0.
+           b2cn_a(l,k,is)=0.
+	   b2cn_b(l,k,is)=0.
+	   b2cn_c(l,k,is)=0.
+	   b2cn_d(l,k,is)=0.
            end do
 	   do is=1,nbfmv3
            b3cn(l,k,is)=0.
+           b3cn_a(l,k,is)=0.
+	   b3cn_b(l,k,is)=0.
+	   b3cn_c(l,k,is)=0.
            end do
 	  end do
 	 end do
@@ -596,53 +795,32 @@ c outputs variables
 	include 'bfm_common.h'
 
 	call confil(ivs1,itmbfm,idtbfm,41,1,fO2o)
-	call confil(ivs1,itmbfm,idtbfm,42,1,fN1p)
-        call confil(ivs1,itmbfm,idtbfm,43,1,fN3n)
-        call confil(ivs1,itmbfm,idtbfm,44,1,fN4n)
-        call confil(ivs1,itmbfm,idtbfm,45,1,fO4n)
-        call confil(ivs1,itmbfm,idtbfm,46,1,fN5s)
-        call confil(ivs1,itmbfm,idtbfm,47,1,fN6r)
+!	call confil(ivs1,itmbfm,idtbfm,42,1,fN1p)
+!        call confil(ivs1,itmbfm,idtbfm,43,1,fN3n)
+!        call confil(ivs1,itmbfm,idtbfm,44,1,fN4n)
+!        call confil(ivs1,itmbfm,idtbfm,45,1,fO4n)
+!        call confil(ivs1,itmbfm,idtbfm,46,1,fN5s)
+!        call confil(ivs1,itmbfm,idtbfm,47,1,fN6r)
 
-        call confil(ivs2,itmbfm,idtbfm,51,1,fB1c)
-        call confil(ivs2,itmbfm,idtbfm,52,1,fP1c)
-        call confil(ivs2,itmbfm,idtbfm,53,1,fP2c)
-        call confil(ivs2,itmbfm,idtbfm,54,1,fP3c)
-        call confil(ivs2,itmbfm,idtbfm,55,1,fP4c)
-        call confil(ivs2,itmbfm,idtbfm,56,1,fZ3c)
-        call confil(ivs2,itmbfm,idtbfm,57,1,fZ4c)
-        call confil(ivs2,itmbfm,idtbfm,58,1,fZ5c)
-        call confil(ivs2,itmbfm,idtbfm,59,1,fZ6c)
+!        call confil(ivs2,itmbfm,idtbfm,51,1,fB1c)
+!        call confil(ivs2,itmbfm,idtbfm,52,1,fP1c)
+!        call confil(ivs2,itmbfm,idtbfm,53,1,fP2c)
+!        call confil(ivs2,itmbfm,idtbfm,54,1,fP3c)
+!        call confil(ivs2,itmbfm,idtbfm,55,1,fP4c)
+!        call confil(ivs2,itmbfm,idtbfm,56,1,fZ3c)
+!        call confil(ivs2,itmbfm,idtbfm,57,1,fZ4c)
+!        call confil(ivs2,itmbfm,idtbfm,58,1,fZ5c)
+!        call confil(ivs2,itmbfm,idtbfm,59,1,fZ6c)
+!	call confil(ivs2,itmbfm,idtbfm,72,1,fP1l)
+!	call confil(ivs2,itmbfm,idtbfm,75,1,fP4l)
+	
 
-        call confil(ivs3,itmbfm,idtbfm,61,1,fR1c)
-        call confil(ivs3,itmbfm,idtbfm,62,1,fR2c)
-        call confil(ivs3,itmbfm,idtbfm,63,1,fR6c)
-        call confil(ivs3,itmbfm,idtbfm,64,1,fR7c)
+
+!        call confil(ivs3,itmbfm,idtbfm,61,1,fR1c)
+!        call confil(ivs3,itmbfm,idtbfm,62,1,fR2c)
+!        call confil(ivs3,itmbfm,idtbfm,63,1,fR6c)
+!        call confil(ivs3,itmbfm,idtbfm,64,1,fR7c)
   
 	end
   
-c**************************************************************
-
-	subroutine setlux
-
-c light routine ??
-
-	real ligth(100000000)
-	common /ligth/ligth
-	
-	integer itrt(100000000)
-	common /itrt/itrt
-
-	i=0
-
-	open(53,file='luce.dat')
-    1	continue
-	  i=i+1
-	  read(53,*,end=2) itrt(i),ligth(i)
-	goto 1
-    2	continue
-	close(53)
-
-	end	
-
-c**************************************************************
 

@@ -1,5 +1,107 @@
 ============================================================
 
+Tue May 31 14:25:59 CEST 2011
+
+BFM modules changed
+
+ LOG                                                |    4 +
+ Rules.make                                         |   14 +-
+ fem3d/param.h                                      |    8 +-
+ fem3d/subbfm.f                                     |  382 +++++--
+ fem3d/subcus.f                                     |    6 +-
+ femadj/param.h                                     |    8 +-
+ fembin/shyfem_version.pl                           |    2 +-
+ femersem/Makefile                                  |   28 +-
+ femersem/doc/bfm-quickstart-1.4.pdf                |  Bin 811897 -> 811897 bytes
+ femersem/lib/libbfm.a                              |  Bin 218774 -> 218774 bytes
+ femersem/modules/api_bfm.mod                       |  Bin 5615 -> 0 bytes
+ femersem/modules/bennut_constants.mod              |  Bin 914 -> 0 bytes
+ femersem/modules/bennut_interface.mod              |  Bin 34634 -> 0 bytes
+ femersem/modules/bennut_type.mod                   |  Bin 3009 -> 0 bytes
+ femersem/modules/bennut_variables.mod              |  Bin 4249 -> 0 bytes
+ femersem/modules/constants.mod                     |  Bin 8932 -> 0 bytes
+ femersem/modules/global_interface.mod              |  Bin 6032 -> 0 bytes
+ femersem/modules/global_mem.mod                    |  Bin 2592 -> 0 bytes
+ femersem/modules/mem.mod                           |  Bin 67341 -> 0 bytes
+ femersem/modules/mem_benammonium.mod               |  Bin 2128 -> 0 bytes
+ femersem/modules/mem_benanoxic.mod                 |  Bin 1908 -> 0 bytes
+ femersem/modules/mem_benbac.mod                    |  Bin 4707 -> 0 bytes
+ femersem/modules/mem_bendenitridepth.mod           |  Bin 1866 -> 0 bytes
+ femersem/modules/mem_bennitrate.mod                |  Bin 2054 -> 0 bytes
+ femersem/modules/mem_benorganism.mod               |  Bin 4976 -> 0 bytes
+ femersem/modules/mem_benoxygen.mod                 |  Bin 1847 -> 0 bytes
+ femersem/modules/mem_benphosphate.mod              |  Bin 1922 -> 0 bytes
+ femersem/modules/mem_benq1transport.mod            |  Bin 1853 -> 0 bytes
+ femersem/modules/mem_bensilica.mod                 |  Bin 2339 -> 0 bytes
+ femersem/modules/mem_benthicreturn1.mod            |  Bin 2166 -> 0 bytes
+ femersem/modules/mem_benthicreturn2.mod            |  Bin 2084 -> 0 bytes
+ femersem/modules/mem_bioturbation.mod              |  Bin 2205 -> 0 bytes
+ .../modules/mem_controlbenpartnutrientbuffers.mod  |  Bin 2057 -> 0 bytes
+ femersem/modules/mem_filterfeeder.mod              |  Bin 2819 -> 0 bytes
+ femersem/modules/mem_globalfun.mod                 |  Bin 5122 -> 0 bytes
+ femersem/modules/mem_lightadaptation.mod           |  Bin 3207 -> 0 bytes
+ femersem/modules/mem_mesozoo.mod                   |  Bin 4158 -> 0 bytes
+ femersem/modules/mem_microzoo.mod                  |  Bin 4272 -> 0 bytes
+ femersem/modules/mem_param.mod                     |  Bin 6671 -> 0 bytes
+ femersem/modules/mem_pelbac.mod                    |  Bin 2963 -> 0 bytes
+ femersem/modules/mem_pelchem.mod                   |  Bin 2196 -> 0 bytes
+ femersem/modules/mem_pelglobal.mod                 |  Bin 1750 -> 0 bytes
+ femersem/modules/mem_photoavailableradiation.mod   |  Bin 2602 -> 0 bytes
+ femersem/modules/mem_phyto.mod                     |  Bin 5960 -> 0 bytes
+ femersem/modules/mem_settling.mod                  |  Bin 1765 -> 0 bytes
+ femersem/modules/mem_windoxreaeration_3.mod        |  Bin 1647 -> 0 bytes
+ femersem/src/.depend                               |  129 --
+ femersem/src/BFM/General/Ecology.F90               |    1 -
+ femersem/src/BFM/Oxygen/WindOxReaeration_3.F90     |    6 +-
+ femersem/src/BFM/PelB/PelagicSystem.F90            |    3 +-
+ femersem/src/BFM/PelBen/Settling.F90               |    6 +-
+ femersem/src/Makefile                              |   15 +-
+ femersem/src/bennut_constants.mod                  |   37 -
+ femersem/src/bennut_type.mod                       |   49 -
+ femersem/src/constants.mod                         |  Bin 11076 -> 0 bytes
+ femersem/src/ggg                                   | 1076 ----------------
+ femersem/src/global_interface.mod                  |  137 ---
+ femersem/src/global_mem.mod                        |  Bin 3136 -> 0 bytes
+ femersem/src/gotm/.Makefile.swp                    |  Bin 12288 -> 12288 bytes
+ femersem/src/gotm/.bio.F90.swp                     |  Bin 16384 -> 16384 bytes
+ femersem/src/info                                  |  267 ----
+ femersem/src/mem.mod                               | 1282 --------------------
+ femersem/src/mem_benammonium.mod                   |   99 --
+ femersem/src/mem_benanoxic.mod                     |   92 --
+ femersem/src/mem_benbac.mod                        |  148 ---
+ femersem/src/mem_bendenitridepth.mod               |   91 --
+ femersem/src/mem_bennitrate.mod                    |   97 --
+ femersem/src/mem_benorganism.mod                   |  154 ---
+ femersem/src/mem_bioturbation.mod                  |  101 --
+ femersem/src/mem_controlbenpartnutrientbuffers.mod |  102 --
+ femersem/src/mem_filterfeeder.mod                  |  121 --
+ femersem/src/mem_globalfun.mod                     |  Bin 6186 -> 0 bytes
+ femersem/src/mem_lightadaptation.mod               |  115 --
+ femersem/src/mem_mesozoo.mod                       |  135 --
+ femersem/src/mem_microzoo.mod                      |  138 ---
+ femersem/src/mem_param.mod                         |  407 -------
+ femersem/src/mem_pelbac.mod                        |  125 --
+ femersem/src/mem_pelchem.mod                       |  101 --
+ femersem/src/mem_pelglobal.mod                     |   87 --
+ femersem/src/mem_photoavailableradiation.mod       |   99 --
+ femersem/src/mem_phyto.mod                         |  178 ---
+ femersem/src/mem_settling.mod                      |   88 --
+ femersem/src/mem_windoxreaeration_3.mod            |   85 --
+ femersem/src/share/:q!                             |   95 --
+ femersem/src/share/femtobfm.F90                    |   93 ++-
+ femersem/src/share/netcdf_bfm.F90                  |  456 +-------
+ femersem/src/share/netcdf_bfm_orig.F90             |  842 +++++++++++++
+ femersem/src/standalone/.integration-RK2.F90.swo   |  Bin 16384 -> 0 bytes
+ femersem/src/standalone/.integration-RK2.F90.swp   |  Bin 16384 -> 0 bytes
+ femersem/src/standalone/integration-RK2.F90        |   46 +-
+ femersem/src/standalone/standalone.F90             |  496 +++++---
+ femersem/src/standalone/standalone.F90~            |  925 --------------
+ femplot/param.h                                    |    8 +-
+ param.h                                            |    8 +-
+ 94 files changed, 1642 insertions(+), 7350 deletions(-)
+
+============================================================
+
 Tue May 31 12:01:40 CEST 2011
 
 New version 6_1_23

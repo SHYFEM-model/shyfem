@@ -104,6 +104,7 @@
   integer, external  :: D3toD1
   integer, external  :: D2toD1
   !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
   BoxNumberZ = NO_BOXES_Z
   DO BoxNumberY=1,NO_BOXES_Y
     DO BoxNumberX=1,NO_BOXES_X
@@ -120,10 +121,11 @@
       !
       ! Calculate wind dependency:
       !`
-
+	
       reacon  =   k* (Wind)**(2.0D+00)/ sqrt(  p_schmidt)
-
+      	
       jOAO2o(BoxNumberXY)  =   reacon*( cxoO2(BoxNumber)- O2o(BoxNumber))
+
 
       if ( AssignAirPelFluxesInBFMFlag) then
         call flux(BoxNumber, iiPel, ppO2o, ppO2o, jOAO2o(BoxNumberXY)/ &

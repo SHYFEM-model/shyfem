@@ -115,10 +115,18 @@
 ! !REVISION HISTORY:
 !  Original author(s): Marcello Vichi
 !
-! !LOCAL VARIABLES:
-   namelist /standalone_nml/mindelt,method,latitude,longitude
-   namelist /anforcings_nml/lw,ls,tde,botdep_c,botdep_n,botdep_p,botdep_si,botox_o
+
+!LOCAL VARIABLES:
+   namelist /standalone_nml/ nboxes,indepth,maxdelt,    &
+            mindelt,endtim,method,latitude,longitude
+   namelist /anforcings_nml/ lw,ls,sw,ss,tw,ts,tde,     &
+            botdep_c,botdep_n,botdep_p,botdep_si,botox_o
    namelist /time_nml/ timefmt,MaxN,start,stop,simdays
+!
+! !LOCAL VARIABLES:
+!   namelist /standalone_nml/mindelt,method,latitude,longitude
+!   namelist /anforcings_nml/tde,botdep_c,botdep_n,botdep_p,botdep_si,botox_o
+!   namelist /time_nml/ timefmt,MaxN,start,stop,simdays
 !
 ! !LOCAL VARIABLES:
    real(RLEN) :: tt
@@ -181,8 +189,10 @@
    close(namlst)
 
 ! initialize state variables from fem3d
-   maxdelt =drr
-   nboxes = nkn
+!   maxdelt =real(idt)
+   nboxes = 1 
+!   mindelt = 1
+!   print*,' drr',drr
    !---------------------------------------------
    ! set the dimensions
    !---------------------------------------------
@@ -195,7 +205,6 @@
                  NO_D2_BOX_STATES * NO_BOXES_XY
 
    LEVEL3 'Number of Boxes:',NO_BOXES
-
    !---------------------------------------------
    ! initialise the timestepping parameters
    ! Use the GOTM time-manager
@@ -203,7 +212,13 @@
    ! (both integer values)
    !---------------------------------------------
    timestep = maxdelt
-   timesec=real(it)
+   call init_time(MinN,MaxN)
+   if (HasRealTime==.true.) then
+      timesec=julianday*SEC_PER_DAY+secondsofday
+      simdays=nint(simtime/SEC_PER_DAY)
+   else
+      timesec=0.0
+   end if
    nmaxdelt=1
    LEVEL3 'nmaxdelt: ',nmaxdelt
    tt=maxdelt/2.
@@ -213,6 +228,7 @@
       LEVEL3 'nmaxdelt: ',nmaxdelt
    end do
    mindelt=maxdelt/nmaxdelt ! maxdelt = nmaxdelt*mindelt
+   nendtim=MaxN
    nstep=nmaxdelt
    ntime=0
    nmin=0
@@ -223,7 +239,40 @@
    LEVEL3 'maxdelt (sec): ',maxdelt
    LEVEL3 'mindelt (sec): ',mindelt
    LEVEL3 'nmaxdelt: ',nmaxdelt
-   LEVEL3 'Initial time (sec): ',timesec
+   LEVEL3 'Simulation time (days): ',simdays
+   LEVEL3 'nendtim: ',nendtim
+   LEVEL3 'Initial time (sec): ',timesec,tt
+
+   !---------------------------------------------
+   !---------------------------------------------
+   ! initialise the timestepping parameters
+   ! Use the GOTM time-manager
+   ! Time is given in Julian day and seconds of day
+   ! (both integer values)
+   !---------------------------------------------
+!   timestep = maxdelt
+!   timesec=real(it)
+!   nmaxdelt=1
+!   LEVEL3 'nmaxdelt: ',nmaxdelt
+!   tt=maxdelt/2.!
+
+!   do while (tt.ge.mindelt)
+!      tt=tt/2.
+!      nmaxdelt=nmaxdelt*2
+!      LEVEL3 'nmaxdelt: ',nmaxdelt
+!   end do
+!   mindelt=maxdelt/nmaxdelt ! maxdelt = nmaxdelt*mindelt
+!   nstep=nmaxdelt
+!   ntime=0
+!   nmin=0
+!   dtm1=maxdelt
+!   delt=maxdelt
+!   if (method.eq.3) delt=2*delt
+!   LEVEL3 'Integration method: ',method
+!   LEVEL3 'maxdelt (sec): ',maxdelt
+!   LEVEL3 'mindelt (sec): ',mindelt
+!   LEVEL3 'nmaxdelt: ',nmaxdelt
+1   LEVEL3 'Initial time (sec): ',timesec
 
    !---------------------------------------------
    ! Initialise the BFM with standalone settings
@@ -241,8 +290,8 @@
    !---------------------------------------------
    ! Initialize depth 
    !---------------------------------------------
-    Depth(:)=hkv(1:NO_BOXES)
-    Depth_ben(:)=Depth(:)
+    Depth = indepth
+    Depth_ben = Depth
 !   LEVEL3 'Box Depth:',Depth,Depth_ben
    !---------------------------------------------
    ! initialise netcdf output
@@ -294,7 +343,7 @@
 ! !USES
    use api_bfm
    use global_mem, only: RLEN
-   use mem,        only: ETW,ESW,EIR,ESS,SUNQ,ThereIsLight, &
+   use mem,        only: ETW,ESW,EIR,ESS,SUNQ,ThereIsLight,Wind,&
                          rutQ6c,rutQ6n,rutQ6p,rutQ6s,R6c,R6n,R6p,R6s,O2o,&
 			 Depth,Depth_ben
    use mem_Param,  only: LightForcingFlag,p_PAR
@@ -318,6 +367,8 @@
 
    integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
    common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+   integer itanf,itend,idt,nits,niter,it
+   common /femtim/ itanf,itend,idt,nits,niter,it
 
    real tempv(nlvdim,nkndim)
    common /tempv/tempv
@@ -325,14 +376,15 @@
    real saltv(nlvdim,nkndim)
    common /saltv/saltv
 
-   real ddepth(nlvdim,nkndim)
+   real ddepth(nkndim)
    common /ddepth/ddepth
+	
+   integer node
+   common /node/node
 
-   integer ligthflag
-   common /ligthflag/ligthflag
+   real wxnv(nkndim),wynv(nkndim)    !x and y wind component [m/s]
+   common /wxnv/wxnv,/wynv/wynv
 
-   real lig
-   common /lig/lig
 !EOP
 !-----------------------------------------------------------------------
 !BOC
@@ -340,37 +392,50 @@
    LEVEL1 'envforcing_bfm'
    LEVEL2 'time=',timesec
 #endif
-
-   if(ligthflag.eq.1)then  ! ligth form nml paramters max min value w/s
-    
-    dtime = timesec/SEC_PER_DAY
-    sunq=daylength(dtime,latitude)
-    dfrac=(dtime-floor(dtime)) ! fraction of the day
-    dyear=mod(dtime,360.) ! Day of the year
-    wlight=light(dyear,dfrac)
-    wlight=instLight(wlight,sunq,dfrac)
-    else if(ligthflag.eq.2)then  !istantaneous ligth from external input data file
-     wlight=lig   
-    else if(ligthflag.eq.3)then  !daily average ligth from external input datafile
-     dtime = timesec/SEC_PER_DAY
-     sunq=daylength(dtime,latitude)
-     dfrac=(dtime-floor(dtime))
-     wlight=lig
-     wlight=instLight(wlight,sunq,dfrac)
-    end if
-
-
-
+   timesec =it
+   !---------------------------------------------
+   ! Computes all the forcings
+   !---------------------------------------------
+   dtime = timesec/SEC_PER_DAY
+   sunq=daylength(dtime,latitude)
+   dfrac=(dtime-floor(dtime)) ! fraction of the day
+   dyear=mod(dtime,360.) ! Day of the year
+   wlight=light(dyear,dfrac)
+   select case(LightForcingFlag)
+    case (3) ! light on/off distribution for daylight average
+      ThereIsLight=lightAtTime(dfrac,sunq)
+      wlight=wlight*ThereIsLight
+    case (1) ! instantaneous light distribution
+      wlight=instLight(wlight,sunq,dfrac)
+    case default ! light constant during the day
+   end select
+    ESS = 0.
+!    ETW = temperature(dyear,dfrac)
+!    ESW = salinity(dyear,dfrac)
+    EIR = wlight*p_PAR
+#ifdef DEBUG
+   LEVEL2 'ETW=',ETW
+   LEVEL2 'ESW=',ESW
+   LEVEL2 'EIR=',EIR
+#endif
+	
 ! feeding envforcing vector from HYDROcode
 
-   ETW(:)=tempv(1,1:nkn)
-   ESW(:)=saltv(1,1:nkn)
-   EIR(:)=wlight*p_PAR    
-   ESS(:)=0.
-   Depth(:)=ddepth(1,1:nkn)
-   Depth_ben(:)=Depth(:)
 
 
+     ETW=tempv(1,node)
+     ESW=saltv(1,node)
+!    print*, ETW,ESW,tempv(1,2),saltv(1,2)
+!    stop
+!    ETW=20
+!    ESW=35
+!    EIR =0
+!    EIR=wlight*p_PAR   ! to be changed 
+!   ESS=0.
+   Wind=sqrt(wxnv(node)**2+wynv(node)**2)
+   Depth=ddepth(node)
+   Depth_ben=Depth
+!   print*,node,ETW,ESW,Wind,Depth
    call CalcVerticalExtinction
 
    if (bio_setup==2) then
@@ -663,6 +728,9 @@
    use api_bfm, only: out_delta
    IMPLICIT NONE
 
+   integer itanf,itend,idt,nits,niter,it
+   common /femtim/ itanf,itend,idt,nits,niter,it
+
 ! !INPUT PARAMETERS:
 ! !INPUT/OUTPUT PARAMETERS:
 !
@@ -677,8 +745,9 @@
 !-----------------------------------------------------------------------
 !BOC
 
-!   LEVEL1 'timestepping'
-
+!   LEVEL1 'timesteppingntime='
+      ntime=it/idt
+!      print*,ntime,it,idt
       call envforcing_bfm
       call EcologyDynamics
       select case (method)
@@ -690,11 +759,11 @@
             call integrationEfw
       end select
       call calcmean_bfm(ACCUMULATE)
-      if (mod(ntime,out_delta).eq.0) then
-         LEVEL1 'OUTPUT' , timesec/SEC_PER_DAY
-         call calcmean_bfm(MEAN)
-         call save_bfm(timesec)
-      end if
+!      if (mod(ntime,out_delta).eq.0) then
+!         LEVEL1 'OUTPUT' , timesec/SEC_PER_DAY
+!         call calcmean_bfm(MEAN)
+!         call save_bfm(timesec)
+!      end if
       call ResetFluxes
 
    END SUBROUTINE timestepping
@@ -727,24 +796,49 @@
 
    real(RLEN) :: tt
    integer    :: dtm1,i
-   
-   maxdelt =drr
+
+   mindelt =1 
+   maxdelt = real(idt)
    timestep = maxdelt
+   timesec=real(it)-maxdelt
    nmaxdelt=1
+!   LEVEL3 'nmaxdelt: ',nmaxdelt
    tt=maxdelt/2.
+
    do while (tt.ge.mindelt)
       tt=tt/2.
       nmaxdelt=nmaxdelt*2
-!       LEVEL3 'nmaxdelt: ',nmaxdelt,maxdelt
+!      LEVEL3 'nmaxdelt: ',nmaxdelt,tt
    end do
    mindelt=maxdelt/nmaxdelt ! maxdelt = nmaxdelt*mindelt
    nstep=nmaxdelt
+   ntime=0
    nmin=0
    dtm1=maxdelt
    delt=maxdelt
+!   LEVEL3 mindelt,nstep,dtm1,delt,timesec
+   if (method.eq.3) delt=2*delt
 
-   timesec = real(it)
+!   maxdelt =drr
+!   timestep = maxdelt
+!   nmaxdelt=1
+!   tt=maxdelt/2.
 
+!    print*,tt ,mindelt
+!   do while (tt.ge.mindelt)
+!      tt=tt/2.
+!      nmaxdelt=nmaxdelt*2
+!       LEVEL3 'nmaxdelt: ',nmaxdelt,maxdelt
+!	print*,'ok3'
+!   end do
+!   mindelt=maxdelt/nmaxdelt ! maxdelt = nmaxdelt*mindelt
+!   nstep=nmaxdelt
+!   nmin=0
+!   dtm1=maxdelt
+!   delt=maxdelt
+
+!   timesec = it
+   
 
    end subroutine time_manager
 
@@ -755,7 +849,8 @@
 !
 ! !INTERFACE:
 
-   subroutine bfm_to_hydro(b1cn,nbfmv1,b2cn,nbfmv2,b3cn,nbfmv3)
+   	subroutine bfm_to_hydro(k,b1cn,nbfmv1,b2cn,nbfmv2,b2cn_a,b2cn_b,b2cn_c,b2cn_d,b3cn,nbfmv3,b3cn_a,b3cn_b,b3cn_c)
+
 
    use mem
    implicit  none
@@ -770,88 +865,123 @@
 
    integer l,k
 
-	 integer nbfmv1,nbfmv2,nbfmv3
-        real b1cn(nlvdim,nkndim,nbfmv1)
-        real  b2cn(nlvdim,nkndim,nbfmv2)
+	integer nbfmv1,nbfmv2,nbfmv3
+	real b1cn(nlvdim,nkndim,nbfmv1)
+        real b2cn(nlvdim,nkndim,nbfmv2)
+        real b2cn_a(nlvdim,nkndim,nbfmv2)
+        real b2cn_b(nlvdim,nkndim,nbfmv2)
+        real b2cn_c(nlvdim,nkndim,nbfmv2)
+        real b2cn_d(nlvdim,nkndim,nbfmv2)
+
         real b3cn(nlvdim,nkndim,nbfmv3)
-
-
+        real b3cn_a(nlvdim,nkndim,nbfmv3)
+        real b3cn_b(nlvdim,nkndim,nbfmv3)
+	real b3cn_c(nlvdim,nkndim,nbfmv3)
    
-    do k=1,nkn
-     
-	   fO2o(k)= 0.+ O2o(k)
-           fN1p(k)= 0.+ N1p(k)
-           fN3n(k)= 0.+ N3n(k)
-           fN4n(k)= 0.+ N4n(k)
-           fO4n(k)= 0.+ O4n(k)
-           fN5s(k)= 0.+ N5s(k)
-           fN6r(k)= 0.+ N6r(k)
-           fB1c(k)= 0.+ B1c(k)
-           fB1n(k)= 0.+ B1n(k)
-           fB1p(k)= 0.+ B1p(k)
-           fP1c(k)= 0.+ P1c(k)
-           fP1n(k)= 0.+ P1n(k)
-           fP1p(k)= 0.+ P1p(k)
-           fP1l(k)= 0.+ P1l(k)
-           fP1s(k)= 0.+ P1s(k)
-           fP2c(k)= 0.+ P2c(k)
-           fP2n(k)= 0.+ P2n(k)
-           fP2p(k)= 0.+ P2p(k)
-           fP2l(k)= 0.+ P2l(k)
-           fP3c(k)= 0.+ P3c(k)
-           fP3n(k)= 0.+ P3n(k)
-           fP3p(k)= 0.+ P3p(k)
-           fP3l(k)= 0.+ P3l(k)
-           fP4c(k)= 0.+ P4c(k)
-           fP4n(k)= 0.+ P4n(k)
-           fP4p(k)= 0.+ P4p(k)
-           fP4l(k)= 0.+ P4l(k)
-           fZ3c(k)= 0.+ Z3c(k)
-           fZ3n(k)= 0.+ Z3n(k)
-           fZ3p(k)= 0.+ Z3p(k)
-           fZ4c(k)= 0.+ Z4c(k)
-           fZ4n(k)= 0.+ Z4n(k)
-           fZ4p(k)= 0.+ Z4p(k)
-           fZ5c(k)= 0.+ Z5c(k)
-           fZ5n(k)= 0.+ Z5n(k)
-           fZ5p(k)= 0.+ Z5p(k)
-           fZ6c(k)= 0.+ Z6c(k)
-           fZ6n(k)= 0.+ Z6n(k)
-           fZ6p(k)= 0.+ Z6p(k)
-           fR1c(k)= 0.+ R1c(k)
-           fR1n(k)= 0.+ R1n(k)
-           fR1p(k)= 0.+ R1p(k)
-           fR2c(k)= 0.+ R2c(k)
-           fR6c(k)= 0.+ R6c(k)
-           fR6n(k)= 0.+ R6n(k)
-           fR6p(k)= 0.+ R6p(k)
-           fR6s(k)= 0.+ R6s(k)
-           fR7c(k)= 0.+ R7c(k)   
-	do l=1,nlv
-	  b1cn(l,k,1) = 0.+ O2o(k)
-          b1cn(l,k,2) = 0.+ N1p(k) 
-          b1cn(l,k,3) = 0.+ N3n(k) 
-          b1cn(l,k,4) = 0.+ N4n(k) 
-          b1cn(l,k,5) = 0.+ O4n(k) 
-          b1cn(l,k,6) = 0.+ N5s(k) 
-          b1cn(l,k,7) = 0.+ N6r(k) 
-          b2cn(l,k,1) = 0.+ B1c(k) 
-          b2cn(l,k,2) = 0.+ P1c(k) 
-          b2cn(l,k,3)= 0.+ P2c(k) 
-          b2cn(l,k,4)= 0.+ P3c(k) 
-          b2cn(l,k,5)= 0.+ P4c(k) 
-          b2cn(l,k,6)= 0.+ Z3c(k) 
-          b2cn(l,k,7)= 0.+ Z4c(k) 
-          b2cn(l,k,8)= 0.+ Z5c(k) 
-          b2cn(l,k,9)= 0.+ Z6c(k) 
-          b3cn(l,k,1)= 0.+ R1c(k) 
-          b3cn(l,k,2)= 0.+ R2c(k) 
-          b3cn(l,k,3)= 0.+ R6c(k) 
-          b3cn(l,k,4)= 0.+ R7c(k) 
+                   fO2o(k)= 0.+ O2o(1)
+	           fN1p(k)= 0.+ N1p(1)
+                   fN3n(k)= 0.+ N3n(1)
+                   fN4n(k)= 0.+ N4n(1)
+                   fO4n(k)= 0.+ O4n(1)
+                   fN5s(k)= 0.+ N5s(1)
+                   fN6r(k)= 0.+ N6r(1)
+                   fB1c(k)= 0.+ B1c(1)
+                   fB1n(k)= 0.+ B1n(1)
+                   fB1p(k)= 0.+ B1p(1)
+                   fP1c(k)= 0.+ P1c(1)
+                   fP1n(k)= 0.+ P1n(1)
+                   fP1p(k)= 0.+ P1p(1)
+                   fP1l(k)= 0.+ P1l(1)
+                   fP1s(k)= 0.+ P1s(1)
+                   fP2c(k)= 0.+ P2c(1)
+                   fP2n(k)= 0.+ P2n(1)
+                   fP2p(k)= 0.+ P2p(1)
+                   fP2l(k)= 0.+ P2l(1)
+                   fP3c(k)= 0.+ P3c(1)
+                   fP3n(k)= 0.+ P3n(1)
+                   fP3p(k)= 0.+ P3p(1)
+                   fP3l(k)= 0.+ P3l(1)
+                   fP4c(k)= 0.+ P4c(1)
+                   fP4n(k)= 0.+ P4n(1)
+                   fP4p(k)= 0.+ P4p(1)
+                   fP4l(k)= 0.+ P4l(1)
+                   fZ3c(k)= 0.+ Z3c(1)
+                   fZ3n(k)= 0.+ Z3n(1)
+                   fZ3p(k)= 0.+ Z3p(1)
+                   fZ4c(k)= 0.+ Z4c(1)
+                   fZ4n(k)= 0.+ Z4n(1)
+                   fZ4p(k)= 0.+ Z4p(1)
+                   fZ5c(k)= 0.+ Z5c(1)
+                   fZ5n(k)= 0.+ Z5n(1)
+                   fZ5p(k)= 0.+ Z5p(1)
+                   fZ6c(k)= 0.+ Z6c(1)
+                   fZ6n(k)= 0.+ Z6n(1)
+                   fZ6p(k)= 0.+ Z6p(1)
+                   fR1c(k)= 0.+ R1c(1)
+                   fR1n(k)= 0.+ R1n(1)
+                   fR1p(k)= 0.+ R1p(1)
+                   fR2c(k)= 0.+ R2c(1)
+                   fR6c(k)= 0.+ R6c(1)
+                   fR6n(k)= 0.+ R6n(1)
+                   fR6p(k)= 0.+ R6p(1)
+                   fR6s(k)= 0.+ R6s(1)
+                   fR7c(k)= 0.+ R7c(1)   
+         do l=1,nlv
+	          b1cn(l,k,1) = 0.+ O2o(1)
+	          b1cn(l,k,2) = 0.+ N1p(1) 
+                  b1cn(l,k,3) = 0.+ N3n(1) 
+                  b1cn(l,k,4) = 0.+ N4n(1) 
+                  b1cn(l,k,5) = 0.+ O4n(1) 
+                  b1cn(l,k,6) = 0.+ N5s(1) 
+                  b1cn(l,k,7) = 0.+ N6r(1) 
+                  b2cn(l,k,1) = 0.+ B1c(1) 
+                  b2cn(l,k,2) = 0.+ P1c(1) 
+                  b2cn(l,k,3)= 0.+ P2c(1) 
+                  b2cn(l,k,4)= 0.+ P3c(1) 
+                  b2cn(l,k,5)= 0.+ P4c(1) 
+                  b2cn(l,k,6)= 0.+ Z3c(1) 
+                  b2cn(l,k,7)= 0.+ Z4c(1) 
+                  b2cn(l,k,8)= 0.+ Z5c(1) 
+                  b2cn(l,k,9)= 0.+ Z6c(1) 
+                  b3cn(l,k,1)= 0.+ R1c(1) 
+                  b3cn(l,k,2)= 0.+ R2c(1) 
+                  b3cn(l,k,3)= 0.+ R6c(1) 
+                  b3cn(l,k,4)= 0.+ R7c(1) 
+ 
+        	b2cn_a(l,k,1) = 0. + B1n(1)
+	        b2cn_b(l,k,1) = 0. + B1p(1)
+                b2cn_a(l,k,2) = 0. + P1n(1)
+                b2cn_b(l,k,2) = 0. + P1p(1)
+                b2cn_c(l,k,2) = 0. + P1l(1)
+                b2cn_d(l,k,2) = 0. + P1s(1)
+                b2cn_a(l,k,3) = 0. + P2n(1)
+                b2cn_b(l,k,3) = 0. + P2p(1)
+                b2cn_c(l,k,3) = 0. + P2l(1)
+                b2cn_a(l,k,4) = 0. + P3n(1)  
+                b2cn_b(l,k,4) = 0. + P3p(1)
+                b2cn_c(l,k,4) = 0. + P3l(1)
+                b2cn_a(l,k,5) = 0. + P4n(1)
+                b2cn_b(l,k,5) = 0. + P4p(1)
+                b2cn_c(l,k,5) = 0. + P4l(1)
+                b2cn_a(l,k,6) =  0. + Z3n(1)
+                b2cn_b(l,k,6) = 0. + Z3p(1)
+                b2cn_a(l,k,7) =  0. + Z4n(1)
+                b2cn_b(l,k,7) = 0. + Z4p(1)
+                b2cn_a(l,k,8) = 0. + Z5n(1)
+                b2cn_b(l,k,8) = 0. + Z5p(1)
+                b2cn_a(l,k,9) = 0. + Z6n(1) 
+                b2cn_b(l,k,9) = 0. + Z6p(1)
+ 
 
-	                                              
-        end do                        
-   end do                             
+                b3cn_a(l,k,1) = 0. + R1n(1)
+                b3cn_b(l,k,1) = 0. + R1p(1)
+                b3cn_a(l,k,3) = 0. + R6n(1)
+                b3cn_b(l,k,3) = 0. + R6p(1)
+                b3cn_c(l,k,3) = 0. + R6s(1) 
+ 
+                                                     
+       end do                        
+ 
                                       
                                       
                                       
@@ -864,9 +994,11 @@
 !                                     
 ! !INTERFACE:                         
 
-   subroutine hydro_to_bfm(b1cn,nbfmv1,b2cn,nbfmv2,b3cn,nbfmv3)
+   	subroutine hydro_to_bfm(k,b1cn,nbfmv1,b2cn,nbfmv2,b2cn_a,b2cn_b,b2cn_c,b2cn_d,b3cn,nbfmv3,b3cn_a,b3cn_b,b3cn_c)
+
    use global_mem
    use mem
+
    implicit  none
 
    include '../../../fem3d/param.h'
@@ -876,42 +1008,82 @@
    common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
    common /level/ nlvdi,nlv
 
-	integer nbfmv1,nbfmv2,nbfmv3
+        integer nbfmv1,nbfmv2,nbfmv3
         real b1cn(nlvdim,nkndim,nbfmv1)
         real b2cn(nlvdim,nkndim,nbfmv2)
+        real b2cn_a(nlvdim,nkndim,nbfmv2)
+        real b2cn_b(nlvdim,nkndim,nbfmv2)
+        real b2cn_c(nlvdim,nkndim,nbfmv2)
+        real b2cn_d(nlvdim,nkndim,nbfmv2)
+
         real b3cn(nlvdim,nkndim,nbfmv3)
+        real b3cn_a(nlvdim,nkndim,nbfmv3)
+        real b3cn_b(nlvdim,nkndim,nbfmv3)
+	real b3cn_c(nlvdim,nkndim,nbfmv3)
+
 
    integer l,k
 
    
-    do k=1,nkn
      do l=1,nlv
-	  O2o(k)  =b1cn(l,k,1)
-          N1p(k)  =b1cn(l,k,2)
-          N3n(k)  =b1cn(l,k,3)
-          N4n(k)  =b1cn(l,k,4)
-          O4n(k)  =b1cn(l,k,5)
-          N5s(k)  =b1cn(l,k,6)
-          N6r(k)  =b1cn(l,k,7)
-          B1c(k)  =b2cn(l,k,1)
-          P1c(k)  =b2cn(l,k,2)
-          P2c(k)  =b2cn(l,k,3)
-          P3c(k)  =b2cn(l,k,4)
-          P4c(k)  =b2cn(l,k,5)
-          Z3c(k)  =b2cn(l,k,6)
-          Z4c(k)  =b2cn(l,k,7)
-          Z5c(k)  =b2cn(l,k,8)
-          Z6c(k)  =b2cn(l,k,9)
-          R1c(k)  =b3cn(l,k,1)
-          R2c(k)  =b3cn(l,k,2)
-          R6c(k)  =b3cn(l,k,3)
-          R7c(k)  =b3cn(l,k,4)
+   	  O2o(1) =b1cn(l,k,1)
+          N1p(1) =b1cn(l,k,2)
+          N3n(1) =b1cn(l,k,3)
+          N4n(1) =b1cn(l,k,4)
+          O4n(1) =b1cn(l,k,5)
+          N5s(1) =b1cn(l,k,6)
+          N6r(1) =b1cn(l,k,7)
+          B1c(1) =b2cn(l,k,1)
+          P1c(1) =b2cn(l,k,2)
+          P2c(1) =b2cn(l,k,3)
+          P3c(1) =b2cn(l,k,4)
+          P4c(1) =b2cn(l,k,5)
+          Z3c(1) =b2cn(l,k,6)
+          Z4c(1) =b2cn(l,k,7)
+          Z5c(1) =b2cn(l,k,8)
+          Z6c(1) =b2cn(l,k,9)
+          R1c(1) =b3cn(l,k,1)
+          R2c(1) =b3cn(l,k,2)
+          R6c(1) =b3cn(l,k,3)
+          R7c(1) =b3cn(l,k,4)
+
+       B1n(1)= b2cn_a(l,k,1)
+       B1p(1)= b2cn_b(l,k,1)
+       P1n(1)= b2cn_a(l,k,2)
+       P1p(1)= b2cn_b(l,k,2)
+       P1l(1)= b2cn_c(l,k,2)
+       P1s(1)= b2cn_d(l,k,2)
+       P2n(1)= b2cn_a(l,k,3)
+       P2p(1)= b2cn_b(l,k,3)
+       P2l(1)= b2cn_c(l,k,3)
+       P3n(1)= b2cn_a(l,k,4)
+       P3p(1)= b2cn_b(l,k,4) 
+       P3l(1)= b2cn_c(l,k,4) 
+        P4n(1)= b2cn_a(l,k,5) 
+       P4p(1)= b2cn_b(l,k,5) 
+       P4l(1)= b2cn_c(l,k,5) 
+       Z3n(1)= b2cn_a(l,k,6) 
+       Z3p(1)= b2cn_b(l,k,6) 
+       Z4n(1)= b2cn_a(l,k,7) 
+       Z4p(1)= b2cn_b(l,k,7) 
+       Z5n(1)= b2cn_a(l,k,8) 
+       Z5p(1)= b2cn_b(l,k,8) 
+       Z6n(1)= b2cn_a(l,k,9) 
+       Z6p(1)= b2cn_b(l,k,9) 
+
+       R1n(1)= b3cn_a(l,k,1) 
+       R1p(1)= b3cn_b(l,k,1) 
+       R6n(1)= b3cn_a(l,k,3) 
+       R6p(1)= b3cn_b(l,k,3) 
+       R6s(1)= b3cn_c(l,k,3) 
+ 
+ 
         end do
-   end do
-
-
+ 
+ 
    end subroutine hydro_to_bfm
 !EOC
 !
    END MODULE standalone
-
+ 
+                                   

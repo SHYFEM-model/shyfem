@@ -12,7 +12,7 @@ NETCDFLIBDIR=/usr/lib
 #FC=ifort
 #DEFINES += -DFORTRAN95
 #can_do_F90=true
-#MODULES=-module $(MODDIR)
+MODULES=-module $(MODDIR)
 #EXTRAS  = -w95
 #PROD_FLAGS  = -O3
 #REAL_4B = real\(4\)
@@ -37,7 +37,6 @@ endif
 
 ifndef MODDIR
 MODDIR  = $(BFMDIR)/modules/IFORT
-MODDIR  = $(BFMDIR)/modules
 endif
 
 INCIDIRS += -I/usr/local/include -I$(BFMDIR)/include -I$(MODDIR)
@@ -63,7 +62,7 @@ INCIDIRS         += -I$(BFMINCDIR)
 ## Sets options for production compilation
 buildtype = _prod
 #DEFINES += -DPRODUCTION $(STATIC)
-FLAGS   = $(PROD_FLAGS) -assume 2underscores
+#FLAGS   = $(PROD_FLAGS) -assume 2underscores
 
 ## For making the source code documentation.
 PROTEX  = protex -b -n -s
@@ -74,8 +73,9 @@ PROTEX  = protex -b -n -s
 #LINKDIR = -L$(LIBDIR)
 LINKDIR = -L$(DIRLIB)
 
+
 CPPFLAGS        = $(DEFINES) $(INCIDIRS)
-FFFLAGS          = $(MODULES) $(INCIDIRS)
+FFFLAGS          =$(DEFINES) $(KCFLAGS) $(MODULES) $(INCIDIRS) $(EXTRAS)
 F90FLAGS        = $(FFFLAGS)
 LDFLAGS         += $(FFFLAGS) $(LINKDIR)
 
@@ -227,7 +227,7 @@ FEM_OBJ = \
 
 
 fem: all
-
+bfm: all
 #all: ${BFM_MOD} ${APIBFM_MOD} ${STDALONE_MOD} ${BFM_OBJ} ${EXE}
 #	$(MOVE_MODULES_COMMAND)
 
@@ -255,6 +255,7 @@ distclean: clean
 
 clean:
 	$(RM) ../modules/$(FORTRAN_COMPILER)/*.{m,mod}
+	$(RM) ../modules/*.{m,mod}
 	$(RM) ../lib/$(FORTRAN_COMPILER)/lib*$(buildtype).a
 	$(RM) ./share/*.o
 	$(RM) ./gotm/*.o
@@ -269,8 +270,8 @@ include .depend
 ## Common rules
 ##
 %.o: %.F90
-	$(F95)  $(FINTEL_ERSEM) $(F90FLAGS) -c $< -o $@
+	$(F77) $(F90FLAGS) $(EXTRA_FFLAGS) -c $< -o $@
 %.o: %.f90
-	$(F95)  $(FINTEL_ERSEM) $(F90FLAGS) -c $< -o $@
+	$(F77) $(F90FLAGS) $(EXTRA_FFLAGS) -c $< -o $@
 
 

@@ -17,6 +17,8 @@
    use standalone
    use api_bfm
    implicit none
+
+    include '../../../fem3d/param.h'
 !
 ! !INPUT PARAMETERS:
 !
@@ -30,12 +32,25 @@
    real(RLEN)              :: min3D,min2D
    integer                 :: i,j,ll
    integer,dimension(2,2)  :: blccc
+   real tempv(nlvdim,nkndim)
+   common /tempv/tempv
+
+   real saltv(nlvdim,nkndim)
+   common /saltv/saltv
+
+   real ddepth(nkndim)
+   common /ddepth/ddepth
+
+   integer node
+   common /node/node
+
+
 !
 ! !EOP
 !-----------------------------------------------------------------------
 !BOC
 #ifdef DEBUG
-   LEVEL1 'integration RK: starting delt = ',delt,timesec
+   LEVEL1 'integration RK: starting delt = ',delt
 #endif
    bbccc3D=D3STATE
    bbccc2D=D2STATE
@@ -45,20 +60,27 @@
       bccc2D=sum(D2SOURCE-D2SINK,2)
       ccc_tmp3D=D3STATE
       ccc_tmp2D=D2STATE
+	
       DO j=1,NO_D3_BOX_STATES
          IF (D3STATETYPE(j).ge.0) THEN
             D3STATE(j,:) = ccc_tmp3D(j,:) + delt*sum(D3SOURCE(j,:,:)-D3SINK(j,:,:),1)
+!	    PRINT*,'3D',j,ccc_tmp3D(j,:),delt,sum(D3SOURCE(j,:,:)-D3SINK(j,:,:),1)
+  	   
          END IF
       END DO
       DO j=1,NO_D2_BOX_STATES
          IF (D2STATETYPE(j).ge.0) THEN
             D2STATE(j,:) = ccc_tmp2D(j,:) + delt*sum(D2SOURCE(j,:,:)-D2SINK(j,:,:),1)
+!	    PRINT*,'2D' ,j,ccc_tmp2D(j,:),delt,sum(D2SOURCE(j,:,:)-D2SINK(j,:,:),1)
          END IF
       END DO
       nmin=nmin+nstep 
       ! Check for negative concentrations
       min3D=minval(D3STATE)
       min2D=minval(D2STATE)
+      
+!      PRINT*,min3D,min2D,eps,delt
+!      PRINT*,'                         '
       IF(min3D.lt.eps.OR.min2D.lt.eps) THEN ! cut timestep
          IF (nstep.eq.1) THEN
             blccc(:,1)=minloc(D3STATE)
@@ -74,6 +96,7 @@
             LEVEL1 'EXIT at time: ',timesec
             D3STATE=bbccc3D
             D2STATE=bbccc2D
+	    print*,node,tempv(1,node),saltv(1,node),ddepth(node)
             STOP
          END IF
          nstep=nstep/2
@@ -82,13 +105,13 @@
          D2STATE=bbccc2D
          dtm1=maxdelt
          delt=nstep*mindelt
-         timesec=timesec+ntime*maxdelt
+         timesec=ntime*maxdelt
 #ifdef DEBUG
-         LEVEL2 'Time Step cut! delt= ',delt/2.,' nstep= ',nstep
+         LEVEL2 ' okTime Step cut! delt= ',delt/2.,' nstep= ',nstep
 #endif
          ! Recalculate Sources:
-          call ResetFluxes
-          call envforcing_bfm
+         call ResetFluxes
+         call envforcing_bfm
          call EcologyDynamics
       ELSE
 #ifdef DEBUG
@@ -98,9 +121,10 @@
 #ifdef DEBUG
          LEVEL2 'Internal time= ',timesec
 #endif   
+	 !print*,'Internal time= ',timesec
          ! Recalculate sources:
-          call ResetFluxes
-          call envforcing_bfm
+         call ResetFluxes
+         call envforcing_bfm
          call EcologyDynamics
          DO j=1,NO_D3_BOX_STATES
             IF (D3STATETYPE(j).ge.0) THEN
@@ -129,6 +153,7 @@
                LEVEL1 'EXIT at time: ',timesec
                D3STATE=bbccc3D
                D2STATE=bbccc2D
+	       print*,node,tempv(1,node),saltv(1,node),ddepth(node)
                STOP 'integration-RK2'
             END IF
             nstep=nstep/2
@@ -137,14 +162,14 @@
             D2STATE=bbccc2D
             dtm1=delt
             delt=nstep*mindelt
-            timesec=timesec+ntime*maxdelt
-            LEVEL1 'Time Step cut at RK2! delt= ',delt,' nstep= ',nstep
+            timesec=ntime*maxdelt
+            LEVEL1 'okTime Step cut at RK2! delt= ',delt,' nstep= ',nstep
          ELSE
             IF (nmin.eq.nmaxdelt) EXIT TLOOP
          ENDIF
          ! Recalculate Sources:
          call ResetFluxes
-          call envforcing_bfm
+         call envforcing_bfm
          call EcologyDynamics
       END IF
    END DO TLOOP
@@ -157,6 +182,7 @@
    LEVEL1 'ntime: ',ntime
    LEVEL1 'Integration time: ',time
 #endif
+
 
    END SUBROUTINE integrationRK2
 !EOC
