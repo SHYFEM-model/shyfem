@@ -1,9 +1,18 @@
 
-30.05.2001	administrative changes
+30.05.2011	administrative changes
 
 	routines on regular files in reg directory (fem3d)
 	cvs routines moved to cvs directory (fembin)
 	changes in git* routines
+
+20.05.2011	changes in wetting and drying
+
+	changes in set_timestep(), element removal, idtmin (subnsh.f)
+	new routines set_dry() and set_element_dry(ie) (subdry.f)
+	different algorithm for element removal (wet&dry) (subdry.f)
+	iwetv introduced, wet and dry from main (ht.f)
+	compute statistics of stability, no stab in dry elemes (newexpl.f)
+	allow for elimination of elems due to high rstab (newstab.f)
 
 17.05.2011	minor enhancements
 

@@ -1,3 +1,51 @@
+version  6_1_23    31-05-2011    VERS_6_1_23
+
+========================================================== 31-05-2011 - 6_1_23
+
+ * ./grid/xgraph.c:
+ * 19-Apr-2011: introduced HAVE_WIDGET for compiler errors in Mac	*
+c ./femplot/supsim.f:
+c 17.05.2011    ggu     in plobas may plot node and element numbers
+c
+c ./femplot/supbas.f:
+c 17.05.2011  ggu     new routine basin_number()
+c
+c ./fem3d/subnsh.f:
+c 20.05.2011    ggu     changes in set_timestep(), element removal, idtmin
+c
+c ./fem3d/basinf.f:
+c 17.05.2011    ggu     changes in freqdep()
+c
+c ./fem3d/subver.f:
+c 31.05.2011	ggu	version 6.1.23
+c
+c ./fem3d/subdry.f:
+c 20.05.2011    ggu     different algorithm for element removal (wet&dry)
+c 20.05.2011    ggu     new routines set_dry() and set_element_dry(ie)
+c
+c ./fem3d/subqfxf.f:
+c 17.05.2011	ggu	compiler warnings in qfcheck()
+c
+c ./fem3d/newchk.f:
+c 17.05.2011    ggu     new routine check_set_unit() to set output unit
+c
+c ./fem3d/ht.f:
+c 20.05.2011    ggu	iwetv introduced, wet and dry from main
+c
+c ./fem3d/newexpl.f:
+c 20.05.2011	ggu	compute statistics of stability, no stab in dry elemes
+c
+c ./fem3d/subcus.f:
+c 17.05.2011	ggu	new routines skadar_debug() and wet_dry()
+c
+c ./fem3d/subdep.f:
+c 17.05.2011	ggu	new routines to adjourn depth
+c
+c ./fem3d/newstab.f:
+c 20.05.2011    ggu     allow for elimination of elems due to high rstab
+
+==========================================================
+
 version  6_1_22    14-04-2011    VERS_6_1_22      commit_2011-05-31
 
 version  6_1_22    14-04-2011    VERS_6_1_22   commit_2011-05-30
