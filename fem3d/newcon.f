@@ -164,6 +164,7 @@ c 26.01.2011    ggu     nudging implemented (scal_adv_nudge, cobs, robs)
 c 16.02.2011    ggu     pass robs to info_stability()
 c 23.03.2011    ggu     new parameter itvdv
 c 25.03.2011    ggu     error check for aapar and itvdv
+c 01.06.2011    ggu     wsink for stability integrated
 c
 c*********************************************************************
 
@@ -487,12 +488,12 @@ c-------------------------------------------------------------
 
 	call get_timestep(dt)
 
-	call make_stability(dt,robs,rkpar,sindex,istot,saux)
+	call make_stability(dt,robs,wsink,rkpar,sindex,istot,saux)
 
         write(iuinfo,*) 'stability_',what,':',it,sindex,istot
 
         if( istot .gt. istot_max ) then
-	    call info_stability(robs,dt,rkpar,sindex,istot,saux)
+	    call info_stability(dt,robs,wsink,rkpar,sindex,istot,saux)
             write(6,*) 'istot  = ',istot,'   sindex = ',sindex
             stop 'error stop scal3sh: istot index too high'
         end if
@@ -1297,7 +1298,7 @@ c*****************************************************************
 
         subroutine conzstab(cn1,co1
      +			,ddt
-     +			,robs
+     +			,robs,wsink
      +                  ,rkpar,difhv,difv
      +			,difmol,azpar
      +			,adpar,aapar
@@ -1367,7 +1368,7 @@ c arguments
         real difhv(nlvdi,1)
 	real difmol
         real ddt,rkpar,azpar,adpar,aapar			!$$azpar
-	real robs
+	real robs,wsink
 	integer istot,isact
 c common
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -1441,6 +1442,7 @@ c local
 	double precision rso,rsn,rsot,rsnt,rstot
 	double precision hn,ho
         double precision wdiff(3)
+        double precision wws
 
 	double precision difabs,difrel,volold,volnew,flxin,flxtot,diff
 	double precision stabind,stabadv,stabdiff,stabvert,stabpoint
@@ -1511,6 +1513,8 @@ c-----------------------------------------------------------------
 	adt=1.-ad
 	aa=aapar
 	aat=1.-aa
+
+	wws = wsink
 
 	if( aa .ne. 0. .and. nlv .gt. 1 ) then
 	  write(6,*) 'aapar = ',aapar
@@ -1687,7 +1691,7 @@ c
 c	  if we are in last layer, w(l,ii) is zero
 c	  if we are in first layer, w(l-1,ii) is zero (see above)
 
-	  w = wl(l-1,ii)		!top of layer
+	  w = wl(l-1,ii) - wws		!top of layer
 	  if( w .gt. 0. ) then          !out
 	    fw(ii) = aat*w
 	    clc(l,ii) = clc(l,ii) + aa*w
@@ -1696,7 +1700,7 @@ c	  if we are in first layer, w(l-1,ii) is zero (see above)
 	    clm(l,ii) = clm(l,ii) + aa*w
 	  end if
 
-	  w = wl(l,ii)			!bottom of layer
+	  w = wl(l,ii) - wws		!bottom of layer
 	  if( w .gt. 0. ) then
 	    clp(l,ii) = clp(l,ii) - aa*w
 	  else

@@ -1,4 +1,23 @@
 
+01.06.2011	wsink for stability
+
+	wsink for stability integrated (newcon.f, newstab.f)
+
+01.06.2011	compiler errors Compaq Fortran
+
+	call to do_gotm_turb was wrong (kepsd.f)
+	documentation to flxscs() changed (subflxa.f)
+	bug fix in green() -> i instead ii (subdif.f)
+
+01.06.2011	shyfem administrative routines
+
+31.05.2011	cleanup of BFM
+
+	changes for BFM (subnsh.f)
+	clean from useless common blocks (subbfm.f)
+
+========================================================== 31-05-2011 - 6_1_24
+
 31.05.2011	new BFM modules
 
 ========================================================== 31-05-2011 - 6_1_23

@@ -144,18 +144,18 @@ c converts specific from/to relative humidity
 	end
 
 c*****************************************************************************
-
-	subroutine rh2w(rh,w)
-
-	w = 0.622 * rh * rhows / ( rho - rhows) * 100.
-
+c
+c	subroutine rh2w(rh,w)
+c
+c	w = 0.622 * rh * rhows / ( rho - rhows) * 100.
+c
 c    w = specific humidity of air vapor mixture (kg/kg)
 c    rh = relative humidity (%)
 c    rhows = density of water vapor (kg/m3)
 c    rho = density of the moist or humid air (kg/m3)
-
-	end
-
+c
+c	end
+c
 c*****************************************************************************
        
 c the next routine compute a series of values from two input values (and PB)

@@ -131,7 +131,7 @@ check:
 	$(FEMBIN)/recursivemake $@ femcheck
 
 install:
-	cd femcheck; make install
+	$(FEMBIN)/shyfem_install.sh
 
 links:
 	-rm -f bin lib

@@ -90,7 +90,7 @@ c EUTRO 0-Dimensional (Sediments)
 	taup = depth/wpsink
 	taun = depth/wnsink
 	kpresusp=kpresusp*fvel		!*abs(vel) incasina tutto
-	!resusp=min(kpresusp,.5)
+	resusp=min(kpresusp,.5)
 	!if(op.le.0.0001)then
 	!op=0.
 	!end if

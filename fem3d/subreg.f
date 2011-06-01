@@ -640,8 +640,8 @@ c local
 	    t=(xx-x1)/pxdreg
 	    u=(yy-y1)/pydreg
 
-	if( u.gt.1. .or. u.lt.0. ) write(6,*) 'error am2val',u,t,k
-	if( t.gt.1. .or. t.lt.0. ) write(6,*) 'error am2val',u,t,k
+	if( u.gt.1. .or. u.lt.0. ) write(6,*) 'error am2val',u,t
+	if( t.gt.1. .or. t.lt.0. ) write(6,*) 'error am2val',u,t
 
 	    am2val=(1-t)*(1-u)*z1+t*(1-u)*z2+t*u*z3+(1-t)*u*z4
 

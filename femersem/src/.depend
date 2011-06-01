@@ -1,0 +1,129 @@
+./BFM/Ben/BenBac.o : ./BFM/Ben/BenBac.F90 ./BFM/General/ModuleGlobFun.o ./BFM/Ben/ModuleBenBac.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Ben/BenCheckMassConservation.o : ./BFM/Ben/BenCheckMassConservation.F90 ./BFM/General/ModuleParam.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Ben/BenOrganism.o : ./BFM/Ben/BenOrganism.F90 ./BFM/General/ModuleGlobFun.o ./BFM/Ben/ModuleBenOrganism.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Ben/BenthicSystem.o : ./BFM/Ben/BenthicSystem.F90 ./BFM/General/ModuleInterface.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Ben/Bioturbation.o : ./BFM/Ben/Bioturbation.F90 ./BFM/General/ModuleGlobFun.o ./BFM/Ben/ModuleBioturbation.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Ben/FilterFeeder.o : ./BFM/Ben/FilterFeeder.F90 ./BFM/General/ModuleGlobFun.o ./BFM/Ben/ModuleFilterFeeder.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Ben/ModuleBenBac.o : ./BFM/Ben/ModuleBenBac.f90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Ben/ModuleBenOrganism.o : ./BFM/Ben/ModuleBenOrganism.f90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Ben/ModuleBioturbation.o : ./BFM/Ben/ModuleBioturbation.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Ben/ModuleFilterFeeder.o : ./BFM/Ben/ModuleFilterFeeder.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/BenAmmonium.o : ./BFM/Bennut/BenAmmonium.F90 ./BFM/General/ModuleGlobFun.o ./BFM/General/ModuleInterface.o ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/Bennut/ModuleBenAmmonium.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/BenAnoxic.o : ./BFM/Bennut/BenAnoxic.F90 ./BFM/General/ModuleGlobFun.o ./BFM/General/ModuleInterface.o ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/Bennut/ModuleBenAnoxic.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/BenDenitriDepth.o : ./BFM/Bennut/BenDenitriDepth.F90 ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/Bennut/ModuleBenDenitriDepth.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/BenNitrate.o : ./BFM/Bennut/BenNitrate.F90 ./BFM/General/ModuleGlobFun.o ./BFM/General/ModuleInterface.o ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/Bennut/ModuleBenNitrate.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/BenNitrogenShifting.o : ./BFM/Bennut/BenNitrogenShifting.F90 ./BFM/General/ModuleGlobFun.o ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/BenOxygen.o : ./BFM/Bennut/BenOxygen.F90 ./BFM/Bennut/ModuleBenOxygen.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/BenPhosphate.o : ./BFM/Bennut/BenPhosphate.F90 ./BFM/General/ModuleGlobFun.o ./BFM/General/ModuleInterface.o ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/Bennut/ModuleBenPhosphate.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/BenQ1Transport.o : ./BFM/Bennut/BenQ1Transport.F90 ./BFM/General/ModuleGlobFun.o ./BFM/General/ModuleInterface.o ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/Bennut/ModuleBenQ1Transport.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/BenSilica.o : ./BFM/Bennut/BenSilica.F90 ./BFM/General/ModuleGlobFun.o ./BFM/General/ModuleInterface.o ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/Bennut/ModuleBenSilica.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/BenthicNutrient2.o : ./BFM/Bennut/BenthicNutrient2.F90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/BenthicNutrient3.o : ./BFM/Bennut/BenthicNutrient3.F90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/BenthicReturn1.o : ./BFM/Bennut/BenthicReturn1.F90 ./BFM/Bennut/ModuleBenthicReturn1.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/BenthicReturn2.o : ./BFM/Bennut/BenthicReturn2.F90 ./BFM/Bennut/ModuleBenthicReturn2.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/bess_exp.o : ./BFM/Bennut/bess_exp.f90 ./BFM/General/ModuleConstants.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/bessi0.o : ./BFM/Bennut/bessi0.f90 ./BFM/General/ModuleConstants.o 
+./BFM/Bennut/bessi1.o : ./BFM/Bennut/bessi1.f90 ./BFM/General/ModuleConstants.o 
+./BFM/Bennut/bessk0.o : ./BFM/Bennut/bessk0.f90 ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/bessk1.o : ./BFM/Bennut/bessk1.f90 ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/General/ModuleConstants.o 
+./BFM/Bennut/calculate_equation.o : ./BFM/Bennut/calculate_equation.f90 ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/Bennut/ModuleBenNutType.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/CalculateFromSet.o : ./BFM/Bennut/CalculateFromSet.f90 ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/calculatelayer.o : ./BFM/Bennut/calculatelayer.f90 ./BFM/Bennut/ModuleBenNutVariables.o ./BFM/Bennut/ModuleBenNutType.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/calculate_one_term.o : ./BFM/Bennut/calculate_one_term.f90 ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/General/ModuleConstants.o ./BFM/Bennut/ModuleBenNutType.o 
+./BFM/Bennut/CalculateSet.o : ./BFM/Bennut/CalculateSet.f90 ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/Bennut/ModuleBenNutConstants.o ./BFM/General/ModuleConstants.o ./BFM/Bennut/ModuleBenNutVariables.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/CalculateShift.o : ./BFM/Bennut/CalculateShift.f90 ./BFM/General/ModuleConstants.o ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/CalculateTau.o : ./BFM/Bennut/CalculateTau.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/CompleteSet.o : ./BFM/Bennut/CompleteSet.f90 ./BFM/Bennut/ModuleBenNutType.o ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/Bennut/ModuleBenNutConstants.o ./BFM/General/ModuleConstants.o ./BFM/Bennut/ModuleBenNutVariables.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/DefineSet.o : ./BFM/Bennut/DefineSet.f90 ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/Bennut/ModuleBenNutConstants.o ./BFM/General/ModuleConstants.o ./BFM/Bennut/ModuleBenNutVariables.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/funcalc.o : ./BFM/Bennut/funcalc.f90 ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/General/ModuleConstants.o ./BFM/Bennut/ModuleBenNutType.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/GetInfoFromSet.o : ./BFM/Bennut/GetInfoFromSet.f90 ./BFM/Bennut/ModuleBenNutConstants.o ./BFM/Bennut/ModuleBenNutVariables.o ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/General/ModuleConstants.o 
+./BFM/Bennut/InitializeSet.o : ./BFM/Bennut/InitializeSet.f90 ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/General/ModuleConstants.o ./BFM/Bennut/ModuleBenNutVariables.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/input_para.o : ./BFM/Bennut/input_para.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/kfind.o : ./BFM/Bennut/kfind.f90 ./BFM/Bennut/ModuleBenNutType.o 
+./BFM/Bennut/lubksb.o : ./BFM/Bennut/lubksb.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/ludcmp.o : ./BFM/Bennut/ludcmp.f90 ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/manage_coeff.o : ./BFM/Bennut/manage_coeff.f90 ./BFM/General/ModuleConstants.o ./BFM/Bennut/ModuleBenNutVariables.o ./BFM/Bennut/ModuleBenNutType.o ./BFM/General/ModuleMem.o ./BFM/Bennut/ModuleBenNutConstants.o ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/ModuleBenAmmonium.o : ./BFM/Bennut/ModuleBenAmmonium.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/ModuleBenAnoxic.o : ./BFM/Bennut/ModuleBenAnoxic.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/ModuleBenDenitriDepth.o : ./BFM/Bennut/ModuleBenDenitriDepth.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/ModuleBenNitrate.o : ./BFM/Bennut/ModuleBenNitrate.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/ModuleBenNutConstants.o : ./BFM/Bennut/ModuleBenNutConstants.f90 
+./BFM/Bennut/ModuleBenNutInterface.o : ./BFM/Bennut/ModuleBenNutInterface.f90 ./BFM/Bennut/ModuleBenNutType.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/ModuleBenNutType.o : ./BFM/Bennut/ModuleBenNutType.f90 ./BFM/General/ModuleConstants.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/ModuleBenNutVariables.o : ./BFM/Bennut/ModuleBenNutVariables.f90 ./BFM/General/ModuleConstants.o ./BFM/Bennut/ModuleBenNutType.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/ModuleBenOxygen.o : ./BFM/Bennut/ModuleBenOxygen.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/ModuleBenPhosphate.o : ./BFM/Bennut/ModuleBenPhosphate.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/ModuleBenQ1Transport.o : ./BFM/Bennut/ModuleBenQ1Transport.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/ModuleBenSilica.o : ./BFM/Bennut/ModuleBenSilica.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/ModuleBenthicReturn1.o : ./BFM/Bennut/ModuleBenthicReturn1.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/ModuleBenthicReturn2.o : ./BFM/Bennut/ModuleBenthicReturn2.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/noutput.o : ./BFM/Bennut/noutput.f90 ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/General/ModuleConstants.o ./BFM/Bennut/ModuleBenNutConstants.o ./BFM/Bennut/ModuleBenNutVariables.o ./BFM/Bennut/ModuleBenNutType.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/PrintSet.o : ./BFM/Bennut/PrintSet.f90 ./BFM/Bennut/ModuleBenNutVariables.o ./BFM/General/ModuleGlobalMem.o ./BFM/General/ModuleMem.o 
+./BFM/Bennut/qgaus_exp.o : ./BFM/Bennut/qgaus_exp.f90 ./BFM/Bennut/ModuleBenNutInterface.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/re_store.o : ./BFM/Bennut/re_store.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/set_max_sing.o : ./BFM/Bennut/set_max_sing.f90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/svbksb.o : ./BFM/Bennut/svbksb.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/svdcmp.o : ./BFM/Bennut/svdcmp.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Bennut/transfer.o : ./BFM/Bennut/transfer.f90 ./BFM/General/ModuleConstants.o ./BFM/Bennut/ModuleBenNutType.o ./BFM/Bennut/ModuleBenNutConstants.o 
+./BFM/Ben/ResetTotMassVar.o : ./BFM/Ben/ResetTotMassVar.F90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Forcing/BoxAbove.o : ./BFM/Forcing/BoxAbove.F90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Forcing/BoxBeneath.o : ./BFM/Forcing/BoxBeneath.F90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/General/AllocateMem.o : ./BFM/General/AllocateMem.F90 ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/General/Ecology.o : ./BFM/General/Ecology.F90 ./BFM/General/ModuleInterface.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/General/eTq.o : ./BFM/General/eTq.F90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/General/InitBoxParams.o : ./BFM/General/InitBoxParams.f90 ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/General/Initialize.o : ./BFM/General/Initialize.f90 ./BFM/PelBen/ModuleControlBenPartNutrientBuffers.o ./BFM/PelBen/ModuleSettling.o ./BFM/Bennut/ModuleBenQ1Transport.o ./BFM/Bennut/ModuleBenSilica.o ./BFM/Bennut/ModuleBenPhosphate.o ./BFM/Bennut/ModuleBenDenitriDepth.o ./BFM/Bennut/ModuleBenAnoxic.o ./BFM/Bennut/ModuleBenOxygen.o ./BFM/Bennut/ModuleBenNitrate.o ./BFM/Bennut/ModuleBenAmmonium.o ./BFM/Bennut/ModuleBenthicReturn2.o ./BFM/Bennut/ModuleBenthicReturn1.o ./BFM/Ben/ModuleBioturbation.o ./BFM/Ben/ModuleBenBac.o ./BFM/Ben/ModuleFilterFeeder.o ./BFM/Ben/ModuleBenOrganism.o ./BFM/Light/ModuleLightAdaptation.o ./BFM/Light/ModulePhotoAvailableRadiation.o ./BFM/PelB/ModulePhyto.o ./BFM/PelB/ModuleMicroZoo.o ./BFM/PelB/ModuleMesoZoo.o ./BFM/PelB/ModulePelBac.o ./BFM/PelB/ModulePelChem.o ./BFM/PelB/ModulePelGlobal.o ./BFM/Oxygen/ModuleWindOxReaeration_3.o ./BFM/General/ModuleParam.o 
+./BFM/General/InitTransportStateTypes.o : ./BFM/General/InitTransportStateTypes.f90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/General/ModuleConstants.o : ./BFM/General/ModuleConstants.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/General/ModuleGlobalMem.o : ./BFM/General/ModuleGlobalMem.f90 
+./BFM/General/ModuleGlobFun.o : ./BFM/General/ModuleGlobFun.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/General/ModuleInterface.o : ./BFM/General/ModuleInterface.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/General/ModuleMem.o : ./BFM/General/ModuleMem.F90 ./BFM/General/ModuleConstants.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/General/ModuleParam.o : ./BFM/General/ModuleParam.f90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/General/set_var_info_bfm.o : ./BFM/General/set_var_info_bfm.F90 ./share/api_bfm.o 
+./BFM/Light/LightAdaptation.o : ./BFM/Light/LightAdaptation.F90 ./BFM/Light/ModuleLightAdaptation.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Light/ModuleLightAdaptation.o : ./BFM/Light/ModuleLightAdaptation.f90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Light/ModulePhotoAvailableRadiation.o : ./BFM/Light/ModulePhotoAvailableRadiation.f90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Light/PhotoAvailableRadiation.o : ./BFM/Light/PhotoAvailableRadiation.F90 ./BFM/General/ModuleGlobFun.o ./BFM/Light/ModulePhotoAvailableRadiation.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Oxygen/CalcOxygenSaturation_3.o : ./BFM/Oxygen/CalcOxygenSaturation_3.F90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Oxygen/CalcSchmidtNumberOx.o : ./BFM/Oxygen/CalcSchmidtNumberOx.F90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/Oxygen/ModuleWindOxReaeration_3.o : ./BFM/Oxygen/ModuleWindOxReaeration_3.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/Oxygen/WindOxReaeration_3.o : ./BFM/Oxygen/WindOxReaeration_3.F90 ./BFM/General/ModuleInterface.o ./BFM/Oxygen/ModuleWindOxReaeration_3.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelB/CalcChlorophylla.o : ./BFM/PelB/CalcChlorophylla.F90 ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelB/CalcVerticalExtinction.o : ./BFM/PelB/CalcVerticalExtinction.F90 ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelBen/BentoPelCoup.o : ./BFM/PelBen/BentoPelCoup.F90 ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelBen/ControlBenPartNutrientBuffers.o : ./BFM/PelBen/ControlBenPartNutrientBuffers.F90 ./BFM/PelBen/ModuleControlBenPartNutrientBuffers.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelBen/ModuleControlBenPartNutrientBuffers.o : ./BFM/PelBen/ModuleControlBenPartNutrientBuffers.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelBen/ModuleSettling.o : ./BFM/PelBen/ModuleSettling.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelBen/PelForcingForBen.o : ./BFM/PelBen/PelForcingForBen.F90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelBen/Sedimentation.o : ./BFM/PelBen/Sedimentation.F90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelBen/Settling.o : ./BFM/PelBen/Settling.F90 ./BFM/PelBen/ModuleSettling.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelB/MesoZoo.o : ./BFM/PelB/MesoZoo.F90 ./BFM/General/ModuleGlobFun.o ./BFM/PelB/ModuleMesoZoo.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelB/MicroZoo.o : ./BFM/PelB/MicroZoo.F90 ./BFM/General/ModuleGlobFun.o ./BFM/PelB/ModuleMicroZoo.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelB/ModuleMesoZoo.o : ./BFM/PelB/ModuleMesoZoo.f90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelB/ModuleMicroZoo.o : ./BFM/PelB/ModuleMicroZoo.f90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelB/ModulePelBac.o : ./BFM/PelB/ModulePelBac.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelB/ModulePelChem.o : ./BFM/PelB/ModulePelChem.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelB/ModulePelGlobal.o : ./BFM/PelB/ModulePelGlobal.f90 ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelB/ModulePhyto.o : ./BFM/PelB/ModulePhyto.f90 ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelB/PelagicSystem.o : ./BFM/PelB/PelagicSystem.F90 ./BFM/General/ModuleInterface.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelB/PelBac.o : ./BFM/PelB/PelBac.F90 ./BFM/General/ModuleGlobFun.o ./BFM/PelB/ModulePelBac.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelB/PelChem.o : ./BFM/PelB/PelChem.F90 ./BFM/General/ModuleGlobFun.o ./BFM/PelB/ModulePelChem.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelB/PelGlobal.o : ./BFM/PelB/PelGlobal.F90 ./BFM/PelB/ModulePelGlobal.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./BFM/PelB/Phyto.o : ./BFM/PelB/Phyto.F90 ./BFM/General/ModuleGlobFun.o ./BFM/PelB/ModulePhyto.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./share/api_bfm.o : ./share/api_bfm.F90 ./BFM/General/ModuleMem.o 
+./share/calcmean_bfm.o : ./share/calcmean_bfm.F90 ./BFM/General/ModuleMem.o ./share/api_bfm.o 
+./share/init_cnps.o : ./share/init_cnps.F90 
+./share/init_var_bfm.o : ./share/init_var_bfm.F90 ./share/string_functions.o ./BFM/General/ModuleParam.o ./BFM/General/ModuleConstants.o ./BFM/Ben/ModuleBenBac.o ./BFM/PelB/ModulePhyto.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o ./share/api_bfm.o 
+./share/netcdf_bfm.o : ./share/netcdf_bfm.F90 ./BFM/General/ModuleMem.o ./share/api_bfm.o 
+./share/string_functions.o : ./share/string_functions.F90 
+./standalone/D2toD1.o : ./standalone/D2toD1.f90 
+./standalone/D3toD1.o : ./standalone/D3toD1.f90 
+./standalone/GetDelta.o : ./standalone/GetDelta.f90 ./standalone/time.o ./BFM/General/ModuleConstants.o 
+./standalone/integration-efw.o : ./standalone/integration-efw.F90 ./standalone/time.o ./share/api_bfm.o ./standalone/standalone.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./standalone/integration-lf.o : ./standalone/integration-lf.F90 ./share/api_bfm.o ./standalone/standalone.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./standalone/integration-RK2.o : ./standalone/integration-RK2.F90 ./share/api_bfm.o ./standalone/standalone.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleGlobalMem.o 
+./standalone/ResetFluxes.o : ./standalone/ResetFluxes.F90 ./BFM/General/ModuleMem.o 
+./standalone/standalone.o : ./standalone/standalone.F90 ./BFM/General/ModuleParam.o ./standalone/time.o ./share/netcdf_bfm.o ./share/api_bfm.o ./BFM/General/ModuleMem.o ./BFM/General/ModuleConstants.o ./BFM/General/ModuleGlobalMem.o 
+./standalone/standalone_main.o : ./standalone/standalone_main.f90 ./standalone/standalone.o 
+./standalone/time.o : ./standalone/time.F90 

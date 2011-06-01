@@ -362,6 +362,8 @@
    integer    :: dyear
    real(RLEN),external :: GetDelta
    real(RLEN) :: biodelta
+   real(RLEN) :: wx,wy
+   integer    :: l
 
 !  ENVFORCING FROM HYDRO
 
@@ -370,20 +372,11 @@
    integer itanf,itend,idt,nits,niter,it
    common /femtim/ itanf,itend,idt,nits,niter,it
 
-   real tempv(nlvdim,nkndim)
-   common /tempv/tempv
-
-   real saltv(nlvdim,nkndim)
-   common /saltv/saltv
-
    real ddepth(nkndim)
    common /ddepth/ddepth
 	
    integer node
    common /node/node
-
-   real wxnv(nkndim),wynv(nkndim)    !x and y wind component [m/s]
-   common /wxnv/wxnv,/wynv/wynv
 
 !EOP
 !-----------------------------------------------------------------------
@@ -421,10 +414,12 @@
 	
 ! feeding envforcing vector from HYDROcode
 
+     call get_wind(node,wx,wy)
+     Wind=sqrt(wx**2+wy**2)
 
+     l = 1
+     call getts(l,node,ETW,ESW)
 
-     ETW=tempv(1,node)
-     ESW=saltv(1,node)
 !    print*, ETW,ESW,tempv(1,2),saltv(1,2)
 !    stop
 !    ETW=20
@@ -432,7 +427,6 @@
 !    EIR =0
 !    EIR=wlight*p_PAR   ! to be changed 
 !   ESS=0.
-   Wind=sqrt(wxnv(node)**2+wynv(node)**2)
    Depth=ddepth(node)
    Depth_ben=Depth
 !   print*,node,ETW,ESW,Wind,Depth

@@ -11,6 +11,7 @@ c 08.03.2010    ggu     run only down to avail layers in stability (bug fix)
 c 26.01.2011    ggu     robs for nudging implemented
 c 16.02.2011    ggu     pass robs to subroutines, write stb-ind to nos file
 c 20.05.2011    ggu     allow for elimination of elems due to high rstab
+c 01.06.2011    ggu     wsink for stability integrated
 c
 c*****************************************************************
 c*****************************************************************
@@ -23,7 +24,7 @@ c call make_stability before advection of similar variables
 c
 c*****************************************************************
 
-	subroutine compute_stability(robs,rkpar,azpar,rindex,saux)
+	subroutine compute_stability(robs,wsink,rkpar,azpar,rindex,saux)
 
 c computes stability index
 
@@ -32,6 +33,7 @@ c computes stability index
         include 'param.h'
 
 	real robs
+	real wsink
         real rkpar
         real azpar
         real rindex
@@ -72,7 +74,7 @@ c call conzstab
 c----------------------------------------------------------------
 
         call conzstab(cnv,saux
-     +          ,ddt,robs,rkpar,difhv,difv
+     +          ,ddt,robs,wsink,rkpar,difhv,difv
      +		,difmol,azpar,adpar,aapar
      +          ,rindex,istot,isact,nlvdi,nlv)
 
@@ -84,7 +86,7 @@ c----------------------------------------------------------------
 
 c*****************************************************************
 
-        subroutine make_stability(dt,robs,rkpar,rindex,istot,saux)
+        subroutine make_stability(dt,robs,wsink,rkpar,rindex,istot,saux)
 
 c gets stability index (if necessary computes it)
 
@@ -94,6 +96,7 @@ c gets stability index (if necessary computes it)
 
 	real dt
 	real robs
+	real wsink
         real rkpar
         real rindex
         integer istot
@@ -103,23 +106,23 @@ c gets stability index (if necessary computes it)
 	logical exist_stability
 
 c----------------------------------------------------------------
-c see if already computed
+c see if already computed (only for wsink == 0)
 c----------------------------------------------------------------
 
-	if( exist_stability(rkpar,rindex) ) goto 1
+	if( wsink .eq. 0. .and. exist_stability(rkpar,rindex) ) goto 1
 	  
 c----------------------------------------------------------------
 c compute stability index
 c----------------------------------------------------------------
 
 	call getaz(azpar)
-	call compute_stability(robs,rkpar,azpar,rindex,saux)
+	call compute_stability(robs,wsink,rkpar,azpar,rindex,saux)
 
 c----------------------------------------------------------------
-c insert stability index
+c insert stability index (only for wsink == 0)
 c----------------------------------------------------------------
 
-	call insert_stability(rkpar,rindex)
+	if( wsink .eq. 0. ) call insert_stability(rkpar,rindex)
 
 c----------------------------------------------------------------
 c scale to real time step dt
@@ -137,7 +140,7 @@ c----------------------------------------------------------------
 
 c*****************************************************************
 
-        subroutine info_stability(robs,dt,rkpar,rindex,istot,saux)
+        subroutine info_stability(dt,robs,wsink,rkpar,rindex,istot,saux)
 
 c gets stability index (if necessary computes it)
 
@@ -145,8 +148,9 @@ c gets stability index (if necessary computes it)
 
 	include 'param.h'
 
-	real robs
         real dt
+	real robs
+	real wsink
         real rkpar
         real rindex
         integer istot
@@ -168,7 +172,7 @@ c compute stability index
 c----------------------------------------------------------------
 
 	call getaz(azpar)
-	call compute_stability(robs,rkpar,azpar,rindex,saux)
+	call compute_stability(robs,wsink,rkpar,azpar,rindex,saux)
 	rindex = dt * rindex
 	istot = 1 + rindex
 
@@ -401,7 +405,6 @@ c mode = 2		eliminate elements with r>rindex
 		write(6,*) 'eliminating rmax: ',rmax
 	end if
 
-	!call compute_stability(robs,rkpar,azpar,rindex,saux1)
 	call momentum_advective_stability(aindex,sauxe1)
 	call momentum_viscous_stability(ahpar,dindex,sauxe2)
 
@@ -551,7 +554,7 @@ c tests parallel implementation
 	rkpar = 0.
 
 	write(6,*) 'parallel test...'
-	call compute_stability(0.,rkpar,azpar,rindex,saux)
+	call compute_stability(0.,0.,rkpar,azpar,rindex,saux)
 	write(6,*) 'parallel is ok.'
 
 	end

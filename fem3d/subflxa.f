@@ -13,7 +13,7 @@ c        subroutine tsflxa
 c
 c        subroutine wrflxa(it)			write of flux data
 c
-c        subroutine flxscs(kflux,iflux,n,az,flux)	flux through sections
+c        subroutine flxscs(kflux,iflux,n,az,flux,flxpm)	flux through sections
 c        function flxsec(kflux,iflux,n,az)		flux through section
 c        function flxnov(k,ibefor,iafter,istype,az)	flux through volume k
 c        subroutine mkweig(n,istype,is,weight)	 	computes weight
@@ -53,6 +53,7 @@ c 23.03.2006    ggu     changed time step to real
 c 28.09.2007    ggu     use testbndo to determine boundary node in flxtype
 c 28.04.2009    ggu     links re-structured
 c 23.02.2011    ggu     new routine call write_node_fluxes() for special output
+c 01.06.2011    ggu     documentation to flxscs() changed
 c
 c notes :
 c
@@ -63,7 +64,7 @@ c call flxe2i(kflux,n,berror)		converts external to internal nodes
 c nsect = kflxck(kflux,n)		checks array kflux and computes nsect
 c call flxin(kflux,iflux,n)		initializes iflux
 c
-c call flxscs(kflux,iflux,n,az,flux)	computes fluxes and returns in flux()
+c call flxscs(kflux,iflux,n,az,flux,flxpm) computes fluxes and returns in flux()
 c
 c Initialization can be done anytime.
 c
@@ -562,16 +563,10 @@ c flux through section kbefor-k must is negative in sign
 
 	flxnov = tt
 
-	!write(99,*) 'flxnov ',tt,n,istype,ibefor,iafter	!ggu99
-	if( abs(tt) .lt. 0.1 ) then
-		!write(99,*) 'lesssssssss flxnov',abs(tt)	!ggu99
-		continue
-	else if( abs(tt) .ge. 0.1 ) then
-		continue
-	else
+	if( abs(tt) .lt. -0.1 ) then
 		write(99,*) 'errorrrrrrr flxnov',abs(tt)	!ggu99
 		write(99,*) n,istype,ibefor,iafter
-		write(99,*) ipf,ipl,aj,area,ie,dz,uv,i
+		write(99,*) aj,area,ie,dz,uv,i
                 write(99,*) (weight(i),weight1(i),transp(i),i=1,n)
 	end if
 

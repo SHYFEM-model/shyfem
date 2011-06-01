@@ -62,6 +62,7 @@ c 29.04.2010    ggu     new routine set_output_frequency() ... not finished
 c 04.05.2010    ggu     shell to compute energy
 c 22.02.2011    ggu     in pritime() new write to terminal
 c 20.05.2011    ggu     changes in set_timestep(), element removal, idtmin
+c 31.05.2011    ggu     changes for BFM
 c
 c************************************************************
 c
@@ -352,6 +353,8 @@ c			call rdfloa(nfldin)
 		else if(section.eq.'oxyarr') then	!oxygen
 c			call rdoxy
 			call nrdskp
+		else if(section.eq.'bfmsc')then        ! BFM ECO TOOL
+                       call nrdins(section)
 		else if(section.eq.'levels') then
 			nlv = nrdvecr(hlv,nlvdi)
 			if( nlv .lt. 0 ) goto 77

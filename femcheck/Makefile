@@ -12,7 +12,8 @@ setup:
 	./setup.sh
 
 install:
-	./install.sh
+	@echo "do not use this command..."
+	#./install.sh
 
 links:
 	./link_compiler.sh

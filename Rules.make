@@ -99,10 +99,10 @@ export NBCDIM = 50
 #export NLVDIM = 17
 
 # Venice
-export NKNDIM = 5000
-export NELDIM = 8000
-export NLVDIM = 1
-export MBWDIM = 70
+#export NKNDIM = 5000
+#export NELDIM = 8000
+#export NLVDIM = 1
+#export MBWDIM = 70
 
 # Marano-Grado
 #export NKNDIM = 12000
@@ -207,9 +207,9 @@ GOTM=true
 #
 ##############################################
 
-#ECOLOGICAL = NONE
+ECOLOGICAL = NONE
 #ECOLOGICAL = EUTRO
-ECOLOGICAL = ERSEM
+#ECOLOGICAL = ERSEM
 #ECOLOGICAL = AQUABC
 
 #------------------------------------------------------------

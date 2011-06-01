@@ -243,6 +243,7 @@ c	parameter(ndim=31,nscdim=10)
 
 	integer kflxck,ieint
 	real flux(nscdim)
+	real fluxpm(2,nscdim)
 
 	integer nsect
 	save nsect
@@ -325,7 +326,7 @@ c	   write(97,*) ((iflux(ii,i),ii=1,3),i=1,n)
 	call getaz(azpar)
 	az = azpar
 
-	call flxscs(kflux,iflux,n,az,flux)
+	call flxscs(kflux,iflux,n,az,flux,fluxpm)
 
 	write(97,*) it,(flux(i),i=1,nsect)
 

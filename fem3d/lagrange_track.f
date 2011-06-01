@@ -533,6 +533,9 @@ c inizializzazione parametri
 110 	continue
 
         fsum=0
+	nl = 0
+	ng = 0
+	ps = 0
         
 c==========================================================
 c CALCOLO TRAIETTORIE

@@ -23,6 +23,7 @@ c 12.02.2010    ggu     diffweight() has new method -> idtype=0,1,2
 c 17.02.2010    ggu     bug fix in diffweight()
 c 08.04.2010    ggu     better error reporting in diffweight()
 c 16.02.2011    ggu     in diffweight() use double precision
+c 01.06.2011    ggu     bug fix in green() -> i instead ii
 c
 c*****************************************************************
 
@@ -812,7 +813,7 @@ c	length of sides
 c	---------------------------------------------
 
 	do ii=1,3
-	  i1 = mod(i,3) + 1
+	  i1 = mod(ii,3) + 1
 	  i2 = mod(i1,3) + 1
 	  dl(ii) = distance(x(i1),y(i1),x(i2),y(i2))
 	end do

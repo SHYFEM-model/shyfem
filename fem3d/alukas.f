@@ -3172,7 +3172,8 @@ c*******************************************************************************
 c
 
 C     USER SUBROUTINES FOR KINETIC MODEL
-      SUBROUTINE SMITH_ALUKAS(PHOTO, Ia, TCHLA, CCHLXI, GITMAX, H, ke, XKC,  
+      SUBROUTINE SMITH_ALUKAS(PHOTO, Ia, TCHLA, CCHLXI, 
+     *                 GITMAX, H, ke, XKC,  			!ggu
      *                 PHIMX, ERR_TOLARATE, LLIGHT, CCHLX) 
 
 C         PHOTO  : Photo period
@@ -3185,6 +3186,8 @@ C         KE     : Background light extinction coefficient (1/m)
 C         XKC    : Chlorophyll light extinction coefficient (1/m)
 C         PHIMAX : Max. Quantum Yield
        
+          IMPLICIT NONE
+
           DOUBLE PRECISION PHOTO
           DOUBLE PRECISION Ia
           DOUBLE PRECISION TCHLA

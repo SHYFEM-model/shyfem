@@ -1,5 +1,48 @@
 ============================================================
 
+Wed Jun  1 16:34:01 CEST 2011
+
+wsink, shyfem admin and Compaq errors
+
+ BUG                                    |    6 ++
+ LOG                                    |   19 +++++
+ Makefile                               |    2 +-
+ Rules.make                             |   12 ++--
+ fem3d/alukas.f                         |    5 +-
+ fem3d/gotm3d.f                         |   42 +++++++---
+ fem3d/kepsd.f                          |   16 +++-
+ fem3d/lagrange_track.f                 |    3 +
+ fem3d/newcon.f                         |   16 +++--
+ fem3d/newstab.f                        |   29 ++++---
+ fem3d/param.h                          |    8 +-
+ fem3d/subbfm.f                         |   58 +--------------
+ fem3d/subcus.f                         |    3 +-
+ fem3d/subdif.f                         |    3 +-
+ fem3d/subflxa.f                        |   15 +---
+ fem3d/subn11.f                         |    2 +
+ fem3d/subnsh.f                         |    3 +
+ fem3d/subqfxu1.f                       |   16 ++--
+ fem3d/subreg.f                         |    4 +-
+ fem3d/weutro_sedim.f                   |    2 +-
+ femadj/param.h                         |    8 +-
+ fembin/convert_date.pl                 |   53 +++++++++++++
+ fembin/shyfem_dir.sh                   |   76 +++++++++++++++++++
+ fembin/shyfem_install.pl               |   47 ++++++++++++
+ fembin/shyfem_install.sh               |  109 +++++++++++++++++++++++++++
+ fembin/shyfem_path.pl                  |   24 ++++++
+ fembin/shyfem_profile.sh               |   33 ++++++++
+ fembin/shyfem_version.pl               |   19 +++++
+ fembin/shyfem_version.sh               |   43 +++++++++++
+ femcheck/Makefile                      |    3 +-
+ femersem/src/.depend                   |  129 ++++++++++++++++++++++++++++++++
+ femersem/src/standalone/standalone.F90 |   18 ++---
+ femlib/perl/info.txt                   |    5 +
+ femplot/param.h                        |    8 +-
+ param.h                                |    8 +-
+ 35 files changed, 696 insertions(+), 151 deletions(-)
+
+============================================================
+
 Tue May 31 14:27:17 CEST 2011
 
 New version 6_1_24

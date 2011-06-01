@@ -21,6 +21,7 @@ c
 c 10.03.2008    aac     bfm ecological module from scratch
 c 29.04.2008    ggu     bfm model integrated in main branch
 c 30.04.2008    ggu     double to real (BUG)
+c 31.05.2011    ggu     clean from useless common blocks
 c
 c**************************************************************
 c
@@ -163,11 +164,6 @@ c computes ecological scalars with BFM  model
 	
 	real znv(nkndim)
         common /znv/znv
-
-
-	
-	real wxnv(nkndim),wynv(nkndim)    !x and y wind component [m/s]
-        common /wxnv/wxnv,/wynv/wynv
 
 ! OBC ARRAY AND VARIABLES
 
@@ -368,8 +364,6 @@ c---------------------------------------------------------------
 	common /uprv/uprv
 	real vprv(nlvdim,nkndim)
 	common /vprv/vprv
-        real tauxnv(1),tauynv(1)
-        common /tauxnv/tauxnv,/tauynv/tauynv
 
 	real visv(0:nlvdim,nkndim)
 	common /visv/visv
@@ -471,27 +465,6 @@ c------------------------------------------------------
 	  itmbfm = iround(getpar('itmbfm'))
           idtbfm = iround(getpar('idtbfm'))
 
-          open(101,file='../data/temfile.dat')
-
-          read(101,*)rtr,nkk
-          print*,rtr,nkk
-          do k=1,nkk
-           read(101,*)krf,tto(1,k)
-           tempv(1,k)=tto(1,k)
-	   
-          end do
-
-          open(102,file='../data/salfile.dat')
-
-          read(102,*)rtr,nkk
-          print*,rtr,nkk
-          do k=1,nkk
-           read(102,*)krf,sto(1,k)
-           saltv(1,k)=sto(1,k)
-          end do
-
-!	  print*,1,tempv(1,1),saltv(1,1)
-
 !         --------------------------------------------------------
 !         Initializes HYBRID HYDRO-BFM arrays
 !         --------------------------------------------------------
@@ -554,31 +527,6 @@ c------------------------------------------------------
 ! light ?? (dove viene utilizzato?)
 !------------------------------------------------------
 
-
-!------------------------------------------------------
-! temp ?? (dove viene utilizzato?)
-!------------------------------------------------------
-	if(it.gt.rtr)then
-	read(101,*)rtr,nkk 
- 	 do k=1,nkk
-          read(101,*)krf,tto(1,k)
-	  tempv(1,k)=tto(1,k)
-         end do
-	 read(102,*)rtr,nkk
-	 do k=1,nkk
-          read(102,*)krf,sto(1,k)
-          saltv(1,k)=sto(1,k)
-         end do
-	else
-	 do k=1,nkn
- 	  tempv(1,k)=tto(1,k)
-	 end do
-	 do k=1,nkn
-          saltv(1,k)=sto(1,k)
-         end do
-	end if
-
-! print*,k,tempv(1,1),saltv(1,1),' ooooooo'
 !-------------------------------------------------------
 ! compute OBC for transported vars (HYBRID HYDRO-BFM arrays)
 !-------------------------------------------------------
@@ -590,6 +538,7 @@ c------------------------------------------------------
 !-----------------------------------------------------------
 ! advection and diffusion of hybrid hydro-bfm var
 !-----------------------------------------------------------
+
 !$OMP PARALLEL PRIVATE(is1,is2,is3)
 !$OMP DO SCHEDULE(DYNAMIC)
 
@@ -616,9 +565,6 @@ c------------------------------------------------------
 
 !$OMP END DO NOWAIT
 !$OMP END PARALLEL
-
-
-
 
 !------------------------------------------------------
 ! ASSIGN DEPTH TO NODE

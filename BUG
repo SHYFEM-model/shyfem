@@ -1,4 +1,10 @@
 
+BUG_2010_24     ggu	6.1.25   01.06.2011
+	bug fix in green() -> i instead ii (subdif.f)
+
+BUG_2010_23     ggu	6.1.25   01.06.2011
+	call to do_gotm_turb was wrong (kepsd.f)
+
 BUG_2010_22     ggu	6.1.22   30.03.2011
         bug in heatgotm() -> convert pressure to Pascal (subqfxm4.f)
 

@@ -1,7 +1,15 @@
-
+c
+c internal gotm routines
+c
 c********************************************************************
 
 	subroutine init_gotm_turb(iunit,fn,ndim)
+
+	implicit none
+
+	integer iunit
+	character*(*) fn
+	integer ndim
 
 	call gotmturb_init 
 
@@ -9,29 +17,37 @@ c********************************************************************
 
 c********************************************************************
 
-            subroutine do_gotm_turb   (
-     &                            Nmx,dt,depth
+        subroutine do_gotm_turb   (
+     &                            Nmx
+     &                           ,dt,depth
      &                           ,u_taus,u_taub
-     &                           ,z0s,z0b,hh
-     &                           ,nn,ss
-     &                           ,num,nuh,ken,dis,len
+     &                           ,z0s,z0b
+     &                           ,hh,nn,ss
+     &                           ,num,nuh
+     &                           ,ken,dis,len
      &                           )
 
-      integer Nmx 
-      double precision hh(0:Nmx),NN(0:Nmx),SS(0:Nmx),num(0:Nmx),
-     &                 nuh(0:Nmx),ken(0:Nmx),dis(0:Nmx),len(0:Nmx)
-      double precision u_taus,u_taub,dt
-      double precision depth,z0s,z0b
+	implicit none
 
-            call gotmturb   (
+        integer Nmx 
+        double precision dt,depth
+        double precision u_taus,u_taub
+        double precision z0s,z0b
+        double precision hh(0:Nmx),NN(0:Nmx),SS(0:Nmx)
+        double precision num(0:Nmx),nuh(0:Nmx)
+        double precision ken(0:Nmx),dis(0:Nmx),len(0:Nmx)
+
+        call gotmturb   (
      &                            Nmx,dt,hh
      &                           ,nn,ss
      &                           ,num,nuh,ken,dis,len
      &                           ,u_taus,u_taub
-     &                           )
+     &                  )
 
 	end
 
+c********************************************************************
+c********************************************************************
 c********************************************************************
 
 !-------------------------------------------------------------------------

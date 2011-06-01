@@ -7,6 +7,7 @@ c revision log :
 c
 c 25.02.1999	ggu	finished writing routines
 c 10.04.2008	ggu&ccf	new gotm routine call integrated
+c 01.06.2011	ggu&cpb	call to do_gotm_turb was wrong (BUG)
 c
 c notes :
 c
@@ -60,14 +61,19 @@ c arguments
 	real*8 rlen(0:nlevdi)
 
 	integer l,lmax1,lp
-	real*8 u_taus,u_taub,z0,ud,vd,aux
+	real*8 ddt,u_taus,u_taub,z0,ud,vd,aux
+	real*8 z0s,z0b,depth
 
 	if( lmax .gt. nlevdi ) stop 'error stop: nlevdi'
 
 	lmax1 = lmax - 1
 
+	ddt = dt
         u_taus = sqrt( taus )	!u_star
         u_taub = sqrt( taub )
+	depth = dl(lmax)
+	z0s = 0.03
+	z0b = 0.03
 
 c compute level differences
 c
@@ -140,8 +146,12 @@ c prepare data for gotm call
 	  rlen(lp) = len(l)
 	end do
 
-	!call gotmturb(lmax,dt,hh,NN,SS,num,nuh,k,eps,L,u_taus,u_taub)
-	call do_gotm_turb(lmax,dt,hh,NN,SS,num,nuh,k,eps,L,u_taus,u_taub)
+c	call gotmturb(lmax,ddt,hh,NN,SS,num,nuh
+c     +			,rkin,reps,rlen,u_taus,u_taub)
+
+	call do_gotm_turb(lmax,dt,depth,u_taus,u_taub,z0s,z0b
+     +			,hh,NN,SS,num,nuh
+     +			,rkin,reps,rlen)
 
 	do l=0,lmax
 	  lp = lmax-l

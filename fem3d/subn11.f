@@ -312,6 +312,8 @@ c	-----------------------------------------------------
 	    call b3dvalue(ibc,it,nsize,nb3dim,bnd3(1,ibc),rwv)
 	    call dist_horizontal(1,rwv,nk,rwv(1))
 	  else if( ibtyp .eq. 4 ) then
+	    rmu = 0.
+	    rmv = 0.
             stop 'error stop: momentum input is broken...'
 	  end if
 
