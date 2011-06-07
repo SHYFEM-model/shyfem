@@ -20,8 +20,6 @@ elif [ $1 = "-h" -o $1 = "-help" ]; then
 fi
 
 if [ $1 = "-nodes" ]; then
-  echo "*** -nodes: feature not yet implemented... aborting"
-  exit 1
   what=nodes
 elif [ $1 = "-records" ]; then
   what=records
