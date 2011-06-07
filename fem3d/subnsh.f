@@ -63,6 +63,7 @@ c 04.05.2010    ggu     shell to compute energy
 c 22.02.2011    ggu     in pritime() new write to terminal
 c 20.05.2011    ggu     changes in set_timestep(), element removal, idtmin
 c 31.05.2011    ggu     changes for BFM
+c 01.06.2011    ggu     idtmin introduced
 c
 c************************************************************
 c
@@ -797,19 +798,20 @@ c controls time step
 c----------------------------------------------------------------------
 c        idtsync = 0             !time step for syncronization
 c        cmax = 1.0              !maximal Courant number permitted
-c        isplit = -1             ! mode for variable time step:
+c        isplit = -1             !mode for variable time step:
 c                                ! -1:  time step fixed, 
 c                                !      no computation of rindex
 c                                !  0:  time step fixed
 c                                !  1:  split time step
 c                                !  2:  optimize time step (no multiple)
+c	 idtmin = 0		 !minimum time step allowed
 c----------------------------------------------------------------------
 
-        isplit  = getpar('itsplt')
+        isplit  = nint(getpar('itsplt'))
         cmax    = getpar('coumax')
-        idtsync = getpar('idtsyn')
+        idtsync = nint(getpar('idtsyn'))
+        idtmin  = nint(getpar('idtmin'))
 
-	idtmin = 10	! minimum time step allowed
 	itloop = 0
 
     1	continue
@@ -886,13 +888,6 @@ c----------------------------------------------------------------------
 	  stop 'error stop set_timestep: too many loops'
 	end if
 
-        if( .not. bsync .and. idt .lt. idtmin ) then     !should be customized
-	  rmax = (1./idtmin)*cmax
-	  call eliminate_stability(rmax)
-	  write(6,*) 'repeating time step for low idt: ',idt,rmax
-	  goto 1
-	end if
-
         if( idt .lt. 1 ) then           !should never happen
           call error_stability(dt,rindex)
           write(6,*) 'idt is less equal 0 !!!'
@@ -903,6 +898,13 @@ c----------------------------------------------------------------------
           write(6,*) cmax,rindex,ri
           stop 'error stop set_timestep: non positive time step'
         end if
+
+        if( .not. bsync .and. idt .lt. idtmin ) then
+	  rmax = (1./idtmin)*cmax
+	  call eliminate_stability(rmax)
+	  write(6,*) 'repeating time step for low idt: ',idt,rmax
+	  goto 1
+	end if
 
 	riold = idtold*ri/idt	!ri with old time step
 	idtold = idt

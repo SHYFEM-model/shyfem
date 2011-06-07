@@ -1,5 +1,37 @@
 ============================================================
 
+Tue Jun  7 16:29:31 CEST 2011
+
+extraction routines, idtmin, wet and dry
+
+ LOG                     |   15 ++++
+ Makefile                |    3 +-
+ TODO                    |    5 +
+ fem3d/Makefile          |    4 +-
+ fem3d/alukas.f          |    2 +-
+ fem3d/genutil.f         |  205 +++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/nosextr_gis.f     |  182 ++++++++----------------------------------
+ fem3d/nosextr_nodes.f   |   72 +++--------------
+ fem3d/nosextr_records.f |  106 ++++---------------------
+ fem3d/nosutil.f         |    4 +-
+ fem3d/ousextr_gis.f     |   68 +++++++++-------
+ fem3d/ousextr_nodes.f   |  119 ++++++++++++++++------------
+ fem3d/ousextr_records.f |   20 +++--
+ fem3d/ousutil.f         |   74 +-----------------
+ fem3d/subcus.f          |   28 ++++++-
+ fem3d/subdry.f          |    7 ++-
+ fem3d/subdts.f          |    8 +-
+ fem3d/subnsh.f          |   24 +++---
+ fem3d/subqfxu4.f        |    9 +-
+ fem3d/subsys.f          |   12 +++
+ fembin/gitcommit        |    8 +-
+ fembin/gittag           |    2 +-
+ fembin/gp_modify.pl     |   32 +++++++
+ femersem/src/Makefile   |    1 +
+ 24 files changed, 511 insertions(+), 499 deletions(-)
+
+============================================================
+
 Wed Jun  1 16:34:01 CEST 2011
 
 wsink, shyfem admin and Compaq errors

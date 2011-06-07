@@ -3830,12 +3830,16 @@ c time of inundation for theseus
 	real hev(1)
 	common /hev/hev
 
-	logical binit
 	integer ie,n
-	real area,sedim,dt,h
+	real area,dt,h
 
 	integer idry(nkndim)
 	save idry
+	real sedim,sedim_save
+	logical binit
+	save sedim_save,binit
+
+	real getpar
 
 	integer icall
 	save icall
@@ -3850,6 +3854,12 @@ c time of inundation for theseus
 	  area = area * 12.
 	  write(122,*) icall,nel,area
 	  write(122,*) (12.*ev(10,ie),ie=1,nel)
+	  sedim_save = getpar('sedim')
+	  binit = .false.
+	  if( sedim_save .lt. 0. ) then
+	    sedim_save = -sedim_save
+	    binit = .true.
+	  end if
 	end if
 
 	do ie=1,nel
@@ -3873,8 +3883,14 @@ c-----------------------------------------
 c modify depth
 c-----------------------------------------
 
-	binit = .false.		! initialize hev from file
-	sedim = 2.		! mm/y
+	!binit = .false.		! initialize hev from file
+	!sedim = 2.		! mm/y
+	!sedim = 5.		! mm/y
+	!sedim = 0.		! mm/y
+
+	sedim = sedim_save
+
+	if( sedim .gt. 0. ) then
 
 	call get_timestep(dt)
 	sedim = sedim*0.001/(365*86400)
@@ -3892,11 +3908,14 @@ c-----------------------------------------
 	call adjourne_depth_from_hev
 	!call set_last_layer
 
+	end if
+
 c-----------------------------------------
 c read or write hev
 c-----------------------------------------
 
 	if( binit .and. icall .eq. 0 ) then
+	  write(6,*) 'hev initialized'
 	  call read_in_hev('in_hev.dat')
 	  call adjourne_depth_from_hev
 	  call set_last_layer
@@ -3906,6 +3925,7 @@ c-----------------------------------------
 
 	if( it .eq. itend ) then
 	  call write_out_hev('out_hev.dat')
+	  write(6,*) 'sedim used: ',sedim_save,binit
 	end if
 
 c-----------------------------------------

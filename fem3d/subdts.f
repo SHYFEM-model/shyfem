@@ -198,7 +198,7 @@ c adjusts date and time (internal routine)
         integer year,month,day
         integer hour,min,sec
 
-	integer ia,jd
+	integer jd
 	logical bdebug
 
 	integer days_in_year
@@ -217,7 +217,7 @@ c---------------------------------------------------------
 	if( sec .lt. 0 .or. sec .ge. 60 ) then
 	  if( bdebug ) write(6,*) day,hour,min,sec
 	  call adjmod(sec,min,60)
-	  if( bdebug ) write(6,*) day,hour,min,sec,ia
+	  if( bdebug ) write(6,*) day,hour,min,sec
 	end if
 
 c---------------------------------------------------------
@@ -227,7 +227,7 @@ c---------------------------------------------------------
 	if( min .lt. 0 .or. min .ge. 60 ) then
 	  if( bdebug ) write(6,*) day,hour,min,sec
 	  call adjmod(min,hour,60)
-	  if( bdebug ) write(6,*) day,hour,min,sec,ia
+	  if( bdebug ) write(6,*) day,hour,min,sec
 	end if
 
 c---------------------------------------------------------
@@ -237,7 +237,7 @@ c---------------------------------------------------------
 	if( hour .lt. 0 .or. hour .ge. 24 ) then
 	  if( bdebug ) write(6,*) day,hour,min,sec
 	  call adjmod(hour,day,24)
-	  if( bdebug ) write(6,*) day,hour,min,sec,ia
+	  if( bdebug ) write(6,*) day,hour,min,sec
 	end if
 
         if( bdebug ) then

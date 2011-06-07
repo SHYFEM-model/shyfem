@@ -96,6 +96,7 @@ c 16.02.2011	ggu	new default for isphe, new routine fnm_aquabc_init()
 c 25.02.2011	ggu	new param wsmax to catch errors in wind type
 c 23.03.2011	ggu	new parameter itvdv
 c 24.03.2011	ggu	new parameters iheat,hdecay,botabs
+c 01.06.2011	ggu	new parameter idtmin
 c
 c************************************************************************
 
@@ -313,10 +314,19 @@ c		has to take one very small time step in order to reach that
 c		time. This parameter is useful
 c		only for |itsplt| = 2 and its default value of
 c		0 does not make any syncronization.
+c |idtmin|	This variable defines the smallest time step possible
+c		when time step splitting is enabled. Normally the smallest
+c		time step is 1 second. But when dealing with a lot of
+c		wet and drying in areas then sometimes it is useful to
+c		take out elements that limit the time step too much. In
+c		the case that |idtmin| is set to a value greater than 1
+c		the program will switch off temporarily elements that
+c		are responsible for such a small time step. (Default 0)
 
 	call addpar('itsplt',0.)
 	call addpar('coumax',1.)
 	call addpar('idtsyn',0.)
+	call addpar('idtmin',0.)
 
 c These parameters define the weighting of time level in the 
 c semi-implicit algorithm. With these parameters the damping
@@ -823,6 +833,8 @@ cc experimental stuff
 
         call addpar('nbfix',0.)         !vel at boundary
         call addpar('nbsig',0.)         !sigma layers to read in for OBC
+
+        call addpar('sedim',0.)         !sedimentation for theseus
 
 	end
 

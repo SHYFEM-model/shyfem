@@ -3206,7 +3206,7 @@ C         CCHLX  : Calculated Carbon to Chlorophyll ratio
           DOUBLE PRECISION CCHLX
 
 
-C         DOUBLE PRECISION FDAY
+          DOUBLE PRECISION FDAY		! ggu
           DOUBLE PRECISION ITOT
           DOUBLE PRECISION CCHL1
           DOUBLE PRECISION KESHD

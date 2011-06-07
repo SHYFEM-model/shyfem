@@ -1,12 +1,13 @@
 c
 c $Id: ousextr.f,v 1.3 2009-09-14 08:20:58 georg Exp $
 c
-c info on OUS files
+c extract nodes from OUS file
 c
 c revision log :
 c
 c 02.09.2003	ggu	adapted to new OUS format
 c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
+c 03.06.2011    ggu     routine adjourned
 c
 c***************************************************************
 
@@ -40,10 +41,12 @@ c still to be revised...
 	common /iarv/iarv
 
 	integer ilhv(neldim)
+	integer ilhkv(nkndim)
 	real hlv(nlvdim)
         real utlnv(nlvdim,neldim)
         real vtlnv(nlvdim,neldim)
 	common /ilhv/ilhv
+	common /ilhkv/ilhkv
 	common /hlv/hlv
         common /utlnv/utlnv
         common /vtlnv/vtlnv
@@ -80,35 +83,32 @@ c	integer rdous,rfous
 	integer iapini,ideffi
 	logical berror
 
-	integer ndim
-	!parameter (ndim=4)
-        parameter (ndim=3)
-        integer nodese(ndim)    !external numbers
-        integer nodes(ndim)     !internal numbers
-        !data nodese /1316,1843,1623,1871/
-        !data nodese /7899,6177,2489/            !Skadar centro, Plavnica, Ckla
-        data nodese /299,6177,2489/            !Skadar centro, Plavnica, Ckla
+c---------------------------------------------------------------
+c nodes for extraction
+c---------------------------------------------------------------
 
+        integer ndim
+        integer nnodes
+        parameter( ndim = nkndim )
+        integer nodes(ndim)     !node numbers
+        integer nodese(ndim)    !external node numbers
 
-	nread=0
+c-------------------------------------------------------------------
+c initialize params
+c-------------------------------------------------------------------
+
+        nread=0
+
+c---------------------------------------------------------------
+c open simulation and basin
+c---------------------------------------------------------------
 
 	if(iapini(3,nkndim,neldim,0).eq.0) then
 		stop 'error stop : iapini'
 	end if
 
 c--------------------------------------------------------------------
-
-        do i=1,ndim
-          nodes(i) = nodese(i)
-        end do
-
-        call n2int(ndim,nodes,berror)
-
-        if( berror ) stop 'error stop nosextr'
-
-        write(6,*) 'Extracting ',ndim,' nodes :'
-        write(6,*) (nodese(i),i=1,ndim)
-
+c open OUS file and read header
 c--------------------------------------------------------------------
 
 	nin=ideffi('datdir','runnam','.ous','unform','old')
@@ -121,9 +121,7 @@ c--------------------------------------------------------------------
      +			,href,hzoff
      +			,descrp
      +			,ierr)
-
-	nlv=nlvous
-	call dimous(nin,nkndim,neldim,nlvdim)
+	if(ierr.ne.0) goto 100
 
         write(6,*)
         write(6,*)   descrp
@@ -134,24 +132,40 @@ c--------------------------------------------------------------------
         write(6,*) ' nlv          : ',nlvous
         write(6,*)
 
+        if( nkn .ne. nknous .or. nel .ne. nelous ) goto 94
+
+	nlv=nlvous
+	call dimous(nin,nkndim,neldim,nlvdim)
+
 	call rsous(nin,ilhv,hlv,hev,ierr)
+        if(ierr.ne.0) goto 100
+
+        call level_e2k(nkn,nel,nen3v,ilhv,ilhkv)
+
+        write(6,*) 'Available levels: ',nlv
+        write(6,*) (hlv(l),l=1,nlv)
+
+c-------------------------------------------------------------------
+c get nodes to extract from STDIN
+c-------------------------------------------------------------------
+
+        call get_nodes_from_stdin(ndim,nnodes,nodes,nodese)
+
+        if( nnodes .le. 0 ) goto 100
+
+c-------------------------------------------------------------------
+c loop on input records
+c-------------------------------------------------------------------
 
   300   continue
 
         call rdous(nin,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
 
-        if(ierr.gt.0) then
-		write(6,*) 'error in reading file : ',ierr
-		goto 100
-        else if(ierr.lt.0) then
-		goto 100
-	end if
+        if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
+        if(ierr.ne.0) goto 100
 
 	nread=nread+1
-
-c	call mima(znv,nknous,zmin,zmax)
-c	call mima(unv,nelout,umin,umax)
-c	call mima(vnv,nelout,vmin,vmax)
+	write(6,*) 'time : ',it,nread
 
 	call comp_barotropic(nel,nlvdim,ilhv,utlnv,vtlnv,ut2v,vt2v)
         call comp_vel2d(nel,hev,zenv,ut2v,vt2v,u2v,v2v,umax,vmax)
@@ -160,39 +174,42 @@ c	call mima(vnv,nelout,vmin,vmax)
      +                          ,ilhv,hlv,utlnv,vtlnv
      +                          ,uprv,vprv,weight)
 
-	write(6,*) 
-	write(6,*) 'time : ',it
-	write(6,*) 
-
-	ivar = 1
-        do i=1,ndim
+        do i=1,nnodes
           k = nodes(i)
           ke = nodese(i)
-	  lmax = ilnv(1,k)
-          write(79,*) it,ke,lmax,ivar,k,i
+	  lmax = ilhkv(k)
+          write(79,*) it,i,ke,k,lmax
           write(79,*) znv(k)
           write(79,*) (uprv(l,k),l=1,lmax)
           write(79,*) (vprv(l,k),l=1,lmax)
         end do
 
-	write(80,*) it,znv(7899),znv(6177),znv(2489)	! skadar
-	!write(80,*) it,znv(2256),znv(6177),znv(2489)	! skadar
-
-        write(85,*) it,nel
-	do ie=1,nel
-	  call baric(ie,xe,ye)
-	  write(85,*) xe,ye,u2v(ie),v2v(ie)
-	end do
+	write(80,*) it,(znv(nodes(k)),k=1,nnodes)
 
 	goto 300
 
   100	continue
 
+c-------------------------------------------------------------------
+c end of loop
+c-------------------------------------------------------------------
+
 	write(6,*)
 	write(6,*) nread,' records read'
 	write(6,*)
+	write(6,*) 'data written to file 79 and 80'
+	write(6,*)
+
+c-------------------------------------------------------------------
+c end of routine
+c-------------------------------------------------------------------
 
 	stop
+   94   continue
+        write(6,*) 'incompatible simulation and basin'
+        write(6,*) 'nkn: ',nkn,nknous
+        write(6,*) 'nel: ',nel,nelous
+        stop 'error stop ousextr_nodes: nkn,nel'
 	end
 
 c******************************************************************

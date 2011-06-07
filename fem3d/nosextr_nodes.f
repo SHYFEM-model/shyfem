@@ -1,19 +1,20 @@
 c
 c $Id: nosextr_nodes.f,v 1.3 2009-04-07 10:43:57 georg Exp $
 c
+c extract nodes from NOS file
+c
 c revision log :
 c
 c 18.11.1998    ggu     check dimensions with dimnos
 c 24.02.1999    ggu     use n2int for node number translation
 c 03.12.2001    ggu     cleaned up, hakata bay
+c 03.06.2011    ggu     routine adjourned
 c
 c****************************************************************
 
 	program nosextr_nodes
 
 c extracts single nodes from nos file -> creates time series
-c
-c interactive version
 
 	implicit none
 
@@ -47,7 +48,7 @@ c--------------------------------------------------
 	real hev(neldim)
 
 	logical berror
-	integer i,n,k,ke,l
+	integer i,n,k,ke,l,lmax
 	integer nread,nunit
 	integer nvers
 	integer nlv,nvar,ivar,ierr
@@ -156,11 +157,11 @@ c	---------------------------------------------------------
 	do i=1,nnodes
 	  k = nodes(i)
 	  ke = nodese(i)
-	  !write(4,*) it,ke,ilhkv(k),ivar,k,i
-	  write(4,*) it,i,ke,k,ilhkv(k),ivar
-	  write(4,*) (cv3(l,k),l=1,ilhkv(k))
-	  write(3,*) it,i,ke,k,ilhkv(k),ivar
-	  write(3,'((6f10.2))') (cv3(l,k),l=1,ilhkv(k))
+	  lmax = ilhkv(k)
+	  write(4,*) it,i,ke,k,lmax,ivar
+	  write(4,*) (cv3(l,k),l=1,lmax)
+	  write(3,*) it,i,ke,k,lmax,ivar
+	  write(3,'((6f10.2))') (cv3(l,k),l=1,lmax)
 	end do
 
 	goto 300
@@ -174,7 +175,7 @@ c---------------------------------------------------------------
 	write(6,*)
 	write(6,*) nread,' records read'
 	write(6,*)
-	write(6,*) 'complete data written to file 4'
+	write(6,*) 'data written to file 3 and 4'
 	write(6,*)
 
 c---------------------------------------------------------------
@@ -184,57 +185,4 @@ c---------------------------------------------------------------
 	end
 
 c***************************************************************
-
-        subroutine get_nodes_from_stdin(ndim,nnodes,nodes,nodese)
-
-c gets records to extract from stdin
-
-        implicit none
-
-        integer ndim		!dimension of nodes
-        integer nnodes		!total number of nodes read
-        integer nodes(ndim)	!array with node numbers (nnodes in total)
-        integer nodese(ndim)	!array with external node numbers
-
-        integer ir
-	integer ipint
-
-	nnodes = 0
-
-        write(6,*) 'Please enter the node numbers to be extracted.'
-        write(6,*) 'Enter every node on a single line.'
-        write(6,*) 'Finish with 0 on the last line.'
-        write(6,*) 'example:'
-        write(6,*) '  5'
-        write(6,*) '  100'
-        write(6,*) '  1505'
-        write(6,*) '  0'
-        write(6,*) ' '
-
-        do while(.true.)
-          write(6,*) 'Enter node to extract (0 to end): '
-          ir = 0
-          read(5,'(i10)') ir
-
-          if( ir .le. 0 ) return
-
-	  nnodes = nnodes + 1
-
-          if( nnodes .gt. ndim ) then
-            write(6,*) 'Cannot extract more than ',ndim,' nodes'
-	    stop 'error stop get_nodes_from_stdin: ndim'
-          else
-            nodese(nnodes) = ir
-            nodes(nnodes) = ipint(ir)
-	    if( nodes(nnodes) .le. 0 ) then
-	      write(6,*) 'No such node ',ir,' ... ignoring'
-	      nnodes = nnodes - 1
-	    end if
-          end if
-        end do
-
-        end
-
-c***************************************************************
-
 

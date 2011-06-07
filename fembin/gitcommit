@@ -59,16 +59,16 @@ Ask "Do you really want to commit?"
 
 echo "Preparing commit"
 
+cat log.tmp $commit_file > com.tmp
+mv -f com.tmp $commit_file
+rm -f log.tmp
+
 line=`$fembin/shyfem_version.pl -noextra $version_file`
 extra=commit_`date +"%Y-%m-%d"`
 echo "$line   $extra"                > ver.tmp
 echo ""                             >> ver.tmp
 cat $version_file                   >> ver.tmp
 mv -f ver.tmp $version_file
-
-cat log.tmp $commit_file > com.tmp
-mv -f com.tmp $commit_file
-rm -f log.tmp
 
 git add $commit_file $version_file
 

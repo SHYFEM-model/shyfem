@@ -261,6 +261,7 @@ clean:
 	$(RM) ./gotm/*.o
 	$(RM) ./standalone/*.o
 	$(RM) ${BFMSRC}/*/*.o
+	$(RM) ../../femlib/libbfm.a
 
 depend:
 	makedepf90 ${BFMSRC}/*/*.?90 ./share/*.?90 ./standalone/*.?90 > .depend

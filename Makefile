@@ -176,8 +176,9 @@ cvschange:
 version:
 	@echo $(VERSION)
 
+changed: modified
 modified:
-	find . -newer INSTALLED
+	find . -newer VERSION -type f
 
 #---------------------------------------------------------------
 

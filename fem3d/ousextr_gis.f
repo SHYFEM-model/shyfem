@@ -1,7 +1,7 @@
 c
 c $Id: ousextr.f,v 1.3 2009-09-14 08:20:58 georg Exp $
 c
-c extracts records from OUS files
+c extracts records from OUS file in gis format
 c
 c revision log :
 c
@@ -11,6 +11,7 @@ c 23.03.2010	ggu	extracts reocrds
 c 26.03.2010	ggu	bug fix: set nkn and nel
 c 23.11.2010	ggu	new for 3D gis output
 c 16.12.2010	ggu	aux routines copied to ousutil.f
+c 03.06.2011	ggu	routine adjourned
 c
 c***************************************************************
 
@@ -89,26 +90,25 @@ c-------------------------------------------------------------------
 c initialize params
 c-------------------------------------------------------------------
 
-	ball = .true.		!write all records
 	ball = .false.
 
 	nread=0
 	nextr=0
 
 c-------------------------------------------------------------------
-c get simulation
+c open simulation and basin
 c-------------------------------------------------------------------
 
 	if(iapini(3,nkndim,neldim,0).eq.0) then
 		stop 'error stop : iapini'
 	end if
 
-        nin=ideffi('datdir','runnam','.ous','unform','old')
-        if(nin.le.0) goto 100
-
 c--------------------------------------------------------------------
 c open OUS file and read header
 c--------------------------------------------------------------------
+
+        nin=ideffi('datdir','runnam','.ous','unform','old')
+        if(nin.le.0) goto 100
 
 	nvers=1
         call rfous(nin
@@ -128,8 +128,8 @@ c--------------------------------------------------------------------
         write(6,*) ' nlv          : ',nlvous
         write(6,*)
 
-	nkn=nknous
-	nel=nelous
+	if( nkn .ne. nknous .or. nel .ne. nelous ) goto 94
+
 	nlv=nlvous
 	call dimous(nin,nkndim,neldim,nlvdim)
 
@@ -145,19 +145,18 @@ c-------------------------------------------------------------------
 c get records to extract from STDIN
 c-------------------------------------------------------------------
 
-        if( .not. ball ) then
-          call get_records_from_stdin(nrdim,irec)
-        end if
-
+        call get_records_from_stdin(nrdim,irec,ball)
 
 c-------------------------------------------------------------------
-c open output file
+c open GIS output file
 c-------------------------------------------------------------------
 
-        call mkname(' ','extract','.gis',file)
+        call mkname(' ','ous_extract','.gis',file)
         write(6,*) 'writing file ',file(1:50)
         nb = ifileo(55,file,'form','new')
         if( nb .le. 0 ) goto 98
+
+	call write_connections(nkn,nel,nen3v,xgv,ygv)
 
 c-------------------------------------------------------------------
 c loop on input records
@@ -171,8 +170,8 @@ c-------------------------------------------------------------------
         if(ierr.ne.0) goto 100
 
 	nread=nread+1
-	if( nread .gt. nrdim ) goto 100
-	write(6,*) 'time : ',nread,it,irec(nread)
+	if( .not. ball .and. nread .gt. nrdim ) goto 100
+	write(6,*) 'time : ',nread,it
 
         bwrite = ball .or. irec(nread) .ne. 0
 
@@ -180,8 +179,8 @@ c-------------------------------------------------------------------
 	  call transp2vel(nel,nkn,nlv,nlvdim,hev,zenv,nen3v
      +                          ,ilhv,hlv,utlnv,vtlnv
      +                          ,uprv,vprv,weight)
-          !call wrgis_3d(nb,it,nkn,ilhkv,znv,uprv,vprv)
-          call wrgis_3d_surf(nb,it,nkn,ilhkv,znv,uprv,vprv)
+          call wrgis_3d(nb,it,nkn,ilhkv,znv,uprv,vprv)
+          !call wrgis_3d_surf(nb,it,nkn,ilhkv,znv,uprv,vprv)
           nextr = nextr + 1
         end if
 
@@ -195,7 +194,7 @@ c-------------------------------------------------------------------
 
 	write(6,*)
 	write(6,*) nread,' records read'
-        write(6,*) nextr,' records written to file extract.gis'
+        write(6,*) nextr,' records written to file ous_extract.gis'
 	write(6,*)
 
         if( nextr .le. 0 ) stop 'no file written'
@@ -205,11 +204,13 @@ c end of routine
 c-------------------------------------------------------------------
 
 	stop
+   94   continue
+        write(6,*) 'incompatible simulation and basin'
+        write(6,*) 'nkn: ',nkn,nknous
+        write(6,*) 'nel: ',nel,nelous
+        stop 'error stop ousextr_gis: nkn,nel'
    98   continue
-        write(6,*) 'error opening file'
-        stop 'error stop ousextr_records'
-   99   continue
-        write(6,*) 'error writing file'
+        write(6,*) 'error opening output file'
         stop 'error stop ousextr_records'
 	end
 
@@ -218,6 +219,17 @@ c******************************************************************
         subroutine wrgis_3d(nb,it,nkn,ilhkv,znv,uprv,vprv)
 
 c writes one record to file nb (3D)
+c
+c legend:
+c
+c it		time in seconds
+c nkn		total number of nodes
+c k		node number [1...nkn]
+c lmax		total number of vertical levels in node
+c x,y		coordinates of node
+c znv(k)	water level of node k
+c uprv(l,k)	current velocity in x of node k and level l
+c vprv(l,k)	current velocity in y of node k and level l
 
         implicit none
 
@@ -229,10 +241,6 @@ c writes one record to file nb (3D)
         real uprv(nlvdim,nkndim)
         real vprv(nlvdim,nkndim)
 
-        double precision x0,y0
-        !parameter ( x0 = 2330000.-50000., y0 = 5000000. )
-        parameter ( x0 = 0., y0 = 0. )
-
         real xgv(nkndim), ygv(nkndim)
         common /xgv/xgv, /ygv/ygv
 
@@ -243,10 +251,10 @@ c writes one record to file nb (3D)
 
         do k=1,nkn
           lmax = ilhkv(k)
-          x = xgv(k) + x0
-          y = ygv(k) + y0
+          x = xgv(k)
+          y = ygv(k)
 
-          write(nb,*) x,y,lmax,znv(k)
+          write(nb,*) k,x,y,lmax,znv(k)
           write(nb,*) (uprv(l,k),l=1,lmax)
           write(nb,*) (vprv(l,k),l=1,lmax)
         end do

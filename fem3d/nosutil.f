@@ -1,5 +1,5 @@
-c
-c utility routines
+
+c utilities for NOS files
 c
 c 29.04.2010    ggu     new file from nosaver
 c 07.05.2010    ggu     new routines qopen_nos_file(), checks ev initialization

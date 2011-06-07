@@ -13,6 +13,7 @@ c
 c 16.08.2004    ggu     heat2t copied from subqfxt.f
 c 23.03.2006    ggu     changed time step to real
 c 11.11.2009    ggu     new routine make_albedo(), pass albedo to heat2t
+c 01.06.2011    ggu     use constant albedo
 c
 c*****************************************************************************
 
@@ -68,10 +69,10 @@ c*****************************************************************************
 
         albedo = 0.06
 
-        if( temp .lt. 4. ) then
-          albedo = 0.5
-          albedo = 0.75
-        end if
+        !if( temp .lt. 4. ) then
+        !  albedo = 0.5
+        !  albedo = 0.75
+        !end if
 
 	end
 

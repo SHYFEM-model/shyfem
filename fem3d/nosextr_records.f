@@ -1,7 +1,12 @@
 c
 c $Id: nosextr_records.f,v 1.1 2008-07-16 15:41:39 georg Exp $
 c
+c extract records from NOS file
+c
+c revision log :
+c
 c 18.11.1998    ggu     check dimensions with dimnos
+c 03.06.2011    ggu     routine adjourned
 c
 c**********************************************************
 
@@ -38,6 +43,7 @@ c records have to be specified on stdin
 	real hlv(nlvdim)
 	real hev(neldim)
 
+	logical ball,bwrite
         integer nread,ivarold,nextr
         integer l,k,nin,nb
         integer nkn,nel,nlv,nvar
@@ -95,13 +101,13 @@ c-------------------------------------------------------------------
 c get records to extract from STDIN
 c-------------------------------------------------------------------
 
-	call get_records_from_stdin(nrdim,irec)
+	call get_records_from_stdin(nrdim,irec,ball)
 
 c-------------------------------------------------------------------
 c open NOS output file
 c-------------------------------------------------------------------
 
-	call mkname(' ','extract','.nos',file)
+	call mkname(' ','nos_extract','.nos',file)
 	write(6,*) 'writing file ',file(1:50)
 	nb = ifileo(55,file,'unform','new')
 	if( nb .le. 0 ) goto 98
@@ -124,9 +130,12 @@ c-------------------------------------------------------------------
         if( ivar .ne. ivarold ) goto 91
 
 	nread=nread+1
+	if( .not. ball .and. nread .gt. nrdim ) goto 100
 	write(6,*) 'time : ',nread,it,ivar
 
-	if( nread .le. nrdim .and. irec(nread) .ne. 0 ) then
+	bwrite = ball .or. irec(nread) .ne. 0
+
+	if( bwrite ) then
 	  call wrnos(nb,it,ivar,nlvdim,ilhkv,cv3,ierr)
 	  if( ierr .ne. 0 ) goto 99
 	  nextr = nextr + 1
@@ -142,7 +151,7 @@ c-------------------------------------------------------------------
 
 	write(6,*)
 	write(6,*) nread,' records read'
-	write(6,*) nextr,' records written to file extract.nos'
+	write(6,*) nextr,' records written to file nos_extract.nos'
 	write(6,*)
 
         if( nextr .le. 0 ) stop 'no file written'
@@ -155,99 +164,14 @@ c-------------------------------------------------------------------
    91	continue
 	write(6,*) 'file may have only one type of variable'
 	write(6,*) 'error ivar : ',ivar,ivarold
+	write(6,*) 'You should use nossplit to extract scalars first'
 	stop 'error stop nosextr_records: ivar'
    98	continue
-	write(6,*) 'error opening file'
+	write(6,*) 'error opening outout file'
 	stop 'error stop nosextr_records'
    99	continue
 	write(6,*) 'error writing file'
 	stop 'error stop nosextr_records'
-	end
-
-c***************************************************************
-
-        subroutine mimar(xx,n,xmin,xmax,rnull)
-
-c computes min/max of vector
-c
-c xx            vector
-c n             dimension of vector
-c xmin,xmax     min/max value in vector
-c rnull		invalid value
-
-        implicit none
-
-        integer n,i,nmin
-        real xx(n)
-        real xmin,xmax,x,rnull
-
-	do i=1,n
-	  if(xx(i).ne.rnull) goto 1
-	end do
-    1	continue
-
-	if(i.le.n) then
-	  xmax=xx(i)
-	  xmin=xx(i)
-	else
-	  xmax=rnull
-	  xmin=rnull
-	end if
-
-	nmin=i+1
-
-        do i=nmin,n
-          x=xx(i)
-	  if(x.ne.rnull) then
-            if(x.gt.xmax) xmax=x
-            if(x.lt.xmin) xmin=x
-	  end if
-        end do
-
-        end
-
-c***************************************************************
-
-	subroutine get_records_from_stdin(ndim,irec)
-
-c gets records to extract from stdin
-
-	implicit none
-
-	integer ndim
-	integer irec(ndim)
-
-	integer i,ir
-
-	do i=1,ndim
-	  irec(i) = 0
-	end do
-
-	write(6,*) 'Please enter the record numbers to be extracted.'
-	write(6,*) 'Enter every record on a single line.'
-	write(6,*) 'Finish with 0 on the last line.'
-	write(6,*) 'example:'
-	write(6,*) '   5'
-	write(6,*) '  10'
-	write(6,*) '  15'
-	write(6,*) '  0'
-	write(6,*) ' '
-
-	do while(.true.)
-	  write(6,*) 'Enter record to extract (0 to end): '
-	  ir = 0
-	  read(5,'(i10)') ir
-
-	  if( ir .le. 0 ) then
-	    return
-	  else if( ir .gt. ndim ) then
-	    write(6,*) 'Cannot extract records higher than ',ndim
-	    write(6,*) 'Please change ndim and recompile.'
-	  else
-	    irec(ir) = 1
-	  end if
-	end do
-
 	end
 
 c***************************************************************

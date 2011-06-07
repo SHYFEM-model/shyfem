@@ -1,15 +1,20 @@
 c
 c $Id: nosextr_gis.f,v 1.2 2008-11-20 10:51:34 georg Exp $
 c
+c extract reords from NOS file in gis format
+c
+c revision log :
+c
 c 18.11.1998    ggu     check dimensions with dimnos
 c 13.11.2008    ggu     write all records with ball=.true.
 c 23.11.2010    ggu     new routine wrgis_3d() to extract 3d info
+c 03.06.2011    ggu     routine adjourned
 c
 c**********************************************************
 
 	program nosextr_gis
 
-c extracts whole records from nos file
+c extracts whole records from nos file and writes in gis format
 c
 c records have to be specified on stdin
 
@@ -75,7 +80,6 @@ c-------------------------------------------------------------------
 c initialize params
 c-------------------------------------------------------------------
 
-	ball = .true.		!write all records
 	ball = .false.
 
 	nread=0
@@ -122,18 +126,18 @@ c-------------------------------------------------------------------
 c get records to extract from STDIN
 c-------------------------------------------------------------------
 
-	if( .not. ball ) then
-	  call get_records_from_stdin(nrdim,irec)
-	end if
+	call get_records_from_stdin(nrdim,irec,ball)
 
 c-------------------------------------------------------------------
 c open GIS output file
 c-------------------------------------------------------------------
 
-	call mkname(' ','extract','.gis',file)
+	call mkname(' ','nos_extract','.gis',file)
 	write(6,*) 'writing file ',file(1:50)
 	nb = ifileo(55,file,'form','new')
 	if( nb .le. 0 ) goto 98
+
+	call write_connections(nkn,nel,nen3v,xgv,ygv)
 
 c-------------------------------------------------------------------
 c loop on input records
@@ -149,13 +153,13 @@ c-------------------------------------------------------------------
         if( ivar .ne. ivarold ) goto 91
 
 	nread=nread+1
-        if( nread .gt. nrdim ) goto 100
+        if( .not. ball .and. nread .gt. nrdim ) goto 100
 	write(6,*) 'time : ',nread,it,ivar
 
 	bwrite = ball .or. irec(nread) .ne. 0
 
 	if( bwrite ) then
-	  !call wrgis(nb,it,ivar,nkn,cv3)
+	  !call wrgis_surf(nb,it,ivar,nkn,cv3)
 	  !call wrgis_sep(it,ivar,nkn,cv3)
 	  call wrgis_3d(nb,it,ivar,nkn,ilhkv,cv3)
 	  nextr = nextr + 1
@@ -171,8 +175,8 @@ c-------------------------------------------------------------------
 
 	write(6,*)
 	write(6,*) nread,' records read'
-	write(6,*) nextr,' records written to file extract.gis'
-	!write(6,*) nextr,' files extract__*.gis created'
+	write(6,*) nextr,' records written to file nos_extract.gis'
+	!write(6,*) nextr,' files nos_extract__*.gis created'
 	write(6,*)
 
         if( nextr .le. 0 ) stop 'no file written'
@@ -185,104 +189,16 @@ c-------------------------------------------------------------------
    91	continue
 	write(6,*) 'file may have only one type of variable'
 	write(6,*) 'error ivar : ',ivar,ivarold
-	stop 'error stop nosextr_records: ivar'
+	write(6,*) 'You should use nossplit to extract scalars first'
+	stop 'error stop nosextr_gis: ivar'
    94	continue
 	write(6,*) 'incompatible simulation and basin'
 	write(6,*) 'nkn: ',nkn,nkn1
 	write(6,*) 'nel: ',nel,nel1
-	stop 'error stop nosextr_records: nkn,nel'
+	stop 'error stop nosextr_gis: nkn,nel'
    98	continue
-	write(6,*) 'error opening file'
-	stop 'error stop nosextr_records'
-   99	continue
-	write(6,*) 'error writing file'
-	stop 'error stop nosextr_records'
-	end
-
-c***************************************************************
-
-        subroutine mimar(xx,n,xmin,xmax,rnull)
-
-c computes min/max of vector
-c
-c xx            vector
-c n             dimension of vector
-c xmin,xmax     min/max value in vector
-c rnull		invalid value
-
-        implicit none
-
-        integer n,i,nmin
-        real xx(n)
-        real xmin,xmax,x,rnull
-
-	do i=1,n
-	  if(xx(i).ne.rnull) goto 1
-	end do
-    1	continue
-
-	if(i.le.n) then
-	  xmax=xx(i)
-	  xmin=xx(i)
-	else
-	  xmax=rnull
-	  xmin=rnull
-	end if
-
-	nmin=i+1
-
-        do i=nmin,n
-          x=xx(i)
-	  if(x.ne.rnull) then
-            if(x.gt.xmax) xmax=x
-            if(x.lt.xmin) xmin=x
-	  end if
-        end do
-
-        end
-
-c***************************************************************
-
-	subroutine get_records_from_stdin(ndim,irec)
-
-c gets records to extract from stdin
-
-	implicit none
-
-	integer ndim
-	integer irec(ndim)
-
-	integer i,ir
-
-	do i=1,ndim
-	  irec(i) = 0
-	end do
-
-	write(6,*) 'Please enter the record numbers to be extracted.'
-	write(6,*) 'Enter every record on a single line.'
-	write(6,*) 'Finish with 0 on the last line.'
-	write(6,*) 'example:'
-	write(6,*) '   5'
-	write(6,*) '  10'
-	write(6,*) '  15'
-	write(6,*) '  0'
-	write(6,*) ' '
-
-	do while(.true.)
-	  write(6,*) 'Enter record to extract (0 to end): '
-	  ir = 0
-	  read(5,'(i10)') ir
-
-	  if( ir .le. 0 ) then
-	    return
-	  else if( ir .gt. ndim ) then
-	    write(6,*) 'Cannot extract records higher than ',ndim
-	    write(6,*) 'Please change ndim and recompile.'
-	  else
-	    irec(ir) = 1
-	  end if
-	end do
-
+	write(6,*) 'error opening output file'
+	stop 'error stop nosextr_gis'
 	end
 
 c***************************************************************
@@ -299,10 +215,6 @@ c writes one record to file nb (3D)
 	integer ilhkv(nlvdim)
 	real cv3(nlvdim,nkndim)
 
-        double precision x0,y0
-        !parameter ( x0 = 2330000.-50000., y0 = 5000000. )
-        parameter ( x0 = 0., y0 = 0. )
-
         real xgv(nkndim), ygv(nkndim)
         common /xgv/xgv, /ygv/ygv
 
@@ -313,10 +225,10 @@ c writes one record to file nb (3D)
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
-	  x = xgv(k) + x0
-	  y = ygv(k) + y0
+	  x = xgv(k)
+	  y = ygv(k)
 
-	  write(nb,*) x,y,lmax
+	  write(nb,*) k,x,y,lmax
 	  write(nb,*) (cv3(l,k),l=1,lmax)
 	end do
 
@@ -324,7 +236,7 @@ c writes one record to file nb (3D)
 
 c***************************************************************
 
-	subroutine wrgis(nb,it,ivar,nkn,cv3)
+	subroutine wrgis_surf(nb,it,ivar,nkn,cv3)
 
 c writes one record to file nb (2D)
 
@@ -334,9 +246,6 @@ c writes one record to file nb (2D)
 
 	integer nb,it,ivar,nkn
 	real cv3(nlvdim,nkndim)
-
-        double precision x0,y0
-        parameter ( x0 = 2330000.-50000., y0 = 5000000. )
 
         real xgv(nkndim), ygv(nkndim)
         common /xgv/xgv, /ygv/ygv
@@ -349,8 +258,8 @@ c writes one record to file nb (2D)
 	write(nb,*) it,nkn,ivar
 
 	do k=1,nkn
-	  x = xgv(k) + x0
-	  y = ygv(k) + y0
+	  x = xgv(k)
+	  y = ygv(k)
 	  c = cv3(level,k)
 
 	  write(nb,*) x,y,c
@@ -372,13 +281,10 @@ c writes one record to single files
 	integer it,ivar,nkn
 	real cv3(nlvdim,nkndim)
 
-        double precision x0,y0
-        parameter ( x0 = 2330000.-50000., y0 = 5000000. )
-
         real xgv(nkndim), ygv(nkndim)
         common /xgv/xgv, /ygv/ygv
 
-	integer k,level,nbloc
+	integer k,level,nb
 	real x,y,c
 	character*60 name
 
@@ -386,45 +292,23 @@ c writes one record to single files
 
 	level = 1
 
-        call make_name('extract','.gis',it,name)
-	nbloc = ifileo(60,name,'form','new')
+        call make_name_with_time('extract','.gis',it,name)
+	nb = ifileo(60,name,'form','new')
 
-	write(nbloc,*) 'x   y   val'
+	write(nb,*) 'x   y   val'
 
 	do k=1,nkn
-	  x = xgv(k) + x0
-	  y = ygv(k) + y0
+	  x = xgv(k)
+	  y = ygv(k)
 	  c = cv3(level,k)
 
-	  write(nbloc,*) x,y,c
+	  write(nb,*) x,y,c
 
 	end do
 
-	close(nbloc)
+	close(nb)
 
 	end
 
 c***************************************************************
-
-        subroutine make_name(pre,post,it,name)
-
-        implicit none
-
-        character*(*) pre,post,name
-        integer it
-
-        integer i
-        character*10 naux
-
-        write(naux,'(i10)') it
-
-        do i=1,10
-          if( naux(i:i) .eq. ' ' ) naux(i:i) = '_'
-        end do
-
-        name = pre // naux // post
-
-        end
-
-c*************************************************************
 

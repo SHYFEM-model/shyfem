@@ -1,4 +1,19 @@
 
+07.06.2011	wetting and drying
+
+	slight changes in wetting and drying (subdry.f)
+
+03.06.2011	extraction routines adjourned
+
+	ousextr_gis.f, ousextr_records.f, ousextr_nodes.f
+	nosextr_gis.f, nosextr_records.f, nosextr_nodes.f
+	ousutil.f, genutil.f
+
+01.06.2011	small changes
+
+	idtmin introduced (subnsh.f, subsys.f)
+	use constant albedo (subqfxu4.f)
+
 01.06.2011	wsink for stability
 
 	wsink for stability integrated (newcon.f, newstab.f)

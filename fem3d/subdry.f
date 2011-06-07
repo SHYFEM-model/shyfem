@@ -31,6 +31,7 @@ c 22.09.2004    ggu     debug in setweg()
 c 23.03.2006    ggu     changed time step to real
 c 20.05.2011    ggu     different algorithm for element removal (wet&dry)
 c 20.05.2011    ggu     new routines set_dry() and set_element_dry(ie)
+c 07.06.2011    ggu     slight changes in wetting and drying
 c
 c*****************************************************************
 
@@ -211,6 +212,7 @@ c            zmin=hzoff+volmin/(4.*aomega)   !$$new 24.07.92
 	    text = 'setweg 2: '
 	  end if
           do ie=1,nel
+	   if( iwegv(ie) .eq. 0 ) then
             debug = ie .eq. iespec
             iweg=0
             do ii=1,3
@@ -230,9 +232,11 @@ c            zmin=hzoff+volmin/(4.*aomega)   !$$new 24.07.92
 	      end if
               iwegv(ie)=iweg
             end if
+	   end if
           end do
         else if(iweich.eq.3) then               !only add
           do ie=1,nel
+	   if( iwegv(ie) .gt. 0 ) then
             debug = ie .eq. iespec
             iweg=0
 	    hztot = 0.
@@ -248,7 +252,7 @@ c            zmin=hzoff+volmin/(4.*aomega)   !$$new 24.07.92
             end do
 	    hztot = hztot / 3.
 	    !binclude = hztot .ge. hzon
-	    binclude = hztot .ge. hzon .and. iwetv(ie) .lt. -iwait
+	    binclude = hztot .ge. hzon .and. -iwetv(ie) .gt. iwait
 c %%%%%%%%% this is wrong -> test also for iweg > 0	!FIXME
 	    if( bnewalg .and. binclude ) then		!new algorithm
 	      iweg = 0
@@ -263,6 +267,7 @@ c %%%%%%%%% this is wrong -> test also for iweg > 0	!FIXME
 	      end if
               iwegv(ie)=0
             end if
+	   end if
           end do
         end if
 

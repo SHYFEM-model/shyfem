@@ -1,7 +1,7 @@
 c
 c $Id: ousextr.f,v 1.3 2009-09-14 08:20:58 georg Exp $
 c
-c info on OUS files
+c extract records from OUS file
 c
 c revision log :
 c
@@ -9,6 +9,7 @@ c 02.09.2003	ggu	adapted to new OUS format
 c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
 c 23.03.2010	ggu	extracts reocrds
 c 26.03.2010	ggu	bug fix: set nkn and nel
+c 03.06.2011    ggu     routine adjourned
 c
 c***************************************************************
 
@@ -64,6 +65,7 @@ c reads ous file and writes extracted records to new ous file
 	integer ilnv(nlvdim,nkndim)
 
 	character*80 name,file
+	logical ball,bwrite
         integer nvers,nin,nlv
         integer itanf,itend,idt,idtous
 	integer it,ie,i
@@ -135,13 +137,13 @@ c-------------------------------------------------------------------
 c get records to extract from STDIN
 c-------------------------------------------------------------------
 
-        call get_records_from_stdin(nrdim,irec)
+        call get_records_from_stdin(nrdim,irec,ball)
 
 c-------------------------------------------------------------------
 c open OUS output file
 c-------------------------------------------------------------------
 
-        call mkname(' ','extract','.ous',file)
+        call mkname(' ','ous_extract','.ous',file)
         write(6,*) 'writing file ',file(1:50)
         nb = ifileo(55,file,'unform','new')
         if( nb .le. 0 ) goto 98
@@ -162,10 +164,12 @@ c-------------------------------------------------------------------
         if(ierr.ne.0) goto 100
 
 	nread=nread+1
-	if( nread .gt. nrdim ) goto 100
-	write(6,*) 'time : ',nread,it,irec(nread)
+	if( .not. ball .and. nread .gt. nrdim ) goto 100
+	write(6,*) 'time : ',nread,it
 
-        if( irec(nread) .ne. 0 ) then
+	bwrite = ball .or. irec(nread) .ne. 0
+
+        if( bwrite ) then
           call wrous(nb,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
           if( ierr .ne. 0 ) goto 99
           nextr = nextr + 1
@@ -181,7 +185,7 @@ c-------------------------------------------------------------------
 
 	write(6,*)
 	write(6,*) nread,' records read'
-        write(6,*) nextr,' records written to file extract.ous'
+        write(6,*) nextr,' records written to file ous_extract.ous'
 	write(6,*)
 
         if( nextr .le. 0 ) stop 'no file written'
@@ -192,7 +196,7 @@ c-------------------------------------------------------------------
 
 	stop
    98   continue
-        write(6,*) 'error opening file'
+        write(6,*) 'error opening output file'
         stop 'error stop ousextr_records'
    99   continue
         write(6,*) 'error writing file'

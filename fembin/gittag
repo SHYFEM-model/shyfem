@@ -198,7 +198,7 @@ echo "new tag    : $newtag"
 
 ok "Shall I tag now ? (y/N) : "
 
-cp $tmpfile1 $version_file
+cp $tmpfile1 $version_file	#maybe invert these two lines
 AddCommitMessage
 
 git add -u

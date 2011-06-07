@@ -215,8 +215,8 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 
 BASEXTRA = subgeo.o subgrd.o subsrt.o sublnka.o links.o sublnku.o
 
-NOSOBJS = subnos.o nosutil.o
-OUSOBJS = subous.o ousutil.o
+NOSOBJS = subnos.o nosutil.o genutil.o
+OUSOBJS = subous.o ousutil.o genutil.o
 GRDOBJS = subgrd.o grdutil.o subsrt.o subcoord.o
 
 LAPLACE = sublpl.o submir.o subnos.o links.o sublnku.o \
