@@ -1,3 +1,27 @@
+version  6_1_26    08-06-2011    VERS_6_1_26
+
+========================================================== 08-06-2011 - 6_1_26
+
+c ./fem3d/nosextr_fluxes.f:
+c 08.06.2011    ggu     routine rewritten for sediments
+c
+c ./fem3d/subver.f:
+c 08.06.2011	ggu	version 6.1.26
+c
+c ./fem3d/nosextr_cat.f:
+c 08.06.2011    ggu     routine rewritten
+c
+c ./fem3d/ousextr_cat.f:
+c 08.06.2011    ggu     routine rewritten
+c
+c ./fem3d/subous.f:
+c 08.06.2011	ggu	new routine delous(), check for end in read
+c
+c ./fem3d/ousutil.f:
+c 08.06.2011	ggu	new routine transp2nodes()
+
+==========================================================
+
 version  6_1_25    07-06-2011    VERS_6_1_25   commit_2011-06-08
 
 version  6_1_25    07-06-2011    VERS_6_1_25
