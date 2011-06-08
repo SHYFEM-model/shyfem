@@ -57,6 +57,9 @@ fem3d/map_influence
 fem3d/basproj
 fem3d/basres
 fem3d/ousextr_nodes
+fem3d/nosextr_cat
+fem3d/ousextr_cat
+fem3d/nosextr_fluxes
 
 femadj/adjele
 fembin/extDiff

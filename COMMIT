@@ -1,5 +1,32 @@
 ============================================================
 
+Wed Jun  8 18:45:39 CEST 2011
+
+post processing routines
+
+ .gitignore             |    3 +
+ LOG                    |    8 +
+ Rules.make             |   18 ++-
+ fem3d/Makefile         |   16 ++-
+ fem3d/basinf.f         |    2 +-
+ fem3d/basproj.f        |   25 ++--
+ fem3d/nosextr_cat.f    |  214 ++++++++++++++++++++++++
+ fem3d/nosextr_fluxes.f |  430 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/ousextr_cat.f    |  259 +++++++++++++++++++++++++++++
+ fem3d/ousutil.f        |  113 +++++++++++++
+ fem3d/param.h          |   10 +-
+ fem3d/subnos.f         |    4 +-
+ fem3d/subous.f         |   67 +++++++-
+ femadj/param.h         |   10 +-
+ fembin/gittag          |    2 +-
+ fembin/nod2grd.pl      |   47 ++++++
+ fembin/ousextr         |    2 -
+ femplot/param.h        |   10 +-
+ param.h                |   10 +-
+ 19 files changed, 1195 insertions(+), 55 deletions(-)
+
+============================================================
+
 Tue Jun  7 16:32:26 CEST 2011
 
 New version 6_1_25

@@ -567,8 +567,8 @@ c local
 	if( nvers .eq. 1 ) then
 	   ivar = 1
 	   read(iunit,end=88,err=98) it
-c	   read(iunit,err=99) ((c(l,k),l=1,nlv),k=1,nkn)
-	   read(iunit,err=99) (c(1,k),k=1,nkn)
+c	   read(iunit,end=99,err=99) ((c(l,k),l=1,nlv),k=1,nkn)
+	   read(iunit,end=99,err=99) (c(1,k),k=1,nkn)
 	else if( nvers .ge. 2 ) then
 	   read(iunit,end=88,err=98) it,ivar
 	   if( nlv .le. 1 ) then

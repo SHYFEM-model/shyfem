@@ -81,7 +81,7 @@ c-----------------------------------------------------------------
 	!call basqual		!grid quality
         call makehev(hev)
         call makehkv(hkv,haux)
-	call freqdep
+	!call freqdep
 
 c-----------------------------------------------------------------
 c loop until no node and element is given

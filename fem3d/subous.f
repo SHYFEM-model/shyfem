@@ -24,6 +24,7 @@ c 21.08.2003	ggu	version 1 implemented
 c 01.09.2003	ggu	first revision
 c 02.09.2003	ggu	last bug fixes (nvers=3 -> nvers=1)
 c 22.09.2004	ggu	bug fix in rdous/wrous -> ie instead of k
+c 08.06.2011	ggu	new routine delous(), check for end in read
 c
 c notes :
 c
@@ -107,19 +108,31 @@ c common
 	integer ousitem,ousvar(0:nitdim,ndim)
 	common /ousvar/ousitem,ousvar
 
+	integer n
+
 c we do not check if unit has already been opened -> open with ifileo
 
-	ousitem = ousitem + 1
+        do n=1,ousitem
+          if( ousvar(0,n) .eq. 0 ) goto 1
+          if( ousvar(0,n) .eq. iunit ) goto 99
+        end do
+    1   continue
+        if( n .gt. ousitem ) ousitem = n
+
 	if( ousitem .gt. ndim ) then
 	   stop 'error stop setous: ndim'
 	end if
 
-	ousvar(0,ousitem) = iunit
-	ousvar(1,ousitem) = nvers
-	ousvar(2,ousitem) = nkn
-	ousvar(3,ousitem) = nel
-	ousvar(4,ousitem) = nlv
+	ousvar(0,n) = iunit
+	ousvar(1,n) = nvers
+	ousvar(2,n) = nkn
+	ousvar(3,n) = nel
+	ousvar(4,n) = nlv
 
+	return
+   99   continue
+        write(6,*) 'unit = ',iunit
+        stop 'error stop setous: unit already open - please close first'
 	end
 
 c************************************************************
@@ -156,6 +169,40 @@ c common
 	nlv   = ousvar(4,n)
 
 	end
+
+c************************************************************
+
+        subroutine delous(iunit)
+
+c closes ous file internal structure - internal routine
+c
+c please note that the file has still to be closed manually
+
+        implicit none
+
+c arguments
+        integer iunit
+c parameters
+        integer ndim,nitdim
+        parameter(ndim=10,nitdim=5)
+c common
+        integer ousitem,ousvar(0:nitdim,ndim)
+        common /ousvar/ousitem,ousvar
+
+        integer n
+
+        do n=1,ousitem
+          if( ousvar(0,n) .eq. iunit ) goto 1
+        end do
+
+        write(6,*) 'Cannot close unit ',iunit
+        write(6,*) 'File is not open.'
+        stop 'error stop delous: file not open'
+    1   continue
+
+        ousvar(0,n) = 0
+
+        end
 
 c************************************************************
 
@@ -443,10 +490,10 @@ c local
 
 	if( nvers .eq. 1 ) then
 	   read(iunit,end=88,err=98) it
-	   read(iunit,err=99) (z(k),k=1,nkn)
-	   read(iunit,err=99) (ze(i),i=1,3*nel)
-	   read(iunit,err=99) ((ut(l,ie),l=1,ilhv(ie)),ie=1,nel)
-	   read(iunit,err=99) ((vt(l,ie),l=1,ilhv(ie)),ie=1,nel)
+	   read(iunit,end=99,err=99) (z(k),k=1,nkn)
+	   read(iunit,end=99,err=99) (ze(i),i=1,3*nel)
+	   read(iunit,end=99,err=99) ((ut(l,ie),l=1,ilhv(ie)),ie=1,nel)
+	   read(iunit,end=99,err=99) ((vt(l,ie),l=1,ilhv(ie)),ie=1,nel)
 	else
 	   stop 'error stop rdous: internal error (1)'
 	end if

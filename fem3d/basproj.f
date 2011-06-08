@@ -55,34 +55,37 @@ c---------------------------------------------------------------
 	end if
 
 c---------------------------------------------------------------
-c do projection
+c parameters for projection
 c---------------------------------------------------------------
 
-	iproj = 3		!equidistant cylindrical
 
 c mediterranean
 
-        c_param(1) = 15.             !longitude of origin (lon0)
-        c_param(2) = 38.             !latitude of origin (lat0)
-        c_param(3) = 38.             !central latitude (phi)
+c	iproj = 3	     	     !equidistant cylindrical
+c        c_param(1) = 15.             !longitude of origin (lon0)
+c        c_param(2) = 38.             !latitude of origin (lat0)
+c        c_param(3) = 38.             !central latitude (phi)
 
 c black sea
 
+	iproj = 3		     !equidistant cylindrical
         c_param(1) = 34.             !longitude of origin (lon0)
         c_param(2) = 43.5            !latitude of origin (lat0)
         c_param(3) = 43.5            !central latitude (phi)
 
 c Klaipeda
 
-	iproj = 4
+c	iproj = 4		     !UTM Lithuania
+c        c_param(1) = 24.             !longitude of origin (lon0)
+c        c_param(2) = -500000.        !false easting
+c        c_param(3) = 0.              !false northing
+c        c_param(4) = 0.9998          !scale factor
 
-        c_param(1) = 24.             !longitude of origin (lon0)
-        c_param(2) = -500000.        !false easting
-        c_param(3) = 0.           !false northing
-        c_param(4) = 0.9998          !scale factor
+c---------------------------------------------------------------
+c do projection
+c---------------------------------------------------------------
 
 	call init_coords(iproj,c_param)
-
 	call convert_coords(mode,nkn,xgv,ygv,xgv,ygv)	!overwrite coords
 
 c---------------------------------------------------------------

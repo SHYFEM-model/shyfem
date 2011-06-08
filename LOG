@@ -1,4 +1,12 @@
 
+08.06.2011	new post processing routines
+
+	new routines (nosextr_fluxes.f, nosextr_cat.f, ousextr_cat.f)
+	better error check (subous.f)
+	transfrom to transport in nodes (ousutil.f)
+
+========================================================= 07-06-2011 - 6_1_25
+
 07.06.2011	wetting and drying
 
 	slight changes in wetting and drying (subdry.f)

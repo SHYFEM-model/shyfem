@@ -96,8 +96,10 @@ SPECIAL =	Makefile \
 		COMMIT README TESTLOG TODO VERSION WARNINGS \
 		ACTUAL LOG
 
-NOSEXTR = nosextr_nodes nosextr_gis nosextr_records nosextr_custom
-OUSEXTR = ousextr_nodes ousextr_records ousextr_gis
+NOSEXTR = nosextr_nodes nosextr_gis nosextr_records nosextr_custom \
+		nosextr_cat
+OUSEXTR = ousextr_nodes ousextr_records ousextr_gis \
+		ousextr_cat
 
 EXES	= ht hp vp \
 	  ousinf whdf whdfs \
@@ -217,6 +219,7 @@ BASEXTRA = subgeo.o subgrd.o subsrt.o sublnka.o links.o sublnku.o
 
 NOSOBJS = subnos.o nosutil.o genutil.o
 OUSOBJS = subous.o ousutil.o genutil.o
+NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o genutil.o
 GRDOBJS = subgrd.o grdutil.o subsrt.o subcoord.o
 
 LAPLACE = sublpl.o submir.o subnos.o links.o sublnku.o \
@@ -391,6 +394,9 @@ ousextr_records:  ousextr_records.o $(OUSOBJS) $(OUTOBJS)
 ousextr_gis:  ousextr_gis.o $(OUSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
 
+ousextr_cat:  ousextr_cat.o $(OUSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
+
 nosextr: $(NOSEXTR)
 
 nosextr_nodes:  nosextr_nodes.o $(NOSOBJS) $(OUTOBJS) 
@@ -404,6 +410,12 @@ nosextr_gis:  nosextr_gis.o $(NOSOBJS) $(OUTOBJS)
 
 nosextr_custom:  nosextr_custom.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+nosextr_fluxes:  nosextr_fluxes.o $(NOSOUSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
+
+nosextr_cat:  nosextr_cat.o $(NOSOUSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
 
 map_influence:  map_influence.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
