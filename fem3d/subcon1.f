@@ -230,7 +230,7 @@ c on return iu = -1 means that no file has been opened and is not written
 	integer ierr
 	character*80 dir,nam,file
 
-	integer ifileo
+	integer ifemop
 
 c check idtcon and itmcon and adjust
 
@@ -242,17 +242,9 @@ c check idtcon and itmcon and adjust
         if( itmcon .lt. itanf ) itmcon = itanf
 	if( idtcon .lt. idt ) idtcon = idt
 
-c construct file name
-
-c        call getfnm('datdir',dir)
-c        call getfnm('runnam',nam)
-c        call mkname(dir,nam,type,file)
-
-	call deffile(type,file)
-
 c open file
 
-	iu = ifileo(iu,file,'unformatted','new')
+	iu = ifemop(type,'unformatted','new')
 	if( iu .le. 0 ) goto 98
 
 c write header of file
@@ -313,6 +305,7 @@ c write file
 c write informational message to terminal
 
         write(6,*) 'confil: variable ',ivar,' written at ',it
+	write(6,*) it,idtcon,itmcon
 
 c end
 

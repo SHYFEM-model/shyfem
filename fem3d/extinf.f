@@ -32,7 +32,7 @@ c This routine reads an EXT file and writes information
 	real h(noddim)
 	integer iznv(noddim)
 
-	integer iapini, ideffi, ifileo
+	integer iapini,ifemop
 	real read7,rdrc7
 
 c---------------------------------------------------------------
@@ -43,8 +43,7 @@ c---------------------------------------------------------------
                 stop 'error stop : iapini'
         end if
 
-        call defmak('datdir','runnam','.ext',file)
-	nin = ifileo(1,file,'unform','old')
+	nin = ifemop('.ext','unform','old')
         if(nin.le.0) goto 97
 
 c---------------------------------------------------------------

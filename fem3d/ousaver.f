@@ -10,6 +10,7 @@ c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
 c 04.03.2005	ggu	computes 3D velocities
 c 16.10.2007	ggu	problems in z averaging shows blank areas -> zaver
 c 14.04.2008	ggu	commented, blank area problems resolved
+c 12.07.2011	ggu	some changes on how to treat partially dry areas
 c
 c***************************************************************
 
@@ -311,7 +312,7 @@ c******************************************************************
 	subroutine aver(nread,nlvdim,neldim,nel
      +			,zacum,uacum,vacum,zenv,utlnv,vtlnv,iwet,iwetv)
 
-c averages variables usuing accumulated values
+c averages variables using accumulated values
 
 	implicit none
 
@@ -325,9 +326,19 @@ c averages variables usuing accumulated values
 	integer iwet(neldim)
 	integer iwetv(neldim)
 
-	integer ie,ii,l,nwet
+	logical bplotdry
+	integer ie,ii,l,nwet,nfact
 	integer icwet
 	double precision rr
+
+c	-------------------------------
+c	initialize parameter
+c	-------------------------------
+
+c	set to true if you want averaging be done in partially dry areas
+c	if set to true only in always wet areas the averaging is performed
+
+	bplotdry = .false.	!average in partially dry areas
 
 c	-------------------------------
 c	initialize factor
@@ -341,13 +352,16 @@ c	-------------------------------
 	  nwet = nread
 	end if
 
+	nfact = nread		  !this makes iwetv=1 if always wet, 0 else
+	if( bplotdry ) nfact = 1  !this makes iwetv=0 only if always dry
+
 c	-------------------------------
 c	compute average
 c	-------------------------------
 
 	icwet = 0
 	do ie=1,nel
-	  iwetv(ie) = iwet(ie) / nwet		!is 1 if always wet and 0 else
+	  iwetv(ie) = iwet(ie) / nfact		!is 1 if always wet and 0 else
 	  if( iwet(ie) .eq. nwet ) icwet = icwet + 1
 	  do ii=1,3
 	    zenv(ii,ie) = zacum(ii,ie) * rr

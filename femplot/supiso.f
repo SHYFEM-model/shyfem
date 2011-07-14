@@ -25,7 +25,7 @@ c****************************************************
 
 	subroutine isoline(val,nval,dis,mode)
 
-c isolines
+c plots color and isolines in elements
 c
 c if isoanz in /isolin/ is 0 dis is used to determine isolines
 c ...else isoanz gives number of isolines on fiso
@@ -107,6 +107,7 @@ c	  -----------------------------------------
 	    call set_fxy_vals(ie,flag,val,f,x,y,inull)
 	    if( inull .eq. 0 ) then
 	      call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+	      !call plnode(x,y,f,ciso,fiso,isoanz+1,fnull)	!plot node
 	    end if
 	  end do
 	  call set_color_table(icsave)
@@ -151,6 +152,8 @@ c--------------------------------------------------------------------
 c***************************************************************
 
 	subroutine pliso(f,x,y,dist,isoanz,fnull,fiso)
+
+c plots isolines
 
 	implicit none
 
@@ -620,6 +623,105 @@ c case b (two free nodes)
 
 c***************************************************************
 
+	subroutine plnode(x,y,z,color,rlev,ncol,fnull)
+
+c plots colors of nodal values without interpolation
+c
+c x,y,z		coordinates and values of vertices in triangle
+c color		array of colors to use (in total ncol colors)
+c rlev		levels to use (in total ncol-1 levels)
+c ncol		total number of colors in color
+c fnull		null value -> do not interpolate
+
+	implicit none
+
+	integer ncol
+	real fnull
+	real x(3),y(3),z(3)
+	real color(1),rlev(1)
+
+	integer idebug,ip,ii
+	real xp(4),yp(4)
+	real col
+
+	real get_color
+
+	idebug = 0
+	ip = 4		!always 4 nodes
+
+	do ii=1,3
+	  if( z(ii) .ne. fnull ) then
+	    call make_xy(ii,x,y,xp,yp)
+	    col = get_color(z(ii),ncol,color,rlev)
+            call fill_area(idebug,"no_intp",ip,xp,yp,col)
+	  end if
+	end do
+
+	end
+
+c***************************************************************
+
+	function get_color(z,ncol,color,rlev)
+
+c returns color for value z
+
+	implicit none
+
+	real get_color
+	real z
+	integer ncol
+	real color(1),rlev(1)
+
+	integer i
+
+	do i=1,ncol-1
+	  if( rlev(i) .gt. z ) goto 1
+	end do
+    1	continue
+
+	get_color = color(i)
+
+	end
+
+c***************************************************************
+
+        subroutine make_xy(in,x,y,xp,yp)
+
+c makes x/y of finite volume of local node ii
+
+	implicit none
+
+	integer in
+	real x(3),y(3)
+	real xp(4),yp(4)
+
+	integer ii,ib,ia
+	real xc,yc
+
+	xc = 0.
+	yc = 0.
+	do ii=1,3
+	  xc = xc + x(ii)
+	  yc = yc + y(ii)
+	end do
+	xc = xc / 3.
+	yc = yc / 3.
+
+	ib = mod(in+1,3)+1
+	ia = mod(in,3)+1
+	xp(1) = x(in)
+	yp(1) = y(in)
+	xp(2) = 0.5*(x(in)+x(ia))
+	yp(2) = 0.5*(y(in)+y(ia))
+	xp(3) = xc
+	yp(3) = yc
+	xp(4) = 0.5*(x(in)+x(ib))
+	yp(4) = 0.5*(y(in)+y(ib))
+
+	end
+
+c***************************************************************
+
         subroutine fill_area(idebug,text,ip,xp,yp,col)
 
 c fills area of polygon given by xp,yp with color
@@ -651,17 +753,20 @@ c***************************************************************
 
 	subroutine set_fxy_vals(ie,flag,val,f,x,y,inull)
 
-	implicit none
+c returns x,y,val of element, and indication of flag values
 
-	integer ie
-	real flag
-	real val(1)
-	real f(3),x(3),y(3)
-	integer inull
+        implicit none
+
+        integer ie              !element for which info is needed
+        real flag               !value of flag
+        real val(1)             !nodal value to be extracted
+        real f(3),x(3),y(3)     !return values of val,x,y
+        integer inull           !total number of flags found
 
 	real xgv(1), ygv(1)
 	integer nen3v(3,1)
 	common /xgv/xgv, /ygv/ygv, /nen3v/nen3v
+
 	integer ii,kn
 
 	inull = 0

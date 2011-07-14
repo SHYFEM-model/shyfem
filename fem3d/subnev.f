@@ -61,7 +61,7 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	real xgv(1),ygv(1)
 	common /xgv/xgv,/ygv/ygv
 
-	integer ie,i,ii,kn1,kn2,kn3
+	integer ie,i,kn1,kn2,kn3
 	integer isphe
         double precision one,two,four,twofour,rad
 	double precision x1,x2,x3,y1,y2,y3
@@ -85,11 +85,11 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	pi=four*atan(one)
         rad = 180./pi
 
-	do i=1,nel
+	do ie=1,nel
 
-	kn1=nen3v(1,i)
-	kn2=nen3v(2,i)
-	kn3=nen3v(3,i)
+	kn1=nen3v(1,ie)
+	kn2=nen3v(2,ie)
+	kn3=nen3v(3,ie)
 
 	if ( isphe .eq. 1 ) then		!spherical
   	  xlon1=xgv(kn1)/rad
@@ -149,34 +149,34 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	dd2 = aj * sqrt( b2*b2 + c2*c2 )
 	dd3 = aj * sqrt( b3*b3 + c3*c3 )
 
-	ev(1,i)=a1		!a values for interpolation
-	ev(2,i)=a2
-	ev(3,i)=a3
-	ev(4,i)=b1		!b values (gradient in x)
-	ev(5,i)=b2
-	ev(6,i)=b3
-	ev(7,i)=c1		!c values (gradient in y)
-	ev(8,i)=c2
-	ev(9,i)=c3
-	ev(10,i)=aj/twofour	!aera * 12
-	ev(11,i)=d1		!angle on vertex
-	ev(12,i)=d2
-	ev(13,i)=d3
-	ev(14,i)=dd1		!for horizontal diffusion (?)
-	ev(15,i)=dd2
-	ev(16,i)=dd3
-	ev(17,i)=s1		!distance between vertices
-	ev(18,i)=s2
-	ev(19,i)=s3
+	ev(1,ie)=a1		!a values for interpolation
+	ev(2,ie)=a2
+	ev(3,ie)=a3
+	ev(4,ie)=b1		!b values (gradient in x)
+	ev(5,ie)=b2
+	ev(6,ie)=b3
+	ev(7,ie)=c1		!c values (gradient in y)
+	ev(8,ie)=c2
+	ev(9,ie)=c3
+	ev(10,ie)=aj/twofour	!aera * 12
+	ev(11,ie)=d1		!angle on vertex
+	ev(12,ie)=d2
+	ev(13,ie)=d3
+	ev(14,ie)=dd1		!for horizontal diffusion (?)
+	ev(15,ie)=dd2
+	ev(16,ie)=dd3
+	ev(17,ie)=s1		!distance between vertices
+	ev(18,ie)=s2
+	ev(19,ie)=s3
 
-        !write(96,*) i,(ev(ii,i),ii=1,evdim)
+        !write(96,*) ie,(ev(i,ie),i=1,evdim)
 
 	end do
 
 	return
    99	continue
         write(6,*) 'set_ev : nodes not in anticlockwise sense'
-        write(6,*) 'elem = ',i,'  area = ',aj
+        write(6,*) 'elem = ',ie,'  area = ',aj
         write(6,*) 'nodes  x  y'
         write(6,*) kn1,x1,y1
         write(6,*) kn2,x2,y2
@@ -266,8 +266,6 @@ c checks if coordinates are lat/lon
 
 	implicit none
 
-	include 'param.h'
-
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         real xgv(1), ygv(1)
@@ -341,7 +339,7 @@ c common
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	include 'ev.h'
 c local
-	integer ie,i,ip
+	integer ie,ii,i,ip
 	real bmax,cmax,bs,cs,b,c
 	real alpha,atria
 c save&data
@@ -361,14 +359,14 @@ c save&data
 	  cs=0.
 	  alpha = 0.
 
-	  do i=1,3
-		b = ev(3+i,ie)
-		c = ev(6+i,ie)
+	  do ii=1,3
+		b = ev(3+ii,ie)
+		c = ev(6+ii,ie)
 		bs = bs + b
 		cs = cs + c
 		if(abs(b).gt.bmax) bmax=abs(b) 
 		if(abs(c).gt.cmax) cmax=abs(c) 
-		alpha = alpha + ev(10+i,ie)
+		alpha = alpha + ev(10+ii,ie)
 	  end do
 
 	  ip=1

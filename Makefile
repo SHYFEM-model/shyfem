@@ -110,6 +110,7 @@ cleanall: cleanlocal
 
 cleanlocal:
 	rm -f fem.tar fem.tar.gz
+	rm -f changed_zip.zip
 	rm -f *~
 	rm -f *.tmp *.bak
 
@@ -173,12 +174,18 @@ publish:
 cvschange:
 	 $(FEMBIN)/iterate1dir "$@ -d -t" $(FEMDIRS)
 
+revision:
+	 $(FEMBIN)/revision_last
+
 version:
 	@echo $(VERSION)
 
 changed: modified
 modified:
-	find . -newer VERSION -type f
+	@find . -newer VERSION -type f
+
+changed_zip:
+	zip changed_zip.zip `find . -newer VERSION -type f`
 
 #---------------------------------------------------------------
 

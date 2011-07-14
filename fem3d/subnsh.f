@@ -64,6 +64,8 @@ c 22.02.2011    ggu     in pritime() new write to terminal
 c 20.05.2011    ggu     changes in set_timestep(), element removal, idtmin
 c 31.05.2011    ggu     changes for BFM
 c 01.06.2011    ggu     idtmin introduced
+c 12.07.2011    ggu     new routine next_output(), revised set_output_frequency
+c 14.07.2011    ggu     new routines for original time step
 c
 c************************************************************
 c
@@ -778,6 +780,7 @@ c controls time step
         if( icall .eq. 0 ) then
           idtorig = idt
           istot = 0
+          call set_orig_timestep(idtorig)
 
           isplit  = getpar('itsplt')
           cmax    = getpar('coumax')
@@ -951,11 +954,47 @@ c returns real time step (in real seconds)
 
         integer itanf,itend,idt,nits,niter,it
         common /femtim/ itanf,itend,idt,nits,niter,it
-        integer itunit
-        common /femtimu/ itunit
+        integer itunit,idtorig
+        common /femtimu/ itunit,idtorig
 	save /femtimu/
 
 	dt = idt/float(itunit)
+
+	end
+
+c**********************************************************************
+
+        subroutine set_orig_timestep(idt)
+
+c returns original real time step (in real seconds)
+
+        implicit none
+
+	integer idt		!time step
+
+        integer itunit,idtorig
+        common /femtimu/ itunit,idtorig
+	save /femtimu/
+
+	idtorig = idt
+
+	end
+
+c**********************************************************************
+
+        subroutine get_orig_timestep(dt)
+
+c returns original real time step (in real seconds)
+
+        implicit none
+
+	real dt		!time step (return)
+
+        integer itunit,idtorig
+        common /femtimu/ itunit,idtorig
+	save /femtimu/
+
+	dt = idtorig/float(itunit)
 
 	end
 
@@ -969,8 +1008,8 @@ c returns time unit
 
 	integer itu
 
-        integer itunit
-        common /femtimu/ itunit
+        integer itunit,idtorig
+        common /femtimu/ itunit,idtorig
 	save /femtimu/
 
 	itu = itunit
@@ -987,8 +1026,8 @@ c sets time unit
 
 	integer itu
 
-        integer itunit
-        common /femtimu/ itunit
+        integer itunit,idtorig
+        common /femtimu/ itunit,idtorig
 	save /femtimu/
 
 	itunit = itu
@@ -1005,7 +1044,7 @@ c sets-up array for output frequency
 
 	integer itm_out		!minimum time for output
 	integer idt_out		!time step for output
-	integer ia_out(3)	!array where info is stored
+	integer ia_out(4)	!array where info is stored
 
 	integer itanf,itend,idt
 	integer itmout,idtout,itout
@@ -1018,20 +1057,56 @@ c sets-up array for output frequency
 	itmout = itm_out
 	idtout = idt_out
 
-	if( idtout .lt. idt .and. idtout .gt. 0 ) idtout = idt
+	if( itmout .eq. -1 ) itmout = itanf
 	if( itmout .lt. itanf ) itmout = itanf
+	if( idtout .lt. idt .and. idtout .gt. 0 ) idtout = idt
 
 	itout = itmout
 	if( itmout .eq. itanf ) itout = itout + idtout
 
 	if( itout .gt. itend ) idtout = 0
 
-	ia_out(1) = idtout
-	ia_out(2) = itout
-	ia_out(3) = itmout
+	ia_out(1) = idtout	! time step of output
+	ia_out(2) = itmout	! first output
+	ia_out(3) = itout	! next output
+	ia_out(4) = 0		! unit (optional)
 
 	end
 
+c********************************************************************
+
+	function next_output(ia_out)
+
+c checks if time has come for output
+
+	implicit none
+
+	logical next_output
+	integer ia_out(4)
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	integer idtout,itnext
+
+	idtout = ia_out(1)
+	itnext = ia_out(3)
+	next_output = .false.
+
+	if( idtout .le. 0 ) return
+	if( itnext .gt. it ) return
+
+	do while( itnext .le. it )
+	  itnext = itnext + idtout
+	end do
+
+	ia_out(3) = itnext
+	next_output = .true.
+
+	end
+
+c********************************************************************
+c********************************************************************
 c********************************************************************
 
         subroutine total_energy

@@ -27,7 +27,7 @@ ChangeDot()
   $femdir/fembin/shyfem_install.pl $femdir $save > $afile
   [ $? != 0 ] && exit 1
 
-  echo "$file has been changed... original saved to $save"
+  echo "$afile has been changed... original saved to $save"
 }
 
 # check shyfem directory -----------------------------------
@@ -91,8 +91,8 @@ fi
 echo ""
 echo "The SHYFEM model has been installed."
 echo ""
-echo "If necessary, please cleanup the files"
-echo ".bashrc and .bash_profile in you home directory."
+echo "If necessary, please cleanup the following files"
+echo "in your home directory: .bashrc .bash_profile .profile"
 echo ""
 echo "In order that the new settings are effective,"
 echo "please log out and in again, or go to your"

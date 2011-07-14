@@ -65,7 +65,7 @@ ifeq ($(GOTM),true)
   LIBF_GOTM      = $(DIRLIB)/lib$(LIBGOTM).a
 endif
 
-ECOLOGICAL_OBJ = ecological_dummy.f
+ECOLOGICAL_OBJ = ecological_dummy.o
 
 ifeq ($(ECOLOGICAL),EUTRO)
   ECOLOGICAL_OBJ = bio3d.o bio3d_util.o \

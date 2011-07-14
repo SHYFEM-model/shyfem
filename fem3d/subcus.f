@@ -58,6 +58,7 @@ c 01.03.2010	ggu	new routines jamal_fra() to reset conz
 c 15.12.2010	ggu	traccia routines moved to subtrace.f
 c 26.01.2011	ggu	set rtauv for black sea (black_sea_nudge)
 c 17.05.2011	ggu	new routines skadar_debug() and wet_dry()
+c 12.07.2011	ggu	new routines init_ts()
 c
 c******************************************************************
 
@@ -118,6 +119,7 @@ c custom routines
         if( icall .eq. 602 ) call tvd_test(it)
         if( icall .eq. 603 ) call wet_dry
         if( icall .eq. 604 ) call skadar_debug
+        if( icall .eq. 700 ) call init_ts
 
 c	call totvol(it)
 c	call georg(it)
@@ -2334,8 +2336,8 @@ c    ! +     /!grid bati_gradino.grd
         real upresc(nlev),vpresc(nlev)
         real umax
 
-        do ii=1,neldim
-                iuvfix(ii)= 0
+        do ie=1,nel
+                iuvfix(ie)= 0
         enddo
 
         umax = 0.!0.1 !unity m/s
@@ -3934,6 +3936,75 @@ c-----------------------------------------
 
 	icall = icall + 1
 
+	end
+
+c**********************************************************************
+
+        subroutine init_ts
+
+	implicit none
+
+	include 'param.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+	real tempv(nlvdim,1)
+	common /tempv/tempv
+	real saltv(nlvdim,1)
+	common /saltv/saltv
+
+c	integer ndim
+c	parameter (ndim=10)	!must be at least the number of layers used
+c	real tobs(ndim)
+c	real sobs(ndim)
+c	data tobs /20.,20.,15.,13.,12.,10.,8.,6.,6.,6./
+c	data sobs /35.,35.,35.,36.,36.,36.,37.,37.,37.,37./
+
+	integer ndim
+        parameter (ndim=22)     !must be at least the number of layers used
+        real tobs(ndim)
+        real sobs(ndim)
+        data tobs /7.4,7.35,7.3,7.4,7.35,7.2,7.3,7.25,7.25,7.25,
+     *  7.15,7.15,7.15,7.,7.55,7.5,7.55,7.45,7.5,7.55,7.55,7.85/
+        data sobs /35.278,35.452,35.626,35.8,35.974,36.148,36.2995,
+     *  36.451,36.6025,36.754,36.9055,37.057,37.1324,37.2078,37.2832,
+     *  37.3586,37.434,37.5094,37.5848,37.6602,37.7356,37.811/
+
+	integer l,k,lmax
+
+	integer icall
+	save icall
+	data icall /0/
+
+	if( icall .ne. 0 ) return
+	icall = 1
+
+        write(6,*) '========================================='
+        write(6,*) '========================================='
+        write(6,*) '========================================='
+        write(6,*) 'initializing T/S data with profile'
+        write(6,*) '========================================='
+        write(6,*) '========================================='
+        write(6,*) '========================================='
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  if( lmax .gt. ndim ) goto 99
+	  do l=1,lmax
+	    tempv(l,k) = tobs(l)
+	    saltv(l,k) = sobs(l)
+	  end do
+	end do
+
+	return
+   99	continue
+	write(6,*) 'lmax,ndim: ',lmax,ndim
+	stop 'error stop init_ts: ndim must be at least lmax'
 	end
 
 c**********************************************************************

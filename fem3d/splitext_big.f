@@ -59,7 +59,7 @@ c next n lines give (u,v,z) for every node written.
 	real xv(3*noddim)
 	real h(noddim)
 
-	integer iapini, ideffi, ifileo
+	integer iapini, ifemop, ifileo
 	real read7,rdrc7
 
 c---------------------------------------------------------------
@@ -70,8 +70,7 @@ c---------------------------------------------------------------
                 stop 'error stop : iapini'
         end if
 
-        call defmak('datdir','runnam','.ext',file)
-	nin = ifileo(1,file,'unform','old')
+	nin = ifemop('.ext','unform','old')
         if(nin.le.0) goto 97
 
 c---------------------------------------------------------------

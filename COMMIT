@@ -1,5 +1,56 @@
 ============================================================
 
+Thu Jul 14 19:39:01 CEST 2011
+
+Various changes (not stable release)
+
+ LOG                          |   44 +++++
+ Makefile                     |    9 +-
+ Rules.make                   |   34 +++-
+ fem3d/Makefile               |    2 +-
+ fem3d/alukas.f               |    6 +-
+ fem3d/aquabc_fem_interface.f |    8 +-
+ fem3d/basinf.f               |   36 ++---
+ fem3d/bin/show_routines.pl   |    2 +-
+ fem3d/bin/struct.pl          |  391 ++++++++++++++++++++++++++++++++----------
+ fem3d/extinf.f               |    5 +-
+ fem3d/newchk.f               |   15 +-
+ fem3d/newcon.f               |   51 +++---
+ fem3d/newexpl.f              |    2 +-
+ fem3d/newstab.f              |  184 ++++++++++++++++++++-
+ fem3d/newtvd.f               |    2 +-
+ fem3d/ousaver.f              |   20 ++-
+ fem3d/param.h                |   10 +-
+ fem3d/splitext.f             |    5 +-
+ fem3d/splitext_big.f         |    5 +-
+ fem3d/splitflx.f             |    5 +-
+ fem3d/subcon1.f              |   13 +-
+ fem3d/subcus.f               |   75 ++++++++-
+ fem3d/subdry.f               |    2 +-
+ fem3d/subflxa.f              |    2 +-
+ fem3d/subgeo.f               |    2 +-
+ fem3d/submet.f               |    3 +
+ fem3d/subnev.f               |   66 ++++----
+ fem3d/subnsh.f               |   97 +++++++++--
+ fem3d/subnsu.f               |   40 +++++
+ fem3d/subrst.f               |    8 +-
+ fem3d/subsys.f               |    3 +
+ fem3d/subuti.f               |   15 +-
+ fem3d/wininf.f               |    4 +-
+ femadj/param.h               |   10 +-
+ fembin/grd2nod.pl            |   63 ++++++-
+ fembin/shyfem_install.sh     |    6 +-
+ femlib/perl/info.txt         |    6 +
+ femplot/param.h              |   10 +-
+ femplot/supiso.f             |  119 ++++++++++++-
+ femplot/supout.f             |  106 +++++++++--
+ femplot/supsim.f             |   11 +-
+ param.h                      |   10 +-
+ post/colorbar.f              |    6 +-
+ 43 files changed, 1198 insertions(+), 315 deletions(-)
+
+============================================================
+
 Wed Jun  8 18:46:42 CEST 2011
 
 New version 6_1_26

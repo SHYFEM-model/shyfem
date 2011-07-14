@@ -636,6 +636,9 @@ cc------------------------------------------------------------------------
 cc still to be commented below here
 cc------------------------------------------------------------------------
 
+	call addpar('idtsti',0.)	!time step for stability index
+	call addpar('itmsti',-1.)	!minimum time for stability index
+
 cc waves
 
         call addpar('iwave',0.)         !wave module: 1 = SPM empirical

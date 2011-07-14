@@ -74,7 +74,7 @@ c next n lines give (u,v,z) for every node written.
 	common /zdata/zdata
 	common /mdata/mdata
 
-	integer iapini, ideffi, ifileo
+	integer iapini, ifemop
 	real read7,rdrc7
 
 c---------------------------------------------------------------
@@ -85,8 +85,7 @@ c---------------------------------------------------------------
                 stop 'error stop : iapini'
         end if
 
-        call defmak('datdir','runnam','.ext',file)
-	nin = ifileo(1,file,'unform','old')
+	nin = ifemop('.ext','unform','old')
         if(nin.le.0) goto 97
 
 c---------------------------------------------------------------

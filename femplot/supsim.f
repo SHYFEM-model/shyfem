@@ -56,6 +56,7 @@ c 26.03.2010	ggu	section plot for velocities in plosim adapted
 c 17.12.2010    ggu     substituted hv with hkv
 c 31.03.2011    ggu     no plotting in dry nodes implemented - read fvl file
 c 17.05.2011    ggu     in plobas may plot node and element numbers
+c 12.07.2011    ggu     eliminated all references to out routines
 c
 c**********************************************************
 c**********************************************************
@@ -186,7 +187,7 @@ c**********************************************************
 	  end if
 	end do
 
-	call outclose
+	call ousclose
 
 	end
 
@@ -204,14 +205,14 @@ c plots barene
 	common /parray/parray
 
 	integer nrec,it,k
-	logical outnext,oktime
+	logical ousnext,oktime
 
 	nrec = 0
 
-	call outopen
+	call ousopen
 	call timeask
 
-	do while( outnext(it) )
+	do while( ousnext(it) )
 	  nrec = nrec + 1
 	  write(6,*) nrec,it
 	  if( oktime(it) ) then
@@ -220,7 +221,7 @@ c plots barene
 	  end if
 	end do
 
-	call outclose
+	call ousclose
 
 	end
 

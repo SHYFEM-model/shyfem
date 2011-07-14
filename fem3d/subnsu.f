@@ -7,6 +7,7 @@ c contents :
 c
 c subroutine baric(ie,x,y)		finds baricentre of element
 c subroutine coord(k,x,y)		returns coordinates of node k (internal)
+c function area_element(ie)		area for element ie (internal)
 c
 c function ipext(k)             returns extern node number
 c function ieext(k)             returns extern element number
@@ -22,6 +23,7 @@ c 02.06.1997	ggu	eliminated extint,extinw,exinel (not needed)
 c 24.02.1999	ggu	new subroutine n2int
 c 19.11.1999	ggu	new subroutine e2int
 c 27.01.2009	ggu	new subroutine coord
+c 07.07.2011	ggu	new subroutine area_element()
 c
 c*******************************************************
 
@@ -59,6 +61,44 @@ c local variables
 	y=yb/3.
 
 	end
+
+c***************************************************************
+
+        function area_element(ie)
+
+c area for element ie
+
+        implicit none
+
+c arguments
+        real area_element
+        integer ie
+c common
+        integer nen3v(3,1)
+        real xgv(1),ygv(1)
+        common /nen3v/nen3v
+        common /xgv/xgv,/ygv/ygv
+c local
+        integer kn1,kn2,kn3
+        real*8 x1,x2,x3,y1,y2,y3
+        real*8 half
+
+        half = 0.5
+
+        kn1=nen3v(1,ie)
+        kn2=nen3v(2,ie)
+        kn3=nen3v(3,ie)
+
+        x1=xgv(kn1)
+        y1=ygv(kn1)
+        x2=xgv(kn2)
+        y2=ygv(kn2)
+        x3=xgv(kn3)
+        y3=ygv(kn3)
+
+        area_element = half * ( (x2-x1) * (y3-y1) - (x3-x1) * (y2-y1) )
+
+        end
 
 c***************************************************************
 

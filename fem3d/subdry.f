@@ -287,7 +287,7 @@ c %%%%%%%%% this is wrong -> test also for iweg > 0	!FIXME
         iw=iwh
 
 	if( bbdebug ) then
-	  write(iu,*) '++++ ',iweich,iw,iwegv(19417),iwegv(19428)
+	  !write(iu,*) '++++ ',iweich,iw,iwegv(19417),iwegv(19428)
 	end if
 
         return

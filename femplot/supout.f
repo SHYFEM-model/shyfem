@@ -17,6 +17,7 @@ c 13.10.2009  ggu     set nlv once file is read
 c 23.02.2010  ggu     change in reading wind file
 c 30.03.2011  ggu     new routines to handle fvl files (not yet integrated)
 c 31.03.2011  ggu     use fvl routines to exclude areas from plot
+c 12.07.2011  ggu     in prepsim use what is available for dry areas
 c
 c**********************************************************
 c**********************************************************
@@ -92,7 +93,8 @@ c -1	use 2D model
 c  0	use 3D model, barotropic currents
 c >0	use 3D, level
 
-	is2d = getlev() .lt. 0
+	!is2d = getlev() .lt. 0
+	is2d = .false.			!no 2D version available anymore
 
 	end
 
@@ -131,10 +133,12 @@ c prepares simulation for use - computes wet and dry areas
 	real znv(1)
 	common /znv/znv
 
+	logical bshowdry
 	integer level
 	real href,hzmin,hdry
 
 	logical fvl_is_available
+	logical ous_is_available
 	integer getlev
 	real getpar
 
@@ -142,23 +146,34 @@ c---------------------------------------------------
 c set up mask of water points
 c---------------------------------------------------
 
-	hdry = -1.e+30				!no drying
-	hdry = 0.05
+c set bshowdry = .true.  if you want to show dried out areas
+c set bshowdry = .false. if you want to plot all areas
+
+	hdry = 0.05				!level for drying
+	bshowdry = .true.			!show dry areas, else plot all
+
+	if( .not. bshowdry ) hdry = -1.e+30	!no drying
 
         href = getpar('href')
         hzmin = getpar('hzmin')
 	level = getlev()
 
-	if( fvl_is_available() ) then		!...handle on nodes
+	if( ous_is_available() ) then		!...handle on elements
+	  write(6,*) 'using zeta for dry areas'
+          call initmask(bwater)			!true for all elements
+	  if( bshowdry ) then
+            call drymask(bwater,znv,href,hzmin)	!false if znv/zenv not equal
+	  end if
+          call levelmask(bwater,ilhv,level)	!element has this level
+	  call nodemask(bwater,bkwater)		!copy element to node mask
+	else if( fvl_is_available() ) then	!...handle on nodes
 	  write(6,*) 'using fvl file for dry areas: ',hdry
 	  call volume_mask(bkwater,hdry)	!guess if dry using h of node
 	  call elemmask(bwater,bkwater)		!copy node to element mask
           !call levelmask(bwater,ilhv,level)	!element has this level
 	  !call nodemask(bwater,bkwater)	!copy element to node mask
-	else					!...handle on elements
-	  write(6,*) 'using zeta for dry areas'
+	else
           call initmask(bwater)			!true for all elements
-          call drymask(bwater,znv,href,hzmin)	!false if znv/zenv not equal
           call levelmask(bwater,ilhv,level)	!element has this level
 	  call nodemask(bwater,bkwater)		!copy element to node mask
 	end if
@@ -781,6 +796,22 @@ c initializes internal data structure for OUS file
 
 c******************************************************
 
+	function ous_is_available()
+
+c checks if OUS file is opened
+
+	logical ous_is_available
+
+	integer nunit
+	common /ousous/ nunit
+
+	call ousini
+	ous_is_available = nunit .gt. 0
+
+	end
+
+c******************************************************
+
 	subroutine ousclose
 
 c closes OUS file
@@ -790,6 +821,7 @@ c closes OUS file
 	integer nunit
 	common /ousous/ nunit
 
+	call ousini
 	if( nunit .gt. 0 ) close(nunit)
 	nunit = 0
 
@@ -799,7 +831,7 @@ c******************************************************
 
         subroutine ousinfo(nvers,nkn,nel,nlv)
 
-c returns info on parameters
+c returns info on OUS parameters
 
         implicit none
 
@@ -808,6 +840,7 @@ c returns info on parameters
 
         integer nvers,nkn,nel,nlv
 
+	call ousini
         call getous(nunit,nvers,nkn,nel,nlv)
 
         end
@@ -943,6 +976,7 @@ c reads next OUS record - is true if a record has been read, false if EOF
 
 	if( nlvdim .ne. nlvdi ) stop 'error stop ousnext: nlvdim'
 
+	call ousini
 	call rdous(nunit,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
 
 c set return value
@@ -1002,6 +1036,7 @@ c closes NOS file
 	integer nunit
 	common /nosnos/ nunit
 
+	call nosini
 	if( nunit .gt. 0 ) close(nunit)
 	nunit = 0
 
@@ -1126,6 +1161,7 @@ c reads next NOS record - is true if a record has been read, false if EOF
 
 	if( nlvdim .ne. nlvdi ) stop 'error stop nosnext: nlvdim'
 
+	call nosini
 	call rdnos(nunit,it,ivar,nlvdim,ilhkv,array,ierr)
 
 c set return value
@@ -1154,7 +1190,7 @@ c******************************************************
 
 	subroutine fvlini
 
-c initializes internal data structure for NOS file
+c initializes internal data structure for FVL file
 
 	implicit none
 
@@ -1178,13 +1214,14 @@ c******************************************************
 
 	function fvl_is_available()
 
-c checks if file is opened
+c checks if FVL file is opened
 
 	logical fvl_is_available
 
 	integer nunit
 	common /fvlfvl/ nunit
 
+	call fvlini
 	fvl_is_available = nunit .gt. 0
 
 	end
@@ -1193,13 +1230,14 @@ c******************************************************
 
 	subroutine fvlclose
 
-c closes NOS file
+c closes FVL file
 
 	implicit none
 
 	integer nunit
 	common /fvlfvl/ nunit
 
+	call fvlini
 	if( nunit .gt. 0 ) close(nunit)
 	nunit = 0
 
@@ -1209,7 +1247,7 @@ c******************************************************
 
 	subroutine fvlopen(type)
 
-c opens NOS file and reads header
+c opens FVL file and reads header
 
 	implicit none
 
@@ -1240,7 +1278,7 @@ c opens NOS file and reads header
 	integer nvers
 	integer nknaux,nelaux,nlvaux,nvar
 	integer ierr
-	integer ideffi
+	integer ifem_choose_file
 
 c initialize routines
 
@@ -1248,14 +1286,14 @@ c initialize routines
 
 c open file
 
-	nunit = ideffi('datdir','runnam',type,'unform','old')
+	nunit = ifem_choose_file(type,'old')
 	if( nunit .le. 0 ) then
-		write(6,*) 'Cannot open flv file ... doing without...'
+		write(6,*) 'Cannot open fvl file ... doing without...'
 		nunit = 0
 		return
 		!stop 'error stop conopen: cannot open NOS file'
         else
-                write(6,*) 'File opened :'
+                write(6,*) 'fvl file opened :'
                 inquire(nunit,name=file)
                 write(6,*) file
                 write(6,*) 'Reading file ...'
@@ -1291,7 +1329,7 @@ c read second header
 		stop 'error stop nosopen: error reading second header'
 	end if
 
-	call array_check(nkn,ilhkv1,ilhkv,'ilhkv')
+	call array_i_check(nkn,ilhkv1,ilhkv,'ilhkv')
 	call array_check(nlv,hlv1,hlv,'hlv')
 	call array_check(nel,hev1,hev,'hev')
 
@@ -1308,14 +1346,16 @@ c end
 	write(6,*) 'nel : ',nel,nelaux
 	write(6,*) 'nlv : ',nlv,nlvaux
 	write(6,*) 'nvar: ',nvar
-	stop 'error stop fvlopen'
+	write(6,*) 'not using FVL file'
+	nunit = 0
+	!stop 'error stop fvlopen'
 	end
 
 c******************************************************
 
 	subroutine fvlnext(it,nlvdim,array)
 
-c reads next NOS record
+c reads next FVL record
 
 	implicit none
 
@@ -1339,6 +1379,7 @@ c reads next NOS record
 
 	if( nlvdim .ne. nlvdi ) stop 'error stop fvlnext: nlvdim'
 
+	call fvlini
 	if( nunit .eq. 0 ) return	!file closed
 	if( it .eq. itfvl ) return	!already read
 
@@ -1349,7 +1390,7 @@ c reads next NOS record
 
 	do while( ierr .eq. 0 .and. itfvl .lt. it )
 	  call rdnos(nunit,itfvl,ivar,nlvdim,ilhkv,array,ierr)
-	  write(6,*) 'flv file read...',itfvl,ivar
+	  write(6,*) 'fvl file read...',itfvl,ivar
 	end do
 
 c set return value
@@ -1425,6 +1466,31 @@ c checks if arrays are equal
 	integer n
 	real a1(n)
 	real a2(n)
+	character*(*) text
+
+	integer i
+
+	do i=1,n
+	  if( a1(i) .ne. a2(i) ) then
+	    write(6,*) text,' : arrays differ'
+	    write(6,*) n,i,a1(i),a2(i)
+	    stop 'error stop array_check: arrays differ'
+	  end if
+	end do
+
+	end
+
+c******************************************************
+
+	subroutine array_i_check(n,a1,a2,text)
+
+c checks if arrays are equal
+
+	implicit none
+
+	integer n
+	integer a1(n)
+	integer a2(n)
 	character*(*) text
 
 	integer i

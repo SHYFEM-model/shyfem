@@ -29,6 +29,7 @@ c 29.03.2000	ggu	new routine getxy and getexy
 c 16.05.2000	ggu	routine volel removed
 c 28.04.2009    ggu     links re-structured
 c 08.06.2010    ggu     new routine for computing 3D kin/pot energy
+c 07.07.2011    ggu     bug fix in areael (unstable computation)
 c
 c******************************************
 
@@ -81,7 +82,7 @@ c******************************************
 
 c area for element ie
 c
-c double precision version
+c double precision version - bug fix 07.07.2011
 
 	implicit none
 
@@ -97,6 +98,9 @@ c local
 	integer kn1,kn2,kn3
 	real*8 x1,x2,x3,y1,y2,y3
 	real*8 a1,a2,a3
+	real*8 half
+
+	half = 0.5
 
 	kn1=nen3v(1,ie)
 	kn2=nen3v(2,ie)
@@ -109,11 +113,12 @@ c local
 	x3=xgv(kn3)
 	y3=ygv(kn3)
 
-	a1=x2*y3-x3*y2
-	a2=x3*y1-x1*y3
-	a3=x1*y2-x2*y1
+	!a1=x2*y3-x3*y2
+	!a2=x3*y1-x1*y3
+	!a3=x1*y2-x2*y1
+	!areael = half*(a1+a2+a3)
 
-	areael=0.5d0*(a1+a2+a3)
+	areael = half * ( (x2-x1) * (y3-y1) - (x3-x1) * (y2-y1) )
 
 	end
 

@@ -165,6 +165,7 @@ c 16.02.2011    ggu     pass robs to info_stability()
 c 23.03.2011    ggu     new parameter itvdv
 c 25.03.2011    ggu     error check for aapar and itvdv
 c 01.06.2011    ggu     wsink for stability integrated
+c 12.07.2011    ggu     run over nlv, not nlvdim, vertical_flux() for lmax>1
 c
 c*********************************************************************
 
@@ -859,7 +860,7 @@ c	----------------------------------------------------------------
 c	these are aux arrays (bigger than needed) to avoid checking for
 c	what layer we are in -> we never get out of bounds
 
-        do l=0,nlvdim+1
+        do l=0,nlv+1
 	  hdv(l) = 0.		!layer thickness
           haver(l) = 0.
 	  present(l) = 0.	!1. if layer is present
@@ -876,7 +877,7 @@ c	these are the local arrays for accumulation of implicit terms
 c	(maybe we do not need them, but just to be sure...)
 c	after accumulation we copy them onto the global arrays
 
-        do l=1,nlvdim
+        do l=1,nlv
 	  do ii=1,3
 	    clc(l,ii) = 0.
 	    clm(l,ii) = 0.
@@ -964,7 +965,9 @@ c	----------------------------------------------------------------
 c	compute vertical fluxes (w/o vertical TVD scheme)
 c	----------------------------------------------------------------
 
-	call vertical_flux_ie(btvdv,ie,ilevel,dt,wws,cl,wl,hold,vflux)
+	if( ilevel .gt. 0 ) then
+	  call vertical_flux_ie(btvdv,ie,ilevel,dt,wws,cl,wl,hold,vflux)
+	end if
 
 c----------------------------------------------------------------
 c loop over levels
@@ -1080,18 +1083,18 @@ c	    clce(l,ii) = clce(l,ii) + aat*w
 	  flux_tot1 = aat * ( flux_top - flux_bot )
 	  flux_tot = aat * ( vflux(l-1,ii) - vflux(l,ii) )
 
-	  if( .not. btvdv ) then
-	  if( flux_tot .ne. flux_tot1 .or. flux_tot .ne. fw(ii) ) then
-	   !if( ie .eq. 100 ) then
-	    write(6,*) '********** vflux   ',ie,ii,l,ilevel
-	    write(6,*) fw(ii),flux_tot1,flux_tot
-	    write(6,*) flux_top,flux_bot
-	    do ll=0,ilevel
-	    write(6,*) ll,vflux(ll,ii)
-	    end do
-	   !end if
-	  end if
-	  end if
+c	  if( .not. btvdv ) then
+c	  if( flux_tot .ne. flux_tot1 .or. flux_tot .ne. fw(ii) ) then
+c	   !if( ie .eq. 100 ) then
+c	    write(6,*) '********** vflux   ',ie,ii,l,ilevel
+c	    write(6,*) fw(ii),flux_tot1,flux_tot
+c	    write(6,*) flux_top,flux_bot
+c	    do ll=0,ilevel
+c	    write(6,*) ll,vflux(ll,ii)
+c	    end do
+c	   !end if
+c	  end if
+c	  end if
 
 	  fw(ii) = flux_tot
 	end do
@@ -1476,6 +1479,7 @@ c
 	double precision present(0:nlvdim+1)
 
         integer kstab
+	integer dtorig
 
         integer iustab
         save iustab
@@ -1558,7 +1562,7 @@ c	these are aux arrays (bigger than needed) to avoid checking for
 c	what layer we are in -> we never get out of bounds
 c	-----------------------------------------------------------------
 
-        do l=0,nlvdim+1
+        do l=0,nlv+1
 	  hdv(l) = 0.		!layer thickness
           haver(l) = 0.
 	  present(l) = 0.	!1. if layer is present
@@ -1576,7 +1580,7 @@ c	(maybe we do not need them, but just to be sure...)
 c	after accumulation we copy them on the global arrays
 c	-----------------------------------------------------------------
 
-        do l=1,nlvdim
+        do l=1,nlv
 	  do ii=1,3
 	    clc(l,ii) = 0.
 	    clm(l,ii) = 0.
@@ -1859,11 +1863,14 @@ c-----------------------------------------------------------------
         istot = 1 + stabind / rstol
         sindex = stabind
 
-        if( .false. ) then
-        !if( idt .le. 3 ) then
-	  write(6,*) 'kstab = ',kstab,'  stabind = ',stabind
-          call conwrite(iustab,'.stb',1,777,nlvdi,cwrite)
-        end if
+	call get_orig_timestep(dtorig)
+	call output_stability_node(dtorig,cwrite)
+
+c        if( .false. ) then
+c        !if( idt .le. 3 ) then
+c	  write(6,*) 'kstab = ',kstab,'  stabind = ',stabind
+c          call conwrite(iustab,'.stb',1,777,nlvdi,cwrite)
+c        end if
 
 c        call stb_histo(it,nlvdi,nkn,ilhkv,cwrite)
 

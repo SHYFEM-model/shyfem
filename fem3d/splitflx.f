@@ -31,7 +31,7 @@ c This routine reads an FLX file and writes the data to single files
 	integer itime(datdim)
 	real pdata(datdim,nfxdim)
 
-	integer iapini, ideffi, ifileo
+	integer iapini, ifemop, ifileo
 
 c---------------------------------------------------------------
 c open files
@@ -41,8 +41,7 @@ c---------------------------------------------------------------
                 stop 'error stop : iapini'
         end if
 
-        call defmak('datdir','runnam','.flx',file)
-	nin = ifileo(1,file,'unform','old')
+	nin = ifemop('.flx','unform','old')
         if(nin.le.0) goto 97
 
 c---------------------------------------------------------------

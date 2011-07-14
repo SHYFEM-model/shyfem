@@ -755,7 +755,7 @@ c else uses kantv
 		stop 'error stop flxtype'
 	   end if
 	else
-	   stop 'internal error flxtype (1)'
+	   stop 'error stop flxtype: internal error (1)'
 	end if
 
 	flxtype = ktype

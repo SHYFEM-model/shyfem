@@ -96,21 +96,21 @@ c	----------------------------------------------------------
 	ncbars = ndim+1		!number of color bars
 	xmarg = xymax/10.	!margin in x
 
-	dy = (xymax - xymin) / (2*ncbars)	!height of space for color bar
+	dy = (xymax - xymin) / (3*ncbars)	!height of space for color bar
 	dx = (xymax-xymin-2.*xmarg)/ncol
 	ddx = dx/2.
 	ddy = dy/2.
 	dty = 3.*dy/4.
 
 	x = xmarg		!start from here in x
-	y = xymin - dy		!start in y
+	y = xymin - 1.5*dy		!start in y
 
 c-------------------------------------------------------------------
 c loop over color bars
 c-------------------------------------------------------------------
 
 	do i=0,ndim
-	  y = y + 2*dy
+	  y = y + 3*dy
 	  text = texts(i)
 	  call color_bar(i,ncol,x,y,dx,dy,text)
 	end do

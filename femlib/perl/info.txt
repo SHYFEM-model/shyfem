@@ -3,3 +3,9 @@ add multiple directories to @INC
 
 use lib ("$ENV{HOME}/fem/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
 
+
+to install packages:
+
+shell> perl -MCPAN -e shell
+cpan> install MP3::Tag
+

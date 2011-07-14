@@ -685,7 +685,7 @@ c computes histogram of stability of elements
 	  bin(i) = bin(i) + 1
 	else				!write out
 	  call get_time(it)
-	  write(567,1000) it,(bin(i),i=0,ndim)
+	  write(97,1000) it,(bin(i),i=0,ndim)
 	end if
 	
 	return

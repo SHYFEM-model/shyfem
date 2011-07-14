@@ -50,6 +50,7 @@ c 06.04.2009    ggu     new check_elems_around_node, check_nodes_in_elem
 c 26.02.2010    ggu     in test3d() write also meteo data
 c 08.04.2010    ggu     more info in checks (depth and area)
 c 17.05.2011    ggu     new routine check_set_unit() to set output unit
+c 12.07.2011    ggu     loop only over actual nodes/elements, not dimensions
 c
 c*************************************************************
 
@@ -660,8 +661,8 @@ c-----------------------------------------------------
 
         hknmax = -high
         hkomax = -high
-        do k=1,nkndim
-          do l=1,nlvdim
+        do k=1,nkn
+          do l=1,nlv
             hknmax = max(hknmax,hdknv(l,k))
             hkomax = max(hkomax,hdkov(l,k))
           end do
@@ -669,8 +670,8 @@ c-----------------------------------------------------
 
         henmax = -high
         heomax = -high
-        do ie=1,neldim
-          do l=1,nlvdim
+        do ie=1,nel
+          do l=1,nlv
             henmax = max(henmax,hdenv(l,ie))
             heomax = max(heomax,hdeov(l,ie))
           end do
@@ -679,7 +680,7 @@ c-----------------------------------------------------
         write(6,*) hknmax,hkomax,henmax,heomax
 
         hlvmax = -high
-        do ie=1,neldim
+        do ie=1,nel
             hlvmax = max(hlvmax,hlhv(ie))
         end do
 
@@ -693,8 +694,8 @@ c-----------------------------------------------------
         utnmax = -high
         vtomax = -high
         vtnmax = -high
-        do ie=1,neldim
-          do l=1,nlvdim
+        do ie=1,nel
+          do l=1,nlv
             utomax = max(utomax,abs(utlov(l,ie)))
             utnmax = max(utnmax,abs(utlnv(l,ie)))
             vtomax = max(vtomax,abs(vtlov(l,ie)))

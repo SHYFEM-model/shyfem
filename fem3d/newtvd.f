@@ -59,7 +59,7 @@ c initializes tvd scheme
 
 	if( itvd_type .eq. 2 ) call tvd_upwind_init
 
-	write(6,*) 'TVD scheme: ',itvd
+	write(6,*) 'TVD scheme initialized: ',itvd
 
 	end
 

@@ -4093,7 +4093,7 @@ C         pH correction factor
           END IF
 
 
-      END FUNCTION
+      END
 
 c*****************************************************************
 c*****************************************************************
@@ -4172,7 +4172,7 @@ C     Tref - temperature below which no aclimation take place
           END IF         
 
 
-      END FUNCTION
+      END
 
 
 
@@ -4297,7 +4297,7 @@ c              write(6,*)PHIMX,XKC,IAVSG,GITMAX
           END IF
 
 
-      END SUBROUTINE
+      END
       
 c********************************************************************
 c********************************************************************

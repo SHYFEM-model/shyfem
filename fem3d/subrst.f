@@ -168,7 +168,7 @@ c administers writing of restart file
 
         character*80 file
         real getpar
-        integer ifileo
+        integer ifemop
 
         integer idtrst,itmrst,itnext,iunit
         save idtrst,itmrst,itnext,iunit
@@ -197,8 +197,7 @@ c-----------------------------------------------------
           itnext = itmrst
 	  if( itmrst .eq. itanf ) itnext = itnext + idtrst
 
-          call deffile('rst',file)
-          iunit = ifileo(0,file,'unformatted','new')
+          iunit = ifemop('rst','unformatted','new')
           if( iunit .le. 0 ) goto 98
 
         end if
@@ -219,8 +218,7 @@ c-----------------------------------------------------
 
         return
    98   continue
-        write(6,*) file
-        stop 'error stop admrst: Cannot open file'
+        stop 'error stop admrst: Cannot open rst file'
         end
 
 c*******************************************************************

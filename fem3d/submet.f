@@ -124,6 +124,8 @@ c converts distributed source from [m/s] to [m**3/s]
 
 	real rqpsv(1), rqdsv(1)
 	common /rqpsv/rqpsv, /rqdsv/rqdsv
+	real evapv(1)
+	common /evapv/evapv
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 	include 'ev.h'
@@ -147,6 +149,7 @@ c converts distributed source from [m/s] to [m**3/s]
 
 	do k=1,nkn
 	  rqdsv(k) = rqdsv(k) * v1v(k)
+	  evapv(k) = evapv(k) * v1v(k)		!only for output purpose
 	end do
 
 	end

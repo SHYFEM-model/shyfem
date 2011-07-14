@@ -101,7 +101,7 @@ c---------------------------------------------------------------
 
 c*********************************************************************
 
-	subroutine c2p(u,v,s,d)
+	subroutine c2p_win(u,v,s,d)
 
 c converts cartesian to polar coordinates
 
@@ -172,7 +172,7 @@ c special output
 	u = wx(node)
 	v = wy(node)
 
-	call c2p(u,v,s,d)
+	call c2p_win(u,v,s,d)
 
 	write(2,*) it,u,v,s,d
 

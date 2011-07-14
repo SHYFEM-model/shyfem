@@ -6,5 +6,5 @@
   print if $no_space =~ /^subroutine/i;
   print if $no_space =~ /^function/i;
 
-  print if $no_space =~ /^(real|integer|double precision|logical)\s+function/i;
+  print if $no_space =~ /^(real|integer|doubleprecision|logical)function/i;
 

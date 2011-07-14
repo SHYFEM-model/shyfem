@@ -12,6 +12,8 @@ c 26.01.2011    ggu     robs for nudging implemented
 c 16.02.2011    ggu     pass robs to subroutines, write stb-ind to nos file
 c 20.05.2011    ggu     allow for elimination of elems due to high rstab
 c 01.06.2011    ggu     wsink for stability integrated
+c 12.07.2011    ggu     new rouitne output_stability()
+c 14.07.2011    ggu     new rouitne output_stability_node()
 c
 c*****************************************************************
 c*****************************************************************
@@ -322,6 +324,8 @@ c**********************************************************************
         subroutine error_stability(dt,rindex)
 
 c computes stability index for hydro timestep - with error output
+c
+c after this call the program should abort
 
         implicit none
 
@@ -408,6 +412,8 @@ c mode = 2		eliminate elements with r>rindex
 	call momentum_advective_stability(aindex,sauxe1)
 	call momentum_viscous_stability(ahpar,dindex,sauxe2)
 
+        call output_stability(dt,sauxe1,sauxe2)	!in case write to file
+
 	aindex = aindex*dt
 	dindex = dindex*dt
 
@@ -447,7 +453,7 @@ c*****************************************************************
 
         subroutine output_errout_stability(dt,sauxe1,sauxe2)
 
-c outputs stability index for hydro timestep (internal)
+c outputs stability index for hydro timestep (internal) (error handling)
 
         implicit none
 
@@ -532,6 +538,182 @@ c set ifnos in order to have output to nos file
 	  call e2n3d_minmax(+1,nlvdim,sauxe1,sauxn)
 	  call conwrite(iustab,'.sta',1,778,nlvdi,sauxn)
 	end if
+
+	end
+
+c*****************************************************************
+
+        subroutine output_stability_node(dt,cwrite)
+
+c outputs stability index for hydro timestep (internal)
+
+        implicit none
+
+	include 'param.h'
+
+        real dt
+	real cwrite(nlvdim,nkndim)
+
+        integer nlv,nlvdi
+        common /level/ nlvdi,nlv
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer nen3v(3,1)
+	common /nen3v/nen3v
+	integer ilhkv(1)
+	common /ilhkv/ilhkv
+
+	real smax(nkndim)
+	save smax
+
+	logical bnos
+	integer ie,ii,k,l,lmax
+	integer ia,id,it
+	integer idtsti,itmsti
+	real sindex,smin
+	logical next_output
+
+	integer icall,iustab,ia_out(4)
+	save icall,iustab,ia_out
+	data icall,iustab /0,0/
+
+	real getpar
+
+c	idtsti = 3600
+c	idtsti = 0
+c	itmsti = -1
+
+	if( icall .lt. 0 ) return
+
+	if( icall .eq. 0 ) then
+	  idtsti = nint(getpar('idtsti'))
+	  itmsti = nint(getpar('itmsti'))
+	  if( idtsti .le. 0 ) icall = -1
+	  if( icall .lt. 0 ) return
+	  call set_output_frequency(itmsti,idtsti,ia_out)
+	  call confop(iustab,itmsti,idtsti,1,1,'.stb')
+	  !write(6,*) 'ia_out: ',ia_out
+	  do k=1,nkn
+	    smax(k) = 0.
+	  end do
+	end if
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+	    sindex = cwrite(l,k)
+	    if( sindex .gt. smax(k) ) smax(k) = sindex
+	  end do
+	end do
+
+	if( next_output(ia_out) ) then
+	  smin = 1./dt
+	  do k=1,nkn				!convert to time step
+	    if( smax(k) .le. smin ) then
+	      smax(k) = dt
+	    else
+	      smax(k) = 1./smax(k)
+	    end if
+	  end do
+	  idtsti = ia_out(1)	!FIXME
+	  itmsti = ia_out(2)
+	  call confil(iustab,itmsti,idtsti,778,1,smax)
+	  do k=1,nkn
+	    smax(k) = 0.
+	  end do
+	end if
+
+	icall = icall + 1
+
+	end
+
+c*****************************************************************
+
+        subroutine output_stability(dt,sauxe1,sauxe2)
+
+c outputs stability index for hydro timestep (internal)
+
+        implicit none
+
+	include 'param.h'
+
+        real dt
+	real sauxe1(nlvdim,neldim)
+	real sauxe2(nlvdim,neldim)
+
+        integer nlv,nlvdi
+        common /level/ nlvdi,nlv
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer nen3v(3,1)
+	common /nen3v/nen3v
+	integer ilhv(1)
+	common /ilhv/ilhv
+
+	real smax(nkndim)
+	save smax
+
+	logical bnos
+	integer ie,ii,k,l,lmax
+	integer ia,id,it
+	integer idtsti,itmsti
+	real sindex,smin
+	logical next_output
+
+	integer icall,iustab,ia_out(4)
+	save icall,iustab,ia_out
+	data icall,iustab /0,0/
+
+	real getpar
+
+c	idtsti = 3600
+c	idtsti = 0
+c	itmsti = -1
+
+	if( icall .lt. 0 ) return
+
+	if( icall .eq. 0 ) then
+	  idtsti = nint(getpar('idtsti'))
+	  itmsti = nint(getpar('itmsti'))
+	  if( idtsti .le. 0 ) icall = -1
+	  if( icall .lt. 0 ) return
+	  call set_output_frequency(itmsti,idtsti,ia_out)
+	  call confop(iustab,itmsti,idtsti,1,1,'.sti')
+	  !write(6,*) 'ia_out: ',ia_out
+	  do k=1,nkn
+	    smax(k) = 0.
+	  end do
+	end if
+
+	do ie=1,nel
+	  lmax = ilhv(ie)
+	  do l=1,lmax
+	    sindex = sauxe1(l,ie)+sauxe2(l,ie)
+	    do ii=1,3
+	      k = nen3v(ii,ie)
+	      if( sindex .gt. smax(k) ) smax(k) = sindex
+	    end do
+	  end do
+	end do
+
+	if( next_output(ia_out) ) then
+	  smin = 1./dt
+	  do k=1,nkn				!convert to time step
+	    if( smax(k) .le. smin ) then
+	      smax(k) = dt
+	    else
+	      smax(k) = 1./smax(k)
+	    end if
+	  end do
+	  idtsti = ia_out(1)	!FIXME
+	  itmsti = ia_out(2)
+	  call confil(iustab,itmsti,idtsti,779,1,smax)
+	  do k=1,nkn
+	    smax(k) = 0.
+	  end do
+	end if
+
+	icall = icall + 1
 
 	end
 

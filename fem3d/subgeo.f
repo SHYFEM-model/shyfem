@@ -36,7 +36,7 @@ c subroutine c2p(u,v,s,d)		converts cartesian to polar coordinates
 c
 c revision log :
 c
-c 18.03.1999	ggu	written from scratch (based on Joseph O'Rourke, 1998)
+c 18.03.1999	ggu	written from scratch (based on Joseph O-Rourke, 1998)
 c 28.03.1999	ggu	bug fix : area2 -> areat (area was 2x)
 c 28.03.1999	ggu	new routine polyinpoly
 c 29.03.1999	ggu	segsegint is working with double precision internally

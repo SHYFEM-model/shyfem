@@ -13,6 +13,7 @@ c 12.06.2009    ggu     areatr in double precision - new algorithm
 c 01.03.2010    ggu     new routine basqual() to compute grid quality
 c 22.03.2010    ggu     write external element number in basqual()
 c 17.05.2011    ggu     changes in freqdep()
+c 12.07.2011    ggu     better treatment of freqdep()
 c
 c****************************************************************
 
@@ -81,7 +82,7 @@ c-----------------------------------------------------------------
 	!call basqual		!grid quality
         call makehev(hev)
         call makehkv(hkv,haux)
-	!call freqdep
+	call freqdep
 
 c-----------------------------------------------------------------
 c loop until no node and element is given
@@ -147,6 +148,8 @@ c info on node number
 
 	bnode = .false.
 	bloop = .true.
+
+        write(6,*) 
 
 c look for node and give info
 
@@ -540,15 +543,8 @@ c-----------------------------------------------------------------
 c area code
 c-----------------------------------------------------------------
 
-	!hmin = -1.
-	!hmax = 10.
-	!dh = 0.10
-
-	!hmin = -1.
-	!hmax = 40.
-	!dh = 0.01
-
 	dh = 0.01
+
 	hmin = 1.e+30
 	hmax = -1.e+30
 	do ie=1,nel
@@ -559,8 +555,8 @@ c-----------------------------------------------------------------
 
 	imax = (hmax-hmin)/dh
 	if( imax .gt. ndim ) then
-	  write(6,*) imax,ndim,hmin,hmax,dh
-	  stop 'error stop freqdep: ndim'
+	  dh = (hmax-hmin)/ndim
+	  imax = ndim
 	end if
 
 	write(6,*) 'computing depth frequency curve ',imax
@@ -575,9 +571,7 @@ c-----------------------------------------------------------------
 	  h = hev(ie)
 	  area = areatr(ie)
 	  vol = area * h
-	  !ih = (h - hmin) / dh
 	  ih = (hmax-h)/dh
-	  !write(6,*) ie,area,h,ih
 	  if( ih .lt. 0 .or. ih .gt. imax ) then
 	    if( ih .lt. 0 ) then
 		ih = 0
@@ -590,30 +584,28 @@ c-----------------------------------------------------------------
 	  end if
 	  do i=ih,imax
 	    freqa(i) = freqa(i) + area
-	    !freqv(i) = freqv(i) + vol
 	    freqv(i) = freqv(i) + area * (i-ih)*dh
 	  end do
 	end do
 
 	area = freqa(imax)	!total area
 	vol  = freqv(imax)	!total volume
+
 	write(6,*) 'total area/vol for freq curve: ',area,vol
 
-	!do i=0,imax
-	!  freqa(i) = freqa(i) / area
-	!  freqv(i) = freqv(i) / vol
-	!end do
+	open(1,file='areavol.dat',status='unknown',form='formatted')
 
 	do i=0,imax
 	  z = -hmax + i*dh
 	  fap = freqa(i) * 100. / area
 	  fa = freqa(i)
 	  fv = freqv(i)
-	  !write(6,*) i,h,fa
-	  write(66,*) h,fa
-	  write(67,*) h,fv
-	  write(68,*) z,fap,fa,fv
+	  write(1,*) z,fap,fa,fv
 	end do
+
+	close(1)
+
+	write(6,*) 'frequency curve written to file areavol.dat'
 
 	end
 
