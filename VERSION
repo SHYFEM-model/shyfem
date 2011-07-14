@@ -1,3 +1,55 @@
+version  6_1_27    14-07-2011    VERS_6_1_27
+
+========================================================== 14-07-2011 - 6_1_27
+
+c ./femplot/supsim.f:
+c 12.07.2011    ggu     eliminated all references to out routines
+c
+c ./femplot/supout.f:
+c 12.07.2011  ggu     in prepsim use what is available for dry areas
+c
+c ./fem3d/subnsh.f:
+c 12.07.2011    ggu     new routine next_output(), revised set_output_frequency
+c 14.07.2011    ggu     new routines for original time step
+c
+c ./fem3d/tmp/subdef.f:
+c 02.07.2011	ggu	idefna,idefop finally deleted
+c 13.07.2011    ggu     cleaned from old structures
+c
+c ./fem3d/tmp/load/newcon.f:
+c 20.06.2011    ccf     settling velocity variable in space
+c 20.06.2011    ccf     inlcude loading (kg/m²s) in conc computation
+c
+c ./fem3d/basinf.f:
+c 12.07.2011    ggu     better treatment of freqdep()
+c
+c ./fem3d/subver.f:
+c 14.07.2011	ggu	version 6.1.27
+c
+c ./fem3d/newcon.f:
+c 12.07.2011    ggu     run over nlv, not nlvdim, vertical_flux() for lmax>1
+c
+c ./fem3d/ousaver.f:
+c 12.07.2011	ggu	some changes on how to treat partially dry areas
+c
+c ./fem3d/newchk.f:
+c 12.07.2011    ggu     loop only over actual nodes/elements, not dimensions
+c
+c ./fem3d/subcus.f:
+c 12.07.2011	ggu	new routines init_ts()
+c
+c ./fem3d/newstab.f:
+c 12.07.2011    ggu     new rouitne output_stability()
+c 14.07.2011    ggu     new rouitne output_stability_node()
+c
+c ./fem3d/subnsu.f:
+c 07.07.2011	ggu	new subroutine area_element()
+c
+c ./fem3d/subuti.f:
+c 07.07.2011    ggu     bug fix in areael (unstable computation)
+
+==========================================================
+
 version  6_1_26    08-06-2011    VERS_6_1_26   commit_2011-07-14
 
 version  6_1_26    08-06-2011    VERS_6_1_26
