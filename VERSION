@@ -1,3 +1,33 @@
+version  6_1_28    15-07-2011    VERS_6_1_28
+
+========================================================== 15-07-2011 - 6_1_28
+
+c ./fem3d/vp.f:
+c 15.07.2011    ggu     calls to ideffi substituted
+c
+c ./fem3d/subver.f:
+c 15.07.2011	ggu	version 6.1.28
+c
+c ./fem3d/newcon.f:
+c 15.07.2011    ggu     call vertical_flux() anyway (BUG)
+c
+c ./fem3d/subcst.f:
+c 15.07.2011    ggu     new call to read basin
+c
+c ./fem3d/newchk.f:
+c 15.07.2011    ggu     new routines for CRC computation
+c
+c ./fem3d/debug.f:
+c 15.07.2011    ggu     new routines for checksum (CRC)
+c
+c ./fem3d/newstab.f:
+c 14.07.2011    ggu     new routine output_stability_node()
+c
+c ./fem3d/subapn.f:
+c 15.07.2011	ggu	adjusted, ideffi substituted
+
+==========================================================
+
 version  6_1_27    14-07-2011    VERS_6_1_27   commit_2011-07-15
 
 version  6_1_27    14-07-2011    VERS_6_1_27
