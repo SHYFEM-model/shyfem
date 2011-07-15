@@ -381,11 +381,11 @@ c******************************************************
         integer nunit,iform
         common /winwin/ nunit,iform
 
-	integer ideffi
+	integer ifemop
 
 	call windini
 
-	nunit = ideffi('datdir','runnam','.win','unform','old')
+	nunit = ifemop('.win','unform','old')
 	if( nunit .le. 0 ) then
 		stop 'error stop windopen: cannot open WIN file'
 	end if
@@ -490,11 +490,11 @@ c******************************************************
 	integer nknaux,nelaux,nlvaux
 	integer nvers,nvar
 
-	integer ideffi
+	integer ifemop
 
 	call waveini
 
-	nunit = ideffi('datdir','runnam','.wav','unform','old')
+	nunit = ifemop('.wav','unform','old')
 	if( nunit .le. 0 ) then
 		stop 'error stop waveopen: cannot open WAV file'
 	end if
@@ -665,11 +665,11 @@ c******************************************************
 
 	character*80 file
 
-	integer rfout,ideffi
+	integer rfout,ifemop
 
 	call outini
 
-	nunit = ideffi('datdir','runnam','.out','unform','old')
+	nunit = ifemop('.out','unform','old')
 	if( nunit .le. 0 ) then
 		stop 'error stop outopen: cannot open OUT file'
 	end if
@@ -875,7 +875,7 @@ c opens OUS file and reads header
 	integer ierr
         integer i
         real href,hzmin
-	integer ideffi
+	integer ifemop
 
 c initialize routines
 
@@ -883,7 +883,7 @@ c initialize routines
 
 c open file
 
-	nunit = ideffi('datdir','runnam','.ous','unform','old')
+	nunit = ifemop('.ous','unform','old')
 	if( nunit .le. 0 ) goto 96
 
         write(6,*) 'file OUS opened'
@@ -1072,7 +1072,7 @@ c opens NOS file and reads header
 	integer nvers
 	integer nknaux,nelaux,nlvaux,nvar
 	integer ierr
-	integer ideffi
+	integer ifemop
 
 c initialize routines
 
@@ -1080,7 +1080,7 @@ c initialize routines
 
 c open file
 
-	nunit = ideffi('datdir','runnam',type,'unform','old')
+	nunit = ifemop(,type,'unform','old')
 	if( nunit .le. 0 ) then
 		stop 'error stop conopen: cannot open NOS file'
         else

@@ -25,6 +25,7 @@ c 06.04.2009    ggu     read param.h
 c 24.04.2009    ggu     new call to rdgrd()
 c 04.03.2011    ggu     new routine test_grade()
 c 30.03.2011    ggu     new routine check_sidei(), text in optest()
+c 15.07.2011    ggu     calls to ideffi substituted
 c
 c notes :
 c
@@ -43,7 +44,7 @@ c********************************************************
 	character*80 file
 	character*80 errfil
 	character*80 errtex
-        character*80 descrg,descrr,descra
+        character*80 descrg,descrr,descra,basnam
         logical bstop,bopti
 
 	common /descrr/descrr
@@ -112,9 +113,10 @@ c
 c get name of basin
 c
 	call pardef(0)
-	ianz=igetxt('Enter name of basin : ',name)
+	ianz=igetxt('Enter name of basin : ',basnam)
 	if(ianz.le.0) stop
-	call putfnm('basnam',name)
+	call putfnm('basnam',basnam)
+	!write(6,*) 'basnam: ',basnam
 c
 c read all ?
 c
@@ -130,7 +132,7 @@ c always process whole file
 c
 c read input file
 c
-        file=name(1:ichanm(name))//'.grd'
+        file=basnam(1:ichanm(basnam))//'.grd'
         write(6,*) ' ...reading file ',file(1:ichanm(file))
 
 	nlidim = 0
@@ -213,7 +215,7 @@ c
 c
 c open files
 c
-        nb2=ideffi('basdir','basnam','.bas','unform','new')
+	nb2=idefbas(basnam,'new')
         if(nb2.le.0) stop
 
 c end reading ----------------------------------------------------
@@ -332,7 +334,7 @@ c*****************************************
 c
 c open bas file
 c
-	nb2=ideffi('basdir','basnam','.bas','unform','old')
+	nb2=idefbas(basnam,'old')
 	if(nb2.le.0) stop
 c
 c read from nb2

@@ -5,10 +5,8 @@ c create default names
 c
 c contents :
 c
-c function idefop(type,form,status)		  opens default file (outdated)
 c subroutine mkname(dir,name,ext,file)            makes file name
 c subroutine defmak(defdir,defnam,ext,file)	  makes file with defaults
-c subroutine deffile(ext,file)			  makes file with fem defaults
 c function ideffi(defdir,defnam,ext,form,status)  opens file in default dir
 c function ifemop(ext,form,status)		  opens file with default name
 c function ifemopa(text,ext,form,status)	  opens file with default name
@@ -27,73 +25,15 @@ c 11.10.2002	ggu	new subroutine deffile
 c 07.03.2007	ggu	new routine ifem_open_file
 c 29.04.2010	ggu	new routine ifem_open_file
 c 03.05.2010	ggu	new routine ifem_choose_file() and add_extension()
+c 02.07.2011	ggu	idefna,idefop finally deleted
+c 03.05.2010    ggu     new routine ifem_choose_file() and add_extension()
+c 13.07.2011    ggu     cleaned from old structures
 c
-c****************************************************************
+c notes :
 c
-c	function idefna(type,name)
+c exchange ideffi with ifemop (many apperances)
+c eliminate call to getpar/getfnm
 c
-c basin files
-c
-c	call getfnm('basdir',dir) call getfnm('basnam',nam) ext='.bas'
-c	call getfnm('basdir',dir) call getfnm('basnam',nam) ext='.geo'
-c	call getfnm('basdir',dir) call getfnm('basnam',nam) ext='.dep'
-c	call getfnm('basdir',dir) call getfnm('basnam',nam) ext='.bnd'
-c	call getfnm('basdir',dir) call getfnm('basnam',nam) ext='.isl'
-c
-c run output files
-c
-c	call getfnm('datdir',dir) call getfnm('runnam',nam) ext='.out'
-c	call getfnm('datdir',dir) call getfnm('runnam',nam) ext='.ous'
-c	call getfnm('datdir',dir) call getfnm('runnam',nam) ext='.ext'
-c	call getfnm('datdir',dir) call getfnm('runnam',nam) ext='.flt'
-c	call getfnm('datdir',dir) call getfnm('runnam',nam) ext='.fdf'
-c	call getfnm('datdir',dir) call getfnm('runnam',nam) ext='.rst'
-c	call getfnm('datdir',dir) call getfnm('runnam',nam) ext='.res'
-c	call getfnm('datdir',dir) call getfnm('runnam',nam) ext='.elv'
-c	call getfnm('datdir',dir) call getfnm('runnam',nam) ext='.nov'
-c	call getfnm('datdir',dir) call getfnm('runnam',nam) ext='.con'
-c	call getfnm('datdir',dir) call getfnm('runnam',nam) ext='.rms'
-c	call getfnm('datdir',dir) call getfnm('basnam',nam) ext='.el0'
-c
-c temporary files
-c
-c	call getfnm('tmpdir',dir) call getfnm('runnam',nam) ext='.cpu'
-c	call getfnm('tmpdir',dir) call getfnm('runnam',nam) ext='.prg'
-c	call getfnm('tmpdir',dir) call getfnm('runnam',nam) ext='.err'
-c	call getfnm('datdir',dir) call getfnm('runnam',nam) ext='.inf'
-c	call getfnm('runnam',nam) ext='.66'
-c
-c**************************************************************
-
-	function idefop(type,form,status)
-
-c opens default file -> should not be used any more
-
-	implicit none
-
-	integer idefop
-	character*(*) type,form,status
-
-	character*4 ext
-	character*6 defdir,defnam
-
-	integer ideffi
-
-	defdir = 'datdir'
-	defnam = 'runnam'
-
-	if( type .eq. 'bas' ) then
-	  defdir = 'basdir'
-	  defnam = 'runnam'
-	end if
-
-	ext(1:1) = '.'
-	ext(2:) = type
-
-        idefop = ideffi(defdir,defnam,ext,form,status)
-
-	end
-
 c**************************************************************
 
         subroutine mkname(dir,name,ext,file)
@@ -133,34 +73,94 @@ c function
 
 	call add_extension(file,ext,.false.)
 
-	return	!FIXME
+	return
 
-c new code: if extension given in name do not add default extension
-c		extension MUST have 3 chars	$$EXTENS
-c FIXME
+	end
+
+c**************************************************************
+c**************************************************************
+c**************************************************************
+
+	blockdata default_names
+
+        character*80 def_dir,def_nam
+	common /defdef/ def_dir,def_nam
+	save /defdef/
+
+	data def_dir,def_nam /' ',' '/
+
+	end
+
+c**************************************************************
+
+	subroutine set_default_names(defbas,defnam)
+
+c sets default names to be used with def routines
 c
-c this should be deleted
+c must be called before any other routine in subdef can be used
 
-	naux = nall - 4
-	if( naux .gt. 0 .and. file(naux:naux) .eq. '.' ) return
+        character*(*) defbas,defnam
+	
+        character*80 def_bas,def_nam
+	common /defdef/ def_bas,def_nam
+	save /defdef/
 
-        nstart=ichafs(ext)
-        nend=ichanm(ext)
+	def_bas = defbas
+	def_nam = defnam
 
-	if( nend .gt. 0 ) then
-	   if( ext(nstart:nstart) .ne. '.' ) then !add dot if not in ext
-		file(nall:nall) = '.'
-		nall = nall + 1
-	   end if
-	   file(nall:)=ext(nstart:nend)
-       	   nall=nall+nend-nstart+1
-	end if
+	end
+
+c**************************************************************
+
+	subroutine get_default_names(defbas,defnam)
+
+c gets default names to be used with def routines
+
+        character*(*) defbas,defnam
+	
+        character*80 def_bas,def_nam
+	common /defdef/ def_bas,def_nam
+	save /defdef/
+
+	defbas = def_bas
+	defnam = def_nam
+
+	end
+	
+c**************************************************************
+c**************************************************************
+c**************************************************************
+
+        subroutine def_make(ext,file)
+
+c makes file with defaults supplied
+c
+c ext   extension (with dot)
+c file  created file name (return)
+
+        implicit none
+
+        character*(*) ext,file
+
+        character*80 def_bas,def_nam
+	common /defdef/ def_bas,def_nam
+	save /defdef/
+
+        character*80 dir,name
+
+	name = def_nam
+        call getfnm('datdir',dir)	! this has to be deleted
+        call getfnm('runnam',name)	! this has to be deleted
+
+	call mkname(dir,name,ext,file)
 
 	end
 
 c**************************************************************
 
         subroutine defmak(defdir,defnam,ext,file)
+
+c FIXME -> take defdir,defnam from common block
 
 c makes file with defaults supplied
 c
@@ -172,36 +172,21 @@ c file  created file name (return)
         implicit none
 
         character*(*) defdir,defnam,ext,file
-	character*80 dir,nam
+	character*80 dir,name
 
 	dir = ' '
         if( defdir .ne. ' ' ) call getfnm(defdir,dir)
-        call getfnm(defnam,nam)
+        call getfnm(defnam,name)
 
-	call mkname(dir,nam,ext,file)
-
-	end
-
-c**************************************************************
-
-        subroutine deffile(ext,file)
-
-c makes file with defaults for fem model supplied
-c
-c ext   extension (with dot)
-c file  created file name (return)
-
-        implicit none
-
-        character*(*) ext,file
-
-	call defmak('datdir','runnam',ext,file)
+	call mkname(dir,name,ext,file)
 
 	end
 
 c**************************************************************
 
         function ideffi(defdir,defnam,ext,form,status)
+
+c FIXME -> substitute with ifemop (many appearances)
 
 c opens file in default dir
 
@@ -219,15 +204,43 @@ c status open status
 	integer ifileo
 
 	call defmak(defdir,defnam,ext,file)
+        call def_make(ext,file)
 	ideffi=ifileo(0,file,form,status)
 
 	end
 
 c**************************************************************
 
+	function idefbas(basnam,status)
+
+	implicit none
+
+	integer idefbas
+	character*(*) basnam
+	character*(*) status
+
+	character*80 name
+	integer ifileo
+
+        name = basnam
+        call add_extension(name,'.bas',.true.)
+
+        idefbas=ifileo(0,name,'unform','old')
+
+	end
+
+c**************************************************************
+c**************************************************************
+c**************************************************************
+c opening of default simulation
+c**************************************************************
+c**************************************************************
+c**************************************************************
+
         function ifemop(ext,form,status)
 
 c opens file with default name (run) and extension given for fem model
+c returns with error code
 
 c ext   extension (with dot)
 c form  formatted ?
@@ -241,9 +254,7 @@ c status open status
 	character*80 file,defdir,defnam
 	integer ifileo
 
-	defdir = ' '
-	defnam = 'runnam'
-	call defmak(defdir,defnam,ext,file)
+        call def_make(ext,file)
 	ifemop=ifileo(0,file,form,status)
 
 	end
@@ -268,9 +279,7 @@ c status open status
 	character*80 file,defdir,defnam
 	integer ifileo
 
-	defdir = ' '
-	defnam = 'runnam'
-	call defmak(defdir,defnam,ext,file)
+        call def_make(ext,file)
 	ifemopa=ifileo(0,file,form,status)
 
 	if( ifemopa .le. 0 ) then
@@ -282,14 +291,20 @@ c status open status
 	end
 
 c**************************************************************
+c**************************************************************
+c**************************************************************
+c unformatted opening of default simulation
+c**************************************************************
+c**************************************************************
+c**************************************************************
 
         function ifem_open_file(ext,status)
 
 c opens unformated file with default name (run) and extension given
 c in case of error exits 
 
-c ext   extension (with dot)
-c status open status
+c ext		extension (with dot)
+c status	open status
 
         implicit none
 
@@ -325,9 +340,7 @@ c status	open status
 	integer ifileo
 
 	form = 'unform'
-	defdir = ' '
-	defnam = 'runnam'
-	call defmak(defdir,defnam,ext,file)
+        call def_make(ext,file)
 
 	ifem_test_file = ifileo(0,file,form,status)
 
@@ -357,9 +370,7 @@ c status	open status
 	integer ifileo
 
 	form = 'unform'
-	defdir = ' '
-	defnam = 'runnam'
-	call defmak(defdir,defnam,ext,file)
+        call def_make(ext,file)
 	call add_extension(file,ext,.true.)
 
 	ifem_choose_file = ifileo(0,file,form,status)
@@ -371,6 +382,8 @@ c status	open status
 	end
 
 c**************************************************************
+c**************************************************************
+c**************************************************************
 
 	subroutine add_extension(name,ext,bforce)
 
@@ -380,6 +393,10 @@ c if bforce is true substitutes given extension
 c otherwise only adds if not already there
 c
 c extension must have 3 chars
+c
+c name		file name (with or without extension)
+c ext		extension (with or without dot)
+c bforce	force substitution of extension, even if already there
 
 	implicit none
 

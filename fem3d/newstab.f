@@ -12,8 +12,8 @@ c 26.01.2011    ggu     robs for nudging implemented
 c 16.02.2011    ggu     pass robs to subroutines, write stb-ind to nos file
 c 20.05.2011    ggu     allow for elimination of elems due to high rstab
 c 01.06.2011    ggu     wsink for stability integrated
-c 12.07.2011    ggu     new rouitne output_stability()
-c 14.07.2011    ggu     new rouitne output_stability_node()
+c 12.07.2011    ggu     new routine output_stability()
+c 14.07.2011    ggu     new routine output_stability_node()
 c
 c*****************************************************************
 c*****************************************************************

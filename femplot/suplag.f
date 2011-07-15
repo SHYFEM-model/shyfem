@@ -240,10 +240,9 @@ c**********************************************************
 
 	logical oktime
 	integer nrec
-        integer ideffi
+        integer ifemop
 
-        !iunit = ideffi('datdir','runnam','.lgr','form','unknown')
-        iunit = ideffi('datdir','runnam','.lgr','unform','unknown')
+        iunit = ifemop('.lgr','unform','unknown')
         if( iunit .le. 0 ) stop
 	!call lag_get_header(iunit,nvers)	!old
 	call lag_get_header_new(iunit,nvers)

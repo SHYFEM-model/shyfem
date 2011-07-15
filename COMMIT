@@ -1,5 +1,32 @@
 ============================================================
 
+Fri Jul 15 17:21:57 CEST 2011
+
+intermediate version
+
+ LOG              |   56 ++++---------
+ Rules.make       |   25 +++---
+ TODO             |   13 +++
+ fem3d/debug.f    |   71 ++++++++++++++++
+ fem3d/ht.f       |    1 +
+ fem3d/newbcl.f   |    2 -
+ fem3d/newchk.f   |  168 ++++++++++++++++++++++++++++++++++++++
+ fem3d/newcon.f   |    5 +-
+ fem3d/newstab.f  |    4 +-
+ fem3d/param.h    |    4 +-
+ fem3d/subapn.f   |   19 +++-
+ fem3d/subcst.f   |   28 +++----
+ fem3d/subdef.f   |  239 +++++++++++++++++++++++++++++-------------------------
+ fem3d/vp.f       |   14 ++--
+ femadj/param.h   |    4 +-
+ femplot/param.h  |    4 +-
+ femplot/suplag.f |    5 +-
+ femplot/supout.f |   20 +++---
+ param.h          |    4 +-
+ 19 files changed, 467 insertions(+), 219 deletions(-)
+
+============================================================
+
 Thu Jul 14 19:40:18 CEST 2011
 
 New version 6_1_27

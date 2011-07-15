@@ -166,6 +166,7 @@ c 23.03.2011    ggu     new parameter itvdv
 c 25.03.2011    ggu     error check for aapar and itvdv
 c 01.06.2011    ggu     wsink for stability integrated
 c 12.07.2011    ggu     run over nlv, not nlvdim, vertical_flux() for lmax>1
+c 15.07.2011    ggu     call vertical_flux() anyway (BUG)
 c
 c*********************************************************************
 
@@ -965,9 +966,7 @@ c	----------------------------------------------------------------
 c	compute vertical fluxes (w/o vertical TVD scheme)
 c	----------------------------------------------------------------
 
-	if( ilevel .gt. 0 ) then
-	  call vertical_flux_ie(btvdv,ie,ilevel,dt,wws,cl,wl,hold,vflux)
-	end if
+	call vertical_flux_ie(btvdv,ie,ilevel,dt,wws,cl,wl,hold,vflux)
 
 c----------------------------------------------------------------
 c loop over levels

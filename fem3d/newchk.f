@@ -51,6 +51,7 @@ c 26.02.2010    ggu     in test3d() write also meteo data
 c 08.04.2010    ggu     more info in checks (depth and area)
 c 17.05.2011    ggu     new routine check_set_unit() to set output unit
 c 12.07.2011    ggu     loop only over actual nodes/elements, not dimensions
+c 15.07.2011    ggu     new routines for CRC computation
 c
 c*************************************************************
 
@@ -935,6 +936,173 @@ c	vrlmax 		!relative error for each box
 c----------------------------------------------------------------
 c end of routine
 c----------------------------------------------------------------
+
+	end
+
+c*************************************************************
+c*************************************************************
+c************ CRC computation ********************************
+c*************************************************************
+c*************************************************************
+
+	subroutine check_crc
+
+	implicit none
+
+	include 'param.h'
+	include 'ev.h'
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer nlvdi,nlv
+	common /level/nlvdi,nlv
+
+	integer ilhv(1),ilhkv(1)
+	real fcorv(1)
+	real zov(1),znv(1)
+	real ulov(nlvdim,1)
+	real ulnv(nlvdim,1)
+	real vlov(nlvdim,1)
+	real vlnv(nlvdim,1)
+	real wlov(0:nlvdim,1)
+	real wlnv(0:nlvdim,1)
+	real utlov(nlvdim,1)
+	real utlnv(nlvdim,1)
+	real vtlov(nlvdim,1)
+	real vtlnv(nlvdim,1)
+	real hlv(1),hldv(1)
+	real hlhv(1)
+	real hev(1)
+	common /ilhv/ilhv, /ilhkv/ilhkv
+	common /fcorv/fcorv
+	common /zov/zov, /znv/znv
+	common /ulov/ulov
+	common /vlov/vlov
+	common /wlov/wlov
+	common /ulnv/ulnv
+	common /vlnv/vlnv
+	common /wlnv/wlnv
+	common /utlov/utlov
+	common /vtlov/vtlov
+	common /utlnv/utlnv
+	common /vtlnv/vtlnv
+	common /hlv/hlv, /hldv/hldv
+	common /hlhv/hlhv
+	common /hev/hev
+
+	real visv(0:nlvdim,1)
+	common /visv/visv
+	real difv(0:nlvdim,1)
+	common /difv/difv
+        real saltv(nlvdim,1)
+        real tempv(nlvdim,1)
+        common /saltv/saltv
+        common /tempv/tempv
+        real zeov(3,1), zenv(3,1)
+        common /zeov/zeov, /zenv/zenv
+        real rhov(nlvdim,1)
+        common /rhov/rhov
+
+        real hdknv(nlvdim,nkndim)
+        common /hdknv/hdknv
+        real hdenv(nlvdim,neldim)
+        common /hdenv/hdenv
+        real mfluxv(nlvdim,1)
+        common /mfluxv/mfluxv
+        real areakv(nlvdim,1)
+        common /areakv/areakv
+        real wprv(0:nlvdim,1)
+        common /wprv/wprv
+
+	integer icrc,iucrc
+	save iucrc
+	data iucrc /0/		! unit
+
+	integer ifemop
+
+	icrc = 3		! level of output [0-10]
+
+	if( icrc .le. 0 ) return
+
+	if( iucrc .le. 0 ) then
+	  iucrc = ifemop('.crc','form','new')
+	  if( iucrc .le. 0 ) stop 'error stop check_crc: open file'
+	end if
+
+	write(iucrc,*) '====================================='
+	write(iucrc,*) ' crc check at time = ',it
+	write(iucrc,*) '====================================='
+
+	call check_crc_1d(iucrc,'znv',nkn,znv)
+	call check_crc_1d(iucrc,'zenv',3*nel,zenv)
+	call check_crc_2d(iucrc,'utlnv',nlvdim,nel,ilhv,utlnv)
+	call check_crc_2d(iucrc,'vtlnv',nlvdim,nel,ilhv,vtlnv)
+	call check_crc_2d(iucrc,'saltv',nlvdim,nkn,ilhkv,saltv)
+	call check_crc_2d(iucrc,'tempv',nlvdim,nkn,ilhkv,tempv)
+	call check_crc_2d(iucrc,'rhov',nlvdim,nkn,ilhkv,rhov)
+
+	if( icrc .le. 1 ) return
+
+	call check_crc_1d(iucrc,'ev',evdim*nel,ev)
+	call check_crc_1d(iucrc,'hev',nel,hev)
+	call check_crc_1d(iucrc,'fcorv',nel,fcorv)
+	call check_crc_2d(iucrc,'visv',nlvdim,nkn,ilhkv,visv)
+	call check_crc_2d(iucrc,'difv',nlvdim,nkn,ilhkv,difv)
+	call check_crc_2d(iucrc,'hdknv',nlvdim,nkn,ilhkv,hdknv)
+	call check_crc_2d(iucrc,'hdenv',nlvdim,nel,ilhv,hdenv)
+
+	if( icrc .le. 2 ) return
+
+	call check_crc_2d(iucrc,'ulnv',nlvdim,nel,ilhv,ulnv)
+	call check_crc_2d(iucrc,'vlnv',nlvdim,nel,ilhv,vlnv)
+	call check_crc_2d(iucrc,'mfluxv',nlvdim,nkn,ilhkv,mfluxv)
+	call check_crc_2d(iucrc,'areakv',nlvdim,nkn,ilhkv,areakv)
+	call check_crc_2d(iucrc,'wlnv',nlvdim+1,nkn,ilhkv,wlnv)
+	call check_crc_2d(iucrc,'wprv',nlvdim+1,nkn,ilhkv,wprv)
+
+	if( icrc .le. 3 ) return
+
+	end
+
+c*************************************************************
+
+	subroutine check_crc_2d(iu,text,nlvdi,n,levels,array)
+
+	implicit none
+
+	integer iu
+	character*(*) text
+	integer nlvdi
+	integer n
+	integer levels(n)
+	real array(nlvdi,n)
+
+	integer crc,nlv
+
+	nlv = 0		! use levels
+
+	call checksum_2d(nlvdi,n,nlv,levels,array,crc)
+	write(iu,*) text,'   ',n,nlvdi,nlv,crc
+
+	end
+
+c*************************************************************
+
+	subroutine check_crc_1d(iu,text,n,array)
+
+	implicit none
+
+	integer iu
+	character*(*) text
+	integer n
+	real array(n)
+
+	integer crc
+
+	call checksum_1d(n,array,crc)
+	write(iu,*) text,'   ',n,crc
 
 	end
 

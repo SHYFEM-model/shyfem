@@ -519,6 +519,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	   !if( it .eq. 1429200 ) call test3d(66,100)
 
+	   call check_crc
 	   call set_dry
 
 	   call reset_stability

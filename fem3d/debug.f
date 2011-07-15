@@ -7,6 +7,7 @@ c 27.03.2003    ggu     new routines for NaN check and value test
 c 03.09.2003    ggu     check routines customized
 c 05.12.2003    ggu     in check[12]Dr only check val if vmin!=vmax
 c 06.12.2008    ggu     check for NaN changed (Portland compiler)
+c 15.07.2011    ggu     new routines for checksum (CRC)
 c
 c notes :
 c
@@ -332,3 +333,73 @@ c tests array for nan and strange values
 	end
 	  
 c***************************************************************
+c***************************************************************
+c***************************************************************
+
+	subroutine checksum_2d(n1dim,n,nlv,levels,idata,crc)
+
+	integer n1dim			! dimension of first index
+	integer n
+	integer nlv			!nlv>0 use this  nlv<=0 use levels
+	integer levels(n)
+	integer idata(n1dim,n)
+	integer crc
+
+	integer a,b
+	integer ivalue
+
+	a = 1
+	b = 0
+
+	do i=1,n
+	  lmax = nlv
+	  if( lmax .le. 0 ) lmax = levels(i)
+	  do l=1,lmax
+	    ivalue = idata(l,i)
+	    call checksum_i(a,b,ivalue)
+	  end do
+	end do
+
+	crc = 256*256 * b + a
+
+	end
+
+c***************************************************************
+
+	subroutine checksum_1d(n,idata,crc)
+
+	integer n
+	integer idata(n)
+	integer crc
+
+	integer a,b
+	integer ivalue
+
+	a = 1
+	b = 0
+
+	do i=1,n
+	  ivalue = idata(i)
+	  call checksum_i(a,b,ivalue)
+	end do
+
+	crc = 256*256 * b + a
+
+	end
+
+c***************************************************************
+
+	subroutine checksum_i(a,b,data)
+
+	integer a,b,data
+
+	integer MOD_ADLER
+	parameter ( MOD_ADLER = 65521 )
+
+	a = mod(a+data,MOD_ADLER)
+	b = mod(a+b,MOD_ADLER)
+
+	end
+
+c***************************************************************
+

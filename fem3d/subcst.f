@@ -31,6 +31,7 @@ c 24.10.2001    ggu     Write on use of Coriolis
 c 14.08.2003    ggu     set depth values transferred to newini
 c 23.03.2006    ggu     use routine set_timeunit() to set time unit
 c 11.02.2009    ggu     in cstfile set fixed name for STR file
+c 15.07.2011    ggu     new call to read basin
 c
 c************************************************************************
 
@@ -171,23 +172,16 @@ c reads files (str and bas)
 	implicit none
 
 	integer nkndim,neldim
-	integer nin,ideffi
-	character*80 file
+	integer nin
+	character*80 file,basnam
 
-	file='venlag.str'	!STR file - if given use this, else STDIN
-	file = ' '
+	integer idefbas
 
-	if( file .ne. ' ' ) then
-	  nin = 1
-	  open(nin,file=file,status='old')
-	  call nlsh2d(nin)
-	  close(nin)
-	else
-	  nin = 5
-	  call nlsh2d(nin)
-	end if
+	nin = 5
+	call nlsh2d(nin)
 
-	nin = ideffi('basdir','basnam','.bas','unform','old')
+        call getfnm('basnam',basnam)
+        nin = idefbas(basnam,'old')
 	call sp13rr(nin,nkndim,neldim)
 	close(nin)
 

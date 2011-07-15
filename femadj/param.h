@@ -25,8 +25,8 @@
 	parameter ( neldim = 6000 )
 	parameter ( nlvdim = 22 )
 
-	parameter ( mbwdim = 220 )
-	parameter ( ngrdim = 15 )
+	parameter ( mbwdim = 300 )
+	parameter ( ngrdim = 12 )
 
 	parameter ( nbcdim = 50 )
 	parameter ( nrbdim = 1000 )

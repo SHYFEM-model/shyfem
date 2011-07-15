@@ -24,6 +24,7 @@ c 12.02.1999	ggu	honor auto mode
 c 12.02.1999	ggu	read runnam from memfil only if not in apn file
 c 05.12.2001	ggu	fixed compiler error with -Wall -pedantic
 c 20.06.2003	ggu	in iapini statement shiftet for compiler error Origin
+c 15.07.2011	ggu	adjusted, ideffi substituted
 c
 c notes :
 c
@@ -166,13 +167,22 @@ c iapini        1:success 0:error
 c
 c mode negative: do not ask for new basin and simulation
 
+	implicit none
+
+	integer mode,nkndim,neldim,matdim
+
 	character*80 descrr
 	character*80 line
-	character*80 basnew,basold
+	character*80 basnew,basold,name
+	integer  nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	real grav,fcor,dcor,dirn,rowass,roluft
 	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
 	common /descrr/descrr
 	real f(10)
+
+	integer i,iunit
+	integer iapini,ifileo,idefbas
 
 	save basold
 
@@ -198,7 +208,7 @@ c open bas file
 
 	call getfnm('basnam',basnew)
 	if(basnew.ne.basold) then
-		iunit=ideffi('basdir','basnam','.bas','unform','old')
+		iunit=idefbas(basnew,'old')
 		if(iunit.le.0) return
 		call sp13rr(iunit,nkndim,neldim)
 		close(iunit)
@@ -247,7 +257,7 @@ c reads default parameters nls and fnm
 	character*80 file
 	character*80 apnnam
 
-	integer ideffi
+	integer ifileo
 	real getpar
 
 	logical bfirst
@@ -263,8 +273,7 @@ c first call -> set parameters, read parameter file, ...
 	  call getfnm('apnfil',apnnam)
 	  call putfnm('apnnam',apnnam)
 
-	  call mkname(' ',apnnam,'.str',file)
-	  nin=ideffi(' ','apnnam','.str','form','old') !$$APNPAR
+	  nin=ifileo(0,'apnstd.str','form','old')
 
 	  call nlsa(nin)
 	  if(nin.gt.0) close(nin)

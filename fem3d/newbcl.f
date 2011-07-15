@@ -80,13 +80,11 @@ c common
 
 	real saltv(nlvdim,1),tempv(nlvdim,1),rhov(nlvdim,1)
 	real bpresv(nlvdim,1)
-        real bpresxv(nlvdim,1),bpresyv(nlvdim,1)!deb110407
 	real uprv(nlvdim,1), vprv(nlvdim,1)
 	real v1v(1),v2v(1)
 	integer ilhkv(1)
 	common /saltv/saltv, /tempv/tempv, /rhov/rhov
 	common /bpresv/bpresv
-        common /bpresxv/bpresxv, /bpresyv/bpresyv!deb110407
 	common /uprv/uprv, /vprv/vprv
 	common /ilhkv/ilhkv
 	common /v1v/v1v, /v2v/v2v

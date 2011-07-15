@@ -86,24 +86,17 @@ export NGRDIM = 12
 #export NLVDIM = 20
 
 # Skadar new
-export NKNDIM = 16000
-export NELDIM = 30000
-export NLVDIM = 10
-export NGRDIM = 15
-export MBWDIM = 220
-export NBCDIM = 50
+#export NKNDIM = 20610
+#export NELDIM = 39170
+#export NLVDIM = 10
+#export NGRDIM = 15
+#export MBWDIM = 220
+#export NBCDIM = 50
 
 # trieste
 #export NKNDIM = 26000
 #export NELDIM = 51000
 #export NLVDIM = 17
-
-# trieste small
-export NKNDIM = 3000
-export NELDIM = 6000
-export NLVDIM = 22
-
-# Venice
 
 # Venice
 #export NKNDIM = 5000
@@ -122,6 +115,12 @@ export NLVDIM = 22
 #export NELDIM = 22000
 #export NLVDIM = 30
 #export MBWDIM = 240
+
+# trieste small
+export NKNDIM = 3000
+export NELDIM = 6000
+export NLVDIM = 22
+
 
 ##############################################
 # Compiler

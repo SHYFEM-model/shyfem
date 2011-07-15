@@ -3,3 +3,16 @@ nosextr_nodes.f
 finish subdry.f
 finish beta handling
 
+idtcon	no write without sync
+plot 2D filed of 3D simulation
+smagorinski to manual
+check code for 32/64 bit conversion
+check if gotm is run in 2D (shearfv gives NaN)
+
+color handling
+	colsetup
+	set_color_table
+	set_default_color_table
+
+force fvl opening even with extension
+femplot -> plot dry areas (auto)
