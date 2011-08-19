@@ -1,3 +1,36 @@
+version  6_1_29    19-08-2011    VERS_6_1_29
+
+========================================================== 19-08-2011 - 6_1_29
+
+c ./femplot/supout.f:
+c 18.08.2011  ggu     bug fix in nosopen() -> extra comma eliminated 
+c
+c ./femplot/supiso.f:
+c 18.08.2011    ggu     use isoinp to decide if interpolate or not in element
+c
+c ./femplot/suplin.f:
+c 18.08.2011    ggu     better error check of node list
+c
+c ./femplot/supint.f:
+c 18.08.2011  ggu     make vsect bigger
+c
+c ./fem3d/subdef.f:
+c 18.08.2011    ggu     bug fix in idefbas -> use status passed in
+c
+c ./fem3d/subver.f:
+c 15.07.2011	ggu	version 6.1.29
+c
+c ./fem3d/subsys.f:
+c 18.08.2011	ggu	new parameter isoinp (interpolate inside element)
+c
+c ./fem3d/subfnm.f:
+c 18.08.2011	ggu	check size of text for getfnm -> limit chars copied
+c
+c ./fem3d/subwin.f:
+c 18.08.2011	ggu	bug fix in binwin() -> close file
+
+==========================================================
+
 version  6_1_28    15-07-2011    VERS_6_1_28   commit_2011-08-19
 
 version  6_1_28    15-07-2011    VERS_6_1_28
