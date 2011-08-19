@@ -94,9 +94,9 @@ export NGRDIM = 12
 #export NBCDIM = 50
 
 # trieste
-#export NKNDIM = 26000
-#export NELDIM = 51000
-#export NLVDIM = 17
+export NKNDIM = 26000
+export NELDIM = 51000
+export NLVDIM = 17
 
 # Venice
 #export NKNDIM = 5000
@@ -117,10 +117,9 @@ export NGRDIM = 12
 #export MBWDIM = 240
 
 # trieste small
-export NKNDIM = 3000
-export NELDIM = 6000
-export NLVDIM = 22
-
+#export NKNDIM = 3000
+#export NELDIM = 6000
+#export NLVDIM = 22
 
 ##############################################
 # Compiler

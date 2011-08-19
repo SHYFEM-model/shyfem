@@ -22,6 +22,7 @@ c
 c revised 04.04.92 by ggu (cint)
 c revised 12.06.97 by ggu (section introduced)
 c 18.03.1998	ggu	save secfnm (bug uncovered by g77)
+c 18.08.2011	ggu	check size of text for getfnm -> limit chars copied
 c
 c**************************************************************
 c
@@ -67,6 +68,7 @@ c-------------------------------------------
 c
 	character*6 namarg,namvec,actsec
 	character*1 type,cint
+	integer ltext
 c	logical bdebug
 c
 	save ifirst,nentry
@@ -86,6 +88,8 @@ c
 c
 	namarg=name
 	call uplow(namarg,'low')
+
+	ltext = len(text)
 c
 c find entry name %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c
@@ -153,6 +157,7 @@ c
 	if(type.eq.'g'.or.type.eq.'l') then             !get text
 		ianf=iptfnm(ientry)
 		iend=iptfnm(ientry+1)-1
+		iend=min(iend,ianf+ltext-1)
 		ii=0
 		do i=ianf,iend
 		   ii=ii+1

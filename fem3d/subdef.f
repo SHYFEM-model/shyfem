@@ -28,6 +28,7 @@ c 03.05.2010	ggu	new routine ifem_choose_file() and add_extension()
 c 02.07.2011	ggu	idefna,idefop finally deleted
 c 03.05.2010    ggu     new routine ifem_choose_file() and add_extension()
 c 13.07.2011    ggu     cleaned from old structures
+c 18.08.2011    ggu     bug fix in idefbas -> use status passed in
 c
 c notes :
 c
@@ -225,7 +226,7 @@ c**************************************************************
         name = basnam
         call add_extension(name,'.bas',.true.)
 
-        idefbas=ifileo(0,name,'unform','old')
+        idefbas=ifileo(0,name,'unform',status)
 
 	end
 

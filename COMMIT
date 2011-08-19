@@ -1,5 +1,32 @@
 ============================================================
 
+Fri Aug 19 17:56:01 CEST 2011
+
+various bug fixes
+
+ BUG                   |   12 +++++
+ LOG                   |   13 ++++++
+ Rules.make            |   13 +++---
+ fem3d/newchk.f        |    6 +-
+ fem3d/nosaver_basin.f |    7 ++-
+ fem3d/nossum.f        |   15 +------
+ fem3d/param.h         |    6 +-
+ fem3d/subdef.f        |    3 +-
+ fem3d/subfnm.f        |    5 ++
+ fem3d/subsys.f        |    6 +++
+ fem3d/subwin.f        |    2 +
+ femadj/param.h        |    6 +-
+ fembin/nodes2grd.pl   |  111 +++++++++++++++++++++++++++++++++++++++++++++++++
+ femplot/param.h       |    6 +-
+ femplot/supint.f      |    3 +-
+ femplot/supiso.f      |    8 +++-
+ femplot/suplin.f      |   33 +++++++++++++--
+ femplot/supout.f      |    3 +-
+ param.h               |    6 +-
+ 19 files changed, 217 insertions(+), 47 deletions(-)
+
+============================================================
+
 Fri Jul 15 17:22:58 CEST 2011
 
 New version 6_1_28

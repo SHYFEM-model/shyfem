@@ -18,6 +18,7 @@ c 23.02.2010  ggu     change in reading wind file
 c 30.03.2011  ggu     new routines to handle fvl files (not yet integrated)
 c 31.03.2011  ggu     use fvl routines to exclude areas from plot
 c 12.07.2011  ggu     in prepsim use what is available for dry areas
+c 18.08.2011  ggu     bug fix in nosopen() -> extra comma eliminated 
 c
 c**********************************************************
 c**********************************************************
@@ -1080,7 +1081,7 @@ c initialize routines
 
 c open file
 
-	nunit = ifemop(,type,'unform','old')
+	nunit = ifemop(type,'unform','old')
 	if( nunit .le. 0 ) then
 		stop 'error stop conopen: cannot open NOS file'
         else

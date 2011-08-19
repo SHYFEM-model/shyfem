@@ -1,4 +1,16 @@
 
+BUG_2010_28     ggu	6.1.29   18.08.2011
+	bug fix in getfnm() -> limit chars of text copied
+
+BUG_2010_27     ggu	6.1.29   18.08.2011
+	bug fix in nosopen() -> extra comma eliminated (supout.f)
+
+BUG_2010_26     ggu	6.1.29   18.08.2011
+	bug fix in idefbas() -> use status passed in (subdef.f)
+
+BUG_2010_25     ggu	6.1.29   18.08.2011
+	bug fix in binwin() -> file is closed now (subwin.f)
+
 BUG_2010_24     ggu	6.1.25   01.06.2011
 	bug fix in green() -> i instead ii (subdif.f)
 

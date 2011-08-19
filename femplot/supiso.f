@@ -20,6 +20,7 @@ c 06.12.2008    ggu     plot isolines only where area is existing (bplot)
 c 09.01.2009    ggu     deleted plcol0 (not used), new set_fxy_vals()
 c 09.01.2009    ggu     plot only part of isolines using make_single_isolines()
 c 23.02.2010    ggu     restructured and commented, use generic color table
+c 18.08.2011    ggu     use isoinp to decide if interpolate or not in element
 c
 c****************************************************
 
@@ -59,6 +60,7 @@ c local
 	integer ie,ii,kn
 	integer inull
 	integer isolin
+	integer isoinp
 	integer icsave
 
         real getpar
@@ -69,6 +71,7 @@ c initialization
 c--------------------------------------------------------------------
 
         isolin = nint(getpar('isolin'))	!plot isoline also for color
+        isoinp = nint(getpar('isoinp'))	!interpolate in element?
 
 	if(nkn.ne.nval) then
 		write(6,*) 'nval must be nkn :',nval,nkn
@@ -105,9 +108,10 @@ c	  -----------------------------------------
 	  call set_color_table(-1)
 	  do ie=1,nel
 	    call set_fxy_vals(ie,flag,val,f,x,y,inull)
-	    if( inull .eq. 0 ) then
+	    if( isoinp .gt. 0 ) then
 	      call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
-	      !call plnode(x,y,f,ciso,fiso,isoanz+1,fnull)	!plot node
+	    else
+	      call plnode(x,y,f,ciso,fiso,isoanz+1,fnull)	!plot node
 	    end if
 	  end do
 	  call set_color_table(icsave)

@@ -97,6 +97,7 @@ c 25.02.2011	ggu	new param wsmax to catch errors in wind type
 c 23.03.2011	ggu	new parameter itvdv
 c 24.03.2011	ggu	new parameters iheat,hdecay,botabs
 c 01.06.2011	ggu	new parameter idtmin
+c 18.08.2011	ggu	new parameter isoinp (interpolate inside element)
 c
 c************************************************************************
 
@@ -1277,12 +1278,17 @@ c		isolines to be plotted. A good choice is to make this
 c		equal to |nctick|, so that the isolines correspond to the 
 c		values	written on the colorbar. For compatibility, a value of
 c		1 plots all isolines. (Default 0)
+c |isoinp|	Normally inside elements the values are interpolated.
+c		Sometimes it is usefull to just plot the value of the
+c		node without interpolation inside the element. This can
+c		be accomplished by setting |isoinp=0|. (Default 1)
 c |bgray|	Gray value used for the finite element grid when plotting
 c		the bathymetry. (Default 0.8)
 
         call addpar('nisomx',20.)      !maximum number of isovalues allowed
         call addpar('nctick',0.)       !default number of ticks to use
         call addpar('isolin',0.)       !plot isolines with color ?
+        call addpar('isoinp',1.)       !interpolate inside elements
 	call addpar('bgray',0.8)       !grey value for bathymetry
 
 c DOCS	END

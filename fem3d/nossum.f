@@ -188,24 +188,13 @@ c end of routine
 c---------------------------------------------------------------
 
 	stop
-   95   continue
-        write(6,*) 'error parameters in fvl file : '
-        write(6,*) 'nkn: ',nkn,nkn2
-        write(6,*) 'nel: ',nel,nel2
-        write(6,*) 'nlv: ',nlv,nlv2
-        stop 'error stop nosaver: nkn,nel,nlv'
-   96   continue
-        write(6,*) 'error parameters in nos file: '
-        write(6,*) 'nkn: ',nkn,nkn1
-        write(6,*) 'nel: ',nel,nel1
-        stop 'error stop nosaver: nkn,nel'
    97	continue
 	write(6,*) 'nstate,nsdim: ',nstate,nsdim
 	write(6,*) 'nstate and nsdim must be equal'
-	stop 'error stop: nsdim'
+	stop 'error stop nossum: nsdim'
    98	continue
 	write(6,*) ivar,nread,nstate,icheck
-	stop 'error stop: error in reading records...'
+	stop 'error stop nossum: error in reading records...'
 	end
 
 c***************************************************************

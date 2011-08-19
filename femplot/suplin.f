@@ -14,6 +14,7 @@ c 15.04.2010    ggu     fix bug where lower layer is plotted with value 0
 c 29.09.2010    ggu     finished velocity plot with reference arrow
 c 09.10.2010    ggu     better labeling of reference arrow
 c 21.12.2010    ggu     plotting vertical vector of sigma (not finished)
+c 18.08.2011    ggu     better error check of node list
 c
 c************************************************************************
 
@@ -1031,8 +1032,13 @@ c------------------------------------------------------------------
 	  k1 = nodes(i-1)
 	  k2 = nodes(i)
 	  call find_elems_to_segment(k1,k2,ie1,ie2)
-	  elems(i) = ie1
-	  if( ie2 .gt. 0 ) then
+	  if( ie2 .le. 0 ) then
+	    if( ie1 .le. 0 ) goto 99
+	    elems(i) = ie1
+	  else if( ie1 .le. 0 ) then
+	    elems(i) = ie2
+	  else
+	    elems(i) = ie1
 	    if( hev(ie2) .gt. hev(ie1) ) elems(i) = ie2
 	  end if
 	  ie = elems(i)
@@ -1075,6 +1081,12 @@ c------------------------------------------------------------------
 c end of routine
 c------------------------------------------------------------------
 
+	return
+   99	continue
+	write(6,*) 'nodes: ',ipext(k1),ipext(k2)
+	write(6,*) 'these nodes are not linked by any element'
+	write(6,*) 'please revise your node list'
+	stop 'error stop line_find_elements: cannot find elements'
 	end
 
 c************************************************************************
@@ -1090,10 +1102,12 @@ c reads line given by nodes
 	integer n
 	integer nodes(ndim)
 
-	integer iunit,nn
+	logical berror
+	integer iunit,nn,k
 	integer ifileo,ipint
 
 	n = 0
+	berror = .false.
 
 	iunit = ifileo(0,file,'form','old')
 	if( iunit .le. 0 ) goto 99 
@@ -1103,7 +1117,12 @@ c reads line given by nodes
 	  if( nn .le. 0 ) goto 2
 	  n = n + 1
 	  if( n .gt. ndim ) stop 'error stop line_read_nodes: ndim'
-	  nodes(n) = ipint(nn)
+	  k = ipint(nn)
+	  if( k .le. 0 ) then
+	    write(6,*) 'no such node: ',nn
+	    berror = .true.
+	  end if
+	  nodes(n) = k
 	goto 1
     2	continue
 
@@ -1111,7 +1130,13 @@ c reads line given by nodes
 
 	close(iunit)
 
+	if( berror ) goto 98
+
 	return
+   98	continue
+	write(6,*) 'Some nodes are not existing'
+	write(6,*) 'please revise your node list'
+	stop 'error stop line_read_nodes: no such nodes'
    99	continue
 	write(6,*) 'Cannot open section file: '
 	write(6,*) file

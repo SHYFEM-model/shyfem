@@ -12,6 +12,7 @@ c 02.03.2005  ggu     new routines set_flag and get_flag
 c 17.09.2008  ggu     comments for level = -1
 c 06.12.2008  ggu     in extlev set not-existing values to flag
 c 14.09.2009  ggu     new way to determine if section plot in getisec()
+c 18.08.2011  ggu     make vsect bigger
 c
 c**********************************************************
 c**********************************************************
@@ -121,7 +122,7 @@ c is it a vertical section
 
         integer getisec
 	real getpar
-	character*6 vsect
+	character*80 vsect
 
 	call getfnm('vsect',vsect)
 	!getisec = nint(getpar('isect'))

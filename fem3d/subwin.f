@@ -82,6 +82,7 @@ c 22.02.2010	ggu&ccf	restructured, new formulas Smith&Banke, Large&Pond
 c 16.02.2011	ggu	set std pressure if pressure not given
 c 25.02.2011	ggu	new param wsmax to catch errors in wind type
 c 23.03.2011	ggu	better error message in binwin()
+c 18.08.2011	ggu	bug fix in binwin() -> close file
 c
 c*************************************************************************
 
@@ -440,6 +441,7 @@ c	does not flag an error...
 	    if( na .eq. nkn .or. na .eq. 1 ) then
 		binwin = .true.			!no error -> unformatted
 	  	write(6,*) 'the wind file is unformated: ',file
+		close( nwin )
 		return
 	    end if
 	end if

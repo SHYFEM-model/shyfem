@@ -1,4 +1,17 @@
 
+18.08.2011	various bug fixes
+
+	better error check of node list (suplin.f)
+	isoinp for plotting in element (subsys.f, supiso.f)
+	compiler error fixed in nosopen() (supout.f)
+	bug fix in idefbas() -> use status (subdef.f)
+	bug fix in binwin() -> close file (subwin.f)
+	bug fix in getfnm() -> limit chars copied
+
+	nodes2grd.pl to format node list for grd
+
+========================================================== 15-07-2011 - 6_1_28
+
 15.07.2011
 
 	new calls to read bas/sim (vp.f, subapn.f subcst.f)

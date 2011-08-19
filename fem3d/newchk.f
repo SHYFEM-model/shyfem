@@ -1005,9 +1005,9 @@ c*************************************************************
         real rhov(nlvdim,1)
         common /rhov/rhov
 
-        real hdknv(nlvdim,nkndim)
+        real hdknv(nlvdim,1)
         common /hdknv/hdknv
-        real hdenv(nlvdim,neldim)
+        real hdenv(nlvdim,1)
         common /hdenv/hdenv
         real mfluxv(nlvdim,1)
         common /mfluxv/mfluxv
@@ -1022,7 +1022,7 @@ c*************************************************************
 
 	integer ifemop
 
-	icrc = 3		! level of output [0-10]
+	icrc = 0		! level of output [0-10]
 
 	if( icrc .le. 0 ) return
 

@@ -38,7 +38,7 @@ c creates 4 values: aver, min, max, sum
         integer it,ivar
         integer ierr
         integer nvers
-	real cmin,cmax,cmed,vtot
+	real cmin,cmax,cmed,vtot,totmass
 
         integer iapini,ideffi,ifileo
         integer ifem_open_file,ifem_test_file,ifem_choose_file
@@ -128,8 +128,9 @@ c	  --------------------------------------------------------
 c	  write output
 c	  --------------------------------------------------------
 
-	  write(6,1234) it,ivar,cmin,cmed,cmax
-	  write(100+ivar,1235) it,cmin,cmed,cmax
+	  totmass = cmed * vtot
+	  write(6,1234) it,ivar,cmin,cmed,cmax,totmass
+	  write(100+ivar,1235) it,cmin,cmed,cmax,totmass
 	  write(100,'(i10,e14.6)') it,vtot
 
 	end do
