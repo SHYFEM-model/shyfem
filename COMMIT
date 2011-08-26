@@ -1,5 +1,15 @@
 ============================================================
 
+Fri Aug 26 16:06:29 CEST 2011
+
+minor changes
+
+ .gitignore   |    1 +
+ fembin/vpgrd |    4 ++--
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+============================================================
+
 Fri Aug 26 15:52:01 CEST 2011
 
 changes to use SHYFEMDIR in routines

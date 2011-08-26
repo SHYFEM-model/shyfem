@@ -36,8 +36,8 @@ if [ -z "$1" ]; then
 fi
 
 vpexe="$BINDIR/vp"
-if [ -x "$vpexe" ]; then
-  echo "No executable vp"
+if [ ! -x "$vpexe" ]; then
+  echo "No executable vp in $BINDIR"
   exit 1
 fi
 

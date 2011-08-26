@@ -18,6 +18,7 @@ bin
 
 a.out
 DIFFS
+errout.dat
 
 fem3d/basbathy
 fem3d/basinf
