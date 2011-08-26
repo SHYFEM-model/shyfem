@@ -9,7 +9,7 @@
 #
 # #!/usr/bin/env perl
 #
-# use lib "$ENV{HOME}/fem/lib/perl";
+# use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
 # use str;
 # 
 # my $file = $ARGV[0];

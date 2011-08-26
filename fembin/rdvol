@@ -2,7 +2,7 @@
 #
 # shell for volinf
 
-FEMDIR=${FEMDIR:-$HOME/fem}
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 BINDIR=$FEMDIR/fem3d
 
 if [ $# != 1 ]; then

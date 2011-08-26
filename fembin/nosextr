@@ -1,4 +1,11 @@
 #!/bin/sh
+#
+#-----------------------------------------------------------------
+
+femdir=${SHYFEMDIR:=$HOME/shyfem}
+bindir=$femdir/fem3d
+
+#-----------------------------------------------------------------
 
 Usage()
 {
@@ -36,8 +43,6 @@ if [ $# -eq 0 ]; then
 fi
 
 datafile=$1
-femdir=$HOME/fem
-bindir=$femdir/fem3d
 tmpfile=extr.tmp
 
 if [ ! -f $datafile ]; then

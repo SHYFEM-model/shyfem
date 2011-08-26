@@ -1,4 +1,11 @@
 #!/bin/sh
+#
+#-----------------------------------------------------------------
+
+femdir=${SHYFEMDIR:=$HOME/shyfem}
+bindir=$femdir/fem3d
+
+#-----------------------------------------------------------------
 
 Usage()
 {
@@ -37,8 +44,6 @@ if [ "$1" = "-freq" ]; then
   freq=$2
 fi
 
-femdir=$HOME/fem
-bindir=$femdir/fem3d
 tmpfile=aver.tmp
 
 #-------------------------------------------------- prepare input file

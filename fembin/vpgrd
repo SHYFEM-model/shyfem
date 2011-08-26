@@ -2,32 +2,16 @@
 #
 # shell for vp
 
-FEMDIR=${FEMDIR:-$HOME/fem}
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 BINDIR=$FEMDIR/fem3d
 
 ##################################### help function
 
-help()
+Usage()
 {
   echo "Usage: vpgrd [-noopt] [-h|-help] basin"
 }
 
-##################################### options
-
-GetVp()
-{
-  if [ -x "vp" ]; then
-    vpexe="vp"
-  elif [ -x "$BINDIR/vp" ]; then
-    vpexe="$BINDIR/vp"
-  else
-    actual=`pwd`
-    cd $BINDIR
-    make vp
-    cd $actual
-    vpexe="$BINDIR/vp"
-  fi
-}
 ##################################### options
 
 opt="YES"	#optimization is on
@@ -36,8 +20,8 @@ while [ $# -gt 0 ]
 do
   case $1 in
         -noopt) opt="NO";;
-        -help)  help; exit 1;;
-        -h)     help; exit 1;;
+        -help)  Usage; exit 1;;
+        -h)     Usage; exit 1;;
         -*)     echo "Unknown option: $1"; exit 1;;
          *)     break;;
   esac
@@ -47,7 +31,13 @@ done
 ###################################### check file name
 
 if [ -z "$1" ]; then
-  help
+  Usage
+  exit 1
+fi
+
+vpexe="$BINDIR/vp"
+if [ -x "$vpexe" ]; then
+  echo "No executable vp"
   exit 1
 fi
 
@@ -56,13 +46,6 @@ file=$name.grd
 
 if [ ! -f $file ]; then
   echo "No such file: $file"
-  exit 1
-fi
-
-GetVp
-#echo "vp: $vpexe"
-if [ -z "$vpexe" ]; then
-  echo "No executable vp"
   exit 1
 fi
 

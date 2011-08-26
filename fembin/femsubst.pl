@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 
 $oldpattern = quotemeta('FEMDIR=$HOME/fem');
-$newpattern = 'FEMDIR=${FEMDIR:-$HOME/fem}' . "\n";
+$newpattern = 'FEMDIR=${SHYFEMDIR:-$HOME/shyfem}' . "\n";
 
 while(<>) {
   if( /^$oldpattern/ ) {

@@ -2,7 +2,7 @@
 #
 # runs gridr
 
-FEMDIR=${FEMDIR:-$HOME/fem}
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 BINDIR=$FEMDIR/femspline
 
 gridr=$BINDIR/gridr

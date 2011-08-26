@@ -2,7 +2,7 @@
 #
 # runs scal_intp
 
-FEMDIR=${FEMDIR:-$HOME/fem}
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 BINDIR=$FEMDIR/fem3d
 
 progname=scal_intp

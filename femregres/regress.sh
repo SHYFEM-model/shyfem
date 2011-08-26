@@ -1,8 +1,11 @@
 #!/bin/sh
 #
 # exports version of fem3d and runs regression test
-
+#
 #----------------------------------------------------------
+
+echo "do not run .. must be revised..."
+exit 1
 
 Usage()
 {

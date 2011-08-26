@@ -1,5 +1,86 @@
 ============================================================
 
+Fri Aug 26 15:52:01 CEST 2011
+
+changes to use SHYFEMDIR in routines
+
+ fembin/basbathy              |    6 +-
+ fembin/basinf                |    2 +-
+ fembin/bastreat              |    2 +-
+ fembin/convert_date.pl       |    2 +-
+ fembin/diffs                 |    2 +
+ fembin/extractgrd.pl         |    3 +-
+ fembin/extractgrd1.pl        |    3 +-
+ fembin/fembat                |    5 +
+ fembin/femrun                |    2 +-
+ fembin/femsubst.pl           |    2 +-
+ fembin/femversion            |   13 --
+ fembin/get_timestep.sh       |    5 +-
+ fembin/gitcommit             |    2 +-
+ fembin/gp                    |    5 +-
+ fembin/grd2bnd.pl            |    3 +-
+ fembin/grd2nod.pl            |    3 +-
+ fembin/grd_area.pl           |    3 +-
+ fembin/grd_area.sh           |    2 +-
+ fembin/grd_bline.pl          |    3 +-
+ fembin/grd_check.pl          |    3 +-
+ fembin/grd_closest.pl        |    3 +-
+ fembin/grd_inf.pl            |    3 +-
+ fembin/grd_modify.pl         |    3 +-
+ fembin/grd_smooth.pl         |    3 +-
+ fembin/grd_transl.pl         |    3 +-
+ fembin/grid.pl               |    2 +-
+ fembin/make_line_nodes.sh    |    2 +-
+ fembin/makebline.pl          |    3 +-
+ fembin/nod2grd.pl            |    3 +-
+ fembin/nodes2grd.pl          |    3 +-
+ fembin/nosaver               |    9 +-
+ fembin/nosextr               |    9 +-
+ fembin/ousextr               |    9 +-
+ fembin/plots                 |    2 +-
+ fembin/procheaders.sh        |    2 +-
+ fembin/rdext                 |    4 +-
+ fembin/rdflx                 |    2 +-
+ fembin/rdvol                 |    2 +-
+ fembin/reduce                |    2 +-
+ fembin/regularize            |    2 +-
+ fembin/revisionlog           |    2 +-
+ fembin/revisionlog.pl        |    3 +-
+ fembin/revisionlog_adjust.pl |    3 +-
+ fembin/scal_intp             |    2 +-
+ fembin/shyfem_install.pl     |    5 +
+ fembin/shyfem_version.sh     |    4 +-
+ fembin/spltext               |    2 +-
+ fembin/spltflx               |    2 +-
+ fembin/strnodes              |    4 +-
+ fembin/strparse.pl           |    3 +-
+ fembin/vpgrd                 |   39 +---
+ femcheck/bashrc              |    5 -
+ femcheck/bashrc.ggu          |   29 ---
+ femcheck/bashrc.skel         |    5 -
+ femcheck/femdir.sh           |   49 -----
+ femcheck/find_routines.sh    |   53 +++++
+ femcheck/install.sh          |  184 ------------------
+ femcheck/profile             |    7 -
+ femcheck/profile.ggu         |  435 ------------------------------------------
+ femcheck/profile.skel        |    7 -
+ femlib/perl/address.pm       |    3 +-
+ femlib/perl/ascii.pm         |    2 +-
+ femlib/perl/convert_date.pl  |    2 +-
+ femlib/perl/csv.pm           |    3 +-
+ femlib/perl/date.pm          |    3 +-
+ femlib/perl/grd.pm           |    3 +-
+ femlib/perl/info.txt         |    7 +-
+ femlib/perl/mail.pm          |    2 +-
+ femlib/perl/message.pm       |    3 +-
+ femlib/perl/missing.pm       |    3 +-
+ femlib/perl/spam.pm          |    3 +-
+ femlib/perl/str.pm           |    2 +-
+ femregres/regress.sh         |    5 +-
+ 73 files changed, 197 insertions(+), 829 deletions(-)
+
+============================================================
+
 Fri Aug 26 11:41:06 CEST 2011
 
 New version 6_1_30

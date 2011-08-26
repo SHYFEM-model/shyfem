@@ -1,9 +1,9 @@
 #!/bin/sh
 
-str=$1
-FEMDIR=${FEMDIR:-$HOME/fem}
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 BINDIR=$FEMDIR/fem3d
 
+str=$1
 strfile=`basename $str .str`
 strfile=$strfile.str
 

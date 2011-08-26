@@ -2,8 +2,9 @@
 #
 # shell for gnuplot
 #
+#########################################################
 
-version=1.44
+version=1.50
 
 # 1.50	05.05.2011	new option -sy (not yet working)
 # 1.46	23.10.2009	new option -verbose
@@ -23,6 +24,8 @@ version=1.44
 # 1.00			original version
 
 ######################################################### defaults
+
+femdir=${SHYFEMDIR:=$HOME/shyfem}
 
 title="Timeseries"
 type="monochrome"

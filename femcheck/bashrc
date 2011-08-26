@@ -1,5 +1,0 @@
-# .bashrc for FEM model
-
-alias pp='. $HOME/.bash_profile; ls'
-alias femdir='. $HOME/fem/femcheck/femdir.sh'
-

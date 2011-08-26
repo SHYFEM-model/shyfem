@@ -9,7 +9,8 @@
 #
 #----------------------------------------------------
 
-use lib "$ENV{HOME}/fem/femlib/perl";
+use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
+
 use grd;
 use strict;
 

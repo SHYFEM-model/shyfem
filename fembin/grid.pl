@@ -3409,7 +3409,7 @@ sub Rescale_points
 
 # example of usage:
 #
-# use lib "$ENV{HOME}/fem/femlib/perl";
+# use lib "$ENV{HOME}/shyfem/femlib/perl";
 # use grd;
 # 
 # my $grid = new grd;

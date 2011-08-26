@@ -5,7 +5,7 @@
 # extracts version of SHYFEM
 #
 # called without argument returns version of actual SHYFEM distribution
-# called with VERSION file returns version of this fem directory
+# called with directory returns version of this fem directory
 #
 # Usage: shyfem_dir.sh [femdir]
 #
@@ -25,7 +25,7 @@ if [ ! -f $version_file ]; then
 fi
 
 if [ ! -f $version_file ]; then
-  echo "No such file: $version_file ...aborting" 1>&2
+  echo "Cannot find file: VERSION ...aborting" 1>&2
   echo "unknown"
   exit 1
 fi

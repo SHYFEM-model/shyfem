@@ -7,7 +7,7 @@
 what=0
 quiet="NO"
 
-FEMDIR=${FEMDIR:-$HOME/fem}
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 
 BINDIR=$FEMDIR/fembin
 PLOTDIR=$FEMDIR/femplot

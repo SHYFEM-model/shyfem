@@ -4,7 +4,8 @@
 #
 #----------------------------------------------------------
 
-femdir=~/fem/fembin
+femdir=${SHYFEMDIR:=$HOME/shyfem}
+fembin=$femdir/fembin
 
 if [ $# -lt 1 ]; then
   echo "Usage: get_timestep.sh simulation [idtsyn]"
@@ -23,6 +24,6 @@ if [ $idtsyn -eq 0 ]; then
 else
   echo "$idtsyn" > aaa.tmp
   getkey.pl  set_timestep  $file  >> aaa.tmp
-  $femdir/clean_time < aaa.tmp
+  $fembin/clean_time < aaa.tmp
 fi
 

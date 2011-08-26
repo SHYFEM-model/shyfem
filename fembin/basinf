@@ -2,7 +2,7 @@
 #
 # shell for basinf
 
-FEMDIR=${FEMDIR:-$HOME/fem}
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 BINDIR=$FEMDIR/fem3d
 
 recursivemake basinf $BINDIR > /dev/null

@@ -7,6 +7,11 @@
 $femdir = shift;
 $in_section = 0;
 
+if [ -z "$femdir" ]; then
+  echo "shyfem_install.pl should not be run directly... aborting"
+  exit 1
+fi
+
 while(<>) {
 
   chomp;

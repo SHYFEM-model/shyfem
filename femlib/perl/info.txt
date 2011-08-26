@@ -1,7 +1,10 @@
 
-add multiple directories to @INC
+add multiple directories to @INC:
 
-use lib ("$ENV{HOME}/fem/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
+use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
+
+$FEMDIR=$ENV{SHYFEMDIR}?$ENV{SHYFEMDIR}:$ENV{HOME}/shyfem;
+
 
 
 to install packages:

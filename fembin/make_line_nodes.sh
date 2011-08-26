@@ -2,7 +2,7 @@
 #
 ##############################################################
 
-FEMDIR=${FEMDIR:-$HOME/fem}
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 
 BINDIR=$FEMDIR/fembin
 PLOTDIR=$FEMDIR/femplot

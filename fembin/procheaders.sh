@@ -2,7 +2,7 @@
 #
 # processes headers from fortran files
 
-FEMDIR=${FEMDIR:-$HOME/fem}
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 export FEMDIR
 
 ###############################################################

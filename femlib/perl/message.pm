@@ -6,7 +6,8 @@
 #
 # #!/usr/bin/env perl
 #
-# use lib "$ENV{HOME}/lib/perl";
+# use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
+#
 # use mail;
 # 
 # $file = @ARGV[0];

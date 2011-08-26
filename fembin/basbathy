@@ -1,9 +1,13 @@
 #!/bin/sh
 #
 # runs basbathy
+#
+#------------------------------------------------------------------------
 
-FEMDIR=${FEMDIR:-$HOME/fem}
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 BINDIR=$FEMDIR/fem3d
+
+#------------------------------------------------------------------------
 
 basbathy=basbathy
 

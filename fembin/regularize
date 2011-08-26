@@ -2,7 +2,7 @@
 #
 # runs adjele
 
-FEMDIR=${FEMDIR:-$HOME/fem}
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 BINDIR=$FEMDIR/femadj
 
 adjele=$BINDIR/adjele

@@ -1,6 +1,7 @@
 #!/usr/bin/perl -s
 
-use lib "$ENV{HOME}/lib/perl";
+use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
+
 use mail;
 use message;
 use address;

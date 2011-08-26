@@ -2,7 +2,7 @@
 #
 # runs bastreat
 
-FEMDIR=${FEMDIR:-$HOME/fem}
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 BINDIR=$FEMDIR/fem3d
 
 bastreat=$BINDIR/bastreat
