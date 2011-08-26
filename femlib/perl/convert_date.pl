@@ -6,6 +6,8 @@
 #
 #-------------------------------------------------
 
+use lib ("$ENV{HOME}/fem/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
+
 use date;
 
 my $date = new date;
@@ -33,6 +35,7 @@ $date->init_year($year0);
 
 if( $it2date ) {
   (@res) = $date->convert_from_it(@date);
+  (@res) = format_numbers(@res);
 } else {
   (@res) = $date->convert_to_it(@date);
 }
@@ -41,4 +44,17 @@ $line = join(" ",@res);
 print "$line\n";
 
 #--------------------------------------
+
+sub format_numbers {
+
+  foreach my $n (@_) {
+    if( $n < 1 ) {
+      $n = "00";
+    } elsif( $n < 10) {
+      $n = "0$n";
+    }
+  }
+
+  return @_;
+}
 

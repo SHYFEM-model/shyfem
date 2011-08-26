@@ -31,6 +31,7 @@ c 26.02.2010	ggu	new momentum_advective_stability()
 c 08.03.2010	ggu	run only down to avail layers (bug fix)
 c 16.12.2010	ggu	barocl preconditioned for sigma layers, but not finshed
 c 20.05.2011	ggu	compute statistics of stability, no stab in dry elemes
+c 25.08.2011	dbf&ggu	baroclinic gradient for sigma level integrated
 c
 c notes :
 c
@@ -108,7 +109,8 @@ c baroclinic contribution
 c-------------------------------------------
 
         !if( bbarcl ) call set_barocl
-        if( bbarcl ) call set_barocl_new
+        !if( bbarcl ) call set_barocl_new
+	if( bbarcl ) call set_barocl_new_interface
 
 c-------------------------------------------
 c end of routine
@@ -840,6 +842,10 @@ c**********************************************************************
 
         subroutine set_barocl_new
 
+c computes baroclinic contribution centered on layers
+c
+c cannot use this for sigma levels
+
         implicit none
          
         include 'param.h'
@@ -858,8 +864,6 @@ c**********************************************************************
         common /fyv/fyv
         real rhov(nlvdim,1)
         common /rhov/rhov
-	real bpresv(nlvdim,1)
-	common /bpresv/bpresv
         real hdeov(nlvdim,1)
         common /hdeov/hdeov
 	real hev(1)
@@ -884,6 +888,10 @@ c**********************************************************************
 
         raux=grav/rowass
 	bsigma = hldv(1) .lt. 0.
+
+	if( bsigma ) then
+	  stop 'error stop set_barocl_new: cannot use with sigma levels'
+	end if
 
         do ie=1,nel
           presbcx = 0.
@@ -926,7 +934,7 @@ c**********************************************************************
 
         subroutine set_barocl_old
 
-c do not use !!!
+c do not use this routine !
 
         implicit none
          
@@ -946,8 +954,6 @@ c do not use !!!
         common /fyv/fyv
         real rhov(nlvdim,1)
         common /rhov/rhov
-	real bpresv(nlvdim,1)
-	common /bpresv/bpresv
         real hdeov(nlvdim,1)
         common /hdeov/hdeov
 	real hev(1)
@@ -970,6 +976,8 @@ c do not use !!!
 
 	double precision px(0:nlvdim)
 	double precision py(0:nlvdim)
+
+	stop 'error stop set_barocl_old: do not use this routine'
 
         if(nlvdim.ne.nlvdi) stop 'error stop set_barocl_new: nlvdi'
 
@@ -1017,6 +1025,134 @@ c do not use !!!
             fxv(l,ie) = fxv(l,ie) + xbcl
             fyv(l,ie) = fyv(l,ie) + ybcl
 	  end do
+        end do
+        
+        end
+
+c**********************************************************************
+
+        subroutine set_barocl_new_interface
+
+c computes baroclinic contribution centered on interfaces
+c
+c use this routine with sigma levels
+
+        implicit none
+         
+        include 'param.h'
+	include 'ev.h'
+        
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer nlv,nlvdi
+        common /level/ nlvdi,nlv
+        real grav,fcor,dcor,dirn,rowass,roluft
+        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+
+        real fxv(nlvdim,1)      !new HYDRO deb
+        real fyv(nlvdim,1)
+        common /fxv/fxv
+        common /fyv/fyv
+        real rhov(nlvdim,1)
+        common /rhov/rhov
+	real bpresv(nlvdim,1)
+	common /bpresv/bpresv
+        real zov(nkndim)
+        common /zov/zov
+        real hdeov(nlvdim,1)
+        common /hdeov/hdeov
+        real hdkov(nlvdim,nkndim)
+        common /hdkov/hdkov
+	real hev(1)
+	common /hev/hev
+	real hldv(1)
+	common /hldv/hldv
+        integer ilhv(1)
+        common /ilhv/ilhv
+        integer ilmv(1)
+        common /ilmv/ilmv
+        integer nen3v(3,1)
+        common /nen3v/nen3v
+        real hkv(1) !DEB
+	real hlv(1)!DEB
+	common /hlv/hlv !DEB
+	common /hkv/hkv !DEB
+
+	logical bsigma
+        integer k,l,ie,ii,lmax,lmin
+        double precision hlayer,hint,hhk,hh,hhup,dzdx,dzdy,zk
+        double precision xbcl,ybcl
+        double precision raux,rhop,presbcx,presbcy
+        double precision b,c,br,cr,brup,crup,brint,crint
+	double precision rhoup,psigma
+
+        if(nlvdim.ne.nlvdi) stop 'error stop set_barocl_new: nlvdi'
+
+        raux=grav/rowass
+	bsigma = hldv(1) .lt. 0.
+	psigma = 0.
+
+        do ie=1,nel
+          presbcx = 0.
+          presbcy = 0.
+	  lmin = ilmv(ie)
+          lmax = ilhv(ie)
+	  brup=0.
+	  crup=0.
+	  hhup=0.
+          do l=1,lmax
+            !hhi = hdeov(l,ie)
+            !hhi = hldv(l)
+	    !if( bsigma ) hhi = - hhi * hev(ie)
+
+            hlayer = hdeov(l,ie)		!layer thickness
+	    if( .not. bsigma ) hlayer = hldv(l)
+
+            hh = 0.5 * hlayer
+	    hint = hh + hhup			!interface thickness
+                
+	    br = 0.
+	    cr = 0.                 
+	    dzdx = 0.
+	    dzdy = 0.
+            do ii=1,3                 
+              k = nen3v(ii,ie)
+              rhop = rhov(l,k)		!rho^prime for each node of element 
+	      rhoup = rhop
+	      if (l.gt.1) rhoup = rhov(l-1,k)
+              b = ev(3+ii,ie)		!gradient in x
+              c = ev(6+ii,ie)		!gradient in y
+              br = br + b * rhop
+              cr = cr + c * rhop
+	      if (bsigma) then
+		psigma = 2.*(rhoup-rhop)/hint
+		hhk = -hlv(l) * (hkv(k)+zov(k))
+		zk = -hhk		!transform depth in z
+	        dzdx = dzdx + b * zk
+	        dzdy = dzdy + c * zk
+	      end if
+            end do
+
+	    if( l .eq. 1 ) then		!surface layer ... treat differently
+	      brint = br
+	      crint = cr
+	    else
+	      brint = 0.5*(br+brup)
+	      crint = 0.5*(cr+crup)
+	    end if
+
+	    brup=br
+	    crup=cr
+	    hhup=hh
+	    
+            presbcx = presbcx + hint * ( brint - dzdx * psigma )
+	    presbcy = presbcy + hint * ( crint - dzdy * psigma )
+
+            xbcl =  raux * hlayer * presbcx
+            ybcl =  raux * hlayer * presbcy
+            fxv(l,ie) = fxv(l,ie) + xbcl
+            fyv(l,ie) = fyv(l,ie) + ybcl
+          end do
         end do
         
         end

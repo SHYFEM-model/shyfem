@@ -1,43 +1,49 @@
 #!/usr/bin/perl -s
 #
-# converts seconds from given year to human readable format
+# usage: convert_date.pl [options] year0 {it|year month day hour min sec}
 #
+# possible options: -it2date -date2it
 #
-# Usage: convert_date.pl -year=# ts-file
-#
-#----------------------------------------------------------
+#-------------------------------------------------
 
 use lib ("$ENV{HOME}/fem/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
+
 use date;
 
-$def_year = 0;
-$def_year = $year if( $year );	
-unless( $def_year ) {
-  die "Must give reference year. Use -year=2005 or similar to set year.\n";
-}
-
 my $date = new date;
-$date->init_year($def_year);
 
-while(<>) {
+$year0 = shift(@ARGV);
+@date=@ARGV;
 
-  chomp;
-  s/^\s+//;
-  @f = split;
-
-  $it = shift(@f);
-  $rest = join(" ",@f);
-
-  ($year,$month,$day,$hour,$min,$sec) = $date->convert_from_it($it);
-  ($month,$day,$hour,$min,$sec) = format_numbers($month,$day,$hour,$min,$sec);
-
-  #print "$year/$month/$day $hour:$min:$sec  $rest\n";
-  print "$day/$month/$year $hour:$min:$sec  $rest\n";
+if( not defined $date[0] or $h or $help ) {
+  print STDERR "Usage: convert_date.pl [-it2date|-date2it] year0 {it|date}\n";
+  print STDERR "   date: year [month [day [hour [min [sec]]]]]\n";
+  exit 1;
 }
 
-print STDERR "Using $def_year as reference year\n";
+if( not $it2date and not $date2it ) {	# no option given
+  if( defined $date[1] ) {		# more than one value given
+    $date2it = 1;
+  } else {
+    $it2date = 1;
+  }
+}
 
-#------------------------------------------------------------
+#print "|$it2date|$date2it|\n";
+
+$date->init_year($year0);
+
+if( $it2date ) {
+  (@res) = $date->convert_from_it(@date);
+  (@res) = format_numbers(@res);
+} else {
+  (@res) = $date->convert_to_it(@date);
+}
+
+$line = join(" ",@res);
+print "$line\n";
+
+#--------------------------------------
 
 sub format_numbers {
 
@@ -51,3 +57,4 @@ sub format_numbers {
 
   return @_;
 }
+

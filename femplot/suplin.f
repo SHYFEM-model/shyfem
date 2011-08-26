@@ -15,6 +15,8 @@ c 29.09.2010    ggu     finished velocity plot with reference arrow
 c 09.10.2010    ggu     better labeling of reference arrow
 c 21.12.2010    ggu     plotting vertical vector of sigma (not finished)
 c 18.08.2011    ggu     better error check of node list
+c 24.08.2011    ggu     small changes to avoid run time error
+c 24.08.2011    ggu     plot real depth for zeta layers
 c
 c************************************************************************
 
@@ -197,8 +199,10 @@ c----------------------------------------------------------------
 	  call proj_velox(vmode,n,nodes,lnodes,ilhkv,dxy,vel,val
      +					,vmin,vmax,vhmin,vhmax)
 	else
-	  call line_insert_scalars(n,nodes,lnodes,ilhkv,nlvdim
-     +					,sv,val,vmin,vmax)
+	  call line_insert_scalars(n,nodes,lnodes,ilhkv,sv
+     +					,val,vmin,vmax)
+	  vhmin = vmin	!...
+	  vhmax = vmax	!not needed, only to avoid run time error
 	end if
 	call colauto(vmin,vmax)
 	write(6,*) 'min/max on line: ',vmin,vmax
@@ -275,12 +279,14 @@ c--------------------------------------------------------------------
 	    yt2 = ya(2,l-1)
 	    yb1 = ya(1,l)
 	    yb2 = ya(2,l)
-	    if( bsigma ) then
-	      call plot_scal(x1,yt1,yb1,x2,yt2,yb2
+	    call plot_scal(x1,yt1,yb1,x2,yt2,yb2
      +				,val(ltop,i-1),val(ltop,i))
-	    else
-	      call plot_rect(x1,yt1,x2,yb1,val(ltop,i-1),val(ltop,i))
-	    end if
+c	    if( bsigma ) then
+c	      call plot_scal(x1,yt1,yb1,x2,yt2,yb2
+c     +				,val(ltop,i-1),val(ltop,i))
+c	    else
+c	      call plot_rect(x1,yt1,x2,yb1,val(ltop,i-1),val(ltop,i))
+c	    end if
 	  end do
 	end do
 
@@ -872,18 +878,19 @@ c************************************************************************
 
 c************************************************************************
 
-	subroutine line_insert_scalars(n,nodes,lnodes,ilhkv,nlvdim,sv
+	subroutine line_insert_scalars(n,nodes,lnodes,ilhkv,sv
      +					,values,vmin,vmax)
 
 c inserts scalar values into matrix section
 
 	implicit none
 
+	include 'param.h'
+
 	integer n
 	integer nodes(n)
 	integer lnodes(n)
 	integer ilhkv(1)		!number of layers in node
-	integer nlvdim
 	real sv(nlvdim,1)
 	real values(0:2*nlvdim,n)
 	real vmin,vmax
@@ -1016,13 +1023,14 @@ c deepest element is chosen
 	integer lelems(n)	!layers in element (return)
 	integer lnodes(n)	!layers in node (return)
 
-	logical bsigma
+	logical bsigma,berror
 	integer i,k1,k2,ie1,ie2,l
 	integer ii,ie
 	real h
 	integer ipext,ieext
 
 	bsigma = hlv(nlv) .eq. -1.
+	berror = .false.
 
 c------------------------------------------------------------------
 c set up depth structure in line (elements)
@@ -1033,7 +1041,10 @@ c------------------------------------------------------------------
 	  k2 = nodes(i)
 	  call find_elems_to_segment(k1,k2,ie1,ie2)
 	  if( ie2 .le. 0 ) then
-	    if( ie1 .le. 0 ) goto 99
+	    if( ie1 .le. 0 ) then
+	      write(6,*) '*** nodes: ',ipext(k1),ipext(k2)
+	      berror =.true.
+	    end if
 	    elems(i) = ie1
 	  else if( ie1 .le. 0 ) then
 	    elems(i) = ie2
@@ -1052,6 +1063,8 @@ c------------------------------------------------------------------
 	  !write(6,*) '                    ',ipext(k1),ipext(k2)
 	  !write(6,*) '                    ',ieext(ie1),ieext(ie2)
 	end do
+
+	if( berror ) goto 99
 
 c------------------------------------------------------------------
 c compute total layers in line (elements)
@@ -1083,8 +1096,7 @@ c------------------------------------------------------------------
 
 	return
    99	continue
-	write(6,*) 'nodes: ',ipext(k1),ipext(k2)
-	write(6,*) 'these nodes are not linked by any element'
+	write(6,*) 'These nodes are not linked by any element'
 	write(6,*) 'please revise your node list'
 	stop 'error stop line_find_elements: cannot find elements'
 	end
@@ -1280,6 +1292,7 @@ c************************************************************************
 	      h = -hd * hlv(l)
 	    else
 	      h = hlv(l)
+	      if( l .eq. nlv ) h = hd
 	    end if
 	    if( blog ) h = hlog(h,hvmax)
 	    if( .not. blayer .and. h .gt. hvmax ) h = hvmax

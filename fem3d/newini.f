@@ -54,6 +54,7 @@ c 08.10.2010    ggu	bug fix in init_coriolis() -> ym not set for isphe=1
 c 16.12.2010    ggu	big restructering for sigma levels (look for bsigma)
 c 21.02.2011    ggu	error check for dzreg, nsigma and levels
 c 23.03.2011    ggu	new routine adjust_spherical(), error check isphe
+c 24.08.2011    ggu	eliminated hbot for sigma due to run time error
 c
 c**************************************************************
 
@@ -345,7 +346,6 @@ c--------------------------------------------------------------
 	    nlv = nsigma
 	    hl = -1. / nlv
 	    do l=1,nlv
-	      hbot = hbot + dzreg
 	      hlv(l) = l * hl
 	    end do
 	  else if( dzreg .gt. 0. ) then	!regular grid

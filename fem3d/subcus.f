@@ -3827,25 +3827,42 @@ c time of inundation for theseus
 
         integer iwegv(1)
         common /iwegv/iwegv
+        integer nen3v(3,1)
+        common /nen3v/nen3v
         real hdenv(nlvdim,neldim)
         common /hdenv/hdenv
 	real hev(1)
 	common /hev/hev
+        real saltv(nlvdim,nkndim)
+        common /saltv/saltv
 
-	integer ie,n
+	logical binit,blast
+	integer ie,n,k,ii
+	integer idtwrite
 	real area,dt,h
+	real sedim,smed,s
 
-	integer idry(nkndim)
+	integer idry(neldim)
 	save idry
-	real sedim,sedim_save
-	logical binit
-	save sedim_save,binit
+	real sedim_save
+	save sedim_save
+	double precision salt_aver_k(nkndim)
+	real salt_aver_e(neldim)
+	save salt_aver_k,salt_aver_e
+	integer isum
+	save isum
 
 	real getpar
 
 	integer icall
 	save icall
 	data icall /0/
+
+	binit = .false.
+	blast = it .eq. itend
+	idtwrite = 86400
+	idtwrite = 86400*30.5
+	smed = 5.
 
 	if( icall .eq. 0 ) then
 	  area = 0.
@@ -3856,46 +3873,79 @@ c time of inundation for theseus
 	  area = area * 12.
 	  write(122,*) icall,nel,area
 	  write(122,*) (12.*ev(10,ie),ie=1,nel)
-	  sedim_save = getpar('sedim')
-	  binit = .false.
+	  sedim_save = getpar('sedim')	! sedimentation in [mm/y]
 	  if( sedim_save .lt. 0. ) then
 	    sedim_save = -sedim_save
-	    binit = .true.
+	    binit = .true.		! initialize hev from file
 	  end if
+	  do k=1,nkn
+	    salt_aver_k(k) = 0.
+	  end do
+	  do ie=1,nel
+	    salt_aver_e(ie) = smed
+	  end do
+	  isum = 0
 	end if
+
+c-----------------------------------------
+c accumulate
+c-----------------------------------------
 
 	do ie=1,nel
 	  if( iwegv(ie) .ne. 0 ) then
-	    idry(ie) = idry(ie) + 1
+	    idry(ie) = idry(ie) + idt	! changed !!! -> was +1
 	  end if
 	end do
 
-	!write(123,*) it,itend
-	if( it .eq. itend ) then
-	  write(123,*) icall,nel
-	  write(123,*) (idry(ie),ie=1,nel)
+	isum = isum + 1
+	do k=1,nkn
+	  salt_aver_k(k) = salt_aver_k(k) + saltv(1,k)
+	end do
+
+c-----------------------------------------
+c write to file
+c-----------------------------------------
+
+	if( mod(it,idtwrite) .eq. 0 ) then
+	  write(124,*) icall,nel,it,idtwrite
+	  write(124,*) (idry(ie),ie=1,nel)
+
+	  do k=1,nkn
+	    salt_aver_k(k) = salt_aver_k(k) / isum
+	  end do
+	  do ie=1,nel
+	    s = 0.
+	    do ii=1,3
+	      k = nen3v(ii,ie)
+	      s = s + salt_aver_k(k)
+	    end do
+	    salt_aver_e(ie) = s / 3.
+	  end do
+	  write(127,*) icall,nel,it,idtwrite
+	  write(127,*) (salt_aver_e(ie),ie=1,nel)
+	  write(128,*) icall,nkn,it,idtwrite
+	  write(128,*) (salt_aver_k(k),k=1,nkn)
+	  do k=1,nkn
+	    salt_aver_k(k) = 0.
+	  end do
+	  isum = 0
 	end if
 
-	if( mod(it,86400) .eq. 0 ) then
-	  write(124,*) icall,nel,it,86400
-	  write(124,*) (idry(ie),ie=1,nel)
+	if( blast ) then
+	  write(123,*) icall,nel,it,0
+	  write(123,*) (idry(ie),ie=1,nel)
 	end if
 
 c-----------------------------------------
 c modify depth
 c-----------------------------------------
 
-	!binit = .false.		! initialize hev from file
-	!sedim = 2.		! mm/y
-	!sedim = 5.		! mm/y
-	!sedim = 0.		! mm/y
-
 	sedim = sedim_save
 
 	if( sedim .gt. 0. ) then
 
 	call get_timestep(dt)
-	sedim = sedim*0.001/(365*86400)
+	sedim = sedim*0.001/(365*86400)		! [m/s]
 	sedim = sedim * dt
 
 	do ie=1,nel
@@ -3916,16 +3966,16 @@ c-----------------------------------------
 c read or write hev
 c-----------------------------------------
 
-	if( binit .and. icall .eq. 0 ) then
+	if( binit ) then	! initialize hev
 	  write(6,*) 'hev initialized'
 	  call read_in_hev('in_hev.dat')
 	  call adjourne_depth_from_hev
 	  call set_last_layer
           call setweg(0,n)
-          call setznv             ! -> change znv since zenv has changed
+          call setznv           ! -> change znv since zenv has changed
 	end if
 
-	if( it .eq. itend ) then
+	if( blast ) then	! last time step -> write out
 	  call write_out_hev('out_hev.dat')
 	  write(6,*) 'sedim used: ',sedim_save,binit
 	end if

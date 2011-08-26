@@ -30,6 +30,25 @@ ChangeDot()
   echo "$afile has been changed... original saved to $save"
 }
 
+CreateSymlink()
+{
+  link=$HOME/$1
+  date=`date "+%Y%m%d"`
+
+  if [ -d $link ]; then                 #directory exists
+    if [ -L $link ]; then               #symbolic link
+      rm -f $link
+    else                                #real directory
+      save=$link.$date.$$
+      mv -f $link $save
+      echo "renaming existing directory shyfem to $save"
+    fi
+  fi
+
+  echo "creating symbolic link from $femdir to $link"
+  ln -s $femdir $link
+}
+
 # check shyfem directory -----------------------------------
 
 dir=`pwd -P`
@@ -50,21 +69,8 @@ femdir=$dir
 
 # make symbolic link -----------------------------------
 
-link=$HOME/shyfem
-date=`date "+%Y%m%d"`
-
-if [ -d $link ]; then		#directory exists
-  if [ -L $link ]; then		#symbolic link
-    rm -f $link
-  else				#real directory
-    save=$link.$date.$$
-    mv -f $link $save
-    echo "renaming existing directory shyfem to $save"
-  fi
-fi
-
-echo "creating symbolic link from $femdir to $link"
-ln -s $femdir $link
+CreateSymlink shyfem
+CreateSymlink fem               #this might be deleted somewhen
 
 # change dot files -----------------------------------
 

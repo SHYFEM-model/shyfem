@@ -1,5 +1,25 @@
 ============================================================
 
+Fri Aug 26 11:39:15 CEST 2011
+
+baroclinic terms for sigma layer
+
+ LOG                         |   10 +++
+ fem3d/newexpl.f             |  148 ++++++++++++++++++++++++++++++++--
+ fem3d/newini.f              |    2 +-
+ fem3d/subcus.f              |  100 +++++++++++++++++------
+ fembin/convert_date.pl      |   53 +++++++-----
+ fembin/gpsinsert            |   33 +++++---
+ fembin/gpsinsert.pl         |  189 +++++++++++++++++++++++++++++++++---------
+ fembin/grd_closest.pl       |   76 +++++++++++++++++
+ fembin/shyfem_install.sh    |   36 +++++----
+ fembin/strparse.pl          |   12 +++-
+ femlib/perl/convert_date.pl |   16 ++++
+ femplot/suplin.f            |   39 ++++++---
+ 12 files changed, 577 insertions(+), 137 deletions(-)
+
+============================================================
+
 Fri Aug 19 17:57:14 CEST 2011
 
 New version 6_1_29

@@ -1,4 +1,14 @@
 
+25.08.2011	baroclinic forcing for sigma layers introduced
+
+	baroclinic gradient for sigma level integrated (newexpl.f)
+	small changes to avoid run time errors (suplin.f, newini.f)
+	plot sections with real depth coming from hev, not hlv (zeta levels)
+	new utility command: grd_closest.pl
+	modified utility commands: convert_date.pl,gpsinsert.pl,strparse.pl
+
+========================================================== 19-08-2011 - 6_1_29
+
 18.08.2011	various bug fixes
 
 	better error check of node list (suplin.f)

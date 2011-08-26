@@ -35,6 +35,7 @@ $::bnd = 1 if $::bnd;
 #-------------------------------------------------------------
 
 my $file = $ARGV[0];
+Usage() unless $file;
 
 my $str = new str;
 $str->read_str($file);
@@ -44,8 +45,15 @@ if( $::bnd ) {
 } elsif( $::files ) {
   show_files($str);
 } else {
-  print STDERR "no command specified...\n";
-  print STDERR "possible commands: -bnd -files\n";
+  Usage();
+}
+
+#------------------------------------------------------------
+
+sub Usage {
+
+  print STDERR "Usage: strparse.pl {-bnd|-files} str-file\n";
+  exit 0;
 }
 
 #------------------------------------------------------------
