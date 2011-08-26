@@ -1,3 +1,22 @@
+version  6_1_30    26-08-2011    VERS_6_1_30
+
+========================================================== 26-08-2011 - 6_1_30
+
+c ./femplot/suplin.f:
+c 24.08.2011    ggu     small changes to avoid run time error
+c 24.08.2011    ggu     plot real depth for zeta layers
+c
+c ./fem3d/subver.f:
+c 26.08.2011	ggu	version 6.1.30
+c
+c ./fem3d/newexpl.f:
+c 25.08.2011	dbf&ggu	baroclinic gradient for sigma level integrated
+c
+c ./fem3d/newini.f:
+c 24.08.2011    ggu	eliminated hbot for sigma due to run time error
+
+==========================================================
+
 version  6_1_29    19-08-2011    VERS_6_1_29   commit_2011-08-26
 
 version  6_1_29    19-08-2011    VERS_6_1_29
