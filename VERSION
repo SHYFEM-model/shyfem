@@ -1,3 +1,30 @@
+version  6_1_32    01-09-2011    VERS_6_1_32
+
+========================================================== 01-09-2011 - 6_1_32
+
+c ./femplot/plotsim.f:
+c 31.08.2011	ggu	new copyright, eos plotting
+c
+c ./femplot/supsim.f:
+c 31.08.2011    ggu     new eos plotting (pleos,ploeval)
+c
+c ./femplot/supout.f:
+c 31.08.2011  ggu     new routines for handling EOS files
+c
+c ./femplot/supiso.f:
+c 31.08.2011    ggu     new elementwise plotting (mode=3)
+c
+c ./femplot/supint.f:
+c 31.08.2011  ggu     new plotting eos
+c
+c ./fem3d/subver.f:
+c 01.09.2011	ggu	version 6.1.32
+c
+c ./fem3d/subeos.f:
+c 31.08.2011	ggu	new routines EOS
+
+==========================================================
+
 version  6_1_31    26-08-2011    VERS_6_1_31   commit_2011-09-01
 
 version  6_1_31    26-08-2011    VERS_6_1_31
