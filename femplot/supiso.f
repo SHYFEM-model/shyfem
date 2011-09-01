@@ -21,6 +21,7 @@ c 09.01.2009    ggu     deleted plcol0 (not used), new set_fxy_vals()
 c 09.01.2009    ggu     plot only part of isolines using make_single_isolines()
 c 23.02.2010    ggu     restructured and commented, use generic color table
 c 18.08.2011    ggu     use isoinp to decide if interpolate or not in element
+c 31.08.2011    ggu     new elementwise plotting (mode=3)
 c
 c****************************************************
 
@@ -35,7 +36,7 @@ c val           array with values
 c nval          dimension of val
 c dis           distance of isolines (dis>0)
 c mode		0: isolines with dis  1: isolines in /isolin/
-c		2: color
+c		2: color  3: color on element values
 
 	implicit none
 
@@ -73,10 +74,10 @@ c--------------------------------------------------------------------
         isolin = nint(getpar('isolin'))	!plot isoline also for color
         isoinp = nint(getpar('isoinp'))	!interpolate in element?
 
-	if(nkn.ne.nval) then
+	if( mode .le. 2 .and. nkn .ne. nval ) then
 		write(6,*) 'nval must be nkn :',nval,nkn
 		write(6,*) 'Cannot execute routine isoline'
-		return
+		stop 'error stop isoline: nval != nkn'
 	end if
 
 	call get_flag(flag)
@@ -97,7 +98,7 @@ c--------------------------------------------------------------------
 
 	write(6,*) 'isoline: isoanz... ',isoanz,mode
 
-	if( mode .eq. 2 ) then
+	if( mode .ge. 2 ) then
 
 c	  -----------------------------------------
 c	  color plot
@@ -108,7 +109,12 @@ c	  -----------------------------------------
 	  call set_color_table(-1)
 	  do ie=1,nel
 	    call set_fxy_vals(ie,flag,val,f,x,y,inull)
-	    if( isoinp .gt. 0 ) then
+	    if( mode .eq. 3 ) then				!element values
+	      do ii=1,3
+		f(ii) = val(ie)
+	      end do
+	      call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+	    else if( isoinp .gt. 0 ) then			!interpolate
 	      call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
 	    else
 	      call plnode(x,y,f,ciso,fiso,isoanz+1,fnull)	!plot node

@@ -30,7 +30,7 @@ HelpLong() {
   Usage
   echo " "
   echo "  what           bath|vel|trans|zeta|conz|temp|salt"
-  echo "                      |rms|wind|nos|lgr|wav|pres"
+  echo "                      |rms|wind|nos|lgr|wav|pres|elem"
   echo " "
   echo "     bath        bathymetry"
   echo "     vel         velocities"
@@ -44,7 +44,8 @@ HelpLong() {
   echo "     nos         generic scalar value"
   echo "     lgr         lagrangian model"
   echo "     wav         wave parameters"
-  echo "     pres        atmosphric pressure"
+  echo "     pres        atmospheric pressure"
+  echo "     elem        element values EOS"
   echo " "
   echo "  lev3d          level for 3d model (default 0 - vertical average)"
   echo "  var            type of scalar value"
@@ -58,7 +59,7 @@ HelpShort() {
   Usage
   echo " "
   echo "  what           bath|vel|trans|zeta|conz|temp|salt"
-  echo "                      |rms|wind|nos|lgr|wav"
+  echo "                      |rms|wind|nos|lgr|wav|pres|elem"
   echo "  lev3d          level for 3d model (default 0 - vertical average)"
   echo "  var            type of scalar value"
   echo "  time           freq | itstart,itend | itstart,itend,freq"
@@ -140,6 +141,7 @@ do
 	-lgr)   what=12;;
 	-wav)   what=13;;
 	-pres)  what=14;;
+	-elem)  what=15;;
 	-time)  time=$2; shift;;
 	-lev3d) lev3d=$2; shift;;
 	-var)   var=$2; shift;;

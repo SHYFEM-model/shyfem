@@ -81,6 +81,8 @@ c        common /hkv/hkv(nkndim) !for depths
 
 	data bstop /.false./
 	data errfil /'errout.dat'/
+
+	call shyfem_copyright('vp - preprocessing of FE grid')
 c
         dcor=0.
         dirn=0.

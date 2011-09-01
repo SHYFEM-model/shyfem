@@ -614,7 +614,7 @@ c computes courant number of advective terms in momentum equation
 	real b,c,f,ftot
 
 	cmax = 0.
-	call compute_stability_stats(-1,cc)
+	!call compute_stability_stats(-1,cc)
 
 	do ie=1,nel
 	  area = 12. * ev(10,ie)
@@ -641,7 +641,7 @@ c computes courant number of advective terms in momentum equation
 	    if( iweg .gt. 0 ) cc = 0.	! dry element
 	    astab(l,ie) = cc
 	    cmax = max(cmax,cc)
-	    call compute_stability_stats(0,cc)
+	    !call compute_stability_stats(0,cc)
 
 	  end do
 	end do

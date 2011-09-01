@@ -212,6 +212,8 @@ c-----------------------------------------------------------------
 	stop
    91	continue
 	write(6,*) 'error ivar : ',ivar,ivarold
+	write(6,*) 'can handle only one variable type in file'
+	write(6,*) 'please use nossplit to extract the variable first'
 	stop 'error stop nosaver'
 	end
 

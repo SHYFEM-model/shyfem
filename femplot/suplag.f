@@ -38,14 +38,8 @@ c**********************************************************
         call annotes(gettime(),title)
         call bash(0)
 
-	!call mima(parray,nkn,pmin,pmax)
-	!call colauto(pmin,pmax)
-
         call qcomm('Plotting particles')
         call plo_xy(n,xlag,ylag,zlag)
-
-        !call isoline(parray,nkn,0.,2)
-        !call colsh
 
         call bash(2)
 	call qend

@@ -21,6 +21,7 @@ c 13.10.2009	ggu	new arrays for velocity section plot
 c 23.02.2010	ggu	new call to set_default_color_table()
 c 17.12.2010	ggu	substituted hv with hkv
 c 31.03.2011	ggu	new arrays fvlv, arfvlv for scalar plotting
+c 31.08.2011	ggu	new copyright, eos plotting
 c
 c*************************************************************
 
@@ -31,8 +32,6 @@ c plots simulation
 	implicit none
 
 c parameters
-        character*20 version
-        parameter(version='1.66')
 
 	include 'param.h'
 	include 'basin.h'
@@ -86,7 +85,7 @@ c 3d
         real wprv(nlvdim,nkndim)
         common /wprv/wprv
 
-        real p3(nlvdim,nkndim)
+        real p3(nlvdim,neldim)		!is good for nodes and elements
         common /p3/p3
 
         real fvlv(nlvdim,nkndim)
@@ -103,7 +102,7 @@ c boundary etc.
         common /ieltv/ieltv
 	real hkv(nkndim)
 	real hetv(neldim)
-	real parray(nkndim)
+	real parray(neldim)		!is good for nodes and elements
 	common /hkv/hkv
 	common /hetv/hetv
 	common /parray/parray
@@ -135,7 +134,7 @@ c vertical velocity
         common /wlnv/wlnv
 c local
 	integer mode
-	integer ie,ii,k,l
+	integer ie,ii,k,l,i
 	integer icolor,isphe
 	integer iapini
 	real sflag
@@ -145,7 +144,7 @@ c----------------------------------------------
 c copyright
 c----------------------------------------------
 
-        call copyright(version)
+	call shyfem_copyright('plotsim - plotting maps on FE grids')
 
 c----------------------------------------------
 c initialize parameters
@@ -163,9 +162,9 @@ c----------------------------------------------
 
 	call set_flag(sflag)
 
-	do k=1,nkndim
+	do i=1,neldim
 	  do l=1,nlvdim
-	    p3(l,k) = sflag
+	    p3(l,i) = sflag
 	  end do
 	end do
 
@@ -234,6 +233,7 @@ c	if( mode .eq. 4 )  call plobar
 	if( mode .eq. 12 ) call plolagr
 	if( mode .eq. 13 ) call plowave
 	if( mode .eq. 14 ) call plopres
+	if( mode .eq. 15 ) call ploeos('.eos',0)
 
 c----------------------------------------------
 c close plot
@@ -277,6 +277,7 @@ c*****************************************************************
 	write(6,*) ' lagrangian .............. 12'
 	write(6,*) ' wave ..... .............. 13'
 	write(6,*) ' atmos. pressure ......... 14'
+	write(6,*) ' generic element values .. 15'
 	write(6,*)
 
         if( iauto .eq. 0 .or. iwhat .eq. 0 ) then
@@ -289,29 +290,6 @@ c*****************************************************************
 	mode = iwhat
 
 	end
-
-c*****************************************************************
-
-        subroutine copyright(version)
-
-c writes copyright
-
-        implicit none
-
-        character*(*) version
-
-        write(6,*)
-        write(6,*) ' -------------------------------------------'
-        write(6,*)
-        write(6,*) ' PLOTSIM - Plot maps on finite element grids'
-        write(6,*) ' Copyright (c)  Georg Umgiesser 1985-2011'
-        write(6,*)
-        write(6,*) ' version ',version
-        write(6,*)
-        write(6,*) ' -------------------------------------------'
-        write(6,*)
-
-        end
 
 c*****************************************************************
 

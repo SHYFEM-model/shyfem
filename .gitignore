@@ -82,3 +82,18 @@ fem3d/nosaver_vert
 fem3d/nosaverf
 fem3d/ousextr_gis
 
+fembin/extinf
+fembin/flxinf
+fembin/ht
+fembin/nosinf
+fembin/nossplit
+fembin/ousinf
+fembin/rstinf
+fembin/splitext
+fembin/splitflx
+fembin/symlink
+fembin/volinf
+fembin/vp
+fembin/wininf
+fembin/basinf
+

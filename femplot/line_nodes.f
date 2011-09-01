@@ -253,6 +253,8 @@ c****************************************************************
 	integer n,nb,nl
 	real x(ndim), y(ndim)
 
+	call shyfem_copyright('line_nodes - find node along line')
+
 	call read_line(ndim,nl,x,y)
 
 	call read_memory_basin(basin)

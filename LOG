@@ -1,4 +1,16 @@
 
+31.08.2011	copyright notice, plotting of element values (EOS)
+
+	copyright notice in all major programs (ht,vp,adjele,...)
+	EOS plotting (plotsim.f,supsim.f,supout.f,supiso.f,supint.f)
+	eos handling routines (subeos.f)
+
+========================================================== 26-08-2011 - 6_1_31
+
+26.08.2011	new subver structure
+
+========================================================== 26-08-2011 - 6_1_30
+
 25.08.2011	baroclinic forcing for sigma layers introduced
 
 	baroclinic gradient for sigma level integrated (newexpl.f)

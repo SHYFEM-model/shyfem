@@ -373,7 +373,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%% code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	call vers3d	!set version of model
+	call shyfem_copyright('3D FEM model')
 
 c-----------------------------------------------------------
 c dimensions
@@ -526,7 +526,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
            call set_timestep
            call get_timestep(dt)
-	   call compute_stability_stats(1,aux)
+	   !call compute_stability_stats(1,aux)
 
 	   call dobefor3d
 

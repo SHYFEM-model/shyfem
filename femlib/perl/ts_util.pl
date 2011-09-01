@@ -2,6 +2,10 @@
 #
 # utilities for time series
 #
+# useage:
+#
+# require "ts_util.pl";		# ts_util.pl must be in same dir
+#
 #-------------------------------------
 
 use strict;

@@ -16,8 +16,7 @@ $year0 = shift(@ARGV);
 @date=@ARGV;
 
 if( not defined $date[0] or $h or $help ) {
-  print STDERR "Usage: convert_date.pl [-it2date|-date2it] year0 {it|date}\n";
-  print STDERR "   date: year [month [day [hour [min [sec]]]]]\n";
+  Usage();
   exit 1;
 }
 
@@ -42,6 +41,20 @@ if( $it2date ) {
 
 $line = join(" ",@res);
 print "$line\n";
+
+#--------------------------------------
+
+sub Usage {
+
+  print STDERR "Usage: convert_date.pl [-it2date|-date2it] year0 {it|date}\n";
+  print STDERR "   -it2date:  convert from seconds to date\n";
+  print STDERR "   -date2it:  convert from date to seconds\n";
+  print STDERR "   year0:     reference year\n";
+  print STDERR "   date:      year month day [hour [min [sec]]]\n";
+  print STDERR "   it:        time in seconds from 1.1 of year0\n";
+  print STDERR " if for {it|date} only one value is given,\n";
+  print STDERR " -it2date is the default, else -date2it is used\n";
+}
 
 #--------------------------------------
 

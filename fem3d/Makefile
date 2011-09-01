@@ -96,24 +96,6 @@ SPECIAL =	Makefile \
 		COMMIT README TESTLOG TODO VERSION WARNINGS \
 		ACTUAL LOG
 
-NOSEXTR = nosextr_nodes nosextr_gis nosextr_records nosextr_custom \
-		nosextr_cat
-OUSEXTR = ousextr_nodes ousextr_records ousextr_gis \
-		ousextr_cat
-
-EXES	= ht hp vp \
-	  ousinf whdf whdfs \
-	  zlevel ttt readext zinit wincrea \
-	  basinf flxinf wininf nosinf nossplit \
-	  nosmaniq $(NOSAVER) \
-	  splitext volinf extinf bastreat basbathy baschk \
-	  nosdiff nostransf mkgeom lagint splitflx \
-	  laplap lapwin nosinit ousintp \
-	  bascomp rstinf nosresidence ousaver ousvdiff \
-	  lgrelab lgrinf qflux_test bedload scal_intp \
-	  $(NOSEXTR) $(OUSEXTR) map_influence \
-	  splitext_big windcrea winshift winmerge \
-	  basres basproj nossum
 
 MAKEDEPEND = $(FEMBIN)/mkdp.pl
 
@@ -134,6 +116,7 @@ NEWOBJS = \
 # objects for library
 
 SOBJS   = \
+	  subver.o \
 	  subnsv.o subsst.o \
           subcmv.o subdry.o subssv.o \
           $(PARMOD) \
@@ -155,7 +138,8 @@ SOBJS   = \
 	  subnos.o subcon1.o subrnd.o sublin.o \
 	  submod.o subuti.o subele.o subgeo.o subdts.o \
 	  links.o sublnka.o sublnks.o sublnku.o subisd.o \
-	  debug.o subhisto.o subnosa.o subfvl.o
+	  debug.o subhisto.o subnosa.o subfvl.o \
+	  subeos.o
 
 # general objects for 3D model ht
 
@@ -198,6 +182,7 @@ HTOBJS = \
 # objects for pre-processor vp
 
 VPOBJS = \
+	subver.o \
         subros.o subcmv.o \
         subdef.o subbas.o subdim.o \
         subfil.o \
@@ -257,15 +242,43 @@ LAGINTP = submir.o
 
 #------------------------------------------------
 
+EXEMAIN  = ht vp
+
+EXEINFO  = ousinf flxinf volinf basinf nosinf wininf extinf rstinf
+EXESPLIT = nossplit splitext splitflx
+EXELAP   = laplap lapwin
+EXEBAS   = bastreat basbathy
+EXEVAR   = nosinit nosresidence scal_intp
+
+NOSAVER  = nosaver_basin nosaver_vert nosaver_time
+NOSEXTR  = nosextr_nodes nosextr_gis nosextr_records nosextr_custom \
+		nosextr_cat
+OUSEXTR  = ousextr_nodes ousextr_records ousextr_gis \
+		ousextr_cat
+
+EXEEXTRA = bedload wincrea windcrea
+
+EXES     = $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXELAP) $(EXEBAS) \
+		$(EXEVAR) $(NOSEXTR) $(OUSEXTR) $(NOSAVER) \
+		$(EXEEXTRA)
+
+#------------------------------------------------
+
 default:	fem
 
 all:	param fem
-fem:	param libfem main info util 
-main:	param ht vp
-info:	param ousinf flxinf volinf basinf nosinf wininf extinf
-util:	param nossplit splitext ousinf splitflx laplap lapwin \
-	nosinit bastreat basbathy scal_intp nosresidence rstinf \
-	$(NOSEXTR) $(OUSEXTR) $(NOSAVER)
+fem:	param libfem main info split lap bas var util links
+main:	param $(EXEMAIN)
+info:	param $(EXEINFO)
+split:	param $(EXESPLIT)
+lap:	param $(EXELAP)
+bas:	param $(EXEBAS)
+var:	param $(EXEVAR)
+util:	param $(NOSEXTR) $(OUSEXTR) $(NOSAVER)
+
+links:
+	@$(FEMBIN)/symlink $(FEMBIN) \
+		$(EXEMAIN) $(EXEINFO) $(EXESPLIT)
 
 #--------------------------------------------- EXES
 
@@ -381,7 +394,9 @@ nosinf2:  nosinf2.o $(NOSOBJS) $(OUTOBJS)
 nossum:  nossum.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-.PHONY: nosextr ousextr 
+#-------------------------------------------------------
+
+.PHONY: nosextr ousextr nosaver
 
 ousextr: $(OUSEXTR)
 
@@ -402,31 +417,20 @@ nosextr: $(NOSEXTR)
 nosextr_nodes:  nosextr_nodes.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nosextr_records:  nosextr_records.o $(NOSOBJS) $(OUTOBJS) 
+nosextr_gis:  nosextr_gis.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nosextr_gis:  nosextr_gis.o $(NOSOBJS) $(OUTOBJS) 
+nosextr_records:  nosextr_records.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 nosextr_custom:  nosextr_custom.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nosextr_fluxes:  nosextr_fluxes.o $(NOSOUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
-
 nosextr_cat:  nosextr_cat.o $(NOSOUSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
 
-map_influence:  map_influence.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-nossplit:  nossplit.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-#-------------------------------------------------------
-
-.PHONY: nosaver
-NOSAVER = nosaver_basin nosaver_vert nosaver_time
+nosextr_fluxes:  nosextr_fluxes.o $(NOSOUSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
 
 nosaver: $(NOSAVER)
 
@@ -439,10 +443,16 @@ nosaver_vert:  nosaver_vert.o $(NOSOBJS) $(OUTOBJS)
 nosaver_time:  nosaver_time.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nosresidence:  nosresidence.o $(NOSOBJS) $(OUTOBJS) 
+#-------------------------------------------------------
+
+map_influence:  map_influence.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-#-------------------------------------------------------
+nossplit:  nossplit.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+nosresidence:  nosresidence.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 nosmaniq:  nosmaniq.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
@@ -511,10 +521,14 @@ depend:
 
 #---------------------------------------------------
 
-cleanall: clean cleanzip cleanlib cleanextra
-
 clean: cleanobj cleanexe cleanvar cleantex cleanlahey cleanexport cleandoc \
-	cleanifc
+	cleanifc cleanlinks
+
+cleanall: clean cleanzip cleanlib cleanextra cleandiff
+
+cleanlinks:
+	@$(FEMBIN)/symlink -remove $(FEMBIN) \
+		$(EXEMAIN) $(EXEINFO) $(EXESPLIT)
 
 cleanifc:
 	-rm -f ifc*

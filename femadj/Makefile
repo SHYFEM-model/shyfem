@@ -22,6 +22,9 @@ FEMBIN    = $(FEMDIR)/fembin
 LIBFEM  = fem
 LIBPOST = post
 
+LIBFS   = -L$(DIRLIB) -l$(LIBFEM)
+LIBIFS  = $(DIRLIB)/lib$(LIBFEM).a
+
 LIBPS   = -L$(DIRLIB) -l$(LIBPOST)
 LIBIPS  = $(DIRLIB)/lib$(LIBPOST).a
 
@@ -45,8 +48,8 @@ default: fem
 fem:	param adjele
 all:	param $(EXES)
 
-adjele:  adjele.o $(ADJOBJS) $(OBJS) $(LIBIPS)
-	$(LINKER) $(LFLAGS) $@.o $(ADJOBJS) $(OBJS) $(LIBPS) -o $@
+adjele:  adjele.o $(ADJOBJS) $(OBJS) $(LIBIFS) $(LIBIPS)
+	$(LINKER) $(LFLAGS) $@.o $(ADJOBJS) $(OBJS) $(LIBFS) $(LIBPS) -o $@
 
 #--------------------------------------------- clean
 

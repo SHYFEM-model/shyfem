@@ -29,9 +29,6 @@ c adjusts elements after automatic mesh generator
 
 	implicit none
 
-        character*20 version
-        parameter (version='1.56')
-
 c------------------------------------------------------- parameters
 	include 'param.h'
 c------------------------------------------------------- grade index
@@ -65,7 +62,7 @@ c------------------------------------------------------- end declaration
 
 c-------------------------------------------------------------------
 
-        call copyright(version)
+	call shyfem_copyright('adjele - regularize finite element grids')
 
 c-------------------------------------------------------------------
 
@@ -282,30 +279,6 @@ c saves information about depth to nodes
 	end do
 
 	end
-
-c***********************************************************
-
-        subroutine copyright(version)
-
-c writes copyright 
-
-        implicit none
-
-        character*(*) version
-
-
-        write(6,*)
-        write(6,*) ' ----------------------------------------'
-        write(6,*)
-        write(6,*) ' ADJELE - Regularize finite element grids'
-        write(6,*) ' Copyright (c)  Georg Umgiesser 1985-2010'
-        write(6,*)
-        write(6,*) ' version ',version
-        write(6,*)
-        write(6,*) ' ----------------------------------------'
-        write(6,*)
-
-        end
 
 c***********************************************************
 

@@ -171,7 +171,7 @@ c 26.08.2011	ggu	version 6.1.31
 c
 c*****************************************************************
 
-	subroutine version
+        blockdata shyfem_version_blockdata
 
 c DOCS	START	P_version
 c
@@ -179,35 +179,20 @@ c \newcommand{\VERSION}{6.1.31}
 c
 c DOCS	END
 
-	implicit none
+        implicit none
 
-        call addfnm('versio','6.1.31')      !version of model 
+        character*10 version
+	parameter (version='6.1.31')
 
-	end
+        character*30 string
+	parameter (string='SHYFEM VERSION = '//version)
 
-c*****************************************************************
-
-        subroutine copyright
-
-c writes copyright and version/dimension
-
-	implicit none
-
-        character*(10) vers
-        integer idim
-
-	call femver(vers,idim)
-
-        write(6,*)
-        write(6,*) ' ----------------------------------------------'
-        write(6,*)
-        write(6,*) ' SHYFEM - Finite Element Model for coastal seas'
-        write(6,*) ' Copyright (c) Georg Umgiesser 1985-2011'
-        write(6,*)
-        write(6,'(i3,a,a10)') idim,'D FEM model,  version ',vers
-        write(6,*)
-        write(6,*) ' ----------------------------------------------'
-        write(6,*)
+        character*10 shyver
+        character*30 shystr
+        common /shyver/shyver,shystr
+        save /shyver/
+        data shyver / version /
+        data shystr / string /
 
         end
 
@@ -215,49 +200,51 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-        subroutine femver(vers,idim)
+        subroutine get_shyfem_version(version)
 
-c returns version and dimensionality of model
+c returns version of model
 
 	implicit none
 
-        character*(*) vers
-        integer idim
+	character*(*) version
 
-        real getpar
+        character*10 shyver
+        common /shyver/shyver
+        save /shyver/
 
-        call getfnm('versio',vers)
-        idim = nint(getpar('dimens'))
+	version = shyver
 
 	end
 
 c*****************************************************************
-
-	subroutine vers2d
-
-c sets version and dimensionality (2D)
-
-	implicit none
-
-        call addpar('dimens',2.)        !2D/3D 
-	call version
-	call copyright
-
-	end
-
+c*****************************************************************
 c*****************************************************************
 
-	subroutine vers3d
+        subroutine shyfem_copyright(routine)
 
-c sets version and dimensionality (3D)
+c writes copyright and version/dimension
 
 	implicit none
 
-        call addpar('dimens',3.)        !2D/3D 
-	call version
-	call copyright
+        character*(*) routine
 
-	end
+        character*(10) vers
+
+	call get_shyfem_version(vers)
+
+        write(6,*)
+        write(6,*) ' ----------------------------------------------'
+        write(6,*)
+        write(6,*) ' SHYFEM - Finite Element Model for coastal seas'
+        write(6,*) ' Copyright (c) Georg Umgiesser 1985-2011'
+        write(6,*)
+        write(6,*) ' version: ',vers
+        write(6,*) ' routine: ',routine
+        write(6,*)
+        write(6,*) ' ----------------------------------------------'
+        write(6,*)
+
+        end
 
 c*****************************************************************
 

@@ -1,5 +1,48 @@
 ============================================================
 
+Thu Sep  1 14:28:59 CEST 2011
+
+new EOS plotting, copyright
+
+ .gitignore                  |   15 +
+ LOG                         |   12 +
+ RELEASE_NOTES               |   27 ++
+ fem3d/Makefile              |  106 ++++---
+ fem3d/ht.f                  |    4 +-
+ fem3d/newexpl.f             |    4 +-
+ fem3d/nosaver_time.f        |    2 +
+ fem3d/subcus.f              |   29 ++-
+ fem3d/subeos.f              |  691 +++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subver.f              |   89 +++----
+ fem3d/vp.f                  |    2 +
+ femadj/Makefile             |    7 +-
+ femadj/adjele.f             |   29 +--
+ fembin/Makefile             |    1 +
+ fembin/basbathy             |    4 -
+ fembin/basinf               |   21 --
+ fembin/convert_date.pl      |   17 +-
+ fembin/exgrd                |    2 +-
+ fembin/grid                 |    2 +-
+ fembin/mesh                 |    2 +-
+ fembin/plots                |    8 +-
+ femlib/perl/buffy.pm        |   64 ----
+ femlib/perl/convert_date.pl |   60 ----
+ femlib/perl/date.pm         |    6 +
+ femlib/perl/hw.pl           |    6 -
+ femlib/perl/ts_util.pl      |    4 +
+ femplot/line_nodes.f        |    2 +
+ femplot/plotsim.f           |   40 +--
+ femplot/supint.f            |   87 ++++--
+ femplot/supiso.f            |   16 +-
+ femplot/suplag.f            |    6 -
+ femplot/supout.f            |  192 ++++++++++++
+ femplot/supsim.f            |  132 ++++++++-
+ grid/Makefile               |   10 +-
+ mesh/Makefile               |   10 +-
+ 35 files changed, 1328 insertions(+), 381 deletions(-)
+
+============================================================
+
 Fri Aug 26 16:07:44 CEST 2011
 
 New version 6_1_31

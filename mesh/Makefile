@@ -57,7 +57,10 @@ TCCOPT = -O -G -Z -w -d -mh
 
 default: fem
 all: depend $(EXES)
-fem: mesh exgrd
+fem: mesh exgrd links
+
+links:
+	$(FEMBIN)/symlink $(FEMBIN) mesh exgrd
 
 #----------------------
 
@@ -94,9 +97,12 @@ depend:
 
 #----------------------
 
+clean: cleanobj cleanexe cleanvar cleanlinks
+
 cleanall: clean cleangrd cleanzip
 
-clean: cleanobj cleanexe cleanvar
+cleanlinks:
+	$(FEMBIN)/symlink -remove $(FEMBIN) mesh exgrd
 
 cleanobj:
 	-rm -f *.o

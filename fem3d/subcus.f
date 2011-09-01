@@ -3841,6 +3841,8 @@ c time of inundation for theseus
 	integer idtwrite
 	real area,dt,h
 	real sedim,smed,s
+	real sedim_reed,sedim_salt
+	real sfact
 
 	integer idry(neldim)
 	save idry
@@ -3863,6 +3865,10 @@ c time of inundation for theseus
 	idtwrite = 86400
 	idtwrite = 86400*30.5
 	smed = 5.
+
+c-----------------------------------------
+c first call
+c-----------------------------------------
 
 	if( icall .eq. 0 ) then
 	  area = 0.
@@ -3891,9 +3897,11 @@ c-----------------------------------------
 c accumulate
 c-----------------------------------------
 
+	icall = icall + 1
+
 	do ie=1,nel
 	  if( iwegv(ie) .ne. 0 ) then
-	    idry(ie) = idry(ie) + idt	! changed !!! -> was +1
+	    idry(ie) = idry(ie) + 1	! changed !!! -> was 1, should be idt
 	  end if
 	end do
 
@@ -3945,14 +3953,25 @@ c-----------------------------------------
 	if( sedim .gt. 0. ) then
 
 	call get_timestep(dt)
-	sedim = sedim*0.001/(365*86400)		! [m/s]
-	sedim = sedim * dt
+	sfact = dt * 0.001/(365*86400)			! [m/timestep]
+	!sedim = sedim*0.001/(365*86400)		! [m/s]
+	!sedim = sedim * dt
+	sedim_reed = sedim * sfact
+	sedim_salt = sedim * sfact * 0.66
 
 	do ie=1,nel
 	  if( iwegv(ie) .eq. 0 ) then	!only for flooded elements
 	    h = hdenv(1,ie)
+	    s = salt_aver_e(ie)
 	    if( h .lt. 0.50 ) then	!only for shallow areas
-		hev(ie) = hev(ie) - sedim
+	      if( s .lt. 5. ) then
+		sedim = sedim_reed
+	      else if( s .gt. 10. ) then
+		sedim = sedim_salt
+	      else
+		sedim = sedim_reed+(sedim_salt-sedim_reed)*(s-5.)/(10.-5.)
+	      end if
+	      hev(ie) = hev(ie) - sedim
 	    end if
 	  end if
 	end do
@@ -3983,8 +4002,6 @@ c-----------------------------------------
 c-----------------------------------------
 c end of routine
 c-----------------------------------------
-
-	icall = icall + 1
 
 	end
 

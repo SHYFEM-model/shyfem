@@ -23,6 +23,7 @@ clean:
 	-rm -f ggg hhh
 	-rm -f fort.*
 	-rm -f *~
+	-rm -f errout.dat
 
 cleanall: clean
 

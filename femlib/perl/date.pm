@@ -10,6 +10,12 @@
 # 
 # my $date = new date;
 #
+# $date->init_year($year0)		#set reference year
+# $it = $date->convert_to_it($year,$month,$day,$hour,$min,$sec);
+# ($year,$month,$day,$hour,$min,$sec) = $date->convert_from_it($it);
+#
+# to convert date online please use the program convert_date.pl
+#
 ##############################################################
 #
 # 10.03.2010	ggu	bug in adjust_mod() -> account for negative values

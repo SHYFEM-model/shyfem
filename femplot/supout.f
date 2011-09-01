@@ -19,6 +19,7 @@ c 30.03.2011  ggu     new routines to handle fvl files (not yet integrated)
 c 31.03.2011  ggu     use fvl routines to exclude areas from plot
 c 12.07.2011  ggu     in prepsim use what is available for dry areas
 c 18.08.2011  ggu     bug fix in nosopen() -> extra comma eliminated 
+c 31.08.2011  ggu     new routines for handling EOS files
 c
 c**********************************************************
 c**********************************************************
@@ -1422,6 +1423,197 @@ c end
 	stop 'error stop fvlnext: time or variable'
 	end
 
+c******************************************************
+c******************************************************
+c******************************************************
+c element values
+c******************************************************
+c******************************************************
+c******************************************************
+
+	subroutine eosini
+
+c initializes internal data structure for EOS file
+
+	implicit none
+
+	integer nunit
+	common /eoseos/ nunit
+	save /eoseos/
+
+	integer icall
+	save icall
+	data icall /0/
+
+	if( icall .ne. 0 ) return
+
+	icall = 1
+
+	nunit = 0
+
+	end
+
+c******************************************************
+
+	subroutine eosclose
+
+c closes EOS file
+
+	implicit none
+
+	integer nunit
+	common /eoseos/ nunit
+
+	call eosini
+	if( nunit .gt. 0 ) close(nunit)
+	nunit = 0
+
+	end
+
+c******************************************************
+
+	subroutine eosopen(type)
+
+c opens EOS file and reads header
+
+	implicit none
+
+	character*(*) type
+
+	integer nunit
+	common /eoseos/ nunit
+
+	character*80 descrp
+        common /descrp/ descrp
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
+
+        real hlv(1), hev(1)
+        common /hlv/hlv, /hev/hev
+        integer ilhv(1)
+        common /ilhv/ilhv
+
+	character*80 file
+
+	integer nvers
+	integer nknaux,nelaux,nlvaux,nvar
+	integer ierr
+	integer ifemop
+
+c initialize routines
+
+	call eosini
+
+c open file
+
+	nunit = ifemop(type,'unform','old')
+	if( nunit .le. 0 ) then
+		stop 'error stop conopen: cannot open EOS file'
+        else
+                write(6,*) 'File opened :'
+                inquire(nunit,name=file)
+                write(6,*) file
+                write(6,*) 'Reading file ...'
+	end if
+
+c read first header
+
+	nvers = 3
+	call rfeos(nunit,nvers,nknaux,nelaux,nlvaux,nvar,descrp,ierr)
+
+	if( ierr .ne. 0 ) then
+		stop 'error stop eosopen: error reading first header'
+	end if
+
+        write(6,*)
+        write(6,*)   descrp
+        write(6,*)
+        write(6,*) ' nvers = ', nvers
+        write(6,*) '   nkn = ',nknaux, '   nel = ',nelaux
+        write(6,*) '   nlv = ',nlvaux, '  nvar = ',  nvar
+        write(6,*)
+
+	if( nkn .ne. nknaux ) goto 99
+	if( nelaux .ne. 0 .and. nel .ne. nelaux ) goto 99
+	if( nlvdi .lt. nlvaux ) goto 99
+
+	nlv = nlvaux
+
+c read second header
+
+	call rseos(nunit,ilhv,hlv,hev,ierr)
+
+	if( ierr .ne. 0 ) then
+		stop 'error stop eosopen: error reading second header'
+	end if
+
+	call level_e2k		!computes ilhkv
+
+c initialize time
+
+	call timeset(0,0,0)
+
+c end
+
+	return
+   99	continue
+	write(6,*) 'error in parameters :'
+	write(6,*) 'nkn : ',nkn,nknaux
+	write(6,*) 'nel : ',nel,nelaux
+	write(6,*) 'nlv : ',nlvdi,nlvaux
+	stop 'error stop eosopen'
+	end
+
+c******************************************************
+
+	function eosnext(it,ivar,nlvdim,array)
+
+c reads next EOS record - is true if a record has been read, false if EOF
+
+	implicit none
+
+	logical eosnext		!true if record read, flase if EOF
+	integer it		!time of record
+	integer ivar		!type of variable
+	integer nlvdim		!dimension of vertical coordinate
+	real array(nlvdim,1)	!values for variable
+
+	integer nunit
+	common /eoseos/ nunit
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
+        integer ilhv(1)
+        common /ilhv/ilhv
+
+	integer ierr
+
+	if( nlvdim .ne. nlvdi ) stop 'error stop eosnext: nlvdim'
+
+	call eosini
+	call rdeos(nunit,it,ivar,nlvdim,ilhv,array,ierr)
+
+c set return value
+
+	if( ierr .gt. 0 ) then
+		!stop 'error stop eosnext: error reading data record'
+		write(6,*) '*** eosnext: error reading data record'
+		eosnext = .false.
+	else if( ierr .lt. 0 ) then
+		eosnext = .false.
+	else
+		eosnext = .true.
+	end if
+
+c end
+
+	end
+
+c******************************************************
+c******************************************************
+c******************************************************
+c aux routines
 c******************************************************
 c******************************************************
 c******************************************************

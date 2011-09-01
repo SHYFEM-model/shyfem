@@ -30,7 +30,7 @@ c subroutine bnd2val(a,val)			sets values on boundary to val
 c subroutine moduv(u,v,uv,n,uvmax)		computes modulus and maximum
 c subroutine normuv(uvnv,vvnv,vv,n)		normalize horizontal velocities
 c subroutine intpn(vev,vnv,bwater)		compute nodal values vnv()
-c subroutine aplymask(bmask,value,nkn,flag)	aplies mask to nodal value
+c subroutine apply_dry_mask(bmask,value,n,flag)	aplies mask to nodes
 c
 c revision log :
 c
@@ -57,6 +57,7 @@ c 17.12.2010    ggu     substituted hv with hkv
 c 31.03.2011    ggu     no plotting in dry nodes implemented - read fvl file
 c 17.05.2011    ggu     in plobas may plot node and element numbers
 c 12.07.2011    ggu     eliminated all references to out routines
+c 31.08.2011    ggu     new eos plotting (pleos,ploeval)
 c
 c**********************************************************
 c**********************************************************
@@ -112,18 +113,82 @@ c 3D concentrations
 	  call fvlnext(it,nlvdim,fvlv)
 	  if( oktime(it) .and. okvar(ivaria) ) then
             if( isect .eq. 0 ) then
-	      write(6,*) '..........horizontal plotting'
-	      call extlev(level,nlvdim,nkn,p3,parray)
+	      write(6,*) '..........horizontal plotting nodes'
+	      call extnlev(level,nlvdim,nkn,p3,parray)
 	      call prepsim
 	      call ploval(nkn,parray,line)
             else
-	      write(6,*) '..........vertical plotting'
+	      write(6,*) '..........vertical plotting nodes'
               call plot_sect(.false.,p3)
             end if
 	  end if
 	end do
 
 	call nosclose
+
+	end
+
+c**********************************************************
+
+	subroutine ploeos(type,ivar_in)
+
+c 3D concentrations (element values)
+
+	implicit none
+
+	include 'param.h'
+
+	character*(*) type
+	integer ivar_in
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	real p3(nlvdim,1)
+	common /p3/p3
+	real parray(1)
+	common /parray/parray
+	real fvlv(nlvdim,1)	!finite volume
+	common /fvlv/fvlv
+
+        character*80 line
+	integer nrec,it
+	integer ivaria
+	integer level,ivar,isect
+	logical eosnext,oktime,okvar
+	integer getlev,getvar,getisec
+
+	nrec = 0
+	level = getlev()
+        isect = getisec()
+	ivar = ivar_in
+
+	call eosopen(type)
+	call timeask
+	if( ivar .gt. 0 ) then
+	  call setvar(ivar)
+	else
+	  call askvar
+          ivar = getvar()
+	end if
+
+        call mkvarline(ivar,line)
+
+	do while( eosnext(it,ivaria,nlvdim,p3) )
+	  nrec = nrec + 1
+	  write(6,*) nrec,it,ivaria,ivar
+	  if( oktime(it) .and. okvar(ivaria) ) then
+            if( isect .eq. 0 ) then
+	      write(6,*) '..........horizontal plotting elements'
+	      call extelev(level,nlvdim,nkn,p3,parray)
+	      call prepsim
+	      call ploeval(nel,parray,line)
+            else
+	      write(6,*) '..........no vertical plotting for elements'
+            end if
+	  end if
+	end do
+
+	call eosclose
 
 	end
 
@@ -373,6 +438,8 @@ c**********************************************************
 
 	subroutine ploval(nkn,parray,title)
 
+c plots node values
+
 	implicit none
 
 	integer nkn
@@ -396,11 +463,54 @@ c**********************************************************
 
 	call get_minmax_flag(parray,nkn,pmin,pmax)
         write(6,*) 'min/max: ',nkn,pmin,pmax
-	call aplymask(bkwater,parray,nkn,flag)	!applies flag to dry nodes
+	call apply_dry_mask(bkwater,parray,nkn,flag)	!flags to dry nodes
 	call colauto(pmin,pmax)
 
         call qcomm('Plotting isolines')
         call isoline(parray,nkn,0.,2)
+        call colsh
+
+	!call bash(3)	! overlays grid (for debug)
+
+	call bash(2)
+	call qend
+
+	end
+
+c**********************************************************
+
+	subroutine ploeval(nel,parray,title)
+
+c plots element values
+
+	implicit none
+
+	integer nel
+	real parray(1)
+        character*(*) title
+
+        logical bwater(1)		!mask for elements
+        common /bwater/bwater
+        logical bkwater(1)		!mask for nodes
+        common /bkwater/bkwater
+
+	real pmin,pmax,flag
+	real getpar
+        integer gettime
+
+        call get_flag(flag)
+
+	call qstart
+        call annotes(gettime(),title)
+	call bash(0)
+
+	call get_minmax_flag(parray,nel,pmin,pmax)
+        write(6,*) 'min/max: ',nel,pmin,pmax
+	call apply_dry_mask(bwater,parray,nel,flag)	!flags to dry nodes
+	call colauto(pmin,pmax)
+
+        call qcomm('Plotting element values')
+        call isoline(parray,nel,0.,3)			!plot on elements
         call colsh
 
 	!call bash(3)	! overlays grid (for debug)
@@ -714,7 +824,7 @@ c------------------------------------------------------------------
             stop 'error stop plo2vel: value not allowed for ioverl'
 	  end if
 	  call mima(v1v,nkn,pmin,pmax)
-	  call aplymask(bkwater,v1v,nkn,flag)
+	  call apply_dry_mask(bkwater,v1v,nkn,flag)
 	  call colauto(pmin,pmax)
 	  write(6,*) 'plotting overlay color... ',pmin,pmax
           call qcomm('Plotting overlay')
@@ -1506,21 +1616,21 @@ c compute nodal values vnv()
 
 c*****************************************************************
 
-	subroutine aplymask(bmask,value,nkn,flag)
+	subroutine apply_dry_mask(bmask,value,n,flag)
 
 c aplies mask to nodal value
 
 	implicit none
 
-	integer nkn
+	integer n
 	real flag
 	real value(1)
 	logical bmask(1)
 
-	integer k
+	integer i
 
-	do k=1,nkn
-	  if( .not. bmask(k) ) value(k) = flag
+	do i=1,n
+	  if( .not. bmask(i) ) value(i) = flag
 	end do
 
 	end

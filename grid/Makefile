@@ -73,7 +73,10 @@ TCCOPT = -O -G -Z -w -d -mh
 #----------------------
 
 default: fem
-fem: grid
+fem: grid links
+
+links:
+	$(FEMBIN)/symlink $(FEMBIN) grid
 
 #----------------------
 
@@ -114,9 +117,12 @@ short: short.o general.o $(XOBDEVICE)
 
 #----------------------
 
+clean: cleanobj cleanexe cleanvar cleanlinks
+
 cleanall: clean cleanzip
 
-clean: cleanobj cleanexe cleanvar
+cleanlinks:
+	$(FEMBIN)/symlink -remove $(FEMBIN) grid
 
 cleanobj:
 	-rm -f *.o

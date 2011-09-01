@@ -1,0 +1,27 @@
+
+	show copyright notice in all major programs
+	new EOS plotting
+
+26-08-2011 - 6_1_31
+
+	new copyright notice
+	use symbolic link shyfem for all programs
+	use SHYFEMDIR for actual shyfem version
+	must use "make install" after unpacking code
+
+26-08-2011 - 6_1_30
+
+	baroclinic term for sigma layer
+
+19-08-2011 - 6_1_29
+
+	plot with no interpolation in element (isoinp)
+
+15-07-2011 - 6_1_28
+
+	possibility to compute checksum
+
+14-07-2011 - 6_1_27
+
+	plot dry areas
+

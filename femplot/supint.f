@@ -13,6 +13,7 @@ c 17.09.2008  ggu     comments for level = -1
 c 06.12.2008  ggu     in extlev set not-existing values to flag
 c 14.09.2009  ggu     new way to determine if section plot in getisec()
 c 18.08.2011  ggu     make vsect bigger
+c 31.08.2011  ggu     new plotting eos
 c
 c**********************************************************
 c**********************************************************
@@ -249,14 +250,11 @@ c**********************************************************
 c**********************************************************
 c**********************************************************
 
-	subroutine extlev(level,nlvdim,nkn,p3,p2)
+	subroutine extnlev(level,nlvdim,nkn,p3,p2)
 
-c extract level from 3d array
+c extract level from 3d array (nodes)
 
 	implicit none
-
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
 
 	integer level		!level to extract
 	integer nlvdim		!vertical dimension of p3
@@ -264,7 +262,50 @@ c extract level from 3d array
 	real p3(nlvdim,nkn)	!3d array
 	real p2(nkn)		!2d array filled on return
 
-	integer k
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+
+	call extlev(level,nlvdim,nkn,ilhkv,p3,p2)
+
+	end
+
+c**********************************************************
+
+	subroutine extelev(level,nlvdim,nel,p3,p2)
+
+c extract level from 3d array (elements)
+
+	implicit none
+
+	integer level		!level to extract
+	integer nlvdim		!vertical dimension of p3
+	integer nel		!number of elements
+	real p3(nlvdim,nel)	!3d array
+	real p2(nel)		!2d array filled on return
+
+        integer ilhv(1)
+        common /ilhv/ilhv
+
+	call extlev(level,nlvdim,nel,ilhv,p3,p2)
+
+	end
+
+c**********************************************************
+
+	subroutine extlev(level,nlvdim,n,ilv,p3,p2)
+
+c extract level from 3d array
+
+	implicit none
+
+	integer level		!level to extract
+	integer nlvdim		!vertical dimension of p3
+	integer n		!number values
+        integer ilv(n)
+	real p3(nlvdim,n)	!3d array
+	real p2(n)		!2d array filled on return
+
+	integer i
         real flag
 
 	if( level .gt. nlvdim ) then
@@ -275,11 +316,11 @@ c extract level from 3d array
         call get_flag(flag)
 
 	if( level .le. 0 ) then
-	  call intlev(nlvdim,nkn,p3,p2)		!integrate
+	  call intlev(nlvdim,n,ilv,p3,p2)		!integrate
 	else
-	  do k=1,nkn
-	    p2(k) = flag
-            if( level .le. ilhkv(k) ) p2(k) = p3(level,k)
+	  do i=1,n
+	    p2(i) = flag
+            if( level .le. ilv(i) ) p2(i) = p3(level,i)
 	  end do
 	end if
 
@@ -287,35 +328,33 @@ c extract level from 3d array
 
 c**********************************************************
 
-	subroutine intlev(nlvdim,nkn,p3,p2)
+	subroutine intlev(nlvdim,n,ilv,p3,p2)
 
-c extract level from 3d array
+c integrate over water column
 
 	implicit none
 
 	integer nlvdim		!vertical dimension of p3
-	integer nkn		!number of nodes
-	real p3(nlvdim,nkn)	!3d array
-	real p2(nkn)		!2d array filled on return
+	integer n		!number of nodes
+        integer ilv(n)
+	real p3(nlvdim,n)	!3d array
+	real p2(n)		!2d array filled on return
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-
-	integer k,l,lmax
+	integer i,l,lmax
 	real value
 
-	do k=1,nkn
-	  lmax = ilhkv(k)
+	do i=1,n
+	  lmax = ilv(i)
 	  if( lmax .eq. 1 ) then	!2d
-	    p2(k) = p3(1,k)
+	    p2(i) = p3(1,i)
 	  else				!primitive method of averaging
 	    if( lmax .gt. nlvdim ) goto 99
 	    if( lmax .le. 0 ) goto 99
 	    value = 0.
 	    do l=1,lmax
-	      value = value + p3(l,k)
+	      value = value + p3(l,i)
 	    end do
-	    p2(k) = value / lmax
+	    p2(i) = value / lmax
 	  end if
 	end do
 
