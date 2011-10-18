@@ -60,7 +60,7 @@ all: depend $(EXES)
 fem: mesh exgrd links
 
 links:
-	$(FEMBIN)/symlink $(FEMBIN) mesh exgrd
+	@$(FEMBIN)/symlink $(FEMBIN) mesh exgrd
 
 #----------------------
 
@@ -102,7 +102,7 @@ clean: cleanobj cleanexe cleanvar cleanlinks
 cleanall: clean cleangrd cleanzip
 
 cleanlinks:
-	$(FEMBIN)/symlink -remove $(FEMBIN) mesh exgrd
+	@$(FEMBIN)/symlink -remove $(FEMBIN) mesh exgrd
 
 cleanobj:
 	-rm -f *.o

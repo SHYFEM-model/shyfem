@@ -1061,7 +1061,7 @@ c use this routine with sigma levels
         common /zov/zov
         real hdeov(nlvdim,1)
         common /hdeov/hdeov
-        real hdkov(nlvdim,nkndim)
+        real hdkov(nlvdim,1)
         common /hdkov/hdkov
 	real hev(1)
 	common /hev/hev

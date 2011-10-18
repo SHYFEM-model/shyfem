@@ -1,4 +1,23 @@
 
+07.10.2011	small bug fixes
+
+	error calling extelev with nkn, and not nel (supsim.f)
+	initialize some variables (lagrange_init.f)
+	subeos -> nel -> nel_lev (subeos.f)
+
+21.09.2011	restructured flx routines
+
+	flx routines (subflxa.f, subflx3d.f, flxinf.f, splitinf.f)
+	change default for isphe (subsys.f)
+	new routine set_bsigma() (newsig.f)
+	better error check in rdtitl (subnsh.f)
+
+13.09.2011	install
+
+	bug fix in install routine (shyfem_install.pl,symlink)
+
+========================================================== 01-09-2011 - 6_1_32
+
 31.08.2011	copyright notice, plotting of element values (EOS)
 
 	copyright notice in all major programs (ht,vp,adjele,...)

@@ -76,7 +76,7 @@ default: fem
 fem: grid links
 
 links:
-	$(FEMBIN)/symlink $(FEMBIN) grid
+	@$(FEMBIN)/symlink $(FEMBIN) grid
 
 #----------------------
 
@@ -122,7 +122,7 @@ clean: cleanobj cleanexe cleanvar cleanlinks
 cleanall: clean cleanzip
 
 cleanlinks:
-	$(FEMBIN)/symlink -remove $(FEMBIN) grid
+	@$(FEMBIN)/symlink -remove $(FEMBIN) grid
 
 cleanobj:
 	-rm -f *.o

@@ -4,6 +4,7 @@ c
 c revision log :
 c
 c 16.12.2010    ggu     program partially finished
+c 19.09.2011    ggu     new routine set_bsigma()
 c
 c********************************************************************
 
@@ -116,7 +117,6 @@ c this is not called anywhere
         real hlv(1)
         common /hlv/hlv
 
-
 	integer i,k,ie
 	integer nsiglv
 	real ds
@@ -154,6 +154,23 @@ c this is not called anywhere
 	do ie=1,nel
 	  ilhv(ie) = nlv
 	end do
+
+	end
+
+c********************************************************************
+
+	subroutine set_bsigma(bsigma)
+
+c returns bsigma which is true if sigma layers are used
+
+	implicit none
+
+	logical bsigma
+
+        real hldv(1)
+        common /hldv/hldv
+
+	bsigma = hldv(1) .lt. 0.
 
 	end
 

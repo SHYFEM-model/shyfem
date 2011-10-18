@@ -37,10 +37,10 @@ export NGRDIM = 12
 #export NLVDIM = 33
 
 # asi-zec
-#export NKNDIM = 17000
-#export NELDIM = 30000
-#export NLVDIM = 52
-#export NLVDIM = 1
+export NKNDIM = 17000
+export NELDIM = 30000
+export NLVDIM = 1
+export NLVDIM = 52
 
 # curonian
 #export NKNDIM = 13000
@@ -94,9 +94,9 @@ export NGRDIM = 12
 #export NBCDIM = 50
 
 # trieste
-export NKNDIM = 26000
-export NELDIM = 51000
-export NLVDIM = 17
+#export NKNDIM = 26000
+#export NELDIM = 51000
+#export NLVDIM = 17
 
 # Venice
 #export NKNDIM = 5000
@@ -261,6 +261,7 @@ endif
 # problems with stacksize (segmentation fault)
 #	ulimit -a
 #	ulimit -s 32000		(32MB)
+#	ulimit -s unlimited
 #
 ##############################################
 

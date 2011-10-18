@@ -261,6 +261,7 @@ c local
 	    hm = hm + hm3v(ii,ie)
           end do
 	  hev(ie) = hm / 3.
+	!print*,ie,hev(ie)
         end do
 
         end

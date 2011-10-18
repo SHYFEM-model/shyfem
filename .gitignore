@@ -91,9 +91,12 @@ fembin/ousinf
 fembin/rstinf
 fembin/splitext
 fembin/splitflx
-fembin/symlink
 fembin/volinf
 fembin/vp
 fembin/wininf
 fembin/basinf
+
+fembin/grid
+fembin/mesh
+fembin/exgrd
 

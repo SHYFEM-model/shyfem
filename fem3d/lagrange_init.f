@@ -9,6 +9,7 @@ c 12.12.2007    ggu	written from scratch
 c 11.09.2009    ggu	more checks for initial seeding (linepoint_in_element)
 c 11.03.2010    ggu	small bug fix in lagbound_seed_particles() -> init np
 c 11.03.2010    ggu	in lgr_init_line() check if at least one line is read
+c 06.10.2011    ggu	in check_elements() initialize iout, icheck (bug)
 c
 c*******************************************************************
 
@@ -502,6 +503,9 @@ c------------------------------------------------------------
 c final statistics
 c------------------------------------------------------------
 
+	iin = 0
+	iout = 0
+	icheck = 0
 	do ie=1,nel
 	  if( iflag(ie) .eq. -1 ) iout = iout + 1
 	  if( iflag(ie) .eq.  0 ) icheck = icheck + 1

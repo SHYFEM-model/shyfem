@@ -5,35 +5,21 @@ c subroutines for computing discharge / flux
 c
 c contents :
 c
-c        subroutine inflxa
-c        subroutine rdflxa
-c        subroutine ckflxa
-c        subroutine prflxa
-c        subroutine tsflxa
+c subroutine inflxa
+c subroutine rdflxa
+c subroutine ckflxa
+c subroutine prflxa
+c subroutine tsflxa
 c
-c        subroutine wrflxa(it)			write of flux data
+c subroutine wrflxa(it)				write of flux data
 c
-c        subroutine flxscs(kflux,iflux,n,az,flux,flxpm)	flux through sections
-c        function flxsec(kflux,iflux,n,az)		flux through section
-c        function flxnov(k,ibefor,iafter,istype,az)	flux through volume k
-c        subroutine mkweig(n,istype,is,weight)	 	computes weight
+c subroutine flxscs(n,kflux,iflux,az,fluxes)	flux through sections
+c subroutine flxsec(n,kflux,iflux,az,fluxes)	flux through section
 c
-c        subroutine flxini			initializes flux routines
-c        subroutine flxin(kflux,iflux,n)	sets up info structure
-c	 function flxtype(k)			determines type of node k (1-5)
-c        subroutine flxinf(kflux,iflux,n)	sets up one info structure
-c        function igtnsc(k1,k2)			gets number of internal section
-c
-c----------------------------------------------------------------
-c the next subroutines shoud be replaced by subs in sublin.f
-c        subroutine flxe2i(kflux,n,berror)	external to internal nodes
-c        function kflxck(kflux,n)		checks compatibility of kflux
-c        subroutine flxdbl(kflux,n,bstop)	tests for uniqueness
-c        subroutine flxadj(kflux,n,bstop)	tests for adjacency
-c        function extrsc(inode,ndim,nnode,ifirst,ilast)	extracts section
-c----------------------------------------------------------------
-c
-c	 subroutine extrsect(isect,knode,nnode)	extracts nodes of one section
+c subroutine flxini				initializes flux routines
+c subroutine flx_init(kfluxm,kflux,nsect,iflux)	sets up array iflux
+c subroutine flxinf(m,kflux,iflux)		sets up one info structure
+c function igtnsc(k1,k2)			gets number of internal section
 c
 c revision log :
 c
@@ -54,20 +40,24 @@ c 28.09.2007    ggu     use testbndo to determine boundary node in flxtype
 c 28.04.2009    ggu     links re-structured
 c 23.02.2011    ggu     new routine call write_node_fluxes() for special output
 c 01.06.2011    ggu     documentation to flxscs() changed
+c 21.09.2011    ggu     some lower-level subroutines copied to subflx.f
+c 07.10.2011    ggu     adjusted for 3d flux routines
 c
 c notes :
 c
 c These routines can also be used internally to compute the flux
 c over various sections. The following calling sequence must be respected:
 c
-c call flxe2i(kflux,n,berror)		converts external to internal nodes
-c nsect = kflxck(kflux,n)		checks array kflux and computes nsect
-c call flxin(kflux,iflux,n)		initializes iflux
+c call flx_init(kfluxm,kflux,nsect,iflux)		initializes iflux
 c
-c call flxscs(kflux,iflux,n,az,flux,flxpm) computes fluxes and returns in flux()
+c call flxscs(kfluxm,kflux,iflux,az,fluxes) computes fluxes 
 c
 c Initialization can be done anytime.
 c
+c******************************************************************
+c******************************************************************
+c******************************************************************
+c******************************************************************
 c******************************************************************
 
         subroutine mod_flx(mode)
@@ -165,7 +155,6 @@ c******************************************************************
 	integer k,ii
         logical berror
 
-c	call flxe2i(kflux,kfluxm,berror)	!FIXME
 	call n2int(kfluxm,kflux,berror)
 
         if( berror ) then
@@ -182,7 +171,7 @@ c initialize vectors (not strictly necessary)
 	end do
 
 c the real set up is done in flxini
-c but, since at this stage we do not have all the arrays set up
+c but since at this stage we do not have all the arrays set up
 c we post-pone it until later
 
         end
@@ -248,12 +237,18 @@ c******************************************************************
 	end
 
 c******************************************************************
+c******************************************************************
+c******************************************************************
+c******************************************************************
+c******************************************************************
 
 	subroutine wrflxa(it)
 
-c write of flux data
+c administers writing of flux data
 
 	implicit none
+
+	include 'param.h'
 
 	integer it
 
@@ -267,29 +262,34 @@ c write of flux data
 	save /kfluxc/,/iflux/	!ggu
 
 	integer itend
-	integer i
+	integer j,i,l,lmax,nlmax
 	real az,azpar,rr
 
 	integer iround,ideffi
 	real getpar
 
-	real fluxt(iscdim)	!accumulator - could be also double precision
-	real flux(iscdim)
-	real fluxtpm(2,iscdim)	!accumulator - could be also double precision
-	real fluxpm(2,iscdim)
+	real fluxes(0:nlvdim,3,iscdim)
+
+	integer nlayers(iscdim)	!number of layers in section
+	real fluxest(0:nlvdim,3,iscdim)	!accumulator - may be double precision
 
         integer idtflx,itflx,itmflx,nr
         integer icall,nbflx,nvers,idfile
-        save fluxt,fluxtpm
+        save fluxest
         save idtflx,itflx,itmflx,nr
         save icall,nbflx,nvers,idfile
-        data icall,nbflx,nvers,idfile /0,0,2,537/
+	save nlayers
+        data icall,nbflx,nvers,idfile /0,0,3,537/
 
+c-----------------------------------------------------------------
 c start of code
+c-----------------------------------------------------------------
 
         if( icall .eq. -1 ) return
 
+c-----------------------------------------------------------------
 c initialization
+c-----------------------------------------------------------------
 
         if( icall .eq. 0 ) then
 
@@ -310,11 +310,16 @@ c initialization
                 itflx = itmflx + idtflx
 		itmflx = itmflx + 1	!start from next time step
 
+		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
+
                 nr = 0
                 do i=1,nsect
-                  fluxt(i) = 0.
-          	  fluxtpm(1,i) = 0.
-          	  fluxtpm(2,i) = 0.
+	  	  lmax = nlayers(i)
+	  	  do l=0,lmax
+          	    fluxest(l,1,i) = 0.
+          	    fluxest(l,2,i) = 0.
+          	    fluxest(l,3,i) = 0.
+		  end do
                 end do
 
                 nbflx=ideffi('datdir','runnam','.flx','unform','new')
@@ -326,74 +331,112 @@ c initialization
                 write(nbflx) nsect,kfluxm,idtflx
                 write(nbflx) (kflux(i),i=1,kfluxm)
 
+		if( nvers .ge. 3 ) then
+                  write(nbflx) nlmax,(nlayers(i),i=1,nsect)	!nvers=3
+		end if
+
 c               here we could also compute and write section in m**2
 
         end if
 
+c-----------------------------------------------------------------
 c normal call
+c-----------------------------------------------------------------
 
         icall = icall + 1
 
         if( it .lt. itmflx ) return
 
+c	-------------------------------------------------------
 c	accumulate results
+c	-------------------------------------------------------
 
         nr = nr + 1
 	call getaz(azpar)
 	az = azpar
 
-	call flxscs(kflux,iflux,kfluxm,az,flux,fluxpm)
+	call flxscs(kfluxm,kflux,iflux,az,fluxes)
 
 	do i=1,nsect
-	  fluxt(i) = fluxt(i) + flux(i)
-	  !write(99,*) 'wrflxa: ',it,i,flux(i),fluxt(i)  !gguerror
-	  fluxtpm(1,i) = fluxtpm(1,i) + fluxpm(1,i)
-	  fluxtpm(2,i) = fluxtpm(2,i) + fluxpm(2,i)
+	  lmax = nlayers(i)
+	  do l=0,lmax
+	    fluxest(l,1,i) = fluxest(l,1,i) + fluxes(l,1,i)
+	    fluxest(l,2,i) = fluxest(l,2,i) + fluxes(l,2,i)
+	    fluxest(l,3,i) = fluxest(l,3,i) + fluxes(l,3,i)
+	  end do
 	end do
 
         if( it .lt. itflx ) return
 
+c	-------------------------------------------------------
 c	write results
+c	-------------------------------------------------------
 
         itflx=itflx+idtflx
 
         rr=1./nr
 
         do i=1,nsect
-          flux(i) = fluxt(i) * rr
-          fluxpm(1,i) = fluxtpm(1,i) * rr
-          fluxpm(2,i) = fluxtpm(2,i) * rr
+	  lmax = nlayers(i)
+	  do l=0,lmax
+            fluxes(l,1,i) = fluxest(l,1,i) * rr
+            fluxes(l,2,i) = fluxest(l,2,i) * rr
+            fluxes(l,3,i) = fluxest(l,3,i) * rr
+	  end do
         end do
 
-        write(nbflx) it,nsect,(flux(i),i=1,nsect)
-     +			,(fluxpm(1,i),fluxpm(2,i),i=1,nsect)
-c	write(6,*) 'section written: ',nsect,nr,it
+	if( nvers .ge. 3 ) then
+          write(nbflx) it,nsect
+     +			,(nlayers(i)
+     +			,((fluxes(l,j,i),l=0,nlayers(i)),j=1,3)
+     +			,i=1,nsect)
+	else
+          write(nbflx) it,nsect
+     +			,(fluxes(0,1,i),i=1,nsect)
+     +                  ,(fluxes(0,2,i),fluxes(0,3,i),i=1,nsect)
+	end if
 
+c	-------------------------------------------------------
 c	reset variables
+c	-------------------------------------------------------
 
         nr = 0
         do i=1,nsect
-          fluxt(i) = 0.
-          fluxtpm(1,i) = 0.
-          fluxtpm(2,i) = 0.
+	  lmax = nlayers(i)
+	  do l=0,lmax
+            fluxest(l,1,i) = 0.
+            fluxest(l,2,i) = 0.
+            fluxest(l,3,i) = 0.
+          end do
         end do
+
+c-----------------------------------------------------------------
+c end of routine
+c-----------------------------------------------------------------
 
 	end
 
 c******************************************************************
+c******************************************************************
+c******************************************************************
+c******************************************************************
+c******************************************************************
 
-	subroutine flxscs(kflux,iflux,n,az,flux,fluxpm)
+	subroutine flxscs(kfluxm,kflux,iflux,az,fluxes)
 
 c computes flux through all sections and returns them in flux
+c
+c flux are divided into total, positive and negative
 
 	implicit none
 
-	integer n
+	include 'param.h'
+
+	integer kfluxm
 	integer kflux(1)
 	integer iflux(3,1)
 	real az
-	real flux(1)
-	real fluxpm(2,1)	!flux divided into positive (1) and negative (2)
+	real fluxes(0:nlvdim,3,1)
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v
@@ -401,262 +444,94 @@ c computes flux through all sections and returns them in flux
 	integer nnode,ifirst,ilast,ntotal
 	integer ns
 	logical nextline
-	real flxsec
 
 	nnode = 0
 	ns = 0
 
-	do while( nextline(kflux,n,nnode,ifirst,ilast) )
+	do while( nextline(kflux,kfluxm,nnode,ifirst,ilast) )
 	  ns = ns + 1
 	  ntotal = ilast - ifirst + 1
-	  flux(ns) = flxsec(kflux(ifirst),iflux(1,ifirst),ntotal,az
-     +				,fluxpm(1,ns),fluxpm(2,ns))
-	  !write(99,*) ns,ifirst,ilast,nnode,ntotal,flux(ns)
+	  call flxsec(ntotal,kflux(ifirst),iflux(1,ifirst),az
+     +				,fluxes(0,1,ns))
 	end do
 
 	end
 
 c******************************************************************
 
-	function flxsec(kflux,iflux,n,az,fluxp,fluxm)
+	subroutine flxsec(n,kflux,iflux,az,fluxes)
 
 c computes flux through one section
 
 	implicit none
 
-	real flxsec
+	include 'param.h'
+
 	integer n
 	integer kflux(1)
 	integer iflux(3,1)
 	real az
-	real fluxp,fluxm
+	real fluxes(0:nlvdim,3)
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 
-	integer i,k
+	integer i,k,l,lkmax
 	integer istype,iafter,ibefor
-	real tt,tp,tm
-	real port
+	real ftot,fpos,fneg
+	real port,ptot,port2d
+	real flux(nlvdim)
 
 	real flxnov
 
-	tt = 0.
-	tp = 0.
-	tm = 0.
+	ftot = 0.
+	fpos = 0.
+	fneg = 0.
 
 	do i=1,n
 		k = kflux(i)
 		istype = iflux(1,i)
 		ibefor = iflux(2,i)
 		iafter = iflux(3,i)
+
 		port = flxnov(k,ibefor,iafter,istype,az)
-		tt = tt + port
-		!write(99,*) ' ... ',i,k,port,tt	!ggu99
+		port2d = port
+		fluxes(0,1) = fluxes(0,1) + port
 		if( port .gt. 0. ) then
-		  tp = tp + port
+		  fluxes(0,2) = fluxes(0,2) + port
 		else
-		  tm = tm - port
+		  fluxes(0,3) = fluxes(0,3) - port
 		end if
-		!call write_node_fluxes(k,port)		!special output
-	end do
 
-	fluxp = tp
-	fluxm = tm
-	flxsec = tt
+		ptot = 0.
+		call flx3d(k,ibefor,iafter,istype,az,lkmax,flux)
+		do l=1,lkmax
+		  port = flux(l)
+		  ptot = ptot + port
+		  fluxes(l,1) = fluxes(l,1) + port
+		  if( port .gt. 0. ) then
+		    fluxes(l,2) = fluxes(l,2) + port
+		  else
+		    fluxes(l,3) = fluxes(l,3) - port
+		  end if
+		end do
+
+		port = abs(port2d-ptot)
+		if( port .gt. 1. ) then
+		  write(6,*) '***** integrated fluxes: ',k,port
+		  write(6,*) '   ',port2d,ptot
+		end if
+	end do
 
 	end
 	  
 c******************************************************************
-
-	function flxnov(k,ibefor,iafter,istype,az)
-
-c computes flux through finite volume k
-c
-c internal section is defined by:  kbefor - k - kafter
-
-	implicit none
-
-	real flxnov
-	integer k,ibefor,iafter,istype
-	real az
-
-	integer ndim		!must be at least ngr
-	parameter (ndim=100)
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-	include 'ev.h'
-	include 'links.h'
-        real uov(1),vov(1),unv(1),vnv(1)
-        common /uov/uov, /vov/vov, /unv/unv, /vnv/vnv
-        real zenv(3,1), zeov(3,1)
-        common /zenv/zenv, /zeov/zeov
-
-c	integer nnode,ifirst,ilast
-c	integer ntotal
-	integer i,ip,ie,ii,n,ne
-	integer ipf,ipl
-	real aj,area,dz,uv,rdt,dt
-	real b,c
-	real azt,tt
-c	logical bstop
-
-	real transp(ndim)
-	real weight(ndim)
-	real weight1(ndim)
-
-	integer ithis
-
-	call get_timestep(dt)
-	rdt = 1./dt
-	azt = 1. - az
-
-c get pointer into link structure
-
-	call set_elem_links(k,ne)
-
-	n = ne
-	if( istype .gt. 1 ) n = n + 1		!boundary
-	if( n .gt. ndim ) stop 'error stop flxnod: ndim'
-
-        transp(n) = 0.                !BUG FIX 29.5.2004
-
-c compute transports into finite volume of node k -> transp
-c computed transports are divergence corrected
-
-	do i=1,ne
-	  ie = lnk_elems(i)
-	  ii = ithis(k,ie)
-	  aj = ev(10,ie)
-	  area = 4. * aj
-	  dz = zenv(ii,ie) - zeov(ii,ie)
-	  b = ev(3+ii,ie)
-	  c = ev(6+ii,ie)
-	  uv = az * ( unv(ie) * b + vnv(ie) * c )
-	  uv = uv + azt * ( uov(ie) * b + vov(ie) * c )
-	  uv = 12. * aj * uv
-	  uv = uv - dz * area * rdt
-	  transp(i) = uv
-	end do
-
-c compute transport through section in finite volume k
-c
-c flux through section kbefor-k must is negative in sign
-
-	tt = 0.
-
-	call mkweig(n,istype,ibefor,weight)
-
-	do i=1,n
-	  tt = tt + weight(i) * transp(i)
-	end do
-
-	tt = - tt
-
-	call mkweig(n,istype,iafter,weight1)
-
-	do i=1,n
-	  tt = tt + weight1(i) * transp(i)
-	end do
-
-	flxnov = tt
-
-	if( abs(tt) .lt. -0.1 ) then
-		write(99,*) 'errorrrrrrr flxnov',abs(tt)	!ggu99
-		write(99,*) n,istype,ibefor,iafter
-		write(99,*) aj,area,ie,dz,uv,i
-                write(99,*) (weight(i),weight1(i),transp(i),i=1,n)
-	end if
-
-	end
-	
-
 c******************************************************************
-
-	subroutine mkweig(n,istype,is,weight)
-
-c computes weight over internal section in one finite volume
-c
-c n		dimension (grade of node)
-c istype	type of node (inner, border, ...)
-c is		number of internal section to compute
-c weigth	weights (return)
-
-	implicit none
-
-	integer n,istype,is
-	real weight(1)
-
-	integer it,i
-	real start,fact,dw
-
-	logical debug
-	save debug
-	data debug /.false./
-
-	it = is
-
-	do i=1,n
-	  weight(i) = 0.
-	end do
-
-	if( is .eq. 0 ) then		!no section given
-c	  nothing
-	else if( istype .eq. 1 ) then
-	  start = -0.5 * (n-1)
-	  fact = 1./n
-	  do i=1,n
-	    weight(it) = start * fact
-	    it = it + 1
-	    if( it .gt. n ) it = 1
-	    start = start + 1.
-	  end do
-	else if( istype .eq. 2 ) then
-	  if( it .eq. 1 ) it = n
-	  do i=it,n-1
-	    weight(i) = -1.
-	  end do
-	else if( istype .eq. 3 ) then
-	  do i=it,n-1
-	    weight(i) = -1.
-	  end do
-	else if( istype .eq. 4 ) then
-	  do i=1,it-1
-	    weight(i) = +1.
-	  end do
-	else if( istype .eq. 5 ) then
-	  if( n .eq. 2 ) then	!handle exception
-	    weight(1) = -0.5 + (it-1)		! -0.5/+0.5
-	  else
-	    fact = 1./(n-1)
-	    dw = fact * ( 1. + 1./(n-2) )
-	    start = 1.
-	    do i=1,n-1
-	      weight(i) = (i-1) * dw
-	      if( i .ge. it ) then	!upper right triangle
-	        weight(i) = weight(i) - start
-	      end if
-	    end do
-	  end if
-	else
-	  write(6,*) n,istype,is
-	  stop 'error stop mkweig : internal error (1)'
-	end if
-	  
-	if( debug .and. istype .ge. 3 ) then
-	  write(6,*) n,istype,is
-	  write(6,*) (weight(i),i=1,n)
-	end if
-
-	end
-
 c******************************************************************
 
 	subroutine flxini
 
-c initializes flux routines finally
+c initializes flux routines finally (wrapper for flx_init)
 
 	implicit none
 
@@ -664,12 +539,32 @@ c initializes flux routines finally
         common /kfluxc/ nsect,kfluxm,kflux
 	integer iflux(3,1)
 	common /iflux/iflux
-	integer kantv(2,1)
-	common /kantv/kantv
 	
-	integer idummy
+	call flx_init(kfluxm,kflux,nsect,iflux)
+
+	end
+
+c******************************************************************
+
+	subroutine flx_init(kfluxm,kflux,nsect,iflux)
+
+c sets up array iflux
+
+	implicit none
+
+        integer kfluxm		!total number of nodes in kflux
+        integer kflux(1)	!nodes in sections
+	integer nsect		!number of section (return)
+	integer iflux(3,1)	!internal array for flux computation (return)
+
+	integer ifirst,ilast,nnode,ntotal
 
 	integer klineck
+	logical nextline
+
+c----------------------------------------------------------
+c check nodes for compatibility
+c----------------------------------------------------------
 
 	nsect = klineck(kfluxm,kflux)
 
@@ -678,93 +573,27 @@ c initializes flux routines finally
 	  stop 'error stop : flxini'
 	end if
 
+c----------------------------------------------------------
 c now set info structure for sections
-
-	call flxin(kflux,iflux,kfluxm)
-
-	end
-
-c******************************************************************
-
-	subroutine flxin(kflux,iflux,n)
-
-c sets up info structure iflux(3,1) from kflux(1)
-
-	implicit none
-
-	integer n		!size of kflux, iflux
-	integer kflux(1)
-	integer iflux(3,1)
-
-	integer nnode,ifirst,ilast,ntotal
-	logical nextline
+c----------------------------------------------------------
 
 	nnode = 0
 
-	do while( nextline(kflux,n,nnode,ifirst,ilast) )
+	do while( nextline(kflux,kfluxm,nnode,ifirst,ilast) )
 	  ntotal = ilast - ifirst + 1
-c	  write(6,*) n,nnode,ifirst,ilast,ntotal
-	  call flxinf(kflux(ifirst),iflux(1,ifirst),ntotal)
+c	  write(6,*) kfluxm,nnode,ifirst,ilast,ntotal
+	  call flxinf(ntotal,kflux(ifirst),iflux(1,ifirst))
 	end do
 
-	end
-
-c******************************************************************
-
-	function flxtype(k)
-
-c determines type of node k (1-5)
-c
-c uses inodv only for determination of open bounday nodes
-c else uses kantv
-
-	implicit none
-
-	integer flxtype
-	integer k
-
-	integer inodv(1)
-	common /inodv/inodv
-	integer kantv(2,1)
-	common /kantv/kantv
-
-	integer ktype
-	integer kafter,kbefor
-
-	integer ipext
-
-	include 'testbndo.h'
-
-	if( kantv(1,k) .eq. 0 ) then			!inner point
-	   ktype = 1
-	else if( .not. is_external_boundary(k) ) then	!material boundary
-	   ktype = 2
-	else if( is_external_boundary(k) ) then		!open boundary
-	   kafter = kantv(1,k)
-	   kbefor = kantv(2,k)
-	   if( is_external_boundary(kbefor) 
-     +			.and. is_external_boundary(kafter) ) then	!OOO
-		ktype = 5
-	   else if( is_external_boundary(kbefor) ) then			!OOB
-		ktype = 4
-	   else if( is_external_boundary(kafter) ) then			!BOO
-		ktype = 3
-	   else
-		write(6,*) 'error at open boundary node ',ipext(k)
-		write(6,*) 'bounadry consisting of one node'
-		stop 'error stop flxtype'
-	   end if
-	else
-	   stop 'error stop flxtype: internal error (1)'
-	end if
-
-	flxtype = ktype
+c----------------------------------------------------------
+c end of routine
+c----------------------------------------------------------
 
 	end
 
 c******************************************************************
 
-	subroutine flxinf(kflux,iflux,n)
+	subroutine flxinf(n,kflux,iflux)
 
 c sets up info structure iflux(3,1) for one section
 
@@ -849,328 +678,45 @@ c	no node found
 	stop 'error stop: internal error igtnsc (2)'
 	end
 	      
-c******************************************************************
+c**********************************************************************
+c**********************************************************************
+c**********************************************************************
+c**********************************************************************
+c**********************************************************************
 
-	subroutine flxe2i(kflux,n,berror)
-
-c converts external to internal node numbers
-
-	implicit none
-
-	integer n
-	integer kflux(1)
-	logical berror
-
-	integer k,kk
-	integer ipint
-
-	berror = .false.
-
-        do k=1,n
-
-           kk=kflux(k)
-
-	   if( kk .lt. 0 ) then
-               write(6,*) 'negative node number ',kk
-               berror=.true.
-	   else if( kk .gt. 0 ) then
-               kk=ipint(kk)
-               if(kk.le.0) then
-                 write(6,*) 'node not found ',kflux(k)
-                 berror=.true.
-               end if
-           end if
-
-           kflux(k)=kk
-
-        end do
-
-	end
-
-c******************************************************************
-
-	function kflxck(kflux,n)
-
-c checks compatibility of kflux -> returns number of sections or -1 (error)
+	subroutine get_nlayers(kfluxm,kflux,nlayers,nlmax)
 
 	implicit none
 
-	integer kflxck
-	integer n		!size of kflux
+	integer kfluxm
 	integer kflux(1)
+	integer nlayers(1)
+	integer nlmax
 
-	integer nnode,ifirst,ilast,ntotal
-	integer nsect
-	logical bstop
+	integer ilhkv(1)
+	common /ilhkv/ilhkv
+
+	integer ns
+	integer nnode,ifirst,ilast
+	integer i,k,l,lmax
+
 	logical nextline
 
-	bstop = .false.
+	ns = 0
 	nnode = 0
-	nsect = 0
+	nlmax = 0
 
-	do while( nextline(kflux,n,nnode,ifirst,ilast) )
-	  nsect = nsect + 1
-	  ntotal = ilast - ifirst + 1
-	  call flxdbl(kflux(ifirst),ntotal,bstop) !tests if nodes unique
-	  call flxadj(kflux(ifirst),ntotal,bstop) !tests if nodes are adjacent
+	do while( nextline(kflux,kfluxm,nnode,ifirst,ilast) )
+	  ns = ns + 1
+	  lmax = 0
+	  do i=ifirst,ilast
+	    k = kflux(i)
+	    l = ilhkv(k)
+	    lmax = max(lmax,l)
+	  end do
+	  nlayers(ns) = lmax
+	  nlmax = max(nlmax,lmax)
 	end do
-
-	if( bstop ) nsect = -1
-
-	kflxck = nsect
-
-	end
-
-c******************************************************************
-
-	subroutine flxdbl(kflux,n,bstop)
-
-c tests for uniqueness
-
-	implicit none
-
-	integer n
-	integer kflux(1)
-	logical bstop
-
-	integer i,k,j
-	integer istart
-
-	integer ipext
-
-        istart = 1
-        if( kflux(1) .eq. kflux(n) ) istart = 2         !allow for closed line
-
-	do i=istart,n
-	   k = kflux(i)
-	   do j=i+1,n
-	      if( kflux(j) .eq. k ) then
-		bstop = .true.
-		write(6,*) 'node is not unique ',ipext(k)
-	      end if
-	   end do
-	end do
-
-	end
-
-c******************************************************************
-
-	subroutine flxadj(kflux,n,bstop)
-
-c tests for adjacency
-
-	implicit none
-
-	integer n
-	integer kflux(1)
-	logical bstop
-
-	integer i,k1,k2
-
-	integer ipext
-	logical iskadj
-
-	do i=2,n
-	   k1 = kflux(i-1)
-	   k2 = kflux(i)
-
-	   if( .not. iskadj(k1,k2) ) then
-		bstop = .true.
-		write(6,*) 'nodes are not adjacent ',ipext(k1),ipext(k2)
-	   end if
-	end do
-
-	end
-
-c******************************************************************
-
-	function extrsc(inode,ndim,nnode,ifirst,ilast)
-
-c extracts section from array
-c
-c on entry:
-c           nnode points to first node to be analysed
-c on return inode(ifirst) is first node of section and
-c           inode(ilast)  is last  node of section
-c           nnode points to first node to be analysed on entry
-
-	implicit none
-
-	logical extrsc		!true if new section found
-	integer inode(1)	!list of nodes that define sections    (in)
-	integer ndim		!total number of nodes given in node() (in)
-	integer nnode		!start/end of section in inode()       (in/out)
-	integer ifirst		!start of section in inode()           (out)
-	integer ilast		!end of section in inode()             (out)
-
-	integer iw,i,node
-
-	iw = -1				! -1 befor  0 in   +1 after section
-	if( nnode .le. 0 ) nnode = 1
-	i = nnode
-
-	do while( i .le. ndim .and. iw .ne. 1 )
-	    node = inode(i)
-	    if( node .lt. 0 ) then
-	        stop 'error stop extrsc: negative nodes in section'
-	    else if( node .eq. 0 ) then
-	        if( iw .eq. 0 ) then	!end of section
-		    ilast = i - 1
-		    iw = +1
-	        end if
-	    else !if( node .gt. 0 ) then
-	        if( iw .eq. -1 ) then	!start of section
-		    ifirst = i
-		    iw = 0
-	        end if
-	    end if
-	    i = i + 1
-	end do
-
-c end last section if not already done
-
-	if( iw .eq. 0 ) ilast = ndim		!last section
-
-	if( iw .eq. -1 ) then		!no more section, only trailing blanks
-		nnode = 0
-		extrsc = .false.
-	else !if( iw .eq. 1 ) then	!section ended regularily
-		nnode = i
-		extrsc = .true.
-	end if
-
-	end
-
-c**********************************************************************
-
-	subroutine extrsect(isect,knode,nnode)
-
-c extracts nodes of one section into array
-
-	implicit none
-
-	integer isect		!section to extract			(in)
-	integer knode(1)	!list of nodes extracted		(out)
-	integer nnode		!total number of nodes extracted	(out)
-
-c nnode is 0 if section has not been found
-c if isect < 0 the order of the nodes in knode is reversed
-c
-c knode must be big enough to contain all nodes of section isect
-
-        integer nsect,kfluxm,kflux(1)
-        common /kfluxc/ nsect,kfluxm,kflux
-
-	integer nsabs,ifirst,ilast
-	integer i
-	logical extrline
-
-	nnode = 0
-	nsabs = abs(isect)
-
-	if( isect .eq. 0 ) return		!no such section
-	if( nsabs .gt. nsect ) return		!no such section
-
-	if( .not. extrline(kflux,kfluxm,nsabs,ifirst,ilast) ) return
-
-	do i=ifirst,ilast
-	  nnode = nnode + 1
-	  knode(nnode) = kflux(i)
-	end do
-
-	if( isect .lt. 0 ) call revline(nnode,knode)
-
-	end
-
-c**********************************************************************
-c**********************************************************************
-c**********************************************************************
-c**********************************************************************
-c**********************************************************************
-
-	subroutine make_fluxes(k,n,itype,rflux,tflux)
-
-c computes fluxes over sides (tflux) from fluxes into node (rflux)
-
-	implicit none
-
-	integer k		!node
-	integer n		!number of sides (tfluxes)
-	integer itype		!type of node (1=int,2=bnd,3=BOO,4=OOB,5=OOO)
-	integer rflux(n)	!fluxes into node (element)
-	integer tflux(n)	!fluxes through sides (return value)
-
-	integer i
-	real rr
-
-	if( itype .eq. 1 ) then		!internal node
-		rr = 0.
-		do i=1,n-1
-		  rr = rr + i * rflux(i)
-		end do
-		rr = rr / n
-
-		tflux(n) = rr
-		do i=n-1,1,-1
-		  tflux(i) = tflux(i+1) - rflux(i)
-		end do
-	else if( itype .eq. 2 ) then	!node on material boundary
-		tflux(1) = 0.
-		do i=2,n-1
-		  tflux(i) = tflux(i-1) + rflux(i-1)
-		end do
-		tflux(n) = 0.
-	else if( itype .eq. 3 ) then	!BOO - boundary on left
-		tflux(n) = 0.
-		do i=n-1,1,-1
-		  tflux(i) = tflux(i+1) - rflux(i)
-		end do
-	else if( itype .eq. 4 ) then	!OOB - boundary on right
-		tflux(1) = 0.
-		do i=2,n
-		  tflux(i) = tflux(i-1) + rflux(i-1)
-		end do
-	else if( itype .eq. 5 ) then	!node totaly on open boundary
-		rr = 0.
-		do i=1,n-1
-		  rr = rr + i * rflux(i)
-		end do
-		rr = rr / n
-
-		tflux(n) = rr
-		do i=n-1,1,-1
-		  tflux(i) = tflux(i+1) - rflux(i)
-		end do
-	else
-		stop 'error stop make_fluxes: internal error (1)'
-	end if
-
-	end
-
-c**********************************************************************
-
-	subroutine write_node_fluxes(k,port)
-
-c special routine to write single fluxes (and water level) at nodes
-c
-c please uncomment the call to this subroutine if needed
-
-	implicit none
-
-	integer k	!node number
-	real port	!discharge through finite volume k
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-	real znv(1)
-	common /znv/znv
-
-	real z
-
-	z = znv(k)
-
-	write(155,*) it,k,z,port
 
 	end
 

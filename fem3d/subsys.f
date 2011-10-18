@@ -98,6 +98,7 @@ c 23.03.2011	ggu	new parameter itvdv
 c 24.03.2011	ggu	new parameters iheat,hdecay,botabs
 c 01.06.2011	ggu	new parameter idtmin
 c 18.08.2011	ggu	new parameter isoinp (interpolate inside element)
+c 18.09.2011	ggu	change default for isphe for output (-1)
 c
 c************************************************************************
 
@@ -1074,10 +1075,15 @@ c			in low dynamic areas. (Default 0)
 	call addpar('velref',0.)	!reference velocity for length scale
 	call addpar('velmin',0.)	!minimum velocity to be plotted
 
-c |isphe|		If 1 spherical coordinates are used (lat/lon). This
+c |isphe|		If 0 a cartesian coordinate system is used,
+c			If 1 the coordinates are in the spherical 
+c			system (lat/lon). Among other, this
 c			indicates that the $x$-coordinates will be multiplied
 c			by a factor that accounts for the visual deformation
-c			using lat/lon coordinates. (Default 0)
+c			using lat/lon coordinates.
+c			The default is -1, which means that the 
+c			type of coordinate system will 
+c			be determined automatically. (Default -1)
 c |reggrd|		If different from 0 it plots a regular grid over
 c			the plot for geographical reference. The value of
 c			|reggrd| gives the spacing of the regular grid lines.
@@ -1095,7 +1101,7 @@ c			1 is white. A value of 1 does not plot the
 c			overlay grid, but still writes the labels. 
 c			(Default 0.5)
 
-	call addpar('isphe',0.)		!spherical coordinate system
+	call addpar('isphe',-1.)	!spherical coordinate system
 	call addpar('reggrd',0.)	!regular grid spacing
 	call addpar('regdst',0.)	!regular micro grid spacing
 	call addpar('reggry',0.5)	!gray value

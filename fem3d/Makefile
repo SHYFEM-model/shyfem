@@ -132,7 +132,7 @@ SOBJS   = \
           subapn.o subnsa.o \
           subgrd.o subreg.o \
           subwin.o subbnd.o \
-          subexta.o subouta.o subdep.o subflxa.o \
+          subexta.o subouta.o subdep.o subflxa.o subflx3d.o \
 	  subdum.o subcus.o subdwq.o \
 	  $(QFLUX) \
 	  subnos.o subcon1.o subrnd.o sublin.o \
@@ -156,7 +156,7 @@ HTOBJS = \
 	subous.o subousa.o \
 	subbnd.o subnos.o \
 	subwin.o \
-	subflxa.o subwat.o subn11.o subdry.o \
+	subflxa.o subflx3d.o subwat.o subn11.o subdry.o \
 	subcus.o subcon1.o \
 	tideg.o tide1.o subzzz.o subres.o subuti.o \
 	sublin.o subvola.o subgeo.o debug.o \

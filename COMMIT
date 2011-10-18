@@ -1,5 +1,43 @@
 ============================================================
 
+Tue Oct 18 11:03:44 CEST 2011
+
+flx for 3D
+
+ .gitignore               |    5 +-
+ LOG                      |   19 +
+ Rules.make               |   15 +-
+ TODO                     |    3 +
+ fem3d/Makefile           |    4 +-
+ fem3d/flxinf.f           |   63 +++-
+ fem3d/ggg.txt            |  314 -----------------
+ fem3d/lagrange_init.f    |    4 +
+ fem3d/new3di.f           |    5 +-
+ fem3d/newexpl.f          |    2 +-
+ fem3d/newsig.f           |   19 +-
+ fem3d/ousextr_gis.f      |    4 +-
+ fem3d/param.h            |    6 +-
+ fem3d/splitflx.f         |    5 +
+ fem3d/subcus.f           |  131 +-------
+ fem3d/subdep.f           |    1 +
+ fem3d/subeos.f           |   13 +-
+ fem3d/subflx3d.f         |  553 ++++++++++++++++++++++++++++++
+ fem3d/subflxa.f          |  850 +++++++++++-----------------------------------
+ fem3d/sublin.f           |   13 +-
+ fem3d/subnsh.f           |   22 +-
+ fem3d/subsys.f           |   12 +-
+ femadj/param.h           |    6 +-
+ fembin/shyfem_install.pl |    8 +-
+ fembin/symlink           |   46 +++
+ femplot/param.h          |    6 +-
+ femplot/supsim.f         |    4 +-
+ grid/Makefile            |    4 +-
+ mesh/Makefile            |    4 +-
+ param.h                  |    6 +-
+ 30 files changed, 994 insertions(+), 1153 deletions(-)
+
+============================================================
+
 Thu Sep  1 14:30:07 CEST 2011
 
 New version 6_1_32

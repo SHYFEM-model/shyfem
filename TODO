@@ -16,3 +16,6 @@ color handling
 
 force fvl opening even with extension
 femplot -> plot dry areas (auto)
+
+symlink not in distribution
+

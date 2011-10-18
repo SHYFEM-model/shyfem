@@ -21,6 +21,7 @@ c
 c revision log :
 c
 c 31.08.2011	ggu	new routines EOS
+c 06.10.2011	ggu	bug fix for ilhv -> nel_lev
 c
 c notes :
 c
@@ -428,25 +429,27 @@ c common
 c local
 	integer l,ie
 	integer nvers,nkn,nel,nlv,nvar
+	integer nel_lev
 
 	call geteos(iunit,nvers,nkn,nel,nlv,nvar)
 
 c only one layer
 
+	nel_lev = nel
 	if( nlv .le. 1 ) then
 	  do ie=1,nel
 	    ilhv(ie) = 1
 	  end do
 	  hlv(1) = 10000.
 
-	  nkn = 0
+	  nel_lev = 0
 	  nlv = 0
 	end if
 
 c read records
 
 	if( nvers .eq. 3 ) then
-	  read(iunit,err=99) (ilhv(ie),ie=1,nel)
+	  read(iunit,err=99) (ilhv(ie),ie=1,nel_lev)
 	  read(iunit,err=99) (hlv(l),l=1,nlv)
 	  read(iunit,err=99) (hev(ie),ie=1,nel)
 	else
@@ -484,19 +487,21 @@ c common
 c local
 	integer l,ie
 	integer nvers,nkn,nel,nlv,nvar
+	integer nel_lev
 
 	call geteos(iunit,nvers,nkn,nel,nlv,nvar)
 
 c only one layer
 
+	nel_lev = nel
 	if( nlv .le. 1 ) then
 	  nlv = 0
-	  nkn = 0
+	  nel_lev = 0
 	end if
 
 c write records
 
-	write(iunit) (ilhv(ie),ie=1,nel)
+	write(iunit) (ilhv(ie),ie=1,nel_lev)
 	write(iunit) (hlv(l),l=1,nlv)
 	write(iunit) (hev(ie),ie=1,nel)
 

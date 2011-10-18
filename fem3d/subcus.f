@@ -9,7 +9,6 @@ c subroutine custom( it )	custom routines
 c
 c subroutine totvol( it )	computes total volume in basin
 c subroutine georg( it )	test some nodes and elements
-c subroutine fluxw( itact )	tests for mass balance
 c subroutine temp( it )		q-flux test
 c subroutine bocche		adjust depth at inlets
 c
@@ -123,7 +122,6 @@ c custom routines
 
 c	call totvol(it)
 c	call georg(it)
-c	call fluxw(it)
 c	call temp(it)
 
 	end
@@ -217,133 +215,6 @@ c	data icall,k1,k2,ie1,ie2,ie3 /0,556,555,777,788,788/
 	write(97,*) (zenv(ii,ie1),ii=1,3)
 	write(97,*) (zenv(ii,ie2),ii=1,3)
 	write(97,*) (zenv(ii,ie3),ii=1,3)
-
-	end
-
-c*****************************************************************
-
-	subroutine fluxw( itact )
-
-c tests for mass balance
-
-	implicit none
-
-	integer itact
-
-	integer ndim,nedim,nscdim
-	parameter(ndim=11,nedim=5,nscdim=10)
-c	parameter(ndim=13,nedim=7,nscdim=10)
-c	parameter(ndim=10,nedim=14,nscdim=10)
-c	parameter(ndim=31,nscdim=10)
-
-	logical berror
-	integer i,ii,k,ie
-	real az,azpar
-	real dt
-	real dv,dz,fd,ft
-	real area
-
-	integer kflxck,ieint
-	real flux(nscdim)
-	real fluxpm(2,nscdim)
-
-	integer nsect
-	save nsect
-	integer icall
-	save icall
-
-	integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-	integer n
-	integer kflux(ndim)
-	integer iflux(3,ndim)
-	save kflux,iflux,n
-	integer ielm(nedim)
-	save ielm
-
-	real areaele,zetaele
-
-	data icall / 0 /
-	data kflux /
-     +			 1,81,587,588,589,446,0
-     +			,1,447,446,0
-     +		/
-	data ielm /
-     +			 6837,6836,896,902,901
-     +		/
-c	data kflux /
-c     +			 582,534,533,532,568,0
-c     +			,582,537,536,535,567,568,0
-c     +		/
-c	data ielm /
-c     +			 890,761,762,760,759,842,843
-c     +		/
-c	data kflux /
-c     +			 1181,1201,1200,1180,0
-c     +			,1183,1206,1205,1178,0
-c     +		/
-c	data ielm /
-c     +			 1880,1877,1869,1868,1875,1870,1867
-c     +			,1879,1878,1876,1874,1873,1872,1871
-c     +		/
-c	data kflux /150,173,172,151,0,4311,4315,4314,4309,0
-c     +			,1181,1201,1200,1180,0,1182,1204,1203,1202,1179,0
-c     +			,1183,1206,1205,1178,0,1185,1208,1207,1177,0
-c     +		/
-
-	if( icall .eq. 0 ) then
-
-	   icall = 1
-
-	   do i=1,nedim
-	     k = ieint(ielm(i))
-	     if( k .le. 0 ) then
-		write(6,*) ielm(i),k
-		stop 'error stop fluxw(6)'
-	     end if
-	     ielm(i) = k
-	   end do
-
-	   do i=1,ndim
-	     if( kflux(i) .ne. 0 ) n = i
-	   end do
-
-	   call flxe2i(kflux,n,berror)
-	   if( berror ) stop 'error stop fluxw (1)'
-	   nsect = kflxck(kflux,n)
-	   if( nsect .lt. 0 ) stop 'error stop fluxw (2)'
-	   call flxin(kflux,iflux,n)
-
-	   if( nsect .gt. nscdim ) then
-	      write(6,*) 'nsect,nscdim ',nsect,nscdim
-	      stop 'error stop fluxw (3)'
-	   end if
-
-c	   write(97,*) 'initialization of sections : ',nsect,n
-c	   write(97,*) (kflux(i),i=1,n)
-c	   write(97,*) ((iflux(ii,i),ii=1,3),i=1,n)
-	end if
-
-	call getaz(azpar)
-	az = azpar
-
-	call flxscs(kflux,iflux,n,az,flux,fluxpm)
-
-	write(97,*) it,(flux(i),i=1,nsect)
-
-	dv = 0.
-	do i=1,nedim
-	  ie = ielm(i)
-	  area = areaele(ie)
-	  dz = zetaele(ie,+1) - zetaele(ie,-1)
-	  dv = dv + dz * area
-	end do
-
-	call get_timestep(dt)
-	fd = dt*(flux(1) - flux(2))
-	ft = dt*(flux(1) + flux(2))
-	write(97,*) dv,fd,ft,(dv-fd)/ft
 
 	end
 
@@ -3833,7 +3704,7 @@ c time of inundation for theseus
         common /hdenv/hdenv
 	real hev(1)
 	common /hev/hev
-        real saltv(nlvdim,nkndim)
+        real saltv(nlvdim,1)
         common /saltv/saltv
 
 	logical binit,blast

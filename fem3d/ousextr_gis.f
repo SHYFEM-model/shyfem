@@ -179,8 +179,8 @@ c-------------------------------------------------------------------
 	  call transp2vel(nel,nkn,nlv,nlvdim,hev,zenv,nen3v
      +                          ,ilhv,hlv,utlnv,vtlnv
      +                          ,uprv,vprv,weight)
-          call wrgis_3d(nb,it,nkn,ilhkv,znv,uprv,vprv)
-          !call wrgis_3d_surf(nb,it,nkn,ilhkv,znv,uprv,vprv)
+          !call wrgis_3d(nb,it,nkn,ilhkv,znv,uprv,vprv)
+          call wrgis_3d_surf(nb,it,nkn,ilhkv,znv,uprv,vprv)
           nextr = nextr + 1
         end if
 

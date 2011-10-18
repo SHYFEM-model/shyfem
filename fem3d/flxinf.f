@@ -22,15 +22,17 @@ c reads flx files
 
 	implicit none
 
-	integer nfxdim
-	parameter( nfxdim = 3000 )
+	include 'param.h'
 
 	integer nin
-	integer idfile,nvers,nsect,kfluxm
-	integer i,it
+	integer idfile,nvers,nsect,kfluxm,nlmax
+	integer i,it,idtflx
+	integer j,l,lmax
 	integer kflux(nfxdim)
+	integer nlayers(nfxdim)
 	real ppp(nfxdim)
 	real ppppm(2,nfxdim)
+	real fluxes(0:nlvdim,3,nfxdim)
 
 	integer iapini,ideffi
 
@@ -46,26 +48,60 @@ c---------------------------------------------------------------
 	end if
 
 	read(nin) idfile,nvers
-	read(nin) nsect,kfluxm
+	read(nin) nsect,kfluxm,idtflx
 
 	if( nsect .gt. nfxdim .or. kfluxm .gt. nfxdim ) then
 	  write(6,*) idfile,nvers
 	  write(6,*) nsect,kfluxm
 	  write(6,*) nfxdim
-	  stop 'error stop: nfxdim'
+	  stop 'error stop flxinf: nfxdim'
 	end if
 
 	read(nin) (kflux(i),i=1,kfluxm)
 
-	write(6,*) idfile,nvers,nsect,kfluxm
+	nlmax = 0
+	if( nvers .ge. 3 ) then
+	  read(nin) nlmax,(nlayers(i),i=1,nsect)
+	  if( nlmax .gt. nlvdim ) then
+	    write(6,*) nlmax,nlvdim
+	    stop 'error stop flxinf: nlvdim'
+	  end if
+	else
+	  do i=1,nsect
+	    nlayers(i) = 1
+	  end do
+	end if
+
+	write(6,*) idfile,nvers,nsect,kfluxm,nlmax
+
+c---------------------------------------------------------------
+c loop on data
+c---------------------------------------------------------------
 
 	do while(.true.)
 
 	  if( nvers .eq. 1 ) then
 	    read(nin,end=2) it,nsect,(ppp(i),i=1,nsect)
-	  else
+	  else if( nvers .eq. 2 ) then
 	    read(nin,end=2) it,nsect,(ppp(i),i=1,nsect)
      +				,(ppppm(1,i),ppppm(2,i),i=1,nsect)
+	  else if( nvers .eq. 3 ) then
+	    read(nin,end=2) it,nsect
+     +                  ,(nlayers(i)
+     +                  ,((fluxes(l,j,i),l=0,nlayers(i)),j=1,3)
+     +                  ,i=1,nsect)
+
+	  else
+	    write(6,*) 'nvers = ',nvers
+	    stop 'error stop flxinf: cannot handle version'
+	  end if
+
+	  if( nvers .ge. 3 ) then
+	    do i=1,nsect
+	      ppp(i) = fluxes(0,1,i)
+	      ppppm(1,i) = fluxes(0,2,i)
+	      ppppm(2,i) = fluxes(0,3,i)
+	    end do
 	  end if
 
 c in ppppm(1,*) are positive fluxes
@@ -75,6 +111,8 @@ c	  write(6,*) it,nsect
 c	  write(6,*) (ppp(i),i=1,nsect)
 
 	  write(6,'(i10,10i7)') it,(nint(ppp(i)),i=1,nsect)
+c	  write(6,'(i10,2f12.4)') it,(ppp(i),i=1,nsect)
+c     +				,(fluxes(1,1,i),i=1,nsect)
 	  write(66,'(i10,20f10.2)') it,(ppp(i),i=1,nsect)	!real
 
 	  write(67,'(i10,20f10.2)') it,(ppppm(1,i),i=1,nsect)	!positive
@@ -82,6 +120,15 @@ c	  write(6,*) (ppp(i),i=1,nsect)
 
           write(69,'(i10,20f10.2)') it,(ppppm(1,i)+ppppm(2,i)	!total (abs)
      +						,i=1,nsect)
+
+	  write(65,*) it,nsect
+	  do i=1,nsect
+	    lmax = nlayers(i)
+	    write(65,*) i,lmax
+	    do l=0,lmax
+	      write(65,*) l,(fluxes(l,j,i),j=1,3)
+	    end do
+	  end do
 
 	end do
 

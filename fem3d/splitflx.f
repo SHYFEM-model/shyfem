@@ -5,6 +5,7 @@ c revision log :
 c
 c 09.04.1999	ggu	restructured from readext
 c 28.09.1999	ggu	reads now all data and then writes it
+c 18.10.2011	ggu	error if nvers > 2
 c
 c***************************************************************
 
@@ -58,6 +59,10 @@ c---------------------------------------------------------------
 
         if( nsect .gt. nfxdim .or. kfluxm .gt. noddim ) then
           stop 'error stop: nfxdim'
+        end if
+                                                   
+        if( nvers .gt. 2 ) then		!still to be implemented
+          stop 'error stop splitflx: nvers'
         end if
                                                    
         read(nin) (kflux(i),i=1,kfluxm)

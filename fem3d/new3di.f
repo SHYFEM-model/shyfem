@@ -1512,7 +1512,7 @@ c local
 	real b,c
 	real am,az,azt,azpar,ampar
 	real ffn,ffo
-	real volo,voln,dt,dvdt
+	real volo,voln,dt,dvdt,q
 c statement functions
 	logical isein
         isein(ie) = iwegv(ie).eq.0
@@ -1582,7 +1582,8 @@ c =>  w(l-1) = flux(l-1) / a_i(l-1)  =>  w(l-1) = flux(l-1) / a(l)
             voln = volnode(l,k,+1)
             volo = volnode(l,k,-1)
 	    dvdt = (voln-volo)/dt
-	    wdiv = vf(l,k) + mfluxv(l,k)
+	    q = mfluxv(l,k)
+	    wdiv = vf(l,k) + q
 	    wlnv(l-1,k) = wlnv(l,k) + wdiv - dvdt
 	    if( debug ) write(6,*) k,l,wdiv,wlnv(l,k),wlnv(l-1,k)
 	  end do

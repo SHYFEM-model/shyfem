@@ -58,6 +58,7 @@ c 31.03.2011    ggu     no plotting in dry nodes implemented - read fvl file
 c 17.05.2011    ggu     in plobas may plot node and element numbers
 c 12.07.2011    ggu     eliminated all references to out routines
 c 31.08.2011    ggu     new eos plotting (pleos,ploeval)
+c 07.10.2011    ggu&dbf error calling extelev with nkn, and not nel
 c
 c**********************************************************
 c**********************************************************
@@ -179,7 +180,8 @@ c 3D concentrations (element values)
 	  if( oktime(it) .and. okvar(ivaria) ) then
             if( isect .eq. 0 ) then
 	      write(6,*) '..........horizontal plotting elements'
-	      call extelev(level,nlvdim,nkn,p3,parray)
+	      !call extelev(level,nlvdim,nkn,p3,parray)
+	      call extelev(level,nlvdim,nel,p3,parray)
 	      call prepsim
 	      call ploeval(nel,parray,line)
             else

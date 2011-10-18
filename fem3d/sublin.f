@@ -22,6 +22,12 @@ c 02.12.1999    ggu	new routine extrline, nextline substitutes extrli
 c 20.01.2000    ggu	new routine revline
 c 28.04.2009    ggu     links re-structured
 c
+c note :
+c
+c line nodes are stored consecutive in inode (dimension ndim)
+c a value of zero devides lines from each other
+c any number of zeros between lines (and leading and trailing) are allowed
+c
 c******************************************************************
 
 	function klineck(n,kline)
@@ -159,9 +165,12 @@ c on entry:
 c           nnode points to first node to be analysed
 c on return inode(ifirst) is first node of line and
 c           inode(ilast)  is last  node of line
-c           nnode points to first node to be analysed on entry
+c           nnode points to first node to be analysed on next entry
 c
 c on first call nnode must be 0, afterwards nnode gets set by algorithm
+c node list must contain zeros to devide lines from each other
+c any number of consecutive zeros can be used
+c leading and trailing zeros are allowed
 
 	implicit none
 
@@ -214,7 +223,7 @@ c**********************************************************************
 
 	function extrline(inode,ndim,nline,ifirst,ilast)
 
-c extracts line from array
+c extracts given line number from array
 c
 c on return inode(ifirst) is first node of line and
 c           inode(ilast)  is last  node of line

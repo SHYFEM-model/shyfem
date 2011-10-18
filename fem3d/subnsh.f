@@ -66,6 +66,7 @@ c 31.05.2011    ggu     changes for BFM
 c 01.06.2011    ggu     idtmin introduced
 c 12.07.2011    ggu     new routine next_output(), revised set_output_frequency
 c 14.07.2011    ggu     new routines for original time step
+c 13.09.2011    ggu     better error check, rdtitl() more robust
 c
 c************************************************************
 c
@@ -330,6 +331,8 @@ c		write(6,*) 'new section: ',section,num
 		if(section.eq.'title') then
 			call rdtitl
 			if( nsc .ne. 1 ) goto 66
+		else if(section.eq.'end') then
+			goto 69
 		else if(section.eq.'para') then
 			call nrdins(section)
 		else if(section.eq.'extra') then
@@ -383,6 +386,9 @@ c end of read %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    66	continue
 	write(6,*) 'section $title must be first section'
 	stop 'error stop : nlsh2d'
+   69	continue
+	write(6,*) 'section $end is not allowed on its own'
+	stop 'error stop : nlsh2d'
    77	continue
 	if( nlv .eq. -1 ) then
 	  write(6,*) 'read error in section $levels'
@@ -410,20 +416,30 @@ c reads title section
 
 	character*80 line
 
-	integer nrdlin
+	integer nrdlin,nrdsec
+	integer num
 
 	if( nrdlin(line) .eq. 0 ) goto 65
+	call triml(line)
 	descrp=line
 	if( nrdlin(line) .eq. 0 ) goto 65
+	call triml(line)
 	call putfnm('runnam',line)
 	if( nrdlin(line) .eq. 0 ) goto 65
+	call triml(line)
 	call putfnm('basnam',line)
-	if( nrdlin(line) .gt. 0 ) goto 65
+
+	!if( nrdlin(line) .gt. 0 ) goto 65
+	if( nrdsec(line,num) .eq. 0 ) goto 65
+	if( line .ne. 'end' ) goto 64
 
 	return
+   64	continue
+	write(6,*) 'error in section $title'
+	stop 'error stop rdtitl: no end found'
    65	continue
 	write(6,*) 'error in section $title'
-	stop 'error stop : rdtitl'
+	stop 'error stop rdtitl: cannot read title section'
 	end
 
 c**********************************************************************
