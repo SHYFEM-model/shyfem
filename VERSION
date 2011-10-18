@@ -1,3 +1,47 @@
+version  6_1_33    18-10-2011    VERS_6_1_33
+
+========================================================== 18-10-2011 - 6_1_33
+
+c ./femplot/supsim.f:
+c 07.10.2011    ggu&dbf error calling extelev with nkn, and not nel
+c
+c ./fem3d/subnsh.f:
+c 13.09.2011    ggu     better error check, rdtitl() more robust
+c
+c ./fem3d/tmp/istanbul/fem3d/subflx.f:
+c 21.09.2011    ggu     low-level routines copied from subflxa.f
+c
+c ./fem3d/tmp/istanbul/fem3d/subflxa.f:
+c 21.09.2011    ggu     some lower-level subroutines copied to subflx.f
+c
+c ./fem3d/lagrange_init.f:
+c 06.10.2011    ggu	in check_elements() initialize iout, icheck (bug)
+c
+c ./fem3d/subver.f:
+c 18.10.2011	ggu	version 6.1.33
+c
+c ./fem3d/newsig.f:
+c 19.09.2011    ggu     new routine set_bsigma()
+c
+c ./fem3d/subflxa.f:
+c 21.09.2011    ggu     some lower-level subroutines copied to subflx.f
+c 07.10.2011    ggu     adjusted for 3d flux routines
+c
+c ./fem3d/subeos.f:
+c 06.10.2011	ggu	bug fix for ilhv -> nel_lev
+c
+c ./fem3d/subsys.f:
+c 18.09.2011	ggu	change default for isphe for output (-1)
+c
+c ./fem3d/subflx3d.f:
+c 21.09.2011    ggu     low-level routines copied from subflxa.f
+c 07.10.2011    ggu     implemented 3d flux routines
+c
+c ./fem3d/splitflx.f:
+c 18.10.2011	ggu	error if nvers > 2
+
+==========================================================
+
 version  6_1_32    01-09-2011    VERS_6_1_32   commit_2011-10-18
 
 version  6_1_32    01-09-2011    VERS_6_1_32
