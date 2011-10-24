@@ -1,3 +1,38 @@
+version  6_1_34    24-10-2011    VERS_6_1_34
+
+========================================================== 24-10-2011 - 6_1_34
+
+c ./fem3d/lagrange.h:
+c 20.10.2011    ggu     fx renamed to flux2d, new flux3d and vel3d_ie
+c
+c ./fem3d/subflx.f:
+c 18.10.2011	ggu	created from subnos.f
+c
+c ./fem3d/flxinf.f:
+c 19.10.2011	ggu	new 3D write
+c
+c ./fem3d/lagrange_flux.f:
+c 20.10.2011    ggu     new routines for fluxes implemented
+c 24.10.2011    ggu     3d routines implemented
+c
+c ./fem3d/lagrange_main.f:
+c 19.10.2011    ggu     fx renamed to flux2d
+c
+c ./fem3d/subver.f:
+c 24.10.2011	ggu	version 6.1.34
+c
+c ./fem3d/sublnku.f:
+c 20.10.2011	ggu	check dimension in set_elem_links(), set_node_links()
+c
+c ./fem3d/subflxa.f:
+c 19.10.2011    ggu     added T/S variables, created fluxes_*() routines
+c 19.10.2011    ggu     added conz variables, created fluxes_template()
+c
+c ./fem3d/subflx3d.f:
+c 20.10.2011    ggu     restructured, flx3d_k(), make_fluxes_3d()
+
+==========================================================
+
 version  6_1_33    18-10-2011    VERS_6_1_33   commit_2011-10-24
 
 version  6_1_33    18-10-2011    VERS_6_1_33
