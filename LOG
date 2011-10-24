@@ -1,4 +1,20 @@
 
+24.10.2011	lagrangian for 3d
+
+	renamed old variables (fx->flux2d) (lagrange.h)
+	new variables (flux3d,vel3d_ie) (lagrange.h)
+	new flux routines for lagrangian (lagrange_flux.f)
+
+20.10.2011	fluxes in 3d
+
+	new file subflx.f
+	new 3d write (flxinf.f)
+	scalar write for fluxes implemented (subflxa.f)
+	more general routines for finite volume and section (subflx3d.f)
+	dimension check for link routines (sublnku.f)
+
+========================================================== 18-10-2011 - 6_1_33
+
 07.10.2011	small bug fixes
 
 	error calling extelev with nkn, and not nel (supsim.f)

@@ -5,14 +5,57 @@ c revision log :
 c
 c 06.04.1999	ggu	cosmetic changes
 c 21.04.2010	ggu	comments, write all files
+c 19.10.2011	ggu	new 3D write
 c
 c notes :
 c
-c ppp		total flux through section
-c ppppm(1,)	positive flux
-c ppppm(2,)	negative flux (number is positive)
+c this program extracts information from the FLX file and writes it to file
 c
-c	=> ppp = ppppm(1,) - ppppm(2,)
+c call fluxes_2d(it,nlvdim,nsect,ivar,ptot,fluxes)
+c
+c writes 2d fluxes of water 
+c this is mainly old stuff that might not be very interesting
+c it has been kept mainly for compatibility
+c
+c call fluxes_3d(it,nlvdim,nsect,ivar,nlayers,fluxes)
+c
+c new 3d output of fluxes (water, salt, temp)
+c the output is written to files depending on the value of ivar
+c	ivar = 0	water	iunit = 60
+c	ivar = 11	salt	iunit = 71
+c	ivar = 12	temp	iunit = 72
+c the format is:
+c
+c	time	nsect	ivar
+c		1	lmax				!first section
+c			0	ftot	fpos	fneg
+c			1	ftot	fpos	fneg
+c			...
+c			lmax	ftot	fpos	fneg
+c		2	lmax				!second section
+c			0	ftot	fpos	fneg
+c			1	ftot	fpos	fneg
+c			...
+c			lmax	ftot	fpos	fneg
+c		...
+c		nsect	lmax				!last section
+c			0	ftot	fpos	fneg
+c			1	ftot	fpos	fneg
+c			...
+c			lmax	ftot	fpos	fneg
+c
+c with
+c
+c	time	time in seconds
+c	nsect	total number of sections
+c	ivar	type of variable (see above)
+c	lmax	number of layers for section
+c	ftot	total flux through layer and section
+c	fpos	positive flux through layer and section
+c	fneg	negative flux through layer and section
+c
+c layers run from 1 to lmax
+c layer 0 gives vertically integrated flux
 c
 c*****************************************************************
 
@@ -27,11 +70,10 @@ c reads flx files
 	integer nin
 	integer idfile,nvers,nsect,kfluxm,nlmax
 	integer i,it,idtflx
-	integer j,l,lmax
+	integer j,l,lmax,ierr,ivar
 	integer kflux(nfxdim)
 	integer nlayers(nfxdim)
-	real ppp(nfxdim)
-	real ppppm(2,nfxdim)
+	real ptot(4,nfxdim)
 	real fluxes(0:nlvdim,3,nfxdim)
 
 	integer iapini,ideffi
@@ -47,32 +89,15 @@ c---------------------------------------------------------------
 	  stop 'error stop: cannot open file'
 	end if
 
-	read(nin) idfile,nvers
-	read(nin) nsect,kfluxm,idtflx
+	nvers = 5
+        call rfflx        (nin,nvers
+     +                          ,nfxdim,nfxdim,nlvdim
+     +                          ,nsect,kfluxm,idtflx,nlmax
+     +                          ,kflux
+     +                          ,nlayers
+     +                          )
 
-	if( nsect .gt. nfxdim .or. kfluxm .gt. nfxdim ) then
-	  write(6,*) idfile,nvers
-	  write(6,*) nsect,kfluxm
-	  write(6,*) nfxdim
-	  stop 'error stop flxinf: nfxdim'
-	end if
-
-	read(nin) (kflux(i),i=1,kfluxm)
-
-	nlmax = 0
-	if( nvers .ge. 3 ) then
-	  read(nin) nlmax,(nlayers(i),i=1,nsect)
-	  if( nlmax .gt. nlvdim ) then
-	    write(6,*) nlmax,nlvdim
-	    stop 'error stop flxinf: nlvdim'
-	  end if
-	else
-	  do i=1,nsect
-	    nlayers(i) = 1
-	  end do
-	end if
-
-	write(6,*) idfile,nvers,nsect,kfluxm,nlmax
+	write(6,*) nvers,nsect,kfluxm,nlmax
 
 c---------------------------------------------------------------
 c loop on data
@@ -80,56 +105,17 @@ c---------------------------------------------------------------
 
 	do while(.true.)
 
-	  if( nvers .eq. 1 ) then
-	    read(nin,end=2) it,nsect,(ppp(i),i=1,nsect)
-	  else if( nvers .eq. 2 ) then
-	    read(nin,end=2) it,nsect,(ppp(i),i=1,nsect)
-     +				,(ppppm(1,i),ppppm(2,i),i=1,nsect)
-	  else if( nvers .eq. 3 ) then
-	    read(nin,end=2) it,nsect
-     +                  ,(nlayers(i)
-     +                  ,((fluxes(l,j,i),l=0,nlayers(i)),j=1,3)
-     +                  ,i=1,nsect)
+          call rdflx(nin,it,nlvdim,nsect,ivar,nlayers,fluxes,ierr)
+	  if( ierr .ne. 0 ) goto 2
 
-	  else
-	    write(6,*) 'nvers = ',nvers
-	    stop 'error stop flxinf: cannot handle version'
+	  if( ivar .eq. 0 ) then
+	    write(6,'(i10,10i7)') it,(nint(fluxes(0,1,i)),i=1,nsect)
 	  end if
 
-	  if( nvers .ge. 3 ) then
-	    do i=1,nsect
-	      ppp(i) = fluxes(0,1,i)
-	      ppppm(1,i) = fluxes(0,2,i)
-	      ppppm(2,i) = fluxes(0,3,i)
-	    end do
-	  end if
+	  call fluxes_2d(it,nlvdim,nsect,ivar,ptot,fluxes)
+	  call fluxes_3d(it,nlvdim,nsect,ivar,nlayers,fluxes)
 
-c in ppppm(1,*) are positive fluxes
-c in ppppm(2,*) are negative fluxes
-
-c	  write(6,*) it,nsect
-c	  write(6,*) (ppp(i),i=1,nsect)
-
-	  write(6,'(i10,10i7)') it,(nint(ppp(i)),i=1,nsect)
-c	  write(6,'(i10,2f12.4)') it,(ppp(i),i=1,nsect)
-c     +				,(fluxes(1,1,i),i=1,nsect)
-	  write(66,'(i10,20f10.2)') it,(ppp(i),i=1,nsect)	!real
-
-	  write(67,'(i10,20f10.2)') it,(ppppm(1,i),i=1,nsect)	!positive
-	  write(68,'(i10,20f10.2)') it,(ppppm(2,i),i=1,nsect)	!negative
-
-          write(69,'(i10,20f10.2)') it,(ppppm(1,i)+ppppm(2,i)	!total (abs)
-     +						,i=1,nsect)
-
-	  write(65,*) it,nsect
-	  do i=1,nsect
-	    lmax = nlayers(i)
-	    write(65,*) i,lmax
-	    do l=0,lmax
-	      write(65,*) l,(fluxes(l,j,i),j=1,3)
-	    end do
-	  end do
-
+    1	  continue
 	end do
 
     2	continue
@@ -137,3 +123,69 @@ c     +				,(fluxes(1,1,i),i=1,nsect)
 	close(nin)
 
 	end
+
+c****************************************************************
+
+	subroutine fluxes_2d(it,nlvdim,nsect,ivar,ptot,fluxes)
+
+c writes 2d fluxes to file (only for ivar=0)
+
+	implicit none
+
+	integer it			!time
+	integer nlvdim			!vertical dimension
+	integer nsect			!total number of sections
+	integer ivar			!type of variable (0: water fluxes)
+	real ptot(4,1)			!aux array
+	real fluxes(0:nlvdim,3,1)	!fluxes
+
+	integer iunit,i,lmax,l,j
+
+	if( ivar .ne. 0 ) return
+
+	do i=1,nsect
+	  ptot(1,i) = fluxes(0,1,i)			!total
+	  ptot(2,i) = fluxes(0,2,i)			!positive
+	  ptot(3,i) = fluxes(0,3,i)			!negative
+	  ptot(4,i) = fluxes(0,2,i) + fluxes(0,3,i)	!absolute
+	end do
+
+	write(66,'(i10,20f10.2)') it,(ptot(1,i),i=1,nsect)	!total
+	write(67,'(i10,20f10.2)') it,(ptot(2,i),i=1,nsect)	!positive
+	write(68,'(i10,20f10.2)') it,(ptot(3,i),i=1,nsect)	!negative
+        write(69,'(i10,20f10.2)') it,(ptot(4,i),i=1,nsect)	!absolute
+
+	end
+
+c****************************************************************
+
+	subroutine fluxes_3d(it,nlvdim,nsect,ivar,nlayers,fluxes)
+
+c writes 3d fluxes to file
+
+	implicit none
+
+	integer it			!time
+	integer nlvdim			!vertical dimension
+	integer nsect			!total number of sections
+	integer ivar			!type of variable (0: water fluxes)
+	integer nlayers(1)		!max layers for section
+	real fluxes(0:nlvdim,3,1)	!fluxes
+
+	integer iunit,i,lmax,l,j
+
+	iunit = 60 + ivar
+
+	write(iunit,*) it,nsect,ivar
+	do i=1,nsect
+	  lmax = nlayers(i)
+	  write(iunit,*) i,lmax
+	  do l=0,lmax
+	    write(iunit,*) l,(fluxes(l,j,i),j=1,3)
+	  end do
+	end do
+
+	end
+
+c****************************************************************
+

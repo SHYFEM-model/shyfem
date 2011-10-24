@@ -9,7 +9,7 @@ c function flxnov(k,ibefor,iafter,istype,az)	flux through volume k
 c subroutine mkweig(n,istype,is,weight)	 	computes weight
 c
 c function flxtype(k)				determines type of node k (1-5)
-c subroutine make_fluxes(k,n,itype,rflux,tflux)	computes fluxes over sides
+c subroutine make_fluxes(k,itype,n,rflux,tflux)	computes fluxes over sides
 c
 c revision log :
 c
@@ -32,6 +32,7 @@ c 23.02.2011    ggu     new routine call write_node_fluxes() for special output
 c 01.06.2011    ggu     documentation to flxscs() changed
 c 21.09.2011    ggu     low-level routines copied from subflxa.f
 c 07.10.2011    ggu     implemented 3d flux routines
+c 20.10.2011    ggu     restructured, flx3d_k(), make_fluxes_3d()
 c
 c******************************************************************
 c******************************************************************
@@ -39,47 +40,33 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	function flxnov(k,ibefor,iafter,istype,az)
+	subroutine flx2d_k(k,istype,az,n,transp)
 
-c computes flux through section of finite volume k
+c computes fluxes through finite volume k (2D version)
 c
-c internal section is defined by:  kbefor - k - kafter
-c passed in are pointers to these section in lnk structure
+c returns n and flux corrected fluxes transp
 
 	implicit none
 
-	real flxnov		!flux computed (return)
 	integer k		!node number of finite volume
-	integer ibefor,iafter	!pointer to pre/post node
-	integer istype		!type of node (see flxtype)
 	real az			!time weighting parameter
-
-	integer ndim		!must be at least ngr
-	parameter (ndim=100)
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	integer istype		!type of node (>1 => boundary node)
+	integer n		!dimension/size of transp (entry/return)
+	real transp(1)		!fluxes into elements (flux corrected, return) 
 
 	include 'ev.h'
 	include 'links.h'
+
         real uov(1),vov(1),unv(1),vnv(1)
         common /uov/uov, /vov/vov, /unv/unv, /vnv/vnv
         real zenv(3,1), zeov(3,1)
         common /zenv/zenv, /zeov/zeov
 
-c	integer nnode,ifirst,ilast
-c	integer ntotal
-	integer i,ip,ie,ii,n,ne
-	integer ipf,ipl
+	integer i,ie,ii,ne,ndim
 	real aj,area,dz,rdt,dt
 	real uv,uvn,uvo
 	real b,c
 	real azt,tt
-c	logical bstop
-
-	real transp(ndim)
-	real weight(ndim)
-	real weight1(ndim)
 
 	integer ithis
 
@@ -87,6 +74,7 @@ c---------------------------------------------------------
 c get parameters
 c---------------------------------------------------------
 
+	ndim = n
 	call get_timestep(dt)
 	rdt = 1./dt
 	azt = 1. - az
@@ -103,7 +91,7 @@ c---------------------------------------------------------
 
 	n = ne
 	if( istype .gt. 1 ) n = n + 1		!boundary
-	if( n .gt. ndim ) stop 'error stop flxnod: ndim'
+	if( n .gt. ndim ) stop 'error stop flx2d_k: n > ndim'
 
         transp(n) = 0.                !BUG FIX 29.5.2004
 
@@ -123,10 +111,48 @@ c---------------------------------------------------------
 	  uvn = unv(ie) * b + vnv(ie) * c
 	  uvo = uov(ie) * b + vov(ie) * c
 	  uv = 12. * aj * ( az * uvn + azt * uvo )
-	  !write(88,*) 'old ',i,uvn,uvo,uv,dz*area*rdt
 	  uv = uv - dz * area * rdt
 	  transp(i) = uv
 	end do
+
+	end
+
+c******************************************************************
+
+	subroutine flx2d(k,ibefor,iafter,istype,az,flux)
+
+c computes flux through section of finite volume k (2D version)
+c
+c internal section is defined by:  kbefor - k - kafter
+c passed in are pointers to these section in lnk structure
+
+	implicit none
+
+	integer k		!node number of finite volume
+	integer ibefor,iafter	!pointer to pre/post node
+	integer istype		!type of node (see flxtype)
+	real az			!time weighting parameter
+	real flux		!flux computed (return)
+
+	integer ndim		!must be at least ngr
+	parameter (ndim=100)
+
+	include 'ev.h'
+	include 'links.h'
+
+	integer i,n
+	real tt
+
+	real transp(ndim)
+	real weight(ndim)
+	real weight1(ndim)
+
+c---------------------------------------------------------
+c compute transport through finite volume k
+c---------------------------------------------------------
+
+	n = ndim
+	call flx2d_k(k,istype,az,n,transp)
 
 c---------------------------------------------------------
 c compute transport through section in finite volume k
@@ -146,18 +172,7 @@ c---------------------------------------------------------
 	  tt = tt + weight1(i) * transp(i)
 	end do
 
-	flxnov = tt
-
-c---------------------------------------------------------
-c error check
-c---------------------------------------------------------
-
-	if( abs(tt) .lt. -0.1 ) then
-		write(99,*) 'errorrrrrrr flxnov',abs(tt)	!ggu99
-		write(99,*) n,istype,ibefor,iafter
-		write(99,*) aj,area,ie,dz,uv,i
-                write(99,*) (weight(i),weight1(i),transp(i),i=1,n)
-	end if
+	flux = tt
 
 c---------------------------------------------------------
 c end of routine
@@ -167,29 +182,20 @@ c---------------------------------------------------------
 	
 c******************************************************************
 
-	subroutine flx3d(k,ibefor,iafter,istype,az,lkmax,flux)
+	subroutine flx3d_k(k,istype,az,lkmax,n,transp)
 
-c computes flux (3d) through section of finite volume k
-c
-c internal section is defined by:  kbefor - k - kafter
-c passed in are pointers to these section in lnk structure
+c computes fluxes through finite volume k (3D version)
 
 	implicit none
 
 	include 'param.h'
 
 	integer k		!node number of finite volume
-	integer ibefor,iafter	!pointer to pre/post node
 	integer istype		!type of node (see flxtype)
 	real az			!time weighting parameter
 	integer lkmax		!maximum layer in finite volume k (return)
-	real flux(nlvdim)	!computed fluxes (return)
-
-	integer ndim		!must be at least ngr
-	parameter (ndim=100)
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	integer n		!dimension/size of transp (entry/return)
+	real transp(nlvdim,1)	!computed fluxes (return)
 
 	include 'ev.h'
 	include 'links.h'
@@ -205,24 +211,16 @@ c passed in are pointers to these section in lnk structure
         real mfluxv(nlvdim,1)
         common /mfluxv/mfluxv
 
-	logical binner
-	integer i,ip,ie,ii,n,ne
-	integer ipf,ipl
+	integer i,ie,ii,ne,ndim
 	integer l,lmax
 	real aj,area,dz,dt
 	real uv,uvn,uvo
 	real b,c
 	real azt
 	real div,dvdt,q,qw_top,qw_bot
-	real ttot
 
 	real dvol(nlvdim)
 	real areal(nlvdim+1)
-	real tt(nlvdim)
-
-	real transp(nlvdim,ndim)
-	real weight(ndim)
-	real weight1(ndim)
 
 	integer ithis
 	real areanode,volnode
@@ -231,6 +229,7 @@ c---------------------------------------------------------
 c get parameters
 c---------------------------------------------------------
 
+	ndim = n
 	call get_timestep(dt)
 	azt = 1. - az
 
@@ -246,8 +245,7 @@ c---------------------------------------------------------
 
 	n = ne
 	if( istype .gt. 1 ) n = n + 1		!boundary
-	if( n .gt. ndim ) stop 'error stop flxnod: ndim'
-	binner = istype .le. 2
+	if( n .gt. ndim ) stop 'error stop flx3d_k: n > ndim'
 
 c---------------------------------------------------------
 c compute transports into finite volume of node k -> transp
@@ -294,20 +292,70 @@ c---------------------------------------------------------
 	  end do
 	end do
 
+	end
+
+c******************************************************************
+
+	subroutine flx3d(k,ibefor,iafter,istype,az,lkmax,flux)
+
+c computes flux through section of finite volume k (3D version)
+c
+c internal section is defined by:  kbefor - k - kafter
+c passed in are pointers to these section in lnk structure
+
+	implicit none
+
+	include 'param.h'
+
+	integer k		!node number of finite volume
+	integer ibefor,iafter	!pointer to pre/post node
+	integer istype		!type of node (see flxtype)
+	real az			!time weighting parameter
+	integer lkmax		!maximum layer in finite volume k (return)
+	real flux(nlvdim)	!computed fluxes (return)
+
+	integer ndim		!must be at least ngr
+	parameter (ndim=100)
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	include 'ev.h'
+	include 'links.h'
+
+	integer i,n
+	integer l
+	real ttot
+
+	real tt(nlvdim)
+
+	real transp(nlvdim,ndim)
+	real weight(ndim)
+	real weight1(ndim)
+
+c---------------------------------------------------------
+c compute transport through finite volume k
+c---------------------------------------------------------
+
+	n = ndim
+	call flx3d_k(k,istype,az,lkmax,n,transp)
+
 c---------------------------------------------------------
 c check if transport is really divergence free
 c---------------------------------------------------------
 
-	do l=1,lkmax
-	  ttot = 0.
-	  do i=1,n
-	    ttot = ttot + transp(l,i)
+	if( istype .le. 2 ) then	!no open boundary
+	  do l=1,lkmax
+	    ttot = 0.
+	    do i=1,n
+	      ttot = ttot + transp(l,i)
+	    end do
+	    if( abs(ttot) .gt. 1. ) then
+	      write(6,*) '******** flx3d (divergence): ',ttot
+	      write(6,*) '     ',k,l,lkmax,istype
+	    end if
 	  end do
-	  if( abs(ttot) .gt. 1. .and. binner ) then
-	    write(6,*) '******** flx3d (divergence): ',ttot
-	    write(6,*) '     ',k,l,lkmax,istype
-	  end if
-	end do
+	end if
 
 c---------------------------------------------------------
 c compute transport through section in finite volume k
@@ -336,19 +384,6 @@ c---------------------------------------------------------
 	do l=1,lkmax
 	  flux(l) = tt(l)
 	end do
-
-
-c---------------------------------------------------------
-c error check
-c---------------------------------------------------------
-
-	if( abs(tt(1)) .lt. -0.1 ) then
-		write(99,*) 'errorrrrrrr flx3d',abs(tt(1))	!ggu99
-		write(99,*) n,istype,ibefor,iafter
-		write(99,*) aj,area,ie,dz,uv,i
-		write(99,*) k,lmax,lkmax
-                write(99,*) (weight(i),weight1(i),transp(1,i),i=1,n)
-	end if
 
 c---------------------------------------------------------
 c end of routine
@@ -490,15 +525,58 @@ c else uses kantv
 
 c**********************************************************************
 
-	subroutine make_fluxes(k,n,itype,rflux,tflux)
+	subroutine make_fluxes_3d(k,itype,lkmax,n,rflux,tflux)
 
 c computes fluxes over sides (tflux) from fluxes into node (rflux)
+c
+c 3d version
+c
+c if on boundary (itype>1) rflux(n) is not used (because not defined)
+
+	implicit none
+
+	include 'param.h'
+
+	integer k		!node
+	integer itype		!type of node (1=int,2=bnd,3=BOO,4=OOB,5=OOO)
+	integer lkmax		!number of layers
+	integer n		!number of sides (tfluxes)
+	integer rflux(nlvdim,n)	!fluxes into node (element)
+	integer tflux(nlvdim,n)	!fluxes through sides (return value)
+
+	integer i,l
+	real rf(ngrdim)
+	real tf(ngrdim)
+
+	do l=1,lkmax
+
+	  do i=1,n
+	    rf(i) = rflux(l,i)
+	  end do
+
+	  call make_fluxes_2d(k,itype,n,rf,tf)
+
+	  do i=1,n
+	    tflux(l,i) = tf(i)
+	  end do
+
+	end do
+
+	end
+
+c**********************************************************************
+
+	subroutine make_fluxes_2d(k,itype,n,rflux,tflux)
+
+c computes fluxes over sides (tflux) from fluxes into node (rflux)
+c
+c if on boundary (itype>1) rflux(n) is not used (because not defined)
 
 	implicit none
 
 	integer k		!node
-	integer n		!number of sides (tfluxes)
 	integer itype		!type of node (1=int,2=bnd,3=BOO,4=OOB,5=OOO)
+	integer n		!number of sides (tfluxes)
 	integer rflux(n)	!fluxes into node (element)
 	integer tflux(n)	!fluxes through sides (return value)
 
@@ -544,7 +622,7 @@ c computes fluxes over sides (tflux) from fluxes into node (rflux)
 		  tflux(i) = tflux(i+1) - rflux(i)
 		end do
 	else
-		stop 'error stop make_fluxes: internal error (1)'
+		stop 'error stop make_fluxes_2d: internal error (1)'
 	end if
 
 	end

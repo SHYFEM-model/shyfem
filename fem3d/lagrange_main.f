@@ -10,7 +10,7 @@ c
 c       read str
 c       subroutine set_input
 c       subroutien nbody
-c       subroutine setup_fluxes         initializes fx
+c       subroutine setup_fluxes         initializes flux2d
 c
 c       subroutine drogue(it)           compute trajectories
 c
@@ -19,7 +19,7 @@ c
 c subroutine back_trace
 c
 c	subroutine setbar		initial t,x,y floats
-c       subroutine setup_fluxes         initializes fx
+c       subroutine setup_fluxes         initializes flux2d
 c       subroutine drogue(it)           compute trajectories
 c       subroutine lagr_vel
 c
@@ -32,7 +32,7 @@ c             subroutine track_orig
 c             subroutine track_line
 c       end do
 c
-c subroutine setup_fluxes        	initializes fx
+c subroutine setup_fluxes        	initializes flux2d
 c
 c       subroutine getaz
 c       do
@@ -40,7 +40,7 @@ c         function flxtype
 c	  subroutine get_elem_linkp
 c         subroutine mk_rflux           flux through volume k
 c         subroutine mk_tflux           flux through vertexes
-c         subroutine setup_fx           set up fx(3,neldim)
+c         subroutine setup_fx           set up flux2d(3,neldim)
 c       end do
 c       subroutine setup_vl
 c
@@ -65,6 +65,7 @@ c 29.01.2009	aac	changes in write to file
 c 05.02.2009    ggu     re-arranged whole lagrangian module
 c 15.02.2009    ggu     call to track_body has changed -> pass time to advect
 c 11.09.2009    ggu     little bug fix for output and release of particles
+c 19.10.2011    ggu     fx renamed to flux2d
 c
 c****************************************************************            
 

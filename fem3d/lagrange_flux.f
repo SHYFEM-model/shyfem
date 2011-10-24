@@ -7,6 +7,8 @@ c revision log :
 c
 c 05.02.2009    ggu     copied from other files
 c 28.04.2009    ggu     links re-structured
+c 20.10.2011    ggu     new routines for fluxes implemented
+c 24.10.2011    ggu     3d routines implemented
 c
 c****************************************************************
 
@@ -17,7 +19,7 @@ c initializes length of element sides and fluxes
 	implicit none
 
 	call rprs
-	call setup_fluxes
+	call setup_fluxes_2d
 
 	end
 
@@ -74,8 +76,83 @@ c initializes length of element sides
 	end
 
 c******************************************************************
+c******************************************************************
+c******************************************************************
 
-	subroutine setup_fluxes
+	subroutine setup_fluxes_3d
+
+c sets up fluxes in 3d - has to be done every time step
+
+	implicit none
+
+	include 'param.h'
+	include 'lagrange.h'
+	include 'links.h'
+	
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	integer ilhv(neldim)
+	common /ilhv/ilhv
+
+	integer k,ie,ii,i
+	integer nn,ne
+	integer n
+	integer l,lmax,lkmax
+	integer itype
+	real az,azpar
+	real tdif
+	
+	real rflux(nlvdim,ngrdim)       !fluxes across finite volume k
+	real tflux(nlvdim,ngrdim)       !fluxes across sides of element
+	
+	integer flxtype
+
+c	--------------------------------------------
+c	initialization
+c	--------------------------------------------
+
+	call getaz(azpar)
+	az = azpar
+
+        do ie=1,nel
+	  lmax = ilhv(ie)
+          do ii=1,3
+	    do l=1,lmax
+              flux3d(l,ii,ie)=0
+	    end do
+          end do
+        end do
+
+c	--------------------------------------------
+c	loop on nodes
+c	--------------------------------------------
+
+        do k=1,nkn
+          itype=flxtype(k)
+
+	  n = ngrdim
+	  call flx3d_k(k,itype,az,lkmax,n,rflux)
+	  call make_fluxes_3d(k,itype,lkmax,n,rflux,tflux)
+
+  	  call setup_flux3d(k,lkmax,n,tflux)
+        end do
+
+c	--------------------------------------------
+c	compute velocities
+c	--------------------------------------------
+
+        !call setup_vl_3d
+
+c	--------------------------------------------
+c	end of routine
+c	--------------------------------------------
+
+        end
+
+c******************************************************************
+
+	subroutine setup_fluxes_2d
 
 c sets up fluxes - has to be done every time step
 
@@ -85,23 +162,27 @@ c sets up fluxes - has to be done every time step
 	include 'lagrange.h'
 	include 'links.h'
 	
-	integer ndim
-	parameter (ndim=20)
-
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
-	integer k,nn,ne,ipf,ipl,ie,ii
-	integer itype,flxtype
-	
+	integer k,ie,ii,i
+	integer nn,ne
+	integer n
+	integer itype
 	real az,azpar
+	real tdif
 	
-	real rflux(ndim)       !fluxes across fifnite volume k
-	real tflux(ndim)       !fluxes across sides of element
+	real rflux(ngrdim)       !fluxes across finite volume k
+	real tflux(ngrdim)       !fluxes across sides of element
+	real tflux_aux(ngrdim)   !fluxes across sides of element (aux)
+	real flux2d_aux(3,neldim)
 	
+	integer flxtype
+
         do ie=1,nel
           do ii=1,3
-            fx(ii,ie)=0
+            flux2d(ii,ie)=0
+            flux2d_aux(ii,ie)=0
           end do
         end do
 
@@ -110,21 +191,81 @@ c sets up fluxes - has to be done every time step
 
         do k=1,nkn
           itype=flxtype(k)
+
+c	  --------------------------------------------
+c	  old way to set-up  rflux,tflux ... delete
+c	  --------------------------------------------
+
 	  call set_elem_links(k,ne)
 	  nn = ne
           if( itype .gt. 1 ) nn = nn + 1   !boundary
-          if( nn .gt. ndim ) stop 'error stop flxnod: ndim'
+          if( nn .gt. ngrdim ) stop 'error stop flxnod: ndim'
 	  rflux(nn) = 0.
 	
     	  call mk_rflux(k,nn,itype,az,rflux,ne,lnk_elems)
-  	  call mk_tflux(k,nn,itype,rflux,tflux)
-  	  call setup_fx(k,nn,tflux,ne,lnk_elems)
+  	  call mk_tflux(k,nn,itype,rflux,tflux_aux)
+
+c	  --------------------------------------------
+c	  new way to set-up rflux,tflux
+c	  --------------------------------------------
+
+	  n = ngrdim
+	  call flx2d_k(k,itype,az,n,rflux)
+	  call make_fluxes_2d(k,itype,n,rflux,tflux)
+
+c	  --------------------------------------------
+c	  error check ... delete
+c	  --------------------------------------------
+
+	  if( n .ne. nn ) then
+	    stop 'error stop setup_fluxes: n .ne. nn'
+	  end if
+	  do i=1,n
+	    tdif = abs( tflux_aux(i) - tflux(i) )
+	    if( tdif .gt. 1.e-4 ) then
+	      stop 'error stop setup_fluxes: tflux .ne. tflux_aux'
+	    end if
+	  end do
+
+c	  --------------------------------------------
+c	  set-up lagrangian fluxes
+c	  --------------------------------------------
+
+  	  call setup_fx(k,nn,tflux,ne,lnk_elems)	!old
+  	  call setup_flux2d(k,n,tflux,flux2d_aux)		!new
         end do
 
-        call setup_vl
+c	--------------------------------------------
+c	error check ... delete
+c	--------------------------------------------
+
+        do ie=1,nel
+          do ii=1,3
+	    tdif = abs( flux2d(ii,ie) - flux2d_aux(ii,ie) )
+	    if( tdif .gt. 1.e-4 ) then
+	      stop 'error stop setup_fluxes: flux2d'
+	    end if
+          end do
+        end do
+
+c	--------------------------------------------
+c	compute velocities
+c	--------------------------------------------
+
+        call setup_vl_2d
+
+c	--------------------------------------------
+c	end of routine
+c	--------------------------------------------
 
         end
 
+c******************************************************************
+c******************************************************************
+c******************************************************************
+c old routines -> delete
+c******************************************************************
+c******************************************************************
 c******************************************************************
 
 	subroutine mk_rflux(k,n,itype,az,transp,ne,elems)
@@ -276,21 +417,118 @@ c computes fluxes in element
         integer ibhnd
         integer inext
 
+	if( n .ne. ne ) then	!just a check
+	  if( ne+1 .ne. n ) then
+	    stop 'error stop setup_fx: internal error (1)'
+	  end if
+	  if( elems(n) .ne. 0 ) then
+	    stop 'error stop setup_fx: internal error (2)'
+	  end if
+	end if
+
         do i=1,ne
          ie=elems(i)
          n1=ibhnd(k,ie)
          n2=inext(k,ie)
          j=i+1
          if(i.eq.n) j=1
-         fx(n2,ie)=fx(n2,ie)-tflux(j)
-         fx(n1,ie)=fx(n1,ie)+tflux(i)      
+         flux2d(n2,ie)=flux2d(n2,ie)-tflux(j)
+         flux2d(n1,ie)=flux2d(n1,ie)+tflux(i)      
         end do
 
         end
 
+c******************************************************************
+c******************************************************************
+c******************************************************************
+c end old routines
+c******************************************************************
+c******************************************************************
+c******************************************************************
+
+  	subroutine setup_flux3d(k,lkmax,n,tflux)
+
+c computes 3d fluxes in element
+c
+c maybe not existing fluxes are set in flux3d
+c we do not use lkmax, but lmax
+
+        implicit none
+
+        include 'param.h'
+	include 'lagrange.h'
+	include 'links.h'
+
+        integer k,lkmax,n
+	real tflux(nlvdim,1)       !fluxes across sides of element
+
+	integer ilhv(neldim)
+	common /ilhv/ilhv
+
+        integer i,ie,ne,l,lmax
+        integer j,n1,n2
+
+        integer ibhnd
+        integer inext
+
+	ne = n
+	if( lnk_elems(ne) .le. 0 ) ne = ne - 1
+
+        do i=1,ne
+          ie=lnk_elems(i)	!set up outside
+          n1=ibhnd(k,ie)
+          n2=inext(k,ie)
+          j=i+1
+          if(i.eq.n) j=1
+	  lmax = ilhv(ie)
+	  do l=1,lmax
+            flux3d(l,n2,ie)=flux3d(l,n2,ie)-tflux(l,j)
+            flux3d(l,n1,ie)=flux3d(l,n1,ie)+tflux(l,i)      
+	  end do
+        end do
+
+	end
+
+c******************************************************************
+
+  	subroutine setup_flux2d(k,n,tflux,flux2d_aux)
+
+c computes fluxes in element
+
+        implicit none
+
+        integer k,n
+        real tflux(1)
+	integer flux2d_aux(3,1)
+
+        include 'param.h'
+	include 'lagrange.h'
+	include 'links.h'
+
+        integer i,ie,ne
+        integer j,n1,n2
+
+        integer ibhnd
+        integer inext
+
+	ne = n
+	if( lnk_elems(ne) .le. 0 ) ne = ne - 1
+
+        do i=1,ne
+          ie=lnk_elems(i)	!set up outside
+          n1=ibhnd(k,ie)
+          n2=inext(k,ie)
+          j=i+1
+          if(i.eq.n) j=1
+          flux2d_aux(n2,ie)=flux2d_aux(n2,ie)-tflux(j)
+          flux2d_aux(n1,ie)=flux2d_aux(n1,ie)+tflux(i)      
+        end do
+
+	end
+
 c*********************************************************************
 
-        subroutine setup_vl
+        subroutine setup_vl_3d
 	
 c computes velocities in element
 
@@ -303,6 +541,81 @@ c
 c dp = dh + (z1+z2)/2 = dH - dz + (z1+z2)/2 
 c		= dH + (3*z1+3*z2-2*z1-2*z2-2*z3)/6
 c		= dH + (z1+z2-2*z3)/6
+c
+c all this has to be revised for sigma layers
+
+	implicit none
+
+	include 'param.h'
+	include 'lagrange.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
+
+	integer ilhv(neldim)
+	common /ilhv/ilhv
+
+        real zenv(3,1),zeov(3,1)
+        common /zenv/zenv, /zeov/zeov
+
+        real hdenv(nlvdim,neldim)
+        common /hdenv/hdenv
+
+	logical bsigma
+	integer ie,ii,i1,i2
+	integer l,lmax
+	real flx,dh,zi1,zi2,zi3,dp,ar,dst
+	real bfact
+	
+	call set_bsigma(bsigma)
+
+	bfact = 1.
+	if( bback ) bfact = -1.
+
+	do ie=1,nel
+	  dh=hdenv(1,ie)		!this already contains water level
+	  lmax = ilhv(ie)
+	  do l=1,lmax
+            do ii=1,3
+	      dp = dh
+	      if( .not. bsigma .and. l .eq. 1 ) then	!z-levels, first layer
+	        dst=dvert(ii,ie)
+                i1=mod(ii,3)+1
+                i2=mod(i1,3)+1
+	        zi1=zenv(i1,ie)
+	        zi2=zenv(i2,ie)
+	        zi3=zenv(ii,ie)
+	        dp=dh+((zi1+zi2-2.*zi3)/6.)	!compute aver depth between 1&2
+	      end if
+	      ar=dp*dst				!section area
+	      flx=flux3d(l,ii,ie)		!flux
+	      vel3d_ie(l,ii,ie)=bfact*flx/ar	!velocity
+	    end do
+          end do
+	end do
+	
+	end
+
+c*********************************************************************
+
+        subroutine setup_vl_2d
+	
+c computes velocities in element
+
+c use first layer thickness which already contains water level
+c
+c dH = dh + dz		dh undisturbed depth  dz average water level
+c
+c dz = (z1+z2+z3)/3.
+c
+c dp = dh + (z1+z2)/2 = dH - dz + (z1+z2)/2 
+c		= dH + (3*z1+3*z2-2*z1-2*z2-2*z3)/6
+c		= dH + (z1+z2-2*z3)/6
+c
+c all this has to be revised for sigma layers
 
 	implicit none
 
@@ -315,8 +628,6 @@ c		= dH + (z1+z2-2*z3)/6
         real zenv(3,1),zeov(3,1)
         common /zenv/zenv, /zeov/zeov
 
-        !real hev(1)
-        !common /hev/hev
         real hdenv(nlvdim,neldim)
         common /hdenv/hdenv
 
@@ -328,7 +639,6 @@ c		= dH + (z1+z2-2*z3)/6
 	if( bback ) bfact = -1.
 
 	do ie=1,nel
-	 !dh=hev(ie)
 	 dh=hdenv(1,ie)			!this already contains water level
          do ii=1,3
 	  dst=dvert(ii,ie)
@@ -337,10 +647,9 @@ c		= dH + (z1+z2-2*z3)/6
 	  zi1=zenv(i1,ie)
 	  zi2=zenv(i2,ie)
 	  zi3=zenv(ii,ie)
-	  dp=dh+((zi1+zi2-2.*zi3)/6.)	!see above
-	  !dp=dh+((zi1+zi2)/2)
-	  ar=dp*dst	
-	  flx=fx(ii,ie)			!flux
+	  dp=dh+((zi1+zi2-2.*zi3)/6.)	!compute aver depth between 1&2
+	  ar=dp*dst			!section area
+	  flx=flux2d(ii,ie)		!flux
 	  vel_ie(ii,ie)=bfact*flx/ar	!velocity
          end do
 	end do

@@ -8,6 +8,7 @@ c
 c 29.04.2005    ggu     arrays for backtracking
 c 29.11.2006    ggu     new version integrated into main model
 c 15.02.2009    ggu     cleaned version
+c 20.10.2011    ggu     fx renamed to flux2d, new flux3d and vel3d_ie
 c
 c******************************************************************
 
@@ -60,6 +61,9 @@ c-------------------------------------------------- backtracking
 	logical bback
 	common /backtrack/ nback, bback
 
+	logical bsurface			!keep particles on surface
+	parameter (bsurface=.true.)
+
 	real v_lag(neldim), u_lag(neldim)	!backtracking velocity
 	common /v_lag/v_lag, /u_lag/u_lag
 
@@ -77,11 +81,17 @@ c-------------------------------------------------- backtracking
 
 c-------------------------------------------------- fluxes and velocities
 	
-        real fx(3,neldim)			!fluxes of sides
-        common /fx/fx
+        real flux2d(3,neldim)			!fluxes of sides
+        common /flux2d/flux2d
+
+        real flux3d(nlvdim,3,neldim)		!fluxes of sides (3d)
+        common /flux3d/flux3d
 
         real vel_ie(3,neldim)			!velocities of sides
         common /vel_ie/vel_ie
+
+        real vel3d_ie(nlvdim,3,neldim)		!velocities of sides (3d)
+        common /vel3d_ie/vel3d_ie
 
         integer lt_body(nbdydim)		!side of parting particle
         common /lt_body/lt_body

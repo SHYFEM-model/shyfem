@@ -12,10 +12,11 @@ diff --stat		summary of all changes
 git diff --cached --stat	-> this output is written to COMMIT (gitcommit)
 diff HEAD
 
-add <files>		add <files> to next commit
-add -u			add all changed and tracked files to next commit
+add <files>		add <files> to next commit (stage)
+add -u			add (stage) all changed and tracked files to next commit
 add .			add all changed files to next commit (also untracked)
-commit			commit changes that have been added
+commit			commit changes that have been added (staged)
+commit -a		same as: add -u; commit
 tag <tag>		tags with <tag>, if no <tag> shows tags
 
 branch <branch>		creates new <branch>, if non given shows branches
@@ -27,12 +28,25 @@ HEAD^			parent of actual commit
 HEAD^^			grand-parent
 HEAD~4			4th grade
 
+different levels:
+	last commit	-> last
+	staged files	-> index
+	working dir	-> work
+
 diffs:
 
-git diff file			differences of changed files
-git diff --staged file		differences of staged but not committed file
+git diff file			differences between work and last
+git diff --staged file		differences between index and last
+git diff HEAD file		differences between work/index and last (all)
 git diff VERS_6_1_5 -- file	differences between VERS_6_1_5 and now
 git diff v6.1.1 v6.1.4 file	differences between v6.1.1 and v6.1.4
+
+--staged is the same as --chached
+
+git diff --stat			statistics on changed files
+	git diff --stat
+	git diff --stat --staged
+	git diff --stat HEAD
 
 commands:
 

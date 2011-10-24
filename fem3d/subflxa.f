@@ -42,6 +42,8 @@ c 23.02.2011    ggu     new routine call write_node_fluxes() for special output
 c 01.06.2011    ggu     documentation to flxscs() changed
 c 21.09.2011    ggu     some lower-level subroutines copied to subflx.f
 c 07.10.2011    ggu     adjusted for 3d flux routines
+c 19.10.2011    ggu     added T/S variables, created fluxes_*() routines
+c 19.10.2011    ggu     added conz variables, created fluxes_template()
 c
 c notes :
 c
@@ -252,8 +254,8 @@ c administers writing of flux data
 
 	integer it
 
-        integer iscdim
-        parameter(iscdim=500)
+        integer nscdim
+        parameter(nscdim=20)			!maximum number of sections
 
         integer nsect,kfluxm,kflux(1)
         common /kfluxc/ nsect,kfluxm,kflux
@@ -262,78 +264,98 @@ c administers writing of flux data
 	save /kfluxc/,/iflux/	!ggu
 
 	integer itend
-	integer j,i,l,lmax,nlmax
+	integer j,i,l,lmax,nlmax,ivar,nvers
 	real az,azpar,rr
 
-	integer iround,ideffi
+	real rhov(nlvdim,nkndim)
+        common /rhov/rhov
+        real saltv(nlvdim,nkndim)
+        common /saltv/saltv
+        real tempv(nlvdim,nkndim)
+        common /tempv/tempv
+        real cnv(nlvdim,nkndim)
+        common /cnv/cnv
+
+	integer ifemop
 	real getpar
 
-	real fluxes(0:nlvdim,3,iscdim)
+	real fluxes(0:nlvdim,3,nscdim)
 
-	integer nlayers(iscdim)	!number of layers in section
-	real fluxest(0:nlvdim,3,iscdim)	!accumulator - may be double precision
+	integer nlayers(nscdim)		!number of layers in section
+	real masst(0:nlvdim,3,nscdim)	!accumulator mass
+	real saltt(0:nlvdim,3,nscdim)	!accumulator salt
+	real tempt(0:nlvdim,3,nscdim)	!accumulator temp
+	real conzt(0:nlvdim,3,nscdim)	!accumulator conz
 
-        integer idtflx,itflx,itmflx,nr
-        integer icall,nbflx,nvers,idfile
-        save fluxest
-        save idtflx,itflx,itmflx,nr
-        save icall,nbflx,nvers,idfile
 	save nlayers
-        data icall,nbflx,nvers,idfile /0,0,3,537/
+        save masst,saltt,tempt,conzt
+
+        integer nrm,nrs,nrt,nrc
+	save nrm,nrs,nrt,nrc
+
+        integer idtflx,itflx,itmflx
+        save idtflx,itflx,itmflx
+        integer nbflx
+        save nbflx
+	integer ibarcl,iconz
+	save ibarcl,iconz
+
+        data nbflx /0/
 
 c-----------------------------------------------------------------
 c start of code
 c-----------------------------------------------------------------
 
-        if( icall .eq. -1 ) return
+        if( nbflx .eq. -1 ) return
 
 c-----------------------------------------------------------------
 c initialization
 c-----------------------------------------------------------------
 
-        if( icall .eq. 0 ) then
+        if( nbflx .eq. 0 ) then
 
-                idtflx = iround(getpar('idtflx'))
-                itmflx = iround(getpar('itmflx'))
-                itend = iround(getpar('itend'))
+                idtflx = nint(getpar('idtflx'))
+                itmflx = nint(getpar('itmflx'))
+                itend = nint(getpar('itend'))
 
-                if( kfluxm .le. 0 ) icall = -1
-                if( nsect .le. 0 ) icall = -1
-                if( idtflx .le. 0 ) icall = -1
-                if( itmflx .gt. itend ) icall = -1
-                if( icall .eq. -1 ) return
+                if( kfluxm .le. 0 ) nbflx = -1
+                if( nsect .le. 0 ) nbflx = -1
+                if( idtflx .le. 0 ) nbflx = -1
+                if( itmflx .gt. itend ) nbflx = -1
+                if( nbflx .eq. -1 ) return
 
-                if( nsect .gt. iscdim ) then
-                  stop 'error stop wrflxa: dimension iscdim'
+                if( nsect .gt. nscdim ) then
+                  stop 'error stop wrflxa: dimension nscdim'
                 end if
+
+		ibarcl = nint(getpar('ibarcl'))
+		iconz = nint(getpar('iconz'))
 
                 itflx = itmflx + idtflx
 		itmflx = itmflx + 1	!start from next time step
 
 		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
 
-                nr = 0
-                do i=1,nsect
-	  	  lmax = nlayers(i)
-	  	  do l=0,lmax
-          	    fluxest(l,1,i) = 0.
-          	    fluxest(l,2,i) = 0.
-          	    fluxest(l,3,i) = 0.
-		  end do
-                end do
+		call fluxes_init(nlvdim,nsect,nlayers,nrm,masst)
+		if( ibarcl .gt. 0 ) then
+		  call fluxes_init(nlvdim,nsect,nlayers,nrs,saltt)
+		  call fluxes_init(nlvdim,nsect,nlayers,nrt,tempt)
+		end if
+		if( iconz .eq. 1 ) then
+		  call fluxes_init(nlvdim,nsect,nlayers,nrc,conzt)
+		end if
 
-                nbflx=ideffi('datdir','runnam','.flx','unform','new')
+                nbflx=ifemop('.flx','unform','new')
                 if(nbflx.le.0) then
         	   stop 'error stop wrflxa : Cannot open FLX file'
 		end if
 
-                write(nbflx) idfile,nvers
-                write(nbflx) nsect,kfluxm,idtflx
-                write(nbflx) (kflux(i),i=1,kfluxm)
-
-		if( nvers .ge. 3 ) then
-                  write(nbflx) nlmax,(nlayers(i),i=1,nsect)	!nvers=3
-		end if
+	        nvers = 5
+                call wfflx      (nbflx,nvers
+     +                          ,nsect,kfluxm,idtflx,nlmax
+     +                          ,kflux
+     +                          ,nlayers
+     +                          )
 
 c               here we could also compute and write section in m**2
 
@@ -343,72 +365,78 @@ c-----------------------------------------------------------------
 c normal call
 c-----------------------------------------------------------------
 
-        icall = icall + 1
-
         if( it .lt. itmflx ) return
+
+	call getaz(azpar)
+	az = azpar
 
 c	-------------------------------------------------------
 c	accumulate results
 c	-------------------------------------------------------
 
-        nr = nr + 1
-	call getaz(azpar)
-	az = azpar
+	ivar = 0
+	call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,rhov)
+	call fluxes_accum(nlvdim,nsect,nlayers,nrm,masst,fluxes)
 
-	call flxscs(kfluxm,kflux,iflux,az,fluxes)
+	if( ibarcl .gt. 0 ) then
+	  ivar = 11
+	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,saltv)
+	  call fluxes_accum(nlvdim,nsect,nlayers,nrs,saltt,fluxes)
+	  ivar = 12
+	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,tempv)
+	  call fluxes_accum(nlvdim,nsect,nlayers,nrt,tempt,fluxes)
+	end if
 
-	do i=1,nsect
-	  lmax = nlayers(i)
-	  do l=0,lmax
-	    fluxest(l,1,i) = fluxest(l,1,i) + fluxes(l,1,i)
-	    fluxest(l,2,i) = fluxest(l,2,i) + fluxes(l,2,i)
-	    fluxest(l,3,i) = fluxest(l,3,i) + fluxes(l,3,i)
-	  end do
-	end do
+	if( iconz .eq. 1 ) then
+	  ivar = 10
+	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,cnv)
+	  call fluxes_accum(nlvdim,nsect,nlayers,nrc,conzt,fluxes)
+	end if
+
+c	-------------------------------------------------------
+c	time for output?
+c	-------------------------------------------------------
 
         if( it .lt. itflx ) return
-
-c	-------------------------------------------------------
-c	write results
-c	-------------------------------------------------------
-
         itflx=itflx+idtflx
 
-        rr=1./nr
+c	-------------------------------------------------------
+c	average and write results
+c	-------------------------------------------------------
 
-        do i=1,nsect
-	  lmax = nlayers(i)
-	  do l=0,lmax
-            fluxes(l,1,i) = fluxest(l,1,i) * rr
-            fluxes(l,2,i) = fluxest(l,2,i) * rr
-            fluxes(l,3,i) = fluxest(l,3,i) * rr
-	  end do
-        end do
+	ivar = 0
+	call fluxes_aver(nlvdim,nsect,nlayers,nrm,masst,fluxes)
+	call wrflx(nbflx,it,nlvdim,nsect,ivar,nlayers,fluxes)
 
-	if( nvers .ge. 3 ) then
-          write(nbflx) it,nsect
-     +			,(nlayers(i)
-     +			,((fluxes(l,j,i),l=0,nlayers(i)),j=1,3)
-     +			,i=1,nsect)
-	else
-          write(nbflx) it,nsect
-     +			,(fluxes(0,1,i),i=1,nsect)
-     +                  ,(fluxes(0,2,i),fluxes(0,3,i),i=1,nsect)
+	if( ibarcl .gt. 0 ) then
+	  ivar = 11
+	  call fluxes_aver(nlvdim,nsect,nlayers,nrs,saltt,fluxes)
+	  call wrflx(nbflx,it,nlvdim,nsect,ivar,nlayers,fluxes)
+	  ivar = 12
+	  call fluxes_aver(nlvdim,nsect,nlayers,nrt,tempt,fluxes)
+	  call wrflx(nbflx,it,nlvdim,nsect,ivar,nlayers,fluxes)
+	end if
+
+	if( iconz .eq. 1 ) then
+	  ivar = 10
+	  call fluxes_aver(nlvdim,nsect,nlayers,nrc,conzt,fluxes)
+	  call wrflx(nbflx,it,nlvdim,nsect,ivar,nlayers,fluxes)
 	end if
 
 c	-------------------------------------------------------
 c	reset variables
 c	-------------------------------------------------------
 
-        nr = 0
-        do i=1,nsect
-	  lmax = nlayers(i)
-	  do l=0,lmax
-            fluxest(l,1,i) = 0.
-            fluxest(l,2,i) = 0.
-            fluxest(l,3,i) = 0.
-          end do
-        end do
+	call fluxes_init(nlvdim,nsect,nlayers,nrm,masst)
+
+	if( ibarcl .gt. 0 ) then
+	  call fluxes_init(nlvdim,nsect,nlayers,nrs,saltt)
+	  call fluxes_init(nlvdim,nsect,nlayers,nrt,tempt)
+	end if
+
+	if( iconz .eq. 1 ) then
+	  call fluxes_init(nlvdim,nsect,nlayers,nrc,conzt)
+	end if
 
 c-----------------------------------------------------------------
 c end of routine
@@ -422,7 +450,89 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	subroutine flxscs(kfluxm,kflux,iflux,az,fluxes)
+	subroutine fluxes_init(nlvdim,nsect,nlayers,nr,masst)
+
+	implicit none
+
+	integer nlvdim,nsect
+	integer nlayers(1)
+	integer nr
+	real masst(0:nlvdim,3,1)
+
+	integer i,l,lmax
+
+        nr = 0
+        do i=1,nsect
+	  lmax = nlayers(i)
+	  do l=0,lmax
+            masst(l,1,i) = 0.
+            masst(l,2,i) = 0.
+            masst(l,3,i) = 0.
+          end do
+        end do
+
+	end
+
+c******************************************************************
+
+	subroutine fluxes_accum(nlvdim,nsect,nlayers,nr,masst,fluxes)
+
+	implicit none
+
+	integer nlvdim,nsect
+	integer nlayers(1)
+	integer nr
+	real masst(0:nlvdim,3,1)
+	real fluxes(0:nlvdim,3,1)
+
+	integer i,l,lmax
+
+        nr = nr + 1
+	do i=1,nsect
+	  lmax = nlayers(i)
+	  do l=0,lmax
+	    masst(l,1,i) = masst(l,1,i) + fluxes(l,1,i)
+	    masst(l,2,i) = masst(l,2,i) + fluxes(l,2,i)
+	    masst(l,3,i) = masst(l,3,i) + fluxes(l,3,i)
+	  end do
+	end do
+
+	end
+
+c******************************************************************
+
+	subroutine fluxes_aver(nlvdim,nsect,nlayers,nr,masst,fluxes)
+
+	implicit none
+
+	integer nlvdim,nsect
+	integer nlayers(1)
+	integer nr
+	real masst(0:nlvdim,3,1)
+	real fluxes(0:nlvdim,3,1)
+
+	integer i,l,lmax
+	real rr
+
+        rr=1./nr
+        do i=1,nsect
+	  lmax = nlayers(i)
+	  do l=0,lmax
+            fluxes(l,1,i) = masst(l,1,i) * rr
+            fluxes(l,2,i) = masst(l,2,i) * rr
+            fluxes(l,3,i) = masst(l,3,i) * rr
+	  end do
+	end do
+
+	end
+
+c******************************************************************
+c******************************************************************
+c******************************************************************
+c******************************************************************
+c******************************************************************
+
+	subroutine flxscs(kfluxm,kflux,iflux,az,fluxes,is,scalar)
 
 c computes flux through all sections and returns them in flux
 c
@@ -436,7 +546,9 @@ c flux are divided into total, positive and negative
 	integer kflux(1)
 	integer iflux(3,1)
 	real az
-	real fluxes(0:nlvdim,3,1)
+	real fluxes(0:nlvdim,3,1)	!computed fluxes (return)
+	integer is
+	real scalar(nlvdim,1)
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v
@@ -452,14 +564,14 @@ c flux are divided into total, positive and negative
 	  ns = ns + 1
 	  ntotal = ilast - ifirst + 1
 	  call flxsec(ntotal,kflux(ifirst),iflux(1,ifirst),az
-     +				,fluxes(0,1,ns))
+     +				,fluxes(0,1,ns),is,scalar)
 	end do
 
 	end
 
 c******************************************************************
 
-	subroutine flxsec(n,kflux,iflux,az,fluxes)
+	subroutine flxsec(n,kflux,iflux,az,fluxes,is,scalar)
 
 c computes flux through one section
 
@@ -471,22 +583,23 @@ c computes flux through one section
 	integer kflux(1)
 	integer iflux(3,1)
 	real az
-	real fluxes(0:nlvdim,3)
+	real fluxes(0:nlvdim,3)		!computed fluxes (return)
+	integer is
+	real scalar(nlvdim,1)
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 
 	integer i,k,l,lkmax
 	integer istype,iafter,ibefor
-	real ftot,fpos,fneg
-	real port,ptot,port2d
+	real port,ptot,port2d,sport,sptot
 	real flux(nlvdim)
 
-	real flxnov
-
-	ftot = 0.
-	fpos = 0.
-	fneg = 0.
+	do l=0,nlvdim
+	  fluxes(l,1) = 0.
+	  fluxes(l,2) = 0.
+	  fluxes(l,3) = 0.
+	end do
 
 	do i=1,n
 		k = kflux(i)
@@ -494,32 +607,37 @@ c computes flux through one section
 		ibefor = iflux(2,i)
 		iafter = iflux(3,i)
 
-		port = flxnov(k,ibefor,iafter,istype,az)
-		port2d = port
-		fluxes(0,1) = fluxes(0,1) + port
-		if( port .gt. 0. ) then
-		  fluxes(0,2) = fluxes(0,2) + port
-		else
-		  fluxes(0,3) = fluxes(0,3) - port
-		end if
+		call flx2d(k,ibefor,iafter,istype,az,port2d)
+
+		call flx3d(k,ibefor,iafter,istype,az,lkmax,flux)
 
 		ptot = 0.
-		call flx3d(k,ibefor,iafter,istype,az,lkmax,flux)
+		sptot = 0.
 		do l=1,lkmax
 		  port = flux(l)
-		  ptot = ptot + port
-		  fluxes(l,1) = fluxes(l,1) + port
+		  sport = port
+		  if( is .gt. 0 ) sport = port * scalar(l,k)
+
+		  fluxes(l,1) = fluxes(l,1) + sport
 		  if( port .gt. 0. ) then
-		    fluxes(l,2) = fluxes(l,2) + port
+		    fluxes(l,2) = fluxes(l,2) + sport
 		  else
-		    fluxes(l,3) = fluxes(l,3) - port
+		    fluxes(l,3) = fluxes(l,3) - sport
 		  end if
+		  ptot = ptot + port
+		  sptot = sptot + sport
 		end do
 
-		port = abs(port2d-ptot)
-		if( port .gt. 1. ) then
-		  write(6,*) '***** integrated fluxes: ',k,port
-		  write(6,*) '   ',port2d,ptot
+		if( abs(port2d-ptot) .gt. 1. ) then
+		  write(6,*) '***** integrated fluxes: ',k
+		  write(6,*) '   ',port2d,ptot,abs(port2d-ptot)
+		end if
+
+		fluxes(0,1) = fluxes(0,1) + sptot
+		if( ptot .gt. 0. ) then
+		  fluxes(0,2) = fluxes(0,2) + sptot
+		else
+		  fluxes(0,3) = fluxes(0,3) - sptot
 		end if
 	end do
 
@@ -721,4 +839,177 @@ c**********************************************************************
 	end
 
 c**********************************************************************
+c**********************************************************************
+c**********************************************************************
+c**********************************************************************
+c**********************************************************************
+
+	subroutine fluxes_template(it)
+
+c administers writing of flux data
+c
+c serves as a template for new variables
+c please copy to extra file and adapt to your needs
+c
+c in this version multiple concentrations are written
+c
+c to change for adaptation:
+c
+c ncsdim	dimension of parameter arrays (here in param.h)
+c conzv		parameters to be computed
+c iconz		how many parameters actually needed
+c csc		new extension for file
+c ivar_base	base of variable numbering
+
+	implicit none
+
+	include 'param.h'
+
+	integer it
+
+        integer nscdim
+        parameter(nscdim=20)			!maximum number of sections
+
+        integer nsect,kfluxm,kflux(1)
+        common /kfluxc/ nsect,kfluxm,kflux
+	integer iflux(3,1)
+	common /iflux/iflux
+	save /kfluxc/,/iflux/	!ggu
+
+        real conzv(nlvdim,nkndim,ncsdim)	!multiple concentrations
+        common /conzv/conzv
+
+	integer itend
+	integer j,i,k,l,lmax,nlmax,ivar,nvers,ivar_base
+	integer iconz
+	real az,azpar,rr
+
+	real fluxes(0:nlvdim,3,nscdim)
+
+	integer nlayers(nscdim)			!number of layers in section
+	integer nrc(ncsdim)			!counter
+	real cflux(0:nlvdim,3,nscdim,ncsdim)	!accumulator
+
+	save nlayers,nrc,cflux
+
+        integer idtflx,itflx,itmflx,nbflx
+        save idtflx,itflx,itmflx,nbflx
+
+        data nbflx /0/
+
+	integer ifemop
+	real getpar
+
+c-----------------------------------------------------------------
+c start of code
+c-----------------------------------------------------------------
+
+        if( nbflx .eq. -1 ) return
+
+c-----------------------------------------------------------------
+c initialization
+c-----------------------------------------------------------------
+
+        if( nbflx .eq. 0 ) then
+
+                idtflx = nint(getpar('idtflx'))
+                itmflx = nint(getpar('itmflx'))
+                itend = nint(getpar('itend'))
+		iconz = nint(getpar('iconz'))	!computing concentrations?
+
+                if( kfluxm .le. 0 ) nbflx = -1
+                if( nsect .le. 0 ) nbflx = -1
+                if( idtflx .le. 0 ) nbflx = -1
+                if( itmflx .gt. itend ) nbflx = -1
+                if( iconz .le. 0 ) nbflx = -1
+                if( nbflx .eq. -1 ) return
+
+                if( nsect .gt. nscdim ) then
+                  stop 'error stop fluxes_template: dimension nscdim'
+                end if
+
+                itflx = itmflx + idtflx
+		itmflx = itmflx + 1	!start from next time step
+
+		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
+
+		do k=1,iconz
+		  call fluxes_init(nlvdim,nsect,nlayers
+     +				,nrc(k),cflux(0,1,1,k))
+		end do
+
+                nbflx=ifemop('.csc','unform','new')
+                if(nbflx.le.0) then
+        	   stop 'error stop wrflxa : Cannot open csc file'
+		end if
+
+	        nvers = 5
+                call wfflx      (nbflx,nvers
+     +                          ,nsect,kfluxm,idtflx,nlmax
+     +                          ,kflux
+     +                          ,nlayers
+     +                          )
+
+        end if
+
+c-----------------------------------------------------------------
+c normal call
+c-----------------------------------------------------------------
+
+        if( it .lt. itmflx ) return
+
+	iconz = nint(getpar('iconz'))
+	call getaz(azpar)
+	az = azpar
+	ivar_base = 200		!base of variable numbering
+
+c	-------------------------------------------------------
+c	accumulate results
+c	-------------------------------------------------------
+
+	do k=1,iconz
+	  ivar = ivar_base + k
+	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,conzv(1,1,k))
+	  call fluxes_accum(nlvdim,nsect,nlayers
+     +			,nrc(k),cflux(0,1,1,k),fluxes)
+	end do
+
+c	-------------------------------------------------------
+c	time for output?
+c	-------------------------------------------------------
+
+        if( it .lt. itflx ) return
+        itflx=itflx+idtflx
+
+c	-------------------------------------------------------
+c	average and write results
+c	-------------------------------------------------------
+
+	do k=1,iconz
+	  ivar = ivar_base + k
+	  call fluxes_aver(nlvdim,nsect,nlayers
+     +			,nrc(k),cflux(0,1,1,k),fluxes)
+	  call wrflx(nbflx,it,nlvdim,nsect,ivar,nlayers,fluxes)
+	end do
+
+c	-------------------------------------------------------
+c	reset variables
+c	-------------------------------------------------------
+
+	do k=1,iconz
+	  call fluxes_init(nlvdim,nsect,nlayers
+     +			,nrc(k),cflux(0,1,1,k))
+	end do
+
+c-----------------------------------------------------------------
+c end of routine
+c-----------------------------------------------------------------
+
+	end
+
+c******************************************************************
+c******************************************************************
+c******************************************************************
+c******************************************************************
+c******************************************************************
 

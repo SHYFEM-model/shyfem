@@ -1,5 +1,24 @@
 ============================================================
 
+Mon Oct 24 16:29:56 CEST 2011
+
+flux routines in 3d (also lagrangian)
+
+ LOG                   |   16 ++
+ fem3d/Makefile        |    8 +-
+ fem3d/flxinf.f        |  202 ++++++++++++-------
+ fem3d/lagrange.h      |   14 ++-
+ fem3d/lagrange_flux.f |  359 +++++++++++++++++++++++++++++++---
+ fem3d/lagrange_main.f |    9 +-
+ fem3d/subflx.f        |  320 ++++++++++++++++++++++++++++++
+ fem3d/subflx3d.f      |  248 ++++++++++++++++--------
+ fem3d/subflxa.f       |  519 ++++++++++++++++++++++++++++++++++++++-----------
+ fem3d/sublnku.f       |    5 +
+ fembin/gitinfo        |   24 ++-
+ 11 files changed, 1410 insertions(+), 314 deletions(-)
+
+============================================================
+
 Tue Oct 18 11:05:16 CEST 2011
 
 New version 6_1_33
