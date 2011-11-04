@@ -1,3 +1,52 @@
+version  6_1_35    04-11-2011    VERS_6_1_35
+
+========================================================== 04-11-2011 - 6_1_35
+
+c ./fem3d/lagrange_flux.f:
+c 04.11.2011    ggu     part with bsigma not yet finished
+c
+c ./fem3d/subver.f:
+c 04.11.2011	ggu	version 6.1.35
+c
+c ./fem3d/newbsig.f:
+c 25.10.2011    ggu     some routines renamed
+c 03.11.2011    ggu     use routine set_hybrid_depth() for hybrid levels
+c
+c ./fem3d/newbcl.f:
+c 04.11.2011    ggu     adapted for hybrid coordinates
+c
+c ./fem3d/newsig.f:
+c 04.11.2011    ggu     new routines for hybrid levels
+c
+c ./fem3d/newchk.f:
+c 25.10.2011    ggu     hlhv eliminated
+c
+c ./fem3d/subsys.f:
+c 03.11.2011	ggu	new parameter hsigma (hybrid)
+c
+c ./fem3d/new3di.f:
+c 04.11.2011    ggu	deleted computation of firction term (in subn35.f)
+c
+c ./fem3d/ht.f:
+c 25.10.2011    ggu	hlhv eliminated
+c
+c ./fem3d/subele.f:
+c 25.10.2011    ggu     hlhv eliminated
+c 04.11.2011    ggu     adapted for hybrid coordinates
+c
+c ./fem3d/subwrt.f:
+c 24.10.2011	ggu	new file copied from subcus.f (jamal)
+c
+c ./fem3d/newexpl.f:
+c 25.10.2011	dbf&ggu	bug fix in set_barocl_new_interface (psigma)
+c 04.11.2011    ggu     adapted for hybrid coordinates
+c
+c ./fem3d/newini.f:
+c 25.10.2011    ggu	hlhv eliminated
+c 04.11.2011    ggu	adapted for hybrid coordinates
+
+==========================================================
+
 version  6_1_34    24-10-2011    VERS_6_1_34   commit_2011-11-04
 
 version  6_1_34    24-10-2011    VERS_6_1_34
