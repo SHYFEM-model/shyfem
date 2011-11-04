@@ -1,5 +1,5 @@
 c
-c $Id: newsigma.f,v 1.3 2009-03-24 17:49:19 georg Exp $
+c $Id: newbsig.f,v 1.3 2009-03-24 17:49:19 georg Exp $
 c
 c routines for handling initialization from sigma levels
 c
@@ -11,10 +11,12 @@ c 07.11.2008    ggu     program written from scratch
 c 06.12.2008    ggu     bbsig set from STR (nbsig)
 c 24.03.2009    ggu     use nbsig to check if initialized
 c 16.12.2010    ggu     adjusted for sigma levels, renamed sigma.h to bsig.h
+c 25.10.2011    ggu     some routines renamed
+c 03.11.2011    ggu     use routine set_hybrid_depth() for hybrid levels
 c
 c*****************************************************************
 
-	subroutine handle_sigma_init
+	subroutine handle_bsig_init
 
 c initializes u/v/z from sigma level data
 
@@ -25,14 +27,9 @@ c initializes u/v/z from sigma level data
 
 	character*(60) sigma_l,sigma_d,sigma_u,sigma_v,sigma_z,sigma_b
 	logical bbsig
-        integer nsig
         real getpar
 
-        nsig = nint(getpar('nbsig'))
-
-	bbsig = .false.		!if true read in sigma data
-	bbsig = .true.		!if true read in sigma data
-        bbsig = nsig .gt. 0
+	bbsig = nint(getpar('nbsig')) .gt. 0	!if true read in sigma data
 
 	nbsig = 0			!number of sigma levels read (init)
 
@@ -46,15 +43,15 @@ c initializes u/v/z from sigma level data
 	sigma_v = 'Vvelocities_init.txt'
 	sigma_z = 'elevation_init.txt'
 
-	call set_bsigma_levels(sigma_l)
-	call set_bsigma_depths(sigma_d)
+	call set_bsig_levels(sigma_l)
+	call set_bsig_depths(sigma_d)
 	call init_vel_from_sigma(sigma_u,sigma_v,sigma_z)
 
 	end
 
 c*****************************************************************
 
-	subroutine set_bsigma_levels(file)
+	subroutine set_bsig_levels(file)
 
 c read in sigma levels
 
@@ -90,17 +87,17 @@ c read in sigma levels
    98	continue
 	write(6,*) 'too many sigma levels'
 	write(6,*) 'nbsig = ',nbsig,'    nsidim = ',nsidim
-	stop 'error stop set_bsigma_levels: nsidim'
+	stop 'error stop set_bsig_levels: nsidim'
    99	continue
 	write(6,*) 'problems in sigma levels...'
 	write(6,*) nbsig
 	write(6,*) (siglev(i),i=0,nbsig)
-	stop 'error stop set_bsigma_levels: sigma'
+	stop 'error stop set_bsig_levels: sigma'
 	end
 
 c*****************************************************************
 
-	subroutine set_bsigma_depths(file)
+	subroutine set_bsig_depths(file)
 
 c read in depth file for sigma layers
 
@@ -143,7 +140,7 @@ c read in depth file for sigma layers
    98	continue
 	write(6,*) 'not compatible number of total nodes'
 	write(6,*) 'nknaux = ',nknaux,'    nkn = ',nkn
-	stop 'error stop set_bsigma_depths: nkn'
+	stop 'error stop set_bsig_depths: nkn'
 	end
 
 c*****************************************************************
@@ -332,32 +329,19 @@ c*****************************************************************
 	real siguval(nsidim+1)
 	real sigvval(nsidim+1)
 
-	logical bsigma
 	integer l,lmax
-	real hfem,hfd,zfem
+	real hfem,hfd,zfem,hsigma
 	real fact
 
 	if( nbsig .le. 0 ) goto 98
 
-	hfem = hev(ie)
-	lmax = ilhv(ie)
-	bsigma = hlv(lmax) .eq. -1.
-
 	hfd = sigdep(k)
 	zfem = znv(k)		!this might not be set at the boundary
+	hfem = hev(ie)
+	lmax = ilhv(ie)
 
-	if( bsigma ) then
-	  hlfem(0) = -zfem
-	  do l=1,lmax
-	    hlfem(l) = -zfem - (hfem+zfem) * hlv(l)
-	  end do
-	else
-	  hlfem(0) = -zfem
-	  do l=1,lmax-1
-	    hlfem(l) = hlv(l)
-	  end do
-	  hlfem(lmax) = hfem
-	end if
+	hlfem(0) = -zfem
+	call set_hybrid_depth(lmax,zfem,hfem,hlfem(1))
 
 	fact = 1.
 	if( ifact .ne. 0 ) fact = (hfd+zfem) / (hfem+zfem)

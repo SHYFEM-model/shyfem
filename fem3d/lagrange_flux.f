@@ -9,6 +9,7 @@ c 05.02.2009    ggu     copied from other files
 c 28.04.2009    ggu     links re-structured
 c 20.10.2011    ggu     new routines for fluxes implemented
 c 24.10.2011    ggu     3d routines implemented
+c 04.11.2011    ggu     part with bsigma not yet finished
 c
 c****************************************************************
 
@@ -570,7 +571,7 @@ c all this has to be revised for sigma layers
 	real flx,dh,zi1,zi2,zi3,dp,ar,dst
 	real bfact
 	
-	call set_bsigma(bsigma)
+	call get_bsigma(bsigma)
 
 	bfact = 1.
 	if( bback ) bfact = -1.

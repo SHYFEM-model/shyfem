@@ -99,6 +99,7 @@ c 24.03.2011	ggu	new parameters iheat,hdecay,botabs
 c 01.06.2011	ggu	new parameter idtmin
 c 18.08.2011	ggu	new parameter isoinp (interpolate inside element)
 c 18.09.2011	ggu	change default for isphe for output (-1)
+c 03.11.2011	ggu	new parameter hsigma (hybrid)
 c
 c************************************************************************
 
@@ -492,7 +493,8 @@ cc         3=add to last layer (keep depth but change layer)
 	call addpar('ilytyp',3.00)	!type of depth adjustment
 	call addpar('hlvmin',0.25)	!min percentage of last layer thickness
 
-	call addpar('nsigma',0.)	!number of sigma layers	!FIXME
+	call addpar('nsigma',0.)	!number of sigma layers
+	call addpar('hsigma',10000.)	!lower depth of sigma layers (hybrid)
 
 cc baroclinic model
 cc

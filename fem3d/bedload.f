@@ -115,7 +115,6 @@ c depth structure of levels
 	common /ilhv/ilhv(neldim)
 	common /ilhkv/ilhkv(nkndim)
 	common /hlv/hlv(nlvdim), /hldv/hldv(nlvdim)
-	common /hlhv/hlhv(neldim)
 
         integer ilmv(neldim)
         common /ilmv/ilmv

@@ -1,5 +1,33 @@
 ============================================================
 
+Fri Nov  4 18:50:10 CET 2011
+
+hybrid levels
+
+ BUG                   |    3 +
+ LOG                   |   16 ++
+ RELEASE_NOTES         |   16 ++
+ fem3d/bedload.f       |    1 -
+ fem3d/ht.f            |   12 +-
+ fem3d/lagrange_flux.f |    3 +-
+ fem3d/new3di.f        |   61 +-------
+ fem3d/newbcl.f        |   13 +-
+ fem3d/newbsig.f       |   50 ++----
+ fem3d/newchk.f        |   21 +---
+ fem3d/newexpl.f       |   35 +++--
+ fem3d/newini.f        |  430 ++++++++++++++++++++++++++++++------------------
+ fem3d/newsig.f        |  245 ++++++++++++++++++++--------
+ fem3d/nosresidence.f  |   16 +-
+ fem3d/subcst.f        |    3 -
+ fem3d/subele.f        |   99 +++++------
+ fem3d/subsys.f        |    4 +-
+ fem3d/subwrt.f        |  338 ++++++++++++++++++++++++++++++++++++++
+ fembin/gitinfo        |    2 +-
+ femplot/line_nodes.f  |   36 ++++-
+ 20 files changed, 967 insertions(+), 437 deletions(-)
+
+============================================================
+
 Mon Oct 24 16:31:20 CEST 2011
 
 New version 6_1_34

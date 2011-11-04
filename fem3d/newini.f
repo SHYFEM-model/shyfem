@@ -55,6 +55,8 @@ c 16.12.2010    ggu	big restructering for sigma levels (look for bsigma)
 c 21.02.2011    ggu	error check for dzreg, nsigma and levels
 c 23.03.2011    ggu	new routine adjust_spherical(), error check isphe
 c 24.08.2011    ggu	eliminated hbot for sigma due to run time error
+c 25.10.2011    ggu	hlhv eliminated
+c 04.11.2011    ggu	adapted for hybrid coordinates
 c
 c**************************************************************
 
@@ -76,7 +78,7 @@ c------------------------------------------------------------------
 c levels read in from $levels section
 c------------------------------------------------------------------
 
-	call adjust_levels	!sets hlv, hldv
+	call adjust_levels	!sets hlv, hldv, nlv
 
 c------------------------------------------------------------------
 c adjust depth values
@@ -89,7 +91,7 @@ c set up depth vectors
 c------------------------------------------------------------------
 
 	call set_ilhv		!sets ilhv (elemental)
-	call set_last_layer	!adjusts hev, hm3v, ilhv - sets up hlhv
+	call set_last_layer	!adjusts hev, hm3v, ilhv, nlv
 	call set_ilhkv		!sets ilhkv (nodal)
 	call set_min_levels	!sets ilmkv and ilmv
 
@@ -237,12 +239,16 @@ c sets up depth arrays and adjusts depth values
 	common /hldv/hldv
 
 	logical bsigma
+	integer nsigma
 	real hmin,hmax,href
+	real hsigma
 	real getpar
 
-c       call bocche     !FIXME
+c----------------------------------------------------------------
+c adjust depth
+c----------------------------------------------------------------
 
-	bsigma = hldv(1) .lt. 0.
+c       call bocche     !FIXME
 
         hmin=getpar('hmin')
         hmax=getpar('hmax')
@@ -250,12 +256,23 @@ c       call bocche     !FIXME
 
         call depadj(hmin,hmax,href)	!adjusts h=h-href and hmax<h<hmin
 
+c----------------------------------------------------------------
+c set depth values
+c----------------------------------------------------------------
+
+	call get_sigma(nsigma,hsigma)
+	bsigma = nsigma .gt. 0
+
 	if( bsigma ) then
 	  call set_sigma_hkhe
 	else
           call huniqu(hev,hkv)		!computes hev and reassignes to hm3v
           call makehkv(hkv,v1v)		!computes hkv as average
 	end if
+
+c----------------------------------------------------------------
+c end of routine
+c----------------------------------------------------------------
 
 	end
 
@@ -287,7 +304,6 @@ c checks arrays containing vertical structure
 	call check_nlv
 	call check_levels
 	call check_ilevels
-	call check_hlhv
 
 	end
 
@@ -319,79 +335,149 @@ c adjusts levels read in from $levels section
 c
 c creates hlv if not set
 c from hlv creates hldv
+c
+c strategy:
+c
+c set hsigma < hmax to ask for hybrid levels
+c set nsigma > 1 to ask for sigma coordinates
+c set dzreg > 0. to ask for regular zeta levels
+c
+c only nsigma				only sigma levels
+c only dzreg				only regular zeta levels
+c nsigma, dzreg and hsigma		hybrid levels
+c
+c only sigma levels			only sigma levels
+c only zeta levels			only zeta levels
+c sigma levels, dzreg and hsigma	hybrid levels
+c zeta levels, nsigma and hsigma	hybrid levels
+c sigma and zeta levels and hsigma	hybrid levels
 
 	implicit none
 
 c common
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
+	real hm3v(3,1)
+	common /hm3v/hm3v
 	real hldv(1),hlv(1)
 	common /hldv/hldv, /hlv/hlv
 
 c local
-	logical bstop,bsigma
-	integer l,nsigma
-	real dzreg,hbot,hl,fact
+	logical bsigma,bhybrid,bzeta
+	integer l,ie,ii,nsigma
+	real dzreg,hl,fact,hsigma
+	real hmax,hbot,htop
+
 	real getpar
+
+c--------------------------------------------------------------
+c get maximum depth
+c--------------------------------------------------------------
+
+	hmax = 0.
+	do ie=1,nel
+	  do ii=1,3
+	    hmax = max(hmax,hm3v(ii,ie))
+	  end do
+	end do
 
 c--------------------------------------------------------------
 c create hlv values
 c--------------------------------------------------------------
 
 	dzreg = getpar('dzreg')
-	nsigma = nint(getpar('nsigma'))
+	call get_sigma(nsigma,hsigma)
+	write(6,*) 'nlv,nsigma,hsigma: ',nlv,nsigma,hsigma
 
-	if( nlv .le. 0 ) then		!no level section given
-	  if( nsigma .gt. 0 ) then	!sigma layers
+	bsigma = nsigma .gt. 0
+	bhybrid = hsigma .lt. hmax
+	bzeta = dzreg .gt. 0.
+
+	if( nsigma .eq. 1 ) goto 92
+
+	if( nlv .le. 0 ) then		!no level section present
+
+	  if( bsigma ) then		!sigma layers
+	    call make_sigma_levels(nsigma)
 	    nlv = nsigma
-	    hl = -1. / nlv
-	    do l=1,nlv
-	      hlv(l) = l * hl
-	    end do
-	  else if( dzreg .gt. 0. ) then	!regular grid
+	  end if
+
+	  if( bhybrid .or. bzeta ) then	!zeta levels
+	    if( bhybrid .and. .not. bzeta ) goto 99
+	    if( bhybrid .and. .not. bsigma ) goto 90
+	    if( bhybrid ) then
+	      call make_zeta_levels(nsigma,hsigma,dzreg)
+	    else if( .not. bsigma ) then	!no sigma layers given
+	      call make_zeta_levels(0,0.,dzreg)
+	    else
+	      goto 89
+	    end if
 	    nlv = nlvdi
-	    hbot = 0.
-	    do l=1,nlv
-	      hbot = hbot + dzreg
-	      hlv(l) = hbot
-	    end do
-	  else				!just one layer
+	  else if( .not. bsigma ) then		!just one layer
 	    nlv = 1
-	    hlv(1) = 10000.
+	    hlv(1) = hsigma
 	  end if
-	else
-	  if( dzreg .gt. 0. ) then
-	    write(6,*) 'nlv,dzreg: ',nlv,dzreg
-	    write(6,*) 'You cannot give both levels and dzreg.'
-	    stop 'error stop adjust_levels: dzreg'
+
+	else				!level section present
+
+	  if( nlv .eq. 1 ) goto 98	!just one level given -> error
+
+	  if( hlv(2) .gt. hlv(1) ) then	!zeta layers given
+	    if( bzeta ) goto 97
+	    if( bsigma ) then		!put sigma layers on top
+	      if( .not. bhybrid ) goto 88
+	      if( hlv(1) .ne. hsigma ) goto 96
+	      if( nsigma + nlv - 1 .gt. nlvdi ) goto 95
+	      do l=1,nlv
+	        hlv(nsigma+l-1) = hlv(l)
+	      end do
+	      call make_sigma_levels(nsigma)
+	      hlv(nsigma) = hsigma
+	      nlv = nlvdi
+	    end if
+	  else if( hlv(nlv) .eq. -1. ) then	!only sigma layers given
+	    if( bsigma ) goto 91
+	    nsigma = nlv
+	    if( bhybrid ) then		!put zeta levels below
+	      if( .not. bzeta ) goto 94
+	      call make_zeta_levels(nlv,hsigma,dzreg)
+	      nlv = nlvdi
+	    end if
+	  else				!both sigma and zeta levels given
+	    if( bsigma ) goto 91
+	    if( bzeta ) goto 97
+	    if( .not. bhybrid ) goto 88
+	    do l=2,nlv
+	      if( hlv(l) .gt. hlv(l-1) ) goto 1
+	    end do
+	    goto 93
+    1	    continue
+	    if( hlv(l-1) .eq. -1. ) then
+	      nsigma = l-1
+	      hlv(l-1) = hsigma
+	    else if( hlv(l) .eq. hsigma ) then
+	      nsigma = l
+	    else
+	      goto 93
+	    end if
+	    if( hlv(nsigma) .eq. hlv(nsigma+1) ) then	!double entry
+	      do l=nsigma+1,nlv
+		hlv(l-1) = hlv(l)
+	      end do
+	      nlv = nlv - 1
+	    else if( hlv(nsigma) .ge. hlv(nsigma+1) ) then
+	      goto 93
+	    end if
 	  end if
-	  if( nsigma .gt. 0 ) then
-	    write(6,*) 'nlv,nsigma: ',nlv,nsigma
-	    write(6,*) 'You cannot give both levels and nsigma.'
-	    stop 'error stop adjust_levels: nsigma'
-	  end if
+
 	end if
 
+	call set_sigma(nsigma,hsigma)
+
+	write(6,*) 'nlv,nsigma,hsigma: ',nlv,nsigma,hsigma
 	write(6,*) 'adjust_levels: ',nlv,(hlv(l),l=1,nlv)
-
-c--------------------------------------------------------------
-c check hlv values
-c--------------------------------------------------------------
-
-	bstop = .false.
-	bsigma = hlv(nlv) .eq. -1.	!sigma levels
-
-	fact = 1.
-	if( bsigma ) fact = -1.
-
-	do l=2,nlv
-	  if( fact*hlv(l) .le. fact*hlv(l-1) ) then
-	    write(6,*) 'Error in level values for level : ',l
-	    write(6,*) '   hlv(l-1),hlv(l) :',hlv(l-1),hlv(l)
-	    bstop = .true.
-	  end if
-	end do
-	if( bstop ) stop 'error stop adjust_levels: level error'
 
 c--------------------------------------------------------------
 c create hldv values
@@ -399,13 +485,67 @@ c--------------------------------------------------------------
 
 	hldv(1)=hlv(1)
 	do l=2,nlv
-	  hldv(l)=hlv(l)-hlv(l-1)
+	  htop = hlv(l-1)
+	  hbot = hlv(l)
+	  if( l .eq. nsigma ) hbot = -1.
+	  hldv(l) = hbot - htop
 	end do
+
+c--------------------------------------------------------------
+c check hlv and hldv values
+c--------------------------------------------------------------
+
+	call check_levels
 
 c--------------------------------------------------------------
 c end of routine
 c--------------------------------------------------------------
 
+	return
+   88	continue
+	write(6,*) 'hsigma: ',hsigma
+	write(6,*) 'for hybrid levels hsigma must be set'
+	stop 'error stop adjust_levels: hsigma'
+   89	continue
+	write(6,*) 'nsigma,dzreg: ',nsigma,dzreg
+	write(6,*) 'with pure sigma layers cannot give dzreg'
+	stop 'error stop adjust_levels: bsigma and dzreg'
+   90	continue
+	write(6,*) 'nsigma,hsigma: ',nsigma,hsigma
+	write(6,*) 'with hsigma set nsigma must be > 0'
+	stop 'error stop adjust_levels: nsigma and hsigma'
+   91	continue
+	write(6,*) 'nlv,nsigma: ',nlv,nsigma
+	write(6,*) 'You cannot give both sigma levels and nsigma'
+	stop 'error stop adjust_levels: nsigma'
+   92	continue
+	write(6,*) 'nsigma must be > 1'
+	stop 'error stop adjust_levels: nsigma = 1'
+   93	continue
+	write(6,*) 'error in level structure'
+	write(6,*) (hlv(l),l=1,nlv)
+	stop 'error stop adjust_levels: hlv'
+   94	continue
+	write(6,*) 'for hybrid levels dzreg must be > 0'
+	stop 'error stop adjust_levels: dzreg'
+   95	continue
+	write(6,*) 'nlv,nsigma,nlvdi: ',nlv,nsigma,nlvdi
+	write(6,*) 'not enough space to add zeta levels'
+	stop 'error stop adjust_levels: nlvdi'
+   96	continue
+	write(6,*) 'hlv(1),hsigma: ',hlv(1),hsigma
+	write(6,*) 'for hybrid levels first zeta level must be hsigma'
+	stop 'error stop adjust_levels: hsigma'
+   97	continue
+	write(6,*) 'nlv,dzreg: ',nlv,dzreg
+	write(6,*) 'You cannot give both zeta levels and dzreg'
+	stop 'error stop adjust_levels: dzreg'
+   98	continue
+	write(6,*) 'only one level given in level section'
+	stop 'error stop adjust_levels: nlv = 1'
+   99	continue
+	write(6,*) 'for hybrid levels dzreg must be > 0'
+	stop 'error stop adjust_levels: dzreg = 0'
 	end
 
 c*****************************************************************
@@ -424,40 +564,67 @@ c common
 
 c local
 	logical bstop,bsigma
-	integer l
-	real h,hd,fact
+	integer l,nsigma,levmin
+	real h,hd,fact,hsigma
+	real hbot,htop
 
-	bsigma = hldv(1) .lt. 0.
-	fact = 1.
-	if( bsigma ) fact = -1.		!sigma levels
+	call get_sigma(nsigma,hsigma)
+	bsigma = nsigma .gt. 0
+
+	bstop = .false.
 
 c--------------------------------------------------------------
 c check hlv values
 c--------------------------------------------------------------
 
-	bstop = .false.
-	do l=2,nlv
-	  if( fact*hlv(l) .le. fact*hlv(l-1) ) then
+	if( nsigma .gt. 0 ) then
+	  h = hlv(nsigma)
+	  if( h .ne. -1. .and. h .ne. hsigma ) then
+	    write(6,*) h,hsigma
+	    stop 'error stop check_levels: hsigma'
+	  end if
+	end if
+
+	hbot = -hlv(1)
+	do l=2,nsigma
+	  htop = hbot
+	  hbot = -hlv(l)
+	  if( l .eq. nsigma ) hbot = 1.
+	  if( hbot .le. htop ) then
 	    write(6,*) 'Error in level values for level : ',l
 	    write(6,*) '   hlv(l-1),hlv(l) :',hlv(l-1),hlv(l)
 	    bstop = .true.
 	  end if
 	end do
+
+	levmin = nsigma + 1
+	if( levmin .eq. 1 ) levmin = 2
+	do l=levmin,nlv
+	  if( hlv(l) .le. hlv(l-1) ) then
+	    write(6,*) 'Error in level values for level : ',l
+	    write(6,*) '   hlv(l-1),hlv(l) :',hlv(l-1),hlv(l)
+	    bstop = .true.
+	  end if
+	end do
+
 	if( bstop ) stop 'error stop check_levels: level error'
 
 c--------------------------------------------------------------
 c check hldv values
 c--------------------------------------------------------------
 
-	h = 0.
-	do l=1,nlv
-	  hd=hlv(l)-h
+	hbot = hlv(1)
+	do l=2,nlv
+	  htop = hbot
+	  hbot = hlv(l)
+	  if( l .eq. nsigma ) hbot = -1.
+	  hd=hbot-htop
 	  if( hd .ne. hldv(l) ) then
 	    write(6,*) 'Error in dlevel values for level : ',l
 	    write(6,*) '   hd,hldv(l) :',hd,hldv(l)
 	    bstop = .true.
 	  end if
-	  h = hlv(l)
+	  hbot = hlv(l)
 	end do
 	if( bstop ) stop 'error stop check_levels: dlevel error'
 
@@ -489,13 +656,14 @@ c sets array ilhv
 
 c local
 	logical bsigma
-	integer ie,l,lmax
-	real h,hmax
+	integer ie,l,lmax,nsigma
+	real h,hmax,hsigma
 
 	lmax=0
 	hmax = 0.
 
-	bsigma = hlv(nlv) .eq. -1.
+	call get_sigma(nsigma,hsigma)
+	bsigma = nsigma .gt. 0
 
 	do ie=1,nel
 	  hmax = max(hmax,hev(ie))
@@ -505,10 +673,10 @@ c local
 
 	  h=hev(ie)
 
-	  if( bsigma ) then
-	    l = nlv
+	  if( bsigma .and. h .le. hsigma ) then
+	    l = nsigma
 	  else
-	    do l=1,nlv
+	    do l=nsigma+1,nlv
 	      if(hlv(l).ge.h) goto 1
 	    end do
     1	    continue
@@ -650,27 +818,23 @@ c checks arrays ilhv and ilhkv
 	common /hlv/hlv
 	real hldv(1)
 	common /hldv/hldv
-	real hlhv(1)
-	common /hlhv/hlhv
 
-	logical bsigma
+	logical bsigma,bspure
 	integer nsigma
 	integer ie,ii,k,lmax,lk
-	real h,hlev
+	real hmax,hsigma
 
-	bsigma = hldv(1) .lt. 0.
-	nsigma = ilhv(1)
+	call get_sigma(nsigma,hsigma)
+	bsigma = nsigma .gt. 0
 
+	hmax = 0.
 	do ie=1,nel
 	  lmax = ilhv(ie)
-	  hlev = hlv(lmax)
-	  h = hev(ie)
+	  hmax = max(hmax,hev(ie))
 	  if( lmax .le. 0 ) goto 99
-	  !if( h .gt. hlev ) goto 99		!might have changed
-	  if( .not. bsigma .and. lmax .gt. 1 ) then
-	    if( hlv(lmax-1) + hlhv(ie) - h .ne. 0. ) goto 99
-	  end if
 	end do
+
+	bspure = bsigma .and. hmax .le. hsigma	!pure sigma coordinates
 
 	do ie=1,nel
 	  lmax=ilhv(ie)
@@ -680,13 +844,15 @@ c checks arrays ilhv and ilhkv
 	    if( lk .le. 0 ) goto 98
 	    if( lk .lt. lmax ) goto 98
 	  end do
-	  if( bsigma .and. lmax .ne. nsigma ) goto 96
+	  if( bspure .and. lmax .ne. nsigma ) goto 96
+	  if( bsigma .and. lmax .lt. nsigma ) goto 96
 	end do
 
 	do k=1,nkn
 	  lmax=ilhkv(k)
 	  if( lmax .le. 0 ) goto 97
-	  if( bsigma .and. lmax .ne. nsigma ) goto 96
+	  if( bspure .and. lmax .ne. nsigma ) goto 96
+	  if( bsigma .and. lmax .lt. nsigma ) goto 96
 	end do
 
 	return
@@ -700,7 +866,7 @@ c checks arrays ilhv and ilhkv
 	write(6,*) ie,lmax,k,lk
 	stop 'error stop check_ilevels: error in vertical structure (2)'
    99	continue
-	write(6,*) ie,lmax,hlev,h,hlhv(ie)
+	write(6,*) ie,lmax
 	stop 'error stop check_ilevels: error in vertical structure (1)'
 	end
 
@@ -710,7 +876,7 @@ c*****************************************************************
 
 c sets last layer thickness
 c
-c adjusts hev, hm3v, ilhv - sets up hlhv
+c adjusts hev, hm3v, ilhv
 
 	implicit none
 
@@ -725,8 +891,6 @@ c adjusts hev, hm3v, ilhv - sets up hlhv
 	common /hlv/hlv
 	real hldv(1)
 	common /hldv/hldv
-	real hlhv(1)
-	common /hlhv/hlhv
 	real hev(1)
 	common /hev/hev
 	real hm3v(3,1)
@@ -739,9 +903,10 @@ c local
 	integer ihtot,lmax
 	integer ilytyp
         integer ic1,ic2,ic3
+	integer nsigma
 	real h,hold,hnew,hlast
 	real hlvmin
-	real hmin,hmax
+	real hmin,hmax,hsigma
 
 	integer ieext
 	real getpar
@@ -758,15 +923,14 @@ c------------------------------------------------------------
 c check if sigma levels
 c------------------------------------------------------------
 
-	bsigma = hldv(1) .lt. 0.
-	if( bsigma ) then		!sigma layers
-	  do ie=1,nel
-	    hlhv(ie) = 0.
-	  end do
-	  write(6,*) 'set_last_layer (nlv used) : ',nlv
-	  write(6,*) 'sigma layers detected'
-	  return
-	end if
+	call get_sigma(nsigma,hsigma)
+	bsigma = nsigma .gt. 0
+
+c	if( bsigma ) then		!sigma layers
+c	  write(6,*) 'set_last_layer (nlv used) : ',nlv
+c	  write(6,*) 'sigma layers detected'
+c	  return
+c	end if
 
 c------------------------------------------------------------
 c set hlvmin
@@ -784,7 +948,7 @@ c         3=add to last layer (keep depth but change layer)
 	if( hlvmin .gt. 1. .or. hlvmin .lt. 0. ) goto 98
 
 c------------------------------------------------------------
-c adjust last layer thickness and store it in hlhv
+c adjust last layer thickness
 c------------------------------------------------------------
 
 	ic1 = 0
@@ -800,6 +964,7 @@ c------------------------------------------------------------
 	  hold = hev(ie)			!original depth of element
 	  h = hold
 	  if( l .gt. 1 ) h = h - hlv(l-1)	!actual layer thickness
+	  if( l .le. nsigma ) h = -hold*hldv(l)	!sigma layer
 	  hlast = hldv(l)			!regular layer thickness
 	  hmin = hlvmin * hlast
 
@@ -818,8 +983,9 @@ c		no adjustment
 	    end if
 	  end if
 
-	  if( ilytyp .eq. 1 ) badjust = .true.	!adjust also first layer
+	  if( ilytyp .eq. 1 ) badjust = .true.	!adjust in any case
 	  if( b2d ) badjust = .false.		!but never for 2D application
+	  if( l .le. nsigma ) badjust = .false.	!we are in sigma layer
 
 	  if( badjust ) then
 	    if( ilytyp .le. 2 ) then		!adjust depth
@@ -846,11 +1012,11 @@ c		no adjustment
 	    ihtot = ihtot + 1
 	  end if
 
-	  hlhv(ie) = h			!finally set last layer thickness
+	  hlast = h			!finally set last layer thickness
 	  lmax = max(lmax,l)
 
 	  if( hlv(l) .ne. hev(ie) ) ic1 = ic1 + 1
-	  if( hldv(l) .ne. hlhv(ie) ) ic2 = ic2 + 1
+	  if( hldv(l) .ne. hlast ) ic2 = ic2 + 1
 	  if( l .eq. 1 ) ic3 = ic3 + 1
 	end do
 
@@ -879,64 +1045,6 @@ c------------------------------------------------------------
 	stop 'error stop set_last_layer: hlvmin'
    99	continue
 	stop 'error stop set_last_layer: layer depth 0 (internal error)'
-	end
-
-c*****************************************************************
-
-	subroutine check_hlhv
-
-c checks depth structure 
-
-	implicit none
-
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-	integer ilhv(1)
-	common /ilhv/ilhv
-	real hldv(1)
-	common /hldv/hldv
-	real hev(1)
-	common /hev/hev
-	real hlhv(1)
-	common /hlhv/hlhv
-
-c local
-	logical bstop
-	logical bsigma
-	integer ie,l
-	integer lmax
-	real h
-
-	bstop = .false.
-	bsigma = hldv(1) .lt. 0.
-
-	do ie=1,nel
-
-	  lmax = ilhv(ie)
-	  h=hlhv(ie)
-
-	  do l=1,lmax-1
-	    h=h+hldv(l)
-	  end do
-
-	  if( bsigma ) then
-	    h = h + hldv(lmax)
-	    h = - h * hev(ie)
-	  end if
-
-	  if(abs(h-hev(ie)).gt.1.e-4) then
-c	  if(abs(h-hev(ie)).gt.0.) then
-		write(6,*) 'ie,htot,hsum,lmax : ',ie,hev(ie),h,lmax
-		bstop = .true.
-	  end if
-
-	end do
-
-	if( bstop ) then
-	  stop 'error stop check_hlhv: error in depth structure'
-	end if
-
 	end
 
 c*****************************************************************
@@ -1063,9 +1171,9 @@ c checks coriolis parameter
 
 	do ie=1,nel
 	  f = fcorv(ie)
-	  if( fmax - f .lt. 0. ) then
+	  if( fmax - abs(f) .lt. 0. ) then
 	    write(6,*) ie,f,fmax
-	    stop 'error stop check_coriolis: error in array'
+	    stop 'error stop check_coriolis: f too big'
 	  end if
 	end do
 

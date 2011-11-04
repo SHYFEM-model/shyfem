@@ -1,4 +1,20 @@
 
+04-11-2011 - 6_1_35
+
+	hybrid levels
+
+24-10-2011 - 6_1_34
+
+	new flux computation for 3D and scalars
+	new fluxes also for lagrangian routines
+
+18-10-2011 - 6_1_33
+
+	bug in isphe and rdtitl fixed
+	bug in install routine fixed
+
+01-09-2011 - 6_1_32
+
 	show copyright notice in all major programs
 	new EOS plotting
 

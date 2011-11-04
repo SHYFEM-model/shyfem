@@ -30,14 +30,14 @@ c--------------------------------------------------
 c--------------------------------------------------
 
 	character*80 title
-	real cv3(nlvdim,nkndim)
-	real cv3d(nlvdim,nkndim)
-	real cv2(nkndim)
-	real cvres3(nlvdim,nkndim)
-	real cvres2(nkndim)
-	real cvrestot(nlvdim,nkndim)
-	real vol3(nlvdim,nkndim)
-        double precision cvacu(nlvdim,nkndim)
+	real cv3(nlvdim,nkndim)		!conz read
+	real cv3d(nlvdim,nkndim)	!conz of last step
+	real cv2(nkndim)		!conz 2d
+	real cvres3(nlvdim,nkndim)	!computed RT 3D
+	real cvres2(nkndim)		!computed RT 2D
+	real cvrestot(nlvdim,nkndim)	!average RT of all replica
+	real vol3(nlvdim,nkndim)	!volume
+        double precision cvacu(nlvdim,nkndim)	!conz integrated
 
 	integer ilhkv2(nkndim)
 	real hev2(neldim)

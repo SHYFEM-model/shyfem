@@ -120,8 +120,8 @@ c gets next node close to line segment starting from ka
 	do i=1,n
 	  k = nodes(i)
 	  call get_distance_from_line(k1,k2,k,dist,t)
-	  if( t .gt. t0 ) then
-	    if( kn .eq. 0 .or. dist .lt. distc ) then
+	  if( t .gt. t0 ) then				!only nodes ahead
+	    if( kn .eq. 0 .or. dist .lt. distc ) then   !choose closest node
 		kn = k
 		distc = dist
 	    end if
@@ -145,9 +145,13 @@ c computes distance of kp from line given by k1,k2
 	include 'param.h'
 
 	integer k1,k2		!start/end node of line segment
-	integer kp		!last node found close to line segment
+	integer kp		!node to compute distance to line segment
 	real dist		!distance of kp from line segment (return)
-	real t			!position of intersection (return)
+	real t			!position of intersection on segment (return)
+
+c (xs,ys) is intersection point on segment
+c (xa,ya) is vector of segment : (xa,ya) = (x2,y2) - (x1,y1)
+c (xs,ys) = (x1,y1) + t * (xa,ya)
 
 	real x1,y1,x2,y2,xp,yp
 	real xa,ya,xs,ys
@@ -323,6 +327,12 @@ c****************************************************************
 
 	integer ipext
 
+c--------------------------------------------------------------
+c write grd file
+c--------------------------------------------------------------
+
+        open(66,file='line_nodes.grd',status='new',form='formatted')
+
 	write(66,*)
 	do i=1,n
 	  k = nodes(i)
@@ -338,11 +348,29 @@ c****************************************************************
 	write(66,3000) (nodes(i),i=1,n)
 	write(66,*)
 
+        close(66)
+
+        write(6,*) 'grd file written to line_nodes.grd'
+
+c--------------------------------------------------------------
+c write txt file
+c--------------------------------------------------------------
+
+        open(77,file='line_nodes.txt',status='new',form='formatted')
+
 	do i=1,n
 	  kext = nodes(i)
 	  write(77,*) kext
 	end do
 	write(77,*) 0
+
+        close(77)
+
+        write(6,*) 'txt file written to line_nodes.txt'
+
+c--------------------------------------------------------------
+c end of routine
+c--------------------------------------------------------------
 
 	return
  1000	format(i1,2i10,2f14.4)

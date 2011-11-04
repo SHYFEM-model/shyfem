@@ -118,9 +118,6 @@ c revised 13.06.97 by ggu !$$kranf - check if kranf <= krend
         common /mkonst/ eps1,eps2,pi,flag,high,higi
 	real grav,fcor,dcor,dirn,rowass,roluft
 	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-	real hkv(1), hev(1)
-	common /hkv/hkv, /hev/hev
-	real hmin,hmax,href
 	real getpar
 
 c parameters read from STR file

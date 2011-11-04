@@ -60,7 +60,7 @@ todo for a new version:
 
 git status
 git diff <file>
-revision_last		-> output should go into LOG and BUG
+revision_last		-> output should go into LOG, BUG and RELEASE_NOTES
 git add -u
 
 gitcommit

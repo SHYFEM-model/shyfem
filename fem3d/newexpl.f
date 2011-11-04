@@ -32,6 +32,8 @@ c 08.03.2010	ggu	run only down to avail layers (bug fix)
 c 16.12.2010	ggu	barocl preconditioned for sigma layers, but not finshed
 c 20.05.2011	ggu	compute statistics of stability, no stab in dry elemes
 c 25.08.2011	dbf&ggu	baroclinic gradient for sigma level integrated
+c 25.10.2011	dbf&ggu	bug fix in set_barocl_new_interface (psigma)
+c 04.11.2011    ggu     adapted for hybrid coordinates
 c
 c notes :
 c
@@ -887,7 +889,7 @@ c cannot use this for sigma levels
         if(nlvdim.ne.nlvdi) stop 'error stop set_barocl_new: nlvdi'
 
         raux=grav/rowass
-	bsigma = hldv(1) .lt. 0.
+	call get_bsigma(bsigma)
 
 	if( bsigma ) then
 	  stop 'error stop set_barocl_new: cannot use with sigma levels'
@@ -901,7 +903,6 @@ c cannot use this for sigma levels
           do l=1,lmax
             hhi = hdeov(l,ie)
             hhi = hldv(l)
-	    if( bsigma ) hhi = - hhi * hev(ie)
             hlayer = 0.5 * hhi
                 
 	    br = 0.
@@ -967,7 +968,6 @@ c do not use this routine !
         integer nen3v(3,1)
         common /nen3v/nen3v
 
-	logical bsigma
         integer k,l,ie,ii,lmax,lmin
         double precision hlayer,hhi
         double precision xbcl,ybcl
@@ -982,7 +982,6 @@ c do not use this routine !
         if(nlvdim.ne.nlvdi) stop 'error stop set_barocl_new: nlvdi'
 
         raux=grav/rowass
-	bsigma = hldv(1) .lt. 0.
 
         do ie=1,nel
           presbcx = 0.
@@ -995,7 +994,6 @@ c do not use this routine !
           do l=1,lmax
             hhi = hdeov(l,ie)
             hhi = hldv(l)
-	    if( bsigma ) hhi = - hhi * hev(ie)
             hlayer = 0.5 * hhi
             hlayer = hhi
                 
@@ -1035,7 +1033,7 @@ c**********************************************************************
 
 c computes baroclinic contribution centered on interfaces
 c
-c use this routine with sigma levels
+c this routine works with Z and sigma layers
 
         implicit none
          
@@ -1073,14 +1071,16 @@ c use this routine with sigma levels
         common /ilmv/ilmv
         integer nen3v(3,1)
         common /nen3v/nen3v
-        real hkv(1) !DEB
+        real hm3v(3,1) !DEB
+	common /hm3v/hm3v !DEB
 	real hlv(1)!DEB
 	common /hlv/hlv !DEB
-	common /hkv/hkv !DEB
 
 	logical bsigma
-        integer k,l,ie,ii,lmax,lmin
-        double precision hlayer,hint,hhk,hh,hhup,dzdx,dzdy,zk
+        integer k,l,ie,ii,lmax,lmin,nsigma
+	real hsigma,hdep
+        double precision hlayer,hint,hhk,hh,hhup
+	double precision dzdx,dzdy,zk
         double precision xbcl,ybcl
         double precision raux,rhop,presbcx,presbcy
         double precision b,c,br,cr,brup,crup,brint,crint
@@ -1088,8 +1088,10 @@ c use this routine with sigma levels
 
         if(nlvdim.ne.nlvdi) stop 'error stop set_barocl_new: nlvdi'
 
+	call get_sigma(nsigma,hsigma)
+	bsigma = nsigma .gt. 0
+
         raux=grav/rowass
-	bsigma = hldv(1) .lt. 0.
 	psigma = 0.
 
         do ie=1,nel
@@ -1101,9 +1103,7 @@ c use this routine with sigma levels
 	  crup=0.
 	  hhup=0.
           do l=1,lmax
-            !hhi = hdeov(l,ie)
-            !hhi = hldv(l)
-	    !if( bsigma ) hhi = - hhi * hev(ie)
+	    bsigma = l .le. nsigma
 
             hlayer = hdeov(l,ie)		!layer thickness
 	    if( .not. bsigma ) hlayer = hldv(l)
@@ -1115,6 +1115,7 @@ c use this routine with sigma levels
 	    cr = 0.                 
 	    dzdx = 0.
 	    dzdy = 0.
+	    psigma = 0.
             do ii=1,3                 
               k = nen3v(ii,ie)
               rhop = rhov(l,k)		!rho^prime for each node of element 
@@ -1125,8 +1126,9 @@ c use this routine with sigma levels
               br = br + b * rhop
               cr = cr + c * rhop
 	      if (bsigma) then
-		psigma = 2.*(rhoup-rhop)/hint
-		hhk = -hlv(l) * (hkv(k)+zov(k))
+		psigma = psigma + 2.*(rhoup-rhop)/hint
+		hdep = hm3v(ii,ie) + zov(k)
+		hhk = -hlv(l) * hdep
 		zk = -hhk		!transform depth in z
 	        dzdx = dzdx + b * zk
 	        dzdy = dzdy + c * zk
@@ -1144,6 +1146,7 @@ c use this routine with sigma levels
 	    brup=br
 	    crup=cr
 	    hhup=hh
+	    psigma = psigma / 3.
 	    
             presbcx = presbcx + hint * ( brint - dzdx * psigma )
 	    presbcy = presbcy + hint * ( crint - dzdy * psigma )

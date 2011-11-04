@@ -68,6 +68,8 @@ c 25.08.2005    ggu     bug in dvanode fixed (use * instead of +)
 c 29.11.2006    ggu     in copydepth do not set to 0 old depths
 c 07.11.2008    ggu     new helper routine make_new_depth()
 c 16.12.2010    ggu     setdepth() changed for sigma levels
+c 25.10.2011    ggu     hlhv eliminated
+c 04.11.2011    ggu     adapted for hybrid coordinates
 c
 c****************************************************************
 
@@ -854,8 +856,8 @@ c sets up depth array for nodes
 	common /nen3v/nen3v
 	real hldv(1)
 	common /hldv/hldv
-	real hlhv(1)
-	common /hlhv/hlhv
+	real hlv(1)
+	common /hlv/hlv
 	real hev(1)
 	common /hev/hev
 	real hm3v(1)
@@ -866,9 +868,9 @@ c	common /zenv/zenv
         logical bdebug
         logical bsigma
 	integer k,l,ie,ii
-	integer nlev,n,ibase
+	integer lmax,n,ibase,nsigma,levmin
 	real hfirst,hlast,h,htot,z,zmed
-	real hacu,hlevel,hlast_aux
+	real hacu,hlevel,hsigma,hsig
 
 	real areael,areafv
 	real areaele
@@ -895,8 +897,9 @@ c----------------------------------------------------------------
 c compute volumes at node
 c----------------------------------------------------------------
 
+	call get_sigma(nsigma,hsigma)
+	bsigma = nsigma .gt. 0
 	hfirst = hldv(1)
-	bsigma = hfirst .lt. 0.
 
 	do ie=1,nel
 
@@ -904,8 +907,7 @@ c----------------------------------------------------------------
 	  areael = areaele(ie)
 	  areafv = areael / n
 
-	  nlev = ilhv(ie)
-	  hlast = hlhv(ie)
+	  lmax = ilhv(ie)
 	  zmed = 0.
 
 c	  -------------------------------------------------------
@@ -917,30 +919,25 @@ c	  -------------------------------------------------------
 	    k = nen3v(ibase+ii)
 	    htot = hm3v(ibase+ii)
 	    z = zenv(ibase+ii)
+	    hsig = min(htot,hsigma) + z
 	    zmed = zmed + z
 
-	    if( bsigma ) then
-	      h = htot + z
-	      do l=1,nlev
-	        hdkn(l,k) = - h * hldv(l)
-	      end do
-	    else if( nlev .eq. 1 ) then
-	      h = htot + z
-	      hdkn(1,k) = hdkn(1,k) + areafv * h
-	    else
-	      h = hfirst + z
-	      hacu = hfirst
-	      hdkn(1,k) = hdkn(1,k) + areafv * h
-	      do l=2,nlev-1
-	        hlevel = hldv(l)
-	        hdkn(l,k) = hdkn(l,k) + areafv * hlevel
-		hacu = hacu + hlevel
-	      end do
-	      hlast_aux = htot - hacu
-	      hdkn(nlev,k) = hdkn(nlev,k) + areafv * hlast
-	      if( hlast_aux .ne. hlast ) then
-		write(6,*) '**** hlast node: ',ie,ii,nlev
-		write(6,*) hfirst,htot,hacu,hlast,hlast_aux
+	    do l=1,nsigma
+	      hdkn(l,k) = - hsig * hldv(l)
+	    end do
+
+	    if( lmax .gt. nsigma ) then
+	      if( lmax .eq. 1 ) then
+	        h = htot + z
+	        hdkn(1,k) = hdkn(1,k) + areafv * h
+	      else
+	        levmin = nsigma + 1
+	        do l=levmin,lmax-1
+	          hdkn(l,k) = hdkn(1,k) + areafv * hldv(l)
+	        end do
+	        if( levmin .eq. 1 ) hdkn(1,k) = hdkn(1,k) + areafv * z
+	        hlast = htot - hlv(lmax-1)
+	        hdkn(lmax,k) = hdkn(lmax,k) + areafv * hlast
 	      end if
 	    end if
 
@@ -952,27 +949,22 @@ c	  -------------------------------------------------------
 
 	  zmed = zmed / n
 	  htot = hev(ie)
+	  hsig = min(htot,hsigma) + zmed
 
-	  if( bsigma ) then
-	    h = htot + zmed
-	    do l=1,nlev
-	      hden(l,ie) = - h * hldv(l)
-	    end do
-	  else if( nlev .eq. 1 ) then
-	    hden(1,ie) = htot + zmed
-	  else
-	    hden(1,ie) = hfirst + zmed
-	    hacu = hfirst
-	    do l=2,nlev-1
-	      hlevel = hldv(l)
-	      hden(l,ie) = hlevel
-	      hacu = hacu + hlevel
-	    end do
-	    hlast_aux = htot - hacu
-	    hden(nlev,ie) = hlast
-	    if( hlast_aux .ne. hlast ) then
-		write(6,*) '**** hlast elem: ',ie,nlev
-		write(6,*) hfirst,htot,hacu,hlast,hlast_aux
+	  do l=1,nsigma
+	    hden(l,ie) = - hsig * hldv(l)
+	  end do
+
+	  if( lmax .gt. nsigma ) then
+	    if( lmax .eq. 1 ) then
+	      hden(1,ie) = htot + zmed
+	    else
+	      levmin = nsigma + 1
+	      do l=levmin,lmax-1
+	        hden(l,ie) = hldv(l)
+	      end do
+	      if( levmin .eq. 1 ) hden(1,ie) = hden(1,ie) + zmed
+	      hden(lmax,ie) = htot - hlv(lmax-1)
 	    end if
 	  end if
 
@@ -982,9 +974,9 @@ c----------------------------------------------------------------
 c compute depth at nodes
 c----------------------------------------------------------------
 
-	if( .not. bsigma ) then
-	 do k=1,nkn
-	  do l=1,levdim
+	levmin = nsigma + 1
+	do k=1,nkn
+	  do l=levmin,levdim
 	    areafv = area(l,k)
 	    if( areafv .gt. 0. ) then
 	      hdkn(l,k) = hdkn(l,k) / areafv
@@ -993,8 +985,7 @@ c----------------------------------------------------------------
 	    end if
 	  end do
     1	  continue
-	 end do
-	end if
+	end do
 
 c----------------------------------------------------------------
 c end of routine

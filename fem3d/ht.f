@@ -79,6 +79,7 @@ c 17.02.2011    ccf	new radiation stress in 3D
 c 23.03.2011    ggu	new call to adjust_spherical()
 c 31.03.2011    ggu	write finite volumes at initial time step
 c 20.05.2011    ggu	iwetv introduced, wet and dry from main
+c 25.10.2011    ggu	hlhv eliminated
 c
 c*****************************************************************
 
@@ -193,7 +194,6 @@ c depth structure of levels
 	common /ilhv/ilhv(neldim)
 	common /ilhkv/ilhkv(nkndim)
 	common /hlv/hlv(nlvdim), /hldv/hldv(nlvdim)
-	common /hlhv/hlhv(neldim)
 
         integer ilmv(neldim)
         common /ilmv/ilmv
@@ -401,7 +401,11 @@ c-----------------------------------------------------------
 	call sp131m(mbwdim)
 	call sp131g(mardim,2,2*nlvdim,2,0)
 
-	call cstcheck	!this also sets time and coriolis
+c-----------------------------------------------------------
+c check parameters read and set time and Coriolis
+c-----------------------------------------------------------
+
+	call cstcheck
 
 c	call pritst(1)
 
@@ -435,7 +439,7 @@ c-----------------------------------------------------------
 
 	call sp111(1)           !here zenv, utlnv, vtlnv are initialized
 
-	call handle_sigma_init
+	call handle_bsig_init	!initialize from sigma level data?
 
 c-----------------------------------------------------------
 c initialize depth arrays and barene data structure
@@ -524,7 +528,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	   call reset_stability
 
-           call set_timestep
+           call set_timestep		!sets idt and it
            call get_timestep(dt)
 	   !call compute_stability_stats(1,aux)
 

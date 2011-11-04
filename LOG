@@ -1,4 +1,20 @@
 
+04.11.2011	hybrid levels
+
+	hybrid levels (newini.f, newexpl.f, subele.f, newbcl.f)
+	hybrid levels (newsig.f, subsys.f, newbsig.f)
+	hybrid levels for lagrange (lagrange_flux.f)
+	code cleaning (new3di.f)
+	
+25.10.2011	hlhv eliminated
+
+	hlhv eliminated (newini.f, subele.f, ht.f, newchk.f)
+	some routines renamed (newbsig.f)
+	started routines for residence time (subwrt.f)
+	bug fix for psigma (newexpl.f)
+
+========================================================== 24-10-2011 - 6_1_34
+
 24.10.2011	lagrangian for 3d
 
 	renamed old variables (fx->flux2d) (lagrange.h)

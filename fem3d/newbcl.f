@@ -49,6 +49,7 @@ c 26.01.2011    ggu     read in obs for t/s (tobsv,sobsv)
 c 28.01.2011    ggu     parameters changed in call to ts_nudge()
 c 04.03.2011    ggu     better error message for rhoset_shell
 c 31.03.2011    ggu     only write temp/salt if computed
+c 04.11.2011    ggu     adapted for hybrid coordinates
 c
 c*****************************************************************
 
@@ -488,8 +489,8 @@ c common
 c local
 	logical bdebug,debug,bsigma
 	integer k,l,lmax
-	integer nresid
-	real sigma0,rho0,pres
+	integer nresid,nsigma
+	real sigma0,rho0,pres,hsigma,hsig
 	real depth,hlayer,h,htot
 	real rhop,presbt,presbc,dpresc
 	double precision dresid
@@ -502,7 +503,8 @@ c functions
 	debug=.false.
 	bdebug=.false.
 
-	bsigma = hldv(1) .lt. 0.
+	call get_sigma(nsigma,hsigma)
+	bsigma = nsigma .gt. 0
 
 	if(debug) write(6,*) sigma0,rowass,rho0
 
@@ -514,11 +516,12 @@ c functions
 	  presbc = 0.
 	  lmax=ilhkv(k)
 	  htot = hkv(k)
+	  hsig = min(htot,hsigma)
 
 	  do l=1,lmax
-	    h = hdkov(l,k)
+	    !h = hdkov(l,k)
 	    h = hldv(l)
-	    if( bsigma ) h = -h * htot
+	    if( l .le. nsigma ) h = -h * hsig
 	    hlayer = 0.5 * h
 	    depth = depth + hlayer
 	    rhop = rhov(l,k)			!rho^prime

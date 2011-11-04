@@ -52,6 +52,7 @@ c 08.04.2010    ggu     more info in checks (depth and area)
 c 17.05.2011    ggu     new routine check_set_unit() to set output unit
 c 12.07.2011    ggu     loop only over actual nodes/elements, not dimensions
 c 15.07.2011    ggu     new routines for CRC computation
+c 25.10.2011    ggu     hlhv eliminated
 c
 c*************************************************************
 
@@ -90,7 +91,6 @@ c common
 	real vtlov(nlvdim,1)
 	real vtlnv(nlvdim,1)
 	real hlv(1),hldv(1)
-	real hlhv(1)
 	real hev(1)
 	common /ilhv/ilhv, /fcorv/fcorv
 	common /zov/zov, /znv/znv
@@ -105,7 +105,6 @@ c common
 	common /utlnv/utlnv
 	common /vtlnv/vtlnv
 	common /hlv/hlv, /hldv/hldv
-	common /hlhv/hlhv
 	common /hev/hev
 
 	real visv(0:nlvdim,1)
@@ -165,8 +164,6 @@ c local
 	write(iu,*) (ilhv(i),i=1,ne)
 	write(iu,*) 'fcorv :'
 	write(iu,*) (fcorv(i),i=1,ne)
-	write(iu,*) 'hlhv :'
-	write(iu,*) (hlhv(i),i=1,ne)
 	write(iu,*) 'hev :'
 	write(iu,*) (hev(i),i=1,ne)
 	write(iu,*) 'iwegv :'
@@ -601,9 +598,6 @@ c common
         real hdeov(nlvdim,1)
         common /hdeov/hdeov
 
-        real hlhv(1)
-        common /hlhv/hlhv
-
         real utlov(nlvdim,1),vtlov(nlvdim,1)
         real utlnv(nlvdim,1),vtlnv(nlvdim,1)
         common /utlov/utlov, /vtlov/vtlov, /utlnv/utlnv, /vtlnv/vtlnv           
@@ -679,13 +673,6 @@ c-----------------------------------------------------
         end do
 
         write(6,*) hknmax,hkomax,henmax,heomax
-
-        hlvmax = -high
-        do ie=1,nel
-            hlvmax = max(hlvmax,hlhv(ie))
-        end do
-
-        write(6,*) hlvmax
 
 c-----------------------------------------------------
 c check of transports
@@ -973,7 +960,6 @@ c*************************************************************
 	real vtlov(nlvdim,1)
 	real vtlnv(nlvdim,1)
 	real hlv(1),hldv(1)
-	real hlhv(1)
 	real hev(1)
 	common /ilhv/ilhv, /ilhkv/ilhkv
 	common /fcorv/fcorv
@@ -989,7 +975,6 @@ c*************************************************************
 	common /utlnv/utlnv
 	common /vtlnv/vtlnv
 	common /hlv/hlv, /hldv/hldv
-	common /hlhv/hlhv
 	common /hev/hev
 
 	real visv(0:nlvdim,1)
@@ -1251,8 +1236,6 @@ c writes debug information on element ie
 
 	real hev(1)
 	common /hev/hev
-	real hlhv(1)
-	common /hlhv/hlhv
 
 	real zenv(3,1)
 	common /zenv/zenv
@@ -1291,7 +1274,7 @@ c writes debug information on element ie
 	write(iu,*) 'lmax,iwegv,iwetv: ',lmax,iwegv(ie),iwetv(ie)
 	write(iu,*) 'area:             ',ev(10,ie)*12.
 	write(iu,*) 'nen3v  :          ',(nen3v(ii,ie),ii=1,3)
-	write(iu,*) 'hev,hlhv:         ',hev(ie),hlhv(ie)
+	write(iu,*) 'hev:              ',hev(ie)
 	write(iu,*) 'zeov:             ',(zeov(ii,ie),ii=1,3)
 	write(iu,*) 'zenv:             ',(zenv(ii,ie),ii=1,3)
 	write(iu,*) 'zov:              ',(zov(nen3v(ii,ie)),ii=1,3)

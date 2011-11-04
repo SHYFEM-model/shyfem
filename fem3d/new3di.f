@@ -159,6 +159,7 @@ c 11.03.2010    ggu	new routine check_volume() to check for negative vol
 c 12.04.2010    ggu	ad hoc routine for Yaron
 c 16.12.2010    ggu	in sp256w() account for changing volume (sigma)
 c 19.02.2011    ccf	3D radiation stress
+c 04.11.2011    ggu	deleted computation of firction term (in subn35.f)
 c
 c******************************************************************
 
@@ -983,66 +984,6 @@ c	gammat=fcorv(ie)*rdist
 
 	gammat=fcorv(ie)*rdist 
         gamma=af*dt*gammat
-
-c---------------------------------------------------------------------
-c next part can be deleted
-c---------------------------------------------------------------------
-	hlh = hdeov(ilevel,ie)
-
-        ulm = utlov(ilevel,ie)
-        vlm = vtlov(ilevel,ie)
-
-	hzg = hlh
-        if(hzg.lt.hzoff) hzg=hzoff
-
-        if(ireib.eq.0) then     !$$ireib0
-                rt=0.
-        else if(ireib.eq.1) then
-		rt = rr
-c		rt=rr/(hlh*hlh)	!for non slip condition...
-        else if(ireib.eq.2) then
-		if(bdebug) write(6,*) czv(ie),hzg,ulm,vlm
-                gcz=grav/((czv(ie)**2)*(hzg**drittl))   !??
-                rt=gcz*sqrt(ulm*ulm+vlm*vlm)/(hzg*hzg)  !??
-        else if(ireib.eq.3) then
-                gcz=grav/(czv(ie)**2)                   !??
-                rt=gcz*sqrt(ulm*ulm+vlm*vlm)/(hzg*hzg)  !??
-        else if(ireib.eq.5) then
-                rt=rr*sqrt(ulm*ulm+vlm*vlm)/(hzg*hzg)        !??
-        else if(ireib.eq.6) then
-		! rr is z0
-		rraux = cdf(hzg,rr)
-                rt=rraux*sqrt(ulm*ulm+vlm*vlm)/(hzg*hzg)        !??
-        else if(ireib.eq.7) then
-		if( czv(ie) .ge. 1. ) then
-                  gcz=grav/((czv(ie)**2)*(hzg**drittl))   !??
-		else
-		  gcz = czv(ie)
-		end if
-                rt=gcz*sqrt(ulm*ulm+vlm*vlm)/(hzg*hzg)  !??
-	else if(ireib.eq.8) then
-                ss = 0.
-                do ii=1,3
-                  kk = nen3v(ii,ie)
-                  ss = ss + z0bk(kk)
-                end do
-                ss = ss / 3.		!this z0 from sedtrans
-                rraux = cdf(hzg,ss)
-                rt=rraux*sqrt(ulm*ulm+vlm*vlm)/(hzg*hzg)
-        else
-                write(6,*) 'unknown friction : ',ireib
-                stop 'error stop : sp156'
-        end if
-
-	rraux = rt
-	rt = rfricv(ie)		!this should be the right one
-	if( reps .gt. 0. .and. abs(rraux-rt) .gt. reps ) then
-		write(6,*) ie,ireib,rt,rraux
-		stop 'error stop sp256v: rt - rraux'
-	end if
-c---------------------------------------------------------------------
-c delete until here
-c---------------------------------------------------------------------
 
 	rt = rfricv(ie)		!bottom friction
 
