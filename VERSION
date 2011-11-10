@@ -1,3 +1,42 @@
+version  6_1_36    10-11-2011    VERS_6_1_36
+
+========================================================== 10-11-2011 - 6_1_36
+
+c ./fem3d/nosresidence.f:
+c 10.11.2011    ggu     call to init_volume() changed for hybrid levels
+c
+c ./fem3d/nosaver_basin.f:
+c 10.11.2011    ggu     call to init_volume() changed for hybrid levels
+c
+c ./fem3d/subver.f:
+c 10.11.2011	ggu	version 6.1.36
+c
+c ./fem3d/nosaver_vert.f:
+c 10.11.2011    ggu     call to init_volume() changed for hybrid levels
+c
+c ./fem3d/map_influence.f:
+c 10.11.2011    ggu     call to init_volume() changed for hybrid levels
+c
+c ./fem3d/newbcl.f:
+c 07.11.2011    ggu     hybrid changed to resemble code in newexpl.f
+c
+c ./fem3d/newsig.f:
+c 10.11.2011    ggu     adjust depth for hybrid levels
+c
+c ./fem3d/subele.f:
+c 08.11.2011    dbf&ggu bug in setdepth(): 1 -> l
+c
+c ./fem3d/genutil.f:
+c 07.11.2011	ggu	layer thickness for hybrid coordinates
+c
+c ./fem3d/nosutil.f:
+c 10.11.2011    ggu     new routines for hybrid levels, init_volume() changed
+c
+c ./fem3d/ousutil.f:
+c 10.11.2011    ggu     new routines for hybrid levels
+
+==========================================================
+
 version  6_1_35    04-11-2011    VERS_6_1_35   commit_2011-11-10
 
 version  6_1_35    04-11-2011    VERS_6_1_35
