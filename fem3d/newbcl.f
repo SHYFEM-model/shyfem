@@ -50,6 +50,7 @@ c 28.01.2011    ggu     parameters changed in call to ts_nudge()
 c 04.03.2011    ggu     better error message for rhoset_shell
 c 31.03.2011    ggu     only write temp/salt if computed
 c 04.11.2011    ggu     adapted for hybrid coordinates
+c 07.11.2011    ggu     hybrid changed to resemble code in newexpl.f
 c
 c*****************************************************************
 
@@ -478,8 +479,6 @@ c common
 	common /ilhkv/ilhkv
 	real bpresv(nlvdim,1),rhov(nlvdim,1)
 	common /bpresv/bpresv, /rhov/rhov
-	real hkv(1)
-	common /hkv/hkv
 	real hldv(1)
 	common /hldv/hldv
 
@@ -490,8 +489,8 @@ c local
 	logical bdebug,debug,bsigma
 	integer k,l,lmax
 	integer nresid,nsigma
-	real sigma0,rho0,pres,hsigma,hsig
-	real depth,hlayer,h,htot
+	real sigma0,rho0,pres,hsigma
+	real depth,hlayer,hh
 	real rhop,presbt,presbc,dpresc
 	double precision dresid
 c functions
@@ -514,19 +513,19 @@ c functions
 	do k=1,nkn
 	  depth = 0.
 	  presbc = 0.
-	  lmax=ilhkv(k)
-	  htot = hkv(k)
-	  hsig = min(htot,hsigma)
+	  lmax = ilhkv(k)
 
 	  do l=1,lmax
-	    !h = hdkov(l,k)
-	    h = hldv(l)
-	    if( l .le. nsigma ) h = -h * hsig
-	    hlayer = 0.5 * h
-	    depth = depth + hlayer
+	    bsigma = l .le. nsigma
+
+	    hlayer = hdkov(l,k)
+	    if( .not. bsigma ) hlayer = hldv(l)
+
+	    hh = 0.5 * hlayer
+	    depth = depth + hh
 	    rhop = rhov(l,k)			!rho^prime
 
-	    dpresc = rhop * grav * hlayer	!differential bc. pres.
+	    dpresc = rhop * grav * hh		!differential bc. pres.
 	    presbc = presbc + dpresc            !baroclinic pres. (mid-layer)
 	    presbt = rho0 * grav * depth	!barotropic pressure
 
@@ -540,7 +539,7 @@ c functions
 	    rhov(l,k) = rhop
 	    bpresv(l,k) = presbc
 
-	    depth = depth + hlayer
+	    depth = depth + hh
 	    presbc = presbc + dpresc		!baroclinic pres. (bottom-lay.)
 	  end do
 	end do

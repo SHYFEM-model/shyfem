@@ -1,9 +1,12 @@
 
 c utilities for NOS files
 c
+c revision log :
+c
 c 29.04.2010    ggu     new file from nosaver
 c 07.05.2010    ggu     new routines qopen_nos_file(), checks ev initialization
 c 15.12.2010    ggu     volume computation also for sigma layers
+c 10.11.2011    ggu     new routines for hybrid levels, init_volume() changed
 c
 c***************************************************************
 
@@ -151,7 +154,7 @@ c***************************************************************
 c***************************************************************
 
 	subroutine init_volume(nlvdim,nkn,nel,nlv,nen3v,ilhkv
-     +				,hlv,hev,vol3)
+     +				,hlv,hev,hl,vol3)
 
 c initializes volumes just in case no volume file is found
 c
@@ -166,16 +169,19 @@ c we could do better using information on node area and depth structure
 	integer ilhkv(1)
 	real hlv(1)
 	real hev(1)
+	real hl(1)		!aux vector for layer thickness
 	real vol3(nlvdim,1)
 
         include 'ev.h'
 
-	logical belem,bsigma
-	integer ie,ii,k,l,lmax
-	real area,helem,hup,hbot,h
+	logical belem,bsigma,bzeta
+	integer ie,ii,k,l,lmax,nsigma
+	real area,hsigma
 
 	call is_init_ev(belem)		!use ev if initialized
-	bsigma = hlv(nlv) .eq. -1.	!sigma layers
+        call get_sigma_info(nsigma,hsigma)
+        bsigma = nsigma .gt. 0
+	bzeta = .false.
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
@@ -184,36 +190,18 @@ c we could do better using information on node area and depth structure
 	  end do
 	end do
 
-	if( belem ) then
-
 	do ie=1,nel
-	  area = 4. * ev(10,ie)
-	  helem = hev(ie)
+	  area = 1.
+	  if( belem ) area = 4. * ev(10,ie)
+	  call get_layer_thickness(ie,nlv,bzeta,nsigma,hsigma,hl)
 	  do ii=1,3
 	    k = nen3v(ii,ie)
 	    lmax = ilhkv(k)
-	    hup = 0.
 	    do l=1,lmax
-	      hbot = hlv(l)
-	      if( bsigma ) hbot = - hbot * helem
-	      if( hbot .gt. helem ) hbot = helem
-	      h = hbot - hup
-	      vol3(l,k) = vol3(l,k) + area * h
-	      hup = hbot
+	      vol3(l,k) = vol3(l,k) + area * hl(l)
 	    end do
 	  end do
 	end do
-
-	else
-
-	do k=1,nkn
-	  lmax = ilhkv(k)
-	  do l=1,nlv
-	    vol3(l,k) = 1.
-	  end do
-	end do
-
-	end if
 
 	end
 

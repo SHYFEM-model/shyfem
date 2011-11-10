@@ -1,5 +1,28 @@
 ============================================================
 
+Thu Nov 10 13:48:26 CET 2011
+
+more on hybrid levels
+
+ BUG                   |    3 +
+ LOG                   |   11 ++
+ RELEASE_NOTES         |    4 +
+ fem3d/Makefile        |    2 +-
+ fem3d/genutil.f       |  142 ++++++++++++++++
+ fem3d/map_influence.f |    4 +-
+ fem3d/newbcl.f        |   27 ++--
+ fem3d/newini.f        |    4 +
+ fem3d/newsig.f        |  452 ++++++++++++++++++++++++++++++++++++++++++++-----
+ fem3d/nosaver_basin.f |    6 +-
+ fem3d/nosaver_vert.f  |    6 +-
+ fem3d/nosresidence.f  |    4 +-
+ fem3d/nosutil.f       |   42 ++---
+ fem3d/ousutil.f       |   40 ++---
+ fem3d/subele.f        |    3 +-
+ 15 files changed, 637 insertions(+), 113 deletions(-)
+
+============================================================
+
 Fri Nov  4 18:51:24 CET 2011
 
 New version 6_1_35

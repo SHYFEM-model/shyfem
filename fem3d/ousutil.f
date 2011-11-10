@@ -8,6 +8,7 @@ c
 c 16.12.2010	ggu	copied from ousextr_gis.f
 c 03.06.2011	ggu	some routines transfered to genutil.f
 c 08.06.2011	ggu	new routine transp2nodes()
+c 10.11.2011    ggu     new routines for hybrid levels
 c
 c******************************************************************
 
@@ -34,12 +35,15 @@ c transforms transports at elements to velocities at nodes
         real vprv(nlvdim,1)
         real weight(nlvdim,1)
 
-	logical bsigma
-        integer ie,ii,k,l,lmax
-        real zmed,hmed,u,v,w
-	real hbot,htop,htot,hfact,hadd
+	logical bsigma,bzeta
+        integer ie,ii,k,l,lmax,nsigma
+        real hmed,u,v,w
+	real hsigma
+	real hl(nlvdim)
 
-	bsigma = hlv(nlv) .eq. -1.
+	call get_sigma_info(nsigma,hsigma)
+	bsigma = nsigma .gt. 0
+	bzeta = .true.		!use zeta for depth computation
 
 	do k=1,nkn
 	  do l=1,nlv
@@ -50,26 +54,12 @@ c transforms transports at elements to velocities at nodes
 	end do
 	      
         do ie=1,nel
-          zmed = 0.
-          do ii=1,3
-            zmed = zmed + zenv(ii,ie)
-          end do
-          zmed = zmed / 3.
 
-	  htot = hev(ie)
-	  htop = -zmed
-          hfact = 1.
-	  hadd = 0.
-          if( bsigma ) htop = 0.
-          if( bsigma ) then
-	    hfact = -(htot+zmed)
-	    hadd = -zmed
-	  end if
 	  lmax = ilhv(ie)
+	  call get_layer_thickness(ie,lmax,bzeta,nsigma,hsigma,hl)
+
 	  do l=1,lmax
-	    if( l .eq. lmax ) hbot = hev(ie)
-	    hbot = hadd + hfact * hlv(l)
-	    hmed = hbot - htop
+	    hmed = hl(l)
 	    u = utlnv(l,ie) / hmed
 	    v = vtlnv(l,ie) / hmed
 	    do ii=1,3
@@ -78,7 +68,6 @@ c transforms transports at elements to velocities at nodes
 	      vprv(l,k) = vprv(l,k) + v
 	      weight(l,k) = weight(l,k) + 1.
 	    end do
-	    htop = hbot
 	  end do
 	end do
 
@@ -119,11 +108,8 @@ c transforms transports at elements to transports at nodes
         real vtprv(nlvdim,1)
         real weight(nlvdim,1)
 
-	logical bsigma
         integer ie,ii,k,l,lmax
         real u,v,w
-
-	bsigma = hlv(nlv) .eq. -1.
 
 	do k=1,nkn
 	  do l=1,nlv

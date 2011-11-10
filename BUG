@@ -1,4 +1,7 @@
 
+BUG_2010_30     dbf&ggu	6.1.36   10.11.2011
+        bug fix for zeta levels (subele.f, introduced with hybrid)
+
 BUG_2010_29     dbf&ggu	6.1.35   04.11.2011
 	bug fix in routine set_barocl_new_interface (psigma)
 

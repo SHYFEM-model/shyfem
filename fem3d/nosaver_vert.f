@@ -1,11 +1,14 @@
 c
 c $Id: nosaverf.f,v 1.1 2008-04-11 16:05:37 georg Exp $
 c
+c revision log :
+c
 c 18.11.1998    ggu     check dimensions with dimnos
 c 07.03.2007    ggu     easier calls
 c 10.04.2008    ggu     copied from nosaver -> frequency introduced
 c 29.04.2010    ggu     new from nosaver_basin (using volumes)
 c 07.05.2010    ggu     call whnos with nlv=1 (bug)
+c 10.11.2011    ggu     call to init_volume() changed for hybrid levels
 c
 c**********************************************************
 
@@ -29,6 +32,7 @@ c averages vertically records
 	integer ilhkv2(nkndim)
 	real hlv2(nlvdim)
 	real hev2(neldim)
+	real hl(nlvdim)
 
 	logical bvol
         integer nread
@@ -81,7 +85,7 @@ c	----------------------------------------------------------
         call rhnos(nin,nvers,nkndim,neldim,nlvdim,nkn1,nel1,nlv,nvar
      +                          ,ilhkv,hlv,hev,title)
 
-        call init_volume(nlvdim,nkn,nel,nlv,nen3v,ilhkv,hlv,hev,vol3)
+        call init_volume(nlvdim,nkn,nel,nlv,nen3v,ilhkv,hlv,hev,hl,vol3)
 
 c	----------------------------------------------------------
 c	output file

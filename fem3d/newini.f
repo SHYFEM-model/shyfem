@@ -58,6 +58,10 @@ c 24.08.2011    ggu	eliminated hbot for sigma due to run time error
 c 25.10.2011    ggu	hlhv eliminated
 c 04.11.2011    ggu	adapted for hybrid coordinates
 c
+c notes :
+c
+c for information on hybrid levels see adjust_levels()
+c
 c**************************************************************
 
 	subroutine init_vertical

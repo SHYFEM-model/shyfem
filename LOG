@@ -1,4 +1,15 @@
 
+
+10.11.2011	more on hybrid levels
+
+	adjust depth for hybrid levels (newsig.f)
+	bug fix for zeta levels (subele.f)
+	refactoring(newbcl.f)
+	init_volume() changed (nosresidence.f, nosaver_*.f, map_influence.f)
+	utilities changed (genutil.f, nosutil.f, ousutil.f)
+
+========================================================== 04-11-2011 - 6_1_35
+
 04.11.2011	hybrid levels
 
 	hybrid levels (newini.f, newexpl.f, subele.f, newbcl.f)

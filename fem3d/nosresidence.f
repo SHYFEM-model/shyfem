@@ -11,6 +11,7 @@ c 13.02.2009    ggu     compute min/max of residence time
 c 29.10.2009    ggu     compute and write 2D fields, use log to compute restime
 c 12.01.2010    ggu     lots of changes
 c 29.04.2010    ggu     completely changed
+c 10.11.2011    ggu     call to init_volume() changed for hybrid levels
 c
 c****************************************************************
 
@@ -42,6 +43,7 @@ c--------------------------------------------------
 	integer ilhkv2(nkndim)
 	real hev2(neldim)
 	real hlv2(nlvdim)
+	real hl(nlvdim)
 
 	integer ilhkv(nkndim)
 	real hev(neldim)
@@ -163,7 +165,7 @@ c       ----------------------------------------------------------
         call rhnos(nin,nvers,nkndim,neldim,nlvdim,nkn1,nel1,nlv,nvar
      +                          ,ilhkv,hlv,hev,title)
 
-	call init_volume(nlvdim,nkn,nel,nlv,nen3v,ilhkv,hlv,hev,vol3)
+	call init_volume(nlvdim,nkn,nel,nlv,nen3v,ilhkv,hlv,hev,hl,vol3)
 
 c-----------------------------------------------------------------
 c check compatibility

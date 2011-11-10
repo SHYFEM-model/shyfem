@@ -139,7 +139,7 @@ SOBJS   = \
 	  submod.o subuti.o subele.o subgeo.o subdts.o \
 	  links.o sublnka.o sublnks.o sublnku.o subisd.o \
 	  debug.o subhisto.o subnosa.o subfvl.o \
-	  subeos.o
+	  subeos.o 
 
 # general objects for 3D model ht
 

@@ -70,6 +70,7 @@ c 07.11.2008    ggu     new helper routine make_new_depth()
 c 16.12.2010    ggu     setdepth() changed for sigma levels
 c 25.10.2011    ggu     hlhv eliminated
 c 04.11.2011    ggu     adapted for hybrid coordinates
+c 08.11.2011    dbf&ggu bug in setdepth(): 1 -> l
 c
 c****************************************************************
 
@@ -933,7 +934,7 @@ c	  -------------------------------------------------------
 	      else
 	        levmin = nsigma + 1
 	        do l=levmin,lmax-1
-	          hdkn(l,k) = hdkn(1,k) + areafv * hldv(l)
+	          hdkn(l,k) = hdkn(l,k) + areafv * hldv(l)
 	        end do
 	        if( levmin .eq. 1 ) hdkn(1,k) = hdkn(1,k) + areafv * z
 	        hlast = htot - hlv(lmax-1)

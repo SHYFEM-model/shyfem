@@ -9,6 +9,7 @@ c 03.12.2001    ggu     cleaned up, hakata bay
 c 18.06.2009    ggu     re-written for map of influence
 c 05.11.2010    ggu     write all conz to one file, bug fix in vert_aver()
 c 16.12.2010    ggu     restructured to use volume file
+c 10.11.2011    ggu     call to init_volume() changed for hybrid levels
 c
 c****************************************************************
 
@@ -58,6 +59,7 @@ c--------------------------------------------------
 	integer ilhkv2(nkndim)
 	real hlv2(nlvdim)
 	real hev2(neldim)
+	real hl(nlvdim)
 
 	logical berror
 	logical bvol
@@ -151,7 +153,7 @@ c---------------------------------------------------------------
         call rhnos(nin,nvers,nkndim,neldim,nlvdim,nkn1,nel1,nlv,nvar
      +                          ,ilhkv,hlv,hev,title)
 
-        call init_volume(nlvdim,nkn,nel,nlv,nen3v,ilhkv,hlv,hev,vol3)
+        call init_volume(nlvdim,nkn,nel,nlv,nen3v,ilhkv,hlv,hev,hl,vol3)
 
 	nstate = nvar
 	if( nstate .ne. nsdim ) goto 97
