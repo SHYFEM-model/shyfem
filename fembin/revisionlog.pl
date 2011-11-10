@@ -29,9 +29,11 @@ $after = 0;
 $befor = 30000000;
 $noname = 0;
 $sepname = "";
+$check = 0;
 
 for(;;) {
   $option = $ARGV[0];
+  if( $option eq "-check" ) { shift; $check = 1; next; }
   if( $option eq "-after" ) { shift; $after = shift; next; }
   if( $option eq "-befor" ) { shift; $befor = shift; next; }
   if( $option eq "-file" ) { shift; $file = shift; next; }
@@ -41,6 +43,12 @@ for(;;) {
 }
 
 $savefile = $file;
+
+if( $check ) {
+  #print STDERR "checking $file\n";
+  revisionlog_fortran_check();
+  exit 0;
+}
 
 while(<>) {
 
@@ -98,6 +106,48 @@ sub revisionlog_fortran {
     }
   }
 }
+
+sub revisionlog_fortran_check {
+
+  my $rev_log_found = 0;
+  my $ndate = 0;
+  my $debug = 0;
+
+  while(<>) {
+
+    if( /^\s*\n$/ ) {				#only white space
+	next;
+    }
+    if( /^\s+\S$/ ) {				# first statement
+	last;
+    }
+    if( /^[cC\!]\s+revision log\s+:\s*\n$/ ) {
+	$rev_log_found = 1;
+	next;
+    }
+
+    $date = &getdate($date);
+
+    if( $date ) {
+      $ndate++;
+      print if $debug;
+    }
+  }
+
+  print "$file:  $rev_log_found  $ndate";
+  print "   ********" if $rev_log_found == 0 and $ndate > 0;
+  print "\n"
+}
+
+
+
+#---------------------------------------------------------------
+
+sub getdate {
+}
+
+
+#---------------------------------------------------------------
 
 sub getdate {
 

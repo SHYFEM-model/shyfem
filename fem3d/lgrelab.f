@@ -1,6 +1,8 @@
 c
 c $Id: lgrelab.f,v 1.1 2008-07-16 15:41:39 georg Exp $
 c
+c revision log :
+c
 c 06.06.2008    ggu     new from scratch
 c
 c**************************************************************

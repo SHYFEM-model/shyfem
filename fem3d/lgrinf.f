@@ -1,6 +1,8 @@
 c
 c $Id: lgrinf.f,v 1.1 2008-07-16 15:41:39 georg Exp $
 c
+c revision log :
+c
 c 18.11.1998    ggu     check dimensions with dimnos
 c 06.04.1999    ggu     some cosmetic changes
 c 03.12.2001    ggu     some extra output -> place of min/max

@@ -3,6 +3,8 @@ c $Id: weutro_sedim.f,v 1.3 2008-04-17 14:53:56 georg Exp $
 c
 c weutro_sedim - sediment routines for weutro
 c
+c revision log :
+c
 c 20.06.2003    ggu&dmk new routine for sediments
 c 18.04.2008    utility routines for bio3d taken out
 c

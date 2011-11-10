@@ -1,6 +1,8 @@
 c
 c $Id: nosinf.f,v 1.8 2008-11-20 10:51:34 georg Exp $
 c
+c revision log :
+c
 c 18.11.1998    ggu     check dimensions with dimnos
 c 06.04.1999    ggu     some cosmetic changes
 c 03.12.2001    ggu     some extra output -> place of min/max

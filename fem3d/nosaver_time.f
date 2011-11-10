@@ -1,6 +1,8 @@
 c
 c $Id: nosaverf.f,v 1.1 2008-04-11 16:05:37 georg Exp $
 c
+c revision log :
+c
 c 18.11.1998    ggu     check dimensions with dimnos
 c 07.03.2007    ggu     easier calls
 c 10.04.2008    ggu     copied from nosaver -> frequency introduced

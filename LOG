@@ -1,10 +1,13 @@
 
+10.11.2011	cosmetic changes for revision log
+
+========================================================== 10-11-2011 - 6_1_36
 
 10.11.2011	more on hybrid levels
 
 	adjust depth for hybrid levels (newsig.f)
 	bug fix for zeta levels (subele.f)
-	refactoring(newbcl.f)
+	refactoring (newbcl.f)
 	init_volume() changed (nosresidence.f, nosaver_*.f, map_influence.f)
 	utilities changed (genutil.f, nosutil.f, ousutil.f)
 

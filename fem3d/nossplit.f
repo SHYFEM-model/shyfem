@@ -1,6 +1,8 @@
 c
 c $Id: nossplit.f,v 1.3 2009-04-07 10:43:57 georg Exp $
 c
+c revision log :
+c
 c 18.11.1998    ggu     check dimensions with dimnos
 c
 c**********************************************************

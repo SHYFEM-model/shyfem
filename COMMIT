@@ -1,5 +1,28 @@
 ============================================================
 
+Thu Nov 10 18:02:00 CET 2011
+
+cosmetic changes for revision log
+
+ LOG                   |    5 +++-
+ fem3d/bedload.f       |    2 +
+ fem3d/lgrelab.f       |    2 +
+ fem3d/lgrinf.f        |    2 +
+ fem3d/nosaver_time.f  |    2 +
+ fem3d/nosdiff.f       |    2 +
+ fem3d/nosinf.f        |    2 +
+ fem3d/nossplit.f      |    2 +
+ fem3d/simsys_pard.f   |    2 +
+ fem3d/simsys_spk.f    |    2 +
+ fem3d/subfvl.f        |    2 +
+ fem3d/weutro_sedim.f  |    2 +
+ fembin/revision_last  |    1 +
+ fembin/revisionlog    |    2 +
+ fembin/revisionlog.pl |   50 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 15 files changed, 79 insertions(+), 1 deletions(-)
+
+============================================================
+
 Thu Nov 10 13:49:20 CET 2011
 
 New version 6_1_36

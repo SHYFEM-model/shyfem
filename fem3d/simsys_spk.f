@@ -1,4 +1,6 @@
 c
+c revision log :
+c
 c 12.01.2009	ggu	new file for system routines
 c 31.03.2009	ggu	call renamed to spk_*
 c
