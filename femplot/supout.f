@@ -20,6 +20,7 @@ c 31.03.2011  ggu     use fvl routines to exclude areas from plot
 c 12.07.2011  ggu     in prepsim use what is available for dry areas
 c 18.08.2011  ggu     bug fix in nosopen() -> extra comma eliminated 
 c 31.08.2011  ggu     new routines for handling EOS files
+c 14.11.2011  ggu     call to init_sigma_info() to setup layer info
 c
 c**********************************************************
 c**********************************************************
@@ -923,7 +924,8 @@ c read second header
 
 	if( ierr .ne. 0 ) goto 97
 
-	call level_e2k		!computes ilhkv
+	call level_e2k				!computes ilhkv
+	call init_sigma_info(nlv,hlv)		!sets up hlv
 
 c initialize time
 
@@ -1122,6 +1124,8 @@ c read second header
 	if( ierr .ne. 0 ) then
 		stop 'error stop nosopen: error reading second header'
 	end if
+
+	call init_sigma_info(nlv,hlv)		!sets up hlv
 
 c initialize time
 

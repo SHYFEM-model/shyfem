@@ -57,6 +57,7 @@ c 23.03.2011    ggu	new routine adjust_spherical(), error check isphe
 c 24.08.2011    ggu	eliminated hbot for sigma due to run time error
 c 25.10.2011    ggu	hlhv eliminated
 c 04.11.2011    ggu	adapted for hybrid coordinates
+c 11.11.2011    ggu	bug fix in adjust_levels: for zeta levels set nlv
 c
 c notes :
 c
@@ -376,6 +377,8 @@ c local
 
 	real getpar
 
+	write(6,*) 'adjust layer structure'
+
 c--------------------------------------------------------------
 c get maximum depth
 c--------------------------------------------------------------
@@ -386,6 +389,8 @@ c--------------------------------------------------------------
 	    hmax = max(hmax,hm3v(ii,ie))
 	  end do
 	end do
+
+	write(6,*) 'maximum depth: ',hmax
 
 c--------------------------------------------------------------
 c create hlv values
@@ -439,7 +444,7 @@ c--------------------------------------------------------------
 	      end do
 	      call make_sigma_levels(nsigma)
 	      hlv(nsigma) = hsigma
-	      nlv = nlvdi
+	      nlv = nlv + nsigma - 1
 	    end if
 	  else if( hlv(nlv) .eq. -1. ) then	!only sigma layers given
 	    if( bsigma ) goto 91
@@ -480,9 +485,6 @@ c--------------------------------------------------------------
 
 	call set_sigma(nsigma,hsigma)
 
-	write(6,*) 'nlv,nsigma,hsigma: ',nlv,nsigma,hsigma
-	write(6,*) 'adjust_levels: ',nlv,(hlv(l),l=1,nlv)
-
 c--------------------------------------------------------------
 c create hldv values
 c--------------------------------------------------------------
@@ -494,6 +496,11 @@ c--------------------------------------------------------------
 	  if( l .eq. nsigma ) hbot = -1.
 	  hldv(l) = hbot - htop
 	end do
+
+	write(6,*) 'adjust_levels: '
+	write(6,*) 'nlv,nsigma,hsigma: ',nlv,nsigma,hsigma
+	write(6,*) 'hlv:  ',(hlv(l),l=1,nlv)
+	write(6,*) 'hldv: ',(hldv(l),l=1,nlv)
 
 c--------------------------------------------------------------
 c check hlv and hldv values

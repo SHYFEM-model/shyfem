@@ -1,4 +1,18 @@
 
+14.11.2011	hybrid plot
+
+	use of routines in sigmautil.f (supout.f, supdep.f)
+	hybrid levels introduced (suplin.f)
+	new array hl (plotsim.f)
+
+14.11.2011	hybrid fixes
+
+	new sigma routines (genutil.f, sigmautil.f)
+	more error checks (newsig.f,subele.f)
+	bug fix in adjust_levels (newini.f)
+	for zeta levels set depth constant (newsig.f)
+	better read of initial conditions (newbcl.f)
+
 10.11.2011	cosmetic changes for revision log
 
 ========================================================== 10-11-2011 - 6_1_36

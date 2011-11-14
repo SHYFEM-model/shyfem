@@ -1,4 +1,7 @@
 
+BUG_2010_31     ggu	6.1.37   14.11.2011
+        bug fix in adjust_levels (newini.f)
+
 BUG_2010_30     dbf&ggu	6.1.36   10.11.2011
         bug fix for zeta levels (subele.f, introduced with hybrid)
 

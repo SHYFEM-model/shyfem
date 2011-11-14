@@ -17,6 +17,7 @@ c 21.12.2010    ggu     plotting vertical vector of sigma (not finished)
 c 18.08.2011    ggu     better error check of node list
 c 24.08.2011    ggu     small changes to avoid run time error
 c 24.08.2011    ggu     plot real depth for zeta layers
+c 14.11.2011    ggu     hybrid levels introduced
 c
 c************************************************************************
 
@@ -65,7 +66,7 @@ c elems(1) is not used, etc..
 
 	character*80 file
 	character*80 string,line
-	logical bhoriz,barrow,btwo,bsigma
+	logical bhoriz,barrow,btwo
 	logical blayer,blog
 	integer it,i,k1,k2,ie,l,lbot,ltop,j
 	integer ltot
@@ -138,10 +139,10 @@ c----------------------------------------------------------------
      +			,isphe,rlmax,rdmax,llmax,xy)
 	  call make_proj_dir(n,isphe,nodes,xgv,ygv,dxy)
 
-	  bgrid = nint(getpar('ivgrid')) .ne. 0
-	  ivert = nint(getpar('ivert'))
-	  lvmax = nint(getpar('lvmax'))
-	  hvmax = getpar('hvmax')
+	  bgrid = nint(getpar('ivgrid')) .ne. 0	!plot grid?
+	  ivert = nint(getpar('ivert'))	!type of vertical coordinate
+	  lvmax = nint(getpar('lvmax'))	!max layer to be plotted
+	  hvmax = getpar('hvmax')	!max depth to be plotted
 
 	  call set_max_dep_lay(nlv,hlv,rdmax,llmax,hvmax,lvmax) !vertical range
 
@@ -169,12 +170,13 @@ c----------------------------------------------------------------
 c prepare logical variables
 c----------------------------------------------------------------
 
-	btwo = .false.				!plot two arrows
-	btwo = .true.				!plot two arrows
+c ivert:   0=depth  1=layers  2=log depth
+c	   -1=layers scaled by sigma values
+
+	btwo = .false.
+	btwo = .true.				!plot two arrows for reference
 
 	barrow = bvel .and. stip .ge. 0.	!plot arrow
-
-	bsigma = hlv(nlv) .eq. -1.
 
 	blayer = abs(ivert) .eq. 1
 	blog = ivert .eq. 2
@@ -281,12 +283,6 @@ c--------------------------------------------------------------------
 	    yb2 = ya(2,l)
 	    call plot_scal(x1,yt1,yb1,x2,yt2,yb2
      +				,val(ltop,i-1),val(ltop,i))
-c	    if( bsigma ) then
-c	      call plot_scal(x1,yt1,yb1,x2,yt2,yb2
-c     +				,val(ltop,i-1),val(ltop,i))
-c	    else
-c	      call plot_rect(x1,yt1,x2,yb1,val(ltop,i-1),val(ltop,i))
-c	    end if
 	  end do
 	end do
 
@@ -1026,10 +1022,13 @@ c deepest element is chosen
 	logical bsigma,berror
 	integer i,k1,k2,ie1,ie2,l
 	integer ii,ie
+	integer nsigma
+	real hsigma
 	real h
 	integer ipext,ieext
 
-	bsigma = hlv(nlv) .eq. -1.
+	call get_sigma_info(nlv,nsigma,hsigma)
+	bsigma = nsigma .gt. 0
 	berror = .false.
 
 c------------------------------------------------------------------
@@ -1072,12 +1071,11 @@ c------------------------------------------------------------------
 
 	do i=2,n
 	  h = max(helems(1,i),helems(2,i))
-	  l = 1
+	  l = max(1,nsigma)
 	  do while( hlv(l) .lt. h ) 
 	    l = l + 1
 	  end do
 	  lelems(i) = l
-	  if( bsigma ) lelems(i) = nlv
 	end do
 	  
 c------------------------------------------------------------------
@@ -1270,29 +1268,34 @@ c************************************************************************
 
 	logical blayer,blog,bsigma
 	integer i,l
-	real hd,h
+	integer nlvaux,nsigma
+	real hsigma
+	real hd,h,hsig
 	real hlog
 
-	bsigma = hlv(nlv) .eq. -1
+	call get_sigma_info(nlvaux,nsigma,hsigma)
+
 	blayer = abs(ivert) .eq. 1
 	blog = ivert .eq. 2
 
 	do i=1,2
 	  hd = hdep(i)
+	  hsig = min(hsigma,hd)
 	  ya(i,0) = 0.
 	  do l=1,nlv
 	    h = hlv(l)
+	    bsigma = l .le. nsigma
+	    if( bsigma .and. l .eq. nsigma ) h = -1.
 	    if( blayer ) then
 	      if( bsigma .and. ivert .eq. -1 ) then
-		h = hlv(l) * l
+		h = -h * l
 	      else
 		h = l
 	      end if
 	    else if( bsigma ) then
-	      h = -hd * hlv(l)
-	    else
-	      h = hlv(l)
-	      if( l .eq. nlv ) h = hd
+	      h = -h * hsig
+	    else if( l .eq. nlv ) then
+	      h = hd
 	    end if
 	    if( blog ) h = hlog(h,hvmax)
 	    if( .not. blayer .and. h .gt. hvmax ) h = hvmax

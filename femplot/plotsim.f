@@ -22,6 +22,7 @@ c 23.02.2010	ggu	new call to set_default_color_table()
 c 17.12.2010	ggu	substituted hv with hkv
 c 31.03.2011	ggu	new arrays fvlv, arfvlv for scalar plotting
 c 31.08.2011	ggu	new copyright, eos plotting
+c 14.11.2011	ggu	new array hl for depth structure
 c
 c*************************************************************
 
@@ -123,6 +124,8 @@ c auxiliary
 	common /uv/uv, /vv/vv
 	real pres(nkndim)
 	common /pres/pres
+	real hl(nlvdim)
+	common /hl/hl
 	logical bwater(neldim)
 	common /bwater/bwater
 	logical bkwater(nkndim)

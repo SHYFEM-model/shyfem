@@ -7,6 +7,8 @@ c 16.12.2010    ggu     program partially finished
 c 19.09.2011    ggu     new routine set_bsigma()
 c 04.11.2011    ggu     new routines for hybrid levels
 c 10.11.2011    ggu     adjust depth for hybrid levels
+c 11.11.2011    ggu     error check in set_hkv_and_hev()
+c 11.11.2011    ggu     in check_hsigma_crossing set zeta levels to const depth
 c
 c notes :
 c
@@ -85,7 +87,7 @@ c-------------------------------------------------------
 	call set_hkv_and_hev(hsigma,idm,idp)
 	write(6,*) 'non-continuous nodes: ',idm,idp
 
-	call make_nodes_continuous(hsigma,bzetaconti)
+	!call make_nodes_continuous(hsigma,bzetaconti)
 	
 	call set_hkv_and_hev(hsigma,idm,idp)
 	write(6,*) 'non-continuous nodes: ',idm,idp
@@ -239,7 +241,7 @@ c checks and adjusts hsigma crossing
 	logical berror,bdebug
 	integer k,ie,ii
 	integer ihmin,ihmax
-	real h
+	real h,hm
 	real f(3)
 
 	bdebug = .true.
@@ -274,10 +276,18 @@ c checks and adjusts hsigma crossing
 	end do
 
 	do ie=1,nel
+	  hm = 0.
+	  do ii=1,3
+	    h = hm3v(ii,ie)
+	    hm = hm + h
+	  end do
+	  hm = hm / 3.
 	  do ii=1,3
 	    h = hm3v(ii,ie)
 	    k = nen3v(ii,ie)
-	    if( v1v(k) .ne. 0. ) then
+	    if( hm .gt. hsigma ) then
+	      hm3v(ii,ie) = hm
+	    else if( v1v(k) .ne. 0. ) then
 	      hm3v(ii,ie) = hsigma
 	    end if
 	  end do
@@ -365,7 +375,7 @@ c-------------------------------------------------------
 	  end if
 	end do
 
-	if( berror ) stop 'error stop set_hkv_and_hev: no depth in node'
+	if( berror ) stop 'error stop make_nodes_continuous: no depth in node'
 
 c-------------------------------------------------------
 c make continuous
@@ -489,8 +499,10 @@ c-------------------------------------------------------
 	    h = hm3v(ii,ie)
 	    k = nen3v(ii,ie)
 	    if( abs(hkv(k)-h) .gt. 1.e-3 ) then
-	      if( hm .le. hsigma ) then
+	      if( hm .lt. hsigma .and. h .ne. hsigma ) then
 	        idm = idm + 1
+	        write(6,*) ie,k,h,hm
+	        berror = .true.
 	      else
 	        idp = idp + 1
 	      end if
@@ -499,6 +511,11 @@ c-------------------------------------------------------
 	end do
 
 	write(6,*) 'non-continuous depth: ',idm,idp
+
+	if( berror ) then
+	  write(6,*) 'non continuous nodes in sigma layers: ',idm
+	  stop 'error stop set_hkv_and_hev: non-continuous depth'
+	end if
 
 c-------------------------------------------------------
 c end of routine

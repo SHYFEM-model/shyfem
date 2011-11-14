@@ -40,7 +40,7 @@ c 23.04.2008    ggu     call to bnds_set_def() changed
 c 12.06.2008    ggu     s/tdifhv deleted
 c 09.10.2008    ggu     new call to confop
 c 12.11.2008    ggu     new initialization, check_layers, initial nos file
-c 13.01.2009    ggu&deb changes in reading file in read_next_record()
+c 13.01.2009    ggu&deb changes in reading file in ts_next_record()
 c 13.10.2009    ggu     in rhoset bug computing pres
 c 13.11.2009    ggu     only initialize T/S if no restart, new rhoset_shell
 c 19.01.2010    ggu     different call to has_restart() 
@@ -51,6 +51,7 @@ c 04.03.2011    ggu     better error message for rhoset_shell
 c 31.03.2011    ggu     only write temp/salt if computed
 c 04.11.2011    ggu     adapted for hybrid coordinates
 c 07.11.2011    ggu     hybrid changed to resemble code in newexpl.f
+c 11.11.2011    ggu     restructured ts_next_record() and diagnostic()
 c
 c*****************************************************************
 
@@ -126,7 +127,7 @@ c local
 	integer ibarcl
 	integer idtext,itmext
 	integer imin,imax
-	integer nintp,nvar,ivar
+	integer nintp,nvar
 	real cdef,t
 	real xmin,xmax
         integer itemp,isalt
@@ -157,7 +158,6 @@ c	integer OMP_GET_THREAD_NUM
 	
 	double precision theatold,theatnew
 	double precision theatconv1,theatconv2,theatqfl1,theatqfl2
-	real cw,row
 c save
         real bnd3_temp(nb3dim,0:nbcdim)
         save bnd3_temp
@@ -180,6 +180,10 @@ c data
 	save icall
 	data icall /0/
 
+c----------------------------------------------------------
+c parameter setup and check
+c----------------------------------------------------------
+
 	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in barocl'
 
 	if(icall.eq.-1) return
@@ -190,7 +194,9 @@ c data
         bgdebug = .false.
 	binitial_nos = .true.
 
+c----------------------------------------------------------
 c initialization
+c----------------------------------------------------------
 
 	if(icall.eq.0) then	!first time
 
@@ -221,9 +227,9 @@ c		--------------------------------------------
 		  call conini(nlvdi,tempv,temref,tstrat,hdkov)
 
 		  if( ibarcl .eq. 1 .or. ibarcl .eq. 3) then
-		    call ts_file_init(it,nlvdim,nlv,nkn,tempv,saltv)
+		    call ts_file_init(it,nlv,nkn,tempv,saltv)
 		  else if( ibarcl .eq. 2 ) then
-	            call diagnostic(it,nlvdim,nlv,nkn,tempv,saltv)
+		    call ts_diag(it,nlv,nkn,tempv,saltv)
 		  else if( ibarcl .eq. 4 ) then		!interpolate to T/S
 	  	    call ts_nudge(it,nlv,nkn,tempv,saltv)
 		  else
@@ -291,17 +297,16 @@ c		-> we iterate to the real solution)
 
 	end if
 
-c normal call
-
 	icall=icall+1
 
 	if(mode.eq.0) return
 
-	cw = 3991.
-	row = 1026.
-	wsink = 0.
-	ivar = 1
+c----------------------------------------------------------
+c normal call
+c----------------------------------------------------------
+
 	t = it
+	wsink = 0.
 	robs = 0.
 	if( bobs ) robs = 1.
 
@@ -309,12 +314,14 @@ c normal call
 	thpar=getpar('thpar')
 
 	if( ibarcl .eq. 2 ) then
-	  call diagnostic(it,nlvdim,nlv,nkn,tempv,saltv)
+	  call ts_diag(it,nlv,nkn,tempv,saltv)
 	else if( ibarcl .eq. 4 ) then
 	  call ts_nudge(it,nlv,nkn,tobsv,sobsv)
 	end if
 
-c salt and temperature transport & diffusion
+c----------------------------------------------------------
+c salt and temperature transport and diffusion
+c----------------------------------------------------------
 
 	if( badvect ) then
 
@@ -357,9 +364,9 @@ c	  write(6,*) 'number of thread of salt: ',tid
 
 	end if
 
-c----------- end of debug section -------------
-
+c----------------------------------------------------------
 c compute total mass
+c----------------------------------------------------------
 
 	if( binfo ) then
 	  call tsmass(saltv,+1,nlvdim,stot) 
@@ -372,22 +379,30 @@ c compute total mass
  2020	  format(a,i10,4f8.2)
 	end if
 
+c----------------------------------------------------------
 c heat flux through surface
+c----------------------------------------------------------
 
         call get_timestep(dt)
 	call qflux3d(it,dt,nkn,nlvdim,tempv,dq)
 
+c----------------------------------------------------------
 c compute rhov and bpresv
+c----------------------------------------------------------
 
 	call rhoset_shell
 
+c----------------------------------------------------------
 c compute min/max
+c----------------------------------------------------------
 
 	call stmima(saltv,nkn,nlvdi,ilhkv,smin,smax)
 	call stmima(tempv,nkn,nlvdi,ilhkv,tmin,tmax)
 	call stmima(rhov,nkn,nlvdi,ilhkv,rmin,rmax)
 
+c----------------------------------------------------------
 c print of results
+c----------------------------------------------------------
 
 	if( isalt .gt. 0 ) then
 	  call confil(iu,itmcon,idtcon,11,nlvdi,saltv)
@@ -395,6 +410,10 @@ c print of results
 	if( itemp .gt. 0 ) then
 	  call confil(iu,itmcon,idtcon,12,nlvdi,tempv)
 	end if
+
+c----------------------------------------------------------
+c end of routine
+c----------------------------------------------------------
 
 	return
    99	continue
@@ -427,7 +446,6 @@ c sets rho iterating to real solution
 	do while( biter )
 	  resid_old = resid
           call rhoset(resid)
-	  !write(6,*) 'GGGGGGGGGGGGGGGGU: ',resid,resid_old
 	  iter = iter + 1
 	  if( resid .lt. eps ) biter = .false.
 	  if( abs(resid-resid_old) .lt. eps ) biter = .false.
@@ -594,6 +612,29 @@ c*******************************************************************
 c*******************************************************************	
 c*******************************************************************	
 
+	subroutine ts_diag(it,nlv,nkn,tempv,saltv)
+
+	implicit none
+
+	include 'param.h'
+
+	integer it
+	integer nlv
+	integer nkn
+	real tempv(nlvdim,1)
+	real saltv(nlvdim,1)
+
+	character*80 tempf,saltf
+
+	tempf = 'temp_diag.dat'
+	saltf = 'salt_diag.dat'
+
+	call ts_intp(it,nlv,nkn,tempv,saltv,tempf,saltf)
+
+	end
+
+c*******************************************************************	
+
 	subroutine ts_nudge(it,nlv,nkn,tobsv,sobsv)
 
 	implicit none
@@ -608,7 +649,29 @@ c*******************************************************************
 
 	character*80 tempf,saltf
 
-	integer iutemp,iusalt
+	tempf = 'temp_obs.dat'
+	saltf = 'salt_obs.dat'
+
+	call ts_intp(it,nlv,nkn,tobsv,sobsv,tempf,saltf)
+
+	end
+
+c*******************************************************************	
+
+	subroutine ts_intp(it,nlv,nkn,tobsv,sobsv,tempf,saltf)
+
+	implicit none
+
+	include 'param.h'
+
+	integer it
+	integer nlv
+	integer nkn
+	real tobsv(nlvdim,1)
+	real sobsv(nlvdim,1)
+	character*80 tempf,saltf
+
+	integer iutemp(3),iusalt(3)
 	save iutemp,iusalt
 	integer ittold,itsold,ittnew,itsnew
 	save ittold,itsold,ittnew,itsnew
@@ -630,19 +693,16 @@ c initialization (open files etc...)
 c-------------------------------------------------------------
 
 	if( icall .eq. 0 ) then
-	  tempf = 'temp_obs.dat'
-	  saltf = 'salt_obs.dat'
-
 	  call ts_file_open(tempf,iutemp)
 	  call ts_file_open(saltf,iusalt)
 
-	  call read_next_record(ittold,iutemp,nkn,nlvdim,nlv,toldv)
-	  call read_next_record(itsold,iusalt,nkn,nlvdim,nlv,soldv)
-	  write(6,*) 'ts_nudge: new record read ',ittold,itsold
+	  call ts_next_record(ittold,iutemp,nkn,nlvdim,nlv,toldv)
+	  call ts_next_record(itsold,iusalt,nkn,nlvdim,nlv,soldv)
+	  write(6,*) 'ts_intp: new record read ',ittold,itsold
 
-	  call read_next_record(ittnew,iutemp,nkn,nlvdim,nlv,tnewv)
-	  call read_next_record(itsnew,iusalt,nkn,nlvdim,nlv,snewv)
-	  write(6,*) 'ts_nudge: new record read ',ittnew,itsnew
+	  call ts_next_record(ittnew,iutemp,nkn,nlvdim,nlv,tnewv)
+	  call ts_next_record(itsnew,iusalt,nkn,nlvdim,nlv,snewv)
+	  write(6,*) 'ts_intp: new record read ',ittnew,itsnew
 
 	  if( ittold .ne. itsold ) goto 98
 	  if( ittnew .ne. itsnew ) goto 98
@@ -662,9 +722,9 @@ c-------------------------------------------------------------
 	  itsold = itsnew
 	  call copy_record(nkn,nlvdim,nlv,soldv,snewv)
 
-	  call read_next_record(ittnew,iutemp,nkn,nlvdim,nlv,tnewv)
-	  call read_next_record(itsnew,iusalt,nkn,nlvdim,nlv,snewv)
-	  write(6,*) 'ts_nudge: new record read ',ittnew
+	  call ts_next_record(ittnew,iutemp,nkn,nlvdim,nlv,tnewv)
+	  call ts_next_record(itsnew,iusalt,nkn,nlvdim,nlv,snewv)
+	  write(6,*) 'ts_intp: new record read ',ittnew
 
 	  if( ittnew .ne. itsnew ) goto 98
 
@@ -686,10 +746,10 @@ c-------------------------------------------------------------
 	return
    98	continue
 	write(6,*) ittold,itsold,ittnew,itsnew
-	stop 'error stop ts_nudge: mismatch time of temp/salt records'
+	stop 'error stop ts_intp: mismatch time of temp/salt records'
    99	continue
 	write(6,*) it,ittold
-	stop 'error stop ts_nudge: no wind file for start of simulation'
+	stop 'error stop ts_intp: no file for start of simulation'
 	end
 
 c*******************************************************************	
@@ -743,113 +803,202 @@ c copies new record to old one
 	end
 
 c*******************************************************************	
+c*******************************************************************	
+c*******************************************************************	
 
-	subroutine diagnostic(it,nlvdim,nlv,nkn,tempv,saltv)
+	subroutine ts_file_init(it,nlv,nkn,tempv,saltv)
+
+c initialization of T/S from file
 
 	implicit none
 
-	integer it
-	integer nlvdim
-	integer nlv
-	integer nkn
-	real tempv(nlvdim,1)
-	real saltv(nlvdim,1)
+	include 'param.h'
 
-	character*80 tempf,saltf
+        integer it
+        integer nlv
+        integer nkn
+        real tempv(nlvdim,1)
+        real saltv(nlvdim,1)
 
-	integer itt,its
-	integer iutemp,iusalt,itnext,idtnext
-	save iutemp,iusalt,itnext,idtnext
+        character*80 tempf,saltf
 
-	integer icall
-	save icall
-	data icall / 0 /
+        integer itt,its
+        integer iutemp(3),iusalt(3)
 
-	if( icall .eq. -1 ) return
+	call getfnm('tempin',tempf)
+	call getfnm('saltin',saltf)
 
-	if( icall .eq. 0 ) then
-	  !tempf = 'dati_interp.temp'
-	  !saltf = 'dati_interp.sal'
-	  tempf = 'temp_dia.dat'
-	  saltf = 'sal_dia.dat'
-
+	if( tempf .ne. ' ' ) then
 	  call ts_file_open(tempf,iutemp)
+          call ts_next_record(itt,iutemp,nkn,nlvdim,nlv,tempv)
+	  call ts_file_close(iutemp)
+          write(6,*) 'temperature initialized from file ',tempf
+	end if
+
+	if( saltf .ne. ' ' ) then
 	  call ts_file_open(saltf,iusalt)
-
-	  call read_next_record(itt,iutemp,nkn,nlvdim,nlv,tempv)
-	  call read_next_record(its,iusalt,nkn,nlvdim,nlv,saltv)
-	  write(6,*) 'diagnostic: first record read ',it
-
-          itnext = 0
-
-	  if( itt .ne. itnext .and. its .ne. itnext ) then
-	    write(6,*) it,itt,its,itnext
-	    stop 'error stop diagnostic (1): it'
-	  end if
-
-	  idtnext = 86400
-	  itnext = itnext + idtnext
-
-	  icall = 1
+          call ts_next_record(its,iusalt,nkn,nlvdim,nlv,saltv)
+	  call ts_file_close(iusalt)
+          write(6,*) 'salinity initialized from file ',saltf
 	end if
-
-	if( it .lt. itnext ) return
-
-	call read_next_record(itt,iutemp,nkn,nlvdim,nlv,tempv)
-	call read_next_record(its,iusalt,nkn,nlvdim,nlv,saltv)
-	write(6,*) 'diagnostic: new record read ',it
-
-	if( itt .ne. itnext .and. its .ne. itnext ) then
-	  write(6,*) it,itt,its,itnext
-	  stop 'error stop diagnostic (2): it'
-	end if
-
-	itnext = itnext + idtnext
 
 	end
 
 c*******************************************************************	
 
-	subroutine read_next_record(it,iunit,nkn,nlvdim,nlv,value)
+	subroutine ts_file_open(name,info)
+
+c opens T/S file
+
+	implicit none
+
+	include 'param.h'
+
+	character*(*) name
+	integer info(3)
+
+	real hlv(1)
+	common /hlv/hlv
+
+	logical bformat,bhashl
+	integer ifileo,iunit,ios
+	integer iformat,ihashl,inzeta
+	integer it,nknaux,lmax,nvar
+	integer l
+	real hl(nlvdim)
+
+c-------------------------------------------------------------
+c check if formatted or unformatted
+c-------------------------------------------------------------
+
+	iunit = ifileo(0,name,'unform','old')
+	if( iunit .le. 0 ) goto 99
+	read(iunit,iostat=ios) it,nknaux,lmax,nvar
+	close(iunit)
+
+	if( ios .lt. 0 ) goto 98
+
+	iformat = ios
+	bformat = iformat .gt. 0
+
+c-------------------------------------------------------------
+c check if level structure information is available
+c-------------------------------------------------------------
+
+	ios = 0
+	if( bformat ) then
+	  iunit = ifileo(0,name,'form','old')
+	  read(iunit,*) it,nknaux,lmax,nvar
+	  read(iunit,*) (hl(l),l=1,lmax)
+	else
+	  iunit = ifileo(0,name,'unform','old')
+	  read(iunit) it,nknaux,lmax,nvar
+	  read(iunit,iostat=ios) (hl(l),l=1,lmax)
+	end if
+	close(iunit)
+
+	if( ios .ne. 0 ) goto 97
+
+	inzeta = 0
+	ihashl = 1
+	do l=2,lmax
+	  if( hl(l) .gt. hl(l-1) ) then		!in zeta
+	    inzeta = +1
+	  else if( hl(l) .lt. hl(l-1) ) then	!in sigma
+	    if( inzeta .gt. 0 ) ihashl = 0
+	  else
+	    ihashl = 0
+	  end if
+	end do
+	bhashl = ihashl .gt. 0
+
+c-------------------------------------------------------------
+c if level structure is available, check if compatible
+c-------------------------------------------------------------
+
+	do l=1,lmax
+	  if( hl(l) .ne. hlv(l) ) goto 96
+	end do
+
+c-------------------------------------------------------------
+c open finally and store info
+c-------------------------------------------------------------
+
+	if( bformat ) then
+	  iunit = ifileo(0,name,'form','old')
+	else
+	  iunit = ifileo(0,name,'unform','old')
+	end if
+
+	info(1) = iunit
+	info(2) = iformat
+	info(3) = ihashl
+
+c-------------------------------------------------------------
+c end of routine
+c-------------------------------------------------------------
+
+	return
+   96	continue
+	write(6,*) 'incompatible levels in file: ',name
+	write(6,*) 'lmax,hl  : ',lmax,(hl(l),l=1,lmax)
+	write(6,*) 'lmax,hlv : ',lmax,(hlv(l),l=1,lmax)
+	stop 'error stop ts_file_open: incompatible levels'
+   97	continue
+	write(6,*) 'read error in file: ',name
+	stop 'error stop ts_file_open: read error'
+   98	continue
+	write(6,*) 'empty file: ',name
+	stop 'error stop ts_file_open: empty file'
+   99	continue
+	write(6,*) 'file name: ',name
+	stop 'error stop ts_file_open: cannot open file'
+	end
+
+c*******************************************************************	
+
+	subroutine ts_next_record(it,info,nkn,nlvdim,nlv,value)
 
 	implicit none
 
 	integer it
-	integer iunit
+	integer info(3)
 	integer nkn
 	integer nlvdim
 	integer nlv
 	real value(nlvdim,1)
 
-	real hlv(1)
-	common /hlv/hlv
+	real v1v(1)
+	common /v1v/v1v
 
-	logical bformat
+	logical bformat,bhashl
 	integer nknaux,lmax,nvar
-	integer i,l
+	integer i,l,iunit
 	real val
 
-	bformat = .true.
+	iunit   = info(1)
+	bformat = info(2) .gt. 0
+	bhashl  = info(3) .gt. 0
 
 	if( iunit .le. 0 ) return
 
 	if( bformat ) then
 	  read(iunit,*) it,nknaux,lmax,nvar
-	  read(iunit,*) (hlv(l),l=1,lmax)				!DEB
 	else
 	  read(iunit) it,nknaux,lmax,nvar
-	  !read(iunit) (hlv(l),l=1,lmax)
 	end if
 
-	write(6,*)'reading initial T/S values', it,nknaux,lmax,nvar	!DEB
+	write(6,*)'reading initial T/S values', it,nknaux,lmax,nvar
 
-	if( nkn .ne. nknaux ) stop 'error stop read_next_record: nkn'
-	if( nvar .ne. 1 ) stop 'error stop read_next_record: nvar'
-	if( lmax .gt. nlvdim ) stop 'error stop read_next_record: nlvdim'
+	if( nkn .ne. nknaux ) stop 'error stop ts_next_record: nkn'
+	if( nvar .ne. 1 ) stop 'error stop ts_next_record: nvar'
+	if( lmax .gt. nlvdim ) stop 'error stop ts_next_record: nlvdim'
 
 	if( bformat ) then
+	  if( bhashl ) read(iunit,*) (v1v(l),l=1,lmax)
 	  read(iunit,*) ((value(l,i),l=1,lmax),i=1,nkn)
 	else
+	  if( bhashl ) read(iunit) (v1v(l),l=1,lmax)
 	  read(iunit) ((value(l,i),l=1,lmax),i=1,nkn)
 	end if
 
@@ -866,64 +1015,15 @@ c*******************************************************************
 
 c*******************************************************************	
 
-	subroutine ts_file_init(it,nlvdim,nlv,nkn,tempv,saltv)
+	subroutine ts_file_close(info)
 
-c initialization of T/S from file
-
-	implicit none
-
-        integer it
-        integer nlvdim
-        integer nlv
-        integer nkn
-        real tempv(nlvdim,1)
-        real saltv(nlvdim,1)
-
-        character*80 tempf,saltf
-
-        integer itt,its
-        integer iutemp,iusalt
-
-	call getfnm('tempin',tempf)
-	call getfnm('saltin',saltf)
-
-	if( tempf .ne. ' ' ) then
-	  call ts_file_open(tempf,iutemp)
-          call read_next_record(itt,iutemp,nkn,nlvdim,nlv,tempv)
-	  close(iutemp)
-          write(6,*) 'temperature initialized from file ',tempf
-	end if
-
-	if( saltf .ne. ' ' ) then
-	  call ts_file_open(saltf,iusalt)
-          call read_next_record(its,iusalt,nkn,nlvdim,nlv,saltv)
-	  close(iusalt)
-          write(6,*) 'salinity initialized from file ',saltf
-	end if
-
-	end
-
-c*******************************************************************	
-
-	subroutine ts_file_open(name,iunit)
-
-c opens T/S file
+c closes T/S file
 
 	implicit none
 
-	character*(*) name
-	integer iunit
+	integer info(3)
 
-	logical bformat
-	integer ifileo
-
-	bformat = .true.
-
-	if( bformat ) then
-	  iunit = ifileo(0,name,'form','old')
-	else
-	  iunit = ifileo(0,name,'unform','old')
-	end if
+	close(info(1))
 
 	end
 

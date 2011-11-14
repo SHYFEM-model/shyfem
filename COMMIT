@@ -1,5 +1,26 @@
 ============================================================
 
+Mon Nov 14 17:10:24 CET 2011
+
+more hybrid levels - plot hybrid
+
+ BUG               |    3 +
+ LOG               |   14 ++
+ fem3d/Makefile    |    8 +-
+ fem3d/genutil.f   |  140 +--------------------
+ fem3d/newbcl.f    |  374 +++++++++++++++++++++++++++++++++-------------------
+ fem3d/newini.f    |   15 ++-
+ fem3d/newsig.f    |   27 +++-
+ fem3d/sigmautil.f |  203 +++++++++++++++++++++++++++++
+ fem3d/subele.f    |   15 ++-
+ femplot/plotsim.f |    3 +
+ femplot/supdep.f  |  127 ++++--------------
+ femplot/suplin.f  |   53 ++++----
+ femplot/supout.f  |    6 +-
+ 13 files changed, 574 insertions(+), 414 deletions(-)
+
+============================================================
+
 Thu Nov 10 18:02:00 CET 2011
 
 cosmetic changes for revision log

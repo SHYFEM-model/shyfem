@@ -139,7 +139,7 @@ SOBJS   = \
 	  submod.o subuti.o subele.o subgeo.o subdts.o \
 	  links.o sublnka.o sublnks.o sublnku.o subisd.o \
 	  debug.o subhisto.o subnosa.o subfvl.o \
-	  subeos.o 
+	  subeos.o sigmautil.o 
 
 # general objects for 3D model ht
 
@@ -202,9 +202,9 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 
 BASEXTRA = subgeo.o subgrd.o subsrt.o sublnka.o links.o sublnku.o
 
-NOSOBJS = subnos.o nosutil.o genutil.o
-OUSOBJS = subous.o ousutil.o genutil.o
-NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o genutil.o
+NOSOBJS = subnos.o nosutil.o genutil.o sigmautil.o
+OUSOBJS = subous.o ousutil.o genutil.o sigmautil.o
+NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o genutil.o sigmautil.o
 GRDOBJS = subgrd.o grdutil.o subsrt.o subcoord.o
 
 LAPLACE = sublpl.o submir.o subnos.o links.o sublnku.o \

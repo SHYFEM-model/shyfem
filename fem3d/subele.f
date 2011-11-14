@@ -71,6 +71,7 @@ c 16.12.2010    ggu     setdepth() changed for sigma levels
 c 25.10.2011    ggu     hlhv eliminated
 c 04.11.2011    ggu     adapted for hybrid coordinates
 c 08.11.2011    dbf&ggu bug in setdepth(): 1 -> l
+c 11.11.2011    ggu     error message for negative last layer
 c
 c****************************************************************
 
@@ -938,6 +939,7 @@ c	  -------------------------------------------------------
 	        end do
 	        if( levmin .eq. 1 ) hdkn(1,k) = hdkn(1,k) + areafv * z
 	        hlast = htot - hlv(lmax-1)
+		if( hlast .lt. 0. ) goto 77
 	        hdkn(lmax,k) = hdkn(lmax,k) + areafv * hlast
 	      end if
 	    end if
@@ -948,6 +950,7 @@ c	  -------------------------------------------------------
 c	  element values
 c	  -------------------------------------------------------
 
+	  k = 0
 	  zmed = zmed / n
 	  htot = hev(ie)
 	  hsig = min(htot,hsigma) + zmed
@@ -965,7 +968,9 @@ c	  -------------------------------------------------------
 	        hden(l,ie) = hldv(l)
 	      end do
 	      if( levmin .eq. 1 ) hden(1,ie) = hden(1,ie) + zmed
-	      hden(lmax,ie) = htot - hlv(lmax-1)
+	      hlast = htot - hlv(lmax-1)
+	      if( hlast .lt. 0. ) goto 77
+	      hden(lmax,ie) = hlast
 	    end if
 	  end if
 
@@ -992,6 +997,14 @@ c----------------------------------------------------------------
 c end of routine
 c----------------------------------------------------------------
 
+	return
+   77	continue
+	write(6,*) 'last layer negative: ',hlast
+	write(6,*) 'levdim,lmax: ',levdim,lmax
+	write(6,*) 'ie,k: ',ie,k
+	write(6,*) 'hlv  ',(hlv(l),l=1,levdim)
+	write(6,*) 'hldv ',(hldv(l),l=1,levdim)
+	stop 'error stop setdepth: last layer negative'
 	end
 
 c***********************************************************
