@@ -100,6 +100,7 @@ c 01.06.2011	ggu	new parameter idtmin
 c 18.08.2011	ggu	new parameter isoinp (interpolate inside element)
 c 18.09.2011	ggu	change default for isphe for output (-1)
 c 03.11.2011	ggu	new parameter hsigma (hybrid)
+c 18.11.2011	ggu	new subroutine nlsinh_proj() for projection
 c
 c************************************************************************
 
@@ -112,6 +113,7 @@ c initializes the parameter file for the main FE model
 	call nlsinh_general
 	call nlsinh_lagrg
 	call nlsinh_bfmsc
+	call nlsinh_proj
 	call nlsinh_undoc
 	call nlsinh_georg
 	call nlsinh_unused
@@ -798,6 +800,33 @@ c BFM ECOLOGICAL MODEL CALL
 	call addpar('itmbfm',0.)
 	call addpar('idtbfm',0.)
 	call addpar('bligth',1.) !light flag=1 max/min light W/m**2 in nml file
+
+	end
+
+c************************************************************************
+
+	subroutine nlsinh_proj
+
+c Parameters for projection
+
+	implicit none
+
+        call sctpar('proj')             !sets default section
+        call sctfnm('proj')
+
+cc iproj:  0=none  1=GB  2=UTM  3=CPP  4=non-std UTM
+
+	call addpar('iproj',0.)		!type of projection
+
+	call addpar('c_fuse',0.)	!fuse for GB (1 or 2)
+	call addpar('c_zone',0.)	!zone for UTM (1-60)
+	call addpar('c_lamb',0.)	!central meridian for non-std UTM
+	call addpar('c_x0',0.)		!x0 for GB and UTM
+	call addpar('c_y0',0.)		!y0 for GB and UTM
+	call addpar('c_skal',0.9996)	!scale factor for non-std UTM
+	call addpar('c_phi',0.)		!central parallel for CPP
+	call addpar('c_lon0',0.)	!longitude origin for CPP
+	call addpar('c_lat0',0.)	!latitude origin for CPP
 
 	end
 

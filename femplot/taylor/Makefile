@@ -28,6 +28,7 @@ LIBIPS  = $(DIRLIB)/lib$(LIBPOST).a
 SPECIAL = Makefile DATA taylor.txt
 
 EXES    = taylor_test
+ALLEXES    = taylor_test taylor
 
 #----------------
 
@@ -58,7 +59,7 @@ cleanobj:
 	-rm -f *.o
 
 cleanexe:
-	-rm -f $(EXES)
+	-rm -f $(ALLEXES)
 	-rm -f *.exp
 	-rm -f *.exe
 

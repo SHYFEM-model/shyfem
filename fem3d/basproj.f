@@ -4,6 +4,7 @@ c
 c revision log :
 c
 c 24.01.2011    ggu     written from scratch
+c 18.11.2011    ggu     adapted to new function call
 c
 c****************************************************************
 
@@ -58,20 +59,19 @@ c---------------------------------------------------------------
 c parameters for projection
 c---------------------------------------------------------------
 
-
-c mediterranean
+c Mediterranean
 
 c	iproj = 3	     	     !equidistant cylindrical
-c        c_param(1) = 15.             !longitude of origin (lon0)
-c        c_param(2) = 38.             !latitude of origin (lat0)
-c        c_param(3) = 38.             !central latitude (phi)
+c        c_param(1) = 38.             !central latitude (phi)
+c        c_param(2) = 15.             !longitude of origin (lon0)
+c        c_param(3) = 38.             !latitude of origin (lat0)
 
-c black sea
+c Black Sea
 
-	iproj = 3		     !equidistant cylindrical
-        c_param(1) = 34.             !longitude of origin (lon0)
-        c_param(2) = 43.5            !latitude of origin (lat0)
-        c_param(3) = 43.5            !central latitude (phi)
+c	iproj = 3		     !equidistant cylindrical
+c        c_param(1) = 43.5            !central latitude (phi)
+c        c_param(2) = 34.             !longitude of origin (lon0)
+c        c_param(3) = 43.5            !latitude of origin (lat0)
 
 c Klaipeda
 
@@ -80,6 +80,13 @@ c        c_param(1) = 24.             !longitude of origin (lon0)
 c        c_param(2) = -500000.        !false easting
 c        c_param(3) = 0.              !false northing
 c        c_param(4) = 0.9998          !scale factor
+
+c Laguna di Venezia
+
+	iproj = 1		     !Gauss-Boaga
+        c_param(1) = 2.              !fuse
+        c_param(2) = 2280000.        !shift in x
+        c_param(3) = 5000000.        !shift in y
 
 c---------------------------------------------------------------
 c do projection

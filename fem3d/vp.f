@@ -26,6 +26,7 @@ c 24.04.2009    ggu     new call to rdgrd()
 c 04.03.2011    ggu     new routine test_grade()
 c 30.03.2011    ggu     new routine check_sidei(), text in optest()
 c 15.07.2011    ggu     calls to ideffi substituted
+c 15.11.2011    ggu     new routines for mixed depth (node and elem), hflag
 c
 c notes :
 c
@@ -78,6 +79,7 @@ c        common /hkv/hkv(nkndim) !for depths
 
         integer nkn,nknh,nel,nelh,nli,nco
 	integer nlidim,nlndim
+	real hflag
 
 	data bstop /.false./
 	data errfil /'errout.dat'/
@@ -98,7 +100,9 @@ c
 	net=5
 	nat=6
 	ner=99		!errout
-c
+
+	hflag = -999.
+
 c        xscal=1.
 c        yscal=1.
 c        hscal=1.
@@ -160,12 +164,12 @@ c     +                  ,ipv,ipev,iaux,iarv,nen3v,xgv,ygv,hev,hkv)
 
 	nknh = 0
 	do k=1,nkn
-	  if( hkv(k) .ne. -999. ) nknh = nknh + 1
+	  if( hkv(k) .ne. hflag ) nknh = nknh + 1
 	end do
 
 	nelh = 0
 	do k=1,nel
-	  if( hev(k) .ne. -999. ) nelh = nelh + 1
+	  if( hev(k) .ne. hflag ) nelh = nelh + 1
 	end do
 
         write(6,*) 'nkn,nel   : ',nkn,nel
@@ -195,10 +199,10 @@ c     +                  ,ipv,ipev,iaux,iarv,nen3v,xgv,ygv,hev,hkv)
 	  itief=0
 	  write(nat,*) ' No depth data read. Process anyway'
 	else
-	  itief=0
+	  itief=2
 	  write(nat,*) '********************************************'
 	  write(nat,*) '********************************************'
-	  write(nat,*) ' Not enough depth data read. Process anyway'
+	  write(nat,*) ' Mixed data source for depth. Process anyway'
 	  write(nat,*) '********************************************'
 	  write(nat,*) '********************************************'
 	end if
@@ -353,14 +357,29 @@ c process depths -------------------------------------------------
 
         write(nat,*) ' ...processing depths'
 c
+	call init_hm3v(nel,hm3v,hflag)
+
 	if(itief.eq.0) then
           write(nat,*) ' ..........................elementwise'
           call helem(nel,nelh,iphev,iaux,iedex,ipev
      +				,hm3v,hev,ner,bstop)
-	else
+	else if( itief .eq. 1 ) then
           write(nat,*) ' ..........................nodewise'
           call hnode(nkn,nel,nknh,nen3v,iphv,iaux,ipdex,ipv
      +                      ,hm3v,hkv,ner,bstop)
+	else
+          write(nat,*) ' ..........................first elementwise'
+          call helem(nel,nelh,iphev,iaux,iedex,ipev
+     +				,hm3v,hev,ner,bstop)
+          write(nat,*) ' ..........................then nodewise'
+          call hnode(nkn,nel,nknh,nen3v,iphv,iaux,ipdex,ipv
+     +                      ,hm3v,hkv,ner,bstop)
+	end if
+
+	call check_hm3v(nel,hm3v,hflag)
+
+	if( bstop ) then
+	  write(6,*) '*** error in processing depth'
 	end if
 
 	call ketest(nel,nen3v)
@@ -1193,6 +1212,66 @@ c builds rank table from index table
 
 c**********************************************************
 
+	subroutine init_hm3v(nel,hm3v,hinit)
+
+	implicit none
+
+	integer nel
+	real hm3v(3,nel)
+	real hinit
+
+	integer ie,ii
+
+	do ie=1,nel
+	  do ii=1,3
+	    hm3v(ii,ie) = hinit
+	  end do
+	end do
+
+	end
+
+c**********************************************************
+
+	subroutine check_hm3v(nel,hm3v,hflag)
+
+	implicit none
+
+	integer nel
+	real hm3v(3,nel)
+	real hflag
+
+	logical bmiss
+	integer ie,ii,iflag
+	real h
+
+	iflag = 0
+
+	do ie=1,nel
+	  bmiss = .false.
+	  do ii=1,3
+	    h = hm3v(ii,ie)
+	    if( h .eq. hflag ) then
+	      iflag = iflag + 1
+	      bmiss = .true.
+	    end if
+	  end do
+	  if( bmiss ) write(6,*) ie,(hm3v(ii,ie),ii=1,3)
+	end do
+
+	if( iflag .gt. 0 ) then
+	  write(6,*) '*******************************************'
+	  write(6,*) '*******************************************'
+	  write(6,*) '*******************************************'
+	  write(6,*) 'flag found in depth: ',iflag,iflag/3
+	  write(6,*) '*******************************************'
+	  write(6,*) '*******************************************'
+	  write(6,*) '*******************************************'
+	end if
+
+	end
+
+c**********************************************************
+
         subroutine helem(nel,nhd,iphev,iaux,iedex
      +                    ,ipev,hm3v,hev,ner,bstop)
 
@@ -1244,9 +1323,6 @@ c it is : ipev(ie) == iphev(i)
             write(ner,*)' for element ',ipev(ie)
      +                        ,' no depth data found'
             bstop=.true.
-            do ii=1,3
-              hm3v(ii,ie)=-999.
-            end do
 	  else
             do ii=1,3
               hm3v(ii,ie)=hev(iaux(ie))
@@ -1277,6 +1353,9 @@ c depth by nodes
 
         integer ie,ii,i,k,kn
         integer locate
+	real h,hflag
+
+	hflag = -999.
 
         do k=1,nkn
           iaux(k)=0
@@ -1312,10 +1391,9 @@ c depth by nodes
         do ie=1,nel
           do ii=1,3
             kn=nen3v(ii,ie)
-            if(iaux(kn).gt.0) then
-              hm3v(ii,ie)=hkv(iaux(kn))
-	    else
-              hm3v(ii,ie)=-999.
+            h = hkv(iaux(kn))
+            if( iaux(kn) .gt. 0 .and. h .ne. hflag ) then
+              hm3v(ii,ie) = h
             end if
           end do
 	end do

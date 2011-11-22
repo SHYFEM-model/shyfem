@@ -14,6 +14,7 @@ c 01.03.2010    ggu     new routine basqual() to compute grid quality
 c 22.03.2010    ggu     write external element number in basqual()
 c 17.05.2011    ggu     changes in freqdep()
 c 12.07.2011    ggu     better treatment of freqdep()
+c 16.11.2011    ggu     basin.h introduced
 c
 c****************************************************************
 
@@ -24,33 +25,15 @@ c writes information on basin about nodes and elements
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
+	include 'evmain.h'
 
-        character*80 descrp
-        common /descrp/ descrp
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
-
-	real haux(nkndim)
 	real hkv(nkndim)
 	common /hkv/hkv
 	real hev(neldim)
 	common /hev/hev
-	include 'evmain.h'
+
+	real haux(nkndim)
 
 	logical bnode,belem
 	integer iapini

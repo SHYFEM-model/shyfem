@@ -9,6 +9,7 @@ c 04.11.2011    ggu     new routines for hybrid levels
 c 10.11.2011    ggu     adjust depth for hybrid levels
 c 11.11.2011    ggu     error check in set_hkv_and_hev()
 c 11.11.2011    ggu     in check_hsigma_crossing set zeta levels to const depth
+c 18.11.2011    ggu     restructured hybrid - adjustment to bashsigma
 c
 c notes :
 c
@@ -48,365 +49,13 @@ c-------------------------------------------------------
 c initialize
 c-------------------------------------------------------
 
-	badjust = .false.
-	badjust = .true.	!adjust depth to hsigma value
-	bzetaconti = .true.	!make also zeta values continuous
-
 	call get_sigma(nsigma,hsigma)
 
-	call set_hkv_and_hev(hsigma,idm,idp)
-
-	if( idm .gt. 0 .or. idp .gt. 0 ) then
-c	  this might be relaxed later
-	  write(6,*) 'basin has non continuous depth values: ',idm,idp
-	  stop 'error stop set_sigma_hkhe: depth values not on nodes'
-	end if
-
 c-------------------------------------------------------
-c eliminate hsigma crossing
+c check continuous and hsigma crossing
 c-------------------------------------------------------
-
-	iadjust = 0
-	call check_hsigma_crossing(hsigma,iadjust)
-
-	write(6,*) 'must adjust elements for hybrid levels: ',iadjust
-	if( .not. badjust ) then
-	  stop 'error stop set_sigma_hkhe: hsigma crossing'
-	end if
-
-	call check_hsigma_crossing(hsigma,iadjust)
-
-	write(6,*) 'must adjust elements for hybrid levels: ',iadjust
-
-c-------------------------------------------------------
-c make continuous depth
-c-------------------------------------------------------
-
-	write(6,*) 'finalizing depths...'
 
 	call set_hkv_and_hev(hsigma,idm,idp)
-	write(6,*) 'non-continuous nodes: ',idm,idp
-
-	!call make_nodes_continuous(hsigma,bzetaconti)
-	
-	call set_hkv_and_hev(hsigma,idm,idp)
-	write(6,*) 'non-continuous nodes: ',idm,idp
-	!call check_hsigma_crossing(hsigma,iadjust)
-	write(6,*) 'must adjust elements for hybrid levels: ',iadjust
-
-c-------------------------------------------------------
-c write out grid
-c-------------------------------------------------------
-
-	open(1,file='hsigma.grd',status='unknown',form='formatted')
-	call wrgrd(1,hkv,hev,0)
-	close(1)
-
-c-------------------------------------------------------
-c end of routine
-c-------------------------------------------------------
-
-	end
-
-c********************************************************************
-
-        subroutine wrgrd(iunit,hkv,hev,ike)
-
-c writes grd file from bas
-c
-c hev or hkv must be set
-
-        implicit none
-
-        integer iunit
-        integer ike             !ike==1 -> depth on elements
-        real hkv(1)
-        real hev(1)
-
-        include 'param.h'
-        include 'basin.h'
-
-        integer k,ie,ii
-
-        do k=1,nkn
-          if( ike .eq. 1 ) then
-            write(iunit,1000) 1,ipv(k),0,xgv(k),ygv(k)
-          else
-            write(iunit,1000) 1,ipv(k),0,xgv(k),ygv(k),hkv(k)
-          end if
-        end do
-
-        write(iunit,*)
-
-        do ie=1,nel
-          if( ike .eq. 1 ) then
-            write(iunit,1100) 2,ipev(ie),iarv(ie)
-     +          ,3,(ipv(nen3v(ii,ie)),ii=1,3),hev(ie)
-          else
-            write(iunit,1100) 2,ipev(ie),iarv(ie)
-     +          ,3,(ipv(nen3v(ii,ie)),ii=1,3)
-          end if
-        end do
-
-        return
- 1000   format(i1,2i10,3e16.8)
- 1100   format(i1,2i10,i4,3i10,e16.8)
-        end
-
-c********************************************************************
-
-	subroutine adjust_for_hybrid(hsigma,h,f)
-
-c adjusts depth values for hybrid levels
-
-	implicit none
-
-	real hsigma
-	real h(3),f(3)
-
-	logical baver
-	integer ii,iii,ip
-	real hm
-	real dh1,dh2
-
-	baver = .false.
-
-	hm = 0.
-	do ii=1,3
-	  hm = hm + h(ii)
-	  f(ii) = 0.
-	end do
-	hm = hm / 3.
-
-	if( baver ) then		!decide based on average
-
-	if( hm .gt. hsigma ) then
-	  do ii=1,3
-	    if( h(ii) .lt. hsigma ) then
-	      h(ii) = hsigma
-	      f(ii) = 1.
-	    end if
-	  end do
-	else
-	  do ii=1,3
-	    if( h(ii) .gt. hsigma ) then
-	      h(ii) = hsigma
-	      f(ii) = 1.
-	    end if
-	  end do
-	end if
-
-	else				!decide based on min/max
-
-	do ii=1,3
-	  iii = mod(ii,3) + 1
-	  dh1 = h(ii)-hsigma
-	  dh2 = h(iii)-hsigma
-	  if( dh1*dh2 .lt. 0. ) then
-	    if( abs(dh1) .lt. abs(dh2) ) then
-	      ip = ii
-	    else
-	      ip = iii
-	    end if
-	    h(ip) = hsigma
-	    f(ip) = 1.
-	  end if
-	end do
-
-	end if
-
-	end
-
-c********************************************************************
-
-	subroutine check_hsigma_crossing(hsigma,iadjust)
-
-c checks and adjusts hsigma crossing
-
-	implicit none
-
-	real hsigma
-	integer iadjust
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        real hm3v(3,1)
-        common /hm3v/hm3v
-        real v1v(1)
-        common /v1v/v1v
-
-	logical berror,bdebug
-	integer k,ie,ii
-	integer ihmin,ihmax
-	real h,hm
-	real f(3)
-
-	bdebug = .true.
-	bdebug = .false.
-	iadjust = 0
-
-	do k=1,nkn
-	  v1v(k) = 0.
-	end do
-
-	do ie=1,nel
-	  ihmin = 0
-	  ihmax = 0
-	  do ii=1,3
-	    h = hm3v(ii,ie)
-	    if( h .lt. hsigma ) then
-	      ihmin = ihmin + 1 
-	    else if( h .gt. hsigma ) then
-	      ihmax = ihmax + 1 
-	    end if
-	  end do
-	  if( ihmin .gt. 0 .and. ihmax .gt. 0 ) then
-	    iadjust = iadjust + 1
-	    if(bdebug) write(6,*) 'before ',ie,(hm3v(ii,ie),ii=1,3)
-	    call adjust_for_hybrid(hsigma,hm3v(1,ie),f)
-	    if(bdebug) write(6,*) 'after  ',ie,(hm3v(ii,ie),ii=1,3)
-	    do ii=1,3
-	      k = nen3v(ii,ie)
-	      v1v(k) = v1v(k) + f(ii)
-	    end do
-	  end if
-	end do
-
-	do ie=1,nel
-	  hm = 0.
-	  do ii=1,3
-	    h = hm3v(ii,ie)
-	    hm = hm + h
-	  end do
-	  hm = hm / 3.
-	  do ii=1,3
-	    h = hm3v(ii,ie)
-	    k = nen3v(ii,ie)
-	    if( hm .gt. hsigma ) then
-	      hm3v(ii,ie) = hm
-	    else if( v1v(k) .ne. 0. ) then
-	      hm3v(ii,ie) = hsigma
-	    end if
-	  end do
-	end do
-
-	end
-
-c********************************************************************
-
-	subroutine make_nodes_continuous(hsigma,bzetaconti)
-
-c makes nodes continuous
-
-	implicit none
-
-	real hsigma
-	logical bzetaconti
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        real hm3v(3,1)
-        common /hm3v/hm3v
-        real hkv(1)
-        common /hkv/hkv
-        real hev(1)
-        common /hev/hev
-        real v1v(1)
-        common /v1v/v1v
-        real v2v(1)
-        common /v2v/v2v
-
-	logical berror,bdebug,bkdebug
-	integer k,ie,ii
-	real hm,h
-
-c-------------------------------------------------------
-c initialize
-c-------------------------------------------------------
-
-	berror = .false.
-
-	do k=1,nkn
-	  hkv(k) = 0.
-	  v1v(k) = 0.
-	  v2v(k) = 0.
-	end do
-
-c-------------------------------------------------------
-c set hkv and hev
-c-------------------------------------------------------
-
-	do ie=1,nel
-	  hm = 0.
-	  bdebug = ie .eq. 4385
-	  bdebug = ie .eq. -1
-	  do ii=1,3
-	    h = hm3v(ii,ie)
-	    hm = hm + h
-	    k = nen3v(ii,ie)
-	    hkv(k) = hkv(k) + h
-	    v1v(k) = v1v(k) + 1.
-	    if( h .le. hsigma ) then
-	      v2v(k) = v2v(k) - 1.
-	    else
-	      v2v(k) = v2v(k) + 1.
-	    end if
-	  end do
-	if( bdebug ) write(6,*) ie,(hm3v(ii,ie),ii=1,3)
-	  hev(ie) = hm / 3.
-	end do
-
-c-------------------------------------------------------
-c check hkv
-c-------------------------------------------------------
-
-	do k=1,nkn
-	  if( v1v(k) .le. 0. ) then
-	    write(6,*) 'no depth in node: ',k
-	    berror = .true.
-	  else
-	    hkv(k) = hkv(k)/v1v(k)
-	  end if
-	end do
-
-	if( berror ) stop 'error stop make_nodes_continuous: no depth in node'
-
-c-------------------------------------------------------
-c make continuous
-c-------------------------------------------------------
-
-	do ie=1,nel
-	  hm = hev(ie)
-	  bdebug = ie .eq. 4385 .or. ie .eq. 4384
-	  bdebug = ie .eq. -1
-	  if( bdebug ) write(6,*) ie,(hm3v(ii,ie),ii=1,3)
-	  do ii=1,3
-	    h = hm3v(ii,ie)
-	    k = nen3v(ii,ie)
-	    bkdebug = k .eq. 2542
-	    bkdebug = k .eq. -1
-	    if( bdebug ) write(6,*) ii,k,h,v1v(k),v2v(k)
-	    if( v1v(k)-abs(v2v(k)) .gt. 0.5 ) then  !discontinuous over hsigma
-	      if( hm .le. hsigma ) then
-	        hm3v(ii,ie) = hsigma
-	      else if( bzetaconti ) then	!make all continuous
-	        hm3v(ii,ie) = hsigma
-	      end if
-	    else if( v2v(k) .lt. 0. ) then	!in sigma levels
-	      hm3v(ii,ie) = hkv(k)
-	    else if( bzetaconti ) then		!in zeta levels
-	      hm3v(ii,ie) = hkv(k)
-	    end if
-	    if( bkdebug ) write(6,*) '== ',k,ie,hm3v(ii,ie)
-	  end do
-	  if( bdebug ) write(6,*) ie,(hm3v(ii,ie),ii=1,3)
-	end do
 
 c-------------------------------------------------------
 c end of routine
@@ -442,18 +91,20 @@ c sets hkv and hev
 
 	logical berror
 	integer k,ie,ii
+	integer inc,ihmin,ihmax
 	real hm,h
 
 c-------------------------------------------------------
 c initialize
 c-------------------------------------------------------
 
-	berror = .false.
-
 	do k=1,nkn
 	  hkv(k) = 0.
 	  v1v(k) = 0.
 	end do
+
+	berror = .false.
+	inc = 0
 
 c-------------------------------------------------------
 c set hkv and hev
@@ -464,12 +115,24 @@ c-------------------------------------------------------
 	  do ii=1,3
 	    h = hm3v(ii,ie)
 	    k = nen3v(ii,ie)
-	    hkv(k) = hkv(k) + h
-	    v1v(k) = v1v(k) + 1.
+	    if( v1v(k) .eq. 0. ) then
+	      hkv(k) = h
+	      v1v(k) = 1.
+	    else
+	      if( h .ne. hkv(k) ) then
+		write(6,*) 'depth of node not unique: ',ie,k,h,hkv(k)
+	        inc = inc + 1
+	      end if
+	    end if
 	    hm = hm + h
 	  end do
 	  hev(ie) = hm / 3.
 	end do
+
+	if( inc .gt. 0 ) then
+	  write(6,*) 'number of occurences found: ',inc
+	  stop 'error stop set_hkv_and_hev: depth not unique'
+	end if
 
 c-------------------------------------------------------
 c check hkv
@@ -479,43 +142,49 @@ c-------------------------------------------------------
 	  if( v1v(k) .le. 0. ) then
 	    write(6,*) 'no depth in node: ',k
 	    berror = .true.
-	  else
-	    hkv(k) = hkv(k)/v1v(k)
 	  end if
 	end do
 
 	if( berror ) stop 'error stop set_hkv_and_hev: no depth in node'
 
 c-------------------------------------------------------
-c count non-continous nodes
+c check hsigma crossing
 c-------------------------------------------------------
 
-	idm = 0
-	idp = 0
+        do ie=1,nel
+          ihmin = 0
+          ihmax = 0
+          do ii=1,3
+            h = hm3v(ii,ie)
+            if( h .lt. hsigma ) then
+              ihmin = ihmin + 1
+            else if( h .gt. hsigma ) then
+              ihmax = ihmax + 1
+            end if
+          end do
+          if( ihmin .gt. 0 .and. ihmax .gt. 0 ) then
+	    write(6,*) 'hsigma crossing: ',ie,(hm3v(ii,ie),ii=1,3)
+	    berror = .true.
+	  end if
+	end do
+
+	if( berror ) then
+	  write(6,*) 'elements with hsigma crossing depths'
+	  stop 'error stop set_hkv_and_hev: hsigma crossing'
+	end if
+
+c-------------------------------------------------------
+c flatten elements of zeta coordinates
+c-------------------------------------------------------
 
 	do ie=1,nel
 	  hm = hev(ie)
-	  do ii=1,3
-	    h = hm3v(ii,ie)
-	    k = nen3v(ii,ie)
-	    if( abs(hkv(k)-h) .gt. 1.e-3 ) then
-	      if( hm .lt. hsigma .and. h .ne. hsigma ) then
-	        idm = idm + 1
-	        write(6,*) ie,k,h,hm
-	        berror = .true.
-	      else
-	        idp = idp + 1
-	      end if
-	    end if
-	  end do
+	  if( hm .gt. hsigma ) then
+	    do ii=1,3
+	      hm3v(ii,ie) = hm
+	    end do
+	  end if
 	end do
-
-	write(6,*) 'non-continuous depth: ',idm,idp
-
-	if( berror ) then
-	  write(6,*) 'non continuous nodes in sigma layers: ',idm
-	  stop 'error stop set_hkv_and_hev: non-continuous depth'
-	end if
 
 c-------------------------------------------------------
 c end of routine

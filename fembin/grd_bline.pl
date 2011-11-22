@@ -1,20 +1,87 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl -ws
+#
+# version 1.1	16.11.2011	option -hsigma implemented
+#
+#-----------------------------------------------------------
+#
+# options:
+#
+# -hsigma=#
+#
+#----------------------------------------------------
 
 use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
 
 use grd;
 use strict;
 
+$::help = 1 if $::help;
+$::h = 1 if $::h;
+
 my $grid = new grd;
 my $file = $ARGV[0];
 
+if( $::help or $::h or not $file ) {
+  Usage();
+}
+
 $grid->readgrd($file);
+
+if( defined $::hsigma and $::hsigma > 0 ) {
+  print STDERR "Creating line for hsigma = $::hsigma\n";
+  $grid = make_hsigma_line($grid,$::hsigma);
+}
 
 $grid = make_bound_line($grid);
 
 $grid->writegrd;
 
 #######################################################################
+
+sub Usage {
+
+  print STDERR "Usage: grd_bline.pl [-h|-help] [-hsigma=#] grd-file\n";
+  exit 0;
+}
+
+sub make_hsigma_line
+{
+  my ($grid,$hsigma) = @_;
+
+  my %keys = ();
+  my %nodes = ();
+  my %bnodes = ();
+
+  my $rkeys = \%keys;
+
+  my $elems = $grid->get_elems();
+
+  foreach my $elem (values %$elems) {
+    my $verts = $elem->{vert};
+
+    my $ihs = 0;
+    my @nlist = ();
+    my $hother = $hsigma + 1;
+    foreach my $newvert (@$verts) {
+      my $nitem = $grid->get_node($newvert);
+      my $h = $nitem->{h};
+      if( $h == $hsigma ) {
+        $nlist[$ihs] = $newvert;
+        $ihs++;
+      } else {
+        $hother = $h;
+      }
+    }
+
+    if( $ihs == 2 and $hother < $hsigma ) {	#element with 2 hsigm
+      $grid->make_line(0,5,0,@nlist);
+    }
+
+    #$grid->delete_elem($elem);			#here we delete the element
+  }
+
+  return $grid;
+}
 
 sub make_bound_line
 {

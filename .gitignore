@@ -61,6 +61,7 @@ fem3d/ousextr_nodes
 fem3d/nosextr_cat
 fem3d/ousextr_cat
 fem3d/nosextr_fluxes
+fem3d/bashsigma
 
 femadj/adjele
 fembin/extDiff

@@ -9,6 +9,7 @@ c 07.05.2009    ggu     new framework (to be finished), new basic projection
 c 26.05.2010    ggu     new utm, bs renamed to cpp
 c 07.12.2010    ggu     bug fix in convert_coords for mode=-1
 c 16.02.2011    ggu     new proj=4 (non standard UTM) implemented
+c 18.11.2011    ggu     in CCP changed order of params in c_param
 c
 c********************************************************************
 
@@ -48,7 +49,7 @@ c UTM: Venice is in zone 33, central meridian is 15
 
 	if( iproj .eq. 0 ) then		!no projection
 	  !nothing to be done
-	else if( iproj .eq. 1 ) then		!GB
+	else if( iproj .eq. 1 ) then	!GB
           fuse = nint( c_param(1) )     !fuse for gauss-boaga
           xtrans = c_param(2)           !extra shift in x [m]
           ytrans = c_param(3)           !extra shift in y [m]
@@ -61,9 +62,9 @@ c UTM: Venice is in zone 33, central meridian is 15
 	  call utm_init(zone)
 	  call utm_trans(xtrans,ytrans)
 	else if( iproj .eq. 3 ) then	!equidistant cylindrical
-          lon0 = c_param(1)             !longitude of origin
-          lat0 = c_param(2)             !latitude of origin
-          phi  = c_param(3)             !central latitude
+          phi  = c_param(1)             !central latitude
+          lon0 = c_param(2)             !longitude of origin
+          lat0 = c_param(3)             !latitude of origin
 	  call cpp_init(lon0,lat0,phi)
 	else if( iproj .eq. 4 ) then	!UTM (non standard)
           lambda = c_param(1)           !central meridian for UTM
@@ -956,6 +957,7 @@ c**********************************************************************
 c intializes utm routines
 
 	implicit none
+
 
 c---------------------------------------------------------------- 
 c proj.h

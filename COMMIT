@@ -1,5 +1,36 @@
 ============================================================
 
+Tue Nov 22 11:18:08 CET 2011
+
+projection and more hybrid
+
+ .gitignore                   |    1 +
+ LOG                          |   16 ++
+ fem3d/Makefile               |    7 +-
+ fem3d/bashsigma.f            |  475 ++++++++++++++++++++++++++++++++++++++++++
+ fem3d/basinf.f               |   27 +--
+ fem3d/basproj.f              |   27 ++-
+ fem3d/ht.f                   |    2 +
+ fem3d/newsig.f               |  429 +++++---------------------------------
+ fem3d/subcoord.f             |   10 +-
+ fem3d/subdep.f               |   68 ++++++-
+ fem3d/submeteo.f             |   50 ++---
+ fem3d/subproj.f              |   83 ++++++++
+ fem3d/subrgf.f               |    4 +-
+ fem3d/subsys.f               |   29 +++
+ fem3d/tideg.f                |   25 +--
+ fem3d/vp.f                   |  104 ++++++++--
+ fembin/grd_bline.pl          |   69 ++++++-
+ femplot/suplin.f             |    3 +-
+ femplot/supout.f             |    3 +-
+ femplot/taylor/Makefile      |    3 +-
+ femplot/taylor/taylor.f      |  110 ++++++++--
+ femplot/taylor/taylor.txt    |   15 +-
+ femplot/taylor/taylor_test.f |   22 ++-
+ 23 files changed, 1065 insertions(+), 517 deletions(-)
+
+============================================================
+
 Mon Nov 14 17:10:24 CET 2011
 
 more hybrid levels - plot hybrid

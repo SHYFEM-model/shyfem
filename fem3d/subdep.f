@@ -23,6 +23,7 @@ c 24.02.2006	ggu	bug in makehkv -> haux was integer
 c 18.10.2006	ccf	bug in makehkv -> no area multiplication
 c 16.12.2010	ggu	in depadj() do not set hm3v to constant
 c 17.05.2011	ggu	new routines to adjourn depth
+c 18.11.2011	ggu	new routine makehkv_minmax()
 c
 c********************************************************************
 
@@ -261,7 +262,6 @@ c local
 	    hm = hm + hm3v(ii,ie)
           end do
 	  hev(ie) = hm / 3.
-	!print*,ie,hev(ie)
         end do
 
         end
@@ -306,6 +306,72 @@ c local
         do k=1,nkn
           hkv(k) = hkv(k) / haux(k)
         end do
+
+        end
+
+c********************************************************************
+
+        subroutine makehkv_minmax(hkv,haux,itype)
+
+c makes hkv (nodewise depth)
+c
+c itype:  -1: min  0; aver  +1: max
+
+        implicit none
+
+        real hkv(1)
+        real haux(1)
+        integer itype
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+        integer nen3v(3,1)
+        common /nen3v/nen3v
+        real hm3v(3,1)
+        common /hm3v/hm3v
+
+        integer k,ie,ii
+        real hinit,h
+
+c-------------------------------------------------------
+c initialize
+c-------------------------------------------------------
+
+	if( itype .eq. 0 ) then
+          call makehkv(hkv,haux)
+	  return
+	end if
+
+        if( itype .lt. 0. ) then
+          hinit = +1.e+30
+        else
+          hinit = -1.e+30
+        end if
+
+        do k=1,nkn
+          hkv(k) = hinit
+        end do
+
+c-------------------------------------------------------
+c set hkv
+c-------------------------------------------------------
+
+        do ie=1,nel
+          do ii=1,3
+            h = hm3v(ii,ie)
+            k = nen3v(ii,ie)
+            if( itype .lt. 0 ) then
+              hkv(k) = min(hkv(k),h)
+            else
+              hkv(k) = max(hkv(k),h)
+            end if
+          end do
+        end do
+
+c-------------------------------------------------------
+c end of routine
+c-------------------------------------------------------
 
         end
 

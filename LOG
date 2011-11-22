@@ -1,4 +1,20 @@
 
+18.11.2011	projection
+
+	restructured hybrid (newsig.f, bashsigma.f)
+	new routines (subdep.f)
+
+18.11.2011	projection
+
+	new projection handling (ht.f, subproj.f, subsys.f)
+	in CCP changed order of params in c_param (subcoord.f, basproj.f)
+	deleted projection code from subroutines (submeteo.f, tideg.f)
+
+15.11.2011	taylor plot and vp (hsigma)
+
+	new configuration routines for taylor plot (taylor.f)
+	new pre-processing of mixed depth (vp.f)
+
 14.11.2011	hybrid plot
 
 	use of routines in sigmautil.f (supout.f, supdep.f)

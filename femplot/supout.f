@@ -1075,7 +1075,7 @@ c opens NOS file and reads header
 
 	integer nvers
 	integer nknaux,nelaux,nlvaux,nvar
-	integer ierr
+	integer ierr,l
 	integer ifemop
 
 c initialize routines
@@ -1127,6 +1127,7 @@ c read second header
 
 	call init_sigma_info(nlv,hlv)		!sets up hlv
 
+	write(6,*) 'hlv: ',nlv,(hlv(l),l=1,nlv)
 c initialize time
 
 	call timeset(0,0,0)

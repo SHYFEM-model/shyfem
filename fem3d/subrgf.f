@@ -26,7 +26,7 @@ c
 c	  ifile(9)   x0
 c	  ifile(10)  y0
 c	  ifile(11)  dx
-c	  ifile(12)  yy
+c	  ifile(12)  dy
 c	  ifile(13)  flag
 c 
 c in dfile are three records:
@@ -45,7 +45,7 @@ c
 c (data is rowwise, lower left corner is first point)
 c
 c	read(iunit,*,end=1) it,nvar,nx,ny,x0,y0,dx,dy,flag
-c	do i=1var,nvar
+c	do ivar=1,nvar
 c	  read(iunit,'(a)') description
 c	  read(iunit,*) ((data(ix,iy,ivar),ix=1,nx),iy=1,ny)
 c	end do

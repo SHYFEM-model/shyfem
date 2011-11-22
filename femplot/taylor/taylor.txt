@@ -32,20 +32,25 @@ where ... denotes the real plotting described below.
 
 The following subroutines are available:
 
-	subroutine taylor_set(sigma_tot,sigma_r,d_sigma,ndec)
+	subroutine taylor_set_param(sigma_tot,sigma_r,d_sigma,ndec)
         real sigma_tot      !maximum of sigma to plot
         real sigma_r        !sigma of reference point
         real d_sigma        !plot marker every d_s sigma
         integer ndec        !decimals for sigma value
 
+        subroutine taylor_set_config(bstd,bcor,brms)
+        logical bstd            !plot lines for standard deviation
+        logical bcor            !plot lines for correlation coefficient
+        logical brms            !plot lines for RMS error
+
 	subroutine taylor_set_text(std_text,cor_text)
         character*(*) std_text         !text to be written for std
         character*(*) cor_text         !text to be written for cor
 
-        subroutine taylor_full
-        subroutine taylor_quart
+        subroutine taylor_full		!plot full circle (really half)
+        subroutine taylor_quart		!plot a quarter of a circle
 
-        subroutine taylor_data(sigma_f,r_corr,text)
-        subroutine taylor_point(sigma_f,r_corr,text)
+        subroutine taylor_data(sigma_f,r_corr,text)	!writes text centered
+        subroutine taylor_point(sigma_f,r_corr,text)	!writes text with point
 
 

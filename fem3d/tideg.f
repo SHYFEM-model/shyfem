@@ -9,6 +9,7 @@ c 19.04.1999	ggu	itide changed to rtide
 c 27.08.2007    ccf     isphe for spherical coordinate system
 c 11.03.2009    ggu     not adjusted for new x/ygeov -> still to be handled
 c 05.02.2010    ccf     include new tideforc routine for tidal potential
+c 18.11.2011    ggu     excluded projection code from tide
 c
 c********************************************************************
 
@@ -55,29 +56,7 @@ c-----------------------------------------------------------
 
 	if( rtide .le. 0. ) return
 
-        if ( isphe .eq. 1 ) then		!spherical
-
-          do k=1,nkn
-            xgeov(k) = xgv(k)
-            ygeov(k) = ygv(k)
-          end do
-
-	else					!cartesian
-
-	  stop 'error stop: broken geographical reference in tideini'
-
-  	  call mercin(phi,omega,scale)
-
-	  call c2g(nkn,xgeov,ygeov,xgv,ygv)
-
-	  call mima(xgeov,nkn,xmin,xmax)
-	  call mima(ygeov,nkn,ymin,ymax)
-
-	  write(6,*) 'Geographical coordinates :'
-	  write(6,*) 'xmin/xmax : ',xmin,xmax
-	  write(6,*) 'ymin/ymax : ',ymin,ymax
-
-        end if
+c delete until here...
 
 	if( rtide .gt. 0 ) then
 	  write(6,*) 'Tidal potential active'

@@ -80,6 +80,7 @@ c 23.03.2011    ggu	new call to adjust_spherical()
 c 31.03.2011    ggu	write finite volumes at initial time step
 c 20.05.2011    ggu	iwetv introduced, wet and dry from main
 c 25.10.2011    ggu	hlhv eliminated
+c 18.11.2011    ggu	new routine handle_projection
 c
 c*****************************************************************
 
@@ -413,6 +414,7 @@ c-----------------------------------------------------------
 c initialize triangles
 c-----------------------------------------------------------
 
+	call handle_projection
 	call set_spherical
 	call set_ev
 	call adjust_spherical

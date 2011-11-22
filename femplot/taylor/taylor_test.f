@@ -30,7 +30,8 @@ c-----------------------
 c-----------------------
 
         call taylor_start
-	call taylor_set(9.,5.5,2.,-1)
+	call taylor_set_param(9.,5.5,2.,-1)
+	call taylor_set_config(.true.,.true.,.true.)
         call taylor_full
         call taylor_data(8.,0.9,'A')
         call taylor_data(6.,0.6,'B')
@@ -38,7 +39,8 @@ c-----------------------
         call taylor_end
 
         call taylor_start
-	call taylor_set(9.,5.5,2.,-1)
+	call taylor_set_param(9.,5.5,2.,-1)
+	call taylor_set_config(.false.,.false.,.false.)
         call taylor_quart
         call taylor_data(8.,0.9,'A')
         call taylor_data(6.,0.6,'B')
@@ -46,8 +48,22 @@ c-----------------------
         call taylor_end
 
         call taylor_start
-	call taylor_set(1.3,1.0,0.2,1)  !normalized
+	call taylor_set_param(1.3,1.0,0.2,1)  !normalized
+	call taylor_set_config(.false.,.false.,.false.)
         call taylor_full
+        do j=1,n
+          sigma_r = a(2,j)
+          sigma_f = a(4,j)
+          sigma_n = sigma_f / sigma_r
+          r_corr  = a(5,j)
+          call taylor_data(sigma_n,r_corr,'X')
+        end do
+        call taylor_end
+
+        call taylor_start
+	call taylor_set_param(1.3,1.0,0.2,1)  !normalized
+	call taylor_set_config(.true.,.true.,.true.)
+        call taylor_quart
         do j=1,n
           sigma_r = a(2,j)
           sigma_f = a(4,j)

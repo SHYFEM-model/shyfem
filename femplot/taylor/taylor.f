@@ -4,6 +4,7 @@ c
 c revision log :
 c
 c 05.04.2004	ggu	written from scratch
+c 15.11.2011	ggu	new routine taylor_set_config() and taylor_set_param()
 c
 c notes :
 c
@@ -49,7 +50,8 @@ c initializes taylor routines (internal routine, do not call explicitly)
 
         implicit none
 
-        call taylor_set(1.3,1.0,0.2,1)  !initialize normalized
+        call taylor_set_param(1.3,1.0,0.2,1)  !initialize normalized
+        call taylor_set_config(.false.,.false.,.false.)	!no lines
         call taylor_set_text('Standard Deviation','Correlation')
 
         end
@@ -95,8 +97,22 @@ c sets parameters for plot
         end
 
 c*****************************************************************
+c next only for compatibility ... do not use anymore
+c*****************************************************************
 
         subroutine taylor_set(sigma_tot,sigma_r,d_sigma,ndec)
+	call taylor_set_param(sigma_tot,sigma_r,d_sigma,ndec)
+	end
+
+        subroutine taylor_get(sigma_tot,sigma_r,d_sigma,ndec)
+	call taylor_get_param(sigma_tot,sigma_r,d_sigma,ndec)
+	end
+
+c*****************************************************************
+c finished compatibility section
+c*****************************************************************
+
+        subroutine taylor_set_param(sigma_tot,sigma_r,d_sigma,ndec)
 
 c sets parameters for plot
 
@@ -121,7 +137,7 @@ c sets parameters for plot
 
 c*****************************************************************
 
-        subroutine taylor_get(sigma_tot,sigma_r,d_sigma,ndec)
+        subroutine taylor_get_param(sigma_tot,sigma_r,d_sigma,ndec)
 
 c returns parameters for plot
 
@@ -141,6 +157,50 @@ c returns parameters for plot
           sigma_r = sigma_r_c
           d_sigma = d_sigma_c
              ndec = ndec_c
+
+        end
+
+c*****************************************************************
+
+        subroutine taylor_set_config(bstd,bcor,brms)
+
+c sets configuration parameters for plot
+
+        implicit none
+
+	logical bstd		!plot lines for standard deviation
+	logical bcor		!plot lines for correlation coefficient
+	logical brms		!plot lines for RMS error
+
+        logical bstd_c,bcor_c,brms_c
+        common /taylor_log/bstd_c,bcor_c,brms_c
+        save /taylor_log/
+
+	bstd_c = bstd
+	bcor_c = bcor
+	brms_c = brms
+
+        end
+
+c*****************************************************************
+
+        subroutine taylor_get_config(bstd,bcor,brms)
+
+c gets configuration parameters for plot
+
+        implicit none
+
+	logical bstd		!plot lines for standard deviation
+	logical bcor		!plot lines for correlation coefficient
+	logical brms		!plot lines for RMS error
+
+        logical bstd_c,bcor_c,brms_c
+        common /taylor_log/bstd_c,bcor_c,brms_c
+        save /taylor_log/
+
+	bstd = bstd_c
+	bcor = bcor_c
+	brms = brms_c
 
         end
 
@@ -211,6 +271,7 @@ c*****************************************************************
 
         real x,y
         real width,height
+        real xmin,phimax,dc
         character*60 text
         character*60 std_text,cor_text
         logical brms,bcor,bquart,bstd
@@ -221,13 +282,21 @@ c-------------------------------------------------------
 c set up
 c-------------------------------------------------------
 
-        brms = .true.
-        bcor = .true.
-        bstd = .true.
         bquart = .false.
 
-        call taylor_get(rad,sigmar,dr,ndec)
+        call taylor_get_param(rad,sigmar,dr,ndec)
+        call taylor_get_config(bstd,bcor,brms)
         call taylor_get_text(std_text,cor_text)
+
+        xmin = -rad
+        phimax = 180.
+        dc = 0.2
+
+        if( bquart ) then
+          xmin = 0.
+          phimax = 90.
+          dc = 0.1
+        end if
 
 c-------------------------------------------------------
 c set up domain
@@ -239,9 +308,9 @@ c-------------------------------------------------------
 c plot domain
 c-------------------------------------------------------
 
-	call qline(-rad,0.,rad,0.)
+	call qline(xmin,0.,rad,0.)
 	call qline(0.,0.,0.,rad)
-	call qarc(0.,0.,rad,0.,180.);
+	call qarc(0.,0.,rad,0.,phimax);
 
 c-------------------------------------------------------
 c standard deviation
@@ -253,8 +322,8 @@ c-------------------------------------------------------
 c correlation coefficient
 c-------------------------------------------------------
 
-        call corr_coff(rad,0.2,1.,bcor)
-        if( .not. bquart ) call corr_coff(rad,0.2,-1.,bcor)
+        call corr_coff(rad,dc,1.,bcor)
+        if( .not. bquart ) call corr_coff(rad,dc,-1.,bcor)
 
 c-------------------------------------------------------
 c rms pattern
@@ -304,8 +373,8 @@ c*****************************************************************
 
         real x,y
         real width,height
-        real xmin,phimax
-        real aux,dc
+        real xmin,phimax,dc
+        real aux
         character*60 text
         character*60 std_text,cor_text
         logical brms,bcor,bquart,bstd
@@ -316,12 +385,10 @@ c-------------------------------------------------------
 c set up
 c-------------------------------------------------------
 
-        brms = .false.
-        bcor = .false.
-        bstd = .false.
         bquart = .true.
 
-        call taylor_get(rad,sigmar,dr,ndec)
+        call taylor_get_param(rad,sigmar,dr,ndec)
+        call taylor_get_config(bstd,bcor,brms)
         call taylor_get_text(std_text,cor_text)
 
         xmin = -rad
@@ -344,9 +411,9 @@ c-------------------------------------------------------
 c plot domain
 c-------------------------------------------------------
 
-	call qline(0.,0.,rad,0.)
+	call qline(xmin,0.,rad,0.)
 	call qline(0.,0.,0.,rad)
-	call qarc(0.,0.,rad,0.,90.);
+	call qarc(0.,0.,rad,0.,phimax);
 
 c-------------------------------------------------------
 c standard deviation
@@ -868,7 +935,7 @@ c-----------------------
 c-----------------------
 
         call taylor_start
-	call taylor_set(9.,5.5,2.,-1)
+	call taylor_set_param(9.,5.5,2.,-1)
         call taylor_full
         call taylor_data(8.,0.9,'A')
         call taylor_data(6.,0.6,'B')
@@ -878,7 +945,7 @@ c-----------------------
 c-----------------------
 
         call taylor_start
-	call taylor_set(9.,5.5,2.,-1)
+	call taylor_set_param(9.,5.5,2.,-1)
         call taylor_quart
         call taylor_data(8.,0.9,'A')
         call taylor_data(6.,0.6,'B')
@@ -888,7 +955,8 @@ c-----------------------
 c-----------------------
 
         call taylor_start
-	call taylor_set(1.3,1.0,0.2,1)  !normalized
+	call taylor_set_param(1.3,1.0,0.2,1)  !normalized
+	call taylor_set_config(.true.,.true.,.false.)
 	call taylor_set_text('Standard Deviation (Normalized)'
      +                  ,'Correlation Coefficient')
         call taylor_quart

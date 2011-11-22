@@ -176,7 +176,7 @@ HTOBJS = \
 	atoxi3d.o atoxi.o subwwm.o kepsd.o keps_util.o \
 	subinv.o newexpl.o subrnd.o \
 	submet.o submeteo.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o \
-	subtrace.o \
+	subtrace.o subproj.o \
 	$(ECOLOGICAL_OBJ)
 
 # objects for pre-processor vp
@@ -248,7 +248,7 @@ EXEINFO  = ousinf flxinf volinf basinf nosinf wininf extinf rstinf
 EXESPLIT = nossplit splitext splitflx
 EXELAP   = laplap lapwin
 EXEBAS   = bastreat basbathy
-EXEVAR   = nosinit nosresidence scal_intp
+EXEVAR   = nosinit nosresidence scal_intp bashsigma
 
 NOSAVER  = nosaver_basin nosaver_vert nosaver_time
 NOSEXTR  = nosextr_nodes nosextr_gis nosextr_records nosextr_custom \
@@ -350,6 +350,9 @@ cubic:   cubic.o $(OUTOBJS) subsse.o subssm.o
 #------------------------------------------------
 
 basinf:  basinf.o $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
+
+bashsigma:  bashsigma.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
 
 baschk:  baschk.o subnev.o $(OUTOBJS) 

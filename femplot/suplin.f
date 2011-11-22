@@ -75,7 +75,7 @@ c elems(1) is not used, etc..
 	real xrmin,yrmin,xrmax,yrmax
 	real xrrmin,yrrmin,xrrmax,yrrmax
 	real xfmin,yfmin,xfmax,yfmax
-	real d,dd,dx,dy,htop,htot,hbot
+	real d,dd,dx,dy
 	real x0,y0,x1,x2,y1,y2
 	real u,v
 	real vmin,vmax
@@ -328,7 +328,6 @@ c--------------------------------------------------------------------
 	      call qgray(0.5)
 	      call trapez(x1,yt1,yb1,x2,yt2,yb2)
 	    end if
-	    htop = hbot
 	  end do
 	end do
 
