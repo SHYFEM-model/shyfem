@@ -1,3 +1,80 @@
+version  6_1_37    22-11-2011    VERS_6_1_37
+
+========================================================== 22-11-2011 - 6_1_37
+
+c ./femplot/plotsim.f:
+c 14.11.2011	ggu	new array hl for depth structure
+c
+c ./femplot/supout.f:
+c 14.11.2011  ggu     call to init_sigma_info() to setup layer info
+c
+c ./femplot/taylor/taylor.f:
+c 15.11.2011	ggu	new routine taylor_set_config() and taylor_set_param()
+c
+c ./femplot/supdep.f:
+c 14.11.2011    ggu     use get_layer_thickness() for layer structure
+c
+c ./femplot/suplin.f:
+c 14.11.2011    ggu     hybrid levels introduced
+c
+c ./fem3d/subcoord.f:
+c 18.11.2011    ggu     in CCP changed order of params in c_param
+c
+c ./fem3d/basinf.f:
+c 16.11.2011    ggu     basin.h introduced
+c
+c ./fem3d/submeteo.f:
+c 18.11.2011    ggu	deleted projection code from subroutines
+c
+c ./fem3d/vp.f:
+c 15.11.2011    ggu     new routines for mixed depth (node and elem), hflag
+c
+c ./fem3d/subver.f:
+c 22.11.2011	ggu	version 6.1.37
+c
+c ./fem3d/sigmautil.f:
+c 14.11.2011	ggu	new sigma routines copied to this file
+c
+c ./fem3d/bashsigma.f:
+c 16.11.2011    ggu     copied from basinf.f and newsig.f
+c
+c ./fem3d/newbcl.f:
+c 11.11.2011    ggu     restructured ts_next_record() and diagnostic()
+c
+c ./fem3d/newsig.f:
+c 11.11.2011    ggu     error check in set_hkv_and_hev()
+c 11.11.2011    ggu     in check_hsigma_crossing set zeta levels to const depth
+c 18.11.2011    ggu     restructured hybrid - adjustment to bashsigma
+c
+c ./fem3d/subsys.f:
+c 18.11.2011	ggu	new subroutine nlsinh_proj() for projection
+c
+c ./fem3d/tideg.f:
+c 18.11.2011    ggu     excluded projection code from tide
+c
+c ./fem3d/ht.f:
+c 18.11.2011    ggu	new routine handle_projection
+c
+c ./fem3d/subele.f:
+c 11.11.2011    ggu     error message for negative last layer
+c
+c ./fem3d/subproj.f:
+c 17.11.2011    ggu     written from scratch
+c
+c ./fem3d/genutil.f:
+c 14.11.2011	ggu	sigma layer routines copied to sigmautil.f
+c
+c ./fem3d/subdep.f:
+c 18.11.2011	ggu	new routine makehkv_minmax()
+c
+c ./fem3d/newini.f:
+c 11.11.2011    ggu	bug fix in adjust_levels: for zeta levels set nlv
+c
+c ./fem3d/basproj.f:
+c 18.11.2011    ggu     adapted to new function call
+
+==========================================================
+
 version  6_1_36    10-11-2011    VERS_6_1_36   commit_2011-11-22
 
 version  6_1_36    10-11-2011    VERS_6_1_36   commit_2011-11-14
