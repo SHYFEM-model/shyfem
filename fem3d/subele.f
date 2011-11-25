@@ -871,7 +871,7 @@ c	common /zenv/zenv
         logical bsigma
 	integer k,l,ie,ii
 	integer lmax,n,ibase,nsigma,levmin
-	real hfirst,hlast,h,htot,z,zmed
+	real hfirst,hlast,h,htot,z,zmed,hm
 	real hacu,hlevel,hsigma,hsig
 
 	real areael,areafv
@@ -910,6 +910,7 @@ c----------------------------------------------------------------
 	  areafv = areael / n
 
 	  lmax = ilhv(ie)
+	  hm = hev(ie)
 	  zmed = 0.
 
 c	  -------------------------------------------------------
@@ -951,6 +952,7 @@ c	  element values
 c	  -------------------------------------------------------
 
 	  k = 0
+	  ii = 0
 	  zmed = zmed / n
 	  htot = hev(ie)
 	  hsig = min(htot,hsigma) + zmed
@@ -1001,9 +1003,11 @@ c----------------------------------------------------------------
    77	continue
 	write(6,*) 'last layer negative: ',hlast
 	write(6,*) 'levdim,lmax: ',levdim,lmax
-	write(6,*) 'ie,k: ',ie,k
-	write(6,*) 'hlv  ',(hlv(l),l=1,levdim)
-	write(6,*) 'hldv ',(hldv(l),l=1,levdim)
+	write(6,*) 'ie,ii,k: ',ie,ii,k
+	write(6,*) 'htot,hm: ',htot,hm
+	write(6,*) 'hm3v  ',(hm3v(ibase+ii),ii=1,3)
+	write(6,*) 'hlv   ',(hlv(l),l=1,levdim)
+	write(6,*) 'hldv  ',(hldv(l),l=1,levdim)
 	stop 'error stop setdepth: last layer negative'
 	end
 

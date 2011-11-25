@@ -18,6 +18,7 @@ c 18.08.2011    ggu     better error check of node list
 c 24.08.2011    ggu     small changes to avoid run time error
 c 24.08.2011    ggu     plot real depth for zeta layers
 c 14.11.2011    ggu     hybrid levels introduced
+c 23.11.2011    ggu     in line_find_elements() adjust depth for hybrid
 c
 c************************************************************************
 
@@ -116,6 +117,7 @@ c elems(1) is not used, etc..
 	save rxscal,ryscal
 
 	logical inboxdim_noabs
+	logical bdebug,bdebug_scalar
 	integer gettime
 	integer ialfa,ichanm
 	real getpar
@@ -128,6 +130,9 @@ c elems(1) is not used, etc..
 c----------------------------------------------------------------
 c initialize
 c----------------------------------------------------------------
+
+	bdebug = .true.
+	bdebug = .false.
 
 	if( icall .eq. 0 ) then
 	  call getfnm('vsect',file)
@@ -219,7 +224,7 @@ c----------------------------------------------------------------
 	yrmax = 1.
 
 	call qgetvp(xmin,ymin,xmax,ymax)
-	write(6,*) 'plot_sect',xmin,ymin,xmax,ymax
+	if( bdebug ) write(6,*) 'plot_sect: ',xmin,ymin,xmax,ymax
 
 	ymax = ymax / 2.			!empirical
 	call qsetvp(xmin,ymin,xmax,ymax)
@@ -286,6 +291,19 @@ c--------------------------------------------------------------------
 	  end do
 	end do
 
+	bdebug_scalar = .true.
+	bdebug_scalar = .false.
+	if( bdebug_scalar ) then
+	  write(6,*) 'scalar: '
+	  do i=1,n
+	    ltot = lelems(i)
+	    write(6,*) 'node ',i,ltot
+	    do l=0,2*ltot
+	      write(6,*) l,l/2.,val(l,i)
+	    end do
+	  end do
+	end if
+
 c--------------------------------------------------------------------
 c plot vector
 c--------------------------------------------------------------------
@@ -298,7 +316,10 @@ c--------------------------------------------------------------------
 	  scale = -ascale * xcm			!not yet documented
 	end if
 	scale = scale * rscale 			!adjust scale
-	write(6,*) 'arrow scale: ',vhmax,ascale,rscale,scale
+
+	if( barrow ) then
+	  write(6,*) 'arrow scale: ',vhmax,ascale,rscale,scale
+	end if
 
 	wscale = rwscal
 	if( blayer ) wscale = wscale / llmax
@@ -314,7 +335,10 @@ c--------------------------------------------------------------------
 	    yt2 = ya(2,l-1)
 	    yb1 = ya(1,l)
 	    yb2 = ya(2,l)
-	    if( l .eq. ltot ) write(6,*) 'last layer: ',yt1,yb1,yt2,yb2
+
+	    if( bdebug .and. l .eq. ltot ) then
+	      write(6,*) 'last layer: ',yt1,yb1,yt2,yb2
+	    end if
 
 	    if( barrow ) then
 	      ymid = 0.25*(yt1+yt2+yb1+yb2)
@@ -629,7 +653,7 @@ c x coords must be the same, but y coords may be different
 
 	call setxyf(x1,x1,xm,ym1,yb1,ym,v1(2),v1(3),vm,x,y,f)
 	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
-	call setxyf(x1,xm,x2,yb1,ym,yb2,v1(3),vm,v2(3),x,y,f)
+	call setxyf(x1,x2,xm,yb1,yb2,ym,v1(3),v2(3),vm,x,y,f)
 	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
 	call setxyf(xm,x2,x2,ym,yb2,ym2,vm,v2(3),v2(2),x,y,f)
 	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
@@ -1051,10 +1075,15 @@ c------------------------------------------------------------------
 	    if( hev(ie2) .gt. hev(ie1) ) elems(i) = ie2
 	  end if
 	  ie = elems(i)
-	  do ii=1,3
-	    if( k1 .eq. nen3v(ii,ie) ) helems(1,i) = hm3v(ii,ie)
-	    if( k2 .eq. nen3v(ii,ie) ) helems(2,i) = hm3v(ii,ie)
-	  end do
+	  if( bsigma .and. hev(ie) .le. hsigma ) then
+	    do ii=1,3
+	      if( k1 .eq. nen3v(ii,ie) ) helems(1,i) = hm3v(ii,ie)
+	      if( k2 .eq. nen3v(ii,ie) ) helems(2,i) = hm3v(ii,ie)
+	    end do
+	  else
+	    helems(1,i) = hev(ie)
+	    helems(2,i) = hev(ie)
+	  end if
 	  !write(6,*) 'line_find_elements: ',k1,k2,ie1,ie2,ie
 	  !write(6,*) '                    ',hev(ie)
 	  !write(6,*) '                    ',helems(1,i),helems(2,i)

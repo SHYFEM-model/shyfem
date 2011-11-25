@@ -476,7 +476,7 @@ c reads next parameter in section and inserts value
 	if( iweich .le. 2 ) call pripar(6)
 	stop 'error stop : nrdpar'
    98	continue
-	stop 'error stop : nrdpar (internal error (1))'
+	stop 'error stop nrdpar: internal error (1)'
 	end
 
 c******************************************************************

@@ -64,6 +64,7 @@ c 12.06.2009	ggu	passing to double precision, intrid, bug bug_f_64bit
 c 26.01.2011	ggu&mb	handling extrapolation in am2av()
 c 27.01.2011	ggu&ccf	bug fix in find_elem_from_old() BUG_27.01.2011
 c 31.03.2011	ggu	new routine elemmask()
+c 24.11.2011	ggu	new routine find_close_elem()
 c
 c notes :
 c
@@ -1101,6 +1102,89 @@ c needs no other vectors but needs x,y of nodes
 	write(6,*) c
 	stop 'error stop elemintp: area of element'
         end
+
+c******************************************************
+
+	subroutine find_close_elem(ieold,xp,yp,ielem)
+
+c finds element for point (xp,yp) starting from ieold
+c
+c uses data structure ev and ieltv
+
+	implicit none
+
+	include 'ev.h'
+
+	integer ieold
+	real xp,yp
+	integer ielem	!element number on return
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	real ieltv(3,1)
+	common /ieltv/ieltv
+
+	logical binit
+	integer ie,ii,iside
+	real xi,ximin
+	double precision a(3),b(3),c(3)
+
+	logical in_element
+
+	call is_init_ev(binit)
+
+c-------------------------------------------------------------
+c check if old element is given -> if not test all elements
+c-------------------------------------------------------------
+
+	write(6,*) 'xi (1) ',ieold
+	if( ieold .le. 0 .or. ieold .gt. nel ) then
+	  call find_element(xp,yp,ielem)
+	  return
+	end if
+
+	write(6,*) 'xi (2) ',ieold
+	if( .not. binit ) then
+	  call find_elem_from_old(ieold,xp,yp,ielem)
+	  return
+	end if
+
+c-------------------------------------------------------------
+c start from old element
+c-------------------------------------------------------------
+
+	write(6,*) 'xi (3) ',ieold
+
+	ie = ieold
+	do while( ie .gt. 0 )
+	  iside = 0
+	  ximin = 1.e+30
+	  call xi_abc(ie,a,b,c)
+	  do ii=1,3
+	    xi = a(ii) + b(ii)*xp + c(ii)*yp
+	write(6,*) 'xiii ',ie,ii,xi
+	    if( xi .lt. ximin ) then
+	      ximin = xi
+	      iside = ii
+	    end if
+	  end do
+	  if( ximin .ge. 0. ) then
+	    ielem = ie
+	    return
+	  end if
+	  if( iside .le. 0 .or. iside .gt. 3 ) then
+	    write(6,*) '******** ',iside,ie,ximin,xi
+	    ie = 0
+	  else
+	    ie = ieltv(iside,ie)
+	write(6,*) 'xiii iterate',ie,iside,ximin
+	  end if
+	end do
+
+	ielem = 0
+
+	end
 
 c******************************************************
 

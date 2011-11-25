@@ -57,6 +57,7 @@ c writes annotation for simulation
 	integer getlev,ialfa
 
         debug = .true.
+        debug = .false.
 
 c--------------------------------------------------------------
 c set up variables
@@ -604,6 +605,7 @@ c color
 	real xcm,ycm,dxtick,dytick
 	integer it
 
+	logical bdebug
 	integer iround,isoget,ialfa
 	real getcolval
 c	real getpar
@@ -612,12 +614,14 @@ c	real getpar
         call qfont('Times-Roman')
         call qtxts(12)
 
+	bdebug = .true.
+	bdebug = .false.
 	bblank = .true.
 	!bhoriz = .false.
 	!bhoriz = .true.
 	brotate = .true.	!rotate numbers for vertical color bar
 
-	write(6,*) 'colbar: ',bhoriz,brotate
+	if( bdebug ) write(6,*) 'colbar: ',bhoriz,brotate
 
 c blanking of window
 
@@ -631,7 +635,9 @@ c determine min/max
 	call colinfo(isoanz,fnull)
 	imax = isoanz + 1	! total number of colors
 
-	write(6,*) 'colbar:  colors = ',imax,'  isolines = ',isoanz
+	if( bdebug ) then
+	  write(6,*) 'colbar:  colors = ',imax,'  isolines = ',isoanz
+	end if
 
 c position of colorbar on plot (colorbar is a little smaller than box)
 

@@ -1,4 +1,25 @@
 
+c ./femplot/taylor/taylor.f:
+c 23.11.2011    ggu     rcol for colored lines
+c
+c ./femplot/suplin.f:
+c 23.11.2011    ggu     in line_find_elements() adjust depth for hybrid
+c
+c ./fem3d/newtvd.f:
+c 24.11.2011    ccf     bug in tvd_init -> not resolved...
+c
+c ./fem3d/newbcl.f:
+c 22.11.2011    ggu     bug fix in ts_file_open() -> bhashl
+c
+c ./fem3d/subnev.f:
+c 24.11.2011    ggu     better routines to handle spherical coordinates
+c
+c ./fem3d/subreg.f:
+c 24.11.2011    ggu     new routine find_close_elem()
+
+
+
+
 18.11.2011	projection
 
 	restructured hybrid (newsig.f, bashsigma.f)

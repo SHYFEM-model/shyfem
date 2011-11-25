@@ -23,6 +23,7 @@ c 15.12.2010	ggu	new routines for vertical tvd: vertical_flux_*()
 c 28.01.2011	ggu	bug fix for distance with lat/lon (tvd_fluxes)
 c 29.01.2011	ccf	insert ISPHE for lat-long coordinates
 c 23.03.2011	ccf	get isphe through get_coords_ev()
+c 24.11.2011	ccf	bug in tvd_init -> not resolved...
 c
 c*****************************************************************
 c
@@ -248,10 +249,6 @@ c sets position and element of upwind node
         include 'param.h'
         include 'tvd.h'
 
-        integer ie,ii,j,k
-        integer ienew
-        real xc,yc,xd,yd,xu,yu
-
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer nen3v(3,1)
@@ -260,89 +257,90 @@ c sets position and element of upwind node
         common /xgv/xgv
         real ygv(1)
         common /ygv/ygv
-        double precision xlon1,ylat1,xlon2,ylat2,xlon3,ylat3    !lat/long [rad]
-        double precision dlat0,dlon0                    !center of projection
-        double precision xx,yy
-        double precision one,four,rad,pi
-        integer kn1,kn2,kn3
+
+	logical bsphe,bdebug
+	integer inode
         integer isphe
+        integer ie,ii,j,k
+        integer ienew,ienew2
+	real x,y
+	real r
+
+        double precision xc,yc,xd,yd,xu,yu
+        double precision dlat0,dlon0                    !center of projection
+
+	integer ieext
 
         write(6,*) 'setting up tvd upwind information...'
 
-        one = 1.
-        four = 4.
-
-        pi=four*atan(one)
-        rad = 180./pi
-
 	call get_coords_ev(isphe)
+	bsphe = isphe .eq. 1
+	bdebug = .false.
+	inode = 0
 
         do ie=1,nel
 
-          if ( isphe .eq. 1 ) then
-            kn1=nen3v(1,ie)
-            kn2=nen3v(2,ie)
-            kn3=nen3v(3,ie)
-            xlon1=xgv(kn1)/rad
-            ylat1=ygv(kn1)/rad
-            xlon2=xgv(kn2)/rad
-            ylat2=ygv(kn2)/rad
-            xlon3=xgv(kn3)/rad
-            ylat3=ygv(kn3)/rad
-            dlon0 = (xlon1+xlon2+xlon3) / 3.
-            dlat0 = (ylat1+ylat2+ylat3) / 3.
-          end if
+          if ( bsphe ) call ev_make_center(ie,dlon0,dlat0)
+
+	  bdebug = ie .eq. 5518 .or. ie .eq. 5521
 
           do ii=1,3
 
             k = nen3v(ii,ie)
             xc = xgv(k)
             yc = ygv(k)
+	    if ( bsphe ) call ev_g2c(xc,yc,xc,yc,dlon0,dlat0)
 
             j = mod(ii,3) + 1
             k = nen3v(j,ie)
             xd = xgv(k)
             yd = ygv(k)
-
-	    if ( isphe .eq. 1 ) then
-              xc = xc/rad
-              yc = yc/rad
-              call cpp(xx,yy,xc,yc,dlon0,dlat0)
-              xc = xx
-              yc = yy
-              xd = xd/rad
-              yd = yd/rad
-              call cpp(xx,yy,xd,yd,dlon0,dlat0)
-              xd = xx
-              yd = yy
-	    end if
+	    if ( bsphe ) call ev_g2c(xd,yd,xd,yd,dlon0,dlat0)
 
             xu = 2*xc - xd
             yu = 2*yc - yd
-            call find_elem_from_old(ie,xu,yu,ienew)
-            tvdupx(j,ii,ie) = xu
-            tvdupy(j,ii,ie) = yu
+	    if ( bsphe ) call ev_c2g(xu,yu,xu,yu,dlon0,dlat0)
+	    x = xu
+	    y = yu
+
+            call find_elem_from_old(ie,x,y,ienew)
+            call find_close_elem(ie,x,y,ienew2)
+	    write(6,*) ie,ienew,ienew2
+	    if( bdebug ) then
+	      write(6,*) ie,ienew
+	      inode = inode + 1
+	      r = ieext(ienew)
+	      write(77,'(i1,2i8,3f16.6)') 1,inode,3,x,y,r
+	    end if
+
+            tvdupx(j,ii,ie) = x
+            tvdupy(j,ii,ie) = y
             ietvdup(j,ii,ie) = ienew
 
             j = mod(ii+1,3) + 1
             k = nen3v(j,ie)
             xd = xgv(k)
             yd = ygv(k)
-
-	    if ( isphe .eq. 1 ) then
-              xd = xd/rad
-              yd = yd/rad
-              call cpp(xx,yy,xd,yd,dlon0,dlat0)
-              xd = xx
-              yd = yy
-	    end if
+	    if ( bsphe ) call ev_g2c(xd,yd,xd,yd,dlon0,dlat0)
 
             xu = 2*xc - xd
 	    yu = 2*yc - yd
+	    if ( bsphe ) call ev_c2g(xu,yu,xu,yu,dlon0,dlat0)
+	    x = xu
+	    y = yu
 
-	    call find_elem_from_old(ie,xu,yu,ienew)
-            tvdupx(j,ii,ie) = xu
-            tvdupy(j,ii,ie) = yu
+	    call find_elem_from_old(ie,x,y,ienew)
+            call find_close_elem(ie,x,y,ienew2)
+	    write(6,*) ie,ienew,ienew2
+	    if( bdebug ) then
+	      write(6,*) ie,ienew
+	      inode = inode + 1
+	      r = ieext(ienew)
+	      write(77,'(i1,2i8,3f16.6)') 1,inode,3,x,y,r
+	    end if
+
+            tvdupx(j,ii,ie) = x
+            tvdupy(j,ii,ie) = y
             ietvdup(j,ii,ie) = ienew
 
             tvdupx(ii,ii,ie) = 0.

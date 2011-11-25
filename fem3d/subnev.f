@@ -12,11 +12,6 @@ c subroutine adjust_bc(v1,v2,v3)		adjusts b/c so that sum = 0
 c function area_elem(ie)			returns area of element ie
 c function aomega_elem(ie)			returns aomega of element ie
 c
-c old routines
-c
-c subroutine sp110a				set up ev vector
-c subroutine testev				tests if ev is set up
-c
 c revision log :
 c
 c 31.05.1997	ggu	unnecessary routines deleted
@@ -36,6 +31,7 @@ c 07.05.2010	ggu	initialization of ev routines
 c 25.01.2011	ggu	default to lat/lon if small coordinates are given
 c 28.01.2011	ggu	new entry in ev for distance of nodes (17-19)
 c 23.03.2011	ggu	better set-up for isphe_ev
+c 24.11.2011	ggu	better routines to handle spherical coordinates
 c
 c***********************************************************
 
@@ -71,6 +67,9 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	double precision d1,d2,d3
 	double precision dd1,dd2,dd3
 
+	double precision xm,ym,maxmax
+	double precision xx1,xx2,xx3,yy1,yy2,yy3
+
 	double precision xlon1,ylat1,xlon2,ylat2,xlon3,ylat3	!lat/long [rad]
 	double precision dlat0,dlon0			!center of projection
 
@@ -82,6 +81,8 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
         four = 4.
         twofour = 24.
 
+	maxmax = 0.
+
 	pi=four*atan(one)
         rad = 180./pi
 
@@ -92,17 +93,16 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	kn3=nen3v(3,ie)
 
 	if ( isphe .eq. 1 ) then		!spherical
-  	  xlon1=xgv(kn1)/rad
-	  ylat1=ygv(kn1)/rad
-	  xlon2=xgv(kn2)/rad
-	  ylat2=ygv(kn2)/rad
-	  xlon3=xgv(kn3)/rad
-	  ylat3=ygv(kn3)/rad
-	  dlon0 = (xlon1+xlon2+xlon3) / 3.
-	  dlat0 = (ylat1+ylat2+ylat3) / 3.
-          call cpp(x1,y1,xlon1,ylat1,dlon0,dlat0)
-          call cpp(x2,y2,xlon2,ylat2,dlon0,dlat0)
-          call cpp(x3,y3,xlon3,ylat3,dlon0,dlat0)
+	  call ev_make_center(ie,dlon0,dlat0)
+  	  xlon1=xgv(kn1)
+	  ylat1=ygv(kn1)
+	  xlon2=xgv(kn2)
+	  ylat2=ygv(kn2)
+	  xlon3=xgv(kn3)
+	  ylat3=ygv(kn3)
+          call ev_g2c(x1,y1,xlon1,ylat1,dlon0,dlat0)
+          call ev_g2c(x2,y2,xlon2,ylat2,dlon0,dlat0)
+          call ev_g2c(x3,y3,xlon3,ylat3,dlon0,dlat0)
         else					!cartesian
   	  x1=xgv(kn1)
 	  y1=ygv(kn1)
@@ -128,6 +128,8 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	a2=a2*aji
 	a3=a3*aji
 	!aj=aj/twofour		!bug 5.2.2010
+
+c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 
 	call adjust_bc(b1,b2,b3)
 	call adjust_bc(c1,c2,c3)
@@ -158,7 +160,7 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	ev(7,ie)=c1		!c values (gradient in y)
 	ev(8,ie)=c2
 	ev(9,ie)=c3
-	ev(10,ie)=aj/twofour	!aera * 12
+	ev(10,ie)=aj/twofour	!aera = 12 * ev(10,ie)
 	ev(11,ie)=d1		!angle on vertex
 	ev(12,ie)=d2
 	ev(13,ie)=d3
@@ -173,10 +175,12 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 
 	end do
 
+	write(68,*) 'maxmax: ',maxmax
+
 	return
    99	continue
         write(6,*) 'set_ev : nodes not in anticlockwise sense'
-        write(6,*) 'elem = ',ie,'  area = ',aj
+        write(6,*) 'elem = ',ie,'  area = ',aj/2.,'  aj = ',aj
         write(6,*) 'nodes  x  y'
         write(6,*) kn1,x1,y1
         write(6,*) kn2,x2,y2
@@ -390,27 +394,73 @@ c save&data
 	stop 'error stop check_ev: errors in array ev'
 	end
 
-c****************************************************************
-
-	subroutine testev
-
-c old test
-
-	implicit none
-
-	call check_ev
-
-	end
-
+c***********************************************************
+c***********************************************************
 c***********************************************************
 
-	subroutine sp110a
+	subroutine xi_abc(ie,a,b,c)
 
-c old set
+c returns a,b,c to compute xi
+c
+c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 
 	implicit none
 
-	call set_ev
+	integer ie
+
+	double precision a(3),b(3),c(3)
+
+	include 'ev.h'
+
+	integer isphe_ev,init_ev
+	common /evcommon/ isphe_ev,init_ev
+        real xgv(1), ygv(1)
+        common /xgv/xgv, /ygv/ygv
+	integer nen3v(3,1)
+	common /nen3v/nen3v
+
+	integer ii
+	integer kn1,kn2,kn3
+	double precision x1,y1,x2,y2,x3,y3
+	double precision a1,a2,a3,aj,aji
+
+	write(6,*) 'xi ',ie,isphe_ev
+
+	if( isphe_ev .eq. 0 ) then	!cartesian
+	  do ii=1,3
+	    a(ii) = ev(ii,ie)
+	    b(ii) = ev(3+ii,ie)
+	    c(ii) = ev(6+ii,ie)
+	  end do
+	  return
+	end if
+
+	kn1=nen3v(1,ie)
+	kn2=nen3v(2,ie)
+	kn3=nen3v(3,ie)
+
+  	x1=xgv(kn1)
+	y1=ygv(kn1)
+	x2=xgv(kn2)
+	y2=ygv(kn2)
+	x3=xgv(kn3)
+	y3=ygv(kn3)
+
+	a1=x2*y3-x3*y2
+	a2=x3*y1-x1*y3
+	a3=x1*y2-x2*y1
+	aj = (x2-x1)*(y3-y1) - (x3-x1)*(y2-y1)
+	aji=1./aj
+
+	a(1)=a1*aji
+	a(2)=a2*aji
+	a(3)=a3*aji
+	b(1)=(y2-y3)*aji
+	c(1)=(x3-x2)*aji
+	b(2)=(y3-y1)*aji
+	c(2)=(x1-x3)*aji
+	b(3)=(y1-y2)*aji
+	c(3)=(x2-x1)*aji
 
 	end
 
@@ -427,13 +477,103 @@ c transforms (lon,lat) into cartesian coordinates (x,y) (lon,lat in radians)
         double precision rlambda0,phi0	!center of projection [rad]
 
         double precision r		!earth radius [m]
-	parameter ( r = 6378206.4 )
+	parameter ( r = 6378206.4D0 )
 
         x = r*(rlambda - rlambda0)*dcos(phi0)
-        y = phi*r
+        y = (phi-phi0)*r
+        !y = phi*r
 
         end
 
+c***********************************************************
+
+	subroutine ev_make_center(ie,xm,ym)
+
+	implicit none
+
+	integer ie
+	double precision xm,ym
+
+	integer nen3v(3,1)
+	common /nen3v/nen3v
+	real xgv(1),ygv(1)
+	common /xgv/xgv,/ygv/ygv
+
+	integer ii,k
+
+	xm = 0.
+	ym = 0.
+	do ii=1,3
+	  k = nen3v(ii,ie)
+	  xm = xm + xgv(k)
+	  ym = ym + ygv(k)
+	end do
+	xm = xm / 3.
+	ym = ym / 3.
+
+	end
+
+c***********************************************************
+
+        subroutine ev_g2c(x,y,lambda,phi,lambda0,phi0)
+
+c transforms geographical (lon,lat) into cartesian (x,y) coordinates 
+c
+c (lon,lat in degrees)
+
+        implicit none
+
+        double precision x,y		!cartesian x,y [m]
+        double precision lambda,phi	!lon,lat [deg]
+        double precision lambda0,phi0	!center of projection [deg]
+
+        double precision r		!earth radius [m]
+	parameter ( r = 6378206.4D0 )
+        double precision pi		!pi
+	parameter ( pi = 3.14159265358979D0 )
+        double precision rad		!convert degrees to radian
+	parameter ( rad = pi / 180.0 )
+
+	double precision dlambda,dphi
+
+	dlambda = rad * (lambda - lambda0)
+	dphi    = rad * (phi - phi0)
+	!dphi    = rad * phi
+
+        x = r*dlambda*dcos(rad*phi0)
+        y = r*dphi
+
+        end
+
+c***********************************************************
+
+        subroutine ev_c2g(x,y,lambda,phi,lambda0,phi0)
+
+c transforms cartesian (x,y) into geographical (lon,lat) coordinates 
+c
+c (lon,lat in degrees)
+
+        implicit none
+
+        double precision x,y		!cartesian x,y [m]
+        double precision lambda,phi	!lon,lat [deg]
+        double precision lambda0,phi0	!center of projection [deg]
+
+        double precision r		!earth radius [m]
+	parameter ( r = 6378206.4D0 )
+        double precision pi		!pi
+	parameter ( pi = 3.14159265358979D0 )
+        double precision rad,rrad	!convert degrees to radian
+	parameter ( rad = pi / 180.0 , rrad = 1. / rad )
+
+	lambda = lambda0 + rrad * x / (r*dcos(rad*phi0))
+	phi = phi0 + rrad * y / r
+	!phi = rrad * y / r
+
+        end
+
+c***********************************************************
+c***********************************************************
 c***********************************************************
 
 	subroutine adjust_bc(v1,v2,v3)

@@ -5,6 +5,7 @@ c revision log :
 c
 c 05.04.2004	ggu	written from scratch
 c 15.11.2011	ggu	new routine taylor_set_config() and taylor_set_param()
+c 23.11.2011	ggu	rcol for colored lines
 c
 c notes :
 c
@@ -564,7 +565,7 @@ c plots correlation coefficient (lines and ticks)
         real pi,aux,dbeta,fact,tick
         real cor,beta,x,y,x1,y1
         real width,height
-        real r
+        real r,rcol
         integer j
         logical bpos
         character*40 text
@@ -582,6 +583,9 @@ c-------------------------------------------------------
 c initialize constants
 c-------------------------------------------------------
 
+	rcol = 0.3
+	rcol = -1.
+
         pi = 4. * atan(1.)
         aux = 180./pi
         dbeta = 1./aux              !for starting point
@@ -591,6 +595,7 @@ c-------------------------------------------------------
         bpos = corfac .gt. 0.
 
         call setdash(4,fact)
+	if( rcol .ge. 0. ) call qhue(rcol)
 
         call make_cor_intv(dcor,ncor,nticks,corcof,cortik)
         write(6,*) 'corcof: ',ncor,(corcof(j),j=1,ncor)
@@ -657,6 +662,8 @@ c-------------------------------------------------------
           call qline(x,y,x1,y1)
           !call qline(-x,y,-x1,y1)
         end do
+
+	call qgray(0.)
 
 c-------------------------------------------------------
 c end of routine
@@ -737,9 +744,13 @@ c plots rms pattern
         real aleg,fact,r,phimax
         real cosphi,phi
         real phileg,x,y
+	real rcol
         character*40 text
 
         integer ialfa
+
+	rcol = 0.6
+	rcol = -1.
 
         pi = 4. * atan(1.)
         aux = 180./pi
@@ -748,7 +759,9 @@ c plots rms pattern
         fact = 0.002 * rad
 
         call setdash(5,fact)
+	if( rcol .ge. 0. ) call qhue(rcol)
         n = 0.1 + (rad+sigmar)/dr
+
         do j=1,n
           r = j * dr
           cosphi = (rad**2 - r**2 - sigmar**2) / (2.*r*sigmar)
@@ -776,6 +789,7 @@ c plots rms pattern
         end do
 
         call qtxtr(0.)
+        call qgray(0.)
 
         end
 
@@ -795,11 +809,14 @@ c plots std
         integer n,j,ndig
         real pi,aux,phimax
         real fact,tick
-        real x,y,r
+        real x,y,r,rcol
         real width,height
         character*40 text
 
         integer ialfa
+
+	rcol = 0.9
+	rcol = -1.
 
         pi = 4. * atan(1.)
         aux = 180./pi
@@ -813,6 +830,7 @@ c make circles
 c-------------------------------------------------------
 
         call setdash(4,fact)
+	if( rcol .ge. 0. ) call qhue(rcol)
         n = 0.1 + rad/dr
 
         if( bstd ) then
@@ -873,6 +891,8 @@ c-------------------------------------------------------
           write(6,*) 'std: ',j,r,ndec,ndig,x,y,width
      +                  ,' |'//text(1:ndig)//'|'
         end do
+
+	call qgray(0.)
 
 c-------------------------------------------------------
 c end of routine

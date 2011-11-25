@@ -52,6 +52,7 @@ c 31.03.2011    ggu     only write temp/salt if computed
 c 04.11.2011    ggu     adapted for hybrid coordinates
 c 07.11.2011    ggu     hybrid changed to resemble code in newexpl.f
 c 11.11.2011    ggu     restructured ts_next_record() and diagnostic()
+c 22.11.2011    ggu     bug fix in ts_file_open() -> bhashl
 c
 c*****************************************************************
 
@@ -916,9 +917,11 @@ c-------------------------------------------------------------
 c if level structure is available, check if compatible
 c-------------------------------------------------------------
 
-	do l=1,lmax
-	  if( hl(l) .ne. hlv(l) ) goto 96
-	end do
+	if( bhashl ) then
+	  do l=1,lmax
+	    if( hl(l) .ne. hlv(l) ) goto 96
+	  end do
+	end if
 
 c-------------------------------------------------------------
 c open finally and store info

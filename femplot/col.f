@@ -282,6 +282,7 @@ c sets up color table in automatic mode
 	real rnext,rnexta
 
 	bdebug = .true.
+	bdebug = .false.
 
 	amin = 0.
 	amax = 0.

@@ -188,7 +188,7 @@ c node_test
 c-----------------------------------------------------------------
 
 	call node_test
-	call sp110a
+	call set_ev
 
         call mklenk(nlkdim,nkn,nel,nen3v,ilinkv,lenkv)
         call mklink(nkn,ilinkv,lenkv,linkv)
@@ -895,7 +895,7 @@ c deletes elements with depth lower then hmin
 
 	call delete_elements_depth(hmin)
 
-	call sp110a
+	call set_ev
         call mklenk(nlkdim,nkn,nel,nen3v,ilinkv,lenkv)
         call mklink(nkn,ilinkv,lenkv,linkv)
         call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
@@ -918,7 +918,7 @@ c deletes elements with depth lower then hmin
 
 	call delete_elements_depth(hmin)
 
-	call sp110a
+	call set_ev
         call mklenk(nlkdim,nkn,nel,nen3v,ilinkv,lenkv)
         call mklink(nkn,ilinkv,lenkv,linkv)
         call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)

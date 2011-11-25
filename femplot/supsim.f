@@ -110,8 +110,8 @@ c 3D concentrations
 
 	do while( nosnext(it,ivaria,nlvdim,p3) )
 	  nrec = nrec + 1
-	  write(6,*) nrec,it,ivaria,ivar
 	  call fvlnext(it,nlvdim,fvlv)
+	  write(6,*) 'new record: ',nrec,it,ivaria,ivar
 	  if( oktime(it) .and. okvar(ivaria) ) then
             if( isect .eq. 0 ) then
 	      write(6,*) '..........horizontal plotting nodes'

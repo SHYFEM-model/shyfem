@@ -1,5 +1,33 @@
 ============================================================
 
+Fri Nov 25 17:20:50 CET 2011
+
+hybrid and tvd find element
+
+ LOG                     |   21 +++++
+ RELEASE_NOTES           |    4 +
+ fem3d/basbathy.f        |    2 +-
+ fem3d/baschk.f          |    2 +-
+ fem3d/bascomp.f         |    2 +-
+ fem3d/bastreat.f        |    6 +-
+ fem3d/bin/struct.pl     |  143 +++++++++++++++++++++++++++++++--
+ fem3d/newbcl.f          |    9 ++-
+ fem3d/newtvd.f          |  106 ++++++++++++-------------
+ fem3d/subele.f          |   12 ++-
+ fem3d/subflxa.f         |    2 +-
+ fem3d/subnev.f          |  200 ++++++++++++++++++++++++++++++++++++++++-------
+ fem3d/subnls.f          |    2 +-
+ fem3d/subreg.f          |   84 ++++++++++++++++++++
+ femplot/col.f           |    1 +
+ femplot/supano.f        |   10 ++-
+ femplot/suplin.f        |   45 +++++++++--
+ femplot/supout.f        |    5 +-
+ femplot/supsim.f        |    2 +-
+ femplot/taylor/taylor.f |   24 +++++-
+ 20 files changed, 561 insertions(+), 121 deletions(-)
+
+============================================================
+
 Tue Nov 22 11:19:16 CET 2011
 
 New version 6_1_37

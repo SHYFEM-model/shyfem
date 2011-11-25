@@ -2,7 +2,11 @@
 #
 # makes structure of program
 #
-# command line options: -main=routine
+# command line options: 
+#
+#	-main=routine
+#	-maxlevel=#
+#	-upper
 #
 #########################################################
 
@@ -42,6 +46,23 @@
 		,"ICHANM"		=> 1
 		,"ICHANM0"		=> 1
 		,"UPLOW"		=> 1
+		,"IROUND"		=> 1
+
+		,"CHKIBC"		=> 1
+		,"IGET_BND_ID"		=> 1
+		,"BNDSETGET"		=> 1
+		,"GET_BND_NAME"		=> 1
+		,"GET_BND_IPAR"		=> 1
+		,"GET_BND_PAR"		=> 1
+
+		,"IFILEO"		=> 1
+		,"IFEMOP"		=> 1
+		,"DEF_MAKE"		=> 1
+		,"FILNA"		=> 1
+
+		,"IS_R_NAN"		=> 1
+		,"CHECK1DR"		=> 1
+		,"CHECK2DR"		=> 1
 
 		,"TWB2RH"		=> 1
 		,"GASDEV"		=> 1
@@ -58,6 +79,9 @@
 use strict;
 
 $::main = $::main if $::main;
+$::maxlevel = 0 unless $::maxlevel;
+$::upper = 1 if $::upper;		# per default use lowercase
+$::mincount = 0 unless $::mincount;	# min calling count for output
 
 %::defined = ();		# how often is this routine defined
 %::functions = ();		# how often is this function defined
@@ -72,8 +96,10 @@ $::line = "";
 $::file = "";
 $::space = "";
 $::level = 0;
-$::maxlevel = 8;
+$::maxl = 0;			# maximum level reached
 $::maxlevel_reached = 0;
+
+init_ignore();
 
 print "\n===================================================\n";
 print "Structure of program:";
@@ -135,7 +161,7 @@ print "Calling sequence:";
 print "\n===================================================\n\n";
 
 if( $::main ) {		# only check this routine
-  my $name = uc($::main);
+  my $name = upperlow($::main);
   sequence($name);
 } else {		# do for all not defined routines
   foreach my $name ( sort (keys %::defined) ) {
@@ -150,6 +176,10 @@ if( $::main ) {		# only check this routine
 if( $::maxlevel_reached ) {
   print STDERR "max level $::maxlevel has been reached $::maxlevel_reached\n";
 }
+
+print_calling_times();
+
+print STDERR "maximum level reached: $::maxl\n";
 
 #----------------------------------------------------------------
 #----------------------------------------------------------------
@@ -193,7 +223,7 @@ sub insert {
   my $type = shift;
   my $name = shift;
 
-  $name = uc($name);
+  $name = upperlow($name);
 
   if( $type eq 'E' ) {		# close section
     unless($::insection) {
@@ -228,7 +258,7 @@ sub handle {
   my $type = shift;
   my $name = shift;
 
-  $name = uc($name);
+  $name = upperlow($name);
 
   #print "    ........... call from $::insection to $name ($type)\n";
 
@@ -279,7 +309,7 @@ sub parse_routine {
   #print STDERR "parsing $name ($type)\n";
 
   unless( $code ) {
-    print STDERR "non code for routine $name\n";
+    print STDERR "no code for routine $name\n";
     return;
   }
 
@@ -294,7 +324,7 @@ sub parse_routine {
     if( $line =~ /^\s+CALL\s+(\w+)/i ) { handle("C",$1); }
     if( $line =~ /^\s+IF\s*\(.+\)\s*CALL\s+(\w+)/i ) { handle("C",$1); }
     while( $line =~ /(\w+)\s*\(/ig ) { 
-      my $func = uc($1);
+      my $func = upperlow($1);
       if( $::functions{$func} ) { 
 	#print STDERR "function call: $func in routine $name\n";
         handle("F",$func);
@@ -312,16 +342,22 @@ sub sequence {
 
   return if( $::ignore{$name} );			#programs to ignore
 
+  push_calling_stack($name);
+  $::calling_times{$name}++;
+
   my $def = $::defined{$name};
   my $is_defined = "";
   $is_defined = "(-)" unless $def;
 
-  if( $::level > $::maxlevel ) {
+  if( $::maxlevel and $::level > $::maxlevel ) {
     print STDERR "******* maxlevel: $name\n";
     $::maxlevel_reached++;
+    #print_calling_stack($name); exit 1;
     return;
   }
   $::level++;
+
+  $::maxl = $::level if $::maxl < $::level;
 
     print "$::space $name $is_defined\n";
     my $oldspace = $::space;
@@ -336,8 +372,12 @@ sub sequence {
     }
     $::space = $oldspace;
 
+  pop_calling_stack($name);
+
   $::level--;
 }
+
+#----------------------------------------------------------------
 
 sub make_unique {
 
@@ -371,3 +411,90 @@ sub make_unique {
 
   return $line;
 }
+
+#----------------------------------------------------------------
+
+sub upperlow {
+  if( $::upper ) {
+    return uc($_[0]);
+  } else {
+    return lc($_[0]);
+  }
+}
+
+sub init_ignore {
+
+  foreach (keys %::ignore) {
+    my $name = upperlow($_);
+    $::ignore{$name} = 1;
+  }
+}
+
+sub print_calling_times {
+
+  return if $::mincount < 1;
+
+  my @sorted = sort by_count keys %::calling_times;
+  #my @sorted = sort keys %::calling_times;
+
+  my $i = 0;
+  foreach my $key (@sorted) {
+    my $count = $::calling_times{$key};
+    next if $count < $::mincount;
+    print "calling times (over $::mincount):\n" if $i == 0;
+    print "$key   $count\n";
+    $i++;
+  }
+}
+
+sub by_count {
+
+  if( $::calling_times{$a} < $::calling_times{$b} ) {
+    return -1;
+  } elsif( $::calling_times{$a} > $::calling_times{$b} ) {
+    return +1;
+  } else {
+    return 0;
+  }
+}
+
+#----------------------------------------------------------------
+#----------------------------------------------------------------
+#----------------------------------------------------------------
+
+sub push_calling_stack {
+
+  my $name = shift;
+
+  if( $::calling_stack{$name} ) {
+    print_calling_stack();
+    die "recursive calling stack: $name\n";
+  } else {
+    $::calling_stack{$name} = 1;
+    push(@::calling_stack,$name);
+  }
+}
+
+sub pop_calling_stack {
+
+  my $name = shift;
+
+  if( $::calling_stack{$name} ) {
+    $::calling_stack{$name} = 0;
+    pop(@::calling_stack);
+  } else {
+    print_calling_stack();
+    die "corrupt calling stack: $name\n";
+  }
+}
+
+sub print_calling_stack {
+
+    my $line = join(" ",@::calling_stack);
+    print STDERR "$line\n";
+}
+
+#----------------------------------------------------------------
+#----------------------------------------------------------------
+#----------------------------------------------------------------
+

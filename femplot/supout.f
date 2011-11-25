@@ -876,7 +876,7 @@ c opens OUS file and reads header
 	integer nvers
 	integer nknaux,nelaux,nlvaux,nvar
 	integer ierr
-        integer i
+        integer i,l
         real href,hzmin
 	integer ifemop
 
@@ -926,6 +926,8 @@ c read second header
 
 	call level_e2k				!computes ilhkv
 	call init_sigma_info(nlv,hlv)		!sets up hlv
+
+	write(6,*) 'hlv: ',nlv,(hlv(l),l=1,nlv)
 
 c initialize time
 
@@ -1128,6 +1130,7 @@ c read second header
 	call init_sigma_info(nlv,hlv)		!sets up hlv
 
 	write(6,*) 'hlv: ',nlv,(hlv(l),l=1,nlv)
+
 c initialize time
 
 	call timeset(0,0,0)

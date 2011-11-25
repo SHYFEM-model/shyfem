@@ -793,7 +793,7 @@ c	no node found
 	call set_elem_links(k2,n)
 	write(6,*) k2,n
 	write(6,*) (lnk_elems(i),i=1,n)
-	stop 'error stop: internal error igtnsc (2)'
+	stop 'error stop igtnsc: internal error (2)'
 	end
 	      
 c**********************************************************************
