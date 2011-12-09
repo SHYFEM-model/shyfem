@@ -1,3 +1,54 @@
+version  6_1_38    09-12-2011    VERS_6_1_38
+
+========================================================== 09-12-2011 - 6_1_38
+
+c ./femspline/gridr.f:
+c 02.12.2011    ggu     bug fix in intpdep() and reduce()
+c 02.12.2011    ggu     use depth also for smoothing (change in distxy())
+c
+c ./femspline/hash.f:
+c 02.12.2011	ggu	initialize hashin to zero
+c
+c ./femplot/taylor/taylor.f:
+c 23.11.2011	ggu	rcol for colored lines
+c
+c ./femplot/suplin.f:
+c 23.11.2011    ggu     in line_find_elements() adjust depth for hybrid
+c
+c ./fem3d/sublnka.f:
+c 02.12.2011    ggu     print_bound_nodes() for writing out boundary nodes
+c
+c ./fem3d/newtvd.f:
+c 24.11.2011	ccf	bug in tvd_init -> not resolved...
+c
+c ./fem3d/sigmautil.f:
+c 02.12.2011	ggu	bug fix in init_sigma_info() for nlv == 1
+c
+c ./fem3d/newbsig.f:
+c 02.12.2011    ggu     check in set_bsig_depths()
+c 02.12.2011    ggu     use of intp_aver() for lmax = 1
+c
+c ./fem3d/newbcl.f:
+c 22.11.2011    ggu     bug fix in ts_file_open() -> bhashl
+c 02.12.2011    ggu     adapt ts_file_open() for barotropic version (ihashl)
+c
+c ./fem3d/subnev.f:
+c 24.11.2011	ggu	better routines to handle spherical coordinates
+c
+c ./fem3d/netcdf.f:
+c 05.12.2011    ggu&dbf	written from scratch
+c
+c ./fem3d/subreg.f:
+c 24.11.2011	ggu	new routine find_close_elem()
+c
+c ./fem3d/nosutil.f:
+c 02.12.2011    ggu     bug fix for call to get_sigma_info() (missing argument)
+c
+c ./fem3d/ousutil.f:
+c 02.12.2011    ggu     bug fix for call to get_sigma_info() (missing argument)
+
+==========================================================
+
 version  6_1_37    22-11-2011    VERS_6_1_37   commit_2011-12-09
 
 version  6_1_37    22-11-2011    VERS_6_1_37   commit_2011-11-25
