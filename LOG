@@ -1,26 +1,38 @@
 
-c ./femplot/taylor/taylor.f:
-c 23.11.2011    ggu     rcol for colored lines
-c
-c ./femplot/suplin.f:
-c 23.11.2011    ggu     in line_find_elements() adjust depth for hybrid
-c
-c ./fem3d/newtvd.f:
-c 24.11.2011    ccf     bug in tvd_init -> not resolved...
-c
-c ./fem3d/newbcl.f:
-c 22.11.2011    ggu     bug fix in ts_file_open() -> bhashl
-c
-c ./fem3d/subnev.f:
-c 24.11.2011    ggu     better routines to handle spherical coordinates
-c
-c ./fem3d/subreg.f:
-c 24.11.2011    ggu     new routine find_close_elem()
+05.12.2011	netcdf
 
+	new file written from scratch (netcdf.f)
 
+02.12.2011	various fixes
 
+	smoothing and reducing (gridr.f, hash.f)
+	adapt ts_file_open() for barotropic version (ihashl) (newbcl.f)
+	print_bound_nodes() for writing out boundary nodes (sublnka.f)
 
-18.11.2011	projection
+02.12.2011	sigma/hybrid levels
+
+	bug fix for call to get_sigma_info() (nosutil.f,ousutil.f)
+	bug fix in init_sigma_info() for nlv == 1 (sigmautil.f)
+	use of intp_aver() for lmax = 1 (newbsig.f)
+
+24.11.2011	tvd
+
+	bug in tvd_init -> not fully resolved... (newtvd.f)
+	better routines to handle spherical coordinates (subnev.f)
+	new routine find_close_elem() (subreg.f)
+
+23.11.2011	plotting
+
+	rcol for colored lines in taylor diagram (taylor.f)
+	in line_find_elements() adjust depth for hybrid (suplin.f)
+
+========================================================== 22-11-2011 - 6_1_37
+
+22.11.2011	read T/S files
+
+	bug fix in ts_file_open() -> bhashl (newbcl.f)
+
+18.11.2011	hybrid
 
 	restructured hybrid (newsig.f, bashsigma.f)
 	new routines (subdep.f)

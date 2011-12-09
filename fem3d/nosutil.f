@@ -7,6 +7,7 @@ c 29.04.2010    ggu     new file from nosaver
 c 07.05.2010    ggu     new routines qopen_nos_file(), checks ev initialization
 c 15.12.2010    ggu     volume computation also for sigma layers
 c 10.11.2011    ggu     new routines for hybrid levels, init_volume() changed
+c 02.12.2011    ggu     bug fix for call to get_sigma_info() (missing argument)
 c
 c***************************************************************
 
@@ -175,11 +176,11 @@ c we could do better using information on node area and depth structure
         include 'ev.h'
 
 	logical belem,bsigma,bzeta
-	integer ie,ii,k,l,lmax,nsigma
+	integer ie,ii,k,l,lmax,nsigma,nlvaux
 	real area,hsigma
 
 	call is_init_ev(belem)		!use ev if initialized
-        call get_sigma_info(nsigma,hsigma)
+        call get_sigma_info(nlvaux,nsigma,hsigma)
         bsigma = nsigma .gt. 0
 	bzeta = .false.
 

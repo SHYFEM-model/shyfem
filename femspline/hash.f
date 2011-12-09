@@ -21,6 +21,7 @@ c
 c revision log :
 c
 c 30.06.2000	ggu	error check for hash table half full
+c 02.12.2011	ggu	initialize hashin to zero
 c
 c******************************************************************
 
@@ -218,6 +219,8 @@ c	parameter (ndim=54563)
 	save ipos,keyt,infot,itotal
 	data ipos /1/
 	data itotal /0/
+
+	hashin=0
 
 	start=mod(key,ndim)+1
 

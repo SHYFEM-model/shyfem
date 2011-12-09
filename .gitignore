@@ -62,6 +62,7 @@ fem3d/nosextr_cat
 fem3d/ousextr_cat
 fem3d/nosextr_fluxes
 fem3d/bashsigma
+fem3d/ous2nc
 
 femadj/adjele
 fembin/extDiff

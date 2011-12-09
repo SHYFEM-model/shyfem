@@ -21,15 +21,12 @@ FEMBIN    = $(FEMDIR)/fembin
 
 LIBFEM     = fem
 LIBGOTM    = gotm
-LIBNETCDF  = netcdf
+LIBNETCDF  = netcdff
 LIBERSEM   = bfm
 
 LIBFFEM    = $(DIRLIB)/lib$(LIBFEM).a
 
-LIBLS      = -L$(DIRLIB) -L$(DIRLIB_NETCDF)
-
-LIBFS   = -L$(DIRLIB) -l$(LIBFEM)
-LIBIFS  = $(DIRLIB)/lib$(LIBFEM).a
+LIBLS      = -L$(DIRLIB)
 
 LIBPS   = -L$(DIRLIB) -l$(LIBPOST)
 LIBIPS  = $(DIRLIB)/lib$(LIBPOST).a
@@ -49,11 +46,12 @@ ifeq ($(SOLVER),SPARSKIT)
 endif
 
 NETCDF_OBJ = subnetcdf_dummy.o
-DIRLIB_NETCDF = $(NETCDFDIR)/lib
+DIRLIB_NETCDF = $(NETCDFDIR)/lib/
 DIRINC_NETCDF = $(NETCDFDIR)/include
 ifeq ($(NETCDF),true)
   NETCDF_OBJ       = subnetcdf_admin.o subnetcdf_hydro.o
-  LIBG_NETCDF      = -l$(LIBNETCDF)
+  NETCDF_OBJ       = netcdf.o
+  LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDF)
   LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDF).a
   INCL_NETCDF      = -I$(DIRINC_NETCDF)
 endif
@@ -66,23 +64,19 @@ ifeq ($(GOTM),true)
 endif
 
 ECOLOGICAL_OBJ = ecological_dummy.o
-
 ifeq ($(ECOLOGICAL),EUTRO)
   ECOLOGICAL_OBJ = bio3d.o bio3d_util.o \
 		weutro.o weutro_sedim.o weutro_light.o
 endif
-
 ifeq ($(ECOLOGICAL),ERSEM)
   ECOLOGICAL_OBJ = subbfm.o
   LIBG_ERSEM     = -l$(LIBERSEM)
   LIBF_ERSEM     = $(DIRLIB)/lib$(LIBERSEM).a
 endif
-
 ifeq ($(ECOLOGICAL),AQUABC)
   ECOLOGICAL_OBJ = aquabc_fem_interface.o alukas.o aquabc.o \
 		aquabc_sediment_model_1.o aquabc_util.o
 endif
-
 
 #------------------------------------------------------------
 
@@ -164,7 +158,6 @@ HTOBJS = \
 	$(SOLVER_FILES) \
 	$(QFLUX) \
 	subgotm.o $(GOTM_OBJ) \
-	$(NETCDF_OBJ) \
 	subbndo.o subbnds.o \
 	new36.o intp.o subssf.o \
 	bdist.o links.o sublnka.o sublnks.o sublnku.o \
@@ -177,7 +170,8 @@ HTOBJS = \
 	subinv.o newexpl.o subrnd.o \
 	submet.o submeteo.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o \
 	subtrace.o subproj.o \
-	$(ECOLOGICAL_OBJ)
+	$(ECOLOGICAL_OBJ) \
+	$(NETCDF_OBJ)
 
 # objects for pre-processor vp
 
@@ -283,13 +277,13 @@ links:
 #--------------------------------------------- EXES
 
 bedload:  bedload.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
-	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS) -o $@
+	$(LINKER) -o $@ $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS)
 
 ht:  ht.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
-	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS) -o $@
+	$(LINKER) -o $@ $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS)
 
 vp:  vp.o $(VPOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(VPOBJS) -o $@
+	$(LINKER) -o $@ $(LFLAGS) $@.o $(VPOBJS)
 
 #------------------------------------------------
 
@@ -396,6 +390,9 @@ nosinf2:  nosinf2.o $(NOSOBJS) $(OUTOBJS)
 
 nossum:  nossum.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+ous2nc:  ous2nc.o $(OUSOBJS) $(OUTOBJS) netcdf.o
+	$(LINKER) -o $@ $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) netcdf.o $(LIBGS)
 
 #-------------------------------------------------------
 

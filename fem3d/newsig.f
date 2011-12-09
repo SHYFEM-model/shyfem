@@ -204,10 +204,7 @@ c returns bsigma which is true if sigma layers are used
 
 	logical bsigma
 
-        real hldv(1)
-        common /hldv/hldv
-
-	bsigma = hldv(1) .lt. 0.
+	bsigma = nint(getpar('nsigma')) .gt. 0
 
 	end
 
@@ -300,7 +297,7 @@ c********************************************************************
 
 	subroutine set_hybrid_depth(lmax,zeta,htot,hlfem)
 
-c sets depth structure and passes it back in hdep
+c sets depth structure and passes it back in hlfem
 
 	implicit none
 
@@ -317,13 +314,15 @@ c sets depth structure and passes it back in hdep
 
         call get_sigma(nsigma,hsigma)
 
-        hsig = min(htot,hsigma) + zeta
+	if( nsigma .gt. 0 ) then
+          hsig = min(htot,hsigma) + zeta
 
-	do l=1,nsigma-1
-          hlfem(l) = -zeta - hsig * hlv(l)
-	end do
+	  do l=1,nsigma-1
+            hlfem(l) = -zeta - hsig * hlv(l)
+	  end do
 
-	hlfem(nsigma) = -zeta + hsig
+	  hlfem(nsigma) = -zeta + hsig
+	end if
 
         do l=nsigma+1,lmax
           hlfem(l) = hlv(l)

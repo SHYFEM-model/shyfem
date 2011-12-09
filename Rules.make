@@ -41,6 +41,7 @@ export NKNDIM = 17000
 export NELDIM = 30000
 export NLVDIM = 1
 export NLVDIM = 52
+export NGRDIM = 12
 
 # curonian
 #export NKNDIM = 13000
@@ -67,10 +68,10 @@ export NLVDIM = 52
 #export MBWDIM = 300
 
 # adriatico_DEFB_nolag
-#export NKNDIM = 23660
-#export NELDIM = 43768
+#export NKNDIM = 24000
+#export NELDIM = 44000
 #export NLVDIM = 27
-#export NGRDIM = 9
+#export NGRDIM = 12
 #export MBWDIM = 295
 
 # isabella
@@ -183,9 +184,10 @@ SOLVER=SPARSKIT
 #
 ##############################################
 
-NETCDF=false
-#NETCDF=true
+#NETCDF=false
+NETCDF=true
 NETCDFDIR = /usr/local/netcdf
+NETCDFDIR = /usr
 
 ##############################################
 # GOTM library
@@ -380,11 +382,12 @@ FINTEL_ERSEM = $(DEFINES)
 
 # NETCDF FLAGS -------------------------------------
 # check it if we really need  "-assume 2underscores"
+# -> not needed anymore
 
 FFNCDF =
-ifeq ($(NETCDF),true)
-  FFNCDF   = -assume 2underscores
-endif
+#ifeq ($(NETCDF),true)
+#  #FFNCDF   = -assume 2underscores
+#endif
 
 #-------------------------------------------------
 

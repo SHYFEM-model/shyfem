@@ -4,7 +4,7 @@
 #
 ##############################################################
 #
-# version 1.7
+# version 1.8
 #
 # 19.08.2005		unify_nodes, if defined $depth
 # 24.08.2005		connect_lines, split_line, contains_node
@@ -13,6 +13,8 @@
 # 01.03.2010		preserve order of written items if needed
 # 07.10.2010		new routine get_xy_minmax()
 # 10.02.2011		new routine make_central_point()
+# 01.12.2011		routines integrated (clone_needed_nodes, make_unique)
+# 01.12.2011		better writing of node list
 #
 ##############################################################
 #
@@ -154,15 +156,27 @@ sub writegrd {
 
 }
 
-sub write_nodes {		# helper routine
+sub write_nodes {		# helper routine -> ncmax max chars to write
 
-  my ($fh,$ra) = @_;
+  my ($fh,$ra,$ncmax) = @_;
   my $j = 0;
+
+  my $n = @$ra;
+  my $ltot = 0;
 
   foreach (@$ra) {
     $j++;
+    my $l = length($_);
+    $ltot += $l + 1;
     print $fh " $_";
-    print $fh "\n" if $j%10 == 0;
+    if( $ncmax ) {
+      if( $ltot > $ncmax and $j != $n ) {
+        print $fh "\n";
+	$ltot = 0;
+      }
+    } else {
+      print $fh "\n" if $j%10 == 0 and $j != $n;
+    }
   }
 }
 
@@ -210,7 +224,7 @@ sub write_line
     my $fh = $self->{outhandle};
 
     print $fh "3 $item->{number} $item->{type} $item->{nvert}\n";
-    &write_nodes($fh,$item->{vert});
+    &write_nodes($fh,$item->{vert},50);
     print $fh " $item->{h}" if defined $item->{h};
     print $fh "\n\n";
 }
@@ -617,6 +631,32 @@ sub clone_item
     }
 }
 
+sub clone_needed_nodes
+{
+    my ($self,$oldgrid) = @_;
+
+    my $nodes = {};
+    get_needed_nodes($self->get_elems(),$nodes);
+    get_needed_nodes($self->get_lines(),$nodes);
+
+    foreach my $node (keys %$nodes) {
+	my $nitem = $oldgrid->get_node($node);
+	$self->clone_node($nitem);
+    }
+}
+
+sub get_needed_nodes
+{
+    my ($items,$nodes) = @_;
+
+    foreach my $item (values %$items) {
+	my $vert = $item->{vert};
+	foreach my $node (@$vert) {
+            $nodes->{$node} = 1;
+	}
+    }
+}
+
 ###############################################################################
 
 sub unify_nodes {	#unifies nodes -> node n2 is deleted
@@ -859,6 +899,46 @@ sub split_line
   my $line_new = $self->make_line(0,$line->{type},$line->{depth},@v2);
 
   return ($line,$line_new);
+}
+
+###################################
+
+sub make_unique {
+
+  my ($self,$item) = @_;
+
+  my $vert = $item->{vert};
+  my $n = @$vert;
+  my @newvert = ();
+  my $nelim = 0;
+
+  my $node0 = $vert->[0];
+  my $nitem0 = $self->get_node($node0);
+  my $x0 = $nitem0->{x};
+  my $y0 = $nitem0->{y};
+  push(@newvert,$node0);
+
+  for( my $i=1; $i<$n; $i++) {
+    my $node = $vert->[$i];
+    my $nitem = $self->get_node($node);
+    my $x = $nitem->{x};
+    my $y = $nitem->{y};
+    if( $node != $node0 and ( $x != $x0 or $y != $y0 ) ) {
+      push(@newvert,$node);
+    } else {
+      print STDERR "*** eliminating double point... $node ($node0)\n";
+      $nelim++;
+    }
+    $node0 = $node;
+    $x0 = $x;
+    $y0 = $y;
+  }
+
+  if( $nelim ) {
+    $item->{vert} = \@newvert;
+    $item->{nvert} = @newvert;
+  }
+
 }
 
 ###################################

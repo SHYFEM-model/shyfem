@@ -55,6 +55,7 @@ c reads ous file and writes extracted records in ascii to new file
         common /vtlnv/vtlnv
 
 	real hev(neldim)
+	common /hev/hev		!this must be in common
 
 	real znv(nkndim)
 	real zenv(3,neldim)
@@ -137,6 +138,7 @@ c--------------------------------------------------------------------
         if(ierr.ne.0) goto 100
 
 	call level_e2k(nkn,nel,nen3v,ilhv,ilhkv)
+	call init_sigma_info(nlv,hlv)
 
         write(6,*) 'Available levels: ',nlv
         write(6,*) (hlv(l),l=1,nlv)
@@ -176,6 +178,7 @@ c-------------------------------------------------------------------
         bwrite = ball .or. irec(nread) .ne. 0
 
         if( bwrite ) then
+	  write(6,*) 'writing for it = ',it
 	  call transp2vel(nel,nkn,nlv,nlvdim,hev,zenv,nen3v
      +                          ,ilhv,hlv,utlnv,vtlnv
      +                          ,uprv,vprv,weight)
@@ -288,11 +291,17 @@ c writes one record to file nb (3D)
         integer k,l,lmax,n
         real x,y
 
+	logical in_area
+
+	!in_area(x,y) = x .le. 50000. .and. y .ge. 0.
+	in_area(x,y) = x .le. 83500. .and. y .ge. 0.
+
 	n = 0
         do k=1,nkn
           x = xgv(k)
           y = ygv(k)
-	  bwrite = x .le. 50000. .and. y .ge. 0.	!only lagoon
+	  !bwrite = x .le. 50000. .and. y .ge. 0.	!only lagoon
+	  bwrite = in_area(x,y)
 	  if( bwrite ) n = n + 1
 	end do
 
@@ -303,7 +312,8 @@ c writes one record to file nb (3D)
           x = xgv(k)
           y = ygv(k)
 
-	  bwrite = x .le. 50000. .and. y .ge. 0.	!only lagoon
+	  !bwrite = x .le. 50000. .and. y .ge. 0.	!only lagoon
+	  bwrite = in_area(x,y)
 
           x = x + x0
           y = y + y0

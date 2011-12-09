@@ -1,23 +1,19 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl -ws
 #
 # computes average
+#
+# -move=m	computes moving average over m data, else arithmetic average
+# -col=c	averages only column c, else all columns
+#
+#------------------------------------------------------------------
 
 use warnings;
 use strict;
 
 # handle options
 
-my $move = 0;
-
-for(;;) {
-  my $arg = $ARGV[0];
-  if( $arg eq "-m" or $arg eq "-move" ) {
-    shift;
-    $move = shift;
-  } else {
-    last;
-  }
-}
+$::move = 0 unless $::move;
+$::col = 0 unless $::col;
 
 my @files = @ARGV;
 my $nfiles = @files;
@@ -25,19 +21,24 @@ print STDERR "total number of files: $nfiles\n";
 
 my $total = 0;
 
-if( $move ) {
+if( $::move ) {
     my @new = <>;
     my @cols = read_cols(\@new);
-    print STDERR "computing moving average with $move\n";
-    $cols[1] = maver($move,$cols[1]);
+    print STDERR "computing moving average with $::move\n";
+    $cols[1] = maver($::move,$cols[1]);
     print_cols(@cols);
 } else {
     my @new = <>;
     my @cols = read_cols(\@new);
     my $n = @cols;
-    for(my $i=1;$i<$n;$i++) {
-      my $aver = aver($cols[$i]);
+    if( $::col ) {
+      my $aver = aver($cols[$::col]);
       print "$aver ";
+    } else {
+      for(my $i=1;$i<$n;$i++) {
+        my $aver = aver($cols[$i]);
+        print "$aver ";
+      }
     }
     print "\n";
 }

@@ -7,6 +7,7 @@ c revision log :
 c
 c 07.11.2011	ggu	layer thickness for hybrid coordinates
 c 14.11.2011	ggu	new sigma routines copied to this file
+c 02.12.2011	ggu	bug fix in init_sigma_info() for nlv == 1
 c
 c******************************************************************
 
@@ -70,6 +71,8 @@ c scan depth structure
 c---------------------------------------------------------
 
 	hsigma = 10000.
+        l = 2                           !HACK for nlv == 1
+        if( nlv .eq. 1 ) goto 1
 
 	do l=2,nlv
 	  if( hlv(l) .gt. hlv(l-1) ) goto 1
@@ -80,7 +83,8 @@ c only sigma layers found
 c---------------------------------------------------------
 
 	if( hlv(nlv) .ne. -1 ) then
-	  stop 'error stop get_sigma_info: internal error (1)'
+          write(6,*) 'nlv,hlv(nlv): ',nlv,hlv(nlv)
+	  stop 'error stop init_sigma_info: internal error (1)'
 	end if
 	nsigma = nlv
 	return
@@ -134,17 +138,23 @@ c in this case the last values for hl are 0
 	real zenv(3,1)
 	common /zenv/zenv
 
+	logical bdebug
 	integer ii,l
 	integer nlv,nsigma
 	real hsigma
 	real zmed
 	real htot,hsig,htop,hbot
 
+	!bdebug = ie .eq. 100
+	bdebug = .false.
+
 c---------------------------------------------------------
 c get sigma info
 c---------------------------------------------------------
 
 	call get_sigma_info(nlv,nsigma,hsigma)
+
+	if( bdebug ) write(6,*) nlv,nsigma,hsigma,ie,lmax,hev(ie)
 
 c---------------------------------------------------------
 c compute contribution of zeta
@@ -174,6 +184,8 @@ c---------------------------------------------------------
 	  hl(l) = -hsig * (hbot-htop)
 	end do
 
+	if( bdebug ) write(6,*) l,hsig,lmax,nsigma
+
 c---------------------------------------------------------
 c compute level structure of zeta and/or hybrid levels
 c---------------------------------------------------------
@@ -187,6 +199,7 @@ c---------------------------------------------------------
 	    do l=nsigma+1,lmax
 	      htop = hbot
 	      hbot = hlv(l)
+	      if( bdebug ) write(6,*) l,htop,hbot,htot
 	      if( hbot .gt. htot ) hbot = htot	!last layer
 	      hl(l) = hbot - htop
 	    end do

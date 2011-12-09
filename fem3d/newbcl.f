@@ -53,6 +53,7 @@ c 04.11.2011    ggu     adapted for hybrid coordinates
 c 07.11.2011    ggu     hybrid changed to resemble code in newexpl.f
 c 11.11.2011    ggu     restructured ts_next_record() and diagnostic()
 c 22.11.2011    ggu     bug fix in ts_file_open() -> bhashl
+c 02.12.2011    ggu     adapt ts_file_open() for barotropic version (ihashl)
 c
 c*****************************************************************
 
@@ -697,6 +698,7 @@ c-------------------------------------------------------------
 	  call ts_file_open(tempf,iutemp)
 	  call ts_file_open(saltf,iusalt)
 
+	  write(6,*) 'ts_intp: initializing T/S'
 	  call ts_next_record(ittold,iutemp,nkn,nlvdim,nlv,toldv)
 	  call ts_next_record(itsold,iusalt,nkn,nlvdim,nlv,soldv)
 	  write(6,*) 'ts_intp: new record read ',ittold,itsold
@@ -911,6 +913,7 @@ c-------------------------------------------------------------
 	    ihashl = 0
 	  end if
 	end do
+        if( lmax .le. 1 ) ihashl = 0
 	bhashl = ihashl .gt. 0
 
 c-------------------------------------------------------------
@@ -978,6 +981,7 @@ c*******************************************************************
 	integer nknaux,lmax,nvar
 	integer i,l,iunit
 	real val
+        real vmin,vmax
 
 	iunit   = info(1)
 	bformat = info(2) .gt. 0
@@ -991,7 +995,7 @@ c*******************************************************************
 	  read(iunit) it,nknaux,lmax,nvar
 	end if
 
-	write(6,*)'reading initial T/S values', it,nknaux,lmax,nvar
+	write(6,*)'reading T/S values', it,nknaux,lmax,nvar
 
 	if( nkn .ne. nknaux ) stop 'error stop ts_next_record: nkn'
 	if( nvar .ne. 1 ) stop 'error stop ts_next_record: nvar'
@@ -1013,6 +1017,9 @@ c*******************************************************************
 	    end do
 	  end do
 	end if
+
+        call conmima(nlvdim,value,vmin,vmax)
+        write(6,*) 'min/max: ',vmin,vmax
 
 	end
 

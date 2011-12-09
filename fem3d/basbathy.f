@@ -13,6 +13,7 @@ c 06.04.2005    ggu     read param.h
 c 24.04.2009	ggu	new call to rdgrd()
 c 21.05.2009	ggu	restructured to allow for nodal interpolation
 c 16.12.2010	ggu	bug fix in copy_depth()
+c 02.12.2010	ggu	introduction of nminimum - hardcoded for now
 c
 c****************************************************************
 
@@ -70,6 +71,7 @@ c takes care of lat/lon coordinates
         integer ner,nco,nknh,nelh,nli
 	integer nlidim,nlndim
 	integer ike,idepth
+	integer nminimum
 	real ufact,umfact
 	real f(5)
 	logical bstop
@@ -78,6 +80,9 @@ c takes care of lat/lon coordinates
 c-----------------------------------------------------------------
 c what to do
 c-----------------------------------------------------------------
+
+	nminimum = 5	!for dwejra
+	nminimum = 1	!minimum number of points to be used for interpolation
 
         write(6,*)
         write(6,*) 'I need the name of the grid file '
@@ -226,7 +231,7 @@ c interpolate
 c-----------------------------------------------------------------
 
 	if( mode .eq. 1 ) then
-	  call interpole(np,xp,yp,dp,ike,ufact,umfact)
+	  call interpole(np,xp,yp,dp,ike,ufact,umfact,nminimum)
         else if( mode .eq. 2 ) then
 	  call interpolq(np,xp,yp,dp)
         else
@@ -849,7 +854,7 @@ c computes area and center point of triangle
 
 c*******************************************************************
 
-	subroutine interpole(np,xp,yp,dp,ike,ufact,umfact)
+	subroutine interpole(np,xp,yp,dp,ike,ufact,umfact,nminimum)
 
 c interpolates depth values
 
@@ -861,6 +866,7 @@ c interpolates depth values
 	real dp(np)
 	integer ike
 	real ufact,umfact
+	integer nminimum	!how many points needed for interpolation
 
 	include 'param.h'
 
@@ -886,7 +892,7 @@ c interpolates depth values
 	integer iaux,inum,ityp
 	integer n,i,nt,ntot
 	integer ihmed
-        integer nintp
+        integer nintp,nmin
 	integer iloop,nintpol
 	real xmin,ymin,xmax,ymax
 	real weight,r2,w
@@ -910,7 +916,6 @@ c-----------------------------------------------------------------
 c initialize
 c-----------------------------------------------------------------
 
-
 	if( ike .eq. 1 ) then		!elementwise
 	  call prepare_on_element(nt,xt,yt,at,ht)
 	else
@@ -933,6 +938,9 @@ c-----------------------------------------------------------------
 c-----------------------------------------------------------------
 c initial interpolation -> point in element
 c-----------------------------------------------------------------
+
+        nmin = nminimum
+	if( nmin .le. 0 ) nmin = 1	!at least one point is needed
 
 	!ufact = 1.
 	!umfact = 2.
@@ -980,7 +988,7 @@ c-----------------------------------------------------------------
                 nintp = nintp + 1
 	      end if
 	    end do
-	    if( nintp .gt. 0 ) then
+	    if( nintp .ge. nmin ) then
 	      if( weight .le. 0. ) then
                 write(6,*) nintp,weight,r2max,i
                 stop 'error stop interpole: zero weight from points'

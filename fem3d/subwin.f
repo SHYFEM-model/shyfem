@@ -530,6 +530,8 @@ c-----------------------------------------------------------------
 
         read(iunit,iostat=ierr) it,n
 
+	if( ierr .ne. 0 ) return
+
 	bpress = n .lt. 0		!read pressure
 	n = abs(n)
 	bconst = n .eq. 1		!constant wind field

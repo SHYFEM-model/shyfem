@@ -1,5 +1,42 @@
 ============================================================
 
+Fri Dec  9 17:44:06 CET 2011
+
+netcdf introduced
+
+ .gitignore              |    1 +
+ BUG                     |    9 +
+ LOG                     |   48 ++-
+ RELEASE_NOTES           |    4 +
+ Rules.make              |   19 +-
+ fem3d/Makefile          |   29 +-
+ fem3d/basbathy.f        |   18 +-
+ fem3d/bin/dependency.pl |   51 +++-
+ fem3d/bin/dependency.sh |   14 +-
+ fem3d/netcdf.f          |  885 +++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/netcdf.h          |   10 +
+ fem3d/newbcl.f          |    9 +-
+ fem3d/newbsig.f         |   53 +++-
+ fem3d/newsig.f          |   19 +-
+ fem3d/nosutil.f         |    5 +-
+ fem3d/ous2nc.f          |  436 +++++++++++++++++++++++
+ fem3d/ousextr_gis.f     |   14 +-
+ fem3d/ousutil.f         |    7 +-
+ fem3d/sigmautil.f       |   15 +-
+ fem3d/subcus.f          |    6 +
+ fem3d/sublnka.f         |   45 +++
+ fem3d/subwin.f          |    2 +
+ fembin/average          |   35 +-
+ fembin/basbathy         |    7 +-
+ fembin/bastreat         |    9 +-
+ femlib/perl/grd.pm      |   90 +++++-
+ femplot/plotsim.f       |    4 +-
+ femspline/gridr.f       |   42 ++-
+ femspline/hash.f        |    3 +
+ 29 files changed, 1767 insertions(+), 122 deletions(-)
+
+============================================================
+
 Fri Nov 25 17:20:50 CET 2011
 
 hybrid and tvd find element

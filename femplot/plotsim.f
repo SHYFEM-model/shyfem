@@ -278,8 +278,8 @@ c*****************************************************************
 	write(6,*) ' generic concentrations .. 10'
 	write(6,*) ' wind array .............. 11'
 	write(6,*) ' lagrangian .............. 12'
-	write(6,*) ' wave ..... .............. 13'
-	write(6,*) ' atmos. pressure ......... 14'
+	write(6,*) ' wave .................... 13'
+	write(6,*) ' atmospheric pressure .... 14'
 	write(6,*) ' generic element values .. 15'
 	write(6,*)
 

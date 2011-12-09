@@ -9,6 +9,7 @@ c 16.12.2010	ggu	copied from ousextr_gis.f
 c 03.06.2011	ggu	some routines transfered to genutil.f
 c 08.06.2011	ggu	new routine transp2nodes()
 c 10.11.2011    ggu     new routines for hybrid levels
+c 02.12.2011    ggu     bug fix for call to get_sigma_info() (missing argument)
 c
 c******************************************************************
 
@@ -36,12 +37,12 @@ c transforms transports at elements to velocities at nodes
         real weight(nlvdim,1)
 
 	logical bsigma,bzeta
-        integer ie,ii,k,l,lmax,nsigma
+        integer ie,ii,k,l,lmax,nsigma,nlvaux
         real hmed,u,v,w
 	real hsigma
 	real hl(nlvdim)
 
-	call get_sigma_info(nsigma,hsigma)
+	call get_sigma_info(nlvaux,nsigma,hsigma)
 	bsigma = nsigma .gt. 0
 	bzeta = .true.		!use zeta for depth computation
 
@@ -56,7 +57,7 @@ c transforms transports at elements to velocities at nodes
         do ie=1,nel
 
 	  lmax = ilhv(ie)
-	  call get_layer_thickness(ie,lmax,bzeta,nsigma,hsigma,hl)
+	  call get_layer_thickness(ie,lmax,bzeta,hl)
 
 	  do l=1,lmax
 	    hmed = hl(l)

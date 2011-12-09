@@ -77,8 +77,13 @@ else
   bathy=$2
 fi
 
+dbathy=`dirname $bathy`
+dbasin=`dirname $basin`
 bathy=`basename $bathy .grd`
-basin=`basename $basin .bas`
+basin=`basename $basin .grd`
+
+bathy=$dbathy/$bathy
+basin=$dbasin/$basin
 
 echo "basin:  $basin"
 echo "bathy:  $bathy"

@@ -14,6 +14,7 @@ c 01.08.2003    ggu     created from sublnk.f
 c 13.08.2003    ggu     in update_geom do not call setweg and setnod
 c 06.11.2008    ggu     better error handling
 c 06.04.2009    ggu     nlidim -> nlkdim
+c 02.12.2011    ggu     print_bound_nodes() for writing out boundary nodes
 c
 c*****************************************************************
 
@@ -436,5 +437,49 @@ c****************************************************************
 
 c****************************************************************
 c****************************************************************
+c****************************************************************
+
+        subroutine print_bound_nodes(nkn,aux)
+
+        implicit none
+
+        integer nkn
+        real aux(nkn)
+
+        integer kantv(2,1)
+        common /kantv/kantv
+
+        integer ib,k,kn,kstart
+
+        integer ipext
+
+        ib = 0
+        do k=1,nkn
+          aux(k) = 0.
+        end do
+
+        open(1,file='bnd_nodes.dat',form='formatted',status='unknown')
+        do k=1,nkn
+          if( aux(k) .eq. 0. ) then
+            if( kantv(1,k) .gt. 0 ) then
+              kstart = k
+              kn = kantv(1,kstart)
+              ib = ib + 1
+              write(1,*) 'bound ',ib
+              write(1,*) ipext(kstart)
+              do while( kn .ne. kstart )
+                aux(kn) = 1.
+                write(1,*) ipext(kn)
+                kn = kantv(1,kn)
+              end do
+            end if
+          end if
+          aux(k) = 1.
+        end do
+
+        close(1)
+
+        end 
+
 c****************************************************************
 

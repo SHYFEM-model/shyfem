@@ -9,6 +9,8 @@ c 01.02.2002    ggu     handle periodic line
 c 06.08.2002    ggu     read also depth value
 c 23.09.2004    ggu     adapted for malta, bug fix
 c 19.10.2005    ggu     documentation and description
+c 02.12.2011    ggu     bug fix in intpdep() and reduce()
+c 02.12.2011    ggu     use depth also for smoothing (change in distxy())
 c
 c description :
 c
@@ -47,9 +49,10 @@ c eliminated. Line points without depth receive an implicit value of 1.
 c The value -1 indicates that this point should never be eliminated 
 c nor should it be smoothed.
 c
-c Please note that the change in resolution is applicable only for the
-c reduction algorithm, and that the smoothing algorithm actually does
-c only use -1 for not smoothing.
+c To do:
+c
+c the fixed points should be handled better (stop smoothing, reducing)
+c adaption of reduce on short lines, look at line globally
 c
 c***********************************************************************
 
@@ -189,11 +192,11 @@ c	call prlixy(nli,iplv,ialrv,ipntlv,inodlv,xgv,ygv)
 
 	do l=1,nli
 	  nl = ndim
+	  nline = iplv(l)
 	  call extrli(l,nli,iplv,ialrv,ipntlv,inodlv,xgv,ygv,hkv
      +				,xt,yt,ht,nl,nt)
 	  call mkperiod(xt,yt,nl,bperiod)
-	  call intpdep(ht,nl,bperiod)
-	  nline = iplv(l)
+	  call intpdep(nline,ht,nl,bperiod)
 	  call smooth(sigma,xt,yt,ht,nl,bperiod)
 	  call wrline(99,nline,nnode,nl,xt,yt,ht,nt,bperiod)
 	  call reduce(reduct,xt,yt,ht,nl)
@@ -411,6 +414,7 @@ c dxy(i-1) -> distance to previous node (i,i-1)
 	  dx = xn - xo
 	  dy = yn - yo
 	  dist = sqrt( dx*dx + dy*dy )
+	  if( hn .gt. 0. ) dist = dist * hn
 
 	  dxy(i-1) = dist
 	  dxy(i-1+nl) = dist
@@ -728,7 +732,7 @@ c very simplicistic approach
 	  h = ht(i)
 	  dist = sqrt( dx*dx + dy*dy )
 	  !write(6,*) dist,h,dist/h,rtot,reduct
-	  if( h .gt. 0. ) dist = dist / h
+	  if( h .gt. 0. ) dist = dist * h
 	  rtot = rtot + dist
 	  if( rtot .gt. reduct .or. h .lt. 0. ) then
 	    nnew = nnew + 1
@@ -752,7 +756,7 @@ c	if( nnew .lt. 3 ) stop 'error stop reduce: line too short...'
 
 c********************************************************
 
-	  subroutine intpdep(ht,nl,bperiod)
+	  subroutine intpdep(nline,ht,nl,bperiod)
 
 c interpolates depth values for points in line
 c
@@ -760,6 +764,7 @@ c negative values are not interpolated and are left alone
 
 	implicit none
 
+      integer nline
 	real ht(1)
 	integer nl
 	logical bperiod
@@ -768,10 +773,15 @@ c negative values are not interpolated and are left alone
 	integer ifirst,ilast,inext,nonzero
 	integer nval
 	real value,vfirst,vlast
-	real aux
+	real aux,hflag
 	logical bdebug
 
+	bdebug = .true.
+	bdebug = nline .eq. 9
+	bdebug = nline .eq. 6
 	bdebug = .false.
+
+        hflag = -990.
 
 c------------------------------------------------------------
 c look for values greater than 0
@@ -789,6 +799,8 @@ c------------------------------------------------------------
 	  end if
 	end do
 
+      if( bdebug ) write(6,*) 'nz: ',nl,nonzero,ifirst,ilast
+
 c------------------------------------------------------------
 c if no value or 1 value found -> set everything constant
 c------------------------------------------------------------
@@ -800,7 +812,7 @@ c------------------------------------------------------------
 	    value = ht(ifirst)
 	  end if
 	  do i=1,nl
-	    if( ht(i) .ge. 0. .or. ht(i) .lt. -990. ) ht(i) = value
+	    if( ht(i) .ge. 0. .or. ht(i) .lt. hflag ) ht(i) = value
 	  end do
 	  return
 	end if
@@ -819,7 +831,7 @@ c------------------------------------------------------------
 	if( bdebug ) write(6,*) ifirst,ilast,nval,vfirst,vlast
 
 	i = 1
-	do while( ht(i) .lt. 0 )
+	do while( ht(i) .lt. 0 .and. ht(i) .gt. hflag )
 	  i = i + 1
 	end do
 	if( bperiod ) then
@@ -828,12 +840,12 @@ c------------------------------------------------------------
 	else
 	  value = ht(ifirst)
 	end if
-	if( bdebug ) write(6,*) i,inext,value,ht(i)
+	if( bdebug ) write(6,*) 'first: ',i,inext,value,ht(i)
 	ht(i) = value
 	ifirst = i
 
 	i = nl
-	do while( ht(i) .lt. 0 )
+	do while( ht(i) .lt. 0 .and. ht(i) .gt. hflag )
 	  i = i - 1
 	end do
 	if( bperiod ) then
@@ -842,7 +854,7 @@ c------------------------------------------------------------
 	else
 	  value = ht(ilast)
 	end if
-	if( bdebug ) write(6,*) i,inext,value,ht(i)
+	if( bdebug ) write(6,*) 'last: ',i,inext,value,ht(i)
 	ht(i) = value
 	ilast = i
 
@@ -861,8 +873,8 @@ c------------------------------------------------------------
 	  if( bdebug ) write(6,*) ifirst,inext,ilast,ht(ifirst),ht(inext)
 	  do i=ifirst+1,inext-1
 	    value = ht(ifirst) + (i-ifirst) * (ht(inext)-ht(ifirst))/nval
-	    if( ht(i) .ge. 0. ) ht(i) = value
-	    if( bdebug ) write(6,*) i,value
+	    if( ht(i) .ge. 0. .or. ht(i) .lt. hflag ) ht(i) = value
+	    if( bdebug ) write(6,*) i,value,ht(i)
 	  end do
 	  ifirst = inext
 	end do

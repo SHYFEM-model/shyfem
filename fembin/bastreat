@@ -16,8 +16,8 @@ FullUsage()
 {
   Usage
   echo "  -h|-help     this help screen"
-  echo "  -hmin #      minimum depth ofr basin"
-  echo "  -hmax #      minimum depth ofr basin"
+  echo "  -hmin #      minimum depth of basin"
+  echo "  -hmax #      minimum depth of basin"
   echo "  -n    #      number of iterations for smoothing (default 0 for none)"
   echo "  -p    #      parameters for smoothing (default 0.5)"
   echo "  basin        name of the basin for which interpolation is done"
@@ -72,7 +72,10 @@ else
   basin=$1
 fi
 
-basin=`basename $basin .bas`
+dbasin=`dirname $basin`
+basin=`basename $basin .grd`
+basin=$dbasin/$basin.grd
+
 
 echo "hmin:   $hmin"
 echo "hmax:   $hmax"

@@ -13,6 +13,8 @@ c 24.03.2009    ggu     use nbsig to check if initialized
 c 16.12.2010    ggu     adjusted for sigma levels, renamed sigma.h to bsig.h
 c 25.10.2011    ggu     some routines renamed
 c 03.11.2011    ggu     use routine set_hybrid_depth() for hybrid levels
+c 02.12.2011    ggu     check in set_bsig_depths()
+c 02.12.2011    ggu     use of intp_aver() for lmax = 1
 c
 c*****************************************************************
 
@@ -68,7 +70,7 @@ c read in sigma levels
 
 	open(1,file=file)
 	read(1,*) nbsig
-	nbsig = nbsig - 1		!number of layers, not levels
+        nbsig = nbsig - 1	!number of layers, not interfaces
 
 	if( nbsig .gt. nsidim ) goto 98
 
@@ -82,6 +84,7 @@ c read in sigma levels
 	if( siglev(nbsig) .ne. 1. ) goto 99
 
 	write(6,*) nbsig,' sigma layers read from file ',file
+	write(6,*) 'sigma levels read: ',(siglev(i),i=0,nbsig)
 
 	return
    98	continue
@@ -111,6 +114,7 @@ c read in depth file for sigma layers
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
+        logical berror
 	integer k,l
 	integer kint,kext
 	integer nknaux
@@ -135,6 +139,18 @@ c read in depth file for sigma layers
 	close(1)
 
 	write(6,*) 'sigma layer depth read from file ',file
+
+        berror = .false.
+	do k=1,nkn
+          if( sigdep(k) .eq. -1. ) then
+            berror = .true.
+            write(6,*) k
+          end if
+	end do
+        if( berror ) then
+          write(6,*) 'errors in reading sigma depth'
+	  stop 'error stop set_bsig_depths: depth'
+        end if
 
 	return
    98	continue
@@ -353,8 +369,13 @@ c*****************************************************************
 	  sigvval(l) = vval(l,k)
 	end do
 
-	call intp_vert(nbsig,hsig,siguval,lmax,hlfem,femuval)
-	call intp_vert(nbsig,hsig,sigvval,lmax,hlfem,femvval)
+        if( lmax .eq. 1 ) then
+          call intp_aver(nbsig,hsig,siguval,femuval)
+          call intp_aver(nbsig,hsig,sigvval,femvval)
+        else
+	  call intp_vert(nbsig,hsig,siguval,lmax,hlfem,femuval)
+	  call intp_vert(nbsig,hsig,sigvval,lmax,hlfem,femvval)
+        end if
 
 	do l=1,lmax
 	  u(l) = u(l) + fact * femuval(l)
@@ -520,6 +541,32 @@ c output is var1, all other variables are input values
 	write(6,*) zbot1,zbot2
 	stop 'error stop intp_vert: interval in (1) must include (2)'
 	end
+
+c*****************************************************************
+
+        subroutine intp_aver(nbsig,hsig,sigval,femval)
+
+        implicit none
+
+        integer nbsig
+        real hsig(0:nbsig)
+        real sigval(nbsig)
+        real femval
+
+        integer i
+        real hacu,acu,h
+
+        acu = 0.
+        hacu = 0.
+        do i=1,nbsig
+          h = hsig(i) - hsig(i-1)
+          hacu = hacu + h
+          acu = acu + h * sigval(i)
+        end do
+
+        femval = acu / hacu
+
+        end
 
 c*****************************************************************
 

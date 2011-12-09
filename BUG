@@ -1,4 +1,13 @@
 
+BUG_2010_34     ggu	6.1.38   02.10.2011
+	init_sigma_info() for nlv == 1 and call to (sigmautil.f)
+
+BUG_2010_33     ggu	still open   24.11.2011
+	bug in tvd_init -> not fully resolved... (newtvd.f)
+
+BUG_2010_32     ggu	6.1.38   22.11.2011
+	bug fix in ts_file_open() -> bhashl (newbcl.f)
+
 BUG_2010_31     ggu	6.1.37   14.11.2011
         bug fix in adjust_levels (newini.f)
 
