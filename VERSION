@@ -1,3 +1,19 @@
+version  6_1_39    12-12-2011    VERS_6_1_39
+
+========================================================== 12-12-2011 - 6_1_39
+
+c ./fem3d/subver.f:
+c 09.12.2011	ggu	version 6.1.38
+c 12.12.2011	ggu	version 6.1.39
+c
+c ./fem3d/newsig.f:
+c 12.12.2011    ggu     eliminated (stupid) compiler bug (getpar)
+c
+c ./fem3d/tideg.f:
+c 12.12.2011    ccf     new component (MSm) in tidal computation
+
+==========================================================
+
 version  6_1_38    09-12-2011    VERS_6_1_38   commit_2011-12-12
 
 version  6_1_38    09-12-2011    VERS_6_1_38
