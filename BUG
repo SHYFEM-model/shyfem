@@ -1,4 +1,7 @@
 
+BUG_2010_35     ggu	6.1.39   12.10.2011
+	eliminated (stupid) compiler bug (getpar) (newsig.f)
+
 BUG_2010_34     ggu	6.1.38   02.10.2011
 	init_sigma_info() for nlv == 1 and call to (sigmautil.f)
 

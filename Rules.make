@@ -184,8 +184,8 @@ SOLVER=SPARSKIT
 #
 ##############################################
 
-#NETCDF=false
-NETCDF=true
+NETCDF=false
+#NETCDF=true
 NETCDFDIR = /usr/local/netcdf
 NETCDFDIR = /usr
 

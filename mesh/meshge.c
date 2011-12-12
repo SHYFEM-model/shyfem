@@ -31,6 +31,9 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 05-Dec-2011: new routines for inLine check				*
+ * 05-Dec-2011: new routine AreaLine					*
+ * 05-Dec-2011: in AreaConvex factor 0.5 was missing (and stable 64 bit)*
  * 09-Oct-2010: better error handling for CircumCircle Error		*
  * 10-Mar-2010: new way to compute area of polygon (stable for 64 bit)	*
  * 03-Jul-2000: in ControlCircumCircle() only warning			*
@@ -397,6 +400,32 @@ float AreaElement( Hashtable_type H , Elem_type *pe )
 }
 
 
+float AreaLine( Hashtable_type H , Line_type *pl )
+
+/* should work for closed and not closed lines */
+
+{
+        int i,nvert;
+        double area=0.;
+        Point *co,*cn;
+        Node_type *pn;
+
+	nvert=pl->vertex;
+
+        pn = RetrieveByNodeNumber(H,pl->index[nvert-1]);
+	co = &pn->coord;
+        for(i=0;i<nvert;i++) {
+                pn = RetrieveByNodeNumber(H,pl->index[i]);
+                cn = &pn->coord;
+                /* area += co->x * cn->y - cn->x * co->y; */
+                area += (co->x + cn->x) * (cn->y - co->y);
+		co = cn;
+        }
+
+        return 0.5 * (float) area;
+}
+
+
 float AreaConvex( NodeList list )
 
 {
@@ -413,11 +442,12 @@ float AreaConvex( NodeList list )
         for(i=0;i<nvert;i++) {
                 pn = RetrieveByNodeNumber(HNN,list->index[i]);
                 cn = &pn->coord;
-                area += co->x * cn->y - cn->x * co->y;
+                /* area += co->x * cn->y - cn->x * co->y; */
+                area += (co->x + cn->x) * (cn->y - co->y);
 		co = cn;
         }
 
-	return (float) area;
+	return 0.5 * (float) area;
 }
 	
 float LengthConvex( NodeList list )
@@ -529,3 +559,67 @@ int TurnClosedLine( int ndim , float *xl , float *yl )
 
 	return loops;
 }
+
+int IsPointInLine( Line_type *pl , float x , float y )
+
+{
+	int i,loops;
+	int nvert;
+	double alpha = 0.;
+	double pi2 = 2.*3.14159;
+        Point *co,*cn;
+        Node_type *pn;
+
+	nvert=pl->vertex;
+
+        pn = RetrieveByNodeNumber(HNN,pl->index[nvert-1]);
+	co = &pn->coord;
+        for(i=0;i<nvert;i++) {
+                pn = RetrieveByNodeNumber(HNN,pl->index[i]);
+                cn = &pn->coord;
+	        alpha += angle(co->x,co->y,x,y,cn->x,cn->y);
+		co = cn;
+        }
+
+	if( alpha > 0. ) {
+		loops = ( alpha + 0.5 ) / pi2;
+	} else if( alpha < 0. ) {
+		loops = ( alpha - 0.5 ) / pi2;
+	} else {
+		loops = 0;
+	}
+
+	return loops;
+}
+       	
+int IsLineInLine( Line_type *plext , Line_type *plint )
+
+{
+	int i,nvert,inside;
+        Point *cn;
+        Node_type *pn;
+
+	nvert=plint->vertex;
+
+        for(i=0;i<nvert;i++) {
+                pn = RetrieveByNodeNumber(HNN,plint->index[i]);
+                cn = &pn->coord;
+		inside = IsPointInLine(plext,cn->x,cn->y);
+		if( ! inside ) return 0;
+        }
+
+	return 1;
+}
+       	
+int IsLineClosed( Line_type *pl )
+
+{
+	if( pl->index[0] == pl->index[pl->vertex-1] ) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+
+

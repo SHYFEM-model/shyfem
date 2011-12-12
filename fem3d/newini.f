@@ -366,7 +366,7 @@ c common
 	common /level/ nlvdi,nlv
 	real hm3v(3,1)
 	common /hm3v/hm3v
-	real hldv(1),hlv(1)
+	real hldv(1),hlv(2)
 	common /hldv/hldv, /hlv/hlv
 
 c local

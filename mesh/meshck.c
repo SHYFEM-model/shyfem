@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 06-Dec-2011: better handling of line types				*
  * 07-Oct-2010: better error message in CheckInput()			*
  * 12-Nov-97: check for not unique coordinates in CheckInput()          *
  * 17-Oct-97: in CheckInput() check for couter-clockwise line turning   *
@@ -83,6 +84,9 @@ int CheckInput( void )
         Line_type *pl;
 	StackTable backg;
 	float *xe, *ye;
+	float area;
+	float areamax = 0.;
+        Line_type *plmax = NULL;
 
 /* set all nodes to NONE */
 
@@ -96,12 +100,27 @@ int CheckInput( void )
         ResetHashTable(HLI);
         while( (pl=VisitHashTableL(HLI)) != NULL ) {
 
-	    if( pl->type == L_EXTERNAL )	/* HACK *//* FIXME */
+	    area = AreaLine(HNN,pl);
+	    if( area > areamax ) {
+		areamax = area;
+		plmax = pl;
+	    }
+
+	    if( pl->type == L_EXTERNAL ) {	/* HACK *//* FIXME */
 		SetLtype(pl, L_EXTERNAL );
-	    if( pl->type == L_INTERNAL )
+	    } else if( pl->type == L_INTERNAL ) {
 		SetLtype(pl, L_INTERNAL );
-	    if( pl->type == L_FAULT )
+	    } else if( pl->type == L_FAULT ) {
 		SetLtype(pl, L_FAULT );
+	    } else if( pl->type == L_NONE ) {
+		if( IsLineClosed(pl) ) {
+		    SetLtype(pl, L_INTERNAL );
+		} else {
+		    SetLtype(pl, L_FAULT );
+		}
+	    } else {
+		  Error2("Unknown line type in line ",itos(pl->number));
+	    }
 
 	    ntot++;
 	    if( IsLtype(pl, L_EXTERNAL ) ) next++;
@@ -112,20 +131,28 @@ int CheckInput( void )
 
 	if( next > 1 ) {
 		Error("More than one line marked external");
-	}
-	if( next == 0 && ntot == 1 ) {
-		Warning("Only one line found: marking external");
-        	ResetHashTable(HLI);
-        	pl=VisitHashTableL(HLI);
-		SetLtype(pl, L_EXTERNAL );
-		next++;
-	}
-	if( ntot == 0 || next == 0 ) {
+	} else if( ntot == 0 ) {
 		Warning("No line found: using hull as boundary");
        		ResetHashTable(HNN);
 		while( (pn=VisitHashTableN(HNN)) != NULL ) {
 			SetNtype(pn, N_BOUNDARY );
 		}
+	} else if( next == 0 ) {
+		Warning("No external line found... using biggest one");
+		SetLtype(plmax, L_EXTERNAL );
+		next++;
+	}
+
+/* check if all lines are inside external line */
+
+	if( plmax != NULL ) {
+          ResetHashTable(HLI);
+          while( (pl=VisitHashTableL(HLI)) != NULL ) {
+	      if( pl == plmax ) continue;
+	      if( ! IsLineInLine(plmax,pl) ) {
+	      	Error2("Line not in external line: ",itos(pl->number));
+	      }
+	  }
 	}
 
 /* check lines and set node type */
@@ -136,7 +163,7 @@ int CheckInput( void )
 
 		/* check for closed line */ /* FIXME */ /* -> close line */
 
-	        if( pl->index[0] != pl->index[pl->vertex-1] ) {
+		if( ! IsLineClosed(pl) ) {
 	    	    Error2("Line is not closed: ",itos(pl->number));
 	        }
 

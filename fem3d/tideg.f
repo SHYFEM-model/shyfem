@@ -10,6 +10,7 @@ c 27.08.2007    ccf     isphe for spherical coordinate system
 c 11.03.2009    ggu     not adjusted for new x/ygeov -> still to be handled
 c 05.02.2010    ccf     include new tideforc routine for tidal potential
 c 18.11.2011    ggu     excluded projection code from tide
+c 12.12.2011    ccf     new component (MSm) in tidal computation
 c
 c********************************************************************
 
@@ -33,38 +34,37 @@ c********************************************************************
 	common /tidcom/ rtide
 	save /tidcom/
 
-	real phi,omega,scale
 	real xmin,xmax,ymin,ymax
+	integer iproj
 	integer k
 
 	real getpar
         integer isphe          !if = 1  coordinates are in spherical system
         integer date,time
 
-c-----------------------------------------------------------
-        phi = dcor                      !latitude of projection
-        omega = 0.0                     !longitude of reference
-        scale = 100.                    !scale of the map (100 is meters)
-c-----------------------------------------------------------
-
 	rtide = getpar('rtide')
+
+	if( rtide .le. 0. ) return
+
+	iproj = nint(getpar('iproj'))
 	call get_coords_ev(isphe)
+
+	if( isphe .le. 0 .and. iproj .eq. 0 ) then
+	  write(6,*) 'isphe,iproj: ',isphe,iproj
+	  write(6,*) 'for tidal potential either '
+	  write(6,*) 'isphe or iproj must be set'
+	  stop 'error stop tideini: no lat/lon coordinates'
+	end if
 
 	do k=1,nkn
 	  zeqv(k) = 0.
 	end do
 
-	if( rtide .le. 0. ) return
-
-c delete until here...
-
-	if( rtide .gt. 0 ) then
-	  write(6,*) 'Tidal potential active'
-	end if
-
 	date = getpar('date')
 	time = getpar('time')
 	call dtsini(date,time)
+
+	write(6,*) 'Tidal potential active'
 
 	end
 
@@ -156,6 +156,7 @@ c********************************************************************
 !    - Mf  fortnightly lunar
 !    - Mm  monthly lunar
 !    - Ssa semiannual solar
+!    - MSm S0-semiannual solar
 !
 !*********************************************************************
 
@@ -297,7 +298,7 @@ c********************************************************************
         chi(9) =      2*s0             !Mf
         chi(10) =       s0 - p0        !Mm
         chi(11) = 2*h0                 !Ssa
-        chi(12) = 0.0
+        chi(12) =-2*h0 + s0 +p0	       !MSm
 
 ! ----- Convert to Radians
         do i=1,ntd
@@ -328,16 +329,16 @@ c********************************************************************
 
         data ome/1.40519e-4,1.45444e-4,1.37880e-4,1.458426e-4,
      &           0.72921e-4,0.67598e-4,0.72523e-4,0.649584e-4,
-     &		 0.053234e-04,0.026392e-04,0.003982e-04,0./
+     &		 0.053234e-04,0.026392e-04,0.003982e-04,0.049252e-04/
 	data amp/0.242334,0.112841,0.046398,0.030704,
      &           0.141465,0.100514,0.046843,0.019256,
-     &		 0.041742,0.022026,0.019446,0./
+     &		 0.041742,0.022026,0.019446,0.004239/
         data loven/0.6930,0.6930,0.6930,0.6930,
      &             0.7364,0.6950,0.7059,0.6946,  
-     &             0.6930,0.6930,0.6930,0./  
+     &             0.6920,0.6920,0.6920,0.6920/  
 	data mask_t/1., 1., 1., 1., 
      &		    1., 1., 1., 1.,
-     &		    1., 1., 1., 0./
+     &		    1., 1., 1., 1./
 
 	integer n,m,l
         real pi2,rad

@@ -1,4 +1,12 @@
 
+12.12.2011	mesh and tide
+
+	new component (MSm) in tidal computation (tideg.f)
+	eliminated (stupid) compiler bug (getpar) (newsig.f)
+	new way to handle lines for mesh (mesh.c,meshge.c,meshck.c)
+
+========================================================== 09-12-2011 - 6_1_38
+
 05.12.2011	netcdf
 
 	new file written from scratch (netcdf.f)

@@ -1,5 +1,26 @@
 ============================================================
 
+Mon Dec 12 12:20:00 CET 2011
+
+mesh adjourned
+
+ BUG                |    3 +
+ LOG                |    8 +
+ RELEASE_NOTES      |    1 +
+ Rules.make         |    4 +-
+ fem3d/newini.f     |    2 +-
+ fem3d/newsig.f     |    3 +
+ fem3d/subver.f     |    2 +-
+ fem3d/tideg.f      |  753 ++++++++++++++++++++++++++--------------------------
+ fembin/revisionlog |    2 +
+ mesh/mesh.c        |    5 +-
+ mesh/meshck.c      |   53 +++-
+ mesh/meshge.c      |   98 +++++++-
+ mesh/meshge.h      |    6 +
+ 13 files changed, 543 insertions(+), 397 deletions(-)
+
+============================================================
+
 Fri Dec  9 17:45:20 CET 2011
 
 New version 6_1_38

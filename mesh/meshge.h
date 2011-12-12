@@ -8,6 +8,7 @@
  * see meshge.c for copying information					*
  *									*
  * Revision History:							*
+ * 05-Dec-2011: new general routines					*
  * 17-Oct-97: new routine TurnClosedLine()                              *
  * 16-Oct-97: new routine FindElement()                                 *
  * 15-Oct-97: new routine InClosedLine()                                *
@@ -47,6 +48,7 @@ Elem_type *FindElement( Hashtable_type H, float x, float y );
 Elem_type *FindXYElement( ListTable L, float x, float y );
 
 float AreaElement( Hashtable_type H , Elem_type *pe );
+float AreaLine( Hashtable_type H , Line_type *pl );
 float AreaConvex( NodeList list );
 float LengthConvex( NodeList list );
 
@@ -54,6 +56,10 @@ double angle( float x1, float y1, float x2, float y2, float x3, float y3 );
 
 int InClosedLine( int ndim , float *xl , float *yl , float x , float y );
 int TurnClosedLine( int ndim , float *xl , float *yl );
+
+int IsPointInLine( Line_type *pl , float x , float y );
+int IsLineInLine( Line_type *plext , Line_type *plint );
+int IsLineClosed( Line_type *pl );
 
 
 #endif

@@ -10,6 +10,7 @@ c 10.11.2011    ggu     adjust depth for hybrid levels
 c 11.11.2011    ggu     error check in set_hkv_and_hev()
 c 11.11.2011    ggu     in check_hsigma_crossing set zeta levels to const depth
 c 18.11.2011    ggu     restructured hybrid - adjustment to bashsigma
+c 12.12.2011    ggu     eliminated (stupid) compiler bug (getpar)
 c
 c notes :
 c
@@ -203,6 +204,8 @@ c returns bsigma which is true if sigma layers are used
 	implicit none
 
 	logical bsigma
+
+	real getpar
 
 	bsigma = nint(getpar('nsigma')) .gt. 0
 

@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 05-Dec-2011: adapt for changes in AreaConvex				*
  * 14-Aug-2002: InterpolRes uses cubic to compute resolution            *
  * 03-Feb-2000: different algorithm to compute resolution in bckgrid    *
  * 05-May-1999: check for zero area in SetFEMParam                      *
@@ -590,7 +591,7 @@ void SetResolution( NodeList list )
 
 	if( OpIntern ) {
 		area = AreaConvex(list);
-		OpResolution = 0.5*(4./sqrt(27)) * area/OpIntern;
+		OpResolution = (4./sqrt(27)) * area/OpIntern;
 		printf("SetResolution: (1) %f %f\n",area,OpResolution);
 	} else if( OpBoundary ) {
 		length = LengthConvex(list);
@@ -602,7 +603,7 @@ void SetResolution( NodeList list )
 		printf("SetResolution: (3) %f\n",OpResolution);
 	}
 
-	resdef = 100.*AreaConvex(list);
+	resdef = 200.*AreaConvex(list);
 
 	if( OpBackGround >= 0 ) {
 		ResetListTable(BCK);

@@ -64,6 +64,8 @@ else
   files=$*
 fi
 
+#echo "$options -file $file -after $after -befor $befor"
+
 for file in $files
 do
   getheader.pl $file | revisionlog.pl \
