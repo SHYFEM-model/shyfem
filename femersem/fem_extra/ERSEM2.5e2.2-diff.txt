@@ -1,0 +1,63 @@
+
+Using the following directories:
+   (1)  .
+   (2)  /home/georg/work/shyfem-6_1_39/femersem
+
+dir  missing from 1: (4096)  ./fem_extra
+different file size: (7054,7516)  ./src/Makefile
+file missing from 1: (2735)  ./src/share/femtobfm.F90
+different file size: (27316,11347)  ./src/share/netcdf_bfm.F90
+different file size: (17771,29666)  ./src/standalone/standalone.F90
+different file size: (11586,11623)  ./src/standalone/time.F90
+different file size: (7533,7531)  ./src/BFM/include/INCLUDE.h
+different file size: (63169,63160)  ./src/BFM/General/ModuleMem.F90
+
+First directory:
+
+  ./ggg   93
+  ./src/Makefile   7054
+  ./src/share/netcdf_bfm.F90   27316
+  ./src/standalone/standalone.F90   17771
+  ./src/standalone/time.F90   11586
+  ./src/BFM/include/INCLUDE.h   7533
+  ./src/BFM/General/ModuleMem.F90   63169
+
+  93   ./ggg
+  7054   ./src/Makefile
+  7533   ./src/BFM/include/INCLUDE.h
+  11586   ./src/standalone/time.F90
+  17771   ./src/standalone/standalone.F90
+  27316   ./src/share/netcdf_bfm.F90
+  63169   ./src/BFM/General/ModuleMem.F90
+
+  total: 134522
+
+Second directory:
+
+  ./fem_extra   4096
+  ./src/Makefile   7516
+  ./src/share/femtobfm.F90   2735
+  ./src/share/netcdf_bfm.F90   11347
+  ./src/standalone/standalone.F90   29666
+  ./src/standalone/time.F90   11623
+  ./src/BFM/include/INCLUDE.h   7531
+  ./src/BFM/General/ModuleMem.F90   63160
+
+  2735   ./src/share/femtobfm.F90
+  4096   ./fem_extra
+  7516   ./src/Makefile
+  7531   ./src/BFM/include/INCLUDE.h
+  11347   ./src/share/netcdf_bfm.F90
+  11623   ./src/standalone/time.F90
+  29666   ./src/standalone/standalone.F90
+  63160   ./src/BFM/General/ModuleMem.F90
+
+  total: 137674
+
+Statistics: 
+
+  Differing files         6
+  Directories only in 2   1
+  Files only in 1         1
+  Files only in 2         1
+

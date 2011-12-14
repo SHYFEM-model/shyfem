@@ -1,0 +1,18 @@
+
+files to modify for a new version:
+
+fem3d/subbfm.f					(new file)
+femersem/src/share/femtobfm.f90			(new file)
+femersem/src/standalone/standalone.f90		(modified file from BFM)
+femersem/src/Makefile				(modified file from BFM)
+femersem/src/Rules.make (FORTRAN_COMPILER)	(modified file from BFM)
+femersem/Makefile				(added fem commands)
+
+other files that have been modified:
+
+femersem/src/share/netcdf_bfm.F90		(exclude calls to netvdf)
+femersem/src/standalone/time.F90		(use fem time)
+
+femersem/src/BFM/include/INCLUDE.h		(compiler warning)
+femersem/src/BFM/General/ModuleMem.F90		(compiler warning)
+

@@ -1,0 +1,8 @@
+2006-08-12
+	Fortran 95 does not allow the isnan intrinsic procedure.
+	Temporarely removed -e95 from compiler.IFORT.
+	However, isnan is not a standard instrinsic in many compilers
+	and should be handled with a special cpp flag 
+2006-09-08
+	Average values of benthic and pelagic  variables are not stored. 
+	Currently can only store snapshots

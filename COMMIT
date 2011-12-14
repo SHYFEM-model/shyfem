@@ -1,5 +1,26 @@
 ============================================================
 
+Wed Dec 14 09:33:55 CET 2011
+
+ersem routines integrated
+
+ femersem/BUGS                            |    8 +
+ femersem/CHANGES                         |   19 +
+ femersem/COPYING                         |  340 ++++++++
+ femersem/README                          |    9 +
+ femersem/TODO                            |   10 +
+ femersem/doc/ModuleMem.F90               | 1375 ++++++++++++++++++++++++++++++
+ femersem/fem_extra/ERSEM-error           |   48 +
+ femersem/fem_extra/ERSEM2.5e2.2-diff.txt |   63 ++
+ femersem/fem_extra/README                |   18 +
+ femersem/fem_extra/bfm_change.pl         |   70 ++
+ femersem/fem_extra/bfm_change.sh         |   30 +
+ femersem/fem_extra/bfm_iterate.sh        |   18 +
+ femersem/src/Rules.make                  |  128 +++
+ 13 files changed, 2136 insertions(+), 0 deletions(-)
+
+============================================================
+
 Mon Dec 12 12:21:08 CET 2011
 
 New version 6_1_39

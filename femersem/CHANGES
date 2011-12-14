@@ -1,0 +1,19 @@
+STANDALONE v1.2
+- Added the initialisation for chl in phytoplankton via namelist. 
+  Needed for running with ChlLighFlag=1 (bio_bfm.F90)
+- Added the zeroing of state variables when switched off (bio_bfm.f90). 
+  Connected to the change below.
+- Variables and systems are switched off according to bio_setup (bio_bfm.F90)
+- Removed the control on variable storage dependent on the bio_setup choice. 
+  This allows to save pelagic variables even if the benthic-only system is run (netcdf_bfm.F90)
+STANDALONE v1.3
+- Added bottom deposition and oxygenation fluxes (standalone.F90: envforcing_bfm)
+  STANDALONE now runs with bio_setup=2 (benthic-only setup)
+- new namelist in standalone.nml collecting all the parameters of the analytical
+  forcings
+SYSTEM v2.0
+- added the GOTM interface
+- changed the name of the BFM rootdir env variable from ROOTDIR to BFMDIR
+SYSTEM v2.1
+- activating the BFM_GOTM key now allows the use of the other bio models in gotm
+  (modified bio_save.F90)

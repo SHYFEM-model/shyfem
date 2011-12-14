@@ -1,0 +1,10 @@
+STANDALONE
+- add the restart option
+- modularize the makefiles for the standalone version
+GOTM
+- add dependency check of the files in the gotm directory
+- remove the unused variable pelvar_save_all (remnant of older implementations)
+NEMO
+- implement standard NEMO coupling (starting)
+POM
+- implement standard POM coupling

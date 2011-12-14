@@ -1,0 +1,9 @@
+# Notes to developers and users #
+---------------------------------
+This is the rootlevel of the BFM structure.
+The Makefile in this directory is intended for development use only.
+Users are requested to follow the quickstart instructions provided 
+in the doc/ directory.
+
+A list of the important environmental variables is also given in the 
+script src/bfm_env.sh
