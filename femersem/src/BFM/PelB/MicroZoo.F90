@@ -1,5 +1,5 @@
-#INCLUDE "DEBUG.h"
-#INCLUDE "INCLUDE.h"
+#include "DEBUG.h"
+#include "INCLUDE.h"
 
 !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 ! MODEL  BFM - Biogeochemical Flux Model version 2.50-g
@@ -42,12 +42,12 @@
   !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
   use global_mem, ONLY:RLEN
-#IFDEF NOPOINTERS
+#ifdef NOPOINTERS
   use mem,  ONLY: D3STATE
-#ELSE
+#else
   use mem, ONLY: D3STATE, B1c, B1n, B1p, O2o, R1c, R6c, R1n, R6n, &
     R1p, R6p, N4n, N1p, PhytoPlankton, MicroZooPlankton
-#ENDIF
+#endif
   use mem, ONLY: ppB1c, ppB1n, ppB1p, ppO2o, ppR1c, ppR6c, &
     ppR1n, ppR6n, ppR1p, ppR6p, ppN4n, ppN1p, ppPhytoPlankton, ppMicroZooPlankton, &
     flP1R6s, ETW, eO2mO2, qnB1c, qpB1c, qnPc, qpPc, qn_mz, qp_mz, &

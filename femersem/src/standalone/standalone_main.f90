@@ -26,7 +26,7 @@
 !EOP
 !-----------------------------------------------------------------------
 !BOC
-      print*,' ok inizia 1'
+
       call init_standalone
       call timestepping
 

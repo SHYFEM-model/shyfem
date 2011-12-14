@@ -5,8 +5,6 @@
 ! !ROUTINE: Initialise BFM variables
 !
 ! !INTERFACE:
-
-
    subroutine init_var_bfm(namlst,fname,unit,setup)
 !
 ! !DESCRIPTION:
@@ -198,7 +196,7 @@
    end if
    var_save=""
    ave_save=""
-   var_ave=0
+   var_ave=.false.
    read(namlst,nml=bfm_save_nml,err=100)
    close(namlst)
    icontrol=1
@@ -381,7 +379,6 @@
    ! Check setup settings
    ! and finalize initialization
    !---------------------------------------------
-   print*,' setup ',setup,CalcBenthicFlag
    select case (setup)
       case (0)
       case (1) ! Pelagic only

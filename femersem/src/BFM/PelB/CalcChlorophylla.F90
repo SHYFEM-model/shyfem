@@ -1,5 +1,5 @@
-#INCLUDE "DEBUG.h"
-#INCLUDE "INCLUDE.h"
+#include "DEBUG.h"
+#include "INCLUDE.h"
 
   !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -37,11 +37,11 @@
   !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
   use global_mem, ONLY:RLEN
-#IFDEF NOPOINTERS
+#ifdef NOPOINTERS
   use mem,  ONLY: D3STATE
-#ELSE
+#else
   use mem,  ONLY: PhytoPlankton
-#ENDIF
+#endif
   use mem, ONLY: ppPhytoPlankton, Chla, iiPhytoPlankton, iiC, iiL, NO_BOXES, &
     iiBen, iiPel, flux_vector
   use mem_Param,  ONLY: ChlLightFlag, p_qchlc

@@ -1,4 +1,10 @@
 
+14.12.2011	ERSEM/BFM
+
+	up and running for ifort and gfortran
+
+========================================================== 12-12-2011 - 6_1_39
+
 12.12.2011	mesh and tide
 
 	new component (MSm) in tidal computation (tideg.f)

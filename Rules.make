@@ -122,6 +122,13 @@ export NGRDIM = 12
 #export NELDIM = 6000
 #export NLVDIM = 22
 
+# Cabras
+#export NKNDIM = 4000
+#export NELDIM = 8000
+#export NLVDIM = 1
+#export MBWDIM = 50
+#export NGRDIM = 10
+
 ##############################################
 # Compiler
 ##############################################
@@ -375,7 +382,7 @@ DEFINES += -DREAL_4B=$(REAL_4B)
 DEFINES += -DFORTRAN95 
 DEFINES += -DPRODUCTION -static
 #DEFINES += -DRLEN=real
-EXTRAS  = -w95
+#EXTRAS  = -w95
 
 #FINTEL_ERSEM = $(DEFINES) $(EXTRAS)
 FINTEL_ERSEM = $(DEFINES) 

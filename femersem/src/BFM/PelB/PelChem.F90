@@ -1,5 +1,5 @@
-#INCLUDE "DEBUG.h"
-#INCLUDE "INCLUDE.h"
+#include "DEBUG.h"
+#include "INCLUDE.h"
 
 !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 ! MODEL  BFM - Biogeochemical Flux Model version 2.50-g
@@ -41,11 +41,11 @@
   !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
   use global_mem, ONLY:RLEN
-#IFDEF NOPOINTERS
+#ifdef NOPOINTERS
   use mem,  ONLY: D3STATE
-#ELSE
+#else
   use mem,  ONLY: N4n, N3n, O2o, O4n, N6r, R6s, N5s, P1s
-#ENDIF
+#endif
   use mem, ONLY: ppN4n, ppN3n, ppO2o, ppO4n, ppN6r, ppR6s, ppN5s, &
     ppP1s, flN3O4n, ETW, flPTN6r, flP1R6s, NO_BOXES, iiBen, iiPel, flux_vector
   use mem_Param,  ONLY: p_qon_nitri, p_qro, p_qon_dentri

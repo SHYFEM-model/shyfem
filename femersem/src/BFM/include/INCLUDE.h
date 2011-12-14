@@ -1,4 +1,4 @@
-#ifdef BFM_NOPOINTERS 1
+#ifdef BFM_NOPOINTERS
 
 
 #define NOPOINTERS 1

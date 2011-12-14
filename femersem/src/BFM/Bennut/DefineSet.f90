@@ -58,7 +58,7 @@
         integer ::j
         integer ::j_1
 
-        integer,static  ::nr=0
+        integer,save  ::nr=0
 
         REAL(RLEN) ::r
         REAL(RLEN) ::s

@@ -1,4 +1,4 @@
-#include 'cppdefs.h'
+#include <cppdefs.h>
 !-----------------------------------------------------------------------
 !BOP
 !
@@ -17,8 +17,6 @@
    use standalone
    use api_bfm
    implicit none
-
-    include '../../../fem3d/param.h'
 !
 ! !INPUT PARAMETERS:
 !
@@ -32,19 +30,6 @@
    real(RLEN)              :: min3D,min2D
    integer                 :: i,j,ll
    integer,dimension(2,2)  :: blccc
-   real tempv(nlvdim,nkndim)
-   common /tempv/tempv
-
-   real saltv(nlvdim,nkndim)
-   common /saltv/saltv
-
-   real ddepth(nkndim)
-   common /ddepth/ddepth
-
-   integer node
-   common /node/node
-
-
 !
 ! !EOP
 !-----------------------------------------------------------------------
@@ -96,7 +81,6 @@
             LEVEL1 'EXIT at time: ',timesec
             D3STATE=bbccc3D
             D2STATE=bbccc2D
-	    print*,node,tempv(1,node),saltv(1,node),ddepth(node)
             STOP
          END IF
          nstep=nstep/2
@@ -107,7 +91,7 @@
          delt=nstep*mindelt
          timesec=ntime*maxdelt
 #ifdef DEBUG
-         LEVEL2 ' okTime Step cut! delt= ',delt/2.,' nstep= ',nstep
+         LEVEL2 'Time Step cut! delt= ',delt/2.,' nstep= ',nstep
 #endif
          ! Recalculate Sources:
          call ResetFluxes
@@ -121,7 +105,6 @@
 #ifdef DEBUG
          LEVEL2 'Internal time= ',timesec
 #endif   
-	 !print*,'Internal time= ',timesec
          ! Recalculate sources:
          call ResetFluxes
          call envforcing_bfm
@@ -153,7 +136,6 @@
                LEVEL1 'EXIT at time: ',timesec
                D3STATE=bbccc3D
                D2STATE=bbccc2D
-	       print*,node,tempv(1,node),saltv(1,node),ddepth(node)
                STOP 'integration-RK2'
             END IF
             nstep=nstep/2
@@ -163,7 +145,7 @@
             dtm1=delt
             delt=nstep*mindelt
             timesec=ntime*maxdelt
-            LEVEL1 'okTime Step cut at RK2! delt= ',delt,' nstep= ',nstep
+            LEVEL1 'Time Step cut at RK2! delt= ',delt,' nstep= ',nstep
          ELSE
             IF (nmin.eq.nmaxdelt) EXIT TLOOP
          ENDIF

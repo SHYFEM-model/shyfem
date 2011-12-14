@@ -37,13 +37,13 @@
 
    select case (mode)
       case(INIT)   ! initialization
-         i=count(var_ave(stPelStateS:stPelFluxE)== .true. )
+         i=count(var_ave(stPelStateS:stPelFluxE) .eqv. .true. )
          if ( i > 0 ) then
             allocate(D3ave(1:i,1:NO_BOXES),stat=rc)
             if (rc /= 0) stop 'init_bio(): Error allocating D3ave'
             D3ave=0.0
          endif
-         i=count(var_ave(stBenStateS:stBenFluxE)== .true. )
+         i=count(var_ave(stBenStateS:stBenFluxE) .eqv. .true. )
          if ( i > 0 ) then
             allocate(D2ave(1:i,1:NO_BOXES_XY),stat=rc)
             if (rc /= 0) stop 'init_bio(): Error allocating D3ave'

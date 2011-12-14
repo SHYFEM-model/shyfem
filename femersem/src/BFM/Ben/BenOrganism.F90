@@ -1,5 +1,5 @@
-#INCLUDE "DEBUG.h"
-#INCLUDE "INCLUDE.h"
+#include "DEBUG.h"
+#include "INCLUDE.h"
 
 !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 ! MODEL  BFM - Biogeochemical Flux Model version 2.50-g
@@ -42,12 +42,12 @@
   !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
   use global_mem, ONLY:RLEN
-#IFDEF NOPOINTERS
+#ifdef NOPOINTERS
   use mem,  ONLY: D2STATE
-#ELSE
+#else
   use mem, ONLY: D2STATE, Q6c, Q6n, Q6p, G2o, K4n, K1p, D6m, D7m, &
     D8m, D1m, BenOrganisms, BenBacteria
-#ENDIF
+#endif
   use mem, ONLY: ppQ6c, ppQ6n, ppQ6p, ppG2o, ppK4n, ppK1p, &
     ppD6m, ppD7m, ppD8m, ppD1m, ppBenOrganisms, ppBenBacteria, rrBTo, reBTn, &
     reBTp, ETW_Ben, iiBenOrganisms, iiBenBacteria, iiY1, iiY2, iiY4, iiY5, iiC, &

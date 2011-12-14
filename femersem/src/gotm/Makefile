@@ -3,7 +3,7 @@
 # Makefile to build the Bio Module - libbio.a
 #
 
-include ../Rules.make
+include ../../Rules.make
 
 LIB     = $(LIBDIR)/libbio$(buildtype).a
 

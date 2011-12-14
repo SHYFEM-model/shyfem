@@ -15,12 +15,12 @@
 !
 ! !USES:
    use bio_var, only: bio_model
-!   use bio_template, only: do_bio_template
-!   use bio_npzd, only: do_bio_npzd
-!   use bio_iow, only: do_bio_iow
-!   use bio_mab, only: do_bio_mab
-!   use bio_sed, only: do_bio_sed
-!   use bio_fasham, only: do_bio_fasham
+   use bio_template, only: do_bio_template
+   use bio_npzd, only: do_bio_npzd
+   use bio_iow, only: do_bio_iow
+   use bio_mab, only: do_bio_mab
+   use bio_sed, only: do_bio_sed
+   use bio_fasham, only: do_bio_fasham
 #ifdef BFM_GOTM
    use bio_bfm, only: do_bio_bfm
 #endif
@@ -45,17 +45,17 @@
 !BOC
    select case (bio_model)
       case (-1)
-!        call do_bio_template(numc,nlev)
+         call do_bio_template(numc,nlev)
       case (1)
-!        call do_bio_npzd(first,numc,nlev,cc,pp,dd)
+         call do_bio_npzd(first,numc,nlev,cc,pp,dd)
       case (2)
-!        call do_bio_iow(first,numc,nlev,cc,pp,dd,h,t)
+         call do_bio_iow(first,numc,nlev,cc,pp,dd,h,t)
       case (3)
-!        call do_bio_sed(nlev,pp,dd)
+         call do_bio_sed(nlev,pp,dd)
       case (4)
-!        call do_bio_fasham(first,numc,nlev,cc,pp,dd)
+         call do_bio_fasham(first,numc,nlev,cc,pp,dd)
       case (5)
-!        call do_bio_mab(first,numc,nlev,cc,pp,dd,h,t)
+         call do_bio_mab(first,numc,nlev,cc,pp,dd,h,t)
 #ifdef BFM_GOTM
       case (6)
          call do_bio_bfm(first)

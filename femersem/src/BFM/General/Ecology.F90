@@ -1,4 +1,4 @@
-#INCLUDE "DEBUG.h"
+#include "DEBUG.h"
 
 !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 ! MODEL  BFM - Biogeochemical Flux Model version 2.50-g
@@ -86,6 +86,7 @@
   if ( CalcPelagicFlag) then
 
     call PelagicSystemDynamics
+
   end if
 
 
@@ -125,8 +126,6 @@
 
 
   end
-
-
 !BOP
 !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 ! MODEL  BFM - Biogeochemical Flux Model version 2.50

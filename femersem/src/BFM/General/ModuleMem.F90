@@ -56,7 +56,7 @@
         ! Modules can optionally use (import) other modules
         !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
         use global_mem, only:RLEN, ZERO
-#ifdef DEBUG && BFM_GOTM
+#if DEBUG && BFM_GOTM
         use gotm_error_msg, only: gotm_error
 #endif
         !-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -315,10 +315,10 @@
 
 !    3d name                                                  description            unit
 ! ---------- ------------------------------------------------------------ ---------------
-!        ETW      HYDROINPUT                                  temperature               C
-!        ESW      HYDROINPUT                                     Salinity              --
-!        EIR      INPUT ATMOS                                  Irradiance            W/m2
-!        ESS   			                       Suspended sediment            g/m3
+!        ETW                                                  temperature               C
+!        ESW                                                     Salinity              --
+!        EIR                                                   Irradiance            W/m2
+!        ESS                                           Suspended sediment            g/m3
 !      cxoO2                      Temperature-dependent oxygen saturation      mmol O2/m3
 !       XO2o                                      Net O2 conc. = O2 - H2S      mmol O2/m3
 !     eO2mO2                                   Relative Oxygen saturation               %
@@ -443,8 +443,8 @@
 !     jRIY3n                           detrtus filtered by filter feeders     mmol N/m2/d
 !     jRIY3p                           detrtus filtered by filter feeders     mmol P/m2/d
 !     jRIY3s                           detrtus filtered by filter feeders    mmol Si/m2/d
-!  Depth_Ben        HYDRO INPUT        depth of the  layer above sediment               m
-!    ETW_Ben        HYDRO INPUT                               temperature               C
+!  Depth_Ben                           depth of the  layer above sediment               m
+!    ETW_Ben                                                  temperature               C
 !    O2o_Ben                                 oxygen conc. in the pelagica      mmol O2/m3
 !    N1p_Ben                               phosphate conc. in the pelagic       mmol P/m3
 !    N3n_Ben                                 nitrate conc. in the pelagic       mmol N/m3
@@ -1034,7 +1034,7 @@
                   destination='',i4)') D23, origin,destination
                 write(LOGUNIT,'(''flux='',(G16.8))') flux
                 STDERR  "Error in flux_vector function: negative flux !"
-#ifdef DEBUG && BFM_GOTM
+#if DEBUG && BFM_GOTM
                 call gotm_error("flux_vector","negative flux")
 #endif
               ENDIF ! minval<0
@@ -1144,7 +1144,7 @@
               write(LOGUNIT,*) "origin,destination:", origin,destination
               write(LOGUNIT,*) flow
               STDERR "Error in (scalar)flux function:negative flux !"
-#ifdef DEBUG && BFM_GOTM
+#if DEBUG && BFM_GOTM
               call gotm_error("flux","negative flux")
 #endif
             ENDIF ! flow<0

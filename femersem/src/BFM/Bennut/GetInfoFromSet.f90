@@ -58,7 +58,7 @@
 
         integer      ::seqnr,j,layer
         real(RLEN)   ::bC,r,s
-        r=0
+
         seqnr=kfind(termnr,sets(NUTR)%coeffs,sets(NUTR)%nn)
         if (seqnr >1000) stop 'GetInfoFromSet mode=GET??'
         if( option == GET ) then
@@ -79,7 +79,12 @@
           layer=termnr/10
           bC=sets(NUTR)%b(layer)
           s=sets(NUTR)%factor(seqnr)
-          j=-2* (input == PARAMETER) 
+          !j=-2* (input == PARAMETER) 
+          if(input == PARAMETER)  then
+	    j = -2
+	  else
+	    j = 0
+	  end if
           if ( s/=0.0 ) then
             r= funcalc(option,j,sets(NUTR)%coeffs(seqnr),bC,at_x)
             !calculate of the result at the upper bborder and substratc result &

@@ -1,5 +1,94 @@
 ============================================================
 
+Wed Dec 14 09:34:54 CET 2011
+
+ersem routines adjourned
+
+ LOG                                                |    6 +
+ RELEASE_NOTES                                      |    3 +
+ Rules.make                                         |    9 +-
+ femersem/Makefile                                  |    7 +
+ femersem/bfm_env.csh                               |   31 +
+ femersem/compilers/compiler.GFORTRAN               |    5 +-
+ femersem/compilers/compiler.IFORT                  |    5 +-
+ femersem/doc/bfm-quickstart-1.4.pdf                |  Bin 811897 -> 811897 bytes
+ femersem/lib/libbfm.a                              |  Bin 218774 -> 0 bytes
+ femersem/src/BFM/Ben/BenBac.F90                    |   10 +-
+ femersem/src/BFM/Ben/BenCheckMassConservation.F90  |   10 +-
+ femersem/src/BFM/Ben/BenOrganism.F90               |   10 +-
+ femersem/src/BFM/Ben/BenthicSystem.F90             |    2 +-
+ femersem/src/BFM/Ben/Bioturbation.F90              |   10 +-
+ femersem/src/BFM/Ben/FilterFeeder.F90              |   10 +-
+ femersem/src/BFM/Ben/ResetTotMassVar.F90           |    4 +-
+ femersem/src/BFM/Bennut/BenAmmonium.F90            |    2 +-
+ femersem/src/BFM/Bennut/BenAnoxic.F90              |    2 +-
+ femersem/src/BFM/Bennut/BenDenitriDepth.F90        |    2 +-
+ femersem/src/BFM/Bennut/BenNitrate.F90             |    2 +-
+ femersem/src/BFM/Bennut/BenNitrogenShifting.F90    |    2 +-
+ femersem/src/BFM/Bennut/BenOxygen.F90              |   10 +-
+ femersem/src/BFM/Bennut/BenPhosphate.F90           |    2 +-
+ femersem/src/BFM/Bennut/BenQ1Transport.F90         |    2 +-
+ femersem/src/BFM/Bennut/BenSilica.F90              |    2 +-
+ femersem/src/BFM/Bennut/BenthicNutrient2.F90       |    2 +-
+ femersem/src/BFM/Bennut/BenthicNutrient3.F90       |    2 +-
+ femersem/src/BFM/Bennut/BenthicReturn1.F90         |   10 +-
+ femersem/src/BFM/Bennut/BenthicReturn2.F90         |   10 +-
+ femersem/src/BFM/Bennut/DefineSet.f90              |    2 +-
+ femersem/src/BFM/Bennut/GetInfoFromSet.f90         |    9 +-
+ femersem/src/BFM/Bennut/noutput.f90                |   10 +-
+ femersem/src/BFM/Forcing/BoxAbove.F90              |    2 +-
+ femersem/src/BFM/Forcing/BoxBeneath.F90            |    2 +-
+ femersem/src/BFM/General/Ecology.F90               |    5 +-
+ femersem/src/BFM/General/ModuleMem.F90             |   18 +-
+ femersem/src/BFM/General/eTq.F90                   |    2 +-
+ femersem/src/BFM/Light/LightAdaptation.F90         |   10 +-
+ femersem/src/BFM/Light/PhotoAvailableRadiation.F90 |   10 +-
+ femersem/src/BFM/Oxygen/CalcOxygenSaturation_3.F90 |   10 +-
+ femersem/src/BFM/Oxygen/CalcSchmidtNumberOx.F90    |    2 +-
+ femersem/src/BFM/Oxygen/WindOxReaeration_3.F90     |    8 +-
+ femersem/src/BFM/PelB/CalcChlorophylla.F90         |   10 +-
+ femersem/src/BFM/PelB/CalcVerticalExtinction.F90   |   13 +-
+ femersem/src/BFM/PelB/MesoZoo.F90                  |   10 +-
+ femersem/src/BFM/PelB/MicroZoo.F90                 |   10 +-
+ femersem/src/BFM/PelB/PelBac.F90                   |   10 +-
+ femersem/src/BFM/PelB/PelChem.F90                  |   10 +-
+ femersem/src/BFM/PelB/PelGlobal.F90                |   10 +-
+ femersem/src/BFM/PelB/PelagicSystem.F90            |    5 +-
+ femersem/src/BFM/PelB/Phyto.F90                    |   10 +-
+ femersem/src/BFM/PelBen/BentoPelCoup.F90           |    2 +-
+ .../BFM/PelBen/ControlBenPartNutrientBuffers.F90   |    2 +-
+ femersem/src/BFM/PelBen/PelForcingForBen.F90       |    2 +-
+ femersem/src/BFM/PelBen/Sedimentation.F90          |   10 +-
+ femersem/src/BFM/PelBen/Settling.F90               |    8 +-
+ femersem/src/BFM/include/INCLUDE.h                 |    2 +-
+ femersem/src/Makefile                              |  128 +---
+ femersem/src/gotm/.Makefile.swp                    |  Bin 12288 -> 0 bytes
+ femersem/src/gotm/.bio.F90.swp                     |  Bin 16384 -> 0 bytes
+ femersem/src/gotm/Makefile                         |    2 +-
+ femersem/src/gotm/bio.F90                          |    2 +-
+ femersem/src/gotm/bio_bfm.F90                      |  223 +++++-
+ femersem/src/gotm/bio_bfm_old.F90                  |  685 ----------------
+ femersem/src/gotm/process_model.F90                |   24 +-
+ femersem/src/oldmake/Makefile                      |  266 ------
+ femersem/src/oldmake/Makefile.bak                  |  221 -----
+ femersem/src/oldmake/Makefileold                   |  186 -----
+ femersem/src/oldmake/Rules.make                    |  112 ---
+ femersem/src/oldmake/Rules_ersem.make              |  144 ----
+ femersem/src/share/api_bfm.F90                     |    2 +-
+ femersem/src/share/calcmean_bfm.F90                |    6 +-
+ femersem/src/share/init_var_bfm.F90                |    5 +-
+ femersem/src/share/netcdf_bfm.F90                  |    5 +
+ femersem/src/share/netcdf_bfm_orig.F90             |  842 --------------------
+ femersem/src/standalone/ResetFluxes.F90            |    2 +-
+ femersem/src/standalone/integration-RK2.F90        |   24 +-
+ femersem/src/standalone/integration-efw.F90        |    2 +-
+ femersem/src/standalone/integration-lf.F90         |    2 +-
+ femersem/src/standalone/standalone.F90             |   11 +-
+ femersem/src/standalone/standalone_main.f90        |    2 +-
+ 81 files changed, 509 insertions(+), 2763 deletions(-)
+
+============================================================
+
 Wed Dec 14 09:33:55 CET 2011
 
 ersem routines integrated

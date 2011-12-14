@@ -157,7 +157,7 @@ CONTAINS
       case (1) ! Pelagic only
         LEVEL2 "Using a Pelagic setup (bio_setup=1)"
         LEVEL3 'pelagic variables =',NO_D3_BOX_STATES
-        LEVEL3 'pelagic transported variables =',NO_D3_BOX_STATES
+        LEVEL3 'pelagic transported variables ='
         LEVEL3 'pelagic diagnostic variables =', NO_D3_BOX_DIAGNOSS
       case (2) ! Benthic only
         LEVEL2 "Using a Benthic-only setup (bio_setup=2)"

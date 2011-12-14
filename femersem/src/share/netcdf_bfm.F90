@@ -243,6 +243,7 @@
 ! !LOCAL VARIABLES:
    integer         :: iret
 !
+   define_mode = 0
 !-----------------------------------------------------------------------
 !BOC
    end function define_mode
@@ -281,6 +282,8 @@
 !
 !-----------------------------------------------------------------------
 !BOC
+   id = 0
+   new_nc_variable = 0
    return
    end function new_nc_variable
 !EOC
@@ -329,6 +332,7 @@
 !EOP
 !-----------------------------------------------------------------------
 !BOC
+   set_attributes = 0
    return
    end function set_attributes
 !EOC
@@ -371,6 +375,7 @@
 !
 !-----------------------------------------------------------------------
 !BOC
+   store_data = 0
    return
    end function store_data
 !EOC

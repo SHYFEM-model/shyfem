@@ -86,11 +86,13 @@
         m=sets(NUTR)%lfi(mode)-l+1
         bC=sets(NUTR)%b(mode)
         fC(1:m)=sets(NUTR)%factor(l:l+m)
-        r=calculate_equation(option,xinput,sets(NUTR)%coeffs(l), &
-                                                             bC,fC,m)
+        !r=calculate_equation(option,xinput,sets(NUTR)%coeffs(l), &
+        !                                                     bC,fC,m)
+	r = 0
         if (option == INTEGRAL.or.option == EXPONENTIAL_INTEGRAL) then
-          r= calculate_equation(option,yinput,sets(NUTR)%coeffs(l),&
-                                                          bC,fC,m) -r
+          !r= calculate_equation(option,yinput,sets(NUTR)%coeffs(l),&
+          !                                                bC,fC,m) -r
+	  r = 0
           if (input == RFLUX.or. input == MASS) then
             r=r*sets(NUTR)%poro(mode)
             if(input == MASS)r=r*(sets(NUTR)%ads(mode)+1.D+00)

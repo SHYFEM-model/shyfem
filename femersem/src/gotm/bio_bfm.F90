@@ -17,12 +17,10 @@
    private
 !
 ! !PUBLIC MEMBER FUNCTIONS:
-   public init_bio_bfm, & !pointers_gotm_bfm,            &
+   public init_bio_bfm, pointers_gotm_bfm,            &
           var_info_bfm, envforcing_bfm, do_bio_bfm,   &
-          !allocate_memory_bfm, 
-	  reset_diagonal,         &
-          !test_on_negative_states, 
-	  end_bio_bfm
+          allocate_memory_bfm,reset_diagonal,         &
+          test_on_negative_states, end_bio_bfm
 !
 ! !PRIVATE DATA MEMBERS:
    REALTYPE,dimension(:),allocatable :: cdepth
@@ -65,7 +63,6 @@
    integer,          intent(in)   :: out_unit
 !
    integer :: i,rc
-   integer numc,numbc,numc_diag,numbc_diag,numc_flux,numbc_flux
 ! !REVISION HISTORY:
 !  Original author(s): Marcello Vichi
 !  from a template by Hans Burchard & Karsten Bolding
@@ -119,6 +116,62 @@
 !-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
+!BOP
+!
+! !ROUTINE: Initialize BFM and GETM shared memory
+!
+! !INTERFACE:
+   subroutine pointers_gotm_bfm()
+!
+! !DESCRIPTION:
+! Allocate pointers to GOTM memory
+!
+! !USES:
+   use mem, only: D3STATE,D3SOURCE,D3SINK,D3STATETYPE, &
+                  D3DIAGNOS,D2STATE,D2SOURCE,D2SINK,   &
+                  D2STATETYPE,NO_BOXES,NO_BOXES_XY,    &
+                  D2DIAGNOS,NO_D2_BOX_STATES,          &
+                  NO_D2_BOX_DIAGNOSS
+
+   IMPLICIT NONE
+!
+! !INPUT PARAMETERS:
+!
+! !REVISION HISTORY:
+!  Original author(s): Marcello Vichi
+!
+! !LOCAL VARIABLES:
+
+   !---------------------------------------------
+   ! Pelagic pointers
+   !---------------------------------------------
+   D3STATE  => cc(:,1:NO_BOXES)
+   D3SOURCE => pp(:,:,1:NO_BOXES)
+   D3SINK   => dd(:,:,1:NO_BOXES)
+   D3STATETYPE => pelvar_type
+   if (numc_diag > 0) D3DIAGNOS => diag(:,1:NO_BOXES)
+
+   !---------------------------------------------
+   ! Benthic pointers
+   !---------------------------------------------
+   if (bio_setup >=2 ) then
+      D2STATE  => ccb(:,1:NO_BOXES_XY)
+      D2SOURCE => ppb(:,:,1:NO_BOXES_XY)
+      D2SINK   => ddb(:,:,1:NO_BOXES_XY)
+      D2STATETYPE => benvar_type
+      if (numbc_diag>0) D2DIAGNOS => diagb(:,1:NO_BOXES_XY)
+   else
+      ! allocate memory anyhow to avoid problems with BFM allocation
+      allocate(D2STATE(1:NO_D2_BOX_STATES,1:NO_BOXES_XY))
+      allocate(D2SOURCE(1:NO_D2_BOX_STATES,1:NO_D2_BOX_STATES,1:NO_BOXES_XY))
+      allocate(D2SINK(1:NO_D2_BOX_STATES,1:NO_D2_BOX_STATES,1:NO_BOXES_XY))
+      allocate(D2STATETYPE(1:NO_D2_BOX_STATES ))
+      if (numbc_diag>0)  &
+         allocate(D2DIAGNOS(1:NO_D2_BOX_DIAGNOSS,1:NO_BOXES_XY))
+   end if
+
+   end subroutine pointers_gotm_bfm
+!EOC
 !-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
@@ -431,6 +484,164 @@ IMPLICIT NONE
    end subroutine reset_diagonal
 !EOC
 !-------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: allocate_bfm
+!
+! !INTERFACE:
+        subroutine allocate_memory_bfm(nlev)
+!
+! !INPUT PARAMETERS:
+        implicit none
+        integer,intent(IN)            ::nlev
+!
+! !LOCAL VARAIBELS:
+   integer                   :: rc
+!
+! !DESCRIPTION:
+!
+! !BUGS:
+!
+! !SEE ALSO:
+!
+! !SYSTEM ROUTINES:
+!
+! !FILES USED:
+!
+! !REVISION HISTORY:
+!
+!  28-04-2006  Piet Ruardij Initial code.
+!
+!EOP
+!-------------------------------------------------------------------------
+!BOC
+
+   if ( numc_diag > 0 ) then
+     allocate(diag(1:numc_diag,0:nlev),stat=rc)
+     if (rc /= 0) STOP 'init_bio: Error allocating (cc)'
+
+
+     diag=_ZERO_                                                     !BFM
+   endif
+
+
+   if (bio_setup >= 2) then                                         !BFM
+     ! allocate benthic state variables                             !BFM
+     allocate(ccb(1:numbc,0:1),stat=rc)                             !BFM
+     if (rc /= 0) STOP 'init_bio: Error allocating (ccb)'           !BFM
+     allocate(ppb(1:numbc,1:numbc,0:1),stat=rc)                     !BFM
+     if (rc /= 0) STOP 'init_bio: Error allocating (ppb)'           !BFM
+     allocate(ddb(1:numbc,1:numbc,0:1),stat=rc)                     !BFM
+     if (rc /= 0) STOP 'init_bio: Error allocating (ppb)'           !BFM
+
+     ccb=_ZERO_                                                     !BFM
+     ppb=_ZERO_                                                     !BFM
+     ddb=_ZERO_                                                     !BFM
+
+     ! allocate variable holding type and save attributes           !BFM
+     allocate(benvar_type(1:numbc),stat=rc)                         !BFM
+     if (rc /= 0) STOP 'init_bio: Error allocating (benvar_type)'   !BFM
+     benvar_type = 0
+
+     if ( numbc_diag > 0 ) then
+       allocate(diagb(1:numbc_diag,0:1),stat=rc)
+       if (rc /= 0) STOP 'init_bio: Error allocating (cc)'
+
+       diagb=_ZERO_                                                     !BFM
+     endif
+
+   end if
+
+
+
+ end subroutine allocate_memory_bfm
+!EOC
+!-------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: Test negative concentrations
+!
+! !INTERFACE:
+       subroutine test_on_negative_states ( statenr,nlev, after, error )
+!
+! !USES:
+       use gotm_error_msg, only:set_warning_for_getm
+       IMPLICIT NONE
+!
+! !INPUT PARAMETERS:
+       integer,intent(in)                      :: statenr
+       integer,intent(in)                      :: nlev
+       character(len=*),intent(IN)             :: after
+!
+! !OUTPUT PARAMETERS:
+       integer,intent(OUT)                     :: error
+!          Array cldim is modified if ncecessry
+!
+! !LOCAL VARAIBELS:
+        integer              ::k
+        integer              ::i
+
+! !DESCRIPTION:
+!   Routine to check for negative values.
+!   Negative values are corrected with the aveage of neighbouring
+!   grid points. A warning is given.
+!
+! !BUGS:
+!
+! !SEE ALSO:
+!
+! !SYSTEM ROUTINES:
+!
+! !FILES USED:
+!
+! !REVISION HISTORY:
+!      created by P. Ruardij 21-06-2006
+!
+!
+!EOP
+!-------------------------------------------------------------------------
+!BOC
+       error=0
+       if (minval(c1dim(:)) < 0.00D+00) then                    !BFM
+          STDERR "statenr=",statenr, c1dim(:)
+          STDERR "Negative value after call to ",after         !BFM
+          k=0                                                  !BFM
+          do i = 0,nlev                                        !BFM
+              if ( c1dim(i).lt.0.0D+00) then                   !BFM
+                  k=i                                          !BFM
+                  STDERR i,c1dim(i)                            !BFM
+                  call set_warning_for_getm()
+                  if ( i == 1 ) then
+                     if ( c1dim(i+1) > 0.0 )  then
+                       c1dim(i)=0.5* c1dim(i+1)
+                       k=0
+                     endif
+                  elseif ( i == nlev ) then
+                     if ( c1dim(i-1) > 0.0 )  then
+                       c1dim(i)=0.5* c1dim(i-1)
+                       k=0
+                     endif
+                  else if ( c1dim(i-1) > 0.0 .and. c1dim(i+1)>0.0 ) then
+                     k=0
+                     c1dim(i)=(c1dim(i-1)+c1dim(i+1)) * 0.5
+                  else if ( c1dim(i-1) > 0.0 ) then
+                       c1dim(i)=0.5* c1dim(i-1)
+                       k=0
+                  else if ( c1dim(i+1) > 0.0 ) then
+                       c1dim(i)=0.5* c1dim(i+1)
+                       k=0
+                  endif
+              endif                                            !BFM
+          end do                                               !BFM
+          if (k.ne.0)  error=k                                 !BFM
+       end if
+
+     end subroutine test_on_negative_states
+
 
 !EOC
 !-------------------------------------------------------------------------

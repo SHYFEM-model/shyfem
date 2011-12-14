@@ -163,8 +163,8 @@
    endtim      = 360.0 !fake 
    method      = 1 !real from str
   !anforcings
-   lw          = 9.0 !fake from model
-   ls          = 11.0 !fake "
+   lw          = 300.0 !fake from model
+   ls          = 600.0 !fake "
    sw          = 33.0 !fake "
    ss          = 37.0 !fake "
    tw          = 10.0 !fake "
@@ -213,7 +213,7 @@
    !---------------------------------------------
    timestep = maxdelt
    call init_time(MinN,MaxN)
-   if (HasRealTime==.true.) then
+   if (HasRealTime .eqv. .true.) then
       timesec=julianday*SEC_PER_DAY+secondsofday
       simdays=nint(simtime/SEC_PER_DAY)
    else
@@ -364,6 +364,7 @@
    real(RLEN) :: biodelta
    real(RLEN) :: wx,wy
    integer    :: l
+   real       :: tt,ss
 
 !  ENVFORCING FROM HYDRO
 
@@ -418,7 +419,9 @@
      Wind=sqrt(wx**2+wy**2)
 
      l = 1
-     call getts(l,node,ETW,ESW)
+     call getts(l,node,tt,ss)
+     ETW = tt
+     ESW = ss
 
 !    print*, ETW,ESW,tempv(1,2),saltv(1,2)
 !    stop

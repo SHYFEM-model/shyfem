@@ -5,6 +5,12 @@
 
 RELEASE=bfm-2.5e-system-2.1
 
+fem:
+	cd src; make fem
+cleanall: clean
+clean:
+	cd src; make clean
+
 all: distclean sources runenv
 
 distclean:
@@ -21,6 +27,7 @@ sources:
 
 runenv:
 	@tar -zcvf ../run-$(RELEASE).tgz --exclude='*.nc' ../bfm-run
+
 ##-----------------------------------------------------------------------
 ##
 ##-----------------------------------------------------------------------

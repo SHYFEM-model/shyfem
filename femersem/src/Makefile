@@ -2,88 +2,31 @@
 ##
 ## uses makedepf90 to build dependencies "on the fly"
 ## http://www.helsinki.fi/~eedelman/makedepf90.html
+
 include ../../Rules.make
 
-BFMDIR=../
-FORTRAN_COMPILER=IFORT
-NETCDFINC=/usr/include
-NETCDFLIBDIR=/usr/lib
-
-#FC=ifort
-#DEFINES += -DFORTRAN95
-#can_do_F90=true
-MODULES=-module $(MODDIR)
-#EXTRAS  = -w95
-#PROD_FLAGS  = -O3
-#REAL_4B = real\(4\)
-
-## Netcdf specifications
-INCDIRS         += -I$(NETCDFINC)
-## NETCDFLIB    = $(NETCDFLIBNAME)
-NETCDFLIB       = -lnetcdf
-LDFLAGS         += -L$(NETCDFLIBDIR)
-
-.PHONY: clean realclean distclean dummy
-
-EXTRA_LIBS += $(NETCDFLIB)
-
-ifndef BINDIR
-BINDIR  = $(BFMDIR)/bin
+ifeq ($(COMPILER),GNU_G77)
+  FORTRAN_COMPILER=G77
+endif
+ifeq ($(COMPILER),GNU_GFORTRAN)
+  FORTRAN_COMPILER=GFORTRAN
+endif
+ifeq ($(COMPILER),INTEL)
+  FORTRAN_COMPILER=IFORT
+endif
+ifeq ($(COMPILER),PORTLAND)
+  FORTRAN_COMPILER=PGF90
 endif
 
-ifndef LIBDIR
-#LIBDIR  = $(BFMDIR)/lib/IFORT
-endif
+include ./Rules.make
 
-ifndef MODDIR
-MODDIR  = $(BFMDIR)/modules/IFORT
-endif
-
-INCIDIRS += -I/usr/local/include -I$(BFMDIR)/include -I$(MODDIR)
-
-## BFM include files and the library
-BFMINCDIR = $(BFMDIR)/src/BFM/include
-INCIDIRS         += -I$(BFMINCDIR)
-##DEFINES += -DBFM_NOPOINTERS -DNOT_STANDALONE
-## DEFINES += -DNOT_STANDALONE
-## FEATURE_LIBS += -lbio$(buildtype)
-
-## Normally this should not be changed - unless you want something very specific.
-
-## The Fortran compiler is determined from the EV FORTRAN_COMPILER - options
-## so far NAG(linux), FUJITSU(Linux), DECF90 (OSF1 and likely Linux on alpha),
-## SunOS, PGF90 - Portland Group Fortran Compiler (on Intel Linux), Intel (ifc, ifort)
-
-
-#DEFINES += -DREAL_4B=$(REAL_4B)
-
-## Sets options for debug compilation
-
-## Sets options for production compilation
-buildtype = _prod
-#DEFINES += -DPRODUCTION $(STATIC)
-#FLAGS   = $(PROD_FLAGS) -assume 2underscores
-
-## For making the source code documentation.
-PROTEX  = protex -b -n -s
-
-.SUFFIXES:
-.SUFFIXES: .F90 .f90
-
-#LINKDIR = -L$(LIBDIR)
-LINKDIR = -L$(DIRLIB)
-
-
-CPPFLAGS        = $(DEFINES) $(INCIDIRS)
-FFFLAGS          =$(DEFINES) $(KCFLAGS) $(MODULES) $(INCIDIRS) $(EXTRAS)
-F90FLAGS        = $(FFFLAGS)
-LDFLAGS         += $(FFFLAGS) $(LINKDIR)
+FC = $(F77)
+buildtype = 
+LIBDIR = ../../femlib
 
 EXE	= bfm_standalone$(buildtype)
 MAINOBJ	= ./standalone/standalone_main.o 
-#LIB	= $(LIBDIR)/libbfm$(buildtype).a
-LIB    = ../$(DIRLIB)/libbfm.a
-
+LIB	= $(LIBDIR)/libbfm$(buildtype).a
 BFMSRC = ./BFM
 
 BFM_MOD = \
@@ -209,7 +152,7 @@ APIBFM_MOD =	\
 	${LIB}(./share/init_var_bfm.o)			\
 	${LIB}(./share/init_cnps.o)			\
 	${LIB}(./share/calcmean_bfm.o)			\
-	${LIB}(${BFMSRC}/General/set_var_info_bfm.o)	\
+	${LIB}(${BFMSRC}/General/set_var_info_bfm.o)	
 
 STDALONE_MOD =	\
 	${LIB}(./standalone/time.o)		\
@@ -220,28 +163,28 @@ STDALONE_MOD =	\
 	${LIB}(./standalone/D3toD1.o)		\
 	${LIB}(./standalone/D2toD1.o)		\
 	${LIB}(./standalone/ResetFluxes.o)	\
-	${LIB}(./standalone/GetDelta.o)		\
+	${LIB}(./standalone/GetDelta.o)		
 
 FEM_OBJ = \
-	${LIB}(./share/femtobfm.o)                      \
+	${LIB}(./share/femtobfm.o)                      
 
 
-fem: all
-bfm: all
+fem: bfm
+bfm: create_dirs all
+all: ${BFM_MOD} ${APIBFM_MOD} ${STDALONE_MOD} ${FEM_OBJ} ${BFM_OBJ} 
+	$(MOVE_MODULES_COMMAND)
+
+create_dirs: ../lib/$(FORTRAN_COMPILER) ../modules/$(FORTRAN_COMPILER)
+../lib/$(FORTRAN_COMPILER):
+	mkdir -p ../lib/$(FORTRAN_COMPILER)
+../modules/$(FORTRAN_COMPILER):
+	mkdir -p ../modules/$(FORTRAN_COMPILER)
+
 #all: ${BFM_MOD} ${APIBFM_MOD} ${STDALONE_MOD} ${BFM_OBJ} ${EXE}
 #	$(MOVE_MODULES_COMMAND)
 
-all: ${BFM_MOD} ${APIBFM_MOD} ${STDALONE_MOD} ${FEM_OBJ} ${BFM_OBJ} 
-	$(MOVE_MODULES_COMMAND)
-#all: ${BFM_MOD} ${APIBFM_MOD} ${STDALONE_MOD} ${BFM_OBJ}
-#	$(MOVE_MODULES_COMMAND)
-
-
-#all: ${BFM_MOD} ${STDALONE_MOD} ${BFM_OBJ}
-#	$(MOVE_MODULES_COMMAND)
-
 $(EXE): $(MAINOBJ) 
-	$(F77) $(FFLAGS) $(FFFLAGS) -o ../bin/$@ $(MAINOBJ) $(LIB) -L$(NETCDFLIBDIR) -lnetcdf
+	$(FC) $(FFLAGS) -o ../bin/$@ $(MAINOBJ) $(LIB) -L$(NETCDFLIBDIR) -lnetcdf
 
 $(BFM_MOD) : $(BFMSRC)/General/ModuleMem.F90
 
@@ -255,24 +198,21 @@ distclean: clean
 
 clean:
 	$(RM) ../modules/$(FORTRAN_COMPILER)/*.{m,mod}
-	$(RM) ../modules/*.{m,mod}
 	$(RM) ../lib/$(FORTRAN_COMPILER)/lib*$(buildtype).a
 	$(RM) ./share/*.o
-	$(RM) ./gotm/*.o
 	$(RM) ./standalone/*.o
 	$(RM) ${BFMSRC}/*/*.o
+
+	$(RM) -r ../modules/*/*.m
+	$(RM) -r ../modules/*/*.mod
+	$(RM) -r ../src/*.m
+	$(RM) -r ../src/*.mod
+	$(RM) ./gotm/*.o
 	$(RM) ../../femlib/libbfm.a
+	$(RM) ../lib/libbfm.a
 
 depend:
 	makedepf90 ${BFMSRC}/*/*.?90 ./share/*.?90 ./standalone/*.?90 > .depend
 
 include .depend
-##
-## Common rules
-##
-%.o: %.F90
-	$(F77) $(F90FLAGS) $(EXTRA_FFLAGS) -c $< -o $@
-%.o: %.f90
-	$(F77) $(F90FLAGS) $(EXTRA_FFLAGS) -c $< -o $@
-
 

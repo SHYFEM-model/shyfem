@@ -794,7 +794,7 @@
 
    allocate(var_ave(1:numsave),stat=rc)
    if (rc /= 0) stop 'init_bio(): Error allocating var_ave)'
-   var_ave=0
+   var_ave=.false.
 #endif
 
    allocate(var_ids(1:numsave),stat=rc)
