@@ -37,11 +37,11 @@ export NGRDIM = 12
 #export NLVDIM = 33
 
 # asi-zec
-export NKNDIM = 17000
-export NELDIM = 30000
-export NLVDIM = 1
-export NLVDIM = 52
-export NGRDIM = 12
+#export NKNDIM = 17000
+#export NELDIM = 30000
+#export NLVDIM = 1
+#export NLVDIM = 52
+#export NGRDIM = 12
 
 # curonian
 #export NKNDIM = 13000
@@ -128,6 +128,14 @@ export NGRDIM = 12
 #export NLVDIM = 1
 #export MBWDIM = 50
 #export NGRDIM = 10
+
+# Mar Menor
+export NKNDIM = 9000
+export NELDIM = 17000
+export NLVDIM = 1
+export MBWDIM = 180
+export NGRDIM = 10
+export NBDYDIM = 200000
 
 ##############################################
 # Compiler

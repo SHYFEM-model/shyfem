@@ -6,6 +6,7 @@ c
 c revision log :
 c
 c 05.02.2009    ggu	copied from lagrange_cont.f and integrated from others
+c 16.12.2011    ggu	initialization with body id
 c
 c*******************************************************************
 
@@ -25,21 +26,24 @@ c inserts particle at position x,y - if element unknown set ie=0
 	real x,y
 
 	nbdy = nbdy + 1
+	idbdy = idbdy + 1
 
 	if( nbdy .gt. nbdydim ) goto 99
 
-        xst(nbdy)=x
-        yst(nbdy)=y
-        est(nbdy)=ie
-
-        x_body(nbdy)=x
-        y_body(nbdy)=y
-        ie_body(nbdy)=ie
-
         tin(nbdy)=it
 
+        est(nbdy)=ie
+        xst(nbdy)=x
+        yst(nbdy)=y
 	zst(nbdy) = 0.5
+
+        ie_body(nbdy)=ie
+        x_body(nbdy)=x
+        y_body(nbdy)=y
 	z_body(nbdy) = 0.5
+
+	lgr_var(nbdy) = 0
+	id_body(nbdy) = 0
 
 	return
    99	continue
@@ -64,15 +68,20 @@ c copies particle from ifrom to ito
 
 	if( ifrom .eq. ito ) return
 
+        tin(ito) = tin(ifrom)
+
+        est(ito) = est(ifrom)
         xst(ito) = xst(ifrom)
         yst(ito) = yst(ifrom)
-        est(ito) = est(ifrom)
+        zst(ito) = zst(ifrom)
 
+        ie_body(ito) = ie_body(ifrom)
         x_body(ito)  = x_body(ifrom)
         y_body(ito)  = y_body(ifrom)
-        ie_body(ito) = ie_body(ifrom)
+        z_body(ito)  = z_body(ifrom)
 
-        tin(ito) = tin(ifrom)
+	lgr_var(ito) = lgr_var(ifrom)
+	id_body(ito) = id_body(ifrom)
 	
 	end
 
@@ -89,7 +98,8 @@ c deletes particle ip
 
 	integer ip
 
-	if( ie_body(ip) .gt. 0 ) ie_body(ip) = -ie_body(ip)
+	!if( ie_body(ip) .gt. 0 ) ie_body(ip) = -ie_body(ip)
+	if( ie_body(ip) .gt. 0 ) ie_body(ip) = 0
 
 	end
 
@@ -360,7 +370,7 @@ c--------------------------------------------------------------
 c check particle structure
 c--------------------------------------------------------------
 
-	write(6,*) 'compress_particles: ',nbefore,nbdy,nbefore-nbdy
+	write(lunit,*) 'compress_particles: ',it,nbefore,nbdy,nbefore-nbdy
 
 	do i=1,nbdy
 	  if( is_free(i) ) then

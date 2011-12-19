@@ -8,7 +8,44 @@ c
 c 07.11.2011	ggu	layer thickness for hybrid coordinates
 c 14.11.2011	ggu	new sigma routines copied to this file
 c 02.12.2011	ggu	bug fix in init_sigma_info() for nlv == 1
+c 16.12.2011	ggu	check for non-initialized data structure (blockdata)
 c
+c******************************************************************
+
+	blockdata sigma_out
+
+	implicit none
+
+	integer nlv_com,nsigma_com
+	common /nsigma_com/nlv_com,nsigma_com
+	real hsigma_com
+	common /hsigma_com/hsigma_com
+	save /nsigma_com/,/hsigma_com/
+
+	data nlv_com,nsigma_com /-1,-1/
+	data hsigma_com /10000./
+
+	end
+
+c******************************************************************
+
+	subroutine check_sigma_initialized
+
+	implicit none
+
+	integer nlv_com,nsigma_com
+	common /nsigma_com/nlv_com,nsigma_com
+	real hsigma_com
+	common /hsigma_com/hsigma_com
+	save /nsigma_com/,/hsigma_com/
+
+	if( nlv_com .le. 0 ) then
+	  write(6,*) 'nlv_com: ',nlv_com
+	  stop 'error stop check_sigma_initialized: not initialized'
+	end if
+
+	end
+
 c******************************************************************
 
 	subroutine get_sigma_info(nlv,nsigma,hsigma)
@@ -24,6 +61,8 @@ c******************************************************************
 	real hsigma_com
 	common /hsigma_com/hsigma_com
 	save /nsigma_com/,/hsigma_com/
+
+	call check_sigma_initialized
 
 	nlv    = nlv_com
 	nsigma = nsigma_com
@@ -196,6 +235,7 @@ c---------------------------------------------------------
 	  else
 	    hbot = hsigma
 	    if( nsigma .eq. 0 ) hbot = -zmed
+	    if( bdebug ) write(6,*) nsigma,lmax,zmed,hbot
 	    do l=nsigma+1,lmax
 	      htop = hbot
 	      hbot = hlv(l)

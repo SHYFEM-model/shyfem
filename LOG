@@ -1,4 +1,22 @@
 
+16.12.2011	lagrange
+
+	lagrange for input over boundary (lagrange_cont.f)
+	new info id_body (lagrange.h,lagrange_main.f,lagrange_inout.f)
+	new file .lgi (lagrange.h,lagrange_main.f,lagrange_track.f)
+	compress_particles into main (lagrange_main.f)
+	bug fix: flux2d_aux was integer (lagrange_flux.f)
+
+16.12.2011	various bug fixes
+
+	check for non-initialized data structure (blockdata) (sigmautil.f)
+	bug fix: call to init_sigma_info and makehev (common hev)
+			(ousextr_nodes.f,ousinf.f)
+	in lnk_elems at boundary set last value to 0 (sublnku.f)
+	bug fix: in make_fluxes_2/3d() r/tflux was integer (subflx3d.f)
+
+========================================================== 14-12-2011 - 6_1_40
+
 14.12.2011	ERSEM/BFM
 
 	up and running for ifort and gfortran

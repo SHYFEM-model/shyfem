@@ -1,5 +1,35 @@
 ============================================================
 
+Mon Dec 19 15:05:30 CET 2011
+
+lagrangian module revised (+ some bugfixes)
+
+ .gitignore             |    2 +
+ BUG                    |    7 ++
+ LOG                    |   18 +++++
+ RELEASE_NOTES          |    4 +
+ Rules.make             |   18 ++++--
+ fem3d/lagrange.h       |    8 ++-
+ fem3d/lagrange_cont.f  |  166 ++++++++++++++++++++++++++++++++++++++++++------
+ fem3d/lagrange_flux.f  |   27 +++++++-
+ fem3d/lagrange_inout.f |   32 ++++++---
+ fem3d/lagrange_main.f  |   22 +++++-
+ fem3d/lagrange_track.f |  109 ++++++++++++++++----------------
+ fem3d/ousextr_nodes.f  |    4 +
+ fem3d/ousinf.f         |    5 ++
+ fem3d/param.h          |   12 ++--
+ fem3d/sigmautil.f      |   40 ++++++++++++
+ fem3d/subflx3d.f       |   20 +++++-
+ fem3d/sublnku.f        |    6 ++-
+ femadj/param.h         |   12 ++--
+ femanim/Makefile       |    1 +
+ femanim/makeanim.sh    |   36 +++++++++--
+ femplot/param.h        |   12 ++--
+ param.h                |   12 ++--
+ 22 files changed, 442 insertions(+), 131 deletions(-)
+
+============================================================
+
 Wed Dec 14 09:36:07 CET 2011
 
 New version 6_1_40

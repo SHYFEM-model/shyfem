@@ -34,6 +34,7 @@ c 28.08.2009	ggu	routine line_elems renamed to find_elems_to_segment
 c 28.08.2009	ggu	new routines get_elems_around, get_nodes_around
 c 09.09.2009	ggu	bug fix in find_elems_to_segment (BUGip2)
 c 20.10.2011	ggu	check dimension in set_elem_links(), set_node_links()
+c 16.12.2011	ggu	in lnk_elems at boundary set last value to 0
 c
 c****************************************************************
 
@@ -363,7 +364,10 @@ c       end do
 	n = ilinkv(k+1)-ilinkv(k)
 	ibase = ilinkv(k)
 
-	if( lenkv(ibase+n) .eq. 0 ) n = n - 1
+	if( lenkv(ibase+n) .eq. 0 ) then
+	  lnk_elems(n) = 0
+	  n = n - 1
+	end if
 
 	if( n .gt. maxlnk ) stop 'error stop set_elem_links: maxlnk'
 

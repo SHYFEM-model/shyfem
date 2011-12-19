@@ -1,4 +1,11 @@
 
+BUG_2010_37     ggu	6.1.41   16.10.2011
+	flux2d_aux and r/tflux were integer (lagrange_flux.f,subflx3d.f)
+
+BUG_2010_36     ggu	6.1.41   16.10.2011
+	call to init_sigma_info and makehev (common hev) 
+			(ousextr_nodes.f,ousinf.f)
+
 BUG_2010_35     ggu	6.1.39   12.10.2011
 	eliminated (stupid) compiler bug (getpar) (newsig.f)
 

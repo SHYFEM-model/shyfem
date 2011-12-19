@@ -16,6 +16,7 @@ clean:
 cleanall: clean
 	-rm -f plot.ps
 	-rm -f plot.*.gif
+	-rm -f plot.*.jpg
 
 cleantotal: cleanall
 	-rm -f anim.gif

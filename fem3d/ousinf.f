@@ -10,6 +10,7 @@ c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
 c 16.10.2007	ggu	new debug routine
 c 27.10.2009    ggu     include evmain.h, compute volume
 c 23.03.2011    ggu     compute real u/v-min/max of first level
+c 16.12.2011    ggu     bug fix: call to init_sigma_info and makehev (common hev)
 c
 c***************************************************************
 
@@ -51,6 +52,7 @@ c we would not even need to read basin
         common /vtlnv/vtlnv
 
 	real hev(neldim)
+	common /hev/hev
 
 	real znv(nkndim)
 	real zenv(3,neldim)
@@ -109,6 +111,9 @@ c-----------------------------------------------------------------
         write(6,*)
 
 	call rsous(nin,ilhv,hlv,hev,ierr)
+
+        call init_sigma_info(nlv,hlv)
+	call makehev(hev)
 
 c-----------------------------------------------------------------
 c loop on data of simulation

@@ -10,6 +10,7 @@ c 28.04.2009    ggu     links re-structured
 c 20.10.2011    ggu     new routines for fluxes implemented
 c 24.10.2011    ggu     3d routines implemented
 c 04.11.2011    ggu     part with bsigma not yet finished
+c 16.12.2011    ggu     bug fix - flux2d_aux was integer
 c
 c****************************************************************
 
@@ -168,7 +169,7 @@ c sets up fluxes - has to be done every time step
 
 	integer k,ie,ii,i
 	integer nn,ne
-	integer n
+	integer n,j
 	integer itype
 	real az,azpar
 	real tdif
@@ -206,6 +207,10 @@ c	  --------------------------------------------
     	  call mk_rflux(k,nn,itype,az,rflux,ne,lnk_elems)
   	  call mk_tflux(k,nn,itype,rflux,tflux_aux)
 
+	  !write(6,*) 'flux old ',k,nn,ne,itype
+	  !write(6,*) 'rflux old ',(rflux(j),j=1,nn)
+	  !write(6,*) 'tflux old ',(tflux_aux(j),j=1,nn)
+
 c	  --------------------------------------------
 c	  new way to set-up rflux,tflux
 c	  --------------------------------------------
@@ -213,6 +218,10 @@ c	  --------------------------------------------
 	  n = ngrdim
 	  call flx2d_k(k,itype,az,n,rflux)
 	  call make_fluxes_2d(k,itype,n,rflux,tflux)
+
+	  !write(6,*) 'flux new ',k,n,itype
+	  !write(6,*) 'rflux new ',(rflux(j),j=1,n)
+	  !write(6,*) 'tflux new ',(tflux(j),j=1,n)
 
 c	  --------------------------------------------
 c	  error check ... delete
@@ -224,6 +233,9 @@ c	  --------------------------------------------
 	  do i=1,n
 	    tdif = abs( tflux_aux(i) - tflux(i) )
 	    if( tdif .gt. 1.e-4 ) then
+	      write(6,*) k,i
+	      write(6,*) (tflux_aux(j),j=1,n)
+	      write(6,*) (tflux(j),j=1,n)
 	      stop 'error stop setup_fluxes: tflux .ne. tflux_aux'
 	    end if
 	  end do
@@ -244,6 +256,7 @@ c	--------------------------------------------
           do ii=1,3
 	    tdif = abs( flux2d(ii,ie) - flux2d_aux(ii,ie) )
 	    if( tdif .gt. 1.e-4 ) then
+	      write(6,*) ie,ii,flux2d(ii,ie),flux2d_aux(ii,ie)
 	      stop 'error stop setup_fluxes: flux2d'
 	    end if
           end do
@@ -420,9 +433,11 @@ c computes fluxes in element
 
 	if( n .ne. ne ) then	!just a check
 	  if( ne+1 .ne. n ) then
+	    write(6,*) k,n,ne,(elems(i),i=1,n)
 	    stop 'error stop setup_fx: internal error (1)'
 	  end if
 	  if( elems(n) .ne. 0 ) then
+	    write(6,*) k,n,ne,(elems(i),i=1,n)
 	    stop 'error stop setup_fx: internal error (2)'
 	  end if
 	end if
@@ -433,6 +448,10 @@ c computes fluxes in element
          n2=inext(k,ie)
          j=i+1
          if(i.eq.n) j=1
+	!write(6,*) 'setup_fx ',k,n,ne
+	!write(62,*) k,n,ne
+	!write(62,*) i,ie,n1,n2,j
+	!write(62,*) tflux(j),tflux(i)
          flux2d(n2,ie)=flux2d(n2,ie)-tflux(j)
          flux2d(n1,ie)=flux2d(n1,ie)+tflux(i)      
         end do
@@ -500,7 +519,7 @@ c computes fluxes in element
 
         integer k,n
         real tflux(1)
-	integer flux2d_aux(3,1)
+	real flux2d_aux(3,1)
 
         include 'param.h'
 	include 'lagrange.h'
@@ -521,6 +540,10 @@ c computes fluxes in element
           n2=inext(k,ie)
           j=i+1
           if(i.eq.n) j=1
+	!write(6,*) 'setup_flux2d ',k,n,ne
+	!write(61,*) k,n,ne
+	!write(61,*) i,ie,n1,n2,j
+	!write(61,*) tflux(j),tflux(i)
           flux2d_aux(n2,ie)=flux2d_aux(n2,ie)-tflux(j)
           flux2d_aux(n1,ie)=flux2d_aux(n1,ie)+tflux(i)      
         end do

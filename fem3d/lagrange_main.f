@@ -66,6 +66,7 @@ c 05.02.2009    ggu     re-arranged whole lagrangian module
 c 15.02.2009    ggu     call to track_body has changed -> pass time to advect
 c 11.09.2009    ggu     little bug fix for output and release of particles
 c 19.10.2011    ggu     fx renamed to flux2d
+c 16.12.2011    ggu     new file .lgi, compress_particles()
 c
 c****************************************************************            
 
@@ -88,7 +89,7 @@ c lagranian main routine
 	integer itmlgr,idtlgr,itnext
         integer iunit,uunit
 
-        integer ideffi
+        integer ifemop
         real getpar
 
         save itlanf,itlend,idtl,itlnext
@@ -120,7 +121,14 @@ c---------------------------------------------------------------
           artype=getpar('artype')	!store special type in common block
           rwhpar=getpar('rwhpar')
 
+	  lunit = ifemop('.lgi','form','new')
+	  if( lunit .le. 0 ) then
+	    write(6,*) 'lunit = ',lunit
+	    stop 'error stop lagrange: cannot open info file'
+	  end if
+
 	  nbdy = 0
+	  idbdy = 0
 	  tdecay = 0.
 
 	  !call init_diff_oil
@@ -147,9 +155,9 @@ c	  open files
 c         ------------------------------------------------------
 
           if( artype .ne. -1 ) then
-            uunit=ideffi('datdir','runnam','.trn','form','new')
+            uunit=ifemop('.trn','form','new')
           end if
-          iunit=ideffi('datdir','runnam','.lgr','unform','new')
+          iunit=ifemop('.lgr','unform','new')
 
 	end if
          
@@ -195,6 +203,12 @@ c---------------------------------------------------------------
 	  call lgr_output_concentrations
 	  itnext = itnext + idtlgr
 	end if
+
+c---------------------------------------------------------------
+c compress particles to save space
+c---------------------------------------------------------------
+
+	call compress_particles		!only after output of particles
 
 c---------------------------------------------------------------
 c end of routine
@@ -247,7 +261,7 @@ c advection of particles
 
 !$OMP  END PARALLEL DO
 
-	write(6,*) 'lagrangian: (tot,out,in) ',nbdy,nf,nbdy-nf
+	write(lunit,*) 'lagrangian: (tot,out,in) ',nbdy,nf,nbdy-nf
 
 	end	
 

@@ -33,6 +33,7 @@ c 01.06.2011    ggu     documentation to flxscs() changed
 c 21.09.2011    ggu     low-level routines copied from subflxa.f
 c 07.10.2011    ggu     implemented 3d flux routines
 c 20.10.2011    ggu     restructured, flx3d_k(), make_fluxes_3d()
+c 16.12.2011    ggu     bug fix: in make_fluxes_2/3d() r/tflux was integer
 c
 c******************************************************************
 c******************************************************************
@@ -45,6 +46,13 @@ c******************************************************************
 c computes fluxes through finite volume k (2D version)
 c
 c returns n and flux corrected fluxes transp
+c on return transp(i) contains fluxes into finite volume (FV)
+c n is total number of internal sections of FV
+c ne is the total number of elements attached to the FV
+c in case of an internal nodes n == ne
+c for a boundary node n == ne + 1
+c in any case it is the number of internal sections that is returned
+c for a boundary node, transp(n) = 0
 
 	implicit none
 
@@ -541,8 +549,8 @@ c if on boundary (itype>1) rflux(n) is not used (because not defined)
 	integer itype		!type of node (1=int,2=bnd,3=BOO,4=OOB,5=OOO)
 	integer lkmax		!number of layers
 	integer n		!number of sides (tfluxes)
-	integer rflux(nlvdim,n)	!fluxes into node (element)
-	integer tflux(nlvdim,n)	!fluxes through sides (return value)
+	real rflux(nlvdim,n)	!fluxes into node (element)
+	real tflux(nlvdim,n)	!fluxes through sides (return value)
 
 	integer i,l
 	real rf(ngrdim)
@@ -577,11 +585,14 @@ c if on boundary (itype>1) rflux(n) is not used (because not defined)
 	integer k		!node
 	integer itype		!type of node (1=int,2=bnd,3=BOO,4=OOB,5=OOO)
 	integer n		!number of sides (tfluxes)
-	integer rflux(n)	!fluxes into node (element)
-	integer tflux(n)	!fluxes through sides (return value)
+	real rflux(n)	!fluxes into node (element)
+	real tflux(n)	!fluxes through sides (return value)
 
 	integer i
 	real rr
+
+	!write(6,*) 'make_fluxes_2d ',k,itype,n
+	!write(6,*) 'make_fluxes_2d ',(rflux(i),i=1,n)
 
 	if( itype .eq. 1 ) then		!internal node
 		rr = 0.
@@ -598,6 +609,7 @@ c if on boundary (itype>1) rflux(n) is not used (because not defined)
 		tflux(1) = 0.
 		do i=2,n-1
 		  tflux(i) = tflux(i-1) + rflux(i-1)
+		  !write(6,*) 'make_fluxes_2d ',i,tflux(i)
 		end do
 		tflux(n) = 0.
 	else if( itype .eq. 3 ) then	!BOO - boundary on left

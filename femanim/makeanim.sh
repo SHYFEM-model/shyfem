@@ -6,24 +6,50 @@
 #
 #--------------------------- clean files from last call
 
+dogif="NO"
+
+delete="YES"
+make_eps="YES"
+rename="YES"
+
+#delete="NO"
+#make_eps="NO"
+#rename="NO"
+
 rm -f plot.*.bak
 rm -f plot.*.eps
 rm -f plot.*.gif
+rm -f plot.*.jpg
 rm -f plot.*.ps
 
 #--------------------------- split and make eps
 
-gps -split -eps plot.ps
-rm -f plot.*.ps
+if [ $make_eps = "YES" ]; then
+  gps -split -eps plot.ps
+  rm -f plot.*.ps
+fi
 
 #--------------------------- rename in numerical order
 
-#./rename.pl plot.*.eps
-./rename-petras.pl plot.*.eps
+if [ $rename = "YES" ]; then
+  #./rename.pl plot.*.eps
+  ./rename-petras.pl plot.*.eps
+fi
 
 #--------------------------- create gifs
 
-gps -gif plot.*.eps
+if [ $dogif = "YES" ]; then
+  gps -gif plot.*.eps
+else				#go via jpg
+  gps -jpg plot.*.eps
+  for file in plot.*.jpg
+  do
+    name=`basename $file .jpg`
+    new="$name.gif"
+    echo "$file -> $new"
+    convert $file $new
+  done
+fi
 
 ######################################################
 #

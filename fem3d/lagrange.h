@@ -9,13 +9,16 @@ c 29.04.2005    ggu     arrays for backtracking
 c 29.11.2006    ggu     new version integrated into main model
 c 15.02.2009    ggu     cleaned version
 c 20.10.2011    ggu     fx renamed to flux2d, new flux3d and vel3d_ie
+c 16.12.2011    ggu     new array id_body, new vars idbdy, lunit
 c
 c******************************************************************
 
 c-------------------------------------------------- main variables
 
         integer nbdy				!total number of particles
-        common /nbdy/nbdy
+        integer idbdy				!max id used
+        integer lunit				!unit for messages
+        common /lagr_i/nbdy,idbdy,lunit
 
         integer est(nbdydim)			!initial element number
         common /est/est
@@ -46,6 +49,9 @@ c-------------------------------------------------- main variables
 
  	real lgr_var(nbdydim)			!custom variable
  	common /lgr_var/lgr_var
+
+        integer id_body(nbdydim)		!id of particle
+        common /id_body/id_body
 
 c-------------------------------------------------- random walk
 	

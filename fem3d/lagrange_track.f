@@ -6,6 +6,7 @@ c
 c revision log :
 c
 c 05.02.2009    ggu     copied from other files
+c 16.12.2011    ggu     write all messages to lunit
 c
 c**********************************************************************
 
@@ -114,8 +115,8 @@ c - individuare nuove coordinate del body
          v_int=vel_ie(l_int,ie)
          
          if(v_int.le.0)then
-          PRINT*,'STOP!! ERRORE VELOCITA DI ENTRATA NEGATIVA'
-	  PRINT*,'CASO [A] TRACK_ORIG'
+          write(lunit,*) 'STOP!! ERRORE VELOCITA DI ENTRATA NEGATIVA'
+	  write(lunit,*) 'CASO [A] TRACK_ORIG'
 	  !stop
           ie = -ie
 	  time=0
@@ -204,15 +205,15 @@ c determinazione velocità di entrata v_ent del body v_ent
         v_out=vel_ie(l_out,ie)
 
         if(v_out.gt.0)then
-         PRINT*,'STOP!! ERRORE VELOCITÀ DI USCITA POSITIVA'
-	 PRINT*,'CASO [A] TRACK_ORIG'	 
+         write(lunit,*) 'STOP!! ERRORE VELOCITÀ DI USCITA POSITIVA'
+	 write(lunit,*) 'CASO [A] TRACK_ORIG'	 
 	 !stop
 	 time=0
          ie = -ie
 	 return
         elseif(v_out.eq.0)then
-         PRINT*,'STOP!! ERRORE VELOCITÀ DI USCITA NULLA'
-	 PRINT*,'CASO [A] TRACK_ORIG'
+         write(lunit,*) 'STOP!! ERRORE VELOCITÀ DI USCITA NULLA'
+	 write(lunit,*) 'CASO [A] TRACK_ORIG'
 	 !stop
 	 time=0
          ie = -ie
@@ -251,8 +252,8 @@ c - individuare nuove coordinate del body
 
         
         if(v_out.ge.0)then
-         PRINT*,'STOP!! ERRORE VELOCITA DI USCITA POSITIVO'
-         PRINT*,'CASO [B] TRACK_ORIG'
+         write(lunit,*) 'STOP!! ERRORE VELOCITA DI USCITA POSITIVO'
+         write(lunit,*) 'CASO [B] TRACK_ORIG'
 	 !stop
 	 time=0
          ie = -ie
@@ -338,15 +339,15 @@ c determinazione velocità di entrata v_ent del body v_ent
         v_int=vel_ie(l_int,ie)
                 
         if(v_int.lt.0)then
-         PRINT*,'STOP!! ERRORE VELOCITÀ DI ENTRATA NEGATIVA'
-         PRINT*,'CASO [B] TRACK_ORIG'
+         write(lunit,*) 'STOP!! ERRORE VELOCITÀ DI ENTRATA NEGATIVA'
+         write(lunit,*) 'CASO [B] TRACK_ORIG'
 	 !stop
 	 time=0
          ie = -ie
 	 return
         elseif(v_int.eq.0)then
-         PRINT*,'STOP!! ERRORE VELOCITÀ DI ENTRATA NULLA'
-	 PRINT*,'CASO [B] TRACK_ORIG'
+         write(lunit,*) 'STOP!! ERRORE VELOCITÀ DI ENTRATA NULLA'
+	 write(lunit,*) 'CASO [B] TRACK_ORIG'
 	 !stop
 	 time=0
          ie = -ie
@@ -358,40 +359,40 @@ c Errore il campo di moto è convergente, problemi con l'eliminazione delle compo
 c DIVERGENTI FERMARE IL CILO
 
        elseif((ps.eq.3).or.(nl.eq.3))then
-c       print*,'STOP!! FLUSSI TUTTI POSITIVI O NULLI IN ',ie
-c       PRINT*,'CASO [C] TRACK_ORIG'
+c       write(lunit,*) 'STOP!! FLUSSI TUTTI POSITIVI O NULLI IN ',ie
+c       write(lunit,*) 'CASO [C] TRACK_ORIG'
          time=0
 c        ie = -ie
         return
        elseif((ng.eq.3))then
-c       print*,'STOP!! FLUSSI TUTTI NEGATIVI IN ',ie
-c       PRINT*,'CASO [D] TRACK_ORIG'
+c       write(lunit,*) 'STOP!! FLUSSI TUTTI NEGATIVI IN ',ie
+c       write(lunit,*) 'CASO [D] TRACK_ORIG'
          time=0
 c        ie = -ie
         return
        elseif((nl.eq.2).and.(ps.eq.1))then
-c       print*,'STOP!! UN SOLO FLUSSO POSITIVO E 2 NULLI IN ',ie
-c       PRINT*,'CASO [E] TRACK_ORIG'
-c       PRINT*,'[elemento di partenza con due lati C.B]'
+c       write(lunit,*) 'STOP!! UN SOLO FLUSSO POSITIVO E 2 NULLI IN ',ie
+c       write(lunit,*) 'CASO [E] TRACK_ORIG'
+c       write(lunit,*) '[elemento di partenza con due lati C.B]'
          time=0
 c        ie = -ie
         return
        elseif((nl.eq.2).and.(ng.eq.1))then
-c       print*,'STOP!! UN SOLO FLUSSO NEGATIVO E 2 NULLI IN ',ie
-c       PRINT*,'CASO [F] TRACK_ORIG'
-c       PRINT*,'[elemento di partenza con due lati C.B]'
+c       write(lunit,*) 'STOP!! UN SOLO FLUSSO NEGATIVO E 2 NULLI IN ',ie
+c       write(lunit,*) 'CASO [F] TRACK_ORIG'
+c       write(lunit,*) '[elemento di partenza con due lati C.B]'
          time=0
 c        ie = -ie
         return
        elseif((nl.eq.1).and.(ps.eq.2))then
-c       print*,'STOP!! 2 FLUSSI POSITIVI E 1 NULLO IN ',ie
-c       PRINT*,'CASO [G] TRACK_ORIG'
+c       write(lunit,*) 'STOP!! 2 FLUSSI POSITIVI E 1 NULLO IN ',ie
+c       write(lunit,*) 'CASO [G] TRACK_ORIG'
          time=0
 c        ie = -ie
         return
        elseif((nl.eq.1).and.(ng.eq.2))then
-c       print*,'STOP!! 2 FLUSSI NEGATIVI E 1 NULLO IN ',ie
-c       PRINT*,'CASO [H] TRACK_ORIG'
+c       write(lunit,*) 'STOP!! 2 FLUSSI NEGATIVI E 1 NULLO IN ',ie
+c       write(lunit,*) 'CASO [H] TRACK_ORIG'
          time=0
 c        ie = -ie
         return
@@ -425,8 +426,8 @@ c elemento ad una distanza di 0.1 m. Questa è la precisione da me
 c imposta
         gf=dvert(1,ie)/100000 
         if(abs(nwdist-dstbdy).lt.gf)then      ! body dista meno di 0.1m dal lato
-          PRINT*,'WARNING!! BODY SU LATO ELEMENTO'
-          PRINT*,'track orig',bdy
+          write(lunit,*) 'WARNING!! BODY SU LATO ELEMENTO'
+          write(lunit,*) 'track orig',bdy
           nwdist=dstbdy+2*gf
         endif
         if(nwdist.gt.dstbdy)then            !2 body su nuovo el
@@ -437,8 +438,8 @@ c imposta
          newie=ieltv(l_out,ie)
          if(newie.eq.-1)then			!2.a body e uscito dal dominio
 	  if( .not. bback ) then
-            PRINT*,'STOP!! BODY ',bdy,' USCITO '
-            PRINT*,'ELEMENTO USCITA ',ie
+            write(lunit,*) 'STOP!! BODY ',bdy,' USCITO '
+            write(lunit,*) 'ELEMENTO USCITA ',ie
 	  end if
           ie=-ie ! flag per skip bdy dal calcolo
 	  time=0.
@@ -561,8 +562,8 @@ c velocità di entrata v_int
 	v_int=vel_ie(l_int,ie)
 
         if(v_int.le.0)then
-         PRINT*,'STOP!! ERRORE FLUSSO DI ENTRATA NEGATIVO'
-         print*,'track line'
+         write(lunit,*) 'STOP!! ERRORE FLUSSO DI ENTRATA NEGATIVO'
+         write(lunit,*) 'track line'
 	 !stop
 	 time=0
          ie = -ie
@@ -728,15 +729,15 @@ c velocita di percorso v_ent pari alla media v_int, v_out
          v_out=vel_ie(l_out,ie)
         
          if(v_out.gt.0)then
-          PRINT*,'STOP!! ERRORE VELOCITÀ DI USCITA POSITIVA'
-          PRINT*,'track line'
+          write(lunit,*) 'STOP!! ERRORE VELOCITÀ DI USCITA POSITIVA'
+          write(lunit,*) 'track line'
 	  !stop
 	  time=0
           ie = -ie
 	  return
          elseif(v_out.eq.0)then
-          PRINT*,'STOP!! ERRORE VELOCITÀ DI USCITA NULLA'
-          PRINT*,'track line'
+          write(lunit,*) 'STOP!! ERRORE VELOCITÀ DI USCITA NULLA'
+          write(lunit,*) 'track line'
 	  !stop
 	  time=0
           ie = -ie
@@ -749,40 +750,40 @@ c CASO [C] tutti i flussi sono entranti o nulli. Errore il campo di moto è
 c convergente, problemi con l'eliminazione delle componenti DIVERGENTI
 c FERMARE IL CILO
 
-c        print*,'STOP!! FLUSSI TUTTI POSITIVI IN ',ie
-c        PRINT*,'CASO [C] TRACK_LINE'
+c        write(lunit,*) 'STOP!! FLUSSI TUTTI POSITIVI IN ',ie
+c        write(lunit,*) 'CASO [C] TRACK_LINE'
          time=0
 c        ie = -ie
          return
         elseif((fpb(1).lt.0).and.(fpb(2).lt.0))then
-c        print*,'STOP!! FLUSSI TUTTI NEGATIVI IN ',ie
-c        PRINT*,'CASO [D] TRACK_LINE'
+c        write(lunit,*) 'STOP!! FLUSSI TUTTI NEGATIVI IN ',ie
+c        write(lunit,*) 'CASO [D] TRACK_LINE'
          time=0
 c        ie = -ie
          return
         elseif((nl.eq.2).and.(ps.eq.1))then
-c        print*,'STOP!! UN SOLO FLUSSO POSITIVO E 2 NULLI IN ',ie
-c        PRINT*,'CASO [E] TRACK_LINE'
-c        PRINT*,'[elemento con due lati C.B]'
+c        write(lunit,*) 'STOP!! UN SOLO FLUSSO POSITIVO E 2 NULLI IN ',ie
+c        write(lunit,*) 'CASO [E] TRACK_LINE'
+c        write(lunit,*) '[elemento con due lati C.B]'
          time=0
 c        ie = -ie
          return
         elseif((nl.eq.2).and.(ng.eq.1))then
-c        print*,'STOP!! UN SOLO FLUSSO NEGATIVO E 2 NULLI IN ',ie
-c        PRINT*,'CASO [F] TRACK_LINE'
-c        PRINT*,'[elemento con due lati C.B]'
+c        write(lunit,*) 'STOP!! UN SOLO FLUSSO NEGATIVO E 2 NULLI IN ',ie
+c        write(lunit,*) 'CASO [F] TRACK_LINE'
+c        write(lunit,*) '[elemento con due lati C.B]'
          time=0
 c        ie = -ie
          return
         elseif((nl.eq.1).and.(ps.eq.2))then
-c        print*,'STOP!! 2 FLUSSI POSITIVI E 1 NULLO IN ',ie
-c        PRINT*,'CASO [G] TRACK_LINE'
+c        write(lunit,*) 'STOP!! 2 FLUSSI POSITIVI E 1 NULLO IN ',ie
+c        write(lunit,*) 'CASO [G] TRACK_LINE'
          time=0
 c        ie = -ie
          return
         elseif((nl.eq.1).and.(ng.eq.2))then
-c        print*,'STOP!! 2 FLUSSI NEGATIVI E 1 NULLO IN ',ie
-c        PRINT*,'CASO [H] TRACK_LINE'
+c        write(lunit,*) 'STOP!! 2 FLUSSI NEGATIVI E 1 NULLO IN ',ie
+c        write(lunit,*) 'CASO [H] TRACK_LINE'
          time=0
 c        ie = -ie
          return
@@ -819,8 +820,8 @@ c imposta
 
         gf=dvert(1,ie)/100000    
         if(abs(nwdist-dstbdy).lt.gf)then     ! body dista meno di 0.1m dal lato    
-          PRINT*,'STOP!! BODY SU LATO ELEMENTO'
-          PRINT*,'track line',bdy
+          write(lunit,*) 'STOP!! BODY SU LATO ELEMENTO'
+          write(lunit,*) 'track line',bdy
           nwdist=dstbdy+2*gf
         endif
 
@@ -832,8 +833,8 @@ c imposta
          newie=ieltv(l_out,ie) !
          if(newie.eq.-1)then			!2.a body uscito dal dominio
 	  if( .not. bback ) then
-            PRINT*,'STOP!! BODY ',bdy,' USCITO '
-            PRINT*,'ELEMENTO USCITA ',ie
+            write(lunit,*) 'STOP!! BODY ',bdy,' USCITO '
+            write(lunit,*) 'ELEMENTO USCITA ',ie
 	  end if
           ie=-ie! flag per skip bdy dal calcolo
           xbdy=nxbdy ! ultime coordinate del body uscito

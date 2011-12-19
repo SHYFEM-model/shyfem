@@ -8,6 +8,7 @@ c
 c 02.09.2003	ggu	adapted to new OUS format
 c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
 c 03.06.2011    ggu     routine adjourned
+c 16.12.2011    ggu     bug fix: call to init_sigma_info and makehev (common hev)
 c
 c***************************************************************
 
@@ -52,6 +53,7 @@ c still to be revised...
         common /vtlnv/vtlnv
 
 	real hev(neldim)
+	common /hev/hev
 
 	real znv(nkndim)
 	real zenv(3,neldim)
@@ -140,7 +142,9 @@ c--------------------------------------------------------------------
 	call rsous(nin,ilhv,hlv,hev,ierr)
         if(ierr.ne.0) goto 100
 
+	call init_sigma_info(nlv,hlv)
         call level_e2k(nkn,nel,nen3v,ilhv,ilhkv)
+	call makehev(hev)
 
         write(6,*) 'Available levels: ',nlv
         write(6,*) (hlv(l),l=1,nlv)
