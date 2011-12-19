@@ -1,5 +1,24 @@
 ============================================================
 
+Mon Dec 19 18:52:25 CET 2011
+
+bug fixes for plotting
+
+ LOG               |   12 ++++++++++++
+ Rules.make        |   22 +++++++++++-----------
+ fem3d/param.h     |   10 +++++-----
+ fem3d/sigmautil.f |    2 ++
+ fem3d/subreg.f    |   11 +++++++++--
+ femadj/param.h    |   10 +++++-----
+ femplot/param.h   |   10 +++++-----
+ femplot/plotsim.f |    2 ++
+ femplot/supout.f  |   33 +++++++++++++++++++++++++++++++++
+ femplot/supsim.f  |   24 ++++++++++++++++++++++++
+ param.h           |   10 +++++-----
+ 11 files changed, 113 insertions(+), 33 deletions(-)
+
+============================================================
+
 Mon Dec 19 15:05:30 CET 2011
 
 lagrangian module revised (+ some bugfixes)

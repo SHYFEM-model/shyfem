@@ -9,6 +9,7 @@ c 07.11.2011	ggu	layer thickness for hybrid coordinates
 c 14.11.2011	ggu	new sigma routines copied to this file
 c 02.12.2011	ggu	bug fix in init_sigma_info() for nlv == 1
 c 16.12.2011	ggu	check for non-initialized data structure (blockdata)
+c 19.12.2011	ggu	bug fix in init_sigma_info(): call set_sigma_info()
 c
 c******************************************************************
 
@@ -126,6 +127,7 @@ c---------------------------------------------------------
 	  stop 'error stop init_sigma_info: internal error (1)'
 	end if
 	nsigma = nlv
+	call set_sigma_info(nlv,nsigma,hsigma)	!HACK
 	return
 
 c---------------------------------------------------------

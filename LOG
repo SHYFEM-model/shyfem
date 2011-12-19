@@ -1,4 +1,16 @@
 
+19.12.2011	bug fixes
+
+c ./femplot/plotsim.f:
+c 19.12.2011    ggu     bug fix: sflag was not set
+c
+c ./femplot/supout.f:
+c 19.12.2011  ggu     new routine level_k2e -> called for nos files
+c
+c ./fem3d/sigmautil.f:
+c 19.12.2011    ggu     bug fix in init_sigma_info(): call set_sigma_info()
+c
+
 16.12.2011	lagrange
 
 	lagrange for input over boundary (lagrange_cont.f)

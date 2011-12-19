@@ -822,11 +822,18 @@ c common
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 c local
-	integer ie
+	integer ie,nedry
+
+	nedry = 0
 
 	do ie=1,nel
-	  if( level .gt. ilhv(ie) ) bwater(ie) = .false.
+	  if( level .gt. ilhv(ie) ) then
+	    bwater(ie) = .false.
+	    nedry = nedry + 1
+	  end if
 	end do
+
+	write(6,*) 'levelmask: no such level =',nedry,nel,level
 
 	end
 

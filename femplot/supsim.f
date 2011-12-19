@@ -466,6 +466,7 @@ c plots node values
 	call get_minmax_flag(parray,nkn,pmin,pmax)
         write(6,*) 'min/max: ',nkn,pmin,pmax
 	call apply_dry_mask(bkwater,parray,nkn,flag)	!flags to dry nodes
+	call count_flag(parray,nkn,flag)
 	call colauto(pmin,pmax)
 
         call qcomm('Plotting isolines')
@@ -1613,6 +1614,29 @@ c compute nodal values vnv()
 	    vnv(k) = 0.
 	  end if
 	end do
+
+	end
+
+c*****************************************************************
+
+	subroutine count_flag(value,n,flag)
+
+c counts total number of flagged nodes
+
+	implicit none
+
+	integer n
+	real flag
+	real value(1)
+
+	integer i,iflag
+
+	iflag = 0
+	do i=1,n
+	  if( value(i) .eq. flag ) iflag = iflag + 1
+	end do
+
+	write(6,*) 'flagged values: ',iflag,n,flag
 
 	end
 

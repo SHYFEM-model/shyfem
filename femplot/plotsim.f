@@ -23,6 +23,7 @@ c 17.12.2010	ggu	substituted hv with hkv
 c 31.03.2011	ggu	new arrays fvlv, arfvlv for scalar plotting
 c 31.08.2011	ggu	new copyright, eos plotting
 c 14.11.2011	ggu	new array hl for depth structure
+c 19.12.2011	ggu	bug fix: sflag was not set
 c
 c*************************************************************
 
@@ -157,6 +158,7 @@ c----------------------------------------------
 	eps2=1.e-6
 	pi=3.141592653
 	flag=-9988765.0
+	sflag = -999.
 	high=1.e+35
 	grav=9.81
 

@@ -21,6 +21,7 @@ c 12.07.2011  ggu     in prepsim use what is available for dry areas
 c 18.08.2011  ggu     bug fix in nosopen() -> extra comma eliminated 
 c 31.08.2011  ggu     new routines for handling EOS files
 c 14.11.2011  ggu     call to init_sigma_info() to setup layer info
+c 19.12.2011  ggu     new routine level_k2e -> called for nos files
 c
 c**********************************************************
 c**********************************************************
@@ -154,6 +155,7 @@ c set bshowdry = .false. if you want to plot all areas
 
 	hdry = 0.05				!level for drying
 	bshowdry = .true.			!show dry areas, else plot all
+	!bshowdry = .false.			!show dry areas, else plot all
 
 	if( .not. bshowdry ) hdry = -1.e+30	!no drying
 
@@ -176,6 +178,7 @@ c set bshowdry = .false. if you want to plot all areas
           !call levelmask(bwater,ilhv,level)	!element has this level
 	  !call nodemask(bwater,bkwater)	!copy element to node mask
 	else
+	  write(6,*) 'no information on dry areas: ',hdry
           call initmask(bwater)			!true for all elements
           call levelmask(bwater,ilhv,level)	!element has this level
 	  call nodemask(bwater,bkwater)		!copy element to node mask
@@ -1127,6 +1130,7 @@ c read second header
 		stop 'error stop nosopen: error reading second header'
 	end if
 
+	call level_k2e
 	call init_sigma_info(nlv,hlv)		!sets up hlv
 
 	write(6,*) 'hlv: ',nlv,(hlv(l),l=1,nlv)
@@ -1652,6 +1656,35 @@ c computes max level at nodes from elements
 	    k = nen3v(ii,ie)
 	    ilhkv(k) = max(ilhkv(k),lmax)
 	  end do
+	end do
+
+	end
+
+c******************************************************
+
+	subroutine level_k2e
+
+c computes level at elems from nodes (not exact)
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	integer nen3v(3,1)
+	common /nen3v/nen3v
+        integer ilhv(1)
+        common /ilhv/ilhv
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+
+	integer ie,ii,k,lmax
+
+	do ie=1,nel
+	  lmax = 0
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    lmax = max(lmax,ilhkv(k))
+	  end do
+	  ilhv(ie) = lmax
 	end do
 
 	end

@@ -68,11 +68,11 @@ export NGRDIM = 12
 #export MBWDIM = 300
 
 # adriatico_DEFB_nolag
-#export NKNDIM = 24000
-#export NELDIM = 44000
-#export NLVDIM = 27
-#export NGRDIM = 12
-#export MBWDIM = 295
+export NKNDIM = 24000
+export NELDIM = 44000
+export NLVDIM = 27
+export NGRDIM = 12
+export MBWDIM = 295
 
 # isabella
 #export NKNDIM = 14000
@@ -130,12 +130,12 @@ export NGRDIM = 12
 #export NGRDIM = 10
 
 # Mar Menor
-export NKNDIM = 9000
-export NELDIM = 17000
-export NLVDIM = 1
-export MBWDIM = 180
-export NGRDIM = 10
-export NBDYDIM = 200000
+#export NKNDIM = 9000
+#export NELDIM = 17000
+#export NLVDIM = 1
+#export MBWDIM = 180
+#export NGRDIM = 10
+#export NBDYDIM = 200000
 
 ##############################################
 # Compiler
