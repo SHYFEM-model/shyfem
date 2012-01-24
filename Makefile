@@ -134,6 +134,12 @@ check:
 install:
 	$(FEMBIN)/shyfem_install.sh
 
+install_hard:
+	$(FEMBIN)/shyfem_install_hard.sh
+
+install_hard_reset:
+	$(FEMBIN)/shyfem_install_hard.sh -reset
+
 links:
 	-rm -f bin lib
 	-ln -sf fembin bin

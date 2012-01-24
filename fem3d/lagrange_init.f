@@ -641,7 +641,7 @@ c-----------------------------------------------------------------
               if( iin .ne. 0 ) then
 		if( ifl .eq. 1 .or. inpoly(n,x,y,xp,yp) ) then
                   np = np + 1
-                  call insert_particle(ie,xp,yp)
+                  call insert_particle(ie,0.,xp,yp)
 		end if
               end if
             end do
@@ -706,7 +706,7 @@ c------------------------------------------------------------------
 
 	      if( iin .ne. 0 ) then
 		nin = nin + 1
-	  	call insert_particle(ie,xp,yp)
+	  	call insert_particle(ie,0.,xp,yp)
 	      end if
 	    end do
 	  end do

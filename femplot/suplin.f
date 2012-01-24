@@ -278,7 +278,12 @@ c--------------------------------------------------------------------
 	  call qgray(0.5)
 	  yb = yrmin
 	  yt = max(ya(1,ltot),ya(2,ltot))
+	write(6,*) 'line_ggu ',i,ltot,lvmax
+	write(6,*) 'line_ggu ',ya
+	write(6,*) 'line_ggu ',nlv,(hlv(l),l=1,nlv)
+	write(6,*) 'line_ggu ',x1,yb,x2,yt
 	  call qrfill(x1,yb,x2,yt)	!land (bottom)
+	write(6,*) 'line_ggu after: ',x1,yb,x2,yt
 
 	  do l=1,ltot
 	    ltop = 2*l - 2

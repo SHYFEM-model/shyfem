@@ -12,6 +12,7 @@ c 05.06.2007    ggu     plot lagrangian particles in color (LAG_COLOR)
 c 13.06.2008    ggu     use also z for plotting
 c 17.09.2008    ggu     new version for plotting lagrangian particles in color
 c 27.01.2009    ggu     better error check reading particles, routines deleted
+c 23.01.2012    ggu     use nbdydim in plolagr, plot z with color in plo_xy
 c
 c**********************************************************
 
@@ -90,8 +91,8 @@ c**********************************************************
 	real xlag(1),ylag(1),zlag(1)
 
 	integer nbdy,nn,nout
-	integer ip,ie,ies,i
-	real x,y,z,xs,ys,zs
+	integer id,ie,ies,i
+	real x,y,z,xs,ys,zs,ts
 
 c-----------------------------------------------------
 c read in particles
@@ -104,7 +105,7 @@ c-----------------------------------------------------
 	n = 0
 
         do i=1,nn
-          read(iunit,err=98) ip,x,y,z,ie,xs,ys,zs,ies
+          read(iunit,err=98) id,x,y,z,ie,xs,ys,zs,ies,ts
           if( ie .gt. 0 ) then
 	    n = n + 1
 	    if( n .gt. ndim ) goto 97
@@ -218,6 +219,8 @@ c**********************************************************
 
 	implicit none
 
+	include 'param.h'
+
 	character*80 descrr
 	common /descrr/ descrr
 
@@ -225,7 +228,7 @@ c**********************************************************
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
 	integer ndim
-	parameter(ndim=100000)
+	parameter(ndim=nbdydim)
 
 	integer iunit,it,n,nvers
 	real xlag(ndim)
@@ -275,14 +278,15 @@ c**********************************************************
 	real ylag(1)
 	real zlag(1)
 
-	logical bcolor,bbottom
+	logical bcolor,bbottom,bzeta
 	integer i
         real x,y,z,x1,y1,x2,y2
 	real cwater,cbottom
 
 c--------------------------------------
 	bcolor = .true.		!use color to plot lagrangian particles
-	bbottom = .true.	!use color to indicate p. on bottom
+	bbottom = .false.	!use color to indicate p. on bottom
+	bzeta = .true.		!use zeta to decide on color to use
 
 	cwater = 1.0		!color to use for particles in water
 	cbottom = 0.3		!color to use for particles on bottom
@@ -297,11 +301,15 @@ c--------------------------------------
 	   y = ylag(i)
 	   z = zlag(i)
 
-	   if( bcolor .and. bbottom ) then
-	     if( z .lt. 1.0 ) then		! in water column
-		call qhue(cwater)
-	     else				! on bottom
-		call qhue(cbottom)
+	   if( bcolor ) then
+	     if( bzeta ) then
+	       call qhue(z)
+	     else if( bbottom ) then
+	       if( z .lt. 1.0 ) then		! in water column
+	  	call qhue(cwater)
+	       else				! on bottom
+	  	call qhue(cbottom)
+	       end if
 	     end if
 	   end if
 

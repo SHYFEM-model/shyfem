@@ -12,6 +12,7 @@ clean:
 	-rm -f plot.*.eps
 	-rm -f plot.*.eps.bak
 	-rm -f tmp.gif
+	-rm -f .directory
 
 cleanall: clean
 	-rm -f plot.ps

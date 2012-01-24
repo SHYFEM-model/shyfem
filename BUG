@@ -1,4 +1,13 @@
 
+BUG_2010_40     ggu	6.1.41   23.01.2012
+	c_param was real (subproj.f)
+
+BUG_2010_39     ggu	6.1.41   19.01.2012
+	sflag was not set (plotsim.f)
+
+BUG_2010_38     ggu	6.1.41   19.01.2012
+	init_sigma_info(): call set_sigma_info() (sigmautil.f)
+
 BUG_2010_37     ggu	6.1.41   16.10.2011
 	flux2d_aux and r/tflux were integer (lagrange_flux.f,subflx3d.f)
 

@@ -169,7 +169,7 @@ HTOBJS = \
 	atoxi3d.o atoxi.o subwwm.o kepsd.o keps_util.o \
 	subinv.o newexpl.o subrnd.o \
 	submet.o submeteo.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o \
-	subtrace.o subproj.o \
+	subtrace.o subproj.o subeos.o \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ)
 
@@ -196,7 +196,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 
 BASEXTRA = subgeo.o subgrd.o subsrt.o sublnka.o links.o sublnku.o
 
-NOSOBJS = subnos.o nosutil.o genutil.o sigmautil.o
+NOSOBJS = subnos.o nosutil.o genutil.o sigmautil.o subeos.o
 OUSOBJS = subous.o ousutil.o genutil.o sigmautil.o
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o genutil.o sigmautil.o
 GRDOBJS = subgrd.o grdutil.o subsrt.o subcoord.o
@@ -346,6 +346,9 @@ cubic:   cubic.o $(OUTOBJS) subsse.o subssm.o
 basinf:  basinf.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
 
+baswork:  baswork.o $(OUTOBJS) $(BASEXTRA)
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(BASEXTRA) -o $@
+
 bashsigma:  bashsigma.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
 
@@ -393,6 +396,9 @@ nossum:  nossum.o $(NOSOBJS) $(OUTOBJS)
 
 ous2nc:  ous2nc.o $(OUSOBJS) $(OUTOBJS) netcdf.o
 	$(LINKER) -o $@ $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) netcdf.o $(LIBGS)
+
+eosinf:  eosinf.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 #-------------------------------------------------------
 

@@ -1,4 +1,6 @@
 
+/* debugging: look for setcolor_ggu and post_ggu */
+
 /************************************************************************\ 
  *									*
  * psgraph.c - graphic routines for postscript output			*
@@ -512,11 +514,22 @@ void PsNewPage( void )
 static void PsSetColor( void )
 
 {
+//	PsComment("aiuto..."); /* setcolor_ggu */
+	PsFlush();
+
+//	  printf("setcolor_ggu %i RGB\n",ColorMode);
 	PsStroke(FLUSH);
+//	  printf("setcolor_ggu %i RGB\n",ColorMode);
 	if( ColorMode == CMODE_COLOR ) {
 	  if( ! ISWHITE ) fprintf(FP,"%1.3f C\n",C1);
 	} else if( ColorMode == CMODE_GRAY ) {
-	  if( ! ISWHITE ) fprintf(FP,"%1.3f G\n",C1);
+//	  printf("setcolor_ggu 1 %i RGB\n",ColorMode);
+//	  printf("setcolor_ggu 2 %i RGB\n",IsWhite);
+//	  printf("setcolor_ggu 3 %i RGB\n",BPaintWhite);
+//	  printf("setcolor_ggu 4 %f RGB\n",C1);
+//	  printf("setcolor_ggu 5 %i RGB\n",FP);
+	  if( ! (ISWHITE) ) fprintf(FP,"%1.3f G\n",C1);
+//	  printf("setcolor_ggu 9 %i RGB\n",ColorMode);
 	} else if( ColorMode == CMODE_HSB ) {
 	  if( C2 == 1. && C3 == 1. ) {
 	    fprintf(FP,"%1.3f H\n",C1);
@@ -996,11 +1009,14 @@ void PsRectFill( float x1 , float y1 , float x2 , float y2 )
 	float vw,vh;
 	float vx1,vy1,vx2,vy2;
 
+//	printf("post_ggu: %1.3f %1.3f %1.3f %1.3f\n",x1,y1,x2,y2);
+
 	ix1 =  MIN(x1,x2);
 	ix2 =  MAX(x1,x2);
 	iy1 =  MIN(y1,y2);
 	iy2 =  MAX(y1,y2);
 
+//	printf("post_ggu: %1.3f %1.3f %1.3f %1.3f\n",x1,y1,x2,y2);
 	vx1 = PsxWtoV(ix1);
 	vy1 = PsyWtoV(iy1);
 	vx2 = PsxWtoV(ix2);
@@ -1010,10 +1026,15 @@ void PsRectFill( float x1 , float y1 , float x2 , float y2 )
 	if( vy1 > ViewTop ) return;
 	if( vy2 < ViewBottom ) return;
 
+//	printf("post_ggu 1: %1.3f %1.3f %1.3f %1.3f\n",x1,y1,x2,y2);
 	if( ISWHITE ) return;
+//	printf("post_ggu 2: %1.3f %1.3f %1.3f %1.3f\n",x1,y1,x2,y2);
 	PsStroke(FLUSH);
+//	printf("post_ggu 3: %1.3f %1.3f %1.3f %1.3f\n",x1,y1,x2,y2);
 	SETCOLOR;
+//	printf("post_ggu 4: %1.3f %1.3f %1.3f %1.3f\n",x1,y1,x2,y2);
 
+//	printf("post_ggu 5: %1.3f %1.3f %1.3f %1.3f\n",x1,y1,x2,y2);
 	vw = vx2 - vx1;
 	vh = vy2 - vy1;
 	fprintf(FP,"%1.3f %1.3f %1.3f %1.3f RF\n",vh,vw,vx1,vy1);

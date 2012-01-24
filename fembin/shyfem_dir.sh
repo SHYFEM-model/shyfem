@@ -17,11 +17,11 @@
 #
 #------------------------------------------------------
 
-femdir=${SHYFEMDIR:=$HOME/shyfem}
-fembin=$femdir/fembin
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
+fembin=$FEMDIR/fembin
 
-femdir_install=${SHYFEM_INSTALL:=$HOME/shyfem}
-fembin_install=$femdir_install/fembin
+FEMDIR_INSTALL=${SHYFEM_INSTALL:=$HOME/shyfem}
+fembin_install=$FEMDIR_INSTALL/fembin
 
 # command line options ----------------------------
 
@@ -49,8 +49,8 @@ if [ -n "$1" ]; then
   fi
 
   export SHYFEMDIR=$dir
-  femdir=${SHYFEMDIR:=$HOME/shyfem}
-  fembin=$femdir/fembin
+  FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
+  fembin=$FEMDIR/fembin
 
   path=`$fembin_install/shyfem_path.pl $PATH`
   export PATH=$path:$fembin:$HOME/shyfem/fembin
@@ -64,8 +64,8 @@ version=`$fembin_install/shyfem_version.sh`
 if [ $write != "quiet" ]; then
 
   echo "SHYFEM version: $version"
-  echo "SHYFEM directory: $femdir"
-  echo "SHYFEM install directory: $femdir_install"
+  echo "SHYFEM directory: $FEMDIR"
+  echo "SHYFEM install directory: $FEMDIR_INSTALL"
 
   if [ $write = "debug" ]; then
     echo "SHYFEM path: $PATH"

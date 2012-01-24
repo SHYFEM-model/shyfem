@@ -7,10 +7,11 @@ c revision log :
 c
 c 05.02.2009    ggu	copied from lagrange_cont.f and integrated from others
 c 16.12.2011    ggu	initialization with body id
+c 23.01.2012    ggu	new call to insert_particle, new id_body
 c
 c*******************************************************************
 
-	subroutine insert_particle(ie,x,y)
+	subroutine insert_particle(ie,rtime,x,y)
 
 c inserts particle at position x,y - if element unknown set ie=0
 
@@ -22,28 +23,35 @@ c inserts particle at position x,y - if element unknown set ie=0
         integer itanf,itend,idt,nits,niter,it
         common /femtim/ itanf,itend,idt,nits,niter,it
 
-	integer ie
-	real x,y
+	integer ie,ip
+	real rtime	!time to be advected (relative to time step - 0 all dt)
+	real x,y,z
 
 	nbdy = nbdy + 1
 	idbdy = idbdy + 1
 
 	if( nbdy .gt. nbdydim ) goto 99
 
-        tin(nbdy)=it
+        tin(nbdy)=it - idt*(1.-rtime)		!idt should be real
+        !tin(nbdy)=it
+
+	z = 0.5
+	call lagr_connect_get_station(ie,ip,z)	!connectivity
 
         est(nbdy)=ie
         xst(nbdy)=x
         yst(nbdy)=y
-	zst(nbdy) = 0.5
+	zst(nbdy) = z
 
         ie_body(nbdy)=ie
         x_body(nbdy)=x
         y_body(nbdy)=y
-	z_body(nbdy) = 0.5
+	z_body(nbdy) = z
 
 	lgr_var(nbdy) = 0
-	id_body(nbdy) = 0
+	id_body(nbdy) = idbdy
+
+	lgr_bitmap(nbdy) = 0
 
 	return
    99	continue
@@ -83,6 +91,8 @@ c copies particle from ifrom to ito
 	lgr_var(ito) = lgr_var(ifrom)
 	id_body(ito) = id_body(ifrom)
 	
+	lgr_bitmap(ito) = lgr_bitmap(ifrom)
+
 	end
 
 c*******************************************************************
@@ -141,7 +151,7 @@ c once it has been written to output with negative ie, it is set to 0
 	integer nvers,mtype
 	parameter ( nvers = 3 , mtype = 367265 )
 
-	integer nn,nout,ie,i
+	integer nn,nout,ie,i,id
 	real x,y,z
 	real getpar
 
@@ -183,8 +193,9 @@ c----------------------------------------------------------------
           y = y_body(i)
           z = z_body(i)
 	  ie = ie_body(i)
+	  id = id_body(i)
 	  if( ie .ne. 0 ) then
-	    write(iu) i,x,y,z,ie,xst(i),yst(i),zst(i),est(i),tin(i)
+	    write(iu) id,x,y,z,ie,xst(i),yst(i),zst(i),est(i),tin(i)
 	  end if
 	  if( ie .lt. 0 ) ie_body(i) = 0		!flag as out
 	end do
@@ -408,7 +419,7 @@ c tests compress routine
 
 	do i=1,nadd
 	  ie = ie + 1
-	  call insert_particle(ie,1.,1.)
+	  call insert_particle(ie,0.,1.,1.)
 	end do
 
 	call ntot_particles(ntot)

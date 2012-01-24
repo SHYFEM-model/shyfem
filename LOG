@@ -1,15 +1,27 @@
 
+23.01.2012	logo and install
+
+	automatic inclusion of logo (gp, plots, fembin/logo)
+	hard install of model (shyfem_install_hard.*)
+
+23.01.2012	projection
+
+	new section proj (subnsh.f)
+	bug fix: c_param was real (subproj.f)
+
+23.01.2012	lagrangian revision (seg fault, connectivity)
+
+	new call to insert_particle, new id_body (lagrange_inout.f)
+	ltbdy is locally passed (not common) (lagrange_track.f)
+	various changes to track_body (id, etc..) (lagrange_main.f)
+	new routine for release in point, connectivity (lagrange_cont.f)
+	use nbdydim in plolagr, plot z with color in plo_xy (suplag.f)
+
 19.12.2011	bug fixes
 
-c ./femplot/plotsim.f:
-c 19.12.2011    ggu     bug fix: sflag was not set
-c
-c ./femplot/supout.f:
-c 19.12.2011  ggu     new routine level_k2e -> called for nos files
-c
-c ./fem3d/sigmautil.f:
-c 19.12.2011    ggu     bug fix in init_sigma_info(): call set_sigma_info()
-c
+	bug fix: sflag was not set (plotsim.f)
+	new routine level_k2e -> called for nos files (supout.f)
+	bug fix in init_sigma_info(): call set_sigma_info() (sigmautil.f)
 
 16.12.2011	lagrange
 

@@ -610,6 +610,11 @@ c arguments
 	integer ip,jp
 	real am(ip,jp)
 	real xx,yy
+c parameter
+	real eps,zero,one
+	parameter( eps = 1.e-4 )
+	!parameter( eps = 0. )		!to use this pass in double precision
+	parameter( zero = 0. - eps , one = 1. + eps )
 c common
 	real pxareg,pyareg,pxdreg,pydreg,pzlreg
 	common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
@@ -641,8 +646,11 @@ c local
 	    t=(xx-x1)/pxdreg
 	    u=(yy-y1)/pydreg
 
-	if( u.gt.1. .or. u.lt.0. ) write(6,*) 'error am2val',u,t
-	if( t.gt.1. .or. t.lt.0. ) write(6,*) 'error am2val',u,t
+	    if( u.gt.one .or. u.lt.zero .or.
+     +			 t.gt.one .or. t.lt.zero ) then
+		write(6,*) 'error am2val',u,t,xx,yy
+		write(6,*) '  ',imin,jmin,ip,jp
+	    end if
 
 	    am2val=(1-t)*(1-u)*z1+t*(1-u)*z2+t*u*z3+(1-t)*u*z4
 
@@ -1132,12 +1140,14 @@ c uses data structure ev and ieltv
 	real ieltv(3,1)
 	common /ieltv/ieltv
 
-	logical binit
+	logical binit,bdebug
 	integer ie,ii,iside
 	real xi,ximin
 	double precision a(3),b(3),c(3)
 
 	logical in_element
+
+	bdebug = .false.
 
 	call is_init_ev(binit)
 
@@ -1145,13 +1155,13 @@ c-------------------------------------------------------------
 c check if old element is given -> if not test all elements
 c-------------------------------------------------------------
 
-	write(6,*) 'xi (1) ',ieold
+	if( bdebug ) write(6,*) 'ggu_xi (1) ',ieold
 	if( ieold .le. 0 .or. ieold .gt. nel ) then
 	  call find_element(xp,yp,ielem)
 	  return
 	end if
 
-	write(6,*) 'xi (2) ',ieold
+	if( bdebug ) write(6,*) 'ggu_xi (2) ',ieold
 	if( .not. binit ) then
 	  call find_elem_from_old(ieold,xp,yp,ielem)
 	  return
@@ -1161,7 +1171,7 @@ c-------------------------------------------------------------
 c start from old element
 c-------------------------------------------------------------
 
-	write(6,*) 'xi (3) ',ieold
+	if( bdebug ) write(6,*) 'ggu_xi (3) ',ieold
 
 	ie = ieold
 	do while( ie .gt. 0 )
@@ -1170,7 +1180,7 @@ c-------------------------------------------------------------
 	  call xi_abc(ie,a,b,c)
 	  do ii=1,3
 	    xi = a(ii) + b(ii)*xp + c(ii)*yp
-	write(6,*) 'xiii ',ie,ii,xi
+	    if( bdebug ) write(6,*) 'ggu_xiii ',ie,ii,xi
 	    if( xi .lt. ximin ) then
 	      ximin = xi
 	      iside = ii
@@ -1181,11 +1191,11 @@ c-------------------------------------------------------------
 	    return
 	  end if
 	  if( iside .le. 0 .or. iside .gt. 3 ) then
-	    write(6,*) '******** ',iside,ie,ximin,xi
+	    if( bdebug ) write(6,*) '******** ',iside,ie,ximin,xi
 	    ie = 0
 	  else
 	    ie = ieltv(iside,ie)
-	write(6,*) 'xiii iterate',ie,iside,ximin
+	    if( bdebug ) write(6,*) 'ggu_xiii iterate',ie,iside,ximin
 	  end if
 	end do
 

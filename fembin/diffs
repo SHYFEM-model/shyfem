@@ -4,7 +4,7 @@
 
 ################################################################
 
-femdir=${SHYFEMDIR:=$HOME/shyfem}
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 
 all="YES"
 ok="NO"

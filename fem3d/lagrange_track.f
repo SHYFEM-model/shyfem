@@ -7,10 +7,11 @@ c revision log :
 c
 c 05.02.2009    ggu     copied from other files
 c 16.12.2011    ggu     write all messages to lunit
+c 23.01.2012    ggu     ltbdy is locally passed (not common)
 c
 c**********************************************************************
 
-        subroutine track_orig(time,bdy,ie,xbdy,ybdy)
+        subroutine track_orig(time,bdy,ie,xbdy,ybdy,ltbdy)
 
 c in questa subroutine si calcola il percorso del body partendo
 c da un punto all'interno dell'elemento ie 
@@ -25,6 +26,7 @@ c si passa alla successiva subroutine con time
  
 	integer ie,bdy ! bdy e' il numero del body
 	real time
+	integer ltbdy
  
         real deltat ! frazione di time step body si muove in ie
  
@@ -449,7 +451,7 @@ c imposta
          endif
          do i=1,3
           if(ie.eq.ieltv(i,newie))then         
-           lt_body(bdy)=i ! individuazione lato di entrata del body
+           ltbdy=i ! individuazione lato di entrata del body
           endif
          end do
          xbdy=nxbdy ! nuove coordinate del body
@@ -469,7 +471,7 @@ c imposta
 
 c**********************************************************************
 
-	subroutine track_line(time,bdy,ie,xbdy,ybdy)
+	subroutine track_line(time,bdy,ie,xbdy,ybdy,ltbdy)
 
 c in questa subroutine si calcola il percorso del body partendo
 c da un punto sul lato dell'elemento ie
@@ -482,6 +484,7 @@ c nello stesso timestep arriva in un nuovo elemento
 	include 'lagrange.h' 
 
 	integer ie,bdy ! bdy e' il numero del body
+	integer ltbdy
 	real time
  
         real deltat ! frazione di time step body si muove in ie
@@ -547,7 +550,7 @@ c exi(1,2) sono i puntatori del nen3v per gli estremi della retta
 c su cui si trova il body
 
         
-        l_int=lt_body(bdy)
+        l_int=ltbdy
 
 
         i1=mod(l_int,3)+1
@@ -844,7 +847,7 @@ c imposta
          endif
          do i=1,3
           if(ie.eq.ieltv(i,newie))then          !3 body su vecchio el
-           lt_body(bdy)=i ! individuazione lato di entrata del body
+           ltbdy=i ! individuazione lato di entrata del body
           endif
          end do
          xbdy=nxbdy ! nuove coordinate del body

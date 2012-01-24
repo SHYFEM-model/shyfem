@@ -24,7 +24,7 @@ c*****************************************************************
 
         subroutine bclfix_ini_intern
 
-c internal routine to initialize common values
+c internal routine to initialize common values (called in bclfix_ini)
 
 	implicit none
 
@@ -41,19 +41,48 @@ c-------------------------------------------------------------
 
         nbfix = nint(getpar('nbfix'))
 
-	bfix = .true.		!fix velocities at boundary
+c------------------------------------------------------------
+c settings for velocity treatment on boundaries
+c------------------------------------------------------------
+
+c general setting
+
+	tramp = 0.
+	vfact = 1.
+
+c next settings for malta
+
 	bfix = .false.		!nudge velocities at boundary
-
-	bosigma = .false.	!boundary data is on z levels
 	bosigma = .true.	!boundary data is on sigma levels
-
-	lbmax = 15		!how many levels to read from boundary file
-	lbmax = 5		!how many levels to read from boundary file
 	lbmax = 19		!how many levels to read from boundary file
-
-	tramp = 43200.		!smooth init
-	tramp = 0.		!smooth init
 	tnudge = 3600.		!relaxation time for nudging
+	tramp = 43200.		!smooth init
+
+c next settings for montenegro
+
+	bfix = .false.		!nudge velocities at boundary
+	bosigma = .false.	!boundary data is on sigma levels
+	lbmax = 33		!how many levels to read from boundary file
+	tnudge = 3600.		!relaxation time for nudging
+	tramp = 43200.		!smooth init
+
+c next settings for chao
+
+	bfix = .true.		!fix velocities at boundary
+	bosigma = .false.	!boundary data is on z levels
+	lbmax = 5		!how many levels to read from boundary file
+	tramp = 0.		!smooth init
+
+c next settings for circular flume
+
+	bfix = .false.		!fix velocities at boundary
+	bosigma = .false.	!boundary data is on z levels
+	lbmax = 18		!how many levels to read from boundary file
+	tramp = 10000.		!smooth init
+	tnudge = 0.5		!relaxation time for nudging
+	vfact = 5.		!factor for velocity
+
+c------------------------------------------------------------
 
 	fixfile = 'vel_bound.dat'	!file name with u/v boundary data
 
@@ -212,8 +241,8 @@ c------------------------------------------------------------------
 	    end do
 
 	    do l=1,lmax
-	      u(l) = u(l) / n
-	      v(l) = v(l) / n
+	      u(l) = vfact * u(l) / n
+	      v(l) = vfact * v(l) / n
 	    end do
 
 	    do l=1,lmax

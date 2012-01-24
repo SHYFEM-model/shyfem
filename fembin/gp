@@ -4,8 +4,9 @@
 #
 #########################################################
 
-version=1.50
+version=1.51
 
+# 1.51	23.01.2012	new option -logo
 # 1.50	05.05.2011	new option -sy (not yet working)
 # 1.46	23.10.2009	new option -verbose
 # 1.45	24.08.2009	new option -bw (is already default)
@@ -25,7 +26,9 @@ version=1.50
 
 ######################################################### defaults
 
-femdir=${SHYFEMDIR:=$HOME/shyfem}
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
+
+fembin=$FEMDIR/fembin
 
 title="Timeseries"
 type="monochrome"
@@ -42,6 +45,10 @@ style=""
 xtics=""
 outfile=""
 ghost='ghostview -dsc -scale -2'
+
+logo="0"
+logo_file=$fembin/logo/logo.eps			#file to be included as logo
+logo_where="0.92 0.92 0 0.99"			#position of included file
 
 ######################################################### programs
 
@@ -101,6 +108,8 @@ FullUsage()
   echo "  -sx xfact        scale x-coordinate with xfact"
   echo "  -sy yfact        scale y-coordinate with yfact"
   echo "  -l  string       string that is removed from legend if found"
+  echo "  -logo            insert logo"
+  #echo "  -logo_where pos  insert logo at position pos (see gpsinsert)"
   echo "  -verbose         writes some diagnostic messages"
   echo ""
   echo "Possible style options are:"
@@ -344,6 +353,8 @@ do
 	-sx)		xfact=$2; shift;;
 	-sy)		yfact=$2; shift;;
 	-l)		nolegend=$2; shift;;
+	-logo)		logo=1;;
+	-logo_where)	logo=1; logo_where=$2; shift;;
 	-verbose)	verbose="YES";;
 	-h|-help)	FullUsage; exit 0;;
 	-*)		ErrorOption $1; exit 1;;
@@ -475,6 +486,13 @@ fi
 ######################################################### 
 
 PlotFiles 
+
+######################################################### insert logo
+
+if [ $logo -ne 0 ]; then
+  $fembin/gpsinsert -relative "$logo_where" $logo_file out.ps
+  mv incl_out.ps out.ps
+fi
 
 ######################################################### 
 

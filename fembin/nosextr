@@ -2,8 +2,8 @@
 #
 #-----------------------------------------------------------------
 
-femdir=${SHYFEMDIR:=$HOME/shyfem}
-bindir=$femdir/fem3d
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
+bindir=$FEMDIR/fem3d
 
 #-----------------------------------------------------------------
 

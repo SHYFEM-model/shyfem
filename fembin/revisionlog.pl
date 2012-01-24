@@ -1,8 +1,6 @@
 #!/usr/bin/perl
 
-$FEMDIR=$ENV{SHYFEMDIR}?$ENV{SHYFEMDIR}:$ENV{HOME}/shyfem;
-
-push(@INC,"$FEMDIR/fembin");
+use lib ("$ENV{SHYFEMDIR}/fembin","$ENV{HOME}/shyfem/fembin");
 
 require "revision_getdate.pl";
 

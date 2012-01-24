@@ -6,6 +6,7 @@ c
 c revision log :
 c
 c 17.11.2011    ggu     written from scratch
+c 10.01.2012    ggu     bug fix: c_param was real
 c
 c****************************************************************            
 
@@ -29,8 +30,8 @@ c handles projection - converts x/y to lat/lon
 	real ygeov(nkndim)
 	common /ygeov/ygeov
 
-	integer mode,iproj
-	real c_param(5)
+	integer mode,iproj,i
+	double precision c_param(5)
 
         real getpar
 
@@ -76,6 +77,17 @@ c---------------------------------------------------------------
 
 	call init_coords(iproj,c_param)
 	call convert_coords(mode,nkn,xgv,ygv,xgeov,ygeov)
+
+	write(6,*) 'start of handle_projection'
+	write(6,*) 'mode  = ',mode
+	write(6,*) 'iproj = ',iproj
+
+	write(6,*) (xgv(i),i=1,5)
+	write(6,*) (ygv(i),i=1,5)
+	write(6,*) (xgeov(i),i=1,5)
+	write(6,*) (ygeov(i),i=1,5)
+
+	write(6,*) 'end of handle_projection'
 
 	end
 

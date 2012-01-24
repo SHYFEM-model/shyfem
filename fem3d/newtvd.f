@@ -283,6 +283,7 @@ c sets position and element of upwind node
           if ( bsphe ) call ev_make_center(ie,dlon0,dlat0)
 
 	  bdebug = ie .eq. 5518 .or. ie .eq. 5521
+	  bdebug = .false.
 
           do ii=1,3
 
@@ -305,7 +306,7 @@ c sets position and element of upwind node
 
             call find_elem_from_old(ie,x,y,ienew)
             call find_close_elem(ie,x,y,ienew2)
-	    write(6,*) ie,ienew,ienew2
+	    !write(6,*) 'ggu_xiq ',ie,ienew,ienew2
 	    if( bdebug ) then
 	      write(6,*) ie,ienew
 	      inode = inode + 1
@@ -331,7 +332,7 @@ c sets position and element of upwind node
 
 	    call find_elem_from_old(ie,x,y,ienew)
             call find_close_elem(ie,x,y,ienew2)
-	    write(6,*) ie,ienew,ienew2
+	    !write(6,*) 'ggu_xiq ',ie,ienew,ienew2
 	    if( bdebug ) then
 	      write(6,*) ie,ienew
 	      inode = inode + 1

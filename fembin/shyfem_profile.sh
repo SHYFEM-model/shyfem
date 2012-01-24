@@ -8,11 +8,11 @@
 #
 #------------------------------------------------------
 
-femdir=${SHYFEMDIR:=$HOME/shyfem}
-fembin=$femdir/fembin
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
+fembin=$FEMDIR/fembin
 
-femdir_install=${SHYFEM_INSTALL:=$HOME/shyfem}
-fembin_install=$femdir_install/fembin
+FEMDIR_INSTALL=${SHYFEM_INSTALL:=$HOME/shyfem}
+fembin_install=$FEMDIR_INSTALL/fembin
 
 # set PATH ----------------------------------------
 
@@ -24,10 +24,10 @@ export PATH=$path:$fembin:$HOME/shyfem/fembin
 alias shyfemdir=". $fembin_install/shyfem_dir.sh"
 alias femdir=". $fembin_install/shyfem_dir.sh"
 
-alias shyfeminstall=". $fembin_install/shyfem_dir.sh $femdir_install"
+alias shyfeminstall=". $fembin_install/shyfem_dir.sh $FEMDIR_INSTALL"
 
-alias cdshyfem="cd $femdir"
-alias cdfem="cd $femdir"
+alias cdshyfem="cd $FEMDIR"
+alias cdfem="cd $FEMDIR"
 
 # end of routine ----------------------------------------
 

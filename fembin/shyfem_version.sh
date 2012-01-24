@@ -11,12 +11,12 @@
 #
 #------------------------------------------------------
 
-femdir=${SHYFEMDIR:=$HOME/shyfem}
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 
 if [ $# -eq 1 ]; then
   dir=$1
 else
-  dir=$femdir
+  dir=$FEMDIR
 fi
 
 version_file=$dir/VERSION
@@ -30,7 +30,7 @@ if [ ! -f $version_file ]; then
   exit 1
 fi
 
-version=`$femdir/fembin/shyfem_version.pl -tag_extra $version_file`
+version=`$FEMDIR/fembin/shyfem_version.pl -tag_extra $version_file`
 
 if [ $? -ne 0 ]; then
   echo "file $version_file does not contain SHYFEM version...aborting" 1>&2

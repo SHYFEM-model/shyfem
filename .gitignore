@@ -65,6 +65,8 @@ fem3d/nosextr_fluxes
 fem3d/bashsigma
 fem3d/ous2nc
 fem3d/lgrinf
+fem3d/baswork
+fem3d/eosinf
 
 femadj/adjele
 fembin/extDiff

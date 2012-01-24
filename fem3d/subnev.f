@@ -175,7 +175,7 @@ c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 
 	end do
 
-	write(68,*) 'maxmax: ',maxmax
+	!write(68,*) 'maxmax: ',maxmax
 
 	return
    99	continue
@@ -424,7 +424,7 @@ c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 	double precision x1,y1,x2,y2,x3,y3
 	double precision a1,a2,a3,aj,aji
 
-	write(6,*) 'xi ',ie,isphe_ev
+	!write(6,*) 'ggu_xi ',ie,isphe_ev
 
 	if( isphe_ev .eq. 0 ) then	!cartesian
 	  do ii=1,3

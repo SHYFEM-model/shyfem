@@ -67,6 +67,7 @@ c 01.06.2011    ggu     idtmin introduced
 c 12.07.2011    ggu     new routine next_output(), revised set_output_frequency
 c 14.07.2011    ggu     new routines for original time step
 c 13.09.2011    ggu     better error check, rdtitl() more robust
+c 23.01.2012    ggu     new section "proj"
 c
 c************************************************************
 c
@@ -334,6 +335,8 @@ c		write(6,*) 'new section: ',section,num
 		else if(section.eq.'end') then
 			goto 69
 		else if(section.eq.'para') then
+			call nrdins(section)
+		else if(section.eq.'proj') then
 			call nrdins(section)
 		else if(section.eq.'extra') then
 			call rdexta

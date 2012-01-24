@@ -4,8 +4,8 @@
 #
 #----------------------------------------------------------
 
-femdir=${SHYFEMDIR:=$HOME/shyfem}
-fembin=$femdir/fembin
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
+fembin=$FEMDIR/fembin
 
 if [ $# -lt 1 ]; then
   echo "Usage: get_timestep.sh simulation [idtsyn]"

@@ -67,6 +67,7 @@ c 15.02.2009    ggu     call to track_body has changed -> pass time to advect
 c 11.09.2009    ggu     little bug fix for output and release of particles
 c 19.10.2011    ggu     fx renamed to flux2d
 c 16.12.2011    ggu     new file .lgi, compress_particles()
+c 23.01.2012    ggu     various changes in call to track_body (id, etc..)
 c
 c****************************************************************            
 
@@ -227,15 +228,18 @@ c advection of particles
         include 'param.h'
 	include 'lagrange.h'
 
-	integer i,ie,nf
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	integer i,id,ie,nf
 	real x,y,z
-	real dt,ttime
+	real dt,ttime,tmax
                 
         nf=0
 	call get_timestep(dt)		!time to advect
 
 !$OMP  PARALLEL DO
-!$OMP& DEFAULT(SHARED) PRIVATE(i,ie,x,y,z,ttime)
+!$OMP& DEFAULT(SHARED) PRIVATE(i,ie,id,x,y,z,ttime)
 !$OMP& SCHEDULE(STATIC)
 !$OMP& REDUCTION(+:nf)
 
@@ -246,10 +250,15 @@ c advection of particles
 	  x=x_body(i)
 	  y=y_body(i)
 	  z=z_body(i)
-          ie=ie_body(i) 
-	  ttime = dt
+          ie=ie_body(i)
+	  id = id_body(i) 
 
-          if( z .lt. 1. ) call track_body(i,x,y,ie,ttime) 
+	  tmax = it - tin(i) 
+	  if( tmax .lt. 0. ) stop 'error stop drogue: internal error'
+	  ttime = min(tmax,dt)
+
+          !if( z .lt. 1. ) call track_body(id,x,y,ie,ttime) 
+          if( z .le. 1. ) call track_body(i,id,x,y,ie,ttime) 
 
 	  x_body(i)=x
 	  y_body(i)=y
@@ -267,7 +276,7 @@ c advection of particles
 
 c**********************************************************************
 
-        subroutine track_body(i,x,y,iel,ttime)
+        subroutine track_body(i,id,x,y,iel,ttime)
 
 c tracks one particle
 c
@@ -283,7 +292,9 @@ c TRACK_LINE if the particle is on one side (normal situation)
 	include 'lagrange.h'
 	
 	integer i		!particle number
+	integer id		!particle id
 	integer iel		!element number
+	integer ielem		!element number to check
 	real x			!x-coordinate
 	real y			!y-coordinate
 	real ttime		!time to advect
@@ -292,6 +303,9 @@ c TRACK_LINE if the particle is on one side (normal situation)
         common /iarv/iarv
         
 	integer nl
+	integer ltbdy
+	integer ieold
+	real torig
 	real xn,yn
 
         if(iel.le.0) return	!particle out of domain
@@ -301,6 +315,7 @@ c initialize
 c---------------------------------------------------------------
 
         nl = 100		!maximum loop count
+	ltbdy = 0
 
 	xn = x
 	yn = y
@@ -309,11 +324,17 @@ c---------------------------------------------------------------
 c track particle
 c---------------------------------------------------------------
 
-        call track_orig(ttime,i,iel,xn,yn)
+	torig = ttime
+	ieold = iel
+        call track_orig(ttime,id,iel,xn,yn,ltbdy)
+	call lagr_connect_count(i,ieold,torig-ttime,0)
 
 	do while ( ttime.gt.0. .and. iel.gt.0 .and. nl.gt.0 )
-           call track_line(ttime,i,iel,xn,yn)
-           nl = nl - 1
+	  torig = ttime
+	  ieold = iel
+          call track_line(ttime,id,iel,xn,yn,ltbdy)
+          nl = nl - 1
+	  call lagr_connect_count(i,ieold,torig-ttime,1)
         end do
 
 c---------------------------------------------------------------
@@ -325,14 +346,13 @@ c---------------------------------------------------------------
                 print*, i,iel,xn,yn
                 iel = -iel
         end if
-        ttime = 0.
 
 c---------------------------------------------------------------
 c diffusion
 c---------------------------------------------------------------
 
         if( .not. bback .and. iel .gt. 0 .and. rwhpar .gt. 0 ) then
-           call lag_diff(iel,i,xn,yn)
+           call lag_diff(iel,id,xn,yn)
         end if     
 
 c---------------------------------------------------------------

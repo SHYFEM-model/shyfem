@@ -8,12 +8,12 @@
 	character*80 fixfile
 	logical bfix,bosigma
 	integer nbfix,lbmax
-	real tramp,tnudge
+	real tramp,tnudge,vfact
 
 	common /fixfile/fixfile
 	common /fixlog/bfix,bosigma
 	common /fixint/nbfix,lbmax
-	common /fixreal/tramp,tnudge
+	common /fixreal/tramp,tnudge,vfact
 
 	save /fixfile/, /fixlog/, /fixint/, /fixreal/
 

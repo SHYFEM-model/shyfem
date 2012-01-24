@@ -657,8 +657,9 @@ c all this has to be revised for sigma layers
 
 	integer ie,ii,i1,i2
 	real flx,dh,zi1,zi2,zi3,dp,ar,dst
-	real bfact
-	
+	real bfact,eps
+
+	eps=1.e-5
 	bfact = 1.
 	if( bback ) bfact = -1.
 
@@ -673,6 +674,7 @@ c all this has to be revised for sigma layers
 	  zi3=zenv(ii,ie)
 	  dp=dh+((zi1+zi2-2.*zi3)/6.)	!compute aver depth between 1&2
 	  ar=dp*dst			!section area
+	  if(ar.le.eps) ar = eps	!area keep above 0
 	  flx=flux2d(ii,ie)		!flux
 	  vel_ie(ii,ie)=bfact*flx/ar	!velocity
          end do

@@ -37,11 +37,14 @@ c******************************************************************
        
         real xold,yold,xnew,ynew,lt_ex
         integer ieold,ienew
+	integer icount
 
         k=rwhpar  
 
 	dx= 0
 	dy= 0
+
+	if( ie .le. 0 ) stop 'error stop lag_diff: internal error'
 
         xold=x
         yold=y
@@ -50,14 +53,18 @@ c******************************************************************
         ttime=dt
 
 	ienew = 0
-	do while (ienew .eq. 0)
+	icount = 20
+	do while ( ienew .eq. 0 )
 
-        call lag_rand(k,ttime,dx,dy) !calcolo spostamento 
-        xnew=xold+dx
-        ynew=yold+dy
-        call find_elem_from_old(ieold,xnew,ynew,ienew)
+          call lag_rand(k,ttime,dx,dy) !calcolo spostamento 
+          xnew=xold+dx
+          ynew=yold+dy
+          call find_elem_from_old(ieold,xnew,ynew,ienew)
+	  icount = icount - 1
+	  if( icount .eq. 0 ) ienew = -ieold
 
 	end do
+
         x=xnew
         y=ynew
         ie=ienew

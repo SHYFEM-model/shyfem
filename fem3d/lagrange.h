@@ -99,9 +99,6 @@ c-------------------------------------------------- fluxes and velocities
         real vel3d_ie(nlvdim,3,neldim)		!velocities of sides (3d)
         common /vel3d_ie/vel3d_ie
 
-        integer lt_body(nbdydim)		!side of parting particle
-        common /lt_body/lt_body
-
         real dvert(3,neldim)
         common /dvert/dvert
 
@@ -115,6 +112,11 @@ c-------------------------------------------------- special variables
 
 	integer artype				!special element type
 	common /artype/artype
+
+c------------------------------------------------------------
+
+	integer*8 lgr_bitmap(nbdydim)		!bitmap for special appls
+	common /lgr_bitmap/lgr_bitmap
 
 c------------------------------------------------------------
 

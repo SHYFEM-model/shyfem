@@ -1,5 +1,60 @@
 ============================================================
 
+Tue Jan 24 11:47:34 CET 2012
+
+lagrangian, hard install, logo
+
+ .gitignore                           |    2 +
+ BUG                                  |    9 +
+ LOG                                  |   30 +-
+ Makefile                             |    6 +
+ fem3d/Makefile                       |   10 +-
+ fem3d/baswork.f                      |  491 ++++++++++
+ fem3d/bclfix.h                       |    4 +-
+ fem3d/eosinf.f                       |  237 +++++
+ fem3d/lagrange.h                     |    8 +-
+ fem3d/lagrange_connect.h             |   45 +
+ fem3d/lagrange_cont.f                |  425 +++++++++-
+ fem3d/lagrange_dif.f                 |   17 +-
+ fem3d/lagrange_flux.f                |    6 +-
+ fem3d/lagrange_in.f                  |  645 -------------
+ fem3d/lagrange_init.f                |    4 +-
+ fem3d/lagrange_inout.f               |   31 +-
+ fem3d/lagrange_main.f                |   44 +-
+ fem3d/lagrange_track.f               |   13 +-
+ fem3d/newfix.f                       |   49 +-
+ fem3d/newtvd.f                       |    5 +-
+ fem3d/subnev.f                       |    4 +-
+ fem3d/subnsh.f                       |    3 +
+ fem3d/subproj.f                      |   16 +-
+ fem3d/subreg.f                       |   28 +-
+ femanim/Makefile                     |    1 +
+ femanim/makeanim.sh                  |   99 ++-
+ fembin/diffs                         |    2 +-
+ fembin/fembat                        |    2 +-
+ fembin/get_timestep.sh               |    4 +-
+ fembin/gp                            |   22 +-
+ fembin/logo/LogoIsmar.eps            | 1644 ++++++++++++++++++++++++++++++++++
+ fembin/logo/logo.eps                 | 1216 +++++++++++++++++++++++++
+ fembin/logo/logo_kassandra-ismar.eps | 1216 +++++++++++++++++++++++++
+ fembin/nosaver                       |    4 +-
+ fembin/nosextr                       |    4 +-
+ fembin/ousextr                       |    4 +-
+ fembin/plots                         |   15 +
+ fembin/revisionlog.pl                |    4 +-
+ fembin/revisionlog_adjust.pl         |    4 +-
+ fembin/shyfem_dir.sh                 |   16 +-
+ fembin/shyfem_install_hard.pl        |   78 ++
+ fembin/shyfem_install_hard.sh        |   46 +
+ fembin/shyfem_profile.sh             |   14 +-
+ fembin/shyfem_version.sh             |    6 +-
+ femplot/suplag.f                     |   30 +-
+ femplot/suplin.f                     |    5 +
+ post/psgraph.c                       |   23 +-
+ 47 files changed, 5798 insertions(+), 793 deletions(-)
+
+============================================================
+
 Mon Dec 19 18:52:25 CET 2011
 
 bug fixes for plotting
