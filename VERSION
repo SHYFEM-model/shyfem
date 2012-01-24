@@ -1,3 +1,83 @@
+version  6_1_41    24-01-2012    VERS_6_1_41
+
+========================================================== 24-01-2012 - 6_1_41
+
+c ./femplot/plotsim.f:
+c 19.12.2011	ggu	bug fix: sflag was not set
+c
+c ./femplot/supout.f:
+c 19.12.2011  ggu     new routine level_k2e -> called for nos files
+c
+c ./femplot/suplag.f:
+c 23.01.2012    ggu     use nbdydim in plolagr, plot z with color in plo_xy
+c
+c ./fem3d/lagrange.h:
+c 16.12.2011    ggu     new array id_body, new vars idbdy, lunit
+c
+c ./fem3d/subnsh.f:
+c 23.01.2012    ggu     new section "proj"
+c
+c ./fem3d/tmp/lagr/lagrange_flux.f:
+c 16.12.2011    ggu     bug fix - flux2d_aux was integer
+c
+c ./fem3d/tmp/lagr/lagrange_main.f:
+c 16.12.2011    ggu     new file .lgi, compress_particles()
+c
+c ./fem3d/tmp/lagr/lagrange_track.f:
+c 16.12.2011    ggu     write all messages to lunit
+c
+c ./fem3d/tmp/lagr/lagrange_inout.f:
+c 16.12.2011    ggu	initialization with body id
+c
+c ./fem3d/tmp/lagrange_cont.f:
+c 16.12.2011    ggu	new routine lagr_continuous_release_ppv()
+c
+c ./fem3d/lagrange_flux.f:
+c 16.12.2011    ggu     bug fix - flux2d_aux was integer
+c
+c ./fem3d/lagrange_main.f:
+c 16.12.2011    ggu     new file .lgi, compress_particles()
+c 23.01.2012    ggu     various changes in call to track_body (id, etc..)
+c
+c ./fem3d/lagrange_cont.f:
+c 16.12.2011    ggu	new routine lagr_continuous_release_ppv()
+c 23.01.2012    ggu	new routine for release in point, connectivity
+c
+c ./fem3d/subver.f:
+c 24.01.2012	ggu	version 6.1.41
+c
+c ./fem3d/sigmautil.f:
+c 16.12.2011	ggu	check for non-initialized data structure (blockdata)
+c 19.12.2011	ggu	bug fix in init_sigma_info(): call set_sigma_info()
+c
+c ./fem3d/ousextr_nodes.f:
+c 16.12.2011    ggu     bug fix: call to init_sigma_info and makehev (common hev)
+c
+c ./fem3d/lagrange_track.f:
+c 16.12.2011    ggu     write all messages to lunit
+c 23.01.2012    ggu     ltbdy is locally passed (not common)
+c
+c ./fem3d/sublnku.f:
+c 16.12.2011	ggu	in lnk_elems at boundary set last value to 0
+c
+c ./fem3d/ousinf.f:
+c 16.12.2011    ggu     bug fix: call to init_sigma_info and makehev (common hev)
+c
+c ./fem3d/subproj.f:
+c 10.01.2012    ggu     bug fix: c_param was real
+c
+c ./fem3d/lagrange_inout.f:
+c 16.12.2011    ggu	initialization with body id
+c 23.01.2012    ggu	new call to insert_particle, new id_body
+c
+c ./fem3d/subflx3d.f:
+c 16.12.2011    ggu     bug fix: in make_fluxes_2/3d() r/tflux was integer
+c
+c ./fem3d/baswork.f:
+c 23.01.2012    ggu     new from basinf
+
+==========================================================
+
 version  6_1_40    14-12-2011    VERS_6_1_40   commit_2012-01-24
 
 version  6_1_40    14-12-2011    VERS_6_1_40   commit_2011-12-19
