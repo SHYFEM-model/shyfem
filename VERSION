@@ -1,3 +1,24 @@
+version  6_1_42    25-01-2012    VERS_6_1_42
+
+========================================================== 25-01-2012 - 6_1_42
+
+c ./fem3d/subnsh.f:
+c 24.01.2012    ggu     new routine setup_parallel()
+c
+c ./fem3d/lagrange_main.f:
+c 24.01.2012    ggu     adapted for parallel OMP
+c
+c ./fem3d/subver.f:
+c 25.01.2012	ggu	version 6.1.42
+c
+c ./fem3d/subsys.f:
+c 24.01.2012	ggu	new parameter nomp
+c
+c ./fem3d/ht.f:
+c 24.01.2012    ggu	new call to setup_parallel()
+
+==========================================================
+
 version  6_1_41    24-01-2012    VERS_6_1_41   commit_2012-01-25
 
 version  6_1_41    24-01-2012    VERS_6_1_41
