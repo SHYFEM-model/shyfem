@@ -68,6 +68,7 @@ c 12.07.2011    ggu     new routine next_output(), revised set_output_frequency
 c 14.07.2011    ggu     new routines for original time step
 c 13.09.2011    ggu     better error check, rdtitl() more robust
 c 23.01.2012    ggu     new section "proj"
+c 24.01.2012    ggu     new routine setup_parallel()
 c
 c************************************************************
 c
@@ -1121,6 +1122,37 @@ c checks if time has come for output
 
 	ia_out(3) = itnext
 	next_output = .true.
+
+	end
+
+c********************************************************************
+c********************************************************************
+c********************************************************************
+
+	subroutine setup_parallel
+
+	implicit none
+
+	integer n,nomp
+	real getpar
+
+	write(6,*) 'start of setup of parallel OMP threads'
+
+	call openmp_get_max_threads(n)
+	write(6,*) 'maximum available threads: ',n
+
+	nomp = nint(getpar('nomp'))
+	if( nomp .gt. 0 ) then
+	  nomp = min(nomp,n)
+	  call openmp_set_num_threads(nomp)
+	else
+	  nomp = n
+	end if
+	call putpar('nomp',nomp)
+
+	write(6,*) 'available threads: ',nomp
+
+	write(6,*) 'end of setup of parallel OMP threads'
 
 	end
 

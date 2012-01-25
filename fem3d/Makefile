@@ -56,6 +56,11 @@ ifeq ($(NETCDF),true)
   INCL_NETCDF      = -I$(DIRINC_NETCDF)
 endif
 
+PARALLEL_OBJ = subomp_dummy.o
+ifeq ($(PARALLEL),true)
+  PARALLEL_OBJ = subomp.o
+endif
+
 GOTM_OBJ = gotm3d.o
 ifeq ($(GOTM),true)
   GOTM_OBJ =
@@ -171,7 +176,7 @@ HTOBJS = \
 	submet.o submeteo.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o \
 	subtrace.o subproj.o subeos.o \
 	$(ECOLOGICAL_OBJ) \
-	$(NETCDF_OBJ)
+	$(NETCDF_OBJ) $(PARALLEL_OBJ)
 
 # objects for pre-processor vp
 
@@ -210,7 +215,8 @@ LAGRANGE =	lagrange_main.o \
 		lagrange_inout.o lagrange_util.o \
 		lagrange_larve.o lagrange_flux.o \
 		lagrange_track.o lagrange_util_tr.o \
-		lagrange_decay.o
+		lagrange_decay.o \
+		lagrange_connect.o
 
 # heat flux module
 

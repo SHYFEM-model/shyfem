@@ -81,6 +81,7 @@ c 31.03.2011    ggu	write finite volumes at initial time step
 c 20.05.2011    ggu	iwetv introduced, wet and dry from main
 c 25.10.2011    ggu	hlhv eliminated
 c 18.11.2011    ggu	new routine handle_projection
+c 24.01.2012    ggu	new call to setup_parallel()
 c
 c*****************************************************************
 
@@ -405,6 +406,8 @@ c-----------------------------------------------------------
 c-----------------------------------------------------------
 c check parameters read and set time and Coriolis
 c-----------------------------------------------------------
+
+	call setup_parallel
 
 	call cstcheck
 

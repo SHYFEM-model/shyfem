@@ -68,6 +68,7 @@ c 11.09.2009    ggu     little bug fix for output and release of particles
 c 19.10.2011    ggu     fx renamed to flux2d
 c 16.12.2011    ggu     new file .lgi, compress_particles()
 c 23.01.2012    ggu     various changes in call to track_body (id, etc..)
+c 24.01.2012    ggu     adapted for parallel OMP
 c
 c****************************************************************            
 
@@ -221,6 +222,50 @@ c**********************************************************************
 
 	subroutine drogue
 
+	implicit none
+	
+        include 'param.h'
+	include 'lagrange.h'
+
+	integer nf,i,ii,n
+	integer chunk
+	real dt
+
+	integer ndim
+	parameter(ndim=100)
+	integer ic(0:ndim)
+
+	chunk = 100
+        nf=0
+	call get_timestep(dt)		!time to advect
+
+	call openmp_get_max_threads(n)
+	if( n .gt. ndim ) stop 'error stop drogue: too many processes'
+	do ii=0,n
+	  ic(ii) = 0
+	end do
+
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(i,ii)
+!$OMP DO SCHEDULE(DYNAMIC,chunk)
+
+	do i=1,nbdy
+	  call openmp_get_thread_num(ii)
+	  ic(ii) = ic(ii) + 1
+	  call track_single(i,dt)
+	end do
+
+!$OMP END DO NOWAIT
+!$OMP END PARALLEL
+
+	write(lunit,*) 'lagrangian: (tot,out,in) ',nbdy,nf,nbdy-nf
+	write(lunit,'(a,i10,12i5)') 'parallel: ',nbdy,(ic(ii),ii=0,n-1)
+
+	end
+
+c**********************************************************************
+
+	subroutine track_single(i,dt)
+
 c advection of particles
 
 	implicit none
@@ -235,16 +280,6 @@ c advection of particles
 	real x,y,z
 	real dt,ttime,tmax
                 
-        nf=0
-	call get_timestep(dt)		!time to advect
-
-!$OMP  PARALLEL DO
-!$OMP& DEFAULT(SHARED) PRIVATE(i,ie,id,x,y,z,ttime)
-!$OMP& SCHEDULE(STATIC)
-!$OMP& REDUCTION(+:nf)
-
-	do i=1,nbdy
-
           call lagr_func(i)		!varying the variable typ(i)
 
 	  x=x_body(i)
@@ -263,14 +298,6 @@ c advection of particles
 	  x_body(i)=x
 	  y_body(i)=y
           ie_body(i)=ie
-
-	  if( ie .le. 0 ) nf = nf + 1
-
-	end do
-
-!$OMP  END PARALLEL DO
-
-	write(lunit,*) 'lagrangian: (tot,out,in) ',nbdy,nf,nbdy-nf
 
 	end	
 

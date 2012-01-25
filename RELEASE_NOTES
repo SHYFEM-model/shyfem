@@ -1,9 +1,15 @@
 
-16-12-2001 - 6_1_41
+25-01-2012 - 6_1_42
 
-	new module in lagrange for boundary induced particles
+	new OMP administration routines, lagrangian parallel
 
-14-12-2001 - 6_1_40
+24-01-2012 - 6_1_41
+
+	new module in lagrange for boundary induced particles and connectivity
+	automatic logo inclusion in plots
+	hard install
+
+14-12-2011 - 6_1_40
 
 	ersem/bfm routines integrated
 

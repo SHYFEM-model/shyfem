@@ -1,4 +1,13 @@
 
+24.01.2012	administer OMP parallel routines
+
+	new routines subomp.f
+	new routine setup_parallel() (ht,subnsh.f)
+	adapted for parallel OMP (lagrange_main.f)
+	new parameter nomp (subsys.f)
+
+========================================================== 24-01-2012 - 6_1_41
+
 23.01.2012	logo and install
 
 	automatic inclusion of logo (gp, plots, fembin/logo)
