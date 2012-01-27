@@ -1,3 +1,34 @@
+version  6_1_43    27-01-2012    VERS_6_1_43
+
+========================================================== 27-01-2012 - 6_1_43
+
+c ./femplot/suplin.f:
+c 27.01.2012    deb&ggu adjusted for hybrid coordinates
+c
+c ./fem3d/newtra.f:
+c 27.01.2012	deb&ggu	routines adapted for sigma levels
+c
+c ./fem3d/subver.f:
+c 27.01.2012	ggu	version 6.1.43
+c
+c ./fem3d/subdry.f:
+c 27.01.2012    deb&ggu changes for sigma coordinates (bsigma)
+c
+c ./fem3d/sigmautil.f:
+c 27.01.2012	deb&ggu	changes to get_layer_thickness()
+c 27.01.2012	deb&ggu	new routine compute_sigma_info()
+c
+c ./fem3d/newbsig.f:
+c 27.01.2012    deb&ggu adapted to hybrid levels
+c
+c ./fem3d/newbcl.f:
+c 27.01.2012    deb&ggu changes for hybrid in ts_file_open,ts_next_record
+c
+c ./fem3d/newsig.f:
+c 27.01.2012    deb&ggu adapted for hybrid levels
+
+==========================================================
+
 version  6_1_42    25-01-2012    VERS_6_1_42   commit_2012-01-27
 
 version  6_1_42    25-01-2012    VERS_6_1_42
