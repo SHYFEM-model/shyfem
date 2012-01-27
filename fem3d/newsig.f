@@ -11,6 +11,7 @@ c 11.11.2011    ggu     error check in set_hkv_and_hev()
 c 11.11.2011    ggu     in check_hsigma_crossing set zeta levels to const depth
 c 18.11.2011    ggu     restructured hybrid - adjustment to bashsigma
 c 12.12.2011    ggu     eliminated (stupid) compiler bug (getpar)
+c 27.01.2012    deb&ggu adapted for hybrid levels
 c
 c notes :
 c
@@ -298,7 +299,8 @@ c********************************************************************
 
 c********************************************************************
 
-	subroutine set_hybrid_depth(lmax,zeta,htot,hlfem)
+	subroutine set_hybrid_depth(lmax,zeta,htot
+     +					,hlv,nsigma,hsigma,hlfem)
 
 c sets depth structure and passes it back in hlfem
 
@@ -307,15 +309,17 @@ c sets depth structure and passes it back in hlfem
 	integer lmax
 	real zeta
 	real htot
+	real hlv(1)
+	integer nsigma
+	real hsigma
 	real hlfem(1)
 
-	integer nsigma,l,i
-	real hsigma,hsig
-
-        real hlv(1)
-        common /hlv/hlv
+	logical bsigma
+	integer l,i
+	real hsig
 
         call get_sigma(nsigma,hsigma)
+	bsigma = nsigma .gt. 0
 
 	if( nsigma .gt. 0 ) then
           hsig = min(htot,hsigma) + zeta
@@ -331,7 +335,7 @@ c sets depth structure and passes it back in hlfem
           hlfem(l) = hlv(l)
         end do
 
-        hlfem(lmax) = htot
+	if( nsigma .lt. lmax ) hlfem(lmax) = htot	!zeta or hybrid
 
 c check ... may be deleted
 

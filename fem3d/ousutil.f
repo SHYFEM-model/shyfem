@@ -57,7 +57,7 @@ c transforms transports at elements to velocities at nodes
         do ie=1,nel
 
 	  lmax = ilhv(ie)
-	  call get_layer_thickness(ie,lmax,bzeta,hl)
+	  call get_layer_thickness(ie,lmax,bzeta,nsigma,hsigma,hl)
 
 	  do l=1,lmax
 	    hmed = hl(l)

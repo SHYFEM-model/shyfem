@@ -62,6 +62,7 @@ c next settings for montenegro
 
 	bfix = .false.		!nudge velocities at boundary
 	bosigma = .false.	!boundary data is on sigma levels
+	lbmax = 27		!how many levels to read from boundary file
 	lbmax = 33		!how many levels to read from boundary file
 	tnudge = 3600.		!relaxation time for nudging
 	tramp = 43200.		!smooth init
@@ -78,9 +79,9 @@ c next settings for circular flume
 	bfix = .false.		!fix velocities at boundary
 	bosigma = .false.	!boundary data is on z levels
 	lbmax = 18		!how many levels to read from boundary file
-	tramp = 10000.		!smooth init
-	tnudge = 0.5		!relaxation time for nudging
-	vfact = 5.		!factor for velocity
+	tramp = 10000.		!smooth init [ms]
+	tnudge = 0.5		!relaxation time for nudging [s]
+	vfact = 2.		!factor for velocity
 
 c------------------------------------------------------------
 

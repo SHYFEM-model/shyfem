@@ -15,6 +15,7 @@ c 25.10.2011    ggu     some routines renamed
 c 03.11.2011    ggu     use routine set_hybrid_depth() for hybrid levels
 c 02.12.2011    ggu     check in set_bsig_depths()
 c 02.12.2011    ggu     use of intp_aver() for lmax = 1
+c 27.01.2012    deb&ggu adapted to hybrid levels
 c
 c*****************************************************************
 
@@ -345,11 +346,17 @@ c*****************************************************************
 	real siguval(nsidim+1)
 	real sigvval(nsidim+1)
 
+	logical bsigma
+	integer nsigma
 	integer l,lmax
-	real hfem,hfd,zfem,hsigma
+	real hfem,hfd,zfem
 	real fact
+	real hsigma
 
 	if( nbsig .le. 0 ) goto 98
+
+	call get_sigma(nsigma,hsigma)
+	bsigma = nsigma .gt. 0
 
 	hfd = sigdep(k)
 	zfem = znv(k)		!this might not be set at the boundary
@@ -357,7 +364,7 @@ c*****************************************************************
 	lmax = ilhv(ie)
 
 	hlfem(0) = -zfem
-	call set_hybrid_depth(lmax,zfem,hfem,hlfem(1))
+	call set_hybrid_depth(lmax,zfem,hfem,hlv,nsigma,hsigma,hlfem(1))
 
 	fact = 1.
 	if( ifact .ne. 0 ) fact = (hfd+zfem) / (hfem+zfem)

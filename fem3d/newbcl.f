@@ -54,6 +54,7 @@ c 07.11.2011    ggu     hybrid changed to resemble code in newexpl.f
 c 11.11.2011    ggu     restructured ts_next_record() and diagnostic()
 c 22.11.2011    ggu     bug fix in ts_file_open() -> bhashl
 c 02.12.2011    ggu     adapt ts_file_open() for barotropic version (ihashl)
+c 27.01.2012    deb&ggu changes for hybrid in ts_file_open,ts_next_record
 c
 c*****************************************************************
 
@@ -863,11 +864,14 @@ c opens T/S file
 	real hlv(1)
 	common /hlv/hlv
 
+	logical bsigma
 	logical bformat,bhashl
 	integer ifileo,iunit,ios
 	integer iformat,ihashl,inzeta
 	integer it,nknaux,lmax,nvar
 	integer l
+	integer nsigma
+	real hsigma
 	real hl(nlvdim)
 
 c-------------------------------------------------------------
@@ -883,6 +887,9 @@ c-------------------------------------------------------------
 
 	iformat = ios
 	bformat = iformat .gt. 0
+
+        call get_sigma(nsigma,hsigma)
+        bsigma = nsigma .gt. 0
 
 c-------------------------------------------------------------
 c check if level structure information is available
@@ -914,6 +921,8 @@ c-------------------------------------------------------------
 	  end if
 	end do
         if( lmax .le. 1 ) ihashl = 0
+
+	!ihashl = 0			!force choice if you are sure (0/1)
 	bhashl = ihashl .gt. 0
 
 c-------------------------------------------------------------
@@ -963,25 +972,44 @@ c-------------------------------------------------------------
 
 c*******************************************************************	
 
-	subroutine ts_next_record(it,info,nkn,nlvdim,nlv,value)
+	subroutine ts_next_record(it,info,nkn,nlv,value)
 
 	implicit none
+
+	include 'param.h'
 
 	integer it
 	integer info(3)
 	integer nkn
-	integer nlvdim
 	integer nlv
 	real value(nlvdim,1)
 
-	real v1v(1)
-	common /v1v/v1v
+	real ilhkv(1)
+	common /ilhkv/ilhkv
+	real hlv(1)
+	common /hlv/hlv
+	real znv(1)
+	common /znv/znv
+	real hkv(1)
+	common /hkv/hkv
 
+	logical bsigma
 	logical bformat,bhashl
 	integer nknaux,lmax,nvar
 	integer i,l,iunit
+	integer nsigma,nsigma_aux
+	real hsigma,hsigma_aux
 	real val
         real vmin,vmax
+
+	integer lmax_fem
+	real htot
+	real zz_fem,zz_data
+	real hlv_aux(nlvdim)
+        real hl_fem(0:nlvdim+1)
+        real hl_data(0:nlvdim+1)
+        real val_fem(nlvdim+1)
+        real val_data(nlvdim+1)
 
 	iunit   = info(1)
 	bformat = info(2) .gt. 0
@@ -1002,10 +1030,10 @@ c*******************************************************************
 	if( lmax .gt. nlvdim ) stop 'error stop ts_next_record: nlvdim'
 
 	if( bformat ) then
-	  if( bhashl ) read(iunit,*) (v1v(l),l=1,lmax)
+	  if( bhashl ) read(iunit,*) (hlv_aux(l),l=1,lmax)
 	  read(iunit,*) ((value(l,i),l=1,lmax),i=1,nkn)
 	else
-	  if( bhashl ) read(iunit) (v1v(l),l=1,lmax)
+	  if( bhashl ) read(iunit) (hlv_aux(l),l=1,lmax)
 	  read(iunit) ((value(l,i),l=1,lmax),i=1,nkn)
 	end if
 
@@ -1017,6 +1045,56 @@ c*******************************************************************
 	    end do
 	  end do
 	end if
+
+c--------------------------------------------------------------
+c interpolate between different vertical structures 
+c--------------------------------------------------------------
+
+c the following still has to be checked
+
+        call get_sigma(nsigma,hsigma)		!from basin
+        bsigma = nsigma .gt. 0
+
+	call compute_sigma_info(lmax,hlv_aux,nsigma_aux,hsigma_aux)
+
+        do i = 1,nkn
+
+          lmax_fem = ilhkv(i)
+
+          hl_data(0)= -znv(i)
+          hl_fem(0) = -znv(i)
+
+          if(nsigma.gt.0.and.nsigma.ge.lmax_fem)then !sigma
+            htot = hkv(i) !giusto
+          else !zeta e ibrido
+            htot = hlv(lmax_fem) !questo non risolve il problema
+          endif
+
+          zz_data = znv(i)
+          zz_fem = znv(i)
+
+          call set_hybrid_depth(lmax_fem,zz_fem,htot
+     +			,hlv,nsigma,hsigma,hl_fem(1))
+
+          htot = hlv_aux(lmax) !questo non risolve il problema
+
+          call set_hybrid_depth(lmax,zz_data,htot
+     +			,hlv_aux,nsigma_aux,hsigma_aux,hl_data(1))
+
+          do l=1,lmax
+            val_data(l) = value(l,i)
+          end do
+
+          call intp_vert(lmax,hl_data,val_data,lmax_fem,hl_fem,val_fem)
+
+          do l = 1,lmax_fem
+            value(l,i) = val_fem(l) !DEB
+          end do
+        enddo
+
+c--------------------------------------------------------------
+c end of routine
+c--------------------------------------------------------------
 
         call conmima(nlvdim,value,vmin,vmax)
         write(6,*) 'min/max: ',vmin,vmax

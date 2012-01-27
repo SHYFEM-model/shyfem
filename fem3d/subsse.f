@@ -533,7 +533,7 @@ c----------------------------------------------------------
 	tc = tcomp(ndata,nintp,vars)	!critical t when to read new values
 
 	do while( t .gt. tc )
-		!write(6,*) 'reading data for boundary: ',i,t,tc
+		!write(6,*) 'reading data for boundary: ',i,t,tc,b3d
                 call read_time_series(unit,ndata,b3d,time,rint,ierr)
                 if( ierr .gt. 0 ) goto 96
                 if( ierr .lt. 0 ) goto 1

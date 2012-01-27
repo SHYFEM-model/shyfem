@@ -174,7 +174,7 @@ HTOBJS = \
 	atoxi3d.o atoxi.o subwwm.o kepsd.o keps_util.o \
 	subinv.o newexpl.o subrnd.o \
 	submet.o submeteo.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o \
-	subtrace.o subproj.o subeos.o \
+	subtrace.o subproj.o subeos.o sigmautil.o \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ) $(PARALLEL_OBJ)
 

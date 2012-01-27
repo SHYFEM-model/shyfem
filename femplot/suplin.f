@@ -19,6 +19,7 @@ c 24.08.2011    ggu     small changes to avoid run time error
 c 24.08.2011    ggu     plot real depth for zeta layers
 c 14.11.2011    ggu     hybrid levels introduced
 c 23.11.2011    ggu     in line_find_elements() adjust depth for hybrid
+c 27.01.2012    deb&ggu adjusted for hybrid coordinates
 c
 c************************************************************************
 
@@ -1105,10 +1106,14 @@ c------------------------------------------------------------------
 	do i=2,n
 	  h = max(helems(1,i),helems(2,i))
 	  l = max(1,nsigma)
-	  do while( hlv(l) .lt. h ) 
-	    l = l + 1
-	  end do
-	  lelems(i) = l
+	  if( bsigma .and. nlv .eq. nsigma ) then
+	    lelems(i) = nsigma
+	  else
+	    do while( hlv(l) .lt. h ) 
+	      l = l + 1
+	    end do
+	    lelems(i) = l
+	  end if
 	end do
 	  
 c------------------------------------------------------------------

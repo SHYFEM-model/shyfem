@@ -10,6 +10,8 @@ c 14.11.2011	ggu	new sigma routines copied to this file
 c 02.12.2011	ggu	bug fix in init_sigma_info() for nlv == 1
 c 16.12.2011	ggu	check for non-initialized data structure (blockdata)
 c 19.12.2011	ggu	bug fix in init_sigma_info(): call set_sigma_info()
+c 27.01.2012	deb&ggu	changes to get_layer_thickness()
+c 27.01.2012	deb&ggu	new routine compute_sigma_info()
 c
 c******************************************************************
 
@@ -102,9 +104,26 @@ c******************************************************************
 	integer nlv
 	real hlv(1)
 
-	integer l
 	integer nsigma
 	real hsigma
+
+	call compute_sigma_info(nlv,hlv,nsigma,hsigma)
+	call set_sigma_info(nlv,nsigma,hsigma)
+
+	end
+
+c******************************************************************
+
+	subroutine compute_sigma_info(nlv,hlv,nsigma,hsigma)
+
+	implicit none
+
+	integer nlv
+	real hlv(1)
+	integer nsigma		!number of sigma layers (return)
+	real hsigma		!depth of hybrid level (return)
+
+	integer l
 
 c---------------------------------------------------------
 c scan depth structure
@@ -127,7 +146,6 @@ c---------------------------------------------------------
 	  stop 'error stop init_sigma_info: internal error (1)'
 	end if
 	nsigma = nlv
-	call set_sigma_info(nlv,nsigma,hsigma)	!HACK
 	return
 
 c---------------------------------------------------------
@@ -145,12 +163,6 @@ c---------------------------------------------------------
 	end if
 
 c---------------------------------------------------------
-c store information in common block
-c---------------------------------------------------------
-
-	call set_sigma_info(nlv,nsigma,hsigma)
-
-c---------------------------------------------------------
 c end of routine
 c---------------------------------------------------------
 
@@ -158,7 +170,7 @@ c---------------------------------------------------------
 
 c******************************************************************
 
-	subroutine get_layer_thickness(ie,lmax,bzeta,hl)
+	subroutine get_layer_thickness(ie,lmax,bzeta,nsigma,hsigma,hl)
 
 c returns layer thickness - works also for lmax higher than actual layers
 c
@@ -170,6 +182,8 @@ c in this case the last values for hl are 0
 	integer ie
 	integer lmax
 	logical bzeta
+	integer nsigma
+	real hsigma
 	real hl(1)
 
 	real hlv(1)
@@ -181,21 +195,10 @@ c in this case the last values for hl are 0
 
 	logical bdebug
 	integer ii,l
-	integer nlv,nsigma
-	real hsigma
 	real zmed
 	real htot,hsig,htop,hbot
 
-	!bdebug = ie .eq. 100
 	bdebug = .false.
-
-c---------------------------------------------------------
-c get sigma info
-c---------------------------------------------------------
-
-	call get_sigma_info(nlv,nsigma,hsigma)
-
-	if( bdebug ) write(6,*) nlv,nsigma,hsigma,ie,lmax,hev(ie)
 
 c---------------------------------------------------------
 c compute contribution of zeta

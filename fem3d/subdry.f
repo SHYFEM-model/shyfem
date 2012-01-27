@@ -32,6 +32,7 @@ c 23.03.2006    ggu     changed time step to real
 c 20.05.2011    ggu     different algorithm for element removal (wet&dry)
 c 20.05.2011    ggu     new routines set_dry() and set_element_dry(ie)
 c 07.06.2011    ggu     slight changes in wetting and drying
+c 27.01.2012    deb&ggu changes for sigma coordinates (bsigma)
 c
 c*****************************************************************
 
@@ -128,6 +129,8 @@ c common
 c local
         integer ie,ii,iwh,iweg,k,iu
         integer iespec,iwait,iwet
+	integer nsigma
+	real hsigma
         real hzg,hzmin,hzoff,hzon,volmin,aomega,zmin
 	real hzlim,hztot
 	character*10 text
@@ -139,6 +142,7 @@ c aux
         logical bdebug,bbdebug
         logical bnewalg,binclude
 	logical bnewtime
+	logical bsigma
 
 c	real rz,rh,rx,rxmin
 c	integer k,iex
@@ -169,6 +173,9 @@ c	integer iz(30),ih(30),izh(30),ix(30),ixx(30)
 	bbdebug = .false.
 	iwait = 5		!wait so long before including
 
+	call get_sigma(nsigma,hsigma)
+	bsigma = nsigma .gt. 0
+
 	if( iweich .ge. 0 ) then
           hzmin=getpar('hzmin')
           hzoff=getpar('hzoff')
@@ -176,7 +183,10 @@ c	integer iz(30),ih(30),izh(30),ix(30),ixx(30)
           volmin=getpar('volmin')
 	end if
 
-        iwh=0
+        iwh = 0
+	iw = 0
+
+	if( bsigma .and. iweich .ge. 1 ) return
 
         if(iweich.eq.-1) then                   !initialize iwegv
           do ie=1,nel
@@ -187,19 +197,18 @@ c	integer iz(30),ih(30),izh(30),ix(30),ixx(30)
           do ie=1,nel
             aomega=ev(10,ie)
             zmin=hzmin+volmin/(4.*aomega)
-c            zmin=hzoff+volmin/(4.*aomega)   !$$new 24.07.92
             if(zmin.gt.hzoff) zmin=hzmin+0.5*(hzmin+hzoff) !just in case...
 
             iweg=0
             do ii=1,3
               hzg = zenv(ii,ie) + hm3v(ii,ie)
               if(hzg.lt.hzoff) iweg=iweg+1
-              if(hzg.lt.zmin) zenv(ii,ie)=zmin-hm3v(ii,ie)
-              if(bdebug.and.hzg.lt.hzoff) then
-                      write(iu,*) 'setweg 0: ',ie,iweg,hzg
-                      write(iu,*) znv(nen3v(ii,ie)),hm3v(ii,ie)
-              end if
+              if(hzg.lt.zmin) then
+		zenv(ii,ie)=zmin-hm3v(ii,ie)
+	        if( bsigma ) znv(nen3v(ii,ie)) = zenv(ii,ie)
+	      end if
             end do
+	    if( bsigma ) iweg = 0
             iwegv(ie)=iweg
 	    if( iweg .eq. 0 ) iwetv(ie) = 1
           end do

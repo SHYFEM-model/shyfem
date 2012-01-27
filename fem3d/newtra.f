@@ -37,6 +37,7 @@ c 10.04.2008	ggu	copy velocities at nodes in copy_uvz()
 c 01.03.2010	ggu	new version of n2e3d()
 c 11.03.2010	ggu	new routine check_volume(); init w only if no restart
 c 16.02.2011	ggu	new routine e2n3d() and e2n3d_minmax()
+c 27.01.2012	deb&ggu	routines adapted for sigma levels
 c
 c****************************************************************************
 c
@@ -416,15 +417,21 @@ c common
         real hdenv(nlvdim,1)
         common /hdenv/hdenv
 
-	logical bstop
+	logical bstop,bsigma
+	integer nsigma
 	integer k,ie,ke,iee,ii
 	real h,z
+	real hsigma
 
 	integer ipext,ieext
 
 	bstop = .false.
 
-	do k=1,nkn
+	call get_sigma(nsigma,hsigma)
+	bsigma = nsigma .gt. 0
+
+	if( .not. bsigma ) then		!not sure we need this - FIXME
+	 do k=1,nkn
 	  h = hdknv(1,k)
 	  if( h .le. 0. ) then
 	    z = znv(k)
@@ -434,7 +441,8 @@ c common
 	    write(6,*) '   depth,zeta    : ',h,z
 	    bstop = .true.
 	  end if
-	end do
+	 end do
+	end if
 
 	do ie=1,nel
 	  h = hdenv(1,ie)
@@ -493,11 +501,19 @@ c common
 	real hm3v(3,1)
 	common /hm3v/hm3v
 c local
+	logical bsigma
+	integer nsigma
 	integer ie,ilevel,ii,l
+	real hsigma
 c functions
         integer ieext
 
 	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in ttov'
+
+	call get_sigma(nsigma,hsigma)
+	bsigma = nsigma .gt. 0
+
+	if( bsigma ) return
 
 	do ie=1,nel
 	  if( iwegv(ie) .gt. 0 ) then	!dry

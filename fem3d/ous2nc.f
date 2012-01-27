@@ -297,12 +297,17 @@ c******************************************************************
         real auxv(nlvdim,nkndim)
 	real hl(nlvdim)
 
-	logical bzeta
+	logical bzeta,bsigma
         integer ie,ii,k,l,lmax
+	integer nlvaux,nsigma
+	real hsigma
 	real area
         real u,v
 
-	bzeta = .true.
+	bzeta = .true.		!use water levels
+
+	call get_sigma_info(nlvaux,nsigma,hsigma)
+	bsigma = nsigma .gt. 0
 
 	do k=1,nkn
 	  do l=1,nlv
@@ -316,7 +321,7 @@ c******************************************************************
 
 	  area = 12. * ev(10,ie)
 	  lmax = ilhv(ie)
-	  call get_layer_thickness(ie,lmax,bzeta,hl)
+	  call get_layer_thickness(ie,lmax,bzeta,nsigma,hsigma,hl)
 
 	  do l=1,lmax
             u = utlnv(l,ie) / hl(l)

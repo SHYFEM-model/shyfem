@@ -182,7 +182,7 @@ c we could do better using information on node area and depth structure
 	call is_init_ev(belem)		!use ev if initialized
         call get_sigma_info(nlvaux,nsigma,hsigma)
         bsigma = nsigma .gt. 0
-	bzeta = .false.
+	bzeta = .false.			!use water level
 
 	do k=1,nkn
 	  lmax = ilhkv(k)

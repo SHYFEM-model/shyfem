@@ -163,8 +163,8 @@ COMPILER = INTEL
 #
 ##############################################
 
-#PARALLEL=false
-PARALLEL=true
+PARALLEL=false
+#PARALLEL=true
 
 ##############################################
 # Solver for matrix solution
