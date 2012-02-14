@@ -544,7 +544,7 @@ int TurnClosedLine( int ndim , float *xl , float *yl )
 	    */
 	    if( a < 0. ) a += pi2;	/* ensure the angle is positive */
 	    alpha += a - pi;
-	    /* printf("angle: %d  %f\n",i,alpha); */
+	    /* printf("angle: %d  %f  %f  %f\n",i,a,a-pi,alpha); */
 	    xold = xl[i];
 	    yold = yl[i];
 	}

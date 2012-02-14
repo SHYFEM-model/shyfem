@@ -1,5 +1,5 @@
 c
-c $Id: ousextr.f,v 1.3 2009-09-14 08:20:58 georg Exp $
+c $Id: ousextr_cat.f,v 1.3 2009-09-14 08:20:58 georg Exp $
 c
 c concatenates OUS files
 c
@@ -11,12 +11,13 @@ c 23.03.2010	ggu	extracts reocrds
 c 26.03.2010	ggu	bug fix: set nkn and nel
 c 03.06.2011    ggu     routine adjourned
 c 08.06.2011    ggu     routine rewritten
+c 31.01.2012    ggu     choice of concatenation mode (mode, itc)
 c
 c***************************************************************
 
-	program ousextr_records
+	program ousextr_cat
 
-c reads ous file and writes extracted records to new ous file
+c concatenates two ous files into one
 
 	implicit none
 
@@ -81,6 +82,7 @@ c reads ous file and writes extracted records to new ous file
 	real xe,ye
 	integer k,ke,ivar
 	integer lmax,l
+	integer mode,itc
 
 	integer iapini,ideffi,ifileo
 	logical berror
@@ -96,8 +98,30 @@ c-------------------------------------------------------------------
 	nread2=0
 	nextr=0
 
+c-------------------------------------------------------------------
+c get mode of operation
+c-------------------------------------------------------------------
+
+	mode = 0
+	itc = 0
+	write(6,*) 'operation mode:'
+	write(6,*) '  0   all of first file, rest of second file'
+	write(6,*) '  1   first file until start of second file'
+	write(6,*) '  2   first file up to itc (inclusive), then second'
+	write(6,*) '  in case of mode 2 itc value is also requested'
+	write(6,*) 'Enter mode:'
+	read(5,'(i10)') mode
+	if( mode .lt. 0 .or. mode .gt. 2 ) stop 'error stop: mode'
+	if( mode .eq. 2 ) then
+	  write(6,*) 'Enter time up to when to read first file:'
+	  read(5,'(i10)') itc
+	end if
+	if( mode .eq. 1 ) then
+	  stop 'error stop: mode = 1 not yet ready...'
+	end if
+
 c--------------------------------------------------------------------
-c open OUS file and read header
+c open first OUS file and read header
 c--------------------------------------------------------------------
 
 	call qopen_ous_file('Enter first file: ','old',nin)
@@ -155,6 +179,8 @@ c-------------------------------------------------------------------
         if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
         if(ierr.ne.0) goto 100
 
+	
+	if( mode .eq. 2 .and. it .gt. itc ) goto 100
 	itfirst = it
 	nread=nread+1
 	nread1=nread1+1
@@ -170,7 +196,7 @@ c-------------------------------------------------------------------
 	call delous(nin)
 
 c--------------------------------------------------------------------
-c open OUS file and read header
+c open second OUS file and read header
 c--------------------------------------------------------------------
 
 	call qopen_ous_file('Enter second file: ','old',nin)

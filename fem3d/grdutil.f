@@ -2,6 +2,7 @@ c
 c revision log :
 c
 c 24.01.2011    ggu     written from scratch
+c 10.02.2012    ggu     read also lines if dimension given
 c
 c*******************************************************************
 
@@ -119,10 +120,11 @@ c reads grd file into basin structure
 
 	include 'param.h'
 	include 'basin.h'
+	include 'grd_extra.h'
 
 	logical bstop
 	integer ner,nco,nli
-	integer nlidim,nlndim
+	integer nlidim0
 	integer nknh,nelh
 
 	integer iaux(neldim)
@@ -136,8 +138,8 @@ c-----------------------------------------------------------------
         ner = 6
         bstop = .false.
 
-        nlidim = 0
-        nlndim = 0
+        nlidim0 = 0		!use this to not read lines
+        nlidim0 = nlidim	!use this to read lines
 
 c-----------------------------------------------------------------
 c read grd file
@@ -147,18 +149,18 @@ c-----------------------------------------------------------------
      +                   gfile
      +                  ,bstop
      +                  ,nco,nkn,nel,nli
-     +                  ,nkndim,neldim,nlidim,nlndim
-     +                  ,ipv,ipev,iaux
-     +                  ,iaux,iarv,iaux
-     +                  ,hkv,hev,raux
+     +                  ,nkndim,neldim,nlidim0,nlndim
+     +                  ,ipv,ipev,iplv
+     +                  ,iarnv,iarv,iarlv
+     +                  ,hkv,hev,hllv
      +                  ,xgv,ygv
      +                  ,nen3v
-     +                  ,iaux,iaux
+     +                  ,ipntlv,inodlv
      +                  )
 
         if( bstop ) stop 'error stop after rdgrd'
 
-        call ex2in(nkn,3*nel,nlidim,ipv,ipaux,nen3v,iaux,bstop)
+        call ex2in(nkn,3*nel,nlidim,ipv,ipaux,nen3v,inodlv,bstop)
         if( bstop ) stop 'error stop after ex2in'
 
 c-----------------------------------------------------------------
@@ -167,7 +169,7 @@ c-----------------------------------------------------------------
 
         call set_depth_flag(nkn,nel,hkv,hev,nknh,nelh)
 
-        ike = 1
+        ike = 1				!depth on elements
         if( nknh .gt. 0 ) ike = 2
         if( nknh .gt. 0 .and. nknh .ne. nkn ) goto 99
         if( nelh .gt. 0 .and. nelh .ne. nel ) goto 99

@@ -121,6 +121,7 @@ c computes new temperature (forced by heat flux) - 3d version
 	real evapv(1)
 	common /evapv/evapv
 c local
+	logical bdebug
 	integer k
 	integer l,lmax,kspec
 	integer mode
@@ -180,6 +181,7 @@ c---------------------------------------------------------
 c loop over nodes
 c---------------------------------------------------------
 
+	bdebug = .false.
         ddq = 0.
 
 	do k=1,nkn
@@ -204,6 +206,14 @@ c---------------------------------------------------------
 	  else
 	    write(6,*) 'iheat = ',iheat
 	    stop 'error stop qflux3d: value for iheat not allowed'
+	  end if
+
+	  bdebug = k .eq. 0 .and. it .ge. 378989200
+	  if( bdebug ) then
+	    write(6,*) iheat,k
+	    write(6,*) ta,p,uw
+	    write(6,*) tb,ur,cc,tm
+	    write(6,*) qsens,qlat,qlong,evap
 	  end if
 
 	  call check_heat(k,tm,qsens,qlat,qlong,evap)

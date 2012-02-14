@@ -27,6 +27,7 @@ c 10.03.2004	ggu	in wfnos make title 80 chars long
 c 28.09.2006	ggu	new routine delnos to close nos file explicitly
 c 28.09.2006	ggu	check if nos file is already open
 c 07.03.2007	ggu	new routines rhnos, whnos
+c 10.02.2012	ggu	new routines to skip records
 c
 c notes :
 c
@@ -725,6 +726,106 @@ c arguments
     1	continue
 	write(6,*) 'ierr: ',ierr
 	stop 'error stop whnos'
+	end
+
+c************************************************************
+c************************************************************
+c************************************************************
+
+	subroutine shnos	(iunit,nvers
+     +				,title
+     +				)
+
+c skips all headers of NOS file
+c
+c nvers		on entry maximal version that can be read
+c		-> must be an input, used to check the corectness
+c		.. of the call parameters
+c		on return actual version read
+
+	implicit none
+
+	integer iunit,nvers
+        character*(*) title
+
+	integer ierr
+
+	call sfnos(iunit,nvers,title,ierr)
+        if(ierr.ne.0) goto 99
+
+        call ssnos(iunit,ierr)
+        if(ierr.ne.0) goto 98
+
+	return
+   98	continue
+	write(6,*) 'ierr: ',ierr
+	stop 'error stop shnos: error reading second header'
+   99	continue
+	write(6,*) 'ierr: ',ierr
+	stop 'error stop shnos: error reading first header'
+	end
+
+c************************************************************
+
+	subroutine sfnos(iunit,nvers,title,ierr)
+
+c reads first header of nos file and skips information
+
+	implicit none
+
+	integer iunit,nvers
+        character*(*) title
+	integer ierr
+
+	integer nkn,nel,nlv,nvar
+
+	call rfnos	(iunit,nvers
+     +				,nkn,nel,nlv,nvar
+     +				,title
+     +				,ierr
+     +				)
+
+	call delnos(iunit)			!trick false parameters
+	call setnos(iunit,nvers,0,0,0,0)
+
+	end
+
+c************************************************************
+
+	subroutine ssnos(iunit,ierr)
+
+c reads second header of nos file and skips information
+
+	implicit none
+
+	integer iunit
+	integer ierr
+
+	integer ilhkv(1)
+	real hlv(1),hev(1)
+
+	call rsnos(iunit,ilhkv,hlv,hev,ierr)
+
+	end
+
+c************************************************************
+
+	subroutine sknos(iunit,it,ivar,ierr)
+
+c reads data of nos file and skips information
+
+	implicit none
+
+	integer iunit
+	integer it,ivar
+	integer ierr
+
+	integer nlvdim
+	integer ilhkv(1)
+	real c(1,1)
+
+	call rdnos(iunit,it,ivar,nlvdim,ilhkv,c,ierr)
+
 	end
 
 c************************************************************

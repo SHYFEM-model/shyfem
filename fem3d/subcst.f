@@ -192,19 +192,13 @@ c check time parameters
 
 	implicit none
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
+	integer itanf,itend,idt
 	integer itunit
-	integer iround
 	real getpar
 
-	itanf = iround(getpar('itanf'))
-	itend = iround(getpar('itend'))
-	idt = iround(getpar('idt'))
-
-	itunit = iround(getpar('itunit'))
-	call set_timeunit(itunit)
+	itanf = nint(getpar('itanf'))
+	itend = nint(getpar('itend'))
+	idt = nint(getpar('idt'))
 
 	if( idt .le. 0 .or. itanf+idt .gt. itend ) then
 	   write(6,*) 'Error in compulsory time parameters'
@@ -212,9 +206,10 @@ c check time parameters
 	   stop 'error stop : cktime'
 	end if
 
-	niter=0
-	it=itanf
-	nits=(itend-itanf)/idt
+	call init_time(itanf,itend,idt)
+
+	itunit = nint(getpar('itunit'))
+	call set_timeunit(itunit)
 
 	end
 

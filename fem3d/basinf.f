@@ -15,6 +15,7 @@ c 22.03.2010    ggu     write external element number in basqual()
 c 17.05.2011    ggu     changes in freqdep()
 c 12.07.2011    ggu     better treatment of freqdep()
 c 16.11.2011    ggu     basin.h introduced
+c 10.02.2012    ggu     use angles in quality of basin (basqual)
 c
 c****************************************************************
 
@@ -717,6 +718,7 @@ c writes statistics on grid quality
 	real areav(nkndim)
 
 	integer ie,ii,k
+	integer ia,ic,ilow,ihigh
 	integer imin,imax
 	real area,amin,amax,atot
         real vtot
@@ -731,7 +733,9 @@ c writes statistics on grid quality
         integer i,k1,k2
 	integer iemin,iemax
 
-	integer ieext
+	integer iangle(0:18)
+
+	integer ieext,ipext
 	real areatr
 
 c-----------------------------------------------------------------
@@ -781,6 +785,36 @@ c-----------------------------------------------------------------
 	write(6,*) 'Grid quality: (internal/external element number)'
 	write(6,*) '   minimum: ',iemin,ieext(iemin),fmin
 	write(6,*) '   maximum: ',iemax,ieext(iemax),fmax
+	write(6,*)
+
+c-----------------------------------------------------------------
+c compute angles
+c-----------------------------------------------------------------
+
+	do i=0,18
+	  iangle(i) = 0
+	end do
+
+	do ie=1,nel
+	  area = 4.*ev(10,ie)
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    a = ev(10+ii,ie)
+	    ia = a / 10.
+	    if( ia .ge. 16 ) then
+		write(6,*) 'bad angle found: ',k,ipext(k),a
+	    end if
+	    iangle(ia) = iangle(ia) + 1
+	  end do
+	end do
+
+	do i=0,18
+	  ic = iangle(i)
+	  ilow = i * 10
+	  ihigh = (i+1) * 10
+	  write(6,*) 'angles between ',ilow,ihigh,ic
+	end do
+
 	write(6,*)
 
 c-----------------------------------------------------------------

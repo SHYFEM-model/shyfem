@@ -92,9 +92,9 @@ c works only with triangles as elements
 	integer nel		!total number of elements read
 	integer nli		!total number of lines read
 
-	integer nkndim		!dimension for nodes
-	integer neldim		!dimension for elements
-	integer nlidim		!dimension for lines
+	integer nkndim		!dimension for number of nodes
+	integer neldim		!dimension for number of elements
+	integer nlidim		!dimension for number of lines
 	integer nlndim		!dimension for node numbers of lines
 
 	integer ipnv(nkndim)	!external node number

@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 01-Feb-2012: bug in choosing lines -> no selection on depth was made	*
  * 08-Oct-2010: new routines for purging nodes after unifying		*
  * 17-Jan-98: algorithm changed for UnifyNodes()                        *
  * 05-May-97: CompressNumbers() added                                   *
@@ -270,6 +271,7 @@ void MinMaxDepth( float *mindepth , float *maxdepth )
 	float max=NULLDEPTH;
 	Node_type *pn;
 	Elem_type *pe;
+	Line_type *pl;
 
 	ResetHashTable(HNN);
 	while( (pn=VisitHashTableN(HNN)) != NULL ) {
@@ -283,6 +285,14 @@ void MinMaxDepth( float *mindepth , float *maxdepth )
 	while( (pe=VisitHashTableE(HEL)) != NULL ) {
 	    if( pe->depth != NULLDEPTH ) {
 		min = max = pe->depth;
+		break;
+	    }
+	}
+
+	ResetHashTable(HLI);
+	while( (pl=VisitHashTableL(HLI)) != NULL ) {
+	    if( pl->depth != NULLDEPTH ) {
+		min = max = pl->depth;
 		break;
 	    }
 	}
@@ -303,6 +313,14 @@ void MinMaxDepth( float *mindepth , float *maxdepth )
 	    }
 	}
 
+	ResetHashTable(HLI);
+	while( (pl=VisitHashTableL(HLI)) != NULL ) {
+	    if( pl->depth != NULLDEPTH ) {
+		if( pl->depth > max ) max = pl->depth;
+		if( pl->depth < min ) min = pl->depth;
+	    }
+	}
+
 	*mindepth = min;
 	*maxdepth = max;
 }
@@ -316,7 +334,7 @@ void MinMaxRange( int *minrange , int *maxrange )
 	Elem_type *pe;
 	Line_type *pl;
 
-	/* find min/max range -> there must be at least one node */
+	/* find min/max number range -> there must be at least one node */
 
 	ResetHashTable(HNN);
 	while( (pn=VisitHashTableN(HNN)) != NULL ) {

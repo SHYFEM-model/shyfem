@@ -454,6 +454,7 @@ c-----------------------------------------------------------
 	call setznv		! -> change znv since zenv has changed
 
         call inirst             !restart
+	call cktime		!in case itanf has changed
 
 c----------------------------------------------- FIXME
 	call makehev(hev)
@@ -519,6 +520,7 @@ c        call bclevvar_ini       !chao debora
 	!call custom(it)		!call for initialization
 
 	write(6,*) 'starting time loop'
+	call pritime
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -55,6 +55,7 @@ c 11.11.2011    ggu     restructured ts_next_record() and diagnostic()
 c 22.11.2011    ggu     bug fix in ts_file_open() -> bhashl
 c 02.12.2011    ggu     adapt ts_file_open() for barotropic version (ihashl)
 c 27.01.2012    deb&ggu changes for hybrid in ts_file_open,ts_next_record
+c 10.02.2012    ggu     bug in call to ts_next_record (called with nlvdim)
 c
 c*****************************************************************
 
@@ -685,11 +686,15 @@ c*******************************************************************
 	real snewv(nlvdim,nkndim)
 	save toldv,soldv,tnewv,snewv
 
+	logical bdebug
 	integer icall
 	save icall
 	data icall / 0 /
 
 	if( icall .eq. -1 ) return
+
+	bdebug = .true.
+	bdebug = .false.
 
 c-------------------------------------------------------------
 c initialization (open files etc...)
@@ -700,13 +705,13 @@ c-------------------------------------------------------------
 	  call ts_file_open(saltf,iusalt)
 
 	  write(6,*) 'ts_intp: initializing T/S'
-	  call ts_next_record(ittold,iutemp,nkn,nlvdim,nlv,toldv)
-	  call ts_next_record(itsold,iusalt,nkn,nlvdim,nlv,soldv)
-	  write(6,*) 'ts_intp: new record read ',ittold,itsold
+	  call ts_next_record(ittold,iutemp,nkn,nlv,toldv)
+	  call ts_next_record(itsold,iusalt,nkn,nlv,soldv)
+	  write(6,*) 'ts_intp: first record read ',ittold,itsold
 
-	  call ts_next_record(ittnew,iutemp,nkn,nlvdim,nlv,tnewv)
-	  call ts_next_record(itsnew,iusalt,nkn,nlvdim,nlv,snewv)
-	  write(6,*) 'ts_intp: new record read ',ittnew,itsnew
+	  call ts_next_record(ittnew,iutemp,nkn,nlv,tnewv)
+	  call ts_next_record(itsnew,iusalt,nkn,nlv,snewv)
+	  write(6,*) 'ts_intp: second record read ',ittnew,itsnew
 
 	  if( ittold .ne. itsold ) goto 98
 	  if( ittnew .ne. itsnew ) goto 98
@@ -726,9 +731,9 @@ c-------------------------------------------------------------
 	  itsold = itsnew
 	  call copy_record(nkn,nlvdim,nlv,soldv,snewv)
 
-	  call ts_next_record(ittnew,iutemp,nkn,nlvdim,nlv,tnewv)
-	  call ts_next_record(itsnew,iusalt,nkn,nlvdim,nlv,snewv)
-	  write(6,*) 'ts_intp: new record read ',ittnew
+	  call ts_next_record(ittnew,iutemp,nkn,nlv,tnewv)
+	  call ts_next_record(itsnew,iusalt,nkn,nlv,snewv)
+	  write(6,*) 'ts_intp: new record read ',ittnew,itsnew
 
 	  if( ittnew .ne. itsnew ) goto 98
 
@@ -834,14 +839,14 @@ c initialization of T/S from file
 
 	if( tempf .ne. ' ' ) then
 	  call ts_file_open(tempf,iutemp)
-          call ts_next_record(itt,iutemp,nkn,nlvdim,nlv,tempv)
+          call ts_next_record(itt,iutemp,nkn,nlv,tempv)
 	  call ts_file_close(iutemp)
           write(6,*) 'temperature initialized from file ',tempf
 	end if
 
 	if( saltf .ne. ' ' ) then
 	  call ts_file_open(saltf,iusalt)
-          call ts_next_record(its,iusalt,nkn,nlvdim,nlv,saltv)
+          call ts_next_record(its,iusalt,nkn,nlv,saltv)
 	  call ts_file_close(iusalt)
           write(6,*) 'salinity initialized from file ',saltf
 	end if
@@ -864,7 +869,7 @@ c opens T/S file
 	real hlv(1)
 	common /hlv/hlv
 
-	logical bsigma
+	logical bsigma,bdebug
 	logical bformat,bhashl
 	integer ifileo,iunit,ios
 	integer iformat,ihashl,inzeta
@@ -873,6 +878,9 @@ c opens T/S file
 	integer nsigma
 	real hsigma
 	real hl(nlvdim)
+
+	bdebug = .true.
+	bdebug = .false.
 
 c-------------------------------------------------------------
 c check if formatted or unformatted
@@ -899,10 +907,12 @@ c-------------------------------------------------------------
 	if( bformat ) then
 	  iunit = ifileo(0,name,'form','old')
 	  read(iunit,*) it,nknaux,lmax,nvar
+	  if( lmax .gt. nlvdim ) goto 95
 	  read(iunit,*) (hl(l),l=1,lmax)
 	else
 	  iunit = ifileo(0,name,'unform','old')
 	  read(iunit) it,nknaux,lmax,nvar
+	  if( lmax .gt. nlvdim ) goto 95
 	  read(iunit,iostat=ios) (hl(l),l=1,lmax)
 	end if
 	close(iunit)
@@ -949,11 +959,22 @@ c-------------------------------------------------------------
 	info(2) = iformat
 	info(3) = ihashl
 
+	if( bdebug ) then
+	  write(6,*) 'debug in ts_file_open:'
+	  write(6,*) 'iunit,iformat,ihashl: ',iunit,iformat,ihashl
+	  write(6,*) 'lmax,hl: ',lmax
+	  write(6,*) (hl(l),l=1,lmax)
+	end if
+
 c-------------------------------------------------------------
 c end of routine
 c-------------------------------------------------------------
 
 	return
+   95	continue
+	write(6,*) 'too many layers in file: ',name
+	write(6,*) 'lmax,nlvdim  : ',lmax,nlvdim
+	stop 'error stop ts_file_open: dimension nlvdim'
    96	continue
 	write(6,*) 'incompatible levels in file: ',name
 	write(6,*) 'lmax,hl  : ',lmax,(hl(l),l=1,lmax)
@@ -993,7 +1014,7 @@ c*******************************************************************
 	real hkv(1)
 	common /hkv/hkv
 
-	logical bsigma
+	logical bsigma,bdebug
 	logical bformat,bhashl
 	integer nknaux,lmax,nvar
 	integer i,l,iunit
@@ -1011,11 +1032,19 @@ c*******************************************************************
         real val_fem(nlvdim+1)
         real val_data(nlvdim+1)
 
+	bdebug = .true.
+	bdebug = .false.
+
 	iunit   = info(1)
 	bformat = info(2) .gt. 0
 	bhashl  = info(3) .gt. 0
 
 	if( iunit .le. 0 ) return
+
+	if( bdebug ) then
+	  write(6,*) 'debug in ts_next_record:'
+	  write(6,*) 'iunit,bformat,bhashl: ',it,iunit,bformat,bhashl
+	end if
 
 	if( bformat ) then
 	  read(iunit,*) it,nknaux,lmax,nvar

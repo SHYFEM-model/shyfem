@@ -354,6 +354,7 @@ c	-------------------------------
 
 	nfact = nread		  !this makes iwetv=1 if always wet, 0 else
 	if( bplotdry ) nfact = 1  !this makes iwetv=0 only if always dry
+	if( nfact .le. 0 ) nfact = 1
 
 c	-------------------------------
 c	compute average

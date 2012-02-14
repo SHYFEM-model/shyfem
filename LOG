@@ -1,27 +1,24 @@
 
+14.02.2012	various fixes from Lithuania
+
+	bug fix with maximum area and line of depth (exgrd.c,meshck.c)
+	bug fix in call to ts_next_record (newbcl.f)
+	quality of basin with angles (basinf.f)
+	plot bathymetry on elements (supsim.f)
+	limit meteo values to acceptable range (submeteo.f)
+	read also lines if dimension given (grdutil.f)
+	write only last record, restart from last record (subrst.f)
+	skip records in nos file (subnos.f,nosutil.f)
+	concatenate files (nosextr_cat.f,ousextr_cat.f)
+
+========================================================== 27-01-2012 - 6_1_43
+
 27.01.2012	changes to hybrid code (deb)
 
-c ./femplot/suplin.f:
-c 27.01.2012    deb&ggu adjusted for hybrid coordinates
-c
-c ./fem3d/newtra.f:
-c 27.01.2012    deb&ggu routines adapted for sigma levels
-c
-c ./fem3d/subdry.f:
-c 27.01.2012    deb&ggu changes for sigma coordinates (bsigma)
-c
-c ./fem3d/sigmautil.f:
-c 27.01.2012    deb&ggu changes to get_layer_thickness()
-c 27.01.2012    deb&ggu new routine compute_sigma_info()
-c
-c ./fem3d/newbsig.f:
-c 27.01.2012    deb&ggu adapted to hybrid levels
-c
-c ./fem3d/newbcl.f:
-c 27.01.2012    deb&ggu changes for hybrid in ts_file_open,ts_next_record
-c
-c ./fem3d/newsig.f:
-c 27.01.2012    deb&ggu adapted for hybrid levels
+	adjusted for hybrid coordinates (suplin.f,newbsig.f,newsig.f))
+	new compute_sigma_info() and changed get_layer_thickness() (sigmautil.f)
+	routines adapted for sigma levels (newtra.f,subdry.f)
+	changes for hybrid in ts_file_open,ts_next_record (newbcl.f)
 
 ========================================================== 25-01-2012 - 6_1_42
 

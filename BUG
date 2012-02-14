@@ -1,4 +1,10 @@
 
+BUG_2010_42     ggu	6.1.44   14.02.2012
+	bug fix in call to ts_next_record (newbcl.f)
+
+BUG_2010_41     ggu	6.1.44   14.02.2012
+	bug fix with maximum area and line of depth (exgrd.c,meshck.c)
+
 BUG_2010_40     ggu	6.1.41   23.01.2012
 	c_param was real (subproj.f)
 

@@ -8,6 +8,7 @@ c 07.05.2010    ggu     new routines qopen_nos_file(), checks ev initialization
 c 15.12.2010    ggu     volume computation also for sigma layers
 c 10.11.2011    ggu     new routines for hybrid levels, init_volume() changed
 c 02.12.2011    ggu     bug fix for call to get_sigma_info() (missing argument)
+c 10.02.2012    ggu     new routines to get initial/final time of records
 c
 c***************************************************************
 
@@ -320,6 +321,68 @@ c tests array to be equal
 	write(6,*) (a2(i),i=imin,imax)
 	write(6,*) 'arrays are not equal: ',text
 	stop 'error stop check_iqual_r: arrays differ'
+	end
+
+c***************************************************************
+c***************************************************************
+c***************************************************************
+
+	subroutine nos_get_it_start(file,itstart)
+
+c gets it of first record
+
+	implicit none
+
+	character*(*) file
+	integer itstart
+
+	integer nunit,nvers
+	integer it,ivar,ierr
+	character*80 title
+
+	nvers = 3
+	itstart = -1
+
+	call open_nos_file(file,'old',nunit)
+	call shnos(nunit,nvers,title)
+
+	call sknos(nunit,it,ivar,ierr)
+	if( ierr .ne. 0 ) return
+	itstart = it
+
+	end
+
+c***************************************************************
+
+	subroutine nos_get_it_end(file,itend)
+
+c gets it of first record
+
+	implicit none
+
+	character*(*) file
+	integer itend
+
+	integer nunit,nvers
+	integer it,itlast,ivar,ierr
+	character*80 title
+
+	nvers = 3
+	itend = -1
+	itlast = -1
+
+	call open_nos_file(file,'old',nunit)
+	call shnos(nunit,nvers,title)
+
+    1	continue
+	call sknos(nunit,it,ivar,ierr)
+	if( ierr .gt. 0 ) return
+	if( ierr .lt. 0 ) goto 2
+	itlast = it
+	goto 1
+    2	continue
+	itend = itlast
+
 	end
 
 c***************************************************************

@@ -14,6 +14,7 @@ c 26.01.2011    ggu	write wind field to debug output (iumetw)
 c 05.02.2011    ggu	changed order of records in dfile (actual is first)
 c 16.02.2011    ggu	pass idata to files, use geo info from files
 c 18.11.2011    ggu	deleted projection code from subroutines
+c 10.02.2012    ggu	limit cc and rh to acceptable range
 c
 c notes :
 c
@@ -549,6 +550,11 @@ c pressure is returned in [mb]
 	wb = metwbt(k)
 	uw = metws(k)
 	cc = metcc(k)
+
+	cc = max(0.,cc)
+	cc = min(1.,cc)
+	rh = max(0.,rh)
+	rh = min(100.,rh)
 
 	p = 0.01 * ppv(k)				!Pascal to mb
 	if( p .lt. 800. .or. p .gt. 1100. ) p = pstd	!850.0 - 1085.6 mb

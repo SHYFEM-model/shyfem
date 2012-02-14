@@ -27,6 +27,7 @@ c 13.11.2009    ggu     keep track of restart: /rstrst/ and has_restart()
 c 27.11.2009    ggu     deal with empty file, rdrst() restructured
 c 19.01.2010    ggu     initialize also conz, has_restart() is function
 c 11.03.2010    ggu     write also vertical velocity
+c 10.02.2012    ggu     write only last record, restart from last record
 c
 c*****************************************************************
 
@@ -41,9 +42,11 @@ c reads and initializes values from restart
 	save /rstrst/
 
         integer itrst,iunit,ierr,ityrst,it
+	double precision dit
         character*80 name
 
         real getpar
+	double precision dgetpar
         integer ifileo
 
 c-----------------------------------------------------------------
@@ -91,9 +94,17 @@ c-----------------------------------------------------------------
 
 	close(iunit)
 
+	if( itrst .eq. -1 ) then	!reset initial time
+	  write(6,*) 'setting new initial time: ',it
+	  dit = it
+	  call dputpar('itanf',dit)
+	  write(6,*) 'new itanf: ',nint(dgetpar('itanf'))
+	end if
+
         write(6,*) '---------------------------------------------'
         write(6,*) 'A restart has been performed'
-        write(6,*) ' restart time = ',itrst
+        write(6,*) ' requested restart time = ',itrst
+        write(6,*) ' used restart time = ',it
         write(6,*) ' nvers,ibarcl,iconz ',nvers,ibarcl,iconz
         write(6,*) ' iwvert ',iwvert
         write(6,*) '---------------------------------------------'
@@ -170,6 +181,8 @@ c administers writing of restart file
         real getpar
         integer ifemop
 
+	logical bonce
+	save bonce
         integer idtrst,itmrst,itnext,iunit
         save idtrst,itmrst,itnext,iunit
         integer icall
@@ -188,8 +201,15 @@ c-----------------------------------------------------
           itmrst = nint(getpar('itmrst'))
 
           icall = -1
-          if( idtrst .le. 0 ) return
+          if( idtrst .eq. 0 ) return
           if( itmrst .gt. itend ) return
+
+	  if( idtrst .lt. 0 ) then	!only last record saved
+	    bonce = .true.
+	    idtrst = -idtrst
+	  else
+	    bonce = .false.
+	  end if
 
           icall = 1
           if( idtrst .le. idt ) idtrst = idt
@@ -197,8 +217,10 @@ c-----------------------------------------------------
           itnext = itmrst
 	  if( itmrst .eq. itanf ) itnext = itnext + idtrst
 
-          iunit = ifemop('rst','unformatted','new')
-          if( iunit .le. 0 ) goto 98
+	  if( .not. bonce ) then
+            iunit = ifemop('rst','unformatted','new')
+            if( iunit .le. 0 ) goto 98
+	  end if
 
         end if
 
@@ -208,7 +230,14 @@ c-----------------------------------------------------
 
         if( it .lt. itnext ) return
 
-        call wrrst(it,iunit)
+	if( bonce ) then
+          iunit = ifemop('rst','unformatted','new')
+          if( iunit .le. 0 ) goto 98
+          call wrrst(it,iunit)
+	  close(iunit)
+	else
+          call wrrst(it,iunit)
+	end if
 
         itnext = itnext + idtrst
 
@@ -317,19 +346,29 @@ c reads restart file until it finds itrst
         integer ii,l,ie,k
         integer itaux
         integer irec
-        logical bloop
+        logical bloop,blast,bnext
 
         irec = 0
 	ierr = 0
         bloop = .true.
+	blast = itrst .eq. -1		! take last record
 
         do while( bloop )
           call rdrst_record(itaux,iunit,ierr)
           if( ierr .eq. 0 ) irec = irec + 1
-          bloop = ierr .eq. 0 .and. itaux .lt. itrst
+	  bnext = itaux .lt. itrst .or. blast	!look for more records
+          bloop = ierr .eq. 0 .and. bnext
         end do
 
-        if( itaux .eq. itrst ) return   !done
+	if( irec .gt. 0 ) then
+	  if( blast ) then
+	    ierr = 0
+	    itrst = itaux
+	    return
+          else if( itaux .eq. itrst ) then
+	    return
+	  end if
+	end if
 
         if( ierr .ne. 0 ) then          !EOF
           if( irec .eq. 0 ) then        !no data found

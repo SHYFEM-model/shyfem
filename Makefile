@@ -15,10 +15,21 @@
 #---------------------------------------------------------------
 
 DIR = fem
+RULES_MAKE_VERSION = 0.0	# default if Rules.make cannot be read
 
 #---------------------------------------------------------------
 
 include ./Rules.make
+
+#---------------------------------------------------------------
+
+RULES_MAKE_EXPECTED = 1.0
+RULES_MAKE_COMPATIBILITY = RULES_MAKE_OK
+ifneq ($(RULES_MAKE_VERSION),"0.0")
+  ifneq ($(RULES_MAKE_VERSION),$(RULES_MAKE_EXPECTED))
+    RULES_MAKE_COMPATIBILITY = RULES_MAKE_NOT_COMPATIBLE
+  endif
+endif
 
 #---------------------------------------------------------------
 
@@ -70,11 +81,11 @@ FEMDIRS   = $(FEMLIBS) $(FEMEXTRA) $(FEMC) $(FEMPROG) $(FEMUTIL)
 default: fem
 
 .IGNORE: clean
-.PHONY: publish
+.PHONY: publish version
 
 all: fem doc
 
-fem: directories links
+fem: checkv directories links
 	$(FEMBIN)/recursivemake $@ $(FEMDIRS)
 
 doc:
@@ -131,13 +142,13 @@ directories_old:
 check:
 	$(FEMBIN)/recursivemake $@ femcheck
 
-install:
+install: checkv
 	$(FEMBIN)/shyfem_install.sh
 
-install_hard:
+install_hard: checkv
 	$(FEMBIN)/shyfem_install_hard.sh
 
-install_hard_reset:
+install_hard_reset: checkv
 	$(FEMBIN)/shyfem_install_hard.sh -reset
 
 links:
@@ -192,6 +203,19 @@ modified:
 
 changed_zip:
 	zip changed_zip.zip `find . -newer VERSION -type f`
+
+#---------------------------------------------------------------
+
+checkv: $(RULES_MAKE_COMPATIBILITY)
+
+RULES_MAKE_OK:
+
+RULES_MAKE_NOT_COMPATIBLE:
+	@echo "*** incompatible version of Rules.make file"
+	@echo "provided: $(RULES_MAKE_VERSION)"
+	@echo "expected: $(RULES_MAKE_EXPECTED)"
+	@echo "please adapt your Rules.make file to the latest version"
+	@exit 1
 
 #---------------------------------------------------------------
 

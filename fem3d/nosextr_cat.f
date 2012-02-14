@@ -1,5 +1,5 @@
 c
-c $Id: nosextr_records.f,v 1.1 2008-07-16 15:41:39 georg Exp $
+c $Id: nosextr_cat.f,v 1.1 2008-07-16 15:41:39 georg Exp $
 c
 c concatenates NOS files
 c
@@ -8,14 +8,13 @@ c
 c 18.11.1998    ggu     check dimensions with dimnos
 c 03.06.2011    ggu     routine adjourned
 c 08.06.2011    ggu     routine rewritten
+c 31.01.2012    ggu     choice of concatenation mode (mode, itc)
 c
 c**********************************************************
 
-	program nosextr_records
+	program nosextr_cat
 
-c extracts whole records from nos file
-c
-c records have to be specified on stdin
+c concatenates two nos files into one
 
         implicit none
 
@@ -53,8 +52,10 @@ c records have to be specified on stdin
 	integer itfirst,itsecond
         integer ierr
         integer nvers
+	integer mode,itc
         real r,rnull
 	real conz,high
+	character*80 file1,file2
 
         integer iapini,ideffi,ifileo
 
@@ -73,10 +74,60 @@ c-------------------------------------------------------------------
 	high = 1.e+30
 
 c-------------------------------------------------------------------
-c open NOS file and read header
+c get mode of operation
 c-------------------------------------------------------------------
 
-	call qopen_nos_file('Enter first file: ','old',nin)
+	mode = 0
+	itc = 0
+	write(6,*) 'operation mode:'
+	write(6,*) '  0   all of first file, rest of second file'
+	write(6,*) '  1   first file until start of second file'
+	write(6,*) '  2   first file up to itc (inclusive), then second'
+	write(6,*) '  in case of mode 2 itc value is also requested'
+	write(6,*) 'Enter mode:'
+	read(5,'(i10)') mode
+	if( mode .lt. 0 .or. mode .gt. 2 ) stop 'error stop: mode'
+	if( mode .eq. 2 ) then
+	  write(6,*) 'Enter time up to when to read first file:'
+	  read(5,'(i10)') itc
+	end if
+	write(6,*) 'mode,itc: ',mode,itc
+
+        write(6,*) 'Enter first file:'
+        read(5,'(a)') file1
+        write(6,*) file1
+
+        write(6,*) 'Enter second file:'
+        read(5,'(a)') file2
+        write(6,*) file2
+
+	if( mode .eq. 1 ) then
+	  call nos_get_it_start(file2,itc)
+	  if( itc .eq. -1 ) then
+	    write(6,*) 'cannot read starting time of second file'
+	    stop 'error stop: starting time'
+	  end if
+	  itc = itc - 1		!last time for first file
+	end if
+
+c-------------------------------------------------------------------
+c open NOS output file
+c-------------------------------------------------------------------
+
+        call mkname(' ','nos_cat','.nos',file)
+        write(6,*) 'writing file ',file(1:50)
+        nb = ifileo(55,file,'unform','new')
+        if( nb .le. 0 ) goto 98
+        call wfnos(nb,3,nkn,nel,nlv,1,title,ierr)
+        if( ierr .ne. 0 ) goto 99
+        call wsnos(nb,ilhkv,hlv,hev,ierr)
+        if( ierr .ne. 0 ) goto 99
+
+c-------------------------------------------------------------------
+c open first NOS file and read header
+c-------------------------------------------------------------------
+
+	call open_nos_file(file1,'old',nin)
 
         nvers=3
 	call rfnos(nin,nvers,nkn,nel,nlv,nvar,title,ierr)
@@ -96,19 +147,6 @@ c-------------------------------------------------------------------
 	write(6,*) (hlv(l),l=1,nlv)
 
 c-------------------------------------------------------------------
-c open NOS output file
-c-------------------------------------------------------------------
-
-        call mkname(' ','nos_cat','.nos',file)
-        write(6,*) 'writing file ',file(1:50)
-        nb = ifileo(55,file,'unform','new')
-        if( nb .le. 0 ) goto 98
-        call wfnos(nb,3,nkn,nel,nlv,1,title,ierr)
-        if( ierr .ne. 0 ) goto 99
-        call wsnos(nb,ilhkv,hlv,hev,ierr)
-        if( ierr .ne. 0 ) goto 99
-
-c-------------------------------------------------------------------
 c loop on input records
 c-------------------------------------------------------------------
 
@@ -119,6 +157,7 @@ c-------------------------------------------------------------------
         if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
         if(ierr.ne.0) goto 100
 
+	if( mode .gt. 0 .and. it .gt. itc ) goto 100
 	itfirst = it
 	nread=nread+1
 	nread1=nread1+1
@@ -134,10 +173,10 @@ c-------------------------------------------------------------------
 	call delnos(nin)
 
 c-------------------------------------------------------------------
-c open NOS file and read header
+c open second NOS file and read header
 c-------------------------------------------------------------------
 
-	call qopen_nos_file('Enter second file: ','old',nin)
+	call open_nos_file(file2,'old',nin)
 
         nvers=3
 	call rfnos(nin,nvers,nkn,nel,nlv,nvar,title,ierr)

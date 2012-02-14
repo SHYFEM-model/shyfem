@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 10-Feb-2012: use ABS() to determine line with maximum area		*
  * 06-Dec-2011: better handling of line types				*
  * 07-Oct-2010: better error message in CheckInput()			*
  * 12-Nov-97: check for not unique coordinates in CheckInput()          *
@@ -77,8 +78,8 @@ int CheckInput( void )
 	int nint=0;
 	int nbound=0;
 	int turn;
-	int bstop = 0;
 	int ndim;
+	int error;
         Node_type *pn;
         Elem_type *pe;
         Line_type *pl;
@@ -100,7 +101,7 @@ int CheckInput( void )
         ResetHashTable(HLI);
         while( (pl=VisitHashTableL(HLI)) != NULL ) {
 
-	    area = AreaLine(HNN,pl);
+	    area = ABS( AreaLine(HNN,pl) );
 	    if( area > areamax ) {
 		areamax = area;
 		plmax = pl;
@@ -139,6 +140,7 @@ int CheckInput( void )
 		}
 	} else if( next == 0 ) {
 		Warning("No external line found... using biggest one");
+		Warning2("  external line is ",itos(plmax->number));
 		SetLtype(plmax, L_EXTERNAL );
 		next++;
 	}
@@ -157,6 +159,7 @@ int CheckInput( void )
 
 /* check lines and set node type */
 
+	error = 0;
         ResetHashTable(HLI);
         while( (pl=VisitHashTableL(HLI)) != NULL ) {
 	    if( IsLtype(pl, L_EXTERNAL ) || IsLtype(pl, L_INTERNAL ) ) {
@@ -174,17 +177,15 @@ int CheckInput( void )
 
 	        for(i=1;i<ndim;i++) {
 		  if( pl->index[i-1] == pl->index[i] ) {
-		    printf("Identical node %d in line %d\n"
-				,pl->index[i],pl->number);
-		    bstop = YES;
+		    printf("*** Line %d: identical node %d\n"
+				,pl->number,pl->index[i]);
+		    error++;
 	          } else if( xe[i-1] == xe[i] && ye[i-1] == ye[i] ) {
-		    printf("Identical coordinates in line %d - ",pl->number);
+		    printf("*** Line %d: Identical coordinates - ",pl->number);
 		    printf("nodes %d and %d\n",pl->index[i-1],pl->index[i]);
-		    bstop = YES;
+		    error++;
 		  }
 		}
-		if( bstop )
-		  Error2("Errors in line ",itos(pl->number));
 		
 		/* check for counter-clockwise turning */
 
@@ -196,9 +197,10 @@ int CheckInput( void )
 				,pl->number);
 			InvertIndex(pl->index,pl->vertex);
 		} else {
-			printf("Line %d , turning number %d\n",
+			printf("*** Line %d: turning number %d\n",
 				pl->number,turn);
-			Error("Error in line turning");
+			printf("  (the line might turn on itself)\n");
+			error++;
 		}
 		free(xe); free(ye);
 
@@ -210,6 +212,10 @@ int CheckInput( void )
 		}
 	    }
         }
+
+	if( error ) {
+		Error("Errors found in lines");
+	}
 
 	/* look for background grid */
 

@@ -88,6 +88,13 @@ c Laguna di Venezia
         c_param(2) = 2280000.        !shift in x
         c_param(3) = 5000000.        !shift in y
 
+c Turkey lake for Ali
+
+	iproj = 2		     !UTM
+        c_param(1) = 36.             !longitude of origin (lon0)
+        c_param(2) = -500000.        !false easting
+        c_param(3) = 0.              !false northing
+
 c---------------------------------------------------------------
 c do projection
 c---------------------------------------------------------------

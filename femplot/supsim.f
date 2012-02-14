@@ -59,6 +59,12 @@ c 17.05.2011    ggu     in plobas may plot node and element numbers
 c 12.07.2011    ggu     eliminated all references to out routines
 c 31.08.2011    ggu     new eos plotting (pleos,ploeval)
 c 07.10.2011    ggu&dbf error calling extelev with nkn, and not nel
+c 10.02.2012    ggu	belem in plobas to plot bathymetry on elements
+c
+c notes :
+c
+c customize belem in plobas() to plot bathymetry on elements
+c customize bnumber in plobas() to write node and element numbers
 c
 c**********************************************************
 c**********************************************************
@@ -1065,14 +1071,18 @@ c**********************************************************
 
 	real hkv(1)
 	common /hkv/hkv
+	real hev(1)
+	common /hev/hev
 	integer iarv(1)
 	common /iarv/iarv
 
-	logical bnumber
+	logical bnumber,belem
         real pmin,pmax
 
 	bnumber = .true.	! plot node and element numbers
 	bnumber = .false.
+	belem = .true.		! plot bathymetry on elements
+	belem = .false.
 
 c only boundary line
 
@@ -1098,7 +1108,11 @@ c grid with gray
 c bathymetry (gray or color)
 
 	call resetsim
-	call ploval(nkn,hkv,'basin')
+	if( belem ) then
+	  call ploeval(nkn,hev,'basin')
+	else
+	  call ploval(nkn,hkv,'basin')
+	end if
 
 c bathymetry with grid
 

@@ -1,9 +1,10 @@
 #!/usr/bin/perl -w -s
 #
-# version = 2.0
+# version = 2.1
 #
 # 07.10.2010	ggu	act on all items if no line is given
 # 07.10.2010	ggu	translate nodes
+# 10.02.2012	ggu	-depth_invert
 #
 #----------------------------------------------------------------
 
@@ -20,6 +21,7 @@ $::h = 1 if $::h;
 $::invert = 0 unless $::invert;
 $::exclude = 0 unless $::exclude;
 $::preserve = 0 unless $::preserve;
+$::depth_invert = 0 unless $::depth_invert;
 
 if( $::n or $::e or $::l ) {	#explicitly given -> only on these items
   $::n = 0 unless $::n;
@@ -111,18 +113,19 @@ sub FullUsage {
   print STDERR "                                    \n";
   print STDERR "  If no line is given acts on all items of grid\n";
   print STDERR "                                    \n";
-  print STDERR "  -h|-help     this help screen\n";
+  print STDERR "  -h|-help      this help screen\n";
   print STDERR "                                    \n";
-  print STDERR "  {-n|-e|-l}   modify nodes,elements,lines (default: all)\n";
-  print STDERR "  -print       print selected items\n";
-  print STDERR "  -type=type   set type of selected items to type\n";
-  print STDERR "  -depth=depth set depth of selected items to depth\n";
-  print STDERR "  -trans=dx,dy translate selected nodes by dx/dy\n";
-  print STDERR "  -delete      delete selected items\n";
+  print STDERR "  {-n|-e|-l}    modify nodes,elements,lines (default: all)\n";
+  print STDERR "  -print        print selected items\n";
+  print STDERR "  -type=type    set type of selected items to type\n";
+  print STDERR "  -depth=depth  set depth of selected items to depth\n";
+  print STDERR "  -trans=dx,dy  translate selected nodes by dx/dy\n";
+  print STDERR "  -delete       delete selected items\n";
   print STDERR "                                    \n";
-  print STDERR "  -invert      invert selection - modify outer area\n";
-  print STDERR "  -exclude     exclude border line items from selection\n";
-  print STDERR "  -preserve    preserves order of items\n";
+  print STDERR "  -invert       invert selection - modify outer area\n";
+  print STDERR "  -exclude      exclude border line items from selection\n";
+  print STDERR "  -preserve     preserves order of items\n";
+  print STDERR "  -depth_invert inverts depth values (neg to pos etc.)\n";
 }
 
 sub Usage {
@@ -223,6 +226,8 @@ sub modify_node {
     $grid->delete_node($node) unless $node->{used};
   } elsif( $::depth != $::flag ) {
     $node->{h} = $::depth;
+  } elsif( $::depth_invert ) {
+    $node->{h} = -$node->{h};
   } elsif( $::trans ) {
     $node->{x} += $::trans_x;
     $node->{y} += $::trans_y;
@@ -243,6 +248,8 @@ sub modify_element {
     $grid->delete_elem($elem);
   } elsif( $::depth != $::flag ) {
     $elem->{h} = $::depth;
+  } elsif( $::depth_invert ) {
+    $elem->{h} = -$elem->{h};
   }
 }
 
@@ -260,6 +267,8 @@ sub modify_line {
     $grid->delete_line($line);
   } elsif( $::depth != $::flag ) {
     $line->{h} = $::depth;
+  } elsif( $::depth_invert ) {
+    $line->{h} = -$line->{h};
   }
 }
 

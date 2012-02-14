@@ -1,5 +1,46 @@
 ============================================================
 
+Tue Feb 14 17:19:21 CET 2012
+
+changes from Lithuania
+
+ BUG                  |    6 +++
+ LOG                  |   39 +++++++++----------
+ Makefile             |   34 ++++++++++++++--
+ RELEASE_NOTES        |    8 ++++
+ Rules.make           |    6 +++
+ fem3d/basinf.f       |   36 +++++++++++++++++-
+ fem3d/basproj.f      |    7 +++
+ fem3d/grd_extra.h    |   28 ++++++++++++++
+ fem3d/grdutil.f      |   22 ++++++-----
+ fem3d/ht.f           |    2 +
+ fem3d/newbcl.f       |   55 +++++++++++++++++++++------
+ fem3d/nosextr_cat.f  |   83 ++++++++++++++++++++++++++++++-----------
+ fem3d/nosutil.f      |   63 +++++++++++++++++++++++++++++++
+ fem3d/ousaver.f      |    1 +
+ fem3d/ousextr_cat.f  |   36 +++++++++++++++--
+ fem3d/rstinf.f       |    9 ++++
+ fem3d/subbnds.f      |    2 +-
+ fem3d/subcst.f       |   21 ++++------
+ fem3d/subgrd.f       |    6 +-
+ fem3d/submeteo.f     |    6 +++
+ fem3d/subnos.f       |  101 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subnsh.f       |   69 +++++++++++++++++++++++++++++++++-
+ fem3d/subqfxt.f      |   10 +++++
+ fem3d/subrst.f       |   55 +++++++++++++++++++++++----
+ fem3d/subsys.f       |   13 +++++-
+ fembin/grd_modify.pl |   31 ++++++++++-----
+ fembin/grd_transl.pl |   69 +++++++++++++++++++++++++++++-----
+ fembin/kml2grd.pl    |   83 +++++++++++++++++++++++++++++++++++++++++
+ fembin/xy2grd.pl     |   12 +++++-
+ femplot/supsim.f     |   18 ++++++++-
+ mesh/exgrd.c         |   20 +++++++++-
+ mesh/meshck.c        |   28 ++++++++-----
+ mesh/meshge.c        |    2 +-
+ 33 files changed, 839 insertions(+), 142 deletions(-)
+
+============================================================
+
 Fri Jan 27 19:12:29 CET 2012
 
 New version 6_1_43

@@ -69,6 +69,7 @@ c 14.07.2011    ggu     new routines for original time step
 c 13.09.2011    ggu     better error check, rdtitl() more robust
 c 23.01.2012    ggu     new section "proj"
 c 24.01.2012    ggu     new routine setup_parallel()
+c 10.02.2012    ggu     new routines to initialize and access time common block
 c
 c************************************************************
 c
@@ -714,7 +715,10 @@ c compute total number of iterations
 c---------------------------------------------------------------
 
         nit1 = niter + (itend-it)/idt
-        nit2 = nint( niter * ( 1 + float(itend-it)/(it-itanf) ) )
+	nit2 = nit1
+	if( it .gt. itanf ) then
+          nit2 = nint( niter * ( 1 + float(itend-it)/(it-itanf) ) )
+	end if
 
         nits = nit2
         if( naver .gt. 0 ) nits = ( 1*nit1 + (naver-1)*nit2 ) / naver
@@ -765,6 +769,8 @@ c prints stats after last time step
 
 	end
 
+c********************************************************************
+c********************************************************************
 c********************************************************************
 
         subroutine set_timestep
@@ -946,6 +952,65 @@ c----------------------------------------------------------------------
         end
 
 c**********************************************************************
+c**********************************************************************
+c**********************************************************************
+
+        subroutine init_time(itanf0,itend0,idt0)
+
+c initializes femtim common block
+
+        implicit none
+
+        integer itanf0,itend0,idt0
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	itanf = itanf0
+	itend = itend0
+	idt   = idt0
+
+	niter = 0
+	it = itanf
+	nits = (itend-itanf) / idt
+
+	end
+
+c**********************************************************************
+
+	subroutine is_time_first(bfirst)
+
+c true if in initialization phase
+
+	implicit none
+
+	logical bfirst
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	bfirst = it .eq. itanf
+
+	end
+
+c**********************************************************************
+
+	subroutine is_time_last(blast)
+
+c true if in last time step
+
+	implicit none
+
+	logical blast
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	blast = it .eq. itend
+
+	end
+
+c**********************************************************************
 
         subroutine get_time(itact)
 
@@ -1054,6 +1119,8 @@ c sets time unit
 
 	end
 
+c********************************************************************
+c********************************************************************
 c********************************************************************
 
 	subroutine set_output_frequency(itm_out,idt_out,ia_out)

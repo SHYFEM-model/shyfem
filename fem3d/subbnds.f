@@ -243,7 +243,7 @@ c sets default value for boundaries - works only for nvar = 1
 	integer nbc,ibc
 	integer iunit,nvar,nsize,ndata
 	integer i
-	real scaldf
+	real scaldf(1)
 
 	integer nbnds
 

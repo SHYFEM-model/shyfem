@@ -1,4 +1,11 @@
 #!/usr/bin/perl
+#
+# converts files containing (x,y,z) coordinates to grd format
+#
+# z value may be missing
+# as separator space ( ), comma (,) or semicolon (;) can be used
+#
+#---------------------------------------------------------
 
 $n = 0;
 $type = 3;
@@ -6,7 +13,10 @@ $type = 3;
 while(<>) {
 
   chomp;
-  s/^\s*//;
+  s/^\s*//;	# get rid of leading spaces
+  s/,/ /g;	# convert commas to spaces
+  s/;/ /g;	# convert semicolon to spaces
+
   @f = split;
   $nf = @f;
 
