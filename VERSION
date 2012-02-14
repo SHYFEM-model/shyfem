@@ -1,3 +1,51 @@
+version  6_1_44    14-02-2012    VERS_6_1_44
+
+Valentine day's release
+
+========================================================== 14-02-2012 - 6_1_44
+
+ * ./mesh/exgrd.c:
+ * 01-Feb-2012: bug in choosing lines -> no selection on depth was made	*
+ * ./mesh/meshck.c:
+ * 10-Feb-2012: use ABS() to determine line with maximum area		*
+c ./femplot/supsim.f:
+c 10.02.2012    ggu	belem in plobas to plot bathymetry on elements
+c
+c ./fem3d/subnos.f:
+c 10.02.2012	ggu	new routines to skip records
+c
+c ./fem3d/subnsh.f:
+c 10.02.2012    ggu     new routines to initialize and access time common block
+c
+c ./fem3d/basinf.f:
+c 10.02.2012    ggu     use angles in quality of basin (basqual)
+c
+c ./fem3d/submeteo.f:
+c 10.02.2012    ggu	limit cc and rh to acceptable range
+c
+c ./fem3d/grdutil.f:
+c 10.02.2012    ggu     read also lines if dimension given
+c
+c ./fem3d/subrst.f:
+c 10.02.2012    ggu     write only last record, restart from last record
+c
+c ./fem3d/subver.f:
+c 14.02.2012	ggu	version 6.1.44	Valentine day's release	'
+c
+c ./fem3d/newbcl.f:
+c 10.02.2012    ggu     bug in call to ts_next_record (called with nlvdim)
+c
+c ./fem3d/nosextr_cat.f:
+c 31.01.2012    ggu     choice of concatenation mode (mode, itc)
+c
+c ./fem3d/ousextr_cat.f:
+c 31.01.2012    ggu     choice of concatenation mode (mode, itc)
+c
+c ./fem3d/nosutil.f:
+c 10.02.2012    ggu     new routines to get initial/final time of records
+
+==========================================================
+
 version  6_1_43    27-01-2012    VERS_6_1_43   commit_2012-02-14
 
 version  6_1_43    27-01-2012    VERS_6_1_43
