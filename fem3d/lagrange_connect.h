@@ -2,7 +2,14 @@
 c include file for connectivity simulations
 
         integer nconnect_dim
-        parameter (nconnect_dim=50)
+        parameter ( nconnect_dim = 50 )
+
+        real lagr_connect_pps
+        !parameter ( lagr_connect_pps = 1./200. )
+        parameter ( lagr_connect_pps = 0. )
+
+	integer lagr_connect_itmonth
+        parameter ( lagr_connect_itmonth = 30.5*86400 )
 
 	integer np_station
 	common /int_conn/ np_station
@@ -43,3 +50,4 @@ c include file for connectivity simulations
 	save /t_connect_total/,/i_connect_total/
 
         save /i_connect_released/,/a_connect_area/
+

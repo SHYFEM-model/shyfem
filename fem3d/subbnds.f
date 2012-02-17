@@ -28,6 +28,7 @@ c 05.10.2007    ggu     definition of array(ndim,1) changed to array(ndim,0:1)
 c 17.03.2008    ggu     routines re-arranged, new bnds_trans, bnds_set_def
 c 17.04.2008    ggu     deleted bnds_set_global
 c 23.04.2008    ggu     in bnds_set_def() eliminated aaux
+c 16.02.2012    ggu     new routine bnds_init0 (to force spatially const bound)
 c
 c******************************************************************
 
@@ -44,6 +45,50 @@ c initializes boundary condition
 	integer ndim		!first dimension of array
 	real array(ndim,0:1)	!array with all information
 	real aconst(nvar)	!if no file is given constant values from here
+
+	call bnds_init_internal(text,file,nintp,nvar
+     +			,ndim,array,aconst,.false.)
+
+	end
+
+c******************************************************************
+
+	subroutine bnds_init0(text,file,nintp,nvar,ndim,array,aconst)
+
+c initializes boundary condition (boundary spatially constant)
+
+	implicit none
+
+	character*(*) text	!text for debug
+	character*80 file(1)	!file names
+	integer nintp		!degree of interpolation - same for all bounds
+	integer nvar		!number of variables
+	integer ndim		!first dimension of array
+	real array(ndim,0:1)	!array with all information
+	real aconst(nvar)	!if no file is given constant values from here
+
+	call bnds_init_internal(text,file,nintp,nvar
+     +			,ndim,array,aconst,.true.)
+
+	end
+
+c******************************************************************
+
+	subroutine bnds_init_internal(text,file,nintp,nvar
+     +			,ndim,array,aconst,bconst)
+
+c initializes boundary condition
+
+	implicit none
+
+	character*(*) text	!text for debug
+	character*80 file(1)	!file names
+	integer nintp		!degree of interpolation - same for all bounds
+	integer nvar		!number of variables
+	integer ndim		!first dimension of array
+	real array(ndim,0:1)	!array with all information
+	real aconst(nvar)	!if no file is given constant values from here
+	logical bconst		!treat all boundaries as spatially constant
 
 	character*80 name
 	integer nbc,ibc
@@ -83,6 +128,7 @@ c initializes boundary condition
 	  end if
 
 	  call get_bnd_ipar(ibc,'nbdim',nbdim)	!0 if one value/boundary
+	  if( bconst ) nbdim = 0
 	  nk = nkbnds(ibc)
 	  nsize = nbdim * nk
 

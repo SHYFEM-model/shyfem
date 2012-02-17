@@ -1,4 +1,25 @@
 
+ * ./mesh/meshgd.c:
+ * 16-Feb-2012: no cast of (char) for type of element and line          *
+c ./fem3d/submeteo.f:
+c 16.02.2012    ggu     new routine meteo_get_solar_radiation()
+c
+c ./fem3d/lagrange_init.f:
+c 16.02.2012    ggu     bug fix reading lines
+c
+c ./fem3d/subbnds.f:
+c 16.02.2012    ggu     new routine bnds_init0 (to force spatially const bound)
+c
+c ./fem3d/subbfm.f:
+c 17.02.2012    aac&ggu restart for bfm
+c
+c ./fem3d/lagrange_decay.f:
+c 16.02.2012    mic&fra new way to kill particles...
+
+
+
+
+
 14.02.2012	various fixes from Lithuania
 
 	bug fix with maximum area and line of depth (exgrd.c,meshck.c)

@@ -6,6 +6,7 @@ c
 c revision log :
 c
 c 05.02.2009    ggu     copied from other files
+c 16.02.2012    mic&fra new way to kill particles...
 c
 c**********************************************************************
 
@@ -36,6 +37,7 @@ c handles decay of particles
 
         if( lcall .eq.  1 ) call lagr_decay(n)   
         if( lcall .eq.  2 ) call lagr_conc(n)
+c        if( lcall .eq.  3 ) call lagr_surv(n)
 
         end
 
@@ -115,5 +117,50 @@ c*********************************************************************
 
         end 
                 
+c**********************************************************************
+
+	subroutine lagr_surv(i)
+
+c particles older than tdead are eliminated
+
+        implicit none
+
+        include 'param.h'
+        include 'lagrange.h'
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	integer icount
+	data icount /0/
+	save icount
+
+	integer i
+
+	real t	    !time of simulation
+	real ts	    !start time of particle
+	real deltat !t-ts age of the particle
+	real tdead  !time to live
+
+	real pdead,psurv !death or survival probability 
+	
+	tdead = 30.5*86400
+
+	t = it 
+	ts = tin(i)  
+
+	deltat = t-ts 
+
+	pdead = deltat/tdead
+	psurv = 1-pdead
+
+	if (psurv.le.0) then !spacciata
+	  icount = icount+1 
+	  write(77,*) it,i,icount	
+	  ie_body(i) = -ie_body(i)
+	endif
+
+	end 
+
 c**********************************************************************
 

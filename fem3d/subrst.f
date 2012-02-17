@@ -28,6 +28,7 @@ c 27.11.2009    ggu     deal with empty file, rdrst() restructured
 c 19.01.2010    ggu     initialize also conz, has_restart() is function
 c 11.03.2010    ggu     write also vertical velocity
 c 10.02.2012    ggu     write only last record, restart from last record
+c 16.02.2011    aac     write also ecological varibles
 c
 c*****************************************************************
 
@@ -37,8 +38,8 @@ c reads and initializes values from restart
 
         implicit none
 
-	integer iokrst,nvers,ibarcl,iconz,iwvert
-	common /rstrst/ iokrst,nvers,ibarcl,iconz,iwvert
+	integer iokrst,nvers,ibarcl,iconz,iwvert,ieco
+	common /rstrst/ iokrst,nvers,ibarcl,iconz,iwvert,ieco
 	save /rstrst/
 
         integer itrst,iunit,ierr,ityrst,it
@@ -105,7 +106,7 @@ c-----------------------------------------------------------------
         write(6,*) 'A restart has been performed'
         write(6,*) ' requested restart time = ',itrst
         write(6,*) ' used restart time = ',it
-        write(6,*) ' nvers,ibarcl,iconz ',nvers,ibarcl,iconz
+        write(6,*) ' nvers,ibarcl,iconz,ieco ',nvers,ibarcl,iconz,ieco
         write(6,*) ' iwvert ',iwvert
         write(6,*) '---------------------------------------------'
 
@@ -138,14 +139,15 @@ c icode = 2	depth values
 c icode = 3	t/s/rho values
 c icode = 4	conz values
 c icode = 5	vertical velocity
+c icode = 6	ecological variables
 
 	implicit none
 
 	logical has_restart
 	integer icode
 
-	integer iokrst,nvers,ibarcl,iconz,iwvert
-	common /rstrst/ iokrst,nvers,ibarcl,iconz,iwvert
+	integer iokrst,nvers,ibarcl,iconz,iwvert,ieco
+	common /rstrst/ iokrst,nvers,ibarcl,iconz,iwvert,ieco
 	save /rstrst/
 
 	if( iokrst .le. 0 ) then
@@ -160,6 +162,8 @@ c icode = 5	vertical velocity
 	  has_restart = iconz .gt. 0
 	else if( icode .eq. 5 ) then
 	  has_restart = iwvert .gt. 0
+	else if( icode .eq. 6 ) then
+	  has_restart = ieco .gt. 0
 	else
 	  has_restart = .false.
 	end if
@@ -289,15 +293,16 @@ c writes one record of restart data
         common /conzv/conzv
 
         integer ii,l,ie,k,i
-	integer ibarcl,iconz
+	integer ibarcl,iconz,ieco
         integer nvers
 
 	real getpar
 
-        nvers = 7
+        nvers = 8
 
 	ibarcl = nint(getpar('ibarcl'))
 	iconz = nint(getpar('iconz'))
+	ieco = nint(getpar('ibfm'))
 
         write(iunit) it,nvers,1
         write(iunit) nkn,nel,nlv
@@ -328,6 +333,11 @@ c writes one record of restart data
 	if( nlv .gt. 1 ) then
           write(iunit) ((wlnv(l,k),l=0,nlv),k=1,nkn)
 	end if
+
+	write(iunit) ieco
+	if( ieco .gt. 0 ) then
+	  call write_restart_eco(iunit)
+        end if
 
         end
 
@@ -403,7 +413,7 @@ c returns info on record in restart file and skips data records
 	implicit none
 
 	integer iunit,it,nvers,nrec,nkn,nel,nlv,ierr
-	integer ibarcl,iconz,iwvert
+	integer ibarcl,iconz,iwvert,ieco
 
 	read(iunit,end=2,err=3) it,nvers,nrec
         read(iunit) nkn,nel,nlv
@@ -437,6 +447,13 @@ c returns info on record in restart file and skips data records
 	    read(iunit)
 	  end if
 	end if
+
+	if( nvers .ge. 8 ) then
+          read(iunit) ieco
+          if( ieco .gt. 0 ) then
+	    call skip_restart_eco(iunit)
+          end if
+        end if
 
 	ierr = 0
 	return
@@ -489,8 +506,8 @@ c reads one record of restart data
         real conzv(nlvdim,nkndim,ncsdim)
         common /conzv/conzv
 
-	integer iokrst,nvers,ibarcl,iconz,iwvert
-	common /rstrst/ iokrst,nvers,ibarcl,iconz,iwvert
+	integer iokrst,nvers,ibarcl,iconz,iwvert,ieco
+	common /rstrst/ iokrst,nvers,ibarcl,iconz,iwvert,ieco
 	save /rstrst/
 
         integer ii,l,ie,k,i
@@ -500,6 +517,7 @@ c reads one record of restart data
         ierr = 0
 	ibarcl = 0
 	iconz = 0
+	ieco = 0
 
           read(iunit,end=97) it,nvers,nrec
           if( nvers .lt. 3 ) goto 98
@@ -543,6 +561,13 @@ c reads one record of restart data
               read(iunit) ((wlnv(l,k),l=0,nlv),k=1,nkn)
 	    end if
 	  end if
+
+	  if( nvers .ge. 8 ) then
+	    read(iunit) ieco
+            if( ieco .gt. 1 ) then
+	      call read_restart_eco(iunit)
+	    end if
+          end if
 
         return
    97   continue

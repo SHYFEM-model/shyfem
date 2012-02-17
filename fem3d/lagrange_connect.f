@@ -29,13 +29,16 @@ c continuous release from points
 	integer ip,n
 	real pps,ppts,dt
 
+	integer itmonth
+
 	integer icall
 	save icall
 	data icall / 0 /
 
 	if( icall .lt. 0 ) return
 
-	pps = 1./200.					!particles per second
+	itmonth = lagr_connect_itmonth
+	pps = lagr_connect_pps				!particles per second
 
 	if( icall .eq. 0 ) then				!initialize
 	  if( pps .le. 0. ) then
@@ -59,8 +62,9 @@ c continuous release from points
 	  call lagr_connect_released(ip,n)	!count released particles
 	end do
 
-	if( it .eq. itend ) then
+	if( mod(it,itmonth).eq.0.or.it.eq.itend ) then
 	  call lagr_connect_write(np)
+!	  call lagr_connect_init(np,iep)  
 	end if
 
 	end
@@ -150,6 +154,7 @@ c*******************************************************************
 	real tarrive
 
 	if( ie .le. 0 ) return
+	if( lagr_connect_pps .le. 0. ) return
 
 	i_connect_total(ie) = i_connect_total(ie) + ic
 	t_connect_total(ie) = t_connect_total(ie) + time
@@ -392,9 +397,15 @@ c******************************************************************
 	integer ie,ip_station
 	real r_station
 
-	ip_station = i_connect_elems(ie)
-	r_station = ip_station / float(np_station)
+	if( lagr_connect_pps .gt. 0. ) then	!connectivity active
+	  ip_station = i_connect_elems(ie)
+	  r_station = ip_station / float(np_station)
+	else
+	  ip_station = 0
+	  r_station = 0.5
+	end if
 
 	end
 
 c******************************************************************
+

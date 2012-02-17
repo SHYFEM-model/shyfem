@@ -51,3 +51,23 @@ c general interface to ecological module
 
 c**************************************************************
 
+        subroutine write_restart_eco(iunit)
+        implicit none
+	integer iunit
+	end
+        subroutine skip_restart_eco(iunit)
+        implicit none
+	integer iunit
+	integer nstate,nkn,i
+        read(iunit) nstate,nkn
+        do i=1,nstate
+          read(iunit)
+        end do
+	end
+        subroutine read_restart_eco(iunit)
+        implicit none
+	integer iunit
+	end
+
+c**************************************************************
+

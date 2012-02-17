@@ -10,6 +10,7 @@ c 11.09.2009    ggu	more checks for initial seeding (linepoint_in_element)
 c 11.03.2010    ggu	small bug fix in lagbound_seed_particles() -> init np
 c 11.03.2010    ggu	in lgr_init_line() check if at least one line is read
 c 06.10.2011    ggu	in check_elements() initialize iout, icheck (bug)
+c 16.02.2012    ggu	bug fix reading lines
 c
 c*******************************************************************
 
@@ -89,6 +90,7 @@ c manages release of particles inside polygon(s)
 	  call lagbound_seed_particles(dxy,n,x,y)
 	end do
 	call lagbound_close_file(iunit)
+	write(6,*) 'total number of lines read: ',nline
 
 	if( nline .eq. 0 ) then
 	  write(6,*) 'no line found in file'
@@ -149,136 +151,6 @@ c*******************************************************************
 c*******************************************************************
 c*******************************************************************
 
-	subroutine laggrd_read_file
-
-	implicit none
-
-	include 'param.h'
-
-c	--------------------------------------
-	integer nlidim,nlndim
-	parameter(nlidim=100,nlndim=nkndim)
-	real xbnd(nlndim), ybnd(nlndim)
-	common /xybnd/xbnd,ybnd
-	integer nline,iline
-	integer ibnd(0:nlidim)
-	common /ibnd/nline,iline,ibnd
-	save /xybnd/,/ibnd/
-c	--------------------------------------
-
-	character*80 file
-	logical bstop
-	integer nco,nkn,nel,nli
-	integer ipnv(nkndim)
-	integer ipev(neldim)
-	integer iplv(nlidim)
-	integer ianv(nkndim)
-	integer iaev(neldim)
-	integer ialv(nlidim)
-	real hnv(nkndim)
-	real hev(neldim)
-	real hlv(nlidim)
-	real xgv(nkndim),ygv(nkndim)
-	integer nen3v(3,neldim)
-	integer ipntlv(0:nlidim)
-	integer inodlv(nlndim)
-
-	integer ipaux(nkndim)
-	integer i,j,k,low,high
-
-	call getfnm('lagra',file)
-
-        call rdgrd(
-     +                   file
-     +                  ,bstop
-     +                  ,nco,nkn,nel,nli
-     +                  ,nkndim,neldim,nlidim,nlndim
-     +                  ,ipnv,ipev,iplv
-     +                  ,ianv,iaev,ialv
-     +                  ,hnv,hev,hlv
-     +                  ,xgv,ygv
-     +                  ,nen3v
-     +                  ,ipntlv,inodlv
-     +                  )
-
-	if( bstop ) goto 99
-
-	call ex2in(nkn,nel,nli,ipnv,ipaux,nen3v,inodlv,bstop)
-	if( bstop ) goto 98
-
-	nline = nli
-	ibnd(i) = 0
-	do i=1,nline
-	  ibnd(i) = ipntlv(i)
-	  low = ibnd(i-1) + 1
-	  high = ibnd(i)
-	  do j=low,high
-	    k = inodlv(j)
-	    xbnd(j) = xgv(k)
-	    ybnd(j) = ygv(k)
-	  end do
-	end do
-
-	iline = 0
-	
-	return
-   98	continue
-	stop 'error stop laggrd_read_file: error converting node numbers'
-   99	continue
-	stop 'error stop laggrd_read_file: error reading grd file'
-	end
-
-c*******************************************************************
-
-	function laggrd_read_next(ndim,n,x,y)
-
-c this routine is never used
-
-	implicit none
-
-	logical laggrd_read_next
-	integer ndim,n
-	real x(1),y(1)
-
-	include 'param.h'
-
-c	--------------------------------------
-	integer nlidim,nlndim
-	parameter(nlidim=100,nlndim=nkndim)
-	real xbnd(nlndim), ybnd(nlndim)
-	common /xybnd/xbnd,ybnd
-	integer nline,iline
-	integer ibnd(0:nlidim)
-	common /ibnd/nline,iline,ibnd
-	save /xybnd/,/ibnd/
-c	--------------------------------------
-
-	integer i,j,low,high
-
-	iline = iline + 1
-
-	low = ibnd(iline-1) + 1
-	high = ibnd(iline)
-	n = high - low + 1
-	if( n .gt. ndim ) stop 'error stop laggrd_read_next: ndim'
-
-	i = 0
-	do j=low,high
-	  i = i + 1
-	  x(i) = xbnd(j)
-	  y(i) = xbnd(j)
-	end do
-
-	if( x(1) .eq. x(n) .and. y(1) .eq. y(n) ) n = n - 1	!closed line
-
-	laggrd_read_next = .true.
-
-	end
-
-c*******************************************************************
-c*******************************************************************
-c*******************************************************************
-
 	subroutine lagbound_open_file(iunit)
 
 	implicit none
@@ -322,10 +194,10 @@ c reads polygons from file
 	integer iflag
 	real xa,ya
 
-	integer isave
+	integer isave,iline
 	real xsave,ysave
-	save isave,xsave,ysave
-	data isave /0/
+	save isave,iline,xsave,ysave
+	data isave,iline /0,0/
 
 	n = 0
 	iflag = 0
@@ -334,6 +206,7 @@ c reads polygons from file
 	if( isave .eq. -1 ) then	!EOF already encountered
 	  lagbound_read_next = .false.
 	  isave = 0			!next read would succeed
+	  iline = 0
 	  return
 	else if( isave .eq. 1 ) then	!first point already read
 	  n = 1
@@ -343,7 +216,7 @@ c reads polygons from file
 
     1	continue
 	  read(iunit,*,end=2) xa,ya,iflag
-	  if( iflag .ne. 0 .and. isave .gt. 0 ) goto 2	!not 1.point on 1.line
+	  if( iflag .ne. 0 .and. n .gt. 0 ) goto 2	!not 1.point on 1.line
 	  n = n + 1
 	  if( n .gt. ndim ) stop 'error stop lagbound_read_next: ndim'
 	  x(n) = xa
@@ -351,7 +224,7 @@ c reads polygons from file
 	  goto 1
     2	continue
 
-	if( iflag .eq. 1 ) then	!start of new line -> save for next call
+	if( iflag .ne. 0 ) then	!start of new line -> save for next call
 	  xsave = xa
 	  ysave = ya
 	  isave = 1
@@ -359,11 +232,16 @@ c reads polygons from file
 	  isave = -1
 	end if
 
-	if( n .gt. 0 ) then
+	if( n .gt. 1 ) then
 	  if( x(1) .eq. x(n) .and. y(1) .eq. y(n) ) n = n - 1	!closed line
 	end if
 
-	if( n .lt. 3 ) then
+	iline = iline + 1
+
+	if( n .gt. 0 .and. n .lt. 3 ) then
+	  write(6,*) 'line has less then 3 vertices: ',iline,n
+	  stop 'error stop lagbound_read_next: degenerated line'
+	else if( n .eq. 0 ) then
 	  lagbound_read_next = .false.
 	end if
 

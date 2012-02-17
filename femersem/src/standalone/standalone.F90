@@ -22,7 +22,7 @@
 ! !PUBLIC MEMBER FUNCTIONS:
    public envforcing_bfm,timestepping,init_standalone
    public temperature,salinity,light,lightAtTime,daylength,instLight
-   public time_manager,bfm_to_hydro,hydro_to_bfm
+   public time_manager,bfm_to_hydro,hydro_to_bfm,rst_bfm_to_hydro
 ! !PUBLIC DATA MEMBERS:
    ! Note: all read from namelist
    !---------------------------------------------
@@ -189,8 +189,8 @@
    close(namlst)
 
 ! initialize state variables from fem3d
-!   maxdelt =real(idt)
-   nboxes = 1 
+ !  maxdelt =real(idt)
+!   nboxes = 1 
 !   mindelt = 1
 !   print*,' drr',drr
    !---------------------------------------------
@@ -364,7 +364,7 @@
    real(RLEN) :: biodelta
    real(RLEN) :: wx,wy
    integer    :: l
-   real       :: tt,ss
+   real       :: tt,ss,ll
 
 !  ENVFORCING FROM HYDRO
 
@@ -406,7 +406,8 @@
     ESS = 0.
 !    ETW = temperature(dyear,dfrac)
 !    ESW = salinity(dyear,dfrac)
-    EIR = wlight*p_PAR
+!    EIR = wlight*p_PAR
+
 #ifdef DEBUG
    LEVEL2 'ETW=',ETW
    LEVEL2 'ESW=',ESW
@@ -418,6 +419,9 @@
      call get_wind(node,wx,wy)
      Wind=sqrt(wx**2+wy**2)
 
+     call get_light(node,ll)
+     EIR = ll
+	
      l = 1
      call getts(l,node,tt,ss)
      ETW = tt
@@ -430,6 +434,9 @@
 !    EIR =0
 !    EIR=wlight*p_PAR   ! to be changed 
 !   ESS=0.
+	if(ddepth(node).le.20)then  !cucco mod
+	 ddepth(node)=20
+	endif
    Depth=ddepth(node)
    Depth_ben=Depth
 !   print*,node,ETW,ESW,Wind,Depth
@@ -744,7 +751,8 @@
 
 !   LEVEL1 'timesteppingntime='
       ntime=it/idt
-!      print*,ntime,it,idt
+
+!	   print*,ntime,it,idt
       call envforcing_bfm
       call EcologyDynamics
       select case (method)
@@ -1079,7 +1087,111 @@
  
  
    end subroutine hydro_to_bfm
-!EOC
+!EOC                                  
+!-----------------------------------------------------------------------
+!BOP                                  
+!                                     
+! !IROUTINE: Providing info on variables
+!                                     
+! !INTERFACE:   
+
+
+   	subroutine rst_bfm_to_hydro(k,b1cn,nbfmv1,b2cn,nbfmv2,b2cn_a,b2cn_b,b2cn_c,b2cn_d,b3cn,nbfmv3,b3cn_a,b3cn_b,b3cn_c)
+
+
+   use mem
+   implicit  none
+
+   include '../../../fem3d/param.h'
+   include '../../../fem3d/bfm_common.h'
+   integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+   integer nlvdi,nlv
+   common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+   common /level/ nlvdi,nlv
+
+
+   integer l,k
+
+	integer nbfmv1,nbfmv2,nbfmv3
+	real b1cn(nlvdim,nkndim,nbfmv1)
+        real b2cn(nlvdim,nkndim,nbfmv2)
+        real b2cn_a(nlvdim,nkndim,nbfmv2)
+        real b2cn_b(nlvdim,nkndim,nbfmv2)
+        real b2cn_c(nlvdim,nkndim,nbfmv2)
+        real b2cn_d(nlvdim,nkndim,nbfmv2)
+
+        real b3cn(nlvdim,nkndim,nbfmv3)
+        real b3cn_a(nlvdim,nkndim,nbfmv3)
+        real b3cn_b(nlvdim,nkndim,nbfmv3)
+	real b3cn_c(nlvdim,nkndim,nbfmv3)
+   
+         do l=1,nlv
+	          b1cn(l,k,1) = 0.+ fO2o(k)
+	          b1cn(l,k,2) = 0.+ fN1p(k) 
+                  b1cn(l,k,3) = 0.+ fN3n(k) 
+                  b1cn(l,k,4) = 0.+ fN4n(k) 
+                  b1cn(l,k,5) = 0.+ fO4n(k) 
+                  b1cn(l,k,6) = 0.+ fN5s(k) 
+                  b1cn(l,k,7) = 0.+ fN6r(k) 
+                  b2cn(l,k,1) = 0.+ fB1c(k) 
+                  b2cn(l,k,2) = 0.+ fP1c(k) 
+                  b2cn(l,k,3)= 0.+ fP2c(k) 
+                  b2cn(l,k,4)= 0.+ fP3c(k) 
+                  b2cn(l,k,5)= 0.+ fP4c(k) 
+                  b2cn(l,k,6)= 0.+ fZ3c(k) 
+                  b2cn(l,k,7)= 0.+ fZ4c(k) 
+                  b2cn(l,k,8)= 0.+ fZ5c(k) 
+                  b2cn(l,k,9)= 0.+ fZ6c(k) 
+                  b3cn(l,k,1)= 0.+ fR1c(k) 
+                  b3cn(l,k,2)= 0.+ fR2c(k) 
+                  b3cn(l,k,3)= 0.+ fR6c(k) 
+                  b3cn(l,k,4)= 0.+ fR7c(k) 
+ 
+        	b2cn_a(l,k,1) = 0. + fB1n(k)
+	        b2cn_b(l,k,1) = 0. + fB1p(k)
+                b2cn_a(l,k,2) = 0. + fP1n(k)
+                b2cn_b(l,k,2) = 0. + fP1p(k)
+                b2cn_c(l,k,2) = 0. + fP1l(k)
+                b2cn_d(l,k,2) = 0. + fP1s(k)
+                b2cn_a(l,k,3) = 0. + fP2n(k)
+                b2cn_b(l,k,3) = 0. + fP2p(k)
+                b2cn_c(l,k,3) = 0. + fP2l(k)
+                b2cn_a(l,k,4) = 0. + fP3n(k)  
+                b2cn_b(l,k,4) = 0. + fP3p(k)
+                b2cn_c(l,k,4) = 0. + fP3l(k)
+                b2cn_a(l,k,5) = 0. + fP4n(k)
+                b2cn_b(l,k,5) = 0. + fP4p(k)
+                b2cn_c(l,k,5) = 0. + fP4l(k)
+                b2cn_a(l,k,6) =  0. + fZ3n(k)
+                b2cn_b(l,k,6) = 0. + fZ3p(k)
+                b2cn_a(l,k,7) =  0. + fZ4n(k)
+                b2cn_b(l,k,7) = 0. + fZ4p(k)
+                b2cn_a(l,k,8) = 0. + fZ5n(k)
+                b2cn_b(l,k,8) = 0. + fZ5p(k)
+                b2cn_a(l,k,9) = 0. + fZ6n(k) 
+                b2cn_b(l,k,9) = 0. + fZ6p(k)
+ 
+
+                b3cn_a(l,k,1) = 0. + fR1n(k)
+                b3cn_b(l,k,1) = 0. + fR1p(k)
+                b3cn_a(l,k,3) = 0. + fR6n(k)
+                b3cn_b(l,k,3) = 0. + fR6p(k)
+                b3cn_c(l,k,3) = 0. + fR6s(k) 
+ 
+                                                     
+       end do                        
+ 
+                                      
+                                      
+                                      
+   end subroutine rst_bfm_to_hydro        
+!EOC                                  
+!-----------------------------------------------------------------------
+!BOP                                  
+!                                     
+! !IROUTINE: Providing info on variables
+!                                     
+! !INTERFACE:                         
 !
    END MODULE standalone
  

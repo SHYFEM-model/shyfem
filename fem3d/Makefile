@@ -197,7 +197,9 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subbas.o subsys.o subdim.o \
 	  subapn.o subnsa.o subdum.o \
 	  subbnd.o subdts.o subdep.o \
-	  debug.o subreg.o subnev.o subrst.o
+	  debug.o subreg.o subnev.o
+
+RSTOBJS = subrst.o ecological_dummy.o
 
 BASEXTRA = subgeo.o subgrd.o subsrt.o sublnka.o links.o sublnku.o
 
@@ -490,8 +492,8 @@ laplap:   laplap.o $(OUTOBJS) $(LAPLACE)
 lapwin:   lapwin.o $(OUTOBJS) $(LAPLACE)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LAPLACE) -o $@ 
 
-rstinf:   rstinf.o $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@ 
+rstinf:   rstinf.o $(OUTOBJS) $(RSTOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(RSTOBJS) -o $@ 
 
 qflux_test:   qflux_test.o $(QFLUX_TEST)
 	$(LINKER) $(LFLAGS) $@.o $(QFLUX_TEST) -o $@ 
@@ -659,33 +661,38 @@ last:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 aquabc.o: param.h
-aquabc_fem_interface.o: param.h aquabc_aout.h aquabc.h
+aquabc_fem_interface.o: param.h aquabc_aout.h aquabc.h ev.h
 atoxi3d.o: param.h
 basbathy.o: param.h evmain.h
 baschk.o: param.h evmain.h
 bascomp.o: param.h evmain.h
-basinf.o: param.h evmain.h
+bashsigma.o: param.h evmain.h basin.h
+basinf.o: param.h evmain.h basin.h
 basproj.o: param.h basin.h
 basres.o: param.h basin.h
-bastreat.o: param.h evmain.h
+bastreat.o: param.h links.h evmain.h basin.h
+baswork.o: param.h evmain.h basin.h
 bdist.o: param.h links.h
 bedload.o: param.h evmain.h
 bio3d.o: param.h
 bio3d_util.o: param.h donata.h
+eosinf.o: param.h
 flux.o: regflux.h param.h links.h ev.h
+flxinf.o: param.h
 gotm3d.o: gotmturb.i
-grdutil.o: param.h basin.h
+grdutil.o: grd_extra.h param.h basin.h
 ht.o: param.h evmain.h
 lagrange_back.o: param.h lagrange.h
+lagrange_connect.o: param.h lagrange.h lagrange_connect.h
+lagrange_cont.o: param.h links.h lagrange.h
 lagrange_decay.o: param.h lagrange.h
 lagrange_dif.o: param.h lagrange.h
 lagrange_flux.o: param.h ev.h links.h lagrange.h
-lagrange_in.o: param.h lagrange.h
 lagrange_init.o: param.h
 lagrange_inout.o: param.h ev.h lagrange.h
 lagrange_larve.o: param.h lagrange.h
 lagrange_main.o: param.h lagrange.h
-lagrange_oil.o: param.h lagrange.h
+lagrange_oil.o: param.h ev.h lagrange.h
 lagrange_track.o: param.h lagrange.h
 lagrange_util.o: ev.h
 laplap.o: param.h evmain.h
@@ -695,6 +702,7 @@ lgrinf.o: param.h
 loading.o: param.h
 map_influence.o: param.h
 matrix49.o: regflux.h
+netcdf.o: param.h netcdf.h netcdf.inc
 new36.o: close.h
 new3di.o: testbndo.h param.h ev.h
 newbcl.o: param.h
@@ -716,7 +724,9 @@ nosaver_basin.o: param.h basin.h
 nosaver_time.o: param.h
 nosaver_vert.o: param.h basin.h
 nosdiff.o: param.h
+nosextr_cat.o: param.h
 nosextr_custom.o: param.h
+nosextr_fluxes.o: param.h
 nosextr_gis.o: param.h
 nosextr_nodes.o: param.h
 nosextr_records.o: param.h
@@ -725,8 +735,11 @@ nosinit.o: param.h
 nosmaniq.o: param.h
 nosresidence.o: param.h basin.h evmain.h
 nossplit.o: param.h
+nossum.o: param.h
 nosutil.o: ev.h
+ous2nc.o: param.h evmain.h
 ousaver.o: param.h
+ousextr_cat.o: param.h
 ousextr_gis.o: param.h
 ousextr_nodes.o: param.h
 ousextr_records.o: param.h
@@ -743,14 +756,15 @@ subbfm.o: param.h bfm_common.h
 subbndo.o: param.h subbndo.h
 subcoo.o: param.h common.h
 subcst.o: modules.h
-subcus.o: param.h
+subcus.o: param.h ev.h
 subdep.o: ev.h
 subdif.o: param.h ev.h
 subdry.o: ev.h
 subdwq.o: param.h
 subele.o: param.h ev.h
 subexta.o: modules.h
-subflxa.o: testbndo.h modules.h links.h ev.h
+subflx3d.o: testbndo.h param.h links.h ev.h
+subflxa.o: param.h modules.h links.h
 subfvl.o: param.h
 subgotm.o: param.h
 sublin.o: links.h
@@ -763,12 +777,14 @@ subn11.o: param.h
 subn35.o: param.h chezy.h
 subnetcdf_admin.o: param.h
 subnetcdf_hydro.o: netcdf.inc
-subnev.o: param.h ev.h
+subnev.o: ev.h
 subnsh.o: modules.h
 subousa.o: param.h
 subpar1.o: subpar.h
 subpard.o: param.h common.h
+subproj.o: param.h
 subqfxf.o: subqfx.h
+subqfxm4.o: subqfxm4.h
 subreg.o: ev.h
 subres.o: param.h
 subrst.o: param.h
@@ -778,6 +794,8 @@ subuti.o: param.h ev.h links.h
 subvola.o: modules.h
 subwat.o: links.h ev.h
 subwaves.o: param.h
+subwrt.o: param.h
+subwrt_deb.o: param.h
 subwwm.o: param.h evmain.h
 tideg.o: param.h
 vp.o: param.h

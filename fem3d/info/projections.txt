@@ -1,0 +1,25 @@
+
+          iproj = 3     !equidistant cylindrical (basic)
+          lon0 = 14.047
+          lat0 = 35.672
+          phi = 36.
+          c_param(1) = phi
+          c_param(2) = lon0
+          c_param(3) = lat0
+
+          iproj = 1     !gauss-boaga (Montenegro?)
+          fuse = 2
+          xtrans = 2798930.
+          ytrans = 4617760.
+          c_param(1) = fuse
+          c_param(2) = xtrans
+          c_param(3) = ytrans
+
+          iproj = 1                    !Gauss-Boaga (Laguna di Venezia)
+          fuse = 2
+          xtrans = 2280000.
+          ytrans = 5000000.
+          c_param(1) = fuse
+          c_param(2) = xtrans
+          c_param(3) = ytrans
+

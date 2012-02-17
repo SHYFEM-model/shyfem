@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 16-Feb-2012: no cast of (char) for type of element and line		*
  * 11-Aug-95: split from gridfi to make own file                        *
  * 10-Feb-95: closefile calls fclose only if file opened                *
  * 21-Oct-94: Changed introduced -> write only if file is changed       *
@@ -345,7 +346,7 @@ int ReadElem( Hashtable_type H )
 	else
 		depth = atof(t);
 
-	p = MakeElemWithIndex(number+NTotElems,(char)ntype,vertex,index);
+	p = MakeElemWithIndex(number+NTotElems,ntype,vertex,index);
 	p->depth = depth;
 	InsertByElemNumber(H,p);
 
@@ -387,7 +388,7 @@ int ReadLine( Hashtable_type H )
 		}
 	}
 
-	p = MakeLineWithIndex(number+NTotLines,(char)ntype,vertex,index);
+	p = MakeLineWithIndex(number+NTotLines,ntype,vertex,index);
 	InsertByLineNumber(H,p);
 
 	return number;

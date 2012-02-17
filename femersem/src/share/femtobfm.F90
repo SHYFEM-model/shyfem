@@ -31,13 +31,25 @@ IMPLICIT NONE
         real b3cn_b(nlvdim,nkndim,nbfmv3)
         real b3cn_c(nlvdim,nkndim,nbfmv3)
 
+! 	function x restart 
+
+	logical has_restart
+
+
+
 	integer k
 
         call init_standalone
 
-	do k =1,nkn
-	 call bfm_to_hydro(k,b1cn,nbfmv1,b2cn,nbfmv2,b2cn_a,b2cn_b,b2cn_c,b2cn_d,b3cn,nbfmv3,b3cn_a,b3cn_b,b3cn_c)
-    	end do
+	if( .not. has_restart(6) ) then
+	 do k =1,nkn
+	  call bfm_to_hydro(k,b1cn,nbfmv1,b2cn,nbfmv2,b2cn_a,b2cn_b,b2cn_c,b2cn_d,b3cn,nbfmv3,b3cn_a,b3cn_b,b3cn_c)
+    	 end do
+	else
+	 do k =1,nkn
+          call rst_bfm_to_hydro(k,b1cn,nbfmv1,b2cn,nbfmv2,b2cn_a,b2cn_b,b2cn_c,b2cn_d,b3cn,nbfmv3,b3cn_a,b3cn_b,b3cn_c)
+         end do
+	endif
 	
 	end subroutine feminit_bio
 !
@@ -95,7 +107,7 @@ IMPLICIT NONE
 
    	 call hydro_to_bfm(k,b1cn,nbfmv1,b2cn,nbfmv2,b2cn_a,b2cn_b,b2cn_c,b2cn_d,b3cn,nbfmv3,b3cn_a,b3cn_b,b3cn_c)
 
-!  	call time_manager
+!   	call time_manager
 	call timestepping
  	call bfm_to_hydro(k,b1cn,nbfmv1,b2cn,nbfmv2,b2cn_a,b2cn_b,b2cn_c,b2cn_d,b3cn,nbfmv3,b3cn_a,b3cn_b,b3cn_c)
 

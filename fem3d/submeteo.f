@@ -15,6 +15,7 @@ c 05.02.2011    ggu	changed order of records in dfile (actual is first)
 c 16.02.2011    ggu	pass idata to files, use geo info from files
 c 18.11.2011    ggu	deleted projection code from subroutines
 c 10.02.2012    ggu	limit cc and rh to acceptable range
+c 16.02.2012    ggu	new routine meteo_get_solar_radiation()
 c
 c notes :
 c
@@ -129,49 +130,6 @@ c------------------------------------------------------------------
 	  write(6,*) 'initialization of regular surface forcing'
 
 c	  ---------------------------------------------------------
-c	  initialization of geometry - please customize
-c	  ---------------------------------------------------------
-
-c	  ---------------------------------------------------------
-c	  projection to be used: 0: none  1: Gauss-Boaga  2: UTM  3: basic CPP
-c	  ---------------------------------------------------------
-
-	  iproj = 0	!no projection
-
-	  iproj = 3	!equidistant cylindrical (basic)
-          lon0 = 14.047
-          lat0 = 35.672
-          phi = 36.
-          c_param(1) = phi
-          c_param(2) = lon0
-          c_param(3) = lat0
-
-	  iproj = 1	!gauss-boaga (Montenegro?)
-	  fuse = 2
-	  xtrans = 2798930.
-	  ytrans = 4617760.
-          c_param(1) = fuse
-          c_param(2) = xtrans
-          c_param(3) = ytrans
-
-          iproj = 1                    !Gauss-Boaga (Laguna di Venezia)
-	  fuse = 2
-	  xtrans = 2280000.
-	  ytrans = 5000000.
-          c_param(1) = fuse
-          c_param(2) = xtrans
-          c_param(3) = ytrans
-
-	  ! next is done somewhere else ... test if working
-	  ! above code can be deleted
-
-	  !iproj = 0
-	  !call init_coords(iproj,c_param)
-
-	  !mode = 1	!from cartesian to lat/lon
-	  !call convert_coords(mode,nkn,xgv,ygv,xgeov,ygeov)
-
-c	  ---------------------------------------------------------
 c	  initialization of data files
 c	  ---------------------------------------------------------
 
@@ -197,7 +155,7 @@ c	  ---------------------------------------------------------
 	end if
 
 c------------------------------------------------------------------
-c end of initialization - do not change anything beyond this point
+c end of initialization
 c------------------------------------------------------------------
 
 	icall = icall + 1
@@ -558,6 +516,20 @@ c pressure is returned in [mb]
 
 	p = 0.01 * ppv(k)				!Pascal to mb
 	if( p .lt. 800. .or. p .gt. 1100. ) p = pstd	!850.0 - 1085.6 mb
+
+	end
+
+c*********************************************************************
+
+	subroutine meteo_get_solar_radiation(k,qs)
+
+        integer k                       !node number
+        real qs                         !solar radiation [W/m**2]
+
+        real metrad(1)
+	common /metrad/metrad
+
+	qs = metrad(k)
 
 	end
 

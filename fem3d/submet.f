@@ -286,3 +286,16 @@ c returns wind (wx/y), normalized stress (taux/yn) and pressure (p)
 
 c*******************************************************************
 
+	subroutine get_light(k,rad_light)
+
+c returns light intensity [W/m**2]
+
+        integer k               !node number
+        real rad_light          !watt/m**2
+
+	call meteo_get_solar_radiation(k,rad_light)
+
+        end
+
+c*******************************************************************
+

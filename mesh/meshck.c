@@ -444,6 +444,7 @@ void CheckNeibor( int id )
 	int n0=0;
 	int i,j,l;
 	int elem,n;
+	int *nb;
 	int stop=0;
 	int warn=0;
 	Elem_type *pe, *paux;
@@ -467,6 +468,8 @@ void CheckNeibor( int id )
 	    pe = RetrieveByElemNumber(HEL,j);
 	    if( pe ) {
 		elem = pe->number;
+		nb = pe->neibor;
+		/* if( nb == NULL ) continue; */
 		for(i=0;i<3;i++) {
 		    n = pe->neibor[i];
 		    if( ACTIVE_NEIBOR(n) ) {
