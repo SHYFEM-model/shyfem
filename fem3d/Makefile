@@ -173,8 +173,9 @@ HTOBJS = \
 	subrst.o subnosa.o subdif.o subreg.o \
 	atoxi3d.o atoxi.o subwwm.o kepsd.o keps_util.o \
 	subinv.o newexpl.o subrnd.o \
-	submet.o submeteo.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o \
+	submet.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o \
 	subtrace.o subproj.o subeos.o sigmautil.o \
+	submeteo.o submeteo1.o submeteo_inout.o \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ) $(PARALLEL_OBJ)
 

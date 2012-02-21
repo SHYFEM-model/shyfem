@@ -78,7 +78,7 @@ c dextra	humidity (1) and wetbulb temperature (2)
 c dws		wind speed (1)
 
 	integer ifidim
-	parameter( ifidim = 13 )
+	parameter( ifidim = 30 )
 
 	integer iheat(ifidim)
 	integer iwind(ifidim)
@@ -265,7 +265,7 @@ c interpolates files spatially
 	implicit none
 
 	integer ifidim
-	parameter( ifidim = 13 )
+	parameter( ifidim = 30 )
 
 	integer ivar		!number of actual variable to interpolate
 	integer ifile(ifidim)
@@ -348,7 +348,7 @@ c interpolates files spatially
 	implicit none
 
 	integer ifidim
-	parameter( ifidim = 13 )
+	parameter( ifidim = 30 )
 
 	real flag
 	integer ifile(ifidim)
@@ -390,7 +390,7 @@ c interpolates files spatially
 	implicit none
 
 	integer ifidim
-	parameter( ifidim = 13 )
+	parameter( ifidim = 30 )
 
 	integer mode
 	real flag

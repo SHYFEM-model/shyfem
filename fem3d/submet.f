@@ -219,6 +219,8 @@ c initializes meteo variables
 
 	if( imreg .eq. 1 ) then
 	  call meteo_regular
+	else if( imreg .eq. 2 ) then
+	  call meteo_forcing		!new framework
 	else
 	  call windad
 	  call qflux_init
@@ -244,6 +246,8 @@ c update meteo variables and admin rain/evaporation
 
 	if( imreg .eq. 1 ) then
 	  call meteo_regular
+	else if( imreg .eq. 2 ) then
+	  call meteo_forcing
 	else
 	  call windad			!wind
 	  call qflux_read(it)		!heat flux

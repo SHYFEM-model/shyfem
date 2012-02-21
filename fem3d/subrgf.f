@@ -13,7 +13,14 @@ c 18.02.2011    ggu     bug fix in rgf_check_header() -> get instead of set
 c
 c notes :
 c
+c ifidim	dimension of array (bigger than needed)
+c ifimax	elements used for integer information
+c ifi_geobase	base from where geo vars start
+c
 c structure of ifile:
+c
+c	basic variables
+
 c	  ifile(1)   iunit
 c	  ifile(2)   itold
 c	  ifile(3)   itnew
@@ -23,12 +30,27 @@ c	  ifile(6)   nx
 c	  ifile(7)   ny
 c	  ifile(8)   n (=nvar*nx*ny)
 c
-c	  ifile(9)   x0
-c	  ifile(10)  y0
-c	  ifile(11)  dx
-c	  ifile(12)  dy
-c	  ifile(13)  flag
+c	from here new variables...
+c
+c	  ifile(9)	mode (file type)
+c			 0 if mode still has to be determined
+c			 1 unformatted
+c			 2 direct
+c			 3 regular
+c			 4 time series
+c			-1 file is closed or is not existing
+c	  ifile(10)	nkn
+c
+c	at the end geo variables
+c
+c	  ifile(19)  x0			ifi_geobase = 18
+c	  ifile(20)  y0
+c	  ifile(21)  dx
+c	  ifile(22)  dy
+c	  ifile(23)  flag
 c 
+c	mode: 0 unknown  1 unformatted  2 regular  3 time series  4 direct
+c
 c in dfile are three records:
 c	1	actual timestep
 c	2	old timestep
@@ -62,8 +84,8 @@ c ifile and dfile are returned and contain all needed information
 
 	implicit none
 
-	integer ifidim
-	parameter ( ifidim = 13 )
+	integer ifidim,ifimax
+	parameter ( ifidim = 30 , ifimax = 10 )
 
 	integer it		!time for interpolation
 	character*(*) file	!name of file (only needed for first call)
@@ -167,8 +189,8 @@ c sets iunit = 0 if EOF has been found
 
 	implicit none
 
-	integer ifidim
-	parameter ( ifidim = 13 )
+	integer ifidim,ifimax
+	parameter ( ifidim = 30 , ifimax = 10 )
 
 	integer iunit
 	integer ndim
@@ -234,8 +256,8 @@ c time interpolation of regular field data
 
 	implicit none
 
-	integer ifidim
-	parameter ( ifidim = 13 )
+	integer ifidim,ifimax
+	parameter ( ifidim = 30 , ifimax = 10 )
 
 	integer it,itold,itnew
 	integer ifile(ifidim)
@@ -272,8 +294,8 @@ c copy regular field record
 
 	implicit none
 
-	integer ifidim
-	parameter ( ifidim = 13 )
+	integer ifidim,ifimax
+	parameter ( ifidim = 30 , ifimax = 10 )
 
 	integer ifile(ifidim)
 	real dsource(1)
@@ -299,8 +321,8 @@ c read complete record of regular field
 
 	implicit none
 
-	integer ifidim
-	parameter ( ifidim = 13 )
+	integer ifidim,ifimax
+	parameter ( ifidim = 30 , ifimax = 10 )
 
 	integer iunit
 	integer ndim
@@ -350,8 +372,8 @@ c reads header of regular field
 
 	implicit none
 
-	integer ifidim
-	parameter ( ifidim = 13 )
+	integer ifidim,ifimax
+	parameter ( ifidim = 30 , ifimax = 10 )
 
 	integer iunit
 	integer it
@@ -394,8 +416,8 @@ c reads data of regular field
 
 	implicit none
 
-	integer ifidim
-	parameter ( ifidim = 13 )
+	integer ifidim,ifimax
+	parameter ( ifidim = 30 , ifimax = 10 )
 
 	integer iunit
 	integer ifile(ifidim)
@@ -428,8 +450,8 @@ c sets header information
 
 	implicit none
 
-	integer ifidim
-	parameter ( ifidim = 13 )
+	integer ifidim,ifimax
+	parameter ( ifidim = 30 , ifimax = 10 )
 
 	integer ifile(ifidim)
 	integer nvar
@@ -453,8 +475,8 @@ c checks header information
 
 	implicit none
 
-	integer ifidim
-	parameter ( ifidim = 13 )
+	integer ifidim,ifimax
+	parameter ( ifidim = 30 , ifimax = 10 )
 
 	integer ifile(ifidim)
 	integer nvar
@@ -487,6 +509,8 @@ c checks header information
 	end
 
 c*********************************************************************
+c*********************************************************************
+c*********************************************************************
 
 	subroutine rgf_set_geo(ifile,x0,y0,dx,dy,flag)
 
@@ -494,16 +518,19 @@ c set geo information
 
 	implicit none
 
-	integer ifidim
-	parameter ( ifidim = 13 )
+	integer ifidim,ifimax
+	parameter ( ifidim = 30 , ifimax = 10 )
 
 	integer ifile(ifidim)
 	real x0,y0,dx,dy,flag
 
 	integer i
+	integer ifi_geobase
 	integer ia(5)
 	real ra(5)
 	equivalence(ra(1),ia(1))
+
+	ifi_geobase = 18
 
 	ra(1) = x0
 	ra(2) = y0
@@ -512,7 +539,7 @@ c set geo information
 	ra(5) = flag
 
 	do i=1,5
-	  ifile(8+i) = ia(i)
+	  ifile(ifi_geobase+i) = ia(i)
 	end do
 
 	end
@@ -525,19 +552,22 @@ c get geo information
 
 	implicit none
 
-	integer ifidim
-	parameter ( ifidim = 13 )
+	integer ifidim,ifimax
+	parameter ( ifidim = 30 , ifimax = 10 )
 
 	integer ifile(ifidim)
 	real x0,y0,dx,dy,flag
 
 	integer i
+	integer ifi_geobase
 	integer ia(5)
 	real ra(5)
 	equivalence(ra(1),ia(1))
 
+	ifi_geobase = 18
+
 	do i=1,5
-	  ia(i) = ifile(8+i)
+	  ia(i) = ifile(ifi_geobase+i)
 	end do
 
 	x0 = ra(1)
@@ -558,8 +588,8 @@ c prints info of regular field to unit nout
 
 	implicit none
 
-	integer ifidim
-	parameter ( ifidim = 13 )
+	integer ifidim,ifimax
+	parameter ( ifidim = 30 , ifimax = 10 )
 
 	integer nout
 	integer ifile(ifidim)
@@ -572,7 +602,7 @@ c prints info of regular field to unit nout
 
 	call rgf_get_geo(ifile,x0,y0,dx,dy,flag)
 
-	write(unit,*) 'rgf_info: ',(ifile(i),i=1,8)
+	write(unit,*) 'rgf_info: ',(ifile(i),i=1,ifimax)
 	write(unit,*) 'x0,y0,dx,dy,flag: ',x0,y0,dx,dy,flag
 
 	end
@@ -585,8 +615,8 @@ c prints data of regular field to unit nout
 
 	implicit none
 
-	integer ifidim
-	parameter ( ifidim = 13 )
+	integer ifidim,ifimax
+	parameter ( ifidim = 30 , ifimax = 10 )
 
 	integer nout
 	integer ifile(ifidim)
@@ -602,7 +632,7 @@ c prints data of regular field to unit nout
         n     = ifile(8)
 	call rgf_get_geo(ifile,x0,y0,dx,dy,flag)
 
-	write(unit,*) 'rgf_print: ',(ifile(i),i=1,8)
+	write(unit,*) 'rgf_print: ',(ifile(i),i=1,ifimax)
 	write(unit,*) 'x0,y0,dx,dy,flag: ',x0,y0,dx,dy,flag
 	write(unit,*) (dfile(i),i=1,n)
 
@@ -616,8 +646,8 @@ c gets value of regular field
 
 	implicit none
 
-	integer ifidim
-	parameter ( ifidim = 13 )
+	integer ifidim,ifimax
+	parameter ( ifidim = 30 , ifimax = 10 )
 
 	integer ifile(ifidim)
 	real dfile(1)
