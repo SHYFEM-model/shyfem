@@ -1,3 +1,37 @@
+version  6_1_46    24-02-2012    VERS_6_1_46
+
+========================================================== 24-02-2012 - 6_1_46
+
+c ./femplot/supdep.f:
+c 23.02.2012    ccf     bug fix in mkht (get_layer_thicknes, get_sigma_info)
+c
+c ./femplot/supint.f:
+c 23.02.2012  ccf     allow plotting also for last layer
+c
+c ./fem3d/submeteo_inout.f:
+c 23.02.2012    ggu     written from scratch
+c
+c ./fem3d/subver.f:
+c 24.02.2012	ggu	version 6.1.46
+c
+c ./fem3d/submeteo1.f:
+c 22.02.2012    ggu	new routines for regular and ts reading of meteo
+c 23.02.2012    ggu&ccf	bug fix meteo_copy_to_old and meteo_interpolate_in_time
+c
+c ./fem3d/newbcl.f:
+c 23.02.2012    ccf     do noy check depth structure
+c
+c ./fem3d/newsig.f:
+c 23.02.2012    ccf	bug fix in set_hybrid_depth (no call to get_sigma)
+c
+c ./fem3d/ht.f:
+c 23.02.2012    ggu&ccf	meteo arrays adjusted (3*nkndim)
+c
+c ./fem3d/subrgf.f:
+c 23.02.2012    ggu     new routines for time series (ts) and regular check
+
+==========================================================
+
 version  6_1_45    17-02-2012    VERS_6_1_45   commit_2012-02-24
 
 version  6_1_45    17-02-2012    VERS_6_1_45   commit_2012-02-21
