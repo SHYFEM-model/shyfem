@@ -16,10 +16,14 @@ c 16.02.2011    ggu	pass idata to files, use geo info from files
 c 18.11.2011    ggu	deleted projection code from subroutines
 c 10.02.2012    ggu	limit cc and rh to acceptable range
 c 16.02.2012    ggu	new routine meteo_get_solar_radiation()
+c 22.02.2012    ggu	new routines for regular and ts reading of meteo
+c 23.02.2012    ggu&ccf	bug fix meteo_copy_to_old and meteo_interpolate_in_time
 c
 c notes :
 c
 c info on file format can be found in subrgf.f
+c
+c to do: implement zdist for rain (constant rain)
 c
 c*********************************************************************
 
@@ -110,19 +114,19 @@ c	  initialization of data files
 c	  ---------------------------------------------------------
 
 	  val0 = 0.
-	  call meteo_init_array(3*nkn,val0,tauxnv)
-	  call meteo_init_array(3*nkn,val0,tauynv)
-	  call meteo_init_array(3*nkn,val0,wxv)
-	  call meteo_init_array(3*nkn,val0,wyv)
-	  call meteo_init_array(3*nkn,val0,ppv)
-	  call meteo_init_array(3*nkn,val0,metrad)
-	  call meteo_init_array(3*nkn,val0,mettair)
-	  call meteo_init_array(3*nkn,val0,metcc)
-	  call meteo_init_array(3*nkn,val0,methum)
-	  call meteo_init_array(3*nkn,val0,metrain)
+	  call meteo_set_array(3*nkn,val0,wxv)
+	  call meteo_set_array(3*nkn,val0,wyv)
+	  call meteo_set_array(3*nkn,val0,ppv)
+	  call meteo_set_array(3*nkn,val0,metrad)
+	  call meteo_set_array(3*nkn,val0,mettair)
+	  call meteo_set_array(3*nkn,val0,metcc)
+	  call meteo_set_array(3*nkn,val0,methum)
+	  call meteo_set_array(3*nkn,val0,metrain)
 
-	  call meteo_init_array(nkn,val0,metwbt)
-	  call meteo_init_array(nkn,val0,metws)
+	  call meteo_set_array(nkn,val0,tauxnv)
+	  call meteo_set_array(nkn,val0,tauynv)
+	  call meteo_set_array(nkn,val0,metwbt)
+	  call meteo_set_array(nkn,val0,metws)
 
 	  call getfnm('qflux',heatfile)
 	  call getfnm('wind',windfile)
@@ -221,7 +225,7 @@ c*********************************************************************
 	integer ifile(1)
 	integer it
 
-	call meteo_init_file(file,ifile)
+	call meteo_init_file(file,ifile,1)
 	call meteo_rain_next_record(ifile)	!read first record
 	call meteo_rain_copy(ifile)
 	call meteo_rain_admin(ifile,it)
@@ -284,16 +288,36 @@ c*********************************************************************
 
 	integer mode,iunit,ne,it,ierr,ip
 	logical meteo_is_open
+	logical bdata
+	real data(9)
 
 	if( .not. meteo_is_open(ifile) ) return
 
-	mode = ifile(9)
-	if( mode .ne. 1 ) goto 99
-
+	ierr = 0
 	iunit = ifile(1)
+	mode = ifile(9)
 	ne = ifile(10)
 	ip = 2*ne+1
-	call read_rain_unformatted(iunit,it,ne,metrain(ip),ierr)
+
+	if( mode .eq. 1 ) then
+	  call read_rain_unformatted(iunit,it,ne,metrain(ip),ierr)
+	else if( mode .eq. 3 ) then
+	  call rgf_read(iunit,nmtdim,it,ifile,mdata,bdata)
+	  if( bdata ) then
+	    call meteo_fem_interpolate(1,ifile,mdata,metrain(ip))
+	  else
+	    ierr = -1
+	  end if
+	else if( mode .eq. 4 ) then
+	  call ts_read(it,ifile,data,bdata)
+	  if( bdata ) then
+	    call meteo_set_array(ne,data(1),metrain(ip))
+	  else
+	    ierr = -1
+	  end if
+	else
+	  goto 99
+	end if
 
 	if( ierr .lt. 0 ) then		!EOF -> close file
 	  call meteo_close_file(ifile)
@@ -305,7 +329,8 @@ c*********************************************************************
 
 	return
    99	continue
-	stop 'error stop meteo_rain_next_record: only unformatted now...'
+	write(6,*) 'mode = ',mode
+	stop 'error stop meteo_rain_next_record: mode not supported...'
 	end
 
 c*********************************************************************
@@ -339,7 +364,7 @@ c*********************************************************************
 	integer ifile(1)
 	integer it
 
-	call meteo_init_file(file,ifile)
+	call meteo_init_file(file,ifile,5)
 	call meteo_heat_next_record(ifile)	!read first record
 	call meteo_heat_copy(ifile)
 	call meteo_heat_admin(ifile,it)
@@ -405,17 +430,43 @@ c*********************************************************************
 
 	integer mode,iunit,ne,it,ierr,ip
 	logical meteo_is_open
+	logical bdata
+	real data(9)
 
 	if( .not. meteo_is_open(ifile) ) return
 
-	mode = ifile(9)
-	if( mode .ne. 1 ) goto 99
-
+	ierr = 0
 	iunit = ifile(1)
+	mode = ifile(9)
 	ne = ifile(10)
 	ip = 2*ne+1
-	call read_heat_unformatted(iunit,it,ne
+
+	if( mode .eq. 1 ) then
+	  call read_heat_unformatted(iunit,it,ne
      +		,metrad(ip),mettair(ip),methum(ip),metcc(ip),ierr)
+	else if( mode .eq. 3 ) then
+	  call rgf_read(iunit,nmtdim,it,ifile,mdata,bdata)
+	  if( bdata ) then
+	    call meteo_fem_interpolate(1,ifile,mdata,metrad(ip))
+	    call meteo_fem_interpolate(2,ifile,mdata,mettair(ip))
+	    call meteo_fem_interpolate(3,ifile,mdata,methum(ip))
+	    call meteo_fem_interpolate(4,ifile,mdata,metcc(ip))
+	  else
+	    ierr = -1
+	  end if
+	else if( mode .eq. 4 ) then
+	  call ts_read(it,ifile,data,bdata)
+	  if( bdata ) then
+	    call meteo_set_array(ne,data(1),metrad(ip))
+	    call meteo_set_array(ne,data(2),mettair(ip))
+	    call meteo_set_array(ne,data(3),methum(ip))
+	    call meteo_set_array(ne,data(3),metcc(ip))
+	  else
+	    ierr = -1
+	  end if
+	else
+	  goto 99
+	end if
 
 	if( ierr .lt. 0 ) then		!EOF -> close file
 	  call meteo_close_file(ifile)
@@ -427,7 +478,8 @@ c*********************************************************************
 
 	return
    99	continue
-	stop 'error stop meteo_heat_next_record: only unformatted now...'
+	write(6,*) 'mode = ',mode
+	stop 'error stop meteo_heat_next_record: mode not supported...'
 	end
 
 c*********************************************************************
@@ -464,7 +516,7 @@ c*********************************************************************
 	integer ifile(1)
 	integer it
 
-	call meteo_init_file(file,ifile)
+	call meteo_init_file(file,ifile,2)
 	call meteo_wind_next_record(ifile)	!read first record
 	call meteo_wind_copy(ifile)
 	call meteo_wind_admin(ifile,it)
@@ -529,17 +581,41 @@ c*********************************************************************
 
 	integer mode,iunit,ne,it,ierr,ip
 	logical meteo_is_open
+	logical bdata
+	real data(9)
 
 	if( .not. meteo_is_open(ifile) ) return
 
-	mode = ifile(9)
-	if( mode .ne. 1 ) goto 99
-
+	ierr = 0
 	iunit = ifile(1)
+	mode = ifile(9)
 	ne = ifile(10)
 	ip = 2*ne+1
-	call read_wind_unformatted(iunit,it,ne
+
+	if( mode .eq. 1 ) then
+	  call read_wind_unformatted(iunit,it,ne
      +		,wxv(ip),wyv(ip),ppv(ip),ierr)
+	else if( mode .eq. 3 ) then
+	  call rgf_read(iunit,nmtdim,it,ifile,mdata,bdata)
+	  if( bdata ) then
+	    call meteo_fem_interpolate(1,ifile,mdata,wxv(ip))
+	    call meteo_fem_interpolate(2,ifile,mdata,wyv(ip))
+	    call meteo_fem_interpolate(3,ifile,mdata,ppv(ip))
+	  else
+	    ierr = -1
+	  end if
+	else if( mode .eq. 4 ) then
+	  call ts_read(it,ifile,data,bdata)
+	  if( bdata ) then
+	    call meteo_set_array(ne,data(1),wxv(ip))
+	    call meteo_set_array(ne,data(2),wyv(ip))
+	    call meteo_set_array(ne,data(3),ppv(ip))
+	  else
+	    ierr = -1
+	  end if
+	else
+	  goto 99
+	end if
 
 	if( ierr .lt. 0 ) then		!EOF -> close file
 	  call meteo_close_file(ifile)
@@ -551,7 +627,8 @@ c*********************************************************************
 
 	return
    99	continue
-	stop 'error stop meteo_wind_next_record: only unformatted now...'
+	write(6,*) 'mode = ',mode
+	stop 'error stop meteo_wind_next_record: mode not supported...'
 	end
 
 c*********************************************************************
@@ -611,31 +688,48 @@ c*********************************************************************
 
 c*********************************************************************
 
-	subroutine meteo_init_file(file,ifile)
+	subroutine meteo_init_file(file,ifile,nvar)
 
 	implicit none
 
 	character*(*) file
 	integer ifile(1)
 	integer it
+	integer nvar		!expected variables (only needed for timeseries)
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
-	integer iunit
+	integer iunit,mode
 	integer ifileo
+	logical is_meteo_unformatted
+	logical is_meteo_regular
+	logical is_meteo_ts
 
 	ifile(9) = -1
 	if( file .eq. ' ' ) return
 
-	iunit = ifileo(0,file,'unform','old')
+	if( is_meteo_unformatted(file,0) ) then
+	  iunit = ifileo(0,file,'unform','old')
+	  mode = 1
+	else if( is_meteo_regular(file,0) ) then
+	  iunit = ifileo(0,file,'form','old')
+	  mode = 3
+	else if( is_meteo_ts(file,nvar) ) then
+	  iunit = ifileo(0,file,'form','old')
+	  mode = 4
+	else
+	  stop 'error stop meteo_init_file: not a known format'
+	end if
+
 	if( iunit .le. 0 ) goto 99
 
 	ifile(1) = iunit
-	ifile(9) = 1		!unformatted read
+	ifile(5) = nvar		!works only for ts
+	ifile(9) = mode
 	ifile(10) = nkn
 
-	write(6,*) 'meteo file opened: ',file
+	write(6,*) 'meteo file opened: ',mode,file
 
 	return
    99	continue
@@ -658,7 +752,7 @@ c*********************************************************************
 	ifile(2) = ifile(3)
 
 	do i=1,n
-	  array(2,i)=array(3,i)
+	  array(i,2)=array(i,3)
 	end do
 
 	end
@@ -689,7 +783,7 @@ c*********************************************************************
 	end if
 
 	do i=1,n
-	  array(1,i)=rit*(array(3,i)-array(2,i))+array(2,i)
+	  array(i,1)=rit*(array(i,3)-array(i,2))+array(i,2)
 	end do
 
 	ifile(4) = itact
@@ -700,7 +794,7 @@ c*********************************************************************
 c*********************************************************************
 c*********************************************************************
 
-	subroutine meteo_init_array0(n,val0,array)
+	subroutine meteo_set_array(n,val0,array)
 
 c initializes 2D array
 

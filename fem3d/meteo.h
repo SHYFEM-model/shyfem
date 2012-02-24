@@ -1,4 +1,9 @@
 
+	integer nmtdim			!size of meteo regular data
+	parameter (nmtdim = 10000)
+
+	real mdata(nmtdim)
+
         real wxv(1),wyv(1)
         common /wxv/wxv,/wyv/wyv
         real ppv(1)

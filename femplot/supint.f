@@ -14,6 +14,7 @@ c 06.12.2008  ggu     in extlev set not-existing values to flag
 c 14.09.2009  ggu     new way to determine if section plot in getisec()
 c 18.08.2011  ggu     make vsect bigger
 c 31.08.2011  ggu     new plotting eos
+c 23.02.2012  ccf     allow plotting also for last layer
 c
 c**********************************************************
 c**********************************************************
@@ -305,7 +306,7 @@ c extract level from 3d array
 	real p3(nlvdim,n)	!3d array
 	real p2(n)		!2d array filled on return
 
-	integer i
+	integer i,lmax,lact
         real flag
 
 	if( level .gt. nlvdim ) then
@@ -315,12 +316,19 @@ c extract level from 3d array
 
         call get_flag(flag)
 
-	if( level .le. 0 ) then
+        if( level .lt. -1 ) then
+	  stop 'error stop extlev: internal error (1)'
+	end if
+
+	if( level .eq. 0 ) then
 	  call intlev(nlvdim,n,ilv,p3,p2)		!integrate
 	else
 	  do i=1,n
+	    lmax = ilv(i)
+	    lact = level
+	    if( lact .eq. -1 ) lact = lmax
 	    p2(i) = flag
-            if( level .le. ilv(i) ) p2(i) = p3(level,i)
+            if( lact .le. ilv(i) ) p2(i) = p3(lact,i)
 	  end do
 	end if
 

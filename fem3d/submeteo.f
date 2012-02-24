@@ -258,6 +258,27 @@ c------------------------------------------------------------------
 
 c*********************************************************************
 
+	subroutine meteo_fem_interpolate(ivar,ifile,dfile,valfem)
+
+	implicit none
+
+	integer ivar
+	integer ifile(1)
+	real dfile(1)
+	real valfem(1)
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	real xgeov(1), ygeov(1)
+	common /xgeov/xgeov, /ygeov/ygeov
+
+	call meteo_intp(ivar,ifile,dfile,nkn,xgeov,ygeov,valfem)
+
+	end
+
+c*********************************************************************
+
 	subroutine meteo_intp(ivar,ifile,dfile,nkn,xv,yv,valfem)
 
 c interpolates files spatially

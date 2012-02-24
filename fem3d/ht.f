@@ -82,6 +82,7 @@ c 20.05.2011    ggu	iwetv introduced, wet and dry from main
 c 25.10.2011    ggu	hlhv eliminated
 c 18.11.2011    ggu	new routine handle_projection
 c 24.01.2012    ggu	new call to setup_parallel()
+c 23.02.2012    ggu&ccf	meteo arrays adjusted (3*nkndim)
 c
 c*****************************************************************
 
@@ -293,22 +294,32 @@ c special boundary arrays
 
 c meteo (wind and pressure)
 
-	common /tauxnv/tauxnv(nkndim), /tauynv/tauynv(nkndim)
-	common /wxv/wxv(nkndim), /wyv/wyv(nkndim)
-	common /wxov/wxov(nkndim), /wyov/wyov(nkndim)
-	common /wxnv/wxnv(nkndim), /wynv/wynv(nkndim)
+c	primary arrays
 
-	common /ppv/ppv(nkndim)
-	common /pov/pov(nkndim), /pnv/pnv(nkndim)
+	real wxv(3*nkndim), wyv(3*nkndim)
+	real ppv(3*nkndim)
+	common /wxv/wxv, /wyv/wyv
+	common /ppv/ppv
 
-        real metrad(nkndim),methum(nkndim)
-        real mettair(nkndim),metcc(nkndim)
-        real metwbt(nkndim),metws(nkndim)
-        real metrain(nkndim)
+        real metrad(3*nkndim),methum(3*nkndim)
+        real mettair(3*nkndim),metcc(3*nkndim)
+        real metrain(3*nkndim)
         common /metrad/metrad, /methum/methum
         common /mettair/mettair, /metcc/metcc
-        common /metwbt/metwbt, /metws/metws
         common /metrain/metrain
+
+c	derived arrays
+
+        real metwbt(nkndim),metws(nkndim)
+        common /metwbt/metwbt, /metws/metws
+	real tauxnv(nkndim), tauynv(nkndim)
+	common /tauxnv/tauxnv, /tauynv/tauynv
+
+c	arrays to be eliminated
+
+	common /wxov/wxov(nkndim), /wyov/wyov(nkndim)
+	common /wxnv/wxnv(nkndim), /wynv/wynv(nkndim)
+	common /pov/pov(nkndim), /pnv/pnv(nkndim)
 
 c tidal potential
 

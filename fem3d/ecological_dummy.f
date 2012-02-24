@@ -54,6 +54,10 @@ c**************************************************************
         subroutine write_restart_eco(iunit)
         implicit none
 	integer iunit
+	integer nstate,nkn,i
+	nstate = 0
+	nkn = 0
+        write(iunit) nstate,nkn
 	end
         subroutine skip_restart_eco(iunit)
         implicit none
@@ -67,6 +71,7 @@ c**************************************************************
         subroutine read_restart_eco(iunit)
         implicit none
 	integer iunit
+	call skip_restart_eco(iunit)
 	end
 
 c**************************************************************

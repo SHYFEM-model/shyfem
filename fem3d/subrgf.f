@@ -10,6 +10,7 @@ c 27.03.2009    ggu     bug fix ITACT (itact was not adjourned)
 c 31.03.2009    ggu     changed header of regular files (x0,.., description)
 c 16.02.2011    ggu     completely restructured - store geo information
 c 18.02.2011    ggu     bug fix in rgf_check_header() -> get instead of set
+c 23.02.2012    ggu     new routines for time series (ts) and regular check
 c
 c notes :
 c
@@ -348,7 +349,8 @@ c------------------------------------------------------------
 	n = ifile(8)
 	if( n .gt. ndim ) then
 	  write(6,*) 'nvar,nx,ny,n:  ',(ifile(i),i=5,8)
-	  write(6,*) 'ndim,needed: ',ndim,n
+	  write(6,*) 'ndim (provided): ',ndim
+	  write(6,*) 'ndim (needed): ',n
 	  stop 'error stop rgf_read: ndim'
 	end if
 
@@ -677,4 +679,233 @@ c gets value of regular field
 	end
 
 c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+
+	function is_meteo_ts(file,nvar_expected)
+
+	implicit none
+
+	logical is_meteo_ts
+        character*(*) file
+        integer nvar_expected
+
+	integer it,nvar
+
+	call ts_test_file(file,it,nvar_expected,nvar)
+
+        if( nvar_expected .eq. 0 ) then
+          is_meteo_ts = nvar .gt. 0
+        else
+          is_meteo_ts = nvar .eq. nvar_expected
+        end if
+
+	end
+
+c*********************************************************************
+
+	subroutine ts_test_file(file,it,nvar_expected,nvar)
+
+c tests file if it is regular meteo forcing file
+
+	implicit none
+
+        character*(*) file
+        integer it,nvar_expected,nvar
+        integer ierr
+
+        integer iunit
+	integer it1,i
+	real dummy
+
+	integer ifileo
+
+	it = 0
+	nvar = 0
+
+	iunit = ifileo(0,file,'form','old')
+	if( iunit .le. 0 ) return
+
+	read(iunit,*,err=2) it,(dummy,i=1,nvar_expected)
+	read(iunit,*,err=2) it1,(dummy,i=1,nvar_expected)
+
+	if( it1 .le. it ) goto 2
+
+	nvar = 1	!we should really be able to check number of variables
+	if( nvar_expected .gt. 0 ) nvar = nvar_expected
+
+    2	continue
+	close(iunit)
+
+	end
+
+c*********************************************************************
+
+	subroutine ts_read(it,ifile,data,bdata)
+
+c reads one line of time series
+
+	implicit none
+
+        integer it
+        integer ifile(1)
+        real data(1)
+        logical bdata
+
+        integer iunit,nvar,i
+
+	it = 0
+	bdata = .false.
+
+	iunit = ifile(1)
+	nvar = ifile(5)
+
+	read(iunit,*,end=2) it,(data,i=1,nvar)
+
+	bdata = .true.
+    2	continue
+
+	end
+
+c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+
+	function is_meteo_regular(file,id_expected)
+
+	implicit none
+
+	logical is_meteo_regular
+        character*(*) file
+        integer id_expected
+
+	integer it,id,nvar,nx,ny
+
+	call rgf_test_file(file,it,id,nvar,nx,ny)
+
+        if( id_expected .eq. 0 ) then
+          is_meteo_regular = id .gt. 0
+        else
+          is_meteo_regular = id .eq. id_expected
+        end if
+
+	end
+
+c*********************************************************************
+
+	subroutine rgf_test_file(file,it,id,nvar,nx,ny)
+
+c tests file if it is regular meteo forcing file
+
+	implicit none
+
+        character*(*) file
+        integer it,id,nvar,nx,ny
+        integer ierr
+
+        integer iunit
+	integer it1,nvar1,nx1,ny1
+	integer ix,iy,ivar
+	real x0,y0,dx,dy,flag
+	real dummy
+	character*80 description
+
+	integer ifileo
+
+	id = 0
+	it = 0
+	nvar = 0
+	nx = 0
+	ny = 0
+
+	iunit = ifileo(0,file,'form','old')
+	if( iunit .le. 0 ) return
+
+	read(iunit,*,err=2) it,nvar,nx,ny,x0,y0,dx,dy,flag
+
+	if( nvar .lt. 1 .or. nvar .gt. 4 ) goto 2
+	if( nx .lt. 1 .or. nx .gt. 10000 ) goto 2
+	if( ny .lt. 1 .or. ny .gt. 10000 ) goto 2
+
+	do ivar=1,nvar
+	  read(iunit,'(a)',err=2) description
+	  read(iunit,*,err=2) ((dummy,ix=1,nx),iy=1,ny)
+	end do
+
+	read(iunit,*,err=2) it1,nvar1,nx1,ny1,x0,y0,dx,dy,flag
+
+	if( nvar .ne. nvar1 ) goto 2
+	if( nx .ne. nx1 ) goto 2
+	if( ny .ne. ny1 ) goto 2
+	if( it1 .le. it ) goto 2
+
+	id = 2000	!this is the regular version
+
+    2	continue
+	close(iunit)
+
+	end
+
+c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+
+	subroutine test_regular
+
+        implicit none
+
+        integer ndim
+        parameter (ndim=10000)
+
+	integer ifidim,ifimax
+	parameter ( ifidim = 30 , ifimax = 10 )
+
+        character*80 file
+        integer iunit,irec,ierr,it,id
+        integer n,nvar,i,nx,ny
+        real data(ndim)
+	integer ifile(ifidim)
+	logical bdata
+	logical is_meteo_regular
+
+        irec = 0
+        iunit = 1
+        file = 'meteodat.win'
+        file = 'wind.win'
+        file = 'heat_skadar_20all.tmp'
+
+	do i=1,ifidim
+	  ifile(i) = 0
+	end do
+
+	if( is_meteo_regular(file,0) ) then
+	  write(6,*) 'file is regular meteo forcing'
+	else
+	  write(6,*) 'file is not regular meteo forcing'
+	end if
+
+	call rgf_test_file(file,it,id,nvar,nx,ny)
+        write(6,*) 'file info: ',it,id,nvar,nx,ny
+        if( id .eq. 0 ) stop
+
+        open(iunit,file=file,form='formatted',status='old')
+
+        do while(.true.)
+          n = 0
+	  call rgf_read(iunit,ndim,it,ifile,data,bdata)
+          if( .not. bdata ) goto 1
+          irec = irec + 1
+          write(6,*) irec,it
+        end do
+
+    1   continue
+	close(iunit)
+
+        end
+
+c***************************************************************
+c       program test_regular_main
+c       call test_regular
+c       end
+c***************************************************************
 

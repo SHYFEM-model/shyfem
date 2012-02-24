@@ -292,7 +292,7 @@ c advection of particles
 	  if( tmax .lt. 0. ) stop 'error stop drogue: internal error'
 	  ttime = min(tmax,dt)
 
-          !if( z .lt. 1. ) call track_body(id,x,y,ie,ttime) 
+          !if( z .lt. 1. ) call track_body(i,id,x,y,ie,ttime) 
           if( z .le. 1. ) call track_body(i,id,x,y,ie,ttime) 
 
 	  x_body(i)=x

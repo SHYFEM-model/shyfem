@@ -87,3 +87,31 @@ to .false.
 
 If you continue to have problems, just send me the offending file and
 I will have a look at it.
+
+
+Is there any windows version of SHYFEM Software?
+
+There is no native windos version of SHYFEM. However, with the help
+of cygwin you can install an environment that is close to a Linux
+environment, and under which you will be able to run SHYFEM. Please go
+toe the web site http://www.cygwin.com/ and copy the program setup.exe
+to your computer. Than run this program which will install the cygwin
+environment on your computer.
+
+
+I have installed cygwin in my computer.  When I try to run the command
+"make fem".  It shows me "-bash: make: command not found". What is the
+solution to this problem?
+
+cygwin only provides basic functionality to run Linux programs. With
+the basic install it does not provide all programs that are needed
+to run SHYFEM. Therefore, some more programs have to be installed
+additionally. With cygwin it is easy. Just run the same program you used
+to install cygwin one more time. At a certain point you will get to the
+page where you can install/uninstall/upgrade programs. Here you spcify
+the programs that you need.
+
+To find out what programs you will need, please go to femcheck and run
+the script check_setup.sh. This will tell you what are programs are
+installed and what programs you still might to have to instal.
+

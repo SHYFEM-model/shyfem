@@ -20,6 +20,7 @@ c 13.10.2009    ggu     new routine mkht3
 c 17.12.2010    ggu     substituted hv with hkv, new routine hlthick()
 c 30.03.2011    ggu     new routine mkareafvl()
 c 14.11.2011    ggu     use get_layer_thickness() for layer structure
+c 23.02.2012    ccf     bug fix in mkht (get_layer_thicknes, get_sigma_info)
 c
 c******************************************************************
 
@@ -121,6 +122,8 @@ c local
 	integer ie,ii
 	integer level,lmax
 	real z,h
+	integer nsigma,nlvaux
+	real hsigma
 c functions
 	integer getlev
 	real hlthick
@@ -134,6 +137,7 @@ c-------------------------------------------------------------------
 	bzeta = .true.
 
 	level = getlev()
+        call get_sigma_info(nlvaux,nsigma,hsigma)
 
 c-------------------------------------------------------------------
 c handle different kind of levels
@@ -141,7 +145,7 @@ c-------------------------------------------------------------------
 
 	do ie=1,nel
 	  lmax = ilhv(ie)
-	  call get_layer_thickness(ie,lmax,bzeta,hl)
+	  call get_layer_thickness(ie,lmax,bzeta,nsigma,hsigma,hl)
 	  hetv(ie) = hlthick(level,lmax,hl)
 	end do
 

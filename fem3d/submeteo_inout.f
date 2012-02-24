@@ -1,4 +1,12 @@
-
+c
+c $Id: submeteo_inout.f$
+c
+c handle meteo files (unformatted)
+c
+c revision log :
+c
+c 23.02.2012    ggu     written from scratch
+c
 c***************************************************************
 c***************************************************************
 c***************************************************************
@@ -202,6 +210,28 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
+	function is_meteo_unformatted(file,id_expected)
+
+	implicit none
+
+	logical is_meteo_unformatted
+	character*(*) file
+	integer id_expected
+
+	integer it,id,n,nvar
+
+	call test_meteo_unformatted(file,it,id,n,nvar)
+
+	if( id_expected .eq. 0 ) then
+	  is_meteo_unformatted = id .gt. 0
+	else
+	  is_meteo_unformatted = id .eq. id_expected
+	end if
+
+	end
+
+c***************************************************************
+
 	subroutine test_meteo_unformatted(file,it,id,n,nvar)
 
 	implicit none
@@ -211,8 +241,10 @@ c***************************************************************
 	integer ierr
 
 	integer iunit
+	integer ifileo
 
-	open(iunit,file=file,form='unformatted',status='old')
+        iunit = ifileo(0,file,'unform','old')
+        if( iunit .le. 0 ) return
 
 	it = 0
 	id = 0
@@ -220,12 +252,12 @@ c***************************************************************
 	nvar = 0
 
 	read(iunit,iostat=ierr) it,id,n,nvar
-	if( ierr .lt. 0 ) goto 1	!EOF
+	if( ierr .lt. 0 ) goto 2	!EOF
 
 	if( ierr .gt. 0 ) then
 	  backspace(iunit)
 	  read(iunit,iostat=ierr) it,n		!old wind read
-	  if( ierr .ne. 0 ) goto 1
+	  if( ierr .ne. 0 ) goto 2
 	  id = 1001
 	  nvar = 2
 	  if( n .lt. 0 ) then
@@ -234,7 +266,7 @@ c***************************************************************
 	  end if
 	end if
 
-    1	continue
+    2	continue
 	close(iunit)
 
 	end

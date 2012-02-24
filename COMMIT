@@ -1,5 +1,30 @@
 ============================================================
 
+Fri Feb 24 17:38:46 CET 2012
+
+new meteo framework
+
+ BUG                      |   12 +++
+ FAQ                      |   28 ++++++
+ RELEASE_NOTES            |    4 +
+ Rules.make               |    2 +-
+ fem3d/ecological_dummy.f |    5 +
+ fem3d/ht.f               |   33 +++++--
+ fem3d/lagrange_main.f    |    2 +-
+ fem3d/meteo.h            |    5 +
+ fem3d/newbcl.f           |   11 +-
+ fem3d/newsig.f           |    3 +-
+ fem3d/submeteo.f         |   21 ++++
+ fem3d/submeteo1.f        |  172 ++++++++++++++++++++++++++--------
+ fem3d/submeteo_inout.f   |   42 +++++++-
+ fem3d/subrgf.f           |  233 +++++++++++++++++++++++++++++++++++++++++++++-
+ fembin/logo/logo.jpg     |  Bin 0 -> 3970 bytes
+ femplot/supdep.f         |    6 +-
+ femplot/supint.f         |   14 ++-
+ 17 files changed, 525 insertions(+), 68 deletions(-)
+
+============================================================
+
 Tue Feb 21 11:22:20 CET 2012
 
 new framework for meteo forcing

@@ -12,6 +12,7 @@ c 11.11.2011    ggu     in check_hsigma_crossing set zeta levels to const depth
 c 18.11.2011    ggu     restructured hybrid - adjustment to bashsigma
 c 12.12.2011    ggu     eliminated (stupid) compiler bug (getpar)
 c 27.01.2012    deb&ggu adapted for hybrid levels
+c 23.02.2012    ccf	bug fix in set_hybrid_depth (no call to get_sigma)
 c
 c notes :
 c
@@ -318,7 +319,7 @@ c sets depth structure and passes it back in hlfem
 	integer l,i
 	real hsig
 
-        call get_sigma(nsigma,hsigma)
+        !call get_sigma(nsigma,hsigma)		!ccf
 	bsigma = nsigma .gt. 0
 
 	if( nsigma .gt. 0 ) then

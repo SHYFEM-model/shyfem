@@ -1,4 +1,16 @@
 
+BUG_2010_46     ggu	6.1.46   23.02.2012
+	fixes for hybrid (newbcl.f, newsig.f)
+
+BUG_2010_45     ggu	6.1.46   23.02.2012
+	fixes for plotting (supdep.f)
+
+BUG_2010_44     ggu	6.1.45   17.02.2012
+	no cast of (char) for type of element and line (meshgd.c)
+
+BUG_2010_43     ggu	6.1.45   17.02.2012
+	bug fix reading lines (lagrange_init.f)
+
 BUG_2010_42     ggu	6.1.44   14.02.2012
 	bug fix in call to ts_next_record (newbcl.f)
 

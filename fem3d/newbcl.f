@@ -56,6 +56,7 @@ c 22.11.2011    ggu     bug fix in ts_file_open() -> bhashl
 c 02.12.2011    ggu     adapt ts_file_open() for barotropic version (ihashl)
 c 27.01.2012    deb&ggu changes for hybrid in ts_file_open,ts_next_record
 c 10.02.2012    ggu     bug in call to ts_next_record (called with nlvdim)
+c 23.02.2012    ccf     do noy check depth structure
 c
 c*****************************************************************
 
@@ -939,11 +940,11 @@ c-------------------------------------------------------------
 c if level structure is available, check if compatible
 c-------------------------------------------------------------
 
-	if( bhashl ) then
-	  do l=1,lmax
-	    if( hl(l) .ne. hlv(l) ) goto 96
-	  end do
-	end if
+	!if( bhashl ) then
+	!  do l=1,lmax
+	!    if( hl(l) .ne. hlv(l) ) goto 96
+	!  end do
+	!end if
 
 c-------------------------------------------------------------
 c open finally and store info
