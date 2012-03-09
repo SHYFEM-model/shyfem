@@ -1,3 +1,39 @@
+version  6_1_47    09-03-2012    VERS_6_1_47
+
+========================================================== 09-03-2012 - 6_1_47
+
+c ./fem3d/bio3d_util.f:
+c 09.03.2012    ggu     bug fix: ilhkv was real
+c
+c ./fem3d/vp.f:
+c 09.03.2012    ggu     delete useless error messages, handle nkn/nel better
+c
+c ./fem3d/subver.f:
+c 09.03.2012	ggu	version 6.1.47
+c
+c ./fem3d/ousextr_nodes.f:
+c 09.03.2012    ggu     bug: zenv must be common
+c
+c ./fem3d/lagrange_track.f:
+c 02.03.2012    ggu&fra introduced epsggu to avoid nan in time
+c
+c ./fem3d/newbcl.f:
+c 09.03.2012    deb     bug fix in ts_next_record: ilhkv was real
+c
+c ./fem3d/subgrd.f:
+c 09.03.2012    ggu     handle dimension error more gracefully
+c
+c ./fem3d/ht.f:
+c 09.03.2012    ggu	call to residence time added
+c
+c ./fem3d/subwrt.f:
+c 28.02.2012	ggu&deb	completely restructured
+c
+c ./fem3d/subcus.f:
+c 09.03.2012	ggu	no call to jamal anymore
+
+==========================================================
+
 version  6_1_46    24-02-2012    VERS_6_1_46   commit_2012-03-09
 
 version  6_1_46    24-02-2012    VERS_6_1_46
