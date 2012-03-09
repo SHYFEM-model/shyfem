@@ -176,6 +176,7 @@ HTOBJS = \
 	submet.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o \
 	subtrace.o subproj.o subeos.o sigmautil.o \
 	submeteo.o submeteo1.o submeteo_inout.o \
+	subwrt.o \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ) $(PARALLEL_OBJ)
 
@@ -536,6 +537,12 @@ depend:
 
 #---------------------------------------------------
 
+options:
+	@echo "compiler  $(COMPILER) $(F77)"
+	@echo "solver    $(SOLVER)"
+
+#---------------------------------------------------
+
 clean: cleanobj cleanexe cleanvar cleantex cleanlahey cleanexport cleandoc \
 	cleanifc cleanlinks
 
@@ -796,7 +803,6 @@ subvola.o: modules.h
 subwat.o: links.h ev.h
 subwaves.o: param.h
 subwrt.o: param.h
-subwrt_deb.o: param.h
 subwwm.o: param.h evmain.h
 tideg.o: param.h
 vp.o: param.h

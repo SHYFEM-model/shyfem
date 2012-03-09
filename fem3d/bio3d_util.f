@@ -7,6 +7,7 @@ c revision log :
 c
 c 18.04.2008    ggu     copied from weutro_sedim.f
 c 09.10.2008    ggu     new call to confop
+c 09.03.2012    ggu     bug fix: ilhkv was real
 c
 c********************************************************************
 
@@ -280,7 +281,7 @@ c sets up sediment loading
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real ilhkv(1)
+	integer ilhkv(1)
 	common /ilhkv/ilhkv
 
         integer mode,i,k,l,lmax

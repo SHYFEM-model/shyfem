@@ -58,6 +58,7 @@ c 09.10.2001    ggu     read node type (ianv)
 c 18.10.2005    ggu     error messages slightly changed
 c 22.04.2009    ggu     changes from spline integrated (read lines)
 c 24.04.2009    ggu     newly restructured
+c 09.03.2012    ggu     handle dimension error more gracefully
 c
 c**********************************************************
 
@@ -258,7 +259,14 @@ c reads nodes from .grd file
 
         nkn=nkn+1
 	if( .not. bread ) return
-	if(bread .and. nkn.gt.nkndim) goto 99
+	if(bread .and. nkn.gt.nkndim) then
+	  bread = .false.
+	  bstop = .true.
+	  if( nkn .eq. nkndim+1 ) then		!just one time
+	    write(ner,*) 'dimension of nkndim too low: ',nkndim
+	  end if
+	end if
+	if( .not. bread ) return
 
         ipnv(nkn)=nint(f(2))
         ianv(nkn)=nint(f(3))
@@ -301,8 +309,9 @@ c reads elements from .grd file
 	real hev(neldim)
 
 	logical bread
-	integer ner
+	integer ner,ii
         real f(4)
+	integer ilist(10)
 	integer inum,itype,ianz
 	integer ivert,nvert,istart
 	real depth
@@ -316,7 +325,14 @@ c reads elements from .grd file
 	call grd_vals(4,f)
 
         nel=nel+1
-	if(bread .and. nel.gt.neldim) goto 99
+	if(bread .and. nel.gt.neldim) then
+	  bread = .false.
+	  bstop = .true.
+	  if( nel .eq. neldim+1 ) then		!just one time
+	    write(ner,*) 'dimension of neldim too low: ',neldim
+	  end if
+	end if
+
         inum=nint(f(2))
         itype=nint(f(3))
         nvert=nint(f(4))
@@ -327,7 +343,7 @@ c reads elements from .grd file
         ivert=nvert
 	if( .not. bread ) ivert = -ivert
 
-	call read_node_list(ivert,istart,nen3v(1,nel),depth)
+	call read_node_list(ivert,istart,ilist,depth)
 
 	if(ivert.lt.nvert) goto 86
 
@@ -335,6 +351,9 @@ c reads elements from .grd file
           ipev(nel) = inum
           iaev(nel) = itype
 	  hev(nel)  = depth
+	  do ii=1,3
+	    nen3v(ii,nel) = ilist(ii)
+	  end do
 	end if
 
 	return

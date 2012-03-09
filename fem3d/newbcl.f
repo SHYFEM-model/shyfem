@@ -1,4 +1,4 @@
-c $Id: newbcl.f,v 1.37 2010-03-08 17:46:45 georg Exp $
+c dd: newbcl.f,v 1.37 2010-03-08 17:46:45 georg Exp $
 c
 c baroclinic routines
 c
@@ -57,6 +57,7 @@ c 02.12.2011    ggu     adapt ts_file_open() for barotropic version (ihashl)
 c 27.01.2012    deb&ggu changes for hybrid in ts_file_open,ts_next_record
 c 10.02.2012    ggu     bug in call to ts_next_record (called with nlvdim)
 c 23.02.2012    ccf     do noy check depth structure
+c 09.03.2012    deb     bug fix in ts_next_record: ilhkv was real
 c
 c*****************************************************************
 
@@ -1006,7 +1007,7 @@ c*******************************************************************
 	integer nlv
 	real value(nlvdim,1)
 
-	real ilhkv(1)
+	integer ilhkv(1)
 	common /ilhkv/ilhkv
 	real hlv(1)
 	common /hlv/hlv

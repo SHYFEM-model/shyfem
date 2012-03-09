@@ -1,24 +1,13 @@
 
 #------------------------------------------------------------
-# This file defines various libraries to be used
-# during compilation. Defaults are usually ok.
+# This file defines various parameters to be used
+# during compilation. Please customize the first part
+# of this file to your needs.
 #------------------------------------------------------------
 
 ##############################################
-# DEFINE VERSION
+# User defined parameters and flags
 ##############################################
-
-RULES_MAKE_VERSION = 1.0
-
-##############################################
-# DEFINE DIRECTORIES
-##############################################
-
-DEFDIR  = $(HOME)
-FEMDIR  = ..
-DIRLIB  = $(FEMDIR)/femlib
-
-LIBX = -L/usr/X11R6/lib -L/usr/X11/lib -L/usr/lib/X11  -lX11
 
 ##############################################
 # Parameters
@@ -31,10 +20,20 @@ LIBX = -L/usr/X11R6/lib -L/usr/X11/lib -L/usr/lib/X11  -lX11
 # also set all the other parameters. Please see
 # param.h for more details.
 #
+# NKNDIM	total number of nodes in domain
+# NELDIM	total number of elements in domain
+# NGRDIM	maximum number of elements attached to one vertex (node)
+# MBWDIM	dimension of bandwidth for system matrix (see output from vpgrd)
+# NLVDIM	total number of vertical layers for application (1 for 2D)
+# NBDYDIM	maximum number of particles for lagrangian model
+#
+# N.B.: the parameters set here may be bigger than the actual application
+#
 ##############################################
 
 export MBWDIM = 300
 export NGRDIM = 12
+export NLVDIM = 1
 
 #-----------------------
 
@@ -143,12 +142,27 @@ export MBWDIM = 295
 #export NGRDIM = 10
 #export NBDYDIM = 200000
 
+# taranto
+export NKNDIM = 4452
+export NELDIM = 8059
+export NLVDIM = 1
+export NGRDIM = 8
+export MBWDIM = 77
+export NLVDIM = 20
+
 ##############################################
 # Compiler
 ##############################################
 #
 # Please choose a compiler. Compiler options are
 # usually correct. You might check below.
+#
+# Available options are:
+#
+# GNU_G77		->	g77
+# GNU_GFORTRAN		->	gfortran
+# INTEL			->	ifort
+# PORTLAND		->	pgf90
 #
 ##############################################
 
@@ -161,11 +175,25 @@ COMPILER = INTEL
 # Parallel compilation
 ##############################################
 #
-# For the Intel compiler you can specify
+# For some compilers you can specify
 # parallel execution of some parts of the
 # code. This can be specified here. Please
 # switch back to serial execution if you are
 # in doubt of the results.
+#
+# If running in parallel you get a segmentation fault
+# then you might have to run one of the following
+# commands on the command line, before you run
+# the model:
+#
+#	ulimit -a		# gives you the system settings
+#	ulimit -s 32000		# sets stack to 32MB
+#	ulimit -s unlimited	# sets stack to unlimited
+#
+# For the Intel compiler you may also try inserting a
+# command similar to the following in your .bashrc file:
+#
+#       export KMP_STACKSIZE=32M
 #
 ##############################################
 
@@ -246,6 +274,10 @@ ECOLOGICAL = NONE
 #ECOLOGICAL = ERSEM
 #ECOLOGICAL = AQUABC
 
+##############################################
+# end of user defined parameters and flags
+##############################################
+
 #------------------------------------------------------------
 #------------------------------------------------------------
 #------------------------------------------------------------
@@ -253,6 +285,26 @@ ECOLOGICAL = NONE
 #------------------------------------------------------------
 #------------------------------------------------------------
 #------------------------------------------------------------
+
+##############################################
+# DEFINE VERSION
+##############################################
+
+RULES_MAKE_VERSION = 1.0
+
+##############################################
+# DEFINE DIRECTORIES
+##############################################
+
+DEFDIR  = $(HOME)
+FEMDIR  = ..
+DIRLIB  = $(FEMDIR)/femlib
+
+LIBX = -L/usr/X11R6/lib -L/usr/X11/lib -L/usr/lib/X11  -lX11
+
+##############################################
+# check compatibility of options
+##############################################
 
 ifeq ($(COMPILER),GNU_G77)
   GOTM=false	# g77 cannot compile fortran 90

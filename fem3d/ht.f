@@ -83,6 +83,7 @@ c 25.10.2011    ggu	hlhv eliminated
 c 18.11.2011    ggu	new routine handle_projection
 c 24.01.2012    ggu	new call to setup_parallel()
 c 23.02.2012    ggu&ccf	meteo arrays adjusted (3*nkndim)
+c 09.03.2012    ggu	call to residence time added
 c
 c*****************************************************************
 
@@ -511,6 +512,7 @@ c-----------------------------------------------------------
 	call cstsetup
 	call sp136(ic)
         call shdist(rdistv)
+	call residence_time
 
 c-----------------------------------------------------------
 c write input values to log file and perform check
@@ -569,6 +571,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            call subwaves(it,dt)         !wave model
            call sedi(it,dt)             !sediment transport
 
+	   call residence_time
 	   call ecological_module(it,dt)	!ecological model
            call atoxi3d(it,dt)			!toxi
 

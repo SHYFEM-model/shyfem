@@ -8,7 +8,8 @@ c
 c 02.09.2003	ggu	adapted to new OUS format
 c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
 c 03.06.2011    ggu     routine adjourned
-c 16.12.2011    ggu     bug fix: call to init_sigma_info and makehev (common hev)
+c 16.12.2011    ggu     bug: call to init_sigma_info and makehev (common hev)
+c 09.03.2012    ggu     bug: zenv must be common
 c
 c***************************************************************
 
@@ -17,8 +18,6 @@ c***************************************************************
 c reads ous file and extracts nodes
 c
 c we would not even need to read basin
-c
-c still to be revised...
 
 	implicit none
 
@@ -56,7 +55,9 @@ c still to be revised...
 	common /hev/hev
 
 	real znv(nkndim)
+	common /znv/znv
 	real zenv(3,neldim)
+	common /zenv/zenv
 
 	real uprv(nlvdim,nkndim)
 	real vprv(nlvdim,nkndim)

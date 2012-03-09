@@ -1,4 +1,13 @@
 
+BUG_2010_49     ggu&fra	6.1.47   09.03.2012
+	introduced epsggu to avoid nan in time (lagrange_track.f)
+
+BUG_2010_48     ggu	6.1.47   09.03.2012
+	zenv must be common (ousextr_nodes.f)
+
+BUG_2010_47     deb	6.1.47   09.03.2012
+	ilhkv was real (newbcl.f,bio3d_util.f)
+
 BUG_2010_46     ggu	6.1.46   23.02.2012
 	fixes for hybrid (newbcl.f, newsig.f)
 

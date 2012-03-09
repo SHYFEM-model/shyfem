@@ -1,24 +1,32 @@
 
- * ./mesh/meshgd.c:
- * 16-Feb-2012: no cast of (char) for type of element and line          *
-c ./fem3d/submeteo.f:
-c 16.02.2012    ggu     new routine meteo_get_solar_radiation()
-c
-c ./fem3d/lagrange_init.f:
-c 16.02.2012    ggu     bug fix reading lines
-c
-c ./fem3d/subbnds.f:
-c 16.02.2012    ggu     new routine bnds_init0 (to force spatially const bound)
-c
-c ./fem3d/subbfm.f:
-c 17.02.2012    aac&ggu restart for bfm
-c
-c ./fem3d/lagrange_decay.f:
-c 16.02.2012    mic&fra new way to kill particles...
+09.03.2012	other bug fixes - new residence time routines
 
+	residence time routines integrated (ht.f, subwrt.f, subcus.f)
+	fail more gently for dimension error (subgrd.f, vp.f)
+	bug fix: ilhkv was real (newbcl.f,bio3d_util.f)
+	bug fix: zenv must be common (ousextr_nodes.f)
+	bug fix: introduced epsggu to avoid nan in time (lagrange_track.f)
 
+========================================================== 24-02-2012 - 6_1_46
 
+23.02.2012	other bug fixes - new meteo framework
 
+	new meteo files (submeteo1.f,meteo.h,submeteo_inout.f,subrgf.f,ht.f)
+	fixes for hybrid (newbcl.f, newsig.f)
+	fixes for plotting (supdep.f, supint.f)
+
+========================================================== 17-02-2012 - 6_1_45
+
+17.02.2012	various bug fixes
+
+	no cast of (char) for type of element and line (meshgd.c)
+	bug fix reading lines (lagrange_init.f)
+	new way to kill particles (lagrange_decay.f)
+	new routine bnds_init0 (subbnds.f)
+	restart for bfm (subbfm.f)
+	new routine meteo_get_solar_radiation() (submeteo.f)
+
+========================================================== 14-02-2012 - 6_1_44
 
 14.02.2012	various fixes from Lithuania
 

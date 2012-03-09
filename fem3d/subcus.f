@@ -58,6 +58,7 @@ c 15.12.2010	ggu	traccia routines moved to subtrace.f
 c 26.01.2011	ggu	set rtauv for black sea (black_sea_nudge)
 c 17.05.2011	ggu	new routines skadar_debug() and wet_dry()
 c 12.07.2011	ggu	new routines init_ts()
+c 09.03.2012	ggu	no call to jamal anymore
 c
 c******************************************************************
 
@@ -100,7 +101,7 @@ c custom routines
 	if( icall .eq. 32 ) call cprint(it)
 	if( icall .eq. 76 ) call lago(it)
 	if( icall .eq. 80 ) call aldo(it)
-	if( icall .eq. 81 ) call jamal(it)
+	if( icall .eq. 81 ) call jamal
 	if( icall .eq. 811 ) call jamal_fra
 	if( icall .eq. 82 ) call sedimt
 	if( icall .eq. 83 ) call joel
@@ -1324,18 +1325,18 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-        subroutine jamal(it)
+        subroutine jamal
 
 c computes residence time online - one value for whole lagoon
 
         implicit none
 
-        integer it
-
         include 'param.h'
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
 
         integer nen3v(3,1)
         common /nen3v/nen3v
@@ -1418,10 +1419,16 @@ c mar menor
 c--------------------------
 c 	just use default settings
 c--------------------------
+c taranto
+c--------------------------
+	itmin = -1
+c--------------------------
 c
 c------------------------------------------------------------
 c do not change anything after this point
 c------------------------------------------------------------
+
+	if( itmin .eq. -1 ) itmin = itanf
 
 c------------------------------------------------------------
 c is it time to run the routine?

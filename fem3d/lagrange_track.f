@@ -8,6 +8,7 @@ c
 c 05.02.2009    ggu     copied from other files
 c 16.12.2011    ggu     write all messages to lunit
 c 23.01.2012    ggu     ltbdy is locally passed (not common)
+c 02.03.2012    ggu&fra introduced epsggu to avoid nan in time
 c
 c**********************************************************************
 
@@ -27,6 +28,9 @@ c si passa alla successiva subroutine con time
 	integer ie,bdy ! bdy e' il numero del body
 	real time
 	integer ltbdy
+
+	real epsggu
+	parameter (epsggu = 1.e-7)
  
         real deltat ! frazione di time step body si muove in ie
  
@@ -436,6 +440,13 @@ c imposta
 	 nxbdy=itrx
 	 nybdy=itry
 	 distance=nwdist-dstbdy
+	 if( v_ent .lt. epsggu ) then
+	   time = 0.
+           xbdy=nxbdy ! nuove coordinate del body
+           ybdy=nybdy ! nuove coordinate del body
+	   return
+	 end if
+	   
 	 deltat=distance/v_ent
          newie=ieltv(l_out,ie)
          if(newie.eq.-1)then			!2.a body e uscito dal dominio
@@ -487,6 +498,9 @@ c nello stesso timestep arriva in un nuovo elemento
 	integer ltbdy
 	real time
  
+	real epsggu
+	parameter (epsggu = 1.e-7)
+
         real deltat ! frazione di time step body si muove in ie
  
 	integer ieltv(3,1)
@@ -832,6 +846,12 @@ c imposta
 	 nxbdy=itrx
 	 nybdy=itry
 	 distance=nwdist-dstbdy
+	 if( v_ent .lt. epsggu ) then
+	   time = 0.
+           xbdy=nxbdy ! nuove coordinate del body
+           ybdy=nybdy ! nuove coordinate del body
+	   return
+	 end if
          deltat=distance/v_ent
          newie=ieltv(l_out,ie) !
          if(newie.eq.-1)then			!2.a body uscito dal dominio

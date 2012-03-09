@@ -42,15 +42,18 @@ c reads ous file and writes extracted records to new ous file
 	common /iarv/iarv
 
 	integer ilhv(neldim)
+	integer ilhkv(nkndim)
 	real hlv(nlvdim)
         real utlnv(nlvdim,neldim)
         real vtlnv(nlvdim,neldim)
 	common /ilhv/ilhv
+	common /ilhkv/ilhkv
 	common /hlv/hlv
         common /utlnv/utlnv
         common /vtlnv/vtlnv
 
 	real hev(neldim)
+        common /hev/hev
 
 	real znv(nkndim)
 	real zenv(3,neldim)
@@ -97,12 +100,12 @@ c-------------------------------------------------------------------
 		stop 'error stop : iapini'
 	end if
 
-        nin=ideffi('datdir','runnam','.nos','unform','old')
-        if(nin.le.0) goto 100
-
 c--------------------------------------------------------------------
 c open OUS file and read header
 c--------------------------------------------------------------------
+
+        nin=ideffi('datdir','runnam','.nos','unform','old')
+        if(nin.le.0) goto 100
 
 	nvers=1
         call rfous(nin

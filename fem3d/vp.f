@@ -27,6 +27,7 @@ c 04.03.2011    ggu     new routine test_grade()
 c 30.03.2011    ggu     new routine check_sidei(), text in optest()
 c 15.07.2011    ggu     calls to ideffi substituted
 c 15.11.2011    ggu     new routines for mixed depth (node and elem), hflag
+c 09.03.2012    ggu     delete useless error messages, handle nkn/nel better
 c
 c notes :
 c
@@ -78,6 +79,7 @@ c        common /hev/hev(neldim)
 c        common /hkv/hkv(nkndim) !for depths
 
         integer nkn,nknh,nel,nelh,nli,nco
+	integer nrec
 	integer nlidim,nlndim
 	real hflag
 
@@ -156,11 +158,11 @@ c
      +                  ,iaux,iaux
      +                  )
 
-c        call rdgrd(file,ner,bstop,nco,nkn,nknh,nel,nelh,nli
-c     +                  ,nkndim,neldim,nliread
-c     +                  ,ipv,ipev,iaux,iarv,nen3v,xgv,ygv,hev,hkv)
-
         write(nat,*) ' ...end of read'
+
+	if(bstop) then
+	  goto 99990
+        end if
 
 	nknh = 0
 	do k=1,nkn
@@ -175,10 +177,6 @@ c     +                  ,ipv,ipev,iaux,iarv,nen3v,xgv,ygv,hev,hkv)
         write(6,*) 'nkn,nel   : ',nkn,nel
         write(6,*) 'nknh,nelh : ',nknh,nelh
         write(6,*) 'nli,nco   : ',nli,nco
-
-	if(bstop) then
-	  goto 99999
-        end if
 
         if(nkn.le.0 .or. nel.le.0) then
           write(ner,*) ' Nothing to process'
@@ -426,74 +424,57 @@ c
 	write(nat,*) ' dcor = ',dcor,'   dirn = ',dirn
 	write(nat,*)
 
+	if( mbw .gt. mbwdim ) then
+	  write(6,*) '*** Attention:'
+	  write(6,*) 'mbwdim = ',mbwdim,'    mbw = ',mbw
+	  write(6,*) 'dimension for mbw is too small'
+	  write(6,*) 'before running the model please adjust dimension'
+	end if
+
 	stop ' Successful completion'
 
 99900	write(nat,*)' (00) error in dimension declaration'
 	goto 99
-c99901	write(nat,*)' (01) error reading first record of file 1'
-c	goto 99
-c99902	write(nat,*)' (02) error reading xscal,yscal'
-c	goto 99
-c99903	write(nat,*)' (03) error in version number :',nvers
-c	goto 99
-c99905   write(nat,*)' (05) error reading nanf,nend'
-c        goto 99
-c99907	write(nat,*)' (07) error reading coordinates close to'
-c	write(nat,*)' node ',in
-c	goto 99
 99909	write(nat,*)' (09) error : no unique definition of nodes'
 	goto 99
 99915	write(nat,*)' (15) error : no unique definition of elements'
 	goto 99
-c99917	write(nat,*)' (17) error reading element index close to'
-c	write(nat,*)' element ',nelm
-c	goto 99
 99918	write(nat,*)' (18) error reading file 1'
 	goto 99
 99920	write(nat,*)' (20) error reading file 1'
 	goto 99
 99930	write(nat,*)' (30) error in element index'
 	goto 99
-c99961	write(nat,*)' (61) error in version number :',nvers
-c	goto 99
-c99962	write(nat,*)' (62) error reading first record of file 3'
-c	goto 99
-c99963	write(nat,*)' (63) error reading hscal,itief'
-c	goto 99
-c99971	write(nat,*)' (71) error reading file 3'
-c	goto 99
-c99972   write(nat,*)' (72) error reading file 3'
-c        goto 99
-c99973	write(nat,*)' (73) error reading depth data close to'
-c	write(nat,*)' node/element ',kn
-c	goto 99
-c99976   write(nat,*)' (76) error reading file 3'
-c        goto 99
-c99977	write(nat,*)' (77) error reading file 3'
-c	goto 99
-c99979   write(nat,*)' (79) error reading file 3'
-c        goto 99
-c99981	write(nat,*)' (81) error reading area code'
-c	goto 99
-c99982	write(nat,*)' (82) error reading area code close to'
-c	write(nat,*)' nanf,nend,narea',nanf,nend,narea
-c	goto 99
+99990	continue
+	write(6,*) 'nkndim = ',nkndim,'    nkn = ',nkn
+	write(6,*) 'neldim = ',neldim,'    nel = ',nel
+	write(nat,*)' (90) error reading grid file'
+	write(nat,*)' plaese have a look at the error messages'
+	write(nat,*)' if there are errors in the file please adjust'
+	write(nat,*)' if there are dimension errors please adjust'
+	write(nat,*)'   dimensions, re-compile and re-run the command'
+	goto 99
 99999	write(nat,*)' (99) generic error'
 	goto 99
 c
    99	continue
 c
+	nrec = 0
 	rewind(ner)
    98	read(ner,6000,err=97,end=97) errtex
 	write(nat,*) errtex
+	nrec = nrec + 1
 	goto 98
    97	continue
 c
-	write(nat,*)
-	write(nat,*) ' Error messages have been written to file :'
-	write(nat,*) errfil
-	write(nat,*)
-	stop ' error stop : vpn2'
+	if( nrec .gt. 0 ) then
+	  write(nat,*)
+	  write(nat,*) ' Error messages have been written to file :'
+	  write(nat,*) errfil
+	  write(nat,*)
+	end if
+
+	stop ' error stop : vp'
  6000	format(a)
  	end
 
@@ -766,6 +747,7 @@ c tests if ngrdim is big enough
 	if( ngr .gt. ngrdim ) then
 	  write(6,*) 'ngr grade possibly too small...'
 	  write(6,*) 'estimated ngr = ',ngr,'   ngrdim = ',ngrdim
+	  write(6,*) 'please adjust and recompile'
 	  stop 'error stop test_grade: ngrdim'
 	end if
 

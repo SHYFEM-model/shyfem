@@ -142,7 +142,12 @@ directories_old:
 check:
 	$(FEMBIN)/recursivemake $@ femcheck
 
-install: checkv
+check_software:
+	@cd femcheck; ./check_software.sh
+
+install: install_hard install_soft
+
+install_soft: checkv
 	$(FEMBIN)/shyfem_install.sh
 
 install_hard: checkv

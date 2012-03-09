@@ -35,17 +35,21 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-vpexe="$BINDIR/vp"
-if [ ! -x "$vpexe" ]; then
-  echo "No executable vp in $BINDIR"
-  exit 1
-fi
-
 name=`basename $1 .grd`
 file=$name.grd
 
 if [ ! -f $file ]; then
   echo "No such file: $file"
+  exit 1
+fi
+
+echo
+echo "dimension info on file $file:"
+$FEMDIR/fembin/grd_info.pl -dim $file		# write info on file
+
+vpexe="$BINDIR/vp"
+if [ ! -x "$vpexe" ]; then
+  echo "No executable vp in $BINDIR"
   exit 1
 fi
 

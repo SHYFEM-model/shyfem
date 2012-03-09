@@ -115,3 +115,21 @@ To find out what programs you will need, please go to femcheck and run
 the script check_setup.sh. This will tell you what are programs are
 installed and what programs you still might to have to instal.
 
+
+How do I have to adjust the Rules.make file?
+
+The Rules.make file contains basic settings for the model. Here you
+have to specify the dimension of the arrays for your application and
+the compiler you want to use.  Other options are relative to parallel
+execution, the matrix solver, the turbulence closure scheme and the
+ecological module to use (if any).
+
+The only thing you really have to change in the Rules.make file are the
+choice of a compiler and the dimensions relative to the application you
+want to use. Please look through the parameters and adjust the dimensions
+to your application. Dimensions may be bigger than actually needed.
+
+What concerns the compiler, if you have the Intel compiler installed,
+then this is normally a good option. Otherwise you can use the Gnu
+compilers (gfortran, or the older version g77).
+
