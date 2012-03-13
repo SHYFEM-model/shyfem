@@ -748,7 +748,7 @@ c reads one line of time series
 	implicit none
 
         integer it
-        integer ifile(1)
+        integer ifile(9)
         real data(1)
         logical bdata
 

@@ -15,22 +15,24 @@ c This routine reads an FLX file and writes the data to single files
 
 	implicit none
 
-	integer nfxdim			!total number of sections
-	parameter (nfxdim=20)
-	integer noddim			!total number of nodes in sections
-	parameter (noddim=1000)
+	include 'param.h'
+
+	integer nscdim			!total number of nodes in sections
+	parameter (nscdim=100)
 	integer datdim			!total number of data records
 	parameter (datdim=400000)
 
 	character*80 line,file
 	integer nvers,kfluxm,idfile,nsect
 	integer nrec,it,i,nin,kn,in,nout
+	integer idtflx,nlmax,ivar,ierr
 
-	integer kflux(noddim)
-	real ppp(nfxdim)
+	integer kflux(nfxdim)
+	integer nlayers(nfxdim)
 
 	integer itime(datdim)
-	real pdata(datdim,nfxdim)
+	real pdata(datdim,nscdim)
+	real fluxes(0:nlvdim,3,nfxdim)
 
 	integer iapini, ifemop, ifileo
 
@@ -49,25 +51,15 @@ c---------------------------------------------------------------
 c read and write header information
 c---------------------------------------------------------------
 
-        read(nin) idfile,nvers
-        read(nin) nsect,kfluxm
+        nvers = 5
+        call rfflx        (nin,nvers
+     +                          ,nfxdim,nfxdim,nlvdim
+     +                          ,nsect,kfluxm,idtflx,nlmax
+     +                          ,kflux
+     +                          ,nlayers
+     +                          )
 
-        write(6,*) 'file id:                  ',idfile
-        write(6,*) 'file version:             ',nvers
-        write(6,*) 'total number of sections: ',nsect
-        write(6,*) 'nodes in sections:        ',kfluxm
-
-        if( nsect .gt. nfxdim .or. kfluxm .gt. noddim ) then
-          stop 'error stop: nfxdim'
-        end if
-                                                   
-        if( nvers .gt. 2 ) then		!still to be implemented
-          stop 'error stop splitflx: nvers'
-        end if
-                                                   
-        read(nin) (kflux(i),i=1,kfluxm)
-
-	write(6,*) '...reading data'
+        write(6,*) nvers,nsect,kfluxm,nlmax
 
 c---------------------------------------------------------------
 c loop over data
@@ -77,7 +69,8 @@ c---------------------------------------------------------------
 
         do while( .true. )
 
-          read(nin,end=100) it,nsect,(ppp(i),i=1,nsect)
+          call rdflx(nin,it,nlvdim,nsect,ivar,nlayers,fluxes,ierr)
+          if( ierr .ne. 0 ) goto 100
 
           nrec = nrec + 1
 
@@ -91,10 +84,10 @@ c---------------------------------------------------------------
 
           itime(nrec) = it
           do i=1,nsect
-            pdata(nrec,i) = ppp(i)
+            pdata(nrec,i) = fluxes(0,1,i)
           end do
 
-          call check_nan(it,nsect,ppp)
+          !call check_nan(it,nsect,ppp)
         end do
 
   100	continue

@@ -167,8 +167,8 @@ export NLVDIM = 20
 ##############################################
 
 #COMPILER = GNU_G77
-#COMPILER = GNU_GFORTRAN
-COMPILER = INTEL
+COMPILER = GNU_GFORTRAN
+#COMPILER = INTEL
 #COMPILER = PORTLAND
 
 ##############################################

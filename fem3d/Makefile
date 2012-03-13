@@ -312,8 +312,8 @@ splitext:  splitext.o subext.o $(OUTOBJS)
 splitext_big:  splitext_big.o subext.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o subext.o $(OUTOBJS) -o $@
 
-splitflx:  splitflx.o $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
+splitflx:  splitflx.o subflx.o $(OUTOBJS)
+	$(LINKER) $(LFLAGS) $@.o subflx.o $(OUTOBJS) -o $@
 
 extinf:  extinf.o subext.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o subext.o $(OUTOBJS) -o $@

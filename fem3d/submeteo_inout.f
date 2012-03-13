@@ -60,9 +60,9 @@ c***************************************************************
 	write(6,*) 'it: ',it
 	write(6,*) 'n,nvar,id (read): ',n_read,nvar_read,id_read
 	write(6,*) 'n,nvar,id (expected): ',n,nvar,id
-	stop 'errro stop read_heat_unformatted: parameters in header record'
+	stop 'errro stop read_heat_unformatted: params in header record'
    99	continue
-	stop 'errro stop read_heat_unformatted: cannot read header record'
+	stop 'errro stop read_heat_unformatted:	cannot read header record'
 	end
 
 c***************************************************************
@@ -118,7 +118,7 @@ c***************************************************************
 	write(6,*) 'it: ',it
 	write(6,*) 'n,nvar,id (read): ',n_read,nvar_read,id_read
 	write(6,*) 'n,nvar,id (expected): ',n,nvar,id
-	stop 'errro stop read_rain_unformatted: parameters in header record'
+	stop 'errro stop read_rain_unformatted: params in header record'
    99	continue
 	stop 'errro stop read_rain_unformatted: cannot read header record'
 	end
@@ -201,7 +201,7 @@ c***************************************************************
 	write(6,*) 'it: ',it
 	write(6,*) 'n,nvar,id (read): ',n_read,nvar_read,id_read
 	write(6,*) 'n,nvar,id (expected): ',n,nvar,id
-	stop 'errro stop read_wind_unformatted: parameters in header record'
+	stop 'errro stop read_wind_unformatted: params in header record'
    99	continue
 	stop 'errro stop read_wind_unformatted: cannot read header record'
 	end

@@ -713,7 +713,7 @@ c write histogram
 	real cvres3(nlvdim,nkndim)
 	double precision volacu(nlvdim,nkndim)
 
-        integer ilhkv(nkndim)
+        integer ilhkv(1)
         common /ilhkv/ilhkv
 	real hev(neldim)
 	common /hev/hev

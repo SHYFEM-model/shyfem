@@ -238,7 +238,7 @@ c*********************************************************************
 
 	implicit none
 
-	integer ifile(1)
+	integer ifile(*)
 	integer it
 
 	integer itnew
@@ -266,7 +266,7 @@ c*********************************************************************
 
 	include 'meteo.h'
 
-	integer ifile(1)
+	integer ifile(*)
 
 	integer n
 
@@ -284,7 +284,7 @@ c*********************************************************************
 
 	include 'meteo.h'
 
-	integer ifile(1)
+	integer ifile(*)
 
 	integer mode,iunit,ne,it,ierr,ip
 	logical meteo_is_open
@@ -341,7 +341,7 @@ c*********************************************************************
 
 	include 'meteo.h'
 
-	integer ifile(1)
+	integer ifile(*)
 	integer it
 
 	integer n
@@ -361,7 +361,7 @@ c*********************************************************************
 	implicit none
 
 	character*(*) file
-	integer ifile(1)
+	integer ifile(*)
 	integer it
 
 	call meteo_init_file(file,ifile,5)
@@ -377,7 +377,7 @@ c*********************************************************************
 
 	implicit none
 
-	integer ifile(1)
+	integer ifile(*)
 	integer it
 
 	integer itnew
@@ -405,7 +405,7 @@ c*********************************************************************
 
 	include 'meteo.h'
 
-	integer ifile(1)
+	integer ifile(*)
 
 	integer n
 
@@ -426,7 +426,7 @@ c*********************************************************************
 
 	include 'meteo.h'
 
-	integer ifile(1)
+	integer ifile(*)
 
 	integer mode,iunit,ne,it,ierr,ip
 	logical meteo_is_open
@@ -490,7 +490,7 @@ c*********************************************************************
 
 	include 'meteo.h'
 
-	integer ifile(1)
+	integer ifile(*)
 	integer it
 
 	integer n
@@ -513,7 +513,7 @@ c*********************************************************************
 	implicit none
 
 	character*(*) file
-	integer ifile(1)
+	integer ifile(*)
 	integer it
 
 	call meteo_init_file(file,ifile,2)
@@ -529,7 +529,7 @@ c*********************************************************************
 
 	implicit none
 
-	integer ifile(1)
+	integer ifile(*)
 	integer it
 
 	integer itnew
@@ -557,7 +557,7 @@ c*********************************************************************
 
 	include 'meteo.h'
 
-	integer ifile(1)
+	integer ifile(*)
 
 	integer n
 
@@ -577,7 +577,7 @@ c*********************************************************************
 
 	include 'meteo.h'
 
-	integer ifile(1)
+	integer ifile(*)
 
 	integer mode,iunit,ne,it,ierr,ip
 	logical meteo_is_open
@@ -639,7 +639,7 @@ c*********************************************************************
 
 	include 'meteo.h'
 
-	integer ifile(1)
+	integer ifile(*)
 	integer it
 
 	integer n
@@ -661,7 +661,7 @@ c*********************************************************************
 	implicit none
 
 	logical meteo_is_open
-	integer ifile(1)
+	integer ifile(*)
 
 	meteo_is_open = ifile(1) .gt. 0
 
@@ -673,7 +673,7 @@ c*********************************************************************
 
 	implicit none
 
-	integer ifile(1)
+	integer ifile(*)
 
 	integer iunit
 
@@ -693,7 +693,7 @@ c*********************************************************************
 	implicit none
 
 	character*(*) file
-	integer ifile(1)
+	integer ifile(*)
 	integer it
 	integer nvar		!expected variables (only needed for timeseries)
 
@@ -743,7 +743,7 @@ c*********************************************************************
 
 	implicit none
 
-	integer ifile(1)
+	integer ifile(*)
 	integer n
 	real array(n,3)
 
@@ -763,7 +763,7 @@ c*********************************************************************
 
 	implicit none
 
-	integer ifile(1)
+	integer ifile(*)
 	integer it
 	integer n
 	real array(n,3)
@@ -802,7 +802,7 @@ c initializes 2D array
 
 	integer n
 	real val0
-	real array(1)
+	real array(*)
 
 	integer i
 
@@ -822,7 +822,7 @@ c computes wind speed
 
 	include 'meteo.h'
 
-	integer ifile(1)
+	integer ifile(*)
 
 	integer n,i
 	real uw,vw,ws
@@ -848,7 +848,7 @@ c computes wet bulb temperature
 	include 'meteo.h'
 
 	integer mode
-	integer ifile(1)
+	integer ifile(*)
 
 	integer n,i
 	real db,rh,wb
