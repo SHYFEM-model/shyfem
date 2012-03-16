@@ -1,3 +1,47 @@
+version  6_1_48    16-03-2012    VERS_6_1_48
+
+========================================================== 16-03-2012 - 6_1_48
+
+c ./femplot/suputi.f:
+c 16.03.2012    deb     bug fix in fcmpfeil (d was used but not set)
+c
+c ./femplot/supdep.f:
+c 16.03.2012    deb     bug fix in mkht3 (get_layer_thicknes, get_sigma_info)
+c
+c ./fem3d/aquabc_fem_interface.f:
+c 14.03.2012    ggu     fixed too long lines for gfortran
+c 14.03.2012    ggu     added dummies for restart
+c
+c ./fem3d/grdutil.f:
+c 16.03.2012    ggu     write also lines if read
+c
+c ./fem3d/submeteo_inout.f:
+c 16.03.2012    ggu     fixed compiler errors for gfortran
+c
+c ./fem3d/subver.f:
+c 16.03.2012	ggu	version 6.1.48
+c
+c ./fem3d/aquabc.f:
+c 14.03.2012    ggu     changed BIGNUMBER because out of range (gfortran)
+c
+c ./fem3d/basbathy.f:
+c 16.03.2012	ggu	autoregression introduced (make_auto_corr,interpola)
+c 16.03.2012	ggu	default value for umfact set to 3, new mode = 3
+c
+c ./fem3d/weutro.f:
+c 16.03.2012    ggu	dummy restart routines added
+c
+c ./fem3d/subwrt.f:
+c 16.03.2012	ggu	use idtreset=-1 for no residence computation
+c
+c ./fem3d/alukas.f:
+c 14.03.2012    ggu     eliminated PAUSE statements (gfortran)
+c
+c ./fem3d/basproj.f:
+c 16.03.2012    ggu     writes also transformed lines
+
+==========================================================
+
 version  6_1_47    09-03-2012    VERS_6_1_47   commit_2012-03-16
 
 version  6_1_47    09-03-2012    VERS_6_1_47   commit_2012-03-13
