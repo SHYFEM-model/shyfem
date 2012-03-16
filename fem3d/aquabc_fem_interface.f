@@ -1,5 +1,14 @@
-
-c Contents :
+c
+c $Id: aquabc_fem_interface.f
+c
+c aquabc interface routines
+c
+c Interface between SHYFEM and AQUABC (Aquatic Biochemical Cycling)
+c Adapted by Petras Zemlys and Ali Erturk from an interface between 
+C EUTRO and SHYFEM called BIO3D 
+c
+c contents :
+c
 c   subroutine aquabc_fem_interface - Interface between SHYFEM and AQUABC (Aquatic Biochemical Cycling)
 c   subroutine setload
 c   subroutine check_var  - checking strange values. Atention! nstate and nsstate are fixed in the code
@@ -15,25 +24,18 @@ c   subroutine cur_param_read - reading WC model parameters(constants)
 c   subroutine cur_param_sed_read - reading BS model parameters(constants)
 c   subroutine auquabcini    - does intialisation for WC model
 c   routines to read forcing time series for water temp, pH and interpolation of their values  
-
-c********************************************************************
-c********************************************************************
-c********************************************************************
-c
-c $Id: aquabc_fem_interface.f
-c
-c Interface between SHYFEM and AQUABC (Aquatic Biochemical Cycling)
-c Adapted by Petras Zemlys and Ali Erturk from an interface between 
-C EUTRO and SHYFEM called BIO3D 
 c
 c revision log :
-C
+c
 c 20.07.2004    The structure has been modified to allow dynamic
 c               forcings to read from external files
 c    07.2006    EUTRO changed by new eutrofication module AQUABC with 
 c               14 state variables
 c    07.2009    Water column eutrophication module changed to ALUKAS
 c               (Advanced Level nUtrient Kinetics for Aquatic Systems)
+c 14.03.2012    ggu     fixed too long lines for gfortran
+c 14.03.2012    ggu     added dummies for restart
+c
 c notes :
 c
 c                  ccccccccccccccccccccccccc
@@ -91,10 +93,6 @@ c  *.bio - water column variables     (unit iub)
 c  *.bs  - bottom sediments variables (unit iubs)
 cccccccccccccccccccccccccccccccccccccccccccccccc
 c
-c***********************************************
-c***********************************************
-c***********************************************
-
 c**************************************************************
 
         subroutine ecological_module(it,dt)
@@ -2904,7 +2902,7 @@ C     Read RECORD 3
 	        write(6,*) 'UNIT : ', BIOTSFUN(i)
 	        itroub = itroub + 1
 	    else
-	        write(6,*) 'AQUABC time series output file ', i, ' opened.' 
+	      write(6,*) 'AQUABC time series output file ', i, ' opened.' 
               write(6,*) 'File unit : ', BIOTSFUN(i)
               write(6,*) 'File name : ', BTSERNAME(i)
 	    end if
@@ -2964,8 +2962,8 @@ C         Read RECORD 6
 	        stop 'error stop biotser_init'      
 	    end if
             
-	    write(6,*) 'NUMBER OF NODES FOR DIAGNOSTIC TIME SERIES OUTPUTS ',
-     +               'FOR STATE VARIABLE ', j, ' : ', NDGTS(j)
+	    write(6,*) 'NUMBER OF NODES FOR DIAGNOSTIC TIME SERIES ',
+     +               'OUTPUTS FOR STATE VARIABLE ', j, ' : ', NDGTS(j)
 	    if(NDGTS(j).GT.0) then
 C             Read RECORD 7
 	        do i=1, NDGTS(j)	    
@@ -3015,8 +3013,8 @@ C             CONVERT EXTERNAL NODES TO INTERNAL
       return     
 
    97 continue
-	write(6,*) 'Cannot open AQUABC time series output information file'
-     +	       ,' biotser.dat'
+	write(6,*) 'Cannot open AQUABC time series output'
+     +	       ,' information file biotser.dat'
 	stop 'error stop biotser_init'   
    98 continue
       write(6,*) 'Read error in RECORD 1 of AQUABC time series ',
@@ -5092,6 +5090,37 @@ c save
 
         call cmed_accum(nlvdim,e,bioacu,biomin,biomax,ivect)
 
+        end
+
+c*************************************************************
+c*************************************************************
+c*************************************************************
+c here we should fill in restart routines for aquabc state variables
+c*************************************************************
+c*************************************************************
+c*************************************************************
+
+        subroutine write_restart_eco(iunit)
+        implicit none
+        integer iunit
+        integer nstate,nkn,i
+        nstate = 0
+        nkn = 0
+        write(iunit) nstate,nkn
+        end
+        subroutine skip_restart_eco(iunit)
+        implicit none
+        integer iunit
+        integer nstate,nkn,i
+        read(iunit) nstate,nkn
+        do i=1,nstate
+          read(iunit)
+        end do
+        end
+        subroutine read_restart_eco(iunit)
+        implicit none
+        integer iunit
+        call skip_restart_eco(iunit)
         end
 
 c*************************************************************

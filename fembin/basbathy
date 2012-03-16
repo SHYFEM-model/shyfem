@@ -18,6 +18,7 @@ FullUsage()
   echo "  -h|-help     this help screen"
   echo "  -u           use uniform interpolation"
   echo "  -e           use exponential interpolation (default)"
+  echo "  -a           use exponential interpolation with autocorrelation"
   echo "  -n           interpolate on nodes (default is on elements)"
   echo "  -t           interpolate everywhere (default is only where missing)"
   echo "  -ufact  #    factor for size of sigma (default 1)"
@@ -32,7 +33,7 @@ FullUsage()
   echo "  The parameters ufact and umfact are used for exponential"
   echo "  interpolation. Their exact meaning can be inferred from"
   echo "  the explaination in the program code. If in doubt you can leave"
-  echo "  the defaults values or change them slightly."
+  echo "  the default values or change them slightly."
   echo "  The results are written to file basbathy.grd. The original basin"
   echo "  is not altered."
 }
@@ -58,6 +59,7 @@ do
    case $1 in
         -e)             mode="1";;
         -u)             mode="2";;
+        -a)             mode="3";;
         -n)             ike="2";;
         -t)             idepth="2";;
         -ufact)         ufact=$1; shift;;

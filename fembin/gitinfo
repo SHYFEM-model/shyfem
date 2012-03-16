@@ -23,6 +23,9 @@ branch <branch>		creates new <branch>, if non given shows branches
 checkout <start>	checks out branch <start>
 checkout -b <new> <start>	checks out <start> and creates new branch <new>
 
+git mv old new		renames files
+			same as "mv old new; git add new; git rm old"
+
 HEAD			actual commit
 HEAD^			parent of actual commit
 HEAD^^			grand-parent

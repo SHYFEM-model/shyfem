@@ -7,6 +7,7 @@ c extra data structure for grd files
 	parameter ( nlidim = 100 )	!maximum number of lines
 	parameter ( nlndim = nkndim )	!maximum number of nodes in lines
 
+	integer nli			!number of lines read
 	integer iplv(nlidim)		!external line numbers
 
 	integer iarnv(nkndim)		!types for nodes
@@ -17,6 +18,7 @@ c extra data structure for grd files
 	integer ipntlv(0:nlidim)	!pointer into line structure
 	integer inodlv(nlndim)		!nodes of lines
 
+	common /nli/nli
 	common /iplv/iplv
 	common /iarnv/iarnv
 	common /iarlv/iarlv
@@ -24,5 +26,5 @@ c extra data structure for grd files
 	common /ipntlv/ipntlv
 	common /inodlv/inodlv
 
-	save /iplv/,/iarnv/,/iarlv/,/hllv/,/ipntlv/,/inodlv/
+	save /nli/,/iplv/,/iarnv/,/iarlv/,/hllv/,/ipntlv/,/inodlv/
 

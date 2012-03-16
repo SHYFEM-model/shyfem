@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -s
 #
 # installs shyfem through hard references
 #
@@ -6,11 +6,19 @@
 #
 #---------------------------------------------
 
-$reset = 0;
+$::verbose = 0;
+
+$reset = 0 unless $reset;
+$install = 0 unless $install;
+
 $dir = shift;
-if( $dir eq "-reset" ) {
-  $reset = 1;
-  $dir = shift;
+
+if( $reset ) {
+  ;
+} elsif( $install ) {
+  ;
+} else {
+  die "one of -reset or -install must be set... aborting\n";
 }
 
 $change = 0;
@@ -33,28 +41,28 @@ sub install_fem {
     if( /^FEMDIR=/ ) {
       $change = 1;
       print "SHYFEMDIR=$dir        # ggu_hard_install\n";
-      print STDERR "$ARGV ($dir) (shell): $_";
+      print STDERR "$ARGV ($dir) (shell): $_" if $::verbose;
     } elsif( /femlib\/perl/ ) {
       $change = 1;
       print;					# write old first
       print "use lib (\"$dir/femlib/perl\");     # ggu_hard_install\n";
-      print STDERR "$ARGV ($dir) (femlib/perl): $_";
+      print STDERR "$ARGV ($dir) (femlib/perl): $_" if $::verbose;
       next;
     } elsif( /ENV/ and /fembin/ ) {
       $change = 1;
       print;					# write old first
       print "use lib (\"$dir/fembin\");     # ggu_hard_install\n";
-      print STDERR "$ARGV ($dir) (perl): $_";
+      print STDERR "$ARGV ($dir) (perl): $_" if $::verbose;
       next;
     } else {
-      print STDERR "$ARGV ($dir) (none): $_";
+      print STDERR "$ARGV ($dir) (none): $_" if $::verbose;
     }
   }
 
   if( /^FEMDIR_INSTALL/ ) {
       $change = 1;
       print "SHYFEM_INSTALL=$dir        # ggu_hard_install\n";
-      print STDERR "$ARGV ($dir) (shell_install): $_";
+      print STDERR "$ARGV ($dir) (shell_install): $_" if $::verbose;
   }
 
   print;

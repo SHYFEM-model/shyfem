@@ -1,4 +1,7 @@
 
+BUG_2010_50     ggu&deb	6.1.48   16.03.2012
+	use of sigma routines (supdep.f) and plotting (suputi.f)
+
 BUG_2010_49     ggu&fra	6.1.47   09.03.2012
 	introduced epsggu to avoid nan in time (lagrange_track.f)
 

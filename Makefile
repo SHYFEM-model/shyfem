@@ -23,7 +23,7 @@ include ./Rules.make
 
 #---------------------------------------------------------------
 
-RULES_MAKE_EXPECTED = 1.0
+RULES_MAKE_EXPECTED = 1.1
 RULES_MAKE_COMPATIBILITY = RULES_MAKE_OK
 ifneq ($(RULES_MAKE_VERSION),"0.0")
   ifneq ($(RULES_MAKE_VERSION),$(RULES_MAKE_EXPECTED))
@@ -113,17 +113,20 @@ param:
 
 #---------------------------------------------------------------
 
+cleanlocal:
+	-rm -f fem.tar fem.tar.gz
+	-rm -f changed_zip.zip
+	-rm -f *~
+	-rm -f *.tmp *.bak *.out
+	-rm -f ggg hhh
+
 clean: cleanlocal
 	$(FEMBIN)/recursivemake $@ $(SUBDIRS)
 
 cleanall: cleanlocal
 	$(FEMBIN)/recursivemake $@ $(SUBDIRS)
 
-cleanlocal:
-	rm -f fem.tar fem.tar.gz
-	rm -f changed_zip.zip
-	rm -f *~
-	rm -f *.tmp *.bak
+cleandist: cleanall
 
 cleandiff:
 	$(FEMBIN)/recursivemake $@ $(SUBDIRS)
@@ -136,19 +139,23 @@ cleanbck:
 directories:
 	-mkdir -p tmp
 
-directories_old:
-	-mkdir -p $(HOME)/lib
-
 check:
 	$(FEMBIN)/recursivemake $@ femcheck
 
 check_software:
 	@cd femcheck; ./check_software.sh
 
+test_compile:
+	@femcheck/test_compile.sh
+
+dist:
+	mv --backup=numbered ./Rules.make rules/Rules.save
+	cp -f rules/Rules.skel ./Rules.make
+
 install: install_hard install_soft
 
 install_soft: checkv
-	$(FEMBIN)/shyfem_install.sh
+	$(FEMBIN)/shyfem_install_soft.sh
 
 install_hard: checkv
 	$(FEMBIN)/shyfem_install_hard.sh
@@ -211,7 +218,7 @@ changed_zip:
 
 #---------------------------------------------------------------
 
-checkv: $(RULES_MAKE_COMPATIBILITY)
+checkv: $(RULES_MAKE_COMPATIBILITY) $(RULES_MAKE_PARAMETERS)
 
 RULES_MAKE_OK:
 
@@ -220,6 +227,12 @@ RULES_MAKE_NOT_COMPATIBLE:
 	@echo "provided: $(RULES_MAKE_VERSION)"
 	@echo "expected: $(RULES_MAKE_EXPECTED)"
 	@echo "please adapt your Rules.make file to the latest version"
+	@exit 1
+
+RULES_MAKE_PARAMETER_ERROR:
+	@echo "*** incompatible parameters in Rules.make file"
+	@echo "$(RULES_MAKE_MESSAGE)"
+	@echo "please adapt your Rules.make file"
 	@exit 1
 
 #---------------------------------------------------------------

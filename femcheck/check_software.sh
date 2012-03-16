@@ -2,7 +2,6 @@
 
 log=CHECKLOG
 rm -f $log
-echo "quit" > quit.tmp
 
 missing=""
 
@@ -49,9 +48,7 @@ int main( void )
 }
 EOI
 
-cat > quit.tmp <<EOI
-quit
-EOI
+echo "quit" > quit.tmp
 }
 
 #---------------------------------------------------

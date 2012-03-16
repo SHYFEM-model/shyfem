@@ -5,6 +5,7 @@ c revision log :
 c
 c 24.01.2011    ggu     written from scratch
 c 18.11.2011    ggu     adapted to new function call
+c 16.03.2012    ggu     writes also transformed lines
 c
 c****************************************************************
 
@@ -91,9 +92,11 @@ c Laguna di Venezia
 c Turkey lake for Ali
 
 	iproj = 2		     !UTM
-        c_param(1) = 36.             !longitude of origin (lon0)
+        c_param(1) = 36.             !zone
         c_param(2) = -500000.        !false easting
         c_param(3) = 0.              !false northing
+        !c_param(2) = -0.13E+06       !false easting
+        !c_param(3) = 0.418E+07       !false northing
 
 c---------------------------------------------------------------
 c do projection
@@ -108,7 +111,7 @@ c---------------------------------------------------------------
 
         nfile = 'proj.grd'
         open(1,file=nfile,status='unknown',form='formatted')
-        call wrgrd(1,hkv,hev,ike)
+        call write_grd(1,hkv,hev,ike)
         close(1)
         write(6,*) 'file has been written to ',nfile
 

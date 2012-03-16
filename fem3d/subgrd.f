@@ -1020,7 +1020,7 @@ c works only with triangles as elements
    99	continue
 	write(6,*) 'error opening output file'
 	write(6,*) file
-	stop 'error stop wrgrd: cannot open file'
+	stop 'error stop grd_write_grid: cannot open file'
 	end
 
 c*****************************************************************

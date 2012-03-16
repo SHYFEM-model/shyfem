@@ -9,6 +9,7 @@ c revision log :
 c
 c 24.10.2011	ggu	new file copied from subcus.f (jamal)
 c 28.02.2012	ggu&deb	completely restructured
+c 16.03.2012	ggu	use idtreset=-1 for no residence computation
 c
 c******************************************************************
 
@@ -108,6 +109,7 @@ c itmin		time from when to compute residence time (-1 for start of sim)
 c itmax		time up to when to compute residence time (-1 for end of sim)
 c idtreset	time step to reset concentration to c0
 c		use 0 if no reset is desired
+c		use -1 if no residence time computation is desired
 c
 c ctop          maximum to be used for frequency curve
 c ccut          cut residence time at this level (for res time computation)
@@ -128,6 +130,7 @@ c--------------------------
 	itmin = -1
 	itmax = -1
 	idtreset = 0
+	idtreset = -1		!no residence time computation
 
 	ccut = 0.
 	ctop = 0.
@@ -140,7 +143,7 @@ c--------------------------
 	idtreset = 3*nint( 30.5 * 86400 )		!one month is 30.5 days
 
         !badj = .false.
-        blog = .true.
+        !blog = .true.
 
 	!idtreset = nint( 30.5 * 86400 )		!one month is 30.5 days
 	!idtreset = nint( 86400. )		!one month is 30.5 days
@@ -155,6 +158,12 @@ c------------------------------------------------------------
 
         if( icall .eq. 0 ) then
           write(6,*) 'initialization of WRT routine residence time'
+
+	  if( idtreset .lt. 0 ) then
+	    icall = -1
+            write(6,*) 'no residence time computation'
+	    return
+	  end if
 
 	  iu = ifemop('.jas','formatted','new')
 	  iuf = ifemop('.frq','formatted','new')

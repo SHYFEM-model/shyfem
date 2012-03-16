@@ -681,7 +681,7 @@ c	nline = nline + 1
 	if( bperiod ) ntot = ntot + 1
 
 	write(iunit,'(i1,3i10)') 3,nline,nt,ntot
-	write(iunit,*) (nnode+i,i=1,nl)
+	write(iunit,'(7i10)') (nnode+i,i=1,nl)
 	if( bperiod ) then
 	  write(iunit,*) nnode+1
 	end if

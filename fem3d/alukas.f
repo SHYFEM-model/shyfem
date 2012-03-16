@@ -1,4 +1,12 @@
+c
+c alukas
+c
+c revision log :
+c
+c 14.03.2012    ggu     eliminated PAUSE statements (gfortran)
+c
 c  CONTENT:
+c
 c   SUBROUTINE ALUKAS       - main subroutine for WC kinetics
 c   SUBROUTINE SMITH_ALUKAS - light limitation factor
 c   FUNCTION ALIGHT_ALUKAS  - light extinction 
@@ -14,7 +22,7 @@ C   FUNCTION HLWRAD         -
 C   FUNCTION HBRAD          -
 C   FUNCTION HLEVAP         -
 C   FUNCTION HTRANS         -
-    
+C    
 C**********************************************************************
 C                                                                     *
 C    NAME    : ALUKAS                                                 *
@@ -1646,7 +1654,7 @@ C     DEATH BY ZOOPLANKTON GRAZING
           WRITE(*,*) 'GRZ_1 : ', GRZ_1
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.
@@ -1695,7 +1703,7 @@ C     DEATH BY ZOOPLANKTON GRAZING
           WRITE(*,*) 'GRZ_2 : ', GRZ_2
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.
@@ -1744,7 +1752,7 @@ C     DEATH BY ZOOPLANKTON GRAZING
           WRITE(*,*) 'GRZ_3 : ', GRZ_3
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.
@@ -1843,7 +1851,7 @@ C     NON PREDATORY DEATH
           WRITE(*,*) 'EXZ   : ', EXZ
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.
@@ -1943,7 +1951,7 @@ C     GRAZING BY ZOOPLANKTON
           WRITE(*,*) 'GRZ_4          : ', GRZ_4
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.
@@ -1980,7 +1988,7 @@ C     DISSOLUTION
           WRITE(*,*) 'DISS_EXLAPDETC : ', DISS_EXREPDETC
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.
@@ -2025,7 +2033,7 @@ C     GRAZINF BY ZOOPLANKTON
           WRITE(*,*) 'GRZ_5                 : ', GRZ_5
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.
@@ -2070,7 +2078,7 @@ C     GRAZING BY ZOOPLANKTON
           WRITE(*,*) 'GRZ_6                 : ', GRZ_6
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.
@@ -2116,7 +2124,7 @@ C     GRAZNG BY ZOOPLANKTON
           WRITE(*,*) 'GRZ_7                 : ', GRZ_7
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.
@@ -2157,7 +2165,7 @@ C     DISSOLUTION
           WRITE(*,*) 'DISS_ZOOPPDETC       : ', DISS_ZOOPPDETC
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.
@@ -2316,7 +2324,7 @@ C     DEGRADATION OF EXTERNAL LABILE DISSOLVED DETRITUS CARBON
           WRITE(*,*) 'OX_EXLADDETC   : ', OX_EXLADDETC
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.
@@ -2376,7 +2384,7 @@ C     DEGRADATION OF EXTERNAL REFRACTORY DISSOLVED DETRITUS CARBON
           WRITE(*,*) 'OX_EXREDDETC   : ', OX_EXREDDETC
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.
@@ -2422,7 +2430,7 @@ C     DEGRADATION OF GREEN PHYTOPLANKTON BASED DISSOLVED DETRITUS CARBON
           WRITE(*,*) 'OX_GPHYDDETC   : ', OX_GPHYDDETC
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.
@@ -2467,7 +2475,7 @@ C     DEGRADATION OF DIATIOMS BASED DISSOLVED DETRITUS CARBON
           WRITE(*,*) 'OX_DPHYDDETC   : ', OX_DPHYDDETC
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.
@@ -2515,7 +2523,7 @@ C     DEGRADATION OF CYANOBACTERIA BASED DISSOLVED DETRITUS CARBON
 
 C         Add additional error detection code to detect the exact
 C         location of error.P
-          PAUSE
+          !PAUSE
 
       END IF
 
@@ -2557,7 +2565,7 @@ C     DEGRADATION OF ZOOPLANKTON BASED DISSOLVED DETRITUS CARBON
           WRITE(*,*) 'OX_ZOOPDDETC   : ', OX_ZOOPDDETC
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.
@@ -2876,7 +2884,9 @@ C     Oxygen saturation concentration
          write(*,*) 'ELEV  : ', SURF_ELEVATION
          write(*,*) 'OSAT  : ', OSAT 
          write(*,*) 'KA    : ', KA
-         pause
+
+         RUNTIME_ERROR = 1
+         !PAUSE
 
       end if
 
@@ -3083,7 +3093,7 @@ C     TOTAL DERIVATIVE FOR INORGANIC CARBON
           WRITE(*,*) 'phot           : ', phot
 
           RUNTIME_ERROR = 1
-          PAUSE
+          !PAUSE
 
 C         Add additional error detection code to detect the exact
 C         location of error.

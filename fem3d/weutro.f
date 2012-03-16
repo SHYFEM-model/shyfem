@@ -23,6 +23,7 @@ c 21.08.2004    ggu     rearangments, renaming ($LGA)
 c 24.08.2004    ggu     all changes incorporated (see check history 1-11)
 c 30.08.2004    ggu     cleanup of settopseg, setbotseg
 c 15.02.2006    ggu&mcg some comments inserted for denitrification (SK18D,SK14D)
+c 16.03.2012    ggu	dummy restart routines added
 c
 c notes :
 c
@@ -2575,6 +2576,37 @@ c          itot = itot / 8.              !just to have same magnitude
 	end do
 
 	end
+
+c**************************************************************
+c**************************************************************
+c**************************************************************
+c restart files -> fill in real routines
+c**************************************************************
+c**************************************************************
+c**************************************************************
+
+        subroutine write_restart_eco(iunit)
+        implicit none
+        integer iunit
+        integer nstate,nkn,i
+        nstate = 0
+        nkn = 0
+        write(iunit) nstate,nkn
+        end
+        subroutine skip_restart_eco(iunit)
+        implicit none
+        integer iunit
+        integer nstate,nkn,i
+        read(iunit) nstate,nkn
+        do i=1,nstate
+          read(iunit)
+        end do
+        end
+        subroutine read_restart_eco(iunit)
+        implicit none
+        integer iunit
+        call skip_restart_eco(iunit)
+        end
 
 c***************************************************************
 

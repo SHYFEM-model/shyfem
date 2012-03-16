@@ -1,5 +1,51 @@
 ============================================================
 
+Fri Mar 16 12:38:59 CET 2012
+
+better install, compiler errors
+
+ .gitignore                    |    2 +
+ BUG                           |    3 +
+ LOG                           |   18 +++
+ Makefile                      |   35 ++++--
+ RELEASE_NOTES                 |    8 ++
+ Rules.make                    |  144 ++++--------------------
+ fem3d/alukas.f                |   48 +++++---
+ fem3d/aquabc.f                |   10 ++-
+ fem3d/aquabc_fem_interface.f  |   73 +++++++++----
+ fem3d/basbathy.f              |  249 ++++++++++++++++++++++++++++++++++++++++-
+ fem3d/basproj.f               |    7 +-
+ fem3d/grd_extra.h             |    4 +-
+ fem3d/grdutil.f               |   29 ++++-
+ fem3d/newbcl.f                |    7 +
+ fem3d/param.h                 |   10 +-
+ fem3d/subcus.f                |    4 +-
+ fem3d/subgrd.f                |    2 +-
+ fem3d/submeteo_inout.f        |    3 +-
+ fem3d/subwrt.f                |   11 ++-
+ fem3d/weutro.f                |   32 ++++++
+ femadj/param.h                |   10 +-
+ fembin/basbathy               |    4 +-
+ fembin/dxf2grd.pl             |  142 +++++++++++++++++++++++
+ fembin/gitinfo                |    3 +
+ fembin/shyfem_install.sh      |  115 -------------------
+ fembin/shyfem_install_hard.pl |   28 +++--
+ fembin/shyfem_install_hard.sh |   19 ++-
+ fembin/shyfem_install_soft.sh |  129 +++++++++++++++++++++
+ fembin/subst_make.pl          |  114 +++++++++++++++----
+ femcheck/check_software.sh    |    5 +-
+ femcheck/test_compile.sh      |   72 ++++++++++++
+ femdoc/installation.tex       |   56 +++++-----
+ femplot/param.h               |   10 +-
+ femplot/supdep.f              |    8 +-
+ femplot/suputi.f              |    5 +-
+ femspline/gridr.f             |    2 +-
+ grid/grid.c                   |    2 +
+ param.h                       |   10 +-
+ 38 files changed, 1038 insertions(+), 395 deletions(-)
+
+============================================================
+
 Tue Mar 13 15:09:18 CET 2012
 
 compiler errors

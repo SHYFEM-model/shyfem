@@ -9,6 +9,7 @@ c 16.10.2001    ggu     new routine fpfeil()
 c 03.09.2003    ggu     bug fix XBXT in fpfeil
 c 05.10.2003    ggu     bug fix S_IS_0 in pfeil
 c 26.03.2010    ggu     new routine fcmpfeil for distorted scales
+c 16.03.2012    deb     bug fix in fcmpfeil (d was used but not set)
 c
 c**************************************************
 
@@ -230,7 +231,7 @@ c	check if we have to plot anything
 c	---------------------------------------------
 
         if( xb .eq. xt .and. yb .eq. yt ) return	!bug fix XBXT
-	if( d .lt. 0 ) return				!negative -> no arrow
+	if( s .lt. 0 ) return				!negative -> no arrow
 
 c	---------------------------------------------
 c	first only line is plotted
@@ -239,7 +240,7 @@ c	---------------------------------------------
         u = xt - xb
         v = yt - yb
 
-        d=s
+        d = s
 	xs = xt - d*u
 	ys = yt - d*v
 

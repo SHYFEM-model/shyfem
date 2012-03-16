@@ -6,6 +6,7 @@ c
 c revision log :
 c
 c 23.02.2012    ggu     written from scratch
+c 16.03.2012    ggu     fixed compiler errors for gfortran
 c
 c***************************************************************
 c***************************************************************
@@ -62,7 +63,7 @@ c***************************************************************
 	write(6,*) 'n,nvar,id (expected): ',n,nvar,id
 	stop 'errro stop read_heat_unformatted: params in header record'
    99	continue
-	stop 'errro stop read_heat_unformatted:	cannot read header record'
+	stop 'errro stop read_heat_unformatted: cannot read header record'
 	end
 
 c***************************************************************

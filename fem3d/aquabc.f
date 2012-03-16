@@ -1,4 +1,12 @@
+c
+c aquabc programs
+c
+c revision log :
+c
+c 14.03.2012    ggu     changed BIGNUMBER because out of range (gfortran)
+c
 c CONTENTS:
+c
 c  subroutine AQUABC
 c  subroutine cur_euler - calculates state variables from rates using Euler
 c  FUNCTION STRANGERS(VALUE) 
@@ -655,7 +663,7 @@ C Input is single precision!
 
       REAL VALUE, BIGNUMBER, RATIO
       
-      BIGNUMBER=1.0E39
+      BIGNUMBER=1.0E30
       STRANGER=0
       
       if (.not.(VALUE .lt. 0.).and..not.(VALUE .ge. 0.)) then

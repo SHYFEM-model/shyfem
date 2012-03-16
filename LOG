@@ -1,4 +1,22 @@
 
+16.03.2012	compiler errors, better install, test compile
+
+	fixed compiler errors for gfortran (submeteo_inout.f)
+	bug fixes (suputi.f,supdep.f)
+	new test_compile.sh
+
+16.03.2012	enhancements
+
+	write transformed lines (basproj.f,grdutil.f)
+	better interpolation for bathymetry (basbathy.f)
+
+14.03.2012	aquabc adjusted
+
+	compiler errors for gfortran (aquabc.f,alukas.f,aquabc_fem_interface.f)
+	added dummies for restart (aquabc_fem_interface.f,weutro.f)
+
+========================================================== 09-03-2012 - 6_1_47
+
 09.03.2012	other bug fixes - new residence time routines
 
 	residence time routines integrated (ht.f, subwrt.f, subcus.f)

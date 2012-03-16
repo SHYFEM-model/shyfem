@@ -190,6 +190,8 @@ int main(int argc, char *argv[])
 
 	printf("Min/Max values : %f %f %f %f\n",
 		gb.low.x,gb.low.y,gb.high.x,gb.high.y);
+	printf("Center values  : %f %f \n",
+		(gb.low.x+gb.high.x)/2.,(gb.low.y+gb.high.y)/2.);
 
 	GbAll = GbPlo = gb;
 

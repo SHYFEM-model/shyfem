@@ -3,6 +3,7 @@ c revision log :
 c
 c 24.01.2011    ggu     written from scratch
 c 10.02.2012    ggu     read also lines if dimension given
+c 16.03.2012    ggu     write also lines if read
 c
 c*******************************************************************
 
@@ -61,8 +62,10 @@ c areatr        element area (return value)
         end
 
 c*******************************************************************
+c*******************************************************************
+c*******************************************************************
 
-        subroutine wrgrd(iunit,hkv,hev,ike)
+        subroutine write_grd(iunit,hkv,hev,ike)
 
 c writes grd file from bas
 c
@@ -77,8 +80,10 @@ c hev or hkv must be set
 
         include 'param.h'
         include 'basin.h'
+	include 'grd_extra.h'
 
-        integer k,ie,ii
+        integer k,ie,ii,nl,il,ip,i
+	real hl
 
         do k=1,nkn
           if( ike .eq. 1 ) then
@@ -100,9 +105,23 @@ c hev or hkv must be set
           end if
         end do
 
+        write(iunit,*)
+
+        do il=1,nli
+	  ip = ipntlv(il-1)
+	  nl = ipntlv(il) - ip
+	  hl = hllv(il)
+          write(iunit,1200) 3,iplv(il),iarlv(ie),nl
+          write(iunit,1250) (inodlv(ip+i),i=1,nl)
+	  if( hl .gt. -990. ) write(iunit,1260) hl
+	end do
+
         return
  1000   format(i1,2i10,3e16.8)
  1100   format(i1,2i10,i4,3i10,e16.8)
+ 1200   format(i1,3i10)
+ 1250   format(7i10)
+ 1260   format(1x,f14.4)
         end
 
 c*******************************************************************
@@ -123,9 +142,10 @@ c reads grd file into basin structure
 	include 'grd_extra.h'
 
 	logical bstop
-	integer ner,nco,nli
+	integer ner,nco
 	integer nlidim0
 	integer nknh,nelh
+	integer nl
 
 	integer iaux(neldim)
 	integer ipaux(neldim)
@@ -160,7 +180,8 @@ c-----------------------------------------------------------------
 
         if( bstop ) stop 'error stop after rdgrd'
 
-        call ex2in(nkn,3*nel,nlidim,ipv,ipaux,nen3v,inodlv,bstop)
+	nl = ipntlv(nli)
+        call ex2in(nkn,3*nel,nl,ipv,ipaux,nen3v,inodlv,bstop)
         if( bstop ) stop 'error stop after ex2in'
 
 c-----------------------------------------------------------------

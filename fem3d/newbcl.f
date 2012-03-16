@@ -703,6 +703,7 @@ c initialization (open files etc...)
 c-------------------------------------------------------------
 
 	if( icall .eq. 0 ) then
+	  write(6,*) 'ts_intp: opening files for T/S'
 	  call ts_file_open(tempf,iutemp)
 	  call ts_file_open(saltf,iusalt)
 
@@ -840,6 +841,7 @@ c initialization of T/S from file
 	call getfnm('saltin',saltf)
 
 	if( tempf .ne. ' ' ) then
+	  write(6,*) 'ts_file_init: opening file for T'
 	  call ts_file_open(tempf,iutemp)
           call ts_next_record(itt,iutemp,nkn,nlv,tempv)
 	  call ts_file_close(iutemp)
@@ -847,6 +849,7 @@ c initialization of T/S from file
 	end if
 
 	if( saltf .ne. ' ' ) then
+	  write(6,*) 'ts_file_init: opening file for S'
 	  call ts_file_open(saltf,iusalt)
           call ts_next_record(its,iusalt,nkn,nlv,saltv)
 	  call ts_file_close(iusalt)
@@ -907,11 +910,13 @@ c-------------------------------------------------------------
 
 	ios = 0
 	if( bformat ) then
+	  write(6,*) 'ts_file_open: opening formatted file ',name
 	  iunit = ifileo(0,name,'form','old')
 	  read(iunit,*) it,nknaux,lmax,nvar
 	  if( lmax .gt. nlvdim ) goto 95
 	  read(iunit,*) (hl(l),l=1,lmax)
 	else
+	  write(6,*) 'ts_file_open: opening unformatted file ',name
 	  iunit = ifileo(0,name,'unform','old')
 	  read(iunit) it,nknaux,lmax,nvar
 	  if( lmax .gt. nlvdim ) goto 95
@@ -976,6 +981,8 @@ c-------------------------------------------------------------
    95	continue
 	write(6,*) 'too many layers in file: ',name
 	write(6,*) 'lmax,nlvdim  : ',lmax,nlvdim
+	write(6,*) 'it,nknaux,nvar: ',it,nknaux,nvar
+	write(6,*) 'iformat,ihashl: ',iformat,ihashl
 	stop 'error stop ts_file_open: dimension nlvdim'
    96	continue
 	write(6,*) 'incompatible levels in file: ',name

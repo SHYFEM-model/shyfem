@@ -1,13 +1,13 @@
 #!/bin/sh
 #
-# shyfem_install.sh
+# shyfem_install_soft.sh
 #
 # changes symbolic link and dor files (.bashrc, .bash_profile, .profile)
 #
 # normally called from Makefile
 # must be called from within root of shyfem directory
 #
-# Usage: shyfem_install.sh
+# Usage: shyfem_install_soft.sh
 #
 #------------------------------------------------------
 
@@ -67,10 +67,15 @@ fi
 
 femdir=$dir
 
+echo "========================================================="
+echo "running shyfem_install_soft.sh"
+echo "      using directory: $dir"
+echo "========================================================="
+
 # make symbolic link -----------------------------------
 
 CreateSymlink shyfem
-CreateSymlink fem               #this might be deleted somewhen
+#CreateSymlink fem               #this might be deleted somewhen
 
 # change dot files -----------------------------------
 
@@ -103,12 +108,21 @@ echo ""
 echo "In order that the new settings are effective,"
 echo "please log out and in again, or go to your"
 echo "home directory and run one of the following commands:"
-echo "source .bashrc"
-echo "source .bash_profile"
-echo "source .profile"
+echo "  source .bashrc"
+echo "  source .bash_profile"
+echo "  source .profile"
 echo ""
-echo "Please also run 'make check' to see if"
-echo "all programs needed for the FEM model are installed."
+echo "If this is the first time you install SHYFEM,"
+echo "please also run 'make check_software' to see if"
+echo "all software needed for the SHYFEM model is installed."
+echo ""
+echo "Please note that you still have to compile the model."
+echo "You should first customize the file Rules.make."
+echo "After this run"
+echo "  make clean"
+echo "  make fem"
+echo "in order to compile all programs. You have to redo"
+echo "this step every time you change Rules.make."
 echo ""
 
 # end of routine ----------------------------------------
