@@ -9,7 +9,7 @@ include ../Rules.make
 
 #------------------------------------------------------
 
-OBJS =	subgrd.o subscn.o subfil.o subsss.o hash.o spline.o sort.o
+OBJS =	subgrd.o subscn.o subfil.o subsss.o hash.o spline.o sort.o subver.o
 SOBJS =  sgauss.o
 VOBJS =  subrnd.o
 

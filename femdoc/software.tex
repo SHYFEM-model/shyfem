@@ -1,0 +1,54 @@
+
+The source code is composed mainly of Fortran 77 files, but files written
+in C, Fortran 90, Perl and Shell scripts are also present.
+
+In order to use the model you have to compile it in a Linux Operating
+System. Several software products must be present in order to be able
+to compile the model. Please refer to the documentation of your Linux
+distribution for installing these programs.
+
+\begin{itemize}
+
+\item A Fortran 77 and 90 compiler. Supported compilers are
+the Gnu |g77| and |g90| compilers, the new Gnu compiler |gfortran|,
+the Intel Fortran compiler |ifort| or the Portland group Fortran compiler.
+
+\item The package |make| is required for compilation.
+
+\item The |perl| interpreter, the |bash| shell and the |gcc| c compiler
+are necessary for compiling.
+
+\end{itemize}
+
+Please note that you might already have everything available in your
+Linux distribution, with the exception of the Fortran compiler.
+
+To find out what software is installed on your computer and what you
+still have to install you can run the following command:
+
+\begin{code}
+    make check_software
+\end{code}
+
+If you get something like |bash: make: command not found|, then you
+do not have make installed. Please first install the |make| command
+before proceeding.
+
+The command will show you what software you will still have to
+install. The software is divided into different sections. The first
+is needed software, which you will not be able to do without. The next
+section is recommended software, which you really should install, but
+for compilation and running you will not necessarily need it. The last
+section is software which is optional, but which makes life easier.
+
+You can always run |make check_software| again to check if the software
+had been successfully installed. When you are satisfied with the output
+you can go to the next section.
+
+Please note that you have to carry out the steps in this section only
+the first time you install the model. If you install new version of the
+software you can skip these steps.
+
+
+
+

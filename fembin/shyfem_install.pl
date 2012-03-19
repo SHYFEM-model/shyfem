@@ -4,11 +4,17 @@
 #
 #-----------------------------------------------------
 
+$reset="";
 $femdir = shift;
+if( $femdir eq "-reset" ) {
+  $reset = "-reset";
+  $femdir = shift;
+}
+
 $in_section = 0;
 
 unless( $femdir ) {
-  print STDERR "shyfem_install.pl should not be run directly... aborting";
+  print STDERR "shyfem_install.pl should not be run directly... aborting\n";
   exit 1;
 }
 
@@ -41,12 +47,18 @@ if( $in_section == 0 ) {	# no section found
 
 exit 0;
 
+#---------------------------------------------------------------
+
 sub write_section {
+
+  return if $reset;		# reset - do not write anything
 
   print "\#--- SHYFEM --- set up start\n";
   print "export SHYFEM_INSTALL=$femdir\n";
   print "export SHYFEMDIR=\$SHYFEM_INSTALL\n";
-  print ". \$SHYFEMDIR/fembin/shyfem_profile.sh\n";
+  print "if [ -f \$SHYFEMDIR/fembin/shyfem_profile.sh ]; then\n";
+  print	"  . \$SHYFEMDIR/fembin/shyfem_profile.sh\n";
+  print "fi\n";
   print "\#--- SHYFEM --- set up end\n";
 }
   

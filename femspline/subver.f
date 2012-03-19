@@ -193,7 +193,6 @@ c*****************************************************************
 c DOCS	START	P_version
 c
 c \newcommand{\VERSION}{6.1.48}
-c \newcommand{\version}{6\_1\_48}
 c
 c DOCS	END
 

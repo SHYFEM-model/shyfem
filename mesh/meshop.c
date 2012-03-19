@@ -121,7 +121,7 @@ void SetOptions(int argc, char *argv[])
 		Logos();
 		Test();
 		Usage();
-		exit(1);
+		exit(0);
 	} else {
 		Logos();
 		Test();

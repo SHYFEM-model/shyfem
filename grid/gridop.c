@@ -288,7 +288,7 @@ void SetOptions(int argc, char *argv[])
 	if( argc <= OpArgc && OpType != -1 ) {
 		Logos();
 		Usage();
-		exit(1);
+		exit(0);
 	} else {
 		Logos();
 	}

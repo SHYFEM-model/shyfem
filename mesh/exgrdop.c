@@ -172,7 +172,7 @@ void SetOptions(int argc, char *argv[])
 		Logos();
 		Test();
 		Usage(TRUE);
-		exit(1);
+		exit(0);
 	} else {
 		Logos();
 		Test();

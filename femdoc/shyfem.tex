@@ -1,21 +1,32 @@
 
 % $Id$
 
+% todo:
+%
+% windos users -> cygwin
+% admin commands (fem, clean, cleanall, install, uninstall,...)
+
 \documentclass{report}
 
 \usepackage{a4}
 \usepackage{shortvrb}
 \usepackage{pslatex}
+
+\usepackage{verbatim}
 \usepackage{alltt}		% as verbatim, but interpret \ { }
 
-\usepackage{version}
-%\newenvironment{comment}{}{}
+\newenvironment{code}{\verbatim}{\endverbatim}
+\newenvironment{codem}{\alltt}{\endalltt}	%interpret \
+\newcommand{\ttt}[1]{{\tt #1}}
 
 \newcommand{\shy}{{\tt SHYFEM}}
 \newcommand{\psp}{{\tt SHYFEM}}
-%\newcommand{\VERSION}{4.31}
 
 \input{P_version.tex}
+%\newcommand{\version}{6\_1\_40}
+\newcommand{\shyname}{shyfem-\version}
+\newcommand{\shydir}{/home/model/shyfem-\version}
+\newcommand{\shydist}{\shydir.tar.gz}
 
 \newcommand{\descrpsep}{\vspace{0.2cm}}
 \newcommand{\descrpitem}[1]{\descrpsep\parbox[t]{2cm}{#1}}
@@ -83,17 +94,7 @@
 \maketitle
 
 %\begin{abstract}
-%A simple graphic plotting package is presented that can be used for
-%the creation of PostScript graphics. The routines are callable from
-%Fortran and C.
-%
-%Only the basic plotting commands have been implemented. The library
-%allows you to plot lines and points, fill arbitrary shapes
-%with arbitrary color and write text with an arbitrary point size.
-%It also allows for producing more pages in one plot. Color can be
-%used as gray scale or through the RGB and HSB color spaces.
-%The coordinate system may be set to best adjust to the drawing.
-%Clipping graphics in a given rectangle is implemented.
+% to be written
 %\end{abstract}
 
 \thispagestyle{empty}
@@ -114,7 +115,7 @@
 
 \begin{quotation}
   									 
-   Copyright (c) 1992-2009 by Georg Umgiesser				 
+   Copyright (c) 1992-2012 by Georg Umgiesser				 
   									 
    Permission to use, copy, modify, and distribute this software	 
    and its documentation for any purpose and without fee is hereby	 
@@ -164,23 +165,23 @@
 
 \chapter{Overview}
 
-\section{What is it}
-\input{over_what}
+	\section{What is it}
+	\input{over_what}
 
-%\section{Why use it}
-%\todo{Georg}
+	%\section{Why use it}
+	%\todo{Georg}
 
-%\section{How to use it}
-%\todo{Georg}
+	%\section{How to use it}
+	%\todo{Georg}
 
-%\section{Where to get it}
-%\todo{Georg}
+	%\section{Where to get it}
+	%\todo{Georg}
 
-%\section{Features}
-%\todo{Georg}
+	%\section{Features}
+	%\todo{Georg}
 
-%\section{License}
-%\todo{Georg}
+	%\section{License}
+	%\todo{Georg}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -188,20 +189,23 @@
 
 \chapter{Installing SHYFEM}
 
+	\section{Downloading and unpacking}
+	\input{download}
+
+	\section{Needed software}
+	\input{software}
+
 	\section{Installation}
 	\input{installation}
 
-%	\section{Needed software}
-%	\todo{Marco}
+	\section{Compilation}
+	\input{compilation}
 
-%	\section{Choice of external software}
-%	\todo{Marco}
+	\section{Compatibility problems}
+	\input{compatibility}
 
-%	\section{Compilation}
-%	\todo{Marco}
-
-%	\section{Compatibility problems}
-%	\todo{Marco}
+	\section{Summary}
+	\input{summary_installing}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

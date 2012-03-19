@@ -108,7 +108,10 @@ sub docs_continue_description {
   my $line = shift;
 
   unless( $descrp ) {
+	print STDERR "*** Error in line:\n";
+	print STDERR "\n";
 	print STDERR "$line\n";
+	print STDERR "\n";
 	print STDERR "This should be a continuation of a description.\n";
 	print STDERR "But no description is open.\n";
 	print STDERR "Be sure to use tabs for description lines.\n";

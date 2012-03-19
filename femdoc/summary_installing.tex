@@ -1,0 +1,31 @@
+
+In summary, the following steps have to be carried out before you will
+be able to run the model:
+
+\begin{itemize}
+
+\item Get the distribution and unpack it in a place of your choice.
+
+\item Move to the root of the distribution (\ttt{cd \shydir}).
+
+\item Check if all software is available (|make check_software|). This
+step has to be done only the first time you install SHYFEM on a computer.
+
+\item Install the model (|make install|). This has to be done everytime
+you get and install a new version of the model.
+
+\item Adjust options in |Rules.make|. This has to be done everytime you
+change options (compiler, parallel execution, etc.). After this you have
+to run also |make cleanall|.
+
+\item Adjust dimension parameters in |Rules.make|. This has to be done the
+first time and every time you change application (basin, etc.) to adapt
+the dimensions to the new problem. You might also run |make cleanall|
+after this step, but it is not required.
+
+\item Compile the programs with |make fem| and have a look at the error
+messages.
+
+\end{itemize}
+
+

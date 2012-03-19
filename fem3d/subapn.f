@@ -25,6 +25,7 @@ c 12.02.1999	ggu	read runnam from memfil only if not in apn file
 c 05.12.2001	ggu	fixed compiler error with -Wall -pedantic
 c 20.06.2003	ggu	in iapini statement shiftet for compiler error Origin
 c 15.07.2011	ggu	adjusted, ideffi substituted
+c 19.03.2012	ggu	if no basin is given return with "error"
 c
 c notes :
 c
@@ -207,6 +208,7 @@ c if no bas file is opened we are done
 c open bas file
 
 	call getfnm('basnam',basnew)
+	if( basnew .eq. ' ' ) return
 	if(basnew.ne.basold) then
 		iunit=idefbas(basnew,'old')
 		if(iunit.le.0) return

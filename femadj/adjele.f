@@ -86,6 +86,7 @@ c read grid file with nodes and elements
         if( bstop ) goto 97
 
 	write(6,'(a,5i7)') 'grid parameters: ',nkn,nel,nli
+	if( nkn .le. 0 ) stop
 
 c external to internal numbering
 

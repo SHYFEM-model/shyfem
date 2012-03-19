@@ -87,6 +87,7 @@ all: fem doc
 
 fem: checkv directories links
 	$(FEMBIN)/recursivemake $@ $(FEMDIRS)
+	make check_install
 
 doc:
 	cd femdoc; make doc
@@ -119,6 +120,9 @@ cleanlocal:
 	-rm -f *~
 	-rm -f *.tmp *.bak *.out
 	-rm -f ggg hhh
+	-rm -f errout.dat a.out plot.ps
+	-rm -f .memory
+	-rm -f CHECKLOG
 
 clean: cleanlocal
 	$(FEMBIN)/recursivemake $@ $(SUBDIRS)
@@ -145,12 +149,21 @@ check:
 check_software:
 	@cd femcheck; ./check_software.sh
 
+check_install:
+	@femcheck/check_install.sh
+
 test_compile:
 	@femcheck/test_compile.sh
 
-dist:
+ggu:
+	cp -f rules/Rules.save ./Rules.make
+
+dist: cleandist
 	mv --backup=numbered ./Rules.make rules/Rules.save
 	cp -f rules/Rules.skel ./Rules.make
+	make doc; make clean
+
+#--------------------------------------------------------
 
 install: install_hard install_soft
 
@@ -160,6 +173,11 @@ install_soft: checkv
 install_hard: checkv
 	$(FEMBIN)/shyfem_install_hard.sh
 
+uninstall: install_hard_reset install_soft_reset
+
+install_soft_reset: checkv
+	$(FEMBIN)/shyfem_install_soft.sh -reset
+
 install_hard_reset: checkv
 	$(FEMBIN)/shyfem_install_hard.sh -reset
 
@@ -167,6 +185,8 @@ links:
 	-rm -f bin lib
 	-ln -sf fembin bin
 	-ln -sf femlib lib
+
+#--------------------------------------------------------
 
 tar:
 	@echo "Please use targets vers or beta"

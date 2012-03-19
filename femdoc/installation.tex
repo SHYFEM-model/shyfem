@@ -1,147 +1,76 @@
 
-\newcommand{\version}{6_1_47}
-\newcommand{\shydir}{shyfem-\version}
+\newcommand{\sysfiles}{.bashrc .bash\_profile .profile}
 
-The source code of the model is provided in a file named 
-|\shydir.tar.gz| or similar, depending on the version
-of the code. In this case the version is \version.
-The file can be downloaded from the SHYFEM 
-web-site\footnote{http://www.ismar.cnr.it/shyfem/}, or
-by contacting directly its authors.
+Before compiling it is avisable to install some files for a simpler
+usage of the model. As long as you only want to tun a simulation, this
+step is not strictly necessary. But if you will run some scripts of the
+distribution, these scripts will not work if you do not install the model.
 
-The source code is composed mainly of Fortran 77 files, but
-files written in C, Fortran 90, Perl and Shell scripts
-are also present.
+In order to install the model, you should run
 
-In order to use the model you have to compile it in a
-Linux Operating System. Several software products must be present
-in order to be able to compile the model. Please refer to
-the documentation of your Linux distribution for installing these programs.
+\begin{code}
+    make install
+\end{code}
 
-Please see the next section for software that is
-helpful for running and using the model.
-However, the software absolutely necessary is the following:
+This command will do the folowing:
 
 \begin{itemize}
-\item A Fortran 77 and 90 compiler. Supported compilers are
-the Gnu |g77| and |g90| compilers, the new Gnu compiler |gfortran|,
-the Intel Fortran compiler |ifort| or the Portland group Fortran compiler.
-\item The package |make| is required for compilation.
-\item The |perl| interpreter, the |bash| shell and the |gcc| c compiler
-are necessary for compiling.
+
+\item It hardcodes the installation directory in all scripts of the
+model so only programs of the installed version will be executed.
+
+\item It inserts a symbolic link |syhfem| from the home directory to
+the root of the SHYFEM installation.
+
+\item It inserts a small snippet of code into the initialization files
+\ttt{\sysfiles} that are in your home directory. This will adjust your
+path to point to the SHYFEM directory and gives you access to some
+administrative commands.
+
 \end{itemize}
 
-Please note that you might already have everything available in your
-Linux distribution, with the exception of the fortran compiler.
-Please see the section on ``Needed software'' for more information
-on the recommended software you should have installed on your computer.
+After this command you will find the original files that have been changed
+in your home directory saved with a trailing number (e.g., |.profile.35624|
+or similar).  If you encounter problems, just substitute back these files.
 
-Once you have downloaded the model open a shell (console) as 
-a normal user, go to the directory where you have downloaded the
-shyfem distribution and run the following command:
+In order that your new settings will take effect you will have to log
+out and log in again. Alternatively, you will have to execute one of
+the files |\sysfiles| that have actually changed. If |.bashrc| has been
+changed, then run |. ~/.bashrc|.
 
-\begin{citation}
-\item |tar -xzvf \shydir.tar.gz|
-\end{citation}
+If you do not want to run the installation routine, you should at least
+manually insert a symbolic link to the root of the SHYFEM model.
+Otherwise some of the commands and shell scripts will not work
+properly. This can be done with the command
 
-At this point a new folder named |\shydir|
-has been created. Move into this directory (|cd \shydir|) 
-and open the file
-|Rules.make| with a text editor.
-In this file all the compilation options can be set.
-These are the sections inside it:
+\begin{codem}
+    cd
+    ln -s \shydir shyfem
+\end{codem}
 
-\begin{itemize}
-\item |Parameters|. In this section you have to set the
-maximum number of nodes (|NKNDIM|) and elements (|NELDIM|)
-used by your grids. You might also have to set also the maximum number 
-of elements attached to
-a node (|NGRDIM|) and the maximum bandwidth (|MBWDIM|) of the
-z-level matrix. You can find these numbers when you create the basin file
-with |vpgrd|. Finally you have to specify
-the maximum number of vertical levels (|NLVDIM|).
-It is advisable to set this value close to the desired number of
-vertical levels, since it affects the model speed performance. So, if
-you want to run the model in 2D mode, please set |NLVDIM| to 1.
-\item |Compiler|. Set the compiler you want to use.
-\item |Parallel compilation|. Some parts of the code are parallelized
-with OpenMP statements. Here you can set if you want to use it or not.
-Intel and Gnu gfortran compilers accept OpenMP statements.
-\item |Solver for matrix solution|. There are three different solvers
-implemented. 
-The |GAUSS| solver is the most robust and best tested solver,
-but it is quite slow. The |PARDISO| solver needs an
-external library available at the Intel 
-web-site\footnote{http://software.intel.com/en-us/articles/code-downloads/},
-that is freely downloadable for non-commercial use. 
-The Pardiso solver is parallelized,
-but it seems to be a little slower than |SPARSKIT| solver.
-The |SPARSKIT| solver is the suggested solver, since it seems to be the 
-fastest one. However, if you are ever in doubt about your results you might
-to revert back to the |GAUSS| solver and check the results.
-\item |NetCDF library|. If you want the output files in NetCDF format
-you need the NetCDF library.
-\item |GOTM library|. The GOTM turbulence model is already included
-in the code. However, a newer and better tested version is available as
-an external module. In order to use it please set this variable
-to true. This is the recommended choice.
-\item |Ecological module|. This option allows for the inclusion
-of an ecological module into the code. Choices are between
-|EUTRO|, |ERSEM| and |AQUABC|. Please refer to information given 
-somewhere else for how to run these programs.
-\item |Compiler options|. Here several sections are present, 
-one for each supported compiler. Normally it should not be necessary to 
-change anything beyond this point.
-\end{itemize}
+from your home directory. If there is already such a link existing you
+first have to delete it (|rm shyfem|).
 
-Once you have set all these options you can run the command
-
-\begin{citation}
-\verb|make fem|
-\end{citation}
-
-to compile everything.
-
-Another useful command is |make clean| to delete files of previous compilations.
-
-It is advisable to make in your home directory a symbolic link named
-|shyfem| to the directory, where you have installed SHYFEM. Otherwise
-some of the commands and shell scripts might not work properly. This
-can be done with the command
-
-\begin{citation}
-\verb|ln -s \shydir shyfem|
-\end{citation}
-
-from your home directory. If there is already such a link existing you first
-have to delete it (|rm shyfem|).
-
-Another useful option is to add the fembin path to your default paths
-to have the main utility commands always available. To do this
-open your |.bashrc| file in the home directory
-and add the following lines at the end of the file:
+You should also think about the option to add the fembin path to your
+default paths to have the main utility commands always available. To do
+this open your |.bashrc| file in the home directory and add the following
+lines at the end of the file:
 
 \begin{verbatim}
-FEMDIR=$HOME/fem
-PATH=$PATH:$FEMDIR/fembin
-export FEMDIR PATH
+SHYFEMDIR=$HOME/fem
+PATH=$PATH:$SHYFEMDIR/fembin
+export SHYFEMDIR PATH
 \end{verbatim}
 
-If you have not set a symbolic link from |fem| to the actual model directory,
-please substitute |fem| with the appropriate directory |fem_VERS_N_nn|.
+However, the same effect can be achieved more easily by using the
+abovementioned command |make install|.
 
-Summarizing, the following steps have to be taken in order to
-properly install the model on your computer:
-\begin{itemize}
-\item download the model and unpack it somewhere
-\item |cd| to the model directory and adjust |Rules.make|
-\item compile the model with |make fem|
-\end{itemize}
+If you ever want to uninstall the model, you can do it with the command
+|make uninstall|. This will delete the symbolic link, cancel the hard
+links in the model scripts and restore the systemfiles \ttt{\sysfiles}
+to their original content.
 
-In addition, you also might
-\begin{itemize}
-\item set a symbolic link from |fem| to the model directory
-		|ln -s fem_VERS_N_nn fem|
-\item adjust the file |.bashrc| adding the |FEMDIR| shell variable 
-	and a new entry for the |PATH|
-\end{itemize}
+Please note that you will still have to delete manually the model
+directory. This can be done with the command \ttt{rm -rf \shydir}). In
+this way, however, changes to the code you have made will be lost.
+

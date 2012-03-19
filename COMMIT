@@ -1,5 +1,48 @@
 ============================================================
 
+Mon Mar 19 14:37:05 CET 2012
+
+install routines, manual
+
+ .gitignore                    |   12 +
+ LOG                           |    6 +
+ Makefile                      |   22 +-
+ RELEASE_NOTES                 |    4 +
+ Rules.make                    |  115 ++-
+ fem3d/param.h                 |    8 +-
+ fem3d/subapn.f                |    2 +
+ fem3d/subsys.f                |   14 +-
+ fem3d/subver.f                |    1 +
+ fem3d/subwrt.f                |   28 +-
+ femadj/adjele.f               |    1 +
+ femadj/param.h                |    8 +-
+ fembin/dxf2grd.pl             |  118 +-
+ fembin/shyfem_install.pl      |   16 +-
+ fembin/shyfem_install_soft.sh |   53 +-
+ fembin/shyfem_profile.sh      |    4 -
+ femcheck/check_install.sh     |   64 +
+ femdoc/compatibility.tex      |  105 +
+ femdoc/compilation.tex        |   78 +
+ femdoc/download.tex           |   29 +
+ femdoc/femdoc.pl              |    3 +
+ femdoc/final/shyfem.pdf       |  Bin 212816 -> 254181 bytes
+ femdoc/final/shyfem.ps        | 4463 ++++++++++++++++++++++++++---------------
+ femdoc/installation.tex       |  175 +--
+ femdoc/shyfem.tex             |   76 +-
+ femdoc/software.tex           |   54 +
+ femdoc/summary_installing.tex |   31 +
+ femplot/param.h               |    8 +-
+ femspline/Makefile            |    2 +-
+ femspline/gridr.f             |    2 +
+ femspline/subver.f            |  267 +++
+ grid/gridop.c                 |    2 +-
+ mesh/exgrdop.c                |    2 +-
+ mesh/meshop.c                 |    2 +-
+ param.h                       |    8 +-
+ 35 files changed, 3929 insertions(+), 1854 deletions(-)
+
+============================================================
+
 Fri Mar 16 12:40:53 CET 2012
 
 New version 6_1_48

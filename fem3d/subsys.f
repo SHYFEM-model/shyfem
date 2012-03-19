@@ -174,17 +174,17 @@ c			the parameter file.
 	call addpar('itmext',0.)
 
 c |idtrst|, |itmrst|	Time step and start time for writing the restart
-c                       file (extension RST). No restart file is written
-c                       with |idtrst| equal to 0. A negative value
+c			file (extension RST). No restart file is written
+c			with |idtrst| equal to 0. A negative value
 c			is also possible for the time step. In this case
 c			the used time step is |-idtrst|, but the file is
 c			overwritten every time. It therefore contains 
 c			always only the last written restart record. (Default 0)
-c |itrst|               Time to use for the restart. If a restart
-c                       is performed, then the file name containing
-c                       the restart data has to be specified in |restrt|
-c                       and the time record corresponding to |itrst|
-c                       is used in this file. A value of -1 is also possible.
+c |itrst|		Time to use for the restart. If a restart
+c			is performed, then the file name containing
+c			the restart data has to be specified in |restrt|
+c			and the time record corresponding to |itrst|
+c			is used in this file. A value of -1 is also possible.
 c			In this case the last record in the restart file
 c			is used for the restart and the simulation starts
 c			from this time. Be aware that this option changes

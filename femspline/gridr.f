@@ -105,6 +105,8 @@ c same as gridf but smooth on length of line, not points
 	real sigma
 	real reduct
 
+	call shyfem_copyright('gridr - smoothing of lines')
+
 c-----------------------------------
 c sigma		smoothing parameter (size of gaussian kernel)
 c reduct	reduction of points in line (in meters)

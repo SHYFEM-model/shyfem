@@ -29,9 +29,21 @@ rules
 .directory
 a.out
 DIFFS
+CHECKLOG
 errout.dat
 
 #-----------------------------------------------
+
+femdoc/P_*.tex
+femdoc/S_*.tex
+femdoc/shyfem.aux
+femdoc/shyfem.bbl
+femdoc/shyfem.blg
+femdoc/shyfem.dvi
+femdoc/shyfem.log
+femdoc/shyfem.pdf
+femdoc/shyfem.ps
+femdoc/shyfem.toc
 
 fem3d/basbathy
 fem3d/basinf

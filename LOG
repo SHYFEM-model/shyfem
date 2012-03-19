@@ -1,4 +1,10 @@
 
+19.03.2012	manual and administrative commands, install routines
+
+========================================================== 16-03-2012 - 6_1_48
+
+	if no basin is given return with "error" (subapn.f)
+
 16.03.2012	compiler errors, better install, test compile
 
 	fixed compiler errors for gfortran (submeteo_inout.f)

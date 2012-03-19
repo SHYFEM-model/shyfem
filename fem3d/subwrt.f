@@ -118,22 +118,22 @@ c--------------------------
 c default settings
 c--------------------------
 
-        bnoret = .false.
-	bstir = .false.
-        blog = .false.
-        badj = .true.
+        bnoret = .false.	!no return flow
+	bstir = .false.		!stirred tank
+        blog = .false.		!compute residence time with log fitting
+        badj = .true.		!adjust residence time for tail
 
-	percmin = 0.
-	iaout = -1
-	c0 = 1.
+	percmin = 0.		!minimum percentage for remnant function
+	iaout = -1		!areas considered outside
+	c0 = 1.			!initial concentration
 
-	itmin = -1
-	itmax = -1
-	idtreset = 0
+	itmin = -1		!compute from start of simulation
+	itmax = -1		!compute to end of simulation
+	idtreset = 0		!no reset of concentrations (old default)
 	idtreset = -1		!no residence time computation
 
-	ccut = 0.
-	ctop = 0.
+	ctop = 0.		!max for frequency curve
+	ccut = 0.		!max fro residence time
 
 c--------------------------
 c customization

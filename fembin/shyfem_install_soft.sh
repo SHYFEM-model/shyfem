@@ -2,7 +2,7 @@
 #
 # shyfem_install_soft.sh
 #
-# changes symbolic link and dor files (.bashrc, .bash_profile, .profile)
+# changes symbolic link and dot files (.bashrc, .bash_profile, .profile)
 #
 # normally called from Makefile
 # must be called from within root of shyfem directory
@@ -13,8 +13,6 @@
 
 ChangeDot()
 {
-  file=$1
-
   afile=$HOME/$1
   if [ -L $afile ]; then	# change file, not link
     afile=`readlink -f $afile`
@@ -23,11 +21,16 @@ ChangeDot()
 
   #echo "$afile -> $save"; return
 
-  mv $afile $save
-  $femdir/fembin/shyfem_install.pl $femdir $save > $afile
+  mv -f $afile $save
+  $femdir/fembin/shyfem_install.pl $reset $femdir $save > tmp.tmp
   [ $? != 0 ] && exit 1
+  mv -f tmp.tmp $afile
 
-  echo "$afile has been changed... original saved to $save"
+  hfile=`basename $afile`
+  hsfile=`basename $save`
+  changed="$changed $hfile"
+
+  echo "$hfile has been changed... original saved to $hsfile"
 }
 
 CreateSymlink()
@@ -45,13 +48,18 @@ CreateSymlink()
     fi
   fi
 
-  echo "creating symbolic link from $femdir to $link"
-  ln -s $femdir $link
+  if [ "$reset" = "-reset" ]; then
+    echo "deleted symbolic link $link"
+  else
+    echo "creating symbolic link from $femdir to $link"
+    ln -s $femdir $link
+  fi
 }
 
 # check shyfem directory -----------------------------------
 
 dir=`pwd -P`
+reset=$1		#if called with -reset
 
 #echo "debug message: using dir as $dir"
 
@@ -68,16 +76,22 @@ fi
 femdir=$dir
 
 echo "========================================================="
-echo "running shyfem_install_soft.sh"
+if [ "$reset" = "-reset" ]; then
+  echo "Uninstalling the SHYFEM model"
+else
+  echo "Installing the SHYFEM model"
+fi
+echo "      running shyfem_install_soft.sh $reset"
 echo "      using directory: $dir"
 echo "========================================================="
 
 # make symbolic link -----------------------------------
 
 CreateSymlink shyfem
-#CreateSymlink fem               #this might be deleted somewhen
 
 # change dot files -----------------------------------
+
+changed=""
 
 if [ -f $HOME/.bashrc ]; then
   ChangeDot .bashrc
@@ -100,17 +114,26 @@ fi
 # final message ----------------------------------------
 
 echo ""
-echo "The SHYFEM model has been installed."
+if [ "$reset" = "-reset" ]; then
+  echo "The SHYFEM model has been uninstalled."
+else
+  echo "The SHYFEM model has been installed."
+fi
 echo ""
 echo "If necessary, please cleanup the following files"
-echo "in your home directory: .bashrc .bash_profile .profile"
+echo "in your home directory: $changed"
 echo ""
 echo "In order that the new settings are effective,"
 echo "please log out and in again, or go to your"
 echo "home directory and run one of the following commands:"
-echo "  source .bashrc"
-echo "  source .bash_profile"
-echo "  source .profile"
+
+for file in $changed
+do
+  echo "  . $file"
+done
+
+[ "$reset" = "-reset" ] && exit 0
+
 echo ""
 echo "If this is the first time you install SHYFEM,"
 echo "please also run 'make check_software' to see if"
