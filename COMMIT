@@ -1,5 +1,17 @@
 ============================================================
 
+Mon Mar 19 14:44:25 CET 2012
+
+fake
+
+ Rules.make              |  115 +---------------------------------------------
+ fem3d/subver.f          |    7 ++-
+ femdoc/final/shyfem.pdf |  Bin 254181 -> 254180 bytes
+ femdoc/final/shyfem.ps  |   24 +++++-----
+ 4 files changed, 19 insertions(+), 127 deletions(-)
+
+============================================================
+
 Mon Mar 19 14:37:05 CET 2012
 
 install routines, manual

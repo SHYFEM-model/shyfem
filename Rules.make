@@ -9,7 +9,7 @@
 # User defined parameters and flags
 ##############################################
 
-# ggu
+# skel version
 
 ##############################################
 # Parameters
@@ -40,115 +40,6 @@ export NLVDIM = 1
 export NKNDIM = 11000
 export NELDIM = 22000
 
-# asi-zec
-#export NKNDIM = 17000
-#export NELDIM = 30000
-#export NLVDIM = 1
-#export NLVDIM = 52
-#export NGRDIM = 12
-
-# curonian
-#export NKNDIM = 13000
-#export NELDIM = 26000
-#export NLVDIM = 1
-
-# curonian petras
-#export NKNDIM = 12900
-#export NELDIM = 22900
-#export NLVDIM = 20
-#export MBWDIM = 173
-#export NGRDIM = 11
-
-# ginevra
-#export NKNDIM = 1100
-#export NELDIM = 2200
-#export NLVDIM = 200
-
-# kassandra
-#export NKNDIM = 81000
-#export NELDIM = 145000
-#export NLVDIM = 1
-#export NGRDIM = 15
-#export MBWDIM = 300
-
-# adriatico_DEFB_nolag
-#export NKNDIM = 24000
-#export NELDIM = 44000
-#export NLVDIM = 27
-#export NGRDIM = 12
-#export MBWDIM = 295
-
-# isabella
-#export NKNDIM = 14000
-#export NELDIM = 26000
-#export NLVDIM = 16
-#export MBWDIM = 200
-#export NGRDIM = 10
-
-# skadar
-#export NKNDIM = 12000
-#export NELDIM = 24000
-#export NLVDIM = 20
-
-# Skadar new
-#export NKNDIM = 20610
-#export NELDIM = 39170
-#export NLVDIM = 10
-#export NGRDIM = 15
-#export MBWDIM = 220
-#export NBCDIM = 50
-
-# trieste
-#export NKNDIM = 26000
-#export NELDIM = 51000
-#export NLVDIM = 17
-
-# Venice
-#export NKNDIM = 5000
-#export NELDIM = 8000
-#export NLVDIM = 1
-#export MBWDIM = 70
-
-# Marano-Grado
-#export NKNDIM = 12000
-#export NELDIM = 22000
-#export NLVDIM = 1
-#export MBWDIM = 300
-
-# Black-Sea
-#export NKNDIM = 12000
-#export NELDIM = 22000
-#export NLVDIM = 30
-#export MBWDIM = 240
-
-# trieste small
-#export NKNDIM = 3000
-#export NELDIM = 6000
-#export NLVDIM = 22
-
-# Cabras
-#export NKNDIM = 4000
-#export NELDIM = 8000
-#export NLVDIM = 1
-#export MBWDIM = 50
-#export NGRDIM = 10
-
-# Mar Menor
-#export NKNDIM = 9000
-#export NELDIM = 17000
-#export NLVDIM = 1
-#export MBWDIM = 180
-#export NGRDIM = 10
-#export NBDYDIM = 200000
-
-# taranto
-export NKNDIM = 4452
-export NELDIM = 8059
-export NLVDIM = 1
-export NGRDIM = 8
-export MBWDIM = 77
-#export NLVDIM = 20
-
 ##############################################
 # Compiler
 ##############################################
@@ -166,8 +57,8 @@ export MBWDIM = 77
 ##############################################
 
 #COMPILER = GNU_G77
-#COMPILER = GNU_GFORTRAN
-COMPILER = INTEL
+COMPILER = GNU_GFORTRAN
+#COMPILER = INTEL
 #COMPILER = PORTLAND
 
 ##############################################
