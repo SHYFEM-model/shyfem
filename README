@@ -1,6 +1,37 @@
 
+============================================
 This is the README file for the SHYFEM model
+============================================
 
+    Copyright (c) 1992-2012 by Georg Umgiesser
+
+    Comments and additions should be sent to the author:
+
+      Georg Umgiesser                                  
+      Oceanography, ISMAR-CNR
+      Arsenale Tesa 104, Castello 2737/F
+      30122 Venezia
+      Italy
+
+      Tel.   : ++39-041-2407943
+      Fax    : ++39-041-2407940
+      E-Mail : georg.umgiesser@ismar.cnr.it
+
+
+    This file is part of SHYFEM.
+
+    SHYFEM is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    SHYFEM is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with SHYFEM.  If not, see <http://www.gnu.org/licenses/>.
 
 
 Directory structure
@@ -10,9 +41,13 @@ fem3d		FEM model and utility routines
 femadj		Routines for the adjustment of the grid after the
 		automatic mesh generation. The program to run
 		is adjele
+femanim		Routines to generate animations from postscript files
 fembin		Binaries used by the model
 femcheck	Routines to set up and check the installation
 femdoc		Documentation, manual, etc.
+femersem	Routines for BFM (ERSEM) ecological model
+femgotm		Routines for GOTM turbulence clousre model
+femlib		Library routines (filled during compilation)
 femplot		Plotting routines for post processing. The routine
 		to run is plotsim, but this routine is more
 		conveniently run through the command plots
@@ -21,6 +56,9 @@ femspline	Programs to smooth and reduce lines. These programs
 		are used to change the resolution of the boundary
 		line before running the automatic mesh generator.
 		Please use the routine gridr.
+grid		Visualization routine for GRD files
+hcbs		Outdated files for plotting to monitor
+mesh		Automatic mesh generator
 post		Library for plotting to Postscript files.
 
 
@@ -33,9 +71,8 @@ command "make fem". Other commands are:
 
 make fem	compiles everything
 make clean	deletes objetc and executable files in all subdirectories
-make cleanall	as clean, but with some more files deleted
-make doc	makes documentation in femdoc
-make tar	creates zipped file for distribution
+make cleanall	as clean, but cleans also libraries
+make doc	makes documentation in femdoc (manual)
 make all	compiles (fem) and makes documents (doc)
 
 

@@ -133,3 +133,13 @@ What concerns the compiler, if you have the Intel compiler installed,
 then this is normally a good option. Otherwise you can use the Gnu
 compilers (gfortran, or the older version g77).
 
+
+Why do I get a "segmentation fault" when I run "grid"?
+
+There are basically two reasons for this behavior. The first is that
+you are running "grid" in a non-X11 environment. Typically this happens
+in a cygwin environment if you have not started the X11 environment
+("startx"). The second reason can be the fact that you have coonected with
+"ssh" to another computer and forgot to use the "-X" flag. Therefore,
+if you want to run "grid" from a remote computer, please log into the
+computer with "ssh -X".

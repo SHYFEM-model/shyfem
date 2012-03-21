@@ -6,7 +6,7 @@ default:
 fem:
 
 check:
-	./check_setup.sh
+	./check_software.sh
 
 setup:
 	./setup.sh

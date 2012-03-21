@@ -1,0 +1,19 @@
+
+This section explains typical usage of the model. It will show how
+the model can be run doing basic 2D hydrodynamic simulations, simulate
+a passive tracer, compute T/S, use the Coriolis force and apply wind
+forcing. More advanced usages of the model, like 3D simulations and the
+use of the turbulence module will be presented later. This section is
+conceived as a simple HOWTO document. For the exact meaning and usage
+of the single parameters, please see the section on input parameters.
+
+To run a simulation, two things are needed. The first is the description
+of the basin and the numerical grid, which must be prepared beforehand and
+then must be compiled in a form that the model can use. How this is been
+done has already been described in the chapter dealing with preprocessing.
+
+The second thing that is needed is a description of the simulation and the
+forcings that have to be applied. This is done through a parameter input
+file. Here we call it |STR| file, because historically these files always
+ended with an extension of |.str|. However, any extension can be used.
+

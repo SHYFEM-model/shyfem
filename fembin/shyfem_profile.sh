@@ -23,7 +23,7 @@ export PATH=$path:$fembin:$HOME/shyfem/fembin
 
 alias shyfemdir=". $fembin_install/shyfem_dir.sh"
 alias shyfeminstall=". $fembin_install/shyfem_dir.sh $FEMDIR_INSTALL"
-alias cdshyfem="cd $FEMDIR"
+alias shyfemcd="cd $FEMDIR"
 
 # end of routine ----------------------------------------
 

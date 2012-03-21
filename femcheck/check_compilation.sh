@@ -4,8 +4,6 @@
 #
 #----------------------------------------------------
 
-verbose="YES"
-verbose="NO"
 log=CHECKLOG
 missing=""
 
@@ -28,6 +26,9 @@ CheckCommand()
 }
 
 #---------------------------------------------------
+
+verbose="YES"
+[ "$1" = "-quiet" ] && verbose="NO"
 
 [ -f .memory ] && rm -f .memory
 [ -f $log ] && rm -f $log
@@ -58,6 +59,10 @@ if [ -n "$missing" ]; then
   echo "Please see the messages in $log and correct"
   echo ""
   exit 1
+elif [ $verbose = "YES" ]; then
+  echo ""
+  echo "All programs are compiled and installed"
+  echo ""
 fi
 
 exit 0

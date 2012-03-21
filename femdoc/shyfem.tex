@@ -4,7 +4,6 @@
 % todo:
 %
 % windos users -> cygwin
-% admin commands (fem, clean, cleanall, install, uninstall,...)
 
 \documentclass{report}
 
@@ -23,10 +22,10 @@
 \newcommand{\psp}{{\tt SHYFEM}}
 
 \input{P_version.tex}
-%\newcommand{\version}{6\_1\_40}
 \newcommand{\shyname}{shyfem-\version}
-\newcommand{\shydir}{/home/model/shyfem-\version}
-\newcommand{\shydist}{\shydir.tar.gz}
+\newcommand{\shydist}{\shyname.tar.gz}
+\newcommand{\basedir}{/home/model}
+\newcommand{\shydir}{\basedir/shyfem-\version}
 
 \newcommand{\descrpsep}{\vspace{0.2cm}}
 \newcommand{\descrpitem}[1]{\descrpsep\parbox[t]{2cm}{#1}}
@@ -70,9 +69,10 @@
 	}
 
 \author{%
-	The SHYFEM Group \\
-	Georg Umgiesser
-	\\ISMAR-CNR, Castello 1364/A
+	The SHYFEM Group
+	\\Georg Umgiesser
+	\\Oceanography, ISMAR-CNR
+	\\Arsenale Tesa 104, Castello 2737/F
 	\\30122 Venezia, Italy
 	\vspace{0.5cm}
 	\\georg.umgiesser@ismar.cnr.it
@@ -100,68 +100,27 @@
 \thispagestyle{empty}
 
 \newpage
-
 \tableofcontents
-
 \newpage
 
-
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \chapter*{Disclaimer}
-\addcontentsline{toc}{chapter}{Disclaimer}
+	\addcontentsline{toc}{chapter}{Disclaimer}
 
-
-\begin{quotation}
-  									 
-   Copyright (c) 1992-2012 by Georg Umgiesser				 
-  									 
-   Permission to use, copy, modify, and distribute this software	 
-   and its documentation for any purpose and without fee is hereby	 
-   granted, provided that the above copyright notice appear in all	 
-   copies and that both that copyright notice and this permission	 
-   notice appear in supporting documentation.				 
-  									 
-   This file is provided AS IS with no warranties of any kind.		 
-   The author shall have no liability with respect to the		 
-   infringement of copyrights, trade secrets or any patents by		 
-   this file or any part thereof.  In no event will the author		 
-   be liable for any lost revenue or profits or other special,		 
-   indirect and consequential damages.					 
-  									 
-   Comments and additions should be sent to the author:			 
-  									 
-	\begin{verbatim}
-  			Georg Umgiesser					 
-  			ISMAR-CNR					 
-  			Castello 1364/A
-  			30122 Venezia					 
-  			Italy						 
-  									 
-  			Tel.   : ++39-41-2404773			 
-  			Fax    : ++39-41-5204126			 
-  			E-Mail : georg.umgiesser@ismar.cnr.it
-	\end{verbatim}
-\end{quotation}
-
-
-
+	\input{disclaimer}
 
 \newpage
-
 \pagenumbering{arabic}
 
-
-
-
-
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% external software
+% contributors
 
 \chapter{Overview}
 
@@ -234,110 +193,91 @@
 	\section{Creating the basin file}
 	\input{pre_basin}
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \chapter{Running SHYFEM}
 
+	\input{running_shyfem}
 
-In the following an overview is given on running the model
-\shy{}. The model needs a parameter input file that is read 
-on standard input. Moreover, it needs some external files that
-are specified in this parameter input file. The model produces
-several external files with the results of the simulation. Again,
-the name of this files can be influenced by the parameter input file
+	\section{How to run: the Parameter Input File (STR)}
+	\input{model_how_to_run}
 
-\section{How to run: the Parameter Input File (STR)}
-\input{model_how_to_run}
-
-%\section{Adjusting to the basin}
-%\todo{Georg}
-
-%\section{Basic file formats}
-%\todo{Georg}
-
-\section{Basic usages}
-
-This section explains typical usage of the model. It will show how
-the model can be run doing basic 2D hydrodynamic simulations, simulate
-a passive tracer, compute T/S, use the Coriolis force and apply wind
-forcing. More advanced usages of the model, like 3D simulations and the
-use of the turbulence module will be presented later. This section is
-conceived as a simple HOWTO document. For the exact meaning and usage
-of the single parameters, please see the section on input parameters.
-
-To run a simulation, two things are needed. The first is the description
-of the basin and the numerical grid, which must be prepared beforehand and
-then must be compiled in a form that the model can use. How this is been
-done has already been described in the chapter dealing with preprocessing.
-
-The second thing that is needed is a description of the simulation and the
-forcings that have to be applied. This is done through a parameter input
-file. Here we call it |STR| file, because historically these files always
-ended with an extension of |.str|. However, any extension can be used.
-
-	\subsection{Minimal simulation}
-	\input{basic_minimal}
-
-	\subsection{Boundary conditions}
-	\input{bound_cond}
-
-%	\subsection{Writing output}
+%	\section{Adjusting to the basin}
 %	\todo{Georg}
 
-%	\subsection{Simulating passive tracers}
+%	\section{Basic file formats}
 %	\todo{Georg}
 
-%	\subsection{Temperature and salinity}
-%	\todo{Georg}
+	\section{Basic usage}
 
-%	\subsection{Linear and non-linear simulations}
-%	\todo{Georg}
+		\input{basic_usage}
 
-%	\subsection{Coriolis force}
-%	\todo{Georg}
+		\subsection{Minimal simulation}
+		\input{basic_minimal}
 
-%	\subsection{Wind forcing}
-%	\todo{Georg}
+%		\input{usage.tex}	%??
 
-\section{Advanced usages}
+		\subsection{Boundary conditions}
+		\input{bound_cond}
 
-	\subsection{Variable time step}
-	\input{var_time_step}
+%		\subsection{Writing output}
+%		\todo{Georg}
 
-	\subsection{3D computations}
-	\input{3d_layers}
+%		\subsection{Simulating passive tracers}
+%		\todo{Georg}
 
-	\subsection{Baroclinic terms}
-	\input{barocl}
+%		\subsection{Temperature and salinity}
+%		\todo{Georg}
 
-%	\subsection{Restart}
-%	\todo{Marco}
+%		\subsection{Linear and non-linear simulations}
+%		\todo{Georg}
 
-	\subsection{Turbulence}
-	\input{turbulence}
+%		\subsection{Coriolis force}
+%		\todo{Georg}
 
-%	\subsection{Meteo forcing}
-%	\todo{Debora}
+%		\subsection{Wind forcing}
+%		\todo{Georg}
 
-%	\subsection{Lagrangian module}
-%	\todo{Andrea}
+	\section{Advanced usage}
 
-%	\subsection{Large grids and projections}
-%	\todo{Debora}
+		\subsection{Variable time step}
+		\input{var_time_step}
 
-%	\subsection{Coupling to the wave model}
-%	\todo{Andrea o Christian}
+		\subsection{3D computations}
+		\input{3d_layers}
+
+		\subsection{Baroclinic terms}
+		\input{barocl}
+
+%		\subsection{Restart}
+%		\todo{Marco}
+
+		\subsection{Turbulence}
+		\input{turbulence}
+
+%		\subsection{Meteo forcing}
+%		\todo{Debora}
+
+%		\subsection{Lagrangian module}
+%		\todo{Andrea}
+
+%		\subsection{Large grids and projections}
+%		\todo{Debora}
+
+%		\subsection{Coupling to the wave model}
+%		\todo{Andrea o Christian}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %\chapter{Other modules}
+
 %	\section{Residence times}
 %	\todo{Andrea}
+
 %	\section{Sediment transport}
 %	\todo{Christian}
 
@@ -348,18 +288,13 @@ ended with an extension of |.str|. However, any extension can be used.
 %	\subsection{Parameters for the Water Quality Module}
 %	\input{S_biopar_h.tex}
 
-
-%\input{usage.tex}
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %\chapter{Postprocessing}
 %
-%Da qui in poi pensiamo piu' tardi...
+% Da qui in poi ci pensiamo piu' tardi...
 %
 %\section{Running the post processing routines}
 %\section{Time series: gnuplot}
@@ -387,14 +322,18 @@ ended with an extension of |.str|. However, any extension can be used.
 
 \chapter{Hydrodynamic equations and resolution techniques}
 
-\input{equat.tex}
+	\input{equat.tex}
 
-%\chapter{File formats}
-%
-%\section{STR file}
-%\section{GRD file}
-%\section{Time series}
-%\section{Output file formats}
+\chapter{File formats}
+
+%	\section{STR file}
+
+	\section{GRD file}
+	\input{grd_format}
+
+%	\section{Time series}
+
+%	\section{Output file formats}
 
 
 
@@ -479,7 +418,7 @@ These are points where water level and velocities are written to create
 a time series that can be elaborated later. The output for these ``extra''
 points consumes little memory and can be therefore written with a
 much higher frequency (typically the same as the integration time step)
-than the complete hydrodynamical output. The output is written
+than the complete hydrodynamic output. The output is written
 to file EXT.
 
 The node numbers are specified in a free format on one ore more lines.

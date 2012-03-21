@@ -397,6 +397,7 @@ c end of read %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    77	continue
 	if( nlv .eq. -1 ) then
 	  write(6,*) 'read error in section $levels'
+	  write(6,*) 'nlv,nlvdi: ',nlv,nlvdi
 	  stop 'error stop nlsh2d: read error'
 	else
 	  write(6,*) 'dimension error in section $levels'

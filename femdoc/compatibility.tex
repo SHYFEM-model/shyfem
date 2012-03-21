@@ -1,7 +1,7 @@
 
-The SHFEM program is designed to work with most of the compilers
+The SHYFEM program is designed to work with most of the compilers
 that are available. Normally there should be no problems with
-caompatibility. However you have to keep in mind some points that are
+compatibility. However you have to keep in mind some points that are
 listed below.
 
 The supported compilers for SHYFEM are
@@ -10,12 +10,11 @@ The supported compilers for SHYFEM are
 
 \item {\bf g77} This the old GNU compiler. It is Fortran 77 only. It
 is also a little outdated and is not supported anymore by the major
-distributions. However, if you do not need software that relies on
-Fortran 90 it is still possible to use it. However, GOTM and some
-ecological modules are relying on Fortran 90 and cannot be used with
-the g77 compiler.
+distributions. If you do not need software that relies on Fortran 90 it
+is still possible to use it. However, GOTM and some ecological modules
+are relying on Fortran 90 and cannot be used with the g77 compiler.
 
-\item {\bf gfortran} This is the actual GNU compiler. It ilso
+\item {\bf gfortran} This is the actual GNU compiler. It also
 supports Fortran 90. This is the compiler that you will find in recent
 distributions.
 
@@ -23,24 +22,23 @@ distributions.
 and install it on your own. It is very efficient and normally faster
 than the GNU compiler.
 
-\item {\bf pgp} This is the Portland group compiler. It is a commercial
+\item {\bf pgf90} This is the Portland group compiler. It is a commercial
 compiler. It creates very efficient code.
 
 \end{itemize}
 
-Whatever compiler you choose to use, you have to set your choice in the
-|Rules.make| file. Even if not desireable, different compilers can give
-you slightly different results in the computations. This is due to the
-different optimizations enabled and maybe different treatment of accuracy
-and round off. Other compatibility issues are the following.
-
+Whatever compiler you choose to use, you have to set your choice in
+the |Rules.make| file. Even if not desirable, different compilers can
+give you slightly different results in the computations. This is due to
+the different optimizations enabled and maybe a different treatment of
+accuracy and round off. Other compatibility issues are the following.
 
 \begin{itemize}
 
 \item With |g77| and |ifort| it is possible to open the same file in
-read only mode more than once. This is usefull, e.g., if you have two
-open boundaries, but you want to prescirbe the same value on these
-two boundaries. With |gfortran| or |pgp| you cannot do this. A file,
+read only mode more than once. This is useful, e.g., if you have two
+open boundaries, but you want to prescribe the same value on these
+two boundaries. With |gfortran| or |pgf90| you cannot do this. A file,
 even in read only mode, can be opened only once. In the above example
 you therefore have to copy the input file to a new name (duplicate it)
 and then prescribe the two different files as boundary conditions.
@@ -63,10 +61,10 @@ compiled with one compiler together with a program compiled with another
 compiler. The same is true for unformatted data files (initial conditions,
 wind and meteo forcing, etc.).
 
-If you have problems reading a basin file, try |basinf|. If this is not
-working chances are high that you have a problem like this.  In case
-of unformatted data files the diagnosis is not so easy. In any case,
-you can solve the problem recompiling all programs with the commands
+If you have problems reading a basin file, try |basinf|. If this is
+not working chances are high that you have the problem described above.
+In case of unformatted data files the diagnosis is not so easy. In any
+case, you can solve the problem recompiling all programs with the commands
 |make cleantotal; make fem| and then re-creating all unformatted files
 with the newly compiled programs. In case of the basin file, you will
 have to run the pre-processor on the grid again.
@@ -79,12 +77,12 @@ between different computers and compilers is never a good idea.
 architectures (32 bit and 64 bits), even if created with the same
 compiler. These files are normally not portable.
 
-\item Nan values (Not a Number) are treated differently bewteen different
-compilers. Nan values are created if a not well defined operation
-is executed (divide by 0 or square root of a negative number). All
-compilers above (excpet pgp) treat Nans to be not comparable to any
-number.  This means that a logical expression |a.eq.a| is always false
-if |a| is a Nan. However the pgp compiler treats Nans to be comparable
+\item Nan values (Not a Number) are treated differently between different
+compilers. Nan values are created if a not well defined operation is
+executed (divide by 0 or square root of a negative number). All compilers
+above (except |pgf90|) treat Nans to be not comparable to any number.
+This means that a logical expression |a.eq.a| is always false if |a|
+is a Nan. However the |pgf90| compiler treats Nans to be comparable
 to any other number. So, an expression like |a.ne.a| will evaluate to
 true. SHYFEM includes code to handle these problems gracefully, but
 incompatibilities might still show up.

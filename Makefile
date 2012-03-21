@@ -76,18 +76,20 @@ endif
 
 FEMDIRS   = $(FEMLIBS) $(FEMEXTRA) $(FEMC) $(FEMPROG) $(FEMUTIL)
 
+.IGNORE: clean
+.PHONY: publish version public
+
+#---------------------------------------------------------------
+# compiling and recursive targets
 #---------------------------------------------------------------
 
 default: fem
-
-.IGNORE: clean
-.PHONY: publish version
 
 all: fem doc
 
 fem: checkv directories links
 	$(FEMBIN)/recursivemake $@ $(FEMDIRS)
-	make check_install
+	@femcheck/check_compilation.sh -quiet
 
 doc:
 	cd femdoc; make doc
@@ -112,6 +114,16 @@ depend:
 param:
 	$(FEMBIN)/recursivemake $@ $(PARAMDIRS)
 
+directories:
+	-mkdir -p tmp
+
+links:
+	-rm -f bin lib
+	-ln -sf fembin bin
+	-ln -sf femlib lib
+
+#---------------------------------------------------------------
+# cleaning
 #---------------------------------------------------------------
 
 cleanlocal:
@@ -139,30 +151,28 @@ cleanbck:
 	-rm -rf *.bck
 
 #---------------------------------------------------------------
+# public commands
+#---------------------------------------------------------------
 
-directories:
-	-mkdir -p tmp
+version:
+	@echo $(VERSION)
 
-check:
-	$(FEMBIN)/recursivemake $@ femcheck
-
+check: check_software
 check_software:
 	@cd femcheck; ./check_software.sh
 
-check_install:
-	@femcheck/check_install.sh
+check_compilation:
+	@femcheck/check_compilation.sh
 
-test_compile:
-	@femcheck/test_compile.sh
+modified: changed
+changed:
+	@find . -newer VERSION -type f
 
-ggu:
-	cp -f rules/Rules.save ./Rules.make
+changed_zip:
+	zip changed_zip.zip `find . -newer VERSION -type f`
 
-dist: cleandist
-	mv --backup=numbered ./Rules.make rules/Rules.save
-	cp -f rules/Rules.skel ./Rules.make
-	make doc; make clean
-
+#--------------------------------------------------------
+# installing
 #--------------------------------------------------------
 
 install: install_hard install_soft
@@ -181,15 +191,26 @@ install_soft_reset: checkv
 install_hard_reset: checkv
 	$(FEMBIN)/shyfem_install_hard.sh -reset
 
-links:
-	-rm -f bin lib
-	-ln -sf fembin bin
-	-ln -sf femlib lib
-
+#--------------------------------------------------------
+# private and admin commands
 #--------------------------------------------------------
 
-tar:
-	@echo "Please use targets vers or beta"
+test_compile:
+	@femcheck/test_compile.sh
+
+revision:
+	 $(FEMBIN)/revision_last
+
+ggu:
+	cp -f rules/Rules.save ./Rules.make
+
+dist: cleandist
+	mv --backup=numbered ./Rules.make rules/Rules.save
+	cp -f rules/Rules.skel ./Rules.make
+	make doc; make clean
+
+public:
+	@public/make_public.sh shyfem-$(VERSNAME).tar.gz
 
 beta: cleanall
 	date > LASTTAR
@@ -204,38 +225,11 @@ beta: cleanall
 	rm -rf $(TMPDIR)/fem.tar $(BETADIR)
 	mv fem.tar.gz shyfem-$(BETANAME).tar.gz
 
-vers: 
-	@echo "please do not use this command - use gittar instead"
-
-versold: cleanall
-	date > LASTTAR
-	rm -rf $(TMPDIR)/fem.tar $(TMPDIR)/fem_VERS_*; mkdir -p $(TARDIR)
-	cp -al $(FEMTOTS) $(SPECIAL) $(TARDIR)
-	cd $(TMPDIR); tar cvf fem.tar fem_VERS_*
-	mv -f $(TMPDIR)/fem.tar .
-	gzip -f fem.tar
-	rm -rf $(TMPDIR)/fem.tar $(TARDIR)
-	mv fem.tar.gz shyfem_$(TARNAME).tar.gz
-
 publish:
 	@fembin/fempub.sh shyfem_$(TARNAME).tar.gz
 
-cvschange:
-	 $(FEMBIN)/iterate1dir "$@ -d -t" $(FEMDIRS)
-
-revision:
-	 $(FEMBIN)/revision_last
-
-version:
-	@echo $(VERSION)
-
-changed: modified
-modified:
-	@find . -newer VERSION -type f
-
-changed_zip:
-	zip changed_zip.zip `find . -newer VERSION -type f`
-
+#---------------------------------------------------------------
+# compatibility checks
 #---------------------------------------------------------------
 
 checkv: $(RULES_MAKE_COMPATIBILITY) $(RULES_MAKE_PARAMETERS)
@@ -255,5 +249,7 @@ RULES_MAKE_PARAMETER_ERROR:
 	@echo "please adapt your Rules.make file"
 	@exit 1
 
+#---------------------------------------------------------------
+# end of Makefile
 #---------------------------------------------------------------
 

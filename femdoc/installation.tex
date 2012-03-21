@@ -1,10 +1,11 @@
 
 \newcommand{\sysfiles}{.bashrc .bash\_profile .profile}
 
-Before compiling it is avisable to install some files for a simpler
+Before compiling it is advisable to install some files for a simpler
 usage of the model. As long as you only want to tun a simulation, this
 step is not strictly necessary. But if you will run some scripts of the
-distribution, these scripts will not work if you do not install the model.
+distribution, these scripts will not work properly if you do not install
+the model.
 
 In order to install the model, you should run
 
@@ -12,7 +13,7 @@ In order to install the model, you should run
     make install
 \end{code}
 
-This command will do the folowing:
+This command will do the following:
 
 \begin{itemize}
 
@@ -35,7 +36,7 @@ or similar).  If you encounter problems, just substitute back these files.
 
 In order that your new settings will take effect you will have to log
 out and log in again. Alternatively, you will have to execute one of
-the files |\sysfiles| that have actually changed. If |.bashrc| has been
+the files \ttt{\sysfiles} that have actually changed. If |.bashrc| has been
 changed, then run |. ~/.bashrc|.
 
 If you do not want to run the installation routine, you should at least
@@ -49,9 +50,9 @@ properly. This can be done with the command
 \end{codem}
 
 from your home directory. If there is already such a link existing you
-first have to delete it (|rm shyfem|).
+will first have to delete it (|rm shyfem|).
 
-You should also think about the option to add the fembin path to your
+You should also think about the possibility to add the fembin path to your
 default paths to have the main utility commands always available. To do
 this open your |.bashrc| file in the home directory and add the following
 lines at the end of the file:

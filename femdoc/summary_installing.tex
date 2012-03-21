@@ -6,15 +6,15 @@ be able to run the model:
 
 \item Get the distribution and unpack it in a place of your choice.
 
-\item Move to the root of the distribution (\ttt{cd \shydir}).
+\item Move to the root of the distribution (\ttt{e.g., cd \shydir}).
 
 \item Check if all software is available (|make check_software|). This
 step has to be done only the first time you install SHYFEM on a computer.
 
-\item Install the model (|make install|). This has to be done everytime
+\item Install the model (|make install|). This has to be done every time
 you get and install a new version of the model.
 
-\item Adjust options in |Rules.make|. This has to be done everytime you
+\item Adjust options in |Rules.make|. This has to be done every time you
 change options (compiler, parallel execution, etc.). After this you have
 to run also |make cleanall|.
 
@@ -28,4 +28,42 @@ messages.
 
 \end{itemize}
 
+Moreover, below a summary of administrative commands is given that are
+available in SHYFEM. \vspace{0.5cm}
 
+\begin{center}
+\begin{tabular}{ l p{7cm} }
+|make version|		&	shows version of distribution \\
+|make clean|		&	deletes objects and executables from a previous
+                        	compilation \\
+|make cleanall|		&	same as |make clean| but also deletes 
+				compiled libraries \\
+|make fem|		&	compiles SHYFEM \\
+|make doc|		&	makes this manual (|femdoc/shyfem.pdf|) \\
+|make check_software|	&	checks the availability of installed software \\
+|make check_compilation|&	checks if all programs have been compiled \\
+|make changed|		&	finds files that are changed with respect to the
+				original distribution \\
+|make changed_zip|	&	zips files that are changed with respect to the
+				original distribution to the file 
+				|changed_zip.zip| \\
+|make install|		&	installs SHYFEM \\
+|make uninstall|	&	uninstalls SHYFEM \\
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+Finally, if you have installed the model with |make install|, 
+the following utility commands are available \vspace{0.5cm}
+
+\begin{center}
+\begin{tabular}{ l l }
+|shyfemdir|		&	shows information about actual SHYFEM
+				settings \\
+|shyfemdir fem_dir|	&	sets |fem_dir| to be the new default 
+				SHYFEM version \\
+|shyfeminstall|		&	shows information about original SHYFEM 
+				installation \\
+|shyfemcd|		&	moves into root of actual SHYFEM directory \\
+\end{tabular}
+\end{center}

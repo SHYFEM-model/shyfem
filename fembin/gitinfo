@@ -61,6 +61,9 @@ gittar			makes tar file for given version
 
 todo for a new version:
 
+make dist
+make test_compile
+
 git status
 git diff <file>
 revision_last		-> output should go into LOG, BUG and RELEASE_NOTES
@@ -68,7 +71,6 @@ git add -u
 
 gitcommit
 gittag
-
 gittar
 
 EOI

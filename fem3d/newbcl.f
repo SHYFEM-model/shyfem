@@ -704,8 +704,8 @@ c-------------------------------------------------------------
 
 	if( icall .eq. 0 ) then
 	  write(6,*) 'ts_intp: opening files for T/S'
-	  call ts_file_open(tempf,iutemp)
-	  call ts_file_open(saltf,iusalt)
+	  call ts_file_open(tempf,nkn,iutemp)
+	  call ts_file_open(saltf,nkn,iusalt)
 
 	  write(6,*) 'ts_intp: initializing T/S'
 	  call ts_next_record(ittold,iutemp,nkn,nlv,toldv)
@@ -842,7 +842,7 @@ c initialization of T/S from file
 
 	if( tempf .ne. ' ' ) then
 	  write(6,*) 'ts_file_init: opening file for T'
-	  call ts_file_open(tempf,iutemp)
+	  call ts_file_open(tempf,nkn,iutemp)
           call ts_next_record(itt,iutemp,nkn,nlv,tempv)
 	  call ts_file_close(iutemp)
           write(6,*) 'temperature initialized from file ',tempf
@@ -850,7 +850,7 @@ c initialization of T/S from file
 
 	if( saltf .ne. ' ' ) then
 	  write(6,*) 'ts_file_init: opening file for S'
-	  call ts_file_open(saltf,iusalt)
+	  call ts_file_open(saltf,nkn,iusalt)
           call ts_next_record(its,iusalt,nkn,nlv,saltv)
 	  call ts_file_close(iusalt)
           write(6,*) 'salinity initialized from file ',saltf
@@ -860,7 +860,7 @@ c initialization of T/S from file
 
 c*******************************************************************	
 
-	subroutine ts_file_open(name,info)
+	subroutine ts_file_open(name,nkn,info)
 
 c opens T/S file
 
@@ -869,6 +869,7 @@ c opens T/S file
 	include 'param.h'
 
 	character*(*) name
+	integer nkn
 	integer info(3)
 
 	real hlv(1)
@@ -888,21 +889,45 @@ c opens T/S file
 	bdebug = .false.
 
 c-------------------------------------------------------------
+c indicator for file format and content
+c
+c -1	do not know - check (default)
+c  0	no (not formatted, does not have hlv array)
+c  1	yes (formatted, has hlv array)
+c
+c if you are sure about your file format and content you can
+c set these variables below to the desired value
+c
+c we still check file for formatted or unformatted
+c we always pretend that the file has hlv information
+c-------------------------------------------------------------
+
+	iformat = -1		!indicator if file is formatted
+	ihashl  = +1		!indicator if file has hlv array
+
+c-------------------------------------------------------------
 c check if formatted or unformatted
 c-------------------------------------------------------------
 
-	iunit = ifileo(0,name,'unform','old')
-	if( iunit .le. 0 ) goto 99
-	read(iunit,iostat=ios) it,nknaux,lmax,nvar
-	close(iunit)
+	if( iformat .eq. -1 ) then		!check if formatted
+	  iunit = ifileo(0,name,'unform','old')
+	  if( iunit .le. 0 ) goto 99
+	  read(iunit,iostat=ios) it,nknaux,lmax,nvar
+	  close(iunit)
 
-	if( ios .lt. 0 ) goto 98
+	  if( ios .lt. 0 ) goto 98		!EOF
 
-	iformat = ios
+	  if( nkn .eq. nknaux ) then		!is is probably unformatted
+	    iformat = ios
+	  else					!let us try formatted
+	    iunit = ifileo(0,name,'form','old')
+	    if( iunit .le. 0 ) goto 99
+	    read(iunit,*,iostat=ios) it,nknaux,lmax,nvar
+	    close(iunit)
+	  end if
+	end if
+
 	bformat = iformat .gt. 0
-
-        call get_sigma(nsigma,hsigma)
-        bsigma = nsigma .gt. 0
 
 c-------------------------------------------------------------
 c check if level structure information is available
