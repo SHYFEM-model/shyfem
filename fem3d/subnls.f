@@ -856,6 +856,7 @@ c
 	length=len(line)
 	intxt=0		!1:reading character string
 	ktext=0		!number of characters in character string
+	delim=' '
 c
 	i=ioff
 	do while(i.le.length)
@@ -956,6 +957,7 @@ c	ikom=1		!1:comma read
 	izeiex=0	!sign of exponential
 c
 	ff=1.		!number
+	ffac=1.
 	kexp=0		!exponential
 c
 	length=len(line)

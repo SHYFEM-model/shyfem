@@ -36,6 +36,7 @@ c**********************************************************************
 	real zdate,zmax
 	real zextra,zsalv,zrise,zfranco
 	real psv,dsv,rainv,windv
+	real psav(1),dsav(1)
 	real vals(ndim)
 	character*4 class
 
@@ -78,8 +79,10 @@ c**********************************************************************
 	do it=itanf,itend,iddt
 	  t = it
 	  iday = 1 + it/86400
-	  call exfintp(ps,t,psv)
-	  call exfintp(ds,t,dsv)
+	  call exfintp(ps,t,psav)
+	  call exfintp(ds,t,dsav)
+	  psv = psav(1)
+	  dsv = dsav(1)
 	  psv = psv + zrise
 	  dsv = dsv + zrise
 

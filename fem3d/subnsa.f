@@ -85,6 +85,7 @@ c	stop 'call to sp158k is broken ... please fix'
 	b2=imode.eq.2
 	b12=b1.or.b2
 	b99=.false.
+	iturn=0
 c
 	do i=1,nkn
 	nkant(i)=0
@@ -240,6 +241,8 @@ c
 	if(k2.eq.kant(ii)) izh2=1
 	end do
 c
+	kaus = 0
+
 	if(izh1.eq.1) then
 		iz=iz+1
 	else

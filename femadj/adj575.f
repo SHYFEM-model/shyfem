@@ -112,6 +112,8 @@ c check if exchange is possible
 c find out distance of 5 grades
 
 	nc = 0
+	ip1 = 0
+	ip2 = 0
 	do i=1,n
 	  ng = ngr(i)
 	  if( ng .eq. 5 ) then

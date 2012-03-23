@@ -576,13 +576,21 @@ c local
 	real e(3)
 	real right,eps,aux
 	real auxib,auxib1,auxib2	
-	real auxm(3,3),rm(3),iaux(3),rmaux(3)
+	real auxm(3,3),rm(3),rmaux(3)
+	integer iaux(3)
 c save
 	save bgtest,itest
 	data bgtest,itest /.true. , 0 /
 c	
 c find out how many nodes are on boundary
 c
+	ib = 0
+	ib1 = 0
+	ib2 = 0
+	ii = 0
+	ii1 = 0
+	ii2 = 0
+
 	ibtot=0
 	do i=1,3
 	  if(ibrad(i).eq.1) ibtot=ibtot+1

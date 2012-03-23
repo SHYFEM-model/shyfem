@@ -12,7 +12,7 @@ bugs
 
 femmpi
 rules
-public
+stable
 femdoc/old/
 
 #-----------------------------------------------
@@ -103,6 +103,7 @@ femspline/gridr
 grid/grid
 mesh/exgrd
 mesh/mesh
+post/demopost
 
 femcheck/CHECKLOG
 femcheck/test.c

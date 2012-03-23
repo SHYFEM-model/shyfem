@@ -182,7 +182,8 @@ ECOLOGICAL = NONE
 # DEFINE VERSION
 ##############################################
 
-RULES_MAKE_VERSION = 1.1
+RULES_MAKE_VERSION = 1.2
+DISTRIBUTION_TYPE = experimental
 
 ##############################################
 # DEFINE DIRECTORIES
@@ -206,6 +207,10 @@ ifeq ($(COMPILER),GNU_G77)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
     RULES_MAKE_MESSAGE = "g77 compiler and GOTM=true are incompatible"
   endif
+  ifeq ($(PARALLEL),true)
+    RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
+    RULES_MAKE_MESSAGE = "g77 compiler and PARALLEL=true are incompatible"
+  endif
 endif
 
 ifneq ($(COMPILER),INTEL)
@@ -220,6 +225,22 @@ endif
 ##############################################
 # COMPILER OPTIONS
 ##############################################
+
+##############################################
+# General Compiler options
+##############################################
+
+DEBUG = true
+#DEBUG = false
+
+#PROFILE = true
+PROFILE = false
+
+OPTIMIZE = true
+#OPTIMIZE = false
+
+WARNING = true
+#WARNING = false
 
 ##############################################
 #
@@ -245,43 +266,54 @@ endif
 #
 ##############################################
 
-#FGNU_PROFILE = -p
 FGNU_PROFILE = 
-# FGNU_NOOPT = -g -Wall -pedantic
-FGNU_NOOPT = -g
-# FGNU_NOOPT = 
-#FGNU_OPT   = -O
-FGNU_OPT   = -O3
+ifeq ($(PROFILE),true)
+  FGNU_PROFILE = -p
+endif
+
+FGNU_WARNING = 
+ifeq ($(WARNING),true)
+  FGNU_NOOPT = -Wall -pedantic
+  FGNU_NOOPT = -Wall -Wtabs -Wno-unused -Wno-uninitialized
+  FGNU_NOOPT = -Wall -Wtabs -Wno-unused
+endif
+
+FGNU_NOOPT = 
+ifeq ($(DEBUG),true)
+  FGNU_NOOPT = -g
+endif
+
+FGNU_OPT   = 
+ifeq ($(OPTIMIZE),true)
+  FGNU_OPT   = -O
+  FGNU_OPT   = -O3
+endif
+
 FGNU_OMP   =
-
-ifeq ($(COMPILER),GNU_G77)
-  FGNU	 = g77
-  FGNU95   = g95
+ifeq ($(PARALLEL),true)
+  FGNU_OMP   =  -fopenmp
 endif
 
+#----------------------------------
+
 ifeq ($(COMPILER),GNU_G77)
+  FGNU		= g77
+  FGNU95	= g95
   F77		= $(FGNU)
   F95		= $(FGNU95)
   LINKER	= $(F77)
-  FFLAGS	= $(FGNU_OPT) $(FGNU_PROFILE) $(FGNU_NOOPT) $(FGNU_OMP)
   LFLAGS	= $(FGNU_OPT) $(FGNU_PROFILE) $(FGNU_OMP)
+  FFLAGS	= $(LFLAGS) $(FGNU_NOOPT) $(FGNU_WARNING)
 endif
 
 ifeq ($(COMPILER),GNU_GFORTRAN)
-  FGNU   = gfortran
-  FGNU95 = gfortran
-
-  ifeq ($(PARALLEL),true)
-    FGNU_OMP   =  -fopenmp
-  endif
-endif
-
-ifeq ($(COMPILER),GNU_GFORTRAN)
+  FGNU		= gfortran
+  FGNU95	= gfortran
   F77		= $(FGNU)
   F95		= $(FGNU95)
   LINKER	= $(F77)
-  FFLAGS	= $(FGNU_OPT) $(FGNU_PROFILE) $(FGNU_NOOPT) $(FGNU_OMP)
   LFLAGS	= $(FGNU_OPT) $(FGNU_PROFILE) $(FGNU_OMP)
+  FFLAGS	= $(LFLAGS) $(FGNU_NOOPT) $(FGNU_WARNING)
 endif
 
 ##############################################
@@ -290,26 +322,42 @@ endif
 #
 ##############################################
 
-FPG    = pgf90
-FPG95	= pgf90
-
 FPG_PROFILE = 
-#FPG_PROFILE = -Mprof=func
+ifeq ($(PROFILE),true)
+  FPG_PROFILE = -Mprof=func
+endif
 
-FPG_NOOPT = -g
-# FPG_NOOPT = 
+FPG_WARNING = 
+ifeq ($(WARNING),true)
+  FPG_WARNING =
+endif
 
-#FPG_OPT   = -O
-FPG_OPT   = -O3
+FPG_NOOPT = 
+ifeq ($(DEBUG),true)
+  FPG_NOOPT = -g
+endif
+
+FPG_OPT   = 
+ifeq ($(OPTIMIZE),true)
+  FPG_OPT   = -O
+  FPG_OPT   = -O3
+endif
 
 FPG_OMP   =
+ifeq ($(PARALLEL),true)
+  FPG_OMP   =  -mp
+endif
+
+#----------------------------------
 
 ifeq ($(COMPILER),PORTLAND)
+  FPG		= pgf90
+  FPG95		= pgf90
   F77		= $(FPG)
   F95		= $(FPG95)
   LINKER	= $(F77)
-  FFLAGS	= $(FPG_OPT) $(FPG_PROFILE) $(FPG_NOOPT) $(FPG_OMP)
   LFLAGS	= $(FPG_OPT) $(FPG_PROFILE) $(FPG_OMP)
+  FFLAGS	= $(LFLAGS) $(FPG_NOOPT) $(FPG_WARNING)
 endif
 
 ##############################################
@@ -324,27 +372,24 @@ endif
 # -O    optimization (O2 O3)
 # -i8   integer 8 byte (-i2 -i4 -i8)
 # -r8   real 8 byte    (-r4 -r8 -r16), also -autodouble
+#
+# -check none
 # -check all
+# -check bounds
 # -check uninit		(run time exception for uninitialized values)
+#
 # -implicitnone
 # -debug
 # -openmp
 # -openmp-profile
 # -openmp-report	(1 2)
 #
+# -warn interfaces -gen-interfaces
+#
 # problems with stacksize (segmentation fault)
 #	export KMP_STACKSIZE=32M
 #
 #############################################
-
-INTEL_DIR = /opt/intel/fc/10.1.018
-INTEL_BIN = $(INTEL_DIR)/bin
-
-FINTEL     = $(INTEL_BIN)/ifort
-FINTEL     = ifort
-
-# FINTEL_PROFILE = -p
-FINTEL_PROFILE = 
 
 # ERSEM FLAGS -------------------------------------
 
@@ -352,39 +397,42 @@ REAL_4B = real\(4\)
 DEFINES += -DREAL_4B=$(REAL_4B)
 DEFINES += -DFORTRAN95 
 DEFINES += -DPRODUCTION -static
-#DEFINES += -DRLEN=real
-#EXTRAS  = -w95
-
-#FINTEL_ERSEM = $(DEFINES) $(EXTRAS)
 FINTEL_ERSEM = $(DEFINES) 
-
-# NETCDF FLAGS -------------------------------------
-# check it if we really need  "-assume 2underscores"
-# -> not needed anymore
-
-FFNCDF =
-#ifeq ($(NETCDF),true)
-#  #FFNCDF   = -assume 2underscores
-#endif
 
 #-------------------------------------------------
 
-# FINTEL_NOOPT = -g -traceback -check all
-# FINTEL_NOOPT = -xP
-# FINTEL_NOOPT = -w -CU -d1
-# FINTEL_NOOPT = -w -CU -d5
-# FINTEL_NOOPT = 
-FINTEL_NOOPT = -w $(FFNCDF) -Cu -traceback
+FINTEL_PROFILE = 
+ifeq ($(PROFILE),true)
+  FINTEL_PROFILE = -p
+endif
 
-# FINTEL_OPT   = 
+FINTEL_WARNING = 
+ifeq ($(WARNING),true)
+  FINTEL_WARNING =
+  FINTEL_WARNING = -w
+  FINTEL_WARNING = -check all 
+  FINTEL_WARNING = -warn interfaces,nouncalled -gen-interfaces
+  FINTEL_WARNING = -check uninit 
+endif
+
+FINTEL_NOOPT = 
+ifeq ($(DEBUG),true)
+  FINTEL_NOOPT = -xP
+  FINTEL_NOOPT = -CU -d1
+  FINTEL_NOOPT = -CU -d5
+  FINTEL_NOOPT = -g -traceback
+  FINTEL_NOOPT = -g -traceback -check uninit -check bounds 
+  FINTEL_NOOPT = -g -traceback -check uninit 
+endif
+
 # FINTEL_OPT   = -O -g -Mprof=time
 # FINTEL_OPT   = -O3 -g -axSSE4.2 #-mcmodel=medium -shared-intel
-FINTEL_OPT   = -O -g
-FINTEL_OPT   = -O -g -warn interfaces -check uninit -check bounds
-FINTEL_OPT   = -O -g -warn interfaces -check uninit
-FINTEL_OPT   = -O -g -check uninit
-#FINTEL_OPT   = -O -g -fp-model precise -no-prec-div
+# FINTEL_OPT   = -O -g -fp-model precise -no-prec-div
 
+FINTEL_OPT   = 
+ifeq ($(OPTIMIZE),true)
+  FINTEL_OPT   = -O 
+endif
 
 FINTEL_OMP   =
 ifeq ($(PARALLEL),true)
@@ -392,11 +440,12 @@ ifeq ($(PARALLEL),true)
 endif
 
 ifeq ($(COMPILER),INTEL)
+  FINTEL	= ifort
   F77		= $(FINTEL)
   F95     	= $(F77)
   LINKER	= $(F77)
-  FFLAGS	= $(FINTEL_OPT) $(FINTEL_PROFILE) $(FINTEL_NOOPT) $(FINTEL_OMP)
   LFLAGS	= $(FINTEL_OPT) $(FINTEL_PROFILE) $(FINTEL_OMP)
+  FFLAGS	= $(LFLAGS) $(FINTEL_NOOPT) $(FINTEL_WARNING)
 endif
 
 ##############################################

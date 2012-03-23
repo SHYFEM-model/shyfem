@@ -29,7 +29,7 @@ c simulates rain (0D) increasing the water level
 
 	character*(80)	file
 	integer k
-	real rw
+	real rw(1)
 	real t,zdist
 
 	real getpar
@@ -52,7 +52,8 @@ c---------------------------------------------------------------
 	   if( zdist .eq. 0. .and. file .eq. ' ' ) icall = -1
 	   if( icall .eq. -1 ) return
 
-	   call exffild(file,ndim,barray,zdist)
+	   rw(1) = zdist
+	   call exffild(file,ndim,barray,rw)
 
 	   icall = 1
 
@@ -66,7 +67,7 @@ c---------------------------------------------------------------
 	call exfintp(barray,t,rw)
 
 	do k=1,nkn
-	  metrain(k) = rw
+	  metrain(k) = rw(1)
 	end do
 
 c---------------------------------------------------------------

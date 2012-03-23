@@ -83,7 +83,7 @@ c 3D concentrations
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real p3(nlvdim,1)
+	real p3(nlvdim,nkndim)
 	common /p3/p3
 	real parray(1)
 	common /parray/parray
@@ -404,7 +404,7 @@ c**********************************************************
 	integer nrec,it
         integer ivel,isect
 
-	real p3(nlvdim,1)
+	real p3(nlvdim,nkndim)
 	common /p3/p3
 
 	logical velnext,oktime
@@ -716,7 +716,7 @@ c	-----------------------------------------------------------
 c	last initializations and start plotting
 c	-----------------------------------------------------------
 
-	call mkht(hetv,href)
+	if( bvel .or. btrans ) call mkht(hetv,href)
 
 	call qstart
 

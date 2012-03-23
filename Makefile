@@ -77,7 +77,7 @@ endif
 FEMDIRS   = $(FEMLIBS) $(FEMEXTRA) $(FEMC) $(FEMPROG) $(FEMUTIL)
 
 .IGNORE: clean
-.PHONY: publish version public
+.PHONY: publish version stable
 
 #---------------------------------------------------------------
 # compiling and recursive targets
@@ -157,6 +157,27 @@ cleanbck:
 version:
 	@echo $(VERSION)
 
+info: version
+	@echo "general:"
+	@echo "  version           = $(VERSNAME)"
+	@echo "  DISTRIBUTION_TYPE = $(DISTRIBUTION_TYPE)"
+	@echo "  SHYFEM directory  = $(SHYFEMDIR)"
+	@echo "macros:"
+	@echo "  COMPILER   = $(COMPILER)"
+	@echo "  PARALLEL   = $(PARALLEL)"
+	@echo "  SOLVER     = $(SOLVER)"
+	@echo "  NETCDF     = $(NETCDF)"
+	@echo "  GOTM       = $(GOTM)"
+	@echo "  ECOLOGICAL = $(ECOLOGICAL)"
+	@echo "parameters:"
+	@echo "  NKNDIM = $(NKNDIM)"
+	@echo "  NELDIM = $(NELDIM)"
+	@echo "  NLVDIM = $(NLVDIM)"
+	@echo "compiler options:"
+	@echo "  PROFILE  = $(PROFILE)"
+	@echo "  DEBUG    = $(DEBUG)"
+	@echo "  OPTIMIZE = $(OPTIMIZE)"
+
 check: check_software
 check_software:
 	@cd femcheck; ./check_software.sh
@@ -209,8 +230,8 @@ dist: cleandist
 	cp -f rules/Rules.skel ./Rules.make
 	make doc; make clean
 
-public:
-	@public/make_public.sh shyfem-$(VERSNAME).tar.gz
+stable:
+	@stable/make_stable.sh shyfem-$(VERSNAME).tar.gz
 
 beta: cleanall
 	date > LASTTAR

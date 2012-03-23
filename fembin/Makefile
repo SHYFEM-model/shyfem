@@ -19,6 +19,7 @@ fem:
 
 clean:
 	-rm -f *.zip
+	-rm -f *.o a.out
 	-rm -f tmp.gnu *.bak *.ps *.tmp
 	-rm -f ggg hhh
 	-rm -f fort.*

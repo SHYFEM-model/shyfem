@@ -92,6 +92,8 @@ c     data cutlo, cuthi / 8.232d-11,  1.304d19 /
 c     data cutlo, cuthi / 4.441e-16,  1.304e19 /
       data cutlo, cuthi / 8.232d-11,  1.304d19 /
 c
+      xmax = zero
+
       if(n .gt. 0) go to 10
          dnrm2  = zero
          go to 300

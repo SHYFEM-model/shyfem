@@ -395,6 +395,12 @@ c ... one variable
 c
 	  do i=1,3
 	    k=nen3v(i,ie)
+	    x(i) = xgv(k)
+	    y(i) = ygv(k)
+	  end do
+
+	  do i=1,3
+	    k=nen3v(i,ie)
 	    i1=mod(i,3)+1
 	    k1=nen3v(i1,ie)
 	    i2=mod(i+1,3)+1

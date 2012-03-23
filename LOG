@@ -1,4 +1,13 @@
 
+c ./fem3d/lagrange_flux.f:
+c 23.03.2012    ggu     bug fix - dst was not available in setup_vl_3d
+c
+c ./fem3d/lagrange_back.f:
+c 23.03.2012    aac     new calling for track_body (id)
+
+
+
+
 21.03.2012	new parts of manual
 
 ========================================================== 19-03-2012 - 6_1_49

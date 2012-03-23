@@ -406,14 +406,20 @@ c----------------------------------------------------------
 c*************************************************************
 
         subroutine exxqq(iunit,nintp,nvar,t,vars,rint)
+	real vars(0:nvar,nintp)
+	real rint(nvar)
         call intp_ts(iunit,nintp,nvar,t,vars,rint,.false.)
         end
 
         subroutine intp_0_ts(iunit,nintp,nvar,t,vars,rint)
+	real vars(0:nvar,nintp)
+	real rint(nvar)
         call intp_ts(iunit,nintp,nvar,t,vars,rint,.false.)
         end
 
         subroutine intp_3_ts(iunit,nintp,nvar,t,vars,rint)
+	real vars(0:nvar,nintp)
+	real rint(nvar)
         call intp_ts(iunit,nintp,nvar,t,vars,rint,.true.)
         end
 

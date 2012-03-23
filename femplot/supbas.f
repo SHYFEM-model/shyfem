@@ -345,7 +345,8 @@ c	write(6,*) 'message from basin() ...'
 c	write(6,*) '****** ',xvmin,yvmin,xvmax,yvmax
 c	write(6,*) '****** ',ixmin,iymin,ixmax,iymax
 
-	write(line,'(a,4i8)') 'InternalBoundingBox',ixmin,iymin,ixmax,iymax
+	write(line,'(a,4i8)') 'InternalBoundingBox'
+     +				,ixmin,iymin,ixmax,iymax
 	call qcomm(line)
 
 	end
@@ -730,6 +731,7 @@ c		-1: round to lower value
 c	data rmaster /1.,2.,4.,5.,8.,10./
 
 	roundm = r
+	raux = 0
 	if( mode .eq. 0 ) return
 
 	fact = 1.0d+0

@@ -84,6 +84,9 @@ c variabili di servizio
 
 c inizializzazione parametri
 
+	l_int = 0
+	l_out = 0
+
 110 	continue
 	nnm=nnm+1
         fsum=0

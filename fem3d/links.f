@@ -45,6 +45,9 @@ c local
 c functions
         integer knext,kbhnd
 
+	ip = 0
+	ip1 = 0
+
 c-------------------------------------------------------------------
 c first the total number of elements (links) for each node is established
 c-------------------------------------------------------------------
@@ -383,6 +386,10 @@ c local
 	logical bverbose
 
 	bverbose = .false.
+
+	k1 = 0				!compiler warnings
+	ipk0 = 0
+	ipk1 = 0
 
 c-------------------------------------------------------------------
 c loop over nodes

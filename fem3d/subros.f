@@ -66,6 +66,7 @@ c
 c
 	write(6,*) 'Applying Rosen algorithm...'
 
+	msloop=0
 	nhil=0
 	nvert=0
         ms=nkn+1

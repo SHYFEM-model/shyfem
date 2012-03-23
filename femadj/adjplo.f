@@ -235,6 +235,8 @@ c plots element
 	xmax = -xmin
 	ymin = xmin
 	ymax = -ymin
+	x = 0.
+	y = 0.
 
 	do iee=1,2
 	  ie = iev(iee)

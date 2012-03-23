@@ -13,6 +13,14 @@ c 19.12.2011	ggu	bug fix in init_sigma_info(): call set_sigma_info()
 c 27.01.2012	deb&ggu	changes to get_layer_thickness()
 c 27.01.2012	deb&ggu	new routine compute_sigma_info()
 c
+c notes :
+c
+c this file is used also in femplot
+c
+c	get_sigma_info (supdep.f,suplin.f)
+c	get_layer_thickness (supdep.f,suplin.f)
+c	init_sigma_info (supout.f)
+c
 c******************************************************************
 
 	blockdata sigma_out

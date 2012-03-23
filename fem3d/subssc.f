@@ -27,6 +27,7 @@ c
 	xm(nm)=x(1)
 	ym(nm)=y(1)
 c
+	i=0
 	yo=y(1)
    10	i=i+1
 	if(i.gt.n) goto 80

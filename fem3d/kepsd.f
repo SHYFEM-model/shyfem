@@ -589,10 +589,10 @@ c initializes arrays for keps routine
 	implicit none
 
 	integer lmax
-	real k(0:1),eps(0:1),len(0:1)
-	real rkm(0:1),rkt(0:1)
-	real kold(0:1),epsold(0:1),lenold(0:1)
-	real rkmold(0:1),rktold(0:1)
+	real k(0:lmax),eps(0:lmax),len(0:lmax)
+	real rkm(0:lmax),rkt(0:lmax)
+	real kold(0:lmax),epsold(0:lmax),lenold(0:lmax)
+	real rkmold(0:lmax),rktold(0:lmax)
 
 	real kmin,epsmin,lenmin
         real avumol,avtmol,avsmol
@@ -627,8 +627,14 @@ c************************************************************************
 
         subroutine keps_compile_test
 
-        real k(1),eps(1),len(1),rkm(1),rkt(1)
-        real kold(1),epsold(1),lenold(1),rkmold(1),rktold(1)
+	implicit none
+
+	integer lmax
+	real dt,rho0,taus,taub
+	real dl(1),u(1),v(1),rho(1)
+
+        real k(0:1),eps(0:1),len(0:1),rkm(0:1),rkt(0:1)
+        real kold(0:1),epsold(0:1),lenold(0:1),rkmold(0:1),rktold(0:1)
 
 	call kepsin(lmax,k,eps,len,rkm,rkt
      +			,kold,epsold,lenold,rkmold,rktold)

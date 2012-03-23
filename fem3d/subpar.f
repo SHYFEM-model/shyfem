@@ -539,6 +539,8 @@ c prints parameter values
 	real value
 	real flag,absval
 
+	flag = 0.
+
 	line=' '
 	bflag=.false.
 	if(itspar('flag').ne.0) then

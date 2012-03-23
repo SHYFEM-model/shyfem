@@ -1,5 +1,5 @@
 c
-c $Id: subscn.f,v 1.5 2002/10/08 16:41:48 georg Exp $
+c $Id: subscn.f,v 1.7 2009-01-26 15:04:57 georg Exp $
 c
 c scanning procedures : scan string for numbers and convert them
 c
@@ -501,6 +501,7 @@ c		izahli=(zahl*ifact+.5)/ifact    !(ROUND)
 		izf=0
 c		izahli=zahl+.5                  !(ROUND)
 		izahli=zahl
+		izahlf=0
 	end if
 
 ! integer

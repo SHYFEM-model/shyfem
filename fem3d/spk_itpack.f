@@ -42,7 +42,7 @@ C
 C          FROM ITPACK    BISRCH, CHGCON, DETERM, DFAULT, ECHALL,   
 C                         ECHOUT, EIGVNS, EIGVSS, EQRT1S, ITERM, TIMER, 
 C                         ITJCG, IVFILL, PARCON, PERMAT,  
-C                         PERROR, PERVEC, PJAC, PMULT, PRBNDX,      
+C                         PERROR1, PERVEC, PJAC, PMULT, PRBNDX,      
 C                         PSTOP, QSORT, DAXPY, SBELM, SCAL, DCOPY,  
 C                         DDOT, SUM3, UNSCAL, VEVMW, VFILL, VOUT,   
 C                         WEVMW, ZBRENT 
@@ -149,6 +149,8 @@ C ... INITIALIZE COMMON BLOCKS
 C       
 	external perror
 
+      TIMJ1 = 0
+      TIMI1 = 0
       LEVEL = IPARM(2)      
       NOUT = IPARM(4)       
       IF (LEVEL.GE.1) WRITE (NOUT,10) 
@@ -364,7 +366,7 @@ C
   340 IDGTS = IPARM(12)     
       IF (IDGTS.LT.0) GO TO 350       
       IF (IPARM(2).LE.0) IDGTS = 0    
-      CALL PERROR (N,IA,JA,A,RHS,U,WKSP,DIGIT1,DIGIT2,IDGTS)
+      CALL PERROR1 (N,IA,JA,A,RHS,U,WKSP,DIGIT1,DIGIT2,IDGTS)
 C       
 C ... SET RETURN PARAMETERS IN IPARM AND RPARM  
 C       
@@ -429,7 +431,7 @@ C ... JSI SUBPROGRAM REFERENCES:
 C       
 C          FROM ITPACK   BISRCH, CHEBY, CHGSI, CHGSME, DFAULT, ECHALL,
 C                        ECHOUT, ITERM, TIMER, ITJSI, IVFILL, PAR   
-C                        PERMAT, PERROR, PERVEC, PJAC, PMULT, PRBNDX, 
+C                        PERMAT, PERROR1, PERVEC, PJAC, PMULT, PRBNDX, 
 C                        PSTOP, PVTBV, QSORT, DAXPY, SBELM, SCAL,   
 C                        DCOPY, DDOT, SUM3, TSTCHG, UNSCAL, VEVMW,  
 C                        VFILL, VOUT, WEVMW     
@@ -537,6 +539,8 @@ C ... INITIALIZE COMMON BLOCKS
 C       
 	external perror
 
+      TIMJ1 = 0
+      TIMI1 = 0
       LEVEL = IPARM(2)      
       NOUT = IPARM(4)       
       IF (LEVEL.GE.1) WRITE (NOUT,10) 
@@ -737,7 +741,7 @@ C
   330 IDGTS = IPARM(12)     
       IF (IDGTS.LT.0) GO TO 340       
       IF (IPARM(2).LE.0) IDGTS = 0    
-      CALL PERROR (N,IA,JA,A,RHS,U,WKSP,DIGIT1,DIGIT2,IDGTS)
+      CALL PERROR1 (N,IA,JA,A,RHS,U,WKSP,DIGIT1,DIGIT2,IDGTS)
 C       
 C ... SET RETURN PARAMETERS IN IPARM AND RPARM  
 C       
@@ -798,7 +802,7 @@ C
 C ... SOR SUBPROGRAM REFERENCES:      
 C       
 C          FROM ITPACK   BISRCH, DFAULT, ECHALL, ECHOUT, IPSTR, ITERM,
-C                        TIMER, ITSOR, IVFILL, PERMAT, PERROR,      
+C                        TIMER, ITSOR, IVFILL, PERMAT, PERROR1,      
 C                        PERVEC, PFSOR1, PMULT, PRBNDX, PSTOP, QSORT, 
 C                        SBELM, SCAL, DCOPY, DDOT, TAU, UNSCAL, VFILL,
 C                        VOUT, WEVMW  
@@ -906,6 +910,8 @@ C ... INITIALIZE COMMON BLOCKS
 C       
 	external perror
 
+      TIMJ1 = 0
+      TIMI1 = 0
       LEVEL = IPARM(2)      
       NOUT = IPARM(4)       
       IF (LEVEL.GE.1) WRITE (NOUT,10) 
@@ -1091,7 +1097,7 @@ C
   330 IDGTS = IPARM(12)     
       IF (IDGTS.LT.0) GO TO 340       
       IF (IPARM(2).LE.0) IDGTS = 0    
-      CALL PERROR (N,IA,JA,A,RHS,U,WKSP,DIGIT1,DIGIT2,IDGTS)
+      CALL PERROR1 (N,IA,JA,A,RHS,U,WKSP,DIGIT1,DIGIT2,IDGTS)
 C       
 C ... SET RETURN PARAMETERS IN IPARM AND RPARM  
 C       
@@ -1159,7 +1165,7 @@ C
 C          FROM ITPACK    BISRCH, CHGCON, DETERM, DFAULT, ECHALL,   
 C                         ECHOUT, EIGVNS, EIGVSS, EQRT1S, ITERM, TIMER, 
 C                         ITSRCG, IVFILL, OMEG, OMGCHG, OMGSTR,     
-C                         PARCON, PBETA, PBSOR, PERMAT, PERROR,     
+C                         PARCON, PBETA, PBSOR, PERMAT, PERROR1,     
 C                         PERVEC, PFSOR, PJAC, PMULT, PRBNDX, PSTOP, PVT
 C                         QSORT, SBELM, SCAL, DCOPY, DDOT, SUM3,    
 C                         UNSCAL, VEVMW, VEVPW, VFILL, VOUT, WEVMW, 
@@ -1269,6 +1275,8 @@ C ... INITIALIZE COMMON BLOCKS
 C       
 	external perror
 
+      TIMJ1 = 0
+      TIMI1 = 0
       LEVEL = IPARM(2)      
       NOUT = IPARM(4)       
       IF (IPARM(9).GE.0) IPARM(6) = 2 
@@ -1498,7 +1506,7 @@ C
   360 IDGTS = IPARM(12)     
       IF (IDGTS.LT.0) GO TO 370       
       IF (IPARM(2).LE.0) IDGTS = 0    
-      CALL PERROR (N,IA,JA,A,RHS,U,WKSP,DIGIT1,DIGIT2,IDGTS)
+      CALL PERROR1 (N,IA,JA,A,RHS,U,WKSP,DIGIT1,DIGIT2,IDGTS)
 C       
 C ... SET RETURN PARAMETERS IN IPARM AND RPARM  
 C       
@@ -1567,7 +1575,7 @@ C ... SSORSI SUBPROGRAM REFERENCES:
 C       
 C          FROM ITPACK    BISRCH, CHEBY, CHGSI, DFAULT, ECHALL, ECHOUT, 
 C                         ITERM, TIMER, ITSRSI, IVFILL, OMEG,       
-C                         OMGSTR, PARSI, PBETA, PERMAT, PERROR,     
+C                         OMGSTR, PARSI, PBETA, PERMAT, PERROR1,     
 C                         PERVEC, PFSOR, PMULT, PRBNDX, PSSOR1,     
 C                         PSTOP, PVTBV, QSORT, SBELM, SCAL, DCOPY,  
 C                         DDOT, SUM3, TSTCHG, UNSCAL, VEVPW, VFILL, 
@@ -1676,6 +1684,8 @@ C ... INITIALIZE COMMON BLOCKS
 C       
 	external perror
 
+      TIMJ1 = 0
+      TIMI1 = 0
       LEVEL = IPARM(2)      
       NOUT = IPARM(4)       
       IF (IPARM(9).GE.0) IPARM(6) = 2 
@@ -1892,7 +1902,7 @@ C
   350 IDGTS = IPARM(12)     
       IF (IDGTS.LT.0) GO TO 360       
       IF (IPARM(2).LE.0) IDGTS = 0    
-      CALL PERROR (N,IA,JA,A,RHS,U,WKSP,DIGIT1,DIGIT2,IDGTS)
+      CALL PERROR1 (N,IA,JA,A,RHS,U,WKSP,DIGIT1,DIGIT2,IDGTS)
 C       
 C ... SET RETURN PARAMETERS IN IPARM AND RPARM  
 C       
@@ -1963,7 +1973,7 @@ C
 C          FROM ITPACK    BISRCH, CHGCON, DETERM, DFAULT, ECHALL,   
 C                         ECHOUT, EIGVNS, EIGVSS, EQRT1S, ITERM, TIMER
 C                         ITRSCG, IVFILL, PARCON, PERMAT, 
-C                         PERROR, PERVEC, PMULT, PRBNDX, PRSBLK,    
+C                         PERROR1, PERVEC, PMULT, PRBNDX, PRSBLK,    
 C                         PRSRED, PSTOP, QSORT, SBELM, SCAL, DCOPY, 
 C                         DDOT, SUM3, UNSCAL, VFILL, VOUT, WEVMW,   
 C                         ZBRENT      
@@ -2071,6 +2081,8 @@ C ... INITIALIZE COMMON BLOCKS
 C       
 	external perror
 
+      TIMJ1 = 0
+      TIMI1 = 0
       LEVEL = IPARM(2)      
       NOUT = IPARM(4)       
       IF (LEVEL.GE.1) WRITE (NOUT,10) 
@@ -2312,7 +2324,7 @@ C
   400 IDGTS = IPARM(12)     
       IF (IDGTS.LT.0) GO TO 410       
       IF (IPARM(2).LE.0) IDGTS = 0    
-      CALL PERROR (N,IA,JA,A,RHS,U,WKSP,DIGIT1,DIGIT2,IDGTS)
+      CALL PERROR1 (N,IA,JA,A,RHS,U,WKSP,DIGIT1,DIGIT2,IDGTS)
 C       
 C ... SET RETURN PARAMETERS IN IPARM AND RPARM  
 C       
@@ -2377,7 +2389,7 @@ C ... RSSI SUBPROGRAM REFERENCES:
 C       
 C          FROM ITPACK    BISRCH, CHEBY, CHGSI, DFAULT, ECHALL,     
 C                         ECHOUT, ITERM, TIMER, ITRSSI, IVFILL,     
-C                         PARSI, PERMAT, PERROR, PERVEC, PMULT,     
+C                         PARSI, PERMAT, PERROR1, PERVEC, PMULT,     
 C                         PRBNDX, PRSBLK, PRSRED, PSTOP, QSORT,     
 C                         DAXPY, SBELM, SCAL, DCOPY, DDOT, SUM3,    
 C                         TSTCHG, UNSCAL, VEVMW, VFILL, VOUT,       
@@ -2486,6 +2498,8 @@ C ... INITIALIZE COMMON BLOCKS
 C       
 	external perror
 
+      TIMJ1 = 0
+      TIMI1 = 0
       LEVEL = IPARM(2)      
       NOUT = IPARM(4)       
       IF (LEVEL.GE.1) WRITE (NOUT,10) 
@@ -2709,7 +2723,7 @@ C
   390 IDGTS = IPARM(12)     
       IF (IDGTS.LT.0) GO TO 400       
       IF (IPARM(2).LE.0) IDGTS = 0    
-      CALL PERROR (N,IA,JA,A,RHS,U,WKSP,DIGIT1,DIGIT2,IDGTS)
+      CALL PERROR1 (N,IA,JA,A,RHS,U,WKSP,DIGIT1,DIGIT2,IDGTS)
 C       
 C ... SET RETURN PARAMETERS IN IPARM AND RPARM  
 C       
@@ -2997,6 +3011,10 @@ C     DESCRIPTION OF VARIABLES IN COMMON BLOCKS IN SUBROUTINE SOR
 C       
 C ... SET INITIAL PARAMETERS NOT ALREADY SET    
 C       
+      CHANGE = .FALSE.      
+      OMEGAP = OMEGA
+      IPSTAR = 0  
+
       N = NN      
       IF (IN.NE.0) GO TO 20 
       CALL PSTOP (N,U,0.D0,0.D0,0,Q1) 
@@ -3709,6 +3727,8 @@ C *** END  : ITPACK COMMON
 C       
 C     DESCRIPTION OF VARIABLES IN COMMON BLOCKS IN MAIN SUBROUTINE  
 C       
+      CMOLD = 0.D0
+
       GO TO (10,20,30), IBMTH 
 C       
 C ... JACOBI CONJUGATE GRADIENT       
@@ -5792,9 +5812,9 @@ C
       IERR = IER  
       RETURN      
       END 
-      SUBROUTINE PERROR (NN,IA,JA,A,RHS,U,W,DIGTT1,DIGTT2,IDGTTS)   
+      SUBROUTINE PERROR1 (NN,IA,JA,A,RHS,U,W,DIGTT1,DIGTT2,IDGTTS)   
 C       
-C     PERROR COMPUTES THE RESIDUAL, R = RHS - A*U.  THE USER
+C     PERROR1 COMPUTES THE RESIDUAL, R = RHS - A*U.  THE USER
 C     ALSO HAS THE OPTION OF PRINTING THE RESIDUAL AND/OR THE       
 C     UNKNOWN VECTOR DEPENDING ON IDGTS.
 C       
@@ -7283,6 +7303,7 @@ C
       DOUBLE PRECISION DI   
 C       
       N = NN      
+      DI = 0.
 C       
 C        IF (N .GE. 1) GO TO 10       
 C           IER = 100       
@@ -8297,7 +8318,7 @@ C
       SUBROUTINE VOUT (N,V,ISWT,NOUTT)
 C       
 C     THIS SUBROUTINE EFFECTS PRINTING OF RESIDUAL AND SOLUTION     
-C     VECTORS - CALLED FROM PERROR    
+C     VECTORS - CALLED FROM PERROR1    
 C       
 C ... PARAMETER LIST:       
 C       

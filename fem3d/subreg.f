@@ -774,7 +774,9 @@ c local
 
           itot=0
           do ii=1,3
-            if( hm3v(ii,ie)+zenv(ii,ie)-href .gt. hzoff ) itot=itot+1    !wet
+            if( hm3v(ii,ie)+zenv(ii,ie)-href .gt. hzoff ) then
+		itot=itot+1    !wet
+	    end if
           end do
 
           itot1=0

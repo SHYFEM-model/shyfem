@@ -319,7 +319,6 @@ c sets depth structure and passes it back in hlfem
 	integer l,i
 	real hsig
 
-        !call get_sigma(nsigma,hsigma)		!ccf
 	bsigma = nsigma .gt. 0
 
 	if( nsigma .gt. 0 ) then

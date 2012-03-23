@@ -523,8 +523,8 @@ c computes nodal values from element values (scalar)
 
 	implicit none
 
-	real sev(1)
-	real sv(1)
+	real sev(*)
+	real sv(*)
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -630,7 +630,7 @@ c sets up area for nodes
 	real area(levdim,1)
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw                         
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer ilhv(1)
 	common /ilhv/ilhv
 	integer nen3v(1)
@@ -793,7 +793,7 @@ c sets up depth array for nodes
 	real hdeo(levdim,1)	!depth at element, old time level
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw                         
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
 	integer k,ie,l
 
@@ -851,7 +851,7 @@ c sets up depth array for nodes
 	real area(levdim,1)
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw                         
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer ilhv(1)
 	common /ilhv/ilhv
 	integer nen3v(1)

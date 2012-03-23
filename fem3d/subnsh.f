@@ -1216,7 +1216,7 @@ c********************************************************************
 	else
 	  nomp = n
 	end if
-	call putpar('nomp',nomp)
+	call putpar('nomp',float(nomp))
 
 	write(6,*) 'available threads: ',nomp
 

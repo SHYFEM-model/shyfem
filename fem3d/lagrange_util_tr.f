@@ -72,7 +72,7 @@ c         /\ pfin         | differenza deltax tra le coord. x degli estremi
 c        /  \             | della retta y=ax+b, applico il rapporto
 c       /    \            | (ratio) dei segmenti a tale delta X e  
 c      /      \           | trovo la frazione di x da aggiungere  
-c     /  ratio \          | all'estremo opposto a cui si riferisce il 
+c     /  ratio \          | all''estremo opposto a cui si riferisce il 
 c    <------------------> | ratio. Quindi trovo le nuove coordinate del punto
 c	        pini      | pini. Da pini e pfin trovo il fascio di
 c_________________________| rette in particolare an il coefficiente
@@ -128,6 +128,7 @@ c calcola distanza tra 2 punti p1,p2
 
 c trasformazione frazione percentuale di 2 in distanza da punto 1
 
+	rr = 0.
 	do i=1,2
 	 if(ext(1).ne.ipb(i))then
 	  dfrq=dist*(ratio(i))
@@ -138,6 +139,8 @@ c trasformazione frazione percentuale di 2 in distanza da punto 1
 c calcolo coordinate punto nella retta distante dfrq da p1 e
 c compreso tra p1 e p2
 
+	xn = 0.
+	yn = 0.
         
 	if(cy.eq.0)then
 	 xn=x1

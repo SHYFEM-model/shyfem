@@ -302,6 +302,8 @@ c functions
 c equivalence
         real winkv(1)
         equivalence(inodv(1),winkv(1))
+
+	ii = 0
 c
 c initialize array to hold angles
 c

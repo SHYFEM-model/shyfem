@@ -299,7 +299,7 @@ c sets default value for boundaries - works only for nvar = 1
 
 	  call exfsize(array(1,ibc),nvar,nsize,ndata)
 	  if( nvar .gt. 1 ) goto 99
-	  call get_bnd_par(ibc,text,scaldf)
+	  call get_bnd_par(ibc,text,scaldf(1))
 	  call exfsetdef(array(1,ibc),scaldf)	!works because nvar = 1
 
 	end do

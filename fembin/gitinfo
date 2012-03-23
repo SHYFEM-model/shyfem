@@ -36,7 +36,7 @@ different levels:
 	staged files	-> index
 	working dir	-> work
 
-diffs:
+diffs:	(script ~/fem/fembin/extDiff is used)
 
 git diff file			differences between work and last
 git diff --staged file		differences between index and last

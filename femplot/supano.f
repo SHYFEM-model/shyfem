@@ -895,7 +895,7 @@ c
 
 	if( nrdvar(keyword,line,ioff) .le. 0 ) goto 99
 
-	what = keyword
+	what = keyword(1:4)
 
 	if( keyword .eq. 'text' ) then
 	  if( istof(line,x,ioff) .le. 0 ) goto 99

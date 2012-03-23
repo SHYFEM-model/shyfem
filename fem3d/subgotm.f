@@ -90,7 +90,8 @@ c---------------------------------------------------------------
 	integer k,l
 	integer nlev
 	integer mode
-	real h,ri,vis,dif
+	real h(nlvdim)
+	real ri,vis,dif
 	real diftur,vistur
 	real a,b,alpha,beta
 
@@ -816,7 +817,7 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
         common /femtim/ itanf,itend,idt,nits,niter,it
 
         real rhov(nlvdim,nkndim)
-        common /rhov/rhov                                                       
+        common /rhov/rhov
 	real uprv(nlvdim,nkndim)
 	common /uprv/uprv
 	real vprv(nlvdim,nkndim)
@@ -1081,7 +1082,7 @@ c checks arrays for nan or other strange values
         real visv(0:nlvdim,nkndim)
         common /visv/visv
         real difv(0:nlvdim,nkndim)
-        common /difv/difv                                                       
+        common /difv/difv
 
         real ulnv(nlvdim,neldim)
         common /ulnv/ulnv
@@ -1131,7 +1132,7 @@ c checks arrays for strange values
         real visv(0:nlvdim,nkndim)
         common /visv/visv
         real difv(0:nlvdim,nkndim)
-        common /difv/difv                                                       
+        common /difv/difv
 
 	real znv(1)
 	common /znv/znv

@@ -1,5 +1,77 @@
 ============================================================
 
+Fri Mar 23 19:03:46 CET 2012
+
+Compiler warnings (intel and gfortran)
+
+ .gitignore                    |    3 +-
+ LOG                           |    9 ++
+ Makefile                      |   27 ++++++-
+ Rules.make                    |  179 ++++++++++++++++++++++++++---------------
+ fem3d/atoxi.f                 |    5 +-
+ fem3d/atoxi3d.f               |    2 +-
+ fem3d/debug.f                 |   18 +++--
+ fem3d/intp.f                  |    7 +-
+ fem3d/kepsd.f                 |   18 +++--
+ fem3d/lagrange_back.f         |    6 +-
+ fem3d/lagrange_flux.f         |    3 +-
+ fem3d/lagrange_track.f        |    3 +
+ fem3d/lagrange_util_tr.f      |    5 +-
+ fem3d/links.f                 |    7 ++
+ fem3d/newbsig.f               |    4 +-
+ fem3d/newchk.f                |    5 +-
+ fem3d/newcon.f                |   10 +-
+ fem3d/newcra.f                |   10 ++-
+ fem3d/newsig.f                |    1 -
+ fem3d/nosresidence.f          |    1 +
+ fem3d/sedi3d.f                |    3 +-
+ fem3d/sigmautil.f             |    8 ++
+ fem3d/spk_blas1_mod.f         |    2 +
+ fem3d/spk_ilut.f              |    1 +
+ fem3d/spk_iters.f             |    1 +
+ fem3d/spk_itpack.f            |   55 +++++++++----
+ fem3d/subbndo.f               |    9 ++-
+ fem3d/subbnds.f               |    2 +-
+ fem3d/subcoo.f                |    4 +
+ fem3d/subdry.f                |   10 +--
+ fem3d/subdwq.f                |    6 ++
+ fem3d/subele.f                |   10 +-
+ fem3d/subgotm.f               |    9 +-
+ fem3d/sublnka.f               |    2 +
+ fem3d/submet.f                |    7 +-
+ fem3d/submeteo.f              |    6 +-
+ fem3d/submir.f                |    6 ++
+ fem3d/subn11.f                |    8 ++
+ fem3d/subnls.f                |    2 +
+ fem3d/subnsa.f                |    3 +
+ fem3d/subnsh.f                |    2 +-
+ fem3d/subpar.f                |    2 +
+ fem3d/subproj.f               |    2 +-
+ fem3d/subqfxm3.f              |    7 ++-
+ fem3d/subqfxt.f               |    3 +-
+ fem3d/subreg.f                |    4 +-
+ fem3d/subrnd.f                |    5 +-
+ fem3d/subros.f                |    1 +
+ fem3d/subssc.f                |    1 +
+ fem3d/subsse.f                |    6 ++
+ fem3d/subsss.f                |    3 +
+ femadj/adj575.f               |    2 +
+ femadj/adjplo.f               |    2 +
+ fembin/Makefile               |    1 +
+ fembin/diffall.sh             |   10 +++
+ fembin/gitinfo                |    2 +-
+ femcheck/check_compilation.sh |   21 +++++
+ femplot/supano.f              |    2 +-
+ femplot/supbas.f              |    4 +-
+ femplot/supiso.f              |   17 ++++
+ femplot/supsim.f              |    6 +-
+ femspline/subscn.f            |    3 +-
+ femspline/subsss.f            |   80 ++++++++++++++++--
+ post/Makefile                 |    2 +-
+ 64 files changed, 497 insertions(+), 168 deletions(-)
+
+============================================================
+
 Wed Mar 21 16:21:07 CET 2012
 
 New version 6_1_50

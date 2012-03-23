@@ -84,7 +84,7 @@ c sets up bndo data structure
 	include 'subbndo.h'
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw                         
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
 	integer iopbnd(1)
 	common /iopbnd/iopbnd
@@ -535,7 +535,7 @@ c adjusts for ambient value, no gradient or outgoing flow
 	include 'subbndo.h'
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw                         
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
 	integer iopbnd(1)
 	common /iopbnd/iopbnd
@@ -565,6 +565,9 @@ c adjusts for ambient value, no gradient or outgoing flow
 	bdebug = .false.
 
 	ibcold = 0
+
+	bgrad0 = .false.
+	blevel = .false.
 
 	if( bdebug ) then
 	  if( ndebug .eq. 0 ) then
@@ -657,7 +660,7 @@ c imposes radiation condition for levels
 	include 'subbndo.h'
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw                         
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
         real znv(1)
         common /znv/znv

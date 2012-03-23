@@ -181,7 +181,7 @@ c shell for scalar (for parallel version)
 
         character*(*) what
 	integer ivar
-        real scal(nlvdim,1)
+        real scal(nlvdim,nkndim)
         real bnd3(nb3dim,0:nbcdim)
 
         real rkpar
@@ -248,7 +248,7 @@ c shell for scalar with nudging (for parallel version)
 
         character*(*) what
 	integer ivar
-        real scal(nlvdim,1)
+        real scal(nlvdim,nkndim)
         real bnd3(nb3dim,0:nbcdim)
 
         real rkpar
@@ -316,7 +316,7 @@ c special version for cohesive sediments with factor
         character*(*) what
 	integer ivar
 	real fact			!factor for boundary condition
-        real scal(nlvdim,1)
+        real scal(nlvdim,nkndim)
         real bnd3(nb3dim,0:nbcdim)
 
         real rkpar
@@ -410,7 +410,7 @@ c parameter
         include 'param.h'
 c arguments
         character*(*) what
-        real cnv(nlvdim,1)
+        real cnv(nlvdim,nkndim)
 	integer nlvbnd		!vertical dimension of boundary condition
         real rcv(nlvbnd,1)	!boundary condition (value of scalar)
 	real cobs(nlvdim,1)	!observations (for nudging)
@@ -1478,7 +1478,7 @@ c
 	double precision present(0:nlvdim+1)
 
         integer kstab
-	integer dtorig
+	real dtorig
 
         integer iustab
         save iustab

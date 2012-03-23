@@ -176,12 +176,10 @@ c	integer iz(30),ih(30),izh(30),ix(30),ixx(30)
 	call get_sigma(nsigma,hsigma)
 	bsigma = nsigma .gt. 0
 
-	if( iweich .ge. 0 ) then
-          hzmin=getpar('hzmin')
-          hzoff=getpar('hzoff')
-          hzon=getpar('hzon')			!$$hzon
-          volmin=getpar('volmin')
-	end if
+        hzmin=getpar('hzmin')
+        hzoff=getpar('hzoff')
+        hzon=getpar('hzon')			!$$hzon
+        volmin=getpar('volmin')
 
         iwh = 0
 	iw = 0

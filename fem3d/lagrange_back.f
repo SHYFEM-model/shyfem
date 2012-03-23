@@ -11,6 +11,7 @@ c 12.06.2006    ggu	integrated in new version
 c 29.11.2006    ggu	new version with different backtrace possibilities
 c 27.01.2009    aac     inertial effects from high vel to low vel
 c 04.02.2009    aac     cleaned up
+c 23.03.2012    aac     new calling for track_body (id)
 c
 c**********************************************************************
 
@@ -73,7 +74,7 @@ c**********************************************************************
         include 'param.h'
 	include 'lagrange.h'
 
-	integer i,ie
+	integer i,ie,id
 	real x,y
 	real dt,ttime
 
@@ -83,8 +84,9 @@ c**********************************************************************
           x=x_back(i)
           y=y_back(i)
           ie=ie_back(i)
+	  id = id_body(i)
 	  ttime=dt
-          call track_body(i,x,y,ie,ttime)
+          call track_body(i,id,x,y,ie,ttime)
           x_back(i)=x
           y_back(i)=y
           ie_back(i)=ie

@@ -7,6 +7,19 @@
 log=CHECKLOG
 missing=""
 
+CheckFile()
+{
+  name=$1
+  file=$2
+
+  if [ -f $file ]; then
+    [ "$verbose" = "YES" ] && echo "... $name is installed"
+  else
+    echo "*** $name is not installed"
+    missing="$missing $command"
+  fi
+}
+
 CheckCommand()
 {
   name=$1
@@ -45,6 +58,14 @@ CheckCommand gridr ./femspline/gridr
 CheckCommand grid ./grid/grid 
 CheckCommand mesh ./mesh/mesh 
 CheckCommand exgrd ./mesh/exgrd 
+
+CheckCommand demopost ./post/demopost 
+
+CheckFile libcalp ./femlib/libcalp.a
+CheckFile libfem ./femlib/libfem.a
+CheckFile libgotm ./femlib/libgotm.a
+CheckFile libgrappa ./femlib/libgrappa.a
+CheckFile libpost ./femlib/libpost.a
 
 rm -f new*.grd
 rm -f errout.dat

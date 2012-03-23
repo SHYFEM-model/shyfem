@@ -377,8 +377,8 @@ c*****************************************************************
 	end do
 
         if( lmax .eq. 1 ) then
-          call intp_aver(nbsig,hsig,siguval,femuval)
-          call intp_aver(nbsig,hsig,sigvval,femvval)
+          call intp_aver(nbsig,hsig,siguval,femuval(1))
+          call intp_aver(nbsig,hsig,sigvval,femvval(1))
         else
 	  call intp_vert(nbsig,hsig,siguval,lmax,hlfem,femuval)
 	  call intp_vert(nbsig,hsig,sigvval,lmax,hlfem,femvval)

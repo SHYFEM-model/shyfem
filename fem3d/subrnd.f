@@ -50,9 +50,9 @@ c works for initialization and normal call
 
 c******************************************************
 
-	function ran(idum)
+	function ran00(idum)
 
-	ran = ran1(idum)
+	ran00 = ran1(idum)
 
 	end
 
@@ -226,6 +226,7 @@ c******************************************************
 c******************************************************
 
 	subroutine des(inp,key,newkey,i,jot)
+        integer inp(1),jot(1),key(1)
 	end
 
 c******************************************************

@@ -46,7 +46,7 @@ c toxi module ARPAV
 	integer nstate
 	parameter( nstate = 1 )
 
-	real toxiarr(nb3dim,nbcdim)	!array containing boundary state
+	real toxiarr(nb3dim,0:nbcdim)	!array containing boundary state
 	save toxiarr
 
 	real e(nlvdim,nkndim,nstate)	!state vector

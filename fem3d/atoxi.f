@@ -176,8 +176,9 @@ c*************************************************************
 
         integer k,id
         integer nstep,n
-        real d,t,e,dt,tsec
+        real d,t,dt,tsec
 	real tmax
+	real e(1)
 
         id=1
 
@@ -193,7 +194,7 @@ c*************************************************************
 
         do n=1,nstep
           tsec = n*dt
-          call atoxi (id,tsec,dt,d,t,e)
+          call atoxi(id,tsec,dt,d,t,e)
           write(10,*) tsec,e
         end do
 

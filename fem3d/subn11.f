@@ -295,6 +295,9 @@ c	-----------------------------------------------------
 
           nk = nkbnds(ibc)   !total number of nodes of this boundary
 
+	  rmu = 0.
+	  rmv = 0.
+
 	  if( ibtyp .le. 3 ) then
 	    if( nbdim .eq. 0 ) then
 	      nsize = 0
@@ -641,6 +644,11 @@ c initializes flux boundary
         call kanfend(ibc,kranf,krend)
 
 	if( krend-kranf .le. 0 ) return
+
+	ii1 = 0
+	ii2 = 0
+	kk1 = 0
+	kk2 = 0
 
 	fm=0
 	do i=kranf,krend

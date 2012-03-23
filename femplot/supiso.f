@@ -220,6 +220,7 @@ c if constant no processing
 
 c starting point
 
+	iisol = 0
 	if( dist .gt. 0. ) then
 		fisol = int(fmin/dist)*dist
 	else
@@ -376,6 +377,22 @@ c
 c for btypa == .true.  => (xa,ya) != (xb,yb) and there is no (x2,y2)
 c for btypa == .false. => (xa,ya) == (xb,yb) and (x2,y2) exists
 c
+c avoid compiler warnings
+
+	xa = 0.
+	ya = 0.
+	za = 0.
+	xb = 0.
+	yb = 0.
+	zb = 0.
+	x1 = 0.
+	y1 = 0.
+	z1 = 0.
+	x2 = 0.
+	y2 = 0.
+	z2 = 0.
+	btypa = .false.
+
 c find first and last node
 
 	bdiff = .false.

@@ -11,6 +11,7 @@ c 20.10.2011    ggu     new routines for fluxes implemented
 c 24.10.2011    ggu     3d routines implemented
 c 04.11.2011    ggu     part with bsigma not yet finished
 c 16.12.2011    ggu     bug fix - flux2d_aux was integer
+c 23.03.2012    ggu     bug fix - dst was not available in setup_vl_3d
 c
 c****************************************************************
 
@@ -605,8 +606,8 @@ c all this has to be revised for sigma layers
 	  do l=1,lmax
             do ii=1,3
 	      dp = dh
+	      dst=dvert(ii,ie)
 	      if( .not. bsigma .and. l .eq. 1 ) then	!z-levels, first layer
-	        dst=dvert(ii,ie)
                 i1=mod(ii,3)+1
                 i2=mod(i1,3)+1
 	        zi1=zenv(i1,ie)

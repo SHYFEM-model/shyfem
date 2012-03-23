@@ -1,5 +1,5 @@
 c
-c $Id: subsss.f,v 1.7 1998/06/23 09:09:31 georg Exp $
+c $Id: subsss.f,v 1.11 2009-02-04 15:26:54 georg Exp $
 c
 c general utility routines
 c
@@ -31,7 +31,7 @@ c function rnext(r,mode)		finds closest value to r
 c function rnexta(r,mode)		finds closest value to r (absolute)
 c function istell(r)			computes exponent of r
 c subroutine scplo(xmin,xmax,ymin,ymax)	scales plot
-c subroutine swap(a,b)			swaps values
+c subroutine swapr(a,b)			swaps values
 c function rlen(x1,y1,x2,y2)		length of line
 c
 c uplow,itypch,tabula depend on the ASCII character set
@@ -40,6 +40,9 @@ c revision log :
 c
 c 01.06.1998	ggu	new routines iscan... into own file (subscn.f)
 c 17.06.1998	ggu	old routines with new name (iscan0,ialfa0)
+c 12.02.1999	ggu	new routine triml
+c 26.01.2009	ggu	minor changes to avoid compiler warnings
+c 16.02.2011	ggu	new routine trimline()
 c
 c***********************************************************
 c
@@ -155,6 +158,7 @@ c
 	izeiex=0	!sign of exponential
 c
 	ff=1.
+	ffac=1.
 	kexp=0
 c
 	length=len(line)
@@ -193,6 +197,7 @@ c
 			izeiex=0
 			kexp=0
 			ff=0.
+			ffac=1.
 			if(lh.eq.plus) then
 				izei=+1
 				goto 1
@@ -454,6 +459,7 @@ c		izahlt=zahlh*ifact+.5
 c		izahlf=mod(izahlt,ifact)
 c		izahli=izahlt/ifact
 	else
+		izahlf = 0
 		ifact=1
 		izf=0
 		izahli=zahlh+.5
@@ -1002,19 +1008,20 @@ c val		matrix containing the closest values to be used
 c		...for each mode (in ascending order)
 c nval		number of values to be used for each mode
 c
-c if r is to small, 0 is returned
+c if r is too small, 0 is returned
 c for negative r the lower value is the value closer to zero
 c
-	parameter (nmodim=3,nvadim=6)
+	parameter (nmodim=4,nvadim=9)
 	logical bhigh
 	real val(nvadim,nmodim)
 	integer nval(nmodim)
 c
-	data val / 1. , 2. , 2.5 , 5. , 8. ,           0.
-     +		,  1. , 2. , 5. ,                      0. , 0. , 0.
-     +		,  1. , 2. , 3. , 4. , 5. , 8.
+	data val / 1. , 2. , 2.5 , 5. , 8. ,           0.,0.,0.,0.
+     +		,  1. , 2. , 5. ,                      0.,0.,0.,0.,0.,0.
+     +		,  1. , 2. , 3. , 4. , 5. , 8. ,       0.,0.,0.
+     +		,  1. , 2. , 3. , 4. , 5. , 6. , 7. , 8. , 9.
      +		 /
-	data nval / 5 , 3 , 6 /
+	data nval / 5 , 3 , 6 , 9 /
 c
 	if(mode.lt.0) then	!upper or lower value
 		bhigh=.false.
@@ -1049,6 +1056,8 @@ c
 	expo=10.**iexpo
 	nn=1
 	rr=val(nn,m)*expo
+	rrold = rr
+
 	do while(rr.lt.rin)
 		rrold=rr
 		nn=nn+1
@@ -1211,7 +1220,7 @@ c
 c
 c************************************************************
 c
-	subroutine swap(a,b)
+	subroutine swapr(a,b)
 c
 c swaps variables a,b
 c
@@ -1232,3 +1241,56 @@ c
 c
 	return
 	end
+c
+c************************************************************
+
+	subroutine triml(line)
+
+c trims line (deleting leading spaces)
+
+	implicit none
+
+	character*(*) line
+
+	integer il
+
+	call trimline(line,il)
+
+	end
+
+c************************************************************
+
+	subroutine trimline(line,il)
+
+c trims line (deleting leading spaces) and gives back length
+
+	implicit none
+
+	character*(*) line
+	integer il
+
+	integer i,j,n,length
+
+	length = len(line)
+
+	do i=1,length
+	  if( line(i:i) .ne. ' ' ) goto 1
+	end do
+
+    1	continue
+
+	if( i .eq. 1 ) return		!already trimmed
+
+	n = 0
+	do j=i,length
+	  n = n + 1
+	  line(n:n) = line(j:j)
+	end do
+
+	line(n+1:length) = ' '
+	il = n
+
+	end
+
+c************************************************************
+

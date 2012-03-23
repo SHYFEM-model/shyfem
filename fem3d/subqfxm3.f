@@ -137,6 +137,8 @@ c	here kondo formulation for ch has to be used
 	endif
 	s= s0 * abs(s0)/(abs(s0)+0.01)
 
+	ce = 0.
+	ch = 0.
 	if( dt .lt. 0 ) then				!stable
 	   if(s .lt. 0 .and. s .gt. -3.3) then
 		ch= 1.24 * (0.1 + 0.03 * s + 0.9 * exp(4.8 * s))/1000.
@@ -336,7 +338,7 @@ c      data cgs /1.e+3/
        data cgstau /10./    
 c
        data ckelv /273.16/
-       data precip  /0.0/                                                       
+       data precip  /0.0/
 c	if(speed.gt.0)then !DEB
 c
 c	print*, 'fluxes : hour =', hour
@@ -430,6 +432,9 @@ c
 c
 c --- for stable condition :
 c
+	fe = 0.
+	fh = 0.
+
              IF(s.lt.0.) THEN
                 if((stp.gt.-3.3).and.(stp.lt.0.)) then
                   fh=0.1+0.03*stp+0.9*exp(4.8*stp)

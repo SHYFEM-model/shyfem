@@ -3152,6 +3152,7 @@ c-----------------------------------------------------------------------
 c     performs implicitly one step of the lu factorization of a
 c     banded hessenberg matrix.
 c-----------------------------------------------------------------------
+      npm1 = np - 1		!ggu FIXME
       if (np .le. 1) goto 12
       npm1 = np - 1
 c

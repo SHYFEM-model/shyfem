@@ -394,7 +394,7 @@ c
 
         do is = 1,nbcc
 
-	  wsink = wsi(i)
+	  wsink = wsi(i)	!ggu error -> should be wsi(is)??
           call scal_adv_fact(what,ivar,dist(is)
      +                          ,scc(1,1,is),bnd3_sed
      +                          ,sedkpar,wsink
@@ -944,6 +944,7 @@ c DOCS  END
         integer npi
         integer k,ib,is,ie,ii,l
 
+	is = 0
         npi = sedpa(5)
 
 !       -------------------------------------------------------------------

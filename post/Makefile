@@ -38,7 +38,7 @@ MAKEDEPEND = $(FEMBIN)/mkdp.pl
 
 default: fem
 
-fem: libs
+fem: libs demopost
 
 all: $(EXES) libs
 

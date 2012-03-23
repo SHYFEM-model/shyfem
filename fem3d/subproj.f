@@ -31,7 +31,7 @@ c handles projection - converts x/y to lat/lon
 	common /ygeov/ygeov
 
 	integer mode,iproj,i
-	double precision c_param(5)
+	double precision c_param(9)
 
         real getpar
 

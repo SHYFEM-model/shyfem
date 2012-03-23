@@ -336,17 +336,20 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-	subroutine checksum_2d(n1dim,n,nlv,levels,idata,crc)
+	subroutine checksum_2d(n1dim,n,nlv,levels,data,crc)
 
 	integer n1dim			! dimension of first index
 	integer n
 	integer nlv			!nlv>0 use this  nlv<=0 use levels
 	integer levels(n)
-	integer idata(n1dim,n)
+	real data(n1dim,n)
 	integer crc
 
 	integer a,b
+
 	integer ivalue
+	real value
+	equivalence(value,ivalue)
 
 	a = 1
 	b = 0
@@ -355,7 +358,7 @@ c***************************************************************
 	  lmax = nlv
 	  if( lmax .le. 0 ) lmax = levels(i)
 	  do l=1,lmax
-	    ivalue = idata(l,i)
+	    value = data(l,i)
 	    call checksum_i(a,b,ivalue)
 	  end do
 	end do
@@ -366,20 +369,23 @@ c***************************************************************
 
 c***************************************************************
 
-	subroutine checksum_1d(n,idata,crc)
+	subroutine checksum_1d(n,data,crc)
 
 	integer n
-	integer idata(n)
+	real data(n)
 	integer crc
 
 	integer a,b
+
 	integer ivalue
+	real value
+	equivalence(value,ivalue)
 
 	a = 1
 	b = 0
 
 	do i=1,n
-	  ivalue = idata(i)
+	  value = data(i)
 	  call checksum_i(a,b,ivalue)
 	end do
 

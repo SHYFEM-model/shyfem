@@ -158,6 +158,7 @@ c
 	izeiex=0	!sign of exponential
 c
 	ff=1.
+	ffac=1.
 	kexp=0
 c
 	length=len(line)
@@ -196,6 +197,7 @@ c
 			izeiex=0
 			kexp=0
 			ff=0.
+			ffac=1.
 			if(lh.eq.plus) then
 				izei=+1
 				goto 1
@@ -457,6 +459,7 @@ c		izahlt=zahlh*ifact+.5
 c		izahlf=mod(izahlt,ifact)
 c		izahli=izahlt/ifact
 	else
+		izahlf = 0
 		ifact=1
 		izf=0
 		izahli=zahlh+.5

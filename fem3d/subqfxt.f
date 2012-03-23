@@ -163,7 +163,8 @@ c---------------------------------------------------------
 	botabs = getpar('botabs')
 
 	if( icall .eq. 0 ) then
-	  write(6,*) 'qflux3d: iheat,hdecay,botabs: ',iheat,hdecay,botabs  
+	  write(6,*) 'qflux3d: iheat,hdecay,botabs: '
+     +				,iheat,hdecay,botabs  
 	end if
 	icall = 1
 

@@ -263,9 +263,9 @@ c*********************************************************************
 	implicit none
 
 	integer ivar
-	integer ifile(1)
-	real dfile(1)
-	real valfem(1)
+	integer ifile(*)
+	real dfile(*)
+	real valfem(*)
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw

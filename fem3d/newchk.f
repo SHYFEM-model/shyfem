@@ -600,7 +600,8 @@ c common
 
         real utlov(nlvdim,1),vtlov(nlvdim,1)
         real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-        common /utlov/utlov, /vtlov/vtlov, /utlnv/utlnv, /vtlnv/vtlnv           
+        common /utlov/utlov, /vtlov/vtlov
+        common /utlnv/utlnv, /vtlnv/vtlnv           
 
 c local
 	integer ie,l,k
@@ -1030,7 +1031,7 @@ c*************************************************************
 
 	if( icrc .le. 1 ) return
 
-	call check_crc_1d(iucrc,'ev',evdim*nel,ev)
+	!call check_crc_1d(iucrc,'ev',evdim*nel,ev)	!FIXME - double
 	call check_crc_1d(iucrc,'hev',nel,hev)
 	call check_crc_1d(iucrc,'fcorv',nel,fcorv)
 	call check_crc_2d(iucrc,'visv',nlvdim,nkn,ilhkv,visv)

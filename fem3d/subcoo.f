@@ -95,6 +95,7 @@ c
 
 	integer k,m,n,nn,nmax
 
+	n = 0
 	nn = 0
 	nmax = 0
 
@@ -141,6 +142,9 @@ c
 
 	debug = .true.
 	n0 = 0
+	n = 0
+	j = 0
+	i = 0
 
 	do k=1,nnkn
 	  do m=-mmbw,mmbw
