@@ -23,14 +23,14 @@ Comp()
 
   lines=`cat stderr.out | wc -l`
   if [ $lines -ne 0 ]; then
-    echo "errors compiling..."
+    echo "*** errors compiling..."
     cat stderr.out
   else
     echo "no compiling errors"
   fi
 
-  cat stdout.out >> allstdout.out
-  cat stderr.out >> allstderr.out
+  cat stdout.out >> allstdout.txt
+  cat stderr.out >> allstderr.txt
 }
 
 Rules()
@@ -40,8 +40,8 @@ Rules()
   #fembin/subst_make.pl   "$1" Rules.make > tmp.tmp
 
   echo "setting macros: $1"
-  echo "setting macros: $1" >> allstdout.out
-  echo "setting macros: $1" >> allstderr.out
+  echo "setting macros: $1" >> allstdout.txt
+  echo "setting macros: $1" >> allstderr.txt
 }
 
 #--------------------------------------------------------------------
@@ -67,6 +67,6 @@ done
 rm -f *.tmp
 rm -f stdout.out stderr.out
 mv -f ./Rules.save ./Rules.make
-mv allstdout.out allstdout.tmp
-mv allstderr.out allstderr.tmp
+mv allstdout.txt allstdout.tmp
+mv allstderr.txt allstderr.tmp
 

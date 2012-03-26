@@ -16,7 +16,7 @@ CheckFile()
     [ "$verbose" = "YES" ] && echo "... $name is installed"
   else
     echo "*** $name is not installed"
-    missing="$missing $command"
+    missing="$missing $file"
   fi
 }
 
@@ -63,7 +63,7 @@ CheckCommand demopost ./post/demopost
 
 CheckFile libcalp ./femlib/libcalp.a
 CheckFile libfem ./femlib/libfem.a
-CheckFile libgotm ./femlib/libgotm.a
+#CheckFile libgotm ./femlib/libgotm.a
 CheckFile libgrappa ./femlib/libgrappa.a
 CheckFile libpost ./femlib/libpost.a
 

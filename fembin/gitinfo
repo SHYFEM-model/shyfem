@@ -36,7 +36,11 @@ different levels:
 	staged files	-> index
 	working dir	-> work
 
-diffs:	(script ~/fem/fembin/extDiff is used)
+diffs:	(script ~/bin/extDiff is used as diff program)
+
+git diff			standard diff program
+gitdiff				visual diff program (accepts same options)
+gitdiffall			all changes
 
 git diff file			differences between work and last
 git diff --staged file		differences between index and last
@@ -61,8 +65,8 @@ gittar			makes tar file for given version
 
 todo for a new version:
 
-make dist
 make test_compile
+make dist
 
 git status
 git diff <file>

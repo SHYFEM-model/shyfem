@@ -1,4 +1,23 @@
 
+c ./femplot/supsim.f:
+c 26.03.2012    ccf&ggu call mkht only for bvel .or. btrans (plo2vel)
+c
+c ./fem3d/subfil.f:
+c 26.03.2012    ggu     if opening already open file -> better error message
+c
+c ./fem3d/subbfm.f:
+c 26.03.2012    ggu     bfm1-3 had wrong second dimension
+c
+c ./fem3d/netcdf.f:
+c 26.03.2012    ggu     standardized implicit routines, compiler warnings
+c
+
+
+
+
+eliminated compiler warnings
+Rules.make cleaned
+
 c ./fem3d/lagrange_flux.f:
 c 23.03.2012    ggu     bug fix - dst was not available in setup_vl_3d
 c

@@ -4,6 +4,7 @@ c
 c revision log :
 c
 c 05.12.2011    ggu&dbf	written from scratch
+c 26.03.2012    ggu	standardized implicit routines, compiler warnings
 c
 c notes :
 c
@@ -32,9 +33,9 @@ c******************************************************************
 	include 'param.h'
 	include 'netcdf.h'
 
-	integer ncid
-	integer nkn,nel,nlv
-	integer date0,time0
+	integer ncid		!identifier (return)
+	integer nkn,nel,nlv	!size of arrays
+	integer date0,time0	!date and time of time 0
 
 	integer lat_varid,lon_varid,lvl_varid,dep_varid
 	integer eix_varid,top_varid
@@ -789,21 +790,24 @@ c*****************************************************************
 
 	character*(*) cdate
 
-	integer time(3)
-	integer date(3)
 	integer year,month,day,hour,min,sec
+	character*10 date,time,zone
+	integer value(8)
+	!integer time(3)
+	!integer date(3)
 
-	call idate(date)
-	call itime(time)
+	!call idate(date)
+	!call itime(time)
+	call date_and_time(date,time,zone,value)
 
-	year = date(3)
-	month = date(2)
-	day = date(1)
-	hour = time(1)
-	min = time(2)
-	sec = time(3)
+	year = value(1)
+	month = value(2)
+	day = value(3)
+	hour = value(5)
+	min = value(6)
+	sec = value(7)
 
-	if( year .lt. 1000 ) year = 2000 + year
+	!if( year .lt. 1000 ) year = 2000 + year
 
 	call nc_format_date(cdate,year,month,day,hour,min,sec,'MET')
 
@@ -853,11 +857,18 @@ c*****************************************************************
 	integer nkn,nel,nlv
 	integer it
 	integer irec
+	integer date0,time0
 	real znv(1)
 	logical next_record
+	character*1 units
 
-	call nc_open(ncid,nkn,nel,nlv)
-	call nc_define_2d(ncid,'water_level','m',level_id)
+	date0 = 20120101
+	time0 = 0
+	units = 'm'
+
+	call nc_open(ncid,nkn,nel,nlv,date0,time0)
+	call nc_define_2d(ncid,'water_level',level_id)
+        call nc_define_attr(ncid,'units',units,level_id)
 	call nc_end_define(ncid)
 	call nc_write_coords(ncid)
 

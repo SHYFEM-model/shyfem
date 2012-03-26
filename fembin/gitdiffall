@@ -1,4 +1,11 @@
 #!/bin/sh
+#
+# shows all changes...
+#
+# works only if in ~/bin/extDiff the regular diff is set (not tkdiff)
+# (is now default)
+#
+#---------------------------------------------------------------------
 
 for name in $(git diff --name-only $1)
 do 

@@ -57,8 +57,8 @@ export NELDIM = 22000
 ##############################################
 
 #COMPILER = GNU_G77
-COMPILER = GNU_GFORTRAN
-#COMPILER = INTEL
+#COMPILER = GNU_GFORTRAN
+COMPILER = INTEL
 #COMPILER = PORTLAND
 
 ##############################################
@@ -230,11 +230,18 @@ endif
 # General Compiler options
 ##############################################
 
-DEBUG = true
-#DEBUG = false
+# if unsure please leave defaults
+#
+# DEBUG        insert debug information and run time checks
+# PROFILE      insert profiling instructions
+# OPTIMIZE     optimize program for speed
+# WARNING      generate compiler warnings for unusual constructs
 
 #PROFILE = true
 PROFILE = false
+
+DEBUG = true
+#DEBUG = false
 
 OPTIMIZE = true
 #OPTIMIZE = false
@@ -410,9 +417,7 @@ FINTEL_WARNING =
 ifeq ($(WARNING),true)
   FINTEL_WARNING =
   FINTEL_WARNING = -w
-  FINTEL_WARNING = -check all 
   FINTEL_WARNING = -warn interfaces,nouncalled -gen-interfaces
-  FINTEL_WARNING = -check uninit 
 endif
 
 FINTEL_NOOPT = 
@@ -420,7 +425,7 @@ ifeq ($(DEBUG),true)
   FINTEL_NOOPT = -xP
   FINTEL_NOOPT = -CU -d1
   FINTEL_NOOPT = -CU -d5
-  FINTEL_NOOPT = -g -traceback
+  FINTEL_NOOPT = -g -traceback -check all
   FINTEL_NOOPT = -g -traceback -check uninit -check bounds 
   FINTEL_NOOPT = -g -traceback -check uninit 
 endif

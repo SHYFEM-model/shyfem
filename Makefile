@@ -23,7 +23,7 @@ include ./Rules.make
 
 #---------------------------------------------------------------
 
-RULES_MAKE_EXPECTED = 1.1
+RULES_MAKE_EXPECTED = 1.2
 RULES_MAKE_COMPATIBILITY = RULES_MAKE_OK
 ifneq ($(RULES_MAKE_VERSION),"0.0")
   ifneq ($(RULES_MAKE_VERSION),$(RULES_MAKE_EXPECTED))
@@ -177,6 +177,7 @@ info: version
 	@echo "  PROFILE  = $(PROFILE)"
 	@echo "  DEBUG    = $(DEBUG)"
 	@echo "  OPTIMIZE = $(OPTIMIZE)"
+	@echo "  WARNING  = $(WARNING)"
 
 check: check_software
 check_software:

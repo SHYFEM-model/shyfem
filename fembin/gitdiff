@@ -1,0 +1,3 @@
+
+git difftool --tool=tkdiff --no-prompt $*
+

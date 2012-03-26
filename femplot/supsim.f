@@ -60,6 +60,7 @@ c 12.07.2011    ggu     eliminated all references to out routines
 c 31.08.2011    ggu     new eos plotting (pleos,ploeval)
 c 07.10.2011    ggu&dbf error calling extelev with nkn, and not nel
 c 10.02.2012    ggu	belem in plobas to plot bathymetry on elements
+c 26.03.2012    ccf&ggu	call mkht only for bvel .or. btrans (plo2vel)
 c
 c notes :
 c

@@ -23,6 +23,7 @@ c 29.06.1998	ggu	filna revisited
 c 10.12.2001	ggu	filna still revisited, new routine useunit
 c 31.03.2008	ggu	in ifileo remember last unit number
 c 09.01.2009	ggu	re-formatted, safeguard units 5 and 6
+c 26.03.2012	ggu	if opening already open file -> better error message
 c
 c********************************************************
 
@@ -83,7 +84,7 @@ c ...is passed back in ifileo. -1 is returned if no file is opened.
 	character*(*) file,format,status
 
 	integer iu,nfile,ios
-	logical found,error,opened,ex
+	logical found,error,opened,ex,od
 	character*1 cf,cs
 	character*15 form,stat,access
 
@@ -187,19 +188,28 @@ c----------------------------------------------------------------
      +			,access=access
      +			,iostat=ios
      +	            )
-		if(ios.ne.0) then
-			nfile=ichanm0(file)
-			if(nfile.le.0) nfile=1
-			write(6,*) 'error opening file : '
+	  if(ios.ne.0) then
+	    nfile=ichanm0(file)
+	    if(nfile.le.0) nfile=1
+	        write(6,*) 'error opening file : '
      +				,file(1:nfile)
-			write(6,*) 'unit : ',iu,'  iostat : ',ios
-			write(6,*) 'error : ',mod(ios,256)
-		else
-			rewind(iu)
-			ifileo=iu
-                        if( iunit .le. 0 ) iustd=iu ! remember for next time
-                        !write(10,*) 'ifileo: ',iu,iunit,'  ',file(1:40)
+		write(6,*) 'unit : ',iu,'  iostat : ',ios
+		write(6,*) 'error : ',mod(ios,256)
+		inquire(file=file,opened=opened)
+		if( opened ) then
+		  write(6,*) '...the file is already open...'
+		  write(6,*) 'If you are using gfortran or pgf90'
+		  write(6,*) 'please remember that you can open'
+		  write(6,*) 'a file only once. You will have to'
+		  write(6,*) 'copy the file to files with different'
+		  write(6,*) 'names and open these files instead'
 		end if
+	  else
+		rewind(iu)
+		ifileo=iu
+                if( iunit .le. 0 ) iustd=iu ! remember for next time
+                !write(10,*) 'ifileo: ',iu,iunit,'  ',file(1:40)
+	  end if
 	end if
 
 c----------------------------------------------------------------

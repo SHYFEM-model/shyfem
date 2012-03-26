@@ -24,6 +24,7 @@ c 30.04.2008    ggu     double to real (BUG)
 c 31.05.2011    ggu     clean from useless common blocks
 c 15.01.2011    aac     advection for all BFM var introduced
 c 17.02.2012    aac&ggu restart for bfm
+c 26.03.2012    ggu	bfm1-3 had wrong second dimension
 c
 c**************************************************************
 c
@@ -198,9 +199,9 @@ c computes ecological scalars with BFM  model
 	real b3cn_b(nlvdim,nkndim,nbfmv3)
 	real b3cn_c(nlvdim,nkndim,nbfmv3)
 
- 	real bfm1(nb3dim,nbcdim)   !boundary state for solutes
-        real bfm2(nb3dim,nbcdim)   !boundary state for fitozoo
-	real bfm3(nb3dim,nbcdim)   !boundary state for essudates
+ 	real bfm1(nb3dim,0:nbcdim)   !boundary state for solutes
+        real bfm2(nb3dim,0:nbcdim)   !boundary state for fitozoo
+	real bfm3(nb3dim,0:nbcdim)   !boundary state for essudates
 
  	real b1bound(nbfmv1)       !boundary vector for solutes
  	real b2bound(nbfmv2)       !boundary vector for fitozoo

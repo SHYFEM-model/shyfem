@@ -1,5 +1,27 @@
 ============================================================
 
+Mon Mar 26 16:42:17 CEST 2012
+
+more compiler warnings
+
+ LOG                           |   19 ++++++++++++++++++
+ Makefile                      |    3 +-
+ Rules.make                    |   19 +++++++++++------
+ fem3d/Makefile                |    1 -
+ fem3d/netcdf.f                |   43 +++++++++++++++++++++++++---------------
+ fem3d/subbfm.f                |    7 +++--
+ fem3d/subfil.f                |   34 +++++++++++++++++++++-----------
+ fembin/diffall.sh             |   10 ---------
+ fembin/gitdiff                |    3 ++
+ fembin/gitdiffall             |   17 ++++++++++++++++
+ fembin/gitinfo                |    8 +++++-
+ femcheck/check_compilation.sh |    4 +-
+ femcheck/test_compile.sh      |   14 ++++++------
+ femplot/supsim.f              |    1 +
+ 14 files changed, 122 insertions(+), 61 deletions(-)
+
+============================================================
+
 Fri Mar 23 19:03:46 CET 2012
 
 Compiler warnings (intel and gfortran)
