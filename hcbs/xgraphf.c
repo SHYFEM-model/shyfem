@@ -118,6 +118,7 @@ void qopen_( void )
 	QSync();
 	printf("Enter <CR> to continue : ");
 	s=getlin(stdin);
+	if( s ) s = NULL;
 }
 
 void qclose_( void )

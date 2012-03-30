@@ -1,31 +1,25 @@
 
-c ./femplot/supsim.f:
-c 26.03.2012    ccf&ggu call mkht only for bvel .or. btrans (plo2vel)
-c
-c ./fem3d/subfil.f:
-c 26.03.2012    ggu     if opening already open file -> better error message
-c
-c ./fem3d/subbfm.f:
-c 26.03.2012    ggu     bfm1-3 had wrong second dimension
-c
-c ./fem3d/netcdf.f:
-c 26.03.2012    ggu     standardized implicit routines, compiler warnings
-c
+29.03.2012	compiler warnings, speed optimizations, sp256v with OpenMP
 
+	use ngrdim1 to avoid too small dimension for ngrdim (vp.f)
+	avoid call to areaele -> ev(10,ie) (subgotm.f, subele.f)
+	avoid call to coo_find (subcoo.f)
+	introduce zero and one as double (bug, was int before) (subspk.f)
+	cleaned up, sp256v prepared for OpenMP (new3di.f)
 
+26.03.2012	compiler warnings
 
+	call mkht only for bvel .or. btrans (plo2vel) (supsim.f)
+	if opening already open file -> better error message (subfil.f)
+	bfm1-3 had wrong second dimension (subbfm.f)
+	standardized implicit routines, compiler warnings (netcdf.f)
 
-eliminated compiler warnings
-Rules.make cleaned
+23.03.2012	compiler warnings, Rules.make cleaned
 
-c ./fem3d/lagrange_flux.f:
-c 23.03.2012    ggu     bug fix - dst was not available in setup_vl_3d
-c
-c ./fem3d/lagrange_back.f:
-c 23.03.2012    aac     new calling for track_body (id)
+	bug fix - dst was not available in setup_vl_3d (lagrange_flux.f)
+	new calling for track_body (id) (lagrange_back.f)
 
-
-
+========================================================== 21-03-2012 - 6_1_50
 
 21.03.2012	new parts of manual
 

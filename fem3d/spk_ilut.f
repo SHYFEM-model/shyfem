@@ -2305,14 +2305,14 @@ c
 c
 c     backward solve.
 c
-	do 90 i = n, 1, -1
-	   do 91 k=ju(i),jlu(i+1)-1
+        do 90 i = n, 1, -1
+           do 91 k=ju(i),jlu(i+1)-1
               x(i) = x(i) - alu(k)*x(jlu(k))
- 91	   continue
+ 91        continue
            x(i) = alu(i)*x(i)
  90     continue
 c
-  	return
+        return
 c----------------end of lusol ------------------------------------------
 c-----------------------------------------------------------------------
 	end

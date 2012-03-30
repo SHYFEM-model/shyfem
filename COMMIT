@@ -1,5 +1,46 @@
 ============================================================
 
+Fri Mar 30 17:14:15 CEST 2012
+
+Compiler warnings, OpenMP
+
+ LOG                     |   36 +++----
+ Makefile                |    2 +-
+ RELEASE_NOTES           |    4 +
+ Rules.make              |   48 ++++++---
+ fem3d/Makefile          |    2 +-
+ fem3d/bin/struct.pl     |    8 +-
+ fem3d/common.h          |    3 +-
+ fem3d/new3di.f          |  268 ++++++++++++++++++----------------------------
+ fem3d/newbcl.f          |    6 +-
+ fem3d/newconz.f         |    4 +-
+ fem3d/spk_ilut.f        |    8 +-
+ fem3d/spk_itaux.f       |    2 +
+ fem3d/subcoo.f          |   14 +++-
+ fem3d/subcus.f          |    3 +-
+ fem3d/subele.f          |    5 +-
+ fem3d/subgotm.f         |   12 +-
+ fem3d/subomp.f          |   28 +++++
+ fem3d/subomp_dummy.f    |   30 +++++
+ fem3d/subspk.f          |    9 ++-
+ fem3d/subsse.f          |   14 ++--
+ fem3d/subsss.f          |    4 +-
+ fem3d/vp.f              |   18 ++--
+ fembin/gitinfo          |    6 +-
+ fembin/parr             |    8 +-
+ femdoc/final/shyfem.pdf |  Bin 257513 -> 257513 bytes
+ femdoc/final/shyfem.ps  |   30 +++---
+ femersem/src/Makefile   |    8 +-
+ grid/color.c            |   10 +--
+ grid/xevents.c          |    3 +
+ grid/xgraph.c           |    5 +
+ hcbs/xgraph.c           |   12 +-
+ hcbs/xgraphf.c          |    1 +
+ mesh/meshck.c           |    2 +-
+ 33 files changed, 333 insertions(+), 280 deletions(-)
+
+============================================================
+
 Mon Mar 26 16:50:30 CEST 2012
 
 Just Rules.make

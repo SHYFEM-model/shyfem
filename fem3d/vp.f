@@ -28,6 +28,7 @@ c 30.03.2011    ggu     new routine check_sidei(), text in optest()
 c 15.07.2011    ggu     calls to ideffi substituted
 c 15.11.2011    ggu     new routines for mixed depth (node and elem), hflag
 c 09.03.2012    ggu     delete useless error messages, handle nkn/nel better
+c 29.03.2012    ggu     use ngrdim1 to avoid too small dimension for ngrdim
 c
 c notes :
 c
@@ -68,12 +69,15 @@ c********************************************************
         real hkv(nkndim)
         real rphv(nkndim)
 
-        integer ng(nkndim),iknot(ngrdim,nkndim)
+	integer ngrdim1
+	parameter (ngrdim1=ngrdim+1)
+
+        integer ng(nkndim),iknot(ngrdim1,nkndim)
         integer kvert(2,nkndim)
 
 c        common /iphv/iphv(nkndim), /kphv/kphv(nkndim)
 c        common /iphev/iphev(neldim), /iaux/iaux(neldim)
-c        common /ng/ng(nkndim), /iknot/iknot(ngrdim,nkndim)
+c        common /ng/ng(nkndim), /iknot/iknot(ngrdim1,nkndim)
 c        common /kvert/kvert(2,nkndim) !aux vector for rosen
 c        common /hev/hev(neldim)
 c        common /hkv/hkv(nkndim) !for depths
@@ -270,10 +274,10 @@ c end reading ----------------------------------------------------
 
 	write(nat,*) ' ...setting up side index'
 
-        call test_grade(nkn,nel,nen3v,ng,ngrdim)
-        call sidei(nkn,nel,nen3v,ng,iknot,ngrdim,ngr)
-        call check_sidei(nkn,nel,nen3v,ipv,ng,iknot,ngrdim,iaux)
-	call knscr(nkn,ngr,ngrdim,iknot)
+        call test_grade(nkn,nel,nen3v,ng,ngrdim1)
+        call sidei(nkn,nel,nen3v,ng,iknot,ngrdim1,ngr)
+        call check_sidei(nkn,nel,nen3v,ipv,ng,iknot,ngrdim1,iaux)
+	call knscr(nkn,ngr,ngrdim1,iknot)
 
 	write(nat,*) ' Maximum grade of nodes is ',ngr
 
@@ -347,7 +351,7 @@ c
 c
 	if(nkn.gt.nkndim) goto 99900
 	if(nel.gt.neldim) goto 99900
-	if(ngr.gt.ngrdim) goto 99900
+	if(ngr.gt.ngrdim1) goto 99900
 c
 	descrg=descrr
 c

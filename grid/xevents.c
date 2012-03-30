@@ -82,6 +82,8 @@ static long	StandardMask;
 static long	AllMask;
 static long	MoveMask;
 
+static int useless = 0;
+
 #define GGU_DEBUG 1
 /*#undef GGU_DEBUG*/
 #ifdef GGU_DEBUG
@@ -203,6 +205,7 @@ void QNextEvent( QEvent *eventp )
 		if( !( ActualEventMask & QKeyPressMask ) ) break;
 		eventp->type = QKeyPress;
                 i=XLookupString(&(XActualEvent.xkey),&c,1,&mykey,0);
+		useless = i;
 /*
                 if( mykey == XK_Return )
                         c='\n';

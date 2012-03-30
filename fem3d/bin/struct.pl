@@ -4,9 +4,9 @@
 #
 # command line options: 
 #
-#	-main=routine
-#	-maxlevel=#
-#	-upper
+#	-main=routine		reconstruct structure from this routine
+#	-maxlevel=#		use this level as maximum descend
+#	-upper			return all routines in uppercase
 #
 #########################################################
 
@@ -320,6 +320,8 @@ sub parse_routine {
     $nline++;
     next if $nline == 1;	# skip definition
     $line =~ s/^\s*\d+\s+/ /;	# get rid of label number
+
+    next if $line =~ /^[cC!]/;		# get rid of line comment
 
     if( $line =~ /^\s+CALL\s+(\w+)/i ) { handle("C",$1); }
     if( $line =~ /^\s+IF\s*\(.+\)\s*CALL\s+(\w+)/i ) { handle("C",$1); }

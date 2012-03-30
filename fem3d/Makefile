@@ -592,7 +592,7 @@ cleanvar:
 	-rm -f .memory
 	-rm -f html/cvs*
 	-rm -fr cvsdiff_tmp
-	-rm -f *.rev
+	-rm -f *.rev *.dcl
 	-rm -f CVSSTATUS CVSRAWSTATUS
 	-rm -f COMMONF COMMONL
 	-rm -f gmon.out tags

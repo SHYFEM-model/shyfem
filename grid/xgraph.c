@@ -140,6 +140,8 @@ static int           YAct=0;
 
 static int           Initialized=0;
 
+static int flag_useless = 0;		/* just to avoid compiler warnings */
+
 static Display       *MyDisplay;
 static int           MyScreen;
 static Window        MyRootWindow;
@@ -864,6 +866,9 @@ void QSetGeometry( char *s )
 	flag = XGeometry( MyDisplay , MyScreen , s , NULL ,
 				MyBorder , 1 , 1 , 0 , 0 ,
 				&x , &y , &width , &height );
+
+	flag_useless = flag;
+
 	XMinPix = x;
 	YMinPix = y;
 	XMaxPix = x+width-1;

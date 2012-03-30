@@ -72,6 +72,7 @@ c 25.10.2011    ggu     hlhv eliminated
 c 04.11.2011    ggu     adapted for hybrid coordinates
 c 08.11.2011    dbf&ggu bug in setdepth(): 1 -> l
 c 11.11.2011    ggu     error message for negative last layer
+c 29.03.2013    ggu     avoid call to areaele -> ev(10,ie)
 c
 c****************************************************************
 
@@ -867,6 +868,8 @@ c sets up depth array for nodes
 c	real zenv(1)
 c	common /zenv/zenv
 
+	include 'ev.h'
+
         logical bdebug
         logical bsigma
 	integer k,l,ie,ii
@@ -906,7 +909,7 @@ c----------------------------------------------------------------
 	do ie=1,nel
 
 	  call elebase(ie,n,ibase)
-	  areael = areaele(ie)
+	  areael = 12 * ev(10,ie)
 	  areafv = areael / n
 
 	  lmax = ilhv(ie)

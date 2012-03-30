@@ -469,7 +469,7 @@ void CheckNeibor( int id )
 	    if( pe ) {
 		elem = pe->number;
 		nb = pe->neibor;
-		/* if( nb == NULL ) continue; */
+		if( nb == NULL ) continue;
 		for(i=0;i<3;i++) {
 		    n = pe->neibor[i];
 		    if( ACTIVE_NEIBOR(n) ) {

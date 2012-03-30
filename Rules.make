@@ -47,19 +47,27 @@ export NELDIM = 22000
 # Please choose a compiler. Compiler options are
 # usually correct. You might check below.
 #
-# Available options are:
+# Available options for the Fortran compiler are:
 #
 # GNU_G77		->	g77
 # GNU_GFORTRAN		->	gfortran
 # INTEL			->	ifort
 # PORTLAND		->	pgf90
 #
+# Available options for the C compiler are:
+#
+# GNU_GCC		->	gcc
+# INTEL			->	icc
+#
 ##############################################
 
-#COMPILER = GNU_G77
-#COMPILER = GNU_GFORTRAN
-COMPILER = INTEL
-#COMPILER = PORTLAND
+#FORTRAN_COMPILER = GNU_G77
+FORTRAN_COMPILER = GNU_GFORTRAN
+#FORTRAN_COMPILER = INTEL
+#FORTRAN_COMPILER = PORTLAND
+
+C_COMPILER = GNU_GCC
+#C_COMPILER = INTEL
 
 ##############################################
 # Parallel compilation
@@ -182,7 +190,7 @@ ECOLOGICAL = NONE
 # DEFINE VERSION
 ##############################################
 
-RULES_MAKE_VERSION = 1.2
+RULES_MAKE_VERSION = 1.3
 DISTRIBUTION_TYPE = experimental
 
 ##############################################
@@ -202,7 +210,7 @@ LIBX = -L/usr/X11R6/lib -L/usr/X11/lib -L/usr/lib/X11  -lX11
 RULES_MAKE_PARAMETERS = RULES_MAKE_OK
 RULES_MAKE_MESSAGE = ""
 
-ifeq ($(COMPILER),GNU_G77)
+ifeq ($(FORTRAN_COMPILER),GNU_G77)
   ifeq ($(GOTM),true)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
     RULES_MAKE_MESSAGE = "g77 compiler and GOTM=true are incompatible"
@@ -213,7 +221,7 @@ ifeq ($(COMPILER),GNU_G77)
   endif
 endif
 
-ifneq ($(COMPILER),INTEL)
+ifneq ($(FORTRAN_COMPILER),INTEL)
   ifeq ($(SOLVER),PARDISO)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
     RULES_MAKE_MESSAGE = "Pardiso solver needs Intel compiler"
@@ -303,7 +311,7 @@ endif
 
 #----------------------------------
 
-ifeq ($(COMPILER),GNU_G77)
+ifeq ($(FORTRAN_COMPILER),GNU_G77)
   FGNU		= g77
   FGNU95	= g95
   F77		= $(FGNU)
@@ -313,7 +321,7 @@ ifeq ($(COMPILER),GNU_G77)
   FFLAGS	= $(LFLAGS) $(FGNU_NOOPT) $(FGNU_WARNING)
 endif
 
-ifeq ($(COMPILER),GNU_GFORTRAN)
+ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
   FGNU		= gfortran
   FGNU95	= gfortran
   F77		= $(FGNU)
@@ -357,7 +365,7 @@ endif
 
 #----------------------------------
 
-ifeq ($(COMPILER),PORTLAND)
+ifeq ($(FORTRAN_COMPILER),PORTLAND)
   FPG		= pgf90
   FPG95		= pgf90
   F77		= $(FPG)
@@ -444,7 +452,7 @@ ifeq ($(PARALLEL),true)
   FINTEL_OMP   = -threads -openmp
 endif
 
-ifeq ($(COMPILER),INTEL)
+ifeq ($(FORTRAN_COMPILER),INTEL)
   FINTEL	= ifort
   F77		= $(FINTEL)
   F95     	= $(F77)
@@ -459,10 +467,18 @@ endif
 #
 ##############################################
 
-CC     = gcc
-CFLAGS = -O -Wall -pedantic
-CFLAGS = -O -Wall -pedantic -std=gnu99  #no warnings for c++ style comments
-LCFLAGS = -O 
+ifeq ($(C_COMPILER),GNU_GCC)
+  CC     = gcc
+  CFLAGS = -O -Wall -pedantic
+  CFLAGS = -O -Wall -pedantic -std=gnu99  #no warnings for c++ style comments
+  LCFLAGS = -O 
+endif
+
+ifeq ($(C_COMPILER),INTEL)
+  CC     = icc
+  CFLAGS = -O -g -traceback -check-uninit
+  LCFLAGS = -O 
+endif
 
 ##############################################
 #

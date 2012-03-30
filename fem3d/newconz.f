@@ -54,7 +54,7 @@ c local
         integer istot
 	integer level
 	integer nintp,nvar,ivar
-	real cdef
+	real cdef(1)
         real cmin,cmax,ctot
         real sindex
 	real wsink
@@ -123,7 +123,7 @@ c-------------------------------------------------------------
 
 	  nintp = 2
 	  nvar = 1
-	  cdef = 0.
+	  cdef(1) = 0.
 	  call bnds_init(what,conzn,nintp,nvar,nb3dim,bnd3_conz,cdef)
 	  call bnds_set_def(what,nb3dim,bnd3_conz)
 

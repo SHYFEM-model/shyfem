@@ -159,7 +159,7 @@ int *QAllocYellow2GreenColors( int ncol )
 	int red,green,blue;
 	int colmin=0;
 	int colmax=255;
-	int auxmax,derv;
+	int auxmax;
 	int *colorp;
 
 	colorp = (int *) malloc( ncol * sizeof(int) );
@@ -167,7 +167,6 @@ int *QAllocYellow2GreenColors( int ncol )
 		Error("Cannot allocate Yellow2Green color");
 
 	auxmax=(3*colmax)/4;
-	derv=2;
 
 	for(i=0;i<ncol;i++) {
 
@@ -190,15 +189,11 @@ int *QAllocRed2YellowColors( int ncol )
 	int red,green,blue;
 	int colmin=0;
 	int colmax=255;
-	int auxmax,derv;
 	int *colorp;
 
 	colorp = (int *) malloc( ncol * sizeof(int) );
 	if( !colorp )
 		Error("Cannot allocate Red2Yellow color");
-
-	auxmax=(3*colmax)/4;
-	derv=2;
 
 	for(i=0;i<ncol;i++) {
 
@@ -252,7 +247,7 @@ int *QAllocBlueColors( int ncol )
 	int red,green,blue;
 	int colmin=0;
 	int colmax=255;
-	int auxmax,derv;
+	int auxmax;
 	int *colorp;
 
 	colorp = (int *) malloc( ncol * sizeof(int) );
@@ -260,7 +255,6 @@ int *QAllocBlueColors( int ncol )
 		Error("Cannot allocate Blue color");
 
 	auxmax=(3*colmax)/4;
-	derv=2;
 
 	for(i=0;i<ncol;i++) {
 

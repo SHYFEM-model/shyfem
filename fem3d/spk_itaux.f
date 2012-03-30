@@ -52,6 +52,8 @@
          IF ( Ipar(7)/=its ) its = Ipar(7)
          res = Fpar(5)
 !
+	!write(6,*) 'ipar(1) = ',ipar(1),its
+
          IF ( Ipar(1)==1 ) THEN
             CALL AMUX(N,Wk(Ipar(8)),Wk(Ipar(9)),A,Ja,Ia)
             CYCLE

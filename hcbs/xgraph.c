@@ -184,6 +184,8 @@ static int TextSize   = 1;
 static int TextHeight = 0;
 */
 
+static int	     flag_useless=0;	/* just to avoid compiler warning */
+
 static int           XAct=0;
 static int           YAct=0;
 
@@ -839,7 +841,6 @@ static void QAllocGreen2BlueColors( void )
 	int i,ncol;
 	long unsigned int il,iaux,nmax=65536,auxmax,derv;
 	long unsigned int colmin,colmax;
-	long unsigned int aux1,aux2;
 
 	ncol = 16;
 
@@ -856,13 +857,9 @@ static void QAllocGreen2BlueColors( void )
 		if(i<ncol) {
 			il=i;
 			color.red=colmin;
-			aux1=linear(auxmax,colmin,iaux,il);
-			aux2=linear(colmin,auxmax,iaux,il);
 			color.green=quadratic_slow(auxmax,colmin,iaux,derv,il);
 			color.blue=quadratic_fast(colmin,auxmax,iaux,derv,il);
-/*			printf("%ld %ld %ld %ld %ld\n",aux1,aux2,
-				color.red,color.green,color.blue);
-*/		}
+		}
 		result=XAllocColor(MyDisplay,MyColormap,&color);
 
 		if(result) {
@@ -1081,6 +1078,9 @@ void QSetGeometry( char *s )
 	flag = XGeometry( MyDisplay , MyScreen , s , NULL ,
 				MyBorder , 1 , 1 , 0 , 0 ,
 				&x , &y , &width , &height );
+
+	flag_useless = flag;
+
 	XMinPix = x;
 	YMinPix = y;
 	XMaxPix = x+width-1;

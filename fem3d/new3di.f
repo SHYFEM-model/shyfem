@@ -160,6 +160,7 @@ c 12.04.2010    ggu	ad hoc routine for Yaron
 c 16.12.2010    ggu	in sp256w() account for changing volume (sigma)
 c 19.02.2011    ccf	3D radiation stress
 c 04.11.2011    ggu	deleted computation of firction term (in subn35.f)
+c 29.03.2012    ggu	cleaned up, sp256v prepared for OpenMP
 c
 c******************************************************************
 
@@ -429,7 +430,7 @@ c	logical debug,bdebug
 	logical bdebug
 	integer kn(3)
 	integer ie,i,j,j1,j2,n,m,kk,l,k
-	integer ncount,ngl
+	integer ngl
 	integer ilevel
 	integer ju,jv
 c	real az,azt,am,amt,af,aft
@@ -460,9 +461,6 @@ c function
 c save - data
 c	data amatr / 2.,1.,1.,1.,2.,1.,1.,1.,2. /
 	data amatr / 4.,0.,0.,0.,4.,0.,0.,0.,4. /
-	data ncount /0/
-c
-	ncount=ncount+1
 c
 	ngl=nkn
 c
@@ -551,33 +549,7 @@ c
 	end do
 
 c	level boundary conditions
-c
-c====================================================================
-c
-c	new implementation of radiation boundary condition $$GWI
-c
-c	iradf=0
-c	do i=1,3
-c	  if(rzv(kn(i)).ne.flag) then
-c	    iradb(i)=1
-c	    iradf=1
-c	  else
-c	    iradb(i)=0
-c	  end if
-c	end do
-c
-c changed 25.03.96 -> no reference to bnd anymore, must be handled
-c	with seperate function
-c
-c	if(iradf.eq.1.and.kn(1).gt.2000.and.bnd(2,2).eq.52) then
-c	  if(niter.le.5.and.ie.eq.1) write(6,*) 'radiation only for canaly'
-c	  write(6,*) ie
-c	write(6,*) '*******************'
-c	write(6,*) zm,uhat,vhat,um,vm
-c	write(6,*) z
-c	  call gwi(hia,hik,iradb,b,c,z,dt,ht,aj) !implicit gravity wave rad.
-c	else
-c
+
 	do i=1,3
 	  if(rzv(kn(i)).ne.flag) then
 		!rw=rzv(kn(i))-zov(kn(i))	!this for dz
@@ -594,37 +566,10 @@ c		hia(i,i)=12.*aj
 		hik(i)=rw*hia(i,i)
 	  end if
 	end do
-c
-c	end if
-c
-c==================================================================
 
-	bdebug = ie.eq.20.or.ie.eq.100.or.ie.eq.250
-	bdebug = .false.
-	if( bdebug ) then
-	  write(6,*) 'xxx: it,ie,ht ',it,ie,ht
-c          write(6,*) 'xxx: ht,g,dt ',ht,grav,dt
-c          write(6,*) 'xxx: az,am ',az,am
-
-	  do i=1,3
-	    write(6,*) 'xxx: hia ',(hia(i,j),j=1,3)
-	  end do
-	  write(6,*) 'xxx: hik ',(hik(j),j=1,3)
-
-	  write(6,*) 'xxx: u ',uhat,uold,ut
-	  write(6,*) 'xxx: v ',vhat,vold,vt
-
-c          write(6,*) 'xxx: b ',(ev(i+3,ie),i=1,3)
-c          write(6,*) 'xxx: c ',(ev(i+6,ie),i=1,3)
-
-
-	end if
-
-c
 c excluded areas
-c
+
           if( iseout(ie) ) then	!ZEONV
-c          if( .false. ) then
             hh999=aj*12.
             do n=1,3
               do m=1,3
@@ -632,7 +577,7 @@ c          if( .false. ) then
               end do
               hik(n)=0.
             end do
-c
+
             do n=1,3
               if( iskbnd(kn(n)) ) then	!not internal and not out of system
                 do m=1,3
@@ -658,6 +603,82 @@ c******************************************************************
 
 	subroutine sp256v
 
+	implicit none
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	real grav,fcor,dcor,dirn,rowass,roluft
+	integer itanf,itend,idt,nits,niter,it
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	common /femtim/ itanf,itend,idt,nits,niter,it
+
+	integer ie
+	integer ith
+	integer count0,dcount,chunk,nt
+	integer ibaroc
+	logical bcolin,baroc
+	real az,am,af,at,azpar,ampar
+	real vismol,rrho0
+	real dt
+
+	real getpar
+
+	ibaroc = nint(getpar('ibarcl'))	! baroclinic contributions
+	bcolin = nint(getpar('iclin')).ne.0	! linearized conti
+        vismol  = getpar('vismol')		! molecular viscosity
+
+	baroc = ibaroc .eq. 1 .or. ibaroc .eq. 2
+
+	call getazam(azpar,ampar)
+	az=azpar
+	am=ampar
+	af=getpar('afpar')
+	at=getpar('atpar')
+
+	call get_timestep(dt)
+    
+	rrho0=1./rowass
+	if( .not. baroc ) rrho0 = 0.
+
+c-------new computation of explicit part----------------------------------
+
+	call bottom_friction	!set bottom friction
+        call set_explicit       !new HYDRO deb
+	!call set_yaron
+
+c-------result: arrays fxv(l,ie),fyv(l,ie)-----------------------------
+
+ccc	call get_clock_count(count0)
+ccc	nt = 2
+ccc	call openmp_set_num_threads(nt)
+ccc	chunk = 1 + nel/nt
+
+ccc !$OMP PARALLEL PRIVATE(ie)
+ccc !$OMP DO SCHEDULE(DYNAMIC,chunk)      
+ccc !$OMP DO SCHEDULE(STATIC,chunk)      
+
+	do ie=1,nel
+
+	  !call openmp_get_thread_num(ith)
+	  !write(6,*) ie,ith
+	  call sp256v_intern(ie,bcolin,baroc,az,am,af,at
+     +			,vismol,rrho0,dt)
+
+	end do
+
+ccc !$OMP END DO NOWAIT     
+ccc !$OMP END PARALLEL      
+
+ccc	call get_clock_count_diff(count0,dcount)
+ccc	write(6,*) 'count: ',dcount
+
+	end
+
+c******************************************************************
+
+	subroutine sp256v_intern(ie,bcolin,baroc,az,am,af,at
+     +			,vismol,rrho0,dt)
+
 c assembles vertical system matrix
 c
 c semi-implicit scheme for 3d model
@@ -665,14 +686,17 @@ c
 c written on 18.02.91 by ggu  (from scratch)
 c
 	implicit none
-c
+
+	integer ie
+	logical bcolin,baroc
+	real az,am,af,at
+	real vismol,rrho0
+	real dt
+
 c parameters
 	include 'param.h'
 	real drittl
 	parameter (drittl=1./3.)
-	real reps
-	parameter (reps=1.e-5)
-	!parameter (reps=0.)			!no check for bottom friction
 c	real az,azt,am,amt,af,aft,at,att
 c	parameter (az=0.50,azt=1.-az)
 c	parameter (am=0.50,amt=1.-am)
@@ -751,29 +775,21 @@ c common
 c local
 
 	logical bbaroc,barea0                  !$$BAROC_AREA0
-	integer nbcount
 
-	logical bfirst,blast,bcolin,baroc,baust
+	logical bfirst,blast
 	logical debug,bdebug
         logical bdebggu
-        logical bgreen
 	integer kn(3)
-	integer kk,ii,ie,l,ju,jv,ncount
+	integer kk,ii,l,ju,jv
 	integer ngl,mbb
 	integer ilevel,ier,ilevmin
 	integer lp,lm
-	integer ireib
 	integer k1,k2,k3
-	integer ibaroc
 	real b(3),c(3)
 	real aj12
-	real az,am,af,at,azpar,ampar
-	real czdef,rr,rt
-	real rrho0,dtgrav
+	real rt
 	real zz
-	real ut,vt
-	real up,vp
-	real dt,hlh,rdt,hlh_new
+	real hlh,hlh_new
 c	real ht
 c	real bz,cz,dbz,dcz,zm
 	real bz,cz,zm,zmm
@@ -786,18 +802,16 @@ c	real beta
 c	real bb,bbt,cc,cct,aa,aat,ppx,ppy,aux,aux1,aux2
 	real bb,bbt,cc,cct,aa,aat,aux
         real epseps
-	real ahpar,aust
+	real aust
 	real fact                       !$$BCHAO - not used
 	real uuadv,uvadv,vuadv,vvadv
         real rhp,rhm,aus
-	real hzg,hzoff,gcz
-	real vismol
+	real hzg,gcz
         real xmin,xmax
         integer imin,imax
         real rdist
         real xadv,yadv,fm,uc,vc,f,um,vm
 	real bpres,cpres
-	real area,ugreen,vgreen
         
         real fxv(nlvdim,1)      !new HYDRO deb
         real fyv(nlvdim,1)
@@ -841,84 +855,20 @@ c	real ppaux,ppmin,ppmax
 	real auxaux(-2:+2)
 c function
 	integer locssp,iround
-	real getpar
 c save
-	save epseps,ncount
+	save epseps
 c data
-	data ncount / 0 /
 	data epseps / 1.e-6 /
-c
-	hact(0) = 0.
 c
 	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp256v'
 c
-	ncount=ncount+1
-c
-c constants
-c
-	czdef=getpar('czdef')			! friction coefficient	
-	bcolin=iround(getpar('iclin')).ne.0	! linearized conti
-	ireib=iround(getpar('ireib'))		! friction term
-        ahpar   = getpar('ahpar')		! new value for austausch
-        hzoff  = getpar('hzoff')		! minimum depth
-        vismol  = getpar('vismol')		! molecular viscosity
-        baust  = ahpar .ne. 0.			! austausch contrib.
-	ibaroc = iround(getpar('ibarcl'))	! baroclinic contributions
-c	baroc = ibaroc .ge. 1 .or. ibaroc .le. 2	!BUG!!!
-	baroc = ibaroc .eq. 1 .or. ibaroc .eq. 2
         barea0 = .false.                        ! baroclinic only with ia = 0
-	bgreen = .false.			!use green for austausch
 
-	call getazam(azpar,ampar)
-	az=azpar
-	am=ampar
-	af=getpar('afpar')
-	at=getpar('atpar')
-
-	rr=czdef
-
-	call get_timestep(dt)
-    
-	rdt=1./dt
-
-	bdebug=.true.
-	bdebug=.false.
-	if( bdebug) write(6,*) 'debug: ',rr,dt
-c
-	dtgrav=dt*grav
-	rrho0=1./rowass
-	if( .not. baroc ) rrho0 = 0.
-	ut=0.
-	vt=0.
-	up=0.
-	vp=0.
-
-	nbcount = 0
-
-c-------new computation of explicit part----------------------------------
-
-	call bottom_friction	!set bottom friction
-        call set_explicit       !new HYDRO deb
-	!call set_yaron
-
-c-------result: arrays fxv(l,ie),fyv(l,ie)-----------------------------
-
-
-c======================================================================
-c======================================================================
-c                       start of element loop
-c======================================================================
-c======================================================================
-
-	do 500 ie=1,nel
-
-	bdebug = ie.eq.20.or.ie.eq.100.or.ie.eq.250
 	bdebug=.false.
 
         bbaroc = baroc
 	if( barea0 ) then               !$$BAROC_AREA $$BAROC_AREA0
 	  if( iarv(ie) .ne. 0 ) bbaroc = .false.
-	  if( bbaroc ) nbcount = nbcount + 1
         end if
 
 	rrho0=1./rowass
@@ -927,7 +877,6 @@ c======================================================================
 c area
 
 	aj12 = 12. * ev(10,ie)
-	area = aj12
 
 c new system
 
@@ -987,10 +936,6 @@ c	gammat=fcorv(ie)*rdist
 
 	rt = rfricv(ie)		!bottom friction
 
-c=========================================
-c	if(rt.gt.rdt) rt=rdt	!$$rtmax
-c=========================================
-
 c reset in system (may be not the whole matrix every time)
 c ...size of matrix : ngl*(2*mbw+1) with mbw=2
 c
@@ -1008,7 +953,7 @@ c compute layer thicknes and store to aux array
 	hact(nlvdim+1) = 0.
 
 	if( bcolin ) then
-	  hact(1) = hact(1) - zmm
+	  hact(1) = hact(1) - zmm		!FIXME
 	end if
 
 c        call mimari(hact(0),ilevel+2,xmin,xmax,imin,imax,0.)
@@ -1176,10 +1121,9 @@ c
 	  ddyv(l,ie) = rvec(2*ngl+l)
 	end do
 c
-  500	continue
-
-	if( barea0 .and. baroc .and. niter .le. 5 ) then  !$$BAROC_AREA0
-	  write(6,*) 'sp256v: BAROC_AREA0 active ',nbcount
+	if( ie .eq. 1 .and. barea0 .and. 
+     +			baroc .and. niter .le. 5 ) then  !$$BAROC_AREA0
+	  write(6,*) 'sp256v: BAROC_AREA0 active '
 	end if
 
 	return
@@ -1276,15 +1220,8 @@ c local
 c function
 	integer iround
 	real getpar
-c save
-	integer ncount
-	save ncount
-c data
-	data ncount / 0 /
 
 	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp256n'
-
-	ncount=ncount+1
 
 c constants
 
@@ -1566,6 +1503,8 @@ c******************************************************************
 c
 c estimation of levels in dry areas
 c
+c this routine is not called anymore
+c
 c rmat          band matrix already decomposed
 c v1            auxiliary vector, is used by routine
 c               ...to assemble constant vector
@@ -1634,7 +1573,10 @@ c
         !if(ier.ne.0) goto 99
 
         !write(6,*) '....... new solution for dry areas .......'
-        call lp_subst_system(nkn,mbw,rmat,v1,v2)	!gguexclude - comment
+	stop 'error stop dryz: not yet ready...'
+c                                             | should be integer
+c					      v
+        !call lp_subst_system(nkn,mbw,rmat,v1,v2)	!gguexclude - comment
 c
         do k=1,nkn
           if( iskout(k) ) zv(k)=v1(k)			!gguexclude - comment

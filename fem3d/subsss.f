@@ -315,12 +315,14 @@ c
 c
 c gets numbers from terminal (see also iscan)
 c
+c do not use -> no way to know if we are out of bounds
+c
 c l		text written to terminal
 c f		array in which the values are stored (return value)
 c inquir	total number of values read in
 c
 	character*(*) l
-	real f(100)
+	real f(1)
 c
 	character*80 lh
 	data net,nat /5,6/

@@ -7,6 +7,7 @@ c revision log :
 c
 c 05.06.2009    ggu     some routines cleaned
 c 22.03.2010    ggu     change of some parameters
+c 29.03.2012    ggu     introduce zero and one as double (bug, was int before)
 c
 c*************************************************************************
 
@@ -74,6 +75,7 @@ c*************************************************************************
       integer  iw(nkndim), jw(2*nkndim), ipar(16)
       integer  ierr, lfil, iwk, itsol, itpre, mbloc
       double precision   droptol, permtol
+      double precision   zero,one
 
       !ITPACK
       integer IPARIT(12),IWKSP(3*nkndim), INW
@@ -98,6 +100,9 @@ c*************************************************************************
       itpre   = 2	! either 2 or 3
       itsol   = 3	! 3 is probably best
 
+      zero = 0.
+      one = 1.
+
       if( itsol .gt. 9 ) stop 'error stop spk_solve_system: itsol'	!ggu
 
 !--------------------------------------------------
@@ -111,10 +116,10 @@ c*************************************************************************
         call ilutp(nkn,csr,jcsr,icsr,lfil,droptol,permtol,mbloc,alu,
      +             jlu,ju,iwk,wilut,jw,iperm,ierr)
       else if (itpre .eq. 4) then
-        call ilud(nkn,csr,jcsr,icsr,0,droptol,alu,
+        call ilud(nkn,csr,jcsr,icsr,zero,droptol,alu,
      +            jlu,ju,iwk,wilut,jw,ierr)
       else if (itpre .eq. 5) then
-        call iludp(nkn,csr,jcsr,icsr,1,droptol,permtol,mbloc,alu,
+        call iludp(nkn,csr,jcsr,icsr,one,droptol,permtol,mbloc,alu,
      +             jlu,ju,iwk,wilut,jw,iperm,ierr)
       end if
 !--------------------------------------------------

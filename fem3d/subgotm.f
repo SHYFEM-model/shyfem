@@ -17,6 +17,7 @@ c 18.09.2008    ccf     bug fix for m2 in setm2n2
 c 02.12.2008    ggu     bug in gotm_init: no limiting values for initialization
 c 18.12.2008    ggu     bug in GOTM module and setm2n2() corrected
 c 16.02.2011    ggu     write n2max to info file, profiles in special node
+c 29.03.2013    ggu     avoid call to areaele -> ev(10,ie)
 c
 c**************************************************************
 
@@ -909,6 +910,7 @@ c taub (stress at bottom) is accumulated and weighted by area
 	real areaac(1)
 
 	include 'param.h'
+	include 'ev.h'
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -923,9 +925,7 @@ c taub (stress at bottom) is accumulated and weighted by area
         common /ilhv/ilhv
 
 	integer k,ie,ii,n,nlev,ibase
-	real area,taubot
-
-	real areaele
+	real aj,taubot
 
 c	---------------------------------------------------
 c	initialize arrays
@@ -943,14 +943,14 @@ c	---------------------------------------------------
         do ie=1,nel
  
           call elebase(ie,n,ibase)
-          area = areaele(ie)
+          aj = ev(10,ie)
 	  nlev = ilhv(ie)
 
           taubot = czdef * ( ulnv(nlev,ie)**2 + vlnv(nlev,ie)**2 )
           do ii=1,n
             k = nen3v(ibase+ii)
-            taub(k) = taub(k) + taubot * area
-            areaac(k) = areaac(k) + area
+            taub(k) = taub(k) + taubot * aj
+            areaac(k) = areaac(k) + aj
           end do
 
 	end do

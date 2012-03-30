@@ -3110,7 +3110,8 @@ c****************************************************************
         common /ilhkv/ilhkv
 
         integer k,l,m
-        real u,v,uz,cdir
+        real u,v
+        double precision uz,cdir
 
         real rdebug(nkndim)
         integer iudeb

@@ -6,6 +6,7 @@ c
 c revision log :
 c
 c 31.01.2009    ggu     cleaned, only generic coo routines here
+c 29.03.2012    ggu     in loccoo avoid call to coo_find (speed)
 c
 !******************************************************************
 
@@ -232,8 +233,19 @@ c localize for COO routines
 	integer nnkn			!size of system
 	integer mmbw			!bandwidth
 
+	integer ip,loccoo1
+
 	!loccoo = ijp(i-j,j)
-	call coo_find(i,j,mmbw,ijp,loccoo)
+	ip = j*(2*mmbw+1)+i-j-mmbw
+	!ip = j*(2*mmbw)+i-mmbw
+	loccoo=ijp(ip)
+
+	!call coo_find(i,j,mmbw,ijp,loccoo1)
+
+	!if( loccoo .ne. loccoo1) then
+	!  write(6,*) 'loccoo...',i,j,mmbw,loccoo,loccoo1
+	!  stop 'error stop loccoo'
+	!end if
 
 	end
 

@@ -8,6 +8,7 @@
 #
 # jgreely@cis.ohio-state.edu, 89/10/23
 # changes by ggu, 96/01/18
+# 27.03.2012	ggu	do not split in EPSF section (in_epsf)
 #
 # ggu -A to spearate pages...
 
@@ -66,14 +67,17 @@ print STDERR "$noutfile     $outfile\n";
 $file = "$TMPDIR/p$$.header";
 @files = ($file);
 $sheet=0;
+$in_epsf = 0;
 open(file,">$file") ||
   die "$file: $!, stopped";
 while (<>) {
+	$in_epsf = 1 if /^BeginEPSF/;
+	$in_epsf = 0 if /^EndEPSF/;
 	#
 	# hack to use NeXT Preview: strip old '%%Pages:' lines
 	#
 	next if /^%%Pages:/;
-	if (/^%%Page:/) {
+	if (/^%%Page:/ and not $in_epsf) {
 		close(file);
 		$sheet++;
 		$file = "$TMPDIR/p$$.$sheet";
@@ -81,7 +85,7 @@ while (<>) {
 		open(file,">$file") ||
 		  die "$file: $!, stopped";
 	}
-	if (/^%%Trailer/) {
+	if (/^%%Trailer/ and not $in_epsf) {
 		close(file);
 		$file = "$TMPDIR/p$$.trailer";
 		push(@files,$file);

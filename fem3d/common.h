@@ -55,7 +55,8 @@
 
         double precision coo(csrdim)
         integer icoo(csrdim),jcoo(csrdim)
-        integer ijp(-mbwdim:mbwdim,nkndim)
+        !integer ijp(-mbwdim:mbwdim,nkndim)
+        integer ijp((2*mbwdim+1)*nkndim)
 
         common /coo/coo, /icoo/icoo, /jcoo/jcoo, /ijp/ijp
 

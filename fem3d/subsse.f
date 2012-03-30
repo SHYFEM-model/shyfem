@@ -1457,7 +1457,7 @@ c get last interpolated values (ndata values)
 
 	implicit none
 
-	real array(11)		!array with information from set-up
+	real array(*)		!array with information from set-up
 	real t			!t value for which to interpolate
 	real rint(1)		!interpolated values
 
@@ -1483,7 +1483,7 @@ c get last interpolated values (only for variable ivar, nsize values)
 
 	implicit none
 
-	real array(11)		!array with information from set-up
+	real array(*)		!array with information from set-up
 	integer ivar		!number of variable needed
 	real t			!t value for which to interpolate
 	real rint(1)		!interpolated values
@@ -1518,7 +1518,7 @@ c sets new actual values
 
 	implicit none
 
-	real array(11)		!array with information from set-up
+	real array(*)		!array with information from set-up
 	real t			!t value for which to interpolate
 	real rint(1)		!interpolated values
 
@@ -1544,7 +1544,7 @@ c sets default value (one for each variable)
 
 	implicit none
 
-	real array(11)		!array with information from set-up
+	real array(*)		!array with information from set-up
 	real rdef(1)		!default values for every variable
 
         integer nsize,nvar
@@ -1576,7 +1576,7 @@ c interpolation from file -> info
 	implicit none
 
 	integer ipunit		!unit where to print on (<0 -> 6)
-	real array(11)		!array with information from set-up
+	real array(*)		!array with information from set-up
 
 	logical bdebug
 	integer iunit,nintp,nvar,nsize,ndata,nextra,ndim
@@ -1633,7 +1633,7 @@ c returns information on unit number
 
 	implicit none
 
-	real array(11)		!array with information from set-up
+	real array(*)		!array with information from set-up
         integer iunit           !unit number of file, 0 if not initialized
 
 	iunit = nint(array(1))
@@ -1648,7 +1648,7 @@ c returns information on number of variables
 
 	implicit none
 
-	real array(11)		!array with information from set-up
+	real array(*)		!array with information from set-up
         integer nvar            !total number of variables
 
 	nvar = nint(array(3))

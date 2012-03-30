@@ -87,7 +87,7 @@ c common
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
-	real saltv(nlvdim,1),tempv(nlvdim,1),rhov(nlvdim,1)
+	real saltv(nlvdim,nkndim),tempv(nlvdim,nkndim),rhov(nlvdim,1)
 	real bpresv(nlvdim,1)
 	real uprv(nlvdim,1), vprv(nlvdim,1)
 	real v1v(1),v2v(1)
@@ -134,7 +134,7 @@ c local
 	integer idtext,itmext
 	integer imin,imax
 	integer nintp,nvar
-	real cdef,t
+	real cdef(1),t
 	real xmin,xmax
         integer itemp,isalt
 	real salref,temref,sstrat,tstrat
@@ -261,7 +261,7 @@ c		--------------------------------------------
 
                 nintp = 2
                 nvar = 1
-                cdef = 0.
+                cdef(1) = 0.
 		what = 'temp'
 		call bnds_init(what,tempn,nintp,nvar,nb3dim,bnd3_temp,cdef)
 		call bnds_set_def(what,nb3dim,bnd3_temp)
