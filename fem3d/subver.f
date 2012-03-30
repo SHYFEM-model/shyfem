@@ -187,6 +187,7 @@ c 09.03.2012	ggu	version 6.1.47
 c 16.03.2012	ggu	version 6.1.48
 c 19.03.2012	ggu	version 6.1.49
 c 21.03.2012	ggu	version 6.1.50
+c 30.03.2012	ggu	version 6.1.51
 c
 c*****************************************************************
 
@@ -194,15 +195,15 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{6.1.50}
-c \newcommand{\version}{6\_1\_50}
+c \newcommand{\VERSION}{6.1.51}
+c \newcommand{\version}{6\_1\_51}
 c
 c DOCS	END
 
         implicit none
 
         character*10 version
-	parameter (version='6.1.50')
+	parameter (version='6.1.51')
 
         character*30 string
 	parameter (string='SHYFEM VERSION = '//version)

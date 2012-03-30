@@ -1,3 +1,48 @@
+version  6_1_51    30-03-2012    VERS_6_1_51
+
+========================================================== 30-03-2012 - 6_1_51
+
+c ./femplot/supsim.f:
+c 26.03.2012    ccf&ggu	call mkht only for bvel .or. btrans (plo2vel)
+c
+c ./fem3d/subfil.f:
+c 26.03.2012	ggu	if opening already open file -> better error message
+c
+c ./fem3d/lagrange_flux.f:
+c 23.03.2012    ggu     bug fix - dst was not available in setup_vl_3d
+c
+c ./fem3d/vp.f:
+c 29.03.2012    ggu     use ngrdim1 to avoid too small dimension for ngrdim
+c
+c ./fem3d/subver.f:
+c 30.03.2012	ggu	version 6.1.51
+c
+c ./fem3d/subgotm.f:
+c 29.03.2013    ggu     avoid call to areaele -> ev(10,ie)
+c
+c ./fem3d/subbfm.f:
+c 26.03.2012    ggu	bfm1-3 had wrong second dimension
+c
+c ./fem3d/subspk.f:
+c 29.03.2012    ggu     introduce zero and one as double (bug, was int before)
+c
+c ./fem3d/lagrange_back.f:
+c 23.03.2012    aac     new calling for track_body (id)
+c
+c ./fem3d/netcdf.f:
+c 26.03.2012    ggu	standardized implicit routines, compiler warnings
+c
+c ./fem3d/new3di.f:
+c 29.03.2012    ggu	cleaned up, sp256v prepared for OpenMP
+c
+c ./fem3d/subele.f:
+c 29.03.2013    ggu     avoid call to areaele -> ev(10,ie)
+c
+c ./fem3d/subcoo.f:
+c 29.03.2012    ggu     in loccoo avoid call to coo_find (speed)
+
+==========================================================
+
 version  6_1_50    21-03-2012    VERS_6_1_50   commit_2012-03-30
 
 version  6_1_50    21-03-2012    VERS_6_1_50   commit_2012-03-26
