@@ -1,3 +1,15 @@
+version  6_1_52    13-04-2012    VERS_6_1_52
+
+========================================================== 13-04-2012 - 6_1_52
+
+c ./femadj/adjele.f:
+c 30.03.2012    ggu     new call to nodeinfo() (was bug)
+c
+c ./fem3d/subver.f:
+c 13.04.2012	ggu	version 6.1.52	Aniversary day's release '
+
+==========================================================
+
 version  6_1_51    30-03-2012    VERS_6_1_51   commit_2012-04-13
 
 version  6_1_51    30-03-2012    VERS_6_1_51
