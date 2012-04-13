@@ -2,13 +2,17 @@
 #
 # converts kml (google earth) data to grd format
 #
-# command line options: -close     close lines
+# command line options: -close           close lines
+# command line options: -points_only     only write points
 #
 #------------------------------------------------------------
 
 $in_coords = 0;
 $nnode = 0;
 $nline = 0;
+
+fullusage() if $h or $help;
+usage() unless $ARGV[0];
 
 while(<>) {
 
@@ -59,6 +63,8 @@ sub parse_coords {
     print "1 $nnode 0 $x $y $z\n";
   }
 
+  return if $points_only;
+
   if( $close or $nelim == $nnode ) {
     #print STDERR "closing line...\n";
     push(@nodes,$nodes[0]);
@@ -80,4 +86,23 @@ sub parse_coords {
 
   print "\n";
 }
+
+#------------------------------------------------------
+
+sub fullusage {
+  print "Usage: kml2grd.pl [-h|-help] [-options] file(s)\n";
+  print "  Transforms KML files (Google Earth) to GRD format\n";
+  print "    -h|-help         this help message\n";
+  print "    -close           close lines\n";
+  print "    -points_only     only write points, make no lines\n";
+  print "    file(s)          file(s) in KML (Google Earth) format\n";
+  exit 0;
+}
+sub usage {
+  print "Usage: kml2grd.pl [-h|-help] [-options] file(s)\n";
+  print "  Transforms KML files (Google Earth) to GRD format\n";
+  exit 0;
+}
+
+#------------------------------------------------------
 

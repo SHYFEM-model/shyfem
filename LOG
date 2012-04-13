@@ -1,4 +1,10 @@
 
+30.03.2012	small cosmetic changes
+
+	new call to nodeinfo() (was bug) (adjele.f)
+
+========================================================== 30-03-2012 - 6_1_51
+
 29.03.2012	compiler warnings, speed optimizations, sp256v with OpenMP
 
 	use ngrdim1 to avoid too small dimension for ngrdim (vp.f)

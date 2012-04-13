@@ -2,10 +2,25 @@
 #
 ##############################################################
 #
-# version 1.3.1
+# version 1.3.2
 #
 # 26.08.2005            print_info, bug in make_unique
 # 20.10.2005            version control introduced
+# 01.12.2011            new functionality
+#
+##############################################################
+#
+# usage:
+#
+# use grdline;
+#
+# my $grdl = new grdline;
+# $grdl->set_line($x,$y);
+#
+# if package grd.pm is used you can do:
+#
+# ($x,$y) = $grid->make_xy(litem);
+# $grdl->set_line($x,$y);
 #
 ##############################################################
  
@@ -32,6 +47,7 @@ sub new
                         ,xmax        =>      -1
                         ,ymin        =>      -1
                         ,ymax        =>      -1
+                        ,area        =>      -1
                 };
  
     bless $self;
@@ -61,6 +77,7 @@ sub set_line {
   $self->is_closed();
   $self->is_convex();
   $self->set_xy_min_max();
+  $self->set_area();
 }
 
 sub print_info {
@@ -175,6 +192,13 @@ sub make_unique {
   $self->{n} = @newx;
   $self->{x} = \@newx;
   $self->{y} = \@newy;
+}
+
+sub set_area {
+ 
+  my $self = shift;
+
+  $self->{area} = $self->area();
 }
 
 sub area {
@@ -297,6 +321,19 @@ sub in_min_max {
     }
   }
   return 0;
+}
+
+sub line_in_line {
+
+  my ($self,$grdl) = @_;
+
+  my $x = $grdl->{x};
+  my $y = $grdl->{y};
+
+  my $x0 = $x->[0];
+  my $y0 = $x->[0];
+
+  return $self->in_line($x0,$y0);
 }
 
 sub in_line {

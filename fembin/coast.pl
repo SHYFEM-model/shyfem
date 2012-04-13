@@ -1,0 +1,107 @@
+#!/usr/bin/perl
+#
+# reads custom file and converts points to coast line
+#
+# You will have to handle the format of the input file.
+# Here its is assumed that each line contains "x y" values.
+# If the units of (x,y) are not in meters you will have to adjust $xyfact.
+# New lines will be started if the distance between two consecutive points
+# will be greater than $maxdist. You have to adjust $maxdist accordingly.
+# If you only want one line connecting all points use $maxdist=0.
+#
+#-----------------------------------------------------------------
+
+$xyfact = 1.;           # scale x/y values
+$maxdist = 0.;		# new line if $dist > $maxdist (0 for one line)
+
+#-----------------------------------------------------------------
+
+while(<>) {
+
+  chomp;
+  next if /^\s*$/;              # empty line
+  s/,/ /g;                      # change , to space
+  s/;/ /g;                      # change ; to space
+
+  ($x,$y) = split;
+
+  $x *= $xyfact;
+  $y *= $xyfact;
+  $dist = make_dist($x,$y);
+  next if $dist == 0.;			# skip non-unique points
+
+  if ( $maxdist > 0 and $dist > $maxdist ) {
+    make_line(@nodes);
+    @nodes = ();
+  }
+
+  make_node($x,$y);
+  push(@nodes,$nnode);
+}
+
+make_line(@nodes);
+
+#------------------------------------------
+# subroutines
+#------------------------------------------
+
+sub make_node {
+
+  my ($x,$y) = @_;
+
+  my $ntype = 1;
+
+  $nnode++;
+
+  print "1 $nnode $ntype $x $y\n";
+}
+
+sub make_line {
+
+  my @nodes = @_;
+
+  my $ltype = 1;
+  my $ntot = @nodes;
+  my $i = 0;
+
+  return if $ntot <= 1;
+
+  $nline++;
+
+  print "\n";
+  print "3 $nline $ltype $ntot\n";
+  foreach (@nodes) {
+    print " $_";
+    $i++;
+    print "\n" if $i%10 == 0;
+  }
+
+  print "\n";
+}
+
+sub make_dist {
+
+  my ($x,$y) = @_;
+
+  if( not defined $xold ) {	# only for first call
+    $xold = $x;
+    $yold = $y;
+    if( $maxdist > 0 ) {
+      return $maxdist/2.;
+    } else {
+      return 1.;
+    }
+  }
+
+  my $dx = $x - $xold;
+  my $dy = $y - $yold;
+  my $dist = $dx*$dx + $dy*$dy;
+
+  $xold = $x;
+  $yold = $y;
+
+  return sqrt($dist);
+}
+
+#------------------------------------------
+

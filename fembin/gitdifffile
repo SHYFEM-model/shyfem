@@ -1,0 +1,98 @@
+#!/bin/sh
+#
+# returns changed files given start and end tag
+#
+#--------------------------------------------------------
+
+GetFilePrefix()		#gets prefix to findf right directory
+{
+  actdir=`pwd`
+  cd ./$(git rev-parse --show-cdup)
+  gitroot=`pwd`
+  cd $actdir
+
+  prefix=`echo $actdir | perl -pe "s|^$gitroot||" | perl -pe "s|^/||"`
+  echo "prefix: $prefix    ($actdir  $gitroot)"
+}
+
+writeall="NO"
+if [ "$1" = "-all" ]; then
+  writeall="YES"
+  shift
+fi
+
+file=$1
+start=$2
+end=$3
+
+GetFilePrefix
+
+if [ $# -lt 1 ]; then
+  echo "Usage: gitdifffile [-all] file [ start-tag [ end-tag ] ]"
+  echo "    with no start tag start from first available tag"
+  echo "    with no end tag go to last available tag"
+  echo "    -all    writes all versions"
+  exit 0
+fi
+
+name=`basename $file`
+
+echo "looking for file $file  ($name)"
+echo "   start tag: $start"
+echo "     end tag: $end"
+echo ""
+
+if [ $name != $file ]; then
+  echo "Please be sure to not use any path to the file"
+  exit 1
+fi
+if [ ! -f $name ]; then
+  echo "no such file: $name"
+  echo "be sure you are in the directory of the requested file"
+  exit 1
+fi
+
+#--------------------------------------
+
+intags="NO"
+[ -z "$start" ] && intags="YES"
+
+tags=`gittags -tagsonly`
+first="YES"
+
+for tag in $tags
+do
+  [ "$start" = $tag ] && intags="YES"
+
+  if [ $intags = "YES" ]; then		#process tags
+    echo -n "checking tag: $tag"
+    git show $tag:$prefix/$file > tmp.tmp
+    if [ $? -ne 0 ]; then
+      echo "error getting file... aborting"
+      exit 1
+    fi
+    write="NO"
+    if [ $first = "YES" -o $writeall = "YES" ]; then
+      write="YES"
+    else
+      cmp --quiet tmp.tmp $lastfile
+      status=$?
+      #echo "status: $status"
+      [ $status -ne 0 ] && write="YES"
+      [ $status -gt 1 ] && (echo "error comparing files: $lastfile"; exit 1)
+    fi
+    if [ $write = "YES" ]; then
+      new=${name}_$tag.rev
+      echo -n "  ...writing $new"
+      mv tmp.tmp  $new
+      lastfile=$new
+    fi
+    first="NO"
+    echo ""
+  fi
+
+  [ "$end" = $tag ] && intags="NO"
+done
+
+[ -f tmp.tmp ] && rm -f tmp.tmp
+

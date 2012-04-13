@@ -139,8 +139,10 @@ c--------------------------
 c customization
 c--------------------------
 
+	badj = .false.
 	itmin = 0
 	idtreset = 3*nint( 30.5 * 86400 )		!one month is 30.5 days
+	!idtreset = -1
 
         !badj = .false.
         !blog = .true.
@@ -245,6 +247,7 @@ c reset variables to compute residence time
 c------------------------------------------------------------
 
 	  if( bcompute ) then	!compute new residence time
+	    rcorrect = 0.	!do not used global correction
 	    call acu_comp(nb3,blog,badj,it,c0,ccut,rcorrect
      +				,tacu,cvacu
      +				,cnv,cvres3)

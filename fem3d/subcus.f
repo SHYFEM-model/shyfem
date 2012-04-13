@@ -1396,14 +1396,12 @@ c--------------------------
 c default settings
 c--------------------------
         bnoret = .false.
-	bstir = .true.
 	bstir = .false.
 	percmin = 0.
 	iaout = -1
 	c0 = 1.
 	itmin = 0
 	idtreset = 0
-	idtreset = nint( 3 * 30.5 * 86400 )		!one month is 30.5 days
 c--------------------------
 c nador
 c--------------------------
@@ -1422,6 +1420,8 @@ c--------------------------
 c taranto
 c--------------------------
 	itmin = -1
+	itmin = 0
+	idtreset = nint( 3 * 30.5 * 86400 )		!one month is 30.5 days
 c--------------------------
 c
 c------------------------------------------------------------

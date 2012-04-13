@@ -1,0 +1,45 @@
+
+
+With the routine |grid| the coastline can be viewed.
+However, normally the line needs some post-processing.
+It might either have resolution which is too high, island
+might show up as open lines etc..
+
+It is important that there is one closed boundary line that
+defines the whole domain of the computation. If you have an
+open coastline, please close the line with the routine |grid|
+at the places where you want your open boundary to be.
+
+Once this domain boundary line has been defined, care has
+to be taken that the lines inside this domain, which denote
+islands, are closed.
+
+Finally the resolution of the boundary lines (coast and islands)
+have to be adjusted. If the cosatline is left as it is you might
+have a much too high resolution along the boundaries. This is due
+to the fact that the meshing algorithm does not discard any points
+given to it. This means that all boundary nodes are used for the meshing.
+Therefore, if you have a very high resolution boundary line, you will
+get many elements along the boundary amd reletively little elements
+(depending on the number of internal points) in the inside of the
+basin.
+
+Smoothing and reduction of the boundary lines can be done with the
+routine |reduce|. The command is
+
+\begin{code}
+    reduce -s sigma -r reduct coast.grd
+\end{code}
+
+Here |sigma| specifies the langth scall for the smoothing operator
+and |reduct| is the length scale below which points may be deleted.
+Both values have to be given in the same units of the coordinates
+of the file |coast.grd|, so normally meters.
+The smoothed file can be found in |smooth.grd| and the subsequently
+reduced file in |reduct.grd|. 
+
+If there are some points in the boundary line that should not be smoothed
+they can be given a depth value of -1. This is a flag that indicates
+that the position of these points will not be touched.
+
+

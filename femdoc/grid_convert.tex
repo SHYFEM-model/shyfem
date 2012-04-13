@@ -1,0 +1,50 @@
+
+Data files with boundary line and bathymetry should be given. These
+files have to be transformed into |GRD| files, that can be read and
+manipolated with the programs |mesh| and |grid|. Examples of how to do
+so can be found in coast.pl and ldb.pl for the coastline and bathy.pl
+for the bathymetry points.
+
+\begin{code}
+    coast.pl mpcoast.dat > coast.grd
+    bathy.pl mpbathy.dat > depth.grd
+\end{code}
+
+Please note that the coordinates for the GRD files should be always in
+meters. Therefore, if you have your coordinates in other units, you have
+to adjust the conversion routines in order to create the new coordinates
+in meters.
+
+Please note that UTM coordinates are in meters, so UTM coordinates are
+fine. However, since UTM coordinates are normally huge numbers, there
+might be an accuracy problem when you try to create the grid. If this
+happens, you should first shift your UTM coordinates so that the origin
+of your new coordinate system coincides with the central point of your
+grid. This translation can be done using the program |grd_transl.pl|.
+
+Other transformation routines are:
+
+\begin{itemize}
+
+\item |dxf2grd.pl|  Transforms a grid from |DXF| (Autocad) to |GRD|
+format. This is still experimental.
+
+\item |kml2grd.pl|  Transforms a grid from the Google Earth format |KML|
+to |GRD| format.
+
+\item |xyz2grd.pl|  Transforms a simple list of nodes to |GRD|
+format. Every line contains 3 values $(x,y,z)$ or two values $(x,y)$,
+when the information on depth is missing.
+
+\end{itemize}
+
+Please note that for SHYFEM depth values have to be positive. If your
+files have depth values as negative numbers, you will have to invert
+them. You can use the command
+
+\begin{code}
+    grd_modify.pl -depth_invert grd-file
+\end{code}
+
+to achieve this task.
+

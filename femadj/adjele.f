@@ -20,6 +20,7 @@ c 09.12.2008    ggu     small changes to Makefile
 c 26.01.2009    ggu     makedepend, compiler warnings
 c 06.04.2009    ggu     new param.h, include basin.h, better error handling
 c 24.04.2009    ggu     new call to rdgrd()
+c 30.03.2012    ggu     new call to nodeinfo() (was bug)
 c
 c***************************************************************
 
@@ -120,7 +121,7 @@ c make boundary nodes (flag nbound)
         call mkstatic(nkn,ianv,nbound)
 	call statgrd('boundary nodes',nkn,nmax,ngrade,nbound)
 
-	call nodeinfo(kspecial,nkn,nel,ngrdim,ngri)
+	call nodeinfo(kspecial)
 
 c plot grade
 
@@ -138,7 +139,7 @@ c	call pltsgrd(4,nkn,nel,nen3v,ngrade,xgv,ygv)
 	call eliml(nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
 	if( bplot) call plobas(nkn,nel,nen3v,ngrade,xgv,ygv)
 	call statgrd('4- grades',nkn,nmax,ngrade,nbound)
-	call nodeinfo(kspecial,nkn,nel,ngrdim,ngri)
+	call nodeinfo(kspecial)
 
 c eliminate 8+ grades
 
@@ -149,7 +150,7 @@ c eliminate 8+ grades
 
 	write(6,*) 'checking after 8+'
 	call chkgrd
-	call nodeinfo(kspecial,nkn,nel,ngrdim,ngri)
+	call nodeinfo(kspecial)
 
 c eliminate 7+ grades
 
@@ -160,7 +161,7 @@ c eliminate 7+ grades
 
 	write(6,*) 'checking after 7+'
 	call chkgrd
-	call nodeinfo(kspecial,nkn,nel,ngrdim,ngri)
+	call nodeinfo(kspecial)
 
 c smoothing
 
@@ -170,7 +171,7 @@ c smoothing
      +                          ,nen3v,nbound
      +                          ,xgv,ygv,dx,dy,ic)
 	if( bplot) call plobas(nkn,nel,nen3v,ngrade,xgv,ygv)
-	call nodeinfo(kspecial,nkn,nel,ngrdim,ngri)
+	call nodeinfo(kspecial)
 
 c again ...
 
@@ -180,7 +181,7 @@ c again ...
 	call elimh(7,nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
 	if( bplot) call plobas(nkn,nel,nen3v,ngrade,xgv,ygv)
 	call statgrd('one more time',nkn,nmax,ngrade,nbound)
-	call nodeinfo(kspecial,nkn,nel,ngrdim,ngri)
+	call nodeinfo(kspecial)
 
 c eliminate 5 grades
 
@@ -193,7 +194,7 @@ c eliminate 5 grades
 
 	write(6,*) 'checking after 5'
 	call chkgrd
-	call nodeinfo(kspecial,nkn,nel,ngrdim,ngri)
+	call nodeinfo(kspecial)
 
 c eliminate 5-5 grades
 
@@ -203,7 +204,7 @@ c eliminate 5-5 grades
 
 	write(6,*) 'checking after 5-5'
 	call chkgrd
-	call nodeinfo(kspecial,nkn,nel,ngrdim,ngri)
+	call nodeinfo(kspecial)
 
 c one more time
 
@@ -214,7 +215,7 @@ c one more time
         call elim57(nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
         call statgrd('all again',nkn,nmax,ngrade,nbound)
 	call chkgrd
-	call nodeinfo(kspecial,nkn,nel,ngrdim,ngri)
+	call nodeinfo(kspecial)
 
 c smoothing
 
@@ -222,12 +223,12 @@ c smoothing
      +                          ,nen3v,nbound
      +                          ,xgv,ygv,dx,dy,ic)
 	if( bplot) call plobas(nkn,nel,nen3v,ngrade,xgv,ygv)
-	call nodeinfo(kspecial,nkn,nel,ngrdim,ngri)
+	call nodeinfo(kspecial)
 
 c write to grd file
 
 	call chkgrd
-	call nodeinfo(kspecial,nkn,nel,ngrdim,ngri)
+	call nodeinfo(kspecial)
 	call wrgrd('new.grd',nkn,nel,xgv,ygv,nen3v)
 
 	call qclose

@@ -1,6 +1,8 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -s
 #
 # shows all tags and commits available
+#
+# -tagsonly
 #
 #--------------------------------------------------------------
 
@@ -29,8 +31,13 @@ foreach $com (@coms) {
   $shorthash = substr($hash,0,10);
   $shortmess = substr($mess,0,55);
   $tag = format_tag($tags{$hash});
-  my $line = "$shorthash $tag $shortmess";
-  push(@lines,$line);
+  if( $tagsonly ) {
+    $tag =~ s/^\s+$//;
+    push(@lines,$tag) if( $tag );
+  } else {
+    my $line = "$shorthash $tag $shortmess";
+    push(@lines,$line);
+  }
   #print "$line\n";
 }
 

@@ -1,0 +1,154 @@
+
+\begin{verbatim}
+
+Construct a background grid
+===========================
+
+If you want a grid with a uniform solution all over, then
+you are already in a position to run the meshing algorithm.
+You just say: "mesh -I2000 coast-new.grd" and then 
+the constructed mesh will be in final.grd. The number 2000
+means that you want aprox. 2000 internal points in the domain.
+You may adjust this number to your needs.
+
+However, you will normally want to have different resolution
+in the domain (high at the inlets of lagoons, at interesting
+sites like harbours etc..). Then you have to construct a
+background grid that gives an indication to the meshing
+algorithm what kind of resolution is need in what area.
+
+You open the coastline with grid and construct elements
+that cover the parts or all of the domain. The areas where
+no background grid exists will use the (constant) resolution of the
+domain computed by the routine mesh using the total number of
+internal nodes (2000 in this example).
+
+Where a background grid exists the model uses the depth values at the
+element vertices (nodes) to compute a new value for this resolution.
+The depth value acts like a factor that multiplies the constant
+overall resolution to obtain a local resolution. So, for example,
+constructing a background grid and setting all depth values to 1
+would not change the resolution at all from a situation without
+background grid. A factor higher than 1 increases the resolution
+and one smaller than 1 decreses it. Therefore, in areas where
+resolution should be higher than average you can set it to
+2 or higher, and in other areas, where you want lower resolution,
+you can set it to 0.5 or lower. All nodes of the background grid
+need to have a depth (resolution) value. Inside each background
+element the resolution is interpolated between the three nodes
+(vertices).
+
+In order to distinguish the background grid from the elements
+that are constructed by the meshing routine, they must become 
+a unique element type. You can set it to a value that is not
+used for other elements (99 is a good choice). All elements
+of the background grid must have this element type.
+
+Please extract the background grid from the grid file you just
+have constructed by running exgrd: "exgrd -LS coast-new.grd".
+The file "new.grd" contains only the background grid. Rename it to
+something more useful (mv new.grd bck1.grd). You are then
+ready to start the meshing algorithm.
+
+	manually construct background grid using coast-new.grd
+	delete coastline (leave only background elements in file)
+		exgrd -LS coast-new.grd
+	set depth at nodes for resolution
+	set type in elements to 99
+	rename to bck1.grd
+		mv new.grd bck1.grd
+
+
+Meshing of the basin
+====================
+
+The meshing algorithm is called mesh. Please see "mesh -h" for
+help of the command line options. The most important are:
+
+	-I2000		use aprox. 2000 internal nodes for the domain
+	-g99		element type of background grid is 99
+
+With this parameters the call to mesh would be
+	"mesh -I2000 -g99 coast-new bck1".
+The created mesh can be found in final.grd.
+
+Please note that you can specify more than one file for the coast line,
+so you could keep the domain line and the island lines in seperate files.
+You can also have different background grid for different areas in
+different files. So a call like this is also possible:
+	"mesh -I2000 -g99 coast island1 island2 bck1 bck2 bck3".
+
+After the meshing please have a look at the result (final.grd).
+If you need more overall resolution, increase the number of internal
+points (here 2000). If you need more resolution in the background grid,
+open the background file and increase the factor (depth) value where needed.
+You might also need other areas with a background grid. Once you
+are satisfied with the result please save it to a more meaningful name.
+
+	mesh -I2000 -g99 coast-new bck1
+	mv final.grd mesh1.grd
+
+
+Adjust elements for regularity
+==============================
+
+After the creation of the mesh, the grid is still not good enough
+for usage in a finite element model. This is due to the fact that
+the grid is too irregular. Therefore a program has to be applied
+that regularizes the grid. 
+
+The program is called regularize. It must be given the input grid file
+(irregular) and creates a new one with much more regular characteristics.
+The program has to be called as:
+	"regularize mesh1.grd mesh2.grd".
+In this case the new regular grid is in mesh2.grd.
+
+
+Interpolate bathymetry
+======================
+
+To interpolate bathymetry, a grd file with single points containig
+depth values has to be available. This file, together with the basin
+onto which the bathymetry has to be interpolated, has to be specified
+for the program basbathy. The simplest call is:
+
+	basbathy mesh2 bathy
+
+where bathy.grd is the grd file with the bathymetry values and
+mesh2 is the basin for which to interpolate the bathymetry.
+Different types of interpolation can be used. Please run
+"basbathy -h" for more options.
+
+The new grd file will be in "new.grd".
+
+	basbathy mesh2 bathy
+	mv new.grd mesh3.grd
+
+
+Create basin for FEM model (bandwidth optimization)
+===================================================
+
+Before proceeding to the simulations we must first create a 
+representation of the basin suitable for the finite element model. 
+
+In order to create the finite element reppresentation of the
+grid, please run "vpgrd mesh3". This creates a file mesh3.bas.
+This is a binary file suitable for being read by the finite
+element model.
+
+        vpgrd mesh3
+
+\end{verbatim}
+
+
+
+
+
+
+
+
+
+
+
+
+

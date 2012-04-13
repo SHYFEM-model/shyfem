@@ -31,8 +31,9 @@ cd $dir
 
 for file
 do
+  #echo "acting on file $file (remove=$remove)"
   if [ $remove = "YES" ]; then
-    if [ -f $file ]; then
+    if [ -f $file -o -L $file ]; then
       echo "removing symlink in $dir: $file"
       rm -f $file
     fi

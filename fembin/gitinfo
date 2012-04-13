@@ -41,6 +41,7 @@ diffs:	(script ~/bin/extDiff is used as diff program)
 git diff			standard diff program
 gitdiff				visual diff program (accepts same options)
 gitdiffall			all changes
+gitdifffile			gets all file versions
 
 git diff file			differences between work and last
 git diff --staged file		differences between index and last
