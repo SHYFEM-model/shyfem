@@ -1,3 +1,40 @@
+version  6_1_53    01-06-2012    VERS_6_1_53
+
+========================================================== 01-06-2012 - 6_1_53
+
+ * ./grid/general.h:
+ * 01-Jun-2012: HACK for grid to work on Mac: __GUG_UNIX_ = 1		*
+ * ./mesh/meshck.c:
+ * 01-Jun-2012: better checking of input lines				*
+c ./femspline/gridr.f:
+c 27.05.2012    ggu     renamed ndim to nsdim in smooth()
+c
+c ./femplot/supano.f:
+c 01.06.2012  ggu     new circle item for legend, auto determ for ndec
+c
+c ./fem3d/ousextr_gis.f:
+c 01.05.2012	ggu	segfault because some arrays not in common
+c
+c ./fem3d/subdts.f:
+c 01.06.2012    ggu     work also with date=0
+c
+c ./fem3d/subver.f:
+c 01.06.2012	ggu	version 6.1.53
+c
+c ./fem3d/basbathy.f:
+c 01.06.2012	ggu	some more changes
+c
+c ./fem3d/subsys.f:
+c 02.05.2012	ggu	new default for ndccol (-> 0)
+c
+c ./fem3d/subflx3d.f:
+c 04.05.2012    ggu     bug fix: in flx3d_k correct for flux boundary
+c
+c ./fem3d/subscn.f:
+c 02.05.2012	ggu	new routine ideci()
+
+==========================================================
+
 version  6_1_52    13-04-2012    VERS_6_1_52   commit_2012-06-01
 
 version  6_1_52    13-04-2012    VERS_6_1_52   commit_2012-06-01
