@@ -1,5 +1,18 @@
 ============================================================
 
+Fri Jun  1 18:01:31 CEST 2012
+
+last minute
+
+ LOG                     |   32 +++++++++++++
+ Rules.make              |  119 +----------------------------------------------
+ fembin/gitinfo          |    1 +
+ femdoc/final/shyfem.pdf |  Bin 268306 -> 268353 bytes
+ femdoc/final/shyfem.ps  |   56 +++++++++++-----------
+ 5 files changed, 64 insertions(+), 144 deletions(-)
+
+============================================================
+
 Fri Jun  1 18:00:21 CEST 2012
 
 small changes, date changes

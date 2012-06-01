@@ -73,6 +73,7 @@ git add -u
 
 make test_compile
 make dist
+git add -u
 
 gitcommit
 gittag
