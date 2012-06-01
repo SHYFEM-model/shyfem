@@ -1,0 +1,34 @@
+
+In order to use the "mesh" algorithm you will have to provide the program
+a coastline in which the program will insert triangles. There are some
+things to be remembered:
+
+There must be exactly one closed outer (external) line that will enclose
+all the other lines given in the coastline file. This means that it is
+not possible to mesh two independent domains at the same time. Clearly,
+you can divide the grid file into more files, each of which contains
+just one independent domain. These files can then be meshed independently.
+
+The program normally is able to find out what is the external line. It
+will simply be the line that encloses all the other lines. If no such line
+is found, then this will lead to an error. The program will distinguish
+between the external line, islands and fault lines. Fault lines are lines
+that will constrain triangles to not cross these lines. For example,
+putting a fault line along the edge of a channel will ensure that the
+triangles will not cross the channel edge but will be placed along
+this edge.
+
+In order to decide what line is of which type, the program considers the
+largest closest line as the external line, all other lines as islands, and
+any open line as a fault line. Normally this is the expected behavior. The
+program will classify these lines only if the line type is 0.
+
+If you want to overwrite this behavior you can give explicit line types to
+the lines in the coast line file. A type of 1 signals an external line,
+a type of 2 an island, and a type of 4 a fault line. Clearly there can
+be only one line with type 1. If you have more than one line with type
+1 the program will exit with an error. You can however have a fault line
+which is closed, a behavior that will not be possible with the automatic
+determination of line types, because a closed line with type 0 is always
+an island. Clearly an open line with type 2 (island) is also an error.
+

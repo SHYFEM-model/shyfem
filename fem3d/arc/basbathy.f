@@ -9,7 +9,7 @@ c 08.09.2003	ggu	mode 5 -> write depth values from elements
 c 23.09.2004    ggu     interpolq() changed for bathy interpolation
 c 02.10.2004    ggu     interpole() for exponential interpolation
 c 12.05.2005    ggu     pass hmin to interpolation functions
-c 06.04.2005    ggu     read param.h
+c 06.04.2009    ggu     read param.h
 c 24.04.2009	ggu	new call to rdgrd()
 c
 c****************************************************************

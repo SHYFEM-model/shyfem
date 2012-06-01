@@ -142,7 +142,7 @@ c--------------------------
 	badj = .false.
 	itmin = 0
 	idtreset = 3*nint( 30.5 * 86400 )		!one month is 30.5 days
-	!idtreset = -1
+	idtreset = -1
 
         !badj = .false.
         !blog = .true.

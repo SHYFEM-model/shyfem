@@ -15,8 +15,10 @@ c function idigit(value,ndec)			computes ciphers of number
 c function lennum(string)			computes length of number
 c function ialfa(value,string,ndec,mode)	converts real number into alpha
 c
-c function cindex(string,i)			returns i'th char of string
+c function cindex(string,i)			returns i''th char of string
 c subroutine skipwh(line,ioff)			skips white space
+c
+c function ideci(value)				computes pos after decimal point
 c
 c revision log :
 c
@@ -25,6 +27,7 @@ c 31.05.1999	ggu	bug fix in ialfa -> negative numbers (idigs)
 c 03.05.2001	ggu	bug fix in ialfa -> avoid -0.0 (MINUS0)
 c 30.10.2001	ggu	bug fix for tab: not recognized as parameter
 c 30.01.2002	ggu	bug fix for rounding 9.9 -> 10 for ndec=-1 (ROUND)
+c 02.05.2012	ggu	new routine ideci()
 c
 c notes :
 c
@@ -566,7 +569,7 @@ c	  string(is+i:is+i)=number(j:j)
 
 	function cindex(string,i)
 
-c returns i'th character of string
+c returns i''th character of string
 
 	implicit none
 
@@ -609,6 +612,36 @@ c skips white space
 
     1	continue
 	ioff = i
+
+	end
+
+!****************************************************************
+
+	function ideci(value)
+
+c computes positions after decimal point
+
+	implicit none
+
+	integer ideci
+	real value
+
+	integer n
+	real eps,v
+
+	eps=1.e-6
+
+	n = 0
+	v = value
+
+	do while( abs(nint(v)-v) .gt. eps )
+	  v = v * 10
+	  n = n + 1
+	end do
+
+	if( n .le. 0 ) n = -1
+
+	ideci = n
 
 	end
 

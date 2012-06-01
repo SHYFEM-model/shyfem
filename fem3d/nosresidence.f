@@ -116,8 +116,8 @@ c	c0 = 100.
 	itend = 30000000
 
 	blog = .false.
-	badj = .false.
 	badj = .true.
+	badj = .false.
 
 c---------------------------------------------------------------
 c do not change anything beyond this point
@@ -165,6 +165,9 @@ c       ----------------------------------------------------------
         call rhnos(nin,nvers,nkndim,neldim,nlvdim,nkn1,nel1,nlv,nvar
      +                          ,ilhkv,hlv,hev,title)
 
+	call init_sigma_info(nlv,hlv)
+
+	write(6,*) 'initializing volumes...'
 	call init_volume(nlvdim,nkn,nel,nlv,nen3v,ilhkv,hlv,hev,hl,vol3)
 
 c-----------------------------------------------------------------
@@ -181,6 +184,8 @@ c-----------------------------------------------------------------
           call check_equal_r('hlv',nlv,hlv,hlv2)
           call check_equal_r('hev',nel,hev,hev2)
         end if
+
+	write(6,*) 'compatibility check passed...'
 
 c---------------------------------------------------------------
 c initialize variables and arrays

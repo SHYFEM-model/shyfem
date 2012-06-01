@@ -102,6 +102,7 @@ c 18.09.2011	ggu	change default for isphe for output (-1)
 c 03.11.2011	ggu	new parameter hsigma (hybrid)
 c 18.11.2011	ggu	new subroutine nlsinh_proj() for projection
 c 24.01.2012	ggu	new parameter nomp
+c 02.05.2012	ggu	new default for ndccol (-> 0)
 c
 c************************************************************************
 
@@ -644,7 +645,7 @@ c			CON (concentration), TEM (temperature) and
 c			SAL (salinity), or generally to file NOS.
 
 	call addpar('idtcon',0.)	!time step for output
-	call addpar('itmcon',0.)	!minimum time for output
+	call addpar('itmcon',-1.)	!minimum time for output
 
 c DOCS	END
 
@@ -1257,7 +1258,8 @@ c		color bar legend. This enables you, e.g., to give water level
 c		results in mm (|faccol = 1000|). (Default 1)
 c |ndccol|	Decimals after the decimal point for the values
 c		written to the color bar legend. Use the value |-1|
-c		to not write the decimal point. (Default -1)
+c		to not write the decimal point. A value of 0 automatically
+c		computes the number of decimals needed. (Default 0)
 c |legcol|	Text for the description of the color bar. This text
 c		is written above the color bar.
 

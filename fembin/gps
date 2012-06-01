@@ -117,12 +117,10 @@ ReduceGif()
 
     echo "reducing  $target"
 
-    gifcrop -o $target > tmp.gif
-    mv tmp.gif $target
-    gifsicle $target '#0' > tmp.gif
-    if [ $? -eq 0 ]; then
-      mv tmp.gif $target
-    fi
+    #gifcrop -o $target > tmp.gif
+    #[ $? -eq 0 ] && mv tmp.gif $target
+    #gifsicle $target '#0' > tmp.gif
+    #[ $? -eq 0 ] && mv tmp.gif $target
   done
 }
 

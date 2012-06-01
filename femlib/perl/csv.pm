@@ -24,9 +24,14 @@
 #
 # my $csv = new csv($file,'\s+');
 # 
+# columns are numbered from 1 to n
+# in col[0] is the time column (maybe scaled)
+# readfile resets all variables for the file (number of cols, etc..)
+#
 ##############################################################
 #
-# 01.12.2005	ggu	bug fixed in writefile -> novalue only for undefined
+# 1.1	30.05.2012	ggu	some new functionality
+# 1.0	01.12.2005	ggu	bug fixed in writefile -> novalue for undefined
 #
 ##############################################################
 
@@ -53,6 +58,8 @@ sub new
 			,nlines		=>	0
 			,ncols		=>	0
 			,write_time	=>	1
+			,verbose	=>	1
+			,version	=>	1.1
 		};
 
     bless $self;
@@ -78,9 +85,8 @@ sub readfile {
   #print STDERR "separator: $separator\n";
 
   my @rows = ();
+  my @lines = ();
   my $ncols = 0;
-
-  my $lines = $self->{lines};
 
   while( my $line = <FILE> ) {
 
@@ -94,17 +100,18 @@ sub readfile {
 	}
 
 	push(@rows,\@f);
-	push(@$lines,$line);
+	push(@lines,$line);
 
 	#print STDERR "$line\n";
   }
 
   close(FILE);
 
-  my $nlines = @$lines;
+  my $nlines = @lines;
   $self->{nlines} = $nlines;
   $self->{ncols} = $ncols;
   $self->{rows} = \@rows;
+  $self->{lines} = \@lines;
 
   #print STDERR "$nlines $ncols\n";
 
@@ -127,12 +134,14 @@ sub readfile {
     }
   }
 
-  print STDERR "$nlines $ncols\n";
+  #print STDERR "$nlines $ncols\n";
 
   $self->{cols} = \@cols;
   $self->set_time_column(0);
 
-  print STDERR "reading file: $file ... records: $nlines  columns: $ncols \n";
+  if( $self->{verbose} ) {
+    print STDERR "reading file: $file ... records: $nlines  columns: $ncols \n";
+  }
 }
 
 #-------------------------------------------------------
@@ -155,8 +164,11 @@ sub writefile {
   my $write_time = $self->{write_time};
   my $novalue = $self->{novalue};
   my $nlines = $self->{nlines};
+  my $ncols = $self->{ncols};
   my $cols = $self->{cols};
   my $time = $cols->[0];
+
+  @icols = (2..$ncols);
 
   for(my $i=0;$i<$nlines;$i++) {
       print FILE "$time->[$i] " if $write_time;
@@ -340,6 +352,7 @@ sub scale_col {
   my ($self,$icol,$fact,$v0) = @_;
 
   my $col = $self->{cols}->[$icol];
+  $v0 = 0 unless $v0;
 
   foreach my $item (@$col) {
     $item = $v0 + $fact * $item;
@@ -419,6 +432,13 @@ sub set_novalue {
   my ($self,$novalue) = @_;
 
   $self->{novalue} = $novalue;
+}
+
+sub set_verbose {
+
+  my ($self,$verbose) = @_;
+
+  $self->{verbose} = $verbose;
 }
 
 sub set_extension {

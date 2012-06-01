@@ -28,7 +28,7 @@ c 27.11.2009    ggu     deal with empty file, rdrst() restructured
 c 19.01.2010    ggu     initialize also conz, has_restart() is function
 c 11.03.2010    ggu     write also vertical velocity
 c 10.02.2012    ggu     write only last record, restart from last record
-c 16.02.2011    aac     write also ecological varibles
+c 16.02.2012    aac     write also ecological varibles
 c
 c*****************************************************************
 

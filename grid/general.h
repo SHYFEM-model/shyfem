@@ -10,6 +10,7 @@
  * see general.c for copying information				*
  *									*
  * Revision History:							*
+ * 01-Jun-2012: HACK for grid to work on Mac: __GUG_UNIX_ = 1		*
  * 20-Mar-1998: ASSERT_DEBUG introduced                                 *
  * 20-Mar-1998: MIN, MAX, ROUND included in header                      *
  * 13-Feb-1998: test automatically if unix or dos                       *
@@ -36,6 +37,7 @@
 #define __GUG_UNIX_    0
 #endif
 #endif
+#define __GUG_UNIX_    1	/* HACK for Mac */
 
 #if __GUG_UNIX_
 #define __GUG_DOS_     0

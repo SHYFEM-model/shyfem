@@ -10,7 +10,7 @@ c 23.09.2004    ggu     interpolq() changed for bathy interpolation
 c 02.10.2004    ggu     interpole() for exponential interpolation
 c 01.11.2004    ggu     whole program simplyfied
 c 06.12.2008    ggu     smoothing introduced
-c 06.04.2005    ggu     read param.h
+c 06.04.2009    ggu     read param.h
 c
 c****************************************************************
 

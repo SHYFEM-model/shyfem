@@ -32,6 +32,7 @@ c 21.04.2009  ggu     allow just one isoline (bug)
 c 09.10.2009  ggu     sclvel for scaling arrow, lots of changes in color bar
 c 13.10.2009  ggu     changes to colbar, new inbox routines
 c 23.02.2010  ggu     for colorbar switch to generic color table
+c 01.06.2012  ggu     new circle item for legend, auto determ for ndec
 c
 c***************************************************************
 
@@ -590,6 +591,7 @@ c color
 	integer ntk
 	integer nmin,nmax
 	integer icsave
+	integer idec
 	logical bblank,brotate
 	logical blowtck
 	real dx,dy
@@ -606,7 +608,7 @@ c color
 	integer it
 
 	logical bdebug
-	integer iround,isoget,ialfa
+	integer iround,isoget,ialfa,ideci
 	real getcolval
 c	real getpar
 
@@ -732,7 +734,9 @@ c write legend
 	  rit = 1. + (i-1)*dtick
 	  value = getcolval(rit)
 	  value = fact * value
-	  nw = ialfa(value,line,ndec,-1)
+	  idec = ndec
+	  if( idec .eq. 0 ) idec = ideci(value)
+	  nw = ialfa(value,line,idec,-1)
 	  x = x0 + dxc + (i-1) * dt
 	  y = y0 + dyc + (i-1) * dt
 	  if( bhoriz ) then
@@ -862,6 +866,7 @@ c line	30500 11800 35000 15000			#line
 c vect	30500 11800 35000 15000	0.1		#arrow, tipsize 0.1
 c rect	30500 11800 35000 15000	0.1		#rectangle, fill color 0.1
 c rect	30500 11800 35000 15000	-1		#rectangle (outline, no fill)
+c circ	30500 11800 5000 -1			#circle (outline, no fill)
 c wid	5					#set line width to 5
 c col	0.5					#set color to 0.5
 c
@@ -907,6 +912,11 @@ c
 	  if( istof(line,y,ioff) .le. 0 ) goto 99
 	  if( istof(line,x2,ioff) .le. 0 ) goto 99
 	  if( istof(line,y2,ioff) .le. 0 ) goto 99
+	  if( istof(line,color,ioff) .le. 0 ) goto 99
+	else if( keyword .eq. 'circ' ) then
+	  if( istof(line,x,ioff) .le. 0 ) goto 99
+	  if( istof(line,y,ioff) .le. 0 ) goto 99
+	  if( istof(line,arrow,ioff) .le. 0 ) goto 99	!is radius
 	  if( istof(line,color,ioff) .le. 0 ) goto 99
 	else if( keyword .eq. 'vect' ) then
 	  if( istof(line,x,ioff) .le. 0 ) goto 99
@@ -1074,7 +1084,8 @@ c plots legend
 	character*4 what,what1
 	character*80 text
 	integer i,isize
-        real color,size
+        real color,size,rad
+	real dcolor		!default color
         real scale
 
 	call legini
@@ -1083,10 +1094,12 @@ c plots legend
         bdebug = .true.
         bdebug = .false.
 
+	dcolor = 0.
+
 	call qcomm('Plotting user defined legend')
         call qwhite(.true.)
         call qfont('Times-Roman')
-        call qgray(0.)
+        call qgray(dcolor)
 	call qtxts(12)
 	call qlwidth(0.01)
 
@@ -1101,6 +1114,7 @@ c plots legend
 	  size = aleg(i)
 	  isize = legsiz(i)
           color = cleg(i)
+          rad   = aleg(i)
 	  text = legleg(i)
 
 	  if( what .eq. 'text' ) then
@@ -1112,21 +1126,34 @@ c plots legend
             if( color .gt. 0. ) call qgray(color)
 	    call make_absolute2(xleg(1,i),yleg(1,i),xleg(2,i),yleg(2,i))
 	    call fpfeil(xleg(1,i),yleg(1,i),xleg(2,i),yleg(2,i),size)
+            if( color .gt. 0. ) call qgray(dcolor)
 	  else if( what .eq. 'line' ) then
 	    if( isize .gt. 0 ) call qlwidth(isize/100.)
             if( color .gt. 0. ) call qgray(color)
 	    call make_absolute2(xleg(1,i),yleg(1,i),xleg(2,i),yleg(2,i))
 	    call qline(xleg(1,i),yleg(1,i),xleg(2,i),yleg(2,i))
+            if( color .gt. 0. ) call qgray(dcolor)
 	  else if( what .eq. 'rect' ) then
 	    call make_absolute2(xleg(1,i),yleg(1,i),xleg(2,i),yleg(2,i))
             if( color .ge. 0. ) then
 	      call qgray(color)
 	      call qrfill(xleg(1,i),yleg(1,i),xleg(2,i),yleg(2,i))
+	      call qgray(dcolor)
 	    else
 	      call pbox(xleg(1,i),yleg(1,i),xleg(2,i),yleg(2,i))
 	    end if
+	  else if( what .eq. 'circ' ) then
+	    call make_absolute1(xleg(1,i),yleg(1,i))
+            if( color .ge. 0. ) then
+	      call qgray(color)
+	      call qarcf(xleg(1,i),yleg(1,i),rad,0.,360.)
+	      call qgray(dcolor)
+	    else
+	      call qarc(xleg(1,i),yleg(1,i),rad,0.,360.)
+	    end if
 	  else if( what .eq. 'col' ) then
-            call qgray(color)
+	    dcolor = color
+	    call qgray(color)
 	  else if( what .eq. 'wid' ) then
 	    call qlwidth(isize/100.)
 	  else
@@ -1144,6 +1171,7 @@ c plots legend
 
 	end do
 
+	call qgray(0.)
         call qwhite(.false.)
 	call qlwidth(0.)              !reset
 
@@ -1315,6 +1343,7 @@ c plots date legend
         data icall /0/
 
 	real getpar
+	double precision dgetpar
 
 	if( icall .eq. -1 ) return
 
@@ -1331,15 +1360,8 @@ c plots date legend
 	    return
 	  end if
 
-          date = nint(getpar('date'))
-	  if( date .lt. 1000000 ) then		!HACK
-	    if( date .lt. 600000 ) then
-		date = date + 20000000
-	    else
-		date = date + 19000000
-	    end if
-	  end if
-          time = nint(getpar('time'))
+          date = nint(dgetpar('date'))
+          time = nint(dgetpar('time'))
 	  write(6,*) 'initializing date and time: ',date,time
           call dtsini(date,time)
 

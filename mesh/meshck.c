@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 01-Jun-2012: better checking of input lines				*
  * 10-Feb-2012: use ABS() to determine line with maximum area		*
  * 06-Dec-2011: better handling of line types				*
  * 07-Oct-2010: better error message in CheckInput()			*
@@ -87,7 +88,8 @@ int CheckInput( void )
 	float *xe, *ye;
 	float area;
 	float areamax = 0.;
-        Line_type *plmax = NULL;
+        Line_type *plmax = NULL;	/* biggest line */
+        Line_type *plext = NULL;	/* external line */
 
 /* set all nodes to NONE */
 
@@ -108,6 +110,7 @@ int CheckInput( void )
 	    }
 
 	    if( pl->type == L_EXTERNAL ) {	/* HACK *//* FIXME */
+		plext = pl;
 		SetLtype(pl, L_EXTERNAL );
 	    } else if( pl->type == L_INTERNAL ) {
 		SetLtype(pl, L_INTERNAL );
@@ -141,18 +144,22 @@ int CheckInput( void )
 	} else if( next == 0 ) {
 		Warning("No external line found... using biggest one");
 		Warning2("  external line is ",itos(plmax->number));
+		plext = plmax;
 		SetLtype(plmax, L_EXTERNAL );
 		next++;
 	}
 
-/* check if all lines are inside external line */
+/* check if external line is closed and all other lines are inside */
 
-	if( plmax != NULL ) {
+	if( plext != NULL ) {
+	  if( ! IsLineClosed(plext) ) {
+    	    Error2("External line is not closed: ",itos(plext->number));
+          }
           ResetHashTable(HLI);
           while( (pl=VisitHashTableL(HLI)) != NULL ) {
-	      if( pl == plmax ) continue;
-	      if( ! IsLineInLine(plmax,pl) ) {
-	      	Error2("Line not in external line: ",itos(pl->number));
+	      if( pl == plext ) continue;
+	      if( ! IsLineInLine(plext,pl) ) {
+	      	Error2("Line not inside external line: ",itos(pl->number));
 	      }
 	  }
 	}

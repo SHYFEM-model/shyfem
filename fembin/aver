@@ -55,7 +55,9 @@ if( $move ) {
         print "$file: $aver\n";
 	close(FILE);
     }
-    print "total: $total\n";
+    my $taver = $total / $nfiles;
+    #print "total: $total  $taver\n";
+    print "total:  $taver\n";
 }
 
 ###############################################################

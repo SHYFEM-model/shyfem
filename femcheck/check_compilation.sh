@@ -50,6 +50,8 @@ CheckCommand ht ./fem3d/ht
 CheckCommand vp ./fem3d/vp 
 CheckCommand basinf ./fem3d/basinf 
 
+CheckCommand plotsim ./femplot/plotsim 
+
 #CheckCommand ggg ./fem3d/ggg 		#fake error
 
 CheckCommand adjele ./femadj/adjele 

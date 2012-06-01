@@ -234,13 +234,10 @@ c on return iu = -1 means that no file has been opened and is not written
 
 c check idtcon and itmcon and adjust
 
-        if( idtcon .le. 0 ) iu = -1
-        if( itmcon+idtcon .gt. itend ) iu = -1
+	call adjust_itmidt(itmcon,idtcon)
 
-        if( iu .eq. -1 ) return
-
-        if( itmcon .lt. itanf ) itmcon = itanf
-	if( idtcon .lt. idt ) idtcon = idt
+	iu = -1
+        if( idtcon .le. 0 ) return
 
 c open file
 
@@ -292,6 +289,8 @@ c writes NOS file
 	integer ierr
 
 c check if files has to be written
+
+	!write(6,*) it,itmcon,idtcon,mod(it-itmcon,idtcon)
 
 	if( iu .le. 0 ) return
 	if( it .lt. itmcon ) return

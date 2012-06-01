@@ -1,0 +1,82 @@
+
+Usage of the grid utility
+
+The GRD file consists of different items. The items that are recognized
+are nodes, elements and lines. Nodes have coordinates and may have a
+depth. Elements and lines consist of a list of nodes and may also have
+a depth. The difference between elements and lines is that elements are
+always closed, and the depth property is referring to the center of the
+element, whereas lines are normally open. You can have closed lines,
+but then the first and last node must be the same. On the contrary, you
+should never make the first and last node of an element the same node,
+because the element is implicitly closed.
+
+With the utility grid you can view and manipulate a GRD file. The grid
+utility also has the possibility to manipulate a vector item type,
+but this is not yet fully supported. Please ignore this feature for
+the moment.
+
+An important issue is how to choose an item. When grid starts, it
+normally always is in "node" mode. This means it allows you to chose a
+node item. To change this, please go to the Show menu item, and choose
+whatever item you would like to view or manipulate.
+
+In order to choose an item you have to put the mouse close to the item and
+then right click on it. If the item can be found it is highlighted. Once
+the item is highlighted you can choose it definitively by left clicking
+with the mouse.
+
+Once you are done with the grid utility, you can exit from it. Please
+note that the saving of the file into a new file is a little bit different
+from what you are probably used to. If you exit and you have not changed
+anything, nothing will happen. But if you have changed something in the
+GRD file, then you are asked to give a new file name in order to save
+the changes. The program will not accept a file name that is already
+existing, so it will never overwrite an old file. Please note that
+if you are hitting return on the question to input a new file name,
+the changes are not saved and you will loose your changes.
+
+
+Some examples are given below:
+
+To manipulate nodes, choose an action from the Nodes menu. To create
+(make) a node, choose the sub-menu action and simply left click where
+you want to put the node. However, with the other actions you first have
+to choose the node, and then you can act on it. So, in order to delete
+a node, first right click on the node, and if it is the desired node,
+confirm by left clicking. If it is not the right node, just continue
+right clicking until you have chosen the right node. The same is true
+for move or unify nodes.  Please remember that you cannot delete a node if
+the node is part of an element or line. You can only delete single nodes.
+
+In order to create elements, you input the nodes either directly by
+left clicking on the desired position, or you choose an already existing
+node by right clicking and then confirm by left clicking. For deleting
+(or removing) an element, right click on the element until you have the
+right element chosen, and then confirm with the left click. The difference
+between deleting and removing is in the treatment of the nodes. If the
+deletion of an element leaves a single (not connected) node, delete
+leaves the node as it is, but remove cancels the single nodes.
+
+The same is true for manipulating lines. Tow more options are available
+for lines. Split line allows to split lines on an node. You first have
+to choose the line, and then to choose the node where to split. So
+right click until you have identified the line, and confirm by left
+clicking, then again right click to choose the node and then confirm
+by left clicking. Once the lien has been split, if you look at the line
+(in Show set "Show Line") you should see two lines where once was just
+one line. Finally, you can also join two lines that have one node in
+common. Just follow the indications on the screen.
+
+Finally with the menu "Change" you can change the type of an item or
+its depth.  Fist choose in "Show" on what item you want to operate,
+then choose "Change Depth" or "Change Type". You can then either input
+with the keyboard the type or depth, or you can click on an item and
+the program will use the type or depth of this item. After this you
+choose and confirm (right and left click) the items you want to change.
+You can change as many items as you want. Once you are done, just choose
+another command (or Refresh from the File menu) in order to stop changing.
+
+
+
+

@@ -19,3 +19,5 @@ femplot -> plot dry areas (auto)
 
 symlink not in distribution
 
+ar not working (problem with tmporary file) -> check $TMPDIR
+

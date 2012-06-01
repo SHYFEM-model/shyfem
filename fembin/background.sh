@@ -8,11 +8,13 @@ FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 BINDIR=$FEMDIR/fembin
 
 #exgrd=$BINDIR/exgrd
-exgrd=$FEMDIR/mesh//exgrd
+exgrd=$FEMDIR/mesh/exgrd
 backb=$BINDIR/background.pl
+modify=$BINDIR/grd_modify.pl
 
 #---------------------------------------------------
 
+backtype=-1
 if [ "$1" = "-g" ]; then
   shift
   backtype=$1
@@ -46,11 +48,16 @@ $backb back_items.grd
 #--------------- combine meshed line background grid
 
 $exgrd -u gtmp*.grd
-mv new.grd back_lines.grd
+if [ $backtype -ge 0 ]; then
+  $modify -e -type=$backtype new.grd
+  mv modify.grd back_lines.grd
+else
+  mv new.grd back_lines.grd
+fi
 
-#--------------- combine background grid from elements and lines
+#--------------- combine background grid from elements and lines (only elements)
 
-$exgrd back_elems.grd back_lines.grd
+$exgrd -eLS back_elems.grd back_lines.grd
 mv new.grd background.grd
 
 #--------------- write final message and clean up

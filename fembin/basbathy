@@ -62,8 +62,8 @@ do
         -a)             mode="3";;
         -n)             ike="2";;
         -t)             idepth="2";;
-        -ufact)         ufact=$1; shift;;
-        -umfact)        umfact=$1; shift;;
+        -ufact)         ufact=$2; shift;;
+        -umfact)        umfact=$2; shift;;
         -h|-help)       FullUsage; exit 0;;
         -*)             ErrorOption $1; exit 1;;
         *)              break;;

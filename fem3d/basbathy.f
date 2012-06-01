@@ -9,13 +9,14 @@ c 08.09.2003	ggu	mode 5 -> write depth values from elements
 c 23.09.2004    ggu     interpolq() changed for bathy interpolation
 c 02.10.2004    ggu     interpole() for exponential interpolation
 c 12.05.2005    ggu     pass hmin to interpolation functions
-c 06.04.2005    ggu     read param.h
+c 06.04.2009    ggu     read param.h
 c 24.04.2009	ggu	new call to rdgrd()
 c 21.05.2009	ggu	restructured to allow for nodal interpolation
 c 16.12.2010	ggu	bug fix in copy_depth()
-c 02.12.2010	ggu	introduction of nminimum - hardcoded for now
+c 02.12.2011	ggu	introduction of nminimum - hardcoded for now
 c 16.03.2012	ggu	autoregression introduced (make_auto_corr,interpola)
 c 16.03.2012	ggu	default value for umfact set to 3, new mode = 3
+c 01.06.2012	ggu	some more changes
 c
 c****************************************************************
 
@@ -132,7 +133,7 @@ c-----------------------------------------------------------------
 	umfact = 2.	!old default
 	umfact = 3.
 
-	if( mode .eq. 1 ) then
+	if( mode .eq. 1 .or. mode .eq. 3 ) then
 
         write(6,*)
         write(6,*) 'For the exponential algorithm you can:'
@@ -149,7 +150,7 @@ c-----------------------------------------------------------------
         write(6,*)
 	write(6,*) 'The std deviation is about the size of the elements'
 	write(6,*) 'With ufact you can ultimately correct it (default=1)'
-	write(6,*) 'The maximum radius is twice the standard deviation'
+	write(6,*) 'The maximum radius is 3 times the standard deviation'
 	write(6,*) 'With umfact you can correct it (default=3)'
         write(6,*)
 	write(6,*) 'Enter params ufact and umfact (<CR> for default): '
@@ -194,12 +195,6 @@ c-----------------------------------------------------------------
 
         if( bstop ) stop 'error stop rdgrd'
 
-c        call rdgrd(gfile,ner,bstop,nco,nkn,nknh,nel,nelh,nli
-c     +                  ,nkndim,neldim,nliread
-c     +                  ,ipv,ipev,ianv,iarv,nen3v,xgv,ygv,hev,hkv)
-c
-c        call ex2in(nkn,nel,ipv,ipaux,nen3v,ner,bstop)
-
         call ex2in(nkn,3*nel,nlidim,ipv,ipaux,nen3v,iaux,bstop)
         if( bstop ) stop 'error stop ex2in'
 
@@ -241,7 +236,7 @@ c-----------------------------------------------------------------
         else if( mode .eq. 2 ) then
 	  call interpolq(np,xp,yp,dp)
 	else if( mode .eq. 3 ) then
-	  call make_auto_corr(np,xp,yp,dp,ap)
+	  call make_auto_corr(np,ufact,xp,yp,dp,ap)
 	  call interpola(np,xp,yp,dp,ap,ike,nminimum)
         else
           write(6,*) 'wrong choice for mode : ',mode
@@ -1172,7 +1167,7 @@ c*******************************************************************
 
 	subroutine interpola(np,xp,yp,dp,ap,ike,nminimum)
 
-c interpolates depth values
+c interpolates depth values with auto-correlation
 
 	implicit none
 
@@ -1209,7 +1204,7 @@ c interpolates depth values
 	integer n,i,nt,ntot
 	integer ihmed
         integer nintp,nmin
-	integer iloop,nintpol
+	integer nintpol
 	real xmin,ymin,xmax,ymax
 	real weight,r2,w
         real r2max,sigma2
@@ -1256,38 +1251,16 @@ c-----------------------------------------------------------------
 c initial interpolation -> point in element
 c-----------------------------------------------------------------
 
-	ufact = 1.
-	umfact = 1.
-
         nmin = nminimum
 	if( nmin .le. 0 ) nmin = 1	!at least one point is needed
 
-	!ufact = 1.
-	!umfact = 2.
-
 	nintpol = 0
-	iloop = 0
-	pi = 4.*atan(1.)
-	fact = 2.
-	fact = 2./pi	!start with a radius slightly greater than area
-	fact = fact * ufact
-
-	do while( ntot .lt. nt )
-
 	ntot = 0
-	iloop = iloop + 1
-	write(6,*) 'starting new loop on items: ',iloop
 
 	do i=1,nt
 
 	  x0 = xt(i)
 	  y0 = yt(i)
-	  area = at(i)
-
-	  if( area .le. 0. ) goto 98
-
-          sigma2 = fact*area    	 !standard deviation grows
-          r2max = (umfact**2)*sigma2     !maximum radius to look for points
 
 	  if( ok(i) ) then
 	    ntot = ntot + 1
@@ -1306,28 +1279,22 @@ c-----------------------------------------------------------------
 	      weight = weight + w
               nintp = nintp + 1
 	    end do
-	    if( nintp .ge. nmin ) then
-	      if( weight .le. 0. ) then
-                write(6,*) nintp,weight,r2max,i
-                stop 'error stop interpole: zero weight from points'
-              end if
-	      ht(i) = depth / weight
-	      ok(i) = .true.
-	      ntot = ntot + 1
-	      nintpol = nintpol + 1
-	      if( mod(nintpol,100) .eq. 0 ) then
-	        write(6,*) 'items interpolated: ',iloop,nintpol,nt
-	      end if
+	    if( weight .le. 0. ) then
+              write(6,*) nintp,weight,r2max,i
+              stop 'error stop interpole: zero weight from points'
+            end if
+	    ht(i) = depth / weight
+	    ok(i) = .true.
+	    ntot = ntot + 1
+	    nintpol = nintpol + 1
+	    if( mod(nintpol,100) .eq. 0 ) then
+	      write(6,*) 'items interpolated: ',nintpol,nt
 	    end if
 	  end if
 
 	end do
 
 	write(6,*) 'Items without depth : ',nt-ntot,nt
-
-	fact = fact * 2.
-
-	end do
 
 c-----------------------------------------------------------------
 c end up
@@ -1363,20 +1330,21 @@ c-----------------------------------------------------------------
 
 c*******************************************************************
 
-	subroutine make_auto_corr(np,xp,yp,dp,ap)
+	subroutine make_auto_corr(np,ufact,xp,yp,dp,ap)
 
 c computes minimum distance to next point
 c
-c this is used as sigma**2 for the interpolation
+c this is used as sigma for the interpolation
 c there are margins for improving this
 
 	implicit none
 
 	integer np
+	real ufact		!extra factor for size of sigma
 	real xp(np)
 	real yp(np)
 	real dp(np)
-	real ap(np)
+	real ap(np)		!computed sigma**2 values for each data point
 
 	integer i,j
 	real d
@@ -1394,7 +1362,7 @@ c there are margins for improving this
 	      if( d .lt. dm ) dm = d
 	    end if
 	  end do
-	  ap(i) = dm
+	  ap(i) = dm * ufact*ufact
 	  !write(6,*) i,ap(i),dp(i)
 	end do
 

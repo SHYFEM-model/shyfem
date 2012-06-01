@@ -31,8 +31,8 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
- * 28-Aug-95: routines written from scratch				*
  * 04-Nov-97: new routine to compute area of all elements               *
+ * 28-Aug-95: routines written from scratch				*
  *									*
 \************************************************************************/
 

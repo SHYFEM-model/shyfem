@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 01-Jan-2012: delete vector item from menu				*
  * 16-Feb-2011: new options OpOutFile, OpItemType                       *
  * 13-May-2003: main changed to menubar in routine MakeGridMenu()	*
  * 02-Apr-1998: no Button_type, Function_type                           *
@@ -222,8 +223,11 @@ void MakeGridMenu( void )
 {
 	Menu_entry *menubar;
 	Menu_entry *file, *view, *show, *node, *elem;
-	Menu_entry *line, *vect, *change;
+	Menu_entry *line, *change;
+/*
+	Menu_entry *vect;
 	Menu_entry *test, *sub;
+*/
 
 
 
@@ -259,7 +263,7 @@ void MakeGridMenu( void )
 	AddMenuItem( show , MakeExecMenu("Show Node",GfShowNode) );
 	AddMenuItem( show , MakeExecMenu("Show Element",GfShowElement) );
 	AddMenuItem( show , MakeExecMenu("Show Line",GfShowLine) );
-	AddMenuItem( show , MakeExecMenu("Show Vector",GfShowVect) );
+	/* AddMenuItem( show , MakeExecMenu("Show Vector",GfShowVect) ); */
 
 
 
@@ -292,13 +296,13 @@ void MakeGridMenu( void )
 	AddMenuItem( line , MakeExecMenu("Join Line",GfJoinLine) );
 
 
-
+/*
 	vect = MakePulldownMenu("Vector");
 	AddMenuItem( menubar , vect );
 
 	AddMenuItem( vect , MakeExecMenu("Del Vector",GfDelVect) );
 	AddMenuItem( vect , MakeExecMenu("Change Vector",GfChangeVect) );
-
+*/
 
 
 	change = MakePulldownMenu("Change");
@@ -308,7 +312,7 @@ void MakeGridMenu( void )
 	AddMenuItem( change , MakeExecMenu("Change Type",GfChangeType) );
 
 
-
+/*
 	test = MakePulldownMenu("Test");
 	AddMenuItem( menubar , test );
 
@@ -335,6 +339,6 @@ void MakeGridMenu( void )
 
 	AddMenuItem( test , MakeExecMenu("Move Node",GfMoveNode) );
 	AddMenuItem( test , MakeExecMenu("Unify Node",GfUnifyNode) );
-
+*/
 
 }

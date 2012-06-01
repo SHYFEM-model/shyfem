@@ -62,6 +62,8 @@ while(<>) {
 
 sub revisionlog_c {
 
+  my $olddate = $befor;		#in c files oreder is inverse
+
   while(<>) {
     if( /^\s+\*\s+\*\s*\n$/ ) {			#only white space
 	last;
@@ -78,10 +80,17 @@ sub revisionlog_c {
       }
       print;
     }
+    if( $date > $olddate ) {
+	print STDERR "*** error in date: $file  $olddate $date\n";
+	print STDERR "       $_";
+    }
+    $olddate = $date;
   }
 }
 
 sub revisionlog_fortran {
+
+  my $olddate = 0;
 
   while(<>) {
     if( /^[cC\!]\s+(.*)\s+:\s*\n$/ ) {		#new keyword
@@ -102,6 +111,11 @@ sub revisionlog_fortran {
       }
       print;
     }
+    if( $date < $olddate ) {
+	print STDERR "*** error in date: $file  $olddate $date\n";
+	print STDERR "       $_";
+    }
+    $olddate = $date;
   }
 }
 
@@ -110,6 +124,7 @@ sub revisionlog_fortran_check {
   my $rev_log_found = 0;
   my $ndate = 0;
   my $debug = 0;
+  my $olddate = 0;
 
   while(<>) {
 
@@ -126,6 +141,12 @@ sub revisionlog_fortran_check {
 
     $date = &getdate($date);
 
+    if( $date < $olddate ) {
+	print STDERR "*** error in date: $file  $olddate $date\n";
+	print STDERR "       $_";
+    }
+    $olddate = $date;
+
     if( $date ) {
       $ndate++;
       print if $debug;
@@ -136,14 +157,6 @@ sub revisionlog_fortran_check {
   print "   ********" if $rev_log_found == 0 and $ndate > 0;
   print "\n"
 }
-
-
-
-#---------------------------------------------------------------
-
-sub getdate {
-}
-
 
 #---------------------------------------------------------------
 

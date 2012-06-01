@@ -11,6 +11,7 @@ c 23.09.2004    ggu     adapted for malta, bug fix
 c 19.10.2005    ggu     documentation and description
 c 02.12.2011    ggu     bug fix in intpdep() and reduce()
 c 02.12.2011    ggu     use depth also for smoothing (change in distxy())
+c 27.05.2012    ggu     renamed ndim to nsdim in smooth()
 c
 c description :
 c
@@ -69,7 +70,7 @@ c same as gridf but smooth on length of line, not points
 	parameter( neldim = 10000 )
 	parameter( nlidim = 1000 )
 	parameter( nlndim = 50000 )
-	parameter( ndim = 20000 )
+	parameter( ndim = 40000 )
 
 	integer ner
 	integer nco,nkn,nel,nli
@@ -264,8 +265,10 @@ c**********************************************************
 
 	return
    98	continue
-	write(6,*) 'nvert = ',nvert
-	write(6,*) 'nl = ',nl
+	write(6,*) '*** Dimension error for nl'
+	write(6,*) 'Number of vertices in line: nvert = ',nvert
+	write(6,*) 'Dimension for vertices:        nl = ',nl
+	write(6,*) 'Please adjust dimension of ndim'
 	stop 'error stop extrli : dimension nl'
    99	continue
 	stop 'error stop extrli: hash routines'
@@ -433,6 +436,8 @@ c********************************************************
 
 c smoothing
 
+	implicit none
+
 	real sigma
 	real xt(1)
 	real yt(1)
@@ -440,23 +445,23 @@ c smoothing
 	integer nl
 	logical bperiod
 
-	integer ndim
-	parameter(ndim=20000)
+	integer nsdim
+	parameter(nsdim=40000)
 
 	integer i
 	integer ngk
 	real dist,dx,dy,distot
-	real gk(-ndim:ndim)
-	real raux(-ndim:2*ndim)
-	real dxy(-ndim:2*ndim)
+	real gk(-nsdim:nsdim)
+	real raux(-nsdim:2*nsdim)
+	real dxy(-nsdim:2*nsdim)
 
-	if( nl .gt. ndim ) stop 'error stop smooth: ndim'
+	if( nl .gt. nsdim ) goto 99
 
         if( sigma .le. 0. ) return
 
 c set up dxy
 
-	call distxy(ndim,nl,xt,yt,ht,dxy)
+	call distxy(nsdim,nl,xt,yt,ht,dxy)
 
 	distot = 0.
 	do i=1,nl-1
@@ -471,14 +476,21 @@ c set up dxy
 c create smoothing kernel
 
 c	ngk = ndim
-c	call gkernel(sigma,ndim,ngk,gk)
+c	call gkernel(sigma,nsdim,ngk,gk)
 c	write(6,*) 'Gaussian kernel : ',sigma,ngk
 
 c smooth x and y
 
-	call grsmooth(ndim,nl,sigma,xt,raux,dxy,ht,bperiod)
-	call grsmooth(ndim,nl,sigma,yt,raux,dxy,ht,bperiod)
+	call grsmooth(nsdim,nl,sigma,xt,raux,dxy,ht,bperiod)
+	call grsmooth(nsdim,nl,sigma,yt,raux,dxy,ht,bperiod)
 
+	return
+   99	continue
+	write(6,*) '*** Dimension error for nsdim'
+	write(6,*) 'Number of vertices in line: nl = ',nl
+	write(6,*) 'Dimension for vertices:  nsdim = ',nsdim
+	write(6,*) 'Please adjust dimension of nsdim in routine smooth'
+	stop 'error stop smooth: nsdim'
 	end
 
 c********************************************************

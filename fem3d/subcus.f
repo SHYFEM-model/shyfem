@@ -101,7 +101,7 @@ c custom routines
 	if( icall .eq. 32 ) call cprint(it)
 	if( icall .eq. 76 ) call lago(it)
 	if( icall .eq. 80 ) call aldo(it)
-	!if( icall .eq. 81 ) call jamal
+	if( icall .eq. 81 ) call jamal
 	!if( icall .eq. 811 ) call jamal_fra
 	if( icall .eq. 82 ) call sedimt
 	if( icall .eq. 83 ) call joel

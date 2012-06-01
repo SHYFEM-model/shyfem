@@ -5,12 +5,12 @@ c color handling routines
 c
 c revision log :
 c
-c 26.01.2009    ggu     some more color tables
 c 26.10.2001    ggu     in colrd allow only one array to be given
 c 06.06.2008    ggu     new colortable introduced
 c 19.11.2008    ggu     new routine coltst()
 c 09.01.2009    ggu     some re-formatting
 c 09.01.2009    ggu     deleted setcol(), new make_single_isolines()
+c 26.01.2009    ggu     some more color tables
 c 23.02.2010    ggu     new set_default_color_table(), renamed qchsc()
 c 23.03.2010    ggu     make it easier to change between color tables
 c

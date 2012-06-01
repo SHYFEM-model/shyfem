@@ -1,4 +1,6 @@
 
+c has to be still commented ... FIXME
+
         integer rec_varid
         integer dimids_2d(2)
         integer dimids_3d(3)

@@ -117,6 +117,7 @@ c-------------------------------------------------------------
           id = 10       !for tracer
 	  itmcon = nint(getpar('itmcon'))
 	  idtcon = nint(getpar('idtcon'))
+	  call adjust_itmidt(itmcon,idtcon)
 	  call confop(iu,itmcon,idtcon,nlv,1,'con')
 
           call getinfo(ninfo)

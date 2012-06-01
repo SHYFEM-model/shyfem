@@ -34,6 +34,7 @@ c 21.09.2011    ggu     low-level routines copied from subflxa.f
 c 07.10.2011    ggu     implemented 3d flux routines
 c 20.10.2011    ggu     restructured, flx3d_k(), make_fluxes_3d()
 c 16.12.2011    ggu     bug fix: in make_fluxes_2/3d() r/tflux was integer
+c 04.05.2012    ggu     bug fix: in flx3d_k correct for flux boundary
 c
 c******************************************************************
 c******************************************************************
@@ -189,10 +190,16 @@ c---------------------------------------------------------
 	end
 	
 c******************************************************************
+c******************************************************************
+c******************************************************************
 
 	subroutine flx3d_k(k,istype,az,lkmax,n,transp)
 
 c computes fluxes through finite volume k (3D version)
+c
+c if we are on a flux boundary this is not working
+c we should exclude mfluxv from the divergence computation
+c -> has been done - other sources of mfluxv (rain, etc.) are also eliminated
 
 	implicit none
 
@@ -207,6 +214,7 @@ c computes fluxes through finite volume k (3D version)
 
 	include 'ev.h'
 	include 'links.h'
+	include 'testbndo.h'
 
         real utlov(nlvdim,1),vtlov(nlvdim,1)
         common /utlov/utlov, /vtlov/vtlov
@@ -284,6 +292,7 @@ c---------------------------------------------------------
 
             dvdt = dvol(l)/dt
 	    q = mfluxv(l,k)
+	    if( is_external_boundary(k) ) q = 0.
 	    qw_top = area * wlnv(l-1,k)
 	    qw_bot = area * wlnv(l,k)
 	    if( l .eq. lmax ) qw_bot = 0.
@@ -399,6 +408,8 @@ c---------------------------------------------------------
 
 	end
 	
+c******************************************************************
+c******************************************************************
 c******************************************************************
 
 	subroutine mkweig(n,istype,is,weight)
@@ -531,6 +542,8 @@ c else uses kantv
 
 	end
 
+c**********************************************************************
+c**********************************************************************
 c**********************************************************************
 
 	subroutine make_fluxes_3d(k,itype,lkmax,n,rflux,tflux)

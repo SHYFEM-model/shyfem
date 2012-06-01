@@ -547,7 +547,7 @@ c flux are divided into total, positive and negative
 	integer iflux(3,1)
 	real az
 	real fluxes(0:nlvdim,3,1)	!computed fluxes (return)
-	integer is
+	integer is			!type of scalar (0=mass)
 	real scalar(nlvdim,1)
 
 	integer nen3v(3,1)
@@ -563,6 +563,7 @@ c flux are divided into total, positive and negative
 	do while( nextline(kflux,kfluxm,nnode,ifirst,ilast) )
 	  ns = ns + 1
 	  ntotal = ilast - ifirst + 1
+	  !write(66,*) 'section ',ns,ntotal,is
 	  call flxsec(ntotal,kflux(ifirst),iflux(1,ifirst),az
      +				,fluxes(0,1,ns),is,scalar)
 	end do
@@ -584,7 +585,7 @@ c computes flux through one section
 	integer iflux(3,1)
 	real az
 	real fluxes(0:nlvdim,3)		!computed fluxes (return)
-	integer is
+	integer is			!type of scalar (0=mass)
 	real scalar(nlvdim,1)
 
 	integer nen3v(3,1)
@@ -616,7 +617,7 @@ c computes flux through one section
 		do l=1,lkmax
 		  port = flux(l)
 		  sport = port
-		  if( is .gt. 0 ) sport = port * scalar(l,k)
+		  if( is .gt. 0 ) sport = port * scalar(l,k)	!not mass
 
 		  fluxes(l,1) = fluxes(l,1) + sport
 		  if( port .gt. 0. ) then
@@ -627,6 +628,7 @@ c computes flux through one section
 		  ptot = ptot + port
 		  sptot = sptot + sport
 		end do
+		!write(66,*) i,k,istype,ibefor,iafter,flux
 
 		if( abs(port2d-ptot) .gt. 1. ) then
 		  write(6,*) '***** integrated fluxes: ',k

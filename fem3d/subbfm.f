@@ -22,7 +22,7 @@ c 10.03.2008    aac     bfm ecological module from scratch
 c 29.04.2008    ggu     bfm model integrated in main branch
 c 30.04.2008    ggu     double to real (BUG)
 c 31.05.2011    ggu     clean from useless common blocks
-c 15.01.2011    aac     advection for all BFM var introduced
+c 15.01.2012    aac     advection for all BFM var introduced
 c 17.02.2012    aac&ggu restart for bfm
 c 26.03.2012    ggu	bfm1-3 had wrong second dimension
 c

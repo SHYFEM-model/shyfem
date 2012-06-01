@@ -4,7 +4,7 @@ c
 c revision log :
 c
 c 01.12.2005    ggu     created from basinf
-c 06.04.2005    ggu     read param.h
+c 06.04.2009    ggu     read param.h
 c
 c****************************************************************
 

@@ -28,11 +28,13 @@ c averages vertically records
 
 	integer ilhkv(nkndim)
 	real hlv(nlvdim)
-	real hev(neldim)
 	integer ilhkv2(nkndim)
 	real hlv2(nlvdim)
 	real hev2(neldim)
 	real hl(nlvdim)
+
+	real hev(neldim)
+	common /hev/hev
 
 	logical bvol
         integer nread
@@ -84,6 +86,8 @@ c	----------------------------------------------------------
         nin = ifem_open_file('.nos','old')
         call rhnos(nin,nvers,nkndim,neldim,nlvdim,nkn1,nel1,nlv,nvar
      +                          ,ilhkv,hlv,hev,title)
+
+        call init_sigma_info(nlv,hlv)
 
         call init_volume(nlvdim,nkn,nel,nlv,nen3v,ilhkv,hlv,hev,hl,vol3)
 

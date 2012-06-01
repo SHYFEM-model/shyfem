@@ -5,7 +5,7 @@ c revision log :
 c
 c 06.04.1999	ggu	completely restructured
 c 04.06.1999	ggu	new statistics are computed
-c 06.04.2005    ggu     read param.h
+c 06.04.2009    ggu     read param.h
 c
 c****************************************************************
 

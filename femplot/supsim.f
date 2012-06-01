@@ -38,7 +38,7 @@ c 30.01.2002	ggu	better debug info, allow for vertical plotting
 c 30.01.2002	ggu	new routines mkvarline, aspecial, traxy, rdspecial
 c 05.10.2003	ggu	changes to allow for automatical plotting of vector
 c 31.10.2003	ggu	subroutine plowind()
-c 17.03.2003	ggu	use okvar to decide which var to plot (0->all)
+c 17.03.2004	ggu	use okvar to decide which var to plot (0->all)
 c 05.10.2004	ggu	use znv instead xv
 c 05.10.2004	ggu	inorm instead ivert, overlay over z/h, comp_scale()
 c 16.12.2004	ggu	plot also regular net

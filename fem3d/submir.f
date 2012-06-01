@@ -34,8 +34,8 @@ c      function locsps(i,j,n,m)
 c
 c revision log :
 c
-c 24.05.1997	ggu	general - compiler warnings -> call to dp routines
 c 03.04.1997	ggu	general - compiler warnings for gfortran
+c 24.05.1997	ggu	general - compiler warnings -> call to dp routines
 c
 c********************************************************************
 

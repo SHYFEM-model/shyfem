@@ -1124,6 +1124,41 @@ c********************************************************************
 c********************************************************************
 c********************************************************************
 
+	subroutine adjust_itmidt(itm_out,idt_out)
+
+c sets-up output frequency and first output
+
+	implicit none
+
+	integer itm_out		!minimum time for output
+	integer idt_out		!time step for output
+
+	integer itanf,itend,idt
+	integer itmout,idtout,itout
+	real getpar
+
+	itanf = nint(getpar('itanf'))
+	itend = nint(getpar('itend'))
+	idt = nint(getpar('idt'))
+
+	itmout = itm_out
+	idtout = idt_out
+
+	if( itmout .eq. -1 ) itmout = itanf
+	if( itmout .lt. itanf ) itmout = itanf
+	if( idtout .lt. idt .and. idtout .gt. 0 ) idtout = idt
+
+	itout = itmout
+	if( itmout .eq. itanf ) itout = itout + idtout
+	if( itout .gt. itend ) idtout = 0
+
+	itm_out = itmout
+	idt_out = idtout
+
+	end
+
+c********************************************************************
+
 	subroutine set_output_frequency(itm_out,idt_out,ia_out)
 
 c sets-up array for output frequency

@@ -13,6 +13,7 @@ c 11.03.2005    ggu     new test added
 c 13.11.2005    ggu     small bug fix (UNPACK)
 c 01.12.2005    ggu     new routine dts_initialized and block data
 c 07.05.2009    ggu     new routine dtsyear() and date_compute()
+c 01.06.2012    ggu     work also with date=0
 c
 c notes :
 c
@@ -314,8 +315,8 @@ c converts it to date and time
 
         integer year0,month0,day0
         integer hour0,min0,sec0
-	integer last
-	common /dtsdts/ year0,month0,day0,hour0,min0,sec0,last
+	integer last,dinit
+	common /dtsdts/ year0,month0,day0,hour0,min0,sec0,last,dinit
 	save /dtsdts/
 
 	last = it
@@ -349,8 +350,8 @@ c converts date and time to it
 
         integer year0,month0,day0
         integer hour0,min0,sec0
-	integer last
-	common /dtsdts/ year0,month0,day0,hour0,min0,sec0,last
+	integer last,dinit
+	common /dtsdts/ year0,month0,day0,hour0,min0,sec0,last,dinit
 	save /dtsdts/
 
 	call date2days(days,year,month,day)
@@ -378,8 +379,8 @@ c sets date and time for 0 fem time
 
         integer year0,month0,day0
         integer hour0,min0,sec0
-	integer last
-	common /dtsdts/ year0,month0,day0,hour0,min0,sec0,last
+	integer last,dinit
+	common /dtsdts/ year0,month0,day0,hour0,min0,sec0,last,dinit
 	save /dtsdts/
 
 	bdebug = .true.
@@ -395,6 +396,7 @@ c sets date and time for 0 fem time
 	  write(6,*) '-----------------------------'
 	end if
 
+	dinit = 1
 	last = 0
 
 	end
@@ -411,7 +413,10 @@ c initialization by only giving year
 
         integer date,time
 
-        date = 10000*year + 101
+	date = 0
+	if( year .ne. 0 ) then
+          date = 10000*year + 101
+	end if
         time = 0
 
 	call dtsini(date,time)
@@ -430,11 +435,11 @@ c checks if dts routines are already initialized
 
         integer year0,month0,day0
         integer hour0,min0,sec0
-	integer last
-	common /dtsdts/ year0,month0,day0,hour0,min0,sec0,last
+	integer last,dinit
+	common /dtsdts/ year0,month0,day0,hour0,min0,sec0,last,dinit
 	save /dtsdts/
 
-	if( year0 .eq. 0 ) then
+	if( dinit .eq. 0 ) then
 	  dts_initialized = .false.
 	else
 	  dts_initialized = .true.
@@ -585,6 +590,11 @@ c converts date to julian days
 	integer jd
 
         integer jdmon,idmon
+
+	if( year .eq. 0 ) then
+	  jd = day
+	  return
+	end if
  
 	if( month .lt. 1 .or. month .gt. 12 ) then
 	  write(6,*) year,month,day
@@ -827,12 +837,13 @@ c************************************************************************
 
         integer year0,month0,day0
         integer hour0,min0,sec0
-	integer last
+	integer last,dinit
 
-	common /dtsdts/ year0,month0,day0,hour0,min0,sec0,last
+	common /dtsdts/ year0,month0,day0,hour0,min0,sec0,last,dinit
 	save /dtsdts/
 
-        data year0,month0,day0,hour0,min0,sec0,last /0,0,0,0,0,0,0/
+        data year0,month0,day0,hour0,min0,sec0,last,dinit
+     +			 /0,0,0,0,0,0,0,0/
 
         end
 

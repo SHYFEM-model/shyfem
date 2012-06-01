@@ -439,6 +439,20 @@ void KeyboardInput( int c )
 	}
 }
 
+/***************************************************************\
+                   	 File menu
+\***************************************************************/
+
+void GfCancel( void )
+
+{
+     if( ActMode == MENU_FIELD_INPUT ) {
+	ActString = StringCancel;
+	TentativeXY=FALSE;
+	UnActive();
+     }
+}
+
 void GfRefresh( void )
 
 {
@@ -452,16 +466,6 @@ void GfRefresh( void )
      }
 }
 
-void GfSave( void )
-
-{
-     if( ActMode == MENU_FIELD_INPUT ) {
-        ActString = StringSave;
-        TentativeXY=FALSE;
-	SaveFile();
-     }
-}
-
 void GfPrint( void )
 
 {
@@ -472,13 +476,13 @@ void GfPrint( void )
      }
 }
 
-void GfCancel( void )
+void GfSave( void )
 
 {
      if( ActMode == MENU_FIELD_INPUT ) {
-	ActString = StringCancel;
-	TentativeXY=FALSE;
-	UnActive();
+        ActString = StringSave;
+        TentativeXY=FALSE;
+	SaveFile();
      }
 }
 
@@ -500,6 +504,10 @@ void GfExit( void )
 	}
      }
 }
+
+/***************************************************************\
+                   	 View menu
+\***************************************************************/
 
 static void Zoom( int mode )
 
@@ -581,6 +589,10 @@ void GfZoomOut( void )		{ Zoom(2); }
 void GfMove( void )		{ Zoom(3); }
 void GfTotalView( void )	{ Zoom(4); }
 
+/***************************************************************\
+                   	 Show menu
+\***************************************************************/
+
 static void Show( int mode )
 
 {
@@ -613,6 +625,10 @@ void GfShowNode( void )		{ Show(0); }
 void GfShowElement( void )	{ Show(1); }
 void GfShowLine( void )		{ Show(2); }
 void GfShowVect( void )		{ Show(3); }
+
+/***************************************************************\
+                   	 Node menu
+\***************************************************************/
 
 void GfMakeNode( void )
 
@@ -740,6 +756,10 @@ void GfUnifyNode( void )
     Changed = TRUE;
 }
 
+/***************************************************************\
+                   	 Element menu
+\***************************************************************/
+
 void GfMakeElement( void )
 
 {
@@ -843,6 +863,10 @@ void GfRemoveElement( void )
      }
     Changed = TRUE;
 }
+
+/***************************************************************\
+                   	 Line menu
+\***************************************************************/
 
 void GfMakeLine( void )
 
@@ -1016,6 +1040,10 @@ void GfSplitLine( void )
     Changed = TRUE;
 }
 
+/***************************************************************\
+                   	 Vector menu
+\***************************************************************/
+
 void GfDelVect( void )
 
 {
@@ -1060,6 +1088,10 @@ void GfChangeVect( void )
     }
     Changed = TRUE;
 }
+
+/***************************************************************\
+                   	 Change menu
+\***************************************************************/
 
 void GfChangeDepth( void )
 
@@ -1230,3 +1262,7 @@ void GfChangeType( void )
         }
     }
 }
+/***************************************************************\
+                   	 Line menu
+\***************************************************************/
+

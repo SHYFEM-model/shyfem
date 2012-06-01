@@ -12,6 +12,7 @@ c 26.03.2010	ggu	bug fix: set nkn and nel
 c 23.11.2010	ggu	new for 3D gis output
 c 16.12.2010	ggu	aux routines copied to ousutil.f
 c 03.06.2011	ggu	routine adjourned
+c 01.05.2012	ggu	segfault because some arrays not in common
 c
 c***************************************************************
 
@@ -58,7 +59,9 @@ c reads ous file and writes extracted records in ascii to new file
 	common /hev/hev		!this must be in common
 
 	real znv(nkndim)
+	common /znv/znv		!this must be in common
 	real zenv(3,neldim)
+	common /zenv/zenv	!this must be in common
 
 	real uprv(nlvdim,nkndim)
 	real vprv(nlvdim,nkndim)
@@ -137,8 +140,9 @@ c--------------------------------------------------------------------
 	call rsous(nin,ilhv,hlv,hev,ierr)
         if(ierr.ne.0) goto 100
 
-	call level_e2k(nkn,nel,nen3v,ilhv,ilhkv)
 	call init_sigma_info(nlv,hlv)
+	call level_e2k(nkn,nel,nen3v,ilhv,ilhkv)
+	call makehev(hev)
 
         write(6,*) 'Available levels: ',nlv
         write(6,*) (hlv(l),l=1,nlv)

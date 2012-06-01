@@ -1,5 +1,66 @@
 ============================================================
 
+Fri Jun  1 18:00:21 CEST 2012
+
+small changes, date changes
+
+ Rules.make                    |  126 ++++++++++++++++++++++++-
+ TODO                          |    2 +
+ fem3d/arc/basbathy.f          |    2 +-
+ fem3d/arc/bastreat.f          |    2 +-
+ fem3d/basbathy.f              |   78 +++++-----------
+ fem3d/baschk.f                |    2 +-
+ fem3d/bascomp.f               |    2 +-
+ fem3d/bastreat.f              |    2 +-
+ fem3d/map_influence.f         |    6 +-
+ fem3d/netcdf.h                |    2 +
+ fem3d/newconz.f               |    1 +
+ fem3d/nosaver_basin.f         |    6 +-
+ fem3d/nosaver_vert.f          |    6 +-
+ fem3d/nosresidence.f          |    7 +-
+ fem3d/ousextr_gis.f           |    6 +-
+ fem3d/param.h                 |    6 +-
+ fem3d/subbfm.f                |    2 +-
+ fem3d/subcon1.f               |   11 +-
+ fem3d/subcus.f                |    2 +-
+ fem3d/subdef.f                |    1 -
+ fem3d/subdts.f                |   37 +++++---
+ fem3d/subflx3d.f              |   13 +++
+ fem3d/subflxa.f               |    8 +-
+ fem3d/submir.f                |    2 +-
+ fem3d/subnsh.f                |   35 +++++++
+ fem3d/subrst.f                |    2 +-
+ fem3d/subscn.f                |   37 +++++++-
+ fem3d/subsys.f                |    6 +-
+ fem3d/subwrt.f                |    2 +-
+ femadj/param.h                |    6 +-
+ fembin/aver                   |    4 +-
+ fembin/background.sh          |   15 ++-
+ fembin/basbathy               |    4 +-
+ fembin/gps                    |   10 +-
+ fembin/revisionlog.pl         |   29 ++++--
+ femcheck/check_compilation.sh |    2 +
+ femdoc/howto_use_grid.txt     |   82 ++++++++++++++++
+ femdoc/meshing.txt            |   34 +++++++
+ femlib/perl/csv.pm            |   34 +++++--
+ femlib/perl/spline.pm         |  212 +++++++++++++++++++++++++++++++++++++++++
+ femplot/param.h               |    6 +-
+ femplot/supano.f              |   50 +++++++---
+ femplot/supcol.f              |    2 +-
+ femplot/supsim.f              |    2 +-
+ femspline/gridr.f             |   38 +++++---
+ grid/args.c                   |    2 +-
+ grid/general.h                |    2 +
+ grid/grid.c                   |   16 ++-
+ grid/gridma1.c                |   62 ++++++++++---
+ mesh/args.c                   |    2 +-
+ mesh/maskgrd.c                |    2 +-
+ mesh/meshck.c                 |   19 +++-
+ param.h                       |    6 +-
+ 53 files changed, 859 insertions(+), 196 deletions(-)
+
+============================================================
+
 Fri Apr 13 15:14:05 CEST 2012
 
 New version 6_1_52
