@@ -20,6 +20,7 @@ c 24.08.2011    ggu     plot real depth for zeta layers
 c 14.11.2011    ggu     hybrid levels introduced
 c 23.11.2011    ggu     in line_find_elements() adjust depth for hybrid
 c 27.01.2012    deb&ggu adjusted for hybrid coordinates
+c 20.06.2012    ggu     plots bottom also for sigma layers (plot_bottom())
 c
 c************************************************************************
 
@@ -275,16 +276,18 @@ c--------------------------------------------------------------------
 	  x2 = xy(i)
 
 	  call make_segment_depth(ivert,ltot,helems(1,i),hvmax,hlv,ya)
+c	write(77,*) i,ya(1,ltot),ya(2,ltot)
 
-	  call qgray(0.5)
-	  yb = yrmin
-	  yt = max(ya(1,ltot),ya(2,ltot))
-	write(6,*) 'line_ggu ',i,ltot,lvmax
-	write(6,*) 'line_ggu ',ya
-	write(6,*) 'line_ggu ',nlv,(hlv(l),l=1,nlv)
-	write(6,*) 'line_ggu ',x1,yb,x2,yt
-	  call qrfill(x1,yb,x2,yt)	!land (bottom)
-	write(6,*) 'line_ggu after: ',x1,yb,x2,yt
+c	  call qgray(0.5)
+c	  yb = yrmin
+c	  yt = max(ya(1,ltot),ya(2,ltot))
+c	  call qrfill(x1,yb,x2,yt)	!land (bottom)
+c	write(6,*) 'line_ggu i',i,ltot,lvmax
+c	write(6,*) 'line_ggu ya',ya
+c	write(6,*) 'line_ggu hlv',nlv,(hlv(l),l=1,nlv)
+c	write(6,*) 'line_ggu x',x1,yb,x2,yt
+
+	  call plot_bottom(x1,x2,yrmin,ya(1,ltot))
 
 	  do l=1,ltot
 	    ltop = 2*l - 2
@@ -615,6 +618,35 @@ c************************************************************************
 	real x,rd
 
 	hlog = rd * log(x+1.)/log(rd+1.)
+
+	end
+
+c************************************************************************
+
+	subroutine plot_bottom(x1,x2,yrmin,ya_bot)
+
+c plots bottom with grey color
+
+	implicit none
+
+	real x1,x2,yrmin,ya_bot(2)
+
+	integer n
+	parameter (n=4)
+	real x(n),y(n)
+
+	call qgray(0.5)
+
+	x(1) = x1
+	y(1) = yrmin
+	x(2) = x2
+	y(2) = yrmin
+	x(3) = x2
+	y(3) = ya_bot(2)
+	x(4) = x1
+	y(4) = ya_bot(1)
+	
+	call qafill(n,x,y)	!land (bottom)
 
 	end
 
@@ -1312,6 +1344,7 @@ c************************************************************************
 	real hlog
 
 	call get_sigma_info(nlvaux,nsigma,hsigma)
+	!write(6,*) 'seg_depth sigma: ',nlvaux,nsigma,hsigma
 
 	blayer = abs(ivert) .eq. 1
 	blog = ivert .eq. 2

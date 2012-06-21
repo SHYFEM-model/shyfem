@@ -71,6 +71,7 @@ c 06.06.2008	ggu	completely restructured
 c 02.04.2009	ggu	intpol default is 0, some unused routines deleted
 c 20.04.2009	ggu	new variable ztilt, ndim substituted with nbvdim
 c 23.02.2011    ggu     new parameters tramp and levflx implemented
+c 21.06.2012    ggu&aar new file names for mud module
 c
 c************************************************************************
 
@@ -117,6 +118,13 @@ c reads boundary info from STR file
         common /bio2dn/ bio2dn
         character*80 sed2dn(1)
         common /sed2dn/ sed2dn
+!AR mud
+        character*80 mud2dn(1)
+        common /mud2dn/ mud2dn
+        character*80 lam2dn(1)
+        common /lam2dn/ lam2dn
+        character*80 dmf2dn(1)
+        common /dmf2dn/ dmf2dn
         character*80 tox3dn(1)
         common /tox3dn/tox3dn
 	character*80 bfm1bc(1)
@@ -275,11 +283,17 @@ c |bio2dn|	File name that contains values for the ecological
 c		module (EUTRO-WASP).
 c |sed2dn|	File name that contains values for the sediment
 c		transport module
+c |mud2dn|	File name that contains values for the fluid mud
+c		module
+cc ARON: please document also lam2dn and dmf2dn
 c |tox3dn|	File name that contains values for the toxicological
 c		module.
 
 	call addfnm('bio2dn',' ')       !HACK
 	call addfnm('sed2dn',' ')       !HACK
+	call addfnm('mud2dn',' ')       !HACK
+	call addfnm('lam2dn',' ')       !HACK
+	call addfnm('dmf2dn',' ')       !HACK
 	call addfnm('tox3dn',' ')       !HACK
 
 cc File name for OB condition in ERSEM MODULE - undocumented
@@ -416,6 +430,9 @@ cccccccccccccccccccccccccccccccccccccccccccccccccc
 
 	call getfnm('bio2dn',bio2dn(nbc))
 	call getfnm('sed2dn',sed2dn(nbc))
+	call getfnm('mud2dn',mud2dn(nbc))
+        call getfnm('dmf2dn',dmf2dn(nbc))
+        call getfnm('lam2dn',lam2dn(nbc))
 	call getfnm('tox3dn',tox3dn(nbc))
 
 	call getfnm('bfm1bc',bfm1bc(nbc))
@@ -602,6 +619,12 @@ c********************************************************************
         common /bio2dn/ bio2dn
 	character*80 sed2dn(1)
         common /sed2dn/ sed2dn
+	character*80 mud2dn(1)
+        common /mud2dn/ mud2dn
+        character*80 lam2dn(1)
+        common /lam2dn/ lam2dn
+        character*80 dmf2dn(1)
+        common /dmf2dn/ dmf2dn
         character*80 tox3dn(1)
         common /tox3dn/tox3dn
 	character*80 bfm1bc(1)
@@ -637,6 +660,9 @@ c********************************************************************
 	  call print_filename(saltn(ibc))
 	  call print_filename(bio2dn(ibc))
 	  call print_filename(sed2dn(ibc))
+	  call print_filename(mud2dn(ibc))
+          call print_filename(lam2dn(ibc))
+          call print_filename(dmf2dn(ibc))
 	  call print_filename(tox3dn(ibc))
 	  call print_filename(bfm1bc(ibc))
 	  call print_filename(bfm2bc(ibc))
@@ -683,6 +709,12 @@ c********************************************************************
         common /bio2dn/ bio2dn
 	character*80 sed2dn(1)
         common /sed2dn/ sed2dn
+	character*80 mud2dn(1)
+        common /mud2dn/ mud2dn
+        character*80 lam2dn(1)
+        common /lam2dn/ lam2dn
+        character*80 dmf2dn(1)
+        common /dmf2dn/ dmf2dn
         character*80 tox3dn(1)
         common /tox3dn/tox3dn
 	character*80 bfm1bc(1)
@@ -709,6 +741,9 @@ c********************************************************************
 	  write(6,*) saltn(j)
 	  write(6,*) bio2dn(j)
 	  write(6,*) sed2dn(j)
+	  write(6,*) mud2dn(j)
+          write(6,*) dmf2dn(j)
+          write(6,*) lam2dn(j)
 	  write(6,*) tox3dn(j)
 	  write(6,*) bfm1bc(j),bfm2bc(j),bfm3bc(j)
 	  write(6,*) (bnd(i,j),i=1,ibndim)

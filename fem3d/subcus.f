@@ -120,6 +120,7 @@ c custom routines
         if( icall .eq. 603 ) call wet_dry
         if( icall .eq. 604 ) call skadar_debug
         if( icall .eq. 700 ) call init_ts
+	if( icall .eq. 710 ) call fluid_mud
 
 c	call totvol(it)
 c	call georg(it)
@@ -3957,6 +3958,32 @@ c	data sobs /35.,35.,35.,36.,36.,36.,37.,37.,37.,37./
    99	continue
 	write(6,*) 'lmax,ndim: ',lmax,ndim
 	stop 'error stop init_ts: ndim must be at least lmax'
+	end
+
+c**********************************************************************
+
+	subroutine fluid_mud
+
+	implicit none
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	real xgv(1), ygv(1)
+	common /xgv/xgv, /ygv/ygv
+	real tauxnv(1), tauynv(1)
+	common /tauxnv/tauxnv, /tauynv/tauynv
+
+	integer k
+
+        do k = 1, nkn
+          if (xgv(k).gt.1..and.xgv(k).lt.2.) then
+            if (ygv(k).gt.1..and.ygv(k).lt.2.) then
+              tauxnv(k) = 0.1 
+            endif
+          endif
+        end do
+
 	end
 
 c**********************************************************************

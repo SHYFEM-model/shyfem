@@ -224,7 +224,8 @@ revision:
 	 $(FEMBIN)/revision_last
 
 ggu:
-	cp -f rules/Rules.save ./Rules.make
+	#cp -f rules/Rules.save ./Rules.make
+	cp -f rules/Rules.ggu ./Rules.make
 
 dist: cleandist
 	mv --backup=numbered ./Rules.make rules/Rules.save

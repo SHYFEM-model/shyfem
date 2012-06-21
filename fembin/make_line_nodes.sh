@@ -59,8 +59,8 @@ mv new.grd line_1.grd
 grd2bnd.pl line_1.grd > line_1.bnd
 
 $prog < line_1.bnd
-mv fort.66 line_2.grd
-mv fort.77 line_2.nod
+mv line_nodes.grd line_2.grd
+mv line_nodes.txt line_2.nod
 
 echo "original line is in line_1.grd"
 echo "transformed line is in line_2.grd"

@@ -373,6 +373,8 @@ c			call rdoxy
                         call nrdins(section)
                 else if(section.eq.'sedtr')then         !sediment
                         call readsed
+                else if(section.eq.'mudsec')then        !fluid mud
+                        !call readmud			!ARON
 		else					!try modules
 			call modules(M_READ)
 			if( .not. hasreadsec() ) then	!sec has been handled?

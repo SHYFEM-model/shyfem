@@ -331,7 +331,7 @@ c--------------------------------------------------------------
 c write grd file
 c--------------------------------------------------------------
 
-        open(66,file='line_nodes.grd',status='new',form='formatted')
+        open(66,file='line_nodes.grd',status='unknown',form='formatted')
 
 	write(66,*)
 	do i=1,n
@@ -356,7 +356,7 @@ c--------------------------------------------------------------
 c write txt file
 c--------------------------------------------------------------
 
-        open(77,file='line_nodes.txt',status='new',form='formatted')
+        open(77,file='line_nodes.txt',status='unknown',form='formatted')
 
 	do i=1,n
 	  kext = nodes(i)

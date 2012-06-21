@@ -556,6 +556,7 @@ c functions
 	    pres = 1.e-5 * ( presbt + presbc )	!pressure in bars (BUG)
 	
 	    rhop = sigma(saltv(l,k),tempv(l,k),pres) - sigma0
+	    !call rho_mud(rhop)	!ARON: please define this in submud
 
 	    nresid = nresid + 1
 	    dresid = dresid + (rhov(l,k)-rhop)**2

@@ -1,5 +1,36 @@
 ============================================================
 
+Thu Jun 21 12:47:18 CEST 2012
+
+wsinkv and fluid mud (not finished)
+
+ .gitignore                |    1 +
+ LOG                       |   26 +++
+ Makefile                  |    3 +-
+ fem3d/Makefile            |    3 +
+ fem3d/baswork.f           |    5 +-
+ fem3d/ht.f                |   24 +++
+ fem3d/newbcl.f            |    1 +
+ fem3d/newcon.f            |   90 +++++++++--
+ fem3d/newstab.f           |   25 ++-
+ fem3d/ouswork.f           |  384 +++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/sedi3d.f            |    7 +-
+ fem3d/subbnd.f            |   35 ++++
+ fem3d/subcus.f            |   27 +++
+ fem3d/subn35.f            |   23 +++-
+ fem3d/subnsh.f            |    2 +
+ fem3d/subreg.f            |   25 +++
+ fembin/gp2d               |   52 ++++++
+ fembin/make_line_nodes.sh |    4 +-
+ femdoc/final/shyfem.pdf   |  Bin 268353 -> 268368 bytes
+ femdoc/final/shyfem.ps    |  316 +++++++++++++++++++------------------
+ femplot/line_nodes.f      |    4 +-
+ femplot/suplin.f          |   51 +++++-
+ femplot/supout.f          |    3 +-
+ 23 files changed, 910 insertions(+), 201 deletions(-)
+
+============================================================
+
 Fri Jun  1 18:02:41 CEST 2012
 
 New version 6_1_53

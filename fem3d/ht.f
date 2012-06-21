@@ -84,6 +84,7 @@ c 18.11.2011    ggu	new routine handle_projection
 c 24.01.2012    ggu	new call to setup_parallel()
 c 23.02.2012    ggu&ccf	meteo arrays adjusted (3*nkndim)
 c 09.03.2012    ggu	call to residence time added
+c 21.06.2012    ggu&aar	fluid mud variables integrated
 c
 c*****************************************************************
 
@@ -121,6 +122,7 @@ c boundary file names			!$$ST	!$$DESCRP
 	character*80 tempn(nbcdim)
         character*80 bio2dn(nbcdim)
         character*80 sed2dn(nbcdim)
+        character*80 mud2dn(nbcdim)	!ARON: maybe also lam2dn and dmf2dn ?
         character*80 tox3dn(nbcdim)
 	character*80 bfm1bc(nbcdim)
         character*80 bfm2bc(nbcdim)
@@ -132,6 +134,7 @@ c boundary file names			!$$ST	!$$DESCRP
         common /tempn/ tempn
         common /bio2dn/ bio2dn
         common /sed2dn/ sed2dn
+        common /mud2dn/ mud2dn
         common /tox3dn/ tox3dn
         common /bfm1bc/bfm1bc
         common /bfm2bc/bfm2bc
@@ -255,6 +258,13 @@ c water level and velocity arrays
 
 	common /xv/xv(3,nkndim)
 
+c fluid mud (ARON: please comment what they are)
+
+	common /lambda/lambda(nlvdim,nkndim) 
+	common /wsink/wsink(nlvdim,nkndim)
+	common /vts/vts(0:nlvdim,nkndim)
+        common /dmf_mud/dmf_mud(nlvdim,nkndim)
+
 c concentration, salinity and temperature
 
 	common /saltv/saltv(nlvdim,nkndim)
@@ -287,6 +297,9 @@ c friction and diffusion
 
 	common /visv/visv(0:nlvdim,nkndim)	!viscosity (momentum)
 	common /difv/difv(0:nlvdim,nkndim)	!diffusivity (scalars)
+
+        common /visv_yield/visv_yield(0:nlvdim,nkndim) !viscosity (mud)
+        common /difv_yield/difv_yield(0:nlvdim,nkndim) !diffusivity (mud)
 
 c special boundary arrays
 
@@ -345,6 +358,16 @@ c wave sub-module
         real z0bk(nkndim)                   !bottom roughenss on nodes
         common /z0bk/z0bk
 	save /z0bk/
+
+        real z0bkmud(nkndim)       !bottom roughenss on nodes for mud
+        common /z0bkmud/z0bkmud
+        save /z0bkmud/
+
+        real mudc(nlvdim,nkndim)	!Fluid mud concentrationarray (kg/m3)
+        common /mudc/mudc
+        double precision rhomud(nlvdim,nkndim) !Mud floc part. density (kg/m3)
+        common /rhomud/rhomud
+	save /mudc/,/rhomud/
 
 c variables for pipe
 
@@ -570,6 +593,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
            call subwaves(it,dt)         !wave model
            call sedi(it,dt)             !sediment transport
+	   !call submud(it,dt)           !fluid mud (ARON)
 
 	   call residence_time
 	   call ecological_module(it,dt)	!ecological model

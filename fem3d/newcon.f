@@ -167,6 +167,7 @@ c 25.03.2011    ggu     error check for aapar and itvdv
 c 01.06.2011    ggu     wsink for stability integrated
 c 12.07.2011    ggu     run over nlv, not nlvdim, vertical_flux() for lmax>1
 c 15.07.2011    ggu     call vertical_flux() anyway (BUG)
+c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
 c
 c*********************************************************************
 
@@ -190,6 +191,9 @@ c shell for scalar (for parallel version)
 	real difv(0:nlvdim,1)
         real difmol
 
+        real const3d(0:nlvdim,nkndim)
+        common /const3d/const3d
+
 	real bnd3_aux(nb3dim)
         real r3v(nlvdim,nkndim)
 
@@ -198,6 +202,7 @@ c shell for scalar (for parallel version)
 	character*10 whatvar,whataux
 
 	robs = 0.
+	call const3d_setup
 
 c--------------------------------------------------------------
 c make identifier for variable
@@ -225,7 +230,7 @@ c--------------------------------------------------------------
         call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdim
      +                          ,r3v,scal,robs
-     +				,rkpar,wsink
+     +				,rkpar,wsink,const3d
      +                          ,difhv,difv,difmol)
 
 c--------------------------------------------------------------
@@ -259,11 +264,16 @@ c shell for scalar with nudging (for parallel version)
 	real sobs(nlvdim,1)		!observations
 	real robs
 
+        real const3d(0:nlvdim,nkndim)
+        common /const3d/const3d
+
 	real bnd3_aux(nb3dim)
         real r3v(nlvdim,nkndim)
 
         integer iwhat,ichanm
 	character*10 whatvar,whataux
+
+	call const3d_setup
 
 c--------------------------------------------------------------
 c make identifier for variable
@@ -291,7 +301,7 @@ c--------------------------------------------------------------
         call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdim
      +                          ,r3v,sobs,robs
-     +				,rkpar,wsink
+     +				,rkpar,wsink,const3d
      +                          ,difhv,difv,difmol)
 
 c--------------------------------------------------------------
@@ -304,12 +314,12 @@ c*********************************************************************
 
 	subroutine scal_adv_fact(what,ivar,fact
      +				,scal,bnd3
-     +				,rkpar,wsink
+     +				,rkpar,wsink,wsinkv
      +                          ,difhv,difv,difmol)
 
 c shell for scalar (for parallel version)
 c
-c special version for cohesive sediments with factor
+c special version with factor for BC and variable sinking velocity
 
         include 'param.h'
 
@@ -321,9 +331,13 @@ c special version for cohesive sediments with factor
 
         real rkpar
 	real wsink
+	real wsinkv(0:nlvdim,nkndim)
         real difhv(nlvdim,1)
 	real difv(0:nlvdim,1)
         real difmol
+
+        real const3d(0:nlvdim,nkndim)
+        common /const3d/const3d
 
 	real bnd3_aux(nb3dim)
         real r3v(nlvdim,nkndim)
@@ -333,6 +347,7 @@ c special version for cohesive sediments with factor
 	character*20 whatvar,whataux
 
 	robs = 0.
+	call const3d_setup
 
 c--------------------------------------------------------------
 c make identifier for variable
@@ -357,7 +372,9 @@ c--------------------------------------------------------------
 c multiply boundary condition with factor
 c--------------------------------------------------------------
 
-	call mult_scal_bc(r3v,fact)
+	if( fact .ne. 1. ) then
+	  call mult_scal_bc(r3v,fact)
+	end if
 
 c--------------------------------------------------------------
 c do advection and diffusion
@@ -366,7 +383,7 @@ c--------------------------------------------------------------
         call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdim
      +                          ,r3v,scal,robs
-     +				,rkpar,wsink
+     +				,rkpar,wsink,wsinkv
      +                          ,difhv,difv,difmol)
 
 c--------------------------------------------------------------
@@ -399,7 +416,8 @@ c*********************************************************************
 c*********************************************************************
 c*********************************************************************
 
-	subroutine scal3sh(what,cnv,nlvbnd,rcv,cobs,robs,rkpar,wsink
+	subroutine scal3sh(what,cnv,nlvbnd,rcv,cobs,robs,rkpar
+     +					,wsink,wsinkv
      +					,difhv,difv,difmol)
 
 c shell for scalar T/D
@@ -417,6 +435,7 @@ c arguments
 	real robs		!use nudging
         real rkpar
 	real wsink
+	real wsinkv(0:nlvdim,nkndim)
         real difhv(nlvdim,1)
 	real difv(0:nlvdim,1)
         real difmol
@@ -490,12 +509,12 @@ c-------------------------------------------------------------
 
 	call get_timestep(dt)
 
-	call make_stability(dt,robs,wsink,rkpar,sindex,istot,saux)
+	call make_stability(dt,robs,wsink,wsinkv,rkpar,sindex,istot,saux)
 
         write(iuinfo,*) 'stability_',what,':',it,sindex,istot
 
         if( istot .gt. istot_max ) then
-	    call info_stability(dt,robs,wsink,rkpar,sindex,istot,saux)
+	    call info_stability(dt,robs,wsink,wsinkv,rkpar,sindex,istot,saux)
             write(6,*) 'istot  = ',istot,'   sindex = ',sindex
             stop 'error stop scal3sh: istot index too high'
         end if
@@ -539,7 +558,7 @@ c-------------------------------------------------------------
      +          ,sbconz
      +		,itvd,itvdv,gradxv,gradyv
      +		,cobs,robs
-     +		,wsink
+     +		,wsink,wsinkv
      +		,azpar,adpar,aapar
      +          ,istot,isact
      +          ,nlvdi,nlv
@@ -584,7 +603,7 @@ c**************************************************************
      +			,difmol,cbound
      +		 	,itvd,itvdv,gradxv,gradyv
      +			,cobs,robs
-     +			,wsink
+     +			,wsink,wsinkv
      +			,azpar,adpar,aapar
      +			,istot,isact
      +			,nlvdi,nlv)
@@ -607,7 +626,8 @@ c itvdv	 type of vertical transport algorithm used
 c gradxv,gradyv  gradient vectors for TVD algorithm
 c cobs	 observations for nudging
 c robs	 use observations for nuding (real)
-c wsink	 settling velocity [m/s]
+c wsink	 factor for settling velocity [m/s]
+c wsinkv variable settling velocity [m/s]
 c azpar  time weighting parameter
 c adpar  time weighting parameter for vertical diffusion (ad)
 c aapar  time weighting parameter for vertical advection (aa)
@@ -663,6 +683,7 @@ c arguments
 	real cobs(nlvdi,1)
 	real robs
 	real wsink
+	real wsinkv(0:nlvdi,1)
         real ddt,rkpar,azpar,adpar,aapar			!$$azpar
 	integer istot,isact
 c common
@@ -827,6 +848,7 @@ c----------------------------------------------------------------
 	rsnt=1.-rsn
 
 	wws = wsink
+	wws = 0.
 
 	dt=ddt/rstot
 
@@ -937,8 +959,7 @@ c	----------------------------------------------------------------
 	    cl(l,ii) = co(l,k)
 	    cob(l,ii) = cobs(l,k)	!observations
 	    rtau(l,ii) = rtauv(l,k)	!observations
-	    wl(l,ii) = wprv(l,k)
-	    !wl(l,ii) = 0.				!DDD
+	    wl(l,ii) = wprv(l,k) - wsink * wsinkv(l,k)
 	  end do
 	end do
 
@@ -958,7 +979,6 @@ c	and there should be no contribution from this element
 c	to the vertical velocity
 
 	do ii=1,3
-c	  wl(0,ii) = wprv(0,kn(ii))
 	  wl(ilevel,ii) = 0.
 	end do
 
@@ -1300,7 +1320,7 @@ c*****************************************************************
 
         subroutine conzstab(cn1,co1
      +			,ddt
-     +			,robs,wsink
+     +			,robs,wsink,wsinkv
      +                  ,rkpar,difhv,difv
      +			,difmol,azpar
      +			,adpar,aapar
@@ -1371,6 +1391,7 @@ c arguments
 	real difmol
         real ddt,rkpar,azpar,adpar,aapar			!$$azpar
 	real robs,wsink
+	real wsinkv(0:nlvdi,1)
 	integer istot,isact
 c common
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -1518,6 +1539,7 @@ c-----------------------------------------------------------------
 	aat=1.-aa
 
 	wws = wsink
+	wws = 0.
 
 	if( aa .ne. 0. .and. nlv .gt. 1 ) then
 	  write(6,*) 'aapar = ',aapar
@@ -1631,7 +1653,7 @@ c set up vectors for use in assembling contributions
 	    hold(l,ii) = rso * hn + rsot * ho
 	    hnew(l,ii) = rsn * hn + rsnt * ho
 	    !cl(l,ii) = co(l,k)
-	    wl(l,ii) = wprv(l,k)
+	    wl(l,ii) = wprv(l,k) - wsink * wsinkv(l,k)
 	  end do
 	end do
 
@@ -1649,7 +1671,6 @@ c	and there should be no contribution from this element
 c	to the vertical velocity
 
 	do ii=1,3
-c	  wl(0,ii) = wprv(0,kn(ii))
 	  wl(ilevel,ii) = 0.
 	end do
 
@@ -2177,6 +2198,39 @@ c writes histogram info about stability index
         call histo_final(ic)
 
         write(98,*) it,ic
+
+        end
+
+c*****************************************************************
+
+        subroutine const3d_setup
+
+        implicit none
+
+        include 'param.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+        real const3d(0:nlvdim,nkndim)
+        common /const3d/const3d
+	save /const3d/
+
+        integer k,l
+
+        integer icall
+        save icall
+        data icall /0/
+
+        if( icall .gt. 0 ) return
+
+        do k=1,nkn
+          do l=0,nlvdim
+            const3d(l,k) = 1.
+          end do
+        end do
+
+        icall = 1
 
         end
 

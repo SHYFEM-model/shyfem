@@ -65,6 +65,7 @@ c 26.01.2011	ggu&mb	handling extrapolation in am2av()
 c 27.01.2011	ggu&ccf	bug fix in find_elem_from_old() BUG_27.01.2011
 c 31.03.2011	ggu	new routine elemmask()
 c 24.11.2011	ggu	new routine find_close_elem()
+c 20.06.2012	ggu	new routine get_scal_elem()
 c
 c notes :
 c
@@ -1373,6 +1374,30 @@ c returns x,y of vertices of element ie
 	  k = nen3v(ii,ie)
 	  x(ii) = xgv(k)
 	  y(ii) = ygv(k)
+	end do
+
+	end
+
+c******************************************************
+
+	subroutine get_scal_elem(ie,sv,s)
+
+c returns s at vertices of element ie
+
+	implicit none
+
+	integer ie
+	real sv(1)
+	real s(3)
+
+	integer nen3v(3,1)
+	common /nen3v/nen3v
+
+	integer ii,k
+
+	do ii=1,3
+	  k = nen3v(ii,ie)
+	  s(ii) = sv(k)
 	end do
 
 	end

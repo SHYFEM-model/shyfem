@@ -125,7 +125,8 @@ c creates boundary condition for circular flume
 	real hkv(nkndim)
 	common /hkv/hkv
 
-	call bnd_nodes(1563,551,-11)
+	!call bnd_nodes(1563,551,-11)	!circular_flume_7680
+	call bnd_nodes(1024,386,-11)	!Hafenmodell_7680
 
 	end
 
@@ -162,6 +163,8 @@ c*****************************************************************
 	it1 = 10000000
 	lmax = 18
 	speed = 0.1
+	lmax = 14
+	speed = 0.55
 
 	ip = 0
 	do k=kstart,kend,kd

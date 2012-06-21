@@ -1,4 +1,30 @@
 
+
+c ./femplot/suplin.f:
+c 20.06.2012    ggu     plots bottom also for sigma layers (plot_bottom())
+c
+c ./fem3d/newcon.f:
+c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
+c
+c ./fem3d/subn35.f:
+c 21.06.2012    ggu&aar new friction for mud module
+c
+c ./fem3d/subbnd.f:
+c 21.06.2012    ggu&aar new file names for mud module
+c
+c ./fem3d/subreg.f:
+c 20.06.2012    ggu     new routine get_scal_elem()
+c
+c ./fem3d/ht.f:
+c 21.06.2012    ggu&aar fluid mud variables integrated
+c
+c ./fem3d/newstab.f:
+c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
+
+
+
+
+
  * ./grid/general.h:
  * 01-Jun-2012: HACK for grid to work on Mac: __GUG_UNIX_ = 1           *
  * ./mesh/meshck.c:

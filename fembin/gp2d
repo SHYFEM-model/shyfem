@@ -1,0 +1,52 @@
+#!/bin/sh
+#
+# set contour to "YES" for isolines
+# set contour to "start,incr,end" for specific isovalues
+#
+# data is written in lines, with one blank line seperating different lines
+#
+# x1 y1 v11
+# x1 y2 v12
+# x1 y3 v13
+#
+# x2 y1 v21
+# x2 y2 v22
+# x2 y3 v23
+#
+#------------------------------------------------------------------
+
+if [ $# -eq 0 ]; then
+  echo "Usage: gp2d file"
+  exit 0
+fi
+
+file=$1
+
+contour="-100,20,100"
+contour="NO"
+contour="YES"
+
+#------------------------------------------------------------------
+
+echo "# 2D plot"				>  gnu2d.tmp
+
+echo "set terminal postscript landscape color"	>> gnu2d.tmp
+echo "set output \"out2d.ps\""			>> gnu2d.tmp
+
+echo "set pm3d map" 				>> gnu2d.tmp
+if [ "$contour" != "NO" ]; then
+  echo "set contour base" 			>> gnu2d.tmp
+  if [ "$contour" != "YES" ]; then
+    echo "set cntrp level incr $contour"	>> gnu2d.tmp
+  fi
+fi
+
+echo "splot \"$file\""				>> gnu2d.tmp
+echo "quit"					>> gnu2d.tmp
+
+#------------------------------------------------------------------
+
+gnuplot gnu2d.tmp
+
+#------------------------------------------------------------------
+

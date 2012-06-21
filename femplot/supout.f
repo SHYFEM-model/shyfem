@@ -1143,10 +1143,11 @@ c end
 
 	return
    99	continue
-	write(6,*) 'error in parameters :'
+	write(6,*) 'error in parameters : basin - simulation'
 	write(6,*) 'nkn : ',nkn,nknaux
 	write(6,*) 'nel : ',nel,nelaux
 	write(6,*) 'nlv : ',nlvdi,nlvaux
+	write(6,*) 'parameters are different between basin and simulation'
 	stop 'error stop nosopen'
 	end
 

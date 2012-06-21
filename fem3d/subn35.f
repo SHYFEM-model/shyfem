@@ -33,6 +33,7 @@ c 02.04.2007    ggu     in check -> warning only for cz=0 and Chezy/Strickler
 c 10.12.2008    ggu     re-organized, deleted sp135r(), use bottom_friction()
 c 29.01.2009    ggu     ausdef eliminated (chezy(5,.) is not used anymore)
 c 16.02.2011    ggu     new routines to deal with nodal area code
+c 21.06.2012    ggu&aar new friction for mud module
 c
 c***********************************************************
 c
@@ -112,12 +113,19 @@ c computes bottom friction
         common /nen3v/nen3v
         integer ilhv(1)
         common /ilhv/ilhv
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
         real czv(1)
         common /czv/czv
         real rfricv(1)
         common /rfricv/rfricv
         real z0bk(1)
         common /z0bk/z0bk
+
+        real z0bkmud(nkndim)            !bottom roughenss on nodes
+        common /z0bkmud/z0bkmud
+        real mudc(nlvdim,nkndim)        !Fluid mud concentration array (kg/m3)
+        common /mudc/mudc		!ARON: mudc never used here
 
         real utlov(nlvdim,1),vtlov(nlvdim,1)
         common /utlov/utlov, /vtlov/vtlov
@@ -126,7 +134,7 @@ c computes bottom friction
 
 	integer ie,ii,k,lmax
 	integer ireib
-	real hzg
+	real hzg,alpha
 	real hzoff
 	real uso,vso,uv
 	real rlamb
@@ -208,6 +216,19 @@ c         ----------------------------------------------------------
                 ss = ss / 3.
                 raux = cdf(hzg,ss)
 		rr = raux*uv/(hzg*hzg)
+          else if(ireib.eq.9) then		! function of fluid mud (AR:)
+                ss = 0.
+                do ii=1,3
+                  k = nen3v(ii,ie)
+                  lmax = ilhkv(k)
+                  !call set_mud_roughness(k,lmax,alpha) (ARON)
+                  ss = ss + alpha * rfric ! rfric = ks for this parameterization
+                end do
+                ss = ss / 3.
+                z0bk(k) = max(z0bkmud(k),ss)
+                ss = rfric	!ARON: do you really need to compute ss above?
+                raux = cdf(hzg,ss)
+                rr = raux*uv/(hzg*hzg)
 	  else
 		write(6,*) 'unknown friction : ',ireib
 		stop 'error stop bottom_friction'

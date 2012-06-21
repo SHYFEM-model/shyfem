@@ -165,6 +165,9 @@ c
       character*80 sed2dn(1)
       common /sed2dn/sed2dn
 
+      real const3d(0:nlvdim,nkndim)
+      common /const3d/const3d
+
       real hzoff
       integer isstart
 
@@ -394,10 +397,10 @@ c
 
         do is = 1,nbcc
 
-	  wsink = wsi(i)	!ggu error -> should be wsi(is)??
+	  wsink = wsi(is)	!ggu error -> should be wsi(is)??
           call scal_adv_fact(what,ivar,dist(is)
      +                          ,scc(1,1,is),bnd3_sed
-     +                          ,sedkpar,wsink
+     +                          ,sedkpar,wsink,const3d
      +                          ,difhv,difv,difmol)
 
         end do
