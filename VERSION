@@ -1,3 +1,33 @@
+version  6_1_54    21-06-2012    VERS_6_1_54
+
+========================================================== 21-06-2012 - 6_1_54
+
+c ./femplot/suplin.f:
+c 20.06.2012    ggu     plots bottom also for sigma layers (plot_bottom())
+c
+c ./fem3d/subver.f:
+c 21.06.2012	ggu	version 6.1.54
+c
+c ./fem3d/newcon.f:
+c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
+c
+c ./fem3d/subn35.f:
+c 21.06.2012    ggu&aar new friction for mud module
+c
+c ./fem3d/subbnd.f:
+c 21.06.2012    ggu&aar new file names for mud module
+c
+c ./fem3d/subreg.f:
+c 20.06.2012	ggu	new routine get_scal_elem()
+c
+c ./fem3d/ht.f:
+c 21.06.2012    ggu&aar	fluid mud variables integrated
+c
+c ./fem3d/newstab.f:
+c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
+
+==========================================================
+
 version  6_1_53    01-06-2012    VERS_6_1_53   commit_2012-06-21
 
 version  6_1_53    01-06-2012    VERS_6_1_53
