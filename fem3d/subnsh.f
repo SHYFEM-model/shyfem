@@ -374,7 +374,7 @@ c			call rdoxy
                 else if(section.eq.'sedtr')then         !sediment
                         call readsed
                 else if(section.eq.'mudsec')then        !fluid mud
-                        !call readmud			!ARON
+                        call readmud			!ARON
 		else					!try modules
 			call modules(M_READ)
 			if( .not. hasreadsec() ) then	!sec has been handled?
@@ -430,9 +430,12 @@ c reads title section
 	if( nrdlin(line) .eq. 0 ) goto 65
 	call triml(line)
 	descrp=line
+	call putfnm('title',line)
+
 	if( nrdlin(line) .eq. 0 ) goto 65
 	call triml(line)
 	call putfnm('runnam',line)
+
 	if( nrdlin(line) .eq. 0 ) goto 65
 	call triml(line)
 	call putfnm('basnam',line)

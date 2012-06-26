@@ -1,4 +1,12 @@
 
+c ./fem3d/subpar1.f:
+c 25.06.2012    ggu     debugged
+
+mud module integrated (submud.f, subgotm_mud.f etc...
+
+
+
+
 
 c ./femplot/suplin.f:
 c 20.06.2012    ggu     plots bottom also for sigma layers (plot_bottom())

@@ -2,16 +2,14 @@
 c-------------------------------------------
 
 	integer nnamdi		!total number of parameters
+	integer nichdi		!total number of strings
 	integer niardi		!total number of arrays
-	integer nichdi		!total number of text strings
 	integer narrdi		!total number of values in arrays
-	integer nchadi		!total number of characters in text strings
 
-	parameter (nnamdi=200)
+	parameter (nnamdi=300)
 	parameter (niardi=20)
 	parameter (nichdi=100)
 	parameter (narrdi=1000)
-	parameter (nchadi=1000)
 
 c-------------------------------------------
 
@@ -23,30 +21,28 @@ c itypar:  1: numeric  2: numeric array  3: string
 
 	double precision valpar(nnamdi) 	!parameter values
 
+	character*80 chapar(nichdi)		!strings
+
 	integer ip_arrpar(2,niardi)		!filling of arrays
 	double precision arrpar(narrdi)		!values in arrays
 
-	integer ip_chapar(2,nichdi)		!filling of characters
-	character*1 chapar(nchadi)		!characters in arrays
-
 	common /d_par/valpar,arrpar
-	common /i_par/itypar,ip_arrpar,ip_chapar
+	common /i_par/itypar,ip_arrpar
 	common /c6_par/nampar,secpar
-	common /c1_par/chapar
+	common /c80_par/chapar
 
-	save /d_par/, /i_par/, /c6_par/, /c1_par/
+	save /d_par/, /i_par/, /c6_par/, /c80_par/
 
 c-------------------------------------------
 
 	character*6 actsec,defsec,auxsec	!default section
 	integer nentry				!total number of values
+	integer incha				!total number of strings
 	integer inarr				!total number of arrays
-	integer incha				!total number of char strings
 	integer infarr				!filling of arrays
-	integer infcha				!filling of chars
 
 	common /parsco/actsec,defsec,auxsec
-	common /iac_par/nentry,inarr,incha,infarr,infcha
+	common /iac_par/nentry,incha,inarr,infarr
 
 	save /parsco/, /iac_par/
 

@@ -175,6 +175,13 @@ ECOLOGICAL = NONE
 #ECOLOGICAL = AQUABC
 
 ##############################################
+# experimental features
+##############################################
+
+FLUID_MUD = false
+#FLUID_MUD = true
+
+##############################################
 # end of user defined parameters and flags
 ##############################################
 

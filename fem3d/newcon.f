@@ -22,7 +22,7 @@ c		shell for scalar with nudging (for parallel version)
 c
 c subroutine scal_adv_fact(what,ivar,fact
 c     +                          ,scal,bnd3
-c     +                          ,rkpar,wsink
+c     +                          ,rkpar,wsink,wsinkv
 c     +                          ,difhv,difv,difmol)
 c		shell for scalar (for parallel version)
 c		special version for cohesive sediments with factor
@@ -32,8 +32,9 @@ c		sets boundary conditions for scalar
 c
 c-------------------------------------------------------------
 c
-c subroutine scal3sh(what,cnv,nlvbnd,rcv,cobs,robs,rkpar,wsink
-c     +                                  ,difhv,difv,difmol)
+c subroutine scal3sh(what,cnv,nlvbnd,rcv,cobs,robs,rkpar
+c					,wsink,wsinkv
+c     +                                 ,difhv,difv,difmol)
 c		shell for scalar T/D
 c
 c subroutine conz3d(cn1,co1
@@ -42,14 +43,14 @@ c     +                  ,rkpar,difhv,difv
 c     +                  ,difmol,cbound
 c     +                  ,itvd,gradxv,gradyv
 c     +                  ,cobs,robs
-c     +                  ,wsink
+c     +                  ,wsink,wsinkv
 c     +                  ,azpar,adpar,aapar
 c     +                  ,istot,isact
 c     +                  ,nlvdi,nlv)
 c
 c subroutine conzstab(cn1,co1
 c     +                  ,ddt
-c     +                  ,robs
+c     +                  ,robs,wsink,wsinkv
 c     +                  ,rkpar,difhv,difv
 c     +                  ,difmol,azpar
 c     +                  ,adpar,aapar
@@ -70,6 +71,9 @@ c		checks min/max property
 c
 c subroutine stb_histo(it,nlvdi,nkn,ilhkv,cwrite)
 c		writes histogram info about stability index
+c
+c subroutine const3d_setup
+c		sets up constant 3D array
 c
 c-------------------------------------------------------------
 c
@@ -514,7 +518,8 @@ c-------------------------------------------------------------
         write(iuinfo,*) 'stability_',what,':',it,sindex,istot
 
         if( istot .gt. istot_max ) then
-	    call info_stability(dt,robs,wsink,wsinkv,rkpar,sindex,istot,saux)
+	    call info_stability(dt,robs,wsink,wsinkv,rkpar
+     +					,sindex,istot,saux)
             write(6,*) 'istot  = ',istot,'   sindex = ',sindex
             stop 'error stop scal3sh: istot index too high'
         end if
@@ -2204,6 +2209,8 @@ c writes histogram info about stability index
 c*****************************************************************
 
         subroutine const3d_setup
+
+c sets up constant 3D array
 
         implicit none
 

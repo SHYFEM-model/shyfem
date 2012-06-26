@@ -78,7 +78,7 @@ c next settings for circular flume
 
 	bfix = .false.		!fix velocities at boundary
 	bosigma = .false.	!boundary data is on z levels
-	lbmax = 18		!how many levels to read from boundary file
+	lbmax = 14		!how many levels to read from boundary file
 	tramp = 10000.		!smooth init [ms]
 	tnudge = 0.5		!relaxation time for nudging [s]
 	vfact = 2.		!factor for velocity

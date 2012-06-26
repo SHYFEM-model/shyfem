@@ -139,14 +139,7 @@ c-----------------------------------------------------------------
      +			,umin,vmin,umax,vmax)
 	call compute_volume(nel,zenv,hev,volume)
 
-	if( it .eq. 410400 ) then
-	  write(6,*)
-	  write(6,*) '****** elaborating data for it = ',it
-	  write(6,*)
-	  call elab_z(nkn,znv)
-	  write(6,*)
-	  stop
-	end if
+	call elab_z(it,nkn,znv)
 
 c        call debug_write_node(it,nread,nkndim,neldim,nlvdim,nkn,nel,nlv
 c     +          ,nen3v,zenv,znv,utlnv,vtlnv)
@@ -305,6 +298,8 @@ c debug write
         end
 
 c******************************************************************
+c******************************************************************
+c******************************************************************
 
 	subroutine get_date(it)
 
@@ -343,10 +338,11 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine elab_z(nkn,znv)
+	subroutine elab_z(it,nkn,znv)
 
 	implicit none
 
+	integer it
 	integer nkn
 	real znv(nkn)
 
@@ -355,6 +351,12 @@ c******************************************************************
 	real zeta
 	real z(3)
 	integer ie,i
+
+	if( it .ne. 410400 ) return
+
+	write(6,*)
+	write(6,*) '****** elaborating data for it = ',it
+	write(6,*)
 
 	name='sev23122012_ore18.txt'
 	open(1,file=name,status='old',form='formatted')
@@ -377,6 +379,11 @@ c******************************************************************
     2	continue
 
 	close(1)
+
+	write(6,*)
+	write(6,*) 'exiting...'
+	write(6,*)
+	stop
 
 	end
 

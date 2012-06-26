@@ -33,6 +33,12 @@ LIBIPS  = $(DIRLIB)/lib$(LIBPOST).a
 
 #------------------------------------------------------------
 
+ifeq ($(FLUID_MUD),true)
+  MUD_FILES = submud.o subgotm_mud.o
+else
+  MUD_FILES = submud_dummy.o subgotm.o
+endif
+
 LIBG_MKL =
 SOLVER_FILES = simsys_lp.o
 ifeq ($(SOLVER),PARDISO)
@@ -162,7 +168,7 @@ HTOBJS = \
 	submod.o subele.o \
 	$(SOLVER_FILES) \
 	$(QFLUX) \
-	subgotm.o $(GOTM_OBJ) \
+	$(MUD_FILES) $(GOTM_OBJ) \
 	subbndo.o subbnds.o \
 	new36.o intp.o subssf.o \
 	bdist.o links.o sublnka.o sublnks.o sublnku.o \
@@ -233,8 +239,8 @@ QFLUX_TEST = subqfxf.o \
 	subqfxu1.o subqfxu2.o subqfxu3.o subqfxu4.o \
 	subfil.o
 
-PARMOD = subpar1.o
-PARMOD = subpar.o subfnm.o
+PARMOD = subpar.o subfnm.o		# old parameter modules
+#PARMOD = subpar1.o			# new parameter modules
 
 # objects for interpolation
 

@@ -298,13 +298,13 @@ c writes one record to file nb (3D)
 	logical in_area
 
 	!in_area(x,y) = x .le. 50000. .and. y .ge. 0.
-	in_area(x,y) = x .le. 83500. .and. y .ge. 0.
+	!in_area(x,y) = x .le. 83500. .and. y .ge. 0.
+	in_area(x,y) = x .le. 86700. .and. y .ge. -22700.
 
 	n = 0
         do k=1,nkn
           x = xgv(k)
           y = ygv(k)
-	  !bwrite = x .le. 50000. .and. y .ge. 0.	!only lagoon
 	  bwrite = in_area(x,y)
 	  if( bwrite ) n = n + 1
 	end do
@@ -316,7 +316,6 @@ c writes one record to file nb (3D)
           x = xgv(k)
           y = ygv(k)
 
-	  !bwrite = x .le. 50000. .and. y .ge. 0.	!only lagoon
 	  bwrite = in_area(x,y)
 
           x = x + x0

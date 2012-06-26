@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -s
 #
 # reads custom file and converts points to coast line
 #
@@ -9,10 +9,17 @@
 # will be greater than $maxdist. You have to adjust $maxdist accordingly.
 # If you only want one line connecting all points use $maxdist=0.
 #
+# options:
+#
+# -maxdist=#
+# -xyfact=#
+# -grd
+#
 #-----------------------------------------------------------------
 
-$xyfact = 1.;           # scale x/y values
-$maxdist = 0.;		# new line if $dist > $maxdist (0 for one line)
+$xyfact = 1. unless $xyfact;    # scale x/y values
+$maxdist = 0. unless $maxdist;	# new line if $dist > $maxdist (0 for one line)
+$grd = 0. unless $grd;		# input file is in grd format
 
 #-----------------------------------------------------------------
 
@@ -23,7 +30,15 @@ while(<>) {
   s/,/ /g;                      # change , to space
   s/;/ /g;                      # change ; to space
 
-  ($x,$y) = split;
+  @f = split;
+
+  if( $grd ) {
+    $x = $f[3];
+    $y = $f[4];
+  } else {
+    $x = $f[0];
+    $y = $f[1];
+  }
 
   $x *= $xyfact;
   $y *= $xyfact;

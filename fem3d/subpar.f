@@ -593,6 +593,9 @@ c**********************************************************
         subroutine delete_section(sect)
         character*(*) sect
 	end
+        subroutine parinfo(iunit)
+	integer iunit
+	end
 
 c**********************************************************
 

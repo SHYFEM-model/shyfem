@@ -121,6 +121,7 @@ c custom routines
         if( icall .eq. 604 ) call skadar_debug
         if( icall .eq. 700 ) call init_ts
 	if( icall .eq. 710 ) call fluid_mud
+	if( icall .eq. 901 ) call test_par
 
 c	call totvol(it)
 c	call georg(it)
@@ -3983,6 +3984,28 @@ c**********************************************************************
             endif
           endif
         end do
+
+	end
+
+c**********************************************************************
+
+	subroutine test_par
+
+	implicit none
+
+	integer iunit
+
+	integer icall
+	save icall
+	data icall /0/
+
+	if( icall .ne. 0 ) return
+	icall = 1
+
+	iunit = 99
+
+	call pripar(iunit)
+	call prifnm(iunit)
 
 	end
 

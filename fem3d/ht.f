@@ -122,7 +122,9 @@ c boundary file names			!$$ST	!$$DESCRP
 	character*80 tempn(nbcdim)
         character*80 bio2dn(nbcdim)
         character*80 sed2dn(nbcdim)
-        character*80 mud2dn(nbcdim)	!ARON: maybe also lam2dn and dmf2dn ?
+        character*80 mud2dn(nbcdim)
+        character*80 lam2dn(nbcdim)
+        character*80 dmf2dn(nbcdim)
         character*80 tox3dn(nbcdim)
 	character*80 bfm1bc(nbcdim)
         character*80 bfm2bc(nbcdim)
@@ -259,11 +261,12 @@ c water level and velocity arrays
 	common /xv/xv(3,nkndim)
 
 c fluid mud (ARON: please comment what they are)
+c ARON: do these have to be global, or are they only needed in submud?
 
-	common /lambda/lambda(nlvdim,nkndim) 
-	common /wsink/wsink(nlvdim,nkndim)
-	common /vts/vts(0:nlvdim,nkndim)
-        common /dmf_mud/dmf_mud(nlvdim,nkndim)
+	common /lambda/lambda(nlvdim,nkndim) 	! Structural parameter
+	common /wsinkv/wsinkv(0:nlvdim,nkndim)	! if we need it globally
+	common /vts/vts(0:nlvdim,nkndim)	! Rheological Viscosity [m2/s]
+        common /dmf_mud/dmf_mud(nlvdim,nkndim)	! Floc size array.
 
 c concentration, salinity and temperature
 
@@ -593,7 +596,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
            call subwaves(it,dt)         !wave model
            call sedi(it,dt)             !sediment transport
-	   !call submud(it,dt)           !fluid mud (ARON)
+	   call submud(it,dt)           !fluid mud (ARON)
 
 	   call residence_time
 	   call ecological_module(it,dt)	!ecological model

@@ -285,7 +285,12 @@ c |sed2dn|	File name that contains values for the sediment
 c		transport module
 c |mud2dn|	File name that contains values for the fluid mud
 c		module
-cc ARON: please document also lam2dn and dmf2dn
+c |lam2dn|	File name that contains values for the fluid mud
+c		module (boundary condition for the structural parameter, 
+c		to be implemented)
+c |dmf2dn|	File name that contains values for the fluid mud
+c		module (boundary conditions for the advection of flocsizes,
+c		to be implemented)
 c |tox3dn|	File name that contains values for the toxicological
 c		module.
 

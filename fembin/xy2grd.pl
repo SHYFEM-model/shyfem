@@ -1,11 +1,15 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -s
 #
 # converts files containing (x,y,z) coordinates to grd format
 #
 # z value may be missing
 # as separator space ( ), comma (,) or semicolon (;) can be used
 #
+# options: -invert
+#
 #---------------------------------------------------------
+
+$invert = 0 unless $invert;	# invert rows 1 and 2 (lat/lon)
 
 $n = 0;
 $type = 3;
@@ -30,6 +34,12 @@ while(<>) {
     $z = $f[2];
   } else {
     die "expecting 2 or 3 values: $_\n";
+  }
+
+  if( $invert ) {
+    $aux = $x;
+    $x = $y;
+    $y = $aux;
   }
 
   $n++;

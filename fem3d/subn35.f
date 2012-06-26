@@ -124,8 +124,6 @@ c computes bottom friction
 
         real z0bkmud(nkndim)            !bottom roughenss on nodes
         common /z0bkmud/z0bkmud
-        real mudc(nlvdim,nkndim)        !Fluid mud concentration array (kg/m3)
-        common /mudc/mudc		!ARON: mudc never used here
 
         real utlov(nlvdim,1),vtlov(nlvdim,1)
         common /utlov/utlov, /vtlov/vtlov
@@ -221,7 +219,7 @@ c         ----------------------------------------------------------
                 do ii=1,3
                   k = nen3v(ii,ie)
                   lmax = ilhkv(k)
-                  !call set_mud_roughness(k,lmax,alpha) (ARON)
+                  call set_mud_roughness(k,lmax,alpha) ! (ARON)
                   ss = ss + alpha * rfric ! rfric = ks for this parameterization
                 end do
                 ss = ss / 3.
@@ -229,6 +227,12 @@ c         ----------------------------------------------------------
                 ss = rfric	!ARON: do you really need to compute ss above?
                 raux = cdf(hzg,ss)
                 rr = raux*uv/(hzg*hzg)
+		!Well not really there are mainls two issues ...
+		!1. Rougnes get reduced by mud this is taken into 
+		!account by calling the routine above
+		!2. We need to apply mixing length for the 1st grid-cell 
+		!otherwise turbulence in gotm fully collapse since k-eps 
+		!is only valid for isotropic turbulence. 
 	  else
 		write(6,*) 'unknown friction : ',ireib
 		stop 'error stop bottom_friction'

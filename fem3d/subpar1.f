@@ -39,6 +39,7 @@ c 16.04.2008    ggu     bugfix in pripar (character*79 -> *80)
 c 28.04.2008    ggu     all routines changed to double precision
 c 28.04.2008    ggu     three new routines: dgetpar, dputpar, daddpar
 c 28.07.2010    ggu     new routines (par and fnm together) -> subst. old ones
+c 25.06.2012    ggu     debugged
 c
 c**************************************************************
 c**************************************************************
@@ -56,7 +57,7 @@ c initializes parameter structure
 	inarr = 0		!total number of arrays
 	incha = 0		!total number of char strings
 	infarr = 0		!filling of arrays
-	infcha = 0		!filling of chars
+	!infcha = 0		!filling of chars
 
 	actsec = ' '
 	defsec = 'para'
@@ -75,7 +76,7 @@ c**************************************************************
 	data inarr /0/
 	data incha /0/
 	data infarr /0/
-	data infcha /0/
+	!data infcha /0/
 	data actsec /' '/
 	data defsec /'para'/
 
@@ -101,15 +102,25 @@ c if section is given, looks for it, else takes first good name
 
 	logical bsect
 	integer i,ientries
-	character*6 namvec
+	character*6 namvec,actname,actsect
+
+	integer ichanm
+
+	actname = name
+	actsect = sect
 
 	bsect = sect .ne. ' '
 	find_entry_par = 0
 
+	!if( name .eq. 'itanf' ) then
+	!  write(6,*) '*** looking for itanf: ',nentry
+	!end if
+	!  write(6,*) '*** looking for param: ',nentry,actname,ichanm(name)
+
 	do i=1,nentry
 	  namvec=nampar(i)
 	  auxsec=secpar(i)
-	  if( name .eq. namvec ) then
+	  if( actname .eq. namvec ) then
 	    if( .not. bsect ) then
 	      find_entry_par = i
 	      return
@@ -183,12 +194,13 @@ c finds place where to enter new value
 	  stop 'error stop add_entry_par: parameter already defined'
 	end if
 
-	nentry = nentry + 1
-	if( nentry .gt. nnamdi ) then
+	if( nentry .ge. nnamdi ) then
 	  write(6,*) 'dimension error in nnamdi: ',nnamdi
+	  call parinfo(6)
 	  stop 'error stop add_entry_par: nnamdi'
 	end if
 
+	nentry = nentry + 1
 	nampar(nentry) = name
 	secpar(nentry) = actsec
 	itypar(nentry) = itype
@@ -226,6 +238,10 @@ c gets value of parameter name
 	integer check_entry_par
 
 	i = check_entry_par(name,' ',1)
+
+	!if( i .le. 0 ) then
+	!  write(6,*) '*** cannot find: ',name,i,nentry
+	!end if
 
 	dgetpar = valpar(i)
 
@@ -282,6 +298,9 @@ c puts parameter dvalue in name
 	integer ichanm
 
 	i = check_entry_par(name,' ',1)
+	!if( i .le. 0 ) then
+	!  write(6,*) '*** cannot find: ',name,i,nentry
+	!end if
 	valpar(i) = dvalue
 
 	!ls = max(6,ichanm(name))
@@ -366,8 +385,8 @@ c adds text into parameter name
 	  stop 'error stop addfnm: dimension error in nichdi'
 	end if
 	valpar(i) = incha
-	ip_chapar(1,incha) = 0
-	ip_chapar(2,incha) = 0
+	!ip_chapar(1,incha) = 0
+	!ip_chapar(2,incha) = 0
 	call copy_from_text(i,text)
 
 	end
@@ -377,6 +396,42 @@ c**************************************************************
 c**************************************************************
 
 	subroutine copy_to_text(ientry,text)
+
+	implicit none
+
+	include 'subpar.h'
+
+	integer ientry
+	character*(*) text
+
+	integer j
+
+	j = nint(valpar(ientry))
+	text = ' '
+	text = chapar(j)
+
+	end
+
+	subroutine copy_from_text(ientry,text)
+
+	implicit none
+
+	include 'subpar.h'
+
+	integer ientry
+	character*(*) text
+
+	integer j
+
+	j = nint(valpar(ientry))
+	chapar(j) = ' '
+	chapar(j) = text
+
+	end
+
+c**************************************************************
+
+	subroutine copy_to_text0(ientry,text)
 
 c copies character string "ientry" to text
 
@@ -394,8 +449,8 @@ c copies character string "ientry" to text
 
 	ip = nint(valpar(ientry))
 
-	ianf = ip_chapar(1,ip)
-	iend = ip_chapar(2,ip)
+	!ianf = ip_chapar(1,ip)
+	!iend = ip_chapar(2,ip)
 
 	string = ' '
 	j = 0
@@ -418,7 +473,7 @@ c copies character string "ientry" to text
 
 c**************************************************************
 
-	subroutine copy_from_text(ientry,text)
+	subroutine copy_from_text0(ientry,text)
 
 c copies text to character string "ientry"
 
@@ -436,32 +491,32 @@ c copies text to character string "ientry"
 
 	ip = nint(valpar(ientry))
 
-	ianf = ip_chapar(1,ip)
-	iend = ip_chapar(2,ip)
+	!ianf = ip_chapar(1,ip)
+	!iend = ip_chapar(2,ip)
 
 	string = text
 	ls = max(1,ichanm(string))
 	le = iend-ianf+1
 
 	if( iend .le. 0 .or. ls .gt. le ) then
-	  ianf = infcha+1
-	  iend = infcha+ls
-	  infcha = infcha + ls
-	  if( infcha .gt. nchadi ) then
-	    write(6,*) 'no space to put new string: ',infcha
-	    stop 'error stop copy_from_text: no space for string'
-	  end if
+	  !ianf = infcha+1
+	  !iend = infcha+ls
+	  !infcha = infcha + ls
+	  !if( infcha .gt. nchadi ) then
+	  !  write(6,*) 'no space to put new string: ',infcha
+	  !  stop 'error stop copy_from_text: no space for string'
+	  !end if
 	else
 	  iend = ianf+ls-1
 	end if
 
-	ip_chapar(1,ip) = ianf
-	ip_chapar(2,ip) = iend
+	!ip_chapar(1,ip) = ianf
+	!ip_chapar(2,ip) = iend
 
 	j = 0
 	do ip=ianf,iend
 	  j = j + 1
-	  chapar(ip) = text(j:j)
+	  !chapar(ip) = text(j:j)
 	end do
 
 	end
@@ -534,13 +589,13 @@ c-----------------------------------------------
 	!write(15,*) 'delete_section (array): ',infarr,imax
 	infarr = imax
 
-	imax = 0
-	do ip=1,incha
-	  iend = ip_chapar(2,ip)
-	  imax = max(imax,iend)
-	end do
+	!imax = 0
+	!do ip=1,incha
+	!  !iend = ip_chapar(2,ip)
+	!  imax = max(imax,iend)
+	!end do
 	!write(15,*) 'delete_section (string): ',infcha,imax
-	infcha = imax
+	!infcha = imax
 
 c-----------------------------------------------
 c adjourn total number of parameters
@@ -557,7 +612,7 @@ c-----------------------------------------------
 	return
    95	continue
 	write(6,*) 'deleting ',name
-	write(6,*) i,ip,incha,ianf,iend,infcha
+	write(6,*) i,ip,incha,ianf,iend!,infcha
 	stop 'error stop delete_section: string'
    96	continue
 	write(6,*) 'deleting ',name
@@ -693,6 +748,43 @@ c**************************************************************
 c**************************************************************
 c**************************************************************
 
+	subroutine parinfo(iunit)
+
+c prints info on parameter values
+
+	implicit none
+
+	include 'subpar.h'
+
+	integer iunit
+	character*6 name,sect
+	character*80 text
+	real value
+	integer itype,i,j,nlen
+
+	integer check_entry_par,ichanm
+
+	write(iunit,*) 'parinfo:'
+	write(iunit,*) 'nentry: ',nentry,' of possible ',nnamdi
+	write(iunit,*) 'incha:  ',incha, ' of possible ',nichdi
+
+	do i=1,nentry
+          name = nampar(i)
+          sect = secpar(i)
+          value = valpar(i)
+          itype = itypar(i)
+	  write(iunit,*) i,itype,value,name,'  ',sect
+	  if( itype .eq. 3 ) then
+	    call copy_to_text(i,text)
+            nlen=max(1,ichanm(text))
+            write(iunit,*) '    ',nlen,text(1:nlen)
+	  end if
+	end do
+
+	end
+
+c**************************************************************
+
 	subroutine pripar(iunit)
 
 c prints parameter values
@@ -733,11 +825,17 @@ c prints parameter values
 	  ianf=20*(imod-1)+1
 	  iend=20*imod
 	  absval=abs(value)
-	  if(absval.lt.1000.and.absval.ge.0.01
-     +                        .or.absval.eq.0.) then
-	    write(line(ianf:iend),2347) name,' =',value,'  '
+	  if(intpar(name).eq.1) then
+            write(line(ianf:iend),2345)
+     +                  name,' =',nint(value),'  '
+
 	  else
-	    write(line(ianf:iend),2346) name,' =',value,'  '
+	    if(absval.lt.1000.and.absval.ge.0.01
+     +                        .or.absval.eq.0.) then
+	      write(line(ianf:iend),2347) name,' =',value,'  '
+	    else
+	      write(line(ianf:iend),2346) name,' =',value,'  '
+	    end if
 	  end if
 	  if(imod.eq.4) then
 		write(iunit,*) line(1:79)
@@ -750,6 +848,7 @@ c prints parameter values
 	if(imod.ne.4) write(iunit,*) line
 
 	return
+ 2345   format(a6,a2,i10,a2)
  2346   format(a6,a2,e10.2,a2)
  2347   format(a6,a2,f10.3,a2)
 	end
@@ -819,10 +918,10 @@ c**********************************************************
 	    call copy_to_text(j,text)
             nlen=max(1,ichanm(text))
 	    ip = nint(value)
-	    ianf = ip_chapar(1,ip)
-	    iend = ip_chapar(2,ip)
-            write(iunit,2346) i,name,sect,itype
-     +				,ip,ianf,iend,nlen,text(1:nlen)
+	    !ianf = ip_chapar(1,ip)
+	    !iend = ip_chapar(2,ip)
+            !write(iunit,2346) i,name,sect,itype
+!     +				,ip,ianf,iend,nlen,text(1:nlen)
 	  else
             write(iunit,2345) i,name,sect,itype,value
           end if
@@ -877,4 +976,35 @@ c	call test_par
 c	end
 c
 c**********************************************************
+
+c************************************************************************
+
+        function intpar(name)
+
+c tests if name is integer
+c
+c name          name to test
+c intpar        1 if name is integer, 0 if not
+
+        implicit none
+
+        integer intpar
+        character*(*) name
+
+        integer i
+        character*6 let
+        character*1 namein
+        data let /'ijklmn'/
+
+        namein=name(1:1)
+        call uplow(namein,'low')
+
+        intpar=0
+        do i=1,6
+          if(namein.eq.let(i:i)) intpar=1
+        end do
+
+        end
+
+c*****************************************************
 
