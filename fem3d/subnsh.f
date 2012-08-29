@@ -325,7 +325,7 @@ c read loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	do while( nrdsec(section,num) .ne. 0 )
 
-c		write(6,*) 'new section: ',section,num
+		!write(6,*) 'new section: ',section,num
 
 		call setsec(section,num)		!remember section
 
@@ -1243,9 +1243,16 @@ c********************************************************************
 
 	integer n,nomp
 	real getpar
+	logical openmp_is_parallel
 
 	write(6,*) 'start of setup of parallel OMP threads'
 
+	if( openmp_is_parallel() ) then
+	  write(6,*) 'the program can run in OMP parallel mode'
+	else
+	  write(6,*) 'the program can run only in serial mode'
+	end if
+	  
 	call openmp_get_max_threads(n)
 	write(6,*) 'maximum available threads: ',n
 

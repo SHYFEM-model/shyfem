@@ -731,6 +731,8 @@ c**************************************************************
 
 	iwtype = iround(getpar('iwtype'))
 
+	write(6,*) 'iwtype,iwsect,nwind: ',iwtype,iwsect,nwind
+
 	if( iwtype .le. 0 ) return	!read wind data from file
 	if( iwsect .le. 0 ) return	!read wind data from file
 

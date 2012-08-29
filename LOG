@@ -1,4 +1,28 @@
 
+
+
+c ./fem3d/lagrange_flux.f:
+c 28.08.2012    ggu&ccf bug fix - ok now for 3d surface tracking
+c
+c ./fem3d/lagrange_main.f:
+c 28.08.2012    ggu     change logic for release, time frame for release
+c
+c ./fem3d/noswrite.f:
+c 05.08.2012    ggu     new name noswrite
+c
+c ./fem3d/subrst.f:
+c 28.08.2012    aac     bug fix for restart time = -1 (rdrst_record)
+c
+c ./fem3d/nosextr_cat.f:
+c 05.08.2012    ggu     bug fix - first read, then open for write
+c
+c ./fem3d/ht.f:
+c 05.08.2012    ggu     bug because lam2dn and dmfd2n not defined
+
+
+
+
+
 c ./fem3d/subpar1.f:
 c 25.06.2012    ggu     debugged
 

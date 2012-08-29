@@ -11,15 +11,19 @@
 #
 # options:
 #
-# -maxdist=#
-# -xyfact=#
-# -grd
+# -maxdist=#		maximum distance for connecting in line
+# -xyfact=#		apply factor to x/y values
+# -grd			input file is in grd format
+# -invert		invert x/y (e.g., if given in lat/lon)
+# -close		close created lines
 #
 #-----------------------------------------------------------------
 
-$xyfact = 1. unless $xyfact;    # scale x/y values
 $maxdist = 0. unless $maxdist;	# new line if $dist > $maxdist (0 for one line)
+$xyfact = 1. unless $xyfact;    # scale x/y values
 $grd = 0. unless $grd;		# input file is in grd format
+$invert = 0. unless $invert;	# invert x/y
+$close = 0. unless $close;	# close created lines
 
 #-----------------------------------------------------------------
 
@@ -39,6 +43,8 @@ while(<>) {
     $x = $f[0];
     $y = $f[1];
   }
+
+  ($x,$y) = invert($x,$y) if $invert;
 
   $x *= $xyfact;
   $y *= $xyfact;
@@ -67,14 +73,17 @@ sub make_node {
   my $ntype = 1;
 
   $nnode++;
+  $x[$nnode] = $x;
+  $y[$nnode] = $y;
 
-  print "1 $nnode $ntype $x $y\n";
+  #print "1 $nnode $ntype $x $y\n";
 }
 
 sub make_line {
 
   my @nodes = @_;
 
+  my $ntype = 1;
   my $ltype = 1;
   my $ntot = @nodes;
   my $i = 0;
@@ -82,6 +91,26 @@ sub make_line {
   return if $ntot <= 1;
 
   $nline++;
+
+  my $closed = 0;
+  if( equal_node($nodes[0],$nodes[$ntot-1]) ) {
+    pop(@nodes);
+    push(@nodes,$nodes[0]);
+    $closed = 1;
+  } elsif( $close ) {
+    push(@nodes,$nodes[0]);
+    $ntot++;
+    $closed = 1;
+  }
+
+  my $nlast = pop(@nodes) if $closed;
+  print "\n";
+  foreach my $n (@nodes) {
+    my $x = $x[$n];
+    my $y = $y[$n];
+    print "1 $n $ntype $x $y\n";
+  }
+  push(@nodes,$nlast) if $closed;
 
   print "\n";
   print "3 $nline $ltype $ntot\n";
@@ -92,6 +121,21 @@ sub make_line {
   }
 
   print "\n";
+}
+
+sub equal_node {
+
+  my ($i1,$i2) = @_;
+
+  if( $x[$i1] == $x[$i2] and $y[$i1] == $y[$i2] ) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+sub invert {
+  return ($_[1],$_[0]);
 }
 
 sub make_dist {

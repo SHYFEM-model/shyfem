@@ -105,8 +105,10 @@
         real mudhpar			!Fluid mud diffusion coefficient [m**2/s]
         real difmol			!Molecolar diffusion coefficient [m**2/s]
         real mwsink			!Fluid mud floc settling velocity [m/s]
-        real wsink(0:nlvdim,nkndim)	!Settling velocity array
-        common /wsink/wsink
+	real wsink
+	real fact
+        real wsinkv(0:nlvdim,nkndim)	!Settling velocity array
+        common /wsinkv/wsinkv
         real tsec			!Simulation time, real [s]
         real bnd3_mud(nb3dim,0:nbcdim)  !Array containing boundary state
         real bnd3_lam(nb3dim,0:nbcdim)  !Array containing boundary state
@@ -140,6 +142,7 @@
         ldebug = .true.
         testnode = 2449 
         ldumpmud = .true.
+        ldumpmud = .false.
         linitmud = .false.
 
 ! ----------------------------------------------------------
@@ -224,7 +227,22 @@
 !         --------------------------------------------------
 !            call set_hind_wsink(k,nlvdi,nkn,phi,phip,
 !     &                         phigel,ldebug,testnode)
-            wsink(:,k) = 0.
+            !wsinkv(:,k) = 1.
+            !lmax = ilhkv(k)
+            !wsinkv(0,k) = 0.
+            !do l = 1,lmax
+            !  wsinkv(l,k) = l*1.
+            !end do
+            !wsinkv(lmax,k) = 0.
+            wsinkv(:,k) = 0.
+!         --------------------------------------------------
+!         Sets sink vel. ... this is overwritten ... 
+!         --------------------------------------------------
+!            call get_mudrho(k,rhow,nf,dm0,ldebug,testnode)
+!         --------------------------------------------------
+!         Sets sink vel. ... this is overwritten ... 
+!         --------------------------------------------------
+!            call get_cgel(k,nf,dm0,cgel,phigel,ldebug,testnode)
           end do
 
           !stop 'check init'
@@ -293,13 +311,17 @@
         difhv = 0.
         difv  = 0.
         mudhpar = 0.
+        wsink = 0.01 
         wsink = 0. 
+	ivar = 0
+	difmol = 0.
+	fact = 1.
 
           if (circle) then
             call scal_adv_circ(what,ivar
      &                      ,mudc,bnd3_mud
-     &                      ,mudhpar,wsink
-     &                      ,difhv,difv,0.)
+     &                      ,mudhpar,wsink,wsinkv
+     &                      ,difhv,difv,difmol)
           else
 !            call scal_adv(what,ivar
 !     &                 ,mudc,bnd3_mud
@@ -311,10 +333,10 @@
 !     +              ,rkpar,wsink,wsinkv
 !     +                          ,difhv,difv,difmol)
 
-            call scal_adv_fact(what,ivar
+            call scal_adv_fact(what,ivar,fact
      &                 ,mudc,bnd3_mud
-     &                 ,mudhpar,wsink
-     &                 ,difhv,difv,0.)
+     &                 ,mudhpar,wsink,wsinkv
+     &                 ,difhv,difv,difmol)
 
           endif
 !       -------------------------------------------------------------
@@ -379,7 +401,7 @@
 !       -------------------------------------------------------
 !          call set_hind_wsink(k,nlvdim,nkn,phi,phip,phigel,
 !     &                        ldebug,testnode)
-          !wsink(:,k) = 0.
+          !wsinkv(:,k) = 0.
         end do ! nodes
 
 !       -------------------------------------------------------------
@@ -572,8 +594,8 @@
         double precision rhosed                !Mud primary particle density (kg/m3)
         common /rhosed/ rhosed
         common /mudc/mudc
-        real wsink(0:nlvdim,nkndim) !Fluid mud concentration array (kg/m3)
-        common /wsink/wsink
+        real wsinkv(0:nlvdim,nkndim) !Fluid mud concentration array (kg/m3)
+        common /wsinkv/wsinkv
         double precision rhomud(nlvdim,nkndim)        !Density of mixture 
         common /rhomud/rhomud
         real rhov(nlvdim,nkndim)        !Density of mixture 
@@ -597,7 +619,7 @@
 
          lmax = ilhkv(k)
 
-         wsink(0,k) = 0.
+         wsinkv(0,k) = 0.
  
          do l=1,lmax
            rhost = (rhomud(l,k)-rhow)/rhow ! 1.65
@@ -608,16 +630,16 @@
            fak   = (1.-min(1.d0,phi(l))*(1.-phip(l)))/(1+2.5*phi(l))
            ws    = ws0 * fak
            fak2   = 0.5d0+0.5d0*tanh((phi(l)-phigel(l))/smooth)
-           wsink(l,k) = fak2 * 0. + (1.-fak2)*ws
-           if(l.gt.1) wsink(l-1,k) = fak2*wsink(l,k)+
-     &                             (1.-fak2)*wsink(l-1,k)
+           wsinkv(l,k) = fak2 * 0. + (1.-fak2)*ws
+           if(l.gt.1) wsinkv(l-1,k) = fak2*wsinkv(l,k)+
+     &                             (1.-fak2)*wsinkv(l-1,k)
            !if (k==198) write(*,*) (phi(l)-phigel(l)),l
            if((phi(l)-phigel(l)).gt.0.01 .and.l.gt.1)then ! no consolidation model yet ...
-             wsink(l,k) = 0.d0
-             wsink(l-1,k) = 0.d0
+             wsinkv(l,k) = 0.d0
+             wsinkv(l-1,k) = 0.d0
            endif
            if (l==lmax) then 
-             wsink(l,k) = 0.
+             wsinkv(l,k) = 0.
              ws             = 0.
            endif
          end do
@@ -630,12 +652,12 @@
      &         (((rhosed-rhow)/rhow)*9.81/nu**2)**(1./3.)*dmf_mud(l,k),
      &         11*nu/dmi*(SQRT(1+.01*((((rhosed-rhow)/rhow)*
      &         9.81/nu**2)**(1./3.)*dmf_mud(l,k))**3)-1),
-     &         wsink(l,k),
+     &         wsinkv(l,k),
      &         (1.-min(1.d0,phi(l))*(1.-phip(l)))/(1+2.5*phi(l)),
      &         (11*nu/dmi*(SQRT(1+.01*((((rhosed-rhow)/rhow)*
      &         9.81/nu**2)**(1./3.)*dmf_mud(l,k))**3)-1))*
      &         (1.-min(1.d0,phi(l))*(1.-phip(l)))/(1+2.5*phi(l)),
-     &         wsink(l,k)*1000.,
+     &         wsinkv(l,k)*1000.,
      &         phi(l),
      &         phip(l),
      &         phigel(l)
@@ -675,6 +697,7 @@
         real h(nlvdim)
         real*8 cnpar,stress_x,stress_y, rhobar, g_dot, rhop, tau,visk
         real*8 g2_dot,g_dot_thr,smooth,viskmax,tf
+	real rhop_r, tau0_r
 
         integer testnode
         logical ldebug
@@ -697,7 +720,9 @@
             rhop = max(0.d0,rhobar)
             call set_toorman_constants(rhop,mu8,mu0,beta)
             c  = mu0 - mu8
-            call set_yieldstress(rhop,tau0)
+	    rhop_r = rhop
+            call set_yieldstress(rhop_r,tau0_r)
+	    tau0 = tau0_r
             g_dot_thr = 0.000001
             smooth    = 2.
             viskmax   = 1000.
@@ -855,8 +880,8 @@
 
         real vts(0:nlvdim,nkndim)
         common /vts/vts
-        real wsink(0:nlvdim,nkndim)
-        common /wsink/wsink
+        real wsinkv(0:nlvdim,nkndim)
+        common /wsinkv/wsinkv
         real rhov(nlvdim,nkndim)
         common /rhov/rhov
         double precision rhomud         ! Mud floc particle density (kg/m3)
@@ -877,8 +902,8 @@
         real, parameter :: beta = 0.7
         real, parameter :: mpar = 1.
 
-        double precision visv(0:nlvdim,nkndim)  !viscosity (momentum)
-
+        !double precision visv(0:nlvdim,nkndim)  !viscosity (momentum)
+        real visv(0:nlvdim,nkndim)  !viscosity (momentum)
         common /visv/visv
         integer ilhkv(nkndim)           !number of node levels
         common /ilhkv/ilhkv
@@ -900,13 +925,13 @@
           tstress  = visk_bar * g_dot
           ufric = sqrt(tstress)
           ri = 9.81/rhobar*drho/g_dot**2
-          alpha = exp(-(1+beta*wsink(lmax,k)/ufric)*
+          alpha = exp(-(1+beta*wsinkv(lmax,k)/ufric)*
      &         (1-exp(-bpar*ri**mpar)))
         else 
           alpha = 1.
         endif
         alpha = 1.
-        !write(*,*) k, alpha, wsink(lmax,k), ri, g_dot**2, ufric
+        !write(*,*) k, alpha, wsinkv(lmax,k), ri, g_dot**2, ufric
       end subroutine
 
 !---------------------------------------------------------------------------
@@ -925,8 +950,8 @@
 
         real vts(0:nlvdim,nkndim)
         common /vts/vts
-        real wsink(0:nlvdim,nkndim)
-        common /wsink/wsink
+        real wsinkv(0:nlvdim,nkndim)
+        common /wsinkv/wsinkv
         real rhov(nlvdim,nkndim)
         common /rhov/rhov
         double precision rhomud         ! Mud floc particle density (kg/m3)
@@ -1330,7 +1355,7 @@
 
         subroutine scal_adv_circ(what,ivar
      +                          ,scal,bnd3
-     +                          ,rkpar,wsink
+     +                          ,rkpar,wsink,wsinkv
      +                          ,difhv,difv,difmol)
 
 c shell for scalar (for parallel version)
@@ -1345,7 +1370,8 @@ c shell for scalar (for parallel version)
         real bnd3(nb3dim,0:nbcdim)
 
         real rkpar
-        real wsink(0:nlvdim,nkndim)
+        real wsink
+        real wsinkv(0:nlvdim,nkndim)
         real difhv(nlvdim,1)
         real difv(0:nlvdim,1)
         real difmol
@@ -1360,7 +1386,6 @@ c shell for scalar (for parallel version)
         integer iwhat,ichanm
         character*10 whatvar,whataux
 
-        cobs = 0.
         robs = 0.
 
 c--------------------------------------------------------------
@@ -1396,8 +1421,8 @@ c--------------------------------------------------------------
 
         call scal3sh(whatvar(1:iwhat)
      +                          ,scal,nlvdim
-     +                          ,r3v,cobs,robs
-     +                          ,rkpar,wsink
+     +                          ,r3v,scal,robs
+     +                          ,rkpar,wsink,wsinkv
      +                          ,difhv,difv,difmol)
 
 c--------------------------------------------------------------
@@ -1499,10 +1524,12 @@ c--------------------------------------------------------------
 
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw,nlvdi
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw,nlvdi
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         real grav,fcor,dcor,dirn,rowass,roluft
         common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+        integer nlvdi,nlv               !total number of levels
+        common /level/ nlvdi,nlv
 
         double precision rhosed                !Mud primary particle density (kg/m3)
         common /rhosed/ rhosed
@@ -1542,6 +1569,8 @@ c--------------------------------------------------------------
         save iwrite
         data time/0./
         data iwrite/100/
+
+        if( nldim .ne. nlvdim ) stop 'error stop stress_mud: dimension'
 
         icycle = 1
 

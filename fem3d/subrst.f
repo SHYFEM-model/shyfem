@@ -11,7 +11,7 @@ c subroutine admrst		administers writing of restart file
 c subroutine wrrst(it,iunit)	writes one record of restart data
 c subroutine rdrst(itrst,iunit)	reads one record of restart data
 c
-c subroutine skip_rst(iunit,it,nvers,nrec,nkn,nel,nlv,ierr)
+c subroutine skip_rst(iunit,it,nvers,nrec,nkn,nel,nlv,iflag,ierr)
 c				returns info on record in restart file
 c
 c revision log :
@@ -29,6 +29,7 @@ c 19.01.2010    ggu     initialize also conz, has_restart() is function
 c 11.03.2010    ggu     write also vertical velocity
 c 10.02.2012    ggu     write only last record, restart from last record
 c 16.02.2012    aac     write also ecological varibles
+c 28.08.2012    aac     bug fix for restart time = -1 (rdrst_record)
 c
 c*****************************************************************
 
@@ -54,7 +55,9 @@ c-----------------------------------------------------------------
 c get parameters
 c-----------------------------------------------------------------
 
-	iokrst = 0	!if different from 0, restart has been performed
+	call init_restart	!sets params to 0
+
+	!iokrst = 0	!if different from 0, restart has been performed
 
         itrst = nint(getpar('itrst'))
         ityrst = nint(getpar('ityrst'))
@@ -124,6 +127,25 @@ c-----------------------------------------------------------------
         write(6,*) 'no such file : ',name
         stop 'error stop inirst: Cannot read restart file'
         end
+
+c*******************************************************************
+
+	subroutine init_restart
+
+	implicit none
+
+	integer iokrst,nvers,ibarcl,iconz,iwvert,ieco
+	common /rstrst/ iokrst,nvers,ibarcl,iconz,iwvert,ieco
+	save /rstrst/
+
+	iokrst = 0
+	nvers = 0
+	ibarcl = 0
+	iconz = 0
+	iwvert = 0
+	ieco = 0
+
+	end
 
 c*******************************************************************
 
@@ -406,14 +428,16 @@ c reads restart file until it finds itrst
 
 c*******************************************************************
 
-	subroutine skip_rst(iunit,it,nvers,nrec,nkn,nel,nlv,ierr)
+	subroutine skip_rst(iunit,it,nvers,nrec,nkn,nel,nlv,iflag,ierr)
 
 c returns info on record in restart file and skips data records
 
 	implicit none
 
-	integer iunit,it,nvers,nrec,nkn,nel,nlv,ierr
+	integer iunit,it,nvers,nrec,nkn,nel,nlv,iflag,ierr
 	integer ibarcl,iconz,iwvert,ieco
+
+	iflag = 0
 
 	read(iunit,end=2,err=3) it,nvers,nrec
         read(iunit) nkn,nel,nlv
@@ -423,11 +447,15 @@ c returns info on record in restart file and skips data records
 	read(iunit)
 	read(iunit)
 	read(iunit)
-	if( nvers .ge. 4 ) read(iunit)
+	if( nvers .ge. 4 ) then
+	  iflag = iflag + 1
+	  read(iunit)
+	end if
 
 	if( nvers .ge. 5 ) then
 	  read(iunit) ibarcl
 	  if( ibarcl .gt. 0 ) then
+	    iflag = iflag + 10
 	    read(iunit)
 	    read(iunit)
 	    read(iunit)
@@ -437,6 +465,7 @@ c returns info on record in restart file and skips data records
 	if( nvers .ge. 6 ) then
 	  read(iunit) iconz
 	  if( iconz .gt. 0 ) then
+	    iflag = iflag + 100
 	    read(iunit)
 	  end if
 	end if
@@ -444,6 +473,7 @@ c returns info on record in restart file and skips data records
 	if( nvers .ge. 7 ) then
 	  read(iunit) iwvert
 	  if( iwvert .gt. 0 ) then
+	    iflag = iflag + 1000
 	    read(iunit)
 	  end if
 	end if
@@ -451,6 +481,7 @@ c returns info on record in restart file and skips data records
 	if( nvers .ge. 8 ) then
           read(iunit) ieco
           if( ieco .gt. 0 ) then
+	    iflag = iflag + 10000
 	    call skip_restart_eco(iunit)
           end if
         end if
@@ -514,13 +545,14 @@ c reads one record of restart data
         integer nversaux,nrec
         integer nknaux,nelaux,nlvaux
 
+          read(iunit,end=97) it,nvers,nrec
+          if( nvers .lt. 3 ) goto 98
+
         ierr = 0
 	ibarcl = 0
 	iconz = 0
+	iwvert = 0
 	ieco = 0
-
-          read(iunit,end=97) it,nvers,nrec
-          if( nvers .lt. 3 ) goto 98
 
           read(iunit) nknaux,nelaux,nlvaux
           if( nknaux .ne. nkn ) goto 99

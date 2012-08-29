@@ -209,7 +209,7 @@ c-----------------------------------------------------------------
 	call set_coords_ev(0)
 
 	call check_coords			!sets lat/lon flag
-	call set_depth(idepth,nknh,nelh)
+	call set_depth_i(idepth,nknh,nelh)
 
 c-----------------------------------------------------------------
 c general info
@@ -253,7 +253,7 @@ c-----------------------------------------------------------------
 	open(1,file=nfile,status='unknown',form='formatted')
 	call wrgrd(1,ike)
 	close(1)
-        write(6,*) 'file has been written to ',nfile
+        write(6,*) 'The new file has been written to ',nfile
 
 c-----------------------------------------------------------------
 c end of routine
@@ -329,7 +329,7 @@ c copies depth values from elems/nodes to nodes/elems
 
 c*******************************************************************
 
-	subroutine set_depth(idepth,nknh,nelh)
+	subroutine set_depth_i(idepth,nknh,nelh)
 
 c handles depth values
 

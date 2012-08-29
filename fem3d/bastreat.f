@@ -165,7 +165,7 @@ c handling depth and coordinates
 c-----------------------------------------------------------------
 
 	call check_coords                       !sets lat/lon flag
-	call set_depth(nknh,nelh)
+	call set_depth_check(nknh,nelh)
 
 	ike = 1
 	if( nknh .gt. 0 ) ike = 2
@@ -301,7 +301,7 @@ c copies depth values from elems/nodes to nodes/elems
 
 c*******************************************************************
 
-	subroutine set_depth(nknh,nelh)
+	subroutine set_depth_check(nknh,nelh)
 
 c handles depth values
 

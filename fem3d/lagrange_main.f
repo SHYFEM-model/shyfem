@@ -69,6 +69,7 @@ c 19.10.2011    ggu     fx renamed to flux2d
 c 16.12.2011    ggu     new file .lgi, compress_particles()
 c 23.01.2012    ggu     various changes in call to track_body (id, etc..)
 c 24.01.2012    ggu     adapted for parallel OMP
+c 28.08.2012    ggu     change logic for release, time frame for release
 c
 c****************************************************************            
 
@@ -87,15 +88,17 @@ c lagranian main routine
         common /femtim/ itanf,itend,idt,nits,niter,it
 
         integer ilagr
-        integer itlanf,itlend,idtl,itlnext
-	integer itmlgr,idtlgr,itnext
+        integer itlanf,itlend
+	integer idtl,itranf,itrend,itrnext
+	integer itmlgr,idtlgr,itmnext
         integer iunit,uunit
 
         integer ifemop
         real getpar
 
-        save itlanf,itlend,idtl,itlnext
-	save itmlgr,idtlgr,itnext
+        save itlanf,itlend
+	save idtl,itranf,itrend,itrnext
+	save itmlgr,idtlgr,itmnext
         save iunit,uunit
 
 	integer icall
@@ -118,7 +121,9 @@ c---------------------------------------------------------------
           idtlgr=getpar('idtlgr')	!output to file
           itlanf=getpar('itlanf')	!start of lagrangian
           itlend=getpar('itlend')	!end of lagrangian
-          idtl=getpar('idtl') 		!frequency of new input
+          idtl=getpar('idtl') 		!frequency of release
+          itranf=getpar('itranf') 	!initial release
+          itrend=getpar('itrend') 	!final release
 
           artype=getpar('artype')	!store special type in common block
           rwhpar=getpar('rwhpar')
@@ -136,21 +141,34 @@ c---------------------------------------------------------------
 	  !call init_diff_oil
 
 c         ------------------------------------------------------
+c	  lagrangian module
+c         ------------------------------------------------------
+
+	  if( itlanf .eq. -1 ) itlanf = itanf
+	  if( itlend .eq. -1 ) itlend = itend
+	  if( itlanf .lt. itanf ) itlanf = itanf
+	  if( itlend .gt. itend ) itlend = itend
+
+c         ------------------------------------------------------
 c	  output
 c         ------------------------------------------------------
 
-	  if( itmlgr .lt. itanf ) itmlgr = itanf
-	  itnext = itmlgr
-	  if( idtlgr .le. 0 ) itnext = itend + 1
+	  if( itmlgr .eq. -1 ) itmlgr = itlanf
+	  if( itmlgr .lt. itlanf ) itmlgr = itlanf
+	  itmnext = itmlgr
+	  if( idtlgr .le. 0 ) itmnext = itlend + 1
 
 c         ------------------------------------------------------
-c	  new input
+c	  new release
 c         ------------------------------------------------------
 
-	  if( itlanf .lt. itanf ) itlanf = itanf
-	  itlnext = itlanf
-	  if( idtl .eq. 0 ) idtl = itend - itanf + 1	!release once at start
-	  if( idtl .lt. 0 ) itlnext = itend + 1		!never release
+	  if( itranf .eq. -1 ) itranf = itlanf
+	  if( itrend .eq. -1 ) itrend = itlend
+	  if( itranf .lt. itlanf ) itranf = itlanf
+	  if( itrend .gt. itlend ) itrend = itlend
+	  itrnext = itranf
+	  if( idtl .eq. 0 ) idtl = itlend - itlanf + 1	!release once at start
+	  if( idtl .lt. 0 ) itrnext = itend + 1		!never release
 
 c         ------------------------------------------------------
 c	  open files
@@ -175,11 +193,11 @@ c---------------------------------------------------------------
 c new release of particles
 c---------------------------------------------------------------
 
-        if( it .ge. itlnext ) then
-	  write(6,*) 'starting release of particles for lagrangian model'
+        if( it .ge. itrnext ) then
+	  write(6,*) 'release of particles for lagrangian model'
 	  call lgr_init_shell
-	  itlnext = itlnext + idtl
-	  if( itlnext .eq. itend ) itlnext = itend + 1
+	  itrnext = itrnext + idtl
+	  if( itrnext .eq. itend ) itrnext = itend + 1
 	  write(6,*) 'new particles released: ',nbdy,it
         end if           
 
@@ -190,7 +208,7 @@ c---------------------------------------------------------------
         call lagr_setup_timestep
 	
 	!call set_diff_oil
-	call lagr_continuous_release_shell
+	call lagr_continuous_release_shell	!particles through boundary
 
  	call drogue
 
@@ -200,10 +218,10 @@ c---------------------------------------------------------------
 c output
 c---------------------------------------------------------------
 
-        if( it .ge. itnext ) then
+        if( it .ge. itmnext ) then
 	  call lgr_output(iunit,it)
 	  call lgr_output_concentrations
-	  itnext = itnext + idtlgr
+	  itmnext = itmnext + idtlgr
 	end if
 
 c---------------------------------------------------------------

@@ -171,13 +171,13 @@ int main(int argc, char *argv[])
 	SetResolution(hull);
 	CopyBoundaryLine();
 
-	printf("Recovering boundary lines...\n");
+	printf("Recovering boundary lines 1...\n");
 	RecoverBoundary();
 	CheckCircumCircle();
 	CheckNeibor(-43);
 	WriteAll("M_bndrecover.grd",NULL);
 
-	printf("Refining boundary points...\n");
+	printf("Refining boundary points 1...\n");
 	boundary = RefineBoundary();
 
 	if( boundary ) {
@@ -214,12 +214,13 @@ int main(int argc, char *argv[])
 	CheckNeibor(-44);
 	WriteAll("M_given.grd",NULL);
 
-	printf("Recovering boundary lines...\n");
+	printf("Recovering boundary lines 2...\n");
 	RecoverBoundary();
 	CheckCircumCircle();
 	CheckNeibor(-45);
 	WriteAll("M_intrecover.grd",NULL);
 
+	CheckArea();
 	printf("Inserting internal points...\n");
 	InsertInternalNodes();
 	CheckCircumCircle();
@@ -228,6 +229,7 @@ int main(int argc, char *argv[])
 
 	TestVersion();
 
+	CheckArea();
 	printf("Refining internal points... %f\n",OpAspect);
 	RefineInternalNodes();
 	CheckArea();
@@ -235,7 +237,8 @@ int main(int argc, char *argv[])
 	CheckCircumCircleProperty();
 	WriteGrd("M_refine.grd");
 
-	printf("Recovering boundary lines...\n");
+	CheckArea();
+	printf("Recovering boundary lines 3...\n");
 	RecoverBoundary();
 	printf("Recovering fault lines...\n");
 	RecoverInternalFault();
@@ -253,6 +256,7 @@ int main(int argc, char *argv[])
 
 	TestVersion();
 
+	CheckArea();
 	printf("Smoothing internal points... %f\n",OpSmoothOmega);
 	SmoothInternalNodes();
 	CheckArea();

@@ -401,6 +401,9 @@ ousintp:  ousintp.o $(OUSOBJS) $(OUTOBJS)
 ousaver:  ousaver.o $(OUSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
 
+ouswrite:  ouswrite.o $(OUSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
+
 ousvdiff:  ousvdiff.o $(OUSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
 
@@ -466,6 +469,9 @@ nosaver_vert:  nosaver_vert.o $(NOSOBJS) $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 nosaver_time:  nosaver_time.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+noswrite:  noswrite.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 #-------------------------------------------------------
@@ -749,11 +755,13 @@ nosextr_nodes.o: param.h
 nosextr_records.o: param.h
 nosinf.o: param.h
 nosinit.o: param.h
+nosintp.o: param.h
 nosmaniq.o: param.h
 nosresidence.o: param.h basin.h evmain.h
 nossplit.o: param.h
 nossum.o: param.h
 nosutil.o: ev.h
+noswrite.o: param.h
 ous2nc.o: param.h evmain.h
 ousaver.o: param.h
 ousextr_cat.o: param.h
@@ -763,12 +771,15 @@ ousextr_records.o: param.h
 ousinf.o: param.h evmain.h
 ousintp.o: param.h
 ousvdiff.o: param.h
+ouswork.o: param.h evmain.h
+ouswrite.o: param.h
 readext.o: param.h
 scal_intp.o: param.h evmain.h
 sedi3d.o: param.h links.h ev.h sed_param.h
 simsys_lp.o: param.h common.h
 simsys_pard.o: param.h common.h
 simsys_spk.o: param.h common.h
+splitflx.o: param.h
 subbfm.o: param.h bfm_common.h
 subbndo.o: param.h subbndo.h
 subcoo.o: param.h common.h
@@ -783,13 +794,16 @@ subexta.o: modules.h
 subflx3d.o: testbndo.h param.h links.h ev.h
 subflxa.o: param.h modules.h links.h
 subfvl.o: param.h
-subgotm.o: param.h
+subgotm.o: param.h ev.h
+subgotm_mud.o: param.h ev.h
 sublin.o: links.h
 sublnka.o: ev.h links.h
 sublnks.o: ev.h links.h
 sublnku.o: links.h
 sublpl.o: ev.h
 submet.o: ev.h
+submeteo1.o: meteo.h
+submud.o: testbndo.h param.h
 subn11.o: param.h
 subn35.o: param.h chezy.h
 subnetcdf_admin.o: param.h

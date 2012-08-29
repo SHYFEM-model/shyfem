@@ -88,7 +88,7 @@ c continuous release - number of particles depends on volume flux
 	    do i=2,nk
 	      k1 = kbnds(ibc,i-1)
 	      k2 = kbnds(ibc,i)
-	      if( k1 .eq. 6935 ) bdebug = .true.
+	      !if( k1 .eq. 6935 ) bdebug = .true.
 	      q = get_bflux_ppv(k1,k2)
 	      q = max(q,0.)
 	      rp = rp + q*ppv*dt

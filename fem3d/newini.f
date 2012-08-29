@@ -89,7 +89,7 @@ c------------------------------------------------------------------
 c adjust depth values
 c------------------------------------------------------------------
 
-	call set_depth	!computes hev, hkv and reassigns to hm3v -> href
+	call set_depth_hkhe	!computes hev, hkv and reassigns to hm3v -> href
 
 c------------------------------------------------------------------
 c set up depth vectors
@@ -230,7 +230,7 @@ c------------------------------------------------------------------
 
 c*****************************************************************
 
-	subroutine set_depth
+	subroutine set_depth_hkhe
 
 c sets up depth arrays and adjusts depth values
 

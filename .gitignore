@@ -93,7 +93,9 @@ fem3d/bashsigma
 fem3d/ous2nc
 fem3d/lgrinf
 fem3d/baswork
+fem3d/ouswrite
 fem3d/eosinf
+fem3d/noswrite
 
 femadj/adjele
 fembin/extDiff

@@ -496,6 +496,7 @@ void PsEndPage( void )
         PsStroke(FLUSH);
 	if( NClip ) fprintf(FP,"GR\n");
         fprintf(FP,"GR\n");
+        fprintf(FP,"%%PsEndPage\n");
         fprintf(FP,"showpage\n");
     }
 }

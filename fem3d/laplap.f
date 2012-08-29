@@ -5,7 +5,7 @@ c revision log :
 c
 c 20.08.2003	ggu	new laplacian interpolation
 c 02.09.2003	ggu	some comments, write to .dat file
-c 30.10.2003	ggu	subroutine prepare_bc included in this file
+c 30.10.2003	ggu	subroutine prepare_bc_l included in this file
 c 04.03.2004	ggu	writes also number of variables (1)
 c 11.03.2009	ggu	bug fix -> declare hev() here
 c
@@ -118,7 +118,7 @@ c-----------------------------------------------------------------
 c read BC and interpolate
 c-----------------------------------------------------------------
 
-	call prepare_bc(' ',rzv,nkn,flag)
+	call prepare_bc_l(' ',rzv,nkn,flag)
 
 	call lapint(rmat,zv,rzv,flag)
 
@@ -155,7 +155,7 @@ c-----------------------------------------------------------------
 
 c****************************************************************
 
-	subroutine prepare_bc(file,rzv,nkn,flag)
+	subroutine prepare_bc_l(file,rzv,nkn,flag)
 
 c reads boundary conditions from file and sets up array
 c
@@ -208,13 +208,13 @@ c	kn, valn
 	return
    97	continue
 	write(6,*) file
-	stop 'error stop prepare_bc: cannot open file'
+	stop 'error stop prepare_bc_l: cannot open file'
    98	continue
 	write(6,*) k,kn,nkn,val
-	stop 'error stop prepare_bc: error in internal node number'
+	stop 'error stop prepare_bc_l: error in internal node number'
    99	continue
 	write(6,*) k,kn,nkn,val
-	stop 'error stop prepare_bc: no such node'
+	stop 'error stop prepare_bc_l: no such node'
 	end
 
 c******************************************************************

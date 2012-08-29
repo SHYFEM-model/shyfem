@@ -31,7 +31,7 @@ c*********************************************************************
 
 c administers meteo files (still to be cleaned)
 c
-c in order to use these routines, please set imreg = 1 in the STR file
+c in order to use these routines, please set imreg = 2 in the STR file
 
 	implicit none
 

@@ -1,5 +1,53 @@
 ============================================================
 
+Wed Aug 29 16:27:17 CEST 2012
+
+small bug fixes
+
+ .gitignore                    |    2 +
+ LOG                           |   24 ++++
+ Makefile                      |    9 ++
+ Rules.make                    |    8 ++
+ fem3d/Makefile                |   16 +++-
+ fem3d/basbathy.f              |    6 +-
+ fem3d/bastreat.f              |    4 +-
+ fem3d/ht.f                    |    3 +
+ fem3d/lagrange_cont.f         |    2 +-
+ fem3d/lagrange_flux.f         |   81 ++++++++------
+ fem3d/lagrange_main.f         |   58 +++++++----
+ fem3d/laplap.f                |   12 +-
+ fem3d/newconz.f               |    6 +-
+ fem3d/newini.f                |    4 +-
+ fem3d/nosextr_cat.f           |   42 +++----
+ fem3d/noswrite.f              |  221 ++++++++++++++++++++++++++++++++++++++
+ fem3d/ouswrite.f              |  238 +++++++++++++++++++++++++++++++++++++++++
+ fem3d/param.h                 |    2 +-
+ fem3d/rstinf.f                |   25 +++--
+ fem3d/subcus.f                |   23 ++++-
+ fem3d/submeteo1.f             |    2 +-
+ fem3d/submud.f                |  101 +++++++++++------
+ fem3d/subnos.f                |   27 +++++
+ fem3d/subnsh.f                |    9 ++-
+ fem3d/subomp.f                |   15 +++
+ fem3d/subomp_dummy.f          |   13 +++
+ fem3d/subrst.f                |   48 +++++++--
+ fem3d/subsys.f                |   84 ++++++++++-----
+ fem3d/subwin.f                |    2 +
+ femadj/param.h                |    2 +-
+ fembin/coast.pl               |   54 +++++++++-
+ fembin/watermark.pl           |  109 +++++++++++++++++++
+ femdoc/final/shyfem.pdf       |  Bin 268525 -> 268527 bytes
+ femdoc/final/shyfem.ps        |   93 ++++++++--------
+ femdoc/watermark/ingv.jpg     |  Bin 0 -> 113311 bytes
+ femdoc/watermark/watermark.pl |   21 ++++
+ femplot/param.h               |    2 +-
+ mesh/mesh.c                   |   12 ++-
+ param.h                       |    2 +-
+ post/psgraph.c                |    1 +
+ 40 files changed, 1144 insertions(+), 239 deletions(-)
+
+============================================================
+
 Tue Jun 26 14:14:58 CEST 2012
 
 New version 6_1_55

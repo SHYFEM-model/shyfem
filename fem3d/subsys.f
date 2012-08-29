@@ -191,16 +191,16 @@ c			is used for the restart and the simulation starts
 c			from this time. Be aware that this option changes
 c			the parameter |itanf| to the time of the last
 c			record found in |restrt|.
-c |ityrst|              Type of restart. If 0 and the restart file is not
-c                       found the program will exit with an error. Otherwise
-c                       the program will simply continue with a cold start.
-c                       If |ityrst| is 1 and the given time record is not
-c                       found in the file it will exit with error. If
-c                       it is 2 it will initialize all values from the
-c                       first time record after |itrst|. Therefore, the
-c                       value of 2 will guarantee that the program will not
-c                       abort and continue running, but it might be
-c                       not doing what you want. (Default 0)
+c |ityrst|		Type of restart. If 0 and the restart file is not
+c			found the program will exit with an error. Otherwise
+c			the program will simply continue with a cold start.
+c			If |ityrst| is 1 and the given time record is not
+c			found in the file it will exit with error. If
+c			it is 2 it will initialize all values from the
+c			first time record after |itrst|. Therefore, the
+c			value of 2 will guarantee that the program will not
+c			abort and continue running, but it might be
+c			not doing what you want. (Default 0)
 
 	call addpar('idtrst',0.)
 	call addpar('itmrst',0.)
@@ -728,10 +728,30 @@ c DOCS	START	S_lagrg
 c
 c DOCS	COMPULS		Lagrangian Module
 
-c The particles can be released inside a specified area with a
-c regular distribution. The area is defined in the file
-c 'farea'. The amount of particles released and the
-c time step is specified by nbdy and idtrl or in the file 'fflux'.
+c This part describes the use of the Lagrangian Module.
+c The lagrangian particles can be released inside a specified area with a
+c regular distribution. The area is defined in the file |lagra|.
+c The amount of particles released and the
+c time step is specified by nbdy and idtrl.
+c 
+c The lagrangian module runs between the times |itlanf| and |itlend|. If one
+c or both are missing, the simulation extremes are substituted. Inside
+c the lagrangian simulation window the release of particles is controlled
+c by the parameters |idtl|, |itranf| and |itrend|. |itranf| gives the time
+c of the first release, |itrend| the time for the last release. If not
+c given they are set equal to the extremes of the lagrangian simulation.
+c |idtl| is giving the time step of release.
+c
+c Particles are released inside the given areas (filename |lagra|). If
+c this file is not specified they are released over the whole domain. There is
+c also a possibility release particles over open boundaries. However,
+c this is still experimental. Please see the file |lagrange_main.f|
+c for more details.
+c
+c The output frequency of the results can be contolled by 
+c |idtlgr| and |itmlgr|.
+c
+c Please find all details here below.
 
         call sctpar('lagrg')             !sets default section
         call sctfnm('lagrg')
@@ -742,7 +762,8 @@ c		to run the lagrangian module
 
 	call addpar('ilagr',0.)         !LAGR
 
-c |nbdy|	Total numbers of particles to be released in the domain. 
+c |nbdy|	Total numbers of particles to be released in the domain each
+c		time a release of particles takes place. 
 c		(Default 0)
 
         call addpar('nbdy',0.)
@@ -756,15 +777,29 @@ c		[m**2/s]. (Default 0)
 c |itlanf, itlend|	The start and end time for the lagrangian module.
 c			If not given, the module runs for the whole simulation.
 
-        call addpar('itlanf',0.)
-        call addpar('itlend',0.)
+        call addpar('itlanf',-1.)
+        call addpar('itlend',-1.)
 
-c |itmlgr, idtlgr|	Initial time and time step for the output
+c |itmlgr, idtlgr|	Initial time and time step for the output to file
 c			of the particles. if |idtlgr| is 0, 
-c			no output is written.
+c			no output is written. (Default 0)
 
-        call addpar('itmlgr',0.)
+        call addpar('itmlgr',-1.)
         call addpar('idtlgr',0.)
+
+c |idtl|	The time step used for the release of particles. If this
+c		is 0 particles are released only once at the beginning
+c		of the lagrangian simulation. No particles are released 
+c		for a value of less than 0. (Default 0)
+
+        call addpar('idtl',0.)
+
+c |itranf, itrend|	Initial and final time for the release of particles.
+c			If not specified the particles are released over the
+c			whole lagrangian simulation period.
+
+        call addpar('itranf',-1.)
+        call addpar('itrend',-1.)
 
 c |lagra|	File name that contains closed lines of the area where
 c		the particles have to be released. If not given, the particles
@@ -772,21 +807,12 @@ c		are released over the whole domain.
 
         call addfnm('lagra',' ')
 
-        call addfnm('lagrf',' ')
-        call addfnm('lagrt',' ')
-
-cc |idtl| time step which the particels are released if ne 0 are dominant
-
-        call addpar('idtl',0.)
-
 cc To compute the transit time of the particles to leave
 cc a specified area. 'Artype' is the flag to detect the
 cc element outside the defined area. 
 cc Default = -1, i.e., no transit times are computed
 
         call addpar('artype',-1.)
-
-cc The transit time results are reported in the file TRT
 
 c DOCS	END
 

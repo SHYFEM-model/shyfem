@@ -12,6 +12,7 @@ c 24.10.2011    ggu     3d routines implemented
 c 04.11.2011    ggu     part with bsigma not yet finished
 c 16.12.2011    ggu     bug fix - flux2d_aux was integer
 c 23.03.2012    ggu     bug fix - dst was not available in setup_vl_3d
+c 28.08.2012    ggu&ccf bug fix - ok now for 3d surface tracking
 c
 c****************************************************************
 
@@ -23,6 +24,7 @@ c initializes length of element sides and fluxes
 
 	call rprs
 	call setup_fluxes_2d
+	call setup_fluxes_3d	!this overwrites velocities in vel_ie (2d)
 
 	end
 
@@ -145,7 +147,7 @@ c	--------------------------------------------
 c	compute velocities
 c	--------------------------------------------
 
-        !call setup_vl_3d
+        call setup_vl_3d
 
 c	--------------------------------------------
 c	end of routine
@@ -199,14 +201,14 @@ c	  --------------------------------------------
 c	  old way to set-up  rflux,tflux ... delete
 c	  --------------------------------------------
 
-	  call set_elem_links(k,ne)
-	  nn = ne
-          if( itype .gt. 1 ) nn = nn + 1   !boundary
-          if( nn .gt. ngrdim ) stop 'error stop flxnod: ndim'
-	  rflux(nn) = 0.
+	  !call set_elem_links(k,ne)
+	  !nn = ne
+          !if( itype .gt. 1 ) nn = nn + 1   !boundary
+          !if( nn .gt. ngrdim ) stop 'error stop flxnod: ndim'
+	  !rflux(nn) = 0.
 	
-    	  call mk_rflux(k,nn,itype,az,rflux,ne,lnk_elems)
-  	  call mk_tflux(k,nn,itype,rflux,tflux_aux)
+    	  !call mk_rflux(k,nn,itype,az,rflux,ne,lnk_elems)
+  	  !call mk_tflux(k,nn,itype,rflux,tflux_aux)
 
 	  !write(6,*) 'flux old ',k,nn,ne,itype
 	  !write(6,*) 'rflux old ',(rflux(j),j=1,nn)
@@ -228,40 +230,41 @@ c	  --------------------------------------------
 c	  error check ... delete
 c	  --------------------------------------------
 
-	  if( n .ne. nn ) then
-	    stop 'error stop setup_fluxes: n .ne. nn'
-	  end if
-	  do i=1,n
-	    tdif = abs( tflux_aux(i) - tflux(i) )
-	    if( tdif .gt. 1.e-4 ) then
-	      write(6,*) k,i
-	      write(6,*) (tflux_aux(j),j=1,n)
-	      write(6,*) (tflux(j),j=1,n)
-	      stop 'error stop setup_fluxes: tflux .ne. tflux_aux'
-	    end if
-	  end do
+	  !if( n .ne. nn ) then
+	  !  stop 'error stop setup_fluxes: n .ne. nn'
+	  !end if
+	  !do i=1,n
+	  !  tdif = abs( tflux_aux(i) - tflux(i) )
+	  !  if( tdif .gt. 1.e-4 ) then
+	  !    write(6,*) k,i
+	  !    write(6,*) (tflux_aux(j),j=1,n)
+	  !    write(6,*) (tflux(j),j=1,n)
+	  !    stop 'error stop setup_fluxes: tflux .ne. tflux_aux'
+	  !  end if
+	  !end do
 
 c	  --------------------------------------------
 c	  set-up lagrangian fluxes
 c	  --------------------------------------------
 
-  	  call setup_fx(k,nn,tflux,ne,lnk_elems)	!old
-  	  call setup_flux2d(k,n,tflux,flux2d_aux)		!new
+  	  !call setup_fx(k,nn,tflux,ne,lnk_elems)	!old
+  	  !call setup_flux2d(k,n,tflux,flux2d_aux)	!new
+  	  call setup_flux2d(k,n,tflux,flux2d)		!new
         end do
 
 c	--------------------------------------------
 c	error check ... delete
 c	--------------------------------------------
 
-        do ie=1,nel
-          do ii=1,3
-	    tdif = abs( flux2d(ii,ie) - flux2d_aux(ii,ie) )
-	    if( tdif .gt. 1.e-4 ) then
-	      write(6,*) ie,ii,flux2d(ii,ie),flux2d_aux(ii,ie)
-	      stop 'error stop setup_fluxes: flux2d'
-	    end if
-          end do
-        end do
+        !do ie=1,nel
+        !  do ii=1,3
+	!    tdif = abs( flux2d(ii,ie) - flux2d_aux(ii,ie) )
+	!    if( tdif .gt. 1.e-4 ) then
+	!      write(6,*) ie,ii,flux2d(ii,ie),flux2d_aux(ii,ie)
+	!      stop 'error stop setup_fluxes: flux2d'
+	!    end if
+        !  end do
+        !end do
 
 c	--------------------------------------------
 c	compute velocities
@@ -512,7 +515,7 @@ c we do not use lkmax, but lmax
 
 c******************************************************************
 
-  	subroutine setup_flux2d(k,n,tflux,flux2d_aux)
+  	subroutine setup_flux2d(k,n,tflux,flux2d_loc)
 
 c computes fluxes in element
 
@@ -520,7 +523,7 @@ c computes fluxes in element
 
         integer k,n
         real tflux(1)
-	real flux2d_aux(3,1)
+	real flux2d_loc(3,1)
 
         include 'param.h'
 	include 'lagrange.h'
@@ -545,8 +548,10 @@ c computes fluxes in element
 	!write(61,*) k,n,ne
 	!write(61,*) i,ie,n1,n2,j
 	!write(61,*) tflux(j),tflux(i)
-          flux2d_aux(n2,ie)=flux2d_aux(n2,ie)-tflux(j)
-          flux2d_aux(n1,ie)=flux2d_aux(n1,ie)+tflux(i)      
+          !flux2d_aux(n2,ie)=flux2d_aux(n2,ie)-tflux(j)
+          !flux2d_aux(n1,ie)=flux2d_aux(n1,ie)+tflux(i)      
+          flux2d_loc(n2,ie)=flux2d_loc(n2,ie)-tflux(j)
+          flux2d_loc(n1,ie)=flux2d_loc(n1,ie)+tflux(i)      
         end do
 
 	end
@@ -618,8 +623,14 @@ c all this has to be revised for sigma layers
 	      ar=dp*dst				!section area
 	      flx=flux3d(l,ii,ie)		!flux
 	      vel3d_ie(l,ii,ie)=bfact*flx/ar	!velocity
+	      !if( l .eq. 1 ) then
+	      !  vel_ie(ii,ie)=vel3d_ie(l,ii,ie) !velocity first layer
+	      !end if
 	    end do
           end do
+	  do ii=1,3
+	    vel_ie(ii,ie)=vel3d_ie(1,ii,ie)	!velocity first layer
+	  end do
 	end do
 	
 	end

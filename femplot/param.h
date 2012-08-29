@@ -35,7 +35,7 @@
 	parameter ( nardim = 200 )
 	parameter ( nexdim = 100 )
 	parameter ( nfxdim = 5000 )
-	parameter ( ncsdim = 9 )
+	parameter ( ncsdim = 1 )
 
 	parameter ( nbdydim = 200000 )
 

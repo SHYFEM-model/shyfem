@@ -3967,6 +3967,8 @@ c**********************************************************************
 
 	implicit none
 
+	include 'param.h'
+
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
@@ -3974,8 +3976,27 @@ c**********************************************************************
 	common /xgv/xgv, /ygv/ygv
 	real tauxnv(1), tauynv(1)
 	common /tauxnv/tauxnv, /tauynv/tauynv
+	real mudc(nlvdim,nkndim)
+	common /mudc/mudc
 
-	integer k
+	integer k,l,lmax
+
+	integer icall
+	save icall
+	data icall / 0 /
+
+	if( icall .eq. 10 ) then
+	  write(6,*) '********** fluid mud concentration initialized'
+	  do k=1,nkn
+	    lmax = nlvdim
+	    do l=1,lmax
+	      mudc(l,k) = l*10.
+	      if( 2*(l/2) .eq. l ) mudc(l,k) = 0.
+	    end do
+	  end do
+	end if
+
+	icall = icall + 1
 
         do k = 1, nkn
           if (xgv(k).gt.1..and.xgv(k).lt.2.) then

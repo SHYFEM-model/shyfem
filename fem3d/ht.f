@@ -85,6 +85,7 @@ c 24.01.2012    ggu	new call to setup_parallel()
 c 23.02.2012    ggu&ccf	meteo arrays adjusted (3*nkndim)
 c 09.03.2012    ggu	call to residence time added
 c 21.06.2012    ggu&aar	fluid mud variables integrated
+c 05.08.2012    ggu	bug because lam2dn and dmfd2n not defined
 c
 c*****************************************************************
 
@@ -137,6 +138,8 @@ c boundary file names			!$$ST	!$$DESCRP
         common /bio2dn/ bio2dn
         common /sed2dn/ sed2dn
         common /mud2dn/ mud2dn
+        common /lam2dn/ lam2dn	!!!!!!!!!!!!!!!!! BUG
+        common /dmf2dn/ dmf2dn
         common /tox3dn/ tox3dn
         common /bfm1bc/bfm1bc
         common /bfm2bc/bfm2bc

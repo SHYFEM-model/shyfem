@@ -333,6 +333,7 @@ ifeq ($(FORTRAN_COMPILER),GNU_G77)
   LINKER	= $(F77)
   LFLAGS	= $(FGNU_OPT) $(FGNU_PROFILE) $(FGNU_OMP)
   FFLAGS	= $(LFLAGS) $(FGNU_NOOPT) $(FGNU_WARNING)
+  FINFOFLAGS	= -v
 endif
 
 ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
@@ -343,6 +344,7 @@ ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
   LINKER	= $(F77)
   LFLAGS	= $(FGNU_OPT) $(FGNU_PROFILE) $(FGNU_OMP)
   FFLAGS	= $(LFLAGS) $(FGNU_NOOPT) $(FGNU_WARNING)
+  FINFOFLAGS	= -v
 endif
 
 ##############################################
@@ -387,6 +389,7 @@ ifeq ($(FORTRAN_COMPILER),PORTLAND)
   LINKER	= $(F77)
   LFLAGS	= $(FPG_OPT) $(FPG_PROFILE) $(FPG_OMP)
   FFLAGS	= $(LFLAGS) $(FPG_NOOPT) $(FPG_WARNING)
+  FINFOFLAGS	= -v
 endif
 
 ##############################################
@@ -459,6 +462,8 @@ endif
 FINTEL_OPT   = 
 ifeq ($(OPTIMIZE),true)
   FINTEL_OPT   = -O 
+  #FINTEL_OPT   = -O -mcmodel=medium
+  #FINTEL_OPT   = -O -mcmodel=large
 endif
 
 FINTEL_OMP   =
@@ -473,6 +478,7 @@ ifeq ($(FORTRAN_COMPILER),INTEL)
   LINKER	= $(F77)
   LFLAGS	= $(FINTEL_OPT) $(FINTEL_PROFILE) $(FINTEL_OMP)
   FFLAGS	= $(LFLAGS) $(FINTEL_NOOPT) $(FINTEL_WARNING)
+  FINFOFLAGS	= -v
 endif
 
 ##############################################
@@ -486,12 +492,14 @@ ifeq ($(C_COMPILER),GNU_GCC)
   CFLAGS = -O -Wall -pedantic
   CFLAGS = -O -Wall -pedantic -std=gnu99  #no warnings for c++ style comments
   LCFLAGS = -O 
+  CINFOFLAGS = -v
 endif
 
 ifeq ($(C_COMPILER),INTEL)
   CC     = icc
   CFLAGS = -O -g -traceback -check-uninit
   LCFLAGS = -O 
+  CINFOFLAGS = -v
 endif
 
 ##############################################

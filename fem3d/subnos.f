@@ -829,4 +829,31 @@ c reads data of nos file and skips information
 	end
 
 c************************************************************
+c************************************************************
+c************************************************************
+
+	subroutine infnos(ivar,name)
+
+c returns description of variable id
+
+	implicit none
+
+	integer ivar
+	character*(*) name
+
+	if( ivar .eq. 10 ) then
+	  name = 'Concentration []'
+	else if( ivar .eq. 11 ) then
+	  name = 'Salinity [psu]'
+	else if( ivar .eq. 12 ) then
+	  name = 'Temperature [C]'
+	else if( ivar .eq. 99 ) then
+	  name = 'Water residence time [days]'
+	else
+	  name = ''
+	end if
+
+	end
+
+c************************************************************
 

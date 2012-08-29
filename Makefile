@@ -173,11 +173,16 @@ info: version
 	@echo "  NKNDIM = $(NKNDIM)"
 	@echo "  NELDIM = $(NELDIM)"
 	@echo "  NLVDIM = $(NLVDIM)"
+	@echo "compiler:"
+	@echo "  FORTRAN  = $(F77)"
+	@echo "  CC       = $(CC)"
 	@echo "compiler options:"
 	@echo "  PROFILE  = $(PROFILE)"
 	@echo "  DEBUG    = $(DEBUG)"
 	@echo "  OPTIMIZE = $(OPTIMIZE)"
 	@echo "  WARNING  = $(WARNING)"
+	@echo "compiler version:"
+	@make compiler_version
 
 check: check_software
 check_software:
@@ -251,6 +256,10 @@ beta: cleanall
 publish:
 	@fembin/fempub.sh shyfem_$(TARNAME).tar.gz
 
+compiler_version:
+	$(F77) $(FINFOFLAGS)
+	$(CC) $(CINFOFLAGS)
+	
 #---------------------------------------------------------------
 # compatibility checks
 #---------------------------------------------------------------

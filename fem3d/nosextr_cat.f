@@ -9,6 +9,7 @@ c 18.11.1998    ggu     check dimensions with dimnos
 c 03.06.2011    ggu     routine adjourned
 c 08.06.2011    ggu     routine rewritten
 c 31.01.2012    ggu     choice of concatenation mode (mode, itc)
+c 05.08.2012    ggu     bug fix - first read, then open for write
 c
 c**********************************************************
 
@@ -20,16 +21,7 @@ c concatenates two nos files into one
 
 	include 'param.h'
 
-        integer ndim
-	parameter ( ndim = 10000 )
-
-	integer iu(ndim)
 	character*80 name,file
-
-        integer nrdim
-	parameter ( nrdim = 2000 )
-
-	integer irec(nrdim)
 
 	character*80 title
 	real cv(nkndim)
@@ -80,13 +72,15 @@ c-------------------------------------------------------------------
 	mode = 0
 	itc = 0
 	write(6,*) 'operation mode:'
+	write(6,*) ' -1   all of first file, then all of second file'
 	write(6,*) '  0   all of first file, rest of second file'
 	write(6,*) '  1   first file until start of second file'
 	write(6,*) '  2   first file up to itc (inclusive), then second'
 	write(6,*) '  in case of mode 2 itc value is also requested'
+	write(6,*) '  mode -1 does not care about time, just joins'
 	write(6,*) 'Enter mode:'
 	read(5,'(i10)') mode
-	if( mode .lt. 0 .or. mode .gt. 2 ) stop 'error stop: mode'
+	if( mode .lt. -1 .or. mode .gt. 2 ) stop 'error stop: mode'
 	if( mode .eq. 2 ) then
 	  write(6,*) 'Enter time up to when to read first file:'
 	  read(5,'(i10)') itc
@@ -111,19 +105,6 @@ c-------------------------------------------------------------------
 	end if
 
 c-------------------------------------------------------------------
-c open NOS output file
-c-------------------------------------------------------------------
-
-        call mkname(' ','nos_cat','.nos',file)
-        write(6,*) 'writing file ',file(1:50)
-        nb = ifileo(55,file,'unform','new')
-        if( nb .le. 0 ) goto 98
-        call wfnos(nb,3,nkn,nel,nlv,1,title,ierr)
-        if( ierr .ne. 0 ) goto 99
-        call wsnos(nb,ilhkv,hlv,hev,ierr)
-        if( ierr .ne. 0 ) goto 99
-
-c-------------------------------------------------------------------
 c open first NOS file and read header
 c-------------------------------------------------------------------
 
@@ -145,6 +126,19 @@ c-------------------------------------------------------------------
 
 	write(6,*) 'Available levels: ',nlv
 	write(6,*) (hlv(l),l=1,nlv)
+
+c-------------------------------------------------------------------
+c open NOS output file
+c-------------------------------------------------------------------
+
+        call mkname(' ','nos_cat','.nos',file)
+        write(6,*) 'writing file ',file(1:50)
+        nb = ifileo(55,file,'unform','new')
+        if( nb .le. 0 ) goto 98
+        call wfnos(nb,3,nkn,nel,nlv,1,title,ierr)
+        if( ierr .ne. 0 ) goto 99
+        call wsnos(nb,ilhkv,hlv,hev,ierr)
+        if( ierr .ne. 0 ) goto 99
 
 c-------------------------------------------------------------------
 c loop on input records
@@ -205,7 +199,7 @@ c-------------------------------------------------------------------
 
         if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
         if(ierr.ne.0) goto 101
-	if( it .le. itfirst ) goto 301	!to make records unique
+	if( mode .ge. 0 .and. it .le. itfirst ) goto 301 !make records unique
 
 	if( itsecond .eq. -1 ) itsecond = it
 	nread=nread+1
