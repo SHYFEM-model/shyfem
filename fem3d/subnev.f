@@ -32,6 +32,7 @@ c 25.01.2011	ggu	default to lat/lon if small coordinates are given
 c 28.01.2011	ggu	new entry in ev for distance of nodes (17-19)
 c 23.03.2011	ggu	better set-up for isphe_ev
 c 24.11.2011	ggu	better routines to handle spherical coordinates
+c 30.08.2012	ggu	new routine is_spherical()
 c
 c***********************************************************
 
@@ -259,6 +260,23 @@ c gets type of coordinates that is used with ev module
 	common /evcommon/ isphe_ev,init_ev
 	
 	isphe = isphe_ev
+
+	end
+
+c****************************************************************
+
+	function is_spherical()
+
+c checks if coordinates are spherical (lat/lon)
+
+	implicit none
+
+	logical is_spherical
+
+	integer isphe_ev,init_ev
+	common /evcommon/ isphe_ev,init_ev
+	
+	is_spherical = isphe_ev .ne. 0
 
 	end
 

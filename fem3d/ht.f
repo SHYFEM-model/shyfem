@@ -541,7 +541,7 @@ c-----------------------------------------------------------
 	call cstsetup
 	call sp136(ic)
         call shdist(rdistv)
-	call residence_time
+	call renewal_time
 
 c-----------------------------------------------------------
 c write input values to log file and perform check
@@ -601,7 +601,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            call sedi(it,dt)             !sediment transport
 	   call submud(it,dt)           !fluid mud (ARON)
 
-	   call residence_time
+	   call renewal_time
 	   call ecological_module(it,dt)	!ecological model
            call atoxi3d(it,dt)			!toxi
 

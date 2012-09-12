@@ -16,6 +16,7 @@
 
 DIR = fem
 RULES_MAKE_VERSION = 0.0	# default if Rules.make cannot be read
+FEMDIR    = .
 
 #---------------------------------------------------------------
 

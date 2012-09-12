@@ -1108,7 +1108,7 @@ c true north) is plotted.
 c |x0leg, y0leg|	Lower left corner of the area
 c			where the legend is plotted.
 c |x1leg, y1leg|	Upper right corner of the area.
-c			where the legend is plotted.
+c			where the legend (north and scale) is plotted.
 
 	call addpar('x0leg',0.)		!dimension of legend
 	call addpar('y0leg',0.)		!dimension of legend
@@ -1158,7 +1158,8 @@ c |reggrd|		If different from 0 it plots a regular grid over
 c			the plot for geographical reference. The value of
 c			|reggrd| gives the spacing of the regular grid lines.
 c			The units must be according to the units used for
-c			the coordinates. (Default 0)
+c			the coordinates. With value of -1 the regular grid is
+c			determined automatically. (Default -1)
 c |regdst|		This value gives the number of intervals
 c			that are used to sub-divide the grid given by
 c			|reggrd| with a black and white scale around
@@ -1172,7 +1173,7 @@ c			overlay grid, but still writes the labels.
 c			(Default 0.5)
 
 	call addpar('isphe',-1.)	!spherical coordinate system
-	call addpar('reggrd',0.)	!regular grid spacing
+	call addpar('reggrd',-1.)	!regular grid spacing
 	call addpar('regdst',0.)	!regular micro grid spacing
 	call addpar('reggry',0.5)	!gray value
 

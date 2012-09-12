@@ -418,7 +418,7 @@ c test if wind file is unformatted
 	character*(*) file
 
 	integer nwin,ios,it,n,na
-	real u,v
+	real t,u,v
 	integer ifileo
 
 	binwin = .false.
@@ -455,11 +455,11 @@ c-----------------------------------------------------------------
 	nwin = ifileo(0,file,'formatted','old')
 	if( nwin .le. 0 ) return		!error opening wind file
 
-	read(nwin,*,iostat=ios) it,u,v
+	read(nwin,*,iostat=ios) t,u,v
 
 	if( ios .ne. 0 ) then
-	  write(6,*) 'The wind file is not ASCII'
-	  write(6,*) 'However there was an error reading it'
+	  write(6,*) 'There was an error reading the wind file as ASCII'
+	  write(6,*) 'However there was an error reading it also'
 	  write(6,*) 'as unformatted.'
 	  write(6,*) 'The total number of nodes could be not'
 	  write(6,*) 'compatible with the basin file.'

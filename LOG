@@ -1,4 +1,12 @@
 
+c ./femplot/supbas.f:
+c 30.08.2012  ggu     new routines to automaticallylabel spehrical grid
+c
+c ./fem3d/subnev.f:
+c 30.08.2012    ggu     new routine is_spherical()
+
+
+
 
 
 c ./fem3d/lagrange_flux.f:

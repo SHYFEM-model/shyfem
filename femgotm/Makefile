@@ -3,6 +3,7 @@
 # Makefile to build the the Turbulence library - libturbulence.a
 #
 
+FEMDIR = ..
 include ../Rules.make
 
 LIB	= $(LIBDIR)/libturbulence$(buildtype).a

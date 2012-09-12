@@ -1,7 +1,7 @@
 c
 c $Id: subwrt.f,v 1.58 2010-03-08 17:46:45 georg Exp $
 c
-c routines dealing with water residence time
+c routines dealing with water renewal time
 c
 c contents :
 c
@@ -9,13 +9,13 @@ c revision log :
 c
 c 24.10.2011	ggu	new file copied from subcus.f (jamal)
 c 28.02.2012	ggu&deb	completely restructured
-c 16.03.2012	ggu	use idtreset=-1 for no residence computation
+c 16.03.2012	ggu	use idtreset=-1 for no renewal computation
 c
 c******************************************************************
 
-        subroutine residence_time
+        subroutine renewal_time
 
-c computes residence time online - one value for whole lagoon
+c computes renewal time online - one value for whole lagoon
 
         implicit none
 
@@ -96,8 +96,8 @@ c bnoret	true if no return flow is used (concentrations outside
 c		are explicitly set to 0)
 c bstir		simulates completely stirred tank
 c		(replaces at every time step conz with average conz)
-c blog          use logarithmic regression to compute residence time
-c badj          adjust residence time for tail of distribution
+c blog          use logarithmic regression to compute renewal time
+c badj          adjust renewal time for tail of distribution
 c
 c percmin	percentage to reach -> after this stop computation
 c		use 0 if no premature end is desired
@@ -105,14 +105,14 @@ c iaout		area code of elements out of lagoon (used for init and retflow)
 c		use -1 to if no outside areas exist
 c c0		initial concentration of tracer
 c
-c itmin		time from when to compute residence time (-1 for start of sim)
-c itmax		time up to when to compute residence time (-1 for end of sim)
+c itmin		time from when to compute renewal time (-1 for start of sim)
+c itmax		time up to when to compute renewal time (-1 for end of sim)
 c idtreset	time step to reset concentration to c0
 c		use 0 if no reset is desired
-c		use -1 if no residence time computation is desired
+c		use -1 if no renewal time computation is desired
 c
 c ctop          maximum to be used for frequency curve
-c ccut          cut residence time at this level (for res time computation)
+c ccut          cut renewal time at this level (for res time computation)
 
 c--------------------------
 c default settings
@@ -120,8 +120,8 @@ c--------------------------
 
         bnoret = .false.	!no return flow
 	bstir = .false.		!stirred tank
-        blog = .false.		!compute residence time with log fitting
-        badj = .true.		!adjust residence time for tail
+        blog = .false.		!compute renewal time with log fitting
+        badj = .true.		!adjust renewal time for tail
 
 	percmin = 0.		!minimum percentage for remnant function
 	iaout = -1		!areas considered outside
@@ -130,10 +130,10 @@ c--------------------------
 	itmin = -1		!compute from start of simulation
 	itmax = -1		!compute to end of simulation
 	idtreset = 0		!no reset of concentrations (old default)
-	idtreset = -1		!no residence time computation
+	idtreset = -1		!no renewal time computation
 
 	ctop = 0.		!max for frequency curve
-	ccut = 0.		!max fro residence time
+	ccut = 0.		!max fro renewal time
 
 c--------------------------
 c customization
@@ -159,11 +159,11 @@ c initialization
 c------------------------------------------------------------
 
         if( icall .eq. 0 ) then
-          write(6,*) 'initialization of WRT routine residence time'
+          write(6,*) 'initialization of WRT routine renewal time'
 
 	  if( idtreset .lt. 0 ) then
 	    icall = -1
-            write(6,*) 'no residence time computation'
+            write(6,*) 'no renewal time computation'
 	    return
 	  end if
 
@@ -240,13 +240,13 @@ c------------------------------------------------------------
 
         if( breset ) then		!reset concentrations to c0
 
-       	  write(6,*) 'resetting concentrations for residence time ',it
+       	  write(6,*) 'resetting concentrations for renewal time ',it
 
 c------------------------------------------------------------
-c reset variables to compute residence time
+c reset variables to compute renewal time
 c------------------------------------------------------------
 
-	  if( bcompute ) then	!compute new residence time
+	  if( bcompute ) then	!compute new renewal time
 	    rcorrect = 0.	!do not used global correction
 	    call acu_comp(nb3,blog,badj,it,c0,ccut,rcorrect
      +				,tacu,cvacu
@@ -278,7 +278,7 @@ c------------------------------------------------------------
         if( mass0 .ne. 0. ) then
 	  perc = mass / mass0
           if( perc .lt. percmin ) then
-                stop 'finished computing residence time'
+                stop 'finished computing renewal time'
 	  end if
         end if
 
@@ -553,7 +553,7 @@ c***************************************************************
      +				,tacu,cvacu
      +				,cnv,cvres3)
 
-c compute residence time and write to file
+c compute renewal time and write to file
 
 	implicit none
 
@@ -589,7 +589,7 @@ c---------------------------------------------------------------
 	rconv = 1. / secs_in_day
 
 c---------------------------------------------------------------
-c compute residence times -> put in cvres3
+c compute renewal times -> put in cvres3
 c---------------------------------------------------------------
 
         do k=1,nkn
@@ -635,11 +635,11 @@ c**********************************************************************
 	subroutine wrt_restime_summary(iu,it,it0,mass,mass0,rcorrect)
 
 c perc		percentage of mass still in domain
-c restime	residence time computed by integrating
-c restimec	residence time computed by integrating with correction
-c restime1	residence time computed by fitting regression curve
-c resmed	average of residence times computed
-c resstd	standard deviation of residence time
+c restime	renewal time computed by integrating
+c restimec	renewal time computed by integrating with correction
+c restime1	renewal time computed by fitting regression curve
+c resmed	average of renewal times computed
+c resstd	standard deviation of renewal time
 
      	implicit none
 	
@@ -683,12 +683,12 @@ c resstd	standard deviation of residence time
         perc = 100.*remnant
 
 	remint = remint + remnant*dt	!integrated remnant function
-	restime = remint/86400.		!residence time in days
+	restime = remint/86400.		!renewal time in days
 
 	rlast = remnant
 	if( rlast .ge. 1. ) rlast = 0.
 	rcorrect = 1. / (1.-rlast)
-	restimec = rcorrect * restime	!corrected residence time
+	restimec = rcorrect * restime	!corrected renewal time
 
 	remlog = remlog - log(remnant)
 	remtim = remtim + (it-it0)
@@ -721,7 +721,7 @@ c write histogram
 
 	integer iu
 	integer it
-	real ctop			!cut at this value of residence time
+	real ctop			!cut at this value of renewal time
 	real cvres3(nlvdim,nkndim)
 	double precision volacu(nlvdim,nkndim)
 

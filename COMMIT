@@ -1,5 +1,32 @@
 ============================================================
 
+Wed Sep 12 17:56:20 CEST 2012
+
+minor enhancements
+
+ LOG                     |    8 +++
+ Makefile                |    1 +
+ fem3d/basbathy.f        |    2 +-
+ fem3d/ht.f              |    4 +-
+ fem3d/nosresidence.f    |   19 +++----
+ fem3d/param.h           |    6 +-
+ fem3d/subnev.f          |   18 +++++++
+ fem3d/subsys.f          |    7 ++-
+ fem3d/subwin.f          |    8 ++--
+ fem3d/subwrt.f          |   60 ++++++++++++------------
+ femadj/param.h          |    6 +-
+ femdoc/final/shyfem.pdf |  Bin 268527 -> 268600 bytes
+ femdoc/final/shyfem.ps  |  113 +++++++++++++++++++++++----------------------
+ femgotm/Makefile        |    1 +
+ femplot/param.h         |    6 +-
+ femplot/supano.f        |   18 +++++++
+ femplot/supbas.f        |  119 +++++++++++++++++++++++++++++++++++++++++++---
+ femspline/Makefile      |    1 +
+ param.h                 |    6 +-
+ 19 files changed, 277 insertions(+), 126 deletions(-)
+
+============================================================
+
 Wed Aug 29 16:28:43 CEST 2012
 
 New version 6_1_56

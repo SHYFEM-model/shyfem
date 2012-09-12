@@ -46,6 +46,7 @@ c 14.09.2009  ggu     new routine divdist()
 c 22.02.2010  ggu     new routine bw_frame() to plot bw scale around plot
 c 09.04.2010  ggu     bug fix in frac_pos() -> maybe compiler error
 c 17.05.2011  ggu     new routine basin_number()
+c 30.08.2012  ggu     new routines to automaticallylabel spehrical grid
 c
 c*************************************************************
 
@@ -94,6 +95,8 @@ c with the desired mode
 	character*80 bndlin
 	real getpar
 	logical inboxdim
+        logical is_spherical
+	logical is_box_given
 
 	call basinit
 
@@ -143,10 +146,17 @@ c user defined legend
 
 	call legplo
 
-c legend
+c legend (north and scale)
 
-	if( inboxdim('leg',x0,y0,x1,y1) ) then	!write legend
-	  call legend(x0,y0,x1,y1)
+	!if( inboxdim('leg',x0,y0,x1,y1) ) then	!write legend
+	if( is_box_given('leg') ) then	!write legend
+          if( is_spherical() ) then
+            write(6,*) 'coordinates are spherical'
+            write(6,*) 'no north and scale written...'
+            return
+	  else
+	    call legend(x0,y0,x1,y1)
+          end if
 	end if
 
 c end of routine
@@ -914,14 +924,50 @@ c computes number of fractional digits of real r
 	real r
 	integer np
 
-	real rr,ri
 	real eps
+	integer ieps,ir
 
 	eps = 1.e-5
+	ieps = 100000
+
+	np = 0
+	ir = nint(ieps*abs(r))
+	if( ir .eq. 0 ) return
+	np = 5
+
+	do while( 10*(ir/10) .eq. ir )
+	  ir = ir/10
+	  np = np - 1
+	  !write(6,*) 'new pos: ',ir,np
+	end do
+
+	end
+
+c**************************************************************
+
+	subroutine frac_pos1(r,np)
+
+c computes number of fractional digits of real r
+
+	implicit none
+
+	real r
+	integer np
+
+	real rr,ri
+	real eps
+	integer ieps
+
+	eps = 1.e-5
+	ieps = nint(1./eps)
 
 	rr = r
+
+	rr = abs(r)
+	rr = eps*nint(rr/eps)
 	ri = float(int(rr))
 	np = 0
+	write(6,*) 'in frac_pos: ',r,rr,ri,np
 
 	do while( abs(rr-ri) .gt. eps )
 	  !write(6,*) np,r,rr
@@ -929,6 +975,7 @@ c computes number of fractional digits of real r
 	  if( np .gt. 5 ) goto 99
 	  rr = rr * 10.
 	  ri = float(int(rr))
+	  write(6,*) 'in frac_pos: ',r,rr,ri,np
 	end do
 
 	return
@@ -945,15 +992,13 @@ c handles spherical coordinates
 
 	implicit none
 
-	integer isphe
 	real fact,y,pi,rad
 	real x0,y0,x1,y1
 
 	real getpar
+	logical is_spherical
 
-	isphe = nint(getpar('isphe'))
-
-	if( isphe .le. 0 ) return
+        if( .not. is_spherical() ) return	!only for spherical
 
 	call getbas(x0,y0,x1,y1)
 	y = 0.5*(y0+y1)
@@ -970,6 +1015,55 @@ c handles spherical coordinates
 
 c**************************************************************
 
+	subroutine adjust_reg_grid_spacing(dreg)
+
+c checks if regular grid should be written
+
+	implicit none
+
+	real dreg
+
+	logical is_spherical,is_box_given
+
+	if( dreg .ge. 0. ) return		!already given
+        if( .not. is_spherical() ) return	!only for spherical
+	if( .not. is_box_given('leg') ) return	!no legend was requested
+
+	call compute_reg_grid_spacing(dreg)
+
+	end
+
+c**************************************************************
+
+	subroutine compute_reg_grid_spacing(dreg)
+
+c tries to find best regular grid spacing value
+
+	implicit none
+
+	real dreg
+
+	real x0,y0,x1,y1
+	real dx,dy,dxy
+
+	real rnext
+
+	call getbas(x0,y0,x1,y1)
+
+	dx = x1 - x0
+	dy = y1 - y0
+	dxy = max(dx,dy)
+
+	dxy = dxy/4.		!around 4 grid lines
+
+	dreg = rnext(dxy,1)
+
+	write(6,*) 'new reggrd = ',dreg,x0,x1,y0,y1
+
+	end
+
+c**************************************************************
+
 	subroutine plot_reg_grid
 
 c handles plotting of regular grid
@@ -979,6 +1073,7 @@ c handles plotting of regular grid
 	integer ngrid
 	real reggrd
 	real reggry
+	real dreg
 
 	real getpar
 
@@ -986,6 +1081,11 @@ c handles plotting of regular grid
 
 	reggrd = getpar('reggrd')
 	reggry = getpar('reggry')
+
+	!call adjust_reg_grid_spacing(reggrd)	!check if plotted automatically
+	! we do not need the above call, because we automatically
+	! only label the plot, but do not plot lines
+	! if you want lines you have to explicitly set reggrd
 
 	if( reggrd .le. 0. ) return
 	if( reggry .ge. 1. ) return	!no white painting
@@ -1032,7 +1132,9 @@ c handles labeling of regular grid
 	reggrd = getpar('reggrd')
 	imicro = nint(getpar('regdst'))
 
-	if( reggrd .le. 0. ) return
+	call adjust_reg_grid_spacing(reggrd)	!check if plotted automatically
+
+	if( reggrd .eq. 0. ) return
 
 	call frame(0)
 
@@ -1049,6 +1151,7 @@ c here labeling
 
 	dist = reggrd
 	call frac_pos(dist,nc)
+	write(6,*) 'frac_pos: ',dist,nc
 	if( nc .eq. 0 ) nc = -1
 
 	xdmin = rround(xmin,dist,-1)

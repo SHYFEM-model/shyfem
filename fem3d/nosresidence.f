@@ -275,17 +275,14 @@ c	  -----------------------------------------
             lmax = ilhkv(k)
             do l=1,lmax
               conz = cv3(l,k)
-	      if ( conz .gt. 0. .and. conz .le. 1. ) then
-		if( blog ) then
-	          rl = - log(conz/c0)
-                  cvacu(l,k) = cvacu(l,k) + rl
-		else
-                  cvacu(l,k) = cvacu(l,k) + conz
-		end if
-              else if( conz .lt. 0. ) then
-		write(140,*) it,k,conz
-		conz = 0.
-      	      endif  
+              if ( conz .lt. 0. ) conz = 0.
+	      if( blog ) then
+                if ( conz .gt. c0 ) conz = c0
+	        rl = - log(conz/c0)
+                cvacu(l,k) = cvacu(l,k) + rl
+	      else
+                cvacu(l,k) = cvacu(l,k) + conz
+	      end if
 	      cv3d(l,k) = conz
             end do
           end do

@@ -1706,6 +1706,24 @@ c	we are nearly done -> see if units are relative and convert
 
 c******************************************************************
 
+	function is_box_given(name)
+
+c checks if box is given
+
+	implicit none
+
+	logical is_box_given
+	character*(*) name
+
+	real x0,y0,x1,y1	!we are not interested in these values
+	logical inboxdim_noabs
+
+	is_box_given = inboxdim_noabs(name,x0,y0,x1,y1)
+
+	end
+
+c******************************************************************
+
 	function is_relative(x,y)
 
 c checks if coordinates are relative or absolute
