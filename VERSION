@@ -1,3 +1,18 @@
+version  6_1_57    12-09-2012    VERS_6_1_57
+
+========================================================== 12-09-2012 - 6_1_57
+
+c ./femplot/supbas.f:
+c 30.08.2012  ggu     new routines to automaticallylabel spehrical grid
+c
+c ./fem3d/subver.f:
+c 12.09.2012	ggu	version 6.1.57
+c
+c ./fem3d/subnev.f:
+c 30.08.2012	ggu	new routine is_spherical()
+
+==========================================================
+
 version  6_1_56    29-08-2012    VERS_6_1_56   commit_2012-09-12
 
 version  6_1_56    29-08-2012    VERS_6_1_56
