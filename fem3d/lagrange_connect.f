@@ -49,7 +49,8 @@ c continuous release from points
 	  call lagr_connect_get_coords(nconnect_dim,np,xp,yp)
 	  call lagr_connect_find_elems(np,xp,yp,iep)
 
-	  call lagr_connect_init(np,iep)
+	  call lagr_connect_init(np,xp,yp,iep)
+	  call lagr_connect_reset(np)
 	end if
 
 	icall = icall + 1
@@ -64,7 +65,7 @@ c continuous release from points
 
 	if( mod(it,itmonth).eq.0.or.it.eq.itend ) then
 	  call lagr_connect_write(np)
-!	  call lagr_connect_init(np,iep)  
+!	  call lagr_connect_reset(np)  
 	end if
 
 	end
@@ -73,7 +74,7 @@ c*******************************************************************
 c*******************************************************************
 c*******************************************************************
 
-	subroutine lagr_connect_init(np,iep)
+	subroutine lagr_connect_init(np,xp,yp,iep)
 
 	implicit none
 
@@ -81,12 +82,14 @@ c*******************************************************************
 	include 'lagrange_connect.h'
 
 	integer np
+	real xp(np),yp(np)
 	integer iep(np)
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
 	integer ie,ip,jp
+	real r
 
 	real areaele
 
@@ -94,14 +97,42 @@ c*******************************************************************
 
 	do ie=1,nel
 	  i_connect_elems(ie) = 0
-	  i_connect_total(ie) = 0
-	  t_connect_total(ie) = 0.
 	end do
 
-	do ip=1,np
-	  ie = iep(ip)
-	  i_connect_elems(ie) = ip
-	  a_connect_area(ip) = areaele(ie)
+	if( r_connect_radius .le. 0. ) then	!receiving in only one element
+	  do ip=1,np
+	    ie = iep(ip)
+	    i_connect_elems(ie) = ip
+	    a_connect_area(ip) = areaele(ie)
+	  end do
+	else					!receiving in circle
+	  r = r_connect_radius
+	  do ip=1,np
+	    call lagr_connect_mark_elems(ip,xp(ip),yp(ip),r)
+	  end do
+	end if
+
+	end
+
+c*******************************************************************
+
+	subroutine lagr_connect_reset(np)
+
+	implicit none
+
+	include 'param.h'
+	include 'lagrange_connect.h'
+
+	integer np
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	integer ie,ip,jp
+
+	do ie=1,nel
+	  i_connect_total(ie) = 0
+	  t_connect_total(ie) = 0.
 	end do
 
 	do ip=1,np
@@ -116,6 +147,38 @@ c*******************************************************************
 
 	end
 
+c*******************************************************************
+
+	subroutine lagr_connect_mark_elems(ip,xp,yp,r)
+
+	implicit none
+
+	include 'param.h'
+	include 'lagrange_connect.h'
+
+	integer ip
+	real xp,yp
+	real r
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	integer ie
+	real r2,d2
+	real xc,yc
+
+	r2 = r*r
+
+	do ie=1,nel
+	  call baric(ie,xc,yc)
+	  d2 = (xc-xp)**2 + (yc-yp)**2
+	  if( d2 .le. r2 ) i_connect_elems(ie) = ip
+	end do
+
+	end
+
+c*******************************************************************
+c*******************************************************************
 c*******************************************************************
 
 	subroutine lagr_connect_released(ip,n)
@@ -133,7 +196,7 @@ c*******************************************************************
 
 c*******************************************************************
 
-	subroutine lagr_connect_count(ibdy,ie,time,ic)
+	subroutine lagr_connect_count(ibdy,ie,ieorig,time,ic)
 
 	implicit none
 
@@ -141,7 +204,7 @@ c*******************************************************************
 	include 'lagrange.h'
 	include 'lagrange_connect.h'
 
-	integer ibdy,ie
+	integer ibdy,ie,ieorig
 	real time
 	integer ic
 
@@ -150,17 +213,28 @@ c*******************************************************************
         integer itanf,itend,idt,nits,niter,it
         common /femtim/ itanf,itend,idt,nits,niter,it
 
-	integer ie_from,ip_to,ip_from
+	integer ie_from,ip_to,ip_from,ip_to_orig
+	integer icc
 	real tarrive
+	logical is_r_nan
 
 	if( ie .le. 0 ) return
 	if( lagr_connect_pps .le. 0. ) return
+
+	if( is_r_nan(time) ) then
+	  write(6,*) 'nan found: ',ibdy,ie,time
+	  stop 'error stop lagr_connect_count: time is nan'
+	end if
 
 	i_connect_total(ie) = i_connect_total(ie) + ic
 	t_connect_total(ie) = t_connect_total(ie) + time
 
 	ip_to = i_connect_elems(ie)
 	if( ip_to .le. 0 ) return
+
+	ip_to_orig = i_connect_elems(ieorig)
+	icc = ic
+	if( ip_to .eq. ip_to_orig ) icc = 0
 
 	ie_from = est(ibdy)
 	ip_from = i_connect_elems(ie_from)
@@ -169,10 +243,10 @@ c*******************************************************************
 	  stop 'error stop lagr_connect_count: no source'
 	end if
 
-	i_connect(ip_from,ip_to) = i_connect(ip_from,ip_to) + ic
+	i_connect(ip_from,ip_to) = i_connect(ip_from,ip_to) + icc
 	t_connect(ip_from,ip_to) = t_connect(ip_from,ip_to) + time
 
-	if( ic .le. 0 ) return
+	if( icc .le. 0 ) return
 
 	if( ip_to .gt. 63 ) then
 	  write(6,*) 'ip_to = ',ip_to
@@ -232,36 +306,37 @@ c*******************************************************************
 	  end do
 	end do
 
-	write(127,*) 'lower matrix (column-wise)'
+!	write(127,*) 'lower matrix (column-wise)'
+!
+!	do jp=1,np				!to
+!	  do ip=jp,np				!from
+!	    call lagr_connect_write_entry(np,ip,jp)
+!	  end do
+!	end do
 
-	do jp=1,np				!to
-	  do ip=jp,np				!from
-	    call lagr_connect_write_entry(np,ip,jp)
-	  end do
-	end do
+!	write(127,*) 'upper matrix (row-wise)'
+!
+!	do ip=1,np				!from
+!	  do jp=ip,np				!to
+!	    call lagr_connect_write_entry(np,ip,jp)
+!	  end do
+!	end do
 
-	write(127,*) 'upper matrix (row-wise)'
+!	file = 'connectivity.eos'
+!	nvers = 3
+!	nvar = 1
+!	nlv = 1
+!	ivar = 300
+!	title = 'connectivity'
 
-	do ip=1,np				!from
-	  do jp=ip,np				!to
-	    call lagr_connect_write_entry(np,ip,jp)
-	  end do
-	end do
-
-	file = 'connectivity.eos'
-	nvers = 3
-	nvar = 1
-	nlv = 1
-	ivar = 300
-	title = 'connectivity'
-
-	iunit = ifileo(0,file,'unformatted','new')
-	call wfeos(iunit,nvers,nkn,nel,nlv,nvar,title,ierr)
-	call wseos(iunit,ilhv,hlv,hev,ierr)
-	call wreos(iunit,it,ivar+1,1,ilhv,t_connect_total,ierr)
+!	iunit = ifileo(0,file,'unformatted','new')
+!	call wfeos(iunit,nvers,nkn,nel,nlv,nvar,title,ierr)
+!	call wseos(iunit,ilhv,hlv,hev,ierr)
+!	call wreos(iunit,it,ivar+1,1,ilhv,t_connect_total,ierr)
 	!call wreos(iunit,it,ivar+2,nlvdim,ilhv,c,ierr)
-	close(iunit)
+!	close(iunit)
 
+	write(128,*) nel
 	do ie=1,nel
 	  write(128,*) ie,i_connect_total(ie),t_connect_total(ie)
 	end do
@@ -280,7 +355,7 @@ c*******************************************************************
 	integer np,ip,jp
 
 	integer ic,icf,itot
-	real tc,tcf,pab
+	real tc,tcf,pab,pabf
 	real area_i,area_j
 
 c ip is from
@@ -293,10 +368,11 @@ c jp is to
 	tc = t_connect(ip,jp)
 	icf = if_connect(ip,jp)
 	tcf = tf_connect(ip,jp)
-	pab = (i_connect(ip,jp)/area_j) / (itot/area_i)
+	pab = (i_connect(ip,jp)/area_j) / itot
+	pabf = (if_connect(ip,jp)/area_j) / itot
 	if( icf .gt. 0 ) tcf = tcf / icf
-	write(127,1000) ip,jp,ic,tc,icf,tcf,pab
- 1000	format(2i3,i8,e15.7,i8,2e15.7)
+	write(127,1000) ip,jp,ic,tc,icf,tcf,pab,pabf
+ 1000	format(2i3,i8,e15.7,i8,e15.7,2f7.4)
 
 	end
 
@@ -402,7 +478,7 @@ c******************************************************************
 	  r_station = ip_station / float(np_station)
 	else
 	  ip_station = 0
-	  r_station = 0.5
+	  !r_station = 0.5	!is not changed
 	end if
 
 	end

@@ -16,6 +16,7 @@ c 03.11.2011    ggu     use routine set_hybrid_depth() for hybrid levels
 c 02.12.2011    ggu     check in set_bsig_depths()
 c 02.12.2011    ggu     use of intp_aver() for lmax = 1
 c 27.01.2012    deb&ggu adapted to hybrid levels
+c 05.10.2012    ggu     intp_vert() and intp_aver() transfered to subvintp.f
 c
 c*****************************************************************
 
@@ -346,7 +347,7 @@ c*****************************************************************
 	real siguval(nsidim+1)
 	real sigvval(nsidim+1)
 
-	logical bsigma
+	logical bsigma,bcons
 	integer nsigma
 	integer l,lmax
 	real hfem,hfd,zfem
@@ -354,6 +355,8 @@ c*****************************************************************
 	real hsigma
 
 	if( nbsig .le. 0 ) goto 98
+
+	bcons = .false.
 
 	call get_sigma(nsigma,hsigma)
 	bsigma = nsigma .gt. 0
@@ -380,8 +383,8 @@ c*****************************************************************
           call intp_aver(nbsig,hsig,siguval,femuval(1))
           call intp_aver(nbsig,hsig,sigvval,femvval(1))
         else
-	  call intp_vert(nbsig,hsig,siguval,lmax,hlfem,femuval)
-	  call intp_vert(nbsig,hsig,sigvval,lmax,hlfem,femvval)
+	  call intp_vert(bcons,nbsig,hsig,siguval,lmax,hlfem,femuval)
+	  call intp_vert(bcons,nbsig,hsig,sigvval,lmax,hlfem,femvval)
         end if
 
 	do l=1,lmax
@@ -435,145 +438,6 @@ c compute bottom of layers for depth h and water level z
 	end do
 
 	end
-
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
-
-	subroutine intp_vert(nl1,zb1,var1,nl2,zb2,var2)
-
-c vertical interpolation of variables from one grid to another
-
-	implicit none
-
-	integer nl1		!number of levels of first grid
-	real zb1(0:nl1+1)	!depth of bottom of vertical boxes
-	real var1(nl1+1)	!value of variable at center of box
-	integer nl2		!number of levels of second grid
-	real zb2(0:nl2)		!depth of bottom of vertical boxes
-	real var2(nl2)		!value of variable at center of box
-
-c values are interpolated from first grid to second grid
-c z levels refer to bottom of each grid (zb1(nl1) is total depth of column)
-c zb(0) is surface ... normally 0
-c variables are considered at center of box
-c values are considered to be constant for every box
-c
-c ATTENTION: arrays zb1, var1 MUST be dimensioned one element bigger
-c	then the available data. The last element is altered by this
-c	subroutine, but should be of no concern for the calling program
-c
-c output is var1, all other variables are input values
-
-	logical bmiss
-	integer l,j,ltop1,lbot1
-	real ztop2,ztop1,zbot2,zbot1
-	real ztop,zbot
-	real vint1,vint2,fact
-	real val
-	logical bcons
-
-	zb1(nl1+1) = zb2(nl2)
-	var1(nl1+1) = var1(nl1)
-	bcons = .true.			!conserve total quantity
-	bcons = .false.			!do not conserve total quantity
-
-	ltop1 = 0
-	vint2 = 0.
-
-	do l=1,nl2
-	  ztop2 = zb2(l-1)
-	  zbot2 = zb2(l)
-
-	  do while( ltop1 .lt. nl1 .and. zb1(ltop1+1) .le. ztop2 )
-	    !write(6,*) 'adjourning top depth: ',ltop1,zb1(ltop1+1),ztop2
-	    ltop1 = ltop1 + 1
-	  end do
-
-	  bmiss = .false.
-	  do lbot1=ltop1+1,nl1+1
-	    if( zb1(lbot1) .ge. zbot2 ) goto 1
-	  end do
-	  lbot1 = nl1
-	  bmiss = .true.
-    1	  continue
-
-	  ztop1 = zb1(ltop1)
-	  zbot1 = zb1(lbot1)
-
-	  if( ztop1 .gt. ztop2 .or. zbot1 .lt. zbot2 ) goto 99
-	  if( bmiss ) goto 98
-
-	  !write(6,*) l,ltop1,lbot1,ztop2,zbot2,zb1(lbot1)
-
-	  val = 0.
-	  do j=ltop1+1,lbot1
-	      ztop = max(zb1(j-1),ztop2)
-	      zbot = min(zb1(j),zbot2)
-	      val = val + var1(j) * ( zbot - ztop )
-	  end do
-
-	  vint2 = vint2 + val			!integrated value
-	  var2(l) = val / (zbot2-ztop2)
-	  ltop1 = lbot1 - 1
-
-	end do
-
-	zb1(nl1+1) = 0.
-	var1(nl1+1) = 0.
-
-	if( bcons ) then	!must conserve total content of scalar
-	  vint1 = 0.
-	  do l=1,nl1
-	    ztop = zb1(l-1)
-	    zbot = zb1(l)
-	    vint1 = vint1 + var1(l) * ( zbot - ztop )
-	  end do
-
-	  if( vint1 .eq. vint2 ) return
-
-	  fact = vint1 / vint2
-	  do l=1,nl2
-	    var2(l) = fact * var2(l)
-	  end do
-	end if
-
-	return
-   98	continue
-	stop 'error stop intp_vert: missing value not possible'
-   99	continue
-	write(6,*) ztop1,ztop2
-	write(6,*) zbot1,zbot2
-	stop 'error stop intp_vert: interval in (1) must include (2)'
-	end
-
-c*****************************************************************
-
-        subroutine intp_aver(nbsig,hsig,sigval,femval)
-
-        implicit none
-
-        integer nbsig
-        real hsig(0:nbsig)
-        real sigval(nbsig)
-        real femval
-
-        integer i
-        real hacu,acu,h
-
-        acu = 0.
-        hacu = 0.
-        do i=1,nbsig
-          h = hsig(i) - hsig(i-1)
-          hacu = hacu + h
-          acu = acu + h * sigval(i)
-        end do
-
-        femval = acu / hacu
-
-        end
 
 c*****************************************************************
 

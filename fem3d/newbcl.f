@@ -1049,7 +1049,7 @@ c*******************************************************************
 	real hkv(1)
 	common /hkv/hkv
 
-	logical bsigma,bdebug
+	logical bsigma,bdebug,bcons
 	logical bformat,bhashl
 	integer nknaux,lmax,nvar
 	integer i,l,iunit
@@ -1069,6 +1069,8 @@ c*******************************************************************
 
 	bdebug = .true.
 	bdebug = .false.
+
+	bcons = .false.		!conserve total quantity?
 
 	iunit   = info(1)
 	bformat = info(2) .gt. 0
@@ -1149,7 +1151,8 @@ c the following still has to be checked
             val_data(l) = value(l,i)
           end do
 
-          call intp_vert(lmax,hl_data,val_data,lmax_fem,hl_fem,val_fem)
+          call intp_vert(bcons,lmax,hl_data,val_data
+     +				,lmax_fem,hl_fem,val_fem)
 
           do l = 1,lmax_fem
             value(l,i) = val_fem(l) !DEB

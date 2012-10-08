@@ -156,7 +156,7 @@ c particles older than tdead are eliminated
 
 	if (psurv.le.0) then !spacciata
 	  icount = icount+1 
-	  write(77,*) it,i,icount	
+	  write(77,*) it,i,icount,deltat
 	  ie_body(i) = -ie_body(i)
 	endif
 

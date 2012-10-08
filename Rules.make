@@ -53,11 +53,13 @@ export NELDIM = 22000
 # GNU_GFORTRAN		->	gfortran
 # INTEL			->	ifort
 # PORTLAND		->	pgf90
+# IBM			->	xlf
 #
 # Available options for the C compiler are:
 #
 # GNU_GCC		->	gcc
 # INTEL			->	icc
+# IBM			->	xlc
 #
 ##############################################
 
@@ -65,9 +67,11 @@ export NELDIM = 22000
 FORTRAN_COMPILER = GNU_GFORTRAN
 #FORTRAN_COMPILER = INTEL
 #FORTRAN_COMPILER = PORTLAND
+#FORTRAN_COMPILER = IBM
 
 C_COMPILER = GNU_GCC
 #C_COMPILER = INTEL
+#C_COMPILER = IBM
 
 ##############################################
 # Parallel compilation
@@ -349,6 +353,55 @@ endif
 
 ##############################################
 #
+# IBM compiler (xlf)
+#
+##############################################
+#
+# if you use xlf95  "-qnosave" is a default option
+# xlf_r is thread safe
+# all the compiler options are included in FIBM_OMP
+# set PARALLEL = TRUE
+##############################################
+
+FIBM_PROFILE = 
+ifeq ($(PROFILE),true)
+  FIBM_PROFILE = 
+endif
+
+FIBM_WARNING = 
+ifeq ($(WARNING),true)
+  FIBM_NOOPT = 
+endif
+
+FIBM_NOOPT = 
+ifeq ($(DEBUG),true)
+  FIBM_NOOPT =
+endif
+
+FIBM_OPT   = 
+ifeq ($(OPTIMIZE),true)
+# FIBM_OPT   = -O3 
+  FIBM_OPT   = 
+endif
+
+FIBM_OMP   =
+ifeq ($(PARALLEL),true)
+     FIBM_OMP    = -qsmp=omp -qnosave -q64 -qmaxmem=-1 -NS32648 -qextname -qsource -qcache=auto -qstrict -O3 -qarch=pwr6 -qtune=pwr6
+endif
+
+#----------------------------------
+
+ifeq ($(FORTRAN_COMPILER),IBM)
+  FIBM		= xlf_r
+  F77		= $(FIBM)
+  F95		= xlf_r
+  LINKER	= $(FIBM)
+  FFLAGS	= $(FIBM_OMP)
+  LFLAGS	= $(FIBM_OMP) -qmixed  -b64 -bbigtoc -bnoquiet -lpmapi -lessl -lmass -lmassvp4
+endif
+ 
+##############################################
+#
 # Portland compiler
 #
 ##############################################
@@ -498,6 +551,14 @@ endif
 ifeq ($(C_COMPILER),INTEL)
   CC     = icc
   CFLAGS = -O -g -traceback -check-uninit
+  LCFLAGS = -O 
+  CINFOFLAGS = -v
+endif
+
+ifeq ($(C_COMPILER),IBM)
+  CC     = xlc
+#  CFLAGS = -O -traceback -check-uninit
+  CFLAGS = -O
   LCFLAGS = -O 
   CINFOFLAGS = -v
 endif

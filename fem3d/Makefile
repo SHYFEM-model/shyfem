@@ -182,7 +182,7 @@ HTOBJS = \
 	submet.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o \
 	subtrace.o subproj.o subeos.o sigmautil.o \
 	submeteo.o submeteo1.o submeteo_inout.o \
-	subwrt.o \
+	subwrt.o subvintp.o \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ) $(PARALLEL_OBJ)
 
@@ -205,7 +205,8 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subbas.o subsys.o subdim.o \
 	  subapn.o subnsa.o subdum.o \
 	  subbnd.o subdts.o subdep.o \
-	  debug.o subreg.o subnev.o
+	  debug.o subreg.o subnev.o \
+	  subfile.o subvintp.o
 
 RSTOBJS = subrst.o ecological_dummy.o
 
@@ -421,6 +422,9 @@ ous2nc:  ous2nc.o $(OUSOBJS) $(OUTOBJS) netcdf.o
 
 eosinf:  eosinf.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+prep_input:  prep_input.o $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
 
 #-------------------------------------------------------
 

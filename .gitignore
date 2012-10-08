@@ -4,6 +4,7 @@
 arc
 test
 tmp
+newtmp
 
 lib
 bin
@@ -117,6 +118,7 @@ fem3d/nosaver_time
 fem3d/nosaver_vert
 fem3d/nosaverf
 fem3d/ousextr_gis
+fem3d/prep_input
 
 fembin/extinf
 fembin/flxinf

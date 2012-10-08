@@ -193,7 +193,7 @@ c---------------------------------------------------------------
 c new release of particles
 c---------------------------------------------------------------
 
-        if( it .ge. itrnext ) then
+	if( it .ge. itrnext .and. it .le. itrend ) then
 	  write(6,*) 'release of particles for lagrangian model'
 	  call lgr_init_shell
 	  itrnext = itrnext + idtl
@@ -349,7 +349,7 @@ c TRACK_LINE if the particle is on one side (normal situation)
         
 	integer nl
 	integer ltbdy
-	integer ieold
+	integer ieold,ieorig
 	real torig
 	real xn,yn
 
@@ -370,16 +370,18 @@ c track particle
 c---------------------------------------------------------------
 
 	torig = ttime
-	ieold = iel
+	ieold = iel	!element the particle is in or leaving
+	ieorig = iel	!original element the particle was in
         call track_orig(ttime,id,iel,xn,yn,ltbdy)
-	call lagr_connect_count(i,ieold,torig-ttime,0)
+	call lagr_connect_count(i,ieold,ieorig,torig-ttime,0)
 
 	do while ( ttime.gt.0. .and. iel.gt.0 .and. nl.gt.0 )
 	  torig = ttime
 	  ieold = iel
           call track_line(ttime,id,iel,xn,yn,ltbdy)
           nl = nl - 1
-	  call lagr_connect_count(i,ieold,torig-ttime,1)
+	  call lagr_connect_count(i,ieold,ieorig,torig-ttime,1)
+	  ieorig = ieold
         end do
 
 c---------------------------------------------------------------

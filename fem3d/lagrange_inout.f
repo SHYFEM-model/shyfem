@@ -8,6 +8,7 @@ c
 c 05.02.2009    ggu	copied from lagrange_cont.f and integrated from others
 c 16.12.2011    ggu	initialization with body id
 c 23.01.2012    ggu	new call to insert_particle, new id_body
+c 01.10.2012    ggu	output concentrations only for one station
 c
 c*******************************************************************
 
@@ -149,7 +150,7 @@ c once it has been written to output with negative ie, it is set to 0
 	integer iu,it
 
 	integer nvers,mtype
-	parameter ( nvers = 3 , mtype = 367265 )
+	parameter ( nvers = 4 , mtype = 367265 )
 
 	integer nn,nout,ie,i,id
 	real x,y,z
@@ -195,7 +196,14 @@ c----------------------------------------------------------------
 	  ie = ie_body(i)
 	  id = id_body(i)
 	  if( ie .ne. 0 ) then
-	    write(iu) id,x,y,z,ie,xst(i),yst(i),zst(i),est(i),tin(i)
+	    if( nvers .eq. 3 ) then
+	      write(iu) id,x,y,z,ie,xst(i),yst(i),zst(i),est(i)
+	    else if( nvers .eq. 4 ) then
+	      write(iu) id,x,y,z,ie,xst(i),yst(i),zst(i),est(i),tin(i)
+	    else
+	      write(6,*) 'nvers = ',nvers
+	      stop 'error stop lgr_output: nvers unknown'
+	    end if
 	  end if
 	  if( ie .lt. 0 ) ie_body(i) = 0		!flag as out
 	end do
@@ -228,6 +236,7 @@ c outputs particles as density (concentration) to NOS file
 
 	integer ie,ii,k
 	integer ic,i
+	integer ip,ip_station
 	integer nvar,ivar,nlvdi
 	real area_el,z
 
@@ -241,6 +250,9 @@ c outputs particles as density (concentration) to NOS file
         integer iunit
         save iunit
         data iunit / 0 /
+
+	ip_station = 5
+	ip_station = 0		!if different from 0 -> plot only this station
 
 c---------------------------------------------------------
 c initialize
@@ -259,10 +271,13 @@ c count particles in elements
 c---------------------------------------------------------
 
 	do i=1,nbdy
-          z = z_body(i)			! z == 1 => bottom
 	  ie = ie_body(i)
+          z = z_body(i)					! z == 1 => bottom
+	  call lagr_connect_get_station(ie,ip,z)	! connectivity
 	  if( ie .ne. 0 ) then
-	    ecount(ie) = ecount(ie) + 1
+	    if( ip*ip_station .eq. 0 .or. ip .eq. ip_station ) then
+	      ecount(ie) = ecount(ie) + 1
+	    end if
 	  end if
 	end do
 
