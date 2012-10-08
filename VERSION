@@ -1,3 +1,30 @@
+version  6_1_58    08-10-2012    VERS_6_1_58
+
+========================================================== 08-10-2012 - 6_1_58
+
+c ./femplot/suplag.f:
+c 01.10.2012    ggu     use station to get color in plot (ip_station)
+c
+c ./fem3d/prep_input.f:
+c 03.10.2012    ggu     written from basinf
+c
+c ./fem3d/subver.f:
+c 08.10.2012	ggu	version 6.1.58
+c
+c ./fem3d/newbsig.f:
+c 05.10.2012    ggu     intp_vert() and intp_aver() transfered to subvintp.f
+c
+c ./fem3d/subvintp.f:
+c 04.10.2012    ggu     copied from newbsig.f
+c
+c ./fem3d/lagrange_inout.f:
+c 01.10.2012    ggu	output concentrations only for one station
+c
+c ./fem3d/subfile.f:
+c 02.10.2012	ggu	created from scratch
+
+==========================================================
+
 version  6_1_57    12-09-2012    VERS_6_1_57   commit_2012-10-08
 
 version  6_1_57    12-09-2012    VERS_6_1_57
