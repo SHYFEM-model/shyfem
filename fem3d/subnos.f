@@ -856,4 +856,40 @@ c returns description of variable id
 	end
 
 c************************************************************
+c
+c	ous_init
+c
+c	ous_set_data
+c	ous_write_header
+c	ous_write_header2
+c	ous_write_record
+c
+c	ous_get_data
+c	ous_read_header
+c	ous_read_header2
+c	ous_read_record
+c
+c writing
+c
+c	ous_open(iunit,nvers)
+c	ous_set_date(date,time)
+c	ous_write_header
+c	ous_write_header2
+c	ous_write_record
+c	ous_write_record
+c	...
+c	ous_close
+c
+c reading
+c
+c	ous_open(iunit,nvers)
+c	ous_read_header
+c	ous_get_date(date,time)
+c	ous_read_header2
+c	ous_read_record
+c	ous_read_record
+c	...
+c	ous_close
+c
+c************************************************************
 

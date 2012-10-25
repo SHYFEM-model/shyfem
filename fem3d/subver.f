@@ -276,3 +276,19 @@ c writes copyright and version/dimension
 
 c*****************************************************************
 
+	subroutine shyfem_copyright_test
+
+	implicit none
+
+	call shyfem_copyright('test_routine')
+
+	end
+
+c*****************************************************************
+
+c	program shyfem_copyright_main
+c	implicit none
+c	call shyfem_copyright_test
+c	end
+
+c*****************************************************************

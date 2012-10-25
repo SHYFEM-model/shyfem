@@ -12,7 +12,7 @@ c
 c************************************************************
 
 	subroutine write_fem_file_header(bformat,iunit,it
-     +				,nkn,lmax,nvar,hlv)
+     +				,nkn,lmax,nvar,nvers,ntype,hlv)
 
 c writes header of the file
 
@@ -24,27 +24,37 @@ c writes header of the file
 	integer nkn		!size of data (horizontal, nodes or elements)
 	integer lmax		!vertical values
 	integer nvar		!number of variables to write
+	integer nvers		!version of file format
+	integer ntype		!type of information contained
 	real hlv(lmax)		!depth at bottom of layer
 
-	integer nvers		!version of file format
-	integer l
+	integer l,nv
 
-	nvers = 1
+	nv = nvers
+	if( nv .eq. 0 ) nv = 2	!default
+	if( nv .lt. 1 .and. nv .gt. 2 ) goto 99
 
 	if( bformat ) then
-	  write(iunit,*) it,nkn,lmax,nvar,nvers
+	  write(iunit,1000) it,nkn,lmax,nvar,nv,ntype
 	  write(iunit,*) (hlv(l),l=1,lmax)
 	else
-	  write(iunit) it,nkn,lmax,nvar,nvers
+	  write(iunit) it,nkn,lmax,nvar,nv,ntype
 	  write(iunit) (hlv(l),l=1,lmax)
 	end if
 
+	return
+ 1000	format(2i14,4i8)
+   99	continue
+	write(6,*) 'nvers = ',nvers
+	stop 'error stop write_fem_file_header: nvers'
 	end
 
 c************************************************************
 
-	subroutine write_fem_file_data(bformat,iunit,string
-     +				,nkn,nlvdim,ilhkv,data)
+	subroutine write_fem_file_data(bformat,iunit
+     +				,nkn,lmax,nvers
+     +				,nlvdim,ilhkv
+     +				,string,data)
 
 c writes data of the file
 
@@ -52,31 +62,47 @@ c writes data of the file
 
 	logical bformat		!formatted or unformatted
 	integer iunit		!file unit
-	character*(*) string	!string explaination
 	integer nkn		!size of data (horizontal, nodes or elements)
-	integer nlvdim		!vertical dimension
+	integer lmax		!vertical values (1 for 2d)
+	integer nvers		!version of file format
+	integer nlvdim		!vertical dimension of data
 	integer ilhkv(nkn)	!number of layers in point k (node)
+	character*(*) string	!string explaination
 	real data(nlvdim,nkn)	!data
 
-	integer k,lm,l
+	logical bcompact,b2d
+	integer k,lm,l,nv
 	character*80 text
 
+	nv = nvers
+	if( nv .eq. 0 ) nv = 2	!default
+
 	text = string
+	bcompact = nv .eq. 2
+	b2d = lmax .eq. 1 .or. nlvdim .eq. 1
 
 	if( bformat ) then
 	  write(iunit,*) text
-	  do k=1,nkn
-	    lm = ilhkv(k)
-	    if( nlvdim .eq. 1 ) lm = 1
-	    write(iunit,*) k,lm,(data(l,k),l=1,lm)
-	  end do
+	  if( bcompact .and. b2d ) then
+	    write(iunit,*) (data(1,k),k=1,nkn)
+	  else
+	    do k=1,nkn
+	      lm = ilhkv(k)
+	      if( b2d ) lm = 1
+	      write(iunit,*) k,lm,(data(l,k),l=1,lm)
+	    end do
+	  end if
 	else
 	  write(iunit) text
-	  do k=1,nkn
-	    lm = ilhkv(k)
-	    if( nlvdim .eq. 1 ) lm = 1
-	    write(iunit) k,lm,(data(l,k),l=1,lm)
-	  end do
+	  if( bcompact .and. b2d ) then
+	    write(iunit) (data(1,k),k=1,nkn)
+	  else
+	    do k=1,nkn
+	      lm = ilhkv(k)
+	      if( b2d ) lm = 1
+	      write(iunit) k,lm,(data(l,k),l=1,lm)
+	    end do
+	  end if
 	end if
 
 	end
@@ -102,14 +128,18 @@ c writes 1 variable of a 3d field
 	character*(*) string	!string explaination
 	real data(nlvdim,nkn)	!data
 
+	integer nvers,ntype
 	integer nvar
 
+	nvers = 2
+	ntype = 0
 	nvar = 1
 
 	call write_fem_file_header(bformat,iunit,it
-     +				,nkn,nlv,nvar,hlv)
-	call write_fem_file_data(bformat,iunit,string
-     +				,nkn,nlvdim,ilhkv,data)
+     +				,nkn,nlv,nvar,nvers,ntype,hlv)
+	call write_fem_file_data(bformat,iunit
+     +				,nkn,nlv,nvers
+     +				,nlvdim,ilhkv,string,data)
 
 	end
 
@@ -129,20 +159,24 @@ c writes 1 variable of a 2d field
 	character*(*) string	!string explaination
 	real data(nkn)		!data
 
-	integer nvar,lmax,nlvdim
+	integer nvers,ntype
+	integer nvar,nlv,nlvdim
 	real hlv(1)
 	integer ilhkv(1)
 
+	nvers = 2
+	ntype = 0
 	nvar = 1
-	lmax = 1
+	nlv = 1
 	nlvdim = 1
 	hlv(1) = 10000.
 	ilhkv(1) = 1
 
 	call write_fem_file_header(bformat,iunit,it
-     +				,nkn,lmax,nvar,hlv)
-	call write_fem_file_data(bformat,iunit,string
-     +				,nkn,nlvdim,ilhkv,data)
+     +				,nkn,nlv,nvar,nvers,ntype,hlv)
+	call write_fem_file_data(bformat,iunit
+     +				,nkn,nlv,nvers
+     +				,nlvdim,ilhkv,string,data)
 
 	end
 
@@ -161,7 +195,82 @@ c checks if file is formatted or unformatted and opens it for read
 	integer iunit		!unit of opened file (in/out)
 	logical bformat		!is formatted? (return)
 
-	integer it,nkn0,nkn1,lmax,nvar,nvers
+	logical bok
+
+	call fem_file_test_open(name,nkn,bok,bformat)
+
+	if( bok ) then
+	  if( bformat ) then
+	    open(iunit,file=name,form='formatted',status='old')
+	  else
+	    open(iunit,file=name,form='unformatted',status='old')
+	  end if
+	else
+	  call fem_file_write_info(name,.true.)
+	  call fem_file_write_info(name,.false.)
+	  stop 'error stop fem_file_read_open: file open or read'
+	end if
+
+	end
+
+c************************************************************
+
+	subroutine fem_file_write_info(name,bformat)
+
+c writes information on file from header
+
+	character*(*) name	!string explaination
+	logical bformat		!is formatted?
+
+	integer iunit
+	integer it,nkn,lmax,nvar,nvers,ntype
+
+	it = 0
+	nkn = 0
+	lmax = 0
+	nvar = 0
+	nvers = 0
+	ntype = 0
+
+	iunit = 90
+	call find_unit(iunit)
+
+	if( bformat ) then
+	  open(iunit,file=name,form='formatted',status='old')
+	  read(iunit,*,err=1) it,nkn,lmax,nvar,nvers,ntype
+	  write(6,*) 'formatted read: '
+	else
+	  open(iunit,file=name,form='unformatted',status='old')
+	  read(iunit,err=1) it,nkn,lmax,nvar,nvers,ntype
+	  write(6,*) 'unformatted read: '
+	end if
+    1	continue
+
+	write(6,*) it,nkn,lmax,nvar,nvers,ntype
+
+	close(iunit)
+
+	end
+
+c************************************************************
+
+	subroutine fem_file_test_open(name,nkn,bok,bformat)
+
+c checks if file is formatted or unformatted and opens it for read
+
+	implicit none
+
+	character*(*) name	!string explaination
+	integer nkn		!expected size of data, 0 if no idea
+	logical bok		!successful read? (return)
+	logical bformat		!is formatted? (return)
+
+	integer iunit
+	integer it,nkn0,nkn1,lmax,nvar,nvers,ntype
+
+c------------------------------------------------------
+c initialize parameters
+c------------------------------------------------------
 
 	nkn0 = 0
 	nkn1 = 0
@@ -170,23 +279,33 @@ c checks if file is formatted or unformatted and opens it for read
 	nvar = 0
 	nvers = 0
 
+	bok = .true.
+
+c------------------------------------------------------
+c find unit to open file
+c------------------------------------------------------
+
+	iunit = 90
+	call find_unit(iunit)
+
 c------------------------------------------------------
 c first try unformatted
 c------------------------------------------------------
 
 	open(iunit,file=name,form='unformatted',status='old',err=2)
-	read(iunit,err=1) it,nkn0,lmax,nvar,nvers
+	read(iunit,err=1) it,nkn0,lmax,nvar,nvers,ntype
 
-	if( nkn .ne. nkn0 ) goto 1
+	if( nkn .gt. 0 .and. nkn .ne. nkn0 ) goto 1
 	if( lmax .le. 0 .or. lmax .gt. 1000 ) goto 1
 	if( nvar .le. 0 .or. nvar .gt. 100 ) goto 1
-	if( nvers .le. 0 .or. nvers .gt. 1 ) goto 1
+	if( nvers .lt. 1 .or. nvers .gt. 2 ) goto 1
+	if( ntype .lt. 0 .or. ntype .gt. 2 ) goto 1
 
 c       -----------------------------------------------
-c	we arrived here... this means the file is unformatted
+c	we arrived here... this means the file is (probably) unformatted
 c       -----------------------------------------------
 
-	backspace(iunit)
+	close(iunit)
 	bformat = .false.
 	return
 
@@ -198,32 +317,32 @@ c------------------------------------------------------
 c now try formatted
 c------------------------------------------------------
 
-	open(iunit,file=name,form='formatted',status='old',err=9)
+	open(iunit,file=name,form='formatted',status='old',err=8)
 	read(iunit,*,err=1) it,nkn1,lmax,nvar,nvers
 
-	if( nkn .ne. nkn1 ) goto 9
+	if( nkn .gt. 0 .and. nkn .ne. nkn0 ) goto 9
 	if( lmax .le. 0 .or. lmax .gt. 1000 ) goto 9
 	if( nvar .le. 0 .or. nvar .gt. 100 ) goto 9
 	if( nvers .le. 0 .or. nvers .gt. 1 ) goto 9
+	if( ntype .lt. 0 .or. ntype .gt. 2 ) goto 9
 
 c       -----------------------------------------------
-c	we arrived here... this means the file is formatted
+c	we arrived here... this means the file is (probably) formatted
 c       -----------------------------------------------
 
-	backspace(iunit)
+	close(iunit)
 	bformat = .true.
 	return
 
     9	continue
+	close(iunit)
+    8	continue
 
 c------------------------------------------------------
-c error handling
+c no successful opening
 c------------------------------------------------------
 
-	write(6,*) 'nkn: ',nkn,nkn0,nkn1
-	write(6,*) 'params: ',it,lmax,nvar,nvers
-	write(6,*) 'cannot open or read file: ',name
-	stop 'error stop fem_file_open: file open or read'
+	bok = .false.
 
 c------------------------------------------------------
 c end of routine
@@ -231,6 +350,8 @@ c------------------------------------------------------
 
 	end
 
+c************************************************************
+c************************************************************
 c************************************************************
 
 	subroutine read_fem_file_header(bformat,iunit,it
@@ -250,22 +371,23 @@ c reads header of the file
 	real hlv(nlvdim)	!depth at bottom of layer
 
 	integer nvers		!version of file format
+	integer ntype
 	integer l,nkn0
 
 	if( bformat ) then
-	  read(iunit,*) it,nkn0,lmax,nvar,nvers
+	  read(iunit,*) it,nkn0,lmax,nvar,nvers,ntype
 	  read(iunit,*) (hlv(l),l=1,min(lmax,nlvdim))
 	else
-	  read(iunit) it,nkn0,lmax,nvar,nvers
+	  read(iunit) it,nkn0,lmax,nvar,nvers,ntype
 	  read(iunit) (hlv(l),l=1,min(lmax,nlvdim))
 	end if
 
 	if( lmax .gt. nlvdim) goto 98
 
-	if( nkn .ne. nkn0 ) goto 99
+	if( nkn .gt. 0 .and. nkn .ne. nkn0 ) goto 99
 	if( lmax .le. 0 .or. lmax .gt. 1000 ) goto 99
 	if( nvar .le. 0 .or. nvar .gt. 100 ) goto 99
-	if( nvers .le. 0 .or. nvers .gt. 1 ) goto 99
+	if( nvers .lt. 1 .or. nvers .gt. 2 ) goto 99
 
 	return
    98	continue

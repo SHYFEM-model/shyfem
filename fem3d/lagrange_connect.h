@@ -5,12 +5,12 @@ c include file for connectivity simulations
         parameter ( nconnect_dim = 50 )
 
         real lagr_connect_pps
-        !parameter ( lagr_connect_pps = 1./200. )
-        parameter ( lagr_connect_pps = 0. )
+        parameter ( lagr_connect_pps = 1./200. )
+        !parameter ( lagr_connect_pps = 0. )
 
         real r_connect_radius
-        !parameter ( r_connect_radius = 1000. )
-        parameter ( r_connect_radius = 0. )
+        parameter ( r_connect_radius = 2000. )
+        !parameter ( r_connect_radius = 0. )
 
 	integer lagr_connect_itmonth
         parameter ( lagr_connect_itmonth = 30.5*86400 )

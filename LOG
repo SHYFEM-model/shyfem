@@ -1,4 +1,36 @@
 
+c ./femplot/supbas.f:
+c 24.10.2012  ggu     bug in labelling non spherical grid (returned -1)
+c
+c ./femplot/suplin.f:
+c 22.10.2012    ggu     dxmin introduced to plot arrow every dxmin distance
+c 24.10.2012    ggu     bsmooth introduced for smooth bottom plotting
+c
+c ./fem3d/subdts.f:
+c 23.10.2012    ggu     unpackdate() and dtsini() accepts also only year
+c
+c ./fem3d/lagrange_main.f:
+c 22.10.2012    ggu     call connectivity also after diffusion
+c 22.10.2012    ggu     limit release to itranf/end
+c
+c ./fem3d/lagrange_cont.f:
+c 23.10.2012    ggu     do not call connectivity here anymore
+c
+c ./fem3d/subbfm.f:
+c 22.10.2012    ggu     saved some variables
+c
+c ./fem3d/lagrange_connect.f:
+c 22.10.2012    ggu     prepared for circular area to receive particles
+c
+c ./fem3d/subreg.f:
+c 10.10.2012    ggu     new routine fm2am2d() and fm2am3d()
+c
+c ./fem3d/subsys.f:
+c 24.10.2012    ggu     new parameter dxmin
+
+
+
+
 c ./femplot/suplag.f:
 c 01.10.2012    ggu     use station to get color in plot (ip_station)
 c

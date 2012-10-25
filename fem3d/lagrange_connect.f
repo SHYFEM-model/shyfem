@@ -6,10 +6,11 @@ c
 c revision log :
 c
 c 23.01.2012    ggu	new routine for release in point, connectivity
+c 22.10.2012    ggu	prepared for circular area to receive particles
 c
 c*******************************************************************
 
-	subroutine lagr_connect_continuous_points
+	subroutine lagr_connect_continuous_points(brelease)
 
 c continuous release from points
 
@@ -17,6 +18,8 @@ c continuous release from points
 
 	include 'param.h'
 	include 'lagrange_connect.h'
+
+	logical brelease
 
         integer itanf,itend,idt,nits,niter,it
         common /femtim/ itanf,itend,idt,nits,niter,it
@@ -58,10 +61,12 @@ c continuous release from points
 	call get_timestep(dt)
 	ppts = dt * pps				!paricles per time step
 
-	do ip=1,np
-	  call release_on_point(ppts,iep(ip),xp(ip),yp(ip),n)
-	  call lagr_connect_released(ip,n)	!count released particles
-	end do
+	if( brelease ) then			!release?
+	  do ip=1,np
+	    call release_on_point(ppts,iep(ip),xp(ip),yp(ip),n)
+	    call lagr_connect_released(ip,n)	!count released particles
+	  end do
+	end if
 
 	if( mod(it,itmonth).eq.0.or.it.eq.itend ) then
 	  call lagr_connect_write(np)
@@ -108,6 +113,7 @@ c*******************************************************************
 	else					!receiving in circle
 	  r = r_connect_radius
 	  do ip=1,np
+	    a_connect_area(ip) = 0.
 	    call lagr_connect_mark_elems(ip,xp(ip),yp(ip),r)
 	  end do
 	end if
@@ -167,12 +173,17 @@ c*******************************************************************
 	real r2,d2
 	real xc,yc
 
+	real areaele
+
 	r2 = r*r
 
 	do ie=1,nel
 	  call baric(ie,xc,yc)
 	  d2 = (xc-xp)**2 + (yc-yp)**2
-	  if( d2 .le. r2 ) i_connect_elems(ie) = ip
+	  if( d2 .le. r2 ) then
+	    i_connect_elems(ie) = ip
+	    a_connect_area(ip) = a_connect_area(ip) + areaele(ie)
+	  end if
 	end do
 
 	end
@@ -226,14 +237,16 @@ c*******************************************************************
 	  stop 'error stop lagr_connect_count: time is nan'
 	end if
 
-	i_connect_total(ie) = i_connect_total(ie) + ic
+	icc = ic
+	if( ie .eq. ieorig ) icc = 0
+
+	i_connect_total(ie) = i_connect_total(ie) + icc
 	t_connect_total(ie) = t_connect_total(ie) + time
 
 	ip_to = i_connect_elems(ie)
 	if( ip_to .le. 0 ) return
 
 	ip_to_orig = i_connect_elems(ieorig)
-	icc = ic
 	if( ip_to .eq. ip_to_orig ) icc = 0
 
 	ie_from = est(ibdy)
@@ -426,10 +439,13 @@ c*******************************************************************
         integer np,i
         real xp(ndim),yp(ndim)
         real xx,yy
+	character*40 file
 
+	file = 'coord_menor.dat'
+	file = 'connectivity_xy.dat'
         np=0
 
-        open(1,file='coord_menor.dat',status='old',err=99)
+        open(1,file=file,status='old',err=99)
 
 10      continue
         read(1,*,err=98,end=12)xx,yy
@@ -452,10 +468,12 @@ c*******************************************************************
         RETURN
 
 99      continue
+	write(6,*) 'file: ',file
         write(6,*)'lagr_get_coords OPEN FILE ERROR'
         STOP
 
 98      continue
+	write(6,*) 'file: ',file
         write(6,*)'lagr_get_coords READING FILE ERROR'
         STOP
         end

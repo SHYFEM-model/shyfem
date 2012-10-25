@@ -10,6 +10,7 @@ c 12.06.2008    ggu	initialize also z
 c 28.08.2009    ggu	new call to find_elems_to_segment (before line_elems)
 c 16.12.2011    ggu	new routine lagr_continuous_release_ppv()
 c 23.01.2012    ggu	new routine for release in point, connectivity
+c 23.10.2012    ggu	do not call connectivity here anymore
 c
 c*******************************************************************
 
@@ -32,12 +33,12 @@ c manages continuous release of particles
 	itmin = 86400
 	itmax = 3*86400
 
+c FIXME -> this has eventually to go into STR file
+
 	!if( it .ge. itmin .and. it .le. itmax ) then
 	  call lagr_continuous_release_pps(pps)
 	  call lagr_continuous_release_ppv(ppv)
 	!end if
-
-	call lagr_connect_continuous_points
 
 	end
 

@@ -157,24 +157,8 @@ c----------------------------------------------------------------
 c find unit where to open file
 c----------------------------------------------------------------
 
-	found=.false.
-	error=.false.
-
-	do while(.not.found.and..not.error)
-		if( iu .eq. 5 ) iu = 7		!safeguard units 5 and 6
-		inquire(unit=iu,exist=ex)
-		error=.not.ex
-		if(error) then
-			write(6,*) 'no unit available to open file'
-                        write(6,*) 'unit tried: ',iu
-                        call useunit(iu-1)
-			return
-		else
-			inquire(iu,opened=opened)
-			found=.not.opened
-		end if
-		if(.not.found) iu=iu+1
-	end do
+	call find_unit(iu)
+	found=iu.gt.0
 
 c----------------------------------------------------------------
 c open file and check error
@@ -360,6 +344,48 @@ c	now we know that there is enough room for extension
 	if( nff .le. 0 .or. file(nff:nfl) .ne. ext(nef:nel) ) then
 	  file(nfl+1:) = '.' // ext(nef:nel)
 	end if
+
+	end
+
+c*******************************************************
+
+	subroutine find_unit(iunit)
+
+c finds unit to open file - starts to search from iunit
+c on return iunit is either the next unit available
+c or it is 0 which means there was an error
+
+	implicit none
+
+	integer iunit
+
+	logical found,error,exists,opened
+	integer iu
+
+	iu = iunit
+	if( iu .le. 0 ) iu = 20			!set standard unit
+
+	found=.false.
+	error=.false.
+
+	do while(.not.found.and..not.error)
+		if( iu .eq. 5 ) iu = 7		!safeguard units 5 and 6
+		inquire(unit=iu,exist=exists)
+		error=.not.exists
+		if(error) then
+			write(6,*) 'no unit available to open file'
+                        write(6,*) 'unit tried: ',iu
+                        call useunit(iu-1)
+			iunit = 0
+			return
+		else
+			inquire(iu,opened=opened)
+			found=.not.opened
+		end if
+		if(.not.found) iu=iu+1
+	end do
+
+	iunit = iu
 
 	end
 

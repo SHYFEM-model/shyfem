@@ -206,7 +206,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subapn.o subnsa.o subdum.o \
 	  subbnd.o subdts.o subdep.o \
 	  debug.o subreg.o subnev.o \
-	  subfile.o subvintp.o
+	  subfile.o subvintp.o subver.o
 
 RSTOBJS = subrst.o ecological_dummy.o
 
@@ -417,7 +417,13 @@ nosinf2:  nosinf2.o $(NOSOBJS) $(OUTOBJS)
 nossum:  nossum.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
+noselab_time:  noselab_time.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
 ous2nc:  ous2nc.o $(OUSOBJS) $(OUTOBJS) netcdf.o
+	$(LINKER) -o $@ $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) netcdf.o $(LIBGS)
+
+ous2nc_reg:  ous2nc_reg.o $(OUSOBJS) $(OUTOBJS) netcdf.o
 	$(LINKER) -o $@ $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) netcdf.o $(LIBGS)
 
 eosinf:  eosinf.o $(NOSOBJS) $(OUTOBJS) 

@@ -103,6 +103,7 @@ c 03.11.2011	ggu	new parameter hsigma (hybrid)
 c 18.11.2011	ggu	new subroutine nlsinh_proj() for projection
 c 24.01.2012	ggu	new parameter nomp
 c 02.05.2012	ggu	new default for ndccol (-> 0)
+c 24.10.2012	ggu	new parameter dxmin
 c
 c************************************************************************
 
@@ -1447,10 +1448,10 @@ c section consists of a series of lines that must contain the
 c following information:
 c
 c The first value is a keyword that specifies what has to be plotted.
-c Possible values are |text|, |line|, |vect|, |rect| and also
+c Possible values are |text|, |line|, |vect|, |rect|, |circ|  and also
 c |wid| and |col|. These correspond to different types of information
-c that is inserted into the plot such as text, line, a vector or
-c a rectangle (filled or just outline). Moreover, the color and
+c that is inserted into the plot such as text, line, vector, rectangle
+c or circle (filled or just outline). Moreover, the color and
 c line width of the pen can be controlled by with |wid| and |col|.
 c
 c In case of |text| the starting position (lower left corner) is given,
@@ -1460,8 +1461,9 @@ c but in this case also the relative tip size must be given as a final
 c parameter. |rect| needs the coordinates of the lower left corner and 
 c upper right corner of the rectangle. It also needs the color used for
 c the filling of the rectangle (0-1) or the flag -1 which only draws the
-c outline of the rectangle without filling it. Finally |wid| needs the
-c relative width of the line and |col| the stroke color used when plotting
+c outline of the rectangle without filling it. |circ| needs the center
+c point and the radius and a fill color (see rectangle). Finally |wid| needs 
+c the relative width of the line and |col| the stroke color used when plotting
 c lines.
 c
 c A small example of an annotation that explains the above parameters
@@ -1474,6 +1476,7 @@ c line  30500 11800 35000 15000          #line
 c vect  30500 11800 35000 15000 0.1      #arrow, tipsize 0.1
 c rect  30500 11800 35000 15000 0.1      #rectangle, fill color 0.1
 c rect  30500 11800 35000 15000 -1       #rectangle (outline, no fill)
+c circ  30500 11800 5000 -1              #circle (outline, no fill)
 c wid   5                                #set line width to 5
 c col   0.5                              #set color to 0.5
 c $end
@@ -1711,6 +1714,10 @@ c		vertical scale is computed automatically, If you dont
 c		like the size of the vertical vectors you can controll
 c		it with this parameter. A value of 2 will give you
 c		a vertical vector twice as big a the default. (Default 1)
+c |dxmin|	Sometimes there are two many arrows plotted horizonally.
+c		The value of |dxmin| gives the minimum distance arrows have
+c		to be apart to be plotted. A value of 0 plots all arrows.
+c		(Default 0)
 c |svtip|	The (relative) tip size of the arrow. It specifies how
 c		big the arrow will be drawn. A value of 0 only draws the
 c		arrow line without tip, and a negative value inhibits
@@ -1727,6 +1734,7 @@ c			(Default 0.6)
 	call addpar('avscal',0.)
 	call addpar('rvscal',1.)
 	call addpar('rwscal',1.)
+	call addpar('dxmin',0.)
 	call addpar('svtip',0.3)
 	call addpar('rxscal',0.6)
 	call addpar('ryscal',0.6)

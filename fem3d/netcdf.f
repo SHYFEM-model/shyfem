@@ -5,6 +5,7 @@ c revision log :
 c
 c 05.12.2011    ggu&dbf	written from scratch
 c 26.03.2012    ggu	standardized implicit routines, compiler warnings
+c 20.09.2012    ggu	new routines for regular output
 c
 c notes :
 c
@@ -19,10 +20,216 @@ c CF compliance checker:
 c http://puma.nerc.ac.uk/cgi-bin/cf-checker.pl
 c http://titania.badc.rl.ac.uk/cgi-bin/cf-checker.pl
 c
+c this file implements CF 1.4 compliance
+c
 c still to be implemented:
 c	sigma/hybrid coordinates
 c	get file name
 c
+c******************************************************************
+
+	subroutine nc_open_reg(ncid,nx,ny,nlv,flag,date0,time0)
+
+	implicit none
+
+	include 'netcdf.inc'
+	include 'param.h'
+	include 'netcdf.h'
+
+        integer ncid            !identifier (return)
+	integer nx,ny,nlv	!size of arrays
+	real flag
+        integer date0,time0     !date and time of time 0
+
+	integer lat_varid,lon_varid,lvl_varid,dep_varid
+	integer varid
+	integer lvl_dimid,nx_dimid,ny_dimid,rec_dimid
+	integer ltext
+	integer retval
+	integer matrix_dimid(2)
+
+	character*80 file_name
+	character*80 text
+	character*80 what
+	character*80 date
+
+	integer nc_ichanm
+
+c-----------------------------------------
+C initialize parameters
+c-----------------------------------------
+
+	file_name = 'netcdf_reg.nc'
+
+c-----------------------------------------
+C Create the file.
+c-----------------------------------------
+
+	retval = nf_create(FILE_NAME, nf_clobber, ncid)
+	call nc_handle_err(retval)
+
+c-----------------------------------------
+C Define the dimensions. The record dimension is defined to have
+C unlimited length - it can grow as needed. In this example it is
+C the time dimension.
+c-----------------------------------------
+
+	retval = nf_def_dim(ncid, 'level', nlv, lvl_dimid)
+	call nc_handle_err(retval)
+	retval = nf_def_dim(ncid, 'lon', nx, nx_dimid)
+	call nc_handle_err(retval)
+	retval = nf_def_dim(ncid, 'lat', ny, ny_dimid)
+	call nc_handle_err(retval)
+	retval = nf_def_dim(ncid, 'time', NF_UNLIMITED, rec_dimid)
+	call nc_handle_err(retval)
+
+	matrix_dimid(1) = nx_dimid
+	matrix_dimid(2) = ny_dimid
+
+c-----------------------------------------
+C Define the coordinate variables
+c-----------------------------------------
+
+c-----------------------------------------
+c Assign units attributes to coordinate variables.
+c-----------------------------------------
+
+	retval = nf_def_var(ncid, 'lon', NF_REAL, 1, nx_dimid
+     +				,lon_varid)
+	call nc_handle_err(retval)
+	varid = lon_varid
+
+	what = 'units'
+	text = 'degrees_east'
+	call nc_define_attr(ncid,what,text,varid)
+
+	what = 'standard_name'
+	text = 'longitude'
+	call nc_define_attr(ncid,what,text,varid)
+
+	what = 'axis'
+	text = 'X'
+	call nc_define_attr(ncid,what,text,varid)
+
+c---------------------
+
+	retval = nf_def_var(ncid, 'lat', NF_REAL, 1, ny_dimid
+     +				,lat_varid)
+	call nc_handle_err(retval)
+	varid = lat_varid
+
+	what = 'units'
+	text = 'degrees_north'
+	call nc_define_attr(ncid,what,text,varid)
+
+	what = 'standard_name'
+	text = 'latitude'
+	call nc_define_attr(ncid,what,text,varid)
+
+	what = 'axis'
+	text = 'Y'
+	call nc_define_attr(ncid,what,text,varid)
+
+c---------------------
+c for non dimensional vertical coordinates (sigma etc) see:
+c http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.1/cf-conventions.html
+c in appendic D.6 - D.9
+c---------------------
+
+	retval = nf_def_var(ncid, 'level', NF_REAL, 1, lvl_dimid
+     +				,lvl_varid)
+	call nc_handle_err(retval)
+	varid = lvl_varid
+
+	what = 'units'
+	text = 'm'
+	call nc_define_attr(ncid,what,text,varid)
+
+	what = 'standard_name'
+	text = 'depth'
+	call nc_define_attr(ncid,what,text,varid)
+
+	what = 'description'
+	text = 'bottom of vertical layers'
+	call nc_define_attr(ncid,what,text,varid)
+
+	what = 'axis'
+	text = 'Z'
+	call nc_define_attr(ncid,what,text,varid)
+
+	what = 'positive'
+	text = 'down'
+	call nc_define_attr(ncid,what,text,varid)
+
+c---------------------
+
+	retval = nf_def_var(ncid, 'total_depth', NF_REAL, 2, matrix_dimid
+     +				,dep_varid)
+	call nc_handle_err(retval)
+	varid = dep_varid
+
+	what = 'units'
+	text = 'm'
+	call nc_define_attr(ncid,what,text,varid)
+
+	what = 'standard_name'
+	text = 'sea_floor_depth_below_sea_surface'
+	call nc_define_attr(ncid,what,text,varid)
+
+	what = 'description'
+	text = 'total depth at data grid nodes'
+	call nc_define_attr(ncid,what,text,varid)
+
+	call nc_define_range(ncid,-100.0,+10000.0,flag,varid)
+
+c---------------------
+
+	retval = nf_def_var(ncid, 'time', NF_INT, 1, rec_dimid
+     +				,rec_varid)
+	call nc_handle_err(retval)
+	varid = rec_varid
+
+	what = 'units'
+	call nc_convert_date(date0,time0,date)
+	text = 'seconds since '//date
+	call nc_define_attr(ncid,what,text,varid)
+
+	what = 'standard_name'
+	text = 'time'
+	call nc_define_attr(ncid,what,text,varid)
+
+	what = 'calendar'
+	text = 'standard'
+	call nc_define_attr(ncid,what,text,varid)
+
+	what = 'axis'
+	text = 'T'
+	call nc_define_attr(ncid,what,text,varid)
+
+c-----------------------------------------
+c define dimensions to pass back
+c-----------------------------------------
+
+	dimids_2d(1) = nx_dimid
+	dimids_2d(2) = ny_dimid
+	dimids_2d(3) = rec_dimid
+
+	dimids_3d(1) = nx_dimid
+	dimids_3d(2) = ny_dimid
+	dimids_3d(3) = lvl_dimid
+	dimids_3d(4) = rec_dimid
+
+	coord_varid(1) = lon_varid
+	coord_varid(2) = lat_varid
+	coord_varid(3) = lvl_varid
+	coord_varid(4) = dep_varid
+
+c-----------------------------------------
+c end of routine
+c-----------------------------------------
+
+	end
+
 c******************************************************************
 
 	subroutine nc_open(ncid,nkn,nel,nlv,date0,time0)
@@ -256,6 +463,50 @@ c-----------------------------------------
 	end
 
 c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine nc_define_2d_reg(ncid,what,var_id)
+
+	implicit none
+
+	include 'netcdf.inc'
+	include 'netcdf.h'
+
+	integer ncid
+	character*(*) what
+	integer var_id				!return
+
+	integer retval
+
+	retval = nf_def_var(ncid, what, NF_REAL, 3, dimids_2d
+     +				,var_id)
+	call nc_handle_err(retval)
+
+	end
+
+c*****************************************************************
+
+	subroutine nc_define_3d_reg(ncid,what,var_id)
+
+	implicit none
+
+	include 'netcdf.inc'
+	include 'netcdf.h'
+
+	integer ncid
+	character*(*) what
+	integer var_id				!return
+
+	integer retval
+
+	retval = nf_def_var(ncid, what, NF_REAL, 4, dimids_3d
+     +				,var_id)
+	call nc_handle_err(retval)
+
+	end
+
+c*****************************************************************
 
 	subroutine nc_define_2d(ncid,what,var_id)
 
@@ -298,6 +549,8 @@ c*****************************************************************
 	end
 
 c*****************************************************************
+c*****************************************************************
+c*****************************************************************
 
 	subroutine nc_define_attr(ncid,what,def,var_id)
 
@@ -308,7 +561,7 @@ c*****************************************************************
 
 	integer ncid
 	character*(*) what,def
-	integer var_id				!return
+	integer var_id
 
 	integer ldef
 	integer retval
@@ -318,6 +571,47 @@ c*****************************************************************
         ldef = nc_ichanm(def)
 	retval = nf_put_att_text(ncid, var_id, what, ldef
      +				,def)
+	call nc_handle_err(retval)
+
+	end
+
+c*****************************************************************
+
+	subroutine nc_define_range(ncid,rmin,rmax,flag,var_id)
+
+	implicit none
+
+	include 'netcdf.inc'
+	include 'netcdf.h'
+
+	integer ncid
+	real rmin,rmax,flag
+	integer var_id
+
+	real rminmax(2)
+	integer retval
+
+	rminmax(1) = rmin
+	rminmax(2) = rmax
+
+c	retval = nf_put_att_real(ncid, var_id, 'valid_range', NF_REAL
+c     +				,2,rminmax)
+c	call nc_handle_err(retval)
+
+	retval = nf_put_att_real(ncid, var_id, 'valid_min', NF_REAL
+     +				,1,rmin)
+	call nc_handle_err(retval)
+
+	retval = nf_put_att_real(ncid, var_id, 'valid_max', NF_REAL
+     +				,1,rmax)
+	call nc_handle_err(retval)
+
+c	retval = nf_put_att_real(ncid, var_id, 'missing_value', NF_REAL
+c     +				,1,flag)
+c	call nc_handle_err(retval)
+
+	retval = nf_put_att_real(ncid, var_id, '_FillValue', NF_REAL
+     +				,1,flag)
 	call nc_handle_err(retval)
 
 	end
@@ -336,6 +630,58 @@ c*****************************************************************
 
 	retval = nf_enddef(ncid)
 	call nc_handle_err(retval)
+
+	end
+
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine nc_write_coords_reg(ncid,nx,ny,xlon,ylat,depth)
+
+	implicit none
+
+	include 'netcdf.inc'
+	include 'param.h'
+	include 'netcdf.h'
+
+	integer ncid
+	integer nx,ny
+	real xlon(nx)
+	real ylat(ny)
+	real depth(nx,ny)
+
+        real hlv(nlvdim)
+        common /hlv/hlv
+
+	integer lon_varid,lat_varid,lvl_varid,dep_varid
+	integer eix_varid,top_varid
+	integer retval
+
+	lon_varid = coord_varid(1)
+	lat_varid = coord_varid(2)
+	lvl_varid = coord_varid(3)
+	dep_varid = coord_varid(4)
+
+c-----------------------------------------
+C write coordinate data
+c-----------------------------------------
+
+	retval = nf_put_var_real(ncid, lon_varid, xlon)
+	call nc_handle_err(retval)
+
+	retval = nf_put_var_real(ncid, lat_varid, ylat)
+	call nc_handle_err(retval)
+
+	retval = nf_put_var_real(ncid, lvl_varid, hlv)
+	call nc_handle_err(retval)
+
+	retval = nf_put_var_real(ncid, dep_varid, depth)
+	call nc_handle_err(retval)
+
+c-----------------------------------------
+c end of routine
+c-----------------------------------------
 
 	end
 
@@ -420,6 +766,98 @@ c*****************************************************************
 	end
 
 c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine nc_write_data_2d_reg(ncid,var_id,irec,nx,ny,var2d)
+
+	implicit none
+
+	include 'netcdf.inc'
+
+	integer ncid
+	integer var_id
+	integer irec
+	integer nx,ny
+	real var2d(nx,ny)
+
+	integer retval
+	integer count(3)
+	integer start(3)
+
+	count(1) = nx
+	count(2) = ny
+	count(3) = 1
+	start(1) = 1
+	start(2) = 1
+	start(3) = irec
+
+	retval = nf_put_vara_real(ncid, var_id, start, count, var2d)
+	call nc_handle_err(retval)
+
+	end
+
+c*****************************************************************
+
+	subroutine nc_write_data_3d_reg(ncid,var_id,irec,nlv,nx,ny,var3d)
+
+	implicit none
+
+	include 'netcdf.inc'
+
+	integer ncid
+	integer var_id
+	integer irec
+	integer nlv
+	integer nx,ny
+	real var3d(nlv,nx,ny)
+
+	integer retval
+	integer count(4)
+	integer start(4)
+
+	count(1) = nx
+	count(2) = ny
+	count(3) = nlv
+	count(4) = 1
+	start(1) = 1
+	start(2) = 1
+	start(3) = 1
+	start(4) = irec
+
+	retval = nf_put_vara_real(ncid, var_id, start, count, var3d)
+	call nc_handle_err(retval)
+
+	end
+
+c*****************************************************************
+
+	subroutine nc_rewrite_3d_reg(nlv,nx,ny,var3d,vnc3d)
+
+c re-writes a 3d array to be CF compliant
+
+	implicit none
+
+	include 'netcdf.inc'
+
+	integer nlv
+	integer nx,ny
+	real var3d(nlv,nx,ny)
+	real vnc3d(nx,ny,nlv)
+
+	integer i,j,l
+
+	do j=1,ny
+	  do i=1,nx
+	    do l=1,nlv
+	      vnc3d(i,j,l) = var3d(l,i,j)
+	    end do
+	  end do
+	end do
+
+	end
+
+c*****************************************************************
 
 	subroutine nc_write_data_2d(ncid,var_id,irec,nkn,var2d)
 
@@ -479,19 +917,27 @@ c*****************************************************************
 	end
 
 c*****************************************************************
+c*****************************************************************
+c*****************************************************************
 
-	subroutine nc_close(ncid)
+	subroutine nc_compact_3d_reg(nlvdim,nlv,nx,ny,var_in,var_out)
 
 	implicit none
 
-	include 'netcdf.inc'
+	integer nlvdim
+	integer nlv,nx,ny
+	real var_in(nlvdim,nx,ny)
+	real var_out(nlv,nx,ny)
 
-	integer ncid
+	integer l,ix,iy
 
-	integer retval
-
-	retval = nf_close(ncid)
-	call nc_handle_err(retval)
+	do iy=1,ny
+	 do ix=1,nx
+	  do l=1,nlv
+	    var_out(l,ix,iy) = var_in(l,ix,iy)
+	  end do
+	 end do
+	end do
 
 	end
 
@@ -513,6 +959,25 @@ c*****************************************************************
 	    var_out(l,k) = var_in(l,k)
 	  end do
 	end do
+
+	end
+
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine nc_close(ncid)
+
+	implicit none
+
+	include 'netcdf.inc'
+
+	integer ncid
+
+	integer retval
+
+	retval = nf_close(ncid)
+	call nc_handle_err(retval)
 
 	end
 
@@ -793,11 +1258,7 @@ c*****************************************************************
 	integer year,month,day,hour,min,sec
 	character*10 date,time,zone
 	integer value(8)
-	!integer time(3)
-	!integer date(3)
 
-	!call idate(date)
-	!call itime(time)
 	call date_and_time(date,time,zone,value)
 
 	year = value(1)

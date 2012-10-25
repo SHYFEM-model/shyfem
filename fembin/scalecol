@@ -18,11 +18,15 @@ $col--;
 
 while(<>) {
 
+  chomp;
   s/^\s*//;
   @data = split;
-  $data[$col] *= $fact;
-  $data[$col] += $const;
-  $_ = join(" ",@data);
+  my $n = @data;
+  if( $n > 0 ) {
+    $data[$col] *= $fact;
+    $data[$col] += $const;
+    $_ = join(" ",@data);
+  }
 
   print "$_\n";
 }

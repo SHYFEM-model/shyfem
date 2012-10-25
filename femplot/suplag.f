@@ -64,7 +64,7 @@ c**********************************************************
 
 	if( mtype .ne. 367265 ) goto 97
 	if( nvers .le. 2 ) goto 95
-	if( nvers .gt. 3 ) goto 96
+	if( nvers .gt. 4 ) goto 96
 
 	return
    95	continue

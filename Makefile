@@ -230,12 +230,11 @@ revision:
 	 $(FEMBIN)/revision_last
 
 ggu:
-	#cp -f rules/Rules.save ./Rules.make
 	cp -f rules/Rules.ggu ./Rules.make
 
 dist: cleandist
 	mv --backup=numbered ./Rules.make rules/Rules.save
-	cp -f rules/Rules.skel ./Rules.make
+	cp -f rules/Rules.dist ./Rules.make
 	make doc; make clean
 
 stable:

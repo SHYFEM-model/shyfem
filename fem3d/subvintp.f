@@ -45,18 +45,25 @@ c output is var2, all other variables are input values
 	real vint1,vint2,fact
 	real val
 
+c---------------------------------------------------------
+c initialize variables
+c---------------------------------------------------------
+
 	zb1(nl1+1) = zb2(nl2)
 	var1(nl1+1) = var1(nl1)
 
 	ltop1 = 0
-	vint2 = 0.
+	vint2 = 0.	!total content in second array
+
+c---------------------------------------------------------
+c loop over second array and interpolate onto it
+c---------------------------------------------------------
 
 	do l=1,nl2
 	  ztop2 = zb2(l-1)
 	  zbot2 = zb2(l)
 
 	  do while( ltop1 .lt. nl1 .and. zb1(ltop1+1) .le. ztop2 )
-	    !write(6,*) 'adjourning top depth: ',ltop1,zb1(ltop1+1),ztop2
 	    ltop1 = ltop1 + 1
 	  end do
 
@@ -74,8 +81,6 @@ c output is var2, all other variables are input values
 	  if( ztop1 .gt. ztop2 .or. zbot1 .lt. zbot2 ) goto 99
 	  if( bmiss ) goto 98
 
-	  !write(6,*) l,ltop1,lbot1,ztop2,zbot2,zb1(lbot1)
-
 	  val = 0.
 	  do j=ltop1+1,lbot1
 	      ztop = max(zb1(j-1),ztop2)
@@ -89,8 +94,16 @@ c output is var2, all other variables are input values
 
 	end do
 
+c---------------------------------------------------------
+c reset modified values
+c---------------------------------------------------------
+
 	zb1(nl1+1) = 0.
 	var1(nl1+1) = 0.
+
+c---------------------------------------------------------
+c if bcons we have to adapt the interpolated values to conserve total value
+c---------------------------------------------------------
 
 	if( bcons ) then	!must conserve total content of scalar
 	  vint1 = 0.
@@ -107,6 +120,10 @@ c output is var2, all other variables are input values
 	    var2(l) = fact * var2(l)
 	  end do
 	end if
+
+c---------------------------------------------------------
+c end of routine
+c---------------------------------------------------------
 
 	return
    98	continue

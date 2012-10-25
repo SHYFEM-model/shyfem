@@ -9,6 +9,36 @@ compilers="GNU_GFORTRAN INTEL"
 
 #--------------------------------------------------------
 
+#trap Clean_up SIGHUP SIGINT SIGTERM
+trap Clean_up 1 2 15
+
+Clean_up() {
+
+  echo "Cleaning up before exiting..."
+  Clean_after
+  exit
+}
+
+Clean_before() {
+
+  rm -f *.out *.tmp
+  mv --backup=numbered ./Rules.make ./rules/Rules.save
+  cp rules/Rules.dist ./Rules.make
+  [ -f allstdout.txt ] && rm allstdout.txt
+  [ -f allstderr.txt ] && rm allstderr.txt
+}
+
+Clean_after() {
+
+  rm -f *.tmp
+  rm -f stdout.out stderr.out
+  mv -f ./rules/Rules.save ./Rules.make
+  [ -f allstdout.txt ] && mv allstdout.txt allstdout.tmp
+  [ -f allstderr.txt ] && mv allstderr.txt allstderr.tmp
+}
+
+#--------------------------------------------------------
+
 Comp()
 {
   Rules "$1"
@@ -46,9 +76,7 @@ Rules()
 
 #--------------------------------------------------------------------
 
-rm -f *.out *.tmp
-mv --backup=numbered ./Rules.make ./Rules.save
-cp rules/Rules.test ./Rules.make
+Clean_before
 
 for comp in $compilers
 do
@@ -64,9 +92,5 @@ do
   Comp "ECOLOGICAL=AQUABC NETCDF=false PARALLEL=true"
 done
 
-rm -f *.tmp
-rm -f stdout.out stderr.out
-mv -f ./Rules.save ./Rules.make
-mv allstdout.txt allstdout.tmp
-mv allstderr.txt allstderr.tmp
+Clean_after
 

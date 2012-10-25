@@ -79,5 +79,6 @@ gitcommit
 gittag
 gittar
 
+make stable
 EOI
 

@@ -70,6 +70,8 @@ c 16.12.2011    ggu     new file .lgi, compress_particles()
 c 23.01.2012    ggu     various changes in call to track_body (id, etc..)
 c 24.01.2012    ggu     adapted for parallel OMP
 c 28.08.2012    ggu     change logic for release, time frame for release
+c 22.10.2012    ggu     call connectivity also after diffusion
+c 22.10.2012    ggu     limit release to itranf/end
 c
 c****************************************************************            
 
@@ -87,6 +89,7 @@ c lagranian main routine
         integer itanf,itend,idt,nits,niter,it
         common /femtim/ itanf,itend,idt,nits,niter,it
 
+	logical brelease
         integer ilagr
         integer itlanf,itlend
 	integer idtl,itranf,itrend,itrnext
@@ -208,7 +211,12 @@ c---------------------------------------------------------------
         call lagr_setup_timestep
 	
 	!call set_diff_oil
-	call lagr_continuous_release_shell	!particles through boundary
+
+	brelease = it .ge. itranf .and. it .le. itrend
+	if( brelease ) then
+	  call lagr_continuous_release_shell	!particles through boundary
+	end if
+	call lagr_connect_continuous_points(brelease)
 
  	call drogue
 
@@ -389,9 +397,10 @@ c error condition (infinite loop)
 c---------------------------------------------------------------
 
         if( nl .eq. 0 ) then
-                print*, 'inifinite loop in track_line'
-                print*, i,iel,xn,yn
-                iel = -iel
+          print*, 'inifinite loop in track_line'
+          print*, i,iel,xn,yn,ttime
+          iel = -iel
+	  ttime = 0.
         end if
 
 c---------------------------------------------------------------
@@ -399,7 +408,10 @@ c diffusion
 c---------------------------------------------------------------
 
         if( .not. bback .and. iel .gt. 0 .and. rwhpar .gt. 0 ) then
-           call lag_diff(iel,id,xn,yn)
+	  ttime = 0.
+	  ieorig = iel
+          call lag_diff(iel,id,xn,yn)
+	  call lagr_connect_count(i,iel,ieorig,ttime,1)
         end if     
 
 c---------------------------------------------------------------

@@ -215,7 +215,7 @@ c--------------------------------------------------------------
 	whatvar = what
 	if( ivar .ne. 0 ) then
           write(whataux,'(i2)') ivar
-          whatvar = what // whataux
+          whatvar = what // '_' // whataux
 	end if
         iwhat = ichanm(whatvar)
 

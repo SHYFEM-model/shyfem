@@ -50,6 +50,7 @@ c-----------------------------------------------------------------
 
 	logical bformat
 	integer it,nvar,iunit,lmax
+	integer nvers,ntype
 	integer iapini
 
 c-----------------------------------------------------------------
@@ -86,6 +87,8 @@ c the routines get_data and intp_data2d, intp_data3d must be
 c provided and customized
 c-----------------------------------------------------------------
 
+	nvers = 0
+	ntype = 0
 	lmax = nlv		!maximum level
 	iunit = 3
 	it = 0			!time stamp - not important for initial cond.
@@ -101,13 +104,16 @@ c-----------------------------------------------------------------
 
 	open(iunit,file='velocity.dat',form='formatted',status='unknown')
 	nvar = 2
-        call write_fem_file_header(bformat,iunit,it,nkn,lmax,nvar,hlv)
+        call write_fem_file_header(bformat,iunit,it,nkn,lmax,nvar
+     +					,nvers,ntype,hlv)
 	call intp_data3d(nxdim,nydim,nzdim,nx,ny,nz,uvel,val3d)
-        call write_fem_file_data(bformat,iunit,'x-velocity'
-     +                          ,nkn,nlvdim,ilhkv,val3d)
+        call write_fem_file_data(bformat,iunit
+     +                          ,nkn,lmax,nvers,nlvdim,ilhkv
+     +				,'x-velocity',val3d)
 	call intp_data3d(nxdim,nydim,nzdim,nx,ny,nz,vvel,val3d)
-        call write_fem_file_data(bformat,iunit,'y-velocity'
-     +                          ,nkn,nlvdim,ilhkv,val3d)
+        call write_fem_file_data(bformat,iunit
+     +                          ,nkn,lmax,nvers,nlvdim,ilhkv
+     +				,'y-velocity',val3d)
 	close(iunit)
 
 	open(iunit,file='temp.dat',form='formatted',status='unknown')

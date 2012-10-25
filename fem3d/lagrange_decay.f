@@ -145,6 +145,9 @@ c particles older than tdead are eliminated
 	real pdead,psurv !death or survival probability 
 	
 	tdead = 30.5*86400
+	tdead = 0.
+
+	if( tdead .le. 0. ) return
 
 	t = it 
 	ts = tin(i)  

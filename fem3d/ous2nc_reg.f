@@ -13,16 +13,17 @@ c 23.03.2011    ggu     compute real u/v-min/max of first level
 c
 c***************************************************************
 
-	program ous2nc
+	program ous2ncreg
 
-c reads ous file and writes info to terminal
-c
-c we would not even need to read basin
+c reads ous file and writes NetCDF file (regular)
 
 	implicit none
 
         include 'param.h'
 	include 'evmain.h'
+
+	integer nxdim,nydim
+	parameter (nxdim=400,nydim=400)
 
 	character*80 descrr,descrp
 	common /descrr/ descrr
@@ -65,7 +66,16 @@ c we would not even need to read basin
 
 	real var3d(nlvdim*nkndim)
 
-        integer nvers,nin,nlv
+	integer nx,ny
+	real xlon(nxdim)
+	real ylat(nydim)
+	real depth(nxdim,nydim)
+	real value2d(nxdim,nydim)
+	real value3d(nlvdim,nxdim,nydim)
+	real vnc3d(nxdim,nydim,nlvdim)
+	real fm(4,nxdim,nydim)
+
+        integer nvers,nin,nlv,lmax
         integer itanf,itend,idt,idtous
 	integer it,ie,i
         integer ierr,nread,ndry
@@ -76,6 +86,9 @@ c we would not even need to read basin
 	real zmin,zmax
 	real umin,umax
 	real vmin,vmax
+
+	real x0,y0,dx,dy
+	real flag
 
         integer ncid
         integer dimids_2d(2)
@@ -89,7 +102,7 @@ c we would not even need to read basin
 c	integer rdous,rfous
 	integer iapini,ideffi
 
-	call shyfem_copyright('ous2cn - unstructured netcdf output')
+	call shyfem_copyright('ous2cn_reg - regular netcdf output')
 
 c-----------------------------------------------------------------
 c initialize basin and simulation
@@ -99,6 +112,8 @@ c-----------------------------------------------------------------
 	time0 = 0
 	maxrec = 0		!max number of records to be written
 	maxrec = 2		!max number of records to be written
+
+	flag = -999.
 
 c-----------------------------------------------------------------
 c do not change anything below here
@@ -111,10 +126,15 @@ c-----------------------------------------------------------------
 		stop 'error stop : iapini'
 	end if
 
+	call get_dimensions(nxdim,nydim,nx,ny,x0,y0,dx,dy,xlon,ylat)
+	call setgeo(x0,y0,dx,dy,flag)
+
 	call set_ev
 
 	call makehkv_minmax(hkv,haux,1)
 	call makehev(hev)
+
+	call av2fm(fm,nx,ny)
 
 	nin=ideffi('datdir','runnam','.ous','unform','old')
 	if(nin.le.0) goto 100
@@ -149,33 +169,39 @@ c-----------------------------------------------------------------
 
 	call init_sigma_info(nlv,hlv)
 
+	call get_lmax_reg(nx,ny,fm,ilhv,lmax)
+
 c-----------------------------------------------------------------
 c prepare netcdf file
 c-----------------------------------------------------------------
 
-        call nc_open(ncid,nkn,nel,nlv,date0,time0)
+        call nc_open_reg(ncid,nx,ny,lmax,flag,date0,time0)
 	call nc_global(ncid, descrp)
 
 	std = 'water_surface_height_above_reference_datum'
 	units = 'm'
-	call nc_define_2d(ncid,'water_level',level_id)
+	call nc_define_2d_reg(ncid,'water_level',level_id)
 	call nc_define_attr(ncid,'units',units,level_id)
 	call nc_define_attr(ncid,'standard_name',std,level_id)
+	call nc_define_range(ncid,-10.0,+10.0,flag,level_id)
 
 	std = 'eastward_sea_water_velocity_assuming_no_tide'
 	units = 'm s-1'
-	call nc_define_3d(ncid,'u_velocity',u_id)
+	call nc_define_3d_reg(ncid,'u_velocity',u_id)
 	call nc_define_attr(ncid,'units',units,u_id)
 	call nc_define_attr(ncid,'standard_name',std,u_id)
+	call nc_define_range(ncid,-10.0,+10.0,flag,u_id)
 
 	std = 'northward_sea_water_velocity_assuming_no_tide'
 	units = 'm s-1'
-	call nc_define_3d(ncid,'v_velocity',v_id)
+	call nc_define_3d_reg(ncid,'v_velocity',v_id)
 	call nc_define_attr(ncid,'units',units,v_id)
 	call nc_define_attr(ncid,'standard_name',std,v_id)
+	call nc_define_range(ncid,-10.0,+10.0,flag,v_id)
 
         call nc_end_define(ncid)
-        call nc_write_coords(ncid)
+	call fm2am2d(hkv,nx,ny,fm,depth)
+        call nc_write_coords_reg(ncid,nx,ny,xlon,ylat,depth)
 
 c-----------------------------------------------------------------
 c loop on data of simulation
@@ -204,7 +230,7 @@ c     +          ,nen3v,zenv,znv,utlnv,vtlnv)
 
 	write(6,*) 
 	!write(6,*) 'time : ',it
-        call write_time(it)
+	call write_time(it)
 	write(6,*) 
 	write(6,*) 'zmin/zmax : ',zmin,zmax
 	write(6,*) 'umin/umax : ',umin,umax
@@ -218,11 +244,17 @@ c     +          ,nen3v,zenv,znv,utlnv,vtlnv)
 
         irec = irec + 1
         call nc_write_time(ncid,irec,it)
-        call nc_write_data_2d(ncid,level_id,irec,nkn,znv)
-	call nc_compact_3d(nlvdim,nlv,nkn,uprv,var3d)
-        call nc_write_data_3d(ncid,u_id,irec,nlv,nkn,var3d)
-	call nc_compact_3d(nlvdim,nlv,nkn,vprv,var3d)
-        call nc_write_data_3d(ncid,v_id,irec,nlv,nkn,var3d)
+
+	call fm2am2d(znv,nx,ny,fm,value2d)
+        call nc_write_data_2d_reg(ncid,level_id,irec,nx,ny,value2d)
+
+	call fm2am3d(nlvdim,ilhv,uprv,lmax,nx,ny,fm,value3d)
+	call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
+	call nc_write_data_3d_reg(ncid,u_id,irec,lmax,nx,ny,vnc3d)
+
+	call fm2am3d(nlvdim,ilhv,vprv,lmax,nx,ny,fm,value3d)
+	call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
+        call nc_write_data_3d_reg(ncid,v_id,irec,lmax,nx,ny,vnc3d)
 
 	if ( maxrec .gt. 0 .and. irec .ge. maxrec ) goto 100
 
@@ -448,18 +480,117 @@ c debug write
 
 c******************************************************************
 
-        subroutine write_time(it)
+	subroutine get_lmax_reg(nx,ny,fm,ilhv,lmax)
 
-        implicit none
+c computes max lmax for regular domain
 
-        integer it
+	implicit none
 
-        character*40 line
+	integer nx,ny
+	real fm(4,nx,ny)
+	integer ilhv(1)
+	integer lmax		!max level (return)
 
-        call dtsgf(it,line)
-        write(6,*) 'time: ',it,'   ',line
+	integer i,j,ie
 
-        end
+	lmax = 0
+
+	do j=1,ny
+	  do i=1,nx
+	    ie = nint(fm(4,i,j))
+	    lmax = max(lmax,ilhv(ie))
+	  end do
+	end do
+
+	end
 
 c******************************************************************
+
+	subroutine get_dimensions(nxdim,nydim,nx,ny,x0,y0,dx,dy,xlon,ylat)
+
+c gets dimensions for reguar grid
+
+	implicit none
+
+	include 'param.h'
+
+	integer nxdim,nydim,nx,ny
+	real x0,y0,dx,dy
+	real xlon(nxdim)
+	real ylat(nydim)
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	real xgv(nkndim), ygv(nkndim)
+	common /xgv/xgv, /ygv/ygv
+
+	integer ichoose,i
+	real x1,y1
+	real xmin,ymin,xmax,ymax
+
+	call mima(xgv,nkn,xmin,xmax)
+	call mima(ygv,nkn,ymin,ymax)
+
+	write(6,*) 'xmin/xmax: ',xmin,xmax
+	write(6,*) 'ymin/ymax: ',ymin,ymax
+
+	write(6,*) 'enter dx,dy: '
+	read(5,*) dx,dy
+	write(6,*) 'Want to choose domain? yes/no -> 1/0'
+	read(5,'(i10)') ichoose
+
+	if( ichoose .eq. 1 ) then
+	  write(6,*) 'enter x0,y0,x1,y1 (min,max)'
+	  read(5,*) x0,y0,x1,y1
+	else
+	  x0 = dx * (int(xmin/dx))
+	  y0 = dy * (int(ymin/dy))
+	  x1 = dx * (int(xmax/dx)+1)
+	  y1 = dy * (int(ymax/dy)+1)
+	end if
+
+	nx = 1 + nint((x1-x0)/dx)
+	ny = 1 + nint((y1-y0)/dy)
+
+	write(6,*) 'dx,dy: ',dx,dy
+	write(6,*) 'x0,y0,x1,y1: ',x0,y0,x1,y1
+	write(6,*) 'nx,ny: ',nx,ny
+
+	if( nx .gt. nxdim ) goto 99
+	if( ny .gt. nydim ) goto 99
+
+	do i=1,nx
+	  xlon(i) = x0 + (i-1)*dx
+	end do
+
+	do i=1,ny
+	  ylat(i) = y0 + (i-1)*dy
+	end do
+
+	return
+   99	continue
+	write(6,*) 'nx,nxdim: ',nx,nxdim
+	write(6,*) 'ny,nydim: ',ny,nydim
+	stop 'error stop get_dimensions: nx/ydim'
+	end
+
+c******************************************************************
+
+	subroutine write_time(it)
+
+	implicit none
+
+	integer it
+
+	character*40 line
+
+	call dtsgf(it,line)
+	write(6,*) 'time: ',it,'   ',line
+
+	end
+
+c******************************************************************
+
+
 

@@ -12,6 +12,7 @@ c 20.06.2006    aac     diffusion coefficient from str file
 c 29.11.2006    ggu     new version integrated into main model
 c 10.11.2007    ggu     renamed random routine from ran1 to ran9 (conflict)
 c 14 09 2007    aac     new simplified version more efficient, ran9->1, ran9 del
+c 24 10 2012    aac     do not kill particle if infinite loop -> leave it
 c
 c******************************************************************
 
@@ -61,7 +62,8 @@ c******************************************************************
           ynew=yold+dy
           call find_elem_from_old(ieold,xnew,ynew,ienew)
 	  icount = icount - 1
-	  if( icount .eq. 0 ) ienew = -ieold
+	  !if( icount .eq. 0 ) ienew = -ieold
+	  if( icount .eq. 0 ) return	!return without diffusion
 
 	end do
 

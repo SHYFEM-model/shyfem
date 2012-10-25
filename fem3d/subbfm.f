@@ -25,6 +25,7 @@ c 31.05.2011    ggu     clean from useless common blocks
 c 15.01.2012    aac     advection for all BFM var introduced
 c 17.02.2012    aac&ggu restart for bfm
 c 26.03.2012    ggu	bfm1-3 had wrong second dimension
+c 22.10.2012    ggu	saved some variables
 c
 c**************************************************************
 c
@@ -193,15 +194,18 @@ c computes ecological scalars with BFM  model
 	real b2cn_b(nlvdim,nkndim,nbfmv2)
 	real b2cn_c(nlvdim,nkndim,nbfmv2)
 	real b2cn_d(nlvdim,nkndim,nbfmv2)
+	save b1cn,b2cn,b2cn_a,b2cn_b,b2cn_c,b2cn_d
 
         real b3cn(nlvdim,nkndim,nbfmv3)
 	real b3cn_a(nlvdim,nkndim,nbfmv3)
 	real b3cn_b(nlvdim,nkndim,nbfmv3)
 	real b3cn_c(nlvdim,nkndim,nbfmv3)
+	save b3cn,b3cn_a,b3cn_b,b3cn_c
 
  	real bfm1(nb3dim,0:nbcdim)   !boundary state for solutes
         real bfm2(nb3dim,0:nbcdim)   !boundary state for fitozoo
 	real bfm3(nb3dim,0:nbcdim)   !boundary state for essudates
+	save bfm1,bfm2,bfm3
 
  	real b1bound(nbfmv1)       !boundary vector for solutes
  	real b2bound(nbfmv2)       !boundary vector for fitozoo
@@ -469,9 +473,9 @@ c------------------------------------------------------
 
           nintp = 2
 
- 	  call bnds_init0(what,bfm1bc,nintp,nbfmv1,nb3dim,bfm1,b1bound)
-   	  call bnds_init0(what,bfm2bc,nintp,nbfmv2,nb3dim,bfm2,b2bound)
-   	  call bnds_init0(what,bfm3bc,nintp,nbfmv3,nb3dim,bfm3,b3bound)
+ 	  call bnds_init0('bfm1',bfm1bc,nintp,nbfmv1,nb3dim,bfm1,b1bound)
+   	  call bnds_init0('bfm2',bfm2bc,nintp,nbfmv2,nb3dim,bfm2,b2bound)
+   	  call bnds_init0('bfm3',bfm3bc,nintp,nbfmv3,nb3dim,bfm3,b3bound)
 
 !         ---------------------------------------------------------
 !         INITIALIZES OUPUT
@@ -503,9 +507,9 @@ c------------------------------------------------------
 ! compute OBC for transported vars (HYBRID HYDRO-BFM arrays)
 !-------------------------------------------------------
 	
-	call scal_bnd(what,t,bfm1)
-	call scal_bnd(what,t,bfm2)
-	call scal_bnd(what,t,bfm3)
+	call scal_bnd('bfm1',t,bfm1)
+	call scal_bnd('bfm2',t,bfm2)
+	call scal_bnd('bfm3',t,bfm3)
 
 !-----------------------------------------------------------
 ! advection and diffusion of hybrid hydro-bfm var
@@ -515,7 +519,7 @@ c------------------------------------------------------
 !$OMP DO SCHEDULE(DYNAMIC)
 
  	do is1=1,nbfmv1
-  	    call scal_adv(what,is1,b1cn(1,1,is1),bfm1
+  	    call scal_adv('bfm_1',is1,b1cn(1,1,is1),bfm1
      +                          ,rkpar,wsink,difhv,difv,difmol)
  	end do
 
@@ -523,7 +527,7 @@ c------------------------------------------------------
 !$OMP DO SCHEDULE(DYNAMIC)
 
  	do is2=1,nbfmv2
-  	    call scal_adv(what,is2,b2cn(1,1,is2),bfm2
+  	    call scal_adv('bfm_2',is2,b2cn(1,1,is2),bfm2
      +                          ,rkpar,wsink,difhv,difv,difmol)
         end do
 
@@ -531,7 +535,7 @@ c------------------------------------------------------
 !$OMP DO SCHEDULE(DYNAMIC)
 
  	do is3=1,nbfmv3
-  	    call scal_adv(what,is3,b3cn(1,1,is3),bfm3
+  	    call scal_adv('bfm_3',is3,b3cn(1,1,is3),bfm3
      +                          ,rkpar,wsink,difhv,difv,difmol)
         end do
 
@@ -540,7 +544,7 @@ c------------------------------------------------------
 
         do is4=1,nbfmv2
             fct=fc2_a(is4)
-            call scal_adv_fact(what,is4,fct,b2cn_a(1,1,is4),bfm2
+            call scal_adv_fact('bfm_4',is4,fct,b2cn_a(1,1,is4),bfm2
      +                          ,rkpar,wsink,difhv,difv,difmol)
         end do
 
@@ -549,7 +553,7 @@ c------------------------------------------------------
 
         do is5=1,nbfmv2
             fct=fc2_b(is5)
-            call scal_adv_fact(what,is5,fct,b2cn_b(1,1,is5),bfm2
+            call scal_adv_fact('bfm_5',is5,fct,b2cn_b(1,1,is5),bfm2
      +                          ,rkpar,wsink,difhv,difv,difmol)
         end do
 
@@ -558,7 +562,7 @@ c------------------------------------------------------
 
         do is6=2,5
             fct=fc2_c(is6)
-            call scal_adv_fact(what,is6,fct,b2cn_a(1,1,is6),bfm2
+            call scal_adv_fact('bfm_6',is6,fct,b2cn_a(1,1,is6),bfm2
      +                          ,rkpar,wsink,difhv,difv,difmol)
         end do
 
@@ -567,7 +571,7 @@ c------------------------------------------------------
 !        do is=1,nbfmv2
             is7 = 2
             fct=fc2_d(is7)
-            call scal_adv_fact(what,is7,fct,b2cn_d(1,1,is7),bfm2
+            call scal_adv_fact('bfm_7',is7,fct,b2cn_d(1,1,is7),bfm2
      +                          ,rkpar,wsink,difhv,difv,difmol)
 !        end do
 
@@ -575,11 +579,11 @@ c------------------------------------------------------
 
          do is8=1,3,2
             fct=fc3_a
-            call scal_adv_fact(what,is8,fct,b3cn_a(1,1,is8),bfm3
+            call scal_adv_fact('bfm_8',is8,fct,b3cn_a(1,1,is8),bfm3
      +                          ,rkpar,wsink,difhv,difv,difmol)
 
             fct=fc3_b
-            call scal_adv_fact(what,is8,fct,b3cn_b(1,1,is8),bfm3
+            call scal_adv_fact('bfm_8',is8,fct,b3cn_b(1,1,is8),bfm3
      +                          ,rkpar,wsink,difhv,difv,difmol)
          end do
 
@@ -588,7 +592,7 @@ c------------------------------------------------------
 
          is9 = 3
          fct=fc3_c
-         call scal_adv_fact(what,is9,fct,b3cn_c(1,1,is9),bfm3
+         call scal_adv_fact('bfm_9',is9,fct,b3cn_c(1,1,is9),bfm3
      +                          ,rkpar,wsink,difhv,difv,difmol)
 
 !------------------------------------------------------
@@ -760,7 +764,6 @@ c outputs variables
 	include 'bfm_common.h'
 
 	call confil(ivs1,itmbfm,idtbfm,41,1,fO2o)
-	write(98,*)fO2o
  	call confil(ivs1,itmbfm,idtbfm,42,1,fN1p)
         call confil(ivs1,itmbfm,idtbfm,43,1,fN3n)
         call confil(ivs1,itmbfm,idtbfm,44,1,fN4n)
@@ -902,7 +905,7 @@ c**************************************************************
 
 	nstate = 48
 
-	write(6,*) 'write_restart_bfm: ',fO2o(1)
+	write(6,*) 'read_restart_bfm: ',fO2o(1)
 
         read(iunit) nstate_aux,nkn_aux
 	if( nstate_aux .ne. nstate .or. nkn_aux .ne. nkn ) then

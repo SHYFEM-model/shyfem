@@ -46,7 +46,20 @@ c 14.09.2009  ggu     new routine divdist()
 c 22.02.2010  ggu     new routine bw_frame() to plot bw scale around plot
 c 09.04.2010  ggu     bug fix in frac_pos() -> maybe compiler error
 c 17.05.2011  ggu     new routine basin_number()
-c 30.08.2012  ggu     new routines to automaticallylabel spehrical grid
+c 30.08.2012  ggu     new routines to automatically label spherical grid
+c 24.10.2012  ggu     bug in labelling non spherical grid (returned -1)
+c
+c notes:
+c
+c rules for regular frame around plot:
+c
+c if reggrd is given		-> use this value
+c if reggrd == 0		-> do not plot frame
+c else (reggrd==-1)
+c if no legend is requested	-> do not plot frame
+c if legend is requested
+c	if spherical		-> plot frame and no scale/north
+c	else			-> plot scale/north and no frame
 c
 c*************************************************************
 
@@ -1026,7 +1039,10 @@ c checks if regular grid should be written
 	logical is_spherical,is_box_given
 
 	if( dreg .ge. 0. ) return		!already given
-        if( .not. is_spherical() ) return	!only for spherical
+        if( .not. is_spherical() ) then		!only for spherical
+	  if( dreg .lt. 0. ) dreg = 0.
+	  return
+	end if
 	if( .not. is_box_given('leg') ) return	!no legend was requested
 
 	call compute_reg_grid_spacing(dreg)
@@ -1151,8 +1167,8 @@ c here labeling
 
 	dist = reggrd
 	call frac_pos(dist,nc)
-	write(6,*) 'frac_pos: ',dist,nc
 	if( nc .eq. 0 ) nc = -1
+	write(6,*) dist,nc
 
 	xdmin = rround(xmin,dist,-1)
 	xdmax = rround(xmax,dist,+1)
@@ -1228,6 +1244,8 @@ c**************************************************************
 c------------------------------------------------------------
 c set parameters
 c------------------------------------------------------------
+
+	if( dx .le. 0. .or. dy .le. 0. ) goto 97
 
 	call qcm(xcm,ycm)
 	hx = 0.1*xcm
@@ -1342,6 +1360,10 @@ c------------------------------------------------------------
 c end of routine
 c------------------------------------------------------------
 
+	return
+   97	continue
+	write(6,*) 'dx,dy: ',dx,dy
+	stop 'error stop bw_frame: dx,dy'
 	end
 
 c**************************************************************

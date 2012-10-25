@@ -66,6 +66,8 @@ c 27.01.2011	ggu&ccf	bug fix in find_elem_from_old() BUG_27.01.2011
 c 31.03.2011	ggu	new routine elemmask()
 c 24.11.2011	ggu	new routine find_close_elem()
 c 20.06.2012	ggu	new routine get_scal_elem()
+c 07.10.2012	ggu	new routine av2fm()
+c 10.10.2012	ggu	new routine fm2am2d() and fm2am3d()
 c
 c notes :
 c
@@ -377,6 +379,234 @@ c function
 	stop 'error stop av2amk: area of element'
 	end
 
+c************************************************
+c************************************************
+c************************************************
+
+	subroutine av2fm(fm,ip,jp)
+
+c computation of interpolation matrix of regular net (nodal values)
+
+	implicit none
+
+	real fm(4,ip,jp)	!values for interpolation (fm(4,i,j) = ie)
+	integer ip,jp		!dimension of matrices
+
+	logical bw		!use wet mask?
+	logical bwater(1)	!wet mask for each element
+
+	bw = .false.
+	bwater(1) = .true.
+
+	call av2fmk(bw,bwater,fm,ip,jp)
+
+	end
+
+c************************************************
+
+	subroutine av2fmk(bw,bwater,fm,ip,jp)
+
+c computation of interpolation matrix of regular net (nodal values) with mask
+c
+c the interpolation can be carried out as
+c
+c	do j=1,jp
+c	  do i=1,ip
+c	    ie = nint(fm(4,i,j))
+c	    if( ie .gt. 0 ) then
+c	      a = 0.
+c	      do ii=1,3
+c	        k = nen3v(ii,ie)
+c		a = a + val(k) * fm(ii,i,j)
+c	      end do
+c	    else
+c	      a = flag
+c	    end if
+c	    am(i,j) = a
+c	  end do
+c	end do
+	        
+	implicit none
+
+c arguments
+	logical bw		!use wet mask?
+	logical bwater(1)	!wet mask for each element
+	real fm(4,ip,jp)	!values for interpolation (fm(4,i,j) = ie)
+	integer ip,jp		!dimension of matrices
+c parameter
+	double precision eps
+	parameter ( eps = 1.d-14 )
+c common
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer nen3v(3,1)
+	common /nen3v/nen3v
+	real xgv(1), ygv(1)
+	common /xgv/xgv, /ygv/ygv
+c pxareg,pyareg         coordinates of lower left point of matrix
+c pxdreg,pydreg         grid size of matrix
+c pzlreg                value of z for land points
+	real pxareg,pyareg,pxdreg,pydreg,pzlreg
+	common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+c local
+	integer i,j,ii,iii,ie,k,kn,iin
+	integer imin,imax,jmin,jmax
+	logical ball
+	double precision x(3),y(3),z(3),a(3),b(3),c(3)
+	double precision zh,fh,f,xp,yp
+	double precision xmin,xmax,ymin,ymax
+c function
+	integer intrid
+
+	ball = .not. bw
+
+	do j=1,jp
+	    do i=1,ip
+		fm(4,i,j) = 0.
+	    end do
+	end do
+
+	do ie=1,nel
+	  if( ball .or. bwater(ie) ) then	!wet
+	    do i=1,3
+		kn=nen3v(i,ie)
+		x(i)=xgv(kn)
+		y(i)=ygv(kn)
+	    end do
+
+	    !f=0.
+	    do i=1,3
+		ii=mod(i,3)+1
+		iii=mod(ii,3)+1
+		a(i)=x(ii)*y(iii)-x(iii)*y(ii)
+		b(i)=y(ii)-y(iii)
+		c(i)=x(iii)-x(ii)
+		!f=f+a(i)
+	    end do
+	    f = c(3)*b(2) - c(2)*b(3)		!bug_f_64bit
+	    if( f .le. eps ) goto 99
+
+	    xmax=max(x(1),x(2),x(3))
+	    xmin=min(x(1),x(2),x(3))
+	    ymin=min(y(1),y(2),y(3))
+	    ymax=max(y(1),y(2),y(3))
+
+	    imin=(xmin-pxareg)/pxdreg+1.99
+	    imax=(xmax-pxareg)/pxdreg+1.01
+	    jmin=(ymin-pyareg)/pydreg+1.99
+	    jmax=(ymax-pyareg)/pydreg+1.01
+
+	    if(imin.lt.1) imin=1
+	    if(imax.gt.ip)imax=ip
+	    if(jmin.lt.1) jmin=1
+	    if(jmax.gt.jp)jmax=jp
+
+	    do i=imin,imax
+		do j=jmin,jmax
+		    xp=(i-1)*pxdreg+pxareg
+		    yp=(j-1)*pydreg+pyareg
+
+		    iin=intrid(x,y,xp,yp)
+
+		    if(iin.ne.0) then
+			do ii=1,3
+			   fh=(a(ii)+xp*b(ii)+yp*c(ii))/f
+			   fm(ii,i,j) = fh
+			end do
+			fm(4,i,j) = ie
+		    end if
+		end do
+	    end do
+	  end if
+	end do
+
+	return
+   99	continue
+	write(6,*) ie,f
+	write(6,*) x
+	write(6,*) y
+	write(6,*) a
+	write(6,*) b
+	write(6,*) c
+	stop 'error stop av2fm: area of element'
+	end
+
+c************************************************
+
+        subroutine fm2am2d(femval,nx,ny,fm,am)
+
+c interpolation 2d of fem values to regular grid using fm matrix
+
+        implicit none
+
+        real femval(1)			!values of fem array
+        integer nx,ny			!dimension of regular matrix
+        real fm(4,nx,ny)		!interpolation matrix
+        real am(nx,ny)			!interpolated values (return)
+
+	integer nlvdim,nlv,ilhv(1)
+
+	nlvdim = 1
+	nlv = 1
+	ilhv(1) = 1
+
+        call fm2am3d(nlvdim,ilhv,femval,nlv,nx,ny,fm,am)
+
+	end
+
+c************************************************
+
+        subroutine fm2am3d(nlvdim,ilhv,femval,nlv,nx,ny,fm,am)
+
+c interpolation 3d of fem values to regular grid using fm matrix
+
+        implicit none
+
+	integer nlvdim			!vertical dimension of fem array
+        integer ilhv(1)			!vertical discretization
+        real femval(nlvdim,1)		!values of fem array
+        integer nlv,nx,ny		!dimension of regular matrix
+        real fm(4,nx,ny)		!interpolation matrix
+        real am(nlv,nx,ny)		!interpolated values (return)
+
+	integer nen3v(3,1)
+	common /nen3v/nen3v
+
+	real pxareg,pyareg,pxdreg,pydreg,pzlreg
+	common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+
+        integer i,j,l,lmax,ie,ii,k
+        real a
+        real flag
+
+	flag = pzlreg
+
+        do j=1,ny
+          do i=1,nx
+            ie = nint(fm(4,i,j))
+            lmax = 0
+            if( ie .gt. 0 ) then
+              lmax = ilhv(ie)
+              if( nlvdim .eq. 1 ) lmax = 1
+            end if 
+            do l=1,lmax
+              a = 0.
+              do ii=1,3
+                k = nen3v(ii,ie)
+                a = a + femval(l,k) * fm(ii,i,j)
+              end do
+              am(l,i,j) = a
+            end do
+            do l=lmax+1,nlv
+              am(l,i,j) = flag
+            end do
+          end do
+        end do
+
+        end
+
+c************************************************
+c************************************************
 c************************************************
 
 	function intri(x,y,xp,yp)

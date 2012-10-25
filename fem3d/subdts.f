@@ -14,6 +14,7 @@ c 13.11.2005    ggu     small bug fix (UNPACK)
 c 01.12.2005    ggu     new routine dts_initialized and block data
 c 07.05.2009    ggu     new routine dtsyear() and date_compute()
 c 01.06.2012    ggu     work also with date=0
+c 23.10.2012    ggu     unpackdate() and dtsini() accepts also only year
 c
 c notes :
 c
@@ -58,11 +59,16 @@ c splits date [YYYYMMDD] into year, month, day
 	integer date
         integer year,month,day
 
-        month = date / 100
-        day = date - month * 100
-
-        year = month / 100
-        month = month - year * 100
+	if( date .lt. 10000 ) then	!only year is given
+	  year = date
+	  month = 1
+	  day = 1
+	else
+          month = date / 100
+          day = date - month * 100
+          year = month / 100
+          month = month - year * 100
+	end if
 
 	end
 

@@ -1,5 +1,47 @@
 ============================================================
 
+Thu Oct 25 14:00:03 CEST 2012
+
+connectivity, netcdf and section plot
+
+ .gitignore               |    1 +
+ LOG                      |   32 +++
+ Makefile                 |    3 +-
+ fem3d/Makefile           |    8 +-
+ fem3d/lagrange_connect.f |   36 ++-
+ fem3d/lagrange_connect.h |    8 +-
+ fem3d/lagrange_cont.f    |    5 +-
+ fem3d/lagrange_decay.f   |    3 +
+ fem3d/lagrange_dif.f     |    4 +-
+ fem3d/lagrange_main.f    |   22 ++-
+ fem3d/netcdf.f           |  485 ++++++++++++++++++++++++++++++++++++-
+ fem3d/netcdf.h           |    6 +-
+ fem3d/newcon.f           |    2 +-
+ fem3d/ous2nc.f           |   34 +++-
+ fem3d/ous2nc_reg.f       |  596 ++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/ouswork.f          |  206 ++++++++++++++--
+ fem3d/prep_input.f       |   16 +-
+ fem3d/subbfm.f           |   39 ++--
+ fem3d/subdts.f           |   16 +-
+ fem3d/subfil.f           |   62 ++++--
+ fem3d/subfile.f          |  218 +++++++++++++----
+ fem3d/subnos.f           |   36 +++
+ fem3d/subreg.f           |  230 ++++++++++++++++++
+ fem3d/subsys.f           |   18 +-
+ fem3d/subver.f           |   16 ++
+ fem3d/subvintp.f         |   25 ++-
+ fembin/gitinfo           |    1 +
+ fembin/scalecol          |   10 +-
+ femcheck/test_compile.sh |   40 +++-
+ femdoc/final/shyfem.pdf  |  Bin 268594 -> 268763 bytes
+ femdoc/final/shyfem.ps   |  218 +++++++++--------
+ femplot/supbas.f         |   28 ++-
+ femplot/suplag.f         |    2 +-
+ femplot/suplin.f         |  266 +++++++++++++++++----
+ 34 files changed, 2349 insertions(+), 343 deletions(-)
+
+============================================================
+
 Mon Oct  8 14:10:11 CEST 2012
 
 New version 6_1_58

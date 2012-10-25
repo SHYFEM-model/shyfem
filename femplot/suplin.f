@@ -21,6 +21,8 @@ c 14.11.2011    ggu     hybrid levels introduced
 c 23.11.2011    ggu     in line_find_elements() adjust depth for hybrid
 c 27.01.2012    deb&ggu adjusted for hybrid coordinates
 c 20.06.2012    ggu     plots bottom also for sigma layers (plot_bottom())
+c 22.10.2012    ggu     dxmin introduced to plot arrow every dxmin distance
+c 24.10.2012    ggu     bsmooth introduced for smooth bottom plotting
 c
 c************************************************************************
 
@@ -66,10 +68,12 @@ c elems(1) is not used, etc..
 	real xy(nldim)			!linear distance
 
 	real ya(2,0:nlvdim)
+	real xbot(2*nldim+2)
+	real ybot(2*nldim+2)
 
 	character*80 file
 	character*80 string,line
-	logical bhoriz,barrow,btwo
+	logical bhoriz,barrow,btwo,bplot
 	logical blayer,blog
 	integer it,i,k1,k2,ie,l,lbot,ltop,j
 	integer ltot
@@ -95,8 +99,9 @@ c elems(1) is not used, etc..
 	real x0s,y0s,x1s,y1s
 	real xmid,hmid,umid,wmid
 	real scale
+	real xlast
 
-	integer n
+	integer n,ib
 	save n,nodes,elems,helems,lelems,lnodes,dxy,xy
 
 	integer llmax,lvmax
@@ -117,6 +122,8 @@ c elems(1) is not used, etc..
 	save faccol
 	real rxscal,ryscal
 	save rxscal,ryscal
+	real dxmin
+	save dxmin
 
 	logical inboxdim_noabs
 	logical bdebug,bdebug_scalar
@@ -169,6 +176,7 @@ c----------------------------------------------------------------
 	  ryscal = getpar('ryscal')	!y scale for reference vector
 
 	  faccol = getpar('faccol')	!factor for velocity (for legend)
+	  dxmin = getpar('dxmin')	!minimum distance for arrwos
 	end if
 
 	icall = icall + 1
@@ -276,18 +284,10 @@ c--------------------------------------------------------------------
 	  x2 = xy(i)
 
 	  call make_segment_depth(ivert,ltot,helems(1,i),hvmax,hlv,ya)
-c	write(77,*) i,ya(1,ltot),ya(2,ltot)
+	  call insert_bottom(i,xy,ya(1,ltot),ib,xbot,ybot)
 
-c	  call qgray(0.5)
-c	  yb = yrmin
-c	  yt = max(ya(1,ltot),ya(2,ltot))
-c	  call qrfill(x1,yb,x2,yt)	!land (bottom)
-c	write(6,*) 'line_ggu i',i,ltot,lvmax
-c	write(6,*) 'line_ggu ya',ya
-c	write(6,*) 'line_ggu hlv',nlv,(hlv(l),l=1,nlv)
-c	write(6,*) 'line_ggu x',x1,yb,x2,yt
-
-	  call plot_bottom(x1,x2,yrmin,ya(1,ltot))
+	  !call plot_bottom(x1,x2,yrmin,ya(1,ltot))
+	  !write(6,*) 'bottom: ',i,yrmin,ya(1,ltot),ya(2,ltot),ib
 
 	  do l=1,ltot
 	    ltop = 2*l - 2
@@ -295,10 +295,13 @@ c	write(6,*) 'line_ggu x',x1,yb,x2,yt
 	    yt2 = ya(2,l-1)
 	    yb1 = ya(1,l)
 	    yb2 = ya(2,l)
-	    call plot_scal(x1,yt1,yb1,x2,yt2,yb2
+	    call plot_scal(x1,yt1,yb1,x2,yt2,yb2,ya(1,ltot),ya(2,ltot)
      +				,val(ltop,i-1),val(ltop,i))
 	  end do
+	  !call plot_bottom(x1,x2,yrmin,ya(1,ltot))
 	end do
+
+	call plot_tot_bottom(ib,xbot,ybot,yrmin)
 
 	bdebug_scalar = .true.
 	bdebug_scalar = .false.
@@ -333,10 +336,17 @@ c--------------------------------------------------------------------
 	wscale = rwscal
 	if( blayer ) wscale = wscale / llmax
 
+	xlast = -dxmin
+
 	do i=2,n
 	  ltot = lelems(i)
 	  x1 = xy(i-1)
 	  x2 = xy(i)
+
+	  xmid = 0.5*(x1+x2)
+	  bplot = xlast + dxmin .le. xmid
+	  if( bplot ) xlast = xmid
+
 	  call make_segment_depth(ivert,ltot,helems(1,i),hvmax,hlv,ya)
 	  do l=1,ltot
 	    ltop = 2*l - 2
@@ -349,9 +359,8 @@ c--------------------------------------------------------------------
 	      write(6,*) 'last layer: ',yt1,yb1,yt2,yb2
 	    end if
 
-	    if( barrow ) then
+	    if( barrow .and. bplot ) then
 	      ymid = 0.25*(yt1+yt2+yb1+yb2)
-	      xmid = 0.5*(x1+x2)
 	      umid = 0.5*(vel(2,ltop+1,i-1)+vel(2,ltop+1,i))
 	      wmid = 0.5*(vel(3,ltop+1,i-1)+vel(3,ltop+1,i))
 	      call qgray(0.0)
@@ -623,6 +632,62 @@ c************************************************************************
 
 c************************************************************************
 
+	subroutine insert_bottom(i,xy,ya,ib,xbot,ybot)
+
+	implicit none
+
+	integer i
+	real xy(1),ya(2)
+	integer ib
+	real xbot(1),ybot(1)
+
+	if( i .eq. 2 ) then
+	  ib = 1
+	  xbot(ib) = xy(i-1)
+	  ybot(ib) = ya(1)
+	else if( ybot(ib) .ne. ya(1) ) then	!ragged bottom
+	  ib = ib + 1
+	  xbot(ib) = xy(i-1)
+	  ybot(ib) = ya(1)
+	end if
+
+	ib = ib + 1
+
+	xbot(ib) = xy(i)
+	ybot(ib) = ya(2)
+
+
+	end 
+
+c************************************************************************
+
+	subroutine plot_tot_bottom(n,xbot,ybot,yrmax)
+
+	implicit none
+
+	integer n
+	real xbot(1)
+	real ybot(1)
+	real yrmax
+
+	integer i
+
+	xbot(n+1) = xbot(n)
+	ybot(n+1) = yrmax
+	xbot(n+2) = xbot(1)
+	ybot(n+2) = yrmax
+
+	!do i=1,n+2
+	!  write(6,*) i,xbot(i),ybot(i)
+	!end do
+
+	call qgray(0.5)
+	call qafill(n+2,xbot,ybot)
+
+	end
+
+c************************************************************************
+
 	subroutine plot_bottom(x1,x2,yrmin,ya_bot)
 
 c plots bottom with grey color
@@ -634,16 +699,21 @@ c plots bottom with grey color
 	integer n
 	parameter (n=4)
 	real x(n),y(n)
+	real dx,eps
+
+	eps = 1.e-5
+	dx = eps * (x2-x1)	!make bottom a little larger
+	dx = 0.
 
 	call qgray(0.5)
 
-	x(1) = x1
+	x(1) = x1 - dx
 	y(1) = yrmin
-	x(2) = x2
+	x(2) = x2 + dx
 	y(2) = yrmin
-	x(3) = x2
+	x(3) = x2 + dx
 	y(3) = ya_bot(2)
-	x(4) = x1
+	x(4) = x1 - dx
 	y(4) = ya_bot(1)
 	
 	call qafill(n,x,y)	!land (bottom)
@@ -652,49 +722,74 @@ c plots bottom with grey color
 
 c************************************************************************
 
-	subroutine plot_scal(x1,yt1,yb1,x2,yt2,yb2,v1,v2)
+	subroutine plot_scal(x1,ytt1,ybb1,x2,ytt2,ybb2
+     +					,ybot1,ybot2,vv1,vv2)
 
 c x coords must be the same, but y coords may be different
+c
+c       ---------------
+c       |\     |     /|
+c       | \  2 | 3  / |
+c       |  \   |   /  |
+c       |   \  |  /   |
+c       | 1  \ | /  4 |
+c       |     \|/     |
+c       |-------------|
+c       |     /|\     |
+c       | 5  / | \  8 |
+c       |   /  |  \   |
+c       |  /   |   \  |
+c       | /  6 | 7  \ |
+c       |/     |     \|
+c       ---------------
 
 	implicit none
 
-	real x1,yt1,yb1,x2,yt2,yb2
-	real v1(3),v2(3)
+	real x1,ytt1,ybb1		!first point (x,ytop,ybottom)
+	real x2,ytt2,ybb2		!second point (x,ytop,ybottom)
+	real ybot1,ybot2		!real bottom (do not plot below)
+	real vv1(3),vv2(3)
 
 	include 'color.h'
 
-	!integer icsave
-	real xm,ym1,ym2,ym,vm
+	real xm
 	real x(3),y(3),f(3)
+	real v1(3),v2(3),vm(3)
+	real y1(3),y2(3),ym(3)
+	integer ii
+	logical isdiff
 
 	xm = (x1+x2)/2.
-	ym1 = (yb1+yt1)/2.
-	ym2 = (yb2+yt2)/2.
-	ym = (ym1+ym2)/2.
-	vm = (v1(2)+v2(2))/2.
 
-	!write(6,*) '--------- plot_scal ---------'
-	!write(6,*) x1,yt1,yb1
-	!write(6,*) x2,yt2,yb2
-	!write(6,*) xm,ym1,ym2,ym
-	
+	call setdpt(ytt1,ybb1,ybot1,vv1,y1,v1)
+	call setdpt(ytt2,ybb2,ybot2,vv2,y2,v2)
+
+	do ii=1,3
+	  vm(ii) = (v1(ii)+v2(ii))/2.
+	  ym(ii) = (y1(ii)+y2(ii))/2.
+	end do
+
 	call set_auto_color_table
 
 	!first plot upper triangles, than lower ones
 
-	call setxyf(x1,x1,xm,yt1,ym1,ym,v1(1),v1(2),vm,x,y,f)
-	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
-	call setxyf(x1,xm,x2,yt1,ym,yt2,v1(1),vm,v2(1),x,y,f)
-	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
-	call setxyf(xm,x2,x2,ym,ym2,yt2,vm,v2(2),v2(1),x,y,f)
-	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+	call setxyf(x1,x1,xm,y1(1),y1(2),ym(2),v1(1),v1(2),vm(2),x,y,f)
+	if( isdiff(y1(1)) ) call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+	call setxyf(x1,xm,xm,y1(1),ym(2),ym(1),v1(1),vm(2),vm(1),x,y,f)
+	if( isdiff(ym(1)) ) call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+	call setxyf(xm,xm,x2,ym(1),ym(2),y2(1),vm(1),vm(2),v2(1),x,y,f)
+	if( isdiff(ym(1)) ) call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+	call setxyf(xm,x2,x2,ym(2),y2(2),y2(1),vm(2),v2(2),v2(1),x,y,f)
+	if( isdiff(y2(1)) ) call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
 
-	call setxyf(x1,x1,xm,ym1,yb1,ym,v1(2),v1(3),vm,x,y,f)
-	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
-	call setxyf(x1,x2,xm,yb1,yb2,ym,v1(3),v2(3),vm,x,y,f)
-	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
-	call setxyf(xm,x2,x2,ym,yb2,ym2,vm,v2(3),v2(2),x,y,f)
-	call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+	call setxyf(x1,x1,xm,y1(2),y1(3),ym(2),v1(2),v1(3),vm(2),x,y,f)
+	if( isdiff(y1(2)) ) call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+	call setxyf(x1,xm,xm,y1(3),ym(3),ym(2),v1(3),vm(3),vm(2),x,y,f)
+	if( isdiff(ym(2)) ) call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+	call setxyf(xm,xm,x2,ym(2),ym(3),y2(3),vm(2),vm(3),v2(3),x,y,f)
+	if( isdiff(ym(2)) ) call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
+	call setxyf(xm,x2,x2,ym(2),y2(3),y2(2),vm(2),v2(3),v2(2),x,y,f)
+	if( isdiff(y2(2)) ) call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
 
 	call reset_auto_color_table
 
@@ -702,7 +797,77 @@ c x coords must be the same, but y coords may be different
 
 c************************************************************************
 
+	function isdiff(y)
+
+	implicit none
+
+	real y(2)
+	logical isdiff
+
+	isdiff = y(1) .ne. y(2)
+
+	end
+
+c************************************************************************
+
+	subroutine setdpt(yt,yb,ybot,vv,y,v)
+
+	implicit none
+
+	real yt,yb,ybot
+	real vv(3),y(3),v(3)
+
+	integer ii
+	real ym,val
+
+	ym = (yt+yb)/2.
+
+	y(1) = yt
+	y(2) = ym
+	y(3) = yb
+	do ii=1,3
+	  v(ii) = vv(ii)
+	end do
+
+	return	!useless below
+
+	if( ybot .le. yb ) then
+	  y(1) = yt
+	  y(2) = ym
+	  y(3) = yb
+	  do ii=1,3
+	    v(ii) = vv(ii)
+	  end do
+	else if( ybot .ge. yt ) then
+	  do ii=1,3
+	    y(ii) = ybot
+	    v(ii) = vv(1)
+	  end do
+	else if( ybot .ge. ym ) then
+	  y(1) = yt
+	  y(2) = ybot
+	  y(3) = ybot
+	  val = vv(1) + (ybot-y(1))*(vv(2)-vv(1))/(y(2)-y(1))
+	  v(1) = vv(1)
+	  v(2) = val
+	  v(3) = val
+	else
+	  y(1) = yt
+	  y(2) = ym
+	  y(3) = ybot
+	  val = vv(2) + (ybot-y(2))*(vv(3)-vv(2))/(y(3)-y(2))
+	  v(1) = vv(1)
+	  v(2) = vv(2)
+	  v(3) = val
+	end if
+
+	end
+
+c************************************************************************
+
 	subroutine plot_rect(x1,y1,x2,y2,v1,v2)
+
+c not used anymore -> delete
 
 	implicit none
 
@@ -1080,13 +1245,16 @@ c deepest element is chosen
 	integer lelems(n)	!layers in element (return)
 	integer lnodes(n)	!layers in node (return)
 
-	logical bsigma,berror
+	logical bsigma,berror,bsmooth
 	integer i,k1,k2,ie1,ie2,l
 	integer ii,ie
 	integer nsigma
 	real hsigma
 	real h
 	integer ipext,ieext
+
+	bsmooth = .true.	!use smooth bottom?
+	bsmooth = .false.	!use smooth bottom?
 
 	call get_sigma_info(nlv,nsigma,hsigma)
 	bsigma = nsigma .gt. 0
@@ -1113,7 +1281,7 @@ c------------------------------------------------------------------
 	    if( hev(ie2) .gt. hev(ie1) ) elems(i) = ie2
 	  end if
 	  ie = elems(i)
-	  if( bsigma .and. hev(ie) .le. hsigma ) then
+	  if( bsmooth .or. bsigma .and. hev(ie) .le. hsigma ) then
 	    do ii=1,3
 	      if( k1 .eq. nen3v(ii,ie) ) helems(1,i) = hm3v(ii,ie)
 	      if( k2 .eq. nen3v(ii,ie) ) helems(2,i) = hm3v(ii,ie)
