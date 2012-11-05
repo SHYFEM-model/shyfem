@@ -307,13 +307,13 @@ c sets depth structure and passes it back in hlfem
 
 	implicit none
 
-	integer lmax
-	real zeta
-	real htot
-	real hlv(1)
-	integer nsigma
-	real hsigma
-	real hlfem(1)
+	integer lmax		!total number of layers
+	real zeta		!water level
+	real htot		!total depth (without water level)
+	real hlv(1)		!depth structure (zeta, sigma or hybrid)
+	integer nsigma		!number of sigma levels
+	real hsigma		!depth of hybrid closure
+	real hlfem(1)		!converted depth values (return)
 
 	logical bsigma
 	integer l,i

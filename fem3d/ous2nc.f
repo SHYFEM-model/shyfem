@@ -77,12 +77,14 @@ c we would not even need to read basin
 	real umin,umax
 	real vmin,vmax
 
+	logical bdate
         integer ncid
         integer dimids_2d(2)
         integer coord_varid(3)
         integer rec_varid
         integer level_id,u_id,v_id
 	integer date0,time0
+	integer it0
 
 	character*80 units,std
 
@@ -97,8 +99,11 @@ c-----------------------------------------------------------------
 
 	date0 = 2009
 	time0 = 0
-	maxrec = 0		!max number of records to be written
 	maxrec = 2		!max number of records to be written
+	maxrec = 0		!max number of records to be written (0 -> all)
+
+	it0 = 0			!subtract from it (hack)
+	bdate = .false.		!if true read from file
 
 c-----------------------------------------------------------------
 c do not change anything below here
@@ -119,6 +124,7 @@ c-----------------------------------------------------------------
 	nin=ideffi('datdir','runnam','.ous','unform','old')
 	if(nin.le.0) goto 100
 
+	if( bdate ) call read_date_and_time(date0,time0)
 	call dtsini(date0,time0)
 
 c-----------------------------------------------------------------
@@ -184,6 +190,8 @@ c-----------------------------------------------------------------
   300   continue
 
         call rdous(nin,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
+
+	it = it - it0
 
         if(ierr.gt.0) then
 		write(6,*) 'error in reading file : ',ierr
@@ -463,3 +471,20 @@ c******************************************************************
 
 c******************************************************************
 
+	subroutine read_date_and_time(date,time)
+
+	implicit none
+
+	integer date,time
+
+	open(1,file='date0',status='old',form='formatted')
+	read(1,*) date
+	close(1)
+
+	open(1,file='time0',status='old',form='formatted')
+	read(1,*) time
+	close(1)
+
+	end
+
+c******************************************************************

@@ -45,6 +45,7 @@ c concatenates two nos files into one
         integer ierr
         integer nvers
 	integer mode,itc
+	integer date,time
         real r,rnull
 	real conz,high
 	character*80 file1,file2
@@ -111,12 +112,18 @@ c-------------------------------------------------------------------
 	call open_nos_file(file1,'old',nin)
 
         nvers=3
-	call rfnos(nin,nvers,nkn,nel,nlv,nvar,title,ierr)
+	call nos_init(nin,nvers)
+	call nos_read_header(nin,nkn,nel,nlv,nvar,ierr)
+	call nos_get_date(nin,date,time)
+	call nos_get_title(nin,title)
+
+	!call rfnos(nin,nvers,nkn,nel,nlv,nvar,title,ierr)
         if(ierr.ne.0) goto 100
 
         write(6,*) 'nvers    : ',nvers
         write(6,*) 'nkn,nel  : ',nkn,nel
         write(6,*) 'nlv,nvar : ',nlv,nvar
+        write(6,*) 'date,time: ',date,time
         write(6,*) 'title    : ',title
 
         call dimnos(nin,nkndim,neldim,nlvdim)
@@ -135,7 +142,13 @@ c-------------------------------------------------------------------
         write(6,*) 'writing file ',file(1:50)
         nb = ifileo(55,file,'unform','new')
         if( nb .le. 0 ) goto 98
-        call wfnos(nb,3,nkn,nel,nlv,1,title,ierr)
+	date = 20120101
+	time = 0
+	call nos_init(nb,nvers)
+	call nos_set_title(nb,title)
+	call nos_set_date(nb,date,time)
+	call nos_write_header(nb,nkn,nel,nlv,nvar,ierr)
+        !call wfnos(nb,3,nkn,nel,nlv,1,title,ierr)
         if( ierr .ne. 0 ) goto 99
         call wsnos(nb,ilhkv,hlv,hev,ierr)
         if( ierr .ne. 0 ) goto 99
@@ -173,12 +186,17 @@ c-------------------------------------------------------------------
 	call open_nos_file(file2,'old',nin)
 
         nvers=3
-	call rfnos(nin,nvers,nkn,nel,nlv,nvar,title,ierr)
+	call nos_init(nin,nvers)
+	call nos_read_header(nin,nkn,nel,nlv,nvar,ierr)
+	call nos_get_title(nin,title)
+	call nos_get_date(nin,date,time)
+	!call rfnos(nin,nvers,nkn,nel,nlv,nvar,title,ierr)
         if(ierr.ne.0) goto 100
 
         write(6,*) 'nvers    : ',nvers
         write(6,*) 'nkn,nel  : ',nkn,nel
         write(6,*) 'nlv,nvar : ',nlv,nvar
+        write(6,*) 'date,time: ',date,time
         write(6,*) 'title    : ',title
 
         call dimnos(nin,nkndim,neldim,nlvdim)

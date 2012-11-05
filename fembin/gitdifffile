@@ -12,28 +12,60 @@ GetFilePrefix()		#gets prefix to findf right directory
   cd $actdir
 
   prefix=`echo $actdir | perl -pe "s|^$gitroot||" | perl -pe "s|^/||"`
-  echo "prefix: $prefix    ($actdir  $gitroot)"
+  #echo "prefix: $prefix    ($actdir  $gitroot)"
 }
 
+ErrorOption()
+{
+  echo "No such option : $1"
+}
+
+Usage()
+{
+  echo "Usage: gitdifffile [-help|-h] [-options] file [ start-tag [ end-tag ] ]"
+}
+
+FullUsage()
+{
+  Usage
+  echo "    gives info on changes in file"
+  echo "    with no start tag start from first available tag"
+  echo "    with no end tag go to last available tag"
+  echo "    options:"
+  echo "       -h|-help    this info"
+  echo "       -write      writes changed versions of file"
+  echo "       -writeall   writes all versions (changed or not)"
+}
+
+writefile="NO"
 writeall="NO"
-if [ "$1" = "-all" ]; then
-  writeall="YES"
-  shift
+
+while [ -n "$1" ]
+do
+   case $1 in
+        -write)         writefile="YES";;
+        -writeall)      writeall="YES";;
+        -h|-help)       FullUsage; exit 0;;
+        -*)             ErrorOption $1; exit 1;;
+        *)              break;;
+   esac
+   shift
+done
+
+[ $writeall = "YES" ] && writefile="YES"
+
+if [ $# -eq 0 ]; then
+  Usage
+  exit 0
 fi
+
+#--------------------------------------
 
 file=$1
 start=$2
 end=$3
 
 GetFilePrefix
-
-if [ $# -lt 1 ]; then
-  echo "Usage: gitdifffile [-all] file [ start-tag [ end-tag ] ]"
-  echo "    with no start tag start from first available tag"
-  echo "    with no end tag go to last available tag"
-  echo "    -all    writes all versions"
-  exit 0
-fi
 
 name=`basename $file`
 
@@ -59,35 +91,48 @@ intags="NO"
 
 tags=`gittags -tagsonly`
 first="YES"
+exists="NO"
 
 for tag in $tags
 do
   [ "$start" = $tag ] && intags="YES"
 
   if [ $intags = "YES" ]; then		#process tags
-    echo -n "checking tag: $tag"
-    git show $tag:$prefix/$file > tmp.tmp
-    if [ $? -ne 0 ]; then
-      echo "error getting file... aborting"
+    echo -n "checking tag: $tag  "
+    git show $tag:$prefix/$file > tmp.tmp 2> err.tmp
+    status=$?
+    if [ $status -eq 128 ]; then	#file in this version not exisiting
+      :
+      echo -n "  ...not existing"
+    elif [ $status -ne 0 ]; then	# not identified error
+      echo "$status: error getting file... aborting"
       exit 1
+    else
+      exists="YES"
     fi
     write="NO"
-    if [ $first = "YES" -o $writeall = "YES" ]; then
-      write="YES"
-    else
-      cmp --quiet tmp.tmp $lastfile
-      status=$?
-      #echo "status: $status"
-      [ $status -ne 0 ] && write="YES"
-      [ $status -gt 1 ] && (echo "error comparing files: $lastfile"; exit 1)
+    if [ $exists = "YES" ]; then
+      if [ $first = "YES" -o $writeall = "YES" ]; then
+        write="YES"
+        first="NO"
+      else
+        cmp --quiet tmp.tmp $lastfile
+        status=$?
+        #echo "status: $status"
+        [ $status -ne 0 ] && write="YES"
+        [ $status -gt 1 ] && (echo "error comparing files: $lastfile"; exit 1)
+      fi
     fi
     if [ $write = "YES" ]; then
       new=${name}_$tag.rev
-      echo -n "  ...writing $new"
+      if [ $writefile = "YES" ]; then
+        echo -n "  ...writing $new"
+      else
+        echo -n "  ...changed"
+      fi
       mv tmp.tmp  $new
       lastfile=$new
     fi
-    first="NO"
     echo ""
   fi
 
@@ -95,4 +140,5 @@ do
 done
 
 [ -f tmp.tmp ] && rm -f tmp.tmp
-
+[ -f err.tmp ] && rm -f err.tmp
+[ $writefile = "NO" ] && rm -f ${name}_*.rev

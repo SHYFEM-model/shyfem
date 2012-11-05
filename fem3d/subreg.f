@@ -68,6 +68,7 @@ c 24.11.2011	ggu	new routine find_close_elem()
 c 20.06.2012	ggu	new routine get_scal_elem()
 c 07.10.2012	ggu	new routine av2fm()
 c 10.10.2012	ggu	new routine fm2am2d() and fm2am3d()
+c 26.10.2012	ggu	bug fix: do not access not existing storage
 c
 c notes :
 c
@@ -451,14 +452,12 @@ c pzlreg                value of z for land points
 c local
 	integer i,j,ii,iii,ie,k,kn,iin
 	integer imin,imax,jmin,jmax
-	logical ball
+	logical bok
 	double precision x(3),y(3),z(3),a(3),b(3),c(3)
 	double precision zh,fh,f,xp,yp
 	double precision xmin,xmax,ymin,ymax
 c function
 	integer intrid
-
-	ball = .not. bw
 
 	do j=1,jp
 	    do i=1,ip
@@ -467,7 +466,9 @@ c function
 	end do
 
 	do ie=1,nel
-	  if( ball .or. bwater(ie) ) then	!wet
+	  bok = .true.
+	  if( bw ) bok = bwater(ie)
+	  if( bok ) then			!wet
 	    do i=1,3
 		kn=nen3v(i,ie)
 		x(i)=xgv(kn)
@@ -586,8 +587,8 @@ c interpolation 3d of fem values to regular grid using fm matrix
             ie = nint(fm(4,i,j))
             lmax = 0
             if( ie .gt. 0 ) then
-              lmax = ilhv(ie)
-              if( nlvdim .eq. 1 ) lmax = 1
+              lmax = 1
+              if( nlvdim .gt. 1 ) lmax = ilhv(ie)
             end if 
             do l=1,lmax
               a = 0.

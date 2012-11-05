@@ -28,16 +28,18 @@ c 28.09.2006	ggu	new routine delnos to close nos file explicitly
 c 28.09.2006	ggu	check if nos file is already open
 c 07.03.2007	ggu	new routines rhnos, whnos
 c 10.02.2012	ggu	new routines to skip records
+c 30.10.2012	ggu	new format for date and time (new accessor routines)
 c
 c notes :
 c
 c format of file:
 c
-c version 3
+c version 3 and 4
 c
-c	mtype,nvers
+c	ftype,nvers
 c	nkn,nel,nlv,nvar
 c	title
+c	date,time				(version 4)
 c
 c	(ilhkv(k),k=1,nkn)			empty if nlv <= 1
 c	(hlv(k),k=1,nlv)			empty if nlv <= 1
@@ -49,7 +51,7 @@ c	(c(1,k),k=1,nkn)			if nlv <= 1
 c
 c version 2
 c
-c	mtype,nvers
+c	ftype,nvers
 c	nkn,nlv,nvar
 c	title
 c
@@ -61,7 +63,7 @@ c	(c(1,k),k=1,nkn)			if nlv <= 1
 c
 c version 1
 c
-c	mtype,nvers
+c	ftype,nvers
 c	title
 c	nkn,nvar
 c
@@ -91,32 +93,17 @@ c sets up initial common block - internal routine
 
 	implicit none
 
-c parameters
-	integer ftype,maxvers
-	parameter(ftype=161,maxvers=3)
-	integer ndim,nitdim
-	parameter(ndim=30,nitdim=5)
-c common
-	integer mtype,maxver
-	common /noscom/ mtype,maxver
-	integer nositem,nosvar(0:nitdim,ndim)
-	common /nosvar/nositem,nosvar
-c local
+	include 'nosinf.h'
+
 	integer i,n
-c save
+
 	logical binit
 	save binit
-	save /noscom/
-	save /nosvar/
-c data
 	data binit /.false./
 
 	if( binit ) return
 
 	binit = .true.
-
-	mtype = ftype
-	maxver = maxvers
 
 	nositem = 0
 	do n=1,ndim
@@ -135,28 +122,22 @@ c sets up parameter common block - internal routine
 
 	implicit none
 
-c arguments
+	include 'nosinf.h'
+
 	integer iunit,nvers,nkn,nel,nlv,nvar
-c parameters
-	integer ndim,nitdim
-	parameter(ndim=30,nitdim=5)
-c common
-	integer nositem,nosvar(0:nitdim,ndim)
-	common /nosvar/nositem,nosvar
-c local
+
 	integer n
+	integer findnos
 
 c we do not check if unit has already been opened -> open with ifileo
 
-	do n=1,nositem
-	  if( nosvar(0,n) .eq. 0 ) goto 1
-	  if( nosvar(0,n) .eq. iunit ) goto 99
-	end do
-    1	continue
-	if( n .gt. nositem ) nositem = n
+	n = findnos(iunit)
+	if( n .eq. 0 ) then
+	  n = findnos(0)
+	end if
 
-	if( nositem .gt. ndim ) then
-	   stop 'error stop setnos: ndim'
+	if( n .eq. 0 ) then
+	  call nos_error(iunit,'setnos','Cannot find entry.')
 	end if
 
 	nosvar(0,n) = iunit
@@ -166,10 +147,6 @@ c we do not check if unit has already been opened -> open with ifileo
 	nosvar(4,n) = nlv
 	nosvar(5,n) = nvar
 
-	return
-   99	continue
-	write(6,*) 'unit = ',iunit
-	stop 'error stop setnos: unit already open - please close first'
 	end
 
 c************************************************************
@@ -180,25 +157,17 @@ c gets parameter common block - internal routine
 
 	implicit none
 
-c arguments
+	include 'nosinf.h'
+
 	integer iunit,nvers,nkn,nel,nlv,nvar
-c parameters
-	integer ndim,nitdim
-	parameter(ndim=30,nitdim=5)
-c common
-	integer nositem,nosvar(0:nitdim,ndim)
-	common /nosvar/nositem,nosvar
 
 	integer n
+	integer findnos
 
-	do n=1,nositem
-	  if( nosvar(0,n) .eq. iunit ) goto 1
-	end do
-
-	write(6,*) 'Cannot read on unit ',iunit
-	write(6,*) 'File is not initialized.'
-	stop 'error stop getnos: no initialization'
-    1	continue
+	n = findnos(iunit)
+	if( n .eq. 0 ) then
+	  call nos_error(iunit,'getnos','File is not initialized.')
+	end if
 
 	nvers = nosvar(1,n)
 	nkn   = nosvar(2,n)
@@ -218,25 +187,17 @@ c please note that the file has still to be closed manually
 
 	implicit none
 
-c arguments
+	include 'nosinf.h'
+
 	integer iunit
-c parameters
-	integer ndim,nitdim
-	parameter(ndim=30,nitdim=5)
-c common
-	integer nositem,nosvar(0:nitdim,ndim)
-	common /nosvar/nositem,nosvar
 
 	integer n
+	integer findnos
 
-	do n=1,nositem
-	  if( nosvar(0,n) .eq. iunit ) goto 1
-	end do
-
-	write(6,*) 'Cannot close unit ',iunit
-	write(6,*) 'File is not open.'
-	stop 'error stop delnos: file not open'
-    1	continue
+	n = findnos(iunit)
+	if( n .eq. 0 ) then
+	  call nos_error(iunit,'delnos','File is not open, cannot close.')
+	end if
 
 	nosvar(0,n) = 0
 
@@ -250,9 +211,8 @@ c checks dimension of arrays
 
 	implicit none
 
-c arguments
 	integer iunit,nkndim,neldim,nlvdim
-c local
+
 	integer nvers,nkn,nel,nlv,nvar
 
 	call getnos(iunit,nvers,nkn,nel,nlv,nvar)
@@ -267,6 +227,296 @@ c local
         write(6,*) 'nel,neldim : ',nel,neldim
         write(6,*) 'nlv,nlvdim : ',nlv,nlvdim
         stop 'error stop dimnos: dimension error'
+	end
+
+c************************************************************
+
+	subroutine nos_error(iunit,routine,text)
+
+	implicit none
+
+	integer iunit
+	character*(*) routine,text
+
+	write(6,*) 'For unit ',iunit,' in routine ',routine
+	write(6,*) text
+	stop 'error stop nos_error'
+
+	end
+
+c************************************************************
+
+	function findnos(iunit)
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iunit
+	integer findnos
+
+	integer n
+
+	do n=1,min(nositem+1,ndim)		!look at one entry more
+	  if( nosvar(0,n) .eq. iunit ) goto 1
+	end do
+	n = 0
+    1	continue
+
+	if( n .gt. nositem ) nositem = n
+	findnos = n
+
+	end
+
+c************************************************************
+c************************************************************
+c************************************************************
+c************************************************************
+c************************************************************
+
+	subroutine nos_init(iunit,nvers)
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iunit
+	integer nvers
+
+	integer n
+	integer findnos
+
+	call ininos
+
+	if( nvers .lt. maxcomp ) then
+	  write(6,*) 'nos_init: Old function call'
+	  write(6,*) 'nvers = ',nvers,'   maxvers = ',maxcomp
+	end if
+
+	n = findnos(iunit)
+	if( n .ne. 0 ) then
+	  call nos_error(iunit,'nos_init','Unit already open.')
+	end if
+
+	n = findnos(0)
+	if( n .eq. 0 ) then
+	  call nos_error(iunit,'nos_init','No space left (ndim).')
+	end if
+
+	nosvar(0,n) = iunit
+	nosvar(1,n) = nvers
+
+	end
+
+c************************************************************
+
+	subroutine nos_close(iunit)
+
+	implicit none
+
+	integer iunit
+
+	call delnos(iunit)
+
+	end
+
+c************************************************************
+
+	subroutine nos_internal_info(iunit,iout)
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iunit,iout
+
+	integer n,i
+	integer findnos
+
+	n = findnos(iunit)
+
+	if( n .eq. 0 ) then
+	  call nos_error(iunit,'nos_info','Cannot find entry.')
+	end if
+
+	write(iout,*) 'iunit = ',iunit,' position = ',n
+	
+	do i=0,nitdim
+	  write(iout,*) i,nosvar(i,n)
+	end do
+
+	end
+
+c************************************************************
+c************************************************************
+c************************************************************
+
+	subroutine nos_get_date(iunit,date,time)
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iunit
+	integer date,time
+
+	integer n
+	integer findnos
+
+	n = findnos(iunit)
+
+	if( n .eq. 0 ) then
+	  call nos_error(iunit,'nos_get_date','Cannot find entry.')
+	end if
+
+	date = nosvar(6,n)
+	time = nosvar(7,n)
+
+	!call nos_internal_info(iunit,6)
+
+	end
+
+c************************************************************
+
+	subroutine nos_set_date(iunit,date,time)
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iunit
+	integer date,time
+
+	integer n
+	integer findnos
+
+	n = findnos(iunit)
+
+	if( n .eq. 0 ) then
+	  call nos_error(iunit,'nos_set_date','Cannot find entry.')
+	end if
+
+	nosvar(6,n) = date
+	nosvar(7,n) = time
+
+	end
+
+c************************************************************
+
+	subroutine nos_get_title(iunit,title)
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iunit
+	character*(*) title
+
+	integer n
+	integer findnos
+
+	n = findnos(iunit)
+
+	if( n .eq. 0 ) then
+	  call nos_error(iunit,'nos_get_title','Cannot find entry.')
+	end if
+
+	title = nostitle(n)
+
+	end
+
+c************************************************************
+
+	subroutine nos_set_title(iunit,title)
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iunit
+	character*(*) title
+
+	integer n
+	integer findnos
+
+	n = findnos(iunit)
+
+	if( n .eq. 0 ) then
+	  call nos_error(iunit,'nos_set_title','Cannot find entry.')
+	end if
+
+	nostitle(n) = title
+
+	end
+
+c************************************************************
+c************************************************************
+c************************************************************
+
+	subroutine nos_read_header(iunit,nkn,nel,nlv,nvar,ierr)
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iunit
+	integer nkn,nel,nlv,nvar
+	integer ierr
+
+	integer n,nvers
+	integer findnos
+	character*80 title
+
+	n = findnos(iunit)
+
+	if( n .eq. 0 ) then
+	  call nos_error(iunit,'nos_read_header','Cannot find entry.')
+	end if
+
+	nvers = nosvar(1,n)
+
+	call rfnos	(iunit,nvers
+     +				,nkn,nel,nlv,nvar
+     +				,title
+     +				,ierr
+     +				)
+
+	nostitle(n) = title
+	nosvar(1,n) = nvers
+
+	end
+
+c************************************************************
+
+	subroutine nos_write_header(iunit,nkn,nel,nlv,nvar,ierr)
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iunit
+	integer nkn,nel,nlv,nvar
+	integer ierr
+
+	integer n,nvers
+	integer findnos
+	character*80 title
+
+	n = findnos(iunit)
+
+	if( n .eq. 0 ) then
+	  call nos_error(iunit,'nos_write_header','Cannot find entry.')
+	end if
+
+	nvers = nosvar(1,n)
+	title = nostitle(n)
+
+	call wfnos	(iunit,nvers
+     +				,nkn,nel,nlv,nvar
+     +				,title
+     +				,ierr
+     +				)
+
 	end
 
 c************************************************************
@@ -290,16 +540,15 @@ c		on return actual version read
 
 	implicit none
 
-c arguments
+	include 'nosinf.h'
+
 	integer iunit,nvers
 	integer nkn,nel,nlv,nvar
 	character*(*) title
 	integer ierr
-c common
-	integer mtype,maxver
-	common /noscom/ mtype,maxver
-c local
+
 	integer ntype,irec
+	integer date,time
 	character*80 line
 
 c initialize
@@ -310,7 +559,7 @@ c initialize
 
 c control newest version number for call
 
-	if( maxver .ne. nvers ) goto 95
+	if( nvers .lt. maxcomp ) goto 95
 
 c rewind file
 
@@ -323,10 +572,13 @@ c first record - find out what version
 
 c control version number and type of file
 
-	if( ntype .ne. mtype ) goto 97
-	if( nvers .le. 0 .or. nvers .gt. maxver ) goto 98
+	if( ntype .ne. ftype ) goto 97
+	if( nvers .le. 0 .or. nvers .gt. maxvers ) goto 98
 
 c next records
+
+	date = 0
+	time = 0
 
 	irec = 2
 	if( nvers .eq. 1 ) then
@@ -338,14 +590,20 @@ c next records
 	   read(iunit,err=99)	 nkn,nlv,nvar
 	   read(iunit,err=99)	 line
 	   nel = 0
-	else if( nvers .ge. 3 ) then
+	else if( nvers .eq. 3 ) then
 	   read(iunit,err=99)	 nkn,nel,nlv,nvar
 	   read(iunit,err=99)	 line
+	else if( nvers .eq. 4 ) then
+	   read(iunit,err=99)	 nkn,nel,nlv,nvar
+	   read(iunit,err=99)	 line
+	   read(iunit,err=99)	 date,time
 	else
 	   stop 'error stop rfnos: internal error (1)'
 	end if
 
 	call setnos(iunit,nvers,nkn,nel,nlv,nvar)
+	call nos_set_title(iunit,line)
+	call nos_set_date(iunit,date,time)
 	title = line
 
 	ierr=0
@@ -364,7 +622,7 @@ c next records
 	return
    97	continue
 	write(6,*) 'rfnos: Wrong type of file : ',ntype
-	write(6,*) 'Expected ',mtype
+	write(6,*) 'Expected ',ftype
 	ierr=97
 	return
    96	continue
@@ -373,7 +631,7 @@ c next records
 	return
    95	continue
 	write(6,*) 'rfnos: Old function call ',nvers
-	write(6,*) 'nvers = ',nvers,'   maxver = ',maxver
+	write(6,*) 'nvers = ',nvers,'   maxvers = ',maxcomp
 	write(6,*) 'Please adjust call to rfnos and recompile'
 	ierr=95
 	return
@@ -399,15 +657,14 @@ c		.. of the call parameters
 
 	implicit none
 
-c arguments
+	include 'nosinf.h'
+
 	integer iunit,nvers
 	integer nkn,nel,nlv,nvar
 	character*(*) title
 	integer ierr
-c common
-	integer mtype,maxver
-	common /noscom/ mtype,maxver
 
+	integer date,time
 	character*80 line
 
         line = ' '
@@ -419,13 +676,16 @@ c initialize
 
 c control newest version number for call
 
-	if( nvers.ne.maxver ) goto 95
+	if( nvers .lt. maxcomp ) goto 95
 
 	rewind(iunit)
 
-	write(iunit)		mtype,maxver
+	call nos_get_date(iunit,date,time)
+
+	write(iunit)		ftype,maxvers
 	write(iunit)		nkn,nel,nlv,nvar
 	write(iunit)		line
+	write(iunit)		date,time
 
 	call setnos(iunit,nvers,nkn,nel,nlv,nvar)
 
@@ -434,7 +694,7 @@ c control newest version number for call
 	return
    95	continue
 	write(6,*) 'wfnos: Old function call'
-	write(6,*) 'nvers = ',nvers,'   maxver = ',maxver
+	write(6,*) 'nvers = ',nvers,'   maxvers = ',maxcomp
 	write(6,*) 'Please adjust call to rfnos and recompile'
 	ierr=95
 	return
@@ -454,9 +714,6 @@ c arguments
 	real hlv(1)
 	real hev(1)
 	integer ierr
-c common
-	integer mtype,maxver
-	common /noscom/ mtype,maxver
 c local
 	integer k,l,ie
 	integer nvers,nkn,nel,nlv,nvar
@@ -515,9 +772,6 @@ c arguments
 	real hlv(1)
 	real hev(1)
 	integer ierr
-c common
-	integer mtype,maxver
-	common /noscom/ mtype,maxver
 c local
 	integer k,l,ie
 	integer nvers,nkn,nel,nlv,nvar
@@ -556,14 +810,13 @@ c arguments
 	integer ilhkv(1)
 	real c(nlvdim,1)
 	integer ierr
-c common
-	integer mtype,maxver
-	common /noscom/ mtype,maxver
 c local
-	integer l,k
+	integer l,k,lmax
 	integer nvers,nkn,nel,nlv,nvar
 
 	call getnos(iunit,nvers,nkn,nel,nlv,nvar)
+
+	lmax = min(nlv,nlvdim)
 
 	if( nvers .eq. 1 ) then
 	   ivar = 1
@@ -571,8 +824,12 @@ c local
 c	   read(iunit,end=99,err=99) ((c(l,k),l=1,nlv),k=1,nkn)
 	   read(iunit,end=99,err=99) (c(1,k),k=1,nkn)
 	else if( nvers .ge. 2 ) then
-	   read(iunit,end=88,err=98) it,ivar
-	   if( nlv .le. 1 ) then
+	   if( nvers .ge. 4 ) then
+	     read(iunit,end=88,err=98) it,ivar,lmax
+	   else
+	     read(iunit,end=88,err=98) it,ivar
+	   end if
+	   if( lmax .le. 1 ) then
              read(iunit,end=99,err=99) (c(1,k),k=1,nkn)
 	   else
              read(iunit,end=99,err=99) ((c(l,k),l=1,ilhkv(k)),k=1,nkn)
@@ -614,18 +871,17 @@ c arguments
 	integer ilhkv(1)
 	real c(nlvdim,1)
 	integer ierr
-c common
-	integer mtype,maxver
-	common /noscom/ mtype,maxver
 c local
-	integer l,k
+	integer l,k,lmax
 	integer nvers,nkn,nel,nlv,nvar
 
 	call getnos(iunit,nvers,nkn,nel,nlv,nvar)
 
-	write(iunit) it,ivar
+	lmax = min(nlv,nlvdim)
 
-	if( nlv .le. 1 ) then
+	write(iunit) it,ivar,lmax
+
+	if( lmax .le. 1 ) then
 	  write(iunit) (c(1,k),k=1,nkn)
 	else
 	  write(iunit) ((c(l,k),l=1,ilhkv(k)),k=1,nkn)
@@ -658,6 +914,7 @@ c arguments
 	integer iunit,nvers
 	integer nkndim,neldim,nlvdim
 	integer nkn,nel,nlv,nvar
+	integer date,time
 	integer ilhkv(1)
 	real hlv(1)
 	real hev(1)
@@ -668,9 +925,12 @@ c local
         call rfnos(iunit,nvers,nkn,nel,nlv,nvar,title,ierr)
         if(ierr.ne.0) goto 99
 
+	call nos_get_date(iunit,date,time)
+
         write(6,*) 'nvers    : ',nvers
         write(6,*) 'nkn,nel  : ',nkn,nel
         write(6,*) 'nlv,nvar : ',nlv,nvar
+        write(6,*) 'date,time: ',date,time
         write(6,*) 'title    : ',title
 
         call dimnos(iunit,nkndim,neldim,nlvdim)

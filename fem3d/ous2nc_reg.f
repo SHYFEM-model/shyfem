@@ -90,12 +90,14 @@ c reads ous file and writes NetCDF file (regular)
 	real x0,y0,dx,dy
 	real flag
 
+	logical bdate
         integer ncid
         integer dimids_2d(2)
         integer coord_varid(3)
         integer rec_varid
         integer level_id,u_id,v_id
 	integer date0,time0
+	integer it0
 
 	character*80 units,std
 
@@ -110,8 +112,11 @@ c-----------------------------------------------------------------
 
 	date0 = 2009
 	time0 = 0
-	maxrec = 0		!max number of records to be written
 	maxrec = 2		!max number of records to be written
+	maxrec = 0		!max number of records to be written (0 -> all)
+
+	it0 = 0			!subtract from it (hack)
+	bdate = .false.		!if true read from file
 
 	flag = -999.
 
@@ -210,6 +215,8 @@ c-----------------------------------------------------------------
   300   continue
 
         call rdous(nin,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
+
+	it = it - it0
 
         if(ierr.gt.0) then
 		write(6,*) 'error in reading file : ',ierr
@@ -592,5 +599,21 @@ c******************************************************************
 
 c******************************************************************
 
+        subroutine read_date_and_time(date,time)
 
+        implicit none
+
+        integer date,time
+
+        open(1,file='date0',status='old',form='formatted')
+        read(1,*) date
+        close(1)
+
+        open(1,file='time0',status='old',form='formatted')
+        read(1,*) time
+        close(1)
+
+        end
+
+c******************************************************************
 

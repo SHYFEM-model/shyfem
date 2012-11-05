@@ -17,13 +17,13 @@ c
 	implicit none
 	include 'common.h'
 
-	integer nnel,nnkn,mmbw
-	integer nnen3v(3,1)
-	integer ndim			!dimension of arrays ip, jp
-	integer nnot0			!number of non 0 elements
-	integer iijp(-mmbw:mmbw,nnkn)	!index pointer into matrix
-	integer ip(ndim)		!row index of non zero element
-	integer jp(ndim)		!col index of non zero element
+	integer nnel,nnkn,mmbw		!size of elements, nodes, bandwidth
+	integer nnen3v(3,1)		!element index
+	integer ndim			!dimension of arrays ip, jp (non zero)
+	integer nnot0			!number of non 0 elements (return)
+	integer iijp(-mmbw:mmbw,nnkn)	!index pointer into matrix (return)
+	integer ip(ndim)		!row index of non zero element (return)
+	integer jp(ndim)		!col index of non zero element (return)
 
 	integer k,m,n,ie,ii,ii1,k1,k2
 
@@ -193,22 +193,22 @@ c
 
 	idk = k1 - k2
 
-	if( idk .ne. 0 ) then
+	if( idk .ne. 0 ) then		!out of diagonal
 	  ip1 = ip(idk,k2)
 	  ip2 = ip(-idk,k2+idk)
 	  !write(6,*) k1,k2,idk,n
-	  if( ip1 .ne. 0 .and. ip2 .ne. 0 ) then
+	  if( ip1 .ne. 0 .and. ip2 .ne. 0 ) then	!already inserted
 	    return
-	  else if( ip1 .eq. 0 .and. ip2 .eq. 0 ) then
+	  else if( ip1 .eq. 0 .and. ip2 .eq. 0 ) then	!must insert
 	    ip(idk,k2) = n + 1
 	    ip(-idk,k2+idk) = n + 2
 	    n = n + 2
-	  else
+	  else						!not possible
 	    write(6,*) k1,k2,idk,n
 	    write(6,*) 'internal error: ',ip1,ip2
 	    stop 'error stop coo_insert: internal error (1)'
 	  end if
-	else
+	else				!on diagonal
 	  !write(6,*) k1,k2,idk,n
 	  ip1 = ip(0,k1)
 	  if( ip1 .eq. 0 ) then

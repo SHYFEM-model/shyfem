@@ -1,4 +1,19 @@
 
+c ./fem3d/subtsuvfile.f:
+c 29.10.2012    ggu     created from scratch
+c
+c ./fem3d/subnos.f:
+c 30.10.2012    ggu     new format for date and time (new accessor routines)
+c
+c ./fem3d/newbcl.f:
+c 31.10.2012    ggu     open and next_record transfered to subtsuvfile.f
+c
+c ./fem3d/subreg.f:
+c 26.10.2012    ggu     bug fix: do not access not existing storage
+
+
+
+
 c ./femplot/supbas.f:
 c 24.10.2012  ggu     bug in labelling non spherical grid (returned -1)
 c

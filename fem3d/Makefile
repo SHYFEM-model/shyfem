@@ -183,6 +183,7 @@ HTOBJS = \
 	subtrace.o subproj.o subeos.o sigmautil.o \
 	submeteo.o submeteo1.o submeteo_inout.o \
 	subwrt.o subvintp.o \
+	subfemfile.o subtsuvfile.o \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ) $(PARALLEL_OBJ)
 
@@ -206,7 +207,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subapn.o subnsa.o subdum.o \
 	  subbnd.o subdts.o subdep.o \
 	  debug.o subreg.o subnev.o \
-	  subfile.o subvintp.o subver.o
+	  subfemfile.o subvintp.o subver.o
 
 RSTOBJS = subrst.o ecological_dummy.o
 

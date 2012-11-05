@@ -58,6 +58,7 @@ c 27.01.2012    deb&ggu changes for hybrid in ts_file_open,ts_next_record
 c 10.02.2012    ggu     bug in call to ts_next_record (called with nlvdim)
 c 23.02.2012    ccf     do noy check depth structure
 c 09.03.2012    deb     bug fix in ts_next_record: ilhkv was real
+c 31.10.2012    ggu     open and next_record transfered to subtsuvfile.f
 c
 c*****************************************************************
 
@@ -233,7 +234,7 @@ c		--------------------------------------------
 		  call conini(nlvdi,tempv,temref,tstrat,hdkov)
 
 		  if( ibarcl .eq. 1 .or. ibarcl .eq. 3) then
-		    call ts_file_init(it,nlv,nkn,tempv,saltv)
+		    call ts_init(it,nlv,nkn,tempv,saltv)
 		  else if( ibarcl .eq. 2 ) then
 		    call ts_diag(it,nlv,nkn,tempv,saltv)
 		  else if( ibarcl .eq. 4 ) then		!interpolate to T/S
@@ -767,6 +768,48 @@ c-------------------------------------------------------------
 
 c*******************************************************************	
 
+	subroutine ts_init(it,nlv,nkn,tempv,saltv)
+
+c initialization of T/S from file
+
+	implicit none
+
+	include 'param.h'
+
+        integer it
+        integer nlv
+        integer nkn
+        real tempv(nlvdim,1)
+        real saltv(nlvdim,1)
+
+        character*80 tempf,saltf
+
+        integer itt,its
+        integer iutemp(3),iusalt(3)
+
+	call getfnm('tempin',tempf)
+	call getfnm('saltin',saltf)
+
+	if( tempf .ne. ' ' ) then
+	  write(6,*) 'ts_init: opening file for T'
+	  call ts_file_open(tempf,nkn,iutemp)
+          call ts_next_record(itt,iutemp,nkn,nlv,tempv)
+	  call ts_file_close(iutemp)
+          write(6,*) 'temperature initialized from file ',tempf
+	end if
+
+	if( saltf .ne. ' ' ) then
+	  write(6,*) 'ts_init: opening file for S'
+	  call ts_file_open(saltf,nkn,iusalt)
+          call ts_next_record(its,iusalt,nkn,nlv,saltv)
+	  call ts_file_close(iusalt)
+          write(6,*) 'salinity initialized from file ',saltf
+	end if
+
+	end
+
+c*******************************************************************	
+
 	subroutine intp_record(nkn,nlvdim,nlv,itold,itnew,it
      +				,voldv,vnewv,vintpv)
 
@@ -812,373 +855,6 @@ c copies new record to old one
 	    voldv(l,k) = vnewv(l,k)
 	  end do
 	end do
-
-	end
-
-c*******************************************************************	
-c*******************************************************************	
-c*******************************************************************	
-
-	subroutine ts_file_init(it,nlv,nkn,tempv,saltv)
-
-c initialization of T/S from file
-
-	implicit none
-
-	include 'param.h'
-
-        integer it
-        integer nlv
-        integer nkn
-        real tempv(nlvdim,1)
-        real saltv(nlvdim,1)
-
-        character*80 tempf,saltf
-
-        integer itt,its
-        integer iutemp(3),iusalt(3)
-
-	call getfnm('tempin',tempf)
-	call getfnm('saltin',saltf)
-
-	if( tempf .ne. ' ' ) then
-	  write(6,*) 'ts_file_init: opening file for T'
-	  call ts_file_open(tempf,nkn,iutemp)
-          call ts_next_record(itt,iutemp,nkn,nlv,tempv)
-	  call ts_file_close(iutemp)
-          write(6,*) 'temperature initialized from file ',tempf
-	end if
-
-	if( saltf .ne. ' ' ) then
-	  write(6,*) 'ts_file_init: opening file for S'
-	  call ts_file_open(saltf,nkn,iusalt)
-          call ts_next_record(its,iusalt,nkn,nlv,saltv)
-	  call ts_file_close(iusalt)
-          write(6,*) 'salinity initialized from file ',saltf
-	end if
-
-	end
-
-c*******************************************************************	
-
-	subroutine ts_file_open(name,nkn,info)
-
-c opens T/S file
-
-	implicit none
-
-	include 'param.h'
-
-	character*(*) name
-	integer nkn
-	integer info(3)
-
-	real hlv(1)
-	common /hlv/hlv
-
-	logical bsigma,bdebug
-	logical bformat,bhashl
-	integer ifileo,iunit,ios
-	integer iformat,ihashl,inzeta
-	integer it,nknaux,lmax,nvar
-	integer l
-	integer nsigma
-	real hsigma
-	real hl(nlvdim)
-
-	bdebug = .true.
-	bdebug = .false.
-
-c-------------------------------------------------------------
-c indicator for file format and content
-c
-c -1	do not know - check (default)
-c  0	no (not formatted, does not have hlv array)
-c  1	yes (formatted, has hlv array)
-c
-c if you are sure about your file format and content you can
-c set these variables below to the desired value
-c
-c we still check file for formatted or unformatted
-c we always pretend that the file has hlv information
-c-------------------------------------------------------------
-
-	iformat = -1		!indicator if file is formatted
-	ihashl  = +1		!indicator if file has hlv array
-
-c-------------------------------------------------------------
-c check if formatted or unformatted
-c-------------------------------------------------------------
-
-	if( iformat .eq. -1 ) then		!check if formatted
-	  iunit = ifileo(0,name,'unform','old')
-	  if( iunit .le. 0 ) goto 99
-	  read(iunit,iostat=ios) it,nknaux,lmax,nvar
-	  close(iunit)
-
-	  if( ios .lt. 0 ) goto 98		!EOF
-
-	  if( nkn .eq. nknaux ) then		!is is probably unformatted
-	    iformat = ios
-	  else					!let us try formatted
-	    iunit = ifileo(0,name,'form','old')
-	    if( iunit .le. 0 ) goto 99
-	    read(iunit,*,iostat=ios) it,nknaux,lmax,nvar
-	    close(iunit)
-	  end if
-	end if
-
-	bformat = iformat .gt. 0
-
-c-------------------------------------------------------------
-c check if level structure information is available
-c-------------------------------------------------------------
-
-	ios = 0
-	if( bformat ) then
-	  write(6,*) 'ts_file_open: opening formatted file ',name
-	  iunit = ifileo(0,name,'form','old')
-	  read(iunit,*) it,nknaux,lmax,nvar
-	  if( lmax .gt. nlvdim ) goto 95
-	  read(iunit,*) (hl(l),l=1,lmax)
-	else
-	  write(6,*) 'ts_file_open: opening unformatted file ',name
-	  iunit = ifileo(0,name,'unform','old')
-	  read(iunit) it,nknaux,lmax,nvar
-	  if( lmax .gt. nlvdim ) goto 95
-	  read(iunit,iostat=ios) (hl(l),l=1,lmax)
-	end if
-	close(iunit)
-
-	if( ios .ne. 0 ) goto 97
-
-	inzeta = 0
-	ihashl = 1
-	do l=2,lmax
-	  if( hl(l) .gt. hl(l-1) ) then		!in zeta
-	    inzeta = +1
-	  else if( hl(l) .lt. hl(l-1) ) then	!in sigma
-	    if( inzeta .gt. 0 ) ihashl = 0
-	  else
-	    ihashl = 0
-	  end if
-	end do
-        if( lmax .le. 1 ) ihashl = 0
-
-	!ihashl = 0			!force choice if you are sure (0/1)
-	bhashl = ihashl .gt. 0
-
-c-------------------------------------------------------------
-c if level structure is available, check if compatible
-c-------------------------------------------------------------
-
-	!if( bhashl ) then
-	!  do l=1,lmax
-	!    if( hl(l) .ne. hlv(l) ) goto 96
-	!  end do
-	!end if
-
-c-------------------------------------------------------------
-c open finally and store info
-c-------------------------------------------------------------
-
-	if( bformat ) then
-	  iunit = ifileo(0,name,'form','old')
-	else
-	  iunit = ifileo(0,name,'unform','old')
-	end if
-
-	info(1) = iunit
-	info(2) = iformat
-	info(3) = ihashl
-
-	if( bdebug ) then
-	  write(6,*) 'debug in ts_file_open:'
-	  write(6,*) 'iunit,iformat,ihashl: ',iunit,iformat,ihashl
-	  write(6,*) 'lmax,hl: ',lmax
-	  write(6,*) (hl(l),l=1,lmax)
-	end if
-
-c-------------------------------------------------------------
-c end of routine
-c-------------------------------------------------------------
-
-	return
-   95	continue
-	write(6,*) 'too many layers in file: ',name
-	write(6,*) 'lmax,nlvdim  : ',lmax,nlvdim
-	write(6,*) 'it,nknaux,nvar: ',it,nknaux,nvar
-	write(6,*) 'iformat,ihashl: ',iformat,ihashl
-	stop 'error stop ts_file_open: dimension nlvdim'
-   96	continue
-	write(6,*) 'incompatible levels in file: ',name
-	write(6,*) 'lmax,hl  : ',lmax,(hl(l),l=1,lmax)
-	write(6,*) 'lmax,hlv : ',lmax,(hlv(l),l=1,lmax)
-	stop 'error stop ts_file_open: incompatible levels'
-   97	continue
-	write(6,*) 'read error in file: ',name
-	stop 'error stop ts_file_open: read error'
-   98	continue
-	write(6,*) 'empty file: ',name
-	stop 'error stop ts_file_open: empty file'
-   99	continue
-	write(6,*) 'file name: ',name
-	stop 'error stop ts_file_open: cannot open file'
-	end
-
-c*******************************************************************	
-
-	subroutine ts_next_record(it,info,nkn,nlv,value)
-
-	implicit none
-
-	include 'param.h'
-
-	integer it
-	integer info(3)
-	integer nkn
-	integer nlv
-	real value(nlvdim,1)
-
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
-	real hlv(1)
-	common /hlv/hlv
-	real znv(1)
-	common /znv/znv
-	real hkv(1)
-	common /hkv/hkv
-
-	logical bsigma,bdebug,bcons
-	logical bformat,bhashl
-	integer nknaux,lmax,nvar
-	integer i,l,iunit
-	integer nsigma,nsigma_aux
-	real hsigma,hsigma_aux
-	real val
-        real vmin,vmax
-
-	integer lmax_fem
-	real htot
-	real zz_fem,zz_data
-	real hlv_aux(nlvdim)
-        real hl_fem(0:nlvdim+1)
-        real hl_data(0:nlvdim+1)
-        real val_fem(nlvdim+1)
-        real val_data(nlvdim+1)
-
-	bdebug = .true.
-	bdebug = .false.
-
-	bcons = .false.		!conserve total quantity?
-
-	iunit   = info(1)
-	bformat = info(2) .gt. 0
-	bhashl  = info(3) .gt. 0
-
-	if( iunit .le. 0 ) return
-
-	if( bdebug ) then
-	  write(6,*) 'debug in ts_next_record:'
-	  write(6,*) 'iunit,bformat,bhashl: ',it,iunit,bformat,bhashl
-	end if
-
-	if( bformat ) then
-	  read(iunit,*) it,nknaux,lmax,nvar
-	else
-	  read(iunit) it,nknaux,lmax,nvar
-	end if
-
-	write(6,*)'reading T/S values', it,nknaux,lmax,nvar
-
-	if( nkn .ne. nknaux ) stop 'error stop ts_next_record: nkn'
-	if( nvar .ne. 1 ) stop 'error stop ts_next_record: nvar'
-	if( lmax .gt. nlvdim ) stop 'error stop ts_next_record: nlvdim'
-
-	if( bformat ) then
-	  if( bhashl ) read(iunit,*) (hlv_aux(l),l=1,lmax)
-	  read(iunit,*) ((value(l,i),l=1,lmax),i=1,nkn)
-	else
-	  if( bhashl ) read(iunit) (hlv_aux(l),l=1,lmax)
-	  read(iunit) ((value(l,i),l=1,lmax),i=1,nkn)
-	end if
-
-	if( nlv .gt. lmax ) then
-	  do i=1,nkn
-	    val = value(lmax,i)
-	    do l=lmax+1,nlv
-	      value(l,i) = val
-	    end do
-	  end do
-	end if
-
-c--------------------------------------------------------------
-c interpolate between different vertical structures 
-c--------------------------------------------------------------
-
-c the following still has to be checked
-
-        call get_sigma(nsigma,hsigma)		!from basin
-        bsigma = nsigma .gt. 0
-
-	call compute_sigma_info(lmax,hlv_aux,nsigma_aux,hsigma_aux)
-
-        do i = 1,nkn
-
-          lmax_fem = ilhkv(i)
-
-          hl_data(0)= -znv(i)
-          hl_fem(0) = -znv(i)
-
-          if(nsigma.gt.0.and.nsigma.ge.lmax_fem)then !sigma
-            htot = hkv(i) !giusto
-          else !zeta e ibrido
-            htot = hlv(lmax_fem) !questo non risolve il problema
-          endif
-
-          zz_data = znv(i)
-          zz_fem = znv(i)
-
-          call set_hybrid_depth(lmax_fem,zz_fem,htot
-     +			,hlv,nsigma,hsigma,hl_fem(1))
-
-          htot = hlv_aux(lmax) !questo non risolve il problema
-
-          call set_hybrid_depth(lmax,zz_data,htot
-     +			,hlv_aux,nsigma_aux,hsigma_aux,hl_data(1))
-
-          do l=1,lmax
-            val_data(l) = value(l,i)
-          end do
-
-          call intp_vert(bcons,lmax,hl_data,val_data
-     +				,lmax_fem,hl_fem,val_fem)
-
-          do l = 1,lmax_fem
-            value(l,i) = val_fem(l) !DEB
-          end do
-        enddo
-
-c--------------------------------------------------------------
-c end of routine
-c--------------------------------------------------------------
-
-        call conmima(nlvdim,value,vmin,vmax)
-        write(6,*) 'min/max: ',vmin,vmax
-
-	end
-
-c*******************************************************************	
-
-	subroutine ts_file_close(info)
-
-c closes T/S file
-
-	implicit none
-
-	integer info(3)
-
-	close(info(1))
 
 	end
 
