@@ -1,3 +1,24 @@
+version  6_1_60    05-11-2012    VERS_6_1_60
+
+========================================================== 05-11-2012 - 6_1_60
+
+c ./fem3d/subtsuvfile.f:
+c 29.10.2012    ggu     created from scratch
+c
+c ./fem3d/subnos.f:
+c 30.10.2012	ggu	new format for date and time (new accessor routines)
+c
+c ./fem3d/subver.f:
+c 05.11.2012	ggu	version 6.1.60
+c
+c ./fem3d/newbcl.f:
+c 31.10.2012    ggu     open and next_record transfered to subtsuvfile.f
+c
+c ./fem3d/subreg.f:
+c 26.10.2012	ggu	bug fix: do not access not existing storage
+
+==========================================================
+
 version  6_1_59    25-10-2012    VERS_6_1_59   commit_2012-11-05
 
 version  6_1_59    25-10-2012    VERS_6_1_59
