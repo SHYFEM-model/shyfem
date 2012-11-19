@@ -21,6 +21,7 @@ sub get_date {
 
   my $line = shift;
   my $date;
+  my $file = "";	# unknown (should be imported)
 
   if( $line =~ /^[cC\!]\s+(\d+)\.(\d+)\.(\d+)\s+/ ) {
 
@@ -28,9 +29,7 @@ sub get_date {
 	my $mon = $2;
 	my $y = $3;
 
-	die "*** Error in date: ($savefile)\n$_" if( $day < 0 || $day > 31 );
-	die "*** Error in date: ($savefile)\n$_" if( $mon < 0 || $mon > 12 );
-	die "*** Error in date: ($savefile)\n$_" if( $y < 1000 || $y > 2500 );
+	error_check($day,$mon,$y,$line,$file);
 
 	$date = 10000 * $y + 100 * $mon + $day;
 
@@ -40,19 +39,9 @@ sub get_date {
 	my $mon = $2;
 	my $y = $3;
 
-	if( $mon =~ /^[a-zA-Z]+$/ ) {
-	  my $month = $months{$mon};
-	  die "*** Error in month: ($savefile)\n$_" unless $month;
-	  $mon = $month;
-	}
-
-	if( $y < 100 && $y > 70 ) {
-	  $y += 1900;
-	}
-
-	die "*** Error in date: ($savefile)\n$_" if( $day < 0 || $day > 31 );
-	die "*** Error in date: ($savefile)\n$_" if( $mon < 0 || $mon > 12 );
-	die "*** Error in date: ($savefile)\n$_" if( $y < 1000 || $y > 2500 );
+	translate_month($mon);
+	adjust_year($y);
+	error_check($day,$mon,$y,$line,$file);
 
 	$date = 10000 * $y + 100 * $mon + $day;
 
@@ -64,6 +53,48 @@ sub get_date {
 
   return $date;
 }
+
+#------------------------------------------------------------
+
+sub adjust_year {
+
+  my $y = shift;
+
+  if( $y < 100 && $y > 70 ) {
+    $y += 1900;
+  }
+
+  return $y;
+}
+
+sub translate_month {
+
+  my ($mon,$file) = @_;
+
+  $file = "" unless $file;
+
+  if( $mon =~ /^[a-zA-Z]+$/ ) {
+    my $month = $months{$mon};
+    die "*** Error in month: ($file)\n$mon" unless $month;
+    $mon = $month;
+  }
+
+  return $mon
+}
+
+sub error_check {
+
+  my ($day,$mon,$y,$string,$file) = @_;
+
+  $file = "" unless $file;
+
+  die "*** Error in date: ($file)\n$string" if( $day < 0 || $day > 31 );
+  die "*** Error in date: ($file)\n$string" if( $mon < 0 || $mon > 12 );
+  die "*** Error in date: ($file)\n$string" if( $y < 1000 || $y > 2500 );
+
+}
+
+#------------------------------------------------------------
 
 sub is_date {
 

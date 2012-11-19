@@ -8,6 +8,7 @@ c
 c 02.09.2004    ggu     new classification routine
 c 04.09.2004    ggu     franco added (zfranco)
 c 11.10.2008	ggu	franco passed in
+c 16.11.2012	ggu	if franco == 99 -> use PS as forecast (init_ps)
 c
 c**********************************************************************
 
@@ -160,17 +161,33 @@ c gets previsioni
 	real paux(nfore)
 
 	integer itanf,itaux,i,j
+	logical bps,bdebug
+	real zfranc
 
 	save n,itime,ifill,pp
 	data n / 0 /
 
+	bdebug = .true.
+	zfranc = zfranco
+	bps = zfranc .gt. .90		!use PS
+
 	if( n .eq. 0 ) then
-	  call init_prev(ndim,nfore,n,itime,ifill,pp,paux)
+	  if( bps ) then
+	    call init_ps(ndim,nfore,n,itime,ifill,pp,paux)
+	  else
+	    call init_prev(ndim,nfore,n,itime,ifill,pp,paux)
+	  end if
+	  if( bdebug ) then
+	    write(6,*) 'prev initialized... ', bps
+	    do i=1,20
+	      if = ifill(i)
+	      write(6,*) itime(i),if
+	      write(6,*) (pp(j,i),j=1,if)
+	    end do
+	  end if
 	end if
 	
-        !zfranco = 0.05    !allow for extra security
-        !zfranco = 0.10    !allow for extra security
-        !zfranco = 0.
+	if( bps ) zfranc = 0.
 
 	itanf = itime(1)
 	itaux = 3600*(it/3600)
@@ -194,7 +211,65 @@ c gets previsioni
 	end if
 
 	do j=1,if
-	  vals(j) = zfranco + pp(j,i)
+	  vals(j) = zfranc + pp(j,i)
+	end do
+
+	end
+
+c********************************************************
+
+	subroutine init_ps(ndim,nfore,n,itime,ifill,pp,paux)
+
+c initializes previsioni
+
+	implicit none
+
+	integer ndim,nfore
+	integer n
+	integer itime(ndim)
+	integer ifill(ndim)
+	real pp(nfore,ndim)
+	real paux(nfore)
+
+	integer iunit
+	integer j,ip,i
+	integer it,i1,i2,i3,i4,i5,if
+	real ps
+	integer ifileo
+	character*80 file
+
+        iunit = 55
+	file = 'psref.dat'
+        iunit = ifileo(iunit,file,'form','old')
+	if( iunit .le. 0 ) stop 'error stop init_ps'
+
+	if = 10
+	n = 0
+    1	continue
+	  read(iunit,*,end=2) it,ps
+
+	  n = n + 1
+	  if( if .gt. nfore ) stop 'error stop init_prev: nfore'
+	  if( n .gt. ndim ) stop 'error stop init_prev: ndim'
+
+	  itime(n) = it
+	  ifill(n) = if
+	  do j=1,if
+	    pp(j,n) = ps
+	  end do
+
+	  goto 1
+    2	continue
+
+	write(6,*) 'init_prev: records read ',n
+
+	close(iunit)
+
+	do i=1,n
+	  do j=1,if
+	    ip = min(n,i+j)
+	    pp(j,i) = pp(j,ip)
+	  end do
 	end do
 
 	end
@@ -224,6 +299,14 @@ c initializes previsioni
 	file = 'prev.dat'
         iunit = ifileo(iunit,file,'form','old')
 	if( iunit .le. 0 ) stop 'error stop init_prev'
+
+c it	fem time (secs)
+c i1	day
+c i2	month
+c i3	year
+c i4	julian day
+c i5	hour
+c if	fill
 
 	n = 0
     1	continue

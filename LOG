@@ -1,4 +1,16 @@
 
+c ./fem3d/subnos.f:
+c 16.11.2012    ggu     in wrnos bugfix - call setnos first
+c
+c ./fem3d/intp.f:
+c 16.11.2012    ggu     if franco == 99 -> use PS as forecast (init_ps)
+c
+c ./fem3d/splitext.f:
+c 16.11.2012    ggu     allow for direct writing values to files (bdirect)
+
+
+
+
 c ./fem3d/subtsuvfile.f:
 c 29.10.2012    ggu     created from scratch
 c

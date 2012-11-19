@@ -6,6 +6,7 @@ c
 c 09.04.1999	ggu	restructured from readext
 c 28.09.1999	ggu	reads now all data and then writes it
 c 13.02.2009	ggu	big arrays in common for parallel environment
+c 16.11.2012	ggu	allow for direct writing values to files (bdirect)
 c
 c***************************************************************
 
@@ -53,8 +54,9 @@ c next n lines give (u,v,z) for every node written.
 	integer nkndim,neldim
 
 	character*80 line,file
-	integer nvers,knausm
+	integer nvers,knausm,nb
 	integer nrec,it,i,nin,kn,in,nout
+	logical bdirect,bspecial
 	real href,hzmin
 	real err
 	character*80 descrp
@@ -76,6 +78,15 @@ c next n lines give (u,v,z) for every node written.
 
 	integer iapini, ifemop
 	real read7,rdrc7
+
+c---------------------------------------------------------------
+c set parameter
+c---------------------------------------------------------------
+
+	bdirect = .false.
+	bdirect = .true.	!write directly after read (for big files)
+	bspecial = .true.	!special output
+	bspecial = .false.
 
 c---------------------------------------------------------------
 c open files
@@ -111,9 +122,22 @@ c---------------------------------------------------------------
 	if( knausm .gt. noddim ) goto 88
 
 c---------------------------------------------------------------
+c open output files
+c---------------------------------------------------------------
+
+	if( bdirect ) then
+	  do i=1,knausm
+	    call opents(100+i,'u',i)
+	    call opents(200+i,'v',i)
+	    call opents(300+i,'z',i)
+	    call opents(400+i,'m',i)
+	  end do
+	end if
+c---------------------------------------------------------------
 c loop over data
 c---------------------------------------------------------------
 
+	nb = knausm
 	nrec = 0
 
    10	continue
@@ -124,21 +148,32 @@ c	write(6,*) nin,nvers,it,knausm
 	if( err .ne. 0. ) goto 98
 	nrec = nrec + 1
 
-	if( nrec .gt. datdim ) then
+	if( .not. bdirect .and. nrec .gt. datdim ) then
 	  write(6,*) 'Cannot read more than ',datdim,' data records'
 	  nrec = nrec - 1
 	  goto 100
 	end if
 	if(mod(nrec,100).eq.0) write(6,*) nrec,' data records read'
 
-	itime(nrec) = it
-
-	do i=1,knausm
-	  udata(nrec,i) = xv(i)
-	  vdata(nrec,i) = xv(i+knausm)
-	  zdata(nrec,i) = xv(i+2*knausm)
-	  mdata(nrec,i) = sqrt( udata(nrec,i)**2 + vdata(nrec,i)**2 )
-	end do
+	if( bdirect ) then
+	  do i=1,knausm
+	    write(100+i,*) it,xv(i)		!u
+	    write(200+i,*) it,xv(i+nb)		!v
+	    write(300+i,*) it,xv(i+2*nb)	!z
+	    write(400+i,*) it,sqrt( xv(i)**2 + xv(i+nb)**2 )
+	  end do
+	  if( bspecial .and. mod(it,3600) .eq. 0 ) then	!special output
+	    write(10,*) it,xv(4+2*nb)
+	  end if
+	else
+	  itime(nrec) = it
+	  do i=1,knausm
+	    udata(nrec,i) = xv(i)
+	    vdata(nrec,i) = xv(i+knausm)
+	    zdata(nrec,i) = xv(i+2*knausm)
+	    mdata(nrec,i) = sqrt( udata(nrec,i)**2 + vdata(nrec,i)**2 )
+	  end do
+	end if
 
 	goto 10
   100	continue
@@ -156,12 +191,14 @@ c---------------------------------------------------------------
 c writing files
 c---------------------------------------------------------------
 
-	do i=1,knausm
-	  call wrts(nrec,itime,udata(1,i),'u',i)
-	  call wrts(nrec,itime,vdata(1,i),'v',i)
-	  call wrts(nrec,itime,zdata(1,i),'z',i)
-	  call wrts(nrec,itime,mdata(1,i),'m',i)
-	end do
+	if( .not. bdirect ) then
+	  do i=1,knausm
+	    call wrts(nrec,itime,udata(1,i),'u',i)
+	    call wrts(nrec,itime,vdata(1,i),'v',i)
+	    call wrts(nrec,itime,zdata(1,i),'z',i)
+	    call wrts(nrec,itime,mdata(1,i),'m',i)
+	  end do
+	end if
 
 c---------------------------------------------------------------
 c end of routine
@@ -179,6 +216,30 @@ c---------------------------------------------------------------
 	stop 'Error reading data record of EXT file'
    97	continue
 	stop 'Cannot open EXT file'
+	end
+
+c*******************************************************************
+
+	subroutine opents(iunit,name,number)
+
+c opens file name.number on unit iunit
+
+	implicit none
+
+	integer iunit
+	character*(*) name
+	integer number
+
+	integer in,nout
+	character*80 numlin,file
+	integer ialfa
+
+	nout = iunit
+	in = ialfa(float(number),numlin,-1,-1)
+	file = name // '.' // numlin(1:in)
+
+	open(nout,file=file,status='unknown',form='formatted')
+
 	end
 
 c*******************************************************************
@@ -201,10 +262,7 @@ c writes data to file name.number
 	integer ialfa
 
 	nout = 1
-	in = ialfa(float(number),numlin,-1,-1)
-	file = name // '.' // numlin(1:in)
-
-	open(nout,file=file,status='unknown',form='formatted')
+	call opents(nout,name,number)
 
 	do i=1,n
 	  write(nout,*) it(i),data(i)

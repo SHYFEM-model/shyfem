@@ -29,6 +29,7 @@ c 28.09.2006	ggu	check if nos file is already open
 c 07.03.2007	ggu	new routines rhnos, whnos
 c 10.02.2012	ggu	new routines to skip records
 c 30.10.2012	ggu	new format for date and time (new accessor routines)
+c 16.11.2012	ggu	in wrnos bugfix - call setnos first
 c
 c notes :
 c
@@ -680,14 +681,14 @@ c control newest version number for call
 
 	rewind(iunit)
 
+	call setnos(iunit,nvers,nkn,nel,nlv,nvar)
+
 	call nos_get_date(iunit,date,time)
 
 	write(iunit)		ftype,maxvers
 	write(iunit)		nkn,nel,nlv,nvar
 	write(iunit)		line
 	write(iunit)		date,time
-
-	call setnos(iunit,nvers,nkn,nel,nlv,nvar)
 
 	ierr=0
 
