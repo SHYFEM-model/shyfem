@@ -206,7 +206,7 @@ c---------------------------------------------------------------
 	nused = 0
 	nrepl = 0
 
-	call acu_reset(tacu,cvacu,ilhkv)
+	call acu_reset_0(tacu,cvacu,ilhkv)
 
         do k=1,nkn
           lmax = ilhkv(k)
@@ -251,14 +251,14 @@ c	  -----------------------------------------
 	    write(6,*) 'computing res time: ',it,conzold,conz,nused
 	    write(6,*) '-------------------------------------------'
 	    if( nused .gt. minused ) then
-	      call acu_comp(blog,badj,it,dt,c0,ccut,ilhkv,tacu,cvacu
+	      call acu_comp_0(blog,badj,it,dt,c0,ccut,ilhkv,tacu,cvacu
      +				,nb3,nb2
      +				,cv3d,vol3,cvres3,cvres2)
-	      call acu_freq(it,ctop,ilhkv,cvres3,vol3)
+	      call acu_freq_0(it,ctop,ilhkv,cvres3,vol3)
 	      nrepl = nrepl + 1
 	      call make_acumulate(nlvdim,nkn,ilhkv,cvres3,cvrestot)
 	    end if
-	    call acu_reset(tacu,cvacu,ilhkv)
+	    call acu_reset_0(tacu,cvacu,ilhkv)
 	    it0 = it
 	    nused = 0
 	  end if
@@ -309,10 +309,10 @@ c---------------------------------------------------------------
 
 	    if( nused .gt. minused ) then
 	      nrepl = nrepl + 1
-	      call acu_comp(blog,badj,it,dt,c0,ccut,ilhkv,tacu,cvacu
+	      call acu_comp_0(blog,badj,it,dt,c0,ccut,ilhkv,tacu,cvacu
      +				,nb3,nb2
      +				,cv3d,vol3,cvres3,cvres2)
-	      call acu_freq(it,ctop,ilhkv,cvres3,vol3)
+	      call acu_freq_0(it,ctop,ilhkv,cvres3,vol3)
 	      call make_acumulate(nlvdim,nkn,ilhkv,cvres3,cvrestot)
 	    end if
 
@@ -323,7 +323,7 @@ c---------------------------------------------------------------
 	    if( nrepl .gt. 0 ) then
 	      it = 0
 	      call acu_final(it,ilhkv,nrepl,nb3,nb2,cvrestot,vol3,cv2)
-	      call acu_freq(it,ctop,ilhkv,cvrestot,vol3)
+	      call acu_freq_0(it,ctop,ilhkv,cvrestot,vol3)
 	    end if
 
 c---------------------------------------------------------------
@@ -368,7 +368,7 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-	subroutine acu_reset(tacu,cvacu,ilhkv)
+	subroutine acu_reset_0(tacu,cvacu,ilhkv)
 
 	implicit none
 
@@ -395,7 +395,7 @@ c***************************************************************
 
 c***************************************************************
 
-	subroutine acu_comp(blog,badj,it,dt,c0,ccut,ilhkv,tacu,cvacu
+	subroutine acu_comp_0(blog,badj,it,dt,c0,ccut,ilhkv,tacu,cvacu
      +				,nb3,nb2
      +				,cv3d,vol3,cv3,cv2)
 
@@ -549,7 +549,7 @@ c**********************************************************************
 c**********************************************************************
 c**********************************************************************
 
-	subroutine acu_freq(it,ctop,ilhkv,cv3,vol3)
+	subroutine acu_freq_0(it,ctop,ilhkv,cv3,vol3)
 
 c write histogram
 

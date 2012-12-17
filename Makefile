@@ -155,6 +155,19 @@ cleanbck:
 # public commands
 #---------------------------------------------------------------
 
+help:
+	@echo "help                this screen"
+	@echo "install             installs the model"
+	@echo "fem                 compiles everything"
+	@echo "clean, cleanall     cleans installation from tmp and object files"
+	@echo "doc                 makes documentation"
+	@echo "version             returns version of this distribution"
+	@echo "info                general options from Rules.make"
+	@echo "check_software      checks needed software"
+	@echo "check_compilation   checks if all executables have compiled"
+	@echo "modified            finds files changed after installation"
+	@echo "changed_zip         zips files changed after installation"
+
 version:
 	@echo $(VERSION)
 

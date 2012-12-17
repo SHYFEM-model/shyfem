@@ -1,6 +1,7 @@
 #!/usr/bin/perl -s
 #
 # -f77   -ifort   -gfortran
+# -main				do not flag missing main
 #
 #------------------------------------------
 
@@ -11,9 +12,11 @@ while(<>) {
   chomp;
 
   if( $f77 ) {
-		f77();
-	} elsif( $ifort ) {
-		ifort();
+	f77();
+  } elsif( $gfortran ) {
+	f77();
+  } elsif( $ifort ) {
+	ifort();
   } else {
     print STDERR "unknown compiler or not specified\n";
     exit 1
@@ -35,7 +38,10 @@ exit 0;
 sub ifort {
 
   if( /^.* undefined reference to \`(\w+)\'$/ ) {
-    $subs{$1}++;
+    $prog = $1;
+    $prog =~ s/_+$//; 
+    return if( $main and $prog eq "MAIN" );
+    $subs{$prog}++;
   } elsif( /more undefined references/ ) {
     ;
   } elsif( /: In function \`/ ) {
@@ -43,7 +49,7 @@ sub ifort {
   } elsif( /This statement function has not been used/ ) {
     ;
   } else {
-    print STDERR "Cannot process: $_\n";
+    print STDERR "dependency.pl: Cannot process: $_\n";
     exit 1
   }
 }
@@ -51,13 +57,20 @@ sub ifort {
 sub f77 {
 
   if( /^.* undefined reference to \`(\w+)\'$/ ) {
-    $subs{$1}++;
+    $prog = $1;
+    $prog =~ s/_+$//; 
+    return if( $main and $prog eq "MAIN" );
+    $subs{$prog}++;
+  } elsif( /libgfortranbegin/ ) {
+    ;
   } elsif( /more undefined references/ ) {
+    ;
+  } elsif( /: In function \`/ ) {
     ;
   } elsif( /collect2/ ) {
     ;
   } else {
-    print STDERR "Cannot process: $_\n";
+    print STDERR "dependency.pl: Cannot process: $_\n";
     exit 1
   }
 }

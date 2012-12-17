@@ -34,14 +34,10 @@ c	if( lmax == 1 )
 c		string
 c		(data(1,k),k=1,np)
 c	if( lmax > 1 )
-c	    if( formatted )
 c		string
 c		do k=1,np
 c		  lm,hd(k),(data(l,k),l=1,lm)
 c		end do
-c	    if( unformatted )
-c		string
-c		(lm,hd(k),(data(l,k),l=1,lm),k=1,np)
 c
 c legend
 c
@@ -152,7 +148,10 @@ c writes data of the file
 	  if( b2d ) then
 	    write(iunit) (data(1,k),k=1,np)
 	  else
-	    write(iunit) (ilhkv(k),hd(k),(data(l,k),l=1,ilhkv(k)),k=1,np)
+	    do k=1,np
+	      lm = ilhkv(k)
+	      write(iunit) lm,hd(k),(data(l,k),l=1,lm)
+	    end do
 	  end if
 	end if
 
@@ -329,6 +328,7 @@ c checks if file is readable and formatted or unformatted
 
 	integer iunit
 	integer it,nvers,np0,lmax,nvar,ntype
+	integer ierr
 
 c------------------------------------------------------
 c initialize parameters
@@ -355,21 +355,19 @@ c first try unformatted
 c------------------------------------------------------
 
 	open(iunit,file=name,form='unformatted',status='old',err=2)
-	read(iunit,err=1) it,nvers,np0,lmax,nvar,ntype
 
-	if( nvers .lt. 1 .or. nvers .gt. 1 ) goto 1
-	if( np0 .le. 0 ) goto 1
-	if( np .gt. 0 .and. np .ne. np0 ) goto 1
-	if( lmax .le. 0 .or. lmax .gt. 1000 ) goto 1
-	if( nvar .le. 0 .or. nvar .gt. 100 ) goto 1
-	if( ntype .lt. 0 .or. ntype .gt. 2 ) goto 1
+	bformat = .false.
+	call fem_file_get_params(bformat,iunit,it
+     +				,nvers,np0,lmax,nvar,ntype,ierr)
+
+	if( ierr .ne. 0 ) goto 1
+	if( np .gt. 0 .and. np0 .gt. 1 .and. np .ne. np0 ) goto 1
 
 c       -----------------------------------------------
 c	we arrived here... this means the file is (probably) unformatted
 c       -----------------------------------------------
 
 	close(iunit)
-	bformat = .false.
 	return
 
     1	continue
@@ -381,21 +379,19 @@ c now try formatted
 c------------------------------------------------------
 
 	open(iunit,file=name,form='formatted',status='old',err=8)
-	read(iunit,*,err=1) it,nvers,np0,lmax,nvar,ntype
 
-	if( nvers .lt. 1 .or. nvers .gt. 1 ) goto 9
-	if( np0 .le. 0 ) goto 1
-	if( np .gt. 0 .and. np .ne. np0 ) goto 9
-	if( lmax .le. 0 .or. lmax .gt. 1000 ) goto 9
-	if( nvar .le. 0 .or. nvar .gt. 100 ) goto 9
-	if( ntype .lt. 0 .or. ntype .gt. 2 ) goto 9
+	bformat = .true.
+	call fem_file_get_params(bformat,iunit,it
+     +				,nvers,np0,lmax,nvar,ntype,ierr)
+
+	if( ierr .ne. 0 ) goto 9
+	if( np .gt. 0 .and. np0 .gt. 1 .and. np .ne. np0 ) goto 9
 
 c       -----------------------------------------------
 c	we arrived here... this means the file is (probably) formatted
 c       -----------------------------------------------
 
 	close(iunit)
-	bformat = .true.
 	return
 
     9	continue
@@ -419,7 +415,7 @@ c************************************************************
 	subroutine fem_file_get_params(bformat,iunit,it
      +				,nvers,np,lmax,nvar,ntype,ierr)
 
-c reads params of next header
+c reads and checks params of next header
 
         implicit none
 
@@ -433,17 +429,105 @@ c reads params of next header
 	integer ntype		!type of information contained
 	integer ierr		!return error code
 
-	ierr = -1
+	ierr = 0
 
 	if( bformat ) then
-	  read(iunit,*,end=1) it,nvers,np,lmax,nvar,ntype
+	  read(iunit,*,end=1,err=2) it,nvers,np,lmax,nvar,ntype
 	else
-	  read(iunit,end=1) it,nvers,np,lmax,nvar,ntype
+	  read(iunit,end=1,err=2) it,nvers,np,lmax,nvar,ntype
 	end if
 
+	call fem_file_check_params(nvers,np,lmax,nvar,ntype,ierr)
+	if( ierr .ne. 0 ) goto 9
+
 	ierr = 0
-    1	continue
 	backspace(iunit)
+	return
+
+    9	continue
+	ierr = 9
+	backspace(iunit)
+	return
+
+    1	continue
+	ierr = -1
+	backspace(iunit)
+	return
+
+    2	continue
+	ierr = 1
+	backspace(iunit)
+	return
+
+	end
+
+c************************************************************
+
+	subroutine fem_file_check_params(nvers,np,lmax,nvar,ntype,ierr)
+
+c reads and checks params of next header
+
+        implicit none
+
+	integer nvers		!version of file format
+	integer np		!size of data (horizontal, nodes or elements)
+	integer lmax		!vertical values
+	integer nvar		!number of variables to write
+	integer ntype		!type of information contained
+	integer ierr		!return error code
+
+	ierr = 0
+
+	if( nvers .lt. 1 .or. nvers .gt. 1 ) goto 9
+	if( np .le. 0 ) goto 9
+	if( lmax .le. 0 .or. lmax .gt. 1000 ) goto 9
+	if( nvar .le. 0 .or. nvar .gt. 100 ) goto 9
+	if( ntype .lt. 0 .or. ntype .gt. 2 ) goto 9
+
+	return
+
+    9	continue
+	ierr = 9
+
+	return
+	end
+
+c************************************************************
+
+	function fem_std_func(lmax,hlv,lm_data,hd_data,data_in
+     +			,nlvdim,lm_fem,hd_fem,data_out)
+
+c standard function for copying data to new structure
+
+	implicit none
+
+	logical fem_std_func
+	integer lmax
+	real hlv(lmax)
+	integer lm_data
+	real hd_data
+	real data_in(lm_data)
+	integer nlvdim
+	integer lm_fem
+	real hd_fem
+	real data_out(nlvdim)
+
+	integer l,lin
+
+	lin = min(lm_data,nlvdim)
+
+	do l=1,lin
+	  data_out(l) = data_in(l)
+	end do
+
+	do l=lin+1,nlvdim
+	  data_out(l) = data_in(lin)
+	end do
+
+	lm_fem = lm_data
+	hd_fem = hd_data
+
+	fem_std_func = .true.
 
 	end
 
@@ -473,6 +557,7 @@ c reads header of the file
 	integer l,np0
 
 	ierr = -1
+	hlv(1) = 10000.
 
 	if( bformat ) then
 	  read(iunit,*,end=1) it,nvers,np0,lmax,nvar,ntype
@@ -484,12 +569,9 @@ c reads header of the file
 
 	if( lmax .gt. nlvdim) goto 98
 
-	if( nvers .lt. 1 .or. nvers .gt. 1 ) goto 99
-	if( np0 .le. 0 ) goto 99
-	if( np .gt. 0 .and. np .ne. np0 ) goto 99
-	if( lmax .le. 0 .or. lmax .gt. 1000 ) goto 99
-	if( nvar .le. 0 .or. nvar .gt. 100 ) goto 99
-	if( ntype .lt. 0 .or. ntype .gt. 2 ) goto 99
+	call fem_file_check_params(nvers,np0,lmax,nvar,ntype,ierr)
+	if( ierr .ne. 0 ) goto 99
+	if( np .gt. 0 .and. np0 .gt. 1 .and. np .ne. np0 ) goto 99
 
 	np = np0
 	ierr = 0
@@ -513,8 +595,8 @@ c************************************************************
 
 	subroutine fem_file_read_data(bformat,iunit
      +				,nvers,np,lmax
-     +				,nlvdim,ilhkv
-     +				,string,hd,data)
+     +				,hlv,ilhkv,hd
+     +				,string,nlvdim,data,func)
 
 c reads data of the file
 
@@ -525,17 +607,30 @@ c reads data of the file
 	integer nvers		!version of file format
 	integer np		!size of data (horizontal, nodes or elements)
 	integer lmax		!vertical values
-	integer nlvdim		!vertical dimension of data
+	real hlv(lmax)		!depth at bottom of layer
 	integer ilhkv(np)	!number of layers in point k (node)
-	character*(*) string	!string explanation
 	real hd(np)		!total depth
+	character*(*) string	!string explanation
+	integer nlvdim		!vertical dimension of data
 	real data(nlvdim,np)	!data
+	logical func		!function to be called for vert. interpolation
+
+c if unsure about func pass in fem_std_func() defined above
+c this will simply copy data read into array with no interpolation
+
+	external func		!this function has to be provided
+
+	integer ndim
+	parameter (ndim=1000)
+	real data_in(ndim)
 
 	logical b2d
 	integer k,lm,l
+	real hdepth
 	character*80 text
 
 	b2d = lmax .le. 1
+	if( lmax .gt. ndim ) goto 97
 
 	if( bformat ) then
 	  read(iunit,*) text
@@ -543,9 +638,12 @@ c reads data of the file
 	    read(iunit,*) (data(1,k),k=1,np)
 	  else
 	    do k=1,np
-	      read(iunit,*) lm,hd(k),(data(l,k),l=1,min(lm,lmax))
+	      read(iunit,*) lm,hdepth,(data_in(l),l=1,min(lm,lmax))
 	      if( lm .gt. lmax ) goto 99
+	      if( .not. func(lmax,hlv,lm,hdepth,data_in
+     +			,nlvdim,ilhkv(k),hd(k),data(1,k)) ) goto 98
 	      ilhkv(k) = lm
+	      hd(k) = hdepth
 	    end do
 	  end if
 	else
@@ -553,10 +651,13 @@ c reads data of the file
 	  if( b2d ) then
 	    read(iunit) (data(1,k),k=1,np)
 	  else
-	    read(iunit) (ilhkv(k),hd(k)
-     +			,(data(l,k),l=1,min(ilhkv(k),lmax)),k=1,np)
 	    do k=1,np
-	      if( ilhkv(k) .gt. lmax ) goto 99
+	      read(iunit) lm,hdepth,(data_in(l),l=1,min(lm,lmax))
+	      if( lm .gt. lmax ) goto 99
+	      if( .not. func(lmax,hlv,lm,hdepth,data_in
+     +			,nlvdim,ilhkv(k),hd(k),data(1,k)) ) goto 98
+	      ilhkv(k) = lm
+	      hd(k) = hdepth
 	    end do
 	  end if
 	end if
@@ -564,6 +665,11 @@ c reads data of the file
 	string = text
 
 	return
+   97	continue
+	write(6,*) 'lmax,ndim: ',lmax,ndim
+	stop 'error stop fem_file_read_data: dimension ndim'
+   98	continue
+	stop 'error stop fem_file_read_data: interpolation function'
    99	continue
 	write(6,*) 'k,lm,lmax: ',k,lm,lmax
 	stop 'error stop fem_file_read_data: dimension lmax'
@@ -573,7 +679,7 @@ c************************************************************
 
 	subroutine fem_file_read_3d(bformat,iunit,it
      +				,np,lmax,nlvdim,hlv
-     +				,ilhkv,string,hd,data,ierr)
+     +				,ilhkv,string,hd,data,func,ierr)
 
 c reads 1 variable of a 3d field
 
@@ -590,7 +696,13 @@ c reads 1 variable of a 3d field
 	character*(*) string	!string explanation
 	real hd(np)		!total depth
 	real data(nlvdim,np)	!data
+	logical func		!function to be called for vert. interpolation
 	integer ierr		!return error code
+
+c if unsure about func pass in fem_std_func() defined above
+c this will simply copy data read into array with no interpolation
+
+	external func		!this function has to be provided
 
 	integer nvers,nvar,ntype
 
@@ -602,8 +714,8 @@ c reads 1 variable of a 3d field
 
 	call fem_file_read_data(bformat,iunit
      +				,nvers,np,lmax
-     +				,nlvdim,ilhkv
-     +				,string,hd,data)
+     +				,hlv,ilhkv,hd
+     +				,string,nlvdim,data,func)
 
 	return
    99	continue
@@ -632,6 +744,9 @@ c reads 1 variable of a 2d field
 	real hlv(1),hd(1)
 	integer ilhkv(1)
 
+	logical fem_std_func
+	external fem_std_func
+
 	nlvdim = 1
 	hlv(1) = 10000.
 	hd(1) = 10000.
@@ -646,8 +761,8 @@ c reads 1 variable of a 2d field
 
 	call fem_file_read_data(bformat,iunit
      +				,nvers,np,lmax
-     +				,nlvdim,ilhkv
-     +				,string,hd,data)
+     +				,hlv,ilhkv,hd
+     +				,string,nlvdim,data,fem_std_func)
 
 	return
    98	continue

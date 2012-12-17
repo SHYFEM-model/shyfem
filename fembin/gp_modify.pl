@@ -1,14 +1,25 @@
-#!/usr/bin/perl -si.bak
+#!/usr/bin/perl -s
 #
 # modifies parameters in files created with gp
 #
 # modifies file inline
 #
 # options:
+#		-h|-help
 #		-bw   -color
 #		-width=#
 #
 #--------------------------------------------------------
+
+if( $h or $help ) {
+  print STDERR "Usage: gp_modify.pl [-h|-help] [-options] file\n";
+  print STDERR "   options:\n";
+  print STDERR "     -h|-help     this help screen\n";
+  print STDERR "     -bw          make plot black and white\n";
+  print STDERR "     -color       make plot color\n";
+  print STDERR "     -width=#     set line width to #\n";
+  exit(0);
+}
 
 while(<>) {
 

@@ -1,5 +1,15 @@
 
 c ./fem3d/subnos.f:
+c 02.12.2012    ggu     restructured
+c
+c ./fem3d/ousextr_records.f:
+c 17.12.2012    ggu     bug: opened nos file instead of ous file
+
+
+
+
+
+c ./fem3d/subnos.f:
 c 16.11.2012    ggu     in wrnos bugfix - call setnos first
 c
 c ./fem3d/intp.f:

@@ -10,6 +10,7 @@ c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
 c 23.03.2010	ggu	extracts reocrds
 c 26.03.2010	ggu	bug fix: set nkn and nel
 c 03.06.2011    ggu     routine adjourned
+c 17.12.2012    ggu     bug: opened nos file instead of ous file
 c
 c***************************************************************
 
@@ -104,7 +105,7 @@ c--------------------------------------------------------------------
 c open OUS file and read header
 c--------------------------------------------------------------------
 
-        nin=ideffi('datdir','runnam','.nos','unform','old')
+        nin=ideffi('datdir','runnam','.ous','unform','old')
         if(nin.le.0) goto 100
 
 	nvers=1

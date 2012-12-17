@@ -10,11 +10,14 @@ options=
 compiler=ifort
 options="-warn nouncalled"
 
+compiler=gfortran
+options=
+
 for file
 do
   echo $file
   $compiler $options $file 2> ggg
-  $binbindir/dependency.pl -$compiler ggg
+  $binbindir/dependency.pl -main -$compiler ggg
   [ $? -ne 0 ] && exit 1
 done
 

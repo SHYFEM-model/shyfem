@@ -19,11 +19,21 @@
 
 sub get_date {
 
-  my $line = shift;
+  my ($line,$file) = @_;
   my $date;
-  my $file = "";	# unknown (should be imported)
+  my $file = "" unless $file;
 
   if( $line =~ /^[cC\!]\s+(\d+)\.(\d+)\.(\d+)\s+/ ) {
+
+	my $day = $1;
+	my $mon = $2;
+	my $y = $3;
+
+	error_check($day,$mon,$y,$line,$file);
+
+	$date = 10000 * $y + 100 * $mon + $day;
+
+  } elsif( $line =~ /^\s+\*\s+(\d+).(\d+).(\d+):\s+/ ) {
 
 	my $day = $1;
 	my $mon = $2;
@@ -39,8 +49,8 @@ sub get_date {
 	my $mon = $2;
 	my $y = $3;
 
-	translate_month($mon);
-	adjust_year($y);
+	$mon = translate_month($mon);
+	$y = adjust_year($y);
 	error_check($day,$mon,$y,$line,$file);
 
 	$date = 10000 * $y + 100 * $mon + $day;
@@ -88,9 +98,12 @@ sub error_check {
 
   $file = "" unless $file;
 
-  die "*** Error in date: ($file)\n$string" if( $day < 0 || $day > 31 );
-  die "*** Error in date: ($file)\n$string" if( $mon < 0 || $mon > 12 );
-  die "*** Error in date: ($file)\n$string" if( $y < 1000 || $y > 2500 );
+  die "*** Error in date: ($file) day $day \n$string" 
+	if( $day < 0 || $day > 31 );
+  die "*** Error in date: ($file) mon $mon \n$string" 
+	if( $mon < 0 || $mon > 12 );
+  die "*** Error in date: ($file) year $y  \n$string" 
+	if( $y < 1000 || $y > 2500 );
 
 }
 
@@ -129,5 +142,7 @@ sub is_empty_comment {
   }
 }
 
+#------------------------------------------------------------
 1;
+#------------------------------------------------------------
 

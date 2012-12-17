@@ -51,6 +51,14 @@ EOI
 echo "quit" > quit.tmp
 }
 
+CleanUp()
+{
+	[ -f test.f ] && rm -f test.f
+	[ -f test.c ] && rm -f test.c
+	[ -f quit.tmp ] && rm -f quit.tmp
+	[ -f a.out ] && rm -f a.out
+}
+
 #---------------------------------------------------
 
 CheckFortranCompiler()
@@ -151,4 +159,7 @@ if [ -n "$missing" ]; then
   echo ""
 fi
 
+CleanUp
+
 # xanim
+

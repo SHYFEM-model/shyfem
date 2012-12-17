@@ -62,7 +62,7 @@ while(<>) {
 
 sub revisionlog_c {
 
-  my $olddate = $befor;		#in c files oreder is inverse
+  my $olddate = $befor;		#in c files order is inverse
 
   while(<>) {
     if( /^\s+\*\s+\*\s*\n$/ ) {			#only white space
@@ -164,57 +164,12 @@ sub getdate {
 
   my $olddate = shift;
 
-  my $date = get_date($_);
+  my $date = get_date($_,$savefile);
 
   $date = $olddate unless $date;
 
   return $date;
 }
 
-sub getdate0 {
+#---------------------------------------------------------------
 
-  my $olddate = shift;
-  my $date;
-
-  if( /^[cC\!]\s+(\d+)\.(\d+)\.(\d+)\s+/ ) {
-
-	my $day = $1;
-	my $mon = $2;
-	my $y = $3;
-
-	die "*** Error in date: ($savefile)\n$_" if( $day < 0 || $day > 31 );
-	die "*** Error in date: ($savefile)\n$_" if( $mon < 0 || $mon > 12 );
-	die "*** Error in date: ($savefile)\n$_" if( $y < 1000 || $y > 2500 );
-
-	$date = 10000 * $y + 100 * $mon + $day;
-
-  } elsif( /^\s+\*\s+(\d+)-(\w+)-(\d+):\s+/ ) {
-
-	my $day = $1;
-	my $mon = $2;
-	my $y = $3;
-
-	if( $mon =~ /^[a-zA-Z]+$/ ) {
-	  $month = $months{$mon};
-	  die "*** Error in month: ($savefile)\n$_" unless $month;
-	  $mon = $month;
-	}
-
-	if( $y < 100 && $y > 70 ) {
-	  $y += 1900;
-	}
-
-	die "*** Error in date: ($savefile)\n$_" if( $day < 0 || $day > 31 );
-	die "*** Error in date: ($savefile)\n$_" if( $mon < 0 || $mon > 12 );
-	die "*** Error in date: ($savefile)\n$_" if( $y < 1000 || $y > 2500 );
-
-	$date = 10000 * $y + 100 * $mon + $day;
-
-  } else { 			# use old date
-
-	$date = $olddate;
-
-  }
-
-  return $date;
-}

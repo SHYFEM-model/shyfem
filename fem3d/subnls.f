@@ -437,8 +437,9 @@ c reads next parameter in section and inserts value
 	double precision value
 
 	integer iweich
+	integer in,is
 
-	integer nrdnxt,itspar,iscpar,itsfnm,iscfnm
+	integer nrdnxt,itspar,iscpar,itsfnm,iscfnm,ichanm
 
 	iweich = nrdnxt(name,value,text)
 	call uplow(name,'low')
@@ -461,8 +462,10 @@ c reads next parameter in section and inserts value
 	return
    93	continue
 	write(6,*) 'no parameter with this name:'
-	write(6,*) 'name: ',name
-	write(6,*) 'section: ',sect
+	in = max(1,ichanm(name))
+	is = max(1,ichanm(sect))
+	write(6,*) 'name: ',name(1:in)
+	write(6,*) 'section: ',sect(1:is)
 	call check_parameter_values('nrdpar')
 	!call parinfo(6)
 	stop 'error stop : nrdpar'

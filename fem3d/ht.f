@@ -511,7 +511,7 @@ c----------------------------------------------- FIXME
 	call copydepth(nlvdim,hdknv,hdkov,hdenv,hdeov)
 	call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)
 
-	!call check_depth
+	!call check_max_depth
 
 c-----------------------------------------------------------
 c initialize open boundary routines
@@ -704,7 +704,7 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine check_depth
+	subroutine check_max_depth
 
 	implicit none
 

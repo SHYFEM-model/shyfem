@@ -189,6 +189,129 @@ c*******************************************************************
 c*******************************************************************	
 c*******************************************************************	
 
+	subroutine intp_to_fem_0(nldim
+     +		,lm_data,hl_data,hd_data,zz_data,val_data
+     +		,lm_fem,il_fem,hl_fem,hd_fem,zz_fem,val_fem)
+
+	implicit none
+
+	include 'param.h'
+
+	integer lm_data			!vertical dimension of data
+	real hl_data(lm_data)
+	!integer lm_data			!max level of data
+	real hd_data
+	real zz_data
+	real val_data(lm_data)
+	integer nldim			!max level of fem
+	integer lm_fem			!max level of fem
+	real hd_fem
+	real val_fem(nldim)
+
+	integer il_fem(1)	!to be changed...
+	real hl_fem(nlvdim)
+	real zz_fem(1)
+
+	real hlv(1)
+	common /hlv/hlv
+
+	integer ndim
+	parameter (ndim=1000)
+	
+	real vaux_data(ndim+1)
+	real haux_data(0:ndim+1)
+	real vaux_fem(nlvdim)
+	real haux_fem(0:nlvdim)
+
+	logical bsigma,bdebug,bcons,bsigma_data
+	integer l,k
+	integer nsigma_data,nsigma
+	real hsigma_data,hsigma
+	integer lmax_fem,lmax_data
+	real z_fem,h_fem
+	real z_data,h_data
+
+	if( nldim .gt. ndim ) stop 'errro stop intp_scalar_to_fem: ndim'
+
+c--------------------------------------------------------------
+c initialize parameters and variables
+c--------------------------------------------------------------
+
+	bcons = .false.
+
+        call compute_sigma_info(lm_data,hl_data,nsigma_data,hsigma_data)
+        bsigma_data = nsigma_data .gt. 0
+	do l=1,lm_data
+	  haux_data(l) = hl_data(l)
+	end do
+	haux_data(0) = 0.
+
+        call get_sigma(nsigma,hsigma)		!from basin
+        bsigma = nsigma .gt. 0
+	do l=1,lm_fem
+	  haux_fem(l) = hl_fem(l)
+	end do
+	haux_fem(0) = 0.
+
+c--------------------------------------------------------------
+c loop on nodes
+c--------------------------------------------------------------
+
+        !do k = 1,np
+
+c	  -----------------------------------------------------
+c	  set data depth structure
+c	  -----------------------------------------------------
+
+          lmax_data = il_data(k)
+	  z_data = zz_data(k)
+	  h_data = hd_data(k)
+
+	  if( bsigma_data ) then
+            call set_hybrid_depth(lmax_data,z_data,h_data
+     +			,hl_data,nsigma_data,hsigma_data,haux_data(1))
+	  end if
+          haux_data(0) = -z_data
+
+c	  -----------------------------------------------------
+c	  set fem depth structure
+c	  -----------------------------------------------------
+
+          lmax_fem = il_fem(k)
+	  z_fem = zz_fem(k)
+	  h_fem = hd_fem(k)
+
+	  if( bsigma ) then
+            call set_hybrid_depth(lmax_fem,z_fem,h_fem
+     +			,hl_fem,nsigma,hsigma,haux_fem(1))
+	  end if
+          haux_fem(0) = -z_fem
+
+c	  -----------------------------------------------------
+c	  interpolate on vertical levels
+c	  -----------------------------------------------------
+
+          do l=1,lmax_data
+            vaux_data(l) = val_data(l,k)
+          end do
+
+          call intp_vert(bcons,lmax_data,haux_data,vaux_data
+     +				,lmax_fem,haux_fem,vaux_fem)
+
+          do l = 1,lmax_fem
+            val_fem(l,k) = vaux_fem(l)
+          end do
+
+        !enddo
+
+c--------------------------------------------------------------
+c end of routine
+c--------------------------------------------------------------
+
+	end
+
+c*******************************************************************	
+
 	subroutine intp_to_fem(np,nldim
      +		,lm_data,il_data,hl_data,hd_data,zz_data,val_data
      +		,lm_fem,il_fem,hl_fem,hd_fem,zz_fem,val_fem)
@@ -207,7 +330,7 @@ c*******************************************************************
 	real val_data(nldim,1)
 	integer lm_fem			!max level of fem
 	integer il_fem(1)
-	real hl_fem(nldim)
+	real hl_fem(nlvdim)
 	real hd_fem(1)
 	real zz_fem(1)
 	real val_fem(nlvdim,1)
@@ -307,6 +430,7 @@ c--------------------------------------------------------------
 
 	end
 
+c*******************************************************************	
 c*******************************************************************	
 c*******************************************************************	
 c*******************************************************************	

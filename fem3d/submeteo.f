@@ -109,7 +109,8 @@ c dws		wind speed (1)
 
 c values for debug: set nfreq and iumet > 0 for debug output
 c	nfreq	debug output frequency
-c	iumet	debug output unit
+c	iumet	debug output unit for meteo scalars
+c	iumetw	debug output unit for wind
 
 	integer iumet,iumetw,nfreq
 	save iumet,iumetw,nfreq

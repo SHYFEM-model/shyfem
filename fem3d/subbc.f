@@ -45,28 +45,10 @@ c 08.11.2008	ggu	better error handling
 c 02.04.2009	ggu	if less data given lower interpolation (REDINT)
 c 03.04.2009	ggu	new routine intp_neville() (stable lagrange interpol.)
 c
-c**************************************************
-c
 c*************************************************************
 
-        subroutine exxqq(iunit,nintp,nvar,t,vars,rint)
-	real vars(0:nvar,nintp)
-	real rint(nvar)
-        call intp_ts(iunit,nintp,nvar,t,vars,rint,.false.,.true.)
-        end
-
-        subroutine intp_0_ts(iunit,nintp,nvar,t,vars,rint)
-	real vars(0:nvar,nintp)
-	real rint(nvar)
-        call intp_ts(iunit,nintp,nvar,t,vars,rint,.false.,.true.)
-        end
-
-        subroutine intp_3_ts(iunit,nintp,nvar,t,vars,rint)
-	real vars(0:nvar,nintp)
-	real rint(nvar)
-        call intp_ts(iunit,nintp,nvar,t,vars,rint,.true.,.true.)
-        end
-
+c*************************************************************
+c*************************************************************
 c*************************************************************
 
 	subroutine intp_ts(iunit,nintp,ndata,t,vars,rint,b3d,bformat)
@@ -316,6 +298,61 @@ c----------------------------------------------------------
 
 c*************************************************************
 
+	function tcomp(ndata,nintp,t)
+
+c returns value of t where new value has to be read
+
+	implicit none
+
+	real tcomp
+	integer ndata
+	integer nintp
+	real t(0:ndata,nintp+1)
+
+	integer nold,n1,n2
+	save nold,n1,n2
+	data nold / 0 /		!impossible value
+
+c----------------------------------------------------------
+c if value of nintp has changed -> compute new n1,n2
+c
+c we could compute this every time, but this slightly more efficient
+c----------------------------------------------------------
+
+	if( nintp .ne. nold ) then
+
+	    if( mod(nintp,2) .eq. 0 ) then	!even
+		n1=1+nintp/2
+		n2=n1
+	    else
+		n1=1+nintp/2
+		if(nintp.gt.1) then
+			n2=n1+1
+		else
+			n2=n1
+		end if
+	    end if
+
+	    nold = nintp
+
+	end if
+
+c----------------------------------------------------------
+c return compare value
+c----------------------------------------------------------
+
+	tcomp = 0.5 * ( t(0,n1) + t(0,n2) )
+
+c----------------------------------------------------------
+c end of routine
+c----------------------------------------------------------
+
+	end
+
+c*************************************************************
+c*************************************************************
+c*************************************************************
+
         subroutine read_time_series(unit,ndata,b3d,time,values,ierr)
 
 c time series read
@@ -434,8 +471,6 @@ c       values
         write(6,*) 'lmax given in data file'
         stop 'error stop read_3_time_series: ndata'
         end
-
-c*************************************************************
 
 c***************************************************************
 c***************************************************************
@@ -669,7 +704,8 @@ c       one guard value at end of array
 	integer nextra
         parameter(nextra=13)
 
-	logical b3d,debug
+	logical b3d,debug,bformat
+	integer iformat,lmax,np0,nvar0
 	integer ires,nspace,ndata,nnintp,nsize
         integer i
 	real time
@@ -684,7 +720,7 @@ c	-------------------------------------------------------------
         nnintp = nintp
 	if( iunit .le. 0 ) nnintp = 0   !reserve some space only for results
 
-	call get_size(iunit,np0,nvar0,lmax,bformat,b3d)	!still to be written
+	call exfcompsize(iunit,np0,nvar0,lmax,bformat,b3d)
 
 c	if 0d
 c		np0 = 1
@@ -911,7 +947,8 @@ c interpolated values are in last part of array
 	real t			!t value for which to interpolate
 	real rint(1)		!interpolated values
 
-	logical b3d
+	logical b3d,bformat
+	integer iformat
 	integer iunit,nintp,nsize,ndata,nextra
         integer ires,nspace,i
 
@@ -928,7 +965,8 @@ c interpolated values are in last part of array
 	bformat = iformat .gt. 0
 
 	if( iunit .gt. 0 ) then
-	  call intp_ts(iunit,nintp,ndata,t,array(nextra+1),rint,b3d,bformat)
+	  call intp_ts(iunit,nintp,ndata,t,array(nextra+1)
+     +				,rint,b3d,bformat)
           array(ires) = t
           do i=1,ndata
             array(ires+i) = rint(i)
@@ -1039,7 +1077,7 @@ c sets default value (one for each variable)
 	implicit none
 
 	real array(*)		!array with information from set-up
-	real rdef(1)		!default values for every variable
+	real rdef(*)		!default values for every variable
 
         integer nsize,nvar
 	integer ires,i
@@ -1075,6 +1113,7 @@ c interpolation from file -> info
 	logical bdebug
 	integer iunit,nintp,nvar,nsize,ndata,nextra,ndim
         integer ires,nspace
+	integer iformat,lmax,np
 	integer ipu
 	integer ip,in,i
 
@@ -1084,17 +1123,17 @@ c interpolation from file -> info
 	ipu = ipunit
 	if( ipunit .le. 0 ) ipu = 6
 
-	iunit  = nint(array(1))
-	nintp  = nint(array(2))
-	nvar   = nint(array(3))
-	nsize  = nint(array(4))
-	ndata  = nint(array(5))
-	ndim   = nint(array(6))
-	nextra = nint(array(7))
-	ires   = nint(array(8))
-	nspace = nint(array(9))
-	np = nint(array(10))
-	lmax = nint(array(11))
+	iunit   = nint(array(1))
+	nintp   = nint(array(2))
+	nvar    = nint(array(3))
+	nsize   = nint(array(4))
+	ndata   = nint(array(5))
+	ndim    = nint(array(6))
+	nextra  = nint(array(7))
+	ires    = nint(array(8))
+	nspace  = nint(array(9))
+	np      = nint(array(10))
+	lmax    = nint(array(11))
 	iformat = nint(array(12))
 
         write(ipu,*) 'info on array interpolation:'
@@ -1163,7 +1202,7 @@ c returns information on size of data
 
 	implicit none
 
-	real array(11)		!array with information from set-up
+	real array(*)		!array with information from set-up
         integer nvar            !total number of variables
         integer nsize           !data per variable
         integer ndata           !total data in array
@@ -1185,7 +1224,7 @@ c array(ires+i)	actual interpolated result of variable i
 
 	implicit none
 
-	real array(11)		!array with information from set-up
+	real array(*)		!array with information from set-up
         integer ires            !pointer to results in array
 
 	ires   = nint(array(8))
@@ -1214,6 +1253,51 @@ c checks array for guard values
             stop 'error stop exfintp: last guard value altered'
         end if
 
+	end
+
+c***************************************************************
+
+	subroutine exfcompsize(iunit,np,nvar,lmax,bformat,b3d)
+
+c gets info on file
+
+	implicit none
+
+	integer iunit,np,nvar,lmax
+	logical bformat,b3d
+
+	integer iret
+	character*1000
+	integer iscanf
+
+	np = 0
+	nvar = 1
+	lmax = 1
+	bformat = .true.
+	b3d = .false.
+
+	if( iunit .le. 0 ) return
+
+c try 3D (fem-file) format
+
+	b3d = .true.
+        call fem_file_get_params(bformat,iunit,it
+     +                          ,nvers,np,lmax,nvar,ntype,ierr)
+	if( ierr .eq. 0 ) return
+
+c try 0D (time series) format
+
+	b3d = .false.
+	read(iunit,'(a)',end=1,err=1) line
+	iret = iscanf(line,f,0)
+	if( iret .lt. 0 ) iret = -iret - 1
+	nvar = iret
+	backspace(iunit)
+	return
+
+    1	continue
+	write(6,*) 'Cannot read file on unit: ',iunit
+	stop 'error stop exfcompsize: read error'
 	end
 
 c***************************************************************
