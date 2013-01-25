@@ -9,6 +9,7 @@ c 15.12.2010    ggu     volume computation also for sigma layers
 c 10.11.2011    ggu     new routines for hybrid levels, init_volume() changed
 c 02.12.2011    ggu     bug fix for call to get_sigma_info() (missing argument)
 c 10.02.2012    ggu     new routines to get initial/final time of records
+c 25.01.2013    ggu     new routines nos_get_vars()
 c
 c***************************************************************
 
@@ -356,7 +357,7 @@ c***************************************************************
 
 	subroutine nos_get_it_end(file,itend)
 
-c gets it of first record
+c gets it of last record
 
 	implicit none
 
@@ -382,6 +383,29 @@ c gets it of first record
 	goto 1
     2	continue
 	itend = itlast
+
+	end
+
+c***************************************************************
+
+	subroutine nos_get_vars(nin,nvar,ivars)
+
+	implicit none
+
+	integer nin
+	integer nvar
+	integer ivars(nvar)
+
+	integer i,ivar,it
+
+	do i=1,nvar
+	  call nos_next_record(nin,it,ivar)
+	  ivars(i) = ivar
+	end do
+
+	do i=1,nvar
+	  call nos_back_record(nin)
+	end do
 
 	end
 

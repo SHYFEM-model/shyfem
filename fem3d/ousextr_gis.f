@@ -70,6 +70,7 @@ c reads ous file and writes extracted records in ascii to new file
 	real u2v(neldim)
 	real v2v(neldim)
 	real weight(nlvdim,nkndim)
+	real hl(nlvdim)
 
 	integer ilnv(nlvdim,nkndim)
 
@@ -185,7 +186,7 @@ c-------------------------------------------------------------------
 	  write(6,*) 'writing for it = ',it
 	  call transp2vel(nel,nkn,nlv,nlvdim,hev,zenv,nen3v
      +                          ,ilhv,hlv,utlnv,vtlnv
-     +                          ,uprv,vprv,weight)
+     +                          ,uprv,vprv,weight,hl)
           !call wrgis_3d(nb,it,nkn,ilhkv,znv,uprv,vprv)
           call wrgis_3d_surf(nb,it,nkn,ilhkv,znv,uprv,vprv)
           nextr = nextr + 1

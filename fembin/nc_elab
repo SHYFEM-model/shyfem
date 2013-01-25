@@ -1,0 +1,71 @@
+#!/bin/sh
+#
+#-----------------------------------------------------------------
+
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
+bindir=$FEMDIR/fem3d
+
+#-----------------------------------------------------------------
+
+Usage()
+{
+  echo "2nc [-h|-help] {-ous|-nos} [-options]"
+  echo "   Transforms ous or nos file into netcdf file"
+  echo "   One of -ous or -nos must be given"
+}
+
+FullUsage()
+{
+  Usage
+  echo "   Options:"
+  echo "    -ous      convert OUS file to netcdf"
+  echo "    -nos      convert NOS file to netcdf"
+  echo "    -reg      convert to regular format"
+}
+
+ErrorOption()
+{
+  echo "No such option: $1"
+}
+
+#-------------------------------------------------- options
+
+what=""
+type="fem"
+date=""
+area=""
+dxy=""
+inter="NO"
+
+while [ -n "$1" ]
+do
+   case $1 in
+        -inter)         inter="YES";;
+        -reg)           type="reg";;
+        -dxy)           dxy=$2; shift;;
+        -area)          area=$2; shift;;
+        -date)          date=$2; shift;;
+        -ous)           what=ous;;
+        -nos)           what=nos;;
+        -h|-help)       FullUsage; exit 0;;
+        -*)             ErrorOption $1; exit 1;;
+        *)              break;;
+   esac
+   shift
+done
+
+if [ $# -eq 0 ]; then
+  Usage
+  exit 0
+fi
+
+#------------------------------------------------------------
+
+prog=~/bigappl/netcdf/taranto/read/nc_read
+
+ln -fs $1 nc_file.nc
+
+echo "running $prog"
+
+$prog
+

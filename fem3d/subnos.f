@@ -31,6 +31,7 @@ c 10.02.2012	ggu	new routines to skip records
 c 30.10.2012	ggu	new format for date and time (new accessor routines)
 c 16.11.2012	ggu	in wrnos bugfix - call setnos first
 c 02.12.2012	ggu	restructured
+c 21.01.2013	ggu	code for next and back record
 c
 c notes :
 c
@@ -743,14 +744,14 @@ c write records
 
 c************************************************************
 
-	subroutine nos_read_record(iunit,it,ivar,nlvdim,ilhkv,c,ierr)
+	subroutine nos_read_record(iu,it,ivar,nlvdim,ilhkv,c,ierr)
 
 c reads data record of NOS file
 
 	implicit none
 
 c arguments
-	integer iunit,it,ivar
+	integer iu,it,ivar
 	integer nlvdim
 	integer ilhkv(1)
 	real c(nlvdim,1)
@@ -758,6 +759,11 @@ c arguments
 c local
 	integer l,k,lmax
 	integer nvers,nkn,nel,nlv,nvar
+	integer iunit
+	logical bdata
+
+	bdata = iu .gt. 0	!with negative unit number only read header
+	iunit = abs(iu)
 
 	call getnos(iunit,nvers,nkn,nel,nlv,nvar)
 
@@ -766,18 +772,25 @@ c local
 	if( nvers .eq. 1 ) then
 	   ivar = 1
 	   read(iunit,end=88,err=98) it
-c	   read(iunit,end=99,err=99) ((c(l,k),l=1,nlv),k=1,nkn)
-	   read(iunit,end=99,err=99) (c(1,k),k=1,nkn)
+	   if( bdata ) then
+	     read(iunit,end=99,err=99) (c(1,k),k=1,nkn)
+	   else
+	     read(iunit,end=99,err=99)
+	   end if
 	else if( nvers .ge. 2 ) then
 	   if( nvers .ge. 4 ) then
 	     read(iunit,end=88,err=98) it,ivar,lmax
 	   else
 	     read(iunit,end=88,err=98) it,ivar
 	   end if
-	   if( lmax .le. 1 ) then
-             read(iunit,end=99,err=99) (c(1,k),k=1,nkn)
+	   if( bdata ) then
+	     if( lmax .le. 1 ) then
+               read(iunit,end=99,err=99) (c(1,k),k=1,nkn)
+	     else
+               read(iunit,end=99,err=99) ((c(l,k),l=1,ilhkv(k)),k=1,nkn)
+	     end if
 	   else
-             read(iunit,end=99,err=99) ((c(l,k),l=1,ilhkv(k)),k=1,nkn)
+	     read(iunit,end=99,err=99)
 	   end if
 	else
 	   stop 'error stop nos_read_record: internal error (1)'
@@ -835,6 +848,39 @@ c local
 	ierr=0
 
 	return
+	end
+
+c************************************************************
+
+	subroutine nos_next_record(iunit,it,ivar)
+
+c skips back one data record (contains two reads)
+
+	implicit none
+
+	integer iunit,it,ivar
+
+	integer nlvdim,ierr
+	integer ilhkv(1)
+	real c(1,1)
+
+	call nos_read_record(-iunit,it,ivar,nlvdim,ilhkv,c,ierr)
+
+	end
+
+c************************************************************
+
+	subroutine nos_back_record(iunit)
+
+c skips back one data record (contains two reads)
+
+	implicit none
+
+	integer iunit
+
+	backspace(iunit)
+	backspace(iunit)
+
 	end
 
 c************************************************************
@@ -1066,7 +1112,7 @@ c************************************************************
 
 	call nos_init(iunit,nvers)
 	call nos_read_header(iunit,nkn,nel,nlv,nvar,ierr)
-	call nos_get_title(title)
+	call nos_get_title(iunit,title)
 
 	end
 
@@ -1086,7 +1132,7 @@ c************************************************************
 	integer ierr
 
 	call nos_init(iunit,nvers)
-	call nos_set_title(title)
+	call nos_set_title(iunit,title)
 	call nos_write_header(iunit,nkn,nel,nlv,nvar,ierr)
 
 	end

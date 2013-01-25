@@ -10,81 +10,57 @@ c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
 c 03.06.2011    ggu     routine adjourned
 c 16.12.2011    ggu     bug: call to init_sigma_info and makehev (common hev)
 c 09.03.2012    ggu     bug: zenv must be common
+c 25.01.2013    ggu     code cleaned
 c
 c***************************************************************
 
 	program ousextr_nodes
 
-c reads ous file and extracts nodes
-c
-c we would not even need to read basin
+c extracts single nodes from OUS file -> creates time series
 
 	implicit none
 
         include 'param.h'
+        include 'basin.h'
+        include 'evmain.h'
 
-	character*80 descrr,descrp
-	common /descrr/ descrr
-	common /descrp/ descrp
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+c--------------------------------------------------
 
-	real xgv(nkndim), ygv(nkndim)
-	real hm3v(3,neldim)
-	integer nen3v(3,neldim)
-	integer ipev(neldim), ipv(nkndim)
-	integer iarv(neldim)
-	common /xgv/xgv, /ygv/ygv
-	common /hm3v/hm3v
-	common /nen3v/nen3v
-	common /ipev/ipev, /ipv/ipv
-	common /iarv/iarv
+	character*80 title
 
 	integer ilhv(neldim)
 	integer ilhkv(nkndim)
 	real hlv(nlvdim)
-        real utlnv(nlvdim,neldim)
-        real vtlnv(nlvdim,neldim)
-	common /ilhv/ilhv
-	common /ilhkv/ilhkv
-	common /hlv/hlv
-        common /utlnv/utlnv
-        common /vtlnv/vtlnv
-
 	real hev(neldim)
-	common /hev/hev
+	common /hev/hev, /hlv/hlv       ! need this for get_layer_thickness
+
+	real zenv(3,neldim)
+	common /zenv/zenv		! need this for get_layer_thickness
 
 	real znv(nkndim)
-	common /znv/znv
-	real zenv(3,neldim)
-	common /zenv/zenv
-
+        real utlnv(nlvdim,neldim)
+        real vtlnv(nlvdim,neldim)
 	real uprv(nlvdim,nkndim)
 	real vprv(nlvdim,nkndim)
 	real weight(nlvdim,nkndim)
+	real hl(nlvdim)
 	real ut2v(neldim)
 	real vt2v(neldim)
 	real u2v(neldim)
 	real v2v(neldim)
 
-	integer ilnv(nlvdim,nkndim)
-
+        integer nread,ierr
         integer nvers,nin,nlv
-        integer itanf,itend,idt,idtous
-	integer it,ie,i
-        integer ierr,nread,ndry
-        integer nknous,nelous,nlvous
-        real href,hzoff,hlvmin
-	real zmin,zmax
-	real umin,umax
-	real vmin,vmax
-	real xe,ye
-	integer k,ke,ivar
-	integer lmax,l
+        integer nknous,nelous
 
-c	integer rdous,rfous
+	integer it
+	integer k,ke,i
+	integer l,lmax
+
+        real href,hzoff
+	real umin,vmin,umax,vmax
+
 	integer iapini,ideffi
-	logical berror
 
 c---------------------------------------------------------------
 c nodes for extraction
@@ -96,9 +72,9 @@ c---------------------------------------------------------------
         integer nodes(ndim)     !node numbers
         integer nodese(ndim)    !external node numbers
 
-c-------------------------------------------------------------------
+c---------------------------------------------------------------
 c initialize params
-c-------------------------------------------------------------------
+c---------------------------------------------------------------
 
         nread=0
 
@@ -110,9 +86,11 @@ c---------------------------------------------------------------
 		stop 'error stop : iapini'
 	end if
 
-c--------------------------------------------------------------------
+	call set_ev
+
+c---------------------------------------------------------------
 c open OUS file and read header
-c--------------------------------------------------------------------
+c---------------------------------------------------------------
 
 	nin=ideffi('datdir','runnam','.ous','unform','old')
 	if(nin.le.0) goto 100
@@ -120,24 +98,23 @@ c--------------------------------------------------------------------
 	nvers=1
         call rfous(nin
      +			,nvers
-     +			,nknous,nelous,nlvous
+     +			,nknous,nelous,nlv
      +			,href,hzoff
-     +			,descrp
+     +			,title
      +			,ierr)
 	if(ierr.ne.0) goto 100
 
         write(6,*)
-        write(6,*)   descrp
+        write(6,*) 'title        : ',title
         write(6,*)
-        write(6,*) ' nvers        : ',nvers
-        write(6,*) ' href,hzoff   : ',href,hzoff
-        write(6,*) ' nkn,nel      : ',nknous,nelous
-        write(6,*) ' nlv          : ',nlvous
+        write(6,*) 'nvers        : ',nvers
+        write(6,*) 'nkn,nel      : ',nknous,nelous
+        write(6,*) 'nlv          : ',nlv
+        write(6,*) 'href,hzoff   : ',href,hzoff
         write(6,*)
 
         if( nkn .ne. nknous .or. nel .ne. nelous ) goto 94
 
-	nlv=nlvous
 	call dimous(nin,nkndim,neldim,nlvdim)
 
 	call rsous(nin,ilhv,hlv,hev,ierr)
@@ -150,17 +127,17 @@ c--------------------------------------------------------------------
         write(6,*) 'Available levels: ',nlv
         write(6,*) (hlv(l),l=1,nlv)
 
-c-------------------------------------------------------------------
+c---------------------------------------------------------------
 c get nodes to extract from STDIN
-c-------------------------------------------------------------------
+c---------------------------------------------------------------
 
         call get_nodes_from_stdin(ndim,nnodes,nodes,nodese)
 
         if( nnodes .le. 0 ) goto 100
 
-c-------------------------------------------------------------------
+c---------------------------------------------------------------
 c loop on input records
-c-------------------------------------------------------------------
+c---------------------------------------------------------------
 
   300   continue
 
@@ -173,11 +150,16 @@ c-------------------------------------------------------------------
 	write(6,*) 'time : ',it,nread
 
 	call comp_barotropic(nel,nlvdim,ilhv,utlnv,vtlnv,ut2v,vt2v)
-        call comp_vel2d(nel,hev,zenv,ut2v,vt2v,u2v,v2v,umax,vmax)
+        call comp_vel2d(nel,hev,zenv,ut2v,vt2v,u2v,v2v
+     +					,umin,vmin,umax,vmax)
 
         call transp2vel(nel,nkn,nlv,nlvdim,hev,zenv,nen3v
      +                          ,ilhv,hlv,utlnv,vtlnv
-     +                          ,uprv,vprv,weight)
+     +                          ,uprv,vprv,weight,hl)
+
+c	---------------------------------------------------------
+c	write to file
+c	---------------------------------------------------------
 
         do i=1,nnodes
           k = nodes(i)
@@ -195,9 +177,9 @@ c-------------------------------------------------------------------
 
   100	continue
 
-c-------------------------------------------------------------------
+c---------------------------------------------------------------
 c end of loop
-c-------------------------------------------------------------------
+c---------------------------------------------------------------
 
 	write(6,*)
 	write(6,*) nread,' records read'
@@ -205,9 +187,9 @@ c-------------------------------------------------------------------
 	write(6,*) 'data written to file 79 and 80'
 	write(6,*)
 
-c-------------------------------------------------------------------
+c---------------------------------------------------------------
 c end of routine
-c-------------------------------------------------------------------
+c---------------------------------------------------------------
 
 	stop
    94   continue
@@ -217,83 +199,5 @@ c-------------------------------------------------------------------
         stop 'error stop ousextr_nodes: nkn,nel'
 	end
 
-c******************************************************************
-
-        subroutine comp_vel2d(nel,hev,zenv,ut2v,vt2v,u2v,v2v,umax,vmax)
-
-c computes velocity in elements for given level 
-c
-c returns result in uv,vv
-
-        implicit none
-
-        integer level		!level for which to compute velocity
-        integer nel
-        real hev(1)
-        real zenv(3,1)
-        real ut2v(1)
-        real vt2v(1)
-	real u2v(1), v2v(1)
-        real umax,vmax
-
-        integer ie,ii
-        real zmed,hmed,u,v
-
-        umax = 0.
-        vmax = 0.
-
-        do ie=1,nel
-          zmed = 0.
-          do ii=1,3
-            zmed = zmed + zenv(ii,ie)
-          end do
-          zmed = zmed / 3.
-          hmed = hev(ie) + zmed
-
-          u = ut2v(ie) / hmed
-          v = vt2v(ie) / hmed
-
-	  u2v(ie) = u
-	  v2v(ie) = v
-
-          umax = max(umax,u)
-          vmax = max(vmax,v)
-        end do
-
-        end
-
-c******************************************************************
-
-	subroutine comp_barotropic(nel,nlvdim,ilhv
-     +			,utlnv,vtlnv,ut2v,vt2v)
-
-c computes barotropic transport
-
-	implicit none
-
-	integer nel,nlvdim
-	integer ilhv(1)
-	real utlnv(nlvdim,1)
-	real vtlnv(nlvdim,1)
-	real ut2v(1)
-	real vt2v(1)
-
-	integer ie,l,lmax
-	real utot,vtot
-
-	do ie=1,nel
-	  lmax = ilhv(ie)
-	  utot = 0.
-	  vtot = 0.
-	  do l=1,lmax
-	    utot = utot + utlnv(l,ie)
-	    vtot = vtot + vtlnv(l,ie)
-	  end do
-	  ut2v(ie) = utot
-	  vt2v(ie) = vtot
-	end do
-
-	end
-
-c******************************************************************
+c***************************************************************
 

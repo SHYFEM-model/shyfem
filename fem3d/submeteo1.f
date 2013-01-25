@@ -1,7 +1,8 @@
 c
 c $Id: submeteo.f,v 1.7 2010-02-26 17:35:06 georg Exp $
 c
-c handle regular meteo files
+c handle regular meteo files 
+c         handles different formats (unformatted, regular, time series)
 c
 c revision log :
 c
@@ -21,9 +22,16 @@ c 23.02.2012    ggu&ccf	bug fix meteo_copy_to_old and meteo_interpolate_in_time
 c
 c notes :
 c
+c this routine is called with imreg = 2
+c
 c info on file format can be found in subrgf.f
 c
 c to do: implement zdist for rain (constant rain)
+c
+c mode:
+c	1	unformatted
+c	3	regular
+c	4	time series
 c
 c*********************************************************************
 

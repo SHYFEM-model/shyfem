@@ -1584,6 +1584,7 @@ c------------------------------------------------------------
 	resmed = rsum / ndata
 	resstd = sqrt( rsumsq/ndata - resmed*resmed )
 
+c it		time in seconds
 c perc		percentage of mass still in domain
 c restime	residence time computed by integrating
 c restimec	residence time computed by integrating with correction

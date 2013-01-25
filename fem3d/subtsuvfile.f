@@ -116,6 +116,8 @@ c*******************************************************************
 	real data(nldim,nkndim)
         real hl_data(0:nldim+1)
 
+	external intp_to_fem_0
+
 c--------------------------------------------------------------
 c initialize
 c--------------------------------------------------------------
@@ -148,15 +150,16 @@ c--------------------------------------------------------------
 
         call fem_file_read_3d(bformat,iu,it
      +                          ,nkn,lmax,nldim,hl_data(1)
-     +                          ,il_data,string,hd_data,data,ierr)
+     +                          ,il_data,string,hd_data,data
+     +				,intp_to_fem_0,ierr)
 
 c--------------------------------------------------------------
 c interpolate between different vertical structures 
 c--------------------------------------------------------------
 
-	call intp_to_fem(nkn,nldim
-     +		,lmax,il_data,hl_data,hd_data,zz_data,data
-     +		,nlv,ilhkv,hlv,hkv,znv,value)
+c	call intp_to_fem(nkn,nldim
+c     +		,lmax,il_data,hl_data,hd_data,zz_data,data
+c     +		,nlv,ilhkv,hlv,hkv,znv,value)
 
 c--------------------------------------------------------------
 c some statistics
@@ -263,7 +266,7 @@ c	  -----------------------------------------------------
 c	  set data depth structure
 c	  -----------------------------------------------------
 
-          lmax_data = il_data(k)
+    !      lmax_data = il_data(k)
 	  z_data = zz_data(k)
 	  h_data = hd_data(k)
 
@@ -292,14 +295,14 @@ c	  interpolate on vertical levels
 c	  -----------------------------------------------------
 
           do l=1,lmax_data
-            vaux_data(l) = val_data(l,k)
+    !        vaux_data(l) = val_data(l,k)
           end do
 
           call intp_vert(bcons,lmax_data,haux_data,vaux_data
      +				,lmax_fem,haux_fem,vaux_fem)
 
           do l = 1,lmax_fem
-            val_fem(l,k) = vaux_fem(l)
+    !        val_fem(l,k) = vaux_fem(l)
           end do
 
         !enddo
@@ -433,7 +436,7 @@ c--------------------------------------------------------------
 c*******************************************************************	
 c*******************************************************************	
 c*******************************************************************	
-c*******************************************************************	
+c****** old routines ***********************************************	
 c*******************************************************************	
 c*******************************************************************	
 c*******************************************************************	

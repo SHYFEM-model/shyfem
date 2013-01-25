@@ -184,6 +184,8 @@ c returns layer thickness - works also for lmax higher than actual layers
 c
 c works also for lmax higher than actual layers
 c in this case the last values for hl are 0
+c
+c needs hlv, hev, zenv in common block
 
 	implicit none
 

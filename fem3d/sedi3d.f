@@ -71,6 +71,7 @@ c 28.04.2008    ggu     call to nrdpar, nrdnls read with double precision
 c 29.04.2008    ccf     save temref and salref in common
 c 09.10.2008    ggu     new call to confop
 c 28.04.2009    ggu     links re-structured
+c 25.01.2013    ggu     mixed real/double common blocks spearated
 c
 !****************************************************************************
 
@@ -179,9 +180,10 @@ c
       real z0bk(nkndim)                   !bottom roughenss on nodes
       common /z0bk/z0bk
 
-      common /sedaux1/scn,scc,eps,sflx,sedx,sedy,gdx,gdy,tao,
-     +riph,ripl,gskm
-      common /sedaux2/tcn,bflx,bdh,bh
+      common /sedaux1/scn,scc,eps,sflx,sedx,sedy,gdx,gdy,tao,gskm
+      common /sedaux1d/riph,ripl
+      common /sedaux2/tcn,bh
+      common /sedaux2d/bflx,bdh
 
 ! function
       integer iround
@@ -199,8 +201,8 @@ c
       save /sedpa/
       save /percbd/
       save /bedn/
-      save /sedaux1/
-      save /sedaux2/
+      save /sedaux1/,/sedaux1d/
+      save /sedaux2/,/sedaux2d/
       save /temsal/
 
       save icall
@@ -1260,8 +1262,8 @@ c DOCS  END
         real z0bk(nkndim)			!bottom roughenss on nodes
 
         common /z0bk/z0bk
-        common /sedaux1/scn,scc,eps,sflx,sedx,sedy,gdx,gdy,tao,
-     +riph,ripl,gskm
+        common /sedaux1/scn,scc,eps,sflx,sedx,sedy,gdx,gdy,tao,gskm
+        common /sedaux1d/riph,ripl
  
         real salref,temref		!salinity [psu] and temperature [C]
 	common /temsal/salref,temref

@@ -159,7 +159,7 @@ help:
 	@echo "help                this screen"
 	@echo "install             installs the model"
 	@echo "fem                 compiles everything"
-	@echo "clean, cleanall     cleans installation from tmp and object files"
+	@echo "clean, cleanall     cleans installation from tmp and obj files"
 	@echo "doc                 makes documentation"
 	@echo "version             returns version of this distribution"
 	@echo "info                general options from Rules.make"

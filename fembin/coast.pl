@@ -24,6 +24,21 @@ $xyfact = 1. unless $xyfact;    # scale x/y values
 $grd = 0. unless $grd;		# input file is in grd format
 $invert = 0. unless $invert;	# invert x/y
 $close = 0. unless $close;	# close created lines
+$help = 0. unless $help;	# write help
+$h = 0. unless $h;	# write help
+
+if( $help or $h ) {
+  print STDERR "coast.pl [-h|-help] [-options] file(s)\n";
+  print STDERR "   Takes single points and creates lines.\n";
+  print STDERR "   options:\n";
+  print STDERR "     -h|-help     this help screen\n";
+  print STDERR "     -grd         input file is in grd format\n";
+  print STDERR "     -invert      invert x/y\n";
+  print STDERR "     -close       close created lines\n";
+  print STDERR "     -maxdist=#   new line if $dist > # (0 for one line)\n";
+  print STDERR "     -xyfact=#    apply factor to x/y values\n";
+  exit 1;
+}
 
 #-----------------------------------------------------------------
 

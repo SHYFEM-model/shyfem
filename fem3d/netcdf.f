@@ -6,6 +6,7 @@ c
 c 05.12.2011    ggu&dbf	written from scratch
 c 26.03.2012    ggu	standardized implicit routines, compiler warnings
 c 20.09.2012    ggu	new routines for regular output
+c 25.01.2013    ggu	new part for nos variable initialization
 c
 c notes :
 c
@@ -60,6 +61,7 @@ C initialize parameters
 c-----------------------------------------
 
 	file_name = 'netcdf_reg.nc'
+	file_name = 'netcdf.nc'
 
 c-----------------------------------------
 C Create the file.
@@ -1230,10 +1232,8 @@ c-----------------------------------------------
 	if( day .le. 0 ) day = 1
 	call nc_unpack_date(time0,hour,min,sec)
 
-	write(6,*) date0
-	write(6,*) year,month,day
-	write(6,*) time0
-	write(6,*) hour,min,sec
+	write(6,*) 'date0: ',date0,year,month,day
+	write(6,*) 'time0: ',time0,hour,min,sec
 
 c-----------------------------------------------
 c prepare date
@@ -1272,11 +1272,116 @@ c*****************************************************************
 
 	call nc_format_date(cdate,year,month,day,hour,min,sec,'MET')
 
-	write(6,*) 'cdate: ',date,time
+	write(6,*) 'cdate: ',date,'  ',time
 	write(6,*) 'cdate: ',cdate
 
 	end
 	
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+c variable initialization
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine nc_init_variable(ncid,breg,dim,ivar,flag,var_id)
+
+	implicit none
+
+	integer ncid
+	logical breg
+	integer dim
+	integer ivar
+	real flag
+	integer var_id		! id to be used for other operations (return)
+
+	character*80 name,what,std,units
+	real cmin,cmax
+
+	if( ivar .eq. 1 ) then		! water level
+	  name = 'water_level'
+	  what = 'standard_name'
+          std = 'water_surface_height_above_reference_datum'
+          units = 'm'
+	  cmin = -10.
+	  cmax = +10.
+	else if( ivar .eq. 2 ) then	! x-velocity
+	  name = 'u_velocity'
+	  what = 'standard_name'
+	  std = 'eastward_sea_water_velocity'
+	  units = 'm s-1'
+	  cmin = -10.
+	  cmax = +10.
+	else if( ivar .eq. 3 ) then	! y-velocity
+	  name = 'v_velocity'
+	  what = 'standard_name'
+	  std = 'northward_sea_water_velocity'
+	  units = 'm s-1'
+	  cmin = -10.
+	  cmax = +10.
+	else if( ivar .eq. 4 ) then	! x-velocity (no tide)
+	  name = 'u_velocity'
+	  what = 'standard_name'
+	  std = 'eastward_sea_water_velocity_assuming_no_tide'
+	  units = 'm s-1'
+	  cmin = -10.
+	  cmax = +10.
+	else if( ivar .eq. 5 ) then	! y-velocity (no tide)
+	  name = 'v_velocity'
+	  what = 'standard_name'
+	  std = 'northward_sea_water_velocity_assuming_no_tide'
+	  units = 'm s-1'
+	  cmin = -10.
+	  cmax = +10.
+	else if( ivar .eq. 10 ) then	! generic tracer
+	  name = 'tracer'
+	  what = 'long_name'
+	  std = 'generic tracer'
+	  units = '1'
+	  cmin = 0.
+	  cmax = 110.
+	else if( ivar .eq. 11 ) then	! salinity
+	  name = 'salinity'
+	  what = 'standard_name'
+	  std = 'sea_water_salinity'
+	  units = '1e-3'
+	  cmin = 0.
+	  cmax = 200.
+	else if( ivar .eq. 12 ) then	! temperature
+	  name = 'temperature'
+	  what = 'standard_name'
+	  std = 'sea_water_temperature'
+	  units = 'degC'
+	  cmin = -10.
+	  cmax = 100.
+	else
+	  write(6,*) 'unknown variable: ',ivar
+	  stop 'error stop descr_var'
+	end if
+
+	write(6,*) 'writing description for variable ',ivar,name(1:30)
+
+	if( dim .eq. 2 ) then
+	  if( breg ) then
+	    call nc_define_2d_reg(ncid,name,var_id)
+	  else
+	    call nc_define_2d(ncid,name,var_id)
+	  end if
+	else if( dim .eq. 3 ) then
+	  if( breg ) then
+	    call nc_define_3d_reg(ncid,name,var_id)
+	  else
+	    call nc_define_3d(ncid,name,var_id)
+	  end if
+	end if
+
+	call nc_define_attr(ncid,'units',units,var_id)
+	call nc_define_attr(ncid,what,std,var_id)
+	call nc_define_range(ncid,cmin,cmax,flag,var_id)
+
+	end
+
 c*****************************************************************
 c*****************************************************************
 c*****************************************************************

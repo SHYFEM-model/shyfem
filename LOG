@@ -1,4 +1,68 @@
 
+
+
+c ./fem3d/subnos.f:
+c 21.01.2013    ggu     code for next and back record
+c
+c ./fem3d/tmp/ous2nc_fem.f:
+c 21.01.2013    ggu     restructured
+c
+c ./fem3d/tmp/ous2nc_reg.f:
+c 21.01.2013    ggu     restructured
+c
+c ./fem3d/tmp/nos2nc_fem.f:
+c 21.01.2013    ggu     restructured
+c
+c ./fem3d/tmp/ous2nc.f:
+c 21.01.2013    ggu     restructured
+c
+c ./fem3d/tmp/nos2nc.f:
+c 21.01.2013    ggu     restructured
+c
+c ./fem3d/tmp/nos2nc_reg.f:
+c 21.01.2013    ggu     restructured
+c
+c ./fem3d/ousextr_nodes.f:
+c 25.01.2013    ggu     code cleaned
+c
+c ./fem3d/lagrange_track.f:
+c 25.01.2013    ggu     error check to avoid segfault (INTERNAL ERROR)
+c
+c ./fem3d/sedi3d.f:
+c 25.01.2013    ggu     mixed real/double common blocks spearated
+c
+c ./fem3d/nosextr_nodes.f:
+c 25.01.2013    ggu     routines cleaned
+c
+c ./fem3d/netcdf.f:
+c 25.01.2013    ggu     new part for nos variable initialization
+c
+c ./fem3d/ousinf.f:
+c 25.01.2013    ggu     utility routines to ousutil.f
+c
+c ./fem3d/netcdf_util.f:
+c 21.01.2013    ggu     routines transfered from ous2nc.f
+c
+c ./fem3d/genutil.f:
+c 25.01.2013    ggu     new routine level_k2e()
+c
+c ./fem3d/ous2nc.f:
+c 21.01.2013    ggu     restructured
+c 25.01.2013    ggu     regular and fem outout in one routine
+c
+c ./fem3d/nosutil.f:
+c 25.01.2013    ggu     new routines nos_get_vars()
+c
+c ./fem3d/ousutil.f:
+c 21.01.2013    ggu     added two new routines comp_vel2d, comp_barotropic
+c
+c ./fem3d/nos2nc.f:
+c 21.01.2013    ggu     restructured
+
+
+
+
+
 c ./fem3d/subnos.f:
 c 02.12.2012    ggu     restructured
 c

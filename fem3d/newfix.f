@@ -41,6 +41,10 @@ c-------------------------------------------------------------
 
         nbfix = nint(getpar('nbfix'))
 
+c bfix	how boundary conditions will be applied
+c	bfix = .true.	fixes (prescribes) velocities at boundaries
+c	bfix = .false.	nudges velocities at boundaries
+
 c------------------------------------------------------------
 c settings for velocity treatment on boundaries
 c------------------------------------------------------------

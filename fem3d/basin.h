@@ -7,8 +7,8 @@ c include file if basin (BAS) is read
         real grav,fcor,dcor,dirn,rowass,roluft
         common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
 
-        character*80 descrp
-        common /descrp/ descrp
+        character*80 descrr
+        common /descrr/ descrr
 
         real xgv(nkndim), ygv(nkndim)
         real hm3v(3,neldim)

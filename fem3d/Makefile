@@ -56,7 +56,7 @@ DIRLIB_NETCDF = $(NETCDFDIR)/lib/
 DIRINC_NETCDF = $(NETCDFDIR)/include
 ifeq ($(NETCDF),true)
   NETCDF_OBJ       = subnetcdf_admin.o subnetcdf_hydro.o
-  NETCDF_OBJ       = netcdf.o
+  NETCDF_OBJ       = netcdf.o netcdf_util.o
   LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDF)
   LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDF).a
   INCL_NETCDF      = -I$(DIRINC_NETCDF)
@@ -421,11 +421,23 @@ nossum:  nossum.o $(NOSOBJS) $(OUTOBJS)
 noselab_time:  noselab_time.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-ous2nc:  ous2nc.o $(OUSOBJS) $(OUTOBJS) netcdf.o
-	$(LINKER) -o $@ $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) netcdf.o $(LIBGS)
+2nc: ous2nc ous2nc_reg nos2nc nos2nc_reg
 
-ous2nc_reg:  ous2nc_reg.o $(OUSOBJS) $(OUTOBJS) netcdf.o
-	$(LINKER) -o $@ $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) netcdf.o $(LIBGS)
+ous2nc:  ous2nc.o $(OUSOBJS) $(OUTOBJS) $(NETCDF_OBJ)
+	$(LINKER) -o $@ $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) \
+			$(NETCDF_OBJ) $(LIBGS)
+
+ous2nc_reg:  ous2nc_reg.o $(OUSOBJS) $(OUTOBJS) $(NETCDF_OBJ)
+	$(LINKER) -o $@ $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) \
+			$(NETCDF_OBJ) $(LIBGS)
+
+nos2nc:  nos2nc.o $(NOSOBJS) $(OUTOBJS) $(NETCDF_OBJ)
+	$(LINKER) -o $@ $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) \
+			$(NETCDF_OBJ) $(LIBGS)
+
+nos2nc_reg:  nos2nc_reg.o $(NOSOBJS) $(OUTOBJS) $(NETCDF_OBJ)
+	$(LINKER) -o $@ $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) \
+			$(NETCDF_OBJ) $(LIBGS)
 
 eosinf:  eosinf.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@

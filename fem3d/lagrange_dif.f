@@ -13,6 +13,7 @@ c 29.11.2006    ggu     new version integrated into main model
 c 10.11.2007    ggu     renamed random routine from ran1 to ran9 (conflict)
 c 14 09 2007    aac     new simplified version more efficient, ran9->1, ran9 del
 c 24 10 2012    aac     do not kill particle if infinite loop -> leave it
+c 25 01 2013    ggu     new formula for horizontal diffusivity
 c
 c******************************************************************
 
@@ -90,6 +91,7 @@ c*******************************************************************
         data idum/387/
         save idum
         cf=sqrt(2*k*ttime) 
+	cf=sqrt(6*k*ttime)  !new formula 3d
         
         dx=cf*gasdev(idum)
         dy=cf*gasdev(idum)

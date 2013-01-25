@@ -1,7 +1,7 @@
 c
-c $Id: ous2nc.f,v 1.15 2009-11-18 16:50:37 georg Exp $
+c $Id: nos2nc.f,v 1.15 2009-11-18 16:50:37 georg Exp $
 c
-c convert OUS to NC files
+c convert NOS to NC file
 c
 c revision log :
 c
@@ -11,13 +11,12 @@ c 16.10.2007	ggu	new debug routine
 c 27.10.2009    ggu     include evmain.h, compute volume
 c 23.03.2011    ggu     compute real u/v-min/max of first level
 c 21.01.2013    ggu     restructured
-c 25.01.2013    ggu     regular and fem outout in one routine
 c
 c***************************************************************
 
-	program ous2nc
+	program nos2nc
 
-c reads ous file and writes NetCDF file
+c reads nos file and writes NetCDF file 
 
 	implicit none
 
@@ -27,13 +26,20 @@ c reads ous file and writes NetCDF file
 
 c-------------------------------------------------
 
+	integer ndim
+	parameter (ndim=100)
+
 	integer nxdim,nydim
 	parameter (nxdim=400,nydim=400)
 
-        character*80 title
+	character*80 title
+
+	real cv3(nlvdim,nkndim)
+	integer ivars(ndim)
+	integer var_ids(ndim)
 
 	integer ilhv(neldim)
-	integer ilhkv(neldim)
+	integer ilhkv(nkndim)
 	real hlv(nlvdim)
         real utlnv(nlvdim,neldim)
         real vtlnv(nlvdim,neldim)
@@ -71,6 +77,7 @@ c-------------------------------------------------
         integer ierr,nread,ndry
 	integer irec,maxrec
         integer nknous,nelous
+	integer nvar,ivar
         real href,hzoff,hlvmin
 	real volume
 	real zmin,zmax
@@ -94,7 +101,7 @@ c-------------------------------------------------
         integer dimids_2d(2)
         integer coord_varid(3)
         integer rec_varid
-        integer z_id,u_id,v_id
+        integer var_id
 	integer date0,time0
 	integer it0
 
@@ -103,7 +110,7 @@ c-------------------------------------------------
 c	integer rdous,rfous
 	integer iapini,ideffi
 
-	call shyfem_copyright('ous2nc - netcdf output')
+	call shyfem_copyright('nos2nc - netcdf output')
 
 c-----------------------------------------------------------------
 c initialize basin and simulation
@@ -135,55 +142,56 @@ c-----------------------------------------------------------------
 	call makehkv_minmax(hkv,haux,1)
 	call makehev(hev)
 
-	nin=ideffi('datdir','runnam','.ous','unform','old')
+	nin=ideffi('datdir','runnam','.nos','unform','old')
 	if(nin.le.0) goto 100
 
 	if( bdate ) call read_date_and_time(date0,time0)
 	call dtsini(date0,time0)
 
-	call get_dimensions(nxdim,nydim,nx,ny,x0,y0,dx,dy,xlon,ylat)
+        call get_dimensions(nxdim,nydim,nx,ny,x0,y0,dx,dy,xlon,ylat)
         breg = nx .gt. 0 .and. ny .gt. 0          !regular output
-	write(6,*) 'breg: ',breg
+        write(6,*) 'breg: ',breg
         if( breg ) then
-          write(6,*) 'NETCDF output: regular ',dx,dy,nx,ny
+	  write(6,*) 'NETCDF output: regular ',dx,dy,nx,ny
           call setgeo(x0,y0,dx,dy,flag)
           call av2fm(fm,nx,ny)
-        else
-          write(6,*) 'NETCDF output: unstructured (fem)'
+	else
+	  write(6,*) 'NETCDF output: unstructured (fem)'
         end if
 
 c-----------------------------------------------------------------
 c read header of simulation
 c-----------------------------------------------------------------
 
-	nvers=1
-        call rfous(nin
-     +			,nvers
-     +			,nknous,nelous,nlv
-     +			,href,hzoff
-     +			,title
-     +			,ierr)
+        nvers=3
+	call rfnos(nin,nvers,nknous,nelous,nlv,nvar,title,ierr)
 
-	call dimous(nin,nkndim,neldim,nlvdim)
+	call dimnos(nin,nkndim,neldim,nlvdim)
 
-        write(6,*)
+	write(6,*)
         write(6,*) 'title        : ',title
-        write(6,*)
+	write(6,*)
         write(6,*) 'nvers        : ',nvers
         write(6,*) 'nkn,nel      : ',nknous,nelous
         write(6,*) 'nlv          : ',nlv
-        write(6,*) 'href,hzoff   : ',href,hzoff
-        write(6,*)
+        write(6,*) 'nvar         : ',nvar
+	write(6,*)
 
 	if( nkn .ne. nknous .or. nel .ne. nelous ) goto 94
+	if( nvar .gt. ndim ) goto 95
 
-	call rsous(nin,ilhv,hlv,hev,ierr)
+	call rsnos(nin,ilhkv,hlv,hev,ierr)
 
 	call init_sigma_info(nlv,hlv)
-	call level_e2k(nkn,nel,nen3v,ilhv,ilhkv)
+	call level_k2e(nkn,nel,nen3v,ilhkv,ilhv)
 
         write(6,*) 'Available levels: ',nlv
         write(6,*) (hlv(l),l=1,nlv)
+
+	call nos_get_vars(nin,nvar,ivars)
+
+        write(6,*) 'Available variables: ',nvar
+        write(6,*) (ivars(i),i=1,nvar)
 
 	if( breg ) call get_lmax_reg(nx,ny,fm,ilhv,lmax)
 
@@ -191,24 +199,24 @@ c-----------------------------------------------------------------
 c prepare netcdf file
 c-----------------------------------------------------------------
 
-	if( breg ) then
-	  call nc_open_reg(ncid,nx,ny,lmax,flag,date0,time0)
-	else
+        if( breg ) then
+          call nc_open_reg(ncid,nx,ny,lmax,flag,date0,time0)
+        else
           call nc_open(ncid,nkn,nel,nlv,date0,time0)
-	end if
-	call nc_global(ncid,title)
+        end if
+        call nc_global(ncid,title)
 
-	call nc_init_variable(ncid,breg,2,1,flag,z_id)
-	call nc_init_variable(ncid,breg,3,2,flag,u_id)
-	call nc_init_variable(ncid,breg,3,3,flag,v_id)
+	do i=1,nvar
+	  call nc_init_variable(ncid,breg,3,ivars(i),flag,var_ids(i))
+	end do
 
         call nc_end_define(ncid)
-	if( breg ) then
-	  call fm2am2d(hkv,nx,ny,fm,depth)
-	  call nc_write_coords_reg(ncid,nx,ny,xlon,ylat,depth)
-	else
+        if( breg ) then
+          call fm2am2d(hkv,nx,ny,fm,depth)
+          call nc_write_coords_reg(ncid,nx,ny,xlon,ylat,depth)
+        else
           call nc_write_coords(ncid)
-	end if
+        end if
 
 c-----------------------------------------------------------------
 c loop on data of simulation
@@ -216,7 +224,7 @@ c-----------------------------------------------------------------
 
   300   continue
 
-        call rdous(nin,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
+	call rdnos(nin,it,ivar,nlvdim,ilhkv,cv3,ierr)
 
 	it = it - it0
 
@@ -225,52 +233,28 @@ c-----------------------------------------------------------------
 
 	nread=nread+1
 
-	call mima(znv,nknous,zmin,zmax)
-        call comp_barotropic(nel,nlvdim,ilhv,utlnv,vtlnv,ut2v,vt2v)
-	call comp_vel2d(nel,hev,zenv,ut2v,vt2v,u2v,v2v
-     +				,umin,vmin,umax,vmax)
-	call compute_volume(nel,zenv,hev,volume)
+	i = mod(nread,nvar)
+	if( i .eq. 0 ) i = nvar
 
-c        call debug_write_node(0,it,nread,nkndim,neldim,nlvdim,nkn,nel,nlv
-c     +          ,nen3v,zenv,znv,utlnv,vtlnv)
-
-	write(6,*) 
-        call write_time(it)
-	write(6,*) 
-	write(6,*) 'zmin/zmax : ',zmin,zmax
-	write(6,*) 'umin/umax : ',umin,umax
-	write(6,*) 'vmin/vmax : ',vmin,vmax
-	write(6,*) 'volume    : ',volume
-
-        call transp2vel(nel,nkn,nlv,nlvdim,hev,zenv,nen3v
-     +                          ,ilhv,hlv,utlnv,vtlnv
-     +                          ,uprv,vprv,weight,hl)
-
-        irec = irec + 1
-        call nc_write_time(ncid,irec,it)
-
-	if( breg ) then
-	  call fm2am2d(znv,nx,ny,fm,value2d)
-          call nc_write_data_2d_reg(ncid,z_id,irec,nx,ny,value2d)
-
-	  call fm2am3d(nlvdim,ilhv,uprv,lmax,nx,ny,fm,value3d)
-	  call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
-	  call nc_write_data_3d_reg(ncid,u_id,irec,lmax,nx,ny,vnc3d)
-
-	  call fm2am3d(nlvdim,ilhv,vprv,lmax,nx,ny,fm,value3d)
-	  call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
-          call nc_write_data_3d_reg(ncid,v_id,irec,lmax,nx,ny,vnc3d)
-	else
-          call nc_write_data_2d(ncid,z_id,irec,nkn,znv)
-
-	  call nc_compact_3d(nlvdim,nlv,nkn,uprv,var3d)
-          call nc_write_data_3d(ncid,u_id,irec,nlv,nkn,var3d)
-
-	  call nc_compact_3d(nlvdim,nlv,nkn,vprv,var3d)
-          call nc_write_data_3d(ncid,v_id,irec,nlv,nkn,var3d)
+	if( i .eq. 1 ) then
+          irec = irec + 1
+	  if ( maxrec .gt. 0 .and. irec .gt. maxrec ) goto 100
+          call write_time(it)
+          call nc_write_time(ncid,irec,it)
 	end if
 
-	if ( maxrec .gt. 0 .and. irec .ge. maxrec ) goto 100
+	write(6,*) '   var: ',ivar,i,irec,nread
+	if( ivars(i) .ne. ivar ) goto 92
+	var_id = var_ids(i)
+
+	if( breg ) then
+	  call fm2am3d(nlvdim,ilhv,cv3,lmax,nx,ny,fm,value3d)
+	  call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
+	  call nc_write_data_3d_reg(ncid,var_id,irec,lmax,nx,ny,vnc3d)
+	else
+	  call nc_compact_3d(nlvdim,nlv,nkn,cv3,var3d)
+          call nc_write_data_3d(ncid,var_id,irec,nlv,nkn,var3d)
+	end if
 
 	goto 300
 
@@ -284,6 +268,8 @@ c-----------------------------------------------------------------
 	write(6,*) nread,' records read'
 	write(6,*)
 
+	if( breg ) call write_dimensions(nx,ny,x0,y0,dx,dy)
+
         call nc_close(ncid)
 
 c-----------------------------------------------------------------
@@ -291,11 +277,18 @@ c end of routine
 c-----------------------------------------------------------------
 
         stop
+   92   continue
+        write(6,*) 'wrong order of variables'
+        write(6,*) 'read: ',ivar,'   expected: ',ivars(i)
+        stop 'error stop nos2nc: variables'
    94   continue
         write(6,*) 'incompatible simulation and basin'
         write(6,*) 'nkn: ',nkn,nknous
         write(6,*) 'nel: ',nel,nelous
-        stop 'error stop ous2nc: nkn,nel'
+        stop 'error stop nos2nc: nkn,nel'
+   95   continue
+        write(6,*) 'nvar,ndim: ',nvar,ndim
+        stop 'error stop nos2nc: ndim'
         end
 
 c******************************************************************

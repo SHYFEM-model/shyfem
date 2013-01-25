@@ -9,58 +9,47 @@ c 18.11.1998    ggu     check dimensions with dimnos
 c 24.02.1999    ggu     use n2int for node number translation
 c 03.12.2001    ggu     cleaned up, hakata bay
 c 03.06.2011    ggu     routine adjourned
+c 25.01.2013    ggu     routines cleaned
 c
-c****************************************************************
+c***************************************************************
 
 	program nosextr_nodes
 
-c extracts single nodes from nos file -> creates time series
+c extracts single nodes from NOS file -> creates time series
 
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
+	include 'evmain.h'
 
-c--------------------------------------------------
-        character*80 descrr
-        common /descrr/descrr
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        integer nen3v(3,neldim)
-        integer ipv(nkndim), ipev(neldim)
-        integer iarv(neldim)
-
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-        common /nen3v/nen3v
-        common /ipv/ipv, /ipev/ipev
-        common /iarv/iarv
 c--------------------------------------------------
 
 	character*80 title
-	real cv(nkndim)
-	real cv3(nlvdim,nkndim)
 
+	integer ilhv(neldim)
 	integer ilhkv(nkndim)
 	real hlv(nlvdim)
 	real hev(neldim)
+	common /hev/hev, /hlv/hlv	! need this for get_layer_thickness
 
-	logical berror
-	integer i,n,k,ke,l,lmax
-	integer nread,nunit
-	integer nvers
-	integer nlv,nvar,ivar,ierr
-	integer nin,it
+        real zenv(3,neldim)
+        common /zenv/zenv		! need this for get_layer_thickness
 
-	integer iapini,ideffi,ialfa
+	real cv(nkndim)
+	real cv3(nlvdim,nkndim)
 
-c--------------------------------------------------
-	integer nudim
-	parameter(nudim=300)
-	integer iunit(nudim)
-	character*50 file
+	integer nread,ierr
+	integer nvers,nin,nlv
+	integer nknous,nelous
+
+	integer it
+	integer k,ke,i
+	integer l,lmax
+
+	integer nvar,ivar,iu
+
+	integer iapini,ideffi
 
 c---------------------------------------------------------------
 c nodes for extraction
@@ -73,12 +62,20 @@ c---------------------------------------------------------------
 	integer nodese(ndim)	!external node numbers
 
 c---------------------------------------------------------------
+c initialize params
+c---------------------------------------------------------------
+
+        nread=0
+
+c---------------------------------------------------------------
 c open simulation and basin
 c---------------------------------------------------------------
 
 	if(iapini(3,nkndim,neldim,0).eq.0) then
 		stop 'error stop : iapini'
 	end if
+
+	call set_ev
 
 c---------------------------------------------------------------
 c open NOS file and read header
@@ -88,32 +85,34 @@ c---------------------------------------------------------------
 	if(nin.le.0) goto 100
 
         nvers=3
-	call rfnos(nin,nvers,nkn,nel,nlv,nvar,title,ierr)
+	call rfnos(nin,nvers,nknous,nelous,nlv,nvar,title,ierr)
         if(ierr.ne.0) goto 100
 
-        write(6,*) 'nvers    : ',nvers
-        write(6,*) 'nkn,nel  : ',nkn,nel
-        write(6,*) 'nlv,nvar : ',nlv,nvar
-        write(6,*) 'title    : ',title
+	write(6,*)
+        write(6,*) 'title        : ',title
+	write(6,*)
+        write(6,*) 'nvers        : ',nvers
+        write(6,*) 'nkn,nel      : ',nknous,nelous
+        write(6,*) 'nlv          : ',nlv
+        write(6,*) 'nvar         : ',nvar
+	write(6,*)
+
+	if( nkn .ne. nknous .or. nel .ne. nelous ) goto 94
 
         call dimnos(nin,nkndim,neldim,nlvdim)
 
 	call rsnos(nin,ilhkv,hlv,hev,ierr)
         if(ierr.ne.0) goto 100
 
+        call init_sigma_info(nlv,hlv)
+        call makehev(hev)
+
 	write(6,*) 'Available levels: ',nlv
 	write(6,*) (hlv(l),l=1,nlv)
 
 c---------------------------------------------------------------
-c initializing units and nodes to be extracted
+c get nodes to extract from STDIN
 c---------------------------------------------------------------
-
-	nread=0
-
-	nunit = 60
-	do i=1,nudim
-	  iunit(i) = 0
-	end do
 
         call get_nodes_from_stdin(ndim,nnodes,nodes,nodese)
 
@@ -131,28 +130,13 @@ c---------------------------------------------------------------
         if(ierr.ne.0) goto 100
 
 	nread=nread+1
-	write(6,*) 'time : ',it,ivar
+	write(6,*) 'time : ',it,nread,ivar
 
-	if( ivar .gt. nudim ) then              !ivar too high
-          write(6,*) 'nudim is too low ',ivar,nudim
-          stop 'error stop: nudim'
-        else if( iunit(ivar) .eq. 0 ) then      !not yet initialized
-	  nunit = nunit + 1
-	  file = ' '
-	  n = ialfa(float(ivar),file,-1,-1)
-	  file(n+1:) = '.dat'
-	  write(6,*) 'opening file ',file
-	  open(nunit,file=file,status='unknown',form='formatted')
-	  iunit(ivar) = nunit
-	else                                    !already initialized
-	  nunit = iunit(ivar)
-	end if
+	call get_unit(ivar,iu)		!gets unit number for variable
 
 c	---------------------------------------------------------
 c	write to file
 c	---------------------------------------------------------
-
-        write(nunit,'(i10,30e12.4)') it,(cv3(1,nodes(i)),i=1,nnodes)
 
 	do i=1,nnodes
 	  k = nodes(i)
@@ -163,6 +147,8 @@ c	---------------------------------------------------------
 	  write(3,*) it,i,ke,k,lmax,ivar
 	  write(3,'((6f10.2))') (cv3(l,k),l=1,lmax)
 	end do
+
+        write(iu,'(i10,30e12.4)') it,(cv3(1,nodes(i)),i=1,nnodes)
 
 	goto 300
 
@@ -181,6 +167,63 @@ c---------------------------------------------------------------
 c---------------------------------------------------------------
 c end of routine
 c---------------------------------------------------------------
+
+	stop
+   94   continue
+        write(6,*) 'incompatible simulation and basin'
+        write(6,*) 'nkn: ',nkn,nknous
+        write(6,*) 'nel: ',nel,nelous
+        stop 'error stop ousextr_nodes: nkn,nel'
+	end
+
+c***************************************************************
+
+	subroutine get_unit(ivar,iu)
+
+c handles unit numbers for files of single variables
+
+	implicit none
+
+	integer ivar		!actual variable number
+	integer iu		!unit number to be used (return)
+
+	integer nudim
+	parameter(nudim=300)
+	integer iunit(nudim)
+	save iunit
+
+	integer n,i
+	character*50 file
+	integer ialfa
+
+	integer nunit
+	save nunit
+	data nunit / 0 /
+
+	if( nunit .eq. 0 ) then
+	  nunit = 60
+	  do i=1,nudim
+	    iunit(i) = 0
+	  end do
+	end if
+
+	if( ivar .gt. nudim ) then              !ivar too high
+          write(6,*) 'nudim is too low ',ivar,nudim
+          write(6,*) 'please increase nudim'
+          stop 'error stop get_unit: nudim'
+	end if
+
+        if( iunit(ivar) .eq. 0 ) then      !not yet initialized
+	  nunit = nunit + 1
+	  file = ' '
+	  n = ialfa(float(ivar),file,-1,-1)
+	  file(n+1:) = '.dat'
+	  write(6,*) 'opening file ',file
+	  open(nunit,file=file,status='unknown',form='formatted')
+	  iunit(ivar) = nunit
+	end if
+
+	iu = iunit(ivar)
 
 	end
 

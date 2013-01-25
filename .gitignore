@@ -93,6 +93,8 @@ fem3d/nosextr_fluxes
 fem3d/bashsigma
 fem3d/ous2nc
 fem3d/ous2nc_reg
+fem3d/nos2nc
+fem3d/nos2nc_reg
 fem3d/lgrinf
 fem3d/baswork
 fem3d/ouswrite

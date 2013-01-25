@@ -564,7 +564,7 @@ c interpolation 3d of fem values to regular grid using fm matrix
         implicit none
 
 	integer nlvdim			!vertical dimension of fem array
-        integer ilhv(1)			!vertical discretization
+        integer ilhv(1)			!vertical discretization (element!!)
         real femval(nlvdim,1)		!values of fem array
         integer nlv,nx,ny		!dimension of regular matrix
         real fm(4,nx,ny)		!interpolation matrix

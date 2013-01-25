@@ -8,6 +8,7 @@ c
 c 03.06.2011	ggu	copied from ousutil.f
 c 07.11.2011	ggu	layer thickness for hybrid coordinates
 c 14.11.2011	ggu	sigma layer routines copied to sigmautil.f
+c 25.01.2013	ggu	new routine level_k2e()
 c
 c******************************************************************
 
@@ -93,6 +94,8 @@ c gets records to extract from stdin
 
           if( ir .le. 0 ) return
 
+          write(6,'(i10)') ir
+
           nnodes = nnodes + 1
 
           if( nnodes .gt. ndim ) then
@@ -135,6 +138,37 @@ c computes ilhkv from ilhv
 	    k = nen3v(ii,ie)
 	    if( ilhkv(k) .lt. lmax ) ilhkv(k) = lmax
 	  end do
+	end do
+
+	end
+
+c******************************************************************
+
+	subroutine level_k2e(nkn,nel,nen3v,ilhkv,ilhv)
+
+c computes ilhv from ilhkv - is not exact (need hev to do better)
+
+	implicit none
+
+	integer nkn,nel
+	integer nen3v(3,1)
+	integer ilhkv(1)
+	integer ilhv(1)
+
+	integer k,ie,ii,lmax,lmin
+
+	lmax = 0
+	do k=1,nkn
+	  lmax = max(lmax,ilhkv(k))
+	end do
+
+	do ie=1,nel
+	  lmin = lmax
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    lmin = min(lmin,ilhkv(k))
+	  end do
+	  ilhv(ie) = lmin
 	end do
 
 	end

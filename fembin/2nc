@@ -1,0 +1,88 @@
+#!/bin/sh
+#
+#-----------------------------------------------------------------
+
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
+bindir=$FEMDIR/fem3d
+
+#-----------------------------------------------------------------
+
+Usage()
+{
+  echo "2nc [-h|-help] {-ous|-nos} [-options]"
+  echo "   Transforms ous or nos file into netcdf file"
+  echo "   One of -ous or -nos must be given"
+}
+
+FullUsage()
+{
+  Usage
+  echo "   Options:"
+  echo "    -ous      convert OUS file to netcdf"
+  echo "    -nos      convert NOS file to netcdf"
+}
+
+ErrorOption()
+{
+  echo "No such option: $1"
+}
+
+#-------------------------------------------------- options
+
+what=""
+type="fem"
+date=""
+area=""
+dxy=""
+inter="NO"
+
+while [ -n "$1" ]
+do
+   case $1 in
+        -inter)         inter="YES";;
+        -dxy)           dxy=$2; shift;;
+        -area)          area=$2; shift;;
+        -date)          date=$2; shift;;
+        -ous)           what=ous;;
+        -nos)           what=nos;;
+        -h|-help)       FullUsage; exit 0;;
+        -*)             ErrorOption $1; exit 1;;
+        *)              break;;
+   esac
+   shift
+done
+
+if [ -z "$what" ]; then
+  Usage
+  exit 0
+fi
+
+if [ $# -ne 0 ]; then
+  echo "Extra information on command line: $*"
+  Usage
+  exit 0
+fi
+
+#------------------------------------------------------------
+
+[ -f input.tmp ] && rm -f input.tmp
+touch input.tmp
+
+echo ""			>> input.tmp
+echo ""			>> input.tmp
+echo "$date"		>> input.tmp
+echo "$dxy"		>> input.tmp
+echo "$area"		>> input.tmp
+
+#------------------------------------------------------------
+
+prog=$bindir/${what}2nc
+
+echo "running $prog"
+
+if [ $inter = "NO" ]; then
+  $prog < input.tmp
+else
+  $prog
+fi
+

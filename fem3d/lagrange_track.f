@@ -9,6 +9,7 @@ c 05.02.2009    ggu     copied from other files
 c 16.12.2011    ggu     write all messages to lunit
 c 23.01.2012    ggu     ltbdy is locally passed (not common)
 c 02.03.2012    ggu&fra introduced epsggu to avoid nan in time
+c 25.01.2013    ggu     error check to avoid segfault (INTERNAL ERROR)
 c
 c**********************************************************************
 
@@ -17,7 +18,7 @@ c**********************************************************************
 c in questa subroutine si calcola il percorso del body partendo
 c da un punto all'interno dell'elemento ie 
 c fino al successivo punto interno allo stesso elemento
-c se entro il time step il body esce dall'elemento 
+c se entro il time step il body esce dall''elemento 
 c si passa alla successiva subroutine con time
 
         implicit none
@@ -55,7 +56,7 @@ c si passa alla successiva subroutine con time
 	integer newie ! nuovo elemento che contiene il body
 
         integer idum ! seme f(x) random
-                        
+
 c variabili di servizio
 	
 	integer pb(3),ip,i,exi(2),ipb(2),exio(2)
@@ -87,7 +88,6 @@ c inizializzazione parametri
 	l_int = 0
 	l_out = 0
 
-110 	continue
 	nnm=nnm+1
         fsum=0
 
@@ -150,6 +150,7 @@ c pb(mi dice il numero interno del lato)
 
          ip=1
          do i=1,3
+	  pb(i) = 0
           if(l_int.ne.i)then
 	   pb(i)=ip
            ipb(ip)=i
@@ -186,9 +187,9 @@ c retta di entrata
         call interc(fay,fax,db,icy,icx,ib,xit,yit)
 
 
-c calcola la distanza (bdx) del punto (xit,yit) dall'estremo piu vicino
+c calcola la distanza (bdx) del punto (xit,yit) dall''estremo piu vicino
 c sulla retta di entrata in termini di frazione della lunghezza totale e
-c dice qual'e' il numero interno dell'estremo piu vicino (pbdx) e 
+c dice qual''e'' il numero interno dell''estremo piu vicino (pbdx) e 
 c quello piu lontano (gbdx)
 
         call distp(xit,yit,exi,bdx,pbdx,gbdx,ie)
@@ -202,6 +203,14 @@ c individuo il lato da cui esce il body (l_out) mediante confronto
 c tra la posizione xit,yit  e le distanze sulla retta di entrata
 c individuate dalle frazioni (ffpd) 
         
+	if(pbdx.lt.1.or.pbdx.gt.3.or.pb(pbdx).le.0) then
+         write(lunit,*) 'STOP!! ERRORE INTERNO (1)'
+	 write(lunit,*) 'CASO [A] TRACK_ORIG'	 
+	 time=0
+         ie = -ie
+	 return
+	end if
+
         if(bdx.le.ffpb(pb(pbdx)))then
          l_out=pbdx
         elseif(bdx.gt.ffpb(pb(pbdx)))then
@@ -261,7 +270,7 @@ c - individuare nuove coordinate del body
 
         
         if(v_out.ge.0)then
-         write(lunit,*) 'STOP!! ERRORE VELOCITA DI USCITA POSITIVO'
+         write(lunit,*) 'STOP!! ERRORE VELOCITA DI USCITA POSITIVA'
          write(lunit,*) 'CASO [B] TRACK_ORIG'
 	 !stop
 	 time=0
@@ -286,6 +295,7 @@ c fpb(1,2), pb(mi dice il numero interno del lato)
         
         ip=1
         do i=1,3
+	 pb(i) = 0
          if(l_out.ne.i)then
           pb(i)=ip
           ipb(ip)=i
@@ -319,9 +329,9 @@ c retta di uscita
 
         call interc(fay,fax,db,ocy,ocx,ob,itrx,itry)
         
-c calcola la distanza (bdx) del punto (itrx,itry) dall'estremo piu vicino
+c calcola la distanza (bdx) del punto (itrx,itry) dall''estremo piu vicino
 c sulla retta di uscita in termini di frazione della lunghezza totale e
-c dice qual'e' il numero interno dell'estremo piu vicino (pbdx) e
+c dice qual''e'' il numero interno dell''estremo piu vicino (pbdx) e
 c quello piu lontano (gbdx)
         
         call distp(itrx,itry,exio,bdx,pbdx,gbdx,ie)
@@ -335,6 +345,14 @@ c quello piu lontano (gbdx)
 c individuo il lato da cui entra il body (l_int) mediante confronto
 c tra la posizione itrx, itry  e le distanze sulla retta di uscita
 c individuate dalle frazioni (ffpd)
+
+	if(pbdx.lt.1.or.pbdx.gt.3.or.pb(pbdx).le.0) then
+         write(lunit,*) 'STOP!! ERRORE INTERNO (2)'
+	 write(lunit,*) 'CASO [B] TRACK_ORIG'	 
+	 time=0
+         ie = -ie
+	 return
+	end if
 
         if(bdx.le.ffpb(pb(pbdx)))then
          l_int=pbdx
@@ -364,7 +382,7 @@ c determinazione velocità di entrata v_ent del body v_ent
         endif
 c____________________________________________________________________________
 c CASO [C]:tutti i flussi sono entranti >0 O NULLI =0
-c Errore il campo di moto è convergente, problemi con l'eliminazione delle componenti
+c Errore il campo di moto è convergente, problemi con l''eliminazione delle componenti
 c DIVERGENTI FERMARE IL CILO
 
        elseif((ps.eq.3).or.(nl.eq.3))then
@@ -409,7 +427,7 @@ c        ie = -ie
 c_________________________________________________________________________
 
 
-c calcolo distanza massima percorribile all'interno di elemento
+c calcolo distanza massima percorribile all''interno di elemento
        
        dxx=itrx-xbdy
        dyy=itry-ybdy
@@ -425,9 +443,9 @@ c=====================================================================
 
 c calcolo della distanza percorsa in 1 tstep (nwdist)
 c se il body arriva esattamente sul lato a ttime=0 (1 iflogico)?
-c se si esce dall'elemento (2 iflogico) allora ho coordinate del body sul lato di uscita
+c se si esce dall''elemento (2 iflogico) allora ho coordinate del body sul lato di uscita
 c e in piu un deltat > 0 da utilizzare durnate questo stesso tstep.
-c se si rimane nell'elemento (3 iflogico) allora calcolo le nuove coordinate 
+c se si rimane nell''elemento (3 iflogico) allora calcolo le nuove coordinate 
 c (pnt_inside) e passo al tstep successivo
 
 c Se il body finisce a 0.1 m dalla linea decido si farlo passare al
@@ -488,8 +506,8 @@ c**********************************************************************
 	subroutine track_line(time,bdy,ie,xbdy,ybdy,ltbdy)
 
 c in questa subroutine si calcola il percorso del body partendo
-c da un punto sul lato dell'elemento ie
-c questa subroutine e' chiamata ogni qualvolta un body
+c da un punto sul lato dell''elemento ie
+c questa subroutine e'' chiamata ogni qualvolta un body
 c nello stesso timestep arriva in un nuovo elemento
 
         implicit none
@@ -551,13 +569,11 @@ c inizializzazione parametri
         data idum/947437/
         save idum
         
-110 	continue
-
         fsum=0
 	nl = 0
 	ng = 0
 	ps = 0
-        
+
 c==========================================================
 c CALCOLO TRAIETTORIE
 c==========================================================
@@ -595,6 +611,7 @@ c pb(mi dice il numero interno del lato)
         
         ip=1
         do i=1,3
+ 	 pb(i)=0
          if(l_int.ne.i)then
  	  pb(i)=ip
 	  ipb(ip)=i
@@ -620,9 +637,9 @@ c del lato pb(1) e del lato pb(2) per la possibile uscita del body.
 	 end do
 
          
-c calcola la distanza del body (bdx) dall'estremo piu vicino
+c calcola la distanza del body (bdx) dall''estremo piu vicino
 c in termini di frazione sulla retta totale  e
-c dice qual'e' il numero interno dell'estremo piu vicino (pbdx)
+c dice qual''e'' il numero interno dell''estremo piu vicino (pbdx)
 c e quello piu lontano (gbdx)
 
         call distp(xbdy,ybdy,exi,bdx,pbdx,gbdx,ie)
@@ -635,6 +652,14 @@ c e quello piu lontano (gbdx)
         
 c individuo il lato da cui esce il body mediante confronto
 c tra posizione del body rispetto alle frazioni  
+
+	if(pbdx.lt.1.or.pbdx.gt.3.or.pb(pbdx).le.0) then
+         write(lunit,*) 'STOP!! ERRORE INTERNO (3)'
+	 write(lunit,*) 'CASO [A] TRACK_LINE'	 
+	 time=0
+         ie = -ie
+	 return
+	end if
 
 	 if(bdx.le.ffpb(pb(pbdx)))then	  
 	  l_out=pbdx
@@ -675,7 +700,7 @@ c retta di uscita
 
 c_____________________________________________________________________________
 c CASO [B] flussi ai lati opposti al l_int uno >0 e altro <0
-c in questo caso il lato di uscita e' sicuramente quello dove ho la velocita'
+c in questo caso il lato di uscita e'' sicuramente quello dove ho la velocita''
 c negativa, non serve quindi il calcolo delle rette di partenza e di arrivo
 c gli estremi della retta del lato di uscita sono i due estremi non opposti
 c alla retta che ha valore di vel negativo
@@ -704,11 +729,12 @@ c equazione della retta del lato di uscita
         call retta(exio,ocy,ocx,ob,ie)
         
         
-c individuo i 2 flussi di entrata del body nell'elemento per il calcolo
+c individuo i 2 flussi di entrata del body nell''elemento per il calcolo
 c delle frazioni di competenza sul lato di uscita.
  
          ip=1
          do i=1,3
+ 	  pb(i)=0
           if(l_out.ne.i)then
            pb(i)=ip
            ipb(ip)=i
@@ -743,7 +769,7 @@ c retta di uscita
 
          call interc(fay,fax,db,ocy,ocx,ob,itrx,itry)
 
-c calcolo velocita' in uscita v_out per il calcolo del modulo della
+c calcolo velocita'' in uscita v_out per il calcolo del modulo della
 c velocita di percorso v_ent pari alla media v_int, v_out
 
          v_out=vel_ie(l_out,ie)
@@ -767,7 +793,7 @@ c velocita di percorso v_ent pari alla media v_int, v_out
         elseif((fpb(1).ge.0).and.(fpb(2).ge.0))then
 c________________________________________________________________________________
 c CASO [C] tutti i flussi sono entranti o nulli. Errore il campo di moto è
-c convergente, problemi con l'eliminazione delle componenti DIVERGENTI
+c convergente, problemi con l''eliminazione delle componenti DIVERGENTI
 c FERMARE IL CILO
 
 c        write(lunit,*) 'STOP!! FLUSSI TUTTI POSITIVI IN ',ie
@@ -810,7 +836,7 @@ c        ie = -ie
         endif
 c_______________________________________________________________________
 
-c calcolo distanza massima percorribile all'interno di elemento
+c calcolo distanza massima percorribile all''interno di elemento
 
         dxx=itrx-xbdy
         dyy=itry-ybdy
@@ -826,12 +852,12 @@ c=====================================================================
 c CALCOLO NUOVE COORDINATE DEL BODY (nxbdy,nybdy)
 c=====================================================================
 
-c il body entra sempre da un lato con una velocita' positiva
+c il body entra sempre da un lato con una velocita'' positiva
 c calcolo della distanza percorsa in 1 tstep (nwdist)
 c se il body arriva esattamente sul lato a ttime=0 (1 iflogico)?
-c se si esce dall'elemento (2 iflogico) allora ho coordinate del body sul lato di uscita
+c se si esce dall''elemento (2 iflogico) allora ho coordinate del body sul lato di uscita
 c e in piu un deltat > 0 da utilizzare durnate questo stesso tstep.
-c se si rimane nell'elemento (3 iflogico) allora calcolo le nuove coordinate 
+c se si rimane nell''elemento (3 iflogico) allora calcolo le nuove coordinate 
 c (pnt_inside) e passo al tstep successivo
 
 c Se il body finisce a 0.1 m dalla linea decido si farlo passare al

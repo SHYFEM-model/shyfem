@@ -26,9 +26,6 @@ c analyzes CON file for residence time
 	include 'basin.h'
 
 c--------------------------------------------------
-        character*80 descrr
-        common /descrr/descrr
-c--------------------------------------------------
 
 	character*80 title
 	real cv3(nlvdim,nkndim)		!conz read

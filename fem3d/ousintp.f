@@ -63,6 +63,7 @@ c we would not even need to read basin
 
 	real uvel(nkndim)
 	real vvel(nkndim)
+	real hl(nlvdim)
 
 	integer ndim
 	parameter(ndim=100)
@@ -237,7 +238,7 @@ c	---------------------------------------------
 
         call transp2vel(nel,nkn,nlv,nlvdim,hev,zenv,nen3v
      +				,ilhv,hlv,utlnv,vtlnv
-     +                          ,uprv,vprv,weight)
+     +                          ,uprv,vprv,weight,hl)
 
 	do k=1,nkn
 	  uvel(k) = uprv(1,k)

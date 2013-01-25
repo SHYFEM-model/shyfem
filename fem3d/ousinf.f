@@ -10,7 +10,8 @@ c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
 c 16.10.2007	ggu	new debug routine
 c 27.10.2009    ggu     include evmain.h, compute volume
 c 23.03.2011    ggu     compute real u/v-min/max of first level
-c 16.12.2011    ggu     bug fix: call to init_sigma_info and makehev (common hev)
+c 16.12.2011    ggu     bug fix: call to init_sigma_info, makehev (common hev)
+c 25.01.2013    ggu     utility routines to ousutil.f
 c
 c***************************************************************
 
@@ -56,6 +57,11 @@ c we would not even need to read basin
 
 	real znv(nkndim)
 	real zenv(3,neldim)
+
+        real ut2v(neldim)
+        real vt2v(neldim)
+        real u2v(neldim)
+        real v2v(neldim)
 
         integer nvers,nin,nlv
         integer itanf,itend,idt,idtous
@@ -133,8 +139,9 @@ c-----------------------------------------------------------------
 	nread=nread+1
 
 	call mima(znv,nknous,zmin,zmax)
-        call comp_vel(1,nel,hev,zenv,nlvdim,utlnv,vtlnv
-     +			,umin,vmin,umax,vmax)
+        call comp_barotropic(nel,nlvdim,ilhv,utlnv,vtlnv,ut2v,vt2v)
+        call comp_vel2d(nel,hev,zenv,ut2v,vt2v,u2v,v2v
+     +                          ,umin,vmin,umax,vmax)
 	call compute_volume(nel,zenv,hev,volume)
 
 c        call debug_write_node(it,nread,nkndim,neldim,nlvdim,nkn,nel,nlv
@@ -166,131 +173,6 @@ c-----------------------------------------------------------------
 
 	stop
 	end
-
-c******************************************************************
-
-	subroutine compute_volume(nel,zenv,hev,volume)
-
-	implicit none
-
-	include 'param.h'
-	include 'evmain.h'
-
-	integer nel
-	real zenv(3,neldim)
-	real hev(neldim)
-	real volume
-
-	integer ie,ii
-	real zav,area
-	double precision vol,voltot,areatot
-
-	voltot = 0.
-	areatot = 0.
-
-	do ie=1,nel
-	  zav = 0.
-	  do ii=1,3
-	    zav = zav + zenv(ii,ie)
-	  end do
-	  area = 12. * ev(10,ie)
-	  vol = area * (hev(ie) + zav/3.)
-	  voltot = voltot + vol
-	  !areatot = areatot + area
-	end do
-
-	volume = voltot
-
-	end
-
-c******************************************************************
-
-        subroutine comp_vel(level,nel,hev,zenv,nlvdim,utlnv,vtlnv
-     +			,umin,vmin,umax,vmax)
-
-        implicit none
-
-        integer level
-        integer nel
-        real hev(1)
-        real zenv(3,1)
-        integer nlvdim
-        real utlnv(nlvdim,1)
-        real vtlnv(nlvdim,1)
-        real umin,vmin
-        real umax,vmax
-
-        integer ie,ii
-        real zmed,hmed,u,v
-
-	umin =  1.e+30
-	vmin =  1.e+30
-        umax = -1.e+30
-        vmax = -1.e+30
-
-        do ie=1,nel
-          zmed = 0.
-          do ii=1,3
-            zmed = zmed + zenv(ii,ie)
-          end do
-          zmed = zmed / 3.
-          hmed = hev(ie) + zmed
-          if( hmed .le. 0. ) stop 'error stop hmed...'
-
-          u = utlnv(level,ie) / hmed
-          v = vtlnv(level,ie) / hmed
-
-          umin = min(umin,u)
-          vmin = min(vmin,v)
-          umax = max(umax,u)
-          vmax = max(vmax,v)
-        end do
-
-        end
-
-c******************************************************************
-
-        subroutine debug_write_node(it,nrec
-     +		,nkndim,neldim,nlvdim,nkn,nel,nlv
-     +          ,nen3v,zenv,znv,utlnv,vtlnv)
-
-c debug write
-
-        implicit none
-
-        integer it,nrec
-        integer nkndim,neldim,nlvdim,nkn,nel,nlv
-        integer nen3v(3,neldim)
-        real znv(nkndim)
-        real zenv(3,neldim)
-        real utlnv(nlvdim,neldim)
-        real vtlnv(nlvdim,neldim)
-
-        integer ie,ii,k,l,ks
-        logical bk
-
-        ks = 6068
-
-        write(66,*) 'time: ',it,nrec
-        write(66,*) 'kkk: ',znv(ks)
-
-        do ie=1,nel
-          bk = .false.
-          do ii=1,3
-            k = nen3v(ii,ie)
-            if( k .eq. ks ) then
-              write(66,*) 'ii: ',ii,ie,zenv(ii,ie)
-              bk = .true.
-            end if
-          end do
-          if( bk ) then
-          do l=1,nlv
-            write(66,*) 'ie: ',ie,l,utlnv(l,ie),vtlnv(l,ie)
-          end do
-          end if
-        end do
-
-        end
 
 c******************************************************************
 
