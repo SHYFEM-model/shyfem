@@ -14,9 +14,9 @@ c 16.12.2011    ggu     bug fix: call to init_sigma_info and makehev (common hev
 c
 c***************************************************************
 
-	program ouswork
+	program ouswork1
 
-c reads ous file and elaborates it for altimeter trace (version 0)
+c reads ous file and elaborates it for altimeter trace (version 1)
 
 	implicit none
 
@@ -52,6 +52,8 @@ c reads ous file and elaborates it for altimeter trace (version 0)
 	real hev(neldim)
 	common /hev/hev
 
+	real znv1(nkndim)
+	real znv2(nkndim)
 	real znv(nkndim)
 	real zenv(3,neldim)
 
@@ -59,13 +61,18 @@ c reads ous file and elaborates it for altimeter trace (version 0)
         integer itanf,itend,idt,idtous
 	integer it_record
 	integer it,ie,i
+	integer it1,it2,itdata,id
         integer ierr,nread,ndry
         integer nknous,nelous,nlvous
+	integer itmin,itmax
+	logical btwin,btsim
         real href,hzoff,hlvmin
 	real volume
 	real zmin,zmax
 	real umin,umax
 	real vmin,vmax
+	real x,y,z
+	character*40 name
 
 c	integer rdous,rfous
 	integer iapini,ideffi
@@ -74,7 +81,10 @@ c-----------------------------------------------------------------
 c initialize basin and simulation
 c-----------------------------------------------------------------
 
-	nread=0
+	itmin = 0
+	itmax = 86400		!set to 0 for no time window
+	btwin = itmin .lt. itmax
+	btsim = .true.		!error if time record not found in sim
 
 	if(iapini(3,nkndim,neldim,0).eq.0) then
 		stop 'error stop : iapini'
@@ -114,7 +124,30 @@ c-----------------------------------------------------------------
         call init_sigma_info(nlv,hlv)
 	call makehev(hev)
 
-	call init_date(it_record)
+c-----------------------------------------------------------------
+c initialize date and and simulation
+c-----------------------------------------------------------------
+
+	name='data_in'
+	open(11,file=name,status='old',form='formatted')
+	name='data_out'
+	open(12,file=name,status='unknown',form='formatted')
+
+	call init_date		!reads file date0 and initializes date
+
+        call rdous(nin,it1,nlvdim,ilhv,znv1,zenv,utlnv,vtlnv,ierr)
+	if( ierr .ne. 0 ) goto 100
+        call rdous(nin,it2,nlvdim,ilhv,znv2,zenv,utlnv,vtlnv,ierr)
+	if( ierr .ne. 0 ) goto 100
+
+	itdata = it1 - 1
+	do while( itdata .lt. it1 )	!read until time in sim window
+	  call read_data(id,itdata,x,y,ierr)
+	  if( ierr .ne. 0 ) goto 100
+	  if( btsim .and. itdata .lt. it1 ) goto 99  !no time record for data
+	  if( btwin .and. itdata .lt. itmin ) goto 98		
+	  if( btwin .and. itdata .gt. itmax ) goto 98	
+	end do
 
 c-----------------------------------------------------------------
 c loop on data of simulation
@@ -122,181 +155,114 @@ c-----------------------------------------------------------------
 
   300   continue
 
-        call rdous(nin,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
-
-        if(ierr.gt.0) then
-		write(6,*) 'error in reading file : ',ierr
-		goto 100
-        else if(ierr.lt.0) then
-		goto 100
-	end if
-
-	nread=nread+1
-
-	call mima(znv,nknous,zmin,zmax)
-        call comp_vel(1,nel,hev,zenv,nlvdim,utlnv,vtlnv
-     +			,umin,vmin,umax,vmax)
-	call compute_volume(nel,zenv,hev,volume)
-
-c        call debug_write_node(it,nread,nkndim,neldim,nlvdim,nkn,nel,nlv
-c     +          ,nen3v,zenv,znv,utlnv,vtlnv)
-
-	!write(6,*) 
-	!write(6,*) 'time : ',it
-	!call get_date(it)
-	!write(6,*) 
-	!write(6,*) 'zmin/zmax : ',zmin,zmax
-	!write(6,*) 'umin/umax : ',umin,umax
-	!write(6,*) 'vmin/vmax : ',vmin,vmax
-	!write(6,*) 'volume    : ',volume
-
-	if( it .eq. it_record ) then
-	  call elab_z(it,nkn,znv)
+	if( itdata .gt. it2 ) then
+	  call copy_znv(nkn,it1,it2,znv1,znv2)
+          call rdous(nin,it2,nlvdim,ilhv,znv2,zenv,utlnv,vtlnv,ierr)
+	  if( btsim .and. ierr .ne. 0 ) goto 99	!no time records for data
+	  if( ierr .ne. 0 ) goto 100		!no time records for data
+	else
+	  call intp_znv(nkn,it1,it2,znv1,znv2,itdata,znv)
+	  call intp_data(nkn,znv,x,y,z)
+	  call write_data(id,itdata,x,y,z)
+	  call read_data(id,itdata,x,y,ierr)
+	  if( ierr .ne. 0 ) goto 100		!no more data to handle
+	  if( btwin .and. itdata .lt. 0 ) goto 98		
+	  if( btwin .and. itdata .gt. 86400 ) goto 98	
 	end if
 
 	goto 300
-
-  100	continue
 
 c-----------------------------------------------------------------
 c end of loop
 c-----------------------------------------------------------------
 
-	write(6,*)
-	write(6,*) nread,' records read'
-	write(6,*)
+  100	continue
 
 c-----------------------------------------------------------------
 c end of routine
 c-----------------------------------------------------------------
 
 	stop
+   98	continue
+	write(6,*) 'it2,it2,itdata: ',it1,it2,itdata
+	stop 'error stop: out of desired time window'
+   99	continue
+	write(6,*) 'it2,it2,itdata: ',it1,it2,itdata
+	stop 'error stop: out of simulation time window'
 	end
 
 c******************************************************************
+c******************************************************************
+c******************************************************************
 
-	subroutine compute_volume(nel,zenv,hev,volume)
+	subroutine intp_data(nkn,znv,x,y,z)
 
 	implicit none
 
-	include 'param.h'
-	include 'evmain.h'
+	integer nkn
+	real znv(nkn)
+	real x,y,z
 
-	integer nel
-	real zenv(3,neldim)
-	real hev(neldim)
-	real volume
+	logical binside
+	real zeta
+	real z3(3)
 
-	integer ie,ii
-	real zav,area
-	double precision vol,voltot,areatot
+	integer ie
+	save ie
+	data ie /0/
 
-	voltot = 0.
-	areatot = 0.
+	call find_elem_from_old(ie,x,y,ie)
+	call find_adriatico(x,y,binside)
 
-	do ie=1,nel
-	  zav = 0.
-	  do ii=1,3
-	    zav = zav + zenv(ii,ie)
-	  end do
-	  area = 12. * ev(10,ie)
-	  vol = area * (hev(ie) + zav/3.)
-	  voltot = voltot + vol
-	  !areatot = areatot + area
-	end do
+	zeta = -999.
+	if( ie .gt. 0 .and. binside ) then
+	  call get_scal_elem(ie,znv,z3)
+	  call femintp(ie,z3,x,y,zeta)
+	end if
 
-	volume = voltot
+	z = zeta
 
 	end
 
 c******************************************************************
 
-        subroutine comp_vel(level,nel,hev,zenv,nlvdim,utlnv,vtlnv
-     +			,umin,vmin,umax,vmax)
+	subroutine copy_znv(nkn,it1,it2,znv1,znv2)
 
-        implicit none
+	implicit none
 
-        integer level
-        integer nel
-        real hev(1)
-        real zenv(3,1)
-        integer nlvdim
-        real utlnv(nlvdim,1)
-        real vtlnv(nlvdim,1)
-        real umin,vmin
-        real umax,vmax
+	integer nkn,it1,it2
+	real znv1(nkn),znv2(nkn)
 
-        integer ie,ii
-        real zmed,hmed,u,v
+	integer k
 
-	umin =  1.e+30
-	vmin =  1.e+30
-        umax = -1.e+30
-        vmax = -1.e+30
+	it1 = it2
+	do k=1,nkn
+	  znv1(k) = znv2(k)
+	end do
 
-        do ie=1,nel
-          zmed = 0.
-          do ii=1,3
-            zmed = zmed + zenv(ii,ie)
-          end do
-          zmed = zmed / 3.
-          hmed = hev(ie) + zmed
-          if( hmed .le. 0. ) stop 'error stop hmed...'
-
-          u = utlnv(level,ie) / hmed
-          v = vtlnv(level,ie) / hmed
-
-          umin = min(umin,u)
-          vmin = min(vmin,v)
-          umax = max(umax,u)
-          vmax = max(vmax,v)
-        end do
-
-        end
+	end
 
 c******************************************************************
 
-        subroutine debug_write_node(it,nrec
-     +		,nkndim,neldim,nlvdim,nkn,nel,nlv
-     +          ,nen3v,zenv,znv,utlnv,vtlnv)
+	subroutine intp_znv(nkn,it1,it2,znv1,znv2,itdata,znv)
 
-c debug write
+	implicit none
 
-        implicit none
+	integer nkn,it1,it2
+	integer itdata
+	real znv1(nkn),znv2(nkn)
+	real znv(nkn)
 
-        integer it,nrec
-        integer nkndim,neldim,nlvdim,nkn,nel,nlv
-        integer nen3v(3,neldim)
-        real znv(nkndim)
-        real zenv(3,neldim)
-        real utlnv(nlvdim,neldim)
-        real vtlnv(nlvdim,neldim)
+	integer k
+	real r
 
-        integer ie,ii,k,l,ks
-        logical bk
+	r = float(itdata-it1)/float(it2-it1)
 
-        ks = 6068
+	do k=1,nkn
+	  znv(k) = znv1(k) + r * ( znv2(k) - znv1(k) )
+	end do
 
-        write(66,*) 'time: ',it,nrec
-        write(66,*) 'kkk: ',znv(ks)
-
-        do ie=1,nel
-          bk = .false.
-          do ii=1,3
-            k = nen3v(ii,ie)
-            if( k .eq. ks ) then
-              write(66,*) 'ii: ',ii,ie,zenv(ii,ie)
-              bk = .true.
-            end if
-          end do
-          if( bk ) then
-          do l=1,nlv
-            write(66,*) 'ie: ',ie,l,utlnv(l,ie),vtlnv(l,ie)
-          end do
-          end if
-        end do
-
-        end
+	end
 
 c******************************************************************
 c******************************************************************
@@ -319,27 +285,88 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine init_date(it_record)
+	subroutine init_date
 
 	implicit none
 
-	integer it_record
 	character*60 name
 	integer date,time
 
 	name='date0'
 
 	open(1,file=name,status='old',form='formatted')
-	read(1,*) date,it_record
+	read(1,*) date
 	close(1)
 
-	write(6,*) 'init_date: ',date,it_record
+	write(6,*) 'init_date: ',date
 
 	time = 0
 	call dtsini(date,time)
 
 	end
 
+c******************************************************************
+
+	subroutine read_data(id,it,x,y,ierr)
+
+c reads data file, converts date and time and returns itdate,x,y
+
+	implicit none
+
+	integer id,it
+	real x,y
+	integer ierr
+
+	integer date,time
+	integer year,month,day
+	integer hour,min,sec
+	real z
+
+    9	continue
+	read(11,*,end=1) id,date,time,x,y
+
+	if( date .eq. -999 .or. time .eq. -999 ) then
+	  z = -999.
+	  write(12,'(3i10,3f12.5)') id,date,time,x,y,z
+	  goto 9
+	end if
+
+	call unpackdate(date,year,month,day)
+	call unpacktime(time,hour,min,sec)
+	call dts2it(it,year,month,day,hour,min,sec)
+	ierr = 0
+
+	return
+    1	continue
+	ierr = -1
+
+	end
+
+c******************************************************************
+
+	subroutine write_data(id,it,x,y,z)
+
+c reads data file, converts date and time and returns itdate,x,y
+
+	implicit none
+
+	integer id,it
+	real x,y,z
+
+	integer date,time
+	integer year,month,day
+	integer hour,min,sec
+
+	call dts2dt(it,year,month,day,hour,min,sec)
+	call packdate(date,year,month,day)
+	call packtime(time,hour,min,sec)
+
+	write(12,'(3i10,3f12.5)') id,date,time,x,y,z
+
+	end
+
+c******************************************************************
+c******************************************************************
 c******************************************************************
 
 	subroutine elab_z(it,nkn,znv)

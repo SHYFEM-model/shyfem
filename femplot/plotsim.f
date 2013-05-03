@@ -23,7 +23,7 @@ c 17.12.2010	ggu	substituted hv with hkv
 c 31.03.2011	ggu	new arrays fvlv, arfvlv for scalar plotting
 c 31.08.2011	ggu	new copyright, eos plotting
 c 14.11.2011	ggu	new array hl for depth structure
-c 19.12.2011	ggu	bug fix: sflag was not set
+c 27.02.2013	ggu	deleted amat, better color handling
 c
 c*************************************************************
 
@@ -38,9 +38,6 @@ c parameters
 	include 'param.h'
 	include 'basin.h'
 	include 'evmain.h'
-
-	integer matdim
-	parameter (matdim=nkndim*ngrdim)
 
 c description
 	character*80 descrr
@@ -117,8 +114,6 @@ c auxiliary
 	common /v3v/v3v
 	real vev(neldim)
 	common /vev/vev
-	real amat(matdim)
-	common /amat/amat
 	real uvnv(neldim), vvnv(neldim)
 	common /uvnv/uvnv, /vvnv/vvnv
 	real uv(nkndim), vv(nkndim)
@@ -137,6 +132,7 @@ c vertical velocity
         real wlnv(0:nlvdim,nkndim)
         common /wlnv/wlnv
 c local
+	character*20 what
 	integer mode
 	integer ie,ii,k,l,i
 	integer icolor,isphe
@@ -177,7 +173,7 @@ c----------------------------------------------
 c read basin
 c----------------------------------------------
 
-	if(iapini(7,nkndim,neldim,matdim).eq.0) then
+	if(iapini(7,nkndim,neldim,0).eq.0) then
 		stop 'error stop : iapini'
 	end if
 
@@ -203,15 +199,12 @@ c----------------------------------------------
 c interactive set up
 c----------------------------------------------
 
-	call colsetup
-	icolor = nint(getpar('icolor'))
-	call set_color_table( icolor )
-	call set_default_color_table( icolor )
-
-
 	call asklev		!ask for 3d level
 
-	call ichoice(mode)
+	call ichoice(mode,what)
+
+	call read_apn_file(what)
+	call initialize_color
 
 c----------------------------------------------
 c open plot
@@ -254,16 +247,26 @@ c----------------------------------------------
 
 c*****************************************************************
 
-	subroutine ichoice(mode)
+	subroutine ichoice(mode,what)
 
 	implicit none
 
 	integer mode
+	character(*) what
+
+	integer ndim
+	parameter (ndim=15)
 
 	integer iwhat,iauto
 	integer ideflt
 	real getpar
 
+	character*10 whats(0:ndim)
+	save whats
+	data whats /' ','bath','vel','trans','zeta','conz'
+     +			,'temp','salt','rms','oxygen','nos'
+     +			,'wind','lgr','wave','pres','elem'/
+	
 	iwhat = nint(getpar('iwhat'))
 	iauto = nint(getpar('iauto'))
 
@@ -277,8 +280,8 @@ c*****************************************************************
 	write(6,*) ' salinity ................  7'
 	write(6,*) ' rms .....................  8'
 	write(6,*) ' oxygen ..................  9'
-	write(6,*) ' generic concentrations .. 10'
-	write(6,*) ' wind array .............. 11'
+	write(6,*) ' generic scalar value .... 10'
+	write(6,*) ' wind field .............. 11'
 	write(6,*) ' lagrangian .............. 12'
 	write(6,*) ' wave .................... 13'
 	write(6,*) ' atmospheric pressure .... 14'
@@ -292,7 +295,29 @@ c*****************************************************************
 	  write(6,*)
         end if
 
+	if( iwhat .lt. 1 .or. iwhat .gt. ndim ) then
+	  write(6,*) 'iwhat = ',iwhat
+	  stop 'error stop ichoice: iwhat'
+	end if
+
 	mode = iwhat
+	what = whats(iwhat)
+
+	end
+
+c*****************************************************************
+
+	subroutine initialize_color
+
+	implicit none
+
+	integer icolor
+	real getpar
+
+	call colsetup
+	icolor = nint(getpar('icolor'))
+	call set_color_table( icolor )
+	call set_default_color_table( icolor )
 
 	end
 

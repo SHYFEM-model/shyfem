@@ -842,12 +842,12 @@ c------------------------------------------------------------------
 	end if
 
 c------------------------------------------------------------------
-c get scale
+c get scale (if not given, typls is computed in bastlscale)
 c------------------------------------------------------------------
 
 	typls  = getpar('typls')		!is available only now...
 	if( valref .le. 0. ) then		!use maximum
-	    if( bnorm ) then
+	    if( bnorm ) then			!normalize vectors
 	      valref = uvmax
 	    else
 	      valref = uvmax / fscale		!use empirical smaller value

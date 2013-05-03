@@ -18,8 +18,15 @@ FullUsage()
 {
   Usage
   echo "   Options:"
-  echo "    -ous      convert OUS file to netcdf"
-  echo "    -nos      convert NOS file to netcdf"
+  echo "    -h|-help           this help screen"
+  echo "    -ous               convert OUS file to netcdf"
+  echo "    -nos               convert NOS file to netcdf"
+  echo "    -inter             run interactively"
+  echo "    -date date[,time]  set date and time for fem time 0"
+  echo "    -dxy dx[,dy]       regular output with grid size dx,dy"
+  echo "    -area x0,y0,x1,y1  sets min/max of domain (for regular output)"
+  echo "    -period ds,de[,nf] specify start/end date (and freq) for output"
+  echo "   Format for date: YYYY[MMDD] and time: hhmmss"
 }
 
 ErrorOption()
@@ -35,6 +42,7 @@ date=""
 area=""
 dxy=""
 inter="NO"
+period=""
 
 while [ -n "$1" ]
 do
@@ -43,6 +51,7 @@ do
         -dxy)           dxy=$2; shift;;
         -area)          area=$2; shift;;
         -date)          date=$2; shift;;
+        -period)        period=$2; shift;;
         -ous)           what=ous;;
         -nos)           what=nos;;
         -h|-help)       FullUsage; exit 0;;
@@ -68,11 +77,19 @@ fi
 [ -f input.tmp ] && rm -f input.tmp
 touch input.tmp
 
-echo ""			>> input.tmp
-echo ""			>> input.tmp
-echo "$date"		>> input.tmp
-echo "$dxy"		>> input.tmp
-echo "$area"		>> input.tmp
+echo ""					>> input.tmp
+echo ""					>> input.tmp
+echo "$date"				>> input.tmp
+echo "$dxy"				>> input.tmp
+if [ -n "$dxy" ]; then
+  echo "$area"				>> input.tmp
+fi
+if [ -n "$period" ]; then
+  echo "1"				>> input.tmp
+  echo "$period"			>> input.tmp
+else
+  echo "0"				>> input.tmp
+fi
 
 #------------------------------------------------------------
 

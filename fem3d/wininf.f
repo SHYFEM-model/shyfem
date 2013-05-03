@@ -57,7 +57,8 @@ c---------------------------------------------------------------
 
 	open(1,file=infile,form='unformatted',status='old')
 
-	write(6,*) '    time      nkn  wxmin  wxmax  wymin  wymax  speed'
+	write(6,*) '      time        nkn'
+     +				,'  wxmin  wxmax  wymin  wymax  speed'
      +                          ,'     pmin     pmax'
 
 	do while(.true.)

@@ -1,7 +1,7 @@
 c
 c $Id: ous2nc.f,v 1.15 2009-11-18 16:50:37 georg Exp $
 c
-c convert OUS to NC files
+c convert OUS to NC file
 c
 c revision log :
 c
@@ -12,6 +12,7 @@ c 27.10.2009    ggu     include evmain.h, compute volume
 c 23.03.2011    ggu     compute real u/v-min/max of first level
 c 21.01.2013    ggu     restructured
 c 25.01.2013    ggu     regular and fem outout in one routine
+c 20.02.2013    ggu     choose period implemented
 c
 c***************************************************************
 
@@ -33,7 +34,7 @@ c-------------------------------------------------
         character*80 title
 
 	integer ilhv(neldim)
-	integer ilhkv(neldim)
+	integer ilhkv(nkndim)
 	real hlv(nlvdim)
         real utlnv(nlvdim,neldim)
         real vtlnv(nlvdim,neldim)
@@ -69,8 +70,9 @@ c-------------------------------------------------
         integer itanf,itend,idt,idtous
 	integer it,ie,i
         integer ierr,nread,ndry
-	integer irec,maxrec
+	integer irec,maxrec,iwrite
         integer nknous,nelous
+	integer iztype
         real href,hzoff,hlvmin
 	real volume
 	real zmin,zmax
@@ -97,6 +99,8 @@ c-------------------------------------------------
         integer z_id,u_id,v_id
 	integer date0,time0
 	integer it0
+	integer iperiod,its,ite,nfreq
+	logical bwrite
 
 	character*80 units,std
 
@@ -125,6 +129,7 @@ c-----------------------------------------------------------------
 
 	nread = 0
 	irec = 0
+	iwrite = 0
 
 	if(iapini(3,nkndim,neldim,0).eq.0) then
 		stop 'error stop : iapini'
@@ -151,6 +156,8 @@ c-----------------------------------------------------------------
         else
           write(6,*) 'NETCDF output: unstructured (fem)'
         end if
+
+	call get_period(iperiod,its,ite,nfreq)
 
 c-----------------------------------------------------------------
 c read header of simulation
@@ -181,6 +188,7 @@ c-----------------------------------------------------------------
 
 	call init_sigma_info(nlv,hlv)
 	call level_e2k(nkn,nel,nen3v,ilhv,ilhkv)
+	call compute_iztype(iztype)
 
         write(6,*) 'Available levels: ',nlv
         write(6,*) (hlv(l),l=1,nlv)
@@ -192,9 +200,9 @@ c prepare netcdf file
 c-----------------------------------------------------------------
 
 	if( breg ) then
-	  call nc_open_reg(ncid,nx,ny,lmax,flag,date0,time0)
+	  call nc_open_reg(ncid,nx,ny,lmax,flag,date0,time0,iztype)
 	else
-          call nc_open(ncid,nkn,nel,nlv,date0,time0)
+          call nc_open(ncid,nkn,nel,nlv,date0,time0,iztype)
 	end if
 	call nc_global(ncid,title)
 
@@ -225,6 +233,12 @@ c-----------------------------------------------------------------
 
 	nread=nread+1
 
+        irec = irec + 1
+        call write_time(it)
+	call check_period(it,iperiod,its,ite,nfreq,bwrite)
+
+	if( .not. bwrite ) goto 300
+
 	call mima(znv,nknous,zmin,zmax)
         call comp_barotropic(nel,nlvdim,ilhv,utlnv,vtlnv,ut2v,vt2v)
 	call comp_vel2d(nel,hev,zenv,ut2v,vt2v,u2v,v2v
@@ -234,43 +248,36 @@ c-----------------------------------------------------------------
 c        call debug_write_node(0,it,nread,nkndim,neldim,nlvdim,nkn,nel,nlv
 c     +          ,nen3v,zenv,znv,utlnv,vtlnv)
 
-	write(6,*) 
-        call write_time(it)
-	write(6,*) 
-	write(6,*) 'zmin/zmax : ',zmin,zmax
-	write(6,*) 'umin/umax : ',umin,umax
-	write(6,*) 'vmin/vmax : ',vmin,vmax
-	write(6,*) 'volume    : ',volume
-
         call transp2vel(nel,nkn,nlv,nlvdim,hev,zenv,nen3v
      +                          ,ilhv,hlv,utlnv,vtlnv
      +                          ,uprv,vprv,weight,hl)
 
-        irec = irec + 1
-        call nc_write_time(ncid,irec,it)
+	iwrite = iwrite + 1
+	if ( maxrec .gt. 0 .and. iwrite .gt. maxrec ) goto 100
+        call nc_write_time(ncid,iwrite,it)
+
+	write(6,*) '   writing: ',irec,nread,iwrite
 
 	if( breg ) then
 	  call fm2am2d(znv,nx,ny,fm,value2d)
-          call nc_write_data_2d_reg(ncid,z_id,irec,nx,ny,value2d)
+          call nc_write_data_2d_reg(ncid,z_id,iwrite,nx,ny,value2d)
 
 	  call fm2am3d(nlvdim,ilhv,uprv,lmax,nx,ny,fm,value3d)
 	  call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
-	  call nc_write_data_3d_reg(ncid,u_id,irec,lmax,nx,ny,vnc3d)
+	  call nc_write_data_3d_reg(ncid,u_id,iwrite,lmax,nx,ny,vnc3d)
 
 	  call fm2am3d(nlvdim,ilhv,vprv,lmax,nx,ny,fm,value3d)
 	  call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
-          call nc_write_data_3d_reg(ncid,v_id,irec,lmax,nx,ny,vnc3d)
+          call nc_write_data_3d_reg(ncid,v_id,iwrite,lmax,nx,ny,vnc3d)
 	else
-          call nc_write_data_2d(ncid,z_id,irec,nkn,znv)
+          call nc_write_data_2d(ncid,z_id,iwrite,nkn,znv)
 
 	  call nc_compact_3d(nlvdim,nlv,nkn,uprv,var3d)
-          call nc_write_data_3d(ncid,u_id,irec,nlv,nkn,var3d)
+          call nc_write_data_3d(ncid,u_id,iwrite,nlv,nkn,var3d)
 
 	  call nc_compact_3d(nlvdim,nlv,nkn,vprv,var3d)
-          call nc_write_data_3d(ncid,v_id,irec,nlv,nkn,var3d)
+          call nc_write_data_3d(ncid,v_id,iwrite,nlv,nkn,var3d)
 	end if
-
-	if ( maxrec .gt. 0 .and. irec .ge. maxrec ) goto 100
 
 	goto 300
 
@@ -283,6 +290,8 @@ c-----------------------------------------------------------------
 	write(6,*)
 	write(6,*) nread,' records read'
 	write(6,*)
+
+        if( breg ) call write_dimensions(nx,ny,x0,y0,dx,dy)
 
         call nc_close(ncid)
 

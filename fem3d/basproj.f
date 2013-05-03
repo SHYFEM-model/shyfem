@@ -60,6 +60,13 @@ c---------------------------------------------------------------
 c parameters for projection
 c---------------------------------------------------------------
 
+c	1	Gauss-Boaga
+c	2	UTM
+c	3	equidistant cylindrical
+c	4	UTM non standard
+
+c---------------------------------------------------------------
+
 c Mediterranean
 
 c	iproj = 3	     	     !equidistant cylindrical
@@ -91,12 +98,12 @@ c Laguna di Venezia
 
 c Turkey lake for Ali
 
-	iproj = 2		     !UTM
-        c_param(1) = 36.             !zone
-        c_param(2) = -500000.        !false easting
-        c_param(3) = 0.              !false northing
-        !c_param(2) = -0.13E+06       !false easting
-        !c_param(3) = 0.418E+07       !false northing
+c	iproj = 2		     !UTM
+c        c_param(1) = 36.             !zone
+c        c_param(2) = -500000.        !false easting
+c        c_param(3) = 0.              !false northing
+c        c_param(2) = -0.13E+06       !false easting
+c        c_param(3) = 0.418E+07       !false northing
 
 c---------------------------------------------------------------
 c do projection

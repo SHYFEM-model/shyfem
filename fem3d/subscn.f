@@ -6,6 +6,8 @@ c
 c contents :
 c
 c function istof(line,f,ioff)			converts string to number
+c function istod(line,d,ioff)			converts string to number
+c function iscand(line,d,max)			converts string to numbers
 c function iscanf(line,f,max)			converts string to numbers
 c function iscan(line,ioff,f)			converts string to numbers
 c
@@ -28,6 +30,7 @@ c 03.05.2001	ggu	bug fix in ialfa -> avoid -0.0 (MINUS0)
 c 30.10.2001	ggu	bug fix for tab: not recognized as parameter
 c 30.01.2002	ggu	bug fix for rounding 9.9 -> 10 for ndec=-1 (ROUND)
 c 02.05.2012	ggu	new routine ideci()
+c 20.02.2013	ggu	new routine iscand, istof changed to istod
 c
 c notes :
 c
@@ -47,22 +50,41 @@ c
 c****************************************************************
 
 	function istof(line,f,ioff)
-
-! converts string to number (reads exactly one number)
-!
-! a comma is treated like a blank (,, does not denote a value of 0)
-!
-! istof		1: valid number in f    0: EOL    -1: read error
-! line		string to convert
-! f		converted number (out)
-! ioff		offset in string to start (in) 
-!		position of first non blank char after number (out)
-
+	
 	implicit none
 
 	integer istof
 	character*(*) line
 	real f
+	integer ioff
+
+	double precision d
+	integer istod
+
+	istof = istod(line,d,ioff)
+	f = d
+
+	end
+
+c****************************************************************
+
+	function istod(line,d,ioff)
+
+! converts string to number (reads exactly one number)
+!
+! a comma is treated like a blank (,, does not denote a value of 0)
+!
+! istod		1: valid number in d    0: EOL    -1: read error
+! line		string to convert
+! d		converted number (out)
+! ioff		offset in string to start (in) 
+!		position of first non blank char after number (out)
+
+	implicit none
+
+	integer istod
+	character*(*) line
+	double precision d
 	integer ioff
 
 	character*1  blank,tab,comma,plus,minus,dot
@@ -81,7 +103,7 @@ c****************************************************************
         logical bdebug
 	integer i,n,istart,ic
 	integer iesign,kexp
-	real ff,fh,fact,sign
+	double precision ff,fh,fact,sign
 	character*1 c
 
 	integer icindx
@@ -185,16 +207,63 @@ c****************************************************************
 	call skipwh(line,i)
 
 	if( beol ) then
-		istof=0
+		istod=0
 		ioff=n+1
 	else if( berr .or. .not.bnumb ) then
-		istof=-1
+		istod=-1
 		ioff=istart-1
 	else
-		istof=1
+		istod=1
 		ioff=i
-		f = ff * sign * ( 10.**(kexp*iesign) )
+		d = ff * sign * ( 10.**(kexp*iesign) )
 	end if
+
+	end
+
+!****************************************************************
+
+	function iscand(line,d,max)
+
+! converts string to numbers (reads at most max numbers)
+!
+! iscand	total number of numbers converted ( >0 )
+!		0: blank line   <0: read error in |iscanf|'th number
+! line		string to convert
+! d		array of converted numbers (return)
+! max		how many numbers to convert at most
+!		 0: count only numbers in line
+!		-1: convert all numbers found (default)
+
+	implicit none
+
+	integer iscand
+	character*(*) line
+	double precision d(1)
+	integer max
+
+	integer i,inumb,iret,maxf
+	double precision ff
+
+	integer istod
+
+	maxf = max
+
+	i=1
+	inumb=0
+
+	do while( .true. )
+	  iret=istod(line,ff,i)
+          !write(6,*) 'iscand: ',i,inumb,iret 
+	  if( iret.le.0 ) goto 1
+	  inumb=inumb+1
+	  if( maxf.ne.0 ) d(inumb)=ff
+	  if( inumb.eq.maxf ) goto 1
+	end do
+
+    1	continue
+	if( iret.lt.0 ) inumb=-inumb-1
+
+	iscand=inumb
 
 	end
 
@@ -220,9 +289,9 @@ c****************************************************************
 	integer max
 
 	integer i,inumb,iret,maxf
-	real ff
+	double precision ff
 
-	integer istof
+	integer istod
 
 	maxf = max
 
@@ -230,7 +299,7 @@ c****************************************************************
 	inumb=0
 
 	do while( .true. )
-	  iret=istof(line,ff,i)
+	  iret=istod(line,ff,i)
           !write(6,*) 'iscanf: ',i,inumb,iret 
 	  if( iret.le.0 ) goto 1
 	  inumb=inumb+1
@@ -250,6 +319,8 @@ c****************************************************************
 	function iscan(line,ioff,f)
 
 ! converts string to numbers
+!
+! better use iscanf of iscand which gives the possibility to limit input
 !
 ! iscan		total number of numbers converted ( >0 )
 !		0: blank line   <0: read error in |iscanf|'th number

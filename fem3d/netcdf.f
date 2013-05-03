@@ -7,6 +7,7 @@ c 05.12.2011    ggu&dbf	written from scratch
 c 26.03.2012    ggu	standardized implicit routines, compiler warnings
 c 20.09.2012    ggu	new routines for regular output
 c 25.01.2013    ggu	new part for nos variable initialization
+c 28.01.2013    dbf	different types of vertical coordinates
 c
 c notes :
 c
@@ -29,7 +30,7 @@ c	get file name
 c
 c******************************************************************
 
-	subroutine nc_open_reg(ncid,nx,ny,nlv,flag,date0,time0)
+	subroutine nc_open_reg(ncid,nx,ny,nlv,flag,date0,time0,iztype)
 
 	implicit none
 
@@ -39,8 +40,9 @@ c******************************************************************
 
         integer ncid            !identifier (return)
 	integer nx,ny,nlv	!size of arrays
-	real flag
+	real flag		!flag for no data
         integer date0,time0     !date and time of time 0
+	integer iztype		!type of vertical coordinates
 
 	integer lat_varid,lon_varid,lvl_varid,dep_varid
 	integer varid
@@ -149,6 +151,7 @@ c---------------------
 
 	what = 'standard_name'
 	text = 'depth'
+	call make_vertical_coordinate(iztype,what,text)
 	call nc_define_attr(ncid,what,text,varid)
 
 	what = 'description'
@@ -234,7 +237,7 @@ c-----------------------------------------
 
 c******************************************************************
 
-	subroutine nc_open(ncid,nkn,nel,nlv,date0,time0)
+	subroutine nc_open(ncid,nkn,nel,nlv,date0,time0,iztype)
 
 	implicit none
 
@@ -245,6 +248,7 @@ c******************************************************************
 	integer ncid		!identifier (return)
 	integer nkn,nel,nlv	!size of arrays
 	integer date0,time0	!date and time of time 0
+	integer iztype		!type of vertical coordinates
 
 	integer lat_varid,lon_varid,lvl_varid,dep_varid
 	integer eix_varid,top_varid
@@ -347,6 +351,7 @@ c---------------------
 
 	what = 'standard_name'
 	text = 'depth'
+	call make_vertical_coordinate(iztype,what,text)
 	call nc_define_attr(ncid,what,text,varid)
 
 	what = 'description'
@@ -461,6 +466,33 @@ c-----------------------------------------
 c-----------------------------------------
 c end of routine
 c-----------------------------------------
+
+	end
+
+c*****************************************************************
+
+	subroutine make_vertical_coordinate(iztype,what,text)
+
+c defines definition for vertical coordinate
+
+	implicit none
+
+	integer iztype
+	character*(*) what
+	character*(*) text
+
+	what = 'standard_name'
+
+	if( iztype .eq. 1 ) then	! z-coordinates
+	  text = 'depth'
+	else if( iztype .eq. 2 ) then	! sigma-coordinates
+	  text = 'ocean_sigma_coordinate'
+	else if( iztype .eq. 3 ) then	! hybrid-coordinates
+	  text = 'ocean_sigma_z_coordinate'
+	else
+	  write(6,*) 'iztype = ',iztype
+	  stop 'error stop make_vertical_coordinate: unknown iztype'
+	end if
 
 	end
 
@@ -1334,6 +1366,13 @@ c*****************************************************************
 	  units = 'm s-1'
 	  cmin = -10.
 	  cmax = +10.
+	else if( ivar .eq. 367 ) then	! generic tracer
+	  name = 'tracer'
+	  what = 'long_name'
+	  std = 'river influence index'
+	  units = '1'
+	  cmin = 0.
+	  cmax = 20.
 	else if( ivar .eq. 10 ) then	! generic tracer
 	  name = 'tracer'
 	  what = 'long_name'
@@ -1424,6 +1463,7 @@ c*****************************************************************
 	integer it
 	integer irec
 	integer date0,time0
+	integer iztype		!type of vertical coordinates
 	real znv(1)
 	logical next_record
 	character*1 units
@@ -1431,8 +1471,9 @@ c*****************************************************************
 	date0 = 20120101
 	time0 = 0
 	units = 'm'
+	iztype = 1
 
-	call nc_open(ncid,nkn,nel,nlv,date0,time0)
+	call nc_open(ncid,nkn,nel,nlv,date0,time0,iztype)
 	call nc_define_2d(ncid,'water_level',level_id)
         call nc_define_attr(ncid,'units',units,level_id)
 	call nc_end_define(ncid)

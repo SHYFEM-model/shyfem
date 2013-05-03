@@ -9,8 +9,9 @@
 # jgreely@cis.ohio-state.edu, 89/10/23
 # changes by ggu, 96/01/18
 # 27.03.2012	ggu	do not split in EPSF section (in_epsf)
+# 02.05.2013	ggu	allow for single pages to be extracted
 #
-# ggu -A to spearate pages...
+# ggu -A to separate pages...
 
 ###########################################################################
 # set up variables

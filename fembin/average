@@ -4,6 +4,7 @@
 #
 # -move=m	computes moving average over m data, else arithmetic average
 # -col=c	averages only column c, else all columns
+# -fact=f	multiplies columns with f
 #
 #------------------------------------------------------------------
 
@@ -14,10 +15,11 @@ use strict;
 
 $::move = 0 unless $::move;
 $::col = 0 unless $::col;
+$::fact = 0 unless $::fact;
 
 my @files = @ARGV;
 my $nfiles = @files;
-print STDERR "total number of files: $nfiles\n";
+print STDERR "total number of files: $nfiles\n" if $nfiles > 1;
 
 my $total = 0;
 
@@ -132,6 +134,7 @@ sub read_cols
 	    $cols[$i] = \@new;
             $ra = $cols[$i];
 	  }
+	  $f[$i] *= $::fact if $i > 0 and $::fact != 0;
           push(@$ra,$f[$i]);
         }
     }
@@ -141,4 +144,3 @@ sub read_cols
 
 ###############################################################
 
-	

@@ -116,6 +116,7 @@ c*******************************************************************
 	real data(nldim,nkndim)
         real hl_data(0:nldim+1)
 
+	logical intp_to_fem_0
 	external intp_to_fem_0
 
 c--------------------------------------------------------------
@@ -192,7 +193,7 @@ c*******************************************************************
 c*******************************************************************	
 c*******************************************************************	
 
-	subroutine intp_to_fem_0(nldim
+	function intp_to_fem_0(nldim
      +		,lm_data,hl_data,hd_data,zz_data,val_data
      +		,lm_fem,il_fem,hl_fem,hd_fem,zz_fem,val_fem)
 
@@ -200,6 +201,7 @@ c*******************************************************************
 
 	include 'param.h'
 
+	logical intp_to_fem_0
 	integer lm_data			!vertical dimension of data
 	real hl_data(lm_data)
 	!integer lm_data			!max level of data
@@ -306,6 +308,8 @@ c	  -----------------------------------------------------
           end do
 
         !enddo
+
+	intp_to_fem_0 = .true.
 
 c--------------------------------------------------------------
 c end of routine

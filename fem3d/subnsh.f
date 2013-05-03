@@ -306,7 +306,7 @@ c---------------------------------------------------------------
 	common /hlv/hlv
 c---------------------------------------------------------------
 
-	character*6 section
+	character*6 section,extra
 	integer nsc,num
 c	integer nrdsec,nrdveci,nrdvecr
 	integer nrdsec,nrdvecr
@@ -323,7 +323,7 @@ c	integer nrdsec,nrdveci,nrdvecr
 
 c read loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	do while( nrdsec(section,num) .ne. 0 )
+	do while( nrdsec(section,num,extra) .ne. 0 )
 
 		!write(6,*) 'new section: ',section,num
 
@@ -422,7 +422,7 @@ c reads title section
 	character*80 descrp
 	common /descrp/ descrp
 
-	character*80 line
+	character*80 line,extra
 
 	integer nrdlin,nrdsec
 	integer num
@@ -441,7 +441,7 @@ c reads title section
 	call putfnm('basnam',line)
 
 	!if( nrdlin(line) .gt. 0 ) goto 65
-	if( nrdsec(line,num) .eq. 0 ) goto 65
+	if( nrdsec(line,num,extra) .eq. 0 ) goto 65
 	if( line .ne. 'end' ) goto 64
 
 	return

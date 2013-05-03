@@ -11,6 +11,7 @@ c 31.03.2009    ggu     changed header of regular files (x0,.., description)
 c 16.02.2011    ggu     completely restructured - store geo information
 c 18.02.2011    ggu     bug fix in rgf_check_header() -> get instead of set
 c 23.02.2012    ggu     new routines for time series (ts) and regular check
+c 02.05.2013    ggu     bug fix: call to rgf_intp() was wrong
 c
 c notes :
 c
@@ -129,7 +130,7 @@ c-------------------------------------------------------------
 	  iunit = -iunit	!force initialization
 
 	  call rgf_intp(iunit,ndim,itact,itold,itnew,ifile
-     +				,dfile(1,2),dfile(1,3),dfile(1,1))
+     +				,dfile(1,1),dfile(1,2),dfile(1,3))
 
 	  nvar  = ifile(5)
 	  nx    = ifile(6)
@@ -180,7 +181,7 @@ c-------------------------------------------------------------
 c*********************************************************************
 
 	subroutine rgf_intp(iunit,ndim,it,itold,itnew
-     +                          ,ifile,dold,dnew,dact)
+     +                          ,ifile,dact,dold,dnew)
 
 c handles time interpolation of regular fields
 c
@@ -197,9 +198,9 @@ c sets iunit = 0 if EOF has been found
 	integer ndim
 	integer it,itold,itnew
 	integer ifile(ifidim)
+	real dact(1)
 	real dold(1)
 	real dnew(1)
-	real dact(1)
 
 	logical bdata
 
@@ -237,7 +238,7 @@ c interpolate
 c--------------------------------------------------------------
 
 	call rgf_time_interpolate(it,itold,itnew
-     +				,ifile,dold,dnew,dact)
+     +				,ifile,dact,dold,dnew)
 
 c--------------------------------------------------------------
 c end of routine
@@ -251,7 +252,7 @@ c--------------------------------------------------------------
 c*********************************************************************
 
 	subroutine rgf_time_interpolate(it,itold,itnew
-     +				,ifile,dold,dnew,dact)
+     +				,ifile,dact,dold,dnew)
 
 c time interpolation of regular field data
 
@@ -262,9 +263,9 @@ c time interpolation of regular field data
 
 	integer it,itold,itnew
 	integer ifile(ifidim)
+	real dact(1)
 	real dold(1)
 	real dnew(1)
-	real dact(1)
 
 	integer i,n
 	real rit,do,dn

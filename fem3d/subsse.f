@@ -277,16 +277,19 @@ c**********************************************
         function intp_neville(nintp,xa,ya,x)
 
 c use Neville algorithm for Lagrangian interpolation
+c
+c use nintp=4 for cubic interpolation
+c use nintp=2 for linear interpolation
 
         implicit none
 
         integer ndim
         parameter (ndim=10)
 
-        real intp_neville
-        integer nintp
-        real xa(0:nintp-1), ya(0:nintp-1)
-        real x
+        real intp_neville			!interpolated value
+        integer nintp				!grade of interpolation
+        real xa(0:nintp-1), ya(0:nintp-1)	!points to use
+        real x					!where to interpolate
 
         integer i,k,n
         double precision xl,xh

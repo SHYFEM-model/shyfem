@@ -207,10 +207,11 @@ check_compilation:
 
 modified: changed
 changed:
-	@find . -newer VERSION -type f
+	@find . -newer VERSION -type f | grep -v '/arc/' | grep -v '/.git/'
 
 changed_zip:
-	zip changed_zip.zip `find . -newer VERSION -type f`
+	zip changed_zip.zip `find . -newer VERSION -type f | \
+		grep -v '/arc/' | grep -v '/.git/'`
 
 #--------------------------------------------------------
 # installing

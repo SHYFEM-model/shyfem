@@ -269,3 +269,28 @@ c---------------------------------------------------------
 
 c******************************************************************
 
+	subroutine compute_iztype(iztype)
+
+c computes type of vertical coordinates
+
+	implicit none
+
+	integer iztype		!type of vertical coordinates (return)
+
+	integer nlv,nsigma
+	real hsigma
+
+	call get_sigma_info(nlv,nsigma,hsigma)
+
+	if( nsigma .eq. 0 ) then		! z-coordinates
+	  iztype = 1
+	else if( nlv .eq. nsigma ) then		! sigma-coordinates
+	  iztype = 2
+	else					! hybrid-coordinates
+	  iztype = 3
+	end if
+
+	end
+	
+c******************************************************************
+

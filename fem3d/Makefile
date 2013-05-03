@@ -51,6 +51,7 @@ ifeq ($(SOLVER),SPARSKIT)
 		spk_itpack.o spk_matvec.o spk_blas1_mod.o
 endif
 
+EXENC = 
 NETCDF_OBJ = subnetcdf_dummy.o
 DIRLIB_NETCDF = $(NETCDFDIR)/lib/
 DIRINC_NETCDF = $(NETCDFDIR)/include
@@ -60,6 +61,7 @@ ifeq ($(NETCDF),true)
   LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDF)
   LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDF).a
   INCL_NETCDF      = -I$(DIRINC_NETCDF)
+  EXENC            = nos2nc ous2nc
 endif
 
 PARALLEL_OBJ = subomp_dummy.o
@@ -268,24 +270,29 @@ NOSEXTR  = nosextr_nodes nosextr_gis nosextr_records nosextr_custom \
 OUSEXTR  = ousextr_nodes ousextr_records ousextr_gis \
 		ousextr_cat
 
-EXEEXTRA = bedload wincrea windcrea
+EXEEXTRA = bedload wincrea windcrea \
+		basproj baswork eosinf \
+		lgrinf \
+		nos2nc ous2nc \
+		noswrite ouswork ouswork1 ouswrite prep_input
 
 EXES     = $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXELAP) $(EXEBAS) \
 		$(EXEVAR) $(NOSEXTR) $(OUSEXTR) $(NOSAVER) \
-		$(EXEEXTRA)
+		$(EXEEXTRA) $(EXENC)
 
 #------------------------------------------------
 
 default:	fem
 
 all:	param fem
-fem:	param libfem main info split lap bas var util links
+fem:	param libfem main info split lap bas var util links nc
 main:	param $(EXEMAIN)
 info:	param $(EXEINFO)
 split:	param $(EXESPLIT)
 lap:	param $(EXELAP)
 bas:	param $(EXEBAS)
 var:	param $(EXEVAR)
+nc:	param $(EXENC)
 util:	param $(NOSEXTR) $(OUSEXTR) $(NOSAVER)
 
 links:
@@ -397,6 +404,9 @@ ousinf:  ousinf.o $(OUSOBJS) $(OUTOBJS)
 ouswork:  ouswork.o $(OUSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
 
+ouswork1:  ouswork1.o $(OUSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
+
 ousintp:  ousintp.o $(OUSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
 
@@ -421,21 +431,13 @@ nossum:  nossum.o $(NOSOBJS) $(OUTOBJS)
 noselab_time:  noselab_time.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-2nc: ous2nc ous2nc_reg nos2nc nos2nc_reg
+2nc: ous2nc nos2nc
 
 ous2nc:  ous2nc.o $(OUSOBJS) $(OUTOBJS) $(NETCDF_OBJ)
 	$(LINKER) -o $@ $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) \
 			$(NETCDF_OBJ) $(LIBGS)
 
-ous2nc_reg:  ous2nc_reg.o $(OUSOBJS) $(OUTOBJS) $(NETCDF_OBJ)
-	$(LINKER) -o $@ $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) \
-			$(NETCDF_OBJ) $(LIBGS)
-
 nos2nc:  nos2nc.o $(NOSOBJS) $(OUTOBJS) $(NETCDF_OBJ)
-	$(LINKER) -o $@ $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) \
-			$(NETCDF_OBJ) $(LIBGS)
-
-nos2nc_reg:  nos2nc_reg.o $(NOSOBJS) $(OUTOBJS) $(NETCDF_OBJ)
 	$(LINKER) -o $@ $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) \
 			$(NETCDF_OBJ) $(LIBGS)
 
@@ -749,6 +751,7 @@ loading.o: param.h
 map_influence.o: param.h
 matrix49.o: regflux.h
 netcdf.o: param.h netcdf.h netcdf.inc
+netcdf_util.o: param.h
 new36.o: close.h
 new3di.o: testbndo.h param.h ev.h
 newbcl.o: param.h
@@ -765,6 +768,7 @@ newini.o: param.h
 newstab.o: param.h
 newtra.o: param.h ev.h
 newtvd.o: param.h ev.h tvd.h
+nos2nc.o: param.h evmain.h basin.h
 nos_elab.o: param.h
 nosaver_basin.o: param.h basin.h
 nosaver_time.o: param.h
@@ -774,7 +778,7 @@ nosextr_cat.o: param.h
 nosextr_custom.o: param.h
 nosextr_fluxes.o: param.h
 nosextr_gis.o: param.h
-nosextr_nodes.o: param.h
+nosextr_nodes.o: param.h evmain.h basin.h
 nosextr_records.o: param.h
 nosinf.o: param.h
 nosinit.o: param.h
@@ -785,17 +789,20 @@ nossplit.o: param.h
 nossum.o: param.h
 nosutil.o: ev.h
 noswrite.o: param.h
-ous2nc.o: param.h evmain.h
+ous2nc.o: param.h evmain.h basin.h
 ousaver.o: param.h
 ousextr_cat.o: param.h
 ousextr_gis.o: param.h
-ousextr_nodes.o: param.h
+ousextr_nodes.o: param.h evmain.h basin.h
 ousextr_records.o: param.h
 ousinf.o: param.h evmain.h
 ousintp.o: param.h
+ousutil.o: param.h ev.h
 ousvdiff.o: param.h
 ouswork.o: param.h evmain.h
+ouswork1.o: param.h evmain.h
 ouswrite.o: param.h
+prep_input.o: param.h evmain.h basin.h
 readext.o: param.h
 scal_intp.o: param.h evmain.h
 sedi3d.o: param.h links.h ev.h sed_param.h
@@ -832,6 +839,7 @@ subn35.o: param.h chezy.h
 subnetcdf_admin.o: param.h
 subnetcdf_hydro.o: netcdf.inc
 subnev.o: ev.h
+subnos.o: nosinf.h
 subnsh.o: modules.h
 subousa.o: param.h
 subpar1.o: subpar.h
@@ -844,6 +852,7 @@ subres.o: param.h
 subrst.o: param.h
 subspk.o: param.h common.h
 subtrace.o: param.h
+subtsuvfile.o: param.h
 subuti.o: param.h ev.h links.h
 subvola.o: modules.h
 subwat.o: links.h ev.h

@@ -9,18 +9,15 @@ bindir=$FEMDIR/fem3d
 
 Usage()
 {
-  echo "2nc [-h|-help] {-ous|-nos} [-options]"
-  echo "   Transforms ous or nos file into netcdf file"
-  echo "   One of -ous or -nos must be given"
+  echo "2nc [-h|-help] [-options] nc-file"
+  echo "   Elaborates nc-file"
+  echo "  ********** old version - do not use **********"
 }
 
 FullUsage()
 {
   Usage
   echo "   Options:"
-  echo "    -ous      convert OUS file to netcdf"
-  echo "    -nos      convert NOS file to netcdf"
-  echo "    -reg      convert to regular format"
 }
 
 ErrorOption()
@@ -45,8 +42,6 @@ do
         -dxy)           dxy=$2; shift;;
         -area)          area=$2; shift;;
         -date)          date=$2; shift;;
-        -ous)           what=ous;;
-        -nos)           what=nos;;
         -h|-help)       FullUsage; exit 0;;
         -*)             ErrorOption $1; exit 1;;
         *)              break;;
@@ -61,7 +56,7 @@ fi
 
 #------------------------------------------------------------
 
-prog=~/bigappl/netcdf/taranto/read/nc_read
+prog=~/bigappl/netcdf/taranto/read/nc_elab
 
 ln -fs $1 nc_file.nc
 

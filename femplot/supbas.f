@@ -48,6 +48,7 @@ c 09.04.2010  ggu     bug fix in frac_pos() -> maybe compiler error
 c 17.05.2011  ggu     new routine basin_number()
 c 30.08.2012  ggu     new routines to automatically label spherical grid
 c 24.10.2012  ggu     bug in labelling non spherical grid (returned -1)
+c 02.05.2013  ggu     handle fact in spherical coords, meteo point plotting
 c
 c notes:
 c
@@ -98,6 +99,8 @@ c mode	0: only scaling  1: net  2: boundary  3: net in gray
 c
 c bash MUST be called first with mode == 0, and then
 c with the desired mode
+c
+c normally bash(2) is called as last call after plotting
 
 	implicit none
 
@@ -170,6 +173,13 @@ c legend (north and scale)
 	  else
 	    call legend(x0,y0,x1,y1)
           end if
+	end if
+
+c special output
+
+	if( mode .eq. 2 ) then		!only after plot
+	  write(6,*) 'plotting meteo points with bash(2)'
+	  call plot_meteo_points
 	end if
 
 c end of routine
@@ -692,6 +702,7 @@ c else it is computed from grid
 	integer ie
 	real area,ao
 	real dist,typls			!typical length scale
+	real fact,afact
 	real dxygrd
 	double precision acu
 
@@ -702,9 +713,10 @@ c else it is computed from grid
 	  ao = aomega_elem(ie)
 	  acu = acu + ao
 	end do
-	area = 24. * acu / nel
+	area = 24. * acu / nel		!a little bit bigger than one element
 
-	dist = sqrt(area)
+	call spherical_fact(fact,afact)	!correct for spherical coordinates
+	dist = sqrt(area/afact)
 
 	typls = getpar('typls')
 	dxygrd = getpar('dxygrd')
@@ -999,18 +1011,25 @@ c computes number of fractional digits of real r
 
 c**************************************************************
 
-	subroutine handle_spherical
+	subroutine spherical_fact(fact,afact)
 
-c handles spherical coordinates
+c computes factors for for spherical coordinates
 
 	implicit none
 
-	real fact,y,pi,rad
+	real fact	!factor in x direction
+	real afact	!area factor between geo and cartesian coordinates
+
+	real geomile,onedeg
+	parameter( geomile = 1855.325 , onedeg = 60.*geomile )
+
+	real y,pi,rad
 	real x0,y0,x1,y1
 
 	real getpar
 	logical is_spherical
 
+	afact = 1.
         if( .not. is_spherical() ) return	!only for spherical
 
 	call getbas(x0,y0,x1,y1)
@@ -1019,10 +1038,25 @@ c handles spherical coordinates
 	rad = pi/180.
 
 	fact = cos(y*rad)
+	afact = fact * onedeg * onedeg
+
+	end
+
+c**************************************************************
+
+	subroutine handle_spherical
+
+c handles spherical coordinates
+
+	implicit none
+
+	real fact,afact
+
+	call spherical_fact(fact,afact)
 
 	call qfact(fact,1.0)
 
-	write(6,*) 'Using factor for spherical coordinates: ',y,fact
+	write(6,*) 'Using factor for spherical coordinates: ',fact
 
 	end
 
@@ -1043,7 +1077,7 @@ c checks if regular grid should be written
 	  if( dreg .lt. 0. ) dreg = 0.
 	  return
 	end if
-	if( .not. is_box_given('leg') ) return	!no legend was requested
+	!if( .not. is_box_given('leg') ) return	!no legend was requested
 
 	call compute_reg_grid_spacing(dreg)
 
@@ -1068,7 +1102,8 @@ c tries to find best regular grid spacing value
 
 	dx = x1 - x0
 	dy = y1 - y0
-	dxy = max(dx,dy)
+	!dxy = max(dx,dy)
+	dxy = min(dx,dy)	!use smaller side
 
 	dxy = dxy/4.		!around 4 grid lines
 
@@ -1133,10 +1168,14 @@ c handles labeling of regular grid
 	real dist,x,y
 	real size,ftext
 	character*10 string
+	logical bdebug
 
 	real getpar
 	real rround
 	integer ialfa
+
+	bdebug = .false.
+	bdebug = .true.
 
 	call basinit
 
@@ -1149,6 +1188,8 @@ c handles labeling of regular grid
 	imicro = nint(getpar('regdst'))
 
 	call adjust_reg_grid_spacing(reggrd)	!check if plotted automatically
+
+	if( bdebug ) write(6,*) 'reggrd: ',reggrd
 
 	if( reggrd .eq. 0. ) return
 
@@ -1384,6 +1425,103 @@ c**************************************************************
 	call qline(x2,y2,x1,y2)
 	call qline(x1,y2,x1,y1)
 
+	end
+
+c**************************************************************
+c**************************************************************
+c**************************************************************
+
+	subroutine plot_meteo_points
+
+c plots special points from meteo file
+c
+c files coords.dat and sea_land.dat must exist
+
+	implicit none
+
+	integer ndim
+	parameter (ndim=30000)
+
+	integer nx,ny,nz,n
+	integer idum,i
+	real dx,dy
+	real x(ndim),y(ndim),rf(ndim)
+	save n,x,y,rf
+
+	integer icall
+	save icall
+	data icall / 0 /
+
+	if( icall .eq. -1 ) return
+
+	if( icall .eq. 0 ) then
+	  open(1,file='coords.dat',status='old',form='formatted',err=88)
+	  read(1,*) nx,ny,nz
+	  n = nx*ny
+	  if( n .gt. ndim ) goto 99
+	  do i=1,n
+	    read(1,*) idum,idum,x(i),y(i)
+	  end do
+	  close(1)
+
+	  do i=1,nx*ny
+	    rf(i) = 1.
+	  end do
+	  open(1,file='sea_land.dat',status='old',form='formatted',err=77)
+	  read(1,*)
+	  read(1,*) nx,ny,nz
+	  if( n .ne. nx*ny ) goto 99
+	  read(1,*) (rf(i),i=1,n)
+	  close(1)
+   77	  continue
+	  icall = 1
+	end if
+
+	call qcomm('plotting meteo points')
+	call qgray(0.)
+	dx = 0.02
+	dy = dx
+	do i=1,n
+	  if( rf(i) .gt. 0 ) then
+	    call qgray(0.)
+	    call plot_plus(x(i),y(i),dx,dy)
+	  else
+	    call qgray(0.5)
+	    call plot_cross(x(i),y(i),dx,dy)
+	  end if
+	end do
+
+	return
+   88	continue
+	write(6,*) 'no coords.dat file ... cannot plot coordinates'
+	icall = -1
+   99	continue
+	write(6,*) nx,ny,n,ndim
+	stop 'error stop plot_meteo_points: ndim'
+	end
+
+c**************************************************************
+
+	subroutine plot_plus(x,y,dx,dy)
+
+	implicit none
+
+	real x,y,dx,dy
+
+	call qline(x,y-dy,x,y+dy)
+	call qline(x-dx,y,x+dx,y)
+
+	end
+
+	subroutine plot_cross(x,y,dx,dy)
+
+	implicit none
+
+	real x,y,dx,dy
+
+	call qline(x-dx,y-dy,x+dx,y+dy)
+	call qline(x-dx,y+dx,x+dx,y-dx)
+	
 	end
 
 c**************************************************************

@@ -6,6 +6,7 @@ c
 c revision log :
 c
 c 21.01.2013    ggu     routines transfered from ous2nc.f
+c 20.02.2013    ggu     new routines get_period() and check_period()
 c
 c******************************************************************
 
@@ -36,8 +37,9 @@ c******************************************************************
 	integer iscanf
 
 	write(6,*)
-	write(6,*) 'Default for date,time: ',date,time
-	write(6,*) '   format: YYYY[MMDD]  hhmmss'
+	write(6,*) 'You can specify date/time for fem-time 0'
+	write(6,*) 'Default for date/time: ',date,time
+	write(6,*) '   format: date=YYYY[MMDD]  time=hhmmss'
 	write(6,*) 'Enter date[,time]: (return for default)'
 	read(5,'(a)') line
 	n = iscanf(line,f,2)
@@ -50,7 +52,95 @@ c******************************************************************
 	  time = f(2)
 	end if
 
-	write(6,*) 'date,time: ',date,time
+	write(6,*) 'Chosen date,time: ',date,time
+
+	end
+
+c******************************************************************
+
+	subroutine get_period(iperiod,its,ite,nfreq)
+
+	implicit none
+
+	integer iperiod		! type of period (0 for none) (return)
+	integer its,ite		! time limit (start, end) (return)
+	integer nfreq		! frequency of output (return)
+
+	integer n
+	integer dates,datee
+	integer year,month,day
+	character*80 line
+	real f(10)
+	double precision d(10)
+
+	integer iscanf,iscand
+
+	iperiod = 0
+	its = 0
+	ite = 0
+
+	write(6,*) 'Do you want to specify period of extraction?'
+	write(6,*) '  0 or return     all of file'
+	write(6,*) '  1               date_start,date_end[,nfreq]'
+	read(5,'(a)') line
+	n = iscanf(line,f,1)
+
+	if( n .le. 0 ) f(1) = 0.
+	iperiod = f(1)
+	if( iperiod .le. 0 ) return
+
+	if( n .eq. 1 ) then
+	  write(6,*) '  Enter  date_start,date_end[,nfreq]'
+	  read(5,'(a)') line
+	  n = iscand(line,d,3)
+	  if( n .eq. 2 ) d(3) = 1
+	  if( n .eq. 2 .or. n .eq. 3 ) then
+	    dates = nint(d(1))
+	    datee = nint(d(2))
+	    nfreq = nint(d(3))
+	    call unpackdate(dates,year,month,day)
+	    call dts2it(its,year,month,day,0,0,0)
+	    call unpackdate(datee,year,month,day)
+	    call dts2it(ite,year,month,day,0,0,0)
+	  else
+	    write(6,*) 'n = ',n
+	    stop 'error stop get_period: 2 or 3 values allowed'
+	  end if
+	else
+	  write(6,*) 'value entered: ',n
+	  stop 'error stop get_period: value not allowed'
+	end if
+
+	end
+
+c******************************************************************
+
+	subroutine check_period(it,iperiod,its,ite,nfreq,bwrite)
+
+	implicit none
+
+	integer it		! fem time
+	integer iperiod		! type of period (0 for none)
+	integer its,ite		! time limit (start, end)
+	integer nfreq		! frequency of output
+	logical bwrite		! write output? (return)
+
+	integer icall
+	save icall
+	data icall / 0 /
+
+	icall = icall + 1
+
+	bwrite = .true.
+	if( iperiod .le. 0 ) return
+
+	bwrite = .false.
+	if( it .lt. its ) return
+	if( it .gt. ite ) return
+
+	if( mod(icall,nfreq) .ne. 0 ) return
+
+	bwrite = .true.
 
 	end
 

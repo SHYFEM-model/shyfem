@@ -19,6 +19,7 @@ c 12.02.1999	ggu	reading title from own subroutine (with sim and bas)
 c 06.12.2004	ggu	new section legvar
 c 11.03.2005	ggu	write section title to stdout
 c 11.09.2009	ggu	new section $sect
+c 27.02.2013	ggu     pass what parameter into nlsa, handle extra info
 c
 c**********************************************
 c
@@ -78,7 +79,7 @@ c
 c
 	ind(i,n) = (ngr*(n-1)+i)
 c
-c	stop 'call to sp158k is broken ... please fix'
+	stop 'call to sp158k is broken ... please fix'
 
 	b0=imode.eq.0
 	b1=imode.eq.1
@@ -113,8 +114,10 @@ c
 c side not yet found ==> build in
 c
 	nkant(k1)=nkant(k1)+1
+	if( nkant(k1) .gt. ngr ) goto 95
 	kant(ind(nkant(k1),k1))=k2
 	nkant(k2)=nkant(k2)+1
+	if( nkant(k2) .gt. ngr ) goto 95
 	kant(ind(nkant(k2),k2))=-k1
 c
 	if(b2) then
@@ -280,7 +283,9 @@ c
 	end do
 c
 	return
-c
+   95   continue
+        write(6,*) 'nkant too high: ',nkant(k1),nkant(k2),ngr
+        stop 'error stop : sp158k'
 c   96   continue
 c	write(6,*) 'error for input boundary at node ',ipv(k)
 c	write(6,*) 'x,y : ',xgv(k),ygv(k)
@@ -295,9 +300,121 @@ c	stop 'error stop : sp158k'
 c
 	end
 
+c**********************************************
+
+	subroutine sp158kk
+
+c finds boundary nodes of not optimized area
+
+	implicit none
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer itanf,itend,idt,nits,niter,it
+	common /femtim/ itanf,itend,idt,nits,niter,it
+
+	real amat(1)
+	common /amat/amat
+	integer nen3v(3,1), kantv(2,1)
+	common /nen3v/nen3v, /kantv/kantv
+
+	integer ipv(1)
+	common /ipv/ipv
+	real xgv(1), ygv(1)
+	common /xgv/xgv, /ygv/ygv
+
+	integer nkant(1),kant(1)
+	equivalence(nkant(1),kantv(1,1))
+	equivalence(kant(1),amat(1))
+
+	integer i,n,k,ie
+	integer k1,k2,j,ii,iii
+	integer ind
+
+	ind(i,n) = (ngr*(n-1)+i)
+
+	stop 'do not use sp158kk ... please fix'
+
+	do i=1,nkn
+	  nkant(i)=0
+	end do
+
+c set up nkant and kant
+
+	do ie=1,nel
+	  do ii=1,3
+	    iii=mod(ii,3)+1
+	    k1=nen3v(ii,ie)
+	    k2=nen3v(iii,ie)
+
+	    do j=1,nkant(k1)
+	      if(kant(ind(j,k1)).eq.-k2) exit
+	    end do
+
+	    if( j .gt. nkant(k1) ) then ! side not yet found ==> build in
+
+	      nkant(k1)=nkant(k1)+1
+	      if( nkant(k1) .gt. ngr ) goto 95
+	      kant(ind(nkant(k1),k1))=k2
+	      nkant(k2)=nkant(k2)+1
+	      if( nkant(k2) .gt. ngr ) goto 95
+	      kant(ind(nkant(k2),k2))=-k1
+
+	    else			! side already found ==> take away
+
+	      kant(ind(j,k1))=kant(ind(nkant(k1),k1))
+	      nkant(k1)=nkant(k1)-1
+
+	      do j=1,nkant(k2)
+	        if(kant(ind(j,k2)).eq.k1) exit
+	      end do
+
+	      if( j .gt. nkant(k2) ) goto 97
+
+	      kant(ind(j,k2))=kant(ind(nkant(k2),k2))
+	      nkant(k2)=nkant(k2)-1
+
+	    end if
+
+	  end do
+	end do
+
+c copy boundary node index to kantv
+
+	do k=1,nkn
+	  n=nkant(i)
+	  if(n.ne.2) goto 99
+	end do
+
+	do k=1,nkn
+	  if(kant(ind(1,i)).gt.0) then
+	    kantv(1,i)=kant(ind(1,i))
+	    kantv(2,i)=-kant(ind(2,i))
+	  else
+	    kantv(1,i)=kant(ind(2,i))
+	    kantv(2,i)=-kant(ind(1,i))
+	  end if
+	end do
+
+	return
+   95   continue
+	write(6,*) 'nkant too high: ',nkant(k1),nkant(k2),ngr
+	stop 'error stop : sp158k'
+   97   continue
+	write(6,*) 'missing edge at nodes ',ipv(k1),ipv(k2)
+	write(6,*) 'x1,y1 : ',xgv(k1),ygv(k1)
+	write(6,*) 'x2,y2 : ',xgv(k2),ygv(k2)
+	stop 'error stop : sp158k'
+   99   continue
+	write(6,*) 'only two sides per node permitted'
+	write(6,*) 'error at node ',ipv(k)
+	write(6,*) 'x,y : ',xgv(k),ygv(k)
+	stop 'error stop : sp158k'
+	end
+
 c******************************************************************
 c
-	subroutine nlsa(iunit)
+	subroutine nlsa(iunit,what)
 c
 c read of parameter file for post processing routines
 c
@@ -306,9 +423,10 @@ c iunit		unit number of file
 	implicit none
 
 	integer iunit
+	character*(*) what
 
-	character*80 name,line,section
-	logical bdebug
+	character*80 name,line,section,extra
+	logical bdebug,bread
 	integer num
 	integer nrdsec,nrdlin,ichanm
 	real getpar
@@ -329,17 +447,27 @@ c		write(6,*) 'parameters initialized to default values'
 
 c loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	do while( nrdsec(section,num) .eq. 1 )
+	do while( nrdsec(section,num,extra) .eq. 1 )
 
 		if( bdebug ) then
 		  write(6,*) 'new section: ',section(1:ichanm(section)),num
 		end if
 
-                call setsec(section,num)                !remember section
+		bread = .false.
+		bread = bread .or. what(1:4) .eq. ' '
+		bread = bread .or. extra(1:4) .eq. ' '
+		bread = bread .or. extra(1:4) .eq. what(1:4)
 
-		write(6,'(a,a)') '$',section(1:60)
+		if( bread ) then
+                  call setsec(section,num)                !remember section
+		  write(6,'(a,a)') '$',section(1:60)
+		else
+		  section = 'skip'
+		end if
 
-		if(section.eq.'title') then
+		if(section.eq.'skip') then
+			call nrdskp
+		else if(section.eq.'title') then
 			call rdtita
 		else if(section.eq.'para') then
 			call nrdins(section)

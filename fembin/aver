@@ -5,11 +5,13 @@
 # -m|-move #	use moving average with # values on each side
 # -c|-col #	use column # to compute average (column 1 is default)
 #			(columns start at 0)
+# -f|-fact #	multiply each value with #
 
 # handle options
 
 $move = 0;
 $column = 1;
+$fact = 1;
 
 for(;;) {
   $arg = $ARGV[0];
@@ -22,6 +24,9 @@ for(;;) {
   } elsif( $arg eq "-c" or $arg eq "-col" ) {
     shift;
     $column = shift;
+  } elsif( $arg eq "-f" or $arg eq "-fact" ) {
+    shift;
+    $fact = shift;
   } else {
     last;
   }
@@ -40,17 +45,20 @@ $total = 0;
 
 if( $move ) {
     @new = <>;
-    $aver = maver($move,\@new);
+    $ra = scale(\@new,$fact);
+    $aver = maver($move,$ra);
     print_array($aver);
 } elsif( $nfiles < 2 ) {
     @new = <>;
-    $aver = &aver(\@new);
+    $ra = scale(\@new,$fact);
+    $aver = &aver($ra);
     print "$aver\n";
 } else {
     foreach $file (@files) {
 	open(FILE,"$file");
 	@new = <FILE>;
-        $aver = &aver(\@new);
+        $ra = scale(\@new,$fact);
+        $aver = &aver($ra);
 	$total += $aver;
         print "$file: $aver\n";
 	close(FILE);
@@ -67,7 +75,8 @@ sub Usage
     print STDERR "Usage: aver [-h|-help] options file(s)\n";
     print STDERR "  options:\n";
     print STDERR "    -m|-move #  compute moving average on # values on each side\n";
-    print STDERR "    -c|-col #	  use column # to compute average (default 1)\n";
+    print STDERR "    -c|-col #   use column # to compute average (default 1)\n";
+    print STDERR "    -f|-fact #  scale column with #\n";
 }
 
 ###############################################################
@@ -150,4 +159,24 @@ sub aver
 
 ###############################################################
 
-	
+sub scale
+{
+    my ($ra,$fact) = @_;
+
+    return $ra if not defined $fact or $fact == 0 or $fact == 1;
+
+    my @new = ();
+
+    foreach (@$ra) {
+	s/^\s+//;
+	my @f = split;
+	$f[$column] *= $fact;
+	my $line = join(" ",@f);
+	push(@new,$line);
+    }
+
+    return \@new;
+}
+
+###############################################################
+

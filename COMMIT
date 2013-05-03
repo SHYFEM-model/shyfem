@@ -1,5 +1,50 @@
 ============================================================
 
+Fri May  3 10:24:54 CEST 2013
+
+small bug fixes, netcdf
+
+ LOG                     |   36 +++
+ Makefile                |    5 +-
+ fem3d/Makefile          |   39 ++--
+ fem3d/basproj.f         |   19 +-
+ fem3d/netcdf.f          |   49 ++++-
+ fem3d/netcdf_util.f     |   96 ++++++++-
+ fem3d/nos2nc.f          |   39 +++-
+ fem3d/ous2nc.f          |   55 +++--
+ fem3d/ouswork.f         |    2 +-
+ fem3d/ouswork1.f        |  574 +++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/param.h           |    2 +-
+ fem3d/sigmautil.f       |   25 ++
+ fem3d/subapn.f          |   30 ++-
+ fem3d/subnls.f          |   24 ++-
+ fem3d/subnsa.f          |  146 +++++++++++-
+ fem3d/subnsh.f          |    8 +-
+ fem3d/subrgf.f          |   13 +-
+ fem3d/subscn.f          |   95 +++++++-
+ fem3d/subsse.f          |   11 +-
+ fem3d/subtsuvfile.f     |    6 +-
+ fem3d/wininf.f          |    3 +-
+ femadj/param.h          |    2 +-
+ fembin/2nc              |   31 ++-
+ fembin/aver             |   39 +++-
+ fembin/average          |    6 +-
+ fembin/gmsh2grd.pl      |  168 +++++++++-----
+ fembin/gps              |   15 +-
+ fembin/nc_elab          |   13 +-
+ fembin/parr             |    3 +-
+ fembin/plots            |   16 +-
+ femdoc/final/shyfem.pdf |  Bin 268764 -> 268761 bytes
+ femdoc/final/shyfem.ps  |  112 +++++-----
+ femplot/param.h         |    2 +-
+ femplot/plotsim.f       |   59 ++++--
+ femplot/supbas.f        |  154 ++++++++++++-
+ femplot/supsim.f        |    4 +-
+ param.h                 |    2 +-
+ 37 files changed, 1609 insertions(+), 294 deletions(-)
+
+============================================================
+
 Fri Jan 25 12:35:23 CET 2013
 
 New version 6_1_62

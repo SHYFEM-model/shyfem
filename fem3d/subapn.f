@@ -26,6 +26,7 @@ c 05.12.2001	ggu	fixed compiler error with -Wall -pedantic
 c 20.06.2003	ggu	in iapini statement shiftet for compiler error Origin
 c 15.07.2011	ggu	adjusted, ideffi substituted
 c 19.03.2012	ggu	if no basin is given return with "error"
+c 27.02.2013	ggu	pass what parameter into nlsa
 c
 c notes :
 c
@@ -237,7 +238,7 @@ c set up boundary nodes
 
 	if(matdim.gt.0) then
 		call sp131k(matdim)
-		call sp158k(0)
+		!call sp158k(0)
 	end if
 
 	iapini=1
@@ -275,10 +276,7 @@ c first call -> set parameters, read parameter file, ...
 	  call getfnm('apnfil',apnnam)
 	  call putfnm('apnnam',apnnam)
 
-	  nin=ifileo(0,'apnstd.str','form','old')
-
-	  call nlsa(nin)
-	  if(nin.gt.0) close(nin)
+	  call read_apn_file(' ')
 
 	  bfirst=.false.
 	end if
@@ -292,3 +290,25 @@ c get new names for basin and simulation
 	call assnam(nmode)
 
 	end
+
+c**************************************************************
+
+	subroutine read_apn_file(what)
+
+	implicit none
+
+	character*(*) what
+
+	integer nin
+	integer ifileo
+
+	nin=ifileo(0,'apnstd.str','form','old')
+	if( nin .le. 0 ) return
+
+	call nlsa(nin,what)
+	close(nin)
+
+	end
+
+c**************************************************************
+

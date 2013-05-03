@@ -7,9 +7,9 @@ c contents :
 c
 c subroutine nrdini(iunit)			initializes unit number
 c
-c subroutine setsec(bset,name,num)		memorizes section name
+c subroutine setsec(name,num)			memorizes section name
 c
-c function nrdsec(name,num)			finds next section
+c function nrdsec(section,num,extra)		finds next section
 c
 c subroutine nrdskp				skips over data in section
 c function nrdlin(line)				reads next line in section
@@ -45,6 +45,7 @@ c 03.09.2008	ggu	nrdvecr slightly changed return value
 c 02.12.2008	ggu	bug in nrdnum: kexp was double precision
 c 09.03.2009	ggu	bug in nrdsec: use local name to manipolate string
 c 26.08.2009	ggu	allow '_' for names (USE_)
+c 27.02.2013	ggu	handle extra information on section line
 c
 c notes :
 c
@@ -198,7 +199,7 @@ c initializes unit number for name list read
 
 c******************************************************************
 
-	function nrdsec(section,num)
+	function nrdsec(section,num,extra)
 
 c finds next section
 c
@@ -213,20 +214,22 @@ c 08.09.1997	ggu	!$IREAD - bug in internal read -> use iscan
 	implicit none
 
 	integer nrdsec,num
-	character*(*) section
+	character*(*) section		!section name
+	character*(*) extra		!extra information
 	integer unit
 	common /nrdcom/ unit
 
 	character*80 linaux,line,name
 	character*1 c
 	real f(5)
-	integer i,iend,ioff,ios
+	integer i,iend,ioff,ios,ianz
 	integer nrdvar,itypch,ichafs,iscan
 
 	nrdsec = 0
 	num = 0
 	name = ' '
 	section = ' '
+	extra = ' '
 
 c read until '&' or '$' as first non white space char of line found
 
@@ -259,8 +262,8 @@ c name found -> look if there is a number at end of name
 c if there is a number, strip it and put it in num
 
 	if( i .le. iend ) then			!number to read
-	  ioff = iscan(name(i:iend),1,f)  	!$IREAD
-	  if( ioff .ne. 1 ) goto 97
+	  ianz = iscan(name(i:iend),1,f)  	!$IREAD
+	  if( ianz .ne. 1 ) goto 97
 	  num = nint(f(1))
 	  name(i:iend) = ' '
 	end if
@@ -269,6 +272,13 @@ c ok, new section found
 
 	nrdsec = 1
 	section = name
+
+c now look for extra information
+
+	iend=nrdvar(name,line,ioff)
+	if( iend .gt. 0 ) extra = name
+
+c end of routine
 
 	return
    97	continue
