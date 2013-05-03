@@ -1,3 +1,45 @@
+version  6_1_63    03-05-2013    VERS_6_1_63
+
+========================================================== 03-05-2013 - 6_1_63
+
+c ./femplot/plotsim.f:
+c 27.02.2013	ggu	deleted amat, better color handling
+c
+c ./femplot/supbas.f:
+c 02.05.2013  ggu     handle fact in spherical coords, meteo point plotting
+c
+c ./fem3d/subnls.f:
+c 27.02.2013	ggu	handle extra information on section line
+c
+c ./fem3d/subver.f:
+c 03.05.2013	ggu	version 6.1.63
+c
+c ./fem3d/subnsa.f:
+c 27.02.2013	ggu     pass what parameter into nlsa, handle extra info
+c
+c ./fem3d/netcdf.f:
+c 28.01.2013    dbf	different types of vertical coordinates
+c
+c ./fem3d/netcdf_util.f:
+c 20.02.2013    ggu     new routines get_period() and check_period()
+c
+c ./fem3d/ous2nc.f:
+c 20.02.2013    ggu     choose period implemented
+c
+c ./fem3d/subscn.f:
+c 20.02.2013	ggu	new routine iscand, istof changed to istod
+c
+c ./fem3d/nos2nc.f:
+c 20.02.2013    ggu     choose period implemented
+c
+c ./fem3d/subrgf.f:
+c 02.05.2013    ggu     bug fix: call to rgf_intp() was wrong
+c
+c ./fem3d/subapn.f:
+c 27.02.2013	ggu	pass what parameter into nlsa
+
+==========================================================
+
 version  6_1_62    25-01-2013    VERS_6_1_62   commit_2013-05-03
 
 version  6_1_62    25-01-2013    VERS_6_1_62
