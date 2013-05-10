@@ -86,6 +86,7 @@ c 23.02.2012    ggu&ccf	meteo arrays adjusted (3*nkndim)
 c 09.03.2012    ggu	call to residence time added
 c 21.06.2012    ggu&aar	fluid mud variables integrated
 c 05.08.2012    ggu	bug because lam2dn and dmfd2n not defined
+c 10.05.2013    dbf	initialization for non hydrostatic routines
 c
 c*****************************************************************
 
@@ -148,9 +149,6 @@ c boundary file names			!$$ST	!$$DESCRP
 c various arrays
 
 	common /knausc/ knausm,knaus(nexdim)
-
-        common /kfluxc/ nsect,kfluxm,kflux(nfxdim)
-        common /iflux/ iflux(3,nfxdim)
 
         integer nvols,kvold,kvolm,kvol(nfxdim)
         common /kvolc/ nvols,kvold,kvolm,kvol
@@ -527,6 +525,7 @@ c-----------------------------------------------------------
 	call init_uv            !set vel, w, pr, ... from transports
 	call barocl(0)
 	call wrfvla		!write finite volume
+	call nonhydro_init
 
 c-----------------------------------------------------------
 c initialize modules

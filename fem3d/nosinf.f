@@ -51,6 +51,8 @@ c--------------------------------------------------------------
 c open basin and simulation
 c--------------------------------------------------------------
 
+	call shyfem_copyright('nosinf - Info on NOS files')
+
 	if(iapini(2,nkndim,neldim,0).eq.0) then
 		stop 'error stop : iapini'
 	end if

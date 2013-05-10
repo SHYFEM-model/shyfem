@@ -100,6 +100,7 @@ fem3d/baswork
 fem3d/ouswrite
 fem3d/eosinf
 fem3d/noswrite
+fem3d/basbox
 
 femadj/adjele
 fembin/extDiff

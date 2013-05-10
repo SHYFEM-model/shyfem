@@ -104,6 +104,8 @@ c 18.11.2011	ggu	new subroutine nlsinh_proj() for projection
 c 24.01.2012	ggu	new parameter nomp
 c 02.05.2012	ggu	new default for ndccol (-> 0)
 c 24.10.2012	ggu	new parameter dxmin
+c 10.05.2013	ggu	new parameters idtbox,itmbox, more comments
+c 10.05.2013	ggu	new parameter inohyd
 c
 c************************************************************************
 
@@ -253,9 +255,8 @@ c DOCS	TIME_DATE	General time and date parameters
 c
 c A time and date can be assigned to the simulation. These values
 c refer to the time 0 of the FEM model. The format for the date is
-c YYMMDD and for the time HHMMSS. Please note that the date should not be
-c given as YYYYMMDD because due to precision problems this will not
-c work. You can also give a time zone if your time is not referring to
+c YYYYMMDD and for the time HHMMSS.
+c You can also give a time zone if your time is not referring to
 c GMT but to another time zone such as MET.
 
 c |date|                The real date corresponding to time 0. (Default 0)
@@ -498,14 +499,34 @@ c		that the layers are specified explicitly in |\$levels|.
 
 	call addpar('dzreg',0.)		!regular vertical grid
 
-cc depth adjustment
-cc hlvmin is min depth that last layer must have (percentage)
-cc ilytyp: 0=no adjustment  1=adjust to full layers (change depth)
-cc         2=adjust only if h<hlvmin (change depth)
-cc         3=add to last layer (keep depth but change layer)
+c The last layer (bottom layer) is treated in a special way. Depending on
+c the parameter |ilytyp| there are various cases to be considered. A value
+c of 0 leaves the last layer as it is, even if the thickness is very small.
+c A value of 1 will always eliminate the last layer, if it has not full
+c layer thickness. A value of 2 will do the same, but only if the last layer
+c is smaller than |hlvmin| (in units of fraction). Finally, a value of
+c 3 will add the last layer to the layer above, if its layer thickness
+c is smaller than |hlvmin|.
+c
+c |ilytyp|	Treatment of last (bottom) layer. 0 means no adjustment,
+c		1 deletes the last layer, if it is not a full layer,
+c		2 only deletes it
+c		if the layer thickness is less than |hlvmin|, and 3
+c		adds the layer thickness to the layer above if it is smaller
+c		than |hlvmin|. Therefore, 1 and 2 might change the
+c		total depth and layer structure, while 3 only might
+c		change the layer structure. The value of 1 will always
+c		give you full layers at the bottom.
+c |hlvmin|	Minimum layer thickness for last (bottom) layer used when
+c		|ilytyp| is 2 or 3. The unit is fractions of the nominal
+c		layer thickness. Therefore, a value of 0.5 indicates that
+c		the last layer should be at least half of the full
+c		layer.
 
 	call addpar('ilytyp',3.00)	!type of depth adjustment
 	call addpar('hlvmin',0.25)	!min percentage of last layer thickness
+
+cc not yet documented features of sigma layers
 
 	call addpar('nsigma',0.)	!number of sigma layers
 	call addpar('hsigma',10000.)	!lower depth of sigma layers (hybrid)
@@ -518,16 +539,21 @@ cc 0 no   1 full    2 diagnostic    3 T/S advection but no baroclinic terms
 
 	call addpar('iturb',0.)		!use turbulence closure scheme
 
-        call addpar('vismol',1.0e-06)	!molecular vertical viscosity
-        call addpar('vistur',0.)	!turbulent vertical viscosity (nau)
+c The next parameters deal with vertical diffusivity and viscosity.
 
 c |diftur|	Vertical turbulent diffusion parameter for the tracer.
 c		(Default 0)
 c |difmol|	Vertical molecular diffusion parameter for the tracer.
 c		(Default 1.0e-06)
+c |vistur|	Vertical turbulent viscosity parameter for the momentum.
+c		(Default 0)
+c |vismol|	Vertical molecular viscosity parameter for the momentum.
+c		(Default 1.0e-06)
 
         call addpar('difmol',1.0e-06)	!molecular vertical diffusivity
 	call addpar('diftur',0.)	!diffusion parameter (vertical), cvpar
+        call addpar('vismol',1.0e-06)	!molecular vertical viscosity
+        call addpar('vistur',0.)	!turbulent vertical viscosity (nau)
 
 cc------------------------------------------------------------------------
 
@@ -545,8 +571,10 @@ c		(Default 0)
 
 	call addpar('dhpar',0.)		!diffusion parameter
 
-cc controlling scalar transport and diffusion
-
+c The next parameters deal with the control of the scalar transport 
+c and diffusion equation. You have possibility to prescribe the tvd scheme
+c desired and to limit the Courant number.
+c
 c |itvd|	Type of the horizontal advection scheme used for 
 c		the transport and diffusion
 c		equation. Normally an upwind scheme is used (0), but setting
@@ -561,10 +589,13 @@ c		the transport and diffusion
 c		equation. Normally an upwind scheme is used (0), but setting
 c		the parameter |itvd| to 1 choses a TVD scheme. This feature
 c		is still experimental, so use with care. (Default 0)
+c |rstol|	Normally the internal time step for scalar advection is
+c		automatically adjusted to produce a Courant number of 1
+c		(marginal stability). You can set |rstol| to a smaller value 
+c		if you think there are stability problems. (Default 1)
 
 	call addpar('itvd',0.)		!horizontal TVD scheme?
 	call addpar('itvdv',0.)		!vertical TVD scheme?
-
 	call addpar('rstol',1.)		!limit time step to this Courant number
 
 cc------------------------------------------------------------------------
@@ -583,16 +614,34 @@ c		and diffusion of the temperature. (Default 1)
 c |isalt|	Flag if the computation on the salinity is done.
 c		A value different from 0 computes the transport
 c		and diffusion of the salinity. (Default 1)
-c |temref|	Reference (ambient) temperature of the water in
-c		centigrade. (Default 0)
-c |salref|	Reference (ambient) salinity of the water in
-c		psu (practical salinity units, per mille).
-c		(Default 0)
 
 	call addpar('itemp',1.)		!compute temperature ?
 	call addpar('isalt',1.)		!compute salinity ?
+
+c The next parameters set the initial conditions for temperature and salinity.
+c Both the average value and and a stratification can be specified.
+c
+c |temref|	Reference (initial) temperature of the water in
+c		centigrade. (Default 0)
+c |salref|	Reference (initial) salinity of the water in
+c		psu (practical salinity units) or ppt.
+c		(Default 0)
+c |tstrat|	Initial temperature stratification in units of [C/km].
+c		A positive value indicates a stable stratification.
+c		(Default 0)
+c |sstrat|	Initial salinity stratification in units of [psu/km].
+c		A positive value indicates a stable stratification.
+c		(Default 0)
+
 	call addpar('temref',0.)	!reference temperatur for baroc runs
 	call addpar('salref',0.)	!reference salinity for baroc runs
+
+	call addpar('sstrat',0.)	!salt stratification
+	call addpar('tstrat',0.)	!temp stratification
+
+c The next parameters deal with horizontal diffusion of temperature
+c and salinity. These parameters overwrite the general parameter for
+c horizontal diffusion |dhpar|.
 
 c |thpar|	Horizontal diffusion parameter for temperature.
 c		(Default 0)
@@ -601,11 +650,6 @@ c		(Default 0)
 
 	call addpar('thpar',-1.)	!horiz. diff. coeff. for temp.
 	call addpar('shpar',-1.)	!horiz. diff. coeff. for sal.
-
-	call addpar('sstrat',0.)	!salt stratification
-	call addpar('tstrat',0.)	!temp stratification
-					!positive in downward direction
-					!is value/km
 
 cc------------------------------------------------------------------------
 
@@ -619,7 +663,7 @@ c |iconz|	Flag if the computation on the tracer is done.
 c		A value different from 0 computes the transport
 c		and diffusion of the substance. If greater than 1
 c		|iconz| concentrations are simulated. (Default 0)
-c |conref|	Reference (ambient) concentration of the tracer in
+c |conref|	Reference (initial) concentration of the tracer in
 c		any unit. (Default 0)
 c |contau|	If different from 0 simulates decay of concentration. In
 c		this case |contau| is the decay rate (e-folding time) in days.
@@ -630,7 +674,8 @@ c		(Default 0)
 	call addpar('contau',0.)	!decay rate [days]
 
 c |chpar|	Horizontal diffusion parameter for the tracer.
-c		(Default 0)
+c		This value overwrites the general parameter for
+c		horizontal diffusion |dhpar|. (Default 0)
 
 	call addpar('chpar',-1.)	!diffusion parameter
 
@@ -642,8 +687,8 @@ c The next parameters define the output frequency of the
 c computed scalars (temperature, salinity, generic concentration) to file.
 c
 c |idtcon|, |itmcon|	Time step and start time for writing to file
-c			CON (concentration), TEM (temperature) and
-c			SAL (salinity), or generally to file NOS.
+c			CON (concentration) and NOS (temperature and
+c			salinity).
 
 	call addpar('idtcon',0.)	!time step for output
 	call addpar('itmcon',-1.)	!minimum time for output
@@ -714,6 +759,11 @@ cc custom call
 cc rain
 
 	call addpar('zdist',0.)		!distributed water level
+
+	call addpar('idtbox',0.)	!for boxes
+	call addpar('itmbox',0.)
+
+	call addpar('inohyd',0.)	!for non-hydrostatic model
 
 	end
 

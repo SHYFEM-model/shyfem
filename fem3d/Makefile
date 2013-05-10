@@ -163,7 +163,7 @@ HTOBJS = \
 	subous.o subousa.o \
 	subbnd.o subnos.o \
 	subwin.o \
-	subflxa.o subflx3d.o subflx.o subwat.o subn11.o subdry.o \
+	subwat.o subn11.o subdry.o \
 	subcus.o subcon1.o \
 	tideg.o tide1.o subzzz.o subres.o subuti.o \
 	sublin.o subvola.o subgeo.o debug.o \
@@ -186,6 +186,9 @@ HTOBJS = \
 	submeteo.o submeteo1.o submeteo_inout.o \
 	subwrt.o subvintp.o \
 	subfemfile.o subtsuvfile.o \
+	subflxa.o subflx3d.o subflx.o subflxu.o \
+	subboxa.o \
+	newnohydro.o \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ) $(PARALLEL_OBJ)
 
@@ -372,6 +375,9 @@ basinf:  basinf.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
 
 baswork:  baswork.o $(OUTOBJS) $(BASEXTRA)
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(BASEXTRA) -o $@
+
+basbox:  basbox.o $(OUTOBJS) $(BASEXTRA)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(BASEXTRA) -o $@
 
 bashsigma:  bashsigma.o $(OUTOBJS) 
@@ -712,6 +718,7 @@ aquabc.o: param.h
 aquabc_fem_interface.o: param.h aquabc_aout.h aquabc.h ev.h
 atoxi3d.o: param.h
 basbathy.o: param.h evmain.h
+basbox.o: param.h links.h evmain.h basin.h
 baschk.o: param.h evmain.h
 bascomp.o: param.h evmain.h
 bashsigma.o: param.h evmain.h basin.h
@@ -812,6 +819,7 @@ simsys_spk.o: param.h common.h
 splitflx.o: param.h
 subbfm.o: param.h bfm_common.h
 subbndo.o: param.h subbndo.h
+subboxa.o: param.h modules.h ev.h basin.h subboxa.h
 subcoo.o: param.h common.h
 subcst.o: modules.h
 subcus.o: param.h ev.h
@@ -822,7 +830,8 @@ subdwq.o: param.h
 subele.o: param.h ev.h
 subexta.o: modules.h
 subflx3d.o: testbndo.h param.h links.h ev.h
-subflxa.o: param.h modules.h links.h
+subflxa.o: param.h subflxa.h modules.h
+subflxu.o: param.h links.h
 subfvl.o: param.h
 subgotm.o: param.h ev.h
 subgotm_mud.o: param.h ev.h

@@ -950,8 +950,8 @@ c------------------------------------------------------------
 c	ilytyp: 
 c	  0=no adjustment  
 c	  1=adjust to full layers (change depth)
-c         2=adjust only if h<hlvmin (change depth)
-c         3=add to last layer (keep depth but change layer)
+c         2=adjust to full layers only if h<hlvmin (change depth)
+c         3=add to last layer if h<hlvmin (keep depth but change layer)
 
 	hlvmin = getpar('hlvmin')		!min percentage of last layer
 	ilytyp = nint(getpar('ilytyp'))

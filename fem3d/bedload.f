@@ -63,9 +63,6 @@ c various arrays
 
 	common /knausc/ knausm,knaus(nexdim)
 
-        common /kfluxc/ nsect,kfluxm,kflux(nfxdim)
-        common /iflux/ iflux(3,nfxdim)
-
         integer nvols,kvold,kvolm,kvol(nfxdim)
         common /kvolc/ nvols,kvold,kvolm,kvol
         integer ivolm,ivol(nfxdim)

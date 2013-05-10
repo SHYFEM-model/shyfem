@@ -243,8 +243,11 @@ test_compile:
 revision:
 	 $(FEMBIN)/revision_last
 
-ggu:
+rules_ggu:
 	cp -f rules/Rules.ggu ./Rules.make
+
+rules_save:
+	cp -f rules/Rules.save ./Rules.make
 
 dist: cleandist
 	mv --backup=numbered ./Rules.make rules/Rules.save

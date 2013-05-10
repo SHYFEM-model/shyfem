@@ -34,6 +34,7 @@ c 20.05.2011	ggu	compute statistics of stability, no stab in dry elemes
 c 25.08.2011	dbf&ggu	baroclinic gradient for sigma level integrated
 c 25.10.2011	dbf&ggu	bug fix in set_barocl_new_interface (psigma)
 c 04.11.2011    ggu     adapted for hybrid coordinates
+c 10.05.2013	dbf&ggu	new routines for non-hydro and vertical advection
 c
 c notes :
 c
@@ -61,6 +62,8 @@ c******************************************************************
         logical bbarcl
         integer ilin,itlin,ibarcl
         real getpar
+	integer inohyd
+	logical bnohyd
 
 c-------------------------------------------
 c parameters
@@ -70,7 +73,9 @@ c-------------------------------------------
         itlin = nint(getpar('itlin'))
         ibarcl = nint(getpar('ibarcl'))
         bbarcl = ibarcl .gt. 0 .and. ibarcl .ne. 3
-
+	inohyd = nint(getpar('inohyd'))
+	bnohyd = inohyd .eq. 1
+	
 c-------------------------------------------
 c initialization
 c-------------------------------------------
@@ -113,6 +118,8 @@ c-------------------------------------------
         !if( bbarcl ) call set_barocl
         !if( bbarcl ) call set_barocl_new
 	if( bbarcl ) call set_barocl_new_interface
+
+	if( bnohyd ) call nonhydro_set_explicit
 
 c-------------------------------------------
 c end of routine
@@ -433,7 +440,6 @@ c******************************************************************
         include 'param.h'
 
         integer nlv,nlvdi
-        !common /nlv/nlv
         common /level/ nlvdi,nlv
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -453,6 +459,8 @@ c******************************************************************
         common /utlnv/utlnv, /vtlnv/vtlnv
         real uprv(nlvdim,1),vprv(nlvdim,1)
         common /uprv/uprv, /vprv/vprv
+	real wlov(0:nlvdim,1),wlnv(0:nlvdim,1)
+	common /wlov/wlov, /wlnv/wlnv
         real hdenv(nlvdim,1)
         common /hdenv/hdenv
         real hdknv(nlvdim,1)
@@ -466,6 +474,11 @@ c******************************************************************
         common /ilhkv/ilhkv
         real radv
         common /radv/radv
+
+	logical bvertadv		! new vertical advection for momentum
+	real zxadv,zyadv
+	real waux			! new vertical advection for momentum
+	real ww(neldim,0:nlvdim)	! FIXME - what is this?
 
         integer ii,ie,k,l,lmax
         real b,c
@@ -482,6 +495,8 @@ c******************************************************************
 c---------------------------------------------------------------
 c initialization
 c---------------------------------------------------------------
+
+	bvertadv = .true. ! vertical advection computed
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
@@ -502,17 +517,20 @@ c---------------------------------------------------------------
             h = hdenv(l,ie)
 	    ut = utlnv(l,ie)
 	    vt = vtlnv(l,ie)
+	    waux = 0
             do ii=1,3
                 k = nen3v(ii,ie)
                 b = ev(3+ii,ie)
                 c = ev(6+ii,ie)
                 f = ut * b + vt * c	! f>0 => flux into node
+		waux = waux + wlnv(l,ii)
                 if( f .gt. 0. ) then
 		  saux1(l,k) = saux1(l,k) + f
 		  saux2(l,k) = saux2(l,k) + f * ut
 		  saux3(l,k) = saux3(l,k) + f * vt
                 end if
 	    end do
+	    ww(ie,l) = waux / 3.
           end do
 	end do
 
@@ -564,10 +582,34 @@ c---------------------------------------------------------------
                   yadv = yadv + f * ( vp - vc )
                 end if
             end do
+	    
+	    zxadv = 0.
+	    zyadv = 0. 
+	   
+	    if ( bvertadv ) then
 
-	    fxv(l,ie) = fxv(l,ie) + xadv
-	    fyv(l,ie) = fyv(l,ie) + yadv
+	    if (ww(ie,l).gt.0) then
+              if (l.lt.lmax) then
+	       zxadv = ww(ie,l)*(utlnv(l+1,ie)-utlnv(l,ie))
+	       zyadv = ww(ie,l)*(vtlnv(l+1,ie)-vtlnv(l,ie))
+              else
+	       zxadv = ww(ie,l)*(-utlnv(l,ie))
+	       zyadv = ww(ie,l)*(-vtlnv(l,ie))
+              end if
+            else
+              if (l.lt.lmax) then
+	       zxadv = ww(ie,l)*(utlnv(l,ie)-utlnv(l+1,ie))
+	       zyadv = ww(ie,l)*(vtlnv(l,ie)-vtlnv(l+1,ie))
+              else
+	       zxadv = ww(ie,l)*utlnv(l,ie)
+	       zyadv = ww(ie,l)*vtlnv(l,ie)
+              end if
+	    end if
+	     
+	    end if
 
+	    fxv(l,ie) = fxv(l,ie) + xadv + zxadv
+	    fyv(l,ie) = fyv(l,ie) + yadv + zyadv
 	  end do
 	end do
 

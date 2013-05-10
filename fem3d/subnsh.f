@@ -194,6 +194,7 @@ c	call wrouta
 c	call wrexta(it)
 	call wrflxa(it)
 	call wrvola(it)
+	call wrboxa(it)
 
         call resid
         call rmsvel

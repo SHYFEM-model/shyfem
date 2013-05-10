@@ -21,9 +21,9 @@ c call fluxes_3d(it,nlvdim,nsect,ivar,nlayers,fluxes)
 c
 c new 3d output of fluxes (water, salt, temp)
 c the output is written to files depending on the value of ivar
-c	ivar = 0	water	iunit = 60
-c	ivar = 11	salt	iunit = 71
-c	ivar = 12	temp	iunit = 72
+c	ivar = 0	water	iunit = 160
+c	ivar = 11	salt	iunit = 171
+c	ivar = 12	temp	iunit = 172
 c the format is:
 c
 c	time	nsect	ivar
@@ -155,6 +155,15 @@ c writes 2d fluxes to file (only for ivar=0)
 	write(68,'(i10,20f10.2)') it,(ptot(3,i),i=1,nsect)	!negative
         write(69,'(i10,20f10.2)') it,(ptot(4,i),i=1,nsect)	!absolute
 
+c next is box format for Ali
+
+	write(61,*) it
+	write(61,*) 0
+	write(61,*) nsect
+	do i=1,nsect
+	  write(61,*) 0,0,(ptot(j,i),j=1,3)
+	end do
+
 	end
 
 c****************************************************************
@@ -174,7 +183,7 @@ c writes 3d fluxes to file
 
 	integer iunit,i,lmax,l,j
 
-	iunit = 60 + ivar
+	iunit = 160 + ivar
 
 	write(iunit,*) it,nsect,ivar
 	do i=1,nsect

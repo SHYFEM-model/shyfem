@@ -161,6 +161,7 @@ c 16.12.2010    ggu	in sp256w() account for changing volume (sigma)
 c 19.02.2011    ccf	3D radiation stress
 c 04.11.2011    ggu	deleted computation of firction term (in subn35.f)
 c 29.03.2012    ggu	cleaned up, sp256v prepared for OpenMP
+c 10.05.2013    dbf&ggu new routines for non-hydro
 c
 c******************************************************************
 
@@ -262,6 +263,8 @@ c function
 c	integer iround,ideffi
 	integer iround
 	real getpar,resi
+	integer inohyd
+	logical bnohyd
 c save
 	save epseps
 c data
@@ -269,6 +272,11 @@ c data
 
 	kspecial = 3878
 	kspecial = 0
+
+c set parameter for hydro or non hydro 
+
+        inohyd = nint(getpar('inohyd'))
+	bnohyd = inohyd .eq. 1
 
 c constants...%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -282,7 +290,8 @@ c dry areas
 	!call set_dry
 
 	call copy_uvz		!copies uvz to old time level
-
+	call nonhydro_copy	!copies non hydrostatic pressure terms
+	
 	call copydepth(nlvdim,hdknv,hdkov,hdenv,hdeov)
 	call setdepth(nlvdim,hdkov,hdeov,zeov,areakv)
 
@@ -337,15 +346,17 @@ c end of solution %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 c w-values %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	call sp256w(saux1,saux2)	!$$VERVEL
+	if (bnohyd) then
+	  call sp256wnh
+	  call nonhydro_adjust
+	else
+	  call sp256w(saux1,saux2)	!$$VERVEL
+	  call mass_conserve(saux1,saux2)	!check mass balance
+	end if
 
 c compute velocities from transports %%%%%%%%%%%%%%%%%%%%%%%%%
 
 	call ttov
-
-c check mass balance (v1v is dummy)
-
-	call mass_conserve(saux1,saux2)
 
 c compute nodal values for velocities %%%%%%%%%%%%%%%%%%%%%%%%
 

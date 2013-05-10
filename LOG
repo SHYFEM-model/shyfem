@@ -1,4 +1,18 @@
 
+10.05.2013	new non-hydrostatic routines
+
+	new file for non hydrostatic terms (newnohydro.f)
+	initialization (ht.f)
+	explicit terms and vertical advection (newexpl.f)
+	implicit resolution of q (new3di.f)
+
+10.05.2013	new boxes computations
+
+	deal with boxes (basbox.f,subboxa.f,subsys.f)
+	fluxes refactroed (subflxa.f,subflxu.f)
+
+
+
 c ./femplot/plotsim.f:
 c 27.02.2013    ggu     deleted amat, better color handling
 c

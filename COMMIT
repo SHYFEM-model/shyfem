@@ -1,5 +1,39 @@
 ============================================================
 
+Fri May 10 18:08:54 CEST 2013
+
+boxes and non-hydrostatic model
+
+ .gitignore              |    1 +
+ LOG                     |   14 +
+ Makefile                |    5 +-
+ fem3d/Makefile          |   13 +-
+ fem3d/basbox.f          |  647 ++++++++++++++++
+ fem3d/bedload.f         |    3 -
+ fem3d/flxinf.f          |   17 +-
+ fem3d/ht.f              |    5 +-
+ fem3d/new3di.f          |   23 +-
+ fem3d/newexpl.f         |   52 ++-
+ fem3d/newini.f          |    4 +-
+ fem3d/newnohydro.f      |  395 ++++++++++
+ fem3d/nosinf.f          |    2 +
+ fem3d/param.h           |    6 +-
+ fem3d/subboxa.f         |  779 +++++++++++++++++++
+ fem3d/subboxa.h         |   24 +
+ fem3d/subflxa.f         |  456 +-----------
+ fem3d/subflxa.h         |   15 +
+ fem3d/subflxu.f         |  423 +++++++++++
+ fem3d/submod.f          |    1 +
+ fem3d/subnsh.f          |    1 +
+ fem3d/subsys.f          |  104 ++-
+ fembin/grd_transl.pl    |   68 ++-
+ femdoc/final/shyfem.pdf |  Bin 268761 -> 270743 bytes
+ femdoc/final/shyfem.ps  | 1904 ++++++++++++++++++++++++-----------------------
+ param.h                 |    6 +-
+ 26 files changed, 3554 insertions(+), 1414 deletions(-)
+
+============================================================
+
 Fri May  3 10:26:26 CEST 2013
 
 New version 6_1_63
