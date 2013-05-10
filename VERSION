@@ -1,3 +1,40 @@
+version  6_1_64    10-05-2013    VERS_6_1_64
+
+========================================================== 10-05-2013 - 6_1_64
+
+c ./fem3d/subver.f:
+c 10.05.2013	ggu	version 6.1.64
+c
+c ./fem3d/newnohydro.f:
+c 10.05.2013    dbf     written from scratch
+c
+c ./fem3d/subflxa.f:
+c 10.05.2013    ggu     introduced subflxa.h, common routines to subflxu.f
+c
+c ./fem3d/subsys.f:
+c 10.05.2013	ggu	new parameters idtbox,itmbox, more comments
+c 10.05.2013	ggu	new parameter inohyd
+c
+c ./fem3d/subflxu.f:
+c 09.05.2013    ggu     separated from subflxa.f
+c
+c ./fem3d/new3di.f:
+c 10.05.2013    dbf&ggu new routines for non-hydro
+c
+c ./fem3d/ht.f:
+c 10.05.2013    dbf	initialization for non hydrostatic routines
+c
+c ./fem3d/basbox.f:
+c 07.05.2013    ggu     copied from bastreat
+c
+c ./fem3d/newexpl.f:
+c 10.05.2013	dbf&ggu	new routines for non-hydro and vertical advection
+c
+c ./fem3d/subboxa.f:
+c 10.05.2013    ggu     adapted to boxes computations
+
+==========================================================
+
 version  6_1_63    03-05-2013    VERS_6_1_63   commit_2013-05-10
 
 version  6_1_63    03-05-2013    VERS_6_1_63
