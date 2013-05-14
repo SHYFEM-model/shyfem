@@ -1,4 +1,13 @@
 
+14.05.2013	OBC in box computations
+
+	OBC also in box computations (basbox.f,subboxa.f)
+	cleaned some checks in flux computation (subflxu.f)
+
+
+
+
+
 10.05.2013	new non-hydrostatic routines
 
 	new file for non hydrostatic terms (newnohydro.f)

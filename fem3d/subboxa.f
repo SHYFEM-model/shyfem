@@ -39,6 +39,7 @@ c 07.10.2011    ggu     adjusted for 3d flux routines
 c 19.10.2011    ggu     added T/S variables, created fluxes_*() routines
 c 19.10.2011    ggu     added conz variables, created fluxes_template()
 c 10.05.2013    ggu     adapted to boxes computations
+c 14.05.2013    ggu     write also OBC sections and contributions
 c
 c******************************************************************
 c******************************************************************
@@ -138,20 +139,14 @@ c******************************************************************
 	integer k,ii
         logical berror
 
+c convert external to internal node numbers
+
 	call n2int(kfluxm,kflux,berror)
 
         if( berror ) then
 		write(6,*) 'error in section FLUX'
 		stop 'error stop: ckboxa'
 	end if
-
-c initialize vectors (not strictly necessary)
-
-	do k=1,kfluxm
-	  do ii=1,3
-	    iflux(ii,k) = 0
-	  end do
-	end do
 
 c the real set up is done in boxini
 c but since at this stage we do not have all the arrays set up
@@ -258,8 +253,12 @@ c administers writing of flux data
 	real tempt(0:nlvdim,3,nscboxdim)	!accumulator temp
 	real conzt(0:nlvdim,3,nscboxdim)	!accumulator conz
 
-	integer nnt,nns,nne
-	save nnt,nns,nne
+	integer nlayers_ob(nbcdim)		!number of layers in section
+	real fluxes_ob(0:1,3,nbcdim)		!discharges at open bound
+	real masst_ob(0:1,3,nbcdim)		!discharges at open bound
+
+	integer nnt,nns,nne,nnob
+	save nnt,nns,nne,nnob
 	real valt(nbxdim)
 	real vals(nbxdim)
 	real vale(nbxdim)
@@ -278,6 +277,8 @@ c administers writing of flux data
         save nbbox
 	integer ibarcl,iconz
 	save ibarcl,iconz
+
+	integer nbnds
 
         data nbbox /0/
 
@@ -335,6 +336,12 @@ c-----------------------------------------------------------------
 		call boxes_init(nbox,nnt,valt)	!temp in box
 		call boxes_init(nbox,nns,vals)	!salt in box
 		call boxes_init(nbox,nne,vale)	!zeta in box
+
+		nbc_ob = nbnds()
+		do i=1,nbc_ob
+		  nlayers_ob(i) = 1
+		end do
+		call fluxes_init(1,nbc_ob,nlayers_ob,nnob,masst_ob)
 
                 nbbox=ifemop('.box','unform','new')
                 if(nbbox.le.0) then
@@ -395,6 +402,9 @@ c     +                  ,i=1,nsect)
 	call box_eta(val)
 	call boxes_accum(nbox,nne,vale,val)
 
+	call box_ob_compute(fluxes_ob)	!open boundary conditions
+	call fluxes_accum(1,nbc_ob,nlayers_ob,nnob,masst_ob,fluxes_ob)
+
 c	-------------------------------------------------------
 c	time for output?
 c	-------------------------------------------------------
@@ -429,7 +439,9 @@ c	-------------------------------------------------------
 	call boxes_aver(nbox,nns,vals)	!salt in box
 	call boxes_aver(nbox,nne,vale)	!zeta in box
 
-	call box_write(it,fluxes,valt,vals,vale)
+	call fluxes_aver(1,nbc_ob,nlayers_ob,nnob,masst_ob,fluxes_ob)
+
+	call box_write(it,fluxes,valt,vals,vale,fluxes_ob)
 
 c	-------------------------------------------------------
 c	reset variables
@@ -449,6 +461,8 @@ c	-------------------------------------------------------
 	call boxes_init(nbox,nnt,valt)	!temp in box
 	call boxes_init(nbox,nns,vals)	!salt in box
 	call boxes_init(nbox,nne,vale)	!zeta in box
+
+	call fluxes_init(1,nbc_ob,nlayers_ob,nnob,masst_ob)
 
 c-----------------------------------------------------------------
 c end of routine
@@ -485,12 +499,16 @@ c reads file etc...
 
 	implicit none
 
-	call inboxa
+	call inboxa		!basic initialization
 
-	call box_read
+	call box_read		!reads boxes.txt
+	call box_elab		!sets up ikboxes
 
-	call ckboxa
-	call boxini
+	call ckboxa		!converts ext to int nodes
+
+	call box_ob_init	!initializes OB contributions (nodes intern)
+
+	call boxini		!sets data structure iflux
 
 	end
 
@@ -504,9 +522,10 @@ c******************************************************************
 	include 'basin.h'
 	include 'subboxa.h'
 
-	integer nb,id,n,ib1,ib2,ip,i
+	integer nb,id,n,ib1,ib2,i
 	integer nelaux,ie
 	integer ierr,iaux
+	integer iauxv(nkndim)
 
 	nsect = 0
 	kfluxm = 0
@@ -520,36 +539,24 @@ c******************************************************************
 	if( nbox .gt. nbxdim ) goto 98
 	read(1,*) (iboxes(ie),ie=1,nelaux)
 
-	ip = 0
     2	continue
 	  read(1,*) id,n,ib1,ib2
 	  if( id .le. 0 ) goto 3
+	  read(1,*) (iauxv(i),i=1,n)
 	  nsect = nsect + 1
 	  if( id .ne. nsect ) goto 97
-	  if( nsect .gt. nscboxdim ) ierr = ierr + 1
-	  if( ip + n + 1 .gt. nfxboxdim ) ierr = ierr + 1
 
-	  if( ierr .gt. 0 ) then	! errors -> dummy read
-	    read(1,*) (iaux,i=1,n)
-	    ip = ip + n + 1
-	  else				! no errors -> read normally
-	    isects(1,id) = n
-	    isects(2,id) = ip+1
-	    isects(3,id) = ib1
-	    isects(4,id) = ib2
-	    read(1,*) (kflux(ip+i),i=1,n)
-	    ip = ip + n + 1
-	    kflux(ip) = 0
-	  end if
+	  call box_insert_section(id,n,ib1,ib2,iauxv,ierr)
+
 	  goto 2
     3	continue
 
 	close(1)
 
 	if( nsect .gt. nscboxdim ) goto 95
-	if( ip .gt. nfxboxdim ) goto 96
+	if( kfluxm .gt. nfxboxdim ) goto 96
 
-	kfluxm = ip - 1
+	kfluxm = kfluxm - 1
 
 	write(6,*) 'finished reading boxes.txt: '
 	write(6,*) nbox,nsect,kfluxm
@@ -562,7 +569,7 @@ c******************************************************************
 	write(6,*) nsect,nscboxdim
 	stop 'error stop box_read: nscboxdim'
    96	continue
-	write(6,*) ip,nfxboxdim
+	write(6,*) kfluxm,nfxboxdim
 	stop 'error stop box_read: nfxboxdim'
    97	continue
 	write(6,*) id,nsect
@@ -577,7 +584,93 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine box_write(it,fluxes,valt,vals,vale)
+	subroutine box_insert_section(id,n,ib1,ib2,list,ierr)
+
+c inserts section in data structure
+
+	implicit none
+
+	include 'param.h'
+	include 'basin.h'
+	include 'subboxa.h'
+
+	integer id,n,ib1,ib2
+	integer list(n)
+	integer ierr
+
+	integer i
+
+	if( id .gt. nscboxdim ) ierr = ierr + 1
+	if( kfluxm + n + 1 .gt. nfxboxdim ) ierr = ierr + 1
+
+	if( ierr .eq. 0 ) then	! no errors -> insert
+	    isects(1,id) = n
+	    isects(2,id) = kfluxm+1
+	    isects(3,id) = ib1
+	    isects(4,id) = ib2
+	    do i=1,n
+	      kflux(kfluxm+i) = list(i)
+	    end do
+	    kfluxm = kfluxm + n + 1
+	    kflux(kfluxm) = 0
+	else
+	    kfluxm = kfluxm + n + 1
+	end if
+
+	end
+
+c******************************************************************
+
+	subroutine box_elab
+
+c sets up ikboxes - index of nodes to boxes
+c
+c is -1 if node belongs to more than one box
+
+	implicit none
+
+	include 'param.h'
+	include 'basin.h'
+	include 'subboxa.h'
+
+	integer k,ie,ii,ib
+	integer nb,nl
+
+	do k=1,nkn
+	  ikboxes(k) = 0
+	end do
+
+	do ie=1,nel
+	  ib = iboxes(ie)
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    if( ikboxes(k) .eq. 0 ) then
+	      ikboxes(k) = ib
+	    else if( ikboxes(k) .ne. ib ) then
+	      ikboxes(k) = -1
+	    end if
+	  end do
+	end do
+
+	nb = 0
+	nl = 0
+	do k=1,nkn
+	  if( ikboxes(k) .gt. 0 ) then
+	    nb = nb + 1
+	  else if( ikboxes(k) .lt. 0 ) then
+	    nl = nl + 1
+	  end if
+	end do
+
+	if( nb+nl .ne. nkn ) stop 'error stop box_elab: internal error'
+
+	write(6,*) 'box nodes: ',nb,nl,nb+nl,nkn
+
+	end
+
+c******************************************************************
+
+	subroutine box_write(it,fluxes,valt,vals,vale,masst_ob)
 
 	implicit none
 
@@ -590,6 +683,7 @@ c******************************************************************
 	real valt(nbxdim)
 	real vals(nbxdim)
 	real vale(nbxdim)
+	real masst_ob(0:1,3,nbcdim)
 
 	integer iu,ib,is,ib1,ib2,ii
 
@@ -606,7 +700,14 @@ c******************************************************************
 	do is=1,nsect
 	  ib1 = isects(3,is)
 	  ib2 = isects(4,is)
-	  write(iu,*) ib1,ib2,(fluxes(1,ii,is),ii=1,3)
+	  write(iu,*) ib1,ib2,(fluxes(0,ii,is),ii=1,3)
+	end do
+
+	write(iu,*) nbc_ob
+	do is=1,nbc_ob
+	  ib1 = iscbnd(3,is)
+	  ib2 = iscbnd(4,is)
+	  write(iu,*) ib1,ib2,(masst_ob(0,ii,is),ii=1,3)
 	end do
 
 	end
@@ -628,6 +729,8 @@ c******************************************************************
 
         real zenv(3,neldim)
         common /zenv/zenv
+        integer iwegv(neldim)
+        common /iwegv/iwegv
 
 	double precision vald(nbxdim)
 	double precision vold(nbxdim)
@@ -641,14 +744,16 @@ c******************************************************************
 	end do
 
 	do ie=1,nel
-	  ib = iboxes(ie)
-	  area3 = 4.*ev(10,ie)
-	  do ii=1,3
-	    z = zenv(ii,ie)
-	    vol = area3
-	    vald(ib) = vald(ib) + vol*z
-	    vold(ib) = vold(ib) + vol
-	  end do
+	  if( iwegv(ie) .eq. 0 ) then	!only for wet elements
+	    ib = iboxes(ie)
+	    area3 = 4.*ev(10,ie)
+	    do ii=1,3
+	      z = zenv(ii,ie)
+	      vol = area3
+	      vald(ib) = vald(ib) + vol*z
+	      vold(ib) = vold(ib) + vol
+	    end do
+	  end if
 	end do
 
 	do ib=1,nbox
@@ -775,5 +880,114 @@ c******************************************************************
 
 c******************************************************************
 c******************************************************************
+c******************************************************************
+
+	subroutine box_ob_init
+
+c sets up open boundary inputs
+
+	implicit none
+
+	include 'param.h'
+	include 'subboxa.h'
+
+	integer nbc,ibc,itype
+	integer nk,i,k,ib,ibk
+	integer ierr
+	integer iauxv(nkndim)
+
+	integer nbnds,itybnd,nkbnds,kbnds
+	integer ipext
+
+	ierr = 0
+	kfluxm = kfluxm + 1
+	kflux(kfluxm) = 0
+
+	nbc = nbnds()
+
+	do ibc = 1,nbc
+	  itype = itybnd(ibc)
+	  nk = nkbnds(ibc)
+	  ib = 0
+	  do i=1,nk
+	    k = kbnds(ibc,i)
+	    ibk = ikboxes(k)
+	    if( ibk .le. 0 ) goto 99	!node not in unique box
+	    if( ib .eq. 0 ) ib = ibk
+	    if( ibk .ne. ib ) goto 98	!boundary nodes in different boxes
+	  end do
+	  iscbnd(1,ibc) = nk		!total number of boundary nodes
+	  iscbnd(2,ibc) = itype		!type of boundary
+	  iscbnd(3,ibc) = -ibc		!from box
+	  iscbnd(4,ibc) = ib		!to box
+
+	  if( itype .eq. 1 ) then	!insert sections of z boundary
+	    nsect = nsect + 1
+	    call irbnds(ibc,nkndim,nk,iauxv)
+	    call box_insert_section(nsect,nk,-ibc,ib,iauxv,ierr)
+	  end if
+	end do
+
+	if( nsect .gt. nscboxdim ) goto 95
+	if( kfluxm .gt. nfxboxdim ) goto 96
+
+	kfluxm = kfluxm - 1
+
+	return
+   95	continue
+	write(6,*) nsect,nscboxdim
+	stop 'error stop box_ob_init: nscboxdim'
+   96	continue
+	write(6,*) kfluxm,nfxboxdim
+	stop 'error stop box_ob_init: nfxboxdim'
+   98	continue
+	write(6,*) 'boxes: ',ib,ibk,'  node: ',ipext(k)
+	stop 'error stop box_ob_init: different boxes for nodes'
+   99	continue
+	write(6,*) 'boxes: ',ibk,'  node: ',ipext(k)
+	stop 'error stop box_ob_init: not unique box for node'
+	end
+
+c******************************************************************
+
+	subroutine box_ob_compute(fluxes_ob)
+
+c computes open boundary inputs
+
+	implicit none
+
+	include 'param.h'
+	include 'subboxa.h'
+
+	real fluxes_ob(0:1,3,nbcdim)		!discharges at open bound
+
+	integer ibc,nbc
+	real val
+
+	real get_discharge
+
+	nbc = nbc_ob
+
+	do ibc = 1,nbc
+	  val = get_discharge(ibc)
+	  if( val .ge. 0 ) then
+	    fluxes_ob(0,1,ibc) = val
+	    fluxes_ob(0,2,ibc) = val
+	    fluxes_ob(0,3,ibc) = 0.
+	    fluxes_ob(1,1,ibc) = val
+	    fluxes_ob(1,2,ibc) = val
+	    fluxes_ob(1,3,ibc) = 0.
+	  else
+	    fluxes_ob(0,1,ibc) = val
+	    fluxes_ob(0,2,ibc) = 0.
+	    fluxes_ob(0,3,ibc) = -val
+	    fluxes_ob(1,1,ibc) = val
+	    fluxes_ob(1,2,ibc) = 0.
+	    fluxes_ob(1,3,ibc) = -val
+	  end if
+	end do
+
+	end
+
 c******************************************************************
 

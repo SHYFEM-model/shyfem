@@ -349,10 +349,10 @@ c w-values %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	if (bnohyd) then
 	  call sp256wnh
 	  call nonhydro_adjust
-	else
-	  call sp256w(saux1,saux2)	!$$VERVEL
-	  call mass_conserve(saux1,saux2)	!check mass balance
 	end if
+
+	call sp256w(saux1,saux2)	!$$VERVEL
+	call mass_conserve(saux1,saux2)	!check mass balance
 
 c compute velocities from transports %%%%%%%%%%%%%%%%%%%%%%%%%
 

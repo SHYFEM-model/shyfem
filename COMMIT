@@ -1,5 +1,25 @@
 ============================================================
 
+Tue May 14 18:24:51 CEST 2013
+
+changes in box computations
+
+ LOG                     |    9 ++
+ fem3d/basbox.f          |   35 +++---
+ fem3d/new3di.f          |    6 +-
+ fem3d/subboxa.f         |  302 ++++++++++++++++++++++++++++++++++++++++-------
+ fem3d/subboxa.h         |   18 ++-
+ fem3d/subflx3d.f        |   73 +++++++++---
+ fem3d/subflxu.f         |   10 +-
+ fem3d/subn11.f          |   39 ++++++
+ femadj/param.h          |    6 +-
+ femdoc/final/shyfem.pdf |  Bin 270743 -> 270744 bytes
+ femdoc/final/shyfem.ps  |   26 ++--
+ femplot/param.h         |    6 +-
+ 12 files changed, 424 insertions(+), 106 deletions(-)
+
+============================================================
+
 Fri May 10 18:10:10 CEST 2013
 
 New version 6_1_64

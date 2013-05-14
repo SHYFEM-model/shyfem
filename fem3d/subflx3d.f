@@ -71,8 +71,10 @@ c for a boundary node, transp(n) = 0
         real zenv(3,1), zeov(3,1)
         common /zenv/zenv, /zeov/zeov
 
+	logical bdebug
 	integer i,ie,ii,ne,ndim
-	real aj,area,dz,rdt,dt
+	real aj,area,dz,dt
+	real dvdt,div
 	real uv,uvn,uvo
 	real b,c
 	real azt,tt
@@ -83,9 +85,11 @@ c---------------------------------------------------------
 c get parameters
 c---------------------------------------------------------
 
+	bdebug = k .eq. 6615
+	bdebug = k .eq. 0
+
 	ndim = n
 	call get_timestep(dt)
-	rdt = 1./dt
 	azt = 1. - az
 
 c---------------------------------------------------------
@@ -112,16 +116,24 @@ c---------------------------------------------------------
 	do i=1,ne
 	  ie = lnk_elems(i)
 	  ii = ithis(k,ie)
-	  aj = ev(10,ie)
-	  area = 4. * aj
-	  dz = zenv(ii,ie) - zeov(ii,ie)
 	  b = ev(3+ii,ie)
 	  c = ev(6+ii,ie)
+	  aj = ev(10,ie)
+	  area = 4. * aj
+
 	  uvn = unv(ie) * b + vnv(ie) * c
 	  uvo = uov(ie) * b + vov(ie) * c
 	  uv = 12. * aj * ( az * uvn + azt * uvo )
-	  uv = uv - dz * area * rdt
-	  transp(i) = uv
+
+	  dz = zenv(ii,ie) - zeov(ii,ie)
+	  dvdt = dz * area / dt
+
+	  div = -dvdt
+	  transp(i) = uv + div
+
+	  !transp(i) = uv - dz * area * rdt
+	  !if( bdebug ) write(88,*) i,1,uv
+	  !if( bdebug ) write(88,*) i,dvdt
 	end do
 
 	end
@@ -149,6 +161,7 @@ c passed in are pointers to these section in lnk structure
 	include 'ev.h'
 	include 'links.h'
 
+	logical bdebug
 	integer i,n
 	real tt
 
@@ -156,12 +169,21 @@ c passed in are pointers to these section in lnk structure
 	real weight(ndim)
 	real weight1(ndim)
 
+	bdebug = k .eq. 6615
+	bdebug = k .eq. 0
+
 c---------------------------------------------------------
 c compute transport through finite volume k
 c---------------------------------------------------------
 
 	n = ndim
 	call flx2d_k(k,istype,az,n,transp)
+
+	if( bdebug ) then
+	  write(88,*) '2d ',k,n
+	  write(88,*) (transp(i),i=1,n)
+	  write(88,*) '---------------------------------'
+	end if
 
 c---------------------------------------------------------
 c compute transport through section in finite volume k
@@ -227,6 +249,7 @@ c -> has been done - other sources of mfluxv (rain, etc.) are also eliminated
         real mfluxv(nlvdim,1)
         common /mfluxv/mfluxv
 
+	logical bdebug
 	integer i,ie,ii,ne,ndim
 	integer l,lmax
 	real aj,area,dz,dt
@@ -244,6 +267,9 @@ c -> has been done - other sources of mfluxv (rain, etc.) are also eliminated
 c---------------------------------------------------------
 c get parameters
 c---------------------------------------------------------
+
+	bdebug = k .eq. 6615
+	bdebug = k .eq. 0
 
 	ndim = n
 	call get_timestep(dt)
@@ -263,12 +289,6 @@ c---------------------------------------------------------
 	if( istype .gt. 1 ) n = n + 1		!boundary
 	if( n .gt. ndim ) stop 'error stop flx3d_k: n > ndim'
 
-c---------------------------------------------------------
-c compute transports into finite volume of node k -> transp
-c computed transports are divergence corrected
-c note: lkmax is always greater or equal than lmax
-c---------------------------------------------------------
-
 	lkmax = ilhkv(k)
 	do l=1,lkmax
 	  areal(l) = areanode(l,k)
@@ -276,6 +296,12 @@ c---------------------------------------------------------
           transp(l,n) = 0.				!if on boundary
 	end do
 	areal(lkmax+1) = 0.
+
+c---------------------------------------------------------
+c compute transports into finite volume of node k -> transp
+c computed transports are divergence corrected
+c note: lkmax is always greater or equal than lmax
+c---------------------------------------------------------
 
 	do i=1,ne
 	  ie = lnk_elems(i)
@@ -298,11 +324,10 @@ c---------------------------------------------------------
 	    if( l .eq. lmax ) qw_bot = 0.
 
 	    div = (area/areal(l))*(q-dvdt) + qw_bot - qw_top
-
-	    !write(88,*) 'new ',i,uvn,uvo,uv,-div
-	    !write(88,*) '... ',q,dvdt
-
 	    transp(l,i) = uv + div
+
+	    !if( bdebug ) write(88,*) i,l,uv
+	    !if( bdebug ) write(88,*) i,dvdt,q,area,areal(l),qw_bot,qw_top
 	  end do
 	  do l=lmax+1,lkmax
 	    transp(l,i) = 0.
@@ -340,6 +365,7 @@ c passed in are pointers to these section in lnk structure
 	include 'ev.h'
 	include 'links.h'
 
+	logical bdebug
 	integer i,n
 	integer l
 	real ttot
@@ -350,12 +376,20 @@ c passed in are pointers to these section in lnk structure
 	real weight(ndim)
 	real weight1(ndim)
 
+	bdebug = k .eq. 6615
+	bdebug = k .eq. 0
+
 c---------------------------------------------------------
 c compute transport through finite volume k
 c---------------------------------------------------------
 
 	n = ndim
 	call flx3d_k(k,istype,az,lkmax,n,transp)
+
+	if( bdebug ) then
+	  write(88,*) '3d ',k,lkmax,n
+	  write(88,*) (transp(1,i),i=1,n)
+	end if
 
 c---------------------------------------------------------
 c check if transport is really divergence free
@@ -372,6 +406,11 @@ c---------------------------------------------------------
 	      write(6,*) '     ',k,l,lkmax,istype
 	    end if
 	  end do
+	end if
+
+	if( bdebug ) then
+	  write(88,*) 'ttot ',ttot
+	  write(88,*) '---------------------------------'
 	end if
 
 c---------------------------------------------------------

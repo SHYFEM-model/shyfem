@@ -16,6 +16,7 @@ c
 c revision log :
 c
 c 09.05.2013    ggu     separated from subflxa.f
+c 14.05.2013    ggu     deleted error check between 2d and 3d computation
 c
 c notes :
 c
@@ -222,10 +223,11 @@ c computes flux through one section
 		end do
 		!write(66,*) i,k,istype,ibefor,iafter,flux
 
-		if( abs(port2d-ptot) .gt. 1. ) then
-		  write(6,*) '***** integrated fluxes: ',k
-		  write(6,*) '   ',port2d,ptot,abs(port2d-ptot)
-		end if
+		!the next will give an error on partially dry nodes
+		!if( abs(port2d-ptot) .gt. 1. ) then
+		!  write(6,*) '***** integrated fluxes: ',k
+		!  write(6,*) '   ',port2d,ptot,abs(port2d-ptot)
+		!end if
 
 		fluxes(0,1) = fluxes(0,1) + sptot
 		if( ptot .gt. 0. ) then

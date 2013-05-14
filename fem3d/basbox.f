@@ -4,6 +4,7 @@ c
 c revision log :
 c
 c 07.05.2013    ggu     copied from bastreat
+c 14.05.2013    ggu     subroutines cleaned
 c
 c****************************************************************
 
@@ -44,7 +45,6 @@ c reads grid with box information and writes index file boxes.txt
         integer ner,nco,nknh,nelh,nli
 	integer nlidim,nlndim
 	integer ike,idepth
-	real hmin,hmax
 	real f(5)
 	logical bstop
 
@@ -60,13 +60,9 @@ c reads grid with box information and writes index file boxes.txt
 	integer iscanf
 	integer iapini
 
-	hmin = -99999.
-	hmax = 99999.
-
 c-----------------------------------------------------------------
-c what to do
+c initialize
 c-----------------------------------------------------------------
-
 
 c-----------------------------------------------------------------
 c read in bathymetry file
@@ -108,17 +104,21 @@ c-----------------------------------------------------------------
 c write
 c-----------------------------------------------------------------
 
+	open(69,file='boxes.txt',form='formatted',status='unknown')
+
 	call write_boxes(nbxdim,nlbdim,nbox,nblink,boxinf)
 	call sort_boxes(nbxdim,nlbdim,nbox,nblink,boxinf,neib
      +			,iaux1,iaux2)
+
+	close(69)
 
 c-----------------------------------------------------------------
 c end of routine
 c-----------------------------------------------------------------
 
+	write(6,*) 
 	write(6,*) 'finished writing files'
-	write(6,*) 'please copy fort.69 to basin.txt'
-	write(6,*) 'in order to use it in box model'
+	write(6,*) 'the index is in file boxes.txt'
 
 	stop
    96	continue
@@ -160,13 +160,14 @@ c there are nblink(ib) node pairs in boxinf, so n=1,nblink(ib)
 	integer neib(nbxdim)
 	integer iaux1(2,nlbdim)
 	integer iaux2(nlbdim)
-
 	integer ib,n,i,ii,ibn,nn,k
-	integer jfill,j,ibb,nf,ns
+	integer jfill,j,ibb,nf,ns,nt,ntt
 	integer id
 
 	integer kantv(2,nkndim)
 
+	nt = 0
+	ntt = 0
 	id = 0
 	do ib=1,nbox
 	  neib(ib) = 0
@@ -216,7 +217,9 @@ c there are nblink(ib) node pairs in boxinf, so n=1,nblink(ib)
 		write(66,*) ns,nf,ib,ibn
 		write(66,*) (ipv(iaux2(i)),i=1,nf)
 
-		call write_section(nf,iaux2,ns,id,ib,ibn,ipv)
+		nt = nt + nf - ns + 1	!real nodes, no zeros
+		ntt = ntt + nf + 1
+		call write_section(nf,iaux2,id,ib,ibn,ipv)
 
 	      end if
 	    end do
@@ -224,6 +227,9 @@ c there are nblink(ib) node pairs in boxinf, so n=1,nblink(ib)
 	end do
 
 	write(69,*) 0,0,0,0
+	write(6,*) 'total number of sections: ',id
+	write(6,*) 'total number of nodes in sections: ',nt
+	write(6,*) 'total number of needed nodes in sections: ',ntt
 
 	end
 
@@ -313,13 +319,12 @@ c*******************************************************************
 
 c*******************************************************************
 
-	subroutine write_section(n,list,ns,id,ib,ibn,ipv)
+	subroutine write_section(n,list,id,ib,ibn,ipv)
 
 	implicit none
 
 	integer n
 	integer list(n)
-	integer ns
 	integer id,ib,ibn
 	integer ipv(*)
 
@@ -338,7 +343,7 @@ c*******************************************************************
 	  write(68,*) id,nn,ib,ibn
 	  write(68,*) (ipv(list(j)),j=is,ie)
 	  write(69,*) id,nn,ib,ibn
-	  write(69,*) (ipv(list(j)),j=is,ie)
+	  write(69,'((8i9))') (ipv(list(j)),j=is,ie)
 	  i = i + 1
 	end do
 
@@ -397,7 +402,7 @@ c*******************************************************************
 	write(67,*) (iarv(ie),ie=1,nel)
 
 	write(69,*) nel,nbox,nu
-	write(69,*) (iarv(ie),ie=1,nel)
+	write(69,'((8i9))') (iarv(ie),ie=1,nel)
 
 	end
 

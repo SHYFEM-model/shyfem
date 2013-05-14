@@ -90,6 +90,7 @@ c 14.04.2010    ggu     account for negative levmin/max
 c 16.02.2011    ggu     copied meteo routines to submet.f
 c 23.02.2011    ggu     new parameters tramp and levflx implemented
 c 01.03.2011    ggu     implement smoothing for levflx
+c 14.05.2011    ggu     new routine get_discharge()
 c
 c***************************************************************
 
@@ -1420,6 +1421,44 @@ c**********************************************************************
         rout = rw
 
         end
+
+c**********************************************************************
+ 
+	function get_discharge(ibc)
+
+c returns discharge through boundary ibc for points sources
+c for z-boundaries 0 is returned
+
+	implicit none
+
+	include 'param.h'
+
+	real get_discharge
+	integer ibc
+
+	real rqpsv(nkndim)
+	common /rqpsv/rqpsv
+
+	integer itype,nk,i,k
+	real acc
+
+	integer itybnd,nkbnds,kbnds
+
+	get_discharge = 0.
+
+	itype = itybnd(ibc)
+	if( itype .le. 1 .or. itype .gt. 3 ) return
+
+	acc = 0.
+        nk = nkbnds(ibc)
+        do i=1,nk
+          k = kbnds(ibc,i)
+	  acc = acc + rqpsv(k)
+        end do
+
+	get_discharge = acc
+
+	end
 
 c**********************************************************************
 
