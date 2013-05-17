@@ -63,7 +63,7 @@ c transforms transports at elements to velocities at nodes
 
 	  area = 12. * ev(10,ie)
 	  lmax = ilhv(ie)
-	  call get_layer_thickness(ie,lmax,bzeta,nsigma,hsigma,hl)
+	  call get_layer_thickness_e(ie,lmax,bzeta,nsigma,hsigma,hl)
 
 	  do l=1,lmax
 	    hmed = hl(l)

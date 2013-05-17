@@ -11,6 +11,7 @@ c 03.06.2011    ggu     routine adjourned
 c 16.12.2011    ggu     bug: call to init_sigma_info and makehev (common hev)
 c 09.03.2012    ggu     bug: zenv must be common
 c 25.01.2013    ggu     code cleaned
+c 17.05.2013    ggu     prepared for write_profile
 c
 c***************************************************************
 
@@ -32,10 +33,13 @@ c--------------------------------------------------
 	integer ilhkv(nkndim)
 	real hlv(nlvdim)
 	real hev(neldim)
-	common /hev/hev, /hlv/hlv       ! need this for get_layer_thickness
-
+	real hkv(nkndim)
 	real zenv(3,neldim)
+
 	common /zenv/zenv		! need this for get_layer_thickness
+	common /hev/hev
+	common /hlv/hlv
+	common /hkv/hkv
 
 	real znv(nkndim)
         real utlnv(nlvdim,neldim)
@@ -48,6 +52,7 @@ c--------------------------------------------------
 	real vt2v(neldim)
 	real u2v(neldim)
 	real v2v(neldim)
+	real haux(nkndim)
 
         integer nread,ierr
         integer nvers,nin,nlv
@@ -59,6 +64,7 @@ c--------------------------------------------------
 
         real href,hzoff
 	real umin,vmin,umax,vmax
+	real z,h
 
 	integer iapini,ideffi
 
@@ -123,6 +129,7 @@ c---------------------------------------------------------------
 	call init_sigma_info(nlv,hlv)
         call level_e2k(nkn,nel,nen3v,ilhv,ilhkv)
 	call makehev(hev)
+	call makehkv_minmax(hkv,haux,+1)
 
         write(6,*) 'Available levels: ',nlv
         write(6,*) (hlv(l),l=1,nlv)
@@ -169,6 +176,10 @@ c	---------------------------------------------------------
           write(79,*) znv(k)
           write(79,*) (uprv(l,k),l=1,lmax)
           write(79,*) (vprv(l,k),l=1,lmax)
+	  z = znv(k)
+	  h = hkv(k)
+	  call write_profile_uv(it,k,ke,lmax,h,z
+     +				,uprv(1,k),vprv(1,k),hl)
         end do
 
 	write(80,*) it,(znv(nodes(k)),k=1,nnodes)
@@ -197,6 +208,40 @@ c---------------------------------------------------------------
         write(6,*) 'nkn: ',nkn,nknous
         write(6,*) 'nel: ',nel,nelous
         stop 'error stop ousextr_nodes: nkn,nel'
+	end
+
+c***************************************************************
+
+	subroutine write_profile_uv(it,k,ke,lmax,h,z,u,v,hl)
+
+	implicit none
+
+	integer it,k,ke
+	integer lmax
+	real z,h
+	real u(1)
+	real v(1)
+	real hl(1)
+
+	logical bcenter
+	integer l
+	integer nlvaux,nsigma
+	real hsigma
+	real uv
+	
+	bcenter = .true.	!depth at center of layer ?
+
+        call get_sigma_info(nlvaux,nsigma,hsigma)
+
+	call get_layer_thickness(lmax,nsigma,hsigma,z,h,hl)
+	call get_bottom_of_layer(bcenter,lmax,z,hl,hl)	!orig hl is overwritten
+
+        write(82,*) it,ke,k,lmax,z
+	do l=1,lmax
+	  uv = sqrt( u(l)**2 + v(l)**2 )
+          write(82,*) hl(l),u(l),v(l),uv
+	end do
+
 	end
 
 c***************************************************************

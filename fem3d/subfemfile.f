@@ -8,6 +8,7 @@ c
 c revision log :
 c
 c 02.10.2012	ggu	created from scratch
+c 16.05.2013	ggu	better documentation
 c
 c
 c notes :
@@ -20,13 +21,17 @@ c	time record ...
 c
 c format for time record
 c
-c	it,nvers,np,lmax,nvar,ntype
-c	(hlv(l),l=1,lmax)			if( lmax > 1 )
-c	other lines depending on ntype
+c	header record
 c	data record for variable 1
 c	data record for variable 2
 c	data record for variable ...
 c	data record for variable nvar
+c
+c format for header record
+c
+c	it,nvers,np,lmax,nvar,ntype
+c	(hlv(l),l=1,lmax)			only if( lmax > 1 )
+c	other lines depending on ntype
 c
 c format for data record
 c
@@ -50,13 +55,20 @@ c ntype		type of data, defines extra data to follow
 c hlv		layer depths
 c string 	string with description of data
 c hd(k)		total depth in node k
-c data(l,k)	data for variable to be read
+c data(l,k)	data for variable
 c lm		total number of vertical data provided for point k
 c k,l		index for horizontal/vertical dimension
 c
-c file type
+c file type (ntype)
 c
 c 0		no other lines in header
+c 1		give date/time of reference in extra line (not yet ready)
+c 10		regular grid, information on extra line (not yet ready)
+c 20		rotated regular grid, information on extra line (not yet ready)
+c
+c combinations are possible, example:
+c
+c 21		date/time and regular rotated grid
 c
 c************************************************************
 c************************************************************
@@ -74,7 +86,7 @@ c writes header of the file
 	integer it		!time stamp
 	integer nvers		!version of file format
 	integer np		!size of data (horizontal, nodes or elements)
-	integer lmax		!vertical values
+	integer lmax		!maximum vertical values
 	integer nvar		!number of variables to write
 	integer ntype		!type of information contained
 	integer nlvdim		!vertical dimension of data
@@ -116,7 +128,7 @@ c writes data of the file
 	integer iunit		!file unit
 	integer nvers		!version of file format
 	integer np		!size of data (horizontal, nodes or elements)
-	integer lmax		!vertical values (1 for 2d)
+	integer lmax		!maximum vertical values (1 for 2d)
 	integer nlvdim		!vertical dimension of data
 	integer ilhkv(np)	!number of layers in point k (node)
 	character*(*) string	!string explanation
@@ -125,7 +137,7 @@ c writes data of the file
 
 	logical b2d
 	integer k,lm,l,nv
-	character*80 text
+	character*60 text
 
 	nv = nvers
 	if( nv .eq. 0 ) nv = 1	!default
@@ -502,15 +514,15 @@ c standard function for copying data to new structure
 	implicit none
 
 	logical fem_std_func
-	integer lmax
-	real hlv(lmax)
-	integer lm_data
-	real hd_data
-	real data_in(lm_data)
-	integer nlvdim
-	integer lm_fem
-	real hd_fem
-	real data_out(nlvdim)
+	integer lmax		!max layers in file
+	real hlv(lmax)		!layer depth in file
+	integer lm_data		!vertical levels read for point
+	real hd_data		!depth value read for point
+	real data_in(lm_data)	!data read for point
+	integer nlvdim		!vertical dimension of data_out
+	integer lm_fem		!number of levels of converted data
+	real hd_fem		!depth of converted data
+	real data_out(nlvdim)	!converted data
 
 	integer l,lin
 
@@ -642,8 +654,6 @@ c this will simply copy data read into array with no interpolation
 	      if( lm .gt. lmax ) goto 99
 	      if( .not. func(lmax,hlv,lm,hdepth,data_in
      +			,nlvdim,ilhkv(k),hd(k),data(1,k)) ) goto 98
-	      ilhkv(k) = lm
-	      hd(k) = hdepth
 	    end do
 	  end if
 	else
@@ -656,8 +666,6 @@ c this will simply copy data read into array with no interpolation
 	      if( lm .gt. lmax ) goto 99
 	      if( .not. func(lmax,hlv,lm,hdepth,data_in
      +			,nlvdim,ilhkv(k),hd(k),data(1,k)) ) goto 98
-	      ilhkv(k) = lm
-	      hd(k) = hdepth
 	    end do
 	  end if
 	end if

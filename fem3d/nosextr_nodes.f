@@ -10,6 +10,7 @@ c 24.02.1999    ggu     use n2int for node number translation
 c 03.12.2001    ggu     cleaned up, hakata bay
 c 03.06.2011    ggu     routine adjourned
 c 25.01.2013    ggu     routines cleaned
+c 17.05.2013    ggu     prepared for write_profile
 c
 c***************************************************************
 
@@ -31,11 +32,14 @@ c--------------------------------------------------
 	integer ilhkv(nkndim)
 	real hlv(nlvdim)
 	real hev(neldim)
-	common /hev/hev, /hlv/hlv	! need this for get_layer_thickness
+	real hkv(nkndim)
 
-        real zenv(3,neldim)
-        common /zenv/zenv		! need this for get_layer_thickness
+	common /hev/hev
+	common /hlv/hlv
+	common /hkv/hkv
 
+	real hl(nlvdim)
+	real haux(nkndim)
 	real cv(nkndim)
 	real cv3(nlvdim,nkndim)
 
@@ -46,6 +50,7 @@ c--------------------------------------------------
 	integer it
 	integer k,ke,i
 	integer l,lmax
+	real z,h
 
 	integer nvar,ivar,iu
 
@@ -106,6 +111,7 @@ c---------------------------------------------------------------
 
         call init_sigma_info(nlv,hlv)
         call makehev(hev)
+	call makehkv_minmax(hkv,haux,+1)
 
 	write(6,*) 'Available levels: ',nlv
 	write(6,*) (hlv(l),l=1,nlv)
@@ -146,9 +152,15 @@ c	---------------------------------------------------------
 	  write(4,*) (cv3(l,k),l=1,lmax)
 	  write(3,*) it,i,ke,k,lmax,ivar
 	  write(3,'((6f10.2))') (cv3(l,k),l=1,lmax)
+
+	  z = 0.
+	  h = hkv(k)
+	  call write_profile_c(it,k,ke,lmax,ivar,h,z
+     +				,cv3(1,k),hl)
 	end do
 
         write(iu,'(i10,30e12.4)') it,(cv3(1,nodes(i)),i=1,nnodes)
+
 
 	goto 300
 
@@ -228,4 +240,38 @@ c handles unit numbers for files of single variables
 	end
 
 c***************************************************************
+
+	subroutine write_profile_c(it,k,ke,lmax,ivar,h,z,c,hl)
+
+	implicit none
+
+	integer it,k,ke
+	integer lmax
+	integer ivar
+	real z,h
+	real c(1)
+	real hl(1)
+
+	logical bcenter
+	integer l
+	integer nlvaux,nsigma
+	real hsigma
+	real uv
+	
+	bcenter = .true.	!depth at center of layer ?
+
+        call get_sigma_info(nlvaux,nsigma,hsigma)
+
+	call get_layer_thickness(lmax,nsigma,hsigma,z,h,hl)
+	call get_bottom_of_layer(bcenter,lmax,z,hl,hl)	!orig hl is overwritten
+
+        write(82,*) it,ke,k,lmax,ivar
+	do l=1,lmax
+          write(82,*) hl(l),c(l)
+	end do
+
+	end
+
+c***************************************************************
+
 

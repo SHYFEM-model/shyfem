@@ -1,5 +1,28 @@
 ============================================================
 
+Fri May 17 18:30:33 CEST 2013
+
+layer thickness computation
+
+ Rules.make            |   15 +++++-
+ fem3d/Makefile        |   19 +++++--
+ fem3d/nosextr_nodes.f |   52 +++++++++++++++++-
+ fem3d/nosutil.f       |    2 +-
+ fem3d/ousextr_nodes.f |   49 ++++++++++++++++-
+ fem3d/ousinf.f        |   18 ++++++
+ fem3d/ousutil.f       |    2 +-
+ fem3d/sigmautil.f     |  141 ++++++++++++++++++++++++++++++++++++++++++++-----
+ fem3d/subbc.f         |   10 +++-
+ fem3d/subfemfile.f    |   50 ++++++++++-------
+ fem3d/subintp.f       |   11 +++--
+ fem3d/subsys.f        |    7 +--
+ fem3d/subtsuvfile.f   |   12 ++--
+ fembin/strparse.pl    |   26 ++++++++-
+ femplot/supbas.f      |    4 +-
+ 15 files changed, 350 insertions(+), 68 deletions(-)
+
+============================================================
+
 Tue May 14 18:24:51 CEST 2013
 
 changes in box computations

@@ -810,6 +810,11 @@ c	-------------------------------------------------------------
 c	end of routine
 c	-------------------------------------------------------------
 
+	return
+   91	continue
+	stop 'error stop exfinit: 91'
+   92	continue
+	stop 'error stop exfinit: 92'
 	end
 
 c***************************************************************
@@ -1266,8 +1271,11 @@ c gets info on file
 	integer iunit,np,nvar,lmax
 	logical bformat,b3d
 
+	integer it,nvers,ntype,ierr
+	real f(10)
+
 	integer iret
-	character*1000
+	character*1000 line
 	integer iscanf
 
 	np = 0

@@ -6,6 +6,7 @@
 #
 #	-bnd	open boundary nodes (writes bnd_str.grd)
 #	-files	files with open boundary conditions
+#	-txt	writes boundary nodes in txt format
 #
 #--------------------------------------------------------
 
@@ -20,6 +21,7 @@ use strict;
 #-------------------------------------------------------------
 $::files = 1 if $::files;
 $::bnd = 1 if $::bnd;
+$::txt = 1 if $::txt;
 #-------------------------------------------------------------
 
 #-------------------------------------------------------------
@@ -53,7 +55,7 @@ if( $::bnd ) {
 
 sub Usage {
 
-  print STDERR "Usage: strparse.pl {-bnd|-files} str-file\n";
+  print STDERR "Usage: strparse.pl {-bnd|-files} [-txt] str-file\n";
   exit 0;
 }
 
@@ -98,7 +100,9 @@ sub show_nodes {
   $ibtyp = 1 if not defined $ibtyp;
   my $value = $str->get_value('kbound',$sect_name,$sect_number);
   if( defined $value ) {
-    if( ref($value) eq "ARRAY" ) {
+    if( $::txt ) {
+      write_txt($sect_number,$value);
+    } elsif( ref($value) eq "ARRAY" ) {
       write_array_new($value,"$sect_id :  kbound = \n");
       @list = @$value;
     } else {
@@ -185,5 +189,23 @@ sub write_array_new {
     print "\n" if $i%$nval == 0;
   }
   print "\n" unless $i%$nval == 0;
+}
+
+sub write_txt {
+
+  my ($id,$value) = @_;
+
+  if( ref($value) ne "ARRAY" ) {
+    my @value = ();
+    $value[0] = $value;
+    $value = \@value;
+  }
+
+  my $n = @$value;
+  print "$id  $n\n";
+  while( $n-- ) {
+    my $val = shift(@$value);
+    print "$val\n";
+  }
 }
 

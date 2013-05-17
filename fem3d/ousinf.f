@@ -155,6 +155,8 @@ c     +          ,nen3v,zenv,znv,utlnv,vtlnv)
 	write(6,*) 'vmin/vmax : ',vmin,vmax
 	write(6,*) 'volume    : ',volume
 
+	!if( it .eq. -1 ) call write_zeta(nkn,znv)
+
 	goto 300
 
   100	continue
@@ -176,3 +178,19 @@ c-----------------------------------------------------------------
 
 c******************************************************************
 
+	subroutine write_zeta(nkn,znv)
+
+	implicit none
+
+	integer nkn
+	real znv(nkn)
+
+	integer k
+
+	open(1,file='zinit.dat',form='unformatted',status='unknown')
+	write(1) (znv(k),k=1,nkn)
+	close(1)
+
+	end
+
+c******************************************************************

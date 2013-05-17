@@ -131,7 +131,7 @@ SOBJS   = \
           subn11.o subsrt.o \
           subdef.o subext.o subssc.o \
           subbas.o subnev.o subdim.o \
-          subnls.o subsse.o subwat.o \
+          subnls.o subwat.o \
           subfil.o subn35.o subout.o subous.o subssg.o \
           subnsh.o subssm.o subzzz.o \
           subnsu.o subsss.o subscn.o subres.o \
@@ -140,13 +140,14 @@ SOBJS   = \
           subwin.o subbnd.o \
           subexta.o subouta.o subdep.o subflxa.o subflx3d.o subflx.o \
 	  subdum.o subcus.o subdwq.o \
+	  $(BCTSOBJS) \
 	  $(QFLUX) \
 	  subnos.o subcon1.o subrnd.o sublin.o \
 	  submod.o subuti.o subele.o subgeo.o subdts.o \
 	  links.o sublnka.o sublnks.o sublnku.o subisd.o \
 	  debug.o subhisto.o subnosa.o subfvl.o \
 	  subeos.o sigmautil.o \
-	  nosutil.o ousutil.o
+	  nosutil.o ousutil.o subfemfile.o
 
 # general objects for 3D model ht
 
@@ -157,7 +158,8 @@ HTOBJS = \
 	subnsu.o subn35.o subdep.o \
 	subdef.o subfil.o subnls.o \
 	$(PARMOD) \
-	subsss.o subscn.o subssv.o subsse.o subssm.o \
+	$(BCTSOBJS) \
+	subsss.o subscn.o subssv.o subssm.o \
 	submir.o \
 	subext.o subexta.o \
 	subous.o subousa.o \
@@ -246,8 +248,13 @@ QFLUX_TEST = subqfxf.o \
 	subqfxu1.o subqfxu2.o subqfxu3.o subqfxu4.o \
 	subfil.o
 
+# experimental stuff
+
 PARMOD = subpar.o subfnm.o		# old parameter modules
 #PARMOD = subpar1.o			# new parameter modules
+
+BCTSOBJS = subintp.o subbc.o
+BCTSOBJS = subsse.o
 
 # objects for interpolation
 
@@ -366,8 +373,8 @@ winmerge:   winmerge.o $(OUTOBJS)
 mkgeom:   mkgeom.o
 	$(LINKER) $(LFLAGS) $@.o -o $@
 
-cubic:   cubic.o $(OUTOBJS) subsse.o subssm.o
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) subsse.o subssm.o -o $@
+cubic:   cubic.o $(OUTOBJS) $(BCTSOBJS) subssm.o
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(BCTSOBJS) subssm.o -o $@
 
 #------------------------------------------------
 
@@ -550,7 +557,7 @@ qflux_test:   qflux_test.o $(QFLUX_TEST)
 
 # to test interpolation routines in intp.f
 
-INTPOBJS = subsse.o subfil.o subsss.o subscn.o subssf.o subssm.o
+INTPOBJS = $(BCTSOBJS) subfil.o subsss.o subscn.o subssf.o subssm.o
 
 intp:	intp.o $(INTPOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(INTPOBJS) -o $@ 

@@ -15,22 +15,22 @@ c*******************************************************************
 	subroutine ts_file_open(name,nkn,iunit)
 	integer iunit(3)
 	character*(*) name
-	call fem_file_open_1(name,nkn,iunit)
-	!call ts_file_open_0(name,nkn,iunit)
+	!call fem_file_open_1(name,nkn,iunit)
+	call ts_file_open_0(name,nkn,iunit)		!old call
 	end
 
 	subroutine ts_next_record(it,iunit,nkn,nlv,value)
 	include 'param.h'
 	integer iunit(3)
 	real value(nlvdim,1)
-	call ts_next_record_1(it,iunit,nkn,nlv,value)
-	!call ts_next_record_0(it,iunit,nkn,nlv,value)
+	!call ts_next_record_1(it,iunit,nkn,nlv,value)
+	call ts_next_record_0(it,iunit,nkn,nlv,value)	!old call
 	end
 
 	subroutine ts_file_close(info)
 	integer info(3)
-	call fem_file_close_1(info)
-	!call ts_file_close_0(info)
+	!call fem_file_close_1(info)
+	call ts_file_close_0(info)			!old call
 	end
 
 c*******************************************************************	

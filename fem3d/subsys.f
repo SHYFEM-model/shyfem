@@ -106,6 +106,7 @@ c 02.05.2012	ggu	new default for ndccol (-> 0)
 c 24.10.2012	ggu	new parameter dxmin
 c 10.05.2013	ggu	new parameters idtbox,itmbox, more comments
 c 10.05.2013	ggu	new parameter inohyd
+c 16.05.2013	ggu	file name bound renamed to zinit
 c
 c************************************************************************
 
@@ -1837,9 +1838,7 @@ c
 c The following strings enable the specification of files
 c that account for initial conditions or forcing.
 c
-c |bound|	File with initial water level distribution. This
-c		file must be constructed by the utility routine
-c		|zinit|.
+c |zinit|	File with initial water level distribution.
 c |wind|	File with wind data. The file may be either
 c		formatted or unformatted. For the format of the unformatted
 c		file please see the section where the WIN
@@ -1867,7 +1866,7 @@ c |gotmpa|	Name of file containing the parameters for the
 c		GOTM turbulence model (iturb = 1).
 
 
-	call addfnm('bound',' ')
+	call addfnm('zinit',' ')
 	call addfnm('wind',' ')
         call addfnm('rain',' ')
         call addfnm('qflux',' ')

@@ -196,7 +196,7 @@ c we could do better using information on node area and depth structure
 	do ie=1,nel
 	  area = 1.
 	  if( belem ) area = 4. * ev(10,ie)
-	  call get_layer_thickness(ie,nlv,bzeta,nsigma,hsigma,hl)
+	  call get_layer_thickness_e(ie,nlv,bzeta,nsigma,hsigma,hl)
 	  do ii=1,3
 	    k = nen3v(ii,ie)
 	    lmax = ilhkv(k)

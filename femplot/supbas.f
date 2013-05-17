@@ -1493,8 +1493,10 @@ c files coords.dat and sea_land.dat must exist
 
 	return
    88	continue
-	write(6,*) 'no coords.dat file ... cannot plot coordinates'
 	icall = -1
+	write(6,*) 'message from plot_meteo_points:'
+	write(6,*) 'no coords.dat file ... cannot plot coordinates'
+	return
    99	continue
 	write(6,*) nx,ny,n,ndim
 	stop 'error stop plot_meteo_points: ndim'
