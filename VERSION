@@ -1,3 +1,84 @@
+version  6_1_65    13-06-2013    VERS_6_1_65
+
+========================================================== 13-06-2013 - 6_1_65
+
+c ./femplot/plotsim.f:
+c 13.06.2013	ggu	new plotting for fem files
+c
+c ./femplot/supsim.f:
+c 13.06.2013    ggu	new routine plofem()
+c
+c ./femplot/supbas.f:
+c 13.06.2013  ggu     bug fix in spherical_fact() -> set fact to 1
+c
+c ./femplot/supout.f:
+c 13.06.2013  ggu     new routines for handling FEM files
+c
+c ./femplot/supdep.f:
+c 10.06.2013    ggu     bug fix in mkht,mkht3 (get_layer_thicknes_e)
+c
+c ./femplot/col.f:
+c 13.06.2013    ggu     small bug fix for computation of dval with rnext
+c
+c ./femplot/supint.f:
+c 13.06.2013  ggu     scans varnam to decide what to plot
+c
+c ./fem3d/subver.f:
+c 13.06.2013	ggu	version 6.1.65
+c
+c ./fem3d/sigmautil.f:
+c 17.05.2013	ggu	layer_thickness for elem and node, general routine
+c 17.05.2013	ggu	new routine get_bottom_of_layer()
+c
+c ./fem3d/basbathy.f:
+c 13.06.2013	ggu	copy_depth() renamed to transfer_depth()
+c
+c ./fem3d/ousextr_nodes.f:
+c 17.05.2013    ggu     prepared for write_profile
+c
+c ./fem3d/subvintp.f:
+c 04.06.2013    ggu     bug fix: restore altered values zb1_save,var1_save
+c
+c ./fem3d/nosextr_nodes.f:
+c 17.05.2013    ggu     prepared for write_profile
+c
+c ./fem3d/subnsa.f:
+c 13.06.2013	ggu     read also varnam to decide what to plot and read
+c
+c ./fem3d/subsys.f:
+c 16.05.2013	ggu	file name bound renamed to zinit
+c
+c ./fem3d/subflxu.f:
+c 14.05.2013    ggu     deleted error check between 2d and 3d computation
+c
+c ./fem3d/ht.f:
+c 13.06.2013    ggu	set/copydepth simplified, offline version
+c
+c ./fem3d/basbox.f:
+c 14.05.2013    ggu     subroutines cleaned
+c
+c ./fem3d/subele.f:
+c 13.06.2013    ggu     new helper functions make_old_depth and copy_depth
+c
+c ./fem3d/newexpl.f:
+c 10.05.2013	dbf&ggu	new routines for vertical advection (bvertadv)
+c 10.05.2013	dbf&ggu	new routines for non-hydro
+c 25.05.2013	ggu	new version for vertical advection (bvertadv)
+c
+c ./fem3d/subboxa.f:
+c 14.05.2013    ggu     write also OBC sections and contributions
+c
+c ./fem3d/bastreat.f:
+c 13.06.2013    ggu     copy_depth() renamed to transfer_depth()
+c
+c ./fem3d/subfemfile.f:
+c 16.05.2013	ggu	better documentation
+c
+c ./fem3d/suboff.f:
+c 13.06.2013    ggu     new routines written from scratch
+
+==========================================================
+
 version  6_1_64    10-05-2013    VERS_6_1_64   commit_2013-06-13
 
 version  6_1_64    10-05-2013    VERS_6_1_64   commit_2013-05-17
