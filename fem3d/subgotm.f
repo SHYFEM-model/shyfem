@@ -26,12 +26,16 @@ c**************************************************************
 c administers turbulence closure
 
 	real getpar,areaele
+	logical boff
 
 	integer iturb
 	save iturb
 	data iturb / 0 /
 
 	if( iturb .lt. 0 ) return
+
+	call is_offline(boff)
+	!if( boff ) return
 
 	if( iturb .eq. 0 ) then
 	  iturb = nint(getpar('iturb'))

@@ -10,7 +10,6 @@ c
 c 02.10.2012	ggu	created from scratch
 c 16.05.2013	ggu	better documentation
 c
-c
 c notes :
 c
 c format for file (nvers == 1)
@@ -475,6 +474,73 @@ c reads and checks params of next header
 
 c************************************************************
 
+	subroutine fem_file_get_hlv(bformat,iunit,nlvdim,nlv,hlv,ierr)
+
+c reads hlv of next header
+
+        implicit none
+
+	logical bformat		!formatted or unformatted
+	integer iunit		!file unit
+	integer nlvdim		!dimensions of vertical array
+	integer nlv		!number of levels
+	real hlv(nlvdim)	!vertical structure
+	integer ierr		!return error code
+
+	integer it,nvers,np,lmax,nvar,ntype
+	integer l
+
+	ierr = 0
+
+	if( bformat ) then
+	  read(iunit,*,end=1,err=2) it,nvers,np,lmax,nvar,ntype
+	else
+	  read(iunit,end=1,err=2) it,nvers,np,lmax,nvar,ntype
+	end if
+
+	if( lmax .gt. nlvdim ) goto 9
+
+	if( lmax .gt. 1 ) then
+	  if( bformat ) then
+	    read(iunit,*,err=3) (hlv(l),l=1,lmax)
+	  else
+	    read(iunit,err=3) (hlv(l),l=1,lmax)
+	  end if
+	end if
+
+	nlv = lmax
+	if( lmax .eq. 1 ) hlv(1) = 10000.
+
+	ierr = 0
+	backspace(iunit)
+	if( lmax .gt. 1 ) backspace(iunit)
+	return
+
+    1	continue
+	ierr = -1
+	backspace(iunit)
+	return
+
+    2	continue
+	ierr = 1
+	backspace(iunit)
+	return
+
+    3	continue
+	ierr = 3
+	backspace(iunit)
+	backspace(iunit)
+	return
+
+    9	continue
+	ierr = 9
+	backspace(iunit)
+	return
+
+	end
+
+c************************************************************
+
 	subroutine fem_file_check_params(nvers,np,lmax,nvar,ntype,ierr)
 
 c reads and checks params of next header
@@ -607,8 +673,8 @@ c************************************************************
 
 	subroutine fem_file_read_data(bformat,iunit
      +				,nvers,np,lmax
-     +				,hlv,ilhkv,hd
-     +				,string,nlvdim,data,func)
+     +				,ilhkv,hd
+     +				,string,nlvdim,data)
 
 c reads data of the file
 
@@ -619,22 +685,11 @@ c reads data of the file
 	integer nvers		!version of file format
 	integer np		!size of data (horizontal, nodes or elements)
 	integer lmax		!vertical values
-	real hlv(lmax)		!depth at bottom of layer
 	integer ilhkv(np)	!number of layers in point k (node)
 	real hd(np)		!total depth
 	character*(*) string	!string explanation
 	integer nlvdim		!vertical dimension of data
 	real data(nlvdim,np)	!data
-	logical func		!function to be called for vert. interpolation
-
-c if unsure about func pass in fem_std_func() defined above
-c this will simply copy data read into array with no interpolation
-
-	external func		!this function has to be provided
-
-	integer ndim
-	parameter (ndim=1000)
-	real data_in(ndim)
 
 	logical b2d
 	integer k,lm,l
@@ -642,18 +697,16 @@ c this will simply copy data read into array with no interpolation
 	character*80 text
 
 	b2d = lmax .le. 1
-	if( lmax .gt. ndim ) goto 97
 
 	if( bformat ) then
-	  read(iunit,*) text
+	  read(iunit,'(a)') text
 	  if( b2d ) then
 	    read(iunit,*) (data(1,k),k=1,np)
 	  else
 	    do k=1,np
-	      read(iunit,*) lm,hdepth,(data_in(l),l=1,min(lm,lmax))
+	      read(iunit,*) lm,hd(k),(data(l,k),l=1,min(lm,lmax))
 	      if( lm .gt. lmax ) goto 99
-	      if( .not. func(lmax,hlv,lm,hdepth,data_in
-     +			,nlvdim,ilhkv(k),hd(k),data(1,k)) ) goto 98
+	      ilhkv(k) = lm
 	    end do
 	  end if
 	else
@@ -662,10 +715,70 @@ c this will simply copy data read into array with no interpolation
 	    read(iunit) (data(1,k),k=1,np)
 	  else
 	    do k=1,np
-	      read(iunit) lm,hdepth,(data_in(l),l=1,min(lm,lmax))
+	      read(iunit) lm,hd(k),(data(l,k),l=1,min(lm,lmax))
 	      if( lm .gt. lmax ) goto 99
-	      if( .not. func(lmax,hlv,lm,hdepth,data_in
-     +			,nlvdim,ilhkv(k),hd(k),data(1,k)) ) goto 98
+	      ilhkv(k) = lm
+	    end do
+	  end if
+	end if
+
+	if( b2d ) then
+	  do k=1,np
+	    ilhkv(k) = 1
+	    hd(k) = 10000.
+	  end do
+	end if
+
+	string = text
+
+	return
+   99	continue
+	write(6,*) 'k,lm,lmax: ',k,lm,lmax
+	stop 'error stop fem_file_read_data: dimension lmax'
+	end
+
+c************************************************************
+
+	subroutine fem_file_skip_data(bformat,iunit
+     +				,nvers,np,lmax
+     +				,string)
+
+c skips one record of data of the file
+
+        implicit none
+
+	logical bformat		!formatted or unformatted
+	integer iunit		!file unit
+	integer nvers		!version of file format
+	integer np		!size of data (horizontal, nodes or elements)
+	integer lmax		!vertical values
+	character*(*) string	!string explanation
+
+	logical b2d
+	integer k,lm,l
+	real aux
+	character*80 text
+
+	b2d = lmax .le. 1
+
+	if( bformat ) then
+	  read(iunit,'(a)') text
+	  if( b2d ) then
+	    read(iunit,*) (aux,k=1,np)
+	  else
+	    do k=1,np
+	      read(iunit,*) lm,aux,(aux,l=1,lm)
+	      if( lm .gt. lmax ) goto 99
+	    end do
+	  end if
+	else
+	  read(iunit) text
+	  if( b2d ) then
+	    read(iunit) (aux,k=1,np)
+	  else
+	    do k=1,np
+	      read(iunit) lm,aux,(aux,l=1,lm)
+	      if( lm .gt. lmax ) goto 99
 	    end do
 	  end if
 	end if
@@ -673,11 +786,6 @@ c this will simply copy data read into array with no interpolation
 	string = text
 
 	return
-   97	continue
-	write(6,*) 'lmax,ndim: ',lmax,ndim
-	stop 'error stop fem_file_read_data: dimension ndim'
-   98	continue
-	stop 'error stop fem_file_read_data: interpolation function'
    99	continue
 	write(6,*) 'k,lm,lmax: ',k,lm,lmax
 	stop 'error stop fem_file_read_data: dimension lmax'
@@ -687,7 +795,7 @@ c************************************************************
 
 	subroutine fem_file_read_3d(bformat,iunit,it
      +				,np,lmax,nlvdim,hlv
-     +				,ilhkv,string,hd,data,func,ierr)
+     +				,ilhkv,string,hd,data,ierr)
 
 c reads 1 variable of a 3d field
 
@@ -704,13 +812,7 @@ c reads 1 variable of a 3d field
 	character*(*) string	!string explanation
 	real hd(np)		!total depth
 	real data(nlvdim,np)	!data
-	logical func		!function to be called for vert. interpolation
 	integer ierr		!return error code
-
-c if unsure about func pass in fem_std_func() defined above
-c this will simply copy data read into array with no interpolation
-
-	external func		!this function has to be provided
 
 	integer nvers,nvar,ntype
 
@@ -722,8 +824,8 @@ c this will simply copy data read into array with no interpolation
 
 	call fem_file_read_data(bformat,iunit
      +				,nvers,np,lmax
-     +				,hlv,ilhkv,hd
-     +				,string,nlvdim,data,func)
+     +				,ilhkv,hd
+     +				,string,nlvdim,data)
 
 	return
    99	continue
@@ -769,8 +871,8 @@ c reads 1 variable of a 2d field
 
 	call fem_file_read_data(bformat,iunit
      +				,nvers,np,lmax
-     +				,hlv,ilhkv,hd
-     +				,string,nlvdim,data,fem_std_func)
+     +				,ilhkv,hd
+     +				,string,nlvdim,data)
 
 	return
    98	continue

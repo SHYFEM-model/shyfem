@@ -20,6 +20,7 @@ c 06.12.2004	ggu	new section legvar
 c 11.03.2005	ggu	write section title to stdout
 c 11.09.2009	ggu	new section $sect
 c 27.02.2013	ggu     pass what parameter into nlsa, handle extra info
+c 13.06.2013	ggu     read also varnam to decide what to plot and read
 c
 c**********************************************
 c
@@ -426,6 +427,7 @@ c iunit		unit number of file
 	character*(*) what
 
 	character*80 name,line,section,extra
+	character*20 what0,whatin
 	logical bdebug,bread
 	integer num
 	integer nrdsec,nrdlin,ichanm
@@ -436,6 +438,8 @@ c iunit		unit number of file
 
 	bdebug = .true.
 	bdebug = .false.
+
+	whatin = what
 
 	if(iunit.le.0) then
 c		write(6,*) 'error reading parameter file'
@@ -454,9 +458,9 @@ c loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		end if
 
 		bread = .false.
-		bread = bread .or. what(1:4) .eq. ' '
+		bread = bread .or. whatin(1:4) .eq. ' '
 		bread = bread .or. extra(1:4) .eq. ' '
-		bread = bread .or. extra(1:4) .eq. what(1:4)
+		bread = bread .or. extra(1:4) .eq. whatin(1:4)
 
 		if( bread ) then
                   call setsec(section,num)                !remember section
@@ -471,6 +475,10 @@ c loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			call rdtita
 		else if(section.eq.'para') then
 			call nrdins(section)
+			call getfnm('varnam',what0)
+			if( what0 .ne. ' ' .and. whatin .eq. ' ' ) then
+			  whatin = what0
+			end if
 		else if(section.eq.'color') then
 			call colrd
 		else if(section.eq.'arrow') then

@@ -101,6 +101,8 @@ fem3d/ouswrite
 fem3d/eosinf
 fem3d/noswrite
 fem3d/basbox
+fem3d/feminf
+fem3d/offinf
 
 femadj/adjele
 fembin/extDiff
@@ -137,6 +139,7 @@ fembin/volinf
 fembin/vp
 fembin/wininf
 fembin/basinf
+fembin/feminf
 
 fembin/grid
 fembin/mesh

@@ -22,6 +22,7 @@ c 18.08.2011  ggu     bug fix in nosopen() -> extra comma eliminated
 c 31.08.2011  ggu     new routines for handling EOS files
 c 14.11.2011  ggu     call to init_sigma_info() to setup layer info
 c 19.12.2011  ggu     new routine level_k2e -> called for nos files
+c 13.06.2013  ggu     new routines for handling FEM files
 c
 c**********************************************************
 c**********************************************************
@@ -1738,6 +1739,257 @@ c checks if arrays are equal
 	  end if
 	end do
 
+	end
+
+c******************************************************
+c******************************************************
+c******************************************************
+c fem files
+c******************************************************
+c******************************************************
+c******************************************************
+
+	subroutine femini
+
+c initializes internal data structure for FEM files
+
+	implicit none
+
+	integer nunit,iformat
+	common /femfem/ nunit,iformat
+	save /femfem/
+
+	integer icall
+	save icall
+	data icall /0/
+
+	if( icall .ne. 0 ) return
+
+	icall = 1
+
+	nunit = 0
+	iformat = 0
+
+	end
+
+c******************************************************
+
+	subroutine femclose
+
+c closes FEM file
+
+	implicit none
+
+	integer nunit,iformat
+	common /femfem/ nunit,iformat
+
+	call femini
+	if( nunit .gt. 0 ) close(nunit)
+	nunit = 0
+
+	end
+
+c******************************************************
+
+	subroutine femopen(type)
+
+c opens FEM file and reads header
+
+	implicit none
+
+	character*(*) type
+
+	integer nunit,iformat
+	common /femfem/ nunit,iformat
+
+	character*80 descrp
+        common /descrp/ descrp
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
+
+        real hlv(1), hev(1)
+        common /hlv/hlv, /hev/hev
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+
+	character*80 file
+
+	logical bformat
+	integer nvers,np,it,lmax,ntype
+	integer nknaux,nelaux,nlvaux,nvar
+	integer ierr,l
+	integer ifemop
+
+c initialize routines
+
+	call femini
+
+c open file
+
+	np = nkn
+	call def_make(type,file)
+	call fem_file_read_open(file,np,nunit,bformat)
+
+	if( nunit .le. 0 ) then
+                write(6,*) file
+		stop 'error stop femopen: cannot open FEM file'
+        else
+                write(6,*) 'File opened :'
+                inquire(nunit,name=file)
+                write(6,*) file
+                write(6,*) 'Reading file ...'
+	end if
+
+	iformat = 0
+	if( bformat ) iformat = 1
+
+c read first header
+
+        call fem_file_get_params(bformat,nunit,it
+     +                          ,nvers,np,lmax,nvar,ntype,ierr)
+
+	if( ierr .ne. 0 ) then
+		write(6,*) 'ierr = ',ierr
+		stop 'error stop femopen: error reading header'
+	end if
+
+        write(6,*)
+        write(6,*) ' nvers = ', nvers
+        write(6,*) '   nkn = ',np,   ' ntype = ',ntype
+        write(6,*) '   nlv = ',lmax, '  nvar = ',nvar
+        write(6,*)
+
+	if( nkn .ne. np ) goto 99
+	if( nlvdi .lt. lmax ) goto 99
+
+	nlv = lmax
+
+c read second header
+
+	call fem_file_get_hlv(bformat,nunit,nlvdi,nlv,hlv,ierr)
+
+	if( ierr .ne. 0 ) then
+		write(6,*) 'ierr = ',ierr
+		stop 'error stop femopen: error reading hlv'
+	end if
+
+	!call level_k2e
+	call init_sigma_info(nlv,hlv)		!sets up hlv
+
+	write(6,*) 'hlv: ',nlv
+	write(6,*) (hlv(l),l=1,nlv)
+
+c close and re-open for a clean state
+
+	close(nunit)
+	call fem_file_read_open(file,np,nunit,bformat)
+
+c initialize time
+
+	call timeset(0,0,0)
+
+c end
+
+	return
+   99	continue
+	write(6,*) 'error in parameters : basin - simulation'
+	write(6,*) 'nkn : ',nkn,np
+	write(6,*) 'nlv : ',nlvdi,lmax
+	write(6,*) 'parameters are different between basin and simulation'
+	stop 'error stop femopen'
+	end
+
+c******************************************************
+
+	function femnext(it,ivar,nlvdim,nkn,array)
+
+c reads next FEM record - is true if a record has been read, false if EOF
+
+	implicit none
+
+	logical femnext			!true if record read, flase if EOF
+	integer it			!time of record
+	integer ivar			!type of variable
+	integer nlvdim			!dimension of vertical coordinate
+	integer nkn			!number of points needed
+	real array(nlvdim,nkn,1)	!values for variable
+
+	integer nunit,iformat
+	common /femfem/ nunit,iformat
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
+        real hlv(1)
+        common /hlv/hlv
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+	real v1v(1)
+	common /v1v/v1v
+
+	logical bfound,bformat
+	integer ierr
+	integer i,iv,ip
+	integer nvers,np,lmax,nvar,ntype
+	character*80 string
+
+	if( nlvdim .ne. nlvdi ) stop 'error stop femnext: nlvdim'
+
+	call femini
+	bformat = iformat .eq. 1
+
+	write(6,*) 'format: ',bformat,iformat
+
+        call fem_file_read_header(bformat,nunit,it
+     +                  ,nvers,np,lmax,nvar,ntype,nlvdim,hlv,ierr)
+
+	if( np .ne. nkn ) goto 99
+
+	ip = 1
+	bfound = .false.
+	do i=1,nvar
+	  if( bfound ) then
+            call fem_file_skip_data(bformat,nunit
+     +                          ,nvers,np,lmax
+     +                          ,string)
+	  else
+            call fem_file_read_data(bformat,nunit
+     +                          ,nvers,np,lmax
+     +                          ,ilhkv,v1v
+     +                          ,string,nlvdim,array(1,1,ip))
+	    call string2ivar(string,iv)
+	    bfound = iv .eq. ivar
+	    if( iv .eq. 21 ) then	!wind -> must read y field
+	      ip = ip + 1
+	      if( ip .eq. 2 ) bfound = .false.
+	    end if
+	  end if
+	end do
+
+	if( bfound ) then
+	  call level_k2e
+	else
+	  ivar = 0
+	end if
+
+c set return value
+
+	if( ierr .gt. 0 ) then
+		!stop 'error stop femnext: error reading data record'
+		write(6,*) '*** femnext: error reading data record'
+		femnext = .false.
+	else if( ierr .lt. 0 ) then
+		femnext = .false.
+	else
+		femnext = .true.
+	end if
+
+c end
+
+	return
+   99	continue
+	write(6,*) 'nkn,np: ',nkn,np
+	stop 'error stop femnext: np different from nkn'
 	end
 
 c******************************************************

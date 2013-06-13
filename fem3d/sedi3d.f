@@ -2969,7 +2969,8 @@ c DOCS  END
 !        call set_ilhkv
 
         call setarea(nlvdim,areakv)
-        call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)
+        !call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)
+	call make_new_depth
         call setweg(0,iw)
 !        call setznv
 

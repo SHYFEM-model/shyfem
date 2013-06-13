@@ -15,6 +15,7 @@ c 14.09.2009  ggu     new way to determine if section plot in getisec()
 c 18.08.2011  ggu     make vsect bigger
 c 31.08.2011  ggu     new plotting eos
 c 23.02.2012  ccf     allow plotting also for last layer
+c 13.06.2013  ggu     scans varnam to decide what to plot
 c
 c**********************************************************
 c**********************************************************
@@ -147,6 +148,7 @@ c initializes actual variable
 	common /ivar3/ivar3
 	save /ivar3/
 
+	character*80 name
 	real getpar
 
 	integer icall
@@ -157,6 +159,12 @@ c initializes actual variable
 	icall = 1
 
 	ivar3 = nint(getpar('ivar'))
+
+	if( ivar3 .le. 0 ) then
+	  call getfnm('varnam',name)
+	  call string2ivar(name,ivar3)
+	  write(6,*) 'new variable: ',ivar3
+	end if
 
 c	ivar3 = 0	! 0 -> nothing
 
@@ -174,7 +182,7 @@ c asks for actual variable
 	common /ivar3/ivar3
 
 	integer iauto
-	integer ideflt
+	integer ideflt,read_var
 	real getpar
 
 	call inivar
@@ -182,11 +190,12 @@ c asks for actual variable
 	iauto = nint(getpar('iauto'))
 
 	if( iauto .eq. 0 ) then
+	  !ivar3 = read_var()
 	  ivar3 = ideflt(ivar3,'Enter variable : ')
-	else
-	  write(6,*) 'Variable used : ',ivar3
-	  write(6,*)
 	end if
+
+	write(6,*) 'Variable used : ',ivar3
+	write(6,*)
 
 	end
 
@@ -244,6 +253,32 @@ c shall we plot this variable ?
 	call inivar
 
 	okvar = ivar3 .eq. ivar .or. ivar3 .eq. 0
+
+	end
+
+c**********************************************************
+
+	function read_var()
+
+c reads number or string from STDIN - converts string to number
+
+	implicit none
+
+	integer read_var
+
+	integer ivar,ios
+	character*60 line
+
+	write(6,*) 'Enter variable : '
+	read(5,'(a)') line
+
+	read(line,'(i10)',iostat=ios) ivar
+
+	if( ios .ne. 0 ) then
+	  call string2ivar(line,ivar)
+	end if
+
+	read_var = ivar
 
 	end
 
@@ -401,3 +436,66 @@ c**********************************************************
 	end
 
 c**********************************************************
+
+        subroutine string2ivar(string,iv)
+
+        implicit none
+
+        character*(*) string
+        integer iv
+
+        iv = -1
+
+        if( string(1:4) .eq. 'mass' ) then
+          iv = 0
+        else if( string(1:4) .eq. 'conc' ) then
+          iv = 10
+        else if( string(1:3) .eq. 'sal' ) then
+          iv = 11
+        else if( string(1:4) .eq. 'temp' ) then
+          iv = 12
+        else if( string(1:4) .eq. 'pres' ) then
+          iv = 20
+        else if( string(1:4) .eq. 'wind' ) then
+          iv = 21
+        else if( string(1:4) .eq. 'sola' ) then
+          iv = 22
+        else if( string(1:3) .eq. 'air' ) then
+          iv = 23
+        else if( string(1:4) .eq. 'humi' ) then
+          iv = 24
+        else if( string(1:4) .eq. 'clou' ) then
+          iv = 25
+        else if( string(1:4) .eq. 'rain' ) then
+          iv = 26
+        else if( string(1:4) .eq. 'evap' ) then
+          iv = 27
+        else
+          write(6,*) '*** cannot find description of string: '
+          write(6,*) string
+        end if
+
+        end
+
+c******************************************************
+
+        subroutine ivar2string(iv,string)
+
+        implicit none
+
+        integer iv
+        character*(*) string
+
+        string = ' '
+
+        if( iv .eq. 12 ) then
+          string = 'temperature'
+        else
+          write(6,*) '*** cannot find description of string: '
+          write(6,*) iv
+        end if
+
+        end
+
+c******************************************************
+

@@ -24,7 +24,7 @@ logo_file=$BINDIR/logo/logo.eps            #file to be included as logo
 Usage() {
   echo "Usage: plots -what"
   echo "            [-quiet] [-vers] [-h|-help]"
-  echo "            [-lev3d #] [-var #] [-time time] "
+  echo "            [-lev3d #] [-var #] [-varnam name] [-time time] "
   echo "            [-sim simul] [-bas basin]"
   echo "            [-logo logo_where]"
   echo "            [control files]"
@@ -34,7 +34,7 @@ HelpLong() {
   Usage
   echo " "
   echo "  what           bath|vel|trans|zeta|conz|temp|salt|rms"
-  echo "                      |nos|wind|lgr|wave|pres|elem"
+  echo "                      |nos|wind|lgr|wave|pres|elem|fem"
   echo " "
   echo "     bath        bathymetry"
   echo "     vel         velocity"
@@ -50,9 +50,11 @@ HelpLong() {
   echo "     wave        wave parameters"
   echo "     pres        atmospheric pressure"
   echo "     elem        element values EOS"
+  echo "     fem         fem external file"
   echo " "
   echo "  lev3d          level for 3d model (default 0 - vertical average)"
   echo "  var            type of scalar value"
+  echo "  varnam         name of scalar value"
   echo "  time           freq | itstart,itend | itstart,itend,freq"
   echo "  simul          simulation name"
   echo "  basin          basin name"
@@ -64,9 +66,10 @@ HelpShort() {
   Usage
   echo " "
   echo "  what           bath|vel|trans|zeta|conz|temp|salt"
-  echo "                      |rms|wind|nos|lgr|wav|pres|elem"
+  echo "                      |rms|wind|nos|lgr|wav|pres|elem|fem"
   echo "  lev3d          level for 3d model (default 0 - vertical average)"
   echo "  var            type of scalar value"
+  echo "  varnam         name of scalar value"
   echo "  time           freq | itstart,itend | itstart,itend,freq"
   echo "  simul          simulation name"
   echo "  basin          basin name"
@@ -115,6 +118,13 @@ WritePar() {
   fi
 }
 
+WriteName() {
+
+  if [ -n "$2" ]; then
+    echo "     $1 = '$2' "
+  fi
+}
+
 WritePara() {
 
   times=`echo $time | sed -e 's/,/ /g'`
@@ -123,6 +133,7 @@ WritePara() {
   echo "   iauto = 1    iwhat = $what "
   WritePar level $lev3d
   WritePar ivar $var
+  WriteName varnam $varnam
   WriteTime $times
   echo '$end'
 }
@@ -132,33 +143,35 @@ WritePara() {
 while [ $# -gt 0 ]
 do
   case $1 in
-	-bath)  what=1;;
-	-vel)   what=2;;
-	-trans) what=3;;
-	-level) what=4;;
-	-zeta)  what=4;;
-	-conz)  what=5;;
-	-temp)  what=6;;
-	-salt)  what=7;;
-	-rms)   what=8;;
-	-oxy)   what=9;;
-	-nos)   what=10;;
-	-wind)  what=11;;
-	-lgr)   what=12;;
-	-wav)   what=13;;
-	-pres)  what=14;;
-	-elem)  what=15;;
-	-time)  time=$2; shift;;
-	-lev3d) lev3d=$2; shift;;
-	-var)   var=$2; shift;;
-	-sim)   sim=$2; shift;;
-	-bas)   bas=$2; shift;;
-	-logo)  logo_where=$2; shift;;
-	-quiet) quiet=YES;;
-	-vers)  Version; exit 1;;
-	-help)  HelpLong; exit 1;;
-	-h)     HelpLong; exit 1;;
-	 *)     break;;
+	-bath)   what=1;;
+	-vel)    what=2;;
+	-trans)  what=3;;
+	-level)  what=4;;
+	-zeta)   what=4;;
+	-conz)   what=5;;
+	-temp)   what=6;;
+	-salt)   what=7;;
+	-rms)    what=8;;
+	-oxy)    what=9;;
+	-nos)    what=10;;
+	-wind)   what=11;;
+	-lgr)    what=12;;
+	-wav)    what=13;;
+	-pres)   what=14;;
+	-elem)   what=15;;
+	-fem)    what=16;;
+	-time)   time=$2; shift;;
+	-lev3d)  lev3d=$2; shift;;
+	-var)    var=$2; shift;;
+	-varnam) varnam=$2; shift;;
+	-sim)    sim=$2; shift;;
+	-bas)    bas=$2; shift;;
+	-logo)   logo_where=$2; shift;;
+	-quiet)  quiet=YES;;
+	-vers)   Version; exit 1;;
+	-help)   HelpLong; exit 1;;
+	-h)      HelpLong; exit 1;;
+	 *)      break;;
   esac
   shift
 done
@@ -181,7 +194,8 @@ apnmake $* >> apnstd.str
 ######################################################### write to terminal
 
 if [ $quiet = "NO" ]; then
-  echo "sim=$sim bas=$bas what=$what time=$time var=$var lev3d=$lev3d"
+  echo "sim=$sim bas=$bas what=$what time=$time"
+  echo "var=$var varnam=$varnam lev3d=$lev3d"
 fi
 
 ######################################################### run output routine

@@ -723,7 +723,7 @@ c computes z value for boundary ibc
 
 	integer ibc		!boundary number
 	integer it		!time for which value is needed
-        integer nsize		!total number of values needed
+        integer nsize		!total number of values needed (is nk)
         integer ndim		!dimension for following arrays
         real array(1)		!array with information on boundary
         real rw(1)		!array with results
@@ -764,6 +764,7 @@ c computes z value for boundary ibc
 		  write(6,*) 'intpol set: ',ibc,ibtyp,intpol
 		end if
                 call exffil(file,intpol,nvar,nsize,ndim,array)
+                !call exffile(file,intpol,nvar,nsize,ndim,array)
 	        call exfunit(array,nbunit)	!need unit
 		write(6,*) 'intpol final set: ',ibc,ibtyp,intpol
 		call set_bnd_ipar(ibc,'intpol',intpol)
@@ -1431,12 +1432,10 @@ c for z-boundaries 0 is returned
 
 	implicit none
 
-	include 'param.h'
-
 	real get_discharge
 	integer ibc
 
-	real rqpsv(nkndim)
+	real rqpsv(1)
 	common /rqpsv/rqpsv
 
 	integer itype,nk,i,k

@@ -10,8 +10,9 @@ c 20.08.2003    ggu     some more comments
 c 21.08.2003    ggu     colini is called in colsetup
 c 04.10.2004    ggu     adjust amin and decimal point in colauto
 c 21.04.2009    ggu     allow for constant values (make 2 isolines)
+c 13.06.2013    ggu     small bug fix for computation of dval with rnext
 c
-c=====================================================================
+c**********************************************************
 c
 c---------------------------------------------------------------------
 c
@@ -348,6 +349,8 @@ c	  ----------------------------------------
 	    dval = (valmax-valmin)/niso
 	    if( dval .ne. 0. ) then
 	      dval = rnext(dval,+3)	!round dval upwards
+	    end if
+	    if( dval .ne. 0. ) then	!see if really rounding
 	      niso = nint((valmax-valmin)/dval) + 1
 	    else
 	      dval = 1.

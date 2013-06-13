@@ -87,6 +87,7 @@ c 09.03.2012    ggu	call to residence time added
 c 21.06.2012    ggu&aar	fluid mud variables integrated
 c 05.08.2012    ggu	bug because lam2dn and dmfd2n not defined
 c 10.05.2013    dbf	initialization for non hydrostatic routines
+c 13.06.2013    ggu	set/copydepth simplified, offline version
 c
 c*****************************************************************
 
@@ -410,6 +411,10 @@ c	common /urv/urv(neldim), /vrv/vrv(neldim), /zrv/zrv(neldim)
 	common /eps/eps(0:nlvdim,nkndim)	!dissipation rate
 	common /rls/rls(0:nlvdim,nkndim)	!length scale
 
+c local variables
+
+	integer iwhat
+
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%% code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -505,9 +510,14 @@ c----------------------------------------------- FIXME
 
 	call setarea(nlvdim,areakv)
 
-	call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)	!FIXME (see above)
-	call copydepth(nlvdim,hdknv,hdkov,hdenv,hdeov)
-	call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)
+	!call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)	!FIXME (see above)
+	!call copydepth(nlvdim,hdknv,hdkov,hdenv,hdeov)
+	!call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)
+
+	!call make_old_depth
+	call make_new_depth
+	call copy_depth
+	call make_new_depth
 
 	!call check_max_depth
 
@@ -557,6 +567,9 @@ c        call bclevvar_ini       !chao debora
 	call init_pipe(ipipe,idcoup)
 	call read_pipe(ipipe,it,idcoup)
         call write_pipe(ipipe,it,idcoup)
+
+	call offline(1,iwhat)
+	call offline(2,iwhat)
 
 	!call custom(it)		!call for initialization
 
@@ -671,6 +684,8 @@ c*****************************************************************
         common /utlov/utlov, /vtlov/vtlov
 	real z0bk(nkndim)
 	common /z0bk/z0bk
+	real wlov(0:nlvdim,nkndim)
+	common /wlov/wlov
 
         real saltv(nlvdim,nkndim)
         real tempv(nlvdim,nkndim)
@@ -679,26 +694,26 @@ c*****************************************************************
 
 	write(66) it
 
-	write(66) 3*neldim,3
-	write(66) zeov
-
-	write(66) nlvdim*neldim,nlvdim
-	write(66) hdeov
-
-	write(66) nlvdim*neldim,nlvdim
-	write(66) utlov
-
-	write(66) nlvdim*neldim,nlvdim
-	write(66) vtlov
-
-	write(66) (nlvdim+1)*nkndim,nlvdim+1
-	write(66) visv
-
-	write(66) nkndim,1
-	write(66) z0bk
+	call debug_output_record(3*neldim,3,zeov)
+	call debug_output_record(nlvdim*neldim,nlvdim,hdeov)
+	call debug_output_record(nlvdim*neldim,nlvdim,utlov)
+	call debug_output_record(nlvdim*neldim,nlvdim,vtlov)
+	call debug_output_record((nlvdim+1)*nkndim,nlvdim+1,visv)
+	call debug_output_record((nlvdim+1)*nkndim,nlvdim+1,wlov)
+	call debug_output_record(nkndim,1,z0bk)
 
 	write(66) 0,0
 
+	end
+
+c*****************************************************************
+
+	subroutine debug_output_record(ntot,nfirst,val)
+	implicit none
+	integer ntot,nfirst
+	real val(ntot)
+	write(66) ntot,nfirst
+	write(66) val
 	end
 
 c*****************************************************************

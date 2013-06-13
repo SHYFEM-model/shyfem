@@ -8,6 +8,7 @@ c
 c revision log :
 c
 c 04.10.2012    ggu     copied from newbsig.f
+c 04.06.2013    ggu     bug fix: restore altered values zb1_save,var1_save
 c
 c*****************************************************************
 
@@ -33,21 +34,25 @@ c values are considered to be constant for every box
 c bcons controlls if total quantity is conserved or not
 c
 c ATTENTION: arrays zb1, var1 MUST be dimensioned one element bigger
-c	then the available data. The last element is altered by this
-c	subroutine, but should be of no concern for the calling program
+c	then the available data. The last element is accessed and altered 
+c	by this subroutine, but at return is restored to its original value
 c
 c output is var2, all other variables are input values
 
-	logical bmiss
+	logical bmiss,bdebug
 	integer l,j,ltop1,lbot1
 	real ztop2,ztop1,zbot2,zbot1
 	real ztop,zbot
 	real vint1,vint2,fact
 	real val
+	real zb1_save,var1_save
 
 c---------------------------------------------------------
 c initialize variables
 c---------------------------------------------------------
+
+	zb1_save = zb1(nl1+1)
+	var1_save = var1(nl1+1)
 
 	zb1(nl1+1) = zb2(nl2)
 	var1(nl1+1) = var1(nl1)
@@ -55,13 +60,19 @@ c---------------------------------------------------------
 	ltop1 = 0
 	vint2 = 0.	!total content in second array
 
+	bdebug = .false.
+
 c---------------------------------------------------------
 c loop over second array and interpolate onto it
 c---------------------------------------------------------
 
+	if( bdebug ) write(66,*) '----------------------------------'
+
 	do l=1,nl2
 	  ztop2 = zb2(l-1)
 	  zbot2 = zb2(l)
+
+	  if( bdebug ) write(66,*) 'l,ztop2,zbot2: ',l,ztop2,zbot2
 
 	  do while( ltop1 .lt. nl1 .and. zb1(ltop1+1) .le. ztop2 )
 	    ltop1 = ltop1 + 1
@@ -78,6 +89,9 @@ c---------------------------------------------------------
 	  ztop1 = zb1(ltop1)
 	  zbot1 = zb1(lbot1)
 
+	  if( bdebug ) write(66,*) 'l,ltop1,lbot1: ',l,ltop1,lbot1
+	  if( bdebug ) write(66,*) 'l,ztop1,zbot1: ',l,ztop1,zbot1
+
 	  if( ztop1 .gt. ztop2 .or. zbot1 .lt. zbot2 ) goto 99
 	  if( bmiss ) goto 98
 
@@ -86,20 +100,25 @@ c---------------------------------------------------------
 	      ztop = max(zb1(j-1),ztop2)
 	      zbot = min(zb1(j),zbot2)
 	      val = val + var1(j) * ( zbot - ztop )
+	      if( bdebug ) write(66,*) 'j,ztop,zbot,val: ',j,ztop,zbot,val
 	  end do
 
 	  vint2 = vint2 + val			!integrated value
 	  var2(l) = val / (zbot2-ztop2)
 	  ltop1 = lbot1 - 1
 
+	  if( bdebug ) write(66,*) 'l,var2: ',l,var2(l)
+
 	end do
+
+	if( bdebug ) write(66,*) '----------------------------------'
 
 c---------------------------------------------------------
 c reset modified values
 c---------------------------------------------------------
 
-	zb1(nl1+1) = 0.
-	var1(nl1+1) = 0.
+	zb1(nl1+1) = zb1_save
+	var1(nl1+1) = var1_save
 
 c---------------------------------------------------------
 c if bcons we have to adapt the interpolated values to conserve total value

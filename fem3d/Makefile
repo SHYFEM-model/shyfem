@@ -147,7 +147,7 @@ SOBJS   = \
 	  links.o sublnka.o sublnks.o sublnku.o subisd.o \
 	  debug.o subhisto.o subnosa.o subfvl.o \
 	  subeos.o sigmautil.o \
-	  nosutil.o ousutil.o subfemfile.o
+	  nosutil.o ousutil.o subfemfile.o subvintp.o
 
 # general objects for 3D model ht
 
@@ -190,7 +190,7 @@ HTOBJS = \
 	subfemfile.o subtsuvfile.o \
 	subflxa.o subflx3d.o subflx.o subflxu.o \
 	subboxa.o \
-	newnohydro.o \
+	newnohydro.o suboff.o \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ) $(PARALLEL_OBJ)
 
@@ -268,7 +268,8 @@ LAGINTP = submir.o
 
 EXEMAIN  = ht vp
 
-EXEINFO  = ousinf flxinf volinf basinf nosinf wininf extinf rstinf
+EXEINFO  = ousinf flxinf volinf basinf nosinf wininf extinf rstinf feminf \
+		offinf
 EXESPLIT = nossplit splitext splitflx
 EXELAP   = laplap lapwin
 EXEBAS   = bastreat basbathy
@@ -284,7 +285,8 @@ EXEEXTRA = bedload wincrea windcrea \
 		basproj baswork eosinf \
 		lgrinf \
 		nos2nc ous2nc \
-		noswrite ouswork ouswork1 ouswrite prep_input
+		noswrite ouswork ouswork1 ouswrite prep_input \
+		basbox
 
 EXES     = $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXELAP) $(EXEBAS) \
 		$(EXEVAR) $(NOSEXTR) $(OUSEXTR) $(NOSAVER) \
@@ -438,6 +440,9 @@ nosinf:  nosinf.o $(NOSOBJS) $(OUTOBJS)
 nosinf2:  nosinf2.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
+feminf:  feminf.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
 nossum:  nossum.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
@@ -459,6 +464,9 @@ eosinf:  eosinf.o $(NOSOBJS) $(OUTOBJS)
 
 prep_input:  prep_input.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
+
+offinf: offinf.o
+	$(LINKER) $(LFLAGS) $@.o -o $@
 
 #-------------------------------------------------------
 

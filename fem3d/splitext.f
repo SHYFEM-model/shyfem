@@ -184,7 +184,9 @@ c---------------------------------------------------------------
 
 	write(6,*)
 	write(6,*) 'Total number of data records read : ',nrec
-	write(6,*) 'Last time value read: ',itime(nrec)
+	if( .not. bdirect ) then
+	  write(6,*) 'Last time value read: ',itime(nrec)
+	end if
 	write(6,*)
 
 c---------------------------------------------------------------

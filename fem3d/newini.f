@@ -1425,7 +1425,7 @@ c--------------------------------------------------------
 c get name of file
 c--------------------------------------------------------
 
-        call getfnm('bound',name)
+        call getfnm('zinit',name)
 
 c--------------------------------------------------------
 c initialize from file or with constant

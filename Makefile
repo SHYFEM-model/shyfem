@@ -54,6 +54,7 @@ SPECIAL   = Makefile Rules.make param.h \
 		BUG COMMIT FAQ LASTTAR LOG README VERSION
 
 VERSION = `head -1 $(FEMDIR)/VERSION | sed -e 's/  */ /g' | cut -f4 -d" "`
+COMMIT = `head -1 $(FEMDIR)/VERSION | sed -e 's/  */ /g' | cut -f5 -d" "`
 VERSNAME = `head -1 $(FEMDIR)/VERSION | sed -e 's/  */ /g' | cut -f4 -d" " | sed -e 's/VERS_//'`
 DATE = `date "+%F"`
 TARNAME  = $(VERSION)
@@ -169,7 +170,7 @@ help:
 	@echo "changed_zip         zips files changed after installation"
 
 version:
-	@echo $(VERSION)
+	@echo $(VERSION) $(COMMIT)
 
 info: version
 	@echo "general:"
@@ -236,6 +237,16 @@ install_hard_reset: checkv
 #--------------------------------------------------------
 # private and admin commands
 #--------------------------------------------------------
+
+ggu_help: help_ggu
+help_ggu:
+	@echo "help_ggu            this screen"
+	@echo "test_compile        compiles model with different configs"
+	@echo "dist                prepares distribution (Rules.make)"
+	@echo "rules_save          copies back last Rules.make file"
+	@echo "rules_ggu           copies back my Rules.make file"
+	@echo "stable              makes stable distribution"
+	@echo "compiler_version    info on compiler"
 
 test_compile:
 	@femcheck/test_compile.sh

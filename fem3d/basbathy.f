@@ -12,11 +12,12 @@ c 12.05.2005    ggu     pass hmin to interpolation functions
 c 06.04.2009    ggu     read param.h
 c 24.04.2009	ggu	new call to rdgrd()
 c 21.05.2009	ggu	restructured to allow for nodal interpolation
-c 16.12.2010	ggu	bug fix in copy_depth()
+c 16.12.2010	ggu	bug fix in transfer_depth()
 c 02.12.2011	ggu	introduction of nminimum - hardcoded for now
 c 16.03.2012	ggu	autoregression introduced (make_auto_corr,interpola)
 c 16.03.2012	ggu	default value for umfact set to 3, new mode = 3
 c 01.06.2012	ggu	some more changes
+c 13.06.2013	ggu	copy_depth() renamed to transfer_depth()
 c
 c****************************************************************
 
@@ -243,7 +244,7 @@ c-----------------------------------------------------------------
           stop 'error stop'
 	end if
 
-	call copy_depth(ike)	!copyt to nodes/elements
+	call transfer_depth(ike)	!copy to nodes/elements
 
 c-----------------------------------------------------------------
 c write
@@ -268,7 +269,7 @@ c-----------------------------------------------------------------
 
 c*******************************************************************
 
-	subroutine copy_depth(ike)
+	subroutine transfer_depth(ike)
 
 c copies depth values from elems/nodes to nodes/elems
 

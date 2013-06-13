@@ -4,9 +4,10 @@
 #
 # possible command line options:
 #
-#	-bnd	open boundary nodes (writes bnd_str.grd)
-#	-files	files with open boundary conditions
-#	-txt	writes boundary nodes in txt format
+#	-bnd		open boundary nodes (writes bnd_str.grd)
+#	-files		files with open boundary conditions
+#	-txt		writes boundary nodes in txt format
+#	-sect=name	writes contents of section
 #
 #--------------------------------------------------------
 
@@ -19,9 +20,10 @@ use strict;
 #-------------------------------------------------------------
 # command line options
 #-------------------------------------------------------------
-$::files = 1 if $::files;
-$::bnd = 1 if $::bnd;
-$::txt = 1 if $::txt;
+$::files = 0 unless $::files;
+$::bnd = 0 unless $::bnd;
+$::txt = 0 unless $::txt;
+$::sect = "" unless $::sect;
 #-------------------------------------------------------------
 
 #-------------------------------------------------------------
@@ -47,6 +49,8 @@ if( $::bnd ) {
   show_bnd_nodes($str);
 } elsif( $::files ) {
   show_files($str);
+} elsif( $::sect ) {
+  show_sect($str,$::sect);
 } else {
   Usage();
 }
@@ -72,7 +76,13 @@ sub show_bnd_nodes {
   my $grid = new grd;
   $grid->readgrd("$basin.grd");
 
-  open(GRD,">bnd_str.grd");
+  my $outfile;
+  if( $::txt ) {
+    $outfile = "bnd_str.txt";
+  } else {
+    $outfile = "bnd_str.grd";
+  }
+  open(OUT,">$outfile");
 
   foreach my $section (@$sequence) {
     my $sect = $sections->{$section};
@@ -82,8 +92,8 @@ sub show_bnd_nodes {
     }
   }
 
-  close(GRD);
-  print STDERR "nodes written to file bnd_str.grd\n";
+  close(OUT);
+  print STDERR "nodes written to file $outfile\n";
 }
 
 sub show_nodes {
@@ -100,9 +110,7 @@ sub show_nodes {
   $ibtyp = 1 if not defined $ibtyp;
   my $value = $str->get_value('kbound',$sect_name,$sect_number);
   if( defined $value ) {
-    if( $::txt ) {
-      write_txt($sect_number,$value);
-    } elsif( ref($value) eq "ARRAY" ) {
+    if( ref($value) eq "ARRAY" ) {
       write_array_new($value,"$sect_id :  kbound = \n");
       @list = @$value;
     } else {
@@ -111,7 +119,24 @@ sub show_nodes {
     }
   }
   
-  write_nodes_to_grd($ibtyp,$grid,\@list);
+  if( $::txt ) {
+    write_nodes_to_txt($sect_number,\@list);
+  } else {
+    #write_nodes_to_grd($ibtyp,$grid,\@list);
+    write_nodes_to_grd($sect_number,$grid,\@list);
+  }
+}
+
+sub write_nodes_to_txt {
+
+  my ($id,$list) = @_;
+
+  my $n = @$list;
+  print OUT "$id  $n\n";
+  while( $n-- ) {
+    my $val = shift(@$list);
+    print OUT "$val\n";
+  }
 }
 
 sub write_nodes_to_grd {
@@ -125,7 +150,7 @@ sub write_nodes_to_grd {
     my $item = $grid->get_node($node);
     my $x = $item->{x};
     my $y = $item->{y};
-    print GRD "1 $node $type $x $y\n";
+    print OUT "1 $node $type $x $y\n";
   }
 }
 
@@ -185,7 +210,7 @@ sub write_array_new {
   my $i = 0;
   foreach my $item (@$array) {
     $i++;
-    print "   $item";
+    print " $item";
     print "\n" if $i%$nval == 0;
   }
   print "\n" unless $i%$nval == 0;
@@ -206,6 +231,26 @@ sub write_txt {
   while( $n-- ) {
     my $val = shift(@$value);
     print "$val\n";
+  }
+}
+
+sub show_sect {
+
+  my ($str,$sname) = @_;
+
+  my $sections = $str->{sections};
+  my $sequence = $str->{sequence};
+
+  foreach my $section (@$sequence) {
+    my $sect = $sections->{$section};
+
+    if( $sect->{name} eq "$sname" ) {
+      #show_name($str,$sect,\@::bound_names);
+	my $array = $sect->{array};
+	foreach my $numb (@$array) {
+	  print "$numb\n";
+	}
+    }
   }
 }
 

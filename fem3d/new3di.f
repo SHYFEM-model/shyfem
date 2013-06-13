@@ -250,6 +250,7 @@ c local
 	integer iw,iwa
 	integer nmat
 	integer kspecial
+	integer iwhat
 c	integer ninf
 	real res
 	real epseps
@@ -282,6 +283,11 @@ c constants...%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp259f'
 
+c offline
+
+	call offline(2,iwhat)		!read from file
+	if( iwhat .eq. 2 ) return
+
 c dry areas
 
 	iw=0
@@ -291,9 +297,13 @@ c dry areas
 
 	call copy_uvz		!copies uvz to old time level
 	call nonhydro_copy	!copies non hydrostatic pressure terms
-	
-	call copydepth(nlvdim,hdknv,hdkov,hdenv,hdeov)
-	call setdepth(nlvdim,hdkov,hdeov,zeov,areakv)
+	call copy_depth
+
+	!call make_old_depth	!probably not needed -> FIXME
+	!call check_diff_depth
+
+	!call copydepth(nlvdim,hdknv,hdkov,hdenv,hdeov)
+	!call setdepth(nlvdim,hdkov,hdeov,zeov,areakv)
 
 c austauch contribution %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -338,7 +348,8 @@ c end of solution %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         call setuvd
 
 	call baro2l 
-	call setdepth(nlvdim,hdknv,hdenv,zenv,areakv) !only now zenv ready
+	!call setdepth(nlvdim,hdknv,hdenv,zenv,areakv) !only now zenv ready
+	call make_new_depth
 	call check_volume			!checks for negative volume 
         call arper
 
@@ -361,6 +372,10 @@ c compute velocities from transports %%%%%%%%%%%%%%%%%%%%%%%%%
 c compute nodal values for velocities %%%%%%%%%%%%%%%%%%%%%%%%
 
 	call make_prvel
+
+c offline
+
+	call offline(1,iwhat)	!write to file
 
 	return
    99	continue

@@ -34,11 +34,13 @@ c 20.05.2011	ggu	compute statistics of stability, no stab in dry elemes
 c 25.08.2011	dbf&ggu	baroclinic gradient for sigma level integrated
 c 25.10.2011	dbf&ggu	bug fix in set_barocl_new_interface (psigma)
 c 04.11.2011    ggu     adapted for hybrid coordinates
-c 10.05.2013	dbf&ggu	new routines for non-hydro and vertical advection
+c 10.05.2013	dbf&ggu	new routines for vertical advection (bvertadv)
+c 10.05.2013	dbf&ggu	new routines for non-hydro
+c 25.05.2013	ggu	new version for vertical advection (bvertadv)
 c
 c notes :
 c
-c explicit term is on left hand side
+c sign of explicit term is computed for left hand side
 c
 c******************************************************************
 
@@ -455,8 +457,10 @@ c******************************************************************
         common /fxv/fxv
         common /fyv/fyv
         save /fxv/,/fyv/
-        real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-        common /utlnv/utlnv, /vtlnv/vtlnv
+        real utlov(nlvdim,1),vtlov(nlvdim,1)
+        common /utlov/utlov, /vtlov/vtlov
+        real ulov(nlvdim,1),vlov(nlvdim,1)
+        common /ulov/ulov, /vlov/vlov
         real uprv(nlvdim,1),vprv(nlvdim,1)
         common /uprv/uprv, /vprv/vprv
 	real wlov(0:nlvdim,1),wlnv(0:nlvdim,1)
@@ -477,8 +481,7 @@ c******************************************************************
 
 	logical bvertadv		! new vertical advection for momentum
 	real zxadv,zyadv
-	real waux			! new vertical advection for momentum
-	real ww(neldim,0:nlvdim)	! FIXME - what is this?
+	real wtop,wbot
 
         integer ii,ie,k,l,lmax
         real b,c
@@ -497,6 +500,7 @@ c initialization
 c---------------------------------------------------------------
 
 	bvertadv = .true. ! vertical advection computed
+	bvertadv = .false. ! vertical advection not computed
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
@@ -515,22 +519,19 @@ c---------------------------------------------------------------
 	  lmax = ilhv(ie)
 	  do l=1,lmax
             h = hdenv(l,ie)
-	    ut = utlnv(l,ie)
-	    vt = vtlnv(l,ie)
-	    waux = 0
+	    ut = utlov(l,ie)
+	    vt = vtlov(l,ie)
             do ii=1,3
                 k = nen3v(ii,ie)
                 b = ev(3+ii,ie)
                 c = ev(6+ii,ie)
                 f = ut * b + vt * c	! f>0 => flux into node
-		waux = waux + wlnv(l,ii)
                 if( f .gt. 0. ) then
 		  saux1(l,k) = saux1(l,k) + f
 		  saux2(l,k) = saux2(l,k) + f * ut
 		  saux3(l,k) = saux3(l,k) + f * vt
                 end if
 	    end do
-	    ww(ie,l) = waux / 3.
           end do
 	end do
 
@@ -560,20 +561,26 @@ c---------------------------------------------------------------
 	  lmax = ilhv(ie)
 	  do l=1,lmax
 
+c	    ---------------------------------------------------------------
+c	    horizontal advection
+c	    ---------------------------------------------------------------
+
 	    area = 12. * ev(10,ie)
             h = hdenv(l,ie)
 	    vol = area * h
-  	    ut = utlnv(l,ie)
-  	    vt = vtlnv(l,ie)
+  	    ut = utlov(l,ie)
+  	    vt = vtlov(l,ie)
             uc = ut / h
             vc = vt / h
 
 	    xadv = 0.
 	    yadv = 0.
+	    wbot = 0.
             do ii=1,3
                 k = nen3v(ii,ie)
                 b = ev(3+ii,ie)
                 c = ev(6+ii,ie)
+		wbot = wbot + wlov(l,k)
                 up = saux2(l,k) / h		!NEW
                 vp = saux3(l,k) / h
                 f = ut * b + vt * c
@@ -586,27 +593,35 @@ c---------------------------------------------------------------
 	    zxadv = 0.
 	    zyadv = 0. 
 	   
-	    if ( bvertadv ) then
+c	    ---------------------------------------------------------------
+c	    vertical advection
+c	    ---------------------------------------------------------------
 
-	    if (ww(ie,l).gt.0) then
-              if (l.lt.lmax) then
-	       zxadv = ww(ie,l)*(utlnv(l+1,ie)-utlnv(l,ie))
-	       zyadv = ww(ie,l)*(vtlnv(l+1,ie)-vtlnv(l,ie))
+	    if ( bvertadv ) then
+	      wbot = wbot / 3.
+	      if( l .eq. lmax ) wbot = 0.
+
+	      if (wtop.ge.0) then
+	        zxadv = wtop * ulov(l,ie)
+	        zyadv = wtop * vlov(l,ie)
               else
-	       zxadv = ww(ie,l)*(-utlnv(l,ie))
-	       zyadv = ww(ie,l)*(-vtlnv(l,ie))
+	        zxadv = wtop * ulov(l-1,ie)
+	        zyadv = wtop * vlov(l-1,ie)
               end if
-            else
-              if (l.lt.lmax) then
-	       zxadv = ww(ie,l)*(utlnv(l,ie)-utlnv(l+1,ie))
-	       zyadv = ww(ie,l)*(vtlnv(l,ie)-vtlnv(l+1,ie))
+
+	      if (wbot.gt.0) then
+	        zxadv = zxadv - wbot * ulov(l+1,ie)
+	        zyadv = zyadv - wbot * vlov(l+1,ie)
               else
-	       zxadv = ww(ie,l)*utlnv(l,ie)
-	       zyadv = ww(ie,l)*vtlnv(l,ie)
+	        zxadv = zxadv - wbot * ulov(l,ie)
+	        zyadv = zyadv - wbot * vlov(l,ie)
               end if
+	      wtop = wbot
 	    end if
-	     
-	    end if
+
+c	    ---------------------------------------------------------------
+c	    total contribution
+c	    ---------------------------------------------------------------
 
 	    fxv(l,ie) = fxv(l,ie) + xadv + zxadv
 	    fyv(l,ie) = fyv(l,ie) + yadv + zyadv

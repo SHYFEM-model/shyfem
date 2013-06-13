@@ -24,6 +24,7 @@ c 31.03.2011	ggu	new arrays fvlv, arfvlv for scalar plotting
 c 31.08.2011	ggu	new copyright, eos plotting
 c 14.11.2011	ggu	new array hl for depth structure
 c 27.02.2013	ggu	deleted amat, better color handling
+c 13.06.2013	ggu	new plotting for fem files
 c
 c*************************************************************
 
@@ -84,7 +85,7 @@ c 3d
         real wprv(nlvdim,nkndim)
         common /wprv/wprv
 
-        real p3(nlvdim,neldim)		!is good for nodes and elements
+        real p3(nlvdim,2*neldim)	!is good for nodes, elements & arrays
         common /p3/p3
 
         real fvlv(nlvdim,nkndim)
@@ -232,6 +233,7 @@ c	if( mode .eq. 4 )  call plobar
 	if( mode .eq. 13 ) call plowave
 	if( mode .eq. 14 ) call plopres
 	if( mode .eq. 15 ) call ploeos('.eos',0)
+	if( mode .eq. 16 ) call plofem('')
 
 c----------------------------------------------
 c close plot
@@ -255,7 +257,7 @@ c*****************************************************************
 	character(*) what
 
 	integer ndim
-	parameter (ndim=15)
+	parameter (ndim=16)
 
 	integer iwhat,iauto
 	integer ideflt
@@ -265,7 +267,8 @@ c*****************************************************************
 	save whats
 	data whats /' ','bath','vel','trans','zeta','conz'
      +			,'temp','salt','rms','oxygen','nos'
-     +			,'wind','lgr','wave','pres','elem'/
+     +			,'wind','lgr','wave','pres','elem'
+     +			,'fem'/
 	
 	iwhat = nint(getpar('iwhat'))
 	iauto = nint(getpar('iauto'))
@@ -286,6 +289,7 @@ c*****************************************************************
 	write(6,*) ' wave .................... 13'
 	write(6,*) ' atmospheric pressure .... 14'
 	write(6,*) ' generic element values .. 15'
+	write(6,*) ' generic fem file ........ 16'
 	write(6,*)
 
         if( iauto .eq. 0 .or. iwhat .eq. 0 ) then

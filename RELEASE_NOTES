@@ -1,4 +1,8 @@
 
+25-03-2013 - VERS_6_1_64 commit_2013-05-17
+
+	vertical advection in momentum equations
+
 30-03-2012 - 6_1_51
 
 	compiler warnings, Rules.make cleaned, OpenMP

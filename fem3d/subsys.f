@@ -763,6 +763,7 @@ cc rain
 
 	call addpar('idtbox',0.)	!for boxes
 	call addpar('itmbox',0.)
+	call addpar('idtoff',0.)	!for offline
 
 	call addpar('inohyd',0.)	!for non-hydrostatic model
 
@@ -1089,6 +1090,10 @@ c			necessary to set |ivar|.
 	call addpar('iauto',0.)		!silent mode
 	call addpar('level',0.) 	!level (-1 -> bottom   0 -> integr.)
 	call addpar('ivar',0.)		!what variable to plot
+
+cc still to document
+
+	call addfnm('varnam',' ')	!variable name to be plotted
 	call addpar('isect',0.)		!vertical section
 
 c The next variables define the time of the plots. Even if the names of two

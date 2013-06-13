@@ -492,8 +492,11 @@ c******************************************************************
 	real r_station
 
 	if( lagr_connect_pps .gt. 0. ) then	!connectivity active
-	  ip_station = i_connect_elems(ie)
-	  r_station = ip_station / float(np_station)
+	  ip_station = 0
+	  if( np_station .gt. 0 ) then
+	    ip_station = i_connect_elems(ie)
+	    r_station = ip_station / float(np_station)
+	  end if
 	else
 	  ip_station = 0
 	  !r_station = 0.5	!is not changed

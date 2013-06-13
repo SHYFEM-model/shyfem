@@ -73,6 +73,7 @@ c 04.11.2011    ggu     adapted for hybrid coordinates
 c 08.11.2011    dbf&ggu bug in setdepth(): 1 -> l
 c 11.11.2011    ggu     error message for negative last layer
 c 29.03.2013    ggu     avoid call to areaele -> ev(10,ie)
+c 13.06.2013    ggu     new helper functions make_old_depth and copy_depth
 c
 c****************************************************************
 
@@ -816,6 +817,29 @@ c sets up depth array for nodes
 
 c***********************************************************
 
+	subroutine copy_depth
+
+c shell (helper) for copydepth
+
+	implicit none
+
+	include 'param.h'
+
+        real hdkov(nlvdim,nkndim)
+        common /hdkov/hdkov
+        real hdeov(nlvdim,neldim)
+        common /hdeov/hdeov
+        real hdknv(nlvdim,nkndim)
+        common /hdknv/hdknv
+        real hdenv(nlvdim,neldim)
+        common /hdenv/hdenv
+
+	call copydepth(nlvdim,hdknv,hdkov,hdenv,hdeov)
+
+	end
+
+c***********************************************************
+
 	subroutine make_new_depth
 
 c shell (helper) for setdepth
@@ -837,6 +861,71 @@ c shell (helper) for setdepth
 
 	end
 
+c***********************************************************
+
+	subroutine make_old_depth
+
+c shell (helper) for setdepth
+
+	implicit none
+
+	include 'param.h'
+
+        real zeov(1)
+        common /zeov/zeov
+        real hdkov(nlvdim,nkndim)
+        common /hdkov/hdkov
+        real hdeov(nlvdim,neldim)
+        common /hdeov/hdeov
+        real areakv(nlvdim,nkndim)
+        common /areakv/areakv
+
+	call setdepth(nlvdim,hdkov,hdeov,zeov,areakv)
+
+	end
+
+c***********************************************************
+
+	subroutine check_diff_depth
+
+c checks differences between old and new depth values (debug)
+
+	implicit none
+
+	include 'param.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+        real hdkov(nlvdim,nkndim)
+        common /hdkov/hdkov
+        real hdeov(nlvdim,neldim)
+        common /hdeov/hdeov
+        real hdknv(nlvdim,nkndim)
+        common /hdknv/hdknv
+        real hdenv(nlvdim,neldim)
+        common /hdenv/hdenv
+
+	integer k,ie,l,idiff
+
+	idiff = 0
+
+	do k=1,nkn
+	  do l=1,nlvdim
+	    if( hdkov(l,k) .ne. hdknv(l,k) ) idiff = idiff + 1
+	  end do
+	end do
+
+	do ie=1,nel
+	  do l=1,nlvdim
+	    if( hdeov(l,ie) .ne. hdenv(l,ie) ) idiff = idiff + 1
+	  end do
+	end do
+
+	write(6,*) 'check_diff_depth: ',idiff
+
+	end
+	  
 c***********************************************************
 
 	subroutine setdepth(levdim,hdkn,hden,zenv,area)

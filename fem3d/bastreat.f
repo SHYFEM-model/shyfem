@@ -14,6 +14,7 @@ c 06.04.2009    ggu     read param.h
 c 29.05.2009    ggu     does only depth limiting and smoothing
 c 20.11.2009    ggu     possibility to smooth only on specific areas
 c 30.03.2011    ggu     new routines to delete elements
+c 13.06.2013    ggu     copy_depth() renamed to transfer_depth()
 c
 c****************************************************************
 
@@ -204,7 +205,7 @@ c-----------------------------------------------------------------
 	  call smooth_bathy(ike,niter,f)
 	end if
 
-	call copy_depth(ike)	!copy to nodes/elements
+	call transfer_depth(ike)	!copy to nodes/elements
 
 c-----------------------------------------------------------------
 c special
@@ -241,7 +242,7 @@ c-----------------------------------------------------------------
 
 c*******************************************************************
 
-	subroutine copy_depth(ike)
+	subroutine transfer_depth(ike)
 
 c copies depth values from elems/nodes to nodes/elems
 

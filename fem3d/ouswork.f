@@ -58,7 +58,7 @@ c reads ous file and elaborates it for altimeter trace (version 0)
         integer nvers,nin,nlv
         integer itanf,itend,idt,idtous
 	integer it_record
-	integer it,ie,i
+	integer it,ie,i,ks
         integer ierr,nread,ndry
         integer nknous,nelous,nlvous
         real href,hzoff,hlvmin
@@ -75,6 +75,7 @@ c initialize basin and simulation
 c-----------------------------------------------------------------
 
 	nread=0
+	ks = 0
 
 	if(iapini(3,nkndim,neldim,0).eq.0) then
 		stop 'error stop : iapini'
@@ -138,7 +139,7 @@ c-----------------------------------------------------------------
      +			,umin,vmin,umax,vmax)
 	call compute_volume(nel,zenv,hev,volume)
 
-c        call debug_write_node(it,nread,nkndim,neldim,nlvdim,nkn,nel,nlv
+c        call debug_write_node(ks,it,nread,nkndim,neldim,nlvdim,nkn,nel,nlv
 c     +          ,nen3v,zenv,znv,utlnv,vtlnv)
 
 	!write(6,*) 
@@ -171,42 +172,6 @@ c end of routine
 c-----------------------------------------------------------------
 
 	stop
-	end
-
-c******************************************************************
-
-	subroutine compute_volume(nel,zenv,hev,volume)
-
-	implicit none
-
-	include 'param.h'
-	include 'evmain.h'
-
-	integer nel
-	real zenv(3,neldim)
-	real hev(neldim)
-	real volume
-
-	integer ie,ii
-	real zav,area
-	double precision vol,voltot,areatot
-
-	voltot = 0.
-	areatot = 0.
-
-	do ie=1,nel
-	  zav = 0.
-	  do ii=1,3
-	    zav = zav + zenv(ii,ie)
-	  end do
-	  area = 12. * ev(10,ie)
-	  vol = area * (hev(ie) + zav/3.)
-	  voltot = voltot + vol
-	  !areatot = areatot + area
-	end do
-
-	volume = voltot
-
 	end
 
 c******************************************************************
@@ -250,50 +215,6 @@ c******************************************************************
           vmin = min(vmin,v)
           umax = max(umax,u)
           vmax = max(vmax,v)
-        end do
-
-        end
-
-c******************************************************************
-
-        subroutine debug_write_node(it,nrec
-     +		,nkndim,neldim,nlvdim,nkn,nel,nlv
-     +          ,nen3v,zenv,znv,utlnv,vtlnv)
-
-c debug write
-
-        implicit none
-
-        integer it,nrec
-        integer nkndim,neldim,nlvdim,nkn,nel,nlv
-        integer nen3v(3,neldim)
-        real znv(nkndim)
-        real zenv(3,neldim)
-        real utlnv(nlvdim,neldim)
-        real vtlnv(nlvdim,neldim)
-
-        integer ie,ii,k,l,ks
-        logical bk
-
-        ks = 6068
-
-        write(66,*) 'time: ',it,nrec
-        write(66,*) 'kkk: ',znv(ks)
-
-        do ie=1,nel
-          bk = .false.
-          do ii=1,3
-            k = nen3v(ii,ie)
-            if( k .eq. ks ) then
-              write(66,*) 'ii: ',ii,ie,zenv(ii,ie)
-              bk = .true.
-            end if
-          end do
-          if( bk ) then
-          do l=1,nlv
-            write(66,*) 'ie: ',ie,l,utlnv(l,ie),vtlnv(l,ie)
-          end do
-          end if
         end do
 
         end

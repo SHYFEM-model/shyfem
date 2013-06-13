@@ -48,7 +48,9 @@ c 09.04.2010  ggu     bug fix in frac_pos() -> maybe compiler error
 c 17.05.2011  ggu     new routine basin_number()
 c 30.08.2012  ggu     new routines to automatically label spherical grid
 c 24.10.2012  ggu     bug in labelling non spherical grid (returned -1)
-c 02.05.2013  ggu     handle fact in spherical coords, meteo point plotting
+c 02.05.2013  ggu     handle fact in spherical coords
+c 02.05.2013  ggu     meteo point plotting (plot_meteo_points())
+c 13.06.2013  ggu     bug fix in spherical_fact() -> set fact to 1
 c
 c notes:
 c
@@ -178,8 +180,7 @@ c legend (north and scale)
 c special output
 
 	if( mode .eq. 2 ) then		!only after plot
-	  write(6,*) 'plotting meteo points with bash(2)'
-	  call plot_meteo_points
+	  !call plot_meteo_points
 	end if
 
 c end of routine
@@ -1029,6 +1030,7 @@ c computes factors for for spherical coordinates
 	real getpar
 	logical is_spherical
 
+	fact = 1.
 	afact = 1.
         if( .not. is_spherical() ) return	!only for spherical
 
@@ -1477,6 +1479,7 @@ c files coords.dat and sea_land.dat must exist
 	  icall = 1
 	end if
 
+	write(6,*) 'plotting meteo points'
 	call qcomm('plotting meteo points')
 	call qgray(0.)
 	dx = 0.02

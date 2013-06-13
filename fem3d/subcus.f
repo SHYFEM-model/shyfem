@@ -1359,6 +1359,7 @@ c computes residence time online - one value for whole lagoon
         real volnode
 	integer ifemop
 	integer iaout,itmin,idtreset
+	integer secsmonth
 	real dt,c0
 	real restime,restime1,restimec
 	real remnant,rlast
@@ -1394,6 +1395,7 @@ c itmin		time from when to compute residence time
 c idtreset	time step to reset concentration to c0
 c		use 0 if no reset is wanted
 c
+c secsmonth	how many seconds in a month
 c--------------------------
 c default settings
 c--------------------------
@@ -1405,6 +1407,11 @@ c--------------------------
 	itmin = 0
 	idtreset = 0
 c--------------------------
+c set how many seconds are in a month
+c--------------------------
+	secsmonth = nint(30.5 * 86400)		! 366 days per year
+	!secsmonth = secsmonth - 7200		! 365 days per year
+c--------------------------
 c nador
 c--------------------------
 c	bnoret = .true.
@@ -1413,7 +1420,7 @@ c	iaout = 0
 c--------------------------
 c alimini
 c--------------------------
-c	idtreset = nint(30.5*86400)
+c	idtreset = 1 * secsmonth
 c--------------------------
 c mar menor
 c--------------------------
@@ -1421,11 +1428,17 @@ c 	just use default settings
 c--------------------------
 c taranto
 c--------------------------
-	itmin = -1
-	itmin = 0
-	idtreset = nint( 3 * 30.5 * 86400 )		!one month is 30.5 days
+c	itmin = -1
+c	itmin = 0
+c	idtreset = 3 * secsmonth
 c--------------------------
-c
+c curonian lagoon
+c--------------------------
+	secsmonth = secsmonth - 7200		! 365 days per year
+	c0 = 0.
+	idtreset = 3 * secsmonth
+	idtreset = 86400
+
 c------------------------------------------------------------
 c do not change anything after this point
 c------------------------------------------------------------
@@ -1541,7 +1554,6 @@ c------------------------------------------------------------
 	!write(67,*) it,mass,massaux
 
 c------------------------------------------------------------
-c------------------------------------------------------------
 c reset variables to compute residence time
 c------------------------------------------------------------
 
@@ -1573,7 +1585,7 @@ c------------------------------------------------------------
 	if( rlast .ge. 1. ) rlast = 0.
 	restimec = restime/(1.-rlast)	!corrected residence time
 
-	remlog = remlog - log(remnant)
+	if( remnant .gt. 0. ) remlog = remlog - log(remnant)
 	remtim = remtim + (it-it0)
 	restime1 = 0.
 	if( remlog .gt. 0. ) restime1 = ( remtim / remlog ) / 86400.
@@ -2048,7 +2060,8 @@ c*****************************************************************
 	  end do
 	end do
 
-	call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)
+	!call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)
+	call make_new_depth
 
 	do ie=1,nel
 	  call baric(ie,x,y)

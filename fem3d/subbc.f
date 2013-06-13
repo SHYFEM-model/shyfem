@@ -172,96 +172,24 @@ c----------------------------------------------------------
                 if( ierr .gt. 0 ) goto 96
                 if( ierr .lt. 0 ) goto 1
 
-		do i=1,nintp-1
-		  do j=0,ndata
-		    vars(j,i) = vars(j,i+1)
-                  end do
-		end do
-
-                vars(0,nintp) = time
-		do j=1,ndata
-		  vars(j,nintp) = rint(j)
-                end do
-
-		if( nintp .gt. 1 ) then		!check time value
-		  if( vars(0,nintp) .le. vars(0,nintp-1) ) goto 87
-		end if
+		call obc_check_time(unit,nintp,ndata,vars,time)
+		call obc_insert_record(nintp,ndata,vars,time,rint)
 
 		tc = tcomp(ndata,nintp,vars)     !pass in time column
 	end do
     1	continue
 
 c----------------------------------------------------------
-c debug output
-c----------------------------------------------------------
-
-	if( bdebug ) then
-	  write(6,*) 'debug for intp_ts: '
-	  do i=1,nintp
-	    write(6,*) (vars(j,i),j=0,ndata)
-	  end do
-	end if
-
-c----------------------------------------------------------
-c time series must have t value monotonically increasing
-c----------------------------------------------------------
-
-	do i=2,nintp
-	    if( vars(0,i) .le. vars(0,i-1) ) goto 88
-	end do
-
-c----------------------------------------------------------
-c check if we are really doing an interpolation
-c----------------------------------------------------------
-
-	if( nintp .gt. 1 ) then			!no check for nintp = 1
-		i = 0
-		if( t .lt. vars(0,1)-eps ) i = 1
-		if( t .gt. vars(0,nintp)+eps ) i = nintp
-		if( i .gt. 0 ) then	!keep constant
-		  do j=1,ndata
-		    rint(j) = vars(j,i)
-		  end do
-		  return
-		end if
-	end if
-
-c----------------------------------------------------------
 c do the interpolation for every column
 c----------------------------------------------------------
 
-	do i=1,nintp
-	  x(i) = vars(0,i)
-	end do
-
-	do j=1,ndata
-	  do i=1,nintp
-	    y(i) = vars(j,i)
-	  end do
-	  rint(j) = intp_neville(nintp,x,y,t)
-	end do
+	call obc_interpolate(nintp,ndata,vars,t)
 
 c----------------------------------------------------------
 c end of routine
 c----------------------------------------------------------
 
 	return
-   87	continue
-	write(6,*) 'time values not in ascending order'
-	write(6,*) 'unit = ',unit
-	write(6,*) 'nintp = ',nintp
-	write(6,*) 'time: ',(vars(0,i),i=1,nintp)
-	stop 'error stop : intp_ts'
-   88	continue
-	write(6,*) 't values are not in increasing order:'
-	write(6,*) 'Available time levels :'
-	write(6,*) (vars(0,i),i=1,nintp)
-	write(6,*) 'interpolation grade = ',nintp
-	write(6,*) 't = ',t
-	write(6,*) 'unit = ',unit
-	call filna(iunit,name)
-	write(6,'(a,a)') 'file = ',name
-	stop 'error stop : intp_ts'
    90	continue
 	write(6,*) 'Value for nintp out of range: ',nintp
 	write(6,*) 'Possible min/max values: ',1,ndim
@@ -298,6 +226,133 @@ c----------------------------------------------------------
 
 c*************************************************************
 
+	subroutine obc_interpolate(nintp,ndata,vars,time)
+
+	implicit none
+
+	integer nintp,ndata
+	real vars(0:ndata,nintp)
+	real time
+
+	real eps
+	parameter (eps=1.e-5)
+	integer ndim
+	parameter (ndim=10)
+	real x(ndim), y(ndim)
+	integer i,j
+
+	real intp_neville
+
+	if( nintp .gt. ndim ) stop 'error stop obc_interpolate: ndim'
+
+c	----------------------------------------------------------
+c	check if we are really doing an interpolation
+c	----------------------------------------------------------
+
+	i = 0
+	if( t .lt. vars(0,1)-eps ) i = 1
+	if( t .gt. vars(0,nintp)+eps ) i = nintp
+	if( nintp .le. 0 ) i = 1
+
+	if( i .gt. 0 ) then	!keep constant -> extrapolation
+	  do j=1,ndata
+	    rint(j) = vars(j,i)
+	  end do
+	  return
+	end if
+
+c	----------------------------------------------------------
+c	check if we are really doing an interpolation
+c	----------------------------------------------------------
+
+	do i=1,nintp
+	  x(i) = vars(0,i)
+	end do
+
+	do j=1,ndata
+	  do i=1,nintp
+	    y(i) = vars(j,i)
+	  end do
+	  rint(j) = intp_neville(nintp,x,y,t)
+	end do
+
+c	----------------------------------------------------------
+c	end of routine
+c	----------------------------------------------------------
+
+	end
+
+c*************************************************************
+
+	subroutine obc_check_time(iunit,nintp,ndata,vars,time)
+
+	implicit none
+
+	integer iunit
+	integer nintp,ndata
+	real vars(0:ndata,nintp)
+	real time
+
+	character*60 name
+
+	if( time .gt. vars(0,nintp) ) return
+
+	write(6,*) 'time values not in ascending order'
+	write(6,*) 'unit = ',unit
+	write(6,*) 'nintp = ',nintp
+	write(6,*) 'time: ',vars(0,nintp),time
+	call filna(iunit,name)
+	write(6,'(a,a)') 'file = ',name
+	stop 'error stop : obc_check_time'
+	end
+
+c*************************************************************
+
+	subroutine obc_init_record(nintp,ndata,vars)
+
+	implicit none
+
+	integer nintp,ndata
+	real vars(0:ndata,nintp)
+
+	integer i,j
+
+	do i=1,nintp
+	  do j=0,ndata
+	    vars(j,i) = 0.
+          end do
+	end do
+
+	end
+
+c*************************************************************
+
+	subroutine obc_insert_record(nintp,ndata,vars,time,rint)
+
+	implicit none
+
+	integer nintp,ndata
+	real vars(0:ndata,nintp)
+	real time
+	real rint(ndata)
+
+	integer i,j
+
+	do i=1,nintp-1
+	  do j=0,ndata
+	    vars(j,i) = vars(j,i+1)
+          end do
+	end do
+
+        vars(0,nintp) = time
+	do j=1,ndata
+	  vars(j,nintp) = rint(j)
+        end do
+
+	end
+
+c*************************************************************
+
 	function tcomp(ndata,nintp,t)
 
 c returns value of t where new value has to be read
@@ -305,9 +360,9 @@ c returns value of t where new value has to be read
 	implicit none
 
 	real tcomp
-	integer ndata
-	integer nintp
-	real t(0:ndata,nintp+1)
+	integer ndata			!total size of data
+	integer nintp			!grade of interpolation
+	real t(0:ndata,nintp+1)		!data, time is at position 0
 
 	integer nold,n1,n2
 	save nold,n1,n2
@@ -679,6 +734,7 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
+	!subroutine obc_init(iunit,nintp,nvar,np,ndim,array)
 	subroutine exfinit(iunit,nintp,nvar,np,ndim,array)
 
 c sets up interpolation from file -> all information is in array
@@ -692,17 +748,14 @@ c       one guard value at end of array
 
 	implicit none
 
+	include 'subobc.h'
+
 	integer iunit		!unit of file
 	integer nintp		!grade of interpolation (2=linear, 4=cubic)
 	integer nvar		!how many columns to read/interpolate
 	integer np		!number of horizontal points
 	integer ndim		!dimension of array, on return space used
 	real array(ndim)	!array with information
-
-        real rguard
-        parameter(rguard=1.234543e+20)
-	integer nextra
-        parameter(nextra=13)
 
 	logical b3d,debug,bformat
 	integer iformat,lmax,np0,nvar0
@@ -781,26 +834,26 @@ c	-------------------------------------------------------------
 c	write parameters to header of array
 c	-------------------------------------------------------------
 
-	array(1) = iunit
-	array(2) = nnintp
-	array(3) = nvar0
-	array(4) = nsize
-	array(5) = ndata
-	array(6) = ndim
-	array(7) = nextra
-	array(8) = ires
-	array(9) = nspace
-	array(10) = np0
-	array(11) = lmax
-	array(12) = iformat
-	array(13) = rguard
+	array(ip_iunit) = iunit
+	array(ip_nintp) = nnintp
+	array(ip_nvar) = nvar0
+	array(ip_nsize) = nsize
+	array(ip_ndata) = ndata
+	array(ip_ndim) = ndim
+	array(ip_nextra) = nextra
+	array(ip_ires) = ires
+	array(ip_nspace) = nspace
+	array(ip_np) = np0
+	array(ip_lmax) = lmax
+	array(ip_iformat) = iformat
+	array(nextra) = rguard
 	array(nspace) = rguard
 
 c	-------------------------------------------------------------
 c	in case flag unit as not used
 c	-------------------------------------------------------------
 
-	if( iunit .eq. 0 ) array(1) = -1	!flag unit as not used
+	if( iunit .eq. 0 ) array(ip_iunit) = -1	!flag unit as not used
 
 	if(debug) then
 	  write(6,*) 'exfini: (finished initializing) ',iunit,nvar
@@ -819,127 +872,6 @@ c	-------------------------------------------------------------
 
 c***************************************************************
 
-	subroutine exfini(iunit,nintp,nvar,nsize,ndim,array)
-
-c sets up interpolation from file -> all information is in array
-c
-c       space is computed as follows:
-c
-c       nvar variables + time -> nvar+1
-c       nintp values per variable + interpolated values -> nintp+1
-c       nextra is extra information heading the other data
-c       one guard value at end of array
-
-	implicit none
-
-	integer iunit		!unit of file
-	integer nintp		!grade of interpolation (2=linear, 4=cubic)
-	integer nvar		!how many columns to read/interpolate
-	integer nsize		!0 for normal read, else number of data/var
-	integer ndim		!dimension of array, on return space used
-	real array(ndim)	!array with information
-
-        real rguard
-        parameter(rguard=1.234543e+20)
-	integer nextra
-        parameter(nextra=13)
-
-	logical b3d,debug
-	integer ires,nspace,ndata,nnintp
-        integer i
-	real time
-	character*80 file
-
-	debug = .false.
-
-c	-------------------------------------------------------------
-c	set-up parameters
-c	-------------------------------------------------------------
-
-        nnintp = nintp
-	if( iunit .le. 0 ) nnintp = 0   !reserve some space only for results
-
-	b3d = nsize .gt. 1
-	ndata = nvar * max(1,nsize)
-
-        ires   = 1 + nextra + nnintp * (ndata+1)	!pointer to results
-	nspace = 1 + nextra + (nnintp+1) * (ndata+1)	!total space needed
-
-c	-------------------------------------------------------------
-c	check space and exit with error in case
-c	-------------------------------------------------------------
-
-	if( nspace .gt. ndim ) then
-                write(6,*) '*** error in exfini'
-		write(6,*) 'Space in array is not sufficient'
-		write(6,*) 'dimension of array: ',ndim
-		write(6,*) 'space needed:       ',nspace
-		write(6,*) 'formula: 1 + nextra + (nnintp+1) * (ndata+1)'
-		write(6,*) 'with nextra = ',nextra
-		write(6,*) 'iunit,nnintp,nvar:  ',iunit,nnintp,nvar
-		write(6,*) 'nsize,ndata:  ',nsize,ndata
-		call filna(iunit,file)
-		write(6,*) 'filename: ',file
-		stop 'error stop exfini: ndim'
-	end if
-
-c	-------------------------------------------------------------
-c	initialization of array, using result section as aux array
-c	-------------------------------------------------------------
-
-	if(debug) write(6,*) 'exfini: (initializing) ',iunit,nspace
-
-        do i=1,nspace
-          array(i) = 0.
-        end do
-
-	if( iunit .gt. 0 ) then
-	  time = 0.     !is not used
-	  call intp_ts(-iunit,nnintp,ndata,time,array(nextra+1)
-     +			,array(ires+1),b3d,.true.)
-        end if
-
-	if(debug) then
-	  write(6,*) 'exfini (end of intp_ts) : ',iunit,nintp,nnintp,nvar
-	end if
-
-c	-------------------------------------------------------------
-c	write parameters to header of array
-c	-------------------------------------------------------------
-
-	array(1) = iunit
-	array(2) = nnintp
-	array(3) = nvar
-	array(4) = nsize
-	array(5) = ndata
-	array(6) = ndim
-	array(7) = nextra
-	array(8) = ires
-	array(9) = nspace
-	array(10) = 0
-	array(11) = 0
-	array(12) = 1
-	array(13) = rguard
-	array(nspace) = rguard
-
-c	-------------------------------------------------------------
-c	in case flag unit as not used
-c	-------------------------------------------------------------
-
-	if( iunit .eq. 0 ) array(1) = -1	!flag unit as not used
-
-	if(debug) then
-	  write(6,*) 'exfini: (finished initializing) ',iunit,nvar
-	end if
-
-c	-------------------------------------------------------------
-c	end of routine
-c	-------------------------------------------------------------
-
-	end
-
-c***************************************************************
-
 	subroutine exfintp(array,t,rint)
 
 c interpolation from file -> all information is in array
@@ -948,22 +880,23 @@ c interpolated values are in last part of array
 
 	implicit none
 
+	include 'subobc.h'
+
 	real array(*)		!array with information from set-up
 	real t			!t value for which to interpolate
 	real rint(1)		!interpolated values
 
 	logical b3d,bformat
 	integer iformat
-	integer iunit,nintp,nsize,ndata,nextra
+	integer iunit,nintp,nsize,ndata
         integer ires,nspace,i
 
-	iunit  = nint(array(1))
-	nintp  = nint(array(2))
-	nsize  = nint(array(4))
-	ndata  = nint(array(5))
-	nextra = nint(array(7))
-	ires   = nint(array(8))
-	iformat = nint(array(12))
+	iunit   = nint(array(ip_iunit))
+	nintp   = nint(array(ip_nintp))
+	nsize   = nint(array(ip_nsize))
+	ndata   = nint(array(ip_ndata))
+	ires    = nint(array(ip_ires))
+	iformat = nint(array(ip_iformat))
 
 	!b3d = nsize .gt. 1
 	b3d = nsize .gt. 0
@@ -994,14 +927,16 @@ c get last interpolated values (ndata values)
 
 	implicit none
 
+	include 'subobc.h'
+
 	real array(*)		!array with information from set-up
 	real t			!t value for which to interpolate
 	real rint(1)		!interpolated values
 
         integer ndata,ires,i
 
-	ndata  = nint(array(5))
-	ires   = nint(array(8))
+	ndata  = nint(array(ip_ndata))
+	ires   = nint(array(ip_ires))
 
         t = array(ires)
         do i=1,ndata
@@ -1020,6 +955,8 @@ c get last interpolated values (only for variable ivar, nsize values)
 
 	implicit none
 
+	include 'subobc.h'
+
 	real array(*)		!array with information from set-up
 	integer ivar		!number of variable needed
 	real t			!t value for which to interpolate
@@ -1028,9 +965,9 @@ c get last interpolated values (only for variable ivar, nsize values)
         integer nvar,nsize
 	integer ires,ip,i
 
-	nvar   = nint(array(3))
-	nsize  = max(nint(array(4)),1)
-	ires   = nint(array(8))
+	nvar   = nint(array(ip_nvar))
+	nsize  = max(nint(array(ip_nsize)),1)
+	ires   = nint(array(ip_ires))
 
 	if( ivar .gt. nvar ) then
 	  write(6,*) 'ivar = ',ivar,'   nvar = ',nvar
@@ -1055,14 +992,16 @@ c sets new actual values
 
 	implicit none
 
+	include 'subobc.h'
+
 	real array(*)		!array with information from set-up
 	real t			!t value for which to interpolate
 	real rint(1)		!interpolated values
 
         integer ndata,ires,i
 
-	ndata  = nint(array(5))
-	ires   = nint(array(8))
+	ndata  = nint(array(ip_ndata))
+	ires   = nint(array(ip_ires))
 
         array(ires) = t
         do i=1,ndata
@@ -1081,6 +1020,8 @@ c sets default value (one for each variable)
 
 	implicit none
 
+	include 'subobc.h'
+
 	real array(*)		!array with information from set-up
 	real rdef(*)		!default values for every variable
 
@@ -1088,9 +1029,9 @@ c sets default value (one for each variable)
 	integer ires,i
 	integer ivar,ip
 
-	nvar   = nint(array(3))
-	nsize  = max(nint(array(4)),1)
-	ires   = nint(array(8))
+	nvar   = nint(array(ip_nvar))
+	nsize  = max(nint(array(ip_nsize)),1)
+	ires   = nint(array(ip_ires))
 
         array(ires) = 0.	!time - not important
 	do ivar=1,nvar
@@ -1112,11 +1053,13 @@ c interpolation from file -> info
 
 	implicit none
 
+	include 'subobc.h'
+
 	integer ipunit		!unit where to print on (<0 -> 6)
 	real array(*)		!array with information from set-up
 
 	logical bdebug
-	integer iunit,nintp,nvar,nsize,ndata,nextra,ndim
+	integer iunit,nintp,nvar,nsize,ndata,ndim
         integer ires,nspace
 	integer iformat,lmax,np
 	integer ipu
@@ -1128,18 +1071,17 @@ c interpolation from file -> info
 	ipu = ipunit
 	if( ipunit .le. 0 ) ipu = 6
 
-	iunit   = nint(array(1))
-	nintp   = nint(array(2))
-	nvar    = nint(array(3))
-	nsize   = nint(array(4))
-	ndata   = nint(array(5))
-	ndim    = nint(array(6))
-	nextra  = nint(array(7))
-	ires    = nint(array(8))
-	nspace  = nint(array(9))
-	np      = nint(array(10))
-	lmax    = nint(array(11))
-	iformat = nint(array(12))
+	iunit   = nint(array(ip_iunit))
+	nintp   = nint(array(ip_nintp))
+	nvar    = nint(array(ip_nvar))
+	nsize   = nint(array(ip_nsize))
+	ndata   = nint(array(ip_ndata))
+	ndim    = nint(array(ip_ndim))
+	ires    = nint(array(ip_ires))
+	nspace  = nint(array(ip_nspace))
+	np      = nint(array(ip_np))
+	lmax    = nint(array(ip_lmax))
+	iformat = nint(array(ip_iformat))
 
         write(ipu,*) 'info on array interpolation:'
         write(ipu,*) 'unit     : ',iunit
@@ -1177,10 +1119,12 @@ c returns information on unit number
 
 	implicit none
 
+	include 'subobc.h'
+
 	real array(*)		!array with information from set-up
         integer iunit           !unit number of file, 0 if not initialized
 
-	iunit = nint(array(1))
+	iunit = nint(array(ip_iunit))
 
         end
 
@@ -1192,10 +1136,12 @@ c returns information on number of variables
 
 	implicit none
 
+	include 'subobc.h'
+
 	real array(*)		!array with information from set-up
         integer nvar            !total number of variables
 
-	nvar = nint(array(3))
+	nvar = nint(array(ip_nvar))
 
 	end
 
@@ -1207,14 +1153,16 @@ c returns information on size of data
 
 	implicit none
 
+	include 'subobc.h'
+
 	real array(*)		!array with information from set-up
         integer nvar            !total number of variables
         integer nsize           !data per variable
         integer ndata           !total data in array
 
-	nvar  = nint(array(3))
-	nsize = nint(array(4))
-	ndata = nint(array(5))
+	nvar  = nint(array(ip_nvar))
+	nsize = nint(array(ip_nsize))
+	ndata = nint(array(ip_ndata))
 
         end
 
@@ -1229,10 +1177,12 @@ c array(ires+i)	actual interpolated result of variable i
 
 	implicit none
 
+	include 'subobc.h'
+
 	real array(*)		!array with information from set-up
         integer ires            !pointer to results in array
 
-	ires   = nint(array(8))
+	ires   = nint(array(ip_ires))
 
         end
 
@@ -1244,13 +1194,11 @@ c checks array for guard values
 
 	real array(*)
 
-        real rguard
-        parameter(rguard=1.234543e+20)
+	include 'subobc.h'
 
 	integer nspace
 
-	nextra = nint(array(7))
-	nspace = nint(array(9))
+	nspace = nint(array(ip_nspace))
 
         if( array(nextra) .ne. rguard ) then
             stop 'error stop exfintp: first guard value altered'
@@ -1262,14 +1210,17 @@ c checks array for guard values
 
 c***************************************************************
 
-	subroutine exfcompsize(iunit,np,nvar,lmax,bformat,b3d)
+	subroutine exfcompsize(iunit,np,nvar,lmax,bformat)
 
 c gets info on file
 
 	implicit none
 
-	integer iunit,np,nvar,lmax
-	logical bformat,b3d
+	integer iunit		!unit number (input)
+	integer np		!number of points in file (0 for time series)
+	integer nvar		!number of variables (normally 1)
+	integer lmax		!number of levels
+	logical bformat		!is file formatted?
 
 	integer it,nvers,ntype,ierr
 	real f(10)
@@ -1282,20 +1233,18 @@ c gets info on file
 	nvar = 1
 	lmax = 1
 	bformat = .true.
-	b3d = .false.
 
 	if( iunit .le. 0 ) return
 
 c try 3D (fem-file) format
 
-	b3d = .true.
         call fem_file_get_params(bformat,iunit,it
      +                          ,nvers,np,lmax,nvar,ntype,ierr)
 	if( ierr .eq. 0 ) return
 
 c try 0D (time series) format
 
-	b3d = .false.
+	np = 0
 	read(iunit,'(a)',end=1,err=1) line
 	iret = iscanf(line,f,0)
 	if( iret .lt. 0 ) iret = -iret - 1

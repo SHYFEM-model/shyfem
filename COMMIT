@@ -1,5 +1,67 @@
 ============================================================
 
+Thu Jun 13 15:58:34 CEST 2013
+
+offline fem file plotting
+
+ .gitignore                 |    3 +
+ LOG                        |   84 +++++
+ Makefile                   |   13 +-
+ RELEASE_NOTES              |    4 +
+ Rules.make                 |   15 +-
+ fem3d/Makefile             |   16 +-
+ fem3d/basbathy.f           |    7 +-
+ fem3d/bastreat.f           |    5 +-
+ fem3d/bin/dependency.sh    |   10 +-
+ fem3d/check_debug.f        |  109 ++++++
+ fem3d/feminf.f             |   72 ++++
+ fem3d/ht.f                 |   53 ++-
+ fem3d/lagrange_connect.f   |    7 +-
+ fem3d/lagrange_connect.h   |    4 +-
+ fem3d/new3di.f             |   23 +-
+ fem3d/newcon.f             |    2 +-
+ fem3d/newexpl.f            |   69 ++--
+ fem3d/newini.f             |    2 +-
+ fem3d/offinf.f             |   41 ++
+ fem3d/ouswork.f            |   85 +----
+ fem3d/param.h              |    6 +-
+ fem3d/sedi3d.f             |    3 +-
+ fem3d/splitext.f           |    4 +-
+ fem3d/subbc.f              |  479 +++++++++++-------------
+ fem3d/subbnds.f            |    1 +
+ fem3d/subcus.f             |   29 +-
+ fem3d/subele.f             |   89 +++++
+ fem3d/subfemfile.f         |  178 +++++++--
+ fem3d/subgotm.f            |    4 +
+ fem3d/subn11.f             |    7 +-
+ fem3d/subnetcdf_admin.f    |    4 +-
+ fem3d/subnsa.f             |   12 +-
+ fem3d/subobc.h             |   36 ++
+ fem3d/suboff.f             |  892 ++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subsys.f             |    5 +
+ fem3d/subvintp.f           |   29 ++-
+ femadj/param.h             |    6 +-
+ fembin/plots               |   76 +++--
+ fembin/strparse.pl         |   75 +++-
+ femcheck/check_software.sh |   50 +++-
+ femcheck/hw.c              |    7 -
+ femcheck/hw.f              |    2 -
+ femdoc/final/shyfem.pdf    |  Bin 270744 -> 270682 bytes
+ femdoc/final/shyfem.ps     |   85 ++---
+ femplot/col.f              |    5 +-
+ femplot/param.h            |    6 +-
+ femplot/plotsim.f          |   10 +-
+ femplot/supbas.f           |    9 +-
+ femplot/supdep.f           |    5 +-
+ femplot/supint.f           |  106 +++++-
+ femplot/suplag.f           |    2 +
+ femplot/supout.f           |  252 +++++++++++++
+ femplot/supsim.f           |  102 +++++
+ param.h                    |    6 +-
+ 54 files changed, 2587 insertions(+), 619 deletions(-)
+
+============================================================
+
 Fri May 17 18:30:33 CEST 2013
 
 layer thickness computation

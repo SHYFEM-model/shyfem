@@ -137,6 +137,7 @@ c initializes boundary condition
 	  end if
 
 	  call exfini(iunit,nintp,nvar,nsize,ndim,array(1,ibc))
+	  !call exfinit(iunit,nintp,nvar,nk,ndim,array(1,ibc))
 
 	  call exfsetdef(array(1,ibc),aconst)
 

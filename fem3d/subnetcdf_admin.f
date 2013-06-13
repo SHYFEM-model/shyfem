@@ -252,7 +252,9 @@ c            bnd(4)  Land segment=0,  Water segment=1
 		bnd(2,nb) = kstart
 		bnd(3,nb) = isl
 		bnd(4,nb) = 0
-	        if(inodv(knext).gt.0. .and. inodv(kstart).gt.0) bnd(4,nb)=1
+	        if(inodv(knext).gt.0. .and. inodv(kstart).gt.0) then
+		  bnd(4,nb)=1
+		end if
 	  end if
 	end do
 

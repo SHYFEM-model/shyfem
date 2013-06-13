@@ -5,16 +5,17 @@ rm -f $log
 
 missing=""
 
+#---------------------------------------------------
+
 CheckCommand()
 {
   name=$1
   command=$2
   error=$3
+  options=$4
 
   if [ -z "$error" ]; then
     error=0
-  else
-    echo "error passed ............"
   fi
 
   ($command) >> $log 2>&1
@@ -24,7 +25,9 @@ CheckCommand()
   if [ $status -eq $error ]; then
     echo "... $name is installed"
   else
-    echo "*** $name is not installed"
+    if [ "$options" != "quiet" ]; then
+      echo "*** $name is not installed"
+    fi
     missing="$missing $name"
   fi
 }
@@ -33,6 +36,7 @@ CreateInputFiles()
 {
 
 cat > test.f <<EOI
+	include 'netcdf.inc'
         write(6,*) 'Hello, world.'
         end
 EOI
@@ -63,14 +67,14 @@ CleanUp()
 
 CheckFortranCompiler()
 {
-  local fortran_available=""
+  #local fortran_available=""
   local missing_save=$missing
 
-  CheckCommand g77 "g77 -v"
+  CheckCommand g77 "g77 -v" "" "quiet"
   [ $status -eq 0 ] && fortran_available="$fortran_available g77"
-  CheckCommand gfortran "gfortran -v"
+  CheckCommand gfortran "gfortran -v" "" "quiet"
   [ $status -eq 0 ] && fortran_available="$fortran_available gfortran"
-  CheckCommand ifort "ifort -v"
+  CheckCommand ifort "ifort -v" "" "quiet"
   [ $status -eq 0 ] && fortran_available="$fortran_available ifort"
 
   #fortran_available=""		# fake error
@@ -84,6 +88,7 @@ CheckFortranCompiler()
     missing_save="$missing_save g77 gfortran ifort"
   fi
 
+  fortran=`echo $fortran_available | sed -e 's/ .*//'`	#first fortran found
   missing=$missing_save
 }
 
@@ -95,6 +100,36 @@ CheckX11()
     echo "*** X11 development package must be installed"
     echo "    please try with: libx11 libx11-common libx11-dev libxt-dev"
   fi
+}
+
+CheckNetcdf()
+{
+  netcdf=`GetMacro NETCDF`
+  netcdfdir=`GetMacro NETCDFDIR`
+
+  #echo "netcdf: $netcdf $netcdfdir    $fortran"
+
+  [ -z "$fortran" ] && return		# no fortran compiler
+  [ "$netcdf" != "true" ] && return	# no netcdf requested
+
+  CheckCommand netcdf "$fortran -L$netcdfdir/lib -I$netcdfdir/include test.f"
+
+  if [ $status -ne 0 ]; then
+    echo "*** netcdf seems not to be installed"
+    echo "    If you need netcdf please install libnetcdf-dev or similar"
+  fi
+}
+
+GetMacro()	# gets macro from Rules.make file
+{
+  what=$1
+  rules="../Rules.make"
+  [ $# -gt 1 ] && rules="$2"
+
+  macro=$( cat $rules | sed -e 's/ *//g' | grep "^$what=" \
+	| tail -1 | sed -e 's/.*=//')
+
+  echo "$macro"
 }
 
 #---------------------------------------------------
@@ -128,6 +163,7 @@ CheckCommand ghostscript "gs -v"
 CheckCommand gnuplot "gnuplot quit.tmp"
 CheckCommand ImageMagic "mogrify -version"
 CheckCommand gifsicle "gifsicle --version"
+CheckNetcdf
 
 echo
 echo "... checking additional routines (not urgently needed)"

@@ -61,6 +61,7 @@ c 31.08.2011    ggu     new eos plotting (pleos,ploeval)
 c 07.10.2011    ggu&dbf error calling extelev with nkn, and not nel
 c 10.02.2012    ggu	belem in plobas to plot bathymetry on elements
 c 26.03.2012    ccf&ggu	call mkht only for bvel .or. btrans (plo2vel)
+c 13.06.2013    ggu	new routine plofem()
 c
 c notes :
 c
@@ -69,6 +70,101 @@ c customize bnumber in plobas() to write node and element numbers
 c
 c**********************************************************
 c**********************************************************
+c**********************************************************
+
+	subroutine plofem(type)
+
+c 3D concentrations
+
+	implicit none
+
+	include 'param.h'
+
+	character*(*) type
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	real p3(nlvdim,nkndim)	!must be big enough for vectors (double)
+	common /p3/p3
+	real parray(1)
+	common /parray/parray
+	real fvlv(nlvdim,1)	!finite volume
+	common /fvlv/fvlv
+
+        character*80 line
+	integer nrec,it,ivel
+	integer ivaria
+	integer level,ivar,isect
+	logical femnext,oktime
+	integer getlev,getvar,getisec
+
+	nrec = 0
+	level = getlev()
+        isect = getisec()
+
+	call askvar
+        ivar = getvar()
+
+	call femopen(type)
+	call timeask
+
+        call mkvarline(ivar,line)
+	ivaria = ivar
+
+	do while( femnext(it,ivaria,nlvdim,nkn,p3) )
+	  nrec = nrec + 1
+	  write(6,*) 'new record: ',nrec,it,ivaria,ivar
+	  if( ivar .ne. ivaria ) goto 99
+	  if( oktime(it) ) then
+            if( isect .eq. 0 ) then
+	      write(6,*) '..........horizontal plotting nodes'
+	      if( ivar .eq. 21 ) then	!wind
+		ivel = 3		!wind
+		call set_uv(nlvdim,nkn,p3)
+	        call resetsim
+	        call plovel(ivel)
+	      else
+	        call extnlev(level,nlvdim,nkn,p3,parray)
+	        call prepsim
+	        call ploval(nkn,parray,line)
+	      end if
+            else
+	      write(6,*) '..........vertical plotting nodes'
+              call plot_sect(.false.,p3)
+            end if
+	  end if
+	end do
+
+	call femclose
+
+	return
+   99	continue
+	write(6,*) 'ivar,ivaria: ',ivar,ivaria
+	stop 'error stop plofem: no such variable in file'
+	end
+
+c**********************************************************
+
+	subroutine set_uv(nlvdim,nkn,p3)
+
+	implicit none
+
+	integer nlvdim
+	integer nkn
+	real p3(nlvdim,nkn,2)
+
+        real uv(1), vv(1)
+        common /uv/uv, /vv/vv
+
+	integer k
+
+	do k=1,nkn
+	  uv(k) = p3(1,k,1)
+	  vv(k) = p3(1,k,2)
+	end do
+
+	end
+
 c**********************************************************
 
 	subroutine plonos(type,ivar_in)
@@ -976,6 +1072,12 @@ c make vertical velocities
 c handle level
 
 	level = getlev()
+	write(6,*) 'plo3vel: level = ',level,' ivel = ',ivel
+
+	if( ivel .eq. 3 .or. ivel .eq. 4 ) then	!wave or wind
+	  call plo2vel(ivel,'3D ')
+	  return
+	end if
 
 	if( level .lt. -1 ) stop 'internal error (1)'
 
