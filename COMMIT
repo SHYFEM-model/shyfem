@@ -1,5 +1,30 @@
 ============================================================
 
+Wed Jun 19 15:28:16 CEST 2013
+
+small fixes
+
+ .gitignore                           |    1 +
+ LOG                                  |   14 +++++++++++++
+ RELEASE_NOTES                        |    6 +++++
+ fem3d/subbfm.f                       |   19 ++++++++++-------
+ fem3d/submeteo1.f                    |    3 ++
+ fem3d/suboff.f                       |   13 ++++++-----
+ fem3d/subtsuvfile.f                  |   16 ++++++++++++--
+ fembin/grd_transl.pl                 |    5 ++++
+ femcheck/test_compile.sh             |   33 ++++++++++++++++++++++--------
+ femdoc/final/shyfem.pdf              |  Bin 270682 -> 270682 bytes
+ femdoc/final/shyfem.ps               |   36 +++++++++++++++++-----------------
+ femersem/compilers/compiler.IFORT    |    3 +-
+ femersem/src/BFM/Bennut/PrintSet.f90 |    4 +-
+ femplot/supano.f                     |   13 ++++++++++-
+ femplot/supbas.f                     |   14 +++++++++++-
+ femplot/supint.f                     |   30 +++++++++++++++++----------
+ femplot/supout.f                     |   27 ++++++++++++++++++++++++-
+ 17 files changed, 174 insertions(+), 63 deletions(-)
+
+============================================================
+
 Thu Jun 13 15:59:48 CEST 2013
 
 New version 6_1_65

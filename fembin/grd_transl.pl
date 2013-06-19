@@ -11,6 +11,7 @@
 # -center	use center of mass of points for translation
 # -proj		make projection from lat/lon to cart or viceversa (using x0,y0)
 #		(x0,y0 must be lon/lat of center of projection)
+# -no_sort	preserves order of node/elem numbering
 #
 #----------------------------------------------------------------
 
@@ -26,6 +27,7 @@ $::x0 = 0. unless $::x0;
 $::y0 = 0. unless $::y0;
 $::center = 0 unless $::center;
 $::proj = 0 unless $::proj;
+$::no_sort = 0 unless $::no_sort;
 
 if( $::h or $::help ) {
   FullUsage();
@@ -47,6 +49,8 @@ my $scale = $::scale;
 my $angle = $::angle;
 
 $grid->readgrd($file);
+
+$grid->set_preserve_order(1) if $::no_sort;
 
 if( $::proj ) {
   project($grid,$x0,$y0);
@@ -78,6 +82,7 @@ sub FullUsage {
   print STDERR " -center	use center of mass for translation or rotation\n";
   print STDERR " -proj		make projection from lat/lon to cart or viceversa (using x0,y0)\n";
   print STDERR " 		(x0,y0 must be lon/lat of center of projection)\n";
+  print STDERR " -no_sort	preserves order of node/elem numbers\n";
 }
 
 sub Usage {

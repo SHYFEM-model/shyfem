@@ -12,15 +12,15 @@ compilers="GNU_GFORTRAN INTEL"
 #trap Clean_up SIGHUP SIGINT SIGTERM
 trap Clean_up 1 2 15
 
-Clean_up() {
-
+Clean_up()
+{
   echo "Cleaning up before exiting..."
   Clean_after
   exit
 }
 
-Clean_before() {
-
+Clean_before()
+{
   rm -f *.out *.tmp
   mv --backup=numbered ./Rules.make ./rules/Rules.save
   cp rules/Rules.dist ./Rules.make
@@ -28,13 +28,25 @@ Clean_before() {
   [ -f allstderr.txt ] && rm allstderr.txt
 }
 
-Clean_after() {
-
+Clean_after()
+{
   rm -f *.tmp
   rm -f stdout.out stderr.out
   mv -f ./rules/Rules.save ./Rules.make
   [ -f allstdout.txt ] && mv allstdout.txt allstdout.tmp
   [ -f allstderr.txt ] && mv allstderr.txt allstderr.tmp
+}
+
+WrapUp()
+{
+  lines=`cat allstderr.tmp | grep -v 'setting macros' | wc -l`
+  echo "Final message on all compilations: "
+  if [ $lines -ne 0 ]; then
+    echo "  *** some errors occured in compilation..."
+    echo "  (see allstderr.tmp for more details)"
+  else
+    echo "  no compilation errors"
+  fi
 }
 
 #--------------------------------------------------------
@@ -53,10 +65,10 @@ Comp()
 
   lines=`cat stderr.out | wc -l`
   if [ $lines -ne 0 ]; then
-    echo "*** errors compiling..."
+    echo "*** compilation errors..."
     cat stderr.out
   else
-    echo "no compiling errors"
+    echo "no compilation errors"
   fi
 
   cat stdout.out >> allstdout.txt
@@ -83,7 +95,7 @@ do
   echo "================================="
   echo "compiling with $comp"
   echo "================================="
-  Rules "COMPILER=$comp"
+  Rules "FORTRAN_COMPILER=$comp"
 
   Comp "ECOLOGICAL=NONE GOTM=true NETCDF=false SOLVER=SPARSKIT PARALLEL=false"
   #Comp "ECOLOGICAL=EUTRO GOTM=false SOLVER=PARDISO"
@@ -93,4 +105,7 @@ do
 done
 
 Clean_after
+WrapUp
+
+#--------------------------------------------------------------------
 

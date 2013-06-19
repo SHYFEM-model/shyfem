@@ -330,6 +330,7 @@ c*********************************************************************
 	if( ierr .lt. 0 ) then		!EOF -> close file
 	  call meteo_close_file(ifile)
 	  write(6,*) 'no more records for rain file... closing'
+	  stop 'error stop meteo_rain_next_record: no record found'
 	else
 	  ifile(3) = it
 	  write(6,*) 'new record for rain file: ',it
@@ -479,6 +480,7 @@ c*********************************************************************
 	if( ierr .lt. 0 ) then		!EOF -> close file
 	  call meteo_close_file(ifile)
 	  write(6,*) 'no more records for heat file... closing'
+	  stop 'error stop meteo_heat_next_record: no record found'
 	else
 	  ifile(3) = it
 	  write(6,*) 'new record for heat file: ',it
@@ -628,6 +630,7 @@ c*********************************************************************
 	if( ierr .lt. 0 ) then		!EOF -> close file
 	  call meteo_close_file(ifile)
 	  write(6,*) 'no more records for wind file... closing'
+	  stop 'error stop meteo_wind_next_record: no record found'
 	else
 	  ifile(3) = it
 	  write(6,*) 'new record for wind file: ',it

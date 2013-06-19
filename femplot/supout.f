@@ -1931,6 +1931,7 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	integer ierr
 	integer i,iv,ip
 	integer nvers,np,lmax,nvar,ntype
+	real fact
 	character*80 string
 
 	if( nlvdim .ne. nlvdi ) stop 'error stop femnext: nlvdim'
@@ -1940,9 +1941,11 @@ c reads next FEM record - is true if a record has been read, false if EOF
 
 	write(6,*) 'format: ',bformat,iformat
 
+	np = 0
         call fem_file_read_header(bformat,nunit,it
      +                  ,nvers,np,lmax,nvar,ntype,nlvdim,hlv,ierr)
 
+	if( ierr .ne. 0 ) goto 7
 	if( np .ne. nkn ) goto 99
 
 	ip = 1
@@ -1959,7 +1962,7 @@ c reads next FEM record - is true if a record has been read, false if EOF
      +                          ,string,nlvdim,array(1,1,ip))
 	    call string2ivar(string,iv)
 	    bfound = iv .eq. ivar
-	    if( iv .eq. 21 ) then	!wind -> must read y field
+	    if( iv .eq. ivar .and. iv .eq. 21 ) then !wind -> must read y field
 	      ip = ip + 1
 	      if( ip .eq. 2 ) bfound = .false.
 	    end if
@@ -1973,6 +1976,8 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	end if
 
 c set return value
+
+    7	continue
 
 	if( ierr .gt. 0 ) then
 		!stop 'error stop femnext: error reading data record'
@@ -1990,6 +1995,26 @@ c end
    99	continue
 	write(6,*) 'nkn,np: ',nkn,np
 	stop 'error stop femnext: np different from nkn'
+	end
+
+c******************************************************
+
+	subroutine femscale(nlvdim,nkn,fact,array)
+
+	implicit none
+
+	integer nlvdim,nkn
+	real fact
+	real array(nlvdim,nkn)
+
+	integer k,l
+
+	do k=1,nkn
+	  do l=1,nlvdim
+	    array(l,k) = fact * array(l,k)
+	  end do
+	end do
+
 	end
 
 c******************************************************

@@ -51,6 +51,7 @@ c 24.10.2012  ggu     bug in labelling non spherical grid (returned -1)
 c 02.05.2013  ggu     handle fact in spherical coords
 c 02.05.2013  ggu     meteo point plotting (plot_meteo_points())
 c 13.06.2013  ggu     bug fix in spherical_fact() -> set fact to 1
+c 14.06.2013  ggu     bug fix in calling scale_legend -> get dims
 c
 c notes:
 c
@@ -109,6 +110,7 @@ c normally bash(2) is called as last call after plotting
 	integer mode
 
 	real x0,y0,x1,y1
+	real x0leg,y0leg,x1leg,y1leg
 	real dxygrd,x,y
 	character*80 bndlin
 	real getpar
@@ -173,7 +175,9 @@ c legend (north and scale)
             write(6,*) 'no north and scale written...'
             return
 	  else
-	    call legend(x0,y0,x1,y1)
+	    if( inboxdim('leg',x0leg,y0leg,x1leg,y1leg) ) then
+	      call scale_legend(x0leg,y0leg,x1leg,y1leg)
+	    end if
           end if
 	end if
 
@@ -1032,6 +1036,7 @@ c computes factors for for spherical coordinates
 
 	fact = 1.
 	afact = 1.
+
         if( .not. is_spherical() ) return	!only for spherical
 
 	call getbas(x0,y0,x1,y1)
@@ -1053,12 +1058,17 @@ c handles spherical coordinates
 	implicit none
 
 	real fact,afact
+	logical is_spherical
 
 	call spherical_fact(fact,afact)
 
 	call qfact(fact,1.0)
 
-	write(6,*) 'Using factor for spherical coordinates: ',fact
+        if( is_spherical() ) then
+	  write(6,*) 'Using factor for spherical coordinates: ',fact
+	else
+	  write(6,*) 'Using factor for coordinates: ',fact
+	end if
 
 	end
 

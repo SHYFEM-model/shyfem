@@ -444,31 +444,39 @@ c**********************************************************
         character*(*) string
         integer iv
 
+	integer is,ie4,ie3
+	integer ichafs
+
         iv = -1
+
+	is = ichafs(string)
+	if( is .le. 0 ) is = 1
+	ie4 = is + 3
+	ie3 = is + 2
 
         if( string(1:4) .eq. 'mass' ) then
           iv = 0
-        else if( string(1:4) .eq. 'conc' ) then
+        else if( string(is:ie4) .eq. 'conc' ) then
           iv = 10
-        else if( string(1:3) .eq. 'sal' ) then
+        else if( string(is:ie3) .eq. 'sal' ) then
           iv = 11
-        else if( string(1:4) .eq. 'temp' ) then
+        else if( string(is:ie4) .eq. 'temp' ) then
           iv = 12
-        else if( string(1:4) .eq. 'pres' ) then
+        else if( string(is:ie4) .eq. 'pres' ) then
           iv = 20
-        else if( string(1:4) .eq. 'wind' ) then
+        else if( string(is:ie4) .eq. 'wind' ) then
           iv = 21
-        else if( string(1:4) .eq. 'sola' ) then
+        else if( string(is:ie4) .eq. 'sola' ) then
           iv = 22
-        else if( string(1:3) .eq. 'air' ) then
+        else if( string(is:ie3) .eq. 'air' ) then
           iv = 23
-        else if( string(1:4) .eq. 'humi' ) then
+        else if( string(is:ie4) .eq. 'humi' ) then
           iv = 24
-        else if( string(1:4) .eq. 'clou' ) then
+        else if( string(is:ie4) .eq. 'clou' ) then
           iv = 25
-        else if( string(1:4) .eq. 'rain' ) then
+        else if( string(is:ie4) .eq. 'rain' ) then
           iv = 26
-        else if( string(1:4) .eq. 'evap' ) then
+        else if( string(is:ie4) .eq. 'evap' ) then
           iv = 27
         else
           write(6,*) '*** cannot find description of string: '

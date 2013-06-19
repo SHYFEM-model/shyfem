@@ -6,6 +6,7 @@ c
 c revision log :
 c
 c 13.06.2013    ggu     new routines written from scratch
+c 17.06.2013    ggu     eliminated compiler warnings
 c
 c****************************************************************
 
@@ -225,12 +226,12 @@ c****************************************************************
 	integer iu
 	integer nintp
 	integer it
-	integer time(1)
-	double precision ut(nlvdim,neldim,1)
-	double precision vt(nlvdim,neldim,1)
-	double precision ze(3,neldim,1)
-	double precision wn(0:nlvdim,nkndim,1)
-	double precision zn(nkndim,1)
+	integer time(4)
+	double precision ut(nlvdim,neldim,nintp)
+	double precision vt(nlvdim,neldim,nintp)
+	double precision ze(3,neldim,nintp)
+	double precision wn(0:nlvdim,nkndim,nintp)
+	double precision zn(nkndim,nintp)
 
 	integer ierr
 	integer ip,i,itnext

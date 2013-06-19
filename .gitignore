@@ -140,6 +140,7 @@ fembin/vp
 fembin/wininf
 fembin/basinf
 fembin/feminf
+fembin/offinf
 
 fembin/grid
 fembin/mesh

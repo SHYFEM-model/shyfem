@@ -7,6 +7,7 @@ c
 c revision log :
 c
 c 29.10.2012    ggu     created from scratch
+c 17.06.2013    ggu     do not pass finction into subroutine
 c
 c*******************************************************************	
 c*******************************************************************	
@@ -152,7 +153,7 @@ c--------------------------------------------------------------
         call fem_file_read_3d(bformat,iu,it
      +                          ,nkn,lmax,nldim,hl_data(1)
      +                          ,il_data,string,hd_data,data
-     +				,intp_to_fem_0,ierr)
+     +				,ierr)
 
 c--------------------------------------------------------------
 c interpolate between different vertical structures 
@@ -470,8 +471,8 @@ c opens T/S file
 	real hsigma
 	real hl(nlvdim)
 
-	bdebug = .true.
 	bdebug = .false.
+	bdebug = .true.
 
 c-------------------------------------------------------------
 c indicator for file format and content
@@ -494,6 +495,8 @@ c-------------------------------------------------------------
 c check if formatted or unformatted
 c-------------------------------------------------------------
 
+	nknaux = -1
+
 	if( iformat .eq. -1 ) then		!check if formatted
 	  iunit = ifileo(0,name,'unform','old')
 	  if( iunit .le. 0 ) goto 99
@@ -509,6 +512,10 @@ c-------------------------------------------------------------
 	    if( iunit .le. 0 ) goto 99
 	    read(iunit,*,iostat=ios) it,nknaux,lmax,nvar
 	    close(iunit)
+	    if( ios .ne. 0 ) then
+	      stop 'error stop ts_file_open_0: cannot read file'
+	    end if
+	    iformat = 1
 	  end if
 	end if
 
@@ -651,8 +658,8 @@ c*******************************************************************
         real val_fem(nlvdim+1)
         real val_data(nlvdim+1)
 
-	bdebug = .true.
 	bdebug = .false.
+	bdebug = .true.
 
 	bcons = .false.		!conserve total quantity?
 
@@ -695,6 +702,9 @@ c*******************************************************************
 	    end do
 	  end do
 	end if
+
+	write(6,*) '****** no interpolation done ********'
+	return
 
 c--------------------------------------------------------------
 c interpolate between different vertical structures 

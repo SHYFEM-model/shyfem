@@ -425,7 +425,7 @@ c	call qtxts()
 
 c*****************************************************************
 
-	subroutine legend(x0,y0,x1,y1)
+	subroutine scale_legend(x0,y0,x1,y1)
 
 c creates legend (north wheel and scale bar)
 
@@ -449,6 +449,8 @@ c creates legend (north wheel and scale bar)
 	logical bblank
 
 	bblank = .true.
+
+	!write(6,*) '===================== legend =============='
 
 c blanking of window
 
@@ -508,13 +510,18 @@ c find leading digit (must be 1,2,3,4,5,8)
 		ndec = -1
 	end if
 
-c	write(6,*) ntics,ndec
+	!write(6,*) 'Plotting legend: ',ntics,ndec
+	!write(6,*) x0,y0,x1,y1
+	!write(6,*) x0s,y0s,dd/ntics,h,ntics,scale,ndec,unit
+	!write(6,*) xr,yr,r
 
         call qcomm('Plotting legend')
         call qtxts(12)
         call qfont('Times-Roman')
 
+        call qcomm('Plotting scale bar')
 	call scalbar(x0s,y0s,dd/ntics,h,ntics,scale,ndec,unit)
+        call qcomm('Plotting north')
         call dnord(xr,yr,r,0.)
 
 c	call qmove(x0,y0)
@@ -1999,11 +2006,13 @@ c blanks window given by coordinates
 
         real x0,y0,x1,y1
 
+        call qcomm('Start blanking window')
 	call qwhite(.true.)
 	call qgray(1.)
 	call qrfill(x0,y0,x1,y1)
 	call qgray(0.)
 	call qwhite(.false.)
+        call qcomm('End blanking window')
 
         end
 

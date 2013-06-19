@@ -13,7 +13,7 @@ SUBROUTINE PrintSet(NUTR)
      write(LOGUNIT,'('' Layer Definition'')')
 
      do i= 1,sets(NUTR)%equa
-       write( LOGUNIT,'(''layer'',I6,G12.6,G12.6,G12.6)') i,  &
+       write( LOGUNIT,'(''layer'',I6,G12.5,G12.5,G12.5)') i,  &
               sets(NUTR)%diff(i), sets(NUTR)%poro(i), sets(NUTR)%ads(i)
      enddo
      write(LOGUNIT,*)
@@ -26,7 +26,7 @@ SUBROUTINE PrintSet(NUTR)
               write(LOGUNIT,'(I5,'' term:'',I2,'' type:'',i2)') i, k,l
            else 
               write(LOGUNIT, &
-                '(I5,'' term:'',I2,'' type:'',i2,'' lambda:'',2G12.6)') i,k,l, &
+                '(I5,'' term:'',I2,'' type:'',i2,'' lambda:'',2G12.5)') i,k,l, &
                  sets(NUTR)%coeffs%labda(1),sets(NUTR)%coeffs%labda(2)
            endif
      enddo

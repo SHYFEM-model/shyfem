@@ -26,6 +26,7 @@ c 15.01.2012    aac     advection for all BFM var introduced
 c 17.02.2012    aac&ggu restart for bfm
 c 26.03.2012    ggu	bfm1-3 had wrong second dimension
 c 22.10.2012    ggu	saved some variables
+c 17.06.2013    ggu	bug fix: wsinkv was not present in call
 c
 c**************************************************************
 c
@@ -371,8 +372,10 @@ c---------------------------------------------------------------
 	real difv(0:nlvdim,nkndim)
 	common /difv/difv
 
-        real difhv(nlvdim,1)
+        real difhv(nlvdim,nkndim)
         common /difhv/difhv
+	real wsinkv(0:nlvdim,nkndim)
+	common /wsinkv/wsinkv
 
 	integer k,l
 	integer laux
@@ -545,7 +548,7 @@ c------------------------------------------------------
         do is4=1,nbfmv2
             fct=fc2_a(is4)
             call scal_adv_fact('bfm_4',is4,fct,b2cn_a(1,1,is4),bfm2
-     +                          ,rkpar,wsink,difhv,difv,difmol)
+     +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
         end do
 
 !$OMP END DO NOWAIT
@@ -554,7 +557,7 @@ c------------------------------------------------------
         do is5=1,nbfmv2
             fct=fc2_b(is5)
             call scal_adv_fact('bfm_5',is5,fct,b2cn_b(1,1,is5),bfm2
-     +                          ,rkpar,wsink,difhv,difv,difmol)
+     +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
         end do
 
 !$OMP END DO NOWAIT
@@ -563,7 +566,7 @@ c------------------------------------------------------
         do is6=2,5
             fct=fc2_c(is6)
             call scal_adv_fact('bfm_6',is6,fct,b2cn_a(1,1,is6),bfm2
-     +                          ,rkpar,wsink,difhv,difv,difmol)
+     +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
         end do
 
 !$OMP END DO NOWAIT
@@ -572,7 +575,7 @@ c------------------------------------------------------
             is7 = 2
             fct=fc2_d(is7)
             call scal_adv_fact('bfm_7',is7,fct,b2cn_d(1,1,is7),bfm2
-     +                          ,rkpar,wsink,difhv,difv,difmol)
+     +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
 !        end do
 
 !$OMP DO SCHEDULE(DYNAMIC)
@@ -580,11 +583,11 @@ c------------------------------------------------------
          do is8=1,3,2
             fct=fc3_a
             call scal_adv_fact('bfm_8',is8,fct,b3cn_a(1,1,is8),bfm3
-     +                          ,rkpar,wsink,difhv,difv,difmol)
+     +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
 
             fct=fc3_b
             call scal_adv_fact('bfm_8',is8,fct,b3cn_b(1,1,is8),bfm3
-     +                          ,rkpar,wsink,difhv,difv,difmol)
+     +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
          end do
 
 !$OMP END DO NOWAIT
@@ -593,7 +596,7 @@ c------------------------------------------------------
          is9 = 3
          fct=fc3_c
          call scal_adv_fact('bfm_9',is9,fct,b3cn_c(1,1,is9),bfm3
-     +                          ,rkpar,wsink,difhv,difv,difmol)
+     +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
 
 !------------------------------------------------------
 ! ASSIGN DEPTH TO NODE
