@@ -1,3 +1,24 @@
+version  6_1_66    19-06-2013    VERS_6_1_66
+
+========================================================== 19-06-2013 - 6_1_66
+
+c ./femplot/supbas.f:
+c 14.06.2013  ggu     bug fix in calling scale_legend -> get dims
+c
+c ./fem3d/subtsuvfile.f:
+c 17.06.2013    ggu     do not pass finction into subroutine
+c
+c ./fem3d/subver.f:
+c 19.06.2013	ggu	version 6.1.66
+c
+c ./fem3d/subbfm.f:
+c 17.06.2013    ggu	bug fix: wsinkv was not present in call
+c
+c ./fem3d/suboff.f:
+c 17.06.2013    ggu     eliminated compiler warnings
+
+==========================================================
+
 version  6_1_65    13-06-2013    VERS_6_1_65   commit_2013-06-19
 
 version  6_1_65    13-06-2013    VERS_6_1_65
