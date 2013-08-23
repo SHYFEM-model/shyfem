@@ -252,7 +252,7 @@ c shall we plot this variable ?
 
 	call inivar
 
-	okvar = ivar3 .eq. ivar .or. ivar3 .eq. 0
+	okvar = ivar3 .eq. ivar .or. ivar3 .le. 0
 
 	end
 
@@ -436,8 +436,10 @@ c**********************************************************
 	end
 
 c**********************************************************
+c next routines copied to subnsa.f
+c**********************************************************
 
-        subroutine string2ivar(string,iv)
+        subroutine string2ivar_do_not_use(string,iv)
 
         implicit none
 
@@ -454,7 +456,7 @@ c**********************************************************
 	ie4 = is + 3
 	ie3 = is + 2
 
-        if( string(1:4) .eq. 'mass' ) then
+        if( string(is:ie4) .eq. 'mass' ) then
           iv = 0
         else if( string(is:ie4) .eq. 'conc' ) then
           iv = 10
@@ -478,16 +480,20 @@ c**********************************************************
           iv = 26
         else if( string(is:ie4) .eq. 'evap' ) then
           iv = 27
+        else if( string .eq. ' ' ) then
+          write(6,*) '*** string2ivar: no string given'
         else
-          write(6,*) '*** cannot find description of string: '
+          write(6,*) '*** string2ivar: cannot find string description: '
           write(6,*) string
+          write(6,*) string(1:3)
+	  if( string(1:3) .eq. 'fem' ) stop 'error.....'
         end if
 
         end
 
 c******************************************************
 
-        subroutine ivar2string(iv,string)
+        subroutine ivar2string_do_not_use(iv,string)
 
         implicit none
 

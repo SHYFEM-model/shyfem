@@ -456,8 +456,9 @@ c reads and checks params of next header
 	return
 
     9	continue
+	write(6,*) 'fem_file_get_params problem gguuu ',bformat
 	ierr = 9
-	backspace(iunit)
+	!backspace(iunit)
 	return
 
     1	continue

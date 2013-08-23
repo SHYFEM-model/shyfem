@@ -40,6 +40,172 @@ export NLVDIM = 1
 export NKNDIM = 11000
 export NELDIM = 22000
 
+# asi-zec
+#export NKNDIM = 17000
+#export NELDIM = 30000
+#export NLVDIM = 1
+#export NLVDIM = 52
+#export NGRDIM = 12
+
+# curonian
+#export NKNDIM = 13000
+#export NELDIM = 26000
+#export NLVDIM = 1
+
+# curonian petras
+#export NKNDIM = 12900
+#export NELDIM = 22900
+#export NLVDIM = 20
+#export MBWDIM = 173
+#export NGRDIM = 11
+
+# ginevra
+#export NKNDIM = 1100
+#export NELDIM = 2200
+#export NLVDIM = 200
+
+# kassandra
+#export NKNDIM = 81000
+#export NELDIM = 145000
+#export NLVDIM = 1
+#export NGRDIM = 15
+#export MBWDIM = 300
+
+# adriatico_DEFB_nolag
+#export NKNDIM = 24000
+#export NELDIM = 44000
+#export NLVDIM = 27
+#export NGRDIM = 12
+#export MBWDIM = 295
+
+# isabella
+#export NKNDIM = 14000
+#export NELDIM = 26000
+#export NLVDIM = 16
+#export MBWDIM = 200
+#export NGRDIM = 10
+
+# skadar
+#export NKNDIM = 12000
+#export NELDIM = 24000
+#export NLVDIM = 20
+
+# Skadar new
+#export NKNDIM = 20610
+#export NELDIM = 39170
+#export NLVDIM = 10
+#export NGRDIM = 15
+#export MBWDIM = 220
+#export NBCDIM = 50
+
+# trieste
+#export NKNDIM = 26000
+#export NELDIM = 51000
+#export NLVDIM = 17
+
+# Venice
+#export NKNDIM = 5000
+#export NELDIM = 8000
+#export NLVDIM = 1
+#export MBWDIM = 70
+
+# Marano-Grado
+#export NKNDIM = 12000
+#export NELDIM = 22000
+#export NLVDIM = 1
+#export MBWDIM = 300
+
+# Black-Sea
+#export NKNDIM = 12000
+#export NELDIM = 22000
+#export NLVDIM = 30
+#export MBWDIM = 240
+
+# trieste small
+#export NKNDIM = 3000
+#export NELDIM = 6000
+#export NLVDIM = 22
+
+# Cabras
+#export NKNDIM = 4000
+#export NELDIM = 8000
+#export NLVDIM = 1
+#export MBWDIM = 50
+#export NGRDIM = 10
+
+# Mar Menor
+#export NKNDIM = 9000
+#export NELDIM = 17000
+#export NLVDIM = 1
+#export MBWDIM = 180
+#export NGRDIM = 10
+#export NBDYDIM = 200000
+
+# taranto
+#export NKNDIM = 4452
+#export NELDIM = 8059
+#export NLVDIM = 1
+#export NGRDIM = 8
+#export MBWDIM = 77
+#export NLVDIM = 20
+
+# irina
+#export NKNDIM = 12000
+#export NELDIM = 22000
+#export NLVDIM = 27
+#export MBWDIM = 240
+
+# circular_flume
+export NKNDIM = 5000
+export NELDIM = 10000
+export NLVDIM = 14
+export MBWDIM = 240
+
+# bajo adjoint
+export NKNDIM = 8000
+export NELDIM = 16000
+export NLVDIM = 1
+export MBWDIM = 240
+
+# ivan
+export NKNDIM = 25000
+export NELDIM = 50000
+export NLVDIM = 1
+export MBWDIM = 540
+
+# ivan 2
+#export NKNDIM = 145000
+#export NELDIM = 280000
+#export NLVDIM = 1
+#export MBWDIM = 300
+#export MBWDIM = 790
+
+# peloro
+export NKNDIM = 2000
+export NELDIM = 4000
+export NLVDIM = 32
+export MBWDIM = 100
+
+# ginevra
+export NKNDIM = 5000
+export NELDIM = 10000
+export NLVDIM = 110
+export MBWDIM = 100
+
+# adria deb
+export NKNDIM = 50000
+export NELDIM = 90000
+export NLVDIM = 1
+export MBWDIM = 480
+export NCSDIM = 1
+
+# adria isa
+export NKNDIM = 20000
+export NELDIM = 40000
+export NLVDIM = 17
+export MBWDIM = 480
+export NCSDIM = 1
+
 ##############################################
 # Compiler
 ##############################################
@@ -53,13 +219,11 @@ export NELDIM = 22000
 # GNU_GFORTRAN		->	gfortran
 # INTEL			->	ifort
 # PORTLAND		->	pgf90
-# IBM			->	xlf
 #
 # Available options for the C compiler are:
 #
 # GNU_GCC		->	gcc
 # INTEL			->	icc
-# IBM			->	xlc
 #
 ##############################################
 
@@ -67,11 +231,9 @@ export NELDIM = 22000
 FORTRAN_COMPILER = GNU_GFORTRAN
 #FORTRAN_COMPILER = INTEL
 #FORTRAN_COMPILER = PORTLAND
-#FORTRAN_COMPILER = IBM
 
 C_COMPILER = GNU_GCC
 #C_COMPILER = INTEL
-#C_COMPILER = IBM
 
 ##############################################
 # Parallel compilation
@@ -138,7 +300,7 @@ SOLVER=SPARSKIT
 ##############################################
 
 NETCDF=false
-#NETCDF=true
+NETCDF=true
 NETCDFDIR = /usr/local/netcdf
 NETCDFDIR = /usr
 
@@ -353,55 +515,6 @@ endif
 
 ##############################################
 #
-# IBM compiler (xlf)
-#
-##############################################
-#
-# if you use xlf95  "-qnosave" is a default option
-# xlf_r is thread safe
-# all the compiler options are included in FIBM_OMP
-# set PARALLEL = TRUE
-##############################################
-
-FIBM_PROFILE = 
-ifeq ($(PROFILE),true)
-  FIBM_PROFILE = 
-endif
-
-FIBM_WARNING = 
-ifeq ($(WARNING),true)
-  FIBM_NOOPT = 
-endif
-
-FIBM_NOOPT = 
-ifeq ($(DEBUG),true)
-  FIBM_NOOPT =
-endif
-
-FIBM_OPT   = 
-ifeq ($(OPTIMIZE),true)
-# FIBM_OPT   = -O3 
-  FIBM_OPT   = 
-endif
-
-FIBM_OMP   =
-ifeq ($(PARALLEL),true)
-     FIBM_OMP    = -qsmp=omp -qnosave -q64 -qmaxmem=-1 -NS32648 -qextname -qsource -qcache=auto -qstrict -O3 -qarch=pwr6 -qtune=pwr6
-endif
-
-#----------------------------------
-
-ifeq ($(FORTRAN_COMPILER),IBM)
-  FIBM		= xlf_r
-  F77		= $(FIBM)
-  F95		= xlf_r
-  LINKER	= $(FIBM)
-  FFLAGS	= $(FIBM_OMP)
-  LFLAGS	= $(FIBM_OMP) -qmixed  -b64 -bbigtoc -bnoquiet -lpmapi -lessl -lmass -lmassvp4
-endif
- 
-##############################################
-#
 # Portland compiler
 #
 ##############################################
@@ -551,14 +664,6 @@ endif
 ifeq ($(C_COMPILER),INTEL)
   CC     = icc
   CFLAGS = -O -g -traceback -check-uninit
-  LCFLAGS = -O 
-  CINFOFLAGS = -v
-endif
-
-ifeq ($(C_COMPILER),IBM)
-  CC     = xlc
-#  CFLAGS = -O -traceback -check-uninit
-  CFLAGS = -O
   LCFLAGS = -O 
   CINFOFLAGS = -v
 endif

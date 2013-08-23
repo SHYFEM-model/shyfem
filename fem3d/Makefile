@@ -43,10 +43,10 @@ LIBG_MKL =
 SOLVER_FILES = simsys_lp.o
 ifeq ($(SOLVER),PARDISO)
   LIBG_MKL = `./bin/find_pardlib.sh`
-  SOLVER_FILES = simsys_pard.o subpard.o subcoo.o
+  SOLVER_FILES = simsys_pard.o subpard.o subcoo.o nonhydro_pard.o
 endif
 ifeq ($(SOLVER),SPARSKIT)
-  SOLVER_FILES = simsys_spk.o subspk.o subcoo.o \
+  SOLVER_FILES = simsys_spk.o subspk.o subcoo.o nonhydro_spk.o \
 		spk_ilut.o spk_iters.o spk_itaux.o \
 		spk_itpack.o spk_matvec.o spk_blas1_mod.o
 endif

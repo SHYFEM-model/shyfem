@@ -601,7 +601,7 @@ c	    ---------------------------------------------------------------
 	      wbot = wbot / 3.
 	      if( l .eq. lmax ) wbot = 0.
 
-	      if (wtop.ge.0) then
+	      if (wtop.ge.0.) then
 	        zxadv = wtop * ulov(l,ie)
 	        zyadv = wtop * vlov(l,ie)
               else
@@ -609,7 +609,7 @@ c	    ---------------------------------------------------------------
 	        zyadv = wtop * vlov(l-1,ie)
               end if
 
-	      if (wbot.gt.0) then
+	      if (wbot.gt.0.) then
 	        zxadv = zxadv - wbot * ulov(l+1,ie)
 	        zyadv = zyadv - wbot * vlov(l+1,ie)
               else

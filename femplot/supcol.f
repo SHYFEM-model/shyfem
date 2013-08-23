@@ -68,8 +68,8 @@ c reads color block from str file
 	call colini
 
 	ndim = isodim
-	bdebug = .false.
 	bdebug = .true.
+	bdebug = .false.
 	ncolrd = 0
 	nisord = 0
 

@@ -1,5 +1,35 @@
 ============================================================
 
+Fri Aug 23 11:41:53 CEST 2013
+
+temporary release
+
+ LOG                   |    7 +
+ Rules.make            |  229 ++++++++++----
+ fem3d/Makefile        |    4 +-
+ fem3d/feminf.f        |  151 +++++++++-
+ fem3d/new3di.f        |    6 +-
+ fem3d/newcon.f        |    1 +
+ fem3d/newexpl.f       |    4 +-
+ fem3d/newnohydro.f    |  828 ++++++++++++++++++++++++++++++++++++++++++++-----
+ fem3d/nohydlinks.h    |  101 ++++++
+ fem3d/nonhydro_pard.f |   86 +++++
+ fem3d/nonhydro_spk.f  |  170 ++++++++++
+ fem3d/param.h         |    8 +-
+ fem3d/subfemfile.f    |    3 +-
+ fem3d/subnsa.f        |  106 ++++++-
+ fem3d/subsys.f        |    2 +-
+ femadj/param.h        |    8 +-
+ fembin/average        |    6 +-
+ femplot/param.h       |    8 +-
+ femplot/supcol.f      |    2 +-
+ femplot/supint.f      |   16 +-
+ femplot/supout.f      |    2 +-
+ param.h               |    8 +-
+ 22 files changed, 1577 insertions(+), 179 deletions(-)
+
+============================================================
+
 Wed Jun 19 15:29:14 CEST 2013
 
 New version 6_1_66

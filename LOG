@@ -1,4 +1,11 @@
 
+23.08.2013
+
+c ./fem3d/subnsa.f:
+c 22.08.2013    ggu     new string2ivar() and similar changes
+
+
+
 19.06.2013
 
 c ./femplot/supbas.f:

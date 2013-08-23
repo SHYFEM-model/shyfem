@@ -1939,7 +1939,7 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	call femini
 	bformat = iformat .eq. 1
 
-	write(6,*) 'format: ',bformat,iformat
+	!write(6,*) 'femnext format: ',bformat,iformat
 
 	np = 0
         call fem_file_read_header(bformat,nunit,it

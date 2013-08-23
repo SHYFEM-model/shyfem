@@ -1125,9 +1125,9 @@ c
 c
 c end of assembling loop
 c
-c solution of vertical system
+c solution of vertical system (we solve 3 systems in one call)
 c
-c        call gelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
+        !call gelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
         !call dgelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
         call dgelb(rvec,rmat,ngl,3,mbb,mbb,epseps,ier)		!ASYM_OPSPLT
 c
@@ -1136,7 +1136,7 @@ c
         afix=1-iuvfix(ie)       !chao deb
 c
 	do l=1,ilevel
-	if(bdebug) write(6,*) 'zzz: ',l,rvec(2*l-1), rvec(2*l)
+	  if(bdebug) write(6,*) 'zzz: ',l,rvec(2*l-1), rvec(2*l)
 	  utlnv(l,ie) = utlov(l,ie) - dt * rvec(2*l-1)*afix     !chao deb
 	  vtlnv(l,ie) = vtlov(l,ie) - dt * rvec(2*l)*afix       !chao deb
 	end do

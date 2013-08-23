@@ -5,6 +5,7 @@
 # -move=m	computes moving average over m data, else arithmetic average
 # -col=c	averages only column c, else all columns
 # -fact=f	multiplies columns with f
+# -sum		computes total and not average
 #
 #------------------------------------------------------------------
 
@@ -16,6 +17,7 @@ use strict;
 $::move = 0 unless $::move;
 $::col = 0 unless $::col;
 $::fact = 0 unless $::fact;
+$::sum = 0 unless $::sum;
 
 my @files = @ARGV;
 my $nfiles = @files;
@@ -59,7 +61,9 @@ sub aver
 	$total += $_;
     }
 
-    $total = $total / $n if $n;
+    if( not $::sum ) {
+      $total = $total / $n if $n;
+    }
 
     return $total;
 }

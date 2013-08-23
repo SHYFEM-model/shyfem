@@ -21,6 +21,7 @@ c 11.03.2005	ggu	write section title to stdout
 c 11.09.2009	ggu	new section $sect
 c 27.02.2013	ggu     pass what parameter into nlsa, handle extra info
 c 13.06.2013	ggu     read also varnam to decide what to plot and read
+c 22.08.2013	ggu     new string2ivar() and similar changes
 c
 c**********************************************
 c
@@ -428,9 +429,11 @@ c iunit		unit number of file
 
 	character*80 name,line,section,extra
 	character*20 what0,whatin
+	character*6 sect
 	logical bdebug,bread
 	integer num
 	integer nrdsec,nrdlin,ichanm
+	integer iv_in,iv_read
 	real getpar
 
 	character*80 descrp
@@ -440,6 +443,11 @@ c iunit		unit number of file
 	bdebug = .false.
 
 	whatin = what
+	iv_in = -1
+	if( whatin .ne. ' ' ) then
+	  call string2ivar(whatin,iv_in)
+	  if( iv_in .lt. 0 ) whatin = ' '
+	end if
 
 	if(iunit.le.0) then
 c		write(6,*) 'error reading parameter file'
@@ -453,14 +461,24 @@ c loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	do while( nrdsec(section,num,extra) .eq. 1 )
 
+		sect = section(1:ichanm(section))
 		if( bdebug ) then
 		  write(6,*) 'new section: ',section(1:ichanm(section)),num
 		end if
 
+		iv_read = -1
+		if( extra .ne. ' ' ) then
+		  call string2ivar(extra,iv_read)
+		end if
+
 		bread = .false.
-		bread = bread .or. whatin(1:4) .eq. ' '
-		bread = bread .or. extra(1:4) .eq. ' '
-		bread = bread .or. extra(1:4) .eq. whatin(1:4)
+		!bread = bread .or. whatin(1:4) .eq. ' '
+		!bread = bread .or. extra(1:4) .eq. ' '
+		!bread = bread .or. extra(1:4) .eq. whatin(1:4)
+		bread = bread .or. iv_in .eq. -1
+		bread = bread .or. iv_read .eq. -1
+		bread = bread .or. iv_read .eq. iv_in
+		write(6,*) 'bread: ',bread,sect,iv_in,iv_read
 
 		if( bread ) then
                   call setsec(section,num)                !remember section
@@ -478,6 +496,9 @@ c loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			call getfnm('varnam',what0)
 			if( what0 .ne. ' ' .and. whatin .eq. ' ' ) then
 			  whatin = what0
+	  		  call string2ivar(whatin,iv_in)
+			  write(6,*) 'adjourning string2ivar: ',
+     +				whatin(1:10),iv_in
 			end if
 		else if(section.eq.'color') then
 			call colrd
@@ -558,4 +579,83 @@ c no more lines allowed
         end
 
 c************************************************************************
+c************************************************************************
+c************************************************************************
+
+        subroutine string2ivar(string,iv)
+
+        implicit none
+
+        character*(*) string
+        integer iv
+
+	integer is,ie4,ie3
+	integer ichafs
+
+        iv = -1
+
+	is = ichafs(string)
+	if( is .le. 0 ) is = 1
+	ie4 = is + 3
+	ie3 = is + 2
+
+        if( string(is:ie4) .eq. 'mass' ) then
+          iv = 0
+        else if( string(is:ie3) .eq. 'vel' ) then
+          iv = 2
+        else if( string(is:ie4) .eq. 'conc' ) then
+          iv = 10
+        else if( string(is:ie3) .eq. 'sal' ) then
+          iv = 11
+        else if( string(is:ie4) .eq. 'temp' ) then
+          iv = 12
+        else if( string(is:ie4) .eq. 'pres' ) then
+          iv = 20
+        else if( string(is:ie4) .eq. 'wind' ) then
+          iv = 21
+        else if( string(is:ie4) .eq. 'sola' ) then
+          iv = 22
+        else if( string(is:ie3) .eq. 'air' ) then
+          iv = 23
+        else if( string(is:ie4) .eq. 'humi' ) then
+          iv = 24
+        else if( string(is:ie4) .eq. 'clou' ) then
+          iv = 25
+        else if( string(is:ie4) .eq. 'rain' ) then
+          iv = 26
+        else if( string(is:ie4) .eq. 'evap' ) then
+          iv = 27
+        else if( string .eq. ' ' ) then
+          write(6,*) '*** string2ivar: no string given'
+        else
+          write(6,*) '*** string2ivar: cannot find string description: '
+          write(6,*) string
+          !if( string(1:3) .eq. 'fem' ) stop 'error.....'
+        end if
+
+	!write(6,*) 'string2ivar: ',string(is:ie4),'   ',iv
+
+        end
+
+c******************************************************
+
+        subroutine ivar2string(iv,string)
+
+        implicit none
+
+        integer iv
+        character*(*) string
+
+        string = ' '
+
+        if( iv .eq. 12 ) then
+          string = 'temperature'
+        else
+          write(6,*) '*** cannot find description of string: '
+          write(6,*) iv
+        end if
+
+        end
+
+c******************************************************
 

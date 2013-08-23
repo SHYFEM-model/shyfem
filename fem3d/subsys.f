@@ -1473,7 +1473,7 @@ c			automatically. (Default 0)
 c |sclvel|		Additional factor to be used for the arrow
 c			in the legend. When the arrow length will be
 c			computed automatically, this parameter gives
-c			the possibility change the length of the
+c			the possibility to change the length of the
 c			reference vector. This is an easy way
 c			to scale the velocitiy arrow
 c			with an overall factor. Not used if
