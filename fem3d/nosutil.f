@@ -10,6 +10,7 @@ c 10.11.2011    ggu     new routines for hybrid levels, init_volume() changed
 c 02.12.2011    ggu     bug fix for call to get_sigma_info() (missing argument)
 c 10.02.2012    ggu     new routines to get initial/final time of records
 c 25.01.2013    ggu     new routines nos_get_vars()
+c 05.09.2013    ggu     new call to get_layer_thickness()
 c
 c***************************************************************
 
@@ -177,14 +178,15 @@ c we could do better using information on node area and depth structure
 
         include 'ev.h'
 
-	logical belem,bsigma,bzeta
+	logical belem,bsigma
 	integer ie,ii,k,l,lmax,nsigma,nlvaux
 	real area,hsigma
+	real zeta
 
 	call is_init_ev(belem)		!use ev if initialized
         call get_sigma_info(nlvaux,nsigma,hsigma)
         bsigma = nsigma .gt. 0
-	bzeta = .false.			!use water level
+	zeta = 0.			!do not use water level
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
@@ -196,7 +198,8 @@ c we could do better using information on node area and depth structure
 	do ie=1,nel
 	  area = 1.
 	  if( belem ) area = 4. * ev(10,ie)
-	  call get_layer_thickness_e(ie,nlv,bzeta,nsigma,hsigma,hl)
+	  !call get_layer_thickness_e(ie,nlv,bzeta,nsigma,hsigma,hl)
+	  call get_layer_thickness(nlv,nsigma,hsigma,zeta,hev(ie),hlv,hl)
 	  do ii=1,3
 	    k = nen3v(ii,ie)
 	    lmax = ilhkv(k)

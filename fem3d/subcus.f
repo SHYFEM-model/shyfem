@@ -3877,7 +3877,7 @@ c-----------------------------------------
 	  end if
 	end do
 
-	call adjourne_depth_from_hev
+	call adjourn_depth_from_hev
 	!call set_last_layer
 
 	end if
@@ -3889,7 +3889,7 @@ c-----------------------------------------
 	if( binit ) then	! initialize hev
 	  write(6,*) 'hev initialized'
 	  call read_in_hev('in_hev.dat')
-	  call adjourne_depth_from_hev
+	  call adjourn_depth_from_hev
 	  call set_last_layer
           call setweg(0,n)
           call setznv           ! -> change znv since zenv has changed

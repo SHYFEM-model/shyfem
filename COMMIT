@@ -1,5 +1,58 @@
 ============================================================
 
+Thu Sep 12 17:06:48 CEST 2013
+
+sigma and depth restructured
+
+ .gitignore                |    2 +-
+ Rules.make                |  229 +++++++------------------
+ fem3d/Makefile            |   19 ++-
+ fem3d/bin/compile.sh      |   20 +++
+ fem3d/bin/compile_test.sh |   32 ++++
+ fem3d/bin/elab_freq.pl    |   67 ++++++++
+ fem3d/bin/elab_freq1.pl   |   89 ++++++++++
+ fem3d/bin/fortran.pm      |  408 +++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/bin/newstruct.pl    |  107 ++++++++++++
+ fem3d/bin/struct_wasp.pl  |  162 ++++++++++++++++++
+ fem3d/genutil.f           |   23 +++
+ fem3d/grdutil.f           |    4 +-
+ fem3d/ht.f                |   25 +--
+ fem3d/newbcl.f            |    5 +-
+ fem3d/newini.f            |   92 ++---------
+ fem3d/newsig.f            |  176 +-------------------
+ fem3d/nonhydro_lp.f       |   11 ++
+ fem3d/nosextr_nodes.f     |    8 +-
+ fem3d/nosutil.f           |    9 +-
+ fem3d/ousextr_nodes.f     |    8 +-
+ fem3d/ousutil.f           |   11 +-
+ fem3d/param.h             |    8 +-
+ fem3d/sigmautil.f         |  108 +------------
+ fem3d/subapn.f            |    9 +-
+ fem3d/subbc.f             |   24 ++-
+ fem3d/subcus.f            |    4 +-
+ fem3d/subdep.f            |  231 ++++++++++++++++++++++++--
+ fem3d/subdry.f            |    4 +-
+ fem3d/subele.f            |    4 +-
+ fem3d/sublnka.f           |   27 ++-
+ fem3d/subnsa.f            |   69 +++++----
+ femadj/param.h            |    8 +-
+ femanim/Makefile          |   15 ++-
+ femanim/makeanim.sh       |   79 ++++++++-
+ femdoc/final/shyfem.pdf   |  Bin 270682 -> 270685 bytes
+ femdoc/final/shyfem.ps    |   60 ++++----
+ femplot/param.h           |    8 +-
+ femplot/plotsim.f         |   56 ++++---
+ femplot/supano.f          |   23 +++-
+ femplot/supdep.f          |   24 ++-
+ femplot/supint.f          |  155 ++++++++----------
+ femplot/supout.f          |   44 ++----
+ femplot/supsim.f          |  160 +++++++++++--------
+ femplot/suptim.f          |   20 +++
+ param.h                   |    8 +-
+ 45 files changed, 1742 insertions(+), 913 deletions(-)
+
+============================================================
+
 Fri Aug 23 11:41:53 CEST 2013
 
 temporary release

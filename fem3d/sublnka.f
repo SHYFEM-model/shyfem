@@ -36,9 +36,12 @@ c common
         integer ieltv(3,1)
         common /ieltv/ieltv
 c local
+	logical bverbose
         integer i,n
         integer nli,nbn,nin,nis,ngrd,ngrd1,ngrd2
         integer nlkdim,ngrdim
+
+	bverbose = .false.
 
 c-------------------------------------------------------------
 c get dimension for link array
@@ -72,21 +75,25 @@ c-------------------------------------------------------------
 	nin = nkn - nbn
 	nis = (nel-2*nkn+nbn+2)/2
 
-        write(6,*) 'nel                      : ',nel
-        write(6,*) 'nkn                      : ',nkn
-        write(6,*) 'nbn                      : ',nbn
-        write(6,*) 'nin                      : ',nin
-        write(6,*) 'nis                      : ',nis
+	if( bverbose ) then
+          write(6,*) 'nel                      : ',nel
+          write(6,*) 'nkn                      : ',nkn
+          write(6,*) 'nbn                      : ',nbn
+          write(6,*) 'nin                      : ',nin
+          write(6,*) 'nis                      : ',nis
+	end if
 
 	ngrd1 = 4*nbn+6*nin+6*(nis-1)
         ngrd2 = 3*nel+nbn
 	nli = ngrd/2
 
-        write(6,*) 'dimension                : ',nlkdim
-        write(6,*) 'grades                   : ',ngrd
-        write(6,*) 'formula (nis)            : ',ngrd1
-        write(6,*) 'formula (nel)            : ',ngrd2
-        write(6,*) 'links                    : ',nli
+	if( bverbose ) then
+          write(6,*) 'dimension                : ',nlkdim
+          write(6,*) 'grades                   : ',ngrd
+          write(6,*) 'formula (nis)            : ',ngrd1
+          write(6,*) 'formula (nel)            : ',ngrd2
+          write(6,*) 'links                    : ',nli
+	end if
 
 	if( ngrd .ne. ngrd1 ) goto 99
 	if( ngrd .ne. ngrd2 ) goto 99

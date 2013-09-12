@@ -129,7 +129,7 @@ c common
 c local
         integer ie,ii,iwh,iweg,k,iu
         integer iespec,iwait,iwet
-	integer nsigma
+	integer nlv,nsigma
 	real hsigma
         real hzg,hzmin,hzoff,hzon,volmin,aomega,zmin
 	real hzlim,hztot
@@ -173,7 +173,7 @@ c	integer iz(30),ih(30),izh(30),ix(30),ixx(30)
 	bbdebug = .false.
 	iwait = 5		!wait so long before including
 
-	call get_sigma(nsigma,hsigma)
+	call get_sigma_info(nlv,nsigma,hsigma)
 	bsigma = nsigma .gt. 0
 
         hzmin=getpar('hzmin')

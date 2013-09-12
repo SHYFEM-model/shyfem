@@ -23,6 +23,7 @@ c 14.11.2011    ggu     use get_layer_thickness() for layer structure
 c 23.02.2012    ccf     bug fix in mkht (get_layer_thicknes, get_sigma_info)
 c 16.03.2012    deb     bug fix in mkht3 (get_layer_thicknes, get_sigma_info)
 c 10.06.2013    ggu     bug fix in mkht,mkht3 (get_layer_thicknes_e)
+c 05.09.2013    ggu     adapt to new get_layer_thickness()
 c
 c******************************************************************
 
@@ -120,10 +121,10 @@ c common
         real hl(1)
         common /hl/hl
 c local
-	logical bdebug,bzeta
+	logical bdebug
 	integer ie,ii
 	integer level,lmax
-	real z,h
+	real zeta
 	integer nsigma,nlvaux
 	real hsigma
 c functions
@@ -136,7 +137,6 @@ c-------------------------------------------------------------------
 
         bdebug = .true.
         bdebug = .false.
-	bzeta = .true.
 
 	level = getlev()
         call get_sigma_info(nlvaux,nsigma,hsigma)
@@ -147,7 +147,9 @@ c-------------------------------------------------------------------
 
 	do ie=1,nel
 	  lmax = ilhv(ie)
-	  call get_layer_thickness_e(ie,lmax,bzeta,nsigma,hsigma,hl)
+	  call compute_levels_on_element(ie,zenv,zeta)
+	  call get_layer_thickness(lmax,nsigma,hsigma,zeta,hev(ie),hlv,hl)
+	  !call get_layer_thickness_e(ie,lmax,bzeta,nsigma,hsigma,hl)
 	  hetv(ie) = hlthick(level,lmax,hl)
 	end do
 
@@ -189,13 +191,17 @@ c common
         common /level/ nlvdi,nlv
         integer ilhv(1)
         common /ilhv/ilhv
+        real hlv(1), hev(1)
+        common /hlv/hlv, /hev/hev
+	real zenv(3,1)
+	common /zenv/zenv
 c local
-	logical bdebug,bzeta
+	logical bdebug
 	integer ie,ii
 	integer l,lmax
 	integer nlvaux,nsigma
 	real hsigma
-	real z,h
+	real zeta
 
 c-------------------------------------------------------------------
 c initialization
@@ -203,7 +209,6 @@ c-------------------------------------------------------------------
 
         bdebug = .true.
         bdebug = .false.
-	bzeta = .true.
 
         call get_sigma_info(nlvaux,nsigma,hsigma)
 
@@ -213,8 +218,11 @@ c-------------------------------------------------------------------
 
 	do ie=1,nel
 	  lmax = ilhv(ie)
-	  call get_layer_thickness_e(ie,lmax,bzeta,nsigma,hsigma
+	  call compute_levels_on_element(ie,zenv,zeta)
+	  call get_layer_thickness(lmax,nsigma,hsigma,zeta,hev(ie),hlv
      +				,het3v(1,ie))
+!	  call get_layer_thickness_e(ie,lmax,bzeta,nsigma,hsigma
+!     +				,het3v(1,ie))
 	end do
 
 c-------------------------------------------------------------------

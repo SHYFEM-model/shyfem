@@ -9,6 +9,7 @@ c 03.06.2011	ggu	copied from ousutil.f
 c 07.11.2011	ggu	layer thickness for hybrid coordinates
 c 14.11.2011	ggu	sigma layer routines copied to sigmautil.f
 c 25.01.2013	ggu	new routine level_k2e()
+c 05.09.2013	ggu	new routine compute_levels_on_element()
 c
 c******************************************************************
 
@@ -170,6 +171,28 @@ c computes ilhv from ilhkv - is not exact (need hev to do better)
 	  end do
 	  ilhv(ie) = lmin
 	end do
+
+	end
+
+c******************************************************************
+
+	subroutine compute_levels_on_element(ie,zenv,zeta)
+
+	implicit none
+
+	integer ie
+	real zenv(3,1)
+	real zeta
+
+	integer ii
+	real z
+
+	z = 0.
+	do ii=1,3
+	  z = z + zenv(ii,ie)
+	end do
+
+	zeta = z / 3.
 
 	end
 

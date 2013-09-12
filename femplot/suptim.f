@@ -8,6 +8,7 @@ c 27.05.2005  ggu     increase nrec always in oktime (even when it is the same)
 c 13.11.2008  ggu     in oktime() increase irec only for new time
 c 06.12.2008  ggu     in oktime() set itact to actual time
 c 09.10.2010  ggu     in oktime() handle negative itfreq
+c 05.09.2013  ggu     new routine endtime()
 c
 c******************************************************
 
@@ -102,6 +103,25 @@ c functions
 	write(6,*)
 
         end
+
+c******************************************************
+
+        function endtime(it)
+
+c is time over max limit?
+
+        implicit none
+
+c arguments
+	logical endtime
+        integer it
+c common
+        integer itmin,itmax,itfreq,nrec,idto,itact
+	common /timlim/ itmin,itmax,itfreq,nrec,idto,itact
+
+	endtime = it .gt. itmax
+
+	end
 
 c******************************************************
 

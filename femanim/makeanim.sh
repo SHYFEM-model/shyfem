@@ -1,12 +1,15 @@
 #!/bin/sh
 #
-# makes gif animation from file plot.ps
-# creates file anim.gif
-# view animation with "xanim anim.gif"
+# makes animation from file plot.ps
+# uses gifsicle to create animated gif file anim.gif
+# uses mencoder to create avi file anim.avi
+# view animation with "xanim anim.gif" or "mplayer anim.avi"
 #
 #--------------------------- clean files from last call
 
+fps=25			# frames per second for mencoder
 delay=10		# delay for gifsicle
+
 dogif="NO"		# produce gifs directly
 
 #---------------------------------------------------------------------
@@ -14,12 +17,15 @@ dogif="NO"		# produce gifs directly
 FullUsage()
 {
   echo ""
-  echo "Usage: makeanim.sh [-h|-help] [-options]"
+  echo "Usage: makeanim.sh {-gif|-avi} [-h|-help] [-options]"
   echo ""
   echo "Available options:"
   echo "  -h|-help         this help"
-  echo "  -only_anim       recreates only animiation"
-  echo "  -delay #         sets delay time (default 10)"
+  echo "  -avi             creates avi file (needs mencoder)"
+  echo "  -gif             creates animated gif file (needs gifsicle)"
+  echo "  -only_anim       recreates only animiation (no image files)"
+  echo "  -delay #         sets delay time for gif (default 10)"
+  echo "  -fps #           sets frames per second for avi (default 25)"
   echo ""
 }
 
@@ -28,12 +34,37 @@ ErrorOption()
   echo "No such option : $1"
 }
 
+TestSoftware()
+{
+  if [ $output = "avi" ]; then
+    mencoder --version > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+      echo "*** mencoder is not installed... aborting"
+      exit 1
+    fi
+  elif [ $output = "gif" ]; then
+    gifsicle --version > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+      echo "*** gifsicle is not installed... aborting"
+      exit 1
+    fi
+  else
+    echo "*** Unknown output format: $output"
+    exit 1
+  fi
+  exit 0
+}
+
+#---------------------------------------------------------------------
+
 delete="YES"
 make_eps="YES"
 rename="YES"
 make_gifs="YES"
+make_jpgs="NO"
 
 only_anim="NO"
+output="none"
 
 #---------------------------------------------------------------------
 
@@ -41,7 +72,10 @@ while [ -n "$1" ]
 do
    case $1 in
         -only_anim)     only_anim="YES";;
+        -avi)           output="avi";;
+        -gif)           output="gif";;
         -delay)         delay=$2; shift;;
+        -fps)           fps=$2; shift;;
         -h|-help)       FullUsage; exit 0;;
         -*)             ErrorOption $1; exit 1;;
         *)              break;;
@@ -49,20 +83,32 @@ do
    [ -n "$1" ] && shift
 done
 
-if [ -z "$delay" ]; then
-  echo "No delay given... aborting"
+if [ "$output" = "avi" ]; then		#create avi file
+  echo "creating anim.avi with fps $fps"
+elif [ "$output" = "gif" ]; then	#create gif file
+  echo "creating anim.gif with delay $delay"
+else
+  echo "Unknown output format: $output"
+  echo "You must at least specify -avi or -gif"
+  FullUsage
   exit 1
 fi
-echo "using delay $delay"
+
+TestSoftware
 
 #---------------------------------------------------------------------
 
+if [ "$output" = "avi" ]; then	#create avi file
+  make_gifs="NO"
+  make_jpgs="YES"
+fi
 if [ "$only_anim" = "YES" ]; then	#recreate only animation
   echo "only recreating animation"
   delete="NO"
   make_eps="NO"
   rename="NO"
   make_gifs="NO"
+  make_jpgs="NO"
 fi
 
 #---------------------------------------------------------------------
@@ -108,6 +154,10 @@ if [ $make_gifs = "YES" ]; then
   fi
 fi
 
+if [ $make_jpgs = "YES" ]; then
+  gps -jpg plot.*.eps
+fi
+
 ######################################################
 #
 # delete second frame in gifs (bug in gps -gif)
@@ -122,7 +172,16 @@ fi
 
 #--------------------------- create animation
 
-gifsicle --delay $delay --optimize --colors 256 plot.*.gif > anim.gif
+if [ $output = "avi" ]; then
+  mencoder mf://*.jpg -mf w=800:h=600:fps=$fps:type=jpg -ovc lavc \
+       -lavcopts vcodec=mpeg4:mbd=2:trell -oac copy -o anim.avi
+  echo "created anim.avi with fps $fps"
+elif [ $output = "gif" ]; then
+  gifsicle --delay $delay --optimize --colors 256 plot.*.gif > anim.gif
+  echo "created anim.gif with delay $delay"
+else
+  echo "Unknown output format: $output"
+fi
 
 #--------------------------- finish
 

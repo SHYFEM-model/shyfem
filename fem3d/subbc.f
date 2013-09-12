@@ -183,13 +183,17 @@ c----------------------------------------------------------
 c do the interpolation for every column
 c----------------------------------------------------------
 
-	call obc_interpolate(nintp,ndata,vars,t)
+	call obc_interpolate(nintp,ndata,vars,t,rint)
 
 c----------------------------------------------------------
 c end of routine
 c----------------------------------------------------------
 
 	return
+   87	continue
+	write(6,*) 'time values not ascending: '
+	write(6,*) (vars(0,i),i=1,nintp)
+	stop 'error stop : intp_ts'
    90	continue
 	write(6,*) 'Value for nintp out of range: ',nintp
 	write(6,*) 'Possible min/max values: ',1,ndim
@@ -226,13 +230,15 @@ c----------------------------------------------------------
 
 c*************************************************************
 
-	subroutine obc_interpolate(nintp,ndata,vars,time)
+	subroutine obc_interpolate(nintp,ndata,vars,time,rint)
 
 	implicit none
 
-	integer nintp,ndata
-	real vars(0:ndata,nintp)
-	real time
+	integer nintp		!order of interpolation (4=cubic)
+	integer ndata		!total number of data
+	real vars(0:ndata,nintp)!values of variables, 0 column is time
+	real time		!time for desired interpolated values
+	real rint(0:ndata)	!values for time interpolated
 
 	real eps
 	parameter (eps=1.e-5)
@@ -250,8 +256,8 @@ c	check if we are really doing an interpolation
 c	----------------------------------------------------------
 
 	i = 0
-	if( t .lt. vars(0,1)-eps ) i = 1
-	if( t .gt. vars(0,nintp)+eps ) i = nintp
+	if( time .lt. vars(0,1)-eps ) i = 1
+	if( time .gt. vars(0,nintp)+eps ) i = nintp
 	if( nintp .le. 0 ) i = 1
 
 	if( i .gt. 0 ) then	!keep constant -> extrapolation
@@ -273,7 +279,7 @@ c	----------------------------------------------------------
 	  do i=1,nintp
 	    y(i) = vars(j,i)
 	  end do
-	  rint(j) = intp_neville(nintp,x,y,t)
+	  rint(j) = intp_neville(nintp,x,y,time)
 	end do
 
 c	----------------------------------------------------------
@@ -298,7 +304,7 @@ c*************************************************************
 	if( time .gt. vars(0,nintp) ) return
 
 	write(6,*) 'time values not in ascending order'
-	write(6,*) 'unit = ',unit
+	write(6,*) 'unit = ',iunit
 	write(6,*) 'nintp = ',nintp
 	write(6,*) 'time: ',vars(0,nintp),time
 	call filna(iunit,name)

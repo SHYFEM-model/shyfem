@@ -14,6 +14,7 @@ c 27.01.2012	deb&ggu	changes to get_layer_thickness()
 c 27.01.2012	deb&ggu	new routine compute_sigma_info()
 c 17.05.2013	ggu	layer_thickness for elem and node, general routine
 c 17.05.2013	ggu	new routine get_bottom_of_layer()
+c 05.09.2013	ggu	new call interface to get_layer_thickness()
 c
 c notes :
 c
@@ -180,113 +181,12 @@ c---------------------------------------------------------
 
 c******************************************************************
 
-	subroutine get_layer_thickness_e(ie,lmax,bzeta,nsigma,hsigma,hl)
-
-c returns layer thickness for elements
-c
-c needs hlv,hev,zenv in common block
-
-	implicit none
-
-	integer ie
-	integer lmax
-	logical bzeta
-	integer nsigma
-	real hsigma
-	real hl(1)
-
-	real hev(1)
-	common /hev/hev
-	real zenv(3,1)
-	common /zenv/zenv
-
-	integer ii
-	real zmed
-	real htot
-
-c---------------------------------------------------------
-c compute contribution of zeta
-c---------------------------------------------------------
-
-	zmed = 0.
-	if( bzeta ) then
-          zmed = 0.
-          do ii=1,3
-            zmed = zmed + zenv(ii,ie)
-          end do
-          zmed = zmed / 3.
-	end if
-
-	htot = hev(ie)
-
-c---------------------------------------------------------
-c call internal routine
-c---------------------------------------------------------
-
-	call get_layer_thickness(lmax,nsigma,hsigma,zmed,htot,hl)
-
-c---------------------------------------------------------
-c end of routine
-c---------------------------------------------------------
-
-	end
-
-c******************************************************************
-
-	subroutine get_layer_thickness_k(k,lmax,bzeta,nsigma,hsigma,hl)
-
-c returns layer thickness for nodes
-c
-c needs hlv,hkv,znv in common block
-
-	implicit none
-
-	integer k
-	integer lmax
-	logical bzeta
-	integer nsigma
-	real hsigma
-	real hl(1)
-
-	real hkv(1)
-	common /hkv/hkv
-	real znv(1)
-	common /znv/znv
-
-	integer ii
-	real zmed
-	real htot
-
-c---------------------------------------------------------
-c compute contribution of zeta
-c---------------------------------------------------------
-
-	zmed = 0.
-	if( bzeta ) zmed = znv(k)
-	htot = hkv(k)
-
-c---------------------------------------------------------
-c call internal routine
-c---------------------------------------------------------
-
-	call get_layer_thickness(lmax,nsigma,hsigma,zmed,htot,hl)
-
-c---------------------------------------------------------
-c end of routine
-c---------------------------------------------------------
-
-	end
-
-c******************************************************************
-
-	subroutine get_layer_thickness(lmax,nsigma,hsigma,z,h,hl)
+	subroutine get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)
 
 c returns layer thickness - works also for lmax higher than actual layers
 c
 c works also for lmax higher than actual layers
 c in this case the last values for hl are 0
-c
-c needs hlv in common block
 
 	implicit none
 
@@ -295,10 +195,8 @@ c needs hlv in common block
 	real hsigma
 	real z			!water level
 	real h			!total depth
+	real hlv(1)		!level structure
 	real hl(1)		!level thickness computed (return)
-
-	real hlv(1)
-	common /hlv/hlv
 
 	logical bdebug
 	integer ii,l

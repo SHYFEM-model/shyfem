@@ -23,6 +23,7 @@ c 31.08.2011  ggu     new routines for handling EOS files
 c 14.11.2011  ggu     call to init_sigma_info() to setup layer info
 c 19.12.2011  ggu     new routine level_k2e -> called for nos files
 c 13.06.2013  ggu     new routines for handling FEM files
+c 03.09.2013  ggu     level_k2e -> level_k2e_sh, level_e2k -> level_e2k_sh
 c
 c**********************************************************
 c**********************************************************
@@ -928,7 +929,7 @@ c read second header
 
 	if( ierr .ne. 0 ) goto 97
 
-	call level_e2k				!computes ilhkv
+	call level_e2k_sh			!computes ilhkv
 	call init_sigma_info(nlv,hlv)		!sets up hlv
 
 	write(6,*) 'hlv: ',nlv,(hlv(l),l=1,nlv)
@@ -1131,7 +1132,7 @@ c read second header
 		stop 'error stop nosopen: error reading second header'
 	end if
 
-	call level_k2e
+	call level_k2e_sh
 	call init_sigma_info(nlv,hlv)		!sets up hlv
 
 	write(6,*) 'hlv: ',nlv,(hlv(l),l=1,nlv)
@@ -1563,7 +1564,7 @@ c read second header
 		stop 'error stop eosopen: error reading second header'
 	end if
 
-	call level_e2k		!computes ilhkv
+	call level_e2k_sh		!computes ilhkv
 
 c initialize time
 
@@ -1632,9 +1633,11 @@ c******************************************************
 c******************************************************
 c******************************************************
 
-	subroutine level_e2k
+	subroutine level_e2k_sh
 
 c computes max level at nodes from elements
+
+	implicit none
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -1646,27 +1649,17 @@ c computes max level at nodes from elements
         integer ilhkv(1)
         common /ilhkv/ilhkv
 
-	integer ie,ii,k,lmax
-
-	do k=1,nkn
-	  ilhkv(k) = 0
-	end do
-
-	do ie=1,nel
-	  lmax = ilhv(ie)
-	  do ii=1,3
-	    k = nen3v(ii,ie)
-	    ilhkv(k) = max(ilhkv(k),lmax)
-	  end do
-	end do
+	call level_e2k(nkn,nel,nen3v,ilhv,ilhkv)
 
 	end
 
 c******************************************************
 
-	subroutine level_k2e
+	subroutine level_k2e_sh
 
 c computes level at elems from nodes (not exact)
+
+	implicit none
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -1678,16 +1671,7 @@ c computes level at elems from nodes (not exact)
         integer ilhkv(1)
         common /ilhkv/ilhkv
 
-	integer ie,ii,k,lmax
-
-	do ie=1,nel
-	  lmax = 0
-	  do ii=1,3
-	    k = nen3v(ii,ie)
-	    lmax = max(lmax,ilhkv(k))
-	  end do
-	  ilhv(ie) = lmax
-	end do
+	call level_k2e(nkn,nel,nen3v,ilhkv,ilhv)
 
 	end
 
@@ -1875,7 +1859,7 @@ c read second header
 		stop 'error stop femopen: error reading hlv'
 	end if
 
-	!call level_k2e
+	call level_k2e_sh
 	call init_sigma_info(nlv,hlv)		!sets up hlv
 
 	write(6,*) 'hlv: ',nlv
@@ -1970,7 +1954,7 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	end do
 
 	if( bfound ) then
-	  call level_k2e
+	  call level_k2e_sh
 	else
 	  ivar = 0
 	end if

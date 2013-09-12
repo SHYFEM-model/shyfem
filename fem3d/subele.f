@@ -962,7 +962,7 @@ c	common /zenv/zenv
         logical bdebug
         logical bsigma
 	integer k,l,ie,ii
-	integer lmax,n,ibase,nsigma,levmin
+	integer lmax,n,ibase,nlv,nsigma,levmin
 	real hfirst,hlast,h,htot,z,zmed,hm
 	real hacu,hlevel,hsigma,hsig
 
@@ -991,7 +991,7 @@ c----------------------------------------------------------------
 c compute volumes at node
 c----------------------------------------------------------------
 
-	call get_sigma(nsigma,hsigma)
+	call get_sigma_info(nlv,nsigma,hsigma)
 	bsigma = nsigma .gt. 0
 	hfirst = hldv(1)
 

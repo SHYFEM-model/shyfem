@@ -11,6 +11,7 @@ c 08.06.2011	ggu	new routine transp2nodes()
 c 10.11.2011    ggu     new routines for hybrid levels
 c 02.12.2011    ggu     bug fix for call to get_sigma_info() (missing argument)
 c 21.01.2013    ggu     added two new routines comp_vel2d, comp_barotropic
+c 05.09.2013    ggu     new call to get_layer_thickness()
 c
 c******************************************************************
 
@@ -40,12 +41,10 @@ c transforms transports at elements to velocities at nodes
         real weight(nlvdim,1)		!aux variable for weights
 	real hl(1)			!aux variable for real level thickness
 
-	logical bsigma,bzeta
+	logical bsigma
         integer ie,ii,k,l,lmax,nsigma,nlvaux
-        real hmed,u,v,area
+        real hmed,u,v,area,zeta
 	real hsigma
-
-	bzeta = .true.		!use zeta for depth computation
 
 	call get_sigma_info(nlvaux,nsigma,hsigma)
 	if( nlvaux .gt. nlvdim ) stop 'error stop transp2vel: nlvdim'
@@ -63,7 +62,9 @@ c transforms transports at elements to velocities at nodes
 
 	  area = 12. * ev(10,ie)
 	  lmax = ilhv(ie)
-	  call get_layer_thickness_e(ie,lmax,bzeta,nsigma,hsigma,hl)
+	  call compute_levels_on_element(ie,zenv,zeta)
+	  call get_layer_thickness(lmax,nsigma,hsigma,zeta,hev(ie),hlv,hl)
+	  !call get_layer_thickness_e(ie,lmax,bzeta,nsigma,hsigma,hl)
 
 	  do l=1,lmax
 	    hmed = hl(l)

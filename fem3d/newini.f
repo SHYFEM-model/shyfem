@@ -58,6 +58,9 @@ c 24.08.2011    ggu	eliminated hbot for sigma due to run time error
 c 25.10.2011    ggu	hlhv eliminated
 c 04.11.2011    ggu	adapted for hybrid coordinates
 c 11.11.2011    ggu	bug fix in adjust_levels: for zeta levels set nlv
+c 23.08.2013    ggu	renamed adjust_k_depth() to make_hkv() -> to subdep
+c 23.08.2013    ggu	depth routines to subdep.f
+c 05.09.2013    ggu	in adjust_levels() allow for nlv==1
 c
 c notes :
 c
@@ -86,10 +89,10 @@ c------------------------------------------------------------------
 	call adjust_levels	!sets hlv, hldv, nlv
 
 c------------------------------------------------------------------
-c adjust depth values
+c set depth arrays
 c------------------------------------------------------------------
 
-	call set_depth_hkhe	!computes hev, hkv and reassigns to hm3v -> href
+	call set_depth
 
 c------------------------------------------------------------------
 c set up depth vectors
@@ -100,7 +103,7 @@ c------------------------------------------------------------------
 	call set_ilhkv		!sets ilhkv (nodal)
 	call set_min_levels	!sets ilmkv and ilmv
 
-	call adjust_k_depth	!adjusts nodal depth values (hkv)
+	call make_hkv		!adjusts nodal depth values (hkv)
 
 c------------------------------------------------------------------
 c check data structure
@@ -230,76 +233,6 @@ c------------------------------------------------------------------
 
 c*****************************************************************
 
-	subroutine set_depth_hkhe
-
-c sets up depth arrays and adjusts depth values
-
-	implicit none
-
-        real hkv(1), hev(1)
-        common /hkv/hkv, /hev/hev
-	real v1v(1)
-	common /v1v/v1v
-	real hldv(1)
-	common /hldv/hldv
-
-	logical bsigma
-	integer nsigma
-	real hmin,hmax,href
-	real hsigma
-	real getpar
-
-c----------------------------------------------------------------
-c adjust depth
-c----------------------------------------------------------------
-
-c       call bocche     !FIXME
-
-        hmin=getpar('hmin')
-        hmax=getpar('hmax')
-        href=getpar('href')
-
-        call depadj(hmin,hmax,href)	!adjusts h=h-href and hmax<h<hmin
-
-c----------------------------------------------------------------
-c set depth values
-c----------------------------------------------------------------
-
-	call get_sigma(nsigma,hsigma)
-	bsigma = nsigma .gt. 0
-
-	if( bsigma ) then
-	  call set_sigma_hkhe
-	else
-          call huniqu(hev,hkv)		!computes hev and reassignes to hm3v
-          call makehkv(hkv,v1v)		!computes hkv as average
-	end if
-
-c----------------------------------------------------------------
-c end of routine
-c----------------------------------------------------------------
-
-	end
-
-c*****************************************************************
-
-	subroutine adjust_k_depth
-
-c adjusts nodal depth values
-
-	implicit none
-
-        real hkv(1)
-        common /hkv/hkv
-	real v1v(1)
-	common /v1v/v1v
-
-        call makehkv(hkv,v1v)		!computes hkv as average
-
-	end
-
-c*****************************************************************
-
 	subroutine check_vertical
 
 c checks arrays containing vertical structure
@@ -406,7 +339,7 @@ c--------------------------------------------------------------
 
 	if( nsigma .eq. 1 ) goto 92
 
-	if( nlv .le. 0 ) then		!no level section present
+	if( nlv .le. 0 ) then		! hlv not set -> must set
 
 	  if( bsigma ) then		!sigma layers
 	    call make_sigma_levels(nsigma)
@@ -431,9 +364,9 @@ c--------------------------------------------------------------
 
 	else				!level section present
 
-	  if( nlv .eq. 1 ) goto 98	!just one level given -> error
-
-	  if( hlv(2) .gt. hlv(1) ) then	!zeta layers given
+	  if( nlv .eq. 1 ) then		!just one level (barotropic)
+	    if( bsigma .or. bhybrid ) goto 98
+	  else if( hlv(2) .gt. hlv(1) ) then	!zeta layers given
 	    if( bzeta ) goto 97
 	    if( bsigma ) then		!put sigma layers on top
 	      if( .not. bhybrid ) goto 88
@@ -483,7 +416,8 @@ c--------------------------------------------------------------
 
 	end if
 
-	call set_sigma(nsigma,hsigma)
+	call set_sigma(nsigma,hsigma)		!uses putpar
+	call set_sigma_info(nlv,nsigma,hsigma)	!sets internal data structure
 
 c--------------------------------------------------------------
 c create hldv values
@@ -553,6 +487,8 @@ c--------------------------------------------------------------
 	stop 'error stop adjust_levels: dzreg'
    98	continue
 	write(6,*) 'only one level given in level section'
+	write(6,*) hlv(1)
+	write(6,*) 'cannot have sigma levels...'
 	stop 'error stop adjust_levels: nlv = 1'
    99	continue
 	write(6,*) 'for hybrid levels dzreg must be > 0'

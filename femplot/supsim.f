@@ -62,6 +62,7 @@ c 07.10.2011    ggu&dbf error calling extelev with nkn, and not nel
 c 10.02.2012    ggu	belem in plobas to plot bathymetry on elements
 c 26.03.2012    ccf&ggu	call mkht only for bvel .or. btrans (plo2vel)
 c 13.06.2013    ggu	new routine plofem()
+c 05.09.2013    ggu	endtime() and nplot introduced
 c
 c notes :
 c
@@ -92,21 +93,21 @@ c 3D concentrations
 	common /fvlv/fvlv
 
         character*80 line
-	integer nrec,it,ivel
+	integer nrec,it,ivel,nplot
 	integer ivaria
 	integer level,ivar,isect
-	logical femnext,oktime
-	integer getlev,getvar,getisec
+	logical femnext,oktime,endtime
+	integer getlev,getisec
 
 	nrec = 0
+	nplot = 0
 	level = getlev()
         isect = getisec()
 
-	call askvar
-        ivar = getvar()
-
 	call femopen(type)
 	call timeask
+	ivar = 0
+	call checkvar(ivar)
 
         call mkvarline(ivar,line)
 	ivaria = ivar
@@ -115,9 +116,11 @@ c 3D concentrations
 	  nrec = nrec + 1
 	  write(6,*) 'new record: ',nrec,it,ivaria,ivar
 	  if( ivar .ne. ivaria ) goto 99
+	  if( endtime(it) ) exit
 	  if( oktime(it) ) then
+	    nplot = nplot + 1
             if( isect .eq. 0 ) then
-	      write(6,*) '..........horizontal plotting nodes'
+	      write(6,*) '..........horizontal plotting nodes ',nplot
 	      if( ivar .eq. 21 ) then	!wind
 		ivel = 3		!wind
 		call set_uv(nlvdim,nkn,p3)
@@ -129,13 +132,15 @@ c 3D concentrations
 	        call ploval(nkn,parray,line)
 	      end if
             else
-	      write(6,*) '..........vertical plotting nodes'
+	      write(6,*) '..........vertical plotting nodes ',nplot
               call plot_sect(.false.,p3)
             end if
 	  end if
 	end do
 
 	call femclose
+
+	write(6,*) 'Total number of plots: ',nplot
 
 	return
    99	continue
@@ -175,8 +180,8 @@ c 3D concentrations
 
 	include 'param.h'
 
-	character*(*) type
-	integer ivar_in
+	character*(*) type	!default extension for file
+	integer ivar_in		!desired variable id
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -188,13 +193,14 @@ c 3D concentrations
 	common /fvlv/fvlv
 
         character*80 line
-	integer nrec,it
+	integer nrec,it,nplot
 	integer ivaria
 	integer level,ivar,isect
-	logical nosnext,oktime,okvar
-	integer getlev,getvar,getisec
+	logical nosnext,oktime,okvar,endtime
+	integer getlev,getisec
 
 	nrec = 0
+	nplot = 0
 	level = getlev()
         isect = getisec()
 	ivar = ivar_in
@@ -202,12 +208,7 @@ c 3D concentrations
 	call nosopen(type)
 	call fvlopen('.fvl')
 	call timeask
-	if( ivar .gt. 0 ) then
-	  call setvar(ivar)
-	else
-	  call askvar
-          ivar = getvar()
-	end if
+	call checkvar(ivar)
 
         call mkvarline(ivar,line)
 
@@ -215,20 +216,24 @@ c 3D concentrations
 	  nrec = nrec + 1
 	  call fvlnext(it,nlvdim,fvlv)
 	  write(6,*) 'new record: ',nrec,it,ivaria,ivar
+	  if( endtime(it) ) exit
 	  if( oktime(it) .and. okvar(ivaria) ) then
+	    nplot = nplot + 1
             if( isect .eq. 0 ) then
-	      write(6,*) '..........horizontal plotting nodes'
+	      write(6,*) '..........horizontal plotting nodes ',nplot
 	      call extnlev(level,nlvdim,nkn,p3,parray)
 	      call prepsim
 	      call ploval(nkn,parray,line)
             else
-	      write(6,*) '..........vertical plotting nodes'
+	      write(6,*) '..........vertical plotting nodes ',nplot
               call plot_sect(.false.,p3)
             end if
 	  end if
 	end do
 
 	call nosclose
+
+	write(6,*) 'Total number of plots: ',nplot
 
 	end
 
@@ -242,8 +247,8 @@ c 3D concentrations (element values)
 
 	include 'param.h'
 
-	character*(*) type
-	integer ivar_in
+	character*(*) type	!default extension for file
+	integer ivar_in		!desired variable id
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -255,45 +260,46 @@ c 3D concentrations (element values)
 	common /fvlv/fvlv
 
         character*80 line
-	integer nrec,it
+	integer nrec,it,nplot
 	integer ivaria
 	integer level,ivar,isect
-	logical eosnext,oktime,okvar
-	integer getlev,getvar,getisec
+	logical eosnext,oktime,okvar,endtime
+	integer getlev,getisec
 
 	nrec = 0
+	nplot = 0
 	level = getlev()
         isect = getisec()
 	ivar = ivar_in
 
 	call eosopen(type)
 	call timeask
-	if( ivar .gt. 0 ) then
-	  call setvar(ivar)
-	else
-	  call askvar
-          ivar = getvar()
-	end if
+	call checkvar(ivar)
 
         call mkvarline(ivar,line)
 
 	do while( eosnext(it,ivaria,nlvdim,p3) )
 	  nrec = nrec + 1
 	  write(6,*) nrec,it,ivaria,ivar
+	  if( endtime(it) ) exit
 	  if( oktime(it) .and. okvar(ivaria) ) then
+	    nplot = nplot + 1
             if( isect .eq. 0 ) then
-	      write(6,*) '..........horizontal plotting elements'
+	      write(6,*) '..........horizontal plotting elements ',nplot
 	      !call extelev(level,nlvdim,nkn,p3,parray)
 	      call extelev(level,nlvdim,nel,p3,parray)
 	      call prepsim
 	      call ploeval(nel,parray,line)
             else
 	      write(6,*) '..........no vertical plotting for elements'
+	      nplot = nplot - 1
             end if
 	  end if
 	end do
 
 	call eosclose
+
+	write(6,*) 'Total number of plots: ',nplot
 
 	end
 
@@ -311,20 +317,12 @@ c makes variable description in nos file
         integer iaux
         integer ialfa
 
-        line = 'variable = '
-        iaux = ialfa(float(ivar),line(12:),-1,-1)
+	call ivar2string(ivar,line)
 
-        if( ivar .eq. 10 ) then
-          line = 'generic tracer'
-        else if( ivar .eq. 11 ) then
-          line = 'salinity'
-        else if( ivar .eq. 12 ) then
-          line = 'temperature'
-        else if( ivar .eq. 15 ) then
-          line = 'oxygen'
-        else if( ivar .eq. 18 ) then
-          line = 'rms velocity'
-        end if
+	if( line .eq. ' ' ) then
+          line = 'variable = '
+          iaux = ialfa(float(ivar),line(12:),-1,-1)
+	end if
 
         end
 
@@ -339,10 +337,11 @@ c**********************************************************
 	real znv(1)
 	common /znv/znv
 
-	integer nrec,it,k
-	logical ousnext,oktime
+	integer nrec,it,k,nplot
+	logical ousnext,oktime,endtime
 
 	nrec = 0
+	nplot = 0
 
 	call ousopen
 	call timeask
@@ -350,14 +349,18 @@ c**********************************************************
 	do while( ousnext(it) )
 	  nrec = nrec + 1
 	  write(6,*) nrec,it
+	  if( endtime(it) ) exit
 	  if( oktime(it) ) then
-	    write(6,*) '..........plotting'
+	    nplot = nplot + 1
+	    write(6,*) '..........plotting ',nplot
 	    call prepsim
 	    call ploval(nkn,znv,'water levels')
 	  end if
 	end do
 
 	call ousclose
+
+	write(6,*) 'Total number of plots: ',nplot
 
 	end
 
@@ -374,10 +377,11 @@ c plots barene
 	real parray(1)
 	common /parray/parray
 
-	integer nrec,it,k
-	logical ousnext,oktime
+	integer nrec,it,k,nplot
+	logical ousnext,oktime,endtime
 
 	nrec = 0
+	nplot = 0
 
 	call ousopen
 	call timeask
@@ -385,13 +389,17 @@ c plots barene
 	do while( ousnext(it) )
 	  nrec = nrec + 1
 	  write(6,*) nrec,it
+	  if( endtime(it) ) exit
 	  if( oktime(it) ) then
-	    write(6,*) '..........plotting'
+	    nplot = nplot + 1
+	    write(6,*) '..........plotting ',nplot
 	    call plozbar
 	  end if
 	end do
 
 	call ousclose
+
+	write(6,*) 'Total number of plots: ',nplot
 
 	end
 
@@ -406,10 +414,11 @@ c**********************************************************
 	real pres(1)
 	common /pres/pres
 
-	integer nrec,it
-	logical windnext,oktime
+	integer nrec,it,nplot
+	logical windnext,oktime,endtime
 
 	nrec = 0
+	nplot = 0
 
 	call windopen
 	call timeask
@@ -417,14 +426,18 @@ c**********************************************************
 	do while( windnext(it) )
 	  nrec = nrec + 1
 	  write(6,*) nrec,it
+	  if( endtime(it) ) exit
 	  if( oktime(it) ) then
-	    write(6,*) '..........plotting'
+	    nplot = nplot + 1
+	    write(6,*) '..........plotting ',nplot
 	    call resetsim
 	    call ploval(nkn,pres,'atmospheric pressure')
 	  end if
 	end do
 
 	call windclose
+
+	write(6,*) 'Total number of plots: ',nplot
 
 	end
 
@@ -434,11 +447,12 @@ c**********************************************************
 
 	implicit none
 
-	integer nrec,it
+	integer nrec,it,nplot
         integer ivel
-	logical windnext,oktime
+	logical windnext,oktime,endtime
 
 	nrec = 0
+	nplot = 0
         ivel = 3	!wind
 
 	call windopen
@@ -447,14 +461,18 @@ c**********************************************************
 	do while( windnext(it) )
 	  nrec = nrec + 1
 	  write(6,*) nrec,it
+	  if( endtime(it) ) exit
 	  if( oktime(it) ) then
-	    write(6,*) '..........plotting'
+	    nplot = nplot + 1
+	    write(6,*) '..........plotting ',nplot
 	    call resetsim
 	    call plovel(ivel)
 	  end if
 	end do
 
 	call windclose
+
+	write(6,*) 'Total number of plots: ',nplot
 
 	end
 
@@ -464,11 +482,12 @@ c**********************************************************
 
 	implicit none
 
-	integer nrec,it
+	integer nrec,it,nplot
         integer ivel
-	logical wavenext,oktime
+	logical wavenext,oktime,endtime
 
 	nrec = 0
+	nplot = 0
         ivel = 4	!wave
 
 	call waveopen
@@ -477,14 +496,18 @@ c**********************************************************
 	do while( wavenext(it) )
 	  nrec = nrec + 1
 	  write(6,*) nrec,it
+	  if( endtime(it) ) exit
 	  if( oktime(it) ) then
-	    write(6,*) '..........plotting'
+	    nplot = nplot + 1
+	    write(6,*) '..........plotting ',nplot
 	    call resetsim
 	    call plovel(ivel)
 	  end if
 	end do
 
 	call waveclose
+
+	write(6,*) 'Total number of plots: ',nplot
 
 	end
 
@@ -498,13 +521,13 @@ c**********************************************************
 
 	logical bvel
 
-	integer nrec,it
+	integer nrec,it,nplot
         integer ivel,isect
 
 	real p3(nlvdim,nkndim)
 	common /p3/p3
 
-	logical velnext,oktime
+	logical velnext,oktime,endtime
 	integer getisec
 
         if( bvel ) then
@@ -515,6 +538,7 @@ c**********************************************************
         isect = getisec()
 
 	nrec = 0
+	nplot = 0
 
 	call velopen
 	call timeask
@@ -522,13 +546,15 @@ c**********************************************************
 	do while( velnext(it) )
 	  nrec = nrec + 1
 	  write(6,*) nrec,it
+	  if( endtime(it) ) exit
 	  if( oktime(it) ) then
+	    nplot = nplot + 1
             if( isect .eq. 0 ) then
-	      write(6,*) '..........horizontal plotting'
+	      write(6,*) '..........horizontal plotting ',nplot
 	      call prepsim
 	      call plovel(ivel)
             else
-	      write(6,*) '..........vertical plotting'
+	      write(6,*) '..........vertical plotting ',nplot
 	      call prepare_vel(p3)
               call plot_sect(.true.,p3)
             end if
@@ -536,6 +562,8 @@ c**********************************************************
 	end do
 
 	call velclose
+
+	write(6,*) 'Total number of plots: ',nplot
 
 	end
 

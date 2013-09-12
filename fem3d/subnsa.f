@@ -22,6 +22,7 @@ c 11.09.2009	ggu	new section $sect
 c 27.02.2013	ggu     pass what parameter into nlsa, handle extra info
 c 13.06.2013	ggu     read also varnam to decide what to plot and read
 c 22.08.2013	ggu     new string2ivar() and similar changes
+c 05.09.2013	ggu     nlsa now wants integer, better handling of what to read
 c
 c**********************************************
 c
@@ -416,7 +417,7 @@ c copy boundary node index to kantv
 
 c******************************************************************
 c
-	subroutine nlsa(iunit,what)
+	subroutine nlsa(iunit,ivar)
 c
 c read of parameter file for post processing routines
 c
@@ -424,13 +425,13 @@ c iunit		unit number of file
 
 	implicit none
 
-	integer iunit
-	character*(*) what
+	integer iunit		!unit where file is open
+	integer ivar		!what type of section to read
 
 	character*80 name,line,section,extra
 	character*20 what0,whatin
 	character*6 sect
-	logical bdebug,bread
+	logical bdebug,bread,bverbose
 	integer num
 	integer nrdsec,nrdlin,ichanm
 	integer iv_in,iv_read
@@ -441,13 +442,9 @@ c iunit		unit number of file
 
 	bdebug = .true.
 	bdebug = .false.
+	bverbose = .false.
 
-	whatin = what
-	iv_in = -1
-	if( whatin .ne. ' ' ) then
-	  call string2ivar(whatin,iv_in)
-	  if( iv_in .lt. 0 ) whatin = ' '
-	end if
+	iv_in = ivar
 
 	if(iunit.le.0) then
 c		write(6,*) 'error reading parameter file'
@@ -471,18 +468,14 @@ c loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		  call string2ivar(extra,iv_read)
 		end if
 
-		bread = .false.
-		!bread = bread .or. whatin(1:4) .eq. ' '
-		!bread = bread .or. extra(1:4) .eq. ' '
-		!bread = bread .or. extra(1:4) .eq. whatin(1:4)
-		bread = bread .or. iv_in .eq. -1
-		bread = bread .or. iv_read .eq. -1
-		bread = bread .or. iv_read .eq. iv_in
-		write(6,*) 'bread: ',bread,sect,iv_in,iv_read
+		bread = iv_read .eq. iv_in
+		if( bverbose ) then
+		  write(6,*) 'nlsa : ',bread,sect,iv_in,iv_read
+		end if
 
 		if( bread ) then
                   call setsec(section,num)                !remember section
-		  write(6,'(a,a)') '$',section(1:60)
+		  if( bverbose ) write(6,'(a,a)') '$',section(1:60)
 		else
 		  section = 'skip'
 		end if
@@ -493,13 +486,6 @@ c loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			call rdtita
 		else if(section.eq.'para') then
 			call nrdins(section)
-			call getfnm('varnam',what0)
-			if( what0 .ne. ' ' .and. whatin .eq. ' ' ) then
-			  whatin = what0
-	  		  call string2ivar(whatin,iv_in)
-			  write(6,*) 'adjourning string2ivar: ',
-     +				whatin(1:10),iv_in
-			end if
 		else if(section.eq.'color') then
 			call colrd
 		else if(section.eq.'arrow') then
@@ -589,26 +575,39 @@ c************************************************************************
         character*(*) string
         integer iv
 
-	integer is,ie4,ie3
+	integer is,isb
+	integer ie3,ie4,ie5
 	integer ichafs
 
         iv = -1
 
 	is = ichafs(string)
 	if( is .le. 0 ) is = 1
-	ie4 = is + 3
-	ie3 = is + 2
+	isb = is - 1
+	ie3 = isb + 3
+	ie4 = isb + 4
+	ie5 = isb + 5
 
         if( string(is:ie4) .eq. 'mass' ) then
           iv = 0
+        else if( string(is:ie5) .eq. 'level' ) then
+          iv = 1
         else if( string(is:ie3) .eq. 'vel' ) then
           iv = 2
+        else if( string(is:ie5) .eq. 'trans' ) then
+          iv = 3
+        else if( string(is:ie4) .eq. 'bath' ) then
+          iv = 5
         else if( string(is:ie4) .eq. 'conc' ) then
           iv = 10
         else if( string(is:ie3) .eq. 'sal' ) then
           iv = 11
         else if( string(is:ie4) .eq. 'temp' ) then
           iv = 12
+        else if( string(is:ie4) .eq. 'oxyg' ) then
+          iv = 15
+        else if( string(is:ie3) .eq. 'rms' ) then
+          iv = 18
         else if( string(is:ie4) .eq. 'pres' ) then
           iv = 20
         else if( string(is:ie4) .eq. 'wind' ) then
@@ -624,6 +623,8 @@ c************************************************************************
         else if( string(is:ie4) .eq. 'rain' ) then
           iv = 26
         else if( string(is:ie4) .eq. 'evap' ) then
+          iv = 27
+        else if( string(is:ie3) .eq. 'lgr' ) then
           iv = 27
         else if( string .eq. ' ' ) then
           write(6,*) '*** string2ivar: no string given'
@@ -648,7 +649,15 @@ c******************************************************
 
         string = ' '
 
-        if( iv .eq. 12 ) then
+        if( iv .eq. 0 ) then
+          string = 'mass field'
+        else if( iv .eq. 1 ) then
+          string = 'water level'
+        else if( iv .eq. 10 ) then
+          string = 'generic tracer'
+        else if( iv .eq. 11 ) then
+          string = 'salinity'
+        else if( iv .eq. 12 ) then
           string = 'temperature'
         else
           write(6,*) '*** cannot find description of string: '

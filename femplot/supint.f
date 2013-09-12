@@ -16,6 +16,7 @@ c 18.08.2011  ggu     make vsect bigger
 c 31.08.2011  ggu     new plotting eos
 c 23.02.2012  ccf     allow plotting also for last layer
 c 13.06.2013  ggu     scans varnam to decide what to plot
+c 05.09.2013  ggu     handle variable choice better
 c
 c**********************************************************
 c**********************************************************
@@ -140,7 +141,7 @@ c**********************************************************
 
 	subroutine inivar
 
-c initializes actual variable
+c initializes actual variable to be plotted (internal routine)
 
 	implicit none
 
@@ -148,6 +149,7 @@ c initializes actual variable
 	common /ivar3/ivar3
 	save /ivar3/
 
+	integer ivar,ivar_name
 	character*80 name
 	real getpar
 
@@ -158,15 +160,31 @@ c initializes actual variable
 	if( icall .gt. 0 ) return
 	icall = 1
 
-	ivar3 = nint(getpar('ivar'))
-
-	if( ivar3 .le. 0 ) then
-	  call getfnm('varnam',name)
-	  call string2ivar(name,ivar3)
-	  write(6,*) 'new variable: ',ivar3
+	ivar = nint(getpar('ivar'))
+	ivar_name = 0
+	name = ' '
+	call getfnm('varnam',name)
+	if( name .ne. ' ' ) then
+	  call string2ivar(name,ivar_name)
 	end if
 
-c	ivar3 = 0	! 0 -> nothing
+	if( ivar .gt. 0 .and. ivar_name .gt. 0 ) then
+	  if( ivar .ne. ivar_name ) then
+	    write(6,*) 'You cannot give both ivar and varnam'
+	    write(6,*) 'ivar = ',ivar
+	    write(6,*) 'varnam = ',name(1:30)
+	    write(6,*) 'ivar_name = ',ivar_name
+	    stop 'error stop inivar: non compatible variables required'
+	  end if
+	end if
+
+	if( ivar .gt. 0 ) then
+	  ivar3 = ivar
+	else if( ivar_name .gt. 0 ) then
+	  ivar3 = ivar_name
+	else
+	  ivar3 = 0
+	end if
 
 	end
 
@@ -182,7 +200,7 @@ c asks for actual variable
 	common /ivar3/ivar3
 
 	integer iauto
-	integer ideflt,read_var
+	integer ideflt
 	real getpar
 
 	call inivar
@@ -190,18 +208,54 @@ c asks for actual variable
 	iauto = nint(getpar('iauto'))
 
 	if( iauto .eq. 0 ) then
-	  !ivar3 = read_var()
-	  ivar3 = ideflt(ivar3,'Enter variable : ')
+	  ivar3 = ideflt(ivar3,'Enter variable id: ')
 	end if
 
-	write(6,*) 'Variable used : ',ivar3
+	write(6,*) 'askvar: Variable used = ',ivar3
 	write(6,*)
 
 	end
 
 c**********************************************************
 
-	subroutine setvar( ivar )
+	subroutine checkvar(ivar)
+
+c checks what variable has to be plotted
+c returns in ivar the variable to be plotted
+
+	implicit none
+
+	integer ivar
+
+	integer ivar3
+	integer getvar
+
+	call inivar
+
+	if( ivar .gt. 0 ) then
+	  ivar3 = getvar()
+	  if( ivar3 .gt. 0 .and. ivar3 .ne. ivar ) goto 99
+          call setvar(ivar)
+        else
+          call askvar
+          ivar = getvar()
+        end if
+
+	if( ivar .le. 0 ) then
+	  write(6,*) 'Do not know what to plot: ivar = ',ivar
+	  stop 'error stop checkvar: no ivar given'
+	end if
+
+	return
+   99	continue
+	write(6,*) 'ivar3 = ',ivar3
+	write(6,*) 'ivar  = ',ivar
+	stop 'error stop checkvar: different values of ivar3 and ivar'
+	end
+
+c**********************************************************
+
+	subroutine setvar(ivar)
 
 c set actual variable
 
@@ -261,6 +315,7 @@ c**********************************************************
 	function read_var()
 
 c reads number or string from STDIN - converts string to number
+c is not used actually
 
 	implicit none
 
@@ -436,80 +491,4 @@ c**********************************************************
 	end
 
 c**********************************************************
-c next routines copied to subnsa.f
-c**********************************************************
-
-        subroutine string2ivar_do_not_use(string,iv)
-
-        implicit none
-
-        character*(*) string
-        integer iv
-
-	integer is,ie4,ie3
-	integer ichafs
-
-        iv = -1
-
-	is = ichafs(string)
-	if( is .le. 0 ) is = 1
-	ie4 = is + 3
-	ie3 = is + 2
-
-        if( string(is:ie4) .eq. 'mass' ) then
-          iv = 0
-        else if( string(is:ie4) .eq. 'conc' ) then
-          iv = 10
-        else if( string(is:ie3) .eq. 'sal' ) then
-          iv = 11
-        else if( string(is:ie4) .eq. 'temp' ) then
-          iv = 12
-        else if( string(is:ie4) .eq. 'pres' ) then
-          iv = 20
-        else if( string(is:ie4) .eq. 'wind' ) then
-          iv = 21
-        else if( string(is:ie4) .eq. 'sola' ) then
-          iv = 22
-        else if( string(is:ie3) .eq. 'air' ) then
-          iv = 23
-        else if( string(is:ie4) .eq. 'humi' ) then
-          iv = 24
-        else if( string(is:ie4) .eq. 'clou' ) then
-          iv = 25
-        else if( string(is:ie4) .eq. 'rain' ) then
-          iv = 26
-        else if( string(is:ie4) .eq. 'evap' ) then
-          iv = 27
-        else if( string .eq. ' ' ) then
-          write(6,*) '*** string2ivar: no string given'
-        else
-          write(6,*) '*** string2ivar: cannot find string description: '
-          write(6,*) string
-          write(6,*) string(1:3)
-	  if( string(1:3) .eq. 'fem' ) stop 'error.....'
-        end if
-
-        end
-
-c******************************************************
-
-        subroutine ivar2string_do_not_use(iv,string)
-
-        implicit none
-
-        integer iv
-        character*(*) string
-
-        string = ' '
-
-        if( iv .eq. 12 ) then
-          string = 'temperature'
-        else
-          write(6,*) '*** cannot find description of string: '
-          write(6,*) iv
-        end if
-
-        end
-
-c******************************************************
 

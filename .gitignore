@@ -7,7 +7,7 @@ tmp
 newtmp
 
 lib
-bin
+#bin
 #fem3d/bin
 bugs
 

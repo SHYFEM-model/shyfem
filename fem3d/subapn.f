@@ -27,6 +27,7 @@ c 20.06.2003	ggu	in iapini statement shiftet for compiler error Origin
 c 15.07.2011	ggu	adjusted, ideffi substituted
 c 19.03.2012	ggu	if no basin is given return with "error"
 c 27.02.2013	ggu	pass what parameter into nlsa
+c 05.09.2013	ggu	read_apn_file() needs integer now
 c
 c notes :
 c
@@ -276,7 +277,7 @@ c first call -> set parameters, read parameter file, ...
 	  call getfnm('apnfil',apnnam)
 	  call putfnm('apnnam',apnnam)
 
-	  call read_apn_file(' ')
+	  call read_apn_file(-1)
 
 	  bfirst=.false.
 	end if
@@ -293,11 +294,11 @@ c get new names for basin and simulation
 
 c**************************************************************
 
-	subroutine read_apn_file(what)
+	subroutine read_apn_file(ivar)
 
 	implicit none
 
-	character*(*) what
+	integer ivar
 
 	integer nin
 	integer ifileo
@@ -305,7 +306,7 @@ c**************************************************************
 	nin=ifileo(0,'apnstd.str','form','old')
 	if( nin .le. 0 ) return
 
-	call nlsa(nin,what)
+	call nlsa(nin,ivar)
 	close(nin)
 
 	end

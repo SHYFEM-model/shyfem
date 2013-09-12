@@ -59,6 +59,7 @@ c 10.02.2012    ggu     bug in call to ts_next_record (called with nlvdim)
 c 23.02.2012    ccf     do noy check depth structure
 c 09.03.2012    deb     bug fix in ts_next_record: ilhkv was real
 c 31.10.2012    ggu     open and next_record transfered to subtsuvfile.f
+c 05.09.2013    ggu     limit salinity to [0,...]
 c
 c*****************************************************************
 
@@ -517,6 +518,7 @@ c local
 	real sigma0,rho0,pres,hsigma
 	real depth,hlayer,hh
 	real rhop,presbt,presbc,dpresc
+	real salt
 	double precision dresid
 c functions
 	real sigma
@@ -556,7 +558,8 @@ c functions
 
 	    pres = 1.e-5 * ( presbt + presbc )	!pressure in bars (BUG)
 	
-	    rhop = sigma(saltv(l,k),tempv(l,k),pres) - sigma0
+	    salt = max(0.,saltv(l,k))
+	    rhop = sigma(salt,tempv(l,k),pres) - sigma0
 	    !call rho_mud(rhop)	!ARON: please define this in submud
 
 	    nresid = nresid + 1

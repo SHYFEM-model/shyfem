@@ -25,6 +25,7 @@ c 31.08.2011	ggu	new copyright, eos plotting
 c 14.11.2011	ggu	new array hl for depth structure
 c 27.02.2013	ggu	deleted amat, better color handling
 c 13.06.2013	ggu	new plotting for fem files
+c 05.09.2013	ggu	better handling of variable
 c
 c*************************************************************
 
@@ -134,7 +135,7 @@ c vertical velocity
         common /wlnv/wlnv
 c local
 	character*20 what
-	integer mode
+	integer mode,ivar
 	integer ie,ii,k,l,i
 	integer icolor,isphe
 	integer iapini
@@ -177,6 +178,7 @@ c----------------------------------------------
 	if(iapini(7,nkndim,neldim,0).eq.0) then
 		stop 'error stop : iapini'
 	end if
+	write(6,*) 'Basin:   nkn = ',nkn,'  nel = ',nel
 
 c----------------------------------------------
 c set up elements
@@ -202,9 +204,9 @@ c----------------------------------------------
 
 	call asklev		!ask for 3d level
 
-	call ichoice(mode,what)
+	call ichoice(mode,ivar)
 
-	call read_apn_file(what)
+	call read_apn_file(ivar)
 	call initialize_color
 
 c----------------------------------------------
@@ -233,7 +235,7 @@ c	if( mode .eq. 4 )  call plobar
 	if( mode .eq. 13 ) call plowave
 	if( mode .eq. 14 ) call plopres
 	if( mode .eq. 15 ) call ploeos('.eos',0)
-	if( mode .eq. 16 ) call plofem('')
+	if( mode .eq. 16 ) call plofem('.fem')
 
 c----------------------------------------------
 c close plot
@@ -249,16 +251,17 @@ c----------------------------------------------
 
 c*****************************************************************
 
-	subroutine ichoice(mode,what)
+	subroutine ichoice(mode,ivar)
 
 	implicit none
 
 	integer mode
-	character(*) what
+	integer ivar
 
 	integer ndim
 	parameter (ndim=16)
 
+	character*10 what
 	integer iwhat,iauto
 	integer ideflt
 	real getpar
@@ -273,26 +276,25 @@ c*****************************************************************
 	iwhat = nint(getpar('iwhat'))
 	iauto = nint(getpar('iauto'))
 
-	write(6,*)
-	write(6,*) ' basin ...................  1'
-	write(6,*) ' velocity ................  2'
-	write(6,*) ' transport ...............  3'
-	write(6,*) ' water level .............  4'
-	write(6,*) ' concentration ...........  5'
-	write(6,*) ' temperature .............  6'
-	write(6,*) ' salinity ................  7'
-	write(6,*) ' rms .....................  8'
-	write(6,*) ' oxygen ..................  9'
-	write(6,*) ' generic scalar value .... 10'
-	write(6,*) ' wind field .............. 11'
-	write(6,*) ' lagrangian .............. 12'
-	write(6,*) ' wave .................... 13'
-	write(6,*) ' atmospheric pressure .... 14'
-	write(6,*) ' generic element values .. 15'
-	write(6,*) ' generic fem file ........ 16'
-	write(6,*)
-
         if( iauto .eq. 0 .or. iwhat .eq. 0 ) then
+	  write(6,*)
+	  write(6,*) ' basin ...................  1'
+	  write(6,*) ' velocity ................  2'
+	  write(6,*) ' transport ...............  3'
+	  write(6,*) ' water level .............  4'
+	  write(6,*) ' concentration ...........  5'
+	  write(6,*) ' temperature .............  6'
+	  write(6,*) ' salinity ................  7'
+	  write(6,*) ' rms .....................  8'
+	  write(6,*) ' oxygen ..................  9'
+	  write(6,*) ' generic scalar value .... 10'
+	  write(6,*) ' wind field .............. 11'
+	  write(6,*) ' lagrangian .............. 12'
+	  write(6,*) ' wave .................... 13'
+	  write(6,*) ' atmospheric pressure .... 14'
+	  write(6,*) ' generic element values .. 15'
+	  write(6,*) ' generic fem file ........ 16'
+	  write(6,*)
           iwhat = ideflt(iwhat,'Enter choice : ')
         else
           write(6,*) 'Plotting : ',iwhat
@@ -306,6 +308,10 @@ c*****************************************************************
 
 	mode = iwhat
 	what = whats(iwhat)
+	call string2ivar(what,ivar)
+	call checkvar(ivar)
+
+	write(6,*) 'Plotting ',ivar,what
 
 	end
 

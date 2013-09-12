@@ -40,7 +40,7 @@ else
 endif
 
 LIBG_MKL =
-SOLVER_FILES = simsys_lp.o
+SOLVER_FILES = simsys_lp.o nonhydro_lp.o
 ifeq ($(SOLVER),PARDISO)
   LIBG_MKL = `./bin/find_pardlib.sh`
   SOLVER_FILES = simsys_pard.o subpard.o subcoo.o nonhydro_pard.o
@@ -147,7 +147,8 @@ SOBJS   = \
 	  links.o sublnka.o sublnks.o sublnku.o subisd.o \
 	  debug.o subhisto.o subnosa.o subfvl.o \
 	  subeos.o sigmautil.o \
-	  nosutil.o ousutil.o subfemfile.o subvintp.o
+	  nosutil.o ousutil.o subfemfile.o subvintp.o \
+	  genutil.o
 
 # general objects for 3D model ht
 
@@ -214,15 +215,15 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subapn.o subnsa.o subdum.o \
 	  subbnd.o subdts.o subdep.o \
 	  debug.o subreg.o subnev.o \
-	  subfemfile.o subvintp.o subver.o
+	  subfemfile.o subvintp.o subver.o sigmautil.o
 
 RSTOBJS = subrst.o ecological_dummy.o
 
 BASEXTRA = subgeo.o subgrd.o subsrt.o sublnka.o links.o sublnku.o
 
-NOSOBJS = subnos.o nosutil.o genutil.o sigmautil.o subeos.o
-OUSOBJS = subous.o ousutil.o genutil.o sigmautil.o
-NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o genutil.o sigmautil.o
+NOSOBJS = subnos.o nosutil.o genutil.o subeos.o
+OUSOBJS = subous.o ousutil.o genutil.o 
+NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o genutil.o
 GRDOBJS = subgrd.o grdutil.o subsrt.o subcoord.o
 
 LAPLACE = sublpl.o submir.o subnos.o links.o sublnku.o \
@@ -747,6 +748,7 @@ bedload.o: param.h evmain.h
 bio3d.o: param.h
 bio3d_util.o: param.h donata.h
 eosinf.o: param.h
+feminf.o: param.h
 flux.o: regflux.h param.h links.h ev.h
 flxinf.o: param.h
 gotm3d.o: gotmturb.i
@@ -787,9 +789,12 @@ newcra.o: ev.h
 newexpl.o: param.h ev.h
 newfix.o: param.h bclfix.h
 newini.o: param.h
+newnohydro.o: param.h nohydlinks.h links.h ev.h
 newstab.o: param.h
 newtra.o: param.h ev.h
 newtvd.o: param.h ev.h tvd.h
+nonhydro_pard.o: param.h nohydlinks.h common.h
+nonhydro_spk.o: param.h nohydlinks.h
 nos2nc.o: param.h evmain.h basin.h
 nos_elab.o: param.h
 nosaver_basin.o: param.h basin.h
@@ -832,6 +837,7 @@ simsys_lp.o: param.h common.h
 simsys_pard.o: param.h common.h
 simsys_spk.o: param.h common.h
 splitflx.o: param.h
+subbc.o: subobc.h
 subbfm.o: param.h bfm_common.h
 subbndo.o: param.h subbndo.h
 subboxa.o: param.h modules.h ev.h basin.h subboxa.h
@@ -865,6 +871,7 @@ subnetcdf_hydro.o: netcdf.inc
 subnev.o: ev.h
 subnos.o: nosinf.h
 subnsh.o: modules.h
+suboff.o: param.h
 subousa.o: param.h
 subpar1.o: subpar.h
 subpard.o: param.h common.h

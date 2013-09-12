@@ -33,6 +33,7 @@ c 09.10.2009  ggu     sclvel for scaling arrow, lots of changes in color bar
 c 13.10.2009  ggu     changes to colbar, new inbox routines
 c 23.02.2010  ggu     for colorbar switch to generic color table
 c 01.06.2012  ggu     new circle item for legend, auto determ for ndec
+c 05.09.2013  ggu     adjust for scale distortion in ref and wind arrows
 c
 c***************************************************************
 
@@ -1214,7 +1215,9 @@ c plots wind vector
         integer gettime
 
         real u,v,s,d
-        real t,sc
+	real xt,yt
+	real fact,afact
+        real t,sc,r
         real wind(2)
         integer it,nintp,nvar,nread
         character*40 file,text
@@ -1253,12 +1256,14 @@ c plots wind vector
           iwtype = nint(getpar('iwtype'))
           lwwind = getpar('lwwind')
           scwind = getpar('scwind')
+	  call make_absolute1(xwind,ywind)
 
           xtwind = getpar('xtwind')
           ytwind = getpar('ytwind')
           stwind = nint(getpar('stwind'))
 	  call getfnm('wtext',wtext)
 	  call getfnm('wunit',wunit)
+	  call make_absolute1(xtwind,ytwind)
         end if
 
         if( iwtype .le. 0 ) return
@@ -1293,7 +1298,14 @@ c plots wind vector
         end if
 
         write(6,*) 'wind legend: ',it,x,y,s,d,u,v,scwind
-        call pfeil(x,y,u,v,scwind)
+	call spherical_fact(fact,afact)
+	!u = u / fact
+        !call pfeil(x,y,u,v,scwind)
+	!r = s*scwind
+	!call pcircle(x,y,r)
+	xt = x + u*scwind/fact
+	yt = y + v*scwind
+        call fcmpfeil(x,y,xt,yt,0.3)
 	call qlwidth(-1.)      !FIXME -> use negative number to reset
 
 	if( stwind .gt. 0 ) call qtxts(stwind)
@@ -1450,6 +1462,7 @@ c creates legend for velocity arrow and plots arrow
 	real dd			!length of velocity arrow
 	real val,val1,val2
 	real width,height
+	real afact,xt
 
 	integer iround,istell,ialfa
 	real rnext
@@ -1492,7 +1505,11 @@ c val	length of velocity vector in velocity (transport) coordinates
 	x0s = x0 + 0.5 * ( dx - dd )
 	y0s = y0 + 0.5 * dy
 
-	call pfeil(x0s,y0s,val,0.,scale)
+	!call pfeil(x0s,y0s,val,0.,scale)
+
+	call spherical_fact(fact,afact)
+	xt = x0s + val*scale/fact
+        call fcmpfeil(x0s,y0s,xt,0.,0.3)
 
 	call qtsize(title,width,height)
 	x0s = x0 + 0.5 * dx - 0.5 * width

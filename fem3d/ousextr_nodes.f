@@ -12,6 +12,7 @@ c 16.12.2011    ggu     bug: call to init_sigma_info and makehev (common hev)
 c 09.03.2012    ggu     bug: zenv must be common
 c 25.01.2013    ggu     code cleaned
 c 17.05.2013    ggu     prepared for write_profile
+c 05.09.2013    ggu     new call to get_layer_thickness()
 c
 c***************************************************************
 
@@ -179,7 +180,7 @@ c	---------------------------------------------------------
 	  z = znv(k)
 	  h = hkv(k)
 	  call write_profile_uv(it,k,ke,lmax,h,z
-     +				,uprv(1,k),vprv(1,k),hl)
+     +				,uprv(1,k),vprv(1,k),hlv,hl)
         end do
 
 	write(80,*) it,(znv(nodes(k)),k=1,nnodes)
@@ -212,7 +213,7 @@ c---------------------------------------------------------------
 
 c***************************************************************
 
-	subroutine write_profile_uv(it,k,ke,lmax,h,z,u,v,hl)
+	subroutine write_profile_uv(it,k,ke,lmax,h,z,u,v,hlv,hl)
 
 	implicit none
 
@@ -221,6 +222,7 @@ c***************************************************************
 	real z,h
 	real u(1)
 	real v(1)
+	real hlv(1)
 	real hl(1)
 
 	logical bcenter
@@ -233,7 +235,7 @@ c***************************************************************
 
         call get_sigma_info(nlvaux,nsigma,hsigma)
 
-	call get_layer_thickness(lmax,nsigma,hsigma,z,h,hl)
+	call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)
 	call get_bottom_of_layer(bcenter,lmax,z,hl,hl)	!orig hl is overwritten
 
         write(82,*) it,ke,k,lmax,z

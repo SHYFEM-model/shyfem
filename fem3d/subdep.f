@@ -24,6 +24,7 @@ c 18.10.2006	ccf	bug in makehkv -> no area multiplication
 c 16.12.2010	ggu	in depadj() do not set hm3v to constant
 c 17.05.2011	ggu	new routines to adjourn depth
 c 18.11.2011	ggu	new routine makehkv_minmax()
+c 05.09.2013	ggu	new routine set_sigma_hkv_and_hev() from newsig.f
 c
 c********************************************************************
 
@@ -466,28 +467,102 @@ c adjust depth to reference level %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 c********************************************************************
 
+	subroutine adjust_depth
+
+c adjusts depth values
+
+	implicit none
+
+	real hmin,hmax,href
+	real getpar
+
+c       call bocche     !FIXME
+
+        hmin=getpar('hmin')
+        hmax=getpar('hmax')
+        href=getpar('href')
+
+        call depadj(hmin,hmax,href)	!adjusts h=h-href and hmax<h<hmin
+
+	end
+
+c********************************************************************
+
+	subroutine set_depth
+
+c sets up depth arrays
+
+	implicit none
+
+	logical bsigma
+	integer nlv,nsigma
+	real hsigma
+
+	call get_sigma_info(nlv,nsigma,hsigma)
+	bsigma = nsigma .gt. 0
+
+	if( bsigma ) then	!sigma or hybrid layers
+	  call set_sigma_hkv_and_hev
+	else			!only zeta layers
+	  call make_hev
+	  call adjourn_depth_from_hev
+	end if
+
+	end
+
+c********************************************************************
+
+	subroutine make_hkv
+
+c adjusts nodal depth values
+
+	implicit none
+
+        real hkv(1)
+        common /hkv/hkv
+	real v1v(1)
+	common /v1v/v1v
+
+        call makehkv(hkv,v1v)		!computes hkv as average
+
+	end
+
+c********************************************************************
+
+	subroutine make_hev
+
+c adjusts elemental depth values
+
+	implicit none
+
+        real hev(1)
+        common /hev/hev
+
+        call makehev(hev)
+
+	end
+
+c********************************************************************
+
 	subroutine adjourne_depth_from_hm3v
 
 c adjourns hev and hkv from hm3v (if it has been changed)
 
-	real hev(1)
-	common /hev/hev
-	real hkv(1)
-	common /hkv/hkv
-	real v1v(1)
-	common /v1v/v1v
+	implicit none
 
-        call makehev(hev)
-        call makehkv(hkv,v1v)
+        call make_hev
+        call make_hkv
         !call set_last_layer		!FIXME
 
 	end
 
 c********************************************************************
 
-	subroutine adjourne_depth_from_hev
+	subroutine adjourn_depth_from_hev
 
 c adjourns hev and hkv from hm3v (if it has been changed)
+
+	implicit none
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -496,10 +571,6 @@ c adjourns hev and hkv from hm3v (if it has been changed)
 	common /hm3v/hm3v
 	real hev(1)
 	common /hev/hev
-	real hkv(1)
-	common /hkv/hkv
-	real v1v(1)
-	common /v1v/v1v
 
 	integer ie,ii
 
@@ -509,11 +580,145 @@ c adjourns hev and hkv from hm3v (if it has been changed)
 	  end do
 	end do
 
-        call makehkv(hkv,v1v)
+        call make_hkv
         !call set_last_layer		!FIXME
 
 	end
 
+c********************************************************************
+c********************************************************************
+c********************************************************************
+
+	subroutine set_sigma_hkv_and_hev
+
+c sets hkv and hev from hm3v
+c uses information about sigma layers and hsigma (hybrid)
+
+	implicit none
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+        integer nen3v(3,1)
+        common /nen3v/nen3v
+        real hm3v(3,1)
+        common /hm3v/hm3v
+        real hkv(1)
+        common /hkv/hkv
+        real hev(1)
+        common /hev/hev
+        real v1v(1)
+        common /v1v/v1v
+
+	logical berror
+	integer k,ie,ii
+	integer inc,ihmin,ihmax
+	integer nlv,nsigma
+	real hm,h
+	real hsigma
+
+c-------------------------------------------------------
+c initialize
+c-------------------------------------------------------
+
+	call get_sigma_info(nlv,nsigma,hsigma)
+
+	do k=1,nkn
+	  hkv(k) = 0.
+	  v1v(k) = 0.
+	end do
+
+	berror = .false.
+	inc = 0
+
+c-------------------------------------------------------
+c set hkv and hev
+c-------------------------------------------------------
+
+	do ie=1,nel
+	  hm = 0.
+	  do ii=1,3
+	    h = hm3v(ii,ie)
+	    k = nen3v(ii,ie)
+	    if( v1v(k) .eq. 0. ) then
+	      hkv(k) = h
+	      v1v(k) = 1.
+	    else
+	      if( h .ne. hkv(k) ) then
+		write(6,*) 'depth of node not unique: ',ie,k,h,hkv(k)
+	        inc = inc + 1
+	      end if
+	    end if
+	    hm = hm + h
+	  end do
+	  hev(ie) = hm / 3.
+	end do
+
+	if( inc .gt. 0 ) then
+	  write(6,*) 'number of occurences found: ',inc
+	  stop 'error stop set_hkv_and_hev: depth not unique'
+	end if
+
+c-------------------------------------------------------
+c check hkv
+c-------------------------------------------------------
+
+	do k=1,nkn
+	  if( v1v(k) .le. 0. ) then
+	    write(6,*) 'no depth in node: ',k
+	    berror = .true.
+	  end if
+	end do
+
+	if( berror ) stop 'error stop set_hkv_and_hev: no depth in node'
+
+c-------------------------------------------------------
+c check hsigma crossing
+c-------------------------------------------------------
+
+        do ie=1,nel
+          ihmin = 0
+          ihmax = 0
+          do ii=1,3
+            h = hm3v(ii,ie)
+            if( h .lt. hsigma ) then
+              ihmin = ihmin + 1
+            else if( h .gt. hsigma ) then
+              ihmax = ihmax + 1
+            end if
+          end do
+          if( ihmin .gt. 0 .and. ihmax .gt. 0 ) then
+	    write(6,*) 'hsigma crossing: ',ie,(hm3v(ii,ie),ii=1,3)
+	    berror = .true.
+	  end if
+	end do
+
+	if( berror ) then
+	  write(6,*) 'elements with hsigma crossing depths'
+	  stop 'error stop set_hkv_and_hev: hsigma crossing'
+	end if
+
+c-------------------------------------------------------
+c flatten elements of zeta coordinates
+c-------------------------------------------------------
+
+	do ie=1,nel
+	  hm = hev(ie)
+	  if( hm .gt. hsigma ) then
+	    do ii=1,3
+	      hm3v(ii,ie) = hm
+	    end do
+	  end if
+	end do
+
+c-------------------------------------------------------
+c end of routine
+c-------------------------------------------------------
+
+	end
+
+c********************************************************************
+c********************************************************************
 c********************************************************************
 
 	subroutine read_in_hev(file)

@@ -11,6 +11,7 @@ c 03.12.2001    ggu     cleaned up, hakata bay
 c 03.06.2011    ggu     routine adjourned
 c 25.01.2013    ggu     routines cleaned
 c 17.05.2013    ggu     prepared for write_profile
+c 05.09.2013    ggu     new call to get_layer_thickness()
 c
 c***************************************************************
 
@@ -156,7 +157,7 @@ c	---------------------------------------------------------
 	  z = 0.
 	  h = hkv(k)
 	  call write_profile_c(it,k,ke,lmax,ivar,h,z
-     +				,cv3(1,k),hl)
+     +				,cv3(1,k),hlv,hl)
 	end do
 
         write(iu,'(i10,30e12.4)') it,(cv3(1,nodes(i)),i=1,nnodes)
@@ -241,7 +242,7 @@ c handles unit numbers for files of single variables
 
 c***************************************************************
 
-	subroutine write_profile_c(it,k,ke,lmax,ivar,h,z,c,hl)
+	subroutine write_profile_c(it,k,ke,lmax,ivar,h,z,c,hlv,hl)
 
 	implicit none
 
@@ -250,6 +251,7 @@ c***************************************************************
 	integer ivar
 	real z,h
 	real c(1)
+	real hlv(1)
 	real hl(1)
 
 	logical bcenter
@@ -262,7 +264,7 @@ c***************************************************************
 
         call get_sigma_info(nlvaux,nsigma,hsigma)
 
-	call get_layer_thickness(lmax,nsigma,hsigma,z,h,hl)
+	call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)
 	call get_bottom_of_layer(bcenter,lmax,z,hl,hl)	!orig hl is overwritten
 
         write(82,*) it,ke,k,lmax,ivar

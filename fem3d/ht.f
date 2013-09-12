@@ -88,6 +88,7 @@ c 21.06.2012    ggu&aar	fluid mud variables integrated
 c 05.08.2012    ggu	bug because lam2dn and dmfd2n not defined
 c 10.05.2013    dbf	initialization for non hydrostatic routines
 c 13.06.2013    ggu	set/copydepth simplified, offline version
+c 05.09.2013    ggu	changed order of adjust depth and barene structures
 c
 c*****************************************************************
 
@@ -469,18 +470,19 @@ c-----------------------------------------------------------
 	call set_geom
 
 c-----------------------------------------------------------
+c inititialize time independent vertical arrays
+c-----------------------------------------------------------
+
+	call adjust_depth
+	call init_vertical
+
+c-----------------------------------------------------------
 c initialize barene data structures
 c-----------------------------------------------------------
 
 	call setweg(-1,n)
 	call setnod
 	call update_geom	!update ieltv - needs inodv
-
-c-----------------------------------------------------------
-c inititialize time independent vertical arrays
-c-----------------------------------------------------------
-
-	call init_vertical
 
 c-----------------------------------------------------------
 c initialize boundary conditions
@@ -500,21 +502,12 @@ c-----------------------------------------------------------
         call inirst             !restart
 	call cktime		!in case itanf has changed
 
-c----------------------------------------------- FIXME
-	call makehev(hev)
-	call makehkv(hkv,v1v)
-	call set_last_layer
-c----------------------------------------------- FIXME
+	call init_vertical	!do again after restart
 
 	call setnod
 
 	call setarea(nlvdim,areakv)
 
-	!call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)	!FIXME (see above)
-	!call copydepth(nlvdim,hdknv,hdkov,hdenv,hdeov)
-	!call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)
-
-	!call make_old_depth
 	call make_new_depth
 	call copy_depth
 	call make_new_depth

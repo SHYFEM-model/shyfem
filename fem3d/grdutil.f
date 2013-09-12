@@ -197,7 +197,7 @@ c-----------------------------------------------------------------
         if( nknh .eq. 0 .and. nelh .eq. 0 ) goto 99
         if( nknh .gt. 0 .and. nelh .gt. 0 ) goto 99
 
-        call set_depth(hkv,hev,ike)
+        call set_depth_value(hkv,hev,ike)
 
 c-----------------------------------------------------------------
 c general info
@@ -283,7 +283,7 @@ c handles depth values
 
 c*******************************************************************
 
-        subroutine set_depth(hkv,hev,ike)
+        subroutine set_depth_value(hkv,hev,ike)
 
 c sets hm3v values
 
