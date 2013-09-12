@@ -1,3 +1,75 @@
+version  6_1_67    12-09-2013    VERS_6_1_67
+
+========================================================== 12-09-2013 - 6_1_67
+
+c ./femplot/plotsim.f:
+c 05.09.2013	ggu	better handling of variable
+c
+c ./femplot/supsim.f:
+c 05.09.2013    ggu	endtime() and nplot introduced
+c
+c ./femplot/suptim.f:
+c 05.09.2013  ggu     new routine endtime()
+c
+c ./femplot/supout.f:
+c 03.09.2013  ggu     level_k2e -> level_k2e_sh, level_e2k -> level_e2k_sh
+c
+c ./femplot/supdep.f:
+c 05.09.2013    ggu     adapt to new get_layer_thickness()
+c
+c ./femplot/supano.f:
+c 05.09.2013  ggu     adjust for scale distortion in ref and wind arrows
+c
+c ./femplot/supint.f:
+c 05.09.2013  ggu     handle variable choice better
+c
+c ./fem3d/subver.f:
+c 12.09.2013	ggu	version 6.1.67
+c
+c ./fem3d/sigmautil.f:
+c 05.09.2013	ggu	new call interface to get_layer_thickness()
+c
+c ./fem3d/ousextr_nodes.f:
+c 05.09.2013    ggu     new call to get_layer_thickness()
+c
+c ./fem3d/newbcl.f:
+c 05.09.2013    ggu     limit salinity to [0,...]
+c
+c ./fem3d/newsig.f:
+c 05.09.2013    ggu	no set_sigma_hkv_and_hev()
+c
+c ./fem3d/nosextr_nodes.f:
+c 05.09.2013    ggu     new call to get_layer_thickness()
+c
+c ./fem3d/subnsa.f:
+c 22.08.2013	ggu     new string2ivar() and similar changes
+c 05.09.2013	ggu     nlsa now wants integer, better handling of what to read
+c
+c ./fem3d/ht.f:
+c 05.09.2013    ggu	changed order of adjust depth and barene structures
+c
+c ./fem3d/genutil.f:
+c 05.09.2013	ggu	new routine compute_levels_on_element()
+c
+c ./fem3d/nosutil.f:
+c 05.09.2013    ggu     new call to get_layer_thickness()
+c
+c ./fem3d/subdep.f:
+c 05.09.2013	ggu	new routine set_sigma_hkv_and_hev() from newsig.f
+c
+c ./fem3d/newini.f:
+c 23.08.2013    ggu	renamed adjust_k_depth() to make_hkv() -> to subdep
+c 23.08.2013    ggu	depth routines to subdep.f
+c 05.09.2013    ggu	in adjust_levels() allow for nlv==1
+c
+c ./fem3d/ousutil.f:
+c 05.09.2013    ggu     new call to get_layer_thickness()
+c
+c ./fem3d/subapn.f:
+c 05.09.2013	ggu	read_apn_file() needs integer now
+
+==========================================================
+
 version  6_1_66    19-06-2013    VERS_6_1_66   commit_2013-09-12
 
 version  6_1_66    19-06-2013    VERS_6_1_66   commit_2013-08-23
