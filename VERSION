@@ -1,3 +1,36 @@
+version  6_1_68    25-10-2013    VERS_6_1_68
+
+========================================================== 25-10-2013 - 6_1_68
+
+c ./femplot/col.f:
+c 01.10.2013    ggu     bug fix for valmin/valmax too close
+c
+c ./fem3d/tmp/new/newexpl_ggu5.f:
+c 13.09.2013	dbf&ggu	new sigma layer adjustment integrated
+c
+c ./fem3d/tmp/new/newexpl.f:
+c 13.09.2013	dbf&ggu	new sigma layer adjustment integrated
+c
+c ./fem3d/tmp/netcdf/ts2nc.f:
+c 25.09.2013    ggu     restructured
+c
+c ./fem3d/vp.f:
+c 04.10.2013    ggu     in optest better error handling
+c
+c ./fem3d/subver.f:
+c 25.10.2013	ggu	version 6.1.68
+c
+c ./fem3d/subnev.f:
+c 30.09.2013	ggu	new routines gradient_normal/tangent
+c
+c ./fem3d/netcdf.f:
+c 25.09.2013    ggu	new routines for writing time series
+c
+c ./fem3d/ts2nc.f:
+c 25.09.2013    ggu     restructured
+
+==========================================================
+
 version  6_1_67    12-09-2013    VERS_6_1_67   commit_2013-10-25
 
 version  6_1_67    12-09-2013    VERS_6_1_67
