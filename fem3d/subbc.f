@@ -268,7 +268,7 @@ c	----------------------------------------------------------
 	end if
 
 c	----------------------------------------------------------
-c	check if we are really doing an interpolation
+c	do interpolation
 c	----------------------------------------------------------
 
 	do i=1,nintp
@@ -740,6 +740,11 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
+	subroutine exfini(iunit,nintp,nvar,np,ndim,array)
+	real array(*)
+	call exfinit(iunit,nintp,nvar,np,ndim,array)
+	end
+
 	!subroutine obc_init(iunit,nintp,nvar,np,ndim,array)
 	subroutine exfinit(iunit,nintp,nvar,np,ndim,array)
 
@@ -779,7 +784,7 @@ c	-------------------------------------------------------------
         nnintp = nintp
 	if( iunit .le. 0 ) nnintp = 0   !reserve some space only for results
 
-	call exfcompsize(iunit,np0,nvar0,lmax,bformat,b3d)
+	call exfcompsize(iunit,np0,nvar0,lmax,bformat)
 
 c	if 0d
 c		np0 = 1

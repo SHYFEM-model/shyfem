@@ -108,6 +108,7 @@ c kflux()	node numbers defining sections
 
         implicit none
 
+	include 'param.h'
 	include 'subflxa.h'
 
         nsect = -1	!must still be initialized
@@ -121,12 +122,13 @@ c******************************************************************
 
         implicit none
 
+	include 'param.h'
 	include 'subflxa.h'
 
-	integer nfxdim
+	!integer nfxdim
         integer nrdveci
 
-	nfxdim = nfxflxdim
+	!nfxdim = nfxflxdim
 
         kfluxm = nrdveci(kflux,nfxdim)
 
@@ -148,6 +150,7 @@ c******************************************************************
 
         implicit none
 
+	include 'param.h'
 	include 'subflxa.h'
 
 	integer k,ii
@@ -180,6 +183,7 @@ c******************************************************************
 
 	implicit none
 
+	include 'param.h'
 	include 'subflxa.h'
 
 	integer nnode,ifirst,ilast
@@ -215,6 +219,7 @@ c******************************************************************
 
 	implicit none
 
+	include 'param.h'
 	include 'subflxa.h'
 
 	integer i,ii
@@ -438,6 +443,7 @@ c initializes flux routines finally (wrapper for flx_init)
 
 	implicit none
 
+	include 'param.h'
 	include 'subflxa.h'
 
 	call flx_init(kfluxm,kflux,nsect,iflux)

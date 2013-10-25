@@ -22,6 +22,10 @@ c 06.04.2009    ggu     new param.h, include basin.h, better error handling
 c 24.04.2009    ggu     new call to rdgrd()
 c 30.03.2012    ggu     new call to nodeinfo() (was bug)
 c
+c notes :
+c
+c to use static (non moveable) nodes please consult nbstatic.h
+c
 c***************************************************************
 
 	program adjele

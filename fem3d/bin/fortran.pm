@@ -29,25 +29,27 @@ sub new
 	my $self;
 
 	$self = 	{
-				 defined	  =>	{}
-				,functions	=>	{}
-				,called		  =>	{}
-				,calling	  =>	{}
-				,calledby	  =>	{}
-				,routines	  =>	{}
+				 defined	    =>	{}
+				,functions	    =>	{}
+				,called		    =>	{}
+				,calling	    =>	{}
+				,calledby	    =>	{}
+				,routines	    =>	{}
 
-				,ignore_files	      =>	{}
-				,ignore_routines	  =>	{}
+				,ignore_files	    =>	{}
+				,ignore_routines    =>	{}
 
-				,upper	    =>	0
+				,upper		    =>	0
+				,has_program	    =>	0
+				,no_sub_in_program  =>	0
 
 				,file		    =>	""
 				,line		    =>	""
-				,insection	=>	""
+				,insection	    =>	""
 				,code		    =>	[]
 
-				,calling_names		    =>	{}
-				,calling_stack		    =>	[]
+				,calling_names	    =>	{}
+				,calling_stack	    =>	[]
 			};
 
 	bless $self;
@@ -90,12 +92,14 @@ sub parse_files {
     print STDERR "reading $ARGV\n" unless $quiet;
     $self->{file} = $ARGV;
     $self->{line} = 0;
-		my $file_name = $self->upperlow($ARGV);
-		$ignore = $self->{ignore_files}->{$file_name};
-		print STDERR "ignoring file $ARGV\n" if $ignore;
+    $self->{has_program} = 0;	# is 1 if file contains program statement
+
+    my $file_name = $self->upperlow($ARGV);
+    $ignore = $self->{ignore_files}->{$file_name};
+    print STDERR "ignoring file $ARGV\n" if $ignore;
   }
 
-	next if $ignore;
+  next if $ignore;
 
   chomp;
 
@@ -108,7 +112,7 @@ sub parse_files {
 
   if( /^END$/i ) { $self->insert_item("E",""); }
   if( /^END(FUNCTION|SUBROUTINE)(\w*)/i ) { $self->insert_item("E",$2); }
-  if( /^PROGRAM(\w+)/i ) { $self->insert_item("P",$1); }
+  if( /^PROGRAM(\w+)/i ) { $self->{has_program}=1; $self->insert_item("P",$1); }
   if( /^SUBROUTINE(\w+)/i ) { $self->insert_item("S",$1); }
   if( /^FUNCTION(\w+)/i ) { $self->insert_item("F",$1); }
   if( /^BLOCKDATA(\w+)/i ) { $self->insert_item("B",$1); }
@@ -147,16 +151,34 @@ sub insert_item {
     $item->{type} = $type;
     $item->{file} = $self->{file};
 
-    $self->{routines}->{$name} = $item;
-    $self->{defined}->{$name}++;
-    $self->{functions}->{$name}++ if $type eq "F";
     $self->{insection} = $name;
+
+    $self->{functions}->{$name}++ if $type eq "F";
+
+    #print "| $name | $self->{no_sub_in_program} | $self->{has_program} |\n";
+
+    if( $self->{no_sub_in_program} == 0 or $self->{has_program} == 0 ) {
+      $self->{routines}->{$name} = $item;
+      $self->{defined}->{$name}++;
+    }
   }
 }
 
 #----------------------------------------------------------------
 #----------------------------------------------------------------
 #----------------------------------------------------------------
+
+sub show_routines {
+
+  my ($self) = @_;
+
+  print STDERR "list of routines:\n";
+  foreach my $name (keys %{$self->{routines}}) {
+    my $item = $self->{routines}->{$name};
+    my $file = $item->{file};
+    print "$name   $file\n";
+  }
+}
 
 sub show_functions {
 
@@ -165,7 +187,8 @@ sub show_functions {
   print STDERR "list of functions:\n";
   foreach my $name (keys %{$self->{functions}}) {
     my $count = $self->{defined}->{$name};
-    print STDERR "$count   $name\n";
+    $count = 0 unless $count;
+    print "$count   $name\n";
   }
 }
 

@@ -81,6 +81,11 @@ Version() {
   $prog < $CR 2> /dev/null | head -10
 }
 
+ErrorOption()
+{
+  echo "No such option : $1"
+}
+
 WriteTitle() {
 
   date=`date`
@@ -171,6 +176,7 @@ do
 	-vers)   Version; exit 1;;
 	-help)   HelpLong; exit 1;;
 	-h)      HelpLong; exit 1;;
+	-*)      ErrorOption $1; exit 1;;
 	 *)      break;;
   esac
   shift

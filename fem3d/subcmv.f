@@ -296,15 +296,18 @@ c cuthill-mckee algorithm for grades
 
 	ikmer=0
 	mmin=nkn
+	m = 0
+
 	write(6,*) 'Applying Cuthill-McKee algorithm...'
+	!write(6,*) jgrmin,jgrmax
 c        write(6,'(16x,a,7x,a,3x,a)') 'node','grade','bandwidth'
 
         do i=1,nkn
             if(ng(i).ge.jgrmin.and.ng(i).le.jgrmax) then
               call nodnum(nkn,iphv,kphv,i,knum)
               call cmalg(nkn,ngrdim,knum,m,iphv,kphv,ng,iknot)
-	      !write(6,*) 'ggu... ',i,ng(i),m
-	      call optest('in cmgrade',nkn,iphv,kphv)
+	      !write(6,*) i,ipv(i),ng(i),m,mmin
+	      call optest('inside cmgrade',nkn,ipv,iphv,kphv)
 c              write(6,'(8x,3i12)') ipv(i),ng(i),m
               if(m.lt.mmin) then
                 mmin=m

@@ -5,10 +5,10 @@
         integer nscflxdim
         parameter(nscflxdim=20)         !maximum number of sections
 
-        integer nsect,kfluxm,kflux(nfxflxdim)
+        integer nsect,kfluxm,kflux(nfxdim)
         common /kfluxflxc/ nsect,kfluxm,kflux
 
-        integer iflux(3,nfxflxdim)
+        integer iflux(3,nfxdim)
         common /ifluxflx/iflux
 
         save /kfluxflxc/,/ifluxflx/

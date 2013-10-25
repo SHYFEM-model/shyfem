@@ -77,6 +77,7 @@ c takes care of lat/lon coordinates
 	integer nlidim,nlndim
 	integer ike,idepth
 	integer nminimum
+	integer isphe
 	real ufact,umfact
 	real f(5)
 	logical bstop
@@ -200,16 +201,13 @@ c-----------------------------------------------------------------
         if( bstop ) stop 'error stop ex2in'
 
 c-----------------------------------------------------------------
-c handling depth and coordinates
-c
-c the program automatically checks if we have lat/lon coordinates
-c if for some ???ggu???
+c handling of depth and coordinates
 c-----------------------------------------------------------------
 
-	call set_dist(0)
-	call set_coords_ev(0)
+	call check_spheric_ev			!sets lat/lon flag
+	call get_coords_ev(isphe)
+	call set_dist(isphe)
 
-	call check_coords			!sets lat/lon flag
 	call set_depth_i(idepth,nknh,nelh)
 
 c-----------------------------------------------------------------
@@ -372,47 +370,6 @@ c handles depth values
 	do ie=1,nel
 	  if( hev(ie) .gt. -990 ) nelh = nelh + 1
 	end do
-
-	end
-
-c*******************************************************************
-
-	subroutine check_coords
-
-c checks if coordinates are lat/lon
-
-	implicit none
-
-	include 'param.h'
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-
-	integer k,isphe
-	real xmin,xmax,ymin,ymax
-
-	xmin = xgv(1)
-	xmax = xgv(1)
-	ymin = ygv(1)
-	ymax = ygv(1)
-
-	do k=1,nkn
-	  xmin = min(xmin,xgv(k))
-	  xmax = max(xmax,xgv(k))
-	  ymin = min(ymin,ygv(k))
-	  ymax = max(ymax,ygv(k))
-	end do
-
-	isphe = 1
-	if( xmin .lt. -180. .or. xmax .gt. 360. ) isphe = 0
-	if( ymin .lt. -180. .or. ymax .gt. 180. ) isphe = 0
-	call set_dist(isphe)
-
-	call set_coords_ev(isphe)
-	write(6,*) 'setting for coordinates: ',isphe
-	if( isphe .ne. 0 ) write(6,*) 'using lat/lon coordinates'
 
 	end
 

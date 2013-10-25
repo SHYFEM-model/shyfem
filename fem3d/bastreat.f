@@ -165,7 +165,7 @@ c-----------------------------------------------------------------
 c handling depth and coordinates
 c-----------------------------------------------------------------
 
-	call check_coords                       !sets lat/lon flag
+	call check_spheric_ev                       !sets lat/lon flag
 	call set_depth_check(nknh,nelh)
 
 	ike = 1
@@ -592,47 +592,6 @@ c*******************************************************************
 	end do
 
 	end
-
-c*******************************************************************
-
-        subroutine check_coords
-
-c checks if coordinates are lat/lon
-
-        implicit none
-
-        include 'param.h'
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-
-        integer k,isphe
-        real xmin,xmax,ymin,ymax
-
-        xmin = xgv(1)
-        xmax = xgv(1)
-        ymin = ygv(1)
-        ymax = ygv(1)
-
-        do k=1,nkn
-          xmin = min(xmin,xgv(k))
-          xmax = max(xmax,xgv(k))
-          ymin = min(ymin,ygv(k))
-          ymax = max(ymax,ygv(k))
-        end do
-
-        isphe = 1
-        if( xmin .lt. -180. .or. xmax .gt. 360. ) isphe = 0
-        if( ymin .lt. -180. .or. ymax .gt. 180. ) isphe = 0
-        !call set_dist(isphe)
-
-        call set_coords_ev(isphe)
-        write(6,*) 'setting for coordinates: ',isphe
-        if( isphe .ne. 0 ) write(6,*) 'using lat/lon coordinates'
-
-        end
 
 c*******************************************************************
 

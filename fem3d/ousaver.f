@@ -81,6 +81,7 @@ c reads ous file and averages with frequency nfreq
 	integer it,ie,i
         integer ierr,nread,ndry
         integer nknous,nelous,nlvous
+	integer ks
         real href,hzoff,hlvmin
 	real zmin,zmax
 	real umin,umax
@@ -105,6 +106,9 @@ c-------------------------------------------------------------------
 
 	nread = 0
 	nrec  = 0
+
+	ks = 6068	!special node for debug
+	ks = 0
 
 c-------------------------------------------------------------------
 c read in basin and header of simulation
@@ -213,8 +217,9 @@ c	---------------------------------
 	  call aver(nread,nlvdim,neldim,nel
      +			,zacum,uacum,vacum,zenv,utlnv,vtlnv,iwet,iwetv)
 	  call zaver(nkndim,neldim,nkn,nel,nen3v,zenv,znv,iwetv,aux)
-c	  call debug_write_node(it,nrec,nkndim,neldim,nlvdim,nkn,nel,nlv
-c     +		,nen3v,zenv,znv,utlnv,vtlnv)
+	  call debug_write_node(ks,it,nrec
+     +		,nkndim,neldim,nlvdim,nkn,nel,nlv
+     +		,nen3v,zenv,znv,utlnv,vtlnv)
           call wrous(nbout,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
 	  write(6,*) 'averaged record written ',nread,nrec,it
           if(ierr.ne.0.) goto 95
@@ -233,8 +238,9 @@ c-------------------------------------------------------------------
 	  call aver(nread,nlvdim,neldim,nel
      +			,zacum,uacum,vacum,zenv,utlnv,vtlnv,iwet,iwetv)
 	  call zaver(nkndim,neldim,nkn,nel,nen3v,zenv,znv,iwetv,aux)
-c	  call debug_write_node(it,nrec,nkndim,neldim,nlvdim,nkn,nel,nlv
-c     +		,nen3v,zenv,znv,utlnv,vtlnv)
+	  call debug_write_node(ks,it,nrec
+     +		,nkndim,neldim,nlvdim,nkn,nel,nlv
+     +		,nen3v,zenv,znv,utlnv,vtlnv)
           call wrous(nbout,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
 	  write(6,*) 'averaged record written ',nread,nrec,it
           if(ierr.ne.0.) goto 95
@@ -398,7 +404,7 @@ c	-------------------------------
 
 c******************************************************************
 
-	subroutine debug_write_node(it,nrec
+	subroutine debug_write_node_to_be_deleted(it,nrec
      +		,nkndim,neldim,nlvdim,nkn,nel,nlv
      +		,nen3v,zenv,znv,utlnv,vtlnv)
 

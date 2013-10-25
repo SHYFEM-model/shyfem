@@ -33,6 +33,7 @@ c 28.01.2011	ggu	new entry in ev for distance of nodes (17-19)
 c 23.03.2011	ggu	better set-up for isphe_ev
 c 24.11.2011	ggu	better routines to handle spherical coordinates
 c 30.08.2012	ggu	new routine is_spherical()
+c 30.09.2013	ggu	new routines gradient_normal/tangent
 c
 c***********************************************************
 
@@ -341,7 +342,7 @@ c checks if coordinates are lat/lon
 	isphe_ev = isphe
 	init_ev = 1
 
-	write(6,*) 'setting for coordinates: ',isphe
+	write(6,*) 'setting for coordinates: isphe = ',isphe
 	if( isphe .ne. 0 ) write(6,*) 'using lat/lon coordinates'
 
 	end
@@ -665,6 +666,124 @@ c returns aomega of element ie
 	include 'ev.h'
 
 	aomega_elem = ev(10,ie)
+
+	end
+
+c***********************************************************
+c***********************************************************
+c***********************************************************
+
+	subroutine gradient_normal(ie,ii,gx,gy,gxn,gyn)
+
+c computes gradient normal to given direction
+c
+c direction is given by the two nodes not identified by ii
+
+	implicit none
+
+	include 'ev.h'
+
+	integer ie	!element number [1-nel]
+	integer ii	!node that is not part of the direction [1-3]
+	real gx,gy	!original vector (gradient) 
+	real gxn,gyn	!projected vector (gradient) (return)
+
+	double precision bii,cii,gn
+
+	bii = ev(3+ii,ie)
+	cii = ev(6+ii,ie)
+
+	gn = (gx*bii + gy*cii) / (bii*bii + cii*cii)
+
+	gxn = gn * bii
+	gyn = gn * cii
+
+	end
+
+c***********************************************************
+
+	subroutine gradient_tangent(ie,ii,gx,gy,gxt,gyt)
+
+c computes gradient tangent to given direction
+c
+c direction is given by the two nodes not identified by ii
+
+	implicit none
+
+	include 'ev.h'
+
+	integer ie	!element number [1-nel]
+	integer ii	!node that is not part of the direction [1-3]
+	real gx,gy	!original vector (gradient) 
+	real gxt,gyt	!projected vector (gradient) (return)
+
+	double precision bii,cii,gn
+
+	bii = ev(3+ii,ie)
+	cii = ev(6+ii,ie)
+
+	gn = (gx*cii - gy*bii) / (bii*bii + cii*cii)
+
+	gxt =  gn * cii
+	gyt = -gn * bii
+
+	end
+
+c***********************************************************
+
+	subroutine gradient_normal_d(ie,ii,gx,gy,gxn,gyn)
+
+c computes gradient normal to given direction
+c
+c direction is given by the two nodes not identified by ii
+
+	implicit none
+
+	include 'ev.h'
+
+	integer ie		 !element number [1-nel]
+	integer ii		 !node that is not part of the direction [1-3]
+	double precision gx,gy	 !original vector (gradient) 
+	double precision gxn,gyn !projected vector (gradient) (return)
+
+	double precision bii,cii,gn
+
+	bii = ev(3+ii,ie)
+	cii = ev(6+ii,ie)
+
+	gn = (gx*bii + gy*cii) / (bii*bii + cii*cii)
+
+	gxn = gn * bii
+	gyn = gn * cii
+
+	end
+
+c***********************************************************
+
+	subroutine gradient_tangent_d(ie,ii,gx,gy,gxt,gyt)
+
+c computes gradient tangent to given direction
+c
+c direction is given by the two nodes not identified by ii
+
+	implicit none
+
+	include 'ev.h'
+
+	integer ie		 !element number [1-nel]
+	integer ii		 !node that is not part of the direction [1-3]
+	double precision gx,gy	 !original vector (gradient) 
+	double precision gxt,gyt !projected vector (gradient) (return)
+
+	double precision bii,cii,gn
+
+	bii = ev(3+ii,ie)
+	cii = ev(6+ii,ie)
+
+	gn = (gx*cii - gy*bii) / (bii*bii + cii*cii)
+
+	gxt =  gn * cii
+	gyt = -gn * bii
 
 	end
 

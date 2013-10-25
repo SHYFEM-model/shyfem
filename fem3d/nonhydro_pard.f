@@ -1,5 +1,7 @@
+
 ********************************************************************
-       subroutine nonhydro_solve_matrix_pard
+
+       subroutine nonhydro_solve_matrix
 
 	implicit none
 	include 'common.h'

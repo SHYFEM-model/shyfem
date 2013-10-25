@@ -11,6 +11,7 @@ c 21.08.2003    ggu     colini is called in colsetup
 c 04.10.2004    ggu     adjust amin and decimal point in colauto
 c 21.04.2009    ggu     allow for constant values (make 2 isolines)
 c 13.06.2013    ggu     small bug fix for computation of dval with rnext
+c 01.10.2013    ggu     bug fix for valmin/valmax too close
 c
 c**********************************************************
 c
@@ -276,7 +277,7 @@ c sets up color table in automatic mode
 	integer icolor
 	real colmin,colmax,dval
 	real amin,amax
-        real fact,val,fdec
+        real fact,val,fdec,eps
         integer ndec,idec
 
 	real getpar
@@ -356,6 +357,16 @@ c	  ----------------------------------------
 	      dval = 1.
 	      niso = 1
 	    end if
+	  end if
+
+c	  ----------------------------------------
+c	  be sure values computed make sense
+c	  ----------------------------------------
+
+	  eps = dval/max(abs(valmax),abs(valmin))
+	  if( eps .lt. 1.e-4 ) then
+	    dval = 1.
+	    niso = 1
 	  end if
 
 c	  ----------------------------------------

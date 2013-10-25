@@ -1159,7 +1159,7 @@ c this routine works with Z and sigma layers
 	  brup=0.
 	  crup=0.
 	  hhup=0.
-          do l=1,lmax
+          do l=1,lmax	!loop over layers to set up interface l-1
 	    bsigma = l .le. nsigma
 
             hlayer = hdeov(l,ie)		!layer thickness

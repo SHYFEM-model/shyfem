@@ -1,4 +1,4 @@
-c
+
 c $Id: subgotm.f,v 1.12 2008-12-18 16:28:51 georg Exp $
 c
 c gotm module
@@ -189,7 +189,10 @@ c computes turbulent quantities with GOTM model
 	double precision u_taus,u_taub
 
 	double precision hh(0:ndim)
+	double precision ddepth(nlvdim)
+	double precision plots(nlvdim,2)
 	double precision nn(0:ndim), ss(0:ndim)
+	double precision richgrad(0:ndim), richflux(0:ndim)
 
 	double precision num(0:ndim), nuh(0:ndim)
 	double precision ken(0:ndim), dis(0:ndim)
@@ -255,17 +258,25 @@ c---------------------------------------------------------------
 	common /difv/difv
 
 	integer ioutfreq,ks
-	integer k,l
+	integer i, k,l
 	integer laux
 	integer nlev
 	real g
 	real czdef,taubot
 	save czdef
+	real vismol 
+	save vismol
+	double precision nu
 
 	real h(nlvdim)
 	double precision depth		!total depth [m]
 	double precision z0s,z0b	!surface/bottom roughness length [m]
 	double precision rlmax
+	double precision dmf,dm0,nf
+	common /dm0/ dm0
+	common /dmf/ dmf
+	common /nf/ nf
+	
 	integer nltot
 	logical bwrite
 
@@ -277,14 +288,45 @@ c---------------------------------------------------------------
 	parameter(z0s_min=0.02)
 	real ubot,vbot,rr
 
+        double precision dmf_mud(nlvdim,nkndim)  !floc diameter
+        common /dmf_mud/dmf_mud
+
+	double precision tmp(nlvdim)
 	real dtreal
 	real getpar,areaele
+	real*8 rhop,tau0
+        double precision rhosed     !Mud primary particle density (kg/m3)
+        common /rhosed/ rhosed
+
+
+! fluid mud variables
+      real lambda(nlvdim,nkndim)        ! lambda array
+      common/lambda/lambda
+      real wsinkv(0:nlvdim,nkndim)   !Settling velocity array
+      common /wsinkv/wsinkv
+      real mudc(nlvdim,nkndim)   !Settling velocity array
+      common /mudc/mudc
+      real vts(0:nlvdim,nkndim),rig(nlvdim),rif(nlvdim)  
+      common /vts/vts
+      real taux(nlvdim), tauy(nlvdim), tautot(nlvdim), visk_bottom1
+      real visk_bottom2
+	double precision tau_y
+	real tstress(nlvdim)
+	real scn			! Schmidt number (=0.5)
+	integer imud
+	logical bmud
+	save bmud
 
 	integer namlst
 	character*80 fn	
-	integer icall
-	save icall
+	integer ius,id,itmcon,idtcon    !output parameter
+	save ius,id,itmcon,idtcon
+	integer icall, iwrite, icycle, testnode,lmudvisc
+	save icall, iwrite, icycle, testnode,lmudvisc
 	data icall / 0 /
+	data iwrite / 0 /
+	logical, save :: ldebug
+
 
 c------------------------------------------------------
 c documentation
@@ -304,8 +346,14 @@ c------------------------------------------------------
 
 	if( icall .eq. 0 ) then
 	  czdef = getpar('czdef')
+	  vismol = getpar('vismol')
+	  lmudvisc = getpar('lmudvisc')
 	  write(*,*) 'starting GOTM turbulence model'
-
+      imud = getpar('imud')
+	  bmud = imud .gt. 0
+      ldebug   = getpar('ldebug')
+      testnode = getpar('testnode')
+      icycle   = getpar('icycle')
 c         --------------------------------------------------------
 c         Initializes gotm arrays 
 c         --------------------------------------------------------
@@ -319,6 +367,12 @@ c         --------------------------------------------------------
           call getfnm('gotmpa',fn)
 
 	  call init_gotm_turb(10,fn,ndim)
+
+	  id = 22
+          ius = 0
+          call confop(ius,itmcon,idtcon,nlv,1,'lam')
+
+      call write_xfn
 
 	end if
 
@@ -346,7 +400,7 @@ c------------------------------------------------------
 
 	rlmax = 0.
 	nltot = 0
-
+    
 	do k=1,nkn
 
 	    call dep3dnod(k,+1,nlev,h)
@@ -367,15 +421,20 @@ c           ------------------------------------------------------
 	    ss(0) = ss(1)
 	    ss(nlev) = ss(nlev-1)
 
-c           ------------------------------------------------------
-c           compute layer thickness and total depth
-c           ------------------------------------------------------
+c       ------------------------------------------------------
+c       compute layer thickness and total depth
+c       ------------------------------------------------------
 
-	    depth = 0.
-	    do l=1,nlev
-	      hh(nlev-l+1) = h(l)
-	      depth = depth + h(l)
-	    end do
+            depth = 0.
+            ddepth = 0.
+            do l=1,nlev
+              hh(nlev-l+1) = h(l)
+              depth = depth + h(l)
+              ddepth(l) = depth 
+            end do
+            do l =1,nlev
+              ddepth(l) = depth - ddepth(l) 
+            end do
 
 c           ------------------------------------------------------
 c           compute surface friction velocity (m/s)
@@ -429,27 +488,43 @@ c           ------------------------------------------------------
      &				 ,num,nuh,ken,dis,len
      &				 )
 
+!           ------------------------------------------------------
+!           update viscosity from fluid mud
+!           ------------------------------------------------------
+        !bmud = .false.
+        !bmud = .true. !DEB
+        if ( bmud ) then
+!         ------------------------------------------------------
+!         compute effective viscosity for sediment rheological stresses
+!         ------------------------------------------------------
+!AR: take care nlev choosen maybe inconsistent with moving bottom
+          call set_bottom_visk(k,u_taub,depth,visk_bottom1,visk_bottom2) 
+          !write(*,*) visk_bottom1,visk_bottom2,num(0),num(1)
+          num(0) = max(num(0),dble(visk_bottom1))
+          num(1) = max(num(1),dble(visk_bottom2))
+          nuh(0) = num(0)/0.7
+          nuh(1) = num(1)/0.7
+          if (lmudvisc) call stress_mud(nlvdim,k,ldebug,testnode,icycle)
+        end if
 c           ------------------------------------------------------
 c           copy back to node vectors
 c           ------------------------------------------------------
 
 	    bwrite = .false.
+
 	    do l=0,nlev
 	      numv(l,k) = num(l)
 	      nuhv(l,k) = nuh(l)
 	      tken(l,k) = ken(l)
 	      eps(l,k)  = dis(l)
 	      rls(l,k)  = len(l)
-
 	      rlmax = max(rlmax,len(l))	!ggu
 	      if( len(l) .gt. 100. ) then
-		nltot = nltot + 1
-		bwrite = .true.
+		    nltot = nltot + 1
+		    bwrite = .true.
 	      end if
-
 	    end do
 
-	    bwrite = .false.
 	    if( bwrite ) then
 
 	      !write(45,*) it,k
@@ -489,21 +564,81 @@ c           ------------------------------------------------------
 	      difv(l,k) = nuh(laux)
 	    end do
 
+        if ( bmud ) then
+          call stress3d(nlvdim,k,tstress,ldebug,testnode,icycle)
+          call richardson(k,nlvdim,rif,rig,ldebug,testnode,icycle)
+!          call set_yield(nlvdim,k,tstress,ldebug,testnode,icycle)
+        end if
+
+        if (k == testnode .and. ldebug .and. 
+     &            mod(iwrite,icycle) .eq. 0) then
+          do i = 1, nlev
+            if (.false.) then
+          write(*,'(I10,7F15.8,7F15.10)') i,
+     &                             ddepth(i),
+     &                             ken(nlev-i+1),
+     &                             dis(nlev-i+1),
+     &                             visv(i,k),
+     &                             difv(i,k),
+     &                             rhov(i,k),
+     &                             -wsinkv(i,k)*1000,
+     &                             vts(i,k),
+     &                             tstress(i),
+     &                             mudc(i,k),
+     &                             uprv(i,k),
+     &                             dmf_mud(i,k)*1000,
+     &                             rig(i),
+     &                             rif(i)
+            endif
+          end do
+        end if
+
+          !write(*,*) '----------------------------------'
+          !write(*,*) testnode,ldebug,iwrite,icycle,mod(iwrite,icycle) 
+
+          if (k == testnode .and. ldebug .and. 
+     &            mod(iwrite,icycle) .eq. 0) then
+             do i = 1, nlev 
+               !write(*,*) testnode, i, k, wsinkv(i,k), 'from gotm'
+          write(1020,'(I10,7F15.8,5F15.8,2E15.6)') i,
+     &                             ddepth(i),
+     &                             ken(nlev-i+1),
+     &                             dis(nlev-i+1),
+     &                             num(nlev-i+1),
+     &                             nuh(nlev-i+1),
+     &                             rhov(i,k),
+     &                             -wsinkv(i,k)*1000,
+     &                             vts(i,k),
+     &                             tstress(i),
+     &                             mudc(i,k),
+     &                             uprv(i,k),
+     &                             dmf_mud(i,k)*1000,
+     &                             rig(i),
+     &                             rif(i)
+              end do
+          end if! testnode
+          if (k == testnode) iwrite = iwrite + 1
+
     1     continue
 	end do
 
 	call checka(nlvdim,shearf2,buoyf2,taub)
 
-	call write_xfn
+	if (mod(iwrite,icycle) .eq. 0) then
+		call write_xfn
+		write(*,*) '********* XFN OUTPUT **********',iwrite,icycle
+	endif
+
+	!write(*,*) sum(wsinkv), 'from gotm'
  
 	!write(70,*) 'rlmax: ',it,rlmax,nltot
 
-	ks = 0			!internal node number
-	ioutfreq = 3600		!output frequency
-	if( ks .gt. 0 .and. mod(it,ioutfreq) .eq. 0 ) then
-	  write(188,*) it,nlev,(visv(l,ks),l=1,nlev)
-	  write(189,*) it,nlev,(difv(l,ks),l=1,nlev)
-	end if
+!	ks = 0			!internal node number
+!	ioutfreq = 3600		!output frequency
+!	if( ks .gt. 0 .and. mod(it,ioutfreq) .eq. 0 ) then
+!	  write(188,*) it,nlev,(visv(l,ks),l=1,nlev)
+!	  write(189,*) it,nlev,(difv(l,ks),l=1,nlev)
+!	end if
 
 c------------------------------------------------------
 c end of routine
@@ -820,7 +955,7 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
         common /femtim/ itanf,itend,idt,nits,niter,it
 
         real rhov(nlvdim,nkndim)
-        common /rhov/rhov
+        common /rhov/rhov                                                       
 	real uprv(nlvdim,nkndim)
 	common /uprv/uprv
 	real vprv(nlvdim,nkndim)
@@ -829,6 +964,7 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
         common /upro/upro
         real vpro(nlvdim,1)
         common /vpro/vpro
+
 
 	integer k,l,nlev
 	real aux,dh,du,dv,m2,dbuoy
@@ -849,11 +985,12 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
  
         do k=1,nkn
           call dep3dnod(k,+1,nlev,h)
+
           do l=1,nlev-1
             dh = 0.5 * ( h(l) + h(l+1) )
             dbuoy = aux * ( rhov(l,k) - rhov(l+1,k) )
             n2 = dbuoy / dh
-	    n2max = max(n2max,n2)
+			n2max = max(n2max,n2)
             buoyf2(l,k) = n2
 
             du = 0.5*(
@@ -898,6 +1035,136 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 
 c**************************************************************
 
+      subroutine richardson(k,nldim,rif,rig,ldebug,testnode,icycle)
+
+        implicit none
+ 
+        integer nldim
+
+        include 'param.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        real grav,fcor,dcor,dirn,rowass,roluft
+        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+
+        real :: rif(nlvdim), rig(nlvdim)
+        real*8 :: dis(nlvdim)
+
+        real rhov(nlvdim,nkndim)
+        common /rhov/rhov
+        real uprv(nlvdim,nkndim)
+        common /uprv/uprv
+        real vprv(nlvdim,nkndim)
+        common /vprv/vprv
+        real mudc(nlvdim,1)        !Fluid mud concentration array (kg/m3)      !ccf
+        common /mudc/mudc
+        real upro(nlvdim,1)
+        common /upro/upro
+        real vpro(nlvdim,1)
+        common /vpro/vpro
+        double precision rhomud(nlvdim,1)         ! Mud floc particle density (kg/m3)
+        common /rhomud/ rhomud
+
+        real shearf2(nlvdim,nkndim)
+        common /saux1/shearf2
+        real buoyf2(nlvdim,nkndim)
+        common /saux2/buoyf2
+
+        double precision tken(0:nlvdim,nkndim)  !turbulent kinetic energy
+        double precision eps (0:nlvdim,nkndim)  !dissipation rate
+
+        common /tken_gotm/tken
+        common /eps_gotm/eps
+
+        logical ldebug
+        integer k,l,nlev,iwrite,icycle,testnode
+        real aux,dh,du,dv,m2,g_dot
+        real h(nlvdim), rho1, rho2
+        save iwrite
+        data iwrite/0/
+
+        if( nldim .ne. nlvdim ) stop 'error stop setbuoyf: dimension'
+
+        call dep3dnod(k,+1,nlev,h)
+ 
+        !write(*,*) sum(eps(:,k))
+
+        do l=1,nlev
+          if (buoyf2(l,k) .gt. 0.0000001) then
+            rig(l) = shearf2(l,k)/buoyf2(l,k)
+            rif(l) = 1./(1.-eps(l,k)/buoyf2(l,k))
+          endif
+          if (ldebug .and. k == testnode .and.
+     &                mod(iwrite,icycle) .eq. 0) then
+            write(1120,'(A10,I5,10F20.12)') 'richardson',
+     &      l, shearf2(l,k), buoyf2(l,k), eps(l,k), 
+     &      tken(l,k), rig(l), rif(l) 
+          endif
+        end do
+
+        if (k==testnode) iwrite = iwrite + 1
+      end subroutine
+c**************************************************************
+
+      subroutine stress3d(nldim,k,tstress,ldebug,testnode,icycle)
+
+! m * g = kg * m/s2 --- force 
+! kg * m/s2 / m2 = kg / (m * s2) --- stress
+! du/dz * nu * rho = 1/s * m2/s * kg/m3 = kg / (m * s2)
+!
+        implicit none
+
+        integer nldim
+
+        include 'param.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        real grav,fcor,dcor,dirn,rowass,roluft
+        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+
+        real tstress(nlvdim)
+        real vts(0:nlvdim,nkndim)
+        common /vts/vts
+        real rhov(nlvdim,nkndim)
+        common /rhov/rhov
+        real visv(0:nlvdim,nkndim)
+        common /visv/visv
+        double precision rhomud(nlvdim,1)         ! Mud floc particle density (kg/m3)
+        common /rhomud/ rhomud
+        real shearf2(nlvdim,nkndim)
+        common /saux1/shearf2
+
+        logical ldebug
+
+        integer k,l,nlev,testnode,icycle,iwrite
+        real aux,dh,du,dv,m2,dbuoy
+        real h(nlvdim), rho1, rho2, visk_bar, sr1, sr2
+        real cnpar,stress_x,stress_y, rhobar, g_dot
+        save iwrite
+        data iwrite/0/
+
+        if( nldim .ne. nlvdim ) stop 'error stop setbuoyf: dimension'
+        call dep3dnod(k,+1,nlev,h)
+        do l=1,nlev
+          g_dot = sqrt(shearf2(l,k))
+          rhobar = rhov(l,k)+1000.
+          visk_bar = visv(l,k) + vts(l,k)
+          tstress(l) = g_dot * visk_bar * rhobar
+          if (ldebug .and. k == testnode .and.
+     &                  mod(iwrite,icycle) .eq. 0) then
+            write(1119,'(I10,12F16.8)')l,g_dot,
+     &      vts(l,k),visv(l,k),
+     &      rhobar, tstress(l)
+          endif
+        end do
+        if (k == testnode) iwrite = iwrite + 1
+        tstress(nlev) = tstress(nlev-1)
+      end subroutine stress3d
+
+c**************************************************************
+
 	subroutine bnstress(czdef,taub,areaac)
 
 c computes bottom stress at nodes
@@ -926,8 +1193,12 @@ c taub (stress at bottom) is accumulated and weighted by area
         integer ilhv(1)
         common /ilhv/ilhv
 
-	integer k,ie,ii,n,nlev,ibase
-	real aj,taubot
+	integer k,ie,ii,n,nlev,ibase, imud
+	real aj,taubot,getpar
+
+	real areaele
+
+	imud = getpar('imud')
 
 c	---------------------------------------------------
 c	initialize arrays
@@ -941,7 +1212,8 @@ c	---------------------------------------------------
 c	---------------------------------------------------
 c	accumulate
 c	---------------------------------------------------
-
+!AR: mud 
+        if (imud == 0) then
         do ie=1,nel
  
           call elebase(ie,n,ibase)
@@ -953,9 +1225,22 @@ c	---------------------------------------------------
             k = nen3v(ibase+ii)
             taub(k) = taub(k) + taubot * aj
             areaac(k) = areaac(k) + aj
+            end do
           end do
-
-	end do
+        else
+          do ie=1,nel
+            call elebase(ie,n,ibase)
+            aj = ev(10,ie)
+            nlev = ilhv(ie)
+            do ii=1,n
+              k = nen3v(ibase+ii)
+!AR: take care with nlev assumed to be constant for the nodes
+              call set_bottom_stress(k,taubot)
+              taub(k) = taub(k) + taubot * aj
+              areaac(k) = areaac(k) + aj
+            end do
+          end do
+        endif
 
 c	---------------------------------------------------
 c	compute bottom stress

@@ -223,8 +223,9 @@ c         ----------------------------------------------------------
                   ss = ss + alpha * rfric ! rfric = ks for this parameterization
                 end do
                 ss = ss / 3.
-                z0bk(k) = max(z0bkmud(k),ss)
-                ss = rfric	!ARON: do you really need to compute ss above?
+                z0bk(k) = ss
+                !z0bk(k) = max(z0bkmud(k),ss)
+                !ss = rfric	!ARON: do you really need to compute ss above?
                 raux = cdf(hzg,ss)
                 rr = raux*uv/(hzg*hzg)
 		!Well not really there are mainls two issues ...

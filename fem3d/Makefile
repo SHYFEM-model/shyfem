@@ -61,7 +61,7 @@ ifeq ($(NETCDF),true)
   LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDF)
   LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDF).a
   INCL_NETCDF      = -I$(DIRINC_NETCDF)
-  EXENC            = nos2nc ous2nc
+  EXENC            = nos2nc ous2nc ts2nc
 endif
 
 PARALLEL_OBJ = subomp_dummy.o
@@ -184,7 +184,7 @@ HTOBJS = \
 	subrst.o subnosa.o subdif.o subreg.o \
 	atoxi3d.o atoxi.o subwwm.o kepsd.o keps_util.o \
 	subinv.o newexpl.o subrnd.o \
-	submet.o subrgf.o subcoord.o subgrd.o sort.o subfvl.o \
+	submet.o subrgf.o subcoord.o subgrd.o subsrt.o subfvl.o \
 	subtrace.o subproj.o subeos.o sigmautil.o \
 	submeteo.o submeteo1.o submeteo_inout.o \
 	subwrt.o subvintp.o \
@@ -285,7 +285,7 @@ OUSEXTR  = ousextr_nodes ousextr_records ousextr_gis \
 EXEEXTRA = bedload wincrea windcrea \
 		basproj baswork eosinf \
 		lgrinf \
-		nos2nc ous2nc \
+		nos2nc ous2nc ts2nc \
 		noswrite ouswork ouswork1 ouswrite prep_input \
 		basbox
 
@@ -450,13 +450,17 @@ nossum:  nossum.o $(NOSOBJS) $(OUTOBJS)
 noselab_time:  noselab_time.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-2nc: ous2nc nos2nc
+2nc: ous2nc nos2nc ts2nc
 
 ous2nc:  ous2nc.o $(OUSOBJS) $(OUTOBJS) $(NETCDF_OBJ)
 	$(LINKER) -o $@ $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) \
 			$(NETCDF_OBJ) $(LIBGS)
 
 nos2nc:  nos2nc.o $(NOSOBJS) $(OUTOBJS) $(NETCDF_OBJ)
+	$(LINKER) -o $@ $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) \
+			$(NETCDF_OBJ) $(LIBGS)
+
+ts2nc:  ts2nc.o $(NOSOBJS) $(OUTOBJS) $(NETCDF_OBJ)
 	$(LINKER) -o $@ $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) \
 			$(NETCDF_OBJ) $(LIBGS)
 

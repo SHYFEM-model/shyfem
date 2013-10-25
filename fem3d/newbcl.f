@@ -560,7 +560,7 @@ c functions
 	
 	    salt = max(0.,saltv(l,k))
 	    rhop = sigma(salt,tempv(l,k),pres) - sigma0
-	    !call rho_mud(rhop)	!ARON: please define this in submud
+	    call set_rhomud(k,l,rhop)
 
 	    nresid = nresid + 1
 	    dresid = dresid + (rhov(l,k)-rhop)**2

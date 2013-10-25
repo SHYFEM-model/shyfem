@@ -18,7 +18,7 @@ c****************************************************************
 
 c sets up vector with element links and a pointer to it
 c
-c only common array nen3v is needed, no aux array is needed
+c only array nen3v is needed, no aux array is needed
 c
 c ilinkv    pointer to links
 c lenkv     link to element numbers
@@ -260,7 +260,8 @@ c-------------------------------------------------------------------
 
           do ip=ip0,ip1
             ie = lenkv(ip)
-            if( ie .eq. 0 ) then
+            if( ie .eq. 0 ) then	!0 in index found
+              write(6,*) 'Node (internal) k = ',k
               write(6,*) k,ip0,ip1
               write(6,*) (lenkv(i),i=ip0,ip1)
               stop 'error stop checklenk: structure of lenkv (2)'
@@ -272,8 +273,9 @@ c-------------------------------------------------------------------
             ie1 = lenkv(ip)
             k0 = kbhnd(k,ie0)
             k1 = knext(k,ie1)
-            if( k0 .ne. k1 ) then
-              write(6,*) k,ip0,ip1,ip
+            if( k0 .ne. k1 ) then	!something is wrong
+              write(6,*) 'Node (internal) k = ',k
+              write(6,*) ip0,ip1,ip
               write(6,*) ie0,ie1,k0,k1
               write(6,*) ie0,(kthis(i,ie0),i=1,3)
               write(6,*) ie1,(kthis(i,ie1),i=1,3)
@@ -310,7 +312,7 @@ c sets up vector with node links
 c
 c ilinkv and lenkv must have already been set up
 c
-c only common array nen3v is needed, no aux array is needed
+c only array nen3v is needed, no aux array is needed
 c
 c ilinkv    pointer to links
 c lenkv     link to element numbers
@@ -399,8 +401,9 @@ c-------------------------------------------------------------------
 
           ip0=ilinkv(k)+1
           ip1=ilinkv(k+1)
-          if( linkv(ip1) .eq. 0 ) then
-            write(6,*) k,ip0,ip1
+          if( linkv(ip1) .eq. 0 ) then	!0 in index found
+            write(6,*) 'Node (internal) k = ',k
+            write(6,*) ip0,ip1
             write(6,*) (linkv(ip),ip=ip0,ip1)
             stop 'error stop checklink: internal error (1)'
           end if
@@ -413,8 +416,9 @@ c-------------------------------------------------------------------
 	    do while( ipk .le. ipk1 .and. linkv(ipk) .ne. k )
 	      ipk = ipk + 1
 	    end do
-	    if( ipk .gt. ipk1 ) then
-              write(6,*) k,ip0,ip1
+	    if( ipk .gt. ipk1 ) then	!node not found
+              write(6,*) 'Node (internal) k = ',k
+              write(6,*) ip0,ip1
               write(6,*) (linkv(i),i=ip0,ip1)
               write(6,*) k1,ipk0,ipk1
               write(6,*) (linkv(i),i=ipk0,ipk1)
@@ -508,14 +512,16 @@ c-------------------------------------------------------------------
 	  if( k1 .gt. 0 .and. k2 .gt. 0 ) then
 	    nbnd = nbnd + 1
 	    if( k .ne. kantv(2,k1) .or. k .ne. kantv(1,k2) ) then
-	      write(6,*) 'k,k1,k2: ',k,k1,k2
+              write(6,*) 'Node (internal) k = ',k
+	      write(6,*) 'k1,k2: ',k1,k2
 	      write(6,*) 'backlink: ',kantv(2,k1),kantv(1,k2)
 	      stop 'error stop checkkant: structure of kantv (2)'
 	    end if
 	  else if( k1 .eq. 0 .and. k2 .eq. 0 ) then
 	    nint = nint + 1
 	  else
-	    write(6,*) 'k,k1,k2: ',k,k1,k2
+            write(6,*) 'Node (internal) k = ',k
+	    write(6,*) 'k1,k2: ',k1,k2
 	    stop 'error stop checkkant: structure of kantv (1)'
 	  end if
         end do
@@ -662,16 +668,18 @@ c-------------------------------------------------------------------
 
         return
    98   continue
-        write(6,*) 'ie,ii,ien,nel: ',ie,ii,ien,nel
+        write(6,*) 'Element (internal) ie = ',ie
+        write(6,*) 'ii,ien,nel: ',ii,ien,nel
         write(6,*) 'k,kn,inn,ienn: ',k,kn,inn,ienn
         write(6,*) 'nen3v: ',ie,(kthis(ii,ie),ii=1,3)
         write(6,*) 'nen3v: ',ien,(kthis(ii,ien),ii=1,3)
         write(6,*) 'ieltv: ',ie,(ieltv(ii,ie),ii=1,3)
         write(6,*) 'ieltv: ',ien,(ieltv(ii,ien),ii=1,3)
-        stop 'error stop checkielt: corrupt data structure of ieltv'
+        stop 'error stop checkielt: corrupt data structure of ieltv (1)'
    99   continue
-        write(6,*) 'ie,ii,ien,nel: ',ie,ii,ien,nel
-        stop 'error stop checkielt: corrupt data structure of ieltv'
+        write(6,*) 'Element (internal) ie = ',ie
+        write(6,*) 'ii,ien,nel: ',ii,ien,nel
+        stop 'error stop checkielt: corrupt data structure of ieltv (2)'
 	end
 
 c****************************************************************

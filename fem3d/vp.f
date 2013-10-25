@@ -29,6 +29,7 @@ c 15.07.2011    ggu     calls to ideffi substituted
 c 15.11.2011    ggu     new routines for mixed depth (node and elem), hflag
 c 09.03.2012    ggu     delete useless error messages, handle nkn/nel better
 c 29.03.2012    ggu     use ngrdim1 to avoid too small dimension for ngrdim
+c 04.10.2013    ggu     in optest better error handling
 c
 c notes :
 c
@@ -935,13 +936,13 @@ c optimize band width
         bauto = iantw(' Automatic optimization ?') .gt. 0
 	if( bauto ) then
 	  call ininum(nkn,iphv,kphv)
-	  call optest('before optimization: ',nkn,iphv,kphv)
+	  call optest('before optimization: ',nkn,ipv,iphv,kphv)
 	  call cmgrade(nkn,ngrdim,ipv,iphv,kphv,ng,iknot,1,4)
-	  call optest('after Cuthill McKee: ',nkn,iphv,kphv)
+	  call optest('after Cuthill McKee: ',nkn,ipv,iphv,kphv)
 	  call revnum(nkn,iphv,kphv)
-	  call optest('after reversing nodes: ',nkn,iphv,kphv)
+	  call optest('after reversing nodes: ',nkn,ipv,iphv,kphv)
           call rosen(nkn,ngrdim,iphv,kphv,ng,iknot,kvert)
-	  call optest('after Rosen: ',nkn,iphv,kphv)
+	  call optest('after Rosen: ',nkn,ipv,iphv,kphv)
 	  return
 	end if
 
@@ -1424,12 +1425,13 @@ c**********************************************************
 
 c**********************************************************
 
-	subroutine optest(text,nkn,iphv,kphv)
+	subroutine optest(text,nkn,ipv,iphv,kphv)
 
 	implicit none
 
 	character*(*) text
 	integer nkn
+	integer ipv(1)
 	integer iphv(1)
 	integer kphv(1)
 
@@ -1444,11 +1446,15 @@ c**********************************************************
 
 	return
    99	continue
+	write(6,*) '*** Error in optest: '
 	write(6,*) text
 	write(6,*) 'error in pointers...'
-	write(6,*) 'node (internal): ',i
+	write(6,*) 'problem is close to following node...'
+	write(6,*) 'node (intern/extern): ',i,ipv(i)
 	write(6,*) i,nkn
 	write(6,*) iphv(i),kphv(i)
+	write(6,*) iphv(kphv(i)),kphv(iphv(i))
+	write(6,*) 'maybe the domain is not connected...'
 	stop 'error stop optest: pointers'
 	end
 

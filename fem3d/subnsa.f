@@ -509,7 +509,7 @@ c end of read %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	return
    97	continue
-	write(6,*) 'Not recognized section key word : ',name
+	write(6,*) 'Not recognized section key word : ',section
 	stop 'error stop : nlsa'
 	end
 

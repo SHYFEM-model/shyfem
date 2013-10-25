@@ -100,6 +100,8 @@ c marks nodes as static (not moveable)
 
 	implicit none
 
+	include 'nbstatic.h'
+
 	integer nkn
 	integer ianv(1)
         integer nbound(1)
@@ -107,8 +109,9 @@ c marks nodes as static (not moveable)
         integer k
 
         do k=1,nkn
-          if( ianv(k) .gt. 0 .and. nbound(k) .eq. 0 ) then
-            nbound(k) = ianv(k)
+          if( ianv(k) .eq. iastatic .and. nbound(k) .eq. 0 ) then
+	    write(6,*) '*** marking node ',k,' (internal) as static'
+            nbound(k) = nbstatic
           end if
         end do
 
@@ -127,11 +130,12 @@ c checks consistency of node and grade index
 	include 'param.h'
 	include 'grade.h'
 	include 'basin.h'
+	include 'nbstatic.h'
 	
 	integer iaux(nkndim)
 
 	logical bstop,bverb
-	integer n,k,ie,ii,kk,i
+	integer n,k,ie,ii,kk,i,ke
 	integer i1,i2,k1,k2
         integer nb
 
@@ -244,14 +248,18 @@ c is grade still ok?
 
 	do k=1,nkn
           nb = nbound(k)
-	  if( nb .ne. 0 .and. nb .ne. 4 ) then	!boundary node
+	  if( nb .ne. 0 .and. nb .ne. nbstatic ) then	!boundary node
 	    if( iaux(k) + 1 .ne. ngrade(k) ) then
 		write(6,*) 'chkgrd (5a): ',k,nbound(k),iaux(k),ngrade(k)
+		ke = ipv(k)
+		write(6,*) '   (problem in boundary node ',ke,' )'
 		bstop =.true.
 	    end if
 	  else				!internal node
 	    if( iaux(k) .ne. ngrade(k) ) then
 		write(6,*) 'chkgrd (5b): ',k,nbound(k),iaux(k),ngrade(k)
+		ke = ipv(k)
+		write(6,*) '   (problem in internal node ',ke,' )'
 		bstop =.true.
 	    end if
 	  end if
@@ -377,7 +385,7 @@ c finds out if node k is boundary node
 	include 'param.h'
 	include 'grade.h'
 
-	if( nbound(k) .gt. 0 ) then
+	if( nbound(k) .eq. 1 ) then
 	  isbound = .true.
 	else
 	  isbound = .false.

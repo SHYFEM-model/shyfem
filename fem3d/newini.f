@@ -1514,6 +1514,8 @@ c initializes bottom roughness z0bn(k)
 	end
 
 c*******************************************************************
+c*******************************************************************
+c*******************************************************************
 
 	subroutine set_spherical
 
@@ -1552,7 +1554,7 @@ c*******************************************************************
 
 	call get_coords_ev(isphe)
 
-        write(6,*) 'setting for coordinates: ',isphe
+        write(6,*) 'setting for coordinates: isphe = ',isphe
         if( isphe .eq. 0 ) then
           write(6,*) 'using cartesian coordinates'
         else

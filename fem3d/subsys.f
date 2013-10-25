@@ -1729,8 +1729,8 @@ c
 c |vtitle|		Title of the plot.
 c |xtitle|		Title for the x-axis.
 c |ytitle|		Title for the y-axis.
-c |vtitle|		Title for start point of the line. (No default)
-c |vtitle|		Title for end point of the line. (No default)
+c |ltitle|		Title for start point of the line. (No default)
+c |rtitle|		Title for end point of the line. (No default)
 
 	call addfnm('vtitle','Section Plot')	!title for plot
 	call addfnm('xtitle','Distance [m]')	!title for x-axis

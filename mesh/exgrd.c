@@ -95,6 +95,7 @@ void PurgeNodesInLines( Hashtable_type HL, Hashtable_type HN );
 int purge_number( int n, int *index );
 void CompressNumbers( void );
 void MakeAntiClockwise( void );
+void DeleteStrangeElements( void );
 
 
 
@@ -157,6 +158,7 @@ int main(int argc, char *argv[])
 	UnifyNodes();
 	CompressNumbers();
 	MakeAntiClockwise();
+	DeleteStrangeElements();
 
 	WriteFile();
 
@@ -880,7 +882,8 @@ float AreaElement( Hashtable_type H , Elem_type *pe )
         for(i=0;i<nvert;i++) {
                 pn = RetrieveByNodeNumber(H,pe->index[i]);
                 cn = &pn->coord;
-                area += co->x * cn->y - cn->x * co->y;
+                /* area += co->x * cn->y - cn->x * co->y; */
+		area += (co->x + cn->x) * (cn->y - co->y);
                 co = cn;
         }
 
@@ -903,4 +906,53 @@ void MakeAntiClockwise( void )
                 }
         }
 }
+
+void DeleteStrangeElements( void )
+
+{
+	StackTable delete;
+        Elem_type *pe;
+	int del,nvert,no,nn,i;
+	float tol;
+
+	if( !OpDeleteStrangeElements ) return;
+
+	fprintf(stderr,"Deleting degenerate elements with tol %f\n"
+					,OpTollerance);
+
+	delete = MakeStackTable();
+
+	tol = OpTollerance;
+
+        ResetHashTable(HEL);
+        while( (pe = VisitHashTableE(HEL)) != NULL ) {
+	    del = 0;
+            nvert=pe->vertex;
+            no = pe->index[nvert-1];
+            for(i=0;i<nvert;i++) {
+                nn = pe->index[i];
+		if( nn == no ) {
+                    printf("Element %d with non-unique nodes: %d %d deleted.\n",
+                                                pe->number,no,nn);
+		    del++;
+		}
+		no = nn;
+	    }
+	    if( del == 0 && (ABS(AreaElement( HNN , pe )) <= tol ) ) {
+                printf("Element %d with area too small: deleted.\n",
+                                                pe->number);
+		del++;
+	    }
+
+	    if( del > 0 ) Push(delete,(void *)pe);
+        }
+
+	while( (pe=(Elem_type *)Pop(delete)) != NULL ) {
+		DeleteElem(pe);
+	}
+
+	FreeStackTable(delete);
+}
+
+/***********************************************************************/
 

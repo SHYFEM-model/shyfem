@@ -9,10 +9,10 @@ use fortran;
 my $fortran = new fortran;
 
 my @ignore_files = (
-	     "subpar.f"
+		         "subpar.f"
 			,"subfnm.f"
 
-			,"subbc.f"
+			,"subsse.f"
 
 			,"subomp_dummy.f"
 
@@ -26,6 +26,10 @@ my @ignore_files = (
 			,"simsys_pard.f"
 			,"simsys_spk.f"
 
+			,"nonhydro_lp.f"
+			,"nonhydro_pard.f"
+			,"nonhydro_spk.f"
+
 			,"aquabc_fem_interface.f"
 			,"ecological_dummy.f"
 			,"subbfm.f"
@@ -35,13 +39,17 @@ my @ignore_files = (
 my $show_stats = 0;
 my $not_defined = 0;
 my $not_called = 0;
-my $quiet = 1;
+my $quiet = 0;
+
+$fortran->{no_sub_in_program} = 1;	# no insert of sub in files with main
 
 $fortran->set_ignore_files(\@ignore_files);
 $fortran->parse_files($quiet);
-#$fortran->show_functions();
 $fortran->check_uniquness();
 $fortran->parse_routines();
+
+#$fortran->show_functions();
+$fortran->show_routines();
 
 if( $show_stats ) {
 

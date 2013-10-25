@@ -43,6 +43,7 @@ extern int OpMaxRange;
 extern int OpUnifyNodes;
 extern int OpCompressNumbers;
 extern int OpMakeAntiClockwise;
+extern int OpDeleteStrangeElements;
 extern float OpMinDepth;
 extern float OpMaxDepth;
 extern float OpTollerance;

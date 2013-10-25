@@ -1,12 +1,13 @@
+c
+c netcdf utility routines - header
+c
 
-c has to be still commented ... FIXME
+        integer dimids_2d(5)	!dimensions for 2D case
+        integer dimids_3d(5)	!dimensions for 3D case
 
-        integer rec_varid
-        integer dimids_2d(5)
-        integer dimids_3d(5)
-        integer coord_varid(9)
+        integer rec_varid	!id for time
+        integer coord_varid(9)	!ids for coordinates
 
         common /nc_common/ rec_varid,dimids_2d,dimids_3d,coord_varid
-
         save /nc_common/
 

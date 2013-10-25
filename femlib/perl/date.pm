@@ -199,6 +199,15 @@ sub init_year		#helper function
 	$self->init_it($year,1,1,0,0,0);
 }
 
+sub init_date		#helper function
+{
+	my ($self,$date) = @_;
+
+	my ($year,$month,$day) = $self->unpack_date($date);
+
+	$self->init_it($year,$month,$day,0,0,0);
+}
+
 sub init_it
 {
 	my $self = shift;

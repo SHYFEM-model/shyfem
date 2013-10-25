@@ -15,6 +15,9 @@ Usage()
 if [ $# -eq 0 ]; then
   Usage
   exit 1
+elif [ $# -eq 1 -a $1 = "-h" ]; then
+  Usage
+  exit 1
 elif [ $# -eq 1 ]; then
   input=$1
   output=""

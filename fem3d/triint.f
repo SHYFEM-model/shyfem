@@ -7,9 +7,9 @@ c contents :
 c
 c function triint(u,x,y,z)	tri-linear interpolation in cube
 c function bilint(u,x,y)	bi-linear interpolation in square
-c subroutine exbil		exercise bi-linear interpolation
-c subroutine extri		exercise tri-linear interpolation
-c function grand()		random numbers
+c subroutine exbil_test		exercise bi-linear interpolation
+c subroutine extri_test		exercise tri-linear interpolation
+c function grand_tri()		random numbers
 c
 c revision log :
 c
@@ -162,8 +162,10 @@ c
 	end
 
 c*************************************************************
+c*************************************************************
+c*************************************************************
 
-	subroutine exbil
+	subroutine exbil_test
 
 c exercise bi-linear interpolation
 
@@ -193,7 +195,7 @@ c exercise bi-linear interpolation
 	  
 c*************************************************************
 
-	subroutine extri
+	subroutine extri_test
 
 c exercise tri-linear interpolation
 
@@ -210,7 +212,7 @@ c exercise tri-linear interpolation
 	real uvw(0:2)
 	real x,y,z
 	real val,compare
-	real triint,grand
+	real triint,grand_tri
 
 	real xyz(8,3)
 	data xyz /
@@ -262,8 +264,8 @@ c linear interpolation
 
 	uvw(j) = 0.5
 	do n=1,ndim
-	  uvw( mod(j+1,3) ) = grand()
-	  uvw( mod(j+2,3) ) = grand()
+	  uvw( mod(j+1,3) ) = grand_tri()
+	  uvw( mod(j+2,3) ) = grand_tri()
 	  x = uvw(0)
 	  y = uvw(1)
 	  z = uvw(2)
@@ -277,20 +279,20 @@ c linear interpolation
 
 c*************************************************************
 
-	function grand()
+	function grand_tri()
 
 c random numbers
 
 	implicit none
 
-	real grand
+	real grand_tri
 	real rand
 
 	integer iseed
 	save iseed
 	data iseed /37582629/
 
-	grand = rand(iseed)
+	grand_tri = rand(iseed)
 
 	end 
 
@@ -298,9 +300,9 @@ c*************************************************************
 c
 c uncomment next lines to run test routines
 
-c	program hptri
-c	call extri
-c	call exbil
+c	program hptri_main
+c	call extri_test
+c	call exbil_test
 c	end
 
 c*************************************************************

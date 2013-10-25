@@ -73,6 +73,8 @@ c computes statistics on grade
 
 	implicit none
 
+	include 'nbstatic.h'
+
 	character*(*) text
 	integer nkn,nmax
 	integer ngrade(1)
@@ -98,7 +100,8 @@ c computes statistics on grade
 
 	do k=1,nkn
 	  n = ngrade(k)
-	  nb = nbound(k)	! > 0 if on boundary
+	  nb = nbound(k)	! = 1 if on boundary
+	  if( nb .eq. nbstatic ) nb = 0	!NBSTATIC
 	  nto = nto + n
 	  if( n .lt. 0 ) stop 'error stop statgrd: internal error'
 	  nsa(n) = nsa(n) + 1
@@ -121,8 +124,6 @@ c	ntheo = 6*nin + 4*nbn + 6*nis - 6	!theoretical grade
 	ndiff = nto-naux	! must be divisible by 6, -6 for no island
 	nis = ndiff/6 + 1	! total number of islands
 
-	if( mod(ndiff,6) .ne. 0 ) write(6,*) 'error in element layout'
-
 	write(6,'(a,a)') 'statistics on grades: ',text
 	write(6,'(5x,a)') '  internal  boundary   islands    total grade'
 	write(6,'(5x,3i10,i15)') nin,nbn,nis,nto
@@ -130,6 +131,17 @@ c	ntheo = 6*nin + 4*nbn + 6*nis - 6	!theoretical grade
 	do i=0,nmax
 	  write(6,'(3x,i5,3i10)') i,nsa(i),nsi(i),nsb(i)
 	end do
+
+	if( mod(ndiff,6) .ne. 0 .and. nbn .gt. 0 ) then	!not on first call
+	  write(6,*) 'error in element layout'
+	  write(6,*) 'ndiff = ',ndiff
+	  write(6,*) 'nis = ',nis
+	  write(6,*) 'nto = ',nto
+	  write(6,*) 'naux = ',naux
+	  write(6,*) 'nin = ',nin
+	  write(6,*) 'nbn = ',nbn
+	  stop 'error stop statgrd: element layout'
+	end if
 
 	end
 
@@ -149,6 +161,10 @@ c marks boundary nodes and determines exact grade
 
 	integer k,ie,ii,n,nb
 	integer i1,i2
+	integer ks,i
+
+	ks = 885
+	ks = 0
 
 	write(6,*) 'grading nodes...'
 
@@ -164,6 +180,7 @@ c marks boundary nodes and determines exact grade
 	    k  = nen3v(ii,ie)
 	    n = ngrade(k)
 c	    nodes are inserted in counter-clockwise sense
+	    if( n + 2 .gt. 2*ngrdim ) goto 99
 	    ngri(n+1,k) = nen3v(i1,ie)
 	    ngri(n+2,k) = nen3v(i2,ie)
 	    ngrade(k) = ngrade(k) + 2
@@ -183,6 +200,10 @@ c	    nodes are inserted in counter-clockwise sense
 
 	write(6,*) 'grading nodes done ... boundary nodes: ',nb
 
+	return
+   99	continue
+	write(6,*) 'internal error: grade too high: ',n+2,2*ngrdim
+	stop 'error stop mkbound: ngrdim'
 	end
 
 c***********************************************************

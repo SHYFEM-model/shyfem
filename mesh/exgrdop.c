@@ -76,6 +76,7 @@ int OpMaxRange = -1;
 int OpUnifyNodes = 0;
 int OpCompressNumbers = 0;
 int OpMakeAntiClockwise = 0;
+int OpDeleteStrangeElements = 0;
 float OpMinDepth = NULLDEPTH;
 float OpMaxDepth = NULLDEPTH;
 float OpTollerance = 0.;
@@ -85,7 +86,7 @@ void SetOptions(int argc, char *argv[])
 
 {
 	int c;
-	char *options = "hinNeElLsSt:T:d:D:v:V:uo:Car:R:";
+	char *options = "hinNeElLsSt:T:d:D:v:V:uo:Caxr:R:";
 
 	while( (c=GetOpt(argc,argv,options)) != EOF ) {
 		switch(c) {
@@ -159,6 +160,9 @@ void SetOptions(int argc, char *argv[])
 			break;
 		case 'a' :
 			OpMakeAntiClockwise = 1;
+			break;
+		case 'x' :
+			OpDeleteStrangeElements = 1;
 			break;
 		default :
 			exit(1);
@@ -240,6 +244,7 @@ static void Help( void )
 	fprintf(stderr,"  -o#  tollerance for unify (def=0)\n");
 	fprintf(stderr,"  -C   compress numbers              ");
 	fprintf(stderr,"  -a   make elements anti-clockwise\n");
+	fprintf(stderr,"  -x   delete degenerate elements  \n");
 	fprintf(stderr,"\n");
 }
 

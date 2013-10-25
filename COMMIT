@@ -1,5 +1,64 @@
 ============================================================
 
+Fri Oct 25 12:09:34 CEST 2013
+
+fluid mud update, some bug fixes
+
+ .gitignore              |    1 +
+ LOG                     |  103 +++
+ fem3d/Makefile          |   12 +-
+ fem3d/basbathy.f        |   53 +--
+ fem3d/bastreat.f        |   43 +--
+ fem3d/bin/fortran.pm    |   65 ++-
+ fem3d/bin/newstruct.pl  |   16 +-
+ fem3d/links.f           |   38 +-
+ fem3d/netcdf.f          |  910 +++++++++++++++++++++++++-
+ fem3d/netcdf.h          |   13 +-
+ fem3d/new3di.f          |    9 +-
+ fem3d/newbcl.f          |    2 +-
+ fem3d/newexpl.f         |    2 +-
+ fem3d/newini.f          |    4 +-
+ fem3d/nonhydro_pard.f   |    4 +-
+ fem3d/ousaver.f         |   16 +-
+ fem3d/param.h           |    2 +-
+ fem3d/sort.f            |  148 -----
+ fem3d/subbc.f           |    9 +-
+ fem3d/subcmv.f          |    7 +-
+ fem3d/subflxa.f         |   10 +-
+ fem3d/subflxa.h         |    4 +-
+ fem3d/subgotm_mud.f     |  353 +++++++++-
+ fem3d/submud.f          | 1643 ++++++++++++++++++++++++++++++-----------------
+ fem3d/submud_dummy.f    |   56 ++-
+ fem3d/subn35.f          |    5 +-
+ fem3d/subnev.f          |  121 ++++-
+ fem3d/subnsa.f          |    2 +-
+ fem3d/subsys.f          |    4 +-
+ fem3d/triint.f          |   30 +-
+ fem3d/ts2nc.f           |  208 ++++++
+ fem3d/vp.f              |   18 +-
+ femadj/Makefile         |    3 +-
+ femadj/adjele.f         |    4 +
+ femadj/adjgrd.f         |   27 +-
+ femadj/adjvar.f         |   18 +-
+ femadj/nbstatic.h       |   21 +
+ femadj/param.h          |    2 +-
+ femanim/makeanim.sh     |    2 +-
+ fembin/plots            |    6 +
+ fembin/regularize       |    3 +
+ femdoc/final/shyfem.pdf |  Bin 270685 -> 270680 bytes
+ femdoc/final/shyfem.ps  |   28 +-
+ femdoc/shyfem.tex       |    2 +
+ femlib/perl/date.pm     |    9 +
+ femplot/col.f           |   13 +-
+ femplot/param.h         |    2 +-
+ mesh/exgrd.c            |   54 ++-
+ mesh/exgrdop.c          |    7 +-
+ mesh/exgrdop.h          |    1 +
+ param.h                 |    2 +-
+ 51 files changed, 3094 insertions(+), 1021 deletions(-)
+
+============================================================
+
 Thu Sep 12 17:09:13 CEST 2013
 
 New version 6_1_67

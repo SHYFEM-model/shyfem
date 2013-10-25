@@ -798,6 +798,9 @@ c common
         real rdistv(1)
         common /rdistv/rdistv
 
+        real vts(0:nlvdim,nkndim)
+        common /vts/vts
+
 c local
 
 	logical bbaroc,barea0                  !$$BAROC_AREA0
@@ -838,6 +841,7 @@ c	real bb,bbt,cc,cct,aa,aat,ppx,ppy,aux,aux1,aux2
         real rdist
         real xadv,yadv,fm,uc,vc,f,um,vm
 	real bpres,cpres
+	real vis
         
         real fxv(nlvdim,1)      !new HYDRO deb
         real fyv(nlvdim,1)
@@ -1004,7 +1008,10 @@ c compute element averaged turbulent viscosity
 	k2 = nen3v(2,ie)
 	k3 = nen3v(3,ie)
 	do l=0,ilevel
-	    alev(l) = vismol + (visv(l,k1)+visv(l,k2)+visv(l,k3))/3.
+	    vis = vismol
+	    vis = vis + (visv(l,k1)+visv(l,k2)+visv(l,k3))/3.
+	    vis = vis + (vts(l,k1)+vts(l,k2)+vts(l,k3))/3.
+	    alev(l) = vis
 	end do
 
 c start of vertical loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
