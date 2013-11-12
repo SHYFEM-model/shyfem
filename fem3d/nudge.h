@@ -1,8 +1,8 @@
 
-	integer ndgdim
+	integer ndgdim			!max size of variables
 	parameter (ndgdim = 50)
 
-	integer ndgdatdim
+	integer ndgdatdim		!max size for BC file
 	parameter (ndgdatdim = 10*ndgdim)
 
 	real andg_data(ndgdatdim)	!data of observations

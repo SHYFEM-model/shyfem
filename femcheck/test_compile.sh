@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# compiles with differetn available compilers
+# compiles with different available compilers
 #
 #--------------------------------------------------------
 
@@ -23,7 +23,7 @@ Clean_before()
 {
   rm -f *.out *.tmp
   mv --backup=numbered ./Rules.make ./rules/Rules.save
-  cp rules/Rules.dist ./Rules.make
+  cp ./rules/Rules.dist ./Rules.make
   [ -f allstdout.txt ] && rm allstdout.txt
   [ -f allstderr.txt ] && rm allstderr.txt
 }
@@ -35,6 +35,12 @@ Clean_after()
   mv -f ./rules/Rules.save ./Rules.make
   [ -f allstdout.txt ] && mv allstdout.txt allstdout.tmp
   [ -f allstderr.txt ] && mv allstderr.txt allstderr.tmp
+}
+
+SetUp()
+{
+  mkdir -p ./rules
+  [ -f ./rules/Rules.dist ] || cp ./Rules.make ./rules/Rules.dist
 }
 
 WrapUp()
@@ -88,6 +94,7 @@ Rules()
 
 #--------------------------------------------------------------------
 
+SetUp
 Clean_before
 
 for comp in $compilers

@@ -242,6 +242,7 @@ ggu_help: help_ggu
 help_ggu:
 	@echo "help_ggu            this screen"
 	@echo "test_compile        compiles model with different configs"
+	@echo "test_stable         compiles stable model with different configs"
 	@echo "dist                prepares distribution (Rules.make)"
 	@echo "rules_save          copies back last Rules.make file"
 	@echo "rules_ggu           copies back my Rules.make file"
@@ -250,6 +251,9 @@ help_ggu:
 
 test_compile:
 	@femcheck/test_compile.sh
+
+test_stable:
+	@femcheck/test_stable.sh
 
 revision:
 	 $(FEMBIN)/revision_last
