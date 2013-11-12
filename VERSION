@@ -1,3 +1,21 @@
+version  6_1_69    12-11-2013    VERS_6_1_69
+
+========================================================== 12-11-2013 - 6_1_69
+
+c ./femplot/supiso.f:
+c 29.10.2013    ggu     new routine pldif (plotting isolines between areas)
+c
+c ./fem3d/subver.f:
+c 12.11.2013	ggu	version 6.1.69	San Martino's release
+c
+c ./fem3d/new3di.f:
+c 29.10.2013    ggu	nudging implemented
+c
+c ./fem3d/ht.f:
+c 29.10.2013    ggu	nudging implemented
+
+==========================================================
+
 version  6_1_68    25-10-2013    VERS_6_1_68   commit_2013-11-12
 
 version  6_1_68    25-10-2013    VERS_6_1_68
