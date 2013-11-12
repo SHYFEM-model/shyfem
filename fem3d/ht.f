@@ -89,6 +89,7 @@ c 05.08.2012    ggu	bug because lam2dn and dmfd2n not defined
 c 10.05.2013    dbf	initialization for non hydrostatic routines
 c 13.06.2013    ggu	set/copydepth simplified, offline version
 c 05.09.2013    ggu	changed order of adjust depth and barene structures
+c 29.10.2013    ggu	nudging implemented
 c
 c*****************************************************************
 
@@ -348,6 +349,11 @@ c tidal potential
         real zeqv(nkndim)
         common /zeqv/zeqv
 
+c nudging
+
+        real andgzv(nkndim)             !contribution to z-computation
+        common /andgzv/andgzv
+
 c wave sub-module
 
         real waveh(nkndim)      !wave height [m]
@@ -564,6 +570,8 @@ c        call bclevvar_ini       !chao debora
 	call offline(1,iwhat)
 	call offline(2,iwhat)
 
+	call nudge_init
+
 	!call custom(it)		!call for initialization
 
 	write(6,*) 'starting time loop'
@@ -589,6 +597,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call dobefor3d
 
 	   call sp111(2)		!boundary conditions
+	   call nudge_zeta
 
            call read_pipe(ipipe,it,idcoup)
 	   

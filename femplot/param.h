@@ -21,11 +21,11 @@
 
 	integer nbdydim			!maximum particles for lagrange model
 
-	parameter ( nkndim = 11000 )
-	parameter ( neldim = 22000 )
-	parameter ( nlvdim = 1 )
+	parameter ( nkndim = 15000 )
+	parameter ( neldim = 27000 )
+	parameter ( nlvdim = 16 )
 
-	parameter ( mbwdim = 300 )
+	parameter ( mbwdim = 210 )
 	parameter ( ngrdim = 12 )
 
 	parameter ( nbcdim = 50 )

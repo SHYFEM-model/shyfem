@@ -162,6 +162,7 @@ c 19.02.2011    ccf	3D radiation stress
 c 04.11.2011    ggu	deleted computation of firction term (in subn35.f)
 c 29.03.2012    ggu	cleaned up, sp256v prepared for OpenMP
 c 10.05.2013    dbf&ggu new routines for non-hydro
+c 29.10.2013    ggu	nudging implemented
 c
 c******************************************************************
 
@@ -449,6 +450,9 @@ c common
         common /ddxv/ddxv, /ddyv/ddyv
         save /ddxv/, /ddyv/
 
+        real andgzv(nkndim)             !contribution to z-computation
+        common /andgzv/andgzv
+
 c local
 
 	logical bcolin
@@ -471,6 +475,7 @@ c	real um,vm,zm
 c	real fcora,beta,gamma
 	real hia(3,3),hik(3),amatr(3,3)
 	real b(3),c(3),z(3)
+	real andg,zndg(3)
 	real acu
 	real uold,vold
 	real dbb,dbc,dcb,dcc,abn,acn
@@ -513,6 +518,7 @@ c
 		c(i)=ev(i+6,ie)
 		z(i)=zov(kk)
 		z(i)=zeov(i,ie)		!ZEONV
+		zndg(i) = andgzv(kk)
 		zm=zm+z(i)
 	end do
 c
@@ -571,7 +577,10 @@ c
 	    hia(n,m) = aj * (amatr(n,m) + 12.*h11)
 	  end do
 	  acu = hia(n,1)*z(1) + hia(n,2)*z(2) + hia(n,3)*z(3)
-	  hik(n) = acu + 12.*aj*dt*( ut*b(n) + vt*c(n) )	!ZNEW
+	  !andg = hia(n,1)*zndg(1) + hia(n,2)*zndg(2) + hia(n,3)*zndg(3)
+	  !andg = dt*andg
+	  andg = 4.*aj*dt*zndg(n)
+	  hik(n) = acu + andg + 12.*aj*dt*( ut*b(n) + vt*c(n) )	!ZNEW
 	end do
 
 c	level boundary conditions

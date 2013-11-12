@@ -117,7 +117,8 @@ NEWOBJS = \
 	  newchao.o newparam.o \
 	  newcon.o newcon_1.o newconz.o \
 	  newchk.o newdum.o newfix.o \
-	  newbsig.o newtvd.o newstab.o newsig.o
+	  newbsig.o newtvd.o newstab.o newsig.o \
+	  newnudge.o
 
 # objects for library
 

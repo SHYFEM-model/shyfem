@@ -84,10 +84,11 @@ c-----------------------------------------------------------------
         call makehkv(hkv,haux)
 
 c-----------------------------------------------------------------
-c loop until no node and element is given
+c specific applications
 c-----------------------------------------------------------------
 
 	call flume
+	call distance
 
 c-----------------------------------------------------------------
 c end of routine
@@ -491,4 +492,68 @@ c areatr        element area (return value)
         end
 
 c*******************************************************************
+
+	subroutine distance
+
+	implicit none
+
+	include 'param.h'
+	include 'basin.h'
+
+	real d(nkndim)
+	real dd(nkndim)
+
+	integer k,ie,ii,it,is
+	integer ngood
+	real high
+
+	high = 1.e+30
+
+	do k=1,nkn
+	  d(k) = -1.
+	end do
+
+	d(100) = 0.
+	d(400) = 0.
+	d(1000) = 0.
+
+	ngood = 0
+	do k=1,nkn
+	  if( d(k) .ge. 0. ) ngood = ngood + 1
+	end do
+
+	do while( ngood .lt. nkn )
+
+	  do k=1,nkn
+	    if( d(k) .ge. 0. ) ngood = ngood + 1
+	  end do
+
+	  do ie=1,nel
+
+	    do k=1,nkn
+	      dd(k) = high
+	    end do
+
+	    it = 0
+	    is = 0
+	    do ii=1,3
+	      k = nen3v(ii,ie)
+	      if( d(k) .ge. 0 ) then
+	        it = it + 1
+	        is = is + ii
+	      end if
+	    end do
+	    
+	    if( it .eq. 1 ) then
+	    else if( it .eq. 2 ) then
+	    end if
+
+	  end do
+
+	end do
+
+	end
+
+c*******************************************************************
+
 

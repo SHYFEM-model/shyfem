@@ -220,12 +220,15 @@ c isabella
 c--------------------------------------------
 	integer ndim
 	!parameter (ndim=10)
-	parameter (ndim=5)
+	!parameter (ndim=5)
+	parameter (ndim=7)
 	real massv(ndim)
 	real taupar(ndim)
 	save taupar
         !data taupar /1.,1.,1.,1.,2.,2.,1.,0.5,0.1,3./
-        data taupar /0.,0.,0.,0.,0./
+        !data taupar /0.,0.,0.,0.,0./
+        data taupar /0.,0.,0.,0.,0.,0.,0./
+        !data taupar /1.,1.,1.,1.,1.,2.,2./
 
 c local
         integer istot

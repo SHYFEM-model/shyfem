@@ -1,5 +1,31 @@
 ============================================================
 
+Tue Nov 12 10:44:56 CET 2013
+
+nudging implemented (zeta)
+
+ .gitignore              |    1 +
+ LOG                     |   13 +
+ fem3d/Makefile          |    3 +-
+ fem3d/baswork.f         |   67 +++++-
+ fem3d/ht.f              |    9 +
+ fem3d/new3di.f          |   11 +-
+ fem3d/newconz.f         |    7 +-
+ fem3d/newnudge.f        |  376 +++++++++++++++++++++++++++
+ fem3d/nudge.h           |   31 +++
+ fem3d/param.h           |    8 +-
+ fem3d/subnsa.f          |    2 +
+ femadj/param.h          |    8 +-
+ femdoc/final/shyfem.pdf |  Bin 270680 -> 270693 bytes
+ femdoc/final/shyfem.ps  |   46 ++--
+ femlib/perl/bibtex.pm   |  656 +++++++++++++++++++++++++++++++++++++++++++++++
+ femplot/param.h         |    8 +-
+ femplot/supiso.f        |   53 ++++-
+ param.h                 |    8 +-
+ 18 files changed, 1261 insertions(+), 46 deletions(-)
+
+============================================================
+
 Fri Oct 25 12:11:10 CEST 2013
 
 New version 6_1_68

@@ -21,7 +21,7 @@ c 09.01.2009    ggu     deleted plcol0 (not used), new set_fxy_vals()
 c 09.01.2009    ggu     plot only part of isolines using make_single_isolines()
 c 23.02.2010    ggu     restructured and commented, use generic color table
 c 18.08.2011    ggu     use isoinp to decide if interpolate or not in element
-c 31.08.2011    ggu     new elementwise plotting (mode=3)
+c 29.10.2013    ggu     new routine pldif (plotting isolines between areas)
 c
 c****************************************************
 
@@ -148,7 +148,13 @@ c--------------------------------------------------------------------
 	  call make_single_isolines(isolin)		!set nriso,riso
           do ie=1,nel
 	    call set_fxy_vals(ie,flag,val,f,x,y,inull)
-	    if( inull .eq. 0 ) call pliso(f,x,y,0.,nriso,flag,riso)
+	    if( inull .eq. 0 ) then
+	      if( isoinp .gt. 0 ) then
+		call pliso(f,x,y,0.,nriso,flag,riso)
+	      else
+		call pldif(f,x,y,0.5,flag)
+	      end if
+	    end if
           end do
 	  call qcomm('finished plotting isolines')
         end if
@@ -156,6 +162,49 @@ c--------------------------------------------------------------------
 c--------------------------------------------------------------------
 c	end of routine
 c--------------------------------------------------------------------
+
+	end
+
+c***************************************************************
+
+	subroutine  pldif(f,x,y,dist,flag)
+
+c plots isolines between different regions
+
+	implicit none
+
+c arguments
+	real f(3)		!values at vertices
+	real x(3)		!x-coordinates of vertices
+	real y(3)		!y-coordinates of vertices
+	real dist		!distance between isolines
+	real flag		!null value -> do not plot
+
+c local
+	integer ii,i1
+	real xm,ym,xc,yc
+c save
+
+	xm = 0.
+	ym = 0.
+	do ii=1,3
+	  xm = xm + x(ii)
+	  ym = ym + y(ii)
+	end do
+	xm = xm / 3.
+	ym = ym / 3.
+
+	do ii=1,3
+	  i1 = mod(ii,3) + 1
+	  if( f(ii) .ne. flag .and. f(i1) .ne. flag ) then
+	    if( abs(f(ii)-f(i1)) .gt. dist ) then
+	      xc = 0.5*(x(ii)+x(i1))
+	      yc = 0.5*(y(ii)+y(i1))
+	      call qmove(xc,yc)
+	      call qplot(xm,ym)
+	    end if
+	  end if
+	end do
 
 	end
 

@@ -96,6 +96,7 @@ fem3d/ous2nc
 fem3d/ous2nc_reg
 fem3d/nos2nc
 fem3d/nos2nc_reg
+fem3d/ts2nc
 fem3d/lgrinf
 fem3d/baswork
 fem3d/ouswrite

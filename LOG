@@ -1,4 +1,17 @@
 
+29.10.2013
+
+c ./femplot/supiso.f:
+c 29.10.2013    ggu     new routine pldif (plotting isolines between areas)
+c
+c ./fem3d/new3di.f:
+c 29.10.2013    ggu     nudging implemented
+c
+c ./fem3d/ht.f:
+c 29.10.2013    ggu     nudging implemented
+
+
+
 25.10.2013
 
 c ./femplot/col.f:

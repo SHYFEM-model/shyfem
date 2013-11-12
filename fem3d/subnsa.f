@@ -592,6 +592,8 @@ c************************************************************************
           iv = 0
         else if( string(is:ie5) .eq. 'level' ) then
           iv = 1
+        else if( string(is:ie4) .eq. 'zeta' ) then
+          iv = 1
         else if( string(is:ie3) .eq. 'vel' ) then
           iv = 2
         else if( string(is:ie5) .eq. 'trans' ) then
