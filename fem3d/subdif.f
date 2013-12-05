@@ -282,6 +282,7 @@ c	  -----------------------------------------------------------------
 	      else
 	        if( w .gt. 0 ) berror = .true.
 	      end if
+	      if( abs(w-bc(iii,ii)) .gt. eps ) berror = .true.	!symmetric?
 	      wdifhv(ii,iii,ie) = bc(ii,iii)
 	    end do
 	    if( abs(wacu) .gt. eps ) berror = .true.
@@ -289,8 +290,8 @@ c	  -----------------------------------------------------------------
 	    wacu_aux(ii) = wacu
 	  end do
 
-	  !if( berror .and. idtype .ne. 0 ) then
-	  if( berror ) then
+	  if( berror .and. idtype .ne. 0 ) then
+	  !if( berror ) then
 	    write(6,*) 'diffweight: idtype = ',idtype
 	    write(6,*) '   ie (intern) = ',ie
 	    write(6,*) '   eps = ',eps

@@ -163,6 +163,7 @@ c 04.11.2011    ggu	deleted computation of firction term (in subn35.f)
 c 29.03.2012    ggu	cleaned up, sp256v prepared for OpenMP
 c 10.05.2013    dbf&ggu new routines for non-hydro
 c 29.10.2013    ggu	nudging implemented
+c 29.11.2013    ggu	zeta correction
 c
 c******************************************************************
 
@@ -246,6 +247,7 @@ c	data ielist /77,163,698,746,1346/
 ccccccccccccc
 ccccccccccccc
 c local
+	logical bzcorr
 	integer i,l,k,ie,ier,ii
 	integer nrand
 	integer iw,iwa
@@ -346,7 +348,7 @@ c---------------------------------------------------------- end of z solution
 c end of solution %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         call setzev     !znv -> zenv
-        call setuvd
+        call setuvd	!set velocities in dry areas
 
 	call baro2l 
 	!call setdepth(nlvdim,hdknv,hdenv,zenv,areakv) !only now zenv ready
@@ -363,7 +365,18 @@ c w-values %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	  call nonhydro_adjust
 	end if
 
-	call sp256w(saux1,saux2)	!$$VERVEL
+	call sp256w(v1v,saux1,saux2)	!$$VERVEL
+
+	bzcorr = .true.
+	bzcorr = .false.
+	if( bzcorr ) then
+	  call correct_zeta(v1v)
+          call setzev     !znv -> zenv
+	  call make_new_depth
+	  call sp256w(v1v,saux1,saux2)	!$$VERVEL
+	end if
+
+	call vol_mass(1)		!computes and writes total volume
 	call mass_conserve(saux1,saux2)	!check mass balance
 
 c compute velocities from transports %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1363,7 +1376,7 @@ c barotropic transports
 
 c******************************************************************
 
-	subroutine sp256w(vf,va)
+	subroutine sp256w(dzeta,vf,va)
 
 c computes vertical velocities
 c
@@ -1401,6 +1414,7 @@ c parameters
 	include 'param.h'
 c arguments
 	!real vv(0:nlvdim,1)	!$$VERVEL
+	real dzeta(1)
 	real vf(nlvdim,1)
 	real va(nlvdim,1)
 c common
@@ -1411,10 +1425,10 @@ c common
 	integer nen3v(3,1)
 	integer ilhv(1)
 	integer ilhkv(1)
-	real utlov(nlvdim,1),vtlov(nlvdim,1)
+	real utlov(nlvdim,1),vtlov(nlvdim,1),wlov(0:nlvdim,1)
 	real utlnv(nlvdim,1),vtlnv(nlvdim,1),wlnv(0:nlvdim,1)
 	common /nen3v/nen3v
-	common /utlov/utlov, /vtlov/vtlov
+	common /utlov/utlov, /vtlov/vtlov, /wlov/wlov
 	common /utlnv/utlnv, /vtlnv/vtlnv, /wlnv/wlnv
 	common /ilhv/ilhv
 	common /ilhkv/ilhkv
@@ -1428,11 +1442,12 @@ c local
 	integer k,ie,ii,kk,l,lmax
 	integer ilevel
         integer ibc,ibtyp
-	real aj,wbot,wdiv,ff,atop
+	real aj,wbot,wdiv,ff,atop,abot,wfold
 	real b,c
 	real am,az,azt,azpar,ampar
 	real ffn,ffo
 	real volo,voln,dt,dvdt,q
+	real dzmax,dz
 c statement functions
 	logical isein
         isein(ie) = iwegv(ie).eq.0
@@ -1476,6 +1491,7 @@ c aj * ff -> [m**3/s]     ( ff -> [m/s]   aj -> [m**2]    b,c -> [1/m] )
 		ffn = utlnv(l,ie)*b + vtlnv(l,ie)*c
 		ffo = utlov(l,ie)*b + vtlov(l,ie)*c
 		ff = ffn * az + ffo * azt
+		!ff = ffn
 		vf(l,kk) = vf(l,kk) + 3. * aj * ff
 		va(l,kk) = va(l,kk) + aj
 	    end do
@@ -1491,25 +1507,36 @@ c wlnv(nlv,k) is always 0
 c
 c dividing wlnv [m**3/s] by area [vv] gives vertical velocity
 c
-c in vv(l,k) is the area of the upper interface: a(l) = a_i(l-1)
+c in va(l,k) is the area of the upper interface: a(l) = a_i(l-1)
 c =>  w(l-1) = flux(l-1) / a_i(l-1)  =>  w(l-1) = flux(l-1) / a(l)
+
+	dzmax = 0.
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
 	  wlnv(lmax,k) = 0.
 	  debug = k .eq. 0
+	  abot = 0.
 	  do l=lmax,1,-1
+	    atop = va(l,k)
             voln = volnode(l,k,+1)
             volo = volnode(l,k,-1)
 	    dvdt = (voln-volo)/dt
 	    q = mfluxv(l,k)
 	    wdiv = vf(l,k) + q
+	    !wfold = azt * (atop*wlov(l-1,k)-abot*wlov(l,k))
+	    !wlnv(l-1,k) = wlnv(l,k) + (wdiv-dvdt+wfold)/az
 	    wlnv(l-1,k) = wlnv(l,k) + wdiv - dvdt
+	    abot = atop
 	    if( debug ) write(6,*) k,l,wdiv,wlnv(l,k),wlnv(l-1,k)
 	  end do
-	  !write(68,*) k,wlnv(0,k)
+	  dz = dt * wlnv(0,k) / va(1,k)
+	  dzmax = max(dzmax,abs(dz))
 	  wlnv(0,k) = 0.	! ensure no flux across surface - is very small
+	  dzeta(k) = dz
 	end do
+
+	!write(6,*) 'sp256w: dzmax = ',dzmax
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
@@ -1533,7 +1560,213 @@ c FIXME	-> only for ibtyp = 1,2 !!!!
 	      do l=0,nlv
 		wlnv(l,k) = 0.
 	      end do
+	      dzeta(k) = 0.
             end if
+	end do
+
+	return
+	end
+
+c******************************************************************
+
+	subroutine sp256wd(dzeta,vf,va)
+
+c computes vertical velocities (double precision)
+c
+c velocities are computed on S/T points (top and bottom of layer)
+c bottom velocity of the whole column is assumed to be 0
+c -> maybe change this
+c
+c computes volume differences and from these computes vertical
+c velocities at every time step so that the computed velocities
+c satisfy the continuity equation for every single time step
+c
+c wlnv is computed horizontally at a node and vertically
+c it is at the center of the layer -> there are nlv velocities
+c computed
+c
+c b,c are 1/m, (phi is dimensionless)
+c aj is m**2
+c utlnv... is m**2/s
+c dvol is in m**3/s
+c vv is m**2 (area)
+c
+c wlnv is first used to accumulate volume difference -> dvol
+c at the end it receives the vertical velocity
+c
+c wlnv (dvol)   aux array for volume difference
+c vv            aux array for area
+c
+c written on 27.08.91 by ggu  (from scratch)
+c 14.08.1998	ggu	w = 0 at open boundary nodes
+c 20.08.1998	ggu	some documentation
+
+	implicit none
+
+c parameters
+	include 'param.h'
+c arguments
+	!real vv(0:nlvdim,1)	!$$VERVEL
+	real dzeta(1)
+	real vf(nlvdim,1)
+	real va(nlvdim,1)
+c common
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer nlvdi,nlv
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /level/ nlvdi,nlv
+	integer nen3v(3,1)
+	integer ilhv(1)
+	integer ilhkv(1)
+	real utlov(nlvdim,1),vtlov(nlvdim,1)
+	real utlnv(nlvdim,1),vtlnv(nlvdim,1),wlnv(0:nlvdim,1)
+	common /nen3v/nen3v
+	common /utlov/utlov, /vtlov/vtlov
+	common /utlnv/utlnv, /vtlnv/vtlnv, /wlnv/wlnv
+	common /ilhv/ilhv
+	common /ilhkv/ilhkv
+	integer iwegv(1)
+	common /iwegv/iwegv
+        real mfluxv(nlvdim,1)
+        common /mfluxv/mfluxv
+	include 'ev.h'
+c local
+	logical debug
+	integer k,ie,ii,kk,l,lmax
+	integer ilevel
+        integer ibc,ibtyp
+	real azpar,ampar
+	real dt
+	double precision aj,wbot,wdiv,ff,atop
+	double precision b,c
+	double precision am,az,azt
+	double precision ffn,ffo
+	double precision volo,voln,ddt,dvdt,q
+	double precision dzmax,dz
+	double precision vfd(nlvdim,nkndim)
+	double precision vad(nlvdim,nkndim)
+	double precision wlndv(0:nlvdim,nkndim)
+c statement functions
+	logical isein
+        isein(ie) = iwegv(ie).eq.0
+	include 'testbndo.h'
+
+	logical is_zeta_bound
+	real volnode
+
+	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp256w'
+
+c initialize
+
+	call getazam(azpar,ampar)
+	az=azpar
+	am=ampar
+	azt = 1. - az
+	call get_timestep(dt)
+	ddt = dt
+
+	do k=1,nkn
+	  do l=1,nlv
+	    vfd(l,k)=0.
+	    vad(l,k)=0.
+	    wlndv(l,k) = 0.
+	  end do
+	end do
+
+c compute difference of velocities for each layer
+c
+c f(ii) > 0 ==> flux into node ii
+c aj * ff -> [m**3/s]     ( ff -> [m/s]   aj -> [m**2]    b,c -> [1/m] )
+
+	do ie=1,nel
+	 !if( isein(ie) ) then		!FIXME
+	  aj=4.*ev(10,ie)		!area of triangle / 3
+	  ilevel = ilhv(ie)
+	  do l=1,ilevel
+	    do ii=1,3
+		kk=nen3v(ii,ie)
+		b = ev(ii+3,ie)
+		c = ev(ii+6,ie)
+		ffn = utlnv(l,ie)*b + vtlnv(l,ie)*c
+		ffo = utlov(l,ie)*b + vtlov(l,ie)*c
+		ff = ffn * az + ffo * azt
+		vfd(l,kk) = vfd(l,kk) + 3. * aj * ff
+		vad(l,kk) = vad(l,kk) + aj
+	    end do
+	  end do
+	 !end if
+	end do
+
+c from vel difference get absolute velocity (w_bottom = 0)
+c	-> wlnv(nlv,k) is already in place !
+c	-> wlnv(nlv,k) = 0 + wlnv(nlv,k)
+c w of bottom of last layer must be 0 ! -> shift everything up
+c wlnv(nlv,k) is always 0
+c
+c dividing wlnv [m**3/s] by area [vv] gives vertical velocity
+c
+c in va(l,k) is the area of the upper interface: a(l) = a_i(l-1)
+c =>  w(l-1) = flux(l-1) / a_i(l-1)  =>  w(l-1) = flux(l-1) / a(l)
+
+	dzmax = 0.
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  wlndv(lmax,k) = 0.
+	  debug = k .eq. 0
+	  do l=lmax,1,-1
+            voln = volnode(l,k,+1)
+            volo = volnode(l,k,-1)
+	    dvdt = (voln-volo)/ddt
+	    q = mfluxv(l,k)
+	    wdiv = vfd(l,k) + q
+	    wlndv(l-1,k) = wlndv(l,k) + wdiv - dvdt
+	    if( debug ) write(6,*) k,l,wdiv,wlndv(l,k),wlndv(l-1,k)
+	  end do
+	  dz = ddt * wlndv(0,k) / vad(1,k)
+	  dzmax = max(dzmax,abs(dz))
+	  wlnv(0,k) = 0.	! ensure no flux across surface - is very small
+	  dzeta(k) = dz
+	end do
+
+	write(6,*) 'dzmax: ',dzmax
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  debug = k .eq. 0
+	  do l=2,lmax
+	    atop = vad(l,k)
+	    if( atop .gt. 0. ) then
+	      wlndv(l-1,k) = wlndv(l-1,k) / atop
+	      if( debug ) write(6,*) k,l,atop,wlndv(l-1,k)
+	    end if
+	  end do
+	end do
+
+c set w to zero at open boundary nodes (new 14.08.1998)
+c
+c FIXME	-> only for ibtyp = 1,2 !!!!
+
+	do k=1,nkn
+            !if( is_external_boundary(k) ) then	!bug fix 10.03.2010
+            if( is_zeta_bound(k) ) then
+	      do l=0,nlv
+		wlndv(l,k) = 0.
+	      end do
+	      dzeta(k) = 0.
+            end if
+	end do
+
+c copy double precision values to real values
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  wlnv(0,k) = wlndv(0,k)
+	  do l=1,lmax
+	    wlnv(l,k) = wlndv(l,k)
+	    vf(l,k) = vfd(l,k)
+	    va(l,k) = vad(l,k)
+	  end do
 	end do
 
 	return
@@ -1827,6 +2060,27 @@ c momentum input for yaron
 	      fyv(lin,ie) = fyv(lin,ie) - fact * rny
 	    end if
 	  end do
+	end do
+
+	end
+
+c*******************************************************************
+
+	subroutine correct_zeta(dzeta)
+
+	implicit none
+
+	real dzeta(1)		!zeta correction
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	real znv(1)
+	common /znv/znv
+
+	integer k
+
+	do k=1,nkn
+	  znv(k) = znv(k) + dzeta(k)
 	end do
 
 	end

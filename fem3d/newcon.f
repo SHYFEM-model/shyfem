@@ -172,6 +172,7 @@ c 01.06.2011    ggu     wsink for stability integrated
 c 12.07.2011    ggu     run over nlv, not nlvdim, vertical_flux() for lmax>1
 c 15.07.2011    ggu     call vertical_flux() anyway (BUG)
 c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
+c 03.12.2013    ggu&deb bug fix for horizontal diffusion
 c
 c*********************************************************************
 
@@ -758,6 +759,7 @@ c local
 	double precision aa,aat,ad,adt
 	double precision aj,rk3,rv,aj4,aj12
 	double precision hmed,hmbot,hmtop
+	double precision hmotop,hmobot,hmntop,hmnbot
 	double precision rvptop,rvpbot
 	double precision dt,w,aux
 	double precision b(3),c(3),f(3)
@@ -920,10 +922,11 @@ c	----------------------------------------------------------------
 
 	do k=1,nkn
 	  do l=0,nlv
-c	    wprv(l,k) =  	(
-c     +				   az*wlnv(l,k) 
-c     +				+ azt*wlov(l,k) 
-c     +				)
+!	    wprv(l,k) =  	(
+!     +				   az*wlnv(l,k) 
+!     +				+ azt*wlov(l,k) 
+!     +				)
+!	    wprv(l,k) = wlov(l,k)	!BUGFIX -> see definition in sp256w
 	    wprv(l,k) = wlnv(l,k)	!BUGFIX -> see definition in sp256w
 	  end do
 	end do
@@ -952,7 +955,8 @@ c	----------------------------------------------------------------
 
         do l=1,ilevel
 	  hdv(l) = hdeov(l,ie)		!use old time step -> FIXME
-          haver(l) = 0.5 * ( hdeov(l,ie) + hdenv(l,ie) )
+          !haver(l) = 0.5 * ( hdeov(l,ie) + hdenv(l,ie) )
+          haver(l) = rso*hdenv(l,ie) + rsot*hdeov(l,ie)
 	  present(l) = 1.
 	  do ii=1,3
 	    k=kn(ii)
@@ -1051,20 +1055,24 @@ c	  time dependent layer thickness
 
 	  rvptop = difv(l-1,k) + difmol
 	  rvpbot = difv(l,k) + difmol
-	  hmtop = 2. * rvptop * present(l-1) / (hdv(l-1)+hdv(l))
-	  hmbot = 2. * rvpbot * present(l+1) / (hdv(l)+hdv(l+1))
+	  !hmtop = 2. * rvptop * present(l-1) / (hdv(l-1)+hdv(l))
+	  !hmbot = 2. * rvpbot * present(l+1) / (hdv(l)+hdv(l+1))
+	  hmotop =2.*rvptop*present(l-1)/(hold(l-1,ii)+hold(l,ii))
+	  hmobot =2.*rvpbot*present(l+1)/(hold(l,ii)+hold(l+1,ii))
+	  hmntop =2.*rvptop*present(l-1)/(hnew(l-1,ii)+hnew(l,ii))
+	  hmnbot =2.*rvpbot*present(l+1)/(hnew(l,ii)+hnew(l+1,ii))
 
 	  fd(ii) = adt * ( 
-     +			(cl(l,ii)-cl(l+1,ii))*hmbot -
-     +			(cl(l-1,ii)-cl(l,ii))*hmtop
+     +			(cl(l,ii)-cl(l+1,ii))*hmobot -
+     +			(cl(l-1,ii)-cl(l,ii))*hmotop
      +			  )
 
 c	  clce(l,ii) = clce(l,ii) - adt * ( hmtop + hmbot )
 c	  clme(l,ii) = clme(l,ii) + adt * ( hmtop )
 c	  clpe(l,ii) = clpe(l,ii) + adt * ( hmbot )
-	  clc(l,ii) = clc(l,ii) + ad * ( hmtop + hmbot )
-	  clm(l,ii) = clm(l,ii) - ad * ( hmtop )
-	  clp(l,ii) = clp(l,ii) - ad * ( hmbot )
+	  clc(l,ii) = clc(l,ii) + ad * ( hmntop + hmnbot )
+	  clm(l,ii) = clm(l,ii) - ad * ( hmntop )
+	  clp(l,ii) = clp(l,ii) - ad * ( hmnbot )
 
 c	  ----------------------------------------------------------------
 c	  contributions from vertical advection
@@ -1155,7 +1163,7 @@ c		minus the sum of these nodes for the flux of this node
 	end if
 
 c	----------------------------------------------------------------
-c	TVD scheme start
+c	horizontal TVD scheme start
 c	----------------------------------------------------------------
 
         if( btvd ) then
@@ -1171,7 +1179,7 @@ c	----------------------------------------------------------------
 	end if
 
 c	----------------------------------------------------------------
-c	TVD scheme finish
+c	horizontal TVD scheme finish
 c	----------------------------------------------------------------
 
 c	----------------------------------------------------------------
@@ -1188,8 +1196,9 @@ c	----------------------------------------------------------------
 
 	do ii=1,3
 	  k=kn(ii)
-          hmed = hold(l,ii)                      !new ggu   !HACK
-          !hmed = haver(l)                      !new ggu   !HACK
+          !hmed = hold(l,ii)                  !ERROR - do not use this!!!
+          hmed = haver(l)                    !new ggu   !HACK
+          !hmed = hdv(l)                      !new ggu   !HACK
 	  cdummy = aj4 * ( hold(l,ii)*cl(l,ii)
      +				+ dt *  ( 
      +					    hold(l,ii)*fnudge(ii)

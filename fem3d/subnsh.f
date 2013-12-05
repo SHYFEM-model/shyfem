@@ -307,7 +307,7 @@ c---------------------------------------------------------------
 	common /hlv/hlv
 c---------------------------------------------------------------
 
-	character*6 section,extra
+	character*6 section,extra,last
 	integer nsc,num
 c	integer nrdsec,nrdveci,nrdvecr
 	integer nrdsec,nrdvecr
@@ -319,6 +319,7 @@ c	integer nrdsec,nrdveci,nrdvecr
 
 	nsc = 0
 	if(iunit.le.0) goto 63
+	last = ' '
 
 	call nrdini(iunit)
 
@@ -383,6 +384,7 @@ c			call rdoxy
 			end if
 		end if
 
+		last = section
 	end do		!loop over sections
 
 c end of read %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -396,6 +398,7 @@ c end of read %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	stop 'error stop : nlsh2d'
    69	continue
 	write(6,*) 'section $end is not allowed on its own'
+	write(6,*) 'last section found was: ',last
 	stop 'error stop : nlsh2d'
    77	continue
 	if( nlv .eq. -1 ) then
@@ -1019,7 +1022,7 @@ c true if in last time step
 
 c**********************************************************************
 
-        subroutine get_time(itact)
+        subroutine get_acttime(itact)
 
 c returns actual time
 

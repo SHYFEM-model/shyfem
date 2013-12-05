@@ -5,16 +5,37 @@ c boundary condition routines
 c
 c contents :
 c
-c subroutine sp111(mode)			set up boundary/initial cond.
-c subroutine tilt				tilting of boundary surface
+c subroutine sp111(mode)		set up boundary/initial cond.
 c
-c subroutine initilt(ibc)       		finds tilting node in node list
-c subroutine iniflux(kranf,krend)		initializes flux boundary
+c subroutine z_tilt			tilting of boundary surface (fixed)
+c subroutine c_tilt			tilting of boundary surface (Coriolis)
 c
-c subroutine mvalue(ibc,it,rmu,rmv)		computes momentum value
-c subroutine bvalue(ibc,it,rwv)			computes z value for boundary
-c function cvalue(ibc,it,what)			computes conz value for bound.
-c subroutine rain( t , dt )			simulates rain increasing z
+c subroutine initilt(ibc)       	finds tilting node in node list
+c subroutine iniflux(ibc)		initializes flux boundary
+c
+c subroutine b3dvalue(ibc,it,nsize,ndim,array,rw)
+c
+c subroutine set_mass_flux		sets up (water) mass flux array mfluxv
+c subroutine adjust_mass_flux		adjusts mass flux for dry nodes
+c subroutine make_scal_flux(what,r3v,scal,sflux,sconz,ssurf)	sets scal flux
+c subroutine flux_debug(what,mfluxv,sflux,sconz)
+c subroutine check_scal_flux(what,scal,sconz)			checks scal flux
+c 
+c subroutine init_scal_bc(r3v)		initializes array for scalar BC
+c subroutine mult_scal_bc(r3v,value)	multiplies array for scalar BC by value
+c 
+c subroutine dist_3d(nlvdim,r3v,kn,nbdim,values)
+c subroutine dist_horizontal(nlvdim,r3v,n,value)
+c subroutine aver_horizontal(nlvdim,r3v,n,value)
+c
+c subroutine print_scal_bc(r3v)		prints non-flag entries of scalar BC
+c subroutine get_bflux(k,flux)		returns boundary flux of node k
+c 
+c subroutine level_flux(it,levflx,kn,rw)compute discharge from water level
+c subroutine z_smooth(z)		smooths z values
+c subroutine flow_out_piece_new(z,rout)
+c
+c function get_discharge(ibc)		returns discharge through boundary ibc
 c
 c revision log :
 c
@@ -91,6 +112,7 @@ c 16.02.2011    ggu     copied meteo routines to submet.f
 c 23.02.2011    ggu     new parameters tramp and levflx implemented
 c 01.03.2011    ggu     implement smoothing for levflx
 c 14.05.2011    ggu     new routine get_discharge()
+c 29.11.2013    ggu     prepared for ibtyp == 0
 c
 c***************************************************************
 
@@ -299,7 +321,9 @@ c	-----------------------------------------------------
 	  rmu = 0.
 	  rmv = 0.
 
-	  if( ibtyp .le. 3 ) then
+	  if( ibtyp .eq. 0 ) then	!switched off
+	    nk = 0
+	  else if( ibtyp .le. 3 ) then
 	    if( nbdim .eq. 0 ) then
 	      nsize = 0
 	      call b3dvalue(ibc,it,nsize,nb3dim,bnd3(1,ibc),rwv)
@@ -374,8 +398,8 @@ c	-----------------------------------------------------
 c	tilting
 c	-----------------------------------------------------
 
-	call tilt
 	call z_tilt
+	call c_tilt
 
 c	-----------------------------------------------------
 c	meteo forcing					!$$surel
@@ -412,7 +436,7 @@ c**************************************************************
 
 	subroutine z_tilt
 
-c tilting of boundary surface
+c artificial tilting of boundary surface - needs ktilt and ztilt
 
 	implicit none
 
@@ -449,9 +473,15 @@ c tilting of boundary surface
 		dx=xgv(kn2)-xgv(kn1)
 		dy=ygv(kn2)-ygv(kn1)
 	        rltot = rltot + sqrt(dx*dx+dy*dy)
-		if( k .le. ktilt ) rltot1 = rltot
+		if( k .eq. ktilt ) rltot1 = rltot	!BUG 3.12.2013
 	    end do
 	    rltot2 = rltot - rltot1
+
+c in rltot the whole length of boundary is stored
+c in rltot1 and rltot2 are first and second part of length of boundary
+c rltot1 from start to ktilt, and rltot2 from ktilt to end
+c if no ktilt is given rltot1/rltot2 are not used
+
 	    rl = 0.
             rzv(irv(kranf)) = rzv(irv(kranf)) - ztilt
 	    do k=kranf+1,krend
@@ -478,9 +508,9 @@ c tilting of boundary surface
 
 c**************************************************************
 
-	subroutine tilt
+	subroutine c_tilt
 
-c tilting of boundary surface
+c tilting of boundary surface due to Coriolis acceleration - needs ktilt
 
 	implicit none
 
@@ -1051,9 +1081,15 @@ c computes scalar flux from fluxes and concentrations
 	  if( ssurf .le. -5555 ) conz = scal(1,k) - 10000. - ssurf !diff
 	  sflux(1,k) = sflux(1,k) + surf_flux * conz
 	  ! next should be sconz(1,k) = conz if surf_flux is eliminated
-	  sconz(1,k) = 0.
-	  if( mfluxv(1,k) .ne. 0 ) sconz(1,k) = sflux(1,k) / mfluxv(1,k)
+	  !sconz(1,k) = 0.
+	  if( mfluxv(1,k) .ne. 0 ) then
+	    sconz(1,k) = sflux(1,k) / mfluxv(1,k)
+	  end if
 	end do
+
+	!if( what .eq. 'salt' ) then
+	!  call flux_debug(what,mfluxv,sflux,sconz)
+	!end if
 
 	return
    99	continue
@@ -1061,6 +1097,54 @@ c computes scalar flux from fluxes and concentrations
 	write(6,*) 'k,l: ',k,l
 	write(6,*) 'flux,conz: ',flux,conz
 	stop 'error stop make_scal_flux: boundary condition mismatch'
+	end
+
+c**********************************************************************
+
+	subroutine flux_debug(what,mfluxv,sflux,sconz)
+
+	implicit none
+
+	include 'param.h'
+
+	character*(*) what
+	real mfluxv(nlvdim,1)	!mass flux
+	real sflux(nlvdim,1)	!scalar flux
+	real sconz(nlvdim,1)	!concentration for each finite volume
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer itanf,itend,idt,nits,niter,it
+	common /femtim/ itanf,itend,idt,nits,niter,it
+
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+
+	integer k,l,lmax
+	integer ifemop
+	real qtot,stot
+
+	integer iunit
+	save iunit
+	data iunit /0/
+
+	if( iunit .eq. 0 ) then
+	  iunit = ifemop('.ggg','formatted','unknown')
+	end if
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  stot = 0.
+	  qtot = 0.
+	  do l=1,lmax
+	    qtot = qtot + mfluxv(l,k)
+	    stot = stot + mfluxv(l,k) * sconz(l,k)
+	  end do
+	  if( qtot .ne. 0 ) then
+	    write(iunit,*) it,k,qtot,stot
+	  end if
+	end do
+
 	end
 
 c**********************************************************************

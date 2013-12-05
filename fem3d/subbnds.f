@@ -153,7 +153,8 @@ c initializes boundary condition
 
 	return
    99	continue
-	write(6,*) 'Error opening file: ',name
+	write(6,*) 'Error opening file of boundary ibc = ',ibc
+	write(6,*) 'file name: ',name
 	stop 'error stop bnds_init: cannot open file'
 	end
 

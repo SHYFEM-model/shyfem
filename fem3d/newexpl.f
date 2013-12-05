@@ -37,6 +37,7 @@ c 04.11.2011    ggu     adapted for hybrid coordinates
 c 10.05.2013	dbf&ggu	new routines for vertical advection (bvertadv)
 c 10.05.2013	dbf&ggu	new routines for non-hydro
 c 25.05.2013	ggu	new version for vertical advection (bvertadv)
+c 13.09.2013	dbf&ggu	new sigma layer adjustment integrated
 c
 c notes :
 c
@@ -745,7 +746,7 @@ c computes histogram of stability of elements
 	  i = min(i,ndim)
 	  bin(i) = bin(i) + 1
 	else				!write out
-	  call get_time(it)
+	  call get_acttime(it)
 	  write(97,1000) it,(bin(i),i=0,ndim)
 	end if
 	
@@ -1124,6 +1125,8 @@ c this routine works with Z and sigma layers
 	common /hldv/hldv
         integer ilhv(1)
         common /ilhv/ilhv
+        integer ilhkv(1)
+        common  /ilhkv/ilhkv
         integer ilmv(1)
         common /ilmv/ilmv
         integer nen3v(3,1)
@@ -1133,24 +1136,58 @@ c this routine works with Z and sigma layers
 	real hlv(1)!DEB
 	common /hlv/hlv !DEB
 
-	logical bsigma
+c---------- DEB SIG
+	real hkk,hkk1,hel,hkkk,hkkk1,heli
+	real hkko(0:nlvdim,nkndim)	!depth of interface at node
+	real hkkom(0:nlvdim,nkndim)	!average depth of layer at node
+	real hele
+	real helei
+	real alpha,aux,bn,cn,bt,ct
+	real h,hd,hu,rd,ru
+	real brl,crl
+
+	integer lkmax,ld,lu
+	integer laux,ll,ls,nn,nb !DEB
+	integer llup(3),lldown(3)
+c---------- DEB SIG
+
+	logical bsigma,bsigadjust
         integer k,l,ie,ii,lmax,lmin,nsigma
 	real hsigma,hdep
-        double precision hlayer,hint,hhk,hh,hhup
+        double precision hlayer,hint,hhk,hh,hhup,htint
 	double precision dzdx,dzdy,zk
         double precision xbcl,ybcl
         double precision raux,rhop,presbcx,presbcy
         double precision b,c,br,cr,brup,crup,brint,crint
 	double precision rhoup,psigma
+	double precision b3,c3
 
         if(nlvdim.ne.nlvdi) stop 'error stop set_barocl_new: nlvdi'
+
+	bsigadjust = .false.		!regular sigma coordinates
+	bsigadjust = .true.		!interpolate on horizontal surfaces
 
 	call get_sigma(nsigma,hsigma)
 	bsigma = nsigma .gt. 0
 
         raux=grav/rowass
 	psigma = 0.
-
+	
+	if( bsigma .and. bsigadjust ) then	!-------------- DEB SIG
+	  do k=1,nkn
+	    lmax=ilhkv(k)
+	    hkko(0,k)=-zov(k)	!depth of interface on node
+	    hkkom(0,k)=-zov(k)	!depth of mid layer on node (0 not used)
+	    hkk=0.
+	    hkk=-zov(k)		!ggu
+	    do l=1,lmax
+	      hkk=hkk+hdkov(l,k)
+	      hkko(l,k)=hkk
+	      hkkom(l,k)=(hkko(l,k)+hkko(l-1,k))/2.
+            end do
+	  end do
+	end if
+	 
         do ie=1,nel
           presbcx = 0.
           presbcy = 0.
@@ -1159,8 +1196,11 @@ c this routine works with Z and sigma layers
 	  brup=0.
 	  crup=0.
 	  hhup=0.
-          do l=1,lmax	!loop over layers to set up interface l-1
+          do l=1,lmax		!loop over layers to set up interface l-1
 	    bsigma = l .le. nsigma
+
+	    htint = 0.				!depth of layer top interface
+	    if( l .gt. 1 ) htint = hlv(l-1)
 
             hlayer = hdeov(l,ie)		!layer thickness
 	    if( .not. bsigma ) hlayer = hldv(l)
@@ -1168,49 +1208,153 @@ c this routine works with Z and sigma layers
             hh = 0.5 * hlayer
 	    hint = hh + hhup			!interface thickness
                 
+	    if( bsigma .and. bsigadjust ) then	!-------------- DEB SIG
+	      hel = 0.
+	      heli = 0.
+	      do ii=1,3
+                k = nen3v(ii,ie)
+	        hel=hel+hkko(l,k)+hkko(l-1,k)	!depth of mid layer in element
+	        heli=heli+hkko(l-1,k)		!depth of interface in element
+	      end do
+
+	      hele=hel/6.
+	      helei=heli/3.
+
+	      do ii=1,3
+                k = nen3v(ii,ie)   
+	        if(helei.lt.hkko(l-1,k))then	!look upwards
+		  do ll=l-1,1,-1
+	            if(helei.gt.hkko(ll-1,k)) exit
+		  end do
+		  if( ll .le. 0 ) ll = 1
+                else if(helei.gt.hkko(l,k))then	!look downwards
+		  lkmax = ilhkv(k)
+		  do ll=l+1,lkmax
+	            if(helei.lt.hkko(ll,k)) exit
+		  end do
+		  if( ll .gt. lkmax ) ll = lkmax
+		else				!inside layer
+		  ll = l
+	        end if
+		if( helei.lt.hkkom(ll,k) ) then	!find part of layer (up or down)
+		  llup(ii) = ll-1
+		  if( ll .eq. 1 ) llup(ii) = 1
+		  lldown(ii) = ll
+		else
+		  llup(ii) = ll
+		  lldown(ii) = ll+1
+		  if( ll .eq. lkmax ) lldown(ii) = lkmax
+		end if
+	      end do
+	    end if
+
+	    nn = 0 
+	    nb = 0
+	    brl = 0.
+	    crl = 0.                 
 	    br = 0.
 	    cr = 0.                 
 	    dzdx = 0.
 	    dzdy = 0.
 	    psigma = 0.
-            do ii=1,3                 
-              k = nen3v(ii,ie)
-              rhop = rhov(l,k)		!rho^prime for each node of element 
+
+            do ii=1,3
+	      k = nen3v(ii,ie)
+	      rhop = rhov(l,k)		!rho^prime for each node of element
 	      rhoup = rhop
-	      if (l.gt.1) rhoup = rhov(l-1,k)
+	      if( l.gt.1) rhoup = rhov(l-1,k)
+	      lkmax = ilhkv(k)
               b = ev(3+ii,ie)		!gradient in x
               c = ev(6+ii,ie)		!gradient in y
+
+	      if( l .eq. nsigma ) then
+	        brl = brl + b * rhop
+	        crl = crl + c * rhop
+	      end if
+
+	      if( bsigma .and. bsigadjust ) then 
+		lu = llup(ii)
+		ld = lldown(ii)
+		if( ld .eq. 1 ) then		!above surface
+		  rhop = rhov(1,k)
+		else if( lu .ge. lkmax ) then	!below bottom
+		  nb = nb + 1
+		  nn = nn + ii
+		  rhop = rhov(lkmax,k)
+		else				!do interpolation
+		  !hu = hkko(lu,k)
+		  !hd = hkko(ld,k)
+		  hu = hkkom(lu,k) !DEB
+		  hd = hkkom(ld,k) !DEB
+		  ru = rhov(lu,k)
+		  rd = rhov(ld,k)
+		  h = helei
+		  alpha = (h-hu)/(hd-hu)
+		  rhop = alpha*rd + (1.-alpha)*ru
+		end if
+	      end if
+
               br = br + b * rhop
               cr = cr + c * rhop
-	      if (bsigma) then
-		psigma = psigma + 2.*(rhoup-rhop)/hint
-		hdep = hm3v(ii,ie) + zov(k)
-		hhk = -hlv(l) * hdep
-		zk = -hhk		!transform depth in z
-	        dzdx = dzdx + b * zk
-	        dzdy = dzdy + c * zk
-	      end if
+
+              if (bsigma) then
+	       if( bsigadjust ) then
+		psigma = 0.
+	       else
+                psigma = psigma + (rhoup-rhop)/hint
+                hdep = hm3v(ii,ie) + zov(k)
+                hhk = -htint * hdep
+                zk = -hhk               !transform depth in z
+                dzdx = dzdx + b * zk
+                dzdy = dzdy + c * zk
+	       end if
+              end if
             end do
 
-	    if( l .eq. 1 ) then		!surface layer ... treat differently
-	      brint = br
-	      crint = cr
+	    if( bsigma .and. bsigadjust ) then 
+              if(nb.eq.2)then
+	        brint = brup
+	        crint = crup
+	      elseif(nb.eq.1)then
+	        b3 = ev(3+nn,ie)
+	        c3 = ev(6+nn,ie)
+	        aux=1./(c3*c3+b3*b3)
+	        bn = aux*(brup*b3+crup*c3)*b3
+	        cn = aux*(brup*b3+crup*c3)*c3
+	        bt = br - aux*(br*b3+cr*c3)*b3
+	        ct = cr - aux*(br*b3+cr*c3)*c3
+	        brint = bn + bt
+	        crint = cn + ct
+              else  
+	        brint = br
+	        crint = cr
+	      end if
 	    else
-	      brint = 0.5*(br+brup)
-	      crint = 0.5*(cr+crup)
+              if( l .eq. 1 ) then         !surface layer ... treat differently
+                brint = br
+                crint = cr
+              else
+                brint = 0.5*(br+brup)
+                crint = 0.5*(cr+crup)
+              end if
 	    end if
 
-	    brup=br
-	    crup=cr
-	    hhup=hh
+	    brup=brint
+	    crup=crint
+	    if( l .eq. nsigma ) then
+	      brup=brl
+	      crup=crl
+	    end if
+            hhup=hh
 	    psigma = psigma / 3.
-	    
+
             presbcx = presbcx + hint * ( brint - dzdx * psigma )
 	    presbcy = presbcy + hint * ( crint - dzdy * psigma )
 
             xbcl =  raux * hlayer * presbcx
             ybcl =  raux * hlayer * presbcy
-            fxv(l,ie) = fxv(l,ie) + xbcl
+
+            fxv(l,ie) = fxv(l,ie) + xbcl 
             fyv(l,ie) = fyv(l,ie) + ybcl
           end do
         end do

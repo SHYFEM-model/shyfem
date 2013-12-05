@@ -1,4 +1,23 @@
 
+05.12.2013
+
+c ./fem3d/newcon.f:
+c 03.12.2013    ggu&deb bug fix for horizontal diffusion
+c
+c ./fem3d/subbnd.f:
+c 29.11.2013    ggu     allow for non continous boundary numbering
+c
+c ./fem3d/new3di.f:
+c 29.11.2013    ggu     zeta correction
+c
+c ./fem3d/subele.f:
+c 29.11.2013    ggu     new subroutine masscont()
+c
+c ./fem3d/subn11.f:
+c 29.11.2013    ggu     prepared for ibtyp == 0
+
+
+
 29.10.2013
 
 c ./femplot/supiso.f:

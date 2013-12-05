@@ -710,6 +710,8 @@ c initializes uvz values from zenv, utlnv, vtlnv, hdenv
 	common /saux1/saux1
 	real saux2(nlvdim,1)
 	common /saux2/saux2
+	real v1v(1)
+	common /v1v/v1v
 
 	logical has_restart
 
@@ -717,7 +719,7 @@ c initializes uvz values from zenv, utlnv, vtlnv, hdenv
 	call uvint			!barotropic transports
 
 	if( .not. has_restart(5) ) then
-	  call sp256w(saux1,saux2)	!vertical velocities
+	  call sp256w(v1v,saux1,saux2)	!vertical velocities
 	end if
 
 	call make_prvel		!nodal values

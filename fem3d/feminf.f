@@ -101,7 +101,7 @@ c shows content of fem boundary/initial files
 	  if( nrec .eq. 0 ) write(6,*)
 
 	  nrec = nrec + 1
-	  call get_time(it,year0,line)
+	  call make_time(it,year0,line)
 	  write(6,'(i6,i12,a,a)') nrec,it,'  ',line
 
 	  goto 1
@@ -123,7 +123,7 @@ c shows content of fem boundary/initial files
 
 c*****************************************************************
 
-	subroutine get_time(it,year0,line)
+	subroutine make_time(it,year0,line)
 
 	implicit none
 

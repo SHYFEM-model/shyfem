@@ -1,5 +1,36 @@
 ============================================================
 
+Thu Dec  5 16:15:36 CET 2013
+
+diffusion bug, baroclinic for sigma revisited
+
+ LOG                     |   19 ++++
+ fem3d/feminf.f          |    4 +-
+ fem3d/ht.f              |    2 +-
+ fem3d/new3di.f          |  270 +++++++++++++++++++++++++++++++++++++++++++++--
+ fem3d/newchk.f          |  109 +++++++++++++++++--
+ fem3d/newcon.f          |   41 +++++---
+ fem3d/newexpl.f         |  198 ++++++++++++++++++++++++++++++-----
+ fem3d/newtra.f          |    4 +-
+ fem3d/newtvd.f          |   16 +++-
+ fem3d/param.h           |    8 +-
+ fem3d/subbnd.f          |   87 +++++++++++-----
+ fem3d/subbnds.f         |    3 +-
+ fem3d/subdif.f          |    5 +-
+ fem3d/subele.f          |   37 +++++++
+ fem3d/submud_dummy.f    |    2 +
+ fem3d/subn11.f          |  116 +++++++++++++++++---
+ fem3d/subnsh.f          |    7 +-
+ femadj/param.h          |    8 +-
+ femcheck/test_stable.sh |    4 -
+ femdoc/final/shyfem.pdf |  Bin 270693 -> 270754 bytes
+ femdoc/final/shyfem.ps  |  230 ++++++++++++++++++++--------------------
+ femplot/param.h         |    8 +-
+ param.h                 |    8 +-
+ 23 files changed, 934 insertions(+), 252 deletions(-)
+
+============================================================
+
 Tue Nov 12 16:17:26 CET 2013
 
 New version 6_1_69a

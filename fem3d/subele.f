@@ -74,6 +74,7 @@ c 08.11.2011    dbf&ggu bug in setdepth(): 1 -> l
 c 11.11.2011    ggu     error message for negative last layer
 c 29.03.2013    ggu     avoid call to areaele -> ev(10,ie)
 c 13.06.2013    ggu     new helper functions make_old_depth and copy_depth
+c 29.11.2013    ggu     new subroutine masscont()
 c
 c****************************************************************
 
@@ -1101,6 +1102,42 @@ c----------------------------------------------------------------
 	write(6,*) 'hlv   ',(hlv(l),l=1,levdim)
 	write(6,*) 'hldv  ',(hldv(l),l=1,levdim)
 	stop 'error stop setdepth: last layer negative'
+	end
+
+c***********************************************************
+
+	function masscont(mode)
+
+c computes content of water mass in total domain
+
+        implicit none
+
+	include 'param.h'
+
+	double precision masscont
+	integer mode
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	integer ilhkv(1)
+	common /ilhkv/ilhkv
+
+	integer k,l,nlev
+	double precision total
+        real volnode
+
+	total = 0.
+
+	do k=1,nkn
+	  nlev = ilhkv(k)
+	  do l=1,nlev
+	    total = total + volnode(l,k,mode)
+	  end do
+	end do
+
+	masscont = total
+
 	end
 
 c***********************************************************

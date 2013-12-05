@@ -508,7 +508,7 @@ c-----------------------------------------------------------
         call inirst             !restart
 	call cktime		!in case itanf has changed
 
-	call init_vertical	!do again after restart
+	!call init_vertical	!do again after restart
 
 	call setnod
 

@@ -39,7 +39,7 @@ c*****************************************************************
 
         subroutine tvd_init(itvd)
 
-c initializes tvd scheme
+c initializes horizontal tvd scheme
 
         implicit none
 
@@ -60,7 +60,11 @@ c initializes tvd scheme
 
 	if( itvd_type .eq. 2 ) call tvd_upwind_init
 
-	write(6,*) 'TVD scheme initialized: ',itvd
+	if( itvd .eq. 0 ) then
+	  write(6,*) 'no horizontal TVD scheme used'
+	else
+	  write(6,*) 'horizontal TVD scheme initialized: ',itvd
+	end if
 
 	end
 
@@ -359,7 +363,7 @@ c*****************************************************************
 
 	subroutine tvd_fluxes(ie,l,itot,isum,dt,cl,cv,gxv,gyv,f,fl)
 
-c computes tvd fluxes for one element
+c computes horizontal tvd fluxes for one element
 
 	implicit none
 
@@ -500,6 +504,12 @@ c               psi = max(0.,min(1.,rf))                ! minmod
 
 	end
 
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+c vertical tvd scheme
+c*****************************************************************
+c*****************************************************************
 c*****************************************************************
 
 	subroutine vertical_flux_k(btvdv,k,dt,wsink,cv,vvel,vflux)

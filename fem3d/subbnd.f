@@ -17,9 +17,9 @@ c subroutine infobnd(ibc,ibtype,...)	 returns important info on boundary ibc
 c function itybnd(ibc)			 returns type of open boundary
 c function nbnds			 returns total number of open b.
 c function nkbnds(ibc)			 returns total number of nodes of ibc
-c function kbnd(i)			 returns i'th node of all b. nodes
+c function kbnd(i)			 returns i th node of all b. nodes
 c subroutine kanfend(ibc,kranf,krend)    returns index of first and last bnode
-c function kbnds(ibc,i)			 returns i'th node of boundary ibc
+c function kbnds(ibc,i)			 returns i th node of boundary ibc
 c subroutine irbnds(ibc,ndim,idim,nodes) returns nodes of boundary ibc
 c subroutine bndsetget(ibc,ientry,value,bset) sets/gets value at entry ientry
 c subroutine setbnd(ibc,value,barray)	 sets boundary ibc to value in barray
@@ -72,6 +72,7 @@ c 02.04.2009	ggu	intpol default is 0, some unused routines deleted
 c 20.04.2009	ggu	new variable ztilt, ndim substituted with nbvdim
 c 23.02.2011    ggu     new parameters tramp and levflx implemented
 c 21.06.2012    ggu&aar new file names for mud module
+c 29.11.2013    ggu	allow for non continous boundary numbering
 c
 c************************************************************************
 
@@ -144,15 +145,40 @@ c reads boundary info from STR file
 
 	real getpar
 
+	integer icall
+	save icall
+	data icall / 0 /
+
 	call getdim('nbcdim',nbcdim)
 	call getdim('nrbdim',nrbdim)
 
-	nbc = nbc + 1
+	if( icall .eq. 0 ) then		!initialize bnd array
+	  do i=1,nbcdim
 
-	if(nbc.ne.ibc) goto 94
+	    call bnd_init(i)
+
+	    boundn(i) = ' '
+	    conzn(i) = ' '
+	    tempn(i) = ' '
+	    saltn(i) = ' '
+
+	    bio2dn(i) = ' '
+	    sed2dn(i) = ' '
+	    mud2dn(i) = ' '
+	    dmf2dn(i) = ' '
+	    lam2dn(i) = ' '
+	    tox3dn(i) = ' '
+
+	    bfm1bc(i) = ' '
+	    bfm2bc(i) = ' '
+	    bfm3bc(i) = ' '
+
+	  end do
+	  icall = 1
+	end if
+
+	nbc = max(nbc,ibc)	!allow for non contiguous numbering
 	if(nbc.gt.nbcdim) goto 77
-
-	call bnd_init(nbc)	!sets everything to 0
 
 	call sctpar('bound')
 	call sctfnm('bound')
@@ -184,6 +210,8 @@ c		\item[0] No boundary values specified
 c		\item[1] Level boundary. At this open boundary
 c			 the water level is imposed and the prescribed
 c			 values are interpreted as water levels in meters.
+c			 If no value for |ibtyp| is specified this
+c			 is the default.
 c		\item[2] Flux boundary. Here the discharge in \dischargeunit
 c			 has to be prescribed.
 c		\item[3] Internal flux boundary. As with |ibtyp = 2| a
@@ -420,7 +448,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccc
 	call set_bnd_ipar(ibc,'krend',krend)	!position of end node
 	call addpar('krend',float(krend))
 
-
 	call get_nbnd(nbnd)
 	do id=1,nbnd
 	  call get_bnd_name(id,name)
@@ -428,21 +455,21 @@ cccccccccccccccccccccccccccccccccccccccccccccccccc
           call set_bnd_par(ibc,name,value)
 	end do
 
-	call getfnm('boundn',boundn(nbc))
-	call getfnm('conzn',conzn(nbc))
-	call getfnm('tempn',tempn(nbc))
-	call getfnm('saltn',saltn(nbc))
+	call getfnm('boundn',boundn(ibc))
+	call getfnm('conzn',conzn(ibc))
+	call getfnm('tempn',tempn(ibc))
+	call getfnm('saltn',saltn(ibc))
 
-	call getfnm('bio2dn',bio2dn(nbc))
-	call getfnm('sed2dn',sed2dn(nbc))
-	call getfnm('mud2dn',mud2dn(nbc))
-        call getfnm('dmf2dn',dmf2dn(nbc))
-        call getfnm('lam2dn',lam2dn(nbc))
-	call getfnm('tox3dn',tox3dn(nbc))
+	call getfnm('bio2dn',bio2dn(ibc))
+	call getfnm('sed2dn',sed2dn(ibc))
+	call getfnm('mud2dn',mud2dn(ibc))
+        call getfnm('dmf2dn',dmf2dn(ibc))
+        call getfnm('lam2dn',lam2dn(ibc))
+	call getfnm('tox3dn',tox3dn(ibc))
 
-	call getfnm('bfm1bc',bfm1bc(nbc))
-	call getfnm('bfm2bc',bfm2bc(nbc))
-	call getfnm('bfm3bc',bfm3bc(nbc))
+	call getfnm('bfm1bc',bfm1bc(ibc))
+	call getfnm('bfm2bc',bfm2bc(ibc))
+	call getfnm('bfm3bc',bfm3bc(ibc))
 
 	!call check_bnd(ibc)
 
@@ -550,12 +577,14 @@ c checks boundary information read from STR
 	   end if
 	 end if
 
-         call get_bnd_par(ibc,'period',period)
-	 if( period .le. 0. .and. boundn(i) .eq. ' ' ) then
+	 if( ibtyp .gt. 0 ) then
+           call get_bnd_par(ibc,'period',period)
+	   if( period .le. 0. .and. boundn(i) .eq. ' ' ) then
 		write(6,'(a,i2,a)') 'section BOUND ',i,' :'
 		write(6,*) '   Period must be > 0'
 		write(6,*) '   period = ',period
 		bstop=.true.
+	   end if
 	 end if
 
          call get_bnd_ipar(ibc,'ktilt',ktilt)
@@ -587,7 +616,8 @@ c checks boundary information read from STR
 		bstop=.true.
 	 end if
 
-	 do k=kranf,krend
+	 if( ibtyp .gt. 0 ) then
+	  do k=kranf,krend
 	    knode=ipint(irv(k))		!$$EXTINW
 	    if(knode.le.0) then
               write(6,'(a,i2,a)') 'Section BOUND ',i,' :'
@@ -595,7 +625,8 @@ c checks boundary information read from STR
               bstop=.true.
 	    end if
 	    irv(k)=knode
-	 end do
+	  end do
+	 end if
 
 	end do
 
@@ -868,7 +899,7 @@ c********************************************************************
 
 	function kbnd(i)
 
-c returns i'th node of all boundary nodes
+c returns i th node of all boundary nodes
 
 	implicit none
 
@@ -915,7 +946,7 @@ c********************************************************************
 
 	function kbndind(ibc,i)
 
-c returns global index of i'th node of boundary ibc
+c returns global index of i th node of boundary ibc
 
 	implicit none
 
@@ -945,7 +976,7 @@ c********************************************************************
 
 	function kbnds(ibc,i)
 
-c returns i'th node of boundary ibc
+c returns i th node of boundary ibc
 
 	implicit none
 
@@ -1216,6 +1247,8 @@ c initializes boundary ibc
 
 	end
 
+c********************************************************************
+c********************************************************************
 c********************************************************************
 
         subroutine bndsetget(ibc,ientry,value,bset)

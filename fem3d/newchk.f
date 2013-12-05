@@ -704,6 +704,38 @@ c-----------------------------------------------------
 
 c*************************************************************
 
+	subroutine vol_mass(mode)
+
+c computes and writes total water volume
+
+        implicit none
+
+	integer mode
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+        real mtot              !total computed mass of ts
+	double precision masscont
+
+	integer ninfo
+	save ninfo
+	data ninfo /0/
+
+	if( mode .ne. 1 .and. mode .ne. -1 ) then
+	  write(6,*) 'mode = ',mode
+	  stop 'error stop vol_mass: wrong value for mode'
+	end if
+
+	mtot = masscont(mode)
+
+	if( ninfo .eq. 0 ) call getinfo(ninfo)
+	write(ninfo,*) 'total_volume: ',it,mtot
+
+        end
+
+c*************************************************************
+
 	subroutine mass_conserve(vf,va)
 
 c checks mass conservation of single boxes (finite volumes)
@@ -733,8 +765,8 @@ c checks mass conservation of single boxes (finite volumes)
 	common /rqv/rqv
 	include 'ev.h'
 
-	logical berror
-	integer ie,l,ii,k,lmax,mode
+	logical berror,bdebug
+	integer ie,l,ii,k,lmax,mode,ks,kss
 	real am,az,azt,dt,azpar,ampar
 	real areafv,b,c
 	real ffn,ffo,ff
@@ -744,6 +776,8 @@ c checks mass conservation of single boxes (finite volumes)
 	real ubar,vbar
 	real vbmax,vlmax,vrbmax,vrlmax
 	real vrwarn,vrerr
+	real qinput
+	double precision vtotmax,vvv,vvm
 
 	real volnode,areanode,getpar
 	include 'testbndo.h'
@@ -801,27 +835,56 @@ c----------------------------------------------------------------
 c include vertical divergence
 c----------------------------------------------------------------
 
+	ks = 1000
+	ks = 5071
+	ks = 0
+	if( ks .gt. 0 ) then
+	  k = ks
+	  lmax = ilhkv(k)
+	  write(77,*) '-------------'
+	  write(77,*) k,lmax
+	  write(77,*) (vf(l,k),l=1,lmax)
+	  write(77,*) (wlnv(l,k),l=1,lmax)
+	  vtotmax = 0.
+	  do l=1,lmax
+	    vtotmax = vtotmax + vf(l,k)
+	  end do
+	  write(77,*) 'from box: ',vtotmax
+	end if
+
+	vtotmax = 0.
 	do k=1,nkn
           lmax = ilhkv(k)
 	  abot = 0.
+	  vvv = 0.
+	  vvm = 0.
 	  do l=lmax,1,-1
 	    atop = va(l,k)
 	    vdiv = wlnv(l,k)*abot - wlnv(l-1,k)*atop
 	    vf(l,k) = vf(l,k) + vdiv + mfluxv(l,k)
 	    abot = atop
+	    vvv = vvv + vdiv
+	    vvm = vvm + mfluxv(l,k)
+	    if( k .eq. ks ) write(77,*) 'vdiv: ',l,vf(l,k),vdiv,vvv
 	  end do
+	  vtotmax = max(vtotmax,abs(vvv))
+	  if( k .eq. ks ) write(77,*) 'vvv: ',vvv,vvm
 	end do
 
 c----------------------------------------------------------------
 c check mass balance in boxes
 c----------------------------------------------------------------
 
+	kss = 5226
+	kss = 0
 	berror = .false.
 	vrmax = 0.
 	vmax = 0.
 	do k=1,nkn
 	 !if( is_inner(k) ) then
 	 if( .not. is_external_boundary(k) ) then
+	  bdebug = k .eq. kss
+	  if( bdebug ) write(78,*) '============================='
 	  berror = .false.
           lmax = ilhkv(k)
 	  do l=1,lmax
@@ -833,13 +896,24 @@ c----------------------------------------------------------------
 	    vrdiff = vdiff / volo
 	    vmax = max(vmax,vdiff)
 	    vrmax = max(vrmax,vrdiff)
+	    if( bdebug ) then
+	        write(78,*) l,k
+	        write(78,*) volo,voln,vdiff,vrdiff
+	        write(78,*) vdiv,vdiv*dt
+	    end if
 	    if( vrdiff .gt. vrerr ) then
 		berror = .true.
 	        write(6,*) 'mass_conserve: ',l,k
 	        write(6,*) volo,voln,vdiff,vrdiff
+	        write(6,*) vdiv,vdiv*dt
 	    end if
 	  end do
 	  if( berror ) call check_node(k)
+	  if( bdebug ) then
+		call check_set_unit(78)
+		call check_node(k)
+		write(78,*) '============================'
+	  end if
 	 end if
 	end do
 
@@ -872,24 +946,35 @@ c----------------------------------------------------------------
                 c = ev(ii+6,ie)
 		ff = ubar * b + vbar * c
                 vf(1,k) = vf(1,k) + 3. * areafv * ff
-                va(1,k) = va(1,k) + areafv * ff
+                va(1,k) = va(1,k) + areafv
           end do
         end do
+
+	if( ks .gt. 0 ) write(77,*) 'from baro: ',vf(1,ks)
 
 	vrmax = 0.
 	vmax = 0.
 	do k=1,nkn
 	 !if( is_inner(k) ) then
 	 if( .not. is_external_boundary(k) ) then
-	    voln = volnode(1,k,+1)
-	    volo = volnode(1,k,-1)
-	    vdiv = vf(1,k) + rqv(k)
-	    vdiff = voln - volo - vdiv * dt
-	    vdiff = abs(vdiff)
-	    vrdiff = vdiff / volo
-	    vmax = max(vmax,vdiff)
-	    vrmax = max(vrmax,vrdiff)
-	    !write(78,*) l,k,volo,voln,vdiff,vrdiff
+           lmax = ilhkv(k)
+	   voln = 0.
+	   volo = 0.
+	   qinput = 0.
+	   do l=1,lmax
+	     voln = voln + volnode(l,k,+1)
+	     volo = volo + volnode(l,k,-1)
+	     qinput = qinput + mfluxv(l,k)
+	   end do
+	   vdiv = vf(1,k) + rqv(k)
+	   vdiv = vf(1,k) + qinput	!should be the same
+	   vdiff = voln - volo - vdiv * dt
+	   if( k .eq. ks ) write(77,*) 'vdiff: ',vdiff
+	   !if( vdiff .gt. 0.1 ) write(6,*) 'baro error: ',k,vdiff
+	   vdiff = abs(vdiff)
+	   vrdiff = vdiff / volo
+	   vmax = max(vmax,vdiff)
+	   vrmax = max(vrmax,vrdiff)
 	 end if
 	end do
 
