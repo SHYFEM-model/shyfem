@@ -1,3 +1,27 @@
+version  6_1_70    05-12-2013    VERS_6_1_70
+
+========================================================== 05-12-2013 - 6_1_70
+
+c ./fem3d/subver.f:
+c 05.12.2013	ggu	version 6.1.70
+c
+c ./fem3d/newcon.f:
+c 03.12.2013    ggu&deb bug fix for horizontal diffusion
+c
+c ./fem3d/subbnd.f:
+c 29.11.2013    ggu	allow for non continous boundary numbering
+c
+c ./fem3d/new3di.f:
+c 29.11.2013    ggu	zeta correction
+c
+c ./fem3d/subele.f:
+c 29.11.2013    ggu     new subroutine masscont()
+c
+c ./fem3d/subn11.f:
+c 29.11.2013    ggu     prepared for ibtyp == 0
+
+==========================================================
+
 version  6_1_69a    12-11-2013    VERS_6_1_69a   commit_2013-12-05
 
 version  6_1_69a    12-11-2013    VERS_6_1_69a
