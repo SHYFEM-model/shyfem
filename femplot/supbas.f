@@ -51,7 +51,7 @@ c 24.10.2012  ggu     bug in labelling non spherical grid (returned -1)
 c 02.05.2013  ggu     handle fact in spherical coords
 c 02.05.2013  ggu     meteo point plotting (plot_meteo_points())
 c 13.06.2013  ggu     bug fix in spherical_fact() -> set fact to 1
-c 14.06.2013  ggu     bug fix in calling scale_legend -> get dims
+c 13.12.2013  ggu     new mode=4 for plotting grey grid over scalar variable
 c
 c notes:
 c
@@ -98,7 +98,12 @@ c**************************************************************
 
 c plots basin (shell)
 c
-c mode	0: only scaling  1: net  2: boundary  3: net in gray
+c mode	
+c	0: only scaling  
+c	1: net  
+c	2: boundary  
+c	3: net in gray (for bathymetry - use bgray)
+c	4: net in gray (for scalar and velocities - use bsgray)
 c
 c bash MUST be called first with mode == 0, and then
 c with the desired mode
@@ -197,7 +202,12 @@ c*************************************************************
 
 c plots basin
 c
-c mode	0: only scaling  1: net  2: boundary  3: net in gray
+c mode	
+c	0: only scaling  
+c	1: net  
+c	2: boundary  
+c	3: net in gray (for bathymetry - use bgray)
+c	4: net in gray (for scalar and velocities - use bsgray)
 
 	implicit none
 
@@ -233,11 +243,16 @@ c mode	0: only scaling  1: net  2: boundary  3: net in gray
 
 	if( mode .eq. 0 ) return
 
-	if( mode .eq. 1 .or. mode .eq. 3 ) then		!net
+	if( mode .eq. 1 .or. mode .ge. 3 ) then		!net
 
 	call qgray(0.)
 	if( mode .eq. 3 ) then
 	  gray = getpar('bgray')
+	  call qgray(gray)
+	end if
+	if( mode .eq. 4 ) then
+	  gray = getpar('bsgray')
+	  if( gray .lt. 0. ) return	!do not plot net
 	  call qgray(gray)
 	end if
 

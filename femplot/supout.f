@@ -1095,7 +1095,7 @@ c open file
 	if( nunit .le. 0 ) then
 		stop 'error stop conopen: cannot open NOS file'
         else
-                write(6,*) 'File opened :'
+                write(6,*) 'File opened on unit: ',nunit
                 inquire(nunit,name=file)
                 write(6,*) file
                 write(6,*) 'Reading file ...'

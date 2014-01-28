@@ -111,47 +111,18 @@ c-------------------------------------------------------------------
 
 	call open_nos_file(file1,'old',nin)
 
-        nvers=3
-	call nos_init(nin,nvers)
-	call nos_read_header(nin,nkn,nel,nlv,nvar,ierr)
-	call nos_get_date(nin,date,time)
-	call nos_get_title(nin,title)
-
-	!call rfnos(nin,nvers,nkn,nel,nlv,nvar,title,ierr)
-        if(ierr.ne.0) goto 100
-
-        write(6,*) 'nvers    : ',nvers
-        write(6,*) 'nkn,nel  : ',nkn,nel
-        write(6,*) 'nlv,nvar : ',nlv,nvar
-        write(6,*) 'date,time: ',date,time
-        write(6,*) 'title    : ',title
-
-        call dimnos(nin,nkndim,neldim,nlvdim)
-
-	call rsnos(nin,ilhkv,hlv,hev,ierr)
-        if(ierr.ne.0) goto 100
-
-	write(6,*) 'Available levels: ',nlv
-	write(6,*) (hlv(l),l=1,nlv)
+        call read_nos_header(nin,nkndim,neldim,nlvdim,ilhkv,hlv,hev)
+        call nos_get_params(nin,nkn,nel,nlv,nvar)
 
 c-------------------------------------------------------------------
 c open NOS output file
 c-------------------------------------------------------------------
 
-        call mkname(' ','nos_cat','.nos',file)
-        write(6,*) 'writing file ',file(1:50)
-        nb = ifileo(55,file,'unform','new')
-        if( nb .le. 0 ) goto 98
-	date = 20120101
-	time = 0
-	call nos_init(nb,nvers)
-	call nos_set_title(nb,title)
-	call nos_set_date(nb,date,time)
-	call nos_write_header(nb,nkn,nel,nlv,nvar,ierr)
-        !call wfnos(nb,3,nkn,nel,nlv,1,title,ierr)
-        if( ierr .ne. 0 ) goto 99
-        call wsnos(nb,ilhkv,hlv,hev,ierr)
-        if( ierr .ne. 0 ) goto 99
+        call open_nos_file('nos_cat','new',nb)
+
+        call nos_init(nb,0)
+        call nos_clone_params(nin,nb)
+        call write_nos_header(nb,ilhkv,hlv,hev)
 
 c-------------------------------------------------------------------
 c loop on input records
@@ -159,7 +130,7 @@ c-------------------------------------------------------------------
 
   300   continue
 
-	call rdnos(nin,it,ivar,nlvdim,ilhkv,cv3,ierr)
+	call nos_read_record(nin,it,ivar,nlvdim,ilhkv,cv3,ierr)
 
         if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
         if(ierr.ne.0) goto 100
@@ -170,14 +141,14 @@ c-------------------------------------------------------------------
 	nread1=nread1+1
 	write(6,*) 'time : ',nread,it,ivar
 
-	call wrnos(nb,it,ivar,nlvdim,ilhkv,cv3,ierr)
+	call nos_write_record(nb,it,ivar,nlvdim,ilhkv,cv3,ierr)
 	if( ierr .ne. 0 ) goto 99
 
 	goto 300
   100	continue
 
 	close(nin)
-	call delnos(nin)
+	call nos_close(nin)
 
 c-------------------------------------------------------------------
 c open second NOS file and read header
@@ -185,27 +156,8 @@ c-------------------------------------------------------------------
 
 	call open_nos_file(file2,'old',nin)
 
-        nvers=3
-	call nos_init(nin,nvers)
-	call nos_read_header(nin,nkn,nel,nlv,nvar,ierr)
-	call nos_get_title(nin,title)
-	call nos_get_date(nin,date,time)
-	!call rfnos(nin,nvers,nkn,nel,nlv,nvar,title,ierr)
-        if(ierr.ne.0) goto 100
-
-        write(6,*) 'nvers    : ',nvers
-        write(6,*) 'nkn,nel  : ',nkn,nel
-        write(6,*) 'nlv,nvar : ',nlv,nvar
-        write(6,*) 'date,time: ',date,time
-        write(6,*) 'title    : ',title
-
-        call dimnos(nin,nkndim,neldim,nlvdim)
-
-	call rsnos(nin,ilhkv,hlv,hev,ierr)
-        if(ierr.ne.0) goto 100
-
-	write(6,*) 'Available levels: ',nlv
-	write(6,*) (hlv(l),l=1,nlv)
+        call read_nos_header(nin,nkndim,neldim,nlvdim,ilhkv,hlv,hev)
+        call nos_get_params(nin,nkn,nel,nlv,nvar)
 
 c-------------------------------------------------------------------
 c loop on input records
@@ -213,7 +165,7 @@ c-------------------------------------------------------------------
 
   301   continue
 
-	call rdnos(nin,it,ivar,nlvdim,ilhkv,cv3,ierr)
+	call nos_read_record(nin,it,ivar,nlvdim,ilhkv,cv3,ierr)
 
         if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
         if(ierr.ne.0) goto 101
@@ -224,7 +176,7 @@ c-------------------------------------------------------------------
 	nread2=nread2+1
 	write(6,*) 'time : ',nread,it,ivar
 
-	call wrnos(nb,it,ivar,nlvdim,ilhkv,cv3,ierr)
+	call nos_write_record(nb,it,ivar,nlvdim,ilhkv,cv3,ierr)
 	if( ierr .ne. 0 ) goto 99
 
 	goto 301

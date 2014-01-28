@@ -38,6 +38,8 @@ c******************************************************************
 
 	write(6,*)
 	write(6,*) 'You can specify date/time for fem-time 0'
+	write(6,*) 'This is only used if the simulation does not'
+	write(6,*) 'contain a date and time stamp.'
 	write(6,*) 'Default for date/time: ',date,time
 	write(6,*) '   format: date=YYYY[MMDD]  time=hhmmss'
 	write(6,*) 'Enter date[,time]: (return for default)'

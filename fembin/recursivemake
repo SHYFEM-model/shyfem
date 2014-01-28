@@ -7,6 +7,19 @@
 # clean:
 #	recursivemake $@ $(SUBDIRS)
 #
+# versions:
+#
+# 1.0	unknown		original version
+# 1.1	10.12.2013	-quiet flag introduced
+#------------------------------------------------------------------
+
+make_option=""
+quiet="NO"
+if [ "$1" = "-quiet" ]; then
+  quiet="YES"
+  make_option="--no-print-directory"
+  shift
+fi
 
 if [ $# -lt 1 ]; then
   echo "Usage: recursivemake target dirs"
@@ -18,15 +31,17 @@ shift
 
 home=`pwd`
 
-echo "making target $target in subdirectories..."
-echo "$*"
+if [ $quiet = "NO" ]; then
+  echo "making target $target in subdirectories..."
+  echo "$*"
+fi
 
 for dir
 do
-  echo $dir
+  [ $quiet = "NO" ] && echo $dir
   if [ -d $dir ]; then
     cd $dir
-    make $target
+    make $make_option $target
     cd $home
   else
     echo "*** no such directory: $dir ... skipping"

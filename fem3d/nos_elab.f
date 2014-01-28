@@ -9,7 +9,7 @@ c 03.12.2001    ggu     cleaned up, hakata bay
 c
 c****************************************************************
 
-	program nosextr_nodes
+	program nos_elab
 
 c extracts single nodes from nos file -> creates time series
 c
@@ -18,6 +18,9 @@ c interactive version
 	implicit none
 
 	include 'param.h'
+
+	integer ntrdim
+	parameter (ntrdim=3)
 
 c--------------------------------------------------
         character*80 descrr
@@ -40,9 +43,9 @@ c--------------------------------------------------
 
 	character*80 title
 	real cv(nkndim)
-	real cv1(nlvdim,nkndim)
-	real cv2(nlvdim,nkndim)
 	real cv3(nlvdim,nkndim)
+	real count(nlvdim,nkndim,ntrdim)
+	real threshold(ntrdim)
 
 	integer ilhkv(nkndim)
 	real hlv(nlvdim)
@@ -55,6 +58,9 @@ c--------------------------------------------------
 	integer nlv,nvar,ivar,ierr
 	integer nin,it,it1,it2,nin1,nin2,nb
 	integer ivar1,ivar2
+	integer idt,itold
+	integer ntres,nt
+	real thres,tunit
 	real c1,c2,c3
 	real soglia
 
@@ -74,40 +80,33 @@ c---------------------------------------------------------------
 	integer nodes(ndim)	!node numbers
 	integer nodese(ndim)	!external node numbers
 
+	integer ifem_open_file
+
 c---------------------------------------------------------------
 c open simulation and basin
 c---------------------------------------------------------------
 
-	!if(iapini(3,nkndim,neldim,0).eq.0) then
-	!	stop 'error stop : iapini'
-	!end if
+	if(iapini(2,nkndim,neldim,0).eq.0) then
+		stop 'error stop : iapini'
+	end if
 
 c---------------------------------------------------------------
 c open NOS file and read header
 c---------------------------------------------------------------
 
-	nin1 = open_file('Enter first file: ','.nos')
-	if(nin1.le.0) goto 100
-	nin2 = open_file('Enter second file: ','.nos')
-	if(nin2.le.0) goto 100
+	nin = ifem_open_file('.nos','old')
 
         nvers=3
-	call rfnos(nin1,nvers,nkn,nel,nlv,nvar,title,ierr)
+	call rfnos(nin,nvers,nkn,nel,nlv,nvar,title,ierr)
         if(ierr.ne.0) goto 100
-        call dimnos(nin1,nkndim,neldim,nlvdim)
-
-	call rfnos(nin2,nvers,nkn,nel,nlv,nvar,title,ierr)
-        if(ierr.ne.0) goto 100
-        call dimnos(nin1,nkndim,neldim,nlvdim)
+        call dimnos(nin,nkndim,neldim,nlvdim)
 
         write(6,*) 'nvers    : ',nvers
         write(6,*) 'nkn,nel  : ',nkn,nel
         write(6,*) 'nlv,nvar : ',nlv,nvar
         write(6,*) 'title    : ',title
 
-	call rsnos(nin1,ilhkv,hlv,hev,ierr)
-        if(ierr.ne.0) goto 100
-	call rsnos(nin2,ilhkv,hlv,hev,ierr)
+	call rsnos(nin,ilhkv,hlv,hev,ierr)
         if(ierr.ne.0) goto 100
 
 	write(6,*) 'Available levels: ',nlv
@@ -116,8 +115,6 @@ c---------------------------------------------------------------
 c---------------------------------------------------------------
 c initializing units and nodes to be extracted
 c---------------------------------------------------------------
-
-	nread=0
 
         call mkname(' ','elab','.nos',file)
         write(6,*) 'writing file ',file(1:50)
@@ -130,54 +127,59 @@ c---------------------------------------------------------------
         if( ierr .ne. 0 ) goto 97
 
 c---------------------------------------------------------------
+c initializing arrays and parameters
+c---------------------------------------------------------------
+
+	tunit = 3600.		!time unit (3600=hours)
+
+	nread=0
+	idt = 0
+	itold = 0
+	ntres = 3
+	if( ntres .gt. ntrdim ) stop 'error stop: ntrdim'
+	threshold(1) = 100
+	threshold(2) = 200
+	threshold(3) = 500
+
+	do nt=1,ntres
+          do k=1,nkn
+            do l=1,nlv
+	      count(l,k,nt) = 0.
+	    end do
+	  end do
+	end do
+	
+c---------------------------------------------------------------
 c loop on input records
 c---------------------------------------------------------------
 
   300   continue
 
-	call rdnos(nin1,it1,ivar1,nlvdim,ilhkv,cv1,ierr)
+	call rdnos(nin,it,ivar1,nlvdim,ilhkv,cv3,ierr)
 
         if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
         if(ierr.ne.0) goto 100
-
-	call rdnos(nin2,it2,ivar2,nlvdim,ilhkv,cv2,ierr)
-
-        if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
-        if(ierr.ne.0) goto 100
-
-	if( it1 .ne. it2 ) then
-	  write(6,*) 'time is different: ',it1,it2
-	  stop 'error stop: time'
-	end if
-
-	it = it1
 
 	nread=nread+1
-	write(6,*) 'time : ',it,ivar1,ivar2
+	write(6,*) 'time : ',it,'   record = ',nread
+	if( nread .eq. 2 ) idt = it - itold
+	if( idt .gt. 0 .and. idt .ne. it-itold ) then
+	  write(6,*) it,itold,idt
+	  stop 'error stop: idt not uniform'
+	end if
 
-c	---------------------------------------------------------
-c	write to file
-c	---------------------------------------------------------
-
-	soglia = 0.1
-
-        do l=1,nlv
+	do nt=1,ntres
+	  thres = threshold(nt)
           do k=1,nkn
-            c1 = cv1(l,k)
-            c2 = cv2(l,k)
+            do l=1,nlv
+	      if( cv3(l,k) .ge. thres ) then
+	        count(l,k,nt) = count(l,k,nt) + 1. 
+	      end if
+	    end do
+	  end do
+	end do
 
-	    c3 = 0.
-	    if( c1 .gt. soglia .and. c2 .gt. soglia ) then
-	      c3 = c2 / c1
-	    end if
-	    !if( c1 .ne. 0. ) c3 = c2 / c1
-
-            cv3(l,k) = c3
-          end do
-        end do
-
-        call wrnos(nb,it,333,nlvdim,ilhkv,cv3,ierr)    !aver
-        if( ierr .ne. 0 ) goto 99
+	itold = it
 
 	goto 300
 
@@ -187,8 +189,23 @@ c---------------------------------------------------------------
 c end of loop
 c---------------------------------------------------------------
 
+	do nt=1,ntres
+          do k=1,nkn
+            do l=1,nlv
+	      count(l,k,nt) = count(l,k,nt) * idt / tunit
+	    end do
+	  end do
+	end do
+
+	do nt=1,ntres
+	  it = nint(threshold(nt))
+          call wrnos(nb,it,335,nlvdim,ilhkv,count(1,1,nt),ierr)
+          if( ierr .ne. 0 ) goto 99
+	end do
+
 	write(6,*)
 	write(6,*) nread,' records read'
+	write(6,*) ' time step = ',idt
 	write(6,*)
 	write(6,*) 'data written to file elab.nos'
 	write(6,*)
@@ -197,7 +214,7 @@ c---------------------------------------------------------------
 c end of routine
 c---------------------------------------------------------------
 
-	return
+	stop
    97   continue
         write(6,*) 'error writing header'
         stop 'error stop nosaver'
@@ -208,58 +225,6 @@ c---------------------------------------------------------------
         write(6,*) 'error writing data'
         stop 'error stop nosaver'
 	end
-
-c***************************************************************
-
-        subroutine get_nodes_from_stdin(ndim,nnodes,nodes,nodese)
-
-c gets records to extract from stdin
-
-        implicit none
-
-        integer ndim		!dimension of nodes
-        integer nnodes		!total number of nodes read
-        integer nodes(ndim)	!array with node numbers (nnodes in total)
-        integer nodese(ndim)	!array with external node numbers
-
-        integer ir
-	integer ipint
-
-	nnodes = 0
-
-        write(6,*) 'Please enter the node numbers to be extracted.'
-        write(6,*) 'Enter every node on a single line.'
-        write(6,*) 'Finish with 0 on the last line.'
-        write(6,*) 'example:'
-        write(6,*) '  5'
-        write(6,*) '  100'
-        write(6,*) '  1505'
-        write(6,*) '  0'
-        write(6,*) ' '
-
-        do while(.true.)
-          write(6,*) 'Enter node to extract (0 to end): '
-          ir = 0
-          read(5,'(i10)') ir
-
-          if( ir .le. 0 ) return
-
-	  nnodes = nnodes + 1
-
-          if( nnodes .gt. ndim ) then
-            write(6,*) 'Cannot extract more than ',ndim,' nodes'
-	    stop 'error stop get_nodes_from_stdin: ndim'
-          else
-            nodese(nnodes) = ir
-            nodes(nnodes) = ipint(ir)
-	    if( nodes(nnodes) .le. 0 ) then
-	      write(6,*) 'No such node ',ir,' ... ignoring'
-	      nnodes = nnodes - 1
-	    end if
-          end if
-        end do
-
-        end
 
 c***************************************************************
 

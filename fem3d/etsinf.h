@@ -1,6 +1,6 @@
 
 c-------------------------------------------------------------
-c header file for nos file format
+c header file for ETS file format
 c-------------------------------------------------------------
 c
 c ftype		file id
@@ -11,53 +11,53 @@ c ndim		number of possible entries (open files)
 c nitdim	number of integer values to be stored
 c nchdim	number of string values to be stored
 c
-c nositem	number of maximum entries in table
+c etsitem	number of maximum entries in table
 c
-c nosvar	integer parameters of open files
-c noschar	string parameters of open files
+c etsvar	integer parameters of open files
+c etschar	string parameters of open files
 c
-c nosvar(0,n)   iunit
-c nosvar(1,n)   nvers
-c nosvar(2,n)   nkn
-c nosvar(3,n)   nel
-c nosvar(4,n)   nlv
-c nosvar(5,n)   nvar
-c nosvar(6,n)   date
-c nosvar(7,n)   time
+c etsvar(0,n)   iunit
+c etsvar(1,n)   nvers
+c etsvar(2,n)   nkn
+c etsvar(3,n)   not used
+c etsvar(4,n)   nlv
+c etsvar(5,n)   nvar
+c etsvar(6,n)   date
+c etsvar(7,n)   time
 c
-c noschar(1,n)  title
-c noschar(2,n)  femver
+c etschar(1,n)  title
+c etschar(2,n)  femver
 c
 c-------------------------------------------------------------
 c parameters
 c-------------------------------------------------------------
 
         integer ftype,maxvers,maxcomp
-        parameter(ftype=161,maxvers=5,maxcomp=3)
+        parameter(ftype=163,maxvers=1,maxcomp=1)
 
         integer ndim,nitdim,nchdim
-        parameter(ndim=30,nitdim=7,nchdim=2)
+        parameter(ndim=10,nitdim=7,nchdim=2)
 
 c-------------------------------------------------------------
 c common
 c-------------------------------------------------------------
 
-        integer nositem
-        common /nositm/nositem
+        integer etsitem
+        common /etsitm/etsitem
 
-        integer nosvar(0:nitdim,ndim)
-        common /nosvar/nosvar
+        integer etsvar(0:nitdim,ndim)
+        common /etsvar/etsvar
 
-        character*80 noschar(nchdim,ndim)
-        common /noschar/noschar
+        character*80 etschar(nchdim,ndim)
+        common /etschar/etschar
 
 c-------------------------------------------------------------
 c save
 c-------------------------------------------------------------
 
-        save /nositm/
-        save /nosvar/
-        save /noschar/
+        save /etsitm/
+        save /etsvar/
+        save /etschar/
 
 c-------------------------------------------------------------
 c end of header

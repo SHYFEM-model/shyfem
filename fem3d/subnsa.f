@@ -627,7 +627,13 @@ c************************************************************************
         else if( string(is:ie4) .eq. 'evap' ) then
           iv = 27
         else if( string(is:ie3) .eq. 'lgr' ) then
-          iv = 27
+          iv = 80
+        else if( string(is:ie3) .eq. 'nos' ) then
+          !generic - no id
+        else if( string(is:ie3) .eq. 'fem' ) then
+          !generic - no id
+        else if( string(is:ie4) .eq. 'elem' ) then
+          !generic - no id
         else if( string .eq. ' ' ) then
           write(6,*) '*** string2ivar: no string given'
         else
@@ -657,13 +663,18 @@ c******************************************************
           string = 'water level'
         else if( iv .eq. 10 ) then
           string = 'generic tracer'
+        else if( iv .eq. 30 ) then
+          string = 'generic tracer'
         else if( iv .eq. 11 ) then
           string = 'salinity'
         else if( iv .eq. 12 ) then
           string = 'temperature'
+        else if( iv .eq. 335 ) then
+          string = 'time over threshold'
         else
-          write(6,*) '*** cannot find description of string: '
+          write(6,*) '*** cannot find description for variable: '
           write(6,*) iv
+	  !stop 'error stop ivar2string: no description'
         end if
 
         end

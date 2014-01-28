@@ -410,6 +410,7 @@ cc undocumented
 
 	call addpar('tramp',0.)		!start smoothly for discharge
 	call addpar('levflx',0.)	!use level-discharge relationship
+	call addpar('nad',-1.)		!no advective terms for this boundary
 
 c DOCS	END
 
@@ -1317,7 +1318,7 @@ c********************************************************************
 	integer nbnd
 
         integer nbvdim
-        parameter(nbvdim=23)
+        parameter(nbvdim=24)
 
 	nbnd = nbvdim
 
@@ -1333,7 +1334,7 @@ c********************************************************************
         character*(*) name
 
         integer nbvdim
-        parameter(nbvdim=23)
+        parameter(nbvdim=24)
 
         integer id
         character*6 bname
@@ -1357,13 +1358,19 @@ c********************************************************************
 
 	subroutine get_bnd_name(id,name)
 
+c all variables used in section bound
+c
+c to add a variable:
+c	add to names
+c	increase nbvdim (more instances in file)
+
 	implicit none
 
 	integer id
         character*(*) name
 
         integer nbvdim
-        parameter(nbvdim=23)
+        parameter(nbvdim=24)
 
         character*6 names(nbvdim)
         save names
@@ -1372,7 +1379,7 @@ c********************************************************************
      +                  ,'ampli','period','phase','zref','ktilt'
      +                  ,'intpol','levmax','igrad0','zfact','nbdim'
      +			,'conz','temp','salt','levmin','kref'
-     +			,'ztilt','tramp','levflx'
+     +			,'ztilt','tramp','levflx','nad'
      +                  /
 
 	if( id .gt. nbvdim ) then
@@ -1392,7 +1399,7 @@ c********************************************************************
 	integer ibc
 
         integer nbvdim
-        parameter(nbvdim=23)
+        parameter(nbvdim=24)
 
         integer i
 	real value

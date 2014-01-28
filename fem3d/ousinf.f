@@ -78,92 +78,72 @@ c	integer rdous,rfous
 	integer iapini,ideffi
 
 c-----------------------------------------------------------------
-c initialize basin and simulation
-c-----------------------------------------------------------------
 
 	nread=0
+
+c-----------------------------------------------------------------
+c open basin and simulation
+c-----------------------------------------------------------------
+
+	call shyfem_copyright('ousinf - Info on OUS files')
 
 	if(iapini(3,nkndim,neldim,0).eq.0) then
 		stop 'error stop : iapini'
 	end if
 
+	call open_ous_type('.ous','old',nin)
+
+	call read_ous_header(nin,nkndim,neldim,nlvdim,ilhv,hlv,hev)
+	call ous_get_params(nin,nknous,nelous,nlvous)
+	nlv = nlvous
+
 	call set_ev
-
-	nin=ideffi('datdir','runnam','.ous','unform','old')
-	if(nin.le.0) goto 100
-
-c-----------------------------------------------------------------
-c read header of simulation
-c-----------------------------------------------------------------
-
-	nvers=1
-        call rfous(nin
-     +			,nvers
-     +			,nknous,nelous,nlvous
-     +			,href,hzoff
-     +			,descrp
-     +			,ierr)
-
-	nlv=nlvous
-	call dimous(nin,nkndim,neldim,nlvdim)
-
-        write(6,*)
-        write(6,*)   descrp
-        write(6,*)
-        write(6,*) ' nvers        : ',nvers
-        write(6,*) ' href,hzoff   : ',href,hzoff
-        write(6,*) ' nkn,nel      : ',nknous,nelous
-        write(6,*) ' nlv          : ',nlvous
-        write(6,*)
-
-	call rsous(nin,ilhv,hlv,hev,ierr)
-
         call init_sigma_info(nlv,hlv)
-	call makehev(hev)
+	!call makehev(hev)
 
 c-----------------------------------------------------------------
 c loop on data of simulation
 c-----------------------------------------------------------------
 
-  300   continue
+	do while(.true.)
 
-        call rdous(nin,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
+          !call rdous(nin,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
+	  call ous_read_record(nin,it,nlvdim,ilhv,znv,zenv
+     +				,utlnv,vtlnv,ierr)
 
-        if(ierr.gt.0) then
-		write(6,*) 'error in reading file : ',ierr
-		goto 100
-        else if(ierr.lt.0) then
-		goto 100
-	end if
+	  if( it .gt. 21049200 ) goto 100
 
-	nread=nread+1
+          if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
+          if(ierr.ne.0) goto 100
 
-	call mima(znv,nknous,zmin,zmax)
-        call comp_barotropic(nel,nlvdim,ilhv,utlnv,vtlnv,ut2v,vt2v)
-        call comp_vel2d(nel,hev,zenv,ut2v,vt2v,u2v,v2v
+	  nread=nread+1
+
+	  call mima(znv,nknous,zmin,zmax)
+          call comp_barotropic(nel,nlvdim,ilhv,utlnv,vtlnv,ut2v,vt2v)
+          call comp_vel2d(nel,hev,zenv,ut2v,vt2v,u2v,v2v
      +                          ,umin,vmin,umax,vmax)
-	call compute_volume(nel,zenv,hev,volume)
+	  call compute_volume(nel,zenv,hev,volume)
 
-c        call debug_write_node(it,nread,nkndim,neldim,nlvdim,nkn,nel,nlv
+c          call debug_write_node(it,nread,nkndim,neldim,nlvdim,nkn,nel,nlv
 c     +          ,nen3v,zenv,znv,utlnv,vtlnv)
 
-	write(6,*) 
-	write(6,*) 'time : ',it
-	write(6,*) 
-	write(6,*) 'zmin/zmax : ',zmin,zmax
-	write(6,*) 'umin/umax : ',umin,umax
-	write(6,*) 'vmin/vmax : ',vmin,vmax
-	write(6,*) 'volume    : ',volume
+	  write(6,*) 
+	  write(6,*) 'time : ',it
+	  write(6,*) 
+	  write(6,*) 'zmin/zmax : ',zmin,zmax
+	  write(6,*) 'umin/umax : ',umin,umax
+	  write(6,*) 'vmin/vmax : ',vmin,vmax
+	  write(6,*) 'volume    : ',volume
 
-	!if( it .eq. -1 ) call write_zeta(nkn,znv)
+	  !if( it .eq. -1 ) call write_zeta(nkn,znv)
 
-	goto 300
-
-  100	continue
+	end do
 
 c-----------------------------------------------------------------
 c end of loop
 c-----------------------------------------------------------------
+
+  100	continue
 
 	write(6,*)
 	write(6,*) nread,' records read'
@@ -173,7 +153,6 @@ c-----------------------------------------------------------------
 c end of routine
 c-----------------------------------------------------------------
 
-	stop
 	end
 
 c******************************************************************

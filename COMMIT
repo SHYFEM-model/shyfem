@@ -1,5 +1,67 @@
 ============================================================
 
+Tue Jan 28 16:31:16 CET 2014
+
+ets, optintp, nos/ous restructured
+
+ .gitignore              |    7 +
+ LOG                     |   56 +++
+ fem3d/Makefile          |   30 +-
+ fem3d/bdist.f           |  163 ++++++--
+ fem3d/common.h          |    5 +-
+ fem3d/etsinf.f          |  119 +++++
+ fem3d/etsinf.h          |   65 +++
+ fem3d/etsutil.f         |  295 +++++++++++++
+ fem3d/ht.f              |    6 +-
+ fem3d/netcdf_util.f     |    2 +
+ fem3d/newexpl.f         |   42 ++-
+ fem3d/nos2nc.f          |   43 +--
+ fem3d/nos_elab.f        |  183 ++++-----
+ fem3d/nosextr_cat.f     |   76 +---
+ fem3d/nosextr_records.f |   47 +--
+ fem3d/nosinf.f          |   14 +-
+ fem3d/nosinf.h          |   46 ++-
+ fem3d/nosutil.f         |  152 ++++++-
+ fem3d/optintp.f         |  365 ++++++++++++++++
+ fem3d/ous2nc.f          |   41 +--
+ fem3d/ousinf.f          |   93 ++---
+ fem3d/ousinf.h          |   72 +++
+ fem3d/ousutil.f         |  125 ++++++-
+ fem3d/simsys_lp.f       |   19 +-
+ fem3d/simsys_pard.f     |   15 +
+ fem3d/simsys_spk.f      |   15 +
+ fem3d/splitets.f        |  223 ++++++++++
+ fem3d/subbnd.f          |   17 +-
+ fem3d/subcon1.f         |   67 +++-
+ fem3d/subets.f          | 1058 +++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subetsa.f         |  372 ++++++++++++++++
+ fem3d/subetsa.h         |   16 +
+ fem3d/submod.f          |    1 +
+ fem3d/subnls.f          |   64 +++
+ fem3d/subnos.f          |  525 +++++++++++++----------
+ fem3d/subnosa.f         |   19 +-
+ fem3d/subnsa.f          |   15 +-
+ fem3d/subnsh.f          |   10 +-
+ fem3d/subous.f          | 1104 ++++++++++++++++++++++++++++++++++++++---------
+ fem3d/subousa.f         |   51 ++-
+ fem3d/subres.f          |   48 ++-
+ fem3d/subsys.f          |    5 +
+ fembin/bashskel.sh      |  152 +++++++
+ fembin/gp               |  107 +++--
+ fembin/grd_closest.pl   |   12 +-
+ fembin/recursivemake    |   23 +-
+ fembin/vpgrd            |   44 ++-
+ femdoc/final/shyfem.pdf |  Bin 270754 -> 270855 bytes
+ femdoc/final/shyfem.ps  |  397 +++++++++---------
+ femplot/plotsim.f       |    6 +-
+ femplot/supbas.f        |   23 +-
+ femplot/supint.f        |    2 +-
+ femplot/supout.f        |    2 +-
+ femplot/supsim.f        |    4 +-
+ 54 files changed, 5326 insertions(+), 1137 deletions(-)
+
+============================================================
+
 Thu Dec  5 16:20:47 CET 2013
 
 New version 6_1_70

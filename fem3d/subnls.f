@@ -18,6 +18,7 @@ c function nrdnxt(name,value,text)		returns next item in section
 c function nrdpar(sect,name,value,text)		reads & inserts next parameter
 c subroutine nrdins(sect)			reads & inserts parameters
 c
+c function nrdtable(ivect,cvect,ndim)		reads table in section
 c function nrdveci(ivect,ndim)			reads integer vector in section
 c function nrdvecr(rvect,ndim)			reads real vector in section
 c
@@ -46,6 +47,7 @@ c 02.12.2008	ggu	bug in nrdnum: kexp was double precision
 c 09.03.2009	ggu	bug in nrdsec: use local name to manipolate string
 c 26.08.2009	ggu	allow '_' for names (USE_)
 c 27.02.2013	ggu	handle extra information on section line
+c 20.01.2014	ggu	new routine nrdtable()
 c
 c notes :
 c
@@ -529,6 +531,64 @@ c does not handle vectors
 
 c******************************************************************
 
+	function nrdtable(ivect,cvect,ndim)
+
+c reads table in section
+c
+c table must have following structure (empty lines are allowed
+c
+c	ivalue1 'char1'
+c	ivalue2 'char2'
+c	etc..
+c
+c returns total number of values read
+c returns -1 in case of dimension error
+c returns -2 in case of read error
+
+	implicit none
+
+	integer nrdtable		!total number of elements read
+	integer ndim			!dimension of vector
+	integer ivect(ndim)		!integer vector
+	character*(*) cvect(ndim)	!character vector
+
+	character*80 line
+	integer n,ioff,ianz
+	integer nrdlin,nrdnum,nrdtxt,ichafs
+	double precision value
+	character*80 text
+
+	n = 0
+
+	do while( nrdlin(line) .eq. 1 )
+		ioff=ichafs(line)
+		ianz=nrdnum(value,line,ioff)
+		if(ianz.gt.0) then
+		   n=n+1
+		   if(n.gt.ndim) goto 99
+		   ivect(n)=nint(value)
+		   ianz=nrdtxt(text,line,ioff)
+		   if( ianz .ge. 0 ) cvect(n) = text
+		end if
+		if(ianz.lt.0) goto 98
+	end do
+
+	nrdtable = n
+
+	return
+   98	continue
+	write(6,*) 'read error in following line'
+	write(6,*) line
+	nrdtable = -2
+	return
+   99	continue
+	write(6,*) 'dimension error : ',ndim
+	nrdtable = -1
+	return
+	end
+
+c******************************************************************
+
 	function nrdveci(ivect,ndim)
 
 c reads integer vector in section
@@ -868,6 +928,8 @@ c
 	character*1 delim
 	integer length,intxt,ktext,i
 c
+	text = ' '
+
 	length=len(line)
 	intxt=0		!1:reading character string
 	ktext=0		!number of characters in character string
@@ -976,6 +1038,8 @@ c
 	kexp=0		!exponential
 c
 	length=len(line)
+c
+	value = 0.
 c
 	do j=ioff,length
 c

@@ -11,6 +11,7 @@ c 02.12.2011    ggu     bug fix for call to get_sigma_info() (missing argument)
 c 10.02.2012    ggu     new routines to get initial/final time of records
 c 25.01.2013    ggu     new routines nos_get_vars()
 c 05.09.2013    ggu     new call to get_layer_thickness()
+c 20.01.2014    ggu     new helper routines
 c
 c***************************************************************
 
@@ -112,6 +113,121 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
+	subroutine write_nos_header(iu,ilhkv,hlv,hev)
+
+c other variables are stored internally
+c
+c must have been initialized with nos_init
+c all other variables must have already been stored internally (title,date..)
+
+	implicit none
+
+	integer iu
+	integer ilhkv(1)
+	real hlv(1)
+	real hev(1)
+
+	integer nkn,nel,nlv,nvar
+	integer ierr
+
+	call nos_get_params(iu,nkn,nel,nlv,nvar)
+	call nos_write_header(iu,nkn,nel,nlv,nvar,ierr)
+	if( ierr .ne. 0 ) goto 99
+	call nos_write_header2(iu,ilhkv,hlv,hev,ierr)
+	if( ierr .ne. 0 ) goto 99
+
+	return
+   99	continue
+	write(6,*) 'error in writing header of NOS file'
+	stop 'error stop write_nos_header: writing header'
+	end
+
+c***************************************************************
+
+	subroutine read_nos_header(iu,nkndim,neldim,nlvdim,ilhkv,hlv,hev)
+
+c other variables are stored internally
+
+	implicit none
+
+	integer iu
+	integer nkndim,neldim,nlvdim
+	integer ilhkv(nkndim)
+	real hlv(nlvdim)
+	real hev(neldim)
+
+	integer nvers
+	integer nkn,nel,nlv,nvar
+	integer ierr
+	integer l
+	integer date,time
+	character*50 title,femver
+
+	nvers = 5
+
+	call nos_init(iu,nvers)
+
+	call nos_read_header(iu,nkn,nel,nlv,nvar,ierr)
+	if( ierr .ne. 0 ) goto 99
+
+	call dimnos(iu,nkndim,neldim,nlvdim)
+
+	call getnos(iu,nvers,nkn,nel,nlv,nvar)
+	call nos_get_date(iu,date,time)
+	call nos_get_title(iu,title)
+	call nos_get_femver(iu,femver)
+
+        write(6,*) 'nvers     : ',nvers
+        write(6,*) 'nkn,nel   : ',nkn,nel
+        write(6,*) 'nlv,nvar  : ',nlv,nvar
+        write(6,*) 'title     : ',title
+        write(6,*) 'femver    : ',femver
+        write(6,*) 'date,time : ',date,time
+
+	call nos_read_header2(iu,ilhkv,hlv,hev,ierr)
+	if( ierr .ne. 0 ) goto 99
+
+        write(6,*) 'Available levels: ',nlv
+        write(6,*) (hlv(l),l=1,nlv)
+
+	return
+   99	continue
+	write(6,*) 'error in reading header of NOS file'
+	stop 'error stop read_nos_header: reading header'
+	end
+
+c***************************************************************
+c***************************************************************
+c***************************************************************
+
+	subroutine open_nos_type(type,status,nunit)
+
+c open NOS file with default simulation name and given extension
+
+	implicit none
+
+	character*(*) type,status
+	integer nunit
+
+	integer nb
+	character*80 file
+
+        integer ifileo
+
+	call def_make(type,file)
+	nb = ifileo(0,file,'unform',status)
+
+	if( nb .le. 0 ) then
+	  write(6,*) 'file: ',file
+	  stop 'error stop open_nos_type: opening file'
+	end if
+
+	nunit = nb
+
+	end
+
+c***************************************************************
+
 	subroutine open_nos_file(name,status,nunit)
 
 	implicit none
@@ -126,7 +242,11 @@ c***************************************************************
 
 	call mkname(' ',name,'.nos',file)
 	nb = ifileo(0,file,'unform',status)
-	if( nb .le. 0 ) stop 'error stop open_nos_file: opening file'
+
+	if( nb .le. 0 ) then
+	  write(6,*) 'file: ',file
+	  stop 'error stop open_nos_file: opening file'
+	end if
 
 	nunit = nb
 
@@ -340,17 +460,18 @@ c gets it of first record
 	character*(*) file
 	integer itstart
 
-	integer nunit,nvers
+	integer nunit,nvers,nvar
 	integer it,ivar,ierr
 	character*80 title
 
-	nvers = 3
+	nvers = 5
 	itstart = -1
 
 	call open_nos_file(file,'old',nunit)
-	call shnos(nunit,nvers,title)
-
-	call sknos(nunit,it,ivar,ierr)
+	call nos_init(nunit,nvers)
+	call nos_skip_header(nunit,nvar,ierr)
+	if( ierr .ne. 0 ) return
+	call nos_skip_record(nunit,it,ivar,ierr)
 	if( ierr .ne. 0 ) return
 	itstart = it
 
@@ -367,19 +488,21 @@ c gets it of last record
 	character*(*) file
 	integer itend
 
-	integer nunit,nvers
+	integer nunit,nvers,nvar
 	integer it,itlast,ivar,ierr
 	character*80 title
 
-	nvers = 3
+	nvers = 5
 	itend = -1
 	itlast = -1
 
 	call open_nos_file(file,'old',nunit)
-	call shnos(nunit,nvers,title)
+	call nos_init(nunit,nvers)
+	call nos_skip_header(nunit,nvar,ierr)
+	if( ierr .ne. 0 ) return
 
     1	continue
-	call sknos(nunit,it,ivar,ierr)
+	call nos_skip_record(nunit,it,ivar,ierr)
 	if( ierr .gt. 0 ) return
 	if( ierr .lt. 0 ) goto 2
 	itlast = it
@@ -399,10 +522,11 @@ c***************************************************************
 	integer nvar
 	integer ivars(nvar)
 
-	integer i,ivar,it
+	integer i,ivar,it,ierr
 
 	do i=1,nvar
-	  call nos_next_record(nin,it,ivar)
+	  call nos_next_record(nin,it,ivar,ierr)
+	  if( ierr .ne. 0 ) goto 99
 	  ivars(i) = ivar
 	end do
 
@@ -410,6 +534,10 @@ c***************************************************************
 	  call nos_back_record(nin)
 	end do
 
+	return
+   99	continue
+	write(6,*) 'not enough variables: ',nvar,i,ierr
+	stop 'error stop nos_get_vars: nvar'
 	end
 
 c***************************************************************

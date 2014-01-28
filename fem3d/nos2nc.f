@@ -74,11 +74,11 @@ c-------------------------------------------------
 	real var3d(nlvdim*nkndim)
 
         integer nvers,nin,nlv,lmax,l
-        integer itanf,itend,idt,idtous
+        integer itanf,itend,idt
 	integer it,ie,i
         integer ierr,nread,ndry
 	integer irec,maxrec,iwrite
-        integer nknous,nelous
+        integer nknnos,nelnos
 	integer iztype
 	integer nvar,ivar
         real href,hzoff,hlvmin
@@ -106,6 +106,7 @@ c-------------------------------------------------
         integer rec_varid
         integer var_id
 	integer date0,time0
+	integer date,time
 	integer it0
 	integer iperiod,its,ite,nfreq
 	logical bwrite
@@ -113,7 +114,6 @@ c-------------------------------------------------
 
 	character*80 units,std
 
-c	integer rdous,rfous
 	integer iapini,ideffi
 
 	call shyfem_copyright('nos2nc - netcdf output')
@@ -149,8 +149,9 @@ c-----------------------------------------------------------------
 	call makehkv_minmax(hkv,haux,1)
 	call makehev(hev)
 
-	nin=ideffi('datdir','runnam','.nos','unform','old')
-	if(nin.le.0) goto 100
+c-----------------------------------------------------------------
+c get input from terminal about what to do
+c-----------------------------------------------------------------
 
 	if( bdate ) call read_date_and_time(date0,time0)
 	call dtsini(date0,time0)
@@ -172,31 +173,23 @@ c-----------------------------------------------------------------
 c read header of simulation
 c-----------------------------------------------------------------
 
-        nvers=3
-	call rfnos(nin,nvers,nknous,nelous,nlv,nvar,title,ierr)
+        call open_nos_type('.nos','old',nin)
 
-	call dimnos(nin,nkndim,neldim,nlvdim)
+        call read_nos_header(nin,nkndim,neldim,nlvdim,ilhkv,hlv,hev)
+        call nos_get_params(nin,nknnos,nelnos,nlv,nvar)
+	call nos_get_date(nin,date,time)
+	if( date .gt. 0 ) then
+	  date0 = date
+	  time0 = time
+	  call dtsini(date0,time0)
+	end if
 
-	write(6,*)
-        write(6,*) 'title        : ',title
-	write(6,*)
-        write(6,*) 'nvers        : ',nvers
-        write(6,*) 'nkn,nel      : ',nknous,nelous
-        write(6,*) 'nlv          : ',nlv
-        write(6,*) 'nvar         : ',nvar
-	write(6,*)
-
-	if( nkn .ne. nknous .or. nel .ne. nelous ) goto 94
+	if( nkn .ne. nknnos .or. nel .ne. nelnos ) goto 94
 	if( nvar .gt. ndim ) goto 95
-
-	call rsnos(nin,ilhkv,hlv,hev,ierr)
 
 	call init_sigma_info(nlv,hlv)
 	call level_k2e(nkn,nel,nen3v,ilhkv,ilhv)
 	call compute_iztype(iztype)
-
-        write(6,*) 'Available levels: ',nlv
-        write(6,*) (hlv(l),l=1,nlv)
 
 	call nos_get_vars(nin,nvar,ivars)
 
@@ -302,8 +295,8 @@ c-----------------------------------------------------------------
         stop 'error stop nos2nc: variables'
    94   continue
         write(6,*) 'incompatible simulation and basin'
-        write(6,*) 'nkn: ',nkn,nknous
-        write(6,*) 'nel: ',nel,nelous
+        write(6,*) 'nkn: ',nkn,nknnos
+        write(6,*) 'nel: ',nel,nelnos
         stop 'error stop nos2nc: nkn,nel'
    95   continue
         write(6,*) 'nvar,ndim: ',nvar,ndim

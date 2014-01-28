@@ -47,6 +47,7 @@ c 07.04.2008    ggu     deleted set_c_bound
 c 08.04.2008    ggu     cleaned, deleted distribute_vertically, open_b_flux
 c 09.10.2008    ggu&ccf call to confop changed -> nlv
 c 20.11.2009    ggu	in conwrite only write needed (nlv) layers
+c 20.01.2014    ggu	new writing format for nos files in confop, confil
 c
 c*****************************************************************
 
@@ -200,6 +201,8 @@ c local
 	end
 
 c*************************************************************
+c*************************************************************
+c*************************************************************
 
 	subroutine confop(iu,itmcon,idtcon,nlv,nvar,type)
 
@@ -227,42 +230,76 @@ c on return iu = -1 means that no file has been opened and is not written
         real hlv(1), hev(1)
         common /hlv/hlv, /hev/hev
 
+	integer nvers
+	integer date,time
 	integer ierr
-	character*80 dir,nam,file
+	!character*80 dir,nam,file
+	character*80 title,femver
 
 	integer ifemop
+	real getpar
+	double precision dgetpar
 
+c-----------------------------------------------------
 c check idtcon and itmcon and adjust
+c-----------------------------------------------------
 
 	call adjust_itmidt(itmcon,idtcon)
 
 	iu = -1
         if( idtcon .le. 0 ) return
 
+c-----------------------------------------------------
 c open file
+c-----------------------------------------------------
 
 	iu = ifemop(type,'unformatted','new')
 	if( iu .le. 0 ) goto 98
 
+c-----------------------------------------------------
+c initialize parameters
+c-----------------------------------------------------
+
+	nvers = 5
+	date = nint(dgetpar('date'))
+	time = nint(dgetpar('time'))
+	title = descrp
+	call get_shyfem_version(femver)
+
+c-----------------------------------------------------
 c write header of file
+c-----------------------------------------------------
 
-	call wfnos(iu,3,nkn,nel,nlv,nvar,descrp,ierr)
+	call nos_init(iu,nvers)
+	call nos_set_title(iu,title)
+	call nos_set_date(iu,date,time)
+	call nos_set_femver(iu,femver)
+	call nos_write_header(iu,nkn,nel,nlv,nvar,ierr)
         if(ierr.gt.0) goto 99
-	call wsnos(iu,ilhkv,hlv,hev,ierr)
+	call nos_write_header2(iu,ilhkv,hlv,hev,ierr)
         if(ierr.gt.0) goto 99
 
+	!call wfnos(iu,3,nkn,nel,nlv,nvar,descrp,ierr)
+        !if(ierr.gt.0) goto 99
+	!call wsnos(iu,ilhkv,hlv,hev,ierr)
+        !if(ierr.gt.0) goto 99
+
+c-----------------------------------------------------
 c write informational message to terminal
+c-----------------------------------------------------
 
         write(6,*) 'confop: ',type,' file opened ',it
 
-c end
+c-----------------------------------------------------
+c end of routine
+c-----------------------------------------------------
 
 	return
    98	continue
-	write(6,*) 'error opening file ',file
+	write(6,*) 'error opening file with type ',type
 	stop 'error stop confop'
    99	continue
-	write(6,*) 'error ',ierr,' writing file ',file
+	write(6,*) 'error ',ierr,' writing file with type ',type
 	stop 'error stop confop'
 	end
 
@@ -288,25 +325,31 @@ c writes NOS file
 
 	integer ierr
 
+c-----------------------------------------------------
 c check if files has to be written
-
-	!write(6,*) it,itmcon,idtcon,mod(it-itmcon,idtcon)
+c-----------------------------------------------------
 
 	if( iu .le. 0 ) return
 	if( it .lt. itmcon ) return
 	if( mod(it-itmcon,idtcon) .ne. 0 ) return
 
+c-----------------------------------------------------
 c write file
+c-----------------------------------------------------
 
-	call wrnos(iu,it,ivar,nlvdi,ilhkv,c,ierr)
+	!call wrnos(iu,it,ivar,nlvdi,ilhkv,c,ierr)
+	call nos_write_record(iu,it,ivar,nlvdi,ilhkv,c,ierr)
 	if(ierr.gt.0) goto 99
 
+c-----------------------------------------------------
 c write informational message to terminal
+c-----------------------------------------------------
 
         write(6,*) 'confil: variable ',ivar,' written at ',it
-	write(6,*) it,idtcon,itmcon
 
-c end
+c-----------------------------------------------------
+c end of routine
+c-----------------------------------------------------
 
 	return
    99	continue
@@ -351,6 +394,8 @@ c shell for writing file unconditionally to disk
 
         end
 
+c*************************************************************
+c*************************************************************
 c*************************************************************
 
         subroutine conmima(nlvdi,c,cmin,cmax)

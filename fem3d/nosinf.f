@@ -57,11 +57,14 @@ c--------------------------------------------------------------
 		stop 'error stop : iapini'
 	end if
 
-	nin = ifem_open_file('.nos','old')
+	call open_nos_type('.nos','old',nin)
 
-        nvers=3
-	call rhnos(nin,nvers,nkndim,neldim,nlvdim,nkn,nel,nlv,nvar
-     +				,ilhkv,hlv,hev,title)
+!        nvers=3
+!	call rhnos(nin,nvers,nkndim,neldim,nlvdim,nkn,nel,nlv,nvar
+!     +				,ilhkv,hlv,hev,title)
+
+	call read_nos_header(nin,nkndim,neldim,nlvdim,ilhkv,hlv,hev)
+	call nos_get_params(nin,nkn,nel,nlv,nvar)
 
 	call depth_stats(nkn,ilhkv)
 
@@ -71,7 +74,8 @@ c--------------------------------------------------------------
 
 	do while(.true.)
 
-	   call rdnos(nin,it,ivar,nlvdim,ilhkv,cv3,ierr)
+	   !call rdnos(nin,it,ivar,nlvdim,ilhkv,cv3,ierr)
+	   call nos_read_record(nin,it,ivar,nlvdim,ilhkv,cv3,ierr)
 
            if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
            if(ierr.ne.0) goto 100

@@ -43,8 +43,9 @@
 
         !real vs1v(nkndim),vs2v(nkndim),vs3v(nkndim)
         double precision vs1v(nkndim),vs2v(nkndim),vs3v(nkndim)
-        common /vs1v/vs1v, /vs2v/vs2v, /vs3v/vs3v
-	save /vs1v/,/vs2v/,/vs3v/
+	integer is2v(nkndim)
+        common /vs1v/vs1v, /vs2v/vs2v, /vs3v/vs3v, /is2v/is2v
+	save /vs1v/,/vs2v/,/vs3v/,/is2v/
 
         real znv(1)
         common /znv/znv

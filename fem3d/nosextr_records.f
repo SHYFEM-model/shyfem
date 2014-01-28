@@ -73,29 +73,14 @@ c-------------------------------------------------------------------
 		stop 'error stop : iapini'
 	end if
 
-	nin=ideffi('datdir','runnam','.nos','unform','old')
-	if(nin.le.0) goto 100
-
 c-------------------------------------------------------------------
 c open NOS file and read header
 c-------------------------------------------------------------------
 
-        nvers=3
-	call rfnos(nin,nvers,nkn,nel,nlv,nvar,title,ierr)
-        if(ierr.ne.0) goto 100
+	call open_nos_type('.nos','old',nin)
 
-        write(6,*) 'nvers    : ',nvers
-        write(6,*) 'nkn,nel  : ',nkn,nel
-        write(6,*) 'nlv,nvar : ',nlv,nvar
-        write(6,*) 'title    : ',title
-
-        call dimnos(nin,nkndim,neldim,nlvdim)
-
-	call rsnos(nin,ilhkv,hlv,hev,ierr)
-        if(ierr.ne.0) goto 100
-
-	write(6,*) 'Available levels: ',nlv
-	write(6,*) (hlv(l),l=1,nlv)
+        call read_nos_header(nin,nkndim,neldim,nlvdim,ilhkv,hlv,hev)
+        call nos_get_params(nin,nkn,nel,nlv,nvar)
 
 c-------------------------------------------------------------------
 c get records to extract from STDIN
@@ -107,14 +92,20 @@ c-------------------------------------------------------------------
 c open NOS output file
 c-------------------------------------------------------------------
 
-	call mkname(' ','nos_extract','.nos',file)
-	write(6,*) 'writing file ',file(1:50)
-	nb = ifileo(55,file,'unform','new')
-	if( nb .le. 0 ) goto 98
-	call wfnos(nb,3,nkn,nel,nlv,1,title,ierr)
-	if( ierr .ne. 0 ) goto 99
-	call wsnos(nb,ilhkv,hlv,hev,ierr)
-	if( ierr .ne. 0 ) goto 99
+	!call mkname(' ','nos_extract','.nos',file)
+	!write(6,*) 'writing file ',file(1:50)
+	!nb = ifileo(55,file,'unform','new')
+
+	call open_nos_file('nos_extract','new',nb)
+
+	call nos_init(nb,0)
+	call nos_clone_params(nin,nb)
+	call write_nos_header(nb,ilhkv,hlv,hev)
+
+	!call wfnos(nb,3,nkn,nel,nlv,1,title,ierr)
+	!if( ierr .ne. 0 ) goto 99
+	!call wsnos(nb,ilhkv,hlv,hev,ierr)
+	!if( ierr .ne. 0 ) goto 99
 
 c-------------------------------------------------------------------
 c loop on input records
@@ -122,7 +113,7 @@ c-------------------------------------------------------------------
 
   300   continue
 
-	call rdnos(nin,it,ivar,nlvdim,ilhkv,cv3,ierr)
+	call nos_read_record(nin,it,ivar,nlvdim,ilhkv,cv3,ierr)
 
         if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
         if(ierr.ne.0) goto 100
@@ -136,7 +127,7 @@ c-------------------------------------------------------------------
 	bwrite = ball .or. irec(nread) .ne. 0
 
 	if( bwrite ) then
-	  call wrnos(nb,it,ivar,nlvdim,ilhkv,cv3,ierr)
+	  call nos_write_record(nb,it,ivar,nlvdim,ilhkv,cv3,ierr)
 	  if( ierr .ne. 0 ) goto 99
 	  nextr = nextr + 1
 	end if

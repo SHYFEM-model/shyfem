@@ -15,6 +15,21 @@ c change amat here and vs*v in common.h
 c
 c******************************************************************
 
+	subroutine system_initialize
+
+	implicit none
+
+	include 'common.h'
+
+	write(6,*) '----------------------------------------'
+	write(6,*) 'initializing matrix inversion routines'
+	write(6,*) 'using Gaussian elimination'
+	write(6,*) '----------------------------------------'
+
+	end
+
+c******************************************************************
+
 	subroutine system_init
 
 	implicit none
@@ -42,8 +57,8 @@ c******************************************************************
         common /amat/amat
         save /amat/
 
-	!call lp_solve_system(nkn,mbw,amat,vs1v,vs2v,vs3v)
-	call dlp_solve_system(nkn,mbw,amat,vs1v,vs2v,vs3v)
+	!call lp_solve_system(nkn,mbw,amat,vs1v,is2v,vs3v)
+	call dlp_solve_system(nkn,mbw,amat,vs1v,is2v,vs3v)
 
 	end
 

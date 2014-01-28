@@ -98,6 +98,7 @@ c-------------------------------------------------
         integer rec_varid
         integer z_id,u_id,v_id
 	integer date0,time0
+	integer date,time
 	integer it0
 	integer iperiod,its,ite,nfreq
 	logical bwrite
@@ -140,8 +141,9 @@ c-----------------------------------------------------------------
 	call makehkv_minmax(hkv,haux,1)
 	call makehev(hev)
 
-	nin=ideffi('datdir','runnam','.ous','unform','old')
-	if(nin.le.0) goto 100
+c-----------------------------------------------------------------
+c get input from terminal about what to do
+c-----------------------------------------------------------------
 
 	if( bdate ) call read_date_and_time(date0,time0)
 	call dtsini(date0,time0)
@@ -163,35 +165,22 @@ c-----------------------------------------------------------------
 c read header of simulation
 c-----------------------------------------------------------------
 
-	nvers=1
-        call rfous(nin
-     +			,nvers
-     +			,nknous,nelous,nlv
-     +			,href,hzoff
-     +			,title
-     +			,ierr)
+	call open_ous_type('.ous','old',nin)
 
-	call dimous(nin,nkndim,neldim,nlvdim)
-
-        write(6,*)
-        write(6,*) 'title        : ',title
-        write(6,*)
-        write(6,*) 'nvers        : ',nvers
-        write(6,*) 'nkn,nel      : ',nknous,nelous
-        write(6,*) 'nlv          : ',nlv
-        write(6,*) 'href,hzoff   : ',href,hzoff
-        write(6,*)
+        call read_ous_header(nin,nkndim,neldim,nlvdim,ilhv,hlv,hev)
+        call ous_get_params(nin,nknous,nelous,nlv)
+	call ous_get_date(nin,date,time)
+	if( date .gt. 0 ) then
+	  date0 = date
+	  time0 = time
+	  call dtsini(date0,time0)
+	end if
 
 	if( nkn .ne. nknous .or. nel .ne. nelous ) goto 94
-
-	call rsous(nin,ilhv,hlv,hev,ierr)
 
 	call init_sigma_info(nlv,hlv)
 	call level_e2k(nkn,nel,nen3v,ilhv,ilhkv)
 	call compute_iztype(iztype)
-
-        write(6,*) 'Available levels: ',nlv
-        write(6,*) (hlv(l),l=1,nlv)
 
 	if( breg ) call get_lmax_reg(nx,ny,fm,ilhv,lmax)
 
@@ -224,7 +213,7 @@ c-----------------------------------------------------------------
 
   300   continue
 
-        call rdous(nin,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
+	call ous_read_record(nin,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
 
 	it = it - it0
 

@@ -1137,7 +1137,7 @@ c this routine works with Z and sigma layers
 	common /hlv/hlv !DEB
 
 c---------- DEB SIG
-	real hkk,hkk1,hel,hkkk,hkkk1,heli
+	real hkk
 	real hkko(0:nlvdim,nkndim)	!depth of interface at node
 	real hkkom(0:nlvdim,nkndim)	!average depth of layer at node
 	real hele
@@ -1209,33 +1209,34 @@ c---------- DEB SIG
 	    hint = hh + hhup			!interface thickness
                 
 	    if( bsigma .and. bsigadjust ) then	!-------------- DEB SIG
-	      hel = 0.
-	      heli = 0.
+	      hele = 0.
+	      helei = 0.
 	      do ii=1,3
                 k = nen3v(ii,ie)
-	        hel=hel+hkko(l,k)+hkko(l-1,k)	!depth of mid layer in element
-	        heli=heli+hkko(l-1,k)		!depth of interface in element
+	        hele=hele+hkko(l,k)+hkko(l-1,k)	!depth of mid layer in element
+	        helei=helei+hkko(l-1,k)		!depth of interface in element
 	      end do
 
-	      hele=hel/6.
-	      helei=heli/3.
+	      hele=hele/6.			!depth of mid layer l
+	      helei=helei/3.			!depth of interface l-1
 
 	      do ii=1,3
                 k = nen3v(ii,ie)   
+		lkmax = ilhkv(k)
 	        if(helei.lt.hkko(l-1,k))then	!look upwards
 		  do ll=l-1,1,-1
 	            if(helei.gt.hkko(ll-1,k)) exit
 		  end do
 		  if( ll .le. 0 ) ll = 1
                 else if(helei.gt.hkko(l,k))then	!look downwards
-		  lkmax = ilhkv(k)
 		  do ll=l+1,lkmax
 	            if(helei.lt.hkko(ll,k)) exit
 		  end do
 		  if( ll .gt. lkmax ) ll = lkmax
-		else				!inside layer
+		else				!inside layer l
 		  ll = l
 	        end if
+		!interface l-1 is inside layer ll
 		if( helei.lt.hkkom(ll,k) ) then	!find part of layer (up or down)
 		  llup(ii) = ll-1
 		  if( ll .eq. 1 ) llup(ii) = 1
@@ -1244,6 +1245,15 @@ c---------- DEB SIG
 		  llup(ii) = ll
 		  lldown(ii) = ll+1
 		  if( ll .eq. lkmax ) lldown(ii) = lkmax
+		end if
+		!do final check just to be sure (may be commented)
+		if( lldown(ii) .eq. 1 ) then
+		  if( helei .gt. hkkom(1,k) ) goto 99
+		else if( llup(ii) .eq. lkmax ) then
+		  if( helei .lt. hkkom(lkmax,k) ) goto 99
+		else
+		  if( helei .gt. hkkom(lldown(ii),k) ) goto 99
+		  if( helei .lt. hkkom(llup(ii),k) ) goto 99
 		end if
 	      end do
 	    end if
@@ -1267,7 +1277,7 @@ c---------- DEB SIG
               b = ev(3+ii,ie)		!gradient in x
               c = ev(6+ii,ie)		!gradient in y
 
-	      if( l .eq. nsigma ) then
+	      if( l .eq. nsigma ) then	!last sigma layer
 	        brl = brl + b * rhop
 	        crl = crl + c * rhop
 	      end if
@@ -1329,7 +1339,7 @@ c---------- DEB SIG
 	        brint = br
 	        crint = cr
 	      end if
-	    else
+	    else			  !zeta layer
               if( l .eq. 1 ) then         !surface layer ... treat differently
                 brint = br
                 crint = cr
@@ -1339,8 +1349,8 @@ c---------- DEB SIG
               end if
 	    end if
 
-	    brup=brint
-	    crup=crint
+	    brup=br
+	    crup=cr
 	    if( l .eq. nsigma ) then
 	      brup=brl
 	      crup=crl
@@ -1359,6 +1369,12 @@ c---------- DEB SIG
           end do
         end do
         
+	return
+   99	continue
+	write(6,*) ie,k,ii
+	write(6,*) llup(ii),lldown(ii)
+	write(6,*) helei,hkkom(lldown(ii),k),hkkom(llup(ii),k)
+	stop 'error stop set_barocl_new_interface: internal error'
         end
 
 c**********************************************************************

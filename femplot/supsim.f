@@ -604,7 +604,7 @@ c plots node values
         call isoline(parray,nkn,0.,2)
         call colsh
 
-	!call bash(3)	! overlays grid (for debug)
+	call bash(4)	! overlays grid
 
 	call bash(2)
 	call qend
@@ -647,7 +647,7 @@ c plots element values
         call isoline(parray,nel,0.,3)			!plot on elements
         call colsh
 
-	!call bash(3)	! overlays grid (for debug)
+	call bash(4)	! overlays grid
 
 	call bash(2)
 	call qend

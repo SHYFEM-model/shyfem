@@ -12,6 +12,7 @@ c 10.11.2011    ggu     new routines for hybrid levels
 c 02.12.2011    ggu     bug fix for call to get_sigma_info() (missing argument)
 c 21.01.2013    ggu     added two new routines comp_vel2d, comp_barotropic
 c 05.09.2013    ggu     new call to get_layer_thickness()
+c 20.01.2014    ggu     new helper routines
 c
 c******************************************************************
 
@@ -319,6 +320,125 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
+        subroutine write_ous_header(iu,ilhv,hlv,hev)
+
+c other variables are stored internally
+c
+c must have been initialized with ous_init
+c all other variables must have already been stored internally (title,date..)
+
+        implicit none
+
+        integer iu
+        integer ilhv(1)
+        real hlv(1)
+        real hev(1)
+
+        integer nkn,nel,nlv
+        integer ierr
+
+        call ous_get_params(iu,nkn,nel,nlv)
+        call ous_write_header(iu,nkn,nel,nlv,ierr)
+        if( ierr .ne. 0 ) goto 99
+        call ous_write_header2(iu,ilhv,hlv,hev,ierr)
+        if( ierr .ne. 0 ) goto 99
+
+        return
+   99   continue
+        write(6,*) 'error in writing header of OUS file'
+        stop 'error stop write_ous_header: writing header'
+        end
+
+c***************************************************************
+
+        subroutine read_ous_header(iu,nkndim,neldim,nlvdim,ilhv,hlv,hev)
+
+c other variables are stored internally
+
+        implicit none
+
+        integer iu
+        integer nkndim,neldim,nlvdim
+        integer ilhv(nkndim)
+        real hlv(nlvdim)
+        real hev(neldim)
+
+        integer nvers
+        integer nkn,nel,nlv,nvar
+        integer ierr
+        integer l
+        integer date,time
+	real href,hzmin
+        character*50 title,femver
+
+        nvers = 2
+
+        call ous_init(iu,nvers)
+
+        call ous_read_header(iu,nkn,nel,nlv,ierr)
+        if( ierr .ne. 0 ) goto 99
+
+        call dimous(iu,nkndim,neldim,nlvdim)
+	!call infoous(iu,6)
+
+        call getous(iu,nvers,nkn,nel,nlv)
+        call ous_get_date(iu,date,time)
+        call ous_get_title(iu,title)
+        call ous_get_femver(iu,femver)
+        call ous_get_hparams(iu,href,hzmin)
+
+        write(6,*) 'nvers      : ',nvers
+        write(6,*) 'nkn,nel    : ',nkn,nel
+        write(6,*) 'nlv        : ',nlv
+        write(6,*) 'title      : ',title
+        write(6,*) 'femver     : ',femver
+        write(6,*) 'date,time  : ',date,time
+        write(6,*) 'href,hzmin : ',href,hzmin
+
+        call ous_read_header2(iu,ilhv,hlv,hev,ierr)
+        if( ierr .ne. 0 ) goto 99
+
+        write(6,*) 'Available levels: ',nlv
+        write(6,*) (hlv(l),l=1,nlv)
+
+        return
+   99   continue
+        write(6,*) 'error in reading header of OUS file'
+        stop 'error stop read_ous_header: reading header'
+        end
+
+c***************************************************************
+c***************************************************************
+c***************************************************************
+
+        subroutine open_ous_type(type,status,nunit)
+
+c open OUS file with default simulation name and given extension
+
+        implicit none
+
+        character*(*) type,status
+        integer nunit
+
+        integer nb
+        character*80 file
+
+        integer ifileo
+
+        call def_make(type,file)
+        nb = ifileo(0,file,'unform',status)
+
+        if( nb .le. 0 ) then
+          write(6,*) 'file: ',file
+          stop 'error stop open_ous_type: opening file'
+        end if
+
+        nunit = nb
+
+        end
+
+c***************************************************************
+
         subroutine open_ous_file(name,status,nunit)
 
         implicit none
@@ -333,7 +453,10 @@ c***************************************************************
 
         call mkname(' ',name,'.ous',file)
         nb = ifileo(0,file,'unform',status)
-        if( nb .le. 0 ) stop 'error stop open_ous_file: opening file'
+        if( nb .le. 0 ) then
+	  write(6,*) 'file: ',file
+	  stop 'error stop open_ous_file: opening file'
+	end if
 
         nunit = nb
 

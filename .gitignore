@@ -105,6 +105,10 @@ fem3d/noswrite
 fem3d/basbox
 fem3d/feminf
 fem3d/offinf
+fem3d/nos_elab
+fem3d/etsinf
+fem3d/splitets
+fem3d/optintp
 
 femadj/adjele
 fembin/extDiff
@@ -143,6 +147,9 @@ fembin/wininf
 fembin/basinf
 fembin/feminf
 fembin/offinf
+fembin/lgrinf
+fembin/etsinf
+fembin/splitets
 
 fembin/grid
 fembin/mesh

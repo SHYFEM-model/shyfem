@@ -262,6 +262,7 @@ c*****************************************************************
 	parameter (ndim=16)
 
 	character*10 what
+	character*20 string
 	integer iwhat,iauto
 	integer ideflt
 	real getpar
@@ -297,7 +298,7 @@ c*****************************************************************
 	  write(6,*)
           iwhat = ideflt(iwhat,'Enter choice : ')
         else
-          write(6,*) 'Plotting : ',iwhat
+          write(6,*) 'Plotting with choice: ',iwhat
 	  write(6,*)
         end if
 
@@ -310,8 +311,9 @@ c*****************************************************************
 	what = whats(iwhat)
 	call string2ivar(what,ivar)
 	call checkvar(ivar)
+	call ivar2string(ivar,string)
 
-	write(6,*) 'Plotting ',ivar,what
+	write(6,*) 'Plotting ',ivar,what,string
 
 	end
 

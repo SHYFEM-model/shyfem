@@ -30,6 +30,7 @@ c 04.03.2004	ggu	bug fix in cmed_accum() for array with more variables
 c 10.08.2004	ggu	cmed_init, cmed_accum adjusted also for 2D
 c 25.11.2004	ggu	resid converted to 3D (not tested)
 c 09.10.2008    ggu     new call to confop
+c 20.01.2014    ggu     new calls to ous routines
 c
 c********************************************************************
 c
@@ -69,11 +70,15 @@ c local
 	integer ierr,ii,ie,k
         integer nvers,lmax,l
 	integer iteres
+	integer date,time
 	real href,hzoff,rr,hm
+	character*80 title,femver
 c function
 	integer iround
 	integer wfout,wrout,ifileo
 	real getpar
+	double precision dgetpar
+	integer ifemop
 c save
 	real ur(nlvdim,neldim),vr(nlvdim,neldim)
         real znr(nkndim),zer(3,neldim)
@@ -97,9 +102,8 @@ c---------------------------------------------------------------------
 	if(icall.eq.0) then
 	  idtres=iround(getpar('idtres'))
 	  itmres=iround(getpar('itmres'))
-	  if(itmres.lt.itanf) itmres=itanf
+	  call adjust_itmidt(itmres,idtres)
 	  if(idtres.le.0) icall=-1
-	  if(itmres+idtres.gt.itend) icall=-1
 
 	  if(icall.eq.-1) return
 
@@ -108,23 +112,33 @@ c---------------------------------------------------------------------
 	  bdebug = iround(getpar('levdbg')) .ge. 1
 
 	  iteres=itmres+idtres*((itend-itmres)/idtres)
-	  href=getpar('href')		!$$HREFBUG
-	  hzoff=getpar('hzoff')		!$$HREFBUG
-
 	  itres=itmres+idtres
 
-	  call getfnm('datdir',dir)
-	  call getfnm('runnam',nam)
-	  call mkname(dir,nam,'.res',file)
-	  nout = ifileo(nout,file,'unformatted','new')
+	  nout = ifemop('.res','unformatted','new')
 	  if( nout .le. 0 ) goto 97
 
-          nvers = 1
-          call wfous(nout,nvers,nkn,nel,nlv,href,hzoff,descrp,ierr)
-          if(ierr.ne.0.) goto 78
+          nvers = 2
+	  href=getpar('href')		!$$HREFBUG
+	  hzoff=getpar('hzoff')		!$$HREFBUG
+          date = nint(dgetpar('date'))
+          time = nint(dgetpar('time'))
+          title = descrp
+          call get_shyfem_version(femver)
 
-          call wsous(nout,ilhv,hlv,hev,ierr)
-          if(ierr.ne.0.) goto 75
+          call ous_init(nout,nvers)
+          call ous_set_title(nout,title)
+          call ous_set_date(nout,date,time)
+          call ous_set_femver(nout,femver)
+	  call ous_set_hparams(nout,href,hzoff)
+          call ous_write_header(nout,nkn,nel,nlv,ierr)
+          if(ierr.gt.0) goto 78
+          call ous_write_header2(nout,ilhv,hlv,hev,ierr)
+          if(ierr.gt.0) goto 75
+
+          !call wfous(nout,nvers,nkn,nel,nlv,href,hzoff,descrp,ierr)
+          !if(ierr.ne.0.) goto 78
+          !call wsous(nout,ilhv,hlv,hev,ierr)
+          !if(ierr.ne.0.) goto 75
 
 	  if( bdebug ) write(6,*) 'resid : res-file opened ',it
 
@@ -206,7 +220,9 @@ c---------------------------------------------------------------------
 	    znr(k)=znr(k)*rr
 	  end do
 
-          call wrous(nout,it,nlvdim,ilhv,znr,zer,ur,vr,ierr)
+          !call wrous(nout,it,nlvdim,ilhv,znr,zer,ur,vr,ierr)
+          call ous_write_record(nout,it,nlvdim,ilhv,znr,zer
+     +                                  ,ur,vr,ierr)
           if(ierr.ne.0.) goto 79
 
 c---------------------------------------------------------------------

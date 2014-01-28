@@ -193,6 +193,7 @@ HTOBJS = \
 	subflxa.o subflx3d.o subflx.o subflxu.o \
 	subboxa.o \
 	newnohydro.o suboff.o \
+	subets.o subetsa.o \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ) $(PARALLEL_OBJ)
 
@@ -224,11 +225,13 @@ BASEXTRA = subgeo.o subgrd.o subsrt.o sublnka.o links.o sublnku.o
 
 NOSOBJS = subnos.o nosutil.o genutil.o subeos.o
 OUSOBJS = subous.o ousutil.o genutil.o 
-NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o genutil.o
+ETSOBJS = subets.o etsutil.o genutil.o 
+NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
+		genutil.o
 GRDOBJS = subgrd.o grdutil.o subsrt.o subcoord.o
 
 LAPLACE = sublpl.o submir.o subnos.o links.o sublnku.o \
-	  subwin.o subnosa.o
+	  subwin.o subnosa.o subssm.o
 
 LAGRANGE =	lagrange_main.o \
 		lagrange_back.o lagrange_dif.o \
@@ -271,23 +274,25 @@ LAGINTP = submir.o
 EXEMAIN  = ht vp
 
 EXEINFO  = ousinf flxinf volinf basinf nosinf wininf extinf rstinf feminf \
-		offinf
-EXESPLIT = nossplit splitext splitflx
+		offinf lgrinf etsinf
+EXESPLIT = nossplit splitext splitflx splitets
 EXELAP   = laplap lapwin
 EXEBAS   = bastreat basbathy
 EXEVAR   = nosinit nosresidence scal_intp bashsigma
 
+NOSVAR   = nos_elab nossum nosdiff noswrite
 NOSAVER  = nosaver_basin nosaver_vert nosaver_time
 NOSEXTR  = nosextr_nodes nosextr_gis nosextr_records nosextr_custom \
 		nosextr_cat
+NOSALL   = $(NOSEXTR) $(NOSAVER) $(NOSVAR)
+
 OUSEXTR  = ousextr_nodes ousextr_records ousextr_gis \
 		ousextr_cat
 
 EXEEXTRA = bedload wincrea windcrea \
 		basproj baswork eosinf \
-		lgrinf \
 		nos2nc ous2nc ts2nc \
-		noswrite ouswork ouswork1 ouswrite prep_input \
+		ouswork ouswork1 ouswrite prep_input \
 		basbox
 
 EXES     = $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXELAP) $(EXEBAS) \
@@ -343,6 +348,9 @@ splitext_big:  splitext_big.o subext.o $(OUTOBJS)
 
 splitflx:  splitflx.o subflx.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o subflx.o $(OUTOBJS) -o $@
+
+splitets:  splitets.o $(ETSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(ETSOBJS) $(OUTOBJS) -o $@
 
 extinf:  extinf.o subext.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o subext.o $(OUTOBJS) -o $@
@@ -436,6 +444,9 @@ ouswrite:  ouswrite.o $(OUSOBJS) $(OUTOBJS)
 ousvdiff:  ousvdiff.o $(OUSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
 
+etsinf:  etsinf.o $(ETSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(ETSOBJS) $(OUTOBJS) -o $@
+
 nosinf:  nosinf.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
@@ -476,7 +487,7 @@ offinf: offinf.o
 
 #-------------------------------------------------------
 
-.PHONY: nosextr ousextr nosaver
+.PHONY: nosextr ousextr nosaver nos
 
 ousextr: $(OUSEXTR)
 
@@ -491,6 +502,8 @@ ousextr_gis:  ousextr_gis.o $(OUSOBJS) $(OUTOBJS)
 
 ousextr_cat:  ousextr_cat.o $(OUSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
+
+nos: $(NOSALL)
 
 nosextr: $(NOSEXTR)
 
@@ -559,6 +572,9 @@ laplap:   laplap.o $(OUTOBJS) $(LAPLACE)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LAPLACE) -o $@ 
 
 lapwin:   lapwin.o $(OUTOBJS) $(LAPLACE)
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LAPLACE) -o $@ 
+
+optintp:   optintp.o $(OUTOBJS) $(LAPLACE)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LAPLACE) -o $@ 
 
 rstinf:   rstinf.o $(OUTOBJS) $(RSTOBJS)

@@ -116,17 +116,28 @@ c***************************************************************************
         real value(1)
 
 	integer i
-	character*5 number
+	integer chars,imax,imin
+	character*30 number,format
 	character*80 file
 
-	write(number,'(i5)') index
-	do i=1,5
+	chars = 5
+	format = '(i5)'
+
+	imax = 10**chars
+	imin = -10**(chars-1)
+	if( index .ge. imax .or. index .le. imin ) goto 99
+
+	write(number(1:chars),format) index
+	do i=1,chars
 	  if( number(i:i) .eq. ' ' ) number(i:i) = '0'
 	end do
 
-	file = name//number
+	file = name//number(1:chars)
         call wrnos2d_it(it,file,title,value)
 
+	return
+   99	write(6,*) 'index is too big for max chars: ',index,chars
+	stop 'error stop wrnos2d_index: index'
 	end
 
 c***************************************************************************

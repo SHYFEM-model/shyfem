@@ -131,7 +131,9 @@ c writes output to terminal or log file
 
 	call prwnds		!prints wind info
 
-	call prexta		!prints extra points
+	!call prexta		!prints extra points
+
+	!call pretsa		!prints extra time series points
 
 	call prflxa		!prints flux sections
 
@@ -251,7 +253,9 @@ c	call tslgr
 	write(6,*) '/descrr/'
 	write(6,*) descrr
 
-	call tsexta
+	!call tsexta
+
+	!call tsetsa
 
 	call tsflxa
 
@@ -344,6 +348,8 @@ c read loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			call nrdins(section)
 		else if(section.eq.'extra') then
 			call rdexta
+		else if(section.eq.'extts') then
+			call rdetsa
 		else if(section.eq.'area') then
 			call rdarea
 		else if(section.eq.'name') then

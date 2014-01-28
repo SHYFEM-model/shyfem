@@ -232,7 +232,7 @@ c returns in ivar the variable to be plotted
 
 	call inivar
 
-	if( ivar .gt. 0 ) then
+	if( ivar .gt. 0 ) then	!ivar given - must be equal to ivar3
 	  ivar3 = getvar()
 	  if( ivar3 .gt. 0 .and. ivar3 .ne. ivar ) goto 99
           call setvar(ivar)

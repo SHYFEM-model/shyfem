@@ -9,19 +9,33 @@ BINDIR=$FEMDIR/fem3d
 
 Usage()
 {
-  echo "Usage: vpgrd [-noopt] [-h|-help] basin"
+  echo "Usage: vpgrd [-h|-help] [-options] basin"
+}
+
+FullUsage()
+{
+  Usage
+  echo "  options:"
+  echo "    -h!-help      this help"
+  echo "    -noopt        do not optimize"
+  echo "    -quiet        run quietly"
+  echo "    -info         do not make bas, only write info on grd"
 }
 
 ##################################### options
 
-opt="YES"	#optimization is on
+opt="YES"	# optimization is on
+quiet="NO"	# be quiet
+info="NO"	# only info
 
 while [ $# -gt 0 ]
 do
   case $1 in
         -noopt) opt="NO";;
-        -help)  Usage; exit 1;;
-        -h)     Usage; exit 1;;
+	-quiet) quiet="YES";;
+	-info) info="YES";;
+        -help)  FullUsage; exit 0;;
+        -h)     FullUsage; exit 0;;
         -*)     echo "Unknown option: $1"; exit 1;;
          *)     break;;
   esac
@@ -43,9 +57,10 @@ if [ ! -f $file ]; then
   exit 1
 fi
 
-echo
 echo "dimension info on file $file:"
 $FEMDIR/fembin/grd_info.pl -dim $file		# write info on file
+
+[ $info = "YES" ] && exit 0
 
 vpexe="$BINDIR/vp"
 if [ ! -x "$vpexe" ]; then
@@ -55,22 +70,17 @@ fi
 
 ##################################### run vp
 
-if [ $opt = "YES" ]; then
+echo $name > vpinput.tmp		# name of basin
+echo $opt >> vpinput.tmp		# optimization
+echo "YES" >> vpinput.tmp		# automatic optimization
 
-$vpexe <<EOI
-$name
-yes
-yes
-EOI
-
+if [ $quiet = "YES" ]; then
+  $vpexe < vpinput.tmp > vpoutput.tmp
 else
-
-$vpexe <<EOI
-$name
-no
-EOI
-
+  $vpexe < vpinput.tmp
 fi
+
+
 
 ##################################### end
 

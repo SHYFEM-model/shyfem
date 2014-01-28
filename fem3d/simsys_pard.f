@@ -6,6 +6,21 @@ c 31.03.2009    ggu     call renamed to pard_*
 c
 c******************************************************************
 
+        subroutine system_initialize
+
+        implicit none
+
+        include 'common.h'
+
+        write(6,*) '----------------------------------------'
+        write(6,*) 'initializing matrix inversion routines'
+        write(6,*) 'using Pardiso routines'
+        write(6,*) '----------------------------------------'
+
+        end
+
+c******************************************************************
+
 	subroutine system_init
 
 	implicit none

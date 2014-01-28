@@ -1419,12 +1419,17 @@ c		node without interpolation inside the element. This can
 c		be accomplished by setting |isoinp=0|. (Default 1)
 c |bgray|	Gray value used for the finite element grid when plotting
 c		the bathymetry. (Default 0.8)
+c |bsgray|	Gray value used to plot the finite element grid over
+c		a scalar or velocity plot. This is basically useful
+c		for debugging reasons. The default is to not plot
+c		the grid (Default -1.0)
 
         call addpar('nisomx',20.)      !maximum number of isovalues allowed
         call addpar('nctick',0.)       !default number of ticks to use
         call addpar('isolin',0.)       !plot isolines with color ?
         call addpar('isoinp',1.)       !interpolate inside elements
 	call addpar('bgray',0.8)       !grey value for bathymetry
+	call addpar('bsgray',-1.0)     !grey value for plotting maps
 
 c DOCS	END
 

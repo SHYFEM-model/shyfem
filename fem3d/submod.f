@@ -49,6 +49,7 @@ c modules
 c------------------------------------------------------------
 
 	call mod_ext(mode)		!extra nodes
+	call mod_ets(mode)		!extra time series nodes
 c	call mod_box(mode)		!boxes
 c	call mod_flx(mode)		!fluxes through sections
 c	call mod_vol(mode)		!volumes in areas

@@ -5,18 +5,42 @@ c utility routines to read/write NOS file - file type 161
 c
 c contents :
 c
-c subroutine ininos
-c subroutine setnos(iunit,nvers,nkn,nel,nlv,nvar)
-c subroutine getnos(iunit,nvers,nkn,nel,nlv,nvar)
+c	 subroutine ininos
+c	 subroutine setnos(iunit,nvers,nkn,nel,nlv,nvar)
+c	 subroutine getnos(iunit,nvers,nkn,nel,nlv,nvar)
+c	 subroutine delnos(iunit)
+c	 subroutine dimnos(iunit,nkndim,neldim,nlvdim)
 c
-c subroutine dimnos(iunit,nkndim,neldim,nlvdim)
+c        subroutine errnos(iunit,routine,text)
+c        subroutine findnos_err(iunit,routine,text,n)
+c        function findnos(iunit)
+c        subroutine infonos(iunit,iout)
 c
-c subroutine rfnos(iunit,nvers,nkn,nel,nlv,nvar,title,ierr)
-c subroutine wfnos(iunit,nvers,nkn,nel,nlv,nvar,title,ierr)
-c subroutine rsnos(iunit,ilhkv,hlv,hev,ierr)
-c subroutine wsnos(iunit,ilhkv,hlv,hev,ierr)
-c subroutine rdnos(iunit,it,ivar,nlvdim,ilhkv,c,ierr)
-c subroutine wrnos(iunit,it,ivar,nlvdim,ilhkv,c,ierr)
+c        subroutine nos_init(iunit,nversion)
+c        subroutine nos_close(iunit)
+c        subroutine nos_check_dimension(iunit,nkndim,neldim,nlvdim)
+c
+c        subroutine nos_get_date(iunit,date,time)
+c        subroutine nos_set_date(iunit,date,time)
+c        subroutine nos_get_title(iunit,title)
+c        subroutine nos_set_title(iunit,title)
+c        subroutine nos_get_femver(iunit,femver)
+c        subroutine nos_set_femver(iunit,femver)
+c        subroutine nos_get_params(iunit,nkn,nel,nlv,nvar)
+c        subroutine nos_set_params(iunit,nkn,nel,nlv,nvar)
+c        subroutine nos_clone_params(iu_from,iu_to)
+c
+c        subroutine nos_read_header(iunit,nkn,nel,nlv,nvar,ierr)
+c        subroutine nos_write_header(iunit,nkn,nel,nlv,nvar,ierr)
+c        subroutine nos_read_header2(iu,ilhkv,hlv,hev,ierr)
+c        subroutine nos_write_header2(iunit,ilhkv,hlv,hev,ierr)
+c        subroutine nos_read_record(iu,it,ivar,nlvdim,ilhkv,c,ierr)
+c        subroutine nos_write_record(iunit,it,ivar,nlvdim,ilhkv,c,ierr)
+c
+c        subroutine nos_next_record(iunit,it,ivar,ierr)
+c        subroutine nos_back_record(iunit)
+c        subroutine nos_skip_header(iunit,nvar,ierr)
+c        subroutine nos_skip_record(iunit,it,ivar,ierr)
 c
 c revision log :
 c
@@ -32,6 +56,7 @@ c 30.10.2012	ggu	new format for date and time (new accessor routines)
 c 16.11.2012	ggu	in wrnos bugfix - call setnos first
 c 02.12.2012	ggu	restructured
 c 21.01.2013	ggu	code for next and back record
+c 18.01.2014	ggu	restructured, new date,time,femver (version 4+5)
 c
 c notes :
 c
@@ -41,6 +66,7 @@ c	open file
 c	call nos_init
 c	call nos_set_title	(not obligatory)
 c	call nos_set_date	(not obligatory)
+c	call nos_set_femver	(not obligatory)
 c	call nos_write_header
 c	call nos_write_header2
 c	call nos_write_record
@@ -55,6 +81,7 @@ c	call nos_read_header
 c	call dimnos
 c	call nos_get_title	(not obligatory)
 c	call nos_get_date	(not obligatory)
+c	call nos_get_femver	(not obligatory)
 c	call nos_read_header2
 c	call nos_read_record
 c	...
@@ -62,20 +89,22 @@ c	call nos_close
 c
 c format of file:
 c
-c version 3 and 4
+c version 3 and greater
 c
 c	ftype,nvers
 c	nkn,nel,nlv,nvar
 c	title
 c	date,time				(version 4)
+c	femver					(version 5)
 c
 c	(ilhkv(k),k=1,nkn)			empty if nlv <= 1
 c	(hlv(k),k=1,nlv)			empty if nlv <= 1
 c	(hev(k),k=1,nel)
 c	
-c	it,ivar
+c	it,ivar					(version <= 3)
+c	it,ivar,lmax				(version >= 4)
+c	(c(1,k),k=1,nkn)			if nlv <= 1 or lmax <= 1
 c	((c(l,k),l=1,ilhkv(k)),k=1,nkn)		if nlv > 1
-c	(c(1,k),k=1,nkn)			if nlv <= 1
 c
 c version 2
 c
@@ -140,9 +169,13 @@ c sets up initial common block - internal routine
 	binit = .true.
 
 	nositem = 0
+
 	do n=1,ndim
 	  do i=0,nitdim
 	    nosvar(i,n) = 0
+	  end do
+	  do i=1,nchdim
+	    noschar(i,n) = ' '
 	  end do
 	end do
 
@@ -164,22 +197,23 @@ c sets up parameter common block - internal routine
 	integer findnos
 
 c we do not check if unit has already been opened -> open with ifileo
+c changed -> before calling this nos_init has to be called
 
 	n = findnos(iunit)
-	if( n .eq. 0 ) then
-	  n = findnos(0)
-	end if
+	!if( n .eq. 0 ) then
+	!  n = findnos(0)
+	!end if
 
 	if( n .eq. 0 ) then
 	  call errnos(iunit,'setnos','Cannot find entry.')
 	end if
 
-	nosvar(0,n) = iunit
-	nosvar(1,n) = nvers
-	nosvar(2,n) = nkn
-	nosvar(3,n) = nel
-	nosvar(4,n) = nlv
-	nosvar(5,n) = nvar
+	!nosvar(0,n) = iunit
+	if( nvers .gt. 0 ) nosvar(1,n) = nvers
+	if(   nkn .gt. 0 ) nosvar(2,n) = nkn
+	if(   nel .gt. 0 ) nosvar(3,n) = nel
+	if(   nlv .gt. 0 ) nosvar(4,n) = nlv
+	if(  nvar .gt. 0 ) nosvar(5,n) = nvar
 
 	end
 
@@ -225,15 +259,17 @@ c please note that the file has still to be closed manually
 
 	integer iunit
 
-	integer n
-	integer findnos
+	integer n,i
 
-	n = findnos(iunit)
-	if( n .eq. 0 ) then
-	  call errnos(iunit,'delnos','File is not open, cannot close.')
-	end if
+	call findnos_err(iunit,'delnos'
+     +			,'File is not open, cannot close.',n)
 
-	nosvar(0,n) = 0
+	do i=0,nitdim
+	  nosvar(i,n) = 0
+	end do
+	do i=1,nchdim
+	  noschar(i,n) = ' '
+	end do
 
 	end
 
@@ -264,6 +300,8 @@ c checks dimension of arrays - internal routine
 	end
 
 c************************************************************
+c************************************************************
+c************************************************************
 
 	subroutine errnos(iunit,routine,text)
 
@@ -277,6 +315,30 @@ c error routine for nos - internal routine
 	write(6,*) 'For unit ',iunit,' in routine ',routine
 	write(6,*) text
 	stop 'error stop errnos'
+
+	end
+
+c************************************************************
+
+	subroutine findnos_err(iunit,routine,text,n)
+
+c finds entry for iunit -> returns it in n or stops with error
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iunit
+	character*(*) routine,text
+	integer n
+
+	integer findnos
+
+	n = findnos(iunit)
+
+	if( n .eq. 0 ) then
+	  call errnos(iunit,routine,text)
+	end if
 
 	end
 
@@ -319,13 +381,8 @@ c writes info for unit - internal routine
 	integer iunit,iout
 
 	integer n,i
-	integer findnos
 
-	n = findnos(iunit)
-
-	if( n .eq. 0 ) then
-	  call errnos(iunit,'nos_info','Cannot find entry.')
-	end if
+	call findnos_err(iunit,'nos_info','Cannot find entry.',n)
 
 	write(iout,*) 'iunit = ',iunit,' position = ',n
 	
@@ -343,25 +400,42 @@ c************************************************************
 c************************************************************
 c************************************************************
 
-	subroutine nos_init(iunit,nvers)
+	subroutine nos_init(iunit,nversion)
 
 	implicit none
 
 	include 'nosinf.h'
 
 	integer iunit
-	integer nvers
+	integer nversion
 
-	integer n
+	integer n,nvers
 	integer findnos
 
 	call ininos
 
+	if( iunit .le. 0 ) then
+	  write(6,*) 'nos_init: Cannot initialize for this unit'
+	  write(6,*) 'iunit = ',iunit
+	  call errnos(iunit,'nos_init','Impossible unit number.')
+	end if
+
+	nvers = nversion
+	if( nvers .le. 0 ) nvers = maxvers
+
+	if( nvers .gt. maxvers ) then
+	  write(6,*) 'nos_init: Impossible version number'
+	  write(6,*) 'nvers = ',nvers,'   maxvers = ',maxvers
+	  call errnos(iunit,'nos_init','Impossible version number.')
+	end if
+
 	if( nvers .lt. maxcomp ) then
 	  write(6,*) 'nos_init: Old function call'
-	  write(6,*) 'nvers = ',nvers,'   maxvers = ',maxcomp
+	  write(6,*) 'nvers = ',nvers,'   maxcomp = ',maxcomp
 	  call errnos(iunit,'nos_init','Old function call.')
 	end if
+
+	nvers = maxvers	!always write with highest version
 
 	n = findnos(iunit)
 	if( n .ne. 0 ) then
@@ -418,18 +492,11 @@ c************************************************************
 	integer date,time
 
 	integer n
-	integer findnos
 
-	n = findnos(iunit)
-
-	if( n .eq. 0 ) then
-	  call errnos(iunit,'nos_get_date','Cannot find entry.')
-	end if
+	call findnos_err(iunit,'nos_get_date','Cannot find entry.',n)
 
 	date = nosvar(6,n)
 	time = nosvar(7,n)
-
-	!call infonos(iunit,6)
 
 	end
 
@@ -445,13 +512,8 @@ c************************************************************
 	integer date,time
 
 	integer n
-	integer findnos
 
-	n = findnos(iunit)
-
-	if( n .eq. 0 ) then
-	  call errnos(iunit,'nos_set_date','Cannot find entry.')
-	end if
+	call findnos_err(iunit,'nos_set_date','Cannot find entry.',n)
 
 	nosvar(6,n) = date
 	nosvar(7,n) = time
@@ -470,15 +532,10 @@ c************************************************************
 	character*(*) title
 
 	integer n
-	integer findnos
 
-	n = findnos(iunit)
+	call findnos_err(iunit,'nos_get_title','Cannot find entry.',n)
 
-	if( n .eq. 0 ) then
-	  call errnos(iunit,'nos_get_title','Cannot find entry.')
-	end if
-
-	title = nostitle(n)
+	title = noschar(1,n)
 
 	end
 
@@ -494,15 +551,112 @@ c************************************************************
 	character*(*) title
 
 	integer n
-	integer findnos
 
-	n = findnos(iunit)
+	call findnos_err(iunit,'nos_set_title','Cannot find entry.',n)
 
-	if( n .eq. 0 ) then
-	  call errnos(iunit,'nos_set_title','Cannot find entry.')
-	end if
+	noschar(1,n) = title
 
-	nostitle(n) = title
+	end
+
+c************************************************************
+
+	subroutine nos_get_femver(iunit,femver)
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iunit
+	character*(*) femver
+
+	integer n
+
+	call findnos_err(iunit,'nos_get_femver','Cannot find entry.',n)
+
+	femver = noschar(2,n)
+
+	end
+
+c************************************************************
+
+	subroutine nos_set_femver(iunit,femver)
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iunit
+	character*(*) femver
+
+	integer n
+
+	call findnos_err(iunit,'nos_set_femver','Cannot find entry.',n)
+
+	noschar(2,n) = femver
+
+	end
+
+c************************************************************
+
+	subroutine nos_get_params(iunit,nkn,nel,nlv,nvar)
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iunit
+	integer nkn,nel,nlv,nvar
+
+	integer nvers
+
+	call getnos(iunit,nvers,nkn,nel,nlv,nvar)
+
+	end
+
+c************************************************************
+
+	subroutine nos_set_params(iunit,nkn,nel,nlv,nvar)
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iunit
+	integer nkn,nel,nlv,nvar
+
+	call setnos(iunit,0,nkn,nel,nlv,nvar)
+
+	end
+
+c************************************************************
+
+	subroutine nos_clone_params(iu_from,iu_to)
+
+c clones data from one to other file 
+c
+c second file must have already been opened and initialized with nos_init
+c should be only used to write file -> nvers should be max version
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iu_from
+	integer iu_to
+
+	integer i,nf,nt
+
+	call findnos_err(iu_from,'nos_clone_params'
+     +				,'Cannot find entry.',nf)
+	call findnos_err(iu_to,'nos_clone_params'
+     +				,'Cannot find entry.',nt)
+
+	do i=2,nitdim		!unit and version are not cloned
+	  nosvar(i,nt) = nosvar(i,nf)
+	end do
+	do i=1,nchdim
+	  noschar(i,nt) = noschar(i,nf)
+	end do
 
 	end
 
@@ -511,6 +665,8 @@ c************************************************************
 c************************************************************
 
 	subroutine nos_read_header(iunit,nkn,nel,nlv,nvar,ierr)
+
+c before this nos_init has to be called
 
 	implicit none
 
@@ -524,15 +680,10 @@ c************************************************************
 	integer ntype,irec
 	integer date,time
 	character*80 line
-	integer findnos
 
 	call ininos
 
-	n = findnos(iunit)
-
-	if( n .eq. 0 ) then
-	  call errnos(iunit,'nos_read_header','Cannot find entry.')
-	end if
+	call findnos_err(iunit,'nos_read_header','Cannot find entry.',n)
 
 c first record - find out what version
 
@@ -551,28 +702,35 @@ c next records
 
 	irec = 2
 	if( nvers .eq. 1 ) then
-	   read(iunit,err=99) line
-	   read(iunit,err=99) nkn,nlv	!nvar is actually nlv
-	   nel = 0
-	   nvar = 1			!always only one variable
+	  read(iunit,err=99) line
+	  read(iunit,err=99) nkn,nlv	!nvar is actually nlv
+	  nel = 0
+	  nvar = 1			!always only one variable
 	else if( nvers .eq. 2 ) then
-	   read(iunit,err=99)	 nkn,nlv,nvar
-	   read(iunit,err=99)	 line
-	   nel = 0
-	else if( nvers .eq. 3 ) then
-	   read(iunit,err=99)	 nkn,nel,nlv,nvar
-	   read(iunit,err=99)	 line
-	else if( nvers .eq. 4 ) then
-	   read(iunit,err=99)	 nkn,nel,nlv,nvar
-	   read(iunit,err=99)	 line
-	   read(iunit,err=99)	 date,time
+	  read(iunit,err=99)	 nkn,nlv,nvar
+	  read(iunit,err=99)	 line
+	  nel = 0
+	else if( nvers .ge. 3 ) then
+	  read(iunit,err=99)	 nkn,nel,nlv,nvar
+	  read(iunit,err=99)	 line
 	else
 	   stop 'error stop nos_read_header: internal error (1)'
 	end if
 
 	call setnos(iunit,nvers,nkn,nel,nlv,nvar)
 	call nos_set_title(iunit,line)
-	call nos_set_date(iunit,date,time)
+
+	irec = 3
+	if( nvers .ge. 4 ) then
+	  read(iunit,err=99)	 date,time
+	  call nos_set_date(iunit,date,time)
+	end if
+
+	irec = 4
+	if( nvers .ge. 5 ) then
+	  read(iunit,err=99)	 line
+	  call nos_set_femver(iunit,line)
+	end if
 
 	ierr=0
 
@@ -604,10 +762,6 @@ c********************************************************************
 	subroutine nos_write_header(iunit,nkn,nel,nlv,nvar,ierr)
 
 c writes first header of NOS file
-c
-c nvers		on entry maximal version
-c		-> must be an input, used to check the corectness
-c		.. of the call parameters
 
 	implicit none
 
@@ -619,56 +773,58 @@ c		.. of the call parameters
 
 	integer n,nvers
 	integer date,time
-	character*80 line
-	integer findnos
+	character*80 title,femver
 
 	call ininos
 
-	n = findnos(iunit)
-
-	if( n .eq. 0 ) then
-	  call errnos(iunit,'nos_write_header','Cannot find entry.')
-	end if
+	call findnos_err(iunit,'nos_write_header','Cannot find entry.',n)
 
 	nvers = maxvers
 	call setnos(iunit,nvers,nkn,nel,nlv,nvar)
 
-	call nos_get_title(iunit,line)
+	call nos_get_title(iunit,title)
 	call nos_get_date(iunit,date,time)
+	call nos_get_femver(iunit,femver)
 
 	write(iunit)		ftype,maxvers
 	write(iunit)		nkn,nel,nlv,nvar
-	write(iunit)		line
+	write(iunit)		title
 	write(iunit)		date,time
+	write(iunit)		femver
 
 	ierr=0
 
-	return
 	end
 
 c************************************************************
 
-	subroutine nos_read_header2(iunit,ilhkv,hlv,hev,ierr)
+	subroutine nos_read_header2(iu,ilhkv,hlv,hev,ierr)
 
 c reads second record of NOS file
 
 	implicit none
 
-c arguments
-	integer iunit
+	integer iu
 	integer ilhkv(1)
 	real hlv(1)
 	real hev(1)
 	integer ierr
-c local
+
+	logical bdata
+	integer iunit
 	integer k,l,ie
 	integer nvers,nkn,nel,nlv,nvar
 
+	bdata = iu .gt. 0	!with negative unit number skip arrays
+	iunit = abs(iu)
+
 	call getnos(iunit,nvers,nkn,nel,nlv,nvar)
 
-c only one layer
-
-	if( nlv .le. 1 ) then
+	if( .not .bdata ) then	!do not read arrays
+	  nkn = 0
+	  nel = 0
+	  nlv = 0
+	else if( nlv .le. 1 ) then
 	  do k=1,nkn
 	    ilhkv(k) = 1
 	  end do
@@ -712,13 +868,12 @@ c writes second record of NOS file
 
 	implicit none
 
-c arguments
 	integer iunit
 	integer ilhkv(1)
 	real hlv(1)
 	real hev(1)
 	integer ierr
-c local
+
 	integer k,l,ie
 	integer nvers,nkn,nel,nlv,nvar
 
@@ -739,7 +894,6 @@ c write records
 
 	ierr = 0
 
-	return
 	end
 
 c************************************************************
@@ -762,7 +916,7 @@ c local
 	integer iunit
 	logical bdata
 
-	bdata = iu .gt. 0	!with negative unit number only read header
+	bdata = iu .gt. 0	!with negative unit number only time record
 	iunit = abs(iu)
 
 	call getnos(iunit,nvers,nkn,nel,nlv,nvar)
@@ -851,19 +1005,22 @@ c local
 	end
 
 c************************************************************
+c************************************************************
+c************************************************************
 
-	subroutine nos_next_record(iunit,it,ivar)
+	subroutine nos_next_record(iunit,it,ivar,ierr)
 
-c skips back one data record (contains two reads)
+c skips data record - only reads header of record
 
 	implicit none
 
-	integer iunit,it,ivar
+	integer iunit,it,ivar,ierr
 
-	integer nlvdim,ierr
+	integer nlvdim
 	integer ilhkv(1)
 	real c(1,1)
 
+	nlvdim = 1
 	call nos_read_record(-iunit,it,ivar,nlvdim,ilhkv,c,ierr)
 
 	end
@@ -880,6 +1037,37 @@ c skips back one data record (contains two reads)
 
 	backspace(iunit)
 	backspace(iunit)
+
+	end
+
+c************************************************************
+
+	subroutine nos_skip_header(iunit,nvar,ierr)
+
+	implicit none
+
+	integer iunit,nvar,ierr
+
+	integer nkn,nel,nlv
+	integer ilhkv(1)
+	real hlv(1)
+	real hev(1)
+
+	call nos_read_header(iunit,nkn,nel,nlv,nvar,ierr)
+	if( ierr .ne. 0 ) return
+	call nos_read_header2(-iunit,ilhkv,hlv,hev,ierr)
+
+	end
+
+c************************************************************
+
+	subroutine nos_skip_record(iunit,it,ivar,ierr)
+
+	implicit none
+
+	integer iunit,it,ivar,ierr
+
+	call nos_next_record(iunit,it,ivar,ierr)
 
 	end
 
@@ -988,110 +1176,6 @@ c arguments
 c************************************************************
 c************************************************************
 c************************************************************
-c skipping records
-c************************************************************
-c************************************************************
-c************************************************************
-
-	subroutine shnos	(iunit,nvers
-     +				,title
-     +				)
-
-c skips all headers of NOS file
-c
-c nvers		on entry maximal version that can be read
-c		-> must be an input, used to check the corectness
-c		.. of the call parameters
-c		on return actual version read
-
-	implicit none
-
-	integer iunit,nvers
-        character*(*) title
-
-	integer ierr
-
-	call sfnos(iunit,nvers,title,ierr)
-        if(ierr.ne.0) goto 99
-
-        call ssnos(iunit,ierr)
-        if(ierr.ne.0) goto 98
-
-	return
-   98	continue
-	write(6,*) 'ierr: ',ierr
-	stop 'error stop shnos: error reading second header'
-   99	continue
-	write(6,*) 'ierr: ',ierr
-	stop 'error stop shnos: error reading first header'
-	end
-
-c************************************************************
-
-	subroutine sfnos(iunit,nvers,title,ierr)
-
-c reads first header of nos file and skips information
-
-	implicit none
-
-	integer iunit,nvers
-        character*(*) title
-	integer ierr
-
-	integer nkn,nel,nlv,nvar
-
-	call rfnos	(iunit,nvers
-     +				,nkn,nel,nlv,nvar
-     +				,title
-     +				,ierr
-     +				)
-
-	call delnos(iunit)			!trick false parameters
-	call setnos(iunit,nvers,0,0,0,0)
-
-	end
-
-c************************************************************
-
-	subroutine ssnos(iunit,ierr)
-
-c reads second header of nos file and skips information
-
-	implicit none
-
-	integer iunit
-	integer ierr
-
-	integer ilhkv(1)
-	real hlv(1),hev(1)
-
-	call rsnos(iunit,ilhkv,hlv,hev,ierr)
-
-	end
-
-c************************************************************
-
-	subroutine sknos(iunit,it,ivar,ierr)
-
-c reads data of nos file and skips information
-
-	implicit none
-
-	integer iunit
-	integer it,ivar
-	integer ierr
-
-	integer nlvdim
-	integer ilhkv(1)
-	real c(1,1)
-
-	call rdnos(iunit,it,ivar,nlvdim,ilhkv,c,ierr)
-
-	end
-
-c************************************************************
-c************************************************************
-c************************************************************
 c compatibility
 c************************************************************
 c************************************************************
@@ -1110,6 +1194,7 @@ c************************************************************
 	character*(*) title
 	integer ierr
 
+	write(6,*) 'rfnos: ',iunit,nvers
 	call nos_init(iunit,nvers)
 	call nos_read_header(iunit,nkn,nel,nlv,nvar,ierr)
 	call nos_get_title(iunit,title)

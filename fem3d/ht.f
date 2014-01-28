@@ -560,12 +560,14 @@ c-----------------------------------------------------------
 c	call listdim
 	call prilog
 
-c        call bclevvar_ini       !chao debora
+c        call bclevvar_ini       	!chao debora
 	call bclfix_ini
 
 	call init_pipe(ipipe,idcoup)
 	call read_pipe(ipipe,it,idcoup)
         call write_pipe(ipipe,it,idcoup)
+
+	call system_initialize		!matrix inversion routines
 
 	call offline(1,iwhat)
 	call offline(2,iwhat)
@@ -700,6 +702,8 @@ c*****************************************************************
 	call debug_output_record(nlvdim*neldim,nlvdim,hdeov)
 	call debug_output_record(nlvdim*neldim,nlvdim,utlov)
 	call debug_output_record(nlvdim*neldim,nlvdim,vtlov)
+        call debug_output_record(nlvdim*nkndim,nlvdim,saltv)
+        call debug_output_record(nlvdim*nkndim,nlvdim,tempv)
 	call debug_output_record((nlvdim+1)*nkndim,nlvdim+1,visv)
 	call debug_output_record((nlvdim+1)*nkndim,nlvdim+1,wlov)
 	call debug_output_record(nkndim,1,z0bk)

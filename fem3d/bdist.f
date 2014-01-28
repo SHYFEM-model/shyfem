@@ -16,6 +16,7 @@ c 20.08.2003    ggu     new routine wr2dn()
 c 05.01.2005    ggu     routines for writing nos file into subnsoa.f
 c 07.01.2005    ggu     documentation for shdist
 c 28.04.2009    ggu     links re-structured
+c 13.12.2013    ggu     make local distances using boundary parameter nad
 c
 c****************************************************************
 
@@ -51,9 +52,8 @@ c local variables
         integer idist(nkndim)
 
         integer i,k,kk
-        integer nadist
+        integer nadist,nad
         integer ibc,n,itype,nk
-        real r,d,d2
 
 	integer iapini,ipint
         integer nbnds,itybnd,nkbnds,kbnds
@@ -68,8 +68,7 @@ c-----------------------------------------------------------------
           idist(k) = 0
         end do
 
-        nadist = nint(getpar('nadist'))
-        if( nadist .le. 0 ) return
+        nadist = nint(getpar('nadist'))		!global value
 
 c-----------------------------------------------------------------
 c gather open boundary nodes
@@ -81,10 +80,15 @@ c-----------------------------------------------------------------
           itype = itybnd(ibc)
           if( itype .eq. 1 .or. itype .eq. 2 ) then
             nk = nkbnds(ibc)
-            do i=1,nk
-              k = kbnds(ibc,i)
-              idist(k) = 1
-            end do
+	    call get_bnd_ipar(ibc,'nad',nad)	!local value
+	    if( nad .lt. 0 ) nad = nadist
+	    if( nad .gt. 0 ) then
+              do i=1,nk
+                k = kbnds(ibc,i)
+                idist(k) = 1			!old version
+                idist(k) = nad
+              end do
+	    end if
           end if
         end do
 
@@ -93,24 +97,8 @@ c make distance
 c-----------------------------------------------------------------
 
         write(6,*) 'Making distance rdist'
-        call mkdist(nkn,idist,rdist)
-
-c-----------------------------------------------------------------
-c adjust distance
-c-----------------------------------------------------------------
-
-        d = nadist
-        d2 = d / 2.
-
-        do k=1,nkn
-          r = rdist(k)
-          r = r - d2            !first rows no adv terms
-          r = r / d             !slowly introduce
-          r = max(0.,r)
-          r = min(1.,r)
-          !if( rdist(k) .eq. 1 ) write(6,*) 'bdist ',rdist(k),d,d2,r
-          rdist(k) = r
-        end do
+        !call mkdist(nadist,nkn,idist,rdist)		!old version
+        call mkdist_new(nkn,idist,rdist)
 
 c-----------------------------------------------------------------
 c write dist (nos) file
@@ -126,9 +114,11 @@ c-----------------------------------------------------------------
 
 c*************************************************************************** 
                          
-        subroutine mkdist(nkn,idist,rdist)
+        subroutine mkdist(nadist,nkn,idist,rdist)
 
 c makes distance array from given nodes
+c
+c can olny deal with one global value
 c
 c rdist of open boundary nodes is 1
 c other nodes are > 1 (integer)
@@ -136,6 +126,7 @@ c example: neibors of rdist=1 nodes have rdist=2 etc.
 
         implicit none
 
+        integer nadist
         integer nkn
         integer idist(1)
         real rdist(1)
@@ -145,6 +136,7 @@ c example: neibors of rdist=1 nodes have rdist=2 etc.
         integer k,kk,i
         integer n
         integer idact,idnew,nfound
+        real r,d,d2
 
 c----------------------------------------------------------
 c initialize with first level
@@ -190,6 +182,123 @@ c----------------------------------------------------------
         do k=1,nkn
           rdist(k) = idist(k)
         end do
+
+c----------------------------------------------------------
+c adjust distance
+c----------------------------------------------------------
+
+        d = nadist
+        d2 = d / 2.
+
+        do k=1,nkn
+          r = rdist(k)
+	  if( r .lt. 0. .or. r .gt. nkn ) stop 'error stop: internal (1)'
+          r = r - d2            !first rows no adv terms
+          r = r / d             !slowly introduce
+          r = max(0.,r)
+          r = min(1.,r)
+          !if( rdist(k) .eq. 1 ) write(6,*) 'bdist ',rdist(k),d,d2,r
+          rdist(k) = r
+        end do
+
+c----------------------------------------------------------
+c end of routine
+c----------------------------------------------------------
+
+        end
+
+c*************************************************************************** 
+                         
+        subroutine mkdist_new(nkn,idist,rdist)
+
+c makes distance array from given nodes
+c
+c can deal with global and local values
+c
+c rdist of open boundary nodes is 1
+c other nodes are > 1 (integer)
+c example: neibors of rdist=1 nodes have rdist=2 etc.
+
+        implicit none
+
+        integer nkn
+        integer idist(1)
+        real rdist(1)
+
+	include 'links.h'
+
+	logical bdebug
+        integer k,kk,ka,i,ks
+        integer n,na,nanew
+        integer idact,idnew,nfound
+	real r
+
+c----------------------------------------------------------
+c initialize with first level
+c----------------------------------------------------------
+
+	do k=1,nkn
+	  rdist(k) = -1.
+	end do
+
+c----------------------------------------------------------
+c loop on levels
+c----------------------------------------------------------
+
+	ks = 12659
+
+	do k=1,nkn
+	  if( idist(k) .gt. 0 .and. rdist(k) .eq. -1. ) then
+	    nanew = idist(k)
+	    na = nanew + nanew/2
+	    na = nanew
+	    do ka=1,nkn		!mark first row
+	      if( idist(ka) .eq. nanew 
+     +			.and. rdist(ka) .eq. -1. ) then
+	         rdist(ka) = 0.
+	      end if
+	    end do
+	    do while( na .gt. 0 )
+	      do ka=1,nkn
+                if( idist(ka) .eq. na .and. rdist(ka) .ge. 0. ) then
+	          call set_node_links(ka,n)
+                  do i=1,n
+                    kk = lnk_nodes(i)
+		    r = 1. - (na-1)/float(nanew)
+		    r = int(r)
+		    r = max(0.,r)
+		    if( rdist(kk) .ge. 0. ) r = min(rdist(kk),r)
+		    idist(kk) = max(idist(kk),na-1)
+		    rdist(kk) = r
+		  end do
+	        end if
+	      end do
+	      na = na - 1
+	    end do
+	  end if
+	end do
+
+c----------------------------------------------------------
+c set real value
+c----------------------------------------------------------
+
+        do k=1,nkn
+          if( rdist(k) .lt. 0. ) rdist(k) = 1.
+        end do
+
+	na = 0
+        do k=1,nkn
+	  r = rdist(k)
+          if( r .lt. 0. .or. r .gt. 1. ) then
+	    write(6,*) 'error in mdist_new: ',k,r
+	    na = na + 1
+	  end if
+        end do
+
+	if( na .gt. 0 ) then
+	  write(6,*) 'errors = ',na
+	  stop 'error stop mdist_new: values out of bound'
+	end if
 
 c----------------------------------------------------------
 c end of routine

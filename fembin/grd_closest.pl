@@ -28,7 +28,7 @@ my @list = ();
 #------------------------------------------------------------
 
 my $nodes = $ngrid->get_nodes();
-foreach my $nitem (values %$nodes) {
+foreach my $nitem (sort by_node_number values %$nodes) {
   my $number = $nitem->{number};
   my $x = $nitem->{x};
   my $y = $nitem->{y};
@@ -75,3 +75,13 @@ sub get_closest {
 
 #------------------------------------------------------------
 
+sub by_node_number {
+
+  if( $a->{number} > $b->{number} ) {
+    return 1;
+  } elsif( $a->{number} < $b->{number} ) {
+    return -1;
+  } else {
+    return 0;
+  }
+}
