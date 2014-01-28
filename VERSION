@@ -1,3 +1,57 @@
+version  6_1_71    28-01-2014    VERS_6_1_71
+
+========================================================== 28-01-2014 - 6_1_71
+
+c ./femplot/supbas.f:
+c 13.12.2013  ggu     new mode=4 for plotting grey grid over scalar variable
+c
+c ./fem3d/subetsa.f:
+c 24.01.2014    ggu     copied from subexta.f
+c
+c ./fem3d/subnos.f:
+c 18.01.2014	ggu	restructured, new date,time,femver (version 4+5)
+c
+c ./fem3d/subnls.f:
+c 20.01.2014	ggu	new routine nrdtable()
+c
+c ./fem3d/subousa.f:
+c 20.01.2014	ggu	new calls for ous writing implemented
+c
+c ./fem3d/etsinf.f:
+c 24.01.2014    ggu     copied from nosinf.f
+c
+c ./fem3d/subres.f:
+c 20.01.2014    ggu     new calls to ous routines
+c
+c ./fem3d/subets.f:
+c 24.01.2014	ggu	copied from subnos.f
+c
+c ./fem3d/subver.f:
+c 28.01.2014	ggu	version 6.1.71
+c
+c ./fem3d/bdist.f:
+c 13.12.2013    ggu     make local distances using boundary parameter nad
+c
+c ./fem3d/splitets.f:
+c 27.01.2014	ggu	copied from splitext
+c
+c ./fem3d/etsutil.f:
+c 24.01.2014    ggu     copied from nosutil.f
+c
+c ./fem3d/nosutil.f:
+c 20.01.2014    ggu     new helper routines
+c
+c ./fem3d/subous.f:
+c 18.01.2014	ggu	restructured, new date,time,femver
+c
+c ./fem3d/subcon1.f:
+c 20.01.2014    ggu	new writing format for nos files in confop, confil
+c
+c ./fem3d/ousutil.f:
+c 20.01.2014    ggu     new helper routines
+
+==========================================================
+
 version  6_1_70    05-12-2013    VERS_6_1_70   commit_2014-01-28
 
 version  6_1_70    05-12-2013    VERS_6_1_70
