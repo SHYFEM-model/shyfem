@@ -244,6 +244,7 @@ c administers writing of flux data
 
 	integer ifemop
 	real getpar
+	double precision dgetpar
 
 	real fluxes(0:nlvdim,3,nscboxdim)
 
@@ -294,10 +295,10 @@ c-----------------------------------------------------------------
 
         if( nbbox .eq. 0 ) then
 
-                idtbox = nint(getpar('idtbox'))
-                itmbox = nint(getpar('itmbox'))
-                itanf = nint(getpar('itanf'))
-                itend = nint(getpar('itend'))
+                idtbox = nint(dgetpar('idtbox'))
+                itmbox = nint(dgetpar('itmbox'))
+                itanf = nint(dgetpar('itanf'))
+                itend = nint(dgetpar('itend'))
 
                 if( idtbox .le. 0 ) nbbox = -1
                 if( itmbox .gt. itend ) nbbox = -1

@@ -1,4 +1,19 @@
 
+18.02.2014
+
+getpar for time converted to dgetpar
+new basbathy to read also bas file
+initial condition for concentration (conzin)
+
+c ./fem3d/basbathy.f:                                                           
+c 13.02.2014    ggu     new data written, can read also bas file                
+c                                                                               
+c ./fem3d/newconz.f:
+c 13.02.2014    ggu     routines for reading initial condition
+
+
+
+
 28.01.2014
 
 no advection for single open boundaries

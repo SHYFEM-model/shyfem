@@ -26,8 +26,8 @@ FullUsage()
   echo "  basin        name of the basin for which interpolation is done"
   echo "  bathy        name of the file containing the bathymetry data"
   echo ""
-  echo "  basin is a grd file (basin.grd) containing the basin for which the"
-  echo "  interpolation has to be executed."
+  echo "  basin can be a grd file (basin.grd) or a bas file (basin.bas)"
+  echo "  containing the basin for which the interpolation has to be executed."
   echo "  bathy is a grd file (bathy.grd) that contains only single"
   echo "  points with depth values."
   echo "  The parameters ufact and umfact are used for exponential"
@@ -52,7 +52,7 @@ mode=1
 ike=1
 idepth=1
 ufact=1
-umfact=2
+umfact=3
 
 while [ -n "$1" ]
 do
@@ -80,12 +80,24 @@ else
 fi
 
 dbathy=`dirname $bathy`
-dbasin=`dirname $basin`
 bathy=`basename $bathy .grd`
-basin=`basename $basin .grd`
+bathy=$dbathy/$bathy.grd
 
-bathy=$dbathy/$bathy
-basin=$dbasin/$basin
+dbasin=`dirname $basin`
+type=`echo $basin | sed -e 's/.*\.//'`
+[ "$type" = "$basin" ] && type=""
+if [ "$type" = "grd" ]; then
+  basin=`basename $basin .grd`
+  basin=$dbasin/$basin.grd
+elif [ "$type" = "bas" ]; then
+  basin=`basename $basin .bas`
+  basin=$dbasin/$basin.bas
+else
+  basin=`basename $basin .grd`
+  basin=$dbasin/$basin.grd
+fi
+
+echo "type of basin is $type"
 
 echo "basin:  $basin"
 echo "bathy:  $bathy"
@@ -106,8 +118,8 @@ if [ ! -x $BINDIR/$basbathy ]; then
 fi
 
 $BINDIR/$basbathy <<EOI
-$basin.grd
-$bathy.grd
+$basin
+$bathy
 $mode
 $idepth
 $ike

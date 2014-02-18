@@ -1,5 +1,34 @@
 ============================================================
 
+Tue Feb 18 10:46:48 CET 2014
+
+dgetpar for time, conzin, basbathy reads bas
+
+ LOG              |   15 +++++
+ Rules.make       |   12 +++-
+ fem3d/basbathy.f |  166 ++++++++++++++++++++++++++++++++++++++++++++++++++----
+ fem3d/basinf.f   |   31 ++++++++++
+ fem3d/basproj.f  |   23 +++++---
+ fem3d/newconz.f  |   34 +++++++++++
+ fem3d/nosinf.f   |   13 ++++-
+ fem3d/param.h    |    6 +-
+ fem3d/subboxa.f  |    9 ++-
+ fem3d/subcst.f   |    9 ++-
+ fem3d/subexta.f  |    7 +-
+ fem3d/subflxa.f  |   16 +++--
+ fem3d/subnsa.f   |    2 +
+ fem3d/subnsh.f   |   14 +++--
+ fem3d/subrst.f   |   14 +++-
+ fem3d/subsys.f   |   11 ++-
+ fem3d/subvola.f  |    7 +-
+ femadj/param.h   |    6 +-
+ fembin/basbathy  |   30 +++++++---
+ femplot/param.h  |    6 +-
+ param.h          |    6 +-
+ 21 files changed, 358 insertions(+), 79 deletions(-)
+
+============================================================
+
 Tue Jan 28 16:34:16 CET 2014
 
 New version 6_1_71

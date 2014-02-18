@@ -15,6 +15,7 @@ c 24.06.2008    ggu     changes in dacay for multiple concentrations
 c 09.10.2008    ggu     new call to confop
 c 19.01.2010    ggu     handle restart of conzentrations
 c 25.02.2011    ggu     new routine decay_conz_variable(), add t90 time scale
+c 13.02.2014    ggu     routines for reading initial condition
 c
 c*********************************************************************
 
@@ -112,6 +113,7 @@ c-------------------------------------------------------------
           if( .not. has_restart(4) ) then	!no restart of conzentrations
 	    call conini0(nlvdi,cnv,cref)
 	  end if
+	  call conz_init(it,nlv,nkn,cnv)	!read from file if name given
 
 	  iu = 0
           id = 10       !for tracer
@@ -486,6 +488,38 @@ c simulates decay for concentration
         end do
 
         end
+
+c*********************************************************************
+
+        subroutine conz_init(it,nlv,nkn,cnv)
+
+c initialization of conz from file
+
+        implicit none
+
+        include 'param.h'
+
+        integer it
+        integer nlv
+        integer nkn
+        real cnv(nlvdim,1)
+
+        character*80 conzf
+
+        integer itc
+        integer iuconz(3)
+
+        call getfnm('conzin',conzf)
+
+        if( conzf .ne. ' ' ) then
+          write(6,*) 'conz_init: opening file for concentration'
+          call ts_file_open(conzf,nkn,iuconz)
+          call ts_next_record(itc,iuconz,nkn,nlv,cnv)
+          call ts_file_close(iuconz)
+          write(6,*) 'concentration initialized from file ',conzf
+        end if
+
+	end
 
 c*********************************************************************
 

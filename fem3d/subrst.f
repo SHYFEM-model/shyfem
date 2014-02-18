@@ -44,6 +44,7 @@ c reads and initializes values from restart
 	save /rstrst/
 
         integer itrst,iunit,ierr,ityrst,it
+	integer itanf,itend
 	double precision dit
         character*80 name
 
@@ -59,8 +60,8 @@ c-----------------------------------------------------------------
 
 	!iokrst = 0	!if different from 0, restart has been performed
 
-        itrst = nint(getpar('itrst'))
-        ityrst = nint(getpar('ityrst'))
+        itrst = nint(dgetpar('itrst'))
+        ityrst = nint(dgetpar('ityrst'))
         call getfnm('restrt',name)
         if(name.eq.' ') return
 
@@ -105,12 +106,16 @@ c-----------------------------------------------------------------
 	  write(6,*) 'new itanf: ',nint(dgetpar('itanf'))
 	end if
 
+	itanf = nint(dgetpar('itanf'))
+	itend = nint(dgetpar('itend'))
+
         write(6,*) '---------------------------------------------'
         write(6,*) 'A restart has been performed'
         write(6,*) ' requested restart time = ',itrst
         write(6,*) ' used restart time = ',it
         write(6,*) ' nvers,ibarcl,iconz,ieco ',nvers,ibarcl,iconz,ieco
         write(6,*) ' iwvert ',iwvert
+        write(6,*) ' itanf = ',itanf,'  itend = ',itend
         write(6,*) '---------------------------------------------'
 
 	iokrst = 1
@@ -205,6 +210,7 @@ c administers writing of restart file
 
         character*80 file
         real getpar
+        double precision dgetpar
         integer ifemop
 
 	logical bonce
@@ -223,8 +229,8 @@ c-----------------------------------------------------
 
         if( icall .eq. 0 ) then
 
-          idtrst = nint(getpar('idtrst'))
-          itmrst = nint(getpar('itmrst'))
+          idtrst = nint(dgetpar('idtrst'))
+          itmrst = nint(dgetpar('itmrst'))
 
           icall = -1
           if( idtrst .eq. 0 ) return

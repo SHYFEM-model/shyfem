@@ -265,6 +265,7 @@ c administers writing of flux data
 
 	integer ifemop
 	real getpar
+	double precision dgetpar
 
 	real fluxes(0:nlvdim,3,nscflxdim)
 
@@ -301,9 +302,9 @@ c-----------------------------------------------------------------
 
         if( nbflx .eq. 0 ) then
 
-                idtflx = nint(getpar('idtflx'))
-                itmflx = nint(getpar('itmflx'))
-                itend = nint(getpar('itend'))
+                idtflx = nint(dgetpar('idtflx'))
+                itmflx = nint(dgetpar('itmflx'))
+                itend = nint(dgetpar('itend'))
 
                 if( kfluxm .le. 0 ) nbflx = -1
                 if( nsect .le. 0 ) nbflx = -1
@@ -503,6 +504,7 @@ c ivar_base	base of variable numbering
 
 	integer ifemop
 	real getpar
+	double precision dgetpar
 
 c-----------------------------------------------------------------
 c start of code
@@ -516,10 +518,10 @@ c-----------------------------------------------------------------
 
         if( nbflx .eq. 0 ) then
 
-                idtflx = nint(getpar('idtflx'))
-                itmflx = nint(getpar('itmflx'))
-                itend = nint(getpar('itend'))
-		iconz = nint(getpar('iconz'))	!computing concentrations?
+                idtflx = nint(dgetpar('idtflx'))
+                itmflx = nint(dgetpar('itmflx'))
+                itend = nint(dgetpar('itend'))
+		iconz = nint(dgetpar('iconz'))	!computing concentrations?
 
                 if( kfluxm .le. 0 ) nbflx = -1
                 if( nsect .le. 0 ) nbflx = -1

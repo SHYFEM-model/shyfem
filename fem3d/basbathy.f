@@ -18,6 +18,7 @@ c 16.03.2012	ggu	autoregression introduced (make_auto_corr,interpola)
 c 16.03.2012	ggu	default value for umfact set to 3, new mode = 3
 c 01.06.2012	ggu	some more changes
 c 13.06.2013	ggu	copy_depth() renamed to transfer_depth()
+c 13.02.2014	ggu	new data written, can read also bas file
 c
 c****************************************************************
 
@@ -80,7 +81,7 @@ c takes care of lat/lon coordinates
 	integer isphe
 	real ufact,umfact
 	real f(5)
-	logical bstop
+	logical bstop,bbasin
 	integer iscanf
 
 c-----------------------------------------------------------------
@@ -91,7 +92,9 @@ c-----------------------------------------------------------------
 	nminimum = 1	!minimum number of points to be used for interpolation
 
         write(6,*)
-        write(6,*) 'I need the name of the grid file '
+        write(6,*) 'I need the name of the basin file '
+        write(6,*) '(the file can be in GRD or BAS format)'
+        write(6,*) '(please include extension - default is GRD)'
         write(6,*)
 	write(6,*) 'Enter file name: '
 	read(5,'(a)') gfile
@@ -101,6 +104,7 @@ c-----------------------------------------------------------------
 
         write(6,*)
         write(6,*) 'I need the name of the bathymetry data file '
+        write(6,*) '(the file must be in GRD format)'
         write(6,*)
 	write(6,*) 'Enter file name: '
 	read(5,'(a)') bfile
@@ -177,12 +181,23 @@ c-----------------------------------------------------------------
 c read in basin
 c-----------------------------------------------------------------
 
-        ner = 6
-        bstop = .false.
+	call check_basin_name(gfile,bbasin)
 
-        nlidim = 0
-        nlndim = 0
-        call rdgrd(
+	if( bbasin ) then
+
+	  write(6,*) 'reading basin as bas file...'
+	  call read_basin(gfile,nkndim,neldim)
+
+	else
+
+	  write(6,*) 'reading basin as grd file...'
+
+          ner = 6
+          bstop = .false.
+
+          nlidim = 0
+          nlndim = 0
+          call rdgrd(
      +                   gfile
      +                  ,bstop
      +                  ,nco,nkn,nel,nli
@@ -195,10 +210,12 @@ c-----------------------------------------------------------------
      +                  ,iaux,iaux
      +                  )
 
-        if( bstop ) stop 'error stop rdgrd'
+          if( bstop ) stop 'error stop rdgrd'
 
-        call ex2in(nkn,3*nel,nlidim,ipv,ipaux,nen3v,iaux,bstop)
-        if( bstop ) stop 'error stop ex2in'
+          call ex2in(nkn,3*nel,nlidim,ipv,ipaux,nen3v,iaux,bstop)
+          if( bstop ) stop 'error stop ex2in'
+
+	end if
 
 c-----------------------------------------------------------------
 c handling of depth and coordinates
@@ -254,6 +271,9 @@ c-----------------------------------------------------------------
 	close(1)
         write(6,*) 'The new file has been written to ',nfile
 
+	!call write_data('basbathy.dat',nkn,hkv)
+	!call write_xy('basbathy.xyz',nkn,ipv,xgv,ygv)
+
 c-----------------------------------------------------------------
 c end of routine
 c-----------------------------------------------------------------
@@ -263,6 +283,130 @@ c-----------------------------------------------------------------
 	write(6,*) n,(f(i),i=1,n)
 	write(6,*) line
 	stop 'error stop basbathy: error in parameters'
+	end
+
+c*******************************************************************
+c*******************************************************************
+c*******************************************************************
+
+	subroutine check_basin_name(name,bbasin)
+
+	implicit none
+
+	character*(*) name
+	logical bbasin
+
+	integer i,nend,ndot
+
+	do i=1,len(name)
+	  if( name(i:i) .eq. ' ' ) exit
+	end do
+
+	nend = max(1,i-1)
+	ndot = max(1,nend-3)
+	
+	if( name(ndot:nend) .eq. '.grd' ) then
+	  bbasin = .false.
+	else if( name(ndot:nend) .eq. '.bas' ) then
+	  bbasin = .true.
+	else
+	  write(6,*) 'name = ',name
+	  write(6,*) 'expecting type of .grd or .bas'
+	  stop 'error stop check_basin_name: cannot parse name'
+	end if
+
+	end
+
+c*******************************************************************
+
+	subroutine read_basin(name,nkndim,neldim)
+
+	implicit none
+
+	character*(*) name
+	integer nkndim,neldim
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        real hm3v(3,1)
+        common /hm3v/hm3v
+        real hev(1)
+        common /hev/hev
+
+	integer ie,ii
+	real h
+
+	open(1,file=name,status='old',form='unformatted')
+	call sp13rr(1,nkndim,neldim)
+	close(1)
+
+	do ie=1,nel
+	  do ii=1,3
+	    h = h + hm3v(ii,ie)
+	  end do
+	  hev(ie) = h / 3.
+	end do
+
+	end
+
+c*******************************************************************
+c*******************************************************************
+c*******************************************************************
+
+	subroutine write_xy(nfile,nkn,ipv,xgv,ygv)
+
+c writes xy as data to file
+
+	implicit none
+
+	character*(*) nfile
+	integer nkn
+	integer ipv(nkn)
+	real xgv(nkn)
+	real ygv(nkn)
+
+	integer k
+
+	open(1,file=nfile,status='unknown',form='formatted')
+        write(1,*) nkn
+	do k=1,nkn
+	  write(1,*) k,ipv(k),xgv(k),ygv(k)
+	end do
+	close(1)
+        write(6,*) 'The coordinates have been written to ',nfile
+
+c-----------------------------------------------------------------
+c end of routine
+c-----------------------------------------------------------------
+
+	end
+
+c*******************************************************************
+
+	subroutine write_data(nfile,nkn,hkv)
+
+c writes depth as data to file
+
+	implicit none
+
+	character*(*) nfile
+	integer nkn
+	real hkv(nkn)
+
+	integer k
+
+	open(1,file=nfile,status='unknown',form='formatted')
+        write(1,*) 0,nkn,1,1
+	do k=1,nkn
+	  write(1,*) hkv(k)
+	end do
+	close(1)
+        write(6,*) 'The data has been written to ',nfile
+
+c-----------------------------------------------------------------
+c end of routine
+c-----------------------------------------------------------------
+
 	end
 
 c*******************************************************************
@@ -910,7 +1054,7 @@ c-----------------------------------------------------------------
 	nintpol = 0
 	iloop = 0
 	pi = 4.*atan(1.)
-	fact = 2.
+
 	fact = 2./pi	!start with a radius slightly greater than area
 	fact = fact * ufact
 

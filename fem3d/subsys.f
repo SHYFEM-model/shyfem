@@ -1874,6 +1874,9 @@ c		from 0. The data record to be used in the file for the
 c		restart must be given by time |itrst|.
 c |gotmpa|	Name of file containing the parameters for the
 c		GOTM turbulence model (iturb = 1).
+c |saltin|	Name of file containing initial conditions for salinity
+c |tempin|	Name of file containing initial conditions for temperature
+c |conzin|	Name of file containing initial conditions for concentration
 
 
 	call addfnm('zinit',' ')
@@ -1884,6 +1887,10 @@ c		GOTM turbulence model (iturb = 1).
 	call addfnm('restrt',' ')
 	call addfnm('gotmpa',' ')
 
+        call addfnm('saltin',' ')
+        call addfnm('tempin',' ')
+        call addfnm('conzin',' ')
+
 c DOCS	END
 
 cc non-documented -> try first	HACK	-> initial conditions
@@ -1891,10 +1898,6 @@ cc non-documented -> try first	HACK	-> initial conditions
         call addfnm('bio',' ')
         call addfnm('bios',' ')
         call addfnm('toxi',' ')
-
-        call addfnm('conzin',' ')	!not yet implemented	FIXME
-        call addfnm('saltin',' ')
-        call addfnm('tempin',' ')
 
 cc ACQUBC
 

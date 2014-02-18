@@ -1151,10 +1151,11 @@ c sets-up output frequency and first output
 	integer itanf,itend,idt
 	integer itmout,idtout,itout
 	real getpar
+	double precision dgetpar
 
-	itanf = nint(getpar('itanf'))
-	itend = nint(getpar('itend'))
-	idt = nint(getpar('idt'))
+	itanf = nint(dgetpar('itanf'))
+	itend = nint(dgetpar('itend'))
+	idt = nint(dgetpar('idt'))
 
 	itmout = itm_out
 	idtout = idt_out
@@ -1187,10 +1188,11 @@ c sets-up array for output frequency
 	integer itanf,itend,idt
 	integer itmout,idtout,itout
 	real getpar
+	double precision dgetpar
 
-	itanf = nint(getpar('itanf'))
-	itend = nint(getpar('itend'))
-	idt = nint(getpar('idt'))
+	itanf = nint(dgetpar('itanf'))
+	itend = nint(dgetpar('itend'))
+	idt = nint(dgetpar('idt'))
 
 	itmout = itm_out
 	idtout = idt_out

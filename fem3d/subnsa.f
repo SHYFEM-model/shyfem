@@ -602,6 +602,8 @@ c************************************************************************
           iv = 5
         else if( string(is:ie4) .eq. 'conc' ) then
           iv = 10
+        else if( string(is:ie4) .eq. 'conz' ) then
+          iv = 10
         else if( string(is:ie3) .eq. 'sal' ) then
           iv = 11
         else if( string(is:ie4) .eq. 'temp' ) then

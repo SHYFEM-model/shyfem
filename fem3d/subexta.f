@@ -176,6 +176,7 @@ c writes and administers ext file
 	real err,href,hzoff
 	integer iround,ideffi
 	real getpar
+	double precision dgetpar
 	real writ7h,wrrc7
 
 	integer idtext,itext
@@ -187,9 +188,9 @@ c writes and administers ext file
 	if( icall .eq. -1 ) return
 
 	if( icall .eq. 0 ) then
-		idtext = iround(getpar('idtext'))
-		itmext = iround(getpar('itmext'))
-		itend = iround(getpar('itend'))
+		idtext = iround(dgetpar('idtext'))
+		itmext = iround(dgetpar('itmext'))
+		itend = iround(dgetpar('itend'))
 		if( knausm .le. 0 ) icall = -1
 		if( idtext .le. 0 ) icall = -1
 		if( itmext .gt. itend ) icall = -1

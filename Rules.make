@@ -40,6 +40,14 @@ export NLVDIM = 1
 export NKNDIM = 11000
 export NELDIM = 22000
 
+# asi-zec
+export NKNDIM = 15000
+export NELDIM = 30000
+export NLVDIM = 1
+export NLVDIM = 21
+export NGRDIM = 12
+export MBWDIM = 300
+
 ##############################################
 # Compiler
 ##############################################
@@ -65,7 +73,7 @@ export NELDIM = 22000
 
 #FORTRAN_COMPILER = GNU_G77
 FORTRAN_COMPILER = GNU_GFORTRAN
-#FORTRAN_COMPILER = INTEL
+FORTRAN_COMPILER = INTEL
 #FORTRAN_COMPILER = PORTLAND
 #FORTRAN_COMPILER = IBM
 
@@ -138,7 +146,7 @@ SOLVER=SPARSKIT
 ##############################################
 
 NETCDF=false
-#NETCDF=true
+NETCDF=true
 NETCDFDIR = /usr/local/netcdf
 NETCDFDIR = /usr
 

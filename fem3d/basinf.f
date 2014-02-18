@@ -92,6 +92,7 @@ c-----------------------------------------------------------------
     1	continue
 
 	!call write_grd_from_bas	!write grd from bas
+        !call write_xy('basinf.xyz',nkn,ipv,xgv,ygv)
 
 	end
 
@@ -816,6 +817,36 @@ c-----------------------------------------------------------------
 	end do
 
 	write(6,*)
+
+c-----------------------------------------------------------------
+c end of routine
+c-----------------------------------------------------------------
+
+	end
+
+c*******************************************************************
+
+        subroutine write_xy(nfile,nkn,ipv,xgv,ygv)
+
+c writes xy as data to file
+
+        implicit none
+
+        character*(*) nfile
+        integer nkn
+        integer ipv(nkn)
+        real xgv(nkn)
+        real ygv(nkn)
+
+        integer k
+
+        open(1,file=nfile,status='unknown',form='formatted')
+        write(1,*) nkn
+        do k=1,nkn
+          write(1,*) k,ipv(k),xgv(k),ygv(k)
+        end do
+        close(1)
+        write(6,*) 'The coordinates have been written to ',nfile
 
 c-----------------------------------------------------------------
 c end of routine

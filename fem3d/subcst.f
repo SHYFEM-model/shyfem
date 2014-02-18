@@ -195,10 +195,11 @@ c check time parameters
 	integer itanf,itend,idt
 	integer itunit
 	real getpar
+	double precision dgetpar
 
-	itanf = nint(getpar('itanf'))
-	itend = nint(getpar('itend'))
-	idt = nint(getpar('idt'))
+	itanf = nint(dgetpar('itanf'))
+	itend = nint(dgetpar('itend'))
+	idt = nint(dgetpar('idt'))
 
 	if( idt .le. 0 .or. itanf+idt .gt. itend ) then
 	   write(6,*) 'Error in compulsory time parameters'
@@ -208,7 +209,7 @@ c check time parameters
 
 	call init_time(itanf,itend,idt)
 
-	itunit = nint(getpar('itunit'))
+	itunit = nint(dgetpar('itunit'))
 	call set_timeunit(itunit)
 
 	end

@@ -28,6 +28,8 @@ c reads nos file
 	real hlv(nlvdim)
 	real hev(neldim)
 
+	logical bdate
+	integer date,time
 	integer nread,nin
 	integer nvers
 	integer nkn,nel,nlv,nvar
@@ -35,6 +37,7 @@ c reads nos file
 	integer it,ivar
 	integer l,k
 	character*80 title
+	character*20 dline
 	real rnull
 	real cmin,cmax
 
@@ -65,6 +68,9 @@ c--------------------------------------------------------------
 
 	call read_nos_header(nin,nkndim,neldim,nlvdim,ilhkv,hlv,hev)
 	call nos_get_params(nin,nkn,nel,nlv,nvar)
+	call nos_get_date(nin,date,time)
+	bdate = date .gt. 0
+	if( bdate ) call dtsini(date,time)
 
 	call depth_stats(nkn,ilhkv)
 
@@ -81,7 +87,12 @@ c--------------------------------------------------------------
            if(ierr.ne.0) goto 100
 
 	   nread=nread+1
-	   write(6,*) 'time : ',it,'   ivar : ',ivar
+	   if( bdate ) then
+	     call dtsgf(it,dline)
+	     write(6,*) 'time : ',it,'  ',dline,'   ivar : ',ivar
+	   else
+	     write(6,*) 'time : ',it,'   ivar : ',ivar
+	   end if
 
 	   do l=1,nlv
 	     do k=1,nkn

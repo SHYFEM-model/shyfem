@@ -316,6 +316,7 @@ c write of vol data
 
 	integer iround,ideffi
 	real getpar
+	double precision dgetpar
 
 	real volt(0:iscdim)	!accumulator - could be also double precision
 
@@ -338,9 +339,9 @@ c initialization
 
         if( icall .eq. 0 ) then
 
-                idtvol = iround(getpar('idtvol'))
-                itmvol = iround(getpar('itmvol'))
-                itend = iround(getpar('itend'))
+                idtvol = iround(dgetpar('idtvol'))
+                itmvol = iround(dgetpar('itmvol'))
+                itend = iround(dgetpar('itend'))
 
                 if( kvolm .le. 0 ) icall = -1
                 if( nvols .le. 0 ) icall = -1
