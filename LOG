@@ -1,4 +1,65 @@
 
+05.03.2014
+
+new grid to zoom in/out and move with mouse wheel
+section plotting bug fix
+new basbathy and scalintp
+
+ * ./grid/gridma2.c:
+ * 21-Feb-2014: new routine MakeGravityPoint() and InPoly()             *
+ * 18-Feb-2014: new routines DelNodeLine(), InsertNodeLine()            *
+ * ./grid/gridut.c:
+ * 18-Feb-2014: new routine Dist2Node()                                 *
+ * ./grid/xevents.c:
+ * 05-Mar-2014: handle mouse wheel, new QSkipMotion()                   *
+ * ./grid/gridma1.c:
+ * 18-Feb-2014: new routines GfDelRemoveNodeLine(), GfInsertNodeLine()  *
+ * ./grid/grid.c:
+ * 18-Feb-2014: new menu items for line (del node, remove node, insert) *
+ * ./grid/gridlo.c:
+ * 05-Mar-2014: new action for drag and mouse wheel                     *
+ * ./grid/events.h:
+ * 05-Mar-2014: handle also mouse wheel                                 *
+c ./femplot/plotsim.f:
+c 05.03.2014    ggu     bug fix: isphe was not stored
+c
+c ./femplot/supout.f:
+c 05.03.2014  ggu     new read for ous and nos files (use date)
+c
+c ./femplot/supano.f:
+c 05.03.2014  ggu     in annotation use date information
+c
+c ./femplot/suplin.f:
+c 05.03.2014    ggu     bug fix for reference vector
+c
+c ./fem3d/subnsh.f:
+c 05.03.2014    ggu     code prepared to repeat time step (irepeat) - not ready
+c
+c ./fem3d/subdts.f:
+c 05.03.2014    ggu     new subdts.h and new routine dts_has_date()
+c
+c ./fem3d/basbathy.f:
+c 13.02.2014    ggu     new data written, can read also bas file
+c 05.03.2014    ggu     subroutines copied to other routine
+c
+c ./fem3d/newconz.f:
+c 13.02.2014    ggu     routines for reading initial condition
+c
+c ./fem3d/subinterpol.f:
+c 21.02.2014    ggu     subroutines copied from basbathy
+c
+c ./fem3d/subinterpol1.f:
+c 27.02.2014    ggu     subroutines copied from basbathy
+c
+c ./fem3d/scalintp.f:
+c 13.02.2014    ggu     new data written, can read also bas file
+c
+c ./fem3d/subgeo.f:
+c 21.02.2014    ggu     new routine centert and centerpoly
+
+
+
+
 18.02.2014
 
 getpar for time converted to dgetpar

@@ -23,6 +23,7 @@ c 27.01.2012    deb&ggu adjusted for hybrid coordinates
 c 20.06.2012    ggu     plots bottom also for sigma layers (plot_bottom())
 c 22.10.2012    ggu     dxmin introduced to plot arrow every dxmin distance
 c 24.10.2012    ggu     bsmooth introduced for smooth bottom plotting
+c 05.03.2014    ggu     bug fix for reference vector
 c
 c************************************************************************
 
@@ -93,6 +94,7 @@ c elems(1) is not used, etc..
 	real ytaux,ymid
 	real xcm,ycm
 	real fact,r
+	real xscale,yscale
 	integer ndec,nctick
 	integer isphe
 
@@ -159,6 +161,9 @@ c----------------------------------------------------------------
 	  hvmax = getpar('hvmax')	!max depth to be plotted
 
 	  call set_max_dep_lay(nlv,hlv,rdmax,llmax,hvmax,lvmax) !vertical range
+
+c	  rdmax: max depth to be plotted
+c	  llmax: max layer to be plotted
 
 	  call getfnm('vtitle',vtitle)
 	  call getfnm('xtitle',xtitle)
@@ -322,8 +327,9 @@ c--------------------------------------------------------------------
 
 	vhmax = max(abs(vhmin),abs(vhmax))
 	scale = rlmax/(2.*vhmax*(n-1))
-	if( ascale .gt. 0. ) scale = ascale
-	if( ascale .lt. 0. ) then		!scale in cm
+	if( ascale .gt. 0. ) then
+	  scale = ascale
+	else if( ascale .lt. 0. ) then		!scale in cm
 	  call qcm(xcm,ycm)
 	  scale = -ascale * xcm			!not yet documented
 	end if
@@ -334,7 +340,10 @@ c--------------------------------------------------------------------
 	end if
 
 	wscale = rwscal
-	if( blayer ) wscale = wscale / llmax
+	if( blayer ) wscale = wscale * (rdmax/llmax)
+	if( barrow ) then
+	  write(6,*) 'vertical scale: ',wscale,llmax,blayer
+	end if
 
 	xlast = -dxmin
 
@@ -349,7 +358,7 @@ c--------------------------------------------------------------------
 
 	  call make_segment_depth(ivert,ltot,helems(1,i),hvmax,hlv,ya)
 	  do l=1,ltot
-	    ltop = 2*l - 2
+	    ltop = 2*l - 2	!ltop is top, ltop+1 is mid, ltop+2 is bottom
 	    yt1 = ya(1,l-1)
 	    yt2 = ya(2,l-1)
 	    yb1 = ya(1,l)
@@ -383,27 +392,30 @@ c--------------------------------------------------------------------
 	xrrmax = xrmax + 2.5*(xrmax-xrmin)/(xmax-xmin)
 	yrrmax = yrmin
 	yrrmin = yrmin + 2.18*(yrmax-yrmin)/(ymax-ymin)
+	!call pbox(xrrmin,yrrmin,xrrmax,yrrmax)		!debug
 
 	xrrmin = xrrmin + 0.1*(xrrmax-xrrmin)
 	xrrmax = xrrmax - 0.1*(xrrmax-xrrmin)
 	yrrmin = yrrmin + 0.1*(yrrmax-yrrmin)
 	!yrrmax = yrrmax - 0.1*(yrrmax-yrrmin)
+	!call pbox(xrrmin,yrrmin,xrrmax,yrrmax)		!debug
 
         call qgray(0.0)
 	!call pbox(xrrmin,yrrmin,xrrmax,yrrmax)		!debug
 
-	dx = rxscal*(xrrmax-xrrmin)
-	dy = ryscal*(yrrmax-yrrmin)
-	u = dx/scale
-	v = dy/scale
-	v = v * wscale
+	dx = rxscal*(xrrmax-xrrmin)		!extension of array in x
+	dy = ryscal*(yrrmax-yrrmin)		!extension of array in y
+	xscale = scale
+	yscale = scale*wscale
+	u = dx/xscale
+	v = dy/yscale
 	u = roundm(u,-1)
 	v = roundm(v,-1)
-	dx = u*scale
-	dy = v*scale
+	dx = u*xscale
+	dy = v*yscale
 
-	x = xrrmin + (xrrmax-xrrmin-dx)/2.
-	y = yrrmax - (yrrmax-yrrmin-dy)/2.
+	!x = xrrmin + (xrrmax-xrrmin-dx)/2.
+	!y = yrrmax - (yrrmax-yrrmin-dy)/2.
 	xfmin = xrrmin + 0.1*(xrrmax-xrrmin)
 	yfmin = yrrmax - 0.1*(yrrmax-yrrmin)
 	xfmax = xrrmin + 0.9*(xrrmax-xrrmin)
@@ -411,36 +423,40 @@ c--------------------------------------------------------------------
 
 	if( btwo ) then
 	 call plot_arrow(xfmin,yfmin,u,0.,scale,stip)
-	 call plot_arrow(xfmin,yfmin,0.,-v,scale,stip)
+	 call plot_arrow(xfmin,yfmin,0.,-v*wscale,scale,stip)
 	else
-	  call plot_arrow(xfmin,yfmin,u,-v,scale,stip)
+	  call plot_arrow(xfmin,yfmin,u,-v*wscale,scale,stip)
 	end if
 
 	mode = -1	!left flushing
         call qfont('Times-Roman')
 	call qtxts(10)
 
+	! label for vector in x
+
 	u = u * faccol
 	call find_nc(u,nc)
 	ir = ialfa(u,string,nc,mode)
 	write(6,*) 'label x: ',u,nc,ir,string
         call qtxtcr(1.,-2.5)
-        !call qtext(x+dx,y,string(1:ir))
-        !call qtext(x+dx/2.,y,string(1:ir))	!center in x
         call qtext(xfmax,yfmin,string(1:ir))	!center in x
+
+	! label for vector in y (z)
 
 	v = v * faccol
 	call find_nc(-v,nc)
 	ir = ialfa(-v,string,nc,mode)
-	write(6,*) 'label x: ',-v,nc,ir,string
+	write(6,*) 'label y: ',-v,nc,ir,string
         call qtxtcr(-1.,-1.5)
         call qtext(xfmin,yfmin-dy,string(1:ir))
+
+	! unit
 
 	x = xrrmin + (xrrmax-xrrmin)/2.
 	y = yrrmax - (yrrmax-yrrmin)/2.
 	call get_vel_unit(faccol,string)
 	ir = ichanm(string)
-        call qtxtcr(1.,-1.)
+        call qtxtcr(1.,-1.5)
         call qtext(xfmax,yfmin-dy,string(1:ir))
 
 	end if
@@ -1401,12 +1417,13 @@ c sets hvmax and lvmax
 
 	integer nlv
 	real hlv(1)
-	real rdmax
-	integer llmax
-	real hvmax
-	integer lvmax
+	real rdmax		!max depth read
+	integer llmax		!max layer read
+	real hvmax		!max depth wanted
+	integer lvmax		!max layer wanted
 
 	integer l
+	real dh
 
         if( hvmax .gt. 0. .and. lvmax .gt. 0 ) then
           write(6,*) 'hvmax,lvmax: ',hvmax,lvmax
@@ -1423,14 +1440,20 @@ c sets hvmax and lvmax
           llmax = lvmax
           rdmax = hvmax
         else if( lvmax .gt. 0 ) then
-          if( lvmax .gt. nlv .and. nlv .gt. 1 ) then	!more than available
-            hvmax = hlv(nlv) + hlv(nlv) - hlv(nlv-1)	!add last layer
+          if( lvmax .gt. nlv ) then		!more than available
+	    lvmax = nlv
+            if( nlv .gt. 1 ) then		!more layers available
+              dh = hlv(nlv) - hlv(nlv-1)	!thickness of last layer
+              hvmax = hlv(nlv) + 0.5*dh		!add extra last layer
+	    else
+	      hvmax = 1.5*rdmax
+	    end if
           else
             hvmax = hlv(lvmax)
           end if
           llmax = lvmax
           rdmax = hvmax
-        else
+        else			!use read values
           hvmax = rdmax
           lvmax = llmax
         end if

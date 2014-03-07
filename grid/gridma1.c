@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 18-Feb-2014: new routines GfDelRemoveNodeLine(), GfInsertNodeLine()	*
  * 16-Feb-2011: use OpItemType for new items				*
  * 02-Apr-1998: new functio integrated -> no gridmu.h, no ActCommand    *
  *                call ExitEventLoop() in GfExit to exit loop           *
@@ -131,6 +132,10 @@ static char *StringSplitLine2  = "Click on node where to split";
 static char *StringJoinLine1   = "Click on first line to join";
 static char *StringJoinLine2   = "Click on second line to join";
 static char *StringJoinLine3   = "Click on node where to join";
+static char *StringDelNodeLine1= "Click on line where to delete";
+static char *StringDelNodeLine2= "Click on node where to delete";
+static char *StringInsertNodeLine1= "Click on line where to insert";
+static char *StringInsertNodeLine2= "Input coordinate of node";
 static char *StringDelElNFound = "Element not found : Choose element to delete";
 static char *StringDelLiNFound = "Line not found : Choose line to delete";
 static char *StringDelNdNFound = "Node not found : Choose node to delete";
@@ -589,6 +594,13 @@ void GfZoomOut( void )		{ Zoom(2); }
 void GfMove( void )		{ Zoom(3); }
 void GfTotalView( void )	{ Zoom(4); }
 
+void GfMoveRelative( float dx, float dy ) 
+{ 
+	MoveRelative(&GbPlo, dx , dy ); 
+        MakePlotWindow(&GbPlo);
+        PlotAll();
+}
+
 /***************************************************************\
                    	 Show menu
 \***************************************************************/
@@ -871,9 +883,9 @@ void GfRemoveElement( void )
 void GfMakeLine( void )
 
 {
-	Line_type *pl;
-	Node_type *pn;
-	Point c;
+    Line_type *pl;
+    Node_type *pn;
+    Point c;
 
     if( ActMode == MENU_FIELD_INPUT ) {
         ActString = StringMakeLine1;
@@ -922,7 +934,7 @@ void GfMakeLine( void )
 void GfDelLine( void )
 
 {
-	Line_type *pl;
+    Line_type *pl;
 
     if( ActMode == MENU_FIELD_INPUT ) {
         ActString = StringDelLine;
@@ -948,7 +960,7 @@ void GfDelLine( void )
 void GfRemoveLine( void )
 
 {
-	Line_type *pl;
+    Line_type *pl;
 
     if( ActMode == MENU_FIELD_INPUT ) {
         ActString = StringRemoveLine;
@@ -1012,8 +1024,8 @@ void GfJoinLine( void )
 void GfSplitLine( void )
 
 {
-	Line_type *pl;
-	static int ActLine1=0;
+    Line_type *pl;
+    static int ActLine1=0;
 
     if( ActMode == MENU_FIELD_INPUT ) {
         ActString = StringSplitLine1;
@@ -1035,6 +1047,101 @@ void GfSplitLine( void )
                 ShowMode = LINEMODE;
 		CheckUseConsistency();	/* HACK ggu */
             }
+        }
+    }
+    Changed = TRUE;
+}
+
+static void GfDelRemoveNodeLine( int mode );
+
+void GfDelNodeLine( void )
+{
+     GfDelRemoveNodeLine( 0 );
+}
+
+void GfRemoveNodeLine( void )
+{
+     GfDelRemoveNodeLine( 1 );
+}
+
+static void GfDelRemoveNodeLine( int delete_node )
+
+{
+    Line_type *pl;
+    Node_type *pn;
+    static int ActLine1=0;
+
+    if( ActMode == MENU_FIELD_INPUT ) {
+        ActString = StringDelNodeLine1;
+        ShowMode = LINEMODE;
+        UnActive();
+        TentativeXY=FALSE;
+    } else {
+        if( ActString == StringDelNodeLine1 ) {
+            if( ActLine != 0 ) {
+                ActLine1=ActLine;
+                ActString = StringDelNodeLine2;
+                ShowMode = NODEMODE;
+            }
+        } else if( ActString == StringDelNodeLine2 ) {
+            if( ActNode != 0 ) {
+                pl=FindLine(HLI,ActLine1);
+		EvidenceLine(ActLine1,PlotWinCol);
+                DelNodeLine(HLI,pl,ActNode);
+		if( delete_node == 1 ) {
+                  pn=FindNode(HNN,ActNode);
+                  DeleteNode(pn);
+		} else {
+                  EvidenceNode(ActNode,PlotCol);
+		}
+                ActNode=0;
+		EvidenceLine(ActLine1,PlotCol);
+                ActString = StringDelNodeLine1;
+                ShowMode = LINEMODE;
+		CheckUseConsistency();	/* HACK ggu */
+            }
+        }
+    }
+    Changed = TRUE;
+}
+
+void GfInsertNodeLine( void )
+{
+    Line_type *pl;
+    Node_type *pn;
+    Point c;
+    static int ActLine1=0;
+
+    if( ActMode == MENU_FIELD_INPUT ) {
+        ActString = StringInsertNodeLine1;
+        ShowMode = LINEMODE;
+        UnActive();
+        TentativeXY=FALSE;
+    } else {
+        if( ActString == StringInsertNodeLine1 ) {
+            if( ActLine != 0 ) {
+                ActLine1=ActLine;
+                ActString = StringInsertNodeLine2;
+                ShowMode = NODEMODE;
+            }
+        } else if( ActString == StringInsertNodeLine2 ) {
+            if( ActNode == 0 ) {
+        	c.x = ActX;
+		c.y = ActY;
+		NTotNodes++;
+		pn = MakeNode(NTotNodes,OpItemType,&c);
+		InsertByNodeNumber(HNN,pn);
+		ActNode = NTotNodes;
+	    }
+            pl=FindLine(HLI,ActLine1);
+	    EvidenceLine(ActLine1,PlotWinCol);
+            InsertNodeLine(HLI,pl,ActNode);
+            ActNode=0;
+            ActLine=0;
+	    EvidenceLine(ActLine1,PlotCol);
+            ActString = StringInsertNodeLine1;
+            ShowMode = LINEMODE;
+	    CheckUseConsistency();	/* HACK ggu */
         }
     }
     Changed = TRUE;

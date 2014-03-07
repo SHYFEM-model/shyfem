@@ -4,7 +4,7 @@
 #
 ##############################################################
 #
-# version 1.8
+# version 1.9
 #
 # 19.08.2005		unify_nodes, if defined $depth
 # 24.08.2005		connect_lines, split_line, contains_node
@@ -14,7 +14,7 @@
 # 07.10.2010		new routine get_xy_minmax()
 # 10.02.2011		new routine make_central_point()
 # 01.12.2011		routines integrated (clone_needed_nodes, make_unique)
-# 01.12.2011		better writing of node list
+# 18.02.2014		delete_items(), clone_grid(), make_bound_line()
 #
 ##############################################################
 #
@@ -406,6 +406,26 @@ sub insert_line
 
 ###############################################################################
 
+sub grid_info
+{
+    my ($self) = @_;
+
+    my @nodes = $self->get_node_list();
+    my $nnodes = @nodes;
+    my $nnmax = $self->{nnmax};
+    print STDERR "Nodes: $nnodes ($nnmax)\n";
+
+    my @elems = $self->get_elem_list();
+    my $nelems = @elems;
+    my $nemax = $self->{nemax};
+    print STDERR "Elems: $nelems ($nemax)\n";
+
+    my @lines = $self->get_line_list();
+    my $nlines = @lines;
+    my $nlmax = $self->{nlmax};
+    print STDERR "Lines: $nlines ($nlmax)\n";
+}
+
 sub node_info
 {
     my ($self,$item,$text) = @_;
@@ -428,6 +448,54 @@ sub elem_info
     } else {
       print STDERR "no such item\n";
     }
+}
+
+sub line_info
+{
+    my ($self,$item,$text) = @_;
+
+    print STDERR "$text\n";
+    if( $item ) {
+      print STDERR "$item->{number} $item->{type} $item->{nvert}\n";
+    } else {
+      print STDERR "no such item\n";
+    }
+}
+
+###############################################################################
+
+sub adjust_nmax 
+{
+    my ($self,$items) = @_;
+
+    my $nmax = 0;
+    foreach my $item (values %$items) {
+      my $number = $item->{number};
+      $nmax = $number if $number > $nmax;
+    }
+
+    return $nmax;
+}
+
+sub adjust_max_nodes
+{
+    my ($self) = @_;
+
+    $self->{nnmax} = $self->adjust_nmax($self->get_nodes());
+}
+
+sub adjust_max_elems
+{
+    my ($self) = @_;
+
+    $self->{nemax} = $self->adjust_nmax($self->get_elems());
+}
+
+sub adjust_max_lines
+{
+    my ($self) = @_;
+
+    $self->{nlmax} = $self->adjust_nmax($self->get_lines());
 }
 
 ###############################################################################
@@ -609,7 +677,24 @@ sub delete_item
     $item = $self->get_item($item,$type) unless ref($item); #if number, get item
     my $number = $item->{number};
 
-    delete $$items{$number};
+    delete $items->{$number};
+}
+
+#----------
+
+sub delete_nodes { return $_[0]->delete_items("nodes"); }
+sub delete_elems { return $_[0]->delete_items("elems"); }
+sub delete_lines { return $_[0]->delete_items("lines"); }
+
+sub delete_items
+{
+    my ($self,$type) = @_;
+
+    my $items = $self->{$type};
+    foreach my $item (values %$items) {
+      my $number = $item->{number};
+      delete $items->{$number};
+    }
 }
 
 #----------
@@ -657,6 +742,27 @@ sub get_needed_nodes
     }
 }
 
+sub clone_grid
+{
+    my ($self,$oldgrid) = @_;
+
+    foreach my $item ( $oldgrid->get_node_list() ) {
+      $self->clone_node($item);
+    }
+    $self->adjust_max_nodes();
+
+    foreach my $item ( $oldgrid->get_elem_list() ) {
+      $self->clone_elem($item);
+    }
+    $self->adjust_max_elems();
+
+    foreach my $item ( $oldgrid->get_line_list() ) {
+      $self->clone_line($item);
+    }
+    $self->adjust_max_lines();
+
+}
+
 ###############################################################################
 
 sub unify_nodes {	#unifies nodes -> node n2 is deleted
@@ -695,6 +801,11 @@ sub substitute_vert {
 }
 
 ###################################
+# next routines:
+#	if number >  0 -> insert with this number
+#	if number == 0 -> create new number and insert
+#	if number <  0 -> only create item, do not insert
+###################################
 
 sub make_node
 {
@@ -702,7 +813,7 @@ sub make_node
 
     my %item = ();
 
-    if( $number <= 0 ) {
+    if( $number == 0 ) {
 	$self->{nnmax}++;
 	$number = $self->{nnmax};
     }
@@ -713,7 +824,7 @@ sub make_node
     $item{y}      = $y;
     $item{h}      = $depth if defined $depth;
 
-    $self->{nodes}->{$number} = \%item;
+    $self->{nodes}->{$number} = \%item if $number > 0;
 
     return \%item;
 }
@@ -724,12 +835,10 @@ sub make_elem
 
     my %item = ();
 
-    if( $number <= 0 ) {
+    if( $number == 0 ) {
 	$self->{nemax}++;
 	$number = $self->{nemax};
     }
-
-    #print STDERR "make_elem: $vert[0] $vert[1] $vert[2]\n";
 
     $item{number} = $number;
     $item{type}   = $type;
@@ -737,7 +846,7 @@ sub make_elem
     $item{vert}   = \@vert;
     $item{h}      = $depth if defined $depth;
 
-    $self->{elems}->{$number} = \%item;
+    $self->{elems}->{$number} = \%item if $number > 0;
 
     return \%item;
 }
@@ -748,7 +857,7 @@ sub make_line
 
     my %item = ();
 
-    if( $number <= 0 ) {
+    if( $number == 0 ) {
 	$self->{nlmax}++;
 	$number = $self->{nlmax};
     }
@@ -759,12 +868,24 @@ sub make_line
     $item{vert}   = \@vert;
     $item{h}      = $depth if defined $depth;
 
-    $self->{lines}->{$number} = \%item;
+    $self->{lines}->{$number} = \%item if $number > 0;
 
     return \%item;
 }
 
 ###################################
+
+sub get_node_xy
+{
+	my ($self,$item) = @_;
+
+	$item = $self->get_node($item) if ref($item) ne "HASH";
+
+	my $x = $item->{x};
+	my $y = $item->{y};
+
+	return ($x,$y);
+}
 
 sub make_xy
 {
@@ -799,7 +920,8 @@ sub is_closed
 {
   my ($self,$line) = @_;
 
-  my $vert = $line->{vert};
+  my $vert = $line;
+  $vert = $line->{vert} if ref($line) eq "HASH";
 
   if( $$vert[0] == $$vert[-1] ) {
 	return 1;
@@ -874,7 +996,8 @@ sub split_line
 {
   my ($self,$line,$node) = @_;
 
-  my $number = $node->{number};
+  my $number = $node;
+  $number = $node->{number} if ref($node);
   my $vert = $line->{vert};
   my @v1 = ();
   my @v2 = ();
@@ -1030,6 +1153,176 @@ sub set_preserve_order
     $self->{preserve_order} = $preserve_order;
 }
 
+###################################
+###################################
+###################################
+
+sub make_bound_line {
+
+  my ($self) = @_;
+
+  my $lines = $self->get_lines();
+  foreach my $line (values %$lines) {
+    $self->delete_line($line);
+  }
+
+  my $elems = $self->get_elems();
+  my %keys = ();
+
+  foreach my $elem (values %$elems) {
+    my $verts = $elem->{vert};
+
+    my $oldvert = $$verts[-1];
+    foreach my $newvert (@$verts) {
+      my $key = "$newvert:$oldvert";
+      if( $keys{$key} ) {
+        delete $keys{$key};
+      } else {
+        $key = "$oldvert:$newvert";
+        $keys{$key} = 1;
+      }
+      $oldvert = $newvert
+    }
+    $self->delete_elem($elem);
+  }
+
+  my $n = 0;
+  my %nodes = ();
+  foreach my $item (keys %keys) {
+    my ($n1,$n2) = split(":",$item);
+    $nodes{$n1} = $n2;
+    $n++;
+  }
+  print STDERR "Boundary nodes found: $n\n";
+
+  my $nline = 0;
+  foreach my $n1 (keys %nodes) {
+    my $n2 = $nodes{$n1};
+    if( $n2 ) {
+      my $linenodes = make_line_from_nodes($n2,\%nodes);
+      $nline++;
+      my $line = $self->make_line(0,0,0,@$linenodes);
+      $self->close_line($line);
+    }
+  }
+  print STDERR "Boundary lines found: $nline\n";
+
+  $self->delete_unused();
+}
+
+sub make_line_from_nodes
+{
+  my ($start,$nodes) = @_;
+
+  my @line = ();
+  my $old = $start;
+  my $node;
+
+  while( $node = $$nodes{$old} ) {
+    push(@line,$node);
+    $$nodes{$old} = 0;
+    $old = $node;
+  }
+
+  if( $old != $start ) {
+    die "error in line: $old  $start\n";
+  }
+
+  return \@line;
+}
+
+###################################
+###################################
+###################################
+
+# next routines accept both a node list (vertices) or an item
+
+sub area {
+
+  my ($self,$item) = @_;
+
+  my $v = $item;
+  $v = $item->{vert} if ref($item) eq "HASH";
+
+  my $n = @$v;
+  $n-- if $self->is_closed($item);
+
+  my ($xc,$yc) = $self->get_center_point($item);	# just aux
+  my $area = 0.;
+
+  my ($xm,$ym);
+  my ($xn,$yn) = $self->get_node_xy($v->[$n-1]);
+
+  for (my $i=0;$i<$n;$i++) {
+    ($xm,$ym) = ($xn,$yn);
+    ($xn,$yn) = $self->get_node_xy($v->[$i]);
+    $area += areat($xm,$ym,$xn,$yn,$xc,$yc);
+  }
+
+  return $area;
+}
+
+sub get_center_of_gravity {	#this is real center of gravity
+
+  my ($self,$item) = @_;
+
+  my $v = $item;
+  $v = $item->{vert} if ref($item) eq "HASH";
+
+  my $n = @$v;
+  $n-- if $self->is_closed($item);
+
+  my ($xc,$yc) = $self->get_center_point($item);	# just aux
+
+  my $at = 0.;
+  my ($xg,$yg) = (0,0);
+  my ($xm,$ym);
+  my ($xn,$yn) = $self->get_node_xy($v->[$n-1]);
+
+  for( my $i=0;$i<$n;$i++ ) {
+    ($xm,$ym) = ($xn,$yn);
+    ($xn,$yn) = $self->get_node_xy($v->[$i]);
+    my $area = areat($xm,$ym,$xn,$yn,$xc,$yc);
+    my $xt = ($xm+$xn+$xc)/3.;
+    my $yt = ($ym+$yn+$yc)/3.;
+    $xg += $xt*$area;
+    $yg += $yt*$area;
+    $at += $area;
+  }
+
+  return ($xg/$at,$yg/$at);
+}
+
+sub get_center_point {
+
+  my ($self,$item) = @_;
+
+  my $v = $item;
+  $v = $item->{vert} if ref($item) eq "HASH";
+
+  my $n = @$v;
+  $n-- if $self->is_closed($item);
+
+  my ($xc,$yc) = (0,0);
+
+  for( my $i=0;$i<$n;$i++ ) {
+    my ($xn,$yn) = $self->get_node_xy($v->[$i]);
+    $xc += $xn;
+    $yc += $yn;
+  }
+
+  return ($xc/$n,$yc/$n);
+}
+
+sub areat {
+
+  my ($x1,$y1,$x2,$y2,$x3,$y3) = @_;
+
+  return 0.5 * ( ($x2-$x1) * ($y3-$y1) - ($x3-$x1) * ($y2-$y1) );
+}
+
+###################################
+###################################
 ###################################
 
 sub test_grd

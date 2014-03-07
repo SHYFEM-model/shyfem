@@ -112,6 +112,7 @@ c custom routines
 	if( icall .eq. 94 ) call diffus2d
         if( icall .eq. 95 ) call ggu_ginevra
 	if( icall .eq. 101 ) call black_sea_nudge
+	if( icall .eq. 201 ) call conz_decay_curonian
         if( icall .eq. 883 ) call debora(it)
         if( icall .eq. 884 ) call tsinitdebora(it)
         if( icall .eq. 888 ) call uv_bottom
@@ -4041,6 +4042,81 @@ c**********************************************************************
 
 	call pripar(iunit)
 	call prifnm(iunit)
+
+	end
+
+c**********************************************************************
+
+	subroutine conz_decay_curonian
+
+	implicit none
+
+	include 'param.h'
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	real xgv(1), ygv(1)
+	common /xgv/xgv, /ygv/ygv
+	real cnv(nlvdim,nkndim)
+	common /cnv/cnv
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+
+	integer k,l,lmax
+	real tau1,tau2,aux1,aux2
+	real dt
+	real x1,y1,x2,y2,x,y
+	logical is_north
+
+	tau1 = +15.0		!growth rate - efolding time in days
+	tau2 = -15.0		!decay rate - efolding time in days
+
+	x1 = 20.99
+	y1 = 55.3
+	x2 = 21.2
+	y2 = 55.18
+
+	call get_timestep(dt)
+	aux1 = exp(dt/(tau1*86400))
+	aux2 = exp(dt/(tau2*86400))
+
+        do k=1,nkn
+          lmax = ilhkv(k)
+	  x = xgv(k)
+	  y = ygv(k)
+          do l=1,lmax
+	    if( is_north(x,y,x1,y1,x2,y2) ) then
+              cnv(l,k) = aux2 * cnv(l,k)
+	    else
+              cnv(l,k) = aux1 * cnv(l,k)
+	    end if
+          end do
+        end do
+
+	end
+
+c**********************************************************************
+
+	function is_north(x,y,x1,y1,x2,y2)
+
+	implicit none
+
+	logical is_north
+	real x,y,x1,y1,x2,y2
+
+	real dxp,dyp,dxt,dyt,dxn,dyn,scal
+
+	dxp = x-x1
+	dyp = y-y1
+	dxt = x2-x1
+	dyt = y2-y1
+	dxn = -dyt
+	dyn = dxt
+
+	scal = dxp*dxn + dyp*dyn
+
+	is_north = scal .gt. 0
 
 	end
 

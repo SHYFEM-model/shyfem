@@ -70,6 +70,7 @@ c 13.09.2011    ggu     better error check, rdtitl() more robust
 c 23.01.2012    ggu     new section "proj"
 c 24.01.2012    ggu     new routine setup_parallel()
 c 10.02.2012    ggu     new routines to initialize and access time common block
+c 05.03.2014    ggu     code prepared to repeat time step (irepeat) - not ready
 c
 c************************************************************
 c
@@ -789,6 +790,16 @@ c********************************************************************
 c********************************************************************
 c********************************************************************
 
+        subroutine check_timestep(irepeat)
+
+	implicit none
+
+	integer irepeat		!on return 1 if time step has to be repeated
+
+	end
+
+c********************************************************************
+
         subroutine set_timestep
 
 c controls time step
@@ -802,16 +813,16 @@ c controls time step
         real dt
         real ri,rindex,rindex1,riold
 	real perc
-        real    cmax,rmax
+        real    cmax,rmax,tfact
         integer iloop,itloop
         integer idtsync,isplit,idtmin
-	integer itunit
+	integer itunit,irepeat
 	logical bsync
 
         real getpar
 
-        integer idtorig,istot,idtold
-        save    idtorig,istot,idtold
+        integer idtorig,istot,idtold,idtnew
+        save    idtorig,istot,idtold,idtnew
         integer iuinfo
         save    iuinfo
 
@@ -850,12 +861,14 @@ c                                !  0:  time step fixed
 c                                !  1:  split time step
 c                                !  2:  optimize time step (no multiple)
 c	 idtmin = 0		 !minimum time step allowed
+c	 tfact = 0		 !factor of maximum decrease of time step
 c----------------------------------------------------------------------
 
         isplit  = nint(getpar('itsplt'))
         cmax    = getpar('coumax')
         idtsync = nint(getpar('idtsyn'))
         idtmin  = nint(getpar('idtmin'))
+        tfact  = getpar('tfact')	!still to be commented
 
 	itloop = 0
 
@@ -870,8 +883,8 @@ c----------------------------------------------------------------------
         end if
 
 	ri = 0.
-	iloop = 0
 	istot = 0
+	idtnew = idt
 
         if( isplit .le. 0 ) then
           idts = 0
@@ -883,33 +896,35 @@ c----------------------------------------------------------------------
             iloop = 0
             do while( ri .gt. cmax )
               istot = istot + 1
-              idt = idtorig/istot
-              if( istot*idt .ne. idtorig ) idt = idt + 1
-              ri = idt*rindex/idtorig
+              idtnew = idtorig/istot
+              if( istot*idtnew .ne. idtorig ) idtnew = idtnew + 1
+              ri = idtnew*rindex/idtorig
               iloop = iloop + 1
+	      if( iloop .gt. 100 ) then
+		stop 'error stop set_timestep: too many iterations'
+	      end if
             end do
           end if
         else if( isplit .eq. 2 ) then
           idts = idtsync
-          idt = idtorig
+          idtnew = idtorig
 	  if( rindex / cmax .gt. 1. ) then	!BUGFIX
-	    idt = min(idt,int(dt*cmax/rindex))
+	    idtnew = min(idtnew,int(dt*cmax/rindex))
 	  end if
-	  !write(6,*) '++++++++ ',idts,idtorig,rindex,idt
         else
           write(6,*) 'isplit = ',isplit
           stop 'error stop set_timestep: value for isplit not allowed'
         end if
 
-	!write(6,*) 'stability: ',it,rindex
-	!write(6,*) idtorig,idts,idt,istot,ri,cmax
-
 c	syncronize at least with end of simulation
 
-	if( it + idt .gt. itend ) idt = itend - it
+	if( it + idtnew .gt. itend ) then
+	  idtnew = itend - it
+	  bsync = .true.
+	end if
 
 c----------------------------------------------------------------------
-c idt    is proposed new time step
+c idtnew is proposed new time step
 c idts   is time step with which to syncronize
 c nits   is total number of time steps
 c rindex is computed stability index
@@ -921,41 +936,56 @@ c----------------------------------------------------------------------
         if( idts .gt. 0 ) then               !syncronize time step
             idtdone = mod(it-itanf,idts)     !already done
             idtrest = idts - idtdone         !still to do
-            if( idt .gt. idtrest ) then
-	      idt = idtrest
+            if( idtnew .gt. idtrest ) then
+	      idtnew = idtrest
 	      bsync = .true.
 	    end if
         end if
 
-        ri = idt*rindex/idtorig
+        ri = idtnew*rindex/idtorig
 
 	if( itloop .gt. 10 ) then
 	  stop 'error stop set_timestep: too many loops'
 	end if
 
-        if( idt .lt. 1 ) then           !should never happen
+        if( idtnew .lt. 1 ) then           !should never happen
           call error_stability(dt,rindex)
           write(6,*) 'idt is less equal 0 !!!'
           write(6,*) it,itanf,mod(it-itanf,idtorig)
-          write(6,*) idt,idtdone,idtrest,idtorig
+          write(6,*) idtnew,idtdone,idtrest,idtorig
           write(6,*) idts,idtsync,iloop
           write(6,*) isplit,istot
           write(6,*) cmax,rindex,ri
           stop 'error stop set_timestep: non positive time step'
         end if
 
-        if( .not. bsync .and. idt .lt. idtmin ) then
+	irepeat = 0
+
+        if( .not. bsync .and. idtnew .lt. idtmin ) then
 	  rmax = (1./idtmin)*cmax
 	  call eliminate_stability(rmax)
-	  write(6,*) 'repeating time step for low idt: ',idt,rmax
-	  goto 1
+	  write(6,*) 'repeating time step for low idt (1): ',idtnew,rmax
+	  irepeat = 1
+	  goto 1	!eventually this should be commented
 	end if
 
-	riold = idtold*ri/idt	!ri with old time step
-	idtold = idt
+        if( .not. bsync .and. idtnew .lt. tfact*idtold ) then
+	  write(6,*) 'repeating time step for low idt (2): ',idtnew,idtold
+	  irepeat = 1
+	end if
+
+	if( irepeat .gt. 0 ) then
+	  idtold = idtnew
+	  write(6,*) 'We really should repeat this time step'
+	  write(6,*) 'code not yet ready...'
+	end if
+
+	riold = idtold*ri/idtnew	!ri with old time step
+	idtold = idtnew
 
         niter=niter+1
-        it=it+idt
+        it=it+idtnew
+	idt=idtnew
 
 	perc = (100.*(it-itanf))/(itend-itanf)
 
@@ -1162,7 +1192,7 @@ c sets-up output frequency and first output
 
 	if( itmout .eq. -1 ) itmout = itanf
 	if( itmout .lt. itanf ) itmout = itanf
-	if( idtout .lt. idt .and. idtout .gt. 0 ) idtout = idt
+	!if( idtout .lt. idt .and. idtout .gt. 0 ) idtout = idt
 
 	itout = itmout
 	if( itmout .eq. itanf ) itout = itout + idtout
@@ -1199,11 +1229,10 @@ c sets-up array for output frequency
 
 	if( itmout .eq. -1 ) itmout = itanf
 	if( itmout .lt. itanf ) itmout = itanf
-	if( idtout .lt. idt .and. idtout .gt. 0 ) idtout = idt
+	!if( idtout .lt. idt .and. idtout .gt. 0 ) idtout = idt
 
 	itout = itmout
 	if( itmout .eq. itanf ) itout = itout + idtout
-
 	if( itout .gt. itend ) idtout = 0
 
 	ia_out(1) = idtout	! time step of output

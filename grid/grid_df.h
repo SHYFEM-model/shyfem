@@ -29,6 +29,7 @@
 #define ELEMMODE 2
 #define LINEMODE 3
 #define VECTMODE 4
+#define SEGMMODE 5
 
 #define AREAMIN 0.4
 

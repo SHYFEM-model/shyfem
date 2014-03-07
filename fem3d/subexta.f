@@ -188,9 +188,9 @@ c writes and administers ext file
 	if( icall .eq. -1 ) return
 
 	if( icall .eq. 0 ) then
-		idtext = iround(dgetpar('idtext'))
-		itmext = iround(dgetpar('itmext'))
-		itend = iround(dgetpar('itend'))
+		idtext = nint(dgetpar('idtext'))
+		itmext = nint(dgetpar('itmext'))
+		itend = nint(dgetpar('itend'))
 		if( knausm .le. 0 ) icall = -1
 		if( idtext .le. 0 ) icall = -1
 		if( itmext .gt. itend ) icall = -1

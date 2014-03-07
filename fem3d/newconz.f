@@ -411,8 +411,8 @@ c simulates decay for concentration
 
         if( tau .le. 0. ) return	!tau is 0 => no decay
 
-	!tauaux = tau			!e-folding time
-	tauaux = tau * alpha_t90	!t_90
+	!tauaux = tau			!tau is e-folding time
+	tauaux = tau * alpha_t90	!tau is t_90
         aux = exp(-dt/(tauaux*86400))
 
         do k=1,nkn

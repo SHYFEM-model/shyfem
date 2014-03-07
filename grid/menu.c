@@ -555,7 +555,7 @@ void ProcessMenuInput( int x , int y )
 	int button_status;
 	QEvent event;
 
-	if( edebug ) printf("ProcessMenuInput: %d %d\n",x,y);
+	if( edebug ) printf("ProcessMenuInput: ...entering %d %d\n",x,y);
 
 	SViewport( &WinDim );	/* whole window */
 	QAddEvent( QPointerMoveMask );
@@ -570,7 +570,8 @@ void ProcessMenuInput( int x , int y )
 	    QNextEvent( &event );
 	    ProcessEvent( &event , &button_status , &x , &y );
 
-	if( edebug ) printf("ProcessMenuInput: button %d %d %d\n",button_status,x,y);
+	    if( edebug ) printf("ProcessMenuInput: button %d %d %d\n"
+					,button_status,x,y);
 
 	    if( button_status == MOUSE_MOVE ) {
 		if( pressed )
@@ -693,10 +694,10 @@ void ExecutePulldownMenu( int x , int y )
 {
 	Menu_entry *menu;
 
-	if( edebug ) printf("ExecutePulldownMenu\n");
 	menu = FindPulldownMenu(x,y);
 
 	if( !menu ) return;
+	if( edebug ) printf("ExecutePulldownMenu: %s %d %d\n",menu->name,x,y);
 
 	if( menu->type == MENU_PULLDOWN ) {
 	    DisplayPulldownMenu( menu , x , y );
@@ -720,7 +721,7 @@ void SchedulePulldownMenu( int x , int y )
 
 	if( !menu ) return;
 
-	if( edebug ) printf("SchedulePulldownMenu: %s\n",menu->name);
+	if( edebug ) printf("SchedulePulldownMenu: %s %d %d\n",menu->name,x,y);
 
 	if( menu->type == MENU_PULLDOWN ) {
 	    HighlightMenu( menu );

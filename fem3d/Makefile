@@ -229,6 +229,8 @@ ETSOBJS = subets.o etsutil.o genutil.o
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
 		genutil.o
 GRDOBJS = subgrd.o grdutil.o subsrt.o subcoord.o
+BATHYOBJS = subgeo.o subgrd.o subsrt.o subinterpol.o subinterpol1.o \
+		subnos.o
 
 LAPLACE = sublpl.o submir.o subnos.o links.o sublnku.o \
 	  subwin.o subnosa.o subssm.o
@@ -277,10 +279,10 @@ EXEINFO  = ousinf flxinf volinf basinf nosinf wininf extinf rstinf feminf \
 		offinf lgrinf etsinf
 EXESPLIT = nossplit splitext splitflx splitets
 EXELAP   = laplap lapwin
-EXEBAS   = bastreat basbathy
+EXEBAS   = bastreat basbathy scalintp
 EXEVAR   = nosinit nosresidence scal_intp bashsigma
 
-NOSVAR   = nos_elab nossum nosdiff noswrite
+NOSVAR   = nos_elab nossum nosdiff noswrite nosadmin
 NOSAVER  = nosaver_basin nosaver_vert nosaver_time
 NOSEXTR  = nosextr_nodes nosextr_gis nosextr_records nosextr_custom \
 		nosextr_cat
@@ -405,8 +407,8 @@ bashsigma:  bashsigma.o $(OUTOBJS)
 baschk:  baschk.o subnev.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subnev.o $(OUTOBJS) -o $@
 
-basbathy:  basbathy.o subgeo.o subgrd.o subsrt.o $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o subgeo.o subgrd.o subsrt.o $(OUTOBJS) -o $@
+basbathy:  basbathy.o $(BATHYOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(BATHYOBJS) $(OUTOBJS) -o $@
 
 basres:  basres.o $(OUTOBJS) $(NOSOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(NOSOBJS) -o $@
@@ -416,6 +418,9 @@ basproj:  basproj.o $(OUTOBJS) $(GRDOBJS)
 
 bastreat:  bastreat.o $(BASEXTRA) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(BASEXTRA) $(OUTOBJS) -o $@
+
+scalintp:  scalintp.o $(OUTOBJS) $(BATHYOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(BATHYOBJS) -o $@
 
 scal_intp:  scal_intp.o subgeo.o $(OUTOBJS) $(LAPLACE)
 	$(LINKER) $(LFLAGS) $@.o subgeo.o $(OUTOBJS) $(LAPLACE) -o $@
@@ -537,6 +542,9 @@ nosaver_time:  nosaver_time.o $(NOSOBJS) $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 noswrite:  noswrite.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+nosadmin:  nosadmin.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 #-------------------------------------------------------
@@ -769,6 +777,7 @@ bedload.o: param.h evmain.h
 bio3d.o: param.h
 bio3d_util.o: param.h donata.h
 eosinf.o: param.h
+etsinf.o: param.h
 feminf.o: param.h
 flux.o: regflux.h param.h links.h ev.h
 flxinf.o: param.h
@@ -811,6 +820,7 @@ newexpl.o: param.h ev.h
 newfix.o: param.h bclfix.h
 newini.o: param.h
 newnohydro.o: param.h nohydlinks.h links.h ev.h
+newnudge.o: param.h nudge.h basin.h
 newstab.o: param.h
 newtra.o: param.h ev.h
 newtvd.o: param.h ev.h tvd.h
@@ -837,6 +847,7 @@ nossplit.o: param.h
 nossum.o: param.h
 nosutil.o: ev.h
 noswrite.o: param.h
+optintp.o: param.h evmain.h
 ous2nc.o: param.h evmain.h basin.h
 ousaver.o: param.h
 ousextr_cat.o: param.h
@@ -853,10 +864,12 @@ ouswrite.o: param.h
 prep_input.o: param.h evmain.h basin.h
 readext.o: param.h
 scal_intp.o: param.h evmain.h
+scalintp.o: param.h evmain.h
 sedi3d.o: param.h links.h ev.h sed_param.h
 simsys_lp.o: param.h common.h
 simsys_pard.o: param.h common.h
 simsys_spk.o: param.h common.h
+splitets.o: param.h
 splitflx.o: param.h
 subbc.o: subobc.h
 subbfm.o: param.h bfm_common.h
@@ -870,6 +883,8 @@ subdif.o: param.h ev.h
 subdry.o: ev.h
 subdwq.o: param.h
 subele.o: param.h ev.h
+subets.o: etsinf.h
+subetsa.o: param.h modules.h subetsa.h
 subexta.o: modules.h
 subflx3d.o: testbndo.h param.h links.h ev.h
 subflxa.o: param.h subflxa.h modules.h
@@ -877,6 +892,8 @@ subflxu.o: param.h links.h
 subfvl.o: param.h
 subgotm.o: param.h ev.h
 subgotm_mud.o: param.h ev.h
+subinterpol.o: param.h
+subinterpol1.o: param.h
 sublin.o: links.h
 sublnka.o: ev.h links.h
 sublnks.o: ev.h links.h
@@ -885,6 +902,7 @@ sublpl.o: ev.h
 submet.o: ev.h
 submeteo1.o: meteo.h
 submud.o: testbndo.h param.h
+submud_dummy.o: param.h
 subn11.o: param.h
 subn35.o: param.h chezy.h
 subnetcdf_admin.o: param.h
@@ -893,6 +911,7 @@ subnev.o: ev.h
 subnos.o: nosinf.h
 subnsh.o: modules.h
 suboff.o: param.h
+subous.o: ousinf.h
 subousa.o: param.h
 subpar1.o: subpar.h
 subpard.o: param.h common.h
@@ -912,6 +931,7 @@ subwaves.o: param.h
 subwrt.o: param.h
 subwwm.o: param.h evmain.h
 tideg.o: param.h
+ts2nc.o: param.h evmain.h
 vp.o: param.h
 weutro.o: donata.h weutro.h
 weutro_sedim.o: donata.h weutro.h

@@ -2,11 +2,12 @@
 #
 ##############################################################
 #
-# version 1.3.2
+# version 1.4.0
 #
 # 26.08.2005            print_info, bug in make_unique
 # 20.10.2005            version control introduced
 # 01.12.2011            new functionality
+# 18.02.2014            bug fix in is_convex()
 #
 ##############################################################
 #
@@ -19,7 +20,7 @@
 #
 # if package grd.pm is used you can do:
 #
-# ($x,$y) = $grid->make_xy(litem);
+# ($x,$y) = $grid->make_xy($litem);
 # $grdl->set_line($x,$y);
 #
 ##############################################################
@@ -56,9 +57,20 @@ sub new
  
 ##############################################################
 
+sub reset_line {
+
+  my ($self) = @_;
+
+  $self->{closed} = -1;
+  $self->{convex} = -1;
+  $self->{area} = -1;
+}
+
 sub set_line {
 
   my ($self,$x,$y) = @_;
+
+  $self->reset_line();
 
   my $nx = @$x;
   my $ny = @$y;
@@ -75,9 +87,9 @@ sub set_line {
 
   $self->make_unique();
   $self->is_closed();
+  $self->set_area();
   $self->is_convex();
   $self->set_xy_min_max();
-  $self->set_area();
 }
 
 sub print_info {
@@ -97,6 +109,7 @@ sub is_convex {
 
   return $self->{convex} if $self->{convex} != -1;
 
+  my $area = $self->{area};
   $self->{convex} = 0;
 
   my $n = $self->{n} - 1;
@@ -112,7 +125,13 @@ sub is_convex {
     ($xm,$ym) = ($xn,$yn);
     ($xn,$yn) = ($$x[$i],$$y[$i]);
 
-    return 0 unless( lefton($xl,$yl,$xm,$ym,$xn,$yn) );
+    if( $area > 0 ) {
+      return 0 if not lefton($xl,$yl,$xm,$ym,$xn,$yn);
+    } elsif( $area < 0 ) {
+      return 0 if not righton($xl,$yl,$xm,$ym,$xn,$yn);
+    } else {
+      return 0;
+    }
   }
 
   $self->{convex} = 1;
@@ -378,6 +397,8 @@ sub in_any_line {
     return 1;
   }
 }
+
+#--------------------------------------------------------------------
 
 ###################################
 1;

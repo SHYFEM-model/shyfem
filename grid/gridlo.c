@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 05-Mar-2014: new action for drag and mouse wheel			*
  * 02-Apr-1998: new LoopForEvents, ExitEventLoop() (used to exit loop)  *
  * 02-Apr-1998: ProcessMenuInput() called for new menu routines         *
  * 06-Apr-94: copyright notice added to file				*
@@ -62,7 +63,13 @@ void LoopForInput( void )
 
 {
     QEvent event;
-    int button,horiz,verti;
+    int button,press,horiz,verti;
+    static int drag = 0;
+    float x1,y1,x2,y2;
+    static int horiz_down = 0;
+    static int verti_down = 0;
+    static int button_orig = 0;		/* use original functionality */
+    static int plot_on_move = 1;	/* replot while dragging */
 
     while( LoopForEvents ) {
 
@@ -88,28 +95,82 @@ void LoopForInput( void )
 		KeyboardInput( event.key );
 		break;
 
+	case QPointerMove:
+
+		horiz = event.button.x;
+		verti = event.button.y;
+		//printf("LoopForInput: QPointerMove %d %d\n",horiz,verti);
+
+		if( plot_on_move ) {
+			GetPlotCoord(horiz_down,verti_down,&x1,&y1);
+			GetPlotCoord(horiz,verti,&x2,&y2);
+			GfMoveRelative(x1-x2,y1-y2);
+			horiz_down = horiz;
+			verti_down = verti;
+			drag = 1;	/* drag event already handled */
+			QSkipMotion();
+		}
+		break;
+
 	case QButtonPress:
 
-		if( event.button.press == QButtonUp ) break;
+		if( button_orig ) {
+		    if( event.button.press == QButtonUp ) break;	
+		}
 
+		press = event.button.press;
 		button = event.button.button;
 		horiz = event.button.x;
 		verti = event.button.y;
 
+		//printf("LoopForInput: QButtonPress %d %d\n",button,press);
+
+		if( InMenuField(horiz,verti) ) {
+		    if( button == QButtonLeft ) {
+			// printf("LoopForInput: MenuFieldInput %d\n",button);
+			ActMode = MENU_FIELD_INPUT;
+			ProcessMenuInput(horiz,verti);
+		    }
+		    break;
+		} else if( ! InPlotField(horiz,verti) ) {
+		    break;
+		}
+
+		if( !button_orig ) {
+		    if( press == QButtonDown ) {
+			QAddEvent( QPointerMoveMask );
+			horiz_down = horiz;
+			verti_down = verti;
+			drag = 0;
+			break;
+		    } if( press == QButtonUp ) {
+		      QDeleteEvent( QPointerMoveMask );
+		      if( drag || horiz != horiz_down || verti != verti_down ) {
+		        if( button == QButtonLeft ) {	/* drag event */
+				GetPlotCoord(horiz_down,verti_down,&x1,&y1);
+				GetPlotCoord(horiz,verti,&x2,&y2);
+				/*
+		                printf("LoopForInput - drag event: %d %f %f\n"
+						,button,x1-x2,y1-y2);
+				*/
+				GfMoveRelative(x1-x2,y1-y2);
+				break;
+		        }
+		      }
+		    }
+		}
+
 		if( button == QButtonLeft ) {
-			if( InPlotField(horiz,verti) ) {
-				ActMode = PLOT_FIELD_INPUT;
-				PlotFieldInput(horiz,verti,LEFT_MOUSE_BUTTON);
-			}
-			if( InMenuField(horiz,verti) ) {
-				/* MenuFieldInput(horiz,verti); */
-				ActMode = MENU_FIELD_INPUT;
-				ProcessMenuInput(horiz,verti);
-			}
+			ActMode = PLOT_FIELD_INPUT;
+			PlotFieldInput(horiz,verti,LEFT_MOUSE_BUTTON);
 		} else if( button == QButtonRight ) {
-			if( InPlotField(horiz,verti) ) {
-				PlotFieldInput(horiz,verti,RIGHT_MOUSE_BUTTON);
-			}
+			PlotFieldInput(horiz,verti,RIGHT_MOUSE_BUTTON);
+		} else if( button == QButtonWheelUp ) {
+			GetPlotCoord(horiz,verti,&ActX,&ActY);
+			GfZoomIn();
+		} else if( button == QButtonWheelDown ) {
+			GetPlotCoord(horiz,verti,&ActX,&ActY);
+			GfZoomOut();
 		}
 
 		break;

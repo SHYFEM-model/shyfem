@@ -19,13 +19,12 @@ c 16.03.2012	ggu	default value for umfact set to 3, new mode = 3
 c 01.06.2012	ggu	some more changes
 c 13.06.2013	ggu	copy_depth() renamed to transfer_depth()
 c 13.02.2014	ggu	new data written, can read also bas file
-c 05.03.2014	ggu	subroutines copied to other routine
 c
 c****************************************************************
 
-        program basbathy
+        program scalintp
 
-c performs bathymetry interpolation in basin
+c performs scalar interpolation in basin
 c
 c takes care of lat/lon coordinates
 
@@ -73,22 +72,23 @@ c takes care of lat/lon coordinates
 
         character*40 bfile,gfile,nfile
         character*60 line
-	integer node,nit
-	integer mode,np,n,i,nt
+	integer node,nit,ivar
+	integer mode,np,n,i,k,nt
         integer ner,nco,nknh,nelh,nli
 	integer nlidim,nlndim
 	integer ike,idepth
 	integer nminimum
 	integer isphe
 	real ufact,umfact
+	real flag
 	real f(5)
 	logical bstop,bbasin
 	integer iscanf
 
-        real xt(neldim)
-        real yt(neldim)
-        real at(neldim)
-        real ht(neldim)
+	real xt(neldim)
+	real yt(neldim)
+	real at(neldim)
+	real ht(neldim)
 
 c-----------------------------------------------------------------
 c what to do
@@ -99,27 +99,25 @@ c-----------------------------------------------------------------
 
         write(6,*)
         write(6,*) 'I need the name of the basin file '
-        write(6,*) '(the file can be in GRD or BAS format)'
-        write(6,*) '(please include extension - default is GRD)'
         write(6,*)
 	write(6,*) 'Enter file name: '
 	read(5,'(a)') gfile
         if( gfile .eq. ' ' ) stop
-	write(6,*) 'grid is read from file : ', gfile
+	write(6,*) 'basin is read from file : ', gfile
         write(6,*)
 
         write(6,*)
-        write(6,*) 'I need the name of the bathymetry data file '
-        write(6,*) '(the file must be in GRD format)'
+        write(6,*) 'I need the name of the data file '
+        write(6,*) '(the file must be in GRD or node/value format)'
         write(6,*)
 	write(6,*) 'Enter file name: '
 	read(5,'(a)') bfile
         if( bfile .eq. ' ' ) stop
-	write(6,*) 'Bathymetry is read from file : ', bfile
+	write(6,*) 'Data is read from file : ', bfile
         write(6,*)
 
         write(6,*)
-        write(6,*) 'Two different algorithms are available:'
+        write(6,*) 'Different algorithms are available:'
         write(6,*) '  1   exponential interpolation (default)'
         write(6,*) '  2   uniform interpolation on squares'
         write(6,*) '  3   exponential interpolation (autocorrelation)'
@@ -130,32 +128,14 @@ c-----------------------------------------------------------------
 	if( mode .gt. 3 ) mode = 1
 	write(6,*) 'Mode is : ', mode
 
-        write(6,*)
-        write(6,*) 'If there are some values missing you can:'
-        write(6,*) '  1   interpolate on missing depth values (default)'
-        write(6,*) '  2   interpolate on all elements/nodes'
-        write(6,*)
-	write(6,*) 'Enter choice: '
-	read(5,'(i10)') idepth
-	if( idepth .ne. 2 ) idepth = 1
-	write(6,*) 'Choice is : ', idepth
+	idepth = 2	!interpolate everywhere
+	ike = 2		!interpolate on nodes
 
-	ike = 1
-	ufact = 1.
+	ufact = -1.
 	umfact = 2.	!old default
 	umfact = 3.
 
 	if( mode .eq. 1 .or. mode .eq. 3 ) then
-
-        write(6,*)
-        write(6,*) 'For the exponential algorithm you can:'
-        write(6,*) '  1   interpolate on elements (default)'
-        write(6,*) '  2   interpolate on nodes'
-        write(6,*)
-	write(6,*) 'Enter choice: '
-	read(5,'(i10)') ike
-	if( ike .ne. 2 ) ike = 1
-	write(6,*) 'Choice is : ', ike
 
         write(6,*)
 	write(6,*) 'Enter parameters for expontential interpolation:'
@@ -177,10 +157,10 @@ c-----------------------------------------------------------------
 	end if
 
 c-----------------------------------------------------------------
-c read in bathymetry file
+c read in data file
 c-----------------------------------------------------------------
 
-	write(6,*) 'reading bathymetry file : ',bfile
+	write(6,*) 'reading data file : ',bfile
 	np = ndim
 	call readgrd(bfile,np,xp,yp,dp)
 
@@ -190,39 +170,8 @@ c-----------------------------------------------------------------
 
 	call check_basin_name(gfile,bbasin)
 
-	if( bbasin ) then
-
-	  write(6,*) 'reading basin as bas file...'
-	  call read_basin(gfile,nkndim,neldim)
-
-	else
-
-	  write(6,*) 'reading basin as grd file...'
-
-          ner = 6
-          bstop = .false.
-
-          nlidim = 0
-          nlndim = 0
-          call rdgrd(
-     +                   gfile
-     +                  ,bstop
-     +                  ,nco,nkn,nel,nli
-     +                  ,nkndim,neldim,nlidim,nlndim
-     +                  ,ipv,ipev,iaux
-     +                  ,iaux,iarv,iaux
-     +                  ,hkv,hev,raux
-     +                  ,xgv,ygv
-     +                  ,nen3v
-     +                  ,iaux,iaux
-     +                  )
-
-          if( bstop ) stop 'error stop rdgrd'
-
-          call ex2in(nkn,3*nel,nlidim,ipv,ipaux,nen3v,iaux,bstop)
-          if( bstop ) stop 'error stop ex2in'
-
-	end if
+	write(6,*) 'reading basin as bas file...'
+	call read_basin(gfile,nkndim,neldim)
 
 c-----------------------------------------------------------------
 c handling of depth and coordinates
@@ -231,8 +180,7 @@ c-----------------------------------------------------------------
 	call check_spheric_ev			!sets lat/lon flag
 	call get_coords_ev(isphe)
 	call set_dist(isphe)
-
-	call set_depth_i(idepth,nknh,nelh)
+	call set_ev
 
 c-----------------------------------------------------------------
 c general info
@@ -240,19 +188,20 @@ c-----------------------------------------------------------------
 
         write(6,*)
         write(6,*) ' nkn  = ',nkn, '  nel  = ',nel
-        write(6,*) ' nknh = ',nknh,'  nelh = ',nelh
         write(6,*)
 
 c-----------------------------------------------------------------
-c node_test
+c prepare points where to interpolate
 c-----------------------------------------------------------------
 
-	call node_test
-	call set_ev
+	flag = -999.
+	do k=1,nkn
+	  hkv(k) = flag
+	end do
 
-        if( ike .eq. 1 ) then                           !elementwise
+        if( ike .eq. 1 ) then           		!elementwise
           call prepare_on_elem(nt,xt,yt,at,ht,ufact)
-        else                                            !nodewise
+        else						!nodewise
           call prepare_on_node(nt,xt,yt,at,ht,ufact)
         end if
 
@@ -263,7 +212,9 @@ c-----------------------------------------------------------------
 	if( mode .eq. 1 ) then
 	  call interpole(np,xp,yp,dp,nt,xt,yt,at,ht,umfact,nminimum)
         else if( mode .eq. 2 ) then
-	  call interpolq(np,xp,yp,dp)
+	  write(6,*) 'mode = 2 -> cannot use this interpolation mode'
+	  stop 'error stop scalintp: mode 2 not possible'
+	  !call interpolq(np,xp,yp,dp)
 	else if( mode .eq. 3 ) then
 	  call make_auto_corr(np,xp,yp,dp,ap,ufact)
 	  call interpola(np,xp,yp,dp,ap,nt,xt,yt,at,ht)
@@ -272,19 +223,28 @@ c-----------------------------------------------------------------
           stop 'error stop'
 	end if
 
-	call transfer_depth(ike,ht)	!copy to nodes/elements
+c-----------------------------------------------------------------
+c copy to depth array
+c-----------------------------------------------------------------
+
+	do k=1,nkn
+	  hkv(k) = ht(k)
+	end do
 
 c-----------------------------------------------------------------
 c write
 c-----------------------------------------------------------------
 
-	nfile = 'basbathy.grd'
+	nfile = 'scalintp.grd'
 	open(1,file=nfile,status='unknown',form='formatted')
 	call wrgrd(1,ike)
 	close(1)
-        write(6,*) 'The new file has been written to ',nfile
+        write(6,*) 'The data has been written to ',nfile
 
-	call write_data('basbathy.dat',nkn,hkv)
+	ivar = 0
+	call write_nos('scalintp.nos',nkn,nel,ivar,ht,hev)
+
+	call write_data('scalintp.dat',nkn,hkv)
 	!call write_xy('basbathy.xyz',nkn,ipv,xgv,ygv)
 
 c-----------------------------------------------------------------

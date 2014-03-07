@@ -1,5 +1,60 @@
 ============================================================
 
+Fri Mar  7 15:40:54 CET 2014
+
+new grid, scalar interpolation
+
+ .gitignore              |    2 +
+ LOG                     |   61 +++
+ Rules.make              |   12 +-
+ fem3d/Makefile          |   28 +-
+ fem3d/basbathy.f        | 1212 +----------------------------------------------
+ fem3d/bastreat.f        |  117 +-----
+ fem3d/newconz.f         |    4 +-
+ fem3d/newstab.f         |    4 +-
+ fem3d/nosadmin.f        |  212 +++++++++
+ fem3d/param.h           |    6 +-
+ fem3d/scalintp.f        |  264 ++++++++++
+ fem3d/subcus.f          |   76 +++
+ fem3d/subdts.f          |   62 ++--
+ fem3d/subdts.h          |   12 +
+ fem3d/subexta.f         |    6 +-
+ fem3d/subgeo.f          |   88 +++-
+ fem3d/subinterpol.f     |  792 +++++++++++++++++++++++++++++++
+ fem3d/subinterpol1.f    |  448 +++++++++++++++++
+ fem3d/subnsh.f          |   89 +++--
+ fem3d/subsys.f          |    3 +-
+ fem3d/subvola.f         |    6 +-
+ femadj/param.h          |    6 +-
+ fembin/bline.pl         |   21 +
+ fembin/makebline.pl     |    2 +
+ fembin/nosadmin         |   93 ++++
+ fembin/plots            |    4 +-
+ fembin/scalintp         |  116 +++++
+ femdoc/final/shyfem.pdf |  Bin 270855 -> 270904 bytes
+ femdoc/final/shyfem.ps  | 1000 ++++++++++++++++++++-------------------
+ femlib/perl/grd.pm      |  319 ++++++++++++-
+ femlib/perl/grdline.pm  |   29 +-
+ femplot/param.h         |    6 +-
+ femplot/plotsim.f       |    3 +
+ femplot/supano.f        |   10 +-
+ femplot/suplin.f        |   75 ++-
+ femplot/supout.f        |  129 ++----
+ grid/events.h           |   16 +-
+ grid/grid.c             |   11 +
+ grid/grid_df.h          |    1 +
+ grid/grid_fp.h          |    8 +
+ grid/gridlo.c           |   89 +++-
+ grid/gridma1.c          |  121 +++++-
+ grid/gridma2.c          |  235 +++++++++-
+ grid/gridut.c           |   28 ++
+ grid/menu.c             |    9 +-
+ grid/xevents.c          |   33 ++
+ param.h                 |    6 +-
+ 47 files changed, 3795 insertions(+), 2079 deletions(-)
+
+============================================================
+
 Tue Feb 18 10:46:48 CET 2014
 
 dgetpar for time, conzin, basbathy reads bas

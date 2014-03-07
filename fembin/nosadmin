@@ -1,0 +1,93 @@
+#!/bin/sh
+#
+# runs scalintp
+
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
+BINDIR=$FEMDIR/fem3d
+
+prog=nosadmin
+
+Usage()
+{
+  echo "Usage: $prog [-h|-help] [-options]"
+}
+
+FullUsage()
+{
+  Usage
+  echo "  -h|-help        this help screen"
+  echo "  -title string   change title to string"
+  echo "  -date #         change date to #"
+  echo "  -time #         change time to #"
+  echo "  -idt #          shift time in it with #"
+  echo "  -ivar #1 #2     exchange var id #1 with #2"
+  echo ""
+  echo "  The new file is written to nos_new.nos"
+}
+
+ErrorOption()
+{
+  echo "No such option : $1"
+}
+
+if [ $# -le 0 ]; then
+  Usage
+  exit 1
+fi
+
+nopts=0
+title=""
+date=0
+time=0
+idt=0
+ivar1=0
+ivar2=0
+
+while [ -n "$1" ]
+do
+   case $1 in
+        -title)         title=$2; shift;;
+        -date)          date=$2; shift;;
+        -time)          time=$2; shift;;
+        -idt)           idt=$2; shift;;
+        -ivar)          ivar1=$2; ivar2=$3; shift; shift;;
+        -h|-help)       FullUsage; exit 0;;
+        -*)             ErrorOption $1; exit 1;;
+        *)              break;;
+   esac
+   nopts=$(($nopts + 1))
+   shift
+done
+
+if [ $nopts -le 0 ]; then
+  echo "nopts = $nopts"
+  Usage
+  exit 1
+fi
+
+echo "nopts:  $nopts"
+echo "title:  $title"
+echo "date:   $date"
+echo "time:   $time"
+echo "idt:    $idt"
+echo "ivar:   $ivar1 $ivar2"
+
+if [ ! -x $BINDIR/$prog ]; then
+  pushd $BINDIR
+  make $prog
+  popd
+fi
+if [ ! -x $BINDIR/$prog ]; then
+  echo "Cannot find or make $prog"
+  exit 1
+fi
+
+$BINDIR/$prog <<EOI
+
+$title
+$date , $time
+$idt
+$ivar1 $ivar2
+EOI
+
+

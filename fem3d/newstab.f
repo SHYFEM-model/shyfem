@@ -353,11 +353,13 @@ c eliminates elements with stability index higher than rmax
 
         real rmax
 
+	integer mode
         real rindex,dt
 
+	mode = 2
 	dt = 0.
 	rindex = rmax
-	call internal_stability(2,dt,rindex)
+	call internal_stability(mode,dt,rindex)
 
 	end
 

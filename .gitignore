@@ -109,6 +109,8 @@ fem3d/nos_elab
 fem3d/etsinf
 fem3d/splitets
 fem3d/optintp
+fem3d/nosadmin
+fem3d/scalintp
 
 femadj/adjele
 fembin/extDiff

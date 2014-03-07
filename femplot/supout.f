@@ -24,6 +24,7 @@ c 14.11.2011  ggu     call to init_sigma_info() to setup layer info
 c 19.12.2011  ggu     new routine level_k2e -> called for nos files
 c 13.06.2013  ggu     new routines for handling FEM files
 c 03.09.2013  ggu     level_k2e -> level_k2e_sh, level_e2k -> level_e2k_sh
+c 05.03.2014  ggu     new read for ous and nos files (use date)
 c
 c**********************************************************
 c**********************************************************
@@ -861,6 +862,8 @@ c opens OUS file and reads header
 
 	implicit none
 
+	include 'param.h'
+
 	integer nunit
 	common /ousous/ nunit
 
@@ -880,8 +883,10 @@ c opens OUS file and reads header
 
 	integer nvers
 	integer nknaux,nelaux,nlvaux,nvar
+	integer nknous,nelous,nlvous
 	integer ierr
         integer i,l
+	integer date,time
         real href,hzmin
 	integer ifemop
 
@@ -889,53 +894,25 @@ c initialize routines
 
 	call ousini
 
-c open file
+c open and read header
 
-	nunit = ifemop('.ous','unform','old')
-	if( nunit .le. 0 ) goto 96
+        call open_ous_type('.ous','old',nunit)
 
-        write(6,*) 'file OUS opened'
-        inquire(nunit,name=file)
-        write(6,*) 'Reading file ...'
-        write(6,*) file
-
-c read first header
-
-	nvers = 1
-	call rfous(nunit,nvers,nknaux,nelaux,nlvaux
-     +                  ,href,hzmin,descrp,ierr)
-
-	if( ierr .ne. 0 ) goto 98
-
-        write(6,*)
-        write(6,*)   descrp
-        write(6,*)
-        write(6,*) ' nvers = ',nvers
-        write(6,*) '   nkn = ',nknaux, '   nel = ',nelaux
-        write(6,*) '   nlv = ',nlvaux
-        write(6,*) '  href = ',href
-        write(6,*) ' hzmin = ',hzmin
-        write(6,*)
-
-	if( nkn .ne. nknaux ) goto 99
-	if( nel .ne. nelaux ) goto 99
-	if( nlvdi .lt. nlvaux ) goto 99
-
-	nlv = nlvaux
-
-c read second header
-
-	call rsous(nunit,ilhv,hlv,hev,ierr)
-
-	if( ierr .ne. 0 ) goto 97
+        call read_ous_header(nunit,nkndim,neldim,nlvdim,ilhv,hlv,hev)
+        call ous_get_params(nunit,nknous,nelous,nlvous)
+	if( nkn .ne. nknous ) goto 99
+	if( nel .ne. nelous ) goto 99
+        nlv = nlvous
 
 	call level_e2k_sh			!computes ilhkv
-	call init_sigma_info(nlv,hlv)		!sets up hlv
-
-	write(6,*) 'hlv: ',nlv,(hlv(l),l=1,nlv)
+        call init_sigma_info(nlv,hlv)
 
 c initialize time
 
+	call ous_get_date(nunit,date,time)
+	if( date .ne. 0 ) then
+	  call dtsini(date,time)
+	end if
 	call timeset(0,0,0)
 
 c end
@@ -949,9 +926,9 @@ c end
 	stop 'error stop ousopen: error reading first header'
    99	continue
 	write(6,*) 'error in parameters :'
-	write(6,*) 'nkn : ',nkn,nknaux
-	write(6,*) 'nel : ',nel,nelaux
-	write(6,*) 'nlv : ',nlvdi,nlvaux
+	write(6,*) 'nkn : ',nkn,nknous
+	write(6,*) 'nel : ',nel,nelous
+	write(6,*) 'nlv : ',nlvdi,nlvous
 	stop 'error stop ousopen'
 	end
 
@@ -1061,6 +1038,8 @@ c opens NOS file and reads header
 
 	implicit none
 
+	include 'param.h'
+
 	character*(*) type
 
 	integer nunit
@@ -1082,6 +1061,8 @@ c opens NOS file and reads header
 
 	integer nvers
 	integer nknaux,nelaux,nlvaux,nvar
+	integer nknnos,nelnos,nlvnos
+	integer date,time
 	integer ierr,l
 	integer ifemop
 
@@ -1091,64 +1072,34 @@ c initialize routines
 
 c open file
 
-	nunit = ifemop(type,'unform','old')
-	if( nunit .le. 0 ) then
-		stop 'error stop conopen: cannot open NOS file'
-        else
-                write(6,*) 'File opened on unit: ',nunit
-                inquire(nunit,name=file)
-                write(6,*) file
-                write(6,*) 'Reading file ...'
-	end if
+        call open_nos_type('.nos','old',nunit)
 
-c read first header
-
-	nvers = 3
-	call rfnos(nunit,nvers,nknaux,nelaux,nlvaux,nvar,descrp,ierr)
-
-	if( ierr .ne. 0 ) then
-		stop 'error stop nosopen: error reading first header'
-	end if
-
-        write(6,*)
-        write(6,*)   descrp
-        write(6,*)
-        write(6,*) ' nvers = ', nvers
-        write(6,*) '   nkn = ',nknaux, '   nel = ',nelaux
-        write(6,*) '   nlv = ',nlvaux, '  nvar = ',  nvar
-        write(6,*)
-
-	if( nkn .ne. nknaux ) goto 99
-	if( nelaux .ne. 0 .and. nel .ne. nelaux ) goto 99
-	if( nlvdi .lt. nlvaux ) goto 99
-
-	nlv = nlvaux
-
-c read second header
-
-	call rsnos(nunit,ilhkv,hlv,hev,ierr)
-
-	if( ierr .ne. 0 ) then
-		stop 'error stop nosopen: error reading second header'
-	end if
+        call read_nos_header(nunit,nkndim,neldim,nlvdim,ilhkv,hlv,hev)
+        call nos_get_params(nunit,nknnos,nelnos,nlvnos,nvar)
+        call nos_get_date(nunit,date,time)
+        if( nkn .ne. nknnos ) goto 99
+        if( nel .ne. nelnos ) goto 99
+        nlv = nlvnos
 
 	call level_k2e_sh
-	call init_sigma_info(nlv,hlv)		!sets up hlv
-
-	write(6,*) 'hlv: ',nlv,(hlv(l),l=1,nlv)
+        call init_sigma_info(nlv,hlv)
 
 c initialize time
 
-	call timeset(0,0,0)
+        call nos_get_date(nunit,date,time)
+        if( date .ne. 0 ) then
+          call dtsini(date,time)
+        end if
+        call timeset(0,0,0)
 
 c end
 
 	return
    99	continue
 	write(6,*) 'error in parameters : basin - simulation'
-	write(6,*) 'nkn : ',nkn,nknaux
-	write(6,*) 'nel : ',nel,nelaux
-	write(6,*) 'nlv : ',nlvdi,nlvaux
+	write(6,*) 'nkn : ',nkn,nknnos
+	write(6,*) 'nel : ',nel,nelnos
+	write(6,*) 'nlv : ',nlvdi,nlvnos
 	write(6,*) 'parameters are different between basin and simulation'
 	stop 'error stop nosopen'
 	end

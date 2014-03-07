@@ -15,6 +15,7 @@ c 01.12.2005    ggu     new routine dts_initialized and block data
 c 07.05.2009    ggu     new routine dtsyear() and date_compute()
 c 01.06.2012    ggu     work also with date=0
 c 23.10.2012    ggu     unpackdate() and dtsini() accepts also only year
+c 05.03.2014    ggu     new subdts.h and new routine dts_has_date()
 c
 c notes :
 c
@@ -319,11 +320,7 @@ c converts it to date and time
         integer year,month,day
         integer hour,min,sec
 
-        integer year0,month0,day0
-        integer hour0,min0,sec0
-	integer last,dinit
-	common /dtsdts/ year0,month0,day0,hour0,min0,sec0,last,dinit
-	save /dtsdts/
+	include 'subdts.h'
 
 	last = it
 
@@ -354,11 +351,7 @@ c converts date and time to it
 
 	integer days,days0,secs,secs0
 
-        integer year0,month0,day0
-        integer hour0,min0,sec0
-	integer last,dinit
-	common /dtsdts/ year0,month0,day0,hour0,min0,sec0,last,dinit
-	save /dtsdts/
+	include 'subdts.h'
 
 	call date2days(days,year,month,day)
 	call date2days(days0,year0,month0,day0)
@@ -383,14 +376,13 @@ c sets date and time for 0 fem time
 	integer date,time
 	logical bdebug
 
-        integer year0,month0,day0
-        integer hour0,min0,sec0
-	integer last,dinit
-	common /dtsdts/ year0,month0,day0,hour0,min0,sec0,last,dinit
-	save /dtsdts/
+	include 'subdts.h'
 
 	bdebug = .true.
 	bdebug = .false.
+
+	date0 = date
+	time0 = time
 
 	call unpackdate(date,year0,month0,day0)
 	!call unpackdate(time,hour0,min0,sec0)	!UNPACK
@@ -439,16 +431,32 @@ c checks if dts routines are already initialized
 
 	logical dts_initialized
 
-        integer year0,month0,day0
-        integer hour0,min0,sec0
-	integer last,dinit
-	common /dtsdts/ year0,month0,day0,hour0,min0,sec0,last,dinit
-	save /dtsdts/
+	include 'subdts.h'
 
 	if( dinit .eq. 0 ) then
 	  dts_initialized = .false.
 	else
 	  dts_initialized = .true.
+	end if
+
+	end
+
+c************************************************************************
+
+	function dts_has_date()
+
+c checks if dts routines have a valid date
+
+	implicit none
+
+	logical dts_has_date
+
+	include 'subdts.h'
+
+	if( date0 .eq. 0 ) then
+	  dts_has_date = .false.
+	else
+	  dts_has_date = .true.
 	end if
 
 	end
@@ -841,15 +849,13 @@ c************************************************************************
 
         implicit none
 
-        integer year0,month0,day0
-        integer hour0,min0,sec0
-	integer last,dinit
+	include 'subdts.h'
 
-	common /dtsdts/ year0,month0,day0,hour0,min0,sec0,last,dinit
-	save /dtsdts/
-
-        data year0,month0,day0,hour0,min0,sec0,last,dinit
-     +			 /0,0,0,0,0,0,0,0/
+        data     date0,time0
+     +		,year0,month0,day0
+     +		,hour0,min0,sec0
+     +		,last,dinit
+     +		 /0,0,0,0,0,0,0,0,0,0/
 
         end
 

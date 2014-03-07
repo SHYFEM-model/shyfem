@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 05-Mar-2014: handle mouse wheel, new QSkipMotion()			*
  * 05-Dec-95: handle special keys from keyboard (arrows, return...)     *
  * 10-Dec-94: routines adapted to gcc through Event Queue Library       *
  * 04-Dec-94: routines written from scratch				*
@@ -52,6 +53,8 @@
 #define X_BUTTON_LEFT		( 1 )
 #define X_BUTTON_RIGHT		( 3 )
 #define X_BUTTON_MIDDLE		( 2 )
+#define X_BUTTON_WHEEL_UP	( 4 )
+#define X_BUTTON_WHEEL_DOWN	( 5 )
 
 #define X_BUTTON_CHANGE_MASK	( ButtonPressMask | ButtonReleaseMask )
 #define X_KEY_PRESS_MASK	( KeyPressMask )
@@ -159,12 +162,31 @@ void QDeleteEvent( QEventMask eventmask )
 	}
 }
 
+void QSkipMotion( void )
+
+/* skips all motion events in event queue */
+
+{
+	XEvent event;
+
+	while ( XPending(MyDisplay) )
+	{
+	  XNextEvent( MyDisplay , &event );
+	  if( event.type != MotionNotify ) {
+	    XPutBackEvent( MyDisplay , &event );
+	    return;
+	  }
+	}
+}
+
+
 void QNextEvent( QEvent *eventp )
 
 {
 	int configure;
 	int width=0,height=0;
 	int i,loop;
+	int button;
 	KeySym mykey;
 	char c;
 
@@ -189,6 +211,7 @@ void QNextEvent( QEvent *eventp )
 		eventp->button.y = XActualEvent.xbutton.y;
 		eventp->button.press = ( XActualEvent.type == ButtonPress ) ?
 					QButtonDown : QButtonUp;
+		button = XActualEvent.xbutton.button;
 		switch (XActualEvent.xbutton.button) {
 		case X_BUTTON_LEFT:
 			eventp->button.button = QButtonLeft;
@@ -198,6 +221,16 @@ void QNextEvent( QEvent *eventp )
 			break;
 		case X_BUTTON_MIDDLE:
 			eventp->button.button = QButtonMiddle;
+			break;
+		case X_BUTTON_WHEEL_UP:
+			eventp->button.button = QButtonWheelUp;
+			break;
+		case X_BUTTON_WHEEL_DOWN:
+			eventp->button.button = QButtonWheelDown;
+			break;
+		default:
+			printf("QNextEvent: unknown button %d\n",button);
+			eventp->button.button = QButtonUnknown;
 			break;
 		}
 		break;

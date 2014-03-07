@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 18-Feb-2014: new routine Dist2Node()					*
  * 16-Feb-2011: pass type into routines for creation of items		*
  * 16-Jun-2010: new way to compute area of polygon (stable for 64 bit)  *
  * 07-May-1998: type is now integer                                     *
@@ -344,3 +345,30 @@ float AreaElement( Hashtable_type H , Elem_type *pe )
 
         return 0.5 * (float) area;
 }
+
+/****************************************************************/
+
+float Dist2Node( Hashtable_type H , int node1 , int node2 )
+
+{
+        Point *c1,*c2;
+        Node_type *pn;
+	float dx,dy;
+	
+        pn = RetrieveByNodeNumber(H,node1);
+        c1 = &pn->coord;
+        pn = RetrieveByNodeNumber(H,node2);
+        c2 = &pn->coord;
+
+	dx = c1->x - c2->x;
+	dy = c1->y - c2->y;
+
+	return dx*dx + dy*dy;
+}
+
+/****************************************************************/
+
+
+
+
+

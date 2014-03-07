@@ -26,6 +26,7 @@ c 14.11.2011	ggu	new array hl for depth structure
 c 27.02.2013	ggu	deleted amat, better color handling
 c 13.06.2013	ggu	new plotting for fem files
 c 05.09.2013	ggu	better handling of variable
+c 05.03.2014	ggu	bug fix: isphe was not stored
 c
 c*************************************************************
 
@@ -189,6 +190,8 @@ c----------------------------------------------
 	call set_coords_ev(isphe)
 	call set_ev
 	call set_geom
+	call get_coords_ev(isphe)
+	call putpar('isphe',float(isphe))
 
 c----------------------------------------------
 c make depth on nodes and elements

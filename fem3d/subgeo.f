@@ -8,7 +8,8 @@ c
 c function areat(x1,y1,x2,y2,x3,y3)
 c function areapoly(n,x,y)
 c
-c subroutine barycenter(n,x,y,xc,yc)
+c subroutine centert(x1,y1,x2,y2,x3,y3,xc,yc)
+c subroutine centerpoly(n,x,y,xc,yc)
 c
 c function left(x1,y1,x2,y2,x3,y3)
 c function lefton(x1,y1,x2,y2,x3,y3)
@@ -44,7 +45,10 @@ c 19.11.1999	ggu	new routines inpoly and winding
 c 06.02.2001	ggu	new routine angle
 c 22.03.2010	ggu	new routine inpoly() has been implemented
 c 05.07.2010	ggu	new routine dist_point_to_line(), bug fix in inpoly1()
+c 21.02.2014	ggu	new routine centert and centerpoly
 c
+c**************************************************************
+c**************************************************************
 c**************************************************************
 
 	function areat(x1,y1,x2,y2,x3,y3)
@@ -101,34 +105,78 @@ c computes area of polygon
 	end
 
 c**************************************************************
+c**************************************************************
+c**************************************************************
 
-	subroutine barycenter(n,x,y,xc,yc)
+	subroutine centert(x1,y1,x2,y2,x3,y3,xc,yc)
 
-c computes barycenter of polygon
+c computes center of triangle
+
+	implicit none
+
+	real x1,y1,x2,y2,x3,y3
+	real xc,yc
+
+	xc = (x1+x2+x3) / 3
+	yc = (y1+y2+y3) / 3
+
+	end
+
+c**************************************************************
+
+	subroutine centerpoly(n,x,y,xc,yc)
+
+c computes center of polygon (center of gravity)
 
 	implicit none
 
 	integer n
-	real x(1),y(1)
+	real x(n),y(n)
 	real xc,yc
 
 	integer i
+	real x1,y1,xo,yo,xn,yn
+	real area
+	double precision areasum,xd,yd
+
+        real areat
 
 	xc = 0.
 	yc = 0.
 
 	if( n .le. 0 ) return
 
-	do i=1,n
-	  xc = xc + x(i)
-	  yc = yc + y(i)
-	end do
+        areasum = 0.
+	xd = 0.
+	yd = 0.
 
-	xc = xc / n
-	yc = yc / n
+        x1 = x(1)
+        y1 = y(1)
+        xn = x(2)
+        yn = y(2)
+
+        do i=3,n
+
+          xo = xn
+          yo = yn
+          xn = x(i)
+          yn = y(i)
+
+          area = areat(x1,y1,xo,yo,xn,yn)
+
+	  areasum = areasum + area
+	  xd = xd + area*(x1+xo+xn)
+	  yd = yd + area*(y1+yo+yn)
+
+        end do
+
+	xc = xd / (3.*areasum)
+	yc = yd / (3.*areasum)
 
 	end
 
+c**************************************************************
+c**************************************************************
 c**************************************************************
 
 	function left(x1,y1,x2,y2,x3,y3)
@@ -180,6 +228,8 @@ c left turn ?
 
 	end
 
+c**************************************************************
+c**************************************************************
 c**************************************************************
 
 	function between(x1,y1,x2,y2,x3,y3)
@@ -271,6 +321,8 @@ c a > 180 => left turn
 	end
 
 c**************************************************************
+c**************************************************************
+c**************************************************************
 
         subroutine dist_point_to_line(px,py,ax,ay,bx,by,qx,qy,d)
 
@@ -302,6 +354,8 @@ c returns point Q on line closest to P and its distance d
 
         end
 
+c**************************************************************
+c**************************************************************
 c**************************************************************
 
 	function segsegint(x1r,y1r,x2r,y2r,x3r,y3r,x4r,y4r,xi,yi)
@@ -445,6 +499,8 @@ c			2	segments collinearly overlap
 	end
 
 c**************************************************************
+c**************************************************************
+c**************************************************************
 
 	function isconvex(n,x,y)
 
@@ -547,6 +603,8 @@ c polygon 1 in convex polygon 2 ? (border is inside)
 	end
 
 c**************************************************************
+c**************************************************************
+c**************************************************************
 
 	function inpoly(n,x,y,x0,y0)
 
@@ -578,7 +636,7 @@ c**************************************************************
 
 c checks if point (x0,y0) is in general polygon (border ?)
 c
-c algorithm from Dan Sunday
+c fast algorithm from Dan Sunday
 c
 c http://softsurfer.com/Archive/algorithm_0103/algorithm_0103.htm
 
@@ -627,6 +685,8 @@ c**************************************************************
 	function inpoly0(n,x,y,x0,y0)
 
 c checks if point (x0,y0) is in general polygon (border is inside)
+c
+c use classical winding number
 
 	implicit none
 
@@ -697,7 +757,7 @@ c-------------------------------------------------------
 	if( winding(n,x,y,x0,y0) .eq. 0 ) return
 
 c-------------------------------------------------------
-c ok, it's inside
+c ok, it is inside
 c-------------------------------------------------------
 
 	inpoly0 = .true.
@@ -776,6 +836,8 @@ c	bdebug = isdebug()
 	end
 
 c**************************************************************
+c**************************************************************
+c**************************************************************
 
 	subroutine c2p(u,v,s,d)
 
@@ -831,5 +893,7 @@ c----------------------------------------------------------------
 
 	end
 
+c**************************************************************
+c**************************************************************
 c**************************************************************
 

@@ -1,0 +1,116 @@
+#!/bin/sh
+#
+# runs scalintp
+
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
+BINDIR=$FEMDIR/fem3d
+
+prog=scalintp
+
+Usage()
+{
+  echo "Usage: scalintp [-h|-help] [-options] basin data"
+}
+
+FullUsage()
+{
+  Usage
+  echo "  -h|-help     this help screen"
+  echo "  -u           use uniform interpolation"
+  echo "  -e           use exponential interpolation (default)"
+  echo "  -a           use exponential interpolation with autocorrelation"
+  #echo "  -n           interpolate on nodes (default is on elements)"
+  #echo "  -t           interpolate everywhere (default is only where missing)"
+  echo "  -ufact  #    factor for size of sigma (default 1)"
+  echo "  -umfact #    factor for maximum radius (default 3)"
+  echo "  basin        name of the basin for which interpolation is done"
+  echo "  data         name of the file containing the scalar data"
+  echo ""
+  echo "  basin must be a bas file (basin.bas)"
+  echo "  containing the basin for which the interpolation has to be executed."
+  echo "  data is a grd file (data.grd) that contains only single"
+  echo "  points with scalar data values."
+  echo "  The parameters ufact and umfact are used for exponential"
+  echo "  interpolation. Their exact meaning can be inferred from"
+  echo "  the explaination in the program code. If in doubt you can leave"
+  echo "  the default values or change them slightly."
+  echo "  The results are written to file scalintp.grd and scalintp.nos."
+}
+
+ErrorOption()
+{
+  echo "No such option : $1"
+}
+
+if [ $# -le 0 ]; then
+  Usage
+  exit 1
+fi
+
+mode=1
+ike=1
+idepth=1
+ufact=1
+umfact=3
+
+while [ -n "$1" ]
+do
+   case $1 in
+        -e)             mode="1";;
+        -u)             mode="2";;
+        -a)             mode="3";;
+        -n)             ike="2";;
+        -t)             idepth="2";;
+        -ufact)         ufact=$2; shift;;
+        -umfact)        umfact=$2; shift;;
+        -h|-help)       FullUsage; exit 0;;
+        -*)             ErrorOption $1; exit 1;;
+        *)              break;;
+   esac
+   shift
+done
+
+if [ $# -le 1 ]; then
+  Usage
+  exit 1
+else
+  basin=$1
+  bathy=$2
+fi
+
+dbathy=`dirname $bathy`
+bathy=`basename $bathy .grd`
+bathy=$dbathy/$bathy.grd
+
+dbasin=`dirname $basin`
+basin=`basename $basin .bas`
+basin=$dbasin/$basin.bas
+
+echo "type of basin is $type"
+
+echo "basin:  $basin"
+echo "data:   $bathy"
+echo "mode:   $mode"
+#echo "ike:    $ike"
+#echo "idepth: $idepth"
+echo "ufact:  $ufact"
+echo "umfact: $umfact"
+
+if [ ! -x $BINDIR/$prog ]; then
+  pushd $BINDIR
+  make $prog
+  popd
+fi
+if [ ! -x $BINDIR/$prog ]; then
+  echo "Cannot find or make $prog"
+  exit 1
+fi
+
+$BINDIR/$prog <<EOI
+$basin
+$bathy
+$mode
+$ufact $umfact
+EOI
+
+

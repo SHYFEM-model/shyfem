@@ -67,6 +67,7 @@ void GfZoomIn( void );
 void GfZoomOut( void );
 void GfMove( void );
 void GfTotalView( void );
+void GfMoveRelative( float dx, float dy );
 
 void GfShowNode( void );
 void GfShowElement( void );
@@ -87,6 +88,9 @@ void GfDelLine( void );
 void GfRemoveLine( void );
 void GfJoinLine( void );
 void GfSplitLine( void );
+void GfDelNodeLine( void );
+void GfRemoveNodeLine( void );
+void GfInsertNodeLine( void );
 
 void GfDelVect( void );
 void GfChangeVect( void );
@@ -150,6 +154,7 @@ void MakeLineActive( int line );
 void MakeVectActive( int line );
 
 void ZoomInOut(Rect *gp , float x , float y , float fact );
+void MoveRelative(Rect *gp , float dx , float dy );
 void MoveToPoint( float x , float y );
 
 void MakeMidPoint( Line_type *p , float *x , float *y );
@@ -161,6 +166,8 @@ void DeleteElemWithNodes( Elem_type *pe );
 void DeleteLineWithNodes( Line_type *pl );
 void SplitLine( Hashtable_type H , Line_type *pl , int node );
 void JoinLine( Hashtable_type H , Line_type *p1 ,  Line_type *p2 , int node );
+void DelNodeLine( Hashtable_type H , Line_type *pl , int node );
+void InsertNodeLine( Hashtable_type H , Line_type *pl , int node );
 
 float MakeDepthFromNodes( Hashtable_type H , Elem_type *p );
 
@@ -263,6 +270,7 @@ void InvertIndex( int *index , int nvert );
 float *MakeFloat( int total );
 
 float AreaElement( Hashtable_type H , Elem_type *pe );
+float Dist2Node( Hashtable_type H , int node1 , int node2 );
 
 /* gridhs */
 

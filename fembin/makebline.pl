@@ -1,4 +1,6 @@
 #!/usr/bin/perl -w
+#
+# old version -> use bline.pl
 
 use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
 

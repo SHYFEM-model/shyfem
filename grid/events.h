@@ -8,6 +8,7 @@
  * see events.c for copying information					*
  *									*
  * Revision History:							*
+ * 05-Mar-2014: handle also mouse wheel					*
  * 05-Dec-95: QKey... symbols introduced                                *
  * 04-Dec-94: routines written from scratch                             *
  *									*
@@ -23,9 +24,16 @@
 #define QExposureMask		0x008
 #define QStructureNotifyMask	0x010
 
+#define QButtonUnknown		0x000
 #define QButtonLeft		0x001
+#define QButtonMiddle		0x002
+#define QButtonRight		0x003
+#define QButtonWheelUp		0x004
+#define QButtonWheelDown	0x005
+/*
 #define QButtonRight		0x002
 #define QButtonMiddle		0x004
+*/
 
 #define QButtonDown		0x001
 #define QButtonUp		0x002
@@ -68,11 +76,15 @@ typedef struct {
 
 void QInitEvent( void );
 void QDeInitEvent( void );
-void QNextEvent( QEvent *eventp );
+
+QEventMask QSelectedEvent( void );
 void QSelectEvent( QEventMask eventmask );
+
 void QAddEvent( QEventMask eventmask );
 void QDeleteEvent( QEventMask eventmask );
-QEventMask QSelectedEvent( void );
+
+void QSkipMotion( void );
+void QNextEvent( QEvent *eventp );
 
 /* QCheckEvent, QSelectedEvent */
 

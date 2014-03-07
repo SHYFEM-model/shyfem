@@ -34,6 +34,7 @@ c 13.10.2009  ggu     changes to colbar, new inbox routines
 c 23.02.2010  ggu     for colorbar switch to generic color table
 c 01.06.2012  ggu     new circle item for legend, auto determ for ndec
 c 05.09.2013  ggu     adjust for scale distortion in ref and wind arrows
+c 05.03.2014  ggu     in annotation use date information
 c
 c***************************************************************
 
@@ -52,11 +53,13 @@ c writes annotation for simulation
 	character*80 line
         logical debug
         integer iaux
+	integer date,time
 	real x,y,dx,wx
 	real xmin,ymin,xmax,ymax
         real aux
 
 	integer getlev,ialfa
+	logical dts_has_date
 
         debug = .true.
         debug = .false.
@@ -107,7 +110,12 @@ c write time/date
 c--------------------------------------------------------------
 
 	x = x + wx/4.
-	call makehm(it,line)    !makes time and date
+	if( dts_has_date() ) then
+	  call dtsgf(it,line)
+	else
+	  call makehm(it,line)    !makes time and date
+	end if
+
 	call qtext(x,y,line)
 
 c--------------------------------------------------------------

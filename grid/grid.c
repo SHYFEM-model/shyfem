@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 18-Feb-2014: new menu items for line (del node, remove node, insert) *
  * 01-Jan-2012: delete vector item from menu				*
  * 16-Feb-2011: new options OpOutFile, OpItemType                       *
  * 13-May-2003: main changed to menubar in routine MakeGridMenu()	*
@@ -229,6 +230,13 @@ void MakeGridMenu( void )
 	Menu_entry *test, *sub;
 */
 
+/*
+	In order to add new functionality the following has to be done:
+
+	- insert new menu item here below
+	- make new prototype in grid_fp.h
+	- add new routine to gridma1.c
+*/
 
 
 	menubar = MakeMenuArea();
@@ -294,6 +302,9 @@ void MakeGridMenu( void )
 	AddMenuItem( line , MakeExecMenu("Remove Line",GfRemoveLine) );
 	AddMenuItem( line , MakeExecMenu("Split Line",GfSplitLine) );
 	AddMenuItem( line , MakeExecMenu("Join Line",GfJoinLine) );
+	AddMenuItem( line , MakeExecMenu("Del Node",GfDelNodeLine) );
+	AddMenuItem( line , MakeExecMenu("Remove Node",GfRemoveNodeLine) );
+	AddMenuItem( line , MakeExecMenu("Insert Node",GfInsertNodeLine) );
 
 
 /*

@@ -339,9 +339,9 @@ c initialization
 
         if( icall .eq. 0 ) then
 
-                idtvol = iround(dgetpar('idtvol'))
-                itmvol = iround(dgetpar('itmvol'))
-                itend = iround(dgetpar('itend'))
+                idtvol = nint(dgetpar('idtvol'))
+                itmvol = nint(dgetpar('itmvol'))
+                itend = nint(dgetpar('itend'))
 
                 if( kvolm .le. 0 ) icall = -1
                 if( nvols .le. 0 ) icall = -1

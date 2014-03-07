@@ -205,7 +205,7 @@ c-----------------------------------------------------------------
 	  call smooth_bathy(ike,niter,f)
 	end if
 
-	call transfer_depth(ike)	!copy to nodes/elements
+	call transfer_depth2(ike)	!copy to nodes/elements
 
 c-----------------------------------------------------------------
 c special
@@ -242,7 +242,7 @@ c-----------------------------------------------------------------
 
 c*******************************************************************
 
-	subroutine transfer_depth(ike)
+	subroutine transfer_depth2(ike)
 
 c copies depth values from elems/nodes to nodes/elems
 
@@ -477,119 +477,6 @@ c computes area and center point of triangle
 
 	x0 = (x(1)+x(2)+x(3))/3.
 	y0 = (y(1)+y(2)+y(3))/3.
-
-	end
-
-c*******************************************************************
-
-	subroutine prepare_on_element(nt,xt,yt,at,ht)
-
-	implicit none
-
-	integer nt
-	real xt(1)
-	real yt(1)
-	real at(1)
-	real ht(1)
-
-	include 'param.h'
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-        real hm3v(3,neldim)
-        common /hm3v/hm3v
-	real hev(neldim)
-        common /hev/hev
-	real hkv(nkndim)
-        common /hkv/hkv
-
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
-
-	integer ie,ii,k
-	real area,x0,y0
-	real xaux(3),yaux(3)
-
-	nt = nel
-
-	do ie=1,nel
-
-	  do ii=1,3
-	    k = nen3v(ii,ie)
-	    xaux(ii) = xgv(k)
-	    yaux(ii) = ygv(k)
-	  end do
-	  call triab(xaux,yaux,area,x0,y0)
-
-	  xt(ie) = x0
-	  yt(ie) = y0
-	  at(ie) = area
-	  ht(ie) = hev(ie)
-
-	end do
-
-	end
-
-c*******************************************************************
-
-	subroutine prepare_on_node(nt,xt,yt,at,ht)
-
-	implicit none
-
-	integer nt
-	real xt(1)
-	real yt(1)
-	real at(1)
-	real ht(1)
-
-	include 'param.h'
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-        real hm3v(3,neldim)
-        common /hm3v/hm3v
-	real hev(neldim)
-        common /hev/hev
-	real hkv(nkndim)
-        common /hkv/hkv
-
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
-
-	integer ie,ii,k
-	real area,x0,y0
-	real xaux(3),yaux(3)
-
-	nt = nkn
-
-	do k=1,nkn
-	  at(k) = 0.
-	  ht(k) = 0.
-	end do
-
-	do ie=1,nel
-	  do ii=1,3
-	    k = nen3v(ii,ie)
-	    xaux(ii) = xgv(k)
-	    yaux(ii) = ygv(k)
-	  end do
-	  call triab(xaux,yaux,area,x0,y0)
-	  at(k) = at(k) + area
-	  ht(k) = ht(k) + 1.
-	end do
-
-	do k=1,nkn
-	  xt(k) = xgv(k)
-	  yt(k) = ygv(k)
-	  at(k) = at(k) / (3.*ht(k))
-	  ht(k) = hkv(k)
-	end do
 
 	end
 

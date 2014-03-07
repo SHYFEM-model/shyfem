@@ -31,6 +31,8 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 21-Feb-2014: new routine MakeGravityPoint() and InPoly()		*
+ * 18-Feb-2014: new routines DelNodeLine(), InsertNodeLine()		*
  * 19-Nov-2003: write node info to stdout                               *
  * 02-Apr-1998: new menu routines integrated -> DisplayMainMenu()       *
  *                no MakeButtons()                                      *
@@ -607,14 +609,14 @@ int InConvex( int n , float *xe , float *ye , float x , float y )
         return 1;
 }
 
+int InTriangle( Hashtable_type H , Elem_type *pe , float x , float y );
+int InPoly( Hashtable_type H , Elem_type *pe , float x , float y );
+
 int InElement( Hashtable_type H , Elem_type *pe , float x , float y )
 
 {
 	Rect r;
-	Node_type *pn;
-	int i,nvert;
-	float scal,scao;
-	Point *cn,*co;
+	int nvert;
 
 	nvert = pe->vertex;
 
@@ -622,6 +624,23 @@ int InElement( Hashtable_type H , Elem_type *pe , float x , float y )
 
 	PolyMinMax( H , pe , &r );
 	if( r.low.x>x || r.high.x<x || r.low.y>y || r.high.y<y ) return 0;
+
+	if( nvert == 3 ) {
+	  return InTriangle(H,pe,x,y);
+	} else {
+	  return InPoly(H,pe,x,y);
+	}
+}
+
+int InTriangle( Hashtable_type H , Elem_type *pe , float x , float y )
+
+{
+	Node_type *pn;
+	int i,nvert;
+	float scal,scao;
+	Point *cn,*co;
+
+	nvert = pe->vertex;
 
 	scao=0.;
 	pn = RetrieveByNodeNumber(H,pe->index[nvert-1]);
@@ -635,6 +654,51 @@ int InElement( Hashtable_type H , Elem_type *pe , float x , float y )
 		co = cn;
 	}
 	return 1;
+}
+
+static float isLeft(float x0,float y0,float x1,float y1,float x2,float y2)
+{
+    return ( (x1 - x0) * (y2 - y0)
+            - (x2 -  x0) * (y1 - y0) );
+}
+
+int InPoly( Hashtable_type H , Elem_type *pe , float x , float y )
+
+{
+/*
+	http://geomalgorithms.com/a03-_inclusion.html
+        wn_PnPoly(): winding number test for a point in a polygon
+        Input:   P = a point,
+                 V[] = vertex points of a polygon V[n+1] with V[n]=V[0]
+        Return:  wn = the winding number (=0 only when P is outside)
+*/
+
+	Node_type *pn;
+	int i,nvert;
+	Point *cn,*co;
+        int wn = 0;    // the  winding number counter
+
+	nvert = pe->vertex;
+
+	pn = RetrieveByNodeNumber(H,pe->index[nvert-1]);
+	co = &pn->coord;
+
+        for (i=0; i<nvert; i++) {     // edge from V[i] to  V[i+1]
+	  pn = RetrieveByNodeNumber(H,pe->index[i]);
+	  cn = &pn->coord;
+          if (co->y <= y) {          // start y <= P.y
+            if (cn->y  > y)     	    // an upward crossing
+                 if (isLeft(co->x,co->y,cn->x,cn->y,x,y) > 0)// P left of  edge
+                     ++wn;          // have  a valid up intersect
+          } else {                  // start y > P.y (no test needed)
+            if (cn->y  <= y)	    // a downward crossing
+                 if (isLeft(co->x,co->y,cn->x,cn->y,x,y) < 0)// P right of  edge
+                     --wn;          // have  a valid down intersect
+          }
+	  co = cn;
+        }
+
+        return wn;
 }
 
 int GetUseN( Node_type *pn )
@@ -781,6 +845,15 @@ void ZoomInOut(Rect *gp , float x , float y , float fact )
 		gp->high.y = y + height/2;
 }
 
+void MoveRelative(Rect *gp , float dx , float dy )
+
+{
+		gp->low.x  += dx;
+		gp->high.x += dx;
+		gp->low.y  += dy;
+		gp->high.y += dy;
+}
+
 void MoveToPoint( float x , float y )
 
 {
@@ -830,7 +903,7 @@ void MakeMidPoint( Line_type *pl , float *x , float *y )
 	}
 }
 
-void MakeGravityPoint( Elem_type *pe , float *x , float *y )
+void MakeCenterPoint( Elem_type *pe , float *xc , float *yc )
 
 {
 	Node_type *pn;
@@ -844,8 +917,44 @@ void MakeGravityPoint( Elem_type *pe , float *x , float *y )
 		yy += pn->coord.y;
 	}
 
-	*x=xx/nvert;
-	*y=yy/nvert;
+	*xc=xx/nvert;
+	*yc=yy/nvert;
+}
+
+static float areat( Point *c1, Point *c2, Point *c3 )
+{
+	return 0.5*( (c2->x-c1->x) * (c3->y-c1->y) 
+			- (c3->x-c1->x) * (c2->y-c1->y) );
+}
+
+void MakeGravityPoint( Elem_type *pe , float *xc , float *yc )
+
+{
+	Node_type *pn;
+	Point *c0, *co, *cn;
+	int i,nvert;
+	double area;
+	double areasum=0.,xx=0.,yy=0.;
+
+	nvert = pe->vertex;
+
+	pn = RetrieveByNodeNumber(HNN,pe->index[0]);
+	c0 = &pn->coord;
+	pn = RetrieveByNodeNumber(HNN,pe->index[1]);
+	cn = &pn->coord;
+
+	for(i=2;i<nvert;i++) {
+		co = cn;
+		pn = RetrieveByNodeNumber(HNN,pe->index[i]);
+		cn = &pn->coord;
+		area = areat(c0,co,cn);
+		areasum = areasum + area;
+		xx += area*(c0->x+co->x+cn->x);
+		yy += area*(c0->y+co->y+cn->y);
+	}
+
+	*xc=xx/(3.*areasum);
+	*yc=yy/(3.*areasum);
 }
 
 /*****************************************************************/
@@ -998,6 +1107,118 @@ void JoinLine( Hashtable_type H , Line_type *p1 ,  Line_type *p2 , int node )
 
 	DeleteUseN( pn );
 }
+
+void DelNodeLine( Hashtable_type H , Line_type *pl , int node )
+
+{
+	int nvert,i,imid;
+	int *index,*index1;
+	Node_type *pn= FindNode(HNN,node);
+
+	if( pl == NULL ) {
+                Warning("SplitLine : Null line pointer");
+                return;
+        }
+
+	nvert=pl->vertex;
+	index=pl->index;
+
+	for(i=0;i<nvert;i++)
+		if( index[i] == node ) break;
+
+        if(i==nvert) {
+                Warning("SplitLine : Node not found in line");
+                return;
+        }
+
+	imid = i;
+	index1 = MakeIndex(nvert-1);
+
+	for(i=0;i<imid;i++)
+		index1[i] = index[i];
+	for(i=imid+1;i<nvert;i++)
+		index1[i-1] = index[i];
+
+	free(index);
+	pl->vertex = nvert-1;
+	pl->index = index1;
+
+	DeleteUseN( pn );
+}
+
+void InsertNodeLine( Hashtable_type H , Line_type *pl , int node )
+
+{
+	int nvert,i,imid;
+	int *index,*index1;
+	float d,dd,d1,d2,dmax;
+	int imax;
+	Node_type *pn= FindNode(HNN,node);
+
+	if( pl == NULL ) {
+                Warning("SplitLine : Null line pointer");
+                return;
+        }
+
+	nvert=pl->vertex;
+	index=pl->index;
+
+	imax = 0;
+	dmax = 2. * Dist2Node(HNN,node,index[0]);	/* initialize */
+	printf( "InsertNodeLine: %f %d\n",dmax,imax);
+	for(i=0;i<nvert;i++) {
+	  d = Dist2Node(HNN,node,index[i]);
+	  if( d < dmax ) {
+	    dmax = d;
+	    imax = i;
+	  }
+	}
+	printf( "InsertNodeLine: %f %d\n",dmax,imax);
+
+	if( imax == 0 ) {
+	  dd = Dist2Node(HNN,index[0],index[1]);
+	  if( Dist2Node(HNN,node,index[1]) < dd ) {
+	    imid = 1;
+	  } else {	/* insert before first node */
+	    imid = 0;
+	  }
+	} else if( imax == nvert-1 ) {
+	  dd = Dist2Node(HNN,index[nvert-2],index[nvert-1]);
+	  if( Dist2Node(HNN,node,index[nvert-2]) < dd ) {
+	    imid = nvert-1;
+	  } else {	/* insert after last node */
+	    imid = nvert;
+	  }
+	} else {
+	  d1 = Dist2Node(HNN,node,index[imax-1])
+		/ Dist2Node(HNN,index[imax],index[imax-1]);
+	  d2 = Dist2Node(HNN,node,index[imax+1])
+		/ Dist2Node(HNN,index[imax],index[imax+1]);
+	  if( d1 < d2 ) {
+	    imid = imax;
+	  } else {
+	    imid = imax+1;
+	  }
+	}
+
+	/* imid is node before we have to insert */
+
+	index1 = MakeIndex(nvert+1);
+
+	for(i=0;i<imid;i++)
+		index1[i] = index[i];
+	index1[imid] = node;
+	for(i=imid;i<nvert;i++)
+		index1[i+1] = index[i];
+
+	free(index);
+	pl->vertex = nvert+1;
+	pl->index = index1;
+
+	AddUseN( pn );
+}
+
+/*******************************************************************/
 
 float MakeDepthFromNodes( Hashtable_type H , Elem_type *p )
 

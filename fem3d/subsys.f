@@ -346,6 +346,7 @@ c		are responsible for such a small time step. (Default 0)
 	call addpar('coumax',1.)
 	call addpar('idtsyn',0.)
 	call addpar('idtmin',0.)
+	call addpar('tfact',0.)		!still to comment FIXME
 
 c These parameters define the weighting of time level in the 
 c semi-implicit algorithm. With these parameters the damping
@@ -1786,7 +1787,7 @@ c		drawing arrows at all. (Default 0.3)
 c |rxscal,ryscal|	In case arrows are plotted, also a reference
 c			vector is plotted. The size of this reference
 c			vector s computed automatically, but can be 
-c			controlled addidionally by the parameters
+c			controlled additionally by the parameters
 c			|rxscal,ryscal|, which are in relative units
 c			with respect to the reference box plotted.
 c			(Default 0.6)
