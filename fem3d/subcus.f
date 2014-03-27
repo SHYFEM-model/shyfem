@@ -59,6 +59,7 @@ c 26.01.2011	ggu	set rtauv for black sea (black_sea_nudge)
 c 17.05.2011	ggu	new routines skadar_debug() and wet_dry()
 c 12.07.2011	ggu	new routines init_ts()
 c 09.03.2012	ggu	no call to jamal anymore
+c 25.03.2014	ggu	new routine conz_decay_curonian()
 c
 c******************************************************************
 
@@ -4064,13 +4065,18 @@ c**********************************************************************
         common /ilhkv/ilhkv
 
 	integer k,l,lmax
-	real tau1,tau2,aux1,aux2
+	real tau1,tau2,aux1,aux2,aux
 	real dt
 	real x1,y1,x2,y2,x,y
+	real qx,qy,d,d0
 	logical is_north
 
-	tau1 = +15.0		!growth rate - efolding time in days
-	tau2 = -15.0		!decay rate - efolding time in days
+c sim 5:	+10 -10 0.5
+c sim 6:	+8 -8 0.4
+
+	tau1 = +8.0		!growth rate - efolding time in days
+	tau2 = -8.0		!decay rate - efolding time in days
+	d0 = 0.4		!distance at which to apply tau1/tau2
 
 	x1 = 20.99
 	y1 = 55.3
@@ -4086,10 +4092,15 @@ c**********************************************************************
 	  x = xgv(k)
 	  y = ygv(k)
           do l=1,lmax
+	    call dist_point_to_line(x,y,x1,y1,x2,y2,qx,qy,d)
+	    !d = 0.	! no decay
+	    !d = d0	! constant decay - use above values
 	    if( is_north(x,y,x1,y1,x2,y2) ) then
-              cnv(l,k) = aux2 * cnv(l,k)
+	      aux = 1.+(aux2-1.)*d/d0
+              cnv(l,k) = aux * cnv(l,k)
 	    else
-              cnv(l,k) = aux1 * cnv(l,k)
+	      aux = 1.+(aux1-1.)*d/d0
+              cnv(l,k) = aux * cnv(l,k)
 	    end if
           end do
         end do
@@ -4105,18 +4116,9 @@ c**********************************************************************
 	logical is_north
 	real x,y,x1,y1,x2,y2
 
-	real dxp,dyp,dxt,dyt,dxn,dyn,scal
+	logical left
 
-	dxp = x-x1
-	dyp = y-y1
-	dxt = x2-x1
-	dyt = y2-y1
-	dxn = -dyt
-	dyn = dxt
-
-	scal = dxp*dxn + dyp*dyn
-
-	is_north = scal .gt. 0
+	is_north = left(x1,y1,x2,y2,x,y)
 
 	end
 

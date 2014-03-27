@@ -164,6 +164,7 @@ c 29.03.2012    ggu	cleaned up, sp256v prepared for OpenMP
 c 10.05.2013    dbf&ggu new routines for non-hydro
 c 29.10.2013    ggu	nudging implemented
 c 29.11.2013    ggu	zeta correction
+c 25.03.2014    ggu     new offline
 c
 c******************************************************************
 
@@ -247,6 +248,7 @@ c	data ielist /77,163,698,746,1346/
 ccccccccccccc
 ccccccccccccc
 c local
+	logical boff
 	logical bzcorr
 	integer i,l,k,ie,ier,ii
 	integer nrand
@@ -288,8 +290,8 @@ c constants...%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 c offline
 
-	call offline(2,iwhat)		!read from file
-	if( iwhat .eq. 2 ) return
+	call is_offline(1,boff)
+	if( boff ) return
 
 c dry areas
 
@@ -386,10 +388,6 @@ c compute velocities from transports %%%%%%%%%%%%%%%%%%%%%%%%%
 c compute nodal values for velocities %%%%%%%%%%%%%%%%%%%%%%%%
 
 	call make_prvel
-
-c offline
-
-	call offline(1,iwhat)	!write to file
 
 	return
    99	continue

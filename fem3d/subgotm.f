@@ -18,6 +18,7 @@ c 02.12.2008    ggu     bug in gotm_init: no limiting values for initialization
 c 18.12.2008    ggu     bug in GOTM module and setm2n2() corrected
 c 16.02.2011    ggu     write n2max to info file, profiles in special node
 c 29.03.2013    ggu     avoid call to areaele -> ev(10,ie)
+c 25.03.2014    ggu     new offline
 c
 c**************************************************************
 
@@ -34,8 +35,8 @@ c administers turbulence closure
 
 	if( iturb .lt. 0 ) return
 
-	call is_offline(boff)
-	!if( boff ) return
+	call is_offline(4,boff)
+	if( boff ) return
 
 	if( iturb .eq. 0 ) then
 	  iturb = nint(getpar('iturb'))

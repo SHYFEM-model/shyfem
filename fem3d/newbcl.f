@@ -60,6 +60,7 @@ c 23.02.2012    ccf     do noy check depth structure
 c 09.03.2012    deb     bug fix in ts_next_record: ilhkv was real
 c 31.10.2012    ggu     open and next_record transfered to subtsuvfile.f
 c 05.09.2013    ggu     limit salinity to [0,...]
+c 25.03.2014    ggu     new offline
 c
 c*****************************************************************
 
@@ -130,6 +131,7 @@ c local
         logical binfo
         logical bstop
 	logical binitial_nos
+	logical boff
 	integer levdbg
 	integer ie
 	integer ibarcl
@@ -195,6 +197,9 @@ c----------------------------------------------------------
 	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in barocl'
 
 	if(icall.eq.-1) return
+
+        call is_offline(2,boff)
+        if( boff ) return
 
 	levdbg = nint(getpar('levdbg'))
 	debug = levdbg .ge. 3

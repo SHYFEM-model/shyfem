@@ -90,6 +90,7 @@ c 10.05.2013    dbf	initialization for non hydrostatic routines
 c 13.06.2013    ggu	set/copydepth simplified, offline version
 c 05.09.2013    ggu	changed order of adjust depth and barene structures
 c 29.10.2013    ggu	nudging implemented
+c 25.03.2014    ggu	new offline
 c
 c*****************************************************************
 
@@ -569,8 +570,8 @@ c        call bclevvar_ini       	!chao debora
 
 	call system_initialize		!matrix inversion routines
 
-	call offline(1,iwhat)
-	call offline(2,iwhat)
+	call offline(2)
+	call offline(1)
 
 	call nudge_init
 
@@ -598,6 +599,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	   call dobefor3d
 
+	   call offline(2)		!read from offline file
+
 	   call sp111(2)		!boundary conditions
 	   call nudge_zeta
 
@@ -622,6 +625,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            call atoxi3d(it,dt)			!toxi
 
            call lagrange
+
+	   call offline(1)		!write to offline file
 
 	   call doafter3d
 

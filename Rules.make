@@ -510,6 +510,7 @@ endif
 
 # FINTEL_OPT   = -O -g -Mprof=time
 # FINTEL_OPT   = -O3 -g -axSSE4.2 #-mcmodel=medium -shared-intel
+# FINTEL_OPT   = -O3 -g -axAVX -mcmodel=medium -shared-intel
 # FINTEL_OPT   = -O -g -fp-model precise -no-prec-div
 
 FINTEL_OPT   = 

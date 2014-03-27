@@ -1,5 +1,27 @@
 ============================================================
 
+Thu Mar 27 09:53:01 CET 2014
+
+new offline module
+
+ LOG                     |   24 +++
+ Rules.make              |    1 +
+ fem3d/ht.f              |    9 +-
+ fem3d/new3di.f          |   10 +-
+ fem3d/newbcl.f          |    5 +
+ fem3d/param.h           |    2 +-
+ fem3d/subcus.f          |   34 +++--
+ fem3d/subgotm.f         |    5 +-
+ fem3d/suboff.f          |  384 ++++++++++++++++++++++++++++++++++++++++-------
+ femadj/param.h          |    2 +-
+ femdoc/final/shyfem.pdf |  Bin 270904 -> 270907 bytes
+ femdoc/final/shyfem.ps  |   26 ++--
+ femplot/param.h         |    2 +-
+ param.h                 |    2 +-
+ 14 files changed, 405 insertions(+), 101 deletions(-)
+
+============================================================
+
 Fri Mar  7 15:42:41 CET 2014
 
 New version 6_1_72

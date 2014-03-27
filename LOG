@@ -1,4 +1,28 @@
 
+25.03.2014
+
+new offline
+
+c ./fem3d/subgotm.f:
+c 25.03.2014    ggu     new offline
+c
+c ./fem3d/newbcl.f:
+c 25.03.2014    ggu     new offline
+c
+c ./fem3d/new3di.f:
+c 25.03.2014    ggu     new offline
+c
+c ./fem3d/ht.f:
+c 25.03.2014    ggu     new offline
+c
+c ./fem3d/subcus.f:
+c 25.03.2014    ggu     new routine conz_decay_curonian()
+c
+c ./fem3d/suboff.f:
+c 25.03.2014    ggu     new offline (for T/S)
+
+
+
 05.03.2014
 
 new grid to zoom in/out and move with mouse wheel
