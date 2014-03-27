@@ -1,3 +1,30 @@
+version  6_1_73    27-03-2014    VERS_6_1_73
+
+========================================================== 27-03-2014 - 6_1_73
+
+c ./fem3d/subver.f:
+c 27.03.2014	ggu	version 6.1.73
+c
+c ./fem3d/subgotm.f:
+c 25.03.2014    ggu     new offline
+c
+c ./fem3d/newbcl.f:
+c 25.03.2014    ggu     new offline
+c
+c ./fem3d/new3di.f:
+c 25.03.2014    ggu     new offline
+c
+c ./fem3d/ht.f:
+c 25.03.2014    ggu	new offline
+c
+c ./fem3d/subcus.f:
+c 25.03.2014	ggu	new routine conz_decay_curonian()
+c
+c ./fem3d/suboff.f:
+c 25.03.2014    ggu     new offline (for T/S)
+
+==========================================================
+
 version  6_1_72    07-03-2014    VERS_6_1_72   commit_2014-03-27
 
 version  6_1_72    07-03-2014    VERS_6_1_72
