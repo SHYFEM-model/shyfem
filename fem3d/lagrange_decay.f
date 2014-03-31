@@ -7,6 +7,7 @@ c revision log :
 c
 c 05.02.2009    ggu     copied from other files
 c 16.02.2012    mic&fra new way to kill particles...
+c 28.03.2014    ggu	new version of decay (for all particles)
 c
 c**********************************************************************
 
@@ -30,14 +31,47 @@ c handles decay of particles
         if( lcall .lt. 0 ) return
 
         if( lcall .eq. 0 ) then
-          !lcall = nint(getpar('lcust'))
-	  lcall = 0
+          lcall = nint(getpar('lcust'))
           if( lcall .le. 0 ) lcall = -1
         end if
 
         if( lcall .eq.  1 ) call lagr_decay(n)   
         if( lcall .eq.  2 ) call lagr_conc(n)
-c        if( lcall .eq.  3 ) call lagr_surv(n)
+        if( lcall .eq.  3 ) call lagr_surv(n)
+
+        end
+
+c**********************************************************************
+
+        subroutine lagrange_decay(ldecay)
+
+c applies decay to all particles
+
+        implicit none
+
+        include 'param.h'
+        include 'lagrange.h'
+
+	real ldecay
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	real tdd    !probability of survival
+        real age    !age of particle
+        real nmb    !probability
+        integer i
+
+	real ggrand
+
+        if( ldecay .le. 0. ) return !FIXME
+
+        do i=1,nbdy
+          age=it-tin(i)
+          tdd=exp(-age/ldecay)
+          nmb=ggrand(2387)
+          if(nmb.gt.tdd) ie_body(i) = 0	! set as if out of domain
+        end do
 
         end
 
@@ -80,7 +114,7 @@ c allora la particella sparisce dal calcolo
 
         nmb=ggrand(2387)
 
-        if(nmb.le.rdc) ie_body(n)=-1
+        if(nmb.le.rdc) ie_body(n) = 0	! set as if out of domain
 
         end
 
@@ -136,6 +170,9 @@ c particles older than tdead are eliminated
 	save icount
 
 	integer i
+	integer icall
+	data icall /0/
+	save icall	
 
 	real t	    !time of simulation
 	real ts	    !start time of particle
@@ -144,22 +181,28 @@ c particles older than tdead are eliminated
 
 	real pdead,psurv !death or survival probability 
 	
-	tdead = 30.5*86400
-	tdead = 0.
+	!tdead = 0 
+	!tdead = 30.5*86400
+	tdead = 15*86400
 
-	if( tdead .le. 0. ) return
+	if( icall .eq. 0 ) then
+	  write(6,*) 'WARNING tdead (lagrange_decay)!',tdead
+	  icall=1
+	endif
+
+	if( tdead .le. 0 ) return
 
 	t = it 
 	ts = tin(i)  
 
-	deltat = t-ts 
+	deltat = t-ts		!age of particle
 
 	pdead = deltat/tdead
 	psurv = 1-pdead
 
-	if (psurv.le.0) then !spacciata
+	if( psurv .le. 0 ) then	!particle is dead
 	  icount = icount+1 
-	  write(77,*) it,i,icount,deltat
+c	  write(77,*) it,i,icount,deltat
 	  ie_body(i) = -ie_body(i)
 	endif
 

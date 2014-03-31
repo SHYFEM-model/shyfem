@@ -72,6 +72,7 @@ c 24.01.2012    ggu     adapted for parallel OMP
 c 28.08.2012    ggu     change logic for release, time frame for release
 c 22.10.2012    ggu     call connectivity also after diffusion
 c 22.10.2012    ggu     limit release to itranf/end
+c 28.03.2014    ggu     code cleaned - connectivity
 c
 c****************************************************************            
 
@@ -90,11 +91,17 @@ c lagranian main routine
         common /femtim/ itanf,itend,idt,nits,niter,it
 
 	logical brelease
+	logical bcompres
+	logical boilsim
+	logical blarvae
+	save brelease,bcompres,boilsim,blarvae
+
         integer ilagr
         integer itlanf,itlend
 	integer idtl,itranf,itrend,itrnext
 	integer itmlgr,idtlgr,itmnext
         integer iunit,uunit
+	real ldecay
 
         integer ifemop
         real getpar
@@ -103,13 +110,31 @@ c lagranian main routine
 	save idtl,itranf,itrend,itrnext
 	save itmlgr,idtlgr,itmnext
         save iunit,uunit
+	save ldecay
 
 	integer icall
 	save icall
         data icall / 0 /
         
         if( icall .eq. -1 ) return
-       
+        
+c---------------------------------------------------------------
+c set some parameters
+c---------------------------------------------------------------
+
+c pps and ppv have to be set in STR file as lgrpps (section BOUND)
+c lgrpps > 0 => pps
+c lgrpps < 0 => ppv
+c
+c the following parameters have to be set in section lagrg
+c
+c tdecay	ldecay
+c boilsim	ioil
+c blarvae	ilarv
+
+	bcompres = .false.	!compress particles
+	bcompres = .true.	!compress particles
+
 c---------------------------------------------------------------
 c initialization
 c---------------------------------------------------------------
@@ -120,28 +145,32 @@ c---------------------------------------------------------------
           if( icall .eq. -1 ) return
 	  icall = 1
 
-          itmlgr=getpar('itmlgr')	!output to file
-          idtlgr=getpar('idtlgr')	!output to file
-          itlanf=getpar('itlanf')	!start of lagrangian
-          itlend=getpar('itlend')	!end of lagrangian
+          itmlgr=getpar('itmlgr')	!startime write output to file
+          idtlgr=getpar('idtlgr')	!frequency output to file
+          itlanf=getpar('itlanf')	!start of lagrangian sim
+          itlend=getpar('itlend')	!end of lagrangian sim
           idtl=getpar('idtl') 		!frequency of release
-          itranf=getpar('itranf') 	!initial release
-          itrend=getpar('itrend') 	!final release
+          itranf=getpar('itranf') 	!time of initial continuous release
+          itrend=getpar('itrend') 	!time of final continuous release
 
           artype=getpar('artype')	!store special type in common block
-          rwhpar=getpar('rwhpar')
+          rwhpar=getpar('rwhpar')	!lagrangian diffusion
 
-	  lunit = ifemop('.lgi','form','new')
+          ldecay=getpar('ldecay')	!decay time for particles
+          boilsim=nint(getpar('ioil')).gt.0
+          blarvae=nint(getpar('ilarv')).gt.0
+
+	  lunit = ifemop('.lgi','form','new') !unit for lagrangian info
 	  if( lunit .le. 0 ) then
 	    write(6,*) 'lunit = ',lunit
 	    stop 'error stop lagrange: cannot open info file'
 	  end if
 
-	  nbdy = 0
-	  idbdy = 0
-	  tdecay = 0.
+	  nbdy = 0 		!number of particles to insert
+	  idbdy = 0		!id body unique 
+	  tdecay = 0		!not used anymore
 
-	  !call init_diff_oil
+c	  if( boilsim ) call init_diff_oil
 
 c         ------------------------------------------------------
 c	  lagrangian module
@@ -178,7 +207,7 @@ c	  open files
 c         ------------------------------------------------------
 
           if( artype .ne. -1 ) then
-            uunit=ifemop('.trn','form','new')
+          uunit=ifemop('.trn','form','new')
           end if
           iunit=ifemop('.lgr','unform','new')
 
@@ -190,12 +219,12 @@ c---------------------------------------------------------------
 
         if( it .lt. itlanf .or. it .gt. itlend ) return      
 
-	bback = .false.
+	bback = .false.		!do not do backtracking
 
 c---------------------------------------------------------------
-c new release of particles
+c new release of particles (more release event, homogeneous or lines)
 c---------------------------------------------------------------
-
+	
 	if( it .ge. itrnext .and. it .le. itrend ) then
 	  write(6,*) 'release of particles for lagrangian model'
 	  call lgr_init_shell
@@ -210,17 +239,43 @@ c---------------------------------------------------------------
 
         call lagr_setup_timestep
 	
-	!call set_diff_oil
+c	if( boilsim ) call set_diff_oil
+
+c---------------------------------------------------------------
+c continuous release from boundary or points
+c---------------------------------------------------------------
 
 	brelease = it .ge. itranf .and. it .le. itrend
+
 	if( brelease ) then
-	  call lagr_continuous_release_shell	!particles through boundary
+	  call lagr_continuous_release_shell
 	end if
-	call lagr_connect_continuous_points(brelease)
+	
+        call lagr_connect_continuous_points(brelease)
+
+c---------------------------------------------------------------
+c transport of particles 
+c---------------------------------------------------------------
 
  	call drogue
 
- 	call lgr_larvae(it)
+c---------------------------------------------------------------
+c connectivity module ?
+c---------------------------------------------------------------
+
+c---------------------------------------------------------------
+c larval module
+c---------------------------------------------------------------
+
+	if( blarvae ) then
+ 	  call lgr_larvae(it)
+	end if
+
+c---------------------------------------------------------------
+c decay
+c---------------------------------------------------------------
+
+	call lagrange_decay(ldecay)
 
 c---------------------------------------------------------------
 c output
@@ -228,15 +283,17 @@ c---------------------------------------------------------------
 
         if( it .ge. itmnext ) then
 	  call lgr_output(iunit,it)
-	  call lgr_output_concentrations
+ 	  call lgr_output_concentrations
 	  itmnext = itmnext + idtlgr
 	end if
 
 c---------------------------------------------------------------
-c compress particles to save space
+c compress to save space: only in contiunous release mode! 
 c---------------------------------------------------------------
 
-	call compress_particles		!only after output of particles
+	if( bcompres ) then 
+	  call compress_particles	!only after output of particles
+	endif 
 
 c---------------------------------------------------------------
 c end of routine
@@ -267,6 +324,7 @@ c**********************************************************************
 
 	call openmp_get_max_threads(n)
 	if( n .gt. ndim ) stop 'error stop drogue: too many processes'
+
 	do ii=0,n
 	  ic(ii) = 0
 	end do
@@ -283,8 +341,8 @@ c**********************************************************************
 !$OMP END DO NOWAIT
 !$OMP END PARALLEL
 
-	write(lunit,*) 'lagrangian: (tot,out,in) ',nbdy,nf,nbdy-nf
-	write(lunit,'(a,i10,12i5)') 'parallel: ',nbdy,(ic(ii),ii=0,n-1)
+c	write(lunit,*) 'lagrangian: (tot,out,in) ',nbdy,nf,nbdy-nf
+c	write(lunit,'(a,i10,12i5)') 'parallel: ',nbdy,(ic(ii),ii=0,n-1)
 
 	end
 
@@ -306,24 +364,24 @@ c advection of particles
 	real x,y,z
 	real dt,ttime,tmax
                 
-          call lagr_func(i)		!varying the variable typ(i)
+c       call lagr_func(i)		!varying the variable typ(i)
+c	call lagr_surv(i)
 
-	  x=x_body(i)
-	  y=y_body(i)
-	  z=z_body(i)
-          ie=ie_body(i)
-	  id = id_body(i) 
+	x=x_body(i)
+	y=y_body(i)
+	z=z_body(i)
+        ie = ie_body(i)
+	id = id_body(i) 
 
-	  tmax = it - tin(i) 
-	  if( tmax .lt. 0. ) stop 'error stop drogue: internal error'
-	  ttime = min(tmax,dt)
+	tmax = it - tin(i) 
+	if( tmax .lt. 0. ) stop 'error stop drogue: internal error'
+	ttime = min(tmax,dt)
 
-          !if( z .lt. 1. ) call track_body(i,id,x,y,ie,ttime) 
-          if( z .le. 1. ) call track_body(i,id,x,y,ie,ttime) 
+	if(z.ge.0.and.z.le.1) call track_body(i,id,x,y,ie,ttime) 
 
-	  x_body(i)=x
-	  y_body(i)=y
-          ie_body(i)=ie
+	x_body(i)=x
+	y_body(i)=y
+        ie_body(i)=ie
 
 	end	
 
@@ -407,7 +465,8 @@ c---------------------------------------------------------------
 c diffusion
 c---------------------------------------------------------------
 
-        if( .not. bback .and. iel .gt. 0 .and. rwhpar .gt. 0 ) then
+       if( .not. bback .and. iel .gt. 0 .and. rwhpar .gt. 0 ) then
+	  ! the time spent in elemets due to diffusion is not considered
 	  ttime = 0.
 	  ieorig = iel
           call lag_diff(iel,id,xn,yn)

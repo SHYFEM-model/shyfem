@@ -5,15 +5,18 @@ c include file for connectivity simulations
         parameter ( nconnect_dim = 50 )
 
         real lagr_connect_pps
-        !parameter ( lagr_connect_pps = 1./200. )
-        parameter ( lagr_connect_pps = 0. )
+        parameter ( lagr_connect_pps = 1./3600. )
+        !parameter ( lagr_connect_pps = 0. )
 
         real r_connect_radius
         parameter ( r_connect_radius = 2000. )
         !parameter ( r_connect_radius = 0. )
 
 	integer lagr_connect_itmonth
-        parameter ( lagr_connect_itmonth = 30.5*86400 )
+	integer lagr_connect_itout
+        parameter ( lagr_connect_itmonth = 61*43200 ) ! = 30.5*86400
+        !parameter ( lagr_connect_itout = lagr_connect_itmonth )
+        parameter ( lagr_connect_itout = 20*86400 )
 
 	integer np_station
 	common /int_conn/ np_station
@@ -45,11 +48,14 @@ c include file for connectivity simulations
         real tf_connect(nconnect_dim,nconnect_dim)
         common /tf_connect/tf_connect
 
+        real agef_connect(nconnect_dim,nconnect_dim)
+        common /agef_connect/agef_connect
+
 	save /int_conn/
         save /i_connect_elems/
 
 	save /i_connect/,/t_connect/
-	save /if_connect/,/tf_connect/
+	save /if_connect/,/tf_connect/,/agef_connect/
 
 	save /t_connect_total/,/i_connect_total/
 

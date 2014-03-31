@@ -299,6 +299,7 @@ c**********************************************************
 
 c--------------------------------------
 	bcolor = .true.		!use color to plot lagrangian particles
+	bcolor = .false.	!use color to plot lagrangian particles
 	bbottom = .false.	!use color to indicate p. on bottom
 	bzeta = .true.		!use zeta to decide on color to use
 	bstation = .false.	!use zeta to get station number (and color)

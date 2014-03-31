@@ -9,13 +9,17 @@ c 05.02.2009    ggu	copied from lagrange_cont.f and integrated from others
 c 16.12.2011    ggu	initialization with body id
 c 23.01.2012    ggu	new call to insert_particle, new id_body
 c 01.10.2012    ggu	output concentrations only for one station
+c 28.03.2014    ggu	bug fix for inesrt with ie=0, area in concentrations
 c
 c*******************************************************************
 
 	subroutine insert_particle(ie,rtime,x,y)
 
-c inserts particle at position x,y - if element unknown set ie=0
-
+c inserts particle at position x,y
+c
+c tin is insert time - compute with rtime
+c z = 0.5 (corresponding to larva in water) 
+ 
 	implicit none
 
 	include 'param.h'
@@ -24,20 +28,30 @@ c inserts particle at position x,y - if element unknown set ie=0
         integer itanf,itend,idt,nits,niter,it
         common /femtim/ itanf,itend,idt,nits,niter,it
 
-	integer ie,ip
+	integer ie	!element of particle - if unknown use 0
 	real rtime	!time to be advected (relative to time step - 0 all dt)
-	real x,y,z
+	real x,y	!coordinates of particle to be inserted
+
+	integer ip
+	real z
 
 	nbdy = nbdy + 1
 	idbdy = idbdy + 1
 
 	if( nbdy .gt. nbdydim ) goto 99
 
-        tin(nbdy)=it - idt*(1.-rtime)		!idt should be real
-        !tin(nbdy)=it
+        tin(nbdy) = it - real(idt)*(1.-rtime)
+        !tin(nbdy) = it				!old
+
+	if( ie .eq. 0 ) then
+	  call find_element(x,y,ie)
+	end if
+	if( ie .eq. 0 ) then
+	  write(6,*) 'inserting particle with ie = 0'
+	end if
 
 	z = 0.5
-	call lagr_connect_get_station(ie,ip,z)	!connectivity
+	call lagr_connect_get_station(ie,ip,z)	!connectivity (z is color)
 
         est(nbdy)=ie
         xst(nbdy)=x
@@ -52,7 +66,8 @@ c inserts particle at position x,y - if element unknown set ie=0
 	lgr_var(nbdy) = 0
 	id_body(nbdy) = idbdy
 
-	lgr_bitmap(nbdy) = 0
+	lgr_bitmap_in(nbdy) = 0
+	lgr_bitmap_out(nbdy) = 0
 
 	return
    99	continue
@@ -92,7 +107,8 @@ c copies particle from ifrom to ito
 	lgr_var(ito) = lgr_var(ifrom)
 	id_body(ito) = id_body(ifrom)
 	
-	lgr_bitmap(ito) = lgr_bitmap(ifrom)
+	lgr_bitmap_in(ito) = lgr_bitmap_in(ifrom)
+	lgr_bitmap_out(ito) = lgr_bitmap_out(ifrom)
 
 	end
 
@@ -238,7 +254,7 @@ c outputs particles as density (concentration) to NOS file
 	integer ic,i
 	integer ip,ip_station
 	integer nvar,ivar,nlvdi
-	real area_el,z
+	real area_elem,area_node,z
 
         integer ecount(neldim)
         integer kcount(nkndim)
@@ -251,8 +267,8 @@ c outputs particles as density (concentration) to NOS file
         save iunit
         data iunit / 0 /
 
-	ip_station = 5
-	ip_station = 0		!if different from 0 -> plot only this station
+c	ip_station = 5
+	ip_station = 0	!if different from 0 -> output only this station
 
 c---------------------------------------------------------
 c initialize
@@ -272,7 +288,7 @@ c---------------------------------------------------------
 
 	do i=1,nbdy
 	  ie = ie_body(i)
-          z = z_body(i)					! z == 1 => bottom
+          z = z_body(i)
 	  call lagr_connect_get_station(ie,ip,z)	! connectivity
 	  if( ie .ne. 0 ) then
 	    if( ip*ip_station .eq. 0 .or. ip .eq. ip_station ) then
@@ -287,11 +303,11 @@ c---------------------------------------------------------
 
 	do ie=1,nel
 	  ic = ecount(ie)
-	  area_el = ev(10,ie)
+	  area_node = 4*ev(10,ie)
 	  do ii=1,3
 	    k = nen3v(ii,ie)
 	    kcount(k) = kcount(k) + ic
-	    area(k) = area(k) + area_el
+	    area(k) = area(k) + area_node
 	  end do
 	end do
 
@@ -300,7 +316,7 @@ c compute density
 c---------------------------------------------------------
 
 	do k=1,nkn
-	  density(k) = kcount(k) / area(k)
+	  density(k) = kcount(k) / area(k)	!in area is total area of node
 	end do
 
 c---------------------------------------------------------

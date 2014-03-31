@@ -73,6 +73,7 @@ c 20.04.2009	ggu	new variable ztilt, ndim substituted with nbvdim
 c 23.02.2011    ggu     new parameters tramp and levflx implemented
 c 21.06.2012    ggu&aar new file names for mud module
 c 29.11.2013    ggu	allow for non continous boundary numbering
+c 28.03.2014    ggu	new parameter lgrpps
 c
 c************************************************************************
 
@@ -411,6 +412,8 @@ cc undocumented
 	call addpar('tramp',0.)		!start smoothly for discharge
 	call addpar('levflx',0.)	!use level-discharge relationship
 	call addpar('nad',-1.)		!no advective terms for this boundary
+	call addpar('lgrpps',0.)	!parts per second for lagrange
+					!if negative parts per volume flux
 
 c DOCS	END
 
@@ -1310,6 +1313,12 @@ c********************************************************************
 c********************************************************************
 c********************************************************************
 c********************************************************************
+c
+c to insert new parameter increase nbvdim below and insert name in data
+c
+c********************************************************************
+c********************************************************************
+c********************************************************************
 
 	subroutine get_nbnd(nbnd)
 
@@ -1318,7 +1327,7 @@ c********************************************************************
 	integer nbnd
 
         integer nbvdim
-        parameter(nbvdim=24)
+        parameter(nbvdim=25)
 
 	nbnd = nbvdim
 
@@ -1334,7 +1343,7 @@ c********************************************************************
         character*(*) name
 
         integer nbvdim
-        parameter(nbvdim=24)
+        parameter(nbvdim=25)
 
         integer id
         character*6 bname
@@ -1370,7 +1379,7 @@ c	increase nbvdim (more instances in file)
         character*(*) name
 
         integer nbvdim
-        parameter(nbvdim=24)
+        parameter(nbvdim=25)
 
         character*6 names(nbvdim)
         save names
@@ -1379,7 +1388,7 @@ c	increase nbvdim (more instances in file)
      +                  ,'ampli','period','phase','zref','ktilt'
      +                  ,'intpol','levmax','igrad0','zfact','nbdim'
      +			,'conz','temp','salt','levmin','kref'
-     +			,'ztilt','tramp','levflx','nad'
+     +			,'ztilt','tramp','levflx','nad','lgrpps'
      +                  /
 
 	if( id .gt. nbvdim ) then
@@ -1399,7 +1408,7 @@ c********************************************************************
 	integer ibc
 
         integer nbvdim
-        parameter(nbvdim=24)
+        parameter(nbvdim=25)
 
         integer i
 	real value

@@ -436,7 +436,14 @@ c**************************************************************
 
 	subroutine z_tilt
 
-c artificial tilting of boundary surface - needs ktilt and ztilt
+c artificial tilting of boundary surface - uses ktilt and ztilt
+c
+c the first boundary node is set to -ztilt, and the last to +ztilt
+c the total water level difference is therefore 2*ztilt
+c if ktilt is not given then the other nodes are linearily interpolated
+c	between these two values
+c if ktilt is given then this node will be set to z=0 and the other
+c	nodes are linearly interpolated between start-ktilt and ktilt-end
 
 	implicit none
 

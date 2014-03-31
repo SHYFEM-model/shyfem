@@ -6,6 +6,7 @@ c
 c revision log :
 c
 c 05.02.2009    ggu     copied from other files
+c 28.03.2014    ggu     compute total length of open boundary
 c
 c*******************************************************************
 
@@ -34,6 +35,35 @@ c returns distance between two nodes
         dist_node = sqrt( dx*dx + dy*dy )
 
         end
+
+c*******************************************************************
+
+	subroutine dist_total(ibc,totdist)
+
+c returns total length of open boundary
+
+	implicit none
+
+	integer ibc
+	real totdist
+
+	integer nk,i,k1,k2
+	real dxy
+
+	integer nkbnds,kbnds
+	real dist_node
+
+	nk = nkbnds(ibc)
+
+        totdist = 0.
+        do i=2,nk
+          k1 = kbnds(ibc,i-1)
+          k2 = kbnds(ibc,i)
+          dxy = dist_node(k1,k2)
+          totdist = totdist + dxy
+        end do
+
+	end
 
 c*******************************************************************
 

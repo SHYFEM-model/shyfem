@@ -1,4 +1,31 @@
 
+28.03.2014
+
+lagrangian cleaned - new connectivity
+
+c ./fem3d/lagrange_main.f:
+c 28.03.2014    ggu     code cleaned - connectivity
+c
+c ./fem3d/lagrange_cont.f:
+c 28.03.2014    ggu     new routine lagr_continuous_release_pps_ppv()
+c
+c ./fem3d/lagrange_decay.f:
+c 28.03.2014    ggu     new version of decay (for all particles)
+c
+c ./fem3d/subbnd.f:
+c 28.03.2014    ggu     new parameter lgrpps
+c
+c ./fem3d/subsys.f:
+c 28.03.2014    ggu     some new params for lagrangian
+c
+c ./fem3d/lagrange_inout.f:
+c 28.03.2014    ggu     bug fix for inesrt with ie=0, area in concentrations
+c
+c ./fem3d/lagrange_util.f:
+c 28.03.2014    ggu     compute total length of open boundary
+
+
+
 25.03.2014
 
 new offline

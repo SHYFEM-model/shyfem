@@ -50,6 +50,9 @@ c-------------------------------------------------- main variables
  	real lgr_var(nbdydim)			!custom variable
  	common /lgr_var/lgr_var
 
+ 	real lgr_Ww(nbdydim)			!custom variable
+ 	common /lgr_Ww/lgr_Ww
+
         integer id_body(nbdydim)		!id of particle
         common /id_body/id_body
 
@@ -104,7 +107,7 @@ c-------------------------------------------------- fluxes and velocities
 
 c-------------------------------------------------- special variables
 
-	real tdecay				!decay time
+	real tdecay				!decay time - do not use
 	common /tdecay/tdecay
 
 	real fall				!vertical sinking velocity
@@ -115,8 +118,9 @@ c-------------------------------------------------- special variables
 
 c------------------------------------------------------------
 
-	integer*8 lgr_bitmap(nbdydim)		!bitmap for special appls
-	common /lgr_bitmap/lgr_bitmap
+	integer*8 lgr_bitmap_in(nbdydim)	!bitmap for entry
+	integer*8 lgr_bitmap_out(nbdydim)	!bitmap for leave
+	common /lgr_bitmap/lgr_bitmap_in,lgr_bitmap_out
 
 c------------------------------------------------------------
 

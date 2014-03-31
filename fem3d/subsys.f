@@ -107,6 +107,7 @@ c 24.10.2012	ggu	new parameter dxmin
 c 10.05.2013	ggu	new parameters idtbox,itmbox, more comments
 c 10.05.2013	ggu	new parameter inohyd
 c 16.05.2013	ggu	file name bound renamed to zinit
+c 28.03.2014	ggu	some new params for lagrangian
 c
 c************************************************************************
 
@@ -867,6 +868,13 @@ cc element outside the defined area.
 cc Default = -1, i.e., no transit times are computed
 
         call addpar('artype',-1.)
+
+cc still to be commented
+
+        call addpar('lcust',0.)
+        call addpar('ldecay',0.)
+        call addpar('ioil',0.)
+        call addpar('ilarv',0.)
 
 c DOCS	END
 

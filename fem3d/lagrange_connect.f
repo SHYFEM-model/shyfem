@@ -10,16 +10,15 @@ c 22.10.2012    ggu	prepared for circular area to receive particles
 c
 c*******************************************************************
 
-	subroutine lagr_connect_continuous_points(brelease)
 
-c continuous release from points
+	subroutine lagr_connect_continuous_points(brelease)
 
 	implicit none
 
 	include 'param.h'
 	include 'lagrange_connect.h'
 
-	logical brelease
+	logical brelease	!is inside release times?
 
         integer itanf,itend,idt,nits,niter,it
         common /femtim/ itanf,itend,idt,nits,niter,it
@@ -32,7 +31,7 @@ c continuous release from points
 	integer ip,n
 	real pps,ppts,dt
 
-	integer itmonth
+	integer itout
 
 	integer icall
 	save icall
@@ -40,10 +39,12 @@ c continuous release from points
 
 	if( icall .lt. 0 ) return
 
-	itmonth = lagr_connect_itmonth
-	pps = lagr_connect_pps				!particles per second
+	itout = lagr_connect_itout	!matric write frequency
+	pps = lagr_connect_pps		!release of particles per second
 
-	if( icall .eq. 0 ) then				!initialize
+c initialize the first time
+
+	if( icall .eq. 0 ) then			
 	  if( pps .le. 0. ) then
 	    icall = -1
 	    return
@@ -59,7 +60,9 @@ c continuous release from points
 	icall = icall + 1
 
 	call get_timestep(dt)
-	ppts = dt * pps				!paricles per time step
+	ppts = dt * pps				!particles per time step
+
+c release particles
 
 	if( brelease ) then			!release?
 	  do ip=1,np
@@ -68,7 +71,9 @@ c continuous release from points
 	  end do
 	end if
 
-	if( mod(it,itmonth).eq.0.or.it.eq.itend ) then
+c write with freqency itout or at the end of sim 
+
+	if( (mod(it,itout).eq.0).or.(it.eq.itend)) then
 	  call lagr_connect_write(np)
 !	  call lagr_connect_reset(np)  
 	end if
@@ -124,6 +129,12 @@ c*******************************************************************
 
 	subroutine lagr_connect_reset(np)
 
+c i_connect_total(ie)
+c t_connect_total(ie)
+c i_connect(ip,jp)
+c t_connect(ip,jp)
+c i_connect_released(ip)	! total number of particles released at i
+
 	implicit none
 
 	include 'param.h'
@@ -147,6 +158,7 @@ c*******************************************************************
 	    t_connect(ip,jp) = 0.
 	    if_connect(ip,jp) = 0
 	    tf_connect(ip,jp) = 0.
+	    agef_connect(ip,jp) = 0.
 	  end do
 	  i_connect_released(ip) = 0
 	end do
@@ -215,8 +227,10 @@ c*******************************************************************
 	include 'lagrange.h'
 	include 'lagrange_connect.h'
 
-	integer ibdy,ie,ieorig
-	real time
+	integer ibdy		!number of particle
+	integer ie		!element the particle has stayed
+	integer ieorig		!element from which particle came
+	real time		!time particle has stayed in ie
 	integer ic
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -224,6 +238,7 @@ c*******************************************************************
         integer itanf,itend,idt,nits,niter,it
         common /femtim/ itanf,itend,idt,nits,niter,it
 
+	logical bin,bout
 	integer ie_from,ip_to,ip_from,ip_to_orig
 	integer icc
 	real tarrive
@@ -244,34 +259,59 @@ c*******************************************************************
 	t_connect_total(ie) = t_connect_total(ie) + time
 
 	ip_to = i_connect_elems(ie)
-	if( ip_to .le. 0 ) return
-
 	ip_to_orig = i_connect_elems(ieorig)
-	if( ip_to .eq. ip_to_orig ) icc = 0
-
-	ie_from = est(ibdy)
-	ip_from = i_connect_elems(ie_from)
-	if( ip_from .le. 0 ) then
-	  write(6,*) 'particle not coming from source: ',ibdy,ie_from
-	  stop 'error stop lagr_connect_count: no source'
-	end if
-
-	i_connect(ip_from,ip_to) = i_connect(ip_from,ip_to) + icc
-	t_connect(ip_from,ip_to) = t_connect(ip_from,ip_to) + time
-
-	if( icc .le. 0 ) return
 
 	if( ip_to .gt. 63 ) then
 	  write(6,*) 'ip_to = ',ip_to
 	  stop 'error stop lagr_connect_count: internal error bitmap'
 	end if
 
-	if( btest(lgr_bitmap(ibdy),ip_to) ) return	!already been there
-	lgr_bitmap(ibdy) = ibset(lgr_bitmap(ibdy),ip_to)!remember for next time
+	if( ip_to .le. 0 .and. ip_to_orig .le. 0 ) return
 
-	tarrive = it - tin(ibdy)
-	if_connect(ip_from,ip_to) = if_connect(ip_from,ip_to) + ic
-	tf_connect(ip_from,ip_to) = tf_connect(ip_from,ip_to) + tarrive
+	if( ip_to .eq. ip_to_orig ) then
+	  icc = 0
+	else if( ip_to .gt. 0 ) then
+	  lgr_bitmap_in(ibdy) = ibset(lgr_bitmap_in(ibdy),ip_to)
+	else if( ip_to_orig .gt. 0 ) then
+	  !can only leave if already entered
+	  if( btest(lgr_bitmap_in(ibdy),ip_to_orig) ) then
+	    lgr_bitmap_out(ibdy) = ibset(lgr_bitmap_out(ibdy),ip_to_orig)
+	  end if
+	end if
+	if( ip_to .le. 0 ) return
+
+	ie_from = est(ibdy)		!element of origin of particle
+	ip_from = i_connect_elems(ie_from)
+	if( ip_from .le. 0 ) then
+	  write(6,*) 'particle not coming from source:',ibdy,ie_from,ip_from
+	  stop 'error stop lagr_connect_count: no source'
+	end if
+
+	! icc == 1 if particle has entered ie in this step
+
+	bin = btest(lgr_bitmap_in(ibdy),ip_to)		!particle has entered
+	bout = btest(lgr_bitmap_out(ibdy),ip_to)	!particle has left
+
+	!only count if paricle has entered orig or if new area
+	if( bin ) then
+	  i_connect(ip_from,ip_to) = i_connect(ip_from,ip_to) + icc
+	  t_connect(ip_from,ip_to) = t_connect(ip_from,ip_to) + time
+	end if
+
+	! here starts redundancy code
+
+	if( bout ) return
+
+	if( bin ) then
+	  if_connect(ip_from,ip_to) = if_connect(ip_from,ip_to) + icc
+	  tf_connect(ip_from,ip_to) = tf_connect(ip_from,ip_to) + time
+	end if
+
+	if( bin ) then
+	  tarrive = it - tin(ibdy) 	!first arrival age
+	  agef_connect(ip_from,ip_to) = agef_connect(ip_from,ip_to)
+     +					+ tarrive
+	end if
 
 	end
 
@@ -305,13 +345,35 @@ c*******************************************************************
 
 	integer ifileo
 
-	write(127,*) np
+	if( np .le. 0 ) return
 
+cmi file.127 probability definition (angel or classic)
+	write(127,*) np
 	do ip=1,np
 	  write(127,*) ip,i_connect_released(ip),a_connect_area(ip)
 	end do
+	write(127,*) 'total matrix time',it
 
-	write(127,*) 'total matrix'
+cmi file.129 Cowen probability 
+	write(129,*) np
+	do ip=1,np
+	  write(129,*) ip,i_connect_released(ip),a_connect_area(ip)
+	end do
+	write(129,*) 'total matrix time',it
+
+cmi file.136 Exposure 
+	write(136,*) np
+	do ip=1,np
+	  write(136,*) ip,i_connect_released(ip),a_connect_area(ip)
+	end do
+	write(136,*) 'total matrix time',it
+
+cmi file.137 cumulate number of part. and time 
+	write(137,*) np
+	do ip=1,np
+	  write(137,*) ip,i_connect_released(ip),a_connect_area(ip)
+	end do
+	write(137,*) 'total matrix time',it
 
 	do ip=1,np				!from
 	  do jp=1,np				!to
@@ -349,6 +411,7 @@ c*******************************************************************
 	!call wreos(iunit,it,ivar+2,nlvdim,ilhv,c,ierr)
 !	close(iunit)
 
+cmi file.128 total released particles and time 
 	write(128,*) nel
 	do ie=1,nel
 	  write(128,*) ie,i_connect_total(ie),t_connect_total(ie)
@@ -365,30 +428,126 @@ c*******************************************************************
 	include 'param.h'
 	include 'lagrange_connect.h'
 
-	integer np,ip,jp
+	integer np,ip,jp,j,i
 
 	integer ic,icf,itot
-	real tc,tcf,pab,pabf
+	real tc,tcf,tcfave,tcave
+	real agef,agefave
+	real pab,pabf,cowpab,cowpabf
 	real area_i,area_j
 
+	real daux,dtaux,naux,ntaux
+	real dauxf,dtauxf,nauxf,ntauxf
+	real expos,expos_f
+
+	tcfave = 0
+	tcave = 0
+	agefave = 0 
+	expos =0 
+	expos_f =0 
+
 c ip is from
-c jp is to
+c jp is to 
 
-	area_i = a_connect_area(ip)
-	itot = i_connect_released(ip)
-	area_j = a_connect_area(jp)
-	ic = i_connect(ip,jp)
-	tc = t_connect(ip,jp)
-	icf = if_connect(ip,jp)
-	tcf = tf_connect(ip,jp)
-	pab = (i_connect(ip,jp)/area_j) / itot
-	pabf = (if_connect(ip,jp)/area_j) / itot
-	if( icf .gt. 0 ) tcf = tcf / icf
-	write(127,1000) ip,jp,ic,tc,icf,tcf,pab,pabf
- 1000	format(2i3,i8,e15.7,i8,e15.7,2f7.4)
+	area_i = a_connect_area(ip)	!area staz i [m^2 ? ] 
+	itot = i_connect_released(ip)	!num tot part mollate da i
+	area_j = a_connect_area(jp)	!area staz j
+	ic = i_connect(ip,jp)		!numero palle da i a j con ridond 
+	tc = t_connect(ip,jp)		!tempo totale speso da prt_i in j [s]
+	icf = if_connect(ip,jp)		!numero palle da i a j senza ridond
+	tcf = tf_connect(ip,jp)		!tempo totale speso .. senza ridond
+	agef = agef_connect(ip,jp)
 
+c inserire tempo di arrivo medio 
+
+
+!sum su j: particelle di i=fix ricevute da qualche j    
+	daux   = 0 
+	dauxf  = 0
+	dtaux  = 0 
+	dtauxf = 0 
+	do j=1,np  
+	daux = daux + i_connect(ip,j)*a_connect_area(j) 	!per area?? 
+	dauxf = dauxf + if_connect(ip,j)*a_connect_area(j)
+cmi	daux = daux + i_connect(ip,j) 
+cmi	dauxf = dauxf + if_connect(ip,j)
+	dtaux = dtaux + t_connect(ip,j)
+	dtauxf = dtauxf + tf_connect(ip,j)
+	enddo
+c	write(99,*) 'daux dauxf',ip,jp,daux,dauxf
+c	write(99,*) '-----------'
+	
+! sum su i = particelle di tutte i ricevute da una j=fix
+	naux=0
+	nauxf = 0
+	ntaux =0 
+	ntauxf =0
+	do i=1,np  
+	naux = naux + i_connect(i,jp)
+	nauxf =nauxf + if_connect(i,jp)
+	ntaux = ntaux + t_connect(i,jp)
+	ntauxf = ntauxf + tf_connect(i,jp) ! [s]
+	enddo
+c	write(99,*) 'naux nauxf',ip,jp,naux,nauxf
+c	write(99,*) '-----------'
+	
+c Cowen probability 
+
+	if(daux.eq.0)then
+	write(6,*) 'warning daux 0'
+	cowpab = 0. 	
+	cowpabf = 0. 	
+	else
+	cowpab = (i_connect(ip,jp)*area_j) /daux 	!Cowen2007
+	cowpabf = (if_connect(ip,jp)*area_j) /dauxf	!without redund
+	endif
+
+C Angel or classical
+
+	if(itot.eq.0)then
+	write(6,*) 'warning itot 0'
+	pab =0. 
+	pabf = 0.
+	else 
+!	pab = (i_connect(ip,jp)/area_j) / itot		!Angel definition 
+!	pabf = (if_connect(ip,jp)/area_j) / itot	!without redund
+
+	pab  = real(i_connect(ip,jp)) / real(itot)	!Definition of probability
+	pabf = real(if_connect(ip,jp))/ real(itot)	!without redund
+	endif
+
+c tcfave = tempo medio trascorso in j da tutte le particelle i arrivate una volta in j e contato
+c solo quella volta.  
+	if( icf .gt. 0 ) agefave = (agef / icf) ! eta media di arrivo
+	if( icf .gt. 0 ) tcfave = (tcf / icf  ) !tempo medio speso in j 
+	if( ic .gt. 0 ) tcave = (tc / ic) !tempo medio speso in j ridond 
+c Exposure 
+
+c	expos = naux /(ntaux/86400.) 
+c	expos_f = nauxf /(ntauxf/86400.) 
+	expos = naux /(ntaux/3600.) 
+	expos_f = nauxf /(ntauxf/3600.) 
+
+
+C FINAL OUTPUT 
+
+c	write(127,1000) ip,jp,ic,tc,icf,tcfave,pab,pabf
+c 1000	format(2i3,i8,e15.7,i8,e15.7,2e15.4)
+
+	write(127,1000) ip,jp,ic,tc,icf,tcf,agef,pab,pabf
+ 1000	format(2i3,i8,e15.7,i8,e15.7,3e15.4)
+
+c	write(129,1001) ip,jp,ic,tc,icf,tcf,cowpab,cowpabf
+	write(129,1001) ip,jp,ic,tcave,icf,tcfave,agefave,cowpab,cowpabf
+ 1001	format(2i3,i8,e15.7,i8,e15.7,3e15.4)
+c 1001	format(2i3,i8,e15.7,i8,e15.7,2f9.4)
+
+	write(136,1002) ip,jp,expos,expos_f
+ 1002	format(2i3,2e15.6)
+
+	write(137,1003) ip,jp,naux,ntaux,nauxf,ntauxf
+ 1003	format(2i3,4e15.6)
 	end
-
 c*******************************************************************
 c*******************************************************************
 c*******************************************************************
@@ -441,9 +600,9 @@ c*******************************************************************
         real xx,yy
 	character*40 file
 
+        np=0
 	file = 'coord_menor.dat'
 	file = 'connectivity_xy.dat'
-        np=0
 
         open(1,file=file,status='old',err=99)
 
@@ -470,7 +629,8 @@ c*******************************************************************
 99      continue
 	write(6,*) 'file: ',file
         write(6,*)'lagr_get_coords OPEN FILE ERROR'
-        STOP
+	write(6,*) 'connectivity not used'
+        return
 
 98      continue
 	write(6,*) 'file: ',file
@@ -488,18 +648,17 @@ c******************************************************************
 	include 'lagrange.h'
 	include 'lagrange_connect.h'
 
-	integer ie,ip_station
-	real r_station
+	integer ie
+	integer ip_station	!station number
+	real r_station		!becomes z (color)
+
+	ip_station = 0
 
 	if( lagr_connect_pps .gt. 0. ) then	!connectivity active
-	  ip_station = 0
-	  if( np_station .gt. 0 ) then
+	  if( np_station .gt. 0 ) then		!stations given
 	    ip_station = i_connect_elems(ie)
 	    r_station = ip_station / float(np_station)
 	  end if
-	else
-	  ip_station = 0
-	  !r_station = 0.5	!is not changed
 	end if
 
 	end

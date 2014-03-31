@@ -1,5 +1,30 @@
 ============================================================
 
+Mon Mar 31 12:15:39 CEST 2014
+
+lagrangian cleaned, new connectivity
+
+ LOG                      |   27 +++++
+ fem3d/lagrange.h         |   10 ++-
+ fem3d/lagrange_connect.f |  269 ++++++++++++++++++++++++++++++++++++----------
+ fem3d/lagrange_connect.h |   14 ++-
+ fem3d/lagrange_cont.f    |  191 +++++++++++++++++++++++---------
+ fem3d/lagrange_decay.f   |   63 +++++++++--
+ fem3d/lagrange_inout.f   |   48 ++++++---
+ fem3d/lagrange_larve.h   |   57 ++++++++++
+ fem3d/lagrange_main.f    |  141 +++++++++++++++++-------
+ fem3d/lagrange_track.f   |   64 ++++++------
+ fem3d/lagrange_util.f    |   30 +++++
+ fem3d/subbnd.f           |   19 +++-
+ fem3d/subn11.f           |    9 ++-
+ fem3d/subsys.f           |    8 ++
+ femdoc/final/shyfem.pdf  |  Bin 270907 -> 270908 bytes
+ femdoc/final/shyfem.ps   |   26 +++---
+ femplot/suplag.f         |    1 +
+ 17 files changed, 743 insertions(+), 234 deletions(-)
+
+============================================================
+
 Thu Mar 27 09:54:32 CET 2014
 
 New version 6_1_73
