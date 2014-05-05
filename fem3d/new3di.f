@@ -165,6 +165,7 @@ c 10.05.2013    dbf&ggu new routines for non-hydro
 c 29.10.2013    ggu	nudging implemented
 c 29.11.2013    ggu	zeta correction
 c 25.03.2014    ggu     new offline
+c 10.04.2014    ggu     cleaning up of a lot of stuff
 c
 c******************************************************************
 
@@ -399,7 +400,7 @@ c compute nodal values for velocities %%%%%%%%%%%%%%%%%%%%%%%%
 c******************************************************************
 
 	subroutine sp256z(vqv)
-c
+
 c assembles linear system matrix
 c
 c vqv		flux boundary condition vector
@@ -410,21 +411,17 @@ c written on 18.02.91 by ggu  (from scratch)
 c changed on 04.06.91 by ggu  (c=(1) : friction term has been corrected)
 c changed on 01.10.92 by ggu  (staggered FE - completely restructured)
 c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
-c
+
 	implicit none
-c
-c parameters
+
 	include 'param.h'
-c arguments
+	include 'ev.h'
+
 	real vqv(1)
-c parameters
-c	real az,azt,am,amt,af,aft
-c	parameter (az=0.50,azt=1.-az)
-c	parameter (am=0.50,amt=1.-am)
-c	parameter (af=0.50,aft=1.-af)
+
 	real drittl
 	parameter (drittl=1./3.)
-c common
+
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	real eps1,eps2,pi,flag,high
 	real grav,fcor,dcor,dirn,rowass,roluft
@@ -433,6 +430,7 @@ c common
 	common /mkonst/ eps1,eps2,pi,flag,high
 	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
 	common /femtim/ itanf,itend,idt,nits,niter,it
+
 	integer nen3v(3,1),ilhv(1)
 	integer iarv(1)
 	real rzv(1)
@@ -450,7 +448,6 @@ c common
         common /zeov/zeov, /zenv/zenv
 	integer iwegv(1), inodv(1)
 	common /iwegv/iwegv, /inodv/inodv
-	include 'ev.h'
 
         integer iuvfix(1)       !chao deb
         common /iuvfix/iuvfix   !chao deb
@@ -461,80 +458,78 @@ c common
         common /ddxv/ddxv, /ddyv/ddyv
         save /ddxv/, /ddyv/
 
-        real andgzv(nkndim)             !contribution to z-computation
+        real andgzv(nkndim)             !nudging contribution
         common /andgzv/andgzv
 
-c local
-
 	logical bcolin
-c	logical debug,bdebug
 	logical bdebug
 	integer kn(3)
 	integer ie,i,j,j1,j2,n,m,kk,l,k
 	integer ngl
 	integer ilevel
 	integer ju,jv
-c	real az,azt,am,amt,af,aft
 	real az,am,af,azpar,ampar
 	real dt,aj,rw
-c	real um,vm,zm
 	real zm
 	real ut,vt,uhat,vhat
 	real ht
 	real h11,hh999
 	real delta
-c	real fcora,beta,gamma
 	real hia(3,3),hik(3),amatr(3,3)
 	real b(3),c(3),z(3)
 	real andg,zndg(3)
 	real acu
 	real uold,vold
 	real dbb,dbc,dcb,dcc,abn,acn
-c	real rmin,ulr,umr,vlr,vmr
-c
-c	integer iradb(3),iradf
-c function
+
         integer locsps,loclp,iround
 	real getpar
 	logical iskbnd,iskout,iseout
         iskbnd(k) = inodv(k).ne.0 .and. inodv(k).ne.-2
         iskout(k) = inodv(k).eq.-2
         iseout(ie) = iwegv(ie).ne.0
-c save - data
-c	data amatr / 2.,1.,1.,1.,2.,1.,1.,1.,2. /
-	data amatr / 4.,0.,0.,0.,4.,0.,0.,0.,4. /
-c
-	ngl=nkn
-c
-c constants
-c
+
+c	data amatr / 2.,1.,1.,1.,2.,1.,1.,1.,2. /	!original
+	data amatr / 4.,0.,0.,0.,4.,0.,0.,0.,4. /	!lumped
+
+c-------------------------------------------------------------
+c initialization
+c-------------------------------------------------------------
+
 	bcolin=iround(getpar('iclin')).ne.0
-c
+
 	call getazam(azpar,ampar)
 	az=azpar
 	am=ampar
 	af=getpar('afpar')
 	call get_timestep(dt)
 
-	acu = 0.
+	ngl=nkn
+
+c-------------------------------------------------------------
+c loop over elements
+c-------------------------------------------------------------
 
 	do ie=1,nel
+
+c	------------------------------------------------------
+c	compute level gradient
+c	------------------------------------------------------
 
 	zm=0.
 	do i=1,3
 		kk=nen3v(i,ie)
 		kn(i)=kk
-c
 		b(i)=ev(i+3,ie)
 		c(i)=ev(i+6,ie)
-		z(i)=zov(kk)
+		!z(i)=zov(kk)
 		z(i)=zeov(i,ie)		!ZEONV
-		zndg(i) = andgzv(kk)
+		zndg(i) = andgzv(kk)	!nudging
 		zm=zm+z(i)
 	end do
-c
+
 	zm=zm*drittl
-c
+
 	if(bcolin) then
 		ht=hev(ie)
 	else
@@ -544,10 +539,12 @@ c
 	ilevel=ilhv(ie)
 	aj=ev(10,ie)
         afix=1-iuvfix(ie)      !chao deb
-c
-	!delta=dt*dt*az*am*grav*ht
-	!delta=dt*dt*az*am*grav		!ASYM_OPSPLT
+
         delta=dt*dt*az*am*grav*afix         !ASYM_OPSPLT        !chao deb
+
+c	------------------------------------------------------
+c	compute contribution from H^x and H^y
+c	------------------------------------------------------
 
 	dbb = 0.
 	dbc = 0.
@@ -561,6 +558,10 @@ c
 	  dcb = dcb + ddxv(jv,ie)
 	  dcc = dcc + ddyv(jv,ie)
 	end do
+
+c	------------------------------------------------------
+c	compute barotropic transport
+c	------------------------------------------------------
 
 	uold = 0.
 	vold = 0.
@@ -577,24 +578,25 @@ c
 	ut = az * uhat + (1.-az) * uold
 	vt = az * vhat + (1.-az) * vold
 
+c	------------------------------------------------------
+c	set element matrix and RHS
+c	------------------------------------------------------
+
 	do n=1,3
 	  do m=1,3
 	    abn = b(n) * ( b(m) * dbb + c(m) * dbc )
 	    acn = c(n) * ( b(m) * dcb + c(m) * dcc )
-	    !abn = ht * b(n) * b(m)			!ASYM_OPSPLT_CH
-	    !acn = ht * c(n) * c(m)			!ASYM_OPSPLT_CH
 	    h11 = delta*( abn + acn )			!ASYM_OPSPLT_CH
-	    !h11 = delta*( b(n)*b(m)+c(n)*c(m) )
 	    hia(n,m) = aj * (amatr(n,m) + 12.*h11)
 	  end do
 	  acu = hia(n,1)*z(1) + hia(n,2)*z(2) + hia(n,3)*z(3)
-	  !andg = hia(n,1)*zndg(1) + hia(n,2)*zndg(2) + hia(n,3)*zndg(3)
-	  !andg = dt*andg
 	  andg = 4.*aj*dt*zndg(n)
 	  hik(n) = acu + andg + 12.*aj*dt*( ut*b(n) + vt*c(n) )	!ZNEW
 	end do
 
+c	------------------------------------------------------
 c	level boundary conditions
+c	------------------------------------------------------
 
 	do i=1,3
 	  if(rzv(kn(i)).ne.flag) then
@@ -608,12 +610,14 @@ c	level boundary conditions
 		hia(i,j2)=0.
 		hia(j1,i)=0.
 		hia(j2,i)=0.
-c		hia(i,i)=12.*aj
+		!hia(i,i)=12.*aj
 		hik(i)=rw*hia(i,i)
 	  end if
 	end do
 
-c excluded areas
+c	------------------------------------------------------
+c	excluded areas
+c	------------------------------------------------------
 
           if( iseout(ie) ) then	!ZEONV
             hh999=aj*12.
@@ -628,20 +632,30 @@ c excluded areas
               if( iskbnd(kn(n)) ) then	!not internal and not out of system
                 do m=1,3
                   hia(n,m)=0.
-c                  hia(m,n)=0.		!gguexclude - comment
+                  !hia(m,n)=0.		!gguexclude - comment
                 end do
                 hik(n)=0.
               end if
             end do
           end if
 
-c in hia(i,j),hik(i),i,j=1,3 is system
+c	------------------------------------------------------
+c	in hia(i,j),hik(i),i,j=1,3 is system
+c	------------------------------------------------------
 
 	  call system_assemble(nkn,mbw,kn,hia,hik)
 
 	end do
 
+c-------------------------------------------------------------
+c end of loop over elements
+c-------------------------------------------------------------
+
 	call system_add_rhs(dt,vqv)
+
+c-------------------------------------------------------------
+c end of routine
+c-------------------------------------------------------------
 
 	end
 
@@ -662,16 +676,25 @@ c******************************************************************
 	integer ith
 	integer count0,dcount,chunk,nt
 	integer ibaroc
+	integer ilin,itlin
 	logical bcolin,baroc
-	real az,am,af,at,azpar,ampar
+	real az,am,af,at,av,azpar,ampar
+	real rlin,radv
 	real vismol,rrho0
 	real dt
 
 	real getpar
 
-	ibaroc = nint(getpar('ibarcl'))	! baroclinic contributions
-	bcolin = nint(getpar('iclin')).ne.0	! linearized conti
+c-------------------------------------------------------------
+c initialize
+c-------------------------------------------------------------
+
+	ibaroc = nint(getpar('ibarcl'))		! baroclinic contributions
         vismol  = getpar('vismol')		! molecular viscosity
+	bcolin = nint(getpar('iclin')).ne.0	! linearized conti
+	itlin = nint(getpar('itlin'))		! advection scheme
+	ilin = nint(getpar('ilin'))		! non-linear terms?
+	rlin = getpar('rlin')			! non-linear strength?
 
 	baroc = ibaroc .eq. 1 .or. ibaroc .eq. 2
 
@@ -680,24 +703,38 @@ c******************************************************************
 	am=ampar
 	af=getpar('afpar')
 	at=getpar('atpar')
+	av=getpar('avpar')
+
+	radv = 0.
+	if( ilin .eq. 0 .and. itlin .eq. 0 ) then	!need non-lin terms
+	  radv = rlin * av	!strength * implicit factor
+	end if
 
 	call get_timestep(dt)
     
 	rrho0=1./rowass
 	if( .not. baroc ) rrho0 = 0.
 
-c-------new computation of explicit part----------------------------------
+c-------------------------------------------------------------
+c computation of explicit part (sets arrays fxv(l,ie),fyv(l,ie)
+c-------------------------------------------------------------
 
 	call bottom_friction	!set bottom friction
         call set_explicit       !new HYDRO deb
 	!call set_yaron
 
-c-------result: arrays fxv(l,ie),fyv(l,ie)-----------------------------
+c-------------------------------------------------------------
+c parallel part
+c-------------------------------------------------------------
 
 ccc	call get_clock_count(count0)
 ccc	nt = 2
 ccc	call openmp_set_num_threads(nt)
 ccc	chunk = 1 + nel/nt
+
+c-------------------------------------------------------------
+c loop over elements
+c-------------------------------------------------------------
 
 ccc !$OMP PARALLEL PRIVATE(ie)
 ccc !$OMP DO SCHEDULE(DYNAMIC,chunk)      
@@ -707,7 +744,7 @@ ccc !$OMP DO SCHEDULE(STATIC,chunk)
 
 	  !call openmp_get_thread_num(ith)
 	  !write(6,*) ie,ith
-	  call sp256v_intern(ie,bcolin,baroc,az,am,af,at
+	  call sp256v_intern(ie,bcolin,baroc,az,am,af,at,radv
      +			,vismol,rrho0,dt)
 
 	end do
@@ -715,14 +752,22 @@ ccc !$OMP DO SCHEDULE(STATIC,chunk)
 ccc !$OMP END DO NOWAIT     
 ccc !$OMP END PARALLEL      
 
+c-------------------------------------------------------------
+c end of loop over elements
+c-------------------------------------------------------------
+
 ccc	call get_clock_count_diff(count0,dcount)
 ccc	write(6,*) 'count: ',dcount
+
+c-------------------------------------------------------------
+c end of routine
+c-------------------------------------------------------------
 
 	end
 
 c******************************************************************
 
-	subroutine sp256v_intern(ie,bcolin,baroc,az,am,af,at
+	subroutine sp256v_intern(ie,bcolin,baroc,az,am,af,at,radv
      +			,vismol,rrho0,dt)
 
 c assembles vertical system matrix
@@ -736,6 +781,7 @@ c
 	integer ie
 	logical bcolin,baroc
 	real az,am,af,at
+	real radv			!non-linear contribution
 	real vismol,rrho0
 	real dt
 
@@ -833,10 +879,8 @@ c local
 	integer ngl,mbb
 	integer ilevel,ier,ilevmin
 	integer lp,lm
-	integer k1,k2,k3
+	integer k1,k2,k3,k
 	real b(3),c(3)
-	real aj12
-	real rt
 	real zz
 	real hlh,hlh_new
 c	real ht
@@ -859,7 +903,7 @@ c	real bb,bbt,cc,cct,aa,aat,ppx,ppy,aux,aux1,aux2
         real xmin,xmax
         integer imin,imax
         real rdist
-        real xadv,yadv,fm,uc,vc,f,um,vm
+        real xadv,yadv,fm,uc,vc,f,um,vm,up,vp
 	real bpres,cpres
 	real vis
         
@@ -909,12 +953,16 @@ c save
 	save epseps
 c data
 	data epseps / 1.e-6 /
-c
+
 	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp256v'
-c
-        barea0 = .false.                        ! baroclinic only with ia = 0
+
+c-------------------------------------------------------------
+c initialization and baroclinic terms
+c-------------------------------------------------------------
 
 	bdebug=.false.
+	debug=.false.
+        barea0 = .false.     ! baroclinic only with ia = 0 (HACK - do not use)
 
         bbaroc = baroc
 	if( barea0 ) then               !$$BAROC_AREA $$BAROC_AREA0
@@ -924,11 +972,9 @@ c
 	rrho0=1./rowass
 	if( .not. bbaroc ) rrho0 = 0.
 
-c area
-
-	aj12 = 12. * ev(10,ie)
-
-c new system
+c-------------------------------------------------------------
+c dimensions of vertical system
+c-------------------------------------------------------------
 
 	ilevel=ilhv(ie)
 	!ilevmin=ilmv(ie)
@@ -936,9 +982,9 @@ c new system
 	mbb=2
 	if(ngl.eq.2) mbb=1
 
-c compute barotropic pressure term
-
-	debug=.false.
+c-------------------------------------------------------------
+c compute barotropic terms (wind, atmospheric pressure, water level
+c-------------------------------------------------------------
 
 	bz=0.
 	cz=0.
@@ -955,18 +1001,15 @@ c compute barotropic pressure term
 	  b(ii)=ev(ii+3,ie)
 	  c(ii)=ev(ii+6,ie)
 
-c	  zz = zeov(ii,ie)		!ZEONV
-c	  zz = zov(kk)
-	  zz = zov(kk) - zeqv(kk)	!tide
 	  zz = zeov(ii,ie) - zeqv(kk)	!tide
 
+          zm=zm+zz
 	  zmm = zmm + zeov(ii,ie)		!ZEONV
 
 	  bz=bz+zz*b(ii)
 	  cz=cz+zz*c(ii)
 	  bpres=bpres+ppv(kk)*b(ii)
 	  cpres=cpres+ppv(kk)*c(ii)
-          zm=zm+zz
 	  taux=taux+tauxnv(kk)
 	  tauy=tauy+tauynv(kk)
           rdist = rdist + rdistv(kk)
@@ -978,22 +1021,30 @@ c	  zz = zov(kk)
 	tauy=tauy*drittl
         rdist = rdist * drittl
 
+c-------------------------------------------------------------
+c coriolis parameter
+c-------------------------------------------------------------
+
 c	gamma=af*dt*fcorv(ie)*rdist     !ggu advindex
 c	gammat=fcorv(ie)*rdist
 
 	gammat=fcorv(ie)*rdist 
         gamma=af*dt*gammat
 
-	rt = rfricv(ie)		!bottom friction
-
-c reset in system (may be not the whole matrix every time)
-c ...size of matrix : ngl*(2*mbw+1) with mbw=2
+c-------------------------------------------------------------
+c reset vertical system 
 c
+c may be not the whole matrix every time
+c ...size of matrix : ngl*(2*mbw+1) with mbw=2
+c-------------------------------------------------------------
+
 	do ii=1,ngl*5
 	  rmat(ii)=0.
 	end do
 
-c compute layer thicknes and store to aux array
+c-------------------------------------------------------------
+c compute layer thicknes and store in hact and rhact
+c-------------------------------------------------------------
 
 	hact(0) = 0.
 	do l=1,ilevel
@@ -1006,11 +1057,6 @@ c compute layer thicknes and store to aux array
 	  hact(1) = hact(1) - zmm		!FIXME
 	end if
 
-c        call mimari(hact(0),ilevel+2,xmin,xmax,imin,imax,0.)
-c        write(99,*) ie,xmin,xmax
-
-c	write(6,*) ie,ilevel,(hact(l),l=1,ilevel)
-
 	do l=0,ilevel+1
 	  if( hact(l) .le. 0. ) then
 	    rhact(l) = 0.
@@ -1019,10 +1065,9 @@ c	write(6,*) ie,ilevel,(hact(l),l=1,ilevel)
 	  end if
 	end do
 
-c        call mimari(rhact(0),ilevel+2,xmin,xmax,imin,imax,0.)
-c        write(99,*) ie,xmin,xmax
-
+c-------------------------------------------------------------
 c compute element averaged turbulent viscosity
+c-------------------------------------------------------------
 
 	k1 = nen3v(1,ie)
 	k2 = nen3v(2,ie)
@@ -1034,10 +1079,9 @@ c compute element averaged turbulent viscosity
 	    alev(l) = vis
 	end do
 
-c start of vertical loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-	do l=1,ilevel
-
+c-------------------------------------------------------------
+c start of vertical loop
+c
 c first set depth values
 c
 c hhi/hhip/hhim		thickness of i/i+1/i-1 layer
@@ -1046,13 +1090,31 @@ c vvi/vvip/vvim		transport in y in i/i+1/i-1 layer
 c
 c in case of a layer that does not exist (i-1 of first layer) give any
 c ...value because the corrisponding a/b/c will be 0
+c-------------------------------------------------------------
 
+	do l=1,ilevel
+
+	bfirst = l .eq. 1
+	blast  = l .eq. ilevel
+	
 	lp = min(l+1,ilevel)
 	lm = max(l-1,1)
 
+	uui = utlov(l,ie)
+	uuip = utlov(lp,ie)
+	uuim = utlov(lm,ie)
+
+	vvi = vtlov(l,ie)
+	vvip = vtlov(lp,ie)
+	vvim = vtlov(lm,ie)
+        
 	hhi = hact(l)
 	hhip = hact(l+1)
 	hhim = hact(l-1)
+
+c	------------------------------------------------------
+c	set up contributions of vertical viscosity
+c	------------------------------------------------------
 
 	rhp = 0.
 	rhm = 0.
@@ -1065,17 +1127,6 @@ c ...value because the corrisponding a/b/c will be 0
 	  end if
 	end if
         
-	uui = utlov(l,ie)
-	uuip = utlov(lp,ie)
-	uuim = utlov(lm,ie)
-
-	vvi = vtlov(l,ie)
-	vvip = vtlov(lp,ie)
-	vvim = vtlov(lm,ie)
-        
-	bfirst = l .eq. 1
-	blast  = l .eq. ilevel
-	
 c	aus = afact * alev(l)
 c	aux = dt * at * aus
 
@@ -1089,6 +1140,10 @@ c	aux = dt * at * aus
 	cc  = aux * rhact(l-1) * rhm
 	cct = aus * rhact(l-1) * rhm
 
+c	------------------------------------------------------
+c	boundary conditions for stress on surface and bottom
+c	------------------------------------------------------
+
 	ppx = 0.
 	ppy = 0.
 	if( bfirst ) then
@@ -1096,16 +1151,55 @@ c	aux = dt * at * aus
 	  ppy = ppy - tauy
 	end if
 	if( blast ) then
-	  aa  = aa + dt * rt
-	  aat = aat + rt
+	  aa  = aa + dt * rfricv(ie)
+	  aat = aat + rfricv(ie)
 	end if
 
-c compute baroclinic contribution
-        
-        aux = rdist * hhi * rrho0!deb100407
+c	------------------------------------------------------
+c	implicit advective contribution
+c	------------------------------------------------------
+
+	uuadv = 0.
+	uvadv = 0.
+	vuadv = 0.
+	vvadv = 0.
+
+	aux = dt * radv * rdist
+
+	if( aux .gt. 0. ) then		!implict treatment of non-linear terms
+
+	uc = uui/hhi
+	vc = vvi/hhi
+
+	do ii=1,3
+          k = nen3v(ii,ie)
+          up = saux2(l,k) / hhi
+          vp = saux3(l,k) / hhi
+          f = uui * b(ii) + vvi * c(ii)
+          if( f .lt. 0. ) then    !flux out of node => into element
+	    uuadv = uuadv + aux*b(ii)*( up - uc )
+	    uvadv = uvadv + aux*c(ii)*( up - uc )
+	    vuadv = vuadv + aux*b(ii)*( vp - vc )
+	    vvadv = vvadv + aux*c(ii)*( vp - vc )
+            !xadv = xadv + f * ( up - uc )
+            !yadv = yadv + f * ( vp - vc )
+          end if
+	end do
+
+	end if
+
+c	------------------------------------------------------
+c	explicit contribution (non-linear, baroclinic, diffusion)
+c	------------------------------------------------------
         
         xexpl = rdist * fxv(l,ie)
         yexpl = rdist * fyv(l,ie)
+
+c	------------------------------------------------------
+c	ppx/ppy is contribution on the left side of equation
+c	ppx corresponds to -F^x_l in the documentation
+c	ppy corresponds to -F^y_l in the documentation
+c	------------------------------------------------------
 
 	ppx = ppx + aat*uui - bbt*uuip - cct*uuim - gammat*vvi 
      +			+ grav*hhi*bz + (hhi/rowass)*bpres + xexpl 
@@ -1114,70 +1208,91 @@ c compute baroclinic contribution
      +			+ grav*hhi*cz + (hhi/rowass)*cpres + yexpl 
      +  		- rady(l,ie)
 
+c	------------------------------------------------------
+c	set up matrix A
+c	------------------------------------------------------
+
 	jv=l+l
 	ju=jv-1
 
-	rmat(locssp(ju,ju,ngl,mbb)) = 1. + aa
-	rmat(locssp(jv,jv,ngl,mbb)) = 1. + aa
-	rmat(locssp(jv,ju,ngl,mbb))=gamma
-	rmat(locssp(ju,jv,ngl,mbb))=-gamma
-c
+	rmat(locssp(ju,ju,ngl,mbb)) = 1. + aa + uuadv
+	rmat(locssp(jv,jv,ngl,mbb)) = 1. + aa + vvadv
+	rmat(locssp(jv,ju,ngl,mbb)) =  gamma  + vuadv
+	rmat(locssp(ju,jv,ngl,mbb)) = -gamma  + uvadv
+
 	if(.not.blast) then
-		rmat(locssp(ju,ju+2,ngl,mbb))=-bb
-		rmat(locssp(jv,jv+2,ngl,mbb))=-bb
+		rmat(locssp(ju,ju+2,ngl,mbb)) = -bb
+		rmat(locssp(jv,jv+2,ngl,mbb)) = -bb
         end if
 	if(.not.bfirst) then
-		rmat(locssp(ju,ju-2,ngl,mbb))=-cc
-		rmat(locssp(jv,jv-2,ngl,mbb))=-cc
+		rmat(locssp(ju,ju-2,ngl,mbb)) = -cc
+		rmat(locssp(jv,jv-2,ngl,mbb)) = -cc
         end if
+
+c	------------------------------------------------------
+c	set up right hand side -F^x and -F^y 
+c	------------------------------------------------------
 
 	rvec(ju) = ppx
 	rvec(jv) = ppy
+
+c	------------------------------------------------------
+c	set up H^x and H^y
+c	------------------------------------------------------
 
 	rvec(ngl+ju) = hhi		!ASYM_OPSPLT
 	rvec(ngl+jv) = 0.d+0
 	rvec(2*ngl+ju) = 0.d+0
 	rvec(2*ngl+jv) = hhi
 
-	bdebug = ie.eq.20.or.ie.eq.100.or.ie.eq.250
-	bdebug=.false.
-	if(bdebug) then
-          write(6,*) 'hhh: ',hact(1),grav,dt
-          write(6,*) 'hhh: ',az,am
-	write(6,*) 'zzz: ',l,ppx,ppy
-	write(6,*) 'zzz: ',aa,gamma,bb,cc
-	end if
-
 	end do
-c
-c end of assembling loop
-c
+
+c-------------------------------------------------------------
+c end of vertical loop
+c-------------------------------------------------------------
+
+c-------------------------------------------------------------
 c solution of vertical system (we solve 3 systems in one call)
-c
+c-------------------------------------------------------------
+
         !call gelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
         !call dgelb(rvec,rmat,ngl,1,mbb,mbb,epseps,ier)
         call dgelb(rvec,rmat,ngl,3,mbb,mbb,epseps,ier)		!ASYM_OPSPLT
-c
+
 	if(ier.ne.0) goto 99
 
+c-------------------------------------------------------------
+c compute u^hat (negative sign because ppx/ppy was -F^x/-F^y)
+c-------------------------------------------------------------
+
         afix=1-iuvfix(ie)       !chao deb
-c
+
 	do l=1,ilevel
-	  if(bdebug) write(6,*) 'zzz: ',l,rvec(2*l-1), rvec(2*l)
 	  utlnv(l,ie) = utlov(l,ie) - dt * rvec(2*l-1)*afix     !chao deb
 	  vtlnv(l,ie) = vtlov(l,ie) - dt * rvec(2*l)*afix       !chao deb
 	end do
-	bdebug = .false.
+
+c-------------------------------------------------------------
+c save contribution A^{-1} H^x and A^{-1} H^y
+c-------------------------------------------------------------
 
 	do l=1,ngl						!ASYM_OPSPLT
 	  ddxv(l,ie) = rvec(ngl+l)
 	  ddyv(l,ie) = rvec(2*ngl+l)
 	end do
-c
+
+c-------------------------------------------------------------
+c special information
+c-------------------------------------------------------------
+
 	if( ie .eq. 1 .and. barea0 .and. 
      +			baroc .and. niter .le. 5 ) then  !$$BAROC_AREA0
 	  write(6,*) 'sp256v: BAROC_AREA0 active '
 	end if
+
+c-------------------------------------------------------------
+c end of routine
+c-------------------------------------------------------------
 
 	return
    99	continue
@@ -1247,9 +1362,6 @@ c common
         common /iuvfix/iuvfix   !chao deb
         integer afix            !chao deb
 
-        real hdeov(nlvdim,1)
-        common /hdeov/hdeov
-
 	real zov(1),znv(1)
 	common /zov/zov, /znv/znv
 	real zeov(3,1)
@@ -1265,10 +1377,8 @@ c local
 	integer ie,ii,l,kk
 	integer ilevel
 	integer ju,jv
-	real az,am,dt,delta,azpar,ampar
+	real az,am,dt,beta,azpar,ampar
 	real bz,cz,um,vm,dz,zm
-	real hact(nlvdim)
-	real hact_new(nlvdim)
 	real du,dv
 c function
 	integer iround
@@ -1276,27 +1386,33 @@ c function
 
 	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp256n'
 
-c constants
+c-------------------------------------------------------------
+c initialize
+c-------------------------------------------------------------
 
 	bcolin=iround(getpar('iclin')).ne.0	! linearized conti
+	bdebug = .false.
 
+	call get_timestep(dt)
 	call getazam(azpar,ampar)
 	az=azpar
 	am=ampar
-	call get_timestep(dt)
 
-	delta = dt * grav * am 
+	beta = dt * grav * am 
+
+c-------------------------------------------------------------
+c start loop on elements
+c-------------------------------------------------------------
 
 	do ie=1,nel
-
-	bdebug = ie.eq.20.or.ie.eq.100.or.ie.eq.250
-	bdebug = bdebug .and. niter .eq. nits
 
 	ilevel=ilhv(ie)
 
         afix=1-iuvfix(ie)       !chao deb
 
-c compute barotropic pressure term
+c	------------------------------------------------------
+c	compute barotropic pressure term
+c	------------------------------------------------------
 
 	bz=0.
 	cz=0.
@@ -1307,57 +1423,28 @@ c compute barotropic pressure term
 	  zm = zm + zeov(ii,ie)		!ZEONV
 	  bz = bz + dz * ev(ii+3,ie)
 	  cz = cz + dz * ev(ii+6,ie)
-c	  bz = bz + ev(ii+3,ie) * ( aux1 * zov(kk) + am * znv(kk) ) !FIXME
-c	  cz = cz + ev(ii+6,ie) * ( aux1 * zov(kk) + am * znv(kk) )
 	end do
 
-c compute layer thicknes and store to aux array
-
-	do l=1,ilevel
-	  hact(l) = hdeov(l,ie)
-	end do
-
-	if( bcolin ) then
-	  hact(1) = hact(1) - zm/3.
-	end if
-
-c new transports from u/v hat variable
+c	------------------------------------------------------
+c	new transports from u/v hat variable
+c	------------------------------------------------------
 
 	do l=1,ilevel
 
 	  jv=l+l
 	  ju=jv-1
 
-	  !du = delta * hact(l) * bz
-	  !dv = delta * hact(l) * cz
-
-	  du = delta * ( ddxv(ju,ie)*bz + ddyv(ju,ie)*cz )	!ASYM_OPSPLT_CH
-	  dv = delta *( ddxv(jv,ie)*bz + ddyv(jv,ie)*cz )	!ASYM_OPSPLT_CH
+	  du = beta * ( ddxv(ju,ie)*bz + ddyv(ju,ie)*cz )	!ASYM_OPSPLT_CH
+	  dv = beta * ( ddxv(jv,ie)*bz + ddyv(jv,ie)*cz )	!ASYM_OPSPLT_CH
 
 	  utlnv(l,ie) = utlnv(l,ie) - du*afix   !chao deb
 	  vtlnv(l,ie) = vtlnv(l,ie) - dv*afix   !chao deb
 
-	  bdebug=.false.
-	  if( bdebug ) then
-	    write(6,*) 'transp: ',ie,l,utlnv(l,ie),vtlnv(l,ie)
-	  end if
-          bdebug = ie.eq.20.or.ie.eq.100.or.ie.eq.250
-	  bdebug = .false.
-	  if(bdebug) then
-	    write(6,*) 'nnn: ie,dt,h ',ie,dt,hact(l)
-c	    write(6,*) 'nnn: am,g ',am,grav
-	    write(6,*) 'nnn: bz,cz ',bz,cz
-c	    write(6,*) 'nnn: b ',(ev(ii+3,ie),ii=1,3)
-c	    write(6,*) 'nnn: c ',(ev(ii+6,ie),ii=1,3)
-            write(6,*) 'nnn: u ',utlov(l,ie),utlnv(l,ie)
-            write(6,*) 'nnn: v ',vtlov(l,ie),vtlnv(l,ie)
-            write(6,*) 'nnn: zo ',(zov(nen3v(ii,ie)),ii=1,3)
-            write(6,*) 'nnn: zn ',(znv(nen3v(ii,ie)),ii=1,3)
-	  end if
-	  bdebug=.false.
 	end do
 
-c barotropic transports
+c	------------------------------------------------------
+c	barotropic transports
+c	------------------------------------------------------
 
 	um = 0.
 	vm = 0.
@@ -1369,6 +1456,10 @@ c barotropic transports
 	vnv(ie) = vm
 
 	end do
+
+c-------------------------------------------------------------
+c end of routine
+c-------------------------------------------------------------
 
 	end
 

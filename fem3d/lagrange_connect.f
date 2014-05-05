@@ -169,6 +169,8 @@ c*******************************************************************
 
 	subroutine lagr_connect_mark_elems(ip,xp,yp,r)
 
+c marks elements contained in circle (x,y) with radius r
+
 	implicit none
 
 	include 'param.h'
@@ -193,11 +195,17 @@ c*******************************************************************
 	  call baric(ie,xc,yc)
 	  d2 = (xc-xp)**2 + (yc-yp)**2
 	  if( d2 .le. r2 ) then
+	    if( i_connect_elems(ie) .gt. 0 ) goto 99
 	    i_connect_elems(ie) = ip
 	    a_connect_area(ip) = a_connect_area(ip) + areaele(ie)
 	  end if
 	end do
 
+	return
+   99	continue
+	write(6,*) 'element is in more than one station: ',ie
+	write(6,*) 'stations old/new: ',i_connect_elems(ie),ip
+	stop 'error stop lagr_connect_mark_elems: non unique station'
 	end
 
 c*******************************************************************
@@ -283,7 +291,8 @@ c*******************************************************************
 	ie_from = est(ibdy)		!element of origin of particle
 	ip_from = i_connect_elems(ie_from)
 	if( ip_from .le. 0 ) then
-	  write(6,*) 'particle not coming from source:',ibdy,ie_from,ip_from
+	  write(6,*) 'particle not coming from source:'
+     +				,ibdy,ie_from,ip_from
 	  stop 'error stop lagr_connect_count: no source'
 	end if
 
@@ -307,7 +316,7 @@ c*******************************************************************
 	  tf_connect(ip_from,ip_to) = tf_connect(ip_from,ip_to) + time
 	end if
 
-	if( bin ) then
+	if( bin .and. icc .gt. 0 ) then
 	  tarrive = it - tin(ibdy) 	!first arrival age
 	  agef_connect(ip_from,ip_to) = agef_connect(ip_from,ip_to)
      +					+ tarrive

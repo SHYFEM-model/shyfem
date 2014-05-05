@@ -6,7 +6,7 @@ c
 c 06.04.1999	ggu	cosmetic changes
 c 13.04.1999	ggu	special output introduced
 c 08.11.2005	ggu	read also with pressure data
-c 07.05.2009	ggu	writes also info on pressure
+c 16.04.2014	ggu	reads now also new meteo format
 c
 c*******************************************************************
 
@@ -27,10 +27,11 @@ c reads wind file for info
 	real wxmin,wxmax,wymin,wymax
 	real smin,smax
 	real pmin,pmax
-	integer it,nkn,i
+	integer it,nkn,i,ios
+	integer id,n,nvar
 	integer itot
 	integer node
-	logical bpres
+	logical bpres,bnew
 
 c---------------------------------------------------------------
 	node = 1620
@@ -57,19 +58,31 @@ c---------------------------------------------------------------
 
 	open(1,file=infile,form='unformatted',status='old')
 
+	bnew = .false.
+	read(1,iostat=ios) it,id,n,nvar
+	if( ios .eq. 0 .and. id .eq. 1001 ) bnew = .true.
+	backspace(1)
+
 	write(6,*) '      time        nkn'
      +				,'  wxmin  wxmax  wymin  wymax  speed'
      +                          ,'     pmin     pmax'
 
 	do while(.true.)
-	  read(1,end=2) it,nkn
+	  if( bnew ) then
+	    read(1,end=2) it,id,n,nvar
+	    nkn = n
+	  else
+	    read(1,end=2) it,nkn
+	  end if
 	  bpres = .false.
 	  if( nkn .lt. 0 ) then
 	    nkn = -nkn
 	    bpres = .true.
 	  end if
 	  if( nkn .gt. nkndim ) goto 99
-          if( bpres ) then
+          if( bnew ) then
+	    read(1) (wx(i),wy(i),p(i),i=1,nkn)
+          else if( bpres ) then
 	    read(1) (wx(i),wy(i),i=1,nkn),(p(i),i=1,nkn)
           else
 	    read(1) (wx(i),wy(i),i=1,nkn)

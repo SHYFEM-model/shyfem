@@ -194,6 +194,25 @@ HandleFiles()
   done
 }
 
+InsertFiles()
+{
+  local s=${astyles[0]}
+  local c=${acolors[0]}
+  local w=${awidths[0]}
+
+  local n=0
+
+  for file in $files
+  do
+    echo "inserting $file"
+    afiles[$n]=$file
+    astyles[$n]=$s
+    acolors[$n]=$c
+    awidths[$n]=$w
+    ((n++))
+  done
+}
+
 ShowFiles()
 {
   n=${#afiles[@]}
@@ -491,6 +510,7 @@ if [ "$using" = "using all" ]; then
   GiveNames
   #SetFilesAndAttributes $files
   deletefiles=$files
+  InsertFiles
 fi
 
 ######################################################### scale plot

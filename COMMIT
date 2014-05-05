@@ -1,5 +1,32 @@
 ============================================================
 
+Mon May  5 13:39:14 CEST 2014
+
+cleaned new3di, connectivity
+
+ LOG                      |   41 ++
+ fem3d/basinf.f           |    2 +-
+ fem3d/lagrange.h         |    9 +
+ fem3d/lagrange_connect.f |   13 +-
+ fem3d/lagrange_connect.h |    3 +-
+ fem3d/lagrange_main.f    |   77 +++
+ fem3d/new3di.f           |  463 ++++++++------
+ fem3d/newexpl.f          |  150 ++++-
+ fem3d/newstab.f          |   10 +-
+ fem3d/offinf.f           |   14 +-
+ fem3d/subcus.f           |   29 +-
+ fem3d/subfemfile.f       |   90 ++-
+ fem3d/subnsa.f           |    2 +
+ fem3d/subnsh.f           |   17 +-
+ fem3d/subsys.f           |   11 +-
+ fem3d/wininf.f           |   23 +-
+ fembin/gp                |   20 +
+ femdoc/final/shyfem.pdf  |  Bin 270908 -> 271362 bytes
+ femdoc/final/shyfem.ps   | 1617 +++++++++++++++++++++++-----------------------
+ 19 files changed, 1488 insertions(+), 1103 deletions(-)
+
+============================================================
+
 Mon Mar 31 12:15:39 CEST 2014
 
 lagrangian cleaned, new connectivity

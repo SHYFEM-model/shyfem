@@ -38,6 +38,7 @@ c 10.05.2013	dbf&ggu	new routines for vertical advection (bvertadv)
 c 10.05.2013	dbf&ggu	new routines for non-hydro
 c 25.05.2013	ggu	new version for vertical advection (bvertadv)
 c 13.09.2013	dbf&ggu	new sigma layer adjustment integrated
+c 10.04.2014	ggu	use rlin and rdistv to determin advective contribution
 c
 c notes :
 c
@@ -64,6 +65,7 @@ c******************************************************************
         
         logical bbarcl
         integer ilin,itlin,ibarcl
+	real rlin
         real getpar
 	integer inohyd
 	logical bnohyd
@@ -73,6 +75,7 @@ c parameters
 c-------------------------------------------
 
         ilin = nint(getpar('ilin'))
+        rlin = getpar('rlin')
         itlin = nint(getpar('itlin'))
         ibarcl = nint(getpar('ibarcl'))
         bbarcl = ibarcl .gt. 0 .and. ibarcl .ne. 3
@@ -108,9 +111,12 @@ c-------------------------------------------
 
         if( ilin .eq. 0 ) then
           if( itlin .eq. 0 ) then
-	    call set_advective
-	  else
+	    call set_advective(rlin)	!saux1/2/3v must be preserved
+	  else if( itlin .eq. 1 ) then
 	    call set_semi_lagrange
+	  else
+	    write(6,*) 'itlin = ',itlin
+	    stop 'error stop set_explicit: no such option'
 	  end if
 	end if
 
@@ -150,14 +156,16 @@ c computes stability for viscosity
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
+	integer nen3v(3,1)
+	common /nen3v/nen3v
 	integer ieltv(3,1)
 	common /ieltv/ieltv
 	integer ilhv(1)
 	common /ilhv/ilhv
 	real difhv(nlvdim,1)
 	common /difhv/difhv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+        real rdistv(1)
+        common /rdistv/rdistv
 
 	integer ie,ii,iei,l,lmax,k
 	integer noslip
@@ -165,7 +173,7 @@ c computes stability for viscosity
 	real anu,ax,ay
 	real area,areai
 	real dt
-	real a,ai,amax,afact
+	real a,ai,amax,afact,r
 
 	rindex = 0.
 	if( ahpar .le. 0 ) return
@@ -180,17 +188,22 @@ c computes stability for viscosity
 	  do l=1,lmax
 
 	    a = 0.
+	    r = 0.
 	    do ii=1,3
               iei = ieltv(ii,ie)
+	      k = nen3v(ii,ie)
               if( iei .le. 0 ) iei = ie
 
               areai = 12. * ev(10,iei)
 
+	      r = r + rdistv(k)
 	      anu = ahpar * difhv(l,ie)
               ai = 2. * anu / ( area + areai )
               a = a + ai
 	    end do
+	    r = r/3.
 
+	    a = a * r
 	    amax = max(amax,a)
 	    dstab(l,ie) = a
 
@@ -436,11 +449,121 @@ c******************************************************************
 
 c******************************************************************
 
-        subroutine set_advective
+        subroutine set_momentum_flux
+
+c sets aux arrays saux1/2/3
 
         implicit none
 
         include 'param.h'
+
+        integer nlv,nlvdi
+        common /level/ nlvdi,nlv
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+        real saux1(nlvdim,1),saux2(nlvdim,1)
+        real saux3(nlvdim,1),saux4(nlvdim,1)
+        common /saux1/saux1, /saux2/saux2
+        common /saux3/saux3, /saux4/saux4
+
+        real utlov(nlvdim,1),vtlov(nlvdim,1)
+        common /utlov/utlov, /vtlov/vtlov
+        real uprv(nlvdim,1),vprv(nlvdim,1)
+        common /uprv/uprv, /vprv/vprv
+        real hdenv(nlvdim,1)
+        common /hdenv/hdenv
+        real hdknv(nlvdim,1)
+        common /hdknv/hdknv
+	include 'ev.h'
+        integer nen3v(3,1), iarv(1)
+        common /nen3v/nen3v, /iarv/iarv
+        integer ilhv(1)
+        common /ilhv/ilhv
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+
+        integer ii,ie,k,l,lmax
+        real b,c
+        real ut,vt
+        real uc,vc
+        real up,vp
+        real um,vm
+        real f,h
+	real xadv,yadv
+	real area,vol
+
+c---------------------------------------------------------------
+c initialization
+c---------------------------------------------------------------
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+            saux1(l,k) = 0.
+	    saux2(l,k) = 0.
+	    saux3(l,k) = 0.
+	  end do
+	end do
+
+c---------------------------------------------------------------
+c accumulate momentum that flows into nodes (weighted by flux)
+c---------------------------------------------------------------
+
+	do ie=1,nel
+	  lmax = ilhv(ie)
+	  do l=1,lmax
+            h = hdenv(l,ie)
+	    ut = utlov(l,ie)
+	    vt = vtlov(l,ie)
+            do ii=1,3
+                k = nen3v(ii,ie)
+                b = ev(3+ii,ie)
+                c = ev(6+ii,ie)
+                f = ut * b + vt * c	! f>0 => flux into node
+                if( f .gt. 0. ) then
+		  saux1(l,k) = saux1(l,k) + f
+		  saux2(l,k) = saux2(l,k) + f * ut
+		  saux3(l,k) = saux3(l,k) + f * vt
+                end if
+	    end do
+          end do
+	end do
+
+c---------------------------------------------------------------
+c compute average momentum for every node
+c---------------------------------------------------------------
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+            h = hdknv(l,k)
+	    if( saux1(l,k) .gt. 0 ) then	!flux into node
+	      saux2(l,k) = saux2(l,k) / saux1(l,k)
+	      saux3(l,k) = saux3(l,k) / saux1(l,k)
+	    else				!only flux out of node
+	      saux2(l,k) = uprv(l,k) * h
+	      saux3(l,k) = vprv(l,k) * h
+	    end if
+	  end do
+	end do
+
+c---------------------------------------------------------------
+c end of routine
+c---------------------------------------------------------------
+
+	end
+
+c******************************************************************
+
+        subroutine set_advective(rlin)
+
+        implicit none
+
+        include 'param.h'
+
+	real rlin		!strength of advection terms - normally 1
 
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
@@ -503,56 +626,11 @@ c---------------------------------------------------------------
 	bvertadv = .true. ! vertical advection computed
 	bvertadv = .false. ! vertical advection not computed
 
-	do k=1,nkn
-	  lmax = ilhkv(k)
-	  do l=1,lmax
-            saux1(l,k) = 0.
-	    saux2(l,k) = 0.
-	    saux3(l,k) = 0.
-	  end do
-	end do
-
 c---------------------------------------------------------------
 c accumulate momentum that flows into nodes (weighted by flux)
 c---------------------------------------------------------------
 
-	do ie=1,nel
-	  lmax = ilhv(ie)
-	  do l=1,lmax
-            h = hdenv(l,ie)
-	    ut = utlov(l,ie)
-	    vt = vtlov(l,ie)
-            do ii=1,3
-                k = nen3v(ii,ie)
-                b = ev(3+ii,ie)
-                c = ev(6+ii,ie)
-                f = ut * b + vt * c	! f>0 => flux into node
-                if( f .gt. 0. ) then
-		  saux1(l,k) = saux1(l,k) + f
-		  saux2(l,k) = saux2(l,k) + f * ut
-		  saux3(l,k) = saux3(l,k) + f * vt
-                end if
-	    end do
-          end do
-	end do
-
-c---------------------------------------------------------------
-c compute average momentum for every node
-c---------------------------------------------------------------
-
-	do k=1,nkn
-	  lmax = ilhkv(k)
-	  do l=1,lmax
-            h = hdknv(l,k)
-	    if( saux1(l,k) .gt. 0 ) then	!flux into node
-	      saux2(l,k) = saux2(l,k) / saux1(l,k)
-	      saux3(l,k) = saux3(l,k) / saux1(l,k)
-	    else				!only flux out of node
-	      saux2(l,k) = uprv(l,k) * h
-	      saux3(l,k) = vprv(l,k) * h
-	    end if
-	  end do
-	end do
+        call set_momentum_flux	!sets aux arrays saux1/2/3
 
 c---------------------------------------------------------------
 c compute advective contribution
@@ -624,8 +702,8 @@ c	    ---------------------------------------------------------------
 c	    total contribution
 c	    ---------------------------------------------------------------
 
-	    fxv(l,ie) = fxv(l,ie) + xadv + zxadv
-	    fyv(l,ie) = fyv(l,ie) + yadv + zyadv
+	    fxv(l,ie) = fxv(l,ie) + rlin*xadv + zxadv
+	    fyv(l,ie) = fyv(l,ie) + rlin*yadv + zyadv
 	  end do
 	end do
 
@@ -637,7 +715,7 @@ c---------------------------------------------------------------
 
 c******************************************************************
 
-	subroutine momentum_advective_stability(rindex,astab)
+	subroutine momentum_advective_stability(rlin,rindex,astab)
 
 c computes courant number of advective terms in momentum equation
 
@@ -645,8 +723,9 @@ c computes courant number of advective terms in momentum equation
 
         include 'param.h'
 
-	real rindex
-	real astab(nlvdim,neldim)
+	real rlin		   !factor for advective terms - normally 1
+	real rindex		   !stability index (return)
+	real astab(nlvdim,neldim)  !stability matrix (return)
 
         integer nlv,nlvdi
         !common /nlv/nlv
@@ -666,12 +745,14 @@ c computes courant number of advective terms in momentum equation
         common /nen3v/nen3v
         integer iwegv(1)
         common /iwegv/iwegv
+        real rdistv(1)
+        common /rdistv/rdistv
 
 	integer ie,l,ii,k,lmax,iweg
 	real cc,cmax
 	real ut,vt
 	real area,h,vol
-	real b,c,f,ftot
+	real b,c,f,ftot,r
 
 	cmax = 0.
 	!call compute_stability_stats(-1,cc)
@@ -689,15 +770,18 @@ c computes courant number of advective terms in momentum equation
   	    vt = vtlnv(l,ie)
 
 	    ftot = 0.
+	    r = 0.
             do ii=1,3
                 k = nen3v(ii,ie)
                 b = ev(3+ii,ie)
                 c = ev(6+ii,ie)
+		r = r + rdistv(k)
                 f = ut * b + vt * c
                 if( f .lt. 0. ) ftot = ftot - f
             end do
+	    r = r/3.
 
-	    cc = area*ftot/vol
+	    cc = rlin*r*area*ftot/vol
 	    if( iweg .gt. 0 ) cc = 0.	! dry element
 	    astab(l,ie) = cc
 	    cmax = max(cmax,cc)

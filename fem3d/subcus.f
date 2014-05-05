@@ -3189,6 +3189,7 @@ c writes node list for Malta Coastal Model
 
 	integer ibc,nnodes,kext
 	integer nkbnds,kbnds,ipext
+	logical bproj
 
 	integer icall
 	save icall
@@ -3205,15 +3206,24 @@ c----------------------------------------------------------
 c initialize geographic projection
 c----------------------------------------------------------
 
-	x0 = 14.047
-	y0 = 35.672
-	phi0 = 36.
+	bproj = .false.
 
-	pi = 4. * atan(1.)
-	rad = pi/180.
+	x0 = 0.
+	y0 = 0.
+	xfact = 1.
+	yfact = 1.
 
-	yfact = 60*1852
-	xfact = yfact * cos(phi0*rad)
+	if( bproj ) then
+	  x0 = 14.047
+	  y0 = 35.672
+	  phi0 = 36.
+
+	  pi = 4. * atan(1.)
+	  rad = pi/180.
+
+	  yfact = 60*1852
+	  xfact = yfact * cos(phi0*rad)
+	end if
 
 c----------------------------------------------------------
 c get deepest depth on node
@@ -3243,7 +3253,7 @@ c----------------------------------------------------------
 	  h = v1v(k)
 	  x = xgv(k) / xfact + x0
 	  y = ygv(k) / yfact + y0
-	  write(1,*) k,kext,l,x,y,h
+	  write(1,1000) k,kext,l,x,y,h
 	end do
 
 	close(1)
@@ -3266,7 +3276,7 @@ c----------------------------------------------------------
 	  h = v1v(k)
 	  x = xgv(k) / xfact + x0
 	  y = ygv(k) / yfact + y0
-	  write(1,*) k,kext,l,x,y,h
+	  write(1,1000) k,kext,l,x,y,h
 	end do
 
 	close(1)
@@ -3296,6 +3306,7 @@ c----------------------------------------------------------
 c end of routine
 c----------------------------------------------------------
 
+ 1000	format(2i10,i5,3f16.8)
 	end
 
 c********************************************************************

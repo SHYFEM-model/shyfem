@@ -73,6 +73,7 @@ c 28.08.2012    ggu     change logic for release, time frame for release
 c 22.10.2012    ggu     call connectivity also after diffusion
 c 22.10.2012    ggu     limit release to itranf/end
 c 28.03.2014    ggu     code cleaned - connectivity
+c 10.04.2014    ggu     new code for lagr_count
 c
 c****************************************************************            
 
@@ -440,6 +441,7 @@ c---------------------------------------------------------------
 	ieorig = iel	!original element the particle was in
         call track_orig(ttime,id,iel,xn,yn,ltbdy)
 	call lagr_connect_count(i,ieold,ieorig,torig-ttime,0)
+	call lagr_count(i,ieold,torig-ttime,0)
 
 	do while ( ttime.gt.0. .and. iel.gt.0 .and. nl.gt.0 )
 	  torig = ttime
@@ -447,6 +449,7 @@ c---------------------------------------------------------------
           call track_line(ttime,id,iel,xn,yn,ltbdy)
           nl = nl - 1
 	  call lagr_connect_count(i,ieold,ieorig,torig-ttime,1)
+	  call lagr_count(i,ieold,torig-ttime,1)
 	  ieorig = ieold
         end do
 
@@ -487,6 +490,80 @@ c---------------------------------------------------------------
 c---------------------------------------------------------------
 c end of routine
 c---------------------------------------------------------------
+
+	end
+
+c**********************************************************************
+c**********************************************************************
+c**********************************************************************
+
+	subroutine lagr_count_init
+
+	implicit none
+
+	include 'param.h'
+	include 'lagrange.h'
+
+	integer ie
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	do ie=1,nel
+	  i_count(ie) = 0
+	  t_count(ie) = 0.
+	end do
+
+	end
+
+c**********************************************************************
+
+	subroutine lagr_count(i,ie,time,icc)
+
+	implicit none
+
+	include 'param.h'
+	include 'lagrange.h'
+
+	integer i
+	integer ie
+	real time
+	integer icc
+
+	if( ie .le. 0 ) return
+
+	i_count(ie) = i_count(ie) + 1
+	t_count(ie) = t_count(ie) + time
+
+	end
+
+c**********************************************************************
+
+	subroutine lagr_count_out(it)
+
+	implicit none
+
+	include 'param.h'
+	include 'lagrange.h'
+
+	integer it
+
+	integer ie,iu
+	character*80 file
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	iu = 237
+	file = 'lagr_count_out.txt'
+	open(iu,file=file,status='unknown',form='formatted')
+	write(iu,*) it,nel
+	do ie=1,nel
+	  i_count(ie) = 0
+	  t_count(ie) = 0.
+	  write(iu,*) ie,i_count(ie),t_count(ie)
+	end do
+	close(iu)
 
 	end
 

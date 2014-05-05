@@ -681,7 +681,7 @@ c writes grd file extracting info from bas file
 	close(8)
 
 	return
- 2000	format(i1,i10,i5,2e14.6)
+ 2000	format(i1,i10,i5,2e16.8)
  2100	format(i1,i10,2i5,3i10,e14.6)
 	end
 

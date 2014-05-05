@@ -15,6 +15,7 @@ c 01.06.2011    ggu     wsink for stability integrated
 c 12.07.2011    ggu     new routine output_stability()
 c 14.07.2011    ggu     new routine output_stability_node()
 c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
+c 08.04.2014    ggu	use rlin to determine advective stability
 c
 c*****************************************************************
 c*****************************************************************
@@ -378,8 +379,8 @@ c mode = 2		eliminate elements with r>rindex
 	include 'param.h'
 
 	integer mode		!0: normal call  1:error output
-        real dt
-        real rindex
+        real dt			!time step to be used
+        real rindex		!stability index (return)
 
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
@@ -394,7 +395,7 @@ c mode = 2		eliminate elements with r>rindex
 	common /ilhv/ilhv
 
 	integer ie,l,lmax,iweg
-        real rkpar,azpar,ahpar
+        real rkpar,azpar,ahpar,rlin
 	real dindex,aindex,tindex,sindex
 	real rmax
 
@@ -404,6 +405,7 @@ c mode = 2		eliminate elements with r>rindex
         rkpar = 0.
 	azpar = 1.
 	ahpar = getpar('ahpar')
+	rlin = getpar('rlin')
 
 	do ie=1,nel
 	  do l=1,nlv
@@ -418,7 +420,7 @@ c mode = 2		eliminate elements with r>rindex
 		write(6,*) 'eliminating rmax: ',rmax
 	end if
 
-	call momentum_advective_stability(aindex,sauxe1)
+	call momentum_advective_stability(rlin,aindex,sauxe1)
 	call momentum_viscous_stability(ahpar,dindex,sauxe2)
 
         call output_stability(dt,sauxe1,sauxe2)	!in case write to file

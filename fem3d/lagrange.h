@@ -118,6 +118,15 @@ c-------------------------------------------------- special variables
 
 c------------------------------------------------------------
 
+	integer i_count(neldim)
+	double precision t_count(neldim)
+
+	common /i_count/i_count
+	common /t_count/t_count
+	save /i_count/,/t_count/
+
+c------------------------------------------------------------
+
 	integer*8 lgr_bitmap_in(nbdydim)	!bitmap for entry
 	integer*8 lgr_bitmap_out(nbdydim)	!bitmap for leave
 	common /lgr_bitmap/lgr_bitmap_in,lgr_bitmap_out

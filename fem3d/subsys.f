@@ -296,6 +296,10 @@ c		equation is taken to be constant. (Default 0)
 	call addpar('itlin',0.)
 	call addpar('iclin',0.)
 
+cc undocumented: rlin can lower effect of non linear terms
+
+	call addpar('rlin',1.)
+
 c The next parameters allow for a variable time step in the
 c hydrodynamic computations. This is especially important for the
 c non-linear model (|ilin=0|) because in this case the criterion
@@ -360,10 +364,13 @@ c |ampar|	Weighting of the new time level of the pressure
 c		term in the momentum equations. (Default 0.5)
 c |afpar|	Weighting of the new time level of the Coriolis
 c		term in the momentum equations. (Default 0.5)
+c |avpar|	Weighting of the new time level of the non-linear
+c		advective terms in the momentum equations. (Default 0.0)
 
 	call addpar('azpar',0.5)
 	call addpar('ampar',0.5)
 	call addpar('afpar',0.5)
+	call addpar('avpar',0.0)
 
 c The next parameters define the weighting of time level for the
 c vertical stress and advection terms. They guarantee the stability
@@ -374,9 +381,9 @@ c
 c |atpar|	Weighting of the new time level of the vertical
 c		viscosity in the momentum equation. (Default 1.0)
 c |adpar|	Weighting of the new time level of the vertical
-c		diffusion in the momentum equations. (Default 1.0)
+c		diffusion in the scalar equations. (Default 1.0)
 c |aapar|	Weighting of the new time level of the vertical
-c		advection in the momentum equations. (Default 1.0)
+c		advection in the scalar equations. (Default 1.0)
 
 	call addpar('atpar',1.0)	!time weighting for vertical viscosity
 	call addpar('adpar',1.0)	!time weighting for vertical diffusion

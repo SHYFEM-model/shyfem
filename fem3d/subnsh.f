@@ -916,13 +916,6 @@ c----------------------------------------------------------------------
           stop 'error stop set_timestep: value for isplit not allowed'
         end if
 
-c	syncronize at least with end of simulation
-
-	if( it + idtnew .gt. itend ) then
-	  idtnew = itend - it
-	  bsync = .true.
-	end if
-
 c----------------------------------------------------------------------
 c idtnew is proposed new time step
 c idts   is time step with which to syncronize
@@ -932,8 +925,16 @@ c ri     is used stability index
 c istot  is number of internal time steps (only for isplit = 1)
 c----------------------------------------------------------------------
 
+c----------------------------------------------------------------------
+c	syncronize time step
+c----------------------------------------------------------------------
+
 	bsync = .false.		!true if time step has been syncronized
-        if( idts .gt. 0 ) then               !syncronize time step
+
+	if( it + idtnew .gt. itend ) then	!sync with end of sim
+	  idtnew = itend - it
+	  bsync = .true.
+        else if( idts .gt. 0 ) then               !syncronize time step
             idtdone = mod(it-itanf,idts)     !already done
             idtrest = idts - idtdone         !still to do
             if( idtnew .gt. idtrest ) then

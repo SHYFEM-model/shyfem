@@ -9,6 +9,7 @@ c revision log :
 c
 c 02.10.2012	ggu	created from scratch
 c 16.05.2013	ggu	better documentation
+c 24.04.2014	ggu	use nvar>0 as indication of good read
 c
 c notes :
 c
@@ -137,11 +138,13 @@ c writes data of the file
 	logical b2d
 	integer k,lm,l,nv
 	character*60 text
+	character*80 textu	!we need 80 chars for unformatted write
 
 	nv = nvers
 	if( nv .eq. 0 ) nv = 1	!default
 
 	text = string
+	textu = string
 	b2d = lmax .le. 1
 
 	if( bformat ) then
@@ -155,7 +158,7 @@ c writes data of the file
 	    end do
 	  end if
 	else
-	  write(iunit) text
+	  write(iunit) textu
 	  if( b2d ) then
 	    write(iunit) (data(1,k),k=1,np)
 	  else
@@ -256,7 +259,7 @@ c opens file for read
 	integer iunit		!unit of opened file (in/out) (0 for error)
 	logical bformat		!is formatted? (return)
 
-	logical bok
+	integer nvar
 	logical filex
 
 	iunit = 0
@@ -267,9 +270,9 @@ c opens file for read
 	  return
 	end if
 
-	call fem_file_test_formatted(name,np,bok,bformat)
+	call fem_file_test_formatted(name,np,nvar,bformat)
 
-	if( bok ) then
+	if( nvar .gt. 0 ) then
 	  call find_unit(iunit)
 	  if( bformat ) then
 	    open(iunit,file=name,form='formatted',status='old')
@@ -277,7 +280,7 @@ c opens file for read
 	    open(iunit,file=name,form='unformatted',status='old')
 	  end if
 	else
-	  write(6,*) 'error opening file ',name
+	  write(6,*) 'fem_file_read_open: error opening file ',name
 	  call fem_file_write_info(name,.true.)
 	  call fem_file_write_info(name,.false.)
 	end if
@@ -295,6 +298,7 @@ c writes information on file from header
 
 	integer iunit
 	integer it,nvers,np,lmax,nvar,ntype
+	integer ios
 
 	it = 0
 	np = 0
@@ -308,17 +312,21 @@ c writes information on file from header
 
 	if( bformat ) then
 	  open(iunit,file=name,form='formatted',status='old')
-	  read(iunit,*,err=1,end=2) it,nvers,np,lmax,nvar,nvers,ntype
+	  read(iunit,*,iostat=ios) it,nvers,np,lmax,nvar,ntype
 	  write(6,*) 'formatted read: '
 	else
 	  open(iunit,file=name,form='unformatted',status='old')
-	  read(iunit,err=1,end=2) it,nvers,np,lmax,nvar,nvers,ntype
+	  read(iunit,iostat=ios) it,nvers,np,lmax,nvar,ntype
 	  write(6,*) 'unformatted read: '
 	end if
-    1	continue
-    2	continue
 
-	write(6,*) it,nvers,np,lmax,nvar,ntype
+	if( ios .gt. 0 ) then
+	  write(6,*) 'fem_file_write_info: error reading file'
+	else if( ios .lt. 0 ) then
+	  write(6,*) 'fem_file_write_info: EOF found'
+	else
+	  write(6,*) it,nvers,np,lmax,nvar,ntype
+	end if
 
 	close(iunit)
 
@@ -326,7 +334,7 @@ c writes information on file from header
 
 c************************************************************
 
-	subroutine fem_file_test_formatted(name,np,bok,bformat)
+	subroutine fem_file_test_formatted(name,np,nvar,bformat)
 
 c checks if file is readable and formatted or unformatted
 
@@ -334,16 +342,20 @@ c checks if file is readable and formatted or unformatted
 
 	character*(*) name	!file name
 	integer np		!expected size of data, 0 if no idea
-	logical bok		!successful read? (return)
+	integer nvar		!successful read => nvar>0 (return)
 	logical bformat		!is formatted? (return)
 
 	integer iunit
-	integer it,nvers,np0,lmax,nvar,ntype
+	integer it,nvers,np0,lmax,ntype
 	integer ierr
+	logical bdebug
 
 c------------------------------------------------------
 c initialize parameters
 c------------------------------------------------------
+
+	bdebug = .false.
+	bdebug = .true.
 
 	nvers = 0
 	it = 0
@@ -351,8 +363,6 @@ c------------------------------------------------------
 	lmax = 0
 	nvar = 0
 	ntype = 0
-
-	bok = .true.
 
 c------------------------------------------------------
 c find unit to open file
@@ -371,18 +381,22 @@ c------------------------------------------------------
 	call fem_file_get_params(bformat,iunit,it
      +				,nvers,np0,lmax,nvar,ntype,ierr)
 
-	if( ierr .ne. 0 ) goto 1
-	if( np .gt. 0 .and. np0 .gt. 1 .and. np .ne. np0 ) goto 1
-
-c       -----------------------------------------------
-c	we arrived here... this means the file is (probably) unformatted
-c       -----------------------------------------------
-
 	close(iunit)
-	return
 
-    1	continue
-	close(iunit)
+	if( ierr .ne. 0 ) then
+	  if( bdebug ) write(6,*) 'unformatted read error'
+	else if( np .gt. 0 .and. np0 .gt. 1 .and. np .ne. np0 ) then
+	  if( bdebug ) then
+	    write(6,*) 'unformatted error in np,np0: ',np,np0
+	  end if
+	else if( nvar .le. 0 .or. lmax .lt. 0 ) then
+	  if( bdebug ) then
+	    write(6,*) 'unformatted error in nvar,lmax: ',nvar,lmax
+	  end if
+	else	!ok, probably unformatted
+	  return
+	end if
+
     2	continue
 
 c------------------------------------------------------
@@ -395,25 +409,29 @@ c------------------------------------------------------
 	call fem_file_get_params(bformat,iunit,it
      +				,nvers,np0,lmax,nvar,ntype,ierr)
 
-	if( ierr .ne. 0 ) goto 9
-	if( np .gt. 0 .and. np0 .gt. 1 .and. np .ne. np0 ) goto 9
-
-c       -----------------------------------------------
-c	we arrived here... this means the file is (probably) formatted
-c       -----------------------------------------------
-
 	close(iunit)
-	return
 
-    9	continue
-	close(iunit)
+	if( ierr .ne. 0 ) then
+	  if( bdebug ) write(6,*) 'formatted read error'
+	else if( np .gt. 0 .and. np0 .gt. 1 .and. np .ne. np0 ) then
+	  if( bdebug ) then
+	    write(6,*) 'formatted error in np,np0: ',np,np0
+	  end if
+	else if( nvar .le. 0 .or. lmax .lt. 0 ) then
+	  if( bdebug ) then
+	    write(6,*) 'formatted error in nvar,lmax: ',nvar,lmax
+	  end if
+	else	!ok, probably formatted
+	  return
+	end if
+
     8	continue
 
 c------------------------------------------------------
 c no successful opening
 c------------------------------------------------------
 
-	bok = .false.
+	nvar = 0
 
 c------------------------------------------------------
 c end of routine

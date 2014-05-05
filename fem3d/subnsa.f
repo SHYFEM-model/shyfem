@@ -671,6 +671,8 @@ c******************************************************
           string = 'salinity'
         else if( iv .eq. 12 ) then
           string = 'temperature'
+        else if( iv .eq. 26 ) then
+          string = 'rain'
         else if( iv .eq. 335 ) then
           string = 'time over threshold'
         else

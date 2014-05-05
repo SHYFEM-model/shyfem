@@ -5,7 +5,7 @@ c shows content of offline data file
 
 	implicit none
 
-	integer it,nkn,nel,nrec,iu
+	integer it,nkn,nel,nrec,iu,i,type
 	character*60 name
 
 	name = 'off.dat'
@@ -17,15 +17,13 @@ c shows content of offline data file
 
     1	continue
 
-          read(iu,err=98,end=2) it,nkn,nel
+          read(iu,err=98,end=2) it,nkn,nel,type
 	  nrec = nrec + 1
-	  write(6,*) nrec,it,nkn,nel
+	  write(6,*) nrec,it,nkn,nel,type
 
-	  read(iu)
-	  read(iu)
-	  read(iu)
-	  read(iu)
-	  read(iu)
+	  do i=1,9
+	    read(iu)
+	  end do
 
 	  goto 1
     2	continue

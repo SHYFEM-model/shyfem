@@ -9,7 +9,8 @@ c include file for connectivity simulations
         !parameter ( lagr_connect_pps = 0. )
 
         real r_connect_radius
-        parameter ( r_connect_radius = 2000. )
+        !parameter ( r_connect_radius = 2000. )
+        parameter ( r_connect_radius = 80000. )
         !parameter ( r_connect_radius = 0. )
 
 	integer lagr_connect_itmonth
