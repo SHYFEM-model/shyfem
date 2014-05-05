@@ -1,3 +1,49 @@
+version  6_1_74    05-05-2014    VERS_6_1_74
+
+========================================================== 05-05-2014 - 6_1_74
+
+c ./fem3d/lagrange_main.f:
+c 28.03.2014    ggu     code cleaned - connectivity
+c 10.04.2014    ggu     new code for lagr_count
+c
+c ./fem3d/lagrange_cont.f:
+c 28.03.2014    ggu	new routine lagr_continuous_release_pps_ppv()
+c
+c ./fem3d/subver.f:
+c 05.05.2014	ggu	version 6.1.74
+c
+c ./fem3d/lagrange_decay.f:
+c 28.03.2014    ggu	new version of decay (for all particles)
+c
+c ./fem3d/subbnd.f:
+c 28.03.2014    ggu	new parameter lgrpps
+c
+c ./fem3d/subsys.f:
+c 28.03.2014	ggu	some new params for lagrangian
+c
+c ./fem3d/new3di.f:
+c 10.04.2014    ggu     cleaning up of a lot of stuff
+c
+c ./fem3d/newexpl.f:
+c 10.04.2014	ggu	use rlin and rdistv to determin advective contribution
+c
+c ./fem3d/lagrange_inout.f:
+c 28.03.2014    ggu	bug fix for inesrt with ie=0, area in concentrations
+c
+c ./fem3d/wininf.f:
+c 16.04.2014	ggu	reads now also new meteo format
+c
+c ./fem3d/lagrange_util.f:
+c 28.03.2014    ggu     compute total length of open boundary
+c
+c ./fem3d/subfemfile.f:
+c 24.04.2014	ggu	use nvar>0 as indication of good read
+c
+c ./fem3d/newstab.f:
+c 08.04.2014    ggu	use rlin to determine advective stability
+
+==========================================================
+
 version  6_1_73    27-03-2014    VERS_6_1_73   commit_2014-05-05
 
 version  6_1_73    27-03-2014    VERS_6_1_73   commit_2014-03-31
