@@ -41,6 +41,7 @@ c 08.04.2008    ggu     treatment of boundaries slightly changed
 c 22.04.2008    ggu     advection parallelized
 c 23.04.2008    ggu     call to bnds_set_def() changed
 c 09.10.2008    ggu     new call to confop
+c 08.05.2014    ggu     bug in call to inicfil for es -> must be inic2fil
 c
 c notes :
 c
@@ -306,7 +307,7 @@ c	  initialize state variables from external file
 c         --------------------------------------------------
 
           call inicfil('bio',e,nstate)
-          call inicfil('bios',es,nsstate)
+          call inic2fil('bios',es,nsstate)
 
 c         --------------------------------------------------
 c	  set loadings in the interal areas

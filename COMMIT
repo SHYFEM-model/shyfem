@@ -1,5 +1,19 @@
 ============================================================
 
+Thu May  8 18:42:31 CEST 2014
+
+test commit
+
+ Makefile                |    6 +++++-
+ fem3d/bio3d.f           |    3 ++-
+ fembin/gittar           |   25 +++++++++++++++++--------
+ femcheck/test_stable.sh |   19 +++++++++++++++++++
+ femdoc/final/shyfem.pdf |  Bin 271362 -> 271362 bytes
+ femdoc/final/shyfem.ps  |   30 +++++++++++++++---------------
+ 6 files changed, 58 insertions(+), 25 deletions(-)
+
+============================================================
+
 Mon May  5 13:43:42 CEST 2014
 
 New version 6_1_74

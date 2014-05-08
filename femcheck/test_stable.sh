@@ -1,6 +1,25 @@
 #!/bin/sh
 
+
+commit=`gittags | tail -1`
+commit_number=`echo $commit | cut -d ' ' -f 1`
+echo "commit_line  : $commit"
+echo "commit number: $commit_number"
+
+name=`gittar -info $commit_number`
+if [ $? -ne 0 ]; then
+  echo $name
+  exit 1
+fi
+
+echo "using name: $name"
+rm -f $name.tar.gz
+
+gittar $commit_number
+mv -f $name.tar.gz tmp
 cd tmp
+
+exit
 
 archive=`ls -1tr ../arc/*_stable.tar.gz | tail -1`
 dir=`basename $archive .tar.gz`

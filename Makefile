@@ -248,6 +248,7 @@ help_ggu:
 	@echo "rules_ggu           copies back my Rules.make file"
 	@echo "stable              makes stable distribution"
 	@echo "compiler_version    info on compiler"
+	@echo "last_commit         name of last commit"
 
 test_compile:
 	@femcheck/test_compile.sh
@@ -291,7 +292,10 @@ publish:
 compiler_version:
 	$(F77) $(FINFOFLAGS)
 	$(CC) $(CINFOFLAGS)
-	
+
+last_commit:
+	@gittags | tail -1
+
 #---------------------------------------------------------------
 # compatibility checks
 #---------------------------------------------------------------
