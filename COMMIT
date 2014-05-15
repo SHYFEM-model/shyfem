@@ -1,5 +1,25 @@
 ============================================================
 
+Thu May 15 14:14:24 CEST 2014
+
+solved problem with mass error messages
+
+ LOG                     |   16 ++++++++++++++++
+ Makefile                |    4 ++--
+ fem3d/newchk.f          |    7 ++++++-
+ fem3d/newcon.f          |    9 ++++++++-
+ fem3d/sigmautil.f       |   34 ++++++++++++++++++++++------------
+ fem3d/subrgf.f          |   22 +++++++++++++++-------
+ fem3d/wininf.f          |    1 +
+ femanim/makeanim.sh     |   45 +++++++++++++++++++++++++++++++++++++++++----
+ femcheck/test_stable.sh |   44 ++++++++++++++++++++++++++++++++++----------
+ femdoc/final/shyfem.pdf |  Bin 271362 -> 271361 bytes
+ femdoc/final/shyfem.ps  |   12 ++++++------
+ femplot/suplin.f        |    3 +++
+ 12 files changed, 154 insertions(+), 43 deletions(-)
+
+============================================================
+
 Thu May  8 18:42:31 CEST 2014
 
 test commit

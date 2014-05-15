@@ -106,6 +106,7 @@ c---------------------------------------------------------------
 	close(1)
 
 	write(6,*) itot,' wind records read'
+	write(6,*) 'new version of wind file: ',bnew
 
 	stop
    99	continue

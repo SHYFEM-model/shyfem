@@ -173,6 +173,7 @@ c 12.07.2011    ggu     run over nlv, not nlvdim, vertical_flux() for lmax>1
 c 15.07.2011    ggu     call vertical_flux() anyway (BUG)
 c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
 c 03.12.2013    ggu&deb bug fix for horizontal diffusion
+c 15.05.2014    ggu     write min/max error only for levdbg >= 3
 c
 c*********************************************************************
 
@@ -2053,16 +2054,20 @@ c checks min/max property
 
 	logical bwrite,bstop
 	integer k,ie,l,ii,lmax,ierr
+	integer levdbg
 	real amin,amax,c,qflux,dmax
 	real drmax,diff
 	real dt
 
 	integer ipext
 	logical is_zeta_bound
+	real getpar
 
 	bwrite = .true.		! write every violation
 	bwrite = .false.		! write every violation
 	bstop = .false.		! stop after error
+
+	levdbg = nint(getpar('levdbg'))
 
 c---------------------------------------------------------------
 c vertical contribution (normally implicit -> whole column)
@@ -2157,7 +2162,9 @@ c---------------------------------------------------------------
 
 	if( ierr .gt. 0 ) then
 	  if( drmax .gt. eps .and. dmax .gt. eps ) then
-	    write(6,*) 'min/max error: ',it,ierr,dmax,drmax
+	    if( levdbg .ge. 3 ) then
+	      write(6,*) 'min/max error: ',it,ierr,dmax,drmax
+	    end if
 	  end if
 	  !write(94,*) 'min/max error violated: ',it,ierr,dmax,drmax
 	  if( bstop ) then

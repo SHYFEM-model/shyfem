@@ -25,6 +25,8 @@ c	get_layer_thickness (supdep.f,suplin.f)
 c	init_sigma_info (supout.f)
 c
 c******************************************************************
+c******************************************************************
+c******************************************************************
 
 	blockdata sigma_out
 
@@ -124,15 +126,21 @@ c******************************************************************
 	end
 
 c******************************************************************
+c******************************************************************
+c******************************************************************
+c next routines can be used without using routines above (common)
+c******************************************************************
+c******************************************************************
+c******************************************************************
 
 	subroutine compute_sigma_info(nlv,hlv,nsigma,hsigma)
 
 	implicit none
 
-	integer nlv
-	real hlv(1)
-	integer nsigma		!number of sigma layers (return)
-	real hsigma		!depth of hybrid level (return)
+	integer nlv		!total number of layers
+	real hlv(1)		!layer structure
+	integer nsigma		!total number of sigma layers (return)
+	real hsigma		!closing depth of hybrid layers (return)
 
 	integer l
 
@@ -190,13 +198,13 @@ c in this case the last values for hl are 0
 
 	implicit none
 
-	integer lmax
-	integer nsigma
-	real hsigma
+	integer lmax		!total number of layers
+	integer nsigma		!total number of sigma layers
+	real hsigma		!closing depth of hybrid layers
 	real z			!water level
 	real h			!total depth
-	real hlv(1)		!level structure
-	real hl(1)		!level thickness computed (return)
+	real hlv(1)		!layer structure
+	real hl(1)		!layer thickness computed (return)
 
 	logical bdebug
 	integer ii,l
@@ -254,15 +262,15 @@ c******************************************************************
 
 	subroutine get_bottom_of_layer(bcenter,lmax,z,hl,hz)
 
-c computes bottom of layer
+c computes bottom of layer (or center if bcenter == .true.)
 
 	implicit none
 
 	logical bcenter	!compute depth at center of layer (else bottom)
-	integer lmax	!number of layers
+	integer lmax	!total number of layers
 	real z		!water level
 	real hl(lmax)	!layer thickness (from get_layer_thickness)
-	real hz(lmax)	!layer depth (return)
+	real hz(lmax)	!depth at layer depth/center (return)
 
 	integer l
 	real htop,hbot
@@ -278,6 +286,8 @@ c computes bottom of layer
 
 	end
 
+c******************************************************************
+c******************************************************************
 c******************************************************************
 
 	subroutine compute_iztype(iztype)

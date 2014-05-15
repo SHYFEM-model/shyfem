@@ -53,6 +53,7 @@ c 17.05.2011    ggu     new routine check_set_unit() to set output unit
 c 12.07.2011    ggu     loop only over actual nodes/elements, not dimensions
 c 15.07.2011    ggu     new routines for CRC computation
 c 25.10.2011    ggu     hlhv eliminated
+c 15.05.2014    ggu     write mass error only for levdbg >= 3
 c
 c*************************************************************
 
@@ -767,6 +768,7 @@ c checks mass conservation of single boxes (finite volumes)
 
 	logical berror,bdebug
 	integer ie,l,ii,k,lmax,mode,ks,kss
+	integer levdbg
 	real am,az,azt,dt,azpar,ampar
 	real areafv,b,c
 	real ffn,ffo,ff
@@ -794,6 +796,7 @@ c----------------------------------------------------------------
 
 	vrwarn = getpar('vreps')
 	vrerr = getpar('vrerr')
+	levdbg = nint(getpar('levdbg'))
 
 	mode = +1
         call getazam(azpar,ampar)
@@ -991,7 +994,9 @@ c	vlmax 		!absolute error for each box
 c	vrlmax 		!relative error for each box
 
 	if( vrlmax .gt. vrwarn ) then
-	  write(6,*) 'mass error: ',vbmax,vlmax,vrbmax,vrlmax
+	  if( levdbg .ge. 3 ) then
+	    write(6,*) 'mass error: ',vbmax,vlmax,vrbmax,vrlmax
+	  end if
 	  if( vrlmax .gt. vrerr ) then
 	    write(6,*) 'mass error of matrix solution is very high'
 	    write(6,*) 'the relative mass error is = ',vrlmax

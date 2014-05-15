@@ -12,6 +12,7 @@ c 16.02.2011    ggu     completely restructured - store geo information
 c 18.02.2011    ggu     bug fix in rgf_check_header() -> get instead of set
 c 23.02.2012    ggu     new routines for time series (ts) and regular check
 c 02.05.2013    ggu     bug fix: call to rgf_intp() was wrong
+c 15.05.2014    ggu&pzy bug fix: compare reals in rgf_check_header()
 c
 c notes :
 c
@@ -396,7 +397,7 @@ c reads header of regular field
 	if( n .le. 0 ) then	!initialize
 	  call rgf_set_header(ifile,nvar,nx,ny,x0,y0,dx,dy,flag)
 	else
-	  call rgf_check_header(ifile,nvar,nx,ny,x0,y0,dx,dy,flag)
+	  call rgf_check_header(ifile,it,nvar,nx,ny,x0,y0,dx,dy,flag)
 	end if
 
         n = ifile(8)	!total number of data read
@@ -472,7 +473,7 @@ c sets header information
 
 c*********************************************************************
 
-	subroutine rgf_check_header(ifile,nvar,nx,ny,x0,y0,dx,dy,flag)
+	subroutine rgf_check_header(ifile,it,nvar,nx,ny,x0,y0,dx,dy,flag)
 
 c checks header information
 
@@ -482,12 +483,16 @@ c checks header information
 	parameter ( ifidim = 30 , ifimax = 10 )
 
 	integer ifile(ifidim)
+	integer it
 	integer nvar
 	integer nx,ny
 	real x0,y0,dx,dy,flag
 
 	integer i
 	real x0_a,y0_a,dx_a,dy_a,flag_a
+	real eps
+
+	eps = 1.e-5
 
 	call rgf_get_geo(ifile,x0_a,y0_a,dx_a,dy_a,flag_a)
 
@@ -496,11 +501,11 @@ c checks header information
 	if( ifile(7) .ne. ny ) goto 99
 	if( ifile(8) .ne. nx*ny*nvar ) goto 99
 
-	if( x0 .ne. x0_a ) goto 99
-	if( y0 .ne. y0_a ) goto 99
-	if( dx .ne. dx_a ) goto 99
-	if( dy .ne. dy_a ) goto 99
-	if( flag .ne. flag_a ) goto 99
+        if( abs(x0-x0_a) .gt. eps ) goto 99
+        if( abs(y0-y0_a) .gt. eps ) goto 99
+        if( abs(dx-dx_a) .gt. eps ) goto 99
+        if( abs(dy-dy_a) .gt. eps ) goto 99
+        if( abs(flag-flag_a) .gt. eps ) goto 99
 
 	return
    99	continue
@@ -508,6 +513,9 @@ c checks header information
 	write(6,*) (ifile(i),i=5,8)
 	write(6,*) x0,y0,dx,dy,flag
 	write(6,*) x0_a,y0_a,dx_a,dy_a,flag_a
+	write(6,*) 'some of the above parameters are differing'
+	write(6,*) 'file opened at unit: ',ifile(1)
+	write(6,*) 'time where inconsistency is happening: ',it
 	stop 'error stop rgf_check_header: parameter mismatch'
 	end
 

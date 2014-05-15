@@ -5,12 +5,22 @@
 # uses mencoder to create avi file anim.avi
 # view animation with "xanim anim.gif" or "mplayer anim.avi"
 #
-#--------------------------- clean files from last call
+#---------------------------------------------------------------------
+
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
+femanim=$FEMDIR/femanim
+
+#---------------------------------------------------------------------
 
 fps=25			# frames per second for mencoder
 delay=10		# delay for gifsicle
 
 dogif="NO"		# produce gifs directly
+
+#---------------------------------------------------------------------
+
+rename_prog=$femanim/rename.pl
+rename_prog=$femanim/rename-petras.pl
 
 #---------------------------------------------------------------------
 
@@ -21,6 +31,7 @@ FullUsage()
   echo ""
   echo "Available options:"
   echo "  -h|-help         this help"
+  echo "  -test            tests software availability"
   echo "  -avi             creates avi file (needs mencoder)"
   echo "  -gif             creates animated gif file (needs gifsicle)"
   echo "  -only_anim       recreates only animiation (no image files)"
@@ -48,11 +59,33 @@ TestSoftware()
       echo "*** gifsicle is not installed... aborting"
       exit 1
     fi
+  elif [ $output = "test" ]; then
+    mencoder --version > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+      echo "   mencoder is installed..."
+    else
+      echo "   mencoder is not installed..."
+    fi
+    gifsicle --version > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+      echo "   gifsicle is installed..."
+    else
+      echo "   gifsicle is not installed..."
+    fi
   else
     echo "*** Unknown output format: $output"
     exit 1
   fi
-  #exit 0
+
+  if [ $rename = "YES" ]; then
+    $rename_prog
+    if [ $? -ne 0 ]; then
+      echo "*** cannot find renaming program (internal error)... aborting"
+      exit 1
+    elif [ $output = "test" ]; then
+      echo "   renaming program is installed..."
+    fi
+  fi
 }
 
 #---------------------------------------------------------------------
@@ -74,6 +107,7 @@ do
         -only_anim)     only_anim="YES";;
         -avi)           output="avi";;
         -gif)           output="gif";;
+        -test)          output="test"; shift;;
         -delay)         delay=$2; shift;;
         -fps)           fps=$2; shift;;
         -h|-help)       FullUsage; exit 0;;
@@ -87,6 +121,9 @@ if [ "$output" = "avi" ]; then		#create avi file
   echo "creating anim.avi with fps $fps"
 elif [ "$output" = "gif" ]; then	#create gif file
   echo "creating anim.gif with delay $delay"
+elif [ "$output" = "test" ]; then	#tests software
+  TestSoftware
+  exit 0
 else
   echo "Unknown output format: $output"
   echo "You must at least specify -avi or -gif"
@@ -133,8 +170,8 @@ fi
 #--------------------------- rename in numerical order
 
 if [ $rename = "YES" ]; then
-  #./rename.pl plot.*.eps
-  ./rename-petras.pl plot.*.eps
+  #$femanim/rename.pl plot.*.eps
+  $femanim/rename-petras.pl plot.*.eps
 fi
 
 #--------------------------- create gifs

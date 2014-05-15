@@ -1,4 +1,20 @@
 
+15.05.2014
+
+c ./fem3d/newcon.f:
+c 15.05.2014    ggu     write min/max error only for levdbg >= 3
+c
+c ./fem3d/bio3d.f:
+c 08.05.2014    ggu     bug in call to inicfil for es -> must be inic2fil
+c
+c ./fem3d/newchk.f:
+c 15.05.2014    ggu     write mass error only for levdbg >= 3
+c
+c ./fem3d/subrgf.f:
+c 15.05.2014    ggu&pzy bug fix: compare reals in rgf_check_header()
+
+
+
 05.05.2014
 
 c ./fem3d/lagrange_main.f:

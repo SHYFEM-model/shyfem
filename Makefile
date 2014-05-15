@@ -246,7 +246,7 @@ help_ggu:
 	@echo "dist                prepares distribution (Rules.make)"
 	@echo "rules_save          copies back last Rules.make file"
 	@echo "rules_ggu           copies back my Rules.make file"
-	@echo "stable              makes stable distribution"
+	@echo "stable              makes stable distribution of last version"
 	@echo "compiler_version    info on compiler"
 	@echo "last_commit         name of last commit"
 
@@ -271,7 +271,7 @@ dist: cleandist
 	make doc; make clean
 
 stable:
-	@stable/make_stable.sh shyfem-$(VERSNAME).tar.gz
+	@stable/make_stable.sh $(FEMDIR)/arc/shyfem-$(VERSNAME).tar.gz
 
 beta: cleanall
 	date > LASTTAR
