@@ -76,6 +76,8 @@ make dist
 git add -u
 
 gitcommit
+make test_stable
+
 gittag
 gittar
 
