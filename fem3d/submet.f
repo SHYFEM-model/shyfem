@@ -6,6 +6,7 @@ c
 c revision log :
 c
 c 16.02.2011    ggu     created by copying mainly from subn11.f
+c 30.05.2014    ggu     new imreg == 3
 c
 c*********************************************************************
 
@@ -213,15 +214,23 @@ c*******************************************************************
 
 c initializes meteo variables
 
+	use meteo_forcing_module
+
+	implicit none
+
 	integer imreg
 	real getpar
 
 	imreg = nint(getpar('imreg'))
 
+	write(6,*) 'initializing meteo: ',imreg
+
 	if( imreg .eq. 1 ) then
 	  call meteo_regular
 	else if( imreg .eq. 2 ) then
 	  call meteo_forcing		!new framework
+	else if( imreg .eq. 3 ) then
+	  call meteo_forcing_fem	!new file format
 	else
 	  call windad
 	  call qflux_init
@@ -237,6 +246,10 @@ c*******************************************************************
 
 c update meteo variables and admin rain/evaporation
 
+	use meteo_forcing_module
+
+	implicit none
+
 	integer itanf,itend,idt,nits,niter,it
 	common /femtim/ itanf,itend,idt,nits,niter,it
 
@@ -245,10 +258,14 @@ c update meteo variables and admin rain/evaporation
 
 	imreg = nint(getpar('imreg'))
 
+	!write(6,*) 'calling meteo: ',imreg
+
 	if( imreg .eq. 1 ) then
 	  call meteo_regular
 	else if( imreg .eq. 2 ) then
 	  call meteo_forcing
+	else if( imreg .eq. 3 ) then
+	  call meteo_forcing_fem	!new file format
 	else
 	  call windad			!wind
 	  call qflux_read(it)		!heat flux
@@ -268,6 +285,8 @@ c*******************************************************************
 	subroutine get_meteo_forcing(k,wx,wy,tauxn,tauyn,p)
 
 c returns wind (wx/y), normalized stress (taux/yn) and pressure (p)
+
+	implicit none
 
 	integer k		!node number
 	real wx,wy		!wind velocity [m/s]
@@ -294,6 +313,8 @@ c*******************************************************************
 	subroutine get_light(k,rad_light)
 
 c returns light intensity [W/m**2]
+
+	implicit none
 
         integer k               !node number
         real rad_light          !watt/m**2

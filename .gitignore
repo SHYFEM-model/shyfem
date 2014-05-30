@@ -111,6 +111,7 @@ fem3d/splitets
 fem3d/optintp
 fem3d/nosadmin
 fem3d/scalintp
+fem3d/mkgeom
 
 femadj/adjele
 fembin/extDiff

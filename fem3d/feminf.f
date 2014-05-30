@@ -1,217 +1,249 @@
 
 	program feminf
 
-c shows content of fem boundary/initial files
+c writes info on fem file
 
 	implicit none
 
-        include 'param.h'
-
-	logical bformat,bread
-	integer np,nunit
-	integer it,nvers,lmax,nvar,ntype
-	integer nrec,i
+	character*50 name,string
+	integer np,iunit
+	integer nvers,lmax,nvar,ntype
+	integer it,itanf,itend,idt,itold
 	integer ierr
-	integer year0
-	real hlv(nlvdim)
-	character*10 type
-	character*60 string,file
-	character*30 line
+	integer irec,i,nvar0,ich
+	logical bformat,bdebug,bfirst
+	character*50, allocatable :: strings(:)
 
-	integer ilhkv(nkndim)
-	real hd(nkndim)
-	real data(nlvdim,nkndim)
-	integer ivalue,mima
+	bdebug = .false.
 
-	integer iapini
+c--------------------------------------------------------------
+c open file
+c--------------------------------------------------------------
 
-	ivalue = 1		!value to be written
-	bread = ivalue.gt. 0
-
-	year0=0
-	year0=2007
-
-	if( year0 .gt. 0 ) then
-	  call dtsyear(year0)
-	end if
-
-        if(iapini(2,nkndim,neldim,0).eq.0) then
-                stop 'error stop : iapini'
-        end if
-
-	type = ' '
-        call def_make(type,file)
+	write(6,*) 'Enter fem-file name: '
+	read(5,*) name
 
 	np = 0
-        call fem_file_read_open(file,np,nunit,bformat)
-	if( nunit .eq. 0 ) goto 99
+	call fem_file_read_open(name,np,iunit,bformat)
 
-	write(6,*) '+++++++++++++== ',bformat,np
-	if( .false. ) then
-        call fem_file_get_params(bformat,nunit,it
+	if( iunit .le. 0 ) stop
+
+	write(6,*) 'file name: ',name
+	write(6,*) 'iunit: ',iunit
+	write(6,*) 'formatted:       ',bformat
+
+c--------------------------------------------------------------
+c read first record
+c--------------------------------------------------------------
+
+	irec = 1
+
+        call fem_file_read_params(bformat,iunit,it
      +                          ,nvers,np,lmax,nvar,ntype,ierr)
+
+	if( ierr .ne. 0 ) goto 99
+
+	write(6,*) 'nvers: ',nvers
+	write(6,*) 'np:    ',np
+	write(6,*) 'lmax:  ',lmax
+	write(6,*) 'nvar:  ',nvar
+	write(6,*) 'ntype: ',ntype
+
+	call fem_file_skip_2header(bformat,iunit,lmax,ntype,ierr)
 	if( ierr .ne. 0 ) goto 98
 
-        write(6,*)
-        write(6,*) 'bformat = ',bformat
-        write(6,*) ' nvers  = ',nvers
-        write(6,*) '    np  = ',np,   ' ntype = ',ntype
-        write(6,*) '  lmax  = ',lmax, '  nvar = ',nvar
-	end if
+	nvar0 = nvar
+	allocate(strings(nvar))
 
-        write(6,*)
-        write(6,*) 'bformat = ',bformat
-	if( year0 .gt. 0 ) write(6,*) 'reference year: ',year0
-        write(6,*)
-
-	nrec = 0
-    1	continue
-          call fem_file_read_header(bformat,nunit,it
-     +                  ,nvers,np,lmax,nvar,ntype,nlvdim,hlv,ierr)
-	  if( ierr .ne. 0 ) goto 2
-
-	  if( bread ) then
-	    if( np .gt. nkndim ) goto 89
-	    if( lmax .gt. nlvdim ) goto 89
-	  end if
-
-          do i=1,nvar
-	   if( bread ) then
-            call fem_file_read_data(bformat,nunit
-     +                          ,nvers,np,lmax
-     +                          ,ilhkv,hd
-     +                          ,string,nlvdim,data)
-	    if( ivalue .eq. i ) then
-	      call minmax(it,nlvdim,np,ilhkv,data)
-	      call write_value(it,nlvdim,np,data)
-	      call write_node(it,nlvdim,np,data)
-	    end if
-	   else
-            call fem_file_skip_data(bformat,nunit
-     +                          ,nvers,np,lmax
-     +                          ,string)
-	   end if
-	   if( nrec .eq. 0 .and. i .eq. 1 ) then
-	     write(6,*) nvers,np,lmax,nvar
-	     write(6,*)
-	   end if
-
-	   if( nrec .eq. 0 ) write(6,*) i,string
-	  end do
-	  if( nrec .eq. 0 ) write(6,*)
-
-	  nrec = nrec + 1
-	  call make_time(it,year0,line)
-	  write(6,'(i6,i12,a,a)') nrec,it,'  ',line
-
-	  goto 1
-    2	continue
-	if( ierr .gt. 0 ) goto 97
-
-	stop
-   89	continue
-	write(6,*) 'nlvdim,lmax: ',nlvdim,lmax
-	write(6,*) 'nkndim,np: ',nkndim,np
-	stop 'error stop feminf: reading header'
-   97	continue
-	stop 'error stop feminf: reading header'
-   98	continue
-	stop 'error stop feminf: getting params'
-   99	continue
-	stop 'error stop feminf: opening file'
-	end
-
-c*****************************************************************
-
-	subroutine make_time(it,year0,line)
-
-	implicit none
-
-	integer it
-	integer year0
-	character*(*) line
-
-	integer year,month,day,hour,min,sec
-
-	line = ' '
-	if( year0 .le. 0 ) return
-
-	call dts2dt(it,year,month,day,hour,min,sec)
-	call dtsform(year,month,day,hour,min,sec,line)
-
-	end
-
-c*****************************************************************
-
-	subroutine write_node(it,nlvdim,np,data)
-
-	implicit none
-
-	integer it
-	integer nlvdim,np
-	real data(nlvdim,1)
-
-	integer nnodes
-	parameter(nnodes=4)
-	integer nodes(nnodes)
-	save nodes
-	data nodes /9442,10770,13210,14219/
-
-	integer n,i
-
-	n = nnodes
-	write(90,'(i10,10i6)') it,(ifix(data(1,nodes(i))),i=1,n)
-
-	end
-
-c*****************************************************************
-
-	subroutine write_value(it,nlvdim,np,data)
-
-	implicit none
-
-	integer it
-	integer nlvdim,np
-	real data(nlvdim,1)
-
-	integer n,nskip,i
-
-	n = 10
-	nskip = np/n
-
-	!write(89,*) np,n,nskip,n*nskip
-	write(89,'(i10,10i6)') it,(ifix(data(1,i*nskip)),i=1,n)
-
-	end
-
-c*****************************************************************
-
-	subroutine minmax(it,nlvdim,np,ilhkv,data)
-
-	implicit none
-
-	integer it
-	integer nlvdim,np
-	integer ilhkv(1)
-	real data(nlvdim,1)
-
-	integer k,l,lmax
-	real vmin,vmax,v
-
-	vmin = data(1,1)
-	vmax = data(1,1)
-
-	do k=1,np
-	  lmax = ilhkv(k)
-	  do l=1,lmax
-	    v = data(l,k)
-	    vmax = max(vmax,v)
-	    vmin = min(vmin,v)
-	  end do
+	do i=1,nvar
+	  call fem_file_skip_data(bformat,iunit
+     +                          ,nvers,np,lmax,string,ierr)
+	  if( ierr .ne. 0 ) goto 97
+	  write(6,*) 'data:  ',i,'  ',string
+	  strings(i) = string
 	end do
 
-	write(86,*) 'min/max: ',it,vmin,vmax
+c--------------------------------------------------------------
+c loop on other data records
+c--------------------------------------------------------------
 
+	bfirst = .true.
+	itanf = it
+	itend = it
+	idt = -1
+	ich = 0
+
+	do while(.true.)
+	  irec = irec + 1
+	  itold = itend
+          call fem_file_read_params(bformat,iunit,it
+     +                          ,nvers,np,lmax,nvar,ntype,ierr)
+	  if( ierr .lt. 0 ) exit
+	  if( ierr .gt. 0 ) goto 99
+	  if( nvar .ne. nvar0 ) goto 96
+	  if( bdebug ) write(6,*) irec,it
+	  call fem_file_skip_2header(bformat,iunit,lmax,ntype,ierr)
+	  if( ierr .ne. 0 ) goto 98
+	  do i=1,nvar
+	    call fem_file_skip_data(bformat,iunit
+     +                          ,nvers,np,lmax,string,ierr)
+	    if( ierr .ne. 0 ) goto 97
+	    if( string .ne. strings(i) ) goto 95
+	  end do
+	  if( bfirst ) then
+	    bfirst = .false.
+	    idt = it - itold
+	  end if
+	  if( idt <= 0 ) then
+	    write(6,*) 'zero or negative time step: ',irec,it,itold
+	  end if
+	  if( it-itold .ne. idt ) then
+	    ich = ich + 1
+	    write(6,*) 'change in time step: ',irec,idt,it-itold
+	    idt = it-itold
+	  end if
+	  itend = it
+	end do
+
+c--------------------------------------------------------------
+c finish loop - info on time records
+c--------------------------------------------------------------
+
+	irec = irec - 1
+	write(6,*) 'irec:  ',irec
+	write(6,*) 'itanf: ',itanf
+	write(6,*) 'itend: ',itend
+	write(6,*) 'idt:   ',idt
+
+	if( ich .gt. 0 ) then
+	  write(6,*) ' * warning: time step changed: ',ich
+	end if
+
+	close(iunit)
+
+c--------------------------------------------------------------
+c end of routine
+c--------------------------------------------------------------
+
+	stop
+   95	continue
+	write(6,*) 'variable ',i
+	write(6,*) string
+	write(6,*) strings(i)
+	write(6,*) 'cannot change description of variables'
+	stop 'error stop feminf'
+   96	continue
+	write(6,*) 'nvar,nvar0: ',nvar,nvar0
+	write(6,*) 'cannot change number of variables'
+	stop 'error stop feminf'
+   97	continue
+	write(6,*) 'record: ',irec
+	write(6,*) 'cannot read data record of file'
+	stop 'error stop feminf'
+   98	continue
+	write(6,*) 'record: ',irec
+	write(6,*) 'cannot read second header of file'
+	stop 'error stop feminf'
+   99	continue
+	write(6,*) 'record: ',irec
+	write(6,*) 'cannot read header of file'
+	stop 'error stop feminf'
 	end
 
 c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+        subroutine make_time(it,year0,line)
+
+        implicit none
+
+        integer it
+        integer year0
+        character*(*) line
+
+        integer year,month,day,hour,min,sec
+
+        line = ' '
+        if( year0 .le. 0 ) return
+
+        call dts2dt(it,year,month,day,hour,min,sec)
+        call dtsform(year,month,day,hour,min,sec,line)
+
+        end
+
+c*****************************************************************
+
+        subroutine write_node(it,nlvdim,np,data)
+
+        implicit none
+
+        integer it
+        integer nlvdim,np
+        real data(nlvdim,1)
+
+        integer nnodes
+        parameter(nnodes=4)
+        integer nodes(nnodes)
+        save nodes
+        data nodes /9442,10770,13210,14219/
+
+        integer n,i
+
+        n = nnodes
+        write(90,'(i10,10i6)') it,(ifix(data(1,nodes(i))),i=1,n)
+
+        end
+
+c*****************************************************************
+
+        subroutine write_value(it,nlvdim,np,data)
+
+        implicit none
+
+        integer it
+        integer nlvdim,np
+        real data(nlvdim,1)
+
+        integer n,nskip,i
+
+        n = 10
+        nskip = np/n
+
+        !write(89,*) np,n,nskip,n*nskip
+        write(89,'(i10,10i6)') it,(ifix(data(1,i*nskip)),i=1,n)
+
+        end
+
+c*****************************************************************
+
+        subroutine minmax(it,nlvdim,np,ilhkv,data)
+
+        implicit none
+
+        integer it
+        integer nlvdim,np
+        integer ilhkv(1)
+        real data(nlvdim,1)
+
+        integer k,l,lmax
+        real vmin,vmax,v
+
+        vmin = data(1,1)
+        vmax = data(1,1)
+
+        do k=1,np
+          lmax = ilhkv(k)
+          do l=1,lmax
+            v = data(l,k)
+            vmax = max(vmax,v)
+            vmin = min(vmin,v)
+          end do
+        end do
+
+        write(86,*) 'min/max: ',it,vmin,vmax
+
+        end
+
+c*****************************************************************
+

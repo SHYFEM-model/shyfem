@@ -52,6 +52,7 @@ c 02.05.2013  ggu     handle fact in spherical coords
 c 02.05.2013  ggu     meteo point plotting (plot_meteo_points())
 c 13.06.2013  ggu     bug fix in spherical_fact() -> set fact to 1
 c 13.12.2013  ggu     new mode=4 for plotting grey grid over scalar variable
+c 30.05.2014  ggu     new metpnt for meteo points, imicro computed
 c
 c notes:
 c
@@ -117,7 +118,7 @@ c normally bash(2) is called as last call after plotting
 	real x0,y0,x1,y1
 	real x0leg,y0leg,x1leg,y1leg
 	real dxygrd,x,y
-	character*80 bndlin
+	character*80 bndlin,metpnt
 	real getpar
 	logical inboxdim
         logical is_spherical
@@ -189,7 +190,10 @@ c legend (north and scale)
 c special output
 
 	if( mode .eq. 2 ) then		!only after plot
-	  !call plot_meteo_points
+	  call getfnm('metpnt',metpnt)
+	  if( metpnt .ne. ' ' ) then
+	    call plot_meteo_points(metpnt)
+	  end if
 	end if
 
 c end of routine
@@ -1089,13 +1093,14 @@ c handles spherical coordinates
 
 c**************************************************************
 
-	subroutine adjust_reg_grid_spacing(dreg)
+	subroutine adjust_reg_grid_spacing(dreg,imicro)
 
 c checks if regular grid should be written
 
 	implicit none
 
 	real dreg
+	integer imicro
 
 	logical is_spherical,is_box_given
 
@@ -1106,24 +1111,26 @@ c checks if regular grid should be written
 	end if
 	!if( .not. is_box_given('leg') ) return	!no legend was requested
 
-	call compute_reg_grid_spacing(dreg)
+	call compute_reg_grid_spacing(dreg,imicro)
 
 	end
 
 c**************************************************************
 
-	subroutine compute_reg_grid_spacing(dreg)
+	subroutine compute_reg_grid_spacing(dreg,imicro)
 
 c tries to find best regular grid spacing value
 
 	implicit none
 
 	real dreg
+	integer imicro
 
 	real x0,y0,x1,y1
 	real dx,dy,dxy
+	real dsreg
 
-	real rnext
+	real rnext,rnextsub
 
 	call getbas(x0,y0,x1,y1)
 
@@ -1135,6 +1142,10 @@ c tries to find best regular grid spacing value
 	dxy = dxy/4.		!around 4 grid lines
 
 	dreg = rnext(dxy,1)
+	dsreg = rnextsub(dreg)
+	imicro = nint(dreg/dsreg)
+
+	write(6,*) 'reg,micro: ',dreg,dsreg,imicro
 
 	write(6,*) 'new reggrd = ',dreg,x0,x1,y0,y1
 
@@ -1214,7 +1225,7 @@ c handles labeling of regular grid
 	reggrd = getpar('reggrd')
 	imicro = nint(getpar('regdst'))
 
-	call adjust_reg_grid_spacing(reggrd)	!check if plotted automatically
+	call adjust_reg_grid_spacing(reggrd,imicro)	!check if automatic
 
 	if( bdebug ) write(6,*) 'reggrd: ',reggrd
 
@@ -1236,7 +1247,7 @@ c here labeling
 	dist = reggrd
 	call frac_pos(dist,nc)
 	if( nc .eq. 0 ) nc = -1
-	write(6,*) dist,nc
+	write(6,*) 'label_reg_grid: ',dist,nc,imicro
 
 	xdmin = rround(xmin,dist,-1)
 	xdmax = rround(xmax,dist,+1)
@@ -1295,6 +1306,8 @@ c here labeling
 c**************************************************************
 
 	subroutine bw_frame(imicro,x0,y0,dx,dy,xmin,xmax,ymin,ymax)
+
+c plot black/white frame around geographical grid
 
 	implicit none
 
@@ -1458,7 +1471,7 @@ c**************************************************************
 c**************************************************************
 c**************************************************************
 
-	subroutine plot_meteo_points
+	subroutine plot_meteo_points(file)
 
 c plots special points from meteo file
 c
@@ -1466,14 +1479,17 @@ c files coords.dat and sea_land.dat must exist
 
 	implicit none
 
+	character*(*) file
+
 	integer ndim
 	parameter (ndim=30000)
 
 	integer nx,ny,nz,n
 	integer idum,i
+	real xmin,xmax,ymin,ymax
 	real dx,dy
 	real x(ndim),y(ndim),rf(ndim)
-	save n,x,y,rf
+	save n,x,y,rf,dx,dy
 
 	integer icall
 	save icall
@@ -1482,7 +1498,7 @@ c files coords.dat and sea_land.dat must exist
 	if( icall .eq. -1 ) return
 
 	if( icall .eq. 0 ) then
-	  open(1,file='coords.dat',status='old',form='formatted',err=88)
+	  open(1,file=file,status='old',form='formatted',err=88)
 	  read(1,*) nx,ny,nz
 	  n = nx*ny
 	  if( n .gt. ndim ) goto 99
@@ -1490,6 +1506,12 @@ c files coords.dat and sea_land.dat must exist
 	    read(1,*) idum,idum,x(i),y(i)
 	  end do
 	  close(1)
+
+	  call mima(x,n,xmin,xmax)
+	  call mima(y,n,ymin,ymax)
+
+	  dx = 0.3*(xmax-xmin)/(nx-1)
+	  dy = 0.3*(ymax-ymin)/(ny-1)
 
 	  do i=1,nx*ny
 	    rf(i) = 1.
@@ -1507,8 +1529,8 @@ c files coords.dat and sea_land.dat must exist
 	write(6,*) 'plotting meteo points'
 	call qcomm('plotting meteo points')
 	call qgray(0.)
-	dx = 0.02
-	dy = dx
+	!dx = 0.02
+	!dy = dx
 	do i=1,n
 	  if( rf(i) .gt. 0 ) then
 	    call qgray(0.)
@@ -1524,7 +1546,8 @@ c files coords.dat and sea_land.dat must exist
 	icall = -1
 	write(6,*) 'message from plot_meteo_points:'
 	write(6,*) 'no coords.dat file ... cannot plot coordinates'
-	return
+	write(6,*) 'file: ',file
+	stop 'error stop plot_meteo_points: file'
    99	continue
 	write(6,*) nx,ny,n,ndim
 	stop 'error stop plot_meteo_points: ndim'

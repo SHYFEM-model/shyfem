@@ -1023,6 +1023,11 @@ c-----------------------------------------------------------------
 	  else
 	    wfact = roluft / rowass
 	  end if
+	  !next is wrong because for iwtype>2 we already have transformed
+	  !if( iwtype .gt. 2 ) then
+	  !  write(6,*) 'Cannot handle iwtype = ',iwtype
+	  !  stop 'error stop wstress: iwtype'
+	  !end if
 	end if
 
 c-----------------------------------------------------------------

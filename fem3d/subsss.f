@@ -43,6 +43,7 @@ c 17.06.1998	ggu	old routines with new name (iscan0,ialfa0)
 c 12.02.1999	ggu	new routine triml
 c 26.01.2009	ggu	minor changes to avoid compiler warnings
 c 16.02.2011	ggu	new routine trimline()
+c 30.05.2014	ggu	new routine rnextsub()
 c
 c***********************************************************
 c
@@ -923,7 +924,7 @@ c char		character (*1) to be looked at
 c itypch	typ of character
 c		1 = numeric
 c		2 = letter
-c		3 = special character 	=+-*/(),.'"$_!:<>%&
+c		3 = special character 	=+-*/(),.'"$_!:<>%&	!'
 c		4 = non-fortran character
 c
 	character*1 char
@@ -1004,6 +1005,7 @@ c		... <0  : the lower value is found (closer to 0)
 c		... |1| : 1. 2. 2.5 5. 8.
 c		... |2| : 1. 2. 5.
 c		... |3| : 1. 2. 3. 4. 5. 8.
+c		... |4| : 1. 2. 3. 4. 5. 6. 7. 8. 9.
 c rnext		closest value found to r
 c
 c val		matrix containing the closest values to be used
@@ -1104,6 +1106,61 @@ c finds closest value to r (absolute, i.e., respects negative values)
 
 	rnexta = rabs
 
+	end
+
+c*****************************************************************
+
+	function rnextsub(r)
+
+c finds best subdivision for value r
+c
+c		... |1| : 1. 2. 2.5 5. 8.
+c		... |2| : 1. 2. 5.
+c		... |3| : 1. 2. 3. 4. 5. 8.
+c		... |4| : 1. 2. 3. 4. 5. 6. 7. 8. 9.
+
+	implicit none
+
+	real rnextsub
+	real r
+
+	integer i
+	real eps,fact,rr,rsub
+	real rdata(9)
+	save rdata
+	data rdata /0.25,0.5,1.,1.,1.,2.,1.,2.,3./
+
+	eps = 1.e-5
+
+	fact = 1.
+	rr = r
+
+	if( rr > 1 ) then
+	  do while( rr/10. > 1 )
+	    fact = fact*10.
+	    rr = rr / 10.
+	  end do
+	else
+	  do while( rr < 1 )
+	    fact = fact/10.
+	    rr = rr * 10.
+	  end do
+	end if
+
+	if( abs(rr-2.5) < eps ) then
+	  rsub = 0.5
+	else
+	  i = nint(rr)
+	  if( i < 1 .or. i > 9 ) goto 99
+	  rsub = rdata(i)
+	end if
+
+	rnextsub = rsub * fact
+
+	return
+   99	continue
+	write(6,*) r,rr,fact,i
+	stop 'error stop rnextsub: internal error'
 	end
 
 c*****************************************************************

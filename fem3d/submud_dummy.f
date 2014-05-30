@@ -18,7 +18,7 @@ c*******************************************************************
 
 	include 'param.h'
 
-	integer vts(0:nlvdim,nkndim)
+	real vts(0:nlvdim,nkndim)
 	common /vts/vts
 
 	integer k,l

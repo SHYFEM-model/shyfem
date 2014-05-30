@@ -1,5 +1,42 @@
 ============================================================
 
+Fri May 30 18:24:40 CEST 2014
+
+intermediate version
+
+ .gitignore              |    1 +
+ LOG                     |   38 ++
+ fem3d/Makefile          |   16 +-
+ fem3d/feminf.f          |  324 +++++++------
+ fem3d/param.h           |    6 +-
+ fem3d/subbc.f           |    6 +-
+ fem3d/subbc99.f         | 1116 ++++++++++++++++++++++++++++++++++++++++
+ fem3d/subfemfile.f      |  348 +++++++------
+ fem3d/subfemintp.f      | 1302 +++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subintp.f         |  123 +++--
+ fem3d/submet.f          |   21 +
+ fem3d/submeteo2.f       |  826 ++++++++++++++++++++++++++++++
+ fem3d/submud_dummy.f    |    2 +-
+ fem3d/subreg.f          |    7 +-
+ fem3d/subsss.f          |   59 +++-
+ fem3d/subsys.f          |    4 +-
+ fem3d/subtsfile.f       |  255 +++++++++
+ fem3d/subwin.f          |    5 +
+ femadj/param.h          |    6 +-
+ fembin/mkdp.pl          |   22 +-
+ femdoc/final/shyfem.pdf |  Bin 271361 -> 271362 bytes
+ femdoc/final/shyfem.ps  |   26 +-
+ femplot/param.h         |    6 +-
+ femplot/plotsim.f       |    5 +-
+ femplot/supano.f        |   23 +-
+ femplot/supbas.f        |   51 ++-
+ femplot/supout.f        |   21 +-
+ femplot/supsim.f        |   52 ++-
+ param.h                 |    6 +-
+ 29 files changed, 4242 insertions(+), 435 deletions(-)
+
+============================================================
+
 Thu May 15 15:08:57 CEST 2014
 
 New version 6_1_75

@@ -1475,9 +1475,11 @@ c creates legend for velocity arrow and plots arrow
 	integer iround,istell,ialfa
 	real rnext
 
-	logical bblank
+	logical bblank,bdebug
 
 	bblank = .true.
+	bdebug = .true.
+	bdebug = .false.
 
 c blanking of window
 
@@ -1517,7 +1519,8 @@ c val	length of velocity vector in velocity (transport) coordinates
 
 	call spherical_fact(fact,afact)
 	xt = x0s + val*scale/fact
-        call fcmpfeil(x0s,y0s,xt,0.,0.3)
+        !call fcmpfeil(x0s,y0s,xt,0.,0.3)
+        call fcmpfeil(x0s,y0s,xt,y0s,0.3)
 
 	call qtsize(title,width,height)
 	x0s = x0 + 0.5 * dx - 0.5 * width
@@ -1528,6 +1531,12 @@ c val	length of velocity vector in velocity (transport) coordinates
 	call qtsize(line,width,height)
 	x0s = x0 + 0.5 * dx - 0.5 * width
 	call qtext(x0s,y0s-2.*height,line)
+
+	if( bdebug) then
+	  write(6,*) 'start velarr ================================='
+	  write(6,*) dd,x0s,y0s,xt
+	  write(6,*) '  end velarr ================================='
+	end if
 
         call qcomm('end of plotting arrow')
 
@@ -1554,10 +1563,14 @@ c ivel = 4      waves
 	integer ndec
 	real fact,arrlen,sclvel
 	real x0,y0,x1,y1
+	logical bdebug
 
 	integer iround
 	real getpar
 	logical inboxdim
+
+	bdebug = .true.
+	bdebug = .false.
 
 	if( .not. inboxdim('arr',x0,y0,x1,y1) ) return
 
@@ -1587,6 +1600,12 @@ c ivel = 4      waves
 	    !write(6,*) 'Cannot handle factor ',fact,' with ivel ',ivel
 	    !stop 'error stop velsh: facvel'
 	  end if
+	end if
+
+	if( bdebug) then
+	  write(6,*) 'start velsh ================================='
+	  write(6,*) fact,'   ',unit
+	  write(6,*) '  end velsh ================================='
 	end if
 
 	call velarr(title,unit,scale,ndec,fact,arrlen,sclvel

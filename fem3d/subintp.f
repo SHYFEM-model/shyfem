@@ -33,6 +33,7 @@ c 08.10.2008	ggu	introduced matinv0 for independence
 c 08.11.2008	ggu	better error handling
 c 02.04.2009	ggu	if less data given lower interpolation (REDINT)
 c 03.04.2009	ggu	new routine intp_neville() (stable lagrange interpol.)
+c 18.05.2014	ggu	new routines d_intp_neville(), rd_intp_neville()
 c
 c**************************************************
 c
@@ -209,59 +210,7 @@ c change column
         end
 
 c**********************************************
-
-	function intp_neville_not_working(nintp,x,y,xe)
-
-c interpolation routine (Lagrangian interpolation)
-c (do not use this function)
-c
-c intp_neville	interpolated y-value for xe
-c nintp		number of points used for interpolation (4=cubic)
-c x,y		x/y-values (vector) ( x(i) != x(j) for i != j )
-c xe		x-value for which y-value has to computed
-
-	implicit none
-
-	real intp_neville_not_working
-	integer nintp
-	real x(nintp),y(nintp)
-	real xe
-
-	integer ndim
-	parameter (ndim=5)
-
-	integer i,k,n
-	double precision dq,xx,accum
-	double precision q(ndim,ndim),d(ndim,ndim)
-
-	if( nintp .gt. ndim ) stop 'error stop intp_neville: ndim'
-
-	n = nintp
-
-	k = 1
-	do i=1,n
-	  q(i,k) = y(i)
-	  d(i,k) = y(i)
-	end do
-
-	do k=2,n
-	  do i=k,n
-	    dq = d(i,k-1) - q(i-1,k-1)
-	    xx = x(i-k) - x(i)
-	    q(i,k) = dq * ( x(i) - xe ) / xx
-	    d(i,k) = dq * ( x(i-k) - xe ) / xx
-	  end do
-	end do
-
-	accum = 0.
-	do k=2,n
-	  accum = accum + q(n,k)
-	end do
-
-	intp_neville_not_working = y(n) + accum
-
-	end
-
+c**********************************************
 c**********************************************
 
         function intp_neville(nintp,xa,ya,x)
@@ -273,9 +222,6 @@ c use nintp=2 for linear interpolation
 
         implicit none
 
-        integer ndim
-        parameter (ndim=10)
-
         real intp_neville			!interpolated value (return)
         integer nintp				!grade of interpolation
         real xa(0:nintp-1), ya(0:nintp-1)	!points to use
@@ -283,15 +229,10 @@ c use nintp=2 for linear interpolation
 
         integer i,k,n
         double precision xl,xh
-        double precision p(0:ndim)
-
-        if( nintp .gt. ndim ) stop 'error stop neville: ndim'
+        double precision p(0:nintp-1)
 
         n = nintp - 1
-
-        do i=0,n
-          p(i) = ya(i)
-        end do
+	p = ya
 
         do k=1,n
           do i=n,k,-1
@@ -305,6 +246,80 @@ c use nintp=2 for linear interpolation
 
         end
 
+c**********************************************
+
+        function d_intp_neville(nintp,xa,ya,x)
+
+c use Neville algorithm for Lagrangian interpolation (double precision)
+c
+c use nintp=4 for cubic interpolation
+c use nintp=2 for linear interpolation
+
+        implicit none
+
+        double precision d_intp_neville		!interpolated value (return)
+        integer nintp				!grade of interpolation
+        double precision xa(0:nintp-1)		!x points to use
+        double precision ya(0:nintp-1)		!y points to use
+        double precision x			!x value where to interpolate
+
+        integer i,k,n
+        double precision xl,xh
+        double precision p(0:nintp-1)
+
+        n = nintp - 1
+	p = ya
+
+        do k=1,n
+          do i=n,k,-1
+            xl = xa(i-k)
+            xh = xa(i)
+            p(i) = ( (x-xl)*p(i) - (x-xh)*p(i-1) ) / (xh-xl)
+          end do
+        end do
+
+        d_intp_neville = p(n)
+
+        end
+
+c**********************************************
+
+        function rd_intp_neville(nintp,xa,ya,x)
+
+c use Neville algorithm for Lagrangian interpolation (double precision)
+c
+c use nintp=4 for cubic interpolation
+c use nintp=2 for linear interpolation
+
+        implicit none
+
+        double precision rd_intp_neville	!interpolated value (return)
+        integer nintp				!grade of interpolation
+        double precision xa(0:nintp-1)		!x points to use
+        real ya(0:nintp-1)			!y points to use
+        double precision x			!x value where to interpolate
+
+        integer i,k,n
+        double precision xl,xh
+        double precision p(0:nintp-1)
+
+        n = nintp - 1
+	p = ya
+
+        do k=1,n
+          do i=n,k,-1
+            xl = xa(i-k)
+            xh = xa(i)
+            p(i) = ( (x-xl)*p(i) - (x-xh)*p(i-1) ) / (xh-xl)
+          end do
+        end do
+
+        rd_intp_neville = p(n)
+
+        end
+
+c**********************************************
+c**********************************************
 c**********************************************
 
 	function intp_lagr(nintp,x,y,xe)

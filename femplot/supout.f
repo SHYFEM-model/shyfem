@@ -1782,7 +1782,7 @@ c open file
 
 c read first header
 
-        call fem_file_get_params(bformat,nunit,it
+        call fem_file_read_params(bformat,nunit,it
      +                          ,nvers,np,lmax,nvar,ntype,ierr)
 
 	if( ierr .ne. 0 ) then
@@ -1803,7 +1803,7 @@ c read first header
 
 c read second header
 
-	call fem_file_get_hlv(bformat,nunit,nlvdi,nlv,hlv,ierr)
+	call fem_file_read_hlv(bformat,nunit,nlv,hlv,ierr)
 
 	if( ierr .ne. 0 ) then
 		write(6,*) 'ierr = ',ierr
@@ -1877,10 +1877,12 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	!write(6,*) 'femnext format: ',bformat,iformat
 
 	np = 0
-        call fem_file_read_header(bformat,nunit,it
-     +                  ,nvers,np,lmax,nvar,ntype,nlvdim,hlv,ierr)
-
+        call fem_file_read_params(bformat,nunit,it
+     +                          ,nvers,np,lmax,nvar,ntype,ierr)
 	if( ierr .ne. 0 ) goto 7
+	call fem_file_read_hlv(bformat,nunit,nlv,hlv,ierr)
+	if( ierr .ne. 0 ) goto 7
+
 	if( np .ne. nkn ) goto 99
 
 	ip = 1
@@ -1889,12 +1891,14 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	  if( bfound ) then
             call fem_file_skip_data(bformat,nunit
      +                          ,nvers,np,lmax
-     +                          ,string)
+     +                          ,string,ierr)
+	    if( ierr .ne. 0 ) goto 98
 	  else
             call fem_file_read_data(bformat,nunit
      +                          ,nvers,np,lmax
      +                          ,ilhkv,v1v
-     +                          ,string,nlvdim,array(1,1,ip))
+     +                          ,string,nlvdim,array(1,1,ip),ierr)
+	    if( ierr .ne. 0 ) goto 98
 	    call string2ivar(string,iv)
 	    bfound = iv .eq. ivar
 	    if( iv .eq. ivar .and. iv .eq. 21 ) then !wind -> must read y field
@@ -1927,6 +1931,9 @@ c set return value
 c end
 
 	return
+   98	continue
+	write(6,*) 'error reading or skipping data'
+	stop 'error stop femnext: read error'
    99	continue
 	write(6,*) 'nkn,np: ',nkn,np
 	stop 'error stop femnext: np different from nkn'

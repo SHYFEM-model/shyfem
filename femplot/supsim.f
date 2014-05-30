@@ -63,6 +63,7 @@ c 10.02.2012    ggu	belem in plobas to plot bathymetry on elements
 c 26.03.2012    ccf&ggu	call mkht only for bvel .or. btrans (plo2vel)
 c 13.06.2013    ggu	new routine plofem()
 c 05.09.2013    ggu	endtime() and nplot introduced
+c 30.05.2014    ggu	flag no data points and do not plot
 c
 c notes :
 c
@@ -707,6 +708,12 @@ c**********************************************************
 	if( is2d() ) then
 	  write(6,*) 'plotting 2d...'
 	  call plo2vel(ivel,'2D ')
+	else if( ivel == 3 ) then
+	  write(6,*) 'plotting wind...'
+	  call plo2vel(ivel,'2D ')
+	else if( ivel == 4 ) then
+	  write(6,*) 'plotting wave...'
+	  call plo2vel(ivel,'2D ')
 	else
 	  write(6,*) 'plotting 3d...'
 	  call plo3vel(ivel)
@@ -957,7 +964,8 @@ c------------------------------------------------------------------
             write(6,*) 'ioverl = ',ioverl
             stop 'error stop plo2vel: value not allowed for ioverl'
 	  end if
-	  call mima(v1v,nkn,pmin,pmax)
+	  !call mima(v1v,nkn,pmin,pmax)
+	  call get_minmax_flag(v1v,nkn,pmin,pmax)
 	  call apply_dry_mask(bkwater,v1v,nkn,flag)
 	  call colauto(pmin,pmax)
 	  write(6,*) 'plotting overlay color... ',pmin,pmax
@@ -1633,23 +1641,31 @@ c computes modulus for velocity vector and maximum and average
 	real uvmax
 	real uvmed
 
-	integer i
+	integer i,nn
 	real um,vm,rmod,rmax,rmed
+	real flag
 
+	flag = -999.
 	rmax = 0.
 	rmed = 0.
+	nn = 0
 
 	do i=1,n
 	  um = u(i)
 	  vm = v(i)
-	  rmod = sqrt( um*um + vm*vm )
-	  rmax = max(rmax,rmod)
-	  rmed = rmed + rmod
-	  uv(i) = rmod
+	  if( um > flag .and. vm > flag ) then
+	    nn = nn + 1
+	    rmod = sqrt( um*um + vm*vm )
+	    rmax = max(rmax,rmod)
+	    rmed = rmed + rmod
+	    uv(i) = rmod
+	  else
+	    uv(i) = flag
+	  end if
 	end do
 
 	uvmax = rmax
-	uvmed = rmed / n
+	uvmed = rmed / nn
 
 	end
 
@@ -1695,17 +1711,22 @@ c compute elemental values vev()
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 
-	integer ie,ii,k
-	real sum
+	integer ie,ii,k,iflag
+	real sum,flag
+
+	flag = -999.
 
 	do ie=1,nel
 	  if( bwater(ie) ) then
             sum = 0.
+	    iflag = 0
 	    do ii=1,3
 	      k = nen3v(ii,ie)
 	      sum = sum + vnv(k)
+	      if( vnv(k) > flag ) iflag = iflag + 1
 	    end do
             vev(ie) = sum / 3.
+	    if( iflag .ne. 3 ) vev(ie) = flag
           else
             vev(ie) = 0.
 	  end if
@@ -1734,7 +1755,9 @@ c compute nodal values vnv()
 	common /nen3v/nen3v
 
 	integer ie,ii,k
-	real r
+	real r,flag
+
+	flag = -999.
 
 	do k=1,nkn
 	  vnv(k) = 0.
@@ -1744,9 +1767,11 @@ c compute nodal values vnv()
 	do ie=1,nel
 	 if( bwater(ie) ) then
 	  do ii=1,3
-	    k = nen3v(ii,ie)
-	    vnv(k) = vnv(k) + vev(ie)
-	    v2v(k) = v2v(k) + 1.
+	    if( vev(ie) > flag ) then
+	      k = nen3v(ii,ie)
+	      vnv(k) = vnv(k) + vev(ie)
+	      v2v(k) = v2v(k) + 1.
+	    end if
 	  end do
 	 end if
 	end do
@@ -1757,6 +1782,7 @@ c compute nodal values vnv()
 	    vnv(k) = vnv(k) / v2v(k)
 	  else
 	    vnv(k) = 0.
+	    vnv(k) = flag
 	  end if
 	end do
 

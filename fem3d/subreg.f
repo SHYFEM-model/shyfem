@@ -69,6 +69,7 @@ c 20.06.2012	ggu	new routine get_scal_elem()
 c 07.10.2012	ggu	new routine av2fm()
 c 10.10.2012	ggu	new routine fm2am2d() and fm2am3d()
 c 26.10.2012	ggu	bug fix: do not access not existing storage
+c 30.05.2014	ggu	in av2amk() do not interpolate for flag values
 c
 c notes :
 c
@@ -301,6 +302,7 @@ c common
 c local
 	integer i,j,ii,iii,ie,k,kn,iin
 	integer imin,imax,jmin,jmax
+	integer iflag
 	double precision x(3),y(3),z(3),a(3),b(3),c(3)
 	double precision zh,fh,f,xp,yp
 	double precision xmin,xmax,ymin,ymax
@@ -315,12 +317,15 @@ c function
 
 	do ie=1,nel
 	  if( bwater(ie) ) then	!wet
+	    iflag = 0
 	    do i=1,3
 		kn=nen3v(i,ie)
 		x(i)=xgv(kn)
 		y(i)=ygv(kn)
 		z(i)=av(kn)
+	        if( z(i) > pzlreg ) iflag = iflag + 1
 	    end do
+	    if( iflag .ne. 3 ) cycle
 
 	    !f=0.
 	    do i=1,3
@@ -1371,7 +1376,7 @@ c uses data structure ev and ieltv
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
-	real ieltv(3,1)
+	integer ieltv(3,1)
 	common /ieltv/ieltv
 
 	logical binit,bdebug

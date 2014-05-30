@@ -108,6 +108,7 @@ c 10.05.2013	ggu	new parameters idtbox,itmbox, more comments
 c 10.05.2013	ggu	new parameter inohyd
 c 16.05.2013	ggu	file name bound renamed to zinit
 c 28.03.2014	ggu	some new params for lagrangian
+c 30.05.2014	ggu	new default for dragco, new metpnt
 c
 c************************************************************************
 
@@ -492,7 +493,7 @@ c \input{P_wind.tex}
 
         call addpar('iwtype',1.)
 	call addpar('itdrag',0.)
-	call addpar('dragco',0.)
+	call addpar('dragco',2.5e-3)
 	call addpar('wsmax',50.)
 
 cc------------------------------------------------------------------------
@@ -1279,6 +1280,7 @@ c DOCS	END
 
 cc not documented
 
+	call addfnm('metpnt'," ")	!name of file with meteo points
 	call addfnm('spcvel'," ")	!name of file for velocity points
 
 cc only for compatibility ... are not used anymore

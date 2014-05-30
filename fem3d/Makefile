@@ -194,6 +194,7 @@ HTOBJS = \
 	subboxa.o \
 	newnohydro.o suboff.o \
 	subets.o subetsa.o \
+	$(IFF_FILES) \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ) $(PARALLEL_OBJ)
 
@@ -259,9 +260,12 @@ QFLUX_TEST = subqfxf.o \
 
 PARMOD = subpar.o subfnm.o		# old parameter modules
 #PARMOD = subpar1.o			# new parameter modules
+IFF_FILES = 
+IFF_FILES = subfemintp.o subtsfile.o submeteo2.o
 
-BCTSOBJS = subintp.o subbc.o
 BCTSOBJS = subsse.o
+BCTSOBJS = subintp.o subbc.o
+BCTSOBJS = subintp.o subbc99.o
 
 # objects for interpolation
 
@@ -778,7 +782,6 @@ bio3d.o: param.h
 bio3d_util.o: param.h donata.h
 eosinf.o: param.h
 etsinf.o: param.h
-feminf.o: param.h
 flux.o: regflux.h param.h links.h ev.h
 flxinf.o: param.h
 gotm3d.o: gotmturb.i
@@ -828,6 +831,7 @@ nonhydro_pard.o: param.h nohydlinks.h common.h
 nonhydro_spk.o: param.h nohydlinks.h
 nos2nc.o: param.h evmain.h basin.h
 nos_elab.o: param.h
+nosadmin.o: param.h
 nosaver_basin.o: param.h basin.h
 nosaver_time.o: param.h
 nosaver_vert.o: param.h basin.h
@@ -881,11 +885,13 @@ subcus.o: param.h ev.h
 subdep.o: ev.h
 subdif.o: param.h ev.h
 subdry.o: ev.h
+subdts.o: subdts.h
 subdwq.o: param.h
 subele.o: param.h ev.h
 subets.o: etsinf.h
 subetsa.o: param.h modules.h subetsa.h
 subexta.o: modules.h
+intp_fem_file.mod: subfemintp.o
 subflx3d.o: testbndo.h param.h links.h ev.h
 subflxa.o: param.h subflxa.h modules.h
 subflxu.o: param.h links.h
@@ -899,8 +905,10 @@ sublnka.o: ev.h links.h
 sublnks.o: ev.h links.h
 sublnku.o: links.h
 sublpl.o: ev.h
-submet.o: ev.h
+submet.o: meteo_forcing_module.mod ev.h
 submeteo1.o: meteo.h
+meteo_forcing_module.mod: submeteo2.o
+submeteo2.o: intp_fem_file.mod meteo.h
 submud.o: testbndo.h param.h
 submud_dummy.o: param.h
 subn11.o: param.h
@@ -914,7 +922,7 @@ suboff.o: param.h
 subous.o: ousinf.h
 subousa.o: param.h
 subpar1.o: subpar.h
-subpard.o: param.h common.h
+subpard.o: param.h omp_lib.mod common.h
 subproj.o: param.h
 subqfxf.o: subqfx.h
 subqfxm4.o: subqfxm4.h

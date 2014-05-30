@@ -22,7 +22,7 @@ foreach my $file (@ARGV) {
   print STDERR "$file\n" if $::debug;
 
   my $rlist = {};
-  handle_file($file,$rlist);
+  handle_file($file,$rlist,\@lines);
 
   my $line = write_inc($file,$rlist);
   print "$line\n" if $line;
@@ -44,9 +44,10 @@ rename("$mfile.new","$mfile");
 
 sub handle_file {
 
-  my ($file,$rlist) = @_;
+  my ($file,$rlist,$rlines) = @_;
 
   my $hfile;
+  my $mfile;
   my $fh;
 
   open($fh,"$file") || die "Cannot open file $file\n";
@@ -56,8 +57,16 @@ sub handle_file {
       $hfile = $1;
     } elsif( /^\s*\#\s*include\s*['"]\s*([\w.]+)\s*['"]\s*$/) {
       $hfile = $1;
-    } else {
-      $hfile = "";
+    } elsif( /^\s+use\s+(\w+)\s*,$/) {
+      print STDERR "*** cannot handle more than 1 module per line yet\n";
+    } elsif( /^\s+use\s+(\w+)\s*$/) {
+      $mfile = "$1.mod";
+    } elsif( /^\s+module\s+(\w+)\s*$/) {	#must treat differently
+      my $module = $1;
+      my $fileo = $file;
+      $fileo =~ s/\.f$/.o/;
+      my $line = "$module.mod: $fileo";
+      push(@$rlines,$line);
     }
 
     if( $hfile ) {
@@ -66,6 +75,11 @@ sub handle_file {
       if( $ins ) {	#new
         handle_file($hfile,$rlist);
       }
+      $hfile = "";
+    } elsif( $mfile ) {
+      print STDERR "module found: $mfile\n" if $::debug;
+      my $ins = insert_inc($rlist,$mfile);
+      $mfile = "";
     }
   }
 

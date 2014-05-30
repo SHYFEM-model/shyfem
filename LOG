@@ -1,4 +1,42 @@
 
+30.05.2014
+
+c ./femplot/supsim.f:
+c 30.05.2014    ggu     flag no data points and do not plot
+c
+c ./femplot/supbas.f:
+c 30.05.2014  ggu     new metpnt for meteo points, imicro computed
+c
+c ./fem3d/tmp/femfile/3/submeteo2.f:
+c 20.05.2014    ggu     new routines for new file format
+c
+c ./fem3d/tmp/femfile/3/subintp.f:
+c 18.05.2014    ggu     new routines d_intp_neville(), rd_intp_neville()
+c
+c ./fem3d/submeteo2.f:
+c 20.05.2014    ggu     new routines for new file format
+c
+c ./fem3d/submet.f:
+c 30.05.2014    ggu     new imreg == 3
+c
+c ./fem3d/subintp.f:
+c 18.05.2014    ggu     new routines d_intp_neville(), rd_intp_neville()
+c
+c ./fem3d/subreg.f:
+c 30.05.2014    ggu     in av2amk() do not interpolate for flag values
+c
+c ./fem3d/subsys.f:
+c 30.05.2014    ggu     new default for dragco, new metpnt
+c
+c ./fem3d/subfemfile.f:
+c 30.05.2014    ggu     restructured
+c
+c ./fem3d/subsss.f:
+c 30.05.2014    ggu     new routine rnextsub()
+
+
+
+
 15.05.2014
 
 c ./fem3d/newcon.f:
