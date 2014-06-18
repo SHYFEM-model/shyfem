@@ -1,3 +1,36 @@
+version  6_1_77    18-06-2014    VERS_6_1_77
+
+========================================================== 18-06-2014 - 6_1_77
+
+c ./tmp/shyfem-4168f3c3c5_2014-06-18_stable/fem3d/subbnd.f:
+c 16.06.2014    ggu	new include file bnd.h (with nbndim)
+c
+c ./tmp/shyfem-4168f3c3c5_2014-06-18_stable/fem3d/subnsa.f:
+c 06.06.2014	ggu	deleted sp158k() and sp158kk()
+c
+c ./tmp/shyfem-4168f3c3c5_2014-06-18_stable/fem3d/subfemfile.f:
+c 16.06.2014	ggu	time is now double precision
+c
+c ./tmp/shyfem-4168f3c3c5_2014-06-18_stable/fem3d/subfemintp.f:
+! 16.06.2014	ggu	tiem is noew double
+!
+c ./fem3d/subver.f:
+c 18.06.2014	ggu	version 6.1.77  Clara's maturita' release
+c
+c ./fem3d/subbnd.f:
+c 16.06.2014    ggu	new include file bnd.h (with nbndim)
+c
+c ./fem3d/subnsa.f:
+c 06.06.2014	ggu	deleted sp158k() and sp158kk()
+c
+c ./fem3d/subfemfile.f:
+c 16.06.2014	ggu	time is now double precision
+c
+c ./fem3d/subfemintp.f:
+! 16.06.2014	ggu	tiem is noew double
+
+==========================================================
+
 version  6_1_76    30-05-2014    VERS_6_1_76   commit_2014-06-18
 
 version  6_1_76    30-05-2014    VERS_6_1_76
