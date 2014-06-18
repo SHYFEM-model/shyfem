@@ -53,6 +53,8 @@ c*********************************************************************
 	real, save :: wfact = 1.
 	real, save :: sfact = 1.
 
+	logical, save, private :: bdebug = .true.
+
 	integer, save :: icall = 0
 
 	character*80, save :: wxss = 'wind stress in x [N/m**2]'
@@ -109,8 +111,10 @@ c*********************************************************************
 	integer nintp
 	integer modehum
 	integer nvarm,nid,nlev
-	integer it0
+	!integer it0
+	double precision dtime0,dtime
 	real flag
+	real val0,val1,val2
 
 	real vconst(4)
 	integer nodes(1)
@@ -135,13 +139,14 @@ c*********************************************************************
 	  call getfnm('qflux',heatfile)
 	  call getfnm('rain',rainfile)
 
-	  it0 = itanf
+	  !it0 = itanf
+	  dtime0 = itanf
 
 	  nvar = 3
 	  nintp = 2
 	  what = 'wind'
 	  vconst = (/ 0., 0., pstd, 0. /)
-	  call iff_init(it0,windfile,nvar,nkn,0,nintp
+	  call iff_init(dtime0,windfile,nvar,nkn,0,nintp
      +				,nodes,vconst,idwind)
 
 	  call meteo_set_wind_data(idwind,nvar)
@@ -150,7 +155,7 @@ c*********************************************************************
 	  nintp = 2
 	  what = 'rain'
 	  vconst = (/ 0., 0., 0., 0. /)
-	  call iff_init(it0,rainfile,nvar,nkn,0,nintp
+	  call iff_init(dtime0,rainfile,nvar,nkn,0,nintp
      +				,nodes,vconst,idrain)
 
 	  call meteo_set_rain_data(idrain,nvar)
@@ -159,7 +164,7 @@ c*********************************************************************
 	  nintp = 2
 	  what = 'heat'
 	  vconst = (/ 0., 0., 50., 0. /)
-	  call iff_init(it0,heatfile,nvar,nkn,0,nintp
+	  call iff_init(dtime0,heatfile,nvar,nkn,0,nintp
      +				,nodes,vconst,idheat)
 
 	  call meteo_set_heat_data(idheat,nvar)
@@ -176,25 +181,32 @@ c*********************************************************************
 ! time interpolation
 !------------------------------------------------------------------
 
+	dtime = it
+
 	if( .not. iff_is_constant(idwind) .or. icall == 1 ) then
-	  call iff_time_interpolate(idwind,it,1,1,nkn,wxv)
-	  call iff_time_interpolate(idwind,it,2,1,nkn,wyv)
+	  call iff_time_interpolate(idwind,dtime,1,1,nkn,wxv)
+	  call iff_time_interpolate(idwind,dtime,2,1,nkn,wyv)
 	  if( iff_get_nvar(idwind) == 3 ) then
-	    call iff_time_interpolate(idwind,it,3,1,nkn,ppv)
+	    call iff_time_interpolate(idwind,dtime,3,1,nkn,ppv)
+	!if( bdebug) then
+	!  call iff_get_value(idwind,3,1,1,1000,val1)
+	!  call iff_get_value(idwind,3,2,1,1000,val2)
+	!  call iff_get_file_value(idwind,3,1,1000,val0)
+	!end if
 	  else
 	    call meteo_set_array(nkn,pstd,ppv)
 	  end if
 	end if
 
 	if( .not. iff_is_constant(idrain) .or. icall == 1 ) then
-	  call iff_time_interpolate(idrain,it,1,1,nkn,metrain)
+	  call iff_time_interpolate(idrain,dtime,1,1,nkn,metrain)
 	end if
 
 	if( .not. iff_is_constant(idheat) .or. icall == 1 ) then
-	  call iff_time_interpolate(idheat,it,1,1,nkn,metrad)
-	  call iff_time_interpolate(idheat,it,2,1,nkn,mettair)
-	  call iff_time_interpolate(idheat,it,3,1,nkn,methum)
-	  call iff_time_interpolate(idheat,it,4,1,nkn,metcc)
+	  call iff_time_interpolate(idheat,dtime,1,1,nkn,metrad)
+	  call iff_time_interpolate(idheat,dtime,2,1,nkn,mettair)
+	  call iff_time_interpolate(idheat,dtime,3,1,nkn,methum)
+	  call iff_time_interpolate(idheat,dtime,4,1,nkn,metcc)
 	end if
 
 !------------------------------------------------------------------
@@ -203,7 +215,7 @@ c*********************************************************************
 
 	if( .not. iff_is_constant(idwind) .or. icall == 1 ) then
 	  call meteo_convert_wind_data(idwind,nkn,wxv,wyv
-     +			,tauxnv,tauxnv,metws,ppv)
+     +			,tauxnv,tauynv,metws,ppv)
 	end if
 
 	if( .not. iff_is_constant(idheat) .or. icall == 1 ) then
@@ -331,7 +343,7 @@ c*********************************************************************
 	end if
 
 	wfact = 1. / rowass
-	if( iwtype == 2 ) wfact = roluft / rowass
+	if( iwtype /= 2 ) wfact = roluft / rowass
 	sfact = 1.
 	if( iwtype == 4 ) sfact = nmile / 3600.
 
@@ -350,6 +362,10 @@ c*********************************************************************
 	    write(6,*) 'description string for pressure not recognized: '
 	    write(6,*) string
 	    stop 'error stop meteo_set_wind_data: pressure description'
+	  end if
+	  if( bdebug ) then
+	    write(6,*) 'pressure initialized: ',pfact,string
+	    write(6,*) 'wind type: ',iwtype
 	  end if
 	end if
 

@@ -134,18 +134,18 @@ c******************************************************************
         integer nvols,kvold,kvolm,kvol(1)
         common /kvolc/ nvols,kvold,kvolm,kvol
 
-	integer nfxdim
+	integer nfxdi
         integer nrdveci
 
-	call getdim('nfxdim',nfxdim)
+	call getdim('nfxdim',nfxdi)
 
-	kvold = nfxdim
-        kvolm = nrdveci(kvol,nfxdim)
+	kvold = nfxdi
+        kvolm = nrdveci(kvol,nfxdi)
 
         if( kvolm .lt. 0 ) then
           if( kvolm .eq. -1 ) then
             write(6,*) 'dimension error nvodin in section $VOL : '
-     +                          ,nfxdim
+     +                          ,nfxdi
           else
             write(6,*) 'read error in section $VOL'
           end if
@@ -684,10 +684,8 @@ c sets up element info structure ivol(1) from kvol(1) for one area
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
-	real xline(1), yline(1)
-	common /v1v/xline, /v2v/yline
-	integer kline(1)
-	common /v3v/kline
+	real xline(nkn), yline(nkn)
+	integer kline(nkn)
 
 	logical bclosed
 	logical bdebug
@@ -872,7 +870,7 @@ c******************************************************************
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
-	integer v3v(1)		!used as flag
+	real v3v(1)		!used as flag
 	common /v3v/v3v
 
         integer ipv(1)

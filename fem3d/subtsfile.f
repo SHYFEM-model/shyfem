@@ -150,7 +150,7 @@ c peeks into one record of time series file
 
 	integer iunit
 	integer nvar		!variables (columns) in file (except time)
-	integer it
+	double precision it
 	real f(nvar)
 	integer ierr
 
@@ -170,7 +170,7 @@ c reads one record of time series file
 
 	integer iunit
 	integer nvar		!variables (columns) in file (except time)
-	integer it
+	double precision it
 	real f(nvar)
 	integer ierr
 
@@ -191,7 +191,7 @@ c read record
 c------------------------------------------------------
 
 	read(iunit,*,end=2,err=3) t,(f(i),i=1,nvar)
-	it = nint(t)
+	it = t
 	ierr = 0
 	return
 

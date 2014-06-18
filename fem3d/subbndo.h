@@ -3,8 +3,6 @@ c----------------------------------------------------------------------
 c data structures for open boundary conditions
 c----------------------------------------------------------------------
 
-	include 'param.h'
-
 	integer kbcdim
 	integer kopdim
 	parameter ( kbcdim = nrbdim )	!total number of open boundary nodes

@@ -3250,9 +3250,6 @@ C slightly different from used for hydrodynamics.
       real qsact,taact,tbact,uwact,ccact
      +			,uract,pact,eact,ract,qact
      
-     
-      common /qflxra/ qsact,taact,tbact,uwact,ccact
-     +			,uract,pact,eact,ract,qact
 C
 c	taact  - air temperature, C
 c	uwact  - wind speed, m/s

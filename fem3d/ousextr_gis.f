@@ -224,7 +224,7 @@ c-------------------------------------------------------------------
 
 c******************************************************************
 
-        subroutine wrgis_3d(nb,it,nkn,ilhkv,znv,uprv,vprv)
+        subroutine wrgis_3d(nb,it,nk,ilhkv,znv,uprv,vprv)
 
 c writes one record to file nb (3D)
 c
@@ -243,7 +243,7 @@ c vprv(l,k)	current velocity in y of node k and level l
 
         include 'param.h'
 
-        integer nb,it,nkn
+        integer nb,it,nk
         integer ilhkv(nkndim)
         real znv(nkndim)
         real uprv(nlvdim,nkndim)
@@ -255,9 +255,9 @@ c vprv(l,k)	current velocity in y of node k and level l
         integer k,l,lmax
         real x,y
 
-        write(nb,*) it,nkn
+        write(nb,*) it,nk
 
-        do k=1,nkn
+        do k=1,nk
           lmax = ilhkv(k)
           x = xgv(k)
           y = ygv(k)
@@ -271,7 +271,7 @@ c vprv(l,k)	current velocity in y of node k and level l
 
 c******************************************************************
 
-        subroutine wrgis_3d_surf(nb,it,nkn,ilhkv,znv,uprv,vprv)
+        subroutine wrgis_3d_surf(nb,it,nk,ilhkv,znv,uprv,vprv)
 
 c writes one record to file nb (3D)
 
@@ -279,7 +279,7 @@ c writes one record to file nb (3D)
 
         include 'param.h'
 
-        integer nb,it,nkn
+        integer nb,it,nk
         integer ilhkv(nkndim)
         real znv(nkndim)
         real uprv(nlvdim,nkndim)
@@ -303,7 +303,7 @@ c writes one record to file nb (3D)
 	in_area(x,y) = x .le. 86700. .and. y .ge. -22700.
 
 	n = 0
-        do k=1,nkn
+        do k=1,nk
           x = xgv(k)
           y = ygv(k)
 	  bwrite = in_area(x,y)
@@ -312,7 +312,7 @@ c writes one record to file nb (3D)
 
         write(nb,*) it,n
 
-        do k=1,nkn
+        do k=1,nk
           lmax = ilhkv(k)
           x = xgv(k)
           y = ygv(k)

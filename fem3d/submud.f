@@ -60,20 +60,8 @@
         real wprv(nlvdim,nkndim)
         common /wprv/wprv
 
-        double precision numv(0:nlvdim,nkndim)  !viscosity (momentum)
-        double precision nuhv(0:nlvdim,nkndim)  !diffusivity (scalars)
-        double precision tken(0:nlvdim,nkndim)  !turbulent kinetic energy
-        double precision eps (0:nlvdim,nkndim)  !dissipation rate
-        double precision rls (0:nlvdim,nkndim)  !length scale
-
         integer, allocatable :: innode(:)          !in boundary node number array (bound1)
         integer, allocatable :: ounode(:)          !out boundary node number array (bound2)
-
-        common /numv/numv
-        common /nuhv/nuhv
-        common /tken_gotm/tken
-        common /eps_gotm/eps
-        common /rls_gotm/rls
 
         integer ius,id,itmcon,idtcon	!output parameter
 
@@ -104,8 +92,6 @@
         double precision rhosed		!Mud primary particle density (kg/m3)
         common /rhosed/ rhosed
         double precision cgel(nlvdim),phigel(nlvdim)
-        real rowass     !Mud floc particle density (kg/m3)
-        common /rowass/ rowass
         real mudref		!Initial fluid mud concentration (kg/m3)
         double precision dm0		!Primary particle diameter [m]
         common /dm0/ dm0
@@ -134,7 +120,7 @@
         character*80 dmf2dn(1)          !File for boundary condition
         common /dmf2dn/dmf2dn
         logical, save :: circle,ldumpmud,linitmud,lsetbound
-        include 'testbndo.h'
+        !include 'testbndo.h'
 
         save /mud2dn/
         save /lam2dn/
@@ -369,7 +355,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         wsink = 1.
         ivar = 0
         fact = 1.
-	wsinkv = 0.0001 !DEB for test winterverp const acc
+	!wsinkv = 0.0001 !DEB for test winterverp const acc
         call scal_adv_mud(what,ivar,fact
      &               ,mudc,bnd3_mud
      &               ,mudhpar,wsink,wsinkv
@@ -393,7 +379,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 !       Transport and diffusion of floc diameter
 !       -------------------------------------------------------------
        if (ladvfloc)  call scal_adv_mud(what,ivar,fact
-     &              ,dmf_mud,bnd3_dmf
+     &              ,real(dmf_mud),bnd3_dmf
      &              ,mudhpar,wsink,wprvs
      &              ,difhv,difv,difmol,mudref,circle,.false.)
 !
@@ -462,6 +448,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         common /mudc/mudc
         double precision rhosed                !Mud primary particle density (kg/m3)
         common /rhosed/ rhosed
+	save /rhosed/
         double precision rhow          !Sediment mineral density (kg/m3)
         double precision dm0           !Actual and primary diameter
         double precision nf(nlvdim,nkndim)  ! fractal dimension
@@ -766,7 +753,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         real mudc(nlvdim,1)        !Fluid mud concentration array (kg/m3)      !ccf
         common /mudc/mudc
         real shearf2(nlvdim,nkndim)
-        common /saux1/shearf2
+        common /shearf2/shearf2
         real lambda(nlvdim,nkndim)        ! lambda array
         common/lambda/lambda
 
@@ -860,7 +847,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         real mudc(nlvdim,1)        !Fluid mud concentration array (kg/m3)      !ccf
         common /mudc/mudc
         real shearf2(nlvdim,nkndim)
-        common /saux1/shearf2
+        common /shearf2/shearf2
         real tstress(nlvdim)
         real z0bkmud(nkndim)                   !bottom roughenss on nodes
         common /z0bkmud/z0bkmud
@@ -868,12 +855,12 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         common /z0bk/z0bk
         real visv(0:nlvdim,nkndim)
         common /visv/visv
-        real disv(0:nlvdim,nkndim)
-        common /disv/disv
+        real difv(0:nlvdim,nkndim)
+        common /difv/difv
         real visv_yield(0:nlvdim,nkndim)
         common /visv_yield/visv_yield
-        real disv_yield(0:nlvdim,nkndim)
-        common /disv_yield/disv_yield
+        real difv_yield(0:nlvdim,nkndim)
+        common /difv_yield/difv_yield
 
         integer k,l,nlev
         real aux,dh,du,dv,m2,dbuoy,tau_test,lambda_e
@@ -900,7 +887,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
             if (tau0 .gt. 0. .and. rhop .gt. 0.) then
               fak = 0.5d0+0.5d0*tanh((tstress(l)-tau0)/smooth)
               visv_yield(l,k) = fak * visv(l,k) + (1.-fak) * 99.
-              disv_yield(l,k) = fak * disv(l,k) + (1.-fak) *  0.
+              difv_yield(l,k) = fak * difv(l,k) + (1.-fak) *  0.
               if (l==nlev) then 
                 z0bkmud(k)  = fak * z0bk(k)   + (1.-fak) * 99.
               else
@@ -909,7 +896,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
             else
               fak = 999.
               visv_yield(l,k) = visv(l,k)
-              disv_yield(l,k) = disv(l,k)
+              difv_yield(l,k) = difv(l,k)
               if (l==nlev) then
                 z0bkmud(k) = z0bk(k)
               else
@@ -920,8 +907,8 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
      &                  mod(iwrite,icycle) .eq. 0) then
               write(1118,'(A10,I5,17F14.8)') 'set yield',
      &        l, rhop,tstress(l)-tau0,tstress(l),tau0,
-     &        visv_yield(l,k),disv_yield(l,k),
-     &        visv(l,k),disv(l,k),z0bk(k),z0bkmud(k),fak, 
+     &        visv_yield(l,k),difv_yield(l,k),
+     &        visv(l,k),difv(l,k),z0bk(k),z0bkmud(k),fak, 
      &        tanh((tstress(l)-tau0)/smooth)
             endif
           end do
@@ -991,7 +978,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         real mudc(nlvdim,1)        !Fluid mud concentration array (kg/m3)      !ccf
         common /mudc/mudc
         real shearf2(nlvdim,nkndim)
-        common /saux1/shearf2
+        common /shearf2/shearf2
 
         integer k,nlev
 
@@ -1070,7 +1057,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         real mudc(nlvdim,1)        !Fluid mud concentration array (kg/m3)      !ccf
         common /mudc/mudc
         real shearf2(nlvdim,nkndim)
-        common /saux1/shearf2
+        common /shearf2/shearf2
 
         integer k,l,nlev
         real tstress
@@ -1159,9 +1146,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         double precision dmf_mud(nlvdim,nkndim)  !floc diameter
         common /dmf_mud/dmf_mud
         real shearf2(nlvdim,nkndim)
-        common /saux1/shearf2
-!        double precision eps (0:nlvdim,nkndim)  !dissipation rate
-!        common /eps_gotm/eps
+        common /shearf2/shearf2
 
         real, intent(in)    :: dt                   ! time step
         double precision, intent(in)    :: dm0                  ! Size of primary floc
@@ -1348,7 +1333,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         real rhov(nlvdim,nkndim)
         common /rhov/rhov
         real shearf2(nlvdim,nkndim)
-        common /saux1/shearf2
+        common /shearf2/shearf2
         real lambda(nlvdim,nkndim)        ! lambda array
         common/lambda/lambda
 
@@ -1673,11 +1658,8 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         real difhv(nlvdim,1)
         real difv(0:nlvdim,1)
         real difmol
-        real const3d(0:nlvdim,nkndim)
 
         logical lcircle,lsetbound
-
-        common /const3d/const3d
 
         real bnd3_aux(nb3dim)
         real r3v(nlvdim,nkndim)
@@ -1947,7 +1929,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         double precision dmf_mud(nlvdim,nkndim)  !floc diameter
         common /dmf_mud/dmf_mud
         real shearf2(nlvdim,nkndim)
-        common /saux1/shearf2
+        common /shearf2/shearf2
         integer nen3v(3,1)
         common /nen3v/nen3v
         real xgv(1),ygv(1) ! coordinate nodi

@@ -156,7 +156,7 @@ c ----------------------
 
 c*************************************************************
 
-	function iapini(mode,nkndim,neldim,matdim)
+	function iapini(mode,nkndi,neldi,matdim)
 
 c init routine for ap routines
 c reads init files nlsina,fnminh,nlsa
@@ -165,14 +165,14 @@ c
 c mode          for assnam 1:assign basin 2:assign run 3:both
 c nkndim        dimension for nkn for reading bas file
 c neldim        dimension for nel for reading bas file
-c matdim        dimension for sp158k --> only called if .gt. 0
+c matdim        (probably useless...)
 c iapini        1:success 0:error
 c
 c mode negative: do not ask for new basin and simulation
 
 	implicit none
 
-	integer mode,nkndim,neldim,matdim
+	integer mode,nkndi,neldi,matdim
 
 	character*80 descrr
 	character*80 line
@@ -214,7 +214,7 @@ c open bas file
 	if(basnew.ne.basold) then
 		iunit=idefbas(basnew,'old')
 		if(iunit.le.0) return
-		call sp13rr(iunit,nkndim,neldim)
+		call sp13rr(iunit,nkndi,neldi)
 		close(iunit)
 		basold=basnew
 
@@ -239,7 +239,6 @@ c set up boundary nodes
 
 	if(matdim.gt.0) then
 		call sp131k(matdim)
-		!call sp158k(0)
 	end if
 
 	iapini=1

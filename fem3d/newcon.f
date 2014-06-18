@@ -342,9 +342,6 @@ c special version with factor for BC and variable sinking velocity
 	real difv(0:nlvdim,1)
         real difmol
 
-        real const3d(0:nlvdim,nkndim)
-        common /const3d/const3d
-
 	real bnd3_aux(nb3dim)
         real r3v(nlvdim,nkndim)
 
@@ -353,7 +350,6 @@ c special version with factor for BC and variable sinking velocity
 	character*20 whatvar,whataux
 
 	robs = 0.
-	call const3d_setup
 
 c--------------------------------------------------------------
 c make identifier for variable

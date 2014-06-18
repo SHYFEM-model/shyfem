@@ -51,7 +51,8 @@ c**************************************************************
 c
 c b1cn is real in main and double precision in init ???????????
 c ligth -> light	dove viene utilizzato ???
-c ddepth		a che cosa serve ????
+c ddepth		a che cosa serve ???? -> needed in standalone
+c drr			-> needed in standalone
 c
 c in bfm Makefile:
 c
@@ -347,19 +348,6 @@ c computes ecological scalars with BFM  model
 
 	integer itmbfm,idtbfm,ivs1,ivs2,ivs3
 	 
-c---------------------------------------------------------------
-c aux arrays superposed onto other aux arrays
-c---------------------------------------------------------------
-
-	real shearf2(nlvdim,nkndim)
-	common /saux1/shearf2
-	real buoyf2(nlvdim,nkndim)
-	common /saux2/buoyf2
-	real taub(1)
-	common /v1v/taub
-	real areaac(1)
-	common /v2v/areaac
-
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
 	real uprv(nlvdim,nkndim)
@@ -384,7 +372,7 @@ c---------------------------------------------------------------
 	save czdef
 
 	real ddepth(nkndim)
-	common /ddepth/ddepth
+	common /ddepth/ddepth		!-> needed in standalone
 
 	double precision z0s,z0b	!surface and bottom roughness length (m)
 
@@ -392,7 +380,7 @@ c---------------------------------------------------------------
 	real areale
 
 	real drr
-        common /drr/drr
+        common /drr/drr			!-> needed in standalone
 
 ! function
 	logical has_restart

@@ -1,5 +1,82 @@
 ============================================================
 
+Wed Jun 18 13:14:02 CEST 2014
+
+new meteo file format, cleaning of code
+
+ .gitignore                   |    1 +
+ LOG                          |   16 +
+ fem3d/Makefile               |    6 +-
+ fem3d/aquabc_fem_interface.f |    3 -
+ fem3d/bclfix.h               |    5 +
+ fem3d/bedload.f              |  669 -------
+ fem3d/bnd.h                  |    8 +
+ fem3d/chezy.h                |    2 -
+ fem3d/common.h               |    4 +-
+ fem3d/feminf.f               |   75 +-
+ fem3d/ht.f                   |   37 +-
+ fem3d/mkgeomr.f              |  152 ++
+ fem3d/new3di.f               |   10 +-
+ fem3d/newcon.f               |    4 -
+ fem3d/newexpl.f              |   18 +-
+ fem3d/newfix.f               |   12 +-
+ fem3d/newnohydro.f           |   36 +-
+ fem3d/newnudge.f             |    2 +-
+ fem3d/newtra.f               |   26 +-
+ fem3d/nkonst.h               |   10 +
+ fem3d/nonhydro_spk.f         |    4 +-
+ fem3d/nosextr_gis.f          |   22 +-
+ fem3d/nosextr_nodes.f        |    2 +
+ fem3d/ousextr_cat.f          |    7 +-
+ fem3d/ousextr_gis.f          |   16 +-
+ fem3d/ousextr_nodes.f        |   13 +-
+ fem3d/ousextr_records.f      |    6 +-
+ fem3d/ousinf.f               |    4 +-
+ fem3d/ousvdiff.f             |   12 -
+ fem3d/param.h                |    6 +-
+ fem3d/sedi3d.f               |    4 +-
+ fem3d/splitext.f             |    5 -
+ fem3d/subapn.f               |    9 +-
+ fem3d/subbas.f               |    8 +-
+ fem3d/subbfm.f               |   20 +-
+ fem3d/subbnd.f               |   45 +-
+ fem3d/subbndo.f              |   18 +-
+ fem3d/subbndo.h              |    2 -
+ fem3d/subcus.f               |    6 +-
+ fem3d/subdef.f               |    6 +-
+ fem3d/subdim.f               |    4 +-
+ fem3d/subdwq.f               |    8 +-
+ fem3d/subele.f               |  156 +-
+ fem3d/subexta.f              |    8 +-
+ fem3d/subfemfile.f           |  203 ++-
+ fem3d/subfemintp.f           |  260 ++-
+ fem3d/subgotm.f              |  158 +-
+ fem3d/subgotm_mud.f          |  219 ++--
+ fem3d/subinterpol1.f         |    6 +-
+ fem3d/sublnka.f              |   10 +-
+ fem3d/submeteo2.f            |   46 +-
+ fem3d/submud.f               | 4110 +++++++++++++++++++++---------------------
+ fem3d/subn35.f               |   13 +
+ fem3d/subnsa.f               |  393 +----
+ fem3d/subqfxm3.f             |    9 +-
+ fem3d/subreg.f               |   14 +-
+ fem3d/subtsfile.f            |    6 +-
+ fem3d/subtsuvfile.f          |   14 +-
+ fem3d/subvola.f              |   18 +-
+ fem3d/subwat.f               |   16 +-
+ fem3d/subwwm.f               |   27 +-
+ fem3d/testbndo.h             |    1 +
+ fem3d/win2fem.f              |  240 +++
+ fem3d/zinit.f                |    3 +-
+ femadj/param.h               |    6 +-
+ femdoc/final/shyfem.pdf      |  Bin 271362 -> 271362 bytes
+ femdoc/final/shyfem.ps       |   30 +-
+ femplot/param.h              |    6 +-
+ param.h                      |    6 +-
+ 69 files changed, 3400 insertions(+), 3901 deletions(-)
+
+============================================================
+
 Fri May 30 18:26:23 CEST 2014
 
 New version 6_1_76

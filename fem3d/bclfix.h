@@ -21,3 +21,8 @@
         common /ielfix/ielfix
         save /ielfix/
 
+        real ubound(nlxdim,nkndim)
+        real vbound(nlxdim,nkndim)
+        common /ubound/ubound
+        common /vbound/vbound
+	save /ubound/,/vbound/

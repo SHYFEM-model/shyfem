@@ -31,8 +31,7 @@ c notes :
 c
 c for scalars: -999. uses ambient value
 c
-c ibndim is the maximum dimension used for boundary information 
-c ibndim is also declared in ht
+c nbndim is the maximum dimension used for boundary information 
 c nbvdim is the actual filling of the variables
 c
 c revision log :
@@ -74,6 +73,7 @@ c 23.02.2011    ggu     new parameters tramp and levflx implemented
 c 21.06.2012    ggu&aar new file names for mud module
 c 29.11.2013    ggu	allow for non continous boundary numbering
 c 28.03.2014    ggu	new parameter lgrpps
+c 16.06.2014    ggu	new include file bnd.h (with nbndim)
 c
 c************************************************************************
 
@@ -139,7 +139,7 @@ c reads boundary info from STR file
 	character*80 name,text
 	double precision dvalue
 	real value
-	integer nbcdim,nrbdim
+	integer nbcdi,nrbdi
 	integer i,kranf,krend,kref
 	integer iweich,id,nbnd
 	integer nrdpar
@@ -150,11 +150,11 @@ c reads boundary info from STR file
 	save icall
 	data icall / 0 /
 
-	call getdim('nbcdim',nbcdim)
-	call getdim('nrbdim',nrbdim)
+	call getdim('nbcdim',nbcdi)
+	call getdim('nrbdim',nrbdi)
 
 	if( icall .eq. 0 ) then		!initialize bnd array
-	  do i=1,nbcdim
+	  do i=1,nbcdi
 
 	    call bnd_init(i)
 
@@ -179,7 +179,7 @@ c reads boundary info from STR file
 	end if
 
 	nbc = max(nbc,ibc)	!allow for non contiguous numbering
-	if(nbc.gt.nbcdim) goto 77
+	if(nbc.gt.nbcdi) goto 77
 
 	call sctpar('bound')
 	call sctfnm('bound')
@@ -439,7 +439,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccc
 	    if( iweich .eq. 4 ) goto 93
 	    if( name .eq. 'kbound' ) then	!$$1stnode
 		nrb=nrb+1
-		if( nrb .gt. nrbdim ) goto 76
+		if( nrb .gt. nrbdi ) goto 76
 		irv(nrb)=nint(value)
 	    else if( iweich .eq. 3 ) then	!file name
 	        ! must be handeled later
@@ -484,11 +484,11 @@ cccccccccccccccccccccccccccccccccccccccccccccccccc
 	return
    76	continue
 	write(6,*) 'Dimension error for nrbdim'
-	write(6,*) 'nrbdim :',nrbdim
+	write(6,*) 'nrbdim :',nrbdi
 	stop 'error stop : rdbnds'
    77	continue
 	write(6,*) 'Dimension error for nbcdim'
-	write(6,*) 'nbcdim :',nbcdim
+	write(6,*) 'nbcdim :',nbcdi
 	stop 'error stop : rdbnds'
    92	continue
 	write(6,*) 'Error in name list read : ',iweich
@@ -731,8 +731,7 @@ c********************************************************************
 
 	implicit none
 
-	integer ibndim
-	parameter (ibndim=100)
+	include 'param.h'
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -764,8 +763,8 @@ c********************************************************************
         character*80 bfm3bc(1)
         common /bfm3bc/bfm3bc
 
-        real bnd(ibndim,1)
-        common /bnd/bnd
+	include 'bnd.h'
+
 	integer irv(1)
 	common /irv/irv
 
@@ -786,7 +785,7 @@ c********************************************************************
           write(6,*) lam2dn(j)
 	  write(6,*) tox3dn(j)
 	  write(6,*) bfm1bc(j),bfm2bc(j),bfm3bc(j)
-	  write(6,*) (bnd(i,j),i=1,ibndim)
+	  write(6,*) (bnd(i,j),i=1,nbndim)
 	end do
 
 	write(6,*) '/irv/'
@@ -1237,15 +1236,12 @@ c initializes boundary ibc
 
 	integer ibc
 
-	integer ibndim
-	parameter (ibndim=100)
-
-        real bnd(ibndim,1)
-	common /bnd/bnd
+	include 'param.h'
+	include 'bnd.h'
 
 	integer i
 
-	do i=1,ibndim
+	do i=1,nbndim
 	  bnd(i,ibc) = 0.
 	end do
 
@@ -1266,11 +1262,8 @@ c sets/gets value at entry ientry
         real value
         logical bset
 
-	integer ibndim
-	parameter (ibndim=100)
-
-        real bnd(ibndim,1)
-	common /bnd/bnd
+	include 'param.h'
+	include 'bnd.h'
 
         call chkibc(ibc,'bndsetget:')
 

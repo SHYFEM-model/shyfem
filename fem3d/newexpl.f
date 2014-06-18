@@ -168,7 +168,6 @@ c computes stability for viscosity
         common /rdistv/rdistv
 
 	integer ie,ii,iei,l,lmax,k
-	integer noslip
 	real u,v,ui,vi
 	real anu,ax,ay
 	real area,areai
@@ -332,14 +331,11 @@ c******************************************************************
         real cb,cd 
         real ahpar,khpar 
         real vismol                     !constant vertical molecular viscosity
-        integer noslip                  !no slip BC
-        common /noslip/noslip
-        common /rpara1/cb,cd,ahpar,khpar,vismol
         integer inodv(1)
         common /inodv/inodv
-        integer ibound(1)
-        common /ibound/ibound
-        save /inodv/,/ibound/
+        integer iopbnd(1)
+        common /iopbnd/iopbnd
+        save /inodv/,/iopbnd/
 
         real v1v(1)
         common /v1v/v1v
@@ -356,6 +352,7 @@ c******************************************************************
         common /utlov/utlov, /vtlov/vtlov
 
 	integer ie,k,ii,l,lmax
+	!logical bnoslip
 	real ao,u,v
 	real anu,rv,acux,acuy
 	real area,w,um,vm
@@ -366,7 +363,7 @@ c******************************************************************
 	logical is_material_boundary_node
 
 	is_material_boundary_node(k) = inodv(k) .ne. 0 
-     +					.and. ibound(k) .eq. 0
+     +					.and. iopbnd(k) .le. 0
 
 	call get_timestep(dt)
 
@@ -375,6 +372,7 @@ c******************************************************************
         !write(6,*)ahpar
 	if( anu .le. 0 ) return
 	!write(6,*) 'anu: ',anu
+        !bnoslip = nint(getpar('noslip')) .ne. 0
 
 	do k=1,nkn
 	  v1v(k) = 0.		!inverse area
@@ -404,7 +402,7 @@ c******************************************************************
 
 	do k=1,nkn
 	  rv = 1. / v2v(k)
-	  !if( noslip .ne. 0 .and. is_material_boundary_node(k) ) rv = 0.
+	  !if( bnoslip .and. is_material_boundary_node(k) ) rv = 0.
 	  lmax = ilhkv(k)
 	  do l=1,lmax
 	    saux1(l,k) = saux1(l,k) * rv
@@ -600,8 +598,6 @@ c******************************************************************
         common /ilhv/ilhv
         integer ilhkv(1)
         common /ilhkv/ilhkv
-        real radv
-        common /radv/radv
 
 	logical bvertadv		! new vertical advection for momentum
 	real zxadv,zyadv

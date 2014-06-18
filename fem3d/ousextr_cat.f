@@ -53,12 +53,17 @@ c concatenates two ous files into one
         common /vtlnv/vtlnv
 
 	real hev(neldim)
+	common /hev/hev
 
 	real znv(nkndim)
 	real zenv(3,neldim)
-
 	real ulnv(nlvdim,nkndim)
 	real vlnv(nlvdim,nkndim)
+        common /znv/znv
+        common /zenv/zenv
+        common /ulnv/ulnv
+        common /vlnv/vlnv
+
 	real ut2v(neldim)
 	real vt2v(neldim)
 	real u2v(neldim)

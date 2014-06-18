@@ -37,16 +37,25 @@ c--------------------------------------------------
 	real hkv(nkndim)
 	real zenv(3,neldim)
 
-	common /zenv/zenv		! need this for get_layer_thickness
-	common /hev/hev
+        common /ilhv/ilhv
+        common /ilhkv/ilhkv
 	common /hlv/hlv
+	common /hev/hev
 	common /hkv/hkv
+	common /zenv/zenv		! need this for get_layer_thickness
 
 	real znv(nkndim)
         real utlnv(nlvdim,neldim)
         real vtlnv(nlvdim,neldim)
 	real uprv(nlvdim,nkndim)
 	real vprv(nlvdim,nkndim)
+
+	common /znv/znv
+	common /utlnv/utlnv
+	common /vtlnv/vtlnv
+	common /uprv/uprv
+	common /vprv/vprv
+
 	real weight(nlvdim,nkndim)
 	real hl(nlvdim)
 	real ut2v(neldim)

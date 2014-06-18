@@ -7,7 +7,7 @@ c contents :
 c
 c subroutine sp131a(nkndim,neldim)		check dimension for nkn,nel
 c subroutine sp131b(nrbdim,nbcdim)		check dimension for nrb,nbc
-c subroutine sp131k(matdim)			check dimension for sp158k
+c subroutine sp131k(matdim)			check dimension for matrix
 c subroutine sp131g(matdim,mbwdim,ngl,mbw,isym) check matrix dimension
 c subroutine sp131m(mbwdim)			check dimension for band width
 c subroutine cstdim(nkndim,...)			writes dimension to common block
@@ -100,7 +100,7 @@ c*************************************************
 
 	subroutine sp131k(matdim)
 
-c check dimension for routine sp158k
+c check dimension for global matrix (probably not needed anymore)
 c
 c matdim	dimension for matrix
 

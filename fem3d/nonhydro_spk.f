@@ -40,9 +40,9 @@
         double precision   droptol, permtol
         double precision   zero,one
 	integer l,lmax,nn,nnn
-	real*8 qpov(nlvdim,nkndim)
+	double precision qpov(nlvdim,nkndim)
 	common /qpov/qpov
-	real*8 qpnv(nlvdim,nkndim)
+	double precision qpnv(nlvdim,nkndim)
 	common /qpnv/qpnv
 	integer i
         !ITPACK

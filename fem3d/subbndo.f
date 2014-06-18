@@ -81,6 +81,7 @@ c sets up bndo data structure
 
 	implicit none
 
+	include 'param.h'
 	include 'subbndo.h'
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -90,7 +91,7 @@ c sets up bndo data structure
 	common /iopbnd/iopbnd
 	integer kantv(2,1)
 	common /kantv/kantv
-	integer nen3v(1)
+	integer nen3v(3,1)
 	common /nen3v/nen3v
         real xgv(1),ygv(1)
         common /xgv/xgv, /ygv/ygv
@@ -100,7 +101,7 @@ c sets up bndo data structure
 	integer k,nodes,itype
 	integer i,ibc
 	integer inext,ilast,knext,klast
-	integer ie,n,ibase
+	integer ie,n
 	integer ii,iii,ib,in,kn,nb,j
 	real area
 	real dx,dy
@@ -216,15 +217,16 @@ c----------------------------------------------------------
 
 	do ie=1,nel
 
-	  call elebase(ie,n,ibase)
+	  !call elebase(ie,n,ibase)
+	  n = 3
 	  area = areaele(ie)
 
 	  do ii=1,n
-	    k = nen3v(ibase+ii)
+	    k = nen3v(ii,ie)
 	    ib = iopbnd(k)
 	    if( ib .gt. 0 ) then		!insert inner nodes
 	      do iii=1,n
-		kn = nen3v(ibase+iii)
+		kn = nen3v(iii,ie)
 	        in = iopbnd(kn)
 		if( in .le. 0 ) then		!only inner nodes
 		  call bndinsert(ib,area,kn)
@@ -292,6 +294,7 @@ c inserts node kn with weight area into list (internal routine)
 	real area		!weight
 	integer kn		!node number to insert
 
+	include 'param.h'
 	include 'subbndo.h'
 
 	integer nb,j,k
@@ -347,6 +350,7 @@ c writes info on open boundary nodes to terminal
 
         integer iunit
 
+	include 'param.h'
 	include 'subbndo.h'
 
         integer iopbnd(1)
@@ -397,6 +401,7 @@ c checks if node k is a zeta boundary
 	logical is_zeta_bound
 	integer k
 
+	include 'param.h'
 	include 'subbndo.h'
 
         integer iopbnd(1)
@@ -465,6 +470,7 @@ c imposes boundary conditions on open boundary
         real cv(nlvdi,1)
         real rbc(nlvdi,1)	!boundary condition (3D)
 
+	include 'param.h'
         include 'subbndo.h'
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -532,6 +538,7 @@ c adjusts for ambient value, no gradient or outgoing flow
 	real uprv(nlvdi,1)
 	real vprv(nlvdi,1)
 
+	include 'param.h'
 	include 'subbndo.h'
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -657,6 +664,7 @@ c imposes radiation condition for levels
 	integer it
 	real rzv(1)
 
+	include 'param.h'
 	include 'subbndo.h'
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw

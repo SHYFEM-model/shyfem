@@ -925,12 +925,8 @@ c-----------------------------------------
 	real rhact(0:nlvdim+1)
 	real alev(0:nlvdim)
 c-----------------------------------------
-c	real rmat(1),rvec(1)
-c	common /rmat/rmat, /rvec/rvec
-c	real ppx,ppy
 	double precision rmat(10*nlvdim)
-	!double precision rvec(2*nlvdim)
-	double precision rvec(6*nlvdim)		!ASYM
+	double precision rvec(6*nlvdim)		!ASYM (3 systems to solve)
 	double precision ppx,ppy
 
 	double precision ddxv(2*nlvdim,neldim)	!ASYM
@@ -1948,8 +1944,8 @@ c
 c
 	return
    99   continue
-        write(6,*) 'ier from sp158s : ',ier
-        stop 'error stop sp158s'
+        write(6,*) 'ier from mchb : ',ier
+        stop 'error stop dryz'
 	end
 
 c**************************************************

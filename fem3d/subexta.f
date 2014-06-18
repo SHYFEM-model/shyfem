@@ -69,19 +69,19 @@ c******************************************************************
         common /knausc/ knausm,knaus
 
 	logical handlesec
-	integer nexdim
+	integer nexdi
 	integer nrdveci
 
 	if( .not. handlesec('extra') ) return
 
-	call getdim('nexdim',nexdim)
+	call getdim('nexdim',nexdi)
 
-	knausm = nrdveci(knaus,nexdim)
+	knausm = nrdveci(knaus,nexdi)
 
 	if( knausm .lt. 0 ) then
 	  if( knausm .eq. -1 ) then
 	    write(6,*) 'dimension error nexdim in section $extra : '
-     +				,nexdim
+     +				,nexdi
 	  else
 	    write(6,*) 'read error in section $extra'
 	  end if

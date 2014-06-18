@@ -1,4 +1,20 @@
 
+18.06.2014
+
+c ./fem3d/subbnd.f:
+c 16.06.2014    ggu     new include file bnd.h (with nbndim)
+c
+c ./fem3d/subnsa.f:
+c 06.06.2014    ggu     deleted sp158k() and sp158kk()
+c
+c ./fem3d/subfemfile.f:
+c 16.06.2014    ggu     time is now double precision
+c
+c ./fem3d/subfemintp.f:
+! 16.06.2014    ggu     tiem is noew double
+
+
+
 30.05.2014
 
 c ./femplot/supsim.f:

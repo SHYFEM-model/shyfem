@@ -136,11 +136,6 @@ c nudges velocities on open boundaries
 	integer ilhv(1)
 	common /ilhv/ilhv
 
-	real ubound(nlxdim,nkndim)
-	real vbound(nlxdim,nkndim)
-	common /ubound/ubound
-	common /vbound/vbound
-
         integer ie,l,i,k,ii,n
 	integer lmax,ifact
 	integer nintp,nvar,ibc,nodes,nsize,ip
@@ -299,11 +294,6 @@ c fixes velocities on open boundaries
 	integer ilhv(1)
 	common /ilhv/ilhv
 
-	real ubound(nlxdim,nkndim)
-	real vbound(nlxdim,nkndim)
-	common /ubound/ubound
-	common /vbound/vbound
-
         integer ie,l,i,k,ii,n
 	integer lmax,ifact
 	integer nintp,nvar,ibc,nodes,nsize,ip
@@ -448,7 +438,7 @@ c initialization of bclfix routines
 	integer nen3v(3,neldim)
 	common /nen3v/nen3v
 
-	integer v1v(1)
+	real v1v(1)
 	common /v1v/v1v
 
         integer iuvfix(neldim)

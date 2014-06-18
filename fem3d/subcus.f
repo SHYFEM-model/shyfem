@@ -2003,7 +2003,7 @@ c*****************************************************************
 	include 'param.h'
 
 	integer k,ie,ii,l
-	real pi,dcor,z0,r0,f,omega,grav
+	real pi,dcori,z0,r0,f,omega,grav
 	real aux,r02,r2
 	real x,y,z,u,v
 
@@ -2036,10 +2036,10 @@ c*****************************************************************
 	common /v1v/v1v
 
 	pi = 4.*atan(1.)
-	dcor = 45.
+	dcori = 45.
 	z0 = 0.
 	r0 = 0.
-	f = 2.0 * 0.729E-4 * sin(dcor*pi/180.)
+	f = 2.0 * 0.729E-4 * sin(dcori*pi/180.)
 	omega = 0.5E-5
 	grav = 9.81
 

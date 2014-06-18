@@ -17,7 +17,7 @@ c 12.01.2011	ggu	debug routine introduced (sp13ts)
 c
 c***********************************************************
 
-	subroutine sp13rr(nb,nkndim,neldim)
+	subroutine sp13rr(nb,nkndi,neldi)
 
 c unformatted read from lagoon file
 c
@@ -25,7 +25,7 @@ c iunit		unit number of file to be read
 
 	implicit none
 
-	integer nb,nkndim,neldim
+	integer nb,nkndi,neldi
 
 	character*80 descrr
 	common /descrr/descrr
@@ -62,7 +62,7 @@ c -------------------------
 	read(nb) dcor,dirn
 	read(nb) descrr
 
-	if(nkn.gt.nkndim.or.nel.gt.neldim) goto 97
+	if(nkn.gt.nkndi.or.nel.gt.neldi) goto 97
 
 	read(nb)((nen3v(ii,i),ii=1,3),i=1,nel)
 	read(nb)(ipv(i),i=1,nkn)
@@ -88,7 +88,7 @@ c	call sp13ts(nvers,79,0)
    97	continue
 	write(6,*) 'Reading basin...'
 	write(6,*) 'Dimension error'
-	write(6,*) 'nkndim,neldim :',nkndim,neldim
+	write(6,*) 'nkndim,neldim :',nkndi,neldi
 	write(6,*) 'nkn,nel       :',nkn,nel
 	write(6,*) 'ngr,mbw       :',ngr,mbw
 	stop 'error stop : sp13rr'

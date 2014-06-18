@@ -39,7 +39,7 @@ c local
 	logical bverbose
         integer i,n
         integer nli,nbn,nin,nis,ngrd,ngrd1,ngrd2
-        integer nlkdim,ngrdim
+        integer nlkdi
 
 	bverbose = .false.
 
@@ -47,15 +47,15 @@ c-------------------------------------------------------------
 c get dimension for link array
 c-------------------------------------------------------------
 
-	call getdim('nlkdim',nlkdim)
-	write(6,*) 'set_geom: nlkdim = ',nlkdim
+	call getdim('nlkdim',nlkdi)
+	write(6,*) 'set_geom: nlkdim = ',nlkdi
 	if( ngr .gt. maxlnk ) goto 98
 
 c-------------------------------------------------------------
 c make static arrays
 c-------------------------------------------------------------
 
-        call mklenk(nlkdim,nkn,nel,nen3v,ilinkv,lenkv)
+        call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
         call mklink(nkn,ilinkv,lenkv,linkv)
 
         call mkkant(nkn,ilinkv,lenkv,linkv,kantv)
@@ -88,7 +88,7 @@ c-------------------------------------------------------------
 	nli = ngrd/2
 
 	if( bverbose ) then
-          write(6,*) 'dimension                : ',nlkdim
+          write(6,*) 'dimension                : ',nlkdi
           write(6,*) 'grades                   : ',ngrd
           write(6,*) 'formula (nis)            : ',ngrd1
           write(6,*) 'formula (nel)            : ',ngrd2

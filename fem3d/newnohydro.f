@@ -23,9 +23,9 @@ c initializes non hydrostatic pressure terms
 	common /level/ nlvdi,nlv
 	integer k,l
 
-	real*8 qpov(nlvdim,nkndim)
+	double precision qpov(nlvdim,nkndim)
 	common /qpov/qpov
-	real*8 qpnv(nlvdim,nkndim)
+	double precision qpnv(nlvdim,nkndim)
 	common /qpnv/qpnv
         save /qpov/,/qpnv/	!this should be enough for all appearances 
 
@@ -55,9 +55,9 @@ c integrates non hydrostatic adjustment to equations
 	common /level/ nlvdi,nlv
 	integer k,l
 
-	real*8 qpov(nlvdim,nkndim)
+	double precision qpov(nlvdim,nkndim)
 	common /qpov/qpov
-	real*8 qpnv(nlvdim,nkndim)
+	double precision qpnv(nlvdim,nkndim)
 	common /qpnv/qpnv
 	integer icall_conh
 	save icall_conh
@@ -109,9 +109,9 @@ c copies new values of q to old time step
 	common /level/ nlvdi,nlv
 	integer k,l
 
-	real*8 qpov(nlvdim,nkndim)
+	double precision qpov(nlvdim,nkndim)
 	common /qpov/qpov
-	real*8 qpnv(nlvdim,nkndim)
+	double precision qpnv(nlvdim,nkndim)
 	common /qpnv/qpnv
 
 	do k = 1,nkn
@@ -168,9 +168,9 @@ c common
 	common /nen3v/nen3v
 	real zeov(3,1),zenv(3,1)
 	common /zeov/zeov, /zenv/zenv
-	real*8 qpov(nlvdim,nkndim)
+	double precision qpov(nlvdim,nkndim)
 	common /qpov/qpov
-	real*8 qpnv(nlvdim,nkndim)
+	double precision qpnv(nlvdim,nkndim)
 	common /qpnv/qpnv
         integer k,ie,ii,l,iii,ll
 	integer ilevel,lmax
@@ -384,7 +384,7 @@ c adds explicit part of non hydrostatic pressure to explict terms
 	common /nen3v/nen3v
         real hdeov(nlvdim,1)
         common /hdeov/hdeov
-	real*8 qpov(nlvdim,nkndim)
+	double precision qpov(nlvdim,nkndim)
 	common /qpov/qpov
 
         integer k,l,ie,ii,lmax	
@@ -471,9 +471,9 @@ c common
 	common /nen3v/nen3v
 	real zeov(3,1),zenv(3,1)
 	common /zeov/zeov, /zenv/zenv
-	real*8 qpov(nlvdim,nkndim)
+	double precision qpov(nlvdim,nkndim)
 	common /qpov/qpov
-	real*8 qpnv(nlvdim,nkndim)
+	double precision qpnv(nlvdim,nkndim)
 	common /qpnv/qpnv
 
         integer k,ie,ii,l,iii,k2,k3,ii2,ii3,jj
@@ -491,8 +491,8 @@ c common
 	real wdiag(0:nlvdim,nkndim)
 	real wdiagt(0:nlvdim,nkndim),wdiagb(0:nlvdim,nkndim)
 	integer nl,n,m,ll,kk
-	real*8 mat(3,3),matl(3,3)
-	real*8 vnot(3)
+	double precision mat(3,3),matl(3,3)
+	double precision vnot(3)
 	integer ia,ib,ic,iat,ibt,ict,iab,ibb,icb
 	real aq
 	 real getpar
@@ -594,7 +594,7 @@ cc********************************************************************
          integer k,l,lmax,nn
          integer ilhv(1), ilhkv(1)
          common /ilhv/ilhv, /ilhkv/ilhkv
-         real*8 qpnv(nlvdim,nkndim)
+         double precision qpnv(nlvdim,nkndim)
          common /qpnv/qpnv
 
          nn=0
@@ -630,7 +630,7 @@ c********************************************************************
 	 common /femtim/itanf,itend,idt,nits,niter,it
          integer nen3v(3,1)
 	 common /nen3v/nen3v
-         real*8 qpnv(nlvdim,nkndim)
+         double precision qpnv(nlvdim,nkndim)
          common /qpnv/qpnv
 	 real hdknv(nlvdim,nkndim)
 	 common /hdknv/hdknv
@@ -646,7 +646,7 @@ c********************************************************************
 	 double precision aj,rk3,rv,aj4,aj12
 	 double precision b(3),c(3),f(3)
 	 real dt,dzcc
-	 real*8 uqaux,vqaux
+	 double precision uqaux,vqaux
          real grav,fcor,dcor,dirn,rowass,roluft
          common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
          real rrho0	
@@ -726,8 +726,8 @@ c********************************************************************
 
 	 integer i,j,l,ipkk,ipkkt,ipkkb,ik,nk
 	 integer kn(3)
-	 real*8 mat(3,3),matl(3,3)
-	 real*8 vnot(3) 
+	 double precision mat(3,3),matl(3,3)
+	 double precision vnot(3) 
 	 integer lmax
 	 integer ie,nn
 

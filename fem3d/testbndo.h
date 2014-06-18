@@ -11,6 +11,7 @@ c----------------------------------------------------------------------
 
 	integer iopbnd(1)
 	common /iopbnd/iopbnd
+	save /iopbnd/
 
 	integer k_n
 	logical is_boundary, is_external_boundary, is_internal_boundary

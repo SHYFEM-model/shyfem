@@ -52,14 +52,16 @@ c opens T/S file
 
 	logical bformat,bdebug
 	integer iu
+	integer iformat
 
 	bdebug = .true.
 	bdebug = .false.
 
 	iu = 0
-	call fem_file_read_open(name,np,iu,bformat)
+	call fem_file_read_open(name,np,iu,iformat)
 	if ( iu .eq. 0 ) goto 99
 
+	bformat = iformat .eq. 1
 	if( .not. bformat ) iu = -iu
 
 	if( bdebug ) then
@@ -108,7 +110,9 @@ c*******************************************************************
 
 	logical bdebug,bcons,bformat
 	integer iu,lmax,ierr,k
+	integer iformat
         real vmin,vmax
+	double precision dtime
 	character*80 string
 
 	integer il_data(nkndim)
@@ -131,6 +135,8 @@ c--------------------------------------------------------------
 
 	iu = iunit(1)
 	bformat = iu .gt. 0
+	iformat = 0
+	if( iu .gt. 0 ) iformat = 1
 	iu = abs(iu)
 
 	if( iu .eq. 0 ) return
@@ -148,9 +154,11 @@ c--------------------------------------------------------------
 c read new data
 c--------------------------------------------------------------
 
-	write(6,*)'reading T/S values', it
+	dtime = it
 
-        call fem_file_read_3d(bformat,iu,it
+	write(6,*)'reading T/S values', it,dtime
+
+        call fem_file_read_3d(iformat,iu,dtime
      +                          ,nkn,lmax,nldim,hl_data(1)
      +                          ,il_data,string,hd_data,data
      +				,ierr)

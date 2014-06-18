@@ -44,20 +44,8 @@ c reads ous files and computes difference
 
         real utln1v(nlvdim,neldim)
         real vtln1v(nlvdim,neldim)
-        common /utln1v/utln1v
-        common /vtln1v/vtln1v
         real utln2v(nlvdim,neldim)
         real vtln2v(nlvdim,neldim)
-        common /utln2v/utln2v
-        common /vtln2v/vtln2v
-
-        real uprv(nlvdim,nkndim)
-        real vprv(nlvdim,nkndim)
-        common /uprv/uprv
-        common /vprv/vprv
-
-	real hev(neldim)
-        common /hev/hev
 
 	real weight(nlvdim,nkndim)
 

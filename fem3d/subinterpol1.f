@@ -41,12 +41,12 @@ c*******************************************************************
 
 c*******************************************************************
 
-	subroutine read_basin(name,nkndim,neldim)
+	subroutine read_basin(name,nkndi,neldi)
 
 	implicit none
 
 	character*(*) name
-	integer nkndim,neldim
+	integer nkndi,neldi
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -59,7 +59,7 @@ c*******************************************************************
 	real h
 
 	open(1,file=name,status='old',form='unformatted')
-	call sp13rr(1,nkndim,neldim)
+	call sp13rr(1,nkndi,neldi)
 	close(1)
 
 	do ie=1,nel

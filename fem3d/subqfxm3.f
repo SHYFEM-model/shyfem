@@ -614,17 +614,15 @@ c
      *  degradr=180./pi, eclips=23.439*degrad)
 c
         dimension alpham(12),alb1(20),za(20),dza(19)
-        common/yd/yrdays
-       
 c
 c ---   alat,alon - (lat, lon)  in radians !!
 c
         data solar/1350./
         data tau /0.7/
         data aozone /0.09/
-c        data yrdays /360./
-c        data yrdays /365./
         data sunalpha /0.03/
+        data yrdays /360./
+        !data yrdays /365./
 c
         data alb1/.719, .656, .603, .480, .385, .300, .250, .193, .164
      $  ,.131 , .103, .084, .071, .061, .054, .039, .036, .032, .031
@@ -661,8 +659,7 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c   days is the number of days elapsed until the day=iday
         days = day -1.
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c        th0 = 2.*pi*days/yrdays
-         th0 = 2.*pi*days/360.
+         th0 = 2.*pi*days/yrdays
         th02 = 2.*th0
         th03 = 3.*th0
 c

@@ -189,7 +189,6 @@ c dynamic geometry information
 
 c boundary arrays
 
-	common /bnd/bnd(ibndim,nbcdim)
 	common /ierv/ierv(2,nrbdim)
 	common /rhv/rhv(nrbdim), /rlv/rlv(nrbdim)
 	common /rrv/rrv(nrbdim), /irv/irv(nrbdim)
@@ -268,10 +267,13 @@ c water level and velocity arrays
 c fluid mud (ARON: please comment what they are)
 c ARON: do these have to be global, or are they only needed in submud?
 
+	real shearf2(nlvdim,nkndim)
+        common /shearf2/shearf2
 	common /lambda/lambda(nlvdim,nkndim) 	! Structural parameter
 	common /wsinkv/wsinkv(0:nlvdim,nkndim)	! if we need it globally
 	common /vts/vts(0:nlvdim,nkndim)	! Rheological Viscosity [m2/s]
-        common /dmf_mud/dmf_mud(nlvdim,nkndim)	! Floc size array.
+	double precision dmf_mud(nlvdim,nkndim)
+        common /dmf_mud/dmf_mud			! Floc size array.
 
 c concentration, salinity and temperature
 
@@ -366,37 +368,26 @@ c wave sub-module
 
         common /waveh/waveh, /wavep/wavep, /waved/waved, /waveov/waveov
         common /stokesx/stokesx, /stokesy/stokesy
-	save /waveh/,/wavep/,/waved/,/waveov/,/stokesx/,/stokesy/
 
         real z0bk(nkndim)                   !bottom roughenss on nodes
         common /z0bk/z0bk
-	save /z0bk/
 
         real z0bkmud(nkndim)       !bottom roughenss on nodes for mud
         common /z0bkmud/z0bkmud
-        save /z0bkmud/
 
         real mudc(nlvdim,nkndim)	!Fluid mud concentrationarray (kg/m3)
         common /mudc/mudc
         double precision rhomud(nlvdim,nkndim) !Mud floc part. density (kg/m3)
         common /rhomud/rhomud
-	save /mudc/,/rhomud/
 
 c variables for pipe
 
 	integer ipipe,idcoup
-	save ipipe, idcoup
 
 c radiation stress
 
         real radx(nlvdim,neldim),rady(nlvdim,neldim)
         common /radx/radx,/rady/rady
-	save /radx/,/rady/
-
-c global matrix
-
-	common /rmat/rmat(mardim)
-	common /rvec/rvec(2*nlvdim)
 
 c auxiliary arrays
 
@@ -410,10 +401,7 @@ c auxiliary arrays
 	common /sauxe1/sauxe1(nlvdim,neldim)
 	common /sauxe2/sauxe2(nlvdim,neldim)
 
-c deleted arrays
-
-c	real*8 urv,vrv,zrv
-c	common /urv/urv(neldim), /vrv/vrv(neldim), /zrv/zrv(neldim)
+c turbulence
 
 	common /tken/tken(0:nlvdim,nkndim)	!turbulent kinetic energy
 	common /eps/eps(0:nlvdim,nkndim)	!dissipation rate
@@ -422,6 +410,8 @@ c	common /urv/urv(neldim), /vrv/vrv(neldim), /zrv/zrv(neldim)
 c local variables
 
 	integer iwhat
+	logical debwin
+	integer nsp
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%% code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -643,6 +633,19 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   !call debug_output(it)
 	   !if( it .gt. 50400 ) call test3d(66,100)
 	   !if( it .gt. 3600 ) call test3d(66,100)
+	   debwin = .true.
+	   debwin = .false.
+	   if( debwin ) then
+	     nsp = 1000
+	     write(66,*) it,wxv(nsp),wyv(nsp),ppv(nsp)
+	     write(65,*) it,metrain(nsp),mettair(nsp),methum(nsp)
+	     !write(67,*) it,nkn
+	     !write(68,*) it,nkn
+	     !do i=1,nkn
+	     !  write(67,*) i,wxv(i),wyv(i),ppv(i),znv(i)
+	     !  write(68,*) i,tauxnv(i),tauynv(i)
+	     !end do
+	   end if
 	end do
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

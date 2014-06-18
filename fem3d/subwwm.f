@@ -429,32 +429,27 @@
 
         implicit none
 
-        integer ibndim
-        parameter (ibndim=100)
-
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real bnd(ibndim,1)
-        common /bnd/bnd
-        integer irv(1)
-        common /irv/irv
         real xgv(1), ygv(1)
         common /xgv/xgv, /ygv/ygv
         real hkv(1)
         common /hkv/hkv
-	integer i,k,knode,kranf,krend,nn
+	integer ibc,k,knode,kranf,krend,nn
 
-        do i=1,nbc
-         kranf=nint(bnd(3,i))
-         krend=nint(bnd(4,i))
-	 nn = krend-kranf+1
+	integer kbnd
 
-	 write(26,*)nn
+        do ibc=1,nbc
+	  call kanfend(ibc,kranf,krend)
+	  nn = krend-kranf+1
 
-         do k=kranf,krend
-            knode=irv(k)
+	  write(26,*)nn
+
+          do k=kranf,krend
+            !knode=irv(k)
+            knode=kbnd(k)
             write(26,25)knode,xgv(knode),ygv(knode),hkv(knode)
-	 end do
+	  end do
 	enddo
 
 25	format(i10,3e14.4)

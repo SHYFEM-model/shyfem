@@ -58,7 +58,7 @@ c****************************************************************
 
 	binfl = sigma .gt. 0.
 
-	do k=1,nkn
+	do k=1,nkndim		!HACK -> should be nkn
 	  andgzv(k) = 0.
 	end do
 

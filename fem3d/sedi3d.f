@@ -182,8 +182,8 @@ c
 
       common /sedaux1/scn,scc,eps,sflx,sedx,sedy,gdx,gdy,tao,gskm
       common /sedaux1d/riph,ripl
-      common /sedaux2/tcn,bh
-      common /sedaux2d/bflx,bdh
+      common /sedaux2/tcn,bh	!FIXME -> only this occurence of common block
+      common /sedaux2d/bflx,bdh	!FIXME -> only this occurence of common block
 
 ! function
       integer iround

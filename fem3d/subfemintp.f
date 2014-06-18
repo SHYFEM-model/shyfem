@@ -1,4 +1,10 @@
-
+!
+! interpolation routines from file
+!
+! revision log :
+!
+! 16.06.2014	ggu	tiem is noew double
+!
 !****************************************************************
 !
 ! info:
@@ -7,8 +13,9 @@
 !		-2  file closed (read EOF)
 !		-1  no file given
 !		 0  fem unformatted
-!		 1  fem unformatted
-!		 2  ts formatted
+!		 1  fem formatted
+!		 2  fem unformatted direct
+!		 3  ts formatted
 !
 ! nintp		if 0 -> constant (do not read any more file)
 !
@@ -21,10 +28,13 @@
 !
 ! how to check for things:
 !
+! iform_ts = 3
+! iform_none = -1
+! iform_closed = -2
+!
 ! bnofile = iformat < 0				no file open
-! bfem = iformat == 0 .or. iformat == 1		fem file format
-! bts = iformat == 2				ts file format
-! bformat = iformat == 1			formatted fem file
+! bfem = iformat >= 0 .and. iformat <= 2	fem file format
+! bts = iformat == iform_ts			ts file format
 ! bconst = nintp == 0				constant field
 ! b2d = lexp == 0				2D field expected
 ! bonepoint					only one point stored
@@ -64,7 +74,7 @@
 	  double precision, allocatable :: time(:)
 	  real, allocatable :: data(:,:,:,:)
 
-	  integer time_file			!maybe not needed
+	  double precision time_file		!maybe not needed
 	  character*80, allocatable :: strings_file(:)
 	  real, allocatable :: data_file(:,:,:)
 	  real, allocatable :: hlv_file(:)
@@ -73,6 +83,10 @@
 	end type info
 
 	logical, parameter :: bassert = .true.
+
+	integer, parameter :: iform_none = -1
+	integer, parameter :: iform_closed = -2
+	integer, parameter :: iform_ts = 3
 
 	integer, parameter :: ndim = 100
 	type(info), save, dimension(ndim) :: pinfo
@@ -91,8 +105,6 @@
 !================================================================
 	contains
 !================================================================
-
-!****************************************************************
 
 	subroutine iff_print_info(idp)
 
@@ -137,7 +149,7 @@
 
 	integer id
 
-	pinfo(id)%iformat = -2
+	pinfo(id)%iformat = iform_closed
 	call iff_allocate_file_arrays(id,0,0,0)
 	close(pinfo(id)%iunit)
 	pinfo(id)%iunit = -2
@@ -264,7 +276,7 @@
 	logical iff_has_file
 	integer id
 
-	iff_has_file = pinfo(id)%iformat /= -1
+	iff_has_file = pinfo(id)%iformat /= iform_none
 
 	end function iff_has_file
 
@@ -311,9 +323,10 @@
 
 !****************************************************************
 
-	subroutine iff_init(it,file,nvar,nexp,lexp,nintp,nodes,vconst,id)
+	subroutine iff_init(dtime,file,nvar,nexp,lexp,nintp
+     +					,nodes,vconst,id)
 
-	integer it		!initial time
+	double precision dtime	!initial time
 	character*(*) file	!file name
 	integer nvar		!expected number of variables (might change)
 	integer nexp		!expected number of points
@@ -327,7 +340,7 @@
 	integer ierr
 	integer nvar_orig
 	integer date,time
-	logical bok,bformat
+	logical bok
 	logical bts,bfem,bnofile
 
 	!---------------------------------------------------------
@@ -360,9 +373,9 @@
 
 	call iff_get_file_info(file,nexp,nvar,iformat)
 
-	bts = iformat == 2
+	bts = iformat == iform_ts
 	bnofile = iformat < 0
-	bfem = iformat == 0 .or. iformat == 1
+	bfem = iformat >= 0 .and. iformat <= 2
 
 	if( file /= ' ' .and. bnofile ) goto 99
 
@@ -416,7 +429,7 @@
 	if( bnofile ) then
 	  return
 	else if( bfem ) then
-	  call fem_file_read_open(file,nexp,iunit,bformat)
+	  call fem_file_read_open(file,nexp,iunit,iformat)
 	else if( bts ) then
 	  call ts_open_file(file,nvar,date,time,iunit)
 	  ! date not yet ready
@@ -433,7 +446,7 @@
 	! populate data base
 	!---------------------------------------------------------
 
-	call iff_populate_records(id,it)
+	call iff_populate_records(id,dtime)
 
 	!---------------------------------------------------------
 	! end of routine
@@ -471,63 +484,60 @@ c	 2	time series
 	integer nvar
 	integer iformat		!info on file type (return)
 
-	logical bformat
 
-	iformat = -1
+	iformat = iform_none
 	if( file == ' ' ) return
 
-	call fem_file_test_formatted(file,nexp,nvar,bformat)
+	call fem_file_test_formatted(file,nexp,nvar,iformat)
 
-	if( nvar > 0 ) then
-	  iformat = 0
-	  if( bformat ) iformat = 1
-	else
+	if( nvar <= 0 ) then
 	  call ts_get_file_info(file,nvar)
-	  if( nvar > 0 ) iformat = 2
+	  if( nvar > 0 ) iformat = iform_ts
 	end if
 
 	end subroutine iff_get_file_info
 
 !****************************************************************
 
-	subroutine iff_populate_records(id,itinit)
+	subroutine iff_populate_records(id,dtime0)
 
 	integer id
-	integer itinit
+	double precision dtime0
 
-	integer it,it2,idt,its,itold
+	!integer it,it2,idt,its,itold
+	double precision dtime,dtime2,dtimes,ddt,dtimeold
 	integer nintp,i
 	logical bok,bts
 
-        if( .not. iff_read_next_record(id,it) ) goto 99
+        if( .not. iff_read_next_record(id,dtime) ) goto 99
 
-        bok = iff_peek_next_record(id,it2)
+        bok = iff_peek_next_record(id,dtime2)
 
 	if( bok ) then				!at least two records
 		nintp = pinfo(id)%nintp
 		call iff_assert(nintp > 0,'nintp<=0')
 
-                idt = it2 - it
-                if( idt <= 0 ) goto 98
-                its = itinit - nintp*idt	!first record needed
+                ddt = dtime2 - dtime
+                if( ddt <= 0 ) goto 98
+                dtimes = dtime0 - nintp*ddt	!first record needed
 
-		itold = it
-                do while( it < its )
-                        bok = iff_read_next_record(id,it)
+		dtimeold = dtime
+                do while( dtime < dtimes )
+                        bok = iff_read_next_record(id,dtime)
                         if( .not. bok ) goto 97
-			idt = it - itold	!if time step changes
-                	if( idt <= 0 ) goto 98
-			its = itinit - nintp*idt
-			itold = it
+			ddt = dtime - dtimeold	!if time step changes
+                	if( ddt <= 0 ) goto 98
+			dtimes = dtime0 - nintp*ddt
+			dtimeold = dtime
                 end do
 
 		call iff_allocate_fem_data_structure(id)
 
-                call iff_space_interpolate(id,1,it)
+                call iff_space_interpolate(id,1,dtime)
                 do i=2,nintp
-                        bok = iff_read_next_record(id,it)
+                        bok = iff_read_next_record(id,dtime)
                         if( .not. bok ) goto 96
-                        call iff_space_interpolate(id,i,it)
+                        call iff_space_interpolate(id,i,dtime)
                 end do
 
 		pinfo(id)%ilast = nintp
@@ -535,7 +545,7 @@ c	 2	time series
 		pinfo(id)%nintp = 0
 		pinfo(id)%ilast = 1
 		call iff_allocate_fem_data_structure(id)
-                call iff_space_interpolate(id,1,it)
+                call iff_space_interpolate(id,1,dtime)
 		call iff_close_file(id)
         end if
 		
@@ -547,12 +557,12 @@ c	 2	time series
 	stop 'error stop iff_populate_records'
    97	continue
 	write(6,*) 'cannot find time record'
-	write(6,*) 'looking at least for it = ',its
+	write(6,*) 'looking at least for it = ',dtimes
 	call iff_print_file_info(id)
 	stop 'error stop iff_populate_records'
    98	continue
 	write(6,*) 'time step less than 0'
-	write(6,*) 'this happens at it = ',it
+	write(6,*) 'this happens at it = ',dtime
 	call iff_print_file_info(id)
 	stop 'error stop iff_populate_records'
    99	continue
@@ -591,14 +601,14 @@ c	 2	time series
 
 !****************************************************************
 
-        function iff_read_next_record(id,it)
+        function iff_read_next_record(id,dtime)
 
 	logical iff_read_next_record
 	integer id
-	integer it
+	double precision dtime
 
-        if( iff_read_header(id,it) ) then
-          call iff_read_data(id,it)
+        if( iff_read_header(id,dtime) ) then
+          call iff_read_data(id,dtime)
 	  iff_read_next_record = .true.
 	else
 	  call iff_close_file(id)
@@ -609,25 +619,24 @@ c	 2	time series
 
 !****************************************************************
 
-        function iff_peek_next_record(id,it)
+        function iff_peek_next_record(id,dtime)
 
 ! just gets new time stamp of next record
 
 	logical iff_peek_next_record
 	integer id
-	integer it
+	double precision dtime
 
 	integer iunit
 	integer nvers,np,lmax,nvar,ntype
 	integer ierr,iformat
 	real f(1)
-	logical bts,bformat,bnofile
+	logical bts,bnofile
 
 	iunit = pinfo(id)%iunit
 	iformat = pinfo(id)%iformat
 	bnofile = iformat < 0
-	bts = iformat == 2
-	bformat = iformat == 1
+	bts = iformat == iform_ts
 
 	iff_peek_next_record = .false.
 
@@ -635,9 +644,9 @@ c	 2	time series
 	  return
 	else if( bts ) then
 	  nvar = 0
-	  call ts_peek_next_record(iunit,nvar,it,f,ierr)
+	  call ts_peek_next_record(iunit,nvar,dtime,f,ierr)
 	else
-          call fem_file_peek_params(bformat,iunit,it
+          call fem_file_peek_params(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,ierr)
 	end if
 
@@ -653,13 +662,13 @@ c	 2	time series
 
 !****************************************************************
 
-        function iff_read_header(id,it)
+        function iff_read_header(id,dtime)
 
 	logical iff_read_header
 	integer id
-	integer it
+	double precision dtime
 
-	logical bformat,bts,bnofile
+	logical bts,bnofile
 	integer nvers,np,lmax,nvar,ntype
 	integer iunit,ierr,iformat
 	integer ivar
@@ -669,8 +678,7 @@ c	 2	time series
 
 	iunit = pinfo(id)%iunit
 	iformat = pinfo(id)%iformat
-	bformat = iformat == 1
-	bts = iformat == 2
+	bts = iformat == iform_ts
 	bnofile = iformat < 0
 
 	if( bnofile ) return		!no header to read
@@ -679,9 +687,9 @@ c	 2	time series
 
 	if( bts ) then
 	  nvar = pinfo(id)%nvar
-	  call ts_read_next_record(iunit,nvar,it,f,ierr)
+	  call ts_read_next_record(iunit,nvar,dtime,f,ierr)
 	else
-          call fem_file_read_params(bformat,iunit,it
+          call fem_file_read_params(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,ierr)
 	end if
 
@@ -689,7 +697,7 @@ c	 2	time series
 	if( ierr > 0 ) goto 99
 	if( nvar /= pinfo(id)%nvar ) goto 98
 
-	pinfo(id)%time_file = it
+	pinfo(id)%time_file = dtime
 
 	if( bts ) then
 	  call iff_allocate_file_arrays(id,nvar,1,1)
@@ -698,7 +706,7 @@ c	 2	time series
 	  pinfo(id)%nvers = nvers
 	  pinfo(id)%ntype = ntype
 	  call iff_allocate_file_arrays(id,nvar,np,lmax)
-	  call fem_file_read_hlv(bformat,iunit,lmax
+	  call fem_file_read_hlv(iformat,iunit,lmax
      +					,pinfo(id)%hlv_file,ierr)
 	  if( ierr /= 0 ) goto 97
 	end if
@@ -807,20 +815,20 @@ c	 2	time series
 
 !****************************************************************
 
-        subroutine iff_read_data(id,it)
+        subroutine iff_read_data(id,dtime)
 
 	integer id
-	integer it
+	double precision dtime
 
 	integer iunit,nvers,np,lmax
 	integer nlvdim,nvar
-	integer ierr,i
-	logical bformat,bnofile,bts
+	integer ierr,i,iformat
+	logical bnofile,bts
 	character*60 string
 
-	bts = pinfo(id)%iformat == 2
-	bformat = pinfo(id)%iformat == 1
-	bnofile = pinfo(id)%iformat < 0
+	iformat = pinfo(id)%iformat
+	bts = iformat == iform_ts
+	bnofile = iformat < 0
 
 	if( bnofile ) return
 
@@ -836,12 +844,12 @@ c	 2	time series
 	  ! ts data has already been read
 	else
 	  do i=1,nvar
-            call fem_file_read_data(bformat,iunit
+            call fem_file_read_data(iformat,iunit
      +                          ,nvers,np,lmax
      +                          ,pinfo(id)%ilhkv_file
      +                          ,pinfo(id)%hd_file
      +                          ,string,nlvdim
-     +				,pinfo(id)%data_file
+     +				,pinfo(id)%data_file(1,1,i)
      +				,ierr)
 	    if( ierr /= 0 ) goto 99
 	    if( string /= pinfo(id)%strings_file(i) ) goto 98
@@ -851,14 +859,14 @@ c	 2	time series
 	return
    98	continue
 	write(6,*) 'string description has changed for var ',i
-	write(6,*) 'time: ',it
+	write(6,*) 'time: ',dtime
 	write(6,*) 'old: ',pinfo(id)%strings_file(i)
 	write(6,*) 'new: ',string
 	call iff_print_file_info(id)
 	stop 'error stop iff_read_data'
    99	continue
 	write(6,*) 'error reading data: ',ierr
-	write(6,*) 'time: ',it
+	write(6,*) 'time: ',dtime
 	call iff_print_file_info(id)
 	stop 'error stop iff_read_data'
 	end subroutine iff_read_data
@@ -867,23 +875,23 @@ c	 2	time series
 !****************************************************************
 !****************************************************************
 
-	subroutine iff_space_interpolate(id,iintp,it)
+	subroutine iff_space_interpolate(id,iintp,dtime)
 
 	integer id
 	integer iintp
-	integer it
+	double precision dtime
 
 	integer nintp,np,nexp,lmax,ip
 	integer ivar,nvar,ntype
 	logical bts
 
-        pinfo(id)%time(iintp) = it
+        pinfo(id)%time(iintp) = dtime
 
         ntype = pinfo(id)%ntype
         nintp = pinfo(id)%nintp
         np = pinfo(id)%np
         nexp = pinfo(id)%nexp
-	bts = pinfo(id)%iformat == 2
+	bts = pinfo(id)%iformat == iform_ts
 
 	if( nintp > 0 .and. iintp > nintp ) goto 99
 	if( nintp == 0 .and. iintp > 1 ) goto 99
@@ -977,8 +985,15 @@ c	 2	time series
 	  lfem = ilhkv_fem(ipl)
 	end if
 
+	!if( id .eq. 1 ) then
+	!write(6,*) 'distribute: ',lfem,ip_from,ip_to,iintp
+	!end if
+
 	do ivar=1,nvar
 	  value = pinfo(id)%data_file(1,ip_from,ivar)
+	!if( id .eq. 1 ) then
+	!write(6,*) 'dist: ',ivar,value
+	!end if
 	  do l=1,lfem
 	    pinfo(id)%data(l,ip_to,ivar,iintp) = value
 	  end do
@@ -1103,16 +1118,16 @@ c global lmax and lexp are > 1
 	subroutine iff_time_interpolate(id,itact,ivar,ldim,ndim,value)
 
 	integer id
-	integer itact
+	double precision itact
 	integer ivar
 	integer ldim		!vertical dimension of value
 	integer ndim		!horizontal dimension of value
-	real value(ldim,ndim,*)
+	real value(ldim,ndim)
 
 	integer iv,nvar
 	integer nintp,lexp,nexp
 	integer ilast,ifirst
-	integer it,itlast,itfirst
+	double precision it,itlast,itfirst
 	logical bok
 	double precision t,tc
 
@@ -1125,8 +1140,8 @@ c global lmax and lexp are > 1
         lexp = max(1,pinfo(id)%lexp)
         nexp = pinfo(id)%nexp
         ilast = pinfo(id)%ilast
-	itlast = nint(pinfo(id)%time(ilast))
 	t = itact
+	itlast = nint(pinfo(id)%time(ilast))
 
 	!---------------------------------------------------------
 	! loop until time window is centered over desidered time
@@ -1150,11 +1165,13 @@ c global lmax and lexp are > 1
 	! some sanity checks
 	!---------------------------------------------------------
 
-	itlast = nint(pinfo(id)%time(ilast))
-	ifirst = mod(ilast,nintp) + 1
-	itfirst = nint(pinfo(id)%time(ifirst))
-        if( itlast < itact ) goto 98
-        if( itfirst > itact ) goto 98
+	if( nintp > 0 ) then
+	  itlast = nint(pinfo(id)%time(ilast))
+	  ifirst = mod(ilast,nintp) + 1
+	  itfirst = nint(pinfo(id)%time(ifirst))
+          if( itlast < itact ) goto 98
+          if( itfirst > itact ) goto 98
+	end if
 	if( lexp > ldim ) goto 97
 	if( nexp > ndim ) goto 97
 
@@ -1202,14 +1219,17 @@ c global lmax and lexp are > 1
 	integer ivar
 	integer ldim		!vertical dimension of value
 	integer ndim		!horizontal dimension of value
-	real value(ldim,ndim,*)
+	real value(ldim,ndim)
 
 	integer nintp,lexp,nexp,ilast
 	logical bonepoint,bconst,bnodes,b2d,bvar
-	integer ipl,lfem,i,l,ip
-	real val
-	real time(pinfo(id)%nintp)
+	integer ipl,lfem,i,l,ip,j
+	real val,tr
+	double precision time(pinfo(id)%nintp)
+	!real time(pinfo(id)%nintp)
+	real vals(pinfo(id)%nintp)
 	double precision rd_intp_neville
+	real intp_neville
 
         nintp = pinfo(id)%nintp
         lexp = max(1,pinfo(id)%lexp)
@@ -1221,6 +1241,8 @@ c global lmax and lexp are > 1
 	b2d = lexp <= 1
 	bnodes = pinfo(id)%nexp /= nkn_fem	!use node pointer
 
+	tr = t		!real version of t
+
 	if( bconst .or. bonepoint ) then
 	  if( bconst ) then
 	    val = pinfo(id)%data(1,1,ivar,1)
@@ -1231,10 +1253,13 @@ c global lmax and lexp are > 1
 	  do i=1,nexp
 	    do l=1,lexp
 	      if( bvar ) val = pinfo(id)%data(l,i,ivar,1)
-	      value(l,i,ivar) = val
+	      value(l,i) = val
 	    end do
 	  end do
 	else
+	  do j=1,nintp
+	    time(j) = pinfo(id)%time(j)
+	  end do
 	  do i=1,nexp
 	    if( b2d ) then
 	      lfem = 1
@@ -1244,9 +1269,12 @@ c global lmax and lexp are > 1
 	      lfem = ilhkv_fem(ipl)
 	    end if
 	    do l=1,lfem
-	      val = rd_intp_neville(nintp,pinfo(id)%time
-     +				,pinfo(id)%data(l,i,ivar,1),t)
-	      value(l,i,ivar) = val
+	      do j=1,nintp
+	        vals(j) = pinfo(id)%data(l,i,ivar,j)
+	      end do
+	      !val = intp_neville(nintp,time,vals,tr)	!real time version
+	      val = rd_intp_neville(nintp,time,vals,t)
+	      value(l,i) = val
 	    end do
 	  end do
 	end if
@@ -1269,6 +1297,11 @@ c global lmax and lexp are > 1
 	!n2 = n1
 	!if( mod(nintp,2) /= 0 .and. nintp > 1 ) n2=n2+1		!odd
 
+	if( nintp < 1 ) then
+	  tcomp = t
+	  return
+	end if
+
 	n1=1+mod(ilast+nintp/2,nintp)
 	n2 = n1
 	if( mod(nintp,2) /= 0 .and. nintp > 1 ) n2=mod(n2,nintp)+1	!odd
@@ -1279,6 +1312,35 @@ c global lmax and lexp are > 1
 
 !****************************************************************
 !****************************************************************
+!****************************************************************
+
+	subroutine iff_get_value(id,ivar,iintp,l,k,val)
+
+	integer id
+	integer ivar
+	integer iintp
+	integer l
+	integer k
+	real val
+
+	val =  pinfo(id)%data(l,k,ivar,iintp)
+
+	end subroutine iff_get_value
+
+!****************************************************************
+
+	subroutine iff_get_file_value(id,ivar,l,k,val)
+
+	integer id
+	integer ivar
+	integer l
+	integer k
+	real val
+
+	val =  pinfo(id)%data_file(l,k,ivar)
+
+	end subroutine iff_get_file_value
+
 !****************************************************************
 
 	subroutine iff_assert(bval,text)

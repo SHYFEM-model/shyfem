@@ -57,6 +57,8 @@ c we would not even need to read basin
 
 	real znv(nkndim)
 	real zenv(3,neldim)
+        common /znv/znv
+        common /zenv/zenv
 
         real ut2v(neldim)
         real vt2v(neldim)
@@ -111,7 +113,7 @@ c-----------------------------------------------------------------
 	  call ous_read_record(nin,it,nlvdim,ilhv,znv,zenv
      +				,utlnv,vtlnv,ierr)
 
-	  if( it .gt. 21049200 ) goto 100
+	  !if( it .gt. 21049200 ) goto 100
 
           if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
           if(ierr.ne.0) goto 100

@@ -7,14 +7,22 @@ c writes info on fem file
 
 	character*50 name,string
 	integer np,iunit
-	integer nvers,lmax,nvar,ntype
+	integer nvers,lmax,nvar,ntype,nlvdim
 	integer it,itanf,itend,idt,itold
+	double precision dtime
+	real dmin,dmax
 	integer ierr
 	integer irec,i,nvar0,ich
-	logical bformat,bdebug,bfirst
+	integer iformat
+	logical bdebug,bfirst,bskip
 	character*50, allocatable :: strings(:)
+	real,allocatable :: data(:,:)
+	real,allocatable :: hd(:)
+	integer,allocatable :: ilhkv(:)
 
 	bdebug = .false.
+	bskip = .true.
+	bskip = .false.
 
 c--------------------------------------------------------------
 c open file
@@ -24,13 +32,13 @@ c--------------------------------------------------------------
 	read(5,*) name
 
 	np = 0
-	call fem_file_read_open(name,np,iunit,bformat)
+	call fem_file_read_open(name,np,iunit,iformat)
 
 	if( iunit .le. 0 ) stop
 
 	write(6,*) 'file name: ',name
-	write(6,*) 'iunit: ',iunit
-	write(6,*) 'formatted:       ',bformat
+	write(6,*) 'iunit:     ',iunit
+	write(6,*) 'format:    ',iformat
 
 c--------------------------------------------------------------
 c read first record
@@ -38,7 +46,7 @@ c--------------------------------------------------------------
 
 	irec = 1
 
-        call fem_file_read_params(bformat,iunit,it
+        call fem_file_read_params(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,ierr)
 
 	if( ierr .ne. 0 ) goto 99
@@ -49,18 +57,37 @@ c--------------------------------------------------------------
 	write(6,*) 'nvar:  ',nvar
 	write(6,*) 'ntype: ',ntype
 
-	call fem_file_skip_2header(bformat,iunit,lmax,ntype,ierr)
+	nlvdim = lmax
+
+	call fem_file_skip_2header(iformat,iunit,lmax,ntype,ierr)
 	if( ierr .ne. 0 ) goto 98
 
 	nvar0 = nvar
 	allocate(strings(nvar))
+	allocate(data(nlvdim,np))
+	allocate(hd(np))
+	allocate(ilhkv(np))
 
 	do i=1,nvar
-	  call fem_file_skip_data(bformat,iunit
+	  if( bskip ) then
+	    call fem_file_skip_data(iformat,iunit
      +                          ,nvers,np,lmax,string,ierr)
+	  else
+            call fem_file_read_data(iformat,iunit
+     +                          ,nvers,np,lmax
+     +                          ,ilhkv
+     +                          ,hd
+     +                          ,string,nlvdim
+     +                          ,data
+     +                          ,ierr)
+	  end if
 	  if( ierr .ne. 0 ) goto 97
 	  write(6,*) 'data:  ',i,'  ',string
 	  strings(i) = string
+	  if( .not. bskip ) then
+            call minmax(nlvdim,np,ilhkv,data,dmin,dmax)
+	    write(6,*) i,dtime,dmin,dmax
+	  end if
 	end do
 
 c--------------------------------------------------------------
@@ -68,6 +95,7 @@ c loop on other data records
 c--------------------------------------------------------------
 
 	bfirst = .true.
+	it = nint(dtime)
 	itanf = it
 	itend = it
 	idt = -1
@@ -76,20 +104,35 @@ c--------------------------------------------------------------
 	do while(.true.)
 	  irec = irec + 1
 	  itold = itend
-          call fem_file_read_params(bformat,iunit,it
+          call fem_file_read_params(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,ierr)
 	  if( ierr .lt. 0 ) exit
 	  if( ierr .gt. 0 ) goto 99
 	  if( nvar .ne. nvar0 ) goto 96
-	  if( bdebug ) write(6,*) irec,it
-	  call fem_file_skip_2header(bformat,iunit,lmax,ntype,ierr)
+	  if( bdebug ) write(6,*) irec,dtime
+	  call fem_file_skip_2header(iformat,iunit,lmax,ntype,ierr)
 	  if( ierr .ne. 0 ) goto 98
 	  do i=1,nvar
-	    call fem_file_skip_data(bformat,iunit
+	    if( bskip ) then
+	      call fem_file_skip_data(iformat,iunit
      +                          ,nvers,np,lmax,string,ierr)
+	    else
+              call fem_file_read_data(iformat,iunit
+     +                          ,nvers,np,lmax
+     +                          ,ilhkv
+     +                          ,hd
+     +                          ,string,nlvdim
+     +                          ,data
+     +                          ,ierr)
+	    end if
 	    if( ierr .ne. 0 ) goto 97
 	    if( string .ne. strings(i) ) goto 95
+	    if( .not. bskip ) then
+              call minmax(nlvdim,np,ilhkv,data,dmin,dmax)
+	      write(6,*) i,dtime,dmin,dmax
+	    end if
 	  end do
+	  it = nint(dtime)
 	  if( bfirst ) then
 	    bfirst = .false.
 	    idt = it - itold
@@ -217,17 +260,17 @@ c*****************************************************************
 
 c*****************************************************************
 
-        subroutine minmax(it,nlvdim,np,ilhkv,data)
+        subroutine minmax(nlvdim,np,ilhkv,data,vmin,vmax)
 
         implicit none
 
-        integer it
         integer nlvdim,np
         integer ilhkv(1)
         real data(nlvdim,1)
+	real vmin,vmax
 
         integer k,l,lmax
-        real vmin,vmax,v
+        real v
 
         vmin = data(1,1)
         vmax = data(1,1)
@@ -241,7 +284,7 @@ c*****************************************************************
           end do
         end do
 
-        write(86,*) 'min/max: ',it,vmin,vmax
+        !write(86,*) 'min/max: ',it,vmin,vmax
 
         end
 

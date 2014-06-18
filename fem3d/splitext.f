@@ -71,11 +71,6 @@ c next n lines give (u,v,z) for every node written.
 	real zdata(datdim,noddim)
 	real mdata(datdim,noddim)
 
-	common /udata/udata
-	common /vdata/vdata
-	common /zdata/zdata
-	common /mdata/mdata
-
 	integer iapini, ifemop
 	real read7,rdrc7
 

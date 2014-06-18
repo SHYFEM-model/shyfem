@@ -295,7 +295,7 @@ NOSALL   = $(NOSEXTR) $(NOSAVER) $(NOSVAR)
 OUSEXTR  = ousextr_nodes ousextr_records ousextr_gis \
 		ousextr_cat
 
-EXEEXTRA = bedload wincrea windcrea \
+EXEEXTRA = wincrea windcrea \
 		basproj baswork eosinf \
 		nos2nc ous2nc ts2nc \
 		ouswork ouswork1 ouswrite prep_input \
@@ -463,6 +463,9 @@ nosinf2:  nosinf2.o $(NOSOBJS) $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 feminf:  feminf.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+win2fem:  win2fem.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 nossum:  nossum.o $(NOSOBJS) $(OUTOBJS) 
@@ -777,7 +780,6 @@ basres.o: param.h basin.h
 bastreat.o: param.h links.h evmain.h basin.h
 baswork.o: param.h evmain.h basin.h
 bdist.o: param.h links.h
-bedload.o: param.h evmain.h
 bio3d.o: param.h
 bio3d_util.o: param.h donata.h
 eosinf.o: param.h

@@ -83,11 +83,11 @@ c**************************************************************
 
 	blockdata default_names
 
-        character*80 def_dir,def_nam
-	common /defdef/ def_dir,def_nam
+        character*80 def_bas,def_nam
+	common /defdef/ def_bas,def_nam
 	save /defdef/
 
-	data def_dir,def_nam /' ',' '/
+	data def_bas,def_nam /' ',' '/
 
 	end
 

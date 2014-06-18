@@ -203,7 +203,7 @@ c-------------------------------------------------------------------
 
 c***************************************************************
 
-	subroutine wrgis_3d(nb,it,ivar,nkn,ilhkv,cv3)
+	subroutine wrgis_3d(nb,it,ivar,nk,ilhkv,cv3)
 
 c writes one record to file nb (3D)
 
@@ -211,7 +211,7 @@ c writes one record to file nb (3D)
 
 	include 'param.h'
 
-	integer nb,it,ivar,nkn
+	integer nb,it,ivar,nk
 	integer ilhkv(nlvdim)
 	real cv3(nlvdim,nkndim)
 
@@ -221,9 +221,9 @@ c writes one record to file nb (3D)
 	integer k,l,lmax
 	real x,y
 
-	write(nb,*) it,nkn,ivar
+	write(nb,*) it,nk,ivar
 
-	do k=1,nkn
+	do k=1,nk
 	  lmax = ilhkv(k)
 	  x = xgv(k)
 	  y = ygv(k)
@@ -236,7 +236,7 @@ c writes one record to file nb (3D)
 
 c***************************************************************
 
-	subroutine wrgis_surf(nb,it,ivar,nkn,cv3)
+	subroutine wrgis_surf(nb,it,ivar,nk,cv3)
 
 c writes one record to file nb (2D)
 
@@ -244,7 +244,7 @@ c writes one record to file nb (2D)
 
 	include 'param.h'
 
-	integer nb,it,ivar,nkn
+	integer nb,it,ivar,nk
 	real cv3(nlvdim,nkndim)
 
         real xgv(nkndim), ygv(nkndim)
@@ -255,9 +255,9 @@ c writes one record to file nb (2D)
 
 	level = 1
 
-	write(nb,*) it,nkn,ivar
+	write(nb,*) it,nk,ivar
 
-	do k=1,nkn
+	do k=1,nk
 	  x = xgv(k)
 	  y = ygv(k)
 	  c = cv3(level,k)
@@ -270,7 +270,7 @@ c writes one record to file nb (2D)
 
 c***************************************************************
 
-	subroutine wrgis_sep(it,ivar,nkn,cv3)
+	subroutine wrgis_sep(it,ivar,nk,cv3)
 
 c writes one record to single files
 
@@ -278,7 +278,7 @@ c writes one record to single files
 
 	include 'param.h'
 
-	integer it,ivar,nkn
+	integer it,ivar,nk
 	real cv3(nlvdim,nkndim)
 
         real xgv(nkndim), ygv(nkndim)
@@ -297,7 +297,7 @@ c writes one record to single files
 
 	write(nb,*) 'x   y   val'
 
-	do k=1,nkn
+	do k=1,nk
 	  x = xgv(k)
 	  y = ygv(k)
 	  c = cv3(level,k)

@@ -169,7 +169,7 @@ c local
         integer it1
         integer i,i1,i2,k,k1,k2,n,ie,j,ip
         integer noflow,noseg,nli
-	integer ibase,ii
+	integer ii
 	integer icall
         logical bwrite
 	integer nvol,nflow,narea
@@ -229,7 +229,8 @@ c
           end do
 c
 		do ie=1,nel
-		  call elebase(ie,n,ibase)
+		  !call elebase(ie,n,ibase)
+		  n = 3
 		  area = areaele(ie)/n
 		  do i1=1,n
 		    i2=mod(i1,3)+1
@@ -378,7 +379,8 @@ c
 	  call baric(ie,xs,ys)
 c
 	  hmzm = depele(ie,+1)
-	  call elebase(ie,n,ibase)
+	  !call elebase(ie,n,ibase)
+	  n = 3
 	  area = areaele(ie)/n
 
             do ii=1,n

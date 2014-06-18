@@ -84,35 +84,38 @@ c computes total (average) depth of element ie
 
 	implicit none
 
+	include 'param.h'
+
 	integer ie	!number of element
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
 	real depele	!depth (return)
 
-	real hm3v(1)
+	real hm3v(3,neldim)
 	common /hm3v/hm3v
-	real zenv(1)
+	real zenv(3,neldim)
 	common /zenv/zenv
-	real zeov(1)
+	real zeov(3,neldim)
 	common /zeov/zeov
 
-	integer ii,n,ibase
+	integer ii,n
 	real hmed
 
-	call elebase(ie,n,ibase)
+	!call elebase(ie,n,ibase)
+	n = 3
 
 	hmed = 0.
 
 	if( mode .lt. 0 ) then
 	  do ii=1,n
-	    hmed = hmed + hm3v(ibase+ii) + zeov(ibase+ii)
+	    hmed = hmed + hm3v(ii,ie) + zeov(ii,ie)
 	  end do
 	else if( mode .gt. 0 ) then
 	  do ii=1,n
-	    hmed = hmed + hm3v(ibase+ii) + zenv(ibase+ii)
+	    hmed = hmed + hm3v(ii,ie) + zenv(ii,ie)
 	  end do
 	else
 	  do ii=1,n
-	    hmed = hmed + hm3v(ibase+ii)
+	    hmed = hmed + hm3v(ii,ie)
 	  end do
 	end if
 
@@ -210,29 +213,32 @@ c computes (average) zeta of element ie
 
 	implicit none
 
+	include 'param.h'
+
 	real zetaele	!depth (return)
 	integer ie	!number of element
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
 
-	real zenv(1)
+	real zenv(3,neldim)
 	common /zenv/zenv
-	real zeov(1)
+	real zeov(3,neldim)
 	common /zeov/zeov
 
-	integer ii,n,ibase
+	integer ii,n
 	real hmed
 
-	call elebase(ie,n,ibase)
+	!call elebase(ie,n,ibase)
+	n = 3
 
 	hmed = 0.
 
 	if( mode .lt. 0 ) then
 	  do ii=1,n
-	    hmed = hmed + zeov(ibase+ii)
+	    hmed = hmed + zeov(ii,ie)
 	  end do
 	else if( mode .gt. 0 ) then
 	  do ii=1,n
-	    hmed = hmed + zenv(ibase+ii)
+	    hmed = hmed + zenv(ii,ie)
 	  end do
 	else
 	  hmed = 0.
@@ -289,19 +295,22 @@ c returns node index for one element
 
 	implicit none
 
+	include 'param.h'
+
 	integer ie      !number of element
 	integer n	!total number of nodes in element (3 for triangle)
 	integer kn(1)	!node index
 
-	integer nen3v(1)
+	integer nen3v(3,neldim)
 	common /nen3v/nen3v
 
-	integer ii,ibase
+	integer ii
 
-	call elebase(ie,n,ibase)
+	!call elebase(ie,n,ibase)
+	n = 3
 
 	do ii=1,n
-	  kn(ii) = nen3v(ibase+ii)
+	  kn(ii) = nen3v(ii,ie)
 	end do
 
 	end
@@ -314,18 +323,21 @@ c sets depth for element ie
 
 	implicit none
 
+	include 'param.h'
+
 	integer ie      !number of element
 	real h		!depth to use
 
-	real hm3v(1)
+	real hm3v(3,neldim)
 	common /hm3v/hm3v
 
-	integer ii,n,ibase
+	integer ii,n
 
-	call elebase(ie,n,ibase)
+	!call elebase(ie,n,ibase)
+	n = 3
 
 	do ii=1,n
-	  hm3v(ibase+ii) = h
+	  hm3v(ii,ie) = h
 	end do
 
 	end
@@ -338,33 +350,36 @@ c computes depth of vertices in element ie
 
 	implicit none
 
+	include 'param.h'
+
 	integer ie	!number of element
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
 	integer n	!total number of vertices (return)
 	real h(1)	!depth at vertices (return)
 
-	real hm3v(1)
+	real hm3v(3,neldim)
 	common /hm3v/hm3v
-	real zenv(1)
+	real zenv(3,neldim)
 	common /zenv/zenv
-	real zeov(1)
+	real zeov(3,neldim)
 	common /zeov/zeov
 
-	integer ii,ibase
+	integer ii
 
-	call elebase(ie,n,ibase)
+	!call elebase(ie,n,ibase)
+	n = 3
 
 	if( mode .lt. 0 ) then
 	  do ii=1,n
-	    h(ii) = hm3v(ibase+ii) + zeov(ibase+ii)
+	    h(ii) = hm3v(ii,ie) + zeov(ii,ie)
 	  end do
 	else if( mode .gt. 0 ) then
 	  do ii=1,n
-	    h(ii) = hm3v(ibase+ii) + zenv(ibase+ii)
+	    h(ii) = hm3v(ii,ie) + zenv(ii,ie)
 	  end do
 	else
 	  do ii=1,n
-	    h(ii) = hm3v(ibase+ii)
+	    h(ii) = hm3v(ii,ie)
 	  end do
 	end if
 
@@ -378,29 +393,32 @@ c computes total depth in vertex ii of element ie
 
 	implicit none
 
+	include 'param.h'
+
 	real depfvol
 	integer ie	!number of element
 	integer ii	!number of vertex
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
 
-	real hm3v(1)
+	real hm3v(3,neldim)
 	common /hm3v/hm3v
-	real zenv(1)
+	real zenv(3,neldim)
 	common /zenv/zenv
-	real zeov(1)
+	real zeov(3,neldim)
 	common /zeov/zeov
 
-	integer ibase,n
+	integer n
 	real h
 
-	call elebase(ie,n,ibase)
+	!call elebase(ie,n,ibase)
+	n = 3
 
 	if( mode .lt. 0 ) then
-	    h = hm3v(ibase+ii) + zeov(ibase+ii)
+	    h = hm3v(ii,ie) + zeov(ii,ie)
 	else if( mode .gt. 0 ) then
-	    h = hm3v(ibase+ii) + zenv(ibase+ii)
+	    h = hm3v(ii,ie) + zenv(ii,ie)
 	else
-	    h = hm3v(ibase+ii)
+	    h = hm3v(ii,ie)
 	end if
 
 	depfvol = h
@@ -526,25 +544,26 @@ c computes nodal values from element values (scalar)
 
 	implicit none
 
-	real sev(*)
-	real sv(*)
+	include 'param.h'
+
+	real sev(3,neldim)
+	real sv(nkndim)
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
         real v1v(1)
         common /v1v/v1v
-	integer nen3v(1)
+	integer nen3v(3,neldim)
 	common /nen3v/nen3v
-	real hm3v(1)
+	real hm3v(3,neldim)
 	common /hm3v/hm3v
-	real zenv(1)
+	real zenv(3,neldim)
 	common /zenv/zenv
 
 	integer ie,k,ii,n
 	integer ip
 	integer kn(10)
-	integer ibase
 	real h(10), s(10)
 	real area,vol
 	logical btype
@@ -583,12 +602,13 @@ c computes nodal values from element values (scalar)
 	do ie=1,nel
 
 	  area = areaele(ie)
-	  call elebase(ie,n,ibase)
+	  !call elebase(ie,n,ibase)
+	  n = 3
 
-	  do ip=ibase+1,ibase+n
-	    k = nen3v(ip)
-	    vol = area * ( hm3v(ip) + zenv(ip) )
-	    sv(k) = sv(k) + sev(ip) * vol
+	  do ip=1,n
+	    k = nen3v(ii,ie)
+	    vol = area * ( hm3v(ii,ie) + zenv(ii,ie) )
+	    sv(k) = sv(k) + sev(ii,ie) * vol
 	    v1v(k) = v1v(k) + vol
 	  end do
 
@@ -629,6 +649,8 @@ c sets up area for nodes
 
 	implicit none
 
+	include 'param.h'
+
 	integer levdim
 	real area(levdim,1)
 
@@ -636,11 +658,11 @@ c sets up area for nodes
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer ilhv(1)
 	common /ilhv/ilhv
-	integer nen3v(1)
+	integer nen3v(3,neldim)
 	common /nen3v/nen3v
 
 	integer k,l,ie,ii
-	integer nlev,n,ibase
+	integer nlev,n
 	real areael,areafv
 	real areaele
 
@@ -652,7 +674,8 @@ c sets up area for nodes
 
 	do ie=1,nel
 
-	  call elebase(ie,n,ibase)
+	  !call elebase(ie,n,ibase)
+	  n = 3
 	  areael = areaele(ie)
 	  areafv = areael / n
 
@@ -660,7 +683,7 @@ c sets up area for nodes
 
 	  do ii=1,n
 
-	    k = nen3v(ibase+ii)
+	    k = nen3v(ii,ie)
 
 	    do l=1,nlev
 	      area(l,k) = area(l,k) + areafv
@@ -849,7 +872,7 @@ c shell (helper) for setdepth
 
 	include 'param.h'
 
-        real zenv(1)
+        real zenv(3,neldim)
         common /zenv/zenv
         real hdknv(nlvdim,nkndim)
         common /hdknv/hdknv
@@ -872,7 +895,7 @@ c shell (helper) for setdepth
 
 	include 'param.h'
 
-        real zeov(1)
+        real zeov(3,neldim)
         common /zeov/zeov
         real hdkov(nlvdim,nkndim)
         common /hdkov/hdkov
@@ -935,17 +958,19 @@ c sets up depth array for nodes
 
 	implicit none
 
+	include 'param.h'
+
 	integer levdim
 	real hdkn(levdim,1)	!depth at node, new time level
 	real hden(levdim,1)	!depth at element, new time level
-	real zenv(1)    	!water level at new time level
+	real zenv(3,1)    	!water level at new time level
 	real area(levdim,1)
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer ilhv(1)
 	common /ilhv/ilhv
-	integer nen3v(1)
+	integer nen3v(3,neldim)
 	common /nen3v/nen3v
 	real hldv(1)
 	common /hldv/hldv
@@ -953,9 +978,9 @@ c sets up depth array for nodes
 	common /hlv/hlv
 	real hev(1)
 	common /hev/hev
-	real hm3v(1)
+	real hm3v(3,neldim)
 	common /hm3v/hm3v
-c	real zenv(1)
+c	real zenv(3,neldim)
 c	common /zenv/zenv
 
 	include 'ev.h'
@@ -963,7 +988,7 @@ c	common /zenv/zenv
         logical bdebug
         logical bsigma
 	integer k,l,ie,ii
-	integer lmax,n,ibase,nlv,nsigma,levmin
+	integer lmax,n,nlv,nsigma,levmin
 	real hfirst,hlast,h,htot,z,zmed,hm
 	real hacu,hlevel,hsigma,hsig
 
@@ -998,7 +1023,8 @@ c----------------------------------------------------------------
 
 	do ie=1,nel
 
-	  call elebase(ie,n,ibase)
+	  !call elebase(ie,n,ibase)
+	  n = 3
 	  areael = 12 * ev(10,ie)
 	  areafv = areael / n
 
@@ -1012,9 +1038,9 @@ c	  -------------------------------------------------------
 
 	  do ii=1,n
 
-	    k = nen3v(ibase+ii)
-	    htot = hm3v(ibase+ii)
-	    z = zenv(ibase+ii)
+	    k = nen3v(ii,ie)
+	    htot = hm3v(ii,ie)
+	    z = zenv(ii,ie)
 	    hsig = min(htot,hsigma) + z
 	    zmed = zmed + z
 
@@ -1098,7 +1124,7 @@ c----------------------------------------------------------------
 	write(6,*) 'levdim,lmax: ',levdim,lmax
 	write(6,*) 'ie,ii,k: ',ie,ii,k
 	write(6,*) 'htot,hm: ',htot,hm
-	write(6,*) 'hm3v  ',(hm3v(ibase+ii),ii=1,3)
+	write(6,*) 'hm3v  ',(hm3v(ii,ie),ii=1,3)
 	write(6,*) 'hlv   ',(hlv(l),l=1,levdim)
 	write(6,*) 'hldv  ',(hldv(l),l=1,levdim)
 	stop 'error stop setdepth: last layer negative'

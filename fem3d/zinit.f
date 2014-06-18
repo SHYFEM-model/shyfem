@@ -17,8 +17,9 @@ c
 	common /xgv/xgv(nkndim), /ygv/ygv(nkndim)
 	common /nen3v/nen3v(3,neldim), /hm3v/hm3v(3,neldim)
 	common /ipev/ipev(neldim), /ipv/ipv(nkndim)
-	common /hv/hv(nkndim)
 	common /iarv/iarv(neldim)
+
+	real hv(nkndim)
 c
 c----------------------------------------------------------------
 c k1,k2		nodes that define x/y of node 1/2

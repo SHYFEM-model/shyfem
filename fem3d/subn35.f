@@ -341,6 +341,7 @@ c***********************************************************
 
 	integer nareas
 
+	include 'param.h'
 	include 'chezy.h'
 
 	nareas = nczdum
@@ -353,6 +354,7 @@ c***********************************************************
 
 	implicit none
 
+	include 'param.h'
 	include 'chezy.h'
 
 	integer iar
@@ -375,6 +377,7 @@ c***********************************************************
 
 	implicit none
 
+	include 'param.h'
 	include 'chezy.h'
 
 	integer iar
@@ -406,6 +409,7 @@ c initializes chezy arrays
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
+	include 'param.h'
 	include 'chezy.h'
 
 	integer iarv(1)
@@ -433,6 +437,7 @@ c initializes chezy arrays
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
+	include 'param.h'
 	include 'chezy.h'
 
 	integer iarv(1)
@@ -467,6 +472,7 @@ c adjusts chezy arrays
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
+	include 'param.h'
 	include 'chezy.h'
 
 	integer iarv(1)
@@ -522,6 +528,7 @@ c prints chezy arrays
 
 	implicit none
 
+	include 'param.h'
 	include 'chezy.h'
 
 	integer i
@@ -547,6 +554,7 @@ c checks chezy arrays
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
+	include 'param.h'
 	include 'chezy.h'
 
 	integer iarv(1)
@@ -603,6 +611,7 @@ c reads area section (chezy) from STR file
 
 	implicit none
 
+	include 'param.h'
 	include 'chezy.h'
 
 	character*80 line
@@ -664,6 +673,7 @@ c checks values for chezy parameters
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
+	include 'param.h'
 	include 'chezy.h'
 
         integer iarv(1)
@@ -763,6 +773,7 @@ c prints chezy values to log file
 
 	implicit none
 
+	include 'param.h'
 	include 'chezy.h'
 
 	integer ianf,i
@@ -796,6 +807,7 @@ c prints test message to terminal
 
 	implicit none
 
+	include 'param.h'
 	include 'chezy.h'
 
 	integer j,i
@@ -816,6 +828,7 @@ c initializes chezy values
 
 	implicit none
 
+	include 'param.h'
 	include 'chezy.h'
 
 	integer i,j

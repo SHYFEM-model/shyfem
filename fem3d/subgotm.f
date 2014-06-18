@@ -26,6 +26,8 @@ c**************************************************************
 
 c administers turbulence closure
 
+	implicit none
+
 	real getpar,areaele
 	logical boff
 
@@ -82,11 +84,8 @@ c aux arrays superposed onto other aux arrays
 c---------------------------------------------------------------
 
 	real shearf2(nlvdim,nkndim)
-	common /saux1/shearf2
 	real buoyf2(nlvdim,nkndim)
-	common /saux2/buoyf2
 	real richard(nlvdim,nkndim)
-	common /saux3/richard
 
 	real visv(0:nlvdim,nkndim)
 	common /visv/visv
@@ -204,19 +203,19 @@ c computes turbulent quantities with GOTM model
 	double precision ken_old(0:ndim), dis_old(0:ndim)
 	double precision len_old(0:ndim)
 
-        double precision numv(0:nlvdim,nkndim)  !viscosity (momentum)
-        double precision nuhv(0:nlvdim,nkndim)  !diffusivity (scalars)
-        double precision tken(0:nlvdim,nkndim)  !turbulent kinetic energy
-        double precision eps (0:nlvdim,nkndim)  !dissipation rate
-        double precision rls (0:nlvdim,nkndim)  !length scale
+        double precision numv_gotm(0:nlvdim,nkndim)  !viscosity (momentum)
+        double precision nuhv_gotm(0:nlvdim,nkndim)  !diffusivity (scalars)
+        double precision tken_gotm(0:nlvdim,nkndim)  !turbulent kinetic energy
+        double precision eps_gotm (0:nlvdim,nkndim)  !dissipation rate
+        double precision rls_gotm (0:nlvdim,nkndim)  !length scale
  
-        common /numv/numv
-        common /nuhv/nuhv
-        common /tken_gotm/tken
-        common /eps_gotm/eps
-        common /rls_gotm/rls
+        common /numv_gotm/numv_gotm
+        common /nuhv_gotm/nuhv_gotm
+        common /tken_gotm/tken_gotm
+        common /eps_gotm/eps_gotm
+        common /rls_gotm/rls_gotm
  
-        save /numv/,/nuhv/,/tken_gotm/,/eps_gotm/,/rls_gotm/
+        save /numv_gotm/,/nuhv_gotm/,/tken_gotm/,/eps_gotm/,/rls_gotm/
 
         integer itanf,itend,idt,nits,niter,it
         common /femtim/ itanf,itend,idt,nits,niter,it
@@ -227,7 +226,7 @@ c computes turbulent quantities with GOTM model
         real grav,fcor,dcor,dirn,rowass,roluft
         common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
 
-	integer nen3v(1)
+	integer nen3v(3,neldim)
 	common /nen3v/nen3v
 	real rhov(nlvdim,nkndim)
 	common /rhov/rhov
@@ -237,13 +236,9 @@ c aux arrays superposed onto other aux arrays
 c---------------------------------------------------------------
 
 	real shearf2(nlvdim,nkndim)
-	common /saux1/shearf2
 	real buoyf2(nlvdim,nkndim)
-	common /saux2/buoyf2
-	real taub(1)
-	common /v1v/taub
-	real areaac(1)
-	common /v2v/areaac
+	real taub(nkndim)
+	real areaac(nkndim)
 
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
@@ -408,16 +403,16 @@ c           update 1-dimensional vectors
 c           ------------------------------------------------------
 
 	    do l=0,nlev
-	      num(l) = numv(l,k)
-	      nuh(l) = nuhv(l,k)
-	      ken(l) = tken(l,k)
-	      dis(l) = eps(l,k)
-	      len(l) = rls(l,k)
-	      num_old(l) = numv(l,k)
-	      nuh_old(l) = nuhv(l,k)
-	      ken_old(l) = tken(l,k)
-	      dis_old(l) = eps(l,k)
-	      len_old(l) = rls(l,k)
+	      num(l) = numv_gotm(l,k)
+	      nuh(l) = nuhv_gotm(l,k)
+	      ken(l) = tken_gotm(l,k)
+	      dis(l) = eps_gotm(l,k)
+	      len(l) = rls_gotm(l,k)
+	      num_old(l) = numv_gotm(l,k)
+	      nuh_old(l) = nuhv_gotm(l,k)
+	      ken_old(l) = tken_gotm(l,k)
+	      dis_old(l) = eps_gotm(l,k)
+	      len_old(l) = rls_gotm(l,k)
 	    end do
 
 	    !call save_gotm_init
@@ -440,11 +435,11 @@ c           ------------------------------------------------------
 
 	    bwrite = .false.
 	    do l=0,nlev
-	      numv(l,k) = num(l)
-	      nuhv(l,k) = nuh(l)
-	      tken(l,k) = ken(l)
-	      eps(l,k)  = dis(l)
-	      rls(l,k)  = len(l)
+	      numv_gotm(l,k) = num(l)
+	      nuhv_gotm(l,k) = nuh(l)
+	      tken_gotm(l,k) = ken(l)
+	      eps_gotm(l,k)  = dis(l)
+	      rls_gotm(l,k)  = len(l)
 
 	      rlmax = max(rlmax,len(l))	!ggu
 	      if( len(l) .gt. 100. ) then
@@ -529,19 +524,19 @@ c initializes gotm arrays
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /level/ nlvdi,nlv
 
-	double precision numv(0:nlvdim,nkndim)	!viscosity (momentum)
-	double precision nuhv(0:nlvdim,nkndim)	!diffusivity (scalars)
-	double precision tken(0:nlvdim,nkndim)	!turbulent kinetic energy
-	double precision eps (0:nlvdim,nkndim)	!dissipation rate
-	double precision rls (0:nlvdim,nkndim)	!length scale
+	double precision numv_gotm(0:nlvdim,nkndim)   !viscosity (momentum)
+	double precision nuhv_gotm(0:nlvdim,nkndim)   !diffusivity (scalars)
+	double precision tken_gotm(0:nlvdim,nkndim)   !turbulent kinetic energy
+	double precision eps_gotm (0:nlvdim,nkndim)   !dissipation rate
+	double precision rls_gotm (0:nlvdim,nkndim)   !length scale
 
-        common /numv/numv
-        common /nuhv/nuhv
-        common /tken_gotm/tken
-        common /eps_gotm/eps
-        common /rls_gotm/rls
+        common /numv_gotm/numv_gotm
+        common /nuhv_gotm/nuhv_gotm
+        common /tken_gotm/tken_gotm
+        common /eps_gotm/eps_gotm
+        common /rls_gotm/rls_gotm
 
-	save /numv/,/nuhv/,/tken_gotm/,/eps_gotm/,/rls_gotm/
+	save /numv_gotm/,/nuhv_gotm/,/tken_gotm/,/eps_gotm/,/rls_gotm/
 
 	integer l,k
         double precision num_min, nuh_min
@@ -555,11 +550,11 @@ c initializes gotm arrays
 
         do k=1,nkn
           do l=0,nlv
-            numv(l,k) = num_min
-            nuhv(l,k) = nuh_min
-            tken(l,k) = tken_min
-            eps(l,k)  = eps_min
-            rls(l,k)  = rls_min
+            numv_gotm(l,k) = num_min
+            nuhv_gotm(l,k) = nuh_min
+            tken_gotm(l,k) = tken_min
+            eps_gotm(l,k)  = eps_min
+            rls_gotm(l,k)  = rls_min
           end do
         end do
 
@@ -583,29 +578,29 @@ c returns internal parameters from turbulence closure
 
 	include 'param.h'
 
-	double precision numv(0:nlvdim,nkndim)	!viscosity (momentum)
-	double precision nuhv(0:nlvdim,nkndim)	!diffusivity (scalars)
-	double precision tken(0:nlvdim,nkndim)	!turbulent kinetic energy
-	double precision eps (0:nlvdim,nkndim)	!dissipation rate
-	double precision rls (0:nlvdim,nkndim)	!length scale
+	double precision numv_gotm(0:nlvdim,nkndim)	!viscosity (momentum)
+	double precision nuhv_gotm(0:nlvdim,nkndim)	!diffusivity (scalars)
+	double precision tken_gotm(0:nlvdim,nkndim)	!turbulent kinetic energy
+	double precision eps_gotm (0:nlvdim,nkndim)	!dissipation rate
+	double precision rls_gotm (0:nlvdim,nkndim)	!length scale
 
-        common /numv/numv
-        common /nuhv/nuhv
-        common /tken_gotm/tken
-        common /eps_gotm/eps
-        common /rls_gotm/rls
+        common /numv_gotm/numv_gotm
+        common /nuhv_gotm/nuhv_gotm
+        common /tken_gotm/tken_gotm
+        common /eps_gotm/eps_gotm
+        common /rls_gotm/rls_gotm
 
-	save /numv/,/nuhv/,/tken_gotm/,/eps_gotm/,/rls_gotm/
+	save /numv_gotm/,/nuhv_gotm/,/tken_gotm/,/eps_gotm/,/rls_gotm/
 
 	integer l,laux
 
         do l=0,nlev
 	  laux = nlev - l
-          num(l) = numv(laux,k)
-          nuh(l) = nuhv(laux,k)
-          tk(l)  = tken(laux,k)
-          ep(l)  = eps (laux,k)
-          rl(l)  = rls (laux,k)
+          num(l) = numv_gotm(laux,k)
+          nuh(l) = nuhv_gotm(laux,k)
+          tk(l)  = tken_gotm(laux,k)
+          ep(l)  = eps_gotm (laux,k)
+          rl(l)  = rls_gotm (laux,k)
         end do
 
 	end
@@ -920,7 +915,7 @@ c taub (stress at bottom) is accumulated and weighted by area
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
-	integer nen3v(1)
+	integer nen3v(3,neldim)
 	common /nen3v/nen3v
 	real ulnv(nlvdim,neldim)
 	common /ulnv/ulnv
@@ -929,7 +924,7 @@ c taub (stress at bottom) is accumulated and weighted by area
         integer ilhv(1)
         common /ilhv/ilhv
 
-	integer k,ie,ii,n,nlev,ibase
+	integer k,ie,ii,n,nlev
 	real aj,taubot
 
 c	---------------------------------------------------
@@ -947,13 +942,14 @@ c	---------------------------------------------------
 
         do ie=1,nel
  
-          call elebase(ie,n,ibase)
+          !call elebase(ie,n,ibase)
+	  n = 3
           aj = ev(10,ie)
 	  nlev = ilhv(ie)
 
           taubot = czdef * ( ulnv(nlev,ie)**2 + vlnv(nlev,ie)**2 )
           do ii=1,n
-            k = nen3v(ibase+ii)
+            k = nen3v(ii,ie)
             taub(k) = taub(k) + taubot * aj
             areaac(k) = areaac(k) + aj
           end do
@@ -986,21 +982,16 @@ c taub (stress at bottom) is also accumulated and weighted by area
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
-	integer nen3v(1)
+	integer nen3v(3,neldim)
 	common /nen3v/nen3v
 	real rhov(nlvdim,nkndim)
 	common /rhov/rhov
  
         real shearf2(nlvdim,nkndim)
-        common /saux1/shearf2
         real buoyf2(nlvdim,nkndim)
-        common /saux2/buoyf2
         real volf2(nlvdim,nkndim)
-        common /saux3/volf2
-        real taub(1)
-        common /v1v/taub
-        real areaac(1)
-        common /v2v/areaac
+        real taub(nkndim)
+        real areaac(nkndim)
  
         integer ilhv(1)
         common /ilhv/ilhv
@@ -1028,7 +1019,8 @@ c taub (stress at bottom) is also accumulated and weighted by area
         do ie=1,nel
  
           call dep3dele(ie,+1,nlev,h)
-          call elebase(ie,n,ibase)
+          !call elebase(ie,n,ibase)
+	  n = 3
           area = areaele(ie)
           arean = area/n
  
@@ -1039,7 +1031,7 @@ c taub (stress at bottom) is also accumulated and weighted by area
             m2 = (du**2 + dv**2) / dh**2
             vol = dh * arean
             do ii=1,n
-              k = nen3v(ibase+ii)
+              k = nen3v(ii,ie)
               shearf2(l,k) = shearf2(l,k) + m2 * vol
               volf2(l,k) = volf2(l,k) + vol
             end do
@@ -1047,7 +1039,7 @@ c taub (stress at bottom) is also accumulated and weighted by area
  
           taubot = czdef * ( ulnv(nlev,ie)**2 + vlnv(nlev,ie)**2 )
           do ii=1,n
-            k = nen3v(ibase+ii)
+            k = nen3v(ii,ie)
             taub(k) = taub(k) + taubot * arean
             areaac(k) = areaac(k) + arean
           end do

@@ -550,27 +550,27 @@ c interpolation 2d of fem values to regular grid using fm matrix
         real fm(4,nx,ny)		!interpolation matrix
         real am(nx,ny)			!interpolated values (return)
 
-	integer nlvdim,nlv,ilhv(1)
+	integer nlvdi,nlv,ilhv(1)
 
-	nlvdim = 1
+	nlvdi = 1
 	nlv = 1
 	ilhv(1) = 1
 
-        call fm2am3d(nlvdim,ilhv,femval,nlv,nx,ny,fm,am)
+        call fm2am3d(nlvdi,ilhv,femval,nlv,nx,ny,fm,am)
 
 	end
 
 c************************************************
 
-        subroutine fm2am3d(nlvdim,ilhv,femval,nlv,nx,ny,fm,am)
+        subroutine fm2am3d(nlvdi,ilhv,femval,nlv,nx,ny,fm,am)
 
 c interpolation 3d of fem values to regular grid using fm matrix
 
         implicit none
 
-	integer nlvdim			!vertical dimension of fem array
+	integer nlvdi			!vertical dimension of fem array
         integer ilhv(1)			!vertical discretization (element!!)
-        real femval(nlvdim,1)		!values of fem array
+        real femval(nlvdi,1)		!values of fem array
         integer nlv,nx,ny		!dimension of regular matrix
         real fm(4,nx,ny)		!interpolation matrix
         real am(nlv,nx,ny)		!interpolated values (return)
@@ -593,7 +593,7 @@ c interpolation 3d of fem values to regular grid using fm matrix
             lmax = 0
             if( ie .gt. 0 ) then
               lmax = 1
-              if( nlvdim .gt. 1 ) lmax = ilhv(ie)
+              if( nlvdi .gt. 1 ) lmax = ilhv(ie)
             end if 
             do l=1,lmax
               a = 0.

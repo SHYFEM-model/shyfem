@@ -35,6 +35,8 @@ c--------------------------------------------------
 	real hev(neldim)
 	real hkv(nkndim)
 
+	common /ilhv/ilhv
+	common /ilhkv/ilhkv
 	common /hev/hev
 	common /hlv/hlv
 	common /hkv/hkv

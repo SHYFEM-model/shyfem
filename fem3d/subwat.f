@@ -360,7 +360,7 @@ c local
 
 c***************************************************************
 
-	subroutine volco0(k,lmax,nlvdim,s,area,vol,vol0,svol)
+	subroutine volco0(k,lmax,nlvdi,s,area,vol,vol0,svol)
 
 c computes volume and total mass of concentration in column of node k
 c + volume of upper layer
@@ -371,8 +371,8 @@ c new version that computes only up to layer lmax (lmax > 0)
 c arguments
 	integer k		!node defining column			(in)
 	integer lmax		!maximum level to which compute		(in)
-	integer nlvdim		!vertical dimension			(in)
-	real s(nlvdim,1)	!variable (temperature, salinity,...)	(in)
+	integer nlvdi		!vertical dimension			(in)
+	real s(nlvdi,1)	!variable (temperature, salinity,...)	(in)
 	real area		!area of column 			(out)
 	real vol		!total volume of column			(out)
 	real vol0		!volume of first layer			(out)
@@ -388,7 +388,7 @@ c functions
 	real volnode,areanode
 
 	nlev = lmax
-	if( lmax .le. 0 ) nlev = nlvdim		!all levels
+	if( lmax .le. 0 ) nlev = nlvdi		!all levels
 	ilevel = min(nlev,ilhkv(k))
 
 	mode = +1	!new time level
@@ -408,7 +408,7 @@ c functions
 
 c******************************************************
 
-	subroutine volno0(k,lmax,nlvdim,s,dvol,dcon)
+	subroutine volno0(k,lmax,nlvdi,s,dvol,dcon)
 
 c inputs concentration in finite volume (node) k
 c ( 3d version ) -> only up to layer lmax
@@ -418,8 +418,8 @@ c ( 3d version ) -> only up to layer lmax
 c arguments
 	integer k		!node defining volume
 	integer lmax		!maximum level to which introduce
-	integer nlvdim		!vertical dimension
-	real s(nlvdim,1)	!variable (temperature, salinity,...)
+	integer nlvdi		!vertical dimension
+	real s(nlvdi,1)	!variable (temperature, salinity,...)
 	real dvol		!change in water volume (whole time step)
 	real dcon		!concentration of new volume dvol
 c common
@@ -435,7 +435,7 @@ c local
 
         if( dcon .le. -990. ) return !input with ambient concentration $AMB0
 
-	call volco0(k,lmax,nlvdim,s,area,vol,vol0,svol)
+	call volco0(k,lmax,nlvdi,s,area,vol,vol0,svol)
 
 	nlev = ilhkv(k)
 	if( lmax .gt. 0 .and. nlev .gt. lmax ) nlev = lmax
