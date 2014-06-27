@@ -29,6 +29,7 @@ c 17.03.2008    ggu     routines re-arranged, new bnds_trans, bnds_set_def
 c 17.04.2008    ggu     deleted bnds_set_global
 c 23.04.2008    ggu     in bnds_set_def() eliminated aaux
 c 16.02.2012    ggu     new routine bnds_init0 (to force spatially const bound)
+c 25.06.2014    ggu     new routines bnds_init_new() and bnds_trans_new()
 c
 c******************************************************************
 
@@ -160,6 +161,89 @@ c initializes boundary condition
 
 c******************************************************************
 
+	subroutine bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv,ids)
+
+c initializes boundary condition
+
+	use intp_fem_file
+
+	implicit none
+
+	character*(*) what	!what variable to initialize
+	double precision dtime0	!time
+	integer nintp		!degree of interpolation - same for all bounds
+	integer nvar		!number of variables
+	integer nkn		!number of points (max)
+	integer nlv		!number of vertical levels
+	integer ids(*)		!boundary info id (return)
+
+	character*80 file
+	integer nbc,ibc
+	integer nbdim,nk,nsize
+	integer iunit,n,i,id
+	real val
+
+	integer nodes(nkn)
+	real aconst(nvar)
+
+	integer nbnds,nkbnds,ifileo,kbnds
+	logical exists_bnd_name
+	logical bdebug
+
+	bdebug = .false.
+
+	if( bdebug ) then
+	  write(88,*) '-------------------------'
+	  write(88,*) 'Initialization for scalar:'
+	  write(88,*) what
+	  write(88,*) '-------------------------'
+	end if
+
+	nbc = nbnds()
+
+	do ibc=1,nbc
+
+          nk = nkbnds(ibc)
+          do i=1,nk
+            nodes(i) = kbnds(ibc,i)
+          end do
+
+	  call get_boundary_file(ibc,what,file)
+
+	  aconst = 0.
+	  if( exists_bnd_name(what) ) then
+	    call get_bnd_par(ibc,what,val)
+	    aconst = val
+	  end if
+
+        !if( ibc .eq. 1 ) then
+	!  if( what .eq. 'temp' ) then
+	!    file='temp_bound_1.fem'
+	!  else if( what .eq. 'salt' ) then
+	!    file='salt_bound_1.fem'
+	!  else
+	!    write(6,*) what
+	!    stop 'error stop bnds_init_new: not yet ready'
+	!  end if
+	!end if
+
+          call iff_init(dtime0,file,nvar,nk,nlv,nintp
+     +                          ,nodes,aconst,id)
+
+	  ids(ibc) = id
+
+          write(6,*) 'boundary file opened: ',ibc,id,file
+
+        end do
+
+	do ibc=1,nbc
+	  !call iff_print_info(ids(ibc))
+	end do
+
+	end
+
+c******************************************************************
+
 	subroutine bnds_set(text,t,ndim,array,aaux)
 
 c sets boundary condition
@@ -235,7 +319,7 @@ c transfers boundary condition to matrix
 
 	integer nbnds,nkbnds,kbnds
 
-	call init_scal_bc(r3v)
+	call init_scal_bc(r3v)	!sets r3v to flag - dims nlv,nkn
 
 	nbc = nbnds()
 	ltext = text
@@ -270,6 +354,56 @@ c transfers boundary condition to matrix
 	    kn = kbnds(ibc,i)
 	    ip = 1 + (i-1) * nbdim             !also works for nbdim=0
 	    call dist_3d(nlvdim,r3v,kn,nbdim,aaux(ip))
+	  end do
+
+	end do
+
+	end
+
+c******************************************************************
+
+	subroutine bnds_trans_new(text,ids,dtime,ivar,nkn,nlv,nlvdim,r3v)
+
+c transfers boundary condition to matrix
+
+	use intp_fem_file
+
+	implicit none
+
+	character*(*) text	!text for debug
+	integer ids(*)
+	double precision dtime
+	integer ivar		!variable to use (can be 0 -> 1)
+	integer nkn
+	integer nlv
+	integer nlvdim		!vertical dimension of levels
+	real r3v(nlvdim,1)	!matrix to which BC values are transfered
+
+	integer nbc,ibc
+	integer nvar,nsize,ndata,nbdim
+	integer nk,iv,kn
+	integer i,ip,id
+	real t
+
+	real vals(nlv,nkn)
+
+	integer nbnds,nkbnds,kbnds
+
+	call init_scal_bc(r3v)	!sets r3v to flag - dims nlv,nkn
+
+	nbc = nbnds()
+	iv = max(ivar,1)
+
+	do ibc=1,nbc
+
+	  nk = nkbnds(ibc)   !total number of nodes of this boundary
+	  id = ids(ibc)
+
+	  call iff_time_interpolate(id,dtime,iv,nkn,nlv,vals)
+
+	  do i=1,nk
+	    kn = kbnds(ibc,i)
+	    call dist_3d(nlvdim,r3v,kn,nlv,vals(1,i))
 	  end do
 
 	end do

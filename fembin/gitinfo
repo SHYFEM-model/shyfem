@@ -15,6 +15,7 @@ diff HEAD
 add <files>		add <files> to next commit (stage)
 add -u			add (stage) all changed and tracked files to next commit
 add .			add all changed files to next commit (also untracked)
+rm <files>		remove <files> from repository
 commit			commit changes that have been added (staged)
 commit -a		same as: add -u; commit
 tag <tag>		tags with <tag>, if no <tag> shows tags

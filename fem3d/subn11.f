@@ -123,6 +123,8 @@ c
 c mode		1 : first call, initialize b.c.
 c		2 : read in b.c.
 
+	use intp_fem_file
+
 	implicit none
 
         include 'param.h'
@@ -158,16 +160,23 @@ c		2 : read in b.c.
 
         real bnd3(nb3dim,0:nbcdim)     !boundary array for water level
         real rwv(nb3dim)
-        save bnd3
+	real rwv2(nkn)
+	integer ids(nbcdim)		!id values for boundary conditions
+        save bnd3,ids
 
-	logical bimpose
+	integer nodes(nkn)
+	real vconst(nkn)
+
+	logical bimpose,bnew
 	integer kranf,krend,k,kn
 	integer ibc,ibtyp
         integer nk,i,kk,kindex,iv
         integer nbdim,nsize
         integer iunrad,ktilt
-	integer ip,l
+	integer ip,l,lmax,ivar
 	integer levflx
+	integer id,intpol,nvar,ierr
+	double precision dtime0,dtime
 	real rw,const,aux
 	real dt
 	real conz,temp,salt
@@ -177,9 +186,10 @@ c	real dz
 	real getpar,rwint
 	real conz3,temp3,salt3
 	real tramp,alpha
+	character*80 zfile
+
 	integer iround
         integer nkbnds,kbnds,itybnd
-
 	integer ipext,kbndind
 
 	!tramp = 0.	!is now handled in str
@@ -234,21 +244,65 @@ c maybe use directly bnds_init ?? FIXME
 	end do
 
 c	-----------------------------------------------------
+c       initialization of fem_intp
+c	-----------------------------------------------------
+
+	bnew = nint(getpar('imreg')).eq. 3
+	dtime0 = itanf
+	nvar = 1
+	vconst = 0.
+
+	if( bnew ) then
+
+	do ibc=1,nbc
+          nk = nkbnds(ibc)
+	  do i=1,nk
+            nodes(i) = kbnds(ibc,i)
+	  end do
+	  call get_boundary_file(ibc,'zeta',zfile)
+	  !if( ibc .eq. 1 ) zfile='otranto2007_3d.fem'
+	  call get_bnd_ipar(ibc,'ibtyp',ibtyp)
+	  call get_bnd_ipar(ibc,'intpol',intpol)
+	  if( intpol .le. 0 ) then
+	    intpol = 2
+	    if( ibtyp .eq. 1 ) intpol = 4
+	    write(6,*) 'intpol set: ',ibc,ibtyp,intpol
+	  end if
+          call iff_init(dtime0,zfile,nvar,nk,0,intpol
+     +                          ,nodes,vconst,id)
+	  ids(ibc) = id
+	  write(6,*) 'boundary file opened: ',ibc,id,zfile
+	end do
+
+	!call iff_print_info(ids(1))
+
+	end if
+
+c	-----------------------------------------------------
 c       determine constant for z initialization
 c	-----------------------------------------------------
 
 	const=getpar('const')	!constant initial z value
+	dtime = itanf
+	ivar = 1
+	lmax = 1
 
 	do ibc=1,nbc
 	  ibtyp=itybnd(ibc)
+	  nk = nkbnds(ibc)
 
 	  if(const.eq.flag.and.ibtyp.eq.1) then
+	    if( bnew ) then
+	        id = ids(ibc)
+	        call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
+		const = rwv2(1)
+	    else
 	        call get_bnd_ipar(ibc,'nbdim',nbdim)
-	        nk = nkbnds(ibc)
 		nsize = 0
 		if( nbdim .gt. 0 ) nsize = nk
 	        call b3dvalue(ibc,itanf,nsize,nb3dim,bnd3(1,ibc),rwv)
 		const=rwv(1)	!prepare constant z value for start
+	    end if
 	  end if
 
 	  if(ibtyp.eq.70) then	!nwe-shelf	!$$roger - special b.c.
@@ -308,6 +362,11 @@ c	loop over boundaries
 c	-----------------------------------------------------
 
         call bndo_radiat(it,rzv)
+	bnew = nint(getpar('imreg')).eq. 3
+
+	dtime = it
+	ivar = 1
+	lmax = 1
 
 	do ibc=1,nbc
 
@@ -320,6 +379,14 @@ c	-----------------------------------------------------
 
 	  rmu = 0.
 	  rmv = 0.
+
+	  if( bnew ) then
+
+	  id = ids(ibc)
+	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
+	  if( ibtyp .eq. 0 ) nk = 0	!switched off
+
+	  else
 
 	  if( ibtyp .eq. 0 ) then	!switched off
 	    nk = 0
@@ -345,6 +412,8 @@ c	-----------------------------------------------------
             stop 'error stop: momentum input is broken...'
 	  end if
 
+	  end if 	!bnew
+
 	  alpha = 1.
 	  if( tramp .gt. 0. .and. it-itanf .le. tramp ) then
 	     alpha = (it-itanf) / tramp
@@ -353,7 +422,11 @@ c	-----------------------------------------------------
 	  do i=1,nk
 
              kn = kbnds(ibc,i)
-	     rw = rwv(i)
+	     if( bnew ) then
+	       rw = rwv2(i)
+	     else
+	       rw = rwv(i)
+	     end if
 
 	     if(ibtyp.eq.1) then		!z boundary
                rzv(kn)=rw
@@ -393,6 +466,11 @@ c	       call zspeci(ibtyp,kranf,krend,rw)	!for radiation...
 	  end do
 
 	end do
+
+	!write(99,*) '======================================'
+	!write(99,*) ' it = ',it
+	!write(99,*) '======================================'
+	!call iff_print_info(ids(1),99)
 
 c	-----------------------------------------------------
 c	tilting

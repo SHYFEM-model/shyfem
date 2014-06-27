@@ -25,6 +25,7 @@ c 16.12.2010	ggu	in depadj() do not set hm3v to constant
 c 17.05.2011	ggu	new routines to adjourn depth
 c 18.11.2011	ggu	new routine makehkv_minmax()
 c 05.09.2013	ggu	new routine set_sigma_hkv_and_hev() from newsig.f
+c 25.06.2014	ggu	computa also hkv_min and hkv_max
 c
 c********************************************************************
 
@@ -520,10 +521,16 @@ c adjusts nodal depth values
 
         real hkv(1)
         common /hkv/hkv
+        real hkv_min(1)
+        common /hkv_min/hkv_min
+        real hkv_max(1)
+        common /hkv_max/hkv_max
 	real v1v(1)
 	common /v1v/v1v
 
         call makehkv(hkv,v1v)		!computes hkv as average
+        call makehkv_minmax(hkv_min,v1v,-1)
+        call makehkv_minmax(hkv_max,v1v,+1)
 
 	end
 

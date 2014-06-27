@@ -135,6 +135,7 @@ fem3d/nosaverf
 fem3d/ousextr_gis
 fem3d/prep_input
 fem3d/win2fem
+fem3d/bc2fem
 
 fembin/extinf
 fembin/flxinf

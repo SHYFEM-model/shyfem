@@ -465,7 +465,7 @@ nosinf2:  nosinf2.o $(NOSOBJS) $(OUTOBJS)
 feminf:  feminf.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-win2fem:  win2fem.o $(NOSOBJS) $(OUTOBJS) 
+bc2fem:  bc2fem.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 nossum:  nossum.o $(NOSOBJS) $(OUTOBJS) 
@@ -788,7 +788,7 @@ flux.o: regflux.h param.h links.h ev.h
 flxinf.o: param.h
 gotm3d.o: gotmturb.i
 grdutil.o: grd_extra.h param.h basin.h
-ht.o: param.h evmain.h
+ht.o: intp_fem_file.mod param.h evmain.h
 lagrange_back.o: param.h lagrange.h
 lagrange_connect.o: param.h lagrange.h lagrange_connect.h
 lagrange_cont.o: param.h links.h lagrange.h
@@ -829,7 +829,7 @@ newnudge.o: param.h nudge.h basin.h
 newstab.o: param.h
 newtra.o: param.h ev.h
 newtvd.o: param.h ev.h tvd.h
-nonhydro_pard.o: param.h nohydlinks.h common.h
+nonhydro_pard.o: param.h nohydlinks.h common.h nkonst.h
 nonhydro_spk.o: param.h nohydlinks.h
 nos2nc.o: param.h evmain.h basin.h
 nos_elab.o: param.h
@@ -872,16 +872,18 @@ readext.o: param.h
 scal_intp.o: param.h evmain.h
 scalintp.o: param.h evmain.h
 sedi3d.o: param.h links.h ev.h sed_param.h
-simsys_lp.o: param.h common.h
-simsys_pard.o: param.h common.h
-simsys_spk.o: param.h common.h
+simsys_lp.o: param.h common.h nkonst.h
+simsys_pard.o: param.h common.h nkonst.h
+simsys_spk.o: param.h common.h nkonst.h
 splitets.o: param.h
 splitflx.o: param.h
 subbc.o: subobc.h
 subbfm.o: param.h bfm_common.h
+subbnd.o: param.h bnd.h
 subbndo.o: param.h subbndo.h
+subbnds.o: intp_fem_file.mod
 subboxa.o: param.h modules.h ev.h basin.h subboxa.h
-subcoo.o: param.h common.h
+subcoo.o: param.h common.h nkonst.h
 subcst.o: modules.h
 subcus.o: param.h ev.h
 subdep.o: ev.h
@@ -911,9 +913,9 @@ submet.o: meteo_forcing_module.mod ev.h
 submeteo1.o: meteo.h
 meteo_forcing_module.mod: submeteo2.o
 submeteo2.o: intp_fem_file.mod meteo.h
-submud.o: testbndo.h param.h
+submud.o: param.h
 submud_dummy.o: param.h
-subn11.o: param.h
+subn11.o: intp_fem_file.mod param.h
 subn35.o: param.h chezy.h
 subnetcdf_admin.o: param.h
 subnetcdf_hydro.o: netcdf.inc
@@ -924,14 +926,14 @@ suboff.o: param.h
 subous.o: ousinf.h
 subousa.o: param.h
 subpar1.o: subpar.h
-subpard.o: param.h omp_lib.mod common.h
+subpard.o: param.h omp_lib.mod common.h nkonst.h
 subproj.o: param.h
 subqfxf.o: subqfx.h
 subqfxm4.o: subqfxm4.h
 subreg.o: ev.h
 subres.o: param.h
 subrst.o: param.h
-subspk.o: param.h common.h
+subspk.o: param.h common.h nkonst.h
 subtrace.o: param.h
 subtsuvfile.o: param.h
 subuti.o: param.h ev.h links.h

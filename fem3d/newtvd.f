@@ -309,7 +309,7 @@ c sets position and element of upwind node
 	    y = yu
 
             call find_elem_from_old(ie,x,y,ienew)
-            call find_close_elem(ie,x,y,ienew2)
+            !call find_close_elem(ie,x,y,ienew2)
 	    !write(6,*) 'ggu_xiq ',ie,ienew,ienew2
 	    if( bdebug ) then
 	      write(6,*) ie,ienew

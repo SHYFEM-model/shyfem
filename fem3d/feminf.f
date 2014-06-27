@@ -5,40 +5,65 @@ c writes info on fem file
 
 	implicit none
 
-	character*50 name,string
-	integer np,iunit
+	character*50 name,string,infile
+	integer np,iunit,iout
 	integer nvers,lmax,nvar,ntype,nlvdim
 	integer it,itanf,itend,idt,itold
-	double precision dtime
+	double precision dtime,tmin,tmax
 	real dmin,dmax
 	integer ierr
 	integer irec,i,nvar0,ich
 	integer iformat
-	logical bdebug,bfirst,bskip
+	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
 	character*50, allocatable :: strings(:)
 	real,allocatable :: data(:,:)
 	real,allocatable :: hd(:)
+	real,allocatable :: hlv(:)
 	integer,allocatable :: ilhkv(:)
 
 	bdebug = .false.
-	bskip = .true.
-	bskip = .false.
+
+        call parse_command_line(infile,bwrite,bout,tmin,tmax)
+	bskip = .not. bwrite
+	if( bout ) bskip = .false.
+	btmin = tmin .ne. -1.
+	btmax = tmax .ne. -1.
+
+	write(6,*) 'Input file: ',infile
+	write(6,*) 'bwrite = ',bwrite
+	write(6,*) 'bskip = ',bskip
+	write(6,*) 'bout = ',bout
+	write(6,*) 'btmax = ',btmax
+	write(6,*) 'tmin = ',tmin
+	write(6,*) 'tmax = ',tmax
 
 c--------------------------------------------------------------
 c open file
 c--------------------------------------------------------------
 
-	write(6,*) 'Enter fem-file name: '
-	read(5,*) name
+	if( infile .eq. ' ' ) stop
 
 	np = 0
-	call fem_file_read_open(name,np,iunit,iformat)
-
+	call fem_file_read_open(infile,np,iunit,iformat)
 	if( iunit .le. 0 ) stop
 
-	write(6,*) 'file name: ',name
+	write(6,*) 'file name: ',infile
 	write(6,*) 'iunit:     ',iunit
 	write(6,*) 'format:    ',iformat
+
+c--------------------------------------------------------------
+c prepare for output if needed
+c--------------------------------------------------------------
+
+	iout = 0
+	if( bout ) then
+	  iout = iunit + 1
+	  if( iformat .eq. 1 ) then
+	    open(iout,file='out.fem',status='unknown',form='formatted')
+	  else
+	    open(iout,file='out.fem',status='unknown',form='unformatted')
+	  end if
+	end if
 
 c--------------------------------------------------------------
 c read first record
@@ -58,9 +83,22 @@ c--------------------------------------------------------------
 	write(6,*) 'ntype: ',ntype
 
 	nlvdim = lmax
+	allocate(hlv(nlvdim))
 
-	call fem_file_skip_2header(iformat,iunit,lmax,ntype,ierr)
+	if( bdebug ) write(6,*) irec,dtime
+	call fem_file_read_hlv(iformat,iunit,lmax,hlv,ierr)
 	if( ierr .ne. 0 ) goto 98
+
+	write(6,*) 'vertical discretization: ',lmax
+	write(6,*) hlv
+
+	if( .not. btmin ) tmin = dtime
+	boutput = bout .and. dtime >= tmin
+
+	if( boutput ) then
+          call fem_file_write_header(iformat,iout,dtime
+     +                          ,nvers,np,lmax,nvar,ntype,nlvdim,hlv)
+	end if
 
 	nvar0 = nvar
 	allocate(strings(nvar))
@@ -75,18 +113,24 @@ c--------------------------------------------------------------
 	  else
             call fem_file_read_data(iformat,iunit
      +                          ,nvers,np,lmax
-     +                          ,ilhkv
-     +                          ,hd
-     +                          ,string,nlvdim
-     +                          ,data
+     +                          ,string
+     +                          ,ilhkv,hd
+     +                          ,nlvdim,data
      +                          ,ierr)
 	  end if
 	  if( ierr .ne. 0 ) goto 97
+	  if( boutput ) then
+            call fem_file_write_data(iformat,iout
+     +                          ,nvers,np,lmax
+     +                          ,string
+     +                          ,ilhkv,hd
+     +                          ,nlvdim,data)
+	  end if
 	  write(6,*) 'data:  ',i,'  ',string
 	  strings(i) = string
-	  if( .not. bskip ) then
+	  if( bwrite ) then
             call minmax(nlvdim,np,ilhkv,data,dmin,dmax)
-	    write(6,*) i,dtime,dmin,dmax
+	    write(6,1100) irec,i,dtime,dmin,dmax
 	  end if
 	end do
 
@@ -101,7 +145,7 @@ c--------------------------------------------------------------
 	idt = -1
 	ich = 0
 
-	do while(.true.)
+	do 
 	  irec = irec + 1
 	  itold = itend
           call fem_file_read_params(iformat,iunit,dtime
@@ -109,9 +153,15 @@ c--------------------------------------------------------------
 	  if( ierr .lt. 0 ) exit
 	  if( ierr .gt. 0 ) goto 99
 	  if( nvar .ne. nvar0 ) goto 96
+	  if( btmax .and. dtime > tmax ) exit
 	  if( bdebug ) write(6,*) irec,dtime
-	  call fem_file_skip_2header(iformat,iunit,lmax,ntype,ierr)
+	  call fem_file_read_hlv(iformat,iunit,lmax,hlv,ierr)
 	  if( ierr .ne. 0 ) goto 98
+	  boutput = bout .and. dtime >= tmin
+	  if( boutput ) then
+            call fem_file_write_header(iformat,iout,dtime
+     +                          ,nvers,np,lmax,nvar,ntype,nlvdim,hlv)
+	  end if
 	  do i=1,nvar
 	    if( bskip ) then
 	      call fem_file_skip_data(iformat,iunit
@@ -119,17 +169,23 @@ c--------------------------------------------------------------
 	    else
               call fem_file_read_data(iformat,iunit
      +                          ,nvers,np,lmax
-     +                          ,ilhkv
-     +                          ,hd
-     +                          ,string,nlvdim
-     +                          ,data
+     +                          ,string
+     +                          ,ilhkv,hd
+     +                          ,nlvdim,data
      +                          ,ierr)
 	    end if
 	    if( ierr .ne. 0 ) goto 97
+	    if( boutput ) then
+              call fem_file_write_data(iformat,iout
+     +                          ,nvers,np,lmax
+     +                          ,string
+     +                          ,ilhkv,hd
+     +                          ,nlvdim,data)
+	    end if
 	    if( string .ne. strings(i) ) goto 95
-	    if( .not. bskip ) then
+	    if( bwrite ) then
               call minmax(nlvdim,np,ilhkv,data,dmin,dmax)
-	      write(6,*) i,dtime,dmin,dmax
+	      write(6,1100) irec,i,dtime,dmin,dmax
 	    end if
 	  end do
 	  it = nint(dtime)
@@ -168,6 +224,7 @@ c--------------------------------------------------------------
 c end of routine
 c--------------------------------------------------------------
 
+ 1100	format(i6,i3,f15.2,2g16.5)
 	stop
    95	continue
 	write(6,*) 'variable ',i
@@ -286,6 +343,76 @@ c*****************************************************************
 
         !write(86,*) 'min/max: ',it,vmin,vmax
 
+        end
+
+c*****************************************************************
+
+        subroutine parse_command_line(infile,bwrite,bout,tmin,tmax)
+
+        implicit none
+
+        character*(*) infile
+	logical bwrite
+	logical bout
+	double precision tmin,tmax
+
+        integer i,nc
+        character*50 aux
+
+        infile = ' '
+	bwrite = .false.
+	bout = .false.
+	tmin = -1.
+	tmax = -1.
+
+        nc = command_argument_count()
+
+        if( nc > 0 ) then
+          i = 0
+          do
+            i = i + 1
+            if( i > nc ) exit
+            call get_command_argument(i,aux)
+            if( aux(1:1) .ne. '-' ) exit
+	    if( aux .eq. '-write' ) then
+	      bwrite = .true.
+	    else if( aux .eq. '-help' .or. aux .eq. '-h' ) then
+	      i = nc + 1
+              exit
+	    else if( aux .eq. '-out' ) then
+	      bout = .true.
+	    else if( aux .eq. '-tmin' ) then
+	      i = i + 1
+              if( i > nc ) exit
+              call get_command_argument(i,aux)
+	      read(aux,'(f14.0)') tmin
+	    else if( aux .eq. '-tmax' ) then
+	      i = i + 1
+              if( i > nc ) exit
+              call get_command_argument(i,aux)
+	      read(aux,'(f14.0)') tmax
+            else
+              write(6,*) '*** unknown option: ',aux
+	      i = nc + 1
+              exit
+            end if
+          end do
+          call get_command_argument(nc,infile)
+          if( i .eq. nc ) return
+        end if
+
+        write(6,*) 'Usage: feminf [options] fem-file'
+        write(6,*) '   options:'
+        write(6,*) '      -help|-h    this help'
+        write(6,*) '      -write      write min/max of values'
+        write(6,*) '      -out        create output file'
+        write(6,*) '      -tmax time  only process up to time'
+        write(6,*) '      -tmin time  only process starting from time'
+        write(6,*) '   With no option gives general information on file'
+        write(6,*) '   -write gives detailed info on every record'
+        write(6,*) '   -out re-writes output file'
+
+        stop
         end
 
 c*****************************************************************

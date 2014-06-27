@@ -91,12 +91,15 @@ c 13.06.2013    ggu	set/copydepth simplified, offline version
 c 05.09.2013    ggu	changed order of adjust depth and barene structures
 c 29.10.2013    ggu	nudging implemented
 c 25.03.2014    ggu	new offline
+c 25.06.2014    ggu	new arrays hkv_min, hkv_max
 c
 c*****************************************************************
 
 c----------------------------------------------------------------
 
 	program ht
+
+	use intp_fem_file
 
 	include 'param.h'
 
@@ -214,6 +217,7 @@ c depth structure of levels
         common /ilmkv/ilmkv
 
 	common /hkv/hkv(nkndim), /hev/hev(neldim)
+	common /hkv_min/hkv_min(nkndim), /hkv_max/hkv_max(nkndim)
 
 c new depth and area arrays
 
@@ -471,7 +475,7 @@ c inititialize time independent vertical arrays
 c-----------------------------------------------------------
 
 	call adjust_depth
-	call init_vertical
+	call init_vertical	!makes nlv, hlv, hldv , ilhv, ilhkv, hev, hkv
 
 c-----------------------------------------------------------
 c initialize barene data structures
@@ -484,6 +488,8 @@ c-----------------------------------------------------------
 c-----------------------------------------------------------
 c initialize boundary conditions
 c-----------------------------------------------------------
+
+	call iff_init_global(nkn,nlv,ilhkv,hkv_max,hlv)
 
 	call sp111(1)           !here zenv, utlnv, vtlnv are initialized
 

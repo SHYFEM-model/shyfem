@@ -184,6 +184,8 @@ c*********************************************************************
 
 c shell for scalar (for parallel version)
 
+	implicit none
+
         include 'param.h'
 
         character*(*) what
@@ -255,6 +257,8 @@ c*********************************************************************
 
 c shell for scalar with nudging (for parallel version)
 
+	implicit none
+
         include 'param.h'
 
         character*(*) what
@@ -276,6 +280,24 @@ c shell for scalar with nudging (for parallel version)
 	real bnd3_aux(nb3dim)
         real r3v(nlvdim,nkndim)
 
+	logical bnew
+	integer ierr,l,k,lmax
+	real eps
+	double precision dtime
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
+	integer ilhkv(nkndim)
+	common /ilhkv/ilhkv
+	real getpar
+
+        integer ids(nbcdim)
+        common /ids/ids
+        save /ids/
+
         integer iwhat,ichanm
 	character*10 whatvar,whataux
 
@@ -296,9 +318,17 @@ c--------------------------------------------------------------
 c transfer boundary conditions of var ivar to 3d matrix r3v
 c--------------------------------------------------------------
 
-	call bnds_trans(whatvar(1:iwhat)
+	dtime = it
+	bnew = nint(getpar('imreg')) .eq. 3
+
+	if( bnew ) then
+	  call bnds_trans_new(whatvar(1:iwhat)
+     +			,ids,dtime,ivar,nkn,nlv,nlvdim,r3v)
+	else
+	  call bnds_trans(whatvar(1:iwhat)
      +				,nb3dim,bnd3,bnd3_aux
      +                          ,ivar,nlvdim,r3v)
+	end if
 
 c--------------------------------------------------------------
 c do advection and diffusion
@@ -326,6 +356,8 @@ c*********************************************************************
 c shell for scalar (for parallel version)
 c
 c special version with factor for BC and variable sinking velocity
+
+	implicit none
 
         include 'param.h'
 
@@ -399,6 +431,8 @@ c*********************************************************************
 	subroutine scal_bnd(what,t,bnd3)
 
 c sets boundary conditions for scalar
+
+	implicit none
 
         include 'param.h'
 
@@ -1223,6 +1257,9 @@ c----------------------------------------------------------------
 c cdiag is diagonal of tri-diagonal system
 c chigh is high (right) part of tri-diagonal system
 c clow is low (left) part of tri-diagonal system
+c
+c clp -> bottom
+c clm -> top
 
 	do ii=1,3
 	  clm(1,ii) = 0.

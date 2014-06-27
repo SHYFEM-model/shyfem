@@ -159,8 +159,11 @@ c--------------------------------------------------------------
 	write(6,*)'reading T/S values', it,dtime
 
         call fem_file_read_3d(iformat,iu,dtime
-     +                          ,nkn,lmax,nldim,hl_data(1)
-     +                          ,il_data,string,hd_data,data
+     +                          ,nkn,lmax
+     +				,string
+     +                          ,il_data,hd_data
+     +				,nldim,hl_data(1)
+     +				,data
      +				,ierr)
 
 c--------------------------------------------------------------

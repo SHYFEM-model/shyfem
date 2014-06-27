@@ -28,7 +28,7 @@ c administers turbulence closure
 
 	implicit none
 
-	real getpar,areaele
+	real getpar
 	logical boff
 
 	integer iturb
@@ -240,8 +240,6 @@ c---------------------------------------------------------------
 	real taub(nkndim)
 	real areaac(nkndim)
 
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
 	real uprv(nlvdim,nkndim)
 	common /uprv/uprv
 	real vprv(nlvdim,nkndim)
@@ -259,7 +257,7 @@ c---------------------------------------------------------------
 	integer laux
 	integer nlev
 	real g
-	real czdef,taubot
+	real czdef
 	save czdef
 
 	real h(nlvdim)
@@ -278,9 +276,8 @@ c---------------------------------------------------------------
 	real ubot,vbot,rr
 
 	real dtreal
-	real getpar,areaele
+	real getpar
 
-	integer namlst
 	character*80 fn	
 	integer icall
 	save icall
@@ -320,9 +317,8 @@ c         --------------------------------------------------------
 
 	  call init_gotm_turb(10,fn,ndim)
 
+	  icall = 1
 	end if
-
-	icall = icall + 1
 
 	call get_timestep(dtreal)
 	dt = dtreal
@@ -338,6 +334,8 @@ c------------------------------------------------------
 c set up buoyancy frequency and shear frequency
 c------------------------------------------------------
 
+	shearf2 = 0.
+ 	buoyf2 = 0.
 	call setm2n2(nlvdim,buoyf2,shearf2)
 
 c------------------------------------------------------
@@ -962,97 +960,6 @@ c	---------------------------------------------------
 
         do k=1,nkn
           if( areaac(k) .le. 0. ) stop 'error stop bnstress: (2)'
-          taub(k) = taub(k) / areaac(k)
-        end do
-
-	end
-
-c**************************************************************
-
-	subroutine notused
- 
-c this is evaluated for every element and then averaged for each node
-c the average is weigthed with the volume of each element
-c level l (for node) refers to interface between layers l and l+1
-c
-c taub (stress at bottom) is also accumulated and weighted by area
-
-	include 'param.h'
- 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-	integer nen3v(3,neldim)
-	common /nen3v/nen3v
-	real rhov(nlvdim,nkndim)
-	common /rhov/rhov
- 
-        real shearf2(nlvdim,nkndim)
-        real buoyf2(nlvdim,nkndim)
-        real volf2(nlvdim,nkndim)
-        real taub(nkndim)
-        real areaac(nkndim)
- 
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real ulnv(nlvdim,neldim)
-        common /ulnv/ulnv
-        real vlnv(nlvdim,neldim)
-        common /vlnv/vlnv
-
-	real h(nlvdim)
-
-	  czdef = getpar('czdef')
-
-        do k=1,nkn
-	  nlev = ilhkv(k)
-	  do l=1,nlev
-	    shearf2(l,k) = 0.
-	    volf2(l,k) = 0.
-	  end do
-          taub(k) = 0.
-          areaac(k) = 0.
-        end do
- 
-        do ie=1,nel
- 
-          call dep3dele(ie,+1,nlev,h)
-          !call elebase(ie,n,ibase)
-	  n = 3
-          area = areaele(ie)
-          arean = area/n
- 
-          do l=1,nlev-1
-            dh = 0.5 * (h(l)+h(l+1))
-            du = ulnv(l,ie) - ulnv(l+1,ie)
-            dv = vlnv(l,ie) - vlnv(l+1,ie)
-            m2 = (du**2 + dv**2) / dh**2
-            vol = dh * arean
-            do ii=1,n
-              k = nen3v(ii,ie)
-              shearf2(l,k) = shearf2(l,k) + m2 * vol
-              volf2(l,k) = volf2(l,k) + vol
-            end do
-          end do
- 
-          taubot = czdef * ( ulnv(nlev,ie)**2 + vlnv(nlev,ie)**2 )
-          do ii=1,n
-            k = nen3v(ii,ie)
-            taub(k) = taub(k) + taubot * arean
-            areaac(k) = areaac(k) + arean
-          end do
- 
-        end do
- 
-        do k=1,nkn
-          nlev = ilhkv(k)
-          do l=1,nlev-1
-            if( volf2(l,k) .le. 0. ) stop 'error stop ... (1)'
-            shearf2(l,k) = shearf2(l,k) / volf2(l,k)
-          end do
-          if( areaac(k) .le. 0. ) stop 'error stop ... (2)'
           taub(k) = taub(k) / areaac(k)
         end do
 

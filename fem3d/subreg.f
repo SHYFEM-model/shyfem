@@ -1380,13 +1380,14 @@ c uses data structure ev and ieltv
 	common /ieltv/ieltv
 
 	logical binit,bdebug
-	integer ie,ii,iside
+	integer ie,ii,iside,lmax,loop
 	real xi,ximin
 	double precision a(3),b(3),c(3)
 
 	logical in_element
 
 	bdebug = .false.
+	lmax = 10
 
 	call is_init_ev(binit)
 
@@ -1412,6 +1413,7 @@ c-------------------------------------------------------------
 
 	if( bdebug ) write(6,*) 'ggu_xi (3) ',ieold
 
+	loop = 0
 	ie = ieold
 	do while( ie .gt. 0 )
 	  iside = 0
@@ -1436,6 +1438,8 @@ c-------------------------------------------------------------
 	    ie = ieltv(iside,ie)
 	    if( bdebug ) write(6,*) 'ggu_xiii iterate',ie,iside,ximin
 	  end if
+	  loop = loop + 1
+	  if( loop .gt. lmax ) ie = 0
 	end do
 
 	ielem = 0

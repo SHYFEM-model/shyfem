@@ -3,13 +3,15 @@
 !
 ! revision log :
 !
-! 16.06.2014	ggu	tiem is noew double
+! 16.06.2014	ggu	time is now double
+! 25.06.2014	ggu	various bug fixes
 !
 !****************************************************************
 !
 ! info:
 !
 ! iformat
+!		-3  file finished (no more read or intp allowed)
 !		-2  file closed (read EOF)
 !		-1  no file given
 !		 0  fem unformatted
@@ -31,6 +33,7 @@
 ! iform_ts = 3
 ! iform_none = -1
 ! iform_closed = -2
+! iform_forget = -3
 !
 ! bnofile = iformat < 0				no file open
 ! bfem = iformat >= 0 .and. iformat <= 2	fem file format
@@ -69,6 +72,8 @@
 
 	  character*80 :: file = ' '
 	  logical :: bonepoint = .false.	!only one point stored
+	  logical :: bfemdata = .false.		!fem data structure allocated
+	  logical :: bfiledata = .false.	!file data structure allocated
 
 	  integer, allocatable :: nodes(:)
 	  double precision, allocatable :: time(:)
@@ -86,6 +91,7 @@
 
 	integer, parameter :: iform_none = -1
 	integer, parameter :: iform_closed = -2
+	integer, parameter :: iform_forget = -3
 	integer, parameter :: iform_ts = 3
 
 	integer, parameter :: ndim = 100
@@ -106,11 +112,19 @@
 	contains
 !================================================================
 
-	subroutine iff_print_info(idp)
+	subroutine iff_print_info(idp,iunit)
 
 	integer idp	!print info on this id, if 0 all info
+	integer, optional :: iunit
 
-	integer id,ids,ide
+	integer id,ids,ide,iu
+	logical debug
+
+	debug = .false.
+	debug = .true.
+
+	iu = 6
+	if( present(iunit)) iu = iunit
 
 	if( idp <= 0 ) then
 	  ids = 1
@@ -120,11 +134,35 @@
 	  ide = idp
 	end if
 
-	write(6,1010)
+	write(iu,*) 'iff_print_info:'
+	write(iu,1010)
 	do id=ids,ide
-	  write(6,1000) id,pinfo(id)%iunit,pinfo(id)%nvar
+	  write(iu,1000) id,pinfo(id)%iunit,pinfo(id)%nvar
      +			,pinfo(id)%nintp,pinfo(id)%iformat
      +			,pinfo(id)%file
+	end do
+
+	if( .not. debug ) return
+
+	write(iu,*) 'debug information:'
+	do id=ids,ide
+	  write(iu,*) id,pinfo(id)%nvers,pinfo(id)%ntype,pinfo(id)%irec
+	  write(iu,*) id,pinfo(id)%np,pinfo(id)%lmax,pinfo(id)%nexp
+	  write(iu,*) id,pinfo(id)%ilast,pinfo(id)%bonepoint
+	  if( pinfo(id)%bfemdata ) then
+	  write(iu,*) id,'fem variables: nodes,time,data'
+	  write(iu,*) id,pinfo(id)%nodes
+	  write(iu,*) id,pinfo(id)%time
+	  write(iu,*) id,pinfo(id)%data
+	  end if
+	  if( pinfo(id)%bfiledata ) then
+	  write(iu,*) id,'file variables: hlv,time,data'
+	  write(iu,*) id,pinfo(id)%hlv_file
+	  write(iu,*) id,pinfo(id)%time_file
+	  write(iu,*) id,pinfo(id)%data_file
+	  end if
+	  !write(iu,*) id,pinfo(id)%ilhkv_file
+	  !write(iu,*) id,pinfo(id)%hd_file
 	end do
 
 	return
@@ -138,8 +176,7 @@
 
 	integer id
 
-	write(6,*) 'fem file info: ',id
-	write(6,*) 'other information still needed'
+	call iff_print_info(id)
 
 	end subroutine iff_print_file_info
 
@@ -158,6 +195,19 @@
 
 !****************************************************************
 
+	subroutine iff_forget_file(id)
+
+	integer id
+
+	pinfo(id)%iformat = iform_forget
+	call iff_delete_entry(id)
+	close(pinfo(id)%iunit)
+	pinfo(id)%iunit = -3
+
+	end subroutine iff_forget_file
+
+!****************************************************************
+
 	subroutine iff_delete_entry(id)
 
 	integer id
@@ -171,6 +221,9 @@
 	deallocate(pinfo(id)%data_file)
 	deallocate(pinfo(id)%ilhkv_file)
 	deallocate(pinfo(id)%hd_file)
+
+	pinfo(id)%bfemdata = .false.
+	pinfo(id)%bfiledata = .false.
 
 	end subroutine iff_delete_entry
 
@@ -470,6 +523,27 @@
 
 !****************************************************************
 
+	subroutine iff_set_constant(id,vconst)
+
+c (re-) sets constant if no file has been opened 
+
+	integer id
+	real vconst(pinfo(id)%nvar)
+
+	integer iformat
+	logical bnofile
+
+	iformat = pinfo(id)%iformat
+	bnofile = iformat < 0
+
+	if( bnofile ) then
+	  pinfo(id)%data_file(1,1,:) = vconst
+	end if
+
+	end subroutine iff_set_constant
+
+!****************************************************************
+
 	subroutine iff_get_file_info(file,nexp,nvar,iformat)
 
 c coputes info on type of file
@@ -551,24 +625,24 @@ c	 2	time series
 		
 	return
    96	continue
+	call iff_print_file_info(id)
 	write(6,*) 'cannot find enough time records'
 	write(6,*) 'would need at least ',nintp
-	call iff_print_file_info(id)
-	stop 'error stop iff_populate_records'
+	stop 'error stop iff_populate_records: not enough records'
    97	continue
+	call iff_print_file_info(id)
 	write(6,*) 'cannot find time record'
 	write(6,*) 'looking at least for it = ',dtimes
-	call iff_print_file_info(id)
-	stop 'error stop iff_populate_records'
+	stop 'error stop iff_populate_records: not enough records'
    98	continue
+	call iff_print_file_info(id)
 	write(6,*) 'time step less than 0'
 	write(6,*) 'this happens at it = ',dtime
-	call iff_print_file_info(id)
-	stop 'error stop iff_populate_records'
+	stop 'error stop iff_populate_records: time step <= 0'
    99	continue
-	write(6,*) 'error reading first record'
 	call iff_print_file_info(id)
-	stop 'error stop iff_populate_records'
+	write(6,*) 'error reading first record'
+	stop 'error stop iff_populate_records: read error'
 	end  subroutine iff_populate_records
 
 !****************************************************************
@@ -593,6 +667,8 @@ c	 2	time series
 	  allocate(pinfo(id)%time(nintp))
 	  allocate(pinfo(id)%data(lexp,nexp,nvar,nintp))
 	end if
+
+	pinfo(id)%bfemdata = .true.
 
 	pinfo(id)%time = 0.
 	pinfo(id)%data = 0.
@@ -733,7 +809,7 @@ c	 2	time series
 
 	subroutine iff_allocate_file_arrays(id,nvar,np,lmax)
 
-! allocates fem data structure
+! allocates file data structure
 !
 ! if np/lmax are different from stored ones: first deallocate, then alloacte
 ! if np/lmax == 0: only deallocate
@@ -781,14 +857,21 @@ c	 2	time series
 	! allocate new arrays
 	!---------------------------------------------------------
 
+	pinfo(id)%bfiledata = .false.
+
 	pinfo(id)%np = np
 	pinfo(id)%lmax = lmax
+
+	if( np == 0 .or. lmax == 0 ) return
+
 	if( np > 0 .or. lmax > 0 ) then
 	  allocate(pinfo(id)%hlv_file(lmax))
 	  allocate(pinfo(id)%data_file(lmax,np,nvar))
 	  allocate(pinfo(id)%ilhkv_file(np))
 	  allocate(pinfo(id)%hd_file(np))
 	end if
+
+	pinfo(id)%bfiledata = .true.
 
 	pinfo(id)%hlv_file = 0.
 	pinfo(id)%data_file = 0.
@@ -846,9 +929,10 @@ c	 2	time series
 	  do i=1,nvar
             call fem_file_read_data(iformat,iunit
      +                          ,nvers,np,lmax
+     +                          ,string
      +                          ,pinfo(id)%ilhkv_file
      +                          ,pinfo(id)%hd_file
-     +                          ,string,nlvdim
+     +                          ,nlvdim
      +				,pinfo(id)%data_file(1,1,i)
      +				,ierr)
 	    if( ierr /= 0 ) goto 99
@@ -881,16 +965,22 @@ c	 2	time series
 	integer iintp
 	double precision dtime
 
-	integer nintp,np,nexp,lmax,ip
+	integer nintp,np,nexp,lexp,ip
 	integer ivar,nvar,ntype
-	logical bts
+	integer l,j,lfem,ipl
+	logical bts,bdebug
+
+	bdebug = .false.
+	!bdebug = id == 6
 
         pinfo(id)%time(iintp) = dtime
 
         ntype = pinfo(id)%ntype
         nintp = pinfo(id)%nintp
+        nvar = pinfo(id)%nvar
         np = pinfo(id)%np
         nexp = pinfo(id)%nexp
+        lexp = pinfo(id)%lexp
 	bts = pinfo(id)%iformat == iform_ts
 
 	if( nintp > 0 .and. iintp > nintp ) goto 99
@@ -912,6 +1002,25 @@ c	 2	time series
 	  do ip=1,np
 	    call iff_handle_vertical(id,iintp,ip,ip)
 	  end do
+	end if
+
+	if( bdebug ) then
+	  write(6,*) 'iff_space_interpolate: data ---------------'
+	  write(6,*) np,dtime
+	  do j=1,nintp
+	    write(6,*) 'iintp = ',j
+	    do ivar=1,nvar
+	      write(6,*) 'ivar = ',ivar
+	      do ip=1,nexp
+		ipl = ip
+		if( nexp /= nkn_fem ) ipl = pinfo(id)%nodes(ip)
+		lfem = ilhkv_fem(ipl)
+	        write(6,*) 'node = ',ip,lfem,lexp
+	        write(6,*) (pinfo(id)%data(l,ip,ivar,j),l=1,lexp)
+	      end do
+	    end do
+	  end do
+	  write(6,*) 'end iff_space_interpolate: data -----------'
 	end if
 
 	return
@@ -985,15 +1094,8 @@ c	 2	time series
 	  lfem = ilhkv_fem(ipl)
 	end if
 
-	!if( id .eq. 1 ) then
-	!write(6,*) 'distribute: ',lfem,ip_from,ip_to,iintp
-	!end if
-
 	do ivar=1,nvar
 	  value = pinfo(id)%data_file(1,ip_from,ivar)
-	!if( id .eq. 1 ) then
-	!write(6,*) 'dist: ',ivar,value
-	!end if
 	  do l=1,lfem
 	    pinfo(id)%data(l,ip_to,ivar,iintp) = value
 	  end do
@@ -1064,9 +1166,12 @@ c global lmax and lexp are > 1
 	real hl(pinfo(id)%lmax)
 	real hz_file(0:pinfo(id)%lmax+1)
 	real val_file(pinfo(id)%lmax+1)
+	logical bdebug
 
 	bcenter = .false.
 	bcons = .false.
+	bdebug = .true.
+	bdebug = .false.
 
         nvar = pinfo(id)%nvar
 	lmax = pinfo(id)%ilhkv_file(ip_from)
@@ -1085,19 +1190,36 @@ c global lmax and lexp are > 1
 
 	z = 0.
 
+	hfem = hd_fem(ipl)
 	h = pinfo(id)%hd_file(ip_from)
+	if( h < -990 ) h = pinfo(id)%hlv_file(lmax)	!take from hlv array
+
 	call compute_sigma_info(lmax,pinfo(id)%hlv_file,nsigma,hsigma)
 	call get_layer_thickness(lmax,nsigma,hsigma,z,h
      +					,pinfo(id)%hlv_file,hl)
 	call get_bottom_of_layer(bcenter,lmax,z,hl,hz_file(1))
 	hz_file(0) = z
 
-	hfem = hd_fem(ipl)
 	call compute_sigma_info(lfem,hlv_fem,nsigma,hsigma)
 	call get_layer_thickness(lfem,nsigma,hsigma,z,hfem
      +					,hlv_fem,hl_fem)
 	call get_bottom_of_layer(bcenter,lfem,z,hl_fem,hz_fem(1))
 	hz_fem(0) = z
+
+	if( bdebug ) then
+	  write(6,*) 'iff_interpolate_vertical: -------------------'
+	  write(6,*) id
+	  write(6,*) ip_from,ip_to
+	  write(6,*) h,hfem
+	  write(6,*) lmax,lfem
+	  write(6,*) 'hlv_file: ',(pinfo(id)%hlv_file(l),l=1,lmax)
+	  write(6,*) 'hlv_fem: ',(hlv_fem(l),l=1,lfem)
+	  write(6,*) (hl(l),l=1,lmax)
+	  write(6,*) (hl_fem(l),l=1,lfem)
+	  write(6,*) (hz_file(l),l=0,lmax)
+	  write(6,*) (hz_fem(l),l=0,lfem)
+	  write(6,*) 'end iff_interpolate_vertical: ----------------'
+	end if
 
 	do ivar=1,nvar
 	  do l=1,lmax
@@ -1107,6 +1229,12 @@ c global lmax and lexp are > 1
 	  do l=1,lfem
 	    pinfo(id)%data(l,ip_to,ivar,iintp) = val_fem(l)
 	  end do
+	  if( bdebug ) then
+	    write(6,*) 'iff_interpolate_vertical - ivar = : ',ivar
+	    write(6,*) (val_file(l),l=1,lmax)
+	    write(6,*) (val_fem(l),l=1,lfem)
+	    write(6,*) 'end iff_interpolate_vertical - ivar = : ',ivar
+	  end if
 	end do
 
 	end subroutine iff_interpolate_vertical
@@ -1115,16 +1243,16 @@ c global lmax and lexp are > 1
 !****************************************************************
 !****************************************************************
 
-	subroutine iff_time_interpolate(id,itact,ivar,ldim,ndim,value)
+	subroutine iff_time_interpolate(id,itact,ivar,ndim,ldim,value)
 
 	integer id
 	double precision itact
 	integer ivar
-	integer ldim		!vertical dimension of value
 	integer ndim		!horizontal dimension of value
+	integer ldim		!vertical dimension of value
 	real value(ldim,ndim)
 
-	integer iv,nvar
+	integer iv,nvar,iformat
 	integer nintp,lexp,nexp
 	integer ilast,ifirst
 	double precision it,itlast,itfirst
@@ -1134,6 +1262,9 @@ c global lmax and lexp are > 1
 	!---------------------------------------------------------
 	! set up parameters
 	!---------------------------------------------------------
+
+        iformat = pinfo(id)%iformat
+	if( iformat == -3 ) goto 96
 
         nintp = pinfo(id)%nintp
         nvar = pinfo(id)%nvar
@@ -1181,10 +1312,10 @@ c global lmax and lexp are > 1
 
 	if( ivar .eq. 0 ) then
 	  do iv=1,nvar
-            call iff_interpolate(id,t,iv,ldim,ndim,value)
+            call iff_interpolate(id,t,iv,ndim,ldim,value)
 	  end do
 	else
-          call iff_interpolate(id,t,ivar,ldim,ndim,value)
+          call iff_interpolate(id,t,ivar,ndim,ldim,value)
 	end if
 
 	!---------------------------------------------------------
@@ -1192,6 +1323,10 @@ c global lmax and lexp are > 1
 	!---------------------------------------------------------
 
 	return
+   96	continue
+	write(6,*) 'file is closed... cannot interpolate anymore'
+	call iff_print_file_info(id)
+	stop 'error stop iff_time_interpolate'
    97	continue
 	write(6,*) 'incompatible dimensions'
 	write(6,*) 'ldim,lexp: ',ldim,lexp
@@ -1212,17 +1347,17 @@ c global lmax and lexp are > 1
 
 !****************************************************************
 
-        subroutine iff_interpolate(id,t,ivar,ldim,ndim,value)
+        subroutine iff_interpolate(id,t,ivar,ndim,ldim,value)
 
 	integer id
 	double precision t
 	integer ivar
-	integer ldim		!vertical dimension of value
 	integer ndim		!horizontal dimension of value
+	integer ldim		!vertical dimension of value
 	real value(ldim,ndim)
 
 	integer nintp,lexp,nexp,ilast
-	logical bonepoint,bconst,bnodes,b2d,bvar
+	logical bonepoint,bconst,bnodes,b2d,bmulti
 	integer ipl,lfem,i,l,ip,j
 	real val,tr
 	double precision time(pinfo(id)%nintp)
@@ -1237,29 +1372,28 @@ c global lmax and lexp are > 1
         ilast = pinfo(id)%ilast
         bonepoint = pinfo(id)%bonepoint
 	bconst = nintp == 0
-	bvar = .not. bconst
+	bmulti = .not. bonepoint
 	b2d = lexp <= 1
 	bnodes = pinfo(id)%nexp /= nkn_fem	!use node pointer
 
 	tr = t		!real version of t
 
 	if( bconst .or. bonepoint ) then
-	  if( bconst ) then
-	    val = pinfo(id)%data(1,1,ivar,1)
-	  else
-	    val = rd_intp_neville(nintp,pinfo(id)%time
-     +				,pinfo(id)%data(1,1,ivar,1),t)
+	  if( bonepoint ) then
+	    time = pinfo(id)%time
+	    do j=1,nintp
+	      vals(j) = pinfo(id)%data(1,1,ivar,j)
+	    end do
+	    val = rd_intp_neville(nintp,time,vals,t)
 	  end if
 	  do i=1,nexp
 	    do l=1,lexp
-	      if( bvar ) val = pinfo(id)%data(l,i,ivar,1)
+	      if( bmulti ) val = pinfo(id)%data(l,i,ivar,1)
 	      value(l,i) = val
 	    end do
 	  end do
 	else
-	  do j=1,nintp
-	    time(j) = pinfo(id)%time(j)
-	  end do
+	  time = pinfo(id)%time
 	  do i=1,nexp
 	    if( b2d ) then
 	      lfem = 1
@@ -1268,12 +1402,16 @@ c global lmax and lexp are > 1
 	      if( nexp /= nkn_fem ) ipl = pinfo(id)%nodes(i)
 	      lfem = ilhkv_fem(ipl)
 	    end if
+	    val = -888.		!just for check
 	    do l=1,lfem
 	      do j=1,nintp
 	        vals(j) = pinfo(id)%data(l,i,ivar,j)
 	      end do
 	      !val = intp_neville(nintp,time,vals,tr)	!real time version
 	      val = rd_intp_neville(nintp,time,vals,t)
+	      value(l,i) = val
+	    end do
+	    do l=lfem+1,ldim
 	      value(l,i) = val
 	    end do
 	  end do

@@ -78,7 +78,9 @@ c************************************************************
 c************************************************************
 
 	subroutine fem_file_write_header(iformat,iunit,it
-     +				,nvers,np,lmax,nvar,ntype,nlvdim,hlv)
+     +				,nvers,np,lmax
+     +				,nvar,ntype
+     +				,nlvdim,hlv)
 
 c writes header of the file
 
@@ -92,7 +94,7 @@ c writes header of the file
 	double precision it	!time stamp
 	integer nvers		!version of file format
 	integer np		!size of data (horizontal, nodes or elements)
-	integer lmax		!maximum vertical values
+	integer lmax		!maximum vertical values (1 for 2d)
 	integer nvar		!number of variables to write
 	integer ntype		!type of information contained
 	integer nlvdim		!vertical dimension of data
@@ -104,6 +106,7 @@ c writes header of the file
 	nv = nvers
 	if( nv .eq. 0 ) nv = 1	!default
 	if( nv .lt. 1 .or. nv .gt. 1 ) goto 99
+	if( lmax < 1 ) goto 98
 
 	if( iformat == 1 ) then
 	  itlong = it
@@ -116,6 +119,9 @@ c writes header of the file
 
 	return
  1000	format(i20,i4,i8,i12,i6,i4,i6)
+   98	continue
+	write(6,*) 'lmax = ',lmax
+	stop 'error stop fem_file_write_header: lmax < 1'
    99	continue
 	write(6,*) 'nvers = ',nvers
 	stop 'error stop fem_file_write_header: nvers'
@@ -125,8 +131,9 @@ c************************************************************
 
 	subroutine fem_file_write_data(iformat,iunit
      +				,nvers,np,lmax
-     +				,nlvdim,ilhkv
-     +				,string,hd,data)
+     +				,string
+     +				,ilhkv,hd
+     +				,nlvdim,data)
 
 c writes data of the file
 
@@ -137,10 +144,10 @@ c writes data of the file
 	integer nvers		!version of file format
 	integer np		!size of data (horizontal, nodes or elements)
 	integer lmax		!maximum vertical values (1 for 2d)
-	integer nlvdim		!vertical dimension of data
-	integer ilhkv(np)	!number of layers in point k (node)
 	character*(*) string	!string explanation
+	integer ilhkv(np)	!number of layers in point k (node)
 	real hd(np)		!total depth
+	integer nlvdim		!vertical dimension of data
 	real data(nlvdim,np)	!data
 
 	logical b2d
@@ -182,8 +189,10 @@ c writes data of the file
 c************************************************************
 
 	subroutine fem_file_write_3d(iformat,iunit,it
-     +				,np,lmax,nlvdim,hlv
-     +				,ilhkv,string,hd,data)
+     +				,np,lmax
+     +				,string
+     +				,ilhkv,hd
+     +				,nlvdim,hlv,data)
 
 c writes 1 variable of a 3d field
 
@@ -194,11 +203,11 @@ c writes 1 variable of a 3d field
 	double precision it	!time stamp
 	integer np		!size of data (horizontal, nodes or elements)
 	integer lmax		!vertical values
+	character*(*) string	!string explanation
+	integer ilhkv(np)	!number of layers in point k (node)
+	real hd(np)		!total depth
 	integer nlvdim		!vertical dimension
 	real hlv(nlvdim)	!depth at bottom of layer
-	integer ilhkv(np)	!number of layers in point k (node)
-	character*(*) string	!string explanation
-	real hd(np)		!total depth
 	real data(nlvdim,np)	!data
 
 	integer nvers,ntype
@@ -211,7 +220,10 @@ c writes 1 variable of a 3d field
 	call fem_file_write_header(iformat,iunit,it,nvers
      +				,np,lmax,nvar,ntype,nlvdim,hlv)
 	call fem_file_write_data(iformat,iunit,nvers
-     +				,np,lmax,nlvdim,ilhkv,string,hd,data)
+     +				,np,lmax
+     +				,string
+     +				,ilhkv,hd
+     +				,nlvdim,data)
 
 	end
 
@@ -248,7 +260,10 @@ c writes 1 variable of a 2d field
 	call fem_file_write_header(iformat,iunit,it,nvers
      +				,np,lmax,nvar,ntype,nlvdim,hlv)
 	call fem_file_write_data(iformat,iunit,nvers
-     +				,np,lmax,nlvdim,ilhkv,string,hd,data)
+     +				,np,lmax
+     +				,string
+     +				,ilhkv,hd
+     +				,nlvdim,data)
 
 	end
 
@@ -688,7 +703,10 @@ c************************************************************
 c************************************************************
 
 	subroutine fem_file_read_header(iformat,iunit,it
-     +				,nvers,np,lmax,nvar,ntype,nlvdim,hlv,ierr)
+     +				,nvers,np,lmax
+     +				,nvar,ntype
+     +				,nlvdim,hlv
+     +				,ierr)
 
 c reads header of the file
 
@@ -725,8 +743,10 @@ c************************************************************
 
 	subroutine fem_file_read_data(iformat,iunit
      +				,nvers,np,lmax
+     +				,string
      +				,ilhkv,hd
-     +				,string,nlvdim,data,ierr)
+     +				,nlvdim,data
+     +				,ierr)
 
 c reads data of the file
 
@@ -737,9 +757,9 @@ c reads data of the file
 	integer nvers		!version of file format
 	integer np		!size of data (horizontal, nodes or elements)
 	integer lmax		!vertical values
+	character*(*) string	!string explanation
 	integer ilhkv(np)	!number of layers in point k (node)
 	real hd(np)		!total depth
-	character*(*) string	!string explanation
 	integer nlvdim		!vertical dimension of data
 	real data(nlvdim,np)	!data
 	integer ierr		!return error code
@@ -872,8 +892,11 @@ c************************************************************
 c************************************************************
 
 	subroutine fem_file_read_3d(iformat,iunit,it
-     +				,np,lmax,nlvdim,hlv
-     +				,ilhkv,string,hd,data,ierr)
+     +				,np,lmax
+     +				,string
+     +				,ilhkv,hd
+     +				,nlvdim,hlv,data
+     +				,ierr)
 
 c reads 1 variable of a 3d field
 
@@ -884,11 +907,11 @@ c reads 1 variable of a 3d field
 	double precision it	!time stamp
 	integer np		!size of data (horizontal, nodes or elements)
 	integer lmax		!vertical values
+	character*(*) string	!string explanation
+	integer ilhkv(np)	!number of layers in point k (node)
+	real hd(np)		!total depth
 	integer nlvdim		!vertical dimension
 	real hlv(nlvdim)	!depth at bottom of layer
-	integer ilhkv(np)	!number of layers in point k (node)
-	character*(*) string	!string explanation
-	real hd(np)		!total depth
 	real data(nlvdim,np)	!data
 	integer ierr		!return error code
 
@@ -902,8 +925,10 @@ c reads 1 variable of a 3d field
 
 	call fem_file_read_data(iformat,iunit
      +				,nvers,np,lmax
+     +				,string
      +				,ilhkv,hd
-     +				,string,nlvdim,data,ierr)
+     +				,nlvdim,data
+     +				,ierr)
 
 	return
    99	continue
@@ -914,7 +939,8 @@ c reads 1 variable of a 3d field
 c************************************************************
 
 	subroutine fem_file_read_2d(iformat,iunit,it
-     +				,np,string,data,ierr)
+     +				,np,string,data
+     +				,ierr)
 
 c reads 1 variable of a 2d field
 
@@ -949,8 +975,10 @@ c reads 1 variable of a 2d field
 
 	call fem_file_read_data(iformat,iunit
      +				,nvers,np,lmax
+     +				,string
      +				,ilhkv,hd
-     +				,string,nlvdim,data,ierr)
+     +				,nlvdim,data
+     +				,ierr)
 
 	return
    98	continue

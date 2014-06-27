@@ -107,7 +107,7 @@ c*********************************************************************
 	character*60 windfile,heatfile,rainfile
 	character*4 what
 
-	integer nvar
+	integer nvar,lmax
 	integer nintp
 	integer modehum
 	integer nvarm,nid,nlev
@@ -133,7 +133,7 @@ c*********************************************************************
 !	  initialization of data files
 !	  ---------------------------------------------------------
 
-	  call iff_init_global(nkn,nlv,ilhkv,hkv,hlv)	!should go to main
+	  !call iff_init_global(nkn,nlv,ilhkv,hkv,hlv)	!should go to main
 
 	  call getfnm('wind',windfile)
 	  call getfnm('qflux',heatfile)
@@ -182,12 +182,13 @@ c*********************************************************************
 !------------------------------------------------------------------
 
 	dtime = it
+	lmax = 1
 
 	if( .not. iff_is_constant(idwind) .or. icall == 1 ) then
-	  call iff_time_interpolate(idwind,dtime,1,1,nkn,wxv)
-	  call iff_time_interpolate(idwind,dtime,2,1,nkn,wyv)
+	  call iff_time_interpolate(idwind,dtime,1,nkn,lmax,wxv)
+	  call iff_time_interpolate(idwind,dtime,2,nkn,lmax,wyv)
 	  if( iff_get_nvar(idwind) == 3 ) then
-	    call iff_time_interpolate(idwind,dtime,3,1,nkn,ppv)
+	    call iff_time_interpolate(idwind,dtime,3,nkn,lmax,ppv)
 	!if( bdebug) then
 	!  call iff_get_value(idwind,3,1,1,1000,val1)
 	!  call iff_get_value(idwind,3,2,1,1000,val2)
@@ -199,14 +200,14 @@ c*********************************************************************
 	end if
 
 	if( .not. iff_is_constant(idrain) .or. icall == 1 ) then
-	  call iff_time_interpolate(idrain,dtime,1,1,nkn,metrain)
+	  call iff_time_interpolate(idrain,dtime,1,nkn,lmax,metrain)
 	end if
 
 	if( .not. iff_is_constant(idheat) .or. icall == 1 ) then
-	  call iff_time_interpolate(idheat,dtime,1,1,nkn,metrad)
-	  call iff_time_interpolate(idheat,dtime,2,1,nkn,mettair)
-	  call iff_time_interpolate(idheat,dtime,3,1,nkn,methum)
-	  call iff_time_interpolate(idheat,dtime,4,1,nkn,metcc)
+	  call iff_time_interpolate(idheat,dtime,1,nkn,lmax,metrad)
+	  call iff_time_interpolate(idheat,dtime,2,nkn,lmax,mettair)
+	  call iff_time_interpolate(idheat,dtime,3,nkn,lmax,methum)
+	  call iff_time_interpolate(idheat,dtime,4,nkn,lmax,metcc)
 	end if
 
 !------------------------------------------------------------------

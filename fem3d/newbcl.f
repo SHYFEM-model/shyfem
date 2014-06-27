@@ -124,6 +124,7 @@ c common
         common /tempn/ tempn
 
 c local
+	logical bnew
 	logical debug
 	logical badvect
 	logical bobs
@@ -150,6 +151,7 @@ c local
 	real mass
 	real wsink
 	real robs
+	double precision dtime0,dtime
 	integer isact,l,k,lmax
 	integer kspec
 	integer icrst
@@ -177,6 +179,13 @@ c save
         integer iu,itmcon,idtcon
         save iu,itmcon,idtcon
 
+	integer idtemp(nbcdim),idsalt(nbcdim)
+	save idtemp,idsalt
+
+	integer ids(nbcdim)
+	common /ids/ids
+	save /ids/
+
         integer ninfo
         save ninfo
 
@@ -201,6 +210,7 @@ c----------------------------------------------------------
         call is_offline(2,boff)
         if( boff ) return
 
+	bnew = nint(getpar('imreg')) .eq. 3
 	levdbg = nint(getpar('levdbg'))
 	debug = levdbg .ge. 3
 	binfo = .true.
@@ -266,15 +276,24 @@ c		--------------------------------------------
 c		initialize open boundary conditions
 c		--------------------------------------------
 
+		dtime0 = itanf
                 nintp = 2
                 nvar = 1
                 cdef(1) = 0.
 		what = 'temp'
+		if( bnew ) then
+		call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv,idtemp)
+		else
 		call bnds_init(what,tempn,nintp,nvar,nb3dim,bnd3_temp,cdef)
 		call bnds_set_def(what,nb3dim,bnd3_temp)
+		end if
 		what = 'salt'
+		if( bnew ) then
+		call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv,idsalt)
+		else
 		call bnds_init(what,saltn,nintp,nvar,nb3dim,bnd3_salt,cdef)
 		call bnds_set_def(what,nb3dim,bnd3_salt)
+		end if
 
 c		initialize rhov, bpresv (we call it twice since
 c		rhov depends on bpresv and viceversa
@@ -319,6 +338,7 @@ c normal call
 c----------------------------------------------------------
 
 	t = it
+	dtime = t
 	wsink = 0.
 	robs = 0.
 	if( bobs ) robs = 1.
@@ -347,7 +367,11 @@ c	  write(6,*) 'number of thread of temp: ',tid
 
           if( itemp .gt. 0 ) then
 		!call check_layers('temp before bnd',tempv)
+		if( bnew ) then
+		ids = idtemp
+		else
 		call scal_bnd('temp',t,bnd3_temp)
+		end if
 		!call check_layers('temp after bnd',tempv)
                 call scal_adv_nudge('temp',0
      +                          ,tempv,bnd3_temp
@@ -363,7 +387,11 @@ c	  write(6,*) 'number of thread of salt: ',tid
 
           if( isalt .gt. 0 ) then
 		!call check_layers('salt before bnd',saltv)
+		if( bnew ) then
+		ids = idsalt
+		else
 		call scal_bnd('salt',t,bnd3_salt)
+		end if
 		!call check_layers('salt after bnd',saltv)
                 call scal_adv_nudge('salt',0
      +                          ,saltv,bnd3_salt

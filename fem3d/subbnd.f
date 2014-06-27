@@ -74,6 +74,7 @@ c 21.06.2012    ggu&aar new file names for mud module
 c 29.11.2013    ggu	allow for non continous boundary numbering
 c 28.03.2014    ggu	new parameter lgrpps
 c 16.06.2014    ggu	new include file bnd.h (with nbndim)
+c 25.06.2014    ggu	new routine exists_bnd_name()
 c
 c************************************************************************
 
@@ -1279,26 +1280,26 @@ c********************************************************************
  
         subroutine set_bnd_par(ibc,name,value)
         character*(*) name
-        id = iget_bnd_id(name)
+        id = iget_bnd_id(name,.true.)
         call bndsetget(ibc,id,value,.true.)
         end
 
         subroutine get_bnd_par(ibc,name,value)
         character*(*) name
-        id = iget_bnd_id(name)
+        id = iget_bnd_id(name,.true.)
         call bndsetget(ibc,id,value,.false.)
         end
 
         subroutine set_bnd_ipar(ibc,name,ivalue)
         character*(*) name
-        id = iget_bnd_id(name)
+        id = iget_bnd_id(name,.true.)
 	value = ivalue
         call bndsetget(ibc,id,value,.true.)
         end
 
         subroutine get_bnd_ipar(ibc,name,ivalue)
         character*(*) name
-        id = iget_bnd_id(name)
+        id = iget_bnd_id(name,.true.)
         call bndsetget(ibc,id,value,.false.)
 	ivalue = nint(value)
         end
@@ -1328,20 +1329,34 @@ c********************************************************************
 
 c********************************************************************
 
-        function iget_bnd_id(name)
+        function exists_bnd_name(name)
+
+        implicit none
+
+        logical exists_bnd_name
+        character*(*) name
+
+	integer iget_bnd_id
+
+	exists_bnd_name = iget_bnd_id(name,.false.) > 0
+
+	end
+
+c********************************************************************
+
+        function iget_bnd_id(name,berror)
 
         implicit none
 
         integer iget_bnd_id
         character*(*) name
+	logical berror		!raises error if name not existing
 
         integer nbvdim
         parameter(nbvdim=25)
 
         integer id
         character*6 bname
-
-	!write(6,*) 'iget_bnd_id: looking for ',name
 
         do id=1,nbvdim
 	  call get_bnd_name(id,bname)
@@ -1351,8 +1366,12 @@ c********************************************************************
           end if
         end do
 
-        write(6,*) 'unknown name for boundary: ',name
-        stop 'error stop iget_bnd_id: name'
+	if( berror ) then
+          write(6,*) 'unknown name for boundary: ',name
+          stop 'error stop iget_bnd_id: name'
+	end if
+
+	iget_bnd_id = 0
 
         end
 

@@ -15,6 +15,7 @@ c 27.01.2012	deb&ggu	new routine compute_sigma_info()
 c 17.05.2013	ggu	layer_thickness for elem and node, general routine
 c 17.05.2013	ggu	new routine get_bottom_of_layer()
 c 05.09.2013	ggu	new call interface to get_layer_thickness()
+c 25.06.2014	ggu	error stop if computed layer thickness is <= 0
 c
 c notes :
 c
@@ -248,6 +249,7 @@ c---------------------------------------------------------
 	      if( bdebug ) write(6,*) l,htop,hbot,htot
 	      if( hbot .gt. htot ) hbot = htot	!last layer
 	      hl(l) = hbot - htop
+	      if( hl(l) .le. 0. ) goto 99
 	    end do
 	  end if
 	end if
@@ -256,6 +258,14 @@ c---------------------------------------------------------
 c end of routine
 c---------------------------------------------------------
 
+	return
+   99	continue
+	write(6,*) 'error computing layer thickness'
+	write(6,*) lmax,nsigma
+	write(6,*) hsigma,z,h
+	write(6,*) (hlv(l),l=1,lmax)
+	write(6,*) (hl(l),l=1,lmax)
+	stop 'error stop get_layer_thickness: 0 thickness'
 	end
 
 c******************************************************************
