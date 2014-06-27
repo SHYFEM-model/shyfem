@@ -1,3 +1,30 @@
+version  6_1_78    27-06-2014    VERS_6_1_78
+
+========================================================== 27-06-2014 - 6_1_78
+
+c ./fem3d/subbnds.f:
+c 25.06.2014    ggu     new routines bnds_init_new() and bnds_trans_new()
+c
+c ./fem3d/subver.f:
+c 27.06.2014	ggu	version 6.1.78  Maria Huber release
+c
+c ./fem3d/sigmautil.f:
+c 25.06.2014	ggu	error stop if computed layer thickness is <= 0
+c
+c ./fem3d/subbnd.f:
+c 25.06.2014    ggu	new routine exists_bnd_name()
+c
+c ./fem3d/ht.f:
+c 25.06.2014    ggu	new arrays hkv_min, hkv_max
+c
+c ./fem3d/subdep.f:
+c 25.06.2014	ggu	computa also hkv_min and hkv_max
+c
+c ./fem3d/subfemintp.f:
+! 25.06.2014	ggu	various bug fixes
+
+==========================================================
+
 version  6_1_77    18-06-2014    VERS_6_1_77   commit_2014-06-27
 
 version  6_1_77    18-06-2014    VERS_6_1_77
