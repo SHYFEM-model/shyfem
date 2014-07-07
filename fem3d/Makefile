@@ -284,7 +284,7 @@ EXEINFO  = ousinf flxinf volinf basinf nosinf wininf extinf rstinf feminf \
 EXESPLIT = nossplit splitext splitflx splitets
 EXELAP   = laplap lapwin
 EXEBAS   = bastreat basbathy scalintp
-EXEVAR   = nosinit nosresidence scal_intp bashsigma
+EXEVAR   = nosinit nosresidence scal_intp bashsigma bc2fem
 
 NOSVAR   = nos_elab nossum nosdiff noswrite nosadmin
 NOSAVER  = nosaver_basin nosaver_vert nosaver_time
@@ -303,7 +303,7 @@ EXEEXTRA = wincrea windcrea \
 
 EXES     = $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXELAP) $(EXEBAS) \
 		$(EXEVAR) $(NOSEXTR) $(OUSEXTR) $(NOSAVER) \
-		$(EXEEXTRA) $(EXENC)
+		$(EXEEXTRA) $(EXENC) $(NOSVAR)
 
 #------------------------------------------------
 

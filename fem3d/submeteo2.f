@@ -148,6 +148,7 @@ c*********************************************************************
 	  vconst = (/ 0., 0., pstd, 0. /)
 	  call iff_init(dtime0,windfile,nvar,nkn,0,nintp
      +				,nodes,vconst,idwind)
+	  call iff_set_description(idwind,0,'meteo wind')
 
 	  call meteo_set_wind_data(idwind,nvar)
 
@@ -157,6 +158,7 @@ c*********************************************************************
 	  vconst = (/ 0., 0., 0., 0. /)
 	  call iff_init(dtime0,rainfile,nvar,nkn,0,nintp
      +				,nodes,vconst,idrain)
+	  call iff_set_description(idrain,0,'meteo rain')
 
 	  call meteo_set_rain_data(idrain,nvar)
 
@@ -166,6 +168,7 @@ c*********************************************************************
 	  vconst = (/ 0., 0., 50., 0. /)
 	  call iff_init(dtime0,heatfile,nvar,nkn,0,nintp
      +				,nodes,vconst,idheat)
+	  call iff_set_description(idheat,0,'meteo heat')
 
 	  call meteo_set_heat_data(idheat,nvar)
 

@@ -1,5 +1,42 @@
 ============================================================
 
+Mon Jul  7 16:21:42 CEST 2014
+
+Last of 6 series (new file format)
+
+ LOG                   |   15 ++
+ Rules.make            |   17 ++-
+ fem3d/Makefile        |    4 +-
+ fem3d/bc2fem.f        |  399 ++++++++++++++++++++++++++++++++++++++----
+ fem3d/feminf.f        |   22 ++-
+ fem3d/ht.f            |    5 +-
+ fem3d/lagrange_cont.f |    2 +-
+ fem3d/newbcl.f        |   82 ++++++++--
+ fem3d/newcon.f        |   25 +++-
+ fem3d/newconz.f       |   31 +++-
+ fem3d/newexpl.f       |    2 +-
+ fem3d/nosinf.f        |    2 +-
+ fem3d/nosutil.f       |    2 +-
+ fem3d/param.h         |    6 +-
+ fem3d/sigmautil.f     |   25 ++-
+ fem3d/subbnds.f       |   21 +--
+ fem3d/subfemfile.f    |  467 +++++++++++++++++++++----------------------------
+ fem3d/subfemintp.f    |  192 +++++++++++++++++----
+ fem3d/submeteo2.f     |    3 +
+ fem3d/subn11.f        |   43 +++++-
+ fem3d/subnos.f        |   27 +---
+ fem3d/subnsh.f        |   37 ++++-
+ fem3d/subreg.f        |   96 ++++++++++-
+ fem3d/subtsfile.f     |   31 +++-
+ fem3d/subtsuvfile.f   |  421 ++++++++------------------------------------
+ femadj/param.h        |    6 +-
+ femplot/param.h       |    6 +-
+ femplot/supout.f      |   32 ++--
+ param.h               |    6 +-
+ 29 files changed, 1236 insertions(+), 791 deletions(-)
+
+============================================================
+
 Fri Jun 27 12:54:11 CEST 2014
 
 New version 6_1_78

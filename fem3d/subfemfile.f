@@ -12,6 +12,7 @@ c 16.05.2013	ggu	better documentation
 c 24.04.2014	ggu	use nvar>0 as indication of good read
 c 30.05.2014	ggu	restructured
 c 16.06.2014	ggu	time is now double precision
+c 07.07.2014	ggu	first version consolidated
 c
 c notes :
 c
@@ -80,9 +81,41 @@ c************************************************************
 	subroutine fem_file_write_header(iformat,iunit,it
      +				,nvers,np,lmax
      +				,nvar,ntype
-     +				,nlvdim,hlv)
+     +				,nlvdim,hlv,datetime,regpar)
 
-c writes header of the file
+c writes header of fem file
+
+        implicit none
+
+	integer iformat		!formatted or unformatted
+	integer iunit		!file unit
+	double precision it	!time stamp
+	integer nvers		!version of file format
+	integer np		!size of data (horizontal, nodes or elements)
+	integer lmax		!maximum vertical values (1 for 2d)
+	integer nvar		!number of variables to write
+	integer ntype		!type of information contained
+	integer nlvdim		!vertical dimension of data
+	real hlv(nlvdim)	!depth at bottom of layer
+	integer datetime(2)	!date and time parameters
+	real regpar(7)		!parameters for regular field
+
+	call fem_file_write_params(iformat,iunit,it
+     +				,nvers,np,lmax
+     +				,nvar,ntype)
+
+	call fem_file_write_2header(iformat,iunit,ntype,lmax
+     +			,hlv,datetime,regpar)
+
+	end
+
+c************************************************************
+
+	subroutine fem_file_write_params(iformat,iunit,it
+     +				,nvers,np,lmax
+     +				,nvar,ntype)
+
+c writes first header of fem file
 
         implicit none
 
@@ -97,8 +130,6 @@ c writes header of the file
 	integer lmax		!maximum vertical values (1 for 2d)
 	integer nvar		!number of variables to write
 	integer ntype		!type of information contained
-	integer nlvdim		!vertical dimension of data
-	real hlv(nlvdim)	!depth at bottom of layer
 
 	integer l,nv
 	integer(kind=8) itlong
@@ -111,10 +142,8 @@ c writes header of the file
 	if( iformat == 1 ) then
 	  itlong = it
 	  write(iunit,1000) itlong,nv,idfem,np,lmax,nvar,ntype
-	  if( lmax .gt. 1 ) write(iunit,*) (hlv(l),l=1,lmax)
 	else
 	  write(iunit) it,nv,idfem,np,lmax,nvar,ntype
-	  if( lmax .gt. 1 ) write(iunit) (hlv(l),l=1,lmax)
 	end if
 
 	return
@@ -125,6 +154,52 @@ c writes header of the file
    99	continue
 	write(6,*) 'nvers = ',nvers
 	stop 'error stop fem_file_write_header: nvers'
+	end
+
+c************************************************************
+
+	subroutine fem_file_write_2header(iformat,iunit,ntype,lmax
+     +			,hlv,datetime,regpar)
+
+	implicit none
+
+	integer iformat		!formatted or unformatted
+	integer iunit		!file unit
+	integer ntype		!type of information contained
+	integer lmax		!maximum vertical values (1 for 2d)
+	real hlv(lmax)		!vertical structure
+	integer datetime(2)	!array for date and time
+	real regpar(7)		!regular array params
+
+	integer l,i
+	integer itype(2)
+
+	call fem_file_make_type(ntype,2,itype)
+
+	if( lmax .gt. 1 ) then
+	  if( iformat == 1 ) then
+	    write(iunit,*) (hlv(l),l=1,lmax)
+	  else
+	    write(iunit) (hlv(l),l=1,lmax)
+	  end if
+	end if
+
+	if( itype(1) .gt. 0 ) then
+	  if( iformat == 1 ) then
+	    write(iunit,*) datetime
+	  else
+	    write(iunit) datetime
+	  end if
+	end if
+	
+	if( itype(2) .gt. 0 ) then
+	  if( iformat == 1 ) then
+	    write(iunit,*) regpar
+	  else
+	    write(iunit) regpar
+	  end if
+	end if
+
 	end
 
 c************************************************************
@@ -187,103 +262,23 @@ c writes data of the file
 	end
 
 c************************************************************
-
-	subroutine fem_file_write_3d(iformat,iunit,it
-     +				,np,lmax
-     +				,string
-     +				,ilhkv,hd
-     +				,nlvdim,hlv,data)
-
-c writes 1 variable of a 3d field
-
-	implicit none
-
-	integer iformat		!formatted or unformatted
-	integer iunit		!file unit
-	double precision it	!time stamp
-	integer np		!size of data (horizontal, nodes or elements)
-	integer lmax		!vertical values
-	character*(*) string	!string explanation
-	integer ilhkv(np)	!number of layers in point k (node)
-	real hd(np)		!total depth
-	integer nlvdim		!vertical dimension
-	real hlv(nlvdim)	!depth at bottom of layer
-	real data(nlvdim,np)	!data
-
-	integer nvers,ntype
-	integer nvar
-
-	nvers = 1
-	ntype = 0
-	nvar = 1
-
-	call fem_file_write_header(iformat,iunit,it,nvers
-     +				,np,lmax,nvar,ntype,nlvdim,hlv)
-	call fem_file_write_data(iformat,iunit,nvers
-     +				,np,lmax
-     +				,string
-     +				,ilhkv,hd
-     +				,nlvdim,data)
-
-	end
-
-c************************************************************
-
-	subroutine fem_file_write_2d(iformat,iunit,it
-     +				,np,string,data)
-
-c writes 1 variable of a 2d field
-
-	implicit none
-
-	integer iformat		!formatted or unformatted
-	integer iunit		!file unit
-	double precision it	!time stamp
-	integer np		!size of data (horizontal, nodes or elements)
-	character*(*) string	!string explanation
-	real data(np)		!data
-
-	integer nvers,ntype
-	integer nvar,lmax,nlvdim
-	real hlv(1),hd(1)
-	integer ilhkv(1)
-
-	nvers = 1
-	ntype = 0
-	nvar = 1
-	lmax = 1
-	nlvdim = 1
-	hlv(1) = 10000.
-	hd(1) = 10000.
-	ilhkv(1) = 1
-
-	call fem_file_write_header(iformat,iunit,it,nvers
-     +				,np,lmax,nvar,ntype,nlvdim,hlv)
-	call fem_file_write_data(iformat,iunit,nvers
-     +				,np,lmax
-     +				,string
-     +				,ilhkv,hd
-     +				,nlvdim,data)
-
-	end
-
-c************************************************************
 c************************************************************
 c************************************************************
 
-	subroutine fem_file_read_open(file,np,iunit,iformat)
+	subroutine fem_file_read_open(file,nexp,iunit,iformat)
 
 c opens fem file for read
 
 	implicit none
 
 	character*(*) file	!file name
-	integer np		!expected size of data
+	integer nexp		!expected size of data (0 if unknown)
 	integer iunit		!unit of opened file (in/out) (0 for error)
 	integer iformat		!is formatted? (return)
 
-	integer nvar
-	logical filex
+	integer nvar,np,ntype
+	integer itype(2)
+	logical filex,breg
 
 	iunit = 0
 	iformat = 0
@@ -293,17 +288,26 @@ c opens fem file for read
 	  return
 	end if
 
-	call fem_file_test_formatted(file,np,nvar,iformat)
+	call fem_file_test_formatted(file,np,nvar,ntype,iformat)
+
+	call fem_file_make_type(ntype,2,itype)
+	breg = itype(2) > 0
 
 	if( nvar .gt. 0 ) then
-	  call find_unit(iunit)
-	  if( iformat == 1 ) then
-	    open(iunit,file=file,form='formatted',status='old')
+	  if( .not. breg .and. nexp .gt. 0 .and. np .ne. nexp ) then
+	    write(6,*) 'fem_file_read_open: data not of expected size'
+	    write(6,*) 'nvar,nexp,np: ',nvar,nexp,np
+	    call fem_file_write_info(file,iformat)
 	  else
-	    open(iunit,file=file,form='unformatted',status='old')
+	    call find_unit(iunit)
+	    if( iformat == 1 ) then
+	      open(iunit,file=file,form='formatted',status='old')
+	    else
+	      open(iunit,file=file,form='unformatted',status='old')
+	    end if
 	  end if
 	else
-	  write(6,*) 'fem_file_read_open: error opening file ',file
+	  write(6,*) 'fem_file_read_open: error opening file '
 	  call fem_file_write_info(file,1)
 	  call fem_file_write_info(file,0)
 	end if
@@ -339,6 +343,8 @@ c writes information on file from header
 	iunit = 90
 	call find_unit(iunit)
 
+	write(6,*) 'debug info for file: ',file
+
 	if( iformat == 1 ) then
 	  open(iunit,file=file,form='formatted',status='old')
 	  read(iunit,*,iostat=ios) it,nvers,id,np,lmax,nvar,ntype
@@ -365,19 +371,20 @@ c writes information on file from header
 
 c************************************************************
 
-	subroutine fem_file_test_formatted(file,np,nvar,iformat)
+	subroutine fem_file_test_formatted(file,np,nvar,ntype,iformat)
 
 c checks if file is readable and formatted or unformatted
 
 	implicit none
 
 	character*(*) file	!file name
-	integer np		!expected size of data, 0 if no idea
+	integer np		!size of data (return)
 	integer nvar		!successful read => nvar>0 (return)
+	integer ntype		!type of data
 	integer iformat		!is formatted? (return)
 
 	integer iunit
-	integer nvers,np0,lmax,ntype
+	integer nvers,np0,lmax
 	double precision it
 	integer ierr
 	logical bdebug
@@ -411,20 +418,12 @@ c------------------------------------------------------
 
 	iformat = 0
 	call fem_file_read_params(iformat,iunit,it
-     +				,nvers,np0,lmax,nvar,ntype,ierr)
+     +				,nvers,np,lmax,nvar,ntype,ierr)
 
 	close(iunit)
 
 	if( ierr .ne. 0 ) then
 	  if( bdebug ) write(6,*) 'unformatted read error'
-	else if( np .gt. 0 .and. np0 .gt. 1 .and. np .ne. np0 ) then
-	  if( bdebug ) then
-	    write(6,*) 'unformatted error in np,np0: ',np,np0
-	  end if
-	else if( nvar .le. 0 .or. lmax .lt. 0 ) then
-	  if( bdebug ) then
-	    write(6,*) 'unformatted error in nvar,lmax: ',nvar,lmax
-	  end if
 	else	!ok, probably unformatted
 	  return
 	end if
@@ -439,20 +438,12 @@ c------------------------------------------------------
 
 	iformat = 1
 	call fem_file_read_params(iformat,iunit,it
-     +				,nvers,np0,lmax,nvar,ntype,ierr)
+     +				,nvers,np,lmax,nvar,ntype,ierr)
 
 	close(iunit)
 
 	if( ierr .ne. 0 ) then
 	  if( bdebug ) write(6,*) 'formatted read error'
-	else if( np .gt. 0 .and. np0 .gt. 1 .and. np .ne. np0 ) then
-	  if( bdebug ) then
-	    write(6,*) 'formatted error in np,np0: ',np,np0
-	  end if
-	else if( nvar .le. 0 .or. lmax .lt. 0 ) then
-	  if( bdebug ) then
-	    write(6,*) 'formatted error in nvar,lmax: ',nvar,lmax
-	  end if
 	else	!ok, probably formatted
 	  return
 	end if
@@ -463,7 +454,10 @@ c------------------------------------------------------
 c no successful opening
 c------------------------------------------------------
 
+	np = 0
 	nvar = 0
+	ntype = 0
+	iformat = -1
 
 c------------------------------------------------------
 c end of routine
@@ -501,7 +495,7 @@ c returns data description for first record
 	if( ierr .ne. 0 ) return
 
 	call fem_file_skip_2header(iformat,iunit
-     +				,lmax,ntype,ierr)
+     +				,ntype,lmax,ierr)
 	if( ierr .ne. 0 ) return
 
 	do i=1,nvar
@@ -541,6 +535,7 @@ c reads and checks params of next header
 	integer id
 
 	ierr = 0
+	if( iunit < 1 ) goto 99
 
 	if( iformat == 1 ) then
 	  read(iunit,*,end=1,err=2) it,nvers,id,np,lmax,nvar,ntype
@@ -559,7 +554,9 @@ c reads and checks params of next header
     2	continue
 	ierr = 1
 	return
-
+   99	continue
+	write(6,*) 'impossible unit number: ',iunit
+	stop 'error stop fem_file_read_params: iunit'
 	end
 
 c************************************************************
@@ -620,7 +617,7 @@ c reads and checks params of next header
 	ierr = 19
 	if( nvar .le. 0 .or. nvar .gt. 100 ) goto 9
 	ierr = 21
-	if( ntype .lt. 0 .or. ntype .gt. 2 ) goto 9
+	if( ntype .lt. 0 .or. ntype .gt. 20 ) goto 9
 
 	ierr = 0
 	return
@@ -632,7 +629,8 @@ c reads and checks params of next header
 
 c************************************************************
 
-	subroutine fem_file_read_hlv(iformat,iunit,lmax,hlv,ierr)
+	subroutine fem_file_read_2header(iformat,iunit,ntype,lmax
+     +			,hlv,datetime,regpar,ierr)
 
 c reads hlv of header
 
@@ -640,34 +638,60 @@ c reads hlv of header
 
 	integer iformat		!formatted or unformatted
 	integer iunit		!file unit
+	integer ntype		!type of second header
 	integer lmax		!total number of elements to read
 	real hlv(lmax)		!vertical structure
+	integer datetime(2)	!array for date and time
+	real regpar(7)		!regular array params
 	integer ierr		!return error code
 
-	integer l
+	integer l,i
+	integer itype(2)
 
+	call fem_file_make_type(ntype,2,itype)
+
+	ierr = 3
 	if( lmax .gt. 1 ) then
 	  if( iformat == 1 ) then
-	    read(iunit,*,err=3) (hlv(l),l=1,lmax)
+	    read(iunit,*,err=1) (hlv(l),l=1,lmax)
 	  else
-	    read(iunit,err=3) (hlv(l),l=1,lmax)
+	    read(iunit,err=1) (hlv(l),l=1,lmax)
 	  end if
 	else
 	  hlv(1) = 10000.
 	end if
 
+	ierr = 5
+	if( itype(1) .gt. 0 ) then
+	  if( iformat == 1 ) then
+	    read(iunit,*,err=1) (datetime(i),i=1,2)
+	  else
+	    read(iunit,err=1) (datetime(i),i=1,2)
+	  end if
+	else
+	  datetime = 0
+	end if
+	
+	ierr = 7
+	if( itype(2) .gt. 0 ) then
+	  if( iformat == 1 ) then
+	    read(iunit,*,err=1) (regpar(i),i=1,7)
+	  else
+	    read(iunit,err=1) (regpar(i),i=1,7)
+	  end if
+	else
+	  regpar = 0.
+	end if
+
 	ierr = 0
 	return
-
-    3	continue
-	ierr = 3
-
+    1	continue
 	end
 
 c************************************************************
 
 	subroutine fem_file_skip_2header(iformat,iunit
-     +				,lmax,ntype,ierr)
+     +				,ntype,lmax,ierr)
 
 c skips additional headers in fem file
 
@@ -679,66 +703,46 @@ c skips additional headers in fem file
 	integer ntype		!type of second header
 	integer ierr		!return error code
 
-	integer l
+	integer l,i
+	integer itype(2)
 	real aux
 
+	call fem_file_make_type(ntype,2,itype)
+
+	ierr = 3
 	if( lmax .gt. 1 ) then
 	  if( iformat  == 1 ) then
-	    read(iunit,*,err=3) (aux,l=1,lmax)
+	    read(iunit,*,err=1) (aux,l=1,lmax)
 	  else
-	    read(iunit,err=3) (aux,l=1,lmax)
+	    read(iunit,err=1) (aux,l=1,lmax)
+	  end if
+	end if
+
+	ierr = 5
+	if( itype(1) .gt. 0 ) then
+	  if( iformat == 1 ) then
+	    read(iunit,*,err=1) (aux,i=1,2)
+	  else
+	    read(iunit,err=1) (aux,i=1,2)
+	  end if
+	end if
+	
+	ierr = 7
+	if( itype(2) .gt. 0 ) then
+	  if( iformat == 1 ) then
+	    read(iunit,*,err=1) (aux,i=1,7)
+	  else
+	    read(iunit,err=1) (aux,i=1,7)
 	  end if
 	end if
 
 	ierr = 0
 	return
-
-    3	continue
-	ierr = 11
-
+    1	continue
 	end
 
 c************************************************************
 c************************************************************
-c************************************************************
-
-	subroutine fem_file_read_header(iformat,iunit,it
-     +				,nvers,np,lmax
-     +				,nvar,ntype
-     +				,nlvdim,hlv
-     +				,ierr)
-
-c reads header of the file
-
-        implicit none
-
-	integer iformat		!formatted or unformatted
-	integer iunit		!file unit
-	double precision it	!time stamp
-	integer nvers		!version of file format
-	integer np		!size of data (horizontal, nodes or elements)
-	integer lmax		!vertical values
-	integer nvar		!number of variables to write
-	integer ntype		!type of information contained
-	integer nlvdim		!vertical dimension of data
-	real hlv(nlvdim)	!depth at bottom of layer
-	integer ierr		!return error code
-
-	call fem_file_read_params(iformat,iunit,it
-     +				,nvers,np,lmax,nvar,ntype,ierr)
-
-	if( ierr .ne. 0 ) return
-	if( lmax .gt. nlvdim) goto 98
-
-	call fem_file_read_hlv(iformat,iunit,lmax,hlv,ierr)
-
-	return
-   98	continue
-	write(6,*) 'nlvdim,lmax: ',nlvdim,lmax
-	ierr = 98
-	return
-	end
-
 c************************************************************
 
 	subroutine fem_file_read_data(iformat,iunit
@@ -891,113 +895,48 @@ c************************************************************
 c************************************************************
 c************************************************************
 
-	subroutine fem_file_read_3d(iformat,iunit,it
-     +				,np,lmax
-     +				,string
-     +				,ilhkv,hd
-     +				,nlvdim,hlv,data
-     +				,ierr)
-
-c reads 1 variable of a 3d field
+	subroutine fem_file_make_type(ntype,imax,itype)
 
 	implicit none
 
-	integer iformat		!formatted or unformatted
-	integer iunit		!file unit
-	double precision it	!time stamp
-	integer np		!size of data (horizontal, nodes or elements)
-	integer lmax		!vertical values
-	character*(*) string	!string explanation
-	integer ilhkv(np)	!number of layers in point k (node)
-	real hd(np)		!total depth
-	integer nlvdim		!vertical dimension
-	real hlv(nlvdim)	!depth at bottom of layer
-	real data(nlvdim,np)	!data
-	integer ierr		!return error code
+	integer ntype
+	integer imax
+	integer itype(imax)
 
-	integer nvers,nvar,ntype
+	integer i,j
 
-	call fem_file_read_header(iformat,iunit,it
-     +				,nvers,np,lmax,nvar,ntype,nlvdim,hlv,ierr)
+	j = ntype
+	do i=1,imax
+	  itype(i) = j - 10*(j/10)
+	  j=j/10
+	end do
 
-	if( ierr .ne. 0 ) return
-	if( nvar .ne. 1 ) goto 99
-
-	call fem_file_read_data(iformat,iunit
-     +				,nvers,np,lmax
-     +				,string
-     +				,ilhkv,hd
-     +				,nlvdim,data
-     +				,ierr)
-
-	return
-   99	continue
-	write(6,*) 'nvar: ',nvar
-	stop 'error stop fem_file_read_3d: can read only one variable'
-	end
-
-c************************************************************
-
-	subroutine fem_file_read_2d(iformat,iunit,it
-     +				,np,string,data
-     +				,ierr)
-
-c reads 1 variable of a 2d field
-
-	implicit none
-
-	integer iformat		!formatted or unformatted
-	integer iunit		!file unit
-	double precision it	!time stamp
-	integer np		!size of data (horizontal, nodes or elements)
-	character*(*) string	!string explanation
-	real data(np)		!data
-	integer ierr		!return error code
-
-	integer nvers,lmax,nvar,ntype,nlvdim
-	real hlv(1),hd(1)
-	integer ilhkv(1)
-
-	logical fem_std_func
-	external fem_std_func
-
-	nlvdim = 1
-	hlv(1) = 10000.
-	hd(1) = 10000.
-	ilhkv(1) = 1
-
-	call fem_file_read_header(iformat,iunit,it
-     +				,nvers,np,lmax,nvar,ntype,nlvdim,hlv,ierr)
-
-	if( ierr .ne. 0 ) return
-	if( nvar .ne. 1 ) goto 99
-	if( lmax .ne. 1 ) goto 98
-
-	call fem_file_read_data(iformat,iunit
-     +				,nvers,np,lmax
-     +				,string
-     +				,ilhkv,hd
-     +				,nlvdim,data
-     +				,ierr)
-
-	return
-   98	continue
-	write(6,*) 'lmax: ',lmax
-	stop 'error stop fem_file_read_2d: data is not 2d'
-   99	continue
-	write(6,*) 'nvar: ',nvar
-	stop 'error stop fem_file_read_2d: can read only one variable'
 	end
 
 c************************************************************
 c************************************************************
 c************************************************************
+
+	subroutine test_type
+
+	integer imax,ntype
+	integer itype(4)
+
+	imax = 4
+	ntype = 101
+	call fem_file_make_type(ntype,imax,itype)
+	write(6,*) ntype,itype
+	ntype = 320
+	call fem_file_make_type(ntype,imax,itype)
+	write(6,*) ntype,itype
+	end
 
 c	subroutine find_unit(iunit)
 c	iunit = 77
 c	end
 
 c	program subfile_main
+c	call test_type
 c	end
 
 c************************************************************

@@ -70,6 +70,7 @@ c 07.10.2012	ggu	new routine av2fm()
 c 10.10.2012	ggu	new routine fm2am2d() and fm2am3d()
 c 26.10.2012	ggu	bug fix: do not access not existing storage
 c 30.05.2014	ggu	in av2amk() do not interpolate for flag values
+c 07.07.2014	ggu	new routine intp_reg()
 c
 c notes :
 c
@@ -744,6 +745,97 @@ c
 	end
 c
 c****************************************************************
+
+	subroutine intp_reg(nx,ny,x0,y0,dx,dy,flag,regval,femval,ierr)
+
+c interpolation of regular array onto fem grid
+c
+c ierr:
+c		0	no errors
+c		< 0	interpolation out of domain (extrapolation)
+c		> 0	values of flag used in interpolation
+
+	implicit none
+
+	integer nx,ny
+	real x0,y0,dx,dy
+	real flag
+	real regval(nx,ny)
+	real femval(*)		!interpolated values on fem grid (return)
+	integer ierr		!error code (return)
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	real xgv(1), ygv(1)
+	common /xgv/xgv, /ygv/ygv
+
+	logical bextra
+	integer k
+	integer imin,jmin
+	integer iflag,iout
+	real xx,yy,z1,z2,z3,z4,x1,y1,t,u
+	real xn,yn
+ 
+	iflag = 0	!used flag for interpolation
+	iout = 0	!used outside point for interpolation
+
+	xn = x0 + (nx-1)*dx
+	yn = y0 + (ny-1)*dy
+
+	do k=1,nkn
+	    xx = xgv(k)
+	    yy = ygv(k)
+ 
+	    femval(k) = flag
+ 
+	    if( xx .le. x0 ) then
+	      imin = 1
+	    else if( xx .ge. xn ) then
+	      imin = nx-1
+	    else
+	      imin=1+(xx-x0)/dx
+	    end if
+	    if( yy .le. y0 ) then
+	      jmin = 1
+	    else if( yy .ge. yn ) then
+	      jmin = ny-1
+	    else
+	      jmin=1+(yy-y0)/dy
+	    end if
+
+	    if( imin.lt.1 .or. jmin.lt.1 ) goto 99
+	    if( imin+1.gt.nx .or. jmin+1.gt.ny ) goto 99
+
+	    z1 = regval(imin,jmin)
+	    z2 = regval(imin+1,jmin)
+	    z3 = regval(imin+1,jmin+1)
+	    z4 = regval(imin,jmin+1)
+
+	    if( z1.eq.flag .or. z2.eq.flag ) iflag = iflag + 1
+	    if( z3.eq.flag .or. z4.eq.flag ) iflag = iflag + 1
+
+	    x1 = x0+(imin-1)*dx
+	    y1 = y0+(jmin-1)*dy
+	    t = (xx-x1)/dx
+	    u = (yy-y1)/dy
+
+	    if( u.gt.1. .or. u.lt.0. ) iout = iout + 1
+	    if( t.gt.1. .or. t.lt.0. ) iout = iout + 1
+
+	    femval(k)=(1-t)*(1-u)*z1+t*(1-u)*z2+t*u*z3+(1-t)*u*z4
+	end do
+ 
+	ierr = 0
+	if( iout .gt. 0 ) ierr = -iout
+	if( iflag .gt. 0 ) ierr = iflag
+
+	return
+   99	continue
+	write(6,*) imin,jmin,nx,ny
+	stop 'error stop intp_reg: internal error (1)'
+	end
+
+c****************************************************************
 c
 	subroutine am2av(am,av,ip,jp)
 c
@@ -789,8 +881,8 @@ c local
 	    imin=imin+1
 	    jmin=jmin+1
 
-	    if( imin.lt.1 .or. jmin.lt.1 ) goto 1
-	    if( imin+1.gt.ip .or. jmin+1.gt.jp ) goto 1
+	    !if( imin.lt.1 .or. jmin.lt.1 ) goto 1
+	    !if( imin+1.gt.ip .or. jmin+1.gt.jp ) goto 1
 
 	    if( bextra ) then
 	      if( imin.lt.1 ) imin = 1

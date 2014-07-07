@@ -190,7 +190,7 @@ c---------------------------------------------------------
 
 c******************************************************************
 
-	subroutine get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)
+	subroutine get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hdl)
 
 c returns layer thickness - works also for lmax higher than actual layers
 c
@@ -205,14 +205,15 @@ c in this case the last values for hl are 0
 	real z			!water level
 	real h			!total depth
 	real hlv(1)		!layer structure
-	real hl(1)		!layer thickness computed (return)
+	real hdl(1)		!layer thickness computed (return)
 
-	logical bdebug
+	logical bdebug,berror
 	integer ii,l
 	real zmed
 	real htot,hsig,htop,hbot
 
 	bdebug = .false.
+	berror = .false.
 
 c---------------------------------------------------------
 c compute level structure of sigma levels
@@ -227,7 +228,7 @@ c---------------------------------------------------------
 	  htop = hbot
 	  hbot = hlv(l)
 	  if( l .eq. nsigma ) hbot = -1.
-	  hl(l) = -hsig * (hbot-htop)
+	  hdl(l) = -hsig * (hbot-htop)
 	end do
 
 	if( bdebug ) write(6,*) l,hsig,lmax,nsigma
@@ -238,7 +239,7 @@ c---------------------------------------------------------
 
 	if( lmax .gt. nsigma ) then		!also zeta coordinates
 	  if( lmax .eq. 1 ) then		!just one layer
-	    hl(1) = htot + zmed
+	    hdl(1) = htot + zmed
 	  else
 	    hbot = hsigma
 	    if( nsigma .eq. 0 ) hbot = -zmed
@@ -248,11 +249,13 @@ c---------------------------------------------------------
 	      hbot = hlv(l)
 	      if( bdebug ) write(6,*) l,htop,hbot,htot
 	      if( hbot .gt. htot ) hbot = htot	!last layer
-	      hl(l) = hbot - htop
-	      if( hl(l) .le. 0. ) goto 99
+	      hdl(l) = hbot - htop
+	      if( hdl(l) .le. 0. ) berror = .true.
 	    end do
 	  end if
 	end if
+
+	if( berror ) goto 99
 
 c---------------------------------------------------------
 c end of routine
@@ -261,10 +264,12 @@ c---------------------------------------------------------
 	return
    99	continue
 	write(6,*) 'error computing layer thickness'
-	write(6,*) lmax,nsigma
-	write(6,*) hsigma,z,h
+	write(6,*) 'lmax,nsigma: ',lmax,nsigma
+	write(6,*) 'hsigma,z,h: ',hsigma,z,h
+	write(6,*) 'hlv: '
 	write(6,*) (hlv(l),l=1,lmax)
-	write(6,*) (hl(l),l=1,lmax)
+	write(6,*) 'hd: '
+	write(6,*) (hdl(l),l=1,lmax)
 	stop 'error stop get_layer_thickness: 0 thickness'
 	end
 

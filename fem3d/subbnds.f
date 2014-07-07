@@ -190,6 +190,7 @@ c initializes boundary condition
 	logical exists_bnd_name
 	logical bdebug
 
+	bdebug = .true.
 	bdebug = .false.
 
 	if( bdebug ) then
@@ -216,19 +217,9 @@ c initializes boundary condition
 	    aconst = val
 	  end if
 
-        !if( ibc .eq. 1 ) then
-	!  if( what .eq. 'temp' ) then
-	!    file='temp_bound_1.fem'
-	!  else if( what .eq. 'salt' ) then
-	!    file='salt_bound_1.fem'
-	!  else
-	!    write(6,*) what
-	!    stop 'error stop bnds_init_new: not yet ready'
-	!  end if
-	!end if
-
           call iff_init(dtime0,file,nvar,nk,nlv,nintp
      +                          ,nodes,aconst,id)
+	  call iff_set_description(id,ibc,what)
 
 	  ids(ibc) = id
 
@@ -236,9 +227,11 @@ c initializes boundary condition
 
         end do
 
-	do ibc=1,nbc
-	  !call iff_print_info(ids(ibc))
-	end do
+	if( bdebug ) then
+	  do ibc=1,nbc
+	    call iff_print_info(ids(ibc))
+	  end do
+	end if
 
 	end
 

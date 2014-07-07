@@ -1,4 +1,19 @@
 
+07.07.2014
+
+c ./fem3d/subtsuvfile.f:
+c 02.07.2014    ggu     new framework finished
+c
+c ./fem3d/subreg.f:
+c 07.07.2014    ggu     new routine intp_reg()
+c
+c ./fem3d/subfemfile.f:
+c 07.07.2014    ggu     first version consolidated
+c
+c ./fem3d/subfemintp.f:
+! 07.07.2014    ggu     first version finished
+
+
 
 27.06.2014
 

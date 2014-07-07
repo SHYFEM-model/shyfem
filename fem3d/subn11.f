@@ -167,6 +167,7 @@ c		2 : read in b.c.
 	integer nodes(nkn)
 	real vconst(nkn)
 
+	character*10 auxname
 	logical bimpose,bnew
 	integer kranf,krend,k,kn
 	integer ibc,ibtyp
@@ -266,12 +267,14 @@ c	-----------------------------------------------------
 	  if( intpol .le. 0 ) then
 	    intpol = 2
 	    if( ibtyp .eq. 1 ) intpol = 4
-	    write(6,*) 'intpol set: ',ibc,ibtyp,intpol
+	    write(6,*) 'sp111: intpol set: ',ibc,ibtyp,intpol
 	  end if
           call iff_init(dtime0,zfile,nvar,nk,0,intpol
      +                          ,nodes,vconst,id)
+	  write(auxname,'(a6,1x,i3)') 'bound ',ibtyp
+	  call iff_set_description(id,ibc,auxname)
 	  ids(ibc) = id
-	  write(6,*) 'boundary file opened: ',ibc,id,zfile
+	  write(6,*) 'z boundary file opened: ',ibc,id,zfile
 	end do
 
 	!call iff_print_info(ids(1))
@@ -384,6 +387,7 @@ c	-----------------------------------------------------
 
 	  id = ids(ibc)
 	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
+	  call adjust_bound(id,ibc,it,nk,rwv2)
 	  if( ibtyp .eq. 0 ) nk = 0	!switched off
 
 	  else
@@ -830,6 +834,39 @@ c*******************************************************************
 c*******************************************************************
 c*******************************************************************
 
+	subroutine adjust_bound(id,ibc,it,nk,rw)
+
+	use intp_fem_file
+
+	implicit none
+
+	integer id
+	integer ibc
+	integer it
+	integer nk
+	real rw(nk)
+
+	integer i
+	real rit,rw0,zfact
+
+	call get_bnd_par(ibc,'zfact',zfact)
+
+	if( iff_has_file(id) ) then
+	  do i=1,nk
+	    rw(i) = rw(i) * zfact
+	  end do
+	else
+	  rit = it
+	  call get_oscil(ibc,rit,rw0)
+	  do i=1,nk
+	    rw(i) = rw0 * zfact
+	  end do
+	end if
+
+	end
+
+c*******************************************************************
+
 	subroutine b3dvalue(ibc,it,nsize,ndim,array,rw)
 
 c computes z value for boundary ibc
@@ -876,7 +913,7 @@ c computes z value for boundary ibc
 		if( intpol .le. 0 ) then
 		  intpol = 2
 		  if( ibtyp .eq. 1 ) intpol = 4
-		  write(6,*) 'intpol set: ',ibc,ibtyp,intpol
+		  write(6,*) 'sp111: intpol set: ',ibc,ibtyp,intpol
 		end if
                 call exffil(file,intpol,nvar,nsize,ndim,array)
                 !call exffile(file,intpol,nvar,nsize,ndim,array)

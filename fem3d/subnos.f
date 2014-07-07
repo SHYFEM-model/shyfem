@@ -37,7 +37,6 @@ c        subroutine nos_write_header2(iunit,ilhkv,hlv,hev,ierr)
 c        subroutine nos_read_record(iu,it,ivar,nlvdim,ilhkv,c,ierr)
 c        subroutine nos_write_record(iunit,it,ivar,nlvdim,ilhkv,c,ierr)
 c
-c        subroutine nos_next_record(iunit,it,ivar,ierr)
 c        subroutine nos_back_record(iunit)
 c        subroutine nos_skip_header(iunit,nvar,ierr)
 c        subroutine nos_skip_record(iunit,it,ivar,ierr)
@@ -1008,25 +1007,6 @@ c************************************************************
 c************************************************************
 c************************************************************
 
-	subroutine nos_next_record(iunit,it,ivar,ierr)
-
-c skips data record - only reads header of record
-
-	implicit none
-
-	integer iunit,it,ivar,ierr
-
-	integer nlvdim
-	integer ilhkv(1)
-	real c(1,1)
-
-	nlvdim = 1
-	call nos_read_record(-iunit,it,ivar,nlvdim,ilhkv,c,ierr)
-
-	end
-
-c************************************************************
-
 	subroutine nos_back_record(iunit)
 
 c skips back one data record (contains two reads)
@@ -1067,7 +1047,12 @@ c************************************************************
 
 	integer iunit,it,ivar,ierr
 
-	call nos_next_record(iunit,it,ivar,ierr)
+	integer nlvdim
+	integer ilhkv(1)
+	real c(1,1)
+
+	nlvdim = 1
+	call nos_read_record(-iunit,it,ivar,nlvdim,ilhkv,c,ierr)
 
 	end
 

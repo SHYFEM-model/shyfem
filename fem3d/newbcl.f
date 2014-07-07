@@ -250,11 +250,11 @@ c		--------------------------------------------
 		  call conini(nlvdi,tempv,temref,tstrat,hdkov)
 
 		  if( ibarcl .eq. 1 .or. ibarcl .eq. 3) then
-		    call ts_init(it,nlv,nkn,tempv,saltv)
+		    call ts_init(itanf,nlv,nkn,tempv,saltv)
 		  else if( ibarcl .eq. 2 ) then
-		    call ts_diag(it,nlv,nkn,tempv,saltv)
+		    call ts_diag(itanf,nlv,nkn,tempv,saltv)
 		  else if( ibarcl .eq. 4 ) then		!interpolate to T/S
-	  	    call ts_nudge(it,nlv,nkn,tempv,saltv)
+	  	    call ts_nudge(itanf,nlv,nkn,tempv,saltv)
 		  else
 		    goto 99
 		  end if
@@ -668,12 +668,40 @@ c*******************************************************************
 	real tempv(nlvdim,1)
 	real saltv(nlvdim,1)
 
+	logical bnew
 	character*80 tempf,saltf
+	integer iutemp(3),iusalt(3)
+	save iutemp,iusalt
+	real getpar
+
+	integer icall
+	data icall /0/
+	save icall
 
 	tempf = 'temp_diag.dat'
 	saltf = 'salt_diag.dat'
 
-	call ts_intp(it,nlv,nkn,tempv,saltv,tempf,saltf)
+	bnew = nint(getpar('imreg')) .eq. 3
+	!bnew = .false.
+
+	if( icall .eq. 0 ) then
+	  if( bnew ) then
+	    call ts_file_open(tempf,it,nkn,nlv,iutemp)
+	    call ts_file_open(saltf,it,nkn,nlv,iusalt)
+	    call ts_file_descrp(iutemp,'temp diag')
+	    call ts_file_descrp(iusalt,'salt diag')
+	  else
+	    call ts_intp(it,nlv,nkn,tempv,saltv,tempf,saltf)
+	  end if
+	  icall = 1
+	end if
+
+	if( bnew ) then
+          call ts_next_record(it,iutemp,nkn,nlv,tempv)
+          call ts_next_record(it,iusalt,nkn,nlv,saltv)
+	else
+	  call ts_intp(it,nlv,nkn,tempv,saltv,tempf,saltf)
+	end if
 
 	end
 
@@ -691,12 +719,40 @@ c*******************************************************************
 	real tobsv(nlvdim,1)
 	real sobsv(nlvdim,1)
 
+	logical bnew
 	character*80 tempf,saltf
+	integer iutemp(3),iusalt(3)
+	save iutemp,iusalt
+	real getpar
+
+	integer icall
+	data icall /0/
+	save icall
 
 	tempf = 'temp_obs.dat'
 	saltf = 'salt_obs.dat'
 
-	call ts_intp(it,nlv,nkn,tobsv,sobsv,tempf,saltf)
+	bnew = nint(getpar('imreg')) .eq. 3
+	!bnew = .false.
+
+	if( icall .eq. 0 ) then
+	  if( bnew ) then
+	    call ts_file_open(tempf,it,nkn,nlv,iutemp)
+	    call ts_file_open(saltf,it,nkn,nlv,iusalt)
+	    call ts_file_descrp(iutemp,'temp nudge')
+	    call ts_file_descrp(iusalt,'salt nudge')
+	  else
+	    call ts_intp(it,nlv,nkn,tobsv,sobsv,tempf,saltf)
+	  end if
+	  icall = 1
+	end if
+
+	if( bnew ) then
+          call ts_next_record(it,iutemp,nkn,nlv,tobsv)
+          call ts_next_record(it,iusalt,nkn,nlv,sobsv)
+	else
+	  call ts_intp(it,nlv,nkn,tobsv,sobsv,tempf,saltf)
+	end if
 
 	end
 
@@ -742,8 +798,8 @@ c-------------------------------------------------------------
 
 	if( icall .eq. 0 ) then
 	  write(6,*) 'ts_intp: opening files for T/S'
-	  call ts_file_open(tempf,nkn,iutemp)
-	  call ts_file_open(saltf,nkn,iusalt)
+	  call ts_file_open(tempf,it,nkn,nlv,iutemp)
+	  call ts_file_open(saltf,it,nkn,nlv,iusalt)
 
 	  write(6,*) 'ts_intp: initializing T/S'
 	  call ts_next_record(ittold,iutemp,nkn,nlv,toldv)
@@ -804,7 +860,7 @@ c-------------------------------------------------------------
 
 c*******************************************************************	
 
-	subroutine ts_init(it,nlv,nkn,tempv,saltv)
+	subroutine ts_init(it0,nlv,nkn,tempv,saltv)
 
 c initialization of T/S from file
 
@@ -812,7 +868,7 @@ c initialization of T/S from file
 
 	include 'param.h'
 
-        integer it
+        integer it0
         integer nlv
         integer nkn
         real tempv(nlvdim,1)
@@ -827,16 +883,20 @@ c initialization of T/S from file
 	call getfnm('saltin',saltf)
 
 	if( tempf .ne. ' ' ) then
+	  itt = it0
 	  write(6,*) 'ts_init: opening file for T'
-	  call ts_file_open(tempf,nkn,iutemp)
+	  call ts_file_open(tempf,itt,nkn,nlv,iutemp)
+	  call ts_file_descrp(iutemp,'temp init')
           call ts_next_record(itt,iutemp,nkn,nlv,tempv)
 	  call ts_file_close(iutemp)
           write(6,*) 'temperature initialized from file ',tempf
 	end if
 
 	if( saltf .ne. ' ' ) then
+	  its = it0
 	  write(6,*) 'ts_init: opening file for S'
-	  call ts_file_open(saltf,nkn,iusalt)
+	  call ts_file_open(saltf,its,nkn,nlv,iusalt)
+	  call ts_file_descrp(iusalt,'salt init')
           call ts_next_record(its,iusalt,nkn,nlv,saltv)
 	  call ts_file_close(iusalt)
           write(6,*) 'salinity initialized from file ',saltf

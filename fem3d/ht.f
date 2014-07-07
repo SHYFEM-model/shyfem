@@ -626,7 +626,10 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	   call doafter3d
 
-           if( niter .eq. 1 ) call useunit(200)
+           if( niter .eq. 1 ) then
+	     call useunit(200)
+	     call iff_print_info(0)
+	   end if
 
 	   call pritime			!output to terminal
 

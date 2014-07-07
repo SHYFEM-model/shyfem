@@ -71,6 +71,7 @@ c 23.01.2012    ggu     new section "proj"
 c 24.01.2012    ggu     new routine setup_parallel()
 c 10.02.2012    ggu     new routines to initialize and access time common block
 c 05.03.2014    ggu     code prepared to repeat time step (irepeat) - not ready
+c 05.03.2014    ggu     new routines get_last/first_time()
 c
 c************************************************************
 c
@@ -1059,7 +1060,7 @@ c true if in last time step
 
 c**********************************************************************
 
-        subroutine get_acttime(itact)
+        subroutine get_act_time(itact)
 
 c returns actual time
 
@@ -1071,6 +1072,40 @@ c returns actual time
         common /femtim/ itanf,itend,idt,nits,niter,it
 
 	itact = it
+
+	end
+
+c**********************************************************************
+
+        subroutine get_first_time(itfirst)
+
+c returns first (initial) time
+
+        implicit none
+
+	integer itfirst
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	itfirst = itanf
+
+	end
+
+c**********************************************************************
+
+        subroutine get_last_time(itlast)
+
+c returns end time
+
+        implicit none
+
+	integer itlast
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	itlast = itend
 
 	end
 

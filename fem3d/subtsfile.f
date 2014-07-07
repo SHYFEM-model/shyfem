@@ -11,7 +11,7 @@ c*************************************************************
 	integer nvar		!variables (columns) in file (except time)
 
 	character*132 line
-	integer iunit,i,nrec
+	integer iunit,i,nrec,iline,nvar0
 	double precision d(1)
 
 	integer iscand,ichafs
@@ -33,23 +33,33 @@ c------------------------------------------------------
         open(iunit,file=file,form='formatted',status='old',err=2)
 
 c------------------------------------------------------
-c loop until first valid record
+c we try to read 3 records
 c------------------------------------------------------
 
-	do while(.true.)
+	iline = 0
+	nvar0 = 0
+
+	do while( iline < 3 )
 	  nrec = nrec + 1
-	  read(iunit,'(a)',err=3,end=3) line
+	  read(iunit,'(a)',err=3,end=2) line
 	  i = ichafs(line)
-	  if( i > 0 .and. line(i:i) /= '#' ) exit
+	  if( i > 0 .and. line(i:i) /= '#' ) then	!valid record
+	    iline = iline + 1
+	    nvar = iscand(line,d,0)		!count values on line
+	    if( nvar < 0 ) nvar = -nvar-1	!read error in number -nvar
+	    nvar = nvar - 1			!do not count time column
+	    if( nvar <= 0 ) exit		!no data found
+	    if( nvar0 == 0 ) nvar0 = nvar
+	    if( nvar /= nvar0 ) exit		!varying number of data
+	  end if
 	end do
 
-c------------------------------------------------------
-c set nvar and close file
-c------------------------------------------------------
+	write(6,*) 'ts_get_file_info: ',iline,nrec,nvar,nvar0
+	if( nvar /= nvar0 ) nvar = 0
 
-	nvar = iscand(line,d,0)		!count values on line
-	if( nvar < 0 ) nvar = -nvar-1	!read error in number -nvar
-	nvar = nvar - 1			!do not count time column
+c------------------------------------------------------
+c close file
+c------------------------------------------------------
 
 	close(iunit)
 
@@ -58,6 +68,7 @@ c end of routine
 c------------------------------------------------------
 
     2	continue
+	write(6,*) 'ts_get_file_info: ',iline,nrec,nvar,nvar0
 	return
     3	continue
 	write(6,*) 'read error in line ',nrec,' of file ',file

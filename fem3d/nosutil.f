@@ -525,7 +525,7 @@ c***************************************************************
 	integer i,ivar,it,ierr
 
 	do i=1,nvar
-	  call nos_next_record(nin,it,ivar,ierr)
+	  call nos_skip_record(nin,it,ivar,ierr)
 	  if( ierr .ne. 0 ) goto 99
 	  ivars(i) = ivar
 	end do

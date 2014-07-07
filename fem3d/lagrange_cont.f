@@ -179,7 +179,7 @@ c replaces the routines above
 	real ggrand
 
 	call get_timestep(dt)
-	call get_acttime(it)
+	call get_act_time(it)
 
 	nbc = nbnds()
 

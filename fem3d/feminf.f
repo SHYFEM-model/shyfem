@@ -13,7 +13,10 @@ c writes info on fem file
 	real dmin,dmax
 	integer ierr
 	integer irec,i,nvar0,ich
+	integer itype(2)
 	integer iformat
+	integer datetime(2)
+	real regpar(7)
 	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
 	character*50, allocatable :: strings(:)
 	real,allocatable :: data(:,:)
@@ -84,20 +87,29 @@ c--------------------------------------------------------------
 
 	nlvdim = lmax
 	allocate(hlv(nlvdim))
+	call fem_file_make_type(ntype,2,itype)
 
 	if( bdebug ) write(6,*) irec,dtime
-	call fem_file_read_hlv(iformat,iunit,lmax,hlv,ierr)
+	call fem_file_read_2header(iformat,iunit,ntype,lmax
+     +			,hlv,datetime,regpar,ierr)
 	if( ierr .ne. 0 ) goto 98
 
 	write(6,*) 'vertical discretization: ',lmax
 	write(6,*) hlv
+	if( itype(1) .gt. 0 ) then
+	  write(6,*) 'date and time: ',datetime
+	end if
+	if( itype(2) .gt. 0 ) then
+	  write(6,*) 'regpar: ',regpar
+	end if
 
 	if( .not. btmin ) tmin = dtime
 	boutput = bout .and. dtime >= tmin
 
 	if( boutput ) then
           call fem_file_write_header(iformat,iout,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,nlvdim,hlv)
+     +                          ,nvers,np,lmax,nvar,ntype,nlvdim
+     +				,hlv,datetime,regpar)
 	end if
 
 	nvar0 = nvar
@@ -155,12 +167,14 @@ c--------------------------------------------------------------
 	  if( nvar .ne. nvar0 ) goto 96
 	  if( btmax .and. dtime > tmax ) exit
 	  if( bdebug ) write(6,*) irec,dtime
-	  call fem_file_read_hlv(iformat,iunit,lmax,hlv,ierr)
+	  call fem_file_read_2header(iformat,iunit,ntype,lmax
+     +			,hlv,datetime,regpar,ierr)
 	  if( ierr .ne. 0 ) goto 98
 	  boutput = bout .and. dtime >= tmin
 	  if( boutput ) then
             call fem_file_write_header(iformat,iout,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,nlvdim,hlv)
+     +                          ,nvers,np,lmax,nvar,ntype,nlvdim
+     +				,hlv,datetime,regpar)
 	  end if
 	  do i=1,nvar
 	    if( bskip ) then

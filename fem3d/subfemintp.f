@@ -5,6 +5,7 @@
 !
 ! 16.06.2014	ggu	time is now double
 ! 25.06.2014	ggu	various bug fixes
+! 07.07.2014	ggu	first version finished
 !
 !****************************************************************
 !
@@ -34,6 +35,7 @@
 ! iform_none = -1
 ! iform_closed = -2
 ! iform_forget = -3
+! iform_error = -9
 !
 ! bnofile = iformat < 0				no file open
 ! bfem = iformat >= 0 .and. iformat <= 2	fem file format
@@ -63,14 +65,20 @@
 	  integer :: ntype = 0
 	  integer :: nvar = 0
 	  integer :: nintp = 0		!if 0 -> constant
+	  integer :: ibc = 0		!may indicate number of open boundary
 	  integer :: irec = 0
 	  integer :: np = 0		!horizontal points in file
 	  integer :: lmax = 0		!vertical layers in file
 	  integer :: nexp = 0		!expected horizontal points
 	  integer :: lexp = 0		!expected vertical points (0 for 2D)
 	  integer :: ilast = 0		!last entry in time
+	  integer :: ireg = 0		!regular grid
+
+	  integer :: datetime(2) = 0	!date and time parameters
+	  real :: regpar(7) = 0.	!parameters for regular grid
 
 	  character*80 :: file = ' '
+	  character*80 :: descript = ' '	!description of entry
 	  logical :: bonepoint = .false.	!only one point stored
 	  logical :: bfemdata = .false.		!fem data structure allocated
 	  logical :: bfiledata = .false.	!file data structure allocated
@@ -92,9 +100,10 @@
 	integer, parameter :: iform_none = -1
 	integer, parameter :: iform_closed = -2
 	integer, parameter :: iform_forget = -3
+	integer, parameter :: iform_error = -9
 	integer, parameter :: iform_ts = 3
 
-	integer, parameter :: ndim = 100
+	integer, parameter, private :: ndim = 100
 	type(info), save, dimension(ndim) :: pinfo
 
 	integer, save :: idnext = 0
@@ -112,19 +121,22 @@
 	contains
 !================================================================
 
-	subroutine iff_print_info(idp,iunit)
+	subroutine iff_print_info(idp,iunit,bdebug)
 
 	integer idp	!print info on this id, if 0 all info
 	integer, optional :: iunit
+	logical, optional :: bdebug
 
 	integer id,ids,ide,iu
 	logical debug
-
-	debug = .false.
-	debug = .true.
+	integer ilast,ifirst
+	character*38 name
+	character*10 descrp
 
 	iu = 6
-	if( present(iunit)) iu = iunit
+	if( present(iunit) ) iu = iunit
+	debug = .false.
+	if( present(bdebug) ) debug = bdebug
 
 	if( idp <= 0 ) then
 	  ids = 1
@@ -137,9 +149,14 @@
 	write(iu,*) 'iff_print_info:'
 	write(iu,1010)
 	do id=ids,ide
-	  write(iu,1000) id,pinfo(id)%iunit,pinfo(id)%nvar
+	  ilast = len_trim(pinfo(id)%file)
+	  ifirst = max(1,ilast-38+1)
+	  name = pinfo(id)%file(ifirst:ilast)
+	  descrp = pinfo(id)%descript
+	  write(iu,1000) id,pinfo(id)%ibc
+     +			,pinfo(id)%iunit,pinfo(id)%nvar
      +			,pinfo(id)%nintp,pinfo(id)%iformat
-     +			,pinfo(id)%file
+     +			,descrp,name
 	end do
 
 	if( .not. debug ) return
@@ -166,8 +183,8 @@
 	end do
 
 	return
- 1010	format('   id unit nvar intp form file')
- 1000	format(5i5,1x,a40)
+ 1010	format('   id  ibc unit nvar intp form descript   file')
+ 1000	format(6i5,1x,a10,1x,a38)
 	end subroutine iff_print_info
 
 !****************************************************************
@@ -214,13 +231,17 @@
 
 	deallocate(pinfo(id)%strings_file)
 
-	deallocate(pinfo(id)%time)
-	deallocate(pinfo(id)%data)
+	if( pinfo(id)%bfemdata ) then
+	  deallocate(pinfo(id)%time)
+	  deallocate(pinfo(id)%data)
+	end if
 
-	deallocate(pinfo(id)%hlv_file)
-	deallocate(pinfo(id)%data_file)
-	deallocate(pinfo(id)%ilhkv_file)
-	deallocate(pinfo(id)%hd_file)
+	if( pinfo(id)%bfiledata ) then
+	  deallocate(pinfo(id)%hlv_file)
+	  deallocate(pinfo(id)%data_file)
+	  deallocate(pinfo(id)%ilhkv_file)
+	  deallocate(pinfo(id)%hd_file)
+	end if
 
 	pinfo(id)%bfemdata = .false.
 	pinfo(id)%bfiledata = .false.
@@ -288,6 +309,19 @@
 	write(6,*) 'ivar,nvar: ',ivar,nvar
 	stop 'error stop iff_get_var_description'
 	end subroutine iff_set_var_description
+
+!****************************************************************
+
+	subroutine iff_set_description(id,ibc,string)
+
+	integer id
+	integer ibc
+	character*(*) string
+
+	pinfo(id)%ibc = ibc
+	pinfo(id)%descript = string
+
+	end subroutine iff_set_description
 
 !****************************************************************
 
@@ -390,11 +424,13 @@
 	integer id		!identification of file info (return)
 
 	integer iformat,iunit
-	integer ierr
+	integer ierr,np
 	integer nvar_orig
 	integer date,time
+	integer ntype,itype(2)
+	logical breg
 	logical bok
-	logical bts,bfem,bnofile
+	logical bts,bfem,bnofile,bfile
 
 	!---------------------------------------------------------
 	! get new id for file
@@ -424,13 +460,19 @@
 
 	nvar_orig = nvar
 
-	call iff_get_file_info(file,nexp,nvar,iformat)
+	call iff_get_file_info(file,np,nvar,ntype,iformat)
 
 	bts = iformat == iform_ts
 	bnofile = iformat < 0
+	bfile = .not. bnofile
 	bfem = iformat >= 0 .and. iformat <= 2
 
+        call fem_file_make_type(ntype,2,itype)
+        breg = itype(2) > 0
+
 	if( file /= ' ' .and. bnofile ) goto 99
+	if( bfile .and. np < 1 ) goto 96
+	if( .not. breg .and. np > 1 .and. np /= nexp ) goto 96
 
 	if( nvar <= 0 ) nvar = nvar_orig
 
@@ -445,13 +487,14 @@
 	pinfo(id)%file = file
 	pinfo(id)%nexp = nexp
 	pinfo(id)%lexp = lexp
+	pinfo(id)%ireg = itype(2)
 
 	!---------------------------------------------------------
 	! get data description and allocate data structure
 	!---------------------------------------------------------
 
-	if( nexp > 0 .and. nexp /= nkn_fem ) then	!lateral BC
-	  allocate(pinfo(id)%nodes(nexp))
+	if( .not. breg .and. nexp > 0 .and. nexp /= nkn_fem ) then
+	  allocate(pinfo(id)%nodes(nexp))	!lateral BC
 	  pinfo(id)%nodes = nodes
 	end if
 
@@ -506,15 +549,22 @@
 	!---------------------------------------------------------
 
 	return
+   96	continue
+	write(6,*) 'file does not contain expected data size'
+	write(6,*) 'nexp,np: ',nexp,np
+	call iff_print_file_info(id)
+	stop 'error stop iff_init'
    97	continue
 	write(6,*) 'error in input parameters of file: ',file
 	write(6,*) 'nvar: ',nvar
 	write(6,*) 'nexp,lexp: ',nexp,lexp
 	write(6,*) 'nintp: ',nintp
 	write(6,*) 'nkn_fem: ',nkn_fem
+	call iff_print_file_info(id)
 	stop 'error stop iff_init'
    98	continue
 	write(6,*) 'error reading data description of file: ',file
+	call iff_print_file_info(id)
 	stop 'error stop iff_init'
    99	continue
 	write(6,*) 'error opening file: ',file
@@ -544,7 +594,7 @@ c (re-) sets constant if no file has been opened
 
 !****************************************************************
 
-	subroutine iff_get_file_info(file,nexp,nvar,iformat)
+	subroutine iff_get_file_info(file,np,nvar,ntype,iformat)
 
 c coputes info on type of file
 c
@@ -554,19 +604,45 @@ c	 1	formatted
 c	 2	time series
 
 	character*(*) file
-	integer nexp
+	integer np
 	integer nvar
+	integer ntype
 	integer iformat		!info on file type (return)
 
+	integer itype(2)
 
+	np = 0
+	nvar = 0
+	ntype = 0
 	iformat = iform_none
+
 	if( file == ' ' ) return
 
-	call fem_file_test_formatted(file,nexp,nvar,iformat)
+	call fem_file_test_formatted(file,np,nvar,ntype,iformat)
 
-	if( nvar <= 0 ) then
+	if( nvar > 0 ) then
+	  write(6,*) 'file is fem file with format: ',iformat
+	  write(6,*) file
+	else
 	  call ts_get_file_info(file,nvar)
-	  if( nvar > 0 ) iformat = iform_ts
+	  if( nvar > 0 ) then
+	    np = 1
+	    ntype = 0
+	    iformat = iform_ts
+	    write(6,*) 'file is time series with columns: ',nvar
+	    write(6,*) file
+	  else
+	    write(6,*) 'cannot determine file format: ',file
+	    write(6,*) 'file is neither FEM file nor time series'
+	    iformat = iform_error
+	  end if
+	end if
+
+	if( ntype .gt. 0 ) then
+	  call fem_file_make_type(ntype,2,itype)
+	  if( itype(2) .gt. 0 ) then
+	    write(6,*) 'file is regular file: ',itype(2)
+	  end if
 	end if
 
 	end subroutine iff_get_file_info
@@ -731,7 +807,7 @@ c	 2	time series
 
 	return
    99	continue
-	write(6,*) 'read error in reading file header'
+	write(6,*) 'read error in reading file header: ',ierr
 	call iff_print_file_info(id)
 	stop 'error stop iff_peek_next_record'
         end function iff_peek_next_record
@@ -753,6 +829,7 @@ c	 2	time series
 	iff_read_header = .false.
 
 	iunit = pinfo(id)%iunit
+	ntype = pinfo(id)%ntype
 	iformat = pinfo(id)%iformat
 	bts = iformat == iform_ts
 	bnofile = iformat < 0
@@ -782,8 +859,11 @@ c	 2	time series
 	  pinfo(id)%nvers = nvers
 	  pinfo(id)%ntype = ntype
 	  call iff_allocate_file_arrays(id,nvar,np,lmax)
-	  call fem_file_read_hlv(iformat,iunit,lmax
-     +					,pinfo(id)%hlv_file,ierr)
+	  call fem_file_read_2header(iformat,iunit,ntype,lmax
+     +					,pinfo(id)%hlv_file
+     +					,pinfo(id)%datetime
+     +					,pinfo(id)%regpar
+     +					,ierr)
 	  if( ierr /= 0 ) goto 97
 	end if
 
@@ -966,7 +1046,7 @@ c	 2	time series
 	double precision dtime
 
 	integer nintp,np,nexp,lexp,ip
-	integer ivar,nvar,ntype
+	integer ivar,nvar,ireg
 	integer l,j,lfem,ipl
 	logical bts,bdebug
 
@@ -975,19 +1055,22 @@ c	 2	time series
 
         pinfo(id)%time(iintp) = dtime
 
-        ntype = pinfo(id)%ntype
         nintp = pinfo(id)%nintp
         nvar = pinfo(id)%nvar
         np = pinfo(id)%np
         nexp = pinfo(id)%nexp
         lexp = pinfo(id)%lexp
+        ireg = pinfo(id)%ireg
 	bts = pinfo(id)%iformat == iform_ts
 
 	if( nintp > 0 .and. iintp > nintp ) goto 99
 	if( nintp == 0 .and. iintp > 1 ) goto 99
-	if( ntype > 0 ) goto 97
 
-	if( bts ) then
+	if( ireg > 0 ) then
+	  if( lexp > 1 ) goto 96
+	  !if( ireg > 0 ) goto 97
+	  call iff_handle_regular_grid(id,iintp)
+	else if( bts ) then
           nvar = pinfo(id)%nvar
 	  do ivar=1,nvar
 	    pinfo(id)%data(1,1,ivar,iintp) = pinfo(id)%data_file(1,1,ivar)
@@ -1024,6 +1107,11 @@ c	 2	time series
 	end if
 
 	return
+   96	continue
+	write(6,*) 'regular grid only for 2d field'
+	write(6,*) 'ireg,lexp: ',ireg,lexp
+	!call iff_print_file_info(id)
+	stop 'error stop iff_space_interpolate'
    97	continue
 	write(6,*) 'cannot yet handle ntype > 0'
 	!call iff_print_file_info(id)
@@ -1037,6 +1125,43 @@ c	 2	time series
 	!call iff_print_file_info(id)
 	stop 'error stop iff_space_interpolate'
 	end subroutine iff_space_interpolate
+
+!****************************************************************
+
+	subroutine iff_handle_regular_grid(id,iintp)
+
+	integer id
+	integer iintp
+
+	integer ivar,nvar
+	integer nx,ny
+	integer ierr
+	real x0,y0,dx,dy,flag
+
+        nvar = pinfo(id)%nvar
+
+	nx = nint(pinfo(id)%regpar(1))
+	ny = nint(pinfo(id)%regpar(2))
+	x0 = pinfo(id)%regpar(3)
+	y0 = pinfo(id)%regpar(4)
+	dx = pinfo(id)%regpar(5)
+	dy = pinfo(id)%regpar(6)
+	flag = pinfo(id)%regpar(7)
+
+	do ivar=1,nvar
+	  call intp_reg(nx,ny,x0,y0,dx,dy,flag
+     +			,pinfo(id)%data_file(1,1,ivar)
+     +			,pinfo(id)%data(1,1,ivar,iintp)
+     +			,ierr
+     +		    )
+	  if( ierr .ne. 0 ) goto 99
+	end do
+
+	return
+   99	continue
+	write(6,*) 'error interpolating from regular grid: ',ierr
+	stop 'error stop iff_handle_regular_grid: reg interpolate'
+	end subroutine iff_handle_regular_grid
 
 !****************************************************************
 
@@ -1125,6 +1250,7 @@ c	 2	time series
         nvar = pinfo(id)%nvar
 	lmax = pinfo(id)%ilhkv_file(ip_from)
 	h = pinfo(id)%hd_file(ip_from)
+	if( h < -990 ) h = pinfo(id)%hlv_file(lmax)	!take from hlv array
 	z = 0.
 
 	call compute_sigma_info(lmax,pinfo(id)%hlv_file,nsigma,hsigma)

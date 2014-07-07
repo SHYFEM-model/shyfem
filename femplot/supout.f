@@ -1755,6 +1755,9 @@ c opens FEM file and reads header
 	integer nvers,np,it,lmax,ntype
 	integer nknaux,nelaux,nlvaux,nvar
 	integer ierr,l
+	integer datetime(2)
+	real regpar(7)
+	double precision dtime
 	integer ifemop
 
 c initialize routines
@@ -1765,7 +1768,7 @@ c open file
 
 	np = nkn
 	call def_make(type,file)
-	call fem_file_read_open(file,np,nunit,bformat)
+	call fem_file_read_open(file,np,nunit,iformat)
 
 	if( nunit .le. 0 ) then
                 write(6,*) file
@@ -1777,12 +1780,9 @@ c open file
                 write(6,*) 'Reading file ...'
 	end if
 
-	iformat = 0
-	if( bformat ) iformat = 1
-
 c read first header
 
-        call fem_file_read_params(bformat,nunit,it
+        call fem_file_read_params(iformat,nunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,ierr)
 
 	if( ierr .ne. 0 ) then
@@ -1799,11 +1799,13 @@ c read first header
 	if( nkn .ne. np ) goto 99
 	if( nlvdi .lt. lmax ) goto 99
 
+	it = nint(dtime)
 	nlv = lmax
 
 c read second header
 
-	call fem_file_read_hlv(bformat,nunit,nlv,hlv,ierr)
+	call fem_file_read_2header(iformat,nunit,ntype,nlv
+     +				,hlv,datetime,regpar,ierr)
 
 	if( ierr .ne. 0 ) then
 		write(6,*) 'ierr = ',ierr
@@ -1819,7 +1821,7 @@ c read second header
 c close and re-open for a clean state
 
 	close(nunit)
-	call fem_file_read_open(file,np,nunit,bformat)
+	call fem_file_read_open(file,np,nunit,iformat)
 
 c initialize time
 
@@ -1866,6 +1868,9 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	integer ierr
 	integer i,iv,ip
 	integer nvers,np,lmax,nvar,ntype
+	integer datetime(2)
+	real regpar(7)
+	double precision dtime
 	real fact
 	character*80 string
 
@@ -1877,27 +1882,30 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	!write(6,*) 'femnext format: ',bformat,iformat
 
 	np = 0
-        call fem_file_read_params(bformat,nunit,it
+        call fem_file_read_params(bformat,nunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,ierr)
 	if( ierr .ne. 0 ) goto 7
-	call fem_file_read_hlv(bformat,nunit,nlv,hlv,ierr)
+	call fem_file_read_2header(bformat,nunit,ntype,nlv
+     +				,hlv,datetime,regpar,ierr)
 	if( ierr .ne. 0 ) goto 7
 
 	if( np .ne. nkn ) goto 99
+	it = nint(dtime)
 
 	ip = 1
 	bfound = .false.
 	do i=1,nvar
 	  if( bfound ) then
-            call fem_file_skip_data(bformat,nunit
+            call fem_file_skip_data(iformat,nunit
      +                          ,nvers,np,lmax
      +                          ,string,ierr)
 	    if( ierr .ne. 0 ) goto 98
 	  else
-            call fem_file_read_data(bformat,nunit
+            call fem_file_read_data(iformat,nunit
      +                          ,nvers,np,lmax
+     +				,string
      +                          ,ilhkv,v1v
-     +                          ,string,nlvdim,array(1,1,ip),ierr)
+     +                          ,nlvdim,array(1,1,ip),ierr)
 	    if( ierr .ne. 0 ) goto 98
 	    call string2ivar(string,iv)
 	    bfound = iv .eq. ivar

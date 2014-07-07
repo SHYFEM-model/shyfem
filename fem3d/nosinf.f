@@ -35,7 +35,7 @@ c reads nos file
 	integer nkn,nel,nlv,nvar
 	integer ierr
 	integer it,ivar
-	integer l,k
+	integer l,k,lmax
 	character*80 title
 	character*20 dline
 	real rnull

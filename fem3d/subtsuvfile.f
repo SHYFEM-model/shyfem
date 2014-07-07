@@ -7,172 +7,140 @@ c
 c revision log :
 c
 c 29.10.2012    ggu     created from scratch
-c 17.06.2013    ggu     do not pass finction into subroutine
+c 17.06.2013    ggu     do not pass function into subroutine
+c 02.07.2014    ggu     new framework finished
 c
 c*******************************************************************	
 c*******************************************************************	
 c*******************************************************************	
 
-	subroutine ts_file_open(name,nkn,iunit)
+	subroutine ts_file_open(name,it,nkn,nlv,iunit)
 	integer iunit(3)
 	character*(*) name
-	!call fem_file_open_1(name,nkn,iunit)
-	call ts_file_open_0(name,nkn,iunit)		!old call
+	imreg = nint(getpar('imreg'))
+	if( imreg .eq. 3 ) then
+	  call ts_file_open_1(name,it,nkn,nlv,iunit)
+	else
+	  call ts_file_open_0(name,it,nkn,nlv,iunit)		!old call
+	end if
+	end
+
+	subroutine ts_file_descrp(iunit,name)
+	use intp_fem_file
+	integer iunit(3)
+	character*(*) name
+	imreg = nint(getpar('imreg'))
+	if( imreg .eq. 3 ) then
+	  call iff_set_description(iunit(1),0,name)
+	end if
 	end
 
 	subroutine ts_next_record(it,iunit,nkn,nlv,value)
 	include 'param.h'
 	integer iunit(3)
 	real value(nlvdim,1)
-	!call ts_next_record_1(it,iunit,nkn,nlv,value)
-	call ts_next_record_0(it,iunit,nkn,nlv,value)	!old call
+	imreg = nint(getpar('imreg'))
+	if( imreg .eq. 3 ) then
+	  call ts_next_record_1(it,iunit,nkn,nlv,value)
+	else
+	  call ts_next_record_0(it,iunit,nkn,nlv,value)	!old call
+	end if
 	end
 
 	subroutine ts_file_close(info)
 	integer info(3)
-	!call fem_file_close_1(info)
-	call ts_file_close_0(info)			!old call
+	imreg = nint(getpar('imreg'))
+	if( imreg .eq. 3 ) then
+	  call ts_file_close_1(info)
+	else
+	  call ts_file_close_0(info)			!old call
+	end if
 	end
 
 c*******************************************************************	
 c*******************************************************************	
 c*******************************************************************	
 
-	subroutine fem_file_open_1(name,np,iunit)
+	subroutine ts_file_open_1(file,it,np,nlv,iunit)
 
 c opens T/S file
+
+	use intp_fem_file
 
 	implicit none
 
 	include 'param.h'
 
-	character*(*) name		!name of file
+	character*(*) file		!name of file
+	integer it
 	integer np			!number of points expected
+	integer nlv
 	integer iunit(3)		!unit number (return)
 
-	logical bformat,bdebug
-	integer iu
-	integer iformat
+	integer nvar,nexp,lexp,nintp
+	integer id
+	double precision dtime
+	integer nodes(1)
+	real vconst(1)
 
-	bdebug = .true.
-	bdebug = .false.
+	dtime = it
+	nvar = 1
+	nexp = np
+	lexp = nlv
+	nintp = 2
+	nodes = 0
+	vconst = 0.
 
-	iu = 0
-	call fem_file_read_open(name,np,iu,iformat)
-	if ( iu .eq. 0 ) goto 99
+	call iff_init(dtime,file,nvar,nexp,lexp,nintp
+     +                                  ,nodes,vconst,id)
 
-	bformat = iformat .eq. 1
-	if( .not. bformat ) iu = -iu
-
-	if( bdebug ) then
-	  write(6,*) 'debug in ts_file_open: ',name
-	  write(6,*) 'iunit,bformat,np: ',iu,bformat,np
-	end if
-
-	iunit(1) = iu
+	iunit(1) = id
 
 	return
    99	continue
-	write(6,*) 'Cannot open file: ',name
-	stop 'error stop fem_file_open: error file open'
+	write(6,*) 'Cannot open file: ',file
+	stop 'error stop ts_file_open: error file open'
 	end
 
 c*******************************************************************	
 
 	subroutine ts_next_record_1(it,iunit,nkn,nlv,value)
 
+	use intp_fem_file
+
 	implicit none
 
 	include 'param.h'
-
-	integer nldim
-	parameter (nldim=100)
 
 	integer it
 	integer iunit(3)
 	integer nkn
 	integer nlv
-	real value(nlvdim,1)
+	real value(nlvdim,nkn)
 
-        !integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        !common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        !integer nlvdi,nlv
-        !common /level/ nlvdi,nlv
-
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
-	real hlv(1)
-	common /hlv/hlv
-	real znv(1)
-	common /znv/znv
-	real hkv(1)
-	common /hkv/hkv
-
-	logical bdebug,bcons,bformat
-	integer iu,lmax,ierr,k
-	integer iformat
+	integer id,ldim,ndim,ivar
         real vmin,vmax
 	double precision dtime
 	character*80 string
-
-	integer il_data(nkndim)
-	real hd_data(nkndim)
-	real zz_data(nkndim)
-	real data(nldim,nkndim)
-        real hl_data(0:nldim+1)
-
-	logical intp_to_fem_0
-	external intp_to_fem_0
 
 c--------------------------------------------------------------
 c initialize
 c--------------------------------------------------------------
 
-	bdebug = .true.
-	bdebug = .false.
-
-	bcons = .false.		!conserve total quantity?
-
-	iu = iunit(1)
-	bformat = iu .gt. 0
-	iformat = 0
-	if( iu .gt. 0 ) iformat = 1
-	iu = abs(iu)
-
-	if( iu .eq. 0 ) return
-
-	if( bdebug ) then
-	  write(6,*) 'debug in ts_next_record:'
-	  write(6,*) 'iunit,bformat: ',it,iu,bformat
-	end if
-
-	do k=1,nkn
-	  zz_data(k) = 0.
-	end do
+	id = iunit(1)
 
 c--------------------------------------------------------------
 c read new data
 c--------------------------------------------------------------
 
 	dtime = it
+	ivar = 1
+	ndim = nkn
+	ldim = nlvdim
 
 	write(6,*)'reading T/S values', it,dtime
 
-        call fem_file_read_3d(iformat,iu,dtime
-     +                          ,nkn,lmax
-     +				,string
-     +                          ,il_data,hd_data
-     +				,nldim,hl_data(1)
-     +				,data
-     +				,ierr)
-
-c--------------------------------------------------------------
-c interpolate between different vertical structures 
-c--------------------------------------------------------------
-
-c	call intp_to_fem(nkn,nldim
-c     +		,lmax,il_data,hl_data,hd_data,zz_data,data
-c     +		,nlv,ilhkv,hlv,hkv,znv,value)
+	call iff_time_interpolate(id,dtime,ivar,ndim,ldim,value)
 
 c--------------------------------------------------------------
 c some statistics
@@ -189,263 +157,20 @@ c--------------------------------------------------------------
 
 c*******************************************************************	
 
-	subroutine fem_file_close_1(iunit)
+	subroutine ts_file_close_1(iunit)
 
 c closes T/S file
+
+	use intp_fem_file
 
 	implicit none
 
 	integer iunit(3)
 
-	close(abs(iunit(1)))
+	integer id
 
-	end
-
-c*******************************************************************	
-c*******************************************************************	
-c*******************************************************************	
-
-	function intp_to_fem_0(nldim
-     +		,lm_data,hl_data,hd_data,zz_data,val_data
-     +		,lm_fem,il_fem,hl_fem,hd_fem,zz_fem,val_fem)
-
-	implicit none
-
-	include 'param.h'
-
-	logical intp_to_fem_0
-	integer lm_data			!vertical dimension of data
-	real hl_data(lm_data)
-	!integer lm_data			!max level of data
-	real hd_data
-	real zz_data
-	real val_data(lm_data)
-	integer nldim			!max level of fem
-	integer lm_fem			!max level of fem
-	real hd_fem
-	real val_fem(nldim)
-
-	integer il_fem(1)	!to be changed...
-	real hl_fem(nlvdim)
-	real zz_fem(1)
-
-	real hlv(1)
-	common /hlv/hlv
-
-	integer ndim
-	parameter (ndim=1000)
-	
-	real vaux_data(ndim+1)
-	real haux_data(0:ndim+1)
-	real vaux_fem(nlvdim)
-	real haux_fem(0:nlvdim)
-
-	logical bsigma,bdebug,bcons,bsigma_data
-	integer l,k
-	integer nsigma_data,nsigma
-	real hsigma_data,hsigma
-	integer lmax_fem,lmax_data
-	real z_fem,h_fem
-	real z_data,h_data
-
-	if( nldim .gt. ndim ) stop 'errro stop intp_scalar_to_fem: ndim'
-
-c--------------------------------------------------------------
-c initialize parameters and variables
-c--------------------------------------------------------------
-
-	bcons = .false.
-
-        call compute_sigma_info(lm_data,hl_data,nsigma_data,hsigma_data)
-        bsigma_data = nsigma_data .gt. 0
-	do l=1,lm_data
-	  haux_data(l) = hl_data(l)
-	end do
-	haux_data(0) = 0.
-
-        call get_sigma(nsigma,hsigma)		!from basin
-        bsigma = nsigma .gt. 0
-	do l=1,lm_fem
-	  haux_fem(l) = hl_fem(l)
-	end do
-	haux_fem(0) = 0.
-
-c--------------------------------------------------------------
-c loop on nodes
-c--------------------------------------------------------------
-
-        !do k = 1,np
-
-c	  -----------------------------------------------------
-c	  set data depth structure
-c	  -----------------------------------------------------
-
-    !      lmax_data = il_data(k)
-	  z_data = zz_data(k)
-	  h_data = hd_data(k)
-
-	  if( bsigma_data ) then
-            call set_hybrid_depth(lmax_data,z_data,h_data
-     +			,hl_data,nsigma_data,hsigma_data,haux_data(1))
-	  end if
-          haux_data(0) = -z_data
-
-c	  -----------------------------------------------------
-c	  set fem depth structure
-c	  -----------------------------------------------------
-
-          lmax_fem = il_fem(k)
-	  z_fem = zz_fem(k)
-	  h_fem = hd_fem(k)
-
-	  if( bsigma ) then
-            call set_hybrid_depth(lmax_fem,z_fem,h_fem
-     +			,hl_fem,nsigma,hsigma,haux_fem(1))
-	  end if
-          haux_fem(0) = -z_fem
-
-c	  -----------------------------------------------------
-c	  interpolate on vertical levels
-c	  -----------------------------------------------------
-
-          do l=1,lmax_data
-    !        vaux_data(l) = val_data(l,k)
-          end do
-
-          call intp_vert(bcons,lmax_data,haux_data,vaux_data
-     +				,lmax_fem,haux_fem,vaux_fem)
-
-          do l = 1,lmax_fem
-    !        val_fem(l,k) = vaux_fem(l)
-          end do
-
-        !enddo
-
-	intp_to_fem_0 = .true.
-
-c--------------------------------------------------------------
-c end of routine
-c--------------------------------------------------------------
-
-	end
-
-c*******************************************************************	
-
-	subroutine intp_to_fem(np,nldim
-     +		,lm_data,il_data,hl_data,hd_data,zz_data,val_data
-     +		,lm_fem,il_fem,hl_fem,hd_fem,zz_fem,val_fem)
-
-	implicit none
-
-	include 'param.h'
-
-	integer np			!total number of horizontal points
-	integer nldim			!vertical dimension of data
-	integer lm_data			!max level of data
-	integer il_data(1)
-	real hl_data(nldim)
-	real hd_data(1)
-	real zz_data(1)
-	real val_data(nldim,1)
-	integer lm_fem			!max level of fem
-	integer il_fem(1)
-	real hl_fem(nlvdim)
-	real hd_fem(1)
-	real zz_fem(1)
-	real val_fem(nlvdim,1)
-
-	integer ndim
-	parameter (ndim=1000)
-	
-	real vaux_data(ndim+1)
-	real haux_data(0:ndim+1)
-	real vaux_fem(nlvdim)
-	real haux_fem(0:nlvdim)
-
-	logical bsigma,bdebug,bcons,bsigma_data
-	integer l,k
-	integer nsigma_data,nsigma
-	real hsigma_data,hsigma
-	integer lmax_fem,lmax_data
-	real z_fem,h_fem
-	real z_data,h_data
-
-	if( nldim .gt. ndim ) stop 'errro stop intp_scalar_to_fem: ndim'
-
-c--------------------------------------------------------------
-c initialize parameters and variables
-c--------------------------------------------------------------
-
-	bcons = .false.
-
-        call compute_sigma_info(lm_data,hl_data,nsigma_data,hsigma_data)
-        bsigma_data = nsigma_data .gt. 0
-	do l=1,lm_data
-	  haux_data(l) = hl_data(l)
-	end do
-	haux_data(0) = 0.
-
-        call get_sigma(nsigma,hsigma)		!from basin
-        bsigma = nsigma .gt. 0
-	do l=1,lm_fem
-	  haux_fem(l) = hl_fem(l)
-	end do
-	haux_fem(0) = 0.
-
-c--------------------------------------------------------------
-c loop on nodes
-c--------------------------------------------------------------
-
-        do k = 1,np
-
-c	  -----------------------------------------------------
-c	  set data depth structure
-c	  -----------------------------------------------------
-
-          lmax_data = il_data(k)
-	  z_data = zz_data(k)
-	  h_data = hd_data(k)
-
-	  if( bsigma_data ) then
-            call set_hybrid_depth(lmax_data,z_data,h_data
-     +			,hl_data,nsigma_data,hsigma_data,haux_data(1))
-	  end if
-          haux_data(0) = -z_data
-
-c	  -----------------------------------------------------
-c	  set fem depth structure
-c	  -----------------------------------------------------
-
-          lmax_fem = il_fem(k)
-	  z_fem = zz_fem(k)
-	  h_fem = hd_fem(k)
-
-	  if( bsigma ) then
-            call set_hybrid_depth(lmax_fem,z_fem,h_fem
-     +			,hl_fem,nsigma,hsigma,haux_fem(1))
-	  end if
-          haux_fem(0) = -z_fem
-
-c	  -----------------------------------------------------
-c	  interpolate on vertical levels
-c	  -----------------------------------------------------
-
-          do l=1,lmax_data
-            vaux_data(l) = val_data(l,k)
-          end do
-
-          call intp_vert(bcons,lmax_data,haux_data,vaux_data
-     +				,lmax_fem,haux_fem,vaux_fem)
-
-          do l = 1,lmax_fem
-            val_fem(l,k) = vaux_fem(l)
-          end do
-
-        enddo
-
-c--------------------------------------------------------------
-c end of routine
-c--------------------------------------------------------------
+	id = iunit(1)
+	call iff_forget_file(id)
 
 	end
 
@@ -457,7 +182,7 @@ c*******************************************************************
 c*******************************************************************	
 c*******************************************************************	
 
-	subroutine ts_file_open_0(name,nkn,info)
+	subroutine ts_file_open_0(name,itaux,nkn,nlv,info)
 
 c opens T/S file
 
@@ -466,7 +191,9 @@ c opens T/S file
 	include 'param.h'
 
 	character*(*) name
+	integer itaux
 	integer nkn
+	integer nlv
 	integer info(3)
 
 	real hlv(1)
@@ -476,8 +203,8 @@ c opens T/S file
 	logical bformat,bhashl
 	integer ifileo,iunit,ios
 	integer iformat,ihashl,inzeta
-	integer it,nknaux,lmax,nvar
-	integer l
+	integer nknaux,lmax,nvar
+	integer l,it
 	integer nsigma
 	real hsigma
 	real hl(nlvdim)

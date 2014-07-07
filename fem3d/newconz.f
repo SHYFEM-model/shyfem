@@ -60,8 +60,9 @@ c local
         real sindex
 	real wsink
 	real t,dt
+	double precision dtime0,dtime
 c function
-	logical has_restart
+	logical has_restart,bnew
 	real getpar
 c save & data
         character*4 what
@@ -82,6 +83,12 @@ c save & data
         save iprogr
 	real bnd3_conz(nb3dim,0:nbcdim)
 	save bnd3_conz
+	integer idconz(nbcdim)
+	save idconz
+
+	integer ids(nbcdim)
+        common /ids/ids
+        save /ids/
 
 	integer icall
 	save icall
@@ -90,6 +97,8 @@ c save & data
 	if(nlvdim.ne.nlvdi) stop 'error stop conz3sh: level dimension'
 
 	if(icall.eq.-1) return
+
+	bnew = nint(getpar('imreg')) .eq. 3
 
 	binfo = .true.		! writes info to info file
 	level = 0		! level > 0 -> writes level to extra file
@@ -113,7 +122,7 @@ c-------------------------------------------------------------
           if( .not. has_restart(4) ) then	!no restart of conzentrations
 	    call conini0(nlvdi,cnv,cref)
 	  end if
-	  call conz_init(it,nlv,nkn,cnv)	!read from file if name given
+	  call conz_init(itanf,nlv,nkn,cnv)	!read from file if name given
 
 	  iu = 0
           id = 10       !for tracer
@@ -124,11 +133,16 @@ c-------------------------------------------------------------
 
           call getinfo(ninfo)
 
+	  dtime0 = itanf
 	  nintp = 2
 	  nvar = 1
 	  cdef(1) = 0.
+          if( bnew ) then
+          call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv,idconz)
+	  else
 	  call bnds_init(what,conzn,nintp,nvar,nb3dim,bnd3_conz,cdef)
 	  call bnds_set_def(what,nb3dim,bnd3_conz)
+	  end if
 
 	  iprogr = nint(getpar('iprogr'))
 	  if( level .le. 0 ) iprogr = 0
@@ -142,9 +156,15 @@ c-------------------------------------------------------------
 
 	wsink = 0.
 	t = it
+	dtime = it
 	dt = idt
 
-        call scal_bnd(what,t,bnd3_conz)
+        if( bnew ) then
+                ids = idconz
+        else
+                call scal_bnd(what,t,bnd3_conz)
+        end if
+
         call scal_adv(what,0
      +                          ,cnv,bnd3_conz
      +                          ,rkpar,wsink
@@ -511,9 +531,12 @@ c initialization of conz from file
 
         call getfnm('conzin',conzf)
 
+	itc = it
+
         if( conzf .ne. ' ' ) then
           write(6,*) 'conz_init: opening file for concentration'
-          call ts_file_open(conzf,nkn,iuconz)
+          call ts_file_open(conzf,it,nkn,nlv,iuconz)
+	  call ts_file_descrp(iuconz,'conz init')
           call ts_next_record(itc,iuconz,nkn,nlv,cnv)
           call ts_file_close(iuconz)
           write(6,*) 'concentration initialized from file ',conzf

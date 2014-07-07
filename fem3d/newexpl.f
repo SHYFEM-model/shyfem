@@ -826,7 +826,7 @@ c computes histogram of stability of elements
 	  i = min(i,ndim)
 	  bin(i) = bin(i) + 1
 	else				!write out
-	  call get_acttime(it)
+	  call get_act_time(it)
 	  write(97,1000) it,(bin(i),i=0,ndim)
 	end if
 	

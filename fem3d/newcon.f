@@ -193,17 +193,32 @@ c shell for scalar (for parallel version)
         real scal(nlvdim,nkndim)
         real bnd3(nb3dim,0:nbcdim)
 
+	logical bnew
+	double precision dtime
         real rkpar
 	real wsink
         real difhv(nlvdim,1)
 	real difv(0:nlvdim,1)
         real difmol
 
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
+
         real const3d(0:nlvdim,nkndim)
         common /const3d/const3d
 
 	real bnd3_aux(nb3dim)
         real r3v(nlvdim,nkndim)
+
+	real getpar
+
+        integer ids(nbcdim)
+        common /ids/ids
+        save /ids/
 
 	real robs
         integer iwhat,ichanm
@@ -227,9 +242,17 @@ c--------------------------------------------------------------
 c transfer boundary conditions of var ivar to 3d matrix r3v
 c--------------------------------------------------------------
 
-	call bnds_trans(whatvar(1:iwhat)
+	dtime = it
+	bnew = nint(getpar('imreg')) .eq. 3
+
+	if( bnew ) then
+	  call bnds_trans_new(whatvar(1:iwhat)
+     +			,ids,dtime,ivar,nkn,nlv,nlvdim,r3v)
+	else
+	  call bnds_trans(whatvar(1:iwhat)
      +				,nb3dim,bnd3,bnd3_aux
      +                          ,ivar,nlvdim,r3v)
+	end if
 
 c--------------------------------------------------------------
 c do advection and diffusion
