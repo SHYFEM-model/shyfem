@@ -73,6 +73,7 @@ revision_last		-> output should go into LOG, BUG and RELEASE_NOTES
 git add -u
 
 make test_compile
+make regress
 make dist
 git add -u
 

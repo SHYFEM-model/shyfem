@@ -40,16 +40,6 @@ export NLVDIM = 1
 export NKNDIM = 11000
 export NELDIM = 22000
 
-# asi-zec
-export NKNDIM = 15000
-export NELDIM = 30000
-export NLVDIM = 21
-
-#deb
-export NKNDIM = 25000
-export NELDIM = 50000
-export NLVDIM = 60
-
 ##############################################
 # Compiler
 ##############################################
@@ -75,7 +65,7 @@ export NLVDIM = 60
 
 #FORTRAN_COMPILER = GNU_G77
 FORTRAN_COMPILER = GNU_GFORTRAN
-FORTRAN_COMPILER = INTEL
+#FORTRAN_COMPILER = INTEL
 #FORTRAN_COMPILER = PORTLAND
 #FORTRAN_COMPILER = IBM
 
@@ -520,13 +510,14 @@ endif
 
 # FINTEL_OPT   = -O -g -Mprof=time
 # FINTEL_OPT   = -O3 -g -axSSE4.2 #-mcmodel=medium -shared-intel
+# FINTEL_OPT   = -O3 -g -axAVX -mcmodel=medium -shared-intel
 # FINTEL_OPT   = -O -g -fp-model precise -no-prec-div
 
 FINTEL_OPT   = 
 ifeq ($(OPTIMIZE),true)
   FINTEL_OPT   = -O 
-  FINTEL_OPT   = -O -mcmodel=medium -shared-intel
-  #FINTEL_OPT   = -O -mcmodel=large -shared-intel
+  #FINTEL_OPT   = -O -mcmodel=medium
+  #FINTEL_OPT   = -O -mcmodel=large
 endif
 
 FINTEL_OMP   =

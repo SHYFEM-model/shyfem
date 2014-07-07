@@ -141,7 +141,7 @@ cleanlocal:
 clean: cleanlocal
 	$(FEMBIN)/recursivemake $@ $(SUBDIRS)
 
-cleanall: cleanlocal
+cleanall: cleanlocal cleanregress
 	$(FEMBIN)/recursivemake $@ $(SUBDIRS)
 
 cleandist: cleanall
@@ -149,6 +149,9 @@ cleandist: cleanall
 cleandiff:
 	$(FEMBIN)/recursivemake $@ $(SUBDIRS)
 
+cleanregress:
+	cd femregres/skel/tests; make cleanall
+	
 cleanbck:
 	-rm -rf *.bck
 
@@ -243,6 +246,7 @@ help_ggu:
 	@echo "help_ggu            this screen"
 	@echo "test_compile        compiles model with different configs"
 	@echo "test_stable         compiles stable model with different configs"
+	@echo "regress             runs regression tests"
 	@echo "dist                prepares distribution (Rules.make)"
 	@echo "rules_save          copies back last Rules.make file"
 	@echo "rules_ggu           copies back my Rules.make file"
@@ -255,6 +259,9 @@ test_compile:
 
 test_stable:
 	@femcheck/test_stable.sh
+
+regress:
+	cd femregres/skel/tests; make check
 
 revision:
 	 $(FEMBIN)/revision_last

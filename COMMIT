@@ -1,5 +1,23 @@
 ============================================================
 
+Mon Jul  7 16:23:30 CEST 2014
+
+some more changes
+
+ Makefile                 |    9 ++++++++-
+ Rules.make               |   17 ++++-------------
+ fem3d/param.h            |    6 +++---
+ femadj/param.h           |    6 +++---
+ fembin/gitinfo           |    1 +
+ femcheck/test_compile.sh |    2 ++
+ femdoc/final/shyfem.pdf  |  Bin 271359 -> 271362 bytes
+ femdoc/final/shyfem.ps   |   30 +++++++++++++++---------------
+ femplot/param.h          |    6 +++---
+ param.h                  |    6 +++---
+ 10 files changed, 42 insertions(+), 41 deletions(-)
+
+============================================================
+
 Mon Jul  7 16:21:42 CEST 2014
 
 Last of 6 series (new file format)

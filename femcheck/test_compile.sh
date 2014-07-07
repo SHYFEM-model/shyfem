@@ -46,6 +46,7 @@ SetUp()
 WrapUp()
 {
   lines=`cat allstderr.tmp | grep -v 'setting macros' | wc -l`
+  echo "================================="
   echo "Final message on all compilations: "
   if [ $lines -ne 0 ]; then
     echo "  *** some errors occured in compilation..."
@@ -53,6 +54,7 @@ WrapUp()
   else
     echo "  no compilation errors"
   fi
+  echo "================================="
 }
 
 #--------------------------------------------------------
