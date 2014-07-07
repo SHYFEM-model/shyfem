@@ -1,3 +1,24 @@
+version  6_1_79    07-07-2014    VERS_6_1_79
+
+========================================================== 07-07-2014 - 6_1_79
+
+c ./fem3d/subtsuvfile.f:
+c 02.07.2014    ggu     new framework finished
+c
+c ./fem3d/subver.f:
+c 07.07.2014	ggu	version 6.1.79  last of 6 series
+c
+c ./fem3d/subreg.f:
+c 07.07.2014	ggu	new routine intp_reg()
+c
+c ./fem3d/subfemfile.f:
+c 07.07.2014	ggu	first version consolidated
+c
+c ./fem3d/subfemintp.f:
+! 07.07.2014	ggu	first version finished
+
+==========================================================
+
 version  6_1_78    27-06-2014    VERS_6_1_78   commit_2014-07-07
 
 version  6_1_78    27-06-2014    VERS_6_1_78   commit_2014-07-07
