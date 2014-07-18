@@ -29,15 +29,14 @@ c------------------------------------------------------
 
 	nvar = 0	!this means no such file etc..
 	nrec = 0
+	iline = 0
+	nvar0 = 0
 
         open(iunit,file=file,form='formatted',status='old',err=2)
 
 c------------------------------------------------------
 c we try to read 3 records
 c------------------------------------------------------
-
-	iline = 0
-	nvar0 = 0
 
 	do while( iline < 3 )
 	  nrec = nrec + 1
@@ -138,6 +137,7 @@ c------------------------------------------------------
 
 	nvar = iscand(line,d,0)		!count values on line
 	if( nvar < 0 ) nvar = -nvar-1	!read error in number -nvar
+	nvar = nvar - 1			!do not count time column
 
 	backspace(iunit)
 

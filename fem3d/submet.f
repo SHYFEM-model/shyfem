@@ -7,77 +7,9 @@ c revision log :
 c
 c 16.02.2011    ggu     created by copying mainly from subn11.f
 c 30.05.2014    ggu     new imreg == 3
+c 10.07.2014    ggu     only new file format allowed
 c
 c*********************************************************************
-
-	subroutine rain0d( it )
-
-c simulates rain (0D) increasing the water level
-
-	implicit none
-
-	integer it
-
-	integer ndim
-	parameter (ndim=100)
-	real barray(ndim)
-	save barray
-
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real metrain(1)
-	common /metrain/metrain
-
-	character*(80)	file
-	integer k
-	real rw(1)
-	real t,zdist
-
-	real getpar
-
-	integer icall
-	save icall
-	data icall / 0 /
-
-	if( icall .eq. -1 ) return
-
-c---------------------------------------------------------------
-c initialization
-c---------------------------------------------------------------
-
-	if( icall .eq. 0 ) then		!initialize
-	   
-	   zdist = getpar('zdist')
-	   call getfnm('rain',file)
-
-	   if( zdist .eq. 0. .and. file .eq. ' ' ) icall = -1
-	   if( icall .eq. -1 ) return
-
-	   rw(1) = zdist
-	   call exffild(file,ndim,barray,rw)
-
-	   icall = 1
-
-	end if
-
-c---------------------------------------------------------------
-c normal call
-c---------------------------------------------------------------
-
-	t = it
-	call exfintp(barray,t,rw)
-
-	do k=1,nkn
-	  metrain(k) = rw(1)
-	end do
-
-c---------------------------------------------------------------
-c end of routine
-c---------------------------------------------------------------
-
-	end
-
-c*******************************************************************
 
 	subroutine rain2distributed
 
@@ -218,23 +150,9 @@ c initializes meteo variables
 
 	implicit none
 
-	integer imreg
-	real getpar
+	write(6,*) 'initializing meteo'
 
-	imreg = nint(getpar('imreg'))
-
-	write(6,*) 'initializing meteo: ',imreg
-
-	if( imreg .eq. 1 ) then
-	  call meteo_regular
-	else if( imreg .eq. 2 ) then
-	  call meteo_forcing		!new framework
-	else if( imreg .eq. 3 ) then
-	  call meteo_forcing_fem	!new file format
-	else
-	  call windad
-	  call qflux_init
-	end if
+	call meteo_forcing_fem	!new file format
 
 	call evap_init
 
@@ -250,27 +168,7 @@ c update meteo variables and admin rain/evaporation
 
 	implicit none
 
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
-
-	integer imreg
-	real getpar
-
-	imreg = nint(getpar('imreg'))
-
-	!write(6,*) 'calling meteo: ',imreg
-
-	if( imreg .eq. 1 ) then
-	  call meteo_regular
-	else if( imreg .eq. 2 ) then
-	  call meteo_forcing
-	else if( imreg .eq. 3 ) then
-	  call meteo_forcing_fem	!new file format
-	else
-	  call windad			!wind
-	  call qflux_read(it)		!heat flux
-	  call rain0d(it)			!rain
-	end if
+	call meteo_forcing_fem	!new file format
 
 	call rain2distributed		!copy rain to distributed source
 	call evap_set			!add evaporation

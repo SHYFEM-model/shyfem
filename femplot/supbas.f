@@ -1176,12 +1176,13 @@ c handles plotting of regular grid
 	! only label the plot, but do not plot lines
 	! if you want lines you have to explicitly set reggrd
 
-	if( reggrd .le. 0. ) return
-	if( reggry .ge. 1. ) return	!no white painting
+	if( reggrd .le. 0. ) goto 1
+	if( reggry .ge. 1. ) goto 1	!no white painting
 
 	ngrid = 0
 	call reggrid(ngrid,reggrd,reggry)
 
+    1	continue
 	write(6,*) 'ending plot_reg_grid...'
 
 	end

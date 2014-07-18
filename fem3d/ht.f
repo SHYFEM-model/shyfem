@@ -546,7 +546,7 @@ c-----------------------------------------------------------
 	call cstsetup
 	call sp136(ic)
         call shdist(rdistv)
-	call renewal_time
+	!call renewal_time
 
 c-----------------------------------------------------------
 c write input values to log file and perform check
@@ -666,6 +666,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	!call pripar(15)
 	!call prifnm(15)
+
+	!call exit(99)
 
         end
 

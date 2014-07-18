@@ -14,6 +14,7 @@ c-----------------------------------------------------------------------
         integer ncolrd		!number of colors read
 	integer icauto		!automatic computation of iso-values
 	integer nriso		!number of single isolines to plot
+	integer iusear		!use array looking up values for colors
 
         real fnull		!flag for value not to plot
 
@@ -21,7 +22,7 @@ c-----------------------------------------------------------------------
         real ciso(isodim+1)	!array with colors
         real riso(isodim)	!array with iso-values of single isolines
 
-        common /isolin/ isopar,isoanz,nisord,ncolrd,icauto,nriso
+        common /isolin/ isopar,isoanz,nisord,ncolrd,icauto,nriso,iusear
         common /fsolin/ fnull
         common /isofol/ fiso
         common /isocol/ ciso

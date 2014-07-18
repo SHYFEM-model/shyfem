@@ -85,7 +85,6 @@ c	call inexta
 	call invola
 	call inarea
 	call inbnds
-	call inwnds
 
 	call inclos
 c	call inoxy	!oxygen
@@ -131,7 +130,6 @@ c	call ckexta	!extra output points
 	call ckvola	!flux sections
 	call ckarea	!chezy values
 	call ckbnds	!boundary conditions
-	call ckwnds	!wind
 
 	call ckclos
 c	call ckoxy	!oxygen

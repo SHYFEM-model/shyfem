@@ -321,6 +321,8 @@ c if regular values (valmin/max) -> use real rindex
 
 	if( nisord .gt. 0 .or. isoanz .eq. 1 ) then	!values read
 	  val = fiso(nint(ri))
+	else if( iusear .ne. 0 ) then			!use array
+	  val = fiso(nint(ri))
 	else
 	  dval = (fiso(isoanz) - fiso(1)) / (isoanz-1)
 	  val = fiso(1) + (ri-1.) * dval

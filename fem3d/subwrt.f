@@ -9,88 +9,11 @@ c revision log :
 c
 c 24.10.2011	ggu	new file copied from subcus.f (jamal)
 c 28.02.2012	ggu&deb	completely restructured
-c 16.03.2012	ggu	use idtreset=-1 for no renewal computation
+c 16.03.2012	ggu	use idtwrt=-1 for no renewal computation
+c 10.05.2014	ccf	parameters from the str file
 c
 c******************************************************************
-
-        subroutine renewal_time
-
-c computes renewal time online - one value for whole lagoon
-
-        implicit none
-
-        include 'param.h'
-
-        character*80 descrp
-        common /descrp/ descrp
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-	integer nlvdi,nlv
-        common /level/ nlvdi,nlv
-
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        integer iarv(1)
-        common /iarv/iarv
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
-        real v1v(1)
-        common /v1v/v1v
-	real hev(neldim)
-	common /hev/hev
-	real hlv(nlvdim)
-	common /hlv/hlv
-
-	logical breset,bcompute,binit,belab
-        logical bnoret,bstir
-	logical blog,badj
-
-	integer iaout,itmin,itmax,idtreset
-	real c0
-	real ctop,ccut
-	real percmin
-
-        real conz,perc,rcorrect
-        double precision mass,volume
-	
-	character*80 title
-	integer nvers	
-
-	real cvres3(nlvdim,nkndim)      	!computed RT 3D
-	real vol(nlvdim,nkndim)      		!volume
-	double precision cvacu(nlvdim,nkndim)   !conz integrated
-	double precision volacu(nlvdim,nkndim)  !volume integrated
-	save cvacu,volacu
-
-	integer ifileo
-        real volnode
-	integer ifemop
-
-	integer iu,nb3,iuf
-	save iu,nb3,iuf
-	integer nrepl
-	save nrepl
-	integer it0
-	save it0
-	double precision tacu
-	save tacu
-        double precision mass0
-        save mass0
-
-        integer icall
-        save icall
-        data icall / 0 /
-
-	if( icall .lt. 0 ) return
-
-c------------------------------------------------------------
-c parameters
-c------------------------------------------------------------
+c Parameters to be set in the wrt section of the parameter input file
 c
 c bnoret	true if no return flow is used (concentrations outside
 c		are explicitly set to 0)
@@ -107,65 +30,124 @@ c c0		initial concentration of tracer
 c
 c itmin		time from when to compute renewal time (-1 for start of sim)
 c itmax		time up to when to compute renewal time (-1 for end of sim)
-c idtreset	time step to reset concentration to c0
+c idtwrt	time step to reset concentration to c0
 c		use 0 if no reset is desired
 c		use -1 if no renewal time computation is desired
 c
 c ctop          maximum to be used for frequency curve
 c ccut          cut renewal time at this level (for res time computation)
+c------------------------------------------------------------
 
-c--------------------------
-c default settings
-c--------------------------
+        subroutine renewal_time
 
-        bnoret = .false.	!no return flow
-	bstir = .false.		!stirred tank
-        blog = .false.		!compute renewal time with log fitting
-        badj = .true.		!adjust renewal time for tail
+        implicit none
 
-	percmin = 0.		!minimum percentage for remnant function
-	iaout = -1		!areas considered outside
-	c0 = 1.			!initial concentration
+        include 'param.h'
 
-	itmin = -1		!compute from start of simulation
-	itmax = -1		!compute to end of simulation
-	idtreset = 0		!no reset of concentrations (old default)
-	idtreset = -1		!no renewal time computation
+        character*80 descrp
+        common /descrp/ descrp
 
-	ctop = 0.		!max for frequency curve
-	ccut = 0.		!max fro renewal time
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+	integer nlvdi,nlv
+        common /level/ nlvdi,nlv
 
-c--------------------------
-c customization
-c--------------------------
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+        real cnv(nlvdim,nkndim)
+        common /cnv/cnv
+        real v1v(1)
+        common /v1v/v1v
+	real hev(neldim)
+	common /hev/hev
+	real hlv(nlvdim)
+	common /hlv/hlv
 
-	badj = .false.
-	itmin = 0
-	idtreset = 3*nint( 30.5 * 86400 )		!one month is 30.5 days
-	idtreset = -1
+	logical breset,bcompute,binit,belab
+        logical bnoret,bstir
+	logical blog,badj
+	logical bdebug
 
-        !badj = .false.
-        !blog = .true.
+	integer iaout,itmin,itmax,idtwrt
+	integer iret,istir,iadj,ilog
+	real c0
+	real ctop,ccut
+	real percmin
 
-	!idtreset = nint( 30.5 * 86400 )		!one month is 30.5 days
-	!idtreset = nint( 86400. )		!one month is 30.5 days
-	!itmin = -1
+        real conz,perc,rcorrect
+        double precision mass,volume
+	
+	character*80 title
+	integer nvers	
 
-	!ccut = 500.
-	!ctop = 400.
+	real cvres3(nlvdim,nkndim)      	!computed RT 3D
+	real vol(nlvdim,nkndim)      		!volume
+	double precision cvacu(nlvdim,nkndim)   !conz integrated
+	double precision volacu(nlvdim,nkndim)  !volume integrated
+	save cvacu,volacu
+
+	integer ifemop
+
+	integer k,nin
+	integer iu,nb3,iuf
+	save iu,nb3,iuf
+	integer nrepl
+	save nrepl
+	integer it0
+	save it0
+	double precision tacu
+	save tacu
+        double precision mass0
+        save mass0
+
+        real getpar
+
+        integer icall
+        save icall
+        data icall / 0 /
+
+	save iaout,idtwrt,itmin,itmax
+	save c0,percmin
+	save bnoret,bstir,blog,badj
+	save ctop,ccut
+
+	bdebug = .true.
+	bdebug = .false.
+
+	if( icall .lt. 0 ) return
 
 c------------------------------------------------------------
 c initialization
 c------------------------------------------------------------
 
         if( icall .eq. 0 ) then
-          write(6,*) 'initialization of WRT routine renewal time'
+          write(6,*) 'Initialization of WRT routine renewal time'
 
-	  if( idtreset .lt. 0 ) then
+          idtwrt = nint(getpar('idtwrt'))
+
+	  if( idtwrt .lt. 0 ) then
 	    icall = -1
-            write(6,*) 'no renewal time computation'
+            write(6,*) 'No renewal time computation'
 	    return
 	  end if
+
+	  iaout = nint(getpar('iaout'))
+	  itmin = nint(getpar('itmin'))
+	  itmax = nint(getpar('itmax'))
+	  c0 = getpar('c0')
+	  percmin = getpar('percmin')
+	  iret = nint(getpar('iret'))
+	  bnoret = iret.eq.0
+	  istir = nint(getpar('istir'))
+	  bstir = istir.eq.1
+	  iadj = nint(getpar('iadj'))
+	  badj = iadj.eq.1
+	  ilog = nint(getpar('ilog'))
+	  blog = ilog.eq.1
+	  ctop = getpar('ctop')
+	  ccut = getpar('ccut')
 
 	  iu = ifemop('.jas','formatted','new')
 	  iuf = ifemop('.frq','formatted','new')
@@ -200,16 +182,19 @@ c------------------------------------------------------------
 	end if
 
 	breset = binit
-	if( idtreset .gt. 0 ) then
-	  if( it-it0 .ge. idtreset ) breset = .true.
+	if( idtwrt .gt. 0 ) then
+	  if( it-it0 .ge. idtwrt ) breset = .true.
 	end if
 	if( it .eq. itmax ) breset = .true.	!last time step
 
 	belab = .not. binit
 	bcompute = .not. binit
 
-	!write(6,*) nrepl,binit,breset,belab,bcompute
-	!write(6,*) it,iu
+	if( bdebug ) then
+	  write(6,*) 'WRT debug:'
+	  write(6,*) nrepl,binit,breset,belab,bcompute,bnoret
+	  write(6,*) it,iu
+	end if
 
 c------------------------------------------------------------
 c flag nodes that are inside lagoon (v1v(k)=1)
@@ -221,6 +206,7 @@ c------------------------------------------------------------
 c elaborate results
 c------------------------------------------------------------
 
+	conz = 0.
 	if( belab ) then
 	  call wrt_massvolconz(cnv,v1v,vol,mass,volume)
 	  conz = mass / volume
@@ -232,6 +218,10 @@ c------------------------------------------------------------
 	  call acu_acum(blog,it,c0,cnv,vol,cvacu,volacu)
 
 	  call wrt_restime_summary(iu,it,it0,mass,mass0,rcorrect)
+	end if
+
+	if( bdebug ) then
+	  write(6,*) 'WRT debug (conz): ',conz
 	end if
 
 c------------------------------------------------------------
@@ -264,11 +254,19 @@ c------------------------------------------------------------
 	  call acu_reset(cvacu)
 	  call acu_reset(volacu)
 	  call wrt_breset(c0,cnv,v1v)
+	  if( bdebug ) then
+	    write(6,*) 'WRT debug:'
+	    nin = 0
+	    do k=1,nkn
+	      if( v1v(k) .ne. 0. ) nin = nin + 1
+	    end do
+	    write(6,*) 'resetting: ',it,c0,nin
+	  end if
 
 	  call wrt_massvolconz(cnv,v1v,vol,mass,volume)
 	  mass0 = mass
 
-	  call wrt_restime_summary(-iuf,it,it0,mass,mass0,rcorrect)		!reset
+	  call wrt_restime_summary(-iuf,it,it0,mass,mass0,rcorrect)	!reset
 	end if
 
 c------------------------------------------------------------
@@ -727,14 +725,6 @@ c write histogram
 
         integer ilhkv(1)
         common /ilhkv/ilhkv
-	real hev(neldim)
-	common /hev/hev
-	real hlv(nlvdim)
-	common /hlv/hlv
-
-	logical breset,bcompute,binit,belab
-        logical bnoret,bstir
-	logical blog,badj
 
 	integer ndim
 	parameter (ndim=100)

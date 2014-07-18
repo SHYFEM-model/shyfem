@@ -138,7 +138,7 @@ SOBJS   = \
           subnsu.o subsss.o subscn.o subres.o \
           subapn.o subnsa.o \
           subgrd.o subreg.o \
-          subwin.o subbnd.o \
+          subbnd.o \
           subexta.o subouta.o subdep.o subflxa.o subflx3d.o subflx.o \
 	  subdum.o subcus.o subdwq.o \
 	  $(BCTSOBJS) \
@@ -149,7 +149,7 @@ SOBJS   = \
 	  debug.o subhisto.o subnosa.o subfvl.o \
 	  subeos.o sigmautil.o \
 	  nosutil.o ousutil.o subfemfile.o subvintp.o \
-	  genutil.o
+	  genutil.o subfemintp.o submeteo2.o subtsfile.o
 
 # general objects for 3D model ht
 
@@ -166,7 +166,6 @@ HTOBJS = \
 	subext.o subexta.o \
 	subous.o subousa.o \
 	subbnd.o subnos.o \
-	subwin.o \
 	subwat.o subn11.o subdry.o \
 	subcus.o subcon1.o \
 	tideg.o tide1.o subzzz.o subres.o subuti.o \
@@ -187,7 +186,6 @@ HTOBJS = \
 	subinv.o newexpl.o subrnd.o \
 	submet.o subrgf.o subcoord.o subgrd.o subsrt.o subfvl.o \
 	subtrace.o subproj.o subeos.o sigmautil.o \
-	submeteo.o submeteo1.o submeteo_inout.o \
 	subwrt.o subvintp.o \
 	subfemfile.o subtsuvfile.o \
 	subflxa.o subflx3d.o subflx.o subflxu.o \
@@ -234,7 +232,7 @@ BATHYOBJS = subgeo.o subgrd.o subsrt.o subinterpol.o subinterpol1.o \
 		subnos.o
 
 LAPLACE = sublpl.o submir.o subnos.o links.o sublnku.o \
-	  subwin.o subnosa.o subssm.o
+	  subnosa.o subssm.o
 
 LAGRANGE =	lagrange_main.o \
 		lagrange_back.o lagrange_dif.o \
@@ -266,6 +264,7 @@ IFF_FILES = subfemintp.o subtsfile.o submeteo2.o
 BCTSOBJS = subsse.o
 BCTSOBJS = subintp.o subbc.o
 BCTSOBJS = subintp.o subbc99.o
+BCTSOBJS = subintp.o
 
 # objects for interpolation
 
@@ -282,7 +281,7 @@ EXEMAIN  = ht vp
 EXEINFO  = ousinf flxinf volinf basinf nosinf wininf extinf rstinf feminf \
 		offinf lgrinf etsinf
 EXESPLIT = nossplit splitext splitflx splitets
-EXELAP   = laplap lapwin
+EXELAP   = laplap 
 EXEBAS   = bastreat basbathy scalintp
 EXEVAR   = nosinit nosresidence scal_intp bashsigma bc2fem
 
@@ -910,7 +909,6 @@ sublnks.o: ev.h links.h
 sublnku.o: links.h
 sublpl.o: ev.h
 submet.o: meteo_forcing_module.mod ev.h
-submeteo1.o: meteo.h
 meteo_forcing_module.mod: submeteo2.o
 submeteo2.o: intp_fem_file.mod meteo.h
 submud.o: param.h

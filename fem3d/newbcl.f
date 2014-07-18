@@ -61,6 +61,7 @@ c 09.03.2012    deb     bug fix in ts_next_record: ilhkv was real
 c 31.10.2012    ggu     open and next_record transfered to subtsuvfile.f
 c 05.09.2013    ggu     limit salinity to [0,...]
 c 25.03.2014    ggu     new offline
+c 10.07.2014    ggu     only new file format allowed
 c
 c*****************************************************************
 
@@ -124,7 +125,6 @@ c common
         common /tempn/ tempn
 
 c local
-	logical bnew
 	logical debug
 	logical badvect
 	logical bobs
@@ -210,7 +210,6 @@ c----------------------------------------------------------
         call is_offline(2,boff)
         if( boff ) return
 
-	bnew = nint(getpar('imreg')) .eq. 3
 	levdbg = nint(getpar('levdbg'))
 	debug = levdbg .ge. 3
 	binfo = .true.
@@ -281,19 +280,11 @@ c		--------------------------------------------
                 nvar = 1
                 cdef(1) = 0.
 		what = 'temp'
-		if( bnew ) then
-		call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv,idtemp)
-		else
-		call bnds_init(what,tempn,nintp,nvar,nb3dim,bnd3_temp,cdef)
-		call bnds_set_def(what,nb3dim,bnd3_temp)
-		end if
+		call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
+     +					,cdef,idtemp)
 		what = 'salt'
-		if( bnew ) then
-		call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv,idsalt)
-		else
-		call bnds_init(what,saltn,nintp,nvar,nb3dim,bnd3_salt,cdef)
-		call bnds_set_def(what,nb3dim,bnd3_salt)
-		end if
+		call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
+     +					,cdef,idsalt)
 
 c		initialize rhov, bpresv (we call it twice since
 c		rhov depends on bpresv and viceversa
@@ -367,11 +358,7 @@ c	  write(6,*) 'number of thread of temp: ',tid
 
           if( itemp .gt. 0 ) then
 		!call check_layers('temp before bnd',tempv)
-		if( bnew ) then
 		ids = idtemp
-		else
-		call scal_bnd('temp',t,bnd3_temp)
-		end if
 		!call check_layers('temp after bnd',tempv)
                 call scal_adv_nudge('temp',0
      +                          ,tempv,bnd3_temp
@@ -387,11 +374,7 @@ c	  write(6,*) 'number of thread of salt: ',tid
 
           if( isalt .gt. 0 ) then
 		!call check_layers('salt before bnd',saltv)
-		if( bnew ) then
 		ids = idsalt
-		else
-		call scal_bnd('salt',t,bnd3_salt)
-		end if
 		!call check_layers('salt after bnd',saltv)
                 call scal_adv_nudge('salt',0
      +                          ,saltv,bnd3_salt
@@ -668,7 +651,6 @@ c*******************************************************************
 	real tempv(nlvdim,1)
 	real saltv(nlvdim,1)
 
-	logical bnew
 	character*80 tempf,saltf
 	integer iutemp(3),iusalt(3)
 	save iutemp,iusalt
@@ -681,27 +663,16 @@ c*******************************************************************
 	tempf = 'temp_diag.dat'
 	saltf = 'salt_diag.dat'
 
-	bnew = nint(getpar('imreg')) .eq. 3
-	!bnew = .false.
-
 	if( icall .eq. 0 ) then
-	  if( bnew ) then
-	    call ts_file_open(tempf,it,nkn,nlv,iutemp)
-	    call ts_file_open(saltf,it,nkn,nlv,iusalt)
-	    call ts_file_descrp(iutemp,'temp diag')
-	    call ts_file_descrp(iusalt,'salt diag')
-	  else
-	    call ts_intp(it,nlv,nkn,tempv,saltv,tempf,saltf)
-	  end if
+	  call ts_file_open(tempf,it,nkn,nlv,iutemp)
+	  call ts_file_open(saltf,it,nkn,nlv,iusalt)
+	  call ts_file_descrp(iutemp,'temp diag')
+	  call ts_file_descrp(iusalt,'salt diag')
 	  icall = 1
 	end if
 
-	if( bnew ) then
-          call ts_next_record(it,iutemp,nkn,nlv,tempv)
-          call ts_next_record(it,iusalt,nkn,nlv,saltv)
-	else
-	  call ts_intp(it,nlv,nkn,tempv,saltv,tempf,saltf)
-	end if
+        call ts_next_record(it,iutemp,nkn,nlv,tempv)
+        call ts_next_record(it,iusalt,nkn,nlv,saltv)
 
 	end
 
@@ -719,7 +690,6 @@ c*******************************************************************
 	real tobsv(nlvdim,1)
 	real sobsv(nlvdim,1)
 
-	logical bnew
 	character*80 tempf,saltf
 	integer iutemp(3),iusalt(3)
 	save iutemp,iusalt
@@ -732,27 +702,16 @@ c*******************************************************************
 	tempf = 'temp_obs.dat'
 	saltf = 'salt_obs.dat'
 
-	bnew = nint(getpar('imreg')) .eq. 3
-	!bnew = .false.
-
 	if( icall .eq. 0 ) then
-	  if( bnew ) then
-	    call ts_file_open(tempf,it,nkn,nlv,iutemp)
-	    call ts_file_open(saltf,it,nkn,nlv,iusalt)
-	    call ts_file_descrp(iutemp,'temp nudge')
-	    call ts_file_descrp(iusalt,'salt nudge')
-	  else
-	    call ts_intp(it,nlv,nkn,tobsv,sobsv,tempf,saltf)
-	  end if
+	  call ts_file_open(tempf,it,nkn,nlv,iutemp)
+	  call ts_file_open(saltf,it,nkn,nlv,iusalt)
+	  call ts_file_descrp(iutemp,'temp nudge')
+	  call ts_file_descrp(iusalt,'salt nudge')
 	  icall = 1
 	end if
 
-	if( bnew ) then
-          call ts_next_record(it,iutemp,nkn,nlv,tobsv)
-          call ts_next_record(it,iusalt,nkn,nlv,sobsv)
-	else
-	  call ts_intp(it,nlv,nkn,tobsv,sobsv,tempf,saltf)
-	end if
+        call ts_next_record(it,iutemp,nkn,nlv,tobsv)
+        call ts_next_record(it,iusalt,nkn,nlv,sobsv)
 
 	end
 

@@ -108,6 +108,7 @@ c 10.05.2013	ggu	new parameters idtbox,itmbox, more comments
 c 10.05.2013	ggu	new parameter inohyd
 c 16.05.2013	ggu	file name bound renamed to zinit
 c 28.03.2014	ggu	some new params for lagrangian
+c 10.04.2014	ccf	new section "wrt" for water renewal time
 c 30.05.2014	ggu	new default for dragco, new metpnt
 c
 c************************************************************************
@@ -120,6 +121,7 @@ c initializes the parameter file for the main FE model
 
 	call nlsinh_general
 	call nlsinh_lagrg
+        call nlsinh_wrt
 	call nlsinh_bfmsc
 	call nlsinh_proj
 	call nlsinh_undoc
@@ -890,6 +892,91 @@ c DOCS	END
 
 c************************************************************************
 
+        subroutine nlsinh_wrt
+
+        implicit none
+
+c $wrt section
+
+c DOCS  START   S_wrt
+c
+c DOCS  COMPULS         Water Renewal Time module
+
+c Computes water renewal time online.
+c During runtime if writes a .jas file with timeseries of total tracer
+c concentration in the basin and WRT computed according to different methods.
+c Nodal values of computed WRT are written in the .wrt file.
+c Frequency distrubutions of WRTs are written in the .frq file.
+c
+c Please find all details here below.
+
+        call sctpar('wrt')             !sets default section
+        call sctfnm('wrt')
+
+c |idtwrt|	Time step to reset concentration to c0. Use 0 if no reset
+c		is desired. Use -1 if no renewal time computation is desired
+c		(Default -1).
+
+        call addpar('idtwrt',-1.)
+
+c |itmin|	Time from when to compute renewal time (-1 for start of sim)
+c		time a release of particles takes place.
+c		(Default -1)
+
+        call addpar('itmin',-1.)
+
+c |itmax|	Time up to when to compute renewal time (-1 for end of sim)
+c		(Default -1).
+
+        call addpar('itmax',-1.)
+
+c |c0|		Initial concentration of tracer (Default 1).
+
+        call addpar('c0',1.)
+
+c |iaout|	Area code of elements out of lagoon (used for init and retflow).
+c		Use -1 to if no outside areas exist. (Default -1).
+
+        call addpar('iaout',-1.)
+
+c |percmin|	Percentage to reach -> after this stop computation. Use 0 if no
+c		premature end is desired (Default 0).
+
+        call addpar('percmin',0.)
+
+c |iret|	Equal 1 if return flow is used. If equal 0 the concentrations
+c		outside are explicitly set to 0 (Default 1).
+
+        call addpar('iret',1.)
+
+c |istir|	If equal 1 simulates completely stirred tank (replaces at every
+c		time step conz with average conz) (Default 0).
+
+        call addpar('istir',0.)
+
+c |iadj|	Adjust renewal time for tail of distribution (Default 1).
+
+        call addpar('iadj',1.)
+
+c |ilog|	Use logarithmic regression to compute renewal time (Default 0).
+
+        call addpar('ilog',0.)
+
+c |ctop|	Maximum to be used for frequency curve (Default 0).
+
+        call addpar('ctop',0.)
+
+c |ccut|	Cut renewal time at this level (for res time computation)
+c		(Default 0).
+
+        call addpar('ccut',0.)
+
+c DOCS  END
+
+        end
+
+c************************************************************************
+
 	subroutine nlsinh_bfmsc
 
 c Parameters for BFM ECOLOGICAL module        !BFMSC
@@ -1381,6 +1468,15 @@ c			be smaller than |colmin| which inverts the color
 c			index used.
 c |valmin, valmax|	Minimum and maximum value for isovalues to be used.
 c			There is no default.
+c |rfiso|		Defines function to be used to compute intermediate
+c			values between |valmin| and |valmax|. If 0 or 1
+c			the values are linearlily interpolated. Else they
+c			are computed by $y=x^n$ where $n$ is |rfiso|
+c			and $x=\frac{v-v_{min}}{v_{max}-v{min}}$. Values
+c			for |rfiso| greater than 0 capture higher detail in
+c			the lower values, whereas values less than 1 do
+c			the opposite.
+c			(Default 0)
 c |dval|		Difference of values between isolines. If this
 c			value is greater then 0 the values for isolines 
 c			and the total number of isolines are computed 
@@ -1393,6 +1489,7 @@ c			(Default 0)
         call addpar('colmax',0.9)      !max color [0..1]
         call addpar('valmin',0.)       !min isovalue
         call addpar('valmax',0.)       !max isovalue
+	call addpar('rfiso',0.)	       !function for intermediate values
 	call addpar('dval',0.)	       !increment for autom. color sep.
 
 c Since there is a great choice of combinations between the parameters,

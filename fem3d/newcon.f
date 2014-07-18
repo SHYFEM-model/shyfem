@@ -174,6 +174,7 @@ c 15.07.2011    ggu     call vertical_flux() anyway (BUG)
 c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
 c 03.12.2013    ggu&deb bug fix for horizontal diffusion
 c 15.05.2014    ggu     write min/max error only for levdbg >= 3
+c 10.07.2014    ggu     only new file format allowed
 c
 c*********************************************************************
 
@@ -193,7 +194,6 @@ c shell for scalar (for parallel version)
         real scal(nlvdim,nkndim)
         real bnd3(nb3dim,0:nbcdim)
 
-	logical bnew
 	double precision dtime
         real rkpar
 	real wsink
@@ -243,16 +243,9 @@ c transfer boundary conditions of var ivar to 3d matrix r3v
 c--------------------------------------------------------------
 
 	dtime = it
-	bnew = nint(getpar('imreg')) .eq. 3
 
-	if( bnew ) then
-	  call bnds_trans_new(whatvar(1:iwhat)
+	call bnds_trans_new(whatvar(1:iwhat)
      +			,ids,dtime,ivar,nkn,nlv,nlvdim,r3v)
-	else
-	  call bnds_trans(whatvar(1:iwhat)
-     +				,nb3dim,bnd3,bnd3_aux
-     +                          ,ivar,nlvdim,r3v)
-	end if
 
 c--------------------------------------------------------------
 c do advection and diffusion
@@ -303,7 +296,6 @@ c shell for scalar with nudging (for parallel version)
 	real bnd3_aux(nb3dim)
         real r3v(nlvdim,nkndim)
 
-	logical bnew
 	integer ierr,l,k,lmax
 	real eps
 	double precision dtime
@@ -342,16 +334,9 @@ c transfer boundary conditions of var ivar to 3d matrix r3v
 c--------------------------------------------------------------
 
 	dtime = it
-	bnew = nint(getpar('imreg')) .eq. 3
 
-	if( bnew ) then
-	  call bnds_trans_new(whatvar(1:iwhat)
+	call bnds_trans_new(whatvar(1:iwhat)
      +			,ids,dtime,ivar,nkn,nlv,nlvdim,r3v)
-	else
-	  call bnds_trans(whatvar(1:iwhat)
-     +				,nb3dim,bnd3,bnd3_aux
-     +                          ,ivar,nlvdim,r3v)
-	end if
 
 c--------------------------------------------------------------
 c do advection and diffusion
@@ -390,6 +375,13 @@ c special version with factor for BC and variable sinking velocity
         real scal(nlvdim,nkndim)
         real bnd3(nb3dim,0:nbcdim)
 
+	double precision dtime
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
         real rkpar
 	real wsink
 	real wsinkv(0:nlvdim,nkndim)
@@ -397,11 +389,15 @@ c special version with factor for BC and variable sinking velocity
 	real difv(0:nlvdim,1)
         real difmol
 
-	real bnd3_aux(nb3dim)
         real r3v(nlvdim,nkndim)
+
+        integer ids(nbcdim)
+        common /ids/ids
+        save /ids/
 
 	real robs
         integer iwhat,ichanm
+	real getpar
 	character*20 whatvar,whataux
 
 	robs = 0.
@@ -421,9 +417,10 @@ c--------------------------------------------------------------
 c transfer boundary conditions of var ivar to 3d matrix r3v
 c--------------------------------------------------------------
 
-	call bnds_trans(whatvar(1:iwhat)
-     +				,nb3dim,bnd3,bnd3_aux
-     +                          ,ivar,nlvdim,r3v)
+	dtime = it
+
+	call bnds_trans_new(whatvar(1:iwhat)
+     +			,ids,dtime,ivar,nkn,nlv,nlvdim,r3v)
 
 c--------------------------------------------------------------
 c multiply boundary condition with factor
@@ -465,7 +462,8 @@ c sets boundary conditions for scalar
 
 	real bnd3_aux(nb3dim)
 
-	call bnds_set(what,t,nb3dim,bnd3,bnd3_aux)
+	stop 'error stop: call to scal_bnd not allowed'
+	!call bnds_set(what,t,nb3dim,bnd3,bnd3_aux)
 
 	end
 

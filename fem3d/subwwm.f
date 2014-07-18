@@ -296,7 +296,7 @@
 
             end do
 
-            call wstress(nkn,wxv,wyv,tauxnv,tauynv)
+            !call wstress(nkn,wxv,wyv,tauxnv,tauynv)	!FIXME
 
 	  end if
 

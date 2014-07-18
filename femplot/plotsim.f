@@ -202,6 +202,8 @@ c----------------------------------------------
 	call mkhev(hev,nel)
 	call mkareafvl			!area of finite volumes
 
+	call iff_init_global_2d(nkn,hkv)	!FIXME
+
 c----------------------------------------------
 c interactive set up
 c----------------------------------------------
@@ -234,12 +236,12 @@ c	if( mode .eq. 4 )  call plobar
 	if( mode .eq. 8 )  call plonos('.rms',18)
 	if( mode .eq. 9 )  call plonos('.oxy',15)
 	if( mode .eq. 10 ) call plonos('.nos',0)
-	if( mode .eq. 11 ) call plowind
+	if( mode .eq. 11 ) call plofem('.fem',21)	!wind
 	if( mode .eq. 12 ) call plolagr
 	if( mode .eq. 13 ) call plowave
-	if( mode .eq. 14 ) call plopres
+	if( mode .eq. 14 ) call plofem('.fem',20)	!pressure
 	if( mode .eq. 15 ) call ploeos('.eos',0)
-	if( mode .eq. 16 ) call plofem('.fem')
+	if( mode .eq. 16 ) call plofem('.fem',0)
 
 c----------------------------------------------
 c close plot

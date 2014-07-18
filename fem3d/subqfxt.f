@@ -192,7 +192,7 @@ c---------------------------------------------------------
 	  lmax = ilhkv(k)
 	  if( hdecay .le. 0. ) lmax = 1
 
-	  call meteo_get_values(k,qs,ta,ur,tb,uw,cc,p)
+	  call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
 
 	  if( iheat .eq. 1 ) then
 	    call heatareg (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)

@@ -30,138 +30,12 @@ c 17.04.2008    ggu     deleted bnds_set_global
 c 23.04.2008    ggu     in bnds_set_def() eliminated aaux
 c 16.02.2012    ggu     new routine bnds_init0 (to force spatially const bound)
 c 25.06.2014    ggu     new routines bnds_init_new() and bnds_trans_new()
+c 10.07.2014    ggu     only new file format allowed
 c
 c******************************************************************
 
-	subroutine bnds_init(text,file,nintp,nvar,ndim,array,aconst)
-
-c initializes boundary condition
-
-	implicit none
-
-	character*(*) text	!text for debug
-	character*80 file(1)	!file names
-	integer nintp		!degree of interpolation - same for all bounds
-	integer nvar		!number of variables
-	integer ndim		!first dimension of array
-	real array(ndim,0:1)	!array with all information
-	real aconst(nvar)	!if no file is given constant values from here
-
-	call bnds_init_internal(text,file,nintp,nvar
-     +			,ndim,array,aconst,.false.)
-
-	end
-
-c******************************************************************
-
-	subroutine bnds_init0(text,file,nintp,nvar,ndim,array,aconst)
-
-c initializes boundary condition (boundary spatially constant)
-
-	implicit none
-
-	character*(*) text	!text for debug
-	character*80 file(1)	!file names
-	integer nintp		!degree of interpolation - same for all bounds
-	integer nvar		!number of variables
-	integer ndim		!first dimension of array
-	real array(ndim,0:1)	!array with all information
-	real aconst(nvar)	!if no file is given constant values from here
-
-	call bnds_init_internal(text,file,nintp,nvar
-     +			,ndim,array,aconst,.true.)
-
-	end
-
-c******************************************************************
-
-	subroutine bnds_init_internal(text,file,nintp,nvar
-     +			,ndim,array,aconst,bconst)
-
-c initializes boundary condition
-
-	implicit none
-
-	character*(*) text	!text for debug
-	character*80 file(1)	!file names
-	integer nintp		!degree of interpolation - same for all bounds
-	integer nvar		!number of variables
-	integer ndim		!first dimension of array
-	real array(ndim,0:1)	!array with all information
-	real aconst(nvar)	!if no file is given constant values from here
-	logical bconst		!treat all boundaries as spatially constant
-
-	character*80 name
-	integer nbc,ibc
-	integer nbdim,nk,nsize
-	integer iunit,n,i
-
-	integer nbnds,nkbnds,ifileo
-	logical bdebug
-
-	bdebug = .false.
-	iunit = 0
-	nbc = nbnds()
-
-	if( bdebug ) then
-	  write(88,*) '-------------------------'
-	  write(88,*) 'Initialization for scalar:'
-	  write(88,*) text
-	  write(88,*) '-------------------------'
-	end if
-
-	do i=1,ndim
-	  array(i,0) = 0.
-	end do
-
-	do ibc=1,nbc
-
-	  do i=1,ndim
-	    array(i,ibc) = 0.
-	  end do
-
-	  name = file(ibc)
-	  if( name .ne. ' ' ) then
-	    iunit = ifileo(iunit,name,'form','old')
-	    if( iunit .le. 0 ) goto 99
-	  else
-	    iunit = -1
-	  end if
-
-	  call get_bnd_ipar(ibc,'nbdim',nbdim)	!0 if one value/boundary
-	  if( bconst ) nbdim = 0
-	  nk = nkbnds(ibc)
-	  nsize = nbdim * nk
-
-	  if( nbdim .gt. 0 ) then
-	    write(6,*) 'variable boundary found: ibc ',ibc,nsize,nbdim
-	  end if
-
-	  call exfini(iunit,nintp,nvar,nsize,ndim,array(1,ibc))
-	  !call exfinit(iunit,nintp,nvar,nk,ndim,array(1,ibc))
-
-	  call exfsetdef(array(1,ibc),aconst)
-
-	  if( bdebug ) then
-	    write(88,*) '-------------------------'
-            write(88,*) 'bnds init: ',ibc,iunit,nvar,nbdim,nsize
-            write(88,*) '      ',nintp,ndim,nk
-            write(88,*) name
-            write(88,*) (aconst(i),i=1,nvar)
-	    write(88,*) '-------------------------'
-	  end if
-	end do
-
-	return
-   99	continue
-	write(6,*) 'Error opening file of boundary ibc = ',ibc
-	write(6,*) 'file name: ',name
-	stop 'error stop bnds_init: cannot open file'
-	end
-
-c******************************************************************
-
-	subroutine bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv,ids)
+	subroutine bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
+     +					,cdef,ids)
 
 c initializes boundary condition
 
@@ -175,6 +49,7 @@ c initializes boundary condition
 	integer nvar		!number of variables
 	integer nkn		!number of points (max)
 	integer nlv		!number of vertical levels
+	real cdef(nvar)		!default values
 	integer ids(*)		!boundary info id (return)
 
 	character*80 file
@@ -194,10 +69,10 @@ c initializes boundary condition
 	bdebug = .false.
 
 	if( bdebug ) then
-	  write(88,*) '-------------------------'
-	  write(88,*) 'Initialization for scalar:'
-	  write(88,*) what
-	  write(88,*) '-------------------------'
+	  write(6,*) '-------------------------'
+	  write(6,*) 'Initialization for scalar:'
+	  write(6,*) what,nvar
+	  write(6,*) '-------------------------'
 	end if
 
 	nbc = nbnds()
@@ -211,7 +86,7 @@ c initializes boundary condition
 
 	  call get_boundary_file(ibc,what,file)
 
-	  aconst = 0.
+	  aconst = cdef
 	  if( exists_bnd_name(what) ) then
 	    call get_bnd_par(ibc,what,val)
 	    aconst = val
@@ -223,7 +98,14 @@ c initializes boundary condition
 
 	  ids(ibc) = id
 
-          write(6,*) 'boundary file opened: ',ibc,id,file
+	  if( bdebug ) then
+            write(6,*) 'boundary: ',ibc,id
+            if( file .ne. ' ' ) then
+	      write(6,*) '  file: ',file(1:60)
+	    else
+              write(6,*) '  def: ',aconst
+	    end if
+	  end if
 
         end do
 
@@ -232,124 +114,6 @@ c initializes boundary condition
 	    call iff_print_info(ids(ibc))
 	  end do
 	end if
-
-	end
-
-c******************************************************************
-
-	subroutine bnds_set(text,t,ndim,array,aaux)
-
-c sets boundary condition
-
-	implicit none
-
-	character*(*) text	!text for debug
-	real t			!time for interpolation
-	integer ndim		!first dimension of array
-	real array(ndim,0:1)	!array with all information
-	real aaux(ndim)		!aux array
-
-	integer nbc,ibc
-	integer iqual
-	integer iunit,nvar
-	integer i
-	character*30 ltext
-
-	integer nbnds
-
-	nbc = nbnds()
-	ltext = text
-
-	do ibc=1,nbc
-
-	  call get_bnd_ipar(ibc,'iqual',iqual)
-
-	  call exfunit(array(1,ibc),iunit)	!gets unit number
-
-	  if( iunit .le. 0 ) then
-c	    nothing, everything in place
-	  else if( iqual .le. 0 ) then
-	    call exfintp(array(1,ibc),t,aaux)
-	    call exfset(array(1,ibc),t,aaux)
-	  else
-	    call exfget(array(1,iqual),t,aaux)
-	    call exfset(array(1,ibc),t,aaux)
-	  end if
-
-	!if( ibc .eq. 3 ) then
-	!  call exfinfo(77,array(1,ibc))
-	!end if
-
-	end do
-
-	!call bnds_print('debug output for '//ltext,ndim,array)
-
-	return
-	end
-
-c******************************************************************
-
-	subroutine bnds_trans(text,ndim,array,aaux,ivar,nlvdim,r3v)
-
-c transfers boundary condition to matrix
-
-	implicit none
-
-	character*(*) text	!text for debug
-	integer ndim		!first dimension of array
-	real array(ndim,0:1)	!array with all information
-	real aaux(ndim)		!aux array
-	integer ivar		!variable to use (can be 0 -> 1)
-	integer nlvdim		!vertical dimension of levels
-	real r3v(nlvdim,1)	!matrix to which BC values are transfered
-
-	integer nbc,ibc
-	integer nvar,nsize,ndata,nbdim
-	integer nk,iv,kn
-	integer i,ip
-	real t
-	character*30 ltext
-
-	integer nbnds,nkbnds,kbnds
-
-	call init_scal_bc(r3v)	!sets r3v to flag - dims nlv,nkn
-
-	nbc = nbnds()
-	ltext = text
-	iv = max(ivar,1)
-
-	do ibc=1,nbc
-
-	  nk = nkbnds(ibc)   !total number of nodes of this boundary
-	  call exfsize(array(1,ibc),nvar,nsize,ndata)
-	  nsize = max(nsize,1)
-	  nbdim = nsize/nk
-	  if( nsize .gt. 1 .and. mod(nsize,nk) .ne. 0 ) then
-	    write(6,*) 'nbdim,nsize,nk: ',nbdim,nsize,nk
-	    stop 'error stop bnds_trans: nsize not multiple of nk'
-	  end if
-
-	  !write(61,*) 'bc: ',ibc,nsize,nbdim,nk
-
-	  call exfgetvar(array(1,ibc),iv,t,aaux)
-
-	  !write(61,*) 'befor 1 ',text,(aaux(i),i=1,nsize)
-
-	  if( nsize .le. 1 ) then	!distribute over nodes of boundary
-	    do i=1,nk
-	      aaux(i) = aaux(1)
-	    end do
-	  end if
-
-	  !write(61,*) 'after 1 ',text,ibc,nsize,nbdim,nk,(aaux(i),i=1,nsize)
-
-	  do i=1,nk
-	    kn = kbnds(ibc,i)
-	    ip = 1 + (i-1) * nbdim             !also works for nbdim=0
-	    call dist_3d(nlvdim,r3v,kn,nbdim,aaux(ip))
-	  end do
-
-	end do
 
 	end
 
@@ -401,6 +165,29 @@ c transfers boundary condition to matrix
 
 	end do
 
+	!call iff_print_info(44,0,.true.)
+	!call iff_print_boundary_info(9,0,.true.)
+
+	end
+
+c******************************************************************
+
+	subroutine bnds_init(text,file,nintp,nvar,ndim,array,aconst)
+
+c initializes boundary condition
+
+	implicit none
+
+	character*(*) text	!text for debug
+	character*80 file(1)	!file names
+	integer nintp		!degree of interpolation - same for all bounds
+	integer nvar		!number of variables
+	integer ndim		!first dimension of array
+	real array(ndim,0:1)	!array with all information
+	real aconst(nvar)	!if no file is given constant values from here
+
+	stop 'error stop: call to bnds_init not allowed'
+
 	end
 
 c******************************************************************
@@ -415,54 +202,7 @@ c sets default value for boundaries - works only for nvar = 1
 	integer ndim		!first dimension of array
 	real array(ndim,0:1)	!array with all information
 
-	integer nbc,ibc
-	integer iunit,nvar,nsize,ndata
-	integer i
-	real scaldf(1)
-
-	integer nbnds
-
-	nbc = nbnds()
-
-	do ibc=1,nbc
-
-	  call exfsize(array(1,ibc),nvar,nsize,ndata)
-	  if( nvar .gt. 1 ) goto 99
-	  call get_bnd_par(ibc,text,scaldf(1))
-	  call exfsetdef(array(1,ibc),scaldf)	!works because nvar = 1
-
-	end do
-
-	return
-   99	continue
-	write(6,*) 'nvar = ',nvar
-	stop 'error stop bnds_set_def: nvar'
-	end
-
-c******************************************************************
-
-	subroutine bnds_print(text,ndim,array)
-
-c prints boundary condition
-
-	implicit none
-
-	character*(*) text	!text for debug
-	integer ndim		!first dimension of array
-	real array(ndim,0:1)	!array with all information
-
-	integer nbc,ibc
-
-	integer nbnds
-
-	nbc = nbnds()
-
-	write(89,*) 'Boundary Info : ',text
-
-	do ibc=1,nbc
-	  write(89,*) '  ...Boundary : ',ibc
-	  call exfinfo(89,array(1,ibc))
-	end do
+	stop 'error stop: call to bnds_set_def not allowed'
 
 	end
 

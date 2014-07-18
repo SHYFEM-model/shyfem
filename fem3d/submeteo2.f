@@ -27,6 +27,76 @@ c
 c info on file format can be found in subfemfile.f
 c
 c*********************************************************************
+c
+c DOCS  START   S_wind
+c
+c In this section the wind data can be given directly without
+c the creation of an external file. Note, however, that
+c a wind file specified in the |name| section takes precedence
+c over this section. E.g., if both a section |wind| and a
+c wind file in |name| is given, the wind data from the file is used.
+c
+c The format of the wind data in this section is the same as the
+c format in the ASCII wind file, i.e., three columns, with
+c the first specifying the time in seconds and the other two columns
+c giving the wind data. The interpretation of the wind data
+c depends on the value of |iwtype|. For more information please
+c see the description of |iwtype| in section |para|.
+c
+c DOCS  END
+
+c DOCS  START   P_wind
+c
+c DOCS  WIND            Wind parameters
+c
+c The next two parameters deal with the wind stress to be
+c prescribed at the surface of the basin.
+c
+c The wind data can either be specified in an external file (ASCII
+c or binary) or directly in the parameter file in section |wind|.
+c The ASCII file or the wind section contain three columns, the first
+c giving the time in seconds, and the others the components of
+c the wind speed. Please see below how the last two columns are
+c interpreted depending on the value of |iwtype|. For the format
+c of the binary file please see the relative section.
+c If both a wind file and section |wind| are given, data from the
+c file is used.
+c
+c The wind stress is normally computed with the following formula
+c \beq
+c \tau^x = \rho_a c_D \vert u \vert u^x \quad
+c \tau^y = \rho_a c_D \vert u \vert u^y
+c \eeq
+c where $\rho_a,\rho_0$ is the density of air and water respectively,
+c $u$ the modulus of wind speed and $u^x,u^y$ the components of
+c wind speed in $x,y$ direction. In this formulation $c_D$ is a
+c dimensionless drag coefficient that varies between 1.5 \ten{-3} and
+c 3.2 \ten{-3}. The wind speed is normally the wind speed measured
+c at a height of 10 m.
+c
+c |iwtype|      The type of wind data given (default 1):
+c               \begin{description}
+c               \item[0] No wind data is processed
+c               \item[1] The components of the wind is given in [m/s]
+c               \item[2] The stress ($\tau^x,\tau^y$) is directly specified
+c               \item[3] The wind is given in speed [m/s] and direction
+c                        [degrees]. A direction of 0\degrees{} specifies
+c                        a wind from the north, 90\degrees{} a wind
+c                        from the east etc.
+c               \item[4] As in 3 but the speed is given in knots
+c               \end{description}
+c |itdrag|      Formula to compute the drag coefficient. A value of 0
+c               uses the constant value given in |dragco|. With 1
+c               the Smith and Banke formula is used.
+c |dragco|      Drag coefficient used in the above formula. The default value
+c               is 0 so it must be specified. Please note also that in case
+c               of |iwtype| = 2 this value is of no interest, since the
+c               stress is specified directly.
+c |wsmax|       Maximum wind speed allowed in [m/s]. This is in order to avoid
+c               errors if the wind data is given in a different format
+c               from the one spwecified by |iwtype|. (Default 50)
+c
+c DOCS  END
 
 !================================================================
         module meteo_forcing_module
@@ -55,7 +125,7 @@ c*********************************************************************
 
 	logical, save, private :: bdebug = .true.
 
-	integer, save :: icall = 0
+	integer, save, private :: icall = 0
 
 	character*80, save :: wxss = 'wind stress in x [N/m**2]'
 	character*80, save :: wyss = 'wind stress in y [N/m**2]'
@@ -192,15 +262,12 @@ c*********************************************************************
 	  call iff_time_interpolate(idwind,dtime,2,nkn,lmax,wyv)
 	  if( iff_get_nvar(idwind) == 3 ) then
 	    call iff_time_interpolate(idwind,dtime,3,nkn,lmax,ppv)
-	!if( bdebug) then
-	!  call iff_get_value(idwind,3,1,1,1000,val1)
-	!  call iff_get_value(idwind,3,2,1,1000,val2)
-	!  call iff_get_file_value(idwind,3,1,1000,val0)
-	!end if
 	  else
 	    call meteo_set_array(nkn,pstd,ppv)
 	  end if
 	end if
+
+	!call iff_print_info(idwind,0,.true.)
 
 	if( .not. iff_is_constant(idrain) .or. icall == 1 ) then
 	  call iff_time_interpolate(idrain,dtime,1,nkn,lmax,metrain)
@@ -716,6 +783,63 @@ c*********************************************************************
 !*********************************************************************
 !*********************************************************************
 
+        subroutine get_drag(itdrag,wxy,dragco)
+
+! computes drag coefficient
+
+        implicit none
+
+        integer itdrag          !type of formula
+        real wxy                !wind speed
+        real dragco             !computed drag coefficient
+
+        if( itdrag .le. 0 ) then
+          !nothing
+        else if( itdrag .eq. 1 ) then   !Smith and Banke (1975)
+          dragco = 0.001 * (0.63 + 0.066*wxy)
+        else if( itdrag .eq. 2 ) then   !Large and Pond (1981)
+          if ( wxy .gt. 11. ) then
+            dragco = 0.001 * (0.49 + 0.066*wxy)
+          else
+            dragco = 0.001 * 1.2
+          end if
+        else
+          write(6,*) 'erroneous value for itdrag = ',itdrag
+          stop 'error stop get_drag: itdrag'
+        end if
+
+        end subroutine get_drag
+
+!================================================================
+        end module meteo_forcing_module
+!================================================================
+
+!*********************************************************************
+
+        subroutine convert_wind(s,d,u,v)
+
+        implicit none
+
+        real s,d,u,v
+
+        real dir
+        real pi,rad
+        parameter(pi=3.14159,rad=pi/180.)
+
+        dir = d
+        dir = 90. - dir + 180.
+        do while( dir .lt. 0. )
+          dir = dir + 360.
+        end do
+        dir = mod(dir,360.)
+
+        u = s*cos(rad*dir)
+        v = s*sin(rad*dir)
+
+        end subroutine convert_wind
+
+!*********************************************************************
+
 	subroutine meteo_get_heat_values(k,qs,ta,rh,wb,uw,cc,p)
 
 ! returns meteo parameters for one node
@@ -754,7 +878,7 @@ c*********************************************************************
 
 !*********************************************************************
 
-	subroutine meteo_get_solar_radiation0(k,qs)
+	subroutine meteo_get_solar_radiation(k,qs)
 
 	implicit none
 
@@ -765,7 +889,7 @@ c*********************************************************************
 
 	qs = metrad(k)
 
-	end subroutine meteo_get_solar_radiation0
+	end subroutine meteo_get_solar_radiation
 
 !*********************************************************************
 
@@ -787,60 +911,36 @@ c*********************************************************************
 
 !*********************************************************************
 
-        subroutine convert_wind(s,d,u,v)
+        subroutine meteo_set_matrix(qs,ta,rh,wb,uw,cc)
+
+c interpolates files spatially - to be deleted
 
         implicit none
 
-        real s,d,u,v
+        real qs,ta,rh,wb,uw,cc
 
-        real dir
-        real pi,rad
-        parameter(pi=3.14159,rad=pi/180.)
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
-        dir = d
-        dir = 90. - dir + 180.
-        do while( dir .lt. 0. )
-          dir = dir + 360.
+        real metrad(1),methum(1)
+        real mettair(1),metcc(1)
+        real metwbt(1),metws(1)
+        common /metrad/metrad, /methum/methum
+        common /mettair/mettair, /metcc/metcc
+        common /metwbt/metwbt, /metws/metws
+
+        integer k
+
+        do k=1,nkn
+          metrad(k) = qs
+          mettair(k) = ta
+          methum(k) = rh
+          metwbt(k) = wb
+          metws(k) = uw
+          metcc(k) = cc
         end do
-        dir = mod(dir,360.)
 
-        u = s*cos(rad*dir)
-        v = s*sin(rad*dir)
-
-        end subroutine convert_wind
+        end
 
 !*********************************************************************
-
-        subroutine get_drag(itdrag,wxy,dragco)
-
-! computes drag coefficient
-
-        implicit none
-
-        integer itdrag          !type of formula
-        real wxy                !wind speed
-        real dragco             !computed drag coefficient
-
-        if( itdrag .le. 0 ) then
-          !nothing
-        else if( itdrag .eq. 1 ) then   !Smith and Banke (1975)
-          dragco = 0.001 * (0.63 + 0.066*wxy)
-        else if( itdrag .eq. 2 ) then   !Large and Pond (1981)
-          if ( wxy .gt. 11. ) then
-            dragco = 0.001 * (0.49 + 0.066*wxy)
-          else
-            dragco = 0.001 * 1.2
-          end if
-        else
-          write(6,*) 'erroneous value for itdrag = ',itdrag
-          stop 'error stop get_drag: itdrag'
-        end if
-
-        end subroutine get_drag
-
-!*********************************************************************
-
-!================================================================
-        end module meteo_forcing_module
-!================================================================
 

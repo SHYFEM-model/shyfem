@@ -347,101 +347,6 @@ c******************************************************
 c******************************************************
 c******************************************************
 
-        subroutine windini
-
-        implicit none
-
-        integer nunit,iform
-        common /winwin/ nunit,iform
-	save /winwin/
-
-	integer icall
-	save icall
-	data icall /0/
-
-	if( icall .ne. 0 ) return
-
-	icall = 1
-
-	nunit = 0
-        iform = 0
-
-        end
-
-c******************************************************
-
-        subroutine windclose
-
-        implicit none
-
-        integer nunit,iform
-        common /winwin/ nunit,iform
-
-	if( nunit .gt. 0 ) close(nunit)
-
-        end
-
-c******************************************************
-
-	subroutine windopen
-
-	implicit none
-
-        integer nunit,iform
-        common /winwin/ nunit,iform
-
-	integer ifemop
-
-	call windini
-
-	nunit = ifemop('.win','unform','old')
-	if( nunit .le. 0 ) then
-		stop 'error stop windopen: cannot open WIN file'
-	end if
-
-        call timeset(0,0,0)
-
-        end
-
-c******************************************************
-
-	function windnext(it)
-
-	implicit none
-
-	logical windnext
-	integer it
-
-        integer nunit,iform
-        common /winwin/ nunit,iform
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        integer ierr,n
-
-        real uv(1), vv(1)
-        real pres(1)
-        common /uv/uv, /vv/vv
-        common /pres/pres
-
-        n = nkn
-        call rdwin(nunit,it,n,uv,vv,pres,ierr)
-
-	if( ierr .gt. 0 ) then
-		stop 'error stop windnext: error reading data record'
-	else if( ierr .lt. 0 ) then
-		windnext = .false.
-	else
-		windnext = .true.
-	end if
-
-        end
-
-c******************************************************
-c******************************************************
-c******************************************************
-
         subroutine waveini
 
         implicit none
@@ -1882,10 +1787,10 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	!write(6,*) 'femnext format: ',bformat,iformat
 
 	np = 0
-        call fem_file_read_params(bformat,nunit,dtime
+        call fem_file_read_params(iformat,nunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,ierr)
 	if( ierr .ne. 0 ) goto 7
-	call fem_file_read_2header(bformat,nunit,ntype,nlv
+	call fem_file_read_2header(iformat,nunit,ntype,nlv
      +				,hlv,datetime,regpar,ierr)
 	if( ierr .ne. 0 ) goto 7
 

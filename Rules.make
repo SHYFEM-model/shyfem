@@ -65,7 +65,7 @@ export NELDIM = 22000
 
 #FORTRAN_COMPILER = GNU_G77
 FORTRAN_COMPILER = GNU_GFORTRAN
-#FORTRAN_COMPILER = INTEL
+FORTRAN_COMPILER = INTEL
 #FORTRAN_COMPILER = PORTLAND
 #FORTRAN_COMPILER = IBM
 
@@ -510,7 +510,6 @@ endif
 
 # FINTEL_OPT   = -O -g -Mprof=time
 # FINTEL_OPT   = -O3 -g -axSSE4.2 #-mcmodel=medium -shared-intel
-# FINTEL_OPT   = -O3 -g -axAVX -mcmodel=medium -shared-intel
 # FINTEL_OPT   = -O -g -fp-model precise -no-prec-div
 
 FINTEL_OPT   = 

@@ -16,6 +16,7 @@ c 09.10.2008    ggu     new call to confop
 c 19.01.2010    ggu     handle restart of conzentrations
 c 25.02.2011    ggu     new routine decay_conz_variable(), add t90 time scale
 c 13.02.2014    ggu     routines for reading initial condition
+c 10.07.2014    ggu     only new file format allowed
 c
 c*********************************************************************
 
@@ -62,7 +63,7 @@ c local
 	real t,dt
 	double precision dtime0,dtime
 c function
-	logical has_restart,bnew
+	logical has_restart
 	real getpar
 c save & data
         character*4 what
@@ -97,8 +98,6 @@ c save & data
 	if(nlvdim.ne.nlvdi) stop 'error stop conz3sh: level dimension'
 
 	if(icall.eq.-1) return
-
-	bnew = nint(getpar('imreg')) .eq. 3
 
 	binfo = .true.		! writes info to info file
 	level = 0		! level > 0 -> writes level to extra file
@@ -137,12 +136,8 @@ c-------------------------------------------------------------
 	  nintp = 2
 	  nvar = 1
 	  cdef(1) = 0.
-          if( bnew ) then
-          call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv,idconz)
-	  else
-	  call bnds_init(what,conzn,nintp,nvar,nb3dim,bnd3_conz,cdef)
-	  call bnds_set_def(what,nb3dim,bnd3_conz)
-	  end if
+          call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
+     +				,cdef,idconz)
 
 	  iprogr = nint(getpar('iprogr'))
 	  if( level .le. 0 ) iprogr = 0
@@ -159,11 +154,7 @@ c-------------------------------------------------------------
 	dtime = it
 	dt = idt
 
-        if( bnew ) then
-                ids = idconz
-        else
-                call scal_bnd(what,t,bnd3_conz)
-        end if
+        ids = idconz
 
         call scal_adv(what,0
      +                          ,cnv,bnd3_conz

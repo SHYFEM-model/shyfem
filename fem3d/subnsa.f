@@ -239,6 +239,12 @@ c************************************************************************
           iv = 27
         else if( string(is:ie3) .eq. 'lgr' ) then
           iv = 80
+        else if( string(is:ie3) .eq. 'wrt' ) then
+          iv = 99
+        else if( string(is:ie5) .eq. 'renew' ) then
+          iv = 99
+        else if( string(is:ie4) .eq. 'resi' ) then
+          iv = 99
         else if( string(is:ie3) .eq. 'nos' ) then
           !generic - no id
         else if( string(is:ie3) .eq. 'fem' ) then
@@ -282,6 +288,8 @@ c******************************************************
           string = 'temperature'
         else if( iv .eq. 26 ) then
           string = 'rain'
+        else if( iv .eq. 99 ) then
+          string = 'renewal time'
         else if( iv .eq. 335 ) then
           string = 'time over threshold'
         else

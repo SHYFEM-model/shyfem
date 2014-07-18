@@ -13,8 +13,6 @@ c
 c subroutine initilt(ibc)       	finds tilting node in node list
 c subroutine iniflux(ibc)		initializes flux boundary
 c
-c subroutine b3dvalue(ibc,it,nsize,ndim,array,rw)
-c
 c subroutine set_mass_flux		sets up (water) mass flux array mfluxv
 c subroutine adjust_mass_flux		adjusts mass flux for dry nodes
 c subroutine make_scal_flux(what,r3v,scal,sflux,sconz,ssurf)	sets scal flux
@@ -113,6 +111,7 @@ c 23.02.2011    ggu     new parameters tramp and levflx implemented
 c 01.03.2011    ggu     implement smoothing for levflx
 c 14.05.2011    ggu     new routine get_discharge()
 c 29.11.2013    ggu     prepared for ibtyp == 0
+c 10.07.2014    ggu     only new file format allowed
 c
 c***************************************************************
 
@@ -168,7 +167,7 @@ c		2 : read in b.c.
 	real vconst(nkn)
 
 	character*10 auxname
-	logical bimpose,bnew
+	logical bimpose
 	integer kranf,krend,k,kn
 	integer ibc,ibtyp
         integer nk,i,kk,kindex,iv
@@ -248,12 +247,9 @@ c	-----------------------------------------------------
 c       initialization of fem_intp
 c	-----------------------------------------------------
 
-	bnew = nint(getpar('imreg')).eq. 3
 	dtime0 = itanf
 	nvar = 1
 	vconst = 0.
-
-	if( bnew ) then
 
 	do ibc=1,nbc
           nk = nkbnds(ibc)
@@ -271,15 +267,21 @@ c	-----------------------------------------------------
 	  end if
           call iff_init(dtime0,zfile,nvar,nk,0,intpol
      +                          ,nodes,vconst,id)
-	  write(auxname,'(a6,1x,i3)') 'bound ',ibtyp
+	  if( ibtyp .le. 0 ) then
+	    write(auxname,'(a6,1x,i3)') 'closed',ibtyp
+	  else if( ibtyp .eq. 1 ) then
+	    write(auxname,'(a6,1x,i3)') 'zlevel',ibtyp
+	  else if( ibtyp .eq. 2 .or. ibtyp .eq. 3 ) then
+	    write(auxname,'(a6,1x,i3)') 'disch ',ibtyp
+	  else
+	    write(auxname,'(a6,1x,i3)') 'bound ',ibtyp
+	  end if
 	  call iff_set_description(id,ibc,auxname)
 	  ids(ibc) = id
 	  write(6,*) 'z boundary file opened: ',ibc,id,zfile
 	end do
 
 	!call iff_print_info(ids(1))
-
-	end if
 
 c	-----------------------------------------------------
 c       determine constant for z initialization
@@ -295,17 +297,10 @@ c	-----------------------------------------------------
 	  nk = nkbnds(ibc)
 
 	  if(const.eq.flag.and.ibtyp.eq.1) then
-	    if( bnew ) then
 	        id = ids(ibc)
 	        call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
+	  	call adjust_bound(id,ibc,it,nk,rwv2)
 		const = rwv2(1)
-	    else
-	        call get_bnd_ipar(ibc,'nbdim',nbdim)
-		nsize = 0
-		if( nbdim .gt. 0 ) nsize = nk
-	        call b3dvalue(ibc,itanf,nsize,nb3dim,bnd3(1,ibc),rwv)
-		const=rwv(1)	!prepare constant z value for start
-	    end if
 	  end if
 
 	  if(ibtyp.eq.70) then	!nwe-shelf	!$$roger - special b.c.
@@ -365,7 +360,6 @@ c	loop over boundaries
 c	-----------------------------------------------------
 
         call bndo_radiat(it,rzv)
-	bnew = nint(getpar('imreg')).eq. 3
 
 	dtime = it
 	ivar = 1
@@ -383,40 +377,10 @@ c	-----------------------------------------------------
 	  rmu = 0.
 	  rmv = 0.
 
-	  if( bnew ) then
-
 	  id = ids(ibc)
 	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
 	  call adjust_bound(id,ibc,it,nk,rwv2)
 	  if( ibtyp .eq. 0 ) nk = 0	!switched off
-
-	  else
-
-	  if( ibtyp .eq. 0 ) then	!switched off
-	    nk = 0
-	  else if( ibtyp .le. 3 ) then
-	    if( nbdim .eq. 0 ) then
-	      nsize = 0
-	      call b3dvalue(ibc,it,nsize,nb3dim,bnd3(1,ibc),rwv)
-              rw = rwv(1)
-	      call dist_horizontal(1,rwv,nk,rw)
-	    else
-	      nsize = nk
-	      call b3dvalue(ibc,it,nsize,nb3dim,bnd3(1,ibc),rwv)
-              call aver_horizontal(1,rwv,nk,rw)
-	    end if
-	    call set_bnd_par(ibc,'zval',rw)
-	  else if( ibtyp .eq. 31 ) then
-	    nsize = 0
-	    call b3dvalue(ibc,it,nsize,nb3dim,bnd3(1,ibc),rwv)
-	    call dist_horizontal(1,rwv,nk,rwv(1))
-	  else if( ibtyp .eq. 4 ) then
-	    rmu = 0.
-	    rmv = 0.
-            stop 'error stop: momentum input is broken...'
-	  end if
-
-	  end if 	!bnew
 
 	  alpha = 1.
 	  if( tramp .gt. 0. .and. it-itanf .le. tramp ) then
@@ -426,11 +390,7 @@ c	-----------------------------------------------------
 	  do i=1,nk
 
              kn = kbnds(ibc,i)
-	     if( bnew ) then
-	       rw = rwv2(i)
-	     else
-	       rw = rwv(i)
-	     end if
+	     rw = rwv2(i)
 
 	     if(ibtyp.eq.1) then		!z boundary
                rzv(kn)=rw
@@ -474,7 +434,7 @@ c	       call zspeci(ibtyp,kranf,krend,rw)	!for radiation...
 	!write(99,*) '======================================'
 	!write(99,*) ' it = ',it
 	!write(99,*) '======================================'
-	!call iff_print_info(ids(1),99)
+	!call iff_print_info(12,0,.true.)
 
 c	-----------------------------------------------------
 c	tilting
@@ -866,97 +826,6 @@ c*******************************************************************
 	end
 
 c*******************************************************************
-
-	subroutine b3dvalue(ibc,it,nsize,ndim,array,rw)
-
-c computes z value for boundary ibc
-
-	implicit none
-
-	integer ibc		!boundary number
-	integer it		!time for which value is needed
-        integer nsize		!total number of values needed (is nk)
-        integer ndim		!dimension for following arrays
-        real array(1)		!array with information on boundary
-        real rw(1)		!array with results
-
-	integer iqual,intpol,nbunit,ibtyp
-	integer iaux
-	integer nvar,ndata
-	integer i
-	real rit,zfact
-	real rw0
-        character*80 file
-
-	logical debug
-
-	debug = .false.
-	!if( ibc .eq. 13 ) debug = .true.
-
-	if( debug ) write(91,*) 'entering... b3dvalue (before): ',ibc
-
-	call get_bnd_par(ibc,'zfact',zfact)
-	call get_bnd_ipar(ibc,'iqual',iqual)
-
-	nvar = 1
-	ndata = nvar*max(nsize,1)
-
-        call exfunit(array,nbunit)
-
-	if( nbunit .eq. 0 ) then
-		call get_boundary_file(ibc,'zeta',file)
-		call get_bnd_ipar(ibc,'ibtyp',ibtyp)
-		call get_bnd_ipar(ibc,'intpol',intpol)
-		if( debug ) then
-		  write(6,*) 'b3dvalue: ',ibc,intpol,nsize,ndim,file
-		end if
-		if( intpol .le. 0 ) then
-		  intpol = 2
-		  if( ibtyp .eq. 1 ) intpol = 4
-		  write(6,*) 'sp111: intpol set: ',ibc,ibtyp,intpol
-		end if
-                call exffil(file,intpol,nvar,nsize,ndim,array)
-                !call exffile(file,intpol,nvar,nsize,ndim,array)
-	        call exfunit(array,nbunit)	!need unit
-		write(6,*) 'intpol final set: ',ibc,ibtyp,intpol
-		call set_bnd_ipar(ibc,'intpol',intpol)
-		if( debug ) then
-		  write(91,*) 'initializing z boundary ',ibc
-		  write(91,*) 'file :',file
-                  call exfinfo(91,array)
-		end if
-	end if
-
-	!write(6,*) 'entering... b3dvalue (after): ',ibc
-
-	rit = it
-
-	if( iqual .ne. 0 ) then		!iqual is broken
-		stop 'error stop b3dvalue: iqual is broken'
-	else if( nbunit .gt. 0 ) then	!read boundary files
-		call exfintp(array,rit,rw)
-                do i=1,ndata
-		  rw(i) = rw(i) * zfact
-                end do
-		if( debug ) then
-		  !write(86,*) it,ibc,(rw(i),i=1,nvar)
-		  !write(88,*) it,ibc,(rw(i),i=1,nvar)
-		  write(91,*) 'z boundary ',ibc
-                  call exfinfo(91,array)
-		end if
-	else				!constant b.c.
-		call get_oscil(ibc,rit,rw0)
-		do i=1,ndata
-		  rw(i) = rw0 * zfact
-		end do
-	end if
-
-	if( debug ) write(91,*) 'z boundary ',ibc,nvar,(rw(i),i=1,nvar)
-
-	return
-	end
-
-c**********************************************************************
 
 	subroutine set_mass_flux
 

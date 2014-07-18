@@ -74,7 +74,7 @@ c**********************************************************
 c**********************************************************
 c**********************************************************
 
-	subroutine plofem(type)
+	subroutine plofem(type,ivar)
 
 c 3D concentrations
 
@@ -83,6 +83,7 @@ c 3D concentrations
 	include 'param.h'
 
 	character*(*) type
+	integer ivar
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -96,7 +97,7 @@ c 3D concentrations
         character*80 line
 	integer nrec,it,ivel,nplot
 	integer ivaria
-	integer level,ivar,isect
+	integer level,isect
 	logical femnext,oktime,endtime
 	integer getlev,getisec
 
@@ -107,7 +108,6 @@ c 3D concentrations
 
 	call femopen(type)
 	call timeask
-	ivar = 0
 	call checkvar(ivar)
 
         call mkvarline(ivar,line)
@@ -399,79 +399,6 @@ c plots barene
 	end do
 
 	call ousclose
-
-	write(6,*) 'Total number of plots: ',nplot
-
-	end
-
-c**********************************************************
-
-	subroutine plopres
-
-	implicit none
-
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real pres(1)
-	common /pres/pres
-
-	integer nrec,it,nplot
-	logical windnext,oktime,endtime
-
-	nrec = 0
-	nplot = 0
-
-	call windopen
-	call timeask
-
-	do while( windnext(it) )
-	  nrec = nrec + 1
-	  write(6,*) nrec,it
-	  if( endtime(it) ) exit
-	  if( oktime(it) ) then
-	    nplot = nplot + 1
-	    write(6,*) '..........plotting ',nplot
-	    call resetsim
-	    call ploval(nkn,pres,'atmospheric pressure')
-	  end if
-	end do
-
-	call windclose
-
-	write(6,*) 'Total number of plots: ',nplot
-
-	end
-
-c**********************************************************
-
-	subroutine plowind
-
-	implicit none
-
-	integer nrec,it,nplot
-        integer ivel
-	logical windnext,oktime,endtime
-
-	nrec = 0
-	nplot = 0
-        ivel = 3	!wind
-
-	call windopen
-	call timeask
-
-	do while( windnext(it) )
-	  nrec = nrec + 1
-	  write(6,*) nrec,it
-	  if( endtime(it) ) exit
-	  if( oktime(it) ) then
-	    nplot = nplot + 1
-	    write(6,*) '..........plotting ',nplot
-	    call resetsim
-	    call plovel(ivel)
-	  end if
-	end do
-
-	call windclose
 
 	write(6,*) 'Total number of plots: ',nplot
 
@@ -986,6 +913,8 @@ c------------------------------------------------------------------
 	    end if
 	end if
 	typsca = typls * typlsf
+
+	write(6,*) 'plo2vel: '
 	write(6,*) 'scale (type): ',typls,typlsf,ioverl
 	write(6,*) 'scale (value): ',valref,valmin,uvmax,uvmed
 

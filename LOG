@@ -1,4 +1,29 @@
 
+18.06.2014
+
+c ./fem3d/subtsuvfile.f:
+c 10.07.2014    ggu     only new file format allowed
+c
+c ./fem3d/subbnds.f:
+c 10.07.2014    ggu     only new file format allowed
+c
+c ./fem3d/submet.f:
+c 10.07.2014    ggu     only new file format allowed
+c
+c ./fem3d/newcon.f:
+c 10.07.2014    ggu     only new file format allowed
+c
+c ./fem3d/newconz.f:
+c 10.07.2014    ggu     only new file format allowed
+c
+c ./fem3d/newbcl.f:
+c 10.07.2014    ggu     only new file format allowed
+c
+c ./fem3d/subn11.f:
+c 10.07.2014    ggu     only new file format allowed
+
+
+
 07.07.2014
 
 c ./fem3d/subtsuvfile.f:

@@ -77,7 +77,7 @@ c - there is no way to change section for an already given parameter
 
 c-------------------------------------------
 	integer nnamdi
-	parameter (nnamdi=200)
+	parameter (nnamdi=300)
 c-------------------------------------------
 	double precision valpar(nnamdi) !array containing parameter values
 	character*6 nampar(nnamdi)      !array containing names of parameters
@@ -189,8 +189,8 @@ c read or write text %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			nentry=nentry+1
 			ientry=nentry
 			if(ientry.gt.nnamdi) then
-				write(6,*) 'dimension error nnamdi'
-				stop 'error stop : manpar'
+			  write(6,*) 'dimension error nnamdi: ',nnamdi
+			  stop 'error stop : manpar'
 			end if
 			nampar(ientry)=name
 			secpar(ientry)=parsec

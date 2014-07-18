@@ -1,5 +1,156 @@
 ============================================================
 
+Fri Jul 18 17:58:51 CEST 2014
+
+first cleaning of new version
+
+ LOG                                     |   25 +
+ Makefile                                |    6 +-
+ Rules.make                              |    3 +-
+ fem3d/Makefile                          |   12 +-
+ fem3d/arc/LOG-COMPILE                   |  884 ---
+ fem3d/arc/Makefile                      |  540 --
+ fem3d/arc/Makefile.orig                 |  777 --
+ fem3d/arc/basbathy.f                    | 1154 ---
+ fem3d/arc/bastreat.f                    | 1297 ----
+ fem3d/arc/bio2d.f                       |  795 --
+ fem3d/arc/bio2d.f.1                     |  750 --
+ fem3d/arc/bio3d.1.f                     |  669 --
+ fem3d/arc/bio3d.orig                    |  833 ---
+ fem3d/arc/doni_ago_2004.zip             |  Bin 29968 -> 0 bytes
+ fem3d/arc/gotm3d.f.new.gz               |  Bin 23014 -> 0 bytes
+ fem3d/arc/gotm3d.f.old.gz               |  Bin 23021 -> 0 bytes
+ fem3d/arc/hfiles.zip                    |  Bin 17826 -> 0 bytes
+ fem3d/arc/hp.f                          |  385 -
+ fem3d/arc/lagrange.f                    | 1743 -----
+ fem3d/arc/lagrange.h                    |   40 -
+ fem3d/arc/lagrange_in.f                 |  236 -
+ fem3d/arc/lagrange_init.f.save          |  430 --
+ fem3d/arc/lagrback.h                    |   63 -
+ fem3d/arc/mkgeom.f                      |  337 -
+ fem3d/arc/newbcl.f.save                 |  513 --
+ fem3d/arc/newcon.f                      | 2277 ------
+ fem3d/arc/newdat.f                      |  444 --
+ fem3d/arc/newflx.f                      |  229 -
+ fem3d/arc/newous.f                      |  269 -
+ fem3d/arc/newouv.f                      |  281 -
+ fem3d/arc/ouvinf.f                      |   80 -
+ fem3d/arc/ouvtrans.f                    |  118 -
+ fem3d/arc/oxygen.f                      |  687 --
+ fem3d/arc/reactor.f                     |  940 ---
+ fem3d/arc/reactor.h                     |   37 -
+ fem3d/arc/sedi.f                        |  635 --
+ fem3d/arc/sedisdgm.f                    | 2738 -------
+ fem3d/arc/sub555.f                      | 1439 ----
+ fem3d/arc/sub_petras.f                  |  274 -
+ fem3d/arc/subcon.f                      |  770 --
+ fem3d/arc/subdat.f                      |  397 -
+ fem3d/arc/subini.f                      |  279 -
+ fem3d/arc/sublgr.f                      | 2012 -----
+ fem3d/arc/sublnk.f                      | 1585 ----
+ fem3d/arc/sublnko.f                     |  774 --
+ fem3d/arc/subn36.f                      | 1332 ----
+ fem3d/arc/subnls_1.f                    | 1138 ---
+ fem3d/arc/subpar_1.f                    |  449 --
+ fem3d/arc/subqfx.f                      |  334 -
+ fem3d/arc/subqfx1.f                     |  507 --
+ fem3d/arc/subqfxa.f                     |  387 -
+ fem3d/arc/subsed.f                      |  410 --
+ fem3d/arc/subsse.f                      | 1330 +++--
+ fem3d/arc/subtxt.f                      |  361 -
+ fem3d/arc/weutro1.f                     | 2099 ------
+ fem3d/arc/weutro2.f                     | 2107 ------
+ fem3d/feminf.f                          |   48 +-
+ fem3d/ht.f                              |    4 +-
+ fem3d/newbcl.f                          |   75 +-
+ fem3d/newcon.f                          |   44 +-
+ fem3d/newconz.f                         |   19 +-
+ fem3d/param.h                           |    6 +-
+ fem3d/subbnds.f                         |  320 +-
+ fem3d/subcst.f                          |    2 -
+ fem3d/subcus.f                          |    2 +-
+ fem3d/subfemintp.f                      |  163 +-
+ fem3d/submet.f                          |  110 +-
+ fem3d/submeteo.f                        |  559 --
+ fem3d/submeteo1.f                       |  974 ---
+ fem3d/submeteo2.f                       |  208 +-
+ fem3d/submeteo_inout.f                  |  321 -
+ fem3d/subn11.f                          |  159 +-
+ fem3d/subnsa.f                          |    8 +
+ fem3d/subnsh.f                          |   27 +-
+ fem3d/subpar.f                          |    6 +-
+ fem3d/subqfxt.f                         |    2 +-
+ fem3d/subsse.f                          | 1750 -----
+ fem3d/subsys.f                          |   97 +
+ fem3d/subtsfile.f                       |    6 +-
+ fem3d/subtsuvfile.f                     |  350 +-
+ fem3d/subwin.f                          | 1163 ---
+ fem3d/subwrt.f                          |  172 +-
+ fem3d/subwwm.f                          |    2 +-
+ femadj/param.h                          |    6 +-
+ femplot/col.f                           |   74 +-
+ femplot/color.h                         |    3 +-
+ femplot/param.h                         |    6 +-
+ femplot/plotsim.f                       |    8 +-
+ femplot/supano.f                        |   12 +-
+ femplot/supbas.f                        |    5 +-
+ femplot/supcol.f                        |    2 +
+ femplot/supout.f                        |   99 +-
+ femplot/supsim.f                        |   81 +-
+ femregres/Makefile                      |   26 -
+ femregres/README                        |   17 -
+ femregres/grds/canale_vert.grd          | 1423 ----
+ femregres/rain/Makefile                 |   84 -
+ femregres/rain/rain.dat                 |    2 -
+ femregres/rain/rain.str                 |   25 -
+ femregres/rain/regress.pl               |   29 -
+ femregres/rain/regress.sh               |   12 -
+ femregres/regdiff.sh                    |  120 -
+ femregres/regress.sh                    |  194 -
+ femregres/skel/Makefile                 |   22 -
+ femregres/skel/data/haka/1998.qfx       |   73 -
+ femregres/skel/data/haka/1998.win       |   73 -
+ femregres/skel/data/haka/9899.salt      |   25 -
+ femregres/skel/data/haka/9899.temp      |   25 -
+ femregres/skel/data/haka/arm4ex.mar     |   73 -
+ femregres/skel/data/haka/hakata22.grd   | 5019 -------------
+ femregres/skel/data/haka/test.str       |  214 -
+ femregres/skel/data/venlag/ds2000.dat   |   41 -
+ femregres/skel/data/venlag/prev.dat     |   58 -
+ femregres/skel/data/venlag/rain.dat     |  367 -
+ femregres/skel/data/venlag/venlag62.grd |12212 -------------------------------
+ femregres/skel/data/venlag/wind.dat     |   55 -
+ femregres/skel/param.h                  |   42 -
+ femregres/skel/strs/bench30.str         |   29 -
+ femregres/skel/strs/bench59.str         |   63 -
+ femregres/skel/strs/bench62.str         |   58 -
+ femregres/skel/strs/bench92.str         |   28 -
+ femregres/skel/strs/regres62.str        |   64 -
+ femregres/skel/test1/Makefile           |   65 -
+ femregres/skel/test1/apnconz.str        |   36 -
+ femregres/skel/test1/input/I1           |   19 -
+ femregres/skel/test1/input/I2           |    6 -
+ femregres/skel/test1/input/I3           |    9 -
+ femregres/skel/test1/test1.str          |   64 -
+ femregres/skel/test2/Makefile           |   67 -
+ femregres/skel/test2/test2.str          |  180 -
+ femregres/skel/test3/Makefile           |   74 -
+ femregres/skel/test3/test3.str          |  217 -
+ femregres/skel/test4/Makefile           |   74 -
+ femregres/skel/test4/test4.str          |  217 -
+ femregres/skel/test5/Makefile           |   78 -
+ femregres/skel/test5/test5.str          |  218 -
+ femregres/skel/test5/test5a.str         |  218 -
+ femregres/tvd/Makefile                  |   84 -
+ femregres/tvd/regress.pl                |   29 -
+ femregres/tvd/regress.sh                |   12 -
+ femregres/tvd/tvd.str                   |   45 -
+ femregres/tvd/xt                        |   44 -
+ param.h                                 |    6 +-
+ 143 files changed, 1640 insertions(+), 65699 deletions(-)
+
+============================================================
+
 Mon Jul  7 16:27:51 CEST 2014
 
 New version 7_0_0

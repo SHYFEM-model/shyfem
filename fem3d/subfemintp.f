@@ -135,6 +135,7 @@
 
 	iu = 6
 	if( present(iunit) ) iu = iunit
+	if( iu <= 0 ) iu = 6
 	debug = .false.
 	if( present(bdebug) ) debug = bdebug
 
@@ -196,6 +197,24 @@
 	call iff_print_info(id)
 
 	end subroutine iff_print_file_info
+
+!****************************************************************
+
+	subroutine iff_print_boundary_info(ibc,iunit,bdebug)
+
+	integer ibc
+	integer iunit
+	logical bdebug
+
+	integer id
+
+	do id=1,idnext
+	  if( ibc .eq. pinfo(id)%ibc ) then
+	    call iff_print_info(id,iunit,bdebug)
+	  end if
+	end do
+
+	end subroutine iff_print_boundary_info
 
 !****************************************************************
 
@@ -285,6 +304,7 @@
    99	continue
 	write(6,*) 'error in parameter'
 	write(6,*) 'ivar,nvar: ',ivar,nvar
+	call iff_print_file_info(id)
 	stop 'error stop iff_get_var_description'
 	end subroutine iff_get_var_description
 
@@ -307,7 +327,7 @@
    99	continue
 	write(6,*) 'error in parameter'
 	write(6,*) 'ivar,nvar: ',ivar,nvar
-	stop 'error stop iff_get_var_description'
+	stop 'error stop iff_set_var_description'
 	end subroutine iff_set_var_description
 
 !****************************************************************
@@ -423,8 +443,10 @@
 	real vconst(nvar)	!constant values in case no file is given
 	integer id		!identification of file info (return)
 
+! nvar is return value (if file can be read)
+
 	integer iformat,iunit
-	integer ierr,np
+	integer ierr,np,i
 	integer nvar_orig
 	integer date,time
 	integer ntype,itype(2)
@@ -513,7 +535,10 @@
 	  pinfo(id)%bonepoint = .true.
 	  pinfo(id)%strings_file = ' '
 	  call iff_allocate_fem_data_structure(id)
-	  pinfo(id)%data_file(1,1,:) = vconst
+          pinfo(id)%time(1) = 0.
+	  do i=1,nvar
+            pinfo(id)%data(1,1,i,1) = vconst(i)
+	  end do
 	else
 	  stop 'error stop iff_init: internal error (3)'
 	end if
@@ -670,6 +695,7 @@ c	 2	time series
                 ddt = dtime2 - dtime
                 if( ddt <= 0 ) goto 98
                 dtimes = dtime0 - nintp*ddt	!first record needed
+		if( dtime0 == -1 ) dtimes = dtime	!just take first
 
 		dtimeold = dtime
                 do while( dtime < dtimes )
@@ -1389,6 +1415,7 @@ c global lmax and lexp are > 1
 	! set up parameters
 	!---------------------------------------------------------
 
+	if( id < 1 .or. id > idnext ) goto 95
         iformat = pinfo(id)%iformat
 	if( iformat == -3 ) goto 96
 
@@ -1449,6 +1476,10 @@ c global lmax and lexp are > 1
 	!---------------------------------------------------------
 
 	return
+   95	continue
+	write(6,*) 'id out of range: ',id,idnext
+	call iff_print_file_info(0)
+	stop 'error stop iff_time_interpolate'
    96	continue
 	write(6,*) 'file is closed... cannot interpolate anymore'
 	call iff_print_file_info(id)
@@ -1461,12 +1492,12 @@ c global lmax and lexp are > 1
 	stop 'error stop iff_time_interpolate'
    98	continue
 	write(6,*) 'file does not contain needed value'
-	write(6,*) 'itlast,itact: ',itlast,itact
+	write(6,*) 'itfirst,itact,itlast: ',itfirst,itact,itlast
 	call iff_print_file_info(id)
 	stop 'error stop iff_time_interpolate'
    99	continue
 	write(6,*) 'time record not in increasing sequence'
-	write(6,*) 'itfirst,it,itlast: ',itfirst,it,itlast
+	write(6,*) 'it,itlast: ',it,itlast
 	call iff_print_file_info(id)
 	stop 'error stop iff_time_interpolate'
 	end subroutine iff_time_interpolate
@@ -1505,7 +1536,9 @@ c global lmax and lexp are > 1
 	tr = t		!real version of t
 
 	if( bconst .or. bonepoint ) then
-	  if( bonepoint ) then
+	  if( bconst ) then
+	    val = pinfo(id)%data(1,1,ivar,1)
+	  else
 	    time = pinfo(id)%time
 	    do j=1,nintp
 	      vals(j) = pinfo(id)%data(1,1,ivar,j)
@@ -1625,4 +1658,122 @@ c global lmax and lexp are > 1
 !================================================================
 	end module intp_fem_file
 !================================================================
+
+!****************************************************************
+! next are dummy routines that can be deleted somewhen...
+!****************************************************************
+
+        subroutine exffil(file,nintp,nvar,nsize,ndim,array)
+
+	use intp_fem_file
+
+c opens file and inititializes array
+c
+c everything needed is in array (unit, vars etc...)
+
+        implicit none
+
+        character*(*) file      !file name
+        integer nintp           !grade of interpolation (2=linear,4=cubic)
+        integer nvar            !how many vars (columns) to read/interpolate
+        integer nsize           !number of data per variable (may be 0 -> 1)
+        integer ndim            !dimension of array
+        real array(ndim)        !array with all information
+
+	integer nv,id
+	integer nexp,lexp
+	integer nodes(1)
+	double precision dtime
+	real vconst(1)
+
+	dtime = -1
+	nexp = 0
+	lexp = 0
+	vconst(1) = 0.
+	
+	call iff_init(dtime,file,nvar,nexp,lexp,nintp
+     +					,nodes,vconst,id)
+
+	if( nv .ne. nvar ) then
+	  write(6,*) 'nvar,nv: ',nvar,nv
+	  stop 'error stop exffil: parameter mismatch'
+	end if
+
+	array(1) = id
+
+	end
+
+!****************************************************************
+
+        subroutine exffils(file,ndim,array)
+
+c opens file and inititializes array - simplified version
+
+        implicit none
+
+        character*(*) file      !file name
+        integer ndim            !dimension of array
+        real array(ndim)        !array with all information
+
+        integer nintp           !grade of interpolation (2=linear,4=cubic)
+        integer nvar            !how many columns to read/interpolate
+        integer nsize           !number of data per variable
+
+        nintp=2
+        nvar=1
+        nsize=0
+
+        call exffil(file,nintp,nvar,nsize,ndim,array)
+
+        end
+
+!****************************************************************
+
+        subroutine exfintp(array,t,rint)
+
+	use intp_fem_file
+
+	implicit none
+
+        real array(*)           !array with information from set-up
+        real t                  !t value for which to interpolate
+        real rint(1)            !interpolated values
+
+	integer id,ldim,ndim,ivar
+	double precision dtime
+
+	id = nint(array(1))
+	dtime = t
+	ldim = 1
+	ndim = 1
+	ivar = 1
+
+	call iff_time_interpolate(id,dtime,ivar,ndim,ldim,rint)
+
+        end
+
+!****************************************************************
+
+	subroutine iff_init_global_2d(nkn,hkv)
+
+	use intp_fem_file
+
+	implicit none
+
+	integer nkn
+	real hkv(nkn)
+
+	integer nlv
+	integer ilhkv(nkn)
+	real hlv(1)
+
+	nlv = 1
+	ilhkv = 1
+	hlv(1) = 10000.
+
+	call iff_init_global(nkn,nlv,ilhkv,hkv,hlv)
+
+	end
+
+!****************************************************************
 

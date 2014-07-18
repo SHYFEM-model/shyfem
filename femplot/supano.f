@@ -1468,9 +1468,9 @@ c creates legend for velocity arrow and plots arrow
 	real dx,dy
 	real x0s,y0s		!starting point of velocity arrow
 	real dd			!length of velocity arrow
-	real val,val1,val2
+	real val,val1,val2,value
 	real width,height
-	real afact,xt
+	real sfact,afact,xt
 
 	integer iround,istell,ialfa
 	real rnext
@@ -1517,8 +1517,8 @@ c val	length of velocity vector in velocity (transport) coordinates
 
 	!call pfeil(x0s,y0s,val,0.,scale)
 
-	call spherical_fact(fact,afact)
-	xt = x0s + val*scale/fact
+	call spherical_fact(sfact,afact)
+	xt = x0s + val*scale/sfact
         !call fcmpfeil(x0s,y0s,xt,0.,0.3)
         call fcmpfeil(x0s,y0s,xt,y0s,0.3)
 
@@ -1526,7 +1526,9 @@ c val	length of velocity vector in velocity (transport) coordinates
 	x0s = x0 + 0.5 * dx - 0.5 * width
 	call qtext(x0s,y0s+1.*height,title)
 
-	nw = ialfa(val*fact,line,ndec,-1)
+	value = val*fact
+	write(6,*) 'arrow: ',val,value,fact
+	nw = ialfa(value,line,ndec,-1)
 	line(nw+1:) = unit
 	call qtsize(line,width,height)
 	x0s = x0 + 0.5 * dx - 0.5 * width

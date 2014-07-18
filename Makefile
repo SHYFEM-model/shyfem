@@ -40,6 +40,8 @@ FEMSRC    = $(FEMDIR)/fem3d
 FEMBIN    = $(FEMDIR)/fembin
 TMPDIR    = $(HOME)/fem/tmp
 
+REGRESSDIR = femregres/tests
+
 SUBDIRS   = `ls -dF * | grep  '/' | sed -e 's/\///'`
 FEMLIBS   = femcheck post hcbs
 FEMC      = grid mesh
@@ -150,7 +152,7 @@ cleandiff:
 	$(FEMBIN)/recursivemake $@ $(SUBDIRS)
 
 cleanregress:
-	cd femregres/skel/tests; make cleanall
+	cd $(REGRESSDIR); make cleanall
 	
 cleanbck:
 	-rm -rf *.bck
@@ -261,7 +263,7 @@ test_stable:
 	@femcheck/test_stable.sh
 
 regress:
-	cd femregres/skel/tests; make check
+	cd $(REGRESSDIR); make check
 
 revision:
 	 $(FEMBIN)/revision_last

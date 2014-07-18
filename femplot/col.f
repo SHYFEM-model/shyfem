@@ -68,8 +68,9 @@ c sets up color table after read from $color section
 	logical bdebug
 	integer niso,nisomx,nisodf
 	integer icolor
+	real rfiso
 	real colmin,colmax,valmin,valmax,dval
-	logical bisord,bcolrd
+	logical bisord,bcolrd,bfunc
 
 	real getpar
 
@@ -89,6 +90,7 @@ c-------------------------------------------------
 	valmin = getpar('valmin')	!min isovalue
 	valmax = getpar('valmax')	!max isovalue
 	dval   = getpar('dval')		!distance of isovalues
+	rfiso  = getpar('rfiso')	!interpolating function
 	niso   = nint(getpar('niso'))	!total number of isovalues to use
 	nisomx = nint(getpar('nisomx'))	!maximum number of isovalues allowed
 	nisodf = nint(getpar('nisodf'))	!default number of isovalues to use
@@ -110,6 +112,9 @@ c-------------------------------------------------
 
 	bisord = nisord .gt. 0		!isovalues have been read
 	bcolrd = ncolrd .gt. 0		!colors have been read
+	bfunc = rfiso .ne. 0		!logarithmic scale
+	iusear = 0			!use array for lookup
+	if( bfunc ) iusear = 1
 
 c-----------------------------------------------------
 c see what has been read -> compute niso
@@ -221,7 +226,13 @@ c	  --------------------------------------------
 	    call mkval(niso+1,ciso,colmin,colmax,0.)
 	    call adjcoltab(icolor,niso+1,ciso)
 	  end if
-	  if( .not. bisord ) call mkval(niso,fiso,valmin,valmax,dval)
+	  if( .not. bisord ) then
+	    if( bfunc ) then
+	      call mkval(-niso,fiso,valmin,valmax,rfiso)
+	    else
+	      call mkval(niso,fiso,valmin,valmax,dval)
+	    end if
+	  end if
 
 	else ! if( icauto .ne. 0 ) then
 
@@ -271,7 +282,7 @@ c sets up color table in automatic mode
 
 	include 'color.h'
 
-	logical bdebug
+	logical bdebug,bfunc
 	integer i
 	integer niso,nisomx,nisodf
 	integer icolor
@@ -279,6 +290,7 @@ c sets up color table in automatic mode
 	real amin,amax
         real fact,val,fdec,eps
         integer ndec,idec
+	real rfiso
 
 	real getpar
 	real rnext,rnexta
@@ -314,9 +326,14 @@ c-------------------------------------------------
 	colmax = getpar('colmax')	!max color [0..1]
 	dval   = getpar('dval')		!distance of isovalues
 	niso   = nint(getpar('niso'))	!total number of isovalues
+	rfiso  = getpar('rfiso')	!interpolating function
 	nisomx = nint(getpar('nisomx'))	!maximum number of isovalues allowed
 	nisodf = nint(getpar('nisodf'))	!default number of isovalues to use
 	icolor = nint(getpar('icolor'))	!color table
+
+	bfunc = rfiso .ne. 0
+	iusear = 0			!use array for lookup
+	if( bfunc ) iusear = 1
 
 	if( bdebug ) then
 	  write(6,*) 'colmin/max: ',colmin,colmax
@@ -335,7 +352,11 @@ c	  we already know how many isolines to draw (and color table)
 c	  ----------------------------------------
 
 	  dval = 0.
-	  call mkval(niso,fiso,valmin,valmax,dval)
+	  if( bfunc ) then
+	    call mkval(-niso,fiso,valmin,valmax,rfiso)
+	  else
+	    call mkval(niso,fiso,valmin,valmax,dval)
+	  end if
 
 	else
 
@@ -431,7 +452,11 @@ c	  ----------------------------------------
 c	  set up arrays
 c	  ----------------------------------------
 
-	  call mkval(niso,fiso,amin,amax,dval)
+	  if( bfunc ) then
+	    call mkval(-niso,fiso,valmin,valmax,rfiso)
+	  else
+	    call mkval(niso,fiso,valmin,valmax,dval)
+	  end if
 	  call mkval(niso+1,ciso,colmin,colmax,0.)
 	  call adjcoltab(icolor,niso+1,ciso)
 
@@ -456,20 +481,27 @@ c	  ----------------------------------------
 
 c**********************************************************
 
-	subroutine mkval(n,array,amin,amax,da)
+	subroutine mkval(nn,array,amin,amax,da)
 
 c makes array of values
+c
+c if nn is negative in da is power of function to use
 
 	implicit none
 
-	integer n
+	integer nn
 	real array(1)
 	real amin,amax
 	real da
 
-	integer i
-	real dval
+	logical bfunc
+	integer i,n
+	real dval,r,rn
 
+	bfunc = nn .lt. 0
+	n = abs(nn)
+	rn = n
+	  
 	if( n .le. 0 ) then
 	  return
 	else if( n .eq. 1 ) then
@@ -479,9 +511,27 @@ c makes array of values
 	  if( dval .eq. 0. ) dval = (amax-amin) / (n-1)
 	end if
 
-	do i=1,n
-	  array(i) = amin + (i-1) * dval
-	end do
+	if( bfunc .and. da .ne. 0. ) then	!polynomial division
+	  write(6,*) 'using polynomial scale... ',da
+	  dval = amax-amin
+	  do i=1,n
+	    !r = float(i)/n
+	    !array(i) = amin+dval*log(1.+r)/log(2.)
+	    !array(i) = amin+dval*(exp(r)-1.)/(exp(1.)-1.)
+	    if( da .gt. 0 ) then
+	      array(i) = amin+dval*((i-1)/(n-1.))**da
+	    else
+	      array(i) = amin+dval*((i/rn)**da)/((1./rn)**da)
+	    end if
+	  end do
+	else				!linear division
+	  do i=1,n
+	    array(i) = amin + (i-1) * dval
+	  end do
+	end if
+
+	write(6,*) 'mkval: ',n,da
+	write(6,*) (array(i),i=1,n)
 
 	end
 

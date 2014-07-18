@@ -18,13 +18,16 @@ c writes info on fem file
 	integer datetime(2)
 	real regpar(7)
 	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
+	logical bspecial
 	character*50, allocatable :: strings(:)
-	real,allocatable :: data(:,:)
+	real,allocatable :: data(:,:,:)
 	real,allocatable :: hd(:)
 	real,allocatable :: hlv(:)
 	integer,allocatable :: ilhkv(:)
 
 	bdebug = .false.
+	bspecial = .true.
+	bspecial = .false.
 
         call parse_command_line(infile,bwrite,bout,tmin,tmax)
 	bskip = .not. bwrite
@@ -114,7 +117,7 @@ c--------------------------------------------------------------
 
 	nvar0 = nvar
 	allocate(strings(nvar))
-	allocate(data(nlvdim,np))
+	allocate(data(nlvdim,np,nvar))
 	allocate(hd(np))
 	allocate(ilhkv(np))
 
@@ -127,7 +130,7 @@ c--------------------------------------------------------------
      +                          ,nvers,np,lmax
      +                          ,string
      +                          ,ilhkv,hd
-     +                          ,nlvdim,data
+     +                          ,nlvdim,data(1,1,i)
      +                          ,ierr)
 	  end if
 	  if( ierr .ne. 0 ) goto 97
@@ -136,12 +139,12 @@ c--------------------------------------------------------------
      +                          ,nvers,np,lmax
      +                          ,string
      +                          ,ilhkv,hd
-     +                          ,nlvdim,data)
+     +                          ,nlvdim,data(1,1,i))
 	  end if
 	  write(6,*) 'data:  ',i,'  ',string
 	  strings(i) = string
 	  if( bwrite ) then
-            call minmax(nlvdim,np,ilhkv,data,dmin,dmax)
+            call minmax(nlvdim,np,ilhkv,data(1,1,i),dmin,dmax)
 	    write(6,1100) irec,i,dtime,dmin,dmax
 	  end if
 	end do
@@ -167,6 +170,11 @@ c--------------------------------------------------------------
 	  if( nvar .ne. nvar0 ) goto 96
 	  if( btmax .and. dtime > tmax ) exit
 	  if( bdebug ) write(6,*) irec,dtime
+	  it = nint(dtime)
+	  if( bspecial .and. irec > 8000 .and. it == 378770400 ) then
+	    it = itold + 3600
+	    dtime = it
+	  end if
 	  call fem_file_read_2header(iformat,iunit,ntype,lmax
      +			,hlv,datetime,regpar,ierr)
 	  if( ierr .ne. 0 ) goto 98
@@ -185,7 +193,7 @@ c--------------------------------------------------------------
      +                          ,nvers,np,lmax
      +                          ,string
      +                          ,ilhkv,hd
-     +                          ,nlvdim,data
+     +                          ,nlvdim,data(1,1,i)
      +                          ,ierr)
 	    end if
 	    if( ierr .ne. 0 ) goto 97
@@ -194,29 +202,45 @@ c--------------------------------------------------------------
      +                          ,nvers,np,lmax
      +                          ,string
      +                          ,ilhkv,hd
-     +                          ,nlvdim,data)
+     +                          ,nlvdim,data(1,1,i))
 	    end if
 	    if( string .ne. strings(i) ) goto 95
 	    if( bwrite ) then
-              call minmax(nlvdim,np,ilhkv,data,dmin,dmax)
+              call minmax(nlvdim,np,ilhkv,data(1,1,i),dmin,dmax)
 	      write(6,1100) irec,i,dtime,dmin,dmax
 	    end if
 	  end do
-	  it = nint(dtime)
 	  if( bfirst ) then
 	    bfirst = .false.
 	    idt = it - itold
-	  end if
-	  if( idt <= 0 ) then
-	    write(6,*) 'zero or negative time step: ',irec,it,itold
 	  end if
 	  if( it-itold .ne. idt ) then
 	    ich = ich + 1
 	    write(6,*) 'change in time step: ',irec,idt,it-itold
 	    idt = it-itold
 	  end if
+	  if( idt <= 0 ) then
+	    write(6,*) 'zero or negative time step: ',irec,it,itold
+	  end if
 	  itend = it
 	end do
+
+	if( bspecial .and. boutput ) then
+	  it = itold + 3600
+	  itend = it
+	  write(6,*) 'special treatment... ',it
+	  dtime = it
+          call fem_file_write_header(iformat,iout,dtime
+     +                          ,nvers,np,lmax,nvar,ntype,nlvdim
+     +				,hlv,datetime,regpar)
+	  do i=1,nvar
+            call fem_file_write_data(iformat,iout
+     +                          ,nvers,np,lmax
+     +                          ,strings(i)
+     +                          ,ilhkv,hd
+     +                          ,nlvdim,data(1,1,i))
+	  end do
+	end if
 
 c--------------------------------------------------------------
 c finish loop - info on time records

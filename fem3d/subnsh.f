@@ -72,6 +72,7 @@ c 24.01.2012    ggu     new routine setup_parallel()
 c 10.02.2012    ggu     new routines to initialize and access time common block
 c 05.03.2014    ggu     code prepared to repeat time step (irepeat) - not ready
 c 05.03.2014    ggu     new routines get_last/first_time()
+c 10.04.2014    ccf     new section "wrt" for water renewal time
 c
 c************************************************************
 c
@@ -130,8 +131,6 @@ c writes output to terminal or log file
 	call check_parameter_values('prilog')
 
 	call prbnds		!prints boundary info
-
-	call prwnds		!prints wind info
 
 	!call prexta		!prints extra points
 
@@ -267,8 +266,6 @@ c	call tslgr
 
 	call tsbnds
 
-	call tswnds
-
 	call tsclos
 
 c	call tsoxy	!oxygen
@@ -367,15 +364,17 @@ c			call rdfloa(nfldin)
 			call rdflxa
 		else if(section.eq.'vol') then
 			call rdvola
+		else if(section.eq.'wrt') then		!water renewal time
+                        call nrdins(section)
 		else if(section.eq.'wind') then
-			call rdwnds
+			call section_deleted(section)
 		else if(section.eq.'oxypar') then	!oxygen
 			call nrdins(section)
 		else if(section.eq.'oxyarr') then	!oxygen
 c			call rdoxy
 			call nrdskp
 		else if(section.eq.'bfmsc')then        ! BFM ECO TOOL
-                       call nrdins(section)
+                        call nrdins(section)
 		else if(section.eq.'levels') then
 			nlv = nrdvecr(hlv,nlvdi)
 			if( nlv .lt. 0 ) goto 77
@@ -421,6 +420,22 @@ c end of read %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    97	continue
 	write(6,*) 'Cannot handle section : ',section
 	stop 'error stop nlsh2d: no such section'
+	end
+
+c************************************************************************
+
+	subroutine section_deleted(section)
+
+	implicit none
+
+	character*(*) section
+
+	write(6,*) 'the following section has been removed: '
+	write(6,*) section
+	write(6,*) 'please remove section from parameter file'
+	write(6,*) 'and substitute with a compatible solution'
+
+	stop 'error stop section_deleted: section has been removed'
 	end
 
 c************************************************************************
