@@ -1,5 +1,20 @@
 ============================================================
 
+Fri Jul 18 18:01:06 CEST 2014
+
+New version 7_0_1
+
+ Rules.make      |    8 ++++++++
+ TODO            |    8 ++++++++
+ fem3d/param.h   |    6 +++---
+ fem3d/subbfm.f  |    8 +++++---
+ femadj/param.h  |    6 +++---
+ femplot/param.h |    6 +++---
+ param.h         |    6 +++---
+ 7 files changed, 33 insertions(+), 15 deletions(-)
+
+============================================================
+
 Fri Jul 18 17:58:51 CEST 2014
 
 first cleaning of new version

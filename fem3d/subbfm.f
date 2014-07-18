@@ -464,9 +464,11 @@ c------------------------------------------------------
 
           nintp = 2
 
- 	  call bnds_init0('bfm1',bfm1bc,nintp,nbfmv1,nb3dim,bfm1,b1bound)
-   	  call bnds_init0('bfm2',bfm2bc,nintp,nbfmv2,nb3dim,bfm2,b2bound)
-   	  call bnds_init0('bfm3',bfm3bc,nintp,nbfmv3,nb3dim,bfm3,b3bound)
+	  write(6,*) 'interface not yet converted for BFM'
+	  stop 'error stop bfm_shell: internal error'
+ 	  !call bnds_init0('bfm1',bfm1bc,nintp,nbfmv1,nb3dim,bfm1,b1bound)
+   	  !call bnds_init0('bfm2',bfm2bc,nintp,nbfmv2,nb3dim,bfm2,b2bound)
+   	  !call bnds_init0('bfm3',bfm3bc,nintp,nbfmv3,nb3dim,bfm3,b3bound)
 
 !         ---------------------------------------------------------
 !         INITIALIZES OUPUT

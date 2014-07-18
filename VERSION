@@ -1,3 +1,33 @@
+version  7_0_1    18-07-2014    VERS_7_0_1
+
+========================================================== 18-07-2014 - 7_0_1
+
+c ./fem3d/subtsuvfile.f:
+c 10.07.2014    ggu     only new file format allowed
+c
+c ./fem3d/subbnds.f:
+c 10.07.2014    ggu     only new file format allowed
+c
+c ./fem3d/subver.f:
+c 18.07.2014	ggu	version 7.0.1   last day before holidays
+c
+c ./fem3d/submet.f:
+c 10.07.2014    ggu     only new file format allowed
+c
+c ./fem3d/newcon.f:
+c 10.07.2014    ggu     only new file format allowed
+c
+c ./fem3d/newconz.f:
+c 10.07.2014    ggu     only new file format allowed
+c
+c ./fem3d/newbcl.f:
+c 10.07.2014    ggu     only new file format allowed
+c
+c ./fem3d/subn11.f:
+c 10.07.2014    ggu     only new file format allowed
+
+==========================================================
+
 version  7_0_0    07-07-2014    VERS_7_0_0   commit_2014-07-18
 
 version  7_0_0    07-07-2014    VERS_7_0_0

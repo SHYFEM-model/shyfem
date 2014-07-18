@@ -219,6 +219,7 @@ c 18.06.2014	ggu	version 6.1.77  Clara's maturita' release
 c 27.06.2014	ggu	version 6.1.78  Maria Huber release
 c 07.07.2014	ggu	version 6.1.79  last of 6 series
 c 07.07.2014	ggu	version 7.0.0   first of 7 series
+c 18.07.2014	ggu	version 7.0.1   last day before holidays
 c
 c*****************************************************************
 
@@ -226,15 +227,15 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.0.0}
-c \newcommand{\version}{7\_0\_0}
+c \newcommand{\VERSION}{7.0.1}
+c \newcommand{\version}{7\_0\_1}
 c
 c DOCS	END
 
         implicit none
 
         character*10 version
-	parameter (version='7.0.0')
+	parameter (version='7.0.1')
 
         character*30 string
 	parameter (string='SHYFEM VERSION = '//version)

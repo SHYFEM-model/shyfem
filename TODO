@@ -1,4 +1,12 @@
 
+18.07.2014
+
+	ids	pass to scalar advection
+	subwwm	wstress
+	BFM	bnds_init0 is not compiling
+
+-------------------------------------------------------------
+
 nosextr_nodes.f
 finish subdry.f
 finish beta handling

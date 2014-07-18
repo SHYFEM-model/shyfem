@@ -40,6 +40,14 @@ export NLVDIM = 1
 export NKNDIM = 11000
 export NELDIM = 22000
 
+# asi-zec
+export NKNDIM = 15000
+export NELDIM = 30000
+export NLVDIM = 1
+export NLVDIM = 21
+export NGRDIM = 12
+export MBWDIM = 300
+
 ##############################################
 # Compiler
 ##############################################
