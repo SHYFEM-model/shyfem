@@ -95,6 +95,7 @@ fem: checkv directories links
 	$(FEMBIN)/recursivemake $@ $(FEMDIRS)
 	@femcheck/check_compilation.sh -quiet
 
+docs: doc
 doc:
 	cd femdoc; make doc
 

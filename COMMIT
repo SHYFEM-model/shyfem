@@ -1,5 +1,22 @@
 ============================================================
 
+Mon Oct 13 16:55:59 CEST 2014
+
+regression tests cleaned
+
+ Makefile                |    1 +
+ Rules.make              |   19 +-
+ fem3d/param.h           |    4 +-
+ femadj/param.h          |    4 +-
+ femdoc/femdoc.sh        |    3 +-
+ femdoc/final/shyfem.pdf |  Bin 271362 -> 271628 bytes
+ femdoc/final/shyfem.ps  | 3811 ++++++++++++++++++++++++-----------------------
+ femplot/param.h         |    4 +-
+ param.h                 |    4 +-
+ 9 files changed, 1926 insertions(+), 1924 deletions(-)
+
+============================================================
+
 Mon Oct 13 14:13:19 CEST 2014
 
 minor updates

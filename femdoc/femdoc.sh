@@ -18,7 +18,8 @@ Proc()
 
 Proc $BINDIR/subsys.f
 Proc $BINDIR/subbnd.f
-Proc $BINDIR/subwin.f
+#Proc $BINDIR/subwin.f
+Proc $BINDIR/submeteo2.f
 Proc $BINDIR/subn35.f
 Proc $BINDIR/subver.f
 Proc $BINDIR/bio3d.f
