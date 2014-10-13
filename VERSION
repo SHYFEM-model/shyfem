@@ -1,3 +1,26 @@
+version  7_0_2    13-10-2014    VERS_7_0_2
+
+========================================================== 13-10-2014 - 7_0_2
+
+c ./tmp/shyfem-28da59bc8a_2014-10-13_stable/fem3d/subdts.f:
+c 13.10.2014    ggu     absolute time routines inserted
+c 13.10.2014    ggu     one day off error fixed ($ONEDAYOFF)
+c
+c ./tmp/shyfem-28da59bc8a_2014-10-13_stable/fem3d/wininf.f:
+c 29.09.2014	ggu	uses allocatable ayyars
+c
+c ./fem3d/subdts.f:
+c 13.10.2014    ggu     absolute time routines inserted
+c 13.10.2014    ggu     one day off error fixed ($ONEDAYOFF)
+c
+c ./fem3d/subver.f:
+c 13.10.2014	ggu	version 7.0.2
+c
+c ./fem3d/wininf.f:
+c 29.09.2014	ggu	uses allocatable ayyars
+
+==========================================================
+
 version  7_0_1    18-07-2014    VERS_7_0_1   commit_2014-10-13
 
 version  7_0_1    18-07-2014    VERS_7_0_1   commit_2014-10-13
