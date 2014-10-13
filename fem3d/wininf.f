@@ -7,6 +7,7 @@ c 06.04.1999	ggu	cosmetic changes
 c 13.04.1999	ggu	special output introduced
 c 08.11.2005	ggu	read also with pressure data
 c 16.04.2014	ggu	reads now also new meteo format
+c 29.09.2014	ggu	uses allocatable ayyars
 c
 c*******************************************************************
 
@@ -16,13 +17,29 @@ c reads wind file for info
 
 	implicit none
 
-        include 'param.h'
+	INTERFACE
+	subroutine alloc(n,nkndim,wx,wy,s,p)
+	!implicit none
+	integer n,nkndim
+	real, allocatable :: wx(:)
+	real, allocatable :: wy(:)
+	real, allocatable :: s(:)
+	real, allocatable :: p(:)
+	end subroutine
+	END INTERFACE
+
+        !include 'param.h'
 
 	character*80 infile
-	real wx(nkndim)
-	real wy(nkndim)
-	real s(nkndim)
-	real p(nkndim)
+	!real wx(nkndim)
+	!real wy(nkndim)
+	!real s(nkndim)
+	!real p(nkndim)
+	integer nkndim
+	real, allocatable :: wx(:)
+	real, allocatable :: wy(:)
+	real, allocatable :: s(:)
+	real, allocatable :: p(:)
 
 	real wxmin,wxmax,wymin,wymax
 	real smin,smax
@@ -48,9 +65,10 @@ c---------------------------------------------------------------
 	smax=0.
 	itot=0
 
-        do i=1,nkndim
-          p(i) = 0.
-        end do
+	nkndim = 0
+        !do i=1,nkndim
+        !  p(i) = 0.
+        !end do
 
 	write(6,*) 'Enter name of wind file :'
 	read(5,'(a)') infile
@@ -79,6 +97,7 @@ c---------------------------------------------------------------
 	    nkn = -nkn
 	    bpres = .true.
 	  end if
+	  call alloc(n,nkndim,wx,wy,s,p)
 	  if( nkn .gt. nkndim ) goto 99
           if( bnew ) then
 	    read(1) (wx(i),wy(i),p(i),i=1,nkn)
@@ -194,4 +213,38 @@ c special output
 	end
 
 c*********************************************************************
+
+	subroutine alloc(n,nkndim,wx,wy,s,p)
+
+	implicit none
+
+	integer n,nkndim
+	real, allocatable :: wx(:)
+	real, allocatable :: wy(:)
+	real, allocatable :: s(:)
+	real, allocatable :: p(:)
+
+	integer i
+
+	if( n .ne. nkndim ) then
+	  if( nkndim .gt. 0 ) then
+	    deallocate(wx)
+	    deallocate(wy)
+	    deallocate(s)
+	    deallocate(p)
+	  end if
+	  nkndim = n
+	  allocate(wx(n))
+	  allocate(wy(n))
+	  allocate(s(n))
+	  allocate(p(n))
+          do i=1,nkndim
+            p(i) = 0.
+          end do
+	end if
+
+	end
+
+c*********************************************************************
+
 

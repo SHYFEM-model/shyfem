@@ -1,4 +1,15 @@
 
+13.10.2014
+
+c ./fem3d/subdts.f:
+c 13.10.2014    ggu     absolute time routines inserted
+c 13.10.2014    ggu     one day off error fixed ($ONEDAYOFF)
+c
+c ./fem3d/wininf.f:
+c 29.09.2014    ggu     uses allocatable ayyars
+
+
+
 18.06.2014
 
 c ./fem3d/subtsuvfile.f:

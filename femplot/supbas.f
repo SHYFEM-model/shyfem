@@ -1476,7 +1476,8 @@ c**************************************************************
 
 c plots special points from meteo file
 c
-c files coords.dat and sea_land.dat must exist
+c name of coords.dat has to passed into the subroutine
+c if sea_land.dat exists it is used, otherwise we can do without
 
 	implicit none
 

@@ -16,6 +16,8 @@ c 07.05.2009    ggu     new routine dtsyear() and date_compute()
 c 01.06.2012    ggu     work also with date=0
 c 23.10.2012    ggu     unpackdate() and dtsini() accepts also only year
 c 05.03.2014    ggu     new subdts.h and new routine dts_has_date()
+c 13.10.2014    ggu     absolute time routines inserted
+c 13.10.2014    ggu     one day off error fixed ($ONEDAYOFF)
 c
 c notes :
 c
@@ -533,7 +535,8 @@ c	end do
 
 	call date2j(year,month,day,jd)
 
-	days = days + jd
+	!days = days + jd	!this is the original $ONEDAYOFF
+	days = days + jd - 1
  
         end
  
@@ -551,7 +554,8 @@ c splits days from 1/1/1 into year, month, day
         integer iy,auxdays,days1
         integer idmon
 
-        days1 = days - 1
+        !days1 = days - 1	!this is the original $ONEDAYOFF
+        days1 = days
 
 c       estimate year (using average days in 400 years)
 
@@ -858,6 +862,99 @@ c************************************************************************
      +		 /0,0,0,0,0,0,0,0,0,0/
 
         end
+
+c************************************************************************
+c************************************************************************
+c************************************************************************
+c
+c absolute time routines
+c
+c************************************************************************
+c************************************************************************
+c************************************************************************
+
+	subroutine dts_to_abs_time(date,time,dtime)
+
+c given date and time converts it to absolute time (seconds from 1.1.1)
+
+	implicit none
+
+	integer date,time
+	double precision dtime
+
+	double precision secs_in_day
+	parameter (secs_in_day = 86400.)
+
+	integer year,month,day
+	integer hour,min,sec
+	integer days,secs
+
+	call unpackdate(date,year,month,day)
+	call unpacktime(time,hour,min,sec)
+
+        call date2days(days,year,month,day)
+	secs = 3600*hour + 60*min + sec
+
+	dtime = secs_in_day*days + secs
+
+	end
+
+c************************************************************************
+
+	subroutine dts_from_abs_time(date,time,dtime)
+
+c given absolute time converts to date and time 
+
+	implicit none
+
+	integer date,time
+	double precision dtime
+
+	double precision secs_in_day
+	parameter (secs_in_day = 86400.)
+
+	integer year,month,day
+	integer hour,min,sec
+	integer days,secs
+
+	days = dtime/secs_in_day
+	secs = dtime - secs_in_day*days
+
+        call days2date(days,year,month,day)
+        call secs2hms(secs,hour,min,sec)
+
+	call packdate(date,year,month,day)
+	call packtime(time,hour,min,sec)
+
+	end
+
+c************************************************************************
+
+	subroutine dts_format_abs_time(dtime,line)
+
+c formats date and time given absolute time
+
+	implicit none
+
+	double precision dtime
+	character*(*) line
+
+	double precision secs_in_day
+	parameter (secs_in_day = 86400.)
+
+	integer year,month,day
+	integer hour,min,sec
+	integer days,secs
+
+	days = dtime/secs_in_day
+	secs = dtime - secs_in_day*days
+
+        call days2date(days,year,month,day)
+        call secs2hms(secs,hour,min,sec)
+
+	call dtsform(year,month,day,hour,min,sec,line)
+
+	end
 
 c************************************************************************
 c************************************************************************
@@ -1192,19 +1289,67 @@ c interactively check date/time and seconds
 
 c************************************************************************
 
+	subroutine test_abs_time
+
+	implicit none
+
+	integer date,time
+	integer niter,i
+	double precision dtime,dmax,dt,dtimenew
+	character*20 line
+
+	niter = 10000
+	time = 0
+
+	dtime = 86400.
+	call dts_format_abs_time(dtime,line)
+	write(6,*) line,'  ',dtime
+
+	date = 1
+	call dts_to_abs_time(date,time,dtime)
+	call dts_format_abs_time(dtime,line)
+	write(6,*) line,'  ',dtime
+
+	date = 3000
+	call dts_to_abs_time(date,time,dtime)
+	call dts_format_abs_time(dtime,line)
+	write(6,*) line,'  ',dtime
+
+	dmax = dtime
+	dt = aint(dmax/niter)
+
+	do i=1,niter
+	  dtime = i*dt
+	  call dts_format_abs_time(dtime,line)
+	  !write(6,*) line,'  ',dtime
+	  call dts_from_abs_time(date,time,dtime)
+	  call dts_to_abs_time(date,time,dtimenew)
+	  if( dtime .ne. dtimenew ) then
+	    write(6,*) dtime,dtimenew
+	    stop 'error stop: times are different'
+	  end if
+	end do
+
+	write(6,*) 'successful completion of iterations: ',niter
+
+	end
+
+c************************************************************************
+
         subroutine test_date_all
 
+	call datetest
 	call test_j2date
         call test_dt_pack
         call test_sd_pack
         call test_var
+	call test_abs_time
 
         end
 
 c************************************************************************
 c	program datet
-c	!call datetest
 c        call test_date_all
-c        call date_compute
+c        !call date_compute
 c	end
 c************************************************************************

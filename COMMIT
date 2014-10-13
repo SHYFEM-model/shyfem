@@ -1,5 +1,29 @@
 ============================================================
 
+Mon Oct 13 14:13:19 CEST 2014
+
+minor updates
+
+ LOG                    |   11 ++++
+ Rules.make             |   10 +++-
+ fem3d/feminf.f         |   51 +++++++++++++---
+ fem3d/newcon.f         |    3 +-
+ fem3d/param.h          |    4 +-
+ fem3d/subcoord.f       |   22 +++++++
+ fem3d/subdts.f         |  153 ++++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/subele.f         |   10 ++--
+ fem3d/wininf.f         |   69 +++++++++++++++++++---
+ femadj/param.h         |    4 +-
+ fembin/convert_date.pl |    2 +
+ fembin/find_pattern.sh |   42 +++++++++++++
+ femlib/perl/str.pm     |    2 +-
+ femplot/param.h        |    4 +-
+ femplot/supbas.f       |    3 +-
+ param.h                |    4 +-
+ 16 files changed, 356 insertions(+), 38 deletions(-)
+
+============================================================
+
 Fri Jul 18 18:01:06 CEST 2014
 
 New version 7_0_1

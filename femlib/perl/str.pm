@@ -60,7 +60,7 @@ sub make_arrays {
 
   my ($self) = @_;
 
-  my @param_sections = qw/ para bound name color legvar /;
+  my @param_sections = qw/ para bound name color legvar wrt sedtr /;
   my @number_sections = qw/ extra flux levels /;
   my @table_sections = qw/ area /;
   my @title_sections = qw/ title /;

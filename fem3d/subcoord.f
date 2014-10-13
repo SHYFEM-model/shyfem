@@ -11,6 +11,22 @@ c 07.12.2010    ggu     bug fix in convert_coords for mode=-1
 c 16.02.2011    ggu     new proj=4 (non standard UTM) implemented
 c 18.11.2011    ggu     in CCP changed order of params in c_param
 c
+c usage :
+c
+c	example is for Gauss-Boaga, other projections work similar
+c	example only converts one point
+c
+c	params(1) = 2
+c	params(2) = 0.
+c	params(3) = 0.
+c	call init_coords(1,params)
+c
+c	mode = -1			!from geo to GB
+c	n = 1
+c	xg = 12.
+c	yg = 45.
+c	call convert_coords(mode,n,xc,yc,xg,yg)
+c
 c********************************************************************
 
 	subroutine init_coords(iproj,c_param)
@@ -26,6 +42,10 @@ c	1	gauss-boaga
 c	2	UTM
 c	3	equidistant cylindrical, carte parallelogrammatique (CPP)
 c	4	UTM non standard
+c
+c c_param:
+c	meaning of c_param changes depending on projection
+c	please see below the exact meaning of the parameters
 c
 c if GB, zone (fuse) must be 1 or 2
 c if UTM, zone must be 1-60
@@ -189,6 +209,8 @@ c         program genproj_main
 c         call genproj_all_test
 c         end
 
+c********************************************************************
+c********************************************************************
 c********************************************************************
 
 c

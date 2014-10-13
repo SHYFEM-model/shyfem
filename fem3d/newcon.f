@@ -1196,7 +1196,6 @@ c		for flux use conz. of the other two nodes and
 c		minus the sum of these nodes for the flux of this node
 
 	if(itot.eq.1) then	!$$flux
-          k = kn(isum)
 	  fl(1)=f(1)*cl(l,isum)
 	  fl(2)=f(2)*cl(l,isum)
 	  fl(3)=f(3)*cl(l,isum)
@@ -1207,7 +1206,7 @@ c		minus the sum of these nodes for the flux of this node
 	  fl(3)=f(3)*cl(l,3)
 	  fl(isum) = 0.
 	  fl(isum) = -(fl(1)+fl(2)+fl(3))
-	  isum=6-isum
+	  isum=6-isum		!reset to original value
 	else			!exception	$$itot0
 	  fl(1)=0.
 	  fl(2)=0.

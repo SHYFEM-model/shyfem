@@ -703,12 +703,12 @@ c returns depth, volume and area of node k on level l
 
 	implicit none
 
-	integer l
-	integer k
+	integer l	!layer
+	integer k	!node
 	integer mode	!-1: old    1: new 
-	real dep
-	real vol
-	real area
+	real dep	!layer thickness of node k and layer l
+	real vol	!volume of node k and layer l
+	real area	!area of node k and layer l
 
 	include 'param.h'
 

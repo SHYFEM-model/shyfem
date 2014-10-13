@@ -15,11 +15,12 @@ c writes info on fem file
 	integer irec,i,nvar0,ich
 	integer itype(2)
 	integer iformat
-	integer datetime(2)
+	integer datetime(2),dateanf(2),dateend(2)
 	real regpar(7)
 	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
 	logical bspecial
 	character*50, allocatable :: strings(:)
+	character*20 line
 	real,allocatable :: data(:,:,:)
 	real,allocatable :: hd(:)
 	real,allocatable :: hlv(:)
@@ -39,9 +40,10 @@ c writes info on fem file
 	write(6,*) 'bwrite = ',bwrite
 	write(6,*) 'bskip = ',bskip
 	write(6,*) 'bout = ',bout
+	write(6,*) 'btmin = ',btmin
 	write(6,*) 'btmax = ',btmax
-	write(6,*) 'tmin = ',tmin
-	write(6,*) 'tmax = ',tmax
+	if( btmin ) write(6,*) 'tmin = ',tmin
+	if( btmax ) write(6,*) 'tmax = ',tmax
 
 c--------------------------------------------------------------
 c open file
@@ -88,6 +90,7 @@ c--------------------------------------------------------------
 	write(6,*) 'nvar:  ',nvar
 	write(6,*) 'ntype: ',ntype
 
+	it = nint(dtime)
 	nlvdim = lmax
 	allocate(hlv(nlvdim))
 	call fem_file_make_type(ntype,2,itype)
@@ -145,7 +148,8 @@ c--------------------------------------------------------------
 	  strings(i) = string
 	  if( bwrite ) then
             call minmax(nlvdim,np,ilhkv,data(1,1,i),dmin,dmax)
-	    write(6,1100) irec,i,dtime,dmin,dmax
+	    call date_convert(it,datetime,line)
+	    write(6,1100) irec,i,dtime,dmin,dmax,line
 	  end if
 	end do
 
@@ -157,6 +161,8 @@ c--------------------------------------------------------------
 	it = nint(dtime)
 	itanf = it
 	itend = it
+	dateanf = datetime
+	dateend = datetime
 	idt = -1
 	ich = 0
 
@@ -207,7 +213,8 @@ c--------------------------------------------------------------
 	    if( string .ne. strings(i) ) goto 95
 	    if( bwrite ) then
               call minmax(nlvdim,np,ilhkv,data(1,1,i),dmin,dmax)
-	      write(6,1100) irec,i,dtime,dmin,dmax
+	      call date_convert(it,datetime,line)
+	      write(6,1100) irec,i,dtime,dmin,dmax,line
 	    end if
 	  end do
 	  if( bfirst ) then
@@ -223,6 +230,7 @@ c--------------------------------------------------------------
 	    write(6,*) 'zero or negative time step: ',irec,it,itold
 	  end if
 	  itend = it
+	  dateend = datetime
 	end do
 
 	if( bspecial .and. boutput ) then
@@ -248,8 +256,10 @@ c--------------------------------------------------------------
 
 	irec = irec - 1
 	write(6,*) 'irec:  ',irec
-	write(6,*) 'itanf: ',itanf
-	write(6,*) 'itend: ',itend
+	call date_convert(itanf,datetime,line)
+	write(6,*) 'itanf: ',itanf,line
+	call date_convert(itend,datetime,line)
+	write(6,*) 'itend: ',itend,line
 	write(6,*) 'idt:   ',idt
 
 	if( ich .gt. 0 ) then
@@ -262,7 +272,7 @@ c--------------------------------------------------------------
 c end of routine
 c--------------------------------------------------------------
 
- 1100	format(i6,i3,f15.2,2g16.5)
+ 1100	format(i6,i3,f15.2,2g16.5,1x,a20)
 	stop
    95	continue
 	write(6,*) 'variable ',i
@@ -452,6 +462,31 @@ c*****************************************************************
 
         stop
         end
+
+c*****************************************************************
+
+	subroutine date_convert(it,datetime,line)
+
+c converts fem time to real date
+
+	integer it
+	integer datetime(2)
+	character*(*) line		!should be at least 20
+
+	integer date,time
+
+	line = ' '
+
+	date = datetime(1)
+	time = datetime(2)
+
+	if( date .eq. 0 ) return
+	if( date < 10000 ) date = 10000*date + 101
+
+	call dtsini(date,time)
+	call dtsgf(it,line)
+
+	end
 
 c*****************************************************************
 

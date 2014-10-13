@@ -36,6 +36,8 @@ if( $it2date ) {
   (@res) = $date->convert_from_it(@date);
   (@res) = format_numbers(@res);
 } else {
+  $date[1] = 1 unless $date[1];		#no month given
+  $date[2] = 1 unless $date[2];		#no day given
   (@res) = $date->convert_to_it(@date);
 }
 
