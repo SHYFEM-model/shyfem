@@ -283,7 +283,8 @@ EXEINFO  = ousinf flxinf volinf basinf nosinf wininf extinf rstinf feminf \
 EXESPLIT = nossplit splitext splitflx splitets
 EXELAP   = laplap 
 EXEBAS   = bastreat basbathy scalintp
-EXEVAR   = nosinit nosresidence scal_intp bashsigma bc2fem
+EXEVAR   = nosinit nosresidence scal_intp bashsigma
+EXEUTIL  = bc2fem
 
 NOSVAR   = nos_elab nossum nosdiff noswrite nosadmin
 NOSAVER  = nosaver_basin nosaver_vert nosaver_time
@@ -301,7 +302,7 @@ EXEEXTRA = wincrea windcrea \
 		basbox
 
 EXES     = $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXELAP) $(EXEBAS) \
-		$(EXEVAR) $(NOSEXTR) $(OUSEXTR) $(NOSAVER) \
+		$(EXEVAR) $(EXEUTIL) $(NOSEXTR) $(OUSEXTR) $(NOSAVER) \
 		$(EXEEXTRA) $(EXENC) $(NOSVAR)
 
 #------------------------------------------------
@@ -317,11 +318,11 @@ lap:	param $(EXELAP)
 bas:	param $(EXEBAS)
 var:	param $(EXEVAR)
 nc:	param $(EXENC)
-util:	param $(NOSEXTR) $(OUSEXTR) $(NOSAVER)
+util:	param $(NOSEXTR) $(OUSEXTR) $(NOSAVER) $(EXEUTIL)
 
 links:
 	@$(FEMBIN)/symlink $(FEMBIN) \
-		$(EXEMAIN) $(EXEINFO) $(EXESPLIT)
+		$(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXEUTIL)
 
 #--------------------------------------------- EXES
 
@@ -647,7 +648,7 @@ cleanall: clean cleanzip cleanlib cleanextra cleandiff
 
 cleanlinks:
 	@$(FEMBIN)/symlink -remove $(FEMBIN) \
-		$(EXEMAIN) $(EXEINFO) $(EXESPLIT)
+		$(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXEUTIL)
 
 cleanifc:
 	-rm -f ifc*

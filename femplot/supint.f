@@ -168,6 +168,9 @@ c initializes actual variable to be plotted (internal routine)
 	  call string2ivar(name,ivar_name)
 	end if
 
+	write(6,*) 'var name: ',name(1:50)
+	write(6,*) 'var id  : ',ivar_name
+
 	if( ivar .gt. 0 .and. ivar_name .gt. 0 ) then
 	  if( ivar .ne. ivar_name ) then
 	    write(6,*) 'You cannot give both ivar and varnam'
@@ -238,6 +241,7 @@ c returns in ivar the variable to be plotted
           call setvar(ivar)
         else
           call askvar
+          ivar3 = getvar()
           ivar = getvar()
         end if
 

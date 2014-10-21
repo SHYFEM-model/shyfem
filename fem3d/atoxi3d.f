@@ -14,6 +14,7 @@ c 17.04.2008    ggu     new open boundary conditions
 c 22.04.2008    ggu     advection parallelized
 c 23.04.2008    ggu     call to bnds_set_def() changed
 c 09.10.2008    ggu     new call to confop
+c 21.10.2014    ggu     converted to new boundary treatment
 c
 c notes :
 c
@@ -46,9 +47,6 @@ c toxi module ARPAV
 	integer nstate
 	parameter( nstate = 1 )
 
-	real toxiarr(nb3dim,0:nbcdim)	!array containing boundary state
-	save toxiarr
-
 	real e(nlvdim,nkndim,nstate)	!state vector
 	real eb(nlvdim,nkndim,nstate)	!boundary vector of state vectors
 	save e,eb
@@ -61,9 +59,6 @@ c toxi module ARPAV
         common /mkonst/ eps1,eps2,pi,flag,high,higi
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
-
-	character*80 tox3dn(1)
-	common /tox3dn/tox3dn
 
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
@@ -82,6 +77,8 @@ c toxi module ARPAV
 	real t,s
 	real u,v
 
+	integer idtoxi(nbcdim)
+
 	real eaux(nstate)
 	real einit(nstate)
 	real ebound(nstate)
@@ -96,6 +93,8 @@ c toxi module ARPAV
 	real getpar
 	integer iround
 	integer ieint,ipint
+	integer itanf,nvar
+	double precision dtime0
 
         integer mode
         real ai,lsurf
@@ -171,8 +170,14 @@ c         --------------------------------------------------
 c	  set boundary conditions for all state variables
 c         --------------------------------------------------
 
+	  call get_first_time(itanf)
+	  dtime0 = itanf
 	  nintp = 2
-	  call bnds_init(what,tox3dn,nintp,nstate,nb3dim,toxiarr,ebound)
+	  nvar = nstate
+          call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
+     +                          ,ebound,idtoxi)
+
+	  !call bnds_init(what,tox3dn,nintp,nstate,nb3dim,toxiarr,ebound)
 	  !call bnds_set_def(what,nb3dim,toxiarr) !nvar != 1
 	  !call bnds_print('init of '//what,nb3dim,toxiarr)
 
@@ -265,15 +270,13 @@ c	-------------------------------------------------------------------
 
 	if( bcheck ) call check_toxi('before advection',e)
 
-	call scal_bnd(what,tsec,toxiarr)
-
 !$OMP PARALLEL PRIVATE(i)
 !$OMP DO SCHEDULE(DYNAMIC)
 
 	do i=1,nstate
 
           call scal_adv(what,i
-     +                          ,e(1,1,i),toxiarr
+     +                          ,e(1,1,i),idtoxi
      +                          ,rkpar,wsink
      +                          ,difhv,difv,difmol)
 

@@ -35,16 +35,16 @@ c 23.02.2010  ggu     for colorbar switch to generic color table
 c 01.06.2012  ggu     new circle item for legend, auto determ for ndec
 c 05.09.2013  ggu     adjust for scale distortion in ref and wind arrows
 c 05.03.2014  ggu     in annotation use date information
+c 16.10.2014  ggu     annotes doesnt need it anymore
 c
 c***************************************************************
 
-	subroutine annotes(it,var)
+	subroutine annotes(var)
 
 c writes annotation for simulation
 
 	implicit none
 
-	integer it
 	character*(*) var
 
         character*80 descrp
@@ -52,11 +52,13 @@ c writes annotation for simulation
 
 	character*80 line
         logical debug
+	integer it
         integer iaux
 	integer date,time
 	real x,y,dx,wx
 	real xmin,ymin,xmax,ymax
         real aux
+	double precision atime
 
 	integer getlev,ialfa
 	logical dts_has_date
@@ -102,6 +104,7 @@ c--------------------------------------------------------------
 	y = ymin + 1.1
 	x = xmin + 0.1 * dx
 
+	call ptime_get_itime(it)
 	write(line,'(i12,a)') it,' sec'
 	call qtext(x,y,line)
 
@@ -111,7 +114,15 @@ c--------------------------------------------------------------
 
 	x = x + wx/4.
 	if( dts_has_date() ) then
-	  call dtsgf(it,line)
+	  call ptime_get_atime(atime)
+	  call dts_format_abs_time(atime,line)
+	  call dts_get_date(date,time)
+	write(6,*) '*****************************************'
+	write(6,*) '*****************************************'
+	write(6,*) date,time
+	write(6,*) atime,line(1:20)
+	write(6,*) '*****************************************'
+	write(6,*) '*****************************************'
 	else
 	  call makehm(it,line)    !makes time and date
 	end if
@@ -1220,8 +1231,6 @@ c plots wind vector
         integer ndim
         parameter(ndim=20)
 
-        integer gettime
-
         real u,v,s,d
 	real xt,yt
 	real fact,afact
@@ -1286,7 +1295,7 @@ c plots wind vector
 	call qtxts(12)
 	call qlwidth(lwwind)
 
-        it = gettime()
+	call ptime_get_itime(it)
         t = it
         call exfintp(array,t,wind)
 
@@ -1352,8 +1361,6 @@ c plots date legend
 
         implicit none
 
-        integer gettime
-
         integer it,iday,ihour
         integer jd,year,month,day
         integer date,time
@@ -1410,7 +1417,7 @@ c plots date legend
 	call qtxts(12)
 	call qlwidth(-1.)
 
-        it = gettime()
+	call ptime_get_itime(it)
 
         if( idate .eq. 1 ) then
           call dtsgf(it,line)

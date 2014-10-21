@@ -62,6 +62,7 @@ c 31.10.2012    ggu     open and next_record transfered to subtsuvfile.f
 c 05.09.2013    ggu     limit salinity to [0,...]
 c 25.03.2014    ggu     new offline
 c 10.07.2014    ggu     only new file format allowed
+c 20.10.2014    ggu     pass ids to scal_adv()
 c
 c*****************************************************************
 
@@ -171,20 +172,11 @@ c	integer OMP_GET_THREAD_NUM
 	double precision theatold,theatnew
 	double precision theatconv1,theatconv2,theatqfl1,theatqfl2
 c save
-        real bnd3_temp(nb3dim,0:nbcdim)
-        save bnd3_temp
-        real bnd3_salt(nb3dim,0:nbcdim)
-        save bnd3_salt
-
         integer iu,itmcon,idtcon
         save iu,itmcon,idtcon
 
 	integer idtemp(nbcdim),idsalt(nbcdim)
 	save idtemp,idsalt
-
-	integer ids(nbcdim)
-	common /ids/ids
-	save /ids/
 
         integer ninfo
         save ninfo
@@ -357,11 +349,9 @@ c	  tid = OMP_GET_THREAD_NUM()
 c	  write(6,*) 'number of thread of temp: ',tid
 
           if( itemp .gt. 0 ) then
-		!call check_layers('temp before bnd',tempv)
-		ids = idtemp
 		!call check_layers('temp after bnd',tempv)
                 call scal_adv_nudge('temp',0
-     +                          ,tempv,bnd3_temp
+     +                          ,tempv,idtemp
      +                          ,thpar,wsink
      +                          ,difhv,difv,difmol,tobsv,robs)
 		!call check_layers('temp after adv',tempv)
@@ -373,11 +363,9 @@ c	  tid = OMP_GET_THREAD_NUM()
 c	  write(6,*) 'number of thread of salt: ',tid
 
           if( isalt .gt. 0 ) then
-		!call check_layers('salt before bnd',saltv)
-		ids = idsalt
 		!call check_layers('salt after bnd',saltv)
                 call scal_adv_nudge('salt',0
-     +                          ,saltv,bnd3_salt
+     +                          ,saltv,idsalt
      +                          ,shpar,wsink
      +                          ,difhv,difv,difmol,sobsv,robs)
 		!call check_layers('salt after adv',saltv)

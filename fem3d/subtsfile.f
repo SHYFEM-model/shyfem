@@ -1,6 +1,10 @@
-
+c
 c routines for reading time series
-
+c
+c revision log :
+c
+c 20.10.2014    ggu     integrating datetime into time series
+c
 c*************************************************************
 
 	subroutine ts_get_file_info(file,nvar)
@@ -53,7 +57,8 @@ c------------------------------------------------------
 	  end if
 	end do
 
-	write(6,*) 'ts_get_file_info: ',iline,nrec,nvar,nvar0
+	!write(6,*) 'ts_get_file_info: ',iline,nrec,nvar,nvar0
+
 	if( nvar /= nvar0 ) nvar = 0
 
 c------------------------------------------------------
@@ -76,22 +81,25 @@ c------------------------------------------------------
 
 c*************************************************************
 
-	subroutine ts_open_file(file,nvar,date,time,iunit)
+	subroutine ts_open_file(file,nvar,datetime,iunit)
 
 	implicit none
 
 	character*(*) file	!file name
 	integer nvar		!variables (columns) in file (except time)
-	integer date,time
+	integer datetime(2)
 	integer iunit
 
 	character*132 line
 	character*10 key
+	character*60 info	!still have to use this data
 	integer i,j,nrec,ioff
+	integer date,time
 	double precision d(3)
 
 	integer iscand,ichafs
 	integer ifileo
+	logical ts_has_keyword
 
 c------------------------------------------------------
 c open file
@@ -101,6 +109,8 @@ c------------------------------------------------------
 	nvar = 0
 	date = 0
 	time = 0
+	datetime = 0
+	info = ' '
 
 	iunit = ifileo(0,file,'formatted','old')
 
@@ -113,26 +123,17 @@ c------------------------------------------------------
 	do while(.true.)
 	  nrec = nrec + 1
 	  read(iunit,'(a)',err=3,end=3) line
-	  i = ichafs(line)
-	  if( i <= 0 ) cycle
-	  if( line(i:i) == '#' ) then
-	    call ts_get_keyword(line,key,ioff)
-	    if( key == 'date' ) then		!date
-	      j = iscand(line(ioff:),d,2)
-	      if( j >= 1 ) date = d(1)
-	      if( j >= 2 ) time = d(2)
-	    else if( key == ' ' ) then		!nothing
-	    else
-	      write(6,*) 'not recognized keyword: ',key,' in file ',file
-	      stop 'error stop ts_open_file: not recognized keyword'
-	    end if
+	  if( ichafs(line) <= 0 ) cycle		!empty line
+	  if( ts_has_keyword(line) ) then
+	    call ts_parse_keyword(iunit,line,datetime,info)
 	  else
 	    exit
 	  end if
+	  !if( info .ne. ' ' ) write(6,*) 'info line: ',info
 	end do
 
 c------------------------------------------------------
-c set nvar and backspace file
+c set date, nvar and backspace file
 c------------------------------------------------------
 
 	nvar = iscand(line,d,0)		!count values on line
@@ -153,7 +154,7 @@ c------------------------------------------------------
 
 c*************************************************************
 
-	subroutine ts_peek_next_record(iunit,nvar,it,f,ierr)
+	subroutine ts_peek_next_record(iunit,nvar,it,f,datetime,ierr)
 
 c peeks into one record of time series file
 
@@ -163,9 +164,10 @@ c peeks into one record of time series file
 	integer nvar		!variables (columns) in file (except time)
 	double precision it
 	real f(nvar)
+	integer datetime(2)
 	integer ierr
 
-	call ts_read_next_record(iunit,nvar,it,f,ierr)
+	call ts_read_next_record(iunit,nvar,it,f,datetime,ierr)
 
 	backspace(iunit)
 
@@ -173,7 +175,7 @@ c peeks into one record of time series file
 
 c*************************************************************
 
-	subroutine ts_read_next_record(iunit,nvar,it,f,ierr)
+	subroutine ts_read_next_record(iunit,nvar,it,f,datetime,ierr)
 
 c reads one record of time series file
 
@@ -183,10 +185,18 @@ c reads one record of time series file
 	integer nvar		!variables (columns) in file (except time)
 	double precision it
 	real f(nvar)
+	integer datetime(2)
 	integer ierr
 
 	integer i
 	double precision t
+	character*132 line
+	character*80 info
+
+	logical ts_has_keyword
+
+	datetime = 0
+	info = ' '
 
 c------------------------------------------------------
 c check if file is open
@@ -200,6 +210,8 @@ c------------------------------------------------------
 c------------------------------------------------------
 c read record
 c------------------------------------------------------
+
+    1	continue
 
 	read(iunit,*,end=2,err=3) t,(f(i),i=1,nvar)
 	it = t
@@ -215,6 +227,16 @@ c------------------------------------------------------
 	return
 
     3	continue
+	backspace(iunit)	!see if it was a keyword line
+	read(iunit,'(a)',end=2,err=4) line
+	
+	if( ts_has_keyword(line) ) then
+	  call ts_parse_keyword(iunit,line,datetime,info)
+	  !if( info .ne. ' ' ) write(6,*) 'info line: ',info
+	  goto 1		!read next line
+	end if
+
+    4	continue
 	ierr = 3
 	return
 
@@ -225,12 +247,36 @@ c------------------------------------------------------
 	end
 
 c*************************************************************
+c*************************************************************
+c*************************************************************
+
+	function ts_has_keyword(line)
+
+	implicit none
+
+	logical ts_has_keyword
+	character*(*) line
+
+	integer i
+	integer ichafs
+
+	ts_has_keyword = .false.
+
+	i = ichafs(line)
+	if( i <= 0 ) return
+	if( line(i:i) == '#' ) ts_has_keyword = .true.
+
+	end
+
+c*************************************************************
 
 	subroutine ts_get_keyword(line,key,ioff)
 
 c gets keyword from line - rest of line after ioff
 c
 c keyword looks like:   "#key:"
+c
+c example:		"#date: 20071001 0"
 
 	implicit none
 
@@ -264,3 +310,132 @@ c keyword looks like:   "#key:"
 
 c*************************************************************
 
+	subroutine ts_parse_keyword(iunit,line,datetime,info)
+
+	implicit none
+
+	integer iunit
+	character(*) line
+	integer datetime(2)
+	character(*) info
+
+	character*10 key
+	character*75 file
+	integer ioff
+
+	call ts_get_keyword(line,key,ioff)
+
+	if( key == 'date' ) then		!date
+	  call ts_parse_datetime(line(ioff:),datetime)
+	else if( key == 'info' ) then		!info
+	  call ts_parse_info(line(ioff:),info)
+	else if( key == ' ' ) then		!nothing
+	else
+	  call filna(iunit,file)
+	  write(6,*) 'not recognized keyword: ',key
+	  write(6,*) 'file open at unit: ',iunit
+	  write(6,*) 'file name: ',file
+	  stop 'error stop ts_parse_keyword: not recognized keyword'
+	end if
+
+	end
+
+c*************************************************************
+
+	subroutine ts_parse_datetime(line,datetime)
+
+	implicit none
+
+	character(*) line
+	integer datetime(2)
+
+	integer j
+	double precision d(3)
+
+	integer iscand
+
+	datetime = 0
+
+	j = iscand(line,d,2)
+
+	if( j >= 1 ) datetime(1) = nint(d(1))
+	if( j >= 2 ) datetime(2) = nint(d(2))
+
+	end
+
+c*************************************************************
+
+	subroutine ts_parse_info(line,info)
+
+	implicit none
+
+	character(*) line
+	character(*) info
+
+	integer i
+	integer ichafs
+
+	info = ' '
+
+	i = ichafs(line)
+	if( i <= 0 ) return
+
+	info = line(i:)
+
+	end
+
+c*************************************************************
+c*************************************************************
+c*************************************************************
+
+	subroutine ts_test
+
+	implicit none
+
+	integer nvar
+	integer iunit
+	integer datetime(2)
+	integer ierr
+	integer nrec,i
+	double precision it
+	real f(10)
+	character*60 file
+	character*20 line
+
+	line = ' '
+	nrec = 0
+	file = 'ts_test.txt'
+
+	call ts_get_file_info(file,nvar)
+	write(6,*) 'file info: nvar = ',nvar
+
+	call ts_open_file(file,nvar,datetime,iunit)
+	write(6,*) 'file open: nvar = ',nvar
+	write(6,*) 'file open: iunit = ',iunit
+	write(6,*) 'file open: datetime = ',datetime
+	if( datetime(1) > 0 ) then
+	  !call dtsini(datetime(1),datetime(2))
+	end if
+
+	do
+	  call ts_read_next_record(iunit,nvar,it,f,datetime,ierr)
+	  if( ierr .ne. 0 ) exit
+	  if( datetime(1) > 0 ) then
+	    write(6,*) 'datetime: ',datetime
+	    !call dtsini(datetime(1),datetime(2))
+	  end if
+	  nrec = nrec + 1
+	  !call dtsgf(nint(it),line)
+	  !write(6,*) it,(f(i),i=1,nvar)
+	  if( mod(nrec,1) .eq. 0 ) write(6,*) it,f(1),line
+	end do
+
+	write(6,*) nrec,' records read'
+
+	end
+
+c*************************************************************
+c	program ts_test_main
+c	call ts_test
+c	end
+c*************************************************************

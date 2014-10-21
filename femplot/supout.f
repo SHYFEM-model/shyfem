@@ -25,6 +25,7 @@ c 19.12.2011  ggu     new routine level_k2e -> called for nos files
 c 13.06.2013  ggu     new routines for handling FEM files
 c 03.09.2013  ggu     level_k2e -> level_k2e_sh, level_e2k -> level_e2k_sh
 c 05.03.2014  ggu     new read for ous and nos files (use date)
+c 20.10.2014  ggu     deleted is2d() and out reading routines
 c
 c**********************************************************
 c**********************************************************
@@ -36,13 +37,7 @@ c opens velocity file (2d and 3d)
 
         implicit none
 
-        logical is2d
-
-        if( is2d() ) then
-          call outopen
-        else
-          call ousopen
-        end if
+        call ousopen
 
         end
 
@@ -57,13 +52,9 @@ c gets next velocity field (2d and 3d)
         logical velnext
         integer it
 
-        logical outnext, ousnext, is2d
+        logical outnext, ousnext
 
-        if( is2d() ) then
-          velnext = outnext(it)
-        else
-          velnext = ousnext(it)
-        end if
+        velnext = ousnext(it)
 
         end
 
@@ -75,36 +66,12 @@ c closes velocity file
 
         implicit none
 
-        logical is2d
-
-        if( is2d() ) then
-          call outclose
-        else
-          call ousclose
-        end if
+        call ousclose
 
         end
 
 c******************************************************
 c******************************************************
-c******************************************************
-
-	function is2d()
-
-	implicit none
-
-	logical is2d
-	integer getlev
-
-c -1	use 2D model
-c  0	use 3D model, barotropic currents
-c >0	use 3D, level
-
-	!is2d = getlev() .lt. 0
-	is2d = .false.			!no 2D version available anymore
-
-	end
-
 c******************************************************
 
         subroutine resetsim
@@ -387,6 +354,8 @@ c******************************************************
 
 	implicit none
 
+	include 'param.h'
+
 	character*80 descrp
         common /descrp/ descrp
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -403,30 +372,33 @@ c******************************************************
 
 	integer nknaux,nelaux,nlvaux
 	integer nvers,nvar
+	integer date,time
 
 	integer ifemop
 
 	call waveini
 
-	nunit = ifemop('.wav','unform','old')
-	if( nunit .le. 0 ) then
-		stop 'error stop waveopen: cannot open WAV file'
-	end if
+c open file
 
-	nvers = 3
-	call rhnos(nunit,nvers
-     +                          ,nkn,nel,nlv
-     +                          ,nknaux,nelaux,nlvaux,nvar
-     +                          ,ilhkv,hlv,hev
-     +                          ,descrp
-     +                          )
+        call open_nos_type('.wav','old',nunit)
 
-	if( nknaux .ne. nkn ) goto 99
-	if( nelaux .ne. nel ) goto 99
-	if( nlvaux .ne. nlv ) goto 99
+        call read_nos_header(nunit,nkndim,neldim,nlvdim,ilhkv,hlv,hev)
+        call nos_get_params(nunit,nknaux,nelaux,nlvaux,nvar)
+        if( nkn .ne. nknaux ) goto 99
+        if( nel .ne. nelaux ) goto 99
+        nlv = nlvaux
 	if( nvar .ne. 3 ) goto 99
 
-        call timeset(0,0,0)
+	call level_k2e_sh
+        call init_sigma_info(nlv,hlv)
+
+c initialize time
+
+        call nos_get_date(nunit,date,time)
+        if( date .ne. 0 ) then
+          call dtsini(date,time)
+	  call ptime_set_date_time(date,time)
+        end if
 
 	return
    99	continue
@@ -486,6 +458,8 @@ c******************************************************
 	  call polar2xy(nkn,v2v,v3v,uv,vv)
 	end if
 
+	call ptime_set_itime(it)
+
 	return
    99	continue
 	stop 'error stop wavenext: error reading data'
@@ -520,164 +494,6 @@ c******************************************************
 
 	  uv(i) = speed(i) * cos( rad * a )
 	  vv(i) = speed(i) * sin( rad * a )
-	end do
-
-	end
-
-c******************************************************
-c******************************************************
-c******************************************************
-
-	subroutine outini
-
-	implicit none
-
-	integer nunit,nvers
-	common /outout/ nunit,nvers
-	save /outout/
-
-	integer icall
-	save icall
-	data icall /0/
-
-	if( icall .ne. 0 ) return
-
-	icall = 1
-
-	nunit = 0
-	nvers = 0
-
-	end
-
-c******************************************************
-
-	subroutine outclose
-
-	implicit none
-
-	integer nunit,nvers
-	common /outout/ nunit,nvers
-
-	if( nunit .gt. 0 ) close(nunit)
-
-	end
-
-c******************************************************
-
-	subroutine outopen
-
-	implicit none
-
-	integer nunit,nvers
-	common /outout/ nunit,nvers
-
-	character*80 descrp
-        common /descrp/ descrp
-	integer itanf,itend,idt,idtout
-	integer ierr
-	real href,hzoff
-
-	character*80 file
-
-	integer rfout,ifemop
-
-	call outini
-
-	nunit = ifemop('.out','unform','old')
-	if( nunit .le. 0 ) then
-		stop 'error stop outopen: cannot open OUT file'
-	end if
-
-        write(6,*) 'file OUT opened'
-        inquire(nunit,name=file)
-        write(6,*) 'Reading file ...'
-        write(6,*) file
-
-	ierr=rfout(nunit,nvers,itanf,itend,idt,idtout,href,hzoff,descrp)
-	if( ierr .ne. 0 ) then
-		stop 'error stop outopen: error reading header'
-	end if
-
-        call putpar('href',href)
-        call putpar('hzoff',hzoff)
-
-        write(6,*)
-        write(6,*)   descrp
-        write(6,*)
-        write(6,*) ' itanf =',itanf,'  itend =',itend
-        write(6,*) '   idt =',idt,  ' idtout =',idtout
-        write(6,*)
-        write(6,*) ' nvers =',nvers
-        write(6,*) '  href =',href, '  hzoff =',hzoff
-        write(6,*)
-
-	call timeset(itanf,itend,idtout)
-
-	end
-
-c******************************************************
-
-	function outnext(it)
-
-	implicit none
-
-	logical outnext
-	integer it
-
-	integer nunit,nvers
-	common /outout/ nunit,nvers
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        real xv(3,1)
-        real zenv(3,1)
-        real usnv(1), vsnv(1)
-        common /xv/xv
-        common /zenv/zenv
-        common /usnv/usnv, /vsnv/vsnv
-
-        real znv(1)
-        common /znv/znv
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-
-	integer ierr,nk,ne
-        integer k,ie
-
-	integer rdout
-
-	nk = nkn
-	ne = nel
-
-	ierr=rdout(nunit,nvers,it,nk,ne,xv,zenv,usnv,vsnv)
-
-	if( ierr .gt. 0 ) then
-		!stop 'error stop outnext: error reading data record'
-		write(6,*) '*** outnext: error reading data record'
-		outnext = .false.
-	else if( nk .ne. nkn .or. ne .ne. nel ) then
-		stop 'error stop outnext: internal error (1)'   !???
-		nkn = nk
-		nel = ne
-	else if( ierr .lt. 0 ) then
-		outnext = .false.
-	else
-		outnext = .true.
-	end if
-
-	do k=1,nkn
-	  znv(k) = xv(3,k)
-	end do
-
-	do ie=1,nel
-	  ilhv(ie) = 1
-	end do
-
-	do k=1,nkn
-	  ilhkv(k) = 1
 	end do
 
 	end
@@ -817,8 +633,8 @@ c initialize time
 	call ous_get_date(nunit,date,time)
 	if( date .ne. 0 ) then
 	  call dtsini(date,time)
+	  call ptime_set_date_time(date,time)
 	end if
-	call timeset(0,0,0)
 
 c end
 
@@ -884,7 +700,7 @@ c set return value
 		ousnext = .true.
 	end if
 
-c end
+	call ptime_set_itime(it)
 
 	end
 
@@ -981,7 +797,6 @@ c open file
 
         call read_nos_header(nunit,nkndim,neldim,nlvdim,ilhkv,hlv,hev)
         call nos_get_params(nunit,nknnos,nelnos,nlvnos,nvar)
-        call nos_get_date(nunit,date,time)
         if( nkn .ne. nknnos ) goto 99
         if( nel .ne. nelnos ) goto 99
         nlv = nlvnos
@@ -994,8 +809,8 @@ c initialize time
         call nos_get_date(nunit,date,time)
         if( date .ne. 0 ) then
           call dtsini(date,time)
+	  call ptime_set_date_time(date,time)
         end if
-        call timeset(0,0,0)
 
 c end
 
@@ -1049,7 +864,7 @@ c set return value
 		nosnext = .true.
 	end if
 
-c end
+	call ptime_set_itime(it)
 
 	end
 
@@ -1205,10 +1020,6 @@ c read second header
 	call array_i_check(nkn,ilhkv1,ilhkv,'ilhkv')
 	call array_check(nlv,hlv1,hlv,'hlv')
 	call array_check(nel,hev1,hev,'hev')
-
-c initialize time
-
-	call timeset(0,0,0)
 
 c end
 
@@ -1422,12 +1233,6 @@ c read second header
 
 	call level_e2k_sh		!computes ilhkv
 
-c initialize time
-
-	call timeset(0,0,0)
-
-c end
-
 	return
    99	continue
 	write(6,*) 'error in parameters :'
@@ -1477,7 +1282,7 @@ c set return value
 		eosnext = .true.
 	end if
 
-c end
+	call ptime_set_itime(it)
 
 	end
 
@@ -1688,7 +1493,7 @@ c open file
 c read first header
 
         call fem_file_read_params(iformat,nunit,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,ierr)
+     +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
 
 	if( ierr .ne. 0 ) then
 		write(6,*) 'ierr = ',ierr
@@ -1710,7 +1515,7 @@ c read first header
 c read second header
 
 	call fem_file_read_2header(iformat,nunit,ntype,nlv
-     +				,hlv,datetime,regpar,ierr)
+     +				,hlv,regpar,ierr)
 
 	if( ierr .ne. 0 ) then
 		write(6,*) 'ierr = ',ierr
@@ -1728,12 +1533,6 @@ c close and re-open for a clean state
 	close(nunit)
 	call fem_file_read_open(file,np,nunit,iformat)
 
-c initialize time
-
-	call timeset(0,0,0)
-
-c end
-
 	return
    99	continue
 	write(6,*) 'error in parameters : basin - simulation'
@@ -1745,7 +1544,7 @@ c end
 
 c******************************************************
 
-	function femnext(it,ivar,nlvdim,nkn,array)
+	function femnext(atime,ivar,nlvdim,nkn,array)
 
 c reads next FEM record - is true if a record has been read, false if EOF
 
@@ -1753,6 +1552,7 @@ c reads next FEM record - is true if a record has been read, false if EOF
 
 	logical femnext			!true if record read, flase if EOF
 	integer it			!time of record
+	double precision atime		!absolute time
 	integer ivar			!type of variable
 	integer nlvdim			!dimension of vertical coordinate
 	integer nkn			!number of points needed
@@ -1788,14 +1588,18 @@ c reads next FEM record - is true if a record has been read, false if EOF
 
 	np = 0
         call fem_file_read_params(iformat,nunit,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,ierr)
+     +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
 	if( ierr .ne. 0 ) goto 7
 	call fem_file_read_2header(iformat,nunit,ntype,nlv
-     +				,hlv,datetime,regpar,ierr)
+     +				,hlv,regpar,ierr)
 	if( ierr .ne. 0 ) goto 7
 
 	if( np .ne. nkn ) goto 99
-	it = nint(dtime)
+
+	!it = nint(dtime)
+	call ptime_set_date_time(datetime(1),datetime(2))
+	call ptime_set_dtime(dtime)
+	call ptime_get_atime(atime)
 
 	ip = 1
 	bfound = .false.

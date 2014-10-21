@@ -803,6 +803,21 @@ c prints stats after last time step
 	end
 
 c********************************************************************
+
+	subroutine get_date_time(date,time)
+
+	implicit none
+
+	integer date,time
+
+	double precision dgetpar
+
+	date = nint(dgetpar('date'))
+	time = nint(dgetpar('time'))
+
+	end
+
+c********************************************************************
 c********************************************************************
 c********************************************************************
 

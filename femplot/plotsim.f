@@ -27,6 +27,7 @@ c 27.02.2013	ggu	deleted amat, better color handling
 c 13.06.2013	ggu	new plotting for fem files
 c 05.09.2013	ggu	better handling of variable
 c 05.03.2014	ggu	bug fix: isphe was not stored
+c 20.10.2014	ggu	handle absolute and plotting time
 c
 c*************************************************************
 
@@ -139,6 +140,7 @@ c local
 	integer mode,ivar
 	integer ie,ii,k,l,i
 	integer icolor,isphe
+	integer date,time
 	integer iapini
 	real sflag
 	real getpar
@@ -202,7 +204,15 @@ c----------------------------------------------
 	call mkhev(hev,nel)
 	call mkareafvl			!area of finite volumes
 
-	call iff_init_global_2d(nkn,hkv)	!FIXME
+c----------------------------------------------
+c time management
+c----------------------------------------------
+
+	call ptime_init
+	call get_date_time(date,time)
+	call ptime_set_date_time(date,time)
+	call ptime_min_max
+	call iff_init_global_2d(nkn,hkv,date,time)	!FIXME
 
 c----------------------------------------------
 c interactive set up
@@ -338,6 +348,21 @@ c*****************************************************************
 	call set_default_color_table( icolor )
 
 	end
+
+c*****************************************************************
+
+        subroutine get_date_time(date,time)
+
+        implicit none
+
+        integer date,time
+
+        double precision dgetpar
+
+        date = nint(dgetpar('date'))
+        time = nint(dgetpar('time'))
+
+        end
 
 c*****************************************************************
 

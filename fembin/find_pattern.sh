@@ -23,20 +23,20 @@ for dir in $dirs
 do
   echo " ----------------- $dir -------------------"
   cd $base/$dir
-  grep -i "$pattern" *.f *.F90 *.f90
+  grep -i "$pattern" *.f *.F90 *.f90 2> /dev/null | grep -v __genmod
 done
 
 dir=$fembfm
 cd $base/$dir
 echo " ----------------- $dir -------------------"
-find . -name "*.F90" -print0 | xargs --null grep -i $pattern
-find . -name "*.f90" -print0 | xargs --null grep -i $pattern
-find . -name "*.f" -print0 | xargs --null grep -i $pattern
+find . -name "*.F90" -print0 2> /dev/null | xargs --null grep -i $pattern
+find . -name "*.f90" -print0 2> /dev/null | xargs --null grep -i $pattern
+find . -name "*.f"   -print0 2> /dev/null | xargs --null grep -i $pattern
 
 dir=$femgotm
 cd $base/$dir
 echo " ----------------- $dir -------------------"
-find . -name "*.F90" -print0 | xargs --null grep -i $pattern
-find . -name "*.f90" -print0 | xargs --null grep -i $pattern
-find . -name "*.f" -print0 | xargs --null grep -i $pattern
+find . -name "*.F90" -print0 2> /dev/null | xargs --null grep -i $pattern
+find . -name "*.f90" -print0 2> /dev/null | xargs --null grep -i $pattern
+find . -name "*.f"   -print0 2> /dev/null | xargs --null grep -i $pattern
 

@@ -8,27 +8,24 @@ c
 c-------------------------------------------------------------
 c
 c subroutine scal_adv(what,ivar
-c     +                          ,scal,bnd3
+c     +                          ,scal,ids
 c     +                          ,rkpar,wsink
 c     +                          ,difhv,difv,difmol)
 c		shell for scalar (for parallel version)
 
 c subroutine scal_adv_nudge(what,ivar
-c     +				,scal,bnd3
+c     +				,scal,ids
 c     +				,rkpar,wsink
 c     +                          ,difhv,difv,difmol
 c     +				,sobs,robs)
 c		shell for scalar with nudging (for parallel version)
 c
 c subroutine scal_adv_fact(what,ivar,fact
-c     +                          ,scal,bnd3
+c     +                          ,scal,ids
 c     +                          ,rkpar,wsink,wsinkv
 c     +                          ,difhv,difv,difmol)
 c		shell for scalar (for parallel version)
 c		special version for cohesive sediments with factor
-c
-c subroutine scal_bnd(what,t,bnd3)
-c		sets boundary conditions for scalar
 c
 c-------------------------------------------------------------
 c
@@ -80,14 +77,10 @@ c
 c notes:
 c
 c	dispersion:
-c	  scal_bnd(what,t,bnd3)
-c	  scal_adv(...,cnv,bnd3,...)
+c	  scal_adv(...,cnv,ids,...)
 c
-c	scal_bnd(what,t,bnd3)
-c	  bnds_set(what,t,nb3dim,bnd3,bnd3_aux)
-c
-c	scal_adv(...,bnd3,...)
-c	  bnds_trans(...,bnd3,r3v,...)		(transfers BC to matrix)
+c	scal_adv(...,ids,...)
+c	  bnds_trans_new(...,ids,r3v,...)	(transfers BC to matrix)
 c         call scal3sh(...,cnv,r3v,...)
 c	
 c	scal3sh(...,cnv,r3v,...)
@@ -175,11 +168,12 @@ c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
 c 03.12.2013    ggu&deb bug fix for horizontal diffusion
 c 15.05.2014    ggu     write min/max error only for levdbg >= 3
 c 10.07.2014    ggu     only new file format allowed
+c 20.10.2014    ggu     accept ids from calling routines
 c
 c*********************************************************************
 
 	subroutine scal_adv(what,ivar
-     +				,scal,bnd3
+     +				,scal,ids
      +				,rkpar,wsink
      +                          ,difhv,difv,difmol)
 
@@ -192,9 +186,7 @@ c shell for scalar (for parallel version)
         character*(*) what
 	integer ivar
         real scal(nlvdim,nkndim)
-        real bnd3(nb3dim,0:nbcdim)
-
-	double precision dtime
+        integer ids(nbcdim)
         real rkpar
 	real wsink
         real difhv(nlvdim,1)
@@ -211,15 +203,9 @@ c shell for scalar (for parallel version)
         real const3d(0:nlvdim,nkndim)
         common /const3d/const3d
 
-	real bnd3_aux(nb3dim)
         real r3v(nlvdim,nkndim)
 
-	real getpar
-
-        integer ids(nbcdim)
-        common /ids/ids
-        save /ids/
-
+	double precision dtime
 	real robs
         integer iwhat,ichanm
 	character*10 whatvar,whataux
@@ -266,7 +252,7 @@ c--------------------------------------------------------------
 c*********************************************************************
 
 	subroutine scal_adv_nudge(what,ivar
-     +				,scal,bnd3
+     +				,scal,ids
      +				,rkpar,wsink
      +                          ,difhv,difv,difmol
      +				,sobs,robs)
@@ -280,8 +266,7 @@ c shell for scalar with nudging (for parallel version)
         character*(*) what
 	integer ivar
         real scal(nlvdim,nkndim)
-        real bnd3(nb3dim,0:nbcdim)
-
+        integer ids(nbcdim)
         real rkpar
 	real wsink
         real difhv(nlvdim,1)
@@ -290,15 +275,6 @@ c shell for scalar with nudging (for parallel version)
 	real sobs(nlvdim,1)		!observations
 	real robs
 
-        real const3d(0:nlvdim,nkndim)
-        common /const3d/const3d
-
-	real bnd3_aux(nb3dim)
-        real r3v(nlvdim,nkndim)
-
-	integer ierr,l,k,lmax
-	real eps
-	double precision dtime
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer itanf,itend,idt,nits,niter,it
@@ -307,12 +283,15 @@ c shell for scalar with nudging (for parallel version)
         common /level/ nlvdi,nlv
 	integer ilhkv(nkndim)
 	common /ilhkv/ilhkv
-	real getpar
 
-        integer ids(nbcdim)
-        common /ids/ids
-        save /ids/
+        real const3d(0:nlvdim,nkndim)
+        common /const3d/const3d
 
+        real r3v(nlvdim,nkndim)
+
+	integer ierr,l,k,lmax
+	real eps
+	double precision dtime
         integer iwhat,ichanm
 	character*10 whatvar,whataux
 
@@ -357,7 +336,7 @@ c--------------------------------------------------------------
 c*********************************************************************
 
 	subroutine scal_adv_fact(what,ivar,fact
-     +				,scal,bnd3
+     +				,scal,ids
      +				,rkpar,wsink,wsinkv
      +                          ,difhv,difv,difmol)
 
@@ -373,15 +352,7 @@ c special version with factor for BC and variable sinking velocity
 	integer ivar
 	real fact			!factor for boundary condition
         real scal(nlvdim,nkndim)
-        real bnd3(nb3dim,0:nbcdim)
-
-	double precision dtime
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+        integer ids(nbcdim)
         real rkpar
 	real wsink
 	real wsinkv(0:nlvdim,nkndim)
@@ -389,15 +360,18 @@ c special version with factor for BC and variable sinking velocity
 	real difv(0:nlvdim,1)
         real difmol
 
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
+
         real r3v(nlvdim,nkndim)
 
-        integer ids(nbcdim)
-        common /ids/ids
-        save /ids/
-
+	double precision dtime
 	real robs
         integer iwhat,ichanm
-	real getpar
 	character*20 whatvar,whataux
 
 	robs = 0.
@@ -450,7 +424,7 @@ c*********************************************************************
 
 	subroutine scal_bnd(what,t,bnd3)
 
-c sets boundary conditions for scalar
+c sets boundary conditions for scalar - not used anymore - to be deleted
 
 	implicit none
 

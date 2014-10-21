@@ -35,6 +35,7 @@ c    07.2009    Water column eutrophication module changed to ALUKAS
 c               (Advanced Level nUtrient Kinetics for Aquatic Systems)
 c 14.03.2012    ggu     fixed too long lines for gfortran
 c 14.03.2012    ggu     added dummies for restart
+c 21.10.2014    ggu     converted to new boundary treatment
 c
 c notes :
 c
@@ -133,11 +134,6 @@ c**************************************************************
         save par
       real par_sed(100)    !aquabc model BC parameters array
         save par_sed
-
-c	real bioarr(narr,nbcdim)	    !array containing boundary state
-	real bioarr(nb3dim,0:nbcdim)	!array containing boundary state
-	save bioarr
-c	real bioaux(narr)		        !aux array for boundaries
 
 	real e(nlvdim,nkndim,nstate)	!state vector
 c	real eb(nlvdim,nkndim,nstate)	!boundary vector of state vectors
@@ -254,6 +250,10 @@ c        real tsstot(nsstate)
       integer iubs,itmcons,idtcons
       save iubs,itmcons,idtcons
 	
+	double precision dtime0
+	integer itanf,nvar
+	integer idbio(nbcdim)
+	save idbio
 
 	
        save icall
@@ -442,9 +442,18 @@ c----------------------------------------------------------
 c         --------------------------------------------------
 c	  set boundary conditions for all WC state variables
 c         --------------------------------------------------
-         nintp=2
-       call bnds_init(what,bio2dn,nintp,nstate,nb3dim,bioarr,ebound)	!new_section
+
+          !nintp=2
+          !call bnds_init(what,bio2dn,nintp,nstate,nb3dim,bioarr,ebound)
 	  !call bnds_print('initialization',narr,bioarr)
+
+	  call get_first_time(itanf)
+          dtime0 = itanf
+          nintp = 2
+	  nvar = nstate
+          ebound = 0.
+          call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
+     +                          ,ebound,idbio)
 
 c         --------------------------------------------------
 c	  initialize eco model output to ascii files
@@ -831,7 +840,7 @@ c	-------------------------------------------------------------------
 
 	if( bcheck ) call check_var('BEFORE advection',it,ulogbio,e,es)
        
-       call scal_bnd(what,tsec,bioarr)
+       !call scal_bnd(what,tsec,bioarr)
 	
 !$OMP PARALLEL PRIVATE(i)
 !$OMP DO SCHEDULE(STATIC)	
@@ -839,7 +848,7 @@ c	-------------------------------------------------------------------
 	do i=1,nstate	  
 	
           call scal_adv(what,i
-     +                          ,e(1,1,i),bioarr
+     +                          ,e(1,1,i),idbio
      +                          ,rkpar,wsink
      +                          ,difhv,difv,difmol)
 

@@ -133,6 +133,10 @@ c formats date and time given it (secs)
 	call dts2dt(it,year,month,day,hour,min,sec)
 	call dtsform(year,month,day,hour,min,sec,line)
 
+	!write(6,*) 'dtsgf act: ',it,year,month,day,hour,min,sec
+	!call dts_get_init(year,month,day,hour,min,sec)
+	!write(6,*) 'dtsgf ini: ',it,year,month,day,hour,min,sec
+
 	end
 
 c************************************************************************
@@ -386,9 +390,11 @@ c sets date and time for 0 fem time
 	date0 = date
 	time0 = time
 
-	call unpackdate(date,year0,month0,day0)
+	if( date0 > 0 .and. date0 < 10000 ) date0 = 10000*date0 + 101
+
+	call unpackdate(date0,year0,month0,day0)
 	!call unpackdate(time,hour0,min0,sec0)	!UNPACK
-	call unpacktime(time,hour0,min0,sec0)
+	call unpacktime(time0,hour0,min0,sec0)
 
 	if( bdebug ) then
 	  write(6,*) '-------- dtsini -------------'
@@ -405,7 +411,7 @@ c************************************************************************
 
 	subroutine dtsyear(year)
 
-c initialization by only giving year
+c initialization by only giving year (can give also date)
 
         implicit none
 
@@ -415,13 +421,52 @@ c initialization by only giving year
 
 	date = 0
 	if( year .ne. 0 ) then
-          date = 10000*year + 101
+	  if( year < 10000 ) then
+            date = 10000*year + 101
+	  else
+	    date = year
+	  end if
 	end if
         time = 0
 
 	call dtsini(date,time)
 
         end
+
+c************************************************************************
+
+	subroutine dts_get_date(date,time)
+
+	implicit none
+
+        integer date,time
+
+	include 'subdts.h'
+
+	date = date0
+	time = time0
+
+	end
+
+c************************************************************************
+
+	subroutine dts_get_init(year,month,day,hour,min,sec)
+
+	implicit none
+
+        integer year,month,day
+        integer hour,min,sec
+
+	include 'subdts.h'
+
+	year = year0
+	month = month0
+	day = day0
+	hour = hour0
+	day = day0
+	sec = sec0
+
+	end
 
 c************************************************************************
 
@@ -873,14 +918,14 @@ c************************************************************************
 c************************************************************************
 c************************************************************************
 
-	subroutine dts_to_abs_time(date,time,dtime)
+	subroutine dts_to_abs_time(date,time,atime)
 
 c given date and time converts it to absolute time (seconds from 1.1.1)
 
 	implicit none
 
 	integer date,time
-	double precision dtime
+	double precision atime
 
 	double precision secs_in_day
 	parameter (secs_in_day = 86400.)
@@ -888,6 +933,9 @@ c given date and time converts it to absolute time (seconds from 1.1.1)
 	integer year,month,day
 	integer hour,min,sec
 	integer days,secs
+
+	atime = 0.
+	if( date .le. 0 ) return
 
 	call unpackdate(date,year,month,day)
 	call unpacktime(time,hour,min,sec)
@@ -895,20 +943,20 @@ c given date and time converts it to absolute time (seconds from 1.1.1)
         call date2days(days,year,month,day)
 	secs = 3600*hour + 60*min + sec
 
-	dtime = secs_in_day*days + secs
+	atime = secs_in_day*days + secs
 
 	end
 
 c************************************************************************
 
-	subroutine dts_from_abs_time(date,time,dtime)
+	subroutine dts_from_abs_time(date,time,atime)
 
 c given absolute time converts to date and time 
 
 	implicit none
 
 	integer date,time
-	double precision dtime
+	double precision atime
 
 	double precision secs_in_day
 	parameter (secs_in_day = 86400.)
@@ -917,8 +965,8 @@ c given absolute time converts to date and time
 	integer hour,min,sec
 	integer days,secs
 
-	days = dtime/secs_in_day
-	secs = dtime - secs_in_day*days
+	days = atime/secs_in_day
+	secs = atime - secs_in_day*days
 
         call days2date(days,year,month,day)
         call secs2hms(secs,hour,min,sec)
@@ -930,13 +978,13 @@ c given absolute time converts to date and time
 
 c************************************************************************
 
-	subroutine dts_format_abs_time(dtime,line)
+	subroutine dts_format_abs_time(atime,line)
 
 c formats date and time given absolute time
 
 	implicit none
 
-	double precision dtime
+	double precision atime
 	character*(*) line
 
 	double precision secs_in_day
@@ -946,8 +994,8 @@ c formats date and time given absolute time
 	integer hour,min,sec
 	integer days,secs
 
-	days = dtime/secs_in_day
-	secs = dtime - secs_in_day*days
+	days = atime/secs_in_day
+	secs = atime - secs_in_day*days
 
         call days2date(days,year,month,day)
         call secs2hms(secs,hour,min,sec)

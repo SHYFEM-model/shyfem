@@ -9,182 +9,310 @@ c 13.11.2008  ggu     in oktime() increase irec only for new time
 c 06.12.2008  ggu     in oktime() set itact to actual time
 c 09.10.2010  ggu     in oktime() handle negative itfreq
 c 05.09.2013  ggu     new routine endtime()
+c 20.10.2014  ggu     completely restructured, old routines deleted
 c
 c******************************************************
 
-        subroutine timeset(itanf,itend,idtout)
+c******************************************************
+c******************************************************
+c******************************************************
+c
+c itime		relative time in integer (old it)
+c dtime		relative time in double precision (in fem files)
+c atime		absolute time (seconds from 1.1.1)
+c
+c atime0	absolute time for fem time 0
+c
+c if no date/time is available then:
+c
+c		itime == dtime == atime
+c		atime0 = 0
+c
+c******************************************************
+c******************************************************
+c******************************************************
 
-c set time limits
+        subroutine ptime_init
+
+c initializes ptime
 
         implicit none
 
-c arguments
-        integer itanf,itend,idtout
-c parameters
 	integer ihigh
 	parameter(ihigh=1000000000)
-c common
-        integer itmin,itmax,itfreq,nrec,idto,itact
-	common /timlim/ itmin,itmax,itfreq,nrec,idto,itact
-	save /timlim/
+	double precision ahigh
+	parameter(ahigh=4000.*365.*86400.)
 
-        itmin = itanf
-        itmax = itend
-	idto  = idtout
+	include 'timlim.h'
+
+c the first 4 variables might be useless
+
+        itmin = -ihigh
+        itmax =  ihigh
+	idto  = 0
+	itact = itmin
+
+c these are still used
+
         itfreq = 1
 	nrec = 0
-	itact = itanf - 1
 
-	if( idtout .le. 0 ) then
-	  itmin = -ihigh
-	  itmax =  ihigh
-	end if
+c these are the new used variables
+
+	atime0 = 0.
+	atimeact = 0.
+	atimemin = -ahigh
+	atimemax =  ahigh
 
         end
 
 c******************************************************
 
-        subroutine timeask
+        subroutine ptime_min_max
 
-c ask for time limits
+c sets time limits
 
         implicit none
 
-c common
-        integer itmin,itmax,itfreq,nrec,idto,itact
-	common /timlim/ itmin,itmax,itfreq,nrec,idto,itact
-c local
-        character*80 line
-        integer ianz
+	include 'timlim.h'
+
 	integer iauto
 	integer itanf,itend
-        real f(10)
-c functions
-        integer iscan,iround
-	real getpar
+	double precision atanf,atend
 
-	iauto = nint(getpar('iauto'))
+	double precision dgetpar
 
-	if( idto .gt. 0 ) then
-          write(6,*) 'itanf,itend,idtout : ',itmin,itmax,idto
+	iauto = nint(dgetpar('iauto'))
+	if( iauto .le. 0 ) then
+	  stop 'error stop  ptime_min_max: not ready for iauto=0'
 	end if
 
-	if( iauto .eq. 0 ) then
-          write(6,*) 'Enter time limits : (itmin,itmax,itfreq)'
-          read(5,'(a)') line
+	itanf = nint(dgetpar('itanf'))
+	itend = nint(dgetpar('itend'))
 
-          ianz = iscan(line,1,f)
-
-          if( ianz .le. 0 .or. ianz .gt. 3 ) then
-            return
-          else if( ianz .eq. 1 ) then
-            itfreq = iround(f(1))
-          else if( ianz .eq. 2 ) then
-            itmin = iround(f(1))
-            itmax = iround(f(2))
-          else if( ianz .eq. 3 ) then
-            itmin = iround(f(1))
-            itmax = iround(f(2))
-            itfreq = iround(f(3))
-          end if
-	else
-	  itanf = nint(getpar('itanf'))
-	  itend = nint(getpar('itend'))
-
-	  if( itanf .ne. -1 ) itmin = itanf
-	  if( itend .ne. -1 ) itmax = itend
-
-	  itfreq = nint(getpar('nout'))
+	if( itanf .ne. -1 ) then
+	  itmin = itanf
+	  call ptime_i2a(itmin,atimemin)
+	end if
+	if( itend .ne. -1 ) then
+	  itmax = itend
+	  call ptime_i2a(itmax,atimemax)
 	end if
 
+	itfreq = nint(dgetpar('nout'))
         if( itfreq .eq. 0 ) itfreq = 1
 
-	write(6,*) 'Using time parameters : ',itmin,itmax,itfreq
+	atanf = dgetpar('atanf')
+	atend = dgetpar('atend')
+
+	if( atanf .gt. 0. ) atimemin = atanf
+	if( atend .gt. 0. ) atimemax = atend
+
+	write(6,*)
+	write(6,*) 'Using time parameters: ',itmin,itmax,itfreq
+	write(6,*) 'absolute time: ',atimemin,atimemax
 	write(6,*)
 
         end
 
 c******************************************************
 
-        function endtime(it)
+	subroutine ptime_info
 
-c is time over max limit?
+	implicit none
 
-        implicit none
+	include 'timlim.h'
 
-c arguments
-	logical endtime
-        integer it
-c common
-        integer itmin,itmax,itfreq,nrec,idto,itact
-	common /timlim/ itmin,itmax,itfreq,nrec,idto,itact
+	write(6,*) '---------- ptime_info -----------'
+	write(6,*) 'itmin,itmax: ',itmin,itmax
+	write(6,*) 'itact: ',itact
+	write(6,*) 'itfreq: ',itfreq
+	write(6,*) 'nrec: ',nrec
+	write(6,*) 
+	write(6,*) 'atime0: ',atime0
+	write(6,*) 'atimeact: ',atimeact
+	write(6,*) 'itain,atmax: ',atimemin,atimemax
+	write(6,*) '---------------------------------'
 
-	endtime = it .gt. itmax
+	end
+
+c******************************************************
+c******************************************************
+c******************************************************
+
+	subroutine ptime_set_date_time(date,time)
+
+	implicit none
+
+	integer date,time
+
+	include 'timlim.h'
+
+	atime0 = 0.
+
+	if( date > 0 ) then
+          call dtsini(date,time)
+	  call dts_to_abs_time(date,time,atime0)
+	end if
+
+	end
+
+c******************************************************
+c******************************************************
+c******************************************************
+
+	subroutine ptime_set_itime(it)
+
+	implicit none
+
+	integer it
+
+	include 'timlim.h'
+
+	atimeact = atime0 + it
 
 	end
 
 c******************************************************
 
-        function oktime(it)
+	subroutine ptime_set_atime(atime)
+
+	implicit none
+
+	double precision atime
+
+	include 'timlim.h'
+
+	atimeact = atime
+
+	end
+
+c******************************************************
+
+	subroutine ptime_set_dtime(dtime)
+
+	implicit none
+
+	double precision dtime
+
+	include 'timlim.h'
+
+	atimeact = atime0 + dtime
+
+	end
+
+c******************************************************
+
+	subroutine ptime_get_itime(it)
+
+	implicit none
+
+	integer it
+
+	include 'timlim.h'
+
+	it = nint( atimeact - atime0 )
+
+	end
+
+c******************************************************
+
+	subroutine ptime_get_atime(atime)
+
+	implicit none
+
+	double precision atime
+
+	include 'timlim.h'
+
+	atime = atimeact
+
+	end
+
+c******************************************************
+
+	subroutine ptime_i2a(it,atime)
+
+	implicit none
+
+	integer it
+	double precision atime
+
+	include 'timlim.h'
+
+	atime = atime0 + it
+
+	end
+
+c******************************************************
+c******************************************************
+c******************************************************
+
+        function ptime_ok()
 
 c is time ok?
 
         implicit none
 
-c arguments
-	logical oktime
-        integer it
-c common
-        integer itmin,itmax,itfreq,nrec,idto,itact
-	common /timlim/ itmin,itmax,itfreq,nrec,idto,itact
+	logical ptime_ok
 
-	integer itold
-	save itold
+	include 'timlim.h'
+
+	integer it
+
+        double precision atimeold
+	save atimeold
+
 	integer icall
 	save icall
 	data icall /0/
 
-	if( icall .eq. 0 .or. it .ne. itold ) then !increase only for new time
+	if( icall .eq. 0 ) then
+	  icall = icall + 1
 	  nrec = nrec + 1
-	  itold = it
+	  atimeold = atimeact
 	end if
 
-	icall = icall + 1
-        itact = it
+	if( atimeact .ne. atimeold ) then !increase for new time
+	  nrec = nrec + 1
+	  atimeold = atimeact
+	end if
 
-c        write(6,*) 'oktime: ',it,nrec,itmin,itmax,itfreq
+	it = atimeact - atime0
+c        write(6,*) 'ptime_ok: ',nrec,itfreq,it,atimeact
 
-	oktime = .false.
+	ptime_ok = .false.
 
-	if( it .ge. itmin .and. it .le. itmax ) then
-	  if( itfreq .gt. 0 .and. mod(nrec,itfreq) .eq. 0 ) then
-	    oktime = .true.
-	  else if( itfreq .eq. 0 ) then
-	    oktime = .true.
-	  else if( itfreq .lt. 0 .and. mod(nrec-1,-itfreq) .eq. 0 ) then
-	    oktime = .true.
-	  end if
+	if( atimeact < atimemin ) return
+	if( atimeact > atimemax ) return
+	
+	if( itfreq .gt. 0 .and. mod(nrec,itfreq) .eq. 0 ) then
+	  ptime_ok = .true.
+	else if( itfreq .eq. 0 ) then
+	  ptime_ok = .true.
+	else if( itfreq .lt. 0 .and. mod(nrec-1,-itfreq) .eq. 0 ) then
+	  ptime_ok = .true.
 	end if
 
 	end
 
 c******************************************************
 
-        function gettime()
+        function ptime_end()
 
-c return current time
+c is time over max limit?
 
         implicit none
 
-c arguments
-	integer gettime
-c common
-        integer itmin,itmax,itfreq,nrec,idto,itact
-	common /timlim/ itmin,itmax,itfreq,nrec,idto,itact
+	logical ptime_end
 
-	gettime = itact
+	include 'timlim.h'
+
+	ptime_end = atimeact .gt. atimemax
 
 	end
 
+c******************************************************
+c******************************************************
 c******************************************************
 

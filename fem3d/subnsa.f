@@ -286,6 +286,8 @@ c******************************************************
           string = 'salinity'
         else if( iv .eq. 12 ) then
           string = 'temperature'
+        else if( iv .eq. 20 ) then
+          string = 'atmospheric pressure'
         else if( iv .eq. 26 ) then
           string = 'rain'
         else if( iv .eq. 99 ) then

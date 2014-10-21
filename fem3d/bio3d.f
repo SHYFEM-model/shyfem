@@ -42,6 +42,7 @@ c 22.04.2008    ggu     advection parallelized
 c 23.04.2008    ggu     call to bnds_set_def() changed
 c 09.10.2008    ggu     new call to confop
 c 08.05.2014    ggu     bug in call to inicfil for es -> must be inic2fil
+c 21.10.2014    ggu     converted to new boundary treatment
 c
 c notes :
 c
@@ -141,9 +142,6 @@ c eco-model cosimo
 	integer nsstate
 	parameter( nsstate = 2 )
 
-	real bioarr(nb3dim,0:nbcdim)	!array containing boundary state
-	save bioarr
-
 	real e(nlvdim,nkndim,nstate)	!state vector
 	real eload(nlvdim,nkndim,nstate)!vector of loadings
 	real es(nkndim,nsstate)		!sediment state variables
@@ -155,9 +153,6 @@ c eco-model cosimo
         common /mkonst/ eps1,eps2,pi,flag,high,higi
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
-
-	character*80 bio2dn(1)
-	common /bio2dn/bio2dn
 
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
@@ -187,6 +182,9 @@ c eco-model cosimo
 	real ebound(nstate)
 	save einit,esinit,elinit,ebound
 
+	integer idbio(nbcdim)
+	save idbio
+
         real tstot(nstate)              !for mass test
         real tsstot(nsstate)
 
@@ -208,6 +206,8 @@ c eco-model cosimo
 	logical bresi,breact,bdecay
 	integer ie,ii
 	integer kspec
+	integer itanf,nvar
+	double precision dtime0
 	real d
 	real cbod,nh3,krear,sod
 	real vel
@@ -320,10 +320,12 @@ c         --------------------------------------------------
 c	  set boundary conditions for all state variables
 c         --------------------------------------------------
 
-	  nintp = 2
-	  call bnds_init(what,bio2dn,nintp,nstate,nb3dim,bioarr,ebound)
-	  !call bnds_set_def(what,nb3dim,bioarr)	!nvar != 1
-	  !call bnds_print('init of '//what,nb3dim,bioarr)
+	  call get_first_time(itanf)
+          dtime0 = itanf
+          nintp = 2
+	  nvar = nstate
+          call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
+     +                          ,ebound,idbio)
 
 c         --------------------------------------------------
 c	  initialize eco model
@@ -489,15 +491,13 @@ c	-------------------------------------------------------------------
 
 	if( bcheck ) call check_bio('before advection',e,es)
 
-	call scal_bnd(what,tsec,bioarr)
-
 !$OMP PARALLEL PRIVATE(i)
 !$OMP DO SCHEDULE(DYNAMIC)	
 
 	do i=1,nstate
 
           call scal_adv(what,i
-     +                          ,e(1,1,i),bioarr
+     +                          ,e(1,1,i),idbio
      +                          ,rkpar,wsink
      +                          ,difhv,difv,difmol)
 

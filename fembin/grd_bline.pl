@@ -135,6 +135,8 @@ sub make_bound_line
     $n++;
   }
   if( $error ) {
+    print STDERR "errors found...\n"; 
+    print STDERR "Are all nodes in elements in anti-clockwise sense?\n";
     die "$error errors in boundary line found. Aborting.\n";
   }
   print STDERR "Boundary nodes found: $n\n";

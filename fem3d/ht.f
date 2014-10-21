@@ -416,6 +416,7 @@ c local variables
 	integer iwhat
 	logical debwin
 	integer nsp
+	integer date,time
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%% code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -489,7 +490,8 @@ c-----------------------------------------------------------
 c initialize boundary conditions
 c-----------------------------------------------------------
 
-	call iff_init_global(nkn,nlv,ilhkv,hkv_max,hlv)
+	call get_date_time(date,time)
+	call iff_init_global(nkn,nlv,ilhkv,hkv_max,hlv,date,time)
 
 	call sp111(1)           !here zenv, utlnv, vtlnv are initialized
 

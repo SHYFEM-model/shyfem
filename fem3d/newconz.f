@@ -17,6 +17,7 @@ c 19.01.2010    ggu     handle restart of conzentrations
 c 25.02.2011    ggu     new routine decay_conz_variable(), add t90 time scale
 c 13.02.2014    ggu     routines for reading initial condition
 c 10.07.2014    ggu     only new file format allowed
+c 20.10.2014    ggu     pass ids to scal_adv routines
 c
 c*********************************************************************
 
@@ -82,14 +83,8 @@ c save & data
         save ninfo
         integer iprogr
         save iprogr
-	real bnd3_conz(nb3dim,0:nbcdim)
-	save bnd3_conz
 	integer idconz(nbcdim)
 	save idconz
-
-	integer ids(nbcdim)
-        common /ids/ids
-        save /ids/
 
 	integer icall
 	save icall
@@ -154,10 +149,8 @@ c-------------------------------------------------------------
 	dtime = it
 	dt = idt
 
-        ids = idconz
-
         call scal_adv(what,0
-     +                          ,cnv,bnd3_conz
+     +                          ,cnv,idconz
      +                          ,rkpar,wsink
      +                          ,difhv,difv,difmol)
 
@@ -253,6 +246,7 @@ c local
 	real wsink,tau,mass
 	real t,dt
 	real cdefs(ncsdim)
+	double precision dtime,dtime0
 c function
 	logical has_restart
 	real getpar
@@ -273,8 +267,8 @@ c save & data
         save ninfo
         integer iprogr
         save iprogr
-	real bnd3_conz(nb3dim,0:nbcdim)
-	save bnd3_conz
+	integer idconz(nbcdim)
+	save idconz
 
 	integer icall
 	save icall
@@ -317,10 +311,11 @@ c-------------------------------------------------------------
 
           call getinfo(ninfo)
 
+	  dtime0 = itanf
 	  nintp = 2
-	  cdef = 0.
-	  call bnds_init(what,conzn,nintp,nvar,nb3dim,bnd3_conz,cdefs)
-	  !call bnds_set_def(what,nb3dim,bnd3_conz)
+	  cdefs = 0.
+          call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
+     +				,cdefs,idconz)
 
 	end if
 
@@ -333,17 +328,15 @@ c-------------------------------------------------------------
 	nvar = iconz
 	wsink = 0.
 	t = it
+	dtime = it
 	dt = idt
-
-        call scal_bnd(what,t,bnd3_conz)
-	!call bnds_print('debug conzm',nb3dim,bnd3_conz)
 
 !$OMP PARALLEL PRIVATE(i)
 !$OMP DO SCHEDULE(DYNAMIC)
 
 	do i=1,nvar
             call scal_adv(what,i
-     +                          ,conzv(1,1,i),bnd3_conz
+     +                          ,conzv(1,1,i),idconz
      +                          ,rkpar,wsink
      +                          ,difhv,difv,difmol)
 	end do

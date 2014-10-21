@@ -13,10 +13,11 @@ c 24.04.2014	ggu	use nvar>0 as indication of good read
 c 30.05.2014	ggu	restructured
 c 16.06.2014	ggu	time is now double precision
 c 07.07.2014	ggu	first version consolidated
+c 20.10.2014	ggu	second version (date record is just after first record)
 c
 c notes :
 c
-c format for file (nvers == 1)
+c format for file (nvers == 2)
 c
 c	time record 1
 c	time record 2
@@ -33,6 +34,7 @@ c
 c format for header record
 c
 c	dtime,nvers,id,np,lmax,nvar,ntype
+c	date,time				only if ntype odd
 c	(hlv(l),l=1,lmax)			only if( lmax > 1 )
 c	other lines depending on ntype
 c
@@ -66,8 +68,8 @@ c
 c file type (ntype)
 c
 c 0		no other lines in header
-c 1		give date/time of reference in extra line (not yet ready)
-c 10		regular grid, information on extra line (not yet ready)
+c 1		give date/time of reference in extra line
+c 10		regular grid, information on extra line
 c 20		rotated regular grid, information on extra line (not yet ready)
 c
 c combinations are possible, example:
@@ -102,10 +104,10 @@ c writes header of fem file
 
 	call fem_file_write_params(iformat,iunit,it
      +				,nvers,np,lmax
-     +				,nvar,ntype)
+     +				,nvar,ntype,datetime)
 
 	call fem_file_write_2header(iformat,iunit,ntype,lmax
-     +			,hlv,datetime,regpar)
+     +			,hlv,regpar)
 
 	end
 
@@ -113,7 +115,7 @@ c************************************************************
 
 	subroutine fem_file_write_params(iformat,iunit,it
      +				,nvers,np,lmax
-     +				,nvar,ntype)
+     +				,nvar,ntype,datetime)
 
 c writes first header of fem file
 
@@ -130,13 +132,15 @@ c writes first header of fem file
 	integer lmax		!maximum vertical values (1 for 2d)
 	integer nvar		!number of variables to write
 	integer ntype		!type of information contained
+	integer datetime(2)	!date and time information
 
 	integer l,nv
+	integer itype(2)
 	integer(kind=8) itlong
 
 	nv = nvers
-	if( nv .eq. 0 ) nv = 1	!default
-	if( nv .lt. 1 .or. nv .gt. 1 ) goto 99
+	if( nv .eq. 0 ) nv = 2	!default
+	if( nv .lt. 2 .or. nv .gt. 2 ) goto 99
 	if( lmax < 1 ) goto 98
 
 	if( iformat == 1 ) then
@@ -144,6 +148,16 @@ c writes first header of fem file
 	  write(iunit,1000) itlong,nv,idfem,np,lmax,nvar,ntype
 	else
 	  write(iunit) it,nv,idfem,np,lmax,nvar,ntype
+	end if
+
+	call fem_file_make_type(ntype,2,itype)
+
+	if( itype(1) .eq. 1 ) then
+	  if( iformat == 1 ) then
+	    write(iunit,*) datetime
+	  else
+	    write(iunit) datetime
+	  end if
 	end if
 
 	return
@@ -159,7 +173,7 @@ c writes first header of fem file
 c************************************************************
 
 	subroutine fem_file_write_2header(iformat,iunit,ntype,lmax
-     +			,hlv,datetime,regpar)
+     +			,hlv,regpar)
 
 	implicit none
 
@@ -168,7 +182,6 @@ c************************************************************
 	integer ntype		!type of information contained
 	integer lmax		!maximum vertical values (1 for 2d)
 	real hlv(lmax)		!vertical structure
-	integer datetime(2)	!array for date and time
 	real regpar(7)		!regular array params
 
 	integer l,i
@@ -184,14 +197,6 @@ c************************************************************
 	  end if
 	end if
 
-	if( itype(1) .gt. 0 ) then
-	  if( iformat == 1 ) then
-	    write(iunit,*) datetime
-	  else
-	    write(iunit) datetime
-	  end if
-	end if
-	
 	if( itype(2) .gt. 0 ) then
 	  if( iformat == 1 ) then
 	    write(iunit,*) regpar
@@ -308,6 +313,7 @@ c opens fem file for read
 	  end if
 	else
 	  write(6,*) 'fem_file_read_open: error opening file '
+	  write(6,*) 'nvar = ',nvar
 	  call fem_file_write_info(file,1)
 	  call fem_file_write_info(file,0)
 	end if
@@ -385,6 +391,7 @@ c checks if file is readable and formatted or unformatted
 
 	integer iunit
 	integer nvers,np0,lmax
+	integer datetime(2)
 	double precision it
 	integer ierr
 	logical bdebug
@@ -418,12 +425,12 @@ c------------------------------------------------------
 
 	iformat = 0
 	call fem_file_read_params(iformat,iunit,it
-     +				,nvers,np,lmax,nvar,ntype,ierr)
+     +				,nvers,np,lmax,nvar,ntype,datetime,ierr)
 
 	close(iunit)
 
 	if( ierr .ne. 0 ) then
-	  if( bdebug ) write(6,*) 'unformatted read error'
+	  if( bdebug ) write(6,*) 'unformatted read error ',ierr
 	else	!ok, probably unformatted
 	  return
 	end if
@@ -438,12 +445,12 @@ c------------------------------------------------------
 
 	iformat = 1
 	call fem_file_read_params(iformat,iunit,it
-     +				,nvers,np,lmax,nvar,ntype,ierr)
+     +				,nvers,np,lmax,nvar,ntype,datetime,ierr)
 
 	close(iunit)
 
 	if( ierr .ne. 0 ) then
-	  if( bdebug ) write(6,*) 'formatted read error'
+	  if( bdebug ) write(6,*) 'formatted read error ',ierr
 	else	!ok, probably formatted
 	  return
 	end if
@@ -481,6 +488,7 @@ c returns data description for first record
 	integer iformat
 	integer np0,iunit,i
 	integer nvers,np,lmax,nvar,ntype
+	integer datetime(2)
 	double precision it
 	character*80 string
 
@@ -491,7 +499,8 @@ c returns data description for first record
 	if( iunit .le. 0 ) return
 
 	call fem_file_read_params(iformat,iunit,it
-     +				,nvers,np,lmax,nvar,ntype,ierr)
+     +				,nvers,np,lmax
+     +				,nvar,ntype,datetime,ierr)
 	if( ierr .ne. 0 ) return
 
 	call fem_file_skip_2header(iformat,iunit
@@ -516,7 +525,8 @@ c************************************************************
 c************************************************************
 
 	subroutine fem_file_read_params(iformat,iunit,it
-     +				,nvers,np,lmax,nvar,ntype,ierr)
+     +				,nvers,np,lmax
+     +				,nvar,ntype,datetime,ierr)
 
 c reads and checks params of next header
 
@@ -530,9 +540,11 @@ c reads and checks params of next header
 	integer lmax		!vertical values
 	integer nvar		!number of variables to write
 	integer ntype		!type of information contained
+	integer datetime(2)	!date and time information
 	integer ierr		!return error code
 
-	integer id
+	integer id,i
+	integer itype(2)
 
 	ierr = 0
 	if( iunit < 1 ) goto 99
@@ -545,15 +557,35 @@ c reads and checks params of next header
 
 	call fem_file_check_params(nvers,id,np,lmax,nvar,ntype,ierr)
 
-	return
+	call fem_file_make_type(ntype,2,itype)
 
+	if( nvers == 1 .and. itype(1) > 0 ) goto 98
+
+	if( itype(1) > 0 ) then
+	  if( iformat == 1 ) then
+	    read(iunit,*,err=3) (datetime(i),i=1,2)
+	  else
+	    read(iunit,err=3) (datetime(i),i=1,2)
+	  end if
+	else
+	  datetime = 0
+	end if
+
+	return
     1	continue
 	ierr = -1
 	return
-
     2	continue
+	!write(6,*) 'error reading fem record header on unit ',iunit
 	ierr = 1
 	return
+    3	continue
+	write(6,*) 'error reading fem date-time record on unit ',iunit
+	ierr = 3
+	return
+   98	continue
+	write(6,*) 'impossible combination: nvers,ntype: ',nvers,ntype
+	stop 'error stop fem_file_read_params: nvers and ntype'
    99	continue
 	write(6,*) 'impossible unit number: ',iunit
 	stop 'error stop fem_file_read_params: iunit'
@@ -562,7 +594,7 @@ c reads and checks params of next header
 c************************************************************
 
 	subroutine fem_file_peek_params(iformat,iunit,it
-     +				,nvers,np,lmax,nvar,ntype,ierr)
+     +				,nvers,np,lmax,nvar,ntype,datetime,ierr)
 
 c reads and checks params of next header (non advancing read)
 
@@ -576,14 +608,20 @@ c reads and checks params of next header (non advancing read)
 	integer lmax		!vertical values
 	integer nvar		!number of variables to write
 	integer ntype		!type of information contained
+	integer datetime(2)	!date and time information
 	integer ierr		!return error code
 
+	integer itype(2)
+
 	call fem_file_read_params(iformat,iunit,it
-     +				,nvers,np,lmax,nvar,ntype,ierr)
+     +				,nvers,np,lmax,nvar,ntype,datetime,ierr)
 
 	if( ierr .ne. 0 ) return
 
 	backspace(iunit)
+
+	call fem_file_make_type(ntype,2,itype)
+	if( itype(1) > 0 ) backspace(iunit)
 
 	end
 
@@ -609,7 +647,7 @@ c reads and checks params of next header
 	ierr = 11
 	if( id .ne. idfem ) goto 9
 	ierr = 13
-	if( nvers .lt. 1 .or. nvers .gt. 1 ) goto 9
+	if( nvers .lt. 1 .or. nvers .gt. 2 ) goto 9
 	ierr = 15
 	if( np .le. 0 ) goto 9
 	ierr = 17
@@ -617,7 +655,7 @@ c reads and checks params of next header
 	ierr = 19
 	if( nvar .le. 0 .or. nvar .gt. 100 ) goto 9
 	ierr = 21
-	if( ntype .lt. 0 .or. ntype .gt. 20 ) goto 9
+	if( ntype .lt. 0 .or. ntype .gt. 21 ) goto 9
 
 	ierr = 0
 	return
@@ -630,7 +668,7 @@ c reads and checks params of next header
 c************************************************************
 
 	subroutine fem_file_read_2header(iformat,iunit,ntype,lmax
-     +			,hlv,datetime,regpar,ierr)
+     +			,hlv,regpar,ierr)
 
 c reads hlv of header
 
@@ -641,7 +679,6 @@ c reads hlv of header
 	integer ntype		!type of second header
 	integer lmax		!total number of elements to read
 	real hlv(lmax)		!vertical structure
-	integer datetime(2)	!array for date and time
 	real regpar(7)		!regular array params
 	integer ierr		!return error code
 
@@ -661,17 +698,6 @@ c reads hlv of header
 	  hlv(1) = 10000.
 	end if
 
-	ierr = 5
-	if( itype(1) .gt. 0 ) then
-	  if( iformat == 1 ) then
-	    read(iunit,*,err=1) (datetime(i),i=1,2)
-	  else
-	    read(iunit,err=1) (datetime(i),i=1,2)
-	  end if
-	else
-	  datetime = 0
-	end if
-	
 	ierr = 7
 	if( itype(2) .gt. 0 ) then
 	  if( iformat == 1 ) then
@@ -718,15 +744,6 @@ c skips additional headers in fem file
 	  end if
 	end if
 
-	ierr = 5
-	if( itype(1) .gt. 0 ) then
-	  if( iformat == 1 ) then
-	    read(iunit,*,err=1) (aux,i=1,2)
-	  else
-	    read(iunit,err=1) (aux,i=1,2)
-	  end if
-	end if
-	
 	ierr = 7
 	if( itype(2) .gt. 0 ) then
 	  if( iformat == 1 ) then
@@ -931,14 +948,10 @@ c************************************************************
 	write(6,*) ntype,itype
 	end
 
-c	subroutine find_unit(iunit)
-c	iunit = 77
-c	end
-
+c************************************************************
 c	program subfile_main
 c	call test_type
 c	end
-
 c************************************************************
 
 

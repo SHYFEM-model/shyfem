@@ -1,7 +1,7 @@
 
 	program bc2fem_main
 
-! converts files from win-format to fem-format
+! converts files from old format to fem-format
 
 	implicit none
 
@@ -9,6 +9,7 @@
 	logical bformat
 	logical formatted,unformatted
 	logical b2d,b3d
+	integer date
 
 	formatted = .true.
 	unformatted = .false.
@@ -18,30 +19,31 @@
 	bformat = .true.
 	bformat = .false.
 
-	call parse_command_line(what,var,infile,hlvfile)
+	call parse_command_line(what,var,infile,hlvfile,date)
 
 	write(6,*) 'what:       ',what
 	write(6,*) 'var:        ',var
 	write(6,*) 'infile:     ',infile
 	write(6,*) 'hlvfile:    ',hlvfile
+	write(6,*) 'date   :    ',date
 
         if(infile.eq.' ') stop
 
 	if( what .eq. 'meteo' ) then
-	  call win2fem(infile,unformatted)
+	  call win2fem(infile,unformatted,date)
 	else if( what .eq. 'reg' ) then
-	  call reg2fem(infile,unformatted)
+	  call reg2fem(infile,unformatted,date)
 	else if( what .eq. 'bc' ) then
 	  if( var .eq. 'zeta' ) then
-	    call bc2fem(var,infile,formatted,b2d,hlvfile)
+	    call bc2fem(var,infile,formatted,b2d,hlvfile,date)
 	  else
-	    call bc2fem(var,infile,formatted,b3d,hlvfile)
+	    call bc2fem(var,infile,formatted,b3d,hlvfile,date)
 	  end if
 	else if( what .eq. 'field' ) then
 	  if( var .eq. 'zeta' ) then
-	    call field2fem(var,infile,unformatted,b2d,hlvfile)
+	    call field2fem(var,infile,unformatted,b2d,hlvfile,date)
 	  else
-	    call field2fem(var,infile,unformatted,b3d,hlvfile)
+	    call field2fem(var,infile,unformatted,b3d,hlvfile,date)
 	  end if
 	else
 	  write(6,*) 'unknown option: ',what
@@ -53,12 +55,13 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine field2fem(var,infile,bformat,b2d,hlvfile)
+	subroutine field2fem(var,infile,bformat,b2d,hlvfile,date)
 
 	implicit none
 
 	character*(*) var,infile,hlvfile
 	logical bformat,b2d
+	integer date
 
 	logical bnew,bpres,bhlv
 	integer ios,it,id,n,n0,nvar,nvar0,itanf,nkn,i,j,itend
@@ -72,6 +75,11 @@ c*****************************************************************
 	integer, allocatable :: ilhkv(:)
 	real, allocatable :: data(:,:)
 	character*50 string
+	character*20 line
+
+	logical bdate0
+	integer time
+	double precision dtime0
 
 	bhlv = .true.		!file has hlv information
 
@@ -129,8 +137,12 @@ c*****************************************************************
 	iunit = 2
 	nvers = 0
 	ntype = 0
+	datetime = 0
 	np = n0
 	nlvdim = lmax
+
+	call dtsyear(date)
+	call setup_time(ntype,date,datetime,bdate0,dtime0)
 
 !-------------------------------------------------------------
 ! loop on input and write
@@ -150,7 +162,8 @@ c*****************************************************************
 	  if( bhlv ) read(1,*) (hlv(l),l=1,lmax)
 	  read(1,*) ((data(l,i),l=1,lmax),i=1,n)
 
-	  dtime = it
+	  call convert_time(bdate0,it,dtime0,datetime,dtime)
+
 	  call fem_file_write_header(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,nlvdim
      +				,hlv,datetime,regpar)
@@ -167,9 +180,13 @@ c*****************************************************************
 ! write final message
 !-------------------------------------------------------------
 
+	line = ' '
 	write(6,*) 
 	write(6,*) 'total records read: ',irec
-	write(6,*) 'start/end time: ',itanf,itend
+	if( date > 0 ) call dtsgf(itanf,line)
+	write(6,*) 'start time: ',itanf,'  ',line
+	if( date > 0 ) call dtsgf(itend,line)
+	write(6,*) 'end time:   ',itend,'  ',line
 	write(6,*) 'output has been written to out.fem'
 
 !-------------------------------------------------------------
@@ -198,12 +215,13 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine bc2fem(var,infile,bformat,b2d,hlvfile)
+	subroutine bc2fem(var,infile,bformat,b2d,hlvfile,date)
 
 	implicit none
 
 	character*(*) var,infile,hlvfile
 	logical bformat,b2d
+	integer date
 
 	logical bnew,bpres
 	integer ios,it,id,n,n0,nvar,nvar0,itanf,nkn,i,j,itend
@@ -217,6 +235,11 @@ c*****************************************************************
 	integer, allocatable :: ilhkv(:)
 	real, allocatable :: data(:,:)
 	character*50 string
+	character*20 line
+
+	logical bdate0
+	integer time
+	double precision dtime0
 
 	iformat = 0
 	if( bformat ) iformat = 1
@@ -273,7 +296,11 @@ c*****************************************************************
 	nvers = 0
 	ntype = 0
 	np = n0
+	datetime = 0
 	nlvdim = lmax
+
+	call dtsyear(date)
+	call setup_time(ntype,date,datetime,bdate0,dtime0)
 
 !-------------------------------------------------------------
 ! loop on input and write
@@ -295,7 +322,8 @@ c*****************************************************************
 	    if( j .ne. i ) goto 95
 	  end do
 
-	  dtime = it
+	  call convert_time(bdate0,it,dtime0,datetime,dtime)
+
 	  call fem_file_write_header(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,nlvdim
      +				,hlv,datetime,regpar)
@@ -312,9 +340,13 @@ c*****************************************************************
 ! write final message
 !-------------------------------------------------------------
 
+	line = ' '
 	write(6,*) 
 	write(6,*) 'total records read: ',irec
-	write(6,*) 'start/end time: ',itanf,itend
+	if( date > 0 ) call dtsgf(itanf,line)
+	write(6,*) 'start time: ',itanf,'  ',line
+	if( date > 0 ) call dtsgf(itend,line)
+	write(6,*) 'end time:   ',itend,'  ',line
 	write(6,*) 'output has been written to out.fem'
 
 !-------------------------------------------------------------
@@ -343,12 +375,13 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine reg2fem(infile,bformat)
+	subroutine reg2fem(infile,bformat,date)
 
 	implicit none
 
 	character*(*) infile
 	logical bformat
+	integer date
 
 	logical bnew,bpres
 	integer ios,it,id,n,n0,nvar,nvar0,itanf,nkn,i,j,itend
@@ -363,6 +396,11 @@ c*****************************************************************
 	integer ilhkv(1)
 	character*50 string,newstring
 	real, allocatable :: data(:)
+	character*20 line
+
+	logical bdate0
+	integer time
+	double precision dtime0
 
 	iformat = 0
 	if( bformat ) iformat = 1
@@ -400,6 +438,10 @@ c*****************************************************************
 	itanf = -1
 	ilhkv(1) = 1
 	hd(1) = -999.
+	datetime = 0
+
+	call dtsyear(date)
+	call setup_time(ntype,date,datetime,bdate0,dtime0)
 
 !-------------------------------------------------------------
 ! loop on input and write
@@ -429,7 +471,8 @@ c*****************************************************************
 
 	  itend = it
 
-	  dtime = it
+	  call convert_time(bdate0,it,dtime0,datetime,dtime)
+
 	  call fem_file_write_header(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,nlvdim
      +				,hlv,datetime,regpar)
@@ -453,9 +496,13 @@ c*****************************************************************
 ! write final message
 !-------------------------------------------------------------
 
+	line = ' '
 	write(6,*) 
 	write(6,*) 'total records read: ',irec
-	write(6,*) 'start/end time: ',itanf,itend
+	if( date > 0 ) call dtsgf(itanf,line)
+	write(6,*) 'start time: ',itanf,'  ',line
+	if( date > 0 ) call dtsgf(itend,line)
+	write(6,*) 'end time:   ',itend,'  ',line
 	write(6,*) 'output has been written to out.fem'
 
 !-------------------------------------------------------------
@@ -473,12 +520,13 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine win2fem(infile,bformat)
+	subroutine win2fem(infile,bformat,date)
 
 	implicit none
 
 	character*(*) infile
 	logical bformat
+	integer date
 
 	logical bnew,bpres
 	integer ios,it,id,n,n0,nvar,nvar0,itanf,nkn,i,j,itend
@@ -492,6 +540,11 @@ c*****************************************************************
 	real regpar(7)
 	real, allocatable :: data(:,:)
 	character*50, allocatable :: strings(:)
+	character*20 line
+
+	logical bdate0
+	integer time
+	double precision dtime0
 
 	iformat = 0
 	if( bformat ) iformat = 1
@@ -591,6 +644,10 @@ c*****************************************************************
 	lmax = 1
 	np = n0
 	nlvdim = 1
+	datetime = 0
+
+	call dtsyear(date)
+	call setup_time(ntype,date,datetime,bdate0,dtime0)
 
 !-------------------------------------------------------------
 ! loop on input and write
@@ -630,7 +687,8 @@ c*****************************************************************
 	    end do
           end if
 
-	  dtime = it
+	  call convert_time(bdate0,it,dtime0,datetime,dtime)
+
 	  call fem_file_write_header(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,nlvdim
      +				,hlv,datetime,regpar)
@@ -649,9 +707,13 @@ c*****************************************************************
 ! write final message
 !-------------------------------------------------------------
 
+	line = ' '
 	write(6,*) 
 	write(6,*) 'total records read: ',irec
-	write(6,*) 'start/end time: ',itanf,itend
+	if( date > 0 ) call dtsgf(itanf,line)
+	write(6,*) 'start time: ',itanf,'  ',line
+	if( date > 0 ) call dtsgf(itend,line)
+	write(6,*) 'end time:   ',itend,'  ',line
 	write(6,*) 'output has been written to out.fem'
 
 !-------------------------------------------------------------
@@ -667,6 +729,8 @@ c*****************************************************************
 	stop 'error stop win2fem'
 	end
 
+c*****************************************************************
+c*****************************************************************
 c*****************************************************************
 
 	subroutine get_new_string(string,newstring)
@@ -705,19 +769,22 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine parse_command_line(what,var,infile,hlv)
+	subroutine parse_command_line(what,var,infile,hlv,date)
 
 	implicit none
 
 	character*(*) what,var,infile,hlv
+	integer date
 
 	integer i,nc
-	character*50 aux
+	character*50 aux,cdate
 
 	what = ' '
 	var = ' '
 	infile = ' '
 	hlv = ' '
+	cdate = ' '
+	date = 0
 
 	nc = command_argument_count()
 
@@ -733,6 +800,10 @@ c*****************************************************************
 	    if( aux .eq. '-hlv' ) then
 	      i = i + 1
 	      call get_command_argument(i,hlv)
+	    else if( aux .eq. '-date' ) then
+	      i = i + 1
+	      call get_command_argument(i,cdate)
+	      call convert_char_to_int(cdate,date)
 	    else if( aux .eq. '-zeta' ) then
 	      var = aux(2:)
 	    else if( aux .eq. '-temp' ) then
@@ -753,12 +824,12 @@ c*****************************************************************
 	end if
 
 	write(6,*) 'Usage: win2fem [-what] [-var] [options] bc-file'
-	write(6,*) '   what:'
+	write(6,*) '   what:   (one of these must be given)'
 	write(6,*) '      -meteo      2d unformatted meteo files'
 	write(6,*) '      -reg        2d regular meteo files'
 	write(6,*) '      -bc         boundary condition file'
 	write(6,*) '      -field      2d/3d scalar field'
-	write(6,*) '   var:'
+	write(6,*) '   var:    (if what is -bc or -field)'
 	write(6,*) '      -zeta       water level'
 	write(6,*) '      -temp       temperature'
 	write(6,*) '      -salt       salinity'
@@ -766,8 +837,25 @@ c*****************************************************************
 	write(6,*) '      -scal       generic scalar file'
 	write(6,*) '   options:'
 	write(6,*) '      -hlv file   file containing hlv levels'
+	write(6,*) '      -date date  date for fem time 0'
+	write(6,*) '                  date given as YYYY[MMDD]'
 
 	stop
+	end
+
+c*****************************************************************
+
+	subroutine convert_char_to_int(string,int)
+
+	implicit none
+
+	character*(*) string
+	integer int
+
+	read(string,'(i10)') int
+
+	if( int < 10000 ) int = 10000*int + 101
+
 	end
 
 c*****************************************************************
@@ -848,5 +936,67 @@ c*****************************************************************
 
 	end
 
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine convert_time(bdate0,it,dtime0,datetime,dtime)
+
+c converts datetime into actual time
+
+	implicit none
+
+	logical bdate0
+	integer it
+	double precision dtime0,dtime
+	integer datetime(2)
+
+	integer date,time
+
+	dtime = dtime0 + it
+	datetime = 0
+
+	if( .not. bdate0 ) return
+
+	call dts_from_abs_time(date,time,dtime)
+
+	datetime(1) = date
+	datetime(2) = time
+	dtime = 0.
+
+	end
+
+c*****************************************************************
+
+	subroutine setup_time(ntype,date,datetime,bdate0,dtime0)
+
+c sets up date and time management
+
+	implicit none
+
+	integer ntype
+	integer date
+	integer datetime(2)
+	logical bdate0
+	double precision dtime0
+
+	integer time
+
+	dtime0 = 0.
+	bdate0 = .false.
+	if( date .eq. 0 ) return
+
+	bdate0 = .true.	!use it = 0 and have date in datetime
+
+	ntype = ntype + 1
+	time = 0
+	datetime(1) = date
+
+	call dts_to_abs_time(date,time,dtime0)
+
+	end
+
+c*****************************************************************
+c*****************************************************************
 c*****************************************************************
 

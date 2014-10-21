@@ -8,8 +8,9 @@ c writes info on fem file
 	character*50 name,string,infile
 	integer np,iunit,iout
 	integer nvers,lmax,nvar,ntype,nlvdim
-	integer it,itanf,itend,idt,itold
-	double precision dtime,tmin,tmax
+	integer it,itanf,itend,idt,itold,idtact
+	double precision dtime,tmin,tmax,dtime0
+	double precision atime,atimeold,atimeanf,atimeend
 	real dmin,dmax
 	integer ierr
 	integer irec,i,nvar0,ich
@@ -19,6 +20,7 @@ c writes info on fem file
 	real regpar(7)
 	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
 	logical bspecial
+	logical bdate		!is date given?
 	character*50, allocatable :: strings(:)
 	character*20 line
 	real,allocatable :: data(:,:,:)
@@ -80,7 +82,7 @@ c--------------------------------------------------------------
 	irec = 1
 
         call fem_file_read_params(iformat,iunit,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,ierr)
+     +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
 
 	if( ierr .ne. 0 ) goto 99
 
@@ -97,7 +99,7 @@ c--------------------------------------------------------------
 
 	if( bdebug ) write(6,*) irec,dtime
 	call fem_file_read_2header(iformat,iunit,ntype,lmax
-     +			,hlv,datetime,regpar,ierr)
+     +			,hlv,regpar,ierr)
 	if( ierr .ne. 0 ) goto 98
 
 	write(6,*) 'vertical discretization: ',lmax
@@ -107,6 +109,14 @@ c--------------------------------------------------------------
 	end if
 	if( itype(2) .gt. 0 ) then
 	  write(6,*) 'regpar: ',regpar
+	end if
+
+	bdate = datetime(1) > 0
+	dtime0 = 0.
+	atime = dtime
+	if( bdate ) then
+	  call dts_to_abs_time(datetime(1),datetime(2),dtime0)
+	  atime = dtime0 + dtime
 	end if
 
 	if( .not. btmin ) tmin = dtime
@@ -161,6 +171,8 @@ c--------------------------------------------------------------
 	it = nint(dtime)
 	itanf = it
 	itend = it
+	atimeanf = atime
+	atimeend = atime
 	dateanf = datetime
 	dateend = datetime
 	idt = -1
@@ -169,20 +181,27 @@ c--------------------------------------------------------------
 	do 
 	  irec = irec + 1
 	  itold = itend
+	  atimeold = atime
           call fem_file_read_params(iformat,iunit,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,ierr)
+     +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
 	  if( ierr .lt. 0 ) exit
 	  if( ierr .gt. 0 ) goto 99
 	  if( nvar .ne. nvar0 ) goto 96
 	  if( btmax .and. dtime > tmax ) exit
 	  if( bdebug ) write(6,*) irec,dtime
 	  it = nint(dtime)
+	  atime = dtime
+	  if( bdate ) then
+	    call dts_to_abs_time(datetime(1),datetime(2),dtime0)
+	    atime = dtime0 + dtime
+	  end if
+	  !write(6,*) atime,dtime0,dtime
 	  if( bspecial .and. irec > 8000 .and. it == 378770400 ) then
 	    it = itold + 3600
 	    dtime = it
 	  end if
 	  call fem_file_read_2header(iformat,iunit,ntype,lmax
-     +			,hlv,datetime,regpar,ierr)
+     +			,hlv,regpar,ierr)
 	  if( ierr .ne. 0 ) goto 98
 	  boutput = bout .and. dtime >= tmin
 	  if( boutput ) then
@@ -219,17 +238,22 @@ c--------------------------------------------------------------
 	  end do
 	  if( bfirst ) then
 	    bfirst = .false.
-	    idt = it - itold
+	    !idt = it - itold
+	    idt = nint(atime-atimeold)
 	  end if
-	  if( it-itold .ne. idt ) then
+	  !idtact = it-itold
+	  idtact = nint(atime-atimeold)
+	  if( idtact .ne. idt ) then
 	    ich = ich + 1
 	    write(6,*) 'change in time step: ',irec,idt,it-itold
-	    idt = it-itold
+	    idt = idtact
 	  end if
 	  if( idt <= 0 ) then
 	    write(6,*) 'zero or negative time step: ',irec,it,itold
 	  end if
 	  itend = it
+	  atimeold = atime
+	  atimeend = atime
 	  dateend = datetime
 	end do
 
@@ -256,9 +280,9 @@ c--------------------------------------------------------------
 
 	irec = irec - 1
 	write(6,*) 'irec:  ',irec
-	call date_convert(itanf,datetime,line)
+	call date_convert_abs(bdate,atimeanf,line)
 	write(6,*) 'itanf: ',itanf,line
-	call date_convert(itend,datetime,line)
+	call date_convert_abs(bdate,atimeend,line)
 	write(6,*) 'itend: ',itend,line
 	write(6,*) 'idt:   ',idt
 
@@ -485,6 +509,24 @@ c converts fem time to real date
 
 	call dtsini(date,time)
 	call dtsgf(it,line)
+
+	end
+
+c*****************************************************************
+
+	subroutine date_convert_abs(bdate,atime,line)
+
+c converts fem time to real date
+
+	logical bdate
+	double precision atime
+	character*(*) line		!should be at least 20
+
+	line = ' '
+
+	if( bdate ) then
+	  call dts_format_abs_time(atime,line)
+	end if
 
 	end
 

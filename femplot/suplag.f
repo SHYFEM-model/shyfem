@@ -34,10 +34,9 @@ c**********************************************************
 
 	real pmin,pmax
 	real getpar
-        integer gettime
 
 	call qstart
-        call annotes(gettime(),title)
+        call annotes(title)
         call bash(0)
 
         call qcomm('Plotting particles')
@@ -249,7 +248,7 @@ c**********************************************************
 	real ylag(ndim)
 	real zlag(ndim)
 
-	logical oktime
+	logical ptime_ok,ptime_end
 	integer nrec
         integer ifemop
 
@@ -260,8 +259,6 @@ c**********************************************************
 	write(6,*) 'lagrangian unit opened: ',iunit,nvers
 
 	nrec = 0
-	call timeset(0,0,0)
-        call timeask
                         
     1   continue
 
@@ -271,7 +268,11 @@ c**********************************************************
         nrec = nrec + 1
         write(6,*) nrec,it,n
 
-	if( oktime(it) ) then
+	call ptime_set_itime(it)
+
+	if( ptime_end() ) goto 2
+
+	if( ptime_ok() ) then
 	  write(6,*) 'plotting particles ',it,n
           call plo_part(n,xlag,ylag,zlag,'particles')
 	end if

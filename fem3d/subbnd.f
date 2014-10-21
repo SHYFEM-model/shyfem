@@ -1211,6 +1211,18 @@ c********************************************************************
         common /tempn/ tempn
         character*80 saltn(1)
         common /saltn/ saltn
+        character*80 sed2dn(1)
+        common /sed2dn/ sed2dn
+        character*80 bio2dn(1)
+        common /bio2dn/ bio2dn
+        character*80 tox3dn(1)
+        common /tox3dn/ tox3dn
+        character*80 bfm1bc(1)
+        common /bfm1bc/bfm1bc
+        character*80 bfm2bc(1)
+        common /bfm2bc/bfm2bc
+        character*80 bfm3bc(1)
+        common /bfm3bc/bfm3bc
 
         if( what .eq. 'zeta' ) then
           file = boundn(ibc)
@@ -1220,6 +1232,18 @@ c********************************************************************
           file = tempn(ibc)
         else if( what .eq. 'salt' ) then
           file = saltn(ibc)
+        else if( what .eq. 'sedt' ) then
+          file = sed2dn(ibc)
+        else if( what .eq. 'lagvebio' ) then
+          file = bio2dn(ibc)
+        else if( what .eq. 'toxi' ) then
+          file = tox3dn(ibc)
+        else if( what .eq. 'bfm1' ) then
+          file = bfm1bc(ibc)
+        else if( what .eq. 'bfm2' ) then
+          file = bfm2bc(ibc)
+        else if( what .eq. 'bfm3' ) then
+          file = bfm3bc(ibc)
         else
           write(6,*) 'keyword not recognized: ',what
           stop 'error stop get_boundary_file'

@@ -6,6 +6,7 @@
 ! 16.06.2014	ggu	time is now double
 ! 25.06.2014	ggu	various bug fixes
 ! 07.07.2014	ggu	first version finished
+! 20.10.2014	ggu	deal with datetime in fem/ts files
 !
 !****************************************************************
 !
@@ -107,6 +108,10 @@
 	type(info), save, dimension(ndim) :: pinfo
 
 	integer, save :: idnext = 0
+
+	integer, save :: date_fem = 0
+	integer, save :: time_fem = 0
+	double precision, save :: atime0_fem = 0
 
 	integer, save :: nkn_fem = 0
 	integer, save :: nlv_fem = 0
@@ -391,7 +396,7 @@
 !****************************************************************
 !****************************************************************
 
-	subroutine iff_init_global(nkn,nlv,ilhkv,hkv,hlv)
+	subroutine iff_init_global(nkn,nlv,ilhkv,hkv,hlv,date,time)
 
 ! passes params and arrays from fem needed for interpolation
 !
@@ -402,6 +407,7 @@
 	integer ilhkv(nkn)
 	real hkv(nkn)
 	real hlv(nlv)
+	integer date,time
 
 	integer i
 
@@ -426,6 +432,10 @@
 	hd_fem = hkv
 	hlv_fem = hlv
 
+	date_fem = date
+	time_fem = time
+	call dts_to_abs_time(date,time,atime0_fem)
+
 	end subroutine iff_init_global
 
 !****************************************************************
@@ -448,7 +458,7 @@
 	integer iformat,iunit
 	integer ierr,np,i
 	integer nvar_orig
-	integer date,time
+	integer datetime(2)
 	integer ntype,itype(2)
 	logical breg
 	logical bok
@@ -552,8 +562,8 @@
 	else if( bfem ) then
 	  call fem_file_read_open(file,nexp,iunit,iformat)
 	else if( bts ) then
-	  call ts_open_file(file,nvar,date,time,iunit)
-	  ! date not yet ready
+	  call ts_open_file(file,nvar,datetime,iunit)
+	  pinfo(id)%datetime = datetime
 	else
 	  stop 'error stop iff_init: internal error (3)'
 	end if
@@ -807,6 +817,7 @@ c	 2	time series
 
 	integer iunit
 	integer nvers,np,lmax,nvar,ntype
+	integer datetime(2)
 	integer ierr,iformat
 	real f(1)
 	logical bts,bnofile
@@ -822,10 +833,14 @@ c	 2	time series
 	  return
 	else if( bts ) then
 	  nvar = 0
-	  call ts_peek_next_record(iunit,nvar,dtime,f,ierr)
+	  call ts_peek_next_record(iunit,nvar,dtime,f,datetime,ierr)
+	  if( datetime(1) > 0 ) pinfo(id)%datetime = datetime
+	  call iff_adjust_datetime(id,pinfo(id)%datetime,dtime)
 	else
           call fem_file_peek_params(iformat,iunit,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,ierr)
+     +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
+	  pinfo(id)%datetime = datetime
+	  call iff_adjust_datetime(id,pinfo(id)%datetime,dtime)
 	end if
 
 	iff_peek_next_record = ( ierr == 0 )
@@ -848,6 +863,7 @@ c	 2	time series
 
 	logical bts,bnofile
 	integer nvers,np,lmax,nvar,ntype
+	integer datetime(2)
 	integer iunit,ierr,iformat
 	integer ivar
 	real f(pinfo(id)%nvar)
@@ -866,10 +882,14 @@ c	 2	time series
 
 	if( bts ) then
 	  nvar = pinfo(id)%nvar
-	  call ts_read_next_record(iunit,nvar,dtime,f,ierr)
+	  call ts_read_next_record(iunit,nvar,dtime,f,datetime,ierr)
+	  if( datetime(1) > 0 ) pinfo(id)%datetime = datetime
+	  call iff_adjust_datetime(id,pinfo(id)%datetime,dtime)
 	else
           call fem_file_read_params(iformat,iunit,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,ierr)
+     +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
+	  pinfo(id)%datetime = datetime
+	  call iff_adjust_datetime(id,pinfo(id)%datetime,dtime)
 	end if
 
 	if( ierr < 0 ) return
@@ -887,7 +907,6 @@ c	 2	time series
 	  call iff_allocate_file_arrays(id,nvar,np,lmax)
 	  call fem_file_read_2header(iformat,iunit,ntype,lmax
      +					,pinfo(id)%hlv_file
-     +					,pinfo(id)%datetime
      +					,pinfo(id)%regpar
      +					,ierr)
 	  if( ierr /= 0 ) goto 97
@@ -1580,6 +1599,33 @@ c global lmax and lexp are > 1
 
 !****************************************************************
 
+	subroutine iff_adjust_datetime(id,datetime,dtime)
+
+! here we have to transform fem_file time to simulation time
+
+	integer id
+	integer datetime(2)		!reference date of fem_file
+	double precision dtime		!relative time of fem_file
+
+	double precision atime0
+
+	if( datetime(1) <= 0 ) return		!nothing to adjust
+
+	if( datetime(1) > 0 .and. date_fem <= 0 ) then
+	  write(6,*) 'file has absolute date but simulation has not'
+	  write(6,*) 'please set the date variable in the STR file'
+	  call iff_print_file_info(id)
+	  stop 'error stop iff_adjust_datetime: date'
+	end if
+
+	call dts_to_abs_time(datetime(1),datetime(2),atime0)
+
+	dtime = dtime + atime0 - atime0_fem
+
+	end subroutine iff_adjust_datetime
+
+!****************************************************************
+
 	function tcomp(t,nintp,ilast,time)
 
 	double precision tcomp
@@ -1754,7 +1800,7 @@ c opens file and inititializes array - simplified version
 
 !****************************************************************
 
-	subroutine iff_init_global_2d(nkn,hkv)
+	subroutine iff_init_global_2d(nkn,hkv,date,time)
 
 	use intp_fem_file
 
@@ -1762,6 +1808,7 @@ c opens file and inititializes array - simplified version
 
 	integer nkn
 	real hkv(nkn)
+	integer date,time
 
 	integer nlv
 	integer ilhkv(nkn)
@@ -1771,7 +1818,7 @@ c opens file and inititializes array - simplified version
 	ilhkv = 1
 	hlv(1) = 10000.
 
-	call iff_init_global(nkn,nlv,ilhkv,hkv,hlv)
+	call iff_init_global(nkn,nlv,ilhkv,hkv,hlv,date,time)
 
 	end
 

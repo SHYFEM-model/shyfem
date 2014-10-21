@@ -27,6 +27,7 @@ c 17.02.2012    aac&ggu restart for bfm
 c 26.03.2012    ggu	bfm1-3 had wrong second dimension
 c 22.10.2012    ggu	saved some variables
 c 17.06.2013    ggu	bug fix: wsinkv was not present in call
+c 21.10.2014    ggu	converted to new boundary treatment
 c
 c**************************************************************
 c
@@ -204,11 +205,6 @@ c computes ecological scalars with BFM  model
 	real b3cn_c(nlvdim,nkndim,nbfmv3)
 	save b3cn,b3cn_a,b3cn_b,b3cn_c
 
- 	real bfm1(nb3dim,0:nbcdim)   !boundary state for solutes
-        real bfm2(nb3dim,0:nbcdim)   !boundary state for fitozoo
-	real bfm3(nb3dim,0:nbcdim)   !boundary state for essudates
-	save bfm1,bfm2,bfm3
-
  	real b1bound(nbfmv1)       !boundary vector for solutes
  	real b2bound(nbfmv2)       !boundary vector for fitozoo
  	real b3bound(nbfmv3)       !boundary vector for essudates
@@ -371,6 +367,13 @@ c computes ecological scalars with BFM  model
 	real czdef,taubot
 	save czdef
 
+	integer itanf
+	double precision dtime0
+	integer idbfm1(nbcdim)
+	integer idbfm2(nbcdim)
+	integer idbfm3(nbcdim)
+	save idbfm1,idbfm2,idbfm3
+
 	real ddepth(nkndim)
 	common /ddepth/ddepth		!-> needed in standalone
 
@@ -462,13 +465,19 @@ c------------------------------------------------------
 !         Initialize boundary conditions for all state variables
 !         --------------------------------------------------
 
-          nintp = 2
-
-	  write(6,*) 'interface not yet converted for BFM'
-	  stop 'error stop bfm_shell: internal error'
  	  !call bnds_init0('bfm1',bfm1bc,nintp,nbfmv1,nb3dim,bfm1,b1bound)
    	  !call bnds_init0('bfm2',bfm2bc,nintp,nbfmv2,nb3dim,bfm2,b2bound)
    	  !call bnds_init0('bfm3',bfm3bc,nintp,nbfmv3,nb3dim,bfm3,b3bound)
+
+	  call get_first_time(itanf)
+          dtime0 = itanf
+          nintp = 2
+          call bnds_init_new('bfm1',dtime0,nintp,nbfmv1,nkn,nlv
+     +                          ,b1bound,idbfm1)
+          call bnds_init_new('bfm2',dtime0,nintp,nbfmv2,nkn,nlv
+     +                          ,b2bound,idbfm2)
+          call bnds_init_new('bfm3',dtime0,nintp,nbfmv3,nkn,nlv
+     +                          ,b3bound,idbfm3)
 
 !         ---------------------------------------------------------
 !         INITIALIZES OUPUT
@@ -500,9 +509,9 @@ c------------------------------------------------------
 ! compute OBC for transported vars (HYBRID HYDRO-BFM arrays)
 !-------------------------------------------------------
 	
-	call scal_bnd('bfm1',t,bfm1)
-	call scal_bnd('bfm2',t,bfm2)
-	call scal_bnd('bfm3',t,bfm3)
+	!call scal_bnd('bfm1',t,bfm1)
+	!call scal_bnd('bfm2',t,bfm2)
+	!call scal_bnd('bfm3',t,bfm3)
 
 !-----------------------------------------------------------
 ! advection and diffusion of hybrid hydro-bfm var
@@ -512,7 +521,7 @@ c------------------------------------------------------
 !$OMP DO SCHEDULE(DYNAMIC)
 
  	do is1=1,nbfmv1
-  	    call scal_adv('bfm_1',is1,b1cn(1,1,is1),bfm1
+  	    call scal_adv('bfm_1',is1,b1cn(1,1,is1),idbfm1
      +                          ,rkpar,wsink,difhv,difv,difmol)
  	end do
 
@@ -520,7 +529,7 @@ c------------------------------------------------------
 !$OMP DO SCHEDULE(DYNAMIC)
 
  	do is2=1,nbfmv2
-  	    call scal_adv('bfm_2',is2,b2cn(1,1,is2),bfm2
+  	    call scal_adv('bfm_2',is2,b2cn(1,1,is2),idbfm2
      +                          ,rkpar,wsink,difhv,difv,difmol)
         end do
 
@@ -528,7 +537,7 @@ c------------------------------------------------------
 !$OMP DO SCHEDULE(DYNAMIC)
 
  	do is3=1,nbfmv3
-  	    call scal_adv('bfm_3',is3,b3cn(1,1,is3),bfm3
+  	    call scal_adv('bfm_3',is3,b3cn(1,1,is3),idbfm3
      +                          ,rkpar,wsink,difhv,difv,difmol)
         end do
 
@@ -537,7 +546,7 @@ c------------------------------------------------------
 
         do is4=1,nbfmv2
             fct=fc2_a(is4)
-            call scal_adv_fact('bfm_4',is4,fct,b2cn_a(1,1,is4),bfm2
+            call scal_adv_fact('bfm_4',is4,fct,b2cn_a(1,1,is4),idbfm2
      +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
         end do
 
@@ -546,7 +555,7 @@ c------------------------------------------------------
 
         do is5=1,nbfmv2
             fct=fc2_b(is5)
-            call scal_adv_fact('bfm_5',is5,fct,b2cn_b(1,1,is5),bfm2
+            call scal_adv_fact('bfm_5',is5,fct,b2cn_b(1,1,is5),idbfm2
      +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
         end do
 
@@ -555,7 +564,7 @@ c------------------------------------------------------
 
         do is6=2,5
             fct=fc2_c(is6)
-            call scal_adv_fact('bfm_6',is6,fct,b2cn_a(1,1,is6),bfm2
+            call scal_adv_fact('bfm_6',is6,fct,b2cn_a(1,1,is6),idbfm2
      +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
         end do
 
@@ -564,7 +573,7 @@ c------------------------------------------------------
 !        do is=1,nbfmv2
             is7 = 2
             fct=fc2_d(is7)
-            call scal_adv_fact('bfm_7',is7,fct,b2cn_d(1,1,is7),bfm2
+            call scal_adv_fact('bfm_7',is7,fct,b2cn_d(1,1,is7),idbfm2
      +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
 !        end do
 
@@ -572,11 +581,11 @@ c------------------------------------------------------
 
          do is8=1,3,2
             fct=fc3_a
-            call scal_adv_fact('bfm_8',is8,fct,b3cn_a(1,1,is8),bfm3
+            call scal_adv_fact('bfm_8',is8,fct,b3cn_a(1,1,is8),idbfm3
      +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
 
             fct=fc3_b
-            call scal_adv_fact('bfm_8',is8,fct,b3cn_b(1,1,is8),bfm3
+            call scal_adv_fact('bfm_8',is8,fct,b3cn_b(1,1,is8),idbfm3
      +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
          end do
 
@@ -585,7 +594,7 @@ c------------------------------------------------------
 
          is9 = 3
          fct=fc3_c
-         call scal_adv_fact('bfm_9',is9,fct,b3cn_c(1,1,is9),bfm3
+         call scal_adv_fact('bfm_9',is9,fct,b3cn_c(1,1,is9),idbfm3
      +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
 
 !------------------------------------------------------

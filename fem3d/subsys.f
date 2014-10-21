@@ -110,6 +110,7 @@ c 16.05.2013	ggu	file name bound renamed to zinit
 c 28.03.2014	ggu	some new params for lagrangian
 c 10.04.2014	ccf	new section "wrt" for water renewal time
 c 30.05.2014	ggu	new default for dragco, new metpnt
+c 20.10.2014	ggu	new default for date (-1)
 c
 c************************************************************************
 
@@ -269,7 +270,7 @@ c |time|                The real time corresponding to time 0. (Default 0)
 c |tz|                  The time zone you are in. This is 0 for GMT, 1 for MET
 c                       and 2 for MEST (MET summer time). (Default 0)
 
-        call addpar('date',0.)
+        call addpar('date',-1.)
         call addpar('time',0.)
         call addpar('tz',0.)
 
@@ -1221,6 +1222,9 @@ c			(Default 1)
 	call addpar('itanf',-1.)	!time start
 	call addpar('itend',-1.)	!time end
 	call addpar('nout',1.)		!time frequence
+
+	call addpar('atanf',-1.)	!time start (absolute)
+	call addpar('atend',-1.)	!time end (absolute)
 
 c DOCS	END
 

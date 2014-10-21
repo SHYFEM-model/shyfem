@@ -72,6 +72,7 @@ c 29.04.2008    ccf     save temref and salref in common
 c 09.10.2008    ggu     new call to confop
 c 28.04.2009    ggu     links re-structured
 c 25.01.2013    ggu     mixed real/double common blocks spearated
+c 21.10.2014    ggu     converted to new boundary treatment
 c
 !****************************************************************************
 
@@ -159,15 +160,14 @@ c
       real gsc(nsdim)                   !grainsize class
       common /gsc/gsc
 
-      real bnd3_sed(nb3dim,0:nbcdim)	!array containing boundary state
-      real bnd3_aux(nb3dim)		!aux array for boundaries
-      save bnd3_sed
-
-      character*80 sed2dn(1)
-      common /sed2dn/sed2dn
-
       real const3d(0:nlvdim,nkndim)
       common /const3d/const3d
+
+      integer idsedi(nbcdim)		!information on boundaries
+      save idsedi
+
+	integer itanf,nvar
+	double precision dtime0
 
       real hzoff
       integer isstart
@@ -196,7 +196,6 @@ c
       save gs,sbound
       save nscls,dist
       save hzoff
-      save /sed2dn/
       save /gsc/
       save /sedpa/
       save /percbd/
@@ -231,6 +230,8 @@ c
 ! Initialization
 ! ----------------------------------------------------------
 ! This section is called only the first time step when ICALL = 0
+
+        what = 'sedt'
 
         if( icall .le. -1 ) return
 
@@ -314,9 +315,12 @@ c
             dist(j) = distr(i)
           end do
 
-	  nintp = 2
-          call bnds_init(what,sed2dn,nintp,nscls,nb3dim,bnd3_sed,sbound)
-	  !call bnds_set_def(what,nb3dim,bnd3_sed,bnd3_aux)
+	  call get_first_time(itanf)
+          dtime0 = itanf
+          nintp = 2
+          nvar = nscls
+          call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
+     +                          ,sbound,idsedi)
 
 !         --------------------------------------------------
 !	  Initializes output
@@ -335,8 +339,6 @@ c
 ! -------------------------------------------------------------------
 ! Normal call
 ! -------------------------------------------------------------------
-
-        what = 'sedt'
 
         TIMEDR = dt
         tsec = it
@@ -378,12 +380,6 @@ c
 
         call upedepth(bdh)
 
-!       -------------------------------------------------------------
-!       Boundary condition for suspended sediment
-!       -------------------------------------------------------------
-
-	call scal_bnd(what,tsec,bnd3_sed)
-
 !       -------------------------------------------------------------------
 !       Transport and diffusion for each sediment class
 !       -------------------------------------------------------------------
@@ -401,7 +397,7 @@ c
 
 	  wsink = wsi(is)	!ggu error -> should be wsi(is)??
           call scal_adv_fact(what,ivar,dist(is)
-     +                          ,scc(1,1,is),bnd3_sed
+     +                          ,scc(1,1,is),idsedi
      +                          ,sedkpar,wsink,const3d
      +                          ,difhv,difv,difmol)
 
@@ -417,11 +413,13 @@ c !$OMP END PARALLEL
 c !$OMP PARALLEL PRIVATE(is,wsink)
 !$OMP DO SCHEDULE(DYNAMIC)
 
+	!why do we start from  isstart and not from nbcc+1 ????
+
         do is = isstart,nscls
 
           wsink = ws(is)
           call scal_adv(what,is
-     +                          ,scn(1,1,is),bnd3_sed
+     +                          ,scn(1,1,is),idsedi
      +                          ,sedkpar,wsink
      +                          ,difhv,eps(1,1,is),difmol)
 

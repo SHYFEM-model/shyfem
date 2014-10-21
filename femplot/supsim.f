@@ -5,6 +5,7 @@ c utility routines for plotsim
 c
 c contents :
 c
+c subroutine plofem(type,ivarin)
 c subroutine plonos(type)
 c subroutine mkvarline(ivar,line)       makes variable description in nos file
 c subroutine plozet
@@ -64,6 +65,7 @@ c 26.03.2012    ccf&ggu	call mkht only for bvel .or. btrans (plo2vel)
 c 13.06.2013    ggu	new routine plofem()
 c 05.09.2013    ggu	endtime() and nplot introduced
 c 30.05.2014    ggu	flag no data points and do not plot
+c 20.10.2014    ggu	new time management
 c
 c notes :
 c
@@ -74,7 +76,7 @@ c**********************************************************
 c**********************************************************
 c**********************************************************
 
-	subroutine plofem(type,ivar)
+	subroutine plofem(type,ivarin)
 
 c 3D concentrations
 
@@ -83,7 +85,7 @@ c 3D concentrations
 	include 'param.h'
 
 	character*(*) type
-	integer ivar
+	integer ivarin
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -95,11 +97,12 @@ c 3D concentrations
 	common /fvlv/fvlv
 
         character*80 line
-	integer nrec,it,ivel,nplot
-	integer ivaria
+	integer nrec,ivel,nplot
+	integer ivaria,ivar
 	integer level,isect
-	logical femnext,oktime,endtime
+	logical femnext,ptime_ok,ptime_end
 	integer getlev,getisec
+	double precision atime
 
 	nrec = 0
 	nplot = 0
@@ -107,18 +110,20 @@ c 3D concentrations
         isect = getisec()
 
 	call femopen(type)
-	call timeask
+	ivar = ivarin
+	write(6,*) 'ivar: ',ivar
 	call checkvar(ivar)
 
         call mkvarline(ivar,line)
 	ivaria = ivar
 
-	do while( femnext(it,ivaria,nlvdim,nkn,p3) )
+	do while( femnext(atime,ivaria,nlvdim,nkn,p3) )
 	  nrec = nrec + 1
-	  write(6,*) 'new record: ',nrec,it,ivaria,ivar
+	  write(6,*) 'new record: ',nrec,ivaria,ivar,atime
 	  if( ivar .ne. ivaria ) goto 99
-	  if( endtime(it) ) exit
-	  if( oktime(it) ) then
+	  !call ptime_info
+	  if( ptime_end() ) exit	!FIXME
+	  if( ptime_ok() ) then
 	    nplot = nplot + 1
             if( isect .eq. 0 ) then
 	      write(6,*) '..........horizontal plotting nodes ',nplot
@@ -197,7 +202,7 @@ c 3D concentrations
 	integer nrec,it,nplot
 	integer ivaria
 	integer level,ivar,isect
-	logical nosnext,oktime,okvar,endtime
+	logical nosnext,okvar,ptime_ok,ptime_end
 	integer getlev,getisec
 
 	nrec = 0
@@ -208,7 +213,6 @@ c 3D concentrations
 
 	call nosopen(type)
 	call fvlopen('.fvl')
-	call timeask
 	call checkvar(ivar)
 
         call mkvarline(ivar,line)
@@ -217,8 +221,8 @@ c 3D concentrations
 	  nrec = nrec + 1
 	  call fvlnext(it,nlvdim,fvlv)
 	  write(6,*) 'new record: ',nrec,it,ivaria,ivar
-	  if( endtime(it) ) exit
-	  if( oktime(it) .and. okvar(ivaria) ) then
+	  if( ptime_end() ) exit
+	  if( ptime_ok() .and. okvar(ivaria) ) then
 	    nplot = nplot + 1
             if( isect .eq. 0 ) then
 	      write(6,*) '..........horizontal plotting nodes ',nplot
@@ -264,7 +268,7 @@ c 3D concentrations (element values)
 	integer nrec,it,nplot
 	integer ivaria
 	integer level,ivar,isect
-	logical eosnext,oktime,okvar,endtime
+	logical eosnext,okvar,ptime_ok,ptime_end
 	integer getlev,getisec
 
 	nrec = 0
@@ -274,7 +278,6 @@ c 3D concentrations (element values)
 	ivar = ivar_in
 
 	call eosopen(type)
-	call timeask
 	call checkvar(ivar)
 
         call mkvarline(ivar,line)
@@ -282,8 +285,8 @@ c 3D concentrations (element values)
 	do while( eosnext(it,ivaria,nlvdim,p3) )
 	  nrec = nrec + 1
 	  write(6,*) nrec,it,ivaria,ivar
-	  if( endtime(it) ) exit
-	  if( oktime(it) .and. okvar(ivaria) ) then
+	  if( ptime_end() ) exit
+	  if( ptime_ok() .and. okvar(ivaria) ) then
 	    nplot = nplot + 1
             if( isect .eq. 0 ) then
 	      write(6,*) '..........horizontal plotting elements ',nplot
@@ -339,19 +342,18 @@ c**********************************************************
 	common /znv/znv
 
 	integer nrec,it,k,nplot
-	logical ousnext,oktime,endtime
+	logical ousnext,ptime_ok,ptime_end
 
 	nrec = 0
 	nplot = 0
 
 	call ousopen
-	call timeask
 
 	do while( ousnext(it) )
 	  nrec = nrec + 1
 	  write(6,*) nrec,it
-	  if( endtime(it) ) exit
-	  if( oktime(it) ) then
+	  if( ptime_end() ) exit
+	  if( ptime_ok() ) then
 	    nplot = nplot + 1
 	    write(6,*) '..........plotting ',nplot
 	    call prepsim
@@ -379,19 +381,18 @@ c plots barene
 	common /parray/parray
 
 	integer nrec,it,k,nplot
-	logical ousnext,oktime,endtime
+	logical ousnext,ptime_ok,ptime_end
 
 	nrec = 0
 	nplot = 0
 
 	call ousopen
-	call timeask
 
 	do while( ousnext(it) )
 	  nrec = nrec + 1
 	  write(6,*) nrec,it
-	  if( endtime(it) ) exit
-	  if( oktime(it) ) then
+	  if( ptime_end() ) exit
+	  if( ptime_ok() ) then
 	    nplot = nplot + 1
 	    write(6,*) '..........plotting ',nplot
 	    call plozbar
@@ -412,20 +413,19 @@ c**********************************************************
 
 	integer nrec,it,nplot
         integer ivel
-	logical wavenext,oktime,endtime
+	logical wavenext,ptime_ok,ptime_end
 
 	nrec = 0
 	nplot = 0
         ivel = 4	!wave
 
 	call waveopen
-	call timeask
 
 	do while( wavenext(it) )
 	  nrec = nrec + 1
 	  write(6,*) nrec,it
-	  if( endtime(it) ) exit
-	  if( oktime(it) ) then
+	  if( ptime_end() ) exit
+	  if( ptime_ok() ) then
 	    nplot = nplot + 1
 	    write(6,*) '..........plotting ',nplot
 	    call resetsim
@@ -455,7 +455,7 @@ c**********************************************************
 	real p3(nlvdim,nkndim)
 	common /p3/p3
 
-	logical velnext,oktime,endtime
+	logical velnext,ptime_ok,ptime_end
 	integer getisec
 
         if( bvel ) then
@@ -469,13 +469,12 @@ c**********************************************************
 	nplot = 0
 
 	call velopen
-	call timeask
 
 	do while( velnext(it) )
 	  nrec = nrec + 1
 	  write(6,*) nrec,it
-	  if( endtime(it) ) exit
-	  if( oktime(it) ) then
+	  if( ptime_end() ) exit
+	  if( ptime_ok() ) then
 	    nplot = nplot + 1
             if( isect .eq. 0 ) then
 	      write(6,*) '..........horizontal plotting ',nplot
@@ -514,12 +513,11 @@ c plots node values
 
 	real pmin,pmax,flag
 	real getpar
-        integer gettime
 
         call get_flag(flag)
 
 	call qstart
-        call annotes(gettime(),title)
+        call annotes(title)
 	call bash(0)
 
 	call get_minmax_flag(parray,nkn,pmin,pmax)
@@ -558,12 +556,11 @@ c plots element values
 
 	real pmin,pmax,flag
 	real getpar
-        integer gettime
 
         call get_flag(flag)
 
 	call qstart
-        call annotes(gettime(),title)
+        call annotes(title)
 	call bash(0)
 
 	call get_minmax_flag(parray,nel,pmin,pmax)
@@ -630,12 +627,7 @@ c**********************************************************
 
 	integer ivel
 
-	logical is2d
-
-	if( is2d() ) then
-	  write(6,*) 'plotting 2d...'
-	  call plo2vel(ivel,'2D ')
-	else if( ivel == 3 ) then
+	if( ivel == 3 ) then
 	  write(6,*) 'plotting wind...'
 	  call plo2vel(ivel,'2D ')
 	else if( ivel == 4 ) then
@@ -727,7 +719,7 @@ c ivel = 4	waves
 	integer nx,ny
 
 	real getpar,getcol
-	integer gettime,getlev
+	integer getlev
 
 	bdebug = .true.
 	bdebug = .false.
@@ -791,7 +783,7 @@ c	-----------------------------------------------------------
         else
           stop 'error stop plo2vel: internal error (3)'
         end if
-	call annotes(gettime(),line)
+	call annotes(line)
 	call bash(0)
 
 c------------------------------------------------------------------

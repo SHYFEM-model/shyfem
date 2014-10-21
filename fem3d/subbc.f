@@ -1247,12 +1247,6 @@ c gets info on file
 
 	if( iunit .le. 0 ) return
 
-c try 3D (fem-file) format
-
-!        call fem_file_get_params(bformat,iunit,it
-!     +                          ,nvers,np,lmax,nvar,ntype,ierr)
-!	if( ierr .eq. 0 ) return
-
 c try 0D (time series) format
 
 	np = 0

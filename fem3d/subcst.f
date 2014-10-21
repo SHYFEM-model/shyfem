@@ -11,6 +11,7 @@ c subroutine cstsetup           sets up modules
 c subroutine cstfile            reads files (str and bas)
 c
 c subroutine cktime		check time parameters
+c subroutine ckdate		check date parameter
 c subroutine ckcori		set coriolis parameter
 c
 c revision log :
@@ -32,6 +33,7 @@ c 14.08.2003    ggu     set depth values transferred to newini
 c 23.03.2006    ggu     use routine set_timeunit() to set time unit
 c 11.02.2009    ggu     in cstfile set fixed name for STR file
 c 15.07.2011    ggu     new call to read basin
+c 20.10.2014    ggu     new routine ckdate()
 c
 c************************************************************************
 
@@ -137,6 +139,7 @@ c	call ckoxy	!oxygen
 	call modules(M_CHECK)
 
 	call cktime	!check and correct time parameters
+	call ckdate	!check date parameter
 	call ckcori	!set coriolis parameter
 
 	end
@@ -210,6 +213,36 @@ c check time parameters
 	itunit = nint(dgetpar('itunit'))
 	call set_timeunit(itunit)
 
+	end
+
+c********************************************************************
+
+	subroutine ckdate
+
+c check date parameter
+
+	implicit none
+
+	integer date
+	double precision dgetpar
+
+	date = nint(dgetpar('date'))
+
+	if( date >= 0 ) return
+
+	write(6,*) 'The date parameter has not been set.'
+	write(6,*) 'The date parameter indicates the absolute date'
+	write(6,*) 'to which FEM time is relative to.'
+	write(6,*) 'The format for the date parameter is YYYY[MMDD].'
+	write(6,*) 'If you want to do without this faeture, please'
+	write(6,*) 'explicitly set the date parameter to 0'
+	write(6,*) 'in the parameter file.'
+	write(6,*) 'Examples:'
+	write(6,*) '   date = 20120101'
+	write(6,*) '   date = 2012       # same as above'
+	write(6,*) '   date = 0          # no date feature'
+
+	stop 'error stop ckdate: date'
 	end
 
 c********************************************************************

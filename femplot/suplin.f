@@ -129,7 +129,6 @@ c elems(1) is not used, etc..
 
 	logical inboxdim_noabs
 	logical bdebug,bdebug_scalar
-	integer gettime
 	integer ialfa,ichanm
 	real getpar
 	real hlog,divdist,roundm
@@ -205,10 +204,10 @@ c----------------------------------------------------------------
 c start plot
 c----------------------------------------------------------------
 
-	it = gettime()
+	call ptime_get_itime(it)
 
         call qstart
-        call annotes(it,'vertical plot')
+        call annotes('vertical plot')
 	call annote
 
 c----------------------------------------------------------------
