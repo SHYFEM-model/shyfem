@@ -1,3 +1,120 @@
+version  7_0_3    21-10-2014    VERS_7_0_3
+
+========================================================== 21-10-2014 - 7_0_3
+
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/femplot/plotsim.f:
+c 20.10.2014	ggu	handle absolute and plotting time
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/femplot/supsim.f:
+c 20.10.2014    ggu	new time management
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/femplot/suptim.f:
+c 20.10.2014  ggu     completely restructured, old routines deleted
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/femplot/supout.f:
+c 20.10.2014  ggu     deleted is2d() and out reading routines
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/femplot/supano.f:
+c 16.10.2014  ggu     annotes doesnt need it anymore
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/fem3d/subtsfile.f:
+c 20.10.2014    ggu     integrating datetime into time series
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/fem3d/aquabc_fem_interface.f:
+c 21.10.2014    ggu     converted to new boundary treatment
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/fem3d/subbfm.f:
+c 21.10.2014    ggu	converted to new boundary treatment
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/fem3d/newcon.f:
+c 20.10.2014    ggu     accept ids from calling routines
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/fem3d/newconz.f:
+c 20.10.2014    ggu     pass ids to scal_adv routines
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/fem3d/subcst.f:
+c 20.10.2014    ggu     new routine ckdate()
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/fem3d/newbcl.f:
+c 20.10.2014    ggu     pass ids to scal_adv()
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/fem3d/bio3d.f:
+c 21.10.2014    ggu     converted to new boundary treatment
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/fem3d/sedi3d.f:
+c 21.10.2014    ggu     converted to new boundary treatment
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/fem3d/atoxi3d.f:
+c 21.10.2014    ggu     converted to new boundary treatment
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/fem3d/subsys.f:
+c 20.10.2014	ggu	new default for date (-1)
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/fem3d/subfemfile.f:
+c 20.10.2014	ggu	second version (date record is just after first record)
+c
+c ./tmp/shyfem-d10f7da76c_2014-10-21_stable/fem3d/subfemintp.f:
+! 20.10.2014	ggu	deal with datetime in fem/ts files
+!
+c ./femplot/plotsim.f:
+c 20.10.2014	ggu	handle absolute and plotting time
+c
+c ./femplot/supsim.f:
+c 20.10.2014    ggu	new time management
+c
+c ./femplot/suptim.f:
+c 20.10.2014  ggu     completely restructured, old routines deleted
+c
+c ./femplot/supout.f:
+c 20.10.2014  ggu     deleted is2d() and out reading routines
+c
+c ./femplot/supano.f:
+c 16.10.2014  ggu     annotes doesnt need it anymore
+c
+c ./fem3d/subtsfile.f:
+c 20.10.2014    ggu     integrating datetime into time series
+c
+c ./fem3d/aquabc_fem_interface.f:
+c 21.10.2014    ggu     converted to new boundary treatment
+c
+c ./fem3d/subver.f:
+c 21.10.2014	ggu	version 7.0.3
+c
+c ./fem3d/subbfm.f:
+c 21.10.2014    ggu	converted to new boundary treatment
+c
+c ./fem3d/newcon.f:
+c 20.10.2014    ggu     accept ids from calling routines
+c
+c ./fem3d/newconz.f:
+c 20.10.2014    ggu     pass ids to scal_adv routines
+c
+c ./fem3d/subcst.f:
+c 20.10.2014    ggu     new routine ckdate()
+c
+c ./fem3d/newbcl.f:
+c 20.10.2014    ggu     pass ids to scal_adv()
+c
+c ./fem3d/bio3d.f:
+c 21.10.2014    ggu     converted to new boundary treatment
+c
+c ./fem3d/sedi3d.f:
+c 21.10.2014    ggu     converted to new boundary treatment
+c
+c ./fem3d/atoxi3d.f:
+c 21.10.2014    ggu     converted to new boundary treatment
+c
+c ./fem3d/subsys.f:
+c 20.10.2014	ggu	new default for date (-1)
+c
+c ./fem3d/subfemfile.f:
+c 20.10.2014	ggu	second version (date record is just after first record)
+c
+c ./fem3d/subfemintp.f:
+! 20.10.2014	ggu	deal with datetime in fem/ts files
+
+==========================================================
+
 version  7_0_2    13-10-2014    VERS_7_0_2   commit_2014-10-21
 
 version  7_0_2    13-10-2014    VERS_7_0_2
