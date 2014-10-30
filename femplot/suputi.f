@@ -303,3 +303,27 @@ c	---------------------------------------------
 
 c**************************************************
 
+        subroutine convert_wind(s,d,u,v)
+
+        implicit none
+
+        real s,d,u,v
+
+        real dir
+        real pi,rad
+        parameter(pi=3.14159,rad=pi/180.)
+
+        dir = d
+        dir = 90. - dir + 180.
+        do while( dir .lt. 0. )
+          dir = dir + 360.
+        end do
+        dir = mod(dir,360.)
+
+        u = s*cos(rad*dir)
+        v = s*sin(rad*dir)
+
+        end subroutine convert_wind
+
+c**************************************************
+

@@ -101,6 +101,7 @@ fem3d/lgrinf
 fem3d/baswork
 fem3d/ouswrite
 fem3d/eosinf
+fem3d/fileinf
 fem3d/noswrite
 fem3d/basbox
 fem3d/feminf
@@ -154,6 +155,7 @@ fembin/feminf
 fembin/offinf
 fembin/lgrinf
 fembin/etsinf
+fembin/fileinf
 fembin/splitets
 fembin/bc2fem
 

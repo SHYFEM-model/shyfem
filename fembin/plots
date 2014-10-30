@@ -15,6 +15,7 @@ PLOTDIR=$FEMDIR/femplot
 prog=$PLOTDIR/plotsim
 CR=$BINDIR/CR
 memory=$BINDIR/memory
+atime=$BINDIR/atime.pl
 
 logo_where=""
 logo_file=$BINDIR/logo/logo.eps            #file to be included as logo
@@ -56,6 +57,8 @@ HelpLong() {
   echo "  var            id of scalar value"
   echo "  varnam         name of scalar value"
   echo "  time           freq | itstart,itend | itstart,itend,freq"
+  echo "                 itstart,itend can be relative (to 0 FEM in secs)"
+  echo "                 or absolute as YYYY-[MM-DD::hh:mm:ss]"
   echo "  simul          simulation name"
   echo "  basin          basin name"
   echo "  logo_where     position to insert logo (see gpsinsert)"
@@ -109,10 +112,22 @@ WriteTime() {
 
   if [ $# -eq 1 ]; then
     echo "     nout = $1 "
-  elif [ $# -eq 2 ]; then
-    echo "     itanf = $1    itend = $2"
-  elif [ $# -eq 3 ]; then
-    echo "     itanf = $1    itend = $2     nout = $3"
+  elif [ $# -eq 2 -o $# -eq 3 ]; then
+    anf=`$atime $1`
+    if [ $anf -eq 0 ]; then
+      echo "     itanf = $1"
+    else
+      echo "     atanf = $anf"
+    fi
+    end=`$atime $2`
+    if [ $end -eq 0 ]; then
+      echo "     itend = $2"
+    else
+      echo "     atend = $end"
+    fi
+    if [ $# -eq 3 ]; then
+      echo "     nout = $3"
+    fi
   fi
 }
 

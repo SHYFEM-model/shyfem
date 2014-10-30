@@ -89,10 +89,12 @@ c Klaipeda
         c_param(3) = 0.              !false northing
         c_param(4) = 0.9998          !scale factor
 
-	iproj = 2		     !UTM
-        c_param(1) = 34.             !zone
-        c_param(2) = -500000.        !false easting
-        c_param(3) = 0.              !false northing
+c ??
+
+c	iproj = 2		     !UTM
+c        c_param(1) = 34.             !zone
+c        c_param(2) = -500000.        !false easting
+c        c_param(3) = 0.              !false northing
 
 c Laguna di Venezia
 

@@ -99,6 +99,11 @@ c sets time limits
 	  call ptime_i2a(itmax,atimemax)
 	end if
 
+	!write(6,*) '++++++++++++++++++++++++++++++++++++++++++'
+	!write(6,*) atime0
+	!write(6,*) itmin,itmax,atimemin,atimemax
+	!write(6,*) '++++++++++++++++++++++++++++++++++++++++++'
+
 	itfreq = nint(dgetpar('nout'))
         if( itfreq .eq. 0 ) itfreq = 1
 
@@ -131,7 +136,7 @@ c******************************************************
 	write(6,*) 
 	write(6,*) 'atime0: ',atime0
 	write(6,*) 'atimeact: ',atimeact
-	write(6,*) 'itain,atmax: ',atimemin,atimemax
+	write(6,*) 'atmin,atmax: ',atimemin,atimemax
 	write(6,*) '---------------------------------'
 
 	end

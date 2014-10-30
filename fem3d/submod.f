@@ -9,7 +9,7 @@ c cstsetup	M_SETUP		after setup of basic arrays (ev,...)
 c
 c look in subnsh for read, write and others
 c
-c prilog	M_PRINT		after everything has been setup (defore loop)
+c prilog	M_PRINT		after everything has been setup (before loop)
 c pritst	M_TEST		only for debug
 c
 c dobefor	M_BEFOR		beginning of each time loop

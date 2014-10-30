@@ -30,6 +30,8 @@ c        subroutine ets_get_params(iunit,nkn,nlv,nvar)
 c        subroutine ets_set_params(iunit,nkn,nlv,nvar)
 c        subroutine ets_clone_params(iu_from,iu_to)
 c
+c	 subroutine ets_is_ets_file(iunit,nvers)
+c
 c        subroutine ets_read_header(iunit,nkn,nlv,nvar,ierr)
 c        subroutine ets_write_header(iunit,nkn,nlv,nvar,ierr)
 c        subroutine ets_read_header2(iu,ilhkv,hlv,hkv
@@ -613,6 +615,38 @@ c should be only used to write file -> nvers should be max version
 	do i=1,nchdim
 	  etschar(i,nt) = etschar(i,nf)
 	end do
+
+	end
+
+c************************************************************
+c************************************************************
+c************************************************************
+
+        subroutine ets_is_ets_file(iunit,nvers)
+
+c checks if iunit is open on ets file - returns nvers
+c
+c nvers == 0    no nos file (ntype is different) or read error
+c nvers < 0     version number is wrong
+c nvers > 0     good nos file
+
+        implicit none
+
+        include 'etsinf.h'
+
+        integer iunit,nvers
+
+        integer ntype
+
+        nvers = 0
+        if( iunit .le. 0 ) return
+
+        read(iunit,end=1,err=1) ntype,nvers
+
+        if( ntype .ne. ftype ) nvers = 0
+        if( nvers .le. 0 .or. nvers .gt. maxvers ) nvers = -abs(nvers)
+
+    1   continue
 
 	end
 

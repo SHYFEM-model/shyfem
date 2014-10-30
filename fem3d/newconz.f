@@ -457,8 +457,6 @@ c simulates decay for concentration
         common /hdknv/hdknv
         real saltv(nlvdim,1),tempv(nlvdim,1)
         common /saltv/saltv, /tempv/tempv
-        real metrad(nkndim)
-        common /metrad/metrad
 
         integer k,l,i,lmax
         real aux,dtt,rk,alpha
@@ -475,8 +473,8 @@ c simulates decay for concentration
 
         do k=1,nkn
           lmax = ilhkv(k)
-	  solrad = metrad(k)		!solar radiation [W/m**2]
-	  solrad = 500.
+	  call meteo_get_solar_radiation(k,solrad)  !solar radiation [W/m**2]
+	  !solrad = 500.
 	  hdep = 0.
           do l=1,lmax
 	    h = hdknv(l,k)

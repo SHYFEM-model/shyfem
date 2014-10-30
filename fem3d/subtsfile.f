@@ -9,6 +9,11 @@ c*************************************************************
 
 	subroutine ts_get_file_info(file,nvar)
 
+c get info on time series file (TS)
+c
+c nvar is returned as the number of available columns (except ttime)
+c nvar <= 0 for error or no TS file
+
 	implicit none
 
 	character*(*) file	!file name
@@ -57,22 +62,21 @@ c------------------------------------------------------
 	  end if
 	end do
 
-	!write(6,*) 'ts_get_file_info: ',iline,nrec,nvar,nvar0
-
 	if( nvar /= nvar0 ) nvar = 0
+
+	!write(6,*) 'ts_get_file_info: ',iline,nrec,nvar,nvar0
 
 c------------------------------------------------------
 c close file
 c------------------------------------------------------
 
+    2	continue
 	close(iunit)
 
 c------------------------------------------------------
 c end of routine
 c------------------------------------------------------
 
-    2	continue
-	write(6,*) 'ts_get_file_info: ',iline,nrec,nvar,nvar0
 	return
     3	continue
 	write(6,*) 'read error in line ',nrec,' of file ',file

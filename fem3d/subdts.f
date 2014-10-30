@@ -1000,7 +1000,11 @@ c formats date and time given absolute time
         call days2date(days,year,month,day)
         call secs2hms(secs,hour,min,sec)
 
-	call dtsform(year,month,day,hour,min,sec,line)
+	if( year > 1000 ) then
+	  call dtsform(year,month,day,hour,min,sec,line)
+	else
+	  call dtsform(0,0,days,hour,min,sec,line)
+	end if
 
 	end
 

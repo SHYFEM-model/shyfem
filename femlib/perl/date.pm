@@ -20,8 +20,10 @@
 #
 # 10.03.2010	ggu	bug in adjust_mod() -> account for negative values
 # 28.09.2010	ggu	new test routine test_femdate()
+# 21.10.2014	ggu	absolute time routines introduced
+# 21.10.2014	ggu	refer to 1.1.1 (date2days and days2date)
 #
-# version 2.1
+# version 2.2
 #
 ##############################################################
 
@@ -179,14 +181,24 @@ sub convert_args		# internal routine
 	my ($year,$month,$day);
 	my ($hour,$min,$sec);
 
-	my $date = int($_[0]+0.5);	#convert to numeric
-	my $time = int($_[1]+0.5);
+	my @args = @_;
+
+	$args[0] = 0 unless $args[0];
+	$args[1] = 0 unless $args[1];
+
+	my $date = int($args[0]+0.5);	#convert to numeric
+	my $time = int($args[1]+0.5);
 
 	if( $date > 10000 ) {		# must convert
 	  ($year,$month,$day) = $self->unpack_date($date);
 	  ($hour,$min,$sec)   = $self->unpack_time($time);
 	} else {			# already converted
 	  ($year,$month,$day,$hour,$min,$sec) = @_;
+	  $month = 1 unless $month;
+	  $day = 1 unless $day;
+	  $hour = 0 unless $hour;
+	  $min = 0 unless $min;
+	  $sec = 0 unless $sec;
 	}
 
 	return ($year,$month,$day,$hour,$min,$sec);
@@ -224,6 +236,46 @@ sub init_it
 	$self->{days0} = $days0;
 	$self->{secs0} = $secs0;
 }
+
+#--------------------------------
+
+sub convert_to_abs
+{
+	my $self = shift;
+
+	my ($year,$month,$day,$hour,$min,$sec) = $self->convert_args(@_);
+
+	my $days = $self->date2days($year,$month,$day);
+	my $secs = $self->time2secs($hour,$min,$sec);
+
+	return 86400.*$days + $secs;
+}
+
+sub convert_from_abs
+{
+	my ($self,$atime) = @_;
+
+        my $days = int($atime/86400.);
+        my $secs = $atime - 86400.*$days;
+
+        my ($year,$month,$day) = $self->days2date($days);
+        my ($hour,$min,$sec) = $self->secs2time($secs);
+
+        my $date = $self->pack_date($year,$month,$day);
+        my $time = $self->pack_time($hour,$min,$sec);
+
+	return ($date,$time);
+}
+
+sub format_abs
+{
+	my ($self,$atime) = @_;
+
+	my ($date,$time) = $self->convert_from_abs($atime);
+	return $self->format_time_date($date,$time);
+}
+
+#--------------------------------
 
 sub convert_to_it
 {
@@ -366,14 +418,17 @@ sub date2days		#days from 1/1/1
 	my $y = $year - 1;
 	my $days = 365*$y + int($y/4) - int($y/100) + int($y/400);
 
-	return $days + $self->date2julian($year,$month,$day);
+	my $jd = $self->date2julian($year,$month,$day);
+	#return $days + $jd;	#old - one day off
+	return $days + $jd - 1;
 }
 
 sub days2date
 {
 	my ($self,$days) = @_;
 
-	my $days1 = $days - 1;
+	#my $days1 = $days - 1;	#old - one day off
+	my $days1 = $days;
 
 	my $y = 2 + int( (400*$days)/(365*400+97) );	#rough first estimate
 
@@ -868,6 +923,47 @@ sub test_femdate
 	}
 }
 
+sub test_abs_time
+{
+	my $pdate = new date;
+
+	my $niter = 100;
+	my $date = 0;
+	my $time = 0;
+	my $line = "";
+
+	my $atime = 86400;
+	$line = $pdate->format_abs($atime);
+	print "$line   $atime\n";
+
+	$date = 1;
+	$atime = $pdate->convert_to_abs($date,$time);
+	$line = $pdate->format_abs($atime);
+	print "$line   $atime\n";
+
+	$date = 3000;
+	$atime = $pdate->convert_to_abs($date,$time);
+	$line = $pdate->format_abs($atime);
+	print "$line   $atime\n";
+
+	my $amax = $atime;
+	my $dt = int($amax/$niter);
+
+	for(my $i=1;$i<=$niter;$i++) {
+	  $atime = $i*$dt;
+	  ($date,$time) = $pdate->convert_from_abs($atime);
+	  my $atime1 = $pdate->convert_to_abs($date,$time);
+	  $line = $pdate->format_abs($atime);
+	  print "  $atime  $atime1   $line  $date $time\n";
+	  if( $atime != $atime1 ) {
+	    my $adiff = $atime-$atime1;
+	    die "*** $atime  $atime1   $adiff   $line\n";
+	  }
+	}
+	
+}
+
+
 ##########################################################################
 
 sub test_this
@@ -880,7 +976,8 @@ sub test_this
 }
 
 #test_this() if $0 =~ /date.pm$/;
-test_weekday() if $0 =~ /date.pm$/;
+#test_weekday() if $0 =~ /date.pm$/;
+test_abs_time() if $0 =~ /date.pm$/;
 
 ################################
 1;

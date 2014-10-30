@@ -61,22 +61,24 @@ commands:
 
 gitcommit		makes commit writing to COMMIT
 gitinfo			this help file
+gitdiff file		visually compares file
 gittag			tags actual commit writing to VERSION
 gittags			shows commits and corresponding tags
 gittar			makes tar file for given version
 
 todo for a new version:
 
-git status
-git diff <file>
-revision_last		-> output should go into LOG, BUG and RELEASE_NOTES
-git add -u
+iterate:
+	git status
+	git diff <file>
+	make test_compile
+	make regress
+	make doc
+	revision_last	-> output should go into LOG, BUG and RELEASE_NOTES
+	git add -u
 
-make test_compile
-make regress
 make dist
 git add -u
-
 gitcommit
 make test_stable
 

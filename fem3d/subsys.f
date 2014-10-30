@@ -498,6 +498,7 @@ c \input{P_wind.tex}
 	call addpar('itdrag',0.)
 	call addpar('dragco',2.5e-3)
 	call addpar('wsmax',50.)
+	call addpar('wslim',-1.)
 
 cc------------------------------------------------------------------------
 
@@ -775,7 +776,7 @@ cc rain
 	call addpar('zdist',0.)		!distributed water level
 
 	call addpar('idtbox',0.)	!for boxes
-	call addpar('itmbox',0.)
+	call addpar('itmbox',-1.)
 	call addpar('idtoff',0.)	!for offline
 
 	call addpar('inohyd',0.)	!for non-hydrostatic model

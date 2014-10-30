@@ -5,8 +5,10 @@ c initialization routines
 c
 c contents :
 c
+c subroutine sp13test(nb,nvers)			tests if file is BAS file
 c subroutine sp13rr(nb,nkndim,neldim)		unformatted read from lagoon
 c subroutine sp13uw(nb)				unformatted write to lagoon
+c subroutine sp13ts(nvers,nb,n)			test write to unit nb
 c
 c revision log :
 c
@@ -14,7 +16,62 @@ c 31.05.1997	ggu	unnecessary routines deleted
 c 27.06.1997	ggu	bas routines into own file
 c 02.04.2009	ggu	error messages changed
 c 12.01.2011	ggu	debug routine introduced (sp13ts)
+c 23.10.2014	ggu	introduced ftype and nvers = 4
 c
+c***********************************************************
+
+	subroutine sp13test(nb,nvers)
+
+c tests if file is BAS file
+c
+c nvers > 0 if file is BAS file
+
+	implicit none
+
+	integer nb	!unit number
+	integer nvers	!version found (return) (<=0 if error or no BAS file)
+
+	integer ftype,nversm
+	parameter (ftype=789233567,nversm=4)
+
+	integer ntype,nversa
+
+	nvers = 0
+
+	if(nb.le.0) return
+
+c-----------------------------------------------------------
+c try new format with ftype information
+c-----------------------------------------------------------
+
+	rewind(nb)
+	read(nb,err=1,end=1) ntype,nversa
+	if( ntype .ne. ftype ) return
+	if( nversa .le. 3 .or. nversa .gt. nversm ) nversa = -abs(nversa)
+
+	nvers = nversa
+	return
+
+c-----------------------------------------------------------
+c try old format without ftype information - nvers must be 3
+c-----------------------------------------------------------
+
+    1	continue
+	rewind(nb)
+	read(nb,err=2,end=2) nversa
+	if( nversa .ne. 3 ) nversa = -abs(nversa)
+
+	nvers = nversa
+	return
+
+c-----------------------------------------------------------
+c definitely no BAS file
+c-----------------------------------------------------------
+
+    2	continue
+	return
+	end
+
 c***********************************************************
 
 	subroutine sp13rr(nb,nkndi,neldi)
@@ -44,19 +101,11 @@ c iunit		unit number of file to be read
 	common /ipv/ipv, /ipev/ipev
 
 	integer i,ii,nvers
-	integer nversa
-	save nversa
-c -------------------------
-	data nversa / 3 /
-c -------------------------
 
-	if(nb.le.0) goto 99
+	call sp13test(nb,nvers)
 
-	rewind(nb)
-
-	read(nb) nvers
-
-	if(nvers.lt.nversa) goto 98
+	if(nvers.eq.0) goto 99
+	if(nvers.lt.0) goto 98
 
 	read(nb) nkn,nel,ngr,mbw
 	read(nb) dcor,dirn
@@ -79,11 +128,11 @@ c	call sp13ts(nvers,79,0)
    99	continue
 	write(6,*) 'Reading basin...'
 	write(6,*) 'Cannot read bas file on unit :',nb
-	stop 'error stop : sp13ur'
+	stop 'error stop : sp13rr'
    98	continue
 	write(6,*) 'Reading basin...'
-	write(6,*) 'Cannot read version < ',nversa
-	write(6,*) 'nvers = ',nvers
+	write(6,*) 'Cannot read version'
+	write(6,*) 'nvers = ',-nvers
 	stop 'error stop : sp13rr'
    97	continue
 	write(6,*) 'Reading basin...'
@@ -123,17 +172,15 @@ c nb		unit number for write
 	common /ipv/ipv, /ipev/ipev
 
 	integer i,ii
-	integer nvers
-	save nvers
-c -------------------------
-	data nvers / 3 /
-c -------------------------
+
+	integer ftype,nversm
+	parameter (ftype=789233567,nversm=4)
 
 	if(nb.le.0) goto 99
 
 	rewind(nb)
 
-	write(nb) nvers
+	write(nb) ftype,nversm
 	write(nb) nkn,nel,ngr,mbw
 	write(nb) dcor,dirn
 	write(nb) descrr

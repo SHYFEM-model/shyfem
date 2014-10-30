@@ -17,6 +17,11 @@ FullUsage() {
 
 Usage() {
   echo "Usage: memory [-h|-help] [-q] [-a] [-s sim] [-b bas]"
+  echo "    -h|-help    this help screen"
+  echo "    -q          quiet - do not echo sim/bas"
+  echo "    -a          ask for names"
+  echo "    -s sim      set simulation"
+  echo "    -b bas      set basin"
 }
 
 WriteMem() {

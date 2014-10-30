@@ -56,6 +56,7 @@ c 03.09.2008    ggu     in nlsh2d different error message
 c 20.11.2008    ggu     init_3d deleted, nlv initialized to 0
 c 18.11.2009    ggu     new format in pritime (write also time step)
 c 22.02.2010    ggu     new call to hydro_stability to compute time step
+c 22.02.2010    ccf     new routine for tidal pot. (tideforc), locaus deleted
 c 26.02.2010    ggu     in set_timestep compute and write ri with old dt
 c 22.03.2010    ggu     some comments for better readability
 c 29.04.2010    ggu     new routine set_output_frequency() ... not finished
@@ -73,6 +74,7 @@ c 10.02.2012    ggu     new routines to initialize and access time common block
 c 05.03.2014    ggu     code prepared to repeat time step (irepeat) - not ready
 c 05.03.2014    ggu     new routines get_last/first_time()
 c 10.04.2014    ccf     new section "wrt" for water renewal time
+c 29.10.2014    ggu     do_() routines transfered from newpri.f
 c
 c************************************************************
 c
@@ -160,7 +162,24 @@ c	call prlgr		!prints float coordinates
 
 c********************************************************************
 
-	subroutine dobefor
+	subroutine do_init
+
+c to do before time loop
+
+	implicit none
+
+	include 'modules.h'
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	call wrboxa(it)
+
+	end
+
+c********************************************************************
+
+	subroutine do_befor
 
 c to do before time step
 
@@ -173,13 +192,16 @@ c to do before time step
 
 	call modules(M_BEFOR)
 
+        !call tidenew(it)       !tidal potential
+        call tideforc(it)       !tidal potential !ccf
+
 	call adjust_chezy
 
 	end
 
 c********************************************************************
 
-	subroutine doafter
+	subroutine do_after
 
 c to do after time step
 

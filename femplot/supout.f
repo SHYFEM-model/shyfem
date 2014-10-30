@@ -398,6 +398,8 @@ c initialize time
         if( date .ne. 0 ) then
           call dtsini(date,time)
 	  call ptime_set_date_time(date,time)
+	  call ptime_min_max
+	  call iff_init_global_date(date,time)
         end if
 
 	return
@@ -634,6 +636,8 @@ c initialize time
 	if( date .ne. 0 ) then
 	  call dtsini(date,time)
 	  call ptime_set_date_time(date,time)
+	  call ptime_min_max
+	  call iff_init_global_date(date,time)
 	end if
 
 c end
@@ -810,6 +814,8 @@ c initialize time
         if( date .ne. 0 ) then
           call dtsini(date,time)
 	  call ptime_set_date_time(date,time)
+	  call ptime_min_max
+	  call iff_init_global_date(date,time)
         end if
 
 c end

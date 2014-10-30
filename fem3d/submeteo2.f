@@ -87,14 +87,18 @@ c               \item[4] As in 3 but the speed is given in knots
 c               \end{description}
 c |itdrag|      Formula to compute the drag coefficient. A value of 0
 c               uses the constant value given in |dragco|. With 1
-c               the Smith and Banke formula is used.
-c |dragco|      Drag coefficient used in the above formula. The default value
-c               is 0 so it must be specified. Please note also that in case
+c               the Smith and Banke formula is used. (Default 0)
+c |dragco|      Drag coefficient used in the above formula. 
+c               Please note that in case
 c               of |iwtype| = 2 this value is of no interest, since the
-c               stress is specified directly.
+c               stress is specified directly. (Default 2.5E-3)
 c |wsmax|       Maximum wind speed allowed in [m/s]. This is in order to avoid
 c               errors if the wind data is given in a different format
 c               from the one spwecified by |iwtype|. (Default 50)
+c |wslim|	Limit maximum wind speed to this value [m/s]. This provides
+c		an easy way to exclude strong wind gusts that might
+c		blow up the simulation. Use with caution. 
+c		(Default -1, no limitation)
 c
 c DOCS  END
 
@@ -118,7 +122,7 @@ c DOCS  END
 	integer, save :: iwtype,itdrag
 	integer, save :: irtype
 	integer, save :: ihtype
-	real, save :: wsmax,dragco,roluft,rowass
+	real, save :: wsmax,wslim,dragco,roluft,rowass
 	real, save :: pfact = 1.
 	real, save :: wfact = 1.
 	real, save :: sfact = 1.
@@ -352,6 +356,7 @@ c DOCS  END
         iwtype = nint(getpar('iwtype'))
         itdrag = nint(getpar('itdrag'))
         wsmax = getpar('wsmax')
+        wslim = getpar('wslim')
         dragco = getpar('dragco')
         roluft = getpar('roluft')
         rowass = getpar('rowass')
@@ -480,7 +485,8 @@ c DOCS  END
 
 	logical bnowind,bstress,bspeed
 	integer k
-	real cd,wxymax,txy,wspeed,wdir
+	integer itact
+	real cd,wxymax,txy,wspeed,wdir,fact
 
 	bnowind = iwtype == 0
 	bstress = iwtype == 2
@@ -488,6 +494,10 @@ c DOCS  END
 	cd = dragco
 	wxymax = 0.
 	
+!	---------------------------------------------------------
+!	convert wind
+!	---------------------------------------------------------
+
         if( bnowind ) then              !no wind
 	  !nothing to be done
         else if( bstress ) then         !data is stress -> normalize it
@@ -526,6 +536,34 @@ c DOCS  END
           end do
         end if
 
+!	---------------------------------------------------------
+!	limit wind
+!	---------------------------------------------------------
+
+	call get_act_time(itact)
+	write(112,*) itact,wxymax
+	if( wslim > 0 .and. wxymax > wslim ) then !artificially limit wind speed
+	  call get_act_time(itact)
+	  write(111,*) 'limiting wind speed: ',itact,wxymax
+          do k=1,n
+            wspeed = ws(k)
+	    if( wspeed <= wslim ) cycle
+	    ws(k) = wslim
+	    fact = wslim/wspeed
+	    wx(k) = fact*wx(k)
+	    wy(k) = fact*wy(k)
+            wspeed = ws(k)
+            if( itdrag .gt. 0 ) call get_drag(itdrag,wspeed,cd)
+            tx(k) = wfact * cd * wspeed * wx(k)
+            ty(k) = wfact * cd * wspeed * wy(k)
+          end do
+	  wxymax = wslim
+	end if
+
+!	---------------------------------------------------------
+!	check wind speed
+!	---------------------------------------------------------
+
         if( wxymax .gt. wsmax ) then
           write(6,*) 'maximum wind speed: ',wxymax
           write(6,*) 'maximum allowed wind speed: ',wsmax
@@ -534,11 +572,19 @@ c DOCS  END
           stop 'error stop meteo_convert_wind_data: wind speed too high'
         end if
 
+!	---------------------------------------------------------
+!	convert pressure
+!	---------------------------------------------------------
+
 	if( pfact /= 1. ) then
           do k=1,n
 	    pp(k) = pfact * pp(k)
 	  end do
 	end if
+
+!	---------------------------------------------------------
+!	end of routine wind speed
+!	---------------------------------------------------------
 
 	end subroutine meteo_convert_wind_data
 

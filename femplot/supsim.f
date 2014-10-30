@@ -221,6 +221,7 @@ c 3D concentrations
 	  nrec = nrec + 1
 	  call fvlnext(it,nlvdim,fvlv)
 	  write(6,*) 'new record: ',nrec,it,ivaria,ivar
+	  !call ptime_info()
 	  if( ptime_end() ) exit
 	  if( ptime_ok() .and. okvar(ivaria) ) then
 	    nplot = nplot + 1

@@ -1,5 +1,50 @@
 ============================================================
 
+Thu Oct 30 11:26:30 CET 2014
+
+Intermediate version
+
+ .gitignore              |    2 +
+ LOG                     |   21 +
+ Makefile                |    2 +-
+ fem3d/Makefile          |   12 +-
+ fem3d/basproj.f         |   10 +-
+ fem3d/feminf.f          |  258 +++--------
+ fem3d/fileinf.f         |  121 +++++
+ fem3d/ht.f              |    8 +-
+ fem3d/newconz.f         |    6 +-
+ fem3d/newpr.f           |   62 ---
+ fem3d/subbas.f          |   87 +++-
+ fem3d/subboxa.f         | 1181 ++++++++++++++++++++++++++++++++++++++++++++---
+ fem3d/subboxa.h         |   19 +
+ fem3d/subdts.f          |    6 +-
+ fem3d/subets.f          |   34 ++
+ fem3d/subfemfile.f      |   51 ++
+ fem3d/subfemintp.f      |   26 +-
+ fem3d/subfil.f          |    2 +-
+ fem3d/submet.f          |    2 +-
+ fem3d/submeteo2.f       |   58 ++-
+ fem3d/submod.f          |    2 +-
+ fem3d/subnos.f          |   35 ++
+ fem3d/subnsh.f          |   26 +-
+ fem3d/subous.f          |   36 ++
+ fem3d/subsys.f          |    3 +-
+ fem3d/subtsfile.f       |   12 +-
+ fembin/atime.pl         |   61 +++
+ fembin/gitinfo          |   16 +-
+ fembin/memory           |    5 +
+ fembin/plots            |   23 +-
+ femdoc/final/shyfem.pdf |  Bin 271626 -> 271809 bytes
+ femdoc/final/shyfem.ps  |  535 +++++++++++-----------
+ femlib/perl/date.pm     |  109 ++++-
+ femplot/supout.f        |    6 +
+ femplot/supsim.f        |    1 +
+ femplot/suptim.f        |    7 +-
+ femplot/suputi.f        |   24 +
+ 37 files changed, 2197 insertions(+), 672 deletions(-)
+
+============================================================
+
 Tue Oct 21 13:54:32 CEST 2014
 
 New version 7_0_3

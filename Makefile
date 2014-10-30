@@ -264,7 +264,7 @@ test_stable:
 	@femcheck/test_stable.sh
 
 regress:
-	cd $(REGRESSDIR); make check
+	cd $(REGRESSDIR); ./regress_all.sh
 
 revision:
 	 $(FEMBIN)/revision_last

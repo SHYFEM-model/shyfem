@@ -110,7 +110,7 @@ MAKEDEPEND = $(FEMBIN)/mkdp.pl
 # 3D objects for 3D model
 
 NEWOBJS = \
-	  new3di.o newpr.o \
+	  new3di.o \
 	  newrog.o newcra.o \
 	  newbcl.o newbcl0.o \
 	  newini.o newtra.o \
@@ -134,7 +134,7 @@ SOBJS   = \
           subbas.o subnev.o subdim.o \
           subnls.o subwat.o \
           subfil.o subn35.o subout.o subous.o subssg.o \
-          subnsh.o subssm.o subzzz.o \
+          subssm.o subzzz.o \
           subnsu.o subsss.o subscn.o subres.o \
           subapn.o subnsa.o \
           subgrd.o subreg.o \
@@ -149,7 +149,7 @@ SOBJS   = \
 	  debug.o subhisto.o subnosa.o subfvl.o \
 	  subeos.o sigmautil.o \
 	  nosutil.o ousutil.o subfemfile.o subvintp.o \
-	  genutil.o subfemintp.o submeteo2.o subtsfile.o
+	  genutil.o subfemintp.o subtsfile.o
 
 # general objects for 3D model ht
 
@@ -216,7 +216,8 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subapn.o subnsa.o subdum.o \
 	  subbnd.o subdts.o subdep.o \
 	  debug.o subreg.o subnev.o \
-	  subfemfile.o subvintp.o subver.o sigmautil.o
+	  subfemfile.o subtsfile.o \
+	  subvintp.o subver.o sigmautil.o
 
 RSTOBJS = subrst.o ecological_dummy.o
 
@@ -461,6 +462,9 @@ nosinf:  nosinf.o $(NOSOBJS) $(OUTOBJS)
 
 nosinf2:  nosinf2.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+fileinf:  fileinf.o $(NOSOUSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
 
 feminf:  feminf.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@

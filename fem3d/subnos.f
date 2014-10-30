@@ -30,6 +30,8 @@ c        subroutine nos_get_params(iunit,nkn,nel,nlv,nvar)
 c        subroutine nos_set_params(iunit,nkn,nel,nlv,nvar)
 c        subroutine nos_clone_params(iu_from,iu_to)
 c
+c	 subroutine nos_is_nos_file(iunit,nvers)
+c
 c        subroutine nos_read_header(iunit,nkn,nel,nlv,nvar,ierr)
 c        subroutine nos_write_header(iunit,nkn,nel,nlv,nvar,ierr)
 c        subroutine nos_read_header2(iu,ilhkv,hlv,hev,ierr)
@@ -56,6 +58,7 @@ c 16.11.2012	ggu	in wrnos bugfix - call setnos first
 c 02.12.2012	ggu	restructured
 c 21.01.2013	ggu	code for next and back record
 c 18.01.2014	ggu	restructured, new date,time,femver (version 4+5)
+c 29.10.2014	ggu	new routine nos_is_nos_file()
 c
 c notes :
 c
@@ -656,6 +659,38 @@ c should be only used to write file -> nvers should be max version
 	do i=1,nchdim
 	  noschar(i,nt) = noschar(i,nf)
 	end do
+
+	end
+
+c************************************************************
+c************************************************************
+c************************************************************
+
+	subroutine nos_is_nos_file(iunit,nvers)
+
+c checks if iunit is open on nos file - returns nvers
+c
+c nvers == 0	no nos file (ntype is different) or read error
+c nvers < 0	version number is wrong
+c nvers > 0	good nos file
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iunit,nvers
+
+	integer ntype
+
+	nvers = 0
+	if( iunit .le. 0 ) return
+
+	read(iunit,end=1,err=1) ntype,nvers
+
+	if( ntype .ne. ftype ) nvers = 0
+	if( nvers .le. 0 .or. nvers .gt. maxvers ) nvers = -abs(nvers)
+
+    1	continue
 
 	end
 

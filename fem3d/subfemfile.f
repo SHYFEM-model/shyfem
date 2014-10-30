@@ -14,6 +14,7 @@ c 30.05.2014	ggu	restructured
 c 16.06.2014	ggu	time is now double precision
 c 07.07.2014	ggu	first version consolidated
 c 20.10.2014	ggu	second version (date record is just after first record)
+c 29.10.2014	ggu	new routine fem_file_is_fem_file()
 c
 c notes :
 c
@@ -268,6 +269,35 @@ c writes data of the file
 
 c************************************************************
 c************************************************************
+c************************************************************
+
+	subroutine fem_file_is_fem_file(file,iformat)
+
+c tries to open fem file for read
+c
+c returns -1 in iformat if no fem file, else iformat indicates format
+
+	implicit none
+
+	character*(*) file	!file name
+	integer iformat		!is formatted? -1 for no fem file (return)
+
+	integer nvar,np,ntype
+	logical filex
+
+	iformat = 0
+
+	if( .not. filex(file) ) then
+	  write(6,*) 'file does not exist: ',file
+	  return
+	end if
+
+	call fem_file_test_formatted(file,np,nvar,ntype,iformat)
+
+	if( nvar <= 0 ) iformat = -1
+
+	end
+
 c************************************************************
 
 	subroutine fem_file_read_open(file,nexp,iunit,iformat)
@@ -910,6 +940,27 @@ c skips one record of data of the file
 
 c************************************************************
 c************************************************************
+c************************************************************
+
+	subroutine fem_file_convert_time(datetime,dtime,atime)
+
+	implicit none
+
+	integer datetime(2)		!reference date
+	double precision dtime		!relative time
+	double precision atime		!absolute time (return)
+
+	double precision dtime0
+
+	if( datetime(1) > 0 ) then
+	  call dts_to_abs_time(datetime(1),datetime(2),dtime0)
+	  atime = dtime0 + dtime
+	else
+	  atime = dtime
+	end if
+
+	end
+
 c************************************************************
 
 	subroutine fem_file_make_type(ntype,imax,itype)

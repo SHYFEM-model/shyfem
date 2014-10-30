@@ -432,11 +432,21 @@
 	hd_fem = hkv
 	hlv_fem = hlv
 
+	call iff_init_global_date_internal(date,time)
+
+	end subroutine iff_init_global
+
+!****************************************************************
+
+	subroutine iff_init_global_date_internal(date,time)
+
+	integer date,time
+
 	date_fem = date
 	time_fem = time
 	call dts_to_abs_time(date,time,atime0_fem)
 
-	end subroutine iff_init_global
+	end subroutine iff_init_global_date_internal
 
 !****************************************************************
 
@@ -1819,6 +1829,20 @@ c opens file and inititializes array - simplified version
 	hlv(1) = 10000.
 
 	call iff_init_global(nkn,nlv,ilhkv,hkv,hlv,date,time)
+
+	end
+
+!****************************************************************
+
+	subroutine iff_init_global_date(date,time)
+
+	use intp_fem_file
+
+	implicit none
+
+	integer date,time
+
+	call iff_init_global_date_internal(date,time)
 
 	end
 

@@ -8,18 +8,18 @@ c writes info on fem file
 	character*50 name,string,infile
 	integer np,iunit,iout
 	integer nvers,lmax,nvar,ntype,nlvdim
-	integer it,itanf,itend,idt,itold,idtact
+	integer nvar0,lmax0,np0
+	integer idt,idtact
 	double precision dtime,tmin,tmax,dtime0
 	double precision atime,atimeold,atimeanf,atimeend
 	real dmin,dmax
 	integer ierr
-	integer irec,i,nvar0,ich
+	integer irec,i,ich
 	integer itype(2)
 	integer iformat
 	integer datetime(2),dateanf(2),dateend(2)
 	real regpar(7)
 	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
-	logical bspecial
 	logical bdate		!is date given?
 	character*50, allocatable :: strings(:)
 	character*20 line
@@ -28,24 +28,17 @@ c writes info on fem file
 	real,allocatable :: hlv(:)
 	integer,allocatable :: ilhkv(:)
 
+c--------------------------------------------------------------
+c parameters and command line options
+c--------------------------------------------------------------
+
 	bdebug = .false.
-	bspecial = .true.
-	bspecial = .false.
 
         call parse_command_line(infile,bwrite,bout,tmin,tmax)
 	bskip = .not. bwrite
 	if( bout ) bskip = .false.
 	btmin = tmin .ne. -1.
 	btmax = tmax .ne. -1.
-
-	write(6,*) 'Input file: ',infile
-	write(6,*) 'bwrite = ',bwrite
-	write(6,*) 'bskip = ',bskip
-	write(6,*) 'bout = ',bout
-	write(6,*) 'btmin = ',btmin
-	write(6,*) 'btmax = ',btmax
-	if( btmin ) write(6,*) 'tmin = ',tmin
-	if( btmax ) write(6,*) 'tmax = ',tmax
 
 c--------------------------------------------------------------
 c open file
@@ -62,24 +55,8 @@ c--------------------------------------------------------------
 	write(6,*) 'format:    ',iformat
 
 c--------------------------------------------------------------
-c prepare for output if needed
-c--------------------------------------------------------------
-
-	iout = 0
-	if( bout ) then
-	  iout = iunit + 1
-	  if( iformat .eq. 1 ) then
-	    open(iout,file='out.fem',status='unknown',form='formatted')
-	  else
-	    open(iout,file='out.fem',status='unknown',form='unformatted')
-	  end if
-	end if
-
-c--------------------------------------------------------------
 c read first record
 c--------------------------------------------------------------
-
-	irec = 1
 
         call fem_file_read_params(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
@@ -92,18 +69,17 @@ c--------------------------------------------------------------
 	write(6,*) 'nvar:  ',nvar
 	write(6,*) 'ntype: ',ntype
 
-	it = nint(dtime)
-	nlvdim = lmax
-	allocate(hlv(nlvdim))
+	allocate(hlv(lmax))
 	call fem_file_make_type(ntype,2,itype)
 
-	if( bdebug ) write(6,*) irec,dtime
 	call fem_file_read_2header(iformat,iunit,ntype,lmax
      +			,hlv,regpar,ierr)
 	if( ierr .ne. 0 ) goto 98
 
-	write(6,*) 'vertical discretization: ',lmax
-	write(6,*) hlv
+	if( lmax > 1 ) then
+	  write(6,*) 'vertical layers: ',lmax
+	  write(6,*) hlv
+	end if
 	if( itype(1) .gt. 0 ) then
 	  write(6,*) 'date and time: ',datetime
 	end if
@@ -111,104 +87,64 @@ c--------------------------------------------------------------
 	  write(6,*) 'regpar: ',regpar
 	end if
 
-	bdate = datetime(1) > 0
-	dtime0 = 0.
-	atime = dtime
-	if( bdate ) then
-	  call dts_to_abs_time(datetime(1),datetime(2),dtime0)
-	  atime = dtime0 + dtime
-	end if
-
-	if( .not. btmin ) tmin = dtime
-	boutput = bout .and. dtime >= tmin
-
-	if( boutput ) then
-          call fem_file_write_header(iformat,iout,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,nlvdim
-     +				,hlv,datetime,regpar)
-	end if
+	call fem_file_convert_time(datetime,dtime,atime)
 
 	nvar0 = nvar
+	lmax0 = lmax
+	np0 = np
 	allocate(strings(nvar))
-	allocate(data(nlvdim,np,nvar))
+	allocate(data(lmax,np,nvar))
 	allocate(hd(np))
 	allocate(ilhkv(np))
 
 	do i=1,nvar
-	  if( bskip ) then
-	    call fem_file_skip_data(iformat,iunit
+	  call fem_file_skip_data(iformat,iunit
      +                          ,nvers,np,lmax,string,ierr)
-	  else
-            call fem_file_read_data(iformat,iunit
-     +                          ,nvers,np,lmax
-     +                          ,string
-     +                          ,ilhkv,hd
-     +                          ,nlvdim,data(1,1,i)
-     +                          ,ierr)
-	  end if
 	  if( ierr .ne. 0 ) goto 97
-	  if( boutput ) then
-            call fem_file_write_data(iformat,iout
-     +                          ,nvers,np,lmax
-     +                          ,string
-     +                          ,ilhkv,hd
-     +                          ,nlvdim,data(1,1,i))
-	  end if
 	  write(6,*) 'data:  ',i,'  ',string
 	  strings(i) = string
-	  if( bwrite ) then
-            call minmax(nlvdim,np,ilhkv,data(1,1,i),dmin,dmax)
-	    call date_convert(it,datetime,line)
-	    write(6,1100) irec,i,dtime,dmin,dmax,line
-	  end if
 	end do
 
 c--------------------------------------------------------------
-c loop on other data records
+c close and re-open file
 c--------------------------------------------------------------
 
-	bfirst = .true.
-	it = nint(dtime)
-	itanf = it
-	itend = it
+	close(iunit)
+
+	np = 0
+	call fem_file_read_open(infile,np,iunit,iformat)
+	if( iunit .le. 0 ) stop
+
+c--------------------------------------------------------------
+c loop on all records
+c--------------------------------------------------------------
+
+	irec = 0
+	idt = 0
+	ich = 0
 	atimeanf = atime
 	atimeend = atime
-	dateanf = datetime
-	dateend = datetime
-	idt = -1
-	ich = 0
 
 	do 
 	  irec = irec + 1
-	  itold = itend
 	  atimeold = atime
           call fem_file_read_params(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
 	  if( ierr .lt. 0 ) exit
 	  if( ierr .gt. 0 ) goto 99
 	  if( nvar .ne. nvar0 ) goto 96
-	  if( btmax .and. dtime > tmax ) exit
-	  if( bdebug ) write(6,*) irec,dtime
-	  it = nint(dtime)
-	  atime = dtime
-	  if( bdate ) then
-	    call dts_to_abs_time(datetime(1),datetime(2),dtime0)
-	    atime = dtime0 + dtime
-	  end if
-	  !write(6,*) atime,dtime0,dtime
-	  if( bspecial .and. irec > 8000 .and. it == 378770400 ) then
-	    it = itold + 3600
-	    dtime = it
-	  end if
+	  if( lmax .ne. lmax0 ) goto 96
+	  if( np .ne. np0 ) goto 96
+
+	  call fem_file_convert_time(datetime,dtime,atime)
+	  call dts_format_abs_time(atime,line)
+
+	  if( bdebug ) write(6,*) irec,atime,line
+
 	  call fem_file_read_2header(iformat,iunit,ntype,lmax
      +			,hlv,regpar,ierr)
 	  if( ierr .ne. 0 ) goto 98
-	  boutput = bout .and. dtime >= tmin
-	  if( boutput ) then
-            call fem_file_write_header(iformat,iout,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,nlvdim
-     +				,hlv,datetime,regpar)
-	  end if
+
 	  do i=1,nvar
 	    if( bskip ) then
 	      call fem_file_skip_data(iformat,iunit
@@ -218,61 +154,32 @@ c--------------------------------------------------------------
      +                          ,nvers,np,lmax
      +                          ,string
      +                          ,ilhkv,hd
-     +                          ,nlvdim,data(1,1,i)
+     +                          ,lmax,data(1,1,i)
      +                          ,ierr)
 	    end if
 	    if( ierr .ne. 0 ) goto 97
-	    if( boutput ) then
-              call fem_file_write_data(iformat,iout
-     +                          ,nvers,np,lmax
-     +                          ,string
-     +                          ,ilhkv,hd
-     +                          ,nlvdim,data(1,1,i))
-	    end if
 	    if( string .ne. strings(i) ) goto 95
 	    if( bwrite ) then
-              call minmax(nlvdim,np,ilhkv,data(1,1,i),dmin,dmax)
-	      call date_convert(it,datetime,line)
-	      write(6,1100) irec,i,dtime,dmin,dmax,line
+              call minmax(lmax,np,ilhkv,data(1,1,i),dmin,dmax)
+	      write(6,1100) irec,i,atime,dmin,dmax,line
 	    end if
 	  end do
-	  if( bfirst ) then
-	    bfirst = .false.
-	    !idt = it - itold
-	    idt = nint(atime-atimeold)
-	  end if
-	  !idtact = it-itold
-	  idtact = nint(atime-atimeold)
-	  if( idtact .ne. idt ) then
-	    ich = ich + 1
-	    write(6,*) 'change in time step: ',irec,idt,it-itold
-	    idt = idtact
-	  end if
-	  if( idt <= 0 ) then
-	    write(6,*) 'zero or negative time step: ',irec,it,itold
-	  end if
-	  itend = it
-	  atimeold = atime
-	  atimeend = atime
-	  dateend = datetime
-	end do
 
-	if( bspecial .and. boutput ) then
-	  it = itold + 3600
-	  itend = it
-	  write(6,*) 'special treatment... ',it
-	  dtime = it
-          call fem_file_write_header(iformat,iout,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,nlvdim
-     +				,hlv,datetime,regpar)
-	  do i=1,nvar
-            call fem_file_write_data(iformat,iout
-     +                          ,nvers,np,lmax
-     +                          ,strings(i)
-     +                          ,ilhkv,hd
-     +                          ,nlvdim,data(1,1,i))
-	  end do
-	end if
+	  if( irec > 1 ) then
+	    if( irec == 2 ) idt = nint(atime-atimeold)
+	    idtact = nint(atime-atimeold)
+	    if( idtact .ne. idt ) then
+	      ich = ich + 1
+	      write(6,*) 'change in time step: ',irec,idt,idtact
+	      idt = idtact
+	    end if
+	    if( idt <= 0 ) then
+	      write(6,*) 'zero or negative time step: ',irec,idt
+     +				,atime,atimeold
+	    end if
+	  end if
+	  atimeend = atime
+	end do
 
 c--------------------------------------------------------------
 c finish loop - info on time records
@@ -280,10 +187,10 @@ c--------------------------------------------------------------
 
 	irec = irec - 1
 	write(6,*) 'irec:  ',irec
-	call date_convert_abs(bdate,atimeanf,line)
-	write(6,*) 'itanf: ',itanf,line
-	call date_convert_abs(bdate,atimeend,line)
-	write(6,*) 'itend: ',itend,line
+	call dts_format_abs_time(atimeanf,line)
+	write(6,*) 'start time: ',atimeanf,line
+	call dts_format_abs_time(atimeend,line)
+	write(6,*) 'end time  : ',atimeend,line
 	write(6,*) 'idt:   ',idt
 
 	if( ich .gt. 0 ) then
@@ -306,6 +213,8 @@ c--------------------------------------------------------------
 	stop 'error stop feminf'
    96	continue
 	write(6,*) 'nvar,nvar0: ',nvar,nvar0
+	write(6,*) 'lmax,lmax0: ',lmax,lmax0	!this might be relaxed
+	write(6,*) 'np,np0:     ',np,np0	!this might be relaxed
 	write(6,*) 'cannot change number of variables'
 	stop 'error stop feminf'
    97	continue
@@ -486,49 +395,6 @@ c*****************************************************************
 
         stop
         end
-
-c*****************************************************************
-
-	subroutine date_convert(it,datetime,line)
-
-c converts fem time to real date
-
-	integer it
-	integer datetime(2)
-	character*(*) line		!should be at least 20
-
-	integer date,time
-
-	line = ' '
-
-	date = datetime(1)
-	time = datetime(2)
-
-	if( date .eq. 0 ) return
-	if( date < 10000 ) date = 10000*date + 101
-
-	call dtsini(date,time)
-	call dtsgf(it,line)
-
-	end
-
-c*****************************************************************
-
-	subroutine date_convert_abs(bdate,atime,line)
-
-c converts fem time to real date
-
-	logical bdate
-	double precision atime
-	character*(*) line		!should be at least 20
-
-	line = ' '
-
-	if( bdate ) then
-	  call dts_format_abs_time(atime,line)
-	end if
-
-	end
 
 c*****************************************************************
 

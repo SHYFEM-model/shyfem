@@ -32,6 +32,8 @@ c        subroutine ous_get_hparams(iunit,href,hzmin)
 c        subroutine ous_set_hparams(iunit,href,hzmin)
 c        subroutine ous_clone_params(iu_from,iu_to)
 c
+c	 subroutine ous_is_ous_file(iunit,nvers)
+c
 c        subroutine ous_read_header(iunit,nkn,nel,nlv,ierr)
 c        subroutine ous_write_header(iunit,nkn,nel,nlv,ierr)
 c        subroutine ous_read_header2(iu,ilhv,hlv,hev,ierr)
@@ -52,6 +54,7 @@ c 02.09.2003	ggu	last bug fixes (nvers=3 -> nvers=1)
 c 22.09.2004	ggu	bug fix in rdous/wrous -> ie instead of k
 c 08.06.2011	ggu	new routine delous(), check for end in read
 c 18.01.2014	ggu	restructured, new date,time,femver
+c 29.10.2014	ggu	new routine ous_is_ous_file()
 c
 c notes :
 c
@@ -693,6 +696,39 @@ c should be only used to write file -> nvers should be max version
         do i=1,nrldim
           ousreal(i,nt) = ousreal(i,nf)
         end do
+
+        end
+
+c************************************************************
+c************************************************************
+c************************************************************
+
+
+        subroutine ous_is_ous_file(iunit,nvers)
+
+c checks if iunit is open on ous file - returns nvers
+c
+c nvers == 0    no ous file (ntype is different) or read error
+c nvers < 0     version number is wrong
+c nvers > 0     good ous file
+
+        implicit none
+
+        include 'ousinf.h'
+
+        integer iunit,nvers
+
+        integer ntype
+
+        nvers = 0
+	if( iunit .le. 0 ) return
+
+        read(iunit,end=1,err=1) ntype,nvers
+
+        if( ntype .ne. ftype ) nvers = 0
+        if( nvers .le. 0 .or. nvers .gt. maxvers ) nvers = -abs(nvers)
+
+    1   continue
 
         end
 

@@ -390,7 +390,7 @@ c or it is 0 which means there was an error
 	end
 
 c*******************************************************
-c stub to be independent of subsss.f
+c stub in order to be independent of subsss.f
 c*******************************************************
 
         function ichanm0(line)

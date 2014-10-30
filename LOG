@@ -1,4 +1,25 @@
 
+30.10.2014
+
+c ./fem3d/subnos.f:
+c 29.10.2014    ggu     new routine nos_is_nos_file()
+c
+c ./fem3d/subnsh.f:
+c 29.10.2014    ggu     do_() routines transfered from newpri.f
+c
+c ./fem3d/subboxa.f:
+c 29.10.2014    ggu     new code and 3d version
+c
+c ./fem3d/subfemfile.f:
+c 29.10.2014    ggu     new routine fem_file_is_fem_file()
+c
+c ./fem3d/subous.f:
+c 29.10.2014    ggu     new routine ous_is_ous_file()
+c
+c ./fem3d/subbas.f:
+c 23.10.2014    ggu     introduced ftype and nvers = 4
+
+
 21.10.2014
 
  ./femplot/plotsim.f:

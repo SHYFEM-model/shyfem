@@ -1,5 +1,5 @@
 c
-c $Id: ht.f,v 1.76 2010-03-11 15:36:38 georg Exp $
+c$ Id: ht.f,v 1.76 2010-03-11 15:36:38 georg Exp $
 c
 c finite element model ht (version 3D)
 c
@@ -573,6 +573,8 @@ c        call bclevvar_ini       	!chao debora
 
 	call nudge_init
 
+	call do_init
+
 	!call custom(it)		!call for initialization
 
 	write(6,*) 'starting time loop'
@@ -595,7 +597,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            call get_timestep(dt)
 	   !call compute_stability_stats(1,aux)
 
-	   call dobefor3d
+	   call do_befor
 
 	   call offline(2)		!read from offline file
 
@@ -626,7 +628,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	   call offline(1)		!write to offline file
 
-	   call doafter3d
+	   call do_after
 
            if( niter .eq. 1 ) then
 	     call useunit(200)
