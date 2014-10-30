@@ -1,3 +1,48 @@
+version  7_0_4    30-10-2014    VERS_7_0_4
+
+========================================================== 30-10-2014 - 7_0_4
+
+c ./tmp/shyfem-8c666943c1_2014-10-30_stable/fem3d/subnos.f:
+c 29.10.2014	ggu	new routine nos_is_nos_file()
+c
+c ./tmp/shyfem-8c666943c1_2014-10-30_stable/fem3d/subnsh.f:
+c 29.10.2014    ggu     do_() routines transfered from newpri.f
+c
+c ./tmp/shyfem-8c666943c1_2014-10-30_stable/fem3d/subboxa.f:
+c 29.10.2014    ggu     new code and 3d version
+c
+c ./tmp/shyfem-8c666943c1_2014-10-30_stable/fem3d/subfemfile.f:
+c 29.10.2014	ggu	new routine fem_file_is_fem_file()
+c
+c ./tmp/shyfem-8c666943c1_2014-10-30_stable/fem3d/subous.f:
+c 29.10.2014	ggu	new routine ous_is_ous_file()
+c
+c ./tmp/shyfem-8c666943c1_2014-10-30_stable/fem3d/subbas.f:
+c 23.10.2014	ggu	introduced ftype and nvers = 4
+c
+c ./fem3d/subnos.f:
+c 29.10.2014	ggu	new routine nos_is_nos_file()
+c
+c ./fem3d/subnsh.f:
+c 29.10.2014    ggu     do_() routines transfered from newpri.f
+c
+c ./fem3d/subver.f:
+c 30.10.2014	ggu	version 7.0.4
+c
+c ./fem3d/subboxa.f:
+c 29.10.2014    ggu     new code and 3d version
+c
+c ./fem3d/subfemfile.f:
+c 29.10.2014	ggu	new routine fem_file_is_fem_file()
+c
+c ./fem3d/subous.f:
+c 29.10.2014	ggu	new routine ous_is_ous_file()
+c
+c ./fem3d/subbas.f:
+c 23.10.2014	ggu	introduced ftype and nvers = 4
+
+==========================================================
+
 version  7_0_3    21-10-2014    VERS_7_0_3   commit_2014-10-30
 
 version  7_0_3    21-10-2014    VERS_7_0_3
