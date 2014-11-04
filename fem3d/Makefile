@@ -117,7 +117,7 @@ NEWOBJS = \
 	  newchao.o newparam.o \
 	  newcon.o newcon_1.o newconz.o \
 	  newchk.o newdum.o newfix.o \
-	  newbsig.o newtvd.o newstab.o newsig.o \
+	  newtvd.o newstab.o newsig.o \
 	  newnudge.o
 
 # objects for library
@@ -182,7 +182,7 @@ HTOBJS = \
 	$(LAGRANGE) \
 	subdts.o loading.o \
 	subrst.o subnosa.o subdif.o subreg.o \
-	atoxi3d.o atoxi.o subwwm.o kepsd.o keps_util.o \
+	atoxi3d.o atoxi.o kepsd.o keps_util.o \
 	subinv.o newexpl.o subrnd.o \
 	submet.o subrgf.o subcoord.o subgrd.o subsrt.o subfvl.o \
 	subtrace.o subproj.o subeos.o sigmautil.o \
@@ -247,7 +247,7 @@ LAGRANGE =	lagrange_main.o \
 # heat flux module
 
 QFLUX = subqfxt.o subqfxf.o \
-	subqfxm1.o subqfxm2.o subqfxm3.o subqfxm4.o \
+	subqfxm1.o subqfxm2.o subqfxm3.o subqfxm4.o subqfxm5.o \
 	subqfxu1.o subqfxu2.o subqfxu3.o subqfxu4.o
 
 QFLUX_TEST = subqfxf.o \
@@ -477,6 +477,9 @@ nossum:  nossum.o $(NOSOBJS) $(OUTOBJS)
 
 noselab_time:  noselab_time.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+check_debug: check_debug.o
+	$(LINKER) $(LFLAGS) $@.o -o $@
 
 2nc: ous2nc nos2nc ts2nc
 
@@ -818,7 +821,6 @@ netcdf_util.o: param.h
 new36.o: close.h
 new3di.o: testbndo.h param.h ev.h
 newbcl.o: param.h
-newbsig.o: bsig.h param.h
 newchao.o: param.h
 newchk.o: testbndo.h param.h ev.h
 newcon.o: testbndo.h param.h ev.h
@@ -833,6 +835,7 @@ newnudge.o: param.h nudge.h basin.h
 newstab.o: param.h
 newtra.o: param.h ev.h
 newtvd.o: param.h ev.h tvd.h
+noh_ggu.o: param.h ev.h
 nonhydro_pard.o: param.h nohydlinks.h common.h nkonst.h
 nonhydro_spk.o: param.h nohydlinks.h
 nos2nc.o: param.h evmain.h basin.h
@@ -871,11 +874,10 @@ ousvdiff.o: param.h
 ouswork.o: param.h evmain.h
 ouswork1.o: param.h evmain.h
 ouswrite.o: param.h
-prep_input.o: param.h evmain.h basin.h
 readext.o: param.h
 scal_intp.o: param.h evmain.h
 scalintp.o: param.h evmain.h
-sedi3d.o: param.h links.h ev.h sed_param.h
+sedi3d.o: testbndo.h param.h evmain.h sed_param.h
 simsys_lp.o: param.h common.h nkonst.h
 simsys_pard.o: param.h common.h nkonst.h
 simsys_spk.o: param.h common.h nkonst.h
@@ -886,7 +888,7 @@ subbfm.o: param.h bfm_common.h
 subbnd.o: param.h bnd.h
 subbndo.o: param.h subbndo.h
 subbnds.o: intp_fem_file.mod
-subboxa.o: param.h modules.h ev.h basin.h subboxa.h
+subboxa.o: param.h meteo.h modules.h ev.h basin.h subboxa.h
 subcoo.o: param.h common.h nkonst.h
 subcst.o: modules.h
 subcus.o: param.h ev.h
@@ -913,7 +915,7 @@ sublnka.o: ev.h links.h
 sublnks.o: ev.h links.h
 sublnku.o: links.h
 sublpl.o: ev.h
-submet.o: meteo_forcing_module.mod ev.h
+submet.o: param.h meteo_forcing_module.mod meteo.h ev.h
 meteo_forcing_module.mod: submeteo2.o
 submeteo2.o: intp_fem_file.mod meteo.h
 submud.o: param.h
@@ -932,13 +934,19 @@ subpar1.o: subpar.h
 subpard.o: param.h omp_lib.mod common.h nkonst.h
 subproj.o: param.h
 subqfxf.o: subqfx.h
-subqfxm4.o: subqfxm4.h
+subqfxm1.o: subqfxm.h
+subqfxm2.o: subqfxm.h
+subqfxm3.o: subqfxm.h
+subqfxm4.o: subqfxm.h
+subqfxm5.o: subqfxm.h
+subqfxt.o: param.h meteo.h subqfxm.h
+subqfxu4.o: subqfxm.h
 subreg.o: ev.h
 subres.o: param.h
 subrst.o: param.h
 subspk.o: param.h common.h nkonst.h
 subtrace.o: param.h
-subtsuvfile.o: param.h
+subtsuvfile.o: intp_fem_file.mod param.h
 subuti.o: param.h ev.h links.h
 subvola.o: modules.h
 subwat.o: links.h ev.h
@@ -951,7 +959,6 @@ vp.o: param.h
 weutro.o: donata.h weutro.h
 weutro_sedim.o: donata.h weutro.h
 windcrea.o: param.h evmain.h
-wininf.o: param.h
 winmerge.o: param.h
 winshift.o: param.h
 zinit.o: param.h

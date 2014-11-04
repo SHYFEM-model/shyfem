@@ -16,6 +16,7 @@ c
 c 04.03.2011    ggu     heat module from gotm extracted
 c 23.03.2011    ggu     bug in heatgotm() -> avoid wind speed == 0
 c 29.03.2011    ggu     bug in heatgotm() -> convert pressure to Pascal
+c 16.06.2014    ccf     bug in heatgotm() -> airt instead of sst in qb
 c
 c***********************************************************************
 
@@ -24,7 +25,7 @@ c***********************************************************************
 
 	implicit none
 
-	include 'subqfxm4.h'
+	include 'subqfxm.h'
 
         real airt       !air temperature [C]                    - in
         real airp       !pressure [mb]                          - in
@@ -71,7 +72,7 @@ c------------------------------------------------------------
         ea = rh*ea ! millibar --> Pascal and saturation --> actual vap. press.
         qa = const06*ea/(airppa-0.377*ea) ! specific humidity at 2m
 
-	tvirt = (airt+Kelvin)*(1+qa/const06)/(1+qa)
+	tvirt = (airt+kelv)*(1+qa/const06)/(1+qa)
 	rho_air = airppa/(287.05*Tvirt)
 
 !	Stability
@@ -114,7 +115,7 @@ c------------------------------------------------------------
 	qe=ced*L*rho_air*w*(qs-qa)            ! latent
 	qh=chd*cpa*rho_air*w*(sst-airt)       ! sensible
 
-	tmp=sst+Kelvin
+	tmp=airt+kelv
 	if( ihback .eq. 1 ) then		!clark
 	  qb=(1.0-.8*cloud*cloud)
      +            *emiss*bolz*(tmp**4)*(0.39-0.05*sqrt(ea/100.0))
@@ -144,7 +145,7 @@ c***********************************************************************
 
 	implicit none
 
-	include 'subqfxm4.h'
+	include 'subqfxm.h'
 
 	real w,cdd,chd,ced
 

@@ -8,7 +8,7 @@ c checks two files written with check_debug from ht
 	integer ndim
 	parameter (ndim=2000000)
 
-	character*60 name_on,name_off
+	character*60 name_one,name_two
 	logical bcheck
 	integer it1,it2,it
 	integer nt1,nt2,nt
@@ -19,11 +19,11 @@ c checks two files written with check_debug from ht
 	real val1(ndim)
 	real val2(ndim)
 
-	name_on = 'debug_on.dat'
-	name_off = 'debug_off.dat'
+	name_one = 'debug_one.dat'
+	name_two = 'debug_two.dat'
 
-	open(1,file=name_on,status='old',form='unformatted')
-	open(2,file=name_off,status='old',form='unformatted')
+	open(1,file=name_one,status='old',form='unformatted')
+	open(2,file=name_two,status='old',form='unformatted')
 
 	do while(.true.)
 
@@ -98,7 +98,7 @@ c*******************************************************************
 	  if( val1(i) .ne. val2(i) ) then
 	    k = 1 + (i-1)/nf
 	    l = 1 + mod(i-1,nf)
-	    !write(77,*) it,nrec,k,l,val1(i),val2(i)
+	    write(77,*) it,nrec,k,l,val1(i),val2(i)
 	    idiff = idiff + 1
 	  end if
 	end do

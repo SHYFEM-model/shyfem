@@ -11,42 +11,6 @@ c 10.07.2014    ggu     only new file format allowed
 c
 c*********************************************************************
 
-	subroutine rain2distributed
-
-c adjustes distributed source with rain
-
-	implicit none
-
-	integer it
-
-	real zconv
-	parameter( zconv = 1.e-3 / 86400. )
-
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real metrain(1)
-	common /metrain/metrain
-	real rqdsv(1)
-	common /rqdsv/rqdsv
-
-	integer k
-
-c---------------------------------------------------------------
-c rain is in mm/day -> convert to m/s (water level change)
-c---------------------------------------------------------------
-
-	do k=1,nkn
-	  rqdsv(k) = rqdsv(k) + metrain(k) * zconv
-	end do
-
-c---------------------------------------------------------------
-c end of routine
-c---------------------------------------------------------------
-
-	end
-
-c*******************************************************************
-
 	subroutine convert_distributed
 
 c converts distributed source from [m/s] to [m**3/s]
@@ -58,8 +22,6 @@ c converts distributed source from [m/s] to [m**3/s]
 
 	real rqpsv(1), rqdsv(1)
 	common /rqpsv/rqpsv, /rqdsv/rqdsv
-	real evapv(1)
-	common /evapv/evapv
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 	include 'ev.h'
@@ -83,7 +45,6 @@ c converts distributed source from [m/s] to [m**3/s]
 
 	do k=1,nkn
 	  rqdsv(k) = rqdsv(k) * v1v(k)
-	  !evapv(k) = evapv(k) * v1v(k)		!only for output purpose
 	end do
 
 	end
@@ -98,10 +59,10 @@ c initializes evaporation mass flux
 
 	implicit none
 
+	include 'meteo.h'
+
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real evapv(1)
-	common /evapv/evapv
 
 	integer k
 
@@ -113,16 +74,16 @@ c initializes evaporation mass flux
 
 c*******************************************************************
 
-	subroutine evap_set
+	subroutine rain_evap_set
 
 c adds evaporation mass flux to distributed source
 
 	implicit none
 
+	include 'meteo.h'
+
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real evapv(1)
-	common /evapv/evapv
 	real rqdsv(1)
 	common /rqdsv/rqdsv
 
@@ -130,10 +91,37 @@ c adds evaporation mass flux to distributed source
 	real getpar
 
 	ievap = nint(getpar('ievap'))
-	if( ievap .le. 0 ) return
 
 	do k=1,nkn
-	  rqdsv(k) = rqdsv(k) - evapv(k)
+	  rqdsv(k) = rqdsv(k) + metrain(k) - ievap*evapv(k)
+	end do
+
+	end
+
+c*******************************************************************
+c*******************************************************************
+c*******************************************************************
+
+	subroutine windcd_init
+
+c initializes evaporation mass flux
+
+	implicit none
+
+	include 'meteo.h'
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	integer k
+	real dragco
+
+	real getpar
+
+	dragco = getpar('dragco')
+
+	do k=1,nkn
+	  windcd(k) = dragco
 	end do
 
 	end
@@ -152,9 +140,10 @@ c initializes meteo variables
 
 	write(6,*) 'initializing meteo'
 
-	call meteo_forcing_fem	!new file format
-
 	call evap_init
+	call windcd_init
+
+	call meteo_forcing_fem	!new file format
 
 	end
 
@@ -170,9 +159,34 @@ c update meteo variables and admin rain/evaporation
 
 	call meteo_forcing_fem	!new file format
 
-	call rain2distributed		!copy rain to distributed source
-	call evap_set			!add evaporation
+	!call compute_heat_flux
+
+	call rain_evap_set		!add evaporation
 	call convert_distributed	!convert from [m/s] to [m**3/s]
+
+	end
+
+c*******************************************************************
+
+	subroutine compute_heat_flux
+
+c computes heat flux through bulk formulas
+
+	implicit none
+
+	include 'param.h'
+
+	integer itanf,itend,idt,nits,niter,it
+	common /femtim/ itanf,itend,idt,nits,niter,it
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	real tempv(nlvdim,nkndim)
+	common /tempv/tempv
+	double precision dq
+	real dt
+
+        call get_timestep(dt)
+        call qflux3d(it,dt,nkn,nlvdim,tempv,dq)	!compute heat flux
 
 	end
 
@@ -191,12 +205,7 @@ c returns wind (wx/y), normalized stress (taux/yn) and pressure (p)
 	real tauxn,tauyn	!normalized stress [m**2/s**2]
 	real p			!pressure [Pa]
 
-        real tauxnv(1),tauynv(1)
-        common /tauxnv/tauxnv,/tauynv/tauynv
-        real wxv(1),wyv(1)
-        common /wxv/wxv,/wyv/wyv
-        real ppv(1)
-        common /ppv/ppv
+	include 'meteo.h'
 
 	wx = wxv(k)
 	wy = wyv(k)

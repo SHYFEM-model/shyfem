@@ -27,6 +27,9 @@ c 11.11.2009    ggu     handle abosrption of short rad in more than one layer
 c 04.03.2011    ggu     new routine heatgotm
 c 23.03.2011    ggu     new routine check_heat() to check for Nan, new iheat
 c 25.03.2011    ggu     new parameters iheat,hdecay,botabs
+c 29.04.2014    ccf     read qsens, qlat, long from file
+c 16.06.2014	ccf	new routine heatcoare, which also update wind stress
+c 20.06.2014	ccf	new routine for computing sea surface skin temperature
 c
 c notes :
 c
@@ -109,6 +112,10 @@ c computes new temperature (forced by heat flux) - 3d version
 
 	implicit none
 
+        include 'param.h'
+        include 'subqfxm.h'
+        include 'meteo.h'
+
 	integer it
 	real dt
 	integer nkn
@@ -118,8 +125,9 @@ c computes new temperature (forced by heat flux) - 3d version
 
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
-	real evapv(1)
-	common /evapv/evapv
+	real saltv(nlvdim,nkndim)
+	common /saltv/saltv
+
 c local
 	logical bdebug
 	integer k
@@ -128,14 +136,26 @@ c local
         integer yes
 	integer iheat
 	real tm,tnew,hm
+	real salt,tfreeze
 	real albedo
 	real hdecay,adecay,qsbottom,botabs
 	real rtot
-	real row
         real qs,ta,tb,uw,cc,ur,p,e,r,q
 	real qsens,qlat,qlong,evap,qrad
+	real ev,eeff
 	real area
+
 	double precision ddq
+	real dtw(nkndim)	!Warm layer temp. diff
+	real tws(nkndim)	!Skin temperature (deg C)
+	save dtw,tws
+	real hb			!depth of modelled T in first layer [m]
+	real usw		!surface friction velocity [m/s]
+	real rad		!Net shortwave flux 
+
+	logical bwind
+	save bwind
+	integer itdrag
 c functions
 	real depnode,areanode,getpar
 	integer ifemopa
@@ -148,7 +168,8 @@ c save
 	if( yes .le. 0 ) return
 
 c---------------------------------------------------------
-c iheat		1=areg  2=pom  3=gill  4=dejak  5=gotm
+c iheat		1=areg  2=pom  3=gill  4=dejak  5=gotm  6=COARE3.0
+c               7=read flux from file
 c hdecay	depth of e-folding decay of radiation
 c		0. ->	everything is absorbed in first layer
 c botabs	1. ->	bottom absorbs remaining radiation
@@ -165,6 +186,20 @@ c---------------------------------------------------------
 	if( icall .eq. 0 ) then
 	  write(6,*) 'qflux3d: iheat,hdecay,botabs: '
      +				,iheat,hdecay,botabs  
+
+	  do k = 1,nkn
+	    dtw(k) = 0.
+	    tws(k) = temp(1,k)
+	  end do
+
+          itdrag = nint(getpar('itdrag'))
+	  if (itdrag .eq. 4 .and. iheat .ne. 6) then
+            write(6,*) 'Erroneous value for itdrag = ',itdrag
+            write(6,*) 'Use itdrag = 4 only with iheat = 6'
+            stop 'error stop qflux3d: itdrag'
+	  end if
+
+	  bwind  = iheat .eq. 6 .and. itdrag .eq. 4
 	end if
 	icall = 1
 
@@ -172,7 +207,6 @@ c---------------------------------------------------------
 c set other parameters
 c---------------------------------------------------------
 
-	row = 1026.
 	mode = +1	!use new time step for depth
 
 	adecay = 0.
@@ -188,11 +222,15 @@ c---------------------------------------------------------
 	do k=1,nkn
 
 	  tm = temp(1,k)
+	  salt = saltv(1,k)
+	  tfreeze = -0.0575*salt
 	  area = areanode(1,k)
 	  lmax = ilhkv(k)
 	  if( hdecay .le. 0. ) lmax = 1
 
-	  call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+          call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	  call make_albedo(tm,albedo)
+	  rad = qs * (1. - albedo)
 
 	  if( iheat .eq. 1 ) then
 	    call heatareg (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
@@ -204,6 +242,16 @@ c---------------------------------------------------------
 	    call heatlucia(ta,p,uw,tb,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 5 ) then
 	    call heatgotm (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
+	  else if( iheat .eq. 6 ) then
+	    call get_pe_values(k,r,ev,eeff)
+	    call heatcoare(ta,p,uw,ur,cc,tws(k),r,rad,wxv(k),wyv(k),
+     +		 qsens,qlat,qlong,evap,bwind,windcd(k),tauxnv(k),
+     +		 tauynv(k))
+	  else if( iheat .eq. 7 ) then
+	    qsens = ta
+	    qlat  = ur
+	    qlong = -cc		!change sign of long wave radiation given by ISAC
+	    evap  = qlat / (2.5008e6 - 2.3e3 * tm)	!pom, gill, gotm
 	  else
 	    write(6,*) 'iheat = ',iheat
 	    stop 'error stop qflux3d: value for iheat not allowed'
@@ -221,7 +269,6 @@ c---------------------------------------------------------
 
           qrad = - ( qlong + qlat + qsens )
 	  rtot = qs + qrad
-	  call make_albedo(tm,albedo)
 
 	  do l=1,lmax
 	    hm = depnode(l,k,mode)
@@ -232,20 +279,32 @@ c---------------------------------------------------------
 		qsbottom = qs * exp( -adecay*hm )
 		if( l .eq. lmax ) qsbottom = botabs * qsbottom
 	    end if
-            call heat2t(dt,hm,qs-qsbottom,qrad,albedo,tm,tnew)
-	    !call check_heat2(k,l,qs,qsbottom,qrad,albedo,tm,tnew)
-	    temp(l,k) = tnew
+	    if( tm .gt. tfreeze ) then
+              call heat2t(dt,hm,qs-qsbottom,qrad,albedo,tm,tnew)
+	      !call check_heat2(k,l,qs,qsbottom,qrad,albedo,tm,tnew)
+	      temp(l,k) = tnew
+	    end if
 	    albedo = 0.
 	    qrad = 0.
 	    qs = qsbottom
 	  end do
 
-c	  -----------------------
+c         ---------------------------------------------------------
+c         Compute sea surface skin temperature
+c         ---------------------------------------------------------
+
+	  tm   = temp(1,k)
+	  hb   = depnode(1,k,mode) * 0.5
+          usw  = max(1.e-5, sqrt(sqrt(tauxnv(k)**2 + tauynv(k)**2)))
+          qrad =  -(qlong + qlat + qsens)
+	  call tw_skin(rad,qrad,tm,hb,usw,dt,dtw(k),tws(k))
+
+c	  ---------------------------------------------------------
 c	  evap is in [kg/(m**2 s)] -> convert it to [m/s]
 c	  evap is normally positive -> we are loosing mass
-c	  -----------------------
+c	  ---------------------------------------------------------
 
-	  evap = evap / row			!evaporation in m/s
+	  evap = evap / rhow			!evaporation in m/s
 	  evapv(k) = evap			!positive if loosing mass
 
 	  !if( k .eq. 100 ) write(6,*) 'qflux3d: ',qrad,qs,dt,hm,tm,tnew

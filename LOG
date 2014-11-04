@@ -1,4 +1,23 @@
 
+04.11.2014
+
+c ./fem3d/subwaves.f:
+! 04.11.2014    ccf     rewritten
+!
+c ./fem3d/subbnd.f:
+c 03.11.2014    ggu     nbdim deleted
+c
+c ./fem3d/subnev.f:
+c 30.10.2014    ggu     new routine compute_distance()
+c
+c ./fem3d/subn11.f:
+c 30.10.2014    ggu     in c_tilt() compute distance also for lat/lon
+c 31.10.2014    ccf     new call to init_z0 instead than init_z0b
+c
+c ./fem3d/newini.f:
+c 31.10.2014    ccf     initi_z0 for zos and zob
+
+
 30.10.2014
 
 c ./fem3d/subnos.f:

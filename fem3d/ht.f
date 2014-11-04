@@ -1,5 +1,5 @@
 c
-c$ Id: ht.f,v 1.76 2010-03-11 15:36:38 georg Exp $
+c $Id: ht.f,v 1.76 2010-03-11 15:36:38 georg Exp $
 c
 c finite element model ht (version 3D)
 c
@@ -129,6 +129,7 @@ c boundary file names			!$$ST	!$$DESCRP
 	character*80 conzn(nbcdim)
 	character*80 saltn(nbcdim)
 	character*80 tempn(nbcdim)
+	character*80 vel3dn(nbcdim)
         character*80 bio2dn(nbcdim)
         character*80 sed2dn(nbcdim)
         character*80 mud2dn(nbcdim)
@@ -143,6 +144,7 @@ c boundary file names			!$$ST	!$$DESCRP
         common /conzn/ conzn
         common /saltn/ saltn
         common /tempn/ tempn
+	common /vel3dn/ vel3dn
         common /bio2dn/ bio2dn
         common /sed2dn/ sed2dn
         common /mud2dn/ mud2dn
@@ -343,6 +345,11 @@ c	derived arrays
 	real tauxnv(nkndim), tauynv(nkndim)
 	common /tauxnv/tauxnv, /tauynv/tauynv
 
+c wind drag coefficient (either from wave or COARE)
+
+        real windcd(nkndim)
+        common /windcd/windcd
+
 c	arrays to be eliminated
 
 	common /wxov/wxov(nkndim), /wyov/wyov(nkndim)
@@ -367,11 +374,14 @@ c wave sub-module
         real wavep(nkndim)      !wave period [s]
         real waved(nkndim)      !wave direction (same as wind direction)
         real waveov(nkndim)     !orbital velocity
-        real stokesx(nkndim)    !stokes velocity x
-        real stokesy(nkndim)    !stokes velocity y
+        real wavefx(nlvdim,neldim)      !wave forcing terms
+        real wavefy(nlvdim,neldim)
 
         common /waveh/waveh, /wavep/wavep, /waved/waved, /waveov/waveov
-        common /stokesx/stokesx, /stokesy/stokesy
+        common /wavefx/wavefx,/wavefy/wavefy
+
+        real z0sk(nkndim)                   !surface roughenss on nodes
+        common /z0sk/z0sk
 
         real z0bk(nkndim)                   !bottom roughenss on nodes
         common /z0bk/z0bk
@@ -384,14 +394,9 @@ c wave sub-module
         double precision rhomud(nlvdim,nkndim) !Mud floc part. density (kg/m3)
         common /rhomud/rhomud
 
-c variables for pipe
+c variables for WWM model
 
-	integer ipipe,idcoup
-
-c radiation stress
-
-        real radx(nlvdim,neldim),rady(nlvdim,neldim)
-        common /radx/radx,/rady/rady
+	integer iwwm,idcoup
 
 c auxiliary arrays
 
@@ -495,7 +500,7 @@ c-----------------------------------------------------------
 
 	call sp111(1)           !here zenv, utlnv, vtlnv are initialized
 
-	call handle_bsig_init	!initialize from sigma level data?
+	!call handle_bsig_init	!initialize from sigma level data?
 
 c-----------------------------------------------------------
 c initialize depth arrays and barene data structure
@@ -550,6 +555,9 @@ c-----------------------------------------------------------
         call shdist(rdistv)
 	!call renewal_time
 
+	call init_wave(iwwm,idcoup)
+        call write_wwm(iwwm,it,idcoup)
+
 c-----------------------------------------------------------
 c write input values to log file and perform check
 c-----------------------------------------------------------
@@ -561,10 +569,6 @@ c	call listdim
 
 c        call bclevvar_ini       	!chao debora
 	call bclfix_ini
-
-	call init_pipe(ipipe,idcoup)
-	call read_pipe(ipipe,it,idcoup)
-        call write_pipe(ipipe,it,idcoup)
 
 	call system_initialize		!matrix inversion routines
 
@@ -604,7 +608,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call sp111(2)		!boundary conditions
 	   call nudge_zeta
 
-           call read_pipe(ipipe,it,idcoup)
+           call read_wwm(iwwm,idcoup)
 	   
 	   call sp259f			!hydro
 
@@ -614,9 +618,11 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call conzm3sh		!multi concentration (for iconz > 1)
 	   call barocl(1)		!baroclinic contribution
 
+	   !call compute_heat_flux
+
            call turb_closure
 
-           call subwaves(it,dt)         !wave model
+           call parwaves(it)            !parametric wave model
            call sedi(it,dt)             !sediment transport
 	   call submud(it,dt)           !fluid mud (ARON)
 
@@ -641,24 +647,12 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call check_all
 	   !call check_special
 
-           call write_pipe(ipipe,it,idcoup)
+           call write_wwm(iwwm,it,idcoup)
 
 	   !call debug_output(it)
+
 	   !if( it .gt. 50400 ) call test3d(66,100)
-	   !if( it .gt. 3600 ) call test3d(66,100)
-	   debwin = .true.
-	   debwin = .false.
-	   if( debwin ) then
-	     nsp = 1000
-	     write(66,*) it,wxv(nsp),wyv(nsp),ppv(nsp)
-	     write(65,*) it,metrain(nsp),mettair(nsp),methum(nsp)
-	     !write(67,*) it,nkn
-	     !write(68,*) it,nkn
-	     !do i=1,nkn
-	     !  write(67,*) i,wxv(i),wyv(i),ppv(i),znv(i)
-	     !  write(68,*) i,tauxnv(i),tauynv(i)
-	     !end do
-	   end if
+
 	end do
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -696,6 +690,7 @@ c*****************************************************************
 	integer it
 
 	include 'param.h'
+	include 'meteo.h'
 
         integer nen3v(3,neldim)
         common /nen3v/nen3v
@@ -730,6 +725,8 @@ c*****************************************************************
 	call debug_output_record((nlvdim+1)*nkndim,nlvdim+1,visv)
 	call debug_output_record((nlvdim+1)*nkndim,nlvdim+1,wlov)
 	call debug_output_record(nkndim,1,z0bk)
+	call debug_output_record(nkndim,1,tauxnv)
+	call debug_output_record(nkndim,1,tauynv)
 
 	write(66) 0,0
 

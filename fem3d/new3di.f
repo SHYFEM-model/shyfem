@@ -319,8 +319,6 @@ c solution %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	call sp256v	!FIXME -> this should prob. go into loop
 
-	call bclfix
-
 c---------------------------------------------------------- z solution
 
 	iw = 1
@@ -913,8 +911,9 @@ c	real bb,bbt,cc,cct,aa,aat,ppx,ppy,aux,aux1,aux2
         common /fyv/fyv
 	real rraux,cdf
 
-        real radx(nlvdim,neldim),rady(nlvdim,neldim)
-        common /radx/radx,/rady/rady
+        real wavefx(nlvdim,neldim)      !wave forcing terms
+        real wavefy(nlvdim,neldim)
+        common /wavefx/wavefx,/wavefy/wavefy
 
 	real ss
 	real z0bk(nkndim)		!bottom roughenss on nodes
@@ -1199,10 +1198,10 @@ c	------------------------------------------------------
 
 	ppx = ppx + aat*uui - bbt*uuip - cct*uuim - gammat*vvi 
      +			+ grav*hhi*bz + (hhi/rowass)*bpres + xexpl 
-     +  		- radx(l,ie)
+     +  		+ wavefx(l,ie)
 	ppy = ppy + aat*vvi - bbt*vvip - cct*vvim + gammat*uui 
      +			+ grav*hhi*cz + (hhi/rowass)*cpres + yexpl 
-     +  		- rady(l,ie)
+     +  		+ wavefy(l,ie)
 
 c	------------------------------------------------------
 c	set up matrix A

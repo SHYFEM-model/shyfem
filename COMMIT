@@ -1,5 +1,65 @@
 ============================================================
 
+Tue Nov  4 18:14:37 CET 2014
+
+Changes of Christian integrated
+
+ .gitignore                   |    1 +
+ LOG                          |   19 +
+ fem3d/Makefile               |   29 +-
+ fem3d/bc2fem.f               |  169 ++
+ fem3d/bclfix.h               |   26 +-
+ fem3d/check_debug.f          |   12 +-
+ fem3d/femelab.f              |  534 +++++++
+ fem3d/ht.f                   |   63 +-
+ fem3d/meteo.h                |   16 +-
+ fem3d/new3di.f               |   11 +-
+ fem3d/newbcl.f               |    9 +-
+ fem3d/newbsig.f              |  443 ------
+ fem3d/newcon.f               |   54 +-
+ fem3d/newexpl.f              |    6 +-
+ fem3d/newfix.f               |  539 ++-----
+ fem3d/newini.f               | 3138 ++++++++++++++++++------------------
+ fem3d/sed_param.h            |   88 +-
+ fem3d/sedi3d.f               | 3085 ++++++++++++++++++++++++-------------
+ fem3d/sedtrans05.f           |  661 +++++---
+ fem3d/subbfm.f               |   32 +-
+ fem3d/subbnd.f               |   49 +-
+ fem3d/subbnds.f              |    4 +-
+ fem3d/subboxa.f              |    2 -
+ fem3d/subfemfile.f           |    1 +
+ fem3d/subfemintp.f           |    2 +-
+ fem3d/subgotm.f              |   15 +-
+ fem3d/submet.f               |  121 +-
+ fem3d/submeteo2.f            |  106 ++-
+ fem3d/subn11.f               |   22 +-
+ fem3d/subnev.f               |   43 +
+ fem3d/subqfxm.h              |   31 +
+ fem3d/subqfxm1.f             |   28 +-
+ fem3d/subqfxm2.f             |   18 +-
+ fem3d/subqfxm3.f             |   63 +-
+ fem3d/subqfxm4.f             |    9 +-
+ fem3d/subqfxm5.f             | 1057 +++++++++++++
+ fem3d/subqfxt.f              |   85 +-
+ fem3d/subqfxu4.f             |  159 +-
+ fem3d/subsys.f               |    3 +-
+ fem3d/subwaves.f             | 1067 ++++++++++++-
+ fem3d/subwwm.f               |  503 ------
+ fembin/check_debug.sh        |   25 +
+ fembin/gitinfo               |    1 +
+ fembin/mkdp.pl               |    8 +-
+ fembin/vpgrd                 |   11 +-
+ femdoc/Release_notes_7.0.tex |  373 +++++
+ femdoc/femdoc.sh             |    2 +
+ femdoc/final/shyfem.pdf      |  Bin 271809 -> 291595 bytes
+ femdoc/final/shyfem.ps       | 3581 ++++++++++++++++++++++++------------------
+ femdoc/sedi.bib              |   80 +
+ femdoc/sediment.tex          |  126 ++
+ femdoc/shyfem.tex            |   23 +-
+ 52 files changed, 10413 insertions(+), 6140 deletions(-)
+
+============================================================
+
 Thu Oct 30 12:19:09 CET 2014
 
 New version 7_0_4

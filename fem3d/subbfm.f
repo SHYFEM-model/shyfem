@@ -361,6 +361,9 @@ c computes ecological scalars with BFM  model
 	real wsinkv(0:nlvdim,nkndim)
 	common /wsinkv/wsinkv
 
+	real load(nlvdim,nkndim)
+	common /load/load
+
 	integer k,l
 	integer laux
 	integer nlev
@@ -381,6 +384,7 @@ c computes ecological scalars with BFM  model
 
 	real dtreal
 	real areale
+	real rload
 
 	real drr
         common /drr/drr			!-> needed in standalone
@@ -480,6 +484,12 @@ c------------------------------------------------------
      +                          ,b3bound,idbfm3)
 
 !         ---------------------------------------------------------
+!         INITIALIZES load
+!         ---------------------------------------------------------
+
+	  load = 0.
+
+!         ---------------------------------------------------------
 !         INITIALIZES OUPUT
 !         ---------------------------------------------------------
 
@@ -500,6 +510,7 @@ c------------------------------------------------------
 
 	icall = icall + 1
 	t = it
+	rload = 0.
 
 !------------------------------------------------------
 ! light ?? (dove viene utilizzato?)
@@ -547,7 +558,8 @@ c------------------------------------------------------
         do is4=1,nbfmv2
             fct=fc2_a(is4)
             call scal_adv_fact('bfm_4',is4,fct,b2cn_a(1,1,is4),idbfm2
-     +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
+     +                          ,rkpar,wsink,wsinkv,rload,load
+     +				,difhv,difv,difmol)
         end do
 
 !$OMP END DO NOWAIT
@@ -556,7 +568,8 @@ c------------------------------------------------------
         do is5=1,nbfmv2
             fct=fc2_b(is5)
             call scal_adv_fact('bfm_5',is5,fct,b2cn_b(1,1,is5),idbfm2
-     +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
+     +                          ,rkpar,wsink,wsinkv,rload,load
+     +				,difhv,difv,difmol)
         end do
 
 !$OMP END DO NOWAIT
@@ -565,7 +578,8 @@ c------------------------------------------------------
         do is6=2,5
             fct=fc2_c(is6)
             call scal_adv_fact('bfm_6',is6,fct,b2cn_a(1,1,is6),idbfm2
-     +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
+     +                          ,rkpar,wsink,wsinkv,rload,load
+     +				,difhv,difv,difmol)
         end do
 
 !$OMP END DO NOWAIT
@@ -574,7 +588,8 @@ c------------------------------------------------------
             is7 = 2
             fct=fc2_d(is7)
             call scal_adv_fact('bfm_7',is7,fct,b2cn_d(1,1,is7),idbfm2
-     +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
+     +                          ,rkpar,wsink,wsinkv,rload,load
+     +				,difhv,difv,difmol)
 !        end do
 
 !$OMP DO SCHEDULE(DYNAMIC)
@@ -582,11 +597,13 @@ c------------------------------------------------------
          do is8=1,3,2
             fct=fc3_a
             call scal_adv_fact('bfm_8',is8,fct,b3cn_a(1,1,is8),idbfm3
-     +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
+     +                          ,rkpar,wsink,wsinkv,rload,load
+     +				,difhv,difv,difmol)
 
             fct=fc3_b
             call scal_adv_fact('bfm_8',is8,fct,b3cn_b(1,1,is8),idbfm3
-     +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
+     +                          ,rkpar,wsink,wsinkv,rload,load
+     +				,difhv,difv,difmol)
          end do
 
 !$OMP END DO NOWAIT
@@ -595,7 +612,8 @@ c------------------------------------------------------
          is9 = 3
          fct=fc3_c
          call scal_adv_fact('bfm_9',is9,fct,b3cn_c(1,1,is9),idbfm3
-     +                          ,rkpar,wsink,wsinkv,difhv,difv,difmol)
+     +                          ,rkpar,wsink,wsinkv,rload,load
+     +				,difhv,difv,difmol)
 
 !------------------------------------------------------
 ! ASSIGN DEPTH TO NODE

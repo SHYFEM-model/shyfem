@@ -112,6 +112,8 @@ c 01.03.2011    ggu     implement smoothing for levflx
 c 14.05.2011    ggu     new routine get_discharge()
 c 29.11.2013    ggu     prepared for ibtyp == 0
 c 10.07.2014    ggu     only new file format allowed
+c 30.10.2014    ggu     in c_tilt() compute distance also for lat/lon
+c 31.10.2014    ccf     new call to init_z0 instead than init_z0b
 c
 c***************************************************************
 
@@ -171,7 +173,7 @@ c		2 : read in b.c.
 	integer kranf,krend,k,kn
 	integer ibc,ibtyp
         integer nk,i,kk,kindex,iv
-        integer nbdim,nsize
+        integer nsize
         integer iunrad,ktilt
 	integer ip,l,lmax,ivar
 	integer levflx
@@ -317,9 +319,9 @@ c       initialize variables or restart
 c	...the variables that have to be set are zenv, utlnv, vtlnv
 c	-----------------------------------------------------
 
-	call init_z(const)		!initializes zenv
-	call init_uvt			!initializes utlnv, vtlnv
-	call init_z0b			!initializes bottom roughness
+	call init_z(const)	!initializes zenv
+	call init_uvt		!initializes utlnv, vtlnv
+	call init_z0		!initializes surface and bottom roughness
 
 c	-----------------------------------------------------
 c       finish
@@ -368,7 +370,6 @@ c	-----------------------------------------------------
 	do ibc=1,nbc
 
           call get_bnd_ipar(ibc,'ibtyp',ibtyp)
-          call get_bnd_ipar(ibc,'nbdim',nbdim)
           call get_bnd_ipar(ibc,'levflx',levflx)
           call get_bnd_par(ibc,'tramp',tramp)
 
@@ -560,6 +561,9 @@ c**************************************************************
 	subroutine c_tilt
 
 c tilting of boundary surface due to Coriolis acceleration - needs ktilt
+c
+c if ztilt is given then z_tilt() is used to tilt water level
+c if ktilt is not given nothing is tilted
 
 	implicit none
 
@@ -613,8 +617,8 @@ c tilting of boundary surface due to Coriolis acceleration - needs ktilt
 	   do k=ktilt+1,krend,1
 		kn2=irv(k)
 		kn1=irv(k-1)
-		dx=xgv(kn2)-xgv(kn1)
-		dy=ygv(kn2)-ygv(kn1)
+		call compute_distance(xgv(kn1),xgv(kn2)
+     +				,ygv(kn1),ygv(kn2),dx,dy)
 		call get_meteo_forcing(kn1,wx,wy,taux1,tauy1,p1)
 		call get_meteo_forcing(kn2,wx,wy,taux2,tauy2,p2)
 		taux = 0.5*(taux1+taux2)
@@ -631,8 +635,8 @@ c tilting of boundary surface due to Coriolis acceleration - needs ktilt
 	   do k=ktilt-1,kranf,-1
 		kn2=irv(k+1)
 		kn1=irv(k)
-		dx=xgv(kn2)-xgv(kn1)
-		dy=ygv(kn2)-ygv(kn1)
+		call compute_distance(xgv(kn1),xgv(kn2)
+     +				,ygv(kn1),ygv(kn2),dx,dy)
 		call get_meteo_forcing(kn1,wx,wy,taux1,tauy1,p1)
 		call get_meteo_forcing(kn2,wx,wy,taux2,tauy2,p2)
 		taux = 0.5*(taux1+taux2)

@@ -22,7 +22,7 @@ c		shell for scalar with nudging (for parallel version)
 c
 c subroutine scal_adv_fact(what,ivar,fact
 c     +                          ,scal,ids
-c     +                          ,rkpar,wsink,wsinkv
+c     +                          ,rkpar,wsink,wsinkv,rload,load
 c     +                          ,difhv,difv,difmol)
 c		shell for scalar (for parallel version)
 c		special version for cohesive sediments with factor
@@ -30,7 +30,7 @@ c
 c-------------------------------------------------------------
 c
 c subroutine scal3sh(what,cnv,nlvbnd,rcv,cobs,robs,rkpar
-c					,wsink,wsinkv
+c					,wsink,wsinkv,rload,load
 c     +                                 ,difhv,difv,difmol)
 c		shell for scalar T/D
 c
@@ -41,6 +41,7 @@ c     +                  ,difmol,cbound
 c     +                  ,itvd,gradxv,gradyv
 c     +                  ,cobs,robs
 c     +                  ,wsink,wsinkv
+c     +                  ,rload,load
 c     +                  ,azpar,adpar,aapar
 c     +                  ,istot,isact
 c     +                  ,nlvdi,nlv)
@@ -169,6 +170,7 @@ c 03.12.2013    ggu&deb bug fix for horizontal diffusion
 c 15.05.2014    ggu     write min/max error only for levdbg >= 3
 c 10.07.2014    ggu     only new file format allowed
 c 20.10.2014    ggu     accept ids from calling routines
+c 22.10.2014    ccf     load in call to scal3sh
 c
 c*********************************************************************
 
@@ -206,11 +208,12 @@ c shell for scalar (for parallel version)
         real r3v(nlvdim,nkndim)
 
 	double precision dtime
-	real robs
+	real robs,rload
         integer iwhat,ichanm
 	character*10 whatvar,whataux
 
 	robs = 0.
+	rload = 0.
 	call const3d_setup
 
 c--------------------------------------------------------------
@@ -240,7 +243,7 @@ c--------------------------------------------------------------
         call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdim
      +                          ,r3v,scal,robs
-     +				,rkpar,wsink,const3d
+     +				,rkpar,wsink,const3d,rload,scal
      +                          ,difhv,difv,difmol)
 
 c--------------------------------------------------------------
@@ -291,10 +294,12 @@ c shell for scalar with nudging (for parallel version)
 
 	integer ierr,l,k,lmax
 	real eps
+	real rload
 	double precision dtime
         integer iwhat,ichanm
 	character*10 whatvar,whataux
 
+	rload = 0.
 	call const3d_setup
 
 c--------------------------------------------------------------
@@ -324,7 +329,7 @@ c--------------------------------------------------------------
         call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdim
      +                          ,r3v,sobs,robs
-     +				,rkpar,wsink,const3d
+     +				,rkpar,wsink,const3d,rload,scal
      +                          ,difhv,difv,difmol)
 
 c--------------------------------------------------------------
@@ -337,12 +342,12 @@ c*********************************************************************
 
 	subroutine scal_adv_fact(what,ivar,fact
      +				,scal,ids
-     +				,rkpar,wsink,wsinkv
+     +				,rkpar,wsink,wsinkv,rload,load
      +                          ,difhv,difv,difmol)
 
 c shell for scalar (for parallel version)
 c
-c special version with factor for BC and variable sinking velocity
+c special version with factor for BC, variable sinking velocity and loads
 
 	implicit none
 
@@ -356,6 +361,8 @@ c special version with factor for BC and variable sinking velocity
         real rkpar
 	real wsink
 	real wsinkv(0:nlvdim,nkndim)
+	real rload			!load factor (1 for load given)
+	real load(nlvdim,nkndim)	!load [kg/s]
         real difhv(nlvdim,1)
 	real difv(0:nlvdim,1)
         real difmol
@@ -411,7 +418,7 @@ c--------------------------------------------------------------
         call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdim
      +                          ,r3v,scal,robs
-     +				,rkpar,wsink,wsinkv
+     +				,rkpar,wsink,wsinkv,rload,load
      +                          ,difhv,difv,difmol)
 
 c--------------------------------------------------------------
@@ -448,7 +455,7 @@ c*********************************************************************
 c*********************************************************************
 
 	subroutine scal3sh(what,cnv,nlvbnd,rcv,cobs,robs,rkpar
-     +					,wsink,wsinkv
+     +					,wsink,wsinkv,rload,load
      +					,difhv,difv,difmol)
 
 c shell for scalar T/D
@@ -467,6 +474,8 @@ c arguments
         real rkpar
 	real wsink
 	real wsinkv(0:nlvdim,nkndim)
+	real rload
+	real load(nlvdim,nkndim)	!load [kg/s]
         real difhv(nlvdim,1)
 	real difv(0:nlvdim,1)
         real difmol
@@ -592,6 +601,7 @@ c-------------------------------------------------------------
      +		,itvd,itvdv,gradxv,gradyv
      +		,cobs,robs
      +		,wsink,wsinkv
+     +		,rload,load
      +		,azpar,adpar,aapar
      +          ,istot,isact
      +          ,nlvdi,nlv
@@ -637,6 +647,7 @@ c**************************************************************
      +		 	,itvd,itvdv,gradxv,gradyv
      +			,cobs,robs
      +			,wsink,wsinkv
+     +			,rload,load
      +			,azpar,adpar,aapar
      +			,istot,isact
      +			,nlvdi,nlv)
@@ -659,8 +670,10 @@ c itvdv	 type of vertical transport algorithm used
 c gradxv,gradyv  gradient vectors for TVD algorithm
 c cobs	 observations for nudging
 c robs	 use observations for nuding (real)
-c wsink	 factor for settling velocity [m/s]
+c wsink	 factor for settling velocity
 c wsinkv variable settling velocity [m/s]
+c rload	 factor for loading
+c load   load (source or sink) [kg/s]
 c azpar  time weighting parameter
 c adpar  time weighting parameter for vertical diffusion (ad)
 c aapar  time weighting parameter for vertical advection (aa)
@@ -717,6 +730,8 @@ c arguments
 	real robs
 	real wsink
 	real wsinkv(0:nlvdi,1)
+	real rload
+        real load(nlvdi,1)                      !ccf_load
         real ddt,rkpar,azpar,adpar,aapar			!$$azpar
 	integer istot,isact
 c common
@@ -779,6 +794,7 @@ c local
         integer n,i,ipp
         real rkmin,rkmax
         real mflux,qflux,cconz
+	double precision loading
 	double precision wws
 	double precision us,vs
 	double precision az,azt
@@ -1296,13 +1312,18 @@ c in case of negative flux (qflux<0) must check if node is OBC (BUG_2010_01)
 	    if( qflux .lt. 0. .and. is_boundary(k) ) cconz = cn1(l,k)
 	    mflux = qflux * cconz
 
-            !if( mflux .lt. 0. ) then
-            !  cdiag(l,k) = cdiag(l,k) - dt * mflux
-            !else
-            !  cn(l,k) = cn(l,k) + dt * mflux
-            !end if
-
             cn(l,k) = cn(l,k) + dt * mflux	!explicit treatment
+
+	    loading = rload*load(l,k)
+            if( loading .eq. 0. ) then
+	      !nothing
+	    else if( loading .gt. 0. ) then    		!treat explicit
+              cn(l,k) = cn(l,k) + dt * loading
+            else !if( loading .lt. 0. ) then		!treat quasi implicit
+	      if( cn1(l,k) > 0. ) then
+                cdiag(l,k) = cdiag(l,k) - dt * loading/cn1(l,k)
+	      end if
+            end if
 	  end do
 	end do
 
@@ -2286,4 +2307,3 @@ c sets up constant 3D array
         end
 
 c*****************************************************************
-

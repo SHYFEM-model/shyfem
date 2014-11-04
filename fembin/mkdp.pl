@@ -49,6 +49,7 @@ sub handle_file {
   my $hfile;
   my $mfile;
   my $fh;
+  my %modules_in_file = ();
 
   open($fh,"$file") || die "Cannot open file $file\n";
 
@@ -63,6 +64,7 @@ sub handle_file {
       $mfile = "$1.mod";
     } elsif( /^\s+module\s+(\w+)\s*$/) {	#must treat differently
       my $module = $1;
+      $modules_in_file{"$module.mod"} = 1;
       my $fileo = $file;
       $fileo =~ s/\.f$/.o/;
       my $line = "$module.mod: $fileo";
@@ -78,7 +80,11 @@ sub handle_file {
       $hfile = "";
     } elsif( $mfile ) {
       print STDERR "module found: $mfile\n" if $::debug;
-      my $ins = insert_inc($rlist,$mfile);
+      if( $modules_in_file{$mfile} ) {
+	print STDERR "*** avoid circular reference for module: $mfile\n";
+      } else {
+        insert_inc($rlist,$mfile);
+      }
       $mfile = "";
     }
   }

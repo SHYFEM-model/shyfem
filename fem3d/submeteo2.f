@@ -85,9 +85,17 @@ c                        a wind from the north, 90\degrees{} a wind
 c                        from the east etc.
 c               \item[4] As in 3 but the speed is given in knots
 c               \end{description}
-c |itdrag|      Formula to compute the drag coefficient. A value of 0
-c               uses the constant value given in |dragco|. With 1
-c               the Smith and Banke formula is used. (Default 0)
+c |itdrag|	Formula to compute the drag coefficient. 
+c		\begin{description}
+c		\item[0] constant value given in |dragco|. 
+c		\item[1] Smith and Banke (1975) formula
+c		\item[2] Large and Pond (1981) formula
+c		\item[3] Spatio/temporally varing in function of wave. Need
+c		the coupling with WWMIII.
+c		\item[4] Spatio/temporally varing in function of heat flux. 
+c		Only for |iheat| = 6. 
+c		\end{description}
+c		(Default 0)
 c |dragco|      Drag coefficient used in the above formula. 
 c               Please note that in case
 c               of |iwtype| = 2 this value is of no interest, since the
@@ -185,6 +193,7 @@ c DOCS  END
 	integer nintp
 	integer modehum
 	integer nvarm,nid,nlev
+	integer i
 	!integer it0
 	double precision dtime0,dtime
 	real flag
@@ -290,12 +299,19 @@ c DOCS  END
 
 	if( .not. iff_is_constant(idwind) .or. icall == 1 ) then
 	  call meteo_convert_wind_data(idwind,nkn,wxv,wyv
-     +			,tauxnv,tauynv,metws,ppv)
+     +			,windcd,tauxnv,tauynv,metws,ppv)
 	end if
+
+!	write(166,*) (wxv(i),wyv(i),windcd(i),tauxnv(i),tauynv(i)
+!     +			,i=1,nkn,nkn/20)
 
 	if( .not. iff_is_constant(idheat) .or. icall == 1 ) then
 	  call meteo_convert_heat_data(idheat,nkn
      +			,mettair,methum,metwbt)
+	end if
+
+	if( .not. iff_is_constant(idrain) .or. icall == 1 ) then
+	  call meteo_convert_rain_data(idrain,nkn,metrain)
 	end if
 
 !------------------------------------------------------------------
@@ -474,11 +490,12 @@ c DOCS  END
 
 !*********************************************************************
 
-	subroutine meteo_convert_wind_data(id,n,wx,wy,tx,ty,ws,pp)
+	subroutine meteo_convert_wind_data(id,n,wx,wy,cdv,tx,ty,ws,pp)
 
 	integer id
 	integer n
 	real wx(n),wy(n)
+	real cdv(n)
 	real tx(n),ty(n)
 	real ws(n)
 	real pp(n)
@@ -530,7 +547,10 @@ c DOCS  END
           do k=1,n
             wspeed = ws(k)
             wxymax = max(wxymax,wspeed)
-            if( itdrag .gt. 0 ) call get_drag(itdrag,wspeed,cd)
+	    cd = cdv(k)
+            if( itdrag .gt. 0 .and. itdrag .le. 2 ) then
+		call get_drag(itdrag,wspeed,cd)
+	    end if
             tx(k) = wfact * cd * wspeed * wx(k)
             ty(k) = wfact * cd * wspeed * wy(k)
           end do
@@ -650,6 +670,26 @@ c DOCS  END
 
 !*********************************************************************
 
+	subroutine meteo_convert_rain_data(id,n,r)
+
+c convert rain from mm/day to m/s
+
+	integer id
+	integer n
+	real r(n)
+
+	integer i
+        real zconv
+        parameter( zconv = 1.e-3 / 86400. )
+
+	do i=1,n
+	  r(i) = r(i) * zconv
+	end do
+
+	end subroutine meteo_convert_rain_data
+
+!*********************************************************************
+
 	subroutine meteo_set_heat_data(id,nvar)
 
 	integer id
@@ -754,11 +794,11 @@ c DOCS  END
 	real methum(n)
 	real metwbt(n)
 
-	logical bnowind
+	logical bnoheat
 
-	bnowind = ihtype == 0
+	bnoheat = ihtype == 0
 	
-        if( bnowind ) then              !no wind
+        if( bnoheat ) then              !no wind
 	  !nothing to be done
         else
 	  call meteo_compute_wbt(ihtype,n,mettair,methum,metwbt)
@@ -921,6 +961,54 @@ c DOCS  END
 	p = 0.01 * p					  !Pascal to mb
 
 	end subroutine meteo_get_heat_values
+
+!*********************************************************************
+
+	subroutine get_pe_values(k,r,e,eeff)
+
+c returns precipitation and evaporation values
+c
+c eeff is evaporation used in model, if ievap==0 => eeff==0.
+
+	implicit none
+
+	include 'meteo.h'
+
+	integer k
+	real r			!rain [m/s]
+	real e			!evaporation [m/s]
+	real eeff		!effective evaporation [m/s] - used in model
+
+	integer ievap
+	save ievap
+	data ievap /-1/
+
+	real getpar
+
+        if( ievap .eq. -1 ) ievap = nint(getpar('ievap'))
+
+	r = metrain(k)
+	e = evapv(k)
+	eeff = e*ievap
+
+	end subroutine get_pe_values
+
+!*********************************************************************
+
+	subroutine set_evap(k,e)
+
+c sets evaporation
+
+	implicit none
+
+	include 'meteo.h'
+
+	integer k
+	real e			!evaporation [m/s]
+
+	evapv(k) = e
+
+	end subroutine set_evap
 
 !*********************************************************************
 

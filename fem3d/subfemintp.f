@@ -104,7 +104,7 @@
 	integer, parameter :: iform_error = -9
 	integer, parameter :: iform_ts = 3
 
-	integer, parameter, private :: ndim = 100
+	integer, parameter, private :: ndim = 300
 	type(info), save, dimension(ndim) :: pinfo
 
 	integer, save :: idnext = 0

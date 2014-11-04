@@ -25,6 +25,8 @@ c radiation is positive if into the water
 
         implicit none
 
+	include 'subqfxm.h'
+
         real dt                 !time step
         real dh                 !layer depth
         real qs                 !solar radiation
@@ -33,17 +35,14 @@ c radiation is positive if into the water
         real ts                 !old temperature
         real tsnew              !new temperature
 
-        real cw,row,ct
+        real ct
         real qseff
 
 c--------------------------------------------------
 c general constants
 c--------------------------------------------------
 
-	cw = 4186.		!specific heat (from Ali)
-        cw = 3991.              !specific heat
-        row = 1026.             !mean density
-        ct = cw*row*dh          !heat capacity
+        ct = cpw*rhow*dh          !heat capacity
 
 c--------------------------------------------------
 c new temperature

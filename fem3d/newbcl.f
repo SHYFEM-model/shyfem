@@ -92,7 +92,7 @@ c common
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
-	real saltv(nlvdim,nkndim),tempv(nlvdim,nkndim),rhov(nlvdim,1)
+	real saltv(nlvdim,nkndim),tempv(nlvdim,nkndim),rhov(nlvdim,nkndim)
 	real bpresv(nlvdim,1)
 	real uprv(nlvdim,1), vprv(nlvdim,1)
 	real v1v(1),v2v(1)
@@ -195,7 +195,7 @@ c----------------------------------------------------------
 c parameter setup and check
 c----------------------------------------------------------
 
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in barocl'
+	if(nlvdim.ne.nlvdi) stop 'error stop barocl: nlvdi'
 
 	if(icall.eq.-1) return
 
@@ -392,11 +392,10 @@ c----------------------------------------------------------
 	end if
 
 c----------------------------------------------------------
-c heat flux through surface
+c heat flux through surface	!ccf --> moved to meteo_force
 c----------------------------------------------------------
 
-        call get_timestep(dt)
-	call qflux3d(it,dt,nkn,nlvdim,tempv,dq)
+	call compute_heat_flux
 
 c----------------------------------------------------------
 c compute rhov and bpresv

@@ -23,6 +23,8 @@ Proc $BINDIR/submeteo2.f
 Proc $BINDIR/subn35.f
 Proc $BINDIR/subver.f
 Proc $BINDIR/bio3d.f
+Proc $BINDIR/sedi3d.f
+Proc $BINDIR/subwaves.f
 
 #---------------------------------------------------------
 

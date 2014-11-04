@@ -53,8 +53,8 @@ c
 c  pa = pressione atmosferica in mbar in subroutine evcon 
 c	(!!!!! verificare la sensibilita' a pa)
 c
-c  cw = calore specifico dell'acqua di mare (J/kg C) da Gill, per ts=16 C
-c  row = densita' dell'acqua di mare (kg/m3) da Gill, per ts=16 C
+c  cpw = calore specifico dell'acqua di mare (J/kg C) da Gill, per ts=16 C
+c  rhow = densita' dell'acqua di mare (kg/m3) da Gill, per ts=16 C
 c
 c  rtot = total radiation
 c  qs = solar radiation (short wave)
@@ -72,6 +72,8 @@ c  L. Zampato - Dicembre 1997
 
       implicit none
 
+      include 'subqfxm.h'
+
       real dt
       real dh
       real p
@@ -83,12 +85,10 @@ c  L. Zampato - Dicembre 1997
       parameter ( pstd = 1013.25 )
 
       real rb, re, rc, rtot
-      real cw, row, ct
+      real ct
 
 c constants
 
-      cw = 3991
-      row = 1026.
       p = pstd
 
 c  long-wave term
@@ -110,14 +110,14 @@ c  total radiation: rtot (W/m2) (positive if into water)
 c  evaporation [kg/(m**2 s)]
 
       evap = re / 2.5e+6                !divide by latent heat of evaporation
-      evap = evap / row                 !in [m/s]
+      evap = evap / rhow                 !in [m/s]
       evap = evap * 1000. * 86400.      !in [mm/day]
 
 c  heat capacity/area
 
-      ct = cw*row*dh
+      ct = cpw*rhow*dh
 
-c  new temperature      formula:  dQ = dT * rho * cw * dh / dt
+c  new temperature      formula:  dQ = dT * rho * cpw * dh / dt
 
       tsnew = ts + rtot*dt/ct
 
@@ -131,6 +131,8 @@ c same as subtem, but use heatlucia
 
       implicit none
 
+      include 'subqfxm.h'
+
       real dt
       real dh
       real qs, uw, cc
@@ -142,25 +144,23 @@ c same as subtem, but use heatlucia
 
       real rtot
       real qsens,qlat,qlong
-      real cw, row, ct, p
+      real ct, p
 
 c constants
 
-      cw = 3991		! [ J / (kg K) ]
-      row = 1026.
-      ct = cw*row*dh	!heat capacity	[ J / (m**2 K) ]
+      ct = cpw*rhow*dh	!heat capacity	[ J / (m**2 K) ]
       p = pstd
 
       call heatlucia(ta,p,uw,tb,cc,ts,qsens,qlat,qlong,evap)
 
       rtot = qs - ( qlong + qlat + qsens )
 
-c  new temperature      formula:  dQ = dT * rho * cw * dh / dt
+c  new temperature      formula:  dQ = dT * rho * cpw * dh / dt
 
       tsnew = ts + rtot*dt/ct
 
       evap = -evap			!in [kg/(m**2 s)]
-      evap = evap / row                 !in [m/s]
+      evap = evap / rhow                 !in [m/s]
       evap = evap * 1000. * 86400.      !in [mm/day]
 
       end

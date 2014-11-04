@@ -24,6 +24,8 @@ c heat fluxes are positive upward (from sea to atmosphere)
 
 	implicit none
 
+	include 'subqfxm.h'
+
 	real t		!air temperature [C]			- in
 	real p		!pressure [mb]				- in
 	real w		!wind speed [m/s]			- in
@@ -41,8 +43,8 @@ c	real q		!specific humidity [0-1]
 c	real e		!vapor pressure [mb]
 c	real r		!mixing ratio [0-1]
 
-	real rdry,lv0,t0,pascal
-	parameter(rdry=287.04,lv0=2.5008e6,t0=273.15,pascal=100.)
+	real rdry,lv0,pascal
+	parameter(rdry=287.04,lv0=2.5008e6,pascal=100.)
 	real sigma,epsbbb,sigma0
 	parameter(sigma=5.67e-8,epsbbb=0.985,sigma0=sigma*epsbbb)
 
@@ -59,7 +61,7 @@ c	------------------------------------------------
 
 	call vapor(t,p,ur,e,r,q)	!compute e,r,q
 
-	tv = ( t + t0 ) * ( 1. + 0.6078 * q )
+	tv = ( t + kelv ) * ( 1. + 0.6078 * q )
 	rho = pascal * p / ( rdry * tv )
 	lv = lv0 - 2.3e3 * ts
 	cp = 1004.6 * ( 1. + 0.8375 * q )
@@ -124,6 +126,8 @@ c heat fluxes are positive upward (from sea to atmosphere)
 
 	implicit none
 
+	include 'subqfxm.h'
+
 	real dt		!time step [s]				- in
 	real dh		!depth of layer [m]			- in
 	real qsol	!solar radiation [W/m**2]		- in
@@ -137,16 +141,14 @@ c heat fluxes are positive upward (from sea to atmosphere)
 	real rtot	!total heat input [W/m**2]		- out
 	real evap	!evaporation [kg/m**2/s]		- out
 
-        real cw,rhow,ct
+        real ct
         real qsens,qlat,qlong
 
 c	------------------------------------------------
 c	constants
 c	------------------------------------------------
 
-	cw   = 3991.		!heat capacity of water
-	rhow = 1026.		!density of water
-	ct   = cw * rhow * dh	!heat capacity / area
+	ct   = cpw * rhow * dh	!heat capacity / area
 
 c	------------------------------------------------
 c	compute total radiation - positive if into water
@@ -158,7 +160,7 @@ c	------------------------------------------------
 	rtot = qsol - ( qsens + qlat + qlong )
 
 c	------------------------------------------------
-c	compute new temperature: dQ = dT * rho * cw * dh / dt
+c	compute new temperature: dQ = dT * rho * cpw * dh / dt
 c	------------------------------------------------
 
 	tsnew = ts + rtot * dt / ct

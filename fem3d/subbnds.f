@@ -54,7 +54,7 @@ c initializes boundary condition
 
 	character*80 file
 	integer nbc,ibc
-	integer nbdim,nk,nsize
+	integer nk,nsize
 	integer iunit,n,i,id
 	real val
 
@@ -137,7 +137,7 @@ c transfers boundary condition to matrix
 	real r3v(nlvdim,1)	!matrix to which BC values are transfered
 
 	integer nbc,ibc
-	integer nvar,nsize,ndata,nbdim
+	integer nvar,nsize,ndata
 	integer nk,iv,kn
 	integer i,ip,id
 	real t

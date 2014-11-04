@@ -94,10 +94,10 @@ c-------------------------------------------
 	end do
 
 c-------------------------------------------
-c nudging
+c fix or nudge boundary velocities
 c-------------------------------------------
 
-	call bclnudge
+	call bclfix
 
 c-------------------------------------------
 c horizontal diffusion
@@ -919,7 +919,7 @@ c        integer icall
 c        save icall
 c        data icall /0/
 
-        if(nlvdim.ne.nlvdi)stop 'error stop : level dimension in barocl'
+        if( nlvdim .ne. nlvdi ) stop 'error stop set_barocl: nlvdim'
 
 c        if(icall.eq.-1) return
 

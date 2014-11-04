@@ -61,6 +61,7 @@ c 11.11.2011    ggu	bug fix in adjust_levels: for zeta levels set nlv
 c 23.08.2013    ggu	renamed adjust_k_depth() to make_hkv() -> to subdep
 c 23.08.2013    ggu	depth routines to subdep.f
 c 05.09.2013    ggu	in adjust_levels() allow for nlv==1
+c 31.10.2014    ccf	initi_z0 for zos and zob
 c
 c notes :
 c
@@ -1491,9 +1492,9 @@ c initializes transport in levels
 
 c*******************************************************************
 
-	subroutine init_z0b
+	subroutine init_z0
 
-c initializes bottom roughness z0bn(k)
+c initializes surface z0sk(k) and bottom z0bn(k) roughness 
 
 	implicit none
 
@@ -1502,12 +1503,15 @@ c initializes bottom roughness z0bn(k)
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
+        real z0sk(nkndim)                   !surface roughenss on nodes
+        common /z0sk/z0sk
         real z0bk(nkndim)                   !bottom roughenss on nodes
         common /z0bk/z0bk
 
 	integer k
 
 	do k = 1,nkn
+	  z0sk(k) = 0.02
 	  z0bk(k) = 0.03 * 0.03       !ggu
 	end do
 

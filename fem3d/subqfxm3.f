@@ -71,6 +71,8 @@ c heat fluxes are positive upward (from sea to atmosphere)
 
 	implicit none
 
+	include 'subqfxm.h'
+
 	real t		!air temperature [C]			- in
 	real p		!pressure [mb]				- in
 	real w		!wind speed [m/s]			- in
@@ -88,10 +90,8 @@ c       real q          !specific humidity [0-1]
 c       real e          !vapor pressure [mb]
 c       real r          !mixing ratio [0-1]
 
-	real rdry,lv0,t0,pascal
-	parameter(rdry=287.04,lv0=2.5008e6,t0=273.15,pascal=100.)
-	real sigma,epsbbb,sigma0
-	parameter(sigma=5.67e-8,epsbbb=0.985,sigma0=sigma*epsbbb)
+	real rdry,lv0,pascal
+	parameter(rdry=287.04,lv0=2.5008e6,pascal=100.)
 
 	real rho,cp,lv,tv
 	real rhod	!density of moist air DEB
@@ -114,7 +114,7 @@ c	------------------------------------------------
 
 	call vapor1(t,p,ur,e,r,q)        !compute e,r,q
 
-	tv = ( t + t0 ) * ( 1. + 0.6078 * q )
+	tv = ( t + kelv ) * ( 1. + 0.6078 * q )
 	lv = lv0 - 2.3e3 * ts
 	rho = pascal * p / ( rdry * tv )
 	rhod =rho * ( 1 + r )/( 1 + 1.609 * r )
@@ -165,17 +165,17 @@ c	------------------------------------------------
 c	long wave radiation
 c	------------------------------------------------
 
-	theta = t + 273.15
-	thetas =  ts + 273.15
+	theta = t + kelv
+	thetas =  ts + kelv
 	theta2 = theta * theta
 	theta4 = theta2 * theta2
 	cloud = 1. - 0.75 * cc**(3.4)
 
 	if(may) then
-	  qlong = (sigma * theta4 * (0.4 - 0.05 * sqrt(e) ) + 4 * sigma *
+	  qlong = (bolz * theta4 * (0.4 - 0.05 * sqrt(e) ) + 4 * bolz *
      +	  theta2 * theta *( thetas - theta)) * cloud
 	else if(bignami) then
-	  qlong=0.98*sigma*thetas**4-sigma*theta4*(0.653+0.00535*e)*
+	  qlong=0.98*bolz*thetas**4-bolz*theta4*(0.653+0.00535*e)*
      +	  (1+0.1762*cc*cc)
 	else
 	  stop 'error stop heatpom: must choose either may or bignami'
@@ -305,6 +305,9 @@ c	initialize qsw
 c	cavaleri??????
 c
 c---------------------------------------------------------------------
+
+      include 'subqfxm.h'
+
       parameter ( pstd = 1013.25 )
       parameter (const = 0.622/pstd)
       parameter (cgs = 1.e-4/4.19)
@@ -318,18 +321,12 @@ c
 c --- turbulent exchange coefficients
       data  ce,ch  / 1.1e-3, 1.1e-3/    
 c  
-c --- surface air pressure, expsi, dry air gas constant
-      data ps,expsi,rd / pstd, 0.622, 287./
+c --- surface air pressure
+      data ps / pstd/
 c
-c --- air density, Stefan-Boltzmann constant , ocean emissivity 
-      data airden,stefbolz ,emiss   /1.2,   5.67e-8, .97/
+c --- air density
+      data airden   /1.2/
 c     
-c --- Solar constant , specific heat capacity               
-      data solar ,cp   /1350., 1005./   
-c
-c --- Water vapor + ozone absorption
-      data aozone    /0.09/         
-c
 c --- conversion factor for Langley                                            
 c      data  watlan /1.434e-3/       
 c
@@ -337,7 +334,6 @@ c --- conversion factor for CGS
 c      data cgs /1.e+3/      
        data cgstau /10./    
 c
-       data ckelv /273.16/
        data precip  /0.0/
 c	if(speed.gt.0)then !DEB
 c
@@ -353,6 +349,7 @@ c --- precipitation at the moment is supposed to be absent
 c     precip = 0.0                                                              
 c --- SST data converted in Kelvin degrees
 c
+	ckelv = kelv
       sstk = sst + ckelv 
 c
 c     TAIR=TNOW is already in Kelvin deg.
@@ -368,8 +365,8 @@ c
 c --- calculates the saturation mixing ratios at air temp. and sea temp.
 c --- wsat(Ta) , wsat(Ts)
 c
-      wsatair = (expsi/ps) * esatair
-      wsatoce = (expsi/ps) * esatoce
+      wsatair = (const06/ps) * esatair
+      wsatoce = (const06/ps) * esatoce
 c
 c --- calculates the mixing ratio of the air
 c --- w(Ta)
@@ -378,11 +375,11 @@ c
 c
 c --- calculates the virtual temperature of air
 c
-      vtnow = (tnow*(expsi+wair))/(expsi*(1.+wair))
+      vtnow = (tnow*(const06+wair))/(const06*(1.+wair))
 c
 c --- calculates the density of the moist air
 c
-      rhom = 100.*(ps/rd)/vtnow
+      rhom = 100.*(ps/rgas)/vtnow
 c
 c ------------------ (i)      short wave
 c
@@ -406,8 +403,8 @@ c
 c --- May formula from May (1986) :
 c
        qbw = (1.-0.75*(cldnow**3.4))
-     &             * (stefbolz*(tnow**4)*(0.4 -0.05*ea)
-     &             + 4.*stefbolz*(tnow**3)*(sstk-tnow))
+     &             * (bolz*(tnow**4)*(0.4 -0.05*ea)
+     &             + 4.*bolz*(tnow**3)*(sstk-tnow))
 c
 c
 c ------------------ (iii)   sensible heat
@@ -461,9 +458,10 @@ c
 c
 c --- calculates the SENSIBLE HEAT FLUX in CGS ( watt/m*m )
 c
-c      HA = airden*cp*ch*speed*deltemp
-      ha = rhom*cp*ch*speed*deltemp
-c	print*,'ha  ',rhom,'cp',cp,'ch ',ch,'sp ',speed,'delt ',deltemp
+c      HA = airden*cpw*ch*speed*deltemp
+      !ha = rhom*cpw*ch*speed*deltemp
+      ha = rhom*cpa*ch*speed*deltemp
+c	print*,'ha  ',rhom,'cpw',cpw,'ch ',ch,'sp ',speed,'delt ',deltemp
 c
 c ------------------ (iv)  latent heat
 c
@@ -614,15 +612,16 @@ c
      *  degradr=180./pi, eclips=23.439*degrad)
 c
         dimension alpham(12),alb1(20),za(20),dza(19)
+       
 c
 c ---   alat,alon - (lat, lon)  in radians !!
 c
         data solar/1350./
         data tau /0.7/
         data aozone /0.09/
-        data sunalpha /0.03/
         data yrdays /360./
-        !data yrdays /365./
+c        data yrdays /365./
+        data sunalpha /0.03/
 c
         data alb1/.719, .656, .603, .480, .385, .300, .250, .193, .164
      $  ,.131 , .103, .084, .071, .061, .054, .039, .036, .032, .031
@@ -659,7 +658,7 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c   days is the number of days elapsed until the day=iday
         days = day -1.
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-         th0 = 2.*pi*days/yrdays
+        th0 = 2.*pi*days/yrdays
         th02 = 2.*th0
         th03 = 3.*th0
 c

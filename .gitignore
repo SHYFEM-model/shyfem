@@ -113,6 +113,7 @@ fem3d/optintp
 fem3d/nosadmin
 fem3d/scalintp
 fem3d/mkgeom
+fem3d/check_debug
 
 femadj/adjele
 fembin/extDiff

@@ -265,6 +265,12 @@
 		\subsection{Turbulence}
 		\input{turbulence}
 
+		\subsection{Sediment transport}
+		\input{sediment}
+
+		\subsection{Coupling to the wave model}
+		\input{S_wave}
+
 %		\subsection{Meteo forcing}
 %		\todo{Debora}
 
@@ -274,9 +280,6 @@
 %		\subsection{Large grids and projections}
 %		\todo{Debora}
 
-%		\subsection{Coupling to the wave model}
-%		\todo{Andrea o Christian}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -285,9 +288,6 @@
 
 %	\section{Residence times}
 %	\todo{Andrea}
-
-%	\section{Sediment transport}
-%	\todo{Christian}
 
 %	\section{Ecological module (EUTRO)}
 %	\todo{Michol (c'e' gia' una descrizione di Donata)}
@@ -397,6 +397,15 @@ the ones that chose the duration of the simulation and the
 integration time step. All other parameters are optional.
 
 \input{S_para_h.tex}
+
+\input{P_wave.tex}
+
+\subsection{Section {\tt \$sedtr}}
+
+This section defines the parameters for the sediment 
+transport module.
+
+\input{P_sediment.tex}
 
 \subsection{Section {\tt \$name}}
 
@@ -530,7 +539,7 @@ for plotting.
 
 
 
-\bibliography{abbrev,lag}
+\bibliography{abbrev,lag,sedi}
 \addcontentsline{toc}{chapter}{Bibliography}
 
 

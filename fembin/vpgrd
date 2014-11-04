@@ -1,6 +1,8 @@
 #!/bin/sh
 #
 # shell for vp
+#
+#----------------------------------------------------------
 
 FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 BINDIR=$FEMDIR/fem3d
@@ -27,6 +29,7 @@ FullUsage()
 opt="YES"	# optimization is on
 quiet="NO"	# be quiet
 info="NO"	# only info
+envir="NO"	# info on environment
 
 while [ $# -gt 0 ]
 do
@@ -34,6 +37,7 @@ do
         -noopt) opt="NO";;
 	-quiet) quiet="YES";;
 	-info) info="YES";;
+	-envir) envir="YES";;
         -help)  FullUsage; exit 0;;
         -h)     FullUsage; exit 0;;
         -*)     echo "Unknown option: $1"; exit 1;;
@@ -49,12 +53,17 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
+dir=`dirname $1`
 name=`basename $1 .grd`
-file=$name.grd
+file=$dir/$name.grd
 
 if [ ! -f $file ]; then
   echo "No such file: $file"
   exit 1
+fi
+
+if [ $envir = "YES" ]; then
+  echo "FEMDIR = $FEMDIR"
 fi
 
 echo "dimension info on file $file:"

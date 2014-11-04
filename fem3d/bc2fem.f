@@ -36,6 +36,8 @@
 	else if( what .eq. 'bc' ) then
 	  if( var .eq. 'zeta' ) then
 	    call bc2fem(var,infile,formatted,b2d,hlvfile,date)
+	  else if ( var .eq. 'vel' ) then
+	    call vel2fem(var,infile,formatted,b3d,hlvfile,date)
 	  else
 	    call bc2fem(var,infile,formatted,b3d,hlvfile,date)
 	  end if
@@ -371,6 +373,170 @@ c*****************************************************************
    98	continue
 	write(6,*) 'read error: ',ios
 	stop 'error stop scal2fem'
+	end
+
+c*****************************************************************
+
+	subroutine vel2fem(var,infile,bformat,b2d,hlvfile,date)
+
+	implicit none
+
+	character*(*) var,infile,hlvfile
+	logical bformat,b2d
+	integer date
+
+	logical bnew,bpres
+	integer ios,it,id,n,n0,nvar,nvar0,itanf,nkn,i,j,itend
+	integer iunit,nvers,ntype,lmax,np,nlvdim,iformat
+	integer irec,ifreq,nlen,l,lmax0,iv
+	integer datetime(2)
+	real regpar(7)
+	double precision dtime
+	real, allocatable :: hlv(:)
+	real, allocatable :: hd(:)
+	integer, allocatable :: ilhkv(:)
+	real, allocatable :: data(:,:)
+	character*50 strings(2)
+	character*20 line
+
+	logical bdate0
+	integer time
+	double precision dtime0
+
+	iformat = 0
+	if( bformat ) iformat = 1
+
+!-------------------------------------------------------------
+! open file
+!-------------------------------------------------------------
+
+        open(1,file=infile,form='formatted',status='old')
+
+!-------------------------------------------------------------
+! read header and see what file it is
+!-------------------------------------------------------------
+
+        read(1,*,iostat=ios) it,lmax,n,nvar
+
+        if( ios .ne. 0 ) goto 98
+	if( b2d .and. lmax .ne. 1 ) goto 97
+	if( nvar .ne. 2 ) goto 94
+	
+        backspace(1)
+
+	irec = 0
+	itanf = it
+
+	write(6,*) 'points:     ',n
+	write(6,*) 'lmax:       ',lmax
+	write(6,*) 'nvar:       ',nvar
+
+	n0 = n
+	lmax0 = lmax
+	allocate(data(lmax0,n0))
+	allocate(hd(n0))
+	allocate(ilhkv(n0))
+	allocate(hlv(lmax))
+	hd = -999.
+	ilhkv = lmax
+
+        strings(1) = 'current velocity in x [m/s]'
+        strings(2) = 'current velocity in y [m/s]'
+
+	if( lmax > 1 ) then
+	  call get_hlv(hlvfile,lmax,hlv)
+	end if
+
+	if( bformat ) then
+	  open(2,file='out.fem',status='unknown',form='formatted')
+	  iformat = 1
+	else
+	  open(2,file='out.fem',status='unknown',form='unformatted')
+	  iformat = 0
+	end if
+
+	iunit = 2
+	nvers = 0
+	ntype = 0
+	np = n0
+	datetime = 0
+	nlvdim = lmax
+
+	call dtsyear(date)
+	call setup_time(ntype,date,datetime,bdate0,dtime0)
+
+!-------------------------------------------------------------
+! loop on input and write
+!-------------------------------------------------------------
+
+	do
+          read(1,*,iostat=ios) it,lmax,n,nvar
+	  if( ios .lt. 0 ) exit
+	  if( ios .gt. 0 ) goto 98
+	  if( b2d .and. lmax .ne. 1 ) goto 97
+	  if( nvar .ne. 2 ) goto 94
+	  if( n .ne. n0 ) goto 96
+	  if( lmax .ne. lmax0 ) goto 96
+
+	  itend = it
+
+	  call convert_time(bdate0,it,dtime0,datetime,dtime)
+
+	  call fem_file_write_header(iformat,iunit,dtime
+     +                          ,nvers,np,lmax,nvar,ntype,nlvdim
+     +				,hlv,datetime,regpar)
+
+	  do iv = 1,nvar
+	    do i=1,n
+	      read(1,*) j,(data(l,i),l=1,lmax)
+	      if( j .ne. i ) goto 95
+	    end do
+
+            call fem_file_write_data(iformat,iunit
+     +                          ,nvers,np,lmax
+     +                          ,strings(iv)
+     +                          ,ilhkv,hd
+     +                          ,nlvdim,data)
+
+	  end do
+	  call progress(irec,24,60)
+	end do
+
+!-------------------------------------------------------------
+! write final message
+!-------------------------------------------------------------
+
+	line = ' '
+	write(6,*) 
+	write(6,*) 'total records read: ',irec
+	if( date > 0 ) call dtsgf(itanf,line)
+	write(6,*) 'start time: ',itanf,'  ',line
+	if( date > 0 ) call dtsgf(itend,line)
+	write(6,*) 'end time:   ',itend,'  ',line
+	write(6,*) 'output has been written to out.fem'
+
+!-------------------------------------------------------------
+! end of routine
+!-------------------------------------------------------------
+
+	stop
+   94	continue
+	write(6,*) 'cannot handle nvar different from 2: ',nvar
+	stop 'error stop vel2fem'
+   95	continue
+	write(6,*) 'error in data index: ',i,j
+	stop 'error stop vel2fem'
+   96	continue
+	write(6,*) 'number of points or levels changed: '
+	write(6,*) 'n,n0: ',n,n0
+	write(6,*) 'lmax,lmax0: ',lmax,lmax0
+	stop 'error stop vel2fem'
+   97	continue
+	write(6,*) 'error in lmax (2d requested): ',lmax
+	stop 'error stop vel2fem'
+   98	continue
+	write(6,*) 'read error: ',ios
+	stop 'error stop vel2fem'
 	end
 
 c*****************************************************************
@@ -814,6 +980,8 @@ c*****************************************************************
 	      var = aux(2:)
 	    else if( aux .eq. '-scal' ) then
 	      var = aux(2:)
+	    else if( aux .eq. '-vel' ) then
+	      var = aux(2:)
 	    else
 	      write(6,*) 'unknown option: ',aux
 	      exit
@@ -835,6 +1003,7 @@ c*****************************************************************
 	write(6,*) '      -salt       salinity'
 	write(6,*) '      -conz       generic tracer'
 	write(6,*) '      -scal       generic scalar file'
+	write(6,*) '      -vel        current velocity vector'
 	write(6,*) '   options:'
 	write(6,*) '      -hlv file   file containing hlv levels'
 	write(6,*) '      -date date  date for fem time 0'

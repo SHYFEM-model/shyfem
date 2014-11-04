@@ -75,6 +75,8 @@ c 29.11.2013    ggu	allow for non continous boundary numbering
 c 28.03.2014    ggu	new parameter lgrpps
 c 16.06.2014    ggu	new include file bnd.h (with nbndim)
 c 25.06.2014    ggu	new routine exists_bnd_name()
+c 29.10.2014    ccf	include vel3dn boundary file
+c 03.11.2014    ggu	nbdim deleted
 c
 c************************************************************************
 
@@ -117,6 +119,8 @@ c reads boundary info from STR file
         common /tempn/ tempn
 	character*80 saltn(1)
         common /saltn/ saltn
+	character*80 vel3dn(1)
+        common /vel3dn/ vel3dn
 	character*80 bio2dn(1)
         common /bio2dn/ bio2dn
         character*80 sed2dn(1)
@@ -163,6 +167,7 @@ c reads boundary info from STR file
 	    conzn(i) = ' '
 	    tempn(i) = ' '
 	    saltn(i) = ' '
+	    vel3dn(i) = ' '
 
 	    bio2dn(i) = ' '
 	    sed2dn(i) = ' '
@@ -305,6 +310,23 @@ c			for salinity.
 	call addfnm('tempn',' ')
 	call addfnm('saltn',' ')
 
+c |vel3dn|	File name that contains current velocity values for the 
+c		boundary condition.  The format is the same as for file 
+c		|tempn| but it has two variables: 
+c	 	current velocity in x and current velocity in y.
+c		Velocity can be nudged or imposed depending on the value 
+c		of |tnudge| (mandatory). The unit is [m/s].
+
+	call addfnm('vel3dn',' ')
+
+c |tnudge|	Relaxation time for nudging of boundary velocity.
+c		For |tnudge| = 0. velocities are imposed, for
+c		|tnudge| > 0. velocities are nudged. The
+c		default is -1 which means do nothing. Unit is [s].
+c		(Default -1)
+
+        call addpar('tnudge',-1.)
+
 c The next variables specify the name of the boundary value file
 c for different modules. Please refer to the documentation of the
 c single modules for the units of the variables.
@@ -312,15 +334,19 @@ c single modules for the units of the variables.
 c |bio2dn|	File name that contains values for the ecological
 c		module (EUTRO-WASP).
 c |sed2dn|	File name that contains values for the sediment
-c		transport module
+c		transport module.
+c		The unit of the values given
+c		in the second and following columns (equal to the 
+c		number of defined grainsize in parameter |sedgrs|).
+
 c |mud2dn|	File name that contains values for the fluid mud
-c		module
+c		module.
 c |lam2dn|	File name that contains values for the fluid mud
 c		module (boundary condition for the structural parameter, 
-c		to be implemented)
+c		to be implemented).
 c |dmf2dn|	File name that contains values for the fluid mud
 c		module (boundary conditions for the advection of flocsizes,
-c		to be implemented)
+c		to be implemented).
 c |tox3dn|	File name that contains values for the toxicological
 c		module.
 
@@ -404,7 +430,6 @@ c |umom, vmom|		Constant values for momentum input. (Default 0)
 
 cc undocumented
 
-	call addpar('nbdim',0.)
 	call addpar('ktilt',0.)
 	call addpar('ztilt',0.)
 	call addpar('kref',0.)
@@ -464,6 +489,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccc
 	call getfnm('conzn',conzn(ibc))
 	call getfnm('tempn',tempn(ibc))
 	call getfnm('saltn',saltn(ibc))
+	call getfnm('vel3dn',vel3dn(ibc))
 
 	call getfnm('bio2dn',bio2dn(ibc))
 	call getfnm('sed2dn',sed2dn(ibc))
@@ -656,6 +682,8 @@ c********************************************************************
         common /tempn/ tempn
 	character*80 saltn(1)
         common /saltn/ saltn
+	character*80 vel3dn(1)
+        common /vel3dn/ vel3dn
 	character*80 bio2dn(1)
         common /bio2dn/ bio2dn
 	character*80 sed2dn(1)
@@ -699,6 +727,7 @@ c********************************************************************
 	  call print_filename(conzn(ibc))
 	  call print_filename(tempn(ibc))
 	  call print_filename(saltn(ibc))
+	  call print_filename(vel3dn(ibc))
 	  call print_filename(bio2dn(ibc))
 	  call print_filename(sed2dn(ibc))
 	  call print_filename(mud2dn(ibc))
@@ -745,6 +774,8 @@ c********************************************************************
         common /tempn/ tempn
 	character*80 saltn(1)
         common /saltn/ saltn
+        character*80 vel3dn(1)
+        common /vel3dn/ vel3dn
 	character*80 bio2dn(1)
         common /bio2dn/ bio2dn
 	character*80 sed2dn(1)
@@ -779,6 +810,7 @@ c********************************************************************
 	  write(6,*) conzn(j)
 	  write(6,*) tempn(j)
 	  write(6,*) saltn(j)
+	  write(6,*) vel3dn(j)
 	  write(6,*) bio2dn(j)
 	  write(6,*) sed2dn(j)
 	  write(6,*) mud2dn(j)
@@ -1211,6 +1243,8 @@ c********************************************************************
         common /tempn/ tempn
         character*80 saltn(1)
         common /saltn/ saltn
+        character*80 vel3dn(1)
+        common /vel3dn/ vel3dn
         character*80 sed2dn(1)
         common /sed2dn/ sed2dn
         character*80 bio2dn(1)
@@ -1232,6 +1266,8 @@ c********************************************************************
           file = tempn(ibc)
         else if( what .eq. 'salt' ) then
           file = saltn(ibc)
+        else if( what .eq. 'vel' ) then
+          file = vel3dn(ibc)
         else if( what .eq. 'sedt' ) then
           file = sed2dn(ibc)
         else if( what .eq. 'lagvebio' ) then
@@ -1422,9 +1458,10 @@ c	increase nbvdim (more instances in file)
         data names      /
      +                   'iqual','ibtyp','kranf','krend','zval'
      +                  ,'ampli','period','phase','zref','ktilt'
-     +                  ,'intpol','levmax','igrad0','zfact','nbdim'
+     +                  ,'intpol','levmax','igrad0','zfact'
      +			,'conz','temp','salt','levmin','kref'
      +			,'ztilt','tramp','levflx','nad','lgrpps'
+     +			,'tnudge'
      +                  /
 
 	if( id .gt. nbvdim ) then

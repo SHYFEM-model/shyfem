@@ -1728,8 +1728,6 @@ c******************************************************************
 
 	include 'param.h'
 	include 'meteo.h'
-	real evapv(nkndim)
-	common /evapv/evapv
 
 	integer i,ip
 	real econv

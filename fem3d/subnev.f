@@ -34,6 +34,7 @@ c 23.03.2011	ggu	better set-up for isphe_ev
 c 24.11.2011	ggu	better routines to handle spherical coordinates
 c 30.08.2012	ggu	new routine is_spherical()
 c 30.09.2013	ggu	new routines gradient_normal/tangent
+c 30.10.2014	ggu	new routine compute_distance()
 c
 c***********************************************************
 
@@ -784,6 +785,48 @@ c direction is given by the two nodes not identified by ii
 
 	gxt =  gn * cii
 	gyt = -gn * bii
+
+	end
+
+c***********************************************************
+
+	subroutine compute_distance(xin1,yin1,xin2,yin2,dx,dy)
+
+c computes distance between (x1,y1) and (x2,y2)
+c
+c takes care of lat/lon coordinates
+
+	implicit none
+
+	real xin1,yin1
+	real xin2,yin2
+	real dx,dy
+
+        integer isphe_ev,init_ev
+        common /evcommon/ isphe_ev,init_ev
+
+	double precision xl1,yl1,xl2,yl2
+	double precision x1,y1,x2,y2
+	double precision dlon0,dlat0
+
+	if ( isphe_ev .eq. 1 ) then		!spherical
+  	  xl1 = xin1
+	  yl1 = yin1
+	  xl2 = xin2
+	  yl2 = yin2
+	  dlon0 = 0.5*(xl1+xl2)
+	  dlat0 = 0.5*(yl1+yl2)
+          call ev_g2c(x1,y1,xl1,yl1,dlon0,dlat0)
+          call ev_g2c(x2,y2,xl2,yl2,dlon0,dlat0)
+        else					!cartesian
+  	  x1 = xin1
+	  y1 = yin1
+	  x2 = xin2
+	  y2 = yin2
+	end if
+
+	dx = x2 - x1
+	dy = y2 - y1
 
 	end
 

@@ -1,8 +1,8 @@
 
-	integer nmtdim			!size of meteo regular data
-	parameter (nmtdim = 10000)
+	!integer nmtdim			!size of meteo regular data
+	!parameter (nmtdim = 10000)
 
-	real mdata(nmtdim)
+	!real mdata(nmtdim)
 
         real wxv(1),wyv(1)
         common /wxv/wxv,/wyv/wyv
@@ -22,3 +22,13 @@
 
         real metwbt(1),metws(1)
         common /metwbt/metwbt, /metws/metws
+
+        real windcd(1)          !wave drag coefficient
+        common /windcd/windcd
+
+	real evapv(1)		!evaporation
+	common /evapv/evapv
+
+c metrain and evapv are in [m/s]
+c metrain is read from file in [mm/day] and converted to [m/s]
+

@@ -1,8 +1,35 @@
-C Common block used in SEDTRANS05
-C
-C ======================================================================
-C                         MAIN
-C ======================================================================
+! ======================================================================
+!		CONSTANTS FOR SEDI3D
+! ======================================================================
+! Common block containing constants used for sedi3d
+
+        INTEGER NLBDIM            !number of bed layer
+        PARAMETER (NLBDIM=20)
+
+        INTEGER NSDIM             !number of grainsize classes
+        PARAMETER (NSDIM=12)
+
+
+        COMMON /CSEDI3D/ KCOES,LIMCOH,SMOOTH,ANGREP,MORPHO,RHOSED,
+     &     POROS,SURFPOR,IOPT,NBCC
+        SAVE /CSEDI3D/
+
+        DOUBLE PRECISION KCOES	!Fraction of mud for sediment to be cohesive [0-1]
+        DOUBLE PRECISION LIMCOH	!grainsize limit for cohesive sediment [m]
+        DOUBLE PRECISION SMOOTH	!smoothing factor for morphodynamic [0-1]
+        DOUBLE PRECISION ANGREP	!angle of repose [rad]
+        DOUBLE PRECISION MORPHO	!Morphological factor
+        DOUBLE PRECISION RHOSED	!sediment grain density
+        DOUBLE PRECISION POROS	!bed porosity [0,1]
+        DOUBLE PRECISION SURFPOR !surficial porosity [0,1]
+        INTEGER IOPT		!SEDIMENT TRANSPORT FORMULA OPTION NUMBER
+        INTEGER NBCC		!same as NBCONC but equal 0 if no cohesive
+
+! Common block used in SEDTRANS05
+!
+! ======================================================================
+!                         MAIN
+! ======================================================================
 
       DOUBLE PRECISION G	!GRAVITY
       DOUBLE PRECISION PII	!
@@ -10,12 +37,12 @@ C ======================================================================
       COMMON /MCONST/ G,PII
       SAVE /MCONST/
 
-C ======================================================================
-C		CONSTANTS FOR COHESIVE SEDIMENTS
-C ======================================================================
-C Common block containing several constant used for the cohesive part of
-C sedtrans. It MUST be initialised with an call to INICONST before the first
-C call to COHESIVE (or to first call to SEDTRANS05 with IOPT1=7)
+! ======================================================================
+!		CONSTANTS FOR COHESIVE SEDIMENTS
+! ======================================================================
+! Common block containing several constant used for the cohesive part of
+! sedtrans. It MUST be initialised with an call to INICONST before the first
+! call to COHESIVE (or to first call to SEDTRANS05 with IOPT1=7)
 
       COMMON /CCONST/ CSULVA,TMULVA,TRULVA,RKERO,E0,CDISRUPT,CLIM1,
      &   CLIM2,KFLOC,MFLOC,RHOCLAY,CTAUDEP,PRS,RHOMUD,DPROFA,DPROFB,
@@ -49,46 +76,23 @@ C call to COHESIVE (or to first call to SEDTRANS05 with IOPT1=7)
       INTEGER DOCOMPACT        ! if not zero, call COMPACT from COHESIVE
 
       INTEGER NDISTR           ! number of elements used in DISTR
-      DOUBLE PRECISION DISTR(15)! (normal) distribution of sediment put in suspension
+      DOUBLE PRECISION DISTR(NSDIM)! (normal) distribution of sediment put in suspension
                                ! the sum of DISTR(1:NDISTR) MUST be exactly 1.0
       DOUBLE PRECISION CDRAGRED! constant for the drag reduction formula
 
-C Common block containing the settling velocity of each Ws class.
-C It MUST be initialised with an call to INICONST before the first
-C call to COHESIVE (or to first call to SEDISDGM with IOPT1=7)
+! Common block containing the settling velocity of each Ws class.
+! It MUST be initialised with an call to INICONST before the first
+! call to COHESIVE (or to first call to SEDISDGM with IOPT1=7)
       COMMON /WSCLASS/ WSI
-      DOUBLE PRECISION WSI(15) ! settling velocity of each Ws class (m/s)
+      SAVE /WSCLASS/
+      DOUBLE PRECISION WSI(NSDIM) ! settling velocity of each Ws class (m/s)
 
-C For subroutine FRICFAC (previous common bloc FRICC
+! For subroutine FRICFAC (previous common bloc FRICC
       DOUBLE PRECISION Z0COH    !BED ROUGHNESS LENGHT FOR COHESIVE SEDIMENTS
       DOUBLE PRECISION FCWCOH   !FRICTION FACTOR FOR COHESIVE SEDIMENTS
 
-C Additional result from COHESIVE
+! Additional result from COHESIVE
       DOUBLE PRECISION TAU0EFF  !effective bed shear stress used in COHESIVE
                                 !includes drag reduction and solid transm. stress by Ulva
 
-C ======================================================================
-C		CONSTANTS FOR SEDI3D
-C ======================================================================
-C Common block containing constants used for sedi3d
 
-        INTEGER NLBDIM            !number of bed layer
-        PARAMETER (NLBDIM=20)
-
-        INTEGER NSDIM             !number of grainsize classes
-        PARAMETER (NSDIM=22)
-
-
-        COMMON /CSEDI3D/ KCOES,LIMCOH,SMOOTH,ANGREP,IOPT,MORPHO,RHOSED,
-     @POROS,NBCC
-        SAVE /CSEDI3D/
-
-        DOUBLE PRECISION KCOES	!Fraction of mud for sediment to be cohesive [0-1]
-        DOUBLE PRECISION LIMCOH	!grainsize limit for cohesive sediment [m]
-        REAL SMOOTH		!smoothing factor for morphodynamic [0-1]
-        REAL ANGREP		!angle of repose [rad]
-        INTEGER IOPT		!SEDIMENT TRANSPORT FORMULA OPTION NUMBER
-        REAL MORPHO		!Morphological factor
-        REAL RHOSED		!sediment grain density
-        REAL POROS		!bed porosity [0,1]
-        INTEGER NBCC		!same as NBCONC but equal 0 if no cohesive

@@ -586,6 +586,7 @@ c reads and checks params of next header
 	end if
 
 	call fem_file_check_params(nvers,id,np,lmax,nvar,ntype,ierr)
+	if( ierr .ne. 0 ) return
 
 	call fem_file_make_type(ntype,2,itype)
 

@@ -267,6 +267,8 @@ c---------------------------------------------------------------
 	integer nltot
 	logical bwrite
 
+        real z0sk(nkndim)               !surface roughness on nodes
+        common /z0sk/z0sk
         real z0bk(nkndim)               !bottom roughenss on nodes
         common /z0bk/z0bk
 	real charnock_val		!emp. Charnok constant (1955)
@@ -277,6 +279,9 @@ c---------------------------------------------------------------
 
 	real dtreal
 	real getpar
+
+	logical bwave
+	save bwave
 
 	character*80 fn	
 	integer icall
@@ -300,8 +305,10 @@ c------------------------------------------------------
 	if( icall .lt. 0 ) return
 
 	if( icall .eq. 0 ) then
-	  czdef = getpar('czdef')
 	  write(*,*) 'starting GOTM turbulence model'
+
+	  czdef = getpar('czdef')
+	  bwave = nint(getpar('iwave')) .ge. 2
 
 c         --------------------------------------------------------
 c         Initializes gotm arrays 
@@ -381,7 +388,11 @@ c           ------------------------------------------------------
 
 	    u_taus = sqrt( sqrt( tauxnv(k)**2 + tauynv(k)**2 ) )
 
-	    z0s = charnock_val*u_taus**2/g
+	    if ( bwave ) then
+	      z0s = z0sk(k)
+	    else
+	      z0s = charnock_val*u_taus**2/g
+	    end if
 	    z0s = max(z0s,z0s_min)
 
 c           ------------------------------------------------------

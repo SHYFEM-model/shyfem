@@ -1,0 +1,126 @@
+The sediment transport module calculates sediment transport for currents 
+only or combined waves and currents over either cohesive and non-cohesive
+sediments. The core of this module is derived by the SEDTRANS05 
+sediment transport model, which is here coupled with SHYFEM. The sediment 
+transport module computes the erosion and deposition rates at every mesh 
+node and determines the sediment volume that is injected into the water 
+column. After this step the sediments are advected with the transport and 
+diffusion module described above. The module update every time step the 
+characteristcs of the bottom in terms of grainsize composition and 
+sediment density.
+
+The sediment transport module is activated by setting |isedi| = 1 
+and |sedgrs| in the section |sedtr|. 
+For more details about the parameters see the Appendix C.
+
+For more information about the sediment transport module please refer 
+to Neumeier et al. \cite{urs:sedtrans05} and Ferrarin et al. 
+\cite{ferrarin:morpho08}.
+
+\subsubsection{Sediment transport formulation}
+For the non-cohesive sediment there are two transport mechanisms, the 
+bedload and the suspended transport, while for the cohesive sediment 
+is assumed to exist only the suspended transport. Then we use the 
+sediment continuity equation for the non-cohesive bedload transport 
+and the transport and diffusion equation to describe the transport
+of the suspended sediment, both cohesive and non-cohesive.
+For the bedload component a direct advection scheme is used. 
+Five methods are proposed to predict sediment transport for non-cohesive
+sediments. The methods of Brown \cite{brown:engi}, Yalin \cite{yalin:bedload} 
+and Van Rijn \cite{vanrijn93:prin} predict the bedload transport. The 
+methods of Engelund and Hansen \cite{eh:momo} and Bagnold 
+\cite{bagnolds:ma-sed} predict the total load transport.
+
+Different approaches have been used to compute the sediment flux 
+between water column and bottom for cohesive and non-cohesive sediment.
+For cohesive sediments the model computes erosion and deposition rates,
+while for non-cohesive the net sediment flux between bottom and water 
+column s computed as the difference between the equilibrium
+concentration and the existing concentration in the lower level.
+Here the source (erosion occurs, flux from the bottom to the water 
+column) term has been taken as explicit, whereas the sink term as 
+semi-implicit (deposition occurs, flux from the water column to 
+the bottom). This approach permits to avoid negative concentration 
+due to deposition higher then the sediment mass present in the water 
+column.
+
+The vertical mixing coefficient has been calculated  using analytical
+expressions given by \cite{vanrijn93:prin} for both the case of current
+related and wave related turbulent mixing.
+
+\subsubsection{Bed representation}
+The bed module is designed to have spatially different characteristics, such 
+as grainsize composition, sediment density and critical stress for erosion.
+The bed is subdivided in several layers and levels. Each layer is considered
+homogeneous, well mixed and characterized by its own grainsize distribution
+(fraction of each class of sediment considered). On the level are defined
+the dry bulk density $\rho_{dry}$ and the critical stress for erosion
+$\tau_{ce}$; it is assumed that these variables vary linearly between two
+levels. These characteristics could vary spatially in the domain.
+
+At each location the uppermost layer has to be always greater or equal to
+the surficial active, or mixed, layer that is available for suspension.
+Sediment below the active layer is unavailable resuspension until the 
+active layer moves downward either because erosion has occurred, or it 
+has thickened due to increase shear stress. As active layer is considered 
+the bottom roughness height considered as the sum of the grain roughness, 
+the bedload roughness and the bedform (ripple) roughness.
+
+Multiple sand grain size classes are considered to behave independently. At
+each location the average grain size (based on the sediment fractions) is
+used to compute the bed roughness and critical shear velocities.
+Modification of the bed elevation and to the grain size distribution are
+updated at each time step based on the net erosion and deposition.
+For each size class, the volume of sediment removed from the bed during any
+time step is limited by the amount available in the active layer. In this
+way the model takes into account time-dependent and spatial sediment
+distribution and bed armouring.
+
+\subsubsection{Sand-mud mixture}
+The morphological behaviour of estuaries and lagoons often depend on
+non-cohesive as well as cohesive sediments. Prediction the distribution
+of sediments in these environments, characterized by zonation of sand,
+mud and mixed deposits, is of crucial importance for sustainable
+management and development of such systems.
+
+Based on laboratory and field experiments several researchers identified a
+transition from non-cohesive to cohesive behaviour at increasing mud content
+in a sand bed. A sand bed with small amount of mud already shows increased
+resistance against erosion. Above a critical mud content (\% $<$ 0.063 mm), 
+the bed behaved cohesively. The critical mud content depend on the history 
+of the bed and on the geochemical properties of the sand and mud and could 
+varies from 3-20 \%. Such a wide range clearly demonstrate that the 
+parameters governing the erosion behaviour of sand-mud mixture, are
+ not fully understood yet. For this reason is crucial to estimate 
+the critical mud or clay content from laboratory and field experiments.
+
+Below the critical mud content the sediments particles are eroded as
+non-cohesive sediments. It is assumed that the sediments in suspension
+always behave independently, either if flocculation processes of the
+thinner particles could trap sand grains into the floc.
+
+Moreover sand increases the binding between the clay particles and results
+in a more compact and dense matrix which is more resistant to erosion. For
+non-consolidated cohesive bed adding sand to mud increase the erosion
+resistance because of the increased density and consolidation rate.
+The improved critical stress for erosion due to sand particles is taken
+into consideration increasing the dry density with the sand fraction.
+
+\subsubsection{Sediment model output}
+The sediment transport model writes the following output:
+\begin{itemize}
+\item erosion/deposition [m], 2D variable 80 in file SED
+\item average grainsize of first bottom layer [m], 2D variable 81 in file SED 
+\item bed shear stress [Pa] of first bottom layer, 2D variable 82 in file SED
+\item updated node depth [m], 2D variable 83 in file SED
+\item total bedload transport [kg/ms], 2D variable 84 in file SED
+\item total suspended concentration [kg/m3], 3D variable 85 in file SCO
+\end{itemize}
+
+The time step and start time for writing to file SED and SCO
+are defined by the parameters |idtcon| and |itmcon| in the |para|
+section. These parameter are the same used for writing tracer
+concentration, salinity and water temperature. If |idtcon| is not
+defined, then the sediment model does not write any results.
+
+

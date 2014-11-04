@@ -1,29 +1,1042 @@
+!
+! $Id: subwaves.f,v 1.1 2006/10/18 15:35:13 georg Exp $
+!
+! waves subroutines
+!
+! revision log :
+!
+! 18.10.2006    ccf     integrated into main tree
+! 19.06.2008    aac&ccf udate to 3D version
+! 16.04.2009	ccf	update to new WWMII-2 version, both 2D and 3D
+! 18.02.2011	ggu	compiler warnings/errors adjusted
+! 25.10.2013	ccf	upgrade compatibility with WWMIII
+! 04.11.2014	ccf	rewritten
+!
+!**************************************************************
+c DOCS  START   S_wave
 c
-c $Id: subwaves.f,v 1.10 2008-10-10 09:29:54 georg Exp $
+c SHYFEM could be coupled with the spectral wind wave unstructured
+c model WWMIII or computes wave characteristics using empirical
+c prediction equations.
 c
-c waves subroutines
+c This empirical wave module is used to calculate the wave height 
+c and period from wind speed, fetch and depth using the EMPIRICAL 
+c PREDICTION EQUATIONS FOR SHALLOW WATER \cite{shoreprot:84}.
+c
+c WWMIII is not provided in the SHYFEM distribution.
+c The coupling of SHYFEM with WWMIII is done through the FIFO PIPE 
+c mechanism. The numerical mesh need to be converted to the GR3 
+c format using the bas2wwm program. WWMIII needs its own input 
+c parameter file (wwminput.nml). The use of the coupled SHYFEM-WWMIII
+c model require additional software which is not described here.
+c
+c The wave module writes in the WAV file the following output:
+c \begin{itemize}
+c \item significant wave height [m], variable 31
+c \item mean wave perios [s], variable 32
+c \item mean wave direction [deg], variable 33
+c \end{itemize}
+c
+c The time step and start time for writing to file WAV 
+c are defined by the parameters |idtcon| and |itmcon| in the |para|
+c section. These parameter are the same used for writting tracer
+c concentration, salinity and water temperature. If |idtcon| is not
+c defined, then the wave module does not write any results. The wave 
+c results can be plotted using |plots -wav|.
+c
+c In case of SHYFEM-WWMIII coupling several variables are exchanged 
+c between the two models:
+c \begin{itemize}
+c \item SHYFEM sends to WWMIII:
+c  \begin{itemize}
+c   \item surface velocities
+c   \item water level
+c   \item bathymetry e number of vertical layers
+c   \item 3D layer depths
+c   \item wind components$^{**}$
+c  \end{itemize}
+c \item SHYFEM reads from WWMIII:
+c  \begin{itemize}
+c   \item gradient of the radiation stresses
+c   \item significant wave heigh
+c   \item mean period
+c   \item significant wave direction
+c   \item wave supported stress
+c   \item peak period
+c   \item wave lenght
+c   \item orbital velocity
+c   \item stokes velocities
+c   \item wind drag coefficient
+c   \item wave pressure
+c   \item wave dissipation
+c   \item wind components$^{**}$
+c \end{itemize}
+c \end{itemize}
+c
+c $^{**}$Wind could be either read from SHYFEM or WWMIII, see parameter 
+c |iwave| in Appendix C.
+c For more information about WWMIII and its couling with SHYFEM please refer
+c to Roland et al. \cite{roland:coupled09} and Ferrarin et al. 
+c \cite{ferrarin:morpho08}.
+c DOCS  END
+
+c DOCS  START   P_wave
+c
+c DOCS  WAVE            Wave parameters
+c There are two parameters that must to be set in the |para| section for
+c computing wave field:
+c
+c |iwave|	Type of wave model and coupling procedure (default 0):
+c		\begin{description}
+c		\item[0] No wave model called 
+c	        \item[1] The parametric wave model is called (see file subwave.f)
+c		\item[$>=$2] The spectral wave model WWMIII is called
+c		\item[2] ... wind from SHYFEM, radiation stress formulation
+c		\item[3] ... wind from SHYFEM, vortex force formulation 
+c		\item[4] ... wind from WWMIII, radiation stress formulation
+c		\item[5] ... wind from WWMIII, vortex force formulation 
+c		\end{description}
+c		When the vortex force formulation is chosen the wave-supported
+c		surface stress is subtracted from the wind stress, in order to
+c		avoid double counting of the wind forcing in the flow model.
+c		Moreover, the use of the wave-depended wind drag coefficient 
+c		could be adopted setting |itdrag| = 3.
+c
+c |dtwave|	Time step for coulping with WWMIII. Needed only for
+c		|iwave| $>$ 1 (default 0).
+c
+c DOCS  END
+c
+c**************************************************************
+
+        subroutine init_wave(iwwm,idcoup)
+
+! initialize arrays and open pipes in case of coupling with WWM
+
+	implicit none
+
+        include 'param.h'
+
+        real waveh(nkndim)      	!wave height [m]
+        real wavep(nkndim)      	!wave period [s]
+        real waved(nkndim)      	!wave direction
+        real waveov(nkndim)		!orbital velocity
+        real wavefx(nlvdim,neldim)	!wave forcing term x
+	real wavefy(nlvdim,neldim)      !wave forcing term y
+        common /waveh/waveh, /wavep/wavep, /waved/waved, /waveov/waveov
+        common /wavefx/wavefx,/wavefy/wavefy
+
+        integer iwwm		!call for coupling with wwm
+	integer idcoup		!time step for sincronizing with wwm [s]
+
+	integer iwave 		!call for wave model [2=wwm]
+	integer itdrag		!drag coefficient type
+	real getpar		!get parameter function
+	integer k,ie,l
+
+!-------------------------------------------------------------
+! initialize wave arrays
+!-------------------------------------------------------------
+
+        do ie = 1,neldim
+  	  do l = 1,nlvdim
+            wavefx(l,ie) = 0.
+            wavefy(l,ie) = 0.
+	  end do
+        end do
+
+	do k = 1,nkndim
+          waveh(k) = 0.
+          wavep(k) = 0.
+          waved(k) = 0.
+          waveov(k) = 0.
+        end do
+
+!-------------------------------------------------------------
+! find out what to do
+!-------------------------------------------------------------
+
+	idcoup = 0
+
+        iwave = nint(getpar('iwave'))
+        itdrag = nint(getpar('itdrag'))
+
+	if (itdrag .eq. 3 .and. iwave .lt. 2) then
+	  write(6,*) 'Erroneous value for itdrag = ',itdrag
+	  write(6,*) 'Use itdrag = 3 only if coupling with WWMIII'
+	  stop 'error stop init_wwm: itdrag'
+	end if
+
+        if( iwave .eq. 2 .or. iwave .eq. 3 ) then
+	  iwwm = 1	!wind from SHYFEM
+	elseif ( iwave .eq. 4 .or. iwave .eq. 5 ) then
+	  iwwm = 2	!wind from WWM
+	else
+	  iwwm = 0	!no SHYFEM-WWM coupling
+	end if
+
+        if( iwwm .le. 0 ) return
+
+!-------------------------------------------------------------
+! open pipe files
+!-------------------------------------------------------------
+       
+	write(*,*)'SHYFEM opening pipe file for WWM'
+ 
+        open(120,file='p_velx.dat',form='unformatted')
+        open(121,file='p_vely.dat',form='unformatted')
+        open(122,file='p_lev.dat',form='unformatted')
+        open(123,file='p_bot.dat',form='unformatted')
+        open(126,file='p_zeta3d.dat',form='unformatted')
+
+        open(101,file='p_stressx.dat',form='unformatted')
+        open(102,file='p_stressy.dat',form='unformatted')
+        open(142,file='p_stresxy.dat',form='unformatted')
+        open(103,file='p_waveh.dat',form='unformatted')
+        open(104,file='p_wavet.dat',form='unformatted')
+        open(105,file='p_waved.dat',form='unformatted')
+        open(106,file='p_wtauw.dat',form='unformatted')
+        open(107,file='p_wavetp.dat',form='unformatted')
+        open(108,file='p_wavewl.dat',form='unformatted')
+        open(109,file='p_orbit.dat',form='unformatted')
+        open(110,file='p_stokesx.dat',form='unformatted')
+        open(111,file='p_stokesy.dat',form='unformatted')
+        open(114,file='p_cd.dat',form='unformatted')
+        open(115,file='p_jpress.dat',form='unformatted')
+        open(116,file='p_wdiss.dat',form='unformatted')
+
+	if (iwwm .eq. 1) then
+          open(124,file='p_windx.dat',form='unformatted')
+          open(125,file='p_windy.dat',form='unformatted')
+	else
+          open(124,file='p_windx.dat',form='unformatted')
+          open(125,file='p_windy.dat',form='unformatted')
+	end if
+
+!-------------------------------------------------------------
+! set coupling time step 
+!-------------------------------------------------------------
+
+        idcoup = nint(getpar('dtwave'))
+
+        write(6,*) 'SHYFEM-WWMIII wave model has been initialized'
+ 	!call getwwmbound
+
+!-------------------------------------------------------------
+! end of routine
+!-------------------------------------------------------------
+        
+	end
+
+!**************************************************************
+
+	subroutine read_wwm(iwwm,idcoup)
+
+! reads from PIPE
+
+        implicit none
+
+c parameters
+        include 'param.h'	
+
+c arguments
+        integer iwwm
+	integer idcoup		!time step for sincronizing with wwm [s]
+
+c common
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+        real grav,fcor,dcor,dirn,rowass,roluft
+        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+
+        real waveh(nkndim)              !wave height [m]
+        real wavep(nkndim)              !wave period [s]
+        real waved(nkndim)              !wave direction
+        real waveov(nkndim)             !orbital velocity
+        real windcd(nkndim)             !wave drag coefficient
+        real wavefx(nlvdim,neldim)      !wave forcing term x
+        real wavefy(nlvdim,neldim)      !wave forcing term y
+        real z0sk(nkndim)               !surface roughness on nodes
+        common /waveh/waveh, /wavep/wavep, /waved/waved, /waveov/waveov
+        common /windcd/windcd
+        common /wavefx/wavefx,/wavefy/wavefy
+        common /z0sk/z0sk
+
+        real wxv(nkndim),wyv(nkndim)    !x and y wind component [m/s]
+        common /wxv/wxv,/wyv/wyv
+        real tauxnv(nkndim),tauynv(nkndim)
+        common /tauxnv/tauxnv,/tauynv/tauynv
+        real ppv(nkndim)
+        common /ppv/ppv
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
+
+c local
+        integer k,l, ie
+        double precision stokesx(nlvdim,nkndim)	!stokes velocity x
+        double precision stokesy(nlvdim,nkndim)	!stokes velocity y
+        real wavejb(nkndim)		!wave pressure
+        real wtauw(nkndim)     		!wave supported stress
+        real wavepp(nkndim)     	!wave peak period [s]
+        real wavewl(nkndim)     	!wave lenght
+        real wavedi(nkndim)     	!wave dissipation
+	real SXX3D(nlvdim,nkndim)	!radiation stress xx
+	real SYY3D(nlvdim,nkndim)	!radiation stress yy
+	real SXY3D(nlvdim,nkndim)	!radiation stress xy
+	real wtau,taux,tauy		!wave and wind stresses
+        real s,d			!speed and direction
+        real pi,deg2rad
+        parameter ( pi=3.14159265358979323846, deg2rad = pi/180. )
+
+	double precision tmpval
+
+	real wfact,wspeed
+	save wfact
+	real getpar			!get parameter function
+        integer iuw,iuw1,itmcon,idtcon
+        save iuw,itmcon,idtcon
+        integer iwave			!call for wave model [2=wwm]
+	save iwave
+        integer icall           	!initialization parameter                        
+        save icall
+        data icall /0/
+	real tramp,alpha
+	save tramp
+
+        if (iwwm .le. 0 ) return
+
+!       -----------------------------------------------
+!       Opens output file for waves
+!       -----------------------------------------------
+
+        if( icall .eq. 0 ) then
+            iwave = nint(getpar('iwave'))
+            itmcon = nint(getpar('itmcon'))
+            idtcon = nint(getpar('idtcon'))
+            call confop(iuw,itmcon,idtcon,1,3,'wav')
+	    tramp = 0.
+	    tramp = 86400.
+	    wfact = 1. / rowass
+            do k = 1,nkndim
+              do l = 1,nlvdim
+		 SXX3D(l,k) = 0.
+		 SXY3D(l,k) = 0.
+		 SYY3D(l,k) = 0.
+              end do
+            end do
+            icall = 1
+        end if
+
+!       -----------------------------------------------
+!       Same time step, do read
+!       -----------------------------------------------
+
+        if (mod(it,idcoup) .eq. 0 ) then
+ 
+!         -----------------------------------------------
+!         Reads stress and wave characteristics
+!         -----------------------------------------------
+
+  	  if (iwwm .eq. 1) then 	!do not read wind from WWM
+
+            do k = 1,nkn
+
+	      do l = 1,nlv 
+                 read(101) tmpval
+		 SXX3D(l,k) = tmpval
+                 read(102) tmpval
+		 SYY3D(l,k) = tmpval
+                 read(142) tmpval
+		 SXY3D(l,k) = tmpval
+	      end do
+
+              read(103) tmpval
+	      waveh(k) = tmpval
+              read(104) tmpval
+	      wavep(k) = tmpval
+              read(105) tmpval
+	      waved(k) = tmpval
+              read(106) tmpval
+	      wtauw(k) = tmpval
+              read(107) tmpval
+	      wavepp(k) = tmpval
+              read(108) tmpval
+	      wavewl(k) = tmpval
+              read(109) tmpval
+	      waveov(k) = tmpval
+              read(110) stokesx(:,k)
+              read(111) stokesy(:,k)
+              read(114) tmpval
+	      windcd(k) = tmpval
+              read(115) tmpval
+	      wavejb(k) = tmpval
+              read(116) tmpval
+	      wavedi(k) = tmpval
+
+            end do
+
+	  elseif (iwwm .eq. 2) then	!read wind from WWM
+
+            do k = 1,nkn
+
+	      do l = 1,nlv 
+                 read(101) tmpval
+		 SXX3D(l,k) = tmpval
+                 read(102) tmpval
+		 SYY3D(l,k) = tmpval
+                 read(142) tmpval
+		 SXY3D(l,k) = tmpval
+	      end do
+
+              read(103) tmpval
+	      waveh(k) = tmpval
+              read(104) tmpval
+	      wavep(k) = tmpval
+              read(105) tmpval
+	      waved(k) = tmpval
+              read(106) tmpval
+	      wtauw(k) = tmpval
+              read(107) tmpval
+	      wavepp(k) = tmpval
+              read(108) tmpval
+	      wavewl(k) = tmpval
+              read(109) tmpval
+	      waveov(k) = tmpval
+              read(110) stokesx(:,k)
+              read(111) stokesy(:,k)
+              read(114) tmpval
+	      windcd(k) = tmpval
+              read(115) tmpval
+	      wavejb(k) = tmpval
+              read(116) tmpval
+	      wavedi(k) = tmpval
+              read(124) tmpval
+	      wxv(k) = tmpval
+              read(125) tmpval
+	      wyv(k) = tmpval
+              ppv(k) = 0.
+
+!             -----------------------------------------------
+!             Transforms wind speed to stress in case of iwwm .eq. 2 
+!  	      and use wave induced CD
+!             -----------------------------------------------
+	      wspeed = sqrt( wxv(k)**2 + wyv(k)**2 )
+              tauxnv(k) = wfact * windcd(k) * wspeed * wxv(k)
+              tauynv(k) = wfact * windcd(k) * wspeed * wyv(k)
+
+            end do
+
+	  end if
+
+          write(*,*) 'SHYFEM read stress and wave ',it
+
+!         -----------------------------------------------
+!         Compute surface roughness z0s = 0.5*Hs
+!         -----------------------------------------------
+
+          do k = 1,nkn
+	    z0sk(k) = 0.5 * waveh(k)
+          end do
+
+!         -----------------------------------------------
+!         Computes wave induced forces
+!         -----------------------------------------------
+
+	  if (iwave .eq. 2 .or. iwave .eq. 4) then
+
+!           -----------------------------------------------
+!           Radiation stress formulation
+!           -----------------------------------------------
+
+	    call diffxy(SXX3D,SYY3D,SXY3D,wavefx,wavefy)
+
+	  elseif (iwave .eq. 3 .or. iwave .eq. 5) then
+!           -----------------------------------------------
+!           Vortex force formulation and substract wave-supported
+!	    stress from wind stress (still to be implemented)
+!           -----------------------------------------------
+
+	    call wave_vortex(stokesx,stokesy,wavejb,wavefx,wavefy)
+
+            do k = 1,nkn
+	      wtau = wtauw(k)
+              taux = tauxnv(k)
+              tauy = tauynv(k)
+	      s = sqrt(taux**2 + tauy**2)
+	      if (s .gt. wtau) then
+	        d = atan2(tauy,taux)
+	        tauxnv(k) = taux - wtau * cos(d)
+	        tauynv(k) = tauy - wtau * sin(d)
+	      end if
+            end do
+
+	  end if
+
+!         -----------------------------------------------
+!         simulate smooth initial forcing
+!	  useful for test cases
+!         -----------------------------------------------
+          if( tramp .gt. 0. ) then
+            alpha = (it-itanf)/tramp
+            if( alpha .gt. 1. ) alpha = 1.
+	    do ie = 1,nel
+	      do l = 1,nlv
+	        wavefx(l,ie) = wavefx(l,ie) * alpha
+	        wavefy(l,ie) = wavefy(l,ie) * alpha
+	      end do
+	    end do
+	  end if
+
+        end if
+
+!       -----------------------------------------------
+!       Writes output to the file.wav 
+!       -----------------------------------------------
+            
+        call confil(iuw,itmcon,idtcon,31,1,waveh)
+        call confil(iuw,itmcon,idtcon,32,1,wavep)
+        call confil(iuw,itmcon,idtcon,33,1,waved)
+ 
+        end
+
+!**************************************************************
+
+        subroutine write_wwm(iwwm,it,idcoup)
+
+! write to PIPE
+
+        implicit none
+
+c parameters
+        include 'param.h'
+
+c arguments
+        integer iwwm
+        integer it              !time [s]
+	integer idcoup		!time step for sincronizing with wwm [s]
+
+c common
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        real wxv(nkndim),wyv(nkndim)    !x and y wind component [m/s]
+        common /wxv/wxv,/wyv/wyv
+        real znv(nkndim)
+        common /znv/znv
+        real hkv(nkndim)
+        common /hkv/hkv
+        integer ilhkv(nkndim)           !number of node level
+        common /ilhkv/ilhkv
+        integer nlvdi,nlv
+        common /level/ nlvdi,nlv
+
+c local
+        integer k,l,nlev,lmax
+	real ddl(nlvdim,nkndim)		!3D layer depth (in the middle of layer)
+	real h(nlvdim)
+	real u,v
+	double precision tempvar
+
+        if (iwwm .le. 0 ) return
+
+!       -----------------------------------------------
+!       Same time step, do write
+!       -----------------------------------------------
+
+        if (mod(it,idcoup) .eq. 0 ) then
+
+!         -----------------------------------------------
+!         Computes 3D layer depth array
+!         -----------------------------------------------
+
+          do k = 1,nkn
+	    do l = 1,nlvdim
+	      ddl(l,k) = 0.
+	    end do
+	    call dep3dnod(k,+1,nlev,h)
+            ddl(1,k) = - 0.5 * h(1)
+            do l = 2,nlev
+              ddl(l,k) = ddl(l-1,k) - 0.5 * (h(l) + h(l-1))
+            end do
+          end do
+
+!         -----------------------------------------------
+!         write velocities and water level
+!         -----------------------------------------------
+
+	  if (iwwm .eq. 1) then	! write wind to wwm
+
+            do k = 1,nkn 
+	      call getuv(1,k,u,v)
+	      tempvar = DBLE(u)
+              write(120) tempvar
+	      flush(120)
+	      tempvar = DBLE(v)
+              write(121) tempvar
+	      flush(121)
+	      tempvar = DBLE(znv(k))
+              write(122) tempvar
+	      flush(122)
+	      tempvar = DBLE(hkv(k))
+              write(123) tempvar
+	      flush(123)
+              write(123) ilhkv(k)
+	      flush(123)
+	      tempvar = DBLE(wxv(k))
+              write(124) tempvar
+	      flush(124)
+	      tempvar = DBLE(wyv(k))
+              write(125) tempvar
+	      flush(125)
+
+              do l = 1,nlv
+		tempvar = DBLE(ddl(l,k))
+                write(126) tempvar
+	      end do 
+	      flush(126)
+	    end do 
+
+	  elseif (iwwm .eq. 2) then	! do not write wind to wwm
+
+            do k = 1,nkn 
+	      call getuv(1,k,u,v)
+	      tempvar = DBLE(u)
+              write(120) tempvar
+	      flush(120)
+	      tempvar = DBLE(v)
+              write(121) tempvar
+	      flush(121)
+	      tempvar = DBLE(znv(k))
+              write(122) tempvar
+	      flush(122)
+	      tempvar = DBLE(hkv(k))
+              write(123) tempvar
+	      flush(123)
+              write(123) ilhkv(k)
+	      flush(123)
+
+              do l = 1,nlv
+		tempvar = DBLE(ddl(l,k))
+                write(126) tempvar
+	      end do 
+	      flush(126)
+            end do
+
+	  end if
+
+          write(*,*) 'SHYFEM writes vel and water level', it
+ 
+        end if
+
+        end
+
+!**************************************************************************
+
+        subroutine getwwmbound
+
+!routine to write boundary node file for wwm (fort.22)
+
+        implicit none
+
+        integer ibndim
+        parameter (ibndim=100)
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        real bnd(ibndim,1)
+        common /bnd/bnd
+        integer irv(1)
+        common /irv/irv
+        real xgv(1), ygv(1)
+        common /xgv/xgv, /ygv/ygv
+        real hkv(1)
+        common /hkv/hkv
+	integer i,k,knode,kranf,krend,nn
+
+        do i=1,nbc
+         kranf=nint(bnd(3,i))
+         krend=nint(bnd(4,i))
+	 nn = krend-kranf+1
+
+	 write(26,*)nn
+
+         do k=kranf,krend
+            knode=irv(k)
+            write(26,25)knode,xgv(knode),ygv(knode),hkv(knode)
+	 end do
+	enddo
+
+25	format(i10,3e14.4)
+
+	end
+
+!**************************************************************************
+! Computes wave forcing terms according to the radiation stress formulation
+
+        subroutine diffxy(SXX3D,SYY3D,SXY3D,wavefx,wavefy)
+
+        implicit none
+
+        include 'param.h'
+        include 'evmain.h'
+
+        real SXX3D(nlvdim,nkndim)       !radiation stress xx
+        real SYY3D(nlvdim,nkndim)       !radiation stress yy
+        real SXY3D(nlvdim,nkndim)       !radiation stress xy
+
+        real wavefx(nlvdim,neldim)      !wave forcing term x
+        real wavefy(nlvdim,neldim)      !wave forcing term y
+
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer ilhv(neldim)
+        common /ilhv/ilhv
+        integer nen3v(3,neldim)        !node number
+        common /nen3v/nen3v
+        double precision b,c           !x and y derivated form function [1/m]
+	integer k,ie,ii,l,ilevel
+        real radsx,radsy
+
+  	call nantest(nkn*nlvdim,SXX3D,'SXX3D')
+	call nantest(nkn*nlvdim,SXY3D,'SXY3D')
+	call nantest(nkn*nlvdim,SYY3D,'SYY3D')
+
+	do ie = 1,nel
+	  ilevel = ilhv(ie)
+	  do l=1,ilevel
+	    radsx = 0.
+	    radsy = 0.
+	    do ii = 1,3
+	      k = nen3v(ii,ie)
+              b = ev(3+ii,ie)
+              c = ev(6+ii,ie)
+	      radsx = radsx -(SXX3D(l,k)*b + SXY3D(l,k)*c)
+	      radsy = radsy -(SXY3D(l,k)*b + SYY3D(l,k)*c)
+	    end do
+	  wavefx(l,ie) = -radsx
+	  wavefy(l,ie) = -radsy
+          end do
+	enddo
+
+	end
+
+!**************************************************************************
+! Computes wave forcing terms according to the vortex force formulation
+
+	subroutine wave_vortex(stokesx,stokesy,wavejb,wavefx,wavefy)
+
+        implicit none
+
+c parameters
+        include 'param.h'
+        include 'evmain.h'
+
+c arguments
+        double precision stokesx(nlvdim,nkndim) !x stokes velocity
+        double precision stokesy(nlvdim,nkndim) !y stokes velocity
+        real wavejb(nkndim)             	!wave pressure
+        real wavefx(nlvdim,neldim)		!x wave forcing term
+	real wavefy(nlvdim,neldim)		!y wave forcing term
+
+c common
+        real grav,fcor,dcor,dirn,rowass,roluft
+        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer ilhv(neldim)
+        common /ilhv/ilhv
+        integer nen3v(3,neldim)        !node number
+        common /nen3v/nen3v
+        real ulnv(nlvdim,1),vlnv(nlvdim,1)
+        common /ulnv/ulnv, /vlnv/vlnv
+        real hdenv(nlvdim,1)
+        common /hdenv/hdenv
+        real fcorv(1)
+        common /fcorv/fcorv
+        real hdknv(nlvdim,nkndim)
+        common /hdknv/hdknv
+
+c local
+        real stokesz(nlvdim,nkndim)	!z stokes velocity on node k
+	real hk(nlvdim)			!layer tickness on nodes
+	integer k,ie,ii,l,ilevel
+	real f				!Coriolis parameter on elements
+	real h				!layer thickness
+	real u,v			!velocities at level l and elements
+	real stxe(nlvdim,neldim)	!x stokes transport on elements
+	real stye(nlvdim,neldim)	!y stokes transport on elements
+	real stxk, styk			!stokes transport on nodes
+	real auxx, auxy			!auxiliary variables
+	real jbk			!integrated wave perssure term
+        double precision b,c		!x and y derivated form function [1/m]
+	real wavesx,wavesy
+        real saux1(nlvdim,nkndim)
+        real saux2(nlvdim,nkndim)
+	real stokesze(0:nlvdim,neldim)	!z stokes velocity on elements
+	real wuz,wvz			!z vortex force
+	real sz,sz1
+	real uaux(0:nlvdim+1),vaux(0:nlvdim+1)
+
+!       -----------------------------------------------
+!       Initialization
+!       -----------------------------------------------
+
+        do ie = 1,neldim
+          do l = 1,nlvdim
+            stokesze(l,ie) = 0.
+	    stxe(l,ie) = 0.
+	    stye(l,ie) = 0.
+	    wavefx(l,ie) = 0.d0
+	    wavefy(l,ie) = 0.d0
+          end do
+          stokesze(0,ie) = 0.
+        end do
+
+!       -----------------------------------------------
+!       Computes wave forcing terms due to horizontal stokes
+!	velocities and wave pressure head
+!       -----------------------------------------------
+
+        do ie = 1,nel
+          ilevel = ilhv(ie)
+	  f = fcorv(ie)
+          do l = 1,ilevel
+            wavesx = 0.
+            wavesy = 0.
+	    auxx = 0.
+	    auxy = 0.
+            h = hdenv(l,ie)
+	    u = ulnv(l,ie)
+	    v = vlnv(l,ie)
+            do ii = 1,3
+              k = nen3v(ii,ie)
+	      h = hdknv(l,k)
+              b = ev(3+ii,ie)
+              c = ev(6+ii,ie)
+	      stxk = stokesx(l,k) * h
+	      styk = stokesy(l,k) * h
+	      auxx = auxx + stxk
+	      auxy = auxy + styk
+              jbk = wavejb(k) * h * grav / 3.	!???? is it correct to divide by 3?
+
+              wavesx = wavesx - (u*b*styk - v*c*styk) + b*jbk
+              wavesy = wavesy + (u*b*stxk - v*c*stxk) + c*jbk
+
+	      !Dutour Sikiric
+              !wavesx = wavesx - (u*b*stxk + v*b*styk) + b*jbk
+              !wavesy = wavesy - (u*c*stxk + v*c*styk) + c*jbk
+
+            end do
+	    stxe(l,ie) = auxx / 3.
+	    stye(l,ie) = auxy / 3.
+
+            wavefx(l,ie) = wavesx - f*stye(l,ie)
+            wavefy(l,ie) = wavesy + f*stxe(l,ie)
+          end do
+        enddo
+!       -----------------------------------------------
+!       Check for nan
+!       -----------------------------------------------
+            
+	call nantest(nel*nlvdim,wavefx,'WAVEFX')
+	call nantest(nel*nlvdim,wavefy,'WAVEFy')
+
+!       -----------------------------------------------
+!       Computes vertical stokes velocity
+!       -----------------------------------------------
+
+	call stokes_vv(saux1,saux2,stxe,stye,stokesz,stokesze)
+
+!       -----------------------------------------------
+!       Computes wave forcing terms due to vertical stokes
+!	velocity
+!       -----------------------------------------------
+
+        do ie = 1,nel
+          ilevel = ilhv(ie)
+
+	  do l = 1,ilevel
+	    uaux(l) = ulnv(l,ie)
+	    vaux(l) = vlnv(l,ie)
+	  end do
+	  uaux(0) = 0.
+	  vaux(0) = 0.
+	  uaux(ilevel+1) = 0.
+	  vaux(ilevel+1) = 0.
+
+          do l = 1,ilevel
+	    sz = stokesze(l,ie)
+	    sz1 = stokesze(l-1,ie)
+	    wuz = 0.
+	    wvz = 0.
+
+	    if ( sz1 .lt. 0. ) then
+	      wuz = wuz - sz1*uaux(l-1)
+	      wvz = wvz - sz1*vaux(l-1)
+	    else
+	      wuz = wuz - sz1*uaux(l)
+	      wvz = wvz - sz1*vaux(l)
+	    end if
+
+	    if ( sz .gt. 0. ) then
+	      wuz = wuz + sz*uaux(l+1)
+	      wvz = wvz + sz*vaux(l+1)
+	    else
+	      wuz = wuz + sz*uaux(l)
+	      wvz = wvz + sz*vaux(l)
+	    end if
+	
+            wavefx(l,ie) = wavefx(l,ie) + wuz		!check stokesz first
+            wavefy(l,ie) = wavefy(l,ie) + wvz
+          end do
+        enddo
+
+	end
+
+!**************************************************************************
+! Computes vertical stokes velocity
+
+	subroutine stokes_vv(vf,va,stxe,stye,auxstz,stokesze)
+
+        implicit none
+
+c parameters
+        include 'param.h'
+        include 'evmain.h'
+c arguments
+        real vf(nlvdim,nkndim)		!auxiliary array
+        real va(nlvdim,nkndim)		!auxiliary array
+	real stxe(nlvdim,neldim)	!x stokes transport on elements
+	real stye(nlvdim,neldim)	!y stokes transport on elements
+	real auxstz(nlvdim,nkndim) 	!z stokes velocity on node k for plotting
+	real stokesze(0:nlvdim,neldim)	!z stokes velocity on elements
+
+c common
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer nlvdi,nlv
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /level/ nlvdi,nlv
+        integer nen3v(3,1)
+        integer ilhv(1)
+        integer ilhkv(1)
+        common /nen3v/nen3v
+        common /ilhv/ilhv
+        common /ilhkv/ilhkv
+
+c local
+	real stokesz(0:nlvdim,nkndim) 	!z stokes velocity on node k
+        logical debug
+        integer k,ie,ii,kk,l,lmax
+        integer ilevel
+        double precision b,c            !x and y derivated form function [1/m]
+	real aj,ff,atop,acu
+        logical is_zeta_bound,is_boundary_node
+
+c initialize
+
+        do k=1,nkn
+          do l=1,nlv
+            vf(l,k)=0.
+            va(l,k)=0.
+            stokesz(l,k) = 0.
+	    auxstz(l,k) = 0.
+          end do
+        end do
+
+c compute difference of velocities for each layer
+
+        do ie=1,nel
+          aj=4.*ev(10,ie)               !area of triangle / 3
+          ilevel = ilhv(ie)
+          do l=1,ilevel
+            do ii=1,3
+               kk=nen3v(ii,ie)
+               b = ev(ii+3,ie)
+               c = ev(ii+6,ie)
+               ff = stxe(l,ie)*b + stye(l,ie)*c
+               vf(l,kk) = vf(l,kk) + 3. * aj * ff
+               va(l,kk) = va(l,kk) + aj
+            end do
+          end do
+        end do
+
+c from vel difference get absolute velocity (w_bottom = 0)
+c       -> stokesz(nlv,k) is already in place !
+c       -> stokesz(nlv,k) = 0 + stokesz(nlv,k)
+c w of bottom of last layer must be 0 ! -> shift everything up
+c stokesz(nlv,k) is always 0
+c
+c dividing stokesz [m**3/s] by area [vv] gives vertical velocity
+c
+c in vv(l,k) is the area of the upper interface: a(l) = a_i(l-1)
+c =>  w(l-1) = flux(l-1) / a_i(l-1)  =>  w(l-1) = flux(l-1) / a(l)
+
+        do k=1,nkn
+          lmax = ilhkv(k)
+          stokesz(lmax,k) = 0.
+          debug = k .eq. 0
+          do l=lmax,1,-1
+            stokesz(l-1,k) = stokesz(l,k) + vf(l,k)
+          end do
+          stokesz(0,k) = 0.        ! ensure no flux across surface - is very small
+        end do
+
+        do k=1,nkn
+          lmax = ilhkv(k)
+          debug = k .eq. 0
+          do l=2,lmax
+            atop = va(l,k)
+            if( atop .gt. 0. ) then
+              stokesz(l-1,k) = stokesz(l-1,k) / atop
+              if( debug ) write(6,*) k,l,atop,stokesz(l-1,k)
+            end if
+	    auxstz(l,k) = stokesz(l,k)
+          end do
+	  auxstz(lmax,k) = stokesz(lmax,k)
+        end do
+
+c set w to zero at open boundary nodes (new 14.08.1998)
+
+        do k=1,nkn
+            !if( is_zeta_bound(k) ) then
+            if( is_boundary_node(k) ) then
+              do l=0,nlv
+                stokesz(l,k) = 0.
+	        auxstz(l,k) = 0.
+              end do
+            end if
+        end do
+
+c-----------------------------------------------------------
+c convert values to elelemts
+c-----------------------------------------------------------
+
+        do ie=1,nel
+          lmax = ilhv(ie)
+          do l = 1,lmax
+            acu = 0.
+            do ii=1,3
+              k = nen3v(ii,ie)
+              acu = acu + stokesz(l,k)
+            end do
+            stokesze(l,ie) = acu / 3.
+          end do
+          stokesze(0,ie) = 0.
+        end do
+
+        return
+        end
+
+c******************************************************************
 c
 c This routine is used to calculate the wave height and period
 c from wind speed, fetch and depth using the EMPIRICAL PREDICTION
 c EQUATIONS FOR SHALLOW WATER (Shore Protection Manual, 1984).
-c It is a part of the sediment transport module.
 c It considers a homogeneous wind field all over the domain.
-c
-c Copyright: Christian Ferrarin - ISMAR-CNR
-c
-c revision log :
-c
-c 14.07.2003	ccf	written from scratch by Christian Ferrarin ISMAR-CNR
-c 01.09.2003    ccf     add subroutine e2n2d (element to node value)
-c 01.11.2004    ccf     compute averaged depth along the fetch
-c 11.11.2004    ccf     limiting wave height: Hbr = 0.50 h
-c 11.11.2004    ccf     bug fix in make_stress: compute tm
-c 26.11.2004    ggu     no idt passed to subwaves
-c 05.01.2005    ccf     output per nodes
-c 07.11.2005    ggu     changes from Christian integrated
-c 18.10.2006    ccf     modified, walues on nodes
-c 10.04.2008    ccf     check for p > 0
-c 09.10.2008    ggu     new call to confop
+c It works only with cartesian coordinate system.
 c
 c notes :
 c
@@ -63,14 +1076,13 @@ c Uw = pi H / (T sinh(kh))
 c
 c**************************************************************
 
-        subroutine subwaves(it,dt)
+        subroutine parwaves(it)
 
         implicit none
 
         include 'param.h'
 
         integer it
-	real dt
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -175,7 +1187,7 @@ c         --------------------------------------------------
 
           call confop(ius,itmcon,idtcon,1,3,'wav')
 
-          write(6,*) 'wave model initialized...'
+          write(6,*) 'parametric wave model initialized...'
 
         endif
 
@@ -284,16 +1296,6 @@ c       -------------------------------------------------------------------
         call confil(ius,itmcon,idtcon,32,1,wavep)
         call e2n2d(waed,waved,v1v)
         call confil(ius,itmcon,idtcon,33,1,waved)
-
-c        call e2n2d(fet,v2v,v1v)
-c        call confil(ius,itmcon,idtcon,33,1,v2v)
-
-c        call e2n2d(tcv,v2v,v1v)
-c        call confil(ius,itmcon,idtcon,34,1,v2v)
-c        call e2n2d(twv,v2v,v1v)
-c        call confil(ius,itmcon,idtcon,35,1,v2v)
-c        call e2n2d(tmv,v2v,v1v)
-c        call confil(ius,itmcon,idtcon,36,1,v2v)
 
         end
 
@@ -533,4 +1535,3 @@ c computes stress parameters
         end
 
 c******************************************************************
-

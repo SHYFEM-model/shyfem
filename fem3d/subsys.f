@@ -1063,8 +1063,7 @@ cc new for scaling time step
 
 cc experimental stuff
 
-        call addpar('nbfix',0.)         !vel at boundary
-        call addpar('nbsig',0.)         !sigma layers to read in for OBC
+        !call addpar('nbsig',0.)         !sigma layers to read in for OBC
 
         call addpar('sedim',0.)         !sedimentation for theseus
 
