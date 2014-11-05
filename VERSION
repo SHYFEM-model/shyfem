@@ -1,3 +1,44 @@
+version  7_0_5    05-11-2014    VERS_7_0_5
+
+========================================================== 05-11-2014 - 7_0_5
+
+c ./tmp/shyfem-f307c41547_2014-11-04_stable/fem3d/subwaves.f:
+! 04.11.2014	ccf	rewritten
+!
+c ./tmp/shyfem-f307c41547_2014-11-04_stable/fem3d/subbnd.f:
+c 03.11.2014    ggu	nbdim deleted
+c
+c ./tmp/shyfem-f307c41547_2014-11-04_stable/fem3d/subnev.f:
+c 30.10.2014	ggu	new routine compute_distance()
+c
+c ./tmp/shyfem-f307c41547_2014-11-04_stable/fem3d/subn11.f:
+c 30.10.2014    ggu     in c_tilt() compute distance also for lat/lon
+c 31.10.2014    ccf     new call to init_z0 instead than init_z0b
+c
+c ./tmp/shyfem-f307c41547_2014-11-04_stable/fem3d/newini.f:
+c 31.10.2014    ccf	initi_z0 for zos and zob
+c
+c ./fem3d/subver.f:
+c 05.11.2014	ggu	version 7.0.5
+c
+c ./fem3d/subwaves.f:
+! 04.11.2014	ccf	rewritten
+!
+c ./fem3d/subbnd.f:
+c 03.11.2014    ggu	nbdim deleted
+c
+c ./fem3d/subnev.f:
+c 30.10.2014	ggu	new routine compute_distance()
+c
+c ./fem3d/subn11.f:
+c 30.10.2014    ggu     in c_tilt() compute distance also for lat/lon
+c 31.10.2014    ccf     new call to init_z0 instead than init_z0b
+c
+c ./fem3d/newini.f:
+c 31.10.2014    ccf	initi_z0 for zos and zob
+
+==========================================================
+
 version  7_0_4    30-10-2014    VERS_7_0_4   commit_2014-11-04
 
 version  7_0_4    30-10-2014    VERS_7_0_4
