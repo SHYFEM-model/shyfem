@@ -67,7 +67,7 @@
 
 	ta   = airt
 	tw   = sst
-	rain = prec
+	rain = prec*rhow	!from m/s to kg/m2/s
 
 !       ---------------------------------------------------------
 !       Compute saturation vapour pressure and specific humidity
@@ -418,7 +418,7 @@
 ! written by David Rutgers and Frank Bradley - see
 ! http://www.coaps.fsu.edu/COARE/flux_algor/flux.html.
 
-	subroutine coare25(sst,airt,w,precip,qs,qa,rhoa,evap,qe,qh,Cd)
+	subroutine coare25(sst,airt,w,rain,qs,qa,rhoa,evap,qe,qh,Cd)
 
 	implicit none
 
@@ -428,7 +428,7 @@
 	real, intent(in)      :: sst		!water temperature [C]
 	real, intent(in)      :: airt		!air temperature [C]
 	real, intent(in)      :: w		!wind speed [m/s]
-	real, intent(in)      :: precip		!precipitation [m/s] [kg/m2/s] 
+	real, intent(in)      :: rain  		!precipitation [kg/m2/s] 
         real, intent(in)      :: qs		!bulk water spec hum [kg/kg]
         real, intent(in)      :: qa		!bulk air spec hum [kg/kg]
         real, intent(in)      :: rhoa		!moist air density [kg/m3]
@@ -490,7 +490,7 @@
 	real        :: tpsi,qpsi,wpsi,ZWoL,oL,ZToL,ZQoL,ZoW,ZoT, ZoQ
 	real        :: Wstar,Tstar, Qstar, delQ, delT, rr,rt,rq
 	real        :: TVstar,Bf, upvel,delw,Wspeed
-	real        :: rain,cd_rain
+	real        :: cd_rain
 	real        :: x1,x2,x3
 ! function
 	real        :: psi
@@ -507,7 +507,6 @@
 	ta_k = airt + kelv
 	ta   = airt
 	delw = sqrt(w*w + wgust*wgust)
-	rain = precip * rhow
 
 !	------------------------------------------------
 !	Compute Monin-Obukhov similarity parameters for wind (Wstar),
@@ -665,7 +664,7 @@
 ! considered by computing SST from model temperature in the 
 ! first layer (see tw_skin)
 
-	subroutine coare30(sst,airt,ws,prec,Rns,Rnl,Qs,Q,rhoa,
+	subroutine coare30(sst,airt,ws,rain,Rns,Rnl,Qs,Q,rhoa,
      +			   evap,qsens,qlat,Cd)
 
 	implicit none
@@ -676,7 +675,7 @@
         real, intent(in) 	:: airt         !air temperature [C]
         real, intent(in) 	:: sst          !sea surface temperature [C]
         real, intent(in) 	:: ws           !wind speed [m/s]                    
-        real, intent(in) 	:: prec         !precipitation [m/s]	           
+        real, intent(in) 	:: rain         !precipitation [kg/m2/s]
 	real, intent(in) 	:: Rns	        !net solar flux (W/m^2)
 	real, intent(in) 	:: Rnl	        !net longwave flux (W/m^2)
 	real, intent(in) 	:: Qs,Q	        !Spec. humidity	[kg/kg]		   
@@ -696,7 +695,6 @@
 	real, parameter		:: zq   = 2.   !air q measurement height (m)
 	real, parameter		:: zi   = 600. !PBL depth (m)
 ! local
-	real 	:: rain		!precipitation [mm/hr]
 	real 	:: us		!surface current speed in the wind direction (m/s)
 	integer	:: jcool	!implement cool calculation skin switch, 0=no, 1=yes
 	integer	:: jwave	!implement wave dependent roughness model
@@ -727,7 +725,6 @@
 	us    = 0.
 	jcool = 0		!implement cool calculation skin switch, 0=no, 1=yes
 	cd    = 2.5e-3
-	rain  = prec * 3600000.	!rain rate (from m/s to mm/hr)
 
 	jwave = 0 		!implement wave dependent roughness model
 	twave = 0. 		!wave period (s)
@@ -868,7 +865,7 @@
      &        0.02411/(rhoa*cpa)
 	alfac= 1./(1.+(wetc*Le*dwat)/(cpa*dtmp))    	!wet bulb factor
 	RF= rain*alfac*cpw*((sst-airt-dter*jcool)+
-     &	    (Qs-Q-dqer*jcool)*Le/cpa)/3600.
+     &	    (Qs-Q-dqer*jcool)*Le/cpa)
 
 !	------------------------------------------------
 !	compute transfer coeffs relative to ut @meas. ht
@@ -896,7 +893,7 @@
 !-----------------------------------------------------------------------
 ! Compute momentum fluxes due to wind and rainfall
 
-	subroutine wcstress(ws,rhoa,rhow,cd,prec,
+	subroutine wcstress(ws,rhoa,rhow,cd,rain,
      +			    wx,wy,taux,tauy)
 
 	implicit none
@@ -906,12 +903,12 @@
 	real, intent(in)	:: rhoa		!moist air density (kg/m3)
 	real, intent(in)	:: rhow		!water density (kg/m3)
 	real, intent(in)	:: cd		!drag coefficient
-	real, intent(in)	:: prec		!precipitation (m/s)
+	real, intent(in)	:: rain		!precipitation (kg/m2/s)
         real, intent(in)	:: wx,wy      	!wind components [m/s]
 ! output
 	real, intent(out)	:: taux,tauy	!wind stress components
 ! local
-	real 			:: cff,rain
+	real 			:: cff
 
 !       ------------------------------------------------
 !       Compute wind stress components (N/m2), Tau
@@ -925,8 +922,7 @@
 !       Compute momentum flux (N/m2) due to rainfall (kg/m2/s)
 !       ------------------------------------------------
 
-	rain = prec * rhow
-        cff  = 0.85 * rain * rhow * ws
+        cff  = 0.85 * rain * ws
         taux  = taux + cff*sign(1.0,wx)
         tauy  = tauy + cff*sign(1.0,wy)
 

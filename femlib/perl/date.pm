@@ -10,7 +10,7 @@
 # 
 # my $date = new date;
 #
-# $date->init_year($year0)		#set reference year
+# $date->init_year($year0);		#set reference year
 # $it = $date->convert_to_it($year,$month,$day,$hour,$min,$sec);
 # ($year,$month,$day,$hour,$min,$sec) = $date->convert_from_it($it);
 #
@@ -22,6 +22,7 @@
 # 28.09.2010	ggu	new test routine test_femdate()
 # 21.10.2014	ggu	absolute time routines introduced
 # 21.10.2014	ggu	refer to 1.1.1 (date2days and days2date)
+# 05.11.2014	ggu	new routine unformat_time_date()
 #
 # version 2.2
 #
@@ -529,6 +530,24 @@ sub format_time_date
 	my $line = "$year-$month-${day}::$hour:$min:$sec";
 
 	return $line;
+}
+
+sub unformat_time_date
+{
+        my ($self,$line) = @_;
+
+	my ($date,$time) = split("::",$line);
+	my ($year,$month,$day) = split("-",$date);
+	my ($hour,$min,$sec) = split(":",$time);
+
+	$year = 0 unless $year;
+	$month = 0 unless $month;
+	$day = 0 unless $day;
+	$hour = 0 unless $hour;
+	$min = 0 unless $min;
+	$sec = 0 unless $sec;
+
+        return ($year,$month,$day,$hour,$min,$sec);
 }
 
 sub add_zero2

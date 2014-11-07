@@ -102,6 +102,7 @@
 	integer, parameter :: iform_closed = -2
 	integer, parameter :: iform_forget = -3
 	integer, parameter :: iform_error = -9
+	integer, parameter :: iform_no_such_file = -11
 	integer, parameter :: iform_ts = 3
 
 	integer, parameter, private :: ndim = 300
@@ -472,7 +473,7 @@
 	integer ntype,itype(2)
 	logical breg
 	logical bok
-	logical bts,bfem,bnofile,bfile
+	logical bts,bfem,bnofile,bfile,berror,bnosuchfile
 
 	!---------------------------------------------------------
 	! get new id for file
@@ -504,15 +505,22 @@
 
 	call iff_get_file_info(file,np,nvar,ntype,iformat)
 
-	bts = iformat == iform_ts
-	bnofile = iformat < 0
-	bfile = .not. bnofile
+	bnofile = iformat == iform_none			!no file given
+	bfile = .not. bnofile				!file has been given
+	bnosuchfile = iformat == iform_no_such_file	!file not existing
+	!bnofile = iformat < 0
+	!berror = iformat < 0
+	berror = iformat == iform_error			!error opening
+
+	bts = iformat == iform_ts			!file is TS
 	bfem = iformat >= 0 .and. iformat <= 2
 
         call fem_file_make_type(ntype,2,itype)
         breg = itype(2) > 0
 
 	if( file /= ' ' .and. bnofile ) goto 99
+	if( bnosuchfile ) goto 99
+	if( bfile .and. berror ) goto 93
 	if( bfile .and. np < 1 ) goto 96
 	if( .not. breg .and. np > 1 .and. np /= nexp ) goto 96
 
@@ -594,6 +602,10 @@
 	!---------------------------------------------------------
 
 	return
+   93	continue
+	write(6,*) 'error in file: ',file
+	write(6,*) 'iformat = ',iformat
+	stop 'error stop iff_init'
    96	continue
 	write(6,*) 'file does not contain expected data size'
 	write(6,*) 'nexp,np: ',nexp,np
@@ -612,7 +624,8 @@
 	call iff_print_file_info(id)
 	stop 'error stop iff_init'
    99	continue
-	write(6,*) 'error opening file: ',file
+	write(6,*) 'no such file: ',file
+	write(6,*) 'iformat = ',iformat
 	stop 'error stop iff_init'
 	end subroutine iff_init
 
@@ -655,6 +668,7 @@ c	 2	time series
 	integer iformat		!info on file type (return)
 
 	integer itype(2)
+	logical filex
 
 	np = 0
 	nvar = 0
@@ -662,6 +676,11 @@ c	 2	time series
 	iformat = iform_none
 
 	if( file == ' ' ) return
+
+	if( .not. filex(file) ) then
+	  iformat = iform_no_such_file
+	  return
+	end if
 
 	call fem_file_test_formatted(file,np,nvar,ntype,iformat)
 

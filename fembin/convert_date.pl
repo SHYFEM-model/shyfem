@@ -35,13 +35,17 @@ $date->init_year($year0);
 if( $it2date ) {
   (@res) = $date->convert_from_it(@date);
   (@res) = format_numbers(@res);
+  if( $format ) {
+    $line = $date->format_time_date(@res);
+  } else {
+    $line = join(" ",@res);
+  }
 } else {
   $date[1] = 1 unless $date[1];		#no month given
   $date[2] = 1 unless $date[2];		#no day given
-  (@res) = $date->convert_to_it(@date);
+  $line = $date->convert_to_it(@date);
 }
 
-$line = join(" ",@res);
 print "$line\n";
 
 #--------------------------------------
@@ -51,6 +55,7 @@ sub Usage {
   print STDERR "Usage: convert_date.pl [-it2date|-date2it] year0 {it|date}\n";
   print STDERR "   -it2date:  convert from seconds to date\n";
   print STDERR "   -date2it:  convert from date to seconds\n";
+  print STDERR "   -format:   format date\n";
   print STDERR "   year0:     reference year\n";
   print STDERR "   date:      year month day [hour [min [sec]]]\n";
   print STDERR "   it:        time in seconds from 1.1 of year0\n";

@@ -114,6 +114,7 @@ c 29.11.2013    ggu     prepared for ibtyp == 0
 c 10.07.2014    ggu     only new file format allowed
 c 30.10.2014    ggu     in c_tilt() compute distance also for lat/lon
 c 31.10.2014    ccf     new call to init_z0 instead than init_z0b
+c 07.11.2014    ggu     bug fix for distance computation in z_tilt, c_tilt
 c
 c***************************************************************
 
@@ -520,8 +521,8 @@ c	nodes are linearly interpolated between start-ktilt and ktilt-end
 	    do k=kranf+1,krend
 		kn2=irv(k)
 		kn1=irv(k-1)
-		dx=xgv(kn2)-xgv(kn1)
-		dy=ygv(kn2)-ygv(kn1)
+		call compute_distance(xgv(kn1),ygv(kn1)
+     +				,xgv(kn2),ygv(kn2),dx,dy)
 	        rltot = rltot + sqrt(dx*dx+dy*dy)
 		if( k .eq. ktilt ) rltot1 = rltot	!BUG 3.12.2013
 	    end do
@@ -537,8 +538,8 @@ c if no ktilt is given rltot1/rltot2 are not used
 	    do k=kranf+1,krend
 		kn2=irv(k)
 		kn1=irv(k-1)
-		dx=xgv(kn2)-xgv(kn1)
-		dy=ygv(kn2)-ygv(kn1)
+		call compute_distance(xgv(kn1),ygv(kn1)
+     +				,xgv(kn2),ygv(kn2),dx,dy)
 	        rl = rl + sqrt(dx*dx+dy*dy)
 		if( ktilt .le. 0 ) then			!no fixed node
 	          z = - ztilt + (rl/rltot) * 2. * ztilt
@@ -617,8 +618,8 @@ c if ktilt is not given nothing is tilted
 	   do k=ktilt+1,krend,1
 		kn2=irv(k)
 		kn1=irv(k-1)
-		call compute_distance(xgv(kn1),xgv(kn2)
-     +				,ygv(kn1),ygv(kn2),dx,dy)
+		call compute_distance(xgv(kn1),ygv(kn1)
+     +				,xgv(kn2),ygv(kn2),dx,dy)
 		call get_meteo_forcing(kn1,wx,wy,taux1,tauy1,p1)
 		call get_meteo_forcing(kn2,wx,wy,taux2,tauy2,p2)
 		taux = 0.5*(taux1+taux2)
@@ -635,8 +636,8 @@ c if ktilt is not given nothing is tilted
 	   do k=ktilt-1,kranf,-1
 		kn2=irv(k+1)
 		kn1=irv(k)
-		call compute_distance(xgv(kn1),xgv(kn2)
-     +				,ygv(kn1),ygv(kn2),dx,dy)
+		call compute_distance(xgv(kn1),ygv(kn1)
+     +				,xgv(kn2),ygv(kn2),dx,dy)
 		call get_meteo_forcing(kn1,wx,wy,taux1,tauy1,p1)
 		call get_meteo_forcing(kn2,wx,wy,taux2,tauy2,p2)
 		taux = 0.5*(taux1+taux2)

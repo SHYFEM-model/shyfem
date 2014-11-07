@@ -560,8 +560,9 @@ c DOCS  END
 !	limit wind
 !	---------------------------------------------------------
 
-	call get_act_time(itact)
-	write(112,*) itact,wxymax
+	!call get_act_time(itact)
+	!write(112,*) itact,wxymax
+
 	if( wslim > 0 .and. wxymax > wslim ) then !artificially limit wind speed
 	  call get_act_time(itact)
 	  write(111,*) 'limiting wind speed: ',itact,wxymax

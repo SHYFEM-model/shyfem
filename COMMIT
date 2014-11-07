@@ -1,5 +1,27 @@
 ============================================================
 
+Fri Nov  7 09:18:42 CET 2014
+
+minor update - first release of 7 to group
+
+ LOG                     |    6 +
+ fem3d/bc2fem.f          |    9 +-
+ fem3d/param.h           |    6 +-
+ fem3d/subfemintp.f      |   29 +-
+ fem3d/submeteo2.f       |    5 +-
+ fem3d/subn11.f          |   17 +-
+ fem3d/subqfxm5.f        | 2110 +++++++++++++++++++++++------------------------
+ femadj/param.h          |    6 +-
+ fembin/convert_date.pl  |    9 +-
+ femdoc/final/shyfem.pdf |  Bin 291595 -> 291596 bytes
+ femdoc/final/shyfem.ps  |   30 +-
+ femlib/perl/date.pm     |   21 +-
+ femplot/param.h         |    6 +-
+ param.h                 |    6 +-
+ 14 files changed, 1157 insertions(+), 1103 deletions(-)
+
+============================================================
+
 Wed Nov  5 09:04:20 CET 2014
 
 New version 7_0_5

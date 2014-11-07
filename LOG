@@ -1,4 +1,10 @@
 
+07.11.2014
+
+c ./fem3d/subn11.f:
+c 07.11.2014    ggu     bug fix for distance computation in z_tilt, c_tilt
+
+
 04.11.2014
 
 c ./fem3d/subwaves.f:

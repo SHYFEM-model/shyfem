@@ -29,6 +29,13 @@
 
         if(infile.eq.' ') stop
 
+	if( date < 0 ) then
+	  write(6,*) 'date must be specified'
+	  write(6,*) 'if you do not want to use this feature,'
+	  write(6,*) 'please set date explicitly to 0'
+	  stop 'error stop bc2fem_main: date'
+	end if
+
 	if( what .eq. 'meteo' ) then
 	  call win2fem(infile,unformatted,date)
 	else if( what .eq. 'reg' ) then
@@ -950,7 +957,7 @@ c*****************************************************************
 	infile = ' '
 	hlv = ' '
 	cdate = ' '
-	date = 0
+	date = -1
 
 	nc = command_argument_count()
 
