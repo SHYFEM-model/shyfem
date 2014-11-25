@@ -1074,10 +1074,12 @@ c
 	end
 
 c******************************************************
+c******************************************************
+c******************************************************
 
-	subroutine drymask(bwater,zv,href,hzoff)
+	subroutine set_dry_mask(bwater,zv,href,hzoff)
 
-c makes mask for dry and wet areas
+c makes mask for dry and wet areas - zenv must be available
 c
 c bwater is elementwise mask:	true = water point
 
@@ -1121,7 +1123,7 @@ c local
 
 c******************************************************
 
-	subroutine initmask(bwater)
+	subroutine init_dry_mask(bwater)
 
 c initializes mask for water points
 c
@@ -1145,7 +1147,7 @@ c local
 
 c******************************************************
 
-	subroutine levelmask(bwater,ilhv,level)
+	subroutine set_level_mask(bwater,ilhv,level)
 
 c makes mask for water points (level)
 c
@@ -1178,7 +1180,7 @@ c local
 
 c******************************************************
 
-	subroutine nodemask(bwater,bkwater)
+	subroutine make_dry_node_mask(bwater,bkwater)
 
 c makes node mask from element mask
 c
@@ -1220,14 +1222,14 @@ c local
 	  if( .not. bkwater(k) ) nndry = nndry + 1
 	end do
 
-	write(6,*) 'nodemask: dry elements =',nedry,nel
-	write(6,*) 'nodemask: dry nodes    =',nndry,nkn
+	write(6,*) 'make_dry_node_mask: dry elements =',nedry,nel
+	write(6,*) 'make_dry_node_mask: dry nodes    =',nndry,nkn
 
 	end
 
 c******************************************************
 
-	subroutine elemmask(bwater,bkwater)
+	subroutine make_dry_elem_mask(bwater,bkwater)
 
 c makes elem mask from node mask
 c
@@ -1263,10 +1265,12 @@ c local
 	  if( .not. bwater(ie) ) nedry = nedry + 1
 	end do
 
-	write(6,*) 'elemmask: dry elements =',nedry,nel
+	write(6,*) 'make_dry_elem_mask: dry elements =',nedry,nel
 
 	end
 
+c******************************************************
+c******************************************************
 c******************************************************
 
 	subroutine mimareg(am,ip,jp,amin,amax)

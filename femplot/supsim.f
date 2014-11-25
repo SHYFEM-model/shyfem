@@ -130,11 +130,11 @@ c 3D concentrations
 	      if( ivar .eq. 21 ) then	!wind
 		ivel = 3		!wind
 		call set_uv(nlvdim,nkn,p3)
-	        call resetsim
+	        call reset_dry_mask
 	        call plovel(ivel)
 	      else
 	        call extnlev(level,nlvdim,nkn,p3,parray)
-	        call prepsim
+	        call prepare_dry_mask
 	        call ploval(nkn,parray,line)
 	      end if
             else
@@ -228,7 +228,7 @@ c 3D concentrations
             if( isect .eq. 0 ) then
 	      write(6,*) '..........horizontal plotting nodes ',nplot
 	      call extnlev(level,nlvdim,nkn,p3,parray)
-	      call prepsim
+	      call prepare_dry_mask
 	      call ploval(nkn,parray,line)
             else
 	      write(6,*) '..........vertical plotting nodes ',nplot
@@ -293,7 +293,7 @@ c 3D concentrations (element values)
 	      write(6,*) '..........horizontal plotting elements ',nplot
 	      !call extelev(level,nlvdim,nkn,p3,parray)
 	      call extelev(level,nlvdim,nel,p3,parray)
-	      call prepsim
+	      call prepare_dry_mask
 	      call ploeval(nel,parray,line)
             else
 	      write(6,*) '..........no vertical plotting for elements'
@@ -357,7 +357,7 @@ c**********************************************************
 	  if( ptime_ok() ) then
 	    nplot = nplot + 1
 	    write(6,*) '..........plotting ',nplot
-	    call prepsim
+	    call prepare_dry_mask
 	    call ploval(nkn,znv,'water levels')
 	  end if
 	end do
@@ -429,7 +429,7 @@ c**********************************************************
 	  if( ptime_ok() ) then
 	    nplot = nplot + 1
 	    write(6,*) '..........plotting ',nplot
-	    call resetsim
+	    call reset_dry_mask
 	    call plovel(ivel)
 	  end if
 	end do
@@ -479,7 +479,7 @@ c**********************************************************
 	    nplot = nplot + 1
             if( isect .eq. 0 ) then
 	      write(6,*) '..........horizontal plotting ',nplot
-	      call prepsim
+	      call prepare_dry_mask
 	      call plovel(ivel)
             else
 	      write(6,*) '..........vertical plotting ',nplot
@@ -529,6 +529,7 @@ c plots node values
 
         call qcomm('Plotting isolines')
         call isoline(parray,nkn,0.,2)
+	call plot_dry_areas
         call colsh
 
 	call bash(4)	! overlays grid
@@ -571,6 +572,7 @@ c plots element values
 
         call qcomm('Plotting element values')
         call isoline(parray,nel,0.,3)			!plot on elements
+	call plot_dry_areas
         call colsh
 
 	call bash(4)	! overlays grid
@@ -893,6 +895,8 @@ c------------------------------------------------------------------
           call isoline(v1v,nkn,0.,2)
 	end if
 
+	call plot_dry_areas
+
 c------------------------------------------------------------------
 c get scale (if not given, typls is computed in bastlscale)
 c------------------------------------------------------------------
@@ -1157,6 +1161,7 @@ c grid
 	call qstart
 	call bash(0)
 	call bash(1)
+	call bash(2)
 	call qend
 
 c grid with gray
@@ -1164,11 +1169,13 @@ c grid with gray
 	call qstart
 	call bash(0)
 	call bash(3)
+	call bash(2)
 	call qend
 
 c bathymetry (gray or color)
 
-	call resetsim
+	call reset_dry_mask
+
 	if( belem ) then
 	  call ploeval(nkn,hev,'basin')
 	else
@@ -1190,6 +1197,7 @@ c bathymetry with grid
         call colsh
         call qcomm('after basin overlay');
         call qlwidth(0.01)
+	call bash(2)
 	call qend
 
 c bathymetry with grid (gray)
@@ -1207,6 +1215,7 @@ c bathymetry with grid (gray)
         call colsh
         call qcomm('after basin overlay');
         call qlwidth(0.01)
+	call bash(2)
 	call qend
 
 c special
@@ -1229,24 +1238,28 @@ c here only debug (node and element numbers)
 	call bash(0)
 	call bash(3)
 	call basin_number(1)
+	call bash(2)
 	call qend
 
 	call qstart
 	call bash(0)
 	call bash(3)
 	call basin_number(2)
+	call bash(2)
 	call qend
 
 	call qstart
 	call bash(0)
 	call bash(3)
 	call basin_number(-1)
+	call bash(2)
 	call qend
 
 	call qstart
 	call bash(0)
 	call bash(3)
 	call basin_number(-2)
+	call bash(2)
 	call qend
 
 	end if
@@ -1925,6 +1938,40 @@ c*****************************************************************
         end do
 
         end
+
+c*****************************************************************
+
+	subroutine plot_dry_areas
+
+c plots node values
+
+	implicit none
+
+	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        logical bwater(1)		!mask for elements
+        common /bwater/bwater
+
+	integer ie
+	real dgrey
+	real x(3),y(3)
+
+	double precision dgetpar
+
+	dgrey = dgetpar('dgrey')
+	if( dgrey < 0 ) return
+
+	call qgray(dgrey)
+
+	do ie=1,nel
+	  if( bwater(ie) ) cycle
+	  call set_xy(ie,x,y)
+	  call qafill(3,x,y)
+	end do
+
+	call qgray(0.)
+
+	end
 
 c*****************************************************************
 

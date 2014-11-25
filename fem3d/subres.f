@@ -69,8 +69,8 @@ c local
 	character*80 nam,dir,file
 	integer ierr,ii,ie,k
         integer nvers,lmax,l
-	integer iteres
 	integer date,time
+	integer nout
 	real href,hzoff,rr,hm
 	character*80 title,femver
 c function
@@ -79,18 +79,18 @@ c function
 	real getpar
 	double precision dgetpar
 	integer ifemop
+	logical has_output,is_over_output,next_output
 c save
 	real ur(nlvdim,neldim),vr(nlvdim,neldim)
         real znr(nkndim),zer(3,neldim)
-	integer nr
-	integer icall,nout
-	integer idtres,itmres,itres
-	logical bfirst,bdebug
 	save ur,vr,znr,zer
-	save icall,nout,nr
-	save idtres,itmres,itres
+	integer icall,nr
+	save icall,nr
+	data icall,nr /0,0/
+	integer ia_out(4)
+	save ia_out
+	logical bfirst,bdebug
 	save bfirst,bdebug
-	data icall,nout /0,0/
 	data bfirst /.true./
 
 	if(icall.eq.-1) return
@@ -100,10 +100,9 @@ c initialize routine and variables
 c---------------------------------------------------------------------
 
 	if(icall.eq.0) then
-	  idtres=iround(getpar('idtres'))
-	  itmres=iround(getpar('itmres'))
-	  call adjust_itmidt(itmres,idtres)
-	  if(idtres.le.0) icall=-1
+          call init_output('itmres','idtres',ia_out)
+	  call increase_output(ia_out)	!itres=itmres+idtres
+          if( .not. has_output(ia_out) ) icall = -1
 
 	  if(icall.eq.-1) return
 
@@ -111,11 +110,9 @@ c---------------------------------------------------------------------
 
 	  bdebug = iround(getpar('levdbg')) .ge. 1
 
-	  iteres=itmres+idtres*((itend-itmres)/idtres)
-	  itres=itmres+idtres
-
 	  nout = ifemop('.res','unformatted','new')
 	  if( nout .le. 0 ) goto 97
+	  ia_out(4) = nout
 
           nvers = 2
 	  href=getpar('href')		!$$HREFBUG
@@ -134,11 +131,6 @@ c---------------------------------------------------------------------
           if(ierr.gt.0) goto 78
           call ous_write_header2(nout,ilhv,hlv,hev,ierr)
           if(ierr.gt.0) goto 75
-
-          !call wfous(nout,nvers,nkn,nel,nlv,href,hzoff,descrp,ierr)
-          !if(ierr.ne.0.) goto 78
-          !call wsous(nout,ilhv,hlv,hev,ierr)
-          !if(ierr.ne.0.) goto 75
 
 	  if( bdebug ) write(6,*) 'resid : res-file opened ',it
 
@@ -164,7 +156,7 @@ c---------------------------------------------------------------------
 
 	icall=icall+1
 
-	if(it.le.itmres) return
+	if( .not. is_over_output(ia_out) ) return	!before start of accum
 
 	if( bfirst ) then
 	   write(6,*) 'resid: starting summing ',it
@@ -194,15 +186,13 @@ c---------------------------------------------------------------------
 c is it time to write file ?
 c---------------------------------------------------------------------
 
-	if(it.lt.itres) return
+	if( .not. next_output(ia_out) ) return
 
 c---------------------------------------------------------------------
 c write results into file
 c---------------------------------------------------------------------
 
 	  if( bdebug ) write(6,*) 'resid : res-file written ',it,nr
-
-	  itres=itres+idtres
 
 	  rr=1./nr
 
@@ -220,7 +210,7 @@ c---------------------------------------------------------------------
 	    znr(k)=znr(k)*rr
 	  end do
 
-          !call wrous(nout,it,nlvdim,ilhv,znr,zer,ur,vr,ierr)
+	  nout = ia_out(4)
           call ous_write_record(nout,it,nlvdim,ilhv,znr,zer
      +                                  ,ur,vr,ierr)
           if(ierr.ne.0.) goto 79
@@ -304,25 +294,24 @@ c function
 	integer iround
 c	integer wfnov,wrnov,ifileo
 	real getpar
+	logical has_output,is_over_output,next_output
 c save
 	double precision rms(neldim)
-	integer icall,nout,nr
-	integer idtres,itmres,itres
-	logical bdebug
 	save rms
-	save icall,nout,nr
-	save idtres,itmres,itres
+	logical bdebug
 	save bdebug
-	data icall,nout,nr /0,0,0/
+	integer ia_out(4)
+	save ia_out
+	integer icall,nr
+	save icall,nr
+	data icall,nr /0,0/
 
 	if(icall.eq.-1) then
 	  return
 	else if(icall.eq.0) then
-	  idtres=iround(getpar('idtrms'))
-	  itmres=iround(getpar('itmrms'))
-	  if(itmres.lt.itanf) itmres=itanf
-	  if(idtres.le.0) icall=-1
-	  if(itmres+idtres.gt.itend) icall=-1
+          call init_output('itmrms','idtrms',ia_out)
+	  call increase_output(ia_out)	!itres=itmres+idtres
+          if( .not. has_output(ia_out) ) icall = -1
 
 	  if(icall.eq.-1) return
 
@@ -330,12 +319,9 @@ c save
 
 	  bdebug = iround(getpar('levdbg')) .ge. 1
 
-	  nout = 55
-          call confop(nout,itmres,idtres,1,1,'rms')
+	  call open_scalar_file(ia_out,1,1,'rms')
 
 	  if( bdebug ) write(6,*) 'rmsvel : rms-file opened ',it
-
-	  itres=itmres+idtres
 
 	  nr=0
 	  do ie=1,nel
@@ -345,9 +331,7 @@ c save
 
 	icall=icall+1
 
-	if(it.le.itmres) return
-
-c        write(6,*) 'res sum ',it
+	if( .not. is_over_output(ia_out) ) return
 
 c       sum transports
 
@@ -365,11 +349,9 @@ c       sum transports
 
 c       if time write output to rms file
 
-	if(it.eq.itres) then
+	if( next_output(ia_out) ) then
 
 	  if( bdebug ) write(6,*) 'rmsvel : rms-file written ',it,nr
-
-	  itres=itres+idtres
 
 	  rr=1./nr
 
@@ -397,7 +379,7 @@ c       if time write output to rms file
 c rms velocity is in v1v
 
 	  id = 18
-	  call confil(nout,itmres,idtres,id,1,v1v)
+	  call write_scalar_file(ia_out,id,1,v1v)
 
 	  nr=0
 	  do ie=1,nel

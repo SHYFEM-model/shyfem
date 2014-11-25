@@ -7,9 +7,13 @@ c info on restart file
 
 	integer iunit,it,nvers,nrec,nkn,nel,nlv,iflag,ierr
 	integer nread
+	double precision atime
+	double precision atime_anf
+	double precision atime_end
+	character*20 line
 	character*60 file
-	character*35 title1
-	character*40 title2
+	character*52 title1
+	character*48 title2
 
 	nread = 0
 	iunit = 1
@@ -21,24 +25,41 @@ c info on restart file
 
 	open(iunit,file=file,status='old',form='unformatted')
 
-	title1 = '      irec        time version nrec'
-	title2 = '       nkn       nel       nlv     iflag'
-c                 1234567890123456789012345678901234567890
-	write(6,1000) title1,title2
+	title1 = 'version nrec       nkn       nel       nlv     iflag'
+c                 12345678901234567890123456789012345678901234567890123
+	title2 = '   irec               atime                 date'
+
     1	continue
 
-	call skip_rst(iunit,it,nvers,nrec,nkn,nel,nlv,iflag,ierr)
+	call skip_rst(iunit,atime,nvers,nrec,nkn,nel,nlv,iflag,ierr)
 	if( ierr .ne. 0 ) goto 2
+
+	if( nread == 0 ) then
+	  write(6,1000) title1
+	  write(6,1010) nvers,nrec,nkn,nel,nlv,iflag
+	  write(6,1001) title2
+	  atime_anf = atime
+	end if
+
 	nread = nread + 1
-	write(6,1010) nread,it,nvers,nrec,nkn,nel,nlv,iflag
+	call dts_format_abs_time(atime,line)
+	write(6,1011) nread,atime,line
+	atime_end = atime
 
 	goto 1
 
     2	continue
 	
-	write(6,1000) title1,title2
+	write(6,1001) title2
+	write(6,*)
+	write(6,1001) title1
+	write(6,1010) nvers,nrec,nkn,nel,nlv,iflag
 	write(6,*)
 	write(6,*) 'Number of records read: ',nread
+	call dts_format_abs_time(atime_anf,line)
+	write(6,*) 'Initial time in file: ',atime_anf,line
+	call dts_format_abs_time(atime_end,line)
+	write(6,*) 'Final time in file: ',atime_end,line
 	write(6,*)
 	write(6,*) 'Meaning of iflag:'
 	write(6,*) '         1          hm3v'
@@ -48,6 +69,8 @@ c                 1234567890123456789012345678901234567890
 	write(6,*) '     10000          ieco (ecological variables)'
 
 	stop
- 1000	format(a35,a40)
- 1010	format(i10,i12,i8,i5,4i10)
+ 1000	format(a52)
+ 1001	format(a48)
+ 1010	format(i7,i5,4i10)
+ 1011	format(i7,d20.1,1x,a20)
 	end

@@ -859,3 +859,29 @@ c returns x,y,val of element, and indication of flag values
 
 c***************************************************************
 
+	subroutine set_xy(ie,x,y)
+
+c returns x,y of element
+
+        implicit none
+
+        integer ie              !element for which info is needed
+        real x(3),y(3)          !return values of x,y
+
+	integer nen3v(3,1)
+	common /nen3v/nen3v
+	real xgv(1), ygv(1)
+	common /xgv/xgv, /ygv/ygv
+
+	integer ii,kn
+
+	do ii=1,3
+	    kn=nen3v(ii,ie)
+	    x(ii)=xgv(kn)
+	    y(ii)=ygv(kn)
+	end do
+
+	end
+
+c***************************************************************
+

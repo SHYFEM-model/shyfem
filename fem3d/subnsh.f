@@ -1,7 +1,7 @@
 c
 c $Id: subnsh.f,v 1.54 2010-03-22 15:29:31 georg Exp $
 c
-c utility routines for hp
+c utility routines for shyfem main routine
 c
 c contents :
 c
@@ -75,11 +75,12 @@ c 05.03.2014    ggu     code prepared to repeat time step (irepeat) - not ready
 c 05.03.2014    ggu     new routines get_last/first_time()
 c 10.04.2014    ccf     new section "wrt" for water renewal time
 c 29.10.2014    ggu     do_() routines transfered from newpri.f
+c 10.11.2014    ggu     shyfem time management routines to new file subtime.f
 c
 c************************************************************
-c
+
 	subroutine prilog
-c
+
 c writes output to terminal or log file
 
 	implicit none
@@ -162,87 +163,12 @@ c	call prlgr		!prints float coordinates
 
 c********************************************************************
 
-	subroutine do_init
-
-c to do before time loop
-
-	implicit none
-
-	include 'modules.h'
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-	call wrboxa(it)
-
-	end
-
-c********************************************************************
-
-	subroutine do_befor
-
-c to do before time step
-
-	implicit none
-
-	include 'modules.h'
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-	call modules(M_BEFOR)
-
-        !call tidenew(it)       !tidal potential
-        call tideforc(it)       !tidal potential !ccf
-
-	call adjust_chezy
-
-	end
-
-c********************************************************************
-
-	subroutine do_after
-
-c to do after time step
-
-	implicit none
-
-	include 'modules.h'
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-	call modules(M_AFTER)
-
-c	call wrouta
-	call wrousa
-c	call wrexta(it)
-	call wrflxa(it)
-	call wrvola(it)
-	call wrboxa(it)
-
-        call resid
-        call rmsvel
-
-        call admrst             !restart
-
-c        call tsmed
-	call ts_shell
-
-	call wrnetcdf		!output in netcdf format
-
-	call custom(it)
-
-	end
-
-c********************************************************************
-
 	subroutine pritst(id)
-c
+
 c test output of all constants and variables
 c
 c id    identifier
-c
+
 	implicit none
 
 	integer id
@@ -306,6 +232,85 @@ c	write(6,*) '/close/'	!deleted on 28.05.97
     1   format(1x,a,i6,a)
 	end
 
+c********************************************************************
+c********************************************************************
+c********************************************************************
+
+	subroutine do_init
+
+c to do before time loop
+
+	implicit none
+
+	include 'modules.h'
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	call wrboxa(it)
+
+	end
+
+c********************************************************************
+
+	subroutine do_befor
+
+c to do in time loop before time step
+
+	implicit none
+
+	include 'modules.h'
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	call modules(M_BEFOR)
+
+        !call tidenew(it)       !tidal potential
+        call tideforc(it)       !tidal potential !ccf
+
+	call adjust_chezy
+
+	end
+
+c********************************************************************
+
+	subroutine do_after
+
+c to do in time loop after time step
+
+	implicit none
+
+	include 'modules.h'
+
+        integer itanf,itend,idt,nits,niter,it
+        common /femtim/ itanf,itend,idt,nits,niter,it
+
+	call modules(M_AFTER)
+
+c	call wrouta
+	call wrousa
+c	call wrexta(it)
+	call wrflxa(it)
+	call wrvola(it)
+	call wrboxa(it)
+
+        call resid
+        call rmsvel
+
+        call admrst             !restart
+
+c        call tsmed
+	call ts_shell
+
+	call wrnetcdf		!output in netcdf format
+
+	call custom(it)
+
+	end
+
+c*******************************************************************
+c*******************************************************************
 c*******************************************************************
 
 	subroutine nlsh2d(iunit)
@@ -369,6 +374,7 @@ c read loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			call nrdins(section)
 		else if(section.eq.'extra') then
 			call rdexta
+			!call section_deleted(section,'use section $extts')
 		else if(section.eq.'extts') then
 			call rdetsa
 		else if(section.eq.'area') then
@@ -378,8 +384,8 @@ c read loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		else if(section.eq.'bound') then
 			call rdbnds(num)
 		else if(section.eq.'float') then
-c			call rdfloa(nfldin)
-			stop 'error stop: float section not supported'
+			!call rdfloa(nfldin)
+			call section_deleted(section,'use section $lagrg')
 		else if(section.eq.'close') then
 			call rdclos(num)
 		else if(section.eq.'flux') then
@@ -389,12 +395,12 @@ c			call rdfloa(nfldin)
 		else if(section.eq.'wrt') then		!water renewal time
                         call nrdins(section)
 		else if(section.eq.'wind') then
-			call section_deleted(section)
+			call section_deleted(section,'use wind file')
 		else if(section.eq.'oxypar') then	!oxygen
 			call nrdins(section)
 		else if(section.eq.'oxyarr') then	!oxygen
-c			call rdoxy
-			call nrdskp
+			!call rdoxy
+			call section_deleted(section,'use ecological model')
 		else if(section.eq.'bfmsc')then        ! BFM ECO TOOL
                         call nrdins(section)
 		else if(section.eq.'levels') then
@@ -446,16 +452,19 @@ c end of read %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 c************************************************************************
 
-	subroutine section_deleted(section)
+	subroutine section_deleted(section,compat)
 
 	implicit none
 
-	character*(*) section
+	character*(*) section,compat
 
 	write(6,*) 'the following section has been removed: '
 	write(6,*) section
 	write(6,*) 'please remove section from parameter file'
 	write(6,*) 'and substitute with a compatible solution'
+        if( compat .ne. ' ' ) then
+          write(6,*) 'a compatible solution could be: ',compat
+        end if
 
 	stop 'error stop section_deleted: section has been removed'
 	end
@@ -719,652 +728,6 @@ c gets unit of info file
 c**********************************************************************
 c**********************************************************************
 c**********************************************************************
-
-	subroutine pritime
-
-c prints time after time step
-
-	implicit none
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-        integer nit1,nit2,naver
-        real perc
-
-	integer time,date
-	integer year,month,day,hour,min,sec
-	double precision dgetpar
-
-	save date
-
-	integer icall
-	save icall
-	data icall / 0 /
-
-c---------------------------------------------------------------
-c initialize date
-c---------------------------------------------------------------
-
-	if( icall .eq. 0 ) then
-	  date = nint(dgetpar('date'))
-	  time = nint(dgetpar('time'))
-	  call dtsini(date,time)
-	end if
-
-	if( date .ne. 0 ) then
-	  call dts2dt(it,year,month,day,hour,min,sec)
-	end if
-
-c---------------------------------------------------------------
-c set parameters and compute percentage of simulation
-c---------------------------------------------------------------
-
-        naver = 20
-        naver = 0
-
-        perc = (100.*(it-itanf))/(itend-itanf)
-
-c---------------------------------------------------------------
-c compute total number of iterations
-c---------------------------------------------------------------
-
-        nit1 = niter + (itend-it)/idt
-	nit2 = nit1
-	if( it .gt. itanf ) then
-          nit2 = nint( niter * ( 1 + float(itend-it)/(it-itanf) ) )
-	end if
-
-        nits = nit2
-        if( naver .gt. 0 ) nits = ( 1*nit1 + (naver-1)*nit2 ) / naver
-
-c---------------------------------------------------------------
-c write to terminal
-c---------------------------------------------------------------
-
-	if( date .eq. 0 ) then
-          write(6,1001) it,idt,niter,nits,perc
-	else
-	  if( mod(icall,50) .eq. 0 ) then
-            write(6,1003)
-	  end if
-          write(6,1002) it,year,month,day,hour,min,sec
-     +			,idt,niter,nits,perc
-	end if
-
-	icall = icall + 1
-
-c---------------------------------------------------------------
-c end of routine
-c---------------------------------------------------------------
-
-	return
- 1000   format(' time =',i10,'   iterations =',i6,' / ',i6,f9.2,' %')
- 1001   format(' time =',i12,'    dt =',i5,'    iterations ='
-     +                 ,i8,' /',i8,f10.2,' %')
- 1002   format(i12,i9,5i3,i9,i8,' /',i8,f10.2,' %')
- 1003   format(8x,'time',13x,'date',14x,'dt',8x,'iterations'
-     +              ,5x,'percent')
-	end
-
-c********************************************************************
-
-	subroutine endtime
-
-c prints stats after last time step
-
-	implicit none
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-	write(6,1035) it,niter
- 1035   format(' program stop at time =',i10,' seconds'/
-     +         ' iterations = ',i10)
-
-	end
-
-c********************************************************************
-
-	subroutine get_date_time(date,time)
-
-	implicit none
-
-	integer date,time
-
-	double precision dgetpar
-
-	date = nint(dgetpar('date'))
-	time = nint(dgetpar('time'))
-
-	end
-
-c********************************************************************
-c********************************************************************
-c********************************************************************
-
-        subroutine check_timestep(irepeat)
-
-	implicit none
-
-	integer irepeat		!on return 1 if time step has to be repeated
-
-	end
-
-c********************************************************************
-
-        subroutine set_timestep
-
-c controls time step
-
-        implicit none
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-        integer idtdone,idtrest,idts
-        real dt
-        real ri,rindex,rindex1,riold
-	real perc
-        real    cmax,rmax,tfact
-        integer iloop,itloop
-        integer idtsync,isplit,idtmin
-	integer itunit,irepeat
-	logical bsync
-
-        real getpar
-
-        integer idtorig,istot,idtold,idtnew
-        save    idtorig,istot,idtold,idtnew
-        integer iuinfo
-        save    iuinfo
-
-        integer icall
-        save icall
-        data icall / 0 /
-
-        if( icall .eq. 0 ) then
-          idtorig = idt
-          istot = 0
-          call set_orig_timestep(idtorig)
-
-          isplit  = getpar('itsplt')
-          cmax    = getpar('coumax')
-          idtsync = getpar('idtsyn')
-
-          call getinfo(iuinfo)  !unit number of info file
-
-          call get_timeunit(itunit)
-	  if( isplit .ge. 0 .and. itunit .ne. 1 ) then
-	    write(6,*) 'isplit, itunit: ',isplit,itunit
-	    stop 'error stop set_timestep: itunit != 1 not allowed here'
-	  end if
-
-	  idtold = 0
-          icall = 1
-        end if
-
-c----------------------------------------------------------------------
-c        idtsync = 0             !time step for syncronization
-c        cmax = 1.0              !maximal Courant number permitted
-c        isplit = -1             !mode for variable time step:
-c                                ! -1:  time step fixed, 
-c                                !      no computation of rindex
-c                                !  0:  time step fixed
-c                                !  1:  split time step
-c                                !  2:  optimize time step (no multiple)
-c	 idtmin = 0		 !minimum time step allowed
-c	 tfact = 0		 !factor of maximum decrease of time step
-c----------------------------------------------------------------------
-
-        isplit  = nint(getpar('itsplt'))
-        cmax    = getpar('coumax')
-        idtsync = nint(getpar('idtsyn'))
-        idtmin  = nint(getpar('idtmin'))
-        tfact  = getpar('tfact')	!still to be commented
-
-	itloop = 0
-
-    1	continue
-	itloop = itloop + 1
-
-        if( isplit .ge. 0 ) then
-          dt = idtorig
-          call hydro_stability(dt,rindex)
-        else
-          rindex = 0.
-        end if
-
-	ri = 0.
-	istot = 0
-	idtnew = idt
-
-        if( isplit .le. 0 ) then
-          idts = 0
-        else if( isplit .eq. 1 ) then
-          idts = idtorig
-          if( mod(it-itanf,idtorig) .eq. 0 ) then      !end of macro timestep
-            istot = rindex/cmax
-            ri = 1. + cmax
-            iloop = 0
-            do while( ri .gt. cmax )
-              istot = istot + 1
-              idtnew = idtorig/istot
-              if( istot*idtnew .ne. idtorig ) idtnew = idtnew + 1
-              ri = idtnew*rindex/idtorig
-              iloop = iloop + 1
-	      if( iloop .gt. 100 ) then
-		stop 'error stop set_timestep: too many iterations'
-	      end if
-            end do
-          end if
-        else if( isplit .eq. 2 ) then
-          idts = idtsync
-          idtnew = idtorig
-	  if( rindex / cmax .gt. 1. ) then	!BUGFIX
-	    idtnew = min(idtnew,int(dt*cmax/rindex))
-	  end if
-        else
-          write(6,*) 'isplit = ',isplit
-          stop 'error stop set_timestep: value for isplit not allowed'
-        end if
-
-c----------------------------------------------------------------------
-c idtnew is proposed new time step
-c idts   is time step with which to syncronize
-c nits   is total number of time steps
-c rindex is computed stability index
-c ri     is used stability index
-c istot  is number of internal time steps (only for isplit = 1)
-c----------------------------------------------------------------------
-
-c----------------------------------------------------------------------
-c	syncronize time step
-c----------------------------------------------------------------------
-
-	bsync = .false.		!true if time step has been syncronized
-
-	if( it + idtnew .gt. itend ) then	!sync with end of sim
-	  idtnew = itend - it
-	  bsync = .true.
-        else if( idts .gt. 0 ) then               !syncronize time step
-            idtdone = mod(it-itanf,idts)     !already done
-            idtrest = idts - idtdone         !still to do
-            if( idtnew .gt. idtrest ) then
-	      idtnew = idtrest
-	      bsync = .true.
-	    end if
-        end if
-
-        ri = idtnew*rindex/idtorig
-
-	if( itloop .gt. 10 ) then
-	  stop 'error stop set_timestep: too many loops'
-	end if
-
-        if( idtnew .lt. 1 ) then           !should never happen
-          call error_stability(dt,rindex)
-          write(6,*) 'idt is less equal 0 !!!'
-          write(6,*) it,itanf,mod(it-itanf,idtorig)
-          write(6,*) idtnew,idtdone,idtrest,idtorig
-          write(6,*) idts,idtsync,iloop
-          write(6,*) isplit,istot
-          write(6,*) cmax,rindex,ri
-          stop 'error stop set_timestep: non positive time step'
-        end if
-
-	irepeat = 0
-
-        if( .not. bsync .and. idtnew .lt. idtmin ) then
-	  rmax = (1./idtmin)*cmax
-	  call eliminate_stability(rmax)
-	  write(6,*) 'repeating time step for low idt (1): ',idtnew,rmax
-	  irepeat = 1
-	  goto 1	!eventually this should be commented
-	end if
-
-        if( .not. bsync .and. idtnew .lt. tfact*idtold ) then
-	  write(6,*) 'repeating time step for low idt (2): ',idtnew,idtold
-	  irepeat = 1
-	end if
-
-	if( irepeat .gt. 0 ) then
-	  idtold = idtnew
-	  write(6,*) 'We really should repeat this time step'
-	  write(6,*) 'code not yet ready...'
-	end if
-
-	riold = idtold*ri/idtnew	!ri with old time step
-	idtold = idtnew
-
-        niter=niter+1
-        it=it+idtnew
-	idt=idtnew
-
-	perc = (100.*(it-itanf))/(itend-itanf)
-
-        write(iuinfo,1001) '----- new timestep: ',it,idt,perc
-        write(iuinfo,1002) 'set_timestep: ',it,ri,riold,rindex,istot,idt
-
-        return
- 1001   format(a,i12,i8,f8.2)
- 1002   format(a,i12,3f12.4,2i8)
-        end
-
-c**********************************************************************
-c**********************************************************************
-c**********************************************************************
-
-        subroutine init_time(itanf0,itend0,idt0)
-
-c initializes femtim common block
-
-        implicit none
-
-        integer itanf0,itend0,idt0
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-	itanf = itanf0
-	itend = itend0
-	idt   = idt0
-
-	niter = 0
-	it = itanf
-	nits = (itend-itanf) / idt
-
-	end
-
-c**********************************************************************
-
-	subroutine is_time_first(bfirst)
-
-c true if in initialization phase
-
-	implicit none
-
-	logical bfirst
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-	bfirst = it .eq. itanf
-
-	end
-
-c**********************************************************************
-
-	subroutine is_time_last(blast)
-
-c true if in last time step
-
-	implicit none
-
-	logical blast
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-	blast = it .eq. itend
-
-	end
-
-c**********************************************************************
-
-        subroutine get_act_time(itact)
-
-c returns actual time
-
-        implicit none
-
-	integer itact
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-	itact = it
-
-	end
-
-c**********************************************************************
-
-        subroutine get_first_time(itfirst)
-
-c returns first (initial) time
-
-        implicit none
-
-	integer itfirst
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-	itfirst = itanf
-
-	end
-
-c**********************************************************************
-
-        subroutine get_last_time(itlast)
-
-c returns end time
-
-        implicit none
-
-	integer itlast
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-	itlast = itend
-
-	end
-
-c**********************************************************************
-
-        subroutine get_timestep(dt)
-
-c returns real time step (in real seconds)
-
-        implicit none
-
-	real dt		!time step (return)
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-        integer itunit,idtorig
-        common /femtimu/ itunit,idtorig
-	save /femtimu/
-
-	dt = idt/float(itunit)
-
-	end
-
-c**********************************************************************
-
-        subroutine set_orig_timestep(idt)
-
-c returns original real time step (in real seconds)
-
-        implicit none
-
-	integer idt		!time step
-
-        integer itunit,idtorig
-        common /femtimu/ itunit,idtorig
-	save /femtimu/
-
-	idtorig = idt
-
-	end
-
-c**********************************************************************
-
-        subroutine get_orig_timestep(dt)
-
-c returns original real time step (in real seconds)
-
-        implicit none
-
-	real dt		!time step (return)
-
-        integer itunit,idtorig
-        common /femtimu/ itunit,idtorig
-	save /femtimu/
-
-	dt = idtorig/float(itunit)
-
-	end
-
-c********************************************************************
-
-        subroutine get_timeunit(itu)
-
-c returns time unit
-
-        implicit none
-
-	integer itu
-
-        integer itunit,idtorig
-        common /femtimu/ itunit,idtorig
-	save /femtimu/
-
-	itu = itunit
-
-	end
-
-c**********************************************************************
-
-        subroutine set_timeunit(itu)
-
-c sets time unit
-
-        implicit none
-
-	integer itu
-
-        integer itunit,idtorig
-        common /femtimu/ itunit,idtorig
-	save /femtimu/
-
-	itunit = itu
-
-	end
-
-c********************************************************************
-c********************************************************************
-c********************************************************************
-
-	subroutine adjust_itmidt(itm_out,idt_out)
-
-c sets-up output frequency and first output
-
-	implicit none
-
-	integer itm_out		!minimum time for output
-	integer idt_out		!time step for output
-
-	integer itanf,itend,idt
-	integer itmout,idtout,itout
-	real getpar
-	double precision dgetpar
-
-	itanf = nint(dgetpar('itanf'))
-	itend = nint(dgetpar('itend'))
-	idt = nint(dgetpar('idt'))
-
-	itmout = itm_out
-	idtout = idt_out
-
-	if( itmout .eq. -1 ) itmout = itanf
-	if( itmout .lt. itanf ) itmout = itanf
-	!if( idtout .lt. idt .and. idtout .gt. 0 ) idtout = idt
-
-	itout = itmout
-	if( itmout .eq. itanf ) itout = itout + idtout
-	if( itout .gt. itend ) idtout = 0
-
-	itm_out = itmout
-	idt_out = idtout
-
-	end
-
-c********************************************************************
-
-	subroutine set_output_frequency(itm_out,idt_out,ia_out)
-
-c sets-up array for output frequency
-
-	implicit none
-
-	integer itm_out		!minimum time for output
-	integer idt_out		!time step for output
-	integer ia_out(4)	!array where info is stored
-
-	integer itanf,itend,idt
-	integer itmout,idtout,itout
-	real getpar
-	double precision dgetpar
-
-	itanf = nint(dgetpar('itanf'))
-	itend = nint(dgetpar('itend'))
-	idt = nint(dgetpar('idt'))
-
-	itmout = itm_out
-	idtout = idt_out
-
-	if( itmout .eq. -1 ) itmout = itanf
-	if( itmout .lt. itanf ) itmout = itanf
-	!if( idtout .lt. idt .and. idtout .gt. 0 ) idtout = idt
-
-	itout = itmout
-	if( itmout .eq. itanf ) itout = itout + idtout
-	if( itout .gt. itend ) idtout = 0
-
-	ia_out(1) = idtout	! time step of output
-	ia_out(2) = itmout	! first output
-	ia_out(3) = itout	! next output
-	ia_out(4) = 0		! unit (optional)
-
-	end
-
-c********************************************************************
-
-	function next_output(ia_out)
-
-c checks if time has come for output
-
-	implicit none
-
-	logical next_output
-	integer ia_out(4)
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
-
-	integer idtout,itnext
-
-	idtout = ia_out(1)
-	itnext = ia_out(3)
-	next_output = .false.
-
-	if( idtout .le. 0 ) return
-	if( itnext .gt. it ) return
-
-	do while( itnext .le. it )
-	  itnext = itnext + idtout
-	end do
-
-	ia_out(3) = itnext
-	next_output = .true.
-
-	end
-
-c********************************************************************
-c********************************************************************
-c********************************************************************
 
 	subroutine setup_parallel
 

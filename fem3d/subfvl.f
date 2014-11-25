@@ -30,12 +30,13 @@ c write of finite volume data
         real saux1(nlvdim,nkndim)
         common /saux1/saux1
 
-	integer k,l,lmax
+	integer k,l,lmax,id,nvar
 
 	real getpar
+	logical has_output,next_output
 
-        integer iu,id,itmcon,idtcon
-        save iu,id,itmcon,idtcon
+	integer ia_out(4)
+	save ia_out
 
         integer icall
         save icall
@@ -49,20 +50,21 @@ c initialization
 
         if( icall .eq. 0 ) then
 
-          iu = 0
-          id = 66       			!for finite volume
-          itmcon = nint(getpar('itmcon'))
-          idtcon = nint(getpar('idtcon'))
-	  if( idtcon .le. 0 ) icall = -1
+	  call init_output('itmcon','idtcon',ia_out)
+
+	  if( .not. has_output(ia_out) ) icall = -1
 	  if( icall .le. -1 ) return
 
-          call confop(iu,itmcon,idtcon,nlv,1,'fvl')
+	  nvar = 1
+	  call open_scalar_file(ia_out,nlv,nvar,'fvl')
 
         end if
 
 c normal call
 
         icall = icall + 1
+
+	if( .not. next_output(ia_out) ) return
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
@@ -71,7 +73,8 @@ c normal call
 	  end do
 	end do
 
-	call confil(iu,itmcon,idtcon,id,nlvdi,saux1)
+        id = 66       			!for finite volume
+	call write_scalar_file(ia_out,id,nlvdi,saux1)
 
 	end
 

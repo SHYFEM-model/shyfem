@@ -310,24 +310,28 @@ c write of vol data
         integer ivolm,ivol(1)
         common /ivol/ivolm,ivol
 
-	integer itend
+	integer itend,idtvol
 	integer i
 	real az,rr
 
 	integer iround,ideffi
 	real getpar
 	double precision dgetpar
+	logical has_output,next_output,is_over_output
+
+	real vol(iscdim)
 
 	real volt(0:iscdim)	!accumulator - could be also double precision
+        save volt
 
 	real voltotal
 	real voltot
 
-	real vol(iscdim)
-        integer idtvol,itvol,itmvol,nr
+        integer nr
+        save nr
+	integer ia_out(4)
+	save ia_out
         integer icall,nbvol,nvers,idfile
-        save volt
-        save idtvol,itvol,itmvol,nr
         save icall,nbvol,nvers,idfile
         data icall,nbvol,nvers,idfile /0,0,1,538/
 
@@ -339,22 +343,17 @@ c initialization
 
         if( icall .eq. 0 ) then
 
-                idtvol = nint(dgetpar('idtvol'))
-                itmvol = nint(dgetpar('itmvol'))
-                itend = nint(dgetpar('itend'))
+		call init_output('itmvol','idtvol',ia_out)
+		call increase_output(ia_out)
+                if( .not. has_output(ia_out) ) icall = -1
 
                 if( kvolm .le. 0 ) icall = -1
                 if( nvols .le. 0 ) icall = -1
-                if( idtvol .le. 0 ) icall = -1
-                if( itmvol .gt. itend ) icall = -1
                 if( icall .eq. -1 ) return
 
                 if( nvols .gt. iscdim ) then
                   stop 'error stop wrvola: dimension iscdim'
                 end if
-
-                itvol = itmvol + idtvol
-		itmvol = itmvol + 1	!start from next time step
 
                 nr = 0
                 do i=0,nvols
@@ -365,6 +364,8 @@ c initialization
                 if(nbvol.le.0) then
         	   stop 'error stop wrvola : Cannot open VOL file'
 		end if
+
+		idtvol = ia_out(1)
 
                 write(nbvol) idfile,nvers
                 write(nbvol) nvols+1,kvolm,idtvol
@@ -378,7 +379,7 @@ c normal call
 
         icall = icall + 1
 
-        if( it .lt. itmvol ) return
+        if( .not. is_over_output(ia_out) ) return
 
 c	accumulate results
 
@@ -392,11 +393,9 @@ c	accumulate results
 
 	volt(0) = volt(0) + voltotal(.true.)	!total basin $$BUGVOLT
 
-        if( it .lt. itvol ) return
+        if( .not. next_output(ia_out) ) return
 
 c	write results
-
-        itvol=itvol+idtvol
 
         rr=1./nr
 
@@ -559,7 +558,7 @@ c writes statistics of volumes to file
 	real volele,areaele
 
         iunit = 79
-        iunit = ifemop('vvv','form','new')
+        iunit = ifemop('.vvv','form','new')
         if( iunit .le. 0 ) then
           write(6,*) '*** volstats: cannot open file to write'
           return

@@ -1,4 +1,22 @@
 
+25.11.2014
+
+c ./fem3d/subnsh.f:
+c 10.11.2014    ggu     shyfem time management routines to new file subtime.f
+c
+c ./fem3d/subdts.f:
+c 12.11.2014    ggu     new routines for unformatting and timespan
+c
+c ./fem3d/suboutput.f:
+c 10.11.2014    ggu     time management routines transfered to this file
+c
+c ./fem3d/subtime.f:
+c 10.11.2014    ggu     time management routines transfered to this file
+c
+c ./fem3d/subcst.f:
+c 10.11.2014    ggu     time and date routines transfered to subtime.f
+
+
 07.11.2014
 
 c ./fem3d/subn11.f:

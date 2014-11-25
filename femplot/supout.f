@@ -74,7 +74,7 @@ c******************************************************
 c******************************************************
 c******************************************************
 
-        subroutine resetsim
+        subroutine reset_dry_mask
 
 c resets mask data structure
 
@@ -85,14 +85,14 @@ c resets mask data structure
 	logical bkwater(1)
 	common /bkwater/bkwater
 
-        call initmask(bwater)
-	call nodemask(bwater,bkwater)
+        call init_dry_mask(bwater)
+	call make_dry_node_mask(bwater,bkwater)
 
         end
 
 c******************************************************
 
-	subroutine prepsim
+	subroutine prepare_dry_mask
 
 c prepares simulation for use - computes wet and dry areas
 
@@ -133,25 +133,31 @@ c set bshowdry = .false. if you want to plot all areas
         hzmin = getpar('hzmin')
 	level = getlev()
 
-	if( ous_is_available() ) then		!...handle on elements
+	call reset_dry_mask
+
+	if( ous_is_available() ) then			!...handle on elements
+
 	  write(6,*) 'using zeta for dry areas'
-          call initmask(bwater)			!true for all elements
 	  if( bshowdry ) then
-            call drymask(bwater,znv,href,hzmin)	!false if znv/zenv not equal
+            call set_dry_mask(bwater,znv,href,hzmin)	!false if znv/=zenv
 	  end if
-          call levelmask(bwater,ilhv,level)	!element has this level
-	  call nodemask(bwater,bkwater)		!copy element to node mask
-	else if( fvl_is_available() ) then	!...handle on nodes
+          call set_level_mask(bwater,ilhv,level)	!element has this level
+	  call make_dry_node_mask(bwater,bkwater)	!copy elem to node mask
+
+	else if( fvl_is_available() ) then		!...handle on nodes
+
 	  write(6,*) 'using fvl file for dry areas: ',hdry
-	  call volume_mask(bkwater,hdry)	!guess if dry using h of node
-	  call elemmask(bwater,bkwater)		!copy node to element mask
-          !call levelmask(bwater,ilhv,level)	!element has this level
-	  !call nodemask(bwater,bkwater)	!copy element to node mask
+	  call set_dry_volume_mask(bkwater,hdry)	!guess if dry using vol
+	  call make_dry_elem_mask(bwater,bkwater)	!copy node to elem mask
+          !call set_level_mask(bwater,ilhv,level)	!element has this level
+	  !call make_dry_node_mask(bwater,bkwater)	!copy elem to node mask
+
 	else
+
 	  write(6,*) 'no information on dry areas: ',hdry
-          call initmask(bwater)			!true for all elements
-          call levelmask(bwater,ilhv,level)	!element has this level
-	  call nodemask(bwater,bkwater)		!copy element to node mask
+          call set_level_mask(bwater,ilhv,level)	!element has this level
+	  call make_dry_node_mask(bwater,bkwater)	!copy elem to node mask
+
 	end if
 
 c---------------------------------------------------
@@ -162,7 +168,7 @@ c---------------------------------------------------
 
 c******************************************************
 
-	subroutine volume_mask(bkwater,hdry)
+	subroutine set_dry_volume_mask(bkwater,hdry)
 
 	implicit none
 
@@ -1534,10 +1540,9 @@ c read second header
 	write(6,*) 'hlv: ',nlv
 	write(6,*) (hlv(l),l=1,nlv)
 
-c close and re-open for a clean state
+c rewind for a clean state
 
-	close(nunit)
-	call fem_file_read_open(file,np,nunit,iformat)
+	rewind(nunit)
 
 	return
    99	continue

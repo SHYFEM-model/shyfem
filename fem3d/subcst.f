@@ -34,6 +34,7 @@ c 23.03.2006    ggu     use routine set_timeunit() to set time unit
 c 11.02.2009    ggu     in cstfile set fixed name for STR file
 c 15.07.2011    ggu     new call to read basin
 c 20.10.2014    ggu     new routine ckdate()
+c 10.11.2014    ggu     time and date routines transfered to subtime.f
 c
 c************************************************************************
 
@@ -105,7 +106,7 @@ c*******************************************************************
 
 	subroutine cstcheck
 
-c checks parameters read
+c sets up and checks parameters read
 c
 c revised 07.04.95 by ggu !$$conzfl - conz compared to iflag (bug)
 c revised 07.04.95 by ggu !$$baroc - impl. of baroclinic salt/temp (21/22)
@@ -127,6 +128,9 @@ c parameters read from STR file
 	rowass=getpar('rowass')
 	roluft=getpar('roluft')
 
+	call setup_date	!set up and check date parameter
+	call setup_time	!set up and check and correct time parameters
+
 c	call ckexta	!extra output points
 	call ckflxa	!flux sections
 	call ckvola	!flux sections
@@ -138,8 +142,6 @@ c	call ckoxy	!oxygen
 
 	call modules(M_CHECK)
 
-	call cktime	!check and correct time parameters
-	call ckdate	!check date parameter
 	call ckcori	!set coriolis parameter
 
 	end
@@ -157,7 +159,9 @@ c sets up modules
 	call flxini
 	call volini
 
+	write(6,*) 'cstsetup: setting up modules'
 	call modules(M_SETUP)
+	write(6,*) 'cstsetup: finished setting up modules'
 
 	end
 
@@ -183,66 +187,6 @@ c reads files (str and bas)
 	call sp13rr(nin,nkndim,neldim)
 	close(nin)
 
-	end
-
-c********************************************************************
-
-	subroutine cktime
-
-c check time parameters
-
-	implicit none
-
-	integer itanf,itend,idt
-	integer itunit
-	real getpar
-	double precision dgetpar
-
-	itanf = nint(dgetpar('itanf'))
-	itend = nint(dgetpar('itend'))
-	idt = nint(dgetpar('idt'))
-
-	if( idt .le. 0 .or. itanf+idt .gt. itend ) then
-	   write(6,*) 'Error in compulsory time parameters'
-	   write(6,*) 'itanf,itend,idt :',itanf,itend,idt
-	   stop 'error stop : cktime'
-	end if
-
-	call init_time(itanf,itend,idt)
-
-	itunit = nint(dgetpar('itunit'))
-	call set_timeunit(itunit)
-
-	end
-
-c********************************************************************
-
-	subroutine ckdate
-
-c check date parameter
-
-	implicit none
-
-	integer date
-	double precision dgetpar
-
-	date = nint(dgetpar('date'))
-
-	if( date >= 0 ) return
-
-	write(6,*) 'The date parameter has not been set.'
-	write(6,*) 'The date parameter indicates the absolute date'
-	write(6,*) 'to which FEM time is relative to.'
-	write(6,*) 'The format for the date parameter is YYYY[MMDD].'
-	write(6,*) 'If you want to do without this faeture, please'
-	write(6,*) 'explicitly set the date parameter to 0'
-	write(6,*) 'in the parameter file.'
-	write(6,*) 'Examples:'
-	write(6,*) '   date = 20120101'
-	write(6,*) '   date = 2012       # same as above'
-	write(6,*) '   date = 0          # no date feature'
-
-	stop 'error stop ckdate: date'
 	end
 
 c********************************************************************

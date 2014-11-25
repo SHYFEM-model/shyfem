@@ -2,6 +2,7 @@
 #
 # str utility routines
 #
+# version 	1.3	24.11.2014	finds section now, can insert values
 # version 	1.2	11.05.2011	restructured and commented
 # version 	1.1	?
 #
@@ -113,6 +114,10 @@ sub get_title {  return $_[0]->{title}; }
 sub get_simul {  return $_[0]->{simul}; }
 sub get_basin {  return $_[0]->{basin}; }
 
+sub set_title {  $_[0]->{title} = $_[1]; }
+sub set_simul {  $_[0]->{simul} = $_[1]; }
+sub set_basin {  $_[0]->{basin} = $_[1]; }
+
 sub get_numbers {
 
   my ($self,$section,$number) = @_;
@@ -162,21 +167,30 @@ sub set_value {
   my $sect = $self->get_section($section,$number);
   my $hash = $sect->{hash};
 
+  if( not defined $hash->{$name} ) {
+    my $items = $sect->{items};
+    push(@$items,$name);
+  }
   $hash->{$name} = $value;
 }
 
 sub get_section {
 
-  my ($self,$section,$number) = @_;
+  my ($self,$section_name,$number) = @_;
 
   my $section_id = "para";	#section defaults to this
-  $section_id = $section if defined $section;
+  $section_id = $section_name if defined $section_name;
   $section_id .= $number if defined $number;
 
   my $sections = $self->{sections};
-  my $sect = $sections->{$section_id};
+  my $sequence = $self->{sequence};
 
-  return $sect;
+  foreach my $section (@$sequence) {
+	  my $sect = $sections->{$section};
+	  return $sect if( $sect->{name} eq $section_id );
+  }
+
+  return;
 }
 
 #-----------------------------------------------------------------
@@ -360,6 +374,7 @@ sub parse_param_section {
 	  my $line = join(" ",@val);
 	  print "new array: $name  $line\n" if $debug;
 	  $hash{$name} = \@val;
+	  push(@$items,$name);
 	} else {
 	  die "Error in parsing STR file: for $name $n values found\n";
 	}
@@ -404,7 +419,9 @@ sub parse_title_section {
   my $data = $sect->{data};
 
   $self->{title} = $data->[0];
+  $data->[1] =~ s/^\s+//;
   $self->{simul} = $data->[1];
+  $data->[2] =~ s/^\s+//;
   $self->{basin} = $data->[2];
 }
 

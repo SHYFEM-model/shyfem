@@ -56,6 +56,7 @@ c******************************************************************
         common /knausc/ knausm,knaus
 
 	knausm = 0
+	!stop 'error stop subexta: extra not supported anymore'
 
 	end
 
@@ -72,6 +73,7 @@ c******************************************************************
 	integer nexdi
 	integer nrdveci
 
+	!stop 'error stop subexta: extra not supported anymore'
 	if( .not. handlesec('extra') ) return
 
 	call getdim('nexdim',nexdi)
@@ -103,6 +105,7 @@ c******************************************************************
 	integer ipint
 	logical bstop
 
+	!stop 'error stop subexta: extra not supported anymore'
 	bstop = .false.
 
         do k=1,knausm
@@ -130,6 +133,7 @@ c******************************************************************
 	integer i
 	integer ipext
 
+	!stop 'error stop subexta: extra not supported anymore'
         if(knausm.le.0) return
 
         write(6,*)
@@ -172,34 +176,34 @@ c writes and administers ext file
 	real xv(3,1)
 	common /xv/xv
 
-	integer itmext,itend
+	integer nbext
 	real err,href,hzoff
 	integer iround,ideffi
 	real getpar
 	double precision dgetpar
 	real writ7h,wrrc7
+	logical has_output,next_output
 
-	integer idtext,itext
-	integer icall,nbext,nvers
-	save idtext,itext
-	save icall,nbext,nvers
-	data icall,nbext,nvers /0,7,6/
+	integer ia_out(4)
+	save ia_out
+	integer icall,nvers
+	save icall,nvers
+	data icall,nvers /0,6/
 
+	!stop 'error stop subexta: extra not supported anymore'
 	if( icall .eq. -1 ) return
 
 	if( icall .eq. 0 ) then
-		idtext = nint(dgetpar('idtext'))
-		itmext = nint(dgetpar('itmext'))
-		itend = nint(dgetpar('itend'))
+                call init_output('itmext','idtext',ia_out)
+		call assure_initial_output(ia_out)
+                if( .not. has_output(ia_out) ) icall = -1
 		if( knausm .le. 0 ) icall = -1
-		call adjust_itmidt(itmext,idtext)
-		if( idtext .le. 0 ) icall = -1
 		if( icall .eq. -1 ) return
 
 		nbext=ideffi('datdir','runnam','.ext','unform','new')
                 if(nbext.le.0) goto 77
+		ia_out(4) = nbext
 
-		itext = itmext
 		href = getpar('href')
 		hzoff = getpar('hzoff')
                 err=writ7h(nbext,nvers,knausm,knaus,href,hzoff)
@@ -210,11 +214,12 @@ c writes and administers ext file
 
 c write file ext
 
-	if( it .lt. itext ) return
+        if( .not. next_output(ia_out) ) return
+
+        nbext = ia_out(4)
 
         err=wrrc7(nbext,nvers,it,knausm,knaus,xv)
         if(err.ne.0.) goto 79
-        itext=itext+idtext
 
 	return
    77   continue

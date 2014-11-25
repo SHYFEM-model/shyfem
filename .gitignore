@@ -30,6 +30,7 @@ femdoc/old/
 #-----------------------------------------------
 
 .directory
+.bash_eternal_history
 a.out
 DIFFS
 CHECKLOG

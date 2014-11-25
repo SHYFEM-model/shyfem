@@ -18,6 +18,7 @@ c 23.10.2012    ggu     unpackdate() and dtsini() accepts also only year
 c 05.03.2014    ggu     new subdts.h and new routine dts_has_date()
 c 13.10.2014    ggu     absolute time routines inserted
 c 13.10.2014    ggu     one day off error fixed ($ONEDAYOFF)
+c 12.11.2014    ggu     new routines for unformatting and timespan
 c
 c notes :
 c
@@ -133,9 +134,26 @@ c formats date and time given it (secs)
 	call dts2dt(it,year,month,day,hour,min,sec)
 	call dtsform(year,month,day,hour,min,sec,line)
 
-	!write(6,*) 'dtsgf act: ',it,year,month,day,hour,min,sec
-	!call dts_get_init(year,month,day,hour,min,sec)
-	!write(6,*) 'dtsgf ini: ',it,year,month,day,hour,min,sec
+	end
+
+c************************************************************************
+
+	subroutine dtsgunf(it,line,ierr)
+
+c unformats date and time and convert to it (secs)
+
+	implicit none
+
+	integer it
+	character*(*) line
+	integer ierr
+
+	integer year,month,day,hour,min,sec
+
+	it = 0
+	call dtsunform(year,month,day,hour,min,sec,line,ierr)
+	if( ierr .ne. 0 ) return
+	call dts2it(it,year,month,day,hour,min,sec)
 
 	end
 
@@ -172,6 +190,164 @@ c formats date and time
 	return
  1000	format(i4,1h-,i2,1h-,i2,2h::,i2,1h:,i2,1h:,i2)
  2000	format(i10,2h::,i2,1h:,i2,1h:,i2)
+	end
+
+c************************************************************************
+
+	subroutine dtsunform(year,month,day,hour,min,sec,line,ierr)
+
+c unformats date and time -> from string to date
+
+	implicit none
+
+	integer year,month,day,hour,min,sec
+	character*(*) line
+	integer ierr
+
+	character*20 ll
+	integer i,n
+
+        ll = line
+	n = len(line)
+	if( n .gt. 20 ) n = 20
+
+	do i=n,1,-1
+	  if( ll(i:i) .ne. ' ' ) exit
+	end do
+	n = i
+
+	ierr = 99
+	if( n .lt. 10 ) goto 9	!we insist having at least the full date
+
+	ierr = 1
+	if( ll(5:5) .ne. '-' .or. ll(8:8) .ne. '-' ) goto 9
+
+	ierr = 3
+	read(ll(1:4),'(i4)',err=9) year
+	read(ll(6:7),'(i2)',err=9) month
+	read(ll(9:10),'(i2)',err=9) day
+
+	hour = 0
+	min = 0
+	sec = 0
+
+	ierr = 0
+	if( n .le. 10 ) return
+
+	ierr = 5
+	if( ll(11:12) .ne. '::' ) goto 9
+	if( n .ge. 15 .and. ll(15:15) .ne. ':' ) goto 9
+	if( n .ge. 18 .and. ll(18:18) .ne. ':' ) goto 9
+
+	ierr = 7
+	if( n .eq. 13 .or. n .eq. 16 .or. n .eq. 19 ) goto 9
+
+	ierr = 9
+	if( n .ge. 14 ) read(ll(13:14),'(i2)',err=9) hour
+	if( n .ge. 17 ) read(ll(16:17),'(i2)',err=9) min
+	if( n .ge. 20 ) read(ll(19:20),'(i2)',err=9) sec
+
+	ierr = 0
+
+	return
+    9	continue
+	write(6,*) '*** cannot parse date: ',ierr,line(1:20)
+	write(6,*) '    format should be YYYY-MM-DD::hh:mm:ss'
+	write(6,*) '    possible also YYYY-MM-DD[::hh[:mm[:ss]]]'
+	return
+	end
+
+c************************************************************************
+
+	subroutine dtstimespan(idt,line,ierr)
+
+c parses time span given in line and converts it to idt
+c
+c only integer values are allowed
+
+	implicit none
+
+	integer idt
+	character*(*) line
+	integer ierr
+
+	integer week,month,year
+	parameter (week=7*86400,month=71*43200,year=365*86400)
+
+	integer facts(7)
+	save facts
+	data facts /1,60,3600,86400,week,month,year/
+
+	integer n,i,m,s,j
+	integer num,fact,sign
+	character*1 c
+	logical bfirst
+
+	integer in_string
+
+	ierr = -1
+
+	n = len(line)
+
+	bfirst = .true.
+	sign = 1
+	num = 0
+	idt = 0
+
+	do i=1,n
+	  c = line(i:i)
+	  if( c .eq. ' ' ) cycle
+	  m = in_string(c,'1234567890')
+	  s = in_string(c,'smhdwMy')
+	  if( c == '-' ) then
+	    if( .not. bfirst ) goto 99
+	    sign = -1
+	  else if( m > 0 ) then
+	    m = mod(m,10)
+	    num = 10*num + m
+	  else if( s > 0 ) then
+	    if( s > 7 ) goto 99
+	    fact = facts(s)
+	    idt = idt + num*fact
+	    num = 0
+	  else
+	    goto 99
+	  end if
+	  bfirst = .false.
+	end do
+
+	if( num > 0 ) goto 99	! no unit at end
+	idt = sign * idt
+	ierr = 0
+
+	return
+   99	continue
+	idt = 0
+	write(6,*) 'cannot parse: ',line(1:n)
+	write(6,*) '              ',(' ',j=1,i-1),'^'
+	end
+
+c************************************************************************
+
+	function in_string(c,string)
+
+	implicit none
+
+	integer in_string
+	character*1 c
+	character*(*) string
+
+	integer n,i
+
+	n = len(string)
+
+	do i=1,n
+	  if( c .eq. string(i:i) ) exit
+	end do
+
+	if( i > n ) i = 0
+	in_string = i
+
 	end
 
 c************************************************************************
@@ -1388,6 +1564,38 @@ c************************************************************************
 
 c************************************************************************
 
+        subroutine test_timespan
+
+	call test_timespan_one('5m')
+	call test_timespan_one('5m 20s')
+	call test_timespan_one('1d')
+	call test_timespan_one('1d5h 30m')
+	call test_timespan_one('1d24h ')
+	call test_timespan_one('1w')
+	call test_timespan_one('1M')
+	call test_timespan_one('1y')
+
+	call test_timespan_one('5a')
+	call test_timespan_one('4h 5a')
+	call test_timespan_one('4.5h')
+
+	end
+
+        subroutine test_timespan_one(line)
+
+	implicit none
+
+	character*(*) line
+
+	integer ierr,idt
+
+	call dtstimespan(idt,line,ierr)
+	write(6,*) ierr,idt,line
+	
+	end
+
+c************************************************************************
+
         subroutine test_date_all
 
 	call datetest
@@ -1396,12 +1604,14 @@ c************************************************************************
         call test_sd_pack
         call test_var
 	call test_abs_time
+        call test_timespan
 
         end
 
 c************************************************************************
-c	program datet
-c        call test_date_all
-c        !call date_compute
-c	end
+!	program datet
+!        !call test_date_all
+!        call test_timespan
+!        !call date_compute
+!	end
 c************************************************************************

@@ -27,7 +27,10 @@ rename_prog=$femanim/rename-petras.pl
 FullUsage()
 {
   echo ""
-  echo "Usage: makeanim.sh {-gif|-avi} [-h|-help] [-options]"
+  echo "Usage: makeanim.sh {-gif|-avi} [-h|-help] [-options] [ps-file]"
+  echo ""
+  echo "  ps-file          ps-file with still images to be animated"
+  echo "                   if not given uses plot.ps"
   echo ""
   echo "Available options:"
   echo "  -h|-help         this help"
@@ -117,6 +120,17 @@ do
    [ -n "$1" ] && shift
 done
 
+if [ $# -gt 0 ]; then
+  plotfile=$1
+  echo "filename is $plotfile"
+  echo "not yet ready to give file name"
+  echo "please use always plot.ps"
+  echo "you can do this with the command: mv $plotfile plot.ps"
+  exit 1
+else
+  plotfile=plot.ps
+fi
+
 if [ "$output" = "avi" ]; then		#create avi file
   echo "creating anim.avi with fps $fps"
 elif [ "$output" = "gif" ]; then	#create gif file
@@ -132,6 +146,11 @@ else
 fi
 
 TestSoftware
+
+if [ ! -f $plotfile ]; then
+  echo "No such file: $plotfile ... aborting"
+  exit 1
+fi
 
 #---------------------------------------------------------------------
 

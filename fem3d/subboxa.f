@@ -235,11 +235,14 @@ c administers writing of flux data
 
 	include 'param.h'
 	include 'subboxa.h'
+	!include 'femtime.h'
 
 	integer it
 
 	integer j,i,l,lmax,nlmax,ivar,nvers
 	integer date,time
+	integer idtbox
+	integer itanf,itend
 	real az,azpar,rr
 	real dt
 
@@ -268,6 +271,7 @@ c administers writing of flux data
 	integer ifemop
 	real getpar
 	double precision dgetpar
+	logical has_output,is_in_output,next_output
 
 	real fluxes(0:nlvdim,3,nscboxdim)
 	real val2d(nbxdim)
@@ -318,14 +322,12 @@ c administers writing of flux data
 	real valdif(0:nlvdim,nbxdim)
 	save valw,valvis,valdif
 
-	integer itanf,itend
-	save itanf,itend
-        integer idtbox,itbox,itmbox
-        save idtbox,itbox,itmbox
         integer nbbox
         save nbbox
 	integer ibarcl,iconz,ievap
 	save ibarcl,iconz,ievap
+	integer ia_out(4)
+	save ia_out
 
 	integer nbnds
 	logical bbox3d,bfirst
@@ -349,17 +351,14 @@ c-----------------------------------------------------------------
 
         if( nbbox .eq. 0 ) then
 
-                idtbox = nint(dgetpar('idtbox'))
-                itmbox = nint(dgetpar('itmbox'))
-                itanf = nint(dgetpar('itanf'))
-                itend = nint(dgetpar('itend'))
+          	call init_output('itmbox','idtbox',ia_out)
+		call increase_output(ia_out)  !itbox=itmbox+idtbox
+          	if( .not. has_output(ia_out) ) nbbox = -1
+
+                if( nbbox .eq. -1 ) return
+
                 date = nint(dgetpar('date'))
                 time = nint(dgetpar('time'))
-
-                if( itmbox .eq. -1 ) itmbox = itanf
-                if( idtbox .le. 0 ) nbbox = -1
-                if( itmbox .gt. itend ) nbbox = -1
-                if( nbbox .eq. -1 ) return
 
 		call box_init
 		call box_make_stats(nblayers,barea,bvolume,bdepth)
@@ -377,10 +376,6 @@ c-----------------------------------------------------------------
 		ievap = nint(getpar('ievap'))
 		ibarcl = 0
 		iconz = 0
-
-		if( itmbox .lt. itanf ) itmbox = itanf
-                itbox = itmbox + idtbox
-		!itmbox = itmbox + 1	!start from next time step
 
 		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
 
@@ -420,6 +415,7 @@ c-----------------------------------------------------------------
 		end if
 
 	        nvers = 5
+		idtbox = ia_out(1)
                 call wfflx      (nbbox,nvers
      +                          ,nsect,kfluxm,idtbox,nlmax
      +                          ,kflux
@@ -428,6 +424,8 @@ c-----------------------------------------------------------------
 
 c               here we could also compute and write section in m**2
 
+		itanf = nint(dgetpar('itanf'))
+		itend = nint(dgetpar('itend'))
 		call box_write_stats(itanf,itend,date,time
      +					,nlayers,nblayers
      +					,barea,bvolume,bdepth)
@@ -438,7 +436,7 @@ c-----------------------------------------------------------------
 c normal call
 c-----------------------------------------------------------------
 
-        if( it .lt. itmbox ) return
+        if( .not. is_in_output(ia_out) ) return		! it < itmbox
 
 	if( bfirst ) then	!initial condition
 	  bfirst = .false.
@@ -504,8 +502,7 @@ c	-------------------------------------------------------
 c	time for output?
 c	-------------------------------------------------------
 
-        if( it .lt. itbox ) return
-        itbox=itbox+idtbox
+        if( .not. next_output(ia_out) ) return
 
 c	-------------------------------------------------------
 c	average results

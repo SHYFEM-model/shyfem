@@ -153,7 +153,7 @@ cleandiff:
 	$(FEMBIN)/recursivemake $@ $(SUBDIRS)
 
 cleanregress:
-	cd $(REGRESSDIR); make cleanall
+	if [ -d $(REGRESSDIR) ]; then cd $(REGRESSDIR); make cleanall; fi
 	
 cleanbck:
 	-rm -rf *.bck
@@ -264,7 +264,7 @@ test_stable:
 	@femcheck/test_stable.sh
 
 regress:
-	cd $(REGRESSDIR); ./regress_all.sh
+	if [ -d $(REGRESSDIR) ]; then cd $(REGRESSDIR); ./regress_all.sh; fi
 
 revision:
 	 $(FEMBIN)/revision_last

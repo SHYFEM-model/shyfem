@@ -1,7 +1,7 @@
 c
 c $Id: subetsa.f,v 1.6 2001/11/16 07:35:43 georg Exp $
 c
-c ETS file administration routines
+c ETS file administration routines (deals with section $EXTTS)
 c
 c revision log :
 c
@@ -16,9 +16,7 @@ c******************************************************************
 	integer mode
 
 	include 'modules.h'
-
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	if( mode .eq. M_AFTER ) then
 	   call wretsa(it)
@@ -78,6 +76,10 @@ c******************************************************************
      +				,nexdim
 	  else
 	    write(6,*) 'read error in section $extts'
+	    write(6,*) 'please remember that the format is:'
+	    write(6,*) 'node  ''text'''
+	    write(6,*) 'text may be missing'
+	    write(6,*) 'only one node per line is allowed'
 	  end if
 	  stop 'error stop rdetsa'
 	end if
@@ -126,21 +128,20 @@ c******************************************************************
 
 	integer i,k
 	real x,y
-	!character*44 s
 	character*65 s
 	integer ipext
 
         if(nets.le.0) return
 
         write(6,*)
-        write(6,*) 'extts section: start'
+        write(6,*) 'extts section: start ',nets
 	do i=1,nets
 	  k = ipext(nkets(i))
 	  x = xets(i)
-	  y = xets(i)
+	  y = yets(i)
 	  s = chets(i)
-          !write(6,1009) i,k,x,y,s
-          write(6,1008) i,k,s
+          write(6,1009) i,k,x,y,s(1:44)
+          !write(6,1008) i,k,s
 	end do
         write(6,*) 'extts section: end'
         write(6,*)
@@ -216,9 +217,11 @@ c writes and administers ets file
 	integer ifemop
 	real getpar
 	double precision dgetpar
+	logical has_output,next_output
 
-	integer idtext,itmext,itext,nbext
-	save idtext,itmext,itext,nbext
+	integer nbext
+	integer ia_out(4)
+	save ia_out
 
 	integer icall
 	data icall /0/
@@ -227,19 +230,15 @@ c writes and administers ets file
 	if( icall .eq. -1 ) return
 
 	if( icall .eq. 0 ) then
-		idtext = nint(getpar('idtext'))
-		itmext = nint(getpar('itmext'))
-
-                call adjust_itmidt(itmext,idtext)
-
-                if( idtext .le. 0 ) icall = -1
+        	call init_output('itmext','idtext',ia_out)
+        	if( .not. has_output(ia_out) ) icall = -1
 		if( nets .le. 0 ) icall = -1
-                if( icall .eq. -1 ) return
 
-		itext = itmext
+                if( icall .eq. -1 ) return
 
                 nbext = ifemop('.ets','unformatted','new')
                 if(nbext.le.0) goto 77
+		ia_out(4) = nbext
 
 		nvers = 1
 		nvar = 5
@@ -263,7 +262,9 @@ c writes and administers ets file
 
 	icall = icall + 1
 
-	if( it .lt. itext ) return
+	if( .not. next_output(ia_out) ) return
+
+	nbext =	ia_out(4)
 
 	ivar = 1
 	call routets(1,ilhkv,znv,out)
@@ -289,8 +290,6 @@ c writes and administers ets file
 	call routets(nlvdim,ilhkv,tempv,out)
         call ets_write_record(nbext,it,ivar,nlvdim,ilets,out,ierr)
         if(ierr.ne.0.) goto 79
-
-        itext=itext+idtext
 
 	return
    77   continue

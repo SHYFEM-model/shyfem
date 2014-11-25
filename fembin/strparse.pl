@@ -2,12 +2,7 @@
 #
 # parses STR file and writes info to stdout or grd file
 #
-# possible command line options:
-#
-#	-bnd		open boundary nodes (writes bnd_str.grd)
-#	-files		files with open boundary conditions
-#	-txt		writes boundary nodes in txt format
-#	-sect=name	writes contents of section
+# possible command line options: see subroutine FullUsage
 #
 #--------------------------------------------------------
 
@@ -20,12 +15,18 @@ use strict;
 #-------------------------------------------------------------
 # command line options
 #-------------------------------------------------------------
-$::files = 0 unless $::files;
+$::h = 0 unless $::h;
+$::help = 0 unless $::help;
 $::bnd = 0 unless $::bnd;
-$::txt = 0 unless $::txt;
+$::files = 0 unless $::files;
+$::zip = 0 unless $::zip;
+$::rewrite = 0 unless $::rewrite;
 $::sect = "" unless $::sect;
+$::txt = 0 unless $::txt;
 #-------------------------------------------------------------
 
+#-------------------------------------------------------------
+# info on names in sections
 #-------------------------------------------------------------
 @::bound_names = qw/ boundn conzn tempn saltn
 		bio2dn sed2dn tox3dn
@@ -40,15 +41,26 @@ $::sect = "" unless $::sect;
 #-------------------------------------------------------------
 
 my $file = $ARGV[0];
-Usage() unless $file;
 
 my $str = new str;
-$str->read_str($file);
+$str->read_str($file) if $file;
 
-if( $::bnd ) {
+if( $::h or $::help ) {
+  FullUsage();
+} elsif( not $file ) {
+  Usage();
+} elsif( $::bnd ) {
   show_bnd_nodes($str);
 } elsif( $::files ) {
   show_files($str);
+} elsif( $::zip ) {
+  my $files = show_files($str);
+  push(@$files,$file);		#add str-file to archive
+  zip_files($files);
+} elsif( $::rewrite ) {
+  #$str->print_sections();;
+  $str->write_str("new.str");;
+  print STDERR "str-file written to new.str\n";
 } elsif( $::sect ) {
   show_sect($str,$::sect);
 } else {
@@ -59,7 +71,21 @@ if( $::bnd ) {
 
 sub Usage {
 
-  print STDERR "Usage: strparse.pl {-bnd|-files} [-txt] str-file\n";
+  print STDERR "Usage: strparse.pl [-h|-help] [-options] str-file\n";
+  exit 0;
+}
+
+sub FullUsage {
+
+  print STDERR "Usage: strparse.pl [-h|-help] [-options] str-file\n";
+  print STDERR "  options:\n";
+  print STDERR "    -h!-help      this help screen\n";
+  print STDERR "    -bnd          extract boundary nodes\n";
+  print STDERR "    -files        extract names of forcing files\n";
+  print STDERR "    -zip          zips forcing files, grid, str in one file\n";
+  print STDERR "    -rewrite      rewrite the str file\n";
+  #print STDERR "    -sect=sect    writes contents of section\n";
+  print STDERR "    -txt          write nodes as text and not in grd format\n";
   exit 0;
 }
 
@@ -158,8 +184,14 @@ sub show_files {
 
   my $str = shift;
 
+  my @files = ();
+  my $new = "";
+
   my $basin = $str->get_basin();
-  print "basin : $basin\n";
+  $basin .= ".grd";
+  $basin =~ s/^\s+//;
+  print "basin :    grid = $basin\n";
+  push(@files,$basin);
 
   my $sections = $str->{sections};
   my $sequence = $str->{sequence};
@@ -167,25 +199,30 @@ sub show_files {
   foreach my $section (@$sequence) {
     my $sect = $sections->{$section};
 
+    $new = "";
     if( $sect->{name} eq "bound" ) {
-      show_name($str,$sect,\@::bound_names);
+      $new = show_name($str,$sect,\@::bound_names);
     } elsif( $sect->{name} eq "name" ) {
-      show_name($str,$sect,\@::name_names);
+      $new = show_name($str,$sect,\@::name_names);
     } elsif( $sect->{name} eq "aquabc" ) {
-      show_name($str,$sect,\@::aquabc_names);
+      $new = show_name($str,$sect,\@::aquabc_names);
     } elsif( $sect->{name} eq "lagrg" ) {
-      show_name($str,$sect,\@::lagrg_names);
+      $new = show_name($str,$sect,\@::lagrg_names);
     } elsif( $sect->{name} eq "sedtr" ) {
-      show_name($str,$sect,\@::sedtr_names);
+      $new = show_name($str,$sect,\@::sedtr_names);
     }
 
+    push(@files,@$new) if $new;
   }
 
+  return \@files;
 }
 
 sub show_name {
 
   my ($str,$sect,$var_names) = @_;
+
+  my @files = ();
 
   my $sect_name = $sect->{name}; 
   my $sect_number = $sect->{number}; 
@@ -195,8 +232,12 @@ sub show_name {
     my $value = $str->get_value($name,$sect_name,$sect_number);
     if( defined $value ) {
       print "$sect_id :    $name = $value\n";
+      $value =~ s/\'//g;
+      push(@files,$value);
     }
   }
+
+  return \@files;
 }
 
 sub write_array_new {
@@ -244,13 +285,31 @@ sub show_sect {
   foreach my $section (@$sequence) {
     my $sect = $sections->{$section};
 
+    my $nnn = $sect->{name}; print "section: $nnn\n";
+
     if( $sect->{name} eq "$sname" ) {
-      #show_name($str,$sect,\@::bound_names);
+        #show_name($str,$sect,\@::bound_names);
 	my $array = $sect->{array};
 	foreach my $numb (@$array) {
 	  print "$numb\n";
 	}
     }
   }
+}
+
+sub zip_files {
+
+  my ($files) = @_;
+
+  my $zipfile = "new_zip.zip";
+
+  unlink "$zipfile" if ( -f $zipfile );
+
+  foreach my $file (@$files) {
+    print STDERR "zip file: $file\n";
+    system("zip $zipfile $file");
+  }
+
+  print STDERR "files have been zipped into file $zipfile\n";
 }
 

@@ -510,7 +510,7 @@ c-----------------------------------------------------------
 	call setznv		! -> change znv since zenv has changed
 
         call inirst             !restart
-	call cktime		!in case itanf has changed
+	call setup_time		!in case itanf has changed
 
 	!call init_vertical	!do again after restart
 
@@ -553,7 +553,7 @@ c-----------------------------------------------------------
 	call cstsetup
 	call sp136(ic)
         call shdist(rdistv)
-	!call renewal_time
+	call renewal_time
 
 	call init_wave(iwwm,idcoup)
         call write_wwm(iwwm,it,idcoup)
@@ -582,7 +582,9 @@ c        call bclevvar_ini       	!chao debora
 	!call custom(it)		!call for initialization
 
 	write(6,*) 'starting time loop'
-	call pritime
+	call print_time
+
+	call check_parameter_values('before main')
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -641,7 +643,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	     call iff_print_info(0)
 	   end if
 
-	   call pritime			!output to terminal
+	   call print_time			!output to terminal
 
 	   call total_energy
 	   call check_all
@@ -659,7 +661,10 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%% end of time loop %%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	call endtime
+	write(6,*) 'checking parameter values...'
+	call check_parameter_values('after main')
+
+	call print_end_time
         !call ht_finished
 
 	!call pripar(15)

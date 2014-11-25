@@ -189,8 +189,8 @@ c	---------------------------------
 c	accumulate
 c	---------------------------------
 
-	call initmask(bwater)
-	call drymask(bwater,znv,href,hzoff)
+	call init_dry_mask(bwater)
+	call set_dry_mask(bwater,znv,href,hzoff)
 
 	icwet = 0
 	do ie=1,nel

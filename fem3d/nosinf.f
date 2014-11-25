@@ -39,7 +39,7 @@ c reads nos file
 	character*80 title
 	character*20 dline
 	real rnull
-	real cmin,cmax
+	real cmin,cmax,caver
 
 	integer iapini
 	integer ifem_open_file
@@ -100,8 +100,9 @@ c--------------------------------------------------------------
 	       if( l .gt. ilhkv(k) ) cv(k) = rnull
 	     end do
 	     call mimar(cv,nkn,cmin,cmax,rnull)
+             call aver(cv,nkn,caver,rnull)
              call check1Dr(nkn,cv,0.,-1.,"NaN check","cv")
-	     write(6,*) 'level,cmin,cmax : ',l,cmin,cmax
+	     write(6,*) 'l,min,max,aver : ',l,cmin,cmax,caver
 	   end do
 
 	end do	!do while
@@ -119,6 +120,41 @@ c--------------------------------------------------------------
 c--------------------------------------------------------------
 c end of routine
 c--------------------------------------------------------------
+
+	end
+
+c***************************************************************
+
+        subroutine aver(xx,n,xaver,rnull)
+
+c computes min/max of vector
+c
+c xx            vector
+c n             dimension of vector
+c xmin,xmax     min/max value in vector
+c rnull		invalid value
+
+        implicit none
+
+        integer n
+        real xx(n)
+        real xaver,rnull
+
+	integer i,nacu
+	double precision acu
+
+	nacu = 0
+	acu = 0.
+	xaver = rnull
+
+	do i=1,n
+	  if(xx(i).ne.rnull) then
+	    acu = acu + xx(i)
+	    nacu = nacu + 1
+	  end if
+	end do
+
+	if( nacu .gt. 0 ) xaver = acu / nacu
 
 	end
 

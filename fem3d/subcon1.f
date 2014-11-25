@@ -233,6 +233,7 @@ c on return iu = -1 means that no file has been opened and is not written
 	integer nvers
 	integer date,time
 	integer ierr
+	integer itcon
 	!character*80 dir,nam,file
 	character*80 title,femver
 
@@ -244,7 +245,7 @@ c-----------------------------------------------------
 c check idtcon and itmcon and adjust
 c-----------------------------------------------------
 
-	call adjust_itmidt(itmcon,idtcon)
+	call adjust_itmidt(itmcon,idtcon,itcon)
 
 	iu = -1
         if( idtcon .le. 0 ) return
@@ -279,11 +280,6 @@ c-----------------------------------------------------
 	call nos_write_header2(iu,ilhkv,hlv,hev,ierr)
         if(ierr.gt.0) goto 99
 
-	!call wfnos(iu,3,nkn,nel,nlv,nvar,descrp,ierr)
-        !if(ierr.gt.0) goto 99
-	!call wsnos(iu,ilhkv,hlv,hev,ierr)
-        !if(ierr.gt.0) goto 99
-
 c-----------------------------------------------------
 c write informational message to terminal
 c-----------------------------------------------------
@@ -316,10 +312,9 @@ c writes NOS file
 	integer idtcon		!time intervall of writes
 	integer ivar		!id of variable to be written
 	integer nlvdi		!vertical dimension of c
-	real c(nlvdi,1)		!concentration to write
+	real c(nlvdi,1)		!scalar to write
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer ilhkv(1)
         common /ilhkv/ilhkv
 
@@ -337,7 +332,6 @@ c-----------------------------------------------------
 c write file
 c-----------------------------------------------------
 
-	!call wrnos(iu,it,ivar,nlvdi,ilhkv,c,ierr)
 	call nos_write_record(iu,it,ivar,nlvdi,ilhkv,c,ierr)
 	if(ierr.gt.0) goto 99
 
@@ -393,6 +387,144 @@ c shell for writing file unconditionally to disk
 	call confil(iu,itmcon,idtcon,ivar,nlvdim,c)
 
         end
+
+c*************************************************************
+c*************************************************************
+c*************************************************************
+
+	subroutine open_scalar_file(ia_out,nlv,nvar,type)
+
+c opens (NOS) file
+
+c on return iu = -1 means that no file has been opened and is not written
+
+	implicit none
+
+	integer ia_out(4)	!time information		       (in/out)
+	integer nlv		!vertical dimension of scalar          (in)
+	integer nvar		!total number of variables to write    (in)
+	character*(*) type	!extension of file		       (in)
+
+	include 'femtime.h'
+
+        character*80 descrp
+        common /descrp/ descrp
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+        real hlv(1), hev(1)
+        common /hlv/hlv, /hev/hev
+
+	integer nvers
+	integer date,time
+	integer iu,ierr
+	character*80 title,femver
+
+	integer ifemop
+	double precision dgetpar
+
+c-----------------------------------------------------
+c open file
+c-----------------------------------------------------
+
+	iu = ifemop(type,'unformatted','new')
+	if( iu .le. 0 ) goto 98
+	ia_out(4) = iu
+
+c-----------------------------------------------------
+c initialize parameters
+c-----------------------------------------------------
+
+	nvers = 5
+	date = nint(dgetpar('date'))
+	time = nint(dgetpar('time'))
+	title = descrp
+	call get_shyfem_version(femver)
+
+c-----------------------------------------------------
+c write header of file
+c-----------------------------------------------------
+
+	call nos_init(iu,nvers)
+	call nos_set_title(iu,title)
+	call nos_set_date(iu,date,time)
+	call nos_set_femver(iu,femver)
+	call nos_write_header(iu,nkn,nel,nlv,nvar,ierr)
+        if(ierr.gt.0) goto 99
+	call nos_write_header2(iu,ilhkv,hlv,hev,ierr)
+        if(ierr.gt.0) goto 99
+
+c-----------------------------------------------------
+c write informational message to terminal
+c-----------------------------------------------------
+
+        write(6,*) 'open_scalar_file: ',type,' file opened ',it
+
+c-----------------------------------------------------
+c end of routine
+c-----------------------------------------------------
+
+	return
+   98	continue
+	write(6,*) 'error opening file with type ',type
+	stop 'error stop open_scalar_file'
+   99	continue
+	write(6,*) 'error ',ierr,' writing file with type ',type
+	stop 'error stop open_scalar_file'
+	end
+
+c*************************************************************
+
+	subroutine write_scalar_file(ia_out,ivar,nlvdi,c)
+
+c writes NOS file
+c
+c the file must be open, the file will be written unconditionally
+
+	implicit none
+
+	integer ia_out(4)	!time information
+	integer ivar		!id of variable to be written
+	integer nlvdi		!vertical dimension of c
+	real c(nlvdi,1)		!scalar to write
+
+	include 'femtime.h'
+
+        integer ilhkv(1)
+        common /ilhkv/ilhkv
+
+	integer iu,ierr
+
+c-----------------------------------------------------
+c check if files has to be written
+c-----------------------------------------------------
+
+	iu = ia_out(4)
+	if( iu .le. 0 ) return
+
+c-----------------------------------------------------
+c write file
+c-----------------------------------------------------
+
+	call nos_write_record(iu,it,ivar,nlvdi,ilhkv,c,ierr)
+	if(ierr.gt.0) goto 99
+
+c-----------------------------------------------------
+c write informational message to terminal
+c-----------------------------------------------------
+
+        write(6,*) 'write_scalar_file: ivar = ',ivar,' written at ',it
+
+c-----------------------------------------------------
+c end of routine
+c-----------------------------------------------------
+
+	return
+   99	continue
+	write(6,*) 'error ',ierr,' writing file at unit ',iu
+	stop 'error stop write_scalar_file: error in writing record'
+	end
 
 c*************************************************************
 c*************************************************************

@@ -552,7 +552,8 @@ if [ -n "$outfile" ]; then
   elif [ "$outfile" = "out.png" ]; then
     :
   else
-    rename out. $outfile. out.[1-9]*.ps out.ps
+    #rename out. $outfile. out.[1-9]*.ps out.ps		# old call
+    rename "s/out\./$outfile./" out.[1-9]*.ps out.ps	# use perl expression
   fi
 fi
 

@@ -56,7 +56,7 @@ c local
 	logical binfo
         integer istot
 	integer level
-	integer nintp,nvar,ivar
+	integer nintp,nvar,ivar,id
 	real cdef(1)
         real cmin,cmax,ctot
         real sindex
@@ -64,7 +64,7 @@ c local
 	real t,dt
 	double precision dtime0,dtime
 c function
-	logical has_restart
+	logical has_restart,next_output,has_output
 	real getpar
 c save & data
         character*4 what
@@ -77,14 +77,14 @@ c save & data
 	save difmol
 	real tau
 	save tau
-	integer iu,id,itmcon,idtcon
-	save iu,id,itmcon,idtcon
         integer ninfo
         save ninfo
         integer iprogr
         save iprogr
 	integer idconz(nbcdim)
 	save idconz
+	integer ia_out(4)
+	save ia_out
 
 	integer icall
 	save icall
@@ -118,12 +118,11 @@ c-------------------------------------------------------------
 	  end if
 	  call conz_init(itanf,nlv,nkn,cnv)	!read from file if name given
 
-	  iu = 0
-          id = 10       !for tracer
-	  itmcon = nint(getpar('itmcon'))
-	  idtcon = nint(getpar('idtcon'))
-	  call adjust_itmidt(itmcon,idtcon)
-	  call confop(iu,itmcon,idtcon,nlv,1,'con')
+	  nvar = 1
+          call init_output('itmcon','idtcon',ia_out)
+	  if( has_output(ia_out) ) then
+            call open_scalar_file(ia_out,nlv,nvar,'con')
+	  end if
 
           call getinfo(ninfo)
 
@@ -164,7 +163,10 @@ c-------------------------------------------------------------
 c write to file
 c-------------------------------------------------------------
 
-	call confil(iu,itmcon,idtcon,id,nlvdi,cnv)
+	if( next_output(ia_out) ) then
+          id = 10       !for tracer
+	  call write_scalar_file(ia_out,id,nlvdi,cnv)
+	end if
 
 	if( iprogr .gt. 0 .and. mod(icall,iprogr) .eq. 0 ) then
 	  call extract_level(nlvdim,nkn,level,cnv,v1v)
@@ -239,7 +241,7 @@ c--------------------------------------------
 c local
         integer istot
 	integer level
-	integer nintp,nvar,ivar,i
+	integer nintp,nvar,ivar,i,id
 	real cdef
         real cmin,cmax
         real sindex
@@ -248,7 +250,7 @@ c local
 	real cdefs(ncsdim)
 	double precision dtime,dtime0
 c function
-	logical has_restart
+	logical has_restart,next_output
 	real getpar
 c save & data
         character*5 what
@@ -261,14 +263,14 @@ c save & data
 	save difmol
 	real contau
 	save contau
-	integer iu,id,itmcon,idtcon
-	save iu,id,itmcon,idtcon
         integer ninfo
         save ninfo
         integer iprogr
         save iprogr
 	integer idconz(nbcdim)
 	save idconz
+	integer ia_out(4)
+	save ia_out
 
 	integer icall
 	save icall
@@ -304,10 +306,8 @@ c-------------------------------------------------------------
 	    end if
 	  end do
 
-	  iu = 0
-	  itmcon = nint(getpar('itmcon'))
-	  idtcon = nint(getpar('idtcon'))
-	  call confop(iu,itmcon,idtcon,nlv,nvar,'com')
+          call init_output('itmcon','idtcon',ia_out)
+          call open_scalar_file(ia_out,nlv,nvar,'con')
 
           call getinfo(ninfo)
 
@@ -369,10 +369,12 @@ c-------------------------------------------------------------
 	end do
 	!write(65,*) it,massv
 
-	do i=1,nvar
+	if( next_output(ia_out) ) then
+	  do i=1,nvar
 	    id = 30 + i
-	    call confil(iu,itmcon,idtcon,id,nlvdi,conzv(1,1,i))
-	end do
+	    call write_scalar_file(ia_out,id,nlvdi,conzv(1,1,i))
+	  end do
+	end if
 
 c-------------------------------------------------------------
 c end of routine

@@ -197,6 +197,7 @@ c eco-model cosimo
 	real getpar
 	integer iround
 	integer ieint,ipint
+	logical has_output,next_output
 
         integer mode
         real ai,lsurf
@@ -221,10 +222,10 @@ c eco-model cosimo
 	save iespecial,inspecial
 	real rkpar,difmol
 	save rkpar,difmol
-	integer iub,itmcon,idtcon
-	save iub,itmcon,idtcon
-	integer iubs,itmcons,idtcons
-	save iubs,itmcons,idtcons
+	integer iub,iubs
+	save iub,iubs
+	integer ia_out(4)
+	save ia_out
 
         save icall
 
@@ -350,21 +351,18 @@ c         --------------------------------------------------
 c	  initialize output 
 c         --------------------------------------------------
 
-	  iub = 0
-          itmcon = iround(getpar('itmcon'))
-          idtcon = iround(getpar('idtcon'))
+	  call init_output('itmcon','idtcon',ia_out)
 
-          call confop(iub,itmcon,idtcon,nlv,nstate,'bio')
+	  if( has_output(ia_out) ) then
+	    call open_scalar_file(ia_out,nlv,nstate,'bio')
+	    iub = ia_out(4)
+	    if( bsedim ) then
+	      call open_scalar_file(ia_out,1,nsstate,'sed')
+	      iubs = ia_out(4)
+	    end if
+	  end if
 
 	  write(6,*) 'bio3d model initialized...'
-
-	  iubs = 0
-          itmcons = iround(getpar('itmcon'))
-          idtcons = iround(getpar('idtcon'))
-
-          call confop(iubs,itmcons,idtcons,1,nsstate,'sed')
-
-	  write(6,*) 'bio3d sediment model initialized...'
 
 	  call loicz1(0,0.,0.)
 
@@ -522,14 +520,20 @@ c	-------------------------------------------------------------------
 
 	if( bcheck ) call check_bio('before write',e,es)
 
-	do i=1,nstate
-          call confil(iub,itmcon,idtcon,70+i,nlvdim,e(1,1,i))
-	end do
-
-        if( bsedim ) then
-	  do i=1,nsstate
-            call confil(iubs,itmcons,idtcons,90+i,1,es(1,i))
+	if( next_output(ia_out) ) then
+	  ia_out(4) = iub
+	  do i=1,nstate
+	    id = 70 + i
+	    call write_scalar_file(ia_out,id,nlvdim,e(1,1,i))
 	  end do
+
+          if( bsedim ) then
+	    ia_out(4) = iubs
+	    do i=1,nsstate
+	      id = 90 + i
+	      call write_scalar_file(ia_out,id,nlvdim,e(1,1,i))
+	    end do
+	  end if
         end if
 
 	call bio_av_shell(e)		!aver/min/max of state vars
@@ -543,9 +547,9 @@ c	-------------------------------------------------------------------
 c	debug output
 c	-------------------------------------------------------------------
 
-        k = 100
-        l = 1
-        call getts(l,k,t,s)
+        !k = 100
+        !l = 1
+        !call getts(l,k,t,s)
         !call writee(95,it,k,l,e,t,s,nlvdim,nkndim,nstate)
         !call bioprint(it,e,nstate)
 

@@ -5,8 +5,8 @@
 !
 ! contents :
 !
-! subroutine heatcoare(airt,airp,ws,rh,cloud,sst,prec,rad,wx,wy,
-!     &                  qsens,qlat,qlong,evap,bwind,taux,tauy)
+! subroutine heatcoare(airt,airp,ws,rh,cloud,sst,prec,rad,
+!     &                  qsens,qlat,qlong,evap)
 !       handles heat fluxes from COARE heat module
 ! subroutine humidity(hum_method,hum,pres,tw,ta,es,ea,qs,qa,rhoa)
 !	computes saturation vapour pressure and specific humidity
@@ -18,7 +18,7 @@
 !       computes heat fluxes according COARE2.5 formulation
 ! subroutine coare30(tw,ta,ws,rain,rad,-qb,qs,qa,rhoa,evp,qe,qh,cd)
 !       computes heat fluxes according COARE3.0 formulation
-! subroutine wcstress(ws,rhoa,cd,rain,wx,wy,taux,tauy)
+! subroutine wcstress(ws,rhoa,rain,wx,wy,taux,tauy)
 !	computes momentum fluxes due to wind and rain
 ! subroutine tw_skin(rad,qrad,tw,hb,usw,dt,dtw,tws)
 !	computes sea surface skin temperature
@@ -29,8 +29,8 @@
 
 !***********************************************************************
 
-	subroutine heatcoare(airt,airp,ws,rh,cloud,sst,prec,rad,wx,wy,
-     +			qsens,qlat,qlong,evap,bwind,cd,taux,tauy)
+	subroutine heatcoare(airt,airp,ws,rh,cloud,sst,prec,rad,
+     +			qsens,qlat,qlong,evap,cd)
 
 	implicit none
 
@@ -45,16 +45,13 @@
         real, intent(in)    :: sst        !sea temperature [C]                 
         real, intent(in)    :: prec       !precipitation [m/s]
 	real, intent(in)    :: rad	  !net solar flux (w/m^2)
-	real, intent(in)    :: wx,wy      !wind components [m/s]
-	logical, intent(in) :: bwind	  !if .true. compute wind stress
 ! inout
-	real 		    :: cd	  !drag_coefficient
-	real,intent(inout)  :: taux,tauy  !wind stress components
 ! output
         real,intent(out)    :: qsens      !sensible heat flux [W/m**2]
         real,intent(out)    :: qlat       !latent heat flux [W/m**2] 
         real,intent(out)    :: qlong      !long wave radiation [W/m**2] 
         real,intent(out)    :: evap       !evaporation [kg/m**2/s] 
+	real,intent(out)    :: cd	  !drag_coefficient
 ! local
 	integer, parameter  :: lon_method=2
 	real 		    :: ta,tw,rain
@@ -92,16 +89,6 @@
 
 	qsens = - qe
 	qlat  = - qh
-
-!       ---------------------------------------------------------
-!       Compute momentum fluxes due to wind and rainfall
-!       ---------------------------------------------------------
-
-	if ( bwind ) then
-	  call wcstress(ws,rhoa,rhow,cd,rain,wx,wy,taux,tauy)
-	  taux  = taux / rhow	!for SHYFEM
-	  tauy  = tauy / rhow
-	end if
 
 !       ---------------------------------------------------------
 !       End of routine
@@ -891,9 +878,9 @@
 
 !-----------------------------------------------------------------------
 !-----------------------------------------------------------------------
-! Compute momentum fluxes due to wind and rainfall
+! Compute momentum fluxes due to rainfall
 
-	subroutine wcstress(ws,rhoa,rhow,cd,rain,
+	subroutine wcstress(ws,rhoa,rhow,rain,
      +			    wx,wy,taux,tauy)
 
 	implicit none
@@ -902,21 +889,12 @@
 	real, intent(in)	:: ws		!wind speed [m/s]
 	real, intent(in)	:: rhoa		!moist air density (kg/m3)
 	real, intent(in)	:: rhow		!water density (kg/m3)
-	real, intent(in)	:: cd		!drag coefficient
 	real, intent(in)	:: rain		!precipitation (kg/m2/s)
         real, intent(in)	:: wx,wy      	!wind components [m/s]
 ! output
 	real, intent(out)	:: taux,tauy	!wind stress components
 ! local
 	real 			:: cff
-
-!       ------------------------------------------------
-!       Compute wind stress components (N/m2), Tau
-!       ------------------------------------------------
-
-        cff  = rhoa*cd*ws
-        taux = cff*wx
-        tauy = cff*wy
 
 !       ------------------------------------------------
 !       Compute momentum flux (N/m2) due to rainfall (kg/m2/s)

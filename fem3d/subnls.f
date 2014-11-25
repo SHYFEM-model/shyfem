@@ -535,11 +535,18 @@ c******************************************************************
 
 c reads table in section
 c
-c table must have following structure (empty lines are allowed
+c table must have following structure (empty lines are allowed)
 c
 c	ivalue1 'char1'
 c	ivalue2 'char2'
 c	etc..
+c
+c an alternative is also possible, where only numbers are given
+c
+c	ivalue1 ivalue2 ...
+c	etc..
+c
+c in this case char1 gets a default value
 c
 c returns total number of values read
 c returns -1 in case of dimension error
@@ -564,11 +571,12 @@ c returns -2 in case of read error
 		ioff=ichafs(line)
 		ianz=nrdnum(value,line,ioff)
 		if(ianz.gt.0) then
-		   n=n+1
-		   if(n.gt.ndim) goto 99
-		   ivect(n)=nint(value)
-		   ianz=nrdtxt(text,line,ioff)
-		   if( ianz .ge. 0 ) cvect(n) = text
+		  n=n+1
+		  if(n.gt.ndim) goto 99
+		  ivect(n)=nint(value)
+		  write(cvect(n),'(a,i3)') 'Extra node ',n	!default text
+		  ianz=nrdtxt(text,line,ioff)
+		  if( ianz .gt. 0 ) cvect(n) = text
 		end if
 		if(ianz.lt.0) goto 98
 	end do

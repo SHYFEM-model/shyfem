@@ -308,7 +308,7 @@ c opens fem file for read
 
 	character*(*) file	!file name
 	integer nexp		!expected size of data (0 if unknown)
-	integer iunit		!unit of opened file (in/out) (0 for error)
+	integer iunit		!unit of opened file (return) (0 for error)
 	integer iformat		!is formatted? (return)
 
 	integer nvar,np,ntype

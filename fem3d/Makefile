@@ -155,7 +155,7 @@ SOBJS   = \
 
 HTOBJS = \
 	subver.o \
-	subcst.o subsys.o subnsh.o \
+	subcst.o subsys.o subnsh.o subtime.o suboutput.o \
 	subbas.o subdim.o subnev.o \
 	subnsu.o subn35.o subdep.o \
 	subdef.o subfil.o subnls.o \
@@ -217,7 +217,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subbnd.o subdts.o subdep.o \
 	  debug.o subreg.o subnev.o \
 	  subfemfile.o subtsfile.o \
-	  subvintp.o subver.o sigmautil.o
+	  subvintp.o subver.o sigmautil.o suboutput.o
 
 RSTOBJS = subrst.o ecological_dummy.o
 
@@ -259,6 +259,7 @@ QFLUX_TEST = subqfxf.o \
 
 PARMOD = subpar.o subfnm.o		# old parameter modules
 #PARMOD = subpar1.o			# new parameter modules
+PARMOD = subpar3.o			# newest parameter modules
 IFF_FILES = 
 IFF_FILES = subfemintp.o subtsfile.o submeteo2.o
 

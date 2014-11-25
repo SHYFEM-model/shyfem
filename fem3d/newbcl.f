@@ -164,7 +164,7 @@ c	real sigma
 	real getpar
 	double precision scalcont,dq
 	integer iround
-	logical has_restart
+	logical has_restart,has_output,next_output
 
 	integer tid
 c	integer OMP_GET_THREAD_NUM
@@ -172,8 +172,8 @@ c	integer OMP_GET_THREAD_NUM
 	double precision theatold,theatnew
 	double precision theatconv1,theatconv2,theatqfl1,theatqfl2
 c save
-        integer iu,itmcon,idtcon
-        save iu,itmcon,idtcon
+        integer ia_out(4)
+        save ia_out
 
 	integer idtemp(nbcdim),idsalt(nbcdim)
 	save idtemp,idsalt
@@ -227,8 +227,6 @@ c----------------------------------------------------------
 		sstrat=getpar('sstrat')
 		tstrat=getpar('tstrat')
 		difmol=getpar('difmol')
-		idtcon=iround(getpar('idtcon'))
-		itmcon=iround(getpar('itmcon'))
                 itemp=iround(getpar('itemp'))
                 isalt=iround(getpar('isalt'))
 
@@ -278,7 +276,10 @@ c		--------------------------------------------
 		call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
      +					,cdef,idsalt)
 
+c		--------------------------------------------
 c		initialize rhov, bpresv (we call it twice since
+c		--------------------------------------------
+
 c		rhov depends on bpresv and viceversa
 c		-> we iterate to the real solution)
 
@@ -291,20 +292,26 @@ c		-> we iterate to the real solution)
 
 		call rhoset_shell
 
-        	iu = 0
+c		--------------------------------------------
+c		initialize output files
+c		--------------------------------------------
+
 		nvar = 0
 		if( itemp .gt. 0 ) nvar = nvar + 1
 		if( isalt .gt. 0 ) nvar = nvar + 1
-        	itmcon = iround(getpar('itmcon'))
-        	idtcon = iround(getpar('idtcon'))
-        	call confop(iu,itmcon,idtcon,nlv,nvar,'nos')
 
-		if( binitial_nos ) then
-		  if( isalt .gt. 0 ) then
-		    call confil(iu,itmcon,idtcon,11,nlvdi,saltv)
-		  end if
-		  if( isalt .gt. 0 ) then
-		    call confil(iu,itmcon,idtcon,12,nlvdi,tempv)
+		call init_output('itmcon','idtcon',ia_out)
+		!call set_output_frequency(itmcon,idtcon,ia_out) !alternatively
+
+		if( has_output(ia_out) ) then
+		  call open_scalar_file(ia_out,nlv,nvar,'nos')
+		  if( binitial_nos ) then
+		    if( isalt .gt. 0 ) then
+		      call write_scalar_file(ia_out,11,nlvdi,saltv)
+		    end if
+		    if( isalt .gt. 0 ) then
+		      call write_scalar_file(ia_out,12,nlvdi,tempv)
+		    end if
 		  end if
 		end if
 
@@ -412,14 +419,16 @@ c----------------------------------------------------------
 	call stmima(rhov,nkn,nlvdi,ilhkv,rmin,rmax)
 
 c----------------------------------------------------------
-c print of results
+c write results to file
 c----------------------------------------------------------
 
-	if( isalt .gt. 0 ) then
-	  call confil(iu,itmcon,idtcon,11,nlvdi,saltv)
-	end if
-	if( itemp .gt. 0 ) then
-	  call confil(iu,itmcon,idtcon,12,nlvdi,tempv)
+	if( next_output(ia_out) ) then
+	  if( isalt .gt. 0 ) then
+	    call write_scalar_file(ia_out,11,nlvdi,saltv)
+	  end if
+	  if( itemp .gt. 0 ) then
+	    call write_scalar_file(ia_out,12,nlvdi,tempv)
+	  end if
 	end if
 
 c----------------------------------------------------------

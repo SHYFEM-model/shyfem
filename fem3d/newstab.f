@@ -580,9 +580,8 @@ c outputs stability index for hydro timestep (internal)
 	logical bnos
 	integer ie,ii,k,l,lmax
 	integer ia,id,it
-	integer idtsti,itmsti
 	real sindex,smin
-	logical next_output
+	logical has_output,next_output,is_over_output
 
 	integer icall,iustab,ia_out(4)
 	save icall,iustab,ia_out
@@ -590,24 +589,18 @@ c outputs stability index for hydro timestep (internal)
 
 	real getpar
 
-c	idtsti = 3600
-c	idtsti = 0
-c	itmsti = -1
-
 	if( icall .lt. 0 ) return
 
 	if( icall .eq. 0 ) then
-	  idtsti = nint(getpar('idtsti'))
-	  itmsti = nint(getpar('itmsti'))
-	  if( idtsti .le. 0 ) icall = -1
+	  call init_output('itmsti','idtsti',ia_out)
+	  call increase_output(ia_out)
+	  if( .not. has_output(ia_out) ) icall = -1
 	  if( icall .lt. 0 ) return
-	  call set_output_frequency(itmsti,idtsti,ia_out)
-	  call confop(iustab,itmsti,idtsti,1,1,'.stb')
-	  !write(6,*) 'ia_out: ',ia_out
-	  do k=1,nkn
-	    smax(k) = 0.
-	  end do
+	  call open_scalar_file(ia_out,1,1,'.stb')
+	  smax = 0.
 	end if
+
+	if( .not. is_over_output(ia_out) ) return 
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
@@ -626,12 +619,8 @@ c	itmsti = -1
 	      smax(k) = 1./smax(k)
 	    end if
 	  end do
-	  idtsti = ia_out(1)	!FIXME
-	  itmsti = ia_out(2)
-	  call confil(iustab,itmsti,idtsti,778,1,smax)
-	  do k=1,nkn
-	    smax(k) = 0.
-	  end do
+	  call write_scalar_file(ia_out,778,1,smax)
+	  smax = 0.
 	end if
 
 	icall = icall + 1
@@ -667,9 +656,8 @@ c outputs stability index for hydro timestep (internal)
 	logical bnos
 	integer ie,ii,k,l,lmax
 	integer ia,id,it
-	integer idtsti,itmsti
 	real sindex,smin
-	logical next_output
+	logical next_output,has_output,is_over_output
 
 	integer icall,iustab,ia_out(4)
 	save icall,iustab,ia_out
@@ -684,17 +672,16 @@ c	itmsti = -1
 	if( icall .lt. 0 ) return
 
 	if( icall .eq. 0 ) then
-	  idtsti = nint(getpar('idtsti'))
-	  itmsti = nint(getpar('itmsti'))
-	  if( idtsti .le. 0 ) icall = -1
 	  if( icall .lt. 0 ) return
-	  call set_output_frequency(itmsti,idtsti,ia_out)
-	  call confop(iustab,itmsti,idtsti,1,1,'.sti')
-	  !write(6,*) 'ia_out: ',ia_out
-	  do k=1,nkn
-	    smax(k) = 0.
-	  end do
+	  call init_output('itmsti','idtsti',ia_out)
+	  call increase_output(ia_out)
+	  if( .not. has_output(ia_out) ) icall = -1
+	  if( icall .lt. 0 ) return
+	  call open_scalar_file(ia_out,1,1,'sti')
+	  smax = 0.
 	end if
+
+	if( .not. is_over_output(ia_out) ) return 
 
 	do ie=1,nel
 	  lmax = ilhv(ie)
@@ -716,12 +703,8 @@ c	itmsti = -1
 	      smax(k) = 1./smax(k)
 	    end if
 	  end do
-	  idtsti = ia_out(1)	!FIXME
-	  itmsti = ia_out(2)
-	  call confil(iustab,itmsti,idtsti,779,1,smax)
-	  do k=1,nkn
-	    smax(k) = 0.
-	  end do
+	  call write_scalar_file(ia_out,779,1,smax)
+	  smax = 0.
 	end if
 
 	icall = icall + 1

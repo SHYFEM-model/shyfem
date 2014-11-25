@@ -59,9 +59,12 @@ c writes and administers ous file
 	real getpar
 	double precision dgetpar
 	integer ifemop
+	logical has_output,next_output
 
 	integer idtout,itout
 	integer icall,nbout,nvers
+	integer ia_out(4)
+	save ia_out
 	save idtout,itout
 	save icall,nvers,nbout
 	data icall,nvers,nbout /0,2,0/
@@ -70,18 +73,14 @@ c writes and administers ous file
 	if( icall .eq. -1 ) return
 
 	if( icall .eq. 0 ) then
-		idtout=iround(getpar('idtout'))
-		itmout=iround(getpar('itmout'))
+		call init_output('itmout','idtout',ia_out)
 
-		call adjust_itmidt(itmout,idtout)
-
-		if( idtout .le. 0 ) icall = -1
+		if( .not. has_output(ia_out) ) icall = -1
 		if( icall .eq. -1 ) return
 		
-		itout = itmout
-
 		nbout = ifemop('.ous','unformatted','new')
 		if(nbout.le.0) goto 77
+		ia_out(4) = nbout
 
 		href=getpar('href')             !reference level
 		hzoff=getpar('hzoff')           !minimum depth
@@ -99,23 +98,15 @@ c writes and administers ous file
 	        if(ierr.gt.0) goto 78
 	        call ous_write_header2(nbout,ilhv,hlv,hev,ierr)
 	        if(ierr.gt.0) goto 75
-
-		!call wfous(nbout,nvers,nkn,nel,nlv,href,hzoff,descrp,ierr)
-        	!if(ierr.ne.0.) goto 78
-		!call wsous(nbout,ilhv,hlv,hev,ierr)
-        	!if(ierr.ne.0.) goto 75
 	end if
 
 	icall = icall + 1
 
-	if( it .lt. itout ) return
+	if( .not. next_output(ia_out) ) return
 
-	!call wrous(nbout,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
 	call ous_write_record(nbout,it,nlvdim,ilhv,znv,zenv
      +					,utlnv,vtlnv,ierr)
 	if(ierr.ne.0.) goto 79
-
-	itout=itout+idtout
 
 	return
    77   continue

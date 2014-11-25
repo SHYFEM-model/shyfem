@@ -153,8 +153,6 @@ c local
 	real usw		!surface friction velocity [m/s]
 	real rad		!Net shortwave flux 
 
-	logical bwind
-	save bwind
 	integer itdrag
 c functions
 	real depnode,areanode,getpar
@@ -198,8 +196,6 @@ c---------------------------------------------------------
             write(6,*) 'Use itdrag = 4 only with iheat = 6'
             stop 'error stop qflux3d: itdrag'
 	  end if
-
-	  bwind  = iheat .eq. 6 .and. itdrag .eq. 4
 	end if
 	icall = 1
 
@@ -244,9 +240,8 @@ c---------------------------------------------------------
 	    call heatgotm (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 6 ) then
 	    call get_pe_values(k,r,ev,eeff)
-	    call heatcoare(ta,p,uw,ur,cc,tws(k),r,rad,wxv(k),wyv(k),
-     +		 qsens,qlat,qlong,evap,bwind,windcd(k),tauxnv(k),
-     +		 tauynv(k))
+	    call heatcoare(ta,p,uw,ur,cc,tws(k),r,rad,qsens,qlat,
+     +                     qlong,evap,windcd(k))
 	  else if( iheat .eq. 7 ) then
 	    qsens = ta
 	    qlat  = ur

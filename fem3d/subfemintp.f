@@ -1527,11 +1527,11 @@ c global lmax and lexp are > 1
    95	continue
 	write(6,*) 'id out of range: ',id,idnext
 	call iff_print_file_info(0)
-	stop 'error stop iff_time_interpolate'
+	stop 'error stop iff_time_interpolate: internal error (1)'
    96	continue
 	write(6,*) 'file is closed... cannot interpolate anymore'
 	call iff_print_file_info(id)
-	stop 'error stop iff_time_interpolate'
+	stop 'error stop iff_time_interpolate: internal error (2)'
    97	continue
 	write(6,*) 'incompatible dimensions'
 	write(6,*) 'ldim,lexp: ',ldim,lexp
@@ -1539,10 +1539,12 @@ c global lmax and lexp are > 1
 	call iff_print_file_info(id)
 	stop 'error stop iff_time_interpolate'
    98	continue
-	write(6,*) 'file does not contain needed value'
-	write(6,*) 'itfirst,itact,itlast: ',itfirst,itact,itlast
+	write(6,*) 'file does not contain needed time value'
+	write(6,*) 'looking for time: ',itact
+	write(6,*) 'first time available: ',itfirst
+	write(6,*) 'last time available: ',itlast
 	call iff_print_file_info(id)
-	stop 'error stop iff_time_interpolate'
+	stop 'error stop iff_time_interpolatei: time out of range'
    99	continue
 	write(6,*) 'time record not in increasing sequence'
 	write(6,*) 'it,itlast: ',it,itlast

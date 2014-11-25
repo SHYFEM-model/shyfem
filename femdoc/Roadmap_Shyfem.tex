@@ -1,0 +1,119 @@
+\documentclass[12pt,draft]{article}
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+%\usepackage{pict2e}
+%\usepackage{epic}
+\usepackage{shortvrb}
+\usepackage{verbatim}
+
+\newcommand{\beq}{\begin{equation}}
+\newcommand{\eeq}{\end{equation}}
+\newcommand{\beqm}{\begin{multline}}
+\newcommand{\eeqm}{\end{multline}}
+\newcommand{\shyfem}{SHYFEM}
+
+\newcommand{\Unod}{U}
+\newcommand{\Vnod}{V}
+\newcommand{\znod}{\zeta}
+\newcommand{\Unew}{U^n}
+\newcommand{\Vnew}{V^n}
+\newcommand{\znew}{\zeta^n}
+\newcommand{\Uold}{U}
+\newcommand{\Vold}{V}
+\newcommand{\zold}{\zeta}
+\newcommand{\Udel}{\Delta U}
+\newcommand{\Vdel}{\Delta V}
+\newcommand{\zdel}{\Delta \zeta}
+
+\newcommand{\UV}{\mathbf{U}}
+\newcommand{\UVnew}{\mathbf{U}^n}
+\newcommand{\UVdel}{\mathbf{\Delta U}}
+\newcommand{\UVhat}{\hat{\mathbf{U}}}
+\newcommand{\UVhatdel}{\mathbf{\Delta \hat{U}}}
+\newcommand{\HH}{\mathbf{H}}
+\newcommand{\Amat}{\mathbf{\bar{A}}}
+\newcommand{\AmatI}{\mathbf{\bar{A}}^{-1}}
+\newcommand{\FF}{\mathbf{F}}
+\newcommand{\II}{\mathbf{I}}
+\newcommand{\Ipart}{\mathbf{\partial I}}
+
+\newcommand{\dt}{\Delta t}
+\newcommand{\dz}{\Delta z}
+
+\newcommand{\Ftilde}{\tilde{F}}
+\newcommand{\Ftx}[1]{\tilde{F}^x_{#1}}
+\newcommand{\Fty}[1]{\tilde{F}^y_{#1}}
+
+\newcommand{\delx}{\partial_x}
+\newcommand{\dely}{\partial_y}
+
+\newcommand{\dpartt}[1]{\frac{\partial #1}{\partial t}}
+\newcommand{\dpartx}[1]{\frac{\partial #1}{\partial x}}
+\newcommand{\dparty}[1]{\frac{\partial #1}{\partial y}}
+\newcommand{\dpartz}[1]{\frac{\partial #1}{\partial z}}
+\newcommand{\dpartzz}[1]{\frac{\partial^2 #1}{\partial z^2}}
+
+\newcounter{cms} % nel preambolo
+
+\MakeShortVerb{\|}
+
+\title{Roadmap \shyfem{}}
+\author{The \shyfem{} Team}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+
+This short document describes the roadmap for the next \shyfem{}
+releases.
+
+\section{Long term changes}
+
+The new versions of \shyfem{} will have the following features:
+\begin{description}
+\item[7.1] finish time management, allow for fractional time steps,
+allow specifying dates with readable strings
+\item[7.2] substitute all common blocks with modules, make all
+arrays allocatable, no dimensions have to be specified anymore
+\item[7.3] parallelization (domain decomposition)
+\item[8.0] final version with all changes integrated
+\end{description}
+
+\section{Other major enhancements}
+
+These are enhancements that will be implemented between
+the main releases:
+\begin{itemize}
+\item Lagrangian 3D
+\item non-hydrostatic model
+\item wetting and drying with sigma layers
+\end{itemize}
+
+\section {Minor enhancements}
+
+These are enhancements that can be implemented with 
+relatively little effort:
+\begin{itemize}
+\item integrate connectivity and larvae module
+\item lagrangian with lat/lon coordinates
+\item bring offline module up to date
+\item fem-file for regular 3D fields
+\item fem-file for sparse points
+\item optimal interpolation (nudging)
+\item extract time series from fem-file
+\item plot profiles from nos and fem-files
+\item make the new extra section standard
+\end{itemize}
+
+
+
+
+
+
+
+\end{document}
+
+is regular 2D meteo fem file plottable?

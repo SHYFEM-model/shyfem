@@ -166,13 +166,13 @@ c The default for the time step of output of the files is 0 which
 c means that no output file is written. If the time step of the
 c output files is equal to the time step of the simulation then
 c at every time step the output file is written. The default start time
-c of the output is 0.
+c of the output is |itanf|, the start of the simulation.
 c
 c |idtout|, |itmout|	Time step and start time for writing to file OUT,
 c			the file containing the general hydrodynamic results.
 
 	call addpar('idtout',0.)
-	call addpar('itmout',0.)
+	call addpar('itmout',-1.)
 
 c |idtext|, |itmext|	Time step and start time for writing to file EXT,
 c			the file containing hydrodynamic data of extra points.
@@ -181,15 +181,21 @@ c			to this file are given in section |extra| of
 c			the parameter file.
 
 	call addpar('idtext',0.)
-	call addpar('itmext',0.)
+	call addpar('itmext',-1.)
 
-c |idtrst|, |itmrst|	Time step and start time for writing the restart
+c |idtrst|		Time step for writing the restart
 c			file (extension RST). No restart file is written
 c			with |idtrst| equal to 0. A negative value
 c			is also possible for the time step. In this case
-c			the used time step is |-idtrst|, but the file is
+c			the time step used is |-idtrst|, but the file is
 c			overwritten every time. It therefore contains 
-c			always only the last written restart record. (Default 0)
+c			always only the last written restart record. The
+c			special value of |idtrst = -1| will write only the
+c			last time step of the simulation in the restart file. 
+c			This is useful if you want to start another
+c			simulation from the last output. (Default 0)
+c |itmrst|		Start time for writing the restart file. If
+c			not given it is the beginning of the simulation.
 c |itrst|		Time to use for the restart. If a restart
 c			is performed, then the file name containing
 c			the restart data has to be specified in |restrt|
@@ -208,11 +214,11 @@ c			found in the file it will exit with error. If
 c			it is 2 it will initialize all values from the
 c			first time record after |itrst|. Therefore, the
 c			value of 2 will guarantee that the program will not
-c			abort and continue running, but it might be
-c			not doing what you want. (Default 0)
+c			abort and continue running, but it might not
+c			be doing what you intended. (Default 0)
 
 	call addpar('idtrst',0.)
-	call addpar('itmrst',0.)
+	call addpar('itmrst',-1.)
 	call addpar('itrst',0.)
 	call addpar('ityrst',0.)
 
@@ -220,14 +226,14 @@ c |idtres|, |itmres|	Time step and start time for writing to file RES,
 c			the file containing residual hydrodynamic data.
 
 	call addpar('idtres',0.)
-	call addpar('itmres',0.)
+	call addpar('itmres',-1.)
 
 c |idtrms|, |itmrms|	Time step and start time for writing to file RMS,
 c			the file containing hydrodynamic data of root mean
 c			square velocities.
 
 	call addpar('idtrms',0.)
-	call addpar('itmrms',0.)
+	call addpar('itmrms',-1.)
 
 c |idtflx|, |itmflx|	Time step and start time for writing to file FLX,
 c			the file containing discharge data through defined
@@ -237,7 +243,7 @@ c			are given in section |flux| of
 c			the parameter file.
 
 	call addpar('idtflx',0.)
-	call addpar('itmflx',0.)
+	call addpar('itmflx',-1.)
 
 c |idtvol|, |itmvol|	Time step and start time for writing to file VOL,
 c			the file containing volume information of areas
@@ -247,7 +253,7 @@ c			are given in section |volume| of
 c			the parameter file.
 
 	call addpar('idtvol',0.)
-	call addpar('itmvol',0.)
+	call addpar('itmvol',-1.)
 
 c |netcdf|		This parameter chooses output in NetCDF format 
 c			if |netcdf| is 1, else the format is unformatted
@@ -993,7 +999,7 @@ c BFM ECOLOGICAL MODEL CALL
 	call addpar('ibfm',0.)
 	call addpar('ibtanf',0.)
 	call addpar('ibtend',0.)
-	call addpar('itmbfm',0.)
+	call addpar('itmbfm',-1.)
 	call addpar('idtbfm',0.)
 	call addpar('bligth',1.) !light flag=1 max/min light W/m**2 in nml file
 
@@ -1268,7 +1274,8 @@ c			(Default is whole area)
 	call addpar('y1',0.)		!dimension of plot
 
 c The next values give the position, where the legend (scale bar and
-c true north) is plotted.
+c true north) is plotted. This legend will only be plotted if
+c the coordinates are not geographical (lat/lon) but cartesian.
 
 c |x0leg, y0leg|	Lower left corner of the area
 c			where the legend is plotted.
@@ -1279,6 +1286,21 @@ c			where the legend (north and scale) is plotted.
 	call addpar('y0leg',0.)		!dimension of legend
 	call addpar('x1leg',0.)		!dimension of legend
 	call addpar('y1leg',0.)		!dimension of legend
+
+c |lblank|		The legend is plotted over a white rectangle.
+c			Sometimes this blanking is not desireable.
+c			If you do not want to have a white box below the
+c			legend set |lblank| to 0. (Default 1)
+
+	call addpar('lblank',1.)
+
+c |cislnd|		It is possible to plot all islands in grey color.
+c			Setting |cislnd| to a value between 0 (black) and 
+c			1 (white) will achieve this. A negative value
+c			will not fill islands with grey color.
+c			(Default -1)
+
+	call addpar('cislnd',-1.)	!plot also outer island: 2 <= c <= 3
 
 c |dxygrd|		Grid size if the results are interpolated on
 c			a regular grid. A value of 0 does
@@ -1446,6 +1468,13 @@ c			color bar is plotted.
 	call addpar('x1col',0.)		!dimension of color bar
 	call addpar('y1col',0.)		!dimension of color bar
 
+c |cblank|		The color bar is plotted over a white rectangle.
+c			Sometimes this blanking is not desireable.
+c			If you do not want to have a white box below the
+c			legend set |cblank| to 0. (Default 1)
+
+	call addpar('cblank',1.)
+
 c |faccol|	Factor for the values that are written to the 
 c		color bar legend. This enables you, e.g., to give water level
 c		results in mm (|faccol = 1000|). (Default 1)
@@ -1580,6 +1609,13 @@ c			reference arrow is plotted.
 	call addpar('y0arr',0.)		!dimension of color bar
 	call addpar('x1arr',0.)		!dimension of color bar
 	call addpar('y1arr',0.)		!dimension of color bar
+
+c |ablank|		The arrow legend is plotted over a white rectangle.
+c			Sometimes this blanking is not desireable.
+c			If you do not want to have a white box below the
+c			legend set |ablank| to 0. (Default 1)
+
+	call addpar('ablank',1.)
 
 c |facvel|		Factor for the value that is written to the 
 c			arrow legend for the velocity.

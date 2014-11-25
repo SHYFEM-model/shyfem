@@ -15,7 +15,6 @@ c subroutine frame(mode)		plots frame
 c subroutine basmima(mode)		computes min/max of basin
 c subroutine setbas(x0,y0,x1,y1)	sets min/max of basin to plot
 c subroutine getbas(x0,y0,x1,y1)	gets min/max of basin to plot
-c subroutine sbline( bndfile )		stores name of boundary file
 c subroutine boundline			plots boundary line for lagoon
 c
 c subroutine reggrid(ngrid,dist,gray)	plots regular grid
@@ -74,10 +73,7 @@ c internal initialization
 
 	real xmin,ymin,xmax,ymax
 	common /bamima/ xmin,ymin,xmax,ymax
-	character*80 bndfil
-	common /bndfil/bndfil
 	save /bamima/
-	save /bndfil/
 
 	logical binit
 	save binit
@@ -89,7 +85,6 @@ c internal initialization
 
 	call basmima(0)		!compute exact dimensions as default
 	call bastlscale		!computes typical length scale
-	bndfil = " "
 
 	end
 
@@ -97,19 +92,18 @@ c**************************************************************
 
 	subroutine bash(mode)
 
-c plots basin (shell)
-c
-c mode	
-c	0: only scaling  
-c	1: net  
-c	2: boundary  
-c	3: net in gray (for bathymetry - use bgray)
-c	4: net in gray (for scalar and velocities - use bsgray)
-c
-c bash MUST be called first with mode == 0, and then
-c with the desired mode
-c
-c normally bash(2) is called as last call after plotting
+! plots basin (shell)
+!
+! mode	
+!	0: only scaling  
+!	1: net  
+!	2: boundary and legend
+!	3: net in gray (for bathymetry - use bgray)
+!	4: net in gray (for scalar and velocities - use bsgray)
+!
+! call first with mode == 0 (scaling9
+! then call with desired mode
+! must be called with mode == 2 before closing the plot
 
 	implicit none
 
@@ -118,15 +112,24 @@ c normally bash(2) is called as last call after plotting
 	real x0,y0,x1,y1
 	real x0leg,y0leg,x1leg,y1leg
 	real dxygrd,x,y
+	real cgrey
 	character*80 bndlin,metpnt
 	real getpar
 	logical inboxdim
         logical is_spherical
 	logical is_box_given
 
+!--------------------------------------
+! initializing
+!--------------------------------------
+
+	cgrey = getpar('cislnd')	!grey scale for islands
+
 	call basinit
 
-c if mode == 0 -> do scaling
+!--------------------------------------
+! if mode == 0 -> do scaling
+!--------------------------------------
 
 	if( mode .eq. 0 ) then
 
@@ -137,7 +140,9 @@ c if mode == 0 -> do scaling
 
 	  call getbas(x0,y0,x1,y1)		!bug fix 2.3.2005
 
-c	  prepare regular grid
+	  !--------------------------------------
+	  ! prepare regular grid
+	  !--------------------------------------
 
 	  dxygrd = getpar('dxygrd')
 	  x = x0 + dxygrd/2.
@@ -147,32 +152,51 @@ c	  prepare regular grid
 	  call annote		!annotation
 	  call basin(0)		!scaling
 	  call label_reg_grid
+	  call plot_islands(cgrey)
 
 	  return
 
 	end if
 
-c frame
+	! frame -> old position, now moved down, see if it workes, 19.11.2014
+	!call frame(0)
+	!call plot_reg_grid
 
-	call frame(0)
-	call plot_reg_grid
-
-c plot
+!--------------------------------------
+! plot
+!--------------------------------------
 
         call qcomm('Plotting basin')
         call basin(mode)
 
-c boundary line
+!--------------------------------------
+! end of plot - now only labeling
+!--------------------------------------
 
-	call getfnm('bndlin',bndlin)
-	if( bndlin .ne. " " ) call sbline(bndlin)
+	if( mode .ne. 2 ) return
+
+	!--------------------------------------
+	! boundary line and islands
+	!--------------------------------------
+
 	call boundline
 
-c user defined legend
+	!--------------------------------------
+	! frame
+	!--------------------------------------
+
+	call frame(0)
+	call plot_reg_grid
+
+	!--------------------------------------
+	! user defined legend
+	!--------------------------------------
 
 	call legplo
 
-c legend (north and scale)
+	!--------------------------------------
+	! legend (north and scale)
+	!--------------------------------------
 
 	!if( inboxdim('leg',x0,y0,x1,y1) ) then	!write legend
 	if( is_box_given('leg') ) then	!write legend
@@ -187,16 +211,18 @@ c legend (north and scale)
           end if
 	end if
 
-c special output
+	!--------------------------------------
+	! special output
+	!--------------------------------------
 
-	if( mode .eq. 2 ) then		!only after plot
-	  call getfnm('metpnt',metpnt)
-	  if( metpnt .ne. ' ' ) then
-	    call plot_meteo_points(metpnt)
-	  end if
+	call getfnm('metpnt',metpnt)
+	if( metpnt .ne. ' ' ) then
+	  call plot_meteo_points(metpnt)
 	end if
 
-c end of routine
+!--------------------------------------
+! end of routine
+!--------------------------------------
 
 	end
 
@@ -238,57 +264,47 @@ c	4: net in gray (for scalar and velocities - use bsgray)
 
 	call basinit
 
-	if( mode .eq. 0 ) then
+	if( mode .eq. 0 ) then				!scaling
 	  call qworld(xmin,ymin,xmax,ymax)
 	  call qrcfy
 	  call handle_spherical
 	  call bpixel
-	end if
-
-	if( mode .eq. 0 ) return
-
-	if( mode .eq. 1 .or. mode .ge. 3 ) then		!net
-
-	call qgray(0.)
-	if( mode .eq. 3 ) then
-	  gray = getpar('bgray')
-	  call qgray(gray)
-	end if
-	if( mode .eq. 4 ) then
-	  gray = getpar('bsgray')
-	  if( gray .lt. 0. ) return	!do not plot net
-	  call qgray(gray)
-	end if
-
-	do ie=1,nel
-	  kn = nen3v(3,ie)
-	  call qmove(xgv(kn),ygv(kn))
-	  do ii=1,3
-	    kn = nen3v(ii,ie)
-	    call qplot(xgv(kn),ygv(kn))
+	else if( mode .eq. 2 ) then			!plot boundary
+	  call qgray(0.)
+	  do k=1,nkn
+	    if( kantv(1,k) .ne. 0 ) then
+	      kn=kantv(1,k)
+	      if( kn .gt. k ) call qline(xgv(k),ygv(k),xgv(kn),ygv(kn))
+	      kn=kantv(2,k)
+	      if( kn .gt. k ) call qline(xgv(k),ygv(k),xgv(kn),ygv(kn))
+	    end if
 	  end do
-	end do
-
-	call qgray(0.)
-
-	end if						!boundary
-
-	if( mode .eq. 2 .or. mode .eq. 3 ) then
-
-	call qgray(0.)
-
-	do k=1,nkn
-	  if( kantv(1,k) .ne. 0 ) then
-	    kn=kantv(1,k)
-	    if( kn .gt. k ) call qline(xgv(k),ygv(k),xgv(kn),ygv(kn))
-	    kn=kantv(2,k)
-	    if( kn .gt. k ) call qline(xgv(k),ygv(k),xgv(kn),ygv(kn))
+	else if( mode .gt. 0 .and. mode .le. 4 ) then	!plot grid
+	  call qgray(0.)
+	  if( mode .eq. 3 ) then
+	    gray = getpar('bgray')
+	    call qgray(gray)
 	  end if
-	end do
+	  if( mode .eq. 4 ) then
+	    gray = getpar('bsgray')
+	    if( gray .lt. 0. ) return	!do not plot net
+	    call qgray(gray)
+	  end if
 
+	  do ie=1,nel
+	    kn = nen3v(3,ie)
+	    call qmove(xgv(kn),ygv(kn))
+	    do ii=1,3
+	      kn = nen3v(ii,ie)
+	      call qplot(xgv(kn),ygv(kn))
+	    end do
+	  end do
+	else
+	  write(6,*) 'mode = ',mode
+	  stop 'error stop basin: internal error'
 	end if
 
-c	call boundline
+	call qgray(0.)
 
 	end
 
@@ -414,7 +430,7 @@ c*****************************************************************
 
 c plots frame
 c
-c 0: just box around plot    1: geographical coordinates
+c 0: just box around plot (only mode allowed)
 
 	implicit none
 
@@ -446,41 +462,7 @@ c 0: just box around plot    1: geographical coordinates
 
 	if( mode .eq. 0 ) return
 
-c========================
-	plon0 = 16.
-	plat0 = 41.
-	dlon = 1.
-	dlat = 1.
-c========================
-
-	call mercoo(1,alonmin,alatmin,pxareg,pyareg,1,plat0,plon0,100.)
-	call mercoo(1,alonmax,alatmax,pxereg,pyereg,1,plat0,plon0,100.)
-
-	iaux=alonmin
-	alonmin=iaux
-	iaux=alatmin
-	alatmin=iaux
-
-	call qgray(0.5)
-
-	alon=alonmin
-	alat=alatmin
-
-	do while( alon .le. alonmax )
-	  call mercoo(0,alon,alat,x,y,1,plat0,plon0,100.)
-	  call qline(x,pyareg,x,pyereg)
-	  alon = alon + dlon
-	end do
-	  
-	do while( alat .le. alatmax )
-	  call mercoo(0,alon,alat,x,y,1,plat0,plon0,100.)
-	  call qline(pxareg,y,pxereg,y)
-	  alat = alat + dlat
-	end do
-
-	call qgray(0.)
-
-	return
+	stop 'error stop frame: only mode == 0 is allowed'
 	end
 
 c*************************************************************
@@ -581,43 +563,26 @@ c gets min/max of basin to plot
 
 c*************************************************************
 
-	subroutine sbline( bndfile )
-
-c stores name of boundary file
-
-	implicit none
-
-	character*(*) bndfile
-
-	character*80 bndfil
-	common /bndfil/bndfil
-
-	bndfil = bndfile
-
-	end
-
-c*************************************************************
-
 	subroutine boundline
 
 c plots boundary line for lagoon
 
 	implicit none
 
-	character*80 bndfil
-	common /bndfil/bndfil
+	character*80 bndlin
 
 	integer n
 	real x,y
 
 	call basinit
 
-	if( bndfil .eq. " " ) return
+	call getfnm('bndlin',bndlin)
+	if( bndlin .eq. " " ) return
 
 	call qcomm('plotting boundary line')
 	call qgray(0.)
 
-	open(1,file=bndfil,status='old',err=99)
+	open(1,file=bndlin,status='old',err=99)
     1	continue
 	read(1,*,end=2) x,y,n
 	if( n .eq. 1 ) then
@@ -632,7 +597,7 @@ c plots boundary line for lagoon
 	return
    99	continue
 	write(6,*) 'error opening boundary file:'
-	write(6,'(a60)') bndfil
+	write(6,'(a60)') bndlin
 	stop 'error stop boundline'
 	end
 
@@ -1034,6 +999,8 @@ c computes number of fractional digits of real r
 	end
 
 c**************************************************************
+c**************************************************************
+c**************************************************************
 
 	subroutine spherical_fact(fact,afact)
 
@@ -1091,6 +1058,8 @@ c handles spherical coordinates
 
 	end
 
+c**************************************************************
+c**************************************************************
 c**************************************************************
 
 	subroutine adjust_reg_grid_spacing(dreg,imicro)
@@ -1200,6 +1169,7 @@ c handles labeling of regular grid
 
 	integer nx,ny,n,i,nc
 	integer imicro
+	integer nxymax
 	real reggrd
 	real xvmin,yvmin,xvmax,yvmax
 	real xdmin,ydmin,xdmax,ydmax
@@ -1222,6 +1192,7 @@ c handles labeling of regular grid
 
 	size = 0.5	!leave this space around plot for labeling
 	ftext = 2.8	!factor to shift text vertically
+	nxymax = 50	!not more than these number of reg grids
 
 	reggrd = getpar('reggrd')
 	imicro = nint(getpar('regdst'))
@@ -1261,6 +1232,8 @@ c here labeling
         y0 = ydmin
         dx = dist
         dy = dist
+
+	if( nx .gt. nxymax .or. ny .gt. nxymax ) goto 99
 
 	call qcomm('labeling regular grid')
 	call qfont('Times-Roman')
@@ -1302,6 +1275,10 @@ c here labeling
 
 	write(6,*) 'ending label_reg_grid...'
 
+	return
+   99	continue
+	write(6,*) 'nx,ny: ',nx,ny
+	stop 'error stop label_reg_grid: nx,ny too high'
 	end
 
 c**************************************************************
@@ -1577,6 +1554,165 @@ c**************************************************************
 	call qline(x-dx,y-dy,x+dx,y+dy)
 	call qline(x-dx,y+dx,x+dx,y-dx)
 	
+	end
+
+c**************************************************************
+
+	subroutine plot_islands(cgrey)
+
+c plots islands grey
+
+	implicit none
+
+	real cgrey	!color
+	
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+
+	integer nen3v(3,1)
+	common /nen3v/nen3v
+	integer kantv(2,1)
+	common /kantv/kantv
+	real xgv(1), ygv(1)
+	common /xgv/xgv, /ygv/ygv
+
+	real xmin,ymin,xmax,ymax
+	common /bamima/ xmin,ymin,xmax,ymax
+
+	logical bouter
+	integer k,kstart,kk,kn,ko
+	integer n,nis
+	real x0,y0,area,cg
+	real xa(nkn),ya(nkn)
+
+	real areapoly
+
+	if( cgrey < 0 ) return
+
+	cg = cgrey
+	bouter = .false.		! plot external island
+	if( cg >= 2 ) then
+	  cg = cg - 2
+	  bouter = .true.
+	end if
+
+	call qgray(cg)
+
+	x0 = 0.5*(xmax-xmin)
+	y0 = 0.5*(ymax-ymin)
+
+	nis = 0
+
+	do k=1,nkn
+	  if( kantv(1,k) > 0 ) then
+	    kstart = k
+	    kk = k
+	    n = 0
+	    nis = nis + 1
+	    do
+	      kn = kantv(1,kk)
+	      kantv(1,kk) = -kantv(1,kk)
+	      ko = kk
+	      kk = kn
+	      if( kn == 0 ) stop 'error stop plot_islands: internal error'
+	      if( kn < 0 ) exit
+	      n = n + 1
+	      xa(n) = xgv(kk)
+	      ya(n) = ygv(kk)
+	    end do
+	    area = areapoly(n,xa,ya)
+	    if( kstart /= ko ) then
+		stop 'error stop plot_islands: internal error'
+	    end if
+	    !write(69,*) 'debug: ',kk,kn,ko,kstart
+	    !write(69,*) 'island found: ',nis,n,area
+	    write(6,*) 'island found: ',nis,n,area
+	    if( area < 0 ) then	!real island
+	      call qafill(n,xa,ya)
+	    else if( bouter ) then
+	      call plot_outer(n,xa,ya)
+	    end if
+	  end if
+	end do
+
+	do k=1,nkn
+	  if( kantv(1,k) < 0 ) kantv(1,k) = -kantv(1,k)
+	  if( kantv(2,k) < 0 ) kantv(2,k) = -kantv(2,k)
+	end do
+
+	call qgray(0.)
+
+	end
+
+c**************************************************************
+
+	subroutine plot_outer(n,xa,ya)
+
+c plots outer island
+
+	implicit none
+
+	integer n
+	real xa(n),ya(n)
+
+	real xmin,ymin,xmax,ymax
+	common /bamima/ xmin,ymin,xmax,ymax
+
+	integer i,ilow
+	real dx,dy,xlow,ylow
+	real xn(n+7),yn(n+7)
+
+	dx = xmax - xmin
+	dy = ymax - ymin
+
+	ilow = 0
+	ylow = ya(1) + 1.
+	do i=1,n
+	  if( ya(i) < ylow ) then
+	    ylow = ya(i)
+	    ilow = i
+	  end if
+	end do
+	xlow = xa(ilow)
+
+	do i=1,ilow
+	  xn(i) = xa(i)
+	  yn(i) = ya(i)
+	end do
+	
+	i = ilow
+
+	i = i + 1
+	xn(i) = xlow
+	yn(i) = ymin - dy
+
+	i = i + 1
+	xn(i) = xmin - dx
+	yn(i) = ymin - dy
+
+	i = i + 1
+	xn(i) = xmin - dx
+	yn(i) = ymax + dy
+
+	i = i + 1
+	xn(i) = xmax + dx
+	yn(i) = ymax + dy
+
+	i = i + 1
+	xn(i) = xmax + dx
+	yn(i) = ymin - dy
+
+	i = i + 1
+	xn(i) = xlow
+	yn(i) = ymin - dy
+
+	do i=ilow,n
+	  xn(i+7) = xa(i)
+	  yn(i+7) = ya(i)
+	end do
+
+	call qafill(n+6,xn,yn)
+
 	end
 
 c**************************************************************

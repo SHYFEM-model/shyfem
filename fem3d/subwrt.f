@@ -43,14 +43,13 @@ c------------------------------------------------------------
         implicit none
 
         include 'param.h'
+        include 'femtime.h'
 
         character*80 descrp
         common /descrp/ descrp
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
 	integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -72,6 +71,7 @@ c------------------------------------------------------------
 
 	integer iaout,itmin,itmax,idtwrt
 	integer iret,istir,iadj,ilog
+	integer iconz
 	real c0
 	real ctop,ccut
 	real percmin
@@ -90,9 +90,9 @@ c------------------------------------------------------------
 
 	integer ifemop
 
-	integer k,nin
-	integer iu,nb3,iuf
-	save iu,nb3,iuf
+	integer k,nin,nvar
+	integer iu,iuf
+	save iu,iuf
 	integer nrepl
 	save nrepl
 	integer it0
@@ -101,8 +101,10 @@ c------------------------------------------------------------
 	save tacu
         double precision mass0
         save mass0
+	integer ia_out(4)
+	save ia_out
 
-        real getpar
+        double precision dgetpar
 
         integer icall
         save icall
@@ -125,44 +127,50 @@ c------------------------------------------------------------
         if( icall .eq. 0 ) then
           write(6,*) 'Initialization of WRT routine renewal time'
 
-          idtwrt = nint(getpar('idtwrt'))
+	  call convert_time('idtwrt',idtwrt)
 
-	  if( idtwrt .lt. 0 ) then
+	  call convert_date('itmin',itmin)
+	  call convert_date('itmax',itmax)
+	  if( itmin .eq. -1 ) itmin = itanf
+	  if( itmax .eq. -1 ) itmax = itend
+
+	  if( idtwrt < 0 ) then
 	    icall = -1
             write(6,*) 'No renewal time computation'
 	    return
 	  end if
 
-	  iaout = nint(getpar('iaout'))
-	  itmin = nint(getpar('itmin'))
-	  itmax = nint(getpar('itmax'))
-	  c0 = getpar('c0')
-	  percmin = getpar('percmin')
-	  iret = nint(getpar('iret'))
+	  iconz = nint(dgetpar('iconz'))
+	  if( iconz .ne. 1 ) then
+	    write(6,*) 'for renewal time computations the generic'
+	    write(6,*) 'concentration must be computed (iconz=1)'
+	    stop 'error stop renewal_time: iconz'
+	  end if
+
+	  iaout = nint(dgetpar('iaout'))
+	  c0 = dgetpar('c0')
+	  percmin = dgetpar('percmin')
+	  iret = nint(dgetpar('iret'))
 	  bnoret = iret.eq.0
-	  istir = nint(getpar('istir'))
+	  istir = nint(dgetpar('istir'))
 	  bstir = istir.eq.1
-	  iadj = nint(getpar('iadj'))
+	  iadj = nint(dgetpar('iadj'))
 	  badj = iadj.eq.1
-	  ilog = nint(getpar('ilog'))
+	  ilog = nint(dgetpar('ilog'))
 	  blog = ilog.eq.1
-	  ctop = getpar('ctop')
-	  ccut = getpar('ccut')
+	  ctop = dgetpar('ctop')
+	  ccut = dgetpar('ccut')
 
 	  iu = ifemop('.jas','formatted','new')
 	  iuf = ifemop('.frq','formatted','new')
-	  nb3 = ifemop('.wrt','unform','new')
-	  if( nb3 .le. 0 ) stop 'error stop open_nos_file: opening file'
-	  nvers = 3
-	  title = descrp
-	  call whnos(nb3,nvers,nkn,nel,nlv,1,ilhkv,hlv,hev,title)
+
+	  nvar = 1
+	  call open_scalar_file(ia_out,nlv,nvar,'wrt')
 
 	  nrepl = -1				!must still initialize
         end if
 
         icall = icall + 1
-	if( itmin .eq. -1 ) itmin = itanf
-	if( itmax .eq. -1 ) itmax = itend
 	
 c------------------------------------------------------------
 c is it time to run the routine?
@@ -174,6 +182,11 @@ c------------------------------------------------------------
 c------------------------------------------------------------
 c decide on what to do
 c------------------------------------------------------------
+
+c binit		is initial call
+c breset	resets concentration
+c bcompute	computes residence times and writes to file
+c belab		elaborates (accumulates) concentrations
 
 	binit = .false.
 	if( nrepl .lt. 0 ) then
@@ -233,12 +246,12 @@ c------------------------------------------------------------
        	  write(6,*) 'resetting concentrations for renewal time ',it
 
 c------------------------------------------------------------
-c reset variables to compute renewal time
+c reset variables to compute renewal time (and write to file)
 c------------------------------------------------------------
 
 	  if( bcompute ) then	!compute new renewal time
 	    rcorrect = 0.	!do not used global correction
-	    call acu_comp(nb3,blog,badj,it,c0,ccut,rcorrect
+	    call acu_comp(ia_out,blog,badj,it,c0,ccut,rcorrect
      +				,tacu,cvacu
      +				,cnv,cvres3)
 	    call acu_freq(iuf,it,ctop,cvres3,volacu)
@@ -266,7 +279,7 @@ c------------------------------------------------------------
 	  call wrt_massvolconz(cnv,v1v,vol,mass,volume)
 	  mass0 = mass
 
-	  call wrt_restime_summary(-iuf,it,it0,mass,mass0,rcorrect)	!reset
+	  call wrt_restime_summary(-iu,it,it0,mass,mass0,rcorrect)	!reset
 	end if
 
 c------------------------------------------------------------
@@ -547,7 +560,7 @@ c***************************************************************
 
 c***************************************************************
 
-	subroutine acu_comp(nb3,blog,badj,it,c0,ccut,rcorrect
+	subroutine acu_comp(ia_out,blog,badj,it,c0,ccut,rcorrect
      +				,tacu,cvacu
      +				,cnv,cvres3)
 
@@ -557,7 +570,7 @@ c compute renewal time and write to file
 
 	include 'param.h'
 
-	integer nb3
+	integer ia_out(4)
 	logical blog,badj
 	integer it
 	real c0
@@ -620,7 +633,7 @@ c write to file
 c---------------------------------------------------------------
 
 	ivar = 99
-        call wrnos(nb3,it,ivar,nlvdim,ilhkv,cvres3,ierr)
+	call write_scalar_file(ia_out,ivar,nlvdim,cvres3)
 
 c---------------------------------------------------------------
 c end of routine

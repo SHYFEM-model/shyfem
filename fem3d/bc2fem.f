@@ -171,7 +171,7 @@ c*****************************************************************
 	  if( bhlv ) read(1,*) (hlv(l),l=1,lmax)
 	  read(1,*) ((data(l,i),l=1,lmax),i=1,n)
 
-	  call convert_time(bdate0,it,dtime0,datetime,dtime)
+	  call convert_date_time(bdate0,it,dtime0,datetime,dtime)
 
 	  call fem_file_write_header(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,nlvdim
@@ -331,7 +331,7 @@ c*****************************************************************
 	    if( j .ne. i ) goto 95
 	  end do
 
-	  call convert_time(bdate0,it,dtime0,datetime,dtime)
+	  call convert_date_time(bdate0,it,dtime0,datetime,dtime)
 
 	  call fem_file_write_header(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,nlvdim
@@ -487,7 +487,7 @@ c*****************************************************************
 
 	  itend = it
 
-	  call convert_time(bdate0,it,dtime0,datetime,dtime)
+	  call convert_date_time(bdate0,it,dtime0,datetime,dtime)
 
 	  call fem_file_write_header(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,nlvdim
@@ -644,7 +644,7 @@ c*****************************************************************
 
 	  itend = it
 
-	  call convert_time(bdate0,it,dtime0,datetime,dtime)
+	  call convert_date_time(bdate0,it,dtime0,datetime,dtime)
 
 	  call fem_file_write_header(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,nlvdim
@@ -860,7 +860,7 @@ c*****************************************************************
 	    end do
           end if
 
-	  call convert_time(bdate0,it,dtime0,datetime,dtime)
+	  call convert_date_time(bdate0,it,dtime0,datetime,dtime)
 
 	  call fem_file_write_header(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,nlvdim
@@ -1116,7 +1116,7 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine convert_time(bdate0,it,dtime0,datetime,dtime)
+	subroutine convert_date_time(bdate0,it,dtime0,datetime,dtime)
 
 c converts datetime into actual time
 

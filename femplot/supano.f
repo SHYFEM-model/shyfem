@@ -465,10 +465,12 @@ c creates legend (north wheel and scale bar)
 
 	integer iround,istell
 	real rnext
+	real getpar
 
 	logical bblank
 
-	bblank = .true.
+	bblank = .true.		!blanking for scale legend
+	bblank = nint(getpar('lblank')) > 0
 
 	!write(6,*) '===================== legend =============='
 
@@ -637,7 +639,7 @@ c color
 	logical bdebug
 	integer iround,isoget,ialfa,ideci
 	real getcolval
-c	real getpar
+	real getpar
 
 	call qcomm('Plotting colorbar')
         call qfont('Times-Roman')
@@ -645,7 +647,8 @@ c	real getpar
 
 	bdebug = .true.
 	bdebug = .false.
-	bblank = .true.
+	bblank = .true.		!blanking for color bar
+	bblank = nint(getpar('cblank')) > 0
 	!bhoriz = .false.
 	!bhoriz = .true.
 	brotate = .true.	!rotate numbers for vertical color bar
@@ -669,6 +672,8 @@ c determine min/max
 	end if
 
 c position of colorbar on plot (colorbar is a little smaller than box)
+c (x0,y0) and (x1,y1) are the extremes of the color bar
+c dx,dy is width of box
 
 	if( bhoriz ) then
 	  xperc = 0.10
@@ -721,7 +726,7 @@ c write legend
 	dytick = 0.1*ycm
 
 	if( bhoriz ) then
-	    call qtxtr(0.)
+	  call qtxtr(0.)
 	  call qtxtcr(0.,+2.5)
 	else
 	  if( brotate ) then
@@ -1481,10 +1486,12 @@ c creates legend for velocity arrow and plots arrow
 
 	integer iround,istell,ialfa
 	real rnext
+	real getpar
 
 	logical bblank,bdebug
 
-	bblank = .true.
+	bblank = .true.		!blanking for velocity arrow
+	bblank = nint(getpar('ablank')) > 0
 	bdebug = .true.
 	bdebug = .false.
 
@@ -1586,7 +1593,7 @@ c ivel = 4      waves
 	fact = getpar('facvel')
 	arrlen = getpar('arrvel')
 	sclvel = getpar('sclvel')
-	ndec = iround(getpar('ndcvel'))
+	ndec = nint(getpar('ndcvel'))
 	call getfnm('legvel',title)
 
 	if( ivel .eq. 2 ) then

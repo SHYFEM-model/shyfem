@@ -252,6 +252,7 @@ c administers writing of flux data
 
 	integer itend
 	integer j,i,l,lmax,nlmax,ivar,nvers
+	integer idtflx
 	real az,azpar,rr
 
 	real rhov(nlvdim,nkndim)
@@ -266,6 +267,7 @@ c administers writing of flux data
 	integer ifemop
 	real getpar
 	double precision dgetpar
+	logical has_output,next_output,is_over_output
 
 	real fluxes(0:nlvdim,3,nscflxdim)
 
@@ -281,8 +283,8 @@ c administers writing of flux data
         integer nrm,nrs,nrt,nrc
 	save nrm,nrs,nrt,nrc
 
-        integer idtflx,itflx,itmflx
-        save idtflx,itflx,itmflx
+        integer ia_out(4)
+        save ia_out
         integer nbflx
         save nbflx
 	integer ibarcl,iconz
@@ -302,14 +304,12 @@ c-----------------------------------------------------------------
 
         if( nbflx .eq. 0 ) then
 
-                idtflx = nint(dgetpar('idtflx'))
-                itmflx = nint(dgetpar('itmflx'))
-                itend = nint(dgetpar('itend'))
+		call init_output('itmflx','idtflx',ia_out)
+		call increase_output(ia_out)
+                if( .not. has_output(ia_out) ) nbflx = -1
 
                 if( kfluxm .le. 0 ) nbflx = -1
                 if( nsect .le. 0 ) nbflx = -1
-                if( idtflx .le. 0 ) nbflx = -1
-                if( itmflx .gt. itend ) nbflx = -1
                 if( nbflx .eq. -1 ) return
 
                 if( nsect .gt. nscflxdim ) then
@@ -318,9 +318,6 @@ c-----------------------------------------------------------------
 
 		ibarcl = nint(getpar('ibarcl'))
 		iconz = nint(getpar('iconz'))
-
-                itflx = itmflx + idtflx
-		itmflx = itmflx + 1	!start from next time step
 
 		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
 
@@ -339,6 +336,7 @@ c-----------------------------------------------------------------
 		end if
 
 	        nvers = 5
+		idtflx = ia_out(1)
                 call wfflx      (nbflx,nvers
      +                          ,nsect,kfluxm,idtflx,nlmax
      +                          ,kflux
@@ -353,7 +351,7 @@ c-----------------------------------------------------------------
 c normal call
 c-----------------------------------------------------------------
 
-        if( it .lt. itmflx ) return
+        if( .not. is_over_output(ia_out) ) return
 
 	call getaz(azpar)
 	az = azpar
@@ -385,8 +383,7 @@ c	-------------------------------------------------------
 c	time for output?
 c	-------------------------------------------------------
 
-        if( it .lt. itflx ) return
-        itflx=itflx+idtflx
+        if( .not. next_output(ia_out) ) return
 
 c	-------------------------------------------------------
 c	average and write results
