@@ -1,3 +1,27 @@
+version  7_0_7    26-11-2014    VERS_7_0_7
+
+========================================================== 26-11-2014 - 7_0_7
+
+c ./fem3d/subnsh.f:
+c 10.11.2014    ggu     shyfem time management routines to new file subtime.f
+c
+c ./fem3d/subdts.f:
+c 12.11.2014    ggu     new routines for unformatting and timespan
+c
+c ./fem3d/suboutput.f:
+c 10.11.2014    ggu     time management routines transfered to this file
+c
+c ./fem3d/subver.f:
+c 26.11.2014	ggu	version 7.0.7	Peter Epplers Geburtstags release
+c
+c ./fem3d/subtime.f:
+c 10.11.2014    ggu     time management routines transfered to this file
+c
+c ./fem3d/subcst.f:
+c 10.11.2014    ggu     time and date routines transfered to subtime.f
+
+==========================================================
+
 version  7_0_6    07-11-2014    VERS_7_0_6   commit_2014-11-25
 
 version  7_0_6    07-11-2014    VERS_7_0_6

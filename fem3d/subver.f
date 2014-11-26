@@ -225,6 +225,7 @@ c 21.10.2014	ggu	version 7.0.3
 c 30.10.2014	ggu	version 7.0.4
 c 05.11.2014	ggu	version 7.0.5
 c 07.11.2014	ggu	version 7.0.6
+c 26.11.2014	ggu	version 7.0.7	Peter Epplers Geburtstags release
 c
 c*****************************************************************
 
@@ -232,15 +233,15 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.0.6}
-c \newcommand{\version}{7\_0\_6}
+c \newcommand{\VERSION}{7.0.7}
+c \newcommand{\version}{7\_0\_7}
 c
 c DOCS	END
 
         implicit none
 
         character*10 version
-	parameter (version='7.0.6')
+	parameter (version='7.0.7')
 
         character*30 string
 	parameter (string='SHYFEM VERSION = '//version)
