@@ -1,3 +1,24 @@
+version  7_0_8    05-12-2014    VERS_7_0_8
+
+========================================================== 05-12-2014 - 7_0_8
+
+c ./fem3d/subclo.f:
+! 27.11.2014    ggu     is now fully functional
+!
+c ./fem3d/subnsh.f:
+c 01.12.2014    ccf     handle new section waves for wave module
+c
+c ./fem3d/subver.f:
+c 05.12.2014	ggu	version 7.0.8	pre Santa Claus release
+c
+c ./fem3d/subsys.f:
+c 01.12.2014	ccf	wave parameters moved to subwave.f
+c
+c ./fem3d/ht.f:
+c 05.12.2014    ccf	new interface for waves
+
+==========================================================
+
 version  7_0_7    26-11-2014    VERS_7_0_7   commit_2014-12-05
 
 version  7_0_7    26-11-2014    VERS_7_0_7
