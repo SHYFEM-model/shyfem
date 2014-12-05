@@ -114,7 +114,7 @@ NEWOBJS = \
 	  newrog.o newcra.o \
 	  newbcl.o newbcl0.o \
 	  newini.o newtra.o \
-	  newchao.o newparam.o \
+	  newchao.o \
 	  newcon.o newcon_1.o newconz.o \
 	  newchk.o newdum.o newfix.o \
 	  newtvd.o newstab.o newsig.o \
@@ -217,7 +217,8 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subbnd.o subdts.o subdep.o \
 	  debug.o subreg.o subnev.o \
 	  subfemfile.o subtsfile.o \
-	  subvintp.o subver.o sigmautil.o suboutput.o
+	  subvintp.o subver.o sigmautil.o suboutput.o \
+	  subclo.o
 
 RSTOBJS = subrst.o ecological_dummy.o
 
@@ -702,6 +703,7 @@ cleanvar:
 	-rm -f CVSSTATUS CVSRAWSTATUS
 	-rm -f COMMONF COMMONL
 	-rm -f gmon.out tags
+	-rm -f main_dummy.f
 
 cleandiff:
 	-rm -f DIFFS
@@ -792,11 +794,12 @@ bio3d.o: param.h
 bio3d_util.o: param.h donata.h
 eosinf.o: param.h
 etsinf.o: param.h
+feminf.o: clo.mod
 flux.o: regflux.h param.h links.h ev.h
 flxinf.o: param.h
 gotm3d.o: gotmturb.i
 grdutil.o: grd_extra.h param.h basin.h
-ht.o: intp_fem_file.mod param.h evmain.h
+ht.o: intp_fem_file.mod param.h meteo.h evmain.h
 lagrange_back.o: param.h lagrange.h
 lagrange_connect.o: param.h lagrange.h lagrange_connect.h
 lagrange_cont.o: param.h links.h lagrange.h
@@ -890,6 +893,8 @@ subbnd.o: param.h bnd.h
 subbndo.o: param.h subbndo.h
 subbnds.o: intp_fem_file.mod
 subboxa.o: param.h meteo.h modules.h ev.h basin.h subboxa.h
+clo.mod: subclo.o
+subcon1.o: femtime.h
 subcoo.o: param.h common.h nkonst.h
 subcst.o: modules.h
 subcus.o: param.h ev.h
@@ -900,7 +905,7 @@ subdts.o: subdts.h
 subdwq.o: param.h
 subele.o: param.h ev.h
 subets.o: etsinf.h
-subetsa.o: param.h modules.h subetsa.h
+subetsa.o: param.h modules.h femtime.h subetsa.h
 subexta.o: modules.h
 intp_fem_file.mod: subfemintp.o
 subflx3d.o: testbndo.h param.h links.h ev.h
@@ -931,7 +936,9 @@ subnsh.o: modules.h
 suboff.o: param.h
 subous.o: ousinf.h
 subousa.o: param.h
+suboutput.o: femtime.h
 subpar1.o: subpar.h
+para.mod: subpar3.o
 subpard.o: param.h omp_lib.mod common.h nkonst.h
 subproj.o: param.h
 subqfxf.o: subqfx.h
@@ -944,16 +951,16 @@ subqfxt.o: param.h meteo.h subqfxm.h
 subqfxu4.o: subqfxm.h
 subreg.o: ev.h
 subres.o: param.h
-subrst.o: param.h
+subrst.o: param.h femtime.h
 subspk.o: param.h common.h nkonst.h
+subtime.o: femtime.h
 subtrace.o: param.h
 subtsuvfile.o: intp_fem_file.mod param.h
 subuti.o: param.h ev.h links.h
 subvola.o: modules.h
 subwat.o: links.h ev.h
-subwaves.o: param.h
-subwrt.o: param.h
-subwwm.o: param.h evmain.h
+subwaves.o: param.h evmain.h
+subwrt.o: param.h femtime.h
 tideg.o: param.h
 ts2nc.o: param.h evmain.h
 vp.o: param.h

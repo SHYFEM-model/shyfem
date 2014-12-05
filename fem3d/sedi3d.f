@@ -109,7 +109,6 @@ c
 
       integer nlvdi,nlv			!number of levels
       common /level/ nlvdi,nlv
-      integer ius1,ius2,itmcon,idtcon 	!output parameter
 
 ! -------------------------------------------------------------
 ! local sediment variables
@@ -177,15 +176,19 @@ c
       real fact
       parameter ( fact = 1. )
       real load(nlvdim,nkndim)
+      integer itmsed,idtsed 		!output parameter
+      integer ia_out(4)
 
 ! function
       integer iround
       real getpar
       real sload(nkndim,nsdim)	  !suspended sediment load [kg/s]
+      logical has_output,next_output
 
 ! save and data
+      save ia_out
       save what
-      save ius1,ius2,itmcon,idtcon
+      save itmsed,idtsed
       save sedkpar,difmol
       save gs,sbound
       save nscls,adjtime,nsclsc
@@ -236,9 +239,8 @@ c
 	end if
 
         if( icall .eq. 0 ) then
-          itmcon = iround(getpar('itmcon'))
-          idtcon = iround(getpar('idtcon'))
-          if( it .lt. itmcon ) return
+
+          if( it .lt. itmsed ) return
           icall = 1
 
 !         --------------------------------------------------
@@ -318,11 +320,12 @@ c
 !	  Initialize output
 !         --------------------------------------------------
 
-          ius1 = 0
-          call confop(ius1,itmcon,idtcon,1,5,'sed')
+          call init_output('itmsed','idtsed',ia_out)
 
-          ius2 = 0
-          call confop(ius2,itmcon,idtcon,nlv,1,'sco')
+          if( has_output(ia_out) ) then
+             call open_scalar_file(ia_out,1,5,'nos')
+             call open_scalar_file(ia_out,nlv,1,'sco')
+          end if
 
           write(6,*) 'sediment model initialized...'
 
@@ -413,13 +416,15 @@ c
 !       Write of results (files SED and SCO)
 !       -------------------------------------------------------------------
 
-        call confil(ius1,itmcon,idtcon,80,1,bh)
-        call confil(ius1,itmcon,idtcon,81,1,gskm)
-        call confil(ius1,itmcon,idtcon,82,1,tao)
-        call confil(ius1,itmcon,idtcon,83,1,hkv)
-        call confil(ius1,itmcon,idtcon,84,1,totbed)
+        if( next_output(ia_out) ) then
+          call write_scalar_file(ia_out,80,1,bh)
+          call write_scalar_file(ia_out,81,1,gskm)
+          call write_scalar_file(ia_out,82,1,tao)
+          call write_scalar_file(ia_out,83,1,hkv)
+          call write_scalar_file(ia_out,84,1,totbed)
 
-        call confil(ius2,itmcon,idtcon,85,nlvdim,tcn)
+          call write_scalar_file(ia_out,85,nlv,tcn)
+        end if
 
 ! -------------------------------------------------------------------
 ! End of routine
@@ -483,6 +488,13 @@ c		\item[1] Compute sediment transport
 c		\end{description}
 
         call addpar('isedi',0.)
+
+c |idtsed|, |itmsed|	Time step and start time for writing to files sed e sco,
+c			the files containing sediment variables and suspended
+c			sediment concentration.
+
+        call addpar('idtsed',0.)
+        call addpar('itmsed',-1.)
 
 c |sedgrs|	Sediment grainsize class vector [mm]. Values has be 
 c		ordered from the finest to the more coarse. \\
@@ -1340,6 +1352,7 @@ c DOCS  END
 
         include 'param.h'
         include 'sed_param.h'
+	include 'waves.h'
 
 ! -------------------------------------------------------------
 ! local variables
@@ -1374,18 +1387,6 @@ c DOCS  END
         real wsink(0:nlvdim,nkndim,nsdim)       !settling velocity for suspended sediment
         common /z0bk/z0bk
         save /z0bk/
-
-! -------------------------------------------------------------
-! wave variables
-! -------------------------------------------------------------
-
-        real waveh(nkndim)        !wave height [m]
-        real wavep(nkndim)        !wave mean period [s]
-        real wavepp(nkndim)       !wave peak period [s]
-        real waved(nkndim)        !wave direction (same as wind direction)
-        real waveov(nkndim)	  !orbital velocity
-        common /waveh/waveh, /wavep/wavep, /waved/waved, /waveov/waveov
-        common /wavepp/wavepp
 
 ! -------------------------------------------------------------
 ! fem variables

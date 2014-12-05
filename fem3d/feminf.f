@@ -3,6 +3,8 @@
 
 c writes info on fem file
 
+	use clo
+
 	implicit none
 
 	character*50 name,string,infile
@@ -14,6 +16,7 @@ c writes info on fem file
 	double precision atime,atimeold,atimeanf,atimeend
 	real dmin,dmax
 	integer ierr
+	integer nfile
 	integer irec,i,ich
 	integer itype(2)
 	integer iformat
@@ -28,17 +31,42 @@ c writes info on fem file
 	real,allocatable :: hlv(:)
 	integer,allocatable :: ilhkv(:)
 
+	bdebug = .true.
+	bdebug = .false.
+
 c--------------------------------------------------------------
 c parameters and command line options
 c--------------------------------------------------------------
 
-	bdebug = .false.
+	call clo_init('feminf','fem-file','1.2')
 
-        call parse_command_line(infile,bwrite,bout,tmin,tmax)
+	call clo_add_option('write',.false.,'write min/max of values')
+	call clo_add_option('out',.false.,'create output file')
+	call clo_add_option('tmin time',-1
+     +				,'only process starting from time')
+	call clo_add_option('tmax time',-1
+     +				,'only process up to time')
+
+	call clo_parse_options(1)	!expecting 1 file after options
+
+	call clo_get_option('write',bwrite)
+	call clo_get_option('out',bout)
+	call clo_get_option('tmin',tmin)
+	call clo_get_option('tmax',tmax)
+
+	nfile = clo_number_of_files()
+	if( nfile > 0 ) call clo_get_file(1,infile)
+
 	bskip = .not. bwrite
 	if( bout ) bskip = .false.
 	btmin = tmin .ne. -1.
 	btmax = tmax .ne. -1.
+
+	if( .true. ) then
+	  write(6,*) nfile
+	  write(6,*) bwrite,bskip,bout,btmin,btmax
+	  write(6,*) tmin,tmax
+	end if
 
 c--------------------------------------------------------------
 c open file
@@ -53,6 +81,8 @@ c--------------------------------------------------------------
 	write(6,*) 'file name: ',infile
 	write(6,*) 'iunit:     ',iunit
 	write(6,*) 'format:    ',iformat
+
+	!stop
 
 c--------------------------------------------------------------
 c read first record
@@ -324,76 +354,6 @@ c*****************************************************************
 
         !write(86,*) 'min/max: ',it,vmin,vmax
 
-        end
-
-c*****************************************************************
-
-        subroutine parse_command_line(infile,bwrite,bout,tmin,tmax)
-
-        implicit none
-
-        character*(*) infile
-	logical bwrite
-	logical bout
-	double precision tmin,tmax
-
-        integer i,nc
-        character*50 aux
-
-        infile = ' '
-	bwrite = .false.
-	bout = .false.
-	tmin = -1.
-	tmax = -1.
-
-        nc = command_argument_count()
-
-        if( nc > 0 ) then
-          i = 0
-          do
-            i = i + 1
-            if( i > nc ) exit
-            call get_command_argument(i,aux)
-            if( aux(1:1) .ne. '-' ) exit
-	    if( aux .eq. '-write' ) then
-	      bwrite = .true.
-	    else if( aux .eq. '-help' .or. aux .eq. '-h' ) then
-	      i = nc + 1
-              exit
-	    else if( aux .eq. '-out' ) then
-	      bout = .true.
-	    else if( aux .eq. '-tmin' ) then
-	      i = i + 1
-              if( i > nc ) exit
-              call get_command_argument(i,aux)
-	      read(aux,'(f14.0)') tmin
-	    else if( aux .eq. '-tmax' ) then
-	      i = i + 1
-              if( i > nc ) exit
-              call get_command_argument(i,aux)
-	      read(aux,'(f14.0)') tmax
-            else
-              write(6,*) '*** unknown option: ',aux
-	      i = nc + 1
-              exit
-            end if
-          end do
-          call get_command_argument(nc,infile)
-          if( i .eq. nc ) return
-        end if
-
-        write(6,*) 'Usage: feminf [options] fem-file'
-        write(6,*) '   options:'
-        write(6,*) '      -help|-h    this help'
-        write(6,*) '      -write      write min/max of values'
-        write(6,*) '      -out        create output file'
-        write(6,*) '      -tmax time  only process up to time'
-        write(6,*) '      -tmin time  only process starting from time'
-        write(6,*) '   With no option gives general information on file'
-        write(6,*) '   -write gives detailed info on every record'
-        write(6,*) '   -out re-writes output file'
-
-        stop
         end
 
 c*****************************************************************

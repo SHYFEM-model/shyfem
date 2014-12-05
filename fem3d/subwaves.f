@@ -38,9 +38,9 @@ c \item mean wave direction [deg], variable 33
 c \end{itemize}
 c
 c The time step and start time for writing to file WAV 
-c are defined by the parameters |idtcon| and |itmcon| in the |para|
+c are defined by the parameters |idtwav| and |itmwav| in the |waves|
 c section. These parameter are the same used for writting tracer
-c concentration, salinity and water temperature. If |idtcon| is not
+c concentration, salinity and water temperature. If |idtwav| is not
 c defined, then the wave module does not write any results. The wave 
 c results can be plotted using |plots -wav|.
 c
@@ -80,56 +80,18 @@ c to Roland et al. \cite{roland:coupled09} and Ferrarin et al.
 c \cite{ferrarin:morpho08}.
 c DOCS  END
 
-c DOCS  START   P_wave
-c
-c DOCS  WAVE            Wave parameters
-c There are two parameters that must to be set in the |para| section for
-c computing wave field:
-c
-c |iwave|	Type of wave model and coupling procedure (default 0):
-c		\begin{description}
-c		\item[0] No wave model called 
-c	        \item[1] The parametric wave model is called (see file subwave.f)
-c		\item[$>=$2] The spectral wave model WWMIII is called
-c		\item[2] ... wind from SHYFEM, radiation stress formulation
-c		\item[3] ... wind from SHYFEM, vortex force formulation 
-c		\item[4] ... wind from WWMIII, radiation stress formulation
-c		\item[5] ... wind from WWMIII, vortex force formulation 
-c		\end{description}
-c		When the vortex force formulation is chosen the wave-supported
-c		surface stress is subtracted from the wind stress, in order to
-c		avoid double counting of the wind forcing in the flow model.
-c		Moreover, the use of the wave-depended wind drag coefficient 
-c		could be adopted setting |itdrag| = 3.
-c
-c |dtwave|	Time step for coulping with WWMIII. Needed only for
-c		|iwave| $>$ 1 (default 0).
-c
-c DOCS  END
-c
+
 c**************************************************************
 
-        subroutine init_wave(iwwm,idcoup)
+        subroutine init_wave
 
 ! initialize arrays and open pipes in case of coupling with WWM
 
 	implicit none
 
         include 'param.h'
+	include 'waves.h'
 
-        real waveh(nkndim)      	!wave height [m]
-        real wavep(nkndim)      	!wave period [s]
-        real waved(nkndim)      	!wave direction
-        real waveov(nkndim)		!orbital velocity
-        real wavefx(nlvdim,neldim)	!wave forcing term x
-	real wavefy(nlvdim,neldim)      !wave forcing term y
-        common /waveh/waveh, /wavep/wavep, /waved/waved, /waveov/waveov
-        common /wavefx/wavefx,/wavefy/wavefy
-
-        integer iwwm		!call for coupling with wwm
-	integer idcoup		!time step for sincronizing with wwm [s]
-
-	integer iwave 		!call for wave model [2=wwm]
 	integer itdrag		!drag coefficient type
 	real getpar		!get parameter function
 	integer k,ie,l
@@ -217,7 +179,9 @@ c**************************************************************
 ! set coupling time step 
 !-------------------------------------------------------------
 
-        idcoup = nint(getpar('dtwave'))
+        call convert_time('dtwave',idcoup)
+
+	call write_wwm
 
         write(6,*) 'SHYFEM-WWMIII wave model has been initialized'
  	!call getwwmbound
@@ -230,18 +194,16 @@ c**************************************************************
 
 !**************************************************************
 
-	subroutine read_wwm(iwwm,idcoup)
+	subroutine read_wwm
 
 ! reads from PIPE
 
         implicit none
 
 c parameters
-        include 'param.h'	
-
-c arguments
-        integer iwwm
-	integer idcoup		!time step for sincronizing with wwm [s]
+        include 'param.h'
+	include 'waves.h'
+	include 'meteo.h'
 
 c common
         integer itanf,itend,idt,nits,niter,it
@@ -253,25 +215,9 @@ c common
         real grav,fcor,dcor,dirn,rowass,roluft
         common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
 
-        real waveh(nkndim)              !wave height [m]
-        real wavep(nkndim)              !wave period [s]
-        real waved(nkndim)              !wave direction
-        real waveov(nkndim)             !orbital velocity
-        real windcd(nkndim)             !wave drag coefficient
-        real wavefx(nlvdim,neldim)      !wave forcing term x
-        real wavefy(nlvdim,neldim)      !wave forcing term y
         real z0sk(nkndim)               !surface roughness on nodes
-        common /waveh/waveh, /wavep/wavep, /waved/waved, /waveov/waveov
-        common /windcd/windcd
-        common /wavefx/wavefx,/wavefy/wavefy
         common /z0sk/z0sk
 
-        real wxv(nkndim),wyv(nkndim)    !x and y wind component [m/s]
-        common /wxv/wxv,/wyv/wyv
-        real tauxnv(nkndim),tauynv(nkndim)
-        common /tauxnv/tauxnv,/tauynv/tauynv
-        real ppv(nkndim)
-        common /ppv/ppv
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -281,7 +227,6 @@ c local
         double precision stokesy(nlvdim,nkndim)	!stokes velocity y
         real wavejb(nkndim)		!wave pressure
         real wtauw(nkndim)     		!wave supported stress
-        real wavepp(nkndim)     	!wave peak period [s]
         real wavewl(nkndim)     	!wave lenght
         real wavedi(nkndim)     	!wave dissipation
 	real SXX3D(nlvdim,nkndim)	!radiation stress xx
@@ -293,14 +238,18 @@ c local
         parameter ( pi=3.14159265358979323846, deg2rad = pi/180. )
 
 	double precision tmpval
+	integer itdrag
+	logical bwind
+	save bwind
 
 	real wfact,wspeed
 	save wfact
-	real getpar			!get parameter function
-        integer iuw,iuw1,itmcon,idtcon
-        save iuw,itmcon,idtcon
-        integer iwave			!call for wave model [2=wwm]
-	save iwave
+
+        real getpar
+        integer ia_out(4)
+        save ia_out
+        logical has_output,next_output
+
         integer icall           	!initialization parameter                        
         save icall
         data icall /0/
@@ -314,10 +263,15 @@ c local
 !       -----------------------------------------------
 
         if( icall .eq. 0 ) then
-            iwave = nint(getpar('iwave'))
-            itmcon = nint(getpar('itmcon'))
-            idtcon = nint(getpar('idtcon'))
-            call confop(iuw,itmcon,idtcon,1,3,'wav')
+
+            call init_output('itmwav','idtwav',ia_out)
+            if( has_output(ia_out) ) then
+              call open_scalar_file(ia_out,1,3,'wav')
+            end if
+
+            itdrag = nint(getpar('itdrag'))
+	    bwind = itdrag .eq. 3		!use wave dependend drag coeff
+
 	    tramp = 0.
 	    tramp = 86400.
 	    wfact = 1. / rowass
@@ -371,7 +325,7 @@ c local
               read(110) stokesx(:,k)
               read(111) stokesy(:,k)
               read(114) tmpval
-	      windcd(k) = tmpval
+	      if ( bwind ) windcd(k) = tmpval
               read(115) tmpval
 	      wavejb(k) = tmpval
               read(116) tmpval
@@ -496,16 +450,18 @@ c local
 !       -----------------------------------------------
 !       Writes output to the file.wav 
 !       -----------------------------------------------
+
+        if( next_output(ia_out) ) then
+          call write_scalar_file(ia_out,31,1,waveh)
+          call write_scalar_file(ia_out,32,1,wavep)
+          call write_scalar_file(ia_out,33,1,waved)
+        end if
             
-        call confil(iuw,itmcon,idtcon,31,1,waveh)
-        call confil(iuw,itmcon,idtcon,32,1,wavep)
-        call confil(iuw,itmcon,idtcon,33,1,waved)
- 
         end
 
 !**************************************************************
 
-        subroutine write_wwm(iwwm,it,idcoup)
+        subroutine write_wwm
 
 ! write to PIPE
 
@@ -513,17 +469,12 @@ c local
 
 c parameters
         include 'param.h'
-
-c arguments
-        integer iwwm
-        integer it              !time [s]
-	integer idcoup		!time step for sincronizing with wwm [s]
+	include 'meteo.h'
+	include 'waves.h'
 
 c common
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real wxv(nkndim),wyv(nkndim)    !x and y wind component [m/s]
-        common /wxv/wxv,/wyv/wyv
         real znv(nkndim)
         common /znv/znv
         real hkv(nkndim)
@@ -534,6 +485,7 @@ c common
         common /level/ nlvdi,nlv
 
 c local
+        integer it              !time [s]
         integer k,l,nlev,lmax
 	real ddl(nlvdim,nkndim)		!3D layer depth (in the middle of layer)
 	real h(nlvdim)
@@ -545,6 +497,8 @@ c local
 !       -----------------------------------------------
 !       Same time step, do write
 !       -----------------------------------------------
+
+	call get_act_time(it)
 
         if (mod(it,idcoup) .eq. 0 ) then
 
@@ -1081,6 +1035,7 @@ c**************************************************************
         implicit none
 
         include 'param.h'
+	include 'waves.h'
 
         integer it
 
@@ -1096,10 +1051,6 @@ c --- input variable
         real daf(neldim)        !averaged depth along the fetch [m]
 
 c --- output variable
-        real waveh(nkndim)	!wave height [m]
-        real wavep(nkndim)	!wave period [s]
-        real waved(nkndim)	!wave direction (same as wind direction)
-        common /waveh/waveh, /wavep/wavep, /waved/waved
 
         real waeh(neldim)	!wave height [m]
         real waep(neldim)	!wave period [s]
@@ -1145,9 +1096,10 @@ c------------------------------------------------------ SPM
         parameter(et2=1.,at3=0.0379,et3=1./3.,et4=1.)
 
         real getpar
-        integer iwave 		!call parameter
-        integer ius,itmcon,idtcon
-        save ius,itmcon,idtcon
+
+        integer ia_out(4)
+        save ia_out
+        logical has_output,next_output
 
         integer icall		!initialization parameter
         save icall
@@ -1175,19 +1127,18 @@ c         --------------------------------------------------
           if( iwave .le. 0 ) icall = -1
           if( iwave .gt. 1 ) icall = -1
           if( icall .le. -1 ) return
-          icall = 1
 
 c         --------------------------------------------------
 c         Initialize output
 c         --------------------------------------------------
 
-          ius = 31
-          itmcon = nint(getpar('itmcon'))
-          idtcon = nint(getpar('idtcon'))
-
-          call confop(ius,itmcon,idtcon,1,3,'wav')
+          call init_output('itmwav','idtwav',ia_out)
+          if( has_output(ia_out) ) then
+            call open_scalar_file(ia_out,1,3,'wav')
+          end if
 
           write(6,*) 'parametric wave model initialized...'
+          icall = 1
 
         endif
 
@@ -1291,11 +1242,16 @@ c       write of results (file WAV)
 c       -------------------------------------------------------------------
 
         call e2n2d(waeh,waveh,v1v)
-        call confil(ius,itmcon,idtcon,31,1,waveh)
         call e2n2d(waep,wavep,v1v)
-        call confil(ius,itmcon,idtcon,32,1,wavep)
         call e2n2d(waed,waved,v1v)
-        call confil(ius,itmcon,idtcon,33,1,waved)
+
+	wavepp = wavep
+
+        if( next_output(ia_out) ) then
+          call write_scalar_file(ia_out,31,1,waveh)
+          call write_scalar_file(ia_out,32,1,wavep)
+          call write_scalar_file(ia_out,33,1,waved)
+        end if
 
         end
 
@@ -1535,3 +1491,51 @@ c computes stress parameters
         end
 
 c******************************************************************
+
+        subroutine get_wave_values(k,wh,wmp,wpp,wd)
+
+c returns significant wave heigh, wave periods (mean and peak) and 
+c mean wave direction
+
+        implicit none
+
+	include 'param.h'
+        include 'waves.h'
+
+        integer k
+        real wh                 !sign. wave height [m]
+        real wmp                !mean wave period [s]
+        real wpp                !peak wave period [s]
+        real wd                 !mean wave direction [deg]
+
+        wh  = waveh(k)
+        wmp = wavep(k)
+        wpp = wavepp(k)
+        wd  = waved(k)
+
+        end subroutine get_wave_values
+
+!*********************************************************************
+
+        function has_waves() 
+
+c gives indication if waves are computed
+
+        implicit none
+
+	include 'param.h'
+        include 'waves.h'
+
+        logical has_waves
+
+        if( iwave .le. 0 ) then
+          has_waves = .false.
+	else if( iwave .gt. 0 .and. iwave .le. 5 ) then
+          has_waves = .true.
+	else
+          has_waves = .false.
+	end if
+
+        end function has_waves
+
+!*********************************************************************

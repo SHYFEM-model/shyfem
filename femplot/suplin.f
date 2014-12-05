@@ -946,6 +946,8 @@ c not used anymore -> delete
 c************************************************************************
 
 	subroutine setxyf(x1,x2,x3,y1,y2,y3,f1,f2,f3,x,y,f)
+	implicit none
+	real x1,x2,x3,y1,y2,y3,f1,f2,f3
 	real x(3),y(3),f(3)
 	x(1)=x1
 	x(2)=x2

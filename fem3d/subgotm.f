@@ -280,7 +280,7 @@ c---------------------------------------------------------------
 	real dtreal
 	real getpar
 
-	logical bwave
+	logical bwave,has_waves
 	save bwave
 
 	character*80 fn	
@@ -308,7 +308,7 @@ c------------------------------------------------------
 	  write(*,*) 'starting GOTM turbulence model'
 
 	  czdef = getpar('czdef')
-	  bwave = nint(getpar('iwave')) .ge. 2
+	  bwave = has_waves()
 
 c         --------------------------------------------------------
 c         Initializes gotm arrays 

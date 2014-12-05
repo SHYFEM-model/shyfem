@@ -76,6 +76,7 @@ c 05.03.2014    ggu     new routines get_last/first_time()
 c 10.04.2014    ccf     new section "wrt" for water renewal time
 c 29.10.2014    ggu     do_() routines transfered from newpri.f
 c 10.11.2014    ggu     shyfem time management routines to new file subtime.f
+c 01.12.2014    ccf     handle new section waves for wave module
 c
 c************************************************************
 
@@ -410,6 +411,8 @@ c read loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                         call nrdins(section)
                 else if(section.eq.'sedtr')then         !sediment
                         call readsed
+                else if(section.eq.'waves')then         !wave
+                        call nrdins(section)
                 else if(section.eq.'mudsec')then        !fluid mud
                         call readmud			!ARON
 		else					!try modules

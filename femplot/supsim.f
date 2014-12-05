@@ -1494,6 +1494,8 @@ c*****************************************************************
 
 c sets values on boundary to val
 
+	implicit none
+
 	real a(1)
 	real val
 
@@ -1838,6 +1840,12 @@ c*****************************************************************
         subroutine traxy(xo,yo,u,v,dist,xn,yn)
 
 c translates x/y to new coordinate to the left of direction (u,v) by dist
+
+	implicit none
+
+	real xo,yo,u,v,dist,xn,yn
+
+	real sp,un,vn
 
           sp = sqrt(u**2+v**2)
           un = - v/sp

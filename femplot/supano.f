@@ -330,7 +330,19 @@ c radius        radius of circle
 c angle         angle of inclination of true north
 c               ...positive if true north is pointing to the east
 c
+	implicit none
+
+	real xm,ym,radius,angle
+
+	real radian
         parameter (radian=3.14159/180.)
+
+	integer i
+	real hsymb
+	real ri,x,y
+	real xtop,ytop,angbot
+	real xbot1,ybot1,xbot2,ybot2
+	real xh,yh,xr,yr
 c
         hsymb=radius/4.
 c

@@ -472,6 +472,8 @@ c**********************************************************
 
 	subroutine set_flag(flag)
 
+	implicit none
+
 	real flag
 
 	real flagco
@@ -483,6 +485,8 @@ c**********************************************************
 	end
 
 	subroutine get_flag(flag)
+
+	implicit none
 
 	real flag
 

@@ -55,12 +55,12 @@ logo_where="0.92 0.92 0 0.99"			#position of included file
 
 ######################################################### programs
 
-psgnu="psgnu"
-gnuplot="gnuplot"
-extractcol="extractcol"
-scalecol="scalecol"
-range="range"
-gpsmerge="gpsmerge"
+gnuplot="/usr/bin/gnuplot"
+psgnu="$fembin/psgnu"
+extractcol="$fembin/extractcol"
+scalecol="$fembin/scalecol"
+range="$fembin/range"
+gpsmerge="$fembin/gpsmerge"
 
 ######################################################### copyright
 

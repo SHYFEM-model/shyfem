@@ -91,9 +91,9 @@ c---------------------------------------------------------------
 	  do i=1,nkn
 	    lmax = ilets(i)
 	    if( ivar .eq. 1 ) lmax = 1
-	    lmax = min(lmax,4)			!delete this
+	    if( ivar .eq. 31 ) lmax = 4
 	    call get_unit(ivar,i,iunit)
-	    write(iunit,*) it,(cv3(l,i),l=1,lmax)
+	    write(iunit,'(i12,5(f12.4))') it,(cv3(l,i),l=1,lmax)
 	  end do
 
 	end do
@@ -202,6 +202,8 @@ c*******************************************************************
 
 	if( ivar .eq. 1 ) then
 	  call opents(iunit,'z',i)
+	else if( ivar .eq. 31 ) then
+	  call opents(iunit,'w',i)
 	else if( ivar .eq. 6 ) then
 	  call opents(iunit,'u',i)
 	else if( ivar .eq. 7 ) then

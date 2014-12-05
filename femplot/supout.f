@@ -538,6 +538,8 @@ c******************************************************
 
 c checks if OUS file is opened
 
+	implicit none
+
 	logical ous_is_available
 
 	integer nunit
@@ -915,6 +917,8 @@ c******************************************************
 	function fvl_is_available()
 
 c checks if FVL file is opened
+
+	implicit none
 
 	logical fvl_is_available
 

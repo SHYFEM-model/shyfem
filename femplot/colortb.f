@@ -149,6 +149,14 @@ c	parameter( hmax = 360. )
 c****************************************************************
 
       function randomtb(idum)
+
+	implicit none
+	real randomtb
+	integer idum
+	integer m,ia,ic
+	integer ir,iy,iff,j
+	real rm
+
       parameter (m=714025,ia=1366,ic=150889,rm=1.4005112e-6)
       dimension ir(97)
       save iy,ir
@@ -156,10 +164,10 @@ c****************************************************************
       if(idum.lt.0.or.iff.eq.0)then
         iff=1
         idum=mod(ic-idum,m)
-        do 11 j=1,97
+        do j=1,97
           idum=mod(ia*idum+ic,m)
           ir(j)=idum
-11      continue
+	end do
         idum=mod(ia*idum+ic,m)
         iy=idum
       endif

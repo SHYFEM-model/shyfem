@@ -183,6 +183,7 @@ c writes and administers ets file
 
 	include 'param.h'
 	include 'subetsa.h'
+	include 'waves.h'
 
 	integer it
 
@@ -214,10 +215,17 @@ c writes and administers ets file
 	real tempv(nlvdim,1)
 	common /tempv/tempv
 
+	real waves(4,nkndim)
+
+        integer il4kv(nkndim)
+
 	integer ifemop
 	real getpar
 	double precision dgetpar
 	logical has_output,next_output
+	logical has_waves,bwave
+	save bwave
+	integer nvars
 
 	integer nbext
 	integer ia_out(4)
@@ -242,6 +250,9 @@ c writes and administers ets file
 
 		nvers = 1
 		nvar = 5
+	        bwave = has_waves()
+	        if ( bwave ) nvar = nvar + 1
+
                 date = nint(dgetpar('date'))
                 time = nint(dgetpar('time'))
                 title = descrp
@@ -270,6 +281,19 @@ c writes and administers ets file
 	call routets(1,ilhkv,znv,out)
         call ets_write_record(nbext,it,ivar,1,ilets,out,ierr)
         if(ierr.ne.0.) goto 79
+
+	if ( bwave ) then
+  	  ivar = 31
+	  nvars = 4
+	  waves(1,:) = waveh
+	  waves(2,:) = wavep
+	  waves(3,:) = wavepp
+	  waves(4,:) = waved
+	  il4kv = nvars
+	  call routets(nvars,il4kv,waves,out)
+          call ets_write_record(nbext,it,ivar,nvars,ilets,out,ierr)
+          if(ierr.ne.0.) goto 79
+        end if
 
 	ivar = 6
 	call routets(nlvdim,ilhkv,uprv,out)

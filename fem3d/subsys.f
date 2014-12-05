@@ -111,6 +111,7 @@ c 28.03.2014	ggu	some new params for lagrangian
 c 10.04.2014	ccf	new section "wrt" for water renewal time
 c 30.05.2014	ggu	new default for dragco, new metpnt
 c 20.10.2014	ggu	new default for date (-1)
+c 01.12.2014	ccf	wave parameters moved to subwave.f
 c
 c************************************************************************
 
@@ -128,6 +129,7 @@ c initializes the parameter file for the main FE model
 	call nlsinh_undoc
 	call nlsinh_georg
 	call nlsinh_unused
+	call nlsinh_waves
 
 	end
 
@@ -723,14 +725,6 @@ cc------------------------------------------------------------------------
 	call addpar('idtsti',0.)	!time step for stability index
 	call addpar('itmsti',-1.)	!minimum time for stability index
 
-cc waves
-
-        call addpar('iwave',0.)         !wave module: 1 = SPM empirical
-                                        !             2 = WWM FEM
-                                        !             spectral
-
-        call addpar('dtwave',0.)        !WWM wave module time step
-
 cc------------------------------------------------------------------------
 
 cc meteo and heat flux
@@ -1110,6 +1104,62 @@ c parameters not used anymore -> to be deleted
 	call addpar('iprogr',0.)
 
 	end
+
+c ********************************************************************
+
+c This subroutine defines the simulation wave parameter
+
+        subroutine nlsinh_waves
+
+        implicit none
+
+c DOCS  START   P_wave
+c
+c DOCS  COMPULS         Parameters in the waves section
+c 
+c The following parameters activate the wind wave module and define
+c which kind of wind wave model has to be used.
+!c |waves|      Wave module section name.
+
+        call sctpar('waves')             !sets waves section
+        call sctfnm('waves')
+
+c |iwave|	Type of wind wave model and coupling procedure (default 0):
+c		\begin{description}
+c		\item[0] No wind wave model called 
+c		\item[1] The parametric wind wave model is called (see file subwave.f)
+c		\item[$>=$2] The spectral wind wave model WWMIII is called
+c		\item[2] ... wind from SHYFEM, radiation stress formulation
+c		\item[3] ... wind from SHYFEM, vortex force formulation 
+c		\item[4] ... wind from WWMIII, radiation stress formulation
+c		\item[5] ... wind from WWMIII, vortex force formulation 
+c		\end{description}
+c		When the vortex force formulation is chosen the wave-supported
+c		surface stress is subtracted from the wind stress, in order to
+c		avoid double counting of the wind forcing in the flow model.
+c		Moreover, the use of the wave-depended wind drag coefficient 
+c		could be adopted setting |itdrag| = 3.
+
+        call addpar('iwave',0.)
+
+c
+c |dtwave|	Time step for coulping with WWMIII. Needed only for
+c		|iwave| $>$ 1 (default 0).
+
+        call addpar('dtwave',0.)
+
+c |idtwav|, |itmwav|	Time step and start time for writing to file wav,
+c			the files containing output wave variables (significant 
+c			wave height, wave period, mean wave direction).
+
+        call addpar('idtwav',0.)
+        call addpar('itmwav',-1.)
+
+c
+c DOCS  END
+c
+
+        end
 
 c************************************************************************
 c************************************************************************

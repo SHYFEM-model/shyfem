@@ -294,8 +294,6 @@ c returns -1 in iformat if no fem file, else iformat indicates format
 
 	call fem_file_test_formatted(file,np,nvar,ntype,iformat)
 
-	if( nvar <= 0 ) iformat = -1
-
 	end
 
 c************************************************************
@@ -451,6 +449,7 @@ c------------------------------------------------------
 c first try unformatted
 c------------------------------------------------------
 
+	ierr = 77
 	open(iunit,file=file,form='unformatted',status='old',err=2)
 
 	iformat = 0
@@ -471,6 +470,7 @@ c------------------------------------------------------
 c now try formatted
 c------------------------------------------------------
 
+	ierr = 77
 	open(iunit,file=file,form='formatted',status='old',err=8)
 
 	iformat = 1
@@ -495,6 +495,7 @@ c------------------------------------------------------
 	nvar = 0
 	ntype = 0
 	iformat = -1
+	iformat = -ierr
 
 c------------------------------------------------------
 c end of routine

@@ -152,11 +152,14 @@ c local
 	real hb			!depth of modelled T in first layer [m]
 	real usw		!surface friction velocity [m/s]
 	real rad		!Net shortwave flux 
+	real cd			!wind drag coefficient
 
 	integer itdrag
 c functions
 	real depnode,areanode,getpar
 	integer ifemopa
+	logical bwind
+	save bwind
 c save
 	integer n93,icall
 	save n93,icall
@@ -191,7 +194,8 @@ c---------------------------------------------------------
 	  end do
 
           itdrag = nint(getpar('itdrag'))
-	  if (itdrag .eq. 4 .and. iheat .ne. 6) then
+	  bwind = itdrag .eq. 4
+	  if ( bwind .and. iheat .ne. 6) then
             write(6,*) 'Erroneous value for itdrag = ',itdrag
             write(6,*) 'Use itdrag = 4 only with iheat = 6'
             stop 'error stop qflux3d: itdrag'
@@ -241,7 +245,8 @@ c---------------------------------------------------------
 	  else if( iheat .eq. 6 ) then
 	    call get_pe_values(k,r,ev,eeff)
 	    call heatcoare(ta,p,uw,ur,cc,tws(k),r,rad,qsens,qlat,
-     +                     qlong,evap,windcd(k))
+     +                     qlong,evap,cd)
+	    if ( bwind ) windcd(k) = cd
 	  else if( iheat .eq. 7 ) then
 	    qsens = ta
 	    qlat  = ur

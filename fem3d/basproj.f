@@ -83,11 +83,11 @@ c        c_param(3) = 43.5            !latitude of origin (lat0)
 
 c Klaipeda
 
-	iproj = 4		     !UTM Lithuania
-        c_param(1) = 24.             !longitude of origin (lon0)
-        c_param(2) = -500000.        !false easting
-        c_param(3) = 0.              !false northing
-        c_param(4) = 0.9998          !scale factor
+c	iproj = 4		     !UTM Lithuania
+c        c_param(1) = 24.             !longitude of origin (lon0)
+c        c_param(2) = -500000.        !false easting
+c        c_param(3) = 0.              !false northing
+c        c_param(4) = 0.9998          !scale factor
 
 c ??
 
@@ -102,6 +102,13 @@ c	iproj = 1		     !Gauss-Boaga
 c        c_param(1) = 2.              !fuse
 c        c_param(2) = 2280000.        !shift in x
 c        c_param(3) = 5000000.        !shift in y
+
+c Laguna di Marano-Grado
+
+	iproj = 1		     !Gauss-Boaga
+        c_param(1) = 2.              !fuse
+        c_param(2) = 0.              !shift in x
+        c_param(3) = 0.              !shift in y
 
 c Turkey lake for Ali
 

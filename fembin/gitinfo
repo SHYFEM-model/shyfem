@@ -86,6 +86,7 @@ gittag
 gittar
 
 make stable
+mail_shyfem.sh tar-file
 
 EOI
 

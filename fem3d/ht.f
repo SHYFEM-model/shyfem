@@ -92,6 +92,7 @@ c 05.09.2013    ggu	changed order of adjust depth and barene structures
 c 29.10.2013    ggu	nudging implemented
 c 25.03.2014    ggu	new offline
 c 25.06.2014    ggu	new arrays hkv_min, hkv_max
+c 05.12.2014    ccf	new interface for waves
 c
 c*****************************************************************
 
@@ -371,13 +372,15 @@ c nudging
 c wave sub-module
 
         real waveh(nkndim)      !wave height [m]
-        real wavep(nkndim)      !wave period [s]
+        real wavep(nkndim)      !mean wave period [s]
+        real wavepp(nkndim)     !peak wave period [s]
         real waved(nkndim)      !wave direction (same as wind direction)
         real waveov(nkndim)     !orbital velocity
         real wavefx(nlvdim,neldim)      !wave forcing terms
         real wavefy(nlvdim,neldim)
 
-        common /waveh/waveh, /wavep/wavep, /waved/waved, /waveov/waveov
+        common /waveh/waveh, /wavep/wavep, /wavepp/wavepp, /waved/waved
+	common /waveov/waveov
         common /wavefx/wavefx,/wavefy/wavefy
 
         real z0sk(nkndim)                   !surface roughenss on nodes
@@ -396,7 +399,9 @@ c wave sub-module
 
 c variables for WWM model
 
-	integer iwwm,idcoup
+        integer iwave                   !call for wave model
+        integer iwwm                    !call for coupling with wwm
+        integer idcoup                  !time step for sincronizing with wwm [s]
 
 c auxiliary arrays
 
@@ -539,6 +544,7 @@ c-----------------------------------------------------------
 	call barocl(0)
 	call wrfvla		!write finite volume
 	call nonhydro_init
+	call init_wave		!waves
 
 c-----------------------------------------------------------
 c initialize modules
@@ -554,9 +560,6 @@ c-----------------------------------------------------------
 	call sp136(ic)
         call shdist(rdistv)
 	call renewal_time
-
-	call init_wave(iwwm,idcoup)
-        call write_wwm(iwwm,it,idcoup)
 
 c-----------------------------------------------------------
 c write input values to log file and perform check
@@ -610,7 +613,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call sp111(2)		!boundary conditions
 	   call nudge_zeta
 
-           call read_wwm(iwwm,idcoup)
+           call read_wwm
 	   
 	   call sp259f			!hydro
 
@@ -649,7 +652,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call check_all
 	   !call check_special
 
-           call write_wwm(iwwm,it,idcoup)
+           call write_wwm
 
 	   !call debug_output(it)
 
@@ -670,7 +673,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	!call pripar(15)
 	!call prifnm(15)
 
-	!call exit(99)
+	call exit(99)
 
         end
 

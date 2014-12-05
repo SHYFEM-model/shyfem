@@ -2015,12 +2015,11 @@ c*******************************************************************
 
         subroutine interpolare_scalar
 
+	implicit none
+
         call system_init
-
         call assamble_interpolare_scalar
-
         call system_solve_z
-
         call system_adjust_z
 
         end

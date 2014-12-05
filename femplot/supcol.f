@@ -506,16 +506,19 @@ c*****************************************************************
 c*****************************************************************
 
 	subroutine white_blue( color )
+	implicit none
 	real color
 	call qhsb(0.666,color,1.)
 	end
 
 	subroutine white_red( color )
+	implicit none
 	real color
 	call qhsb(1.,color,1.)
 	end
 
 	subroutine blue_white_red( color )
+	implicit none
 	real color
 	if( color .le. 0.5 ) then
 	  call qhsb(0.666,1.-2.*color,1.)
@@ -525,6 +528,7 @@ c*****************************************************************
 	end
 
 	subroutine blue_black_red( color )
+	implicit none
 	real color
 	if( color .le. 0.5 ) then
 	  call qhsb(0.666,1.,1.-2.*color)
@@ -534,11 +538,13 @@ c*****************************************************************
 	end
 
 	subroutine hue_sqrt( color )
+	implicit none
 	real color
 	call qhue(sqrt(color))
 	end
 
 	subroutine hue_pow2( color )
+	implicit none
 	real color
 	call qhue(color*color)
 	end

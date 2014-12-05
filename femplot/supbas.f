@@ -71,6 +71,8 @@ c*************************************************************
 
 c internal initialization
 
+	implicit none
+
 	real xmin,ymin,xmax,ymax
 	common /bamima/ xmin,ymin,xmax,ymax
 	save /bamima/
@@ -398,9 +400,13 @@ c*****************************************************************
 
 c writes the pixel size as a comment to PS file
 
+	implicit none
+
 	character*80 line
 	real fact
 	real xvmin,yvmin,xvmax,yvmax
+	real dxy
+	integer idxy
 	integer ixmin,iymin,ixmax,iymax
 
 	call qgetvp(xvmin,yvmin,xvmax,yvmax)

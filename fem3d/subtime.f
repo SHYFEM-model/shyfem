@@ -276,8 +276,10 @@ c controls time step
         real ri,rindex,rindex1,riold
 	real perc
         real    cmax,rmax,tfact
+	save cmax,tfact
         integer iloop,itloop
         integer idtsync,isplit,idtmin
+	save idtsync,isplit,idtmin
 	integer irepeat
 	logical bsync
 
@@ -297,7 +299,10 @@ c controls time step
 
           isplit  = getpar('itsplt')
           cmax    = getpar('coumax')
-          idtsync = getpar('idtsyn')
+          tfact  = getpar('tfact')	!still to be commented
+
+	  call convert_time('idtsync',idtsync)
+	  call convert_time('idtmin',idtmin)
 
           call getinfo(iuinfo)  !unit number of info file
 
@@ -322,12 +327,6 @@ c                                !  2:  optimize time step (no multiple)
 c	 idtmin = 0		 !minimum time step allowed
 c	 tfact = 0		 !factor of maximum decrease of time step
 c----------------------------------------------------------------------
-
-        isplit  = nint(getpar('itsplt'))
-        cmax    = getpar('coumax')
-        idtsync = nint(getpar('idtsyn'))
-        idtmin  = nint(getpar('idtmin'))
-        tfact  = getpar('tfact')	!still to be commented
 
 	itloop = 0
 

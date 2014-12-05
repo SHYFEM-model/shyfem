@@ -51,20 +51,25 @@ c*****************************************************************
 c dummies for oxygen module
 
         subroutine inoxy
+	implicit none
 	end
 
         subroutine rdoxy
+	implicit none
 	write(6,*) 'Oxygen module not yet supported in 3d version'
 	stop 'error stop rdoxy'
 	end
 
         subroutine ckoxy
+	implicit none
 	end
 
         subroutine proxy
+	implicit none
 	end
 
         subroutine tsoxy
+	implicit none
 	end
 
 c*****************************************************************

@@ -1,4 +1,19 @@
 
+05.12.2014
+
+c ./fem3d/subclo.f:
+! 27.11.2014    ggu     is now fully functional
+!
+c ./fem3d/subnsh.f:
+c 01.12.2014    ccf     handle new section waves for wave module
+c
+c ./fem3d/subsys.f:
+c 01.12.2014    ccf     wave parameters moved to subwave.f
+c
+c ./fem3d/ht.f:
+c 05.12.2014    ccf     new interface for waves
+
+
 25.11.2014
 
 c ./fem3d/subnsh.f:

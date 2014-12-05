@@ -1427,11 +1427,14 @@ c*****************************************************************
 
         subroutine get_new_mode(j,it,iact,imode)
 
+        implicit none
+
         integer j,it,iact,imode
 
         include 'close.h'
 
         integer icycle
+	integer jitb,nitb
 
 c---------------------------------------------------------------
          integer ipnt,id,isect

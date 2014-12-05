@@ -266,7 +266,7 @@ c	-----------------------------------------------------
 	  if( intpol .le. 0 ) then
 	    intpol = 2
 	    if( ibtyp .eq. 1 ) intpol = 4
-	    write(6,*) 'sp111: intpol set: ',ibc,ibtyp,intpol
+	    write(6,*) 'sp111: (ibc,ibtyp,intpol) ',ibc,ibtyp,intpol
 	  end if
           call iff_init(dtime0,zfile,nvar,nk,0,intpol
      +                          ,nodes,vconst,id)

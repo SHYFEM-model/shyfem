@@ -1,5 +1,62 @@
 ============================================================
 
+Fri Dec  5 18:02:31 CET 2014
+
+some restructuring, waves
+
+ .gitignore              |    1 +
+ LOG                     |   15 +
+ fem3d/Makefile          |   23 +-
+ fem3d/basproj.f         |   17 +-
+ fem3d/bin/fortran.pm    |  548 ++++++---
+ fem3d/bin/newstruct.pl  |  172 +++-
+ fem3d/feminf.f          |  104 +--
+ fem3d/ht.f              |   21 +-
+ fem3d/new36.f           |    3 +
+ fem3d/new3di.f          |    5 +-
+ fem3d/newdum.f          |    5 +
+ fem3d/newini.f          | 3142 +++++++++++++++++++++++-----------------------
+ fem3d/newparam.f        |   21 -
+ fem3d/sedi3d.f          |   55 +-
+ fem3d/splitets.f        |    6 +-
+ fem3d/subbc.f           | 1293 -------------------
+ fem3d/subbc99.f         | 1116 -----------------
+ fem3d/subclo.f          |  814 ++++++++++++
+ fem3d/subdum.f          |    6 +-
+ fem3d/subetsa.f         |   24 +
+ fem3d/subfemfile.f      |    5 +-
+ fem3d/subfemintp.f      |   34 +-
+ fem3d/subgotm.f         |    4 +-
+ fem3d/subn11.f          |    2 +-
+ fem3d/subnsh.f          |    3 +
+ fem3d/subpar.f          |  601 ---------
+ fem3d/subpar1.f         | 1010 ---------------
+ fem3d/subqfxt.f         |    9 +-
+ fem3d/subqfxu4.f        |  158 ++--
+ fem3d/subsys.f          |   66 +-
+ fem3d/subtime.f         |   13 +-
+ fem3d/subwaves.f        |  214 ++--
+ fem3d/tideg.f           |  754 ++++++------
+ fem3d/waves.h           |   27 +
+ fembin/gitinfo          |    1 +
+ fembin/gp               |   12 +-
+ fembin/mail_shyfem.sh   |   36 +
+ femdoc/final/shyfem.pdf |  Bin 292981 -> 293356 bytes
+ femdoc/final/shyfem.ps  | 1665 +++++++++++++-------------
+ femdoc/shyfem.tex       |    6 +-
+ femplot/colortb.f       |   12 +-
+ femplot/line_nodes.f    |    1 +
+ femplot/supano.f        |   12 +
+ femplot/supbas.f        |    6 +
+ femplot/supcol.f        |    6 +
+ femplot/supint.f        |    4 +
+ femplot/suplin.f        |    2 +
+ femplot/supout.f        |    4 +
+ femplot/supsim.f        |    8 +
+ 49 files changed, 4735 insertions(+), 7331 deletions(-)
+
+============================================================
+
 Wed Nov 26 09:50:45 CET 2014
 
 New version 7_0_7

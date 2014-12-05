@@ -102,6 +102,7 @@
 	integer, parameter :: iform_closed = -2
 	integer, parameter :: iform_forget = -3
 	integer, parameter :: iform_error = -9
+	integer, parameter :: iform_error_opening = -15
 	integer, parameter :: iform_no_such_file = -11
 	integer, parameter :: iform_ts = 3
 
@@ -467,13 +468,13 @@
 ! nvar is return value (if file can be read)
 
 	integer iformat,iunit
-	integer ierr,np,i
+	integer ierr,np,i,il
 	integer nvar_orig
 	integer datetime(2)
 	integer ntype,itype(2)
 	logical breg
 	logical bok
-	logical bts,bfem,bnofile,bfile,berror,bnosuchfile
+	logical bts,bfem,bnofile,bfile,berror,bnosuchfile,boperr
 
 	!---------------------------------------------------------
 	! get new id for file
@@ -502,6 +503,7 @@
 	!---------------------------------------------------------
 
 	nvar_orig = nvar
+	il = len_trim(file)
 
 	call iff_get_file_info(file,np,nvar,ntype,iformat)
 
@@ -510,7 +512,8 @@
 	bnosuchfile = iformat == iform_no_such_file	!file not existing
 	!bnofile = iformat < 0
 	!berror = iformat < 0
-	berror = iformat == iform_error			!error opening
+	boperr = iformat == iform_error_opening		!error opening
+	berror = iformat == iform_error			!error file
 
 	bts = iformat == iform_ts			!file is TS
 	bfem = iformat >= 0 .and. iformat <= 2
@@ -521,6 +524,7 @@
 	if( file /= ' ' .and. bnofile ) goto 99
 	if( bnosuchfile ) goto 99
 	if( bfile .and. berror ) goto 93
+	if( bfile .and. boperr ) goto 91
 	if( bfile .and. np < 1 ) goto 96
 	if( .not. breg .and. np > 1 .and. np /= nexp ) goto 96
 
@@ -602,8 +606,13 @@
 	!---------------------------------------------------------
 
 	return
+   91	continue
+	write(6,*) 'error opening file: ',file(1:il)
+	write(6,*) '(maybe the file is already open?)'
+	write(6,*) 'iformat = ',iformat
+	stop 'error stop iff_init'
    93	continue
-	write(6,*) 'error in file: ',file
+	write(6,*) 'error in file: ',file(1:il)
 	write(6,*) 'iformat = ',iformat
 	stop 'error stop iff_init'
    96	continue
@@ -612,7 +621,7 @@
 	call iff_print_file_info(id)
 	stop 'error stop iff_init'
    97	continue
-	write(6,*) 'error in input parameters of file: ',file
+	write(6,*) 'error in input parameters of file: ',file(1:il)
 	write(6,*) 'nvar: ',nvar
 	write(6,*) 'nexp,lexp: ',nexp,lexp
 	write(6,*) 'nintp: ',nintp
@@ -620,11 +629,11 @@
 	call iff_print_file_info(id)
 	stop 'error stop iff_init'
    98	continue
-	write(6,*) 'error reading data description of file: ',file
+	write(6,*) 'error reading data description of file: ',file(1:il)
 	call iff_print_file_info(id)
 	stop 'error stop iff_init'
    99	continue
-	write(6,*) 'no such file: ',file
+	write(6,*) 'no such file: ',file(1:il)
 	write(6,*) 'iformat = ',iformat
 	stop 'error stop iff_init'
 	end subroutine iff_init
@@ -667,6 +676,7 @@ c	 2	time series
 	integer ntype
 	integer iformat		!info on file type (return)
 
+	integer il
 	integer itype(2)
 	logical filex
 
@@ -677,6 +687,8 @@ c	 2	time series
 
 	if( file == ' ' ) return
 
+	il = len_trim(file)
+
 	if( .not. filex(file) ) then
 	  iformat = iform_no_such_file
 	  return
@@ -686,7 +698,7 @@ c	 2	time series
 
 	if( nvar > 0 ) then
 	  write(6,*) 'file is fem file with format: ',iformat
-	  write(6,*) file
+	  write(6,*) file(1:il)
 	else
 	  call ts_get_file_info(file,nvar)
 	  if( nvar > 0 ) then
@@ -695,8 +707,12 @@ c	 2	time series
 	    iformat = iform_ts
 	    write(6,*) 'file is time series with columns: ',nvar
 	    write(6,*) file
+	  else if( iformat == -77 ) then
+	    !write(6,*) 'error opening file: ',file(1:il)
+	    !write(6,*) '(maybe the file is already open?)'
+	    iformat = iform_error_opening
 	  else
-	    write(6,*) 'cannot determine file format: ',file
+	    write(6,*) 'cannot determine file format: ',file(1:il)
 	    write(6,*) 'file is neither FEM file nor time series'
 	    iformat = iform_error
 	  end if
