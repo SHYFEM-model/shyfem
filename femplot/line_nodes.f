@@ -262,7 +262,7 @@ c****************************************************************
 	call read_line(ndim,nl,x,y)
 
 	call read_memory_basin(basin)
-	if( basin .eq. ' ' ) stop 7
+	if( basin .eq. ' ' ) stop
 
 	nb = 1
 	open(nb,file=basin,status='old',form='unformatted')
@@ -307,7 +307,7 @@ c****************************************************************
 	return
    99	continue
 	write(6,*) 'Cannot read memory file .memory'
-	stop 9
+	stop 'error stop read_memory_basin: memory'
 	end
 
 c****************************************************************

@@ -1,5 +1,45 @@
 ============================================================
 
+Fri Dec 12 14:02:24 CET 2014
+
+small changes, bug fix subrst.f
+
+ LOG                     |    6 +
+ fem3d/Makefile          |   11 +-
+ fem3d/bastreat.f        |   89 ------
+ fem3d/bin/fortran.pm    |  401 ++++++++++++++++++++++++++--
+ fem3d/bin/newstruct.pl  |   11 +-
+ fem3d/gotm3d.f          |    2 +-
+ fem3d/grdutil.f         |    4 +-
+ fem3d/haka0d.f          |    2 +-
+ fem3d/lagrange_decay.f  |    2 +-
+ fem3d/new36.f           |   12 +-
+ fem3d/new3di.f          |   19 +-
+ fem3d/newcon.f          |    5 +-
+ fem3d/newcon_1.f        |  690 -----------------------------------------------
+ fem3d/newini.f          |    2 +-
+ fem3d/subapn.f          |    3 +-
+ fem3d/subclo.f          |    8 +-
+ fem3d/subcoo.f          |    2 +-
+ fem3d/subdep.f          |    4 +-
+ fem3d/subdry.f          |    3 +-
+ fem3d/subdwq.f          |    1 -
+ fem3d/subfemfile.f      |    2 +-
+ fem3d/subinterpol1.f    |   29 ++-
+ fem3d/subpar3.f         |    6 +-
+ fem3d/subrst.f          |    9 +-
+ fem3d/subsss.f          |    6 +-
+ fem3d/subtime.f         |    4 +-
+ fem3d/subtsfile.f       |   10 +-
+ fem3d/subver.f          |    2 +-
+ femdoc/final/shyfem.pdf |  Bin 293356 -> 293358 bytes
+ femdoc/final/shyfem.ps  |   28 +-
+ femplot/line_nodes.f    |    4 +-
+ femplot/supiso.f        |    2 +-
+ 32 files changed, 493 insertions(+), 886 deletions(-)
+
+============================================================
+
 Fri Dec  5 18:04:07 CET 2014
 
 New version 7_0_8

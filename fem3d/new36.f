@@ -165,7 +165,7 @@ c local
 	integer itybnd,ideffi
 
 c---------------------------------------------------------------
-        integer ipnt,id,isect
+c        integer ipnt,id,isect
 c       ipnt(id,isect) = lhead + lsect*(isect-1) + id
 c---------------------------------------------------------------
 
@@ -183,11 +183,6 @@ c       save weight
 	real hdry
 	save hdry
 
-c---------------------------------------------------------------
-c        integer ipnt,id,isect
-         ipnt(id,isect) = lhead + lsect*(isect-1) + id
-c---------------------------------------------------------------
-
 c data
 	data binit /.true./
 	data bfull /.false./	!write full info every time step
@@ -199,6 +194,11 @@ c       data weight /1./  !weight to be used
 c+++++++++++++++++++++++++++++++++++++++++++++++
         data czcls /.2,.2,.2/  !$$3
 c+++++++++++++++++++++++++++++++++++++++++++++++
+
+c---------------------------------------------------------------
+        integer ipnt,id,isect
+        ipnt(id,isect) = lhead + lsect*(isect-1) + id
+c---------------------------------------------------------------
 
 	iclose=iround(getpar('iclose'))
 	if(iclose.le.0) return		!no closing enabled

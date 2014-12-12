@@ -1356,7 +1356,7 @@ c initializes variables
 
 	include 'param.h'
 
-	character*(80) name
+	character*80 name
 
 c--------------------------------------------------------
 c get name of file

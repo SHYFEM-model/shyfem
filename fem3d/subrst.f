@@ -30,6 +30,7 @@ c 11.03.2010    ggu     write also vertical velocity
 c 10.02.2012    ggu     write only last record, restart from last record
 c 16.02.2012    aac     write also ecological varibles
 c 28.08.2012    aac     bug fix for restart time = -1 (rdrst_record)
+c 11.12.2014    ccf     bug fix for atime
 c
 c
 c notes :
@@ -140,6 +141,7 @@ c-----------------------------------------------------------------
         write(6,*) 'A restart has been performed'
 	call dtsgf(itrst,line)
         write(6,*) ' requested restart time = ',itrst,line
+	it = nint(atime-atime0)
 	call dtsgf(it,line)
         write(6,*) ' used restart time = ',it,line
         write(6,*) ' nvers,ibarcl,iconz,ieco ',nvers,ibarcl,iconz,ieco
@@ -280,7 +282,7 @@ c-----------------------------------------------------
 
           icall = -1
           call set_output_frequency(itmrst,idtrst,ia_out)
-          if( has_output(ia_out) ) return
+          if( .not. has_output(ia_out) ) return
           icall = 1
 
 	  if( .not. bonce ) then
@@ -362,14 +364,15 @@ c writes one record of restart data
 	integer date,time
 
 	real getpar
+        double precision dgetpar
 
         nvers = 9
 
 	ibarcl = nint(getpar('ibarcl'))
 	iconz = nint(getpar('iconz'))
 	ieco = nint(getpar('ibfm'))
-	date = nint(getpar('date'))
-	time = nint(getpar('time'))
+        date = nint(dgetpar('date'))
+        time = nint(dgetpar('time'))
 
         write(iunit) it,nvers,1
         write(iunit) date,time

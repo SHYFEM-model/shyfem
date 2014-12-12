@@ -319,9 +319,9 @@ c*************************************************************
 	implicit none
 
 	integer iunit
-	character(*) line
+	character*(*) line
 	integer datetime(2)
-	character(*) info
+	character*(*) info
 
 	character*10 key
 	character*75 file
@@ -350,7 +350,7 @@ c*************************************************************
 
 	implicit none
 
-	character(*) line
+	character*(*) line
 	integer datetime(2)
 
 	integer j
@@ -373,8 +373,8 @@ c*************************************************************
 
 	implicit none
 
-	character(*) line
-	character(*) info
+	character*(*) line
+	character*(*) info
 
 	integer i
 	integer ichafs

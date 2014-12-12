@@ -730,7 +730,7 @@ c********************************************************************
 
 	subroutine read_in_hev(file)
 
-	character(*) file
+	character*(*) file
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
@@ -755,7 +755,7 @@ c********************************************************************
 
 	subroutine write_out_hev(file)
 
-	character(*) file
+	character*(*) file
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw

@@ -127,7 +127,7 @@ c********************************************************************
 
       if (Nmx.gt.MaxN) then
          write(*,*) 'MaxN is smaller than Nmx.'
-         write(*,*) 'Increase MaxN in gotmturb.i or decrease Nmx !'
+         write(*,*) 'Increase MaxN in gotmturb.i or decrease Nmx.'
          write(*,*) 'Program interrupted in gotmturb.f'
          stop
       end if 

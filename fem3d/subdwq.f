@@ -530,7 +530,6 @@ C
 C
       INTEGER*4  NODNUM(3,NFELT) , LINNUM(ngrdim,NONODE)
       INTEGER*4  NOLINK(NONODE) ,
-C$1-1line changed
      *           NPOINT(3,NFELT) , IPNT  ( NONODE  )
       CHARACTER*40 name
 	integer nout

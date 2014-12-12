@@ -57,10 +57,10 @@ c =>  C_new = ( C_old V_old + dt * source ) / V_new
 
         real Kx,Kz,Ks,Iopt,L,Kzp,kmp,kmz,kg,kk
         parameter(Kx=140,Kz=0.0002,Ks=0.03,
-c     +             Iopt=500000,
      +             Iopt=6,
      +             L=10000,Kzp=0.00001, kmp=0.069,
      +             kmz=0.0693, kg=0.0693,kk=0.063)
+c     +             Iopt=500000,
       
         real A1,A2,A1A2,A3,B1,B2,B3,B4,C1,C2,D1
         real aIr,T

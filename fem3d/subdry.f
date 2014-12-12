@@ -358,13 +358,12 @@ c        real zm,zmed,d1,d2,det
 c save
         real eps
         save eps
+        data eps /1.e-5/
 c functions
         real getpar
         integer ieext
         logical iseout
         iseout(ie) = iwegv(ie).gt.0
-c data
-        data eps /1.e-5/
 c
         nnn=-802 	!<0 if not needed
 c	itmin=1550100	!0 if not needed

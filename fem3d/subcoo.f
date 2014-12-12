@@ -117,7 +117,7 @@ c
 
 	if( nn .ne. nmax ) then
 		write(6,*) 'coo_debug: ',nmax,nn
-		stop 'error stop coo_debug: nn != nmax'
+		stop 'error stop coo_debug: nn /= nmax'
 	end if
 
 	write(6,*) 'coo_debug: ',nmax,nn

@@ -56,13 +56,13 @@ c**************************************************************
 
 	type, private :: entry
 
-	  character*(6) :: name
-	  character*(6) :: section
+	  character*6 :: name
+	  character*6 :: section
 	  integer :: isize
 	  integer :: itype
 	  double precision :: value
 	  double precision, allocatable :: array(:)
-	  character*(80) :: string
+	  character*80 :: string
 
 	end type entry
 

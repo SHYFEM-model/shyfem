@@ -186,7 +186,7 @@ c particles older than tdead are eliminated
 	tdead = 15*86400
 
 	if( icall .eq. 0 ) then
-	  write(6,*) 'WARNING tdead (lagrange_decay)!',tdead
+	  write(6,*) 'WARNING tdead (lagrange_decay):',tdead
 	  icall=1
 	endif
 

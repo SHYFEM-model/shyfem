@@ -303,7 +303,7 @@ c
      +			.or.l1.eq.' ') then
 		iantw=0
 	else
-		write(nat,*) 'Incorrect answer. Try again!'
+		write(nat,*) 'Incorrect answer. Try again.'
 		goto 1
 	end if
 c
@@ -847,7 +847,7 @@ c
 	else if(ianz.eq.0) then
 		ideflt=k
 	else if(ianz.gt.1) then
-		write(6,*) 'Only one number at a time !'
+		write(6,*) 'Only one number at a time.'
 		goto 1
 	else
 		write(6,*) 'Read error'
@@ -884,7 +884,7 @@ c
 	else if(ianz.eq.0) then
 		fdeflt=r
 	else if(ianz.gt.1) then
-		write(6,*) 'Only one number at a time !'
+		write(6,*) 'Only one number at a time.'
 		goto 1
 	else
 		write(6,*) 'Read error'

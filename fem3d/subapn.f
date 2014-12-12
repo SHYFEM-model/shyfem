@@ -188,11 +188,10 @@ c mode negative: do not ask for new basin and simulation
 	integer iapini,ifileo,idefbas
 
 	save basold
+	data basold / ' ' /
 
 	logical iseven
 	iseven(i) = i .eq. (i/2)*2
-
-	data basold / ' ' /
 
 	iapini=0
 

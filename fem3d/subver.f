@@ -288,7 +288,7 @@ c writes copyright and version/dimension
 
         character*(*) routine
 
-        character*(10) vers
+        character*10 vers
 
 	call get_shyfem_version(vers)
 

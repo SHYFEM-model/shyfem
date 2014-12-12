@@ -137,7 +137,7 @@ c writes first header of fem file
 
 	integer l,nv
 	integer itype(2)
-	integer(kind=8) itlong
+	integer(kind=8) :: itlong
 
 	nv = nvers
 	if( nv .eq. 0 ) nv = 2	!default

@@ -1245,14 +1245,15 @@ c	----------------------------------------------------------------
      +					    hold(l,ii)*fnudge(ii)
      +					  + 3.*fl(ii) 
      +					  - fw(ii)
-c     +					  - rk3*hmed*b(ii)*cbm
-c     +					  - rk3*hmed*c(ii)*ccm
      +					  - rk3*hmed*wdiff(ii)
      +					  - fd(ii)
      +					)
      +			               )
 	  cn(l,k) = cn(l,k) + cdummy
 	end do
+
+c     +					  - rk3*hmed*b(ii)*cbm
+c     +					  - rk3*hmed*c(ii)*ccm
 
 	end do		! loop over l
 

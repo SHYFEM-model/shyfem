@@ -365,30 +365,39 @@ c*******************************************************************
 
 	subroutine node_test
 
+	implicit none
+
 	include 'param.h'
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer nen3v(3,1)
+	common /nen3v/nen3v
 
-        real xgv(1), ygv(1)
-        common /xgv/xgv, /ygv/ygv
+	logical bstop
+	integer ie,ii,iii,k,k1
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	bstop = .false.
 
-	integer ie,ii,k
-
-	write(6,*) 'node_testing ... ',nel,nkn
+	write(6,*) 'node_test ... ',nel,nkn
 	do ie=1,nel
 	  do ii=1,3
 	    k = nen3v(ii,ie)
-	    if( k .le. 0 ) write(6,*) ie,ii,k
+            if( k .le. 0 ) then
+                write(6,*) ie,ii,k
+                bstop = .true.
+	    end if
 	    iii = mod(ii,3) + 1
 	    k1 = nen3v(iii,ie)
-	    if( k .eq. k1 ) write(6,*) ie,(nen3v(iii,ie),iii=1,3)
+            if( k .eq. k1 ) then
+                write(6,*) ie,(nen3v(iii,ie),iii=1,3)
+                bstop = .true.
+            end if
 	  end do
 	end do
-	write(6,*) 'end of node_testing ... '
+	write(6,*) 'end of node_test ... '
+
+	if( bstop ) stop 'error stop node_test: errors'
 
 	end
 

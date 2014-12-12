@@ -1,4 +1,10 @@
 
+12.12.2014
+
+c ./fem3d/subrst.f:
+c 11.12.2014    ccf     bug fix for atime
+
+
 05.12.2014
 
 c ./fem3d/subclo.f:

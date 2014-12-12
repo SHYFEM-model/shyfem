@@ -115,7 +115,7 @@ NEWOBJS = \
 	  newbcl.o newbcl0.o \
 	  newini.o newtra.o \
 	  newchao.o \
-	  newcon.o newcon_1.o newconz.o \
+	  newcon.o newconz.o \
 	  newchk.o newdum.o newfix.o \
 	  newtvd.o newstab.o newsig.o \
 	  newnudge.o
@@ -222,7 +222,8 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 
 RSTOBJS = subrst.o ecological_dummy.o
 
-BASEXTRA = subgeo.o subgrd.o subsrt.o sublnka.o links.o sublnku.o
+BASEXTRA = subgeo.o subgrd.o subsrt.o sublnka.o links.o sublnku.o \
+		subinterpol.o subinterpol1.o subnos.o
 
 NOSOBJS = subnos.o nosutil.o genutil.o subeos.o
 OUSOBJS = subous.o ousutil.o genutil.o 
@@ -230,8 +231,10 @@ ETSOBJS = subets.o etsutil.o genutil.o
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
 		genutil.o
 GRDOBJS = subgrd.o grdutil.o subsrt.o subcoord.o
-BATHYOBJS = subgeo.o subgrd.o subsrt.o subinterpol.o subinterpol1.o \
-		subnos.o
+
+BATHYOBJS = $(BASEXTRA)
+#BATHYOBJS = subgeo.o subgrd.o subsrt.o subinterpol.o subinterpol1.o \
+#		subnos.o
 
 LAPLACE = sublpl.o submir.o subnos.o links.o sublnku.o \
 	  subnosa.o subssm.o

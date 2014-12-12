@@ -220,7 +220,7 @@ c-----------------------------------------------------------------
 
 c*******************************************************************
 
-        subroutine node_test
+        subroutine node_testing
 
 	implicit none
 
@@ -249,7 +249,7 @@ c*******************************************************************
           end do
         end do
         write(6,*) 'end of node_testing ... '
-	if( bstop ) stop 'error stop node_test: errors'
+	if( bstop ) stop 'error stop node_testing: errors'
 
         end
 

@@ -57,26 +57,33 @@ $::not_called = 0 unless $::not_called;
 $::struct = "" unless $::struct;
 $::no_main = 0 unless $::no_main;
 $::min_count = 0 unless $::min_count;
+$::debug = 0 unless $::debug;
+$::parse_later = 0 unless $::parse_later;
 
 $::implicit = 0 unless $::implicit;
+$::content = 0 unless $::content;
 $::compile = 0 unless $::compile;
 
 #----------------------------------------------------------------
 
 $fortran->{no_main} = $::no_main;	# do not insert subs in files with main
 $fortran->{implicit} = $::implicit;
+$fortran->{debug} = $::debug;
+$fortran->{parse_later} = $::parse_later;
+
 $fortran->set_ignore_files(\@ignore_files);
 $fortran->set_ignore_routines(\@ignore_routines);
 
 $fortran->parse_files($::quiet);
-$fortran->parse_routines();
+$fortran->parse_routines() if $::parse_later;
 
 $fortran->check_uniqueness($::more) if $::unique;
 $fortran->show_functions() if $::functions;
 $fortran->show_routines() if $::routines;
 $fortran->show_files() if $::files;
 
-$fortran->show_content();
+$fortran->show_implicit() if $::implicit;
+$fortran->show_content() if $::content;
 
 $fortran->calling_sequence($::struct) if $::struct;
 $fortran->print_calling_times($::min_count);

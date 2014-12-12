@@ -45,13 +45,13 @@
 
 	type, private :: entry
 
-	  character*(20) :: name	! name of option
+	  character*20 :: name		! name of option
 	  integer :: itype		! type (1: number  2: flag  3: string)
 	  double precision :: value	! value if number
 	  logical :: flag		! flag if flag
-	  character*(80) :: string	! string if string
-	  character*(80) :: text	! description for clo_fullusage
-	  character*(80) :: textra	! if number or string extra info
+	  character*80 :: string	! string if string
+	  character*80 :: text		! description for clo_fullusage
+	  character*80 :: textra	! if number or string extra info
 
 	end type entry
 

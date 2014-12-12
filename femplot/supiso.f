@@ -77,7 +77,7 @@ c--------------------------------------------------------------------
 	if( mode .le. 2 .and. nkn .ne. nval ) then
 		write(6,*) 'nval must be nkn :',nval,nkn
 		write(6,*) 'Cannot execute routine isoline'
-		stop 'error stop isoline: nval != nkn'
+		stop 'error stop isoline: nval /= nkn'
 	end if
 
 	call get_flag(flag)

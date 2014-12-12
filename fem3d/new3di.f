@@ -480,15 +480,15 @@ c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 	real uold,vold
 	real dbb,dbc,dcb,dcc,abn,acn
 
+c	data amatr / 2.,1.,1.,1.,2.,1.,1.,1.,2. /	!original
+	data amatr / 4.,0.,0.,0.,4.,0.,0.,0.,4. /	!lumped
+
         integer locsps,loclp,iround
 	real getpar
 	logical iskbnd,iskout,iseout
         iskbnd(k) = inodv(k).ne.0 .and. inodv(k).ne.-2
         iskout(k) = inodv(k).eq.-2
         iseout(ie) = iwegv(ie).ne.0
-
-c	data amatr / 2.,1.,1.,1.,2.,1.,1.,1.,2. /	!original
-	data amatr / 4.,0.,0.,0.,4.,0.,0.,0.,4. /	!lumped
 
 c-------------------------------------------------------------
 c initialization
@@ -1533,12 +1533,13 @@ c local
 	real volo,voln,dt,dvdt,q
 	real dzmax,dz
 c statement functions
-	logical isein
-        isein(ie) = iwegv(ie).eq.0
 	include 'testbndo.h'
 
 	logical is_zeta_bound
 	real volnode
+
+	logical isein
+        isein(ie) = iwegv(ie).eq.0
 
 	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp256w'
 
@@ -1731,12 +1732,14 @@ c local
 	double precision vad(nlvdim,nkndim)
 	double precision wlndv(0:nlvdim,nkndim)
 c statement functions
-	logical isein
-        isein(ie) = iwegv(ie).eq.0
-	include 'testbndo.h'
 
 	logical is_zeta_bound
 	real volnode
+
+	include 'testbndo.h'
+
+	logical isein
+        isein(ie) = iwegv(ie).eq.0
 
 	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp256w'
 

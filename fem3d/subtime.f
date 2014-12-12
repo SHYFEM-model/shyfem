@@ -308,7 +308,7 @@ c controls time step
 
 	  if( isplit .ge. 0 .and. itunit .ne. 1 ) then
 	    write(6,*) 'isplit, itunit: ',isplit,itunit
-	    stop 'error stop set_timestep: itunit != 1 not allowed here'
+	    stop 'error stop set_timestep: itunit /= 1 not allowed here'
 	  end if
 
 	  idtold = 0
@@ -409,7 +409,7 @@ c----------------------------------------------------------------------
 
         if( idtnew .lt. 1 ) then           !should never happen
           call error_stability(dt,rindex)
-          write(6,*) 'idt is less equal 0 !!!'
+          write(6,*) 'idt is less equal 0'
           write(6,*) it,itanf,mod(it-itanf,idtorig)
           write(6,*) idtnew,idtdone,idtrest,idtorig
           write(6,*) idts,idtsync,iloop
