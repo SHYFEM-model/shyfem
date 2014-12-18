@@ -17,8 +17,7 @@ c handles decay of particles
 
         implicit none
         
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
         integer n
         
@@ -54,8 +53,7 @@ c applies decay to all particles
 
 	real ldecay
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	real tdd    !probability of survival
         real age    !age of particle
@@ -93,8 +91,7 @@ c allora la particella sparisce dal calcolo
         include 'param.h'
         include 'lagrange.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	real rdc    !tasso di mortalita'
         real dt     !eta' della particella n-esima
@@ -127,8 +124,7 @@ c*********************************************************************
         include 'param.h'
         include 'lagrange.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         
         integer i
         
@@ -162,8 +158,7 @@ c particles older than tdead are eliminated
         include 'param.h'
         include 'lagrange.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	integer icount
 	data icount /0/

@@ -439,6 +439,23 @@ sub show_content {
     my $file = $ritem->{file};
     my $implicit = $ritem->{implicit};
     print "  $name: $implicit ($file)\n";
+    my $common = $ritem->{common};
+    foreach $name (sort keys %$common) {
+      my $list = $common->{$name};
+      my $line = join(",",@$list);
+      print "    common /$name/ $line\n";
+    }
+    my $save = $ritem->{save};
+    if( $save ) {
+      my $line = join(",",sort keys %$save);
+      print "    save $line\n";
+    }
+    my $declaration = $ritem->{declaration};
+    foreach my $type (sort keys %$declaration) {
+      my $htype = $ritem->{declaration}->{$type};
+      my $line = join(",",sort keys %$htype);
+      print "    $type $line\n";
+    }
   }
 }
 
@@ -519,6 +536,7 @@ sub parse_routine {
     $nline++;
     my $line = $code->[$i];
     $line = $self->clean_line($line);
+    next unless $line;
     while( $i+1 < $n and $code->[$i+1] =~ /^     \S/ ) {	# continuation
       $i++; $nline++;
       my $aux = $code->[$i];
@@ -529,13 +547,6 @@ sub parse_routine {
     }
 
     next if( $cline == 1 );		# skip opening of routine
-
-    $line =~ s/^\s*\d+\s+/ /;		# get rid of label number
-    next if $line =~ /^[cC!*]/;		# line comment
-    next if $line =~ /^\s+!/;		# line comment
-    next if $line =~ /^\s*$/;		# empty line
-
-    $line =~ s/\s*!.*$//;		# trailing comment
 
     print STDERR "parsing: $line\n" if $::bdebug;
     if( not $in_executable ) {
@@ -586,7 +597,7 @@ sub clean_line {
   $line =~ s/^\s*\d+\s+/ /;		# get rid of label number
   $line =~ s/^[cC!*].*$//;		# line comment
   $line =~ s/\s*!.*$//;			# trailing comment
-  $line =~ s/^\s*$//;			# empty line
+  $line =~ s/^\s+$//;			# empty line
 
   return $line;
 }
@@ -594,6 +605,9 @@ sub clean_line {
 sub is_specification {
 
   my ($self,$line,$ritem) = @_;
+
+  my $what = "found";
+  my $type;
 
   $_ = $line;
   s/\s+//g;			# eliminate all space
@@ -607,26 +621,29 @@ sub is_specification {
     $ritem->{include}->{$1} = 1;
   } elsif( /^use(\w+)\b/i ) {
     $ritem->{use}->{$1} = 1;
-  } elsif( $self->parse_type_declaration($_,$ritem) ) {
-  } elsif( /^common\//i ) { $self->parse_common($_,$ritem);
+  } elsif( $type = $self->parse_type_declaration($_,$ritem) ) {
+    $what = "declaration-$type";
+  } elsif( /^common\//i ) { 
+    $self->parse_common($_,$ritem); $what = "common";
   } elsif( /^equivalence\(/i ) { ;
   } elsif( /^parameter\(/i ) { ;
-  } elsif( /^save\w+\b/i or /^save\b/i ) { $self->parse_save($_,$ritem);
+  } elsif( /^optional\w+/i ) { ;
+  } elsif( /^save\w+\b/i or /^save\b/i ) { 
+    $self->parse_save($_,$ritem); $what = "save";
   } elsif( /^data\w+\b/i ) { ;
   } elsif( /^dimension\w+\b/i ) { ;
   } elsif( /^external\w+\b/i or /^intrinsic\w+\b/i ) { ;
   } elsif( /^type\w+\b/i or /^type\b.*::\w+/i) { ;
   } elsif( /^endtype\w*\b/i ) { ;
   } elsif( /^interface\w*$/i or /^endinterface$/i ) { ;
-  } elsif( /^moduleprocedure\w*\b/i ) { ;
   } elsif( /^subroutine\w+\b/i or /^endsubroutine\w*\b/i ) { ;
   } elsif( /^contains\b/i ) { ;
-  } elsif( /^optional\w+\b/i ) { ;
+  } elsif( /^moduleprocedure\w+\b\b/i ) { ;
   } else {
-    return 0;
+    return "";
   }
   print STDERR "is spec: $_\n" if $::bdebug;
-  return 1;
+  return $what;
 }
 
 sub is_executable {
@@ -705,7 +722,7 @@ sub parse_type_declaration {
   foreach my $t (@types) {
     #print "trying $t: $line\n";
     last unless $t;
-    if( $line =~ /^$t(.*)::(.+)$/i ) {	# real, save ::
+    if( $line =~ /^$t(.*)::(.+)$/i ) {			# real, save ::
       $type = $t; $param = $1; $list = $2; $found = 1; last;
     } elsif( $line =~ /^$t(\*\d+)(.+)$/i ) {		# real*8, character*80
       $type = $t; $dim = $1; $list = $2; $found = 2; last;
@@ -720,6 +737,12 @@ sub parse_type_declaration {
     }
   }
   #print "type found ($found): $type\n";
+
+  return $type unless $type;
+  my $alist = split_list($list);
+  foreach my $name (@$alist) {
+    $ritem->{declaration}->{$type}->{$name}++;
+  }
   return $type;
 }
 
@@ -728,20 +751,13 @@ sub parse_save {
   my ($self,$line,$ritem) = @_;
 
   my $orig = $line;
-  my $print = 0;
+  $line =~ s/^save//;
 
-  $line =~ s/^save//i;
-  $line = elim_pars($line);
-  my @f = split(/,/,$line);
+  my $alist = split_list($line);
 
-  print "save:" if $print;
-  foreach my $s (@f) {
-    print " $s" if $print;
-    next if( $s =~ /^\w+$/ );
-    next if( $s =~ /^\/\w+\/$/ );
-    die "*** cannot parse save statement: $orig\n";
+  foreach my $name (@$alist) {
+    $ritem->{save}->{$name}++;
   }
-  print "\n" if $print;
 }
 
 sub parse_common {
@@ -749,13 +765,13 @@ sub parse_common {
   my ($self,$line,$ritem) = @_;
 
   my $orig = $line;
+  $line =~ s/^common//;
+  my ($name,$list);
 
-  while( $line =~ /\/(\w+)\/([^\/]+)(.*)/ ) {
-    my $name = $1;
-    my $list = $2;
-    $line = $3;
-    $list =~ s/,$//;	# pop trailing comma
-    #print "/$name/: $list\n";
+  while(1) {
+    ($name,$list,$line) = $self->next_common($line);
+    last unless $name;
+    $ritem->{common}->{$name} = split_list($list);
   }
 
   if( $line ) {
@@ -763,9 +779,58 @@ sub parse_common {
   }
 }
 
+sub next_common {
+
+  my ($self,$line) = @_;
+
+  if( $line =~ /^\/(\w+)\/([^\/]+)(.*)/ ) {
+    my $name = $1;
+    my $list = $2;
+    $line = $3;
+    $list =~ s/,$//;	# pop trailing comma
+    return ($name,$list,$line);
+  }
+  return;
+}
+
+sub split_var {
+
+  my ($self,$line) = @_;
+
+  return split_list($line);
+}
+
 #----------------------------------------------------------------
 #----------------------------------------------------------------
 #----------------------------------------------------------------
+
+sub split_list {
+
+  my $list = shift;
+
+  return [] unless $list;
+
+  my @alist = ();
+
+  my $m = 0;
+  my $new = "";
+  my @f = split(//,$list);
+  foreach my $c (@f) {
+    if( $c eq "," and $m == 0 ) {
+      push(@alist,$new);
+      $new = "";
+    } else {
+      $new .= "$c";
+    }
+    $m++ if $c eq '(';
+    $m-- if $c eq ')';
+    die "*** cannot parse parenthesis: $list\n" if $m < 0;
+  }
+  die "*** cannot parse parenthesis: $list\n" if $m > 0;
+  push(@alist,$new) if $new;
+
+  return \@alist;
+}
 
 sub elim_string {
 
@@ -979,6 +1044,14 @@ sub print_calling_stack {
 #----------------------------------------------------------------
 #----------------------------------------------------------------
 #----------------------------------------------------------------
+
+sub set_changed {
+
+  my ($self,$file) = @_;
+
+  my $fitem = $self->{files}->{$file};
+  $fitem->{changed} = 1;
+}
 
 sub write_files {
 

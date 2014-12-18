@@ -19,11 +19,10 @@ c written on 06.06.96 by ggu   (from sp159f)
 c parameter
 	include 'param.h'
 c common
-	integer itanf,itend,idt,nits,niter,it
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
 	real unv(1),vnv(1)

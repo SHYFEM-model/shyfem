@@ -172,8 +172,7 @@ c DOCS  END
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -356,6 +355,7 @@ c DOCS  END
 	integer id
 	integer nvar
 
+	integer il
 	character*60 string,string1,string2
 
 	real, external :: getpar
@@ -456,7 +456,8 @@ c DOCS  END
 	    stop 'error stop meteo_set_wind_data: pressure description'
 	  end if
 	  if( bdebug ) then
-	    write(6,*) 'pressure initialized: ',pfact,string
+	    il = len_trim(string)
+	    write(6,*) 'pressure initialized: ',pfact,string(1:il)
 	    write(6,*) 'wind type: ',iwtype
 	  end if
 	end if

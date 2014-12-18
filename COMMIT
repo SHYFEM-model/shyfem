@@ -1,5 +1,81 @@
 ============================================================
 
+Thu Dec 18 18:38:22 CET 2014
+
+femtime converted
+
+ Rules.make                   |    3 +
+ fem3d/Makefile               |    8 +-
+ fem3d/aquabc_fem_interface.f |   12 +-
+ fem3d/bin/fortran.pm         |  137 ++++--
+ fem3d/bin/handle_common.sh   |   79 +++
+ fem3d/bin/newstruct.pl       |    5 +-
+ fem3d/bin/newsubst.pl        |  297 ++++++++++
+ fem3d/ecological_dummy.f     |    4 +-
+ fem3d/flux.f                 |    3 +-
+ fem3d/ht.f                   |    5 +-
+ fem3d/lagrange_connect.f     |    9 +-
+ fem3d/lagrange_decay.f       |   15 +-
+ fem3d/lagrange_dif.f         |    3 +-
+ fem3d/lagrange_flux.f        |    3 +-
+ fem3d/lagrange_inout.f       |    9 +-
+ fem3d/lagrange_main.f        |    6 +-
+ fem3d/lagrange_oil.f         |    3 +-
+ fem3d/new36.f                |    3 +-
+ fem3d/new3di.f               |   15 +-
+ fem3d/newbcl.f               |    6 +-
+ fem3d/newchao.f              |    3 +-
+ fem3d/newchk.f               |   27 +-
+ fem3d/newcon.f               |   24 +-
+ fem3d/newconz.f              |    6 +-
+ fem3d/newcra.f               |    3 +-
+ fem3d/newfix.f               |    3 +-
+ fem3d/newnohydro.f           |    9 +-
+ fem3d/newnudge.f             |    3 +-
+ fem3d/param.h                |    4 +-
+ fem3d/subboxa.f              |    3 +-
+ fem3d/subcon1.f              |    9 +-
+ fem3d/subcus.f               |   54 +--
+ fem3d/subdif.f               |    6 +-
+ fem3d/subdry.f               |    6 +-
+ fem3d/subdwq.f               |    3 +-
+ fem3d/subexta.f              |    3 +-
+ fem3d/subfemintp.f           |   50 ++-
+ fem3d/subflx3d.f             |    3 +-
+ fem3d/subflxa.f              |    3 +-
+ fem3d/subfnm.f               |  465 ----------------
+ fem3d/subgotm.f              |    9 +-
+ fem3d/subgotm_mud.f          |    9 +-
+ fem3d/sublnks.f              |    6 +-
+ fem3d/submet.f               |    3 +-
+ fem3d/submeteo2.f            |    7 +-
+ fem3d/subn11.f               |   21 +-
+ fem3d/subnetcdf_admin.f      |  287 ----------
+ fem3d/subnetcdf_hydro.f      | 1216 ------------------------------------------
+ fem3d/subnsh.f               |   26 +-
+ fem3d/suboff.f               |    3 +-
+ fem3d/subousa.f              |    3 +-
+ fem3d/subouta.f              |    3 +-
+ fem3d/subpar.h               |   51 --
+ fem3d/subres.f               |   15 +-
+ fem3d/subtrace.f             |    3 +-
+ fem3d/subvola.f              |    3 +-
+ fem3d/subwaves.f             |    3 +-
+ femadj/param.h               |    4 +-
+ femplot/param.h              |    4 +-
+ param.h                      |    4 +-
+ 60 files changed, 664 insertions(+), 2328 deletions(-)
+ new file:
+   fem3d/bin/handle_common.sh
+   fem3d/bin/newsubst.pl
+ deleted:
+    fem3d/subfnm.f
+    fem3d/subnetcdf_admin.f
+    fem3d/subnetcdf_hydro.f
+    fem3d/subpar.h
+
+============================================================
+
 Fri Dec 12 14:05:13 CET 2014
 
 New version 7_0_9

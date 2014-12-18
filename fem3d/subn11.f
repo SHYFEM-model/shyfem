@@ -135,8 +135,7 @@ c		2 : read in b.c.
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	real eps1,eps2,pi,flag,high,higi
 	common /mkonst/ eps1,eps2,pi,flag,high,higi
@@ -174,7 +173,7 @@ c		2 : read in b.c.
 	integer kranf,krend,k,kn
 	integer ibc,ibtyp
         integer nk,i,kk,kindex,iv
-        integer nsize
+        integer nsize,il
         integer iunrad,ktilt
 	integer ip,l,lmax,ivar
 	integer levflx
@@ -260,7 +259,6 @@ c	-----------------------------------------------------
             nodes(i) = kbnds(ibc,i)
 	  end do
 	  call get_boundary_file(ibc,'zeta',zfile)
-	  !if( ibc .eq. 1 ) zfile='otranto2007_3d.fem'
 	  call get_bnd_ipar(ibc,'ibtyp',ibtyp)
 	  call get_bnd_ipar(ibc,'intpol',intpol)
 	  if( intpol .le. 0 ) then
@@ -281,7 +279,8 @@ c	-----------------------------------------------------
 	  end if
 	  call iff_set_description(id,ibc,auxname)
 	  ids(ibc) = id
-	  write(6,*) 'z boundary file opened: ',ibc,id,zfile
+	  il = len_trim(zfile)
+	  write(6,*) 'boundary file opened: ',ibc,id,zfile(1:il)
 	end do
 
 	!call iff_print_info(ids(1))
@@ -493,8 +492,7 @@ c	nodes are linearly interpolated between start-ktilt and ktilt-end
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	integer irv(1)
 	common /irv/irv
@@ -570,8 +568,7 @@ c if ktilt is not given nothing is tilted
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	real grav,fcor,dcor,dirn,rowass,roluft
 	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
@@ -1110,8 +1107,7 @@ c**********************************************************************
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
         integer ilhkv(1)
         common /ilhkv/ilhkv
@@ -1161,8 +1157,7 @@ c checks scalar flux
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         real eps1,eps2,pi,flag,high,hihi
         common /mkonst/ eps1,eps2,pi,flag,high,hihi
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 

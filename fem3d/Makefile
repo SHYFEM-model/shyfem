@@ -52,11 +52,10 @@ ifeq ($(SOLVER),SPARSKIT)
 endif
 
 EXENC = 
-NETCDF_OBJ = subnetcdf_dummy.o
+NETCDF_OBJ = 
 DIRLIB_NETCDF = $(NETCDFDIR)/lib/
 DIRINC_NETCDF = $(NETCDFDIR)/include
 ifeq ($(NETCDF),true)
-  NETCDF_OBJ       = subnetcdf_admin.o subnetcdf_hydro.o
   NETCDF_OBJ       = netcdf.o netcdf_util.o
   LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDF)
   LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDF).a
@@ -261,7 +260,7 @@ QFLUX_TEST = subqfxf.o \
 
 # experimental stuff
 
-PARMOD = subpar.o subfnm.o		# old parameter modules
+#PARMOD = subpar.o subfnm.o		# old parameter modules
 #PARMOD = subpar1.o			# new parameter modules
 PARMOD = subpar3.o			# newest parameter modules
 IFF_FILES = 
@@ -931,8 +930,6 @@ submud.o: param.h
 submud_dummy.o: param.h
 subn11.o: intp_fem_file.mod param.h
 subn35.o: param.h chezy.h
-subnetcdf_admin.o: param.h
-subnetcdf_hydro.o: netcdf.inc
 subnev.o: ev.h
 subnos.o: nosinf.h
 subnsh.o: modules.h
@@ -940,7 +937,6 @@ suboff.o: param.h
 subous.o: ousinf.h
 subousa.o: param.h
 suboutput.o: femtime.h
-subpar1.o: subpar.h
 para.mod: subpar3.o
 subpard.o: param.h omp_lib.mod common.h nkonst.h
 subproj.o: param.h

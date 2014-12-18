@@ -71,8 +71,7 @@ c argument
 c parameter
 	include 'param.h'
 c common
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
@@ -296,8 +295,7 @@ c checks important variables
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -406,9 +404,8 @@ c writes debug information on dry areas
 	include 'param.h'
 
 c common
-	integer itanf,itend,idt,nits,niter,it
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer iwegv(1)
 	common /iwegv/iwegv
@@ -437,11 +434,10 @@ c writes debug information on final volume around node k (internal)
 	include 'param.h'
 
 c common
-	integer itanf,itend,idt,nits,niter,it
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
 	real eps1,eps2,pi,flag,high
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /level/ nlvdi,nlv
 	common /mkonst/ eps1,eps2,pi,flag,high
@@ -571,10 +567,9 @@ c writes some min/max values to stdout
 
         character*(*) string
 c common
-        integer itanf,itend,idt,nits,niter,it
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /level/ nlvdi,nlv
 
@@ -713,8 +708,7 @@ c computes and writes total water volume
 
 	integer mode
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
         real mtot              !total computed mass of ts
 	double precision masscont
@@ -1030,8 +1024,7 @@ c*************************************************************
 	include 'param.h'
 	include 'ev.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
@@ -1229,8 +1222,7 @@ c writes debug information on node k
 	integer iucheck
 	common /iucheck/iucheck
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
         integer nen3v(3,1)
         common /nen3v/nen3v
@@ -1311,8 +1303,7 @@ c writes debug information on element ie
 	integer iucheck
 	common /iucheck/iucheck
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v

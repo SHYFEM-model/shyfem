@@ -37,10 +37,9 @@ c common
 	real grav,fcor,dcor,dirn,rowass,roluft
 	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	integer itanf,itend,idt,nits,niter,it
 	real eps1,eps2,pi,flag,high
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	common /mkonst/ eps1,eps2,pi,flag,high
 	integer nen3v(3,1)
 	real zov(1),znv(1)

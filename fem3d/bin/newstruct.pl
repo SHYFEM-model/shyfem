@@ -15,10 +15,7 @@ my @ignore_routines = (
 		);
 
 my @ignore_files = (
-			 "subfnm.f"
-			,"subsse.f"
-
-			,"subomp_dummy.f"
+			"subomp_dummy.f"
 
 			,"subgotm_mud.f"
 			,"submud_dummy.f"

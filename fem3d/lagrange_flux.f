@@ -301,8 +301,7 @@ c internal section is defined by:  kbefor - k - kafter
 	real transp(1)
 	integer elems(1)
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	include 'ev.h'
         real utlnv(nlvdim,1)

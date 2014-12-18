@@ -29,10 +29,9 @@ c
         implicit none
 c
 c common
-        integer itanf,itend,idt,nits,niter,it
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	real uov(1),vov(1),unv(1),vnv(1)
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /uov/uov, /vov/vov, /unv/unv, /vnv/vnv
 c local

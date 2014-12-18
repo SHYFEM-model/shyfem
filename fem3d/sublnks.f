@@ -119,10 +119,9 @@ c ... iwegv has already been set
 
 c common
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
         integer ieltv(3,1),kantv(2,1)
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         common /ieltv/ieltv,/kantv/kantv
 c local
         character*80 nam,dir,file
@@ -319,10 +318,9 @@ c
 c
 c common
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
         integer iwegv(1)
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         common /iwegv/iwegv
 	include 'ev.h'
 c local

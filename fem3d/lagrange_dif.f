@@ -24,8 +24,7 @@ c******************************************************************
         include 'param.h'
         include 'lagrange.h' 
         
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         real dt,ttime
         
         real k ! coefficiente di diffusione        

@@ -20,8 +20,7 @@ c*******************************************************************
 
 	logical brelease	!is inside release times?
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	integer np
 	integer iep(nconnect_dim)
@@ -243,8 +242,7 @@ c*******************************************************************
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	logical bin,bout
 	integer ie_from,ip_to,ip_from,ip_to_orig
@@ -337,8 +335,7 @@ c*******************************************************************
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	real hev(1)
 	common /hev/hev
 

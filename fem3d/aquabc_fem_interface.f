@@ -1825,7 +1825,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 	!write(6,*) 'check_var: ',title
 
-        text = '!!! BIO CHECK'
+        text = 'BIO CHECK'
 C Changed by Petras 11 January 2005 to pass number of variable 
        do i=1,nstate	  
         call check2Dbio(it,ulog,nlv,nkn,70+i,e(1,1,i),
@@ -2111,7 +2111,7 @@ c-------------------------------------------------------
         write(6,*) '... reading file',file
         stop 'error stop inicfil'
    91   continue
-        write(6,*) 'bad file type descriptor: value 1 or 2 is allowed!'
+        write(6,*) 'bad file type descriptor: value 1 or 2 is allowed'
         write(6,*) '... reading file',file
         stop 'error stop inicfil'
    96   continue
@@ -2142,8 +2142,7 @@ c prints stats after last time step
         character  date*8, time*10           !Added by Petras 11.09.2004
         character  startdate*8, starttime*10
          
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	write(6,1035) it,niter
  1035   format(' program stop at time =',i10,' seconds'/
@@ -3066,7 +3065,7 @@ C             CONVERT EXTERNAL NODES TO INTERNAL
 	stop 'error stop biotser_init'
   200 continue
       write(6,*) 'ERROR, LESS TIME SERIES PLOT DATA AVAILABLE ',
-     +            'THEN REQUIRED !!!'
+     +            'THEN REQUIRED'
       stop 'error stop biotser_init'
 	return	
 	end !biotser_init
@@ -3101,8 +3100,7 @@ c                                                        5...
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       include 'param.h'
-      integer itanf,itend,idt,nits,niter,it
-      common /femtim/ itanf,itend,idt,nits,niter,it	
+	include 'femtime.h'
 
       real e(nlvd,nkndim,noutput)	!state variables
       real dg  (nlvd,nkndim,nstate,NDIAGVAR) !intermediate variables

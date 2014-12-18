@@ -28,8 +28,7 @@ c writes and administers ous file
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 

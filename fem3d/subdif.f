@@ -471,8 +471,7 @@ c	2	smagorinsky (variable with area and time)
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
         real v1v(1), v2v(1)
         common /v1v/v1v, /v2v/v2v
@@ -660,11 +659,10 @@ c***************************************************************************
 
         include 'param.h'
         
-        integer itanf,itend,idt,nits,niter,it
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
-        common /femtim/itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         common /nkonst/nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         
 	include 'ev.h'

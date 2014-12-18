@@ -94,8 +94,7 @@ c writes output to terminal or log file
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	real grav,fcor,dcor,dirn,rowass,roluft
 	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	character*80 descrp,descrr
 	common /descrp/ descrp
 	common /descrr/ descrr
@@ -245,8 +244,7 @@ c to do before time loop
 
 	include 'modules.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	call wrboxa(it)
 
@@ -262,8 +260,7 @@ c to do in time loop before time step
 
 	include 'modules.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	call modules(M_BEFOR)
 
@@ -284,8 +281,7 @@ c to do in time loop after time step
 
 	include 'modules.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	call modules(M_AFTER)
 
@@ -304,7 +300,7 @@ c	call wrexta(it)
 c        call tsmed
 	call ts_shell
 
-	call wrnetcdf		!output in netcdf format
+c	call wrnetcdf		!output in netcdf format - not supported
 
 	call custom(it)
 
@@ -546,8 +542,7 @@ c initializes parameters for semi-implicit time-step
 	real weight
 	common /semimr/ weight
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	integer icall
 	save icall
@@ -595,8 +590,7 @@ c returns actual az
 
 	real azpar
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	real ampar
 	real getpar
@@ -619,8 +613,7 @@ c returns actual az,am
 	real azpar
 	real ampar
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	real getpar
 
@@ -776,8 +769,7 @@ c writes info on total energy to info file
 
 	implicit none
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	real kenergy,penergy,tenergy
 

@@ -109,7 +109,7 @@
 	integer, parameter, private :: ndim = 300
 	type(info), save, dimension(ndim) :: pinfo
 
-	integer, save :: idnext = 0
+	integer, save :: idlast = 0
 
 	integer, save :: date_fem = 0
 	integer, save :: time_fem = 0
@@ -148,7 +148,7 @@
 
 	if( idp <= 0 ) then
 	  ids = 1
-	  ide = idnext
+	  ide = idlast
 	else
 	  ids = idp
 	  ide = idp
@@ -215,7 +215,7 @@
 
 	integer id
 
-	do id=1,idnext
+	do id=1,idlast
 	  if( ibc .eq. pinfo(id)%ibc ) then
 	    call iff_print_info(id,iunit,bdebug)
 	  end if
@@ -472,6 +472,7 @@
 	integer nvar_orig
 	integer datetime(2)
 	integer ntype,itype(2)
+	integer id0,ibc
 	logical breg
 	logical bok
 	logical bts,bfem,bnofile,bfile,berror,bnosuchfile,boperr
@@ -480,11 +481,11 @@
 	! get new id for file
 	!---------------------------------------------------------
 
-	idnext = idnext + 1
-	if( idnext > ndim ) then
+	idlast = idlast + 1
+	if( idlast > ndim ) then
 	  stop 'error stop iff_init: too many files opened'
 	end if
-	id = idnext
+	id = idlast
 
 	call iff_init_entry(id)
 
@@ -593,7 +594,7 @@
 	if( iunit < 0 ) goto 99
 	pinfo(id)%iunit = iunit
 
-	write(6,*) 'file opened: ',id,file
+	write(6,*) 'file opened: ',id,file(1:il)
 
 	!---------------------------------------------------------
 	! populate data base
@@ -608,8 +609,13 @@
 	return
    91	continue
 	write(6,*) 'error opening file: ',file(1:il)
-	write(6,*) '(maybe the file is already open?)'
-	write(6,*) 'iformat = ',iformat
+	id0 = iff_find_id_to_file(file)
+	if( id0 > 0 ) then
+	  ibc = pinfo(id0)%ibc
+	  write(6,*) 'the file is already open on boundary ',ibc
+	else 
+	  write(6,*) 'iformat = ',iformat
+	end if
 	stop 'error stop iff_init'
    93	continue
 	write(6,*) 'error in file: ',file(1:il)
@@ -706,7 +712,7 @@ c	 2	time series
 	    ntype = 0
 	    iformat = iform_ts
 	    write(6,*) 'file is time series with columns: ',nvar
-	    write(6,*) file
+	    write(6,*) file(1:il)
 	  else if( iformat == -77 ) then
 	    !write(6,*) 'error opening file: ',file(1:il)
 	    !write(6,*) '(maybe the file is already open?)'
@@ -726,6 +732,26 @@ c	 2	time series
 	end if
 
 	end subroutine iff_get_file_info
+
+!****************************************************************
+
+	function iff_find_id_to_file(file)
+
+! finds id given file, returns 0 if file is not open
+
+	integer iff_find_id_to_file
+	character*(*) file
+
+	integer id
+
+	do id=1,idlast
+	  if( file == pinfo(id)%file ) exit
+	end do
+	if( id > idlast ) id = 0
+
+	iff_find_id_to_file = id
+
+	end function iff_find_id_to_file
 
 !****************************************************************
 
@@ -1479,7 +1505,7 @@ c global lmax and lexp are > 1
 	! set up parameters
 	!---------------------------------------------------------
 
-	if( id < 1 .or. id > idnext ) goto 95
+	if( id < 1 .or. id > idlast ) goto 95
         iformat = pinfo(id)%iformat
 	if( iformat == -3 ) goto 96
 
@@ -1541,7 +1567,7 @@ c global lmax and lexp are > 1
 
 	return
    95	continue
-	write(6,*) 'id out of range: ',id,idnext
+	write(6,*) 'id out of range: ',id,idlast
 	call iff_print_file_info(0)
 	stop 'error stop iff_time_interpolate: internal error (1)'
    96	continue

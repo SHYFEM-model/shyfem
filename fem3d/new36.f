@@ -107,8 +107,7 @@ c vdate		velocity variable used in mode
 	include 'close.h'
 
 c common
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         real eps1,eps2,pi,flag,high,higi

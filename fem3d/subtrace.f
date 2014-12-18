@@ -56,8 +56,7 @@ c*****************************************************************
 
 	include 'param.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
         real zeov(3,1)
 	common /zeov/zeov

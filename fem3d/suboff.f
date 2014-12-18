@@ -45,8 +45,7 @@ c-----------------------------------------------------
 	!parameter (nintp=2)		!grade of interpolation
 	parameter (nintp=4)		!grade of interpolation
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	integer ioffline
 	common /ioffline/ioffline

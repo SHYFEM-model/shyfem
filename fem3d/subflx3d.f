@@ -359,8 +359,7 @@ c passed in are pointers to these section in lnk structure
 	integer ndim		!must be at least ngr
 	parameter (ndim=100)
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	include 'ev.h'
 	include 'links.h'

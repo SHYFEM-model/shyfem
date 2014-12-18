@@ -186,11 +186,10 @@ c
 c parameter
 	include 'param.h'
 c common
-	integer itanf,itend,idt,nits,niter,it
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	real rqv(1),v1v(1),v2v(1)
 	real zov(1),znv(1),unv(1),vnv(1)
@@ -423,11 +422,10 @@ c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	real eps1,eps2,pi,flag,high
 	real grav,fcor,dcor,dirn,rowass,roluft
-	integer itanf,itend,idt,nits,niter,it
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /mkonst/ eps1,eps2,pi,flag,high
 	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	integer nen3v(3,1),ilhv(1)
 	integer iarv(1)
@@ -665,10 +663,9 @@ c******************************************************************
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	real grav,fcor,dcor,dirn,rowass,roluft
-	integer itanf,itend,idt,nits,niter,it
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	integer ie
 	integer ith
@@ -796,12 +793,11 @@ c common
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	real eps1,eps2,pi,flag,high
 	real grav,fcor,dcor,dirn,rowass,roluft
-	integer itanf,itend,idt,nits,niter,it
 	integer nlvdi,nlv
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /mkonst/ eps1,eps2,pi,flag,high
 	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	common /level/ nlvdi,nlv
 	integer nen3v(3,1)
 	integer ilhv(1)
@@ -1333,12 +1329,11 @@ c common
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	real eps1,eps2,pi,flag,high
 	real grav,fcor,dcor,dirn,rowass,roluft
-	integer itanf,itend,idt,nits,niter,it
 	integer nlvdi,nlv
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /mkonst/ eps1,eps2,pi,flag,high
 	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	common /level/ nlvdi,nlv
 	integer nen3v(3,1)
 	integer ilhv(1)

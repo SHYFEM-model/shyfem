@@ -139,8 +139,7 @@ c common
 	integer nlvdi,nlv
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /level/ nlvdi,nlv
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         real grav,fcor,dcor,dirn,rowass,roluft
         common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
         real rrho0	
@@ -445,8 +444,7 @@ c common
 	integer nlvdi,nlv
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /level/ nlvdi,nlv
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	real difv(0:nlvdim,1)
 	common /difv/difv
 	real difhv(nlvdim,1)
@@ -626,8 +624,7 @@ c********************************************************************
 	 common /level/ nlvdi,nlv
          integer ilhv(1), ilhkv(1)
          common /ilhv/ilhv, /ilhkv/ilhkv
-	 integer itanf,itend,idt,nits,niter,it
-	 common /femtim/itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
          integer nen3v(3,1)
 	 common /nen3v/nen3v
          double precision qpnv(nlvdim,nkndim)

@@ -138,8 +138,7 @@ c****************************************************************
 	include 'basin.h'
 	include 'nudge.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	real andgzv(nkndim)		!contribution to z-computation
 	common /andgzv/andgzv

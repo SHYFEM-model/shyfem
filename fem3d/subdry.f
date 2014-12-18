@@ -147,8 +147,7 @@ c aux
 c	real rz,rh,rx,rxmin
 c	integer k,iex
 c	integer iz(30),ih(30),izh(30),ix(30),ixx(30)
-        integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	integer itold
 	save itold
@@ -336,8 +335,7 @@ c
 c common
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer iwegv(1),nen3v(3,1)
         common /iwegv/iwegv, /nen3v/nen3v
         real zenv(3,1),hm3v(3,1)

@@ -223,8 +223,7 @@ c on return iu = -1 means that no file has been opened and is not written
         common /descrp/ descrp
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer ilhkv(1)
         common /ilhkv/ilhkv
         real hlv(1), hev(1)
@@ -366,8 +365,7 @@ c shell for writing file unconditionally to disk
 	integer nlvdim		!vertical dimension of c
 	real c(nlvdim,1)	!concentration to write
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -596,8 +594,7 @@ c arguments
 c common
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer ilhkv(1)
         common /ilhkv/ilhkv
 c local

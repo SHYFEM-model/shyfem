@@ -941,8 +941,7 @@ c*****************************************************************
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 c local
         integer ie,ii,k
 c	integer ibc,nbc
@@ -995,8 +994,7 @@ c*****************************************************************
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	real znv(1)
 	common /znv/znv
 c local
@@ -1339,8 +1337,7 @@ c computes residence time online - one value for whole lagoon
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
         integer nen3v(3,1)
         common /nen3v/nen3v
@@ -1657,8 +1654,7 @@ c reset conz for fra
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
         integer nen3v(3,1)
         common /nen3v/nen3v
@@ -1754,8 +1750,7 @@ c*****************************************************************
 
         include 'param.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
@@ -1945,8 +1940,7 @@ c*****************************************************************
 
 	include 'param.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	real kenerg,penerg,tenerg
 
@@ -1973,8 +1967,7 @@ c*****************************************************************
 
 	include 'param.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	real kenerg,penerg,tenerg
 
@@ -2094,8 +2087,7 @@ c*****************************************************************
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
         integer edim
         parameter(edim = 20) !20!number of element near the open boundary
@@ -2496,8 +2488,7 @@ c C(x,t) =  1/(4*pi*a*t) * exp( -|x|**2/(4*a*t) )		(n=2)
 
 	include 'param.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         real cnv(nlvdim,nkndim)
         common /cnv/cnv
 
@@ -2939,8 +2930,7 @@ c test for horizontal diffusion algorithm
 
 	include 'param.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         real cnv(nlvdim,nkndim)
         common /cnv/cnv
 
@@ -2999,8 +2989,7 @@ c viscosity algorithm
 
 	include 'param.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -3049,8 +3038,7 @@ c the solution is normalized, i.e.  int(C(x,t)dx) = 1 over the whole area
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
         real cnv(nlvdim,nkndim)
@@ -3560,8 +3548,7 @@ c**********************************************************************
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
         real uprv(nlvdim,1),vprv(nlvdim,1)
         common /uprv/uprv, /vprv/vprv
@@ -3620,8 +3607,7 @@ c debugging skadar application
 
 	implicit none
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	integer ie,it0
 
@@ -3661,8 +3647,7 @@ c**********************************************************************
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
         integer ilhkv(1)
         common /ilhkv/ilhkv
@@ -3701,8 +3686,7 @@ c**********************************************************************
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
         integer ilhkv(1)
         common /ilhkv/ilhkv
@@ -3736,8 +3720,7 @@ c time of inundation for theseus
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
         integer iwegv(1)
         common /iwegv/iwegv
@@ -3929,8 +3912,7 @@ c**********************************************************************
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
         integer ilhkv(1)
         common /ilhkv/ilhkv

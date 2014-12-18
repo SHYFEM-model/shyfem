@@ -176,8 +176,7 @@ c computes heat flux through bulk formulas
 
 	include 'param.h'
 
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	real tempv(nlvdim,nkndim)

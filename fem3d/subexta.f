@@ -19,8 +19,7 @@ c******************************************************************
 
 	include 'modules.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	if( mode .eq. M_AFTER ) then
 	   call wrexta(it)

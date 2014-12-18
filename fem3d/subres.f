@@ -47,8 +47,7 @@ c common
 	common /descrp/ descrp
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -274,14 +273,13 @@ c parameter
 c common
 	character*80 descrp
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	integer itanf,itend,idt,nits,niter,it
 	real zenv(3,1),hm3v(3,1)
 	real unv(1),vnv(1)
 	integer nen3v(3,1)
 	real v1v(1),v2v(1)
 	common /descrp/ descrp
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 	common /zenv/zenv, /hm3v/hm3v
 	common /unv/unv, /vnv/vnv
 	common /nen3v/nen3v
@@ -469,8 +467,7 @@ c parameter
 c common
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -677,8 +674,7 @@ c parameter
 c common
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -804,8 +800,7 @@ c parameter
 c common
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	integer itanf,itend,idt,nits,niter,it
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	real saux1(nlvdim,nkndim)
 	common /saux1/saux1

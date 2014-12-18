@@ -114,7 +114,7 @@ c variables and coefficients
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /mkonst/ eps1,eps2,pi,flag,high,hihi
 	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-	common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	common /level/ nlvdi,nlv
 
@@ -806,8 +806,7 @@ c*****************************************************************
 
 	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	integer ilhkv(nkndim)
 	common /ilhkv/ilhkv

@@ -30,8 +30,7 @@ c	parameter(nxdim=140,nydim=170)
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	real r(ndim)		!diverg. corrected fluxes out of element
 	real t(ndim)		!original fluxes into element

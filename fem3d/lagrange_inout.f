@@ -25,8 +25,7 @@ c z = 0.5 (corresponding to larva in water)
 	include 'param.h'
 	include 'lagrange.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	integer ie	!element of particle - if unknown use 0
 	real rtime	!time to be advected (relative to time step - 0 all dt)
@@ -244,8 +243,7 @@ c outputs particles as density (concentration) to NOS file
 
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v
@@ -370,8 +368,7 @@ c deletes particles not in system and compresses array
 	include 'param.h'
 	include 'lagrange.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	integer ifree,icopy,i
 	integer nbefore

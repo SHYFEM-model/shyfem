@@ -65,8 +65,7 @@ c computes turbulent quantities with Munk - Anderson model
 
 	include 'param.h'
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer nlvdi,nlv
@@ -215,8 +214,7 @@ c computes turbulent quantities with GOTM model
  
         save /numv_gotm/,/nuhv_gotm/,/tken_gotm/,/eps_gotm/,/rls_gotm/
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer nlvdi,nlv
@@ -949,8 +947,7 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
         common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         real grav,fcor,dcor,dirn,rowass,roluft
         common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
         real rhov(nlvdim,nkndim)
         common /rhov/rhov                                                       
