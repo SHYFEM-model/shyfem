@@ -23,6 +23,7 @@ $::zip = 0 unless $::zip;
 $::rewrite = 0 unless $::rewrite;
 $::sect = "" unless $::sect;
 $::txt = 0 unless $::txt;
+$::debug = 0 unless $::debug;
 #-------------------------------------------------------------
 
 #-------------------------------------------------------------
@@ -43,6 +44,7 @@ $::txt = 0 unless $::txt;
 my $file = $ARGV[0];
 
 my $str = new str;
+#$str->{verbose} = 1;
 $str->read_str($file) if $file;
 
 if( $::h or $::help ) {
@@ -198,6 +200,7 @@ sub show_files {
 
   foreach my $section (@$sequence) {
     my $sect = $sections->{$section};
+    my $section_id = $sect->{id};
 
     $new = "";
     if( $sect->{name} eq "bound" ) {
@@ -228,9 +231,15 @@ sub show_name {
   my $sect_number = $sect->{number}; 
   my $sect_id = $sect->{id}; 
 
+  if( $::debug ) {
+    print STDERR "searching files: $sect_name ($sect_number) $sect_id\n";
+  }
+
   foreach my $name (@$var_names) {
     my $value = $str->get_value($name,$sect_name,$sect_number);
+    print STDERR "  $name  (no value)\n" if not defined $value and $::debug;
     if( defined $value ) {
+      print STDERR "  $name  $value\n" if $::debug;
       print "$sect_id :    $name = $value\n";
       $value =~ s/\'//g;
       push(@files,$value);
@@ -301,7 +310,7 @@ sub zip_files {
 
   my ($files) = @_;
 
-  my $zipfile = "new_zip.zip";
+  my $zipfile = "new_str_zip.zip";
 
   unlink "$zipfile" if ( -f $zipfile );
 

@@ -40,9 +40,6 @@ export NLVDIM = 1
 export NKNDIM = 11000
 export NELDIM = 22000
 
-export NKNDIM = 16000
-export NELDIM = 30000
-
 ##############################################
 # Compiler
 ##############################################

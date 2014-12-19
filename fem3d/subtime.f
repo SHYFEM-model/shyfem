@@ -65,6 +65,7 @@ c 05.03.2014    ggu     new routines get_last/first_time()
 c 10.04.2014    ccf     new section "wrt" for water renewal time
 c 29.10.2014    ggu     do_() routines transfered from newpri.f
 c 10.11.2014    ggu     time management routines transfered to this file
+c 19.12.2014    ggu     accept date also as string
 c
 c************************************************************
 c
@@ -204,7 +205,29 @@ c setup and check date parameter
 	implicit none
 
 	integer date,time
+	double precision ddate,dtime
+	integer year,month,day,hour,min,sec
+	integer ierr
+	character*20 text
 	double precision dgetpar
+
+	call getfnm('date',text)
+	if( text .ne. ' ' ) then	!string value given
+	  call dtsunform(year,month,day,hour,min,sec,text,ierr)
+	  if( ierr .ne. 0 ) then
+	    write(6,*) 'date: ',text
+	    stop 'error stop setup_date: cannot parse date'
+	  end if
+	  date = 10000*year + 100*month + day
+	  time = 10000*hour + 100*min + sec
+	  ddate = date
+	  dtime = time
+	  call dputpar('date',ddate)
+	  call dputpar('time',dtime)
+	  !write(6,*) '===================================='
+	  !write(6,*) 'date as string: ',date,time
+	  !write(6,*) '===================================='
+	end if
 
 	date = nint(dgetpar('date'))
 	time = nint(dgetpar('time'))
@@ -220,10 +243,13 @@ c setup and check date parameter
 	write(6,*) 'If you want to do without this faeture, please'
 	write(6,*) 'explicitly set the date parameter to 0'
 	write(6,*) 'in the parameter file.'
+	write(6,*) 'Alternatively, you can also specify date as a string.'
+	write(6,*) 'The format is ''YYYY-MM-DD[::hh:mm:ss]'''
 	write(6,*) 'Examples:'
 	write(6,*) '   date = 20120101'
-	write(6,*) '   date = 2012       # same as above'
-	write(6,*) '   date = 0          # no date feature'
+	write(6,*) '   date = 2012                 # same as above'
+	write(6,*) '   date = ''2012-01-01''         # same as above'
+	write(6,*) '   date = 0                    # no date feature'
 
 	stop 'error stop ckdate: date'
 	end

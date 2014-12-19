@@ -1,5 +1,30 @@
 ============================================================
 
+Fri Dec 19 12:38:23 CET 2014
+
+accept date also as string
+
+ LOG                            |    6 +
+ RELEASE_NOTES                  |   64 +++++
+ Rules.make                     |    3 -
+ fem3d/param.h                  |    4 +-
+ fem3d/suboutput.f              |    2 +-
+ fem3d/subtime.f                |   30 ++-
+ femadj/param.h                 |    4 +-
+ fembin/gitcommit               |   15 ++
+ fembin/strparse.pl             |   11 +-
+ femdoc/Release_notes_7.0v3.tex |  537 ++++++++++++++++++++++++++++++++++++++++
+ femdoc/final/shyfem.pdf        |  Bin 293358 -> 293358 bytes
+ femdoc/final/shyfem.ps         |   28 +-
+ femlib/perl/str.pm             |   11 +-
+ femplot/param.h                |    4 +-
+ param.h                        |    4 +-
+ 15 files changed, 690 insertions(+), 33 deletions(-)
+ new file:
+   femdoc/Release_notes_7.0v3.tex
+
+============================================================
+
 Thu Dec 18 18:38:22 CET 2014
 
 femtime converted

@@ -23,6 +23,17 @@ GetMessage()
   read message
 }
 
+GetSpecial()
+{
+  what=$1
+  [ -f tmp.tmp ] && rm -f tmp.tmp
+  git status | grep "$what" | sed -E "s/^.*$what//" > tmp.tmp
+  if [ -f tmp.tmp -a -s tmp.tmp ]; then
+    echo " $what"
+    cat tmp.tmp
+  fi
+}
+
 #------------------------------------------------------------
 # cd to base dir and get info
 #------------------------------------------------------------
@@ -31,6 +42,8 @@ cd $femdir
 
 git status
 git diff --cached --stat
+GetSpecial "new file:"
+GetSpecial "deleted:"
 
 Ask "Continue?"
 
@@ -47,6 +60,8 @@ echo "" 				>> log.tmp
 echo "$message" 			>> log.tmp
 echo "" 				>> log.tmp
 git diff --cached --stat 		>> log.tmp
+GetSpecial "new file:"			>> log.tmp
+GetSpecial "deleted:"			>> log.tmp
 echo ""					>> log.tmp
 
 vi log.tmp

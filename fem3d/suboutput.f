@@ -351,8 +351,8 @@ c converts time period to relative time difference
 
 	double precision dgetpar
 
-	bdebug = .false.
 	bdebug = .true.
+	bdebug = .false.
 
 	call getfnm(name,text)
 

@@ -187,7 +187,7 @@ sub get_section {
 
   foreach my $section (@$sequence) {
 	  my $sect = $sections->{$section};
-	  return $sect if( $sect->{name} eq $section_id );
+	  return $sect if( $sect->{id} eq $section_id );
   }
 
   return;
@@ -297,7 +297,10 @@ sub read_section {
   my ($self,$sect) = @_;
 
   my $section = $sect->{name};
-  #print STDERR "reading section $section\n";
+  my $number = $sect->{number};
+  $number = "" unless $number;
+  $number = "($number)" if $number;
+  print STDERR "reading section $section $number\n" if $self->{verbose};;
 
   my @data = ();
 
@@ -362,7 +365,7 @@ sub parse_param_section {
 	my $name = $1;
 	my $rest = $';
 	my @val = ();
-	while( defined ($item = get_next_value(\$rest)) ) {
+	while( defined ($item = $self->get_next_value(\$rest)) ) {
 	  push(@val,$item);
 	}
 	my $n = @val;
@@ -386,7 +389,7 @@ sub parse_param_section {
 
 sub get_next_value {
 
-  my $rline = shift;
+  my ($self,$rline) = @_;
 
   my $val = undef;
   my $first = substr($$rline,0,1);

@@ -1,4 +1,10 @@
 
+19.12.2014
+
+c ./fem3d/subtime.f:
+c 19.12.2014    ggu     accept date also as string
+
+
 12.12.2014
 
 c ./fem3d/subrst.f:

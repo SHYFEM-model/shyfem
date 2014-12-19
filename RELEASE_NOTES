@@ -1,4 +1,68 @@
 
+19.12.2014    VERS_7_0_10
+
+	femtime converted (from common to include)
+	accept date also as string
+
+12-12-2014    VERS_7_0_9
+
+	small changes, bug fixes
+
+05-12-2014    VERS_7_0_8
+
+	some restructuring
+	waves have own section, routines moved to subwave.f
+	routine to handle command line options (subclo.f)
+
+26-11-2014    VERS_7_0_7
+
+	implementation of new time management
+	time management routines to new file subtime.f
+
+07-11-2014    VERS_7_0_6
+
+	bug fix for distance computation in z_tilt, c_tilt
+
+05-11-2014    VERS_7_0_5
+
+	Changes of Christian integrated
+	tilting also for lat/lon grids
+
+30-10-2014    VERS_7_0_4
+
+	Intermediate version
+	some changes in subbox.f
+	new version (4) for bas files
+
+21-10-2014    VERS_7_0_3
+
+	new boundary treatment for advection
+	pass id to scal_adv routines
+	new boundary treatment for lots of modules
+	absolute time routines fixed
+	integrated datetime into time series
+	new version (2) for fem files (position of date info)
+
+13-10-2014    VERS_7_0_2
+
+	absolute time introduced
+	one day off error fixed in subdts.f
+	use allocatable arrays in wininf.f
+	regression tests cleaned
+
+18-07-2014    VERS_7_0_1
+
+	first cleaning of new version
+	only new file format allowed
+
+07-07-2014    VERS_7_0_0
+
+	first of 7 series, identical to VERS_6_1_79
+
+=================================================================
+=================================================================
+=================================================================
+
 13-06-2013    VERS_6_1_65
 
 	offline version
