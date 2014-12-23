@@ -229,6 +229,7 @@ c 26.11.2014	ggu	version 7.0.7	Peter Epplers Geburtstags release
 c 05.12.2014	ggu	version 7.0.8	pre Santa Claus release
 c 12.12.2014	ggu	version 7.0.9	pre St Lucia release
 c 19.12.2014	ggu	version 7.0.10	pre Christmas release
+c 23.12.2014	ggu	version 7.0.11	pre Christmas eve release
 c
 c*****************************************************************
 
@@ -236,15 +237,15 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.0.10}
-c \newcommand{\version}{7\_0\_10}
+c \newcommand{\VERSION}{7.0.11}
+c \newcommand{\version}{7\_0\_11}
 c
 c DOCS	END
 
         implicit none
 
         character*10 version
-	parameter (version='7.0.10')
+	parameter (version='7.0.11')
 
         character*30 string
 	parameter (string='SHYFEM VERSION = '//version)
@@ -298,7 +299,7 @@ c writes copyright and version/dimension
         write(6,*) ' ----------------------------------------------'
         write(6,*)
         write(6,*) ' SHYFEM - Finite Element Model for coastal seas'
-        write(6,*) ' Copyright (c) Georg Umgiesser 1985-2011'
+        write(6,*) ' Copyright (c) The Shyfem Team 1985-2014'
         write(6,*)
         write(6,*) ' version: ',vers
         write(6,*) ' routine: ',routine

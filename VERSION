@@ -1,3 +1,21 @@
+version  7_0_11    23-12-2014    VERS_7_0_11
+
+========================================================== 23-12-2014 - 7_0_11
+
+c ./femplot/suplin.f:
+c 22.12.2014    ggu     new routine integrate_flux()
+c
+c ./fem3d/subver.f:
+c 23.12.2014	ggu	version 7.0.11	pre Christmas eve release
+c
+c ./fem3d/subtime.f:
+c 23.12.2014    ggu     fractional time step introduced
+c
+c ./fem3d/ousvdiff.f:
+c 20.12.2014	ggu	bug fix: nlv was not set, new calling sequence
+
+==========================================================
+
 version  7_0_10    19-12-2014    VERS_7_0_10   commit_2014-12-23
 
 version  7_0_10    19-12-2014    VERS_7_0_10
