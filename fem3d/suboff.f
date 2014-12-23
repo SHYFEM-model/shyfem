@@ -291,8 +291,7 @@ c****************************************************************
 	double precision sn(nlvdim,nkndim,nintp)
 	double precision tn(nlvdim,nkndim,nintp)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhv(neldim)
         common /ilhv/ilhv
@@ -464,8 +463,7 @@ c****************************************************************
 	double precision wn(0:nlvdim,nkndim,4)
 	double precision zn(nkndim,4)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhv(neldim)
         common /ilhv/ilhv
@@ -545,8 +543,7 @@ c****************************************************************
 	double precision wn(0:nlvdim,nkndim,2)
 	double precision zn(nkndim,2)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhv(neldim)
         common /ilhv/ilhv
@@ -614,8 +611,7 @@ c****************************************************************
 	double precision sn(nlvdim,nkndim,1)
 	double precision tn(nlvdim,nkndim,1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhv(neldim)
         common /ilhv/ilhv
@@ -675,8 +671,7 @@ c****************************************************************
 	double precision sn(nlvdim,nkndim)
 	double precision tn(nlvdim,nkndim)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhv(neldim)
         common /ilhv/ilhv
@@ -730,8 +725,7 @@ c****************************************************************
 	double precision sn(nlvdim,nkndim)
 	double precision tn(nlvdim,nkndim)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhv(neldim)
         common /ilhv/ilhv
@@ -806,8 +800,7 @@ c****************************************************************
 	double precision sn(nlvdim,nkndim)
 	double precision tn(nlvdim,nkndim)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhv(neldim)
         common /ilhv/ilhv
@@ -865,8 +858,7 @@ c****************************************************************
 	double precision sn(nlvdim,nkndim,1)
 	double precision tn(nlvdim,nkndim,1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhv(neldim)
         common /ilhv/ilhv
@@ -990,8 +982,7 @@ c****************************************************************
 	double precision sn(nlvdim,nkndim)
 	double precision tn(nlvdim,nkndim)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhv(neldim)
         common /ilhv/ilhv
@@ -1033,8 +1024,7 @@ c****************************************************************
 	integer ierr
 	integer iread
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhv(neldim)
         common /ilhv/ilhv

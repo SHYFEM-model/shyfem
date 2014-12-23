@@ -193,8 +193,7 @@ c finds closest node to coordinate (x0,y0)
 	real x0,y0		!coordinates of point
 	integer kc		!closest node to point (return)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real xgv(nkndim), ygv(nkndim)
 	common /xgv/xgv, /ygv/ygv
 

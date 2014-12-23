@@ -170,8 +170,7 @@ c DOCS  END
 !
 ! in order to use these routines, please set imreg = 3 in the STR file
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
@@ -1055,8 +1054,7 @@ c interpolates files spatially - to be deleted
 
         real qs,ta,rh,wb,uw,cc
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real metrad(1),methum(1)
         real mettair(1),metcc(1)

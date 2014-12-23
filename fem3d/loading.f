@@ -42,8 +42,7 @@ c  the node numbers in karee are external node numbers
 
 	real eload(nlvdim,nkndim,nstate)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhkv(1)
         common /ilhkv/ilhkv
@@ -239,8 +238,7 @@ c please set afact according to the choice of unit of sload (see below)
 	real eload(nlvdim,nkndim,nstate)	!loading matrix for eutro
 	real sload(nstate)			!surface load for each var
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real areav(nkndim)
 	real volv(nkndim)
@@ -365,8 +363,7 @@ c makes total volume of areas
         real volume(1)
         integer aree(1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer ilhkv(1)
         common /ilhkv/ilhkv
 

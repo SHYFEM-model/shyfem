@@ -45,18 +45,9 @@ c-----------------------------------------------------------------
 
         if( iapini(1,nkndim,neldim,0) .le. 0 ) stop
 
+	call bas_info
+
 	call set_ev
-
-c-----------------------------------------------------------------
-c general info
-c-----------------------------------------------------------------
-
-        write(6,*)
-        write(6,*) ' nkn = ',nkn,'  nel = ',nel
-        write(6,*) ' mbw = ',mbw,'  ngr = ',ngr
-        write(6,*)
-        write(6,*) ' dcor = ',dcor,'  dirn = ',dirn
-        write(6,*)
 
 c-----------------------------------------------------------------
 c specific info
@@ -107,21 +98,7 @@ c info on node number
 	logical bnode
 
 	include 'param.h'
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
+	include 'basin.h'
 
 	real hkv(nkndim)
 	common /hkv/hkv
@@ -195,21 +172,7 @@ c info on element number
 	logical belem
 
 	include 'param.h'
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
+	include 'basin.h'
 
 	integer ie,ii,k
 	integer eext,eint
@@ -273,26 +236,7 @@ c writes statistics on basin
 	implicit none
 
 	include 'param.h'
-
-        character*80 descrp
-        common /descrp/ descrp
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
+	include 'basin.h'
 
 	integer ie,ii,k
 	integer imin,imax
@@ -486,29 +430,10 @@ c writes frequency distribution of depth
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
 
 	integer ndim
 	parameter (ndim=10000)
-
-        character*80 descrp
-        common /descrp/ descrp
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
 
 	real hev(neldim)
 	common /hev/hev
@@ -607,12 +532,7 @@ c areatr        element area (return value)
 	integer ie
 
 	include 'param.h'
-
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
+	include 'basin.h'
 
 	integer ii,i1,i2,k1,k2
 	double precision f,x(3),y(3)
@@ -638,26 +558,7 @@ c writes grd file extracting info from bas file
 	implicit none
 
 	include 'param.h'
-
-        character*80 descrp
-        common /descrp/ descrp
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
+	include 'basin.h'
 
 	integer k,ie,ii,ia
 	real x,y,h
@@ -694,26 +595,7 @@ c writes statistics on grid quality
 	implicit none
 
 	include 'param.h'
-
-        character*80 descrp
-        common /descrp/ descrp
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
+	include 'basin.h'
 	include 'evmain.h'
 
 	real areav(nkndim)

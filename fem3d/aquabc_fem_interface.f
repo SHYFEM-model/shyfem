@@ -147,11 +147,9 @@ c        real tsstot(nsstate)
        real sed_output(NOSLAY,nkndim,nsoutput)     ! BS output
        save e, es, eload				    !SAVESED
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
-        real eps1,eps2,flag,high,higi
-        common /mkonst/ eps1,eps2,pi,flag,high,higi
+	include 'mkonst.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -209,7 +207,6 @@ c        real tsstot(nsstate)
       real dtday
       real area ,vol,vel
 
-       real pi
 
       real oxysat
       real getpar
@@ -989,8 +986,7 @@ C     TAKE CARE
 C     eload(3,neldim,nstate) -----> eload(nlvdim,nkndim,nstate)	
 	real eload(nlvdim,nkndim,nstate)
 
-      integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-      common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	include 'ev.h'
 	integer nen3v(3,1)
@@ -1813,8 +1809,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real e(nlvdim,nkndim,nstate)	        !state vector
       real es(NOSLAY,nkndim,nsstate)		!sediment state variables
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -1936,8 +1931,7 @@ c initializes nodal value variable from file
         integer ftype               !type of  1- homogeneous initial cond.
                                     !2-heterogeneous initial conditions. Added by Petras 12-12-2004
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         real hlv(1)       !hlv(i)absolute depth of bottom of layer i
         common /hlv/hlv
 
@@ -2175,8 +2169,7 @@ C                Corrected error output messages, 01.09.2004 by Petras
 
       real a_ITOT(nkndim,2)    !Keeps values for total daily ligth for each node
 
-      integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-      common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
       integer ipv(nkndim)	!external node numbers
       common  /ipv/ipv

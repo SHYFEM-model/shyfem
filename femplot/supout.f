@@ -177,8 +177,7 @@ c******************************************************
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real fvlv(nlvdim,nkndim)
         common /fvlv/fvlv
@@ -226,8 +225,7 @@ c	znv,utlnv,vtlnv 	-> set zenv, usnv, vsnv
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real znv(1)
         common /znv/znv
@@ -294,8 +292,7 @@ c	xv,zenv,usnv,vsnv -> set znv
 
 	implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real znv(1)
         common /znv/znv
@@ -364,8 +361,7 @@ c******************************************************
 
 	character*80 descrp
         common /descrp/ descrp
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
         real hlv(1), hev(1)
@@ -428,8 +424,7 @@ c******************************************************
         integer nunit,iform
         common /wavwav/ nunit,iform
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhkv(1)
         common /ilhkv/ilhkv
@@ -600,8 +595,7 @@ c opens OUS file and reads header
 
 	character*80 descrp
         common /descrp/ descrp
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -780,8 +774,7 @@ c opens NOS file and reads header
 
 	character*80 descrp
         common /descrp/ descrp
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -964,8 +957,7 @@ c opens FVL file and reads header
 
 	character*80 descrp
         common /descrp/ descrp
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -1183,8 +1175,7 @@ c opens EOS file and reads header
 
 	character*80 descrp
         common /descrp/ descrp
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -1316,8 +1307,7 @@ c computes max level at nodes from elements
 
 	implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v
@@ -1338,8 +1328,7 @@ c computes level at elems from nodes (not exact)
 
 	implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v
@@ -1465,8 +1454,7 @@ c opens FEM file and reads header
 
 	character*80 descrp
         common /descrp/ descrp
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 

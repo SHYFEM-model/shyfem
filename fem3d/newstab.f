@@ -21,10 +21,24 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 c
-c typical usage:
+c typical usage :
 c
 c call reset_stability at beginning of time loop
 c call make_stability before advection of similar variables
+c
+c notes :
+c
+c	scal3sh							newcon
+c		info_stability					newstab
+c		make_stability					newstab
+c			compute_stability			newstab
+c				conzstab			newcon
+c
+c	set_timestep						subtime
+c		hydro_stability					newstab
+c			internal_stability			newstab
+c				momentum_advective_stability	newexpl
+c				momentum_viscous_stability	newexpl
 c
 c*****************************************************************
 
@@ -168,8 +182,7 @@ c gets stability index (if necessary computes it)
 
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ia,iustab
 	integer l,k
@@ -384,8 +397,7 @@ c mode = 2		eliminate elements with r>rindex
 
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real sauxe1(nlvdim,neldim)
         common /sauxe1/sauxe1
@@ -477,8 +489,7 @@ c outputs stability index for hydro timestep (internal) (error handling)
 
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer ilhv(1)
 	common /ilhv/ilhv
 
@@ -567,8 +578,7 @@ c outputs stability index for hydro timestep (internal)
 
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 	integer ilhkv(1)
@@ -643,8 +653,7 @@ c outputs stability index for hydro timestep (internal)
 
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 	integer ilhv(1)

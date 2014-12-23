@@ -47,8 +47,7 @@ c description
 	character*80 descrr
 	common /descrr/ descrr
 c FEM parameters
-	real eps,eps2,pi,flag,high
-	common /mkonst/ eps,eps2,pi,flag,high
+	include 'mkonst.h'
 c OUT
 	real xv(3,nkndim)
 	common /xv/xv
@@ -142,6 +141,7 @@ c local
 	integer icolor,isphe
 	integer date,time
 	integer iapini
+	real eps
 	real sflag
 	real getpar
 
@@ -156,6 +156,7 @@ c initialize parameters
 c----------------------------------------------
 
 	eps=1.e-5
+	eps1=1.e-5
 	eps2=1.e-6
 	pi=3.141592653
 	flag = -9988765.0

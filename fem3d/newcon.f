@@ -195,8 +195,7 @@ c shell for scalar (for parallel version)
 	real difv(0:nlvdim,1)
         real difmol
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
@@ -277,8 +276,7 @@ c shell for scalar with nudging (for parallel version)
 	real sobs(nlvdim,1)		!observations
 	real robs
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
@@ -365,8 +363,7 @@ c special version with factor for BC, variable sinking velocity and loads
 	real difv(0:nlvdim,1)
         real difmol
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
@@ -483,11 +480,9 @@ c parameters
 	!parameter ( istot_max = 300 )
 	parameter ( istot_max = 1000 )
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
-        real eps1,eps2,pi,flag,high,higi
-        common /mkonst/ eps1,eps2,pi,flag,high,higi
+	include 'mkonst.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -731,8 +726,7 @@ c arguments
         real ddt,rkpar,azpar,adpar,aapar			!$$azpar
 	integer istot,isact
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
@@ -1454,11 +1448,9 @@ c arguments
 	real wsinkv(0:nlvdi,1)
 	integer istot,isact
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
-        real eps1,eps2,pi,flag,high,higi
-        common /mkonst/ eps1,eps2,pi,flag,high,higi
+	include 'mkonst.h'
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v
@@ -1980,8 +1972,7 @@ c arguments
 c parameter
         include 'param.h'
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
@@ -2028,8 +2019,7 @@ c checks if scalar is out of bounds
 	real eps
 	logical bstop		!stop simulation if true
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer ilhkv(1)
         common /ilhkv/ilhkv
 
@@ -2082,8 +2072,7 @@ c checks min/max property
 	real rmax(nlvdim,nkndim)		!aux arrray to contain max
 	real eps
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
 	integer nen3v(3,1)
@@ -2274,8 +2263,7 @@ c sets up constant 3D array
 
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real const3d(0:nlvdim,nkndim)
         common /const3d/const3d

@@ -48,8 +48,7 @@ c*******************************************************************
 	character*(*) name
 	integer nkndi,neldi
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         real hm3v(3,1)
         common /hm3v/hm3v
         real hev(1)
@@ -197,8 +196,7 @@ c copies depth values from elems/nodes to nodes/elems
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer nen3v(3,1)
         common /nen3v/nen3v
@@ -267,8 +265,7 @@ c handles depth values
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real hev(1)
         common /hev/hev
@@ -314,8 +311,7 @@ c writes grd file from bas
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real xgv(1), ygv(1)
         common /xgv/xgv, /ygv/ygv
@@ -369,8 +365,7 @@ c*******************************************************************
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 

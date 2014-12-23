@@ -39,8 +39,7 @@ c checks stability of diffusion (old, not used)
         real v1v(1),v2v(1)
         real gamma              !stability parameter -> must be < 1.
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,1)
         common /nen3v/nen3v
 	include 'ev.h'
@@ -99,8 +98,7 @@ c checks stability of diffusion (with variable diffusion coef.)
         real v1v(1),v2v(1)
         real gamma              !stability parameter -> must be < 1.
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,1)
         common /nen3v/nen3v
 	include 'ev.h'
@@ -151,8 +149,7 @@ c weights in main diagonal are positive => weights out of diag are negative
 
         implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,1)
         common /nen3v/nen3v
 	include 'ev.h'
@@ -345,8 +342,7 @@ c limits diffusion parameter
         integer istot
         real gammax             !max for stability parameter, should be < 1
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,1)
         common /nen3v/nen3v
 	include 'ev.h'
@@ -397,8 +393,7 @@ c adjusts diffusion coefficient
         integer mode
         real rkv(1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,1)
         common /nen3v/nen3v
 	include 'ev.h'
@@ -469,8 +464,7 @@ c	2	smagorinsky (variable with area and time)
 
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
         real v1v(1), v2v(1)
@@ -659,11 +653,10 @@ c***************************************************************************
 
         include 'param.h'
         
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 	include 'femtime.h'
-        common /nkonst/nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         
 	include 'ev.h'
         integer ilhv(1)
@@ -905,9 +898,8 @@ c parameters
 	include 'param.h'
 	real vv(1)
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /level/ nlvdi,nlv
 	integer ilhv(1)
 	integer nen3v(3,1)

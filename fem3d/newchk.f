@@ -72,8 +72,7 @@ c parameter
 	include 'param.h'
 c common
 	include 'femtime.h'
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlvdi,nlv
 	common /level/nlvdi,nlv
 
@@ -293,8 +292,7 @@ c checks important variables
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
@@ -404,9 +402,8 @@ c writes debug information on dry areas
 	include 'param.h'
 
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	include 'femtime.h'
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer iwegv(1)
 	common /iwegv/iwegv
 
@@ -434,13 +431,11 @@ c writes debug information on final volume around node k (internal)
 	include 'param.h'
 
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
-	real eps1,eps2,pi,flag,high
 	include 'femtime.h'
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /level/ nlvdi,nlv
-	common /mkonst/ eps1,eps2,pi,flag,high
+	include 'mkonst.h'
 	integer nen3v(3,1)
 	integer ilhv(1)
 	real hev(1)
@@ -567,10 +562,9 @@ c writes some min/max values to stdout
 
         character*(*) string
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
 	include 'femtime.h'
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /level/ nlvdi,nlv
 
         real znv(1)
@@ -742,8 +736,7 @@ c checks mass conservation of single boxes (finite volumes)
 	real vf(nlvdim,1)
 	real va(nlvdim,1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,1)
         integer ilhv(1)
         integer ilhkv(1)
@@ -1025,8 +1018,7 @@ c*************************************************************
 	include 'ev.h'
 
 	include 'femtime.h'
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlvdi,nlv
 	common /level/nlvdi,nlv
 
@@ -1418,8 +1410,7 @@ c writes debug information on elements around node k
 	integer iucheck
 	common /iucheck/iucheck
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer nen3v(3,1)
         common /nen3v/nen3v

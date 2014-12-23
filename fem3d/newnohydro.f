@@ -17,8 +17,7 @@ c initializes non hydrostatic pressure terms
 	include 'param.h'
 	include 'ev.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlv,nlvdi,lmax
 	common /level/ nlvdi,nlv
 	integer k,l
@@ -49,8 +48,7 @@ c integrates non hydrostatic adjustment to equations
 	include 'param.h'
 	include 'ev.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlv,nlvdi,lmax
 	common /level/ nlvdi,nlv
 	integer k,l
@@ -103,8 +101,7 @@ c copies new values of q to old time step
 	include 'param.h'
 	include 'ev.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlv,nlvdi,lmax
 	common /level/ nlvdi,nlv
 	integer k,l
@@ -135,13 +132,11 @@ cc parameters
 	include 'ev.h'
 
 c common 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /level/ nlvdi,nlv
 	include 'femtime.h'
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'pkonst.h'
         real rrho0	
 	real difv(0:nlvdim,1)
 	common /difv/difv
@@ -366,10 +361,8 @@ c adds explicit part of non hydrostatic pressure to explict terms
 	include 'param.h'
 	include 'ev.h'
         
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
 
@@ -440,9 +433,8 @@ cc parameters
 	include 'ev.h'
 
 c common 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /level/ nlvdi,nlv
 	include 'femtime.h'
 	real difv(0:nlvdim,1)
@@ -585,8 +577,7 @@ cc********************************************************************
 
 	 include 'param.h'
 	 include 'nohydlinks.h'
-         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	 common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
          integer nlvdi,nlv
 	 common /level/ nlvdi,nlv
          integer k,l,lmax,nn
@@ -618,8 +609,7 @@ c********************************************************************
 	 include 'param.h'
 	 include 'ev.h'
 
-         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	 common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
          integer nlvdi,nlv
 	 common /level/ nlvdi,nlv
          integer ilhv(1), ilhkv(1)
@@ -644,8 +634,7 @@ c********************************************************************
 	 double precision b(3),c(3),f(3)
 	 real dt,dzcc
 	 double precision uqaux,vqaux
-         real grav,fcor,dcor,dirn,rowass,roluft
-         common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'pkonst.h'
          real rrho0	
 	 real getpar
 	 real aq 
@@ -712,8 +701,7 @@ c********************************************************************
 	 include 'param.h'
 	 include 'links.h'
 	 include 'nohydlinks.h'
-         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	 common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
          integer nlvdi,nlv
 	 common /level/ nlvdi,nlv
          integer ilhv(1), ilhkv(1)
@@ -801,8 +789,7 @@ c construct pointers for matrix
 	 include 'param.h'
 	 include 'links.h'
 	 include 'nohydlinks.h'
-         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	 common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
          integer nlvdi,nlv
 	 common /level/ nlvdi,nlv
          integer ilhv(1), ilhkv(1)

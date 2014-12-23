@@ -106,14 +106,14 @@ c----------------------------------------------------------------
 
 c----------------------------------------------------------------
 
-	parameter (ibndim=100)
+	!parameter (ibndim=100)
 	parameter (mardim=nlvdim*10)
 
 c variables and coefficients
 
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /mkonst/ eps1,eps2,pi,flag,high,hihi
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'mkonst.h'
+	include 'pkonst.h'
 	include 'femtime.h'
 
 	common /level/ nlvdi,nlv
@@ -449,7 +449,9 @@ c read STR file
 c-----------------------------------------------------------
 
 	call cstinit
-	call cstfile(nkndim,neldim)
+	call cstfile(nkndim,neldim)	! read basin
+
+	call bas_get_para(nkn,nel,ngr,mbw)	!to be deleted later
 
 c-----------------------------------------------------------
 c check dimensions
@@ -758,8 +760,7 @@ c*****************************************************************
 
 	include 'param.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ilhv(neldim)
 	integer ilhkv(nkndim)
@@ -804,8 +805,7 @@ c*****************************************************************
 
 	include 'param.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
 	integer ilhkv(nkndim)

@@ -549,8 +549,7 @@ c computes nodal values from element values (scalar)
 	real sev(3,neldim)
 	real sv(nkndim)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real v1v(1)
         common /v1v/v1v
@@ -654,8 +653,7 @@ c sets up area for nodes
 	integer levdim
 	real area(levdim,1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer ilhv(1)
 	common /ilhv/ilhv
 	integer nen3v(3,neldim)
@@ -818,8 +816,7 @@ c sets up depth array for nodes
 	real hden(levdim,1)	!depth at element, new time level
 	real hdeo(levdim,1)	!depth at element, old time level
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer k,ie,l
 
@@ -918,8 +915,7 @@ c checks differences between old and new depth values (debug)
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real hdkov(nlvdim,nkndim)
         common /hdkov/hdkov
@@ -966,8 +962,7 @@ c sets up depth array for nodes
 	real zenv(3,1)    	!water level at new time level
 	real area(levdim,1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer ilhv(1)
 	common /ilhv/ilhv
 	integer nen3v(3,neldim)
@@ -1143,8 +1138,7 @@ c computes content of water mass in total domain
 	double precision masscont
 	integer mode
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
@@ -1180,8 +1174,7 @@ c computes content of scalar in total domain
 	integer mode
 	real scal(nlvdim,nkndim)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
@@ -1222,8 +1215,7 @@ c computes content of scalar at node k
         integer mode,k
         real scal(nlvdim,nkndim)
  
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
  
         integer ilhkv(1)
         common /ilhkv/ilhkv
@@ -1258,8 +1250,7 @@ c computes content of scalar at node k (with given depth)
         real scal(nlvdim,nkndim)
         real depth
  
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
  
         integer ilhkv(1)
         common /ilhkv/ilhkv
@@ -1293,8 +1284,7 @@ c this routine into another file... FIXME
         real depth                      !depth of column
         real tstot                      !total mass (return)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer k
         double precision scalcontkh

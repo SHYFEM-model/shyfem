@@ -141,8 +141,7 @@ c computes total volume in basin
 
 	integer it
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer iwegv(1)
 	common /iwegv/iwegv
 
@@ -265,8 +264,7 @@ c adjust depth at inlets -> must be called from cst routines
 	real hm,h,hlido,hmala,hchio
 	real getpar
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer iarv(1)
 	common /iarv/iarv
@@ -598,8 +596,7 @@ c channel velocity output
 
 	integer it
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhkv(1)
         common /ilhkv/ilhkv
@@ -717,8 +714,7 @@ c set up zeta and conc for mass conservation test
 
 	integer it
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhkv(1)
         common /ilhkv/ilhkv
@@ -803,8 +799,7 @@ c mass conservation test
 
 	include 'param.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer iwegv(1)
 	common /iwegv/iwegv
 	real cnv(nlvdim,nkndim)
@@ -939,13 +934,13 @@ c*****************************************************************
 
 	implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        !integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        !common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	include 'femtime.h'
 c local
         integer ie,ii,k
 c	integer ibc,nbc
-	integer ibc
+	integer ibc,nbc
 	integer ibctot
 	real dz,dzcmh
 	real zdate
@@ -961,7 +956,7 @@ c	integer ibc,nbc
 	  iunit = ifemopa('','.ccc','form','new')
 	end if
 
-c	nbc = nbnds()
+	nbc = nbnds()
 	dz = 0.
 	dzcmh = 0.
 	call get_timestep(dt)
@@ -992,8 +987,7 @@ c*****************************************************************
 
 	implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 	real znv(1)
 	common /znv/znv
@@ -1014,6 +1008,7 @@ c	integer ibc,nbc
 	real vals(ndim)
 	integer icl,nbcc,iclose,n,ih,iclass,itcl
 	integer itotal,ittot,iclose_old
+	integer nbc
 	real psv,dsv,zrise,zextra,zsalv,zbound,zfranco
 	real zmax,wmax,rmax
 	real windv,rainv,zlevel
@@ -1029,6 +1024,8 @@ c	integer ibc,nbc
 
         integer icm
         icm(t) = nint(100.*t)
+
+	nbc = nbnds()
 
 	if( iunit .eq. 0 ) then
 	  iunit = ifemopa('','.ccc','form','new')
@@ -1257,8 +1254,7 @@ c*****************************************************************
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer ilhkv(1)
         common /ilhkv/ilhkv
         real cnv(nlvdim,nkndim)
@@ -1335,8 +1331,7 @@ c computes residence time online - one value for whole lagoon
 
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
         integer nen3v(3,1)
@@ -1652,8 +1647,7 @@ c reset conz for fra
 
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
         integer nen3v(3,1)
@@ -1751,8 +1745,7 @@ c*****************************************************************
         include 'param.h'
 
 	include 'femtime.h'
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer nen3v(3,1)
         common /nen3v/nen3v
@@ -2000,8 +1993,7 @@ c*****************************************************************
 	real aux,r02,r2
 	real x,y,z,u,v
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -2084,8 +2076,7 @@ c*****************************************************************
 
         include 'param.h' 
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	include 'femtime.h'
 
@@ -2174,8 +2165,7 @@ c*****************************************************************
 
         include 'param.h' 
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer edim
         parameter(edim = 20) !number of element near the open boundary
@@ -2305,8 +2295,7 @@ c*****************************************************************
 
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
 	integer ie,k,i,l,it
@@ -2352,8 +2341,7 @@ c*****************************************************************
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real xgv(1), ygv(1)
 	common /xgv/xgv, /ygv/ygv
 	real znv(1)
@@ -2683,8 +2671,7 @@ c initializes cnv with analytic solution (2D)
 	real rk,c0,ct0
         real cv(nlvdim,nkndim)
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real xgv(1), ygv(1)
 	common /xgv/xgv, /ygv/ygv
 
@@ -3036,8 +3023,7 @@ c the solution is normalized, i.e.  int(C(x,t)dx) = 1 over the whole area
 
 	include 'param.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
@@ -3110,8 +3096,7 @@ c****************************************************************
 
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer ilhkv(1)
         common /ilhkv/ilhkv
 
@@ -3149,9 +3134,8 @@ c writes node list for Malta Coastal Model
 	implicit none
 
         include 'param.h'
+        include 'nbasin.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -3169,6 +3153,7 @@ c writes node list for Malta Coastal Model
 	common /v1v/v1v
 
         integer k,l,ie,ii,i
+	integer nbc
         real x,y,h
 
 	real x0,y0,phi0
@@ -3176,7 +3161,7 @@ c writes node list for Malta Coastal Model
 	real xfact,yfact
 
 	integer ibc,nnodes,kext
-	integer nkbnds,kbnds,ipext
+	integer nkbnds,kbnds,ipext,nbnds
 	logical bproj
 
 	integer icall
@@ -3249,6 +3234,8 @@ c----------------------------------------------------------
 c----------------------------------------------------------
 c write out values for open boundary
 c----------------------------------------------------------
+
+	nbc = nbnds()
 
 	if( nbc .gt. 0 ) then
 	open(1,file='joel_bound.dat')
@@ -3346,8 +3333,7 @@ c introduce le condizioni iniziali per la concentrazione
 	real yco(ndim)
 	save nelems,iel,conz,yco
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real xgv(1), ygv(1)
 	common /xgv/xgv, /ygv/ygv
         real cnv(nlvdim,nkndim)
@@ -3471,8 +3457,7 @@ c**********************************************************************
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real xgv(1), ygv(1)
 	common /xgv/xgv, /ygv/ygv
 	real rtauv(nlvdim,nkndim)
@@ -3546,8 +3531,7 @@ c**********************************************************************
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
         real uprv(nlvdim,1),vprv(nlvdim,1)
@@ -3645,8 +3629,7 @@ c**********************************************************************
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
         integer ilhkv(1)
@@ -3684,8 +3667,7 @@ c**********************************************************************
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
         integer ilhkv(1)
@@ -3718,8 +3700,7 @@ c time of inundation for theseus
 	include 'param.h'
 	include 'ev.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
         integer iwegv(1)
@@ -3910,8 +3891,7 @@ c**********************************************************************
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
         integer ilhkv(1)
@@ -3978,8 +3958,7 @@ c**********************************************************************
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real xgv(1), ygv(1)
 	common /xgv/xgv, /ygv/ygv
@@ -4047,8 +4026,7 @@ c**********************************************************************
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real xgv(1), ygv(1)
 	common /xgv/xgv, /ygv/ygv

@@ -45,8 +45,7 @@ c parameter
 c common
 	character*80 descrp
 	common /descrp/ descrp
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
@@ -272,13 +271,12 @@ c parameter
 	include 'param.h'
 c common
 	character*80 descrp
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	real zenv(3,1),hm3v(3,1)
 	real unv(1),vnv(1)
 	integer nen3v(3,1)
 	real v1v(1),v2v(1)
 	common /descrp/ descrp
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 	common /zenv/zenv, /hm3v/hm3v
 	common /unv/unv, /vnv/vnv
@@ -465,8 +463,7 @@ c parameter
 	include 'param.h'
 
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
@@ -672,8 +669,7 @@ c parameter
 	integer ivect(8)	!info array that is set up
 
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
@@ -798,8 +794,7 @@ c parameter
 	integer ivect(8)                	!info array that is set up
 
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
 	real saux1(nlvdim,nkndim)

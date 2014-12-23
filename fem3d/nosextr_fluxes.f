@@ -26,8 +26,7 @@ c--------------------------------------------------
         common /descrr/descrr
         character*80 descrp
         common /descrp/descrp
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real xgv(nkndim), ygv(nkndim)
         real hm3v(3,neldim)
@@ -368,8 +367,7 @@ c***************************************************************
 	integer nodes(nnodes)
 	real flx(2,nnodes)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real xgv(nkndim), ygv(nkndim)
         common /xgv/xgv, /ygv/ygv

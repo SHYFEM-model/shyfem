@@ -54,11 +54,17 @@ $fortran->parse_routines() if $::parse_later;
 #----------------------------------------------------------------
 
 if( $::subst ) {
-  subst_femtim($fortran);
+  subst_konst($fortran);
 } elsif( $::clean ) {
   clean_files($fortran);
 }
 
+sub subst_konst {
+  my $fortran = shift;
+  subst_common($fortran,"mkonst","mkonst.h");
+  subst_common($fortran,"pkonst","pkonst.h");
+  subst_common($fortran,"nkonst","nbasin.h");
+}
 sub subst_femtim {
   my $fortran = shift;
   subst_common($fortran,"femtim","femtime.h");
@@ -82,9 +88,9 @@ sub subst_common {
 
   print STDERR "  substituting common /$common/ with include $include\n";
 
-  my @list = sort keys %{$fortran->{routines}};
+  my @list = sort keys %{$fortran->{all_routines}};
   foreach my $rname (@list) {
-    my $ritem = $fortran->{routines}->{$rname};
+    my $ritem = $fortran->{all_routines}->{$rname};
     my $name = $ritem->{name};
     my $file = $ritem->{file};
 

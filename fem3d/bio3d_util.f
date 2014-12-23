@@ -29,8 +29,7 @@ c new version -> does everything: initializes, accumulates, writes
         include 'param.h'
         include 'donata.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real elz(nkndim,nlzstate)               !loicz budg proc ariables
         save elz                                !SAVEloicz
@@ -279,8 +278,7 @@ c sets up sediment loading
         real eload(nlvdim,nkndim,nstate)
         real elini(nstate)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
 

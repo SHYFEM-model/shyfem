@@ -24,6 +24,7 @@ c 20.06.2012    ggu     plots bottom also for sigma layers (plot_bottom())
 c 22.10.2012    ggu     dxmin introduced to plot arrow every dxmin distance
 c 24.10.2012    ggu     bsmooth introduced for smooth bottom plotting
 c 05.03.2014    ggu     bug fix for reference vector
+c 22.12.2014    ggu     new routine integrate_flux()
 c
 c************************************************************************
 
@@ -89,6 +90,7 @@ c elems(1) is not used, etc..
 	real vmin,vmax
 	real vhmin,vhmax
 	real wscale,vv
+	real flux
 	real rrlmax,rrdmax,x,y,xtick,ytick,ylast,rdist,rmax,xs
 	real h1,h2,yb1,yb2,yt1,yt2,yt,yb
 	real ytaux,ymid
@@ -227,6 +229,13 @@ c----------------------------------------------------------------
 	end if
 	call colauto(vmin,vmax)
 	write(6,*) 'min/max on line: ',vmin,vmax
+
+c----------------------------------------------------------------
+c compute fluxes
+c----------------------------------------------------------------
+
+	call integrate_flux(n,xy,lelems,helems,hlv,val,flux)
+	write(111,*) it,flux
 
 c----------------------------------------------------------------
 c set viewport
@@ -1094,6 +1103,53 @@ c modes: 0=use normal vel   1=use tangent vel   as scalar velocity
 	    vhmax = max(vhmax,vel(2,l,i))
 	  end do
 	end do
+
+	end
+
+c************************************************************************
+
+	subroutine integrate_flux(n,xy,lelems,helems,hlv,val,flux)
+
+c computes flux through section
+
+	implicit none
+
+	include 'param.h'
+
+	integer n			!total number of nodes
+	real xy(n)			!coordinates along section
+	integer lelems(n)		!total nuber of layers
+	real helems(2,n)		!depth elems
+	real hlv(*)			!depth structure
+	real val(0:2*nlvdim,n)		!scalar velocity for overlay (ret)
+	real flux			!computed flux (return)
+
+	integer i,l,ltot,lc,ivert
+	real dx,dh1,dh2,thick,value,hvmax
+	real ya(2,0:nlvdim)
+	double precision acum
+
+	ivert = 0
+	hvmax = 10000.
+	acum = 0.
+
+	do i=2,n
+	  ltot = lelems(i)
+	  dx = xy(i) - xy(i-1)
+
+	  call make_segment_depth(ivert,ltot,helems(1,i),hvmax,hlv,ya)
+
+	  do l=1,ltot
+	    lc = 2*l-1		!center of layer
+	    value = 0.5 * ( val(lc,i) + val(lc,i-1) )
+	    dh1 = ya(1,l) - ya(1,l-1)
+	    dh2 = ya(2,l) - ya(2,l-1)
+	    thick = 0.5 * dx * ( dh1 + dh2 )
+	    acum = acum + thick * dx * value
+	  end do
+	end do
+
+	flux = acum
 
 	end
 

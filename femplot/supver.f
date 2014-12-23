@@ -49,8 +49,7 @@ c parameters
         include 'param.h'
         include 'ev.h'
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 

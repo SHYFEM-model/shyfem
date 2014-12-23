@@ -134,8 +134,7 @@ c arguments
 	real areavl
 	integer k
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'links.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
@@ -191,8 +190,7 @@ c arguments
         real flxnod
         integer k
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         real unv(1),vnv(1)
         common /unv/unv, /vnv/vnv
         integer nen3v(3,1)
@@ -258,10 +256,8 @@ c arguments
 	integer ielem
 	real kenerg,penerg
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real grav,fcor,dcor,dirn,rowass,roluft
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
 	integer nen3v(3,1)
 	real hev(1),znv(1)
 	real unv(1),vnv(1)
@@ -327,10 +323,8 @@ c	kin = (1/2) * aj * 12 * u*u/h
 	include 'param.h'
 	include 'ev.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real grav,fcor,dcor,dirn,rowass,roluft
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
 
 	integer ilhv(1)
 	common /ilhv/ilhv
@@ -421,8 +415,7 @@ c copies concentrations from node value to element value (only wet areas)
         real cn(1)
         real ce(3,1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer nen3v(3,1)
         common /nen3v/nen3v

@@ -15,27 +15,7 @@ c compares depth of two basins
 	implicit none
 
 	include 'param.h'
-
-        character*80 descrp
-        common /descrp/ descrp
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
-
+	include 'basin.h'
 	include 'evmain.h'
 
 	real hm3v1(3,neldim)
@@ -69,16 +49,7 @@ c-----------------------------------------------------------------
 
         if( iapini(1,nkndim,neldim,0) .le. 0 ) stop
 
-c-----------------------------------------------------------------
-c general info
-c-----------------------------------------------------------------
-
-        write(6,*)
-        write(6,*) ' nkn = ',nkn,'  nel = ',nel
-        write(6,*) ' mbw = ',mbw,'  ngr = ',ngr
-        write(6,*)
-        write(6,*) ' dcor = ',dcor,'  dirn = ',dirn
-        write(6,*)
+	call bas_info
 
 c-----------------------------------------------------------------
 c test
@@ -124,12 +95,7 @@ c areatr        element area (return value)
 	integer ie
 
 	include 'param.h'
-
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
+	include 'basin.h'
 
 	real aj
 	integer ii,i1,i2,k1,k2
@@ -161,21 +127,7 @@ c writes grd file from bas
 	integer iunit
 
 	include 'param.h'
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
+	include 'basin.h'
 
 	integer k,ie,ii
 
@@ -209,12 +161,7 @@ c gets neibors of node node (nit iterations)
 	integer nit
 
 	include 'param.h'
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
+	include 'basin.h'
 
 	integer nodes(nkndim)
 	integer icol(nkndim)
@@ -291,9 +238,7 @@ c*******************************************************************
 	character*(*) file
 
 	include 'param.h'
-
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
 	integer node,it,k
 	integer ipint
@@ -326,16 +271,12 @@ c*******************************************************************
 	character*(*) file
 
 	include 'param.h'
+	include 'basin.h'
 
 	integer ndim
 	parameter (ndim=1000)
 
 	integer nodes(nkndim)
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
 
 	integer node,it,k
 	integer ipint
@@ -404,19 +345,9 @@ c writes depth values distributed in elements
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
 
 	integer ntot	!number of subdivisions in element
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
 
 	integer ie,ii,k,i,j,itot
 	integer node,itype
@@ -549,17 +480,7 @@ c interpolates depth values
 	character*(*) file
 
 	include 'param.h'
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-        real hm3v(3,neldim)
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
+	include 'basin.h'
 
 	integer ie,ii,k
 	integer netot

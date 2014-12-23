@@ -5,5 +5,8 @@
         integer itunit,idtorig
         common /femtimu/ itunit,idtorig
 
-        save /femtim/,/femtimu/
+	double precision t_act,dt_act
+        common /femtimd/ t_act,dt_act
+
+        save /femtim/,/femtimu/,/femtimd/
 

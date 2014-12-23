@@ -34,13 +34,10 @@ c parameters
 	parameter (ndim=55)
 c common
 	include 'ev.h'
-	real grav,fcor,dcor,dirn,rowass,roluft
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real eps1,eps2,pi,flag,high
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'pkonst.h'
+	include 'nbasin.h'
 	include 'femtime.h'
-	common /mkonst/ eps1,eps2,pi,flag,high
+	include 'mkonst.h'
 	integer nen3v(3,1)
 	real zov(1),znv(1)
 	real unv(1),vnv(1)

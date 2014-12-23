@@ -1,4 +1,16 @@
 
+23.12.2014
+
+c ./femplot/suplin.f:
+c 22.12.2014    ggu     new routine integrate_flux()
+c
+c ./fem3d/subtime.f:
+c 23.12.2014    ggu     fractional time step introduced
+c
+c ./fem3d/ousvdiff.f:
+c 20.12.2014    ggu     bug fix: nlv was not set, new calling sequence
+
+
 19.12.2014
 
 c ./fem3d/subtime.f:

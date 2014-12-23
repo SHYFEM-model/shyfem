@@ -83,9 +83,7 @@ c sets up bndo data structure
 
 	include 'param.h'
 	include 'subbndo.h'
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer iopbnd(1)
 	common /iopbnd/iopbnd
@@ -103,10 +101,11 @@ c sets up bndo data structure
 	integer inext,ilast,knext,klast
 	integer ie,n
 	integer ii,iii,ib,in,kn,nb,j
+	integer nbc
 	real area
 	real dx,dy
 
-	integer nkbnds,itybnd,kbnds,ipext
+	integer nkbnds,itybnd,kbnds,ipext,nbnds
 	real areaele
 
 c----------------------------------------------------------
@@ -119,6 +118,8 @@ c----------------------------------------------------------
 
 	nbndo = 0
         ndebug = 0              !unit number for debug (in common block)
+
+	nbc = nbnds()
 
 	do ibc = 1,nbc
 	  nodes = nkbnds(ibc)
@@ -473,8 +474,7 @@ c imposes boundary conditions on open boundary
 	include 'param.h'
         include 'subbndo.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer iopbnd(1)
         common /iopbnd/iopbnd
@@ -541,8 +541,7 @@ c adjusts for ambient value, no gradient or outgoing flow
 	include 'param.h'
 	include 'subbndo.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer iopbnd(1)
 	common /iopbnd/iopbnd
@@ -667,8 +666,7 @@ c imposes radiation condition for levels
 	include 'param.h'
 	include 'subbndo.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real znv(1)
         common /znv/znv

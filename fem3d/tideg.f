@@ -18,10 +18,8 @@ c********************************************************************
 
 	implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
 
         real xgv(1), ygv(1)
         common /xgv/xgv, /ygv/ygv
@@ -76,10 +74,8 @@ c********************************************************************
 
 	integer it
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
 
 	real xgeov(1), ygeov(1)
 	common /xgeov/xgeov, /ygeov/ygeov
@@ -167,10 +163,8 @@ c********************************************************************
 	integer it
 
 ! common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
 
         real xgeov(1), ygeov(1)
         common /xgeov/xgeov, /ygeov/ygeov

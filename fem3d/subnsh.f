@@ -86,18 +86,16 @@ c writes output to terminal or log file
 
 	implicit none
 
+	include 'param_dummy.h'
+	!include 'basin.h'
 	include 'modules.h'
+	include 'femtime.h'
+	include 'nbound.h'
 
 	character*80 name
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real grav,fcor,dcor,dirn,rowass,roluft
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-	include 'femtime.h'
-	character*80 descrp,descrr
+	character*80 descrp
 	common /descrp/ descrp
-	common /descrr/ descrr
 
 	call getfnm('runnam',name)
 	write(6,*)
@@ -119,12 +117,11 @@ c writes output to terminal or log file
 
 	write(6,*)
 	write(6,*) '     Description of basin :'
-	write(6,*) descrr
-	write(6,*)
+	call bas_info
 
-	write(6,*) '     nkn,nel,ngr,mbw :',nkn,nel,ngr,mbw
+	write(6,*) '     Description of boundary values :'
+	write(6,*)
 	write(6,*) '     nbc,nrz,nrq,nrb     :',nbc,nrz,nrq,nrb
-	write(6,*) '     dcor,dirn       :',dcor,dirn
 
 	write(6,*)
 	write(6,*) '     Values from parameter file :'
@@ -173,11 +170,12 @@ c id    identifier
 
 	integer id
 
+	include 'param_dummy.h'
+	include 'basin.h'
 	include 'modules.h'
 
-	character*80 descrp,descrr
+	character*80 descrp
 	common /descrp/ descrp
-	common /descrr/ descrr
 
 	write(6,*)
 	write(6,*) '============================================='
@@ -186,21 +184,11 @@ c id    identifier
 	write(6,1) '================ id = ',id,' ================'
 	write(6,*) '============================================='
 	write(6,*)
-c	write(6,*) '/nkonst/'
-c	write(6,*) nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-c	write(6,*) '/mkonst/'
-c        write(6,*) eps1,eps2,pi,flag,high,higi
-c	write(6,*) '/pkonst'
-c	write(6,*) grav,fcor,dcor,dirn,rowass,roluft
-c	write(6,*) '/femtim/'
-c	write(6,*) itanf,itend,idt,nits,niter,it
-c
-c	call tslgr
+
+	call bas_info
 
 	write(6,*) '/descrp/'
 	write(6,*) descrp
-	write(6,*) '/descrr/'
-	write(6,*) descrr
 
 	!call tsexta
 

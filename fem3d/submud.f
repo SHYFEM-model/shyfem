@@ -21,8 +21,7 @@
   
           include 'param.h'
   
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhkv(nkndim)           !number of node levels
         common /ilhkv/ilhkv
@@ -739,10 +738,8 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 ! Computes the rheoligical stresses and the viscosity of the mud
 !
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
 
         real vts(0:nlvdim,nkndim)
         common /vts/vts
@@ -833,10 +830,8 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 ! Purpose:
 ! Computes the yield stress and sets the certain visc. to model the yield stress regime
 !
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
 
         real vts(0:nlvdim,nkndim)
         common /vts/vts
@@ -962,10 +957,10 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw,lmax
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft,alpha
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	integer lmax
+	include 'nbasin.h'
+	real alpha
+	include 'pkonst.h'
 
         real vts(0:nlvdim,nkndim)
         common /vts/vts
@@ -1041,10 +1036,10 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw,lmax
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft,alpha
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	integer lmax
+	include 'nbasin.h'
+	real alpha
+	include 'pkonst.h'
 
         real vts(0:nlvdim,nkndim)
         common /vts/vts
@@ -1090,8 +1085,8 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw,lmax
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer lmax
+	include 'nbasin.h'
 
         integer k,l,nlev
         real*8 ufric,depth
@@ -1121,10 +1116,8 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
 
         double precision rhosed                !Mud primary particle density (kg/m3)
         common /rhosed/ rhosed
@@ -1320,10 +1313,8 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 !
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
 
         logical ldebug
         integer testnode, icycle
@@ -1641,8 +1632,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         include 'param.h'
 
 	integer k,l !DEB
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv               !total number of levels
         common /level/ nlvdi,nlv
 	character*(*) what
@@ -1908,10 +1898,8 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw,nlvdi
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw,nlvdi
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
 
         double precision rhosed                !Mud primary particle density (kg/m3)
         common /rhosed/ rhosed
@@ -2012,8 +2000,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer ilhkv(nkndim)           !number of node levels
         common /ilhkv/ilhkv
 

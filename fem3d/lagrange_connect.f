@@ -94,8 +94,7 @@ c*******************************************************************
 	real xp(np),yp(np)
 	integer iep(np)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ie,ip,jp
 	real r
@@ -141,8 +140,7 @@ c i_connect_released(ip)	! total number of particles released at i
 
 	integer np
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ie,ip,jp
 
@@ -179,8 +177,7 @@ c marks elements contained in circle (x,y) with radius r
 	real xp,yp
 	real r
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ie
 	real r2,d2
@@ -240,8 +237,7 @@ c*******************************************************************
 	real time		!time particle has stayed in ie
 	integer ic
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
 	logical bin,bout
@@ -333,8 +329,7 @@ c*******************************************************************
 
 	integer np
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 	real hev(1)
 	common /hev/hev

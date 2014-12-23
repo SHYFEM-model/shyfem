@@ -35,36 +35,16 @@ c laplacian interpolation
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
+	include 'evmain.h'
 
 	integer matdim
 	parameter (matdim = nkndim*100)
 	integer nobdim
 	parameter (nobdim = 100)
 
-        character*80 descrp
-        common /descrp/ descrp
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
-
         real hev(neldim)
         common /hev/hev
-
-	include 'evmain.h'
 
 	real zv(nkndim)
 	integer node(nobdim)
@@ -96,16 +76,7 @@ c-----------------------------------------------------------------
 
         if( iapini(1,nkndim,neldim,0) .le. 0 ) stop
 
-c-----------------------------------------------------------------
-c general info
-c-----------------------------------------------------------------
-
-        write(6,*)
-        write(6,*) ' nkn = ',nkn,'  nel = ',nel
-        write(6,*) ' mbw = ',mbw,'  ngr = ',ngr
-        write(6,*)
-        write(6,*) ' dcor = ',dcor,'  dirn = ',dirn
-        write(6,*)
+	call bas_info
 
 c-----------------------------------------------------------------
 c set up ev

@@ -29,8 +29,7 @@ c we would not even need to read basin
 	character*80 descrr,descrp
 	common /descrr/ descrr
 	common /descrp/ descrp
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real xgv(nkndim), ygv(nkndim)
 	real hm3v(3,neldim)
@@ -101,7 +100,6 @@ c-----------------------------------------------------------------
 
 	call set_ev
         call init_sigma_info(nlv,hlv)
-	!call makehev(hev)
 
 c-----------------------------------------------------------------
 c loop on data of simulation
@@ -109,11 +107,8 @@ c-----------------------------------------------------------------
 
 	do while(.true.)
 
-          !call rdous(nin,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
 	  call ous_read_record(nin,it,nlvdim,ilhv,znv,zenv
      +				,utlnv,vtlnv,ierr)
-
-	  !if( it .gt. 21049200 ) goto 100
 
           if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
           if(ierr.ne.0) goto 100
@@ -136,8 +131,6 @@ c     +          ,nen3v,zenv,znv,utlnv,vtlnv)
 	  write(6,*) 'umin/umax : ',umin,umax
 	  write(6,*) 'vmin/vmax : ',vmin,vmax
 	  write(6,*) 'volume    : ',volume
-
-	  !if( it .eq. -1 ) call write_zeta(nkn,znv)
 
 	end do
 

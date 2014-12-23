@@ -26,8 +26,7 @@ c reads ous file and elaborates it for altimeter trace (version 1)
 	character*80 descrr,descrp
 	common /descrr/ descrr
 	common /descrp/ descrp
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real xgv(nkndim), ygv(nkndim)
 	real hm3v(3,neldim)

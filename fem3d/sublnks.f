@@ -57,9 +57,8 @@ c nli < 2*nkn + nel
 c arguments
         integer nnkn,nnel,nnbn,nnli,nnis,nnod
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer inodv(1), iwegv(1)
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         common /inodv/inodv, /iwegv/iwegv
 	include 'links.h'
 c local
@@ -118,9 +117,8 @@ c ... iwegv has already been set
         implicit none
 
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer ieltv(3,1),kantv(2,1)
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
         common /ieltv/ieltv,/kantv/kantv
 c local
@@ -167,8 +165,7 @@ c arguments
 	real winkk
         integer k
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer iwegv(1)
         common /iwegv/iwegv
 	include 'ev.h'
@@ -206,9 +203,8 @@ c
 c arguments
         integer nar
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer nen3v(3,1),ieltv(3,1),iwegv(1)
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         common /nen3v/nen3v, /ieltv/ieltv, /iwegv/iwegv
 c local
         integer i,ie,ieo,ien,n1,n2
@@ -277,9 +273,8 @@ c
 c arguments
         real wink
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer nen3v(3,1),inodv(1),iwegv(1)
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         common /nen3v/nen3v, /inodv/inodv, /iwegv/iwegv
 	include 'ev.h'
 c local
@@ -317,9 +312,8 @@ c
         implicit none
 c
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer iwegv(1)
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
         common /iwegv/iwegv
 	include 'ev.h'

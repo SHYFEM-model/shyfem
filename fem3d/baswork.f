@@ -61,19 +61,10 @@ c-----------------------------------------------------------------
 
         if( iapini(1,nkndim,neldim,0) .le. 0 ) stop
 
+	call bas_info
+
 	call set_ev
 	call set_geom
-
-c-----------------------------------------------------------------
-c general info
-c-----------------------------------------------------------------
-
-        write(6,*)
-        write(6,*) ' nkn = ',nkn,'  nel = ',nel
-        write(6,*) ' mbw = ',mbw,'  ngr = ',ngr
-        write(6,*)
-        write(6,*) ' dcor = ',dcor,'  dirn = ',dirn
-        write(6,*)
 
 c-----------------------------------------------------------------
 c specific info
@@ -107,21 +98,7 @@ c creates boundary condition for circular flume
 	logical bnode
 
 	include 'param.h'
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
+	include 'basin.h'
 
 	real hkv(nkndim)
 	common /hkv/hkv
@@ -138,6 +115,7 @@ c*****************************************************************
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
 
 	integer kstart,kend,kd
 
@@ -148,8 +126,6 @@ c*****************************************************************
 	integer kint(ndim)
 	real tang(2,ndim)
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
         integer kantv(2,nkndim)
         common /kantv/kantv
 
@@ -252,26 +228,7 @@ c writes statistics on basin
 	implicit none
 
 	include 'param.h'
-
-        character*80 descrp
-        common /descrp/ descrp
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
+	include 'basin.h'
 
 	integer ie,ii,k
 	integer imin,imax
@@ -469,12 +426,7 @@ c areatr        element area (return value)
 	integer ie
 
 	include 'param.h'
-
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
+	include 'basin.h'
 
 	integer ii,i1,i2,k1,k2
 	double precision f,x(3),y(3)

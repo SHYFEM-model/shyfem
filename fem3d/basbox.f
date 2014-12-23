@@ -70,16 +70,7 @@ c-----------------------------------------------------------------
 
         if( iapini(1,nkndim,neldim,0) .le. 0 ) stop
 
-c-----------------------------------------------------------------
-c general info
-c-----------------------------------------------------------------
-
-        write(6,*)
-        write(6,*) ' nkn = ',nkn,'  nel = ',nel
-        write(6,*) ' mbw = ',mbw,'  ngr = ',ngr
-        write(6,*)
-        write(6,*) ' dcor = ',dcor,'  dirn = ',dirn
-        write(6,*)
+	call bas_info
 
 c-----------------------------------------------------------------
 c set link structure
@@ -519,12 +510,9 @@ c checks if all boxes are connected
 	implicit none
 
 	include 'param.h'
+        include 'basin.h'
         include 'links.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
         integer ieltv(3,neldim)
         common /ieltv/ieltv
 

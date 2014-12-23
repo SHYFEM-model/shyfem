@@ -71,12 +71,10 @@ c computes turbulent quantities with Munk - Anderson model
 	include 'param.h'
 
 	include 'femtime.h'
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'pkonst.h'
 
 c---------------------------------------------------------------
 c aux arrays superposed onto other aux arrays
@@ -217,12 +215,10 @@ c computes turbulent quantities with GOTM model
         save /numv_gotm/,/nuhv_gotm/,/tken_gotm/,/eps_gotm/,/rls_gotm/
 
 	include 'femtime.h'
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'pkonst.h'
 
 	integer nen3v(3,neldim)
 	common /nen3v/nen3v
@@ -526,9 +522,8 @@ c initializes gotm arrays
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer nlvdi,nlv
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         common /level/ nlvdi,nlv
 
 	double precision numv_gotm(0:nlvdim,nkndim)   !viscosity (momentum)
@@ -817,10 +812,8 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
 	include 'femtime.h'
 
         real rhov(nlvdim,nkndim)
@@ -918,8 +911,7 @@ c taub (stress at bottom) is accumulated and weighted by area
 	include 'param.h'
 	include 'ev.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer nen3v(3,neldim)
 	common /nen3v/nen3v
@@ -988,8 +980,7 @@ c checks arrays for nan or other strange values
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real visv(0:nlvdim,nkndim)
         common /visv/visv
@@ -1038,8 +1029,7 @@ c checks arrays for strange values
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real visv(0:nlvdim,nkndim)
         common /visv/visv
@@ -1105,8 +1095,7 @@ c**************************************************************
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer ilhkv(1)
         common /ilhkv/ilhkv
@@ -1190,8 +1179,7 @@ c       parameter(kmin=1.e-10,epsmin=1.e-12,lenmin=0.01)
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real visv(0:nlvdim,nkndim)      !viscosity (momentum)
         real difv(0:nlvdim,nkndim)      !diffusivity (scalars)

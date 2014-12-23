@@ -55,8 +55,7 @@ c******************************************************************
 	integer ie,l
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         real fxv(nlvdim,1)      !new HYDRO deb
         real fyv(nlvdim,1)
         common /fxv/fxv
@@ -141,6 +140,8 @@ c******************************************************************
 	subroutine momentum_viscous_stability(ahpar,rindex,dstab)
 
 c computes stability for viscosity
+c
+c stability is computed for dt == 1
 
 	implicit none
 
@@ -153,8 +154,7 @@ c computes stability for viscosity
 
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v
@@ -223,8 +223,7 @@ c******************************************************************
         include 'param.h'
 	include 'ev.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
 
@@ -313,8 +312,7 @@ c******************************************************************
 
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
 
@@ -458,8 +456,7 @@ c sets aux arrays saux1/2/3
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real saux1(nlvdim,1),saux2(nlvdim,1)
         real saux3(nlvdim,1),saux4(nlvdim,1)
@@ -566,8 +563,7 @@ c******************************************************************
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real saux1(nlvdim,1),saux2(nlvdim,1)
         real saux3(nlvdim,1),saux4(nlvdim,1)
@@ -714,6 +710,8 @@ c******************************************************************
 	subroutine momentum_advective_stability(rlin,rindex,astab)
 
 c computes courant number of advective terms in momentum equation
+c
+c stability is computed for dt == 1
 
 	implicit none
 
@@ -727,8 +725,7 @@ c computes courant number of advective terms in momentum equation
         !common /nlv/nlv
         common /level/ nlvdi,nlv
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	include 'ev.h'
         real utlnv(nlvdim,1),vtlnv(nlvdim,1)
@@ -846,8 +843,7 @@ c******************************************************************
 	real xadv,yadv,dt
         real uadv(neldim),vadv(neldim)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         real fxv(nlvdim,1)
         real fyv(nlvdim,1)
         common /fxv/fxv
@@ -880,10 +876,8 @@ c******************************************************************
         
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
         real fxv(nlvdim,1)      !new HYDRO deb
         real fyv(nlvdim,1)
         common /fxv/fxv
@@ -991,12 +985,10 @@ c cannot use this for sigma levels
         include 'param.h'
 	include 'ev.h'
         
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'pkonst.h'
 
         real fxv(nlvdim,1)      !new HYDRO deb
         real fyv(nlvdim,1)
@@ -1080,12 +1072,10 @@ c do not use this routine !
         include 'param.h'
 	include 'ev.h'
         
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'pkonst.h'
 
         real fxv(nlvdim,1)      !new HYDRO deb
         real fyv(nlvdim,1)
@@ -1178,12 +1168,10 @@ c this routine works with Z and sigma layers
         include 'param.h'
 	include 'ev.h'
         
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlv,nlvdi
         common /level/ nlvdi,nlv
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'pkonst.h'
 
         real fxv(nlvdim,1)      !new HYDRO deb
         real fyv(nlvdim,1)

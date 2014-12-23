@@ -30,9 +30,7 @@ c initialization of bclfix routines
 
         include 'param.h' 
         include 'bclfix.h' 
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        include 'nbasin.h' 
 
 	integer nen3v(3,neldim)
 	common /nen3v/nen3v
@@ -48,8 +46,9 @@ c initialization of bclfix routines
 
         integer ie,l,i,ii,k,n,nn,nf
 	integer ibc,nodes
+	integer nbc
        
-	integer nkbnds,kbnds
+	integer nkbnds,kbnds,nbnds
 	integer ieext
 	logical bdebug
 
@@ -71,6 +70,8 @@ c------------------------------------------------------------------
 c------------------------------------------------------------------
 c loop over boundaries
 c------------------------------------------------------------------
+
+	nbc = nbnds()
 
 	do ibc = 1, nbc
 
@@ -171,8 +172,7 @@ c fix or nudge  velocities on open boundaries
         include 'param.h' 
         include 'bclfix.h' 
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	include 'femtime.h'
 

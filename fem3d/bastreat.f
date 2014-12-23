@@ -252,8 +252,7 @@ c copies depth values from elems/nodes to nodes/elems
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer nen3v(3,neldim)
         common /nen3v/nen3v
@@ -313,8 +312,7 @@ c handles depth values
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real hev(neldim)
         common /hev/hev
@@ -402,8 +400,7 @@ c*******************************************************************
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real hev(neldim)
         common /hev/hev
 	real hkv(nkndim)
@@ -463,8 +460,7 @@ c smoothes depth values
 	include 'param.h'
 	include 'evmain.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real xgv(nkndim), ygv(nkndim)
         common /xgv/xgv, /ygv/ygv
@@ -616,8 +612,7 @@ c deletes elements with depth lower then hmin
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real xgv(nkndim), ygv(nkndim)
         common /xgv/xgv, /ygv/ygv
@@ -844,8 +839,7 @@ c*******************************************************************
 	integer icon(neldim)
 	integer icol,ibig
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,neldim)
         common /nen3v/nen3v
         integer ieltv(3,neldim)

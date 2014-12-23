@@ -18,8 +18,7 @@ c handles projection - converts x/y to lat/lon
 
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real xgv(nkndim)
 	common /xgv/xgv

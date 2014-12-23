@@ -163,7 +163,8 @@ c---------------------------------------------------------
 
 	if( hlv(nlv) .ne. -1 ) then
           write(6,*) 'nlv,hlv(nlv): ',nlv,hlv(nlv)
-	  stop 'error stop init_sigma_info: internal error (1)'
+	  write(6,*) (hlv(l),l=1,nlv)
+	  stop 'error stop compute_sigma_info: internal error (1)'
 	end if
 	nsigma = nlv
 	return

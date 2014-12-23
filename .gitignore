@@ -116,6 +116,9 @@ fem3d/nosadmin
 fem3d/scalintp
 fem3d/mkgeom
 fem3d/check_debug
+fem3d/baschk
+fem3d/bascomp
+fem3d/ousvdiff
 
 femadj/adjele
 fembin/extDiff

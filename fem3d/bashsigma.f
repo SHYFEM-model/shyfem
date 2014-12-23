@@ -42,22 +42,13 @@ c-----------------------------------------------------------------
 
         if( iapini(1,nkndim,neldim,0) .le. 0 ) stop
 
+	call bas_info
+
 	write(6,*) 'Enter value for hsigma: '
 	read(5,*) hsigma
 	write(6,*) 'Vaue used for hsigma: ',hsigma
 
 	call set_ev
-
-c-----------------------------------------------------------------
-c general info
-c-----------------------------------------------------------------
-
-        write(6,*)
-        write(6,*) ' nkn = ',nkn,'  nel = ',nel
-        write(6,*) ' mbw = ',mbw,'  ngr = ',ngr
-        write(6,*)
-        write(6,*) ' dcor = ',dcor,'  dirn = ',dirn
-        write(6,*)
 
 c-----------------------------------------------------------------
 c check if depth values are continuous
@@ -125,14 +116,8 @@ c checks for continuous depth
 	integer idp
 
 	include 'param.h'
+	include 'basin.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
-        real hm3v(3,neldim)
-        common /hm3v/hm3v
 	real hkv(nkndim)
 	common /hkv/hkv
 	real hev(neldim)
@@ -171,11 +156,8 @@ c checks for flag values
 
 	real hflag
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        real hm3v(3,1)
-        common /hm3v/hm3v
+	include 'param.h'
+	include 'basin.h'
 
 	integer ie,ii
 	integer iflag
@@ -209,13 +191,9 @@ c checks and adjusts hsigma crossing
         real hsigma
         integer iadjust
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'param.h'
+	include 'basin.h'
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        real hm3v(3,1)
-        common /hm3v/hm3v
         real v1v(1)
         common /v1v/v1v
 
@@ -345,12 +323,7 @@ c areatr        element area (return value)
 	integer ie
 
 	include 'param.h'
-
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
+	include 'basin.h'
 
 	integer ii,i1,i2,k1,k2
 	double precision f,x(3),y(3)
@@ -376,26 +349,7 @@ c writes grd file extracting info from bas file
 	implicit none
 
 	include 'param.h'
-
-        character*80 descrp
-        common /descrp/ descrp
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
+	include 'basin.h'
 
 	integer k,ie,ii,ia
 	real x,y,h

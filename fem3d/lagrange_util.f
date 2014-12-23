@@ -104,8 +104,7 @@ c returns center of gravity of total basin
 
 	real xm,ym
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real xgv(1)
 	common /xgv/xgv
 	real ygv(1)
@@ -185,8 +184,7 @@ c*******************************************************************
 
 	real area
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	include 'ev.h'
 

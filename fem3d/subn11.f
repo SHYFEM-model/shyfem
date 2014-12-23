@@ -130,15 +130,13 @@ c		2 : read in b.c.
 	implicit none
 
         include 'param.h'
+        include 'nbasin.h'
 
 	integer mode
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	include 'femtime.h'
 
-	real eps1,eps2,pi,flag,high,higi
-	common /mkonst/ eps1,eps2,pi,flag,high,higi
+	include 'mkonst.h'
 
 	real rrv(1)
 	common /rrv/rrv
@@ -177,6 +175,7 @@ c		2 : read in b.c.
         integer iunrad,ktilt
 	integer ip,l,lmax,ivar
 	integer levflx
+	integer nbc
 	integer id,intpol,nvar,ierr
 	double precision dtime0,dtime
 	real rw,const,aux
@@ -191,7 +190,7 @@ c	real dz
 	character*80 zfile
 
 	integer iround
-        integer nkbnds,kbnds,itybnd
+        integer nkbnds,kbnds,itybnd,nbnds
 	integer ipext,kbndind
 
 	!tramp = 0.	!is now handled in str
@@ -218,6 +217,8 @@ c	-----------------------------------------------------
 c	-----------------------------------------------------
 c       initialize tilted and flux boundaries
 c	-----------------------------------------------------
+
+	nbc = nbnds()
 
 	do ibc=1,nbc
 	  ibtyp=itybnd(ibc)
@@ -362,6 +363,7 @@ c	loop over boundaries
 c	-----------------------------------------------------
 
         call bndo_radiat(it,rzv)
+	nbc = nbnds()
 
 	dtime = it
 	ivar = 1
@@ -490,8 +492,7 @@ c	nodes are linearly interpolated between start-ktilt and ktilt-end
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
 	integer irv(1)
@@ -502,11 +503,14 @@ c	nodes are linearly interpolated between start-ktilt and ktilt-end
         common /xgv/xgv,/ygv/ygv
 
 	integer ibc,ibtyp,ktilt
+	integer nbc
 	integer k,kranf,krend,kn1,kn2
 	real dx,dy,ztilt,z
 	double precision rltot,rltot1,rltot2,rl
 
-	integer itybnd
+	integer itybnd,nbnds
+
+	nbc = nbnds()
 
 	do ibc=1,nbc
           ibtyp = itybnd(ibc)
@@ -566,14 +570,11 @@ c if ktilt is not given nothing is tilted
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
-	real grav,fcor,dcor,dirn,rowass,roluft
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-	real eps1,eps2,pi,flag,high,higi
-	common /mkonst/ eps1,eps2,pi,flag,high,higi
+	include 'pkonst.h'
+	include 'mkonst.h'
 
 	real rrv(1)
 	common /rrv/rrv
@@ -593,15 +594,18 @@ c if ktilt is not given nothing is tilted
         common /xgv/xgv,/ygv/ygv
 
 	integer ibc,ibtyp,kranf,krend,ktilt,k,kn1,kn2
+	integer nbc
 	real roinv,f,ginv,dx,dy,taux,tauy
 	real taux1,taux2,tauy1,tauy2,wx,wy
 	real u,v,z,h,p1,p2,b,hh,ztilt
 	real getpar
-	integer iround,itybnd
+	integer iround,itybnd,nbnds
 
 	roinv=1./rowass
 	f=fcor
 	ginv=1./grav
+
+	nbc = nbnds()
 
 	do ibc=1,nbc
          ibtyp = itybnd(ibc)
@@ -701,8 +705,7 @@ c initializes flux boundary
 
         integer ibc
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 	integer irv(1)
@@ -836,9 +839,8 @@ c sets up (water) mass flux array mfluxv (3d) and rqv (vertically integrated)
 	implicit none
 
 	include 'param.h'
+	include 'nbasin.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -854,10 +856,11 @@ c sets up (water) mass flux array mfluxv (3d) and rqv (vertically integrated)
 	logical debug
 	integer i,k,l,lmin,lmax,nk,ibc,mode
 	integer ibtyp,levmax,levmin
+	integer nbc
 	real flux,vol,voltot,fluxtot,fluxnode
 	real vols(nkndim)
 
-	integer nkbnds,kbnds
+	integer nkbnds,kbnds,nbnds
 	real volnode		!function to compute volume of node
 
 c------------------------------------------------------------------
@@ -877,6 +880,8 @@ c------------------------------------------------------------------
 c------------------------------------------------------------------
 c loop over boundaries for point sources -> use volumes as weight
 c------------------------------------------------------------------
+
+	nbc = nbnds()
 
 	do ibc=1,nbc
 
@@ -978,8 +983,7 @@ c adjusts mass flux for dry nodes
 
 	include 'param.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -1026,10 +1030,8 @@ c computes scalar flux from fluxes and concentrations
 	real sconz(nlvdim,1)	!concentration for each finite volume (return)
 	real ssurf		!value of scalar for surface flux
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real eps1,eps2,pi,flag,high,hihi
-        common /mkonst/ eps1,eps2,pi,flag,high,hihi
+	include 'nbasin.h'
+	include 'mkonst.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -1105,8 +1107,7 @@ c**********************************************************************
 	real sflux(nlvdim,1)	!scalar flux
 	real sconz(nlvdim,1)	!concentration for each finite volume
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
         integer ilhkv(1)
@@ -1153,10 +1154,8 @@ c checks scalar flux
 	real scal(nlvdim,1)	!concentration of scalar
 	real sconz(nlvdim,1)	!concentration for each finite volume
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real eps1,eps2,pi,flag,high,hihi
-        common /mkonst/ eps1,eps2,pi,flag,high,hihi
+	include 'nbasin.h'
+	include 'mkonst.h'
 	include 'femtime.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
@@ -1202,12 +1201,10 @@ c initializes array for scalar boundary condition
 
 	real r3v(nlvdim,nkndim)
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
-	real eps1,eps2,pi,flag,high,higi
-	common /mkonst/ eps1,eps2,pi,flag,high,higi
+	include 'mkonst.h'
 
 	integer k,l
 
@@ -1232,12 +1229,10 @@ c multiplies array for scalar boundary condition with value
 	real r3v(nlvdim,nkndim)
 	real value
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
-	real eps1,eps2,pi,flag,high,higi
-	common /mkonst/ eps1,eps2,pi,flag,high,higi
+	include 'mkonst.h'
 
 	integer k,l
 
@@ -1333,12 +1328,10 @@ c prints non-flag entries of array for scalar boundary condition
 
 	real r3v(nlvdim,nkndim)
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
-	real eps1,eps2,pi,flag,high,higi
-	common /mkonst/ eps1,eps2,pi,flag,high,higi
+	include 'mkonst.h'
 
 	integer k,l
 	real value

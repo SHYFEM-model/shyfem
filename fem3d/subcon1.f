@@ -61,8 +61,7 @@ c sets initial conditions (no stratification)
 	real c(nlvdi,1)		!variable to initialize
 	real cref		!reference value
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 c local
 	integer k,l
 	real depth,hlayer
@@ -89,8 +88,7 @@ c sets initial conditions (with stratification)
 	real cstrat		!stratification [conc/km]
 	real hdko(nlvdi,1)	!layer thickness
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 c local
 	integer k,l
 	real depth,hlayer
@@ -120,10 +118,8 @@ c arguments
 	real c(nlvdi,1)		!concentration (cconz,salt,temp,...)
 	real rbc(1)		!boundary condition
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real eps1,eps2,pi,flag,high,hihi
-        common /mkonst/ eps1,eps2,pi,flag,high,hihi
+	include 'nbasin.h'
+	include 'mkonst.h'
         integer ilhkv(1)
         common /ilhkv/ilhkv
 c local
@@ -157,10 +153,8 @@ c arguments
 	integer nlvbnd		!vertical dimension of boundary conditions
 	real rbc(nlvbnd,1)	!boundary condition
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real eps1,eps2,pi,flag,high,hihi
-        common /mkonst/ eps1,eps2,pi,flag,high,hihi
+	include 'nbasin.h'
+	include 'mkonst.h'
         integer ilhkv(1)
         common /ilhkv/ilhkv
         real rzv(1)
@@ -221,8 +215,7 @@ c on return iu = -1 means that no file has been opened and is not written
 
         character*80 descrp
         common /descrp/ descrp
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
         integer ilhkv(1)
         common /ilhkv/ilhkv
@@ -407,8 +400,7 @@ c on return iu = -1 means that no file has been opened and is not written
 
         character*80 descrp
         common /descrp/ descrp
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer ilhkv(1)
         common /ilhkv/ilhkv
         real hlv(1), hev(1)
@@ -539,8 +531,7 @@ c arguments
 	real c(nlvdi,1)		!concentration (cconz,salt,temp,...)
         real cmin,cmax
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer ilhkv(1)
         common /ilhkv/ilhkv
 c local
@@ -592,8 +583,7 @@ c arguments
 	real c(nlvdi,1)		!concentration (cconz,salt,temp,...)
         real cmin,cmax
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
         integer ilhkv(1)
         common /ilhkv/ilhkv

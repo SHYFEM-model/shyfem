@@ -96,8 +96,7 @@ c dz		rise of water level to achieve
 c arguments
 	real dz
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real zenv(3,1),zeov(3,1)
 	common /zenv/zenv, /zeov/zeov
 	real znv(1),zov(1)
@@ -137,8 +136,7 @@ c arguments
 	integer ielem
 	real dz
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real zenv(3,1),zeov(3,1)
 	common /zenv/zenv, /zeov/zeov
 c local
@@ -274,8 +272,7 @@ c arguments
 	real dz,con
 	real coe(3,1)
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real zeov(3,1)
 	real hm3v(3,1)
 	common /zeov/zeov
@@ -321,8 +318,7 @@ c arguments
 	integer k
 	real dvol
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,1)
         common /nen3v/nen3v
 	real znv(1)

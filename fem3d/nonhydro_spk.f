@@ -6,8 +6,7 @@
 	implicit none
 	include 'param.h'
         include 'nohydlinks.h'
-         integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	 common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
          integer nlvdi,nlv
 	 common /level/ nlvdi,nlv
          integer ilhv(1), ilhkv(1)

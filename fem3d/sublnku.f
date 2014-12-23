@@ -231,8 +231,7 @@ c returns filling of linkv
 c arguments
         integer n       !filling of linkv (return)
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'links.h'
 
         n = ilinkv(nkn+1)

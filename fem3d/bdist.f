@@ -38,11 +38,9 @@ c   rdist:   0   0  1/4 2/4 3/4  1   1   1   ...
 	implicit none
 
 	include 'param.h'
+	include 'nbasin.h'
 
         real rdist(1)
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 
         integer nen3v(3,neldim)			!element index
         common /nen3v/nen3v
@@ -54,6 +52,7 @@ c local variables
         integer i,k,kk
         integer nadist,nad
         integer ibc,n,itype,nk
+	integer nbc
 
 	integer iapini,ipint
         integer nbnds,itybnd,nkbnds,kbnds
@@ -75,6 +74,8 @@ c gather open boundary nodes
 c-----------------------------------------------------------------
 
         n = 0
+
+	nbc = nbnds()
 
         do ibc=1,nbc
           itype = itybnd(ibc)

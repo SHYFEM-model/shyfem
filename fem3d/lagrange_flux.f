@@ -39,8 +39,7 @@ c initializes length of element sides
 	include 'param.h'
 	include 'lagrange.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	
         real xgv(1), ygv(1)
         common /xgv/xgv, /ygv/ygv
@@ -94,8 +93,7 @@ c sets up fluxes in 3d - has to be done every time step
 	include 'lagrange.h'
 	include 'links.h'
 	
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ilhv(neldim)
 	common /ilhv/ilhv
@@ -167,8 +165,7 @@ c sets up fluxes - has to be done every time step
 	include 'lagrange.h'
 	include 'links.h'
 	
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer k,ie,ii,i
 	integer nn,ne
@@ -578,8 +575,7 @@ c all this has to be revised for sigma layers
 	include 'param.h'
 	include 'lagrange.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
@@ -657,8 +653,7 @@ c all this has to be revised for sigma layers
 	include 'param.h'
 	include 'lagrange.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real zenv(3,1),zeov(3,1)
         common /zenv/zenv, /zeov/zeov

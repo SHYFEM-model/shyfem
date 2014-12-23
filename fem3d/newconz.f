@@ -30,11 +30,9 @@ c shell for conz (new version)
 c parameter
         include 'param.h'
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
-        real eps1,eps2,pi,flag,high,higi
-        common /mkonst/ eps1,eps2,pi,flag,high,higi
+	include 'mkonst.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -200,11 +198,9 @@ c shell for conz with multi dimensions
 c parameter
         include 'param.h'
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
-        real eps1,eps2,pi,flag,high,higi
-        common /mkonst/ eps1,eps2,pi,flag,high,higi
+	include 'mkonst.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -405,8 +401,7 @@ c simulates decay for concentration
 	real tau			!decay time in days (0 for no decay)
         real e(nlvdim,nkndim,nsdim)     !state vector
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer ilhkv(1)
         common /ilhkv/ilhkv
 
@@ -448,8 +443,7 @@ c simulates decay for concentration
 	real tau			!decay time in days (0 for no decay)
         real e(nlvdim,nkndim,nsdim)     !state vector
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer ilhkv(1)
         common /ilhkv/ilhkv
 

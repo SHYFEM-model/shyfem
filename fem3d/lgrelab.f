@@ -18,8 +18,7 @@ c reads nos file
 c--------------------------------------------------
         character*80 descrr
         common /descrr/descrr
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real xgv(nkndim), ygv(nkndim)
         real hm3v(3,neldim)
@@ -184,8 +183,7 @@ c***************************************************************
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer nen3v(3,neldim)
         common /nen3v/nen3v
@@ -289,8 +287,7 @@ c shell for writing file unconditionally to disk
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real hev(neldim)
 	common /hev/hev
 

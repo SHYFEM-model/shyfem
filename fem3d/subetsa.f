@@ -195,8 +195,7 @@ c writes and administers ets file
 
         character*80 descrp
         common /descrp/ descrp
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
         integer ilhkv(1)

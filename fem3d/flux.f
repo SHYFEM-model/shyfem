@@ -28,8 +28,7 @@ c	parameter(nxdim=140,nydim=170)
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
 	real r(ndim)		!diverg. corrected fluxes out of element
@@ -441,8 +440,7 @@ c writes ktype to GRD file
 
 	implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real xgv(1), ygv(1)
 	common /xgv/xgv, /ygv/ygv
 	integer nen3v(3,1)

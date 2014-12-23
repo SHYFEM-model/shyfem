@@ -50,8 +50,7 @@ c revised 29.06.97 by ggu	$$ndim - dimension of f is passed
 	integer k,ndim
 	real f(1)
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 	real hm3v(3,1)
@@ -108,8 +107,7 @@ c               -1      error
 	real high
 	parameter(high=1.e+30)
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 	real hm3v(3,1)
@@ -180,8 +178,7 @@ c hkv            array with unique depth values
 	real hev(1)
 	real hkv(1)
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v
@@ -250,8 +247,7 @@ c makes hev (elementwise depth)
 c arguments
         real hev(1)
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         real hm3v(3,1)
         common /hm3v/hm3v
 c local
@@ -280,8 +276,7 @@ c arguments
         real hkv(1)
         real haux(1)   !aux array -> bug - was integer
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,1)
         common /nen3v/nen3v
         real hm3v(3,1)
@@ -325,8 +320,7 @@ c itype:  -1: min  0; aver  +1: max
         real haux(1)
         integer itype
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer nen3v(3,1)
         common /nen3v/nen3v
@@ -387,8 +381,7 @@ c adjusts depth to reference and min/max values
 
 	real hmin,hmax,href
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 	real hm3v(3,1)
@@ -571,8 +564,7 @@ c adjourns hev and hkv from hm3v (if it has been changed)
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real hm3v(3,1)
 	common /hm3v/hm3v
@@ -603,8 +595,7 @@ c uses information about sigma layers and hsigma (hybrid)
 
 	implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer nen3v(3,1)
         common /nen3v/nen3v
@@ -732,8 +723,7 @@ c********************************************************************
 
 	character*(*) file
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real hev(1)
 	common /hev/hev
 
@@ -757,8 +747,7 @@ c********************************************************************
 
 	character*(*) file
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real hev(1)
 	common /hev/hev
 

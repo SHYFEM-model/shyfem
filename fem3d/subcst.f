@@ -46,10 +46,8 @@ c set up constants and parameters
 
 	include 'modules.h'
 
-        real eps1,eps2,pi,flag,high,higi
-        common /mkonst/ eps1,eps2,pi,flag,high,higi
-	real grav,fcor,dcor,dirn,rowass,roluft
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'mkonst.h'
+	include 'pkonst.h'
 
 c parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -116,10 +114,8 @@ c revised 13.06.97 by ggu !$$kranf - check if kranf <= krend
 
 	include 'modules.h'
 
-        real eps1,eps2,pi,flag,high,higi
-        common /mkonst/ eps1,eps2,pi,flag,high,higi
-	real grav,fcor,dcor,dirn,rowass,roluft
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'mkonst.h'
+	include 'pkonst.h'
 	real getpar
 
 c parameters read from STR file
@@ -197,29 +193,18 @@ c set coriolis parameter
 
 	implicit none
 
-        real eps1,eps2,pi,flag,high,higi
-        common /mkonst/ eps1,eps2,pi,flag,high,higi
-	real grav,fcor,dcor,dirn,rowass,roluft
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'pkonst.h'
 
-	integer icor
 	real dlat
 
-	integer iround
 	real getpar
 
-	icor=iround(getpar('icor'))
+	call bas_get_geom(dcor,dirn)	! from basin
+
 	dlat=getpar('dlat')
 
-	if(icor.ne.0) then
-	   if( dlat .le. 90. ) dcor = dlat
-	   fcor = 2.0 * 0.729E-4 * sin(dcor*pi/180.)
-	   call putpar('dlat',dcor)
-           write(6,*) 'Coriolis: ',icor,dcor,dlat,fcor
-	else
-	   fcor = 0.
-           write(6,*) 'No Coriolis accelaration'
-	end if
+	if( dlat .le. 90. ) dcor = dlat
+	call putpar('dlat',dcor)
 
 	end
 

@@ -76,8 +76,7 @@ c interpolates depth values
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real xgv(nkndim), ygv(nkndim)
         common /xgv/xgv, /ygv/ygv
@@ -290,8 +289,7 @@ c interpolates depth values
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real xgv(nkndim), ygv(nkndim)
         common /xgv/xgv, /ygv/ygv
@@ -470,8 +468,7 @@ c if ufact > 0: use it directly as sigma
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real xgv(nkndim), ygv(nkndim)
         common /xgv/xgv, /ygv/ygv
@@ -536,8 +533,7 @@ c if ufact > 0: use it directly as sigma
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real xgv(nkndim), ygv(nkndim)
         common /xgv/xgv, /ygv/ygv
@@ -611,8 +607,7 @@ c interpolates depth values with auto-correlation
 
 	include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real xgv(nkndim), ygv(nkndim)
         common /xgv/xgv, /ygv/ygv

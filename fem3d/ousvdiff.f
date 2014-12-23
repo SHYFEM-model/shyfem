@@ -9,6 +9,7 @@ c 02.09.2003	ggu	adapted to new OUS format
 c 24.01.2005	ggu	computes maximum velocities for 3D (only first level)
 c 04.03.2005	ggu	computes 3D velocities
 c 03.11.2010	ggu	prepared to use for water level differences
+c 20.12.2014	ggu	bug fix: nlv was not set, new calling sequence
 c
 c***************************************************************
 
@@ -23,8 +24,7 @@ c reads ous files and computes difference
 	character*80 descrr,descrp
 	common /descrr/ descrr
 	common /descrp/ descrp
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real xgv(nkndim), ygv(nkndim)
 	real hm3v(3,neldim)
@@ -41,6 +41,8 @@ c reads ous files and computes difference
 	common /ilhv/ilhv
 	real hlv(nlvdim)
 	common /hlv/hlv
+	real hev(neldim)
+	common /hev/hev
 
         real utln1v(nlvdim,neldim)
         real vtln1v(nlvdim,neldim)
@@ -54,11 +56,6 @@ c reads ous files and computes difference
 	real zn2v(nkndim)
 	real zen2v(3,neldim)
 
-	integer ndim
-	parameter(ndim=100)
-	real xpn(ndim), ypn(ndim)
-	integer ielv(ndim)
-
 	character*80 file1,file2
 	integer n,nx,ny
 	integer nfreq
@@ -71,27 +68,28 @@ c reads ous files and computes difference
 	integer it,ie,i,k
 	integer it1,it2
         integer ierr,nread,ndry
-        integer nknous,nelous,nlvous
+        integer nknous,nelous,nlvous1,nlvous2
         real href,hzoff,hlvmin
 	real zmin,zmax
 	real umin,umax
 	real vmin,vmax
 	real cmin,cmax
 
-c	integer rdous,rfous
 	integer iapini,ideffi
 
-	double precision zacum(3,neldim)
-	double precision uacum(nlvdim,neldim)
-	double precision vacum(nlvdim,neldim)
+c--------------------------------------------------------------
+c information and copyright
+c--------------------------------------------------------------
 
-c-------------------------------------
+        call shyfem_copyright('ousdiff - Difference of OUS files')
 
-	write(6,*) 'This program computes the difference of two ous files.'
-	write(6,*) 'It needs the name of the basin and the two ous files.'
+	write(6,*) 'This program computes the difference of 2 ous files.'
+	write(6,*) 'It needs the name of the basin and the 2 ous files.'
 	write(6,*) 'The first is subtracted from the second.'
 
-c-------------------------------------
+c--------------------------------------------------------------
+c open basin
+c--------------------------------------------------------------
 
 	nread=0
 
@@ -99,48 +97,57 @@ c-------------------------------------
 		stop 'error stop : iapini'
 	end if
 
-c-------------------------------------
+c--------------------------------------------------------------
+c open first ous file
+c--------------------------------------------------------------
 
 	write(6,*) 'Enter name of first OUS file: '
 	read (5,'(a)') file1
 
-	call init_ousfile(nb1,file1
-     +				,nkndim,neldim,nlvdim
-     +				,nknous,nelous,nlvous
-     +				,ilhv,hlv,hev
-     +				,href,hzoff)
+        call open_ous_file(file1,'old',nb1)
+        call read_ous_header(nb1,nkndim,neldim,nlvdim,ilhv,hlv,hev)
+        call ous_get_params(nb1,nknous,nelous,nlvous1)
 
 	if( nkn .ne. nknous ) goto 88
 	if( nel .ne. nelous ) goto 88
 
-c-------------------------------------
+c--------------------------------------------------------------
+c open second ous file
+c--------------------------------------------------------------
 
 	write(6,*) 'Enter name of second OUS file: '
 	read (5,'(a)') file2
 
-	call init_ousfile(nb2,file2
-     +				,nkndim,neldim,nlvdim
-     +				,nknous,nelous,nlvous
-     +				,ilhv,hlv,hev
-     +				,href,hzoff)
+        call open_ous_file(file2,'old',nb2)
+        call read_ous_header(nb2,nkndim,neldim,nlvdim,ilhv,hlv,hev)
+        call ous_get_params(nb2,nknous,nelous,nlvous2)
 
 	if( nkn .ne. nknous ) goto 88
 	if( nel .ne. nelous ) goto 88
 
-c-------------------------------------
+c--------------------------------------------------------------
+c check nlv
+c--------------------------------------------------------------
 
-	nbout = 55
-	nvers = 1
-        nbout=ifileo(nbout,'diff.ous','unform','new')
-        if(nbout.le.0) then
-	  stop 'error stop: Cannot open OUS file for writing'
-	end if
-	call wfous(nbout,nvers,nkn,nel,nlv,href,hzoff,descrp,ierr)
-	if( ierr .ne. 0 ) goto 95
-	call wsous(nbout,ilhv,hlv,hev,ierr)
-	if( ierr .ne. 0 ) goto 95
+	if( nlvous1 .ne. nlvous2 ) goto 87
+	nlv = nlvous1
 
-c-------------------------------------
+        call init_sigma_info(nlv,hlv)
+
+c--------------------------------------------------------------
+c open output file
+c--------------------------------------------------------------
+
+        call open_ous_file('diff.ous','new',nbout)
+        call ous_init(nbout,0)
+        call ous_clone_params(nb1,nbout)
+        call write_ous_header(nbout,ilhv,hlv,hev)
+
+	write(6,*) 'output file diff.ous opened ',ierr
+
+c--------------------------------------------------------------
+c loop on data
+c--------------------------------------------------------------
 
 	it1 = -1024*1024*1024
 	it2 = it1
@@ -188,11 +195,11 @@ c-------------------------------------
         call wrous(nbout,it1,nlvdim,ilhv,zn1v,zen1v,utln1v,vtln1v,ierr)
         if(ierr.ne.0.) goto 95
 
-	write(6,*) 
-	write(6,*) 'time : ',it
-	write(6,*) 
-
 	goto 300
+
+c--------------------------------------------------------------
+c end of loop
+c--------------------------------------------------------------
 
   100	continue
 
@@ -200,7 +207,14 @@ c-------------------------------------
 	write(6,*) nread,' records elaborated'
 	write(6,*)
 
+c--------------------------------------------------------------
+c end of routine
+c--------------------------------------------------------------
+
 	stop
+   87	continue
+	write(6,*) 'nlv different between simulations: ',nlvous1,nlvous2
+	stop 'error stop: nlv parameter'
    88	continue
 	write(6,*) 'nkn, nel from basin: ',nkn,nel
 	write(6,*) 'nkn, nel from simul: ',nknous,nelous
@@ -210,64 +224,6 @@ c-------------------------------------
 	stop 'error stop: Cannot read file OUS'
    95	continue
 	stop 'error stop: Cannot write output file OUS'
-	end
-
-c******************************************************************
-
-	subroutine init_ousfile(nb,file
-     +				,nkndim,neldim,nlvdim,nkn,nel,nlv
-     +				,ilhv,hlv,hev
-     +				,href,hzoff)
-
-c initializes OUS file
-
-	integer nb
-	character*(*) file
-	integer nkndim,neldim,nlvdim
-	integer nkn,nel,nlv
-	real href,hzoff
-
-	character*80 descrp
-	common /descrp/ descrp
-	integer ilhv(neldim)
-	real hlv(nlvdim)
-	real hev(neldim)
-
-	integer ierr,nvers
-
-        nb=ifileo(55,file,'unform','old')
-	if(nb.le.0) goto 100
-
-	nvers=1
-        call rfous(nb
-     +			,nvers
-     +			,nkn,nel,nlv
-     +			,href,hzoff
-     +			,descrp
-     +			,ierr)
-	if( ierr .ne. 0 ) goto 200
-
-	call dimous(nb,nkndim,neldim,nlvdim)
-
-	call rsous(nb,ilhv,hlv,hev,ierr)
-	if( ierr .ne. 0 ) goto 200
-
-        write(6,*)
-        write(6,*)   descrp
-        write(6,*)
-        write(6,*) ' nvers        : ',nvers
-        write(6,*) ' href,hzoff   : ',href,hzoff
-        write(6,*) ' nkn,nel      : ',nkn,nel
-        write(6,*) ' nlv          : ',nlv
-        write(6,*)
-
-	return
-  100	continue
-	write(6,*) file
-	stop 'error stop init_ousfile: opening file'
-  200	continue
-	write(6,*) 'ierr = ',ierr
-	stop 'error stop init_ousfile: reading header'
 	end
 
 c******************************************************************

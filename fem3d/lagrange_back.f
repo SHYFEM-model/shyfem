@@ -24,8 +24,7 @@ c handles lagrangian backtracing
         include 'param.h'
         include 'lagrange.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
                 
 	real uadv(1), vadv(1)
         
@@ -107,8 +106,7 @@ c interpolation of velocities on the points that have been backtraced
         
 	real uadv(1), vadv(1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
                 
         integer nen3v(3,1)
         common /nen3v/nen3v

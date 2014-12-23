@@ -482,8 +482,7 @@ c computes vol in total basin
 	real voltotal
 	logical bz	!if true use new zeta to compute volume
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ie,mode
 	real volume
@@ -516,8 +515,7 @@ c computes area in total basin
 
 	real areatotal
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ie
 	real area
@@ -679,8 +677,7 @@ c sets up element info structure ivol(1) from kvol(1) for one area
 	integer ivolm		!filling of ivol		(out)
 	integer ivol(1)		!element numbers of volumes     (out)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real xline(nkn), yline(nkn)
 	integer kline(nkn)
@@ -865,8 +862,7 @@ c******************************************************************
 	integer ielems(1)
 	integer ietype
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real v3v(1)		!used as flag
 	common /v3v/v3v

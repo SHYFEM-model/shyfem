@@ -155,10 +155,8 @@ c computes ecological scalars with BFM  model
 	integer ndim
 	parameter(ndim=nlvdim)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -664,9 +662,8 @@ c initializes bfm  arrays
 
 	include 'param.h'
 	include 'bfm_common.h'
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer nlvdi,nlv
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         common /level/ nlvdi,nlv
 	
 	integer nbfmv1
@@ -821,8 +818,7 @@ c**************************************************************
 
 	integer iunit
 	integer k,nstate
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	nstate = 48
 
@@ -920,8 +916,7 @@ c**************************************************************
 
 	integer k,nstate
 	integer nstate_aux,nkn_aux
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	nstate = 48
 

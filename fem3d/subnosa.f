@@ -42,8 +42,7 @@ c write 2d nos file
         character*(*) name,title
         real value(1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         real hev(1)
         common /hev/hev
 

@@ -455,8 +455,7 @@ c*****************************************************************
 	integer get_nearest_point
 	real xp,yp
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real xgv(1)
 	common /xgv/xgv

@@ -1,4 +1,9 @@
 
+23.12.2014    VERS_7_0_11
+
+	fractional time step introduced
+	some common blocks converted to include
+
 19.12.2014    VERS_7_0_10
 
 	femtime converted (from common to include)

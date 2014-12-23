@@ -50,8 +50,7 @@ c
 c parameters
 	include 'param.h'
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
 	integer ilhv(1)
@@ -94,8 +93,7 @@ c transforms velocities to transports
 c parameters
 	include 'param.h'
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
 	integer ilhv(1)
@@ -137,8 +135,7 @@ c
 c arguments
 	real vv(1)
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	real up0v(1),vp0v(1)
 	real unv(1),vnv(1)
@@ -211,9 +208,8 @@ c parameters
 c arguments
 	real vv(1)
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /level/ nlvdi,nlv
 	integer ilhv(1)
 	integer nen3v(3,1)
@@ -294,9 +290,8 @@ c
 c parameters
 	include 'param.h'
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /level/ nlvdi,nlv
 	integer ilhv(1)
 	integer nen3v(3,1)
@@ -361,9 +356,8 @@ c parameter
 	include 'param.h'
 c common
 	integer nlvdi,nlv
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	common /level/ nlvdi,nlv
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer ilhv(1)
 	real unv(1),vnv(1)
 	real utlnv(nlvdim,1),vtlnv(nlvdim,1)
@@ -403,9 +397,8 @@ c only first layer has to be checked
 c parameters
 	include 'param.h'
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /level/ nlvdi,nlv
 
         real znv(1)
@@ -482,9 +475,8 @@ c distribute barotropic velocities onto layers (only in dry elements)
 c parameters
 	include 'param.h'
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /level/ nlvdi,nlv
 	integer ilhv(1)
 	real utlnv(nlvdim,1),vtlnv(nlvdim,1)
@@ -546,8 +538,7 @@ c sets obsolete data structure xv
 	implicit none
 
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real up0v(1),vp0v(1)
 	common /up0v/up0v, /vp0v/vp0v
 	real znv(1)
@@ -597,8 +588,7 @@ c copies u/v/z to old time step
 
 	include 'param.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
 
@@ -746,8 +736,7 @@ c arguments
         real aux(1)     !aux array (nkndim)
 
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 	include 'ev.h'
@@ -812,8 +801,7 @@ c arguments
         real aux(nlvdi,1)     !aux array (nkndim)
 
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
         integer ilhv(1),ilhkv(1)
@@ -889,8 +877,7 @@ c arguments
         real nov(nlvdi,1)      !array with nodal values (out)
 
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
         integer ilhv(1),ilhkv(1)
@@ -959,8 +946,7 @@ c (2D version)
         real nov(1)     !array with nodal values (in)
         real elv(1)     !array with element values (out)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer nen3v(3,1)
         common /nen3v/nen3v
@@ -1004,8 +990,7 @@ c arguments
         real elv(nlvdi,1)	!array with element values (out)
 
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer ilhv(1),ilhkv(1)
         common /ilhv/ilhv, /ilhkv/ilhkv
         integer nen3v(3,1)

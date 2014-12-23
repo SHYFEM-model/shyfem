@@ -147,10 +147,8 @@ c eco-model cosimo
 	real es(nkndim,nsstate)		!sediment state variables
 	save e,eload,es
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real eps1,eps2,pi,flag,high,higi
-        common /mkonst/ eps1,eps2,pi,flag,high,higi
+	include 'nbasin.h'
+	include 'mkonst.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -672,8 +670,7 @@ c checks bio vars
 	real e(nlvdim,nkndim,nstate)	!state vector
 	real es(nkndim,nsstate)		!sediment state variables
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -712,8 +709,7 @@ c simulates decay for virus and bacteria
         real dt
 	real e(nlvdim,nkndim,nstate)	!state vector
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 	integer ilhkv(1)
@@ -828,8 +824,7 @@ c einit must be 1.
 	real dt
 	real e(nlvdim,nkndim,nstate)	!state vector
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 	integer ilhkv(1)
@@ -972,8 +967,7 @@ c must be customized
 
 	real val(1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer iarv(1)
         common /iarv/iarv
@@ -1020,8 +1014,7 @@ c computes total mass of state variables (only where v1v is not 0)
 	real v1v(1)
 	double precision mass(1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 	integer ilhkv(1)

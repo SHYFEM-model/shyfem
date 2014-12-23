@@ -41,33 +41,13 @@ c optimal interpolation
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
+	include 'evmain.h'
 
 	integer ndim
 	parameter (ndim = 100)
 	integer matdim
 	parameter (matdim = nkndim*100)
-
-        character*80 descrp
-        common /descrp/ descrp
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
-
-	include 'evmain.h'
 
 	real rmat(matdim)
 	real zv(nkndim)
@@ -91,16 +71,7 @@ c-----------------------------------------------------------------
 
         if( iapini(1,nkndim,neldim,0) .le. 0 ) stop
 
-c-----------------------------------------------------------------
-c general info
-c-----------------------------------------------------------------
-
-        write(6,*)
-        write(6,*) ' nkn = ',nkn,'  nel = ',nel
-        write(6,*) ' mbw = ',mbw,'  ngr = ',ngr
-        write(6,*)
-        write(6,*) ' dcor = ',dcor,'  dirn = ',dirn
-        write(6,*)
+	call bas_info
 
 c-----------------------------------------------------------------
 c set up ev
@@ -201,13 +172,11 @@ c******************************************************************
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
 
 	integer mode
 	integer ndim,np
 	real xp(1),yp(1),zp(1)
-
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
 
 	character*80 file
 	integer n,k,ki
@@ -263,13 +232,8 @@ c exponential interpolation with max radius
 	real zv(1)
 
 	include 'param.h'
+	include 'basin.h'
 	include 'evmain.h'
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
 
 	integer ie,ii,k
 	integer nktot

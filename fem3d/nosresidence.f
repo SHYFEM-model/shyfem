@@ -375,8 +375,7 @@ c***************************************************************
 	double precision cvacu(nlvdim,nkndim)
 	integer ilhkv(nkndim)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer k,lmax,l
 
@@ -416,8 +415,7 @@ c compute residence time
 	real cv3(nlvdim,nkndim)				!computed RT 3D
 	real cv2(nkndim)				!computed RT 2D
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer k,lmax,l,ivar,ierr
 	real conz,conze,res,rese
@@ -499,8 +497,7 @@ c**********************************************************************
 	real vol3(nlvdim,nkndim)			!volumes
 	real cv2(nkndim)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer k,lmax,l,ivar,ierr
 	real cmin,cmax,cmed,vtot
@@ -563,8 +560,7 @@ c write histogram
 	integer ndim
 	parameter (ndim=100)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	logical bdebug
 	integer k,lmax,l,i,ic

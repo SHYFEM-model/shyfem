@@ -48,8 +48,7 @@ c------------------------------------------------------------
         character*80 descrp
         common /descrp/ descrp
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -316,8 +315,7 @@ c on return rinside(k) = 1 for nodes inside domain
 	real rinside(1)
 	integer iaout		!area code for outside elements
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,1)
         common /nen3v/nen3v
         integer iarv(1)
@@ -355,8 +353,7 @@ c resets concentration for start of new computation
 	real cnv(nlvdim,1)
 	real rinside(1)			!flag if node is inside domain
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer ilhkv(1)
         common /ilhkv/ilhkv
 
@@ -388,8 +385,7 @@ c simulates stirred tank
 	real cnv(nlvdim,1)
 	real rinside(1)			!flag if node is inside domain
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
 
@@ -421,8 +417,7 @@ c computes mass and volume on internal nodes
 	real vol(nlvdim,1)
 	double precision mass,volume
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
 
@@ -462,8 +457,7 @@ c sets concentration to zero outside of domain
         real cnv(nlvdim,1)
 	real rinside(1)			!flag if node is inside domain
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
 
@@ -492,8 +486,7 @@ c resets acumulated value
 
 	double precision cvacu(nlvdim,nkndim)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
 
@@ -524,8 +517,7 @@ c***************************************************************
 	double precision cvacu(nlvdim,nkndim)
 	double precision volacu(nlvdim,nkndim)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
 
@@ -581,8 +573,7 @@ c compute renewal time and write to file
 	real cnv(nlvdim,nkndim)				!last concentration
 	real cvres3(nlvdim,nkndim)			!computed RT 3D
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer ilhkv(1)
 	common /ilhkv/ilhkv
 
@@ -742,8 +733,7 @@ c write histogram
 	integer ndim
 	parameter (ndim=100)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	logical bdebug
 	integer k,lmax,l,i,ic

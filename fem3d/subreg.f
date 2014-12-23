@@ -178,11 +178,10 @@ c parameter
 	double precision eps
 	parameter ( eps = 1.d-14 )
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nen3v(3,1)
 	real xgv(1), ygv(1)
 	real pxareg,pyareg,pxdreg,pydreg,pzlreg
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /xgv/xgv, /ygv/ygv
 	common /nen3v/nen3v
 	common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
@@ -292,11 +291,10 @@ c parameter
 	double precision eps
 	parameter ( eps = 1.d-14 )
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nen3v(3,1)
 	real xgv(1), ygv(1)
 	real pxareg,pyareg,pxdreg,pydreg,pzlreg
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /xgv/xgv, /ygv/ygv
 	common /nen3v/nen3v
 	common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
@@ -444,8 +442,7 @@ c parameter
 	double precision eps
 	parameter ( eps = 1.d-14 )
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 	real xgv(1), ygv(1)
@@ -764,8 +761,7 @@ c		> 0	values of flag used in interpolation
 	real femval(*)		!interpolated values on fem grid (return)
 	integer ierr		!error code (return)
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real xgv(1), ygv(1)
 	common /xgv/xgv, /ygv/ygv
 
@@ -856,10 +852,9 @@ c arguments
 	real av(1)
 	real am(ip,jp)
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	real xgv(1), ygv(1)
 	real pxareg,pyareg,pxdreg,pydreg,pzlreg
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /xgv/xgv, /ygv/ygv
 	common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
 c local
@@ -1009,11 +1004,10 @@ c arguments
 	real av(1)
 	real am(ip,jp)
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nen3v(3,1)
 	real xgv(1), ygv(1)
 	real pxareg,pyareg,pxdreg,pydreg,pzlreg
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /xgv/xgv, /ygv/ygv
 	common /nen3v/nen3v
 	common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
@@ -1090,11 +1084,10 @@ c arguments
 	real zv(1)
 	real href,hzoff
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nen3v(3,1)
 	real hm3v(3,1)
 	real zenv(3,1)
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /nen3v/nen3v, /hm3v/hm3v
 	common /zenv/zenv
 c local
@@ -1134,8 +1127,7 @@ c bwater is elementwise mask:	true = water point
 c arguments
 	logical bwater(1)
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 c local
 	integer ie
 
@@ -1160,8 +1152,7 @@ c arguments
 	integer ilhv(1)
 	integer level
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 c local
 	integer ie,nedry
 
@@ -1192,8 +1183,7 @@ c arguments
 	logical bwater(1)
 	logical bkwater(1)
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 c local
@@ -1241,8 +1231,7 @@ c arguments
 	logical bwater(1)
 	logical bkwater(1)
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 c local
@@ -1469,8 +1458,7 @@ c uses data structure ev and ieltv
 	real xp,yp
 	integer ielem	!element number on return
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ieltv(3,1)
 	common /ieltv/ieltv
@@ -1554,8 +1542,7 @@ c finds element for point (xp,yp) starting from ieold
 	real xp,yp
 	integer ielem	!element number on return
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	logical in_element
 	integer iem,iep
@@ -1626,8 +1613,7 @@ c finds element for point (xp,yp)
 	real xp,yp
 	integer ielem	!element number on return
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ie
 	logical in_element

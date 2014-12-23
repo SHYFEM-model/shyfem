@@ -13,7 +13,7 @@ c
 c
 	common /descrr/ descrr
 	common /descrp/ descrp
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /xgv/xgv(nkndim), /ygv/ygv(nkndim)
 	common /nen3v/nen3v(3,neldim), /hm3v/hm3v(3,neldim)
 	common /ipev/ipev(neldim), /ipv/ipv(nkndim)

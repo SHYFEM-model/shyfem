@@ -42,23 +42,17 @@ c********************************************************
 
         program vp
 
+	implicit none
+
         include 'param.h'
+        include 'basin.h'
 
 	character*80 name
 	character*80 file
 	character*80 errfil
 	character*80 errtex
-        character*80 descrg,descrr,descra,basnam
+        character*80 descrg,descra,basnam
         logical bstop,bopti
-
-	common /descrr/descrr
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /pkonst/ grav,fcor,dcor,dirn
-
-	common /xgv/xgv(nkndim), /ygv/ygv(nkndim)
-	common /ipev/ipev(neldim), /ipv/ipv(nkndim)
-	common /nen3v/nen3v(3,neldim), /hm3v/hm3v(3,neldim)
-	common /iarv/iarv(neldim)
 
         integer ipdex(nkndim), iedex(neldim)
 
@@ -83,18 +77,24 @@ c        common /kvert/kvert(2,nkndim) !aux vector for rosen
 c        common /hev/hev(neldim)
 c        common /hkv/hkv(nkndim) !for depths
 
-        integer nkn,nknh,nel,nelh,nli,nco
+	integer ianz,idepth,itief
+	integer ie,k
+	integer nat,net,ner,nb1,nb2,nb3,nb4,nb9
+
+        integer nknh,nelh,nli,nco
 	integer nrec
 	integer nlidim,nlndim
 	real hflag
+
+	integer igetxt,idefbas,ichanm,ifileo
 
 	data bstop /.false./
 	data errfil /'errout.dat'/
 
 	call shyfem_copyright('vp - preprocessing of FE grid')
 c
-        dcor=0.
-        dirn=0.
+        dcorbas=0.
+        dirnbas=0.
         descrg=' '
         descrr=' '
         descra=' '
@@ -420,14 +420,7 @@ c
 c
 	close(nb2)
 c
-	write(nat,*)
-	write(nat,*) descrr
-	write(nat,*)
-	write(nat,*) ' nkn  = ',nkn ,'   nel  = ',nel
-	write(nat,*) ' ngr  = ',ngr ,'   mbw  = ',mbw
-	write(nat,*)
-	write(nat,*) ' dcor = ',dcor,'   dirn = ',dirn
-	write(nat,*)
+	call bas_info
 
 	if( mbw .gt. mbwdim ) then
 	  write(6,*) '*** Attention:'

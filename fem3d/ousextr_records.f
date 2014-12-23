@@ -28,8 +28,7 @@ c reads ous file and writes extracted records to new ous file
         integer irec(nrdim)
 
 	character*80 title
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real xgv(nkndim), ygv(nkndim)
 	real hm3v(3,neldim)

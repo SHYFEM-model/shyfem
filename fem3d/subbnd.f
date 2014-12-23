@@ -86,8 +86,7 @@ c initializes boundary parameters
 
 	implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbound.h'
 
 	nbc = 0
 	nrb = 0
@@ -106,8 +105,7 @@ c reads boundary info from STR file
 
 	integer ibc
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbound.h'
         integer irv(1)
         common /irv/irv
 
@@ -536,8 +534,7 @@ c checks boundary information read from STR
 
 	implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbound.h'
 	integer irv(1)
 	common /irv/irv
 	character*80 boundn(1)
@@ -671,8 +668,7 @@ c********************************************************************
 
 	implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbound.h'
 
 	character*80 boundn(1)
         common /boundn/ boundn
@@ -762,9 +758,7 @@ c********************************************************************
 	implicit none
 
 	include 'param.h'
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbound.h'
 
 	character*80 boundn(1)
         common /boundn/ boundn
@@ -902,10 +896,25 @@ c returns total number of open boundaries
 
 	integer nbnds
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbound.h'
 
 	nbnds = nbc
+
+	end
+
+c********************************************************************
+
+	function nkbnd()
+
+c returns total number of open boundary nodes
+
+	implicit none
+
+	integer nkbnd
+
+	include 'nbound.h'
+
+	nkbnd = nrb
 
 	end
 
@@ -942,8 +951,7 @@ c returns i th node of all boundary nodes
 	integer kbnd
 	integer i
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbound.h'
 	integer irv(1)
 	common /irv/irv
 
@@ -1126,8 +1134,8 @@ c sets all open boundaries to value
 	real array(1)
 	real flag
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbound.h'
+	include 'nbasin.h'
 	integer irv(1)
 	common /irv/irv
 
@@ -1169,8 +1177,7 @@ c checks if ibc is in bounds
         integer ibc
 	character*(*) errtext
  
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbound.h'
  
         if( ibc .lt. 1 .or. ibc .gt. nbc ) then
 	    write(6,*) errtext

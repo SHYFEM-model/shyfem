@@ -1985,8 +1985,7 @@ c	+---+---+
 
 	integer iqc(4)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real xgv(1), ygv(1)
 	common /xgv/xgv, /ygv/ygv

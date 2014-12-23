@@ -648,8 +648,7 @@ c raises water level of lagoon
 
 	real dz		!water level rise per time step [m]
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         real zenv(3,1)
         common /zenv/zenv
         real znv(1)

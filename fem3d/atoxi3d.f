@@ -53,10 +53,8 @@ c toxi module ARPAV
 
         real tstot(nstate)              !for mass test
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real eps1,eps2,pi,flag,high,higi
-        common /mkonst/ eps1,eps2,pi,flag,high,higi
+	include 'nbasin.h'
+	include 'mkonst.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 
@@ -427,8 +425,7 @@ c checks bio vars
 	character*(*) title
 	real e(nlvdim,nkndim,nstate)	!state vector
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
 

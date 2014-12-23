@@ -104,10 +104,8 @@ c computes bottom friction
 	real drittl
 	parameter(drittl=1./3.)
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real grav,fcor,dcor,dirn,rowass,roluft
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
 
         integer nen3v(3,1)
         common /nen3v/nen3v
@@ -278,8 +276,7 @@ c interpolates area codes from elements to nodes (min or max)
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,1)
         common /nen3v/nen3v
         integer iarv(1)
@@ -406,8 +403,7 @@ c initializes chezy arrays
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	include 'param.h'
 	include 'chezy.h'
@@ -434,8 +430,7 @@ c initializes chezy arrays
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	include 'param.h'
 	include 'chezy.h'
@@ -469,8 +464,7 @@ c adjusts chezy arrays
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	include 'param.h'
 	include 'chezy.h'
@@ -551,8 +545,7 @@ c checks chezy arrays
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	include 'param.h'
 	include 'chezy.h'
@@ -670,8 +663,7 @@ c checks values for chezy parameters
 
 	implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	include 'param.h'
 	include 'chezy.h'

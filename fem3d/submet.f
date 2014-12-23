@@ -17,8 +17,7 @@ c converts distributed source from [m/s] to [m**3/s]
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real rqpsv(1), rqdsv(1)
 	common /rqpsv/rqpsv, /rqdsv/rqdsv
@@ -61,8 +60,7 @@ c initializes evaporation mass flux
 
 	include 'meteo.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer k
 
@@ -82,8 +80,7 @@ c adds evaporation mass flux to distributed source
 
 	include 'meteo.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real rqdsv(1)
 	common /rqdsv/rqdsv
 
@@ -110,8 +107,7 @@ c initializes evaporation mass flux
 
 	include 'meteo.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer k
 	real dragco
@@ -177,8 +173,7 @@ c computes heat flux through bulk formulas
 	include 'param.h'
 
 	include 'femtime.h'
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real tempv(nlvdim,nkndim)
 	common /tempv/tempv
 	double precision dq

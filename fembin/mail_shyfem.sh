@@ -29,6 +29,7 @@ echo "Dear All,"						 > $tmpfile
 echo "a new shyfem file $file is available for download."	>> $tmpfile
 echo "Please use the following link to download the file:"	>> $tmpfile
 echo "$link"							>> $tmpfile
+echo "Release notes can be found in the file RELEASE_NOTES."	>> $tmpfile
 echo "Best regards, Georg"					>> $tmpfile
 
 #gmutt -auto -s "$subject" -i $tmpfile gmail

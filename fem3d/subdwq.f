@@ -29,10 +29,9 @@ c
         implicit none
 c
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	real uov(1),vov(1),unv(1),vnv(1)
 	include 'femtime.h'
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /uov/uov, /vov/vov, /unv/unv, /vnv/vnv
 c local
         integer itsdwq,itedwq,idtdwq,nagdwq
@@ -142,10 +141,9 @@ c parameter
 	real drittl
 	parameter (drittl=1./3.)
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         real xgv(1),ygv(1)
         integer nen3v(3,1), iwegv(1)
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         common /xgv/xgv, /ygv/ygv
 	common /nen3v/nen3v
         common /iwegv/iwegv
@@ -173,9 +171,10 @@ c local
         logical bwrite
 	integer nvol,nflow,narea
 	integer nout
+	integer nrb,nbc
 c function
         integer ipext, ifileo
-	integer itybnd, nkbnds, kbnds
+	integer itybnd, nkbnds, kbnds, nkbnd, nbnds
 	real areaele,depfvol,depele
 c save
 	save icall
@@ -301,6 +300,9 @@ c
 c
 c  open boundary nodes
 c
+	  nrb = nkbnd()
+	  nbc = nbnds()
+
           write(nout) nrb
           do i=1,nbc
 	     write(nout) itybnd(i),nkbnds(i)

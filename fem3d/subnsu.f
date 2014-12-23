@@ -132,8 +132,7 @@ c
 	integer ipext
 	integer k
 	integer ipv(1)
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /ipv/ipv
 c
 	if(k.lt.1.or.k.gt.nkn) then
@@ -158,8 +157,7 @@ c
 	integer ieext
 	integer k
 	integer ipev(1)
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /ipev/ipev
 c
 	if(k.lt.1.or.k.gt.nel) then
@@ -184,8 +182,7 @@ c
 	integer ipint
 	integer k,i
 	integer ipv(1)
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /ipv/ipv
 c
 	do i=1,nkn
@@ -211,8 +208,7 @@ c
 	integer ieint
 	integer k,i
 	integer ipev(1)
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /ipev/ipev
 c
 	do i=1,nel

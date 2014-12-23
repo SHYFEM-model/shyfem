@@ -66,6 +66,7 @@ c 10.04.2014    ccf     new section "wrt" for water renewal time
 c 29.10.2014    ggu     do_() routines transfered from newpri.f
 c 10.11.2014    ggu     time management routines transfered to this file
 c 19.12.2014    ggu     accept date also as string
+c 23.12.2014    ggu     fractional time step introduced
 c
 c************************************************************
 c
@@ -82,11 +83,13 @@ c prints time after time step
 	include 'femtime.h'
 
         integer nit1,nit2,naver
+	integer idtfrac,i
         real perc
 
 	integer year,month,day,hour,min,sec
 
 	character*20 line
+	character*9 frac
 	double precision dgetpar
 	logical dts_has_date
 
@@ -107,7 +110,14 @@ c---------------------------------------------------------------
 c compute total number of iterations
 c---------------------------------------------------------------
 
-        nit1 = niter + (itend-it)/idt
+	if( idt .gt. 0 ) then
+          nit1 = niter + (itend-it)/idt
+	  idtfrac = 0
+	else
+          nit1 = niter + nint((itend-it)/dt_act)
+	  idtfrac = nint(1./dt_act)
+	end if
+
 	nit2 = nit1
 	if( it .gt. itanf ) then
           nit2 = nint( niter * ( 1 + float(itend-it)/(it-itanf) ) )
@@ -124,7 +134,17 @@ c---------------------------------------------------------------
 	  if( mod(icall,50) .eq. 0 ) write(6,1003)
 !	  call dts2dt(it,year,month,day,hour,min,sec)
 	  call dtsgf(it,line)
-          write(6,1005) it,line,idt,niter,nits,perc
+	  if( idtfrac == 0 ) then
+            write(6,1005) it,line,idt,niter,nits,perc
+	  else
+	    frac = ' '
+	    write(frac,'(i9)') idtfrac
+	    do i=9,1,-1
+	      if( frac(i:i) == ' ' ) exit
+	    end do
+	    frac(i-1:i) = '1/'
+            write(6,1006) it,line,frac,niter,nits,perc
+	  end if
 !          write(6,1002) it,year,month,day,hour,min,sec
 !     +			,idt,niter,nits,perc
 	else
@@ -145,6 +165,7 @@ c---------------------------------------------------------------
  1003   format(8x,'time',13x,'date',14x,'dt',8x,'iterations'
      +              ,5x,'percent')
  1005   format(i12,3x,a20,1x,i9,i8,' /',i8,f10.2,' %')
+ 1006   format(i12,3x,a20,1x,a9,i8,' /',i8,f10.2,' %')
 	end
 
 c********************************************************************
@@ -190,6 +211,9 @@ c setup and check time parameters
 	niter = 0
 	it = itanf
 	nits = (itend-itanf) / idt
+
+	t_act = it
+	dt_act = idt
 
 	itunit = nint(dgetpar('itunit'))
 	idtorig = idt
@@ -297,19 +321,22 @@ c controls time step
 
 	include 'femtime.h'
 
+	logical bsync
         integer idtdone,idtrest,idts
-        real dt
-        real ri,rindex,rindex1,riold
-	real perc
-        real    cmax,rmax,tfact
-	save cmax,tfact
+	integer irepeat
         integer iloop,itloop
+	integer idtfrac,itnext
+        double precision dt
+	real dtr
+        real ri,rindex,rindex1,riold
+	real perc,rmax
+
+        real cmax,tfact,dtmin
+	save cmax,tfact,dtmin
         integer idtsync,isplit,idtmin
 	save idtsync,isplit,idtmin
-	integer irepeat
-	logical bsync
 
-        real getpar
+	double precision dgetpar
 
         integer istot,idtold,idtnew
         save    istot,idtold,idtnew
@@ -323,12 +350,13 @@ c controls time step
         if( icall .eq. 0 ) then
           istot = 0
 
-          isplit  = getpar('itsplt')
-          cmax    = getpar('coumax')
-          tfact  = getpar('tfact')	!still to be commented
+          isplit = nint(dgetpar('itsplt'))
+          cmax   = dgetpar('coumax')
+          tfact  = dgetpar('tfact')	!still to be commented
 
 	  call convert_time('idtsync',idtsync)
 	  call convert_time('idtmin',idtmin)
+	  dtmin = dgetpar('idtmin')
 
           call getinfo(iuinfo)  !unit number of info file
 
@@ -350,7 +378,7 @@ c                                !      no computation of rindex
 c                                !  0:  time step fixed
 c                                !  1:  split time step
 c                                !  2:  optimize time step (no multiple)
-c	 idtmin = 0		 !minimum time step allowed
+c	 idtmin = 1		 !minimum time step allowed
 c	 tfact = 0		 !factor of maximum decrease of time step
 c----------------------------------------------------------------------
 
@@ -361,7 +389,8 @@ c----------------------------------------------------------------------
 
         if( isplit .ge. 0 ) then
           dt = idtorig
-          call hydro_stability(dt,rindex)
+          dtr = 1.
+          call hydro_stability(dtr,rindex)
         else
           rindex = 0.
         end if
@@ -375,6 +404,7 @@ c----------------------------------------------------------------------
         else if( isplit .eq. 1 ) then
           idts = idtorig
           if( mod(it-itanf,idtorig) .eq. 0 ) then      !end of macro timestep
+	    rindex = dt * rindex
             istot = rindex/cmax
             ri = 1. + cmax
             iloop = 0
@@ -391,10 +421,25 @@ c----------------------------------------------------------------------
           end if
         else if( isplit .eq. 2 ) then
           idts = idtsync
-          idtnew = idtorig
-	  if( rindex / cmax .gt. 1. ) then	!BUGFIX
-	    idtnew = min(idtnew,int(dt*cmax/rindex))
+	  idtfrac = 0
+	  dt = idtorig
+	  if( rindex > 0 ) dt = cmax / rindex	! maximum allowed time step
+	  if( dt >= idtorig ) then
+	    idtnew = idtorig
+	    dt = idtnew
+	  else if( dt >= 1. ) then
+	    idtnew = dt
+	    dt = idtnew
+	  else
+	    idtnew = 0
+	    idtfrac = ceiling(1./dt)
+	    dt = 1. / idtfrac
+	    write(6,*) '++++++++ fractional time step: ',dt,idtfrac,rindex
 	  end if
+	  write(166,*) '++++++++ : ',dt,idtfrac,rindex
+	  !if( rindex / cmax .gt. 1. ) then	!BUGFIX
+	  !  idtnew = min(idtnew,int(dt*cmax/rindex))
+	  !end if
         else
           write(6,*) 'isplit = ',isplit
           stop 'error stop set_timestep: value for isplit not allowed'
@@ -403,6 +448,7 @@ c----------------------------------------------------------------------
 c----------------------------------------------------------------------
 c idtnew is proposed new time step
 c idts   is time step with which to syncronize
+c dtmin is minimum time step allowed
 c nits   is total number of time steps
 c rindex is computed stability index
 c ri     is used stability index
@@ -413,32 +459,45 @@ c----------------------------------------------------------------------
 c	syncronize time step
 c----------------------------------------------------------------------
 
+	itnext = 0
 	bsync = .false.		!true if time step has been syncronized
 
-	if( it + idtnew .gt. itend ) then	!sync with end of sim
-	  idtnew = itend - it
+	if( t_act + dt .gt. itend ) then	!sync with end of sim
+	  dt = itend - t_act
+	  idtnew = nint(dt)
 	  bsync = .true.
         else if( idts .gt. 0 ) then               !syncronize time step
-            idtdone = mod(it-itanf,idts)     !already done
-            idtrest = idts - idtdone         !still to do
-            if( idtnew .gt. idtrest ) then
-	      idtnew = idtrest
-	      bsync = .true.
-	    end if
+	  itnext = itanf + idts * ceiling( (t_act-itanf)/idts )	!is integer
+	  if( itnext == it ) itnext = itnext + idts
+	  if( t_act + dt > itnext ) then
+	    dt = itnext - t_act
+	    bsync = .true.
+	  end if
+          !idtdone = mod(it-itanf,idts)     !already done
+          !idtrest = idts - idtdone         !still to do
+          !if( idtnew .gt. idtrest ) then
+	  !  dt = idtrest
+	  !  idtnew = idtrest
+	  !  bsync = .true.
+	  !end if
         end if
 
-        ri = idtnew*rindex/idtorig
+        !ri = idtnew*rindex/idtorig
+        ri = dt*rindex
 
 	if( itloop .gt. 10 ) then
 	  stop 'error stop set_timestep: too many loops'
 	end if
 
-        if( idtnew .lt. 1 ) then           !should never happen
-          call error_stability(dt,rindex)
-          write(6,*) 'idt is less equal 0'
+        if( dt .lt. dtmin ) then           !should never happen
+	  dtr = dt
+          call error_stability(dtr,rindex)
+          write(6,*) 'dt is less than dtmin'
           write(6,*) it,itanf,mod(it-itanf,idtorig)
-          write(6,*) idtnew,idtdone,idtrest,idtorig
-          write(6,*) idts,idtsync,iloop
+          !write(6,*) idtnew,idtdone,idtrest,idtorig
+          write(6,*) idtnew,idtorig,itnext
+          write(6,*) idts,idtsync,itloop
+          write(6,*) t_act,dt,dtmin
           write(6,*) isplit,istot
           write(6,*) cmax,rindex,ri
           stop 'error stop set_timestep: non positive time step'
@@ -446,31 +505,43 @@ c----------------------------------------------------------------------
 
 	irepeat = 0
 
-        if( .not. bsync .and. idtnew .lt. idtmin ) then
-	  rmax = (1./idtmin)*cmax
-	  call eliminate_stability(rmax)
-	  write(6,*) 'repeating time step for low idt (1): ',idtnew,rmax
-	  irepeat = 1
-	  goto 1	!eventually this should be commented
-	end if
+        !if( .not. bsync .and. dt .lt. dtmin ) then
+	!  rmax = (1./idtmin)*cmax
+	!  call eliminate_stability(rmax)
+	!  write(6,*) 'repeating time step for low idt (1): ',idtnew,rmax
+	!  irepeat = 1
+	!  goto 1	!eventually this should be commented
+	!end if
 
-        if( .not. bsync .and. idtnew .lt. tfact*idtold ) then
-	  write(6,*) 'repeating time step for low idt (2): ',idtnew,idtold
-	  irepeat = 1
-	end if
+        !if( .not. bsync .and. idtnew .lt. tfact*idtold ) then
+	!  write(6,*) 'repeating time step for low idt (2): ',idtnew,idtold
+	!  irepeat = 1
+	!end if
 
-	if( irepeat .gt. 0 ) then
-	  idtold = idtnew
-	  write(6,*) 'We really should repeat this time step'
-	  write(6,*) 'code not yet ready...'
-	end if
+	!if( irepeat .gt. 0 ) then
+	!  idtold = idtnew
+	!  write(6,*) 'We really should repeat this time step'
+	!  write(6,*) 'code not yet ready...'
+	!end if
 
-	riold = idtold*ri/idtnew	!ri with old time step
+	riold = 0
+	!riold = idtold*ri/idtnew	!ri with old time step
 	idtold = idtnew
 
         niter=niter+1
-        it=it+idtnew
-	idt=idtnew
+        !it=it+idtnew
+	!idt=idtnew
+
+	dt_act = dt
+	t_act = t_act + dt
+	idt = dt
+	it = t_act
+
+	write(107,*) '========================'
+	write(107,*) it,idt,t_act,dt_act,bsync
+	write(107,*) itanf,itend
+	write(107,*) rindex,ri
+	write(107,*) '========================'
 
 	perc = (100.*(it-itanf))/(itend-itanf)
 
@@ -576,7 +647,8 @@ c returns real time step (in real seconds)
 
 	include 'femtime.h'
 
-	dt = idt/float(itunit)
+	!dt = idt/float(itunit)
+	dt = dt_act
 
 	end
 

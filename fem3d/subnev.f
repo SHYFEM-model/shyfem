@@ -50,8 +50,7 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	include 'ev.h'
 
@@ -290,8 +289,7 @@ c checks if coordinates are lat/lon
 
 	implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         real xgv(1), ygv(1)
         common /xgv/xgv, /ygv/ygv
 
@@ -359,8 +357,7 @@ c tests if ev is set up correctly
 	implicit none
 
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'ev.h'
 c local
 	integer ie,ii,i,ip

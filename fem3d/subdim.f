@@ -39,8 +39,7 @@ c neldim	dimension for nel
 
 	integer nkndim,neldim
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	if(nkndim.lt.nkn) goto 99
 	if(neldim.lt.nel) goto 99
@@ -73,8 +72,7 @@ c nbcdim	dimension for nbc
 
 	integer nrbdim,nbcdim
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbound.h'
 
 	if(nrbdim.lt.nrb) goto 99
 	if(nbcdim.lt.nbc) goto 99
@@ -108,8 +106,7 @@ c matdim	dimension for matrix
 
 	integer matdim
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	if(matdim.lt.nkn*ngr) goto 99
 
@@ -184,8 +181,7 @@ c check dimension for band width
 
 	integer mbwdim
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	if(mbwdim.lt.mbw) goto 99
 	if(mbw.le.0) goto 98

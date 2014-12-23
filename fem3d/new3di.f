@@ -186,11 +186,10 @@ c
 c parameter
 	include 'param.h'
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
 	include 'femtime.h'
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real rqv(1),v1v(1),v2v(1)
 	real zov(1),znv(1),unv(1),vnv(1)
 	real ulnv(nlvdim,1),vlnv(nlvdim,1)
@@ -419,12 +418,9 @@ c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 	real drittl
 	parameter (drittl=1./3.)
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real eps1,eps2,pi,flag,high
-	real grav,fcor,dcor,dirn,rowass,roluft
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /mkonst/ eps1,eps2,pi,flag,high
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'mkonst.h'
+	include 'pkonst.h'
 	include 'femtime.h'
 
 	integer nen3v(3,1),ilhv(1)
@@ -661,10 +657,8 @@ c******************************************************************
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real grav,fcor,dcor,dirn,rowass,roluft
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
 	include 'femtime.h'
 
 	integer ie
@@ -790,13 +784,10 @@ c	parameter (am=0.50,amt=1.-am)
 c	parameter (af=0.50,aft=1.-af)
 c	parameter (at=0.50,att=1.-at)
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real eps1,eps2,pi,flag,high
-	real grav,fcor,dcor,dirn,rowass,roluft
 	integer nlvdi,nlv
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /mkonst/ eps1,eps2,pi,flag,high
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'mkonst.h'
+	include 'pkonst.h'
 	include 'femtime.h'
 	common /level/ nlvdi,nlv
 	integer nen3v(3,1)
@@ -1326,13 +1317,10 @@ c parameters
 	real drittl
 	parameter (drittl=1./3.)
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real eps1,eps2,pi,flag,high
-	real grav,fcor,dcor,dirn,rowass,roluft
 	integer nlvdi,nlv
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /mkonst/ eps1,eps2,pi,flag,high
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'mkonst.h'
+	include 'pkonst.h'
 	include 'femtime.h'
 	common /level/ nlvdi,nlv
 	integer nen3v(3,1)
@@ -1497,9 +1485,8 @@ c arguments
 	real vf(nlvdim,1)
 	real va(nlvdim,1)
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /level/ nlvdi,nlv
 	integer nen3v(3,1)
 	integer ilhv(1)
@@ -1691,9 +1678,8 @@ c arguments
 	real vf(nlvdim,1)
 	real va(nlvdim,1)
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /level/ nlvdi,nlv
 	integer nen3v(3,1)
 	integer ilhv(1)
@@ -1873,9 +1859,8 @@ c
 c arguments
         real rmat(1),v1(1),v2(1),zv(1)
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer nen3v(3,1),iwegv(1),inodv(1)
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         common /nen3v/nen3v, /iwegv/iwegv, /inodv/inodv
 	include 'ev.h'
 c local
@@ -2028,10 +2013,8 @@ c*******************************************************************
 
         implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real eps1,eps2,pi,flag,high
-	common /mkonst/ eps1,eps2,pi,flag,high
+	include 'nbasin.h'
+	include 'mkonst.h'
         integer nen3v(3,1)
         common /nen3v/nen3v
 	real rzv(1)
@@ -2099,8 +2082,7 @@ c momentum input for yaron
 	include 'param.h'
 	include 'ev.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer ilhv(1)
         common /ilhv/ilhv
         integer nen3v(3,1)
@@ -2153,8 +2135,7 @@ c*******************************************************************
 
 	real dzeta(1)		!zeta correction
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real znv(1)
 	common /znv/znv
 

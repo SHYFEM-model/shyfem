@@ -261,8 +261,7 @@ c flags elements which are in/out-side or at border of line
 	real x(1),y(1)
 	integer iflag(1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	common /nen3v/nen3v
 	real xgv(1)
@@ -441,8 +440,7 @@ c release in partial area
 	integer n
 	real x(1),y(1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer iflag(neldim)
 
@@ -546,8 +544,7 @@ c release in total area
 
 	real dxy
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ie,i,j
 	integer nin,iin

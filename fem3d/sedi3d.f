@@ -93,8 +93,7 @@ c
 ! fem variables
 ! -------------------------------------------------------------
 
-      integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-      common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
       real difhv(nlvdim,1)
       common /difhv/difhv
@@ -978,8 +977,7 @@ c DOCS  END
         include 'param.h'
         include 'sed_param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer iarv(neldim)                 	!element code number
         common /iarv/iarv
         integer nen3v(3,neldim)           	        !node number
@@ -1392,8 +1390,7 @@ c DOCS  END
 ! fem variables
 ! -------------------------------------------------------------
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer ilhkv(nkndim)		!number of element and node level
         common /ilhkv/ilhkv
         real hdknv(nlvdim,nkndim)
@@ -2390,8 +2387,7 @@ c DOCS  END
         include 'testbndo.h'
 	include 'evmain.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,neldim)        		!node number
         common /nen3v/nen3v
 
@@ -2499,8 +2495,7 @@ c DOCS  END
         include 'param.h'
         include 'sed_param.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nscls				!number of grainsize class
         double precision bflx(nsdim,nkndim)	!bedload sediment contribution [m3/m2]
         real bh(nkndim)				!bed elevation
@@ -2560,8 +2555,7 @@ c DOCS  END
         include 'param.h'
         include 'evmain.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,neldim)
         common /nen3v/nen3v
 
@@ -2700,8 +2694,7 @@ c DOCS  END
                                                 ! (2) critical erosion stress (Pa)
                                                 ! (3) dry bulk density (kg/m**3)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	double precision bdh(nkndim)		!total elevation change [>0depo,<0ero]
         double precision dzco			!elevation variation due to compaction [m]
         double precision flx 			!bedload + suspended flux [m]
@@ -3542,8 +3535,7 @@ c DOCS  END
         include 'param.h'
         include 'sed_param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer ilhkv(nkndim)			!number of element and node level
         common /ilhkv/ilhkv
 	real rhov(nlvdim,nkndim)
@@ -3602,8 +3594,7 @@ c DOCS  END
 
         double precision bdh(nkndim)          !total elevation change [>0depo,<0ero]
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,neldim)
         common /nen3v/nen3v
         real hm3v(3,neldim)
@@ -3721,8 +3712,7 @@ c DOCS  END
 
         integer k,kn,n,ibase,i,l
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer ilinkv(nkndim),linkv(nkndim)
         common /ilinkv/ilinkv,/linkv/linkv
         integer ilhkv(nkndim)		!number of element and node level
@@ -3773,8 +3763,7 @@ c DOCS  END
         include 'param.h'
         include 'sed_param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer it                      !time in seconds
 	integer adjtime			!time for initialization [s]
@@ -3808,8 +3797,7 @@ c DOCS  END
         include 'param.h'
         include 'sed_param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         double precision bedn(nlbdim,3,nkndim)  !bed characteristics in 3 column table
                                                 ! (1) depth below sediment surface (m)
@@ -3855,9 +3843,8 @@ c DOCS  END
 	real vv(nkndim)
 	real vv1(nkndim)
 ! common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	common /level/ nlvdi,nlv
 	integer nen3v(3,neldim)
 	common /nen3v/nen3v

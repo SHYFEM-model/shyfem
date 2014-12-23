@@ -26,8 +26,7 @@ c writes nos file from data file
 	character*80 descrr,descrp,title
 	common /descrr/ descrr
 	common /descrp/ descrp
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real xgv(nkndim), ygv(nkndim)
 	real hm3v(3,neldim)

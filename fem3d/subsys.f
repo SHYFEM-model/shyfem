@@ -352,17 +352,23 @@ c		only for |itsplt| = 2 and its default value of
 c		0 does not make any syncronization.
 c |idtmin|	This variable defines the smallest time step possible
 c		when time step splitting is enabled. Normally the smallest
-c		time step is 1 second. But when dealing with a lot of
-c		wet and drying in areas then sometimes it is useful to
-c		take out elements that limit the time step too much. In
-c		the case that |idtmin| is set to a value greater than 1
-c		the program will switch off temporarily elements that
-c		are responsible for such a small time step. (Default 0)
+c		time step is 1 second. Please set |idtmin| to values
+c		smaller than 1 in order to allow for fractional time steps.
+c		A value of 0.001 allows for timesteps of down to
+c		1 millisecond. (Deault 1)
+cc |idtmin|	This variable defines the smallest time step possible
+cc		when time step splitting is enabled. Normally the smallest
+cc		time step is 1 second. But when dealing with a lot of
+cc		wet and drying in areas then sometimes it is useful to
+cc		take out elements that limit the time step too much. In
+cc		the case that |idtmin| is set to a value greater than 1
+cc		the program will switch off temporarily elements that
+cc		are responsible for such a small time step. (Default 0)
 
 	call addpar('itsplt',0.)
 	call addpar('coumax',1.)
 	call addpar('idtsyn',0.)
-	call addpar('idtmin',0.)
+	call addpar('idtmin',1.)
 	call addpar('tfact',0.)		!still to comment FIXME
 
 c These parameters define the weighting of time level in the 

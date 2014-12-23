@@ -19,11 +19,10 @@ c written on 06.06.96 by ggu   (from sp159f)
 c parameter
 	include 'param.h'
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
 	include 'femtime.h'
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real unv(1),vnv(1)
 	real utlnv(nlvdim,1),vtlnv(nlvdim,1)

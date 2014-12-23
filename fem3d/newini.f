@@ -149,8 +149,7 @@ c sets vertical eddy coefficient
 
 	include 'param.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
 
@@ -197,8 +196,7 @@ c checks vertical eddy coefficient
 
 	include 'param.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
 
@@ -294,8 +292,7 @@ c sigma and zeta levels and hsigma	hybrid levels
 	implicit none
 
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
 	real hm3v(3,1)
@@ -590,8 +587,7 @@ c sets array ilhv
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
 
@@ -654,8 +650,7 @@ c set ilhkv array
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ilhv(1)
 	common /ilhv/ilhv
@@ -688,8 +683,7 @@ c set minimum number of levels for node and element
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
 
@@ -751,8 +745,7 @@ c checks arrays ilhv and ilhkv
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v
@@ -828,8 +821,7 @@ c adjusts hev, hm3v, ilhv
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
 
@@ -1008,12 +1000,9 @@ c sets coriolis parameter
 	real rearth	!radius of earth
 	parameter ( rearth = 6371000. )
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real eps1,eps2,pi,flag,high
-	real grav,fcor,dcor,dirn,rowass,roluft
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /mkonst/ eps1,eps2,pi,flag,high
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'mkonst.h'
+	include 'pkonst.h'
 
 	integer nen3v(3,1)
 	real ygv(1)
@@ -1025,7 +1014,7 @@ c sets coriolis parameter
 	integer k,ie,ii
 	integer icor
 	integer isphe
-	real yc,ym,y,ymin,ymax
+	real yc,ym,y,ymin,ymax,dlat
 	real aux1,aux2,rad
 	real getpar
 
@@ -1047,6 +1036,7 @@ c icor = -1. The parameter dlat is not needed.
 	call get_coords_ev(isphe)
 
 	rad = pi / 180.
+	dlat = dcor			! average latitude
 
 	yc=0.
 	ymin=ygv(1)
@@ -1059,18 +1049,23 @@ c icor = -1. The parameter dlat is not needed.
 	end do
 	yc=yc/nkn
 
+	if( isphe .eq. 1 ) dlat = yc		! get directly from basin
+
 	aux1 = 0.
 	aux2 = 0.
 
 	if(icor.eq.1) then	!beta plane
-		aux1 = omega2 * sin(dcor*rad)
-		aux2 = omega2 * cos(dcor*rad) / rearth
+		aux1 = omega2 * sin(dlat*rad)
+		aux2 = omega2 * cos(dlat*rad) / rearth
 	else if(icor.eq.2) then	!f plane
-		aux1 = omega2 * sin(dcor*rad)
+		aux1 = omega2 * sin(dlat*rad)
 		aux2 = 0.
 	end if
 
-	write(6,*) 'pi , dcor    : ',pi,dcor
+	fcor = aux1		! coriolis value of average latitude
+
+	write(6,*) 'pi, dlat     : ',pi,dlat
+	write(6,*) 'icor, fcor   : ',icor,fcor
 	write(6,*) 'f_0, beta    : ',aux1,aux2
 	write(6,*) 'yc,ymin,ymax : ',yc,ymin,ymax
 
@@ -1106,8 +1101,7 @@ c checks coriolis parameter
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real fcorv(1)
 	common /fcorv/fcorv 
@@ -1222,8 +1216,7 @@ c used to initialize the underlying layers
 	real var(nlvdi,nkndim,1)	!variable to contain scalar
         integer nvar			!how many variables
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real hlv(1)
 	common /hlv/hlv
 
@@ -1396,8 +1389,7 @@ c initializes water level with constant
 
 	real const		!constant z value to impose
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real znv(1),zov(1)
 	common /znv/znv, /zov/zov
@@ -1434,8 +1426,7 @@ c initializes water level from file
 
 	include 'param.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real znv(1)
 	common /znv/znv
@@ -1473,8 +1464,7 @@ c initializes transport in levels
 
 	include 'param.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real utlnv(nlvdim,1), vtlnv(nlvdim,1)
 	common /utlnv/utlnv, /vtlnv/vtlnv
@@ -1500,8 +1490,7 @@ c initializes surface z0sk(k) and bottom z0bn(k) roughness
 
 	include 'param.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real z0sk(nkndim)                   !surface roughenss on nodes
         common /z0sk/z0sk

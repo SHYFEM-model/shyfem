@@ -111,8 +111,7 @@ c
 c arguments
         integer iweich,iw
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer iwegv(1)
         common /iwegv/iwegv
         integer iwetv(1)
@@ -333,8 +332,7 @@ c
         implicit none
 c
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
         integer iwegv(1),nen3v(3,1)
         common /iwegv/iwegv, /nen3v/nen3v
@@ -566,8 +564,7 @@ c sets array zenv from znv
         implicit none
 
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,1),iwegv(1)
         common /nen3v/nen3v, /iwegv/iwegv
         real zenv(3,1)
@@ -596,10 +593,8 @@ c sets array znv from zenv
         implicit none
 
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real eps1,eps2,pi,flag,high,hihi
-	common /mkonst/ eps1,eps2,pi,flag,high,hihi
+	include 'nbasin.h'
+	include 'mkonst.h'
 
         integer nen3v(3,1),iwegv(1)
         common /nen3v/nen3v, /iwegv/iwegv
@@ -700,10 +695,9 @@ c
 c arguments
         real zv(1),av(1)
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer iwegv(1),nen3v(3,1)
         real zenv(3,1)
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         common /iwegv/iwegv, /nen3v/nen3v
         common /zenv/zenv
 	include 'ev.h'

@@ -82,8 +82,7 @@ c computes gradients for scalar cc (average gradient information)
 	real gy(nlvdi,1)
 	real aux(nlvdi,1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         
         integer nen3v(3,1)
         common /nen3v/nen3v        
@@ -152,8 +151,7 @@ c computes gradients for scalar cc (only 2D - used in sedi3d)
 	real gy(1)
 	real aux(1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         
         integer nen3v(3,1)
         common /nen3v/nen3v        
@@ -253,8 +251,7 @@ c sets position and element of upwind node
         include 'param.h'
         include 'tvd.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer nen3v(3,1)
         common /nen3v/nen3v
         real xgv(1)

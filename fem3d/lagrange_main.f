@@ -86,8 +86,7 @@ c lagranian main routine
         include 'param.h'
         include 'lagrange.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	include 'femtime.h'
 
 	logical brelease
@@ -504,8 +503,7 @@ c**********************************************************************
 
 	integer ie
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	do ie=1,nel
 	  i_count(ie) = 0
@@ -549,8 +547,7 @@ c**********************************************************************
 	integer ie,iu
 	character*80 file
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	iu = 237
 	file = 'lagr_count_out.txt'

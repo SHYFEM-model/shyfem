@@ -53,6 +53,7 @@ sub new
 				,calledby	    =>	{}
 				,defined_files	    =>	{}
 
+				,all_routines	    =>	{}
 				,routines	    =>	{}
 				,files		    =>	{}
 
@@ -194,6 +195,7 @@ sub insert_routine {
   return if $type eq "comment";
   return if $type eq "end";
   $self->{functions}->{$name}++ if $type eq "function";
+  $self->{all_routines}->{"$name-$file"} = $ritem;
 
   if( $self->{no_main} == 0 or $self->{has_program} == 0 ) {
     $self->{routines}->{$name} = $ritem;

@@ -26,8 +26,8 @@ c creates map of influence
 c--------------------------------------------------
         character*80 descrr
         common /descrr/descrr
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw,nlv
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	integer nlv
+	include 'nbasin.h'
 
         real xgv(nkndim), ygv(nkndim)
         real hm3v(3,neldim)

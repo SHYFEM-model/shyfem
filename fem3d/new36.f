@@ -108,10 +108,8 @@ c vdate		velocity variable used in mode
 
 c common
 	include 'femtime.h'
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real eps1,eps2,pi,flag,high,higi
-        common /mkonst/ eps1,eps2,pi,flag,high,higi
+	include 'nbasin.h'
+	include 'mkonst.h'
 
 	real xv(3,1)
 	common /xv/xv
@@ -145,6 +143,7 @@ c local
 	integer ibtyp,icltot,ioptot,icl,iop
 	integer k1,k2,k,l
 	integer icycle
+	integer nbc
 	real scalo,zin,zout,zref,u,v,uvref2,dx,dy
 	real h1,h2,z1,z2,hm,flux1,flux2,geyer
 	real fluxnn,rmass,hboc,h
@@ -161,7 +160,7 @@ c local
 	real getpar
 	real volag,flxnod,areavl
 	real zvbnds
-	integer itybnd,ideffi
+	integer itybnd,ideffi,nbnds
 
 c---------------------------------------------------------------
 c        integer ipnt,id,isect
@@ -220,6 +219,7 @@ c
 
 	ic=0				!&&&&   do not compute new uv-matrix
 	nsc=ipccv(ipnt(lnsect,0))	!number of sections
+	nbc = nbnds()
 
 	icycle = 4			!cyclic openings
 c
@@ -1307,8 +1307,7 @@ c volag         volume of water in basin (return value)
         integer mode
         real z
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,nhr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,nhr,mbw
+	include 'nbasin.h'
 
         integer ie
         real w,vol,area

@@ -32,8 +32,7 @@ c arguments
 	real flag		!flag to distinguish boundary condition
 
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 c local
 	integer i,k
 	integer matdim
@@ -77,8 +76,7 @@ c arguments
 	real rzv(1)		!boundary conditions
 	real flag		!flag to distinguish boundary condition
 c common
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v

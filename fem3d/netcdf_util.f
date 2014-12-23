@@ -189,8 +189,7 @@ c gets dimensions for reguar grid
 	real xlon(nxdim)
 	real ylat(nydim)
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real xgv(nkndim), ygv(nkndim)
 	common /xgv/xgv, /ygv/ygv

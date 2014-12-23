@@ -8,8 +8,7 @@ c*******************************************************************
         include 'param.h'
         include 'lagrange.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ie
 
@@ -36,8 +35,7 @@ c*******************************************************************
 	common /v2v/v2v
 
 	include 'femtime.h'
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real oil(neldim)
 	real zfilm(neldim)

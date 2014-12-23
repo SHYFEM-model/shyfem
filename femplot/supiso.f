@@ -46,8 +46,7 @@ c argument
 	real dis
 	integer mode
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real xgv(1), ygv(1)
 	integer nen3v(3,1)

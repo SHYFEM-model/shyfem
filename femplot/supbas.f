@@ -245,8 +245,7 @@ c	4: net in gray (for scalar and velocities - use bsgray)
 
 	integer mode
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	integer ipev(1), ipv(1)
 	real xgv(1), ygv(1)
@@ -323,8 +322,7 @@ c	positive: external    negative: internal
 
 	integer mode
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	integer ipev(1), ipv(1)
 	real xgv(1), ygv(1)
@@ -483,8 +481,7 @@ c mode	0: exact dimensions  1: larger dimensions
 
 	integer mode
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	integer nen3v(3,1)
 	real xgv(1), ygv(1)
 	common /nen3v/nen3v
@@ -691,8 +688,7 @@ c else it is computed from grid
 
 	implicit none
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer ie
 	real area,ao
@@ -1572,8 +1568,7 @@ c plots islands grey
 
 	real cgrey	!color
 	
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v

@@ -13,8 +13,7 @@ c interpolates nos file onto regular grid
 
 c arrays from basin
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer nen3v(3,neldim)
 	integer ipv(nkndim), ipev(neldim)

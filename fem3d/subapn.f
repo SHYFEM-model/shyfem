@@ -177,10 +177,8 @@ c mode negative: do not ask for new basin and simulation
 	character*80 descrr
 	character*80 line
 	character*80 basnew,basold,name
-	integer  nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real grav,fcor,dcor,dirn,rowass,roluft
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
 	common /descrr/descrr
 	real f(10)
 
@@ -217,11 +215,7 @@ c open bas file
 		close(iunit)
 		basold=basnew
 
-		write(6,*)
-		write(6,*) ' Title of geometrical file :'
-		write(6,*)
-		write(6,*) descrr
-		write(6,*)
+		call bas_info
 
 		call putpar('dirn',dirn)
 	end if
@@ -239,6 +233,8 @@ c set up boundary nodes
 	if(matdim.gt.0) then
 		call sp131k(matdim)
 	end if
+
+	!call nbasin_transfer
 
 	iapini=1
 
@@ -308,6 +304,14 @@ c**************************************************************
 	close(nin)
 
 	end
+
+c**************************************************************
+
+        subroutine nbasin_transfer
+        implicit none
+        include 'nbasin.h'
+        call bas_get_para(nkn,nel,ngr,mbw)
+        end
 
 c**************************************************************
 

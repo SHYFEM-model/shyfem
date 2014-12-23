@@ -16,8 +16,7 @@ c****************************************************************
 c--------------------------------------------------
         character*80 descrr
         common /descrr/descrr
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real xgv(nkndim), ygv(nkndim)
         real hm3v(3,neldim)

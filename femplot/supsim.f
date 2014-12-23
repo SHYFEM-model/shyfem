@@ -87,8 +87,7 @@ c 3D concentrations
 	character*(*) type
 	integer ivarin
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real p3(nlvdim,nkndim)	!must be big enough for vectors (double)
 	common /p3/p3
 	real parray(1)
@@ -189,8 +188,7 @@ c 3D concentrations
 	character*(*) type	!default extension for file
 	integer ivar_in		!desired variable id
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real p3(nlvdim,nkndim)
 	common /p3/p3
 	real parray(1)
@@ -256,8 +254,7 @@ c 3D concentrations (element values)
 	character*(*) type	!default extension for file
 	integer ivar_in		!desired variable id
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real p3(nlvdim,1)
 	common /p3/p3
 	real parray(1)
@@ -337,8 +334,7 @@ c**********************************************************
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real znv(1)
 	common /znv/znv
 
@@ -376,8 +372,7 @@ c plots barene
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 	real parray(1)
 	common /parray/parray
 
@@ -588,8 +583,7 @@ c**********************************************************
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         real zenv(3,1)
         common /zenv/zenv
         real znv(1)
@@ -662,8 +656,7 @@ c ivel = 4	waves
 	integer nxdim,nydim
 	parameter( nxdim = 300 , nydim = 300 )
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real xgv(1), ygv(1)
 	common /xgv/xgv, /ygv/ygv
@@ -993,8 +986,7 @@ c	parameter ( nlvdim = 14 )
 
 	include 'param.h'
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
@@ -1131,8 +1123,7 @@ c**********************************************************
 	character*80 descrr
 	common /descrr/ descrr
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	real hkv(1)
 	common /hkv/hkv
@@ -1499,8 +1490,7 @@ c sets values on boundary to val
 	real a(1)
 	real val
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer kantv(2,1)
 	common /kantv/kantv
@@ -1642,8 +1632,7 @@ c compute elemental values vev()
 	real vev(1)
 	logical bwater(1)
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v
@@ -1683,8 +1672,7 @@ c compute nodal values vnv()
         real vnv(1)
 	logical bwater(1)
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real v2v(1)
         common /v2v/v2v
@@ -1955,8 +1943,7 @@ c plots node values
 
 	implicit none
 
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         logical bwater(1)		!mask for elements
         common /bwater/bwater
 

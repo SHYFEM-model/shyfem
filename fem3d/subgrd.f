@@ -595,11 +595,10 @@ c
 	character*80 descrr
 	logical btitle
 	real f(10)
-	real grav,fcor,dcor,dirn
 	real xscale,yscale,zscale
 
 	common /descrr/ descrr
-	common /pkonst/ grav,fcor,dcor,dirn
+	include 'pkonst.h'
 	common /vscale/ xscale,yscale,zscale
 	save /vscale/
 

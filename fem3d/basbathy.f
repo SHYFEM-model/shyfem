@@ -43,10 +43,8 @@ c takes care of lat/lon coordinates
         character*80 descrp
         common /descrp/ descrp
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'nbasin.h'
+	include 'pkonst.h'
 
         real xgv(nkndim), ygv(nkndim)
         real hm3v(3,neldim)

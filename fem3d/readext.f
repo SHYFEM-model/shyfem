@@ -61,12 +61,11 @@ c*****************************************************************
 	integer iz(noddim)
 
 c global data ------------------------------------
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer nen3v(3,neldim), iarv(neldim)
         integer ipev(neldim), ipv(nkndim)
         real xgv(nkndim), ygv(nkndim)
         real hm3v(3,neldim)
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         common /nen3v/nen3v, /iarv/iarv
         common /ipev/ipev, /ipv/ipv
         common /xgv/xgv, /ygv/ygv

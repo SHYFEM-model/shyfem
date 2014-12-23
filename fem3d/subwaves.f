@@ -208,11 +208,9 @@ c parameters
 c common
 	include 'femtime.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
+	include 'pkonst.h'
 
         real z0sk(nkndim)               !surface roughness on nodes
         common /z0sk/z0sk
@@ -472,8 +470,7 @@ c parameters
 	include 'waves.h'
 
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         real znv(nkndim)
         common /znv/znv
         real hkv(nkndim)
@@ -594,32 +591,26 @@ c local
 
         implicit none
 
-        integer ibndim
-        parameter (ibndim=100)
-
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real bnd(ibndim,1)
-        common /bnd/bnd
-        integer irv(1)
-        common /irv/irv
         real xgv(1), ygv(1)
         common /xgv/xgv, /ygv/ygv
+
         real hkv(1)
         common /hkv/hkv
-	integer i,k,knode,kranf,krend,nn
 
-        do i=1,nbc
-         kranf=nint(bnd(3,i))
-         krend=nint(bnd(4,i))
-	 nn = krend-kranf+1
+	integer i,knode,nn,ibc,nbc
+	integer nbnds,nkbnds,kbnds
 
-	 write(26,*)nn
+	nbc = nbnds()
 
-         do k=kranf,krend
-            knode=irv(k)
-            write(26,25)knode,xgv(knode),ygv(knode),hkv(knode)
-	 end do
+        do ibc=1,nbc
+
+	  nn = nkbnds(ibc)
+	  write(26,*) nn
+
+          do i=1,nn
+	    knode = kbnds(ibc,i)
+            write(26,25) knode,xgv(knode),ygv(knode),hkv(knode)
+	  end do
 	enddo
 
 25	format(i10,3e14.4)
@@ -643,8 +634,7 @@ c local
         real wavefx(nlvdim,neldim)      !wave forcing term x
         real wavefy(nlvdim,neldim)      !wave forcing term y
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer ilhv(neldim)
         common /ilhv/ilhv
         integer nen3v(3,neldim)        !node number
@@ -695,10 +685,8 @@ c arguments
 	real wavefy(nlvdim,neldim)		!y wave forcing term
 
 c common
-        real grav,fcor,dcor,dirn,rowass,roluft
-        common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'pkonst.h'
+	include 'nbasin.h'
         integer ilhv(neldim)
         common /ilhv/ilhv
         integer nen3v(3,neldim)        !node number
@@ -868,9 +856,8 @@ c arguments
 	real stokesze(0:nlvdim,neldim)	!z stokes velocity on elements
 
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         integer nlvdi,nlv
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         common /level/ nlvdi,nlv
         integer nen3v(3,1)
         integer ilhv(1)
@@ -1038,8 +1025,7 @@ c**************************************************************
 
         integer it
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         real wxv(1),wyv(1)	!x and y wind component [m/s]
         common /wxv/wxv,/wyv/wyv
 
@@ -1265,8 +1251,7 @@ c grid given the wind direction.
   
         include 'param.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real xe,ye		!element point coordinates [m]
         real xf,yf		!far away point coordinates [m]
@@ -1408,8 +1393,7 @@ c computes stress parameters
         real twv(1)
         real tmv(1)
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         real pi,karm,rho,g
         real depth,ux,uy,uc2

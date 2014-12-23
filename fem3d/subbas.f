@@ -84,21 +84,8 @@ c iunit		unit number of file to be read
 
 	integer nb,nkndi,neldi
 
-	character*80 descrr
-	common /descrr/descrr
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real  grav,fcor,dcor,dirn,rowass,roluft
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-
-	real hm3v(3,1)
-	common /hm3v/hm3v
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-	integer nen3v(3,1), iarv(1)
-	common /nen3v/nen3v, /iarv/iarv
-	integer ipv(1), ipev(1)
-	common /ipv/ipv, /ipev/ipev
+	include 'param.h'
+	include 'basin.h'
 
 	integer i,ii,nvers
 
@@ -108,7 +95,7 @@ c iunit		unit number of file to be read
 	if(nvers.lt.0) goto 98
 
 	read(nb) nkn,nel,ngr,mbw
-	read(nb) dcor,dirn
+	read(nb) dcorbas,dirnbas
 	read(nb) descrr
 
 	if(nkn.gt.nkndi.or.nel.gt.neldi) goto 97
@@ -155,21 +142,8 @@ c nb		unit number for write
 
 	integer nb
 
-	character*80 descrr
-	common /descrr/descrr
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real  grav,fcor,dcor,dirn,rowass,roluft
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-
-	real hm3v(3,1)
-	common /hm3v/hm3v
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-	integer nen3v(3,1), iarv(1)
-	common /nen3v/nen3v, /iarv/iarv
-	integer ipv(1), ipev(1)
-	common /ipv/ipv, /ipev/ipev
+	include 'param.h'
+	include 'basin.h'
 
 	integer i,ii
 
@@ -182,7 +156,7 @@ c nb		unit number for write
 
 	write(nb) ftype,nversm
 	write(nb) nkn,nel,ngr,mbw
-	write(nb) dcor,dirn
+	write(nb) dcorbas,dirnbas
 	write(nb) descrr
 
 	write(nb)((nen3v(ii,i),ii=1,3),i=1,nel)
@@ -215,21 +189,8 @@ c writes first n values, if n=0 -> all values
 
 	integer nvers,nb,n
 
-	character*80 descrr
-	common /descrr/descrr
-	integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real  grav,fcor,dcor,dirn,rowass,roluft
-	common /pkonst/ grav,fcor,dcor,dirn,rowass,roluft
-
-	real hm3v(3,1)
-	common /hm3v/hm3v
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-	integer nen3v(3,1), iarv(1)
-	common /nen3v/nen3v, /iarv/iarv
-	integer ipv(1), ipev(1)
-	common /ipv/ipv, /ipev/ipev
+	include 'param.h'
+	include 'basin.h'
 
 	integer i,ii
 	integer nkn1,nel1
@@ -244,7 +205,7 @@ c writes first n values, if n=0 -> all values
 	write(nb,*) 'sp13ts:'
 	write(nb,*) nvers
 	write(nb,*) nkn,nel,ngr,mbw
-	write(nb,*) dcor,dirn
+	write(nb,*) dcorbas,dirnbas
 	write(nb,*) descrr
 
 	write(nb,*)((nen3v(ii,i),ii=1,3),i=1,nel1)
@@ -257,6 +218,60 @@ c writes first n values, if n=0 -> all values
 	write(nb,*)((hm3v(ii,i),ii=1,3),i=1,nel1)
 
 	return
+	end
+
+c*************************************************
+
+	subroutine bas_info
+
+	implicit none
+
+	include 'param.h'
+	include 'basin.h'
+
+        write(6,*)
+        write(6,*) descrr(1:len_trim(descrr))
+        write(6,*)
+        write(6,*) ' nkn = ',nkn,'  nel = ',nel
+        write(6,*) ' mbw = ',mbw,'  ngr = ',ngr
+        write(6,*)
+        write(6,*) ' dcor = ',dcorbas,'  dirn = ',dirnbas
+        write(6,*)
+
+	end
+
+c*************************************************
+
+	subroutine bas_get_geom(dcor,dirn)
+
+	implicit none
+
+	include 'param.h'
+	include 'basin.h'
+
+	real dcor,dirn
+
+	dcor = dcorbas
+	dirn = dirnbas
+
+	end
+
+c*************************************************
+
+	subroutine bas_get_para(nkna,nela,ngra,mbwa)
+
+	implicit none
+
+	include 'param.h'
+	include 'basin.h'
+
+	integer nkna,nela,ngra,mbwa
+
+	nkna = nkn
+	nela = nel
+	ngra = ngr
+	mbwa = mbw
+
 	end
 
 c*************************************************

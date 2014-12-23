@@ -25,8 +25,7 @@ c sets up geometrical arrays
         implicit none
 
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer nen3v(3,1)
         common /nen3v/nen3v
@@ -120,8 +119,7 @@ c updates geometrical array (ieltv)
         implicit none
 
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
         integer inodv(1)
         common /inodv/inodv
@@ -151,8 +149,7 @@ c checks geometrical arrays
         implicit none
 
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	include 'links.h'
         integer kantv(2,1)
@@ -188,8 +185,7 @@ c checks various subroutines
 
         include 'links.h'
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
 
 	integer k,n,ne,ipf,ipl,ibase
 	integer nl,i,ip,ie1,ie2,nn,k1,k2
@@ -295,17 +291,17 @@ c parameter
 	real winmax
 	parameter(winmax=359.8)
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+	include 'nbasin.h'
         integer iwegv(1),nen3v(3,1),inodv(1)
-	common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
         common /iwegv/iwegv, /nen3v/nen3v, /inodv/inodv
 	include 'ev.h'
 c local
         integer ie,ii,k,n
         integer ibc,ibtyp
+	integer nbc
 c functions
         integer ipext
-	integer itybnd,nkbnds,kbnds
+	integer itybnd,nkbnds,kbnds,nbnds
 c equivalence
         real winkv(1)
         equivalence(inodv(1),winkv(1))
@@ -343,6 +339,8 @@ c
 c
 c now mark open boundary nodes
 c
+	nbc = nbnds()
+
 	do ibc=1,nbc
           ibtyp = itybnd(ibc)
 	  n = nkbnds(ibc)
