@@ -1,3 +1,28 @@
+version  7_0_12    09-01-2015    VERS_7_0_12
+
+========================================================== 09-01-2015 - 7_0_12
+
+c ./fem3d/subnls.f:
+c 08.01.2015	ggu	new version for nrdvec*()
+c
+c ./fem3d/subver.f:
+c 09.01.2015	ggu	version 7.0.12
+c
+c ./fem3d/subtime.f:
+c 07.01.2015    ggu     fractional time step without rounding (itsplt=3)
+c
+c ./fem3d/subgrd.f:
+c 08.01.2015    ggu     common blocks in include file
+c
+c ./fem3d/subbas.f:
+c 04.01.2015	ggu	new routine sp13_get_par()
+c
+c ./fem3d/subfemintp.f:
+! 07.01.2015	ggu	bug fix in iff_populate_records() -> handle holes
+! 08.01.2015	ggu	bug fix for parallel: make variables local
+
+==========================================================
+
 version  7_0_11    23-12-2014    VERS_7_0_11   commit_2015-01-09
 
 version  7_0_11    23-12-2014    VERS_7_0_11
