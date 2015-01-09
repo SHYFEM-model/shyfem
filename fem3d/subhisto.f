@@ -22,20 +22,13 @@ c****************************************************************
         integer nbin            !total number of bins
         real bin0               !first bin (limit)
         real dbin               !regular bin size (0 => use rbin)
-        real rbin(1)            !bin size limits (upper)
+        real rbin(nbin)         !bin size limits (upper)
 
-        integer ndim,nid
-        parameter(ndim=100,nid=14758327)
-        integer ncbin,ncid
-        integer icount(ndim+1)
-        real abin(ndim)
-        common /ihisto/ncid,ncbin,icount
-        common /rhisto/abin
-        save /ihisto/,/rhisto/
+	include 'histo.h'
 
         integer i
 
-        if( nbin .gt. ndim ) stop 'error stop histo_init: nbin'
+        if( nbin .gt. ndim_histo ) stop 'error stop histo_init: nbin'
 
         if( dbin .gt. 0 ) then
           do i=1,nbin
@@ -47,7 +40,6 @@ c****************************************************************
           end do
         end if
 
-        ncid = nid
         ncbin = nbin
         do i=1,nbin+1
           icount(i) = 0
@@ -63,18 +55,9 @@ c****************************************************************
 
         real value
 
-        integer ndim,nid
-        parameter(ndim=100,nid=14758327)
-        integer ncbin,ncid
-        integer icount(ndim+1)
-        real abin(ndim)
-        common /ihisto/ncid,ncbin,icount
-        common /rhisto/abin
-        save /ihisto/,/rhisto/
+	include 'histo.h'
 
         integer i
-
-        if( ncid .ne. nid ) stop 'error stop histo_insert: ncid'
 
         do i=1,ncbin
           if( value .le. abin(i) ) then
@@ -96,18 +79,9 @@ c****************************************************************
 
         integer ic(1)
 
-        integer ndim,nid
-        parameter(ndim=100,nid=14758327)
-        integer ncbin,ncid
-        integer icount(ndim+1)
-        real abin(ndim)
-        common /ihisto/ncid,ncbin,icount
-        common /rhisto/abin
-        save /ihisto/,/rhisto/
+	include 'histo.h'
 
         integer i
-
-        if( ncid .ne. nid ) stop 'error stop histo_final: ncid'
 
         do i=1,ncbin+1
           ic(i) = icount(i)

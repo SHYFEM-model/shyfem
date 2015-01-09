@@ -151,7 +151,7 @@ c*****************************************************************
 	nlvdim = lmax
 
 	call dtsyear(date)
-	call setup_time(ntype,date,datetime,bdate0,dtime0)
+	call setup_datetime(ntype,date,datetime,bdate0,dtime0)
 
 !-------------------------------------------------------------
 ! loop on input and write
@@ -309,7 +309,7 @@ c*****************************************************************
 	nlvdim = lmax
 
 	call dtsyear(date)
-	call setup_time(ntype,date,datetime,bdate0,dtime0)
+	call setup_datetime(ntype,date,datetime,bdate0,dtime0)
 
 !-------------------------------------------------------------
 ! loop on input and write
@@ -470,7 +470,7 @@ c*****************************************************************
 	nlvdim = lmax
 
 	call dtsyear(date)
-	call setup_time(ntype,date,datetime,bdate0,dtime0)
+	call setup_datetime(ntype,date,datetime,bdate0,dtime0)
 
 !-------------------------------------------------------------
 ! loop on input and write
@@ -614,7 +614,7 @@ c*****************************************************************
 	datetime = 0
 
 	call dtsyear(date)
-	call setup_time(ntype,date,datetime,bdate0,dtime0)
+	call setup_datetime(ntype,date,datetime,bdate0,dtime0)
 
 !-------------------------------------------------------------
 ! loop on input and write
@@ -820,7 +820,7 @@ c*****************************************************************
 	datetime = 0
 
 	call dtsyear(date)
-	call setup_time(ntype,date,datetime,bdate0,dtime0)
+	call setup_datetime(ntype,date,datetime,bdate0,dtime0)
 
 !-------------------------------------------------------------
 ! loop on input and write
@@ -1144,7 +1144,7 @@ c converts datetime into actual time
 
 c*****************************************************************
 
-	subroutine setup_time(ntype,date,datetime,bdate0,dtime0)
+	subroutine setup_datetime(ntype,date,datetime,bdate0,dtime0)
 
 c sets up date and time management
 

@@ -324,18 +324,27 @@ c It then computes the optimal time step (here micro time step)
 c in order to not exceed the given Courant number. However,
 c the value for the macro time step will never be exceeded.
 c
+c Normally time steps are always given in full seconds. This is still
+c true when specifying the macro time step |idt|. In older versions also
+c the computed micro time steps also had to be full integer values.
+c Starting from version 7.1 also fractional time steps are allowed.
+c This gives the possibility to have time steps smaller than 1 s.
+c
 c |itsplt|	Type of variable time step computation. If this value
-c		is 0, the time step will kept constant at its initial
+c		is 0, the time step will be kept constant at its initial
 c		value. A value of 1 devides the initial time step into
 c		(possibly) equal parts, but makes sure that at the end
 c		of the micro time steps one complete macro time
-c		step has been executed. The last mode |itsplt| = 2
+c		step has been executed. The mode |itsplt| = 2
 c		does not care about the macro time step, but always
 c		uses the biggest time step possible. In this case
 c		it is not assured that after some micro time steps
 c		a macro time step will be recovered. Please note
 c		that the initial macro time step will never be exceeded.
-c		(Default 0)
+c		In any case, the time step will always be rounded to the
+c		next lower integer value. This is not the case with
+c		|itsplt| = 3 where the highest possible fractional time step 
+c		will be used. (Default 0)
 c |coumax|	Normally the time step is computed in order to not
 c		exceed the Courant number of 1. However, in some cases
 c		the non-linear terms are stable even for a value higher

@@ -148,9 +148,6 @@ c
       real gsc(nsdim)                   !grainsize class
       common /gsc/gsc
 
-      real const3d(0:nlvdim,nkndim)
-      common /const3d/const3d
-
       integer idsedi(nbcdim)            !information on boundaries
       save idsedi
 

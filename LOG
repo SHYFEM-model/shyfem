@@ -1,4 +1,23 @@
 
+09.01.2015
+
+c ./fem3d/subnls.f:
+c 08.01.2015    ggu     new version for nrdvec*()
+c
+c ./fem3d/subtime.f:
+c 07.01.2015    ggu     fractional time step without rounding (itsplt=3)
+c
+c ./fem3d/subgrd.f:
+c 08.01.2015    ggu     common blocks in include file
+c
+c ./fem3d/subbas.f:
+c 04.01.2015    ggu     new routine sp13_get_par()
+c
+c ./fem3d/subfemintp.f:
+! 07.01.2015    ggu     bug fix in iff_populate_records() -> handle holes
+! 08.01.2015    ggu     bug fix for parallel: make variables local
+
+
 23.12.2014
 
 c ./femplot/suplin.f:

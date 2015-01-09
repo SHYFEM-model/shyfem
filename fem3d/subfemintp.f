@@ -7,6 +7,8 @@
 ! 25.06.2014	ggu	various bug fixes
 ! 07.07.2014	ggu	first version finished
 ! 20.10.2014	ggu	deal with datetime in fem/ts files
+! 07.01.2015	ggu	bug fix in iff_populate_records() -> handle holes
+! 08.01.2015	ggu	bug fix for parallel: make variables local
 !
 !****************************************************************
 !
@@ -120,9 +122,6 @@
 	integer, save, allocatable :: ilhkv_fem(:)
 	real, save, allocatable :: hd_fem(:)
 	real, save, allocatable :: hlv_fem(:)
-	real, save, allocatable :: hl_fem(:)		!aux array
-	real, save, allocatable :: hz_fem(:)		!aux array
-	real, save, allocatable :: val_fem(:)		!aux array
 
 !================================================================
 	contains
@@ -422,10 +421,8 @@
 	if( nkn /= nkn_fem .or. nlv /= nlv_fem ) then
 	  if( nkn_fem > 0 ) then
 	    deallocate(ilhkv_fem,hd_fem,hlv_fem)
-	    deallocate(hl_fem,hz_fem,val_fem)
 	  end if
 	  allocate(ilhkv_fem(nkn),hd_fem(nkn),hlv_fem(nlv))
-	  allocate(hl_fem(nlv),hz_fem(0:nlv),val_fem(nlv))
 	end if
 
 	nkn_fem = nkn
@@ -761,11 +758,14 @@ c	 2	time series
 	double precision dtime0
 
 	!integer it,it2,idt,its,itold
-	double precision dtime,dtime2,dtimes,ddt,dtimeold
+	double precision dtime,dtime2
+	!double precision dtimes,ddt
+	double precision dtimefirst,dtimelast
 	integer nintp,i
 	logical bok,bts
 
         if( .not. iff_read_next_record(id,dtime) ) goto 99
+	dtimefirst = dtime
 
         bok = iff_peek_next_record(id,dtime2)
 
@@ -773,20 +773,33 @@ c	 2	time series
 		nintp = pinfo(id)%nintp
 		call iff_assert(nintp > 0,'nintp<=0')
 
-                ddt = dtime2 - dtime
-                if( ddt <= 0 ) goto 98
-                dtimes = dtime0 - nintp*ddt	!first record needed
-		if( dtime0 == -1 ) dtimes = dtime	!just take first
+                !ddt = dtime2 - dtime
+                !if( ddt <= 0 ) goto 98
+                !dtimes = dtime0 - nintp*ddt	!first record needed
+		!if( dtime0 == -1 ) dtimes = dtime	!just take first
 
-		dtimeold = dtime
-                do while( dtime < dtimes )
-                        bok = iff_read_next_record(id,dtime)
-                        if( .not. bok ) goto 97
-			ddt = dtime - dtimeold	!if time step changes
-                	if( ddt <= 0 ) goto 98
-			dtimes = dtime0 - nintp*ddt
-			dtimeold = dtime
-                end do
+		!dtimeold = dtime
+                !do while( dtime < dtimes )
+                !        bok = iff_read_next_record(id,dtime)
+                !        if( .not. bok ) goto 97
+		!	ddt = dtime - dtimeold	!if time step changes
+                !	if( ddt <= 0 ) goto 98
+		!	dtimes = dtime0 - nintp*ddt
+		!	dtimeold = dtime
+                !end do
+
+	        do
+		  bok = iff_peek_next_record(id,dtime2)
+                  if( .not. bok ) goto 97
+		  if( dtime2 >= dtime0 ) exit
+                  bok = iff_read_next_record(id,dtime)
+                  if( .not. bok ) goto 97
+		  dtimelast = dtime
+		end do
+
+		if( dtime0 < dtimefirst ) goto 91
+		if( dtime0 > dtime2 ) goto 91
+		!write(6,*) 'populate: ',dtimefirst,dtime,dtime2,dtime0
 
 		call iff_allocate_fem_data_structure(id)
 
@@ -807,6 +820,12 @@ c	 2	time series
         end if
 		
 	return
+   91	continue
+	call iff_print_file_info(id)
+	write(6,*) 'cannot find time records'
+	write(6,*) 'looking for it = ',dtime0
+	write(6,*) 'first time found = ',dtimefirst
+	stop 'error stop iff_populate_records: no time record found'
    96	continue
 	call iff_print_file_info(id)
 	write(6,*) 'cannot find enough time records'
@@ -815,7 +834,9 @@ c	 2	time series
    97	continue
 	call iff_print_file_info(id)
 	write(6,*) 'cannot find time record'
-	write(6,*) 'looking at least for it = ',dtimes
+	!write(6,*) 'looking at least for it = ',dtimes
+	write(6,*) 'looking for it = ',dtime0
+	write(6,*) 'last time found it = ',dtime
 	stop 'error stop iff_populate_records: not enough records'
    98	continue
 	call iff_print_file_info(id)
@@ -824,7 +845,7 @@ c	 2	time series
 	stop 'error stop iff_populate_records: time step <= 0'
    99	continue
 	call iff_print_file_info(id)
-	write(6,*) 'error reading first record'
+	write(6,*) 'error reading first record of file'
 	stop 'error stop iff_populate_records: read error'
 	end  subroutine iff_populate_records
 
@@ -1408,6 +1429,9 @@ c global lmax and lexp are > 1
 	real hl(pinfo(id)%lmax)
 	real hz_file(0:pinfo(id)%lmax+1)
 	real val_file(pinfo(id)%lmax+1)
+	real hl_fem(nlv_fem)
+	real hz_fem(0:nlv_fem)
+	real val_fem(nlv_fem)
 	logical bdebug
 
 	bcenter = .false.

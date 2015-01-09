@@ -54,6 +54,7 @@ sub handle_file {
   open($fh,"$file") || die "Cannot open file $file\n";
 
   while( <$fh> ) {
+    s/\s*\!.*$//;		# get rid of trailing comments
     if( /^\s+include\s*['"]\s*([\w.]+)\s*['"]\s*$/) {
       $hfile = $1;
     } elsif( /^\s*\#\s*include\s*['"]\s*([\w.]+)\s*['"]\s*$/) {

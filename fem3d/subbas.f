@@ -17,6 +17,7 @@ c 27.06.1997	ggu	bas routines into own file
 c 02.04.2009	ggu	error messages changed
 c 12.01.2011	ggu	debug routine introduced (sp13ts)
 c 23.10.2014	ggu	introduced ftype and nvers = 4
+c 04.01.2015	ggu	new routine sp13_get_par()
 c
 c***********************************************************
 
@@ -74,6 +75,39 @@ c-----------------------------------------------------------
 
 c***********************************************************
 
+	subroutine sp13_get_par(nb,nkn,nel,ngr,mbw)
+
+c unformatted read from lagoon file
+c
+c iunit		unit number of file to be read
+
+	implicit none
+
+	integer nb
+	integer nkn,nel,ngr,mbw
+
+	integer nvers
+
+	call sp13test(nb,nvers)
+
+	if(nvers.eq.0) goto 99
+	if(nvers.lt.0) goto 98
+
+	read(nb) nkn,nel,ngr,mbw
+
+	return
+   99	continue
+	write(6,*) 'Cannot read bas file on unit :',nb
+	stop 'error stop : sp13_get_par'
+   98	continue
+	write(6,*) 'Cannot read version: nvers = ',-nvers
+	stop 'error stop : sp13_get_par'
+   97	continue
+
+	end
+
+c***********************************************************
+
 	subroutine sp13rr(nb,nkndi,neldi)
 
 c unformatted read from lagoon file
@@ -113,21 +147,17 @@ c	call sp13ts(nvers,79,0)
 
 	return
    99	continue
-	write(6,*) 'Reading basin...'
 	write(6,*) 'Cannot read bas file on unit :',nb
-	stop 'error stop : sp13rr'
+	stop 'error stop sp13rr: error reading file'
    98	continue
-	write(6,*) 'Reading basin...'
-	write(6,*) 'Cannot read version'
+	write(6,*) 'Cannot read version: nvers = ',-nvers
 	write(6,*) 'nvers = ',-nvers
-	stop 'error stop : sp13rr'
+	stop 'error stop sp13rr: error in version'
    97	continue
-	write(6,*) 'Reading basin...'
-	write(6,*) 'Dimension error'
 	write(6,*) 'nkndim,neldim :',nkndi,neldi
 	write(6,*) 'nkn,nel       :',nkn,nel
 	write(6,*) 'ngr,mbw       :',ngr,mbw
-	stop 'error stop : sp13rr'
+	stop 'error stop sp13rr: dimension error'
 	end
 
 c***********************************************************

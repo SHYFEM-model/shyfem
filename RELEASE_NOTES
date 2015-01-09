@@ -1,4 +1,10 @@
 
+09.01.2015    VERS_7_0_12
+
+	fractional time step finished (also without rounding, itsplt=3)
+	bug fix in subfemintp.f -> handle holes in files
+	bug fix for parallel in subfemintp.f: make variables local
+
 23.12.2014    VERS_7_0_11
 
 	fractional time step introduced

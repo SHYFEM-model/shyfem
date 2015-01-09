@@ -1,5 +1,57 @@
 ============================================================
 
+Fri Jan  9 16:09:34 CET 2015
+
+final pre 7.1 release
+
+ LOG                            |   19 +
+ RELEASE_NOTES                  |    6 +
+ fem3d/Makefile                 |  241 ++++++-----
+ fem3d/bc2fem.f                 |   12 +-
+ fem3d/bin/handle_common.sh     |   24 +-
+ fem3d/bin/newsubst.pl          |  907 ++++++++++++++++++++++++++++++++++++++--
+ fem3d/fem_tides.f              |   47 ++
+ fem3d/histo.h                  |   13 +
+ fem3d/ht.f                     |   24 +-
+ fem3d/meteo.h                  |   23 +-
+ fem3d/newalloc.f               |   76 ++++
+ fem3d/newstab.f                |   25 +-
+ fem3d/sedi3d.f                 |    3 -
+ fem3d/stab.h                   |   11 +
+ fem3d/subbas.f                 |   46 ++-
+ fem3d/subfemintp.f             |   68 ++-
+ fem3d/subgrd.f                 |   97 ++---
+ fem3d/subgrd.h                 |   13 +
+ fem3d/subhisto.f               |   36 +--
+ fem3d/submet.f                 |    4 +
+ fem3d/submeteo2.f              |    7 +
+ fem3d/subnls.f                 |  170 +++++----
+ fem3d/subnls.h                 |   19 +
+ fem3d/subsys.f                 |   15 +-
+ fem3d/subtime.f                |   62 ++--
+ fem3d/subzzz.f                 |  407 ------------------
+ fem3d/waves.h                  |   24 +-
+ fembin/mail_shyfem.sh          |   58 ++-
+ fembin/mkdp.pl                 |    1 +
+ fembin/rms.pl                  |  117 +++++
+ femdoc/Release_notes_7.1v1.tex |  544 ++++++++++++++++++++++++
+ femdoc/final/shyfem.pdf        |  Bin 293283 -> 293644 bytes
+ femdoc/final/shyfem.ps         |  255 ++++++------
+ 33 files changed, 2379 insertions(+), 995 deletions(-)
+ new file:
+   fem3d/fem_tides.f
+   fem3d/histo.h
+   fem3d/newalloc.f
+   fem3d/stab.h
+   fem3d/subgrd.h
+   fem3d/subnls.h
+   fembin/rms.pl
+   femdoc/Release_notes_7.1v1.tex
+ deleted:
+    fem3d/subzzz.f
+
+============================================================
+
 Tue Dec 23 17:34:17 CET 2014
 
 New version 7_0_11

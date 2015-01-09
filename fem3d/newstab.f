@@ -239,12 +239,7 @@ c rests stability index
 
         implicit none
 
-	integer ndim
-	parameter (ndim = 50)
-	integer nentry
-	real rkind(2,ndim)
-	common /istab/nentry, /rstab/rkind
-	save /istab/, /rstab/
+	include 'stab.h'
 
 	nentry = 0
 
@@ -260,19 +255,14 @@ c inserts stability index
 
 	real rkpar,rindex
 
-	integer ndim
-	parameter (ndim = 50)
-	integer nentry
-	real rkind(2,ndim)
-	common /istab/nentry, /rstab/rkind
-	save /istab/, /rstab/
+	include 'stab.h'
 
 	integer i
 
 	do i=1,nentry
 	  if( rkind(1,i) .eq. rkpar ) return
 	end do
-	if( i .gt. ndim ) goto 99
+	if( i .gt. ndim_stab ) goto 99
 
 	!return		!uncomment for debug -> never insert
 
@@ -284,7 +274,7 @@ cggu protect
 
 	return
    99	continue
-	write(6,*) 'nentry,ndim: ',i,ndim
+	write(6,*) 'nentry,ndim: ',i,ndim_stab
 	stop 'error stop insert_stability: ndim'
 	end
 
@@ -299,12 +289,7 @@ c tests if stability index has already been computed and returns it
 	logical exist_stability
 	real rkpar,rindex
 
-	integer ndim
-	parameter (ndim = 50)
-	integer nentry
-	real rkind(2,ndim)
-	common /istab/nentry, /rstab/rkind
-	save /istab/, /rstab/
+	include 'stab.h'
 
 	integer i
 

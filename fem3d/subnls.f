@@ -48,6 +48,7 @@ c 09.03.2009	ggu	bug in nrdsec: use local name to manipolate string
 c 26.08.2009	ggu	allow '_' for names (USE_)
 c 27.02.2013	ggu	handle extra information on section line
 c 20.01.2014	ggu	new routine nrdtable()
+c 08.01.2015	ggu	new version for nrdvec*()
 c
 c notes :
 c
@@ -102,11 +103,7 @@ c memorizes section name
 	character*(*) name	!section name
 	integer num		!number of section
 
-	character*80 sname	!name of section
-	integer snum		!number of section
-	logical sread		!section has been read
-	common /secsec/ snum,sread,sname
-	save /secsec/
+	include 'subnls.h'
 
 	sname = name
 	snum = num
@@ -125,11 +122,7 @@ c gets section name
 	character*(*) name	!section name
 	integer num		!number of section
 
-	character*80 sname	!name of section
-	integer snum		!number of section
-	logical sread		!section has been read
-	common /secsec/ snum,sread,sname
-	save /secsec/
+	include 'subnls.h'
 
 	name = sname
 	num = snum 
@@ -147,11 +140,7 @@ c checks if can handle section name
 	logical handlesec	!true if can handle section
 	character*(*) name	!section name
 
-	character*80 sname	!name of section
-	integer snum		!number of section
-	logical sread		!section has been read
-	common /secsec/ snum,sread,sname
-	save /secsec/
+	include 'subnls.h'
 
 	if( name .eq. sname ) then
 	  sread = .true.
@@ -172,11 +161,7 @@ c actual section has been read ?
 
 	logical hasreadsec	!true if section has been read
 
-	character*80 sname	!name of section
-	integer snum		!number of section
-	logical sread		!section has been read
-	common /secsec/ snum,sread,sname
-	save /secsec/
+	include 'subnls.h'
 
 	hasreadsec = sread
 
@@ -192,8 +177,7 @@ c initializes unit number for name list read
 
 	implicit none
 	integer iunit
-	integer unit
-	common /nrdcom/ unit
+	include 'subnls.h'
 
 	unit = iunit
 
@@ -218,8 +202,7 @@ c 08.09.1997	ggu	!$IREAD - bug in internal read -> use iscan
 	integer nrdsec,num
 	character*(*) section		!section name
 	character*(*) extra		!extra information
-	integer unit
-	common /nrdcom/ unit
+	include 'subnls.h'
 
 	character*80 linaux,line,name
 	character*1 c
@@ -321,8 +304,7 @@ c reads next line in section
 	implicit none
 	integer nrdlin		!1 ok,  0 end of section
 	character*(*) line
-	integer unit
-	common /nrdcom/ unit
+	include 'subnls.h'
 
 	character*80 linaux
 	character*1 c
@@ -530,6 +512,8 @@ c does not handle vectors
 	end
 
 c******************************************************************
+c******************************************************************
+c******************************************************************
 
 	function nrdtable(ivect,cvect,ndim)
 
@@ -596,10 +580,12 @@ c returns -2 in case of read error
 	end
 
 c******************************************************************
+c******************************************************************
+c******************************************************************
 
-	function nrdveci(ivect,ndim)
+	function nrdvec()
 
-c reads integer vector in section
+c reads nuber section, stores numbers in internal array
 c
 c returns total number of values read
 c returns -1 in case of dimension error
@@ -607,15 +593,14 @@ c returns -2 in case of read error
 
 	implicit none
 
-	integer nrdveci		!total number of elements read
-	integer ndim		!dimension of vector
-	integer ivect(ndim)	!vector
+	include 'subnls.h'
+
+	integer nrdvec		!total number of elements read
 
 	character*80 line
 	integer n,ioff,ianz
-	integer nrdlin,nrdnum,ichafs
-	!real value
 	double precision value
+	integer nrdlin,nrdnum,ichafs
 
 	n = 0
 
@@ -624,38 +609,98 @@ c returns -2 in case of read error
 		ianz=nrdnum(value,line,ioff)
 		do while(ianz.gt.0)
 		   n=n+1
-		   if(n.gt.ndim) goto 99
-		   ivect(n)=nint(value)
+		   if(n.gt.nlsdim) goto 99
+		   dnlscom(n)=value
 		   ianz=nrdnum(value,line,ioff)
 		end do
 		if(ianz.lt.0) goto 98
 	end do
 
-	nrdveci = n
+	nrdvec = n
 
 	return
    98	continue
 	write(6,*) 'read error in following line'
 	write(6,*) line
-	nrdveci = -2
+	nrdvec = -2
 	return
 c	stop 'error stop : nrdveci'
    99	continue
 c	write(6,*) 'dimension error : ',ndim
-	nrdveci = -1
+	nrdvec = -1
 	return
 c	stop 'error stop : nrdveci'
 	end
 
 c******************************************************************
 
+	subroutine nrdvec_int(n,ivect)
+
+c copies values read from internal storage to vector ivect
+
+	implicit none
+
+	include 'subnls.h'
+
+	integer n
+	integer ivect(n)
+
+	integer i
+
+	do i=1,n
+	  ivect(i) = nint(dnlscom(i))
+	end do
+
+	end
+
+c******************************************************************
+
+	subroutine nrdvec_real(n,rvect)
+
+c copies values read from internal storage to vector rvect
+
+	implicit none
+
+	include 'subnls.h'
+
+	integer n
+	real rvect(n)
+
+	integer i
+
+	do i=1,n
+	  rvect(i) = dnlscom(i)
+	end do
+
+	end
+
+c******************************************************************
+
+	function nrdveci(ivect,ndim)
+
+c reads integer vector in section (compatibility)
+
+	implicit none
+
+	integer nrdveci		!total number of elements read
+	integer ndim		!dimension of vector
+	integer ivect(ndim)	!vector
+
+	integer n
+	integer nrdvec
+
+	n = nrdvec()
+	if( n > ndim) n = -1			!flag dimension error
+	if( n > 0 ) call nrdvec_int(n,ivect)
+	nrdveci = n
+
+	end
+
+c******************************************************************
+
 	function nrdvecr(rvect,ndim)
 
-c reads real vector in section
-c
-c returns total number of values read
-c returns -1 in case of read error
-c returns -n in case of dimension error (n is number of read elements)
+c reads real vector in section (compatibility)
 
 	implicit none
 
@@ -663,43 +708,18 @@ c returns -n in case of dimension error (n is number of read elements)
 	integer ndim		!dimension of vector
 	real rvect(ndim)	!vector
 
-	character*80 line
-	integer n,ioff,ianz
-	integer nrdlin,nrdnum,ichafs
-	!real value
-	double precision value
+	integer n
+	integer nrdvec
 
-	n = 0
-
-	do while( nrdlin(line) .eq. 1 )
-		ioff=ichafs(line)
-		ianz=nrdnum(value,line,ioff)
-		do while(ianz.gt.0)
-		   n=n+1
-		   if( n .le. ndim ) rvect(n)=value
-		   ianz=nrdnum(value,line,ioff)
-		end do
-		if(ianz.lt.0) goto 98
-	end do
-
-	if(n.gt.ndim) goto 99
-
+	n = nrdvec()
+	if( n > ndim) n = -1			!flag dimension error
+	if( n > 0 ) call nrdvec_real(n,rvect)
 	nrdvecr = n
 
-	return
-   98	continue
-	write(6,*) 'read error in following line'
-	write(6,*) line
-	nrdvecr = -1
-	return
-c	stop 'error stop : nrdvecr'
-   99	continue
-c	write(6,*) 'dimension error : ',ndim
-	nrdvecr = -n
-	return
-c	stop 'error stop : nrdvecr'
 	end
 
+c******************************************************************
+c******************************************************************
 c******************************************************************
 
 	function nrdnls(name,value,text,line,ioff)

@@ -351,12 +351,6 @@ c wind drag coefficient (either from wave or COARE)
         real windcd(nkndim)
         common /windcd/windcd
 
-c	arrays to be eliminated
-
-	common /wxov/wxov(nkndim), /wyov/wyov(nkndim)
-	common /wxnv/wxnv(nkndim), /wynv/wynv(nkndim)
-	common /pov/pov(nkndim), /pnv/pnv(nkndim)
-
 c tidal potential
 
         real xgeov(nkndim), ygeov(nkndim)
@@ -371,17 +365,7 @@ c nudging
 
 c wave sub-module
 
-        real waveh(nkndim)      !wave height [m]
-        real wavep(nkndim)      !mean wave period [s]
-        real wavepp(nkndim)     !peak wave period [s]
-        real waved(nkndim)      !wave direction (same as wind direction)
-        real waveov(nkndim)     !orbital velocity
-        real wavefx(nlvdim,neldim)      !wave forcing terms
-        real wavefy(nlvdim,neldim)
-
-        common /waveh/waveh, /wavep/wavep, /wavepp/wavepp, /waved/waved
-	common /waveov/waveov
-        common /wavefx/wavefx,/wavefy/wavefy
+	include 'waves.h'
 
         real z0sk(nkndim)                   !surface roughenss on nodes
         common /z0sk/z0sk
@@ -396,12 +380,6 @@ c wave sub-module
         common /mudc/mudc
         double precision rhomud(nlvdim,nkndim) !Mud floc part. density (kg/m3)
         common /rhomud/rhomud
-
-c variables for WWM model
-
-        integer iwave                   !call for wave model
-        integer iwwm                    !call for coupling with wwm
-        integer idcoup                  !time step for sincronizing with wwm [s]
 
 c auxiliary arrays
 

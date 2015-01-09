@@ -170,6 +170,7 @@ c DOCS  END
 !
 ! in order to use these routines, please set imreg = 3 in the STR file
 
+	include 'param.h'
 	include 'nbasin.h'
 	include 'femtime.h'
         integer nlvdi,nlv
@@ -837,6 +838,7 @@ c convert rain from mm/day to m/s
 
 	implicit none
 
+	include 'param.h'
 	include 'meteo.h'
 
 	integer mode
@@ -935,6 +937,7 @@ c convert rain from mm/day to m/s
 
 	implicit none
 
+	include 'param.h'
 	include 'meteo.h'
 
         integer k                       !node number
@@ -973,6 +976,7 @@ c eeff is evaporation used in model, if ievap==0 => eeff==0.
 
 	implicit none
 
+	include 'param.h'
 	include 'meteo.h'
 
 	integer k
@@ -1002,6 +1006,7 @@ c sets evaporation
 
 	implicit none
 
+	include 'param.h'
 	include 'meteo.h'
 
 	integer k
@@ -1017,6 +1022,7 @@ c sets evaporation
 
 	implicit none
 
+	include 'param.h'
 	include 'meteo.h'
 
         integer k                       !node number
@@ -1034,6 +1040,7 @@ c sets evaporation
 
         implicit none
 
+	include 'param.h'
 	include 'meteo.h'
 
         integer k

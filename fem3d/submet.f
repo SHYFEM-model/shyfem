@@ -58,6 +58,7 @@ c initializes evaporation mass flux
 
 	implicit none
 
+	include 'param.h'
 	include 'meteo.h'
 
 	include 'nbasin.h'
@@ -78,6 +79,7 @@ c adds evaporation mass flux to distributed source
 
 	implicit none
 
+	include 'param.h'
 	include 'meteo.h'
 
 	include 'nbasin.h'
@@ -105,6 +107,7 @@ c initializes evaporation mass flux
 
 	implicit none
 
+	include 'param.h'
 	include 'meteo.h'
 
 	include 'nbasin.h'
@@ -199,6 +202,7 @@ c returns wind (wx/y), normalized stress (taux/yn) and pressure (p)
 	real tauxn,tauyn	!normalized stress [m**2/s**2]
 	real p			!pressure [Pa]
 
+	include 'param.h'
 	include 'meteo.h'
 
 	wx = wxv(k)

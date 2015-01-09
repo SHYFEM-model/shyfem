@@ -1,32 +1,27 @@
 
-	!integer nmtdim			!size of meteo regular data
-	!parameter (nmtdim = 10000)
-
-	!real mdata(nmtdim)
-
-        real wxv(1),wyv(1)
+        real wxv(nkndim),wyv(nkndim)
         common /wxv/wxv,/wyv/wyv
-        real ppv(1)
+        real ppv(nkndim)
         common /ppv/ppv
 
-        real metrad(1),methum(1)
-        real mettair(1),metcc(1)
+        real metrad(nkndim),methum(nkndim)
+        real mettair(nkndim),metcc(nkndim)
         common /metrad/metrad, /methum/methum
         common /mettair/mettair, /metcc/metcc
 
-        real metrain(1)
+        real metrain(nkndim)
         common /metrain/metrain
 
-        real tauxnv(1),tauynv(1)
+        real tauxnv(nkndim),tauynv(nkndim)
         common /tauxnv/tauxnv,/tauynv/tauynv
 
-        real metwbt(1),metws(1)
+        real metwbt(nkndim),metws(nkndim)
         common /metwbt/metwbt, /metws/metws
 
-        real windcd(1)          !wave drag coefficient
+        real windcd(nkndim)          !wave drag coefficient
         common /windcd/windcd
 
-	real evapv(1)		!evaporation
+	real evapv(nkndim)		!evaporation
 	common /evapv/evapv
 
 c metrain and evapv are in [m/s]

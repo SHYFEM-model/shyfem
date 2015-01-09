@@ -1,0 +1,544 @@
+\documentclass[12pt,draft]{article}
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+%\usepackage{pict2e}
+%\usepackage{epic}
+\usepackage{shortvrb}
+\usepackage{verbatim}
+
+\newcommand{\beq}{\begin{equation}}
+\newcommand{\eeq}{\end{equation}}
+\newcommand{\beqm}{\begin{multline}}
+\newcommand{\eeqm}{\end{multline}}
+\newcommand{\shyfem}{SHYFEM}
+
+\newcommand{\Unod}{U}
+\newcommand{\Vnod}{V}
+\newcommand{\znod}{\zeta}
+\newcommand{\Unew}{U^n}
+\newcommand{\Vnew}{V^n}
+\newcommand{\znew}{\zeta^n}
+\newcommand{\Uold}{U}
+\newcommand{\Vold}{V}
+\newcommand{\zold}{\zeta}
+\newcommand{\Udel}{\Delta U}
+\newcommand{\Vdel}{\Delta V}
+\newcommand{\zdel}{\Delta \zeta}
+
+\newcommand{\UV}{\mathbf{U}}
+\newcommand{\UVnew}{\mathbf{U}^n}
+\newcommand{\UVdel}{\mathbf{\Delta U}}
+\newcommand{\UVhat}{\hat{\mathbf{U}}}
+\newcommand{\UVhatdel}{\mathbf{\Delta \hat{U}}}
+\newcommand{\HH}{\mathbf{H}}
+\newcommand{\Amat}{\mathbf{\bar{A}}}
+\newcommand{\AmatI}{\mathbf{\bar{A}}^{-1}}
+\newcommand{\FF}{\mathbf{F}}
+\newcommand{\II}{\mathbf{I}}
+\newcommand{\Ipart}{\mathbf{\partial I}}
+
+\newcommand{\dt}{\Delta t}
+\newcommand{\dz}{\Delta z}
+
+\newcommand{\Ftilde}{\tilde{F}}
+\newcommand{\Ftx}[1]{\tilde{F}^x_{#1}}
+\newcommand{\Fty}[1]{\tilde{F}^y_{#1}}
+
+\newcommand{\delx}{\partial_x}
+\newcommand{\dely}{\partial_y}
+
+\newcommand{\dpartt}[1]{\frac{\partial #1}{\partial t}}
+\newcommand{\dpartx}[1]{\frac{\partial #1}{\partial x}}
+\newcommand{\dparty}[1]{\frac{\partial #1}{\partial y}}
+\newcommand{\dpartz}[1]{\frac{\partial #1}{\partial z}}
+\newcommand{\dpartzz}[1]{\frac{\partial^2 #1}{\partial z^2}}
+
+\newcounter{cms} % nel preambolo
+
+\MakeShortVerb{\|}
+
+\title{Release notes for \shyfem{} 7.0}
+\author{The \shyfem{} Team}
+
+\begin{document}
+
+\maketitle
+
+
+\section{Overview}
+
+
+The \shyfem{} version 7 shows major differences with respect to 
+the older versions (pre 7). Some of the differences are so
+strong that they are not backward compatible with the older versions. This means that changes have to be made to the
+input files and also the parameter file. Otherwise version 7
+will not be able to run with the old input files. All these changes
+are detailed here below.
+
+The fact that version 7 breaks with the compatibility of
+the older versions is deliberate. It would have been too complicated
+to maintain backward compatibility with older versions. It would
+have also made the code extremely complicated.
+
+On the other hand the transition to the new version has been made
+quite simple. There exists a utility |bc2fem| that transforms the
+old input files to the new file format. The routine is quite 
+well documented, so there should really be no problem to
+apply this routine to the old files. Changes in the parameter input
+file consist in declaring some obligatory parameters and
+in the way space varying boundary conditions are specified. All this
+is explained in the following section.
+
+
+\section{New file formats}
+
+
+In the previous versions different file formats were adopted for 
+boundary conditions, initial values,
+diagnostic values and meteo forcing. File formats also kept
+changing, trying to integrate more information into
+the files. At the end of the versions 6 of the model, there were
+4 formats for meteo forcing, all incompatible between each other.
+
+Another problem when specifying spatially varying boundary
+conditions was the fact that when specifying a spatially
+varying parameter at the boundary, all parameters had to
+be given spatially varying. It was therefore not possible to 
+use plain time series files for this boundary.
+
+To end this situation, in version 7 of the model
+it has been decided to standardize
+on only two different file formats that would fit all needs. This
+file format can now be applied to all types of input, like meteo
+forcing, lateral boundary conditions, initial conditions and 
+variables used for nudging. 
+
+The two formats are a classical time series format and a more
+complicated format that can be used for all the other situations
+where simple time series cannot be used anymore. We call in
+the following the time series TS and the more 
+complete format FEM. 
+
+In the following sections the two input file formats are described
+and typical usages are described.
+
+\subsection{The time series (TS) format}
+
+This file format can be used every time when only a simple
+series of values have to be imposed. Examples of this are
+a time series of water levels to be imposed on one
+open boundary, when all values of the open boundary
+have the same value. Another example is a spatially
+homogeneous wind blowing over the water body. Also
+in this case only one value has to be specified.
+
+The format consist in various columns of data. The first column
+consists of the time in seconds and the other columns
+consist of data. In case of the water level there are two columns,
+the first is time, the second is the water level. In case of
+the wind there are three columns, their meaning depending on the
+parameter |iwtype|. Apart from the first time column, the second and third can be wind velocity in $x,y$ direction, or it can be
+wind speed and direction, where the wind speed is in [m/s]
+or in nodes.
+
+The format for time series has been kept backward compatible.
+Only some minor enhancements have been introduced
+that are explained in a separate document, where the exact 
+format has been detailed. It is important to note that files
+with the time series format from older versions can be used
+in version 7 without changes.
+
+\subsection{The finite element (FEM) format}
+
+The FEM file format covers all the other situation where the 
+TS format cannot be used. These cases include:
+\begin{itemize}
+\item spatially varying meteo files,
+\item regular (not interpolated) meteo files,
+\item spatially varying (2D and 3D) boundary files like
+water levels, temperature fields, etc.,
+\item 2D and 3D fields for scalar values (temperature, 
+salinity) used as initial fields or to be used for nudging.
+\end{itemize}
+Please note that this list is not complete. 
+
+All of the above usage already was covered in older versions
+of \shyfem{}. However, different file formats were adopted 
+to fulfill the usage needs. It is important for code
+maintenance and readability that all these different formats have been merged into one standard FEM format. This fact 
+automatically meant that there had to be an incompatibility
+between older versions and version 7.
+
+New FEM files can be directly produced by programs creating the
+desired content. The exact FEM file format can be found either
+in a different document that only gives details about the format
+or in file |subfemfile.f|, the file where the subroutines that write
+FEM files have been collected.
+
+Existing old files can be converted by the utility |bc2fem|. The
+routine writes some help messages to the screen which should
+be easily understandable. For more information the source code
+of |bc2fem.f| will be very helpful.
+
+Since the FEM files contain more information than the original 
+files, this information has to be provided during the process
+of file conversion. The following list shows the extra information contained in the FEM files and explains why it is needed:
+\begin{itemize}
+\item both formatted and unformatted,
+\item an absolute reference date can be given for the file (please see the section on time management),
+\item for 3D fields (non vertically homogeneous) the depth
+of the nodes and the vertical discretization has to be given.
+\end{itemize}
+
+The last point has to be explained a little bit more. \shyfem{}
+is now able to vertically interpolate between different vertical
+levels, sigma levels included. In order that this is possible the
+vertical discretization of the file has to be known. Also the
+total depth of every node is needed for the interpolation from
+sigma levels, but if this information is not given the total depth
+of the node from the model is used.
+
+Various helper routines are available that deal with FEM files. Here
+is a probably incomplete list:
+\begin{itemize}
+\item |bc2fem| - converts old file format to FEM file format
+\item |feminf| - information on fem file
+\item |femelab| - elaborates (rewrites) FEM files
+\item |femformat| - converts between formatted and unformatted FEM files
+\end{itemize}
+
+
+
+\section{New time management}
+
+Time in older versions of \shyfem{} was given as an integer
+with units in seconds. This gave rise to a series of problems,
+like
+\begin{itemize}
+\item there was no absolute reference date 
+that would have link the time in seconds to real time.
+\item only integer time steps were allowed. Therefore no time step below one second was possible.
+\item running time was also measured with integer values. This did not allow simulations much longer than 30 years.
+\item it was not clear from a given file to what date 
+it was referred to.
+\end{itemize}
+
+Because of these deficiencies time management has changed in version 7. Not all of the features given here are already 
+implemented, but all features will be finished before version 7.1
+will be released.
+
+
+\subsection{Some definitions}
+
+
+Here are some definitions that will be used describing
+the new time management:
+\begin{itemize}
+\item date - a unique point in time that is identified by date
+(year,month,day) and time (hour,minute,second).
+\item time - a time span measured in seconds from some
+specific date. To which date this time is referred to depends on how
+and where it is used.
+\item relative time - this is the time in seconds relative
+to a reference date. In \shyfem{} the simulation runs in
+relative time referred to the reference date of the simulation.
+Start and end of the simulation are specified with
+this time. External files have a time stamp that is in relative time
+referred to the reference date of the file. If external files have no indication of reference date. 
+(like it was in older versions) these files are referred to 
+the reference date of the simulation. Units are seconds.
+\item absolute time - this is the time in seconds from a unique
+reference date, the
+first of January of year 1. The fact that this time is referred
+always to the same reference date makes it ideal for converting
+relative time referred to different reference dates. Units are seconds.
+\item reference date - this is the date to which relative time is referred to. There can be more than one reference date. The
+simulation has its reference date. Every file can have its own 
+reference date. 
+\end{itemize}
+
+An example will explain these definitions. Let's say you have 
+set the reference date for the simulation at 1.1.2014 (the way
+how to do this is given below). In the parameter file the start
+of the simulation is given as |itanf=172800|. This is relative time,
+relative to the reference date. So the simulation starts at
+3.1.2014, midnight. The absolute time for this starting date
+is 63524304000, a rather useless number. In fact, you will never get 
+into contact with the absolute time. This is all handled in
+the program.
+
+If you now use an external file with a reference date set to
+2.1.2014. Then the program, in order to pick the first data
+to be used for the start of the simulation, will look for a
+relative time in the file corresponding to 86400, because the
+relative time of 86400 together with the file reference date
+of 2.1.2014 corresponds to 3.1.2014, midnight.
+
+In any case, all of this will be handled transparently by the 
+program.
+
+\subsection{Changes from older versions}
+
+The first and only incompatibility introduced with version 7 is the 
+need to specify the reference date for the simulation. This is
+done through the parameters |date| and |time| in the |para|
+section of the parameter input file. The format of these parameters is specified below. If you want to continue working with relative
+dates just set explicitly |date| to 0. 
+In this case nothing will be changed 
+with respect to the old versions.
+
+The simulation always runs in relative time. In older versions
+there was no need to specify the reference date, so this reference date was implicit. All times in external files had to refer to the same
+implicit reference date.
+
+With version 7 the reference date of the simulation has to be specified. The |date| parameter has to be specified as
+YYYYMMDD. It is also possible to specify only the year as YYYY. This
+is the same as YYYY0101, the first of January of year YYYY. The 
+reference time also can be specified in parameter |time|
+as hhmmss. A value of 0 means midnight. This is also the
+default. Please note that |date| and |time| are integer values,
+so an example of specifying these parameters is 
+|date|=20141102 and |time|=120000 which indicates as the
+reference date the second of November 2014 at noon. It is highly recommended that you leave time always at 0 (midnight). If you
+want to set the date to the beginning of the year then 
+|date|=2014 is sufficient.
+
+As already explained, if you do not want to set a reference date
+(maybe because you are running a simulation not referred to
+any external time), please set the |date| parameter explicitly to
+0 to indicate your intention. In this case all external files
+also have to use this time reference with no reference date
+indicated in the files.
+
+\subsection{Reference dates in files}
+
+Once the reference date has been chosen you will have to indicate
+all references to time as relative time referred to this reference date. Examples are the start and end of simulation (|itanf| and
+|itend|) or the start of the output of hydrodynamic results 
+(|itmout|). All time steps (|idt|, |idtout|, etc.) have still to be specified in seconds.
+
+External files can be handled as follows. If the file time is referred
+to the same reference date of the simulation nothing has to be
+done. \shyfem{} will take care of referring the relative time of the
+files to the same reference date of the simulation.
+
+If the external files contain a reference date, then the time
+of the data record contained in the file will be converted to
+the relative time of the simulation. All of this will happened
+without any user interaction. External files can therefore be 
+reused for several simulations, even if the reference date
+of the simulations change.
+
+\subsubsection{Reference dates in time series (TS files)}
+
+In case of a time series (TS file) a reference date can be easily indicated by simply inserting the following line at the
+beginning of the file:
+\begin{verbatim}
+#date: YYYYMMDD
+\end{verbatim}
+As already explained, if the date is the first of January, also |YYYY|
+will do. These lines can also occur in any other line of the file.
+In this case all lines after the |date| line will refer to the new
+reference date. This feature makes it possible to simple
+concatenate two TS files with different reference date on top
+by copying them into one file.
+
+
+\subsubsection{Reference dates in FEM files}
+
+In case of FEM files two strategies can be followed. The first
+one is to fix one reference date for the file and then adjust
+the relative time of each record. So, if for example the reference
+date is 20140101, a file with hourly data will have relative times
+as 0, 3600, 7200 etc..
+
+Another strategy can be to always set the reference date to
+the external date of the record and set the relative time to zero.
+This works because every data record in FEM files has its own 
+reference date. In this case the time record of the aforementioned
+hourly file would always be 0, and the reference dates of the
+records would read as
+\begin{verbatim}
+20141010 000000
+20141010 010000
+20141010 020000
+20141010 030000
+\end{verbatim}
+This solution is probably the preferred version of specifying
+time in FEM files because it makes the date and time human
+readable.
+
+
+
+There is also the possibility to adopt a mixed version of the
+above mentioned strategies. However, because of difficult
+interpretation of the time records this solution is discouraged.
+
+\subsection{Specification of time variables in the parameter file}
+
+Until the version 6 series of the model all time variables had
+to be given in seconds and were integer values. This fact
+made it very complicated to specify dates and time periods
+in a comprehensive way. If the reference date for the
+simulation was 1.1.2014 (given as |20140101| in the parameter file)
+and you wanted to run the simulation from 1.7.2014 to 1.8.2014
+with a time step of 5 minutes
+you would have to specify this in the parameter file as
+\begin{verbatim}
+date=20140101  
+itanf=15638400  itend=18316800  idt=300
+\end{verbatim}
+Clearly, especially
+the specification of the initial and final dates is very cumbersome.
+
+In the version 7 series of the model this problem has been
+overcome by the possibility to specify dates and time periods in
+a different way. Dates can now not only be specified by 
+an integer value, but also by a string value that should
+follow the format |'YYYY-MM-DD::hh:mm:ss'|. Smaller units can 
+be left out if not needed. So the start date of the simulation
+mentioned above could be specified as |'2014-07-01::00:00:00'|
+or even simpler |'2014-07-01'|.
+
+The values specifying time duration can also be given in
+a simplified way using string values. Time periods can be
+specified using units such as |s| for seconds, |m| for minutes,
+|h| for hours, |d| for days, |w| for weeks (7 days), |M| for 
+months (30.5 days) and |y| for years (365 days). Please note 
+that all units are lower case, except the unit for month.
+
+Therefore the 5 minute time step can now be specified
+as |'300s'| or |'5m'|. Fractions are not allowed. So one and a half
+day should be specified as |'1d12h'| and one and a half hour
+would be |'1h30s'|.
+
+Please note that there is no way to indicate fractions of
+seconds. Therefore there is no way to have simulation output
+of less than a second. This is probably no limitation to most of
+the applications.
+
+For one variable either the integer or the string representation 
+can be chosen. If both are given, the string representation
+will take precedence. The possibility to represent dates and times
+by strings is extended to all variables that deal with these 
+values. Examples are the output frequency |idtout| 
+and start time |itmout| for
+hydrodynamic file output and other similar variables.
+
+To conclude here the specification of dates and times of the
+above example are shown here:
+\begin{verbatim}
+date='2014-01-01' 
+itanf='2014-07-01' itend='2014-08-01' idt='5m' 
+\end{verbatim}
+This is clearly much more intuitive than the old 
+way of specifying dates and times.
+
+
+
+
+
+
+\subsection{Other changes in time variables}
+
+
+\begin{itemize}
+\item all time variables are now internally double precision. 
+However, there is no way to specify fractional seconds
+in the parameter file. Therefore, the highest output
+frequency for simulation variables is still one second
+\item fractional time steps are now allowed. However, they can
+not be specified in the parameter file. 
+When automatic limitation of the time step is in use, time
+steps that are computed can now be lower than 1 second. For this feature
+to work you will have to lower the value of |idtmin|, the minimum
+time step allowed, to a value lower than 1 s. The time step splitting
+will be handled by the parameter |itsplt|. A value of 2 for this
+parameter will work as before with time steps higher than 1 s, and will
+produce fractional integer time steps (example: 1/3, 1/5 s) if the time
+step falls below 1 s. A value of 3 for |itsplt| will always take the
+highest possible time step. This feature is incompatible with older
+versions.
+
+\end{itemize}
+
+
+
+\section{Summary of all incompatible changes}
+
+Here a short summary of all incompatible changes with
+regard to older versions is given.
+
+\begin{itemize}
+\item file formats have changed, except for time series files. Please use |bc2fem| to convert old files to the new format.
+\item some parameters are not needed anymore. They are therefore not accepted anymore by \shyfem. Deleted parameters
+are: |nbdim|, |ibfix|
+\item external files can now have a reference date to which relative
+time is referring. It is highly recommended to use this new feature,
+even if it is not compulsory.
+\item a reference date for the simulation is now obligatory. If
+you do not have such a date (idealized simulations) or do
+not want to use it, please set |date| explicitly to 0 in the parameter
+input file.
+\item name of some executables have changed. Here is a list
+of the old and new names:
+\begin{itemize}
+\item ht - shyfem
+\item plotsim - shypost
+\item plots - shyplot
+\item vp - shypre
+\end{itemize}
+
+\end{itemize}
+
+\section{Summary of changes between different versions}
+
+\begin{itemize}
+\item new tool |strparse.pl| to get information on parameter input files.
+The command |strparse.pl -files| lists the files that are needed
+in order to run a simulation. These files include the grid file
+of the basin, open boundary forcing files and initial value files.
+The only file that has to be given to the tool is the parameter
+file (|STR| file) used to run the simulation.
+The option |-zip| will actually zip all these files, together with the
+parameter file, into one file that can be distributed. This zip-file
+will contain all the files that are needed to run the simulation
+in another location.
+\item new tool |restart.pl| to help making a quick restart. If the variable
+|idtrst| was specified in the simulation parameter file the model
+will write a restart file with the frequency given in this variable.
+Running the new tool on this parameter file will create a new
+parameter file that can be used to restart the simulation. The
+simulation will start from the last restart point written to file.
+\item changes in specifying sediment transport module (Chris)
+
+
+\end{itemize}
+
+
+
+\end{document}
+
+%\begin{bmatrix}
+%0 & \cdots & 0 
+%\\ \vdots & \ddots & \vdots 
+%\\ 0 & \cdots & 0 
+%\end{bmatrix}
+
+change formatting of fem file
+bc2fem: insist on date (done)
+initial values: one or more records
+nbdim, ibfix
+elim:  - wininf  - scalintp, laplap, scal_intp.  - wincrea, windcrea
+
+ - ht           ---> shyfem
+ - vp           ---> shyfem_bas o shyfem_pre
+ - feminf       ---> shyfem_file_info
+ - femelab      ---> shyfem_file_elab
+ - femformat    ---> shyfem_file_format
+ - plots        ---> shyfem_plots
+ - femrun       ---> shyfem_run
+ - basbathy     ---> shyfem_bathy
+ - grid         ---> shyfem_grid
+

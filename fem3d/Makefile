@@ -108,6 +108,8 @@ MAKEDEPEND = $(FEMBIN)/mkdp.pl
 
 # 3D objects for 3D model
 
+MODULES = fem_tides.o
+
 NEWOBJS = \
 	  new3di.o \
 	  newrog.o newcra.o \
@@ -117,7 +119,8 @@ NEWOBJS = \
 	  newcon.o newconz.o \
 	  newchk.o newdum.o newfix.o \
 	  newtvd.o newstab.o newsig.o \
-	  newnudge.o
+	  newnudge.o \
+	  $(MODULES)
 
 # objects for library
 
@@ -133,7 +136,7 @@ SOBJS   = \
           subbas.o subnev.o subdim.o \
           subnls.o subwat.o \
           subfil.o subn35.o subout.o subous.o subssg.o \
-          subssm.o subzzz.o \
+          subssm.o \
           subnsu.o subsss.o subscn.o subres.o \
           subapn.o subnsa.o \
           subgrd.o subreg.o \
@@ -167,7 +170,7 @@ HTOBJS = \
 	subbnd.o subnos.o \
 	subwat.o subn11.o subdry.o \
 	subcus.o subcon1.o \
-	tideg.o tide1.o subzzz.o subres.o subuti.o \
+	tideg.o tide1.o subres.o subuti.o \
 	sublin.o subvola.o subgeo.o debug.o \
 	submod.o subele.o \
 	$(SOLVER_FILES) \
@@ -273,7 +276,7 @@ BCTSOBJS = subintp.o
 
 # objects for interpolation
 
-INTP    = subzzz.o subreg.o
+INTP    = subreg.o
 
 # objects for lagrangian interpolation
 
@@ -772,169 +775,182 @@ last:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 aquabc.o: param.h
-aquabc_fem_interface.o: param.h aquabc_aout.h aquabc.h femtime.h \
-		ev.h 
-atoxi3d.o: param.h
-basbathy.o: param.h evmain.h
+aquabc_fem_interface.o: nbasin.h param.h aquabc_aout.h aquabc.h \
+		femtime.h ev.h mkonst.h 
+atoxi3d.o: nbasin.h param.h mkonst.h
+basbathy.o: pkonst.h nbasin.h param.h evmain.h
 basbox.o: param.h links.h evmain.h basin.h
-baschk.o: param.h evmain.h basin.h
+baschk.o: pkonst.h nbasin.h param.h evmain.h basin.h
 bascomp.o: param.h evmain.h basin.h
 bashsigma.o: param.h evmain.h basin.h
 basinf.o: param.h evmain.h basin.h
 basproj.o: param.h basin.h
 basres.o: param.h basin.h
-bastreat.o: param.h links.h evmain.h basin.h
+bastreat.o: nbasin.h param.h links.h evmain.h basin.h
 baswork.o: param.h evmain.h basin.h
-bdist.o: param.h nkonst.h links.h
-bio3d.o: param.h
-bio3d_util.o: param.h donata.h
+bdist.o: nbasin.h param.h links.h
+bio3d.o: nbasin.h param.h mkonst.h
+bio3d_util.o: nbasin.h param.h donata.h
 eosinf.o: param.h
 etsinf.o: param.h
+fem_tides.mod: fem_tides.o
 feminf.o: clo.mod
-flux.o: regflux.h param.h links.h ev.h femtime.h
+flux.o: regflux.h nbasin.h param.h links.h ev.h femtime.h
 flxinf.o: param.h
 gotm3d.o: gotmturb.i
 grdutil.o: grd_extra.h param.h basin.h
-ht.o: intp_fem_file.mod param.h meteo.h evmain.h femtime.h
-lagrange_back.o: param.h lagrange.h
-lagrange_connect.o: param.h femtime.h lagrange.h \
+ht.o: pkonst.h nbasin.h intp_fem_file.mod param.h meteo.h evmain.h \
+		femtime.h mkonst.h 
+intp.o: nbasin.h
+lagrange_back.o: nbasin.h param.h lagrange.h
+lagrange_connect.o: nbasin.h param.h femtime.h lagrange.h \
 		lagrange_connect.h 
 lagrange_cont.o: param.h links.h lagrange.h
 lagrange_decay.o: param.h femtime.h lagrange.h
 lagrange_dif.o: param.h femtime.h lagrange.h
-lagrange_flux.o: param.h ev.h femtime.h links.h lagrange.h
-lagrange_init.o: param.h
-lagrange_inout.o: param.h ev.h femtime.h lagrange.h
+lagrange_flux.o: nbasin.h param.h ev.h femtime.h links.h \
+		lagrange.h 
+lagrange_init.o: nbasin.h param.h
+lagrange_inout.o: nbasin.h param.h ev.h femtime.h lagrange.h
 lagrange_larve.o: param.h lagrange.h
-lagrange_main.o: param.h femtime.h lagrange.h
-lagrange_oil.o: param.h femtime.h ev.h lagrange.h
+lagrange_main.o: nbasin.h param.h femtime.h lagrange.h
+lagrange_oil.o: nbasin.h param.h femtime.h ev.h lagrange.h
 lagrange_track.o: param.h lagrange.h
-lagrange_util.o: ev.h
-lgrelab.o: param.h
+lagrange_util.o: nbasin.h ev.h
+lgrelab.o: nbasin.h param.h
 lgrinf.o: param.h
-loading.o: param.h
-map_influence.o: param.h
+loading.o: nbasin.h param.h
+map_influence.o: nbasin.h param.h
 matrix49.o: regflux.h
 netcdf.o: param.h netcdf.h netcdf.inc
-netcdf_util.o: param.h
-new36.o: nkonst.h femtime.h close.h
-new3di.o: testbndo.h param.h ev.h femtime.h
-newbcl.o: param.h femtime.h
-newchao.o: param.h femtime.h
-newchk.o: testbndo.h param.h ev.h femtime.h
-newcon.o: testbndo.h param.h ev.h femtime.h
-newconz.o: param.h femtime.h
-newcra.o: femtime.h ev.h
-newexpl.o: param.h ev.h
-newfix.o: param.h nkonst.h femtime.h bclfix.h
-newini.o: param.h
-newnohydro.o: param.h nohydlinks.h links.h femtime.h ev.h
+netcdf_util.o: nbasin.h param.h
+new36.o: nbasin.h mkonst.h femtime.h close.h
+new3di.o: testbndo.h pkonst.h nbasin.h param.h mkonst.h ev.h \
+		femtime.h 
+newbcl.o: pkonst.h nbasin.h param.h mkonst.h femtime.h
+newchao.o: nbasin.h param.h femtime.h
+newchk.o: testbndo.h nbasin.h param.h ev.h mkonst.h femtime.h
+newcon.o: testbndo.h nbasin.h param.h ev.h mkonst.h femtime.h
+newconz.o: nbasin.h param.h mkonst.h femtime.h
+newcra.o: nbasin.h pkonst.h mkonst.h femtime.h ev.h
+newexpl.o: pkonst.h nbasin.h param.h ev.h
+newfix.o: nbasin.h param.h femtime.h bclfix.h
+newini.o: pkonst.h nbasin.h param.h mkonst.h
+newnohydro.o: pkonst.h nbasin.h param.h nohydlinks.h links.h \
+		femtime.h ev.h 
 newnudge.o: param.h nudge.h femtime.h basin.h
-newstab.o: param.h
-newtra.o: param.h ev.h
-newtvd.o: param.h ev.h tvd.h
-noh_ggu.o: param.h femtime.h ev.h
+newstab.o: nbasin.h param.h
+newtra.o: nbasin.h param.h ev.h
+newtvd.o: nbasin.h param.h ev.h tvd.h
+noh_ggu.o: pkonst.h nbasin.h param.h femtime.h ev.h
 nonhydro_pard.o: param.h nohydlinks.h common.h nkonst.h
-nonhydro_spk.o: param.h nohydlinks.h
+nonhydro_spk.o: nbasin.h param.h nohydlinks.h
 nos2nc.o: param.h evmain.h basin.h
-nos_elab.o: param.h
+nos_elab.o: nbasin.h param.h
 nosadmin.o: param.h
 nosaver_basin.o: param.h basin.h
 nosaver_time.o: param.h
 nosaver_vert.o: param.h basin.h
 nosdiff.o: param.h
 nosextr_cat.o: param.h
-nosextr_custom.o: param.h
-nosextr_fluxes.o: param.h
-nosextr_gis.o: param.h
+nosextr_custom.o: nbasin.h param.h
+nosextr_fluxes.o: nbasin.h param.h
+nosextr_gis.o: nbasin.h param.h
 nosextr_nodes.o: param.h evmain.h basin.h
 nosextr_records.o: param.h
 nosinf.o: param.h
-nosinit.o: param.h
-nosintp.o: param.h
-nosmaniq.o: param.h
-nosresidence.o: param.h basin.h evmain.h
+nosinit.o: nbasin.h param.h
+nosintp.o: nbasin.h param.h
+nosmaniq.o: nbasin.h param.h
+nosresidence.o: nbasin.h param.h basin.h evmain.h
 nossplit.o: param.h
-nossum.o: param.h
+nossum.o: nbasin.h param.h
 nosutil.o: ev.h
-noswrite.o: param.h
+noswrite.o: nbasin.h param.h
 optintp.o: param.h evmain.h basin.h
 ous2nc.o: param.h evmain.h basin.h
-ousaver.o: param.h
-ousextr_cat.o: param.h
-ousextr_gis.o: param.h
+ousaver.o: nbasin.h param.h
+ousextr_cat.o: nbasin.h param.h
+ousextr_gis.o: nbasin.h param.h
 ousextr_nodes.o: param.h evmain.h basin.h
-ousextr_records.o: param.h
-ousinf.o: param.h evmain.h
-ousintp.o: param.h
+ousextr_records.o: nbasin.h param.h
+ousinf.o: nbasin.h param.h evmain.h
+ousintp.o: nbasin.h param.h
 ousutil.o: param.h ev.h
-ousvdiff.o: param.h
-ouswork.o: param.h evmain.h
-ouswork1.o: param.h evmain.h
-ouswrite.o: param.h
-readext.o: param.h
+ousvdiff.o: nbasin.h param.h
+ouswork.o: nbasin.h param.h evmain.h
+ouswork1.o: nbasin.h param.h evmain.h
+ouswrite.o: nbasin.h param.h
+readext.o: nbasin.h param.h
 scal_intp.o: param.h evmain.h basin.h
-scalintp.o: param.h evmain.h
-sedi3d.o: testbndo.h param.h evmain.h sed_param.h waves.h
+scalintp.o: pkonst.h nbasin.h param.h evmain.h
+sedi3d.o: testbndo.h nbasin.h param.h evmain.h sed_param.h waves.h
 simsys_lp.o: param.h common.h nkonst.h
 simsys_pard.o: param.h common.h nkonst.h
 simsys_spk.o: param.h common.h nkonst.h
 splitets.o: param.h
 splitflx.o: param.h
+subapn.o: pkonst.h nbasin.h
 subbas.o: param.h basin.h
-subbfm.o: param.h bfm_common.h
-subbnd.o: param.h nkonst.h bnd.h nbound.h
-subbndo.o: param.h subbndo.h nkonst.h
+subbfm.o: pkonst.h nbasin.h param.h bfm_common.h
+subbnd.o: nbasin.h param.h bnd.h nbound.h
+subbndo.o: nbasin.h param.h subbndo.h
 subbnds.o: intp_fem_file.mod
 subboxa.o: param.h meteo.h modules.h ev.h basin.h subboxa.h \
 		femtime.h 
 clo.mod: subclo.o
-subcon1.o: femtime.h
+subcon1.o: nbasin.h femtime.h mkonst.h
 subcoo.o: param.h common.h nkonst.h
-subcst.o: modules.h
-subcus.o: param.h nkonst.h ev.h femtime.h
-subdep.o: ev.h
-subdif.o: param.h femtime.h ev.h
-subdim.o: nbound.h
-subdry.o: femtime.h ev.h
+subcst.o: pkonst.h modules.h mkonst.h
+subcus.o: nbasin.h param.h ev.h femtime.h
+subdep.o: nbasin.h ev.h
+subdif.o: nbasin.h param.h femtime.h ev.h
+subdim.o: nbasin.h nbound.h
+subdry.o: nbasin.h mkonst.h femtime.h ev.h
 subdts.o: subdts.h
-subdwq.o: param.h femtime.h
-subele.o: param.h ev.h
+subdwq.o: nbasin.h param.h femtime.h
+subele.o: nbasin.h param.h ev.h
 subets.o: etsinf.h
-subetsa.o: param.h modules.h femtime.h waves.h subetsa.h
+subetsa.o: nbasin.h param.h modules.h femtime.h waves.h subetsa.h
 subexta.o: modules.h femtime.h
 intp_fem_file.mod: subfemintp.o
 subflx3d.o: testbndo.h param.h femtime.h links.h ev.h
 subflxa.o: param.h subflxa.h modules.h femtime.h
 subflxu.o: param.h links.h
-subfvl.o: param.h
-subgotm.o: param.h ev.h femtime.h
-subgotm_mud.o: param.h ev.h femtime.h
-subinterpol.o: param.h
-subinterpol1.o: param.h
+subfvl.o: nbasin.h param.h
+subgotm.o: pkonst.h nbasin.h param.h ev.h femtime.h
+subgotm_mud.o: pkonst.h nbasin.h param.h ev.h femtime.h
+subgrd.o: pkonst.h
+subinterpol.o: nbasin.h param.h
+subinterpol1.o: nbasin.h param.h
 sublin.o: links.h
-sublnka.o: nkonst.h ev.h links.h
-sublnks.o: ev.h femtime.h links.h
-sublnku.o: links.h
-sublpl.o: ev.h
-submet.o: param.h meteo_forcing_module.mod meteo.h femtime.h ev.h
+sublnka.o: nbasin.h ev.h links.h
+sublnks.o: nbasin.h ev.h femtime.h links.h
+sublnku.o: nbasin.h links.h
+sublpl.o: nbasin.h ev.h
+submet.o: nbasin.h meteo_forcing_module.mod param.h meteo.h \
+		femtime.h ev.h 
 meteo_forcing_module.mod: submeteo2.o
-submeteo2.o: intp_fem_file.mod meteo.h femtime.h
-submud.o: param.h
+submeteo2.o: nbasin.h intp_fem_file.mod param.h meteo.h femtime.h
+submud.o: pkonst.h nbasin.h param.h
 submud_dummy.o: param.h
-subn11.o: intp_fem_file.mod param.h nkonst.h femtime.h
-subn35.o: param.h chezy.h
-subnev.o: ev.h
+subn11.o: pkonst.h nbasin.h intp_fem_file.mod param.h mkonst.h \
+		femtime.h 
+subn35.o: pkonst.h nbasin.h param.h chezy.h
+subnev.o: nbasin.h ev.h
+subnls.o: subnls.h
 subnos.o: nosinf.h
+subnosa.o: nbasin.h
 subnsh.o: param_dummy.h modules.h basin.h femtime.h nbound.h
-suboff.o: param.h femtime.h
+subnsu.o: nbasin.h
+suboff.o: nbasin.h param.h femtime.h
 subous.o: ousinf.h
-subousa.o: param.h femtime.h
-subouta.o: femtime.h
+subousa.o: nbasin.h param.h femtime.h
+subouta.o: nbasin.h femtime.h
 suboutput.o: femtime.h
 para.mod: subpar3.o
 subpard.o: param.h omp_lib.mod common.h nkonst.h
-subproj.o: param.h
+subproj.o: nbasin.h param.h
 subqfxf.o: subqfx.h
 subqfxm1.o: subqfxm.h
 subqfxm2.o: subqfxm.h
@@ -943,25 +959,26 @@ subqfxm4.o: subqfxm.h
 subqfxm5.o: subqfxm.h
 subqfxt.o: param.h meteo.h subqfxm.h
 subqfxu4.o: subqfxm.h
-subreg.o: ev.h
-subres.o: param.h femtime.h
-subrst.o: param.h femtime.h
+subreg.o: nbasin.h ev.h
+subres.o: nbasin.h param.h femtime.h
+subrst.o: nbasin.h param.h femtime.h
 subspk.o: param.h common.h nkonst.h
 subtime.o: femtime.h
-subtrace.o: param.h femtime.h
+subtrace.o: nbasin.h param.h femtime.h
 subtsuvfile.o: intp_fem_file.mod param.h
-subuti.o: param.h ev.h links.h
-subvola.o: modules.h femtime.h
-subwat.o: links.h ev.h
-subwaves.o: param.h meteo.h evmain.h femtime.h waves.h
-subwrt.o: param.h femtime.h
-tideg.o: param.h
-ts2nc.o: param.h evmain.h
+subuti.o: pkonst.h nbasin.h param.h ev.h links.h
+subvola.o: nbasin.h modules.h femtime.h
+subwat.o: nbasin.h links.h ev.h
+subwaves.o: pkonst.h nbasin.h param.h meteo.h evmain.h femtime.h \
+		waves.h 
+subwrt.o: nbasin.h param.h femtime.h
+tideg.o: pkonst.h nbasin.h param.h
+ts2nc.o: nbasin.h param.h evmain.h
 vp.o: param.h basin.h
 weutro.o: donata.h weutro.h
 weutro_sedim.o: donata.h weutro.h
-windcrea.o: param.h evmain.h basin.h
+windcrea.o: nbasin.h param.h evmain.h basin.h
 winmerge.o: param.h
 winshift.o: param.h
-zinit.o: param.h
+zinit.o: nbasin.h param.h
 

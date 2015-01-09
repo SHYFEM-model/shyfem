@@ -67,6 +67,7 @@ c 29.10.2014    ggu     do_() routines transfered from newpri.f
 c 10.11.2014    ggu     time management routines transfered to this file
 c 19.12.2014    ggu     accept date also as string
 c 23.12.2014    ggu     fractional time step introduced
+c 07.01.2015    ggu     fractional time step without rounding (itsplt=3)
 c
 c************************************************************
 c
@@ -84,9 +85,11 @@ c prints time after time step
 
         integer nit1,nit2,naver
 	integer idtfrac,i
-        real perc
+        real perc,dt
 
 	integer year,month,day,hour,min,sec
+	integer isplit
+	save isplit
 
 	character*20 line
 	character*9 frac
@@ -101,10 +104,15 @@ c---------------------------------------------------------------
 c set parameters and compute percentage of simulation
 c---------------------------------------------------------------
 
+	if( icall .eq. 0 ) then
+          isplit = nint(dgetpar('itsplt'))
+	end if
+
         naver = 20
         naver = 0
 
-        perc = (100.*(it-itanf))/(itend-itanf)
+        !perc = (100.*(it-itanf))/(itend-itanf)
+        perc = (100.*(t_act-itanf))/(itend-itanf)
 
 c---------------------------------------------------------------
 c compute total number of iterations
@@ -134,7 +142,10 @@ c---------------------------------------------------------------
 	  if( mod(icall,50) .eq. 0 ) write(6,1003)
 !	  call dts2dt(it,year,month,day,hour,min,sec)
 	  call dtsgf(it,line)
-	  if( idtfrac == 0 ) then
+	  if( isplit == 3 ) then
+	    dt = dt_act
+            write(6,1007) it,line,dt,niter,nits,perc
+	  else if( idtfrac == 0 ) then
             write(6,1005) it,line,idt,niter,nits,perc
 	  else
 	    frac = ' '
@@ -166,6 +177,7 @@ c---------------------------------------------------------------
      +              ,5x,'percent')
  1005   format(i12,3x,a20,1x,i9,i8,' /',i8,f10.2,' %')
  1006   format(i12,3x,a20,1x,a9,i8,' /',i8,f10.2,' %')
+ 1007   format(i12,3x,a20,1x,f9.2,i8,' /',i8,f10.2,' %')
 	end
 
 c********************************************************************
@@ -321,7 +333,7 @@ c controls time step
 
 	include 'femtime.h'
 
-	logical bsync
+	logical bsync,bdebug
         integer idtdone,idtrest,idts
 	integer irepeat
         integer iloop,itloop
@@ -346,6 +358,8 @@ c controls time step
         integer icall
         save icall
         data icall / 0 /
+
+	bdebug = .false.
 
         if( icall .eq. 0 ) then
           istot = 0
@@ -419,7 +433,7 @@ c----------------------------------------------------------------------
 	      end if
             end do
           end if
-        else if( isplit .eq. 2 ) then
+        else if( isplit .eq. 2 .or. isplit .eq. 3 ) then
           idts = idtsync
 	  idtfrac = 0
 	  dt = idtorig
@@ -429,14 +443,14 @@ c----------------------------------------------------------------------
 	    dt = idtnew
 	  else if( dt >= 1. ) then
 	    idtnew = dt
-	    dt = idtnew
+	    if( isplit .eq. 2 ) dt = idtnew
 	  else
 	    idtnew = 0
 	    idtfrac = ceiling(1./dt)
-	    dt = 1. / idtfrac
-	    write(6,*) '++++++++ fractional time step: ',dt,idtfrac,rindex
+	    if( isplit .eq. 2 ) dt = 1. / idtfrac
+	    !write(6,*) '++++++++ fractional time step: ',dt,idtfrac,rindex
 	  end if
-	  write(166,*) '++++++++ : ',dt,idtfrac,rindex
+	  !write(166,*) '++++++++ : ',dt,idtfrac,rindex
 	  !if( rindex / cmax .gt. 1. ) then	!BUGFIX
 	  !  idtnew = min(idtnew,int(dt*cmax/rindex))
 	  !end if
@@ -473,23 +487,15 @@ c----------------------------------------------------------------------
 	    dt = itnext - t_act
 	    bsync = .true.
 	  end if
-          !idtdone = mod(it-itanf,idts)     !already done
-          !idtrest = idts - idtdone         !still to do
-          !if( idtnew .gt. idtrest ) then
-	  !  dt = idtrest
-	  !  idtnew = idtrest
-	  !  bsync = .true.
-	  !end if
         end if
 
-        !ri = idtnew*rindex/idtorig
         ri = dt*rindex
 
 	if( itloop .gt. 10 ) then
 	  stop 'error stop set_timestep: too many loops'
 	end if
 
-        if( dt .lt. dtmin ) then           !should never happen
+        if( dt .lt. dtmin .and. .not. bsync ) then    !should never happen
 	  dtr = dt
           call error_stability(dtr,rindex)
           write(6,*) 'dt is less than dtmin'
@@ -500,7 +506,10 @@ c----------------------------------------------------------------------
           write(6,*) t_act,dt,dtmin
           write(6,*) isplit,istot
           write(6,*) cmax,rindex,ri
-          stop 'error stop set_timestep: non positive time step'
+	  write(6,*) 'possible computed time step:  dt = ',dt
+	  write(6,*) 'minimum time step allowed: dtmin = ',dtmin
+	  write(6,*) 'please lower dtmin in parameter input file'
+          stop 'error stop set_timestep: time step too small'
         end if
 
 	irepeat = 0
@@ -537,13 +546,16 @@ c----------------------------------------------------------------------
 	idt = dt
 	it = t_act
 
-	write(107,*) '========================'
-	write(107,*) it,idt,t_act,dt_act,bsync
-	write(107,*) itanf,itend
-	write(107,*) rindex,ri
-	write(107,*) '========================'
+	if( bdebug ) then
+	  write(107,*) '========================'
+	  write(107,*) it,idt,t_act,dt_act,bsync
+	  write(107,*) itanf,itend
+	  write(107,*) rindex,ri
+	  write(107,*) '========================'
+	end if
 
-	perc = (100.*(it-itanf))/(itend-itanf)
+	!perc = (100.*(it-itanf))/(itend-itanf)
+	perc = (100.*(t_act-itanf))/(itend-itanf)
 
         write(iuinfo,1001) '----- new timestep: ',it,idt,perc
         write(iuinfo,1002) 'set_timestep: ',it,ri,riold,rindex,istot,idt
