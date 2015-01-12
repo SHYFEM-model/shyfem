@@ -42,7 +42,7 @@ echo "$link"							>> $tmpfile
 echo ""								>> $tmpfile
 echo "Release notes:"						>> $tmpfile
 $fembin/extract_release.pl RELEASE_NOTES			>> $tmpfile
-echo "Other release notes can be found in RELEASE_NOTES."	>> $tmpfile
+echo "Other information can be found in RELEASE_NOTES."		>> $tmpfile
 echo ""								>> $tmpfile
 echo "Best regards, Georg"					>> $tmpfile
 echo ""								>> $tmpfile

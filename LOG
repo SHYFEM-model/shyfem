@@ -1,4 +1,10 @@
 
+12.01.2015
+
+c ./fem3d/subfemfile.f:
+c 09.01.2015    ggu     new routine fem_file_get_format_description()
+
+
 09.01.2015
 
 c ./fem3d/subnls.f:

@@ -15,6 +15,7 @@ c 16.06.2014	ggu	time is now double precision
 c 07.07.2014	ggu	first version consolidated
 c 20.10.2014	ggu	second version (date record is just after first record)
 c 29.10.2014	ggu	new routine fem_file_is_fem_file()
+c 09.01.2015	ggu	new routine fem_file_get_format_description()
 c
 c notes :
 c
@@ -980,6 +981,29 @@ c************************************************************
 	  itype(i) = j - 10*(j/10)
 	  j=j/10
 	end do
+
+	end
+
+c************************************************************
+
+	subroutine fem_file_get_format_description(iformat,line)
+
+	implicit none
+
+	integer iformat
+	character*(*) line
+
+	if( iformat == 0 ) then
+	  line = "unformatted"
+	else if( iformat == 1 ) then
+	  line = "formatted"
+	else if( iformat == 2 ) then
+	  line = "binary direct"
+	else if( iformat == 3 ) then
+	  line = "time series"
+	else
+	  line = "unknown"
+	end if
 
 	end
 

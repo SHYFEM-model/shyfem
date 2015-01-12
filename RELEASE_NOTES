@@ -1,4 +1,15 @@
 
+12.01.2015    VERS_7_1_0
+
+	major release with the following highlights:
+	  new time management
+	  need date variable in STR file
+	  may specify dates and times in STR file in human readable format
+	  fractional time steps are available (itsplt=2,3)
+	  new file format is debugged
+	  use bc2fem to convert old boundary and forcing files to new format
+	please see also Release_notes_7.1v1.tex for more information
+
 09.01.2015    VERS_7_0_12
 
 	fractional time step finished (also without rounding, itsplt=3)

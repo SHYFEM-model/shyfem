@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
 
@@ -26,9 +26,9 @@ my $nsim = @$tsim;
 
 #print STDERR "$nobs $nsim\n";
 
-my $rms = rms($tobs,$vobs,$tsim,$vsim);
+my ($rms,$ndata) = rms($tobs,$vobs,$tsim,$vsim);
 
-print STDERR "rms = $rms\n";
+print STDERR "rms = $rms   ndata = $ndata\n";
 print "$rms\n";
 
 #------------------------------------------------
@@ -46,6 +46,10 @@ sub rms
 
   foreach my $to (@$tobs) {
     my $vo = shift(@$vobs);
+    if( not defined $vo ) {
+      print STDERR "no data for time $to in observations... skipping\n";
+      next;
+    }
     next if $to < $ts1;			# no sim for observations
     while( $ts2 < $to ) {
       ($ts1,$vs1) = ($ts2,$vs2);
@@ -54,6 +58,11 @@ sub rms
       last if not defined $ts2;
     }
     last if not defined $ts2;
+    if( not defined $vs2 ) {
+      print STDERR "no data for time $ts2 in simulation... skipping\n";
+      next;
+    }
+    next if not defined $vs1;
     if( $ts1 > $to or $to > $ts2 ) {
       print STDERR "*** error in times: $n  $ts1  $to  $ts2\n";
     }
@@ -62,9 +71,9 @@ sub rms
     #print STDERR "$n  $vs1  $v  $vs2\n";
     $acum += ($v-$vo)*($v-$vo);
   }
-  $acum /= $n;
+  $acum /= $n if $n;
 
-  return sqrt($acum);
+  return (sqrt($acum),$n);
 }
 
 #------------------------------------------------

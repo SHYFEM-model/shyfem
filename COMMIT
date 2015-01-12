@@ -1,5 +1,25 @@
 ============================================================
 
+Mon Jan 12 14:05:09 CET 2015
+
+major release 7.1, time management finished
+
+ LOG                       |    6 ++++++
+ RELEASE_NOTES             |   11 +++++++++++
+ fem3d/feminf.f            |   38 ++++++++++++++++++++++----------------
+ fem3d/fileinf.f           |   19 +++++++++++--------
+ fem3d/subfemfile.f        |   24 ++++++++++++++++++++++++
+ fembin/extract_release.pl |   13 +++++++++++++
+ fembin/mail_shyfem.sh     |    2 +-
+ fembin/rms.pl             |   19 ++++++++++++++-----
+ femdoc/final/shyfem.pdf   |  Bin 293644 -> 293643 bytes
+ femdoc/final/shyfem.ps    |   36 ++++++++++++++++++------------------
+ 10 files changed, 120 insertions(+), 48 deletions(-)
+ new file:
+   fembin/extract_release.pl
+
+============================================================
+
 Fri Jan  9 16:11:20 CET 2015
 
 New version 7_0_12

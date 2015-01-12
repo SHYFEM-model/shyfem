@@ -17,12 +17,13 @@ c writes info on fem file
 	real dmin,dmax
 	integer ierr
 	integer nfile
-	integer irec,i,ich
+	integer irec,i,ich,nrecs
 	integer itype(2)
 	integer iformat
 	integer datetime(2),dateanf(2),dateend(2)
 	real regpar(7)
 	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
+	logical bquiet
 	logical bdate		!is date given?
 	character*50, allocatable :: strings(:)
 	character*20 line
@@ -42,6 +43,7 @@ c--------------------------------------------------------------
 
 	call clo_add_option('write',.false.,'write min/max of values')
 	call clo_add_option('out',.false.,'create output file')
+	call clo_add_option('quiet',.false.,'do not be verbose')
 	call clo_add_option('tmin time',-1
      +				,'only process starting from time')
 	call clo_add_option('tmax time',-1
@@ -51,6 +53,7 @@ c--------------------------------------------------------------
 
 	call clo_get_option('write',bwrite)
 	call clo_get_option('out',bout)
+	call clo_get_option('quiet',bquiet)
 	call clo_get_option('tmin',tmin)
 	call clo_get_option('tmax',tmax)
 
@@ -62,7 +65,7 @@ c--------------------------------------------------------------
 	btmin = tmin .ne. -1.
 	btmax = tmax .ne. -1.
 
-	if( .true. ) then
+	if( .false. ) then
 	  write(6,*) nfile
 	  write(6,*) bwrite,bskip,bout,btmin,btmax
 	  write(6,*) tmin,tmax
@@ -79,8 +82,9 @@ c--------------------------------------------------------------
 	if( iunit .le. 0 ) stop
 
 	write(6,*) 'file name: ',infile
-	write(6,*) 'iunit:     ',iunit
-	write(6,*) 'format:    ',iformat
+	!write(6,*) 'iunit:     ',iunit
+	call fem_file_get_format_description(iformat,line)
+	write(6,*) 'format: ',iformat,"  (",line(1:len_trim(line)),")"
 
 	!stop
 
@@ -93,11 +97,13 @@ c--------------------------------------------------------------
 
 	if( ierr .ne. 0 ) goto 99
 
-	write(6,*) 'nvers: ',nvers
-	write(6,*) 'np:    ',np
-	write(6,*) 'lmax:  ',lmax
-	write(6,*) 'nvar:  ',nvar
-	write(6,*) 'ntype: ',ntype
+	if( .not. bquiet ) then
+	  write(6,*) 'nvers: ',nvers
+	  write(6,*) 'np:    ',np
+	  write(6,*) 'lmax:  ',lmax
+	  write(6,*) 'nvar:  ',nvar
+	  write(6,*) 'ntype: ',ntype
+	end if
 
 	allocate(hlv(lmax))
 	call fem_file_make_type(ntype,2,itype)
@@ -106,14 +112,14 @@ c--------------------------------------------------------------
      +			,hlv,regpar,ierr)
 	if( ierr .ne. 0 ) goto 98
 
-	if( lmax > 1 ) then
+	if( lmax > 1 .and. .not. bquiet ) then
 	  write(6,*) 'vertical layers: ',lmax
 	  write(6,*) hlv
 	end if
-	if( itype(1) .gt. 0 ) then
+	if( itype(1) .gt. 0 .and. .not. bquiet ) then
 	  write(6,*) 'date and time: ',datetime
 	end if
-	if( itype(2) .gt. 0 ) then
+	if( itype(2) .gt. 0 .and. .not. bquiet ) then
 	  write(6,*) 'regpar: ',regpar
 	end if
 
@@ -131,7 +137,7 @@ c--------------------------------------------------------------
 	  call fem_file_skip_data(iformat,iunit
      +                          ,nvers,np,lmax,string,ierr)
 	  if( ierr .ne. 0 ) goto 97
-	  write(6,*) 'data:  ',i,'  ',string
+	  write(6,*) 'data:   ',i,'  ',string
 	  strings(i) = string
 	end do
 
@@ -215,13 +221,13 @@ c--------------------------------------------------------------
 c finish loop - info on time records
 c--------------------------------------------------------------
 
-	irec = irec - 1
-	write(6,*) 'irec:  ',irec
+	nrecs = irec - 1
+	write(6,*) 'nrecs:  ',nrecs
 	call dts_format_abs_time(atimeanf,line)
 	write(6,*) 'start time: ',atimeanf,line
 	call dts_format_abs_time(atimeend,line)
 	write(6,*) 'end time  : ',atimeend,line
-	write(6,*) 'idt:   ',idt
+	write(6,*) 'idt:    ',idt
 
 	if( ich .gt. 0 ) then
 	  write(6,*) ' * warning: time step changed: ',ich

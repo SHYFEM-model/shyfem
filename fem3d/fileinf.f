@@ -9,7 +9,14 @@ c checks type of file
 	integer iunit,nvers,nvar
 	character*70 file
 
+	integer ifileo
+
         call parse_command_line(file)
+
+	nvar = 0
+	iunit = 0
+	nvers = 0
+	iformat = -1
 
 c-------------------------------------------------------------
 c FEM file
@@ -25,7 +32,7 @@ c-------------------------------------------------------------
 c NOS file
 c-------------------------------------------------------------
 
-	call open_nos_file(file,'old',iunit)
+	iunit = ifileo(0,file,'unformatted','old')
 	call nos_is_nos_file(iunit,nvers)
 	if( nvers > 0 ) then
 	  write(6,*) 'file format is NOS'
@@ -37,7 +44,7 @@ c-------------------------------------------------------------
 c OUS file
 c-------------------------------------------------------------
 
-	call open_ous_file(file,'old',iunit)
+	iunit = ifileo(0,file,'unformatted','old')
 	call ous_is_ous_file(iunit,nvers)
 	if( nvers > 0 ) then
 	  write(6,*) 'file format is OUS'
@@ -49,10 +56,9 @@ c-------------------------------------------------------------
 c BAS file
 c-------------------------------------------------------------
 
-	open(iunit,file=file,status='old',form='unformatted')
+	iunit = ifileo(0,file,'unformatted','old')
 	call sp13test(iunit,nvers)
 	if( nvers > 0 ) then
-	  !write(6,*) 'nvers = ',nvers
 	  write(6,*) 'file format is BAS'
 	  stop
 	end if
@@ -62,10 +68,8 @@ c-------------------------------------------------------------
 c TS file
 c-------------------------------------------------------------
 
-	open(iunit,file=file,status='old',form='formatted')
 	call ts_get_file_info(file,nvar)
 	if( nvar > 0 ) then
-	  !write(6,*) 'nvar = ',nvar
 	  write(6,*) 'file format is TS'
 	  stop
 	end if
@@ -75,8 +79,7 @@ c-------------------------------------------------------------
 c ETS file
 c-------------------------------------------------------------
 
-	open(iunit,file=file,status='old',form='formatted')
-	call open_ets_file(file,'old',iunit)
+	iunit = ifileo(0,file,'formatted','old')
 	call ets_is_ets_file(iunit,nvers)
 	if( nvers > 0 ) then
 	  write(6,*) 'file format is ETS'
