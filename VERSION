@@ -1,3 +1,18 @@
+version  7_1_0    12-01-2015    VERS_7_1_0
+
+========================================================== 12-01-2015 - 7_1_0
+
+c ./tmp/shyfem-1e5396afab_2015-01-12_stable/fem3d/subfemfile.f:
+c 09.01.2015	ggu	new routine fem_file_get_format_description()
+c
+c ./fem3d/subver.f:
+c 12.01.2015	ggu	version 7.1.0	Wolfgangs release
+c
+c ./fem3d/subfemfile.f:
+c 09.01.2015	ggu	new routine fem_file_get_format_description()
+
+==========================================================
+
 version  7_0_12    09-01-2015    VERS_7_0_12   commit_2015-01-12
 
 version  7_0_12    09-01-2015    VERS_7_0_12
