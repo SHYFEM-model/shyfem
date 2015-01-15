@@ -1359,13 +1359,21 @@ c			legend set |lblank| to 0. (Default 1)
 
 	call addpar('lblank',1.)
 
-c |cislnd|		It is possible to plot all islands in grey color.
+c |cislnd|		It is possible to plot all islands in gray color.
 c			Setting |cislnd| to a value between 0 (black) and 
 c			1 (white) will achieve this. A negative value
-c			will not fill islands with grey color.
+c			will not fill islands with gray color.
 c			(Default -1)
 
 	call addpar('cislnd',-1.)	!plot also outer island: 2 <= c <= 3
+
+c |dgray|		It is possible to plot all dry areas in gray color.
+c			Setting |dgray| to a value between 0 (black) and 
+c			1 (white) will achieve this. A negative value
+c			will not fill dry areas with gray color.
+c			(Default -1)
+
+	call addpar('dgray',-1.)
 
 c |dxygrd|		Grid size if the results are interpolated on
 c			a regular grid. A value of 0 does
@@ -1419,7 +1427,7 @@ c			the plot. If 0 it tries to determine automatically
 c			the sub-intervals (2 or 4). A value of -1 does
 c			not plot the subgrid scale. (Default 0)
 c |reggry|		If plotting the regular overlay grid this gives
-c			the grey value used for the grid. 0 is black, and
+c			the gray value used for the grid. 0 is black, and
 c			1 is white. A value of 1 does not plot the
 c			overlay grid, but still writes the labels. 
 c			(Default 0.5)
@@ -1641,8 +1649,8 @@ c		the grid (Default -1.0)
         call addpar('nctick',0.)       !default number of ticks to use
         call addpar('isolin',0.)       !plot isolines with color ?
         call addpar('isoinp',1.)       !interpolate inside elements
-	call addpar('bgray',0.8)       !grey value for bathymetry
-	call addpar('bsgray',-1.0)     !grey value for plotting maps
+	call addpar('bgray',0.8)       !gray value for bathymetry
+	call addpar('bsgray',-1.0)     !gray value for plotting maps
 
 c DOCS	END
 

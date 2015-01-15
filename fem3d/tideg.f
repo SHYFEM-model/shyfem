@@ -11,6 +11,7 @@ c 11.03.2009    ggu     not adjusted for new x/ygeov -> still to be handled
 c 05.02.2010    ccf     include new tideforc routine for tidal potential
 c 18.11.2011    ggu     excluded projection code from tide
 c 12.12.2011    ccf     new component (MSm) in tidal computation
+c 14.01.2015    ccf     small bug fix rounding date and time
 c
 c********************************************************************
 
@@ -58,8 +59,8 @@ c********************************************************************
 	  zeqv(k) = 0.
 	end do
 
-	date = getpar('date')
-	time = getpar('time')
+	date = nint(getpar('date'))
+	time = nint(getpar('time'))
 	call dtsini(date,time)
 
 	write(6,*) 'Tidal potential active'

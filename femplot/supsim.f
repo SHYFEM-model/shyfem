@@ -43,7 +43,7 @@ c 17.03.2004	ggu	use okvar to decide which var to plot (0->all)
 c 05.10.2004	ggu	use znv instead xv
 c 05.10.2004	ggu	inorm instead ivert, overlay over z/h, comp_scale()
 c 16.12.2004	ggu	plot also regular net
-c 04.03.2005	ggu	grey plot over bathy
+c 04.03.2005	ggu	gray plot over bathy
 c 14.03.2007	ggu	wave plotting with plowave
 c 17.09.2008	ggu	plot last layer
 c 06.12.2008	ggu	new routine get_minmax_flag(), bvel -> ivel for velsh
@@ -1948,15 +1948,15 @@ c plots node values
         common /bwater/bwater
 
 	integer ie
-	real dgrey
+	real dgray
 	real x(3),y(3)
 
 	double precision dgetpar
 
-	dgrey = dgetpar('dgrey')
-	if( dgrey < 0 ) return
+	dgray = dgetpar('dgray')
+	if( dgray < 0 ) return
 
-	call qgray(dgrey)
+	call qgray(dgray)
 
 	do ie=1,nel
 	  if( bwater(ie) ) cycle

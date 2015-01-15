@@ -64,6 +64,7 @@ c--------------------------------------------------
 	real v2v(neldim)
 	real haux(nkndim)
 
+	character*80 format
         integer nread,ierr
         integer nvers,nin,nlv
         integer nknous,nelous
@@ -184,15 +185,17 @@ c	---------------------------------------------------------
 	  lmax = ilhkv(k)
           write(79,*) it,i,ke,k,lmax
           write(79,*) znv(k)
-          write(79,*) (uprv(l,k),l=1,lmax)
-          write(79,*) (vprv(l,k),l=1,lmax)
+	  write(format,'(a,i4,a)') '(',lmax,'(e12.4))'
+          write(79,format) (uprv(l,k),l=1,lmax)
+          write(79,format) (vprv(l,k),l=1,lmax)
 	  z = znv(k)
 	  h = hkv(k)
 	  call write_profile_uv(it,k,ke,lmax,h,z
      +				,uprv(1,k),vprv(1,k),hlv,hl)
         end do
 
-	write(80,*) it,(znv(nodes(k)),k=1,nnodes)
+	write(format,'(a,i4,a)') '(i12,',nnodes,'(e12.4))'
+	write(80,format) it,(znv(nodes(k)),k=1,nnodes)
 
 	goto 300
 

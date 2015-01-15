@@ -45,6 +45,7 @@ sub new
 			,sequence	=>	[]
 			,section_types	=>	undef
 			,verbose	=>	0
+			,quiet		=>	0
 		};
 
     bless $self;
@@ -262,9 +263,12 @@ sub read_str {
   $self->delete_str();	#erase info on last str file
 
   $self->{file} = $file;
-  print STDERR "reading file: $file\n";;
+  print STDERR "reading file: $file\n" unless $self->{quiet};
 
   while( <STR_FILE> ) {
+
+	  chomp;
+	  s/\r$//;
 
 	  if( /^\s*[\$\&](\w+)\s*(.*)/ ) {
 

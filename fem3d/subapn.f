@@ -28,23 +28,25 @@ c 15.07.2011	ggu	adjusted, ideffi substituted
 c 19.03.2012	ggu	if no basin is given return with "error"
 c 27.02.2013	ggu	pass what parameter into nlsa
 c 05.09.2013	ggu	read_apn_file() needs integer now
+c 14.01.2015	ggu	reorganized and cleaned
 c
 c notes :
 c
-c	iapini
+c	call iapini
 c		->   call pardef
-c
-c	pardef	
+c			->   call nlsina
+c			->   call fnminh
+c	  		->   call read_apn_file(-1)
+c				->   call nlsa
 c		->   call assnam
-c		->   call nlsina
-c		->   call fnminh
-c		->   call nlsa
+c		->   call read_bas_file(nkndi,neldi)
+c		->   call sp131k(matdim)
 c
 c****************************************************************
 
 	subroutine assnam(mode)
 
-c assigns name for run and basin interactivly
+c assigns name for run and basin (also interactivly)
 c
 c mode          1:assign basin 2:assign run 4:assign parameter file
 c
@@ -52,40 +54,26 @@ c mode < 0	do not change names
 c
 c combinations are possible, all together : 7
 
-	logical bchang,bbas,brun,bapn,bdo,bask
-	character*80 runnam,basnam,name,memfil,text
+	implicit none
+
+	integer mode
+
+	logical bchang,bask
+	character*80 runnam,basnam
 	character*80 runaux,basaux
+
+c---------------------------------------------------------------------
+c read memory file
+c---------------------------------------------------------------------
 
 	bask = mode .gt. 0
 
-	modeh = abs(mode)
+	call read_memory(runaux,basaux)
 
-	bbas=.false.
-	brun=.false.
-	bapn=.false.
-	if(modeh.ne.(modeh/2)*2) bbas=.true.
-	modeh=modeh/2
-	if(modeh.ne.(modeh/2)*2) brun=.true.
-	modeh=modeh/2
-	if(modeh.ne.(modeh/2)*2) bapn=.true.
-
-	call getfnm('memfil',memfil)
-
-	imem=0
-	if(memfil.ne.' ') then
-		imem=ifileo(55,memfil,'form','old')
-	end if
-
-	if(imem.gt.0) then
-		read(imem,'(a)') runaux
-		read(imem,'(a)') basaux
-	else
-		runaux=' '
-		basaux=' '
-	end if
-
+c---------------------------------------------------------------------
 c if we already have the names through the title section -> use these
 c	else use the names just read from memory file
+c---------------------------------------------------------------------
 
 	call getfnm('runnam',runnam)
 	call getfnm('basnam',basnam)
@@ -96,61 +84,46 @@ c	else use the names just read from memory file
 	if( runnam .eq. ' ' ) runnam = runaux
 	if( basnam .eq. ' ' ) basnam = basaux
 
-c ----------------------
-
-	irun=ichanm(runnam)
-	ibas=ichanm(basnam)
-
-	bchang=.false.
+c---------------------------------------------------------------------
+c if necessary ask for new values
+c---------------------------------------------------------------------
 
 	if( bask ) then
-
-	  text = 'Enter name of simulation (Default ' 
-     +			// runnam(1:irun) 
-     +			// ' ) : '
-	  irun = 0
-	  itxt = ichanm(text)
-	  if(brun) irun=igetxt(text(1:itxt),name)
-	  if(irun.gt.0) then
-	     runnam=name
-	     bchang=.true.
-	  end if
-
-	  text = 'Enter name of basin      (Default ' 
-     +			// basnam(1:ibas) 
-     +			// ' ) : '
-	  ibas = 0
-	  itxt = ichanm(text)
-	  if(bbas) ibas=igetxt(text(1:itxt),name)
-	  if(ibas.gt.0) then
-	     basnam=name
-	     bchang=.true.
-	  end if
-
-	else
-
-	  write(6,*) 'Name of simulation : ',runnam(1:irun)
-	  write(6,*) 'Name of basin      : ',basnam(1:ibas)
-
+	  call ask_memory(mode,runnam,basnam,bchang)
 	end if
+
+c---------------------------------------------------------------------
+c see if we have what we need
+c---------------------------------------------------------------------
+
+	if( btest(abs(mode),0) ) then
+	  if( basnam == ' ' ) then
+	    write(6,*) 'no basin given... exiting'
+	    stop
+	  end if
+	  write(6,*) 'Name of basin      : ',basnam(1:len_trim(basnam))
+	end if
+
+	if( btest(abs(mode),1) ) then
+	  if( runnam == ' ' ) then
+	    write(6,*) 'no simulation given... exiting'
+	    stop
+	  end if
+	  write(6,*) 'Name of simulation : ',runnam(1:len_trim(runnam))
+	end if
+
+c---------------------------------------------------------------------
+c writes new information and new values
+c---------------------------------------------------------------------
 
 	call putfnm('runnam',runnam)
 	call putfnm('basnam',basnam)
 
-	irun=ichanm(runnam)
-	ibas=ichanm(basnam)
+	if(bchang) call write_memory(runnam,basnam)
 
-	if(bchang) then
-	   if(imem.le.0) then
-		imem=ifileo(55,memfil,'form','new')
-		if(imem.le.0) return
-	   end if
-	   rewind(imem)
-	   write(imem,'(a)') runnam(1:irun)
-	   write(imem,'(a)') basnam(1:ibas)
-	end if
-
-	if( imem .gt. 0 ) close(imem)	!$$IMEM
+c---------------------------------------------------------------------
+c end of routine
+c---------------------------------------------------------------------
 
 	end
 
@@ -159,84 +132,68 @@ c*************************************************************
 	function iapini(mode,nkndi,neldi,matdim)
 
 c init routine for ap routines
-c reads init files nlsina,fnminh,nlsa
-c calls pardef (and therefore assnam)
 c
+c calls pardef
+c calls assnam
+c reads basin
+c
+c iapini        1:success 0:error
 c mode          for assnam 1:assign basin 2:assign run 3:both
 c nkndim        dimension for nkn for reading bas file
 c neldim        dimension for nel for reading bas file
 c matdim        (probably useless...)
-c iapini        1:success 0:error
 c
 c mode negative: do not ask for new basin and simulation
 
 	implicit none
 
+	integer iapini
 	integer mode,nkndi,neldi,matdim
 
-	character*80 descrr
-	character*80 line
-	character*80 basnew,basold,name
-	include 'nbasin.h'
-	include 'pkonst.h'
-	common /descrr/descrr
-	real f(10)
+	integer nmode,iauto
+	real getpar
 
-	integer i,iunit
-	integer iapini,ifileo,idefbas
+	iapini = 1
 
-	save basold
-	data basold / ' ' /
-
-	logical iseven
-	iseven(i) = i .eq. (i/2)*2
-
-	iapini=0
-
+c---------------------------------------------------------------------
 c assign new parameter file
+c---------------------------------------------------------------------
 
 	call pardef(mode)
 
-c if no bas file is opened we are done
+c---------------------------------------------------------------------
+c get names of basin and simulation
+c---------------------------------------------------------------------
 
-	if( iseven( abs(mode) ) ) then		!$$NOBAS
-		iapini = 1
-		return
-	end if
+	nmode = mode
+	iauto = nint(getpar('iauto'))
+	if( iauto .ne. 0 ) nmode = -abs(mode)
 
+	call assnam(nmode)
+
+c---------------------------------------------------------------------
+c if no bas file has to be opened we are done
+c---------------------------------------------------------------------
+
+	if( .not. btest(abs(mode),0) ) return
+
+c---------------------------------------------------------------------
 c open bas file
+c---------------------------------------------------------------------
 
-	call getfnm('basnam',basnew)
-	if( basnew .eq. ' ' ) return
-	if(basnew.ne.basold) then
-		iunit=idefbas(basnew,'old')
-		if(iunit.le.0) return
-		call sp13rr(iunit,nkndi,neldi)
-		close(iunit)
-		basold=basnew
+	call read_bas_file(nkndi,neldi)
 
-		call bas_info
-
-		call putpar('dirn',dirn)
-	end if
-
-c land boundary		...deleted
-c
-c       ib=0    chain (middle node)
-c       ib!=0   first node of chain
-c       ib=1    normal chain, do not fill
-c       ib=2    closed chain --> sea
-c       ib=3    closed chain --> island
-
+c---------------------------------------------------------------------
 c set up boundary nodes
+c---------------------------------------------------------------------
 
-	if(matdim.gt.0) then
-		call sp131k(matdim)
-	end if
+	if(matdim.gt.0) call sp131k(matdim)
+
+c---------------------------------------------------------------------
+c end of routine
+c---------------------------------------------------------------------
 
 	!call nbasin_transfer
-
-	iapini=1
 
 	end
 
@@ -250,19 +207,11 @@ c reads default parameters nls and fnm
 
 	integer mode
 
-	integer nin
-	integer nmode,iauto
-	character*80 file
 	character*80 apnnam
-
-	integer ifileo
-	real getpar
 
 	logical bfirst
 	save bfirst
 	data bfirst /.true./
-
-c first call -> set parameters, read parameter file, ...
 
 	if(bfirst) then
 	  call nlsina
@@ -275,14 +224,6 @@ c first call -> set parameters, read parameter file, ...
 
 	  bfirst=.false.
 	end if
-
-c get new names for basin and simulation
-
-	nmode = mode
-	iauto = nint(getpar('iauto'))
-	if( iauto .ne. 0 ) nmode = -abs(mode)
-
-	call assnam(nmode)
 
 	end
 
@@ -312,6 +253,139 @@ c**************************************************************
         include 'nbasin.h'
         call bas_get_para(nkn,nel,ngr,mbw)
         end
+
+c**************************************************************
+c**************************************************************
+c**************************************************************
+
+	subroutine read_memory(simul,basin)
+
+	implicit none
+
+	character*(*) simul,basin
+
+	integer imem
+	character*80 memfil
+
+	integer ifileo
+
+	call getfnm('memfil',memfil)
+
+	if(memfil.ne.' ') imem=ifileo(0,memfil,'form','old')
+
+	simul=' '
+	basin=' '
+
+	if(imem.gt.0) then
+		read(imem,'(a)') simul
+		read(imem,'(a)') basin
+		close(imem)
+	end if
+
+	end
+
+c**************************************************************
+
+	subroutine write_memory(simul,basin)
+
+	implicit none
+
+	character*(*) simul,basin
+
+	integer imem
+	character*80 memfil
+
+	integer ifileo
+
+	call getfnm('memfil',memfil)
+
+	if(memfil.ne.' ') imem=ifileo(0,memfil,'form','new')
+
+	if(imem.gt.0) then
+		read(imem,'(a)') simul(1:len_trim(simul))
+		read(imem,'(a)') basin(1:len_trim(basin))
+		close(imem)
+	end if
+
+	end
+
+c**************************************************************
+
+	subroutine ask_memory(mode,simul,basin,bchang)
+
+	implicit none
+
+	integer mode
+	character*(*) simul,basin
+	logical bchang
+
+	integer irun,ibas
+	character*80 text,name
+
+	integer igetxt
+
+	bchang=.false.
+
+	if( btest(mode,1) ) then
+	  text = 'Enter name of simulation (Default ' 
+     +			// simul(1:len_trim(simul)) 
+     +			// ' ) : '
+	  irun=igetxt(text(1:len_trim(text)),name)
+	  if(irun.gt.0) then
+	     simul=name
+	     bchang=.true.
+	  end if
+	end if
+
+	if( btest(mode,0) ) then
+	  text = 'Enter name of basin      (Default ' 
+     +			// basin(1:len_trim(basin)) 
+     +			// ' ) : '
+	  ibas=igetxt(text(1:len_trim(text)),name)
+	  if(ibas.gt.0) then
+	     basin=name
+	     bchang=.true.
+	  end if
+	end if
+
+	end
+
+c**************************************************************
+
+	subroutine read_bas_file(nkndi,neldi)
+
+c opens and reads basin file
+
+	implicit none
+
+	integer nkndi,neldi
+
+	integer iunit
+	character*80 basnew
+
+	integer idefbas
+
+	character*80 basold
+	save basold
+	data basold / ' ' /
+
+	call getfnm('basnam',basnew)
+
+	if( basnew .eq. ' ' ) return
+	if( basnew .eq. basold ) return
+
+	iunit=idefbas(basnew,'old')
+	if(iunit.le.0) then
+	  stop 'error stop read_bas_file: error reading basin'
+	end if
+	call sp13rr(iunit,nkndi,neldi)
+	close(iunit)
+
+	basold=basnew
+
+	call bas_info
+
+	end
 
 c**************************************************************
 

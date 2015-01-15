@@ -1,4 +1,11 @@
 
+15.01.2014    VERS_7_1_1
+
+	mostly bug fixes
+	feminf and femelab are now working as expected
+	new tsinf (as feminf, but for time series files)
+	new routine strcheck.sh to check STR file before long runs
+
 12.01.2015    VERS_7_1_0
 
 	major release with the following highlights:

@@ -717,7 +717,7 @@ c************************************************************************
 
 	subroutine plot_bottom(x1,x2,yrmin,ya_bot)
 
-c plots bottom with grey color
+c plots bottom with gray color
 
 	implicit none
 

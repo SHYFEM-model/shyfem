@@ -1,3 +1,11 @@
+!
+! info on fem files
+!
+! revision log :
+!
+! 14.01.2015    ggu     finished and cleaned
+!
+!******************************************************************
 
 	program feminf
 
@@ -7,12 +15,72 @@ c writes info on fem file
 
 	implicit none
 
-	character*50 name,string,infile
+	character*80 infile
+	integer i,nfile
+	logical bdebug,bskip,bwrite,bquiet
+
+	bdebug = .true.
+	bdebug = .false.
+
+c--------------------------------------------------------------
+c parameters and command line options
+c--------------------------------------------------------------
+
+	call clo_init('feminf','fem-file(s)','1.2')
+
+	call clo_add_info('returns info on a fem file')
+	call clo_add_option('write',.false.,'write min/max of values')
+	call clo_add_option('quiet',.false.,'do not be verbose')
+
+	call clo_parse_options(1)  !expecting (at least) 1 file after options
+
+	call clo_get_option('write',bwrite)
+	call clo_get_option('quiet',bquiet)
+
+	bskip = .not. bwrite
+
+	nfile = clo_number_of_files()
+
+	if( bdebug ) then
+	  write(6,*) nfile
+	  write(6,*) bwrite,bskip,bquiet
+	end if
+
+c--------------------------------------------------------------
+c loop on files
+c--------------------------------------------------------------
+
+        do i=1,nfile
+          call clo_get_file(i,infile)
+          if( infile .ne. ' ' ) call feminf_file(infile)
+        end do
+
+c--------------------------------------------------------------
+c end of routine
+c--------------------------------------------------------------
+
+        end
+
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine feminf_file(infile)
+
+c writes info on fem file
+
+	use clo
+
+	implicit none
+
+	character*(*) infile
+
+	character*50 name,string
 	integer np,iunit,iout
 	integer nvers,lmax,nvar,ntype,nlvdim
 	integer nvar0,lmax0,np0
 	integer idt,idtact
-	double precision dtime,tmin,tmax,dtime0
+	double precision dtime,tmin,tmax
 	double precision atime,atimeold,atimeanf,atimeend
 	real dmin,dmax
 	integer ierr
@@ -22,11 +90,10 @@ c writes info on fem file
 	integer iformat
 	integer datetime(2),dateanf(2),dateend(2)
 	real regpar(7)
-	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
+	logical bdebug,bfirst,bskip,bwrite
 	logical bquiet
-	logical bdate		!is date given?
 	character*50, allocatable :: strings(:)
-	character*20 line
+	character*20 line,aline
 	real,allocatable :: data(:,:,:)
 	real,allocatable :: hd(:)
 	real,allocatable :: hlv(:)
@@ -35,41 +102,13 @@ c writes info on fem file
 	bdebug = .true.
 	bdebug = .false.
 
-c--------------------------------------------------------------
-c parameters and command line options
-c--------------------------------------------------------------
-
-	call clo_init('feminf','fem-file','1.2')
-
-	call clo_add_option('write',.false.,'write min/max of values')
-	call clo_add_option('out',.false.,'create output file')
-	call clo_add_option('quiet',.false.,'do not be verbose')
-	call clo_add_option('tmin time',-1
-     +				,'only process starting from time')
-	call clo_add_option('tmax time',-1
-     +				,'only process up to time')
-
-	call clo_parse_options(1)	!expecting 1 file after options
+        datetime = 0
+        irec = 0
 
 	call clo_get_option('write',bwrite)
-	call clo_get_option('out',bout)
 	call clo_get_option('quiet',bquiet)
-	call clo_get_option('tmin',tmin)
-	call clo_get_option('tmax',tmax)
-
-	nfile = clo_number_of_files()
-	if( nfile > 0 ) call clo_get_file(1,infile)
 
 	bskip = .not. bwrite
-	if( bout ) bskip = .false.
-	btmin = tmin .ne. -1.
-	btmax = tmax .ne. -1.
-
-	if( .false. ) then
-	  write(6,*) nfile
-	  write(6,*) bwrite,bskip,bout,btmin,btmax
-	  write(6,*) tmin,tmax
-	end if
 
 c--------------------------------------------------------------
 c open file
@@ -81,12 +120,9 @@ c--------------------------------------------------------------
 	call fem_file_read_open(infile,np,iunit,iformat)
 	if( iunit .le. 0 ) stop
 
-	write(6,*) 'file name: ',infile
-	!write(6,*) 'iunit:     ',iunit
+	write(6,*) 'file name: ',infile(1:len_trim(infile))
 	call fem_file_get_format_description(iformat,line)
 	write(6,*) 'format: ',iformat,"  (",line(1:len_trim(line)),")"
-
-	!stop
 
 c--------------------------------------------------------------
 c read first record
@@ -98,11 +134,11 @@ c--------------------------------------------------------------
 	if( ierr .ne. 0 ) goto 99
 
 	if( .not. bquiet ) then
-	  write(6,*) 'nvers: ',nvers
-	  write(6,*) 'np:    ',np
-	  write(6,*) 'lmax:  ',lmax
-	  write(6,*) 'nvar:  ',nvar
-	  write(6,*) 'ntype: ',ntype
+	  write(6,*) 'nvers:  ',nvers
+	  write(6,*) 'np:     ',np
+	  write(6,*) 'lmax:   ',lmax
+	  write(6,*) 'nvar:   ',nvar
+	  write(6,*) 'ntype:  ',ntype
 	end if
 
 	allocate(hlv(lmax))
@@ -173,9 +209,9 @@ c--------------------------------------------------------------
 	  if( np .ne. np0 ) goto 96
 
 	  call fem_file_convert_time(datetime,dtime,atime)
-	  call dts_format_abs_time(atime,line)
+	  call dts_format_abs_time(atime,aline)
 
-	  if( bdebug ) write(6,*) irec,atime,line
+	  if( bdebug ) write(6,*) irec,atime,aline
 
 	  call fem_file_read_2header(iformat,iunit,ntype,lmax
      +			,hlv,regpar,ierr)
@@ -196,8 +232,9 @@ c--------------------------------------------------------------
 	    if( ierr .ne. 0 ) goto 97
 	    if( string .ne. strings(i) ) goto 95
 	    if( bwrite ) then
-              call minmax(lmax,np,ilhkv,data(1,1,i),dmin,dmax)
-	      write(6,1100) irec,i,atime,dmin,dmax,line
+              call minmax_data(lmax,np,ilhkv,data(1,1,i),dmin,dmax)
+	      write(6,1100) irec,i,atime,dmin,dmax,aline
+ 1100	      format(i6,i3,f15.2,2g16.5,1x,a20)
 	    end if
 	  end do
 
@@ -206,12 +243,13 @@ c--------------------------------------------------------------
 	    idtact = nint(atime-atimeold)
 	    if( idtact .ne. idt ) then
 	      ich = ich + 1
-	      write(6,*) 'change in time step: ',irec,idt,idtact
+	      write(6,*) '* change in time step: '
+     +				,irec,idt,idtact,aline
 	      idt = idtact
 	    end if
 	    if( idt <= 0 ) then
-	      write(6,*) 'zero or negative time step: ',irec,idt
-     +				,atime,atimeold
+	      write(6,*) '*** zero or negative time step: ',irec,idt
+     +				,atime,atimeold,aline
 	    end if
 	  end if
 	  atimeend = atime
@@ -223,24 +261,28 @@ c--------------------------------------------------------------
 
 	nrecs = irec - 1
 	write(6,*) 'nrecs:  ',nrecs
-	call dts_format_abs_time(atimeanf,line)
-	write(6,*) 'start time: ',atimeanf,line
-	call dts_format_abs_time(atimeend,line)
-	write(6,*) 'end time  : ',atimeend,line
+	call dts_format_abs_time(atimeanf,aline)
+	write(6,*) 'start time: ',atimeanf,aline
+	call dts_format_abs_time(atimeend,aline)
+	write(6,*) 'end time:   ',atimeend,aline
 	write(6,*) 'idt:    ',idt
 
 	if( ich .gt. 0 ) then
-	  write(6,*) ' * warning: time step changed: ',ich
+	  write(6,*) '* warning: time step changed: ',ich
 	end if
 
 	close(iunit)
+
+	deallocate(strings)
+	deallocate(data)
+	deallocate(hd)
+	deallocate(ilhkv)
 
 c--------------------------------------------------------------
 c end of routine
 c--------------------------------------------------------------
 
- 1100	format(i6,i3,f15.2,2g16.5,1x,a20)
-	stop
+	return
    95	continue
 	write(6,*) 'variable ',i
 	write(6,*) string
@@ -271,70 +313,7 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-        subroutine make_time(it,year0,line)
-
-        implicit none
-
-        integer it
-        integer year0
-        character*(*) line
-
-        integer year,month,day,hour,min,sec
-
-        line = ' '
-        if( year0 .le. 0 ) return
-
-        call dts2dt(it,year,month,day,hour,min,sec)
-        call dtsform(year,month,day,hour,min,sec,line)
-
-        end
-
-c*****************************************************************
-
-        subroutine write_node(it,nlvdim,np,data)
-
-        implicit none
-
-        integer it
-        integer nlvdim,np
-        real data(nlvdim,1)
-
-        integer nnodes
-        parameter(nnodes=4)
-        integer nodes(nnodes)
-        save nodes
-        data nodes /9442,10770,13210,14219/
-
-        integer n,i
-
-        n = nnodes
-        write(90,'(i10,10i6)') it,(ifix(data(1,nodes(i))),i=1,n)
-
-        end
-
-c*****************************************************************
-
-        subroutine write_value(it,nlvdim,np,data)
-
-        implicit none
-
-        integer it
-        integer nlvdim,np
-        real data(nlvdim,1)
-
-        integer n,nskip,i
-
-        n = 10
-        nskip = np/n
-
-        !write(89,*) np,n,nskip,n*nskip
-        write(89,'(i10,10i6)') it,(ifix(data(1,i*nskip)),i=1,n)
-
-        end
-
-c*****************************************************************
-
-        subroutine minmax(nlvdim,np,ilhkv,data,vmin,vmax)
+        subroutine minmax_data(nlvdim,np,ilhkv,data,vmin,vmax)
 
         implicit none
 

@@ -121,7 +121,7 @@ c--------------------------------------------------------------
 	ndim = nkn
 	ldim = nlvdim
 
-	write(6,*)'reading T/S values', it,dtime
+	!write(6,*)'reading T/S values', it,dtime
 
 	call iff_time_interpolate(id,dtime,ivar,ndim,ldim,value)
 
@@ -130,7 +130,8 @@ c some statistics
 c--------------------------------------------------------------
 
         call conmima(nlvdim,value,vmin,vmax)
-        write(6,*) 'min/max: ',vmin,vmax
+
+        !write(6,*) 'min/max: ',vmin,vmax
 
 c--------------------------------------------------------------
 c end of routine

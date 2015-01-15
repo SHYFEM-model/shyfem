@@ -1,5 +1,47 @@
 ============================================================
 
+Thu Jan 15 14:06:53 CET 2015
+
+bug fixes, femelab, tsinf, strcheck.sh
+
+ .gitignore              |    3 +
+ LOG                     |   21 ++
+ RELEASE_NOTES           |    7 +
+ fem3d/Makefile          |    9 +-
+ fem3d/bc2fem.f          |    2 +-
+ fem3d/femelab.f         |  557 ++++++++++++++++++-----------------------------
+ fem3d/feminf.f          |  223 +++++++++-----------
+ fem3d/nosextr_nodes.f   |   11 +-
+ fem3d/nosinf.f          |    5 -
+ fem3d/ousextr_nodes.f   |    9 +-
+ fem3d/splitets.f        |    7 +-
+ fem3d/subapn.f          |  356 ++++++++++++++++++------------
+ fem3d/subclo.f          |   49 ++++-
+ fem3d/subdts.f          |   11 +-
+ fem3d/subfemfile.f      |   39 ++++
+ fem3d/subsys.f          |   18 +-
+ fem3d/subtsuvfile.f     |    5 +-
+ fem3d/tideg.f           |    5 +-
+ fem3d/tsinf.f           |  275 +++++++++++++++++++++++
+ fembin/gitinfo          |    3 +-
+ fembin/strcheck.pl      |  131 +++++++++++
+ fembin/strcheck.sh      |   51 +++++
+ fembin/strparse.pl      |   24 ++-
+ femdoc/final/shyfem.pdf |  Bin 293643 -> 293717 bytes
+ femdoc/final/shyfem.ps  |  388 +++++++++++++++++----------------
+ femlib/perl/date.pm     |   16 ++-
+ femlib/perl/str.pm      |    6 +-
+ femplot/supbas.f        |   18 +-
+ femplot/suplin.f        |    2 +-
+ femplot/supsim.f        |   10 +-
+ 30 files changed, 1408 insertions(+), 853 deletions(-)
+ new file:
+   fem3d/tsinf.f
+   fembin/strcheck.pl
+   fembin/strcheck.sh
+
+============================================================
+
 Mon Jan 12 14:20:46 CET 2015
 
 New version 7_1_0

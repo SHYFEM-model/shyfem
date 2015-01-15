@@ -286,7 +286,8 @@ LAGINTP = submir.o
 
 EXEMAIN  = ht vp
 
-EXEINFO  = ousinf flxinf volinf basinf nosinf wininf extinf rstinf feminf \
+EXEINFO  = ousinf flxinf volinf basinf nosinf wininf extinf rstinf \
+		feminf tsinf \
 		offinf lgrinf etsinf
 EXESPLIT = nossplit splitext splitflx splitets
 EXELAP   =  
@@ -473,6 +474,12 @@ fileinf:  fileinf.o $(NOSOUSOBJS) $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
 
 feminf:  feminf.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+tsinf:  tsinf.o $(NOSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
+femelab:  femelab.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 bc2fem:  bc2fem.o $(NOSOBJS) $(OUTOBJS) 

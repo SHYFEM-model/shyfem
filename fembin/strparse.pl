@@ -17,6 +17,7 @@ use strict;
 #-------------------------------------------------------------
 $::h = 0 unless $::h;
 $::help = 0 unless $::help;
+$::quiet = 0 unless $::quiet;
 $::bnd = 0 unless $::bnd;
 $::files = 0 unless $::files;
 $::zip = 0 unless $::zip;
@@ -24,6 +25,7 @@ $::rewrite = 0 unless $::rewrite;
 $::sect = "" unless $::sect;
 $::txt = 0 unless $::txt;
 $::debug = 0 unless $::debug;
+$::value = "" unless $::value;
 #-------------------------------------------------------------
 
 #-------------------------------------------------------------
@@ -44,7 +46,7 @@ $::debug = 0 unless $::debug;
 my $file = $ARGV[0];
 
 my $str = new str;
-#$str->{verbose} = 1;
+$str->{quiet} = $::quiet;
 $str->read_str($file) if $file;
 
 if( $::h or $::help ) {
@@ -65,9 +67,15 @@ if( $::h or $::help ) {
   print STDERR "str-file written to new.str\n";
 } elsif( $::sect ) {
   show_sect($str,$::sect);
+} elsif( $::value ) {
+  my $val = show_value($str,$::value);
+  $val = "(unknown)" unless $val;
+  #print "$::value = $val\n";
+  print "$val\n";
 } else {
   Usage();
 }
+
 
 #------------------------------------------------------------
 
@@ -82,10 +90,12 @@ sub FullUsage {
   print STDERR "Usage: strparse.pl [-h|-help] [-options] str-file\n";
   print STDERR "  options:\n";
   print STDERR "    -h!-help      this help screen\n";
+  print STDERR "    -quiet        be as quiet as possible\n";
   print STDERR "    -bnd          extract boundary nodes\n";
   print STDERR "    -files        extract names of forcing files\n";
   print STDERR "    -zip          zips forcing files, grid, str in one file\n";
   print STDERR "    -rewrite      rewrite the str file\n";
+  print STDERR "    -value=var    show value of var ([sect:]var)\n";
   #print STDERR "    -sect=sect    writes contents of section\n";
   print STDERR "    -txt          write nodes as text and not in grd format\n";
   exit 0;
@@ -192,7 +202,7 @@ sub show_files {
   my $basin = $str->get_basin();
   $basin .= ".grd";
   $basin =~ s/^\s+//;
-  print "basin :    grid = $basin\n";
+  print "basin :    grid = '$basin'\n";
   push(@files,$basin);
 
   my $sections = $str->{sections};
@@ -219,6 +229,16 @@ sub show_files {
   }
 
   return \@files;
+}
+
+sub show_value {
+
+  my ($str,$name,$sect_name,$sect_number) = @_;
+
+  #$sect_name = "para" unless $sect_name;
+  #$sect_number = "" unless $sect_number;
+
+  return $str->get_value($name,$sect_name,$sect_number);
 }
 
 sub show_name {

@@ -107,6 +107,8 @@ fem3d/fileinf
 fem3d/noswrite
 fem3d/basbox
 fem3d/feminf
+fem3d/tsinf
+fem3d/femelab
 fem3d/offinf
 fem3d/nos_elab
 fem3d/etsinf
@@ -158,6 +160,7 @@ fembin/vp
 fembin/wininf
 fembin/basinf
 fembin/feminf
+fembin/tsinf
 fembin/offinf
 fembin/lgrinf
 fembin/etsinf

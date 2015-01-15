@@ -998,7 +998,7 @@ c*****************************************************************
 	  if( i .eq. nc ) return
 	end if
 
-	write(6,*) 'Usage: win2fem [-what] [-var] [options] bc-file'
+	write(6,*) 'Usage: bc2fem [-what] [-var] [options] bc-file'
 	write(6,*) '   what:   (one of these must be given)'
 	write(6,*) '      -meteo      2d unformatted meteo files'
 	write(6,*) '      -reg        2d regular meteo files'

@@ -5,6 +5,7 @@
 !
 ! 24.11.2014    ggu     written from scratch
 ! 27.11.2014    ggu     is now fully functional
+! 14.01.2015    ggu     added new routines clo_add_info/extra
 !
 ! notes :
 !
@@ -18,12 +19,14 @@
 !
 !        call clo_init('feminf','fem-file','1.2')
 !
+!	 call clo_add_info('elaborates and rewrites a fem file')
 !        call clo_add_option('write',.false.,'write min/max of values')
 !        call clo_add_option('out',.false.,'create output file')
 !        call clo_add_option('tmin time',-1
 !     +                          ,'only process starting from time')
 !        call clo_add_option('tmax time',-1
 !     +                          ,'only process up to time')
+!	 call clo_add_extra('time is YYYY-MM-DD[::hh:mm:ss]')
 !
 !        call clo_parse_options(1)       !expecting 1 file
 !
@@ -61,6 +64,10 @@
 
 	integer, save, private :: last_option = 0
 	integer, save, private :: last_file = 0
+
+	integer, save, private :: ielast = 0
+	character*80, save, private :: info = ' '
+	character*80, save, private, dimension(10) :: extra = ' '
 
 	character*80, save, private :: routine_name = ' '
 	character*80, save, private :: files_name = ' '
@@ -395,6 +402,7 @@
 
 	id = clo_get_id(name1)
 	if( id /= 0 ) call clo_error(name1,'option already existing')
+	call clo_init_new_id(id)
 
 	pentry(id)%name = name1
 	pentry(id)%itype = 3
@@ -606,7 +614,7 @@
 
 	subroutine clo_parse_options(nexpect)
 
-	integer nexpect		!number of expected files
+	integer nexpect		!number of expected files (at least)
 
 	integer nc,i,n
 	character*80 option
@@ -697,6 +705,31 @@
 !**************************************************************
 !**************************************************************
 
+	subroutine clo_add_info(string)
+
+	character*(*) string
+
+	info = string
+
+	end subroutine clo_add_info
+
+!**************************************************************
+
+	subroutine clo_add_extra(string)
+
+	character*(*) string
+
+	ielast = ielast + 1
+	if( ielast > 10 ) stop 'error stop clo_add_extra: ielast'
+
+	extra(ielast) = string
+
+	end subroutine clo_add_extra
+
+!**************************************************************
+!**************************************************************
+!**************************************************************
+
 	subroutine clo_version
 
 	integer nr,nv
@@ -729,11 +762,11 @@
 	subroutine clo_fullusage
 
 	integer nr,nf,nn,nt,ne,nl,np
-	integer itype,id
+	integer itype,id,ie
 	integer length,l
 	character*80 name
 	character*80 text
-	character*80 extra
+	character*80 textra
 
 	nr = len_trim(routine_name)
 	nf = len_trim(files_name)
@@ -749,15 +782,21 @@
 
 	write(6,*) 'Usage: ',routine_name(1:nr)
      +			,' [-h|-help] [-options] ',files_name(1:nf)
+	if( info /= ' ' ) write(6,*) '  ',info(1:len_trim(info))
 	write(6,*) '  options:'
 	call clo_write_line(length,'h|-help',' ','this help screen')
 	call clo_write_line(length,'v|-version',' ','version of routine')
 
 	do id=1,idlast
 	  name = pentry(id)%name
-	  extra = pentry(id)%textra
+	  textra = pentry(id)%textra
 	  text = pentry(id)%text
-	  call clo_write_line(length,name,extra,text)
+	  call clo_write_line(length,name,textra,text)
+	end do
+
+	do ie=1,ielast
+	  text = extra(ie)
+	  write(6,*) '  ',text(1:len_trim(text))
 	end do
 
 	stop

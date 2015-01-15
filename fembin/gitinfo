@@ -85,8 +85,9 @@ make test_stable
 gittag
 gittar
 
-make stable
 mail_shyfem.sh tar-file
+mv tar-file arc
+make stable
 
 EOI
 

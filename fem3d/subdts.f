@@ -206,6 +206,9 @@ c unformats date and time -> from string to date
 
 	character*20 ll
 	integer i,n
+	logical bdebug
+
+	bdebug = .false.
 
         ll = line
 	n = len(line)
@@ -251,9 +254,11 @@ c unformats date and time -> from string to date
 
 	return
     9	continue
-	write(6,*) '*** cannot parse date: ',ierr,line(1:20)
-	write(6,*) '    format should be YYYY-MM-DD::hh:mm:ss'
-	write(6,*) '    possible also YYYY-MM-DD[::hh[:mm[:ss]]]'
+	if( bdebug ) then
+	  write(6,*) '*** cannot parse date: ',ierr,line(1:20)
+	  write(6,*) '    format should be YYYY-MM-DD::hh:mm:ss'
+	  write(6,*) '    possible also YYYY-MM-DD[::hh[:mm[:ss]]]'
+	end if
 	return
 	end
 

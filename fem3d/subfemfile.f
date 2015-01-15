@@ -16,6 +16,7 @@ c 07.07.2014	ggu	first version consolidated
 c 20.10.2014	ggu	second version (date record is just after first record)
 c 29.10.2014	ggu	new routine fem_file_is_fem_file()
 c 09.01.2015	ggu	new routine fem_file_get_format_description()
+c 14.01.2015	ggu	new routine fem_file_string2time()
 c
 c notes :
 c
@@ -943,6 +944,44 @@ c skips one record of data of the file
 
 c************************************************************
 c************************************************************
+c************************************************************
+
+	subroutine fem_file_string2time(string,atime)
+
+c converts string to time stamp
+c
+c string can be an absolute date (YYYY-MM-DD[::hh:mm:ss])
+c or a relative time (integer)
+
+	implicit none
+
+	character*(*) string		!string indicating date
+	double precision atime		!absolute time (return)
+
+	integer year,month,day,hour,min,sec
+	integer date,time,it
+	integer ierr
+
+	call dtsunform(year,month,day,hour,min,sec,string,ierr)
+
+	if( ierr > 0 ) then
+	  read(string,'(i10)',err=9) it
+	  atime = it
+	else
+          call packdate(date,year,month,day)
+          call packtime(time,hour,min,sec)
+	  call dts_to_abs_time(date,time,atime)
+	end if
+
+	return
+    9	continue
+        write(6,*) '*** cannot parse date: ',ierr,string(1:20)
+        write(6,*) '    format should be YYYY-MM-DD::hh:mm:ss'
+        write(6,*) '    possible also YYYY-MM-DD[::hh[:mm[:ss]]]'
+        write(6,*) '    or it should be an integer (relative time)'
+	stop 'error stop fem_file_string2time: conversion error'
+	end
+
 c************************************************************
 
 	subroutine fem_file_convert_time(datetime,dtime,atime)

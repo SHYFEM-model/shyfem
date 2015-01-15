@@ -46,6 +46,7 @@ c--------------------------------------------------
 	real cv(nkndim)
 	real cv3(nlvdim,nkndim)
 
+	character*80 format
 	integer nread,ierr
 	integer nvers,nin,nlv
 	integer nknous,nelous
@@ -154,7 +155,10 @@ c	---------------------------------------------------------
 	  write(4,*) it,i,ke,k,lmax,ivar
 	  write(4,*) (cv3(l,k),l=1,lmax)
 	  write(3,*) it,i,ke,k,lmax,ivar
-	  write(3,'((6f10.2))') (cv3(l,k),l=1,lmax)
+          write(format,'(a,i4,a)') '(',lmax,'(f12.4))'
+          write(3,format) (cv3(l,k),l=1,lmax)
+	  !write(3,'((6f10.2))') (cv3(l,k),l=1,lmax)
+	  !write(3,'(*(f10.2))') (cv3(l,k),l=1,lmax)
 
 	  z = 0.
 	  h = hkv(k)
@@ -162,7 +166,10 @@ c	---------------------------------------------------------
      +				,cv3(1,k),hlv,hl)
 	end do
 
-        write(iu,'(i10,30e12.4)') it,(cv3(1,nodes(i)),i=1,nnodes)
+        write(format,'(a,i4,a)') '(i12,',nnodes,'(f12.4))'
+        write(iu,format) it,(cv3(1,nodes(i)),i=1,nnodes)
+        !write(iu,'(i10,30e12.4)') it,(cv3(1,nodes(i)),i=1,nnodes)
+        !write(iu,'(i10,*(e12.4))') it,(cv3(1,nodes(i)),i=1,nnodes)
 
 	goto 300
 

@@ -216,9 +216,21 @@ sub init_date		#helper function
 {
 	my ($self,$date) = @_;
 
-	my ($year,$month,$day) = $self->unpack_date($date);
+	my ($year,$month,$day);
+	my ($hour,$min,$sec) = (0,0,0);
 
-	$self->init_it($year,$month,$day,0,0,0);
+	if( $date =~ /^\'(.*)\'$/  ) {		#string
+	  $date = $1;
+	  ($year,$month,$day,$hour,$min,$sec)=$self->unformat_time_date($date);
+	} elsif( $date =~ /:/  ) {		#string
+	  ($year,$month,$day,$hour,$min,$sec)=$self->unformat_time_date($date);
+	} elsif( $date < 10000 ) {
+	  $year = $date; $month = 1; $day = 1;
+	} else {
+	  ($year,$month,$day) = $self->unpack_date($date);
+	}
+
+	$self->init_it($year,$month,$day,$hour,$min,$sec);
 }
 
 sub init_it

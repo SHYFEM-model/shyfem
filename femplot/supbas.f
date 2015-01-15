@@ -50,7 +50,7 @@ c 24.10.2012  ggu     bug in labelling non spherical grid (returned -1)
 c 02.05.2013  ggu     handle fact in spherical coords
 c 02.05.2013  ggu     meteo point plotting (plot_meteo_points())
 c 13.06.2013  ggu     bug fix in spherical_fact() -> set fact to 1
-c 13.12.2013  ggu     new mode=4 for plotting grey grid over scalar variable
+c 13.12.2013  ggu     new mode=4 for plotting gray grid over scalar variable
 c 30.05.2014  ggu     new metpnt for meteo points, imicro computed
 c
 c notes:
@@ -114,7 +114,7 @@ c**************************************************************
 	real x0,y0,x1,y1
 	real x0leg,y0leg,x1leg,y1leg
 	real dxygrd,x,y
-	real cgrey
+	real cgray
 	character*80 bndlin,metpnt
 	real getpar
 	logical inboxdim
@@ -125,7 +125,7 @@ c**************************************************************
 ! initializing
 !--------------------------------------
 
-	cgrey = getpar('cislnd')	!grey scale for islands
+	cgray = getpar('cislnd')	!gray scale for islands
 
 	call basinit
 
@@ -154,7 +154,7 @@ c**************************************************************
 	  call annote		!annotation
 	  call basin(0)		!scaling
 	  call label_reg_grid
-	  call plot_islands(cgrey)
+	  call plot_islands(cgray)
 
 	  return
 
@@ -1560,13 +1560,13 @@ c**************************************************************
 
 c**************************************************************
 
-	subroutine plot_islands(cgrey)
+	subroutine plot_islands(cgray)
 
-c plots islands grey
+c plots islands gray
 
 	implicit none
 
-	real cgrey	!color
+	real cgray	!color
 	
 	include 'nbasin.h'
 
@@ -1588,9 +1588,9 @@ c plots islands grey
 
 	real areapoly
 
-	if( cgrey < 0 ) return
+	if( cgray < 0 ) return
 
-	cg = cgrey
+	cg = cgray
 	bouter = .false.		! plot external island
 	if( cg >= 2 ) then
 	  cg = cg - 2

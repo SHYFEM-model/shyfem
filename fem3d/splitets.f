@@ -18,7 +18,7 @@ c This routine reads an EXT file and writes the data to unit 76
 	integer ndim
 	parameter (ndim=100)
 
-	character*80 line,file
+	character*80 line,file,format
 	integer nrec,it,i,nin,j,lmax,l
 	integer nkn,nlv,nvar
 	integer ivar,ierr,iunit
@@ -93,7 +93,10 @@ c---------------------------------------------------------------
 	    if( ivar .eq. 1 ) lmax = 1
 	    if( ivar .eq. 31 ) lmax = 4
 	    call get_unit(ivar,i,iunit)
-	    write(iunit,'(i12,5(f12.4))') it,(cv3(l,i),l=1,lmax)
+	    write(format,'(a,i4,a)') '(i12,',lmax,'(f12.4))'
+	    write(iunit,format) it,(cv3(l,i),l=1,lmax)
+	    !write(iunit,'(i12,5(f12.4))') it,(cv3(l,i),l=1,lmax)
+	    !write(iunit,'(i12,*(f12.4))') it,(cv3(l,i),l=1,lmax)
 	  end do
 
 	end do
