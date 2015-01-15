@@ -1,3 +1,30 @@
+version  7_1_1    15-01-2015    VERS_7_1_1
+
+========================================================== 15-01-2015 - 7_1_1
+
+c ./fem3d/subclo.f:
+! 14.01.2015    ggu     added new routines clo_add_info/extra
+!
+c ./fem3d/subver.f:
+c 15.01.2015	ggu	version 7.1.1
+c
+c ./fem3d/feminf.f:
+! 14.01.2015    ggu     finished and cleaned
+c
+c ./fem3d/tideg.f:
+c 14.01.2015    ccf     small bug fix rounding date and time
+c
+c ./fem3d/femelab.f:
+! 14.01.2015    ggu     adapted from feminf
+c
+c ./fem3d/subfemfile.f:
+c 14.01.2015	ggu	new routine fem_file_string2time()
+c
+c ./fem3d/subapn.f:
+c 14.01.2015	ggu	reorganized and cleaned
+
+==========================================================
+
 version  7_1_0    12-01-2015    VERS_7_1_0   commit_2015-01-15
 
 version  7_1_0    12-01-2015    VERS_7_1_0
