@@ -1,5 +1,5 @@
 c
-c $Id: subgrd.f,v 1.8 2005/11/03 16:59:25 georg Exp $
+c $Id: subgrd.f,v 1.9 2009-05-21 09:24:00 georg Exp $
 c
 c rdgrd routines - read GRD files
 c
@@ -58,6 +58,8 @@ c 09.10.2001    ggu     read node type (ianv)
 c 18.10.2005    ggu     error messages slightly changed
 c 22.04.2009    ggu     changes from spline integrated (read lines)
 c 24.04.2009    ggu     newly restructured
+c 09.03.2012    ggu     handle dimension error more gracefully
+c 08.01.2015    ggu     common blocks in include file
 c
 c**********************************************************
 
@@ -92,9 +94,9 @@ c works only with triangles as elements
 	integer nel		!total number of elements read
 	integer nli		!total number of lines read
 
-	integer nkndim		!dimension for nodes
-	integer neldim		!dimension for elements
-	integer nlidim		!dimension for lines
+	integer nkndim		!dimension for number of nodes
+	integer neldim		!dimension for number of elements
+	integer nlidim		!dimension for number of lines
 	integer nlndim		!dimension for node numbers of lines
 
 	integer ipnv(nkndim)	!external node number
@@ -117,9 +119,7 @@ c works only with triangles as elements
 	integer ipntlv(0:nlidim)!pointer into inodlv
 	integer inodlv(nlndim)	!node numbers of lines (dim. nlndim)
 
-	real xscale,yscale,zscale
-	common /vscale/ xscale,yscale,zscale
-	save /vscale/
+	include 'subgrd.h'
 
 	integer iwhat,ner
 	real value
@@ -237,14 +237,12 @@ c reads nodes from .grd file
 	real xgv(nkndim),ygv(nkndim)
 	real hnv(nkndim)
 
-	real xscale,yscale,zscale
-	common /vscale/ xscale,yscale,zscale
-	save /vscale/
+	include 'subgrd.h'
 
 	logical bread
 	integer ner
-	integer ianz
-        real f(6)
+	!integer ianz
+        !real f(6)
 	real depth
 
 	ner = 6
@@ -258,7 +256,14 @@ c reads nodes from .grd file
 
         nkn=nkn+1
 	if( .not. bread ) return
-	if(bread .and. nkn.gt.nkndim) goto 99
+	if(bread .and. nkn.gt.nkndim) then
+	  bread = .false.
+	  bstop = .true.
+	  if( nkn .eq. nkndim+1 ) then		!just one time
+	    write(ner,*) 'dimension of nkndim too low: ',nkndim
+	  end if
+	end if
+	if( .not. bread ) return
 
         ipnv(nkn)=nint(f(2))
         ianv(nkn)=nint(f(3))
@@ -301,8 +306,9 @@ c reads elements from .grd file
 	real hev(neldim)
 
 	logical bread
-	integer ner
+	integer ner,ii
         real f(4)
+	integer ilist(10)
 	integer inum,itype,ianz
 	integer ivert,nvert,istart
 	real depth
@@ -316,7 +322,14 @@ c reads elements from .grd file
 	call grd_vals(4,f)
 
         nel=nel+1
-	if(bread .and. nel.gt.neldim) goto 99
+	if(bread .and. nel.gt.neldim) then
+	  bread = .false.
+	  bstop = .true.
+	  if( nel .eq. neldim+1 ) then		!just one time
+	    write(ner,*) 'dimension of neldim too low: ',neldim
+	  end if
+	end if
+
         inum=nint(f(2))
         itype=nint(f(3))
         nvert=nint(f(4))
@@ -327,7 +340,7 @@ c reads elements from .grd file
         ivert=nvert
 	if( .not. bread ) ivert = -ivert
 
-	call read_node_list(ivert,istart,nen3v(1,nel),depth)
+	call read_node_list(ivert,istart,ilist,depth)
 
 	if(ivert.lt.nvert) goto 86
 
@@ -335,6 +348,9 @@ c reads elements from .grd file
           ipev(nel) = inum
           iaev(nel) = itype
 	  hev(nel)  = depth
+	  do ii=1,3
+	    nen3v(ii,nel) = ilist(ii)
+	  end do
 	end if
 
 	return
@@ -449,12 +465,10 @@ c reads node list
 	integer nodes(1)
 	real depth
 
-	real xscale,yscale,zscale
-	common /vscale/ xscale,yscale,zscale
-	save /vscale/
+	include 'subgrd.h'
 
 	logical bread,bline
-	integer i,ivert,ianz
+	integer i,ivert!,ianz
 	real value
 
 	logical grd_next_line
@@ -547,7 +561,7 @@ c finds first char of line that is not blank or tab
 
 c******************************************************************************
 
-	subroutine fempar(line)
+	subroutine fempar(gline)
 
 c read parameters for fem model 
 c
@@ -569,57 +583,54 @@ c 0 (FEM-NORTH) 90.0
 c
         implicit none
 
-	character*(*) line
+	character*(*) gline
 
 	integer i,j,n
 	integer ifstch,iscan
-	character*80 descrr
 	logical btitle
-	real f(10)
-	real grav,fcor,dcor,dirn
-	real xscale,yscale,zscale
+	!real f(10)
 
-	common /descrr/ descrr
-	common /pkonst/ grav,fcor,dcor,dirn
-	common /vscale/ xscale,yscale,zscale
-	save /vscale/
+	include 'param_dummy.h'
+	include 'basin.h'
+	include 'pkonst.h'
+	include 'subgrd.h'
 
 	save btitle
 	data btitle /.false./
 
-	i=ifstch(line)
-	n=len(line)
+	i=ifstch(gline)
+	n=len(gline)
 
 	if( i.gt.0 .and. i+10.lt.n ) then
-	  if( line(i:i+10) .eq. '(FEM-TITLE)' ) then
-		descrr=line(i+11:)
+	  if( gline(i:i+10) .eq. '(FEM-TITLE)' ) then
+		descrr=gline(i+11:)
 		btitle=.true.
-	  else if( line(i:i+10) .eq. '(FEM-SCALE)' ) then
-		j=iscan(line(i+11:),1,f)
+	  else if( gline(i:i+10) .eq. '(FEM-SCALE)' ) then
+		j=iscan(gline(i+11:),1,f)
 		if(j.eq.3) then
 		  xscale=f(1)
 		  yscale=f(2)
 		  zscale=f(3)
 		else
 		  write(6,*) 'error reading (FEM-SCALE) :',j
-		  write(6,*) line
-		  write(6,*) line(i+11:)
+		  write(6,*) gline
+		  write(6,*) gline(i+11:)
 		end if
-	  else if( line(i:i+10) .eq. '(FEM-LATID)' ) then
-		j=iscan(line(i+11:),1,f)
+	  else if( gline(i:i+10) .eq. '(FEM-LATID)' ) then
+		j=iscan(gline(i+11:),1,f)
 		if(j.eq.1) then
 		  dcor=f(1)
 		else
 		  write(6,*) 'error reading (FEM-LATID) :'
-		  write(6,*) line
+		  write(6,*) gline
 		end if
-	  else if( line(i:i+10) .eq. '(FEM-NORTH)' ) then
-		j=iscan(line(i+11:),1,f)
+	  else if( gline(i:i+10) .eq. '(FEM-NORTH)' ) then
+		j=iscan(gline(i+11:),1,f)
 		if(j.eq.1) then
 		  dirn=f(1)
 		else
 		  write(6,*) 'error reading (FEM-NORTH) :'
-		  write(6,*) line
+		  write(6,*) gline
 		end if
 	  end if
 	end if
@@ -627,7 +638,7 @@ c
 c use first comment as title
 
 	if( i.gt.0 .and. .not.btitle ) then
-		descrr=line(i:)
+		descrr=gline(i:)
 		btitle=.true.
 	end if
 
@@ -707,8 +718,7 @@ c initializes reading from grid file
 	integer ner
 	integer ifileo
 
-	integer nin,iline,ianz
-	common /grdcom_i/ nin,iline,ianz
+	include 'subgrd.h'
 
 	nin = 0
 	iline = 0
@@ -740,13 +750,7 @@ c reads next line from file
 
 	logical grd_next_line
 
-	integer nin,iline,ianz
-	common /grdcom_i/ nin,iline,ianz
-	real f(80)
-	common /grdcom_r/ f
-	character*132 line
-	common /grdcom_c/ line
-	save /grdcom_i/, /grdcom_r/, /grdcom_c/
+	include 'subgrd.h'
 
 	integer ner,ios
 	integer iscan
@@ -788,8 +792,7 @@ c returns number of values on line
 
 	integer nvals
 
-	integer nin,iline,ianz
-	common /grdcom_i/ nin,iline,ianz
+	include 'subgrd.h'
 
 	nvals = ianz
 
@@ -806,10 +809,7 @@ c returns nvals in vals
 	integer nvals
 	real vals(nvals)
 
-	integer nin,iline,ianz
-	common /grdcom_i/ nin,iline,ianz
-	real f(80)
-	common /grdcom_r/ f
+	include 'subgrd.h'
 
 	integer i,n,nmin,nmax
 
@@ -841,10 +841,7 @@ c returns value at position ival
 	integer ival
 	real val
 
-	integer nin,iline,ianz
-	common /grdcom_i/ nin,iline,ianz
-	real f(80)
-	common /grdcom_r/ f
+	include 'subgrd.h'
 
 	val = 0.
 	if( ival .ge. 1 .and. ival .le. ianz ) val = f(ival)
@@ -862,10 +859,7 @@ c returns info on line
 	integer iline_grd
 	character*(*) line_grd
 
-	integer nin,iline,ianz
-	common /grdcom_i/ nin,iline,ianz
-	character*132 line
-	common /grdcom_c/ line
+	include 'subgrd.h'
 
 	iline_grd = iline
 	line_grd = line
@@ -880,10 +874,7 @@ c write info on line
 
 	implicit none
 
-	integer nin,iline,ianz
-	common /grdcom_i/ nin,iline,ianz
-	character*132 line
-	common /grdcom_c/ line
+	include 'subgrd.h'
 
 	integer ner
 
@@ -1001,7 +992,7 @@ c works only with triangles as elements
    99	continue
 	write(6,*) 'error opening output file'
 	write(6,*) file
-	stop 'error stop wrgrd: cannot open file'
+	stop 'error stop grd_write_grid: cannot open file'
 	end
 
 c*****************************************************************

@@ -63,6 +63,7 @@ c for a boundary node, transp(n) = 0
 	integer n		!dimension/size of transp (entry/return)
 	real transp(1)		!fluxes into elements (flux corrected, return) 
 
+	include 'param.h'
 	include 'ev.h'
 	include 'links.h'
 
@@ -158,6 +159,7 @@ c passed in are pointers to these section in lnk structure
 	integer ndim		!must be at least ngr
 	parameter (ndim=100)
 
+	include 'param.h'
 	include 'ev.h'
 	include 'links.h'
 

@@ -25,6 +25,7 @@ c sets up geometrical arrays
         implicit none
 
 c common
+	include 'param_dummy.h'
 	include 'nbasin.h'
 
         integer nen3v(3,1)
@@ -149,6 +150,7 @@ c checks geometrical arrays
         implicit none
 
 c common
+	include 'param_dummy.h'
 	include 'nbasin.h'
 
 	include 'links.h'
@@ -183,6 +185,7 @@ c checks various subroutines
 
         implicit none
 
+	include 'param_dummy.h'
         include 'links.h'
 
 	include 'nbasin.h'

@@ -13,14 +13,6 @@ my @ignore_files = ();
 
 #----------------------------------------------------------------
 
-# newini.f		375: hlv(2)
-#
-# in sublnka.f subflx3d : links.h does not have nkndim etc...
-# clean boundary names (???)
-# subgotm: 214 -> comment shearf2 buoyf2 once gotm_aux.h is included
-
-#----------------------------------------------------------------
-
 $::quiet = 0 unless $::quiet;
 $::write = 0 unless $::write;
 $::debug = 0 unless $::debug;
@@ -34,6 +26,14 @@ $::check = 0 unless $::check;
 
 #----------------------------------------------------------------
 
+# newini.f		375: hlv(2)
+#
+# in sublnka.f subflx3d : links.h does not have nkndim etc...
+# clean boundary names (???)
+# subgotm: 214 -> comment shearf2 buoyf2 once gotm_aux.h is included
+
+#----------------------------------------------------------------
+
 $fortran->{debug} = $::debug;
 
 $fortran->set_ignore_files(\@ignore_files);
@@ -44,8 +44,8 @@ $fortran->parse_files($::quiet);
 #----------------------------------------------------------------
 
 if( $::subst ) {
-  #subst_femtim($fortran);
-  #subst_konst($fortran);
+  subst_femtim($fortran);
+  subst_konst($fortran);
   #subst_ts($fortran);
   #subst_levels($fortran);
   #subst_depth($fortran);
@@ -53,6 +53,9 @@ if( $::subst ) {
   #subst_hydro($fortran);
   #subst_hydro_vel($fortran);
   #subst_hydro_print($fortran);
+  #subst_hydro_plot($fortran);
+  #subst_plot_aux($fortran);
+  #subst_plot_supout($fortran);
   #subst_basin($fortran);
   #subst_geom_dynamic($fortran);
   #subst_geom($fortran);
@@ -404,6 +407,41 @@ sub subst_basin {
   subst_common($fortran,"ipv","param_dummy.h","basin.h");
   subst_common($fortran,"iarv","param_dummy.h","basin.h");
   subst_common($fortran,"iarnv","param_dummy.h","basin.h");
+}
+
+sub subst_plot_supout {
+  my $fortran = shift;
+  subst_common($fortran,"eoseos","supout.h");
+  subst_common($fortran,"nosnos","supout.h");
+  subst_common($fortran,"wavwav","supout.h");
+  subst_common($fortran,"femfem","supout.h");
+  subst_common($fortran,"fvlfvl","supout.h");
+  subst_common($fortran,"ousous","supout.h");
+}
+
+sub subst_plot_aux {
+  my $fortran = shift;
+  subst_common($fortran,"fvlv","param_dummy.h","plot_aux.h");
+  subst_common($fortran,"arfvlv","param_dummy.h","plot_aux.h");
+  subst_common($fortran,"wauxv","param_dummy.h","plot_aux.h");
+  subst_common($fortran,"bwater","param_dummy.h","plot_aux.h");
+  subst_common($fortran,"bkwater","param_dummy.h","plot_aux.h");
+  subst_common($fortran,"hetv","param_dummy.h","plot_aux.h");
+  subst_common($fortran,"het3v","param_dummy.h","plot_aux.h");
+  #subst_common($fortran,"hl","param_dummy.h","plot_aux.h");
+  subst_common($fortran,"parray","param_dummy.h","plot_aux.h");
+  subst_common($fortran,"p3","param_dummy.h","plot_aux.h");
+}
+
+sub subst_hydro_plot {
+  my $fortran = shift;
+  subst_common($fortran,"uv","param_dummy.h","hydro_plot.h");
+  subst_common($fortran,"vv","param_dummy.h","hydro_plot.h");
+  subst_common($fortran,"uvnv","param_dummy.h","hydro_plot.h");
+  subst_common($fortran,"vvnv","param_dummy.h","hydro_plot.h");
+  subst_common($fortran,"usnv","param_dummy.h","hydro_plot.h");
+  subst_common($fortran,"vsnv","param_dummy.h","hydro_plot.h");
+  subst_common($fortran,"wsnv","param_dummy.h","hydro_plot.h");
 }
 
 sub subst_hydro_print {

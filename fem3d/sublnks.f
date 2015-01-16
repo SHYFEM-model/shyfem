@@ -57,6 +57,7 @@ c nli < 2*nkn + nel
 c arguments
         integer nnkn,nnel,nnbn,nnli,nnis,nnod
 c common
+	include 'param_dummy.h'
         integer inodv(1), iwegv(1)
 	include 'nbasin.h'
         common /inodv/inodv, /iwegv/iwegv
@@ -165,6 +166,7 @@ c arguments
 	real winkk
         integer k
 c common
+	include 'param_dummy.h'
 	include 'nbasin.h'
         integer iwegv(1)
         common /iwegv/iwegv

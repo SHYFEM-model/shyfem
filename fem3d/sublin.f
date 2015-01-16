@@ -136,6 +136,7 @@ c tests for adjacency between nodes
 
 	integer nen3v(3,1)
 	common /nen3v/nen3v
+	include 'param_dummy.h'
 	include 'links.h'
 
 	integer n,i,ie,ii

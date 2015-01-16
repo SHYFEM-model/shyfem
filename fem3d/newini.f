@@ -292,17 +292,18 @@ c sigma and zeta levels and hsigma	hybrid levels
 	implicit none
 
 c common
+	include 'param.h'
 	include 'nbasin.h'
 	integer nlvdi,nlv
 	common /level/ nlvdi,nlv
 	real hm3v(3,1)
 	common /hm3v/hm3v
-	real hldv(1),hlv(2)
+	real hldv(nlvdim),hlv(nlvdim)
 	common /hldv/hldv, /hlv/hlv
 
 c local
 	logical bsigma,bhybrid,bzeta
-	integer l,ie,ii,nsigma
+	integer l,ie,ii,nsigma,second
 	real dzreg,hl,fact,hsigma
 	real hmax,hbot,htop
 
@@ -327,6 +328,7 @@ c--------------------------------------------------------------
 c create hlv values
 c--------------------------------------------------------------
 
+	second = 2
 	dzreg = getpar('dzreg')
 	call get_sigma(nsigma,hsigma)
 	write(6,*) 'nlv,nsigma,hsigma: ',nlv,nsigma,hsigma
@@ -364,7 +366,7 @@ c--------------------------------------------------------------
 
 	  if( nlv .eq. 1 ) then		!just one level (barotropic)
 	    if( bsigma .or. bhybrid ) goto 98
-	  else if( hlv(2) .gt. hlv(1) ) then	!zeta layers given
+	  else if( hlv(second) .gt. hlv(1) ) then	!zeta layers given
 	    if( bzeta ) goto 97
 	    if( bsigma ) then		!put sigma layers on top
 	      if( .not. bhybrid ) goto 88

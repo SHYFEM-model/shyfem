@@ -54,6 +54,7 @@ c common
 	common /nen3v/nen3v
 	common /zenv/zenv, /zeov/zeov
 	include 'ev.h'
+	include 'param_dummy.h'
 	include 'links.h'
 c local
 	real area
@@ -194,6 +195,7 @@ c common
 	real hm3v(3,1)
 	common /hm3v/hm3v
 	include 'ev.h'
+	include 'param_dummy.h'
 	include 'links.h'
 c local
 	integer ie,i,ii,nl

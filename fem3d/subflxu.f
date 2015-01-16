@@ -334,6 +334,7 @@ c gets number of internal section in link index of k1
 	integer igtnsc
 	integer k1,k2
 
+	include 'param.h'
 	include 'links.h'
 
 	integer k,i,n,ie

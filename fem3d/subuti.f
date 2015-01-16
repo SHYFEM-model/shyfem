@@ -134,6 +134,7 @@ c arguments
 	real areavl
 	integer k
 c common
+	include 'param.h'
 	include 'nbasin.h'
 	include 'links.h'
 	integer nen3v(3,1)
@@ -190,6 +191,7 @@ c arguments
         real flxnod
         integer k
 c common
+	include 'param.h'
 	include 'nbasin.h'
         real unv(1),vnv(1)
         common /unv/unv, /vnv/vnv

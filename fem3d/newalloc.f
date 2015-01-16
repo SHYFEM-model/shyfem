@@ -73,4 +73,5 @@
 ! Georg: bnd.h geom.h geom_aux.h (link.h) bound_geom.h volcomp.h
 !	conz.h basin.h 
 
+	subroutine text_alloc
 	end

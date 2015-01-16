@@ -268,14 +268,14 @@ c save
 
 c********************************************************************
 
-        subroutine setsedload(nlvdim,nkndim,nstate,eload,elini)
+        subroutine setsedload(nlvdi,nkndi,nstate,eload,elini)
 
 c sets up sediment loading
 
         implicit none
 
-        integer nlvdim,nkndim,nstate
-        real eload(nlvdim,nkndim,nstate)
+        integer nlvdi,nkndi,nstate
+        real eload(nlvdi,nkndi,nstate)
         real elini(nstate)
 
 	include 'nbasin.h'

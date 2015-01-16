@@ -132,6 +132,7 @@ c example: neibors of rdist=1 nodes have rdist=2 etc.
         integer idist(1)
         real rdist(1)
 
+	include 'param.h'
 	include 'links.h'
 
         integer k,kk,i
@@ -226,6 +227,7 @@ c example: neibors of rdist=1 nodes have rdist=2 etc.
         integer idist(1)
         real rdist(1)
 
+	include 'param.h'
 	include 'links.h'
 
 	logical bdebug
