@@ -141,9 +141,6 @@ c eliminates node
 	integer ipos,ipos1,ipos2
 	integer neibs(30),ngneib(30)
 
-	integer ipv(1), ipev(1)
-	common /ipv/ipv, /ipev/ipev
-
 	logical bdebug
 	integer ie,ii,ip
 	integer kk

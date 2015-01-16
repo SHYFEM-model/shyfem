@@ -6,6 +6,10 @@ use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
 $FEMDIR=$ENV{SHYFEMDIR}?$ENV{SHYFEMDIR}:$ENV{HOME}/shyfem;
 
 
+or (to avoid warnings):
+
+BEGIN { $::SFD = ( defined $ENV{SHYFEMDIR} ? $ENV{SHYFEMDIR} : "unknown" ); }
+use lib ("$::SFD/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
 
 to install packages:
 

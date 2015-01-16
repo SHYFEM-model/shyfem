@@ -155,13 +155,13 @@ c 3D concentrations
 
 c**********************************************************
 
-	subroutine set_uv(nlvdim,nkn,p3)
+	subroutine set_uv(nlvddi,nkn,p3)
 
 	implicit none
 
-	integer nlvdim
+	integer nlvddi
 	integer nkn
-	real p3(nlvdim,nkn,2)
+	real p3(nlvddi,nkn,2)
 
         real uv(1), vv(1)
         common /uv/uv, /vv/vv
@@ -492,14 +492,14 @@ c**********************************************************
 
 c**********************************************************
 
-	subroutine ploval(nkn,parray,title)
+	subroutine ploval(nkn,pa,title)
 
 c plots node values
 
 	implicit none
 
 	integer nkn
-	real parray(1)
+	real pa(1)
         character*(*) title
 
         logical bwater(1)		!mask for elements
@@ -516,14 +516,14 @@ c plots node values
         call annotes(title)
 	call bash(0)
 
-	call get_minmax_flag(parray,nkn,pmin,pmax)
+	call get_minmax_flag(pa,nkn,pmin,pmax)
         write(6,*) 'min/max: ',nkn,pmin,pmax
-	call apply_dry_mask(bkwater,parray,nkn,flag)	!flags to dry nodes
-	call count_flag(parray,nkn,flag)
+	call apply_dry_mask(bkwater,pa,nkn,flag)	!flags to dry nodes
+	call count_flag(pa,nkn,flag)
 	call colauto(pmin,pmax)
 
         call qcomm('Plotting isolines')
-        call isoline(parray,nkn,0.,2)
+        call isoline(pa,nkn,0.,2)
 	call plot_dry_areas
         call colsh
 
@@ -536,14 +536,14 @@ c plots node values
 
 c**********************************************************
 
-	subroutine ploeval(nel,parray,title)
+	subroutine ploeval(nel,pa,title)
 
 c plots element values
 
 	implicit none
 
 	integer nel
-	real parray(1)
+	real pa(1)
         character*(*) title
 
         logical bwater(1)		!mask for elements
@@ -560,13 +560,13 @@ c plots element values
         call annotes(title)
 	call bash(0)
 
-	call get_minmax_flag(parray,nel,pmin,pmax)
+	call get_minmax_flag(pa,nel,pmin,pmax)
         write(6,*) 'min/max: ',nel,pmin,pmax
-	call apply_dry_mask(bwater,parray,nel,flag)	!flags to dry nodes
+	call apply_dry_mask(bwater,pa,nel,flag)	!flags to dry nodes
 	call colauto(pmin,pmax)
 
         call qcomm('Plotting element values')
-        call isoline(parray,nel,0.,3)			!plot on elements
+        call isoline(pa,nel,0.,3)			!plot on elements
 	call plot_dry_areas
         call colsh
 
@@ -668,8 +668,8 @@ c ivel = 4	waves
         common /hetv/hetv
         real uvnv(1), vvnv(1)
         common /uvnv/uvnv, /vvnv/vvnv
-	real vev(1)
-	common /vev/vev
+	real ve1v(1)
+	common /ve1v/ve1v
 	real v1v(1)
 	common /v1v/v1v
 	real uv(1), vv(1)
@@ -859,7 +859,7 @@ c	v1v is used for overlay plot
 
 c------------------------------------------------------------------
 c underlying color 
-c -> create vev/v1v (v1v is modulus of vel/tra) and plot
+c -> create ve1v/v1v (v1v is modulus of vel/tra) and plot
 c------------------------------------------------------------------
 
 	if( boverl ) then
@@ -1908,12 +1908,12 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine get_minmax_flag(parray,nkn,pmin,pmax)
+	subroutine get_minmax_flag(pa,nkn,pmin,pmax)
 
         implicit none
 
         integer nkn
-        real parray(nkn)
+        real pa(nkn)
         real pmin,pmax
 
         integer k
@@ -1926,7 +1926,7 @@ c*****************************************************************
         pmax = -high
         
         do k=1,nkn
-          val = parray(k)
+          val = pa(k)
           if( val .ne. flag ) then
             pmin = min(pmin,val)
             pmax = max(pmax,val)

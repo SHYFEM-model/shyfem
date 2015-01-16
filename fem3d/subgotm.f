@@ -230,7 +230,10 @@ c aux arrays superposed onto other aux arrays
 c---------------------------------------------------------------
 
 	real shearf2(nlvdim,nkndim)
+        common /shearf2/shearf2
 	real buoyf2(nlvdim,nkndim)
+        common /buoyf2/buoyf2
+
 	real taub(nkndim)
 	real areaac(nkndim)
 

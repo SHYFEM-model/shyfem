@@ -345,66 +345,66 @@ c**********************************************************
 c**********************************************************
 c**********************************************************
 
-	subroutine extnlev(level,nlvdim,nkn,p3,p2)
+	subroutine extnlev(level,nlvddi,nkn,p3,p2)
 
 c extract level from 3d array (nodes)
 
 	implicit none
 
 	integer level		!level to extract
-	integer nlvdim		!vertical dimension of p3
+	integer nlvddi		!vertical dimension of p3
 	integer nkn		!number of nodes
-	real p3(nlvdim,nkn)	!3d array
+	real p3(nlvddi,nkn)	!3d array
 	real p2(nkn)		!2d array filled on return
 
         integer ilhkv(1)
         common /ilhkv/ilhkv
 
-	call extlev(level,nlvdim,nkn,ilhkv,p3,p2)
+	call extlev(level,nlvddi,nkn,ilhkv,p3,p2)
 
 	end
 
 c**********************************************************
 
-	subroutine extelev(level,nlvdim,nel,p3,p2)
+	subroutine extelev(level,nlvddi,nel,p3,p2)
 
 c extract level from 3d array (elements)
 
 	implicit none
 
 	integer level		!level to extract
-	integer nlvdim		!vertical dimension of p3
+	integer nlvddi		!vertical dimension of p3
 	integer nel		!number of elements
-	real p3(nlvdim,nel)	!3d array
+	real p3(nlvddi,nel)	!3d array
 	real p2(nel)		!2d array filled on return
 
         integer ilhv(1)
         common /ilhv/ilhv
 
-	call extlev(level,nlvdim,nel,ilhv,p3,p2)
+	call extlev(level,nlvddi,nel,ilhv,p3,p2)
 
 	end
 
 c**********************************************************
 
-	subroutine extlev(level,nlvdim,n,ilv,p3,p2)
+	subroutine extlev(level,nlvddi,n,ilv,p3,p2)
 
 c extract level from 3d array
 
 	implicit none
 
 	integer level		!level to extract
-	integer nlvdim		!vertical dimension of p3
+	integer nlvddi		!vertical dimension of p3
 	integer n		!number values
         integer ilv(n)
-	real p3(nlvdim,n)	!3d array
+	real p3(nlvddi,n)	!3d array
 	real p2(n)		!2d array filled on return
 
 	integer i,lmax,lact
         real flag
 
-	if( level .gt. nlvdim ) then
-	  write(6,*) 'level, nlvdim : ',level,nlvdim
+	if( level .gt. nlvddi ) then
+	  write(6,*) 'level, nlvddi : ',level,nlvddi
 	  stop 'error stop extlev: level'
 	end if
 
@@ -415,7 +415,7 @@ c extract level from 3d array
 	end if
 
 	if( level .eq. 0 ) then
-	  call intlev(nlvdim,n,ilv,p3,p2)		!integrate
+	  call intlev(nlvddi,n,ilv,p3,p2)		!integrate
 	else
 	  do i=1,n
 	    lmax = ilv(i)
@@ -430,16 +430,16 @@ c extract level from 3d array
 
 c**********************************************************
 
-	subroutine intlev(nlvdim,n,ilv,p3,p2)
+	subroutine intlev(nlvddi,n,ilv,p3,p2)
 
 c integrate over water column
 
 	implicit none
 
-	integer nlvdim		!vertical dimension of p3
+	integer nlvddi		!vertical dimension of p3
 	integer n		!number of nodes
         integer ilv(n)
-	real p3(nlvdim,n)	!3d array
+	real p3(nlvddi,n)	!3d array
 	real p2(n)		!2d array filled on return
 
 	integer i,l,lmax
@@ -450,7 +450,7 @@ c integrate over water column
 	  if( lmax .eq. 1 ) then	!2d
 	    p2(i) = p3(1,i)
 	  else				!primitive method of averaging
-	    if( lmax .gt. nlvdim ) goto 99
+	    if( lmax .gt. nlvddi ) goto 99
 	    if( lmax .le. 0 ) goto 99
 	    value = 0.
 	    do l=1,lmax
@@ -462,7 +462,7 @@ c integrate over water column
 
 	return
    99	continue
-	write(6,*) 'lmax,nlvdim : ',lmax,nlvdim
+	write(6,*) 'lmax,nlvddi : ',lmax,nlvddi
 	stop 'error stop intlev : error in lmax'
 	end
 

@@ -1,5 +1,34 @@
 ============================================================
 
+Fri Jan 16 16:25:38 CET 2015
+
+intermediate for include files
+
+ fem3d/basin.h           |    4 +-
+ fem3d/bin/newsubst.pl   |   38 +++++--
+ fem3d/geom_aux.h        |   21 ++++
+ fem3d/subgotm.f         |    3 +
+ femadj/adj4el.f         |    3 -
+ fembin/strcheck.sh      |    8 +-
+ femdoc/final/shyfem.pdf |  Bin 293717 -> 293711 bytes
+ femdoc/final/shyfem.ps  |   36 ++++----
+ femlib/perl/info.txt    |    4 +
+ femlib/perl/str.pm      |    2 +-
+ femplot/plotsim.f       |   12 +--
+ femplot/reg2fem.f       |  261 -----------------------------------------------
+ femplot/supdep.f        |   47 +++++----
+ femplot/supint.f        |   38 ++++----
+ femplot/suplin1.f       |    6 +-
+ femplot/supout.f        |   66 ++++++------
+ femplot/supsim.f        |   40 ++++----
+ 17 files changed, 187 insertions(+), 402 deletions(-)
+ new file:
+   fem3d/geom_aux.h
+ deleted:
+    femplot/reg2fem.f
+
+============================================================
+
 Thu Jan 15 14:08:28 CET 2015
 
 New version 7_1_1

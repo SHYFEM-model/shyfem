@@ -115,16 +115,12 @@ c auxiliary
 	common /v2v/v2v
 	real v3v(nkndim)
 	common /v3v/v3v
-	real vev(neldim)
-	common /vev/vev
+	real ve1v(neldim)
+	common /ve1v/ve1v
 	real uvnv(neldim), vvnv(neldim)
 	common /uvnv/uvnv, /vvnv/vvnv
 	real uv(nkndim), vv(nkndim)
 	common /uv/uv, /vv/vv
-	real pres(nkndim)
-	common /pres/pres
-	real hl(nlvdim)
-	common /hl/hl
 	logical bwater(neldim)
 	common /bwater/bwater
 	logical bkwater(nkndim)
@@ -201,8 +197,8 @@ c----------------------------------------------
 c make depth on nodes and elements
 c----------------------------------------------
 
-	call mkhkv(hkv,v1v,nkn,nel)
-	call mkhev(hev,nel)
+	call mkhkv
+	call mkhev
 	call mkareafvl			!area of finite volumes
 
 c----------------------------------------------

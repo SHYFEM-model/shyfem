@@ -13,6 +13,14 @@ my @ignore_files = ();
 
 #----------------------------------------------------------------
 
+# newini.f		375: hlv(2)
+#
+# in sublnka.f subflx3d : links.h does not have nkndim etc...
+# clean boundary names (???)
+# subgotm: 214 -> comment shearf2 buoyf2 once gotm_aux.h is included
+
+#----------------------------------------------------------------
+
 $::quiet = 0 unless $::quiet;
 $::write = 0 unless $::write;
 $::debug = 0 unless $::debug;
@@ -83,7 +91,7 @@ if( $::subst ) {
   #subst_reg($fortran);
 
   treat_includes($fortran);
-  check_common($fortran);
+  #check_common($fortran);
 } elsif( $::clean ) {
   clean_files($fortran);
 } elsif( $::include ) {
@@ -97,14 +105,6 @@ if( $::subst ) {
 }
 
 $fortran->write_files($::quiet) if $::write;
-
-#----------------------------------------------------------------
-
-# newini.f		375: hlv(2)
-#
-# in sublnka.f subflx3d : links.h does not have nkndim etc...
-# clean boundary names (???)
-# subgotm: 214 -> comment shearf2 buoyf2 once gotm_aux.h is included
 
 #----------------------------------------------------------------
 #----------------------------------------------------------------
@@ -587,12 +587,32 @@ sub condense_list {
   return \@aux
 }
 
+sub copy_include {
+
+  my @include = @_;
+
+  my $hdir = "/home/georg/fem/fem3d/common_h";
+
+  foreach my $include (@include) {
+    my $file = "$hdir/$include";
+    if( -f $include ) {
+      print STDERR "include file $include existing... not copying\n";
+    } elsif( not -f $file ) {
+      die "no include file $include available... aborting\n";
+    } else {
+      print STDERR "copy include file $include\n";
+      `cp $file .`
+    }
+  }
+}
+
 sub subst_common {
 
   my ($fortran,$common,@include) = @_;
 
   my $include = join(" ",@include);
   print STDERR "  substituting common /$common/ with include $include\n";
+  copy_include(@include);
 
   my @list = sort keys %{$fortran->{all_routines}};
   foreach my $rname (@list) {

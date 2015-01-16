@@ -14,14 +14,14 @@ fi
 
 str=$1
 
-itanf=`strparse.pl -quiet -value=itanf $str`
-itend=`strparse.pl -quiet -value=itend $str`
-date=`strparse.pl -quiet -value=date $str`
+itanf=`$fembin/strparse.pl -quiet -value=itanf $str`
+itend=`$fembin/strparse.pl -quiet -value=itend $str`
+date=`$fembin/strparse.pl -quiet -value=date $str`
 [ "$date" = "" ] && date=0
 
 echo "STR parameters: $itanf $itend $date"
 
-strparse.pl -quiet -files $str > tmp.tmp
+$fembin/strparse.pl -quiet -files $str > tmp.tmp
 tail -n +2 tmp.tmp > tmp1.tmp		# get rid of line with grid (first)
 
 while read line

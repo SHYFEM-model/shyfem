@@ -8,7 +8,7 @@ c
 c subroutine mkhkv(hkv,auxv,nkn,nel)	makes hkv (nodewise depth)
 c subroutine mkhev(hev,nel)		makes hev (elementwise depth)
 c subroutine mkht(hetv,href)		makes hetv (elem depth of actual layer)
-c subroutine mkht3(nlvdim,het3v,href)	makes het3v (3D depth structure)
+c subroutine mkht3(nlvdi,het3v,href)	makes het3v (3D depth structure)
 c function hlthick(l,lmax,hl)		layer thickness
 c
 c revision log :
@@ -27,37 +27,41 @@ c 05.09.2013    ggu     adapt to new get_layer_thickness()
 c
 c******************************************************************
 
-	subroutine mkhkv(hkv,auxv,nkn,nel)
+	subroutine mkhkv
 
 c makes hkv (nodewise depth)
 
 	implicit none
 
-c arguments
-	real hkv(1)
-	real auxv(1)
-	integer nkn,nel
 c common
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	integer nen3v(3,1)
+	common /nen3v/nen3v
 	real hm3v(3,1)
-	common /nen3v/nen3v, /hm3v/hm3v
+	common /hm3v/hm3v
+	real hkv(1)
+	common /hkv/hkv
+	real v1v(1)
+	common /v1v/v1v
 c local
 	integer ie,ii,k,kn
 
         do k=1,nkn
           hkv(k) = 0.
+	  v1v(k) = 0.
         end do
 
         do ie=1,nel
           do ii=1,3
             kn=nen3v(ii,ie)
             hkv(kn)=hkv(kn)+hm3v(ii,ie)
-	    auxv(kn)=auxv(kn)+1.
+	    v1v(kn)=v1v(kn)+1.
           end do
         end do
 
         do k=1,nkn
-          hkv(k) = hkv(k) / auxv(k)
+          hkv(k) = hkv(k) / v1v(k)
         end do
 
 	return
@@ -65,18 +69,19 @@ c local
 
 c******************************************************************
 
-	subroutine mkhev(hev,nel)
+	subroutine mkhev
 
 c makes hev (elementwise depth)
 
 	implicit none
 
-c arguments
-	real hev(1)
-	integer nel
 c common
+        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
+        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
 	real hm3v(3,1)
 	common /hm3v/hm3v
+	real hev(1)
+	common /hev/hev
 c local
 	integer ie,ii
 	real h
@@ -109,16 +114,15 @@ c common
 	include 'nbasin.h'
         integer nlvdi,nlv
         common /level/ nlvdi,nlv
+
         real hlv(1), hev(1)
         common /hlv/hlv, /hev/hev
         integer ilhv(1)
         common /ilhv/ilhv
 	real zenv(3,1)
 	common /zenv/zenv
-        real vev(1)
-        common /vev/vev
-        real hl(1)
-        common /hl/hl
+        real ve1v(1)
+        common /ve1v/ve1v
 c local
 	logical bdebug
 	integer ie,ii
@@ -126,6 +130,7 @@ c local
 	real zeta
 	integer nsigma,nlvaux
 	real hsigma
+        real hl(nlv)
 c functions
 	integer getlev
 	real hlthick
@@ -173,20 +178,18 @@ c-------------------------------------------------------------------
 
 c******************************************************************
 
-	subroutine mkht3(nlvdim,het3v,href)
+	subroutine mkht3(nlvdi,het3v,href)
 
 c makes het3v (3D depth structure)
 
 	implicit none
 
 c arguments
-	integer nlvdim
-	real het3v(nlvdim,1)
+	integer nlvdi
+	real het3v(nlvdi,1)
 	real href
 c common
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
         integer ilhv(1)
         common /ilhv/ilhv
         real hlv(1), hev(1)

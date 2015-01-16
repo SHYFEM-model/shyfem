@@ -168,11 +168,11 @@ c---------------------------------------------------
 
 c******************************************************
 
-	subroutine set_dry_volume_mask(bkwater,hdry)
+	subroutine set_dry_volume_mask(bkw,hdry)
 
 	implicit none
 
-	logical bkwater(1)
+	logical bkw(1)
 	real hdry
 
 	include 'param.h'
@@ -198,8 +198,8 @@ c******************************************************
 	  h = vol/area
 	  hhmin = min(hhmin,h)
 	  hhmax = max(hhmax,h)
-	  bkwater(k) = h .ge. hdry
-	  if( .not. bkwater(k) ) idry = idry + 1
+	  bkw(k) = h .ge. hdry
+	  if( .not. bkw(k) ) idry = idry + 1
 	end do
 
 	write(6,*) 'min/max depth: ',hhmin,hhmax,hdry,idry
@@ -429,7 +429,7 @@ c******************************************************
         integer ilhkv(1)
         common /ilhkv/ilhkv
 
-        integer ierr,nlvdim,ivar
+        integer ierr,nlvddi,ivar
 
         real uv(1), vv(1)
         real v1v(1), v2v(1), v3v(1)
@@ -439,16 +439,16 @@ c******************************************************
         common /v3v/v3v
 
 	wavenext = .false.
-	nlvdim = 1
-	call rdnos(nunit,it,ivar,nlvdim,ilhkv,v1v,ierr)
+	nlvddi = 1
+	call rdnos(nunit,it,ivar,nlvddi,ilhkv,v1v,ierr)
 	if( ierr .gt. 0 ) goto 99
 	if( ierr .lt. 0 ) return
 	if( ivar .ne. 31 ) goto 97
-	call rdnos(nunit,it,ivar,nlvdim,ilhkv,v2v,ierr)
+	call rdnos(nunit,it,ivar,nlvddi,ilhkv,v2v,ierr)
 	if( ierr .gt. 0 ) goto 99
 	if( ierr .lt. 0 ) goto 98
 	if( ivar .ne. 32 ) goto 97
-	call rdnos(nunit,it,ivar,nlvdim,ilhkv,v3v,ierr)
+	call rdnos(nunit,it,ivar,nlvddi,ilhkv,v3v,ierr)
 	if( ierr .gt. 0 ) goto 99
 	if( ierr .lt. 0 ) goto 98
 	if( ivar .ne. 33 ) goto 97
@@ -833,7 +833,7 @@ c end
 
 c******************************************************
 
-	function nosnext(it,ivar,nlvdim,array)
+	function nosnext(it,ivar,nlvddi,array)
 
 c reads next NOS record - is true if a record has been read, false if EOF
 
@@ -842,8 +842,8 @@ c reads next NOS record - is true if a record has been read, false if EOF
 	logical nosnext		!true if record read, flase if EOF
 	integer it		!time of record
 	integer ivar		!type of variable
-	integer nlvdim		!dimension of vertical coordinate
-	real array(nlvdim,1)	!values for variable
+	integer nlvddi		!dimension of vertical coordinate
+	real array(nlvddi,1)	!values for variable
 
 	integer nunit
 	common /nosnos/ nunit
@@ -854,10 +854,10 @@ c reads next NOS record - is true if a record has been read, false if EOF
 
 	integer ierr
 
-	if( nlvdim .ne. nlvdi ) stop 'error stop nosnext: nlvdim'
+	if( nlvddi .ne. nlvdi ) stop 'error stop nosnext: nlvddi'
 
 	call nosini
-	call rdnos(nunit,it,ivar,nlvdim,ilhkv,array,ierr)
+	call rdnos(nunit,it,ivar,nlvddi,ilhkv,array,ierr)
 
 c set return value
 
@@ -1045,15 +1045,15 @@ c end
 
 c******************************************************
 
-	subroutine fvlnext(it,nlvdim,array)
+	subroutine fvlnext(it,nlvddi,array)
 
 c reads next FVL record
 
 	implicit none
 
 	integer it		!time of record
-	integer nlvdim		!dimension of vertical coordinate
-	real array(nlvdim,1)	!values for variable
+	integer nlvddi		!dimension of vertical coordinate
+	real array(nlvddi,1)	!values for variable
 
 	integer nunit
 	common /fvlfvl/ nunit
@@ -1069,7 +1069,7 @@ c reads next FVL record
 	save itfvl
 	data itfvl / -1 /
 
-	if( nlvdim .ne. nlvdi ) stop 'error stop fvlnext: nlvdim'
+	if( nlvddi .ne. nlvdi ) stop 'error stop fvlnext: nlvddi'
 
 	call fvlini
 	if( nunit .eq. 0 ) return	!file closed
@@ -1081,7 +1081,7 @@ c reads next FVL record
 	ivar = 66
 
 	do while( ierr .eq. 0 .and. itfvl .lt. it )
-	  call rdnos(nunit,itfvl,ivar,nlvdim,ilhkv,array,ierr)
+	  call rdnos(nunit,itfvl,ivar,nlvddi,ilhkv,array,ierr)
 	  write(6,*) 'fvl file read...',itfvl,ivar
 	end do
 
@@ -1251,7 +1251,7 @@ c read second header
 
 c******************************************************
 
-	function eosnext(it,ivar,nlvdim,array)
+	function eosnext(it,ivar,nlvddi,array)
 
 c reads next EOS record - is true if a record has been read, false if EOF
 
@@ -1260,8 +1260,8 @@ c reads next EOS record - is true if a record has been read, false if EOF
 	logical eosnext		!true if record read, flase if EOF
 	integer it		!time of record
 	integer ivar		!type of variable
-	integer nlvdim		!dimension of vertical coordinate
-	real array(nlvdim,1)	!values for variable
+	integer nlvddi		!dimension of vertical coordinate
+	real array(nlvddi,1)	!values for variable
 
 	integer nunit
 	common /eoseos/ nunit
@@ -1272,10 +1272,10 @@ c reads next EOS record - is true if a record has been read, false if EOF
 
 	integer ierr
 
-	if( nlvdim .ne. nlvdi ) stop 'error stop eosnext: nlvdim'
+	if( nlvddi .ne. nlvdi ) stop 'error stop eosnext: nlvddi'
 
 	call eosini
-	call rdeos(nunit,it,ivar,nlvdim,ilhv,array,ierr)
+	call rdeos(nunit,it,ivar,nlvddi,ilhv,array,ierr)
 
 c set return value
 
@@ -1547,7 +1547,7 @@ c rewind for a clean state
 
 c******************************************************
 
-	function femnext(atime,ivar,nlvdim,nkn,array)
+	function femnext(atime,ivar,nlvddi,nkn,array)
 
 c reads next FEM record - is true if a record has been read, false if EOF
 
@@ -1557,9 +1557,9 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	integer it			!time of record
 	double precision atime		!absolute time
 	integer ivar			!type of variable
-	integer nlvdim			!dimension of vertical coordinate
+	integer nlvddi			!dimension of vertical coordinate
 	integer nkn			!number of points needed
-	real array(nlvdim,nkn,1)	!values for variable
+	real array(nlvddi,nkn,1)	!values for variable
 
 	integer nunit,iformat
 	common /femfem/ nunit,iformat
@@ -1582,7 +1582,7 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	real fact
 	character*80 string
 
-	if( nlvdim .ne. nlvdi ) stop 'error stop femnext: nlvdim'
+	if( nlvddi .ne. nlvdi ) stop 'error stop femnext: nlvddi'
 
 	call femini
 	bformat = iformat .eq. 1
@@ -1617,7 +1617,7 @@ c reads next FEM record - is true if a record has been read, false if EOF
      +                          ,nvers,np,lmax
      +				,string
      +                          ,ilhkv,v1v
-     +                          ,nlvdim,array(1,1,ip),ierr)
+     +                          ,nlvddi,array(1,1,ip),ierr)
 	    if( ierr .ne. 0 ) goto 98
 	    call string2ivar(string,iv)
 	    bfound = iv .eq. ivar
@@ -1661,18 +1661,18 @@ c end
 
 c******************************************************
 
-	subroutine femscale(nlvdim,nkn,fact,array)
+	subroutine femscale(nlvddi,nkn,fact,array)
 
 	implicit none
 
-	integer nlvdim,nkn
+	integer nlvddi,nkn
 	real fact
-	real array(nlvdim,nkn)
+	real array(nlvddi,nkn)
 
 	integer k,l
 
 	do k=1,nkn
-	  do l=1,nlvdim
+	  do l=1,nlvddi
 	    array(l,k) = fact * array(l,k)
 	  end do
 	end do

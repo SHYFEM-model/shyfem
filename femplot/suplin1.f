@@ -9,13 +9,13 @@ c 13.10.2009    ggu     routines written from scratch
 c
 c*******************************************************************
 
-	subroutine prepare_vel(p3)
+	subroutine prepare_vel(pp3)
 
 	implicit none
 
 	include 'param.h'
 
-	real p3(nlvdim,nkndim)
+	real pp3(nlvdim,nkndim)
 
 	include 'nbasin.h'
         integer nlvdi,nlv
@@ -48,7 +48,7 @@ c*******************************************************************
 	    u = uprv(l,k)
 	    v = vprv(l,k)
 	    w = wprv(l,k)
-	    p3(l,k) = sqrt( u*u + v*v + w*w )
+	    pp3(l,k) = sqrt( u*u + v*v + w*w )
 	  end do
 	end do
 
