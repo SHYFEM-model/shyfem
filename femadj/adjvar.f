@@ -19,24 +19,23 @@ c 10.03.2010    ggu     area computation changed in checkarea (bug in 64 bit)
 c
 c**************************************************************
 
-	subroutine smooth(npass,omega,nkn,nel
-     +				,nen3v,nbound
-     +				,xgv,ygv,dx,dy,ic)
+	subroutine smooth(npass,omega)
 
 c smoothing of internal nodes
 
 	implicit none
 
+	include 'param.h'
+	include 'grade.h'
+	include 'basin.h'
+
 	integer npass
-	integer nkn,nel
-	integer nen3v(3,1)
-	integer nbound(1)
 	real omega
-	real xgv(1),ygv(1)
-	real dx(1),dy(1)
-	integer ic(1)
 
 	integer n,k,ie,ii
+	integer ic(nkn)
+	real dx(nkn)
+	real dy(nkn)
 	real xm,ym
 
 	write(6,*) 'smoothing grid '
@@ -372,69 +371,6 @@ c writes info on node
 	end
 
 c****************************************************************
-
-	function isbound(k)
-
-c finds out if node k is boundary node
-
-	implicit none
-
-	logical isbound
-	integer k
-
-	include 'param.h'
-	include 'grade.h'
-
-	if( nbound(k) .eq. 1 ) then
-	  isbound = .true.
-	else
-	  isbound = .false.
-	end if
-
-	end
-
-c****************************************************************
-
-	function ngrad(k)
-
-c returns grade of node k
-
-	implicit none
-
-	integer ngrad		!grade of node (return)
-	integer k		!number of node
-
-	include 'param.h'
-	include 'grade.h'
-
-	ngrad = ngrade(k)
-
-	end
-
-c************************************************************
-
-	subroutine grpnt(k,n,ip)
-
-c gives grade info on node k
-c
-c n	grade
-c ip	pointer into ngri(1), so that (ngri(ip+i),i=1,n) are neighbors
-
-	implicit none
-
-	include 'param.h'
-	include 'grade.h'
-
-	integer k	!node
-	integer n	!grade (return)
-	integer ip	!pointer to first neighbor (-1) (return)
-
-	n = ngrade(k)
-	ip = 2*ngrdim*(k-1)
-
-	end
-
-c************************************************************
 
 	function rangle(k1,k2,k3)
 

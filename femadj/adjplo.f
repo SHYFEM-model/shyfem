@@ -22,16 +22,15 @@ c 19.05.2003    ggu     plot some more info on debug plot
 c
 c***********************************************************
 
-	subroutine plobas(nkn,nel,nen3v,ngrade,xgv,ygv)
+	subroutine plobas
 
 c plots basin
 
 	implicit none
 
-	integer nkn,nel
-	integer nen3v(3,1)
-	integer ngrade(1)
-	real xgv(1),ygv(1)
+	include 'param.h'
+	include 'basin.h'
+	include 'grade.h'
 
 	integer ie,ii,k,n,i1,i2
 	real xmin,xmax,ymin,ymax
@@ -123,7 +122,7 @@ c plots only special grade
 	    ngrade(k) = ngrade(k) - 1000
 	  end if
 	end do
-	call plobas(nkn,nel,nen3v,ngrade,xgv,ygv)
+	call plobas
 	do k=1,nkn
 	  n = ngrade(k)
 	  if( n .ne. igr ) then
@@ -137,50 +136,26 @@ c***********************************************************
 
 	subroutine wr0grd
 
-c writes quick and dirty results from common block to file
+c writes quick and dirty results from basin to file
 
 	implicit none
 
-	call wrfgrd('new0.grd')
+	call wrgrd('new0.grd')
 
 	end
 
 c***********************************************************
 
-	subroutine wrfgrd(file)
-
-c writes quick and dirty results from common block to file
-
-	implicit none
-
-	character*(*) file
-	integer nkn,nel
-        integer nen3v(3,1)
-        real xgv(1), ygv(1)
-
-        common /nkon/ nkn,nel
-        common /nen3v/nen3v
-        common /xgv/xgv, /ygv/ygv
-
-	call wrgrd(file,nkn,nel,xgv,ygv,nen3v)
-
-	end
-
-c***********************************************************
-
-	subroutine wrgrd(file,nkn,nel,xgv,ygv,nen3v)
+	subroutine wrgrd(file)
 
 c writes quick and dirty results to file
 
 	implicit none
 
-	character*(*) file
-	integer nkn,nel
-	integer nen3v(3,1)
-	real xgv(1),ygv(1)
+	include 'param.h'
+	include 'basin.h'
 
-	integer ipv(1), ipev(1)
-	common /ipv/ipv, /ipev/ipev
+	character*(*) file
 
 	integer k,ie,ii,it
 
@@ -204,21 +179,20 @@ c	call primem(2*nkn)	!prints deleted nodes
 	end
 
 c***********************************************************
+c***********************************************************
+c***********************************************************
 
-	subroutine plosel2(ie1,ie2,nkn,nel,ngrdim,nen3v,ngrade,ngri)
+	subroutine plosel2(ie1,ie2)
 
 c plots element
 
 	implicit none
 
-	integer ie1,ie2
-	integer nkn,nel,ngrdim
-	integer nen3v(3,1)
-	integer ngrade(1)
-	integer ngri(ngrdim*2,1)
+	include 'param.h'
+	include 'basin.h'
+	include 'grade.h'
 
-	real xgv(1),ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	integer ie1,ie2
 
 	character*11 line
 	integer ie,ii,k,n
@@ -299,14 +273,11 @@ c plots node and neighborhood
 
 	implicit none
 
-	integer k
+	include 'param.h'
+	include 'basin.h'
+	include 'grade.h'
 
-	integer nkn,nel
-	common /nkon/ nkn,nel
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-        integer ngri(1)
-	common /ngri/ngri
+	integer k
 
 	integer n,ip,i,kk
 	real xmin,xmax,ymin,ymax
@@ -318,12 +289,12 @@ c plots node and neighborhood
 	call qworld(xmin,ymin,xmax,ymax)
 	call qrcfy
 
-	call grpnt(k,n,ip)
+        n = ngrade(k)
 
 	call plonn(k)
 
 	do i=1,n
-	   kk = ngri(ip+i)
+	   kk = ngri(i,k)
 	   call plosno0(kk)
 	   call plonn(kk)
 	end do
@@ -340,26 +311,21 @@ c plots one node
 
 	implicit none
 
-	integer k
+	include 'param.h'
+	include 'basin.h'
+	include 'grade.h'
 
-	integer nkn,nel
-	common /nkon/ nkn,nel
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real xgv(1),ygv(1)
-	common /xgv/xgv, /ygv/ygv
-        integer ngri(1)
-	common /ngri/ngri
+	integer k
 
 	integer n,ip,i,kk
 	real x,y,xc,yc
 
 	xc = xgv(k)
 	yc = ygv(k)
-	call grpnt(k,n,ip)
+        n = ngrade(k)
 
 	do i=1,n
-	   kk = ngri(ip+i)
+	   kk = ngri(i,k)
 	   x = xgv(kk)
 	   y = ygv(kk)
 	   call qline(xc,yc,x,y)
@@ -375,27 +341,27 @@ c plots node number
 
 	implicit none
 
+	include 'param.h'
+	include 'basin.h'
+	include 'grade.h'
+
 	integer k
 
 	character*11 line
+	logical isbound
 	integer id,idnew,idtot
 	integer ng
 	real x,y
 	integer ialfa
 
-	integer ngrad
-	logical isbound
-
-	real xgv(1),ygv(1)
-	common /xgv/xgv, /ygv/ygv
-
 	line = ' '
 
-	ng = ngrad(k)
+	isbound = nbound(k) .eq. 1
+        ng = ngrade(k)
 	id = ialfa(float(k),line,-1,-1)
 	idtot = id
 
-	if( isbound(k) ) then
+	if( isbound ) then
 	  line(id+1:id+4) = ' (B)'
 	  idtot = id + 4
 	else if( ng .ne. 6 ) then
@@ -419,11 +385,11 @@ c computes min/max of (x,y) of node k and neighbors
 
 	implicit none
 
+	include 'param.h'
+	include 'grade.h'
+
 	integer k
 	real xmin,xmax,ymin,ymax
-
-        integer ngri(1)
-	common /ngri/ngri
 
 	integer n,ip,i,kk
 	real dx,dy
@@ -433,12 +399,12 @@ c computes min/max of (x,y) of node k and neighbors
 	ymin = xmin
 	ymax = -ymin
 
-	call grpnt(k,n,ip)
+        n = ngrade(k)
 
 	call mnmx(k,xmin,xmax,ymin,ymax)
 
 	do i=1,n
-	   kk = ngri(ip+i)
+	   kk = ngri(i,k)
 	   call mnmx(kk,xmin,xmax,ymin,ymax)
 	end do
 
@@ -460,21 +426,20 @@ c xmin... must be already initialized
 
 	implicit none
 
+	include 'param.h'
+	include 'basin.h'
+	include 'grade.h'
+
 	integer k
 	real xmin,xmax,ymin,ymax
-
-        integer ngri(1)
-	common /ngri/ngri
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
 
 	integer n,ip,i,kk
 	real x,y
 
-	call grpnt(k,n,ip)
+        n = ngrade(k)
 
 	do i=1,n
-	   kk = ngri(ip+i)
+	   kk = ngri(i,k)
 	   x = xgv(kk)
 	   y = ygv(kk)
 	   if( x .gt. xmax ) xmax = x
@@ -484,3 +449,6 @@ c xmin... must be already initialized
 	end do
 
 	end
+
+c******************************************************
+

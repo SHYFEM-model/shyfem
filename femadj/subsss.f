@@ -1,8 +1,9 @@
 c
-c $Id: subsss.f,v 1.4 2009-01-26 13:27:24 georg Exp $
+c $Id: subsss.f,v 1.11 2009-02-04 15:26:54 georg Exp $
 c
 c general utility routines
 c
+c contents :
 c
 c function izahl(z,ndec)		computes ciphers of number
 c function laezi(l,ioff)		computes length of number
@@ -27,12 +28,22 @@ c function iround(f)			rounds real value
 c function itypch(char)			returns typ of character
 c subroutine tabula(tab)		creates tab character
 c function rnext(r,mode)		finds closest value to r
-c function istell(r)		computes exponent of r
+c function rnexta(r,mode)		finds closest value to r (absolute)
+c function istell(r)			computes exponent of r
 c subroutine scplo(xmin,xmax,ymin,ymax)	scales plot
-c subroutine swap(a,b)			swaps values
+c subroutine swapr(a,b)			swaps values
 c function rlen(x1,y1,x2,y2)		length of line
 c
 c uplow,itypch,tabula depend on the ASCII character set
+c
+c revision log :
+c
+c 01.06.1998	ggu	new routines iscan... into own file (subscn.f)
+c 17.06.1998	ggu	old routines with new name (iscan0,ialfa0)
+c 12.02.1999	ggu	new routine triml
+c 26.01.2009	ggu	minor changes to avoid compiler warnings
+c 16.02.2011	ggu	new routine trimline()
+c 30.05.2014	ggu	new routine rnextsub()
 c
 c***********************************************************
 c
@@ -116,7 +127,7 @@ c
 c
 c**************************************
 c
-	function iscan(line,ioff,f)
+	function iscan0(line,ioff,f)
 c
 c converts alphanumeric text to numbers
 c
@@ -187,6 +198,7 @@ c
 			izeiex=0
 			kexp=0
 			ff=0.
+			ffac=1.
 			if(lh.eq.plus) then
 				izei=+1
 				goto 1
@@ -246,12 +258,12 @@ c
 		f(ianz)=ff*izei*(10.**(kexp*izeiex))
 	end if
 c
-	iscan=ianz
+	iscan0=ianz
 c
 	return
 c
    99	continue
-	iscan=-1
+	iscan0=-1
 c
 	return
 	end
@@ -291,7 +303,7 @@ c
      +			.or.l1.eq.' ') then
 		iantw=0
 	else
-		write(nat,*) 'Incorrect answer. Try again!'
+		write(nat,*) 'Incorrect answer. Try again.'
 		goto 1
 	end if
 c
@@ -304,12 +316,14 @@ c
 c
 c gets numbers from terminal (see also iscan)
 c
+c do not use -> no way to know if we are out of bounds
+c
 c l		text written to terminal
 c f		array in which the values are stored (return value)
 c inquir	total number of values read in
 c
 	character*(*) l
-	real f(100)
+	real f(1)
 c
 	character*80 lh
 	data net,nat /5,6/
@@ -388,7 +402,7 @@ c
 c
 c********************************************
 c
-	function ialfa(zahl,lh,ndec,mode)
+	function ialfa0(zahl,lh,ndec,mode)
 c
 c converts real number into alphanumeric characters
 c fills zahl with '*', if dimension of lh is
@@ -421,6 +435,7 @@ c
 		lh(i:i)='*'
 		end do
 		ialfa=lentxt
+		ialfa0=lentxt
 		return
 	end if
 c
@@ -447,10 +462,10 @@ c		izahlt=zahlh*ifact+.5
 c		izahlf=mod(izahlt,ifact)
 c		izahli=izahlt/ifact
 	else
+		izahlf = 0
 		ifact=1
 		izf=0
 		izahli=zahlh+.5
-		izahlf=0
 	end if
 c
 c integer
@@ -501,6 +516,8 @@ c
 	end do
 	if(ndif.ge.1) lh(1:ndif)=' '
 	if(ial+ndif.lt.lenlh) lh(ial+ndif+1:lenlh)=' '
+c
+	ialfa0 = ialfa
 c
 	return
 	end
@@ -830,7 +847,7 @@ c
 	else if(ianz.eq.0) then
 		ideflt=k
 	else if(ianz.gt.1) then
-		write(6,*) 'Only one number at a time !'
+		write(6,*) 'Only one number at a time.'
 		goto 1
 	else
 		write(6,*) 'Read error'
@@ -867,7 +884,7 @@ c
 	else if(ianz.eq.0) then
 		fdeflt=r
 	else if(ianz.gt.1) then
-		write(6,*) 'Only one number at a time !'
+		write(6,*) 'Only one number at a time.'
 		goto 1
 	else
 		write(6,*) 'Read error'
@@ -907,7 +924,7 @@ c char		character (*1) to be looked at
 c itypch	typ of character
 c		1 = numeric
 c		2 = letter
-c		3 = special character 	=+-*/(),.'"$_!:<>%&
+c		3 = special character 	=+-*/(),.'"$_!:<>%&	!'
 c		4 = non-fortran character
 c
 	character*1 char
@@ -973,9 +990,9 @@ c
 c
 	return
 	end
-c
+
 c*********************************************************
-c
+
 	function rnext(r,mode)
 c
 c finds closest value to r
@@ -988,25 +1005,27 @@ c		... <0  : the lower value is found (closer to 0)
 c		... |1| : 1. 2. 2.5 5. 8.
 c		... |2| : 1. 2. 5.
 c		... |3| : 1. 2. 3. 4. 5. 8.
+c		... |4| : 1. 2. 3. 4. 5. 6. 7. 8. 9.
 c rnext		closest value found to r
 c
 c val		matrix containing the closest values to be used
 c		...for each mode (in ascending order)
 c nval		number of values to be used for each mode
 c
-c if r is to small, 0 is returned
+c if r is too small, 0 is returned
 c for negative r the lower value is the value closer to zero
 c
-	parameter (nmodim=3,nvadim=6)
+	parameter (nmodim=4,nvadim=9)
 	logical bhigh
 	real val(nvadim,nmodim)
 	integer nval(nmodim)
 c
-	data val / 1. , 2. , 2.5 , 5. , 8. ,           0.
-     +		,  1. , 2. , 5. ,                      0. , 0. , 0.
-     +		,  1. , 2. , 3. , 4. , 5. , 8.
+	data val / 1. , 2. , 2.5 , 5. , 8. ,           0.,0.,0.,0.
+     +		,  1. , 2. , 5. ,                      0.,0.,0.,0.,0.,0.
+     +		,  1. , 2. , 3. , 4. , 5. , 8. ,       0.,0.,0.
+     +		,  1. , 2. , 3. , 4. , 5. , 6. , 7. , 8. , 9.
      +		 /
-	data nval / 5 , 3 , 6 /
+	data nval / 5 , 3 , 6 , 9 /
 c
 	if(mode.lt.0) then	!upper or lower value
 		bhigh=.false.
@@ -1041,7 +1060,7 @@ c
 	expo=10.**iexpo
 	nn=1
 	rr=val(nn,m)*expo
-	rrold=rr
+	rrold = rr
 
 	do while(rr.lt.rin)
 		rrold=rr
@@ -1061,7 +1080,89 @@ c
 c
 	return
 	end
+
+c*********************************************************
+
+	function rnexta(r,mode)
+
+c finds closest value to r (absolute, i.e., respects negative values)
+
+	implicit none
+
+	real rnexta
+	real r
+	integer mode
+
+	real rabs,rnext
+	integer m
+
+	rabs = abs(r)
+	m = mode
+	if( r .lt. 0. ) m = -mode
+
+	rabs = rnext(rabs,m)
+
+	if( r .lt. 0. ) rabs = -rabs
+
+	rnexta = rabs
+
+	end
+
+c*****************************************************************
+
+	function rnextsub(r)
+
+c finds best subdivision for value r
 c
+c		... |1| : 1. 2. 2.5 5. 8.
+c		... |2| : 1. 2. 5.
+c		... |3| : 1. 2. 3. 4. 5. 8.
+c		... |4| : 1. 2. 3. 4. 5. 6. 7. 8. 9.
+
+	implicit none
+
+	real rnextsub
+	real r
+
+	integer i
+	real eps,fact,rr,rsub
+	real rdata(9)
+	save rdata
+	data rdata /0.25,0.5,1.,1.,1.,2.,1.,2.,3./
+
+	eps = 1.e-5
+
+	fact = 1.
+	rr = r
+
+	if( rr > 1 ) then
+	  do while( rr/10. > 1 )
+	    fact = fact*10.
+	    rr = rr / 10.
+	  end do
+	else
+	  do while( rr < 1 )
+	    fact = fact/10.
+	    rr = rr * 10.
+	  end do
+	end if
+
+	if( abs(rr-2.5) < eps ) then
+	  rsub = 0.5
+	else
+	  i = nint(rr)
+	  if( i < 1 .or. i > 9 ) goto 99
+	  rsub = rdata(i)
+	end if
+
+	rnextsub = rsub * fact
+
+	return
+   99	continue
+	write(6,*) r,rr,fact,i
+	stop 'error stop rnextsub: internal error'
+	end
+
 c*****************************************************************
 c
 	function istell(r)
@@ -1115,8 +1216,8 @@ c
 	bold=.not.bfirst	!ask for old values
 	bchang=.true.		!values changed
 c
-	bdif = xmin.ne.xminh .or. xmax.ne.xmaxh .or.	!different values
-     +		ymin.ne.yminh .or. ymax.ne.ymaxh 	!...from last call
+c	bdif = xmin.ne.xminh .or. xmax.ne.xmaxh .or.	!different values
+c     +		ymin.ne.yminh .or. ymax.ne.ymaxh 	!...from last call
 	bdif = .true.	!always ask for old dimensions (11.10.95)
 c
 	do while(bchang)
@@ -1178,7 +1279,7 @@ c
 c
 c************************************************************
 c
-	subroutine swap(a,b)
+	subroutine swapr(a,b)
 c
 c swaps variables a,b
 c
@@ -1199,3 +1300,56 @@ c
 c
 	return
 	end
+c
+c************************************************************
+
+	subroutine triml(line)
+
+c trims line (deleting leading spaces)
+
+	implicit none
+
+	character*(*) line
+
+	integer il
+
+	call trimline(line,il)
+
+	end
+
+c************************************************************
+
+	subroutine trimline(line,il)
+
+c trims line (deleting leading spaces) and gives back length
+
+	implicit none
+
+	character*(*) line
+	integer il
+
+	integer i,j,n,length
+
+	length = len(line)
+
+	do i=1,length
+	  if( line(i:i) .ne. ' ' ) goto 1
+	end do
+
+    1	continue
+
+	if( i .eq. 1 ) return		!already trimmed
+
+	n = 0
+	do j=i,length
+	  n = n + 1
+	  line(n:n) = line(j:j)
+	end do
+
+	line(n+1:length) = ' '
+	il = n
+
+	end
+
+c************************************************************
+

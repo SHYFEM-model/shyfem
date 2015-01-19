@@ -40,10 +40,11 @@ c------------------------------------------------------- grade index
 	include 'grade.h'
 c------------------------------------------------------- basin
 	include 'basin.h'
+	include 'depth.h'
 c------------------------------------------------------- local
 	integer kspecial
 	integer nlidim,nlndim
-	integer nmax,k
+	integer k
 	integer ner
 	integer nco,nknh,nli
 	logical bstop, bplot
@@ -107,23 +108,23 @@ c save depth information in elements to nodes
 
 	if( nknh .eq. 0 ) then
 	  write(6,*) 'copying element depth to nodes...'
-	  call hev2hkv(nkn,nel,nen3v,hev,hkv,ic)
+	  call hev2hkv
 	end if
 
 c determine grade
 
-	call maxgrd(nkn,nel,nen3v,ngrade,nmax)
+	call maxgrd(nkn,nel,nen3v,ngrade,ngr)
 
-	write(6,*) 'maximum grade: ',nmax
-	if( nmax .gt. ngrdim ) goto 98
+	write(6,*) 'maximum grade: ',ngr
+	if( ngr .gt. ngrdim ) goto 98
 
-	call statgrd('first call',nkn,nmax,ngrade,nbound)
+	call stats('first call')
 
 c make boundary nodes (flag nbound)
 
 	call mkbound(nkn,nel,ngrdim,nen3v,ngrade,nbound,ngri)
         call mkstatic(nkn,ianv,nbound)
-	call statgrd('boundary nodes',nkn,nmax,ngrade,nbound)
+	call stats('boundary nodes')
 
 	call nodeinfo(kspecial)
 
@@ -131,7 +132,7 @@ c plot grade
 
 	call qopen
 
-	if( bplot) call plobas(nkn,nel,nen3v,ngrade,xgv,ygv)
+	if( bplot) call plobas
 
 c eliminate 4- grades
 
@@ -139,18 +140,17 @@ c eliminate 4- grades
 
 	call chkgrd
         write(6,*) 'chkgrd ok ...'
-c	call pltsgrd(4,nkn,nel,nen3v,ngrade,xgv,ygv)
-	call eliml(nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
-	if( bplot) call plobas(nkn,nel,nen3v,ngrade,xgv,ygv)
-	call statgrd('4- grades',nkn,nmax,ngrade,nbound)
+	call elimlow
+	if( bplot) call plobas
+	call stats('4- grades')
 	call nodeinfo(kspecial)
 
 c eliminate 8+ grades
 
 	call chkgrd
-	call elimh(8,nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
-	if( bplot) call plobas(nkn,nel,nen3v,ngrade,xgv,ygv)
-	call statgrd('8+ grades',nkn,nmax,ngrade,nbound)
+	call elimhigh(8)
+	if( bplot) call plobas
+	call stats('8+ grades')
 
 	write(6,*) 'checking after 8+'
 	call chkgrd
@@ -159,9 +159,9 @@ c eliminate 8+ grades
 c eliminate 7+ grades
 
 	call chkgrd
-	call elimh(7,nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
-	if( bplot) call plobas(nkn,nel,nen3v,ngrade,xgv,ygv)
-	call statgrd('7+ grades',nkn,nmax,ngrade,nbound)
+	call elimhigh(7)
+	if( bplot) call plobas
+	call stats('7+ grades')
 
 	write(6,*) 'checking after 7+'
 	call chkgrd
@@ -169,32 +169,30 @@ c eliminate 7+ grades
 
 c smoothing
 
-	call wrgrd('new_nosmooth.grd',nkn,nel,xgv,ygv,nen3v)
+	call wrgrd('new_nosmooth.grd')
 
-        call smooth(50,0.1,nkn,nel
-     +                          ,nen3v,nbound
-     +                          ,xgv,ygv,dx,dy,ic)
-	if( bplot) call plobas(nkn,nel,nen3v,ngrade,xgv,ygv)
+        call smooth(50,0.1)
+	if( bplot) call plobas
 	call nodeinfo(kspecial)
 
 c again ...
 
 	call chkgrd
-        call eliml(nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
-	call elimh(8,nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
-	call elimh(7,nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
-	if( bplot) call plobas(nkn,nel,nen3v,ngrade,xgv,ygv)
-	call statgrd('one more time',nkn,nmax,ngrade,nbound)
+        call elimlow
+	call elimhigh(8)
+	call elimhigh(7)
+	if( bplot) call plobas
+	call stats('one more time')
 	call nodeinfo(kspecial)
 
 c eliminate 5 grades
 
-	call wrgrd('new_help.grd',nkn,nel,xgv,ygv,nen3v)
+	call wrgrd('new_help.grd')
 
 	call chkgrd
-	call elim5(nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
-	if( bplot) call plobas(nkn,nel,nen3v,ngrade,xgv,ygv)
-	call statgrd('5 grades',nkn,nmax,ngrade,nbound)
+	call elim5
+	if( bplot) call plobas
+	call stats('5 grades')
 
 	write(6,*) 'checking after 5'
 	call chkgrd
@@ -202,9 +200,9 @@ c eliminate 5 grades
 
 c eliminate 5-5 grades
 
-	call elim57(nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
-	if( bplot) call plobas(nkn,nel,nen3v,ngrade,xgv,ygv)
-	call statgrd('5-5 grades',nkn,nmax,ngrade,nbound)
+	call elim57
+	if( bplot) call plobas
+	call stats('5-5 grades')
 
 	write(6,*) 'checking after 5-5'
 	call chkgrd
@@ -213,27 +211,25 @@ c eliminate 5-5 grades
 c one more time
 
 	write(6,*) 'one more round...'
-	call elimh(8,nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
-        call elimh(7,nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
-        call elim5(nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
-        call elim57(nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
-        call statgrd('all again',nkn,nmax,ngrade,nbound)
+	call elimhigh(8)
+        call elimhigh(7)
+        call elim5
+        call elim57
+        call stats('all again')
 	call chkgrd
 	call nodeinfo(kspecial)
 
 c smoothing
 
-        call smooth(50,0.1,nkn,nel
-     +                          ,nen3v,nbound
-     +                          ,xgv,ygv,dx,dy,ic)
-	if( bplot) call plobas(nkn,nel,nen3v,ngrade,xgv,ygv)
+        call smooth(50,0.1)
+	if( bplot) call plobas
 	call nodeinfo(kspecial)
 
 c write to grd file
 
 	call chkgrd
 	call nodeinfo(kspecial)
-	call wrgrd('new.grd',nkn,nel,xgv,ygv,nen3v)
+	call wrgrd('new.grd')
 
 	call qclose
 
@@ -251,19 +247,21 @@ c write to grd file
 	end
 
 c***********************************************************
+c***********************************************************
+c***********************************************************
 
-	subroutine hev2hkv(nkn,nel,nen3v,hev,hkv,ic)
+	subroutine hev2hkv
 
 c saves information about depth to nodes
 
 	implicit none
 
-	integer nkn,nel
-	integer nen3v(3,1)
-	real hev(1),hkv(1)
-	integer ic(1)
+	include 'param.h'
+	include 'basin.h'
+	include 'depth.h'
 
 	integer k,ie,ii
+	integer ic(nkn)
 
 	do k=1,nkn
 	  hkv(k) = 0.
@@ -283,6 +281,22 @@ c saves information about depth to nodes
 	    hkv(k) = hkv(k) / ic(k)
 	  end if
 	end do
+
+	end
+
+c***********************************************************
+
+	subroutine stats(text)
+
+	implicit none
+
+	include 'param.h'
+	include 'basin.h'
+	include 'grade.h'
+
+	character*(*) text
+
+	call statgrd(text,nkn,ngr,ngrade,nbound)
 
 	end
 

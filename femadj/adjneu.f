@@ -7,44 +7,33 @@ c node and element utility routines
 c
 c contents :
 c
-c subroutine delele(ie,nkn,nel,ngrdim,ngrade,ngri)
-c               deletes element
-c subroutine subnod(k,knew,nkn,nel,ngrdim,ngrade,ngri)
-c               substitutes node in indices (k subst by knew)
-c subroutine delnod(k,nkn,nel,ngrdim,ngrade,ngri)
-c               deletes node
+c subroutine delele(ie)		deletes element
+c subroutine newele(nnew)	new element
+c subroutine subnod(k,knew)     substitutes node in indices (k subst by knew)
+c subroutine delnod(k)		deletes node
+c subroutine newnod(nnew)	new node
+c
 c function ifindel(k1,k2,k3)
 c               finds element given three nodes
 c subroutine setele(ie,k1,k2,k3,nen3v)
 c               inserts grade in index (in index of node k after node k1)
+c subroutine subval(n,iarray,kold,knew)
+c		substitutes in array iarray kold with knew
 c
 c***********************************************************
 
-	subroutine delele(ie,nkn,nel,ngrdim,ngrade,ngri)
+	subroutine delele(ie)
 
 c deletes element
 
 	implicit none
 
-	integer ie,ngrdim
-	integer nkn,nel
-	integer ngrade(1)
-	integer ngri(2*ngrdim,1)
+	include 'param.h'
+	include 'basin.h'
+	include 'depth.h'
+	include 'grade.h'
 
-	integer ipv(1)
-	integer ipev(1)
-	integer iarv(1)
-	integer nen3v(3,1)
-	real xgv(1), ygv(1)
-	real hev(1), hkv(1)
-
-c	common /nkon/ nkn,nel
-	common /ipv/ipv
-	common /ipev/ipev
-	common /iarv/iarv
-	common /nen3v/nen3v
-	common /xgv/xgv, /ygv/ygv
-	common /hev/hev, /hkv/hkv
+	integer ie
 
 	integer ieold,ienew,ii
 
@@ -64,29 +53,20 @@ c	common /nkon/ nkn,nel
 
 c***********************************************************
 
-	subroutine newele(nel)
+	subroutine newele(nnew)
 
 c new element
 
 	implicit none
 
-	integer nel
+	include 'param.h'
+	include 'basin.h'
+	include 'depth.h'
+	include 'grade.h'
 
-	integer ipv(1)
-	integer ipev(1)
-	integer iarv(1)
-	integer nen3v(3,1)
-	real xgv(1), ygv(1)
-	real hev(1), hkv(1)
+	integer nnew
 
-	common /ipv/ipv
-	common /ipev/ipev
-	common /iarv/iarv
-	common /nen3v/nen3v
-	common /xgv/xgv, /ygv/ygv
-	common /hev/hev, /hkv/hkv
-
-	integer ie
+	integer ie,ii
 	integer iemax
 
 	iemax = 0
@@ -95,41 +75,37 @@ c new element
 	end do
 
 	nel = nel + 1
+	if( nel .gt. neldim ) stop 'error stop newele: neldim'
 
 	ipev(nel) = iemax
 	iarv(nel) = 0
 	hev(nel) = 0.
+	do ii=1,3
+	  hm3v(ii,nel) = 0.
+	end do
+
+	nnew = nel
 
 	end
 
 c***********************************************************
+c***********************************************************
+c***********************************************************
 
-	subroutine subnod(k,knew,nkn,nel,ngrdim,ngrade,ngri)
+	subroutine subnod(k,knew)
 
 c substitutes node in indices (k subst by knew)
 
 	implicit none
 
-	integer k,ngrdim
-	integer nkn,nel
-	integer ngrade(1)
-	integer ngri(2*ngrdim,1)
+	include 'param.h'
+	include 'basin.h'
+	include 'depth.h'
+	include 'grade.h'
 
-	integer ipv(1)
-	integer ipev(1)
-	integer iarv(1)
-	integer nen3v(3,1)
-	real xgv(1), ygv(1)
-	real hev(1), hkv(1)
+	integer k,knew
 
-	common /ipv/ipv
-	common /ipev/ipev
-	common /iarv/iarv
-	common /nen3v/nen3v
-	common /xgv/xgv, /ygv/ygv
-	common /hev/hev, /hkv/hkv
-
-	integer knew,ie,ii,n,kk,i
+	integer ie,ii,n,kk,i
 
 	do ie=1,nel
 	 do ii=1,3
@@ -148,33 +124,18 @@ c substitutes node in indices (k subst by knew)
 
 c***********************************************************
 
-	subroutine delnod(k,nkn,nel,ngrdim,ngrade,ngri)
+	subroutine delnod(k)
 
 c deletes node
 
 	implicit none
 
-	integer k,ngrdim
-	integer nkn,nel
-	integer ngrade(1)
-	integer ngri(2*ngrdim,1)
+	include 'param.h'
+	include 'basin.h'
+	include 'depth.h'
+	include 'grade.h'
 
-	integer ipv(1)
-	integer ipev(1)
-	integer iarv(1)
-	integer nen3v(3,1)
-	real xgv(1), ygv(1)
-	real hev(1), hkv(1)
-
-	integer nbound(1)
-	common /nbound/nbound
-
-	common /ipv/ipv
-	common /ipev/ipev
-	common /iarv/iarv
-	common /nen3v/nen3v
-	common /xgv/xgv, /ygv/ygv
-	common /hev/hev, /hkv/hkv
+	integer k
 
 	logical bdebug
 	integer knew,kold,ie,ii,n,kk,i
@@ -223,30 +184,18 @@ c deletes node
 
 c***********************************************************
 
-	subroutine newnod(nkn,ngrade,nbound)
+	subroutine newnod(nnew)
 
 c new node
 
 	implicit none
 
-	integer nkn
-	integer ngrade(1)
-	integer nbound(1)
+	include 'param.h'
+	include 'basin.h'
+	include 'depth.h'
+	include 'grade.h'
 
-	integer ipv(1)
-	integer ipev(1)
-	integer iarv(1)
-	integer nen3v(3,1)
-	real xgv(1), ygv(1)
-	real hev(1), hkv(1)
-
-	common /ipv/ipv
-	common /ipev/ipev
-	common /iarv/iarv
-	common /nen3v/nen3v
-	common /xgv/xgv, /ygv/ygv
-	common /hev/hev, /hkv/hkv
-
+	integer nnew
 	integer k,kmax
 
 	kmax = 0
@@ -255,8 +204,10 @@ c new node
 	end do
 
 	nkn = nkn + 1
+	if( nkn .gt. nkndim ) stop 'error stop newnod: nkndim'
 
 	ipv(nkn) = kmax
+	iarnv(nkn) = 0
 	xgv(nkn) = 0.
 	ygv(nkn) = 0.
 	hkv(nkn) = 0.
@@ -264,8 +215,12 @@ c new node
 	ngrade(nkn) = 0
 	nbound(nkn) = 0
 
+	nnew = nkn
+
 	end
 
+c***********************************************************
+c***********************************************************
 c***********************************************************
 
 	function ifindel(k1,k2,k3)
@@ -274,14 +229,12 @@ c finds element given three nodes
 
 	implicit none
 
+	include 'param.h'
+	include 'basin.h'
+
 	integer ifindel
 	integer k1,k2,k3
 	integer ie,ii,iii,kn2,kn3
-
-	integer nkn,nel
-	integer nen3v(3,1)
-	common /nkon/ nkn,nel
-	common /nen3v/nen3v
 
 	ifindel = 0
 
@@ -306,7 +259,7 @@ c**************************************************************
 
 	subroutine setele(ie,k1,k2,k3,nen3v)
 
-c inserts grade in index (in index of node k after node k1)
+c inserts nodes in index
 
 	implicit none
 

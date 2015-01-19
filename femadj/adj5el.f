@@ -14,17 +14,15 @@ c			eliminates 5-5 connections
 c
 c***********************************************************
 
-	subroutine elim5(nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
+	subroutine elim5
 
 c eliminates low grades
 
 	implicit none
 
-        integer nkn,nel,ngrdim
-        integer ngrade(1)
-        integer nbound(1)
-        integer ngri(2*ngrdim,1)
-        integer nen3v(3,1)
+        include 'param.h'
+        include 'basin.h'
+        include 'grade.h'
 
         integer k,n
 
@@ -33,7 +31,7 @@ c eliminates low grades
         do k=1,nkn
           n = ngrade(k)
           if( n .eq. 5 .and. nbound(k) .eq. 0 ) then
-            call elim55(k,nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
+            call elim55(k)
 c	    call nodeinfo(1290)
 	    call chkgrd
           end if
@@ -43,18 +41,17 @@ c	    call nodeinfo(1290)
 
 c***********************************************************
 
-	subroutine elim55(k,nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
+	subroutine elim55(k)
 
 c eliminates 5-5 connections
 
 	implicit none
 
+        include 'param.h'
+        include 'basin.h'
+        include 'grade.h'
+
 	integer k
-        integer nkn,nel,ngrdim
-        integer ngrade(1)
-        integer nbound(1)
-        integer ngri(2*ngrdim,1)
-        integer nen3v(3,1)
 
 	logical bdebug
         integer n,i,nc,nmax,ii
@@ -62,12 +59,9 @@ c eliminates 5-5 connections
 	integer ip1,ip2
 	integer np,nt,nn
 	integer nval,ip
-	integer nga(0:30)
-	integer ngr(0:30)
-	integer nba(0:30)
-
-        real xgv(1), ygv(1)
-        common /xgv/xgv, /ygv/ygv
+	integer ngav(0:ngrdim)
+	integer ngrv(0:ngrdim)
+	integer nbav(0:ngrdim)
 
 	integer ifindel
 
@@ -84,23 +78,23 @@ c eliminates 5-5 connections
 
 c make circular list
 c
-c nga 	node numbers around k
-c ngr	grades of node numbers around k
-c nba	boundary  flag for nodes around k
+c ngav 	node numbers around k
+c ngrv	grades of node numbers around k
+c nbav	boundary  flag for nodes around k
 
         n = ngrade(k)
-	nga(0) = ngri(n,k)
+	ngav(0) = ngri(n,k)
 	do i=1,n
-	  nga(i) = ngri(i,k)
+	  ngav(i) = ngri(i,k)
 	end do
-	nga(n+1) = ngri(1,k)
+	ngav(n+1) = ngri(1,k)
 
 	do i=0,n+1
-	  ngr(i) = ngrade(nga(i))
-	  nba(i) = 0
-	  if( nbound(nga(i)) .ne. 0 ) then
-	    ngr(i) = 6	!FIXME
-	    nba(i) = 1
+	  ngrv(i) = ngrade(ngav(i))
+	  nbav(i) = 0
+	  if( nbound(ngav(i)) .ne. 0 ) then
+	    ngrv(i) = 6	!FIXME
+	    nbav(i) = 1
 	  end if
 	end do
 
@@ -110,9 +104,9 @@ c check if exchange is possible
 	nmax = 0	!maximum sum of grades -> must be at least 3
 	ip = 0		!pointer to node in list that has been chosen
 	do i=1,n
-	  np = ngr(i-1)
-	  nt = ngr(i)
-	  nn = ngr(i+1)
+	  np = ngrv(i-1)
+	  nt = ngrv(i)
+	  nn = ngrv(i+1)
 
 	  nval = np + nn - n - nt
 
@@ -134,21 +128,21 @@ c ip is the pointer to the node to be exchanged
 c
 c we decide to take the first choice
 c
-c k is eliminated, nga(ip) is retained (to account for boundary node)
+c k is eliminated, ngav(ip) is retained (to account for boundary node)
 
 	if( bdebug ) then
-	    write(6,*) 'exchanging with node ... ',nga(ip)
-	    write(6,'(7i10)') (nga(i),i=0,n+1)
-	    write(6,'(7i10)') (ngr(i),i=0,n+1)
-	    write(6,'(7i10)') (nba(i),i=0,n+1)
+	    write(6,*) 'exchanging with node ... ',ngav(ip)
+	    write(6,'(7i10)') (ngav(i),i=0,n+1)
+	    write(6,'(7i10)') (ngrv(i),i=0,n+1)
+	    write(6,'(7i10)') (nbav(i),i=0,n+1)
 	    call plosno(k)
-	    call plosno(nga(ip))
+	    call plosno(ngav(ip))
 	end if
 
 c find elements that have to be deleted
 
-	ie1 = ifindel(k,nga(ip),nga(ip+1))
-	ie2 = ifindel(k,nga(ip-1),nga(ip))
+	ie1 = ifindel(k,ngav(ip),ngav(ip+1))
+	ie2 = ifindel(k,ngav(ip-1),ngav(ip))
 
 	if( ie1 .eq. 0 .or. ie2 .eq. 0 ) then
 	  stop 'error stop elim55: internal error (2)'
@@ -156,9 +150,9 @@ c find elements that have to be deleted
 
 	if( bdebug ) then
 	  write(6,*) 'elements to be deleted... ',ie1,ie2
-	  write(6,*) ie1,k,nga(ip),nga(ip+1)
+	  write(6,*) ie1,k,ngav(ip),ngav(ip+1)
 	  write(6,*) (nen3v(ii,ie1),ii=1,3)
-	  write(6,*) ie2,k,nga(ip-1),nga(ip)
+	  write(6,*) ie2,k,ngav(ip-1),ngav(ip)
 	  write(6,*) (nen3v(ii,ie2),ii=1,3)
 	  call plosel2(ie1,ie2,nkn,nel,ngrdim,nen3v,ngrade,ngri)
 	end if
@@ -166,78 +160,78 @@ c find elements that have to be deleted
 c delete elements
 
 	if( ie1 .gt. ie2 ) then		!to avoid bug
-	  call delele(ie1,nkn,nel,ngrdim,ngrade,ngri)
-	  call delele(ie2,nkn,nel,ngrdim,ngrade,ngri)
+	  call delele(ie1)
+	  call delele(ie2)
 	else
-	  call delele(ie2,nkn,nel,ngrdim,ngrade,ngri)
-	  call delele(ie1,nkn,nel,ngrdim,ngrade,ngri)
+	  call delele(ie2)
+	  call delele(ie1)
 	end if
 
 	if( bdebug ) then
 	  write(6,*) 'grade index befor manipulation:'
 	  call prgr(k,ngrdim,ngrade,ngri)
-	  call prgr(nga(ip),ngrdim,ngrade,ngri)
-	  call prgr(nga(ip-1),ngrdim,ngrade,ngri)
-	  call prgr(nga(ip+1),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip-1),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip+1),ngrdim,ngrade,ngri)
 	end if
 
 c new coordinates for node
 
-	if( nba(ip) .le. 0 ) then	!no boundary node
-	  xgv(k) = 0.5 * ( xgv(k) + xgv(nga(ip)) )
-	  ygv(k) = 0.5 * ( ygv(k) + ygv(nga(ip)) )
+	if( nbav(ip) .le. 0 ) then	!no boundary node
+	  xgv(k) = 0.5 * ( xgv(k) + xgv(ngav(ip)) )
+	  ygv(k) = 0.5 * ( ygv(k) + ygv(ngav(ip)) )
 	end if
 
-c substitute all occurrences of k with nga(ip)
+c substitute all occurrences of k with ngav(ip)
 
-	call subnod(k,nga(ip),nkn,nel,ngrdim,ngrade,ngri)
+	call subnod(k,ngav(ip))
 
 	if( bdebug ) then
 	  write(6,*) 'after substitution...'
-	  call prgr(nga(ip),ngrdim,ngrade,ngri)
-	  call prgr(nga(ip-1),ngrdim,ngrade,ngri)
-	  call prgr(nga(ip+1),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip-1),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip+1),ngrdim,ngrade,ngri)
 	end if
 
 c adjourn grade (delete) for nodes ip-1, ip+1
 
-	call delgr(nga(ip-1),nga(ip),ngrdim,ngrade,ngri)
-	call delgr(nga(ip+1),nga(ip),ngrdim,ngrade,ngri)
+	call delgr(ngav(ip-1),ngav(ip),ngrdim,ngrade,ngri)
+	call delgr(ngav(ip+1),ngav(ip),ngrdim,ngrade,ngri)
 
 	if( bdebug ) then
 	  write(6,*) 'after deleting ip-1,ip+1...'
-	  call prgr(nga(ip),ngrdim,ngrade,ngri)
-	  call prgr(nga(ip-1),ngrdim,ngrade,ngri)
-	  call prgr(nga(ip+1),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip-1),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip+1),ngrdim,ngrade,ngri)
 	end if
 
 c adjourn grade index for ip and delete node k finally
 
-	call delgr(nga(ip),nga(ip),ngrdim,ngrade,ngri)
-	call delnod(k,nkn,nel,ngrdim,ngrade,ngri)
-	call subval(n+2,nga(0),nkn+1,k)	!if nkn is in nga
+	call delgr(ngav(ip),ngav(ip),ngrdim,ngrade,ngri)
+	call delnod(k)
+	call subval(n+2,ngav(0),nkn+1,k)	!if nkn is in ngav
 
 	if( bdebug ) then
 	  write(6,*) 'after deleting ip...'
-	  call prgr(nga(ip),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip),ngrdim,ngrade,ngri)
 	end if
 
 	ip1 = mod(ip+2,n)
 	ip2 = mod(ip+3,n)
-	call insgr(nga(ip),nga(ip+1),nga(ip1),ngrdim,ngrade,ngri)
-	call insgr(nga(ip),nga(ip1),nga(ip2),ngrdim,ngrade,ngri)
+	call insgr(ngav(ip),ngav(ip+1),ngav(ip1),ngrdim,ngrade,ngri)
+	call insgr(ngav(ip),ngav(ip1),ngav(ip2),ngrdim,ngrade,ngri)
 
 	if( bdebug ) then
 	  write(6,*) 'grade index after manipulation:'
-	  call prgr(nga(ip),ngrdim,ngrade,ngri)
-	  call prgr(nga(ip-1),ngrdim,ngrade,ngri)
-	  call prgr(nga(ip+1),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip-1),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip+1),ngrdim,ngrade,ngri)
 	end if
 
 	if( bdebug ) then
-	  call plosno(nga(ip))
-	  call plosno(nga(ip-1))
-	  call plosno(nga(ip+1))
+	  call plosno(ngav(ip))
+	  call plosno(ngav(ip-1))
+	  call plosno(ngav(ip+1))
 	end if
 
 	if( bdebug ) then

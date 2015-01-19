@@ -4,11 +4,15 @@
 #
 #------------------------------------------------------------------
 
+FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
+
+fembin=$FEMDIR/fembin
+
 subject="new SHYFEM file $file"
 shyfemdir="0B742mznAzyDPbGF2em5NMjZYdHc"
 link="https://drive.google.com/folderview?id=$shyfemdir&usp=sharing"
 tmpfile=tmp.tmp
-fembin=./fembin
+#fembin=./fembin
 
 #------------------------------------------------------------------
 
@@ -21,13 +25,19 @@ YesNo()
 
 #------------------------------------------------------------------
 
+mail="YES"
+if [ "$1" = "-no_mail" ]; then
+  mail="NO"
+  shift
+fi
+
 file=$1
 
 if [ $# -eq 0 ]; then
-  echo "Usage: mail_shyfem.sh tar-file"
+  echo "Usage: mail_shyfem.sh [-no_mail] tar-file"
   exit 1
 elif [ ! -f "$file" ]; then
-  echo "*** no such file: $1 ...aborting"
+  echo "*** no such file: $file ...aborting"
   exit 3
 fi
 
@@ -41,7 +51,7 @@ echo "Please use the following link to download the file:"	>> $tmpfile
 echo "$link"							>> $tmpfile
 echo ""								>> $tmpfile
 echo "Release notes:"						>> $tmpfile
-$fembin/extract_release.pl RELEASE_NOTES			>> $tmpfile
+$fembin/extract_release.pl $FEMDIR/RELEASE_NOTES		>> $tmpfile
 echo "Other information can be found in RELEASE_NOTES."		>> $tmpfile
 echo ""								>> $tmpfile
 echo "Best regards, Georg"					>> $tmpfile
@@ -51,7 +61,12 @@ echo ""								>> $tmpfile
 
 echo "Email message:"
 cat $tmpfile
-answer=`YesNo "Do you want to upload and email?"`
+echo "mail: $mail"
+if [ $mail = "YES" ]; then
+  answer=`YesNo "Do you want to upload and email?"`
+else
+  answer=`YesNo "Do you want to upload?"`
+fi
 [ "$answer" = "y" ] || exit 0
 
 echo "uploading and emailing..."
@@ -64,6 +79,8 @@ status=$?
 [ $status -ne 0 ] && echo "*** error uploading file" && exit 1
 
 #------------------------------------------------------------------
+
+[ "$mail" = "NO" ] && exit 0
 
 echo "sending mail..."
 #gmutt -auto -s "$subject" -i $tmpfile gmail

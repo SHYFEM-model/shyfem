@@ -14,17 +14,15 @@ c subroutine unifel(k,ik1,ik2,inew)			unifies two elements
 c
 c***********************************************************
 
-	subroutine eliml(nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
+	subroutine elimlow
 
 c eliminates grade=4 nodes (and less)
 
 	implicit none
 
-	integer nkn,nel,ngrdim
-	integer ngrade(1)
-	integer nbound(1)
-	integer ngri(2*ngrdim,1)
-	integer nen3v(3,1)
+	include 'param.h'
+	include 'basin.h'
+	include 'grade.h'
 
 	logical b3
 	integer k,n,nc
@@ -41,7 +39,7 @@ c iterate over 3 grades as long as there is no 3 grade node left
 	  if( nbound(k) .eq. 0 ) then
 	    n = ngrade(k)
 	    if( n .eq. 3 ) then
-	      call elim3(k,nkn,nel,ngrdim,ngrade,ngri,nen3v)
+	      call elim3(k)
 	      b3 = .true.
 	      nc = nc + 1
 	    end if
@@ -57,7 +55,7 @@ c iterate over 3 grades as long as there is no 3 grade node left
 	  if( nbound(k) .eq. 0 ) then
 	    n = ngrade(k)
 	    if( n .eq. 4 ) then
-	      call elim4(k,nkn,nel,ngrdim,ngrade,ngri,nen3v)
+	      call elim4(k)
 	      call chkgrd	!FIXME
 	    end if
 	  end if
@@ -67,16 +65,17 @@ c iterate over 3 grades as long as there is no 3 grade node left
 
 c***********************************************************
 
-	subroutine elim3(k,nkn,nel,ngrdim,ngrade,ngri,nen3v)
+	subroutine elim3(k)
 
 c eliminates node
 
 	implicit none
 
-	integer k,nkn,nel,ngrdim
-	integer ngrade(1)
-	integer ngri(2*ngrdim,1)
-	integer nen3v(3,1)
+	include 'param.h'
+	include 'basin.h'
+	include 'grade.h'
+
+	integer k
 
 	integer i,n,kk,ie
 	integer neibs(30),ngneib(30)
@@ -112,30 +111,31 @@ c delete elements
 
 	ie = ifindel(neibs(2),neibs(3),k)
 	if( ie .eq. 0 ) stop 'error stop elim3: internal error (1)'
-	call delele(ie,nkn,nel,ngrdim,ngrade,ngri)
+	call delele(ie)
 
 	ie = ifindel(neibs(3),neibs(1),k)
 	if( ie .eq. 0 ) stop 'error stop elim3: internal error (1)'
-	call delele(ie,nkn,nel,ngrdim,ngrade,ngri)
+	call delele(ie)
 
 c delete node
 
-	call delnod(k,nkn,nel,ngrdim,ngrade,ngri)
+	call delnod(k)
 
 	end
 
 c***********************************************************
 
-	subroutine elim4(k,nkn,nel,ngrdim,ngrade,ngri,nen3v)
+	subroutine elim4(k)
 
 c eliminates node
 
 	implicit none
 
-	integer k,nkn,nel,ngrdim
-	integer ngrade(1)
-	integer ngri(2*ngrdim,1)
-	integer nen3v(3,1)
+	include 'param.h'
+	include 'basin.h'
+	include 'grade.h'
+
+	integer k
 
 	integer i,n,k1,k2
 	integer ipos,ipos1,ipos2
@@ -290,14 +290,14 @@ c to be eliminated is number nel, we will have a bug
 
 	do i=4,3,-1
 	  ie = ielem(i)
-	  call delele(ie,nkn,nel,ngrdim,ngrade,ngri)
+	  call delele(ie)
 	end do
 
 c	write(6,*) '***',1764,(nen3v(ii,1764),ii=1,3)
 
 c eliminate node
 
-	call delnod(k,nkn,nel,ngrdim,ngrade,ngri)
+	call delnod(k)
 
 c	write(6,*) '***',1764,(nen3v(ii,1764),ii=1,3)
 

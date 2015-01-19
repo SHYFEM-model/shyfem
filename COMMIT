@@ -1,5 +1,47 @@
 ============================================================
 
+Mon Jan 19 12:48:40 CET 2015
+
+femadj converted to include
+
+ fem3d/bin/newsubst.pl         |   92 +++++++++---------
+ femadj/adj4el.f               |   46 +++++-----
+ femadj/adj575.f               |  116 +++++++++++------------
+ femadj/adj5el.f               |  144 ++++++++++++++---------------
+ femadj/adj7el.f               |   94 +++++++++----------
+ femadj/adjele.f               |  114 +++++++++++++----------
+ femadj/adjneu.f               |  163 ++++++++++++---------------------
+ femadj/adjplo.f               |  136 +++++++++++-----------------
+ femadj/adjvar.f               |   80 ++--------------
+ femadj/basin.h                |   55 +++++++----
+ femadj/depth.h                |   22 +++++
+ femadj/param_dummy.h          |   22 +++++
+ femadj/pkonst.h               |   11 ++
+ femadj/subgrd.f               |  136 +++++++++++++---------------
+ femadj/subgrd.h               |   13 +++
+ femadj/subsss.f               |  204 ++++++++++++++++++++++++++++++++++++-----
+ fembin/mail_shyfem.sh         |   27 +++++-
+ fembin/shyfem_install_hard.pl |   10 +-
+ femcheck/test_compile.sh      |    2 +-
+ femdoc/final/shyfem.pdf       |  Bin 293711 -> 293711 bytes
+ femdoc/final/shyfem.ps        |   10 +-
+ femspline/basin.h             |   37 ++++++++
+ femspline/param_dummy.h       |   22 +++++
+ femspline/pkonst.h            |   11 ++
+ femspline/subgrd.h            |   13 +++
+ 25 files changed, 884 insertions(+), 696 deletions(-)
+ new file:
+   femadj/depth.h
+   femadj/param_dummy.h
+   femadj/pkonst.h
+   femadj/subgrd.h
+   femspline/basin.h
+   femspline/param_dummy.h
+   femspline/pkonst.h
+   femspline/subgrd.h
+
+============================================================
+
 Fri Jan 16 17:40:01 CET 2015
 
 still intermediate, eliminated warnings
