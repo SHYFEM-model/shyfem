@@ -234,6 +234,7 @@ c 09.01.2015	ggu	version 7.0.12
 c 12.01.2015	ggu	version 7.1.0	Wolfgangs release
 c 15.01.2015	ggu	version 7.1.1
 c 19.01.2015	ggu	version 7.1.2
+c 19.01.2015	ggu	version 7.1.3	huge commit (include for common)
 c
 c*****************************************************************
 
@@ -241,15 +242,15 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.1.2}
-c \newcommand{\version}{7\_1\_2}
+c \newcommand{\VERSION}{7.1.3}
+c \newcommand{\version}{7\_1\_3}
 c
 c DOCS	END
 
         implicit none
 
         character*10 version
-	parameter (version='7.1.2')
+	parameter (version='7.1.3')
 
         character*30 string
 	parameter (string='SHYFEM VERSION = '//version)
