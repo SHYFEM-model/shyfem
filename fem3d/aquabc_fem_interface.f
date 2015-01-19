@@ -147,27 +147,20 @@ c        real tsstot(nsstate)
        real sed_output(NOSLAY,nkndim,nsoutput)     ! BS output
        save e, es, eload				    !SAVESED
 
-	include 'nbasin.h'
 
 	include 'mkonst.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-      character*80 bio2dn(1)
-      common /bio2dn/bio2dn
+	include 'bound_names.h'
 
-      integer ilhkv(1)   !Number of WC layers for each node
-      common /ilhkv/ilhkv
+	include 'levels.h'
 	
 	integer ilhkv_sed(nkndim)	
        save ilhkv_sed     ! Needed for compatibility of WC and BS writing in biotser_write
 
 
       
-        real difv(0:nlvdim,1)
-        common /difv/difv
-        real difhv(nlvdim,1)
-        common /difhv/difhv
+	include 'diff_visc_fric.h'
 
         character*10 what,whataux
         character*2 whatn
@@ -270,8 +263,7 @@ c        real tsstot(nsstate)
       real FDAY
 
 	
-       integer ipv(nkndim)
-       common /ipv/ipv
+	include 'basin.h'
 
 
 C     ADDED BY ALI
@@ -986,13 +978,9 @@ C     TAKE CARE
 C     eload(3,neldim,nstate) -----> eload(nlvdim,nkndim,nstate)	
 	real eload(nlvdim,nkndim,nstate)
 
-	include 'nbasin.h'
 
 	include 'ev.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real hm3v(3,1)
-	common /hm3v/hm3v
+	include 'basin.h'
 
 C	ADDED BY PETRAS AND ALI
 C     CORPI, 19 July 2004
@@ -1204,8 +1192,6 @@ C              ilast2(j) = 1 ---> Last loading time interval read for load j
 
 C	ADDED BY ALI
 C     CORPI, 02 August 2004
-      integer ipv(nkndim)	!external node numbers
-      common  /ipv/ipv
 
 
 C	ADDED BY PETRAS AND ALI
@@ -1810,8 +1796,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real es(NOSLAY,nkndim,nsstate)		!sediment state variables
 
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
         character*16 text
         integer i
@@ -1845,8 +1830,7 @@ c Made from check2Dr by P.Zemlys 11 January 2005
 
         include 'param.h'
 
-        integer ipv(nkndim) !external numbers of nodes
-        common /ipv/ipv
+	include 'basin.h'
         integer nlv,n
         integer nvar         !state variable number
         real a(nlvdim,1)     !array of variable values for levels and nodes
@@ -1932,8 +1916,7 @@ c initializes nodal value variable from file
                                     !2-heterogeneous initial conditions. Added by Petras 12-12-2004
 
 	include 'nbasin.h'
-        real hlv(1)       !hlv(i)absolute depth of bottom of layer i
-        common /hlv/hlv
+	include 'levels.h'
 
         character*80 file
         integer nb,irec
@@ -2169,10 +2152,8 @@ C                Corrected error output messages, 01.09.2004 by Petras
 
       real a_ITOT(nkndim,2)    !Keeps values for total daily ligth for each node
 
-	include 'nbasin.h'
 
-      integer ipv(nkndim)	!external node numbers
-      common  /ipv/ipv
+	include 'basin.h'
       
 
 C     nimmax : Maximum number of regions allowed for the compiled

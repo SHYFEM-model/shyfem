@@ -61,15 +61,7 @@ c*****************************************************************
 	integer iz(noddim)
 
 c global data ------------------------------------
-        integer nen3v(3,neldim), iarv(neldim)
-        integer ipev(neldim), ipv(nkndim)
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-	include 'nbasin.h'
-        common /nen3v/nen3v, /iarv/iarv
-        common /ipev/ipev, /ipv/ipv
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
+	include 'basin.h'
 c ------------------------------------------------
 
 	integer iapini, ideffi, ifileo

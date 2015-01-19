@@ -72,8 +72,7 @@ c computes turbulent quantities with Munk - Anderson model
 
 	include 'femtime.h'
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'pkonst.h'
 
 c---------------------------------------------------------------
@@ -84,10 +83,7 @@ c---------------------------------------------------------------
 	real buoyf2(nlvdim,nkndim)
 	real richard(nlvdim,nkndim)
 
-	real visv(0:nlvdim,nkndim)
-	common /visv/visv
-	real difv(0:nlvdim,nkndim)
-	common /difv/difv
+	include 'diff_visc_fric.h'
 
 	integer k,l
 	integer nlev
@@ -200,54 +196,29 @@ c computes turbulent quantities with GOTM model
 	double precision ken_old(0:ndim), dis_old(0:ndim)
 	double precision len_old(0:ndim)
 
-        double precision numv_gotm(0:nlvdim,nkndim)  !viscosity (momentum)
-        double precision nuhv_gotm(0:nlvdim,nkndim)  !diffusivity (scalars)
-        double precision tken_gotm(0:nlvdim,nkndim)  !turbulent kinetic energy
-        double precision eps_gotm (0:nlvdim,nkndim)  !dissipation rate
-        double precision rls_gotm (0:nlvdim,nkndim)  !length scale
  
-        common /numv_gotm/numv_gotm
-        common /nuhv_gotm/nuhv_gotm
-        common /tken_gotm/tken_gotm
-        common /eps_gotm/eps_gotm
-        common /rls_gotm/rls_gotm
+	include 'gotm_aux.h'
  
-        save /numv_gotm/,/nuhv_gotm/,/tken_gotm/,/eps_gotm/,/rls_gotm/
 
 	include 'femtime.h'
-	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'pkonst.h'
 
-	integer nen3v(3,neldim)
-	common /nen3v/nen3v
-	real rhov(nlvdim,nkndim)
-	common /rhov/rhov
+	include 'basin.h'
+	include 'ts.h'
 
 c---------------------------------------------------------------
 c aux arrays superposed onto other aux arrays
 c---------------------------------------------------------------
 
-	real shearf2(nlvdim,nkndim)
-        common /shearf2/shearf2
-	real buoyf2(nlvdim,nkndim)
-        common /buoyf2/buoyf2
 
 	real taub(nkndim)
 	real areaac(nkndim)
 
-	real uprv(nlvdim,nkndim)
-	common /uprv/uprv
-	real vprv(nlvdim,nkndim)
-	common /vprv/vprv
-        real tauxnv(1),tauynv(1)
-        common /tauxnv/tauxnv,/tauynv/tauynv
+	include 'hydro_print.h'
+	include 'meteo_aux.h'
 
-	real visv(0:nlvdim,nkndim)
-	common /visv/visv
-	real difv(0:nlvdim,nkndim)
-	common /difv/difv
+	include 'diff_visc_fric.h'
 
 	integer ioutfreq,ks
 	integer k,l
@@ -264,10 +235,7 @@ c---------------------------------------------------------------
 	integer nltot
 	logical bwrite
 
-        real z0sk(nkndim)               !surface roughness on nodes
-        common /z0sk/z0sk
-        real z0bk(nkndim)               !bottom roughenss on nodes
-        common /z0bk/z0bk
+	include 'roughness.h'
 	real charnock_val		!emp. Charnok constant (1955)
 	parameter(charnock_val=1400.)	!default value = 1400.
 	double precision z0s_min	!minimum value of z0s
@@ -525,23 +493,12 @@ c initializes gotm arrays
 
 	include 'param.h'
 
-        integer nlvdi,nlv
 	include 'nbasin.h'
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	double precision numv_gotm(0:nlvdim,nkndim)   !viscosity (momentum)
-	double precision nuhv_gotm(0:nlvdim,nkndim)   !diffusivity (scalars)
-	double precision tken_gotm(0:nlvdim,nkndim)   !turbulent kinetic energy
-	double precision eps_gotm (0:nlvdim,nkndim)   !dissipation rate
-	double precision rls_gotm (0:nlvdim,nkndim)   !length scale
 
-        common /numv_gotm/numv_gotm
-        common /nuhv_gotm/nuhv_gotm
-        common /tken_gotm/tken_gotm
-        common /eps_gotm/eps_gotm
-        common /rls_gotm/rls_gotm
+	include 'gotm_aux.h'
 
-	save /numv_gotm/,/nuhv_gotm/,/tken_gotm/,/eps_gotm/,/rls_gotm/
 
 	integer l,k
         double precision num_min, nuh_min
@@ -583,19 +540,9 @@ c returns internal parameters from turbulence closure
 
 	include 'param.h'
 
-	double precision numv_gotm(0:nlvdim,nkndim)	!viscosity (momentum)
-	double precision nuhv_gotm(0:nlvdim,nkndim)	!diffusivity (scalars)
-	double precision tken_gotm(0:nlvdim,nkndim)	!turbulent kinetic energy
-	double precision eps_gotm (0:nlvdim,nkndim)	!dissipation rate
-	double precision rls_gotm (0:nlvdim,nkndim)	!length scale
 
-        common /numv_gotm/numv_gotm
-        common /nuhv_gotm/nuhv_gotm
-        common /tken_gotm/tken_gotm
-        common /eps_gotm/eps_gotm
-        common /rls_gotm/rls_gotm
+	include 'gotm_aux.h'
 
-	save /numv_gotm/,/nuhv_gotm/,/tken_gotm/,/eps_gotm/,/rls_gotm/
 
 	integer l,laux
 
@@ -819,16 +766,8 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 	include 'pkonst.h'
 	include 'femtime.h'
 
-        real rhov(nlvdim,nkndim)
-        common /rhov/rhov
-	real uprv(nlvdim,nkndim)
-	common /uprv/uprv
-	real vprv(nlvdim,nkndim)
-	common /vprv/vprv
-        real upro(nlvdim,1)
-        common /upro/upro
-        real vpro(nlvdim,1)
-        common /vpro/vpro
+	include 'ts.h'
+	include 'hydro_print.h'
 
 	integer k,l,nlev
 	real aux,dh,du,dv,m2,dbuoy
@@ -914,16 +853,10 @@ c taub (stress at bottom) is accumulated and weighted by area
 	include 'param.h'
 	include 'ev.h'
 
-	include 'nbasin.h'
 
-	integer nen3v(3,neldim)
-	common /nen3v/nen3v
-	real ulnv(nlvdim,neldim)
-	common /ulnv/ulnv
-	real vlnv(nlvdim,neldim)
-	common /vlnv/vlnv
-        integer ilhv(1)
-        common /ilhv/ilhv
+	include 'basin.h'
+	include 'hydro_vel.h'
+	include 'levels.h'
 
 	integer k,ie,ii,n,nlev
 	real aj,taubot
@@ -985,21 +918,11 @@ c checks arrays for nan or other strange values
 
 	include 'nbasin.h'
 
-        real visv(0:nlvdim,nkndim)
-        common /visv/visv
-        real difv(0:nlvdim,nkndim)
-        common /difv/difv
+	include 'diff_visc_fric.h'
 
-        real ulnv(nlvdim,neldim)
-        common /ulnv/ulnv
-        real vlnv(nlvdim,neldim)
-        common /vlnv/vlnv
-        real uprv(nlvdim,nkndim)
-        common /uprv/uprv
-        real vprv(nlvdim,nkndim)
-        common /vprv/vprv
-        real tauxnv(1),tauynv(1)
-        common /tauxnv/tauxnv,/tauynv/tauynv
+	include 'hydro_vel.h'
+	include 'hydro_print.h'
+	include 'meteo_aux.h'
 
 	if( nlvdim .ne. nldim ) stop 'error stop checka'
 
@@ -1034,32 +957,14 @@ c checks arrays for strange values
 
 	include 'nbasin.h'
 
-        real visv(0:nlvdim,nkndim)
-        common /visv/visv
-        real difv(0:nlvdim,nkndim)
-        common /difv/difv
+	include 'diff_visc_fric.h'
 
-	real znv(1)
-	common /znv/znv
-	real zenv(3,1)
-	common /zenv/zenv
+	include 'hydro.h'
 
-	real rhov(nlvdim,nkndim)
-	common /rhov/rhov
-        real ulnv(nlvdim,neldim)
-        common /ulnv/ulnv
-        real vlnv(nlvdim,neldim)
-        common /vlnv/vlnv
-        real utlnv(nlvdim,neldim)
-        common /utlnv/utlnv
-        real vtlnv(nlvdim,neldim)
-        common /vtlnv/vtlnv
-        real uprv(nlvdim,nkndim)
-        common /uprv/uprv
-        real vprv(nlvdim,nkndim)
-        common /vprv/vprv
-        real tauxnv(1),tauynv(1)
-        common /tauxnv/tauxnv,/tauynv/tauynv
+	include 'ts.h'
+	include 'hydro_vel.h'
+	include 'hydro_print.h'
+	include 'meteo_aux.h'
 
 	integer one,three
 	real zero,valmax
@@ -1100,30 +1005,18 @@ c**************************************************************
 
 	include 'nbasin.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
-        real hdknv(nlvdim,nkndim)
-        common /hdknv/hdknv
+	include 'depth.h'
 
-        real uprv(nlvdim,nkndim),vprv(nlvdim,nkndim)
-        common /uprv/uprv, /vprv/vprv
+	include 'hydro_print.h'
 
-        real rhov(nlvdim,nkndim)
-        real visv(0:nlvdim,nkndim)      !viscosity (momentum)
-        real difv(0:nlvdim,nkndim)      !diffusivity (scalars)
 
-        real tken(0:nlvdim,nkndim)      !turbulent kinetic energy
-        real eps(0:nlvdim,nkndim)       !dissipation rate
-        real rls(0:nlvdim,nkndim)       !length scale
 
-        common /rhov/rhov
-        common /visv/visv      !viscosity (momentum)
-        common /difv/difv      !diffusivity (scalars)
+	include 'ts.h'
+	include 'diff_visc_fric.h'
 
-        common /tken/tken      !turbulent kinetic energy
-        common /eps/eps        !dissipation rate
-        common /rls/rls        !length scale
+	include 'turbulence.h'
 
 	integer k,lmax,l
 	real rho0,rhoair
@@ -1184,19 +1077,11 @@ c       parameter(kmin=1.e-10,epsmin=1.e-12,lenmin=0.01)
 
 	include 'nbasin.h'
 
-        real visv(0:nlvdim,nkndim)      !viscosity (momentum)
-        real difv(0:nlvdim,nkndim)      !diffusivity (scalars)
 
-        real tken(0:nlvdim,nkndim)      !turbulent kinetic energy
-        real eps(0:nlvdim,nkndim)       !dissipation rate
-        real rls(0:nlvdim,nkndim)       !length scale
 
-        common /visv/visv      !viscosity (momentum)
-        common /difv/difv      !diffusivity (scalars)
+	include 'diff_visc_fric.h'
 
-        common /tken/tken      !turbulent kinetic energy
-        common /eps/eps        !dissipation rate
-        common /rls/rls        !length scale
+	include 'turbulence.h'
 
         integer k,l
 
@@ -1294,9 +1179,7 @@ c**************************************************************
 	implicit none
 
 	logical debug
-	logical bdebug
-	common /debug_ggu/bdebug
-	save /debug_ggu/
+	include 'debug_aux2.h'
 
 	bdebug = debug
 
@@ -1309,9 +1192,7 @@ c**************************************************************
 	implicit none
 
 	logical debug
-	logical bdebug
-	common /debug_ggu/bdebug
-	save /debug_ggu/
+	include 'debug_aux2.h'
 
 	debug = bdebug
 

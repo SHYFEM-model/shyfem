@@ -50,11 +50,8 @@ c revised 29.06.97 by ggu	$$ndim - dimension of f is passed
 	integer k,ndim
 	real f(1)
 
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real hm3v(3,1)
-	common /hm3v/hm3v
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	integer iact,ie,i,ii
 
@@ -107,11 +104,8 @@ c               -1      error
 	real high
 	parameter(high=1.e+30)
 
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real hm3v(3,1)
-	common /hm3v/hm3v
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	logical buniq
 	integer ie,ii,i,k
@@ -178,12 +172,9 @@ c hkv            array with unique depth values
 	real hev(1)
 	real hkv(1)
 
-	include 'nbasin.h'
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real hm3v(3,1)
-	common /hm3v/hm3v
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	integer ie,ii,k
 	logical bstop
@@ -247,9 +238,8 @@ c makes hev (elementwise depth)
 c arguments
         real hev(1)
 c common
-	include 'nbasin.h'
-        real hm3v(3,1)
-        common /hm3v/hm3v
+	include 'param_dummy.h'
+	include 'basin.h'
 c local
         integer ie,ii
 	real hm
@@ -276,11 +266,8 @@ c arguments
         real hkv(1)
         real haux(1)   !aux array -> bug - was integer
 c common
-	include 'nbasin.h'
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        real hm3v(3,1)
-        common /hm3v/hm3v
+	include 'param_dummy.h'
+	include 'basin.h'
 	include 'ev.h'
 c local
         integer ie,ii,k,kn
@@ -320,12 +307,9 @@ c itype:  -1: min  0; aver  +1: max
         real haux(1)
         integer itype
 
-	include 'nbasin.h'
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        real hm3v(3,1)
-        common /hm3v/hm3v
+	include 'param_dummy.h'
+	include 'basin.h'
 
         integer k,ie,ii
         real hinit,h
@@ -381,11 +365,8 @@ c adjusts depth to reference and min/max values
 
 	real hmin,hmax,href
 
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real hm3v(3,1)
-	common /hm3v/hm3v
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	integer iaux,ie,ii
 	real hmed
@@ -512,14 +493,9 @@ c adjusts nodal depth values
 
 	implicit none
 
-        real hkv(1)
-        common /hkv/hkv
-        real hkv_min(1)
-        common /hkv_min/hkv_min
-        real hkv_max(1)
-        common /hkv_max/hkv_max
-	real v1v(1)
-	common /v1v/v1v
+	include 'param_dummy.h'
+	include 'depth.h'
+	include 'aux_array.h'
 
         call makehkv(hkv,v1v)		!computes hkv as average
         call makehkv_minmax(hkv_min,v1v,-1)
@@ -535,8 +511,8 @@ c adjusts elemental depth values
 
 	implicit none
 
-        real hev(1)
-        common /hev/hev
+	include 'param_dummy.h'
+	include 'depth.h'
 
         call makehev(hev)
 
@@ -564,12 +540,10 @@ c adjourns hev and hkv from hm3v (if it has been changed)
 
 	implicit none
 
-	include 'nbasin.h'
 
-	real hm3v(3,1)
-	common /hm3v/hm3v
-	real hev(1)
-	common /hev/hev
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'depth.h'
 
 	integer ie,ii
 
@@ -595,18 +569,11 @@ c uses information about sigma layers and hsigma (hybrid)
 
 	implicit none
 
-	include 'nbasin.h'
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        real hm3v(3,1)
-        common /hm3v/hm3v
-        real hkv(1)
-        common /hkv/hkv
-        real hev(1)
-        common /hev/hev
-        real v1v(1)
-        common /v1v/v1v
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'depth.h'
+	include 'aux_array.h'
 
 	logical berror
 	integer k,ie,ii
@@ -723,9 +690,9 @@ c********************************************************************
 
 	character*(*) file
 
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-	real hev(1)
-	common /hev/hev
+	include 'depth.h'
 
 	integer ie
 
@@ -747,9 +714,9 @@ c********************************************************************
 
 	character*(*) file
 
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-	real hev(1)
-	common /hev/hev
+	include 'depth.h'
 
 	integer ie
 

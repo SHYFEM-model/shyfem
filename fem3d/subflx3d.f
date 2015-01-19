@@ -67,10 +67,8 @@ c for a boundary node, transp(n) = 0
 	include 'ev.h'
 	include 'links.h'
 
-        real uov(1),vov(1),unv(1),vnv(1)
-        common /uov/uov, /vov/vov, /unv/unv, /vnv/vnv
-        real zenv(3,1), zeov(3,1)
-        common /zenv/zenv, /zeov/zeov
+	include 'hydro_baro.h'
+	include 'hydro.h'
 
 	logical bdebug
 	integer i,ie,ii,ne,ndim
@@ -240,16 +238,10 @@ c -> has been done - other sources of mfluxv (rain, etc.) are also eliminated
 	include 'links.h'
 	include 'testbndo.h'
 
-        real utlov(nlvdim,1),vtlov(nlvdim,1)
-        common /utlov/utlov, /vtlov/vtlov
-        real utlnv(nlvdim,1),vtlnv(nlvdim,1),wlnv(0:nlvdim,1)
-        common /utlnv/utlnv, /vtlnv/vtlnv, /wlnv/wlnv
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real mfluxv(nlvdim,1)
-        common /mfluxv/mfluxv
+	include 'hydro.h'
+	include 'hydro_vel.h'
+	include 'levels.h'
+	include 'bound_dynamic.h'
 
 	logical bdebug
 	integer i,ie,ii,ne,ndim
@@ -543,10 +535,9 @@ c else uses kantv
 	integer flxtype		!type of node (1=int,2=bnd,3=BOO,4=OOB,5=OOO)
 	integer k		!node number of finite volume
 
-	integer inodv(1)
-	common /inodv/inodv
-	integer kantv(2,1)
-	common /kantv/kantv
+	include 'param.h'
+	include 'geom_dynamic.h'
+	include 'geom.h'
 
 	integer ktype
 	integer kafter,kbefor

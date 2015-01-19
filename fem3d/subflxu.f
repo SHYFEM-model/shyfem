@@ -391,8 +391,8 @@ c**********************************************************************
 	integer nlayers(1)
 	integer nlmax
 
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'param.h'
+	include 'levels.h'
 
 	integer ns
 	integer nnode,ifirst,ilast

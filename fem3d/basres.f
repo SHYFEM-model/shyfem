@@ -17,8 +17,6 @@ c computes resolution in basin
 	include 'basin.h'
 
 c--------------------------------------------------
-        character*80 descrr
-        common /descrr/descrr
 c--------------------------------------------------
 
 	character*50 file

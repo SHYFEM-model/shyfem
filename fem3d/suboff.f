@@ -293,21 +293,11 @@ c****************************************************************
 
 	include 'nbasin.h'
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        integer ilhkv(nkndim)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
-        real utlnv(nlvdim,neldim), vtlnv(nlvdim,neldim)
-        common /utlnv/utlnv, /vtlnv/vtlnv
-        real wlnv(0:nlvdim,nkndim)
-        common /wlnv/wlnv
-        real znv(nkndim)
-        common /znv/znv
-        real zenv(3,neldim)
-        common /zenv/zenv
-        real saltv(nlvdim,nkndim), tempv(nlvdim,nkndim)
-        common /saltv/saltv, /tempv/tempv
+	include 'hydro_vel.h'
+	include 'hydro.h'
+	include 'ts.h'
 
 	logical boff,bhydro,bts
 	integer ierr,iread
@@ -465,19 +455,10 @@ c****************************************************************
 
 	include 'nbasin.h'
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        integer ilhkv(nkndim)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
-        real utlnv(nlvdim,neldim), vtlnv(nlvdim,neldim)
-        common /utlnv/utlnv, /vtlnv/vtlnv
-        real wlnv(0:nlvdim,nkndim)
-        common /wlnv/wlnv
-        real znv(nkndim)
-        common /znv/znv
-        real zenv(3,neldim)
-        common /zenv/zenv
+	include 'hydro_vel.h'
+	include 'hydro.h'
 
 	integer ie,ii,k,l,lmax,i,nintp
 	real x(4),y(4),t
@@ -545,19 +526,10 @@ c****************************************************************
 
 	include 'nbasin.h'
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        integer ilhkv(nkndim)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
-        real utlnv(nlvdim,neldim), vtlnv(nlvdim,neldim)
-        common /utlnv/utlnv, /vtlnv/vtlnv
-        real wlnv(0:nlvdim,nkndim)
-        common /wlnv/wlnv
-        real znv(nkndim)
-        common /znv/znv
-        real zenv(3,neldim)
-        common /zenv/zenv
+	include 'hydro_vel.h'
+	include 'hydro.h'
 
 	integer ie,ii,k,l,lmax
 	integer it1,it2
@@ -613,10 +585,7 @@ c****************************************************************
 
 	include 'nbasin.h'
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        integer ilhkv(nkndim)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer ie,ii,k,l,lmax
 	integer ito,ifrom
@@ -673,10 +642,7 @@ c****************************************************************
 
 	include 'nbasin.h'
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        integer ilhkv(nkndim)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer ie,ii,k,l,lmax
 
@@ -727,20 +693,10 @@ c****************************************************************
 
 	include 'nbasin.h'
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        integer ilhkv(nkndim)
-        common /ilhkv/ilhkv
-        real utlnv(nlvdim,neldim),vtlnv(nlvdim,neldim)
-        common /utlnv/utlnv, /vtlnv/vtlnv
-	real wlnv(0:nlvdim,nkndim)
-	common /wlnv/wlnv
-        real zenv(3,neldim)
-        common /zenv/zenv
-        real znv(nkndim)
-        common /znv/znv
-        real saltv(nlvdim,nkndim), tempv(nlvdim,nkndim)
-        common /saltv/saltv, /tempv/tempv
+	include 'levels.h'
+	include 'hydro_vel.h'
+	include 'hydro.h'
+	include 'ts.h'
 
 	integer ie,ii,k,l,lmax
 	double precision dtt
@@ -802,10 +758,7 @@ c****************************************************************
 
 	include 'nbasin.h'
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        integer ilhkv(nkndim)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer ie,ii,k,l,lmax
 	double precision rr
@@ -860,37 +813,15 @@ c****************************************************************
 
 	include 'nbasin.h'
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        integer ilhkv(nkndim)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
-        real utlnv(nlvdim,neldim),vtlnv(nlvdim,neldim)
-        common /utlnv/utlnv, /vtlnv/vtlnv
-        real utlov(nlvdim,neldim),vtlov(nlvdim,neldim)
-        common /utlov/utlov, /vtlov/vtlov
 
-        real ulov(nlvdim,neldim), vlov(nlvdim,neldim)
-        common /ulov/ulov,  /vlov/vlov
-        real ulnv(nlvdim,neldim), vlnv(nlvdim,neldim)
-        common /ulnv/ulnv,  /vlnv/vlnv
+	include 'hydro_vel.h'
 
-        real uprv(nlvdim,nkndim)
-        common /uprv/uprv
-        real vprv(nlvdim,nkndim)
-        common /vprv/vprv
+	include 'hydro_print.h'
 
-        real upro(nlvdim,nkndim)
-        common /upro/upro
-        real vpro(nlvdim,nkndim)
-        common /vpro/vpro
 
-	real wlnv(0:nlvdim,nkndim)
-	common /wlnv/wlnv
-        real zenv(3,neldim)
-        common /zenv/zenv
-        real znv(nkndim)
-        common /znv/znv
+	include 'hydro.h'
 
 	integer ie,ii,k,l,lmax
 	integer ierr
@@ -984,10 +915,7 @@ c****************************************************************
 
 	include 'nbasin.h'
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        integer ilhkv(nkndim)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer ie,ii,k,l,lmax
 
@@ -1026,10 +954,7 @@ c****************************************************************
 
 	include 'nbasin.h'
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        integer ilhkv(nkndim)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer ilhaux(neldim)
 	integer ilhkaux(nkndim)

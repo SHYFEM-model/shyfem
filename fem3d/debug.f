@@ -35,9 +35,7 @@ c***************************************************************
 
 	logical bdebug
 
-	logical debug
-	common /comdebug/ debug
-	save /comdebug/
+	include 'debug_aux1.h'
 
 	debug = bdebug
 
@@ -49,9 +47,7 @@ c***************************************************************
 
 	implicit none
 
-	logical debug
-	common /comdebug/ debug
-	save /comdebug/
+	include 'debug_aux1.h'
 
 	debug = .true.
 
@@ -63,9 +59,7 @@ c***************************************************************
 
 	implicit none
 
-	logical debug
-	common /comdebug/ debug
-	save /comdebug/
+	include 'debug_aux1.h'
 
 	debug = .false.
 
@@ -79,9 +73,7 @@ c***************************************************************
 
 	logical isdebug
 
-	logical debug
-	common /comdebug/ debug
-	save /comdebug/
+	include 'debug_aux1.h'
 
 	isdebug = debug
 
@@ -93,9 +85,7 @@ c***************************************************************
 
 	implicit none
 
-	logical debug
-	common /comdebug/ debug
-	save /comdebug/
+	include 'debug_aux1.h'
 
 	data debug / .false. /
 

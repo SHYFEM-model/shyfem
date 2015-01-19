@@ -28,41 +28,15 @@ c reads ous file and writes extracted records to new ous file
         integer irec(nrdim)
 
 	character*80 title
-	include 'nbasin.h'
 
-	real xgv(nkndim), ygv(nkndim)
-	real hm3v(3,neldim)
-	integer nen3v(3,neldim)
-	integer ipev(neldim), ipv(nkndim)
-	integer iarv(neldim)
-	common /xgv/xgv, /ygv/ygv
-	common /hm3v/hm3v
-	common /nen3v/nen3v
-	common /ipev/ipev, /ipv/ipv
-	common /iarv/iarv
+	include 'basin.h'
 
-	integer ilhv(neldim)
-	integer ilhkv(nkndim)
-	real hlv(nlvdim)
-        real utlnv(nlvdim,neldim)
-        real vtlnv(nlvdim,neldim)
-	common /ilhv/ilhv
-	common /ilhkv/ilhkv
-	common /hlv/hlv
-        common /utlnv/utlnv
-        common /vtlnv/vtlnv
+	include 'levels.h'
 
-	real hev(neldim)
-        common /hev/hev
+	include 'depth.h'
 
-	real znv(nkndim)
-	real zenv(3,neldim)
-	real ulnv(nlvdim,nkndim)
-	real vlnv(nlvdim,nkndim)
-	common /znv/znv
-	common /zenv/zenv
-	common /ulnv/ulnv
-	common /vlnv/vlnv
+	include 'hydro.h'
+	include 'hydro_vel.h'
 
 	real ut2v(neldim)
 	real vt2v(neldim)

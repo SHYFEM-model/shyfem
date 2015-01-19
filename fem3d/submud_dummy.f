@@ -18,8 +18,7 @@ c*******************************************************************
 
 	include 'param.h'
 
-	real vts(0:nlvdim,nkndim)
-	common /vts/vts
+	include 'fluidmud.h'
 
 	integer k,l
 

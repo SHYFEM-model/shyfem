@@ -50,14 +50,11 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 
 	implicit none
 
-	include 'nbasin.h'
 
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'ev.h'
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real xgv(1),ygv(1)
-	common /xgv/xgv,/ygv/ygv
+	include 'basin.h'
 
 	integer ie,i,kn1,kn2,kn3
 	integer isphe
@@ -289,9 +286,8 @@ c checks if coordinates are lat/lon
 
 	implicit none
 
-	include 'nbasin.h'
-        real xgv(1), ygv(1)
-        common /xgv/xgv, /ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	integer isphe_ev,init_ev
 	common /evcommon/ isphe_ev,init_ev
@@ -427,14 +423,12 @@ c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 
 	double precision a(3),b(3),c(3)
 
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'ev.h'
 
 	integer isphe_ev,init_ev
 	common /evcommon/ isphe_ev,init_ev
-        real xgv(1), ygv(1)
-        common /xgv/xgv, /ygv/ygv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'basin.h'
 
 	integer ii
 	integer kn1,kn2,kn3
@@ -511,10 +505,8 @@ c***********************************************************
 	integer ie
 	double precision xm,ym
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real xgv(1),ygv(1)
-	common /xgv/xgv,/ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	integer ii,k
 

@@ -18,15 +18,11 @@ c initializes non hydrostatic pressure terms
 	include 'ev.h'
 
 	include 'nbasin.h'
-	integer nlv,nlvdi,lmax
-	common /level/ nlvdi,nlv
+	integer lmax
+	include 'nlevel.h'
 	integer k,l
 
-	double precision qpov(nlvdim,nkndim)
-	common /qpov/qpov
-	double precision qpnv(nlvdim,nkndim)
-	common /qpnv/qpnv
-        save /qpov/,/qpnv/	!this should be enough for all appearances 
+	include 'nohyd.h'
 
 	do k = 1,nkn
 	   do l=1,nlv
@@ -49,14 +45,11 @@ c integrates non hydrostatic adjustment to equations
 	include 'ev.h'
 
 	include 'nbasin.h'
-	integer nlv,nlvdi,lmax
-	common /level/ nlvdi,nlv
+	integer lmax
+	include 'nlevel.h'
 	integer k,l
 
-	double precision qpov(nlvdim,nkndim)
-	common /qpov/qpov
-	double precision qpnv(nlvdim,nkndim)
-	common /qpnv/qpnv
+	include 'nohyd.h'
 	integer icall_conh
 	save icall_conh
 	data icall_conh /0/
@@ -102,14 +95,11 @@ c copies new values of q to old time step
 	include 'ev.h'
 
 	include 'nbasin.h'
-	integer nlv,nlvdi,lmax
-	common /level/ nlvdi,nlv
+	integer lmax
+	include 'nlevel.h'
 	integer k,l
 
-	double precision qpov(nlvdim,nkndim)
-	common /qpov/qpov
-	double precision qpnv(nlvdim,nkndim)
-	common /qpnv/qpnv
+	include 'nohyd.h'
 
 	do k = 1,nkn
 	   do l=1,nlv
@@ -132,40 +122,19 @@ cc parameters
 	include 'ev.h'
 
 c common 
-	integer nlvdi,nlv
-	include 'nbasin.h'
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'femtime.h'
 	include 'pkonst.h'
         real rrho0	
-	real difv(0:nlvdim,1)
-	common /difv/difv
-	real difhv(nlvdim,1)
-	common /difhv/difhv
-        real uprv(nlvdim,1), vprv(nlvdim,1)
-	common /uprv/uprv, /vprv/vprv
-        real wlov(0:nlvdim,1),wlnv(0:nlvdim,1)
-	common /wlov/wlov, /wlnv/wlnv
-        integer ilhv(1), ilhkv(1)
-	common /ilhv/ilhv, /ilhkv/ilhkv
-	real hdknv(nlvdim,nkndim)
-	common /hdknv/hdknv
-	real hdkov(nlvdim,1)
-	common /hdkov/hdkov
-	real hdenv(nlvdim,1)
-	common /hdenv/hdenv
-	real hdeov(nlvdim,1)
-	common /hdeov/hdeov
-        real areakv(nlvdim,1)
-	common /areakv/areakv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real zeov(3,1),zenv(3,1)
-	common /zeov/zeov, /zenv/zenv
-	double precision qpov(nlvdim,nkndim)
-	common /qpov/qpov
-	double precision qpnv(nlvdim,nkndim)
-	common /qpnv/qpnv
+	include 'diff_visc_fric.h'
+	include 'hydro_print.h'
+	include 'hydro_vel.h'
+	include 'levels.h'
+	include 'depth.h'
+	include 'area.h'
+	include 'basin.h'
+	include 'hydro.h'
+	include 'nohyd.h'
         integer k,ie,ii,l,iii,ll
 	integer ilevel,lmax
 	integer lstart
@@ -361,23 +330,14 @@ c adds explicit part of non hydrostatic pressure to explict terms
 	include 'param.h'
 	include 'ev.h'
         
-	include 'nbasin.h'
 	include 'pkonst.h'
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        integer ilhv(1)
-        common /ilhv/ilhv
-        real fxv(nlvdim,1)      
-        real fyv(nlvdim,1)
-        common /fxv/fxv
-        common /fyv/fyv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-        real hdeov(nlvdim,1)
-        common /hdeov/hdeov
-	double precision qpov(nlvdim,nkndim)
-	common /qpov/qpov
+	include 'levels.h'
+	include 'internal.h'
+	include 'basin.h'
+	include 'depth.h'
+	include 'nohyd.h'
 
         integer k,l,ie,ii,lmax	
 	real hhi
@@ -433,38 +393,17 @@ cc parameters
 	include 'ev.h'
 
 c common 
-	integer nlvdi,nlv
-	include 'nbasin.h'
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'femtime.h'
-	real difv(0:nlvdim,1)
-	common /difv/difv
-	real difhv(nlvdim,1)
-	common /difhv/difhv
-        real uprv(nlvdim,1), vprv(nlvdim,1)
-	common /uprv/uprv, /vprv/vprv
-        real wlov(0:nlvdim,1),wlnv(0:nlvdim,1)
-	common /wlov/wlov, /wlnv/wlnv
-        integer ilhv(1), ilhkv(1)
-	common /ilhv/ilhv, /ilhkv/ilhkv
-	real hdknv(nlvdim,nkndim)
-	common /hdknv/hdknv
-	real hdkov(nlvdim,1)
-	common /hdkov/hdkov
-	real hdenv(nlvdim,1)
-	common /hdenv/hdenv
-	real hdeov(nlvdim,1)
-	common /hdeov/hdeov
-        real areakv(nlvdim,1)
-	common /areakv/areakv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real zeov(3,1),zenv(3,1)
-	common /zeov/zeov, /zenv/zenv
-	double precision qpov(nlvdim,nkndim)
-	common /qpov/qpov
-	double precision qpnv(nlvdim,nkndim)
-	common /qpnv/qpnv
+	include 'diff_visc_fric.h'
+	include 'hydro_print.h'
+	include 'hydro_vel.h'
+	include 'levels.h'
+	include 'depth.h'
+	include 'area.h'
+	include 'basin.h'
+	include 'hydro.h'
+	include 'nohyd.h'
 
         integer k,ie,ii,l,iii,k2,k3,ii2,ii3,jj
 	integer ilevel,lmax
@@ -578,13 +517,10 @@ cc********************************************************************
 	 include 'param.h'
 	 include 'nohydlinks.h'
 	include 'nbasin.h'
-         integer nlvdi,nlv
-	 common /level/ nlvdi,nlv
+	include 'nlevel.h'
          integer k,l,lmax,nn
-         integer ilhv(1), ilhkv(1)
-         common /ilhv/ilhv, /ilhkv/ilhkv
-         double precision qpnv(nlvdim,nkndim)
-         common /qpnv/qpnv
+	include 'levels.h'
+	include 'nohyd.h'
 
          nn=0
          do k=1,nkn
@@ -609,26 +545,16 @@ c********************************************************************
 	 include 'param.h'
 	 include 'ev.h'
 
-	include 'nbasin.h'
-         integer nlvdi,nlv
-	 common /level/ nlvdi,nlv
-         integer ilhv(1), ilhkv(1)
-         common /ilhv/ilhv, /ilhkv/ilhkv
+	include 'nlevel.h'
+	include 'levels.h'
 	include 'femtime.h'
-         integer nen3v(3,1)
-	 common /nen3v/nen3v
-         double precision qpnv(nlvdim,nkndim)
-         common /qpnv/qpnv
-	 real hdknv(nlvdim,nkndim)
-	 common /hdknv/hdknv
-         real zov(1),znv(1),unv(1),vnv(1)
-         real ulnv(nlvdim,1),vlnv(nlvdim,1)
-         real wlov(0:nlvdim,1),wlnv(0:nlvdim,1)
-	 common /wlov/wlov, /wlnv/wlnv
-         real uprv(nlvdim,1), vprv(nlvdim,1)
-	 common /uprv/uprv, /vprv/vprv
-	 common /zov/zov, /znv/znv
-	 common /ulnv/ulnv, /vlnv/vlnv
+	include 'basin.h'
+	include 'nohyd.h'
+	include 'depth.h'
+	real unv(1), vnv(1)
+	include 'hydro_print.h'
+	include 'hydro.h'
+	include 'hydro_vel.h'
 	 integer kn(3)
 	 double precision aj,rk3,rv,aj4,aj12
 	 double precision b(3),c(3),f(3)
@@ -701,13 +627,9 @@ c********************************************************************
 	 include 'param.h'
 	 include 'links.h'
 	 include 'nohydlinks.h'
-	include 'nbasin.h'
-         integer nlvdi,nlv
-	 common /level/ nlvdi,nlv
-         integer ilhv(1), ilhkv(1)
-	 common /ilhv/ilhv, /ilhkv/ilhkv
-         integer nen3v(3,1)
-	 common /nen3v/nen3v
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'basin.h'
 
 	 integer i,j,l,ipkk,ipkkt,ipkkb,ik,nk
 	 integer kn(3)
@@ -789,13 +711,9 @@ c construct pointers for matrix
 	 include 'param.h'
 	 include 'links.h'
 	 include 'nohydlinks.h'
-	include 'nbasin.h'
-         integer nlvdi,nlv
-	 common /level/ nlvdi,nlv
-         integer ilhv(1), ilhkv(1)
-         common /ilhv/ilhv, /ilhkv/ilhkv
-         integer nen3v(3,1)
-	 common /nen3v/nen3v
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'basin.h'
  	 integer kn(3)	 
 	 integer kk,nk,i,k,l,ll,mm,ik,ip,n,nn,lmax
 	 integer ii,jj,ie,nkmax(nlvdim,nkndim),ss,nnn

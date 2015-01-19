@@ -408,8 +408,7 @@ c TRACK_LINE if the particle is on one side (normal situation)
 	real y			!y-coordinate
 	real ttime		!time to advect
 
-        integer iarv(neldim)
-        common /iarv/iarv
+	include 'basin.h'
         
 	integer nl
 	integer ltbdy

@@ -245,15 +245,9 @@ c	4: net in gray (for scalar and velocities - use bsgray)
 
 	integer mode
 
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	integer ipev(1), ipv(1)
-	real xgv(1), ygv(1)
-	integer kantv(2,1)
-	common /xgv/xgv, /ygv/ygv
-	common /nen3v/nen3v
-	common /ipev/ipev, /ipv/ipv
-	common /kantv/kantv
+	include 'param_dummy.h'
+	include 'basin.h'
+	include 'geom.h'
 
 	real xmin,ymin,xmax,ymax
 	common /bamima/ xmin,ymin,xmax,ymax
@@ -322,15 +316,9 @@ c	positive: external    negative: internal
 
 	integer mode
 
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	integer ipev(1), ipv(1)
-	real xgv(1), ygv(1)
-	integer kantv(2,1)
-	common /xgv/xgv, /ygv/ygv
-	common /nen3v/nen3v
-	common /ipev/ipev, /ipv/ipv
-	common /kantv/kantv
+	include 'param_dummy.h'
+	include 'basin.h'
+	include 'geom.h'
 
 	real xmin,ymin,xmax,ymax
 	common /bamima/ xmin,ymin,xmax,ymax
@@ -481,11 +469,8 @@ c mode	0: exact dimensions  1: larger dimensions
 
 	integer mode
 
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	real xgv(1), ygv(1)
-	common /nen3v/nen3v
-	common /xgv/xgv, /ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	real xmin,ymin,xmax,ymax
 	common /bamima/ xmin,ymin,xmax,ymax
@@ -1568,14 +1553,10 @@ c plots islands gray
 
 	real cgray	!color
 	
-	include 'nbasin.h'
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	integer kantv(2,1)
-	common /kantv/kantv
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'geom.h'
+	include 'basin.h'
 
 	real xmin,ymin,xmax,ymax
 	common /bamima/ xmin,ymin,xmax,ymax

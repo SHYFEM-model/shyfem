@@ -42,9 +42,9 @@ c write 2d nos file
         character*(*) name,title
         real value(1)
 
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-        real hev(1)
-        common /hev/hev
+	include 'depth.h'
 
         character*80 pfile
         character*80 ptitle

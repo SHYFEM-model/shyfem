@@ -81,45 +81,22 @@ c parameter
 c arguments
 	integer mode
 c common
-	include 'nbasin.h'
 	include 'femtime.h'
 	include 'pkonst.h'
 	include 'mkonst.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	real saltv(nlvdim,nkndim),tempv(nlvdim,nkndim),rhov(nlvdim,nkndim)
-	real bpresv(nlvdim,1)
-	real uprv(nlvdim,1), vprv(nlvdim,1)
-	real v1v(1),v2v(1)
-	integer ilhkv(1)
-	common /saltv/saltv, /tempv/tempv, /rhov/rhov
-	common /bpresv/bpresv
-	common /uprv/uprv, /vprv/vprv
-	common /ilhkv/ilhkv
-	common /v1v/v1v, /v2v/v2v
-	real zeov(3,1), zenv(3,1)
-	common /zeov/zeov, /zenv/zenv
-	real difv(0:nlvdim,1)
-	common /difv/difv
-        real hdkov(nlvdim,1)
-        common /hdkov/hdkov
-        real difhv(nlvdim,1)
-        common /difhv/difhv
-        real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'ts.h'
+	include 'hydro_print.h'
+	include 'levels.h'
+	include 'aux_array.h'
+	include 'hydro.h'
+	include 'depth.h'
+	include 'diff_visc_fric.h'
+	include 'basin.h'
 
-	real tobsv(nlvdim,1)
-	common /tobsv/tobsv
-	real sobsv(nlvdim,1)
-	common /sobsv/sobsv
-	real rtauv(nlvdim,1)
-	common /rtauv/rtauv
                       
-        character*80 saltn(nbcdim)
-        character*80 tempn(nbcdim)
-        common /saltn/ saltn
-        common /tempn/ tempn
+	include 'bound_names.h'
 
 c local
 	logical debug
@@ -502,19 +479,11 @@ c common
 
 	include 'nbasin.h'
 	include 'pkonst.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
-	real saltv(nlvdim,1),tempv(nlvdim,1)
-	common /saltv/saltv, /tempv/tempv
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
-	real bpresv(nlvdim,1),rhov(nlvdim,1)
-	common /bpresv/bpresv, /rhov/rhov
-	real hldv(1)
-	common /hldv/hldv
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'ts.h'
 
-        real hdkov(nlvdim,1)
-        common /hdkov/hdkov
+	include 'depth.h'
 
 c local
 	logical bdebug,debug,bsigma
@@ -594,14 +563,9 @@ c checks values of t/s/rho
 	include 'param.h'
 
 	include 'nbasin.h'
-	real saltv(nlvdim,1),tempv(nlvdim,1)
-	common /saltv/saltv, /tempv/tempv
-	real rhov(nlvdim,1)
-	common /rhov/rhov
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'ts.h'
+	include 'levels.h'
+	include 'nlevel.h'
 
 	real smin,smax,tmin,tmax,rmin,rmax
 	character*30 text
@@ -916,8 +880,7 @@ c accessor routine to get T/S
 
 	include 'param.h'
 
-	real saltv(nlvdim,1),tempv(nlvdim,1),rhov(nlvdim,1)
-	common /saltv/saltv, /tempv/tempv, /rhov/rhov
+	include 'ts.h'
 
         t = tempv(l,k)
         s = saltv(l,k)
@@ -936,10 +899,8 @@ c******************************************************************
 	real vals(nlvdim,nkndim)
 
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'nlevel.h'
+	include 'levels.h'
 
 	integer l,k,lmax
 	real valmin,valmax

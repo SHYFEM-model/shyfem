@@ -42,13 +42,9 @@ c--------------------------------------------------
 	real hlv2(nlvdim)
 	real hl(nlvdim)
 
-	integer ilhkv(nkndim)
-	real hev(neldim)
-	real hlv(nlvdim)
 
-	common /ilhkv/ilhkv
-	common /hev/hev
-	common /hlv/hlv
+	include 'levels.h'
+	include 'depth.h'
 
 	logical bminmax,balways,breset
 	logical blog,badj,bvol

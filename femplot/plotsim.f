@@ -44,92 +44,28 @@ c parameters
 	include 'evmain.h'
 
 c description
-	character*80 descrr
-	common /descrr/ descrr
 c FEM parameters
 	include 'mkonst.h'
 c OUT
-	real xv(3,nkndim)
-	common /xv/xv
-	real zenv(3,neldim)
-	common /zenv/zenv
-	real usnv(neldim), vsnv(neldim)
-	common /usnv/usnv, /vsnv/vsnv
-	real wsnv(nkndim)
-	common /wsnv/wsnv
 c 3d
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real hlv(nlvdim), hev(neldim)
-        common /hlv/hlv, /hev/hev
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        integer ilhkv(nkndim)
-        common /ilhkv/ilhkv
-        real znv(nkndim)
-        common /znv/znv
-        real utlnv(nlvdim,neldim)
-        common /utlnv/utlnv
-        real vtlnv(nlvdim,neldim)
-        common /vtlnv/vtlnv
-        real ulnv(nlvdim,neldim)
-        common /ulnv/ulnv
-        real vlnv(nlvdim,neldim)
-        common /vlnv/vlnv
-        real het3v(nlvdim,neldim)
-        common /het3v/het3v
+	include 'levels.h'
+	include 'hydro.h'
+	include 'hydro_vel.h'
 
-        real uprv(nlvdim,nkndim)
-        common /uprv/uprv
-        real vprv(nlvdim,nkndim)
-        common /vprv/vprv
-        real wprv(nlvdim,nkndim)
-        common /wprv/wprv
+	include 'hydro_print.h'
 
-        real p3(nlvdim,2*neldim)	!is good for nodes, elements & arrays
-        common /p3/p3
 
-        real fvlv(nlvdim,nkndim)
-        common /fvlv/fvlv
-        real arfvlv(nkndim)
-        common /arfvlv/arfvlv
+	include 'plot_aux.h'
 
 c boundary etc.
-	integer kantv(2,nkndim)
-	common /kantv/kantv
-        integer ilinkv(nkndim+1),lenkv(nlkdim),linkv(nlkdim)
-        common /ilinkv/ilinkv, /lenkv/lenkv, /linkv/linkv
-        integer ieltv(3,neldim)
-        common /ieltv/ieltv
-	real hkv(nkndim)
-	real hetv(neldim)
-	real parray(neldim)		!is good for nodes and elements
-	common /hkv/hkv
-	common /hetv/hetv
-	common /parray/parray
+	include 'geom.h'
+	include 'depth.h'
 c auxiliary
-	real v1v(nkndim)
-	common /v1v/v1v
-	real v2v(nkndim)
-	common /v2v/v2v
-	real v3v(nkndim)
-	common /v3v/v3v
-	real ve1v(neldim)
-	common /ve1v/ve1v
-	real uvnv(neldim), vvnv(neldim)
-	common /uvnv/uvnv, /vvnv/vvnv
-	real uv(nkndim), vv(nkndim)
-	common /uv/uv, /vv/vv
-	logical bwater(neldim)
-	common /bwater/bwater
-	logical bkwater(nkndim)
-	common /bkwater/bkwater
+	include 'aux_array.h'
+	include 'hydro_plot.h'
 c vertical velocity
-        real wauxv(0:nlvdim,nkndim)
-        common /wauxv/wauxv
-        real wlnv(0:nlvdim,nkndim)
-        common /wlnv/wlnv
 c local
 	character*20 what
 	integer mode,ivar

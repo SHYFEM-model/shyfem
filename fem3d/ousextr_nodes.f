@@ -30,31 +30,13 @@ c--------------------------------------------------
 
 	character*80 title
 
-	integer ilhv(neldim)
-	integer ilhkv(nkndim)
-	real hlv(nlvdim)
-	real hev(neldim)
-	real hkv(nkndim)
-	real zenv(3,neldim)
 
-        common /ilhv/ilhv
-        common /ilhkv/ilhkv
-	common /hlv/hlv
-	common /hev/hev
-	common /hkv/hkv
-	common /zenv/zenv		! need this for get_layer_thickness
+	include 'levels.h'
+	include 'depth.h'
 
-	real znv(nkndim)
-        real utlnv(nlvdim,neldim)
-        real vtlnv(nlvdim,neldim)
-	real uprv(nlvdim,nkndim)
-	real vprv(nlvdim,nkndim)
 
-	common /znv/znv
-	common /utlnv/utlnv
-	common /vtlnv/vtlnv
-	common /uprv/uprv
-	common /vprv/vprv
+	include 'hydro.h'
+	include 'hydro_print.h'
 
 	real weight(nlvdim,nkndim)
 	real hl(nlvdim)

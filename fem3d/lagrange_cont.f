@@ -254,8 +254,8 @@ c*******************************************************************
 
 	integer np,k1,k2
 
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'param.h'
+	include 'basin.h'
 
 	integer i,ie1,ie2
 	real x1,y1,x2,y2,dx,dy
@@ -336,8 +336,8 @@ c release on node
 	integer k		!node where particle is released
 	integer n
 
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'param.h'
+	include 'basin.h'
 
 	integer ie
 	real x,y

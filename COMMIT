@@ -1,5 +1,296 @@
 ============================================================
 
+Mon Jan 19 17:59:41 CET 2015
+
+huge commit - substituted common with include
+
+ Makefile                      |    4 +
+ RELEASE_NOTES                 |    8 +
+ fem3d/aquabc_fem_interface.f  |   39 +---
+ fem3d/area.h                  |    5 +
+ fem3d/atoxi3d.f               |   14 +-
+ fem3d/aux_array.h             |   26 +++
+ fem3d/basbathy.f              |   24 +--
+ fem3d/basbox.f                |   29 +--
+ fem3d/baschk.f                |   20 +--
+ fem3d/bashsigma.f             |   16 +--
+ fem3d/basinf.f                |   11 +-
+ fem3d/basres.f                |    2 -
+ fem3d/bastreat.f              |   94 ++-------
+ fem3d/baswork.f               |   26 +--
+ fem3d/bdist.f                 |    4 +-
+ fem3d/bin/newsubst.pl         |    2 +-
+ fem3d/bio3d.f                 |   45 ++---
+ fem3d/bio3d_util.f            |    4 +-
+ fem3d/bnd_aux.h               |    9 +
+ fem3d/bound_dynamic.h         |   14 ++
+ fem3d/bound_geom.h            |   16 ++
+ fem3d/bound_names.h           |   36 ++++
+ fem3d/const_aux.h             |    5 +
+ fem3d/conz.h                  |    9 +
+ fem3d/coords.h                |   55 +++++
+ fem3d/coords_cpp.h            |    5 +
+ fem3d/coords_gb.h             |    7 +
+ fem3d/coords_utm.h            |    9 +
+ fem3d/debug.f                 |   20 +--
+ fem3d/debug_aux1.h            |    5 +
+ fem3d/debug_aux2.h            |    5 +
+ fem3d/depth.h                 |   22 ++
+ fem3d/diff_aux.h              |    5 +
+ fem3d/diff_visc_fric.h        |   26 +++
+ fem3d/extra.h                 |    5 +
+ fem3d/fluidmud.h              |   38 ++++
+ fem3d/flux.f                  |   32 ++--
+ fem3d/geom.h                  |   21 ++
+ fem3d/geom_dynamic.h          |   10 +
+ fem3d/gotm3d.f                |    4 +-
+ fem3d/gotm_aux.h              |   22 ++
+ fem3d/grdutil.f               |    5 +-
+ fem3d/ht.f                    |  268 +++++---------------------
+ fem3d/hydro.h                 |   19 ++
+ fem3d/hydro_baro.h            |    7 +
+ fem3d/hydro_print.h           |   26 +++
+ fem3d/hydro_vel.h             |   16 ++
+ fem3d/internal.h              |   22 ++
+ fem3d/intp.f                  |    6 +-
+ fem3d/lagrange_back.f         |   19 +--
+ fem3d/lagrange_connect.f      |    3 +-
+ fem3d/lagrange_cont.f         |    8 +-
+ fem3d/lagrange_flux.f         |   41 +---
+ fem3d/lagrange_init.f         |   12 +-
+ fem3d/lagrange_inout.f        |    4 +-
+ fem3d/lagrange_main.f         |    3 +-
+ fem3d/lagrange_oil.f          |    5 +-
+ fem3d/lagrange_track.f        |   22 +--
+ fem3d/lagrange_util.f         |   19 +--
+ fem3d/lagrange_util_tr.f      |   18 +--
+ fem3d/levels.h                |   18 ++
+ fem3d/lgrelab.f               |   24 +--
+ fem3d/loading.f               |    7 +-
+ fem3d/map_influence.f         |   17 +--
+ fem3d/meteo_aux.h             |   25 +++
+ fem3d/netcdf.f                |   58 +++---
+ fem3d/netcdf_util.f           |    4 +-
+ fem3d/new36.f                 |   20 +--
+ fem3d/new3di.f                |  286 +++++++--------------------
+ fem3d/newbcl.f                |   83 ++------
+ fem3d/newchao.f               |   13 +-
+ fem3d/newchk.f                |  384 +++++++++---------------------------
+ fem3d/newcon.f                |  143 ++++----------
+ fem3d/newconz.f               |   56 ++----
+ fem3d/newcra.f                |   22 +--
+ fem3d/newexpl.f               |  312 +++++++----------------------
+ fem3d/newfix.f                |   49 ++----
+ fem3d/newini.f                |  144 ++++----------
+ fem3d/newnohydro.f            |  190 +++++-------------
+ fem3d/newnudge.f              |    9 +-
+ fem3d/newrog.f                |    4 +-
+ fem3d/newsig.f                |   11 +-
+ fem3d/newstab.f               |   51 ++----
+ fem3d/newtra.f                |  244 +++++++----------------
+ fem3d/newtvd.f                |   46 ++---
+ fem3d/nlevel.h                |    5 +
+ fem3d/nohyd.h                 |    7 +
+ fem3d/nonhydro_pard.f         |    7 +-
+ fem3d/nonhydro_spk.f          |   15 +-
+ fem3d/nos2nc.f                |   21 +--
+ fem3d/nos_elab.f              |   18 +--
+ fem3d/nosaver_basin.f         |    3 +-
+ fem3d/nosaver_vert.f          |    3 +-
+ fem3d/nosextr_custom.f        |   14 +--
+ fem3d/nosextr_fluxes.f        |   27 +--
+ fem3d/nosextr_gis.f           |   27 +--
+ fem3d/nosextr_nodes.f         |   14 +-
+ fem3d/nosinit.f               |   18 +--
+ fem3d/nosintp.f               |   14 +--
+ fem3d/nosmaniq.f              |   18 +--
+ fem3d/nosresidence.f          |    8 +-
+ fem3d/nossum.f                |   14 +--
+ fem3d/noswrite.f              |   34 +---
+ fem3d/nudging.h               |    5 +
+ fem3d/optintp.f               |    6 +-
+ fem3d/ous2nc.f                |   21 +--
+ fem3d/ousaver.f               |   39 +---
+ fem3d/ousextr_cat.f           |   42 +---
+ fem3d/ousextr_gis.f           |   45 +----
+ fem3d/ousextr_nodes.f         |   32 +---
+ fem3d/ousextr_records.f       |   44 +----
+ fem3d/ousinf.f                |   41 +---
+ fem3d/ousintp.f               |   41 +---
+ fem3d/ousvdiff.f              |   24 +--
+ fem3d/ouswork.f               |   35 +---
+ fem3d/ouswork1.f              |   29 +---
+ fem3d/ouswrite.f              |   39 +---
+ fem3d/readext.f               |   10 +-
+ fem3d/reg.h                   |    5 +
+ fem3d/roughness.h             |    7 +
+ fem3d/scalintp.f              |   24 +--
+ fem3d/sedi3d.f                |  115 +++--------
+ fem3d/semi.h                  |    8 +
+ fem3d/sigma.h                 |    7 +
+ fem3d/sigmautil.f             |   24 +--
+ fem3d/simul.h                 |    5 +
+ fem3d/sinking.h               |    5 +
+ fem3d/subbfm.f                |   48 ++----
+ fem3d/subbnd.f                |  153 +++------------
+ fem3d/subbndo.f               |   39 ++---
+ fem3d/subboxa.f               |   62 ++-----
+ fem3d/subcon1.f               |   50 ++---
+ fem3d/subcoord.f              |  331 +++----------------------------
+ fem3d/subcus.f                |  440 ++++++++++++-----------------------------
+ fem3d/subdep.f                |   93 +++------
+ fem3d/subdif.f                |   97 +++-------
+ fem3d/subdry.f                |   69 +++-----
+ fem3d/subdwq.f                |   12 +-
+ fem3d/subele.f                |  154 ++++-----------
+ fem3d/subetsa.f               |   36 +---
+ fem3d/subexta.f               |   34 ++--
+ fem3d/subflx3d.f              |   27 +--
+ fem3d/subflxa.f               |   13 +-
+ fem3d/subflxu.f               |    4 +-
+ fem3d/subfvl.f                |   19 +--
+ fem3d/subgotm.f               |  201 ++++---------------
+ fem3d/subgotm_mud.f           |  283 ++++++---------------------
+ fem3d/subinterpol.f           |   63 +-----
+ fem3d/subinterpol1.f          |   41 +---
+ fem3d/sublin.f                |    3 +-
+ fem3d/sublnka.f               |   47 ++---
+ fem3d/sublnks.f               |   27 ++--
+ fem3d/sublnku.f               |   27 ++--
+ fem3d/sublpl.f                |    5 +-
+ fem3d/submet.f                |   17 +-
+ fem3d/submeteo2.f             |   19 +--
+ fem3d/submud.f                |  331 +++++++------------------------
+ fem3d/submud_dummy.f          |    3 +-
+ fem3d/subn11.f                |  146 ++++----------
+ fem3d/subn35.f                |   80 +++------
+ fem3d/subnev.f                |   24 +--
+ fem3d/subnosa.f               |    4 +-
+ fem3d/subnsa.f                |    8 +-
+ fem3d/subnsh.f                |   38 ++---
+ fem3d/subnsu.f                |   36 ++--
+ fem3d/suboff.f                |  133 +++----------
+ fem3d/subousa.f               |   25 +--
+ fem3d/subouta.f               |   15 +-
+ fem3d/subproj.f               |   13 +-
+ fem3d/subqfxt.f               |    6 +-
+ fem3d/subreg.f                |  120 ++++--------
+ fem3d/subres.f                |   76 ++-----
+ fem3d/subrst.f                |   64 ++-----
+ fem3d/subtrace.f              |   50 ++----
+ fem3d/subuti.f                |   61 ++----
+ fem3d/subvola.f               |   74 +++-----
+ fem3d/subwat.f                |   56 ++----
+ fem3d/subwaves.f              |   80 +++-----
+ fem3d/subwrt.f                |   52 ++----
+ fem3d/tideg.f                 |   28 +--
+ fem3d/tides.h                 |    7 +
+ fem3d/ts.h                    |   27 +++
+ fem3d/ts2nc.f                 |   35 +---
+ fem3d/turbulence.h            |   10 +
+ fem3d/volcomp.h               |    7 +
+ fem3d/windcrea.f              |    9 +-
+ fem3d/zinit.f                 |   10 +-
+ fembin/clean_time             |  Bin 8290 -> 0 bytes
+ fembin/clean_time.f           |   25 ---
+ fembin/get_timestep.sh        |    2 +-
+ fembin/gitinfo                |    7 +
+ fembin/progs/clean_time       |  Bin 0 -> 9026 bytes
+ fembin/progs/clean_time.f     |   25 +++
+ femcheck/check_var.sh         |   35 ++++
+ femdoc/final/shyfem.pdf       |  Bin 293711 -> 293716 bytes
+ femdoc/final/shyfem.ps        |   24 ++--
+ femplot/aux_array.h           |   26 +++
+ femplot/depth.h               |   22 ++
+ femplot/geom.h                |   21 ++
+ femplot/hydro.h               |   19 ++
+ femplot/hydro_plot.h          |   20 ++
+ femplot/hydro_print.h         |   26 +++
+ femplot/hydro_vel.h           |   16 ++
+ femplot/levels.h              |   18 ++
+ femplot/line_nodes.f          |   13 +-
+ femplot/nlevel.h              |    5 +
+ femplot/ousinfo.f             |   17 +--
+ femplot/param_dummy.h         |   22 ++
+ femplot/plot_aux.h            |   30 +++
+ femplot/plotsim.f             |   84 +-------
+ femplot/simul.h               |    5 +
+ femplot/supano.f              |    9 +-
+ femplot/supbas.f              |   41 +---
+ femplot/supdep.f              |   59 ++----
+ femplot/supint.f              |    8 +-
+ femplot/supiso.f              |   17 +-
+ femplot/suplag.f              |    4 +-
+ femplot/suplin.f              |   25 +--
+ femplot/suplin1.f             |   56 ++----
+ femplot/supout.f              |  296 +++++++++-------------------
+ femplot/supout.h              |    5 +
+ femplot/supsim.f              |  158 +++++-----------
+ femplot/supver.f              |   21 +--
+ 223 files changed, 3154 insertions(+), 6465 deletions(-)
+ new file:
+   fem3d/area.h
+   fem3d/aux_array.h
+   fem3d/bnd_aux.h
+   fem3d/bound_dynamic.h
+   fem3d/bound_geom.h
+   fem3d/bound_names.h
+   fem3d/const_aux.h
+   fem3d/conz.h
+   fem3d/coords.h
+   fem3d/coords_cpp.h
+   fem3d/coords_gb.h
+   fem3d/coords_utm.h
+   fem3d/debug_aux1.h
+   fem3d/debug_aux2.h
+   fem3d/depth.h
+   fem3d/diff_aux.h
+   fem3d/diff_visc_fric.h
+   fem3d/extra.h
+   fem3d/fluidmud.h
+   fem3d/geom.h
+   fem3d/geom_dynamic.h
+   fem3d/gotm_aux.h
+   fem3d/hydro.h
+   fem3d/hydro_baro.h
+   fem3d/hydro_print.h
+   fem3d/hydro_vel.h
+   fem3d/internal.h
+   fem3d/levels.h
+   fem3d/meteo_aux.h
+   fem3d/nlevel.h
+   fem3d/nohyd.h
+   fem3d/nudging.h
+   fem3d/reg.h
+   fem3d/roughness.h
+   fem3d/semi.h
+   fem3d/sigma.h
+   fem3d/simul.h
+   fem3d/sinking.h
+   fem3d/tides.h
+   fem3d/ts.h
+   fem3d/turbulence.h
+   fem3d/volcomp.h
+   fembin/progs/clean_time
+   femcheck/check_var.sh
+   femplot/aux_array.h
+   femplot/depth.h
+   femplot/geom.h
+   femplot/hydro.h
+   femplot/hydro_plot.h
+   femplot/hydro_print.h
+   femplot/hydro_vel.h
+   femplot/levels.h
+   femplot/nlevel.h
+   femplot/param_dummy.h
+   femplot/plot_aux.h
+   femplot/simul.h
+   femplot/supout.h
+ deleted:
+    fembin/clean_time
+
+============================================================
+
 Mon Jan 19 15:17:39 CET 2015
 
 New version 7_1_2

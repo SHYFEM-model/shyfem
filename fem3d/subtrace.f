@@ -58,12 +58,8 @@ c*****************************************************************
 
 	include 'femtime.h'
 
-        real zeov(3,1)
-	common /zeov/zeov
-        real zenv(3,1)
-	common /zenv/zenv
-	integer iwegv(1)
-	common /iwegv/iwegv
+	include 'hydro.h'
+	include 'geom_dynamic.h'
 
 	integer itnew,itold,ierr
 	real zp,zold,znew
@@ -172,18 +168,10 @@ c*****************************************************************
 	real xinit,yinit	!lido for rachel
 	parameter (xinit=38889.,yinit=32745.2)
 
-        real zeov(3,1)
-	common /zeov/zeov
-        real zenv(3,1)
-	common /zenv/zenv
-        real zov(1)
-	common /zov/zov
-        real znv(1)
-	common /znv/znv
-        real unv(1),vnv(1)
-        common /unv/unv, /vnv/vnv
-	integer iwegv(1)
-	common /iwegv/iwegv
+	include 'param.h'
+	include 'hydro.h'
+	include 'hydro_baro.h'
+	include 'geom_dynamic.h'
 
 	logical bintmiss
 	logical bnearpoint
@@ -275,10 +263,8 @@ c interpolates water level
 	integer itp,itold,itnew
 	real zp
 
-        real zeov(3,1)
-	common /zeov/zeov
-        real zenv(3,1)
-	common /zenv/zenv
+	include 'param.h'
+	include 'hydro.h'
 
 	real zold,znew
 
@@ -304,16 +290,9 @@ c interpolates current velocity
 	integer itp,itold,itnew
 	real uv(2)
 
-        real unv(1),vnv(1)
-        common /unv/unv, /vnv/vnv
-        real uov(1),vov(1)
-        common /uov/uov, /vov/vov
-        real ulov(nlvdim,1), vlov(nlvdim,1)
-        common /ulov/ulov,  /vlov/vlov
-        real ulnv(nlvdim,1), vlnv(nlvdim,1)
-        common /ulnv/ulnv,  /vlnv/vlnv
-        integer ilhv(1)
-        common /ilhv/ilhv
+	include 'hydro_baro.h'
+	include 'hydro_vel.h'
+	include 'levels.h'
 
 	integer level,lmax
 	real uold,unew,vold,vnew
@@ -455,12 +434,9 @@ c*****************************************************************
 	integer get_nearest_point
 	real xp,yp
 
-	include 'nbasin.h'
 
-	real xgv(1)
-	common /xgv/xgv
-	real ygv(1)
-	common /ygv/ygv
+	include 'param.h'
+	include 'basin.h'
 
 	integer knear,k
 	real dist,d

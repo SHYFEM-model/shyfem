@@ -30,37 +30,14 @@ c reads ous file and writes extracted records in ascii to new file
         integer irec(nrdim)
 
 	character*80 title
-	include 'nbasin.h'
 
-	real xgv(nkndim), ygv(nkndim)
-	real hm3v(3,neldim)
-	integer nen3v(3,neldim)
-	integer ipev(neldim), ipv(nkndim)
-	integer iarv(neldim)
-	common /xgv/xgv, /ygv/ygv
-	common /hm3v/hm3v
-	common /nen3v/nen3v
-	common /ipev/ipev, /ipv/ipv
-	common /iarv/iarv
+	include 'basin.h'
 
-	integer ilhv(neldim)
-	integer ilhkv(nkndim)
-	real hlv(nlvdim)
-        real utlnv(nlvdim,neldim)
-        real vtlnv(nlvdim,neldim)
-	common /ilhv/ilhv
-	common /ilhkv/ilhkv
-	common /hlv/hlv
-        common /utlnv/utlnv
-        common /vtlnv/vtlnv
+	include 'levels.h'
 
-	real hev(neldim)
-	common /hev/hev		!this must be in common
+	include 'depth.h'
 
-	real znv(nkndim)
-	common /znv/znv		!this must be in common
-	real zenv(3,neldim)
-	common /zenv/zenv	!this must be in common
+	include 'hydro.h'
 
 	real uprv(nlvdim,nkndim)
 	real vprv(nlvdim,nkndim)
@@ -248,8 +225,7 @@ c vprv(l,k)	current velocity in y of node k and level l
         real uprv(nlvdim,nkndim)
         real vprv(nlvdim,nkndim)
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
         integer k,l,lmax
         real x,y
@@ -288,8 +264,7 @@ c writes one record to file nb (3D)
         parameter ( x0 = 2330000.-50000., y0 = 5000000. )
         !parameter ( x0 = 0., y0 = 0. )
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
 	logical bwrite
         integer k,l,lmax,n

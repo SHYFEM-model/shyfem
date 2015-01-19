@@ -33,25 +33,10 @@ c-------------------------------------------------
 
         character*80 title
 
-	integer ilhv(neldim)
-	integer ilhkv(nkndim)
-	real hlv(nlvdim)
-        real utlnv(nlvdim,neldim)
-        real vtlnv(nlvdim,neldim)
-	common /ilhv/ilhv
-	common /ilhkv/ilhkv
-	common /hlv/hlv
-        common /utlnv/utlnv
-        common /vtlnv/vtlnv
-	real zenv(3,neldim)
-	common /zenv/zenv
-	real znv(nkndim)
-	common /znv/znv
+	include 'levels.h'
+	include 'hydro.h'
 
-	real hkv(nkndim)
-	common /hkv/hkv
-	real hev(neldim)
-	common /hev/hev
+	include 'depth.h'
 
 	real uprv(nlvdim,nkndim)
 	real vprv(nlvdim,nkndim)

@@ -212,11 +212,9 @@ c common
 
 	include 'pkonst.h'
 
-        real z0sk(nkndim)               !surface roughness on nodes
-        common /z0sk/z0sk
+	include 'roughness.h'
 
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
 c local
         integer k,l, ie
@@ -471,14 +469,10 @@ c parameters
 
 c common
 	include 'nbasin.h'
-        real znv(nkndim)
-        common /znv/znv
-        real hkv(nkndim)
-        common /hkv/hkv
-        integer ilhkv(nkndim)           !number of node level
-        common /ilhkv/ilhkv
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'hydro.h'
+	include 'depth.h'
+	include 'levels.h'
+	include 'nlevel.h'
 
 c local
         integer it              !time [s]
@@ -591,11 +585,10 @@ c local
 
         implicit none
 
-        real xgv(1), ygv(1)
-        common /xgv/xgv, /ygv/ygv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'basin.h'
 
-        real hkv(1)
-        common /hkv/hkv
+	include 'depth.h'
 
 	integer i,knode,nn,ibc,nbc
 	integer nbnds,nkbnds,kbnds
@@ -634,11 +627,8 @@ c local
         real wavefx(nlvdim,neldim)      !wave forcing term x
         real wavefy(nlvdim,neldim)      !wave forcing term y
 
-	include 'nbasin.h'
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        integer nen3v(3,neldim)        !node number
-        common /nen3v/nen3v
+	include 'levels.h'
+	include 'basin.h'
         double precision b,c           !x and y derivated form function [1/m]
 	integer k,ie,ii,l,ilevel
         real radsx,radsy
@@ -686,19 +676,11 @@ c arguments
 
 c common
 	include 'pkonst.h'
-	include 'nbasin.h'
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        integer nen3v(3,neldim)        !node number
-        common /nen3v/nen3v
-        real ulnv(nlvdim,1),vlnv(nlvdim,1)
-        common /ulnv/ulnv, /vlnv/vlnv
-        real hdenv(nlvdim,1)
-        common /hdenv/hdenv
-        real fcorv(1)
-        common /fcorv/fcorv
-        real hdknv(nlvdim,nkndim)
-        common /hdknv/hdknv
+	include 'levels.h'
+	include 'basin.h'
+	include 'hydro_vel.h'
+	include 'internal.h'
+	include 'depth.h'
 
 c local
         real stokesz(nlvdim,nkndim)	!z stokes velocity on node k
@@ -856,15 +838,9 @@ c arguments
 	real stokesze(0:nlvdim,neldim)	!z stokes velocity on elements
 
 c common
-        integer nlvdi,nlv
-	include 'nbasin.h'
-        common /level/ nlvdi,nlv
-        integer nen3v(3,1)
-        integer ilhv(1)
-        integer ilhkv(1)
-        common /nen3v/nen3v
-        common /ilhv/ilhv
-        common /ilhkv/ilhkv
+	include 'nlevel.h'
+	include 'basin.h'
+	include 'levels.h'
 
 c local
 	real stokesz(0:nlvdim,nkndim) 	!z stokes velocity on node k
@@ -1026,8 +1002,7 @@ c**************************************************************
         integer it
 
 	include 'nbasin.h'
-        real wxv(1),wyv(1)	!x and y wind component [m/s]
-        common /wxv/wxv,/wyv/wyv
+	include 'meteo_aux.h'
 
 c --- input variable
         real wis		!wind speed at 10m [m/s]
@@ -1047,10 +1022,7 @@ c --- stress variables
         real twv(neldim)
         real tmv(neldim)
 
-        real v1v(1)
-        common /v1v/v1v
-        real v2v(1)
-        common /v2v/v2v
+	include 'aux_array.h'
 
 c --- local variable
         real widold		!old wind direction
@@ -1331,10 +1303,9 @@ c line and one of the border line of the element
         integer ien		!next element number
         real xn,yn		!intersection coordinates [m]
 
-        real xgv(1), ygv(1)
-        common /xgv/xgv, /ygv/ygv
-        integer ieltv(3,1)
-        common  /ieltv/ieltv
+	include 'param.h'
+	include 'basin.h'
+	include 'geom.h'
 
         real x0(3),y0(3)        !element vertices coordinates [m]
         real x3,y3,x4,y4	!node points coordiantes [m]
@@ -1408,8 +1379,7 @@ c computes stress parameters
         real waeh(neldim)	!wave height [m]
         real waep(neldim)	!wave period [s]
 
-        real unv(1), vnv(1)
-        common /unv/unv, /vnv/vnv
+	include 'hydro_baro.h'
 
         real depele
         logical is_r_nan

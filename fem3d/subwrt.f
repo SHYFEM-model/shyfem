@@ -45,23 +45,15 @@ c------------------------------------------------------------
         include 'param.h'
         include 'femtime.h'
 
-        character*80 descrp
-        common /descrp/ descrp
+	include 'simul.h'
 
 	include 'nbasin.h'
-	integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
-        real v1v(1)
-        common /v1v/v1v
-	real hev(neldim)
-	common /hev/hev
-	real hlv(nlvdim)
-	common /hlv/hlv
+	include 'levels.h'
+	include 'conz.h'
+	include 'aux_array.h'
+	include 'depth.h'
 
 	logical breset,bcompute,binit,belab
         logical bnoret,bstir
@@ -315,11 +307,7 @@ c on return rinside(k) = 1 for nodes inside domain
 	real rinside(1)
 	integer iaout		!area code for outside elements
 
-	include 'nbasin.h'
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        integer iarv(1)
-        common /iarv/iarv
+	include 'basin.h'
 
 	integer k,ie,ii,ia
 
@@ -354,8 +342,7 @@ c resets concentration for start of new computation
 	real rinside(1)			!flag if node is inside domain
 
 	include 'nbasin.h'
-	integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer k,l,lmax
 	real conz
@@ -386,8 +373,7 @@ c simulates stirred tank
 	real rinside(1)			!flag if node is inside domain
 
 	include 'nbasin.h'
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer k,l,lmax
 
@@ -418,8 +404,7 @@ c computes mass and volume on internal nodes
 	double precision mass,volume
 
 	include 'nbasin.h'
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer k,l,lmax
 	real v,conz
@@ -458,8 +443,7 @@ c sets concentration to zero outside of domain
 	real rinside(1)			!flag if node is inside domain
 
 	include 'nbasin.h'
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer k,l,lmax
 
@@ -487,8 +471,7 @@ c resets acumulated value
 	double precision cvacu(nlvdim,nkndim)
 
 	include 'nbasin.h'
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer k,lmax,l
 
@@ -518,8 +501,7 @@ c***************************************************************
 	double precision volacu(nlvdim,nkndim)
 
 	include 'nbasin.h'
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer k,l,lmax
 	real rl,conz,dt
@@ -574,8 +556,7 @@ c compute renewal time and write to file
 	real cvres3(nlvdim,nkndim)			!computed RT 3D
 
 	include 'nbasin.h'
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer k,lmax,l,ivar,ierr
 	real conz,conze,rconv,corr
@@ -727,8 +708,7 @@ c write histogram
 	real cvres3(nlvdim,nkndim)
 	double precision volacu(nlvdim,nkndim)
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer ndim
 	parameter (ndim=100)

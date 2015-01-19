@@ -141,9 +141,9 @@ c computes total volume in basin
 
 	integer it
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-	integer iwegv(1)
-	common /iwegv/iwegv
+	include 'geom_dynamic.h'
 
 	integer iwet,ie
 	real area,voldry,volwet,vol,a,v
@@ -191,12 +191,9 @@ c test some nodes and elements
 	integer ipint,ieint
 	integer n,ibase
 
-	integer iwegv(1)
-	common /iwegv/iwegv
-	real znv(1)
-        common /znv/znv
-	real zenv(3,1)
-	common /zenv/zenv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'geom_dynamic.h'
+	include 'hydro.h'
 
 	integer icall,k1,k2,ie1,ie2,ie3
 	save icall,k1,k2,ie1,ie2,ie3
@@ -240,8 +237,7 @@ c q-flux test
 	integer ndim
 	parameter(ndim=5)
 
-	real tempv(nlvdim,1)
-	common /tempv/tempv
+	include 'ts.h'
 
 	integer nodes(ndim)
 	save nodes
@@ -264,12 +260,10 @@ c adjust depth at inlets -> must be called from cst routines
 	real hm,h,hlido,hmala,hchio
 	real getpar
 
-	include 'nbasin.h'
 
-	integer iarv(1)
-	common /iarv/iarv
-	real hev(1)
-	common /hev/hev
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'depth.h'
 
 	write(6,*) 'adjusting depth at inlets...'
 
@@ -429,14 +423,9 @@ c channel output
 
 	integer it
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real ulnv(nlvdim,neldim)
-        common /ulnv/ulnv
-        real vlnv(nlvdim,neldim)
-        common /vlnv/vlnv
-        real rhov(nlvdim,nkndim)
-        common /rhov/rhov
+	include 'levels.h'
+	include 'hydro_vel.h'
+	include 'ts.h'
  
         real num(0:nlvdim)
         real nuh(0:nlvdim)
@@ -534,10 +523,7 @@ c channel output
 
 	integer it
 
-	real unv(1)
-	common /unv/unv
-	real vnv(1)
-	common /vnv/vnv
+	include 'hydro_baro.h'
 
 	integer ie,i
 	integer iunit
@@ -596,18 +582,12 @@ c channel velocity output
 
 	integer it
 
-	include 'nbasin.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real uprv(nlvdim,1), vprv(nlvdim,1)
-	common /uprv/uprv, /vprv/vprv
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-	real tempv(nlvdim,1)
-	common /tempv/tempv
-	real znv(1)
-	common /znv/znv
+	include 'levels.h'
+	include 'hydro_print.h'
+	include 'basin.h'
+	include 'ts.h'
+	include 'hydro.h'
 
 	logical berror
 	logical b1,b2,b3,b4
@@ -714,20 +694,11 @@ c set up zeta and conc for mass conservation test
 
 	integer it
 
-	include 'nbasin.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-	real cnv(nlvdim,nkndim)
-	common /cnv/cnv
-	real znv(1)
-	common /znv/znv
-	real zenv(3,1)
-	common /zenv/zenv
+	include 'levels.h'
+	include 'basin.h'
+	include 'conz.h'
+	include 'hydro.h'
 
 	integer k,ie,ii,n,ip,l
 	integer ntot,nlev
@@ -800,10 +771,8 @@ c mass conservation test
 	include 'param.h'
 
 	include 'nbasin.h'
-	integer iwegv(1)
-	common /iwegv/iwegv
-	real cnv(nlvdim,nkndim)
-	common /cnv/cnv
+	include 'geom_dynamic.h'
+	include 'conz.h'
 
 	real res
 	integer i,ie,iweg
@@ -858,17 +827,10 @@ c*****************************************************************
 
         include 'param.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real tempv(nlvdim,1)
-        common /tempv/tempv
-        real saltv(nlvdim,1)
-        common /saltv/saltv
-        real uprv(nlvdim,1),vprv(nlvdim,1)
-        common /uprv/uprv, /vprv/vprv
-        real visv(0:nlvdim,1)
-        real difv(0:nlvdim,1)
-        common /visv/visv, /difv/difv
+	include 'levels.h'
+	include 'ts.h'
+	include 'hydro_print.h'
+	include 'diff_visc_fric.h'
 
         integer nlev
 
@@ -987,10 +949,10 @@ c*****************************************************************
 
 	implicit none
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'femtime.h'
-	real znv(1)
-	common /znv/znv
+	include 'hydro.h'
 c local
         integer ie,ii,k
 c	integer ibc,nbc
@@ -1156,18 +1118,11 @@ c*****************************************************************
 
         include 'param.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real tempv(nlvdim,1)
-        common /tempv/tempv
-        real saltv(nlvdim,1)
-        common /saltv/saltv
-        real uprv(nlvdim,1),vprv(nlvdim,1)
-        common /uprv/uprv, /vprv/vprv
-	real znv(1)
-	common /znv/znv
-	real wlnv(0:nlvdim,1)
-	common /wlnv/wlnv
+	include 'levels.h'
+	include 'ts.h'
+	include 'hydro_print.h'
+	include 'hydro.h'
+	include 'hydro_vel.h'
 
         integer nlev
 	integer l
@@ -1203,14 +1158,9 @@ c*****************************************************************
 
 	include 'param.h'
 
-        real ulnv(nlvdim,neldim)
-        common /ulnv/ulnv
-        real vlnv(nlvdim,neldim)
-        common /vlnv/vlnv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real uprv(nlvdim,1), vprv(nlvdim,1)
-	common /uprv/uprv, /vprv/vprv
+	include 'hydro_vel.h'
+	include 'levels.h'
+	include 'hydro_print.h'
 
 	logical berror
 	integer i,k
@@ -1254,13 +1204,9 @@ c*****************************************************************
 
 	include 'param.h'
 
-	include 'nbasin.h'
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'levels.h'
+	include 'conz.h'
+	include 'basin.h'
 
 	integer l,k,lmax
         real x0,y0,x1,y1,x2,y2,x3,y3
@@ -1331,19 +1277,12 @@ c computes residence time online - one value for whole lagoon
 
         include 'param.h'
 
-	include 'nbasin.h'
 	include 'femtime.h'
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        integer iarv(1)
-        common /iarv/iarv
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
-        real v1v(1)
-        common /v1v/v1v
+	include 'basin.h'
+	include 'levels.h'
+	include 'conz.h'
+	include 'aux_array.h'
 
         integer ie,ii,k,lmax,l,ia
         logical bnoret,breset,bstir
@@ -1647,19 +1586,12 @@ c reset conz for fra
 
         include 'param.h'
 
-	include 'nbasin.h'
 	include 'femtime.h'
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        integer iarv(1)
-        common /iarv/iarv
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
-        real v1v(1)
-        common /v1v/v1v
+	include 'basin.h'
+	include 'levels.h'
+	include 'conz.h'
+	include 'aux_array.h'
 
         integer ie,ii,k,lmax,l,ia
         logical bnoret,breset,bstir
@@ -1745,18 +1677,11 @@ c*****************************************************************
         include 'param.h'
 
 	include 'femtime.h'
-	include 'nbasin.h'
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        integer iarv(1)
-        common /iarv/iarv
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
-        real v1v(1)
-        common /v1v/v1v
+	include 'basin.h'
+	include 'levels.h'
+	include 'conz.h'
+	include 'aux_array.h'
 
 	real conzs(nkndim)
 	save conzs
@@ -1993,32 +1918,16 @@ c*****************************************************************
 	real aux,r02,r2
 	real x,y,z,u,v
 
-	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-	real znv(1)
-	common /znv/znv
-	real zenv(3,1)
-	common /zenv/zenv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real ulnv(nlvdim,neldim)
-	common /ulnv/ulnv
-	real vlnv(nlvdim,neldim)
-	common /vlnv/vlnv
+	include 'basin.h'
+	include 'hydro.h'
+	include 'hydro_vel.h'
 
-        real hdknv(nlvdim,nkndim)
-        common /hdknv/hdknv
-        real hdenv(nlvdim,neldim)
-        common /hdenv/hdenv
-        real areakv(nlvdim,nkndim)
-        common /areakv/areakv
+	include 'depth.h'
+	include 'area.h'
 
-	real v1v(1)
-	common /v1v/v1v
+	include 'aux_array.h'
 
 	pi = 4.*atan(1.)
 	dcori = 45.
@@ -2097,14 +2006,9 @@ c     !+         /!grid bati_gradino.grd
         integer ie,l,i
         logical berror          !true on return if error
         
-        real ulnv(nlvdim,neldim),vlnv(nlvdim,neldim)
-        common /ulnv/ulnv, /vlnv/vlnv
-        real utlnv(nlvdim,neldim), vtlnv(nlvdim,neldim)
-        common /utlnv/utlnv, /vtlnv/vtlnv
-        real hdenv(nlvdim,neldim)
-        common /hdenv/hdenv
-        real hdeov(nlvdim,neldim)
-        common /hdeov/hdeov
+	include 'hydro_vel.h'
+	include 'hydro.h'
+	include 'depth.h'
 
         real u,v
         real ut,vt
@@ -2185,24 +2089,13 @@ c    ! +     /!grid bati_gradino.grd
         integer ie,l,i,ii
         logical berror          !true on return if error
        
-        real ulov(nlvdim,neldim),vlov(nlvdim,neldim)
-        common /ulov/ulov, /vlov/vlov
-        real utlov(nlvdim,neldim), vtlov(nlvdim,neldim)
-        common /utlov/utlov, /vtlov/vtlov
+	include 'hydro_vel.h'
+	include 'hydro.h'
 
-        real ulnv(nlvdim,neldim),vlnv(nlvdim,neldim)
-        common /ulnv/ulnv, /vlnv/vlnv
-        real utlnv(nlvdim,neldim), vtlnv(nlvdim,neldim)
-        common /utlnv/utlnv, /vtlnv/vtlnv
-        real hdeov(nlvdim,neldim)
-        common /hdeov/hdeov
-        real hdenv(nlvdim,neldim)
-        common /hdenv/hdenv
+	include 'depth.h'
 
 
-        integer iuvfix(neldim)
-        common /iuvfix/iuvfix
-        save /iuvfix/
+	include 'internal.h'
 
         real u,v
         real ut,vt
@@ -2295,19 +2188,11 @@ c*****************************************************************
 
         include 'param.h'
 
-	include 'nbasin.h'
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	integer ie,k,i,l,it
         integer itype
-        integer iarv(1)
-        common /iarv/iarv
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        real tempv(nlvdim,1)
-        common /tempv/tempv
-        real saltv(nlvdim,1)
-        common /saltv/saltv
+	include 'basin.h'
+	include 'ts.h'
 
 	integer icall
 	save icall
@@ -2341,15 +2226,9 @@ c*****************************************************************
 
 	implicit none
 
-	include 'nbasin.h'
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-	real znv(1)
-	common /znv/znv
-	real zenv(3,1)
-	common /zenv/zenv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'hydro.h'
 
 	integer k,ie,ii
 	real xmin,xmax,ymin,ymax
@@ -2412,14 +2291,9 @@ c****************************************************************
 	integer i,k,lmax,l
 	logical berror
 
-	real cnv(nlvdim,nkndim)
-	common /cnv/cnv
-	real saltv(nlvdim,1)
-	common /saltv/saltv
-	real tempv(nlvdim,1)
-	common /tempv/tempv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'conz.h'
+	include 'ts.h'
+	include 'levels.h'
 
 	integer icall
 	save icall
@@ -2477,8 +2351,7 @@ c C(x,t) =  1/(4*pi*a*t) * exp( -|x|**2/(4*a*t) )		(n=2)
 	include 'param.h'
 
 	include 'femtime.h'
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
+	include 'conz.h'
 
 	integer ndim
 	parameter (ndim=101)
@@ -2671,9 +2544,7 @@ c initializes cnv with analytic solution (2D)
 	real rk,c0,ct0
         real cv(nlvdim,nkndim)
 
-	include 'nbasin.h'
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
 	integer i,k,kin
 	real x,y,dx,dy,r
@@ -2721,8 +2592,7 @@ c extracts conz from array
 	integer k0
 	real dx,phi
 
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
 	integer i,kin0,ie,ip
 	real x0,y0
@@ -2836,8 +2706,7 @@ c****************************************************************
 	real cv(nlvdim,nkndim)
 	real zp
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'basin.h'
 
 	integer ii,k
 	real z(3)
@@ -2871,8 +2740,7 @@ c extracts conz from array
 	real yv(ndim)
 	integer k0,kmin,kmax,kstep
 
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
 	integer i,k,kin
 	real x,y,dx,dy,dxy
@@ -2918,8 +2786,7 @@ c test for horizontal diffusion algorithm
 	include 'param.h'
 
 	include 'femtime.h'
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
+	include 'conz.h'
 
 	integer k,k0,k1,i
 	real c0,cmed
@@ -2977,11 +2844,9 @@ c viscosity algorithm
 	include 'param.h'
 
 	include 'femtime.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	real vprv(nlvdim,1)
-	common /vprv/vprv
+	include 'hydro_print.h'
 
 	integer k,i,l
 
@@ -3025,12 +2890,9 @@ c the solution is normalized, i.e.  int(C(x,t)dx) = 1 over the whole area
 
 	include 'nbasin.h'
 	include 'femtime.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'nlevel.h'
+	include 'conz.h'
+	include 'levels.h'
 
 	integer k,i,l,lc,lmax
 	integer it0
@@ -3097,8 +2959,7 @@ c****************************************************************
         include 'param.h'
 
 	include 'nbasin.h'
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
         integer k,l,m
         real u,v
@@ -3134,23 +2995,13 @@ c writes node list for Malta Coastal Model
 	implicit none
 
         include 'param.h'
-        include 'nbasin.h'
 
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real hlv(1)
-        common /hlv/hlv
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-	real hev(1)
-	common /hev/hev
-	real v1v(1)
-	common /v1v/v1v
+	include 'levels.h'
+	include 'basin.h'
+	include 'depth.h'
+	include 'aux_array.h'
 
         integer k,l,ie,ii,i
 	integer nbc
@@ -3294,8 +3145,7 @@ c introduce le condizioni iniziali per la concentrazione
 
         include 'param.h'
 
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
+	include 'conz.h'
 
 	integer ks
 
@@ -3333,13 +3183,8 @@ c introduce le condizioni iniziali per la concentrazione
 	real yco(ndim)
 	save nelems,iel,conz,yco
 
-	include 'nbasin.h'
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'basin.h'
+	include 'conz.h'
 
 	integer i,ii,ie,k,ien
 	integer igrad
@@ -3457,11 +3302,8 @@ c**********************************************************************
 
 	include 'param.h'
 
-	include 'nbasin.h'
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-	real rtauv(nlvdim,nkndim)
-	common /rtauv/rtauv
+	include 'basin.h'
+	include 'ts.h'
 
 	integer k,l
 	real xc1,yc1,xc2,yc2
@@ -3534,21 +3376,12 @@ c**********************************************************************
 	include 'nbasin.h'
 	include 'femtime.h'
 
-        real uprv(nlvdim,1),vprv(nlvdim,1)
-        common /uprv/uprv, /vprv/vprv
-	real tempv(nlvdim,1)
-	common /tempv/tempv
-        real visv(0:nlvdim,1)
-        common /visv/visv
-        real difv(0:nlvdim,1)
-        common /difv/difv
-	real znv(1)
-	common /znv/znv
+	include 'hydro_print.h'
+	include 'ts.h'
+	include 'diff_visc_fric.h'
+	include 'hydro.h'
 
-        real hlv(1)
-        common /hlv/hlv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer ks,lmax,l
 
@@ -3632,10 +3465,8 @@ c**********************************************************************
 	include 'nbasin.h'
 	include 'femtime.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-	real tempv(nlvdim,1)
-	common /tempv/tempv
+	include 'levels.h'
+	include 'ts.h'
 
 	integer l,k,lmax,ks
 	real qs,ta,rh,wb,uw,cc,p
@@ -3670,10 +3501,8 @@ c**********************************************************************
 	include 'nbasin.h'
 	include 'femtime.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-	real tempv(nlvdim,1)
-	common /tempv/tempv
+	include 'levels.h'
+	include 'ts.h'
 
 	integer l,k,lmax
 	real tmin
@@ -3700,19 +3529,12 @@ c time of inundation for theseus
 	include 'param.h'
 	include 'ev.h'
 
-	include 'nbasin.h'
 	include 'femtime.h'
 
-        integer iwegv(1)
-        common /iwegv/iwegv
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        real hdenv(nlvdim,neldim)
-        common /hdenv/hdenv
-	real hev(1)
-	common /hev/hev
-        real saltv(nlvdim,1)
-        common /saltv/saltv
+	include 'geom_dynamic.h'
+	include 'basin.h'
+	include 'depth.h'
+	include 'ts.h'
 
 	logical binit,blast
 	integer ie,n,k,ii
@@ -3894,12 +3716,8 @@ c**********************************************************************
 	include 'nbasin.h'
 	include 'femtime.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-	real tempv(nlvdim,1)
-	common /tempv/tempv
-	real saltv(nlvdim,1)
-	common /saltv/saltv
+	include 'levels.h'
+	include 'ts.h'
 
 c	integer ndim
 c	parameter (ndim=10)	!must be at least the number of layers used
@@ -3958,14 +3776,10 @@ c**********************************************************************
 
 	include 'param.h'
 
-	include 'nbasin.h'
 
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-	real tauxnv(1), tauynv(1)
-	common /tauxnv/tauxnv, /tauynv/tauynv
-	real mudc(nlvdim,nkndim)
-	common /mudc/mudc
+	include 'basin.h'
+	include 'meteo_aux.h'
+	include 'fluidmud.h'
 
 	integer k,l,lmax
 
@@ -4026,14 +3840,10 @@ c**********************************************************************
 
 	include 'param.h'
 
-	include 'nbasin.h'
 
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-	real cnv(nlvdim,nkndim)
-	common /cnv/cnv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'basin.h'
+	include 'conz.h'
+	include 'levels.h'
 
 	integer k,l,lmax
 	real tau1,tau2,aux1,aux2,aux

@@ -22,35 +22,13 @@ c writes ous file
 
 	include 'param.h'
 
-	character*80 descrr,descrp
-	common /descrr/ descrr
-	common /descrp/ descrp
-	include 'nbasin.h'
+	include 'basin.h'
+	include 'simul.h'
 
-	real xgv(nkndim), ygv(nkndim)
-	real hm3v(3,neldim)
-	integer nen3v(3,neldim)
-	integer ipev(neldim), ipv(nkndim)
-	integer iarv(neldim)
-	common /xgv/xgv, /ygv/ygv
-	common /hm3v/hm3v
-	common /nen3v/nen3v
-	common /ipev/ipev, /ipv/ipv
-	common /iarv/iarv
 
-	integer ilhv(neldim)
-	real hlv(nlvdim)
-        real utlnv(nlvdim,neldim)
-        real vtlnv(nlvdim,neldim)
-	common /ilhv/ilhv
-	common /hlv/hlv
-        common /utlnv/utlnv
-        common /vtlnv/vtlnv
+	include 'levels.h'
 
-        real uprv(nlvdim,nkndim)
-        real vprv(nlvdim,nkndim)
-        common /uprv/uprv
-        common /vprv/vprv
+	include 'hydro_print.h'
 
 	logical bwater(neldim)
 	integer iwet(neldim)
@@ -59,8 +37,7 @@ c writes ous file
 	real weight(nlvdim,nkndim)
 
 	real znv(nkndim)
-	real zenv(3,neldim)
-	common /zenv/zenv
+	include 'hydro.h'
 
 	real aux(nkndim)
 

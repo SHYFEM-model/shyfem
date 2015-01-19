@@ -16,18 +16,13 @@ c write of finite volume data
 	include 'param.h'
 
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
-        real hdknv(nlvdim,nkndim)
-        common /hdknv/hdknv
-        real areakv(nlvdim,nkndim)
-        common /areakv/areakv
-        real saux1(nlvdim,nkndim)
-        common /saux1/saux1
+	include 'depth.h'
+	include 'area.h'
+	include 'aux_array.h'
 
 	integer k,l,lmax,id,nvar
 

@@ -39,9 +39,8 @@ c checks stability of diffusion (old, not used)
         real v1v(1),v2v(1)
         real gamma              !stability parameter -> must be < 1.
 
-	include 'nbasin.h'
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param.h'
+	include 'basin.h'
 	include 'ev.h'
 
         integer k,ie,ii
@@ -98,9 +97,8 @@ c checks stability of diffusion (with variable diffusion coef.)
         real v1v(1),v2v(1)
         real gamma              !stability parameter -> must be < 1.
 
-	include 'nbasin.h'
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param.h'
+	include 'basin.h'
 	include 'ev.h'
 
         integer k,ie,ii
@@ -149,12 +147,10 @@ c weights in main diagonal are positive => weights out of diag are negative
 
         implicit none
 
-	include 'nbasin.h'
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param.h'
+	include 'basin.h'
 	include 'ev.h'
-        real wdifhv(3,3,1)
-        common /wdifhv/wdifhv
+	include 'diff_aux.h'
 
 	logical bdebug,berror
         integer k,ie,ii,iii,i
@@ -342,9 +338,8 @@ c limits diffusion parameter
         integer istot
         real gammax             !max for stability parameter, should be < 1
 
-	include 'nbasin.h'
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param.h'
+	include 'basin.h'
 	include 'ev.h'
 
         integer k,ie,ii
@@ -393,12 +388,10 @@ c adjusts diffusion coefficient
         integer mode
         real rkv(1)
 
-	include 'nbasin.h'
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'basin.h'
 	include 'ev.h'
-        real hev(1)
-        common /hev/hev
+	include 'depth.h'
 
         integer k,ie,ii
         real h,aux,fact
@@ -467,14 +460,9 @@ c	2	smagorinsky (variable with area and time)
 	include 'nbasin.h'
 	include 'femtime.h'
 
-        real v1v(1), v2v(1)
-        common /v1v/v1v, /v2v/v2v
-        real ve1v(1)
-        common /ve1v/ve1v
-        real difhv(nlvdim,1)
-        common /difhv/difhv
-        integer ilhv(1)
-        common /ilhv/ilhv
+	include 'aux_array.h'
+	include 'diff_visc_fric.h'
+	include 'levels.h'
 	include 'ev.h'
 
         character*80 file,title
@@ -653,20 +641,14 @@ c***************************************************************************
 
         include 'param.h'
         
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'femtime.h'
-	include 'nbasin.h'
         
 	include 'ev.h'
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer nen3v(3,1)
-        common /nen3v/nen3v        
-        real uprv(nlvdim,1),vprv(nlvdim,1)
-        common /uprv/uprv, /vprv/vprv
-        real difhv(nlvdim,1)
-        common /difhv/difhv
+	include 'levels.h'
+	include 'basin.h'
+	include 'hydro_print.h'
+	include 'diff_visc_fric.h'
         
         real b(3),c(3),ux,uy,vx,vy
         real dt,ds,dd,dl,aj
@@ -750,20 +732,10 @@ c ieltv:  >0 element  0: boundary  -1: open boundary
 	include 'param.h'
 
 	include 'ev.h'
-	integer ilhv(1)
-	common /ilhv/ilhv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	integer ieltv(3,1)
-	common /ieltv/ieltv
-        real xgv(1)
-        common /xgv/xgv
-        real ygv(1)
-        common /ygv/ygv
-        real utlov(nlvdim,1)
-        common /utlov/utlov
-        real vtlov(nlvdim,1)
-        common /vtlov/vtlov
+	include 'levels.h'
+	include 'geom.h'
+	include 'basin.h'
+	include 'hydro.h'
 
 	integer k,i,ii,iii,ienb,i1,i2
 	real dl(3)
@@ -898,22 +870,13 @@ c parameters
 	include 'param.h'
 	real vv(1)
 c common
-	integer nlvdi,nlv
-	include 'nbasin.h'
-	common /level/ nlvdi,nlv
-	integer ilhv(1)
-	integer nen3v(3,1)
-	real utlov(nlvdim,1),vtlov(nlvdim,1)
-        real saux1(nlvdim,1),saux2(nlvdim,1)
-        real saux3(nlvdim,1),saux4(nlvdim,1)
-	common /ilhv/ilhv
-	common /nen3v/nen3v
-        common /utlov/utlov, /vtlov/vtlov
-        common /saux1/saux1, /saux2/saux2
-        common /saux3/saux3, /saux4/saux4
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'basin.h'
+	include 'hydro.h'
+	include 'aux_array.h'
 	include 'ev.h'
-	integer iwegv(1)
-	common /iwegv/iwegv
+	include 'geom_dynamic.h'
 c local
 	integer ie,l,k,ii
 	real aj,ut,vt,b,c,rv

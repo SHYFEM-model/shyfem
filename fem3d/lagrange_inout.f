@@ -241,11 +241,9 @@ c outputs particles as density (concentration) to NOS file
         include 'lagrange.h'
         include 'ev.h'
 
-	include 'nbasin.h'
 	include 'femtime.h'
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'basin.h'
 
 	integer ie,ii,k
 	integer ic,i

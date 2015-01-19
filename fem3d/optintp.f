@@ -43,8 +43,7 @@ c laplacian interpolation
 	integer nobdim
 	parameter (nobdim = 100)
 
-        real hev(neldim)
-        common /hev/hev
+	include 'depth.h'
 
 	real zv(nkndim)
 	integer node(nobdim)
@@ -150,8 +149,7 @@ c computes optimal interpolation
 
 	include 'param.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
 	integer i,j,ki,kj,k
 	real rl2,rlmax2,rr2,rmean

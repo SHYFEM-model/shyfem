@@ -19,17 +19,12 @@ c written on 06.06.96 by ggu   (from sp159f)
 c parameter
 	include 'param.h'
 c common
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'femtime.h'
-	include 'nbasin.h'
 
-	real unv(1),vnv(1)
-	real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-	integer ipev(1)
-	common /unv/unv, /vnv/vnv
-	common /utlnv/utlnv, /vtlnv/vtlnv
-	common /ipev/ipev
+	include 'hydro_baro.h'
+	include 'hydro.h'
+	include 'basin.h'
 
 	real umax,dz,fact
 	integer ie,l,last,iex

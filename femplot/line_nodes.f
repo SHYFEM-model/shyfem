@@ -156,8 +156,7 @@ c (xs,ys) = (x1,y1) + t * (xa,ya)
 	real x1,y1,x2,y2,xp,yp
 	real xa,ya,xs,ys
 
-	real xgv(nkndim), ygv(nkndim)
-	common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
 	x1 = xgv(k1)
 	y1 = ygv(k1)
@@ -193,9 +192,7 @@ c finds closest node to coordinate (x0,y0)
 	real x0,y0		!coordinates of point
 	integer kc		!closest node to point (return)
 
-	include 'nbasin.h'
-	real xgv(nkndim), ygv(nkndim)
-	common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
 	integer k
 	real dist,distc
@@ -225,8 +222,7 @@ c writes node info for node k
 
 	integer k
 
-	real xgv(nkndim), ygv(nkndim)
-	common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
 	write(6,*) 'node = ',k,xgv(k),ygv(k)
 
@@ -248,8 +244,7 @@ c****************************************************************
 	integer ndim
 	parameter (ndim=500)
 
-        integer ilinkv(nkndim+1),lenkv(nlkdim),linkv(nlkdim)
-        common /ilinkv/ilinkv, /lenkv/lenkv, /linkv/linkv
+	include 'geom.h'
 
 	character*80 basin
 	integer nodes(ndim)

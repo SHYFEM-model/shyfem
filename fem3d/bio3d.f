@@ -149,16 +149,11 @@ c eco-model cosimo
 
 	include 'nbasin.h'
 	include 'mkonst.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 
-        real difv(0:nlvdim,1)
-        common /difv/difv
-        real difhv(nlvdim,1)
-        common /difhv/difhv
+	include 'diff_visc_fric.h'
 
         character*10 what,whataux
 	character*2 whatn
@@ -671,8 +666,7 @@ c checks bio vars
 	real es(nkndim,nsstate)		!sediment state variables
 
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
         character*20 text
 	integer i
@@ -710,10 +704,8 @@ c simulates decay for virus and bacteria
 	real e(nlvdim,nkndim,nstate)	!state vector
 
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'nlevel.h'
+	include 'levels.h'
 
         integer k,l,i,lmax
         real aux,tau
@@ -825,12 +817,9 @@ c einit must be 1.
 	real e(nlvdim,nkndim,nstate)	!state vector
 
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
-	real v1v(1)
-	common /v1v/v1v
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'aux_array.h'
 
 	integer k,lmax,l,i
 	integer istate,itper
@@ -967,12 +956,9 @@ c must be customized
 
 	real val(1)
 
-	include 'nbasin.h'
 
-        integer iarv(1)
-        common /iarv/iarv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'param.h'
+	include 'basin.h'
 
 	integer k,ie,ii,ia
 	integer iaout
@@ -1015,10 +1001,8 @@ c computes total mass of state variables (only where v1v is not 0)
 	double precision mass(1)
 
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'nlevel.h'
+	include 'levels.h'
 
 	integer k,lmax,l,i
 	real vol,conz
@@ -1060,8 +1044,7 @@ c****************************************************************
         integer i,k,n
         logical berror
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
         integer icall
         save icall

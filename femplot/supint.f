@@ -357,8 +357,8 @@ c extract level from 3d array (nodes)
 	real p3(nlvddi,nkn)	!3d array
 	real p2(nkn)		!2d array filled on return
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'param_dummy.h'
+	include 'levels.h'
 
 	call extlev(level,nlvddi,nkn,ilhkv,p3,p2)
 
@@ -378,8 +378,8 @@ c extract level from 3d array (elements)
 	real p3(nlvddi,nel)	!3d array
 	real p2(nel)		!2d array filled on return
 
-        integer ilhv(1)
-        common /ilhv/ilhv
+	include 'param_dummy.h'
+	include 'levels.h'
 
 	call extlev(level,nlvddi,nel,ilhv,p3,p2)
 

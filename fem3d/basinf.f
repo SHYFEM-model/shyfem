@@ -29,10 +29,7 @@ c writes information on basin about nodes and elements
 	include 'basin.h'
 	include 'evmain.h'
 
-	real hkv(nkndim)
-	common /hkv/hkv
-	real hev(neldim)
-	common /hev/hev
+	include 'depth.h'
 
 	real haux(nkndim)
 
@@ -100,8 +97,7 @@ c info on node number
 	include 'param.h'
 	include 'basin.h'
 
-	real hkv(nkndim)
-	common /hkv/hkv
+	include 'depth.h'
 
 	integer ie,ii,in
 	integer kext,kint
@@ -435,8 +431,7 @@ c writes frequency distribution of depth
 	integer ndim
 	parameter (ndim=10000)
 
-	real hev(neldim)
-	common /hev/hev
+	include 'depth.h'
 
 	integer ie,i
 	integer imax,ih

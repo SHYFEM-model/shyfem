@@ -76,10 +76,9 @@ c arguments
 	real rzv(1)		!boundary conditions
 	real flag		!flag to distinguish boundary condition
 c common
-	include 'nbasin.h'
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'param_dummy.h'
+	include 'basin.h'
 	include 'ev.h'
 c local
 	integer kn(3)

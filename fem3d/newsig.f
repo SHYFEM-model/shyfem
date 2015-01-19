@@ -87,8 +87,8 @@ c********************************************************************
 
 	integer nsigma
 
-        real hlv(1)
-        common /hlv/hlv
+	include 'param_dummy.h'
+	include 'levels.h'
 
 	integer l
 	real hl
@@ -111,11 +111,10 @@ c********************************************************************
 	integer lmin
 	real hmin,dzreg
 
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'nlevel.h'
 
-        real hlv(1)
-        common /hlv/hlv
+	include 'levels.h'
 
 	integer l
 	real hbot

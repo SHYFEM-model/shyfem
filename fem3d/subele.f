@@ -90,12 +90,8 @@ c computes total (average) depth of element ie
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
 	real depele	!depth (return)
 
-	real hm3v(3,neldim)
-	common /hm3v/hm3v
-	real zenv(3,neldim)
-	common /zenv/zenv
-	real zeov(3,neldim)
-	common /zeov/zeov
+	include 'basin.h'
+	include 'hydro.h'
 
 	integer ii,n
 	real hmed
@@ -138,13 +134,9 @@ c computes (average) depth of element ie for all layers
 
 	include 'param.h'
 
-	integer ilhv(1)
-	common /ilhv/ilhv
+	include 'levels.h'
 
-	real hdenv(nlvdim,neldim)
-	common /hdenv/hdenv
-	real hdeov(nlvdim,neldim)
-	common /hdeov/hdeov
+	include 'depth.h'
 
 	integer l
 
@@ -179,13 +171,9 @@ c computes depth of node k for all layers
 
 	include 'param.h'
 
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 
-	real hdknv(nlvdim,nkndim)
-	common /hdknv/hdknv
-	real hdkov(nlvdim,nkndim)
-	common /hdkov/hdkov
+	include 'depth.h'
 
 	integer l
 
@@ -219,10 +207,7 @@ c computes (average) zeta of element ie
 	integer ie	!number of element
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
 
-	real zenv(3,neldim)
-	common /zenv/zenv
-	real zeov(3,neldim)
-	common /zeov/zeov
+	include 'hydro.h'
 
 	integer ii,n
 	real hmed
@@ -301,8 +286,7 @@ c returns node index for one element
 	integer n	!total number of nodes in element (3 for triangle)
 	integer kn(1)	!node index
 
-	integer nen3v(3,neldim)
-	common /nen3v/nen3v
+	include 'basin.h'
 
 	integer ii
 
@@ -328,8 +312,7 @@ c sets depth for element ie
 	integer ie      !number of element
 	real h		!depth to use
 
-	real hm3v(3,neldim)
-	common /hm3v/hm3v
+	include 'basin.h'
 
 	integer ii,n
 
@@ -357,12 +340,8 @@ c computes depth of vertices in element ie
 	integer n	!total number of vertices (return)
 	real h(1)	!depth at vertices (return)
 
-	real hm3v(3,neldim)
-	common /hm3v/hm3v
-	real zenv(3,neldim)
-	common /zenv/zenv
-	real zeov(3,neldim)
-	common /zeov/zeov
+	include 'basin.h'
+	include 'hydro.h'
 
 	integer ii
 
@@ -400,12 +379,8 @@ c computes total depth in vertex ii of element ie
 	integer ii	!number of vertex
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
 
-	real hm3v(3,neldim)
-	common /hm3v/hm3v
-	real zenv(3,neldim)
-	common /zenv/zenv
-	real zeov(3,neldim)
-	common /zeov/zeov
+	include 'basin.h'
+	include 'hydro.h'
 
 	integer n
 	real h
@@ -549,16 +524,10 @@ c computes nodal values from element values (scalar)
 	real sev(3,neldim)
 	real sv(nkndim)
 
-	include 'nbasin.h'
 
-        real v1v(1)
-        common /v1v/v1v
-	integer nen3v(3,neldim)
-	common /nen3v/nen3v
-	real hm3v(3,neldim)
-	common /hm3v/hm3v
-	real zenv(3,neldim)
-	common /zenv/zenv
+	include 'aux_array.h'
+	include 'basin.h'
+	include 'hydro.h'
 
 	integer ie,k,ii,n
 	integer ip
@@ -653,11 +622,8 @@ c sets up area for nodes
 	integer levdim
 	real area(levdim,1)
 
-	include 'nbasin.h'
-	integer ilhv(1)
-	common /ilhv/ilhv
-	integer nen3v(3,neldim)
-	common /nen3v/nen3v
+	include 'levels.h'
+	include 'basin.h'
 
 	integer k,l,ie,ii
 	integer nlev,n
@@ -710,12 +676,8 @@ c returns depth, volume and area of node k on level l
 
 	include 'param.h'
 
-	real hdknv(nlvdim,nkndim)
-	common /hdknv/hdknv
-	real hdkov(nlvdim,nkndim)
-	common /hdkov/hdkov
-	real areakv(nlvdim,nkndim)
-	common /areakv/areakv
+	include 'depth.h'
+	include 'area.h'
 
 	if( mode .gt. 0 ) then
 	  dep = hdknv(l,k)
@@ -746,10 +708,7 @@ c returns depth of node k on level l
 
 	include 'param.h'
 
-	real hdknv(nlvdim,nkndim)
-	common /hdknv/hdknv
-	real hdkov(nlvdim,nkndim)
-	common /hdkov/hdkov
+	include 'depth.h'
 
 	if( mode .gt. 0 ) then
 	  depnode = hdknv(l,k)
@@ -795,8 +754,7 @@ c returns area of node k on level l
 
 	include 'param.h'
 
-	real areakv(nlvdim,nkndim)
-	common /areakv/areakv
+	include 'area.h'
 
 	areanode = areakv(l,k)
 
@@ -846,14 +804,7 @@ c shell (helper) for copydepth
 
 	include 'param.h'
 
-        real hdkov(nlvdim,nkndim)
-        common /hdkov/hdkov
-        real hdeov(nlvdim,neldim)
-        common /hdeov/hdeov
-        real hdknv(nlvdim,nkndim)
-        common /hdknv/hdknv
-        real hdenv(nlvdim,neldim)
-        common /hdenv/hdenv
+	include 'depth.h'
 
 	call copydepth(nlvdim,hdknv,hdkov,hdenv,hdeov)
 
@@ -869,14 +820,9 @@ c shell (helper) for setdepth
 
 	include 'param.h'
 
-        real zenv(3,neldim)
-        common /zenv/zenv
-        real hdknv(nlvdim,nkndim)
-        common /hdknv/hdknv
-        real hdenv(nlvdim,neldim)
-        common /hdenv/hdenv
-        real areakv(nlvdim,nkndim)
-        common /areakv/areakv
+	include 'hydro.h'
+	include 'depth.h'
+	include 'area.h'
 
 	call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)
 
@@ -892,14 +838,9 @@ c shell (helper) for setdepth
 
 	include 'param.h'
 
-        real zeov(3,neldim)
-        common /zeov/zeov
-        real hdkov(nlvdim,nkndim)
-        common /hdkov/hdkov
-        real hdeov(nlvdim,neldim)
-        common /hdeov/hdeov
-        real areakv(nlvdim,nkndim)
-        common /areakv/areakv
+	include 'hydro.h'
+	include 'depth.h'
+	include 'area.h'
 
 	call setdepth(nlvdim,hdkov,hdeov,zeov,areakv)
 
@@ -917,14 +858,7 @@ c checks differences between old and new depth values (debug)
 
 	include 'nbasin.h'
 
-        real hdkov(nlvdim,nkndim)
-        common /hdkov/hdkov
-        real hdeov(nlvdim,neldim)
-        common /hdeov/hdeov
-        real hdknv(nlvdim,nkndim)
-        common /hdknv/hdknv
-        real hdenv(nlvdim,neldim)
-        common /hdenv/hdenv
+	include 'depth.h'
 
 	integer k,ie,l,idiff
 
@@ -962,19 +896,9 @@ c sets up depth array for nodes
 	real zenv(3,1)    	!water level at new time level
 	real area(levdim,1)
 
-	include 'nbasin.h'
-	integer ilhv(1)
-	common /ilhv/ilhv
-	integer nen3v(3,neldim)
-	common /nen3v/nen3v
-	real hldv(1)
-	common /hldv/hldv
-	real hlv(1)
-	common /hlv/hlv
-	real hev(1)
-	common /hev/hev
-	real hm3v(3,neldim)
-	common /hm3v/hm3v
+	include 'levels.h'
+	include 'depth.h'
+	include 'basin.h'
 c	real zenv(3,neldim)
 c	common /zenv/zenv
 
@@ -1140,8 +1064,7 @@ c computes content of water mass in total domain
 
 	include 'nbasin.h'
 
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer k,l,nlev
 	double precision total
@@ -1176,8 +1099,7 @@ c computes content of scalar in total domain
 
 	include 'nbasin.h'
 
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 
 	logical bdebug
 	integer k,l,nlev
@@ -1217,8 +1139,7 @@ c computes content of scalar at node k
  
 	include 'nbasin.h'
  
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
  
         integer l,nlev
         double precision total
@@ -1252,8 +1173,7 @@ c computes content of scalar at node k (with given depth)
  
 	include 'nbasin.h'
  
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
  
         integer l,nlev
         double precision total

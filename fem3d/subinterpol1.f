@@ -48,11 +48,9 @@ c*******************************************************************
 	character*(*) name
 	integer nkndi,neldi
 
-	include 'nbasin.h'
-        real hm3v(3,1)
-        common /hm3v/hm3v
-        real hev(1)
-        common /hev/hev
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'depth.h'
 
 	integer ie,ii
 	real h
@@ -196,15 +194,10 @@ c copies depth values from elems/nodes to nodes/elems
 
 	include 'param.h'
 
-	include 'nbasin.h'
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'basin.h'
 
-        real hev(1)
-        common /hev/hev
-        real hkv(1)
-        common /hkv/hkv
+	include 'depth.h'
 
 	integer k,ie,ii
 	real depth
@@ -267,10 +260,7 @@ c handles depth values
 
 	include 'nbasin.h'
 
-        real hev(1)
-        common /hev/hev
-        real hkv(1)
-        common /hkv/hkv
+	include 'depth.h'
 
 	integer k,ie
 	real flag
@@ -311,22 +301,11 @@ c writes grd file from bas
 
 	include 'param.h'
 
-	include 'nbasin.h'
 
-        real xgv(1), ygv(1)
-        common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
-        integer nen3v(3,1)
-        integer ipev(1), ipv(1)
-        integer iarv(1)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
 
-        real hev(1)
-        common /hev/hev
-        real hkv(1)
-        common /hkv/hkv
+	include 'depth.h'
 
 	integer k,ie,ii
 
@@ -365,9 +344,7 @@ c*******************************************************************
 
 	include 'param.h'
 
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'basin.h'
 
 	logical bstop
 	integer ie,ii,iii,k,k1

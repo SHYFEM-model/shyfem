@@ -82,12 +82,10 @@ c computes gradients for scalar cc (average gradient information)
 	real gy(nlvdi,1)
 	real aux(nlvdi,1)
 
-	include 'nbasin.h'
         
-        integer nen3v(3,1)
-        common /nen3v/nen3v        
-	integer ilhv(1), ilhkv(1)
-	common /ilhv/ilhv, /ilhkv/ilhkv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'levels.h'
 	include 'ev.h'
         
         integer k,l,ie,ii,lmax
@@ -151,10 +149,9 @@ c computes gradients for scalar cc (only 2D - used in sedi3d)
 	real gy(1)
 	real aux(1)
 
-	include 'nbasin.h'
         
-        integer nen3v(3,1)
-        common /nen3v/nen3v        
+	include 'param.h'
+	include 'basin.h'
 	include 'ev.h'
         
         integer k,ie,ii
@@ -212,10 +209,8 @@ c computes concentration of upwind node (using info on upwind node)
         real cu
         real cv(nlvdim,1)
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v        
-	integer ilhv(1)			!BUG fix
-	common /ilhv/ilhv
+	include 'basin.h'
+	include 'levels.h'
 
         integer ienew
         integer ii,k
@@ -251,13 +246,7 @@ c sets position and element of upwind node
         include 'param.h'
         include 'tvd.h'
 
-	include 'nbasin.h'
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        real xgv(1)
-        common /xgv/xgv
-        real ygv(1)
-        common /ygv/ygv
+	include 'basin.h'
 
 	logical bsphe,bdebug
 	integer inode
@@ -381,14 +370,8 @@ c computes horizontal tvd fluxes for one element
 	real eps
 	parameter (eps=1.e-8)
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        real xgv(1)
-        common /xgv/xgv
-        real ygv(1)
-        common /ygv/ygv
-        real ulnv(nlvdim,1), vlnv(nlvdim,1)
-        common /ulnv/ulnv, /vlnv/vlnv
+	include 'basin.h'
+	include 'hydro_vel.h'
 
         logical bgradup
         logical bdebug
@@ -537,12 +520,9 @@ c ------------------- l+2 -----------------------
 	real vvel(0:nlvdim)		!velocities at interface (return)
 	real vflux(0:nlvdim)		!fluxes at interface (return)
 
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
-	real wprv(0:nlvdim,1)
-	common /wprv/wprv
-        real hdknv(nlvdim,1)
-        common /hdknv/hdknv
+	include 'levels.h'
+	include 'hydro_print.h'
+	include 'depth.h'
 
         real eps
         parameter (eps=1.e-8)

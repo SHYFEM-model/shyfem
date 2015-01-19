@@ -44,8 +44,7 @@ c  the node numbers in karee are external node numbers
 
 	include 'nbasin.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer nareas
 	parameter (nareas=5)
@@ -363,9 +362,9 @@ c makes total volume of areas
         real volume(1)
         integer aree(1)
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
         integer mode,i,k,ia,lmax,l
 

@@ -58,25 +58,14 @@ c writes statistics on basin
 
 	include 'param.h'
 
-        character*80 descrp
-        common /descrp/ descrp
+	include 'simul.h'
 
-	include 'nbasin.h'
 	include 'pkonst.h'
 
 	include 'evmain.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
+	include 'basin.h'
 
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
 
 	integer ie,ii,k,i
 	integer imin,imax
@@ -175,11 +164,8 @@ c areatr        element area (return value)
 
 	include 'param.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
 
 	real aj
 	integer ii,i1,i2,k1,k2

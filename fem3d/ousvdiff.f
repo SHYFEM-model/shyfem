@@ -21,28 +21,12 @@ c reads ous files and computes difference
 
         include 'param.h'
 
-	character*80 descrr,descrp
-	common /descrr/ descrr
-	common /descrp/ descrp
-	include 'nbasin.h'
+	include 'basin.h'
+	include 'simul.h'
 
-	real xgv(nkndim), ygv(nkndim)
-	real hm3v(3,neldim)
-	integer nen3v(3,neldim)
-	integer ipev(neldim), ipv(nkndim)
-	integer iarv(neldim)
-	common /xgv/xgv, /ygv/ygv
-	common /hm3v/hm3v
-	common /nen3v/nen3v
-	common /ipev/ipev, /ipv/ipv
-	common /iarv/iarv
 
-	integer ilhv(neldim)
-	common /ilhv/ilhv
-	real hlv(nlvdim)
-	common /hlv/hlv
-	real hev(neldim)
-	common /hev/hev
+	include 'levels.h'
+	include 'depth.h'
 
         real utln1v(nlvdim,neldim)
         real vtln1v(nlvdim,neldim)

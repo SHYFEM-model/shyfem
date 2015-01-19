@@ -18,21 +18,9 @@ c extracts single nodes from nos file -> creates time series
 	include 'param.h'
 
 c--------------------------------------------------
-        character*80 descrr
-        common /descrr/descrr
-	include 'nbasin.h'
+	include 'basin.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        integer nen3v(3,neldim)
-        integer ipv(nkndim), ipev(neldim)
-        integer iarv(neldim)
 
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-        common /nen3v/nen3v
-        common /ipv/ipv, /ipev/ipev
-        common /iarv/iarv
 c--------------------------------------------------
 
 	character*80 title

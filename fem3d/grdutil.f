@@ -41,11 +41,8 @@ c areatr        element area (return value)
 
         include 'param.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
 
         integer ii,k
         real x(3),y(3)

@@ -59,10 +59,8 @@ c sets dry elements
 
 	integer ie
 
-        integer iwegv(1)
-        common /iwegv/iwegv
-        integer iwetv(1)
-        common /iwetv/iwetv
+	include 'param_dummy.h'
+	include 'geom_dynamic.h'
 
 	if( iwegv(ie) .eq. 0 ) then
 	  iwegv(ie) = 3
@@ -111,19 +109,10 @@ c
 c arguments
         integer iweich,iw
 c common
-	include 'nbasin.h'
-        integer iwegv(1)
-        common /iwegv/iwegv
-        integer iwetv(1)
-        common /iwetv/iwetv
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        real hm3v(3,1)
-        common /hm3v/hm3v
-        real zenv(3,1)
-        common /zenv/zenv
-	real znv(1)
-	common /znv/znv
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'geom_dynamic.h'
+	include 'basin.h'
+	include 'hydro.h'
 	include 'ev.h'
 c local
         integer ie,ii,iwh,iweg,k,iu
@@ -332,14 +321,12 @@ c
         implicit none
 c
 c common
-	include 'nbasin.h'
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
-        integer iwegv(1),nen3v(3,1)
-        common /iwegv/iwegv, /nen3v/nen3v
-        real zenv(3,1),hm3v(3,1)
-        common /zenv/zenv, /hm3v/hm3v
-        real uov(1),vov(1),unv(1),vnv(1)
-	common /uov/uov, /vov/vov, /unv/unv, /vnv/vnv
+	include 'geom_dynamic.h'
+	include 'basin.h'
+	include 'hydro.h'
+	include 'hydro_baro.h'
 	include 'ev.h'
 c local
         integer ie,ii,i1,i2,isum,itot
@@ -564,13 +551,10 @@ c sets array zenv from znv
         implicit none
 
 c common
-	include 'nbasin.h'
-        integer nen3v(3,1),iwegv(1)
-        common /nen3v/nen3v, /iwegv/iwegv
-        real zenv(3,1)
-        common /zenv/zenv
-	real znv(1)
-	common /znv/znv
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'geom_dynamic.h'
+	include 'basin.h'
+	include 'hydro.h'
 c local
         integer ie,ii
 
@@ -593,18 +577,14 @@ c sets array znv from zenv
         implicit none
 
 c common
-	include 'nbasin.h'
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'mkonst.h'
 
-        integer nen3v(3,1),iwegv(1)
-        common /nen3v/nen3v, /iwegv/iwegv
-        real zenv(3,1)
-        common /zenv/zenv
-	real znv(1)
-	common /znv/znv
+	include 'geom_dynamic.h'
+	include 'basin.h'
+	include 'hydro.h'
 	include 'ev.h'
-	real v1v(1), v2v(1)
-	common /v1v/v1v, /v2v/v2v
+	include 'aux_array.h'
 c local
         integer ie,ii,k
         integer ntot
@@ -695,11 +675,10 @@ c
 c arguments
         real zv(1),av(1)
 c common
-        integer iwegv(1),nen3v(3,1)
-        real zenv(3,1)
-	include 'nbasin.h'
-        common /iwegv/iwegv, /nen3v/nen3v
-        common /zenv/zenv
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'geom_dynamic.h'
+	include 'basin.h'
+	include 'hydro.h'
 	include 'ev.h'
 c local
         integer ie,i,k

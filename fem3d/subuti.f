@@ -42,8 +42,8 @@ c gets coordinates x/y for node k
 	integer k
 	real x,y
 
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'param.h'
+	include 'basin.h'
 
 	x = xgv(k)
 	y = ygv(k)
@@ -63,10 +63,8 @@ c gets coordinates x/y for element ie
 
 	integer k,ii
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'param.h'
+	include 'basin.h'
 
 	do ii=1,3
 	  k = nen3v(ii,ie)
@@ -90,10 +88,8 @@ c arguments
 	real areael
 	integer ie
 c common
-	integer nen3v(3,1)
-	real xgv(1),ygv(1)
-	common /nen3v/nen3v
-	common /xgv/xgv,/ygv/ygv
+	include 'param.h'
+	include 'basin.h'
 c local
 	integer kn1,kn2,kn3
 	real*8 x1,x2,x3,y1,y2,y3
@@ -135,10 +131,8 @@ c arguments
 	integer k
 c common
 	include 'param.h'
-	include 'nbasin.h'
 	include 'links.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'basin.h'
 	include 'ev.h'
 c local
 	logical blink
@@ -192,11 +186,8 @@ c arguments
         integer k
 c common
 	include 'param.h'
-	include 'nbasin.h'
-        real unv(1),vnv(1)
-        common /unv/unv, /vnv/vnv
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'hydro_baro.h'
+	include 'basin.h'
 	include 'ev.h'
 	include 'links.h'
 c local
@@ -258,18 +249,13 @@ c arguments
 	integer ielem
 	real kenerg,penerg
 c common
-	include 'nbasin.h'
 	include 'pkonst.h'
-	integer nen3v(3,1)
-	real hev(1),znv(1)
-	real unv(1),vnv(1)
-	common /nen3v/nen3v
-	common /hev/hev, /znv/znv
-	common /unv/unv ,/vnv/vnv
+	include 'basin.h'
+	include 'hydro.h'
+	include 'depth.h'
+	include 'hydro_baro.h'
 	include 'ev.h'
 
-        real zeov(3,neldim),zenv(3,neldim)
-        common /zeov/zeov, /zenv/zenv
 
 c local
 	integer ie,ii
@@ -328,17 +314,10 @@ c	kin = (1/2) * aj * 12 * u*u/h
 	include 'nbasin.h'
 	include 'pkonst.h'
 
-	integer ilhv(1)
-	common /ilhv/ilhv
-        real hdenv(nlvdim,neldim)
-        common /hdenv/hdenv
+	include 'levels.h'
+	include 'depth.h'
 
-        real zeov(3,neldim),zenv(3,neldim)
-        common /zeov/zeov, /zenv/zenv
-        real utlnv(nlvdim,neldim)
-        common /utlnv/utlnv
-        real vtlnv(nlvdim,neldim)
-        common /vtlnv/vtlnv
+	include 'hydro.h'
 
 c local
 	integer ie,ii,l,lmax
@@ -417,12 +396,10 @@ c copies concentrations from node value to element value (only wet areas)
         real cn(1)
         real ce(3,1)
 
-	include 'nbasin.h'
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        integer iwegv(1)
-        common /iwegv/iwegv
+	include 'param.h'
+	include 'basin.h'
+	include 'geom_dynamic.h'
 	include 'ev.h'
 
         integer ie,ii,k

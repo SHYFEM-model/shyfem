@@ -1,4 +1,12 @@
 
+19.01.2014    VERS_7_1_3
+
+	major changes in code - this is a hugh commit
+	basically all files have been changed
+	(nearly) all common blocks have been substituted by include files
+	please base all future changes of the code on this release
+	the release still has to be thoroughly debugged
+
 19.01.2014    VERS_7_1_2
 
 	small bug fixes

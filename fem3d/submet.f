@@ -17,15 +17,12 @@ c converts distributed source from [m/s] to [m**3/s]
 
 	implicit none
 
-	include 'nbasin.h'
 
-	real rqpsv(1), rqdsv(1)
-	common /rqpsv/rqpsv, /rqdsv/rqdsv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'bound_dynamic.h'
+	include 'basin.h'
 	include 'ev.h'
-	real v1v(1)
-	common /v1v/v1v
+	include 'aux_array.h'
 
 	integer k,ie,ii
 	real area3
@@ -83,8 +80,7 @@ c adds evaporation mass flux to distributed source
 	include 'meteo.h'
 
 	include 'nbasin.h'
-	real rqdsv(1)
-	common /rqdsv/rqdsv
+	include 'bound_dynamic.h'
 
 	integer k,ievap
 	real getpar
@@ -177,8 +173,7 @@ c computes heat flux through bulk formulas
 
 	include 'femtime.h'
 	include 'nbasin.h'
-	real tempv(nlvdim,nkndim)
-	common /tempv/tempv
+	include 'ts.h'
 	double precision dq
 	real dt
 

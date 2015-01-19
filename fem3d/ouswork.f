@@ -23,33 +23,14 @@ c reads ous file and elaborates it for altimeter trace (version 0)
         include 'param.h'
 	include 'evmain.h'
 
-	character*80 descrr,descrp
-	common /descrr/ descrr
-	common /descrp/ descrp
-	include 'nbasin.h'
+	include 'basin.h'
+	include 'simul.h'
 
-	real xgv(nkndim), ygv(nkndim)
-	real hm3v(3,neldim)
-	integer nen3v(3,neldim)
-	integer ipev(neldim), ipv(nkndim)
-	integer iarv(neldim)
-	common /xgv/xgv, /ygv/ygv
-	common /hm3v/hm3v
-	common /nen3v/nen3v
-	common /ipev/ipev, /ipv/ipv
-	common /iarv/iarv
 
-	integer ilhv(neldim)
-	real hlv(nlvdim)
-        real utlnv(nlvdim,neldim)
-        real vtlnv(nlvdim,neldim)
-	common /ilhv/ilhv
-	common /hlv/hlv
-        common /utlnv/utlnv
-        common /vtlnv/vtlnv
+	include 'levels.h'
+	include 'hydro.h'
 
-	real hev(neldim)
-	common /hev/hev
+	include 'depth.h'
 
 	real znv(nkndim)
 	real zenv(3,neldim)

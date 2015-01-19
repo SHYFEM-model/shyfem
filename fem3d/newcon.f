@@ -197,11 +197,9 @@ c shell for scalar (for parallel version)
 
 	include 'nbasin.h'
 	include 'femtime.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real const3d(0:nlvdim,nkndim)
-        common /const3d/const3d
+	include 'const_aux.h'
 
         real r3v(nlvdim,nkndim)
 
@@ -278,13 +276,10 @@ c shell for scalar with nudging (for parallel version)
 
 	include 'nbasin.h'
 	include 'femtime.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
-	integer ilhkv(nkndim)
-	common /ilhkv/ilhkv
+	include 'nlevel.h'
+	include 'levels.h'
 
-        real const3d(0:nlvdim,nkndim)
-        common /const3d/const3d
+	include 'const_aux.h'
 
         real r3v(nlvdim,nkndim)
 
@@ -365,8 +360,7 @@ c special version with factor for BC, variable sinking velocity and loads
 
 	include 'nbasin.h'
 	include 'femtime.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
         real r3v(nlvdim,nkndim)
 
@@ -483,11 +477,9 @@ c common
 	include 'nbasin.h'
 	include 'femtime.h'
 	include 'mkonst.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real uprv(nlvdim,1), vprv(nlvdim,1)
-        common /uprv/uprv, /vprv/vprv
+	include 'hydro_print.h'
 
 c local
         real saux(nlvdim,nkndim)		!aux array
@@ -726,50 +718,25 @@ c arguments
         real ddt,rkpar,azpar,adpar,aapar			!$$azpar
 	integer istot,isact
 c common
-	include 'nbasin.h'
 	include 'femtime.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
 	include 'ev.h'
-        real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-        common /utlnv/utlnv, /vtlnv/vtlnv
-        real utlov(nlvdim,1),vtlov(nlvdim,1)
-        common /utlov/utlov, /vtlov/vtlov
-        real wprv(0:nlvdim,1)
-        common /wprv/wprv
-        real wlov(0:nlvdim,1),wlnv(0:nlvdim,1)
-        common /wlov/wlov, /wlnv/wlnv
-	integer ilhv(1), ilhkv(1)
-	common /ilhv/ilhv, /ilhkv/ilhkv
-	real rtauv(nlvdim,1)
-	common /rtauv/rtauv
+	include 'hydro_print.h'
+	include 'levels.h'
+	include 'ts.h'
 
-        real zeov(3,1),zenv(3,1)
-        common /zeov/zeov, /zenv/zenv
+	include 'hydro.h'
 
-        real hdknv(nlvdim,1)
-        common /hdknv/hdknv
-        real hdkov(nlvdim,1)
-        common /hdkov/hdkov
+	include 'depth.h'
  
-        real hdenv(nlvdim,1)
-        common /hdenv/hdenv
-        real hdeov(nlvdim,1)
-        common /hdeov/hdeov
  
-        real areakv(nlvdim,1)
-        common /areakv/areakv
+	include 'area.h'
 
-        real wdifhv(3,3,1)
-        common /wdifhv/wdifhv
+	include 'diff_aux.h'
 
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-        real ulnv(nlvdim,1), vlnv(nlvdim,1)
-        common /ulnv/ulnv, /vlnv/vlnv
+	include 'basin.h'
+	include 'hydro_vel.h'
 
-        real mfluxv(nlvdim,1)
-        common /mfluxv/mfluxv
+	include 'bound_dynamic.h'
 
 c local
 	logical bdebug,bdebug1,debug,btvdv
@@ -1448,51 +1415,29 @@ c arguments
 	real wsinkv(0:nlvdi,1)
 	integer istot,isact
 c common
-	include 'nbasin.h'
 	include 'femtime.h'
 	include 'mkonst.h'
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'basin.h'
 	include 'ev.h'
-        real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-        common /utlnv/utlnv, /vtlnv/vtlnv
-        real utlov(nlvdim,1),vtlov(nlvdim,1)
-        common /utlov/utlov, /vtlov/vtlov
-        real wprv(0:nlvdim,1)
-        common /wprv/wprv
-        real wlov(0:nlvdim,1),wlnv(0:nlvdim,1)
-        common /wlov/wlov, /wlnv/wlnv
-	integer ilhv(1), ilhkv(1)
-	common /ilhv/ilhv, /ilhkv/ilhkv
+	include 'hydro_print.h'
+	include 'hydro_vel.h'
+	include 'levels.h'
 
-        real zeov(3,1),zenv(3,1)
-        common /zeov/zeov, /zenv/zenv
+	include 'hydro.h'
 
-        real mfluxv(nlvdim,1)
-        common /mfluxv/mfluxv
+	include 'bound_dynamic.h'
 
-        real hdknv(nlvdim,1)
-        common /hdknv/hdknv
-        real hdkov(nlvdim,1)
-        common /hdkov/hdkov
+	include 'depth.h'
  
-        real hdenv(nlvdim,1)
-        common /hdenv/hdenv
-        real hdeov(nlvdim,1)
-        common /hdeov/hdeov
  
-        real areakv(nlvdim,1)
-        common /areakv/areakv
+	include 'area.h'
 
-        real wdifhv(3,3,1)
-        common /wdifhv/wdifhv
+	include 'diff_aux.h'
 
-	real saux1(nlvdim,nkndim)
-        common /saux1/saux1
+	include 'aux_array.h'
 
-	real rtauv(nlvdim,1)
-        common /rtauv/rtauv
+	include 'ts.h'
 
 c local
 	logical bdebug,bdebug1,debug
@@ -1974,8 +1919,7 @@ c parameter
 c common
 	include 'nbasin.h'
 	include 'femtime.h'
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 c local
 	integer k,l,lmax
         double precision vol
@@ -2020,8 +1964,7 @@ c checks if scalar is out of bounds
 	logical bstop		!stop simulation if true
 
 	include 'nbasin.h'
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
 	logical berror
         integer k,l,lmax,kext
@@ -2072,15 +2015,11 @@ c checks min/max property
 	real rmax(nlvdim,nkndim)		!aux arrray to contain max
 	real eps
 
-	include 'nbasin.h'
 	include 'femtime.h'
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-        real mfluxv(nlvdim,1)
-        common /mfluxv/mfluxv
-	integer ilhv(1), ilhkv(1)
-	common /ilhv/ilhv, /ilhkv/ilhkv
+	include 'basin.h'
+	include 'bound_dynamic.h'
+	include 'levels.h'
 
 	logical bwrite,bstop
 	integer k,ie,l,ii,lmax,ierr
@@ -2265,9 +2204,7 @@ c sets up constant 3D array
 
 	include 'nbasin.h'
 
-        real const3d(0:nlvdim,nkndim)
-        common /const3d/const3d
-	save /const3d/
+	include 'const_aux.h'
 
         integer k,l
 

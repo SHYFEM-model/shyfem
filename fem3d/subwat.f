@@ -49,12 +49,10 @@ c arguments
 	integer k
 	real vol,dz
 c common
-	integer nen3v(3,1)
-	real zenv(3,1),zeov(3,1)
-	common /nen3v/nen3v
-	common /zenv/zenv, /zeov/zeov
-	include 'ev.h'
 	include 'param_dummy.h'
+	include 'basin.h'
+	include 'hydro.h'
+	include 'ev.h'
 	include 'links.h'
 c local
 	real area
@@ -97,11 +95,9 @@ c dz		rise of water level to achieve
 c arguments
 	real dz
 c common
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-	real zenv(3,1),zeov(3,1)
-	common /zenv/zenv, /zeov/zeov
-	real znv(1),zov(1)
-	common /znv/znv, /zov/zov
+	include 'hydro.h'
 c local
 	integer ie,ii,k
 
@@ -137,9 +133,9 @@ c arguments
 	integer ielem
 	real dz
 c common
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-	real zenv(3,1),zeov(3,1)
-	common /zenv/zenv, /zeov/zeov
+	include 'hydro.h'
 c local
 	integer ie,ii
 	integer ie1,ie2
@@ -186,16 +182,10 @@ c arguments
 	real con,dz
 	real coe(3,1)
 c common
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real zeov(3,1)
-	common /zeov/zeov
-	real zenv(3,1)
-	common /zenv/zenv
-	real hm3v(3,1)
-	common /hm3v/hm3v
-	include 'ev.h'
 	include 'param_dummy.h'
+	include 'hydro.h'
+	include 'basin.h'
+	include 'ev.h'
 	include 'links.h'
 c local
 	integer ie,i,ii,nl
@@ -274,11 +264,9 @@ c arguments
 	real dz,con
 	real coe(3,1)
 c common
-	include 'nbasin.h'
-	real zeov(3,1)
-	real hm3v(3,1)
-	common /zeov/zeov
-	common /hm3v/hm3v
+	include 'param_dummy.h'
+	include 'hydro.h'
+	include 'basin.h'
 c local
 	real depth
 	integer ie,ii
@@ -320,13 +308,9 @@ c arguments
 	integer k
 	real dvol
 c common
-	include 'nbasin.h'
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-	real znv(1)
-	common /znv/znv
-        real zenv(3,1)
-        common /zenv/zenv
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'hydro.h'
 	include 'ev.h'
 c local
         integer ie,ii
@@ -376,8 +360,8 @@ c arguments
 	real vol0		!volume of first layer			(out)
 	real svol		!total mass of s in column		(out)
 c common
-	integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'param_dummy.h'
+	include 'levels.h'
 c local
 	integer l,ilevel,nlev
 	integer mode
@@ -421,8 +405,8 @@ c arguments
 	real dvol		!change in water volume (whole time step)
 	real dcon		!concentration of new volume dvol
 c common
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'param_dummy.h'
+	include 'levels.h'
 c local
 	logical debug
 	integer l,nlev

@@ -24,6 +24,6 @@ if [ $idtsyn -eq 0 ]; then
 else
   echo "$idtsyn" > aaa.tmp
   getkey.pl  set_timestep  $file  >> aaa.tmp
-  $fembin/clean_time < aaa.tmp
+  $fembin/progs/clean_time < aaa.tmp
 fi
 

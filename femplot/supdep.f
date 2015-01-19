@@ -34,16 +34,10 @@ c makes hkv (nodewise depth)
 	implicit none
 
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real hm3v(3,1)
-	common /hm3v/hm3v
-	real hkv(1)
-	common /hkv/hkv
-	real v1v(1)
-	common /v1v/v1v
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'depth.h'
+	include 'aux_array.h'
 c local
 	integer ie,ii,k,kn
 
@@ -76,12 +70,9 @@ c makes hev (elementwise depth)
 	implicit none
 
 c common
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-	real hm3v(3,1)
-	common /hm3v/hm3v
-	real hev(1)
-	common /hev/hev
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'depth.h'
 c local
 	integer ie,ii
 	real h
@@ -111,18 +102,14 @@ c arguments
 	real hetv(1)
 	real href
 c common
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real hlv(1), hev(1)
-        common /hlv/hlv, /hev/hev
-        integer ilhv(1)
-        common /ilhv/ilhv
-	real zenv(3,1)
-	common /zenv/zenv
-        real ve1v(1)
-        common /ve1v/ve1v
+	include 'depth.h'
+	include 'levels.h'
+	include 'hydro.h'
+	include 'aux_array.h'
 c local
 	logical bdebug
 	integer ie,ii
@@ -189,13 +176,11 @@ c arguments
 	real het3v(nlvdi,1)
 	real href
 c common
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-        integer ilhv(1)
-        common /ilhv/ilhv
-        real hlv(1), hev(1)
-        common /hlv/hlv, /hev/hev
-	real zenv(3,1)
-	common /zenv/zenv
+	include 'levels.h'
+	include 'depth.h'
+	include 'hydro.h'
 c local
 	logical bdebug
 	integer ie,ii
@@ -275,11 +260,9 @@ c makes area of finite volume
 	implicit none
 
 c common
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real arfvlv(1)
-	common /arfvlv/arfvlv
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'plot_aux.h'
 	include 'ev.h'
 c local
 	integer ie,ii,k

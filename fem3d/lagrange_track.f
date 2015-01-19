@@ -35,16 +35,11 @@ c si passa alla successiva subroutine con time
  
         real deltat ! frazione di time step body si muove in ie
  
-	integer ieltv(3,1)
-        common /ieltv/ieltv !punta ad elemento opposto al nodo 
+	include 'geom.h'
 
-	real xgv(1),ygv(1) ! coordinate nodi
-        integer nen3v(3,1) ! puntatore sui nodi di ogni elemento
-        common /xgv/xgv, /ygv/ygv
-        common /nen3v/nen3v
+	include 'basin.h'
 
-        real ulnv(nlvdim,1),vlnv(nlvdim,1)
-        common /ulnv/ulnv, /vlnv/vlnv
+	include 'hydro_vel.h'
 
 	real v_ent ! valore mediato tra velocita' int e out
 	real v_int ! modulo della velocita' di entrata
@@ -524,16 +519,11 @@ c nello stesso timestep arriva in un nuovo elemento
 
         real deltat ! frazione di time step body si muove in ie
  
-	integer ieltv(3,1)
-        common /ieltv/ieltv !punta ad elemento opposto al nodo 
+	include 'geom.h'
 
-	real xgv(1),ygv(1) ! coordinate nodi
-        integer nen3v(3,1) ! puntatore sui nodi di ogni elemento
-        common /xgv/xgv, /ygv/ygv
-        common /nen3v/nen3v
+	include 'basin.h'
 
-        real ulnv(nlvdim,1),vlnv(nlvdim,1)
-        common /ulnv/ulnv, /vlnv/vlnv
+	include 'hydro_vel.h'
                 
 	real v_ent ! valore mediato tra velocita' int e out
 	real v_int ! modulo della velocita' di entrata

@@ -51,16 +51,11 @@ c parameters
 	include 'param.h'
 c common
 	include 'nbasin.h'
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
-	integer ilhv(1)
-	common /ilhv/ilhv
-	real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-	common /utlnv/utlnv, /vtlnv/vtlnv
-	real ulnv(nlvdim,1),vlnv(nlvdim,1)
-	common /ulnv/ulnv, /vlnv/vlnv
-        real hdenv(nlvdim,1)
-        common /hdenv/hdenv
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'hydro.h'
+	include 'hydro_vel.h'
+	include 'depth.h'
 c local
 	integer ie,l,ilevel
 	real h,rh
@@ -94,16 +89,11 @@ c parameters
 	include 'param.h'
 c common
 	include 'nbasin.h'
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
-	integer ilhv(1)
-	common /ilhv/ilhv
-	real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-	common /utlnv/utlnv, /vtlnv/vtlnv
-	real ulnv(nlvdim,1),vlnv(nlvdim,1)
-	common /ulnv/ulnv, /vlnv/vlnv
-        real hdenv(nlvdim,1)
-        common /hdenv/hdenv
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'hydro.h'
+	include 'hydro_vel.h'
+	include 'depth.h'
 c local
 	integer ie,l,ilevel
 	real h
@@ -135,21 +125,15 @@ c
 c arguments
 	real vv(1)
 c common
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	real up0v(1),vp0v(1)
-	real unv(1),vnv(1)
-	real znv(1),hev(1)
-	common /nen3v/nen3v
-	common /up0v/up0v, /vp0v/vp0v
-	common /unv/unv, /vnv/vnv
-	common /znv/znv, /hev/hev
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'hydro_print.h'
+	include 'hydro_baro.h'
+	include 'hydro.h'
+	include 'depth.h'
 	include 'ev.h'
 
-        real zeov(3,1),zenv(3,1)
-        common /zeov/zeov, /zenv/zenv
-	integer iwegv(1)
-	common /iwegv/iwegv
+	include 'geom_dynamic.h'
 c local
 	logical bcolin
 	integer ie,k,ii
@@ -208,21 +192,14 @@ c parameters
 c arguments
 	real vv(1)
 c common
-	integer nlvdi,nlv
-	include 'nbasin.h'
-	common /level/ nlvdi,nlv
-	integer ilhv(1)
-	integer nen3v(3,1)
-	real ulnv(nlvdim,1),vlnv(nlvdim,1),wlnv(0:nlvdim,1)
-	real uprv(nlvdim,1),vprv(nlvdim,1),wprv(0:nlvdim,1)
-	common /ilhv/ilhv
-	common /nen3v/nen3v
-	common /ulnv/ulnv, /vlnv/vlnv, /wlnv/wlnv
-	common /uprv/uprv, /vprv/vprv, /wprv/wprv
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'basin.h'
+	include 'hydro_vel.h'
+	include 'hydro_print.h'
 	include 'ev.h'
 
-	integer iwegv(1)
-	common /iwegv/iwegv
+	include 'geom_dynamic.h'
 c local
 	integer ie,l,k,ii
 	real aj
@@ -290,19 +267,12 @@ c
 c parameters
 	include 'param.h'
 c common
-	integer nlvdi,nlv
-	include 'nbasin.h'
-	common /level/ nlvdi,nlv
-	integer ilhv(1)
-	integer nen3v(3,1)
-	real ulnv(nlvdim,1),vlnv(nlvdim,1),wlnv(0:nlvdim,1)
-	real uprv(nlvdim,1),vprv(nlvdim,1),wprv(0:nlvdim,1)
-	common /ilhv/ilhv
-	common /nen3v/nen3v
-	common /ulnv/ulnv, /vlnv/vlnv, /wlnv/wlnv
-	common /uprv/uprv, /vprv/vprv, /wprv/wprv
-	integer iwegv(1)
-	common /iwegv/iwegv
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'basin.h'
+	include 'hydro_vel.h'
+	include 'hydro_print.h'
+	include 'geom_dynamic.h'
 c local
 	integer ie,l,k,ii
 	real u,v
@@ -355,15 +325,11 @@ c
 c parameter
 	include 'param.h'
 c common
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'nbasin.h'
-	integer ilhv(1)
-	real unv(1),vnv(1)
-	real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-	common /ilhv/ilhv
-	common /unv/unv, /vnv/vnv
-	common /utlnv/utlnv, /vtlnv/vtlnv
+	include 'levels.h'
+	include 'hydro_baro.h'
+	include 'hydro.h'
 c local
 	integer ie,l
 	real u,v
@@ -397,18 +363,11 @@ c only first layer has to be checked
 c parameters
 	include 'param.h'
 c common
-	integer nlvdi,nlv
 	include 'nbasin.h'
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real znv(1)
-        common /znv/znv
-        real zenv(3,1)
-        common /zenv/zenv
-        real hdknv(nlvdim,1)
-        common /hdknv/hdknv
-        real hdenv(nlvdim,1)
-        common /hdenv/hdenv
+	include 'hydro.h'
+	include 'depth.h'
 
 	logical bstop,bsigma
 	integer nsigma
@@ -475,23 +434,13 @@ c distribute barotropic velocities onto layers (only in dry elements)
 c parameters
 	include 'param.h'
 c common
-	integer nlvdi,nlv
-	include 'nbasin.h'
-	common /level/ nlvdi,nlv
-	integer ilhv(1)
-	real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-	real ulnv(nlvdim,1),vlnv(nlvdim,1)
-	common /utlnv/utlnv, /vtlnv/vtlnv
-	common /ulnv/ulnv, /vlnv/vlnv
-	common /ilhv/ilhv
-	integer iwegv(1)
-	common /iwegv/iwegv
-	real unv(1),vnv(1)
-	common /unv/unv, /vnv/vnv
-        real zeov(3,1),zenv(3,1)
-        common /zeov/zeov, /zenv/zenv
-	real hm3v(3,1)
-	common /hm3v/hm3v
+	include 'nlevel.h'
+	include 'hydro_vel.h'
+	include 'levels.h'
+	include 'geom_dynamic.h'
+	include 'hydro_baro.h'
+	include 'hydro.h'
+	include 'basin.h'
 c local
 	logical bsigma
 	integer nsigma
@@ -538,13 +487,10 @@ c sets obsolete data structure xv
 	implicit none
 
 c common
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-	real up0v(1),vp0v(1)
-	common /up0v/up0v, /vp0v/vp0v
-	real znv(1)
-	common /znv/znv
-	real xv(3,1)
-	common /xv/xv
+	include 'hydro_print.h'
+	include 'hydro.h'
 c local
 	integer k
 
@@ -570,8 +516,7 @@ c accessor routine to get velocities u/v
 c parameters
 	include 'param.h'
 c common
-	real uprv(nlvdim,1),vprv(nlvdim,1),wprv(0:nlvdim,1)
-	common /uprv/uprv, /vprv/vprv, /wprv/wprv
+	include 'hydro_print.h'
 
         u = uprv(l,k)
         v = vprv(l,k)
@@ -589,45 +534,18 @@ c copies u/v/z to old time step
 	include 'param.h'
 
 	include 'nbasin.h'
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	real utlov(nlvdim,1), vtlov(nlvdim,1)
-	common /utlov/utlov, /vtlov/vtlov
-	real utlnv(nlvdim,1), vtlnv(nlvdim,1)
-	common /utlnv/utlnv, /vtlnv/vtlnv
 
-	real ulov(nlvdim,1), vlov(nlvdim,1)
-	common /ulov/ulov,  /vlov/vlov
-	real ulnv(nlvdim,1), vlnv(nlvdim,1)
-	common /ulnv/ulnv,  /vlnv/vlnv
+	include 'hydro_vel.h'
 
-        real uprv(nlvdim,1)
-        common /uprv/uprv
-        real vprv(nlvdim,1)
-        common /vprv/vprv
+	include 'hydro_print.h'
 
-        real upro(nlvdim,1)
-        common /upro/upro
-        real vpro(nlvdim,1)
-        common /vpro/vpro
 
-	real wlov(0:nlvdim,1)
-	common /wlov/wlov
-	real wlnv(0:nlvdim,1)
-	common /wlnv/wlnv
 
-	real uov(1),vov(1)
-	common /uov/uov, /vov/vov
-	real unv(1),vnv(1)
-	common /unv/unv, /vnv/vnv
+	include 'hydro_baro.h'
 
-	real zov(1)
-	common /zov/zov
-	real znv(1)
-	common /znv/znv
-        real zeov(3,1),zenv(3,1)
-        common /zeov/zeov, /zenv/zenv
+	include 'hydro.h'
 
 	integer k,ie,ii,l
 
@@ -677,8 +595,7 @@ c makes print velocities and xv from new level arrays
 
 	include 'param.h'
 
-	real v1v(1)
-	common /v1v/v1v
+	include 'aux_array.h'
 
 	call uvtopr(v1v)
 	call uvtop0(v1v)
@@ -696,12 +613,7 @@ c initializes uvz values from zenv, utlnv, vtlnv, hdenv
 
 	include 'param.h'
 
-	real saux1(nlvdim,1)
-	common /saux1/saux1
-	real saux2(nlvdim,1)
-	common /saux2/saux2
-	real v1v(1)
-	common /v1v/v1v
+	include 'aux_array.h'
 
 	logical has_restart
 
@@ -736,9 +648,8 @@ c arguments
         real aux(1)     !aux array (nkndim)
 
 c common
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'param.h'
+	include 'basin.h'
 	include 'ev.h'
 
 c local
@@ -801,11 +712,9 @@ c arguments
         real aux(nlvdi,1)     !aux array (nkndim)
 
 c common
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-        integer ilhv(1),ilhkv(1)
-        common /ilhv/ilhv, /ilhkv/ilhkv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'levels.h'
 	include 'ev.h'
 
 c local
@@ -877,11 +786,9 @@ c arguments
         real nov(nlvdi,1)      !array with nodal values (out)
 
 c common
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-        integer ilhv(1),ilhkv(1)
-        common /ilhv/ilhv, /ilhkv/ilhkv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'levels.h'
 
 c local
         integer k,ie,ii,l,lmax
@@ -946,10 +853,9 @@ c (2D version)
         real nov(1)     !array with nodal values (in)
         real elv(1)     !array with element values (out)
 
-	include 'nbasin.h'
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param.h'
+	include 'basin.h'
 
         integer k,ie,ii
         real acu,value
@@ -990,11 +896,9 @@ c arguments
         real elv(nlvdi,1)	!array with element values (out)
 
 c common
-	include 'nbasin.h'
-        integer ilhv(1),ilhkv(1)
-        common /ilhv/ilhv, /ilhkv/ilhkv
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param.h'
+	include 'levels.h'
+	include 'basin.h'
 
 c local
         integer k,ie,ii,l,lmax

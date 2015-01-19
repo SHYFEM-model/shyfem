@@ -94,9 +94,7 @@ c pzlreg                value of z for land points
 	real dx,dy	!grid spacing in x/y direction
 	real flag	!flag for land points
 
-        real pxareg,pyareg,pxdreg,pydreg,pzlreg
-        common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
-	save /ppp20/
+	include 'reg.h'
 
 	pxareg = x0
 	pyareg = y0
@@ -122,9 +120,7 @@ c pzlreg                value of z for land points
 	real dx,dy	!grid spacing in x/y direction
 	real flag	!flag for land points
 
-        real pxareg,pyareg,pxdreg,pydreg,pzlreg
-        common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
-	save /ppp20/
+	include 'reg.h'
 
 	x0   = pxareg
 	y0   = pyareg
@@ -146,9 +142,7 @@ c flag                value for land points
 
 	real flag	!flag for land points
 
-        real pxareg,pyareg,pxdreg,pydreg,pzlreg
-        common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
-	save /ppp20/
+	include 'reg.h'
 
 	flag = pzlreg
 
@@ -178,13 +172,9 @@ c parameter
 	double precision eps
 	parameter ( eps = 1.d-14 )
 c common
-	integer nen3v(3,1)
-	real xgv(1), ygv(1)
-	real pxareg,pyareg,pxdreg,pydreg,pzlreg
-	include 'nbasin.h'
-	common /xgv/xgv, /ygv/ygv
-	common /nen3v/nen3v
-	common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+	include 'param_dummy.h'
+	include 'basin.h'
+	include 'reg.h'
 c local
 	integer i,j,ii,iii,ie,k,kn,iin
 	integer imin,imax,jmin,jmax
@@ -291,13 +281,9 @@ c parameter
 	double precision eps
 	parameter ( eps = 1.d-14 )
 c common
-	integer nen3v(3,1)
-	real xgv(1), ygv(1)
-	real pxareg,pyareg,pxdreg,pydreg,pzlreg
-	include 'nbasin.h'
-	common /xgv/xgv, /ygv/ygv
-	common /nen3v/nen3v
-	common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+	include 'param_dummy.h'
+	include 'basin.h'
+	include 'reg.h'
 c local
 	integer i,j,ii,iii,ie,k,kn,iin
 	integer imin,imax,jmin,jmax
@@ -442,16 +428,12 @@ c parameter
 	double precision eps
 	parameter ( eps = 1.d-14 )
 c common
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 c pxareg,pyareg         coordinates of lower left point of matrix
 c pxdreg,pydreg         grid size of matrix
 c pzlreg                value of z for land points
-	real pxareg,pyareg,pxdreg,pydreg,pzlreg
-	common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+	include 'reg.h'
 c local
 	integer i,j,ii,iii,ie,k,kn,iin
 	integer imin,imax,jmin,jmax
@@ -573,11 +555,10 @@ c interpolation 3d of fem values to regular grid using fm matrix
         real fm(4,nx,ny)		!interpolation matrix
         real am(nlv,nx,ny)		!interpolated values (return)
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'param_dummy.h'
+	include 'basin.h'
 
-	real pxareg,pyareg,pxdreg,pydreg,pzlreg
-	common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+	include 'reg.h'
 
         integer i,j,l,lmax,ie,ii,k
         real a
@@ -761,9 +742,8 @@ c		> 0	values of flag used in interpolation
 	real femval(*)		!interpolated values on fem grid (return)
 	integer ierr		!error code (return)
 
-	include 'nbasin.h'
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	logical bextra
 	integer k
@@ -852,11 +832,9 @@ c arguments
 	real av(1)
 	real am(ip,jp)
 c common
-	real xgv(1), ygv(1)
-	real pxareg,pyareg,pxdreg,pydreg,pzlreg
-	include 'nbasin.h'
-	common /xgv/xgv, /ygv/ygv
-	common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+	include 'param_dummy.h'
+	include 'basin.h'
+	include 'reg.h'
 c local
 	logical bextra
 	integer k
@@ -940,8 +918,7 @@ c parameter
 	!parameter( eps = 0. )		!to use this pass in double precision
 	parameter( zero = 0. - eps , one = 1. + eps )
 c common
-	real pxareg,pyareg,pxdreg,pydreg,pzlreg
-	common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+	include 'reg.h'
 c local
 	integer k
 	integer imin,jmin
@@ -1004,13 +981,9 @@ c arguments
 	real av(1)
 	real am(ip,jp)
 c common
-	integer nen3v(3,1)
-	real xgv(1), ygv(1)
-	real pxareg,pyareg,pxdreg,pydreg,pzlreg
-	include 'nbasin.h'
-	common /xgv/xgv, /ygv/ygv
-	common /nen3v/nen3v
-	common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+	include 'param_dummy.h'
+	include 'basin.h'
+	include 'reg.h'
 c local
 c	integer i,j,ii,iii,ie,k,kn,iin
 	integer i,j,ie,kn,iin
@@ -1084,12 +1057,9 @@ c arguments
 	real zv(1)
 	real href,hzoff
 c common
-	integer nen3v(3,1)
-	real hm3v(3,1)
-	real zenv(3,1)
-	include 'nbasin.h'
-	common /nen3v/nen3v, /hm3v/hm3v
-	common /zenv/zenv
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'hydro.h'
 c local
 	integer itot,itot1
 	integer ie,ii
@@ -1183,9 +1153,8 @@ c arguments
 	logical bwater(1)
 	logical bkwater(1)
 c common
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'param_dummy.h'
+	include 'basin.h'
 c local
 	integer ie,ii,k
 	integer nndry,nedry
@@ -1231,9 +1200,8 @@ c arguments
 	logical bwater(1)
 	logical bkwater(1)
 c common
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'param_dummy.h'
+	include 'basin.h'
 c local
 	integer ie,ii,k
 	integer nedry
@@ -1272,8 +1240,7 @@ c computes min/max of regular matrix (without flag values)
 	real am(ip,jp)
 	real amin,amax
 
-        real pxareg,pyareg,pxdreg,pydreg,pzlreg
-        common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+	include 'reg.h'
 
 	integer i,j
 	real a,high
@@ -1310,8 +1277,7 @@ c creates 1 char representation of matrix
 	real am(ip,jp)		!matrix containing data
 	character*1 ac(ip,jp)	!matrix containing chars on return
 
-        real pxareg,pyareg,pxdreg,pydreg,pzlreg
-        common /ppp20/ pxareg,pyareg,pxdreg,pydreg,pzlreg
+	include 'reg.h'
 
 	integer i,j
 
@@ -1452,6 +1418,7 @@ c uses data structure ev and ieltv
 
 	implicit none
 
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'ev.h'
 
 	integer ieold
@@ -1460,8 +1427,7 @@ c uses data structure ev and ieltv
 
 	include 'nbasin.h'
 
-	integer ieltv(3,1)
-	common /ieltv/ieltv
+	include 'geom.h'
 
 	logical binit,bdebug
 	integer ie,ii,iside,lmax,loop
@@ -1641,10 +1607,8 @@ c checks if point (xp,yp) is in element ie
 	integer ie
 	real xp,yp
 
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	integer ii,k,in
 	real xmin,ymin,xmax,ymax
@@ -1685,10 +1649,8 @@ c returns x,y of vertices of element ie
 	integer ie
 	real x(3), y(3)
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	integer ii,k
 
@@ -1712,8 +1674,8 @@ c returns s at vertices of element ie
 	real sv(1)
 	real s(3)
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	integer ii,k
 

@@ -49,25 +49,16 @@ c parameters
         include 'param.h'
         include 'ev.h'
 c common
-	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        integer ilhv(1)
-        common /ilhv/ilhv
+	include 'basin.h'
+	include 'levels.h'
 
-        real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-        common /utlnv/utlnv, /vtlnv/vtlnv
+	include 'hydro.h'
 
-        real wlnv(0:nlvdim,1)
-        common /wlnv/wlnv
-        real wauxv(0:nlvdim,1)
-        common /wauxv/wauxv
+	include 'hydro_vel.h'
+	include 'plot_aux.h'
 
-        logical bwater(1)
-        common /bwater/bwater
 c local
 	logical byaron
         integer k,ie,ii,kk,l

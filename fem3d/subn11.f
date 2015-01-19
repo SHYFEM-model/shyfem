@@ -138,24 +138,12 @@ c		2 : read in b.c.
 
 	include 'mkonst.h'
 
-	real rrv(1)
-	common /rrv/rrv
-	integer irv(1)
-	common /irv/irv
-	real rzv(1), rqv(1)
-	common /rzv/rzv, /rqv/rqv
-	real rqpsv(1), rqdsv(1)
-	common /rqpsv/rqpsv, /rqdsv/rqdsv
-	real mfluxv(nlvdim,1)
-	common /mfluxv/mfluxv
+	include 'bound_geom.h'
+	include 'bound_dynamic.h'
 
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real ruv(1)
-        real rvv(1)
-        common /ruv/ruv
-        common /rvv/rvv
+	include 'bnd_aux.h'
 
         real bnd3(nb3dim,0:nbcdim)     !boundary array for water level
         real rwv(nb3dim)
@@ -492,15 +480,12 @@ c	nodes are linearly interpolated between start-ktilt and ktilt-end
 
 	implicit none
 
-	include 'nbasin.h'
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
 
-	integer irv(1)
-	common /irv/irv
-	real rzv(1)
-	common /rzv/rzv
-        real xgv(1),ygv(1)
-        common /xgv/xgv,/ygv/ygv
+	include 'bound_geom.h'
+	include 'bound_dynamic.h'
+	include 'basin.h'
 
 	integer ibc,ibtyp,ktilt
 	integer nbc
@@ -570,28 +555,19 @@ c if ktilt is not given nothing is tilted
 
 	implicit none
 
-	include 'nbasin.h'
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
 
 	include 'pkonst.h'
 	include 'mkonst.h'
 
-	real rrv(1)
-	common /rrv/rrv
-	integer irv(1)
-	common /irv/irv
-	real rzv(1)
-	common /rzv/rzv
-	real rhv(1)
-	common /rhv/rhv
+	include 'bound_geom.h'
+	include 'bound_dynamic.h'
 
-        real znv(1)
-        common /znv/znv
-        real up0v(1), vp0v(1)
-        common /up0v/up0v, /vp0v/vp0v
+	include 'hydro.h'
+	include 'hydro_print.h'
 
-        real xgv(1),ygv(1)
-        common /xgv/xgv,/ygv/ygv
+	include 'basin.h'
 
 	integer ibc,ibtyp,kranf,krend,ktilt,k,kn1,kn2
 	integer nbc
@@ -705,21 +681,9 @@ c initializes flux boundary
 
         integer ibc
 
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	integer irv(1)
-	common /irv/irv
-	integer ierv(2,1)
-	common /ierv/ierv
-	real rrv(1)
-	common /rrv/rrv
-	real rlv(1), rhv(1)
-	common /rlv/rlv, /rhv/rhv
-	real hm3v(3,1)
-	common /hm3v/hm3v
-	real xgv(1),ygv(1)
-	common /xgv/xgv,/ygv/ygv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'bound_geom.h'
+	include 'basin.h'
 
 	integer kranf,krend
 	integer ie,i,k1,k2,kk1,kk2,ii1,ii2
@@ -841,17 +805,10 @@ c sets up (water) mass flux array mfluxv (3d) and rqv (vertically integrated)
 	include 'param.h'
 	include 'nbasin.h'
 
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-	real rqv(1)
-	common /rqv/rqv
-	real rqpsv(1), rqdsv(1)			![m**3/s]
-	common /rqpsv/rqpsv, /rqdsv/rqdsv
-	real mfluxv(nlvdim,1)			![m**3/s]
-	common /mfluxv/mfluxv
+	include 'levels.h'
+	include 'bound_dynamic.h'
 
 	logical debug
 	integer i,k,l,lmin,lmax,nk,ibc,mode
@@ -984,17 +941,10 @@ c adjusts mass flux for dry nodes
 	include 'param.h'
 
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        integer inodv(1)
-        common /inodv/inodv
-	real rqv(1)
-	common /rqv/rqv
-	real rqpsv(1), rqdsv(1)
-	common /rqpsv/rqpsv, /rqdsv/rqdsv
-	real mfluxv(nlvdim,1)
-	common /mfluxv/mfluxv
+	include 'geom_dynamic.h'
+	include 'bound_dynamic.h'
 
 	integer k,l
 
@@ -1032,15 +982,10 @@ c computes scalar flux from fluxes and concentrations
 
 	include 'nbasin.h'
 	include 'mkonst.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-	real rqpsv(1), rqdsv(1)
-	common /rqpsv/rqpsv, /rqdsv/rqdsv
-	real mfluxv(nlvdim,1)
-	common /mfluxv/mfluxv
+	include 'levels.h'
+	include 'bound_dynamic.h'
 
 	integer k,l,lmax,ks
 	real flux,conz
@@ -1110,8 +1055,7 @@ c**********************************************************************
 	include 'nbasin.h'
 	include 'femtime.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer k,l,lmax
 	integer ifemop
@@ -1157,13 +1101,10 @@ c checks scalar flux
 	include 'nbasin.h'
 	include 'mkonst.h'
 	include 'femtime.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-	real mfluxv(nlvdim,1)
-	common /mfluxv/mfluxv
+	include 'levels.h'
+	include 'bound_dynamic.h'
 
 	integer k,l,lmax,ks
 	real cconz,qflux,mflux
@@ -1202,8 +1143,7 @@ c initializes array for scalar boundary condition
 	real r3v(nlvdim,nkndim)
 
 	include 'nbasin.h'
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'mkonst.h'
 
 	integer k,l
@@ -1230,8 +1170,7 @@ c multiplies array for scalar boundary condition with value
 	real value
 
 	include 'nbasin.h'
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'mkonst.h'
 
 	integer k,l
@@ -1329,8 +1268,7 @@ c prints non-flag entries of array for scalar boundary condition
 	real r3v(nlvdim,nkndim)
 
 	include 'nbasin.h'
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'mkonst.h'
 
 	integer k,l
@@ -1358,8 +1296,8 @@ c returns boundary flux of node k
 	integer k	!node
 	real flux	!flux in node k (return)
 
-	real rqv(1)
-	common /rqv/rqv
+	include 'param.h'
+	include 'bound_dynamic.h'
 
 	flux = rqv(k)
 
@@ -1378,8 +1316,8 @@ c compute discharge from water level
 	integer kn		!node number
 	real rw			!discharge computed
 
-	real znv(1)
-	common /znv/znv
+	include 'param.h'
+	include 'hydro.h'
 
 	real z,a,b,c,z0
 
@@ -1503,8 +1441,8 @@ c for z-boundaries 0 is returned
 	real get_discharge
 	integer ibc
 
-	real rqpsv(1)
-	common /rqpsv/rqpsv
+	include 'param.h'
+	include 'bound_dynamic.h'
 
 	integer itype,nk,i,k
 	real acc

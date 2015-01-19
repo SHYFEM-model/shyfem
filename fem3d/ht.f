@@ -111,293 +111,143 @@ c----------------------------------------------------------------
 
 c variables and coefficients
 
-	include 'nbasin.h'
 	include 'mkonst.h'
 	include 'pkonst.h'
 	include 'femtime.h'
 
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
 c run and basin description
 
-	character*80 descrp,descrr
-	common /descrp/ descrp
-	common /descrr/ descrr
+	include 'simul.h'
+	include 'basin.h'
 
 c boundary file names			!$$ST	!$$DESCRP
 
-	character*80 boundn(nbcdim)
-	character*80 conzn(nbcdim)
-	character*80 saltn(nbcdim)
-	character*80 tempn(nbcdim)
-	character*80 vel3dn(nbcdim)
-        character*80 bio2dn(nbcdim)
-        character*80 sed2dn(nbcdim)
-        character*80 mud2dn(nbcdim)
-        character*80 lam2dn(nbcdim)
-        character*80 dmf2dn(nbcdim)
-        character*80 tox3dn(nbcdim)
-	character*80 bfm1bc(nbcdim)
-        character*80 bfm2bc(nbcdim)
-        character*80 bfm3bc(nbcdim)
 
-	common /boundn/ boundn
-        common /conzn/ conzn
-        common /saltn/ saltn
-        common /tempn/ tempn
-	common /vel3dn/ vel3dn
-        common /bio2dn/ bio2dn
-        common /sed2dn/ sed2dn
-        common /mud2dn/ mud2dn
-        common /lam2dn/ lam2dn	!!!!!!!!!!!!!!!!! BUG
-        common /dmf2dn/ dmf2dn
-        common /tox3dn/ tox3dn
-        common /bfm1bc/bfm1bc
-        common /bfm2bc/bfm2bc
-        common /bfm3bc/bfm3bc
+	include 'bound_names.h'
   
 c various arrays
 
-	common /knausc/ knausm,knaus(nexdim)
+	include 'extra.h'
 
-        integer nvols,kvold,kvolm,kvol(nfxdim)
-        common /kvolc/ nvols,kvold,kvolm,kvol
-        integer ivolm,ivol(nfxdim)
-        common /ivol/ivolm,ivol
+	include 'volcomp.h'
 
 c basin arrays
 
-	common /nen3v/nen3v(3,neldim)
-	common /iarv/iarv(neldim)
-	common /ipv/ipv(nkndim), /ipev/ipev(neldim)
-	common /xgv/xgv(nkndim), /ygv/ygv(nkndim)
-	common /hm3v/hm3v(3,neldim)
 
 c static geometry information
 
 	include 'evmain.h'
 
-        common /ilinkv/ilinkv(nkndim+1)
-        common /lenkv/lenkv(nlkdim)
-        common /linkv/linkv(nlkdim)
+	include 'geom.h'
 
-	common /ieltv/ieltv(3,neldim)
-	common /kantv/kantv(2,nkndim)
-	common /dxv/dxv(nkndim), /dyv/dyv(nkndim)
 
-	common /iarnv/iarnv(nkndim)	!area code information on nodes
 
 c dynamic geometry information
 
-	common /iwegv/iwegv(neldim)
-	common /iwetv/iwetv(neldim)
-        common /inodv/inodv(nkndim)
+	include 'geom_dynamic.h'
 
 c boundary arrays
 
-	common /ierv/ierv(2,nrbdim)
-	common /rhv/rhv(nrbdim), /rlv/rlv(nrbdim)
-	common /rrv/rrv(nrbdim), /irv/irv(nrbdim)
-	common /rzv/rzv(nkndim), /rqv/rqv(nkndim)
-	common /iopbnd/iopbnd(nkndim)
+	include 'bound_geom.h'
 
-        real rqpsv(nkndim), rqdsv(nkndim)
-        common /rqpsv/rqpsv, /rqdsv/rqdsv
-        real evapv(nkndim)
-        common /evapv/evapv
-        real mfluxv(nlvdim,nkndim)
-        common /mfluxv/mfluxv
+	include 'bound_dynamic.h'
 
 c depth structure of levels
 
-	common /ilhv/ilhv(neldim)
-	common /ilhkv/ilhkv(nkndim)
-	common /hlv/hlv(nlvdim), /hldv/hldv(nlvdim)
+	include 'levels.h'
 
-        integer ilmv(neldim)
-        common /ilmv/ilmv
-        integer ilmkv(nkndim)
-        common /ilmkv/ilmkv
 
-	common /hkv/hkv(nkndim), /hev/hev(neldim)
-	common /hkv_min/hkv_min(nkndim), /hkv_max/hkv_max(nkndim)
+	include 'depth.h'
 
 c new depth and area arrays
 
-	real hdknv(nlvdim,nkndim)
-	common /hdknv/hdknv
-	real hdkov(nlvdim,nkndim)
-	common /hdkov/hdkov
 
-	real hdenv(nlvdim,neldim)
-	common /hdenv/hdenv
-	real hdeov(nlvdim,neldim)
-	common /hdeov/hdeov
 
-        real areakv(nlvdim,nkndim)
-        common /areakv/areakv
+	include 'area.h'
 
 c water level and velocity arrays
 
-	common /zov/zov(nkndim), /znv/znv(nkndim)
-	common /zeov/zeov(3,neldim), /zenv/zenv(3,neldim)	!$$ZEONV
+	include 'hydro.h'
 
-	common /uov/uov(neldim), /vov/vov(neldim)
-	common /unv/unv(neldim), /vnv/vnv(neldim)
+	include 'hydro_baro.h'
 
-	common /ulov/ulov(nlvdim,neldim)
-	common /ulnv/ulnv(nlvdim,neldim)
-	common /vlov/vlov(nlvdim,neldim)
-	common /vlnv/vlnv(nlvdim,neldim)
-	common /wlov/wlov(0:nlvdim,nkndim)
-	common /wlnv/wlnv(0:nlvdim,nkndim)
+	include 'hydro_vel.h'
 
-	common /utlov/utlov(nlvdim,neldim)
-	common /utlnv/utlnv(nlvdim,neldim)
-	common /vtlov/vtlov(nlvdim,neldim)
-	common /vtlnv/vtlnv(nlvdim,neldim)
 
-	common /uprv/uprv(nlvdim,nkndim)
-	common /vprv/vprv(nlvdim,nkndim)
-	common /upro/upro(nlvdim,nkndim)
-	common /vpro/vpro(nlvdim,nkndim)
-	common /wprv/wprv(0:nlvdim,nkndim)
+	include 'hydro_print.h'
 
-	common /up0v/up0v(nkndim)
-	common /vp0v/vp0v(nkndim)
         
-        common /fxv/fxv(nlvdim,neldim)		!new HYDRO debora
-        common /fyv/fyv(nlvdim,neldim)
 
-	common /xv/xv(3,nkndim)
 
 c fluid mud (ARON: please comment what they are)
 c ARON: do these have to be global, or are they only needed in submud?
 
-	real shearf2(nlvdim,nkndim)
-        common /shearf2/shearf2
-	common /lambda/lambda(nlvdim,nkndim) 	! Structural parameter
-	common /wsinkv/wsinkv(0:nlvdim,nkndim)	! if we need it globally
-	common /vts/vts(0:nlvdim,nkndim)	! Rheological Viscosity [m2/s]
-	double precision dmf_mud(nlvdim,nkndim)
-        common /dmf_mud/dmf_mud			! Floc size array.
+	include 'gotm_aux.h'
+	include 'sinking.h'
 
 c concentration, salinity and temperature
 
-	common /saltv/saltv(nlvdim,nkndim)
-	common /tempv/tempv(nlvdim,nkndim)
-	common /sobsv/sobsv(nlvdim,nkndim)
-	common /tobsv/tobsv(nlvdim,nkndim)
-	common /rtauv/rtauv(nlvdim,nkndim)	!relaxation time
 
-	common /rhov/rhov(nlvdim,nkndim)
-	common /bpresv/bpresv(nlvdim,nkndim)
-        common /bpresxv/bpresxv(nlvdim,neldim)	!deb110407	debora
-        common /bpresyv/bpresyv(nlvdim,neldim)	!deb110407
+	include 'ts.h'
 
 c coriolis parameter
 
-	common /fcorv/fcorv(neldim)
 
 c friction and diffusion
 
-	common /rfricv/rfricv(neldim)
-	common /czv/czv(neldim)
-	common /austv/austv(neldim)			!$$AUST
+	include 'diff_visc_fric.h'
 
-	common /wdifhv/wdifhv(3,3,neldim)   	!weights for horizontal diff.
+	include 'diff_aux.h'
 
-	common /difhv/difhv(nlvdim,neldim)   	!horizontal diffusion - 3D
 
-        real rdistv(nkndim)
-        common /rdistv/rdistv
+	include 'internal.h'
 
-	common /visv/visv(0:nlvdim,nkndim)	!viscosity (momentum)
-	common /difv/difv(0:nlvdim,nkndim)	!diffusivity (scalars)
 
-        common /visv_yield/visv_yield(0:nlvdim,nkndim) !viscosity (mud)
-        common /difv_yield/difv_yield(0:nlvdim,nkndim) !diffusivity (mud)
 
 c special boundary arrays
 
-	common /ruv/ruv(nkndim), /rvv/rvv(nkndim)	!momentum input (2D)
-	common /crad/crad(neldim)			!$$GWI (radiation)
+	include 'bnd_aux.h'
 
 c meteo (wind and pressure)
 
 c	primary arrays
 
-	real wxv(3*nkndim), wyv(3*nkndim)
-	real ppv(3*nkndim)
-	common /wxv/wxv, /wyv/wyv
-	common /ppv/ppv
 
-        real metrad(3*nkndim),methum(3*nkndim)
-        real mettair(3*nkndim),metcc(3*nkndim)
-        real metrain(3*nkndim)
-        common /metrad/metrad, /methum/methum
-        common /mettair/mettair, /metcc/metcc
-        common /metrain/metrain
 
 c	derived arrays
 
-        real metwbt(nkndim),metws(nkndim)
-        common /metwbt/metwbt, /metws/metws
-	real tauxnv(nkndim), tauynv(nkndim)
-	common /tauxnv/tauxnv, /tauynv/tauynv
+	include 'meteo_aux.h'
 
 c wind drag coefficient (either from wave or COARE)
 
-        real windcd(nkndim)
-        common /windcd/windcd
 
 c tidal potential
 
-        real xgeov(nkndim), ygeov(nkndim)
-        common /xgeov/xgeov, /ygeov/ygeov
-        real zeqv(nkndim)
-        common /zeqv/zeqv
+	include 'tides.h'
 
 c nudging
 
-        real andgzv(nkndim)             !contribution to z-computation
-        common /andgzv/andgzv
+	include 'nudging.h'
 
 c wave sub-module
 
 	include 'waves.h'
 
-        real z0sk(nkndim)                   !surface roughenss on nodes
-        common /z0sk/z0sk
 
-        real z0bk(nkndim)                   !bottom roughenss on nodes
-        common /z0bk/z0bk
+	include 'roughness.h'
 
-        real z0bkmud(nkndim)       !bottom roughenss on nodes for mud
-        common /z0bkmud/z0bkmud
+	include 'fluidmud.h'
 
-        real mudc(nlvdim,nkndim)	!Fluid mud concentrationarray (kg/m3)
-        common /mudc/mudc
-        double precision rhomud(nlvdim,nkndim) !Mud floc part. density (kg/m3)
-        common /rhomud/rhomud
 
 c auxiliary arrays
 
-	common /v1v/v1v(nkndim), /v2v/v2v(nkndim)
-	common /v3v/v3v(nkndim)
-	common /ve1v/ve1v(neldim)
-	common /saux1/saux1(nlvdim,nkndim)
-	common /saux2/saux2(nlvdim,nkndim)
-	common /saux3/saux3(nlvdim,nkndim)
-	common /saux4/saux4(nlvdim,nkndim)
-	common /sauxe1/sauxe1(nlvdim,neldim)
-	common /sauxe2/sauxe2(nlvdim,neldim)
+	include 'aux_array.h'
 
 c turbulence
 
-	common /tken/tken(0:nlvdim,nkndim)	!turbulent kinetic energy
-	common /eps/eps(0:nlvdim,nkndim)	!dissipation rate
-	common /rls/rls(0:nlvdim,nkndim)	!length scale
+	include 'turbulence.h'
 
 c local variables
 
@@ -680,27 +530,15 @@ c*****************************************************************
 	include 'param.h'
 	include 'meteo.h'
 
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        real zeov(3,neldim)
-        common /zeov/zeov
-        real hdeov(nlvdim,neldim)
-        common /hdeov/hdeov
-        real visv(0:nlvdim,nkndim)
-        common /visv/visv
-        real utlov(nlvdim,neldim),vtlov(nlvdim,neldim)
-        common /utlov/utlov, /vtlov/vtlov
-	real z0bk(nkndim)
-	common /z0bk/z0bk
-	real wlov(0:nlvdim,nkndim)
-	common /wlov/wlov
+	include 'basin.h'
+	include 'levels.h'
+	include 'hydro.h'
+	include 'depth.h'
+	include 'diff_visc_fric.h'
+	include 'roughness.h'
+	include 'hydro_vel.h'
 
-        real saltv(nlvdim,nkndim)
-        real tempv(nlvdim,nkndim)
-        common /saltv/saltv
-        common /tempv/tempv
+	include 'ts.h'
 
 	write(66) it
 
@@ -740,22 +578,10 @@ c*****************************************************************
 
 	include 'nbasin.h'
 
-	integer ilhv(neldim)
-	integer ilhkv(nkndim)
-	common /ilhv/ilhv
-	common /ilhkv/ilhkv
+	include 'levels.h'
 
-	real hev(neldim)
-	common /hev/hev
-	real hdknv(nlvdim,nkndim)
-	common /hdknv/hdknv
-	real hdkov(nlvdim,nkndim)
-	common /hdkov/hdkov
+	include 'depth.h'
 
-	real hdenv(nlvdim,neldim)
-	common /hdenv/hdenv
-	real hdeov(nlvdim,neldim)
-	common /hdeov/hdeov
 
 	integer k,l,lmax,ie
 	real hmax
@@ -786,12 +612,8 @@ c*****************************************************************
 	include 'nbasin.h'
 	include 'femtime.h'
 
-	integer ilhkv(nkndim)
-	common /ilhkv/ilhkv
-        real saltv(nlvdim,nkndim)
-        real tempv(nlvdim,nkndim)
-        common /saltv/saltv
-        common /tempv/tempv
+	include 'levels.h'
+	include 'ts.h'
 	
 	integer k,l,lmax
 

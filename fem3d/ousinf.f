@@ -26,38 +26,15 @@ c we would not even need to read basin
         include 'param.h'
 	include 'evmain.h'
 
-	character*80 descrr,descrp
-	common /descrr/ descrr
-	common /descrp/ descrp
-	include 'nbasin.h'
+	include 'basin.h'
+	include 'simul.h'
 
-	real xgv(nkndim), ygv(nkndim)
-	real hm3v(3,neldim)
-	integer nen3v(3,neldim)
-	integer ipev(neldim), ipv(nkndim)
-	integer iarv(neldim)
-	common /xgv/xgv, /ygv/ygv
-	common /hm3v/hm3v
-	common /nen3v/nen3v
-	common /ipev/ipev, /ipv/ipv
-	common /iarv/iarv
 
-	integer ilhv(neldim)
-	real hlv(nlvdim)
-        real utlnv(nlvdim,neldim)
-        real vtlnv(nlvdim,neldim)
-	common /ilhv/ilhv
-	common /hlv/hlv
-        common /utlnv/utlnv
-        common /vtlnv/vtlnv
+	include 'levels.h'
 
-	real hev(neldim)
-	common /hev/hev
+	include 'depth.h'
 
-	real znv(nkndim)
-	real zenv(3,neldim)
-        common /znv/znv
-        common /zenv/zenv
+	include 'hydro.h'
 
         real ut2v(neldim)
         real vt2v(neldim)

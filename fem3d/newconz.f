@@ -33,21 +33,13 @@ c common
 	include 'nbasin.h'
 	include 'femtime.h'
 	include 'mkonst.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	real difv(0:nlvdim,1)
-	common /difv/difv
-        real difhv(nlvdim,1)
-        common /difhv/difhv
-	real v1v(1)
-	common /v1v/v1v
-        character*80 conzn(nbcdim)
-        common /conzn/ conzn
+	include 'diff_visc_fric.h'
+	include 'aux_array.h'
+	include 'bound_names.h'
 
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
-	save /cnv/	!not in ht anymore
+	include 'conz.h'
 
 c local
 	logical binfo
@@ -201,21 +193,13 @@ c common
 	include 'nbasin.h'
 	include 'femtime.h'
 	include 'mkonst.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	real difv(0:nlvdim,1)
-	common /difv/difv
-        real difhv(nlvdim,1)
-        common /difhv/difhv
-	real v1v(1)
-	common /v1v/v1v
-        character*80 conzn(nbcdim)
-        common /conzn/ conzn
+	include 'diff_visc_fric.h'
+	include 'aux_array.h'
+	include 'bound_names.h'
 
-        real conzv(nlvdim,nkndim,ncsdim)
-        common /conzv/conzv
-	save /conzv/	!not in ht anymore
+	include 'conz.h'
 
 c--------------------------------------------
 c isabella
@@ -402,8 +386,7 @@ c simulates decay for concentration
         real e(nlvdim,nkndim,nsdim)     !state vector
 
 	include 'nbasin.h'
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
         integer k,l,i,lmax
         real aux,tauaux
@@ -444,13 +427,10 @@ c simulates decay for concentration
         real e(nlvdim,nkndim,nsdim)     !state vector
 
 	include 'nbasin.h'
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
-        real hdknv(nlvdim,nkndim)
-        common /hdknv/hdknv
-        real saltv(nlvdim,1),tempv(nlvdim,1)
-        common /saltv/saltv, /tempv/tempv
+	include 'depth.h'
+	include 'ts.h'
 
         integer k,l,i,lmax
         real aux,dtt,rk,alpha

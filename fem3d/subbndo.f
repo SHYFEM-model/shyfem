@@ -83,16 +83,10 @@ c sets up bndo data structure
 
 	include 'param.h'
 	include 'subbndo.h'
-	include 'nbasin.h'
 
-	integer iopbnd(1)
-	common /iopbnd/iopbnd
-	integer kantv(2,1)
-	common /kantv/kantv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-        real xgv(1),ygv(1)
-        common /xgv/xgv, /ygv/ygv
+	include 'bound_geom.h'
+	include 'geom.h'
+	include 'basin.h'
 
 	logical bexternal
 	logical berror
@@ -354,11 +348,9 @@ c writes info on open boundary nodes to terminal
 	include 'param.h'
 	include 'subbndo.h'
 
-        integer iopbnd(1)
-        common /iopbnd/iopbnd
+	include 'bound_geom.h'
 
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer i,k,ibc,nb,j,iu
 	integer itybnd,ipext
@@ -405,8 +397,7 @@ c checks if node k is a zeta boundary
 	include 'param.h'
 	include 'subbndo.h'
 
-        integer iopbnd(1)
-        common /iopbnd/iopbnd
+	include 'bound_geom.h'
 
 	integer ip
 
@@ -476,10 +467,8 @@ c imposes boundary conditions on open boundary
 
 	include 'nbasin.h'
 
-        integer iopbnd(1)
-        common /iopbnd/iopbnd
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'bound_geom.h'
+	include 'levels.h'
 
         logical bgrad0
         logical bdebug
@@ -543,10 +532,8 @@ c adjusts for ambient value, no gradient or outgoing flow
 
 	include 'nbasin.h'
 
-	integer iopbnd(1)
-	common /iopbnd/iopbnd
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'bound_geom.h'
+	include 'levels.h'
 
 	logical bgrad0
 	logical blevel
@@ -668,11 +655,9 @@ c imposes radiation condition for levels
 
 	include 'nbasin.h'
 
-        real znv(1)
-        common /znv/znv
+	include 'hydro.h'
 
-	integer iopbnd(1)
-	common /iopbnd/iopbnd
+	include 'bound_geom.h'
 
 	logical bdebug
 	integer i,j,k,l

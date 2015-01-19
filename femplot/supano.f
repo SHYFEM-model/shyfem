@@ -47,8 +47,8 @@ c writes annotation for simulation
 
 	character*(*) var
 
-        character*80 descrp
-        common /descrp/ descrp
+	include 'param_dummy.h'
+	include 'simul.h'
 
 	character*80 line
         logical debug
@@ -1985,10 +1985,9 @@ c	+---+---+
 
 	integer iqc(4)
 
-	include 'nbasin.h'
 
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	character*80 line
 	integer i,j,k,n

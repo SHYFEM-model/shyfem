@@ -51,8 +51,8 @@ c arguments
 	integer kthis
         integer i,ie
 c common
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	kthis = nen3v(i,ie)
 
@@ -73,8 +73,8 @@ c arguments
 	integer knext
         integer k,ie
 c common
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param_dummy.h'
+	include 'basin.h'
 c local
         integer i
 c
@@ -105,8 +105,8 @@ c arguments
 	integer kbhnd
         integer k,ie
 c common
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param_dummy.h'
+	include 'basin.h'
 c local
         integer i
 c
@@ -137,8 +137,8 @@ c arguments
 	integer ithis
         integer k,ie
 c common
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param_dummy.h'
+	include 'basin.h'
 c local
         integer i
 c
@@ -169,8 +169,8 @@ c arguments
 	integer inext
         integer k,ie
 c common
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param_dummy.h'
+	include 'basin.h'
 c local
         integer i
 c
@@ -201,8 +201,8 @@ c arguments
 	integer ibhnd
         integer k,ie
 c common
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param_dummy.h'
+	include 'basin.h'
 c local
         integer i
 c
@@ -566,8 +566,7 @@ c arguments
 c common
 	include 'param_dummy.h'
 	include 'links.h'
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'basin.h'
 
         integer ii,iii,k,kn,i
         integer ipf,ipl

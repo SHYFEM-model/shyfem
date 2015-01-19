@@ -34,21 +34,9 @@ c records have to be specified on stdin
 	integer irec(nrdim)
 
 c--------------------------------------------------
-        character*80 descrr
-        common /descrr/descrr
-	include 'nbasin.h'
+	include 'basin.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        integer nen3v(3,neldim)
-        integer ipv(nkndim), ipev(neldim)
-        integer iarv(neldim)
 
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-        common /nen3v/nen3v
-        common /ipv/ipv, /ipev/ipev
-        common /iarv/iarv
 c--------------------------------------------------
 
 	character*80 title
@@ -214,8 +202,7 @@ c writes one record to file nb (3D)
 	integer ilhkv(nlvdim)
 	real cv3(nlvdim,nkndim)
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
 	integer k,l,lmax
 	real x,y
@@ -246,8 +233,7 @@ c writes one record to file nb (2D)
 	integer nb,it,ivar,nk
 	real cv3(nlvdim,nkndim)
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
 	integer k,level
 	real x,y,c
@@ -280,8 +266,7 @@ c writes one record to single files
 	integer it,ivar,nk
 	real cv3(nlvdim,nkndim)
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
 	integer k,level,nb
 	real x,y,c

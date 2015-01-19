@@ -33,8 +33,7 @@ c creates 4 values: aver, min, max, sum
 	real hev2(neldim)
 	real hl(nlvdim)
 
-	real hev(neldim)
-	common /hev/hev
+	include 'depth.h'
 
 	logical bvol
         integer nread

@@ -29,10 +29,10 @@ c
         implicit none
 c
 c common
-	real uov(1),vov(1),unv(1),vnv(1)
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
 	include 'nbasin.h'
-	common /uov/uov, /vov/vov, /unv/unv, /vnv/vnv
+	include 'hydro_baro.h'
 c local
         integer itsdwq,itedwq,idtdwq,nagdwq
 c function
@@ -141,12 +141,8 @@ c parameter
 	real drittl
 	parameter (drittl=1./3.)
 c common
-        real xgv(1),ygv(1)
-        integer nen3v(3,1), iwegv(1)
-	include 'nbasin.h'
-        common /xgv/xgv, /ygv/ygv
-	common /nen3v/nen3v
-        common /iwegv/iwegv
+	include 'basin.h'
+	include 'geom_dynamic.h'
 c global...
         integer ipnt(nkndim)
         integer npoint(3,neldim)

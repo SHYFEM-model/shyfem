@@ -94,8 +94,7 @@ c writes output to terminal or log file
 
 	character*80 name
 
-	character*80 descrp
-	common /descrp/ descrp
+	include 'simul.h'
 
 	call getfnm('runnam',name)
 	write(6,*)
@@ -174,8 +173,7 @@ c id    identifier
 	include 'basin.h'
 	include 'modules.h'
 
-	character*80 descrp
-	common /descrp/ descrp
+	include 'simul.h'
 
 	write(6,*)
 	write(6,*) '============================================='
@@ -313,13 +311,12 @@ c 18.03.1998	ggu	use variable section instead name
 
 	integer iunit
 
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'modules.h'
 
 c---------------------------------------------------------------
-	integer nlvdi,nlv	!for 3d model
-	common /level/ nlvdi,nlv
-	real hlv(1)
-	common /hlv/hlv
+	include 'nlevel.h'
+	include 'levels.h'
 c---------------------------------------------------------------
 
 	character*6 section,extra,last
@@ -464,8 +461,8 @@ c reads title section
 
 	implicit none
 
-	character*80 descrp
-	common /descrp/ descrp
+	include 'param_dummy.h'
+	include 'simul.h'
 
 	character*80 line,extra
 
@@ -525,10 +522,7 @@ c initializes parameters for semi-implicit time-step
 
 	implicit none
 
-	integer itimpl
-	common /semimi/ itimpl
-	real weight
-	common /semimr/ weight
+	include 'semi.h'
 
 	include 'femtime.h'
 
@@ -555,8 +549,7 @@ c checks if semi-implicit time-step is active
 	logical bimpli
 	integer it
 
-	integer itimpl
-	common /semimi/ itimpl
+	include 'semi.h'
 
 	call impini
 
@@ -623,10 +616,7 @@ c changes parameters for semi-implicit time-step if necessary
 	integer it
 	real azpar,ampar
 
-	integer itimpl
-	common /semimi/ itimpl
-        real weight
-        common /semimr/ weight
+	include 'semi.h'
 
 	call impini
 
@@ -648,10 +638,7 @@ c sets parameters for semi-implicit time-step
 	integer it
 	real aweigh
 
-	integer itimpl
-	common /semimi/ itimpl
-        real weight
-        common /semimr/ weight
+	include 'semi.h'
 
 	call impini
 
@@ -672,8 +659,7 @@ c gets weight for semi-implicit time-step
 
 	real getimp
 
-        real weight
-        common /semimr/ weight
+	include 'semi.h'
 
 	getimp = weight
 

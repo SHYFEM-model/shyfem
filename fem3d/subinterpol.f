@@ -76,17 +76,10 @@ c interpolates depth values
 
 	include 'param.h'
 
-	include 'nbasin.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-        real hm3v(3,neldim)
-        common /hm3v/hm3v
-	real hev(neldim)
-        common /hev/hev
+	include 'basin.h'
+	include 'depth.h'
 
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
 
 	integer ie,ii,k
 	integer netot
@@ -289,19 +282,10 @@ c interpolates depth values
 
 	include 'param.h'
 
-	include 'nbasin.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-        real hm3v(3,neldim)
-        common /hm3v/hm3v
-	real hev(neldim)
-        common /hev/hev
-	real hkv(nkndim)
-        common /hkv/hkv
+	include 'basin.h'
+	include 'depth.h'
 
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
 
 	integer k
 	integer netot
@@ -468,19 +452,10 @@ c if ufact > 0: use it directly as sigma
 
 	include 'param.h'
 
-	include 'nbasin.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-        real hm3v(3,neldim)
-        common /hm3v/hm3v
-	real hev(neldim)
-        common /hev/hev
-	real hkv(nkndim)
-        common /hkv/hkv
+	include 'basin.h'
+	include 'depth.h'
 
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
 
 	integer ie,ii,k
 	real area,x0,y0,fact,sigma2
@@ -533,19 +508,10 @@ c if ufact > 0: use it directly as sigma
 
 	include 'param.h'
 
-	include 'nbasin.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-        real hm3v(3,neldim)
-        common /hm3v/hm3v
-	real hev(neldim)
-        common /hev/hev
-	real hkv(nkndim)
-        common /hkv/hkv
+	include 'basin.h'
+	include 'depth.h'
 
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
 
 	integer ie,ii,k
 	real area,fact,sigma2
@@ -607,19 +573,10 @@ c interpolates depth values with auto-correlation
 
 	include 'param.h'
 
-	include 'nbasin.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-        real hm3v(3,neldim)
-        common /hm3v/hm3v
-	real hev(neldim)
-        common /hev/hev
-	real hkv(nkndim)
-        common /hkv/hkv
+	include 'basin.h'
+	include 'depth.h'
 
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
 
 	integer k
 	integer netot

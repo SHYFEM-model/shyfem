@@ -28,24 +28,13 @@ c writes and administers ous file
 
 	include 'nbasin.h'
 	include 'femtime.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	character*80 descrp
-	common /descrp/ descrp
+	include 'simul.h'
 
-        real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-        common /utlnv/utlnv, /vtlnv/vtlnv
-        integer ilhv(1)
-        common /ilhv/ilhv
-        real znv(1)
-        common /znv/znv
-        real zenv(3,1)
-        common /zenv/zenv
-        real hlv(1)
-	common /hlv/hlv
-        real hev(1)
-	common /hev/hev
+	include 'levels.h'
+	include 'hydro.h'
+	include 'depth.h'
 
 	integer itmout,ierr
 	real href,hzoff

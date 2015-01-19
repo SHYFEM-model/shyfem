@@ -20,23 +20,13 @@ c reads grid with box information and writes index file boxes.txt
 
 	integer ndim
 
-        real hev(neldim)
-        common /hev/hev
-        real hkv(nkndim)
-        common /hkv/hkv
+	include 'depth.h'
 
         real raux(neldim)
         integer iaux(neldim)
         integer ipaux(nkndim)
 
-        integer ilinkv(nkndim+1)
-        common /ilinkv/ilinkv
-        integer lenkv(nlkdim)
-        common /lenkv/lenkv
-        integer linkv(nlkdim)
-        common /linkv/linkv
-        integer ieltv(3,neldim)
-        common /ieltv/ieltv
+	include 'geom.h'
 
         character*40 bfile,gfile,nfile
         character*60 line
@@ -412,8 +402,7 @@ c*******************************************************************
 	integer ib,ie,ien,ii,i1,i2
 	integer ia,n,nb
 
-	integer ieltv(3,neldim)
-	common /ieltv/ieltv
+	include 'geom.h'
 
 	nbox = 0
 	do ib=1,nbxdim
@@ -457,8 +446,7 @@ c*******************************************************************
 	integer ib,ie,ien,ii,i1,i2
 	integer ia,ian,n
 
-	integer ieltv(3,neldim)
-	common /ieltv/ieltv
+	include 'geom.h'
 
 	nbox = 0
 	do ib=1,nbxdim
@@ -513,8 +501,7 @@ c checks if all boxes are connected
         include 'basin.h'
         include 'links.h'
 
-        integer ieltv(3,neldim)
-        common /ieltv/ieltv
+	include 'geom_aux.h'
 
 	integer ie
 	integer i,nc,ic,nt
@@ -596,10 +583,8 @@ c area code 0 is not allowed !!!!
 	integer icol		!color used (return)
 	integer nc		!total number of elements colored (return)
 
-        integer iarv(neldim)
-        common /iarv/iarv
-        integer ieltv(3,neldim)
-        common /ieltv/ieltv
+	include 'basin.h'
+	include 'geom_aux.h'
 
 	integer ip,ien,ii,ie
 	integer list(neldim)

@@ -39,13 +39,9 @@ c initializes length of element sides
 	include 'param.h'
 	include 'lagrange.h'
 
-	include 'nbasin.h'
 	
-        real xgv(1), ygv(1)
-        common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
 
 	real x1,x2,y1,y2,dx,dy,ddx,ddy,d
 	integer ie,k,i1,i2,p1,p2
@@ -95,8 +91,7 @@ c sets up fluxes in 3d - has to be done every time step
 	
 	include 'nbasin.h'
 
-	integer ilhv(neldim)
-	common /ilhv/ilhv
+	include 'levels.h'
 
 	integer k,ie,ii,i
 	integer nn,ne
@@ -301,18 +296,9 @@ c internal section is defined by:  kbefor - k - kafter
 	include 'femtime.h'
 
 	include 'ev.h'
-        real utlnv(nlvdim,1)
-        common /utlnv/utlnv
-        real vtlnv(nlvdim,1)
-        common /vtlnv/vtlnv
-        real utlov(nlvdim,1)
-        common /utlov/utlov
-        real vtlov(nlvdim,1)
-        common /vtlov/vtlov
         !real uov(1),vov(1),unv(1),vnv(1)
         !common /uov/uov, /vov/vov, /unv/unv, /vnv/vnv
-        real zenv(3,1), zeov(3,1)
-        common /zenv/zenv, /zeov/zeov
+	include 'hydro.h'
 
 	integer i,ip,ie,ii
 	integer l
@@ -482,8 +468,7 @@ c we do not use lkmax, but lmax
         integer k,lkmax,n
 	real tflux(nlvdim,1)       !fluxes across sides of element
 
-	integer ilhv(neldim)
-	common /ilhv/ilhv
+	include 'levels.h'
 
         integer i,ie,ne,l,lmax
         integer j,n1,n2
@@ -577,17 +562,13 @@ c all this has to be revised for sigma layers
 
 	include 'nbasin.h'
 
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	integer ilhv(neldim)
-	common /ilhv/ilhv
+	include 'levels.h'
 
-        real zenv(3,1),zeov(3,1)
-        common /zenv/zenv, /zeov/zeov
+	include 'hydro.h'
 
-        real hdenv(nlvdim,neldim)
-        common /hdenv/hdenv
+	include 'depth.h'
 
 	logical bsigma
 	integer ie,ii,i1,i2
@@ -655,11 +636,9 @@ c all this has to be revised for sigma layers
 
 	include 'nbasin.h'
 
-        real zenv(3,1),zeov(3,1)
-        common /zenv/zenv, /zeov/zeov
+	include 'hydro.h'
 
-        real hdenv(nlvdim,neldim)
-        common /hdenv/hdenv
+	include 'depth.h'
 
 	integer ie,ii,i1,i2
 	real flx,dh,zi1,zi2,zi3,dp,ar,dst

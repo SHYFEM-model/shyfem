@@ -19,15 +19,11 @@ c********************************************************************
 
 	implicit none
 
-	include 'nbasin.h'
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'pkonst.h'
 
-        real xgv(1), ygv(1)
-        common /xgv/xgv, /ygv/ygv
-	real xgeov(1), ygeov(1)
-	common /xgeov/xgeov, /ygeov/ygeov
-	real zeqv(1)
-	common /zeqv/zeqv
+	include 'basin.h'
+	include 'tides.h'
 
 	real rtide
 	common /tidcom/ rtide
@@ -75,13 +71,11 @@ c********************************************************************
 
 	integer it
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'pkonst.h'
 
-	real xgeov(1), ygeov(1)
-	common /xgeov/xgeov, /ygeov/ygeov
-	real zeqv(1)
-	common /zeqv/zeqv
+	include 'tides.h'
 
 	real rtide
 	common /tidcom/ rtide
@@ -164,17 +158,13 @@ c********************************************************************
 	integer it
 
 ! common
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'pkonst.h'
 
-        real xgeov(1), ygeov(1)
-        common /xgeov/xgeov, /ygeov/ygeov
-	real zeqv(1)
-	common /zeqv/zeqv
-	real zov(1)
-	common /zov/zov
-	real hkv(1)
-	common /hkv/hkv
+	include 'tides.h'
+	include 'hydro.h'
+	include 'depth.h'
 
 	real rtide
 	common /tidcom/ rtide

@@ -16,24 +16,11 @@ c reads nos file
 	include 'param.h'
 
 c--------------------------------------------------
-        character*80 descrr
-        common /descrr/descrr
-	include 'nbasin.h'
+	include 'basin.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        integer nen3v(3,neldim)
-        integer ipv(nkndim), ipev(neldim)
-        integer iarv(neldim)
 
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-        common /nen3v/nen3v
-        common /ipv/ipv, /ipev/ipev
-        common /iarv/iarv
 
-	real hev(neldim)
-	common /hev/hev
+	include 'depth.h'
 c--------------------------------------------------
 
 	integer nread,nin,i,it
@@ -183,10 +170,8 @@ c***************************************************************
 
 	include 'param.h'
 
-	include 'nbasin.h'
 
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
+	include 'basin.h'
 
 	integer nodes(0:3,nkndim)
 	integer icount(nkndim)
@@ -288,8 +273,7 @@ c shell for writing file unconditionally to disk
 	include 'param.h'
 
 	include 'nbasin.h'
-	real hev(neldim)
-	common /hev/hev
+	include 'depth.h'
 
 	integer ierr,nvers,nlv
 	integer ilhkv(1)

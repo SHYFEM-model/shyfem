@@ -33,11 +33,7 @@ c******************************************************************
 
 	implicit none
 
-	integer nlv_com,nsigma_com
-	common /nsigma_com/nlv_com,nsigma_com
-	real hsigma_com
-	common /hsigma_com/hsigma_com
-	save /nsigma_com/,/hsigma_com/
+	include 'sigma.h'
 
 	data nlv_com,nsigma_com /-1,-1/
 	data hsigma_com /10000./
@@ -50,11 +46,7 @@ c******************************************************************
 
 	implicit none
 
-	integer nlv_com,nsigma_com
-	common /nsigma_com/nlv_com,nsigma_com
-	real hsigma_com
-	common /hsigma_com/hsigma_com
-	save /nsigma_com/,/hsigma_com/
+	include 'sigma.h'
 
 	if( nlv_com .le. 0 ) then
 	  write(6,*) 'nlv_com: ',nlv_com
@@ -73,11 +65,7 @@ c******************************************************************
 	integer nsigma
 	real hsigma
 
-	integer nlv_com,nsigma_com
-	common /nsigma_com/nlv_com,nsigma_com
-	real hsigma_com
-	common /hsigma_com/hsigma_com
-	save /nsigma_com/,/hsigma_com/
+	include 'sigma.h'
 
 	call check_sigma_initialized
 
@@ -97,11 +85,7 @@ c******************************************************************
 	integer nsigma
 	real hsigma
 
-	integer nlv_com,nsigma_com
-	common /nsigma_com/nlv_com,nsigma_com
-	real hsigma_com
-	common /hsigma_com/hsigma_com
-	save /nsigma_com/,/hsigma_com/
+	include 'sigma.h'
 
 	nlv_com    = nlv
 	nsigma_com = nsigma

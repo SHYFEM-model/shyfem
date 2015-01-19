@@ -18,16 +18,9 @@ c handles projection - converts x/y to lat/lon
 
         include 'param.h'
 
-	include 'nbasin.h'
 
-	real xgv(nkndim)
-	common /xgv/xgv
-	real ygv(nkndim)
-	common /ygv/ygv
-	real xgeov(nkndim)
-	common /xgeov/xgeov
-	real ygeov(nkndim)
-	common /ygeov/ygeov
+	include 'basin.h'
+	include 'tides.h'
 
 	integer mode,iproj,i
 	double precision c_param(9)

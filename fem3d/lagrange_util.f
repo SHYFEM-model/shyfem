@@ -19,8 +19,8 @@ c returns distance between two nodes
         real dist_node
         integer k1,k2
 
-        real xgv(1), ygv(1)
-        common /xgv/xgv, /ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 
         real x1,y1,x2,y2,dx,dy
 
@@ -104,11 +104,8 @@ c returns center of gravity of total basin
 
 	real xm,ym
 
-	include 'nbasin.h'
-	real xgv(1)
-	common /xgv/xgv
-	real ygv(1)
-	common /ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	call xy_center(nkn,xgv,ygv,xm,ym)
 
@@ -154,12 +151,8 @@ c returns x,y and min/max coordinates of vertices of element ie
 	real xmin,xmax
 	real ymin,ymax
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real xgv(1)
-	common /xgv/xgv
-	real ygv(1)
-	common /ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	integer ii,k
 

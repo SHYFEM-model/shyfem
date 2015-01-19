@@ -33,25 +33,17 @@ c parameters
 	integer ndim
 	parameter (ndim=55)
 c common
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'ev.h'
 	include 'pkonst.h'
-	include 'nbasin.h'
 	include 'femtime.h'
 	include 'mkonst.h'
-	integer nen3v(3,1)
-	real zov(1),znv(1)
-	real unv(1),vnv(1)
-	real rzv(1)
-	real xgv(1),ygv(1)
-	real crad(1)
-	real hev(1)
-	common /hev/hev
-	common /nen3v/nen3v
-	common /zov/zov, /znv/znv
-	common /unv/unv, /vnv/vnv
-	common /rzv/rzv
-	common /xgv/xgv, /ygv/ygv
-	common /crad/crad
+	include 'depth.h'
+	include 'hydro.h'
+	include 'hydro_baro.h'
+	include 'bound_dynamic.h'
+	include 'basin.h'
+	include 'bnd_aux.h'
 c local
 	integer ie,ii,k,irand,n
 	real dt,area,bcz,c,cmax

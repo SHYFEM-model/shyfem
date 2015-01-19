@@ -349,9 +349,7 @@ c***************************************************************
  
         logical istdebug
  
-        logical debug
-        common /comdebug/ debug
-        save /comdebug/
+	include 'debug_aux1.h'
  
         istdebug = debug	!GGU
         istdebug = .true.

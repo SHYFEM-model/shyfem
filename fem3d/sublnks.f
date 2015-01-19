@@ -58,9 +58,8 @@ c arguments
         integer nnkn,nnel,nnbn,nnli,nnis,nnod
 c common
 	include 'param_dummy.h'
-        integer inodv(1), iwegv(1)
 	include 'nbasin.h'
-        common /inodv/inodv, /iwegv/iwegv
+	include 'geom_dynamic.h'
 	include 'links.h'
 c local
         integer k,ie,n,i,ne
@@ -118,10 +117,10 @@ c ... iwegv has already been set
         implicit none
 
 c common
-        integer ieltv(3,1),kantv(2,1)
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'femtime.h'
-        common /ieltv/ieltv,/kantv/kantv
+	include 'geom.h'
 c local
         character*80 nam,dir,file
         real wink
@@ -168,8 +167,7 @@ c arguments
 c common
 	include 'param_dummy.h'
 	include 'nbasin.h'
-        integer iwegv(1)
-        common /iwegv/iwegv
+	include 'geom_dynamic.h'
 	include 'ev.h'
 	include 'links.h'
 c local
@@ -205,9 +203,10 @@ c
 c arguments
         integer nar
 c common
-        integer nen3v(3,1),ieltv(3,1),iwegv(1)
-	include 'nbasin.h'
-        common /nen3v/nen3v, /ieltv/ieltv, /iwegv/iwegv
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'geom.h'
+	include 'geom_dynamic.h'
+	include 'basin.h'
 c local
         integer i,ie,ieo,ien,n1,n2
         logical btest
@@ -275,9 +274,9 @@ c
 c arguments
         real wink
 c common
-        integer nen3v(3,1),inodv(1),iwegv(1)
-	include 'nbasin.h'
-        common /nen3v/nen3v, /inodv/inodv, /iwegv/iwegv
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'geom_dynamic.h'
+	include 'basin.h'
 	include 'ev.h'
 c local
         integer ie,ii,k
@@ -314,10 +313,10 @@ c
         implicit none
 c
 c common
-        integer iwegv(1)
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'femtime.h'
-        common /iwegv/iwegv
+	include 'geom_dynamic.h'
 	include 'ev.h'
 c local
         real arin,arout,artot,area

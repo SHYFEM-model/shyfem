@@ -12,19 +12,10 @@ c this program demonstrates how to use the routines ousopen etc..
 	include 'param.h'
 	include 'basin.h'
 
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        real zenv(3,neldim)
-        common /zenv/zenv
-        real znv(nkndim)
-        common /znv/znv
-        real utlnv(nlvdim,neldim)
-        common /utlnv/utlnv
-        real vtlnv(nlvdim,neldim)
-        common /vtlnv/vtlnv
+	include 'levels.h'
+	include 'hydro.h'
 
 	logical ousnext
         integer iapini

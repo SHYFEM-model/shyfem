@@ -24,10 +24,7 @@ c creates special wind file
 	include 'basin.h'
 
 	real haux(nkndim)
-	real hkv(nkndim)
-	common /hkv/hkv
-	real hev(neldim)
-	common /hev/hev
+	include 'depth.h'
 	include 'evmain.h'
 
 	logical bnode,belem
@@ -97,10 +94,8 @@ c*******************************************************************
 	real speedn,dn
 	real wx(1), wy(1)
 
-	include 'nbasin.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
 	logical left,lefton
 

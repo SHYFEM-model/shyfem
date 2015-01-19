@@ -43,8 +43,8 @@ c******************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
         integer ncid            !identifier (return)
@@ -250,8 +250,8 @@ c******************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid		!identifier (return)
@@ -649,8 +649,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid		!identifier (return)
@@ -673,8 +673,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -702,8 +702,8 @@ c*****************************************************************
 
         implicit none
 
-        include 'netcdf.inc'
         include 'param.h'
+        include 'netcdf.inc'
         include 'netcdf.h'
 
         integer ncid
@@ -723,8 +723,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -744,8 +744,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -769,8 +769,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -837,8 +837,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -873,8 +873,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -908,8 +908,8 @@ c returns var_id = 0 if not found (no error)
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -933,8 +933,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -954,8 +954,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -974,8 +974,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -999,8 +999,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -1037,8 +1037,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -1055,8 +1055,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -1082,8 +1082,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -1103,8 +1103,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -1127,8 +1127,8 @@ c reads time record trec of variable name
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -1501,8 +1501,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
@@ -1511,8 +1511,7 @@ c*****************************************************************
 	real ylat(ny)
 	real depth(nx,ny)
 
-        real hlv(nlvdim)
-        common /hlv/hlv
+	include 'levels.h'
 
 	integer lon_varid,lat_varid,lvl_varid,dep_varid
 	integer eix_varid,top_varid
@@ -1551,20 +1550,15 @@ c*****************************************************************
 
 	implicit none
 
-	include 'netcdf.inc'
 	include 'param.h'
+	include 'netcdf.inc'
 	include 'netcdf.h'
 
 	integer ncid
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
-        real hlv(nlvdim)
-        common /hlv/hlv
-        real hkv(nkndim)
-        common /hkv/hkv
+	include 'basin.h'
+	include 'levels.h'
+	include 'depth.h'
 
 	integer lon_varid,lat_varid,lvl_varid,dep_varid
 	integer eix_varid,top_varid

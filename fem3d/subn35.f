@@ -104,29 +104,17 @@ c computes bottom friction
 	real drittl
 	parameter(drittl=1./3.)
 
-	include 'nbasin.h'
 	include 'pkonst.h'
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real czv(1)
-        common /czv/czv
-        real rfricv(1)
-        common /rfricv/rfricv
-        real z0bk(1)
-        common /z0bk/z0bk
+	include 'basin.h'
+	include 'levels.h'
+	include 'diff_visc_fric.h'
+	include 'roughness.h'
 
-        real z0bkmud(nkndim)            !bottom roughenss on nodes
-        common /z0bkmud/z0bkmud
+	include 'fluidmud.h'
 
-        real utlov(nlvdim,1),vtlov(nlvdim,1)
-        common /utlov/utlov, /vtlov/vtlov
-        real hdeov(nlvdim,1)
-        common /hdeov/hdeov
+	include 'hydro.h'
+	include 'depth.h'
 
 	integer ie,ii,k,lmax
 	integer ireib
@@ -276,13 +264,8 @@ c interpolates area codes from elements to nodes (min or max)
 
 	implicit none
 
-	include 'nbasin.h'
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        integer iarv(1)
-        common /iarv/iarv
-	integer iarnv(1)
-        common /iarnv/iarnv
+	include 'param.h'
+	include 'basin.h'
 
 	integer init,mode
 	integer k,ie,ii,ia
@@ -319,8 +302,8 @@ c***********************************************************
 	integer k	!node number
 	integer ncode	!nodal area code (return)
 
-	integer iarnv(1)
-        common /iarnv/iarnv
+	include 'param.h'
+	include 'basin.h'
 
 	ncode = iarnv(k)
 
@@ -403,15 +386,12 @@ c initializes chezy arrays
 
 	implicit none
 
-	include 'nbasin.h'
 
 	include 'param.h'
 	include 'chezy.h'
 
-	integer iarv(1)
-	common /iarv/iarv
-	real czv(1)
-	common /czv/czv
+	include 'basin.h'
+	include 'diff_visc_fric.h'
 
 	integer ie,iar
 
@@ -430,15 +410,12 @@ c initializes chezy arrays
 
 	implicit none
 
-	include 'nbasin.h'
 
 	include 'param.h'
 	include 'chezy.h'
 
-	integer iarv(1)
-	common /iarv/iarv
-	real czv(1)
-	common /czv/czv
+	include 'basin.h'
+	include 'diff_visc_fric.h'
 
 	logical bdebug
 	integer i
@@ -464,19 +441,13 @@ c adjusts chezy arrays
 
 	implicit none
 
-	include 'nbasin.h'
 
 	include 'param.h'
 	include 'chezy.h'
 
-	integer iarv(1)
-	common /iarv/iarv
-	real czv(1)
-	common /czv/czv
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-        real up0v(1), vp0v(1)
-        common /up0v/up0v, /vp0v/vp0v
+	include 'diff_visc_fric.h'
+	include 'basin.h'
+	include 'hydro_print.h'
 
 	logical bdebug
 	integer i,k1,k2
@@ -545,15 +516,12 @@ c checks chezy arrays
 
 	implicit none
 
-	include 'nbasin.h'
 
 	include 'param.h'
 	include 'chezy.h'
 
-	integer iarv(1)
-	common /iarv/iarv
-	real czv(1)
-	common /czv/czv
+	include 'basin.h'
+	include 'diff_visc_fric.h'
 
 	integer ie,iar
 	integer i,j,k
@@ -663,13 +631,11 @@ c checks values for chezy parameters
 
 	implicit none
 
-	include 'nbasin.h'
 
 	include 'param.h'
 	include 'chezy.h'
 
-        integer iarv(1)
-        common /iarv/iarv
+	include 'basin.h'
 
 	integer i,knode,knodeh,ireib
 	logical bstop,bpos

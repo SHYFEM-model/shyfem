@@ -55,16 +55,11 @@ c toxi module ARPAV
 
 	include 'nbasin.h'
 	include 'mkonst.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 
-        real difv(0:nlvdim,1)
-        common /difv/difv
-        real difhv(nlvdim,1)
-        common /difhv/difhv
+	include 'diff_visc_fric.h'
 
         character*10 what
 
@@ -426,8 +421,7 @@ c checks bio vars
 	real e(nlvdim,nkndim,nstate)	!state vector
 
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
         character*20 text
 	integer i

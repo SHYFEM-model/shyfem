@@ -648,11 +648,9 @@ c raises water level of lagoon
 
 	real dz		!water level rise per time step [m]
 
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-        real zenv(3,1)
-        common /zenv/zenv
-        real znv(1)
-        common /znv/znv
+	include 'hydro.h'
 
         integer ie,ii,k
 

@@ -96,19 +96,14 @@ c
 
 	include 'nbasin.h'
 
-      real difhv(nlvdim,1)
-      common /difhv/difhv
+	include 'diff_visc_fric.h'
       real sedkpar,difmol
 
-      real hkv(nkndim)
-      common /hkv/hkv
-      real v1v(nkndim)
-      common /v1v/v1v
-      integer ilhkv(nkndim)		!number of element and node level
-      common /ilhkv/ilhkv
+	include 'depth.h'
+	include 'aux_array.h'
+	include 'levels.h'
 
-      integer nlvdi,nlv			!number of levels
-      common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
 ! -------------------------------------------------------------
 ! local sediment variables
@@ -155,8 +150,7 @@ c
       integer itanf,nvar
       double precision dtime0
 
-      character*80 sed2dn(1)
-      common /sed2dn/sed2dn
+	include 'bound_names.h'
 
       double precision hzoff
       real salref,temref		!salinity [psu] and temperature [C]
@@ -199,7 +193,6 @@ c
       save tao,gskm
       save bedn,percbd
       save salref,temref
-      save /sed2dn/
       save /gsc/
       save /sedpa/
 
@@ -980,11 +973,7 @@ c DOCS  END
         include 'param.h'
         include 'sed_param.h'
 
-	include 'nbasin.h'
-        integer iarv(neldim)                 	!element code number
-        common /iarv/iarv
-        integer nen3v(3,neldim)           	        !node number
-        common /nen3v/nen3v
+	include 'basin.h'
 
         real sedpa(7)	                        !sediment parameter vector
         common /sedpa/sedpa
@@ -1384,20 +1373,16 @@ c DOCS  END
 	double precision hzoff
 	real totbed(nkndim)			!total bedload transport (kg/ms)
         real salref,temref			!salinity [psu] and temperature [C]
-        real z0bk(nkndim)			!bottom roughenss on nodes
         real wsink(0:nlvdim,nkndim,nsdim)       !settling velocity for suspended sediment
-        common /z0bk/z0bk
-        save /z0bk/
+	include 'roughness.h'
 
 ! -------------------------------------------------------------
 ! fem variables
 ! -------------------------------------------------------------
 
 	include 'nbasin.h'
-        integer ilhkv(nkndim)		!number of element and node level
-        common /ilhkv/ilhkv
-        real hdknv(nlvdim,nkndim)
-        common /hdknv/hdknv
+	include 'levels.h'
+	include 'depth.h'
         real salt,temp			!salinity [psu] and temperature [C]
 
 ! -------------------------------------------------------------
@@ -1614,12 +1599,8 @@ c DOCS  END
         real gdx,gdy			!slope gradients
         double precision alph           !slope effect
         real eps(0:nlvdim,nkndim,nsdim)	!vertical mixing coefficient
-        real hdknv(nlvdim,nkndim)
-        common /hdknv/hdknv
-        real visv(0:nlvdim,nkndim)
-        common /visv/visv
-        real difv(0:nlvdim,nkndim)
-        common /difv/difv
+	include 'depth.h'
+	include 'diff_visc_fric.h'
 	double precision uslim
 	double precision pcoes		!% of  fine sediments
 	logical cohes
@@ -2390,9 +2371,7 @@ c DOCS  END
         include 'testbndo.h'
 	include 'evmain.h'
 
-	include 'nbasin.h'
-        integer nen3v(3,neldim)        		!node number
-        common /nen3v/nen3v
+	include 'basin.h'
 
 ! --- input variables
         integer nscls				!number grainsize classes
@@ -2558,9 +2537,7 @@ c DOCS  END
         include 'param.h'
         include 'evmain.h'
 
-	include 'nbasin.h'
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
+	include 'basin.h'
 
         double precision v1v(nkndim),v2v(nkndim),v3v(nkndim),v4v(nkndim)
 	double precision bbk(nkndim),bbe(neldim)
@@ -3539,10 +3516,8 @@ c DOCS  END
         include 'sed_param.h'
 
 	include 'nbasin.h'
-        integer ilhkv(nkndim)			!number of element and node level
-        common /ilhkv/ilhkv
-	real rhov(nlvdim,nkndim)
-	common /rhov/rhov
+	include 'levels.h'
+	include 'ts.h'
 
 	real rhos,conc
         integer nscls				!number of grainsize class
@@ -3597,27 +3572,14 @@ c DOCS  END
 
         double precision bdh(nkndim)          !total elevation change [>0depo,<0ero]
 
-	include 'nbasin.h'
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
-        real hm3v(3,neldim)
-        common /hm3v/hm3v
-        real zenv(3,neldim)
-        common /zenv/zenv
-        real hkv(nkndim), hev(neldim)
-        common /hkv/hkv, /hev/hev
-        real hdknv(nlvdim,nkndim)
-        common /hdknv/hdknv
-        real hdenv(nlvdim,neldim)
-        common /hdenv/hdenv
-        real areakv(nlvdim,nkndim)
-        common /areakv/areakv
+	include 'basin.h'
+	include 'hydro.h'
+	include 'depth.h'
+	include 'area.h'
         real hlhv(neldim)
         common /hlhv/hlhv
-        real v1v(nkndim)
-        common /v1v/v1v
-	integer iwegv(neldim)
-	common /iwegv/iwegv
+	include 'aux_array.h'
+	include 'geom_dynamic.h'
 
         real dh
         real evdep				!element depth variation
@@ -3716,10 +3678,8 @@ c DOCS  END
         integer k,kn,n,ibase,i,l
 
 	include 'nbasin.h'
-        integer ilinkv(nkndim),linkv(nkndim)
-        common /ilinkv/ilinkv,/linkv/linkv
-        integer ilhkv(nkndim)		!number of element and node level
-        common /ilhkv/ilhkv
+	include 'geom.h'
+	include 'levels.h'
 
         if ( smooth .eq. 1.d0 ) return
 
@@ -3846,26 +3806,13 @@ c DOCS  END
 	real vv(nkndim)
 	real vv1(nkndim)
 ! common
-	integer nlvdi,nlv
-	include 'nbasin.h'
-	common /level/ nlvdi,nlv
-	integer nen3v(3,neldim)
-	common /nen3v/nen3v
-	real ulnv(nlvdim,neldim),vlnv(nlvdim,neldim)
-	common /ulnv/ulnv, /vlnv/vlnv
-	integer ilhv(neldim)
-	common /ilhv/ilhv
-        integer ilhkv(nkndim)
-        common /ilhkv/ilhkv
-        real hdenv(nlvdim,neldim)
-        common /hdenv/hdenv
-        real hdknv(nlvdim,nkndim)
-        common /hdknv/hdknv
+	include 'nlevel.h'
+	include 'basin.h'
+	include 'hydro_vel.h'
+	include 'levels.h'
+	include 'depth.h'
 
-	integer iwegv(neldim)
-	common /iwegv/iwegv
-        integer iwetv(neldim)
-        common /iwetv/iwetv
+	include 'geom_dynamic.h'
 
 
 ! local

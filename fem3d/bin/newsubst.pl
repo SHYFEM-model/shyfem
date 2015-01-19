@@ -650,7 +650,6 @@ sub subst_common {
 
   my $include = join(" ",@include);
   print STDERR "  substituting common /$common/ with include $include\n";
-  copy_include(@include);
 
   my @list = sort keys %{$fortran->{all_routines}};
   foreach my $rname (@list) {
@@ -661,6 +660,7 @@ sub subst_common {
     if( $ritem->{common}->{$common} ) {
       print STDERR "    routine $name contains common... substituting\n";
       substitute_common($fortran,$ritem,$common,@include);
+      copy_include(@include);		# copy only if changed
       $fortran->set_changed($file);
     }
   }

@@ -53,14 +53,9 @@ c******************************************************************
         include 'param.h'
 
 	integer ie,l
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'nbasin.h'
-        real fxv(nlvdim,1)      !new HYDRO deb
-        real fyv(nlvdim,1)
-        common /fxv/fxv
-        common /fyv/fyv
-        save /fxv/,/fyv/
+	include 'internal.h'
         
         logical bbarcl
         integer ilin,itlin,ibarcl
@@ -152,20 +147,13 @@ c stability is computed for dt == 1
 	real rindex
 	real dstab(nlvdim,neldim)
 
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
-	include 'nbasin.h'
+	include 'nlevel.h'
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	integer ieltv(3,1)
-	common /ieltv/ieltv
-	integer ilhv(1)
-	common /ilhv/ilhv
-	real difhv(nlvdim,1)
-	common /difhv/difhv
-        real rdistv(1)
-        common /rdistv/rdistv
+	include 'basin.h'
+	include 'geom.h'
+	include 'levels.h'
+	include 'diff_visc_fric.h'
+	include 'internal.h'
 
 	integer ie,ii,iei,l,lmax,k
 	real u,v,ui,vi
@@ -224,23 +212,14 @@ c******************************************************************
 	include 'ev.h'
 
 	include 'nbasin.h'
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real fxv(nlvdim,1)
-        real fyv(nlvdim,1)
-        common /fxv/fxv
-        common /fyv/fyv
-        save /fxv/,/fyv/
+	include 'internal.h'
 
-	integer ieltv(3,1)
-	common /ieltv/ieltv
-	integer ilhv(1)
-	common /ilhv/ilhv
-        real utlov(nlvdim,1),vtlov(nlvdim,1)
-        common /utlov/utlov, /vtlov/vtlov
-	real difhv(nlvdim,1)
-	common /difhv/difhv
+	include 'geom.h'
+	include 'levels.h'
+	include 'hydro.h'
+	include 'diff_visc_fric.h'
 
 	integer ie,ii,iei,l,lmax
 	integer noslip
@@ -312,42 +291,21 @@ c******************************************************************
 
         include 'param.h'
 
-	include 'nbasin.h'
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real saux1(nlvdim,1),saux2(nlvdim,1)
-        real saux3(nlvdim,1),saux4(nlvdim,1)
-        common /saux1/saux1, /saux2/saux2
-        common /saux3/saux3, /saux4/saux4
-        real fxv(nlvdim,1)      !new HYDRO deb
-        real fyv(nlvdim,1)
-        common /fxv/fxv
-        common /fyv/fyv
-        save /fxv/,/fyv/
+	include 'internal.h'
 
         real cb,cd 
         real ahpar,khpar 
         real vismol                     !constant vertical molecular viscosity
-        integer inodv(1)
-        common /inodv/inodv
-        integer iopbnd(1)
-        common /iopbnd/iopbnd
-        save /inodv/,/iopbnd/
+	include 'geom_dynamic.h'
+	include 'bound_geom.h'
 
-        real v1v(1)
-        common /v1v/v1v
-        real v2v(1)
-        common /v2v/v2v
-        real v3v(1)
-        common /v3v/v3v
+	include 'aux_array.h'
 	include 'ev.h'
-        integer ilhv(1), ilhkv(1)
-        common /ilhv/ilhv, /ilhkv/ilhkv
-        integer nen3v(3,1), iarv(1)
-        common /nen3v/nen3v, /iarv/iarv
-        real utlov(nlvdim,1),vtlov(nlvdim,1)
-        common /utlov/utlov, /vtlov/vtlov
+	include 'levels.h'
+	include 'basin.h'
+	include 'hydro.h'
 
 	integer ie,k,ii,l,lmax
 	!logical bnoslip
@@ -453,31 +411,17 @@ c sets aux arrays saux1/2/3
 
         include 'param.h'
 
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	include 'nbasin.h'
 
-        real saux1(nlvdim,1),saux2(nlvdim,1)
-        real saux3(nlvdim,1),saux4(nlvdim,1)
-        common /saux1/saux1, /saux2/saux2
-        common /saux3/saux3, /saux4/saux4
+	include 'aux_array.h'
 
-        real utlov(nlvdim,1),vtlov(nlvdim,1)
-        common /utlov/utlov, /vtlov/vtlov
-        real uprv(nlvdim,1),vprv(nlvdim,1)
-        common /uprv/uprv, /vprv/vprv
-        real hdenv(nlvdim,1)
-        common /hdenv/hdenv
-        real hdknv(nlvdim,1)
-        common /hdknv/hdknv
+	include 'hydro.h'
+	include 'hydro_print.h'
+	include 'depth.h'
 	include 'ev.h'
-        integer nen3v(3,1), iarv(1)
-        common /nen3v/nen3v, /iarv/iarv
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'basin.h'
+	include 'levels.h'
 
         integer ii,ie,k,l,lmax
         real b,c
@@ -560,40 +504,19 @@ c******************************************************************
 
 	real rlin		!strength of advection terms - normally 1
 
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	include 'nbasin.h'
 
-        real saux1(nlvdim,1),saux2(nlvdim,1)
-        real saux3(nlvdim,1),saux4(nlvdim,1)
-        common /saux1/saux1, /saux2/saux2
-        common /saux3/saux3, /saux4/saux4
+	include 'aux_array.h'
 
-        real fxv(nlvdim,1)      !new HYDRO deb
-        real fyv(nlvdim,1)
-        common /fxv/fxv
-        common /fyv/fyv
-        save /fxv/,/fyv/
-        real utlov(nlvdim,1),vtlov(nlvdim,1)
-        common /utlov/utlov, /vtlov/vtlov
-        real ulov(nlvdim,1),vlov(nlvdim,1)
-        common /ulov/ulov, /vlov/vlov
-        real uprv(nlvdim,1),vprv(nlvdim,1)
-        common /uprv/uprv, /vprv/vprv
-	real wlov(0:nlvdim,1),wlnv(0:nlvdim,1)
-	common /wlov/wlov, /wlnv/wlnv
-        real hdenv(nlvdim,1)
-        common /hdenv/hdenv
-        real hdknv(nlvdim,1)
-        common /hdknv/hdknv
+	include 'internal.h'
+	include 'hydro.h'
+	include 'hydro_vel.h'
+	include 'hydro_print.h'
+	include 'depth.h'
 	include 'ev.h'
-        integer nen3v(3,1), iarv(1)
-        common /nen3v/nen3v, /iarv/iarv
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'basin.h'
+	include 'levels.h'
 
 	logical bvertadv		! new vertical advection for momentum
 	real zxadv,zyadv
@@ -721,25 +644,17 @@ c stability is computed for dt == 1
 	real rindex		   !stability index (return)
 	real astab(nlvdim,neldim)  !stability matrix (return)
 
-        integer nlv,nlvdi
         !common /nlv/nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	include 'nbasin.h'
 
 	include 'ev.h'
-        real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-        common /utlnv/utlnv, /vtlnv/vtlnv
-        real hdenv(nlvdim,1)
-        common /hdenv/hdenv
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        integer iwegv(1)
-        common /iwegv/iwegv
-        real rdistv(1)
-        common /rdistv/rdistv
+	include 'hydro.h'
+	include 'depth.h'
+	include 'levels.h'
+	include 'basin.h'
+	include 'geom_dynamic.h'
+	include 'internal.h'
 
 	integer ie,l,ii,k,lmax,iweg
 	real cc,cmax
@@ -844,10 +759,7 @@ c******************************************************************
         real uadv(neldim),vadv(neldim)
 
 	include 'nbasin.h'
-        real fxv(nlvdim,1)
-        real fyv(nlvdim,1)
-        common /fxv/fxv
-        common /fyv/fyv
+	include 'internal.h'
 
 	call get_timestep(dt)
 
@@ -874,17 +786,10 @@ c******************************************************************
         include 'param.h'
 	include 'ev.h'
         
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
-	include 'nbasin.h'
+	include 'nlevel.h'
 	include 'pkonst.h'
-        real fxv(nlvdim,1)      !new HYDRO deb
-        real fyv(nlvdim,1)
-        common /fxv/fxv
-        common /fyv/fyv
-        save /fxv/,/fyv/
-        real rhov(nlvdim,1)
-        common /rhov/rhov
+	include 'internal.h'
+	include 'ts.h'
         !integer itanf,itend,idt,nits,niter,it
         !real k,l,ie,ii				!BUG
         integer k,l,ie,ii			!BUG
@@ -893,19 +798,12 @@ c******************************************************************
         real salref,temref,sstrat,tstrat
         real hlayer
         real hhi
-        real hdeov(nlvdim,1)
-        common /hdeov/hdeov
-        real hdkov(nlvdim,1)
-        common /hdkov/hdkov
+	include 'depth.h'
 
         real xbcl,ybcl
-        real bpresxv(nlvdim,1),bpresyv(nlvdim,1)!deb 100407
-        common /bpresxv/bpresxv, /bpresyv/bpresyv!deb 100407
         integer lmax
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'levels.h'
+	include 'basin.h'
 
         real rhop,presbt,presbcx,presbcy,dprescx,dprescy,br,cr!deb
         real b,c
@@ -985,29 +883,14 @@ c cannot use this for sigma levels
         include 'param.h'
 	include 'ev.h'
         
-	include 'nbasin.h'
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'pkonst.h'
 
-        real fxv(nlvdim,1)      !new HYDRO deb
-        real fyv(nlvdim,1)
-        common /fxv/fxv
-        common /fyv/fyv
-        real rhov(nlvdim,1)
-        common /rhov/rhov
-        real hdeov(nlvdim,1)
-        common /hdeov/hdeov
-	real hev(1)
-	common /hev/hev
-	real hldv(1)
-	common /hldv/hldv
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer ilmv(1)
-        common /ilmv/ilmv
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'internal.h'
+	include 'ts.h'
+	include 'depth.h'
+	include 'levels.h'
+	include 'basin.h'
 
 	logical bsigma
         integer k,l,ie,ii,lmax,lmin
@@ -1072,29 +955,14 @@ c do not use this routine !
         include 'param.h'
 	include 'ev.h'
         
-	include 'nbasin.h'
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'pkonst.h'
 
-        real fxv(nlvdim,1)      !new HYDRO deb
-        real fyv(nlvdim,1)
-        common /fxv/fxv
-        common /fyv/fyv
-        real rhov(nlvdim,1)
-        common /rhov/rhov
-        real hdeov(nlvdim,1)
-        common /hdeov/hdeov
-	real hev(1)
-	common /hev/hev
-	real hldv(1)
-	common /hldv/hldv
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer ilmv(1)
-        common /ilmv/ilmv
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'internal.h'
+	include 'ts.h'
+	include 'depth.h'
+	include 'levels.h'
+	include 'basin.h'
 
         integer k,l,ie,ii,lmax,lmin
         double precision hlayer,hhi
@@ -1168,41 +1036,15 @@ c this routine works with Z and sigma layers
         include 'param.h'
 	include 'ev.h'
         
-	include 'nbasin.h'
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'pkonst.h'
 
-        real fxv(nlvdim,1)      !new HYDRO deb
-        real fyv(nlvdim,1)
-        common /fxv/fxv
-        common /fyv/fyv
-        real rhov(nlvdim,1)
-        common /rhov/rhov
-	real bpresv(nlvdim,1)
-	common /bpresv/bpresv
-        real zov(nkndim)
-        common /zov/zov
-        real hdeov(nlvdim,1)
-        common /hdeov/hdeov
-        real hdkov(nlvdim,1)
-        common /hdkov/hdkov
-	real hev(1)
-	common /hev/hev
-	real hldv(1)
-	common /hldv/hldv
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer ilhkv(1)
-        common  /ilhkv/ilhkv
-        integer ilmv(1)
-        common /ilmv/ilmv
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        real hm3v(3,1) !DEB
-	common /hm3v/hm3v !DEB
-	real hlv(1)!DEB
-	common /hlv/hlv !DEB
+	include 'internal.h'
+	include 'ts.h'
+	include 'hydro.h'
+	include 'depth.h'
+	include 'levels.h'
+	include 'basin.h'
 
 c---------- DEB SIG
 	real hkk

@@ -278,9 +278,9 @@ c sets up sediment loading
         real eload(nlvdi,nkndi,nstate)
         real elini(nstate)
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 
         integer mode,i,k,l,lmax
         real d,vol,area

@@ -43,25 +43,14 @@ c
 c parameter
         include 'param.h'
 c common
-	character*80 descrp
-	common /descrp/ descrp
+	include 'simul.h'
 	include 'nbasin.h'
 	include 'femtime.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-        common /utlnv/utlnv, /vtlnv/vtlnv
-        integer ilhv(1)
-        common /ilhv/ilhv
-        real znv(1)
-        common /znv/znv
-        real zenv(3,1)
-        common /zenv/zenv
-        real hlv(1)
-        common /hlv/hlv
-        real hev(1)
-        common /hev/hev
+	include 'levels.h'
+	include 'hydro.h'
+	include 'depth.h'
 
 c local
 	character*80 nam,dir,file
@@ -270,18 +259,12 @@ c
 c parameter
 	include 'param.h'
 c common
-	character*80 descrp
-	real zenv(3,1),hm3v(3,1)
-	real unv(1),vnv(1)
-	integer nen3v(3,1)
-	real v1v(1),v2v(1)
-	common /descrp/ descrp
-	include 'nbasin.h'
+	include 'simul.h'
 	include 'femtime.h'
-	common /zenv/zenv, /hm3v/hm3v
-	common /unv/unv, /vnv/vnv
-	common /nen3v/nen3v
-	common /v1v/v1v, /v2v/v2v
+	include 'basin.h'
+	include 'hydro.h'
+	include 'hydro_baro.h'
+	include 'aux_array.h'
 c local
 	double precision rr
 	integer ii,ie,k,id
@@ -465,19 +448,11 @@ c parameter
 c common
 	include 'nbasin.h'
 	include 'femtime.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	real saux1(nlvdim,nkndim)
-	real saux2(nlvdim,nkndim)
-	common /saux1/saux1
-	common /saux2/saux2
-	real tempv(nlvdim,nkndim)
-	real saltv(nlvdim,nkndim)
-	common /tempv/tempv
-	common /saltv/saltv
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'aux_array.h'
+	include 'ts.h'
+	include 'levels.h'
 c local
 	double precision rr
 	real tact,sact
@@ -671,11 +646,9 @@ c parameter
 c common
 	include 'nbasin.h'
 	include 'femtime.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 c local
 	logical bdebug
 	integer i,k,l,nlev,nlvuse
@@ -797,13 +770,9 @@ c common
 	include 'nbasin.h'
 	include 'femtime.h'
 
-	real saux1(nlvdim,nkndim)
-	common /saux1/saux1
-	real v3v(nkndim)
-	common /v3v/v3v
+	include 'aux_array.h'
 
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 c local
 	logical bdebug
 	integer nout,id
@@ -928,10 +897,7 @@ c parameter
 
 	include 'param.h'
 
-	real tempv(nlvdim,nkndim)
-	real saltv(nlvdim,nkndim)
-	common /tempv/tempv
-	common /saltv/saltv
+	include 'ts.h'
 c local
 	integer idtc,itmc,itsmed
 	integer id,nvar

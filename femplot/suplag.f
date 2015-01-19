@@ -234,10 +234,8 @@ c**********************************************************
 
 	include 'param.h'
 
-	character*80 descrr
-	common /descrr/ descrr
+	include 'basin.h'
 
-	include 'nbasin.h'
 
 	integer ndim
 	parameter(ndim=nbdydim)

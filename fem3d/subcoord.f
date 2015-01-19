@@ -63,9 +63,7 @@ c UTM: Venice is in zone 33, central meridian is 15
 	double precision lon0,lat0,phi
 	double precision lambda,k
 
-	integer proj
-	common /coords1/ proj
-	save /coords1/
+	include 'coords.h'
 
 	if( iproj .eq. 0 ) then		!no projection
 	  !nothing to be done
@@ -120,8 +118,7 @@ c conversion of coordinates
         external utm_c2g,utm_g2c
         external cpp_c2g,cpp_g2c
 
-	integer proj
-	common /coords1/ proj
+	include 'coords.h'
 
 	integer i
 	double precision east,north,lon,lat
@@ -224,9 +221,7 @@ c********************************************************************
 
         double precision lon0,lat0,phi
 
-	double precision lon_0,lat_0,phi_0,xfact,yfact
-	common /cpp_param1/ lon_0,lat_0,phi_0,xfact,yfact
-	save /cpp_param1/
+	include 'coords_cpp.h'
 
         double precision pi, rad
 
@@ -253,9 +248,7 @@ c transformation from (lon/lat) to cartesian (x,y)
 	double precision lon,lat !geographical coordinates
 	double precision x,y  !cartesian coordinates (return)
 
-	double precision lon_0,lat_0,phi_0,xfact,yfact
-	common /cpp_param1/ lon_0,lat_0,phi_0,xfact,yfact
-	save /cpp_param1/
+	include 'coords_cpp.h'
 
         x = (lon-lon_0) * xfact
         y = (lat-lat_0) * yfact
@@ -273,9 +266,7 @@ c transformation from to cartesian (x,y) to (lon/lat)
 	double precision x,y  !cartesian coordinates
 	double precision lon,lat !geographical coordinates (return)
 
-	double precision lon_0,lat_0,phi_0,xfact,yfact
-	common /cpp_param1/ lon_0,lat_0,phi_0,xfact,yfact
-	save /cpp_param1/
+	include 'coords_cpp.h'
 
         lon =  lon_0 + x / xfact
         lat =  lat_0 + y / yfact
@@ -399,39 +390,18 @@ c----------------------------------------------------------------
 c proj.h
 c----------------------------------------------------------------
 
-	double precision aearth,bearth,flat,rflat,e,es
-	common /proj_param01/ aearth,bearth,flat,rflat,e,es
-	save /proj_param01/
+	include 'coords.h'
 
-	double precision k0
-	common /proj_param02/ k0
-	save /proj_param02/
 
-	double precision zero,one,two,four,half
-	common /proj_param11/ zero,one,two,four,half
-	save /proj_param11/
 
-	double precision pi,half_pi,quarter_pi,rad,rrad
-	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
-	save /proj_param12/
 
-	double precision eps,tol
-	common /proj_param13/ eps,tol
-	save /proj_param13/
 
-	logical debug
-	common /proj_param21/ debug
-	save /proj_param21/
 
 c---------------------------------------------------------------- 
 
 c	include 'proj.h'
 
-	integer fuso			!1 or 2
-	common /gb_param1/ fuso
-	double precision lambda0,x0,xtrans0,ytrans0
-	common /gb_param2/ lambda0,x0,xtrans0,ytrans0
-	save /gb_param1/,/gb_param2/
+	include 'coords_gb.h'
 
 	call proj_init
 
@@ -479,8 +449,7 @@ c -> so these coordinates will be subtracted from the GB coordinates
 
 	double precision xtrans,ytrans
 
-	double precision lambda0,x0,xtrans0,ytrans0
-	common /gb_param2/ lambda0,x0,xtrans0,ytrans0
+	include 'coords_gb.h'
 
 	xtrans0 = xtrans
 	ytrans0 = ytrans
@@ -503,36 +472,18 @@ c----------------------------------------------------------------
 c proj.h
 c----------------------------------------------------------------
 
-	double precision aearth,bearth,flat,rflat,e,es
-	common /proj_param01/ aearth,bearth,flat,rflat,e,es
-	save /proj_param01/
+	include 'coords.h'
 
-	double precision k0
-	common /proj_param02/ k0
-	save /proj_param02/
 
-	double precision zero,one,two,four,half
-	common /proj_param11/ zero,one,two,four,half
-	save /proj_param11/
 
-	double precision pi,half_pi,quarter_pi,rad,rrad
-	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
-	save /proj_param12/
 
-	double precision eps,tol
-	common /proj_param13/ eps,tol
-	save /proj_param13/
 
-	logical debug
-	common /proj_param21/ debug
-	save /proj_param21/
 
 c---------------------------------------------------------------- 
 
 c	 include 'proj.h'
 
-	 double precision lambda0,x0,xtrans0,ytrans0
-	 common /gb_param2/ lambda0,x0,xtrans0,ytrans0
+	include 'coords_gb.h'
 
 	 double precision a1,a2,a4,a6
 	 parameter ( a1 = 111092.08210 , a2 = 16100.59187 )
@@ -586,36 +537,18 @@ c----------------------------------------------------------------
 c proj.h
 c----------------------------------------------------------------
 
-	double precision aearth,bearth,flat,rflat,e,es
-	common /proj_param01/ aearth,bearth,flat,rflat,e,es
-	save /proj_param01/
+	include 'coords.h'
 
-	double precision k0
-	common /proj_param02/ k0
-	save /proj_param02/
 
-	double precision zero,one,two,four,half
-	common /proj_param11/ zero,one,two,four,half
-	save /proj_param11/
 
-	double precision pi,half_pi,quarter_pi,rad,rrad
-	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
-	save /proj_param12/
 
-	double precision eps,tol
-	common /proj_param13/ eps,tol
-	save /proj_param13/
 
-	logical debug
-	common /proj_param21/ debug
-	save /proj_param21/
 
 c---------------------------------------------------------------- 
 
 c	 include 'proj.h'
 
-	 double precision lambda0,x0,xtrans0,ytrans0
-	 common /gb_param2/ lambda0,x0,xtrans0,ytrans0
+	include 'coords_gb.h'
 
 	 double precision a1,a2,a4,a6
 	 parameter ( a1 = 111092.08210 , a2 = 16100.59187 )
@@ -985,41 +918,18 @@ c----------------------------------------------------------------
 c proj.h
 c----------------------------------------------------------------
 
-	double precision aearth,bearth,flat,rflat,e,es
-	common /proj_param01/ aearth,bearth,flat,rflat,e,es
-	save /proj_param01/
+	include 'coords.h'
 
-	double precision k0
-	common /proj_param02/ k0
-	save /proj_param02/
 
-	double precision zero,one,two,four,half
-	common /proj_param11/ zero,one,two,four,half
-	save /proj_param11/
 
-	double precision pi,half_pi,quarter_pi,rad,rrad
-	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
-	save /proj_param12/
 
-	double precision eps,tol
-	common /proj_param13/ eps,tol
-	save /proj_param13/
 
-	logical debug
-	common /proj_param21/ debug
-	save /proj_param21/
 
 c---------------------------------------------------------------- 
 
 c	include 'proj.h'
 
-	integer utm_zone		!1-60
-	common /utm_param1/ utm_zone
-	double precision lambda0,xtrans0,ytrans0
-	common /utm_param2/ lambda0,xtrans0,ytrans0
-	double precision ep2,dn,es_4,es_6,z1,z2,z3,z4,j1,j2,j3,j4
-	common /utm_param3/ ep2,dn,es_4,es_6,z1,z2,z3,z4,j1,j2,j3,j4
-	save /utm_param1/,/utm_param2/,/utm_param3/
+	include 'coords_utm.h'
 
 	double precision e1
 
@@ -1085,8 +995,7 @@ c -> so these coordinates will be subtracted from the GB coordinates
 
 	double precision xtrans,ytrans
 
-	double precision lambda0,xtrans0,ytrans0
-	common /utm_param2/ lambda0,xtrans0,ytrans0
+	include 'coords_utm.h'
 
 	xtrans0 = xtrans
 	ytrans0 = ytrans
@@ -1103,10 +1012,7 @@ c changes zone of UTM - must have already been initialized
 
 	integer zone
 
-	integer utm_zone		!1-60
-	common /utm_param1/ utm_zone
-	double precision lambda0,xtrans0,ytrans0
-	common /utm_param2/ lambda0,xtrans0,ytrans0
+	include 'coords_utm.h'
 
 	if( zone .lt. 1 .or. zone .gt. 60 ) then
 	  write(6,*) 'zone = ',zone
@@ -1128,10 +1034,7 @@ c sets central meridian directly (for non standard UTM projections)
 
 	double precision lambda
 
-	integer utm_zone		!1-60
-	common /utm_param1/ utm_zone
-	double precision lambda0,xtrans0,ytrans0
-	common /utm_param2/ lambda0,xtrans0,ytrans0
+	include 'coords_utm.h'
 
 	utm_zone = 0		! not valid
 	lambda0 = lambda
@@ -1228,38 +1131,18 @@ c----------------------------------------------------------------
 c proj.h
 c----------------------------------------------------------------
 
-	double precision aearth,bearth,flat,rflat,e,es
-	common /proj_param01/ aearth,bearth,flat,rflat,e,es
-	save /proj_param01/
+	include 'coords.h'
 
-	double precision k0
-	common /proj_param02/ k0
-	save /proj_param02/
 
-	double precision zero,one,two,four,half
-	common /proj_param11/ zero,one,two,four,half
-	save /proj_param11/
 
-	double precision pi,half_pi,quarter_pi,rad,rrad
-	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
-	save /proj_param12/
 
-	double precision eps,tol
-	common /proj_param13/ eps,tol
-	save /proj_param13/
 
-	logical debug
-	common /proj_param21/ debug
-	save /proj_param21/
 
 c---------------------------------------------------------------- 
 
 c	include 'proj.h'
 
-	double precision lambda0,xtrans0,ytrans0
-	common /utm_param2/ lambda0,xtrans0,ytrans0
-	double precision ep2,dn,es_4,es_6,z1,z2,z3,z4,j1,j2,j3,j4
-	common /utm_param3/ ep2,dn,es_4,es_6,z1,z2,z3,z4,j1,j2,j3,j4
+	include 'coords_utm.h'
 
 	double precision long,phi,p,nu,M
 	double precision k1,k2,k3,k4,k5
@@ -1319,38 +1202,18 @@ c----------------------------------------------------------------
 c proj.h
 c----------------------------------------------------------------
 
-	double precision aearth,bearth,flat,rflat,e,es
-	common /proj_param01/ aearth,bearth,flat,rflat,e,es
-	save /proj_param01/
+	include 'coords.h'
 
-	double precision k0
-	common /proj_param02/ k0
-	save /proj_param02/
 
-	double precision zero,one,two,four,half
-	common /proj_param11/ zero,one,two,four,half
-	save /proj_param11/
 
-	double precision pi,half_pi,quarter_pi,rad,rrad
-	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
-	save /proj_param12/
 
-	double precision eps,tol
-	common /proj_param13/ eps,tol
-	save /proj_param13/
 
-	logical debug
-	common /proj_param21/ debug
-	save /proj_param21/
 
 c---------------------------------------------------------------- 
 
 c	include 'proj.h'
 
-	double precision lambda0,xtrans0,ytrans0
-	common /utm_param2/ lambda0,xtrans0,ytrans0
-	double precision ep2,dn,es_4,es_6,z1,z2,z3,z4,j1,j2,j3,j4
-	common /utm_param3/ ep2,dn,es_4,es_6,z1,z2,z3,z4,j1,j2,j3,j4
+	include 'coords_utm.h'
 
 	double precision xx,yy,M,mu,fp
 	double precision c1,t1,r1,n1
@@ -1591,29 +1454,12 @@ c----------------------------------------------------------------
 c proj.h
 c----------------------------------------------------------------
 
-	double precision aearth,bearth,flat,rflat,e,es
-	common /proj_param01/ aearth,bearth,flat,rflat,e,es
-	save /proj_param01/
+	include 'coords.h'
 
-	double precision k0
-	common /proj_param02/ k0
-	save /proj_param02/
 
-	double precision zero,one,two,four,half
-	common /proj_param11/ zero,one,two,four,half
-	save /proj_param11/
 
-	double precision pi,half_pi,quarter_pi,rad,rrad
-	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
-	save /proj_param12/
 
-	double precision eps,tol
-	common /proj_param13/ eps,tol
-	save /proj_param13/
 
-	logical debug
-	common /proj_param21/ debug
-	save /proj_param21/
 
 c---------------------------------------------------------------- 
 
@@ -1669,29 +1515,12 @@ c----------------------------------------------------------------
 c proj.h
 c----------------------------------------------------------------
 
-	double precision aearth,bearth,flat,rflat,e,es
-	common /proj_param01/ aearth,bearth,flat,rflat,e,es
-	save /proj_param01/
+	include 'coords.h'
 
-	double precision k0
-	common /proj_param02/ k0
-	save /proj_param02/
 
-	double precision zero,one,two,four,half
-	common /proj_param11/ zero,one,two,four,half
-	save /proj_param11/
 
-	double precision pi,half_pi,quarter_pi,rad,rrad
-	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
-	save /proj_param12/
 
-	double precision eps,tol
-	common /proj_param13/ eps,tol
-	save /proj_param13/
 
-	logical debug
-	common /proj_param21/ debug
-	save /proj_param21/
 
 c---------------------------------------------------------------- 
 
@@ -1714,29 +1543,12 @@ c----------------------------------------------------------------
 c proj.h
 c----------------------------------------------------------------
 
-	double precision aearth,bearth,flat,rflat,e,es
-	common /proj_param01/ aearth,bearth,flat,rflat,e,es
-	save /proj_param01/
+	include 'coords.h'
 
-	double precision k0
-	common /proj_param02/ k0
-	save /proj_param02/
 
-	double precision zero,one,two,four,half
-	common /proj_param11/ zero,one,two,four,half
-	save /proj_param11/
 
-	double precision pi,half_pi,quarter_pi,rad,rrad
-	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
-	save /proj_param12/
 
-	double precision eps,tol
-	common /proj_param13/ eps,tol
-	save /proj_param13/
 
-	logical debug
-	common /proj_param21/ debug
-	save /proj_param21/
 
 c---------------------------------------------------------------- 
 
@@ -1757,29 +1569,12 @@ c----------------------------------------------------------------
 c proj.h
 c----------------------------------------------------------------
 
-	double precision aearth,bearth,flat,rflat,e,es
-	common /proj_param01/ aearth,bearth,flat,rflat,e,es
-	save /proj_param01/
+	include 'coords.h'
 
-	double precision k0
-	common /proj_param02/ k0
-	save /proj_param02/
 
-	double precision zero,one,two,four,half
-	common /proj_param11/ zero,one,two,four,half
-	save /proj_param11/
 
-	double precision pi,half_pi,quarter_pi,rad,rrad
-	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
-	save /proj_param12/
 
-	double precision eps,tol
-	common /proj_param13/ eps,tol
-	save /proj_param13/
 
-	logical debug
-	common /proj_param21/ debug
-	save /proj_param21/
 
 c---------------------------------------------------------------- 
 
@@ -1804,29 +1599,12 @@ c----------------------------------------------------------------
 c proj.h
 c----------------------------------------------------------------
 
-	double precision aearth,bearth,flat,rflat,e,es
-	common /proj_param01/ aearth,bearth,flat,rflat,e,es
-	save /proj_param01/
+	include 'coords.h'
 
-	double precision k0
-	common /proj_param02/ k0
-	save /proj_param02/
 
-	double precision zero,one,two,four,half
-	common /proj_param11/ zero,one,two,four,half
-	save /proj_param11/
 
-	double precision pi,half_pi,quarter_pi,rad,rrad
-	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
-	save /proj_param12/
 
-	double precision eps,tol
-	common /proj_param13/ eps,tol
-	save /proj_param13/
 
-	logical debug
-	common /proj_param21/ debug
-	save /proj_param21/
 
 c---------------------------------------------------------------- 
 
@@ -1882,29 +1660,12 @@ c----------------------------------------------------------------
 c proj.h
 c----------------------------------------------------------------
 
-	double precision aearth,bearth,flat,rflat,e,es
-	common /proj_param01/ aearth,bearth,flat,rflat,e,es
-	save /proj_param01/
+	include 'coords.h'
 
-	double precision k0
-	common /proj_param02/ k0
-	save /proj_param02/
 
-	double precision zero,one,two,four,half
-	common /proj_param11/ zero,one,two,four,half
-	save /proj_param11/
 
-	double precision pi,half_pi,quarter_pi,rad,rrad
-	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
-	save /proj_param12/
 
-	double precision eps,tol
-	common /proj_param13/ eps,tol
-	save /proj_param13/
 
-	logical debug
-	common /proj_param21/ debug
-	save /proj_param21/
 
 c---------------------------------------------------------------- 
 
@@ -1946,29 +1707,12 @@ c----------------------------------------------------------------
 c proj.h
 c----------------------------------------------------------------
 
-	double precision aearth,bearth,flat,rflat,e,es
-	common /proj_param01/ aearth,bearth,flat,rflat,e,es
-	save /proj_param01/
+	include 'coords.h'
 
-	double precision k0
-	common /proj_param02/ k0
-	save /proj_param02/
 
-	double precision zero,one,two,four,half
-	common /proj_param11/ zero,one,two,four,half
-	save /proj_param11/
 
-	double precision pi,half_pi,quarter_pi,rad,rrad
-	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
-	save /proj_param12/
 
-	double precision eps,tol
-	common /proj_param13/ eps,tol
-	save /proj_param13/
 
-	logical debug
-	common /proj_param21/ debug
-	save /proj_param21/
 
 c---------------------------------------------------------------- 
 
@@ -1998,29 +1742,12 @@ c----------------------------------------------------------------
 c proj.h
 c----------------------------------------------------------------
 
-	double precision aearth,bearth,flat,rflat,e,es
-	common /proj_param01/ aearth,bearth,flat,rflat,e,es
-	save /proj_param01/
+	include 'coords.h'
 
-	double precision k0
-	common /proj_param02/ k0
-	save /proj_param02/
 
-	double precision zero,one,two,four,half
-	common /proj_param11/ zero,one,two,four,half
-	save /proj_param11/
 
-	double precision pi,half_pi,quarter_pi,rad,rrad
-	common /proj_param12/ pi,half_pi,quarter_pi,rad,rrad
-	save /proj_param12/
 
-	double precision eps,tol
-	common /proj_param13/ eps,tol
-	save /proj_param13/
 
-	logical debug
-	common /proj_param21/ debug
-	save /proj_param21/
 
 c---------------------------------------------------------------- 
 

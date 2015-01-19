@@ -19,13 +19,9 @@ c needs continuous depth and produces continuous depth
 	include 'basin.h'
 	include 'evmain.h'
 
-	real hkv(nkndim)
-	common /hkv/hkv
-	real hev(neldim)
-	common /hev/hev
+	include 'depth.h'
 
-	real v1v(nkndim)
-	common /v1v/v1v
+	include 'aux_array.h'
 	real haux(nkndim)
 
 	logical bnode,belem
@@ -118,10 +114,7 @@ c checks for continuous depth
 	include 'param.h'
 	include 'basin.h'
 
-	real hkv(nkndim)
-	common /hkv/hkv
-	real hev(neldim)
-	common /hev/hev
+	include 'depth.h'
 
 	integer ie,ii,k
 	real h,hm
@@ -194,8 +187,7 @@ c checks and adjusts hsigma crossing
 	include 'param.h'
 	include 'basin.h'
 
-        real v1v(1)
-        common /v1v/v1v
+	include 'aux_array.h'
 
         logical berror,bdebug
         integer k,ie,ii

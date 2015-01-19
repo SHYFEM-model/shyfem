@@ -39,28 +39,14 @@ c takes care of lat/lon coordinates
 	real dp(ndim)
 	real ap(ndim)
 
-        character*80 descrp
-        common /descrp/ descrp
+	include 'simul.h'
 
-	include 'nbasin.h'
 	include 'pkonst.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
+	include 'basin.h'
 
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
 
-        real hev(neldim)
-        common /hev/hev
-        real hkv(nkndim)
-        common /hkv/hkv
+	include 'depth.h'
 
         real raux(neldim)
         integer iaux(neldim)

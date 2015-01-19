@@ -20,6 +20,12 @@ commit			commit changes that have been added (staged)
 commit -a		same as: add -u; commit
 tag <tag>		tags with <tag>, if no <tag> shows tags
 
+git commit --amend	integrate into last commit
+git reset HEAD <file>	unstage file
+git reset --hard HEAD	undo all changes, restore last committed version
+git checkout -- <file>	forget about changes in file
+git clean -f -d		delete all untracked files (-f) and directories (-d)
+
 branch <branch>		creates new <branch>, if non given shows branches
 checkout <start>	checks out branch <start>
 checkout -b <new> <start>	checks out <start> and creates new branch <new>
@@ -77,6 +83,7 @@ iterate:
 	revision_last	-> output should go into LOG, BUG and RELEASE_NOTES
 	git add -u
 
+make check_var
 make dist
 git add -u
 gitcommit

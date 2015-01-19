@@ -30,17 +30,12 @@ c initialization of bclfix routines
 
         include 'param.h' 
         include 'bclfix.h' 
-        include 'nbasin.h' 
 
-	integer nen3v(3,neldim)
-	common /nen3v/nen3v
+	include 'basin.h'
 
-	real v1v(1)
-	common /v1v/v1v
+	include 'aux_array.h'
 
-        integer iuvfix(neldim)
-        common /iuvfix/iuvfix
-        save /iuvfix/
+	include 'internal.h'
 
 	real tnudge	!relaxation time for nudging [s]
 
@@ -176,32 +171,18 @@ c fix or nudge  velocities on open boundaries
 
 	include 'femtime.h'
 
-        integer nlvdi,nlv                 !number of levels
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        character*80 vel3dn(nbcdim)
-        common /vel3dn/ vel3dn
+	include 'bound_names.h'
 
-	integer inodv(1)
-	common /inodv/inodv
+	include 'geom_dynamic.h'
 
-        integer iuvfix(1)       !chao deb
-        common /iuvfix/iuvfix   !chao deb
-        real fxv(nlvdim,neldim)      !new HYDRO deb
-        real fyv(nlvdim,neldim)
-        common /fxv/fxv
-        common /fyv/fyv
-        real ulnv(nlvdim,neldim),vlnv(nlvdim,neldim)
-        common /ulnv/ulnv, /vlnv/vlnv
-        real utlnv(nlvdim,neldim), vtlnv(nlvdim,neldim)
-        common /utlnv/utlnv, /vtlnv/vtlnv
-        real hdenv(nlvdim,neldim)
-        common /hdenv/hdenv
-        real hdeov(nlvdim,neldim)
-        common /hdeov/hdeov
+	include 'internal.h'
+	include 'hydro_vel.h'
+	include 'hydro.h'
+	include 'depth.h'
 
-	integer ilhv(1)
-	common /ilhv/ilhv
+	include 'levels.h'
 
 	real tnudge	!relaxation time for nudging [s]
 	real tramp	!time for smooth init

@@ -24,22 +24,10 @@ c sums all concentrations in .com file to one concentration in .con file
 	parameter (nsdim=3)	!number of tracers
 
 c--------------------------------------------------
-        character*80 descrr
-        common /descrr/descrr
+	include 'basin.h'
 	integer nlv
-	include 'nbasin.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        integer nen3v(3,neldim)
-        integer ipv(nkndim), ipev(neldim)
-        integer iarv(neldim)
 
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-        common /nen3v/nen3v
-        common /ipv/ipv, /ipev/ipev
-        common /iarv/iarv
 c--------------------------------------------------
 
 	character*80 title

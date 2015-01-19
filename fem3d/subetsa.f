@@ -193,26 +193,15 @@ c writes and administers ets file
 	character*80 title,femver
 	real out(nlvdim,nexdim)
 
-        character*80 descrp
-        common /descrp/ descrp
+	include 'simul.h'
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real hlv(1), hkv(1)
-        common /hlv/hlv, /hkv/hkv
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'depth.h'
 
-	real znv(1)
-	common /znv/znv
-	real uprv(nlvdim,1)
-	common /uprv/uprv
-	real vprv(nlvdim,1)
-	common /vprv/vprv
-	real saltv(nlvdim,1)
-	common /saltv/saltv
-	real tempv(nlvdim,1)
-	common /tempv/tempv
+	include 'hydro.h'
+	include 'hydro_print.h'
+	include 'ts.h'
 
 	real waves(4,nkndim)
 
@@ -343,12 +332,9 @@ c******************************************************************
 
 	integer i,k
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real hkv(1)
-        common /hkv/hkv
-        real xgeov(1),ygeov(1)
-	common /xgeov/xgeov, /ygeov/ygeov
+	include 'levels.h'
+	include 'depth.h'
+	include 'tides.h'
 
 	do i=1,nets
 	  k = nkets(i)

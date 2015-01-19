@@ -111,10 +111,8 @@ c kvol()	node numbers defining areas
 
         implicit none
 
-        integer nvols,kvold,kvolm,kvol(1)
-        common /kvolc/ nvols,kvold,kvolm,kvol
-	integer ivolm,ivol(1)
-	common /ivol/ivolm,ivol
+	include 'param_dummy.h'
+	include 'volcomp.h'
 
         nvols = -1	!must still be initialized
         kvold = 0	!is set later
@@ -130,8 +128,8 @@ c******************************************************************
 
         implicit none
 
-        integer nvols,kvold,kvolm,kvol(1)
-        common /kvolc/ nvols,kvold,kvolm,kvol
+	include 'param_dummy.h'
+	include 'volcomp.h'
 
 	integer nfxdi
         integer nrdveci
@@ -159,11 +157,9 @@ c******************************************************************
 
         implicit none
 
-        integer nvols,kvold,kvolm,kvol(1)
-        common /kvolc/ nvols,kvold,kvolm,kvol
+	include 'param_dummy.h'
+	include 'volcomp.h'
 
-	integer ivolm,ivol(1)
-	common /ivol/ivolm,ivol
 
 	integer k,ii
         logical berror
@@ -187,11 +183,9 @@ c******************************************************************
 
 	implicit none
 
-        integer nvols,kvold,kvolm,kvol(1)
-        common /kvolc/ nvols,kvold,kvolm,kvol
+	include 'param_dummy.h'
+	include 'volcomp.h'
 
-        integer ivolm,ivol(1)
-        common /ivol/ivolm,ivol
 	
 	integer nnode,ifirst,ilast
 	integer ntotal,ns
@@ -272,11 +266,9 @@ c******************************************************************
 
 	implicit none
 
-        integer nvols,kvold,kvolm,kvol(1)
-        common /kvolc/ nvols,kvold,kvolm,kvol
+	include 'param_dummy.h'
+	include 'volcomp.h'
 
-        integer ivolm,ivol(1)
-        common /ivol/ivolm,ivol
 	
 	integer i,ii
 
@@ -303,11 +295,9 @@ c write of vol data
         integer iscdim
         parameter(iscdim=500)
 
-        integer nvols,kvold,kvolm,kvol(1)
-        common /kvolc/ nvols,kvold,kvolm,kvol
+	include 'param_dummy.h'
+	include 'volcomp.h'
 
-        integer ivolm,ivol(1)
-        common /ivol/ivolm,ivol
 
 	integer itend,idtvol
 	integer i
@@ -593,14 +583,11 @@ c initializes vol routines finally
 
 	implicit none
 
-        integer nvols,kvold,kvolm,kvol(1)
-        common /kvolc/ nvols,kvold,kvolm,kvol
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'volcomp.h'
 
-	integer ivolm,ivol(1)
-	common /ivol/ivolm,ivol
 
-	integer kantv(2,1)
-	common /kantv/kantv
+	include 'geom.h'
 	
 	integer idummy
 
@@ -799,11 +786,10 @@ c close line -> nodes will be unique (first & last are different)
 	integer kline(1)
 	real xline(1), yline(1)
 
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 
-	integer kantv(2,1)
-	common /kantv/kantv
+	include 'geom.h'
 
 	integer i,k
 	integer kfirst,kstart,knext
@@ -862,23 +848,13 @@ c******************************************************************
 	integer ielems(1)
 	integer ietype
 
-	include 'nbasin.h'
 
-	real v3v(1)		!used as flag
-	common /v3v/v3v
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'aux_array.h'
 
-        integer ipv(1)
-        common /ipv/ipv
-        integer ipev(1)
-        common /ipev/ipev
 
-        integer iarv(1)
-        common /iarv/iarv
 
-        real xgv(1)
-        common /xgv/xgv
-        real ygv(1)
-        common /ygv/ygv
+	include 'basin.h'
 
 	integer k,i,ii,ie,nvert
 	integer kn(10)
@@ -929,13 +905,9 @@ c******************************************************************
 	integer inodes(1)
 	integer il,iltype
 
-        integer ipv(1)
-        common /ipv/ipv
 
-        real xgv(1)
-        common /xgv/xgv
-        real ygv(1)
-        common /ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	integer k,i
 	integer istart

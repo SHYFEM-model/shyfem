@@ -40,14 +40,12 @@ c arguments
 	integer ie
 	real x,y
 c common blocks
-	integer nen3v(3,1)
-	real xgv(1),ygv(1)
 c local variables
 	integer i,kkk
 	real xb,yb
 
-	common /nen3v/nen3v
-	common /xgv/xgv, /ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	xb=0.
 	yb=0.
@@ -74,10 +72,8 @@ c arguments
         real area_element
         integer ie
 c common
-        integer nen3v(3,1)
-        real xgv(1),ygv(1)
-        common /nen3v/nen3v
-        common /xgv/xgv,/ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 c local
         integer kn1,kn2,kn3
         real*8 x1,x2,x3,y1,y2,y3
@@ -111,8 +107,8 @@ c returns coordinates of node k (internal)
 	integer k
 	real x,y
 
-	real xgv(1),ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	x = xgv(k)
 	y = ygv(k)
@@ -131,9 +127,8 @@ c
 	implicit none
 	integer ipext
 	integer k
-	integer ipv(1)
-	include 'nbasin.h'
-	common /ipv/ipv
+	include 'param_dummy.h'
+	include 'basin.h'
 c
 	if(k.lt.1.or.k.gt.nkn) then
 		ipext=0
@@ -156,9 +151,8 @@ c
 	implicit none
 	integer ieext
 	integer k
-	integer ipev(1)
-	include 'nbasin.h'
-	common /ipev/ipev
+	include 'param_dummy.h'
+	include 'basin.h'
 c
 	if(k.lt.1.or.k.gt.nel) then
 		ieext=0
@@ -181,9 +175,8 @@ c
 	implicit none
 	integer ipint
 	integer k,i
-	integer ipv(1)
-	include 'nbasin.h'
-	common /ipv/ipv
+	include 'param_dummy.h'
+	include 'basin.h'
 c
 	do i=1,nkn
 	if(ipv(i).eq.k) goto 1
@@ -207,9 +200,8 @@ c
 	implicit none
 	integer ieint
 	integer k,i
-	integer ipev(1)
-	include 'nbasin.h'
-	common /ipev/ipev
+	include 'param_dummy.h'
+	include 'basin.h'
 c
 	do i=1,nel
 	if(ipev(i).eq.k) goto 1

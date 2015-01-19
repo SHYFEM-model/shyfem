@@ -333,29 +333,15 @@ c writes one record of restart data
 
         include 'param.h'
 
-	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real zenv(3,1)
-        common /zenv/zenv
-        real znv(1)
-        common /znv/znv
-        integer iwegv(1)
-        common /iwegv/iwegv
-        real utlnv(nlvdim,1), vtlnv(nlvdim,1)
-        common /utlnv/utlnv, /vtlnv/vtlnv
-	real hm3v(3,1)
-	common /hm3v/hm3v
-        real saltv(nlvdim,1),tempv(nlvdim,1),rhov(nlvdim,1)
-        common /saltv/saltv, /tempv/tempv, /rhov/rhov
-        real wlnv(0:nlvdim,1)
-	common /wlnv/wlnv
+	include 'hydro.h'
+	include 'geom_dynamic.h'
+	include 'basin.h'
+	include 'ts.h'
+	include 'hydro_vel.h'
 
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
-        real conzv(nlvdim,nkndim,ncsdim)
-        common /conzv/conzv
+	include 'conz.h'
 
         integer ii,l,ie,k,i
 	integer ibarcl,iconz,ieco
@@ -574,29 +560,15 @@ c reads one record of restart data
 
         include 'param.h'
 
-	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real zenv(3,1)
-        common /zenv/zenv
-        real znv(1)
-        common /znv/znv
-        integer iwegv(1)
-        common /iwegv/iwegv
-        real utlnv(nlvdim,1), vtlnv(nlvdim,1)
-        common /utlnv/utlnv, /vtlnv/vtlnv
-        real hm3v(3,1)
-        common /hm3v/hm3v
-        real saltv(nlvdim,1),tempv(nlvdim,1),rhov(nlvdim,1)
-        common /saltv/saltv, /tempv/tempv, /rhov/rhov
-        real wlnv(0:nlvdim,1)
-	common /wlnv/wlnv
+	include 'hydro.h'
+	include 'geom_dynamic.h'
+	include 'basin.h'
+	include 'ts.h'
+	include 'hydro_vel.h'
 
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
-        real conzv(nlvdim,nkndim,ncsdim)
-        common /conzv/conzv
+	include 'conz.h'
 
 	integer iokrst,nvers,ibarcl,iconz,iwvert,ieco
 	common /rstrst/ iokrst,nvers,ibarcl,iconz,iwvert,ieco

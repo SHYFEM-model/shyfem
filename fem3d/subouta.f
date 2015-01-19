@@ -22,17 +22,14 @@ c writes and administers out file
 
 	implicit none
 
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'femtime.h'
-	character*80 descrp
-	common /descrp/ descrp
+	include 'simul.h'
 
-	real xv(3,1)
-	common /xv/xv
-        real zenv(3,1)
-        common /zenv/zenv
-        real unv(1), vnv(1)
-        common /unv/unv, /vnv/vnv
+	include 'hydro_print.h'
+	include 'hydro.h'
+	include 'hydro_baro.h'
 
 	integer itmout,ierr
 	real href,hzoff

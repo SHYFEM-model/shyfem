@@ -4,12 +4,11 @@
        subroutine nonhydro_solve_matrix
 
 	implicit none
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'common.h'
         include 'nohydlinks.h'
-        integer nlvdi,nlv
-	 common /level/ nlvdi,nlv
-         integer ilhv(1), ilhkv(1)
-	 common /ilhv/ilhv, /ilhkv/ilhkv
+	include 'nlevel.h'
+	include 'levels.h'
          real*8 csr(csrdimnh)
         integer icsr(matdimmax+1),jcsr(csrdimnh)
         integer iwork(2*csrdimnh)

@@ -80,10 +80,8 @@ c resets mask data structure
 
 	implicit none
 
-	logical bwater(1)
-	common /bwater/bwater
-	logical bkwater(1)
-	common /bkwater/bkwater
+	include 'param.h'
+	include 'plot_aux.h'
 
         call init_dry_mask(bwater)
 	call make_dry_node_mask(bwater,bkwater)
@@ -98,14 +96,10 @@ c prepares simulation for use - computes wet and dry areas
 
 	implicit none
 
-	logical bwater(1)
-	common /bwater/bwater
-	logical bkwater(1)
-	common /bkwater/bkwater
-        integer ilhv(1)
-        common /ilhv/ilhv
-	real znv(1)
-	common /znv/znv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'plot_aux.h'
+	include 'levels.h'
+	include 'hydro.h'
 
 	logical bshowdry
 	integer level
@@ -179,10 +173,7 @@ c******************************************************
 
 	include 'nbasin.h'
 
-        real fvlv(nlvdim,nkndim)
-        common /fvlv/fvlv
-        real arfvlv(nkndim)
-        common /arfvlv/arfvlv
+	include 'plot_aux.h'
 
 	integer k,idry
 	real vol,area,h
@@ -225,24 +216,12 @@ c	znv,utlnv,vtlnv 	-> set zenv, usnv, vsnv
 
 	include 'param.h'
 
-	include 'nbasin.h'
 
-        real znv(1)
-        common /znv/znv
-        real zenv(3,1)
-        common /zenv/zenv
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        real xv(3,1)
-        common /xv/xv
-        integer ilhv(1)
-        common /ilhv/ilhv
-        real utlnv(nlvdim,1)
-        common /utlnv/utlnv
-        real vtlnv(nlvdim,1)
-        common /vtlnv/vtlnv
-        real usnv(1), vsnv(1)
-        common /usnv/usnv, /vsnv/vsnv
+	include 'hydro.h'
+	include 'basin.h'
+	include 'hydro_print.h'
+	include 'levels.h'
+	include 'hydro_plot.h'
 
 	integer k,ie,ii,l,lmax
 	real utot,vtot
@@ -292,14 +271,12 @@ c	xv,zenv,usnv,vsnv -> set znv
 
 	implicit none
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 
-        real znv(1)
-        common /znv/znv
-        real xv(3,1)
-        common /xv/xv
-        integer ilhv(1)
-        common /ilhv/ilhv
+	include 'hydro.h'
+	include 'hydro_print.h'
+	include 'levels.h'
 
 	integer k,ie
 
@@ -321,9 +298,7 @@ c******************************************************
 
         implicit none
 
-        integer nunit,iform
-        common /wavwav/ nunit,iform
-	save /wavwav/
+	include 'supout.h'
 
 	integer icall
 	save icall
@@ -344,8 +319,7 @@ c******************************************************
 
         implicit none
 
-        integer nunit,iform
-        common /wavwav/ nunit,iform
+	include 'supout.h'
 
 	if( nunit .gt. 0 ) close(nunit)
 
@@ -359,18 +333,13 @@ c******************************************************
 
 	include 'param.h'
 
-	character*80 descrp
-        common /descrp/ descrp
+	include 'simul.h'
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
-        real hlv(1), hev(1)
-        common /hlv/hlv, /hev/hev
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'nlevel.h'
+	include 'depth.h'
+	include 'levels.h'
 
-        integer nunit,iform
-        common /wavwav/ nunit,iform
+	include 'supout.h'
 
 	integer nknaux,nelaux,nlvaux
 	integer nvers,nvar
@@ -421,22 +390,17 @@ c******************************************************
 	logical wavenext
 	integer it
 
-        integer nunit,iform
-        common /wavwav/ nunit,iform
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'supout.h'
 
 	include 'nbasin.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
         integer ierr,nlvddi,ivar
 
-        real uv(1), vv(1)
-        real v1v(1), v2v(1), v3v(1)
-        common /uv/uv, /vv/vv
-        common /v1v/v1v
-        common /v2v/v2v
-        common /v3v/v3v
+	include 'hydro_plot.h'
+	include 'aux_array.h'
 
 	wavenext = .false.
 	nlvddi = 1
@@ -511,9 +475,7 @@ c initializes internal data structure for OUS file
 
 	implicit none
 
-	integer nunit
-	common /ousous/ nunit
-	save /ousous/
+	include 'supout.h'
 
 	integer icall
 	save icall
@@ -537,8 +499,7 @@ c checks if OUS file is opened
 
 	logical ous_is_available
 
-	integer nunit
-	common /ousous/ nunit
+	include 'supout.h'
 
 	call ousini
 	ous_is_available = nunit .gt. 0
@@ -553,8 +514,7 @@ c closes OUS file
 
 	implicit none
 
-	integer nunit
-	common /ousous/ nunit
+	include 'supout.h'
 
 	call ousini
 	if( nunit .gt. 0 ) close(nunit)
@@ -570,8 +530,7 @@ c returns info on OUS parameters
 
         implicit none
 
-	integer nunit
-	common /ousous/ nunit
+	include 'supout.h'
 
         integer nvers,nkn,nel,nlv
 
@@ -590,19 +549,14 @@ c opens OUS file and reads header
 
 	include 'param.h'
 
-	integer nunit
-	common /ousous/ nunit
+	include 'supout.h'
 
-	character*80 descrp
-        common /descrp/ descrp
+	include 'simul.h'
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real hlv(1), hev(1)
-        common /hlv/hlv, /hev/hev
-        integer ilhv(1)
-        common /ilhv/ilhv
+	include 'depth.h'
+	include 'levels.h'
 
 	character*80 file
 
@@ -672,20 +626,10 @@ c reads next OUS record - is true if a record has been read, false if EOF
 
         include 'param.h'
 
-	integer nunit
-	common /ousous/ nunit
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
-        integer ilhv(1)
-        common /ilhv/ilhv
-        real znv(1)
-        common /znv/znv
-        real zenv(3,1)
-        common /zenv/zenv
-        real utlnv(nlvdim,1)
-        common /utlnv/utlnv
-        real vtlnv(nlvdim,1)
-        common /vtlnv/vtlnv
+	include 'supout.h'
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'hydro.h'
 
 	integer ierr
 
@@ -724,9 +668,7 @@ c initializes internal data structure for NOS file
 
 	implicit none
 
-	integer nunit
-	common /nosnos/ nunit
-	save /nosnos/
+	include 'supout.h'
 
 	integer icall
 	save icall
@@ -748,8 +690,7 @@ c closes NOS file
 
 	implicit none
 
-	integer nunit
-	common /nosnos/ nunit
+	include 'supout.h'
 
 	call nosini
 	if( nunit .gt. 0 ) close(nunit)
@@ -769,19 +710,14 @@ c opens NOS file and reads header
 
 	character*(*) type
 
-	integer nunit
-	common /nosnos/ nunit
+	include 'supout.h'
 
-	character*80 descrp
-        common /descrp/ descrp
+	include 'simul.h'
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real hlv(1), hev(1)
-        common /hlv/hlv, /hev/hev
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'depth.h'
+	include 'levels.h'
 
 	character*80 file
 
@@ -845,12 +781,10 @@ c reads next NOS record - is true if a record has been read, false if EOF
 	integer nlvddi		!dimension of vertical coordinate
 	real array(nlvddi,1)	!values for variable
 
-	integer nunit
-	common /nosnos/ nunit
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'supout.h'
+	include 'nlevel.h'
+	include 'levels.h'
 
 	integer ierr
 
@@ -889,9 +823,7 @@ c initializes internal data structure for FVL file
 
 	implicit none
 
-	integer nunit
-	common /fvlfvl/ nunit
-	save /fvlfvl/
+	include 'supout.h'
 
 	integer icall
 	save icall
@@ -915,8 +847,7 @@ c checks if FVL file is opened
 
 	logical fvl_is_available
 
-	integer nunit
-	common /fvlfvl/ nunit
+	include 'supout.h'
 
 	call fvlini
 	fvl_is_available = nunit .gt. 0
@@ -931,8 +862,7 @@ c closes FVL file
 
 	implicit none
 
-	integer nunit
-	common /fvlfvl/ nunit
+	include 'supout.h'
 
 	call fvlini
 	if( nunit .gt. 0 ) close(nunit)
@@ -952,19 +882,14 @@ c opens FVL file and reads header
 
         include 'param.h'
 
-	integer nunit
-	common /fvlfvl/ nunit
+	include 'supout.h'
 
-	character*80 descrp
-        common /descrp/ descrp
+	include 'simul.h'
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real hlv(1), hev(1)
-        common /hlv/hlv, /hev/hev
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'depth.h'
+	include 'levels.h'
 
         real hlv1(nlvdim), hev1(neldim)
         integer ilhkv1(nkndim)
@@ -1055,12 +980,10 @@ c reads next FVL record
 	integer nlvddi		!dimension of vertical coordinate
 	real array(nlvddi,1)	!values for variable
 
-	integer nunit
-	common /fvlfvl/ nunit
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'supout.h'
+	include 'nlevel.h'
+	include 'levels.h'
 
 	integer ierr
 	integer ivar		!type of variable
@@ -1127,9 +1050,7 @@ c initializes internal data structure for EOS file
 
 	implicit none
 
-	integer nunit
-	common /eoseos/ nunit
-	save /eoseos/
+	include 'supout.h'
 
 	integer icall
 	save icall
@@ -1151,8 +1072,7 @@ c closes EOS file
 
 	implicit none
 
-	integer nunit
-	common /eoseos/ nunit
+	include 'supout.h'
 
 	call eosini
 	if( nunit .gt. 0 ) close(nunit)
@@ -1170,19 +1090,15 @@ c opens EOS file and reads header
 
 	character*(*) type
 
-	integer nunit
-	common /eoseos/ nunit
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'supout.h'
 
-	character*80 descrp
-        common /descrp/ descrp
+	include 'simul.h'
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real hlv(1), hev(1)
-        common /hlv/hlv, /hev/hev
-        integer ilhv(1)
-        common /ilhv/ilhv
+	include 'depth.h'
+	include 'levels.h'
 
 	character*80 file
 
@@ -1263,12 +1179,10 @@ c reads next EOS record - is true if a record has been read, false if EOF
 	integer nlvddi		!dimension of vertical coordinate
 	real array(nlvddi,1)	!values for variable
 
-	integer nunit
-	common /eoseos/ nunit
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
-        integer ilhv(1)
-        common /ilhv/ilhv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'supout.h'
+	include 'nlevel.h'
+	include 'levels.h'
 
 	integer ierr
 
@@ -1307,14 +1221,10 @@ c computes max level at nodes from elements
 
 	implicit none
 
-	include 'nbasin.h'
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'levels.h'
 
 	call level_e2k(nkn,nel,nen3v,ilhv,ilhkv)
 
@@ -1328,14 +1238,10 @@ c computes level at elems from nodes (not exact)
 
 	implicit none
 
-	include 'nbasin.h'
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'levels.h'
 
 	call level_k2e(nkn,nel,nen3v,ilhkv,ilhv)
 
@@ -1405,9 +1311,7 @@ c initializes internal data structure for FEM files
 
 	implicit none
 
-	integer nunit,iformat
-	common /femfem/ nunit,iformat
-	save /femfem/
+	include 'supout.h'
 
 	integer icall
 	save icall
@@ -1430,8 +1334,7 @@ c closes FEM file
 
 	implicit none
 
-	integer nunit,iformat
-	common /femfem/ nunit,iformat
+	include 'supout.h'
 
 	call femini
 	if( nunit .gt. 0 ) close(nunit)
@@ -1449,19 +1352,15 @@ c opens FEM file and reads header
 
 	character*(*) type
 
-	integer nunit,iformat
-	common /femfem/ nunit,iformat
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'supout.h'
 
-	character*80 descrp
-        common /descrp/ descrp
+	include 'simul.h'
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real hlv(1), hev(1)
-        common /hlv/hlv, /hev/hev
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'depth.h'
+	include 'levels.h'
 
 	character*80 file
 
@@ -1561,16 +1460,11 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	integer nkn			!number of points needed
 	real array(nlvddi,nkn,1)	!values for variable
 
-	integer nunit,iformat
-	common /femfem/ nunit,iformat
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
-        real hlv(1)
-        common /hlv/hlv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-	real v1v(1)
-	common /v1v/v1v
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'supout.h'
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'aux_array.h'
 
 	logical bfound,bformat
 	integer ierr

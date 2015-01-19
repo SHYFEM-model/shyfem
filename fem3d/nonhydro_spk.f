@@ -6,13 +6,9 @@
 	implicit none
 	include 'param.h'
         include 'nohydlinks.h'
-	include 'nbasin.h'
-         integer nlvdi,nlv
-	 common /level/ nlvdi,nlv
-         integer ilhv(1), ilhkv(1)
-	 common /ilhv/ilhv, /ilhkv/ilhkv
-         integer nen3v(3,1)
-	 common /nen3v/nen3v
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'basin.h'
         integer k
 
         real*8 csr(csrdimnh)
@@ -39,10 +35,7 @@
         double precision   droptol, permtol
         double precision   zero,one
 	integer l,lmax,nn,nnn
-	double precision qpov(nlvdim,nkndim)
-	common /qpov/qpov
-	double precision qpnv(nlvdim,nkndim)
-	common /qpnv/qpnv
+	include 'nohyd.h'
 	integer i
         !ITPACK
         integer IPARIT(12),IWKSP(3*nkndim), INW

@@ -59,15 +59,10 @@ c computes stability index
         real rindex
         real saux(nlvdim,nkndim)
 
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real cnv(nlvdim,1)
-        common /cnv/cnv
-        real difv(0:nlvdim,1)
-        common /difv/difv
-        real difhv(nlvdim,1)
-	common /difhv/difhv
+	include 'conz.h'
+	include 'diff_visc_fric.h'
 
         real adpar,aapar
         real difmol
@@ -180,8 +175,7 @@ c gets stability index (if necessary computes it)
         integer istot
 	real saux(nlvdim,nkndim)
 
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'nbasin.h'
 
 	integer ia,iustab
@@ -380,16 +374,11 @@ c mode = 2		eliminate elements with r>rindex
         real dt			!time step to be used
         real rindex		!stability index (return)
 
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'nbasin.h'
 
-        real sauxe1(nlvdim,neldim)
-        common /sauxe1/sauxe1
-        real sauxe2(nlvdim,neldim)
-        common /sauxe2/sauxe2
-	integer ilhv(1)
-	common /ilhv/ilhv
+	include 'aux_array.h'
+	include 'levels.h'
 
 	integer ie,l,lmax,iweg
         real rkpar,azpar,ahpar,rlin
@@ -472,11 +461,9 @@ c outputs stability index for hydro timestep (internal) (error handling)
 	real sauxe2(nlvdim,neldim)
 	real sauxn(nlvdim,nkndim)
 
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'nbasin.h'
-	integer ilhv(1)
-	common /ilhv/ilhv
+	include 'levels.h'
 
 	logical bnos
 	integer ie,l,lmax
@@ -561,13 +548,9 @@ c outputs stability index for hydro timestep (internal)
         real dt
 	real cwrite(nlvdim,nkndim)
 
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'nlevel.h'
+	include 'basin.h'
+	include 'levels.h'
 
 	real smax(nkndim)
 	save smax
@@ -636,13 +619,9 @@ c outputs stability index for hydro timestep (internal)
 	real sauxe1(nlvdim,neldim)
 	real sauxe2(nlvdim,neldim)
 
-        integer nlv,nlvdi
-        common /level/ nlvdi,nlv
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	integer ilhv(1)
-	common /ilhv/ilhv
+	include 'nlevel.h'
+	include 'basin.h'
+	include 'levels.h'
 
 	real smax(nkndim)
 	save smax

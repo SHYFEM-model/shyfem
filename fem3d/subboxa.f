@@ -245,27 +245,13 @@ c administers writing of flux data
 	real az,azpar,rr
 	real dt
 
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	real rhov(nlvdim,nkndim)
-        common /rhov/rhov
-        real saltv(nlvdim,nkndim)
-        common /saltv/saltv
-        real tempv(nlvdim,nkndim)
-        common /tempv/tempv
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
-        real wlnv(0:nlvdim,nkndim)
-        common /wlnv/wlnv
-        real visv(0:nlvdim,nkndim)
-        common /visv/visv
-        real difv(0:nlvdim,nkndim)
-        common /difv/difv
-        real zeov(3,neldim)
-        common /zeov/zeov
-        real zenv(3,neldim)
-        common /zenv/zenv
+	include 'ts.h'
+	include 'conz.h'
+	include 'hydro_vel.h'
+	include 'diff_visc_fric.h'
+	include 'hydro.h'
 
 	integer ifemop
 	real getpar
@@ -813,10 +799,8 @@ c computes max layers for each box
 	real bvolume(nbxdim)			!volume of boxes
 	real bdepth(nbxdim)			!depth of boxes
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        real hev(neldim)
-        common /hev/hev
+	include 'levels.h'
+	include 'depth.h'
 
 	integer ib,lmax,ie
 	real area,hdep
@@ -1136,8 +1120,7 @@ c computes average zeta values for box
         real zev(3,neldim)
 	real val(nbxdim)
 
-        integer iwegv(neldim)
-        common /iwegv/iwegv
+	include 'geom_dynamic.h'
 
 	double precision vald(nbxdim)
 	double precision vold(nbxdim)
@@ -1188,16 +1171,9 @@ c computes average velocity values (speed) for box
 
 	real val(0:nlvdim,nbxdim)
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        real hdknv(nlvdim,nkndim)
-        common /hdknv/hdknv
-        real hdenv(nlvdim,nkndim)
-        common /hdenv/hdenv
-        real utlnv(nlvdim,neldim)
-        common /utlnv/utlnv
-        real vtlnv(nlvdim,neldim)
-        common /vtlnv/vtlnv
+	include 'levels.h'
+	include 'depth.h'
+	include 'hydro.h'
 
 	real h,u,v
 	real velspeed(nlvdim)
@@ -1267,10 +1243,8 @@ c computes average scalar values for box
 	real val(0:nlvdim,nbxdim)
 	integer iaver			!average or only accumulate
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        real hdknv(nlvdim,nkndim)
-        common /hdknv/hdknv
+	include 'levels.h'
+	include 'depth.h'
 
 	double precision vald(0:nlvdim,nbxdim)
 	double precision vold(0:nlvdim,nbxdim)
@@ -1329,10 +1303,8 @@ c computes average scalar values for box
 	real scalar(nlvdim,nkndim)
 	real val(0:nlvdim,nbxdim)
 
-        integer ilhv(neldim)
-        common /ilhv/ilhv
-        real hdknv(nlvdim,nkndim)
-        common /hdknv/hdknv
+	include 'levels.h'
+	include 'depth.h'
 
 	double precision vald(0:nlvdim,nbxdim)
 	double precision vold(0:nlvdim,nbxdim)

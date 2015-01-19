@@ -106,23 +106,14 @@ c interpolation of velocities on the points that have been backtraced
         
 	real uadv(1), vadv(1)
 
-	include 'nbasin.h'
                 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'basin.h'
        
-        real uprv(nlvdim,1),vprv(nlvdim,1),wprv(0:nlvdim,1)
-        common /uprv/uprv, /vprv/vprv, /wprv/wprv
+	include 'hydro_print.h'
         
-	real utlov(nlvdim,1)
-	common /utlov/utlov
-	real vtlov(nlvdim,1)
-	common /vtlov/vtlov
 
-	real zeov(3,1)
-	common /zeov/zeov
-	real hev(1)
-	common /hev/hev
+	include 'hydro.h'
+	include 'depth.h'
        
         real x,y
         real vold,vnow

@@ -247,10 +247,9 @@ c computes fluxes through all elements of finite volume
 	real a(1)		!area of element (return)
 	real z(1)		!dz/dt in element
 
-        real uov(1),vov(1),unv(1),vnv(1)
-        common /uov/uov, /vov/vov, /unv/unv, /vnv/vnv
-        real zenv(3,1), zeov(3,1)
-        common /zenv/zenv, /zeov/zeov
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'hydro_baro.h'
+	include 'hydro.h'
 	include 'ev.h'
 	include 'links.h'
 
@@ -316,8 +315,8 @@ c stores computed fluxes in array
 	real z(1)		!dz/dt in element
 	real eflux(7,3,1)	!flux through element sections
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'param.h'
+	include 'basin.h'
 
 	integer i,ie,ii
 	integer inext
@@ -356,11 +355,10 @@ c checks consistency of array eflux
 	integer nel		!total number of elements
 	real dt			!time step
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'ev.h'
-        real zenv(3,1), zeov(3,1)
-        common /zenv/zenv, /zeov/zeov
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'hydro.h'
+	include 'basin.h'
 
 	integer ie,ii,k,iii
 	real fiitot(3)
@@ -440,11 +438,8 @@ c writes ktype to GRD file
 
 	implicit none
 
-	include 'nbasin.h'
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'param.h'
+	include 'basin.h'
 
 	integer k,ktype
 	integer ie,ii
@@ -746,12 +741,11 @@ c fills global array with scalars of one element
         integer ipm(3,1)
         integer ipam(2,1)
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'regflux.h'
 
-        real zenv(3,1)
-        common /zenv/zenv
-        real hm3v(3,1)
-        common /hm3v/hm3v
+	include 'hydro.h'
+	include 'basin.h'
 
 	integer i,j,k,ii
 	integer ix,iy

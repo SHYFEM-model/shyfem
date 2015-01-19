@@ -22,23 +22,10 @@ c computes fluxes of scalar (sediment) through section
 	include 'param.h'
 
 c--------------------------------------------------
-        character*80 descrr
-        common /descrr/descrr
-        character*80 descrp
-        common /descrp/descrp
-	include 'nbasin.h'
+	include 'basin.h'
+	include 'simul.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        real hm3v(3,neldim)
-        integer nen3v(3,neldim)
-        integer ipv(nkndim), ipev(neldim)
-        integer iarv(neldim)
 
-        common /xgv/xgv, /ygv/ygv
-        common /hm3v/hm3v
-        common /nen3v/nen3v
-        common /ipv/ipv, /ipev/ipev
-        common /iarv/iarv
 c--------------------------------------------------
 
 	character*80 title
@@ -367,12 +354,8 @@ c***************************************************************
 	integer nodes(nnodes)
 	real flx(2,nnodes)
 
-	include 'nbasin.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
+	include 'basin.h'
 
 	integer i,ii,i1,i2,im,ip
 	integer k,k1,k2

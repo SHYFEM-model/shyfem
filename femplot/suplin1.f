@@ -18,18 +18,11 @@ c*******************************************************************
 	real pp3(nlvdim,nkndim)
 
 	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real het3v(nlvdim,neldim)
-        common /het3v/het3v
+	include 'plot_aux.h'
 
-        real uprv(nlvdim,nkndim)
-	common /uprv/uprv
-        real vprv(nlvdim,nkndim)
-	common /vprv/vprv
-        real wprv(nlvdim,nkndim)
-	common /wprv/wprv
+	include 'hydro_print.h'
 
 	integer k,l
 	real u,v,w
@@ -66,16 +59,9 @@ c*******************************************************************
 
 	include 'nbasin.h'
 
-        real utlnv(nlvdim,neldim)
-        common /utlnv/utlnv
-        real vtlnv(nlvdim,neldim)
-        common /vtlnv/vtlnv
-        real ulnv(nlvdim,neldim)
-        common /ulnv/ulnv
-        real vlnv(nlvdim,neldim)
-        common /vlnv/vlnv
-        integer ilhv(neldim)
-        common /ilhv/ilhv
+	include 'hydro.h'
+	include 'hydro_vel.h'
+	include 'levels.h'
 
 	integer ie,l,lmax
 	real h,rh
@@ -105,28 +91,14 @@ c*******************************************************************
 
 	include 'param.h'
 
-	include 'nbasin.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	integer nen3v(3,neldim)
-	common /nen3v/nen3v
-        integer ilhv(neldim)
-        common /ilhv/ilhv
+	include 'basin.h'
+	include 'levels.h'
 
-        real ulnv(nlvdim,neldim)
-        common /ulnv/ulnv
-        real vlnv(nlvdim,neldim)
-        common /vlnv/vlnv
-        real wlnv(0:nlvdim,nkndim)
-        common /wlnv/wlnv
+	include 'hydro_vel.h'
 
-        real uprv(nlvdim,nkndim)
-	common /uprv/uprv
-        real vprv(nlvdim,nkndim)
-	common /vprv/vprv
-        real wprv(nlvdim,nkndim)
-	common /wprv/wprv
+	include 'hydro_print.h'
 
 	include 'ev.h'
 

@@ -261,15 +261,9 @@ c flags elements which are in/out-side or at border of line
 	real x(1),y(1)
 	integer iflag(1)
 
-	include 'nbasin.h'
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real xgv(1)
-	common /xgv/xgv
-	real ygv(1)
-	common /ygv/ygv
-	real v1v(1)
-	common /v1v/v1v
+	include 'param.h'
+	include 'basin.h'
+	include 'aux_array.h'
 
 	logical inpoly
 	logical debug

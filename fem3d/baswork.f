@@ -31,22 +31,10 @@ c works on basin data structure
 	include 'basin.h'
 	include 'evmain.h'
 
-	integer ilinkv(nkndim+1)
-        common /ilinkv/ilinkv
-        integer linkv(nlkdim)
-        common /linkv/linkv
-        integer lenkv(nlkdim)
-        common /lenkv/lenkv
+	include 'geom.h'
 
-        integer kantv(2,nkndim)
-        common /kantv/kantv
-        integer ieltv(3,neldim)
-        common /ieltv/ieltv
 
-	real hkv(nkndim)
-	common /hkv/hkv
-	real hev(neldim)
-	common /hev/hev
+	include 'depth.h'
 
 	real haux(nkndim)
 
@@ -100,8 +88,7 @@ c creates boundary condition for circular flume
 	include 'param.h'
 	include 'basin.h'
 
-	real hkv(nkndim)
-	common /hkv/hkv
+	include 'depth.h'
 
 	!call bnd_nodes(1563,551,-11)	!circular_flume_7680
 	call bnd_nodes(1024,386,-11)	!Hafenmodell_7680
@@ -126,8 +113,7 @@ c*****************************************************************
 	integer kint(ndim)
 	real tang(2,ndim)
 
-        integer kantv(2,nkndim)
-        common /kantv/kantv
+	include 'geom.h'
 
 	integer ip,k,i,lmax
 	integer ka,kb

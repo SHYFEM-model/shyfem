@@ -254,14 +254,8 @@ c administers writing of flux data
 	integer idtflx
 	real az,azpar,rr
 
-	real rhov(nlvdim,nkndim)
-        common /rhov/rhov
-        real saltv(nlvdim,nkndim)
-        common /saltv/saltv
-        real tempv(nlvdim,nkndim)
-        common /tempv/tempv
-        real cnv(nlvdim,nkndim)
-        common /cnv/cnv
+	include 'ts.h'
+	include 'conz.h'
 
 	integer ifemop
 	real getpar
@@ -477,8 +471,7 @@ c ivar_base	base of variable numbering
 
 	integer it
 
-        real conzv(nlvdim,nkndim,ncsdim)	!multiple concentrations
-        common /conzv/conzv
+	include 'conz.h'
 
 	integer itend
 	integer j,i,k,l,lmax,nlmax,ivar,nvers,ivar_base

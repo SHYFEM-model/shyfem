@@ -29,17 +29,9 @@ c--------------------------------------------------
 
 	character*80 title
 
-	integer ilhv(neldim)
-	integer ilhkv(nkndim)
-	real hlv(nlvdim)
-	real hev(neldim)
-	real hkv(nkndim)
 
-	common /ilhv/ilhv
-	common /ilhkv/ilhkv
-	common /hev/hev
-	common /hlv/hlv
-	common /hkv/hkv
+	include 'levels.h'
+	include 'depth.h'
 
 	real hl(nlvdim)
 	real haux(nkndim)

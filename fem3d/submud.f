@@ -21,43 +21,20 @@
   
           include 'param.h'
   
-	include 'nbasin.h'
 
-        integer ilhkv(nkndim)           !number of node levels
-        common /ilhkv/ilhkv
-        real difv(0:nlvdim,nkndim)	!vertical diffusivity
+	include 'levels.h'
         real difvm(0:nlvdim,nkndim)  !vertical diffusivity for transport of mud
-        common /difv/difv
-        real difhv(nlvdim,1)		!horizontal diffusivity
-        double precision nf(nlvdim,nkndim)  ! fractal dimension
-        common /nf/nf
-        common /difhv/difhv
-        integer nlvdi,nlv               !total number of levels
-        common /level/ nlvdi,nlv
-        real rhov(nlvdim,nkndim)	!water density
-        common /rhov/rhov
-        double precision dmf_mud(nlvdim,nkndim)  !floc diameter
-        common /dmf_mud/dmf_mud
-        real vts(0:nlvdim,nkndim)
-        common /vts/vts
-        real wprvs(0:nlvdim,nkndim)    !water density
-        common /wprvs/wprvs
+	include 'diff_visc_fric.h'
+	include 'nlevel.h'
+	include 'ts.h'
         
 
-        double precision rhomud(nlvdim,nkndim) !Mud floc particle density (kg/m3)
-        common /rhomud/rhomud
-        real lambda(nlvdim,nkndim) !Mud floc particle density (kg/m3)
-        common /lambda/lambda
         integer, save :: testnode, icycle
         logical, save :: ldebug,lsink,lhind,llambda,ladvlam
         logical, save :: lfloc,ladvfloc
-        real z0bkmud(nkndim)                   !bottom roughenss on nodes
-        common /z0bkmud/z0bkmud
-        real xgv(1),ygv(1) ! coordinate nodi
-        common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
-        real wprv(nlvdim,nkndim)
-        common /wprv/wprv
+	include 'hydro_print.h'
 
         integer, allocatable :: innode(:)          !in boundary node number array (bound1)
         integer, allocatable :: ounode(:)          !out boundary node number array (bound2)
@@ -72,8 +49,7 @@
 
         save nk, innode, ounode
 
-        integer irv(nrbdim)                  !boundary node number array
-        common /irv/irv
+	include 'bound_geom.h'
 
 ! -------------------------------------------------------------
 ! local mud variables
@@ -88,42 +64,28 @@
         integer k,l,lmax		!Counters
         character*10 what
         double precision rhow		!Fluid density (kg/m3)
-        double precision rhosed		!Mud primary particle density (kg/m3)
-        common /rhosed/ rhosed
+	include 'fluidmud.h'
         double precision cgel(nlvdim),phigel(nlvdim)
         real mudref		!Initial fluid mud concentration (kg/m3)
-        double precision dm0		!Primary particle diameter [m]
-        common /dm0/ dm0
         double precision visk		!molecular viscosity
         double precision phi(nlvdim),phip(nlvdim)
         integer lthick			!Initial fluid mud layer thickness (layer number)
-        real mudc(nlvdim,nkndim)	!Fluid mud concentration array (kg/m3)
-        common /mudc/mudc
         real mudhpar			!Fluid mud diffusion coefficient [m**2/s]
         real difmol			!Molecolar diffusion coefficient [m**2/s]
         real mwsink			!Fluid mud floc settling velocity [m/s]
 	    real wsink,sinkaccel
 	    real fact, dm1 
-        real wsinkv(0:nlvdim,nkndim)	!Settling velocity array
-        common /wsinkv/wsinkv
+	include 'sinking.h'
         real tsec			!Simulation time, real [s]
         real bnd3_mud(nb3dim,0:nbcdim)  !Array containing boundary state
         real bnd3_lam(nb3dim,0:nbcdim)  !Array containing boundary state
         real bnd3_dmf(nb3dim,0:nbcdim)  !Array containing boundary state
         real fmbnd(nsmud),fak,smooth
         real t_now,t_start		        !Boundary vector [kg/m3]
-        character*80 mud2dn(1)		!File for boundary condition
-        common /mud2dn/mud2dn
-        character*80 lam2dn(1)          !File for boundary condition
-        common /lam2dn/lam2dn
-        character*80 dmf2dn(1)          !File for boundary condition
-        common /dmf2dn/dmf2dn
+	include 'bound_names.h'
         logical, save :: circle,ldumpmud,linitmud,lsetbound
         !include 'testbndo.h'
 
-        save /mud2dn/
-        save /lam2dn/
-        save /dmf2dn/
         save what,mudref,lthick,sinkaccel
         save fmbnd
         save bnd3_mud
@@ -439,23 +401,13 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 
         integer k,l,nlev
         double precision phip(nlvdim),phi(nlvdim)
-        double precision rhomud(nlvdim,nkndim)        !Mud floc particle density (kg/m3)
-        common /rhomud/ rhomud
-        double precision dmf_mud(nlvdim,nkndim)  !floc diameter
-        common /dmf_mud/dmf_mud
-        real mudc(nlvdim,nkndim)  !floc diameter
-        common /mudc/mudc
-        double precision rhosed                !Mud primary particle density (kg/m3)
-        common /rhosed/ rhosed
-	save /rhosed/
+	include 'fluidmud.h'
         double precision rhow          !Sediment mineral density (kg/m3)
         double precision dm0           !Actual and primary diameter
-        double precision nf(nlvdim,nkndim)  ! fractal dimension
-        common /nf/nf
 
 
-        integer ilhkv(nkndim),lmax           !number of node levels
-        common /ilhkv/ilhkv
+	integer lmax
+	include 'levels.h'
         integer testnode,icycle,iwrite
         logical ldebug
         save iwrite
@@ -494,18 +446,11 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         include 'param.h'
 
         integer k,l,nlev
-        double precision rhomud(nlvdim,nkndim)        !Mud floc particle density (kg/m3)
-        common /rhomud/ rhomud
-        double precision nf(nlvdim,nkndim)  ! fractal dimension
-        common /nf/nf
-        double precision dmf_mud(nlvdim,nkndim)  !floc diameter
-        common /dmf_mud/dmf_mud
-        double precision rhosed                !Mud primary particle density (kg/m3)
-        common /rhosed/ rhosed
+	include 'fluidmud.h'
         double precision rhow          !Sediment mineral density (kg/m3)
         double precision dm0           !Actual and primary diameter
-        integer ilhkv(nkndim),lmax           !number of node levels
-        common /ilhkv/ilhkv
+	integer lmax
+	include 'levels.h'
         integer testnode,icycle,iwrite
         logical ldebug
         save iwrite
@@ -538,12 +483,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 !
         include 'param.h'
 
-        real mudc(nlvdim,1)        !Fluid mud concentration array (kg/m3)      !ccf
-        common /mudc/mudc
-        double precision rhomud(nlvdim,nkndim)        !Mud floc particle density (kg/m3)
-        common /rhomud/ rhomud
-        double precision rhosed     !Mud primary particle density (kg/m3)
-        common /rhosed/ rhosed
+	include 'fluidmud.h'
         real*8 drho, maxdrho
 
         integer, intent(in) :: l,k
@@ -577,21 +517,14 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 
         integer k,l,nlev
 
-        double precision rhomud(nlvdim,nkndim)        !Mud floc particle density (kg/m3)
-        common /rhomud/ rhomud
-        double precision dmf_mud(nlvdim,nkndim)  !floc diameter
-        common /dmf_mud/dmf_mud
-        double precision nf(nlvdim,nkndim)  ! fractal dimension
-        common /nf/nf
 
         double precision rhow          !Sediment mineral density (kg/m3)
         double precision dm0           !Actual and primary diameter
         double precision cgel(nlvdim)  ! gel, concentration
         double precision phigel(nlvdim)! gel, concentration
-        integer ilhkv(nkndim),lmax           !number of node levels
-        common /ilhkv/ilhkv
-        double precision rhosed                !Mud primary particle density (kg/m3)
-        common /rhosed/ rhosed
+	integer lmax
+	include 'levels.h'
+	include 'fluidmud.h'
         integer testnode,icycle, iwrite
         logical ldebug
         save iwrite
@@ -632,26 +565,15 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         integer nlvdi,nkn               !number of level and nodes
         double precision d              !grain size
         double precision visk           !molecular viskosity 
-        real mudc(nlvdim,nkndim)        !Fluid mud concentration array (kg/m3)
         real getpar,vismol
-        double precision rhosed                !Mud primary particle density (kg/m3)
-        common /rhosed/ rhosed
-        common /mudc/mudc
-        real wsinkv(0:nlvdim,nkndim) !Fluid mud concentration array (kg/m3)
-        common /wsinkv/wsinkv
-        double precision rhomud(nlvdim,nkndim)        !Density of mixture 
-        common /rhomud/rhomud
-        real rhov(nlvdim,nkndim)        !Density of mixture 
-        common /rhov/rhov
-        integer ilhkv(nkndim)           !number of node levels
-        common /ilhkv/ilhkv
+	include 'fluidmud.h'
+	include 'sinking.h'
+	include 'ts.h'
+	include 'levels.h'
 
-        double precision dmf_mud(nlvdim,nkndim)  !floc diameter
-        common /dmf_mud/dmf_mud
         integer l,k,lmax
 
-        integer irv(nrbdim)                  !boundary node number array
-        common /irv/irv
+	include 'bound_geom.h'
 
         double precision :: rhost,nu,dst,ws0,ws,rhow,fak,dmi
         double precision, intent(in):: phi(nlvdim)         !Fluid density (kg/m3)
@@ -741,18 +663,9 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 	include 'nbasin.h'
 	include 'pkonst.h'
 
-        real vts(0:nlvdim,nkndim)
-        common /vts/vts
-        real rhov(nlvdim,nkndim)
-        common /rhov/rhov
-        double precision rhomud         ! Mud floc particle density (kg/m3)
-        common /rhomud/ rhomud
-        real mudc(nlvdim,1)        !Fluid mud concentration array (kg/m3)      !ccf
-        common /mudc/mudc
-        real shearf2(nlvdim,nkndim)
-        common /shearf2/shearf2
-        real lambda(nlvdim,nkndim)        ! lambda array
-        common/lambda/lambda
+	include 'ts.h'
+	include 'fluidmud.h'
+	include 'gotm_aux.h'
 
         integer k,l,nlev
         real*8 aux,dh,du,dv,m2,dbuoy,tau_test,lambda_e,visk_new
@@ -833,29 +746,12 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 	include 'nbasin.h'
 	include 'pkonst.h'
 
-        real vts(0:nlvdim,nkndim)
-        common /vts/vts
-        real rhov(nlvdim,nkndim)
-        common /rhov/rhov
-        double precision rhomud         ! Mud floc particle density (kg/m3)
-        common /rhomud/ rhomud
-        real mudc(nlvdim,1)        !Fluid mud concentration array (kg/m3)      !ccf
-        common /mudc/mudc
-        real shearf2(nlvdim,nkndim)
-        common /shearf2/shearf2
+	include 'ts.h'
+	include 'gotm_aux.h'
         real tstress(nlvdim)
-        real z0bkmud(nkndim)                   !bottom roughenss on nodes
-        common /z0bkmud/z0bkmud
-        real z0bk(nkndim)                   !bottom roughenss on nodes
-        common /z0bk/z0bk
-        real visv(0:nlvdim,nkndim)
-        common /visv/visv
-        real difv(0:nlvdim,nkndim)
-        common /difv/difv
-        real visv_yield(0:nlvdim,nkndim)
-        common /visv_yield/visv_yield
-        real difv_yield(0:nlvdim,nkndim)
-        common /difv_yield/difv_yield
+	include 'fluidmud.h'
+	include 'roughness.h'
+	include 'diff_visc_fric.h'
 
         integer k,l,nlev
         real aux,dh,du,dv,m2,dbuoy,tau_test,lambda_e
@@ -962,18 +858,10 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 	real alpha
 	include 'pkonst.h'
 
-        real vts(0:nlvdim,nkndim)
-        common /vts/vts
-        real wsinkv(0:nlvdim,nkndim)
-        common /wsinkv/wsinkv
-        real rhov(nlvdim,nkndim)
-        common /rhov/rhov
-        double precision rhomud         ! Mud floc particle density (kg/m3)
-        common /rhomud/ rhomud
-        real mudc(nlvdim,1)        !Fluid mud concentration array (kg/m3)      !ccf
-        common /mudc/mudc
-        real shearf2(nlvdim,nkndim)
-        common /shearf2/shearf2
+	include 'sinking.h'
+	include 'ts.h'
+	include 'fluidmud.h'
+	include 'gotm_aux.h'
 
         integer k,nlev
 
@@ -986,11 +874,10 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         real, parameter :: beta = 0.7
         real, parameter :: mpar = 1.
 
-        real visv(0:nlvdim,nkndim)  !viscosity (momentum)
-        common /visv/visv
+	include 'diff_visc_fric.h'
 
-        integer ilhkv(nkndim),i           !number of node levels
-        common /ilhkv/ilhkv
+	integer i
+	include 'levels.h'
         real h(nlvdim)
 
         call dep3dnod(k,+1,nlev,h)
@@ -1041,18 +928,10 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 	real alpha
 	include 'pkonst.h'
 
-        real vts(0:nlvdim,nkndim)
-        common /vts/vts
-        real wsinkv(0:nlvdim,nkndim)
-        common /wsinkv/wsinkv
-        real rhov(nlvdim,nkndim)
-        common /rhov/rhov
-        double precision rhomud         ! Mud floc particle density (kg/m3)
-        common /rhomud/ rhomud
-        real mudc(nlvdim,1)        !Fluid mud concentration array (kg/m3)      !ccf
-        common /mudc/mudc
-        real shearf2(nlvdim,nkndim)
-        common /shearf2/shearf2
+	include 'sinking.h'
+	include 'ts.h'
+	include 'fluidmud.h'
+	include 'gotm_aux.h'
 
         integer k,l,nlev
         real tstress
@@ -1061,10 +940,8 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         real*8 cnpar,stress_x,stress_y, rhobar
         real*8  g_dot, rhop, tau,visk, drho, ri
 
-        real visv(0:nlvdim,nkndim)      !viscosity (momentum)
-        common /visv/visv      !viscosity (momentum)
-        integer ilhkv(nkndim)           !number of node levels
-        common /ilhkv/ilhkv
+	include 'diff_visc_fric.h'
+	include 'levels.h'
 
         lmax = ilhkv(k)
         g_dot = sqrt(shearf2(lmax,k))
@@ -1091,8 +968,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         integer k,l,nlev
         real*8 ufric,depth
         real visk1,visk2
-        integer ilhkv(nkndim)           !number of node levels
-        common /ilhkv/ilhkv
+	include 'levels.h'
         real h(nlvdim)
 
         call dep3dnod(k,+1,nlev,h)
@@ -1119,27 +995,12 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 	include 'nbasin.h'
 	include 'pkonst.h'
 
-        double precision rhosed                !Mud primary particle density (kg/m3)
-        common /rhosed/ rhosed
+	include 'fluidmud.h'
 
-        integer ilhkv(nkndim)           !number of node levels
-        common /ilhkv/ilhkv
-        real vts(0:nlvdim,nkndim)
-        common /vts/vts
-        real visv(0:nlvdim,nkndim)
-        common /visv/visv
-        real rhov(nlvdim,nkndim)
-        common /rhov/rhov
-        double precision nf(nlvdim,nkndim)  ! fractal dimension
-        common /nf/nf
-        double precision rhomud(nlvdim,nkndim)         ! Mud floc particle density (kg/m3)
-        common /rhomud/ rhomud
-        real mudc(nlvdim,1)             !Fluid mud concentration array (kg/m3)      !ccf
-        common /mudc/mudc
-        double precision dmf_mud(nlvdim,nkndim)  !floc diameter
-        common /dmf_mud/dmf_mud
-        real shearf2(nlvdim,nkndim)
-        common /shearf2/shearf2
+	include 'levels.h'
+	include 'diff_visc_fric.h'
+	include 'ts.h'
+	include 'gotm_aux.h'
 
         real, intent(in)    :: dt                   ! time step
         double precision, intent(in)    :: dm0                  ! Size of primary floc
@@ -1319,17 +1180,11 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         logical ldebug
         integer testnode, icycle
 
-        double precision rhosed                !Mud primary particle density (kg/m3)
-        common /rhosed/ rhosed
-        real rhov(nlvdim,nkndim)
-        common /rhov/rhov
-        real shearf2(nlvdim,nkndim)
-        common /shearf2/shearf2
-        real lambda(nlvdim,nkndim)        ! lambda array
-        common/lambda/lambda
+	include 'fluidmud.h'
+	include 'ts.h'
+	include 'gotm_aux.h'
 
-        integer ilhkv(nkndim)           !number of node levels
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
         real, intent(in)    :: dt                   ! time step
 
@@ -1633,8 +1488,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 
 	integer k,l !DEB
 	include 'nbasin.h'
-        integer nlvdi,nlv               !total number of levels
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	character*(*) what
         integer ivar
         real fact           !factor for boundary condition
@@ -1714,13 +1568,10 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 
         real r3v(nlvdim,1)              !boundary conc array
 
-        integer irv(nrbdim)                  !boundary node number array
-        common /irv/irv
-        integer nlvdi,nlv               !total number of levels
-        common /level/ nlvdi,nlv
+	include 'bound_geom.h'
+	include 'nlevel.h'
         real scal(nlvdim,1)             !Fluid mud concentration array (kg/m3)      !ccf
-        real mfluxv(nlvdim,1)
-        common /mfluxv/mfluxv
+	include 'bound_dynamic.h'
 
         integer, allocatable :: innode(:)          !in boundary node number array (bound1)
         integer, allocatable :: ounode(:)          !out boundary node number array (bound2)
@@ -1734,13 +1585,9 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         save innode,ounode,nk,nnode
         data icall /0/
 
-        real uprv(nlvdim,nkndim)
-        common /uprv/uprv
-        real vprv(nlvdim,nkndim)
-        common /vprv/vprv
+	include 'hydro_print.h'
 
-        integer ilhkv(nkndim)           !number of node levels
-        common /ilhkv/ilhkv
+	include 'levels.h'
         integer lmax
         real diff
 
@@ -1813,14 +1660,11 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 
         real,intent(in) :: mudref       !mudref  
  
-        integer irv(1)                  !boundary node number array
-        common /irv/irv
-        integer nlvdi,nlv               !total number of levels
-        common /level/ nlvdi,nlv
+	include 'bound_geom.h'
+	include 'nlevel.h'
         real r3v(nlvdim,1)              !boundary conc array
 
-        real mudc(nlvdim,1)             !Fluid mud concentration array (kg/m3)      !ccf
-        common /mudc/mudc
+	include 'fluidmud.h'
 
         integer, allocatable :: innode(:)          !in boundary node number array (bound1)
         integer, allocatable :: ounode(:)          !out boundary node number array (bound2)
@@ -1898,38 +1742,16 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 
         include 'param.h'
 
-	include 'nbasin.h'
 	include 'pkonst.h'
 
-        double precision rhosed                !Mud primary particle density (kg/m3)
-        common /rhosed/ rhosed
+	include 'fluidmud.h'
 
-        real vts(0:nlvdim,nkndim)
-        common /vts/vts
-        real visv(0:nlvdim,nkndim)
-        common /visv/visv
-        real rhov(nlvdim,nkndim)
-        common /rhov/rhov
-        double precision rhomud         ! Mud floc particle density (kg/m3)
-        common /rhomud/ rhomud
-        real mudc(nlvdim,1)             !Fluid mud concentration array (kg/m3)      !ccf
-        common /mudc/mudc
-        double precision dmf_mud(nlvdim,nkndim)  !floc diameter
-        common /dmf_mud/dmf_mud
-        real shearf2(nlvdim,nkndim)
-        common /shearf2/shearf2
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        real xgv(1),ygv(1) ! coordinate nodi
-        common /xgv/xgv, /ygv/ygv
-	    real uprv(nlvdim,nkndim)
-        common /uprv/uprv
-   	    real vprv(nlvdim,nkndim)
-        common /vprv/vprv
-        real hkv(nkndim)
-        real lambda(nlvdim,nkndim)        ! lambda array
-        common/lambda/lambda
-        common /hkv/hkv
+	include 'diff_visc_fric.h'
+	include 'ts.h'
+	include 'gotm_aux.h'
+	include 'basin.h'
+	include 'hydro_print.h'
+	include 'depth.h'
 
         logical, save :: lfirst
         data lfirst/.true./
@@ -2001,8 +1823,7 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
         include 'param.h'
 
 	include 'nbasin.h'
-        integer ilhkv(nkndim)           !number of node levels
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
         integer it
         real mudc(nlvdim,nkndim)    !Fluid mud concentration array (kg/m3)

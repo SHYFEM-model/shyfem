@@ -186,54 +186,23 @@ c
 c parameter
 	include 'param.h'
 c common
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'femtime.h'
 	include 'nbasin.h'
-	real rqv(1),v1v(1),v2v(1)
-	real zov(1),znv(1),unv(1),vnv(1)
-	real ulnv(nlvdim,1),vlnv(nlvdim,1)
-	real ulov(nlvdim,1),vlov(nlvdim,1)
-	real wlov(0:nlvdim,1),wlnv(0:nlvdim,1)
-	real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-	real utlov(nlvdim,1),vtlov(nlvdim,1)
-	real uov(1),vov(1)			!$$UVBARO
-	real wprv(0:nlvdim,1)			!$$VERVEL
-        real saux1(nlvdim,1),saux2(nlvdim,1)
 
-	common /rqv/rqv
-	common /v1v/v1v, /v2v/v2v
-	common /zov/zov, /znv/znv
-	common /unv/unv, /vnv/vnv
-	common /ulnv/ulnv, /vlnv/vlnv
-	common /ulov/ulov, /vlov/vlov
-	common /wlov/wlov, /wlnv/wlnv
-	common /utlnv/utlnv, /vtlnv/vtlnv
-	common /utlov/utlov, /vtlov/vtlov
-	common /uov/uov, /vov/vov	!$$UVBARO
-	common /wprv/wprv			!$$VERVEL
-        common /saux1/saux1, /saux2/saux2
-	real zeov(3,1),zenv(3,1)
-	common /zeov/zeov, /zenv/zenv
-	real v3v(1)
-	common /v3v/v3v
+	include 'bound_dynamic.h'
+	include 'aux_array.h'
+	include 'hydro.h'
+	include 'hydro_vel.h'
+	include 'hydro_baro.h'
 
-        real hdknv(nlvdim,1)
-        common /hdknv/hdknv
-        real hdkov(nlvdim,1)
-        common /hdkov/hdkov
+	include 'depth.h'
 
-        real hdenv(nlvdim,1)
-        common /hdenv/hdenv
-        real hdeov(nlvdim,1)
-        common /hdeov/hdeov
  
-        real areakv(nlvdim,1)
-        common /areakv/areakv
+	include 'area.h'
 
 cccccccccccccccccccccccccccc
-	real vp0v(1),vprv(nlvdim,1)
-	common /vp0v/vp0v , /vprv/vprv
+	include 'hydro_print.h'
 cccccccccccccccccccccccccccc
 ccccccccccccc
 ccccccccccccc
@@ -418,40 +387,23 @@ c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 	real drittl
 	parameter (drittl=1./3.)
 
-	include 'nbasin.h'
 	include 'mkonst.h'
 	include 'pkonst.h'
 	include 'femtime.h'
 
-	integer nen3v(3,1),ilhv(1)
-	integer iarv(1)
-	real rzv(1)
-	real hev(1)
-	real zov(1),unv(1),vnv(1)
-	real utlov(nlvdim,1),vtlov(nlvdim,1)
-	real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-	common /nen3v/nen3v, /ilhv/ilhv
-	common /iarv/iarv
-	common /rzv/rzv
-	common /hev/hev
-	common /zov/zov, /unv/unv ,/vnv/vnv
-	common /utlov/utlov, /vtlov/vtlov, /utlnv/utlnv, /vtlnv/vtlnv
-        real zeov(3,1),zenv(3,1)
-        common /zeov/zeov, /zenv/zenv
-	integer iwegv(1), inodv(1)
-	common /iwegv/iwegv, /inodv/inodv
+	include 'basin.h'
+	include 'levels.h'
+	include 'bound_dynamic.h'
+	include 'depth.h'
+	include 'hydro_baro.h'
+	include 'hydro.h'
+	include 'geom_dynamic.h'
 
-        integer iuvfix(1)       !chao deb
-        common /iuvfix/iuvfix   !chao deb
+	include 'internal.h'
         integer afix            !chao deb
 
-        double precision ddxv(2*nlvdim,neldim)  !ASYM
-        double precision ddyv(2*nlvdim,neldim)
-        common /ddxv/ddxv, /ddyv/ddyv
-        save /ddxv/, /ddyv/
 
-        real andgzv(nkndim)             !nudging contribution
-        common /andgzv/andgzv
+	include 'nudging.h'
 
 	logical bcolin
 	logical bdebug
@@ -784,73 +736,32 @@ c	parameter (am=0.50,amt=1.-am)
 c	parameter (af=0.50,aft=1.-af)
 c	parameter (at=0.50,att=1.-at)
 c common
-	integer nlvdi,nlv
-	include 'nbasin.h'
 	include 'mkonst.h'
 	include 'pkonst.h'
 	include 'femtime.h'
-	common /level/ nlvdi,nlv
-	integer nen3v(3,1)
-	integer ilhv(1)
-	integer iarv(1)
-	integer ipev(1)
-	real hev(1)
-	real zov(1)
-	real utlov(nlvdim,1),vtlov(nlvdim,1)
-        real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-	real uprv(nlvdim,1),vprv(nlvdim,1)
-        real saux1(nlvdim,1),saux2(nlvdim,1)
-        real saux3(nlvdim,1),saux4(nlvdim,1)
-	real tauxnv(1),tauynv(1)
-	real unv(1),vnv(1)
-	real fcorv(1)
-	real visv(0:nlvdim,1)
-	real czv(1)
-	common /nen3v/nen3v
-	common /ilhv/ilhv
-	common /iarv/iarv
-	common /ipev/ipev
-	common /hev/hev
-	common /zov/zov
-	common /utlov/utlov, /vtlov/vtlov, /utlnv/utlnv, /vtlnv/vtlnv
-	common /uprv/uprv, /vprv/vprv
-        common /saux1/saux1, /saux2/saux2
-        common /saux3/saux3, /saux4/saux4
-	common /tauxnv/tauxnv, /tauynv/tauynv
-	common /unv/unv, /vnv/vnv
-	common /fcorv/fcorv 
-	common /visv/visv
-	common /czv/czv
+	include 'nlevel.h'
+	include 'basin.h'
+	include 'levels.h'
+	include 'depth.h'
+	include 'hydro.h'
+	include 'hydro_print.h'
+	include 'aux_array.h'
+	include 'hydro_baro.h'
 	include 'ev.h'
 
-       integer iuvfix(1)        !chao deb
-       common /iuvfix/iuvfix    !chao deb
        integer afix             !chao deb
 
-	integer ilmv(1)
-	common /ilmv/ilmv
 
-	real difhv(nlvdim,1)
-	common /difhv/difhv
-	real rfricv(1)
-        common /rfricv/rfricv
+	include 'diff_visc_fric.h'
 
-        real hdeov(nlvdim,1)
-        common /hdeov/hdeov
 
-        real zeov(3,1),zenv(3,1)
-        common /zeov/zeov, /zenv/zenv
-	real ppv(1)
-	common /ppv/ppv
+	include 'meteo_aux.h'
 
-        real zeqv(1)
-        common /zeqv/zeqv
+	include 'tides.h'
 
-        real rdistv(1)
-        common /rdistv/rdistv
+	include 'internal.h'
 
-        real vts(0:nlvdim,nkndim)
-        common /vts/vts
+	include 'fluidmud.h'
 
 c local
 
@@ -892,19 +803,12 @@ c	real bb,bbt,cc,cct,aa,aat,ppx,ppy,aux,aux1,aux2
 	real bpres,cpres
 	real vis
         
-        real fxv(nlvdim,1)      !new HYDRO deb
-        real fyv(nlvdim,1)
-        common /fxv/fxv
-        common /fyv/fyv
 	real rraux,cdf
 
-        real wavefx(nlvdim,neldim)      !wave forcing terms
-        real wavefy(nlvdim,neldim)
-        common /wavefx/wavefx,/wavefy/wavefy
+	include 'waves.h'
 
 	real ss
-	real z0bk(nkndim)		!bottom roughenss on nodes
-	common /z0bk/z0bk
+	include 'roughness.h'
 
 c-----------------------------------------
 	real hact(0:nlvdim+1)
@@ -915,10 +819,6 @@ c-----------------------------------------
 	double precision rvec(6*nlvdim)		!ASYM (3 systems to solve)
 	double precision ppx,ppy
 
-	double precision ddxv(2*nlvdim,neldim)	!ASYM
-	double precision ddyv(2*nlvdim,neldim)
-	common /ddxv/ddxv, /ddyv/ddyv
-	save /ddxv/, /ddyv/
 
 c-----------------------------------------
 c	integer iaux
@@ -1317,38 +1217,21 @@ c parameters
 	real drittl
 	parameter (drittl=1./3.)
 c common
-	integer nlvdi,nlv
-	include 'nbasin.h'
 	include 'mkonst.h'
 	include 'pkonst.h'
 	include 'femtime.h'
-	common /level/ nlvdi,nlv
-	integer nen3v(3,1)
-	integer ilhv(1)
-	real hev(1)
-	real utlov(nlvdim,1),vtlov(nlvdim,1)
-	real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-	real unv(1),vnv(1)
-	common /nen3v/nen3v
-	common /ilhv/ilhv
-	common /hev/hev
-	common /utlov/utlov, /vtlov/vtlov, /utlnv/utlnv, /vtlnv/vtlnv
-	common /unv/unv, /vnv/vnv
+	include 'nlevel.h'
+	include 'basin.h'
+	include 'levels.h'
+	include 'depth.h'
+	include 'hydro_baro.h'
 	include 'ev.h'
 
-        integer iuvfix(1)       !chao deb
-        common /iuvfix/iuvfix   !chao deb
+	include 'internal.h'
         integer afix            !chao deb
 
-	real zov(1),znv(1)
-	common /zov/zov, /znv/znv
-	real zeov(3,1)
-	common /zeov/zeov
+	include 'hydro.h'
 
-        double precision ddxv(2*nlvdim,neldim)  !ASYM
-        double precision ddyv(2*nlvdim,neldim)
-        common /ddxv/ddxv, /ddyv/ddyv
-        save /ddxv/, /ddyv/
 
 c local
 	logical bcolin,bdebug
@@ -1485,23 +1368,13 @@ c arguments
 	real vf(nlvdim,1)
 	real va(nlvdim,1)
 c common
-	integer nlvdi,nlv
-	include 'nbasin.h'
-	common /level/ nlvdi,nlv
-	integer nen3v(3,1)
-	integer ilhv(1)
-	integer ilhkv(1)
-	real utlov(nlvdim,1),vtlov(nlvdim,1),wlov(0:nlvdim,1)
-	real utlnv(nlvdim,1),vtlnv(nlvdim,1),wlnv(0:nlvdim,1)
-	common /nen3v/nen3v
-	common /utlov/utlov, /vtlov/vtlov, /wlov/wlov
-	common /utlnv/utlnv, /vtlnv/vtlnv, /wlnv/wlnv
-	common /ilhv/ilhv
-	common /ilhkv/ilhkv
-	integer iwegv(1)
-	common /iwegv/iwegv
-        real mfluxv(nlvdim,1)
-        common /mfluxv/mfluxv
+	include 'nlevel.h'
+	include 'basin.h'
+	include 'hydro_vel.h'
+	include 'hydro.h'
+	include 'levels.h'
+	include 'geom_dynamic.h'
+	include 'bound_dynamic.h'
 	include 'ev.h'
 c local
 	logical debug
@@ -1678,23 +1551,13 @@ c arguments
 	real vf(nlvdim,1)
 	real va(nlvdim,1)
 c common
-	integer nlvdi,nlv
-	include 'nbasin.h'
-	common /level/ nlvdi,nlv
-	integer nen3v(3,1)
-	integer ilhv(1)
-	integer ilhkv(1)
-	real utlov(nlvdim,1),vtlov(nlvdim,1)
-	real utlnv(nlvdim,1),vtlnv(nlvdim,1),wlnv(0:nlvdim,1)
-	common /nen3v/nen3v
-	common /utlov/utlov, /vtlov/vtlov
-	common /utlnv/utlnv, /vtlnv/vtlnv, /wlnv/wlnv
-	common /ilhv/ilhv
-	common /ilhkv/ilhkv
-	integer iwegv(1)
-	common /iwegv/iwegv
-        real mfluxv(nlvdim,1)
-        common /mfluxv/mfluxv
+	include 'nlevel.h'
+	include 'basin.h'
+	include 'hydro.h'
+	include 'hydro_vel.h'
+	include 'levels.h'
+	include 'geom_dynamic.h'
+	include 'bound_dynamic.h'
 	include 'ev.h'
 c local
 	logical debug
@@ -1859,9 +1722,9 @@ c
 c arguments
         real rmat(1),v1(1),v2(1),zv(1)
 c common
-        integer nen3v(3,1),iwegv(1),inodv(1)
-	include 'nbasin.h'
-        common /nen3v/nen3v, /iwegv/iwegv, /inodv/inodv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'geom_dynamic.h'
+	include 'basin.h'
 	include 'ev.h'
 c local
         integer ii,ie,k,ii1,ii2,kk1,kk2,ier
@@ -2013,12 +1876,10 @@ c*******************************************************************
 
         implicit none
 
-	include 'nbasin.h'
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'mkonst.h'
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-	real rzv(1)
-	common /rzv/rzv
+	include 'basin.h'
+	include 'bound_dynamic.h'
 	include 'ev.h'
 
         integer ie,i,kk
@@ -2082,17 +1943,10 @@ c momentum input for yaron
 	include 'param.h'
 	include 'ev.h'
 
-	include 'nbasin.h'
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        real hdeov(nlvdim,1)
-        common /hdeov/hdeov
-        real fxv(nlvdim,1)
-        real fyv(nlvdim,1)
-        common /fxv/fxv
-        common /fyv/fyv
+	include 'levels.h'
+	include 'basin.h'
+	include 'depth.h'
+	include 'internal.h'
 
 	integer kin,lin,ie,ii,k,lmax,nelem
 	real rnx,rny,rfact,q,area,h,fact
@@ -2135,9 +1989,9 @@ c*******************************************************************
 
 	real dzeta(1)		!zeta correction
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-	real znv(1)
-	common /znv/znv
+	include 'hydro.h'
 
 	integer k
 

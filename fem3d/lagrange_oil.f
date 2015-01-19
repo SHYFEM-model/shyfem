@@ -29,10 +29,7 @@ c*******************************************************************
 
 	include 'ev.h'
 
-	real v1v(1)
-	common /v1v/v1v
-	real v2v(1)
-	common /v2v/v2v
+	include 'aux_array.h'
 
 	include 'femtime.h'
 	include 'nbasin.h'

@@ -31,10 +31,7 @@ c takes care of lat/lon coordinates
 
 	integer ndim
 
-        real hev(neldim)
-        common /hev/hev
-        real hkv(nkndim)
-        common /hkv/hkv
+	include 'depth.h'
 
         real raux(neldim)
         integer iaux(neldim)
@@ -42,14 +39,7 @@ c takes care of lat/lon coordinates
 
 	include 'evmain.h'
 
-        integer ilinkv(nkndim+1)
-        common /ilinkv/ilinkv
-        integer lenkv(nlkdim)
-        common /lenkv/lenkv
-        integer linkv(nlkdim)
-        common /linkv/linkv
-        integer ieltv(3,neldim)
-        common /ieltv/ieltv
+	include 'geom.h'
 
         character*40 bfile,gfile,nfile
         character*60 line
@@ -252,15 +242,10 @@ c copies depth values from elems/nodes to nodes/elems
 
 	include 'param.h'
 
-	include 'nbasin.h'
 
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
+	include 'basin.h'
 
-        real hev(neldim)
-        common /hev/hev
-        real hkv(nkndim)
-        common /hkv/hkv
+	include 'depth.h'
 
 	integer k,ie,ii
 	real depth
@@ -314,10 +299,7 @@ c handles depth values
 
 	include 'nbasin.h'
 
-        real hev(neldim)
-        common /hev/hev
-        real hkv(nkndim)
-        common /hkv/hkv
+	include 'depth.h'
 
 	integer k,ie
 
@@ -347,11 +329,8 @@ c areatr        element area (return value)
 
 	include 'param.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
 
 	real aj
 	integer ii,i1,i2,k1,k2
@@ -401,10 +380,7 @@ c*******************************************************************
 	include 'param.h'
 
 	include 'nbasin.h'
-	real hev(neldim)
-        common /hev/hev
-	real hkv(nkndim)
-        common /hkv/hkv
+	include 'depth.h'
 
 	integer ie,k
 
@@ -460,17 +436,10 @@ c smoothes depth values
 	include 'param.h'
 	include 'evmain.h'
 
-	include 'nbasin.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
-	real hev(neldim)
-        common /hev/hev
-	real hkv(nkndim)
-        common /hkv/hkv
+	include 'basin.h'
+	include 'depth.h'
 
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
 
 	integer ie,ii,k,i,nok
 	real x,y,d,h,hold,hnew,ao
@@ -612,31 +581,13 @@ c deletes elements with depth lower then hmin
 
 	include 'param.h'
 
-	include 'nbasin.h'
 
-        real xgv(nkndim), ygv(nkndim)
-        common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
-        integer nen3v(3,neldim)
-        integer ipev(neldim), ipv(nkndim)
-        integer iarv(neldim)
-        common /nen3v/nen3v
-        common /ipev/ipev, /ipv/ipv
-        common /iarv/iarv
 
-        real hev(neldim)
-        common /hev/hev
-        real hkv(nkndim)
-        common /hkv/hkv
+	include 'depth.h'
 
-        integer ilinkv(nkndim+1)
-        common /ilinkv/ilinkv
-        integer lenkv(nlkdim)
-        common /lenkv/lenkv
-        integer linkv(nlkdim)
-        common /linkv/linkv
-        integer ieltv(3,neldim)
-        common /ieltv/ieltv
+	include 'geom.h'
 
 	integer icon(neldim)
 
@@ -701,10 +652,7 @@ c deletes elements with depth lower then hmin
 	include 'param.h'
 	include 'basin.h'
 
-        real hev(neldim)
-        common /hev/hev
-        real hkv(nkndim)
-        common /hkv/hkv
+	include 'depth.h'
 
 	integer ie,ii,k
 	integer n,ieh,kh
@@ -839,11 +787,8 @@ c*******************************************************************
 	integer icon(neldim)
 	integer icol,ibig
 
-	include 'nbasin.h'
-        integer nen3v(3,neldim)
-        common /nen3v/nen3v
-        integer ieltv(3,neldim)
-        common /ieltv/ieltv
+	include 'basin.h'
+	include 'geom_aux.h'
 
 	integer ie
 	integer i,nc,ic
@@ -897,8 +842,7 @@ c*******************************************************************
 	integer iestart,icol
 	integer icon(neldim)
 
-        integer ieltv(3,neldim)
-        common /ieltv/ieltv
+	include 'geom_aux.h'
 
 	integer ip,ien,ii,ie
 	integer list(neldim)

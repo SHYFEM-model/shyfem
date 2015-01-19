@@ -29,8 +29,7 @@ c****************************************************************
 	include 'basin.h'
 	include 'nudge.h'
 
-	real andgzv(nkndim)		!contribution to computation
-	common /andgzv/andgzv
+	include 'nudging.h'
 
 	logical binfl,binsert
 	integer nintp,nsize,ndim
@@ -140,10 +139,8 @@ c****************************************************************
 
 	include 'femtime.h'
 
-	real andgzv(nkndim)		!contribution to z-computation
-	common /andgzv/andgzv
-	real zov(nkndim)
-	common /zov/zov
+	include 'nudging.h'
+	include 'hydro.h'
 
 	integer i,k,kk,ia
 	integer nnudge,iuse,iu

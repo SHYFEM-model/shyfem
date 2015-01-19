@@ -73,60 +73,19 @@ c parameter
 c common
 	include 'femtime.h'
 	include 'nbasin.h'
-	integer nlvdi,nlv
-	common /level/nlvdi,nlv
+	include 'nlevel.h'
 
-	integer ilhv(1)
-	real fcorv(1)
-	real zov(1),znv(1)
-	real ulov(nlvdim,1)
-	real ulnv(nlvdim,1)
-	real vlov(nlvdim,1)
-	real vlnv(nlvdim,1)
-	real wlov(0:nlvdim,1)
-	real wlnv(0:nlvdim,1)
-	real utlov(nlvdim,1)
-	real utlnv(nlvdim,1)
-	real vtlov(nlvdim,1)
-	real vtlnv(nlvdim,1)
-	real hlv(1),hldv(1)
-	real hev(1)
-	common /ilhv/ilhv, /fcorv/fcorv
-	common /zov/zov, /znv/znv
-	common /ulov/ulov
-	common /vlov/vlov
-	common /wlov/wlov
-	common /ulnv/ulnv
-	common /vlnv/vlnv
-	common /wlnv/wlnv
-	common /utlov/utlov
-	common /vtlov/vtlov
-	common /utlnv/utlnv
-	common /vtlnv/vtlnv
-	common /hlv/hlv, /hldv/hldv
-	common /hev/hev
+	include 'internal.h'
+	include 'levels.h'
+	include 'hydro.h'
+	include 'hydro_vel.h'
+	include 'depth.h'
 
-	real visv(0:nlvdim,1)
-	common /visv/visv
-	real difv(0:nlvdim,1)
-	common /difv/difv
-        real saltv(nlvdim,1)
-        real tempv(nlvdim,1)
-        common /saltv/saltv
-        common /tempv/tempv
-        real zeov(3,1), zenv(3,1)
-        common /zeov/zeov, /zenv/zenv
-        real difhv(nlvdim,1)
-        common /difhv/difhv
-        integer iwegv(1)
-        common /iwegv/iwegv
+	include 'ts.h'
+	include 'diff_visc_fric.h'
+	include 'geom_dynamic.h'
 
-        real tauxnv(1), tauynv(1)
-        real wxv(1), wyv(1)
-        real ppv(1)
-        common /tauxnv/tauxnv, /tauynv/tauynv
-        common /wxv/wxv, /wyv/wyv
-        common /ppv/ppv
+	include 'meteo_aux.h'
 
 c local
 	logical bmeteo
@@ -294,41 +253,19 @@ c checks important variables
 
 	include 'nbasin.h'
 	include 'femtime.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real hdknv(nlvdim,1)
-        common /hdknv/hdknv
-        real hdkov(nlvdim,1)
-        common /hdkov/hdkov
+	include 'depth.h'
 
-        real hdenv(nlvdim,1)
-        common /hdenv/hdenv
-        real hdeov(nlvdim,1)
-        common /hdeov/hdeov
 
-        real zeov(3,1),zenv(3,1)
-        common /zeov/zeov, /zenv/zenv
 
-        real zov(1),znv(1)
-        common /zov/zov, /znv/znv
-	real unv(1),vnv(1)
-        common /unv/unv, /vnv/vnv
+	include 'hydro.h'
+	include 'hydro_baro.h'
 
-        real saltv(nlvdim,1)
-        common /saltv/saltv
-        real tempv(nlvdim,1)
-        common /tempv/tempv
+	include 'ts.h'
 
-        real utlov(nlvdim,1),vtlov(nlvdim,1)
-        common /utlov/utlov, /vtlov/vtlov
-        real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-	common /utlnv/utlnv, /vtlnv/vtlnv           
 
-        real ulov(nlvdim,1),vlov(nlvdim,1)
-        common /ulov/ulov, /vlov/vlov
-        real ulnv(nlvdim,1),vlnv(nlvdim,1)
-	common /ulnv/ulnv, /vlnv/vlnv           
+	include 'hydro_vel.h'
 
 	character*16 text
 
@@ -404,8 +341,7 @@ c writes debug information on dry areas
 c common
 	include 'femtime.h'
 	include 'nbasin.h'
-	integer iwegv(1)
-	common /iwegv/iwegv
+	include 'geom_dynamic.h'
 
 	integer ie,iweg
 
@@ -431,35 +367,17 @@ c writes debug information on final volume around node k (internal)
 	include 'param.h'
 
 c common
-	integer nlvdi,nlv
 	include 'femtime.h'
-	include 'nbasin.h'
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	include 'mkonst.h'
-	integer nen3v(3,1)
-	integer ilhv(1)
-	real hev(1)
-	real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-	real utlov(nlvdim,1),vtlov(nlvdim,1)
-	real wlov(0:nlvdim,1),wlnv(0:nlvdim,1)
-	real uprv(nlvdim,1),vprv(nlvdim,1),wprv(0:nlvdim,1)
-	common /nen3v/nen3v
-	common /hev/hev
-	common /utlnv/utlnv, /vtlnv/vtlnv, /wlnv/wlnv
-	common /utlov/utlov, /vtlov/vtlov
-	common /wlov/wlov
-	common /uprv/uprv, /vprv/vprv, /wprv/wprv
-	common /ilhv/ilhv
-	real zov(1), znv(1)
-	common /zov/zov, /znv/znv
-        real zeov(3,1),zenv(3,1)
-        common /zeov/zeov, /zenv/zenv
-	real unv(1),uov(1)
-	common /unv/unv, /uov/uov
-	real vnv(1),vov(1)
-	common /vnv/vnv, /vov/vov
-        integer iwegv(1)
-        common /iwegv/iwegv
+	include 'basin.h'
+	include 'depth.h'
+	include 'hydro_vel.h'
+	include 'hydro_print.h'
+	include 'levels.h'
+	include 'hydro.h'
+	include 'hydro_baro.h'
+	include 'geom_dynamic.h'
 	include 'ev.h'
 
 	integer ie,ii,kk,l,i
@@ -562,36 +480,18 @@ c writes some min/max values to stdout
 
         character*(*) string
 c common
-	integer nlvdi,nlv
 	include 'femtime.h'
 	include 'nbasin.h'
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        real znv(1)
-        real ulnv(nlvdim,1),vlnv(nlvdim,1)
-        real wlnv(0:nlvdim,1)
-        real up0v(1),vp0v(1)
-        real saltv(nlvdim,1),tempv(nlvdim,1)
-        common /znv/znv
-        common /ulnv/ulnv, /vlnv/vlnv
-        common /wlnv/wlnv
-        common /up0v/up0v, /vp0v/vp0v
-        common /saltv/saltv, /tempv/tempv
+	include 'hydro.h'
+	include 'hydro_vel.h'
+	include 'hydro_print.h'
+	include 'ts.h'
 
-        real hdknv(nlvdim,1)
-        common /hdknv/hdknv
-        real hdkov(nlvdim,1)
-        common /hdkov/hdkov
+	include 'depth.h'
 
-        real hdenv(nlvdim,1)
-        common /hdenv/hdenv
-        real hdeov(nlvdim,1)
-        common /hdeov/hdeov
 
-        real utlov(nlvdim,1),vtlov(nlvdim,1)
-        real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-        common /utlov/utlov, /vtlov/vtlov
-        common /utlnv/utlnv, /vtlnv/vtlnv           
 
 c local
 	integer ie,l,k
@@ -736,21 +636,11 @@ c checks mass conservation of single boxes (finite volumes)
 	real vf(nlvdim,1)
 	real va(nlvdim,1)
 
-	include 'nbasin.h'
-        integer nen3v(3,1)
-        integer ilhv(1)
-        integer ilhkv(1)
-        real utlov(nlvdim,1),vtlov(nlvdim,1)
-        real utlnv(nlvdim,1),vtlnv(nlvdim,1),wlnv(0:nlvdim,1)
-        common /nen3v/nen3v
-        common /utlov/utlov, /vtlov/vtlov
-        common /utlnv/utlnv, /vtlnv/vtlnv, /wlnv/wlnv
-        common /ilhv/ilhv
-        common /ilhkv/ilhkv
-        real mfluxv(nlvdim,1)
-        common /mfluxv/mfluxv
-	real rqv(1)
-	common /rqv/rqv
+	include 'basin.h'
+	include 'hydro.h'
+	include 'hydro_vel.h'
+	include 'levels.h'
+	include 'bound_dynamic.h'
 	include 'ev.h'
 
 	logical berror,bdebug
@@ -1019,63 +909,20 @@ c*************************************************************
 
 	include 'femtime.h'
 	include 'nbasin.h'
-	integer nlvdi,nlv
-	common /level/nlvdi,nlv
+	include 'nlevel.h'
 
-	integer ilhv(1),ilhkv(1)
-	real fcorv(1)
-	real zov(1),znv(1)
-	real ulov(nlvdim,1)
-	real ulnv(nlvdim,1)
-	real vlov(nlvdim,1)
-	real vlnv(nlvdim,1)
-	real wlov(0:nlvdim,1)
-	real wlnv(0:nlvdim,1)
-	real utlov(nlvdim,1)
-	real utlnv(nlvdim,1)
-	real vtlov(nlvdim,1)
-	real vtlnv(nlvdim,1)
-	real hlv(1),hldv(1)
-	real hev(1)
-	common /ilhv/ilhv, /ilhkv/ilhkv
-	common /fcorv/fcorv
-	common /zov/zov, /znv/znv
-	common /ulov/ulov
-	common /vlov/vlov
-	common /wlov/wlov
-	common /ulnv/ulnv
-	common /vlnv/vlnv
-	common /wlnv/wlnv
-	common /utlov/utlov
-	common /vtlov/vtlov
-	common /utlnv/utlnv
-	common /vtlnv/vtlnv
-	common /hlv/hlv, /hldv/hldv
-	common /hev/hev
+	include 'levels.h'
+	include 'internal.h'
+	include 'hydro.h'
+	include 'hydro_vel.h'
+	include 'depth.h'
 
-	real visv(0:nlvdim,1)
-	common /visv/visv
-	real difv(0:nlvdim,1)
-	common /difv/difv
-        real saltv(nlvdim,1)
-        real tempv(nlvdim,1)
-        common /saltv/saltv
-        common /tempv/tempv
-        real zeov(3,1), zenv(3,1)
-        common /zeov/zeov, /zenv/zenv
-        real rhov(nlvdim,1)
-        common /rhov/rhov
+	include 'diff_visc_fric.h'
+	include 'ts.h'
 
-        real hdknv(nlvdim,1)
-        common /hdknv/hdknv
-        real hdenv(nlvdim,1)
-        common /hdenv/hdenv
-        real mfluxv(nlvdim,1)
-        common /mfluxv/mfluxv
-        real areakv(nlvdim,1)
-        common /areakv/areakv
-        real wprv(0:nlvdim,1)
-        common /wprv/wprv
+	include 'bound_dynamic.h'
+	include 'area.h'
+	include 'hydro_print.h'
 
 	integer icrc,iucrc
 	save iucrc
@@ -1216,38 +1063,18 @@ c writes debug information on node k
 
 	include 'femtime.h'
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-	integer inodv(1)
-	common /inodv/inodv
+	include 'levels.h'
+	include 'geom_dynamic.h'
 
-        real wlnv(0:nlvdim,1)
-        common /wlnv/wlnv
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-        real mfluxv(nlvdim,1)
-        common /mfluxv/mfluxv
-	real znv(1), zov(1)
-	common /znv/znv, /zov/zov
-        real saltv(nlvdim,1)
-        common /saltv/saltv
-        real tempv(nlvdim,1)
-        common /tempv/tempv
-	real visv(0:nlvdim,1)
-	common /visv/visv
-	real difv(0:nlvdim,1)
-	common /difv/difv
+	include 'hydro_vel.h'
+	include 'basin.h'
+	include 'bound_dynamic.h'
+	include 'hydro.h'
+	include 'ts.h'
+	include 'diff_visc_fric.h'
 
-        real hdknv(nlvdim,1)
-        common /hdknv/hdknv
-        real hdkov(nlvdim,1)
-        common /hdkov/hdkov
-        real areakv(nlvdim,1)
-        common /areakv/areakv
+	include 'depth.h'
+	include 'area.h'
 
 	integer iu
 	integer l,lmax,kk
@@ -1297,43 +1124,17 @@ c writes debug information on element ie
 
 	include 'femtime.h'
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	integer ilhv(1)
-	common /ilhv/ilhv
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
-	integer iwegv(1)
-	common /iwegv/iwegv
-	integer iwetv(1)
-	common /iwetv/iwetv
+	include 'basin.h'
+	include 'levels.h'
+	include 'geom_dynamic.h'
 
-	real hev(1)
-	common /hev/hev
+	include 'depth.h'
 
-	real zenv(3,1)
-	common /zenv/zenv
-	real zeov(3,1)
-	common /zeov/zeov
-	real znv(1), zov(1)
-	common /znv/znv, /zov/zov
+	include 'hydro.h'
 
-        real utlov(nlvdim,1),vtlov(nlvdim,1)
-        real utlnv(nlvdim,1),vtlnv(nlvdim,1)
-        common /utlov/utlov, /vtlov/vtlov
-        common /utlnv/utlnv, /vtlnv/vtlnv
 
-        real ulnv(nlvdim,1)
-        common /ulnv/ulnv
-        real vlnv(nlvdim,1)
-        common /vlnv/vlnv
-        real wlnv(0:nlvdim,1)
-        common /wlnv/wlnv
+	include 'hydro_vel.h'
 
-        real hdenv(nlvdim,1)
-        common /hdenv/hdenv
-        real hdeov(nlvdim,1)
-        common /hdeov/hdeov
 
 	integer iu
 	integer l,lmax,ii
@@ -1378,8 +1179,8 @@ c writes debug information on nodes in element ie
 	integer iucheck
 	common /iucheck/iucheck
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param.h'
+	include 'basin.h'
 
 	integer ii,k,iu
 	integer ieext
@@ -1410,10 +1211,9 @@ c writes debug information on elements around node k
 	integer iucheck
 	common /iucheck/iucheck
 
-	include 'nbasin.h'
 
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param.h'
+	include 'basin.h'
 
 	integer ie,ii,kk,iu
 	logical bdebug

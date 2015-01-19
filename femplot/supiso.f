@@ -46,11 +46,9 @@ c argument
 	real dis
 	integer mode
 c common
-	include 'nbasin.h'
 
-	real xgv(1), ygv(1)
-	integer nen3v(3,1)
-	common /xgv/xgv, /ygv/ygv, /nen3v/nen3v
+	include 'param_dummy.h'
+	include 'basin.h'
 c color
 	include 'color.h'
 c local
@@ -838,9 +836,8 @@ c returns x,y,val of element, and indication of flag values
         real f(3),x(3),y(3)     !return values of val,x,y
         integer inull           !total number of flags found
 
-	real xgv(1), ygv(1)
-	integer nen3v(3,1)
-	common /xgv/xgv, /ygv/ygv, /nen3v/nen3v
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	integer ii,kn
 
@@ -867,10 +864,8 @@ c returns x,y of element
         integer ie              !element for which info is needed
         real x(3),y(3)          !return values of x,y
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 
 	integer ii,kn
 

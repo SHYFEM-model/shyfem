@@ -42,20 +42,10 @@ c plots section
 	integer nldim
 	parameter (nldim=200)
 
-	real hev(1)
-	common /hev/hev
-	real hm3v(3,1)
-	common /hm3v/hm3v
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-	real hlv(1)
-	common /hlv/hlv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'depth.h'
+	include 'basin.h'
+	include 'levels.h'
+	include 'nlevel.h'
 
 c elems(1) is not used, etc..
 
@@ -1048,12 +1038,7 @@ c modes: 0=use normal vel   1=use tangent vel   as scalar velocity
 	real vmin,vmax			!min/max of scalar vel (ret)
 	real vhmin,vhmax		!min/max of tangent vel (ret)
 
-        real uprv(nlvdim,nkndim)
-        common /uprv/uprv
-        real vprv(nlvdim,nkndim)
-        common /vprv/vprv
-        real wprv(nlvdim,nkndim)
-        common /wprv/wprv
+	include 'hydro_print.h'
 
 	integer i,k,l,lmax,llayer
 	real ut,un,w

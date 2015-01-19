@@ -150,12 +150,9 @@ c sets vertical eddy coefficient
 	include 'param.h'
 
 	include 'nbasin.h'
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	real visv(0:nlvdim,1)
-	real difv(0:nlvdim,1)
-	common /visv/visv, /difv/difv
+	include 'diff_visc_fric.h'
 
 	integer k,l
 	real vistur,diftur
@@ -197,12 +194,9 @@ c checks vertical eddy coefficient
 	include 'param.h'
 
 	include 'nbasin.h'
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	real visv(0:nlvdim,1)
-	real difv(0:nlvdim,1)
-	common /visv/visv, /difv/difv
+	include 'diff_visc_fric.h'
 
 	integer k,l
 	real v,d
@@ -254,8 +248,7 @@ c checks nlv and associated parameters
 
 	include 'param.h'
 
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
 	write(6,*) 'check_nlv : ',nlvdim,nlvdi,nlv
 
@@ -293,13 +286,9 @@ c sigma and zeta levels and hsigma	hybrid levels
 
 c common
 	include 'param.h'
-	include 'nbasin.h'
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
-	real hm3v(3,1)
-	common /hm3v/hm3v
-	real hldv(nlvdim),hlv(nlvdim)
-	common /hldv/hldv, /hlv/hlv
+	include 'nlevel.h'
+	include 'basin.h'
+	include 'levels.h'
 
 c local
 	logical bsigma,bhybrid,bzeta
@@ -504,10 +493,9 @@ c checks arrays hlv and hldv
 	implicit none
 
 c common
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
-	real hldv(1),hlv(1)
-	common /hldv/hldv, /hlv/hlv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'nlevel.h'
+	include 'levels.h'
 
 c local
 	logical bstop,bsigma
@@ -589,16 +577,12 @@ c sets array ilhv
 
 	implicit none
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	integer ilhv(1)
-	common /ilhv/ilhv
-	real hlv(1)
-	common /hlv/hlv
-	real hev(1)
-	common /hev/hev
+	include 'levels.h'
+	include 'depth.h'
 
 c local
 	logical bsigma
@@ -652,14 +636,10 @@ c set ilhkv array
 
 	implicit none
 
-	include 'nbasin.h'
 
-	integer ilhv(1)
-	common /ilhv/ilhv
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'param.h'
+	include 'levels.h'
+	include 'basin.h'
 
 	integer ie,ii,k,l
 
@@ -685,22 +665,13 @@ c set minimum number of levels for node and element
 
 	implicit none
 
-	include 'nbasin.h'
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'nlevel.h'
 
-	integer ilhv(1)
-	common /ilhv/ilhv
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
+	include 'levels.h'
 
-	integer ilmv(1)
-	common /ilmv/ilmv
-	integer ilmkv(1)
-	common /ilmkv/ilmkv
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'basin.h'
 
 	integer ie,ii,k,l
 	integer lmin,lmax
@@ -747,20 +718,11 @@ c checks arrays ilhv and ilhkv
 
 	implicit none
 
-	include 'nbasin.h'
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	integer ilhv(1)
-	common /ilhv/ilhv
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
-	real hev(1)
-	common /hev/hev
-	real hlv(1)
-	common /hlv/hlv
-	real hldv(1)
-	common /hldv/hldv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'levels.h'
+	include 'depth.h'
 
 	logical bsigma,bspure
 	integer nsigma
@@ -823,20 +785,12 @@ c adjusts hev, hm3v, ilhv
 
 	implicit none
 
-	include 'nbasin.h'
-	integer nlvdi,nlv
-	common /level/ nlvdi,nlv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'nlevel.h'
 
-	integer ilhv(1)
-	common /ilhv/ilhv
-	real hlv(1)
-	common /hlv/hlv
-	real hldv(1)
-	common /hldv/hldv
-	real hev(1)
-	common /hev/hev
-	real hm3v(3,1)
-	common /hm3v/hm3v
+	include 'levels.h'
+	include 'depth.h'
+	include 'basin.h'
 
 c local
 	logical bwrite
@@ -1002,16 +956,12 @@ c sets coriolis parameter
 	real rearth	!radius of earth
 	parameter ( rearth = 6371000. )
 
-	include 'nbasin.h'
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'mkonst.h'
 	include 'pkonst.h'
 
-	integer nen3v(3,1)
-	real ygv(1)
-	real fcorv(1)
-	common /nen3v/nen3v
-	common /ygv/ygv
-	common /fcorv/fcorv 
+	include 'basin.h'
+	include 'internal.h'
 
 	integer k,ie,ii
 	integer icor
@@ -1103,10 +1053,10 @@ c checks coriolis parameter
 
 	implicit none
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 
-	real fcorv(1)
-	common /fcorv/fcorv 
+	include 'internal.h'
 
 	integer ie
 	real f,fmax
@@ -1219,8 +1169,7 @@ c used to initialize the underlying layers
         integer nvar			!how many variables
 
 	include 'nbasin.h'
-	real hlv(1)
-	common /hlv/hlv
+	include 'levels.h'
 
 	integer nb,irec,itsearch
 	integer nkk,lmax
@@ -1391,12 +1340,10 @@ c initializes water level with constant
 
 	real const		!constant z value to impose
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 
-	real znv(1),zov(1)
-	common /znv/znv, /zov/zov
-        real zenv(3,1), zeov(3,1)
-        common /zenv/zenv, /zeov/zeov
+	include 'hydro.h'
 
 	integer k,ie,ii
 
@@ -1430,8 +1377,7 @@ c initializes water level from file
 
 	include 'nbasin.h'
 
-	real znv(1)
-	common /znv/znv
+	include 'hydro.h'
 
 	integer nb,k
 	integer ifileo
@@ -1468,8 +1414,7 @@ c initializes transport in levels
 
 	include 'nbasin.h'
 
-	real utlnv(nlvdim,1), vtlnv(nlvdim,1)
-	common /utlnv/utlnv, /vtlnv/vtlnv
+	include 'hydro.h'
 
 	integer ie,l
 
@@ -1494,10 +1439,7 @@ c initializes surface z0sk(k) and bottom z0bn(k) roughness
 
 	include 'nbasin.h'
 
-        real z0sk(nkndim)                   !surface roughenss on nodes
-        common /z0sk/z0sk
-        real z0bk(nkndim)                   !bottom roughenss on nodes
-        common /z0bk/z0bk
+	include 'roughness.h'
 
 	integer k
 

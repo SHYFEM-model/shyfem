@@ -331,8 +331,7 @@ c*******************************************************************
 
 	include 'nbasin.h'
 	include 'femtime.h'
-	real hev(1)
-	common /hev/hev
+	include 'depth.h'
 
 	integer nlv,nvar,nvers,ierr,iunit,ivar
 	integer ilhv(1)

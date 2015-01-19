@@ -69,8 +69,8 @@ c parameters
 	parameter (tiden='/d4/georg/hamsom/daten/rogtides.data')
 	parameter (rad=3.14159/180.)
 c common (just for debug)	!$$TEST
-	real xgv(1),ygv(1)
-	common /xgv/xgv, /ygv/ygv
+	include 'param_dummy.h'
+	include 'basin.h'
 c local
 	real hsing(lanz,ndim),hcosg(lanz,ndim)
 	real speed(lanz)

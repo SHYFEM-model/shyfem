@@ -155,30 +155,19 @@ c computes ecological scalars with BFM  model
 	integer ndim
 	parameter(ndim=nlvdim)
 
-	include 'nbasin.h'
 	include 'pkonst.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-	integer nen3v(1)
-	common /nen3v/nen3v
-	real rhov(nlvdim,nkndim)
-	common /rhov/rhov
+	include 'basin.h'
+	include 'ts.h'
 
-	real hkv(nkndim)
-	common /hkv/hkv
+	include 'depth.h'
 	
-	real znv(nkndim)
-        common /znv/znv
+	include 'hydro.h'
 
 ! OBC ARRAY AND VARIABLES
 
-	character*80 bfm1bc(1)
-        common /bfm1bc/bfm1bc
-	character*80 bfm2bc(1)
-        common /bfm2bc/bfm2bc
-	character*80 bfm3bc(1)
-        common /bfm3bc/bfm3bc
+	include 'bound_names.h'
 
 	character*10 what
 
@@ -342,22 +331,12 @@ c computes ecological scalars with BFM  model
 
 	integer itmbfm,idtbfm,ivs1,ivs2,ivs3
 	 
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
-	real uprv(nlvdim,nkndim)
-	common /uprv/uprv
-	real vprv(nlvdim,nkndim)
-	common /vprv/vprv
+	include 'levels.h'
+	include 'hydro_print.h'
 
-	real visv(0:nlvdim,nkndim)
-	common /visv/visv
-	real difv(0:nlvdim,nkndim)
-	common /difv/difv
 
-        real difhv(nlvdim,nkndim)
-        common /difhv/difhv
-	real wsinkv(0:nlvdim,nkndim)
-	common /wsinkv/wsinkv
+	include 'diff_visc_fric.h'
+	include 'sinking.h'
 
 	real load(nlvdim,nkndim)
 	common /load/load
@@ -662,9 +641,8 @@ c initializes bfm  arrays
 
 	include 'param.h'
 	include 'bfm_common.h'
-        integer nlvdi,nlv
 	include 'nbasin.h'
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 	
 	integer nbfmv1
 	real b1cn(nlvdim,nkndim,nbfmv1)

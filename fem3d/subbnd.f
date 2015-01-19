@@ -105,39 +105,12 @@ c reads boundary info from STR file
 
 	integer ibc
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbound.h'
-        integer irv(1)
-        common /irv/irv
+	include 'bound_geom.h'
 
-	character*80 boundn(1)
-        common /boundn/ boundn
-	character*80 conzn(1)
-        common /conzn/ conzn
-	character*80 tempn(1)
-        common /tempn/ tempn
-	character*80 saltn(1)
-        common /saltn/ saltn
-	character*80 vel3dn(1)
-        common /vel3dn/ vel3dn
-	character*80 bio2dn(1)
-        common /bio2dn/ bio2dn
-        character*80 sed2dn(1)
-        common /sed2dn/ sed2dn
+	include 'bound_names.h'
 !AR mud
-        character*80 mud2dn(1)
-        common /mud2dn/ mud2dn
-        character*80 lam2dn(1)
-        common /lam2dn/ lam2dn
-        character*80 dmf2dn(1)
-        common /dmf2dn/ dmf2dn
-        character*80 tox3dn(1)
-        common /tox3dn/tox3dn
-	character*80 bfm1bc(1)
-        common /bfm1bc/bfm1bc
-        character*80 bfm2bc(1)
-        common /bfm2bc/bfm2bc
-        character*80 bfm3bc(1)
-        common /bfm3bc/bfm3bc
 
 	character*80 name,text
 	double precision dvalue
@@ -534,11 +507,10 @@ c checks boundary information read from STR
 
 	implicit none
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbound.h'
-	integer irv(1)
-	common /irv/irv
-	character*80 boundn(1)
-        common /boundn/ boundn
+	include 'bound_geom.h'
+	include 'bound_names.h'
 
 	logical bstop
 	integer i,k,ibc
@@ -668,39 +640,12 @@ c********************************************************************
 
 	implicit none
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbound.h'
 
-	character*80 boundn(1)
-        common /boundn/ boundn
-	character*80 conzn(1)
-        common /conzn/ conzn
-	character*80 tempn(1)
-        common /tempn/ tempn
-	character*80 saltn(1)
-        common /saltn/ saltn
-	character*80 vel3dn(1)
-        common /vel3dn/ vel3dn
-	character*80 bio2dn(1)
-        common /bio2dn/ bio2dn
-	character*80 sed2dn(1)
-        common /sed2dn/ sed2dn
-	character*80 mud2dn(1)
-        common /mud2dn/ mud2dn
-        character*80 lam2dn(1)
-        common /lam2dn/ lam2dn
-        character*80 dmf2dn(1)
-        common /dmf2dn/ dmf2dn
-        character*80 tox3dn(1)
-        common /tox3dn/tox3dn
-	character*80 bfm1bc(1)
-        common /bfm1bc/bfm1bc
-        character*80 bfm2bc(1)
-        common /bfm2bc/bfm2bc
-        character*80 bfm3bc(1)
-        common /bfm3bc/bfm3bc
+	include 'bound_names.h'
 
-	integer irv(1)
-	common /irv/irv
+	include 'bound_geom.h'
 
 	integer i,ibc
 	integer ibtyp,kranf,krend
@@ -760,39 +705,11 @@ c********************************************************************
 	include 'param.h'
 	include 'nbound.h'
 
-	character*80 boundn(1)
-        common /boundn/ boundn
-	character*80 conzn(1)
-        common /conzn/ conzn
-	character*80 tempn(1)
-        common /tempn/ tempn
-	character*80 saltn(1)
-        common /saltn/ saltn
-        character*80 vel3dn(1)
-        common /vel3dn/ vel3dn
-	character*80 bio2dn(1)
-        common /bio2dn/ bio2dn
-	character*80 sed2dn(1)
-        common /sed2dn/ sed2dn
-	character*80 mud2dn(1)
-        common /mud2dn/ mud2dn
-        character*80 lam2dn(1)
-        common /lam2dn/ lam2dn
-        character*80 dmf2dn(1)
-        common /dmf2dn/ dmf2dn
-        character*80 tox3dn(1)
-        common /tox3dn/tox3dn
-	character*80 bfm1bc(1)
-        common /bfm1bc/bfm1bc
-        character*80 bfm2bc(1)
-        common /bfm2bc/bfm2bc
-        character*80 bfm3bc(1)
-        common /bfm3bc/bfm3bc
+	include 'bound_names.h'
 
 	include 'bnd.h'
 
-	integer irv(1)
-	common /irv/irv
+	include 'bound_geom.h'
 
 	integer j,i
 
@@ -951,9 +868,9 @@ c returns i th node of all boundary nodes
 	integer kbnd
 	integer i
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbound.h'
-	integer irv(1)
-	common /irv/irv
+	include 'bound_geom.h'
 
 	integer krend
 
@@ -1028,8 +945,8 @@ c returns i th node of boundary ibc
 	integer ibc
 	integer i
 
-	integer irv(1)
-	common /irv/irv
+	include 'param.h'
+	include 'bound_geom.h'
 
 	integer kranf,krend,n
 
@@ -1062,8 +979,8 @@ c returns nodes of boundary ibc (maximum ndim)
 	integer idim			!total number of nodes    (out)
 	integer nodes(1)		!boundary nodes           (out)
 
-	integer irv(1)
-	common /irv/irv
+	include 'param.h'
+	include 'bound_geom.h'
 
 	integer i,imaxi
 	integer kranf,krend
@@ -1105,8 +1022,8 @@ c sets boundary ibc to value in barray (apparently not used)
 	real value
 	real barray(1)
 
-	integer irv(1)
-	common /irv/irv
+	include 'param.h'
+	include 'bound_geom.h'
 
 	integer kranf,krend,k,kn
 
@@ -1134,10 +1051,10 @@ c sets all open boundaries to value
 	real array(1)
 	real flag
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbound.h'
 	include 'nbasin.h'
-	integer irv(1)
-	common /irv/irv
+	include 'bound_geom.h'
 
 	integer ibc
 	integer ibtyp,kranf,krend
@@ -1242,28 +1159,8 @@ c********************************************************************
 	character*(*) what
 	character*(*) file
 
-        character*80 boundn(1)
-        common /boundn/boundn
-        character*80 conzn(1)
-        common /conzn/conzn
-        character*80 tempn(1)
-        common /tempn/ tempn
-        character*80 saltn(1)
-        common /saltn/ saltn
-        character*80 vel3dn(1)
-        common /vel3dn/ vel3dn
-        character*80 sed2dn(1)
-        common /sed2dn/ sed2dn
-        character*80 bio2dn(1)
-        common /bio2dn/ bio2dn
-        character*80 tox3dn(1)
-        common /tox3dn/ tox3dn
-        character*80 bfm1bc(1)
-        common /bfm1bc/bfm1bc
-        character*80 bfm2bc(1)
-        common /bfm2bc/bfm2bc
-        character*80 bfm3bc(1)
-        common /bfm3bc/bfm3bc
+	include 'param.h'
+	include 'bound_names.h'
 
         if( what .eq. 'zeta' ) then
           file = boundn(ibc)

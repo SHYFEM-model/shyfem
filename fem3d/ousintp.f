@@ -24,35 +24,14 @@ c we would not even need to read basin
 
         include 'param.h'
 
-	character*80 descrr,descrp
-	common /descrr/ descrr
-	common /descrp/ descrp
-	include 'nbasin.h'
+	include 'basin.h'
+	include 'simul.h'
 
-	real xgv(nkndim), ygv(nkndim)
-	real hm3v(3,neldim)
-	integer nen3v(3,neldim)
-	integer ipev(neldim), ipv(nkndim)
-	integer iarv(neldim)
-	common /xgv/xgv, /ygv/ygv
-	common /hm3v/hm3v
-	common /nen3v/nen3v
-	common /ipev/ipev, /ipv/ipv
-	common /iarv/iarv
 
-	integer ilhv(neldim)
-	real hlv(nlvdim)
-        real utlnv(nlvdim,neldim)
-        real vtlnv(nlvdim,neldim)
-	common /ilhv/ilhv
-	common /hlv/hlv
-        common /utlnv/utlnv
-        common /vtlnv/vtlnv
+	include 'levels.h'
+	include 'hydro.h'
 
-        real uprv(nlvdim,nkndim)
-        real vprv(nlvdim,nkndim)
-        common /uprv/uprv
-        common /vprv/vprv
+	include 'hydro_print.h'
 
 	real hev(neldim)
 	real weight(nlvdim,nkndim)
@@ -418,10 +397,8 @@ c writes value of fem grid to file
         integer it              !time of simulation (seconds)
         real value(1)           !values of fem grid
 
-	include 'nbasin.h'
 
-	real xgv(nkndim), ygv(nkndim)
-	common /xgv/xgv, /ygv/ygv
+	include 'basin.h'
 
 	integer k
 	real x,y,v

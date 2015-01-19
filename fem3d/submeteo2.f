@@ -173,15 +173,10 @@ c DOCS  END
 	include 'param.h'
 	include 'nbasin.h'
 	include 'femtime.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        integer ilhkv(1)	!delete once iff_init_global is in main
-        common /ilhkv/ilhkv
-        real hlv(1)
-        common /hlv/hlv
-        real hkv(1)
-        common /hkv/hkv
+	include 'levels.h'
+	include 'depth.h'
 
 	include 'meteo.h'
 
@@ -1061,14 +1056,10 @@ c interpolates files spatially - to be deleted
 
         real qs,ta,rh,wb,uw,cc
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 
-        real metrad(1),methum(1)
-        real mettair(1),metcc(1)
-        real metwbt(1),metws(1)
-        common /metrad/metrad, /methum/methum
-        common /mettair/mettair, /metcc/metcc
-        common /metwbt/metwbt, /metws/metws
+	include 'meteo_aux.h'
 
         integer k
 

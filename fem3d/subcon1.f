@@ -118,10 +118,10 @@ c arguments
 	real c(nlvdi,1)		!concentration (cconz,salt,temp,...)
 	real rbc(1)		!boundary condition
 c common
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'mkonst.h'
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 c local
 	integer k,l,lmax
 	real rb
@@ -153,12 +153,11 @@ c arguments
 	integer nlvbnd		!vertical dimension of boundary conditions
 	real rbc(nlvbnd,1)	!boundary condition
 c common
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'mkonst.h'
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real rzv(1)
-        common /rzv/rzv
+	include 'levels.h'
+	include 'bound_dynamic.h'
 c local
 	integer k,l,lmax
 	real rb
@@ -213,14 +212,12 @@ c on return iu = -1 means that no file has been opened and is not written
 	integer nvar		!total number of variables to write    (in)
 	character*(*) type	!extension of file		       (in)
 
-        character*80 descrp
-        common /descrp/ descrp
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'simul.h'
 	include 'nbasin.h'
 	include 'femtime.h'
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real hlv(1), hev(1)
-        common /hlv/hlv, /hev/hev
+	include 'levels.h'
+	include 'depth.h'
 
 	integer nvers
 	integer date,time
@@ -306,9 +303,9 @@ c writes NOS file
 	integer nlvdi		!vertical dimension of c
 	real c(nlvdi,1)		!scalar to write
 
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer ierr
 
@@ -359,8 +356,7 @@ c shell for writing file unconditionally to disk
 	real c(nlvdim,1)	!concentration to write
 
 	include 'femtime.h'
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
         integer itmcon,idtcon,lmax
 
@@ -396,15 +392,13 @@ c on return iu = -1 means that no file has been opened and is not written
 	integer nvar		!total number of variables to write    (in)
 	character*(*) type	!extension of file		       (in)
 
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
 
-        character*80 descrp
-        common /descrp/ descrp
+	include 'simul.h'
 	include 'nbasin.h'
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
-        real hlv(1), hev(1)
-        common /hlv/hlv, /hev/hev
+	include 'levels.h'
+	include 'depth.h'
 
 	integer nvers
 	integer date,time
@@ -479,10 +473,10 @@ c the file must be open, the file will be written unconditionally
 	integer nlvdi		!vertical dimension of c
 	real c(nlvdi,1)		!scalar to write
 
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
 
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
 	integer iu,ierr
 
@@ -531,9 +525,9 @@ c arguments
 	real c(nlvdi,1)		!concentration (cconz,salt,temp,...)
         real cmin,cmax
 c common
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 c local
 	integer k,l,lmax
 	real cc
@@ -583,10 +577,10 @@ c arguments
 	real c(nlvdi,1)		!concentration (cconz,salt,temp,...)
         real cmin,cmax
 c common
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'femtime.h'
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 c local
 	integer k,l,lmax
         integer ntot

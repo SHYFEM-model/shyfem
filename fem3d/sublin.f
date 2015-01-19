@@ -134,9 +134,8 @@ c tests for adjacency between nodes
 	logical iskadj
 	integer k1,k2
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
 	include 'param_dummy.h'
+	include 'basin.h'
 	include 'links.h'
 
 	integer n,i,ie,ii

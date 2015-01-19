@@ -123,10 +123,8 @@ c computes new temperature (forced by heat flux) - 3d version
 	real temp(nlvdi,1)
 	double precision dq	!total energy introduced [(W/m**2)*dt*area = J]
 
-	integer ilhkv(1)
-	common /ilhkv/ilhkv
-	real saltv(nlvdim,nkndim)
-	common /saltv/saltv
+	include 'levels.h'
+	include 'ts.h'
 
 c local
 	logical bdebug

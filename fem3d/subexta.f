@@ -51,8 +51,8 @@ c******************************************************************
 
 	implicit none
 
-        integer knausm,knaus(1)
-        common /knausc/ knausm,knaus
+	include 'param_dummy.h'
+	include 'extra.h'
 
 	knausm = 0
 	!stop 'error stop subexta: extra not supported anymore'
@@ -65,8 +65,8 @@ c******************************************************************
 
 	implicit none
 
-        integer knausm,knaus(1)
-        common /knausc/ knausm,knaus
+	include 'param_dummy.h'
+	include 'extra.h'
 
 	logical handlesec
 	integer nexdi
@@ -97,8 +97,8 @@ c******************************************************************
 
 	implicit none
 
-        integer knausm,knaus(1)
-        common /knausc/ knausm,knaus
+	include 'param_dummy.h'
+	include 'extra.h'
 
 	integer k,knode
 	integer ipint
@@ -126,8 +126,8 @@ c******************************************************************
 
 	implicit none
 
-        integer knausm,knaus(1)
-        common /knausc/ knausm,knaus
+	include 'param_dummy.h'
+	include 'extra.h'
 
 	integer i
 	integer ipext
@@ -149,8 +149,8 @@ c******************************************************************
 
 	implicit none
 
-        integer knausm,knaus(1)
-        common /knausc/ knausm,knaus
+	include 'param_dummy.h'
+	include 'extra.h'
 
 	integer i
 
@@ -170,10 +170,9 @@ c writes and administers ext file
 
 	integer it
 
-        integer knausm,knaus(1)
-        common /knausc/ knausm,knaus
-	real xv(3,1)
-	common /xv/xv
+	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'extra.h'
+	include 'hydro_print.h'
 
 	integer nbext
 	real err,href,hzoff
@@ -254,10 +253,9 @@ c ...ndim is dummy argument
 	integer nmax
 	parameter(nmax=50)
 
-        character*80 descrp
-	common /descrp/descrp
-	real v1v(1)
-	common /v1v/v1v
+	include 'param_dummy.h'
+	include 'simul.h'
+	include 'aux_array.h'
 
 	integer i,n,ndim
 	real hmin,hmax

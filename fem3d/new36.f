@@ -104,27 +104,17 @@ c vdate		velocity variable used in mode
 
 	integer ic		!0 if no change in configuration   (out)
 
+	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'close.h'
 
 c common
 	include 'femtime.h'
-	include 'nbasin.h'
 	include 'mkonst.h'
 
-	real xv(3,1)
-	common /xv/xv
-	real hm3v(3,1)
-	common /hm3v/hm3v
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-	real rzv(1), rqv(1)
-	common /rzv/rzv, /rqv/rqv
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	integer ipv(1), ipev(1)
-	common /ipv/ipv, /ipev/ipev
-	real czv(1)
-	common /czv/czv
+	include 'hydro_print.h'
+	include 'basin.h'
+	include 'bound_dynamic.h'
+	include 'diff_visc_fric.h'
 
 c local
 	logical bclos,bopen,bimm,bact

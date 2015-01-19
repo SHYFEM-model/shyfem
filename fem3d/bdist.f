@@ -38,12 +38,10 @@ c   rdist:   0   0  1/4 2/4 3/4  1   1   1   ...
 	implicit none
 
 	include 'param.h'
-	include 'nbasin.h'
 
         real rdist(1)
 
-        integer nen3v(3,neldim)			!element index
-        common /nen3v/nen3v
+	include 'basin.h'
 
 c local variables
 

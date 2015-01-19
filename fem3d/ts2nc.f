@@ -26,39 +26,14 @@ c reads file and writes time series to nc file
 	integer ndsdim
 	parameter(ndsdim=1)
 
-	character*80 descrr,descrp
-	common /descrr/ descrr
-	common /descrp/ descrp
-	include 'nbasin.h'
+	include 'basin.h'
+	include 'simul.h'
 
-	real xgv(nkndim), ygv(nkndim)
-	real hm3v(3,neldim)
-	integer nen3v(3,neldim)
-	integer ipev(neldim), ipv(nkndim)
-	integer iarv(neldim)
-	common /xgv/xgv, /ygv/ygv
-	common /hm3v/hm3v
-	common /nen3v/nen3v
-	common /ipev/ipev, /ipv/ipv
-	common /iarv/iarv
 
-	integer ilhv(neldim)
-	real hlv(nlvdim)
-        real utlnv(nlvdim,neldim)
-        real vtlnv(nlvdim,neldim)
-	common /ilhv/ilhv
-	common /hlv/hlv
-        common /utlnv/utlnv
-        common /vtlnv/vtlnv
-	real zenv(3,neldim)
-	common /zenv/zenv
-	real znv(nkndim)
-	common /znv/znv
+	include 'levels.h'
+	include 'hydro.h'
 
-	real hkv(nkndim)
-	common /hkv/hkv
-	real hev(neldim)
-	common /hev/hev
+	include 'depth.h'
 
 	real haux(nkndim)
 	real uprv(nlvdim,nkndim)

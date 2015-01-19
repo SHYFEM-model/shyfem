@@ -251,6 +251,7 @@ help_ggu:
 	@echo "test_compile        compiles model with different configs"
 	@echo "test_stable         compiles stable model with different configs"
 	@echo "regress             runs regression tests"
+	@echo "check_var           does various checks on distribution"
 	@echo "dist                prepares distribution (Rules.make)"
 	@echo "rules_save          copies back last Rules.make file"
 	@echo "rules_ggu           copies back my Rules.make file"
@@ -263,6 +264,9 @@ test_compile:
 
 test_stable:
 	@femcheck/test_stable.sh
+
+check_var:
+	@femcheck/check_var.sh
 
 regress:
 	if [ -d $(REGRESSDIR) ]; then cd $(REGRESSDIR); ./regress_all.sh; fi

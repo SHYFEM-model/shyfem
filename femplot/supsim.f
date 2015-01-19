@@ -88,12 +88,7 @@ c 3D concentrations
 	integer ivarin
 
 	include 'nbasin.h'
-	real p3(nlvdim,nkndim)	!must be big enough for vectors (double)
-	common /p3/p3
-	real parray(1)
-	common /parray/parray
-	real fvlv(nlvdim,1)	!finite volume
-	common /fvlv/fvlv
+	include 'plot_aux.h'
 
         character*80 line
 	integer nrec,ivel,nplot
@@ -163,8 +158,8 @@ c**********************************************************
 	integer nkn
 	real p3(nlvddi,nkn,2)
 
-        real uv(1), vv(1)
-        common /uv/uv, /vv/vv
+	include 'param.h'
+	include 'hydro_plot.h'
 
 	integer k
 
@@ -189,12 +184,7 @@ c 3D concentrations
 	integer ivar_in		!desired variable id
 
 	include 'nbasin.h'
-	real p3(nlvdim,nkndim)
-	common /p3/p3
-	real parray(1)
-	common /parray/parray
-	real fvlv(nlvdim,1)	!finite volume
-	common /fvlv/fvlv
+	include 'plot_aux.h'
 
         character*80 line
 	integer nrec,it,nplot
@@ -255,12 +245,7 @@ c 3D concentrations (element values)
 	integer ivar_in		!desired variable id
 
 	include 'nbasin.h'
-	real p3(nlvdim,1)
-	common /p3/p3
-	real parray(1)
-	common /parray/parray
-	real fvlv(nlvdim,1)	!finite volume
-	common /fvlv/fvlv
+	include 'plot_aux.h'
 
         character*80 line
 	integer nrec,it,nplot
@@ -334,9 +319,9 @@ c**********************************************************
 
 	implicit none
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-	real znv(1)
-	common /znv/znv
+	include 'hydro.h'
 
 	integer nrec,it,k,nplot
 	logical ousnext,ptime_ok,ptime_end
@@ -372,9 +357,9 @@ c plots barene
 
 	implicit none
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-	real parray(1)
-	common /parray/parray
+	include 'plot_aux.h'
 
 	integer nrec,it,k,nplot
 	logical ousnext,ptime_ok,ptime_end
@@ -448,8 +433,7 @@ c**********************************************************
 	integer nrec,it,nplot
         integer ivel,isect
 
-	real p3(nlvdim,nkndim)
-	common /p3/p3
+	include 'plot_aux.h'
 
 	logical velnext,ptime_ok,ptime_end
 	integer getisec
@@ -502,10 +486,8 @@ c plots node values
 	real pa(1)
         character*(*) title
 
-        logical bwater(1)		!mask for elements
-        common /bwater/bwater
-        logical bkwater(1)		!mask for nodes
-        common /bkwater/bkwater
+	include 'param.h'
+	include 'plot_aux.h'
 
 	real pmin,pmax,flag
 	real getpar
@@ -546,10 +528,8 @@ c plots element values
 	real pa(1)
         character*(*) title
 
-        logical bwater(1)		!mask for elements
-        common /bwater/bwater
-        logical bkwater(1)		!mask for nodes
-        common /bkwater/bkwater
+	include 'param.h'
+	include 'plot_aux.h'
 
 	real pmin,pmax,flag
 	real getpar
@@ -583,13 +563,9 @@ c**********************************************************
 
 	implicit none
 
-	include 'nbasin.h'
-        real zenv(3,1)
-        common /zenv/zenv
-        real znv(1)
-        common /znv/znv
-        integer nen3v(3,1)
-        common /nen3v/nen3v
+	include 'param.h'
+	include 'hydro.h'
+	include 'basin.h'
 
 	logical bdry
 	integer ie,ii,k
@@ -656,34 +632,16 @@ c ivel = 4	waves
 	integer nxdim,nydim
 	parameter( nxdim = 300 , nydim = 300 )
 
-	include 'nbasin.h'
 
-	real xgv(1), ygv(1)
-	common /xgv/xgv, /ygv/ygv
-        real usnv(1), vsnv(1)
-        common /usnv/usnv, /vsnv/vsnv
-        real wsnv(1)
-        common /wsnv/wsnv
-        real hetv(1)
-        common /hetv/hetv
-        real uvnv(1), vvnv(1)
-        common /uvnv/uvnv, /vvnv/vvnv
-	real ve1v(1)
-	common /ve1v/ve1v
-	real v1v(1)
-	common /v1v/v1v
-	real uv(1), vv(1)
-	common /uv/uv, /vv/vv
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'basin.h'
+	include 'aux_array.h'
+	include 'hydro_plot.h'
 
-        real hkv(1)
-        common /hkv/hkv
-        real znv(1)
-        common /znv/znv
+	include 'depth.h'
+	include 'hydro.h'
 
-        logical bwater(1)		!mask for elements
-        common /bwater/bwater
-        logical bkwater(1)		!mask for nodes
-        common /bkwater/bkwater
+	include 'plot_aux.h'
 
 	real ureg(nxdim,nydim)
 	real vreg(nxdim,nydim)
@@ -988,24 +946,13 @@ c	parameter ( nlvdim = 14 )
 
 	include 'nbasin.h'
 
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nlevel.h'
 
-        integer ilhv(1)
-        common /ilhv/ilhv
-        integer ilhkv(1)
-        common /ilhkv/ilhkv
+	include 'levels.h'
 
-        real utlnv(nlvdim,1)
-        common /utlnv/utlnv
-        real vtlnv(nlvdim,1)
-        common /vtlnv/vtlnv
-        real wlnv(0:nlvdim,1)
-        common /wlnv/wlnv
-        real usnv(1), vsnv(1)
-        common /usnv/usnv, /vsnv/vsnv
-        real wsnv(1)
-        common /wsnv/wsnv
+	include 'hydro.h'
+	include 'hydro_vel.h'
+	include 'hydro_plot.h'
 
 	integer ie,ii,k,l
 	integer level,lmax,lact
@@ -1120,17 +1067,11 @@ c**********************************************************
 
 	implicit none
 
-	character*80 descrr
-	common /descrr/ descrr
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'basin.h'
 
-	include 'nbasin.h'
 
-	real hkv(1)
-	common /hkv/hkv
-	real hev(1)
-	common /hev/hev
-	integer iarv(1)
-	common /iarv/iarv
+	include 'depth.h'
 
 	logical bnumber,belem
         real pmin,pmax
@@ -1429,10 +1370,8 @@ c**************************************************************
 	integer ie
 	real color
 
-        real xgv(1), ygv(1)
-        integer nen3v(3,1)
-        common /xgv/xgv, /ygv/ygv
-        common /nen3v/nen3v
+	include 'param.h'
+	include 'basin.h'
 
 	integer ii,k
 	real xp(3),yp(3)
@@ -1490,10 +1429,10 @@ c sets values on boundary to val
 	real a(1)
 	real val
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 
-	integer kantv(2,1)
-	common /kantv/kantv
+	include 'geom.h'
 
 	integer k
 
@@ -1632,10 +1571,9 @@ c compute elemental values vev()
 	real vev(1)
 	logical bwater(1)
 
-	include 'nbasin.h'
 
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'param.h'
+	include 'basin.h'
 
 	integer ie,ii,k,iflag
 	real sum,flag
@@ -1672,12 +1610,10 @@ c compute nodal values vnv()
         real vnv(1)
 	logical bwater(1)
 
-	include 'nbasin.h'
 
-        real v2v(1)
-        common /v2v/v2v
-	integer nen3v(3,1)
-	common /nen3v/nen3v
+	include 'param.h' !COMMON_GGU_SUBST
+	include 'aux_array.h'
+	include 'basin.h'
 
 	integer ie,ii,k
 	real r,flag
@@ -1943,9 +1879,9 @@ c plots node values
 
 	implicit none
 
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
-        logical bwater(1)		!mask for elements
-        common /bwater/bwater
+	include 'plot_aux.h'
 
 	integer ie
 	real dgray
