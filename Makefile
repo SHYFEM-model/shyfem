@@ -39,6 +39,7 @@ DIRLIB    = $(FEMDIR)/femlib
 FEMSRC    = $(FEMDIR)/fem3d
 FEMBIN    = $(FEMDIR)/fembin
 TMPDIR    = $(HOME)/fem/tmp
+ACTFEMDIR = `pwd`
 
 REGRESSDIR = femregres/tests
 

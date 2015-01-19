@@ -1,5 +1,21 @@
 ============================================================
 
+Mon Jan 19 15:04:22 CET 2015
+
+consolidating commit
+
+ Makefile                |    1 +
+ fem3d/param.h           |    6 +++---
+ fem3d/sedi3d.f          |   34 ++++++++++++++++++++--------------
+ femadj/param.h          |    6 +++---
+ femdoc/final/shyfem.pdf |  Bin 293711 -> 293711 bytes
+ femdoc/final/shyfem.ps  |    4 ++--
+ femplot/param.h         |    6 +++---
+ param.h                 |    6 +++---
+ 8 files changed, 35 insertions(+), 28 deletions(-)
+
+============================================================
+
 Mon Jan 19 12:48:40 CET 2015
 
 femadj converted to include

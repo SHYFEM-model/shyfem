@@ -75,7 +75,8 @@ c 03.10.2009    ccf     compute transport only for GD
 c 13.04.2010    ccf     introduce SSC effect on density
 c 27.07.2010    ccf     settling velocity for cohesive sedimen in function of space
 c 20.06.2011    ccf     load for erosion deposition for both cohesive and non-cohesive
-c			deleted suspco routine
+c 20.06.2011	ccf	deleted suspco routine
+c 19.01.2015    ccf     ia_out1/2 introduced
 c
 !****************************************************************************
 
@@ -173,7 +174,7 @@ c
       parameter ( fact = 1. )
       real load(nlvdim,nkndim)
       integer itmsed,idtsed 		!output parameter
-      integer ia_out(4)
+      integer ia_out1(4),ia_out2(4)
 
 ! function
       integer iround
@@ -182,7 +183,7 @@ c
       logical has_output,next_output
 
 ! save and data
-      save ia_out
+      save ia_out1, ia_out2
       save what
       save itmsed,idtsed
       save sedkpar,difmol
@@ -316,11 +317,14 @@ c
 !	  Initialize output
 !         --------------------------------------------------
 
-          call init_output('itmsed','idtsed',ia_out)
+          call init_output('itmsed','idtsed',ia_out1)
+          call init_output('itmsed','idtsed',ia_out2)
 
-          if( has_output(ia_out) ) then
-             call open_scalar_file(ia_out,1,5,'nos')
-             call open_scalar_file(ia_out,nlv,1,'sco')
+          if( has_output(ia_out1) ) then
+             call open_scalar_file(ia_out1,1,5,'sed')
+          end if
+          if( has_output(ia_out2) ) then
+             call open_scalar_file(ia_out2,nlv,1,'sco')
           end if
 
           write(6,*) 'sediment model initialized...'
@@ -412,14 +416,16 @@ c
 !       Write of results (files SED and SCO)
 !       -------------------------------------------------------------------
 
-        if( next_output(ia_out) ) then
-          call write_scalar_file(ia_out,80,1,bh)
-          call write_scalar_file(ia_out,81,1,gskm)
-          call write_scalar_file(ia_out,82,1,tao)
-          call write_scalar_file(ia_out,83,1,hkv)
-          call write_scalar_file(ia_out,84,1,totbed)
+        if( next_output(ia_out1) ) then
+          call write_scalar_file(ia_out1,80,1,bh)
+          call write_scalar_file(ia_out1,81,1,gskm)
+          call write_scalar_file(ia_out1,82,1,tao)
+          call write_scalar_file(ia_out1,83,1,hkv)
+          call write_scalar_file(ia_out1,84,1,totbed)
+        end if
 
-          call write_scalar_file(ia_out,85,nlv,tcn)
+        if( next_output(ia_out2) ) then
+          call write_scalar_file(ia_out2,85,nlv,tcn)
         end if
 
 ! -------------------------------------------------------------------
