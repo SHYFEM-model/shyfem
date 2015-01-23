@@ -33,15 +33,15 @@ c********************************************************************
 	integer iproj
 	integer k
 
-	real getpar
+	double precision dgetpar
         integer isphe          !if = 1  coordinates are in spherical system
         integer date,time
 
-	rtide = getpar('rtide')
+	rtide = dgetpar('rtide')
 
 	if( rtide .le. 0. ) return
 
-	iproj = nint(getpar('iproj'))
+	iproj = nint(dgetpar('iproj'))
 	call get_coords_ev(isphe)
 
 	if( isphe .le. 0 .and. iproj .eq. 0 ) then
@@ -55,8 +55,8 @@ c********************************************************************
 	  zeqv(k) = 0.
 	end do
 
-	date = nint(getpar('date'))
-	time = nint(getpar('time'))
+	date = nint(dgetpar('date'))
+	time = nint(dgetpar('time'))
 	call dtsini(date,time)
 
 	write(6,*) 'Tidal potential active'

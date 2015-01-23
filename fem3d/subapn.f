@@ -67,6 +67,7 @@ c read memory file
 c---------------------------------------------------------------------
 
 	bask = mode .gt. 0
+	bchang = .false.
 
 	call read_memory(runaux,basaux)
 

@@ -1,4 +1,21 @@
 
+23.01.2015
+
+c ./fem3d/subwaves.f:
+! 21.01.2015    ggu     computing fetch for geographical coordinates (bug fix)
+!
+c ./fem3d/subnev.f:
+c 21.01.2015    ggu     new routine compute_cartesian_coords()
+c
+c ./fem3d/subproj.f:
+c 21.01.2015    ggu     code to handle projection in both directions
+
+
+19.01.2015
+
+big changes: common -> include
+
+
 15.01.2015
 
 c ./fem3d/subclo.f:

@@ -1,17 +1,33 @@
 
-	program fileinf
+	program filetype
 
 c checks type of file
+
+	use clo
 
 	implicit none
 
 	integer iformat
 	integer iunit,nvers,nvar
+	integer nfile
 	character*70 file
 
 	integer ifileo
 
-        call parse_command_line(file)
+c--------------------------------------------------------------
+c parameters and command line options
+c--------------------------------------------------------------
+
+        call clo_init('filetype','fem-file','1.0')
+
+        call clo_add_info('returns type of file')
+
+        call clo_parse_options(1)  !expecting (at least) 1 file after options
+
+        nfile = clo_number_of_files()
+	if( nfile < 1 ) stop
+
+	call clo_get_file(1,file)
 
 	nvar = 0
 	iunit = 0
@@ -93,31 +109,6 @@ c-------------------------------------------------------------
 
 	write(6,*) 'file format is unknown'
 
-	end
-
-c*****************************************************************
-
-        subroutine parse_command_line(infile)
-
-        implicit none
-
-        character*(*) infile
-
-        integer i,nc
-        character*50 aux
-
-        infile = ' '
-
-        nc = command_argument_count()
-
-        if( nc > 0 ) then
-          call get_command_argument(1,infile)
-          return
-        end if
-
-        write(6,*) 'Usage: fileinf [options] file'
-
-	stop
 	end
 
 c*****************************************************************

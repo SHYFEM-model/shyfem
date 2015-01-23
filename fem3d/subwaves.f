@@ -11,6 +11,7 @@
 ! 18.02.2011	ggu	compiler warnings/errors adjusted
 ! 25.10.2013	ccf	upgrade compatibility with WWMIII
 ! 04.11.2014	ccf	rewritten
+! 21.01.2015	ggu	computing fetch for geographical coordinates (bug fix)
 !
 !**************************************************************
 c DOCS  START   S_wave
@@ -1001,12 +1002,12 @@ c**************************************************************
 
         integer it
 
-	include 'nbasin.h'
+	include 'basin.h'
 	include 'meteo_aux.h'
 
 c --- input variable
-        real wis		!wind speed at 10m [m/s]
-        real wid		!wind direction [degree north]
+        real winds(neldim)	!wind speed at 10m [m/s]
+        real windd(neldim)	!wind direction [degree north]
         real fet(neldim)        !wind fetch length [m]
         real daf(neldim)        !averaged depth along the fetch [m]
 
@@ -1025,14 +1026,15 @@ c --- stress variables
 	include 'aux_array.h'
 
 c --- local variable
-        real widold		!old wind direction
+	logical debug
         real depele             !element depth function [m]
         real hbr		!limiting wave height [m]
         real dep,depe
         real gh,gx,hg
-        integer ie,icount
+	real wis,wid
+	real wx,wy
+        integer ie,icount,ii,k
 
-        save widold
         real g			!gravity acceleration [m2/s]
         parameter (g=9.81)
         real z0
@@ -1061,6 +1063,9 @@ c------------------------------------------------------ SPM
         integer icall		!initialization parameter
         save icall
         data icall /0/
+
+	debug = .false.
+	debug = .true.
 
 c ----------------------------------------------------------
 c Initialization
@@ -1105,11 +1110,32 @@ c -------------------------------------------------------------------
 
 c --- get the wind speed and direction
 
-        call c2p(wxv(1),wyv(1),wis,wid)
+	do ie=1,nel
+	  wx = 0.
+	  wy = 0.
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    wx = wx + wxv(k)
+	    wy = wy + wyv(k)
+	  end do
+	  wx = wx / 3.
+	  wy = wy / 3.
+          call c2p(wx,wy,winds(ie),windd(ie))
+	end do
 
 c --- get the wind fetch
 
-        call fetch(wid,fet,daf)
+        call fetch(windd,fet,daf)
+
+	if( debug ) then
+	  write(155,*) '----------------------------------------'
+	  do ie=1,nel,nel/10
+	    write(155,*) ipev(ie),fet(ie),daf(ie),winds(ie),windd(ie)
+	  end do
+	  ie = 1743
+	  write(155,*) ipev(ie),fet(ie),daf(ie),winds(ie),windd(ie)
+	  write(155,*) '----------------------------------------'
+	end if
 
 c       -------------------------------------------------------------------
 c       start loop on elements
@@ -1127,6 +1153,8 @@ c --- get averaged depth along the fetch
 
 c --- calculate the wave height, period and direction
 
+	  wis = winds(ie)
+	  wid = windd(ie)
           gh = (g*dep)/(wis**2.)
           gx = (g*fet(ie))/(wis**2.)
           hg = dep / (g*wis**2.)
@@ -1190,8 +1218,6 @@ c --- limiting wave height
 
         end do
 
-        widold = wid
-
         call make_stress(waeh,waep,z0,tcv,twv,tmv)
 
 c       -------------------------------------------------------------------
@@ -1214,7 +1240,7 @@ c       -------------------------------------------------------------------
 
 c**************************************************************
 
-        subroutine fetch(wid,fet,daf)
+        subroutine fetch(windd,fet,daf)
 
 c This subroutine computes the wind fetch for each element of the
 c grid given the wind direction.
@@ -1225,22 +1251,26 @@ c grid given the wind direction.
 
 	include 'nbasin.h'
 
+        real windd(neldim)	!wind direction [degree north]
+        real fet(neldim)        !wind fetch length [m]
+        real daf(neldim)	!averaged depth along the fetch [m]
+
         real xe,ye		!element point coordinates [m]
+        real xge,yge		!element point coordinates [degrees]
         real xf,yf		!far away point coordinates [m]
         real xnew,ynew		!new coordinates [m]
         real d,de		!distance between points [m]
-        real wid		!wind direction [degree north]
-        real fet(neldim)        !wind fetch length [m]
-        real daf(neldim)	!averaged depth along the fetch [m]
         real depele             !element depth function [m]
         real dep		!element depth [m]
-        real rad,wdir
+        real rad,wdir,wid
         integer ie,iie,ii,ienew,icount,ieo
-	save rad,wdir
+	integer iespecial
+	logical bdebug
 
         d = 500000.
         rad = 45. / atan (1.)
-        wdir = wid / rad		!from deg to rad
+	iespecial = 1743
+	iespecial = 0
 
 c --- loop over elements
 
@@ -1251,22 +1281,28 @@ c --- loop over elements
 
 c --- get element coordinates
 
-          call baric(ie,xe,ye)
+          call baric_cart(ie,xe,ye)
 
 c --- get far away points coordinates
 
-          xf = xe + d*sin(wdir)
-          yf = ye + d*cos(wdir)
+	  wid = windd(ie)
+          wdir = wid / rad		!from deg to rad
 
           iie = ie
           ieo = ie
 
-c --- calculate fetc and averaged depth along the fetch
+c --- calculate fetch and averaged depth along the fetch
+
+	bdebug = iie == iespecial
+	if( bdebug ) then
+	  write(6,*) '-------------------'
+	  write(6,*) iie
+	end if
 
           icount = 0
 
 1         continue
-          call intersect(iie,xe,ye,xf,yf,ienew,xnew,ynew,ieo)
+          call intersect(iie,xe,ye,wdir,ienew,xnew,ynew,ieo,bdebug)
           dep = depele(iie,+1)
           
           de = ((xnew-xe)**2 + (ynew-ye)**2)**0.5
@@ -1277,20 +1313,26 @@ c --- calculate fetc and averaged depth along the fetch
           xe = xnew
           ye = ynew
           icount = icount + 1
-          if(icount.gt.1000) stop 'error: number of interactions 
-     $    exceeds the limit'
+          if(icount.gt.1000) goto 99
           if(ienew.gt.0) go to 1
           daf(ie) = daf(ie)/fet(ie)
           if(ienew.lt.0) then			!open boundary
            fet(ie) = fet(ie) + 50000.
           end if
+	if( bdebug ) then
+	  write(6,*) icount,fet(ie),daf(ie)
+	  write(6,*) '-------------------'
+	end if
         end do 
  
+	return
+   99	continue
+	stop 'error stop fetch: number of iterations exceeds limit'
         end
            
 c******************************************************************
 
-        subroutine intersect(iie,x,y,xf,yf,ien,xn,yn,ieold)
+        subroutine intersect(iie,x,y,wdir,ien,xn,yn,ieold,bdebug)
 
 c this routine computes the coordinate of the intersection beetwen the
 c line and one of the border line of the element
@@ -1299,24 +1341,40 @@ c line and one of the border line of the element
 
         integer iie		!element number
         real x,y		!start point cooridnates [m]
-        real xf,yf		!far away point coordinates [m]
+        real wdir		!direction to search [radians]
         integer ien		!next element number
         real xn,yn		!intersection coordinates [m]
+	integer ieold
+	logical bdebug
 
 	include 'param.h'
 	include 'basin.h'
 	include 'geom.h'
 
         real x0(3),y0(3)        !element vertices coordinates [m]
+        real xg0(3),yg0(3)      !element vertices coordinates [degrees]
         real x3,y3,x4,y4	!node points coordiantes [m]
         real xi,yi		!intersection point coordinate [m]
+	real xf,yf		!far away point
+	real d			!distance
+	double precision a(3),b(3),c(3)
         integer iint,i,ii,iii
-        integer ieold,ie
+        integer ie
 
         integer segsegint	!intersection function
 
+	d = 5000000.
+        xf = x + d*sin(wdir)
+        yf = y + d*cos(wdir)
+
         ien = 0
-        call getexy(iie,x0,y0)
+        call getexy_cart(iie,x0,y0)
+	if( bdebug ) then
+	  write(6,*) iie
+	  write(6,*) x0
+	  write(6,*) y0
+	  write(6,*) x,y,xf,yf
+	end if
  
         do i = 1,3
 
@@ -1332,6 +1390,10 @@ c line and one of the border line of the element
           iint = segsegint(x,y,xf,yf,x3,y3,x4,y4,xi,yi)
 
           ie = ieltv(i,iie)
+	
+	if( bdebug ) then
+	  write(6,*) i,ie,iint
+	end if
 
           if(iint.gt.0.and.ie.ne.ieold)then	!intersection
             if(iint.eq.3)then	 		!intersection with node
@@ -1346,6 +1408,14 @@ c line and one of the border line of the element
           end if
 
         end do
+
+	if( ien .gt. 0 .and. bdebug ) then
+	  write(6,*) 'xi,yi: ',xi,yi,ien
+	  call xi_abc(iie,a,b,c)
+	  do ii=1,3
+	    write(6,*) ii,a(ii) + b(ii)*xi + c(ii)*yi
+	  end do
+	end if
 
         end
 

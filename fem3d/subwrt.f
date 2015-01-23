@@ -13,7 +13,7 @@ c 16.03.2012	ggu	use idtwrt=-1 for no renewal computation
 c 10.05.2014	ccf	parameters from the str file
 c
 c******************************************************************
-c Parameters to be set in the wrt section of the parameter input file
+c Parameters to be set in section $wrt of the parameter input file
 c
 c bnoret	true if no return flow is used (concentrations outside
 c		are explicitly set to 0)

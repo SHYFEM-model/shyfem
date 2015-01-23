@@ -1,7 +1,12 @@
 
+23.01.2014    VERS_7_1_4
+
+	compute fetch also in geo coordinates
+	handle projection in both directions
+
 19.01.2014    VERS_7_1_3
 
-	major changes in code - this is a hugh commit
+	major changes in code - this is a huge commit
 	basically all files have been changed
 	(nearly) all common blocks have been substituted by include files
 	please base all future changes of the code on this release

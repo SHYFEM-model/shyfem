@@ -45,7 +45,7 @@ tarfile=$name-$vers.tar.gz
 if [ $info = "YES" ]; then
   echo "$prefix"
 else
-  echo "vers=$vers  tag=$tag  prefix=$prefix  tarfile=$tarfile"
+  echo "vers: $vers  tag: $tag  prefix: $prefix  tarfile: $tarfile"
   git archive --format=tar --prefix=$prefix/ $tag | gzip > $tarfile
 fi
 

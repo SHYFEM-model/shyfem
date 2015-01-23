@@ -35,6 +35,7 @@ c 24.11.2011	ggu	better routines to handle spherical coordinates
 c 30.08.2012	ggu	new routine is_spherical()
 c 30.09.2013	ggu	new routines gradient_normal/tangent
 c 30.10.2014	ggu	new routine compute_distance()
+c 21.01.2015	ggu	new routine compute_cartesian_coords()
 c
 c***********************************************************
 
@@ -816,6 +817,67 @@ c takes care of lat/lon coordinates
 
 	dx = x2 - x1
 	dy = y2 - y1
+
+	end
+
+c***********************************************************
+
+        subroutine compute_cartesian_coords(n,lon,lat,x,y)
+
+	implicit none
+
+	integer n		!total number of points to convert
+	real lon(n),lat(n)	!coordinates of points to convert
+	real x(n),y(n)		!converted cartesian coordinates (return)
+
+        integer isphe_ev,init_ev
+        common /evcommon/ isphe_ev,init_ev
+
+	integer i
+	double precision lambda0,phi0
+	double precision lambda,phi
+	double precision xx,yy
+
+c---------------------------------------------------------
+c see if spherical coordinates
+c---------------------------------------------------------
+
+	if ( isphe_ev .eq. 0 ) then		!already cartesian
+	  do i=1,n
+	    x(i) = lon(i)
+	    y(i) = lat(i)
+	  end do
+	  return
+	end if
+
+c---------------------------------------------------------
+c compute reference point
+c---------------------------------------------------------
+
+	lambda0 = 0.
+	phi0 = 0.
+	do i=1,n
+	  lambda0 = lambda0 + lon(i)
+	  phi0 = phi0 + lat(i)
+	end do
+	lambda0 = lambda0 / n
+	phi0 = phi0 / n
+	
+c---------------------------------------------------------
+c do conversion
+c---------------------------------------------------------
+
+	do i=1,n
+	  lambda = lon(i)
+	  phi = lat(i)
+          call ev_g2c(xx,yy,lambda,phi,lambda0,phi0)
+	  x(i) = xx
+	  y(i) = yy
+	end do
+
+c---------------------------------------------------------
+c end of routine
+c---------------------------------------------------------
 
 	end
 

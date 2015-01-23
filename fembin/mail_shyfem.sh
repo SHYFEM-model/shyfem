@@ -61,7 +61,6 @@ echo ""								>> $tmpfile
 
 echo "Email message:"
 cat $tmpfile
-echo "mail: $mail"
 if [ $mail = "YES" ]; then
   answer=`YesNo "Do you want to upload and email?"`
 else

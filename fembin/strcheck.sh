@@ -6,6 +6,7 @@
 
 FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 fembin=$FEMDIR/fembin
+fem3d=$FEMDIR/fem3d
 
 if [ $# -ne 1 ]; then
   echo "Usage: strcheck.sh str-file"
@@ -30,8 +31,9 @@ do
   new2=`echo $new1 | sed -E "s/'//g"`
   file=$new2
 
-  $fembin/fileinf  $file > tmp2.tmp
+  $fem3d/fileinf  $file > tmp2.tmp
 
+  echo "checking file $file"
   $fembin/strcheck.pl $itanf $itend $date tmp2.tmp
 
   status=$?

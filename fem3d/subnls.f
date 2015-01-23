@@ -622,7 +622,7 @@ c returns -2 in case of read error
    98	continue
 	write(6,*) 'read error in following line'
 	write(6,*) line
-	nrdvec = -2
+	nrdvec = -1
 	return
 c	stop 'error stop : nrdveci'
    99	continue
@@ -690,7 +690,7 @@ c reads integer vector in section (compatibility)
 	integer nrdvec
 
 	n = nrdvec()
-	if( n > ndim) n = -1			!flag dimension error
+	if( n > ndim) n = -n			!flag dimension error
 	if( n > 0 ) call nrdvec_int(n,ivect)
 	nrdveci = n
 
@@ -712,7 +712,7 @@ c reads real vector in section (compatibility)
 	integer nrdvec
 
 	n = nrdvec()
-	if( n > ndim) n = -1			!flag dimension error
+	if( n > ndim) n = -n			!flag dimension error
 	if( n > 0 ) call nrdvec_real(n,rvect)
 	nrdvecr = n
 

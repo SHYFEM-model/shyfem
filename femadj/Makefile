@@ -135,7 +135,14 @@ strip:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-adjele.o: param.h basin.h grade.h
+adj4el.o: param.h basin.h grade.h
+adj575.o: param.h basin.h grade.h
+adj5el.o: param.h basin.h grade.h
+adj7el.o: param.h basin.h grade.h
+adjele.o: depth.h param.h basin.h grade.h
 adjgrd.o: nbstatic.h
+adjneu.o: depth.h param.h basin.h grade.h
+adjplo.o: param.h basin.h grade.h
 adjvar.o: param.h nbstatic.h basin.h grade.h
+subgrd.o: pkonst.h param_dummy.h subgrd.h basin.h
 

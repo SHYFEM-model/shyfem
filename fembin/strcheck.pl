@@ -7,7 +7,7 @@ use strict;
  
 my $date = new date;
 
-my $debug = 0;
+my $debug = 1;
 
 my $err = 0;
 my $warn = 0;
@@ -29,6 +29,8 @@ print "STR params: $itanf $itend $date0\n" if $debug;
 
 while(<>) {
   chomp;
+
+  print "debug: $_\n" if $debug;
 
   if( /file name:\s*(\S+)/ ) { $file = $1; }
   if( /nrecs:\s*(\S+)/ ) { $nrecs = $1; }

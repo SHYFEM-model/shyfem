@@ -1,5 +1,41 @@
 ============================================================
 
+Fri Jan 23 15:38:33 CET 2015
+
+bug fixes, fetch in lat/lon, projection
+
+ .gitignore              |    2 +
+ LOG                     |   17 ++
+ RELEASE_NOTES           |    7 +-
+ fem3d/Makefile          |  422 ++++++++++++++++++++++++++++++-----------------
+ fem3d/fem_tides.f       |   47 ------
+ fem3d/fileinf.f         |  124 --------------
+ fem3d/filetype.f        |  115 +++++++++++++
+ fem3d/mod_tides.f       |   57 +++++++
+ fem3d/subapn.f          |    1 +
+ fem3d/subnev.f          |   62 +++++++
+ fem3d/subnls.f          |    6 +-
+ fem3d/subproj.f         |  176 +++++++++++++++++++-
+ fem3d/subwaves.f        |  126 +++++++++++---
+ fem3d/subwrt.f          |    2 +-
+ fem3d/tideg.f           |   10 +-
+ fem3d/tides.h           |    7 +
+ femadj/Makefile         |    9 +-
+ fembin/fileinf.sh       |   10 +
+ fembin/gitinfo          |    1 +
+ fembin/gittar           |    2 +-
+ fembin/mail_shyfem.sh   |    1 -
+ fembin/strcheck.pl      |    4 +-
+ fembin/strcheck.sh      |    4 +-
+ femdoc/final/shyfem.pdf |  Bin 293716 -> 293717 bytes
+ femdoc/final/shyfem.ps  |   36 ++--
+ femplot/Makefile        |   35 +++-
+ 26 files changed, 887 insertions(+), 396 deletions(-)
+ new file:
+   fembin/fileinf.sh
+
+============================================================
+
 Mon Jan 19 18:02:05 CET 2015
 
 New version 7_1_3
