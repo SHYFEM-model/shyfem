@@ -1,5 +1,84 @@
 ============================================================
 
+Thu Feb 26 10:45:36 CET 2015
+
+bug fixes from Kalipeda
+
+ LOG                      |   64 ++
+ Makefile                 |    6 +-
+ RELEASE_NOTES            |   17 +-
+ fem3d/Makefile           |   13 +-
+ fem3d/atoxi3d.f          |    5 +-
+ fem3d/bc2fem.f           |   41 +-
+ fem3d/bio3d.f            |    5 +-
+ fem3d/feminf.f           |    9 +-
+ fem3d/kepsd.f            |    3 +-
+ fem3d/netcdf_util.f      |   93 ++--
+ fem3d/newbcl.f           |   19 +-
+ fem3d/newcon.f           |    5 +-
+ fem3d/newconz.f          |    5 +
+ fem3d/newfix.f           |    1 +
+ fem3d/nosextr_nodes.f    |   19 +-
+ fem3d/nosinf.f           |   25 +-
+ fem3d/optintp.f          |  562 ++++++++++------
+ fem3d/sedi3d.f           |   55 +-
+ fem3d/splitext.f         |    3 +-
+ fem3d/subapn.f           |   43 ++-
+ fem3d/subbas.f           |   29 +-
+ fem3d/subbnds.f          |   41 ++
+ fem3d/subclo.f           |   67 ++-
+ fem3d/subcon1.f          |   14 +-
+ fem3d/subdts.f           |   42 ++
+ fem3d/subfemfile.f       |   25 +
+ fem3d/subfemintp.f       |  105 +++-
+ fem3d/submet.f           |   35 +
+ fem3d/submeteo2.f        |    3 +
+ fem3d/subn11.f           |   15 +-
+ fem3d/subnev.f           |   26 +-
+ fem3d/subnls.f           | 1667 +++++++++++++++++++++-------------------------
+ fem3d/subnos.f           |    1 +
+ fem3d/subnosa.f          |   68 ++-
+ fem3d/subnsa.f           |    4 +
+ fem3d/subnsh.f           |    9 +-
+ fem3d/suboi.f            |  375 +++++++++++
+ fem3d/subomp.f           |   16 +-
+ fem3d/subomp_dummy.f     |   15 +-
+ fem3d/subpar3.f          |   95 +++-
+ fem3d/subqfxt.f          |    9 +-
+ fem3d/subqfxu4.f         |   36 +-
+ fem3d/subscn.f           |  166 +++++
+ fem3d/subssm.f           |  223 ++++++
+ fem3d/subsys.f           |   12 +-
+ fem3d/subtime.f          |    2 +-
+ fem3d/subtsfile.f        |   31 +-
+ fem3d/subtsuvfile.f      |    1 +
+ fem3d/subwaves.f         |  191 ++++--
+ fembin/clo.sh            |  281 ++++++++
+ fembin/extractcol        |   59 ++-
+ fembin/fileinf.sh        |   10 -
+ fembin/filetype.sh       |   10 +
+ fembin/gp                |   21 +-
+ fembin/nosextr           |   19 +-
+ femcheck/find_changed.sh |   28 +
+ femdoc/final/shyfem.pdf  |  Bin 293717 -> 293719 bytes
+ femdoc/final/shyfem.ps   |   32 +-
+ femplot/Makefile         |    9 +-
+ femplot/basin.h          |   31 +-
+ femplot/plotbug.f        |  212 ++++++
+ femplot/plotsim.f        |    1 +
+ femplot/supano.f         |   10 +-
+ femplot/supbas.f         |  148 ++++-
+ femplot/supout.f         |  195 +++++-
+ femplot/supout.h         |   20 +-
+ 66 files changed, 3893 insertions(+), 1509 deletions(-)
+ new file:
+   fem3d/suboi.f
+   fembin/clo.sh
+   femcheck/find_changed.sh
+   femplot/plotbug.f
+
+============================================================
+
 Fri Jan 23 15:39:52 CET 2015
 
 New version 7_1_4

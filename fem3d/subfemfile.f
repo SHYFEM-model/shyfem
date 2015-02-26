@@ -52,6 +52,10 @@ c		do k=1,np
 c		  lm,hd(k),(data(l,k),l=1,lm)
 c		end do
 c
+c format for regpar
+c
+c	nx,ny,x0,y0,dx,dy,flag
+c
 c legend
 c
 c dtime		time stamp (double precision, seconds)
@@ -67,6 +71,10 @@ c hd(k)		total depth in node k
 c data(l,k)	data for variable
 c lm		total number of vertical data provided for point k
 c k,l		index for horizontal/vertical dimension
+c nx,ny		size of regular grid
+c x0,y0		origin of regular grid
+c dx,dy		space increment of regular grid
+c flag		flag for invalid data of regular grid
 c
 c file type (ntype)
 c
@@ -1020,6 +1028,23 @@ c************************************************************
 	  itype(i) = j - 10*(j/10)
 	  j=j/10
 	end do
+
+	end
+
+c************************************************************
+
+	function fem_file_regular(ntype)
+
+	implicit none
+
+	integer ntype
+
+	integer fem_file_regular
+	integer itype(2)
+
+	call fem_file_make_type(ntype,2,itype)
+
+	fem_file_regular = itype(2)
 
 	end
 

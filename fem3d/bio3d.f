@@ -201,7 +201,7 @@ c eco-model cosimo
 	integer ie,ii
 	integer kspec
 	integer itanf,nvar
-	double precision dtime0
+	double precision dtime0,dtime
 	real d
 	real cbod,nh3,krear,sod
 	real vel
@@ -481,6 +481,9 @@ c	advection and diffusion
 c	-------------------------------------------------------------------
 
 	if( bcheck ) call check_bio('before advection',e,es)
+
+	dtime = it
+	call bnds_read_new(what,idbio,dtime)
 
 !$OMP PARALLEL PRIVATE(i)
 !$OMP DO SCHEDULE(DYNAMIC)	

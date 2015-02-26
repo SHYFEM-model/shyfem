@@ -20,9 +20,104 @@ c revision log :
 c
 c 04.06.1999    ggu     new routine matstru
 c 22.06.1999    ggu     headers in new routine matstru
+c 10.02.2015    ggu     some double precision routines introduced
 c
 c************************************************
+
+	subroutine dmatinv(a,ip,hv,n,nd)
+
+c inversion of square matrix (no band matrix)
 c
+c a		square matrix
+c ip		aux vector for pivot search
+c hv		aux vector for resolution of matrix
+c n		actual dimension of matrix
+c nd		formal dimension of matrix
+
+	implicit none
+
+	double precision eps
+	parameter (eps=1.e-30)
+
+	integer n,nd
+	double precision a(nd,nd),hv(nd)
+	integer ip(nd)
+
+	integer i,j,k,ir
+	integer ihi,ipk
+	double precision amax,hr
+
+	do j=1,n
+	  ip(j)=j
+	end do
+
+	do j=1,n
+
+c look for pivot
+
+	amax=abs(a(j,j))
+	ir=j
+	do i=j+1,n
+	  if(abs(a(i,j)).gt.amax) then
+	    amax=abs(a(i,j))
+	    ir=i
+	  end if
+	end do
+	if(amax.lt.eps) goto 99
+
+c change row
+
+	if(ir.gt.j) then
+	  do k=1,n
+	    hr=a(j,k)
+	    a(j,k)=a(ir,k)
+	    a(ir,k)=hr
+	  end do
+	  ihi=ip(j)
+	  ip(j)=ip(ir)
+	  ip(ir)=ihi
+	end if
+
+c transformation
+
+	hr=1./a(j,j)
+	do i=1,n
+	  a(i,j)=hr*a(i,j)
+	end do
+	a(j,j)=hr
+	do k=1,n
+	  if(k.ne.j) then
+	    do i=1,n
+	      if(i.ne.j) a(i,k)=a(i,k)-a(i,j)*a(j,k)
+	    end do
+	    a(j,k)=-hr*a(j,k)
+	  end if
+	end do
+
+	end do
+
+c change column
+
+	do i=1,n
+	  do k=1,n
+	    ipk=ip(k)
+            hv(ipk)=a(i,k)
+	  end do
+	  do k=1,n
+	    a(i,k)=hv(k)
+	  end do
+	end do
+
+	return
+
+   99	continue
+	write(6,*) 'matrix singular. cannot invert matrix'
+	write(6,*) 'i,j,amax(i,j) :',ir,j,amax
+	stop 'error stop : matinv'
+	end
+
+c**********************************************
+
 	subroutine matinv(a,ip,hv,n,nd)
 c
 c inversion of square matrix (no band matrix)
@@ -104,6 +199,63 @@ c change column
 	write(6,*) 'matrix singular. cannot invert matrix'
 	write(6,*) 'i,j,amax(i,j) :',ir,j,amax
 	stop 'error stop : matinv'
+
+	end
+
+c**********************************************
+
+	subroutine dmatnorm(anorm,a,n,nd)
+
+c computes norm of square matrix (column sum norm)
+
+	implicit none
+
+	double precision anorm		!computed norm (return)
+	double precision a(nd,nd)	!matrix
+	integer n			!size of matrix
+	integer nd			!formal dimension of matrix
+	
+	integer i,j
+	double precision acu
+
+	anorm = 0.
+
+	do j=1,n
+	  acu = 0.
+	  do i=1,n
+	    acu = acu + abs(a(i,j))
+	  end do
+	  anorm = max(anorm,acu)
+	end do
+
+	end
+
+c**********************************************
+
+	subroutine dmatmult(a,b,c,n,nd)
+
+c multiplies two square matrices: c = a * b
+
+	implicit none
+
+	double precision a(nd,nd)	!matrix
+	double precision b(nd,nd)	!matrix
+	double precision c(nd,nd)	!matrix
+	integer n			!size of matrix
+	integer nd			!formal dimension of matrix
+	
+	integer i,j,k
+	double precision acu
+
+	do i=1,n
+	  do j=1,n
+	    acu = 0.
+	    do k=1,n
+	      acu = acu + a(i,k) * b(k,j)
+	    end do
+	    c(i,j) = acu
+	  end do
+	end do
 
 	end
 
@@ -578,3 +730,74 @@ c
 	lsqua=0
 	return
 	end
+
+c************************************************
+
+	subroutine mat_test
+
+	implicit none
+
+	integer i,ndim
+	real r
+
+	do i=1,100
+	  call random_number(r)
+	  ndim = 10.*r + 1
+	  call mat_test_n(ndim)
+	end do
+
+	end
+
+c************************************************
+
+	subroutine mat_test_n(ndim)
+
+	implicit none
+
+	integer ndim
+
+	integer n,nd
+	integer i,j
+	real r
+	double precision an,aninv,anind,cond
+	double precision a(ndim,ndim)
+	double precision ainv(ndim,ndim)
+	double precision aind(ndim,ndim)
+	double precision hv(ndim)
+	integer ip(ndim)
+
+	n = ndim
+	nd = ndim
+
+	do i=1,n
+	  do j=1,n
+	    call random_number(r)
+	    a(i,j) = 10.*(r-0.5)
+	  end do
+	end do
+
+	ainv = a
+	call dmatinv(ainv,ip,hv,n,nd)
+
+	call dmatnorm(an,a,n,nd)
+	call dmatnorm(aninv,ainv,n,nd)
+	cond = an * aninv
+
+	call dmatmult(a,ainv,aind,n,nd)
+	do i=1,n
+	  aind(i,i) = aind(i,i) - 1.
+	end do
+	call dmatnorm(anind,aind,n,nd)
+
+	write(6,'(i5,3f12.4,e12.4)') ndim,an,aninv,cond,anind
+
+	end
+
+c************************************************
+
+c	program mat_test_main
+c	call mat_test
+c	end
+
+c************************************************
+

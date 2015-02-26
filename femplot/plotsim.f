@@ -46,6 +46,7 @@ c parameters
 c description
 c FEM parameters
 	include 'mkonst.h'
+	include 'pkonst.h'
 c OUT
 c 3d
 	include 'nlevel.h'

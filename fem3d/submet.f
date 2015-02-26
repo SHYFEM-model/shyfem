@@ -225,3 +225,38 @@ c returns light intensity [W/m**2]
 
 c*******************************************************************
 
+	subroutine get_ice(k,ice_cover)
+
+c returns ice cover [fraction 0-1]
+
+	implicit none
+
+        integer k               !node number
+        real ice_cover          ![0-1]
+
+	ice_cover = 0.
+
+        end
+
+c*******************************************************************
+
+	subroutine get_ice_all(ice_cover)
+
+c returns ice cover array [fraction 0-1]
+
+	implicit none
+
+	include 'nbasin.h'
+
+        real ice_cover(nkn)          ![0-1]
+
+	integer k
+
+	do k=1,nkn
+	  ice_cover(k) = 0.
+	end do
+
+        end
+
+c*******************************************************************
+

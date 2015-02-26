@@ -6,6 +6,9 @@
 ! 24.11.2014    ggu     written from scratch
 ! 27.11.2014    ggu     is now fully functional
 ! 14.01.2015    ggu     added new routines clo_add_info/extra
+! 26.01.2015    ggu     make argument to clo_parse_options() optional
+! 26.01.2015    ggu     new routine clo_check_files()
+! 08.02.2015    ggu     bug fix in clo_get_option, new routine clo_info
 !
 ! notes :
 !
@@ -168,6 +171,46 @@
 	pentry(id)%text = ' '
 	
 	end subroutine clo_init_id
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine clo_info(name)
+
+	character*(*), optional :: name
+	integer id
+
+	if( present(name) ) then
+	  id = clo_get_id(name)
+	  if( id > 0 ) then
+	    call clo_info_id(id)
+	  else
+	    write(6,*) 'clo_info: no option with this name: ',trim(name)
+	  end if
+	else
+	  do id=1,idlast
+	    call clo_info_id(id)
+	  end do
+	end if
+
+	end subroutine clo_info
+
+!******************************************************************
+
+	subroutine clo_info_id(id)
+
+	integer id
+
+	write(6,*) 'clo info on id = ',id
+	write(6,*) 'name   = ',pentry(id)%name
+	write(6,*) 'itype  = ',pentry(id)%itype
+	write(6,*) 'value  = ',pentry(id)%value
+	write(6,*) 'flag   = ',pentry(id)%flag
+	write(6,*) 'string = ',trim(pentry(id)%string)
+	write(6,*) 'text   = ',trim(pentry(id)%text)
+
+	end subroutine clo_info_id
 
 !******************************************************************
 !******************************************************************
@@ -434,8 +477,8 @@
 
 	double precision dvalue
 
-	dvalue = value
 	call clo_get_option_n(name,dvalue)
+	value = dvalue
 
 	end subroutine clo_get_option_r
 
@@ -448,8 +491,8 @@
 
 	double precision dvalue
 
-	dvalue = value
 	call clo_get_option_n(name,dvalue)
+	value = dvalue
 
 	end subroutine clo_get_option_i
 
@@ -595,6 +638,18 @@
 	end subroutine clo_get_file
 
 !**************************************************************
+
+	subroutine clo_check_files(nexpect)
+
+	integer nexpect
+
+	if( nexpect > last_file - last_option ) then
+	  call clo_usage
+	end if
+
+	end subroutine clo_check_files
+
+!**************************************************************
 !**************************************************************
 !**************************************************************
 
@@ -612,14 +667,18 @@
 
 !**************************************************************
 
-	subroutine clo_parse_options(nexpect)
+	subroutine clo_parse_options(opt_nexpect)
 
-	integer nexpect		!number of expected files (at least)
+	integer, optional :: opt_nexpect  !number of expected files (at least)
 
+	integer nexpect
 	integer nc,i,n
 	character*80 option
 	character*80 string
 	double precision value
+
+	nexpect = 0
+	if( present(opt_nexpect) ) nexpect = opt_nexpect
 
 	nc = command_argument_count()
 	last_file = nc

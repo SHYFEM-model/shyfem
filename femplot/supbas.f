@@ -52,6 +52,7 @@ c 02.05.2013  ggu     meteo point plotting (plot_meteo_points())
 c 13.06.2013  ggu     bug fix in spherical_fact() -> set fact to 1
 c 13.12.2013  ggu     new mode=4 for plotting gray grid over scalar variable
 c 30.05.2014  ggu     new metpnt for meteo points, imicro computed
+c 10.02.2015  ggu     also plot other points, also regular points
 c
 c notes:
 c
@@ -111,11 +112,12 @@ c**************************************************************
 
 	integer mode
 
+	integer ifreg
 	real x0,y0,x1,y1
 	real x0leg,y0leg,x1leg,y1leg
 	real dxygrd,x,y
 	real cgray
-	character*80 bndlin,metpnt
+	character*80 bndlin,file
 	real getpar
 	logical inboxdim
         logical is_spherical
@@ -217,9 +219,19 @@ c**************************************************************
 	! special output
 	!--------------------------------------
 
-	call getfnm('metpnt',metpnt)
-	if( metpnt .ne. ' ' ) then
-	  call plot_meteo_points(metpnt)
+	call getfnm('metpnt',file)
+	if( file .ne. ' ' ) then
+	  call plot_meteo_points(1,file)
+	end if
+
+	call getfnm('obspnt',file)
+	if( file .ne. ' ' ) then
+	  call plot_meteo_points(2,file)
+	end if
+
+	ifreg = nint(getpar('ifreg'))
+	if( ifreg .gt. 0 ) then
+	  call plot_regular_points
 	end if
 
 !--------------------------------------
@@ -1436,7 +1448,75 @@ c**************************************************************
 c**************************************************************
 c**************************************************************
 
-	subroutine plot_meteo_points(file)
+	subroutine plot_regular_points
+
+c plots regular points
+
+	implicit none
+
+	include 'supout.h'
+
+        real xmin,ymin,xmax,ymax
+        common /bamima/ xmin,ymin,xmax,ymax
+
+	integer nx,ny
+	real ddx,ddy,dxy
+	real x0,y0,dx,dy,flag
+	real fact,afact
+	real x,y
+
+        nx = nint(regp(1))
+        ny = nint(regp(2))
+        x0 = regp(3)
+        y0 = regp(4)
+        dx = regp(5)
+        dy = regp(6)
+        flag = regp(7)
+
+	if( dx <= 0. .or. dy <= 0. ) return
+	if( nx <= 0. .or. ny <= 0. ) return
+
+	write(6,*) 'plotting regular points:'
+	write(6,*) x0,y0,dx,dy,flag
+	write(6,*) xmin,ymin,xmax,ymax
+
+	do while( x0 + dx < xmin )
+	  x0 = x0 + dx
+	end do
+	do while( y0 + dy < ymin )
+	  y0 = y0 + dy
+	end do
+
+	nx = (xmax-xmin)/dx
+	ny = (ymax-ymin)/dy
+	nx = max(nx,20)
+	ny = max(ny,20)
+	ddx = 0.3*(xmax-xmin)/(nx-1)
+	ddy = 0.3*(ymax-ymin)/(ny-1)
+	dxy = min(ddx,ddy)
+	call spherical_fact(fact,afact)
+	ddx = dxy/fact
+	ddy = dxy
+
+	write(6,*) nx,ny,ddx,ddy
+
+	call qgray(0.)
+
+	y = y0
+	do while( y <= ymax )
+	  x = x0
+	  do while( x <= xmax )
+	    call plot_plus(x,y,ddx,ddy)
+	    x = x + dx
+	  end do
+	  y = y + dy
+	end do
+
+	end
+
+c**************************************************************
+
+	subroutine plot_meteo_points(mode,file)
 
 c plots special points from meteo file
 c
@@ -1445,17 +1525,20 @@ c if sea_land.dat exists it is used, otherwise we can do without
 
 	implicit none
 
+	integer mode
 	character*(*) file
 
 	integer ndim
 	parameter (ndim=30000)
 
 	integer nx,ny,nz,n
-	integer idum,i
+	integer idum,i,ios
+	real xx,yy
+	real fact,afact
 	real xmin,xmax,ymin,ymax
-	real dx,dy
+	real dx,dy,dxy
 	real x(ndim),y(ndim),rf(ndim)
-	save n,x,y,rf,dx,dy
+	save n,x,y,rf,dx,dy,dxy
 
 	integer icall
 	save icall
@@ -1465,12 +1548,34 @@ c if sea_land.dat exists it is used, otherwise we can do without
 
 	if( icall .eq. 0 ) then
 	  open(1,file=file,status='old',form='formatted',err=88)
-	  read(1,*) nx,ny,nz
-	  n = nx*ny
-	  if( n .gt. ndim ) goto 99
-	  do i=1,n
-	    read(1,*) idum,idum,x(i),y(i)
-	  end do
+
+	  if( mode .eq. 1 ) then
+	    read(1,*) nx,ny,nz
+	    n = nx*ny
+	    if( n .gt. ndim ) goto 99
+	    do i=1,n
+	      read(1,*) idum,idum,x(i),y(i)
+	    end do
+	  else if( mode .eq. 2 ) then
+	    i = 0
+	    do
+	      !read(1,*,iostat=ios) xx,yy
+	      read(1,*,iostat=ios) idum,idum,xx,yy
+	      if( ios < 0 ) exit
+	      if( ios > 0 ) goto 98
+	      i = i + 1
+	      if( i .gt. ndim ) goto 99
+	      x(i) = xx
+	      y(i) = yy
+	    end do
+	    n = i
+	    nx = 10
+	    ny = 10
+	  else
+	    write(6,*) 'mode = ',mode
+	    stop 'error stop plot_meteo_points: mode not recognized'
+	  end if
+
 	  close(1)
 
 	  call mima(x,n,xmin,xmax)
@@ -1478,6 +1583,10 @@ c if sea_land.dat exists it is used, otherwise we can do without
 
 	  dx = 0.3*(xmax-xmin)/(nx-1)
 	  dy = 0.3*(ymax-ymin)/(ny-1)
+	  dxy = min(dx,dy)
+	  call spherical_fact(fact,afact)
+	  dx = dxy/fact
+	  dy = dxy
 
 	  do i=1,nx*ny
 	    rf(i) = 1.
@@ -1485,7 +1594,7 @@ c if sea_land.dat exists it is used, otherwise we can do without
 	  open(1,file='sea_land.dat',status='old',form='formatted',err=77)
 	  read(1,*)
 	  read(1,*) nx,ny,nz
-	  if( n .ne. nx*ny ) goto 99
+	  if( n .ne. nx*ny ) goto 97
 	  read(1,*) (rf(i),i=1,n)
 	  close(1)
    77	  continue
@@ -1514,9 +1623,16 @@ c if sea_land.dat exists it is used, otherwise we can do without
 	write(6,*) 'no coords.dat file ... cannot plot coordinates'
 	write(6,*) 'file: ',file
 	stop 'error stop plot_meteo_points: file'
+   98	continue
+	write(6,*) 'file: ',trim(file)
+	write(6,*) 'mode,irec: ',mode,i
+	stop 'error stop plot_meteo_points: read error'
    99	continue
-	write(6,*) nx,ny,n,ndim
+	write(6,*) n,ndim
 	stop 'error stop plot_meteo_points: ndim'
+   97	continue
+	write(6,*) nx,ny,n,ndim
+	stop 'error stop plot_meteo_points: different length'
 	end
 
 c**************************************************************

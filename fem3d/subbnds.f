@@ -31,6 +31,8 @@ c 23.04.2008    ggu     in bnds_set_def() eliminated aaux
 c 16.02.2012    ggu     new routine bnds_init0 (to force spatially const bound)
 c 25.06.2014    ggu     new routines bnds_init_new() and bnds_trans_new()
 c 10.07.2014    ggu     only new file format allowed
+c 05.02.2015    ggu     check for number of variables read
+c 10.02.2015    ggu     new routine bnds_read_new()
 c
 c******************************************************************
 
@@ -62,6 +64,7 @@ c initializes boundary condition
 	real aconst(nvar)
 
 	integer nbnds,nkbnds,ifileo,kbnds
+	integer nvar_orig
 	logical exists_bnd_name
 	logical bdebug
 
@@ -75,6 +78,7 @@ c initializes boundary condition
 	  write(6,*) '-------------------------'
 	end if
 
+	nvar_orig = nvar
 	nbc = nbnds()
 
 	do ibc=1,nbc
@@ -94,6 +98,7 @@ c initializes boundary condition
 
           call iff_init(dtime0,file,nvar,nk,nlv,nintp
      +                          ,nodes,aconst,id)
+	  if( nvar /= nvar_orig ) goto 99
 	  call iff_set_description(id,ibc,what)
 
 	  ids(ibc) = id
@@ -114,6 +119,42 @@ c initializes boundary condition
 	    call iff_print_info(ids(ibc))
 	  end do
 	end if
+
+	return
+   99	continue
+	write(6,*) 'number of variables is wrong'
+	write(6,*) 'expected: ',nvar_orig
+	write(6,*) 'read from file: ',nvar
+	write(6,*) 'type of boundary condition: ',what
+	write(6,*) 'number of boundary: ',ibc
+	write(6,*) 'file name: ',trim(file)
+	call iff_print_info(id)
+	stop 'error stop bnds_init_new: wrong number of variables'
+	end
+
+c******************************************************************
+
+	subroutine bnds_read_new(text,ids,dtime)
+
+c reads new boundary condition
+
+	use intp_fem_file
+
+	implicit none
+
+	character*(*) text	!text for debug
+	integer ids(*)
+	double precision dtime
+
+	integer nbc,ibc,id
+	integer nbnds
+
+	nbc = nbnds()
+
+	do ibc=1,nbc
+	  id = ids(ibc)
+	  call iff_read_and_interpolate(id,dtime)
+	end do
 
 	end
 

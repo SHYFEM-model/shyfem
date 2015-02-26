@@ -29,6 +29,7 @@ c 19.03.2012	ggu	if no basin is given return with "error"
 c 27.02.2013	ggu	pass what parameter into nlsa
 c 05.09.2013	ggu	read_apn_file() needs integer now
 c 14.01.2015	ggu	reorganized and cleaned
+c 10.02.2015	ggu	debugged, bcompat gives compatibility with old versions
 c
 c notes :
 c
@@ -102,7 +103,7 @@ c---------------------------------------------------------------------
 	    write(6,*) 'no basin given... exiting'
 	    stop
 	  end if
-	  write(6,*) 'Name of basin      : ',basnam(1:len_trim(basnam))
+	  write(6,*) 'Name of basin      : ',trim(basnam)
 	end if
 
 	if( btest(abs(mode),1) ) then
@@ -110,7 +111,7 @@ c---------------------------------------------------------------------
 	    write(6,*) 'no simulation given... exiting'
 	    stop
 	  end if
-	  write(6,*) 'Name of simulation : ',runnam(1:len_trim(runnam))
+	  write(6,*) 'Name of simulation : ',trim(runnam)
 	end if
 
 c---------------------------------------------------------------------
@@ -125,6 +126,40 @@ c---------------------------------------------------------------------
 c---------------------------------------------------------------------
 c end of routine
 c---------------------------------------------------------------------
+
+	end
+
+c*************************************************************
+
+	subroutine ap_set_names(basin,simul)
+
+c sets basin and simulation
+
+	character*(*) basin,simul
+
+	logical haspar
+
+	if( .not. haspar('runnam') ) call addfnm('runnam',' ')
+	if( .not. haspar('basnam') ) call addfnm('basnam',' ')
+
+	if( simul .ne. ' ' ) call putfnm('runnam',simul)
+	if( basin .ne. ' ' ) call putfnm('basnam',basin)
+
+	end
+
+c*************************************************************
+
+	subroutine ap_init(mode,nkndi,neldi)
+
+c initializes post processing
+
+	implicit none
+
+	integer mode,nkndi,neldi
+
+	integer iapini
+
+	if( iapini(mode,nkndi,neldi,0) .le. 0 ) stop
 
 	end
 
@@ -151,10 +186,12 @@ c mode negative: do not ask for new basin and simulation
 	integer iapini
 	integer mode,nkndi,neldi,matdim
 
+	logical bcompat
 	integer nmode,iauto
 	real getpar
 
 	iapini = 1
+	bcompat = .false.	!set to .true. for compatibility
 
 c---------------------------------------------------------------------
 c assign new parameter file
@@ -169,6 +206,8 @@ c---------------------------------------------------------------------
 	nmode = mode
 	iauto = nint(getpar('iauto'))
 	if( iauto .ne. 0 ) nmode = -abs(mode)
+
+	if( .not. bcompat ) nmode = -abs(mode)	!never ask
 
 	call assnam(nmode)
 

@@ -368,7 +368,7 @@ c controls time step
           cmax   = dgetpar('coumax')
           tfact  = dgetpar('tfact')	!still to be commented
 
-	  call convert_time('idtsync',idtsync)
+	  call convert_time('idtsyn',idtsync)
 	  call convert_time('idtmin',idtmin)
 	  dtmin = dgetpar('idtmin')
 

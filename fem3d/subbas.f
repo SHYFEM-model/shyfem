@@ -260,7 +260,7 @@ c*************************************************
 	include 'basin.h'
 
         write(6,*)
-        write(6,*) descrr(1:len_trim(descrr))
+        write(6,*) trim(descrr)
         write(6,*)
         write(6,*) ' nkn = ',nkn,'  nel = ',nel
         write(6,*) ' mbw = ',mbw,'  ngr = ',ngr
@@ -301,6 +301,33 @@ c*************************************************
 	nela = nel
 	ngra = ngr
 	mbwa = mbw
+
+	end
+
+c*************************************************
+
+	subroutine bas_get_minmax(xmin,ymin,xmax,ymax)
+
+	implicit none
+
+	include 'param.h'
+	include 'basin.h'
+
+	real xmin,ymin,xmax,ymax
+
+	integer k
+
+	xmin = xgv(1)
+	xmax = xgv(1)
+	ymin = ygv(1)
+	ymax = ygv(1)
+
+	do k=1,nkn
+	  xmin = min(xmin,xgv(k))
+	  xmax = max(xmax,xgv(k))
+	  ymin = min(ymin,ygv(k))
+	  ymax = max(ymax,ygv(k))
+	end do
 
 	end
 

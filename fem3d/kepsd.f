@@ -8,6 +8,7 @@ c
 c 25.02.1999	ggu	finished writing routines
 c 10.04.2008	ggu&ccf	new gotm routine call integrated
 c 01.06.2011	ggu&cpb	call to do_gotm_turb was wrong (BUG)
+c 10.02.2015	ggu	in gotm call to do_gotm_turb() with ddt and not dt
 c
 c notes :
 c
@@ -149,7 +150,7 @@ c prepare data for gotm call
 c	call gotmturb(lmax,ddt,hh,NN,SS,num,nuh
 c     +			,rkin,reps,rlen,u_taus,u_taub)
 
-	call do_gotm_turb(lmax,dt,depth,u_taus,u_taub,z0s,z0b
+	call do_gotm_turb(lmax,ddt,depth,u_taus,u_taub,z0s,z0b
      +			,hh,NN,SS,num,nuh
      +			,rkin,reps,rlen)
 

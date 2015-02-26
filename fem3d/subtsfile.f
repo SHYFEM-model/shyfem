@@ -4,6 +4,11 @@ c
 c revision log :
 c
 c 20.10.2014    ggu     integrating datetime into time series
+c 10.02.2015    ggu     length of line set to 2048
+c
+c notes :
+c
+c keyword example setting date:		"#date: 20071001 0"
 c
 c*************************************************************
 
@@ -19,8 +24,8 @@ c nvar <= 0 for error or no TS file
 	character*(*) file	!file name
 	integer nvar		!variables (columns) in file (except time)
 
-	character*132 line
-	integer iunit,i,nrec,iline,nvar0
+	character*2048 line
+	integer iunit,i,iend,nrec,iline,nvar0
 	double precision d(1)
 
 	integer iscand,ichafs
@@ -51,6 +56,8 @@ c------------------------------------------------------
 	  nrec = nrec + 1
 	  read(iunit,'(a)',err=3,end=2) line
 	  i = ichafs(line)
+	  iend = len_trim(line)
+	  if( iend > 2000 ) goto 95
 	  if( i > 0 .and. line(i:i) /= '#' ) then	!valid record
 	    iline = iline + 1
 	    nvar = iscand(line,d,0)		!count values on line
@@ -78,6 +85,10 @@ c end of routine
 c------------------------------------------------------
 
 	return
+   95	continue
+	write(6,*) 'read error in line ',nrec,' of file ',file
+	write(6,*) 'last character read: ',iend
+	stop 'error stop ts_get_file_info: line too long'
     3	continue
 	write(6,*) 'read error in line ',nrec,' of file ',file
 	stop 'error stop ts_get_file_info: read error'
@@ -94,10 +105,10 @@ c*************************************************************
 	integer datetime(2)
 	integer iunit
 
-	character*132 line
+	character*2048 line
 	character*10 key
 	character*60 info	!still have to use this data
-	integer i,j,nrec,ioff
+	integer i,j,nrec,ioff,iend
 	integer date,time
 	double precision d(3)
 
@@ -140,6 +151,8 @@ c------------------------------------------------------
 c set date, nvar and backspace file
 c------------------------------------------------------
 
+	iend = len_trim(line)
+	if( iend > 2000 ) goto 95
 	nvar = iscand(line,d,0)		!count values on line
 	if( nvar < 0 ) nvar = -nvar-1	!read error in number -nvar
 	nvar = nvar - 1			!do not count time column
@@ -151,9 +164,13 @@ c end of routine
 c------------------------------------------------------
 
 	return
+   95	continue
+	write(6,*) 'read error in line ',nrec,' of file ',file
+	write(6,*) 'last character read: ',iend
+	stop 'error stop ts_open_file: line too long'
     3	continue
 	write(6,*) 'read error in line ',nrec,' of file ',file
-	stop 'error stop ts_get_file_info: read error'
+	stop 'error stop ts_open_file: read error'
 	end
 
 c*************************************************************
@@ -364,6 +381,10 @@ c*************************************************************
 
 	if( j >= 1 ) datetime(1) = nint(d(1))
 	if( j >= 2 ) datetime(2) = nint(d(2))
+
+	if( datetime(1) > 0 .and. datetime(1) < 10000 ) then
+	  datetime(1) = 10000*datetime(1) + 101
+	end if
 
 	end
 

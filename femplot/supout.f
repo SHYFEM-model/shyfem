@@ -26,6 +26,7 @@ c 13.06.2013  ggu     new routines for handling FEM files
 c 03.09.2013  ggu     level_k2e -> level_k2e_sh, level_e2k -> level_e2k_sh
 c 05.03.2014  ggu     new read for ous and nos files (use date)
 c 20.10.2014  ggu     deleted is2d() and out reading routines
+c 10.02.2015  ggu     use different file units (more than one can be opened)
 c
 c**********************************************************
 c**********************************************************
@@ -304,12 +305,17 @@ c******************************************************
 	save icall
 	data icall /0/
 
+	if( bdebug_out ) then
+	  write(6,*) 'debug_out: waveini'
+	  write(6,*) icall,nunit_fvl
+	end if
+
 	if( icall .ne. 0 ) return
 
 	icall = 1
 
-	nunit = 0
-        iform = 0	! 0 = wave height   1 = wave period
+	nunit_wave = 0
+        iwave = 0	! 0 = wave height   1 = wave period
 
         end
 
@@ -321,7 +327,8 @@ c******************************************************
 
 	include 'supout.h'
 
-	if( nunit .gt. 0 ) close(nunit)
+	if( nunit_wave .gt. 0 ) close(nunit_wave)
+	nunit_wave = 0
 
         end
 
@@ -373,6 +380,8 @@ c initialize time
 	  call iff_init_global_date(date,time)
         end if
 
+	nunit_wave = nunit
+
 	return
    99	continue
 	write(6,*) nkn,nel,nlv
@@ -402,6 +411,9 @@ c******************************************************
 	include 'hydro_plot.h'
 	include 'aux_array.h'
 
+	call waveini
+	nunit = nunit_wave
+
 	wavenext = .false.
 	nlvddi = 1
 	call rdnos(nunit,it,ivar,nlvddi,ilhkv,v1v,ierr)
@@ -419,7 +431,7 @@ c******************************************************
 
 	wavenext = .true.
 
-	if( iform .eq. 0 ) then
+	if( iwave .eq. 0 ) then
 	  call polar2xy(nkn,v1v,v3v,uv,vv)
 	else
 	  call polar2xy(nkn,v2v,v3v,uv,vv)
@@ -481,11 +493,16 @@ c initializes internal data structure for OUS file
 	save icall
 	data icall /0/
 
+	if( bdebug_out ) then
+	  write(6,*) 'debug_out: ousini'
+	  write(6,*) icall,nunit_fvl
+	end if
+
 	if( icall .ne. 0 ) return
 
 	icall = 1
 
-	nunit = 0
+	nunit_ous = 0
 
 	end
 
@@ -502,7 +519,7 @@ c checks if OUS file is opened
 	include 'supout.h'
 
 	call ousini
-	ous_is_available = nunit .gt. 0
+	ous_is_available = nunit_ous .gt. 0
 
 	end
 
@@ -517,8 +534,8 @@ c closes OUS file
 	include 'supout.h'
 
 	call ousini
-	if( nunit .gt. 0 ) close(nunit)
-	nunit = 0
+	if( nunit_ous .gt. 0 ) close(nunit_ous)
+	nunit_ous = 0
 
 	end
 
@@ -535,7 +552,7 @@ c returns info on OUS parameters
         integer nvers,nkn,nel,nlv
 
 	call ousini
-        call getous(nunit,nvers,nkn,nel,nlv)
+        call getous(nunit_ous,nvers,nkn,nel,nlv)
 
         end
 
@@ -596,6 +613,8 @@ c initialize time
 	  call iff_init_global_date(date,time)
 	end if
 
+	nunit_ous = nunit
+
 c end
 
 	return
@@ -636,6 +655,8 @@ c reads next OUS record - is true if a record has been read, false if EOF
 	if( nlvdim .ne. nlvdi ) stop 'error stop ousnext: nlvdim'
 
 	call ousini
+	nunit = nunit_ous
+
 	call rdous(nunit,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
 
 c set return value
@@ -674,11 +695,16 @@ c initializes internal data structure for NOS file
 	save icall
 	data icall /0/
 
+	if( bdebug_out ) then
+	  write(6,*) 'debug_out: nosini'
+	  write(6,*) icall,nunit_fvl
+	end if
+
 	if( icall .ne. 0 ) return
 
 	icall = 1
 
-	nunit = 0
+	nunit_nos = 0
 
 	end
 
@@ -693,8 +719,8 @@ c closes NOS file
 	include 'supout.h'
 
 	call nosini
-	if( nunit .gt. 0 ) close(nunit)
-	nunit = 0
+	if( nunit_nos .gt. 0 ) close(nunit_nos)
+	nunit_nos = 0
 
 	end
 
@@ -755,7 +781,11 @@ c initialize time
 	  call iff_init_global_date(date,time)
         end if
 
+	nunit_nos = nunit
+
 c end
+
+	write(6,*) 'gguuuuuu: (nosopen)',nunit,nunit_fvl
 
 	return
    99	continue
@@ -791,6 +821,9 @@ c reads next NOS record - is true if a record has been read, false if EOF
 	if( nlvddi .ne. nlvdi ) stop 'error stop nosnext: nlvddi'
 
 	call nosini
+	nunit = nunit_nos
+	write(6,*) 'gguuuuuu: (nosnext)',nunit,nunit_fvl
+
 	call rdnos(nunit,it,ivar,nlvddi,ilhkv,array,ierr)
 
 c set return value
@@ -829,11 +862,16 @@ c initializes internal data structure for FVL file
 	save icall
 	data icall /0/
 
+	if( bdebug_out ) then
+	  write(6,*) 'debug_out: fvlini'
+	  write(6,*) icall,nunit_fvl
+	end if
+
 	if( icall .ne. 0 ) return
 
 	icall = 1
 
-	nunit = 0
+	nunit_fvl = 0
 
 	end
 
@@ -850,7 +888,7 @@ c checks if FVL file is opened
 	include 'supout.h'
 
 	call fvlini
-	fvl_is_available = nunit .gt. 0
+	fvl_is_available = nunit_fvl .gt. 0
 
 	end
 
@@ -865,8 +903,8 @@ c closes FVL file
 	include 'supout.h'
 
 	call fvlini
-	if( nunit .gt. 0 ) close(nunit)
-	nunit = 0
+	if( nunit_fvl .gt. 0 ) close(nunit_fvl)
+	nunit_fvl = 0
 
 	end
 
@@ -910,7 +948,7 @@ c open file
 	nunit = ifem_choose_file(type,'old')
 	if( nunit .le. 0 ) then
 		write(6,*) 'Cannot open fvl file ... doing without...'
-		nunit = 0
+		nunit_fvl = 0
 		return
 		!stop 'error stop conopen: cannot open NOS file'
         else
@@ -954,6 +992,8 @@ c read second header
 	call array_check(nlv,hlv1,hlv,'hlv')
 	call array_check(nel,hev1,hev,'hev')
 
+	nunit_fvl = nunit
+
 c end
 
 	return
@@ -964,7 +1004,7 @@ c end
 	write(6,*) 'nlv : ',nlv,nlvaux
 	write(6,*) 'nvar: ',nvar
 	write(6,*) 'not using FVL file'
-	nunit = 0
+	nunit_fvl = 0
 	!stop 'error stop fvlopen'
 	end
 
@@ -995,6 +1035,8 @@ c reads next FVL record
 	if( nlvddi .ne. nlvdi ) stop 'error stop fvlnext: nlvddi'
 
 	call fvlini
+	nunit = nunit_fvl
+
 	if( nunit .eq. 0 ) return	!file closed
 	if( it .eq. itfvl ) return	!already read
 
@@ -1014,18 +1056,17 @@ c set return value
 	  if( ierr .gt. 0 ) then
 		!stop 'error stop fvlnext: error reading data record'
 		write(6,*) '*** fvlnext: error reading data record'
-	
 	  else if( ierr .lt. 0 ) then
 		write(6,*) '*** fvlnext: EOF encountered'
 	  end if
 	  itfvl = -1
-	  nunit = 0
+	  nunit_fvl = 0
 	  return
 	end if
 
 c check results
 
-	if( it .ne. itfvl ) nunit = -abs(nunit)
+	if( it .ne. itfvl ) nunit_fvl = -abs(nunit_fvl)
 	if( ivar .ne. 66 ) goto 99
 
 c end
@@ -1056,11 +1097,16 @@ c initializes internal data structure for EOS file
 	save icall
 	data icall /0/
 
+	if( bdebug_out ) then
+	  write(6,*) 'debug_out: eosini'
+	  write(6,*) icall,nunit_fvl
+	end if
+
 	if( icall .ne. 0 ) return
 
 	icall = 1
 
-	nunit = 0
+	nunit_eos = 0
 
 	end
 
@@ -1075,8 +1121,8 @@ c closes EOS file
 	include 'supout.h'
 
 	call eosini
-	if( nunit .gt. 0 ) close(nunit)
-	nunit = 0
+	if( nunit_eos .gt. 0 ) close(nunit_eos)
+	nunit_eos = 0
 
 	end
 
@@ -1156,6 +1202,8 @@ c read second header
 
 	call level_e2k_sh		!computes ilhkv
 
+	nunit_eos = nunit
+
 	return
    99	continue
 	write(6,*) 'error in parameters :'
@@ -1189,6 +1237,8 @@ c reads next EOS record - is true if a record has been read, false if EOF
 	if( nlvddi .ne. nlvdi ) stop 'error stop eosnext: nlvddi'
 
 	call eosini
+	nunit = nunit_eos
+
 	call rdeos(nunit,it,ivar,nlvddi,ilhv,array,ierr)
 
 c set return value
@@ -1317,11 +1367,16 @@ c initializes internal data structure for FEM files
 	save icall
 	data icall /0/
 
+	if( bdebug_out ) then
+	  write(6,*) 'debug_out: femini'
+	  write(6,*) icall,nunit_fvl
+	end if
+
 	if( icall .ne. 0 ) return
 
 	icall = 1
 
-	nunit = 0
+	nunit_fem = 0
 	iformat = 0
 
 	end
@@ -1337,8 +1392,8 @@ c closes FEM file
 	include 'supout.h'
 
 	call femini
-	if( nunit .gt. 0 ) close(nunit)
-	nunit = 0
+	if( nunit_fem .gt. 0 ) close(nunit_fem)
+	nunit_fem = 0
 
 	end
 
@@ -1364,14 +1419,14 @@ c opens FEM file and reads header
 
 	character*80 file
 
-	logical bformat
+	logical bformat,breg
 	integer nvers,np,it,lmax,ntype
 	integer nknaux,nelaux,nlvaux,nvar
 	integer ierr,l
 	integer datetime(2)
 	real regpar(7)
 	double precision dtime
-	integer ifemop
+	integer ifemop,fem_file_regular
 
 c initialize routines
 
@@ -1403,13 +1458,21 @@ c read first header
 		stop 'error stop femopen: error reading header'
 	end if
 
+	breg = fem_file_regular(ntype) > 0
+
         write(6,*)
         write(6,*) ' nvers = ', nvers
         write(6,*) '   nkn = ',np,   ' ntype = ',ntype
         write(6,*) '   nlv = ',lmax, '  nvar = ',nvar
         write(6,*)
+	if( breg ) then
+          write(6,*) 'the file is a regular grid'
+          write(6,*)
+	end if
 
-	if( nkn .ne. np ) goto 99
+	if( .not. breg .and. nkn .ne. np ) goto 99
+	if( nkn .lt. np ) goto 99
+	if( breg .and. lmax > 1 ) goto 98
 	if( nlvdi .lt. lmax ) goto 99
 
 	it = nint(dtime)
@@ -1433,9 +1496,15 @@ c read second header
 
 c rewind for a clean state
 
+	nunit_fem = nunit
 	rewind(nunit)
 
 	return
+   98	continue
+	write(6,*) 'error in parameters : regular - lmax'
+	write(6,*) 'the file is regular and 3D'
+	write(6,*) 'Cannot handle interpolation yet'
+	stop 'error stop femopen'
    99	continue
 	write(6,*) 'error in parameters : basin - simulation'
 	write(6,*) 'nkn : ',nkn,np
@@ -1466,7 +1535,7 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	include 'levels.h'
 	include 'aux_array.h'
 
-	logical bfound,bformat
+	logical bfound,bformat,breg
 	integer ierr
 	integer i,iv,ip
 	integer nvers,np,lmax,nvar,ntype
@@ -1476,9 +1545,12 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	real fact
 	character*80 string
 
+	integer fem_file_regular
+
 	if( nlvddi .ne. nlvdi ) stop 'error stop femnext: nlvddi'
 
 	call femini
+	nunit = nunit_fem
 	bformat = iformat .eq. 1
 
 	!write(6,*) 'femnext format: ',bformat,iformat
@@ -1487,11 +1559,20 @@ c reads next FEM record - is true if a record has been read, false if EOF
         call fem_file_read_params(iformat,nunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
 	if( ierr .ne. 0 ) goto 7
+	nlv = lmax
+	regpar = 0
 	call fem_file_read_2header(iformat,nunit,ntype,nlv
      +				,hlv,regpar,ierr)
 	if( ierr .ne. 0 ) goto 7
 
-	if( np .ne. nkn ) goto 99
+	breg = fem_file_regular(ntype) > 0
+	if( .not. breg .and. np .ne. nkn ) goto 99
+
+	if( breg ) then
+	  write(6,*) 'plotting regular grid...'
+	  write(6,*) 'not yet ready for regular grid...'
+	  !stop
+	end if
 
 	!it = nint(dtime)
 	call ptime_set_date_time(datetime(1),datetime(2))
@@ -1521,6 +1602,12 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	    end if
 	  end if
 	end do
+
+	if( breg ) then
+	  write(6,*) 'interpolating from regular grid...'
+	  call fem_interpolate(nlvddi,nkn,np,ip,regpar,ilhkv,array)
+	  regp = regpar		!save for later
+	end if
 
 	if( bfound ) then
 	  call level_k2e_sh
@@ -1568,6 +1655,50 @@ c******************************************************
 	do k=1,nkn
 	  do l=1,nlvddi
 	    array(l,k) = fact * array(l,k)
+	  end do
+	end do
+
+	end
+
+c******************************************************
+
+	subroutine fem_interpolate(nlvddi,nkn,np,ip,regpar,ilhkv,array)
+
+c interpolates from a regular grid (only for 2D)
+
+	implicit none
+
+	integer nlvddi,nkn,np,ip
+	real regpar(7)
+	integer ilhkv(nkn)
+	real array(nlvddi,nkn,ip)
+
+	integer i,ivar
+	integer nx,ny
+	real x0,y0,dx,dy,flag
+	real areg(np)
+	real afem(nkn)
+
+	nx = nint(regpar(1))
+	ny = nint(regpar(2))
+	x0 = regpar(3)
+	y0 = regpar(4)
+	dx = regpar(5)
+	dy = regpar(6)
+	flag = regpar(7)
+	ilhkv = 1		!works only for 2D
+
+	call setgeo(x0,y0,dx,dy,flag)
+
+	do ivar=1,ip
+	  do i=1,np
+	    areg(i) = array(1,i,ivar)
+	  end do
+
+	  call am2av(areg,afem,nx,ny)
+
+	  do i=1,nkn
+	    array(1,i,ivar) = afem(i)
 	  end do
 	end do
 

@@ -236,6 +236,7 @@ c------------------------------------------------------------------
 
         dtime = it
 
+        call bnds_read_new(what,idvel,dtime)
         call bnds_trans_new(what,idvel,dtime,1,nkn,nlv,nlvdim,ubound)
         call bnds_trans_new(what,idvel,dtime,2,nkn,nlv,nlvdim,vbound)
 

@@ -307,7 +307,10 @@ c writes NOS file
 	include 'femtime.h'
 	include 'levels.h'
 
+	logical binfo
 	integer ierr
+
+	binfo = .false.
 
 c-----------------------------------------------------
 c check if files has to be written
@@ -328,7 +331,9 @@ c-----------------------------------------------------
 c write informational message to terminal
 c-----------------------------------------------------
 
-        write(6,*) 'confil: variable ',ivar,' written at ',it
+	if( binfo ) then
+          write(6,*) 'confil: variable ',ivar,' written at ',it
+	end if
 
 c-----------------------------------------------------
 c end of routine
@@ -478,7 +483,10 @@ c the file must be open, the file will be written unconditionally
 
 	include 'levels.h'
 
+	logical binfo
 	integer iu,ierr
+
+	binfo = .false.
 
 c-----------------------------------------------------
 c check if files has to be written
@@ -498,7 +506,9 @@ c-----------------------------------------------------
 c write informational message to terminal
 c-----------------------------------------------------
 
-        write(6,*) 'write_scalar_file: ivar = ',ivar,' written at ',it
+	if( binfo ) then
+          write(6,*) 'write_scalar_file: ivar = ',ivar,' written at ',it
+	end if
 
 c-----------------------------------------------------
 c end of routine

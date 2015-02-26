@@ -40,6 +40,7 @@ c 28.04.2008    ggu     all routines changed to double precision
 c 28.04.2008    ggu     three new routines: dgetpar, dputpar, daddpar
 c 28.07.2010    ggu     new routines (par and fnm together) -> subst. old ones
 c 25.06.2012    ggu     debugged
+c 13.02.2015    ggu     limit of string raised from 6 to 10
 c
 c**************************************************************
 c**************************************************************
@@ -54,25 +55,26 @@ c**************************************************************
 
 	implicit none
 
+	integer, parameter, private :: lc = 10		!max length of name
+
 	type, private :: entry
 
-	  character*6 :: name
-	  character*6 :: section
+	  character*10 :: name
+	  character*10 :: section
 	  integer :: isize
 	  integer :: itype
 	  double precision :: value
 	  double precision, allocatable :: array(:)
 	  character*80 :: string
+	  !character(len=:), allocatable :: string
 
 	end type entry
 
 	integer, save, private :: idlast = 0
-	!integer, parameter, private :: ndim = 300
-	!type(entry), save :: pentry(ndim)
 	integer, save, private :: ndim = 0
 	type(entry), save, allocatable :: pentry(:)
 
-	character*(6), save, private :: def_section = ' '
+	character*10, save, private :: def_section = ' '
 
 !==================================================================
 	contains
@@ -84,11 +86,26 @@ c**************************************************************
 	character*(*) name,section
 
 	integer id,ifound
-	character*6 namarg,s
+	integer ln,ls
+	character(len=len(name)) :: namarg
+	character(len=len(section)) :: s
 
-        namarg=name
+	ln = len(trim(name))
+	ls = len(trim(section))
+
+	if( ln > lc .or. ls > lc ) then
+	  write(6,*) ln,trim(name)
+	  write(6,*) ls,trim(section)
+	  write(6,*) 'maximum length allowed: ',lc
+	  !ls = 0
+	  !ifound = ln/ls
+	  !write(6,*) ln,ls,ifound
+	  stop 'error stop para_get_id: name or section too long'
+	end if
+
+        namarg=trim(name)
         call uplow(namarg,'low')
-        s=section
+        s=trim(section)
         call uplow(s,'low')
 
 	ifound = 0
@@ -298,6 +315,47 @@ c**************************************************************
 	end subroutine para_get_info
 
 !******************************************************************
+
+	subroutine para_info(id_opt)
+
+	integer, optional :: id_opt
+
+	integer id
+
+	if( present(id_opt) ) then
+	  id = id_opt
+	  call para_info_id(id)
+	else
+	  do id=1,idlast
+	    call para_info_id(id)
+	  end do
+	end if
+
+	end subroutine para_info
+
+!******************************************************************
+
+	subroutine para_info_id(id)
+
+	integer id
+
+	integer itype
+	double precision value
+	character(len=len(pentry(id)%name))    :: name
+	character(len=len(pentry(id)%section)) :: section
+	character(len=len(pentry(id)%string))  :: string
+
+	name = pentry(id)%name
+	section = pentry(id)%section
+	itype = pentry(id)%itype
+	value = pentry(id)%value
+	string = pentry(id)%string
+
+	write(6,*) id,itype,trim(name),value,trim(string)
+
+	end subroutine para_info_id
+
+!******************************************************************
 !******************************************************************
 !******************************************************************
 
@@ -421,7 +479,7 @@ c**************************************************************
 	if( id .eq. 0 ) call para_init_new_id(id)
 
 	pentry(id)%name   = name
-	pentry(id)%string = string
+	pentry(id)%string = trim(string)
 	pentry(id)%itype = 3
 
 	end subroutine para_add_string
@@ -451,7 +509,7 @@ c**************************************************************
 	  stop 'error stop para_put_string: itype'
 	end if
 
-	pentry(id)%string = string
+	pentry(id)%string = trim(string)
 
 	end subroutine para_put_string
 
@@ -569,6 +627,14 @@ c**************************************************************
 c**************************************************************
 c**************************************************************
 c**************************************************************
+
+	function haspar(name)
+	use para
+	implicit none
+	logical haspar
+	character*(*) name
+	haspar=para_get_id(name,' ')>0
+	end
 
 	function itspar(name)
 	use para
@@ -844,8 +910,7 @@ c**********************************************************
           if(itype.eq.1) then
             write(iunit,2345) id,name,section,itype,value
           else if(itype.eq.3) then
-            nlen=max(1,ichanm(string))
-            write(iunit,2346) id,name,section,itype,string(1:nlen)
+            write(iunit,2346) id,name,section,itype,trim(string)
 	  else
 	    write(6,*) 'error itype...'
             write(iunit,2345) id,name,section,itype,value
@@ -854,8 +919,8 @@ c**********************************************************
         end do
 
         return
- 2345   format(1x,i4,2(1x,a6,1x),i4,e12.4,i4,1x,a)
- 2346   format(1x,i4,2(1x,a6,1x),i4,4i4,1x,a)
+ 2345   format(1x,i4,2(1x,a6,1x),i4,e12.4)
+ 2346   format(1x,i4,2(1x,a6,1x),i4,a)
 	end
 
 c**********************************************************
@@ -878,7 +943,7 @@ c**********************************************************
 
 	write(iunit,*) '--------------------------------'
 	write(iunit,*) 'info on parameters: ',text
-	!call chkparam(iunit)
+	call chkparam(iunit)
 	write(iunit,*) '--------------------------------'
 	write(iunit,*) '...printing with pripar...'
         call pripar(iunit)

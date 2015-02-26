@@ -77,6 +77,7 @@ c 27.07.2010    ccf     settling velocity for cohesive sedimen in function of sp
 c 20.06.2011    ccf     load for erosion deposition for both cohesive and non-cohesive
 c 20.06.2011	ccf	deleted suspco routine
 c 19.01.2015    ccf     ia_out1/2 introduced
+c 10.02.2015    ggu     new read for constants
 c
 !****************************************************************************
 
@@ -148,7 +149,7 @@ c
       save idsedi
 
       integer itanf,nvar
-      double precision dtime0
+      double precision dtime0,dtime
 
 	include 'bound_names.h'
 
@@ -360,6 +361,9 @@ c
 !       -------------------------------------------------------------------
 !       Transport and diffusion for each sediment class
 !       -------------------------------------------------------------------
+
+	dtime = it
+	call bnds_read_new(what,idsedi,dtime)
 
 !$OMP PARALLEL PRIVATE(is)
 !$OMP DO SCHEDULE(DYNAMIC)
@@ -751,7 +755,7 @@ c DOCS  END
 
         include 'sed_param.h'
 
-        integer nrdnls,iw,ioff
+        integer nrdnxt,iw,ioff
         integer ifileo
         integer iunit
         real value
@@ -877,28 +881,41 @@ c DOCS  END
 !         Reads first line in file
 !         --------------------------------------------------------
 
-          read(iunit,'(a)') line
-          ioff = 1
+!ggu          read(iunit,'(a)') line
+!ggu          ioff = 1
 
 !         --------------------------------------------------------
 !         Loop on lines
 !         --------------------------------------------------------
 
-    1     continue
-            iw = nrdnls(name,dvalue,text,line,ioff)
-	    value = real(dvalue)
-            if( iw .le. 0 ) then
-              read(iunit,'(a)',end=2) line
-              ioff = 1
-            else
-              if( iw .eq. 1 ) text = ' '
-              if( iw .eq. 2 ) value = 0
-              do j = 1,nc
-                if (name .eq. cname(j)) cvalue(j) = value
-              end do
-            end if
-            goto 1
-    2     continue
+	  call nrdini(iunit)
+
+	  do
+	    iw = nrdnxt(name,dvalue,text)
+	    if( iw .le. 0 ) exit
+	    if( iw .ne. 1 ) stop 'error stop readsedconst: wrong item'
+            do j = 1,nc
+              if (name .eq. cname(j)) cvalue(j) = dvalue
+            end do
+	  end do
+
+	  close(iunit)
+
+!    1     continue
+!            iw = nrdnls(name,dvalue,text,line,ioff)
+!	    value = real(dvalue)
+!            if( iw .le. 0 ) then
+!              read(iunit,'(a)',end=2) line
+!              ioff = 1
+!            else
+!              if( iw .eq. 1 ) text = ' '
+!              if( iw .eq. 2 ) value = 0
+!              do j = 1,nc
+!                if (name .eq. cname(j)) cvalue(j) = value
+!              end do
+!            end if
+!            goto 1
+!    2     continue
 
         end if
 

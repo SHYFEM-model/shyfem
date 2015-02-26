@@ -5,7 +5,8 @@
 
 	implicit none
 
-	character*50 infile,what,var,hlvfile
+	character*132 infile
+	character*50 what,var,hlvfile
 	logical bformat
 	logical formatted,unformatted
 	logical b2d,b3d
@@ -23,7 +24,7 @@
 
 	write(6,*) 'what:       ',what
 	write(6,*) 'var:        ',var
-	write(6,*) 'infile:     ',infile
+	write(6,*) 'infile:     ',trim(infile)
 	write(6,*) 'hlvfile:    ',hlvfile
 	write(6,*) 'date   :    ',date
 
@@ -233,7 +234,7 @@ c*****************************************************************
 	integer date
 
 	logical bnew,bpres
-	integer ios,it,id,n,n0,nvar,nvar0,itanf,nkn,i,j,itend
+	integer ios,it,id,n,n0,nvar,nvar0,itanf,nkn,i,j,itend,iv
 	integer iunit,nvers,ntype,lmax,np,nlvdim,iformat
 	integer irec,ifreq,nlen,l,lmax0
 	integer datetime(2)
@@ -243,15 +244,18 @@ c*****************************************************************
 	real, allocatable :: hd(:)
 	integer, allocatable :: ilhkv(:)
 	real, allocatable :: data(:,:)
-	character*50 string
+	character*50 string,stringaux
 	character*20 line
 
-	logical bdate0
+	logical bdate0,bmulti
 	integer time
 	double precision dtime0
 
 	iformat = 0
 	if( bformat ) iformat = 1
+
+	bmulti = (var == 'scal')
+	write(6,*) var,bmulti
 
 !-------------------------------------------------------------
 ! open file
@@ -267,7 +271,7 @@ c*****************************************************************
 
         if( ios .ne. 0 ) goto 98
 	if( b2d .and. lmax .ne. 1 ) goto 97
-	if( nvar .ne. 1 ) goto 94
+	if( .not. bmulti .and. nvar .ne. 1 ) goto 94
 	
         backspace(1)
 
@@ -288,6 +292,7 @@ c*****************************************************************
 	ilhkv = lmax
 
 	call description(var,string)
+	write(6,*) 'string: ',string
 
 	if( lmax > 1 ) then
 	  call get_hlv(hlvfile,lmax,hlv)
@@ -320,29 +325,33 @@ c*****************************************************************
 	  if( ios .lt. 0 ) exit
 	  if( ios .gt. 0 ) goto 98
 	  if( b2d .and. lmax .ne. 1 ) goto 97
-	  if( nvar .ne. 1 ) goto 94
+	  if( .not. bmulti .and. nvar .ne. 1 ) goto 94
 	  if( n .ne. n0 ) goto 96
 	  if( lmax .ne. lmax0 ) goto 96
 
 	  itend = it
-
-	  do i=1,n
-	    read(1,*) j,(data(l,i),l=1,lmax)
-	    if( j .ne. i ) goto 95
-	  end do
 
 	  call convert_date_time(bdate0,it,dtime0,datetime,dtime)
 
 	  call fem_file_write_header(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,nlvdim
      +				,hlv,datetime,regpar)
-          call fem_file_write_data(iformat,iunit
+
+	  do iv=1,nvar
+	    do i=1,n
+	      read(1,*) j,(data(l,i),l=1,lmax)
+	      if( j .ne. i ) goto 95
+	    end do
+
+	    write(stringaux,'(a,i4)') trim(string),iv
+            call fem_file_write_data(iformat,iunit
      +                          ,nvers,np,lmax
-     +                          ,string
+     +                          ,stringaux
      +                          ,ilhkv,hd
      +                          ,nlvdim,data)
 
-	  call progress(irec,24,60)
+	    call progress(irec,24,60)
+	  end do
 	end do
 
 !-------------------------------------------------------------
@@ -1009,7 +1018,7 @@ c*****************************************************************
 	write(6,*) '      -temp       temperature'
 	write(6,*) '      -salt       salinity'
 	write(6,*) '      -conz       generic tracer'
-	write(6,*) '      -scal       generic scalar file'
+	write(6,*) '      -scal       generic scalar file (multi var)'
 	write(6,*) '      -vel        current velocity vector'
 	write(6,*) '   options:'
 	write(6,*) '      -hlv file   file containing hlv levels'

@@ -10,6 +10,11 @@ c function istod(line,d,ioff)			converts string to number
 c function iscand(line,d,max)			converts string to numbers
 c function iscanf(line,f,max)			converts string to numbers
 c function iscan(line,ioff,f)			converts string to numbers
+c function istos(line,string,ioff)		returns next string on line
+c function iston(line,string,ioff)		returns next name on line
+c
+c function is_digit(c)				checks if c is digit
+c function is_letter(c)				checks if c is letter
 c
 c function icindx(string,c)			finds c in string
 c
@@ -31,6 +36,7 @@ c 30.10.2001	ggu	bug fix for tab: not recognized as parameter
 c 30.01.2002	ggu	bug fix for rounding 9.9 -> 10 for ndec=-1 (ROUND)
 c 02.05.2012	ggu	new routine ideci()
 c 20.02.2013	ggu	new routine iscand, istof changed to istod
+c 06.02.2015	ggu	new routines istos,iston,is_digit,is_letter
 c
 c notes :
 c
@@ -341,6 +347,166 @@ c****************************************************************
 
 	end
 
+!****************************************************************
+!****************************************************************
+!****************************************************************
+
+	function istos(line,string,ioff)
+
+c returns next string on line (text enclosed in "'" or '"')
+c
+c > 0	success
+c == 0	no text
+c < 0	read or conversion error
+
+	implicit none
+
+	integer istos
+	character*(*) line
+	character*(*) string
+	integer ioff
+
+	character*1 c
+	logical bfound
+	integer i,ia
+	integer ll,ls
+
+	istos = 0
+        string = ' '
+	ll = len(line)
+
+	call skipwh(line,ioff)
+	if( ioff > ll ) return
+
+        c = line(ioff:ioff)
+	if( c /= '"' .and. c /= "'" ) return	!no text found
+
+	istos = -1
+        ia = 0
+        bfound = .false.
+        i = ioff
+	ls = len(string)
+
+        do while( i < ll )
+          i = i + 1
+          if( line(i:i) == c ) then
+            if( i < ll .and. line(i+1:i+1) == c ) then
+              i = i + 1
+            else
+              bfound = .true.
+              exit
+            end if
+          end if
+          ia = ia + 1
+	  if( ia > ls ) exit		!string is too small for text
+          string(ia:ia) = line(i:i)
+        end do
+
+	ioff = i + 1
+	if( bfound ) istos = 1
+
+	end
+
+!****************************************************************
+
+	function iston(line,string,ioff)
+
+c returns next name on line
+c
+c > 0	success
+c == 0	no name
+c < 0	read or conversion error
+
+	implicit none
+
+	integer iston
+	character*(*) line
+	character*(*) string	!contains name on return
+	integer ioff
+
+	character*1 c
+	logical bgood
+	integer i,ia
+	integer ll,ls
+
+	logical is_digit,is_letter
+
+	iston = 0
+        string = ' '
+	ll = len(line)
+
+	call skipwh(line,ioff)
+	if( ioff > ll ) return
+
+	c = line(ioff:ioff)
+	if( .not. is_letter(c) ) return
+
+	iston = -1
+        ia = 0
+        i = ioff
+	ls = len(string)
+
+        do
+	  if( i > ll ) exit
+	  c = line(i:i)
+	  bgood = is_letter(c)
+	  bgood = bgood .or. is_digit(c)
+	  bgood = bgood .or. c == '_'
+	  if( .not. bgood ) exit
+          ia = ia + 1
+	  if( ia > ls ) exit		!string is too small for text
+          string(ia:ia) = line(i:i)
+          i = i + 1
+        end do
+
+	ioff = i
+	if( ia <= ls ) iston = 1
+
+	end
+
+!****************************************************************
+!****************************************************************
+!****************************************************************
+
+	function is_digit(c)
+
+c checks if c is digit
+
+	implicit none
+
+	logical is_digit
+	character*1 c
+
+	integer ia
+
+	ia=ichar(c)
+
+	is_digit = (ia.ge.48.and.ia.le.57)
+
+	end
+
+!****************************************************************
+
+	function is_letter(c)
+
+c checks if c is letter
+
+	implicit none
+
+	logical is_letter
+	character*1 c
+
+	integer ia
+
+	ia=ichar(c)
+
+	is_letter = (ia.ge.65.and.ia.le.90)
+	is_letter = is_letter .or. (ia.ge.97.and.ia.le.122)
+
+	end
+
+!****************************************************************
+!****************************************************************
 !****************************************************************
 
 	function icindx(string,c)

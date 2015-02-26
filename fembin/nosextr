@@ -53,22 +53,25 @@ fi
 #-------------------------------------------------- prepare input file
 
 if [ $what = "nodes" ]; then
-  echo ""  > $tmpfile
-  echo "" >> $tmpfile
-  cat $datafile >> $tmpfile
+  #echo ""  > $tmpfile
+  #echo "" >> $tmpfile
+  #cat $datafile >> $tmpfile
+  cat $datafile > $tmpfile
   echo "0" >> $tmpfile
 
   $bindir/nosextr_nodes < $tmpfile
 elif [ $what = "gis" ]; then
-  echo ""  > $tmpfile
-  echo "" >> $tmpfile
-  cat $datafile >> $tmpfile
+  #echo ""  > $tmpfile
+  #echo "" >> $tmpfile
+  #cat $datafile >> $tmpfile
+  cat $datafile > $tmpfile
   echo "0" >> $tmpfile
 
   $bindir/nosextr_gis < $tmpfile
 else
-  echo ""  > $tmpfile
-  cat $datafile >> $tmpfile
+  #echo ""  > $tmpfile
+  #cat $datafile >> $tmpfile
+  cat $datafile > $tmpfile
   echo "0" >> $tmpfile
 
   $bindir/nosextr_records < $tmpfile

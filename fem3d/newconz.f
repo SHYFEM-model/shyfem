@@ -18,6 +18,7 @@ c 25.02.2011    ggu     new routine decay_conz_variable(), add t90 time scale
 c 13.02.2014    ggu     routines for reading initial condition
 c 10.07.2014    ggu     only new file format allowed
 c 20.10.2014    ggu     pass ids to scal_adv routines
+c 10.02.2015    ggu     call to bnds_read_new() introduced
 c
 c*********************************************************************
 
@@ -136,6 +137,8 @@ c-------------------------------------------------------------
 	t = it
 	dtime = it
 	dt = idt
+
+	call bnds_read_new(what,idconz,dtime)
 
         call scal_adv(what,0
      +                          ,cnv,idconz
@@ -308,6 +311,8 @@ c-------------------------------------------------------------
 	t = it
 	dtime = it
 	dt = idt
+
+	call bnds_read_new(what,idconz,dtime)
 
 !$OMP PARALLEL PRIVATE(i)
 !$OMP DO SCHEDULE(DYNAMIC)

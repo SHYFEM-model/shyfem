@@ -924,7 +924,7 @@ c
 	character*80 text,keyword
 	logical bdebug
 	integer ioff
-	integer nrdvar,istof,nrdtxt
+	integer iston,istof,istos
 
 	character*4 what
 	real x,y,x2,y2,size,arrow,color
@@ -942,7 +942,7 @@ c
 	text = ' '
 	what = 'none'
 
-	if( nrdvar(keyword,line,ioff) .le. 0 ) goto 99
+	if( iston(line,keyword,ioff) .le. 0 ) goto 99
 
 	what = keyword(1:4)
 
@@ -950,7 +950,7 @@ c
 	  if( istof(line,x,ioff) .le. 0 ) goto 99
 	  if( istof(line,y,ioff) .le. 0 ) goto 99
 	  if( istof(line,size,ioff) .le. 0 ) goto 99
-	  if( nrdtxt(text,line,ioff) .le. 0 ) goto 99
+	  if( istos(line,text,ioff) .le. 0 ) goto 99
 	else if( keyword .eq. 'rect' ) then
 	  if( istof(line,x,ioff) .le. 0 ) goto 99
 	  if( istof(line,y,ioff) .le. 0 ) goto 99
@@ -1041,7 +1041,7 @@ c         30500 11800      5	  35000   15000   0   3	#line, color 3
 	real x,y,s,x2,y2
         real arrow,color
 
-	integer nrdlin,nrdtxt,istof
+	integer nrdlin,istos,istof
 	integer iround,ichafs
 
         bdebug = .true.
@@ -1061,7 +1061,7 @@ c         30500 11800      5	  35000   15000   0   3	#line, color 3
 	    arrow = 0.
 	    color = 0.
 
-	    if( nrdtxt(text,line,ioff) .le. 0 ) then	!no text
+	    if( istos(line,text,ioff) .le. 0 ) then	!no text
 	      ioff = ioffold
 	      text = ' '
 	      if( istof(line,x2,ioff) .le. 0 ) goto 99

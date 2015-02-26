@@ -981,6 +981,7 @@ c local
 	     read(iunit,end=99,err=99)
 	   end if
 	else
+	   write(6,*) 'nvers = ',nvers,'  iunit = ',iunit
 	   stop 'error stop nos_read_record: internal error (1)'
 	end if
 

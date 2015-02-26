@@ -115,6 +115,7 @@ c 10.07.2014    ggu     only new file format allowed
 c 30.10.2014    ggu     in c_tilt() compute distance also for lat/lon
 c 31.10.2014    ccf     new call to init_z0 instead than init_z0b
 c 07.11.2014    ggu     bug fix for distance computation in z_tilt, c_tilt
+c 10.02.2015    ggu     new call to iff_read_and_interpolate()
 c
 c***************************************************************
 
@@ -145,11 +146,9 @@ c		2 : read in b.c.
 
 	include 'bnd_aux.h'
 
-        real bnd3(nb3dim,0:nbcdim)     !boundary array for water level
-        real rwv(nb3dim)
 	real rwv2(nkn)
 	integer ids(nbcdim)		!id values for boundary conditions
-        save bnd3,ids
+        save ids
 
 	integer nodes(nkn)
 	real vconst(nkn)
@@ -226,14 +225,6 @@ c	-----------------------------------------------------
 c       initialization of aux array
 c	-----------------------------------------------------
 
-c maybe use directly bnds_init ?? FIXME
-
-	do ibc=0,nbc
-	  do i=1,nb3dim
-	    bnd3(i,ibc) = 0.
-	  end do
-	end do
-
 c	-----------------------------------------------------
 c       initialization of fem_intp
 c	-----------------------------------------------------
@@ -289,6 +280,7 @@ c	-----------------------------------------------------
 
 	  if(const.eq.flag.and.ibtyp.eq.1) then
 	        id = ids(ibc)
+	        call iff_read_and_interpolate(id,dtime)
 	        call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
 	  	call adjust_bound(id,ibc,it,nk,rwv2)
 		const = rwv2(1)
@@ -369,6 +361,7 @@ c	-----------------------------------------------------
 	  rmv = 0.
 
 	  id = ids(ibc)
+	  call iff_read_and_interpolate(id,dtime)
 	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
 	  call adjust_bound(id,ibc,it,nk,rwv2)
 	  if( ibtyp .eq. 0 ) nk = 0	!switched off

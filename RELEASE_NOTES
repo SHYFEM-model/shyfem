@@ -1,10 +1,19 @@
 
-23.01.2014    VERS_7_1_4
+26.02.2015    VERS_7_1_5
+
+	new calling sequence for BC to avoid parallel bug (bnds_read_new)
+	subnls.f rewritten
+	subpar3.f now allows for string of up to 10 chars
+	optimal interpolation finished (suboi.f, optintp.f)
+	iapini does not ask for basin/simul anymore
+	bug fix for waves on lat/lon grid
+
+23.01.2015    VERS_7_1_4
 
 	compute fetch also in geo coordinates
 	handle projection in both directions
 
-19.01.2014    VERS_7_1_3
+19.01.2015    VERS_7_1_3
 
 	major changes in code - this is a huge commit
 	basically all files have been changed
@@ -12,13 +21,13 @@
 	please base all future changes of the code on this release
 	the release still has to be thoroughly debugged
 
-19.01.2014    VERS_7_1_2
+19.01.2015    VERS_7_1_2
 
 	small bug fixes
 	consolidation of some features
 	output for sediment module
 
-15.01.2014    VERS_7_1_1
+15.01.2015    VERS_7_1_1
 
 	mostly bug fixes
 	feminf and femelab are now working as expected

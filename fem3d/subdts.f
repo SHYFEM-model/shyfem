@@ -194,6 +194,26 @@ c formats date and time
 
 c************************************************************************
 
+	subroutine dtsform_pack(date,time,line)
+
+c formats date and time
+
+	implicit none
+
+	integer date,time
+	character*(*) line
+
+	integer year,month,day,hour,min,sec
+
+	call unpackdate(date,year,month,day)
+	call unpacktime(time,hour,min,sec)
+
+	call dtsform(year,month,day,hour,min,sec,line)
+
+	end
+
+c************************************************************************
+
 	subroutine dtsunform(year,month,day,hour,min,sec,line,ierr)
 
 c unformats date and time -> from string to date
@@ -262,6 +282,28 @@ c unformats date and time -> from string to date
 	return
 	end
 
+c************************************************************************
+
+	subroutine dtsunform_pack(date,time,line,ierr)
+
+	implicit none
+
+	integer date,time
+	character*(*) line
+	integer ierr
+
+	integer year,month,day,hour,min,sec
+
+	date = 0
+	time = 0
+	call dtsunform(year,month,day,hour,min,sec,line,ierr)
+	if( ierr .ne. 0 ) return
+
+	call packdate(date,year,month,day)
+	call packtime(time,hour,min,sec)
+
+	end
+	
 c************************************************************************
 
 	subroutine dtstimespan(idt,line,ierr)

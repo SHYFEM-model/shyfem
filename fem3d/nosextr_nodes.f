@@ -41,7 +41,7 @@ c--------------------------------------------------
 	character*80 format
 	integer nread,ierr
 	integer nvers,nin,nlv
-	integer nknous,nelous
+	integer nknnos,nelnos
 
 	integer it
 	integer k,ke,i
@@ -86,19 +86,19 @@ c---------------------------------------------------------------
 	if(nin.le.0) goto 100
 
         nvers=3
-	call rfnos(nin,nvers,nknous,nelous,nlv,nvar,title,ierr)
+	call rfnos(nin,nvers,nknnos,nelnos,nlv,nvar,title,ierr)
         if(ierr.ne.0) goto 100
 
 	write(6,*)
         write(6,*) 'title        : ',title
 	write(6,*)
         write(6,*) 'nvers        : ',nvers
-        write(6,*) 'nkn,nel      : ',nknous,nelous
+        write(6,*) 'nkn,nel      : ',nknnos,nelnos
         write(6,*) 'nlv          : ',nlv
         write(6,*) 'nvar         : ',nvar
 	write(6,*)
 
-	if( nkn .ne. nknous .or. nel .ne. nelous ) goto 94
+	if( nkn .ne. nknnos .or. nel .ne. nelnos ) goto 94
 
         call dimnos(nin,nkndim,neldim,nlvdim)
 
@@ -118,7 +118,7 @@ c---------------------------------------------------------------
 
         call get_nodes_from_stdin(ndim,nnodes,nodes,nodese)
 
-	if( nnodes .le. 0 ) goto 100
+	if( nnodes .le. 0 ) goto 95
 
 c---------------------------------------------------------------
 c loop on input records
@@ -182,11 +182,14 @@ c end of routine
 c---------------------------------------------------------------
 
 	stop
+   95   continue
+        write(6,*) 'no nodes read'
+        stop 'error stop nosextr_nodes: no nodes'
    94   continue
         write(6,*) 'incompatible simulation and basin'
-        write(6,*) 'nkn: ',nkn,nknous
-        write(6,*) 'nel: ',nel,nelous
-        stop 'error stop ousextr_nodes: nkn,nel'
+        write(6,*) 'nkn: ',nkn,nknnos
+        write(6,*) 'nel: ',nel,nelnos
+        stop 'error stop nosextr_nodes: nkn,nel'
 	end
 
 c***************************************************************

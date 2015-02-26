@@ -44,7 +44,8 @@ c next n lines give (u,v,z) for every node written.
 	integer noddim			!total number of nodes
 	!parameter (noddim=27)
 	!parameter (noddim=35)
-	parameter (noddim=60)
+	!parameter (noddim=60)
+	parameter (noddim=90)
 	!parameter (noddim=20)
 	integer datdim			!total number of data records
 	!parameter (datdim=120000)

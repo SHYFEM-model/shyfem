@@ -1256,78 +1256,129 @@ c grid given the wind direction.
         real daf(neldim)	!averaged depth along the fetch [m]
 
         real xe,ye		!element point coordinates [m]
-        real xge,yge		!element point coordinates [degrees]
-        real xf,yf		!far away point coordinates [m]
-        real xnew,ynew		!new coordinates [m]
-        real d,de		!distance between points [m]
-        real depele             !element depth function [m]
-        real dep		!element depth [m]
+	real fff,ddd
         real rad,wdir,wid
-        integer ie,iie,ii,ienew,icount,ieo
+	double precision wddir
+        integer ie,ierr
 	integer iespecial
-	logical bdebug
+	integer icaver,icmax
 
-        d = 500000.
         rad = 45. / atan (1.)
 	iespecial = 1743
 	iespecial = 0
+	icaver = 0
+	icmax = 0
 
 c --- loop over elements
 
         do ie = 1,nel
           
-          daf(ie) = 0.
-          fet(ie) = 0.
-
-c --- get element coordinates
-
           call baric_cart(ie,xe,ye)
-
-c --- get far away points coordinates
 
 	  wid = windd(ie)
           wdir = wid / rad		!from deg to rad
 
-          iie = ie
-          ieo = ie
+	  ierr = 0
+	  if( ie == iespecial ) ierr = 1			!debug mode
+	  call fetch_element(ie,xe,ye,wdir,fff,ddd,ierr)
+	  icaver = icaver + ierr
+	  icmax = max(icmax,ierr)
+
+	  if( ierr .ge. 1000 ) then
+	    write(6,*) 'warning: iteration exceeded: ',ie
+	    ierr = 1
+	    wddir = wdir
+	    write(156,*) 0,0
+	    write(156,*) ie,wddir
+	    call fetch_element(ie,xe,ye,wdir,fff,ddd,ierr)
+	  end if
+
+          fet(ie) = fff
+          daf(ie) = ddd
+	  
+	end do
+
+	icaver = icaver/nel
+	write(156,*) icaver,icmax
+
+	end
+
+c**************************************************************
+
+        subroutine fetch_element(ie,xein,yein,wdir,fff,ddd,ierr)
+
+c This subroutine computes the wind fetch for each element of the
+c grid given the wind direction.
+
+        implicit none
+  
+        include 'param.h'
+	include 'nbasin.h'
+
+	integer ie
+	real xein,yein
+	real wdir
+	real fff,ddd
+	integer ierr
+
+        real xe,ye		!element point coordinates [m]
+        real xnew,ynew		!new coordinates [m]
+        real de			!distance between points [m]
+        real depele             !element depth function [m]
+        real dep		!element depth [m]
+        integer iie,ii,ienew,icount,ieold
+	logical bdebug
+
+        iie = ie
+        ieold = ie
+	bdebug = ierr > 0
+	fff = 0.
+	ddd = 0.
+	xe = xein
+	ye = yein
 
 c --- calculate fetch and averaged depth along the fetch
 
-	bdebug = iie == iespecial
 	if( bdebug ) then
-	  write(6,*) '-------------------'
-	  write(6,*) iie
+	  write(156,*) '=========================='
+	  write(156,*) iie
 	end if
 
-          icount = 0
+        icount = 0
+	ienew = 1	!just to enter the while loop
 
-1         continue
-          call intersect(iie,xe,ye,wdir,ienew,xnew,ynew,ieo,bdebug)
+	do while( ienew > 0 .and. icount < 1000 )
+          call intersect(iie,xe,ye,wdir,ienew,xnew,ynew,ieold,bdebug)
           dep = depele(iie,+1)
-          
           de = ((xnew-xe)**2 + (ynew-ye)**2)**0.5
-          fet(ie) = fet(ie) + de
-          daf(ie) = daf(ie) + dep*de
-          ieo = iie
+          fff = fff + de
+          ddd = ddd + dep*de
+          icount = icount + 1
+	  if( bdebug ) then
+	    write(156,*) '-------------------'
+	    write(156,*)  icount
+	    write(156,*)  iie,ienew,ieold
+	    write(156,*)  xe,ye,xnew,ynew
+	    write(156,*)  de,dep,fff,ddd
+	    write(156,*) '-------------------'
+	  end if
+          ieold = iie
           iie = ienew
           xe = xnew
           ye = ynew
-          icount = icount + 1
-          if(icount.gt.1000) goto 99
-          if(ienew.gt.0) go to 1
-          daf(ie) = daf(ie)/fet(ie)
-          if(ienew.lt.0) then			!open boundary
-           fet(ie) = fet(ie) + 50000.
-          end if
+	end do
+
+        if( fff > 0. ) ddd = ddd/fff
+        if(ienew.lt.0) fff = fff + 50000.	!open boundary
+
 	if( bdebug ) then
-	  write(6,*) icount,fet(ie),daf(ie)
-	  write(6,*) '-------------------'
+	  write(156,*) icount,fff,ddd
+	  write(156,*) '=========================='
 	end if
-        end do 
  
+	ierr = icount
+
 	return
-   99	continue
-	stop 'error stop fetch: number of iterations exceeds limit'
         end
            
 c******************************************************************
@@ -1342,8 +1393,8 @@ c line and one of the border line of the element
         integer iie		!element number
         real x,y		!start point cooridnates [m]
         real wdir		!direction to search [radians]
-        integer ien		!next element number
-        real xn,yn		!intersection coordinates [m]
+        integer ien		!next element number (return)
+        real xn,yn		!intersection coordinates [m] (return)
 	integer ieold
 	logical bdebug
 
@@ -1357,9 +1408,10 @@ c line and one of the border line of the element
         real xi,yi		!intersection point coordinate [m]
 	real xf,yf		!far away point
 	real d			!distance
+	real rx,ry
 	double precision a(3),b(3),c(3)
         integer iint,i,ii,iii
-        integer ie
+        integer ienew
 
         integer segsegint	!intersection function
 
@@ -1368,12 +1420,15 @@ c line and one of the border line of the element
         yf = y + d*cos(wdir)
 
         ien = 0
+	xn = 0.
+	yn = 0.
         call getexy_cart(iie,x0,y0)
 	if( bdebug ) then
-	  write(6,*) iie
-	  write(6,*) x0
-	  write(6,*) y0
-	  write(6,*) x,y,xf,yf
+	  write(156,*) '.............'
+	  write(156,*) iie
+	  write(156,*) x0
+	  write(156,*) y0
+	  write(156,*) x,y,xf,yf
 	end if
  
         do i = 1,3
@@ -1389,32 +1444,46 @@ c line and one of the border line of the element
 2         continue
           iint = segsegint(x,y,xf,yf,x3,y3,x4,y4,xi,yi)
 
-          ie = ieltv(i,iie)
+          ienew = ieltv(i,iie)
 	
-	if( bdebug ) then
-	  write(6,*) i,ie,iint
-	end if
+	  if( bdebug ) then
+	    write(156,*) i,iint,iie,ienew,ieold
+	  end if
 
-          if(iint.gt.0.and.ie.ne.ieold)then	!intersection
+          if(iint.gt.0.and.ienew.ne.ieold)then	!intersection
             if(iint.eq.3)then	 		!intersection with node
-              x = x + 1.
-              y = y + 1.
+              !x = x + 1.
+              !y = y + 1.
+	      call random_number(rx)
+	      call random_number(ry)
+              x = x + 10.*(rx-0.5)
+              y = y + 10.*(ry-0.5)
+	      if( bdebug ) then
+	  	write(156,*) 9,0,0,0,0
+		write(156,*) 'warning: node intersection: ',i,x,y
+	      end if
               go to 2
             else
+	      if( bdebug .and. ien .gt. 0 ) then
+	  	write(156,*) 9,0,0,0,0
+		write(156,*) 'warning: ien already set: ',ien,xn,yn
+	      end if
               xn = xi
               yn = yi
-              ien = ie
+              ien = ienew
             end if
           end if
 
         end do
 
-	if( ien .gt. 0 .and. bdebug ) then
-	  write(6,*) 'xi,yi: ',xi,yi,ien
-	  call xi_abc(iie,a,b,c)
-	  do ii=1,3
-	    write(6,*) ii,a(ii) + b(ii)*xi + c(ii)*yi
-	  end do
+	if( bdebug ) then
+	  if( ien .eq. 0 ) then
+	    write(156,*) 9,0,0,0,0
+	    write(156,*) 'warning: ien not set: ',ien,xn,yn
+	  end if
+	  write(156,*) 0,0,0,0,0
+	  write(156,*) ien,xn,yn
+	  write(156,*) '.............'
 	end if
 
         end

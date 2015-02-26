@@ -320,6 +320,7 @@ c---------------------------------------------------------------
 c---------------------------------------------------------------
 
 	character*6 section,extra,last
+	logical bdebug
 	integer nsc,num
 c	integer nrdsec,nrdveci,nrdvecr
 	integer nrdsec,nrdvecr
@@ -327,11 +328,15 @@ c	integer nrdsec,nrdveci,nrdvecr
 
 	logical hasreadsec
 
+	bdebug = .true.
+	bdebug = .false.
         nlv = 0         !is initialized really only in adjust_levels
 
 	nsc = 0
 	if(iunit.le.0) goto 63
 	last = ' '
+
+	if( bdebug ) write(6,*) 'start reading STR file'
 
 	call nrdini(iunit)
 
@@ -339,7 +344,7 @@ c read loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	do while( nrdsec(section,num,extra) .ne. 0 )
 
-		!write(6,*) 'new section: ',section,num
+		if( bdebug ) write(6,*) 'new section: ',section,num
 
 		call setsec(section,num)		!remember section
 
@@ -405,6 +410,8 @@ c read loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 		last = section
 	end do		!loop over sections
+
+	if( bdebug ) write(6,*) 'finished reading STR file'
 
 c end of read %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

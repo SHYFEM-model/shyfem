@@ -59,21 +59,37 @@ c--------------------------------------------------
 
 c*****************************************************************************
 
-	subroutine make_albedo(temp,albedo)
+        subroutine make_albedo(temp,albedo)
 
-	implicit none
+        implicit none
 
-	real temp	!water temperature
-	real albedo	!albedo
+        real temp       !water temperature
+        real albedo     !albedo
 
-        albedo = 0.06
+        real albed0,albed4
+        save albed0,albed4
 
-        !if( temp .lt. 4. ) then
-        !  albedo = 0.5
-        !  albedo = 0.75
-        !end if
+        double precision dgetpar
 
-	end
+        integer icall
+        save icall
+        data icall /0/
+
+        if( icall .eq. 0 ) then
+          albed0 = dgetpar('albedo')
+          albed4 = dgetpar('albed4')
+          icall = 1
+        end if
+
+        albedo = albed0
+
+        if( temp .lt. 4. ) then
+          albedo = albed4
+          !albedo = 0.5
+          !albedo = 0.75
+        end if
+
+        end
 
 c*****************************************************************************
 

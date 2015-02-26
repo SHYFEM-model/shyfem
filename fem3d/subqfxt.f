@@ -277,11 +277,10 @@ c---------------------------------------------------------
 		qsbottom = qs * exp( -adecay*hm )
 		if( l .eq. lmax ) qsbottom = botabs * qsbottom
 	    end if
-	    if( tm .gt. tfreeze ) then
-              call heat2t(dt,hm,qs-qsbottom,qrad,albedo,tm,tnew)
-	      !call check_heat2(k,l,qs,qsbottom,qrad,albedo,tm,tnew)
-	      temp(l,k) = tnew
-	    end if
+            call heat2t(dt,hm,qs-qsbottom,qrad,albedo,tm,tnew)
+	    !call check_heat2(k,l,qs,qsbottom,qrad,albedo,tm,tnew)
+	    tnew = max(tnew,tfreeze)
+	    temp(l,k) = tnew
 	    albedo = 0.
 	    qrad = 0.
 	    qs = qsbottom

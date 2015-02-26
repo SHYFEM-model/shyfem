@@ -238,7 +238,7 @@ BATHYOBJS = $(BASEXTRA)
 #BATHYOBJS = subgeo.o subgrd.o subsrt.o subinterpol.o subinterpol1.o \
 #		subnos.o
 
-LAPLACE = sublpl.o submir.o subnos.o links.o sublnku.o \
+LAPLACE = suboi.o submir.o subnos.o links.o sublnku.o \
 	  subnosa.o subssm.o
 
 LAGRANGE =	lagrange_main.o \
@@ -768,6 +768,8 @@ last:
 # Rules ----------------------------------------------
 #
 
+.SUFFIXES: .F90 .f90
+
 .c.o:
 	$(CC) -c $(CFLAGS) $*.c
 
@@ -776,6 +778,9 @@ last:
 
 .for.obj:
 	$(FLC) $< , $(<,B).OBJ $(FLFLAGS)
+
+.f90.o:
+	$(F77) -c $(FFLAGS) $<
 
 #--------------------------------------------------
 
@@ -918,7 +923,7 @@ nosextr_fluxes.o: param.h basin.h simul.h
 nosextr_gis.o: param.h basin.h
 nosextr_nodes.o: depth.h param.h levels.h evmain.h basin.h
 nosextr_records.o: param.h
-nosinf.o: param.h
+nosinf.o: param.h clo.mod
 nosinit.o: param.h basin.h
 nosintp.o: param.h basin.h
 nosmaniq.o: param.h basin.h
@@ -927,7 +932,7 @@ nossplit.o: param.h
 nossum.o: param.h basin.h
 nosutil.o: ev.h
 noswrite.o: hydro.h param.h levels.h basin.h hydro_print.h simul.h
-optintp.o: depth.h param.h evmain.h basin.h
+optintp.o: depth.h param.h evmain.h basin.h clo.mod
 ous2nc.o: depth.h hydro.h param.h levels.h evmain.h basin.h
 ousaver.o: hydro.h param.h levels.h basin.h hydro_print.h simul.h
 ousextr_cat.o: hydro_vel.h depth.h hydro.h param.h levels.h \
@@ -1053,7 +1058,7 @@ subn35.o: depth.h hydro.h param.h pkonst.h fluidmud.h levels.h \
 		basin.h roughness.h hydro_print.h chezy.h \
 		diff_visc_fric.h 
 subnev.o: nbasin.h param_dummy.h basin.h ev.h
-subnls.o: subnls.h
+nls.mod: subnls.o
 subnos.o: nosinf.h
 subnosa.o: depth.h nbasin.h param_dummy.h
 subnsa.o: param_dummy.h simul.h

@@ -60,7 +60,21 @@ c***************************************************************
 
 	openmp_is_parallel = .true.
 
-        return
+        end
+
+c***************************************************************
+
+        function openmp_in_parallel()
+
+c true if in parallel region
+
+        implicit none
+
+        logical openmp_in_parallel
+	logical OMP_IN_PARALLEL
+
+	openmp_in_parallel = OMP_IN_PARALLEL()
+
         end
 
 c***************************************************************

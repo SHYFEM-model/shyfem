@@ -265,6 +265,7 @@ c DOCS  END
 	lmax = 1
 
 	if( .not. iff_is_constant(idwind) .or. icall == 1 ) then
+	  call iff_read_and_interpolate(idwind,dtime)
 	  call iff_time_interpolate(idwind,dtime,1,nkn,lmax,wxv)
 	  call iff_time_interpolate(idwind,dtime,2,nkn,lmax,wyv)
 	  if( iff_get_nvar(idwind) == 3 ) then
@@ -277,10 +278,12 @@ c DOCS  END
 	!call iff_print_info(idwind,0,.true.)
 
 	if( .not. iff_is_constant(idrain) .or. icall == 1 ) then
+	  call iff_read_and_interpolate(idrain,dtime)
 	  call iff_time_interpolate(idrain,dtime,1,nkn,lmax,metrain)
 	end if
 
 	if( .not. iff_is_constant(idheat) .or. icall == 1 ) then
+	  call iff_read_and_interpolate(idheat,dtime)
 	  call iff_time_interpolate(idheat,dtime,1,nkn,lmax,metrad)
 	  call iff_time_interpolate(idheat,dtime,2,nkn,lmax,mettair)
 	  call iff_time_interpolate(idheat,dtime,3,nkn,lmax,methum)

@@ -758,6 +758,8 @@ cc               0. ->   everything is absorbed in last layer
 	call addpar('iheat',1.)		!type of heat flux routine
 	call addpar('hdecay',0.)	!depth of e-folding decay of radiation
 	call addpar('botabs',0.)	!heat absorption at bottom
+	call addpar('albedo',0.06)	!general albedo
+	call addpar('albed4',0.06)	!albedo for temp below 4 degrees
 
 cc------------------------------------------------------------------------
 
@@ -1466,6 +1468,8 @@ c DOCS	END
 
 cc not documented
 
+	call addpar('ifreg',0.)		!plot regular grid from fem file
+	call addfnm('obspnt'," ")	!name of file with obs points
 	call addfnm('metpnt'," ")	!name of file with meteo points
 	call addfnm('spcvel'," ")	!name of file for velocity points
 
@@ -2046,6 +2050,8 @@ c initializes default names
 
 	implicit none
 
+	logical haspar
+
 c para section
 
 	call sctfnm('name')		!sets default section
@@ -2146,9 +2152,9 @@ cc DOCS	INTERNAL	internal administration - blank section
 
 	call addfnm('title',' ')
 
-	call addfnm('basnam',' ')
-	call addfnm('runnam',' ')
-	call addfnm('apnnam',' ')
+	if( .not. haspar('basnam') ) call addfnm('basnam',' ')
+	if( .not. haspar('runnam') ) call addfnm('runnam',' ')
+	if( .not. haspar('apnnam') ) call addfnm('apnnam',' ')
 
 	call addfnm('apnfil','apnstd.str')
 	call addfnm('colfil','apncol.str')

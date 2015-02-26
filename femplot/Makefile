@@ -61,6 +61,9 @@ all: param $(EXES)
 plotsim:  plotsim.o $(PSOBJS) $(LIBIFS) $(LIBIPS)
 	$(LINKER) $(LFLAGS) $@.o $(PSOBJS) $(LIBFS) $(LIBPS) -o $@
 
+plotbug:  plotbug.o $(PSOBJS) $(LIBIFS) $(LIBIPS)
+	$(LINKER) $(LFLAGS) $@.o $(PSOBJS) $(LIBFS) $(LIBPS) -o $@
+
 plotcolb:  plotcolb.o $(NPOBJS) $(LIBIFS) $(LIBIPS)
 	$(LINKER) $(LFLAGS) $@.o $(NPOBJS) $(LIBFS) $(LIBPS) -o $@
 
@@ -174,10 +177,10 @@ col.o: color.h
 line_nodes.o: param.h basin.h geom.h
 ousinfo.o: hydro.h param.h levels.h nlevel.h basin.h
 plotsim.o: depth.h hydro_vel.h hydro.h param.h nlevel.h mkonst.h \
-		evmain.h levels.h basin.h hydro_print.h \
-		hydro_plot.h aux_array.h plot_aux.h geom.h 
+		evmain.h pkonst.h levels.h basin.h hydro_print.h \
+		hydro_plot.h aux_array.h geom.h plot_aux.h 
 supano.o: color.h param_dummy.h basin.h legend.h simul.h
-supbas.o: nbasin.h param_dummy.h basin.h geom.h
+supbas.o: nbasin.h param_dummy.h supout.h basin.h geom.h
 supcol.o: color.h
 supdep.o: depth.h hydro.h param_dummy.h ev.h nlevel.h nbasin.h \
 		levels.h basin.h plot_aux.h aux_array.h 

@@ -87,7 +87,7 @@ c toxi module ARPAV
 	integer iround
 	integer ieint,ipint
 	integer itanf,nvar
-	double precision dtime0
+	double precision dtime0,dtime
 
         integer mode
         real ai,lsurf
@@ -262,6 +262,9 @@ c	advection and diffusion
 c	-------------------------------------------------------------------
 
 	if( bcheck ) call check_toxi('before advection',e)
+
+	dtime = it
+	call bnds_read_new(what,idtoxi,dtime)
 
 !$OMP PARALLEL PRIVATE(i)
 !$OMP DO SCHEDULE(DYNAMIC)

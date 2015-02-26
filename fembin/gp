@@ -105,7 +105,7 @@ FullUsage()
   echo "  -width width     sets line width (integer) for following files"
   echo "  -xtics xtics     sets tics style for x-axis"
   echo "  -u  x:y          using columns x and y for x/y values (Default 1:2)"
-  echo "  -u  all          plot all columns"
+  echo "  -u  all          plot all columns (x:all also possible)"
   echo "  -t  title        give title of plot"
   echo "  -tx xlabel       give x-label of plot"
   echo "  -ty ylabel       give y-label of plot"
@@ -127,6 +127,8 @@ FullUsage()
   echo "   to see all color names run gp with -showcolor"
   echo "Possible xtics options are:"
   echo "   xdtics, xmtics, mesi, months or (custom)"
+  echo "Column 0 indicates automatically generated index"
+  echo "-u 0:all uses generated index on all data columns"
   echo ""
 }
 
@@ -497,15 +499,26 @@ files=${afiles[@]}
 
 ######################################################### adjust using command
 
-if [ "$using" = "using all" ]; then
-  using="using 1:2"
+aux=`echo $using | sed -e 's/ //g' | sed -e 's/using//'`
+if [[ $aux =~ all ]]; then
+  xcol=`echo $aux | sed -e 's/://g' | sed -e 's/all//'`
+  [ -z "$xcol" ] && xcol=1
+  allcol="YES"
+else
+  allcol="NO"
+fi
+echo "allcol=$allcol  xcol=$xcol"
+#exit 0
+
+if [ $allcol = "YES" ]; then
+  using="using $xcol:2"
   nfiles=${#afiles[@]}
   if [ $nfiles -gt 1 ]; then
     echo "-u all only with one file"
     exit 1
   fi
   rm -f column.*
-  $extractcol -f column $files
+  $extractcol -f column -x $xcol $files
   files=`ls column.*[0-9]`
   GiveNames
   #SetFilesAndAttributes $files

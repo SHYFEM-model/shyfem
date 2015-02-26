@@ -1,6 +1,4 @@
 c
-c $Id: laplap.f,v 1.9 2009-04-07 10:43:57 georg Exp $
-c
 c revision log :
 c
 c 20.08.2003	ggu	new laplacian interpolation
@@ -8,29 +6,35 @@ c 02.09.2003	ggu	some comments, write to .dat file
 c 30.10.2003	ggu	subroutine prepare_bc_l included in this file
 c 04.03.2004	ggu	writes also number of variables (1)
 c 11.03.2009	ggu	bug fix -> declare hev() here
+c 07.02.2015	ggu	OI finished
 c
 c notes :
 c
 c please prepare file like this:
 c
 c----------------- start
-c
 c k1	val1
 c k2	val2
 c ...
 c kn	valn
 c----------------- end
 c
-c first line of file must be empty !!!
+c or alternatively like this:
 c
-c run memory and set the basin ( memory -b venlag62 )
-c run laplap with input file ( laplap < input.dat )
+c----------------- start
+c x1 y1    val1
+c x2 y2    val2
+c ...
+c xn yn    valn
+c----------------- end
 c
 c****************************************************************
 
         program optintp
 
-c laplacian interpolation
+c optimal interpolation interpolation
+
+	use clo
 
 	implicit none
 
@@ -38,85 +42,257 @@ c laplacian interpolation
 	include 'basin.h'
 	include 'evmain.h'
 
-	integer matdim
-	parameter (matdim = nkndim*100)
 	integer nobdim
-	parameter (nobdim = 100)
+	parameter (nobdim = 1000)
 
 	include 'depth.h'
 
-	real zv(nkndim)
-	integer node(nobdim)
-	integer ivec(nobdim)
-	real obs(nobdim)
-	real rvec(nobdim)
-	real raux(nobdim)
-	real rmat(nobdim,nobdim)
+	real xobs(nobdim)
+	real yobs(nobdim)
+	real zobs(nobdim)
+	real bobs(nobdim)
+	real xback(nkndim)
+	real yback(nkndim)
+	real zback(nkndim)
+	real zanal(nkndim)
 
-	integer k,ie,n
-        integer ilev,ivar
-	real flag
+	integer nvers,ntype,nvar,nlvdi
+	integer iformat,lmax,np
+	integer iufem,iuobs,iunos
+	integer jmax,j
+	double precision dtime
+	real hlv(1)
+	real hd(nkndim)
+	real regpar(7)
+	integer ilhkv(nkndim)
+	integer datetime(2)
+	character*30 string,format
+
+	character*80 file,basin
+	logical bback,bgeo,bcart,bquiet,blimit,breg,bnos,bmulti
+	integer k,ie,n,ndim
+	integer nobs,nback
+        integer ilev,ivar,irec
+	integer it,index
 	real zmin,zmax
+	real zomin,zomax
+	real xmin,ymin,xmax,ymax
+	real dx,dy,dxy
+	real drl,rlact
 
-	real rl,rlmax,sigma,rr
+	real rl,rlmax,rr,ss
 
 	integer iapini
+	logical is_spherical
 
-	flag = 1.23456e+23
+c--------------------------------------------------------------
+c parameters and command line options
+c--------------------------------------------------------------
 
-	rl = 1000.		! length scale for covariance matrix
-	rlmax = 10000.		! max radius to be considered
-	sigma = 0.3		! std of background field
-	rr = 0.02		! std of observation errors
+        call clo_init('optintp','input-file','1.0')
+
+        call clo_add_info('Optimal interpolation for sparse data')
+        call clo_add_option('basin',' ','basin to be used')
+        call clo_add_option('rl #',-1.
+     +		,'set length scale for covariance matrix')
+        call clo_add_option('rlmax #',-1.
+     +		,'maximum distance of nodes to be considered')
+        call clo_add_option('rr #',-1.
+     +		,'std of observation errors')
+        call clo_add_option('ss #',-1.
+     +		,'std of background field')
+        call clo_add_option('dx #',0.
+     +		,'dx for regular field')
+        call clo_add_option('dy #',0.
+     +		,'dy for regular field (Default dy=dx)')
+        call clo_add_option('multi',.false.
+     +		,'read multiple data with time')
+        call clo_add_option('cart',.false.
+     +		,'force use of cartesian coordinates')
+        call clo_add_option('limit',.false.
+     +		,'limit values to min/max of observations')
+        call clo_add_option('quiet',.false.,'do not be verbose')
+	call clo_add_extra('defaults for undefined values:')
+	call clo_add_extra('rl: 1/10 of basin size')
+	call clo_add_extra('rlmax=10*rl  rr=0.01  ss=100*rr')
+	call clo_add_extra('Default for dx is 0 (use FEM grid)')
+
+        call clo_parse_options(1)  !expecting (at least) 1 file after options
+
+        call clo_get_option('basin',basin)
+        call clo_get_option('cart',bcart)
+        call clo_get_option('quiet',bquiet)
+        call clo_get_option('rl',rl)
+        call clo_get_option('rlmax',rlmax)
+        call clo_get_option('rr',rr)
+        call clo_get_option('ss',ss)
+        call clo_get_option('limit',blimit)
+        call clo_get_option('multi',bmulti)
+        call clo_get_option('dx',dx)
+        call clo_get_option('dy',dy)
+
+	!call clo_info()
+
+	ndim = nkndim
+	bback = .false.
+	call clo_get_file(1,file)
 
 c-----------------------------------------------------------------
 c read in basin
 c-----------------------------------------------------------------
 
-        if( iapini(1,nkndim,neldim,0) .le. 0 ) stop
+	call ap_set_names(basin,' ')
+	call ap_init(1,nkndim,neldim)
 
-	call bas_info
+	call bas_get_minmax(xmin,ymin,xmax,ymax)
+	dxy = max((xmax-xmin),(ymax-ymin))
+
+	if( rl < 0 ) rl = 0.1*dxy
+	if( rlmax == 0 ) rlmax = 2.*dxy
+	if( rlmax < 0 ) rlmax = 10.*rl
+	if( rr < 0 ) rr = 0.01
+	if( ss < 0 ) ss = 100.*rr
+	if( dy <= 0 ) dy = dx
+
+	if( .not. bquiet ) then
+	  write(6,*) 'parameters used:'
+	  write(6,*) 'xmin/xmax: ',xmin,xmax
+	  write(6,*) 'ymin/ymax: ',ymin,ymax
+	  write(6,*) 'rl:        ',rl
+	  write(6,*) 'rlmax:     ',rlmax
+	  write(6,*) 'rr:        ',rr
+	  write(6,*) 'ss:        ',ss
+	  write(6,*) 'dx,dy:     ',dx,dy
+	  write(6,*) 'limit:     ',blimit
+	end if
 
 c-----------------------------------------------------------------
-c set up ev
+c set up ev and background grid
 c-----------------------------------------------------------------
 
 	call set_ev
 	call check_ev
 
+	bgeo = is_spherical()
+	if( bcart ) bgeo = .false.
+
+	regpar = 0.
+	call setup_background(ndim,dx,dy,xmin,ymin,xmax,ymax
+     +			,nback,xback,yback,regpar)
+
+	breg = dx > 0.
+	bnos = .not. breg
+
+	if( .not. bquiet ) then
+	  write(6,*) 'background grid:'
+	  write(6,*) 'nback: ',nback
+	  if( breg ) then
+	    write(6,*) 'nx,ny: ',nint(regpar(1)),nint(regpar(2))
+	    write(6,*) 'dx,dy: ',dx,dy
+	    write(6,*) 'x0,y0: ',regpar(3),regpar(4)
+	  end if
+	end if
+
+	iformat = 0
+	format = 'unformatted'
+	ntype = 1
+	if( breg ) then
+	  iformat = 1
+	  format = 'formatted'
+	  ntype = ntype + 10
+	end if
+
+	nvers = 0
+	nvar = 1
+	lmax = 1
+	nlvdi = 1
+	np = nback
+	it = 0
+	datetime = 0
+	datetime(1) = 19970101
+	hlv(1) = 10000.
+	hd = 1.
+	ilhkv = 1
+	string = 'ice cover [0-1]'
+
+c-----------------------------------------------------------------
+c open files
+c-----------------------------------------------------------------
+
+	irec = 0
+	ivar = 85
+	drl = 0.
+	drl = 0.05
+	if( bmulti ) drl = 0.
+	jmax = 0
+	if( drl > 0. ) jmax = 5
+
+	if( bnos ) then
+	  call wrnos2d_open(iunos,'optintp','optimal interpolation')
+	end if
+
+	iufem = 2
+	open(iufem,file='optintp.fem',status='unknown',form=format)
+
+	iuobs = 1
+	open(iuobs,file=file,status='old',form='formatted')
+
 c-----------------------------------------------------------------
 c read observations and interpolate
 c-----------------------------------------------------------------
 
-	call read_observations(' ',n,node,obs)
+	do
 
-	call optintp_field(n,nkn,node,obs,rl,rlmax,sigma,rr,zv
-     +				,ivec,rvec,raux,rmat)
+	nobs = nobdim
+	call read_observations(bmulti,iuobs
+     +				,dtime,nobs,xobs,yobs,zobs)
 
-c-----------------------------------------------------------------
-c min/max of interpolated values
-c-----------------------------------------------------------------
+	if( nobs <= 0 ) exit
 
-	call mima(zv,nkn,zmin,zmax)
-	write(6,*) 'min/max: ',zmin,zmax
-
-c-----------------------------------------------------------------
-c write to NOS file
-c-----------------------------------------------------------------
-
-	call wrnos2d('optintp','optimal interpolation',zv)
+	irec = irec + 1
+	call mima(zobs,nobs,zomin,zomax)
+	write(6,*) 'observations min/max: ',zomin,zomax
 
 c-----------------------------------------------------------------
-c write to DAT file laplace.dat
+c interpolate
 c-----------------------------------------------------------------
 
-        ilev = 0
-        ivar = 1
+	do j=-jmax,jmax
+	  rlact = rl + j*drl
+          call opt_intp(nobs,xobs,yobs,zobs,bobs
+     +                  ,nback,bback,xback,yback,zback
+     +                  ,rlact,rlmax,ss,rr,zanal)
 
-	open(1,file='optintp.dat',status='unknown',form='unformatted')
-	write(1) nkn,ilev,ivar
-	write(1) (zv(k),k=1,nkn)
-	close(1)
+	  call mima(zanal,nback,zmin,zmax)
+	  if( bmulti ) then
+	    write(6,*) 'min/max: ',dtime,zmin,zmax
+	  else 
+	    write(6,*) 'min/max: ',rlact,zmin,zmax
+	  end if
+
+	  if( blimit ) call limit_values(nback,zanal,zomin,zomax)
+
+	  if( bnos ) call wrnos2d_record(iunos,it,ivar,zanal)
+
+	  call fem_file_write_header(iformat,iufem,dtime
+     +                          ,nvers,np,lmax
+     +                          ,nvar,ntype
+     +                          ,nlvdi,hlv,datetime,regpar)
+          call fem_file_write_data(iformat,iufem
+     +                          ,nvers,np,lmax
+     +                          ,string
+     +                          ,ilhkv,hd
+     +                          ,nlvdi,zanal)
+
+	  it = it + 1
+	  dtime = dtime + 1
+	end do
+
+	if( .not. bmulti ) exit
+
+	end do
+
+	write(6,*) 'total number of observations treated: ',irec
 
 c-----------------------------------------------------------------
 c end of routine
@@ -126,145 +302,105 @@ c-----------------------------------------------------------------
 
 c****************************************************************
 
-	subroutine optintp_field(n,nkn,node,obs,rl,rlmax,sigma,rr,zv
-     +				,ivec,rvec,raux,rmat)
-
-c computes optimal interpolation
+	subroutine setup_background(ndim,dx,dy,xmin,ymin,xmax,ymax
+     +			,nback,xback,yback,regpar)
 
 	implicit none
 
-	integer n		!size of observations
-	integer nkn		!size of background field
-	integer node(n)	!list of (internal) node numbers
-	real obs(n)		!values of observations
-	real rl			!length scale
-	real rlmax		!max radius to be considered
-	real sigma		!std of background field
-	real rr			!std of error matrix
-	real zv(nkn)		!analysis on return
-	integer ivec(n)		!aux vector (n)
-	real rvec(n)		!aux vector (n)
-	real raux(n)		!aux vector (n)
-	real rmat(n,n)		!aux matrix (nxn)
-
 	include 'param.h'
-
 	include 'basin.h'
 
-	integer i,j,ki,kj,k
-	real rl2,rlmax2,rr2,rmean
-	real xi,yi,xj,yj,dist2,r,z,acu
+	integer ndim
+	real dx,dy
+	real xmin,ymin,xmax,ymax
+	integer nback
+	real xback(ndim)
+	real yback(ndim)
+	real regpar(7)
 
-	rl2 = rl**2
-	rlmax2 = rlmax**2
-	rr2 = rr**2
+	integer k,i,j
+	integer nx,ny
+	real x0,y0
+	real diff,flag
 
-c	------------------------------------------
-c	compute mean of observations
-c	------------------------------------------
+	x0 = 0.
+	y0 = 0.
+	regpar = 0.
+	flag = -999.
 
-	rmean = 0.
-	do i=1,n
-	  rmean = rmean + obs(i)
-	end do
-	rmean = rmean / n
-
-c	------------------------------------------
-c	subtract mean from observations and set background to 0 (mean)
-c	------------------------------------------
-
-	do i=1,n
-	  obs(i) = obs(i) - rmean
-	end do
-
-	do k=1,nkn
-	  zv(k) = 0.
-	end do
-
-c	------------------------------------------
-c	set up covariance matrix H P^b H^T
-c	------------------------------------------
-
-	do j=1,n
-	  kj = node(j)
-	  xj = xgv(kj)
-	  yj = ygv(kj)
-	  do i=1,n
-	    ki = node(i)
-	    xi = xgv(ki)
-	    yi = ygv(ki)
-	    dist2 = (xi-xj)**2 + (yi-yj)**2
-	    r = exp( -dist2/rl2 )
-	    if( dist2 .gt. rlmax2 ) r = 0.
-	    rmat(i,j) = r * sigma**2
+	if( dx <= 0. ) then
+	  nx = 0
+	  ny = 0
+	  nback = nkn
+	  if( nback > ndim ) goto 99
+	  do k=1,nback
+	    xback(k) = xgv(k)
+	    yback(k) = ygv(k)
 	  end do
-	end do
-
-c	------------------------------------------
-c	add observation error matrix
-c	------------------------------------------
-
-	do j=1,n
-	  rmat(j,j) = rmat(j,j) + rr2
-	end do
-
-c	------------------------------------------
-c	invert matrix
-c	------------------------------------------
-
-	call matinv(rmat,ivec,rvec,n,n)
-
-c	------------------------------------------
-c	create observational innovation vector
-c	------------------------------------------
-
-	do j=1,n
-	  k = node(j)
-	  z = zv(k)
-	  rvec(j) = obs(j) - z
-	end do
-
-c	------------------------------------------
-c	multiply inverted matrix with observational innovation
-c	------------------------------------------
-
-	do i=1,n
-	  acu = 0.
-	  do j=1,n
-	    acu = acu + rmat(i,j) * rvec(j)
+	else
+	  if( dy < = 0. ) stop 'error stop setup_background: dy'
+	  nx = 1 + (xmax - xmin) / dx
+	  ny = 1 + (ymax - ymin) / dy
+	  diff = nx * dx - (xmax-xmin)
+	  x0 = xmin - diff/2.
+	  diff = ny * dy - (ymax-ymin)
+	  y0 = ymin - diff/2.
+	  k = 0
+	  do j=0,ny
+	    do i=0,nx
+	      k = k + 1
+	      if( k > ndim ) goto 99
+	      xback(k) = x0 + i*dx
+	      yback(k) = y0 + j*dy
+	    end do
 	  end do
-	  raux(i) = acu
+	  nx = nx + 1
+	  ny = ny + 1
+	  nback = nx*ny
+	  if( nback .ne. k ) goto 98
+	  regpar(1) = nx
+	  regpar(2) = ny
+	  regpar(3) = x0
+	  regpar(4) = y0
+	  regpar(5) = dx
+	  regpar(6) = dy
+	  regpar(7) = flag
+	end if
+
+	return
+   98	continue
+	write(6,*) nx,ny,nback,k,ndim
+	stop 'error stop setup_background: internal error (1)'
+   99	continue
+	write(6,*) nx,ny,nback,k,ndim
+	stop 'error stop setup_background: dimension ndim'
+	end
+
+c****************************************************************
+
+	subroutine limit_values(nback,zback,zomin,zomax)
+
+c limits computed values to min/max of observations
+
+	implicit none
+
+	integer nback
+	real zback(nback)
+	real zomin,zomax
+
+	integer i
+
+	do i=1,nback
+	  zback(i) = max(zback(i),zomin)
+	  zback(i) = min(zback(i),zomax)
 	end do
-
-c	------------------------------------------
-c	multiply P^b H^T with vector and add to background to obtain analysis
-c	------------------------------------------
-
-	do k=1,nkn
-	  xi = xgv(k)
-	  yi = ygv(k)
-	  acu = 0.
-	  do j=1,n
-	    kj = node(j)
-	    xj = xgv(kj)
-	    yj = ygv(kj)
-	    dist2 = (xi-xj)**2 + (yi-yj)**2
-	    r = exp( -dist2/rl2 )
-	    if( dist2 .gt. rlmax2 ) r = 0.
-	    acu = acu + r * sigma**2 * raux(j)
-	  end do
-	  zv(k) = zv(k) + rmean + acu
-	end do
-
-c	------------------------------------------
-c	end of routine
-c	------------------------------------------
 
 	end
 
 c****************************************************************
 
-	subroutine read_observations(file,n,node,obs)
+	subroutine read_observations(bmulti,iuobs
+     +				,dtime,nobs,xobs,yobs,zobs)
 
 c reads boundary conditions from file and sets up array
 c
@@ -277,56 +413,80 @@ c	kn, valn
 
 	implicit none
 
-	character*(*) file
-	integer n
-	integer node(n)
-	real obs(n)
+	include 'param.h'
+	include 'basin.h'
 
-	integer iunit
-	integer k,kn,ndim
-	real val
+	logical bmulti
+	integer iuobs
+	double precision dtime
+	integer nobs
+	real xobs(nobs)
+	real yobs(nobs)
+	real zobs(nobs)
 
-	integer ipint
+	character*80 line
+	logical bdebug
+	integer k,kn,ndim,n,ianz
+	real f(10)
 
-	ndim = n
+	integer ipint,iscanf
 
-	if( file .ne. ' ' ) then
-	  open(1,file=file,status='old',form='formatted',err=97)
-	  iunit = 1
-	else
-	  iunit = 5
+	bdebug = .false.
+
+	ndim = nobs
+	nobs = 0
+	n = 0
+	dtime = 0.
+
+	if( bdebug ) then
+	  write(6,*) '...reading observations from unit :',iuobs
+	  write(6,*) '   format: "k val" or "x y val"'
 	end if
 
-	write(6,*) '...reading boundary conditions from unit :',iunit
-	write(6,*) '   format: k  val'
+	if( bmulti ) read(iuobs,*,end=2) dtime,nobs
 
-	n = 0
-    1	continue
-	  read(iunit,*,end=2) k,val
+	do
+	  if( nobs > 0 .and. n == nobs ) exit	!for multi data
+	  read(iuobs,'(a)',end=2) line
+	  !write(6,*) trim(line)
+	  ianz = iscanf(line,f,4)
+	  if( ianz < 0 ) ianz = -ianz - 1
+	  if( ianz == 0 ) cycle
 	  n = n + 1
 	  if( n .gt. ndim ) goto 96
-	  kn = ipint(k)
-	  if( kn .le. 0 ) goto 99
-	  node(n) = kn
-	  obs(n) = val
-	  write(6,*) n,k,kn,val
-	  goto 1
+	  if( ianz == 2 ) then			!node given
+	    k = nint(f(1))
+	    kn = ipint(k)
+	    if( kn .le. 0 ) goto 99
+	    xobs(n) = xgv(kn)
+	    yobs(n) = ygv(kn)
+	    zobs(n) = f(2)
+	    if( bdebug ) write(6,*) n,k,kn,zobs(n)
+	  else if( ianz == 3 ) then		!x/y given
+	    xobs(n) = f(1)
+	    yobs(n) = f(2)
+	    zobs(n) = f(3)
+	    if( bdebug ) write(6,*) n,xobs(n),yobs(n),zobs(n)
+	  else
+	    goto 98
+	  end if
+	end do
     2	continue
 
-	if( iunit .ne. 5 ) close(iunit)
+	nobs = n
 
 	return
    96	continue
 	write(6,*) n,ndim
 	stop 'error stop read_observations: dimensions'
-   97	continue
-	write(6,*) file
-	stop 'error stop read_observations: cannot open file'
    98	continue
-	write(6,*) k,kn,val
-	stop 'error stop read_observations: error in internal node number'
+	write(6,*) 'input file line number = ',n
+	write(6,*) 'line = ',trim(line)
+	write(6,*) 'number of items read = ',ianz
+	write(6,*) 'format should be: "k val" or "x y val"'
+	stop 'error stop read_observations: wrong format'
    99	continue
-	write(6,*) k,kn,val
+	write(6,*) k,kn
 	stop 'error stop read_observations: no such node'
 	end
 

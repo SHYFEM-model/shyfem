@@ -215,11 +215,11 @@ check_compilation:
 
 modified: changed
 changed:
-	@find . -newer VERSION -type f | grep -v '/arc/' | grep -v '/.git/'
+	@femcheck/find_changed.sh
 
 changed_zip:
-	zip changed_zip.zip `find . -newer VERSION -type f | \
-		grep -v '/arc/' | grep -v '/.git/'`
+	zip changed_zip.zip `femcheck/find_changed.sh`
+	@echo "changed files have bin zipped to changed_zip.zip"
 
 #--------------------------------------------------------
 # installing

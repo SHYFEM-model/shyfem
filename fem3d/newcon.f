@@ -427,12 +427,9 @@ c sets boundary conditions for scalar - not used anymore - to be deleted
 
         character*(*) what
 	real t
-        real bnd3(nb3dim,0:nbcdim)
-
-	real bnd3_aux(nb3dim)
+	real bnd3(1,1)
 
 	stop 'error stop: call to scal_bnd not allowed'
-	!call bnds_set(what,t,nb3dim,bnd3,bnd3_aux)
 
 	end
 

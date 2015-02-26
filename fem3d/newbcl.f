@@ -63,6 +63,7 @@ c 05.09.2013    ggu     limit salinity to [0,...]
 c 25.03.2014    ggu     new offline
 c 10.07.2014    ggu     only new file format allowed
 c 20.10.2014    ggu     pass ids to scal_adv()
+c 10.02.2015    ggu     call to bnds_read_new() introduced
 c
 c*****************************************************************
 
@@ -329,12 +330,15 @@ c	  tid = OMP_GET_THREAD_NUM()
 c	  write(6,*) 'number of thread of temp: ',tid
 
           if( itemp .gt. 0 ) then
-		!call check_layers('temp after bnd',tempv)
-                call scal_adv_nudge('temp',0
+		what = 'temp'
+		dtime = it
+	        call bnds_read_new(what,idtemp,dtime)
+		!call check_layers(what//' after bnd',tempv)
+                call scal_adv_nudge(what,0
      +                          ,tempv,idtemp
      +                          ,thpar,wsink
      +                          ,difhv,difv,difmol,tobsv,robs)
-		!call check_layers('temp after adv',tempv)
+		!call check_layers(what//' after adv',tempv)
 	  end if
 
 !$OMP SECTION
@@ -343,12 +347,15 @@ c	  tid = OMP_GET_THREAD_NUM()
 c	  write(6,*) 'number of thread of salt: ',tid
 
           if( isalt .gt. 0 ) then
-		!call check_layers('salt after bnd',saltv)
-                call scal_adv_nudge('salt',0
+		what = 'salt'
+		dtime = it
+	        call bnds_read_new(what,idsalt,dtime)
+		!call check_layers(what//' after bnd',tempv)
+                call scal_adv_nudge(what,0
      +                          ,saltv,idsalt
      +                          ,shpar,wsink
      +                          ,difhv,difv,difmol,sobsv,robs)
-		!call check_layers('salt after adv',saltv)
+		!call check_layers(what//' after adv',tempv)
           end if
 
 !$OMP END SECTIONS NOWAIT

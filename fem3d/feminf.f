@@ -4,6 +4,7 @@
 ! revision log :
 !
 ! 14.01.2015    ggu     finished and cleaned
+! 10.02.2015    ggu     option for not complaining about changed time step
 !
 !******************************************************************
 
@@ -31,6 +32,8 @@ c--------------------------------------------------------------
 	call clo_add_info('returns info on a fem file')
 	call clo_add_option('write',.false.,'write min/max of values')
 	call clo_add_option('quiet',.false.,'do not be verbose')
+	call clo_add_option('no_dt',.false.
+     +				,'do not check for change of time step')
 
 	call clo_parse_options(1)  !expecting (at least) 1 file after options
 
@@ -91,7 +94,7 @@ c writes info on fem file
 	integer datetime(2),dateanf(2),dateend(2)
 	real regpar(7)
 	logical bdebug,bfirst,bskip,bwrite
-	logical bquiet
+	logical bquiet,bnodt,bcheckdt
 	character*50, allocatable :: strings(:)
 	character*20 line,aline
 	real,allocatable :: data(:,:,:)
@@ -107,8 +110,10 @@ c writes info on fem file
 
 	call clo_get_option('write',bwrite)
 	call clo_get_option('quiet',bquiet)
+	call clo_get_option('no_dt',bnodt)
 
 	bskip = .not. bwrite
+	bcheckdt = .not. bnodt
 
 c--------------------------------------------------------------
 c open file
@@ -241,7 +246,7 @@ c--------------------------------------------------------------
 	  if( irec > 1 ) then
 	    if( irec == 2 ) idt = nint(atime-atimeold)
 	    idtact = nint(atime-atimeold)
-	    if( idtact .ne. idt ) then
+	    if( bcheckdt. and. idtact .ne. idt ) then
 	      ich = ich + 1
 	      write(6,*) '* change in time step: '
      +				,irec,idt,idtact,aline

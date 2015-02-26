@@ -31,31 +31,36 @@ c******************************************************************
 
 	integer date,time
 
-	character*80 line
-	integer n
-	real f(10)
-	integer iscanf
+	integer ierr
+	character*20 line
 
 	write(6,*)
-	write(6,*) 'You can specify date/time for fem-time 0'
+	write(6,*) 'You can specify a date for fem-time 0'
 	write(6,*) 'This is only used if the simulation does not'
 	write(6,*) 'contain a date and time stamp.'
-	write(6,*) 'Default for date/time: ',date,time
-	write(6,*) '   format: date=YYYY[MMDD]  time=hhmmss'
-	write(6,*) 'Enter date[,time]: (return for default)'
-	read(5,'(a)') line
-	n = iscanf(line,f,2)
-	if( n .le. 0 ) then
-	  !
-	else if( n .eq. 1 ) then
-	  date = f(1)
+	if( date > 0 ) then
+	  call dtsunform_pack(date,time,line,ierr)
+	  write(6,*) 'Default for date: ',line
 	else
-	  date = f(1)
-	  time = f(2)
+	  write(6,*) 'There is no default date... using 0'
 	end if
+	write(6,*) 'Format: YYYY-MM-DD[::dd:mm:ss]'
+	write(6,*) 'Enter date: (return for default)'
 
-	write(6,*) 'Chosen date,time: ',date,time
+	read(5,'(a)') line
 
+	if( line == ' ' ) return
+
+	call dtsunform_pack(date,time,line,ierr)
+	if( ierr .ne. 0 ) goto 99
+
+	call dtsform_pack(date,time,line)
+	write(6,*) 'Chosen date: ',line
+
+	return
+   99	continue
+	write(6,*) 'cannot parse date format: ',line
+	stop 'error stop read_date_and_time: date format'
 	end
 
 c******************************************************************
@@ -70,7 +75,8 @@ c******************************************************************
 
 	integer n
 	integer dates,datee
-	integer year,month,day
+	integer year,month,day,hour,min,sec
+	integer ierr
 	character*80 line
 	real f(10)
 	double precision d(10)
@@ -78,12 +84,12 @@ c******************************************************************
 	integer iscanf,iscand
 
 	iperiod = 0
-	its = 0
-	ite = 0
+	its = -1
+	ite = -1
 
 	write(6,*) 'Do you want to specify period of extraction?'
-	write(6,*) '  0 or return     all of file'
-	write(6,*) '  1               date_start,date_end[,nfreq]'
+	write(6,*) '  0 or return  all of file'
+	write(6,*) '  1            give start, end and frequency'
 	read(5,'(a)') line
 	n = iscanf(line,f,1)
 
@@ -92,27 +98,32 @@ c******************************************************************
 	if( iperiod .le. 0 ) return
 
 	if( n .eq. 1 ) then
-	  write(6,*) '  Enter  date_start,date_end[,nfreq]'
+	  write(6,*) '  format for date is: YYYY-MM-DD[::dd:mm:ss]'
+
+	  write(6,*) '  Enter start date (return for start of data):'
 	  read(5,'(a)') line
-	  n = iscand(line,d,3)
-	  if( n .eq. 2 ) d(3) = 1
-	  if( n .eq. 2 .or. n .eq. 3 ) then
-	    dates = nint(d(1))
-	    datee = nint(d(2))
-	    nfreq = nint(d(3))
-	    call unpackdate(dates,year,month,day)
-	    call dts2it(its,year,month,day,0,0,0)
-	    call unpackdate(datee,year,month,day)
-	    call dts2it(ite,year,month,day,0,0,0)
-	  else
-	    write(6,*) 'n = ',n
-	    stop 'error stop get_period: 2 or 3 values allowed'
+	  if( line .ne. ' ' ) then
+	    call dtsunform(year,month,day,hour,min,sec,line,ierr)
+	    if( ierr .ne. 0 ) goto 99
+	    call dts2it(its,year,month,day,hour,min,sec)
 	  end if
-	else
-	  write(6,*) 'value entered: ',n
-	  stop 'error stop get_period: value not allowed'
+
+	  write(6,*) '  Enter end date (return for end of data):'
+	  read(5,'(a)') line
+	  if( line .ne. ' ' ) then
+	    call dtsunform(year,month,day,hour,min,sec,line,ierr)
+	    if( ierr .ne. 0 ) goto 99
+	    call dts2it(ite,year,month,day,hour,min,sec)
+	  end if
+
+	  write(6,*) '  Enter frequency (return for every record):'
+	  read(5,'(i10)') nfreq
 	end if
 
+	return
+   99	continue
+	write(6,*) 'cannot parse date format: ',line
+	stop 'error stop get_period: date format'
 	end
 
 c******************************************************************
@@ -137,8 +148,8 @@ c******************************************************************
 	if( iperiod .le. 0 ) return
 
 	bwrite = .false.
-	if( it .lt. its ) return
-	if( it .gt. ite ) return
+	if( its .ne. -1 .and. it .lt. its ) return
+	if( ite .ne. -1 .and. it .gt. ite ) return
 
 	if( mod(icall,nfreq) .ne. 0 ) return
 

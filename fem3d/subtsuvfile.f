@@ -123,6 +123,7 @@ c--------------------------------------------------------------
 
 	!write(6,*)'reading T/S values', it,dtime
 
+	call iff_read_and_interpolate(id,dtime)
 	call iff_time_interpolate(id,dtime,ivar,ndim,ldim,value)
 
 c--------------------------------------------------------------

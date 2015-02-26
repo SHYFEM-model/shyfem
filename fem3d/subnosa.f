@@ -11,6 +11,7 @@ c revision log :
 c
 c 05.01.2005    ggu     new routine wrnos2d() to write 2d nos file
 c 28.09.2006    ggu     new routines wrnos2d_it, wrnos2d_index, extract_level
+c 10.02.2015    ggu     some new routines for writing...
 c
 c***************************************************************************
 
@@ -34,13 +35,36 @@ c***************************************************************************
 
         subroutine wrnos2d_it(it,name,title,value)
 
-c write 2d nos file
+c write one 2d nos file
 
         implicit none
 
 	integer it
         character*(*) name,title
         real value(1)
+
+        integer nb,ivar
+
+	ivar = 99
+
+	call wrnos2d_open(nb,name,title)
+	call wrnos2d_record(nb,it,ivar,value)
+
+	call delnos(nb)
+        close(nb)
+
+	end
+
+c***************************************************************************
+
+        subroutine wrnos2d_open(nb,name,title)
+
+c write 2d nos file
+
+        implicit none
+
+	integer nb
+        character*(*) name,title
 
 	include 'param_dummy.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
@@ -49,11 +73,9 @@ c write 2d nos file
         character*80 pfile
         character*80 ptitle
         integer nvers,nvar,ivar,nlv
-        integer nb,ierr
-        integer ie,ii
+        integer ierr
         integer ilhkv(1)
         real hlv(1)
-        real h
 
         integer ifileo
 
@@ -63,13 +85,12 @@ c-----------------------------------------------------------------
 
         nvers = 3
         nvar = 1
-        ivar = 99
         nlv = 1
 
         ptitle = title
 
 c-----------------------------------------------------------------
-c writing file
+c writing header
 c-----------------------------------------------------------------
 
         pfile = name
@@ -82,11 +103,6 @@ c-----------------------------------------------------------------
         if(ierr.ne.0) goto 99
         call wsnos(nb,ilhkv,hlv,hev,ierr)
         if(ierr.ne.0) goto 99
-        call wrnos(nb,it,ivar,nlv,ilhkv,value,ierr)
-        if( ierr .ne. 0 ) goto 99
-
-	call delnos(nb)
-        close(nb)
 
 c-----------------------------------------------------------------
 c end of routine
@@ -96,11 +112,37 @@ c-----------------------------------------------------------------
    98   continue
         write(6,*) pfile
         write(6,*) nb
-        stop 'error stop wrnos2d: opening file'
+        stop 'error stop wrnos2d_open: opening file'
    99   continue
         write(6,*) pfile
         write(6,*) ierr
-        stop 'error stop wrnos2d: writing file'
+        stop 'error stop wrnos2d_open: writing header'
+        end
+
+c***************************************************************************
+
+	subroutine wrnos2d_record(nb,it,ivar,value)
+
+c write 2d nos file
+
+        implicit none
+
+	integer nb,it,ivar
+        real value(1)
+
+	integer nlv,ierr
+        integer ilhkv(1)
+
+        nlv = 1
+
+        call wrnos(nb,it,ivar,nlv,ilhkv,value,ierr)
+        if( ierr .ne. 0 ) goto 99
+
+	return
+   99   continue
+        write(6,*) nb
+        write(6,*) ierr
+        stop 'error stop wrnos2d_record: writing record'
         end
 
 c***************************************************************************

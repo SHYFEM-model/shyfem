@@ -9,6 +9,7 @@
 ! 20.10.2014	ggu	deal with datetime in fem/ts files
 ! 07.01.2015	ggu	bug fix in iff_populate_records() -> handle holes
 ! 08.01.2015	ggu	bug fix for parallel: make variables local
+! 05.02.2015	ggu	iff_read_and_interpolate() introduced for parallel bug
 !
 !****************************************************************
 !
@@ -47,11 +48,16 @@
 ! b2d = lexp == 0				2D field expected
 ! bonepoint					only one point stored
 !
-! todo:
+! calling sequence:
 !
-! time record -> integer, real, double
-! date/time
-! regular fields
+! iff_init_global		intializes module
+! iff_init(...,id)		initializes and gets file id
+!	-> iff_populate_records
+! iff_read_and_interpolate
+!	-> iff_read_next_record
+!	-> iff_space_interpolate
+! iff_time_interpolate(id,...)	interpolates for new time (and reads from file)
+!	-> iff_interpolate	interpolates in time
 !
 !****************************************************************
 
@@ -76,6 +82,7 @@
 	  integer :: lexp = 0		!expected vertical points (0 for 2D)
 	  integer :: ilast = 0		!last entry in time
 	  integer :: ireg = 0		!regular grid
+	  logical :: eof = .false.	!EOF encountered?
 
 	  integer :: datetime(2) = 0	!date and time parameters
 	  real :: regpar(7) = 0.	!parameters for regular grid
@@ -1178,6 +1185,8 @@ c	 2	time series
 
 	subroutine iff_space_interpolate(id,iintp,dtime)
 
+c interpolates in space all variables in data set id
+
 	integer id
 	integer iintp
 	double precision dtime
@@ -1537,33 +1546,23 @@ c global lmax and lexp are > 1
         nvar = pinfo(id)%nvar
         lexp = max(1,pinfo(id)%lexp)
         nexp = pinfo(id)%nexp
-        ilast = pinfo(id)%ilast
 	t = itact
-	itlast = nint(pinfo(id)%time(ilast))
 
 	!---------------------------------------------------------
 	! loop until time window is centered over desidered time
 	!---------------------------------------------------------
 
-	tc = tcomp(t,nintp,ilast,pinfo(id)%time)
-
-        do while( tc < t )
-          bok = iff_read_next_record(id,it)
-	  if( .not. bok ) exit
-	  if( it <= itlast ) goto 99
-	  ilast = mod(ilast,nintp) + 1
-	  call iff_space_interpolate(id,ilast,it)
-	  tc = tcomp(t,nintp,ilast,pinfo(id)%time)
-	  itlast = it
-        end do
-
-        pinfo(id)%ilast = ilast
+	if( iff_must_read(id,t) ) then
+	  write(6,*) 'warning: reading data in iff_time_interpolate'
+	  call iff_read_and_interpolate(id,t)
+	end if
 
 	!---------------------------------------------------------
 	! some sanity checks
 	!---------------------------------------------------------
 
 	if( nintp > 0 ) then
+          ilast = pinfo(id)%ilast
 	  itlast = nint(pinfo(id)%time(ilast))
 	  ifirst = mod(ilast,nintp) + 1
 	  itfirst = nint(pinfo(id)%time(ifirst))
@@ -1611,16 +1610,80 @@ c global lmax and lexp are > 1
 	write(6,*) 'last time available: ',itlast
 	call iff_print_file_info(id)
 	stop 'error stop iff_time_interpolatei: time out of range'
-   99	continue
-	write(6,*) 'time record not in increasing sequence'
-	write(6,*) 'it,itlast: ',it,itlast
-	call iff_print_file_info(id)
-	stop 'error stop iff_time_interpolate'
 	end subroutine iff_time_interpolate
 
 !****************************************************************
 
+	function iff_must_read(id,t)
+
+c this routine determines if new data has to be read from file
+
+	logical iff_must_read
+	integer id
+	double precision t		!time for which to interpolate
+
+	integer ilast,nintp
+	double precision tc
+
+        nintp = pinfo(id)%nintp
+        ilast = pinfo(id)%ilast			!index of last record
+
+        iff_must_read = .false.
+	if( pinfo(id)%eof ) return		!already at EOF
+
+	tc = tcomp(t,nintp,ilast,pinfo(id)%time)
+
+        iff_must_read = ( tc < t )
+
+	end function iff_must_read
+
+!****************************************************************
+
+	subroutine iff_read_and_interpolate(id,t)
+
+c this routine reads and interpolates new data - no parallel execution
+
+	integer id
+	double precision t		!time for which to interpolate
+
+	logical bok
+	integer ilast,nintp
+	double precision itlast,it
+	double precision tc		!check time
+
+	bok = .true.
+        nintp = pinfo(id)%nintp
+        ilast = pinfo(id)%ilast			!index of last record
+	itlast = nint(pinfo(id)%time(ilast))	!time of last record
+
+	tc = tcomp(t,nintp,ilast,pinfo(id)%time)
+
+        do while( tc < t )
+          bok = iff_read_next_record(id,it)
+	  if( .not. bok ) exit
+	  if( it <= itlast ) goto 99
+	  ilast = mod(ilast,nintp) + 1
+	  call iff_space_interpolate(id,ilast,it)
+	  tc = tcomp(t,nintp,ilast,pinfo(id)%time)
+	  itlast = it
+        end do
+
+        pinfo(id)%eof = .not. bok
+        pinfo(id)%ilast = ilast
+
+	return
+   99	continue
+	write(6,*) 'time record not in increasing sequence'
+	write(6,*) 'it,itlast: ',it,itlast
+	call iff_print_file_info(id)
+	stop 'error stop iff_read_and_interpolate'
+	end subroutine iff_read_and_interpolate
+
+!****************************************************************
+
         subroutine iff_interpolate(id,t,ivar,ndim,ldim,value)
+
+c does the final interpolation in time
 
 	integer id
 	double precision t

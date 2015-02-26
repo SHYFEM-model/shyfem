@@ -15,6 +15,8 @@ c**************************************************************
 
 	program nosinf
 
+	use clo
+
 c reads nos file
 
 	implicit none
@@ -28,6 +30,7 @@ c reads nos file
 	real hlv(nlvdim)
 	real hev(neldim)
 
+	logical bwrite,bquiet,bask
 	logical bdate
 	integer date,time
 	integer nread,nin
@@ -38,6 +41,7 @@ c reads nos file
 	integer l,k,lmax
 	character*80 title
 	character*20 dline
+	character*80 infile
 	real rnull
 	real cmin,cmax,caver
 
@@ -54,7 +58,26 @@ c--------------------------------------------------------------
 c open basin and simulation
 c--------------------------------------------------------------
 
-	call shyfem_copyright('nosinf - Info on NOS files')
+        call clo_init('nosinf','nos-file','2.0')
+
+        call clo_add_info('returns info on a nos file')
+
+        call clo_add_option('write',.false.,'write min/max of values')
+        call clo_add_option('quiet',.false.,'do not be verbose')
+        call clo_add_option('ask',.false.,'ask for simulation')
+
+        call clo_parse_options
+
+        call clo_get_option('write',bwrite)
+        call clo_get_option('quiet',bquiet)
+        call clo_get_option('ask',bask)
+
+	if( .not. bask ) call clo_check_files(1)
+	call clo_get_file(1,infile)
+
+	if( .not. bquiet ) then
+	  call shyfem_copyright('nosinf - Info on NOS files')
+	end if
 
 	if(iapini(2,nkndim,neldim,0).eq.0) then
 		stop 'error stop : iapini'

@@ -293,8 +293,12 @@ c checks if coordinates are lat/lon
 	integer isphe_ev,init_ev
 	common /evcommon/ isphe_ev,init_ev
 
+	logical bverbose
 	integer k,isphe
 	real xmin,xmax,ymin,ymax
+
+	bverbose = .true.
+	bverbose = .false.
 
 	xmin = xgv(1)
 	xmax = xgv(1)
@@ -314,13 +318,14 @@ c checks if coordinates are lat/lon
 
 	if( isphe_ev .eq. -1 ) then	!determine automatically
 	  if( isphe .eq. 1 ) then
-	    write(6,*) 'Unsure about type of coordinates.'
-	    write(6,*) 'Coodinates seem as lat/lon'
-	    write(6,*) 'but are not flagged as such.'
-	    write(6,*) 'Using lat/lon coordinates.'
-	    write(6,*) 'If this is an error, then please set'
-	    write(6,*) 'parameter isphe to the desired value.'
-	    !stop 'error stop check_spheric_ev: coord type'
+	    if( bverbose ) then
+	      write(6,*) 'Unsure about type of coordinates.'
+	      write(6,*) 'Coodinates seem as lat/lon'
+	      write(6,*) 'but are not flagged as such.'
+	      write(6,*) 'Using lat/lon coordinates.'
+	      write(6,*) 'If this is an error, then please set'
+	      write(6,*) 'parameter isphe to the desired value.'
+	    end if
 	  end if
 	else if( isphe_ev .ne. isphe ) then	!not the same
 	  if( isphe .eq. 0 ) then	!not possible -> coords out of range
@@ -338,8 +343,11 @@ c checks if coordinates are lat/lon
 	isphe_ev = isphe
 	init_ev = 1
 
-	write(6,*) 'setting for coordinates: isphe = ',isphe
-	if( isphe .ne. 0 ) write(6,*) 'using lat/lon coordinates'
+	if( isphe == 1 ) then
+	  write(6,*) 'using lat/lon coordinates'
+	else
+	  write(6,*) 'using cartesian coordinates'
+	end if
 
 	end
 
