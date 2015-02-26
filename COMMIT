@@ -1,5 +1,58 @@
 ============================================================
 
+Thu Feb 26 18:40:05 CET 2015
+
+new aquabc_II
+
+ LOG                                  |    5 +
+ RELEASE_NOTES                        |    5 +
+ fem3d/Makefile                       |   33 +-
+ fem3d/alukas.f                       | 4807 --------------------------------
+ fem3d/aquabc.f                       |  685 -----
+ fem3d/aquabc.h                       |   17 -
+ fem3d/aquabc_II.f90                  | 1579 +++++++++++
+ fem3d/aquabc_II.h                    |   21 +
+ fem3d/aquabc_II_aout.h               |   49 +
+ fem3d/aquabc_II_apara.f              |  980 +++++++
+ fem3d/aquabc_II_ased_ini.f90         |  292 ++
+ fem3d/aquabc_II_co2sys.f90           | 4875 ++++++++++++++++++++++++++++++++
+ fem3d/aquabc_II_fem_interface.f      | 4165 +++++++++++++++++++++++++++
+ fem3d/aquabc_II_pelagic_lib.f90      | 1756 ++++++++++++
+ fem3d/aquabc_II_pelagic_model.f90    | 5098 +++++++++++++++++++++++++++++++++
+ fem3d/aquabc_II_sediment_lib.f90     |   95 +
+ fem3d/aquabc_II_sediment_model_1.f90 | 2511 +++++++++++++++++
+ fem3d/aquabc_II_util.f               |  367 +++
+ fem3d/aquabc_aout.h                  |   49 -
+ fem3d/aquabc_fem_interface.f         | 5105 ----------------------------------
+ fem3d/aquabc_sediment_model_1.f      | 1433 ----------
+ fem3d/aquabc_util.f                  |  127 -
+ fem3d/subwaves.f                     |    1 +
+ fembin/mkdp.pl                       |    4 +
+ femdoc/final/shyfem.pdf              |  Bin 293719 -> 293719 bytes
+ femdoc/final/shyfem.ps               |    4 +-
+ 26 files changed, 21831 insertions(+), 12232 deletions(-)
+ new file:
+   fem3d/aquabc_II.f90
+   fem3d/aquabc_II.h
+   fem3d/aquabc_II_apara.f
+   fem3d/aquabc_II_ased_ini.f90
+   fem3d/aquabc_II_co2sys.f90
+   fem3d/aquabc_II_fem_interface.f
+   fem3d/aquabc_II_pelagic_lib.f90
+   fem3d/aquabc_II_pelagic_model.f90
+   fem3d/aquabc_II_sediment_lib.f90
+   fem3d/aquabc_II_sediment_model_1.f90
+   fem3d/aquabc_II_util.f
+ deleted:
+    fem3d/alukas.f
+    fem3d/aquabc.f
+    fem3d/aquabc.h
+    fem3d/aquabc_fem_interface.f
+    fem3d/aquabc_sediment_model_1.f
+    fem3d/aquabc_util.f
+
+============================================================
+
 Thu Feb 26 10:47:05 CET 2015
 
 New version 7_1_5

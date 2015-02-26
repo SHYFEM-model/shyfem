@@ -26,8 +26,8 @@ C     Parameters and arrays for writing diagnostics(components of derivatives) t
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 C WATER COLUMN
-		integer   NDIAGVAR           !Maximum number of different intermediate variables in output. Chek biotser_write formats! 
-		parameter (NDIAGVAR=20)      !Number of auxilary variables for output	
+		integer   NDIAGVAR           !Maximum number of different intermediate variables in output.  
+		parameter (NDIAGVAR=26)      !Number of auxilary variables for output	
 		integer   NDGTSMX            !Total number of nodes for intermediates of each state variable 
 		parameter (NDGTSMX=100)
 		integer NDGTS(nstate)        !Actual number of nodes for intermediates of each state variable
@@ -38,7 +38,7 @@ C WATER COLUMN
 
 C BOTTOM SEDIMENTS
 		integer   NDIAGVAR_sed          !Maximum number of different intermediate variables in output. Chek biotser_write formats
-		parameter (NDIAGVAR_sed=9)      !Number of auxilary variables for output	
+		parameter (NDIAGVAR_sed=25)      !Number of auxilary variables for output	
 		integer   NDGTSMX_sed           !Total number of nodes for intermediates of each state variable 
 		parameter (NDGTSMX_sed=100)
 		integer NDGTS_sed(nsstate)      !Actual number of nodes for intermediates of each state variable

@@ -86,9 +86,14 @@ ifeq ($(ECOLOGICAL),ERSEM)
   LIBF_ERSEM     = $(DIRLIB)/lib$(LIBERSEM).a
 endif
 ifeq ($(ECOLOGICAL),AQUABC)
-  ECOLOGICAL_OBJ = aquabc_fem_interface.o alukas.o aquabc.o \
-		aquabc_sediment_model_1.o aquabc_util.o
+  ECOLOGICAL_OBJ = aquabc_II_pelagic_lib.o aquabc_II_fem_interface.o \
+		aquabc_II_co2sys.o aquabc_II_apara.o aquabc_II_util.o \
+		aquabc_II_sediment_model_1.o aquabc_II_sediment_lib.o \
+		aquabc_II_pelagic_model.o aquabc_II.o \
+		aquabc_II_ased_ini.o
 endif
+#  ECOLOGICAL_OBJ = aquabc_fem_interface.o alukas.o aquabc.o \
+#		aquabc_sediment_model_1.o aquabc_util.o
 
 #------------------------------------------------------------
 
@@ -645,7 +650,7 @@ headers:
 #------------------------------------------------
 
 depend:
-	$(MAKEDEPEND) *.f
+	$(MAKEDEPEND) *.f *.f90
 
 #---------------------------------------------------
 
@@ -786,10 +791,12 @@ last:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-aquabc.o: param.h
-aquabc_fem_interface.o: param.h bound_names.h aquabc.h femtime.h \
-		ev.h nlevel.h mkonst.h nbasin.h aquabc_aout.h \
-		levels.h basin.h diff_visc_fric.h 
+para_aqua.mod: aquabc_II_apara.o
+aquabc_II_fem_interface.o: aquabc_II.h param.h femtime.h nlevel.h \
+		mkonst.h nbasin.h aquabc_II_aout.h \
+		aquabc_II_sed_ini.mod levels.h basin.h \
+		para_aqua.mod diff_visc_fric.h 
+aquabc_II_util.o: param.h
 atoxi3d.o: nbasin.h param.h levels.h nlevel.h mkonst.h \
 		diff_visc_fric.h 
 basbathy.o: depth.h pkonst.h param.h evmain.h basin.h simul.h
@@ -1117,4 +1124,16 @@ windcrea.o: depth.h param.h evmain.h basin.h
 winmerge.o: param.h
 winshift.o: param.h
 zinit.o: param.h basin.h simul.h
+aquabc_II.o: param.h aquabc_II_sed_ini.mod para_aqua.mod
+aquabc_II_sed_ini.mod: aquabc_II_ased_ini.o
+aquabc_II_ased_ini.o: nbasin.h aquabc_II.h para_aqua.mod
+AQUABC_II_GLOBAL.mod: aquabc_II_co2sys.o
+VECTOR_MATRIX_UTILS.mod: aquabc_II_co2sys.o
+CO2SYS_CDIAC.mod: aquabc_II_co2sys.o
+aquabc_II_pelagic_lib.o: AQUABC_II_GLOBAL.mod
+aquabc_II_pelagic_model.o: param.h AQUABC_II_GLOBAL.mod \
+		CO2SYS_CDIAC.mod para_aqua.mod 
+aquabc_II_sediment_lib.o: AQUABC_II_GLOBAL.mod
+aquabc_II_sediment_model_1.o: param.h AQUABC_II_GLOBAL.mod \
+		CO2SYS_CDIAC.mod para_aqua.mod 
 

@@ -4,6 +4,8 @@
 #
 # handles recursive includes
 #
+# 26.02.2015	ggu	adapted for f90 files
+#
 #------------------------------------------------------
 
 use strict;
@@ -68,6 +70,7 @@ sub handle_file {
       $modules_in_file{"$module.mod"} = 1;
       my $fileo = $file;
       $fileo =~ s/\.f$/.o/;
+      $fileo =~ s/\.f90$/.o/;
       my $line = "$module.mod: $fileo";
       push(@$rlines,$line);
     }
@@ -151,6 +154,7 @@ sub write_inc {
   return unless scalar @list;
 
   $file =~ s/\.[fc]$/.o:/;
+  $file =~ s/\.f90$/.o:/;
   foreach my $f (@list) {
     $file .= " $f";
   }

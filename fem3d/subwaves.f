@@ -12,6 +12,7 @@
 ! 25.10.2013	ccf	upgrade compatibility with WWMIII
 ! 04.11.2014	ccf	rewritten
 ! 21.01.2015	ggu	computing fetch for geographical coordinates (bug fix)
+! 10.02.2015	ggu	randomixe change of coordinates if on node (bug fix)
 !
 !**************************************************************
 c DOCS  START   S_wave

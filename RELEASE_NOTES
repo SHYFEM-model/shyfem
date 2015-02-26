@@ -1,4 +1,9 @@
 
+27.02.2015    VERS_7_1_6
+
+	new version of aquabc_II integrated
+
+
 26.02.2015    VERS_7_1_5
 
 	new calling sequence for BC to avoid parallel bug (bnds_read_new)
