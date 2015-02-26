@@ -1,3 +1,73 @@
+version  7_1_5    26-02-2015    VERS_7_1_5
+
+========================================================== 26-02-2015 - 7_1_5
+
+c ./femplot/supbas.f:
+c 10.02.2015  ggu     also plot other points, also regular points
+c
+c ./femplot/supout.f:
+c 10.02.2015  ggu     use different file units (more than one can be opened)
+c
+c ./fem3d/subtsfile.f:
+c 10.02.2015    ggu     length of line set to 2048
+c
+c ./fem3d/subclo.f:
+! 26.01.2015    ggu     make argument to clo_parse_options() optional
+! 26.01.2015    ggu     new routine clo_check_files()
+! 08.02.2015    ggu     bug fix in clo_get_option, new routine clo_info
+!
+c ./fem3d/subnls.f:
+c 05.02.2015	ggu	program completely rewritten (modules introduced)
+c 08.02.2015	ggu	accept also '!' and '#' for end comment on line
+c
+c ./fem3d/subbnds.f:
+c 05.02.2015    ggu     check for number of variables read
+c 10.02.2015    ggu     new routine bnds_read_new()
+c
+c ./fem3d/subssm.f:
+c 10.02.2015    ggu     some double precision routines introduced
+c
+c ./fem3d/kepsd.f:
+c 10.02.2015	ggu	in gotm call to do_gotm_turb() with ddt and not dt
+c
+c ./fem3d/subver.f:
+c 26.02.2015	ggu	version 7.1.5
+c
+c ./fem3d/subpar3.f:
+c 13.02.2015    ggu     limit of string raised from 6 to 10
+c
+c ./fem3d/subnosa.f:
+c 10.02.2015    ggu     some new routines for writing...
+c
+c ./fem3d/optintp.f:
+c 07.02.2015	ggu	OI finished
+c
+c ./fem3d/newconz.f:
+c 10.02.2015    ggu     call to bnds_read_new() introduced
+c
+c ./fem3d/newbcl.f:
+c 10.02.2015    ggu     call to bnds_read_new() introduced
+c
+c ./fem3d/feminf.f:
+! 10.02.2015    ggu     option for not complaining about changed time step
+c
+c ./fem3d/subn11.f:
+c 10.02.2015    ggu     new call to iff_read_and_interpolate()
+c
+c ./fem3d/arc/subnls_new.f:
+c 05.02.2015	ggu	program completely rewritten (modules introduced)
+c
+c ./fem3d/subscn.f:
+c 06.02.2015	ggu	new routines istos,iston,is_digit,is_letter
+c
+c ./fem3d/subfemintp.f:
+! 05.02.2015	ggu	iff_read_and_interpolate() introduced for parallel bug
+!
+c ./fem3d/subapn.f:
+c 10.02.2015	ggu	debugged, bcompat gives compatibility with old versions
+
+==========================================================
+
 version  7_1_4    23-01-2015    VERS_7_1_4   commit_2015-02-26
 
 version  7_1_4    23-01-2015    VERS_7_1_4
