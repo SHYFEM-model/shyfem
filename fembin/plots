@@ -94,11 +94,11 @@ WriteTitle() {
   date=`date`
 
   if [ -z "$sim" ]; then
-    sim=`memory -s`
+    sim=`$memory -s`
   fi
 
   if [ -z "$bas" ]; then
-    bas=`memory -b`
+    bas=`$memory -b`
   fi
 
   echo '$title'
@@ -209,7 +209,7 @@ fi
 WriteTitle > apnstd.str
 WritePara  >> apnstd.str
 
-apnmake $* >> apnstd.str
+$BINDIR/apnmake $* >> apnstd.str
 [ $? -ne 0 ] && exit 1
 
 ######################################################### write to terminal

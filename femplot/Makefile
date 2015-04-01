@@ -79,6 +79,9 @@ readout:  readout.o $(NPOBJS) $(LIBIFS) $(LIBIPS)
 windrose: windrose.o $(LIBIPS)
 	$(LINKER) $(LFLAGS) $@.o $(LIBPS) -o $@
 
+lagxitest:  lagxitest.o $(PSOBJS) $(LIBIFS) $(LIBIPS)
+	$(LINKER) $(LFLAGS) $@.o $(PSOBJS) $(LIBFS) $(LIBPS) -o $@
+
 testdash: testdash.o $(LIBIFS) $(LIBIPS)
 	$(LINKER) $(LFLAGS) $@.o $(LIBFS) $(LIBPS) -o $@
 

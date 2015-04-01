@@ -295,7 +295,7 @@ c
 
 c***************************************************************
 
-	subroutine energ3d(kenergy,penergy)
+	subroutine energ3d(kenergy,penergy,ia_ignore)
 
 c computation of kinetic & potential energy (per unit mass) in element ielem
 c
@@ -307,11 +307,12 @@ c	kin = (1/2) * aj * 12 * u*u/h
 	implicit none
 
 	real kenergy,penergy
+	integer ia_ignore	!area code to be ignored
 
 	include 'param.h'
 	include 'ev.h'
 
-	include 'nbasin.h'
+	include 'basin.h'
 	include 'pkonst.h'
 
 	include 'levels.h'
@@ -320,7 +321,7 @@ c	kin = (1/2) * aj * 12 * u*u/h
 	include 'hydro.h'
 
 c local
-	integer ie,ii,l,lmax
+	integer ie,ii,l,lmax,ia
 	double precision area,pot,kin,z,zz
 	double precision h,uu,vv
 
@@ -330,6 +331,8 @@ c local
 	do ie=1,nel
 
 	  area = 12. * ev(10,ie)
+	  ia = iarv(ie)
+	  if( ia .eq. ia_ignore ) cycle
 
 	  z=0.
 	  do ii=1,3

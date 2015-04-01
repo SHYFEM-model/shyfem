@@ -13,7 +13,7 @@ c 25.01.2013    ggu     error check to avoid segfault (INTERNAL ERROR)
 c
 c**********************************************************************
 
-        subroutine track_orig(time,bdy,ie,xbdy,ybdy,ltbdy)
+        subroutine track_orig(time,bdy,ie,xbdy,ybdy,zbdy,lybdy,ltbdy)
 
 c in questa subroutine si calcola il percorso del body partendo
 c da un punto all'interno dell'elemento ie 
@@ -25,10 +25,15 @@ c si passa alla successiva subroutine con time
         
 	include 'param.h' 
 	include 'lagrange.h'
+	include 'nlevel.h'
  
-	integer ie,bdy ! bdy e' il numero del body
-	real time
-	integer ltbdy
+	real time	!total time to travel
+	integer bdy	!number of body
+	integer ie	!number of element of body
+	real xbdy,ybdy	!horizontal position of body
+	real zbdy	!relative vertical position of body in layer
+	integer lybdy	!layer of body
+	integer ltbdy	!entering side of next element 
 
 	real epsggu
 	parameter (epsggu = 1.e-7)
@@ -46,10 +51,19 @@ c si passa alla successiva subroutine con time
 	real v_out ! modulo della velocita' di uscita
 	integer l_int !lato di entrata numerazione elemento (var. output)
 	integer l_out ! lato di uscita numerazione elemento
-	real xbdy,ybdy ! coordinate del body
 	real nxbdy,nybdy !nuove coordinate del body
 	integer newie ! nuovo elemento che contiene il body
 
+! vertical treatment 
+	real z0,z1,zn0,zn1  !	cuccomod
+	integer l0,l1,addl
+	real ztime,lb,subtime,layd
+	real w
+	real hl(nlvdim)
+	real a_int,a_out
+        real in_d,ou_d
+	integer in_dm,in_dx,ou_dm,ou_dx
+	
         integer idum ! seme f(x) random
 
 c variabili di servizio
@@ -69,7 +83,7 @@ c variabili di servizio
 	real db ! parametri retta della traiettoria sguita dal body 
 	real dstbdy ! distanza tra lato entrata e uscita lungo la traiettoria
         real bdx ! distanza (frazione) del body da estremo piu vicno retta entrata
-        real gf !precision along the side
+	real gf !precision along the side
         integer pbdx,gbdx ! numero interno dell'estremo piu vicino e piu lontano dal body
         integer ps,ng,nl,nnm,i1,i2
 	data nnm/0/
@@ -188,6 +202,10 @@ c dice qual''e'' il numero interno dell''estremo piu vicino (pbdx) e
 c quello piu lontano (gbdx)
 
         call distp(xit,yit,exi,bdx,pbdx,gbdx,ie)
+	
+	in_d=bdx
+	in_dm=pbdx
+	in_dx=gbdx
        
         if(ie.le.0)then
          call find_elem_from_old(-ie,xbdy,ybdy,ie)
@@ -249,6 +267,13 @@ c estremi del lato da cui esce il body
 c calcolo punto intercetto tra retta traiettoria - retta uscita 
 
         call interc(fay,fax,db,ocy,ocx,ob,itrx,itry)
+	
+	call distp(itrx,itrx,exio,bdx,pbdx,gbdx,ie)
+
+	ou_d =bdx
+        ou_dm=pbdx
+        ou_dx=gbdx
+	
 
 c___________________________________________________________
 c CASO [B]: 2 flussi >0 (entranti) o 1 flusso >0
@@ -331,6 +356,11 @@ c quello piu lontano (gbdx)
         
         call distp(itrx,itry,exio,bdx,pbdx,gbdx,ie)
 
+	ou_d=bdx
+        ou_dm=pbdx
+        ou_dx=gbdx
+
+
         if(ie.le.0)then
          call find_elem_from_old(-ie,xbdy,ybdy,ie)
          time=0
@@ -355,6 +385,26 @@ c	 write(lunit,*) 'CASO [B] TRACK_ORIG'
          l_int=gbdx
         end if
 
+c estremi del lato da cui entra il body
+
+        i1=mod(l_int,3)+1
+        i2=mod(i1,3)+1
+
+        exi(1)=i1
+        exi(2)=i2
+
+        call retta(exi,ocy,ocx,ob,ie)
+
+
+c calcolo punto intercetto tra retta traiettoria - retta entrata
+
+        call interc(fay,fax,db,ocy,ocx,ob,xit,yit)
+
+	call distp(xit,yit,exi,bdx,pbdx,gbdx,ie)
+
+	in_d=bdx
+        in_dm=pbdx
+        in_dx=gbdx
 
 c determinazione velocità di entrata v_ent del body v_ent
          
@@ -452,6 +502,18 @@ c          write(lunit,*) 'WARNING!! BODY SU LATO ELEMENTO'
 c          write(lunit,*) 'track orig',bdy
           nwdist=dstbdy+2*gf
         endif
+
+	 zn0=zbdy
+         l0=lybdy
+	 call getalfa(l_int,in_d,in_dm,in_dx,a_int)
+	 call getalfa(l_out,ou_d,ou_dm,ou_dx,a_out)
+         call getzvel(ie,zn0,l0,l_int,l_out,a_int,a_out,w)
+	 if( bsurf ) w = 0.
+         call lagr_layer_thickness(ie,nlv,hl)
+         layd=hl(l0)
+
+! check for new body position 
+
         if(nwdist.gt.dstbdy)then            !2 body su nuovo el
 	 nxbdy=itrx
 	 nybdy=itry
@@ -463,8 +525,46 @@ c          write(lunit,*) 'track orig',bdy
 	   return
 	 end if
 	   
-	 deltat=distance/v_ent
+	 deltat=distance/v_ent ! time within the element 
+
+! VERTICAL TREATMENT
+
+         call vertpos(zn0,deltat,layd,w,zn1,ztime,addl) !compute the new vert. pos. and time
+
+          if(ztime.gt.deltat)then   ! change element keeping the same layer
+	   l1=l0
+	   zbdy=zn1
+           lybdy=l1
+	     
+	  elseif(ztime.lt.deltat)then ! change layer keeping the same element 
+	   l1=l0+addl
+           if(l1.le.1)stop 'surface'
+	   if(l1.ge.lb)stop 'bottom'
+	   zbdy=zn1
+	   lybdy=l1
+	   nwdist=ztime*v_ent
+	   call pnt_inside(nwdist,dstbdy,fay,fax,xbdy,ybdy
+     +                          ,itrx,itry,nxbdy,nybdy)
+           deltat=time-ztime
+           time=deltat
+           ie=ie ! individuazione vecchio elemento
+           xbdy=nxbdy ! nuove coordinate del body
+           ybdy=nybdy ! nuove coordinate del body
+           return
+	  end if
+	 
          newie=ieltv(l_out,ie)
+
+	 do i=1,3
+          if(ie.eq.ieltv(i,newie))then
+           ltbdy=i ! individuazione lato di entrata del body
+          endif
+         end do
+	 xbdy=nxbdy ! nuove coordinate del body
+         ybdy=nybdy ! nuove coordinate del body
+         ie=newie ! individuazione nuovo elemento
+         time=deltat
+
          if(newie.eq.-1)then			!2.a body e uscito dal dominio
 	  if( .not. bback ) then
 c            write(lunit,*) 'STOP!! BODY ',bdy,' USCITO '
@@ -476,29 +576,47 @@ c            write(lunit,*) 'ELEMENTO USCITA ',ie
           ybdy=nybdy ! ultime coordinate del body uscito
           return
          endif
-         do i=1,3
-          if(ie.eq.ieltv(i,newie))then         
-           ltbdy=i ! individuazione lato di entrata del body
-          endif
-         end do
-         xbdy=nxbdy ! nuove coordinate del body
-	 ybdy=nybdy ! nuove coordinate del body
-         ie=newie ! individuazione nuovo elemento
-         time=deltat
+
+
   	elseif(nwdist.lt.dstbdy)then            !3 body su vecchio el
-	 call pnt_inside(nwdist,dstbdy,fay,fax,xbdy,ybdy
-     +				,itrx,itry,nxbdy,nybdy)
-	 deltat=0.
-	 time=deltat
-	 ie=ie ! individuazione vecchio elemento
-         xbdy=nxbdy ! nuove coordinate del body
-         ybdy=nybdy ! nuove coordinate del body
+  	  
+	 deltat = time
+	 call vertpos(zn0,deltat,layd,w,zn1,ztime,addl) !compute the new vert. pos. and time
+
+          if(ztime.gt.deltat)then   ! keeping the same layer
+           l1=l0
+           zbdy=zn1
+           lybdy=l1
+	   call pnt_inside(nwdist,dstbdy,fay,fax,xbdy,ybdy
+     +                          ,itrx,itry,nxbdy,nybdy)
+           deltat=0.
+           time=deltat
+           ie=ie ! individuazione vecchio elemento
+           xbdy=nxbdy ! nuove coordinate del body
+           ybdy=nybdy ! nuove coordinate del body
+          elseif(ztime.lt.deltat)then ! change layer keeping the same element 
+           l1=l0+addl
+           if(l1.le.1)stop 'surface'
+           if(l1.ge.lb)stop 'bottom'
+           zbdy=zn1
+           lybdy=l1
+           nwdist=ztime*v_ent
+           call pnt_inside(nwdist,dstbdy,fay,fax,xbdy,ybdy
+     +                          ,itrx,itry,nxbdy,nybdy)
+           deltat=time-ztime
+           time=deltat
+           ie=ie ! individuazione vecchio elemento
+           xbdy=nxbdy ! nuove coordinate del body
+           ybdy=nybdy ! nuove coordinate del body
+           return
+          end if
+
         endif
         end
 
 c**********************************************************************
 
-	subroutine track_line(time,bdy,ie,xbdy,ybdy,ltbdy)
+	subroutine track_line(time,bdy,ie,xbdy,ybdy,zbdy,lybdy,ltbdy)
 
 c in questa subroutine si calcola il percorso del body partendo
 c da un punto sul lato dell''elemento ie
@@ -510,9 +628,13 @@ c nello stesso timestep arriva in un nuovo elemento
 	include 'param.h' 
 	include 'lagrange.h' 
 
-	integer ie,bdy ! bdy e' il numero del body
-	integer ltbdy
-	real time
+	real time	!total time to travel
+	integer bdy	!number of body
+	integer ie	!number of element of body
+	real xbdy,ybdy	!horizontal position of body
+	real zbdy	!relative vertical position of body in layer
+	integer lybdy	!layer of body
+	integer ltbdy	!entering side of body [1-3]
  
 	real epsggu
 	parameter (epsggu = 1.e-7)
@@ -524,15 +646,27 @@ c nello stesso timestep arriva in un nuovo elemento
 	include 'basin.h'
 
 	include 'hydro_vel.h'
-                
+
+	include 'levels.h'
+	include 'nlevel.h'
+
 	real v_ent ! valore mediato tra velocita' int e out
 	real v_int ! modulo della velocita' di entrata
 	real v_out ! modulo della velocita' di uscita
 	integer l_int !lato di entrata numerazione elemento (var. input)
 	integer l_out ! lato di uscita numerazione elemento
-	real xbdy,ybdy ! coordinate del body
 	real nxbdy,nybdy !nuove coordinate del body
 	integer newie ! nuovo elemento che contiene il body
+
+! vertical treatment 
+        real z0,z1,zn0,zn1  !      cuccomod
+        integer l0,l1,addl,lmax
+        real ztime,lb,subtime,layd
+        real w
+        real hl(nlvdim)
+        real a_int,a_out
+	real in_d,ou_d
+        integer in_dm,in_dx,ou_dm,ou_dx
 
         integer idum ! seme f(x) random
                         
@@ -563,6 +697,8 @@ c inizializzazione parametri
 	nl = 0
 	ng = 0
 	ps = 0
+
+	lmax = ilhv(ie)
 
 c==========================================================
 c CALCOLO TRAIETTORIE
@@ -611,7 +747,13 @@ c pb(mi dice il numero interno del lato)
 	end do
 
         v_ent=sqrt((ulnv(1,ie)**2)+(vlnv(1,ie)**2))
-         
+        
+
+	call distp(xbdy,ybdy,exi,bdx,pbdx,gbdx,ie)
+
+        in_d=bdx
+        in_dm=pbdx
+        in_dx=gbdx
          
 c______________________________________________________________________
 c CASO [A] flussi ai lati opposti al l_int entrambi <0
@@ -633,6 +775,12 @@ c dice qual''e'' il numero interno dell''estremo piu vicino (pbdx)
 c e quello piu lontano (gbdx)
 
         call distp(xbdy,ybdy,exi,bdx,pbdx,gbdx,ie)
+
+	in_d=bdx
+        in_dm=pbdx
+        in_dx=gbdx
+
+
         if(ie.le.0)then
          call find_elem_from_old(-ie,xbdy,ybdy,ie)
          time=0
@@ -687,6 +835,12 @@ c deteminazione coordinate punto intercetto retta traiettoria-
 c retta di uscita
          
         call interc(fay,fax,db,ocy,ocx,ob,itrx,itry)
+
+	call distp(itrx,itry,exio,bdx,pbdx,gbdx,ie)
+
+	ou_d=bdx
+        ou_dm=pbdx
+        ou_dx=gbdx	
 
 c_____________________________________________________________________________
 c CASO [B] flussi ai lati opposti al l_int uno >0 e altro <0
@@ -758,6 +912,12 @@ c deteminazione coordinate punto intercetto retta traiettoria-
 c retta di uscita
 
          call interc(fay,fax,db,ocy,ocx,ob,itrx,itry)
+
+	call distp(itrx,itry,exio,bdx,pbdx,gbdx,ie)
+
+        ou_d=bdx
+        ou_dm=pbdx
+        ou_dx=gbdx     
 
 c calcolo velocita'' in uscita v_out per il calcolo del modulo della
 c velocita di percorso v_ent pari alla media v_int, v_out
@@ -837,6 +997,14 @@ c calcolo distanza massima percorribile all''interno di elemento
 
 	nwdist=time*v_ent
 
+	zn0=zbdy
+        l0=lybdy
+	call getalfa(l_int,in_d,in_dm,in_dx,a_int)
+	call getalfa(l_out,ou_d,ou_dm,ou_dx,a_out)
+        call getzvel(ie,zn0,l0,l_int,l_out,a_int,a_out,w)
+	if( bsurf ) w = 0.
+        call lagr_layer_thickness(ie,nlv,hl)
+        layd=hl(l0)
 
 c=====================================================================
 c CALCOLO NUOVE COORDINATE DEL BODY (nxbdy,nybdy)
@@ -872,7 +1040,45 @@ c          write(lunit,*) 'track line',bdy
 	   return
 	 end if
          deltat=distance/v_ent
+
+	call vertpos(zn0,deltat,layd,w,zn1,ztime,addl) !compute the new vert. pos. and time
+
+          if(ztime.gt.deltat)then   ! change element keeping the same layer
+           l1=l0
+           zbdy=zn1
+           lybdy=l1
+        
+          elseif(ztime.lt.deltat)then ! change layer keeping the same element 
+           l1=l0+addl
+           if(l1.lt.1)stop 'error stop track_line: surface'
+           if(l1.gt.lmax)stop 'error stop track_line: bottom'
+           zbdy=zn1
+           lybdy=l1
+           nwdist=ztime*v_ent
+           call pnt_inside(nwdist,dstbdy,fay,fax,xbdy,ybdy
+     +                          ,itrx,itry,nxbdy,nybdy)
+           deltat=time-ztime
+           time=deltat
+           ie=ie ! individuazione vecchio elemento
+           xbdy=nxbdy ! nuove coordinate del body
+           ybdy=nybdy ! nuove coordinate del body
+           return
+          end if
+
+
          newie=ieltv(l_out,ie) !
+	 do i=1,3
+          if(ie.eq.ieltv(i,newie))then          !3 body su vecchio el
+           ltbdy=i ! individuazione lato di entrata del body
+          endif
+         end do
+         xbdy=nxbdy ! nuove coordinate del body
+         ybdy=nybdy ! nuove coordinate del body
+        ie=newie ! individuazione nuovo elemento
+        time=deltat
+
+
+
          if(newie.eq.-1)then			!2.a body uscito dal dominio
 	  if( .not. bback ) then
 c            write(lunit,*) 'STOP!! BODY ',bdy,' USCITO '
@@ -884,23 +1090,40 @@ c            write(lunit,*) 'ELEMENTO USCITA ',ie
 	  time=0.
 	  return     
          endif
-         do i=1,3
-          if(ie.eq.ieltv(i,newie))then          !3 body su vecchio el
-           ltbdy=i ! individuazione lato di entrata del body
-          endif
-         end do
-         xbdy=nxbdy ! nuove coordinate del body
-	 ybdy=nybdy ! nuove coordinate del body
-        ie=newie ! individuazione nuovo elemento
-        time=deltat
-       elseif(nwdist.lt.dstbdy)then
-	 call pnt_inside(nwdist,dstbdy,fay,fax,xbdy,ybdy
-     +				,itrx,itry,nxbdy,nybdy)
-	 deltat=0.
-	 time=deltat
-	 ie=ie ! individuazione vecchio elemento
-         xbdy=nxbdy ! nuove coordinate del body
-         ybdy=nybdy ! nuove coordinate del body
+
+       elseif(nwdist.lt.dstbdy)then   !3 body su vecchio el
+
+	 deltat = time
+         call vertpos(zn0,deltat,layd,w,zn1,ztime,addl) !compute the new vert. pos. and time
+
+          if(ztime.gt.deltat)then   ! keeping the same layer
+           l1=l0
+           zbdy=zn1
+           lybdy=l1
+           call pnt_inside(nwdist,dstbdy,fay,fax,xbdy,ybdy
+     +                          ,itrx,itry,nxbdy,nybdy)
+           deltat=0.
+           time=deltat
+           ie=ie ! individuazione vecchio elemento
+           xbdy=nxbdy ! nuove coordinate del body
+           ybdy=nybdy ! nuove coordinate del body
+          elseif(ztime.lt.deltat)then ! change layer keeping the same element 
+           l1=l0+addl
+           if(l1.le.1)stop 'surface'
+           if(l1.ge.lb)stop 'bottom'
+           zbdy=zn1
+           lybdy=l1
+           nwdist=ztime*v_ent
+           call pnt_inside(nwdist,dstbdy,fay,fax,xbdy,ybdy
+     +                          ,itrx,itry,nxbdy,nybdy)
+           deltat=time-ztime
+           time=deltat
+           ie=ie ! individuazione vecchio elemento
+           xbdy=nxbdy ! nuove coordinate del body
+           ybdy=nybdy ! nuove coordinate del body
+           return
+          end if
+
        endif
        end
 

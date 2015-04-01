@@ -497,6 +497,8 @@
 	! check input parameters
 	!---------------------------------------------------------
 
+	il = len_trim(file)
+
 	if( nvar < 1 ) goto 97
 	if( nexp < 1 ) goto 97
 	if( nexp > nkn_fem ) goto 97
@@ -508,7 +510,6 @@
 	!---------------------------------------------------------
 
 	nvar_orig = nvar
-	il = len_trim(file)
 
 	call iff_get_file_info(file,np,nvar,ntype,iformat)
 

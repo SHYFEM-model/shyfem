@@ -1,7 +1,7 @@
 
 default:
-	@echo "possible targets: gif avi clean cleanall cleantotal zip"
-	./makeanim.sh -h
+	@echo "targets: gif avi clean cleanmore cleanall cleantotal zip"
+	@./makeanim.sh -h
 
 fem:
 all:
@@ -20,11 +20,13 @@ clean:
 	-rm -f tmp.gif
 	-rm -f .directory
 
-cleanall: clean
-	-rm -f plot.ps
+cleanmore: clean
 	-rm -f plot.*.gif
 	-rm -f plot.*.jpg
 	-rm -f plot.*.png
+
+cleanall: cleanmore
+	-rm -f plot.ps
 
 cleantotal: cleanall
 	-rm -f anim.gif anim.avi

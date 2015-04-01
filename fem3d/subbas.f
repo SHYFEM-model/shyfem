@@ -18,6 +18,7 @@ c 02.04.2009	ggu	error messages changed
 c 12.01.2011	ggu	debug routine introduced (sp13ts)
 c 23.10.2014	ggu	introduced ftype and nvers = 4
 c 04.01.2015	ggu	new routine sp13_get_par()
+c 31.03.2015	ggu	set iarnv on read
 c
 c***********************************************************
 
@@ -142,6 +143,10 @@ c iunit		unit number of file to be read
 	read(nb)(xgv(i),i=1,nkn)
 	read(nb)(ygv(i),i=1,nkn)
 	read(nb)((hm3v(ii,i),ii=1,3),i=1,nel)
+
+	do i=1,nkn
+	  iarnv(i) = 0
+	end do
 
 c	call sp13ts(nvers,79,0)
 

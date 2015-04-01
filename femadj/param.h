@@ -37,7 +37,7 @@
 	parameter ( nfxdim = 5000 )
 	parameter ( ncsdim = 9 )
 
-	parameter ( nbdydim = 10000 )
+	parameter ( nbdydim = 500000 )
 
 !------------------------------------------------------------------------
 ! do not change anything beyond this line

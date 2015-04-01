@@ -73,8 +73,8 @@ c**********************************************************************
         include 'param.h'
 	include 'lagrange.h'
 
-	integer i,ie,id
-	real x,y
+	integer i,ie,id,lb
+	real x,y,z
 	real dt,ttime
 
 	call get_timestep(dt)
@@ -82,12 +82,20 @@ c**********************************************************************
         do i=1,nback
           x=x_back(i)
           y=y_back(i)
+          z=z_body(i)
+          lb=l_body(i)
+
           ie=ie_back(i)
 	  id = id_body(i)
+
 	  ttime=dt
-          call track_body(i,id,x,y,ie,ttime)
+          call track_body(i,id,x,y,z,lb,ie,ttime)
+
           x_back(i)=x
           y_back(i)=y
+          z_body(i)=z
+          l_body(i)=lb
+
           ie_back(i)=ie
         end do
 

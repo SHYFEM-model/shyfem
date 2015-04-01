@@ -127,6 +127,9 @@ c---------------------------------------------------------------
 	threshold(1) = 100
 	threshold(2) = 200
 	threshold(3) = 500
+	threshold(1) = 1
+	threshold(2) = 10
+	threshold(3) = 20
 
 	do nt=1,ntres
           do k=1,nkn

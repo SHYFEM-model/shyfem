@@ -1820,7 +1820,7 @@ c			you have to set this variable only if you want to
 c			show results in a different time zone than the one
 c			given in |tz|. (Default 0)
 
-	call addpar('date',0.)
+	call addpar('date',-1.)
 	call addpar('time',0.)
 	call addpar('tz',0.)
 	call addpar('tzshow',0.)

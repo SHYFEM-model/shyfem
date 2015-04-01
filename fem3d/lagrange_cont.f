@@ -207,7 +207,7 @@ c replaces the routines above
 	      else
 	        q = dist_node(k1,k2) / totdist
 	      end if
-	write(333,*) it,i,q
+	!write(333,*) it,i,q
 	      q = max(q,0.)
 	      rp = rp + q*pps*dt
 	      np = rp
@@ -372,6 +372,7 @@ c release from one point
 	do i=1,n
 	  rt = ggrand(77)			!vary time
 	  call insert_particle(ie,rt,x,y)
+	  !write(55,*) 'gguuyy particle: ',ie,rt,x,y
 	end do
 
 	end

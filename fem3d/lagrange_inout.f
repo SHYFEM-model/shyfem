@@ -58,6 +58,7 @@ c z = 0.5 (corresponding to larva in water)
 	zst(nbdy) = z
 
         ie_body(nbdy)=ie
+        l_body(nbdy)=1
         x_body(nbdy)=x
         y_body(nbdy)=y
 	z_body(nbdy) = z

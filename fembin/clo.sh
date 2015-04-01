@@ -7,6 +7,7 @@
 # version:
 #
 # 1.00	26.01.2015	routine written from scratch
+# 1.10	24.03.2015	new routine clo_shift_files() and clo_get_shifted()
 #
 # please see clo_test at end of file for usage information
 # please insert ". clo.sh" close to beginning of the bash script
@@ -25,6 +26,7 @@ declare -a clo_sequence		# sequence in which options have been added
 
 declare clo_total_files=0	# total number of files after options
 declare clo_files=""		# files after options
+declare clo_shifted=""		# after shift contains shifted argument
 declare clo_lenmax=11		# max lenght of name and expect (-v|-version)
 declare clo_routine=""		# routine name
 declare clo_files_info=""	# files info for usage
@@ -49,7 +51,7 @@ clo_parse_options()
   [ $clo_debug = "YES" ] && echo "parsing options..."
   while [ -n "$1" ]
   do
-     name=`echo $1 | sed -e 's/^-//'`		# strip - from option
+     name=`echo $1 | sed -E 's|^-||'`		# strip - from option
      [ "$name" = $1 ] && break			# no option
      exists=${clo_exists[$name]}
      if [ "$name" = "help" -o "$name" = "h" ]; then
@@ -220,6 +222,31 @@ clo_get_files()
   echo $clo_files
 }
 
+clo_get_shifted()
+{
+  echo $clo_shifted
+}
+
+# next routine oes not work with blank in file name
+
+clo_shift_files()
+{
+  local first=""
+
+  if [ $clo_total_files -gt 0 ]; then
+    first=`echo $clo_files | sed -E 's| .*||'`
+    local rest=`echo $clo_files | sed -E "s|$first *||"`
+    clo_files=$rest
+    clo_total_files=$((clo_total_files-1))
+  fi
+
+  clo_shifted=$first
+
+  #echo "total = $clo_total_files"
+  #echo "files = $clo_files"
+  #echo "first = $first"
+}
+
 clo_check_files()
 {
   if [ $# -ne 1 ]; then
@@ -270,7 +297,7 @@ clo_test()
 
 clo_main()
 {
-  calling_prog=`echo $0 | sed -e "s/.*\///"`
+  calling_prog=`echo $0 | sed -E "s/.*\///"`
   [ "$calling_prog" = "clo.sh" ] && clo_test "$@"
 }
 

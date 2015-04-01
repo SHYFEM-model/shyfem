@@ -15,6 +15,9 @@ c******************************************************************
 
 c-------------------------------------------------- main variables
 
+	logical bsurf				!particle only in surface layer
+	parameter ( bsurf = .true. )
+
         integer nbdy				!total number of particles
         integer idbdy				!max id used
         integer lunit				!unit for messages
@@ -35,6 +38,9 @@ c-------------------------------------------------- main variables
         integer ie_body(nbdydim)		!element number
         common /ie_body/ie_body
 
+        integer l_body(nbdydim)			!layer
+        common /l_body/l_body
+
         real x_body(nbdydim)			!x-coordinate
         common /x_body/x_body
 
@@ -43,6 +49,9 @@ c-------------------------------------------------- main variables
 
 	real z_body(nbdydim)			!z-coordinate
 	common /z_body/z_body
+
+	double precision xi_body(3,nbdydim)	!internal coordinate
+	common /xi_body/xi_body
 
 	real tin(nbdydim)			!time of release
 	common /tin/tin

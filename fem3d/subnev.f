@@ -36,6 +36,7 @@ c 30.08.2012	ggu	new routine is_spherical()
 c 30.09.2013	ggu	new routines gradient_normal/tangent
 c 30.10.2014	ggu	new routine compute_distance()
 c 21.01.2015	ggu	new routine compute_cartesian_coords()
+c 31.03.2015	ggu	new routines for internal coordinates
 c
 c***********************************************************
 
@@ -418,6 +419,73 @@ c save&data
 
 c***********************************************************
 c***********************************************************
+c***********************************************************
+
+	subroutine xy2xi(ie,x,y,xi)
+
+c given x/y returns internal coordinates xi
+
+	implicit none
+
+	integer ie
+	double precision x,y
+	double precision xi(3)
+
+	integer ii
+	double precision a(3),b(3),c(3)
+
+	call xi_abc(ie,a,b,c)
+
+	do ii=1,3
+	  xi(ii) = a(ii) + b(ii)*x + c(ii)*y
+	end do
+
+	end
+	
+c***********************************************************
+
+	subroutine xi2xy(ie,x,y,xi)
+
+c given internal coordinates xi returns x/y
+
+	implicit none
+
+	integer ie
+	double precision x,y
+	double precision xi(3)
+
+	double precision eps
+	parameter (eps = 1.e-8)
+
+	double precision a1,a2,det
+	double precision a(3),b(3),c(3)
+
+	call xi_abc(ie,a,b,c)
+
+	a1 = (xi(1)-a(1))
+	a2 = (xi(2)-a(2))
+
+	det = b(2)*c(1) - b(1)*c(2)
+	if( abs(det) < eps ) goto 99
+
+	x = (a1*b(2) - a2*b(1)) / det
+
+	det = b(1)*c(2) - b(2)*c(1)
+	if( abs(det) < eps ) goto 99
+
+	y = (a1*c(2) - a2*c(1)) / det
+
+	return
+   99	continue
+	write(6,*) 'det too small: ',det
+	write(6,*) x,y
+	write(6,*) xi
+	write(6,*) a
+	write(6,*) b
+	write(6,*) c
+	stop 'error stop xi2xy: det == 0'
+	end
+	
 c***********************************************************
 
 	subroutine xi_abc(ie,a,b,c)

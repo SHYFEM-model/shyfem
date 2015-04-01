@@ -1,4 +1,24 @@
 
+01.04.2015
+
+intermediate version
+
+c ./fem3d/tmp/javier/subwrt.f:
+c 11.03.2015    ggu     introduced bstop, if early stop, write to file
+c
+c ./fem3d/subdts.f:
+c 31.03.2015    ggu     bug fix - month was 71/2, now 61/2
+c
+c ./fem3d/subnev.f:
+c 31.03.2015    ggu     new routines for internal coordinates
+c
+c ./fem3d/subwrt.f:
+c 31.03.2015    ggu     compute res time for different areas
+c
+c ./fem3d/subbas.f:
+c 31.03.2015    ggu     set iarnv on read
+
+
 27.02.2015
 
 aquabc_II added

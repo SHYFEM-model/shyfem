@@ -19,6 +19,7 @@ c 05.03.2014    ggu     new subdts.h and new routine dts_has_date()
 c 13.10.2014    ggu     absolute time routines inserted
 c 13.10.2014    ggu     one day off error fixed ($ONEDAYOFF)
 c 12.11.2014    ggu     new routines for unformatting and timespan
+c 31.03.2015    ggu     bug fix - month was 71/2, now 61/2
 c
 c notes :
 c
@@ -319,7 +320,7 @@ c only integer values are allowed
 	integer ierr
 
 	integer week,month,year
-	parameter (week=7*86400,month=71*43200,year=365*86400)
+	parameter (week=7*86400,month=61*43200,year=365*86400)
 
 	integer facts(7)
 	save facts

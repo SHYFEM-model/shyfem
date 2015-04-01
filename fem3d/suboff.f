@@ -33,6 +33,8 @@ c	idtoff = -1	uses offline hydro results
 c	idtoff = -2	uses offline T/S results
 c	idtoff = -4	uses offline turbulence results
 c
+c combinations are possible: -3,-7
+c
 c-----------------------------------------------------
 
 	implicit none
@@ -207,8 +209,8 @@ c type == 0 -> any offline
 
 	implicit none
 
-	integer type	!is this offline data available?
-	logical boff	!data is available (return)
+	integer type	!should we use this offline data?
+	logical boff	!data is available and should be used (return)
 
 	integer ioffline
 	common /ioffline/ioffline
@@ -216,7 +218,7 @@ c type == 0 -> any offline
 
 	integer iwhat
 
-	iwhat = ioffline		!this is what we want
+	iwhat = ioffline		!this is what we want (from idtoff)
 
 	if( iwhat .le. 0 ) then		!no offline
 	  boff = .false.

@@ -1413,8 +1413,10 @@ c plots date legend
 
           date = nint(dgetpar('date'))
           time = nint(dgetpar('time'))
-	  write(6,*) 'initializing date and time: ',date,time
-          call dtsini(date,time)
+	  if( date .ne. -1 ) then	!if given overwrites date in sim
+	    write(6,*) 'initializing date and time: ',date,time
+            call dtsini(date,time)
+	  end if
 
           xdate = getpar('xdate')
           ydate = getpar('ydate')

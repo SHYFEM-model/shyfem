@@ -35,7 +35,7 @@ c the last written record might be averaged over less records
 	real hlv(nlvdim)
 	real hev(neldim)
 
-        integer nread,ivarold
+        integer nread,ivarold,nwrite
 	integer nfreq,naccum
         integer l,k,nin
 	integer nbaver,nbmin,nbmax,nbsum
@@ -53,6 +53,7 @@ c initialize params
 c-----------------------------------------------------------------
 
 	nread = 0
+	nwrite = 0
 	nfreq = 30
         ivarold = 0
 	high = 1.e+30
@@ -144,7 +145,8 @@ c	----------------------------------------------------------
 
 	if( nfreq .gt. 0 .and. mod(nread,nfreq) .eq. 0 ) then
 
-	  write(6,*) 'writing output files: ',nread,naccum
+	  nwrite = nwrite + 1
+	  write(6,*) 'writing output files: ',nread,naccum,nwrite
 
           r = 1./naccum
           do l=1,nlv
@@ -184,7 +186,8 @@ c-----------------------------------------------------------------
 
 	if( naccum .gt. 0 ) then
 
-	  write(6,*) 'writing output files: ',nread,naccum
+	  nwrite = nwrite + 1
+	  write(6,*) 'writing output files: ',nread,naccum,nwrite
 
           r = 1./naccum
           do l=1,nlv
@@ -209,6 +212,7 @@ c-----------------------------------------------------------------
 	write(6,*) 'frequency used',nfreq
 	write(6,*)
 	write(6,*) nread,' records read in total'
+	write(6,*) nwrite,' records written in total'
 	write(6,*)
 
 	stop

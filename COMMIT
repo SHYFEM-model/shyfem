@@ -1,5 +1,60 @@
 ============================================================
 
+Wed Apr  1 18:59:03 CEST 2015
+
+intermediate version
+
+ LOG                       |   20 +++
+ RELEASE_NOTES             |    4 +
+ fem3d/Makefile            |   16 ++-
+ fem3d/basin.h             |    2 +-
+ fem3d/basproj.f           |   20 ++--
+ fem3d/grd_extra.h         |    7 +-
+ fem3d/lagrange.h          |    9 ++
+ fem3d/lagrange_back.f     |   14 ++-
+ fem3d/lagrange_connect.h  |    4 +-
+ fem3d/lagrange_cont.f     |    3 +-
+ fem3d/lagrange_inout.f    |    1 +
+ fem3d/lagrange_main.f     |  148 ++++++++++++++++++++-
+ fem3d/lagrange_track.f    |  317 ++++++++++++++++++++++++++++++++++++++-------
+ fem3d/lagrange_vertical.f |  219 +++++++++++++++++++++++++++++++
+ fem3d/newconz.f           |    7 +-
+ fem3d/nos_elab.f          |    3 +
+ fem3d/nosaver_time.f      |   10 +-
+ fem3d/nosutil.f           |    1 +
+ fem3d/param.h             |    2 +-
+ fem3d/subbas.f            |    5 +
+ fem3d/subdts.f            |    3 +-
+ fem3d/subfemintp.f        |    3 +-
+ fem3d/subnev.f            |   68 ++++++++++
+ fem3d/subnsh.f            |    3 +-
+ fem3d/suboff.f            |    8 +-
+ fem3d/subsys.f            |    2 +-
+ fem3d/subuti.f            |    9 +-
+ fem3d/subwrt.f            |  149 +++++++++++++++++++--
+ fem3d/subxi.f             |  237 +++++++++++++++++++++++++++++++++
+ femadj/param.h            |    2 +-
+ femanim/Makefile          |   10 +-
+ fembin/cleansim.sh        |   15 ++
+ fembin/clo.sh             |   31 ++++-
+ fembin/plots              |    6 +-
+ femdoc/final/shyfem.pdf   |  Bin 293719 -> 293718 bytes
+ femdoc/final/shyfem.ps    |   30 ++--
+ femplot/Makefile          |    3 +
+ femplot/lagxitest.f       |  266 +++++++++++++++++++++++++++++++++++++
+ femplot/param.h           |    2 +-
+ femplot/supano.f          |    6 +-
+ femplot/supout.f          |    4 +-
+ param.h                   |    2 +-
+ 42 files changed, 1530 insertions(+), 141 deletions(-)
+ new file:
+   fem3d/lagrange_vertical.f
+   fem3d/subxi.f
+   fembin/cleansim.sh
+   femplot/lagxitest.f
+
+============================================================
+
 Thu Feb 26 18:42:10 CET 2015
 
 New version 7_1_6

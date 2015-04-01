@@ -317,6 +317,14 @@ c**********************************************************************
 	parameter(ndim=100)
 	integer ic(0:ndim)
 
+        integer iuinfo
+        save iuinfo
+        data iuinfo / 0 /
+
+        if( iuinfo .eq. 0 ) then
+          call getinfo(iuinfo)  !unit number of info file
+        end if
+
 	chunk = 100
         nf=0
 	call get_timestep(dt)		!time to advect
@@ -343,6 +351,9 @@ c**********************************************************************
 c	write(lunit,*) 'lagrangian: (tot,out,in) ',nbdy,nf,nbdy-nf
 c	write(lunit,'(a,i10,12i5)') 'parallel: ',nbdy,(ic(ii),ii=0,n-1)
 
+	write(iuinfo,*) 'lagrange: ',nbdy
+	write(6,*) 'lagrange: ',nbdy
+
 	end
 
 c**********************************************************************
@@ -358,8 +369,9 @@ c advection of particles
 
 	include 'femtime.h'
 
-	integer i,id,ie,nf
+	integer i,id,ie,nf,lb,ii
 	real x,y,z
+	double precision xi(3)
 	real dt,ttime,tmax
                 
 c       call lagr_func(i)		!varying the variable typ(i)
@@ -368,24 +380,110 @@ c	call lagr_surv(i)
 	x=x_body(i)
 	y=y_body(i)
 	z=z_body(i)
+	lb=l_body(i)
         ie = ie_body(i)
+	do ii=1,3
+	  xi(ii) = xi_body(ii,i)
+	end do
+
+	if( mod(i,100) .eq. 0 ) then
+	  write(56,*) 'gguuaa: ',i,ie,lb,x,y,z
+	end if
+
 	id = id_body(i) 
 
 	tmax = it - tin(i) 
 	if( tmax .lt. 0. ) stop 'error stop drogue: internal error'
 	ttime = min(tmax,dt)
 
-	if(z.ge.0.and.z.le.1) call track_body(i,id,x,y,ie,ttime) 
+        if( lb > 0 ) call track_body(i,id,x,y,z,lb,ie,ttime) 
+        !if( lb > 0 ) call track_body_xi(i,id,x,y,z,xi,ie,lb,ttime) 
 
 	x_body(i)=x
 	y_body(i)=y
+	z_body(i)=z
+	l_body(i)=lb
         ie_body(i)=ie
+	do ii=1,3
+	  xi_body(ii,i) = xi(ii)
+	end do
 
 	end	
 
 c**********************************************************************
 
-        subroutine track_body(i,id,x,y,iel,ttime)
+        subroutine track_body_xi(i,id,x,y,z,xi,iel,lb,ttime)
+
+c tracks one particle - uses internal coordinates
+
+	implicit none
+
+	include 'param.h'
+	include 'lagrange.h'
+	
+	integer i		!particle number
+	integer id		!particle id
+	real x			!x-coordinate
+	real y			!y-coordinate
+	real z 			!relative vertical position
+	double precision xi(3)	!internal coordinates
+	integer iel		!element number
+	integer lb 		!layer 
+	real ttime		!time to advect
+	
+	include 'basin.h'
+        
+	integer nl
+	integer ltbdy
+	integer ieold,ieorig
+	!integer ielem		!element number to check
+	real torig
+	real xn,yn,zn
+	integer ly
+
+        if(iel.le.0) return	!particle out of domain
+
+c---------------------------------------------------------------
+c initialize
+c---------------------------------------------------------------
+
+        nl = 100		!maximum loop count
+
+	xn = x
+	yn = y
+	zn = z
+	ly = lb
+
+c---------------------------------------------------------------
+c track particle
+c---------------------------------------------------------------
+
+	do while ( ttime.gt.0 .and. iel.eq.ieold )
+          !call track_orig(ttime,id,iel,xn,yn,zn,ly,ltbdy)
+	end do
+
+c---------------------------------------------------------------
+c special treatment and finish up
+c---------------------------------------------------------------
+
+        if( .not. bback ) then
+          if( iel.gt.0 .and. iarv(iel).eq.artype ) iel = -iel
+	end if
+
+	x = xn
+	y = yn
+	z = zn
+	lb = ly
+
+c---------------------------------------------------------------
+c end of routine
+c---------------------------------------------------------------
+
+	end
+
+c**********************************************************************
+
+        subroutine track_body(i,id,x,y,z,lb,iel,ttime)
 
 c tracks one particle
 c
@@ -407,14 +505,17 @@ c TRACK_LINE if the particle is on one side (normal situation)
 	real x			!x-coordinate
 	real y			!y-coordinate
 	real ttime		!time to advect
-
+	real z 			!relative vertical position
+	integer lb 		!layer 
+	
 	include 'basin.h'
         
 	integer nl
 	integer ltbdy
 	integer ieold,ieorig
 	real torig
-	real xn,yn
+	real xn,yn,zn
+	integer ly
 
         if(iel.le.0) return	!particle out of domain
 
@@ -427,27 +528,58 @@ c---------------------------------------------------------------
 
 	xn = x
 	yn = y
+	zn = z
+	ly = lb
 
 c---------------------------------------------------------------
 c track particle
 c---------------------------------------------------------------
 
+        torig = ttime
+        ieold = iel     !element the particle is in or leaving
+        ieorig = iel    !original element the particle was in
+        call track_orig(ttime,id,iel,xn,yn,zn,ly,ltbdy)
+        !call lagr_connect_count(i,ieold,ieorig,torig-ttime,0)
+        !call lagr_count(i,ieold,torig-ttime,0)
+
+        do while ( ttime.gt.0. .and. iel.gt.0 .and. nl.gt.0 )
+          torig = ttime
+          ieold = iel
+          call track_line(ttime,id,iel,xn,yn,zn,ly,ltbdy)
+          nl = nl - 1
+          !call lagr_connect_count(i,ieold,ieorig,torig-ttime,1)
+          !call lagr_count(i,ieold,torig-ttime,1)
+          ieorig = ieold
+        end do
+
+	if( .false. ) then
+
 	torig = ttime
 	ieold = iel	!element the particle is in or leaving
 	ieorig = iel	!original element the particle was in
-        call track_orig(ttime,id,iel,xn,yn,ltbdy)
+        call track_orig(ttime,id,iel,xn,yn,zn,ly,ltbdy)
+
+	do while ( ttime.gt.0 .and. iel.eq.ieold )
+          call track_orig(ttime,id,iel,xn,yn,zn,ly,ltbdy)
+	end do
+
 	call lagr_connect_count(i,ieold,ieorig,torig-ttime,0)
 	call lagr_count(i,ieold,torig-ttime,0)
 
 	do while ( ttime.gt.0. .and. iel.gt.0 .and. nl.gt.0 )
 	  torig = ttime
 	  ieold = iel
-          call track_line(ttime,id,iel,xn,yn,ltbdy)
+          call track_line(ttime,id,iel,xn,yn,zn,ly,ltbdy)
+	  do while ( ttime.gt.0 .and. iel.eq.ieold )
+            call track_orig(ttime,id,iel,xn,yn,zn,ly,ltbdy)
+          end do
           nl = nl - 1
 	  call lagr_connect_count(i,ieold,ieorig,torig-ttime,1)
 	  call lagr_count(i,ieold,torig-ttime,1)
 	  ieorig = ieold
         end do
+
+	end if
 
 c---------------------------------------------------------------
 c error condition (infinite loop)
@@ -482,6 +614,8 @@ c---------------------------------------------------------------
 
 	x = xn
 	y = yn
+	z = zn
+	lb = ly
 
 c---------------------------------------------------------------
 c end of routine

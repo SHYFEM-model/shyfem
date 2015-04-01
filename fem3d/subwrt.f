@@ -11,6 +11,7 @@ c 24.10.2011	ggu	new file copied from subcus.f (jamal)
 c 28.02.2012	ggu&deb	completely restructured
 c 16.03.2012	ggu	use idtwrt=-1 for no renewal computation
 c 10.05.2014	ccf	parameters from the str file
+c 31.03.2015	ggu	compute res time for different areas
 c
 c******************************************************************
 c Parameters to be set in section $wrt of the parameter input file
@@ -47,7 +48,7 @@ c------------------------------------------------------------
 
 	include 'simul.h'
 
-	include 'nbasin.h'
+	include 'basin.h'
 	include 'nlevel.h'
 
 	include 'levels.h'
@@ -55,10 +56,14 @@ c------------------------------------------------------------
 	include 'aux_array.h'
 	include 'depth.h'
 
+	integer ndim
+	parameter (ndim=100)
+
 	logical breset,bcompute,binit,belab
         logical bnoret,bstir
 	logical blog,badj
 	logical bdebug
+	logical bresarea
 
 	integer iaout,itmin,itmax,idtwrt
 	integer iret,istir,iadj,ilog
@@ -81,9 +86,9 @@ c------------------------------------------------------------
 
 	integer ifemop
 
-	integer k,nin,nvar
-	integer iu,iuf
-	save iu,iuf
+	integer k,nin,nvar,ie
+	integer iu,iuf,iua
+	save iu,iuf,iua
 	integer nrepl
 	save nrepl
 	integer it0
@@ -95,7 +100,14 @@ c------------------------------------------------------------
 	integer ia_out(4)
 	save ia_out
 
+	integer iadim
+	save iadim
+
         double precision dgetpar
+
+	double precision massa(0:ndim)
+	double precision massa0(0:ndim)
+	save massa,massa0
 
         integer icall
         save icall
@@ -108,6 +120,8 @@ c------------------------------------------------------------
 
 	bdebug = .true.
 	bdebug = .false.
+
+	bresarea = .true.	!compute masses for single areas
 
 	if( icall .lt. 0 ) return
 
@@ -131,6 +145,16 @@ c------------------------------------------------------------
 	    return
 	  end if
 
+	  iadim = 0
+	  do ie=1,nel
+	    iadim = max(iadim,iarv(ie))
+	  end do
+	  if( .not. bresarea ) iadim = 0
+	  if( iadim > ndim ) then
+	    write(6,*) 'iadim,ndim: ',iadim,ndim
+	    stop 'error stop renewal_time: iadim>ndim'
+	  end if
+
 	  iconz = nint(dgetpar('iconz'))
 	  if( iconz .ne. 1 ) then
 	    write(6,*) 'for renewal time computations the generic'
@@ -151,9 +175,11 @@ c------------------------------------------------------------
 	  blog = ilog.eq.1
 	  ctop = dgetpar('ctop')
 	  ccut = dgetpar('ccut')
+	  it0 = it
 
 	  iu = ifemop('.jas','formatted','new')
 	  iuf = ifemop('.frq','formatted','new')
+	  iua = ifemop('.jaa','formatted','new')
 
 	  nvar = 1
 	  call open_scalar_file(ia_out,nlv,nvar,'wrt')
@@ -213,6 +239,8 @@ c------------------------------------------------------------
 	conz = 0.
 	if( belab ) then
 	  call wrt_massvolconz(cnv,v1v,vol,mass,volume)
+	  call wrt_mass_area(iadim,cnv,massa)
+	  call wrt_write_area(iua,it,iadim,massa,massa0)
 	  conz = mass / volume
 
 	  if( bstir ) call wrt_bstir(conz,cnv,v1v)	!stirred tank
@@ -269,6 +297,10 @@ c------------------------------------------------------------
 
 	  call wrt_massvolconz(cnv,v1v,vol,mass,volume)
 	  mass0 = mass
+
+	  call wrt_mass_area(iadim,cnv,massa)
+	  massa0 = massa
+	  call wrt_write_area(iua,it,iadim,massa,massa0)
 
 	  call wrt_restime_summary(-iu,it,it0,mass,mass0,rcorrect)	!reset
 	end if
@@ -386,6 +418,92 @@ c simulates stirred tank
 	  end if
 	end do
 	
+	end
+
+c******************************************************
+
+	subroutine wrt_write_area(iua,it,ndim,massa,massa0)
+
+c computes masses for different areas
+
+	implicit none
+
+	integer iua
+	integer it
+	integer ndim
+	double precision massa(0:ndim)
+	double precision massa0(0:ndim)
+
+	integer i
+	real mass0
+	real mass(0:ndim)
+
+	if( ndim .le. 0 ) return
+
+	do i=0,ndim
+	  mass(i) = 0.
+	  if( massa0(i) > 0. ) then
+	    mass(i) = 100. * massa(i) / massa0(i)
+	  end if
+	end do
+
+	write(iua,*) it,mass
+	
+	end
+
+c******************************************************
+
+	subroutine wrt_mass_area(ndim,cnv,massa)
+
+c computes masses for different areas
+
+	implicit none
+
+	include 'param.h'
+
+	integer ndim
+	real cnv(nlvdim,1)
+	double precision massa(0:ndim)
+
+	include 'basin.h'
+	include 'levels.h'
+	include 'ev.h'
+
+	integer ie,k,ii,ia,l,lmax,nlev
+	real v,conz,area,hdep
+	real h(nlvdim)
+
+	real volnode
+
+	if( ndim .le. 0 ) return
+
+	massa = 0.
+
+	do ie=1,nel
+	  ia = iarv(ie)
+	  if( ia > ndim .or. ia < 0 ) goto 99
+          lmax = ilhv(ie)
+	  area = 4.*ev(10,ie)
+	  call dep3dele(ie,+1,nlev,h)
+	  if( lmax .ne. nlev ) goto 98
+	  do l=1,lmax
+	    hdep = h(l)
+	    do ii=1,3
+	      k = nen3v(ii,ie)
+              v = area * hdep
+              conz = cnv(l,k)
+              massa(ia) = massa(ia) + v*conz
+	    end do
+	  end do
+	end do
+
+	return
+   98	continue
+	write(6,*) 'lmax,nlev: ',lmax,nlev
+	stop 'error stop wrt_mass_area: internal error (2)'
+   99	continue
+	write(6,*) 'ie,ia: ',ie,ia
+	stop 'error stop wrt_mass_area: internal error (1)'
 	end
 
 c******************************************************
@@ -620,7 +738,7 @@ c**********************************************************************
 c perc		percentage of mass still in domain
 c restime	renewal time computed by integrating
 c restimec	renewal time computed by integrating with correction
-c restime1	renewal time computed by fitting regression curve
+c restimel	renewal time computed by fitting regression curve
 c resmed	average of renewal times computed
 c resstd	standard deviation of renewal time
 
@@ -635,7 +753,7 @@ c resstd	standard deviation of renewal time
 	real dt
 	real perc
         real remnant,rlast
-	real restime,restime1,restimec
+	real restime,restimel,restimec
         real resmed,resstd
 
 	integer ndata
@@ -654,7 +772,7 @@ c resstd	standard deviation of renewal time
 	  rsum = 0.
 	  rsumsq = 0.
 	  !if( iu .ne. 0 ) then
-	  ! write(-iu,1000) it,perc,restime,restimec,restime1,resmed,resstd
+	  ! write(-iu,1000) it,perc,restime,restimec,restimel,resmed,resstd
 	  !end if
 	  return
 	end if
@@ -663,6 +781,7 @@ c resstd	standard deviation of renewal time
 
 	remnant = 0.
         if( mass0 .gt. 0. ) remnant = mass/mass0
+	if( remnant > 1. ) remnant = 1.
         perc = 100.*remnant
 
 	remint = remint + remnant*dt	!integrated remnant function
@@ -672,20 +791,24 @@ c resstd	standard deviation of renewal time
 	if( rlast .ge. 1. ) rlast = 0.
 	rcorrect = 1. / (1.-rlast)
 	restimec = rcorrect * restime	!corrected renewal time
+	restimec = min(restimec,999999.)
 
 	remlog = remlog - log(remnant)
 	remtim = remtim + (it-it0)
-	restime1 = 0.
-	if( remlog .gt. 0. ) restime1 = ( remtim / remlog ) / 86400.
+	restimel = 0.
+	if( remlog .gt. 0. ) restimel = ( remtim / remlog ) / 86400.
+	restimel = min(restimel,999999.)
 
 	ndata = ndata + 1
-	rsum = rsum + restime1
-	rsumsq = rsumsq + restime1*restime1
+	rsum = rsum + restimel
+	rsumsq = rsumsq + restimel*restimel
 	resmed = rsum / ndata
+	resmed = min(resmed,999999.)
 	resstd = sqrt( rsumsq/ndata - resmed*resmed )
+	resstd = min(resstd,999999.)
 
-        !write(6,1000) it,perc,restime,restimec,restime1,resmed,resstd
-        write(iu,1000) it,perc,restime,restimec,restime1,resmed,resstd
+        !write(6,1000) it,perc,restime,restimec,restimel,resmed,resstd
+        write(iu,1000) it,perc,restime,restimec,restimel,resmed,resstd
 
  1000	format(i10,6f10.2)
 	end

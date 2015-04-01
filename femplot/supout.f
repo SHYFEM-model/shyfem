@@ -785,7 +785,7 @@ c initialize time
 
 c end
 
-	write(6,*) 'gguuuuuu: (nosopen)',nunit,nunit_fvl
+	!write(6,*) 'gguuuuuu: (nosopen)',nunit,nunit_fvl
 
 	return
    99	continue
@@ -822,7 +822,7 @@ c reads next NOS record - is true if a record has been read, false if EOF
 
 	call nosini
 	nunit = nunit_nos
-	write(6,*) 'gguuuuuu: (nosnext)',nunit,nunit_fvl
+	!write(6,*) 'gguuuuuu: (nosnext)',nunit,nunit_fvl
 
 	call rdnos(nunit,it,ivar,nlvddi,ilhkv,array,ierr)
 

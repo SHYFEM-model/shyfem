@@ -156,7 +156,7 @@ SOBJS   = \
 	  debug.o subhisto.o subnosa.o subfvl.o \
 	  subeos.o sigmautil.o \
 	  nosutil.o ousutil.o subfemfile.o subvintp.o \
-	  genutil.o subfemintp.o subtsfile.o
+	  genutil.o subfemintp.o subtsfile.o subxi.o
 
 # general objects for 3D model ht
 
@@ -253,7 +253,7 @@ LAGRANGE =	lagrange_main.o \
 		lagrange_larve.o lagrange_flux.o \
 		lagrange_track.o lagrange_util_tr.o \
 		lagrange_decay.o \
-		lagrange_connect.o
+		lagrange_connect.o lagrange_vertical.o
 
 # heat flux module
 
@@ -851,9 +851,12 @@ lagrange_larve.o: param.h lagrange.h
 lagrange_main.o: nbasin.h param.h basin.h femtime.h lagrange.h
 lagrange_oil.o: nbasin.h param.h femtime.h ev.h lagrange.h \
 		aux_array.h 
-lagrange_track.o: hydro_vel.h param.h basin.h lagrange.h geom.h
+lagrange_track.o: hydro_vel.h param.h levels.h basin.h nlevel.h \
+		lagrange.h geom.h 
 lagrange_util.o: nbasin.h param_dummy.h ev.h basin.h
 lagrange_util_tr.o: param_dummy.h basin.h
+lagrange_vertical.o: depth.h hydro_vel.h hydro.h param.h levels.h \
+		basin.h 
 lgrelab.o: nbasin.h depth.h param.h basin.h
 lgrinf.o: param.h
 loading.o: nbasin.h param.h levels.h
@@ -1101,9 +1104,8 @@ subtime.o: femtime.h
 subtrace.o: hydro_vel.h hydro.h param.h femtime.h geom_dynamic.h \
 		hydro_baro.h levels.h basin.h 
 subtsuvfile.o: intp_fem_file.mod param.h
-subuti.o: depth.h hydro.h param.h ev.h nbasin.h pkonst.h \
-		geom_dynamic.h levels.h hydro_baro.h basin.h \
-		links.h 
+subuti.o: depth.h hydro.h param.h ev.h pkonst.h geom_dynamic.h \
+		levels.h hydro_baro.h basin.h links.h 
 subvola.o: param_dummy.h femtime.h nbasin.h volcomp.h modules.h \
 		basin.h geom.h aux_array.h 
 subwat.o: nbasin.h hydro.h param_dummy.h levels.h links.h ev.h \
@@ -1112,7 +1114,7 @@ subwaves.o: depth.h internal.h evmain.h nlevel.h nbasin.h meteo.h \
 		roughness.h geom.h aux_array.h waves.h hydro_vel.h \
 		param.h hydro.h femtime.h pkonst.h hydro_baro.h \
 		levels.h meteo_aux.h basin.h 
-subwrt.o: depth.h conz.h param.h nlevel.h femtime.h simul.h \
+subwrt.o: depth.h conz.h param.h ev.h nlevel.h femtime.h simul.h \
 		nbasin.h levels.h basin.h aux_array.h 
 tideg.o: depth.h nbasin.h pkonst.h hydro.h param.h basin.h tides.h
 ts2nc.o: depth.h hydro.h param.h levels.h basin.h evmain.h simul.h

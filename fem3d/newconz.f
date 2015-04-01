@@ -381,7 +381,8 @@ c simulates decay for concentration
         include 'param.h'
 
 	real alpha_t90
-	parameter( alpha_t90 = 1./2.302585 )	!-1./ln(0.1)
+	!parameter( alpha_t90 = 1./2.302585 )	!-1./ln(0.1) - prob wrong
+	parameter( alpha_t90 = 2.302585 )	!-1./ln(0.1)
 
 	integer nsdim			!dimension of state variables for e
 	integer nvar			!actual number of state variables
@@ -398,8 +399,8 @@ c simulates decay for concentration
 
         if( tau .le. 0. ) return	!tau is 0 => no decay
 
-	!tauaux = tau			!tau is e-folding time
-	tauaux = tau * alpha_t90	!tau is t_90
+	tauaux = tau			!tau is e-folding time
+	!tauaux = tau * alpha_t90	!tau is t_90
         aux = exp(-dt/(tauaux*86400))
 
         do k=1,nkn

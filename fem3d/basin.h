@@ -31,7 +31,7 @@ c include file if basin (BAS) is read
         common /ipev/ipev, /ipv/ipv
         integer iarv(neldim)
         common /iarv/iarv
-        integer iarnv(neldim)
+        integer iarnv(nkndim)
         common /iarnv/iarnv
 	save /nen3v/,/ipev/,/ipv/,/iarv/,/iarnv/
 
