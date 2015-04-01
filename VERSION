@@ -1,3 +1,27 @@
+version  7_1_7    01-04-2015    VERS_7_1_7
+
+========================================================== 01-04-2015 - 7_1_7
+
+c ./fem3d/tmp/javier/subwrt.f:
+c 11.03.2015	ggu	introduced bstop, if early stop, write to file
+c
+c ./fem3d/subdts.f:
+c 31.03.2015    ggu     bug fix - month was 71/2, now 61/2
+c
+c ./fem3d/subver.f:
+c 01.04.2015	ggu	version 7.1.7	first of aprile version
+c
+c ./fem3d/subnev.f:
+c 31.03.2015	ggu	new routines for internal coordinates
+c
+c ./fem3d/subwrt.f:
+c 31.03.2015	ggu	compute res time for different areas
+c
+c ./fem3d/subbas.f:
+c 31.03.2015	ggu	set iarnv on read
+
+==========================================================
+
 version  7_1_6    26-02-2015    VERS_7_1_6   commit_2015-04-01
 
 version  7_1_6    26-02-2015    VERS_7_1_6
