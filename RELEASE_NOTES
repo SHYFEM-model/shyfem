@@ -1,4 +1,12 @@
 
+23.04.2015    VERS_7_1_8
+
+	lagrangian 3d finished !!!!
+		internal coordinates introduced
+		should work also for geographical coordinates
+		works also for zeta (still to be checked)
+		no diffusion yet
+
 01.04.2015    VERS_7_1_7
 
 	intermediate version (3D lagrangian not finished)

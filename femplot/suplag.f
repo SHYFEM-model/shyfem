@@ -14,6 +14,7 @@ c 17.09.2008    ggu     new version for plotting lagrangian particles in color
 c 27.01.2009    ggu     better error check reading particles, routines deleted
 c 23.01.2012    ggu     use nbdydim in plolagr, plot z with color in plo_xy
 c 01.10.2012    ggu     use station to get color in plot (ip_station)
+c 23.04.2015    ggu     plotting for 3d particles
 c
 c**********************************************************
 
@@ -22,7 +23,7 @@ c**********************************************************
 c**********************************************************
 c**********************************************************
 
-        subroutine plo_part(n,xlag,ylag,zlag,title)
+        subroutine plo_part(n,xlag,ylag,zlag,llag,lmax,title)
 
 	implicit none
 
@@ -30,6 +31,8 @@ c**********************************************************
 	real xlag(1)
 	real ylag(1)
 	real zlag(1)
+	integer llag(1)
+	integer lmax
         character*(*) title
 
 	real pmin,pmax
@@ -40,7 +43,7 @@ c**********************************************************
         call bash(0)
 
         call qcomm('Plotting particles')
-        call plo_xy(n,xlag,ylag,zlag)
+        call plo_xy(n,xlag,ylag,zlag,llag,lmax)
 
         call bash(2)
 	call qend
@@ -51,19 +54,23 @@ c**********************************************************
 c**********************************************************
 c**********************************************************
 
-	subroutine lag_get_header_new(iunit,nvers)
+	subroutine lag_get_header_new(iunit,nvers,lmax)
 
 	implicit none
 
-	integer iunit,nvers
+	integer iunit,nvers,lmax
 
 	integer mtype
+
+	lmax = 1
 
 	read(iunit,end=98,err=99) mtype,nvers
 
 	if( mtype .ne. 367265 ) goto 97
 	if( nvers .le. 2 ) goto 95
-	if( nvers .gt. 4 ) goto 96
+	if( nvers .gt. 5 ) goto 96
+
+	if( nvers .ge. 5 ) read(iunit) lmax
 
 	return
    95	continue
@@ -83,7 +90,8 @@ c**********************************************************
 
 c**********************************************************
 
-	subroutine lag_get_xy_new(iunit,nvers,ndim,it,n,xlag,ylag,zlag)
+	subroutine lag_get_xy_new(iunit,nvers,ndim,it,n
+     +			,xlag,ylag,zlag,llag)
 
 	implicit none
 
@@ -93,9 +101,10 @@ c**********************************************************
 	integer it
 	integer n
 	real xlag(1),ylag(1),zlag(1)
+	integer llag(1)
 
 	integer nbdy,nn,nout
-	integer id,ie,ies,i
+	integer id,ie,ies,i,lb
 	real x,y,z,xs,ys,zs,ts
 
 c-----------------------------------------------------
@@ -113,6 +122,8 @@ c-----------------------------------------------------
             read(iunit,err=98) id,x,y,z,ie,xs,ys,zs,ies
 	  else if( nvers .eq. 4 ) then
             read(iunit,err=98) id,x,y,z,ie,xs,ys,zs,ies,ts
+	  else if( nvers .eq. 5 ) then
+            read(iunit,err=98) id,x,y,z,ie,lb,xs,ys,zs,ies,ts
 	  else
 	    write(6,*) 'nvers = ',nvers
 	    stop 'error stop lag_get_xy_new: internal error (1)'
@@ -123,6 +134,7 @@ c-----------------------------------------------------
 	    xlag(n) = x
 	    ylag(n) = y
 	    zlag(n) = z
+	    llag(n) = lb
 	  end if
         end do
 
@@ -240,10 +252,11 @@ c**********************************************************
 	integer ndim
 	parameter(ndim=nbdydim)
 
-	integer iunit,it,n,nvers
+	integer iunit,it,n,nvers,lmax
 	real xlag(ndim)
 	real ylag(ndim)
 	real zlag(ndim)
+	integer llag(ndim)
 
 	logical ptime_ok,ptime_end
 	integer nrec
@@ -252,7 +265,7 @@ c**********************************************************
         iunit = ifemop('.lgr','unform','unknown')
         if( iunit .le. 0 ) stop
 	!call lag_get_header(iunit,nvers)	!old
-	call lag_get_header_new(iunit,nvers)
+	call lag_get_header_new(iunit,nvers,lmax)
 	write(6,*) 'lagrangian unit opened: ',iunit,nvers
 
 	nrec = 0
@@ -260,7 +273,7 @@ c**********************************************************
     1   continue
 
 	!call lag_get_xy(iunit,ndim,it,n,xlag,ylag,zlag)	!old
-	call lag_get_xy_new(iunit,nvers,ndim,it,n,xlag,ylag,zlag)
+	call lag_get_xy_new(iunit,nvers,ndim,it,n,xlag,ylag,zlag,llag)
 	if( n .lt. 0 ) goto 2
         nrec = nrec + 1
         write(6,*) nrec,it,n
@@ -271,7 +284,7 @@ c**********************************************************
 
 	if( ptime_ok() ) then
 	  write(6,*) 'plotting particles ',it,n
-          call plo_part(n,xlag,ylag,zlag,'particles')
+          call plo_part(n,xlag,ylag,zlag,llag,lmax,'particles')
 	end if
 
 	goto 1
@@ -281,7 +294,7 @@ c**********************************************************
 
 c**********************************************************
 
-        subroutine plo_xy(n,xlag,ylag,zlag)
+        subroutine plo_xy(n,xlag,ylag,zlag,llag,lmax)
      
         implicit none
        
@@ -289,17 +302,21 @@ c**********************************************************
 	real xlag(1)
 	real ylag(1)
 	real zlag(1)
+	integer llag(1)
+	integer lmax
 
-	logical bcolor,bbottom,bzeta,bstation,bplot
-	integer i,is,ip_station
+	logical bcolor,bbottom,bzeta,bstation,bplot,blayer
+	integer i,is,ip_station,l
         real x,y,z,x1,y1,x2,y2
 	real cwater,cbottom,col
 
 c--------------------------------------
-	bcolor = .true.		!use color to plot lagrangian particles
 	bcolor = .false.	!use color to plot lagrangian particles
+	bcolor = .true.		!use color to plot lagrangian particles
 	bbottom = .false.	!use color to indicate p. on bottom
+	blayer = .true.		!use layer to decide on color to use
 	bzeta = .true.		!use zeta to decide on color to use
+	bzeta = .false.		!use zeta to decide on color to use
 	bstation = .false.	!use zeta to get station number (and color)
 	ip_station = 0		!if different from 0 -> plot only this station
 
@@ -317,12 +334,17 @@ c--------------------------------------
 	   x = xlag(i)
 	   y = ylag(i)
 	   z = zlag(i)
+	   l = llag(i)
 
 	   if( bcolor ) then
 	     if( bstation ) then
                call get_station_color(z,is,col)
                call qhue(col)
 	       bplot = ip_station .eq. 0 .or. ip_station .eq. is
+	     else if( blayer .and. lmax > 1 ) then
+	       col = float(l)/lmax
+	       !write(6,*) i,l,x,y,z,col
+	       call qhue(col)
 	     else if( bzeta ) then
 	       call qhue(z)
 	     else if( bbottom ) then

@@ -56,7 +56,7 @@ c si passa alla successiva subroutine con time
 
 ! vertical treatment 
 	real z0,z1,zn0,zn1  !	cuccomod
-	integer l0,l1,addl
+	integer l0,l1,addl,lmax
 	real ztime,lb,subtime,layd
 	real w
 	real hl(nlvdim)
@@ -508,8 +508,9 @@ c          write(lunit,*) 'track orig',bdy
 	 call getalfa(l_int,in_d,in_dm,in_dx,a_int)
 	 call getalfa(l_out,ou_d,ou_dm,ou_dx,a_out)
          call getzvel(ie,zn0,l0,l_int,l_out,a_int,a_out,w)
-	 if( bsurf ) w = 0.
-         call lagr_layer_thickness(ie,nlv,hl)
+	 if( blgrsurf ) w = 0.
+	 lmax = nlvdim
+         call lagr_layer_thickness(ie,lmax,hl)
          layd=hl(l0)
 
 ! check for new body position 
@@ -1002,8 +1003,9 @@ c calcolo distanza massima percorribile all''interno di elemento
 	call getalfa(l_int,in_d,in_dm,in_dx,a_int)
 	call getalfa(l_out,ou_d,ou_dm,ou_dx,a_out)
         call getzvel(ie,zn0,l0,l_int,l_out,a_int,a_out,w)
-	if( bsurf ) w = 0.
-        call lagr_layer_thickness(ie,nlv,hl)
+	if( blgrsurf ) w = 0.
+	lmax = nlvdim
+        call lagr_layer_thickness(ie,lmax,hl)
         layd=hl(l0)
 
 c=====================================================================

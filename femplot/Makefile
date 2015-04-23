@@ -177,6 +177,7 @@ strip:	$(EXES)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 col.o: color.h
+lagxitest.o: param.h evmain.h basin.h
 line_nodes.o: param.h basin.h geom.h
 ousinfo.o: hydro.h param.h levels.h nlevel.h basin.h
 plotsim.o: depth.h hydro_vel.h hydro.h param.h nlevel.h mkonst.h \

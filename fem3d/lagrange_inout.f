@@ -9,13 +9,16 @@ c 05.02.2009    ggu	copied from lagrange_cont.f and integrated from others
 c 16.12.2011    ggu	initialization with body id
 c 23.01.2012    ggu	new call to insert_particle, new id_body
 c 01.10.2012    ggu	output concentrations only for one station
-c 28.03.2014    ggu	bug fix for inesrt with ie=0, area in concentrations
+c 28.03.2014    ggu	bug fix for insert with ie=0, area in concentrations
+c 23.04.2014    ggu	new 3d insertion, new version of lgr file, new copy
 c
 c*******************************************************************
 
-	subroutine insert_particle(ie,rtime,x,y)
+	subroutine insert_particle(ie,lb,rtime,x,y,z)
 
 c inserts particle at position x,y
+c
+c this is the ultimate routine that is called for insertion
 c
 c tin is insert time - compute with rtime
 c z = 0.5 (corresponding to larva in water) 
@@ -24,22 +27,28 @@ c z = 0.5 (corresponding to larva in water)
 
 	include 'param.h'
 	include 'lagrange.h'
-
 	include 'femtime.h'
 
 	integer ie	!element of particle - if unknown use 0
-	real rtime	!time to be advected (relative to time step - 0 all dt)
+	integer lb	!layer [1-lmax]
+	real rtime	!fraction of time step to be inserted (0 for all) [0-1]
 	real x,y	!coordinates of particle to be inserted
+	real z		!vertical (relative) coordinate [0-1]
+
+c rtime is the relative time position when the particle is inserted
+c 0 inserts at the beginning of the time step - advection for full time step
+c 1 inserts at end of time step - no advection for this time step needed
 
 	integer ip
-	real z
+	double precision xx,yy,xi(3)
 
 	nbdy = nbdy + 1
 	idbdy = idbdy + 1
 
 	if( nbdy .gt. nbdydim ) goto 99
 
-        tin(nbdy) = it - real(idt)*(1.-rtime)
+        tin(nbdy) = t_act - dt_act*(1.-rtime)
+        !tin(nbdy) = it - real(idt)*(1.-rtime)
         !tin(nbdy) = it				!old
 
 	if( ie .eq. 0 ) then
@@ -49,8 +58,7 @@ c z = 0.5 (corresponding to larva in water)
 	  write(6,*) 'inserting particle with ie = 0'
 	end if
 
-	z = 0.5
-	call lagr_connect_get_station(ie,ip,z)	!connectivity (z is color)
+	!call lagr_connect_get_station(ie,ip,z)	!connectivity (z is color)
 
         est(nbdy)=ie
         xst(nbdy)=x
@@ -58,10 +66,18 @@ c z = 0.5 (corresponding to larva in water)
 	zst(nbdy) = z
 
         ie_body(nbdy)=ie
-        l_body(nbdy)=1
+        l_body(nbdy)=lb
         x_body(nbdy)=x
         y_body(nbdy)=y
 	z_body(nbdy) = z
+
+	xi = 1./3.
+	if( ie > 0 ) then
+	  xx = x
+	  yy = y
+	  call xy2xi(ie,xx,yy,xi)
+	  xi_body(:,nbdy) = xi
+	end if
 
 	lgr_var(nbdy) = 0
 	id_body(nbdy) = idbdy
@@ -75,6 +91,140 @@ c z = 0.5 (corresponding to larva in water)
 	write(6,*) 'Cannot insert more than nbdydim particles'
 	write(6,*) 'Please change nbdydim in param.h and recompile'
 	stop 'error stop insert_particle: nbdy'
+	end
+
+c*******************************************************************
+
+	subroutine insert_particle_3d(ie,rtime,x,y)
+
+	implicit none
+
+	integer ie	!element of particle - if unknown use 0
+	real rtime	!fraction of time step to be inserted (0 for all) [0-1]
+	real x,y	!coordinates of particle to be inserted
+
+c n = abs(itype)
+c itype == 0	realase one particle in surface layer
+c itype > 0	realase n particles regularly
+c itype < 0	realase n particles randomly
+
+	include 'param.h'
+	include 'lagrange.h'
+	include 'nlevel.h'
+
+	logical b2d,bdebug
+	integer n,lmax,l,i
+	real h,dh,hact,r
+	integer itype	!type of vertical distribution
+	integer lb	!layer [1-lmax]
+	real z		!vertical (relative) coordinate [0-1]
+	real hl(nlv)
+
+	bdebug = .false.
+	bdebug = .true.
+
+	itype = ipvert
+	b2d = nlv <= 1
+
+	!-------------------------------------------------
+	! handle 2d or surface situation
+	!-------------------------------------------------
+
+	if( blgrsurf .or. b2d .or. itype == 0 ) then
+	  lb = 1
+	  z = 0.5
+	  call insert_particle(ie,lb,rtime,x,y,z)
+	  return
+	end if
+
+	!-------------------------------------------------
+	! handle 3d situation
+	!-------------------------------------------------
+
+	n = abs(itype)
+	lmax = nlv
+	call lagr_layer_thickness(ie,lmax,hl)
+	h = 0.
+	do l=1,lmax
+	  h = h + hl(l)
+	end do
+	dh = h / n
+	hact = -dh/2.
+
+	if( bdebug ) write(6,*) '3d release for lagrange ',n,x,y
+
+	do i=1,n
+	  if( itype > 0 ) then
+	    hact = hact + dh
+	  else
+	    call random_number(r)
+	    hact = r*h
+	  end if
+	  call find_vertical_position(lmax,hl,hact,lb,z)
+	  call insert_particle(ie,lb,rtime,x,y,z)
+	  if( bdebug ) write(6,*) '   ',i,hact,lb,z
+	end do
+	
+	!-------------------------------------------------
+	! end of routine
+	!-------------------------------------------------
+
+	end
+
+c*******************************************************************
+
+	subroutine insert_particle_surface(ie,rtime,x,y)
+
+	implicit none
+
+	integer ie	!element of particle - if unknown use 0
+	real rtime	!fraction of time step to be inserted (0 for all) [0-1]
+	real x,y	!coordinates of particle to be inserted
+
+	integer lb	!layer [1-lmax]
+	real z		!vertical (relative) coordinate [0-1]
+
+	lb = 1
+	z = 0.5
+
+	call insert_particle(ie,lb,rtime,x,y,z)
+
+	end
+
+c*******************************************************************
+
+	subroutine find_vertical_position(lmax,hl,hact,lb,z)
+
+c finds vertical position for depth hact
+
+	implicit none
+
+	integer lmax		!total number of layers
+	real hl(lmax)		!layer thickness
+	real hact		!vertical depth of particle
+	integer lb		!layer [1-lmax] (return)
+	real z			!position in layer [0-1] (return, 1 bottom)
+
+	integer l
+	real hbot,htop
+
+	hbot = 0.
+	htop = 0.
+	do l=1,lmax
+	  hbot = hbot + hl(l)
+	  if( hbot >= hact ) exit
+	  htop = hbot
+	end do
+	if( l > lmax ) goto 99
+
+	lb = l
+	z = (hact-htop)/(hbot-htop)
+
+	return
+   99	continue
+	write(6,*) 'lmax,hbot,hact: ',lmax,hbot,hact
+	write(6,*) hl
+	stop 'error stop find_vertical_position: hact > hbot'
 	end
 
 c*******************************************************************
@@ -100,11 +250,16 @@ c copies particle from ifrom to ito
         zst(ito) = zst(ifrom)
 
         ie_body(ito) = ie_body(ifrom)
+        l_body(ito)  = l_body(ifrom)
         x_body(ito)  = x_body(ifrom)
         y_body(ito)  = y_body(ifrom)
         z_body(ito)  = z_body(ifrom)
 
+        xi_body(:,ito)  = xi_body(:,ifrom)
+
+	tin(ito) = tin(ifrom)
 	lgr_var(ito) = lgr_var(ifrom)
+	lgr_Ww(ito) = lgr_Ww(ifrom)
 	id_body(ito) = id_body(ifrom)
 	
 	lgr_bitmap_in(ito) = lgr_bitmap_in(ifrom)
@@ -161,14 +316,15 @@ c once it has been written to output with negative ie, it is set to 0
 	implicit none
 
         include 'param.h'
+        include 'nlevel.h'
         include 'lagrange.h'
 
 	integer iu,it
 
 	integer nvers,mtype
-	parameter ( nvers = 4 , mtype = 367265 )
+	parameter ( nvers = 5 , mtype = 367265 )
 
-	integer nn,nout,ie,i,id
+	integer nn,nout,ie,i,id,lb
 	real x,y,z
 	real getpar
 
@@ -182,6 +338,7 @@ c----------------------------------------------------------------
 
 	if( icall .eq. 0 ) then
 	  write(iu) mtype,nvers
+	  write(iu) nlv			!from version 5 on
 	  write(6,*) 'lgr file initialized...'
 	end if
 
@@ -210,12 +367,16 @@ c----------------------------------------------------------------
           y = y_body(i)
           z = z_body(i)
 	  ie = ie_body(i)
+	  lb = l_body(i)
 	  id = id_body(i)
 	  if( ie .ne. 0 ) then
 	    if( nvers .eq. 3 ) then
 	      write(iu) id,x,y,z,ie,xst(i),yst(i),zst(i),est(i)
 	    else if( nvers .eq. 4 ) then
 	      write(iu) id,x,y,z,ie,xst(i),yst(i),zst(i),est(i),tin(i)
+	    else if( nvers .eq. 5 ) then
+	      write(iu) id,x,y,z,ie,lb
+     +			,xst(i),yst(i),zst(i),est(i),tin(i)
 	    else
 	      write(6,*) 'nvers = ',nvers
 	      stop 'error stop lgr_output: nvers unknown'
@@ -445,7 +606,7 @@ c tests compress routine
 
 	do i=1,nadd
 	  ie = ie + 1
-	  call insert_particle(ie,0.,1.,1.)
+	  call insert_particle_surface(ie,0.,1.,1.)
 	end do
 
 	call ntot_particles(ntot)

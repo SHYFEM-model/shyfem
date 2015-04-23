@@ -37,6 +37,8 @@ c 30.09.2013	ggu	new routines gradient_normal/tangent
 c 30.10.2014	ggu	new routine compute_distance()
 c 21.01.2015	ggu	new routine compute_cartesian_coords()
 c 31.03.2015	ggu	new routines for internal coordinates
+c 19.04.2015	ggu	new routines for internal coordinates (distance)
+c 22.04.2015	ggu	bug fix in xi2xy - x/y were exchanged
 c
 c***********************************************************
 
@@ -420,6 +422,10 @@ c save&data
 c***********************************************************
 c***********************************************************
 c***********************************************************
+c internal coordinates
+c***********************************************************
+c***********************************************************
+c***********************************************************
 
 	subroutine xy2xi(ie,x,y,xi)
 
@@ -468,16 +474,16 @@ c given internal coordinates xi returns x/y
 	det = b(2)*c(1) - b(1)*c(2)
 	if( abs(det) < eps ) goto 99
 
-	x = (a1*b(2) - a2*b(1)) / det
+	y = (a1*b(2) - a2*b(1)) / det
 
 	det = b(1)*c(2) - b(2)*c(1)
 	if( abs(det) < eps ) goto 99
 
-	y = (a1*c(2) - a2*c(1)) / det
+	x = (a1*c(2) - a2*c(1)) / det
 
 	return
    99	continue
-	write(6,*) 'det too small: ',det
+	write(6,*) 'det too small: ',ie,det
 	write(6,*) x,y
 	write(6,*) xi
 	write(6,*) a
@@ -486,6 +492,120 @@ c given internal coordinates xi returns x/y
 	stop 'error stop xi2xy: det == 0'
 	end
 	
+c***********************************************************
+
+	subroutine xi_dist(ie,xia,xib,l)
+
+c computes distance between two points given in internal coordinates
+c
+c the two points must be lying on the sides of the triangle
+
+	implicit none
+
+	include 'param_dummy.h'
+	include 'ev.h'
+
+	integer ie			!element number
+	double precision xia(3)		!internal coordinates of point a
+	double precision xib(3)		!internal coordinates of point b
+	double precision l		!length of segment (return)
+
+	double precision pi,rad
+	parameter (pi=4.D+0*atan(1.D+0),rad=pi/180.D+0)
+	integer ilbase,icbase,ii
+	parameter (ilbase=16,icbase=10)
+	double precision length,cosine
+	length(ii) = ev(ilbase+ii,ie)
+	cosine(ii) = cos(rad*ev(icbase+ii,ie))
+
+	integer na0,nb0,ia0,ib0
+	integer ia1,ib1,ia2,ib2,ia3,ib3
+	integer il,il1,il2,il3
+	double precision dla,dlb,cc
+
+	ia0 = 0
+	ib0 = 0
+	na0 = 0
+	nb0 = 0
+	do ii=1,3
+	  if( xia(ii) == 0. ) then
+	    na0 = na0 + 1
+	    ia0 = ia0 + ii
+	  end if
+	  if( xib(ii) == 0. ) then
+	    nb0 = nb0 + 1
+	    ib0 = ib0 + ii
+	  end if
+	end do
+
+	!write(6,*) ia0,ib0,na0,nb0
+
+	if( na0 == 0 .or. nb0 == 0 ) then	!points must lie on side
+	  write(6,*) 'points not on side of triangle...'
+	  goto 99
+	end if
+
+	if( na0 == 2 .and. nb0 == 2 ) then	!line through two vertices
+	  ia1 = 6 - ia0
+	  ib1 = 6 - ib0
+	  dla = 0.
+	  cc = 0.
+	  if( ia0 == ib0 ) then
+	    dlb = 0.
+	  else
+	    il = ia0 + ib0 - 6
+	    dlb = length(il)
+	  end if
+	else if( na0 == 1 ) then		!point a on real side ia1
+	  ia1 = ia0
+	  ia2 = mod(ia1,3) + 1
+	  ia3 = mod(ia2,3) + 1
+	  if( xib(ia1) == 0. ) then		!a and b on same side
+	    dla = abs( xia(ia2)-xib(ia2) ) * length(ia1)
+	    dlb = 0.
+	    cc = 0.
+	  else if( xib(ia2) == 0. ) then
+	    dla = xia(ia2) * length(ia1)
+	    dlb = xib(ia1) * length(ia2)
+	    cc = cosine(ia3)
+	  else
+	    dla = xia(ia3) * length(ia1)
+	    dlb = xib(ia1) * length(ia3)
+	    cc = cosine(ia2)
+	  end if
+	else if( nb0 == 1 ) then		!point b on real side ib1
+	  ib1 = ib0
+	  ib2 = mod(ib1,3) + 1
+	  ib3 = mod(ib2,3) + 1
+	  if( xia(ib1) == 0. ) then		!a and b on same side
+	    dla = abs( xia(ib2)-xib(ib2) ) * length(ib1)
+	    dlb = 0.
+	    cc = 0.
+	  else if( xia(ib2) == 0. ) then
+	    dlb = xib(ib2) * length(ib1)
+	    dla = xia(ib1) * length(ib2)
+	    cc = cosine(ib3)
+	  else
+	    dlb = xib(ib3) * length(ib1)
+	    dla = xia(ib1) * length(ib3)
+	    cc = cosine(ib2)
+	  end if
+	else
+	  write(6,*) 'impossible... internal error'
+	  goto 99
+	end if
+
+	l = sqrt( dla**2 + dlb**2 - 2.*dla*dlb*cc )
+
+	return
+   99	continue
+	write(6,*) 'error in computing distance:'
+	write(6,*) ia0,ib0,na0,nb0
+	write(6,*) xia
+	write(6,*) xib
+	stop 'error stop xi_dist: generic error'
+	end
+
 c***********************************************************
 
 	subroutine xi_abc(ie,a,b,c)
@@ -552,6 +672,8 @@ c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 
 	end
 
+c***********************************************************
+c***********************************************************
 c***********************************************************
 
         subroutine cpp(x,y,rlambda,phi,rlambda0,phi0)

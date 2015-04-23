@@ -9,6 +9,7 @@ c
 c revision log :
 c
 c 21.01.2015	ggu	new routine compute_cartesian_coords()
+c 23.04.2015	ggu	compute s value for particle path
 c
 c***********************************************************
 c***********************************************************
@@ -180,7 +181,7 @@ c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 
 c***********************************************************
 
-	subroutine xit_start_end(iflux,alpha,xip,xis,xie)
+	subroutine xit_start_end(iflux,alpha,xip,xis,xie,s)
 
 c find start and end point of line through point xip
 c
@@ -193,29 +194,41 @@ c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 	double precision xip(3)		!coordinates of point
 	double precision xis(3)		!start coordinate (return)
 	double precision xie(3)		!end coordinate (return)
+	double precision s		!point parameter [0-1] (return)
 
 	integer i1,i2,i3
+	integer iflag,ielem
 	double precision as,ae
-	double precision beta,xi3,a
+	double precision beta,xi3,a,gamma
 
+	gamma = -1			!not yet computed
 	i1 = iflux
 	xi3 = alpha*(1.-xip(i1))
 	i3 = mod(i1+1,3) + 1
 
 	if( xi3 > xip(i3) ) then	!right sub-triangle
+	  ielem = 1
 	  a = alpha
 	  i2 = mod(i1,3) + 1
 	  i3 = mod(i2,3) + 1
+	  if( xip(i3) == 0 ) gamma = 1
+	  if( xip(i1) == 0 ) gamma = 0
 	else				!left sub-triangle
+	  ielem = 2
 	  a = 1. - alpha
 	  i3 = mod(i1,3) + 1
 	  i2 = mod(i3,3) + 1
+	  if( xip(i3) == 0 ) gamma = 1
+	  if( xip(i1) == 0 ) gamma = 0
 	end if
 
 	if( a .eq. 0. ) then
 	  beta = 0.
 	else if( xip(i3) > a ) then
-	  stop 'error stop xit_start_end: internal error (1)'
+	  write(6,*) iflux,alpha
+	  write(6,*) i1,i2,i3,a
+	  write(6,*) xip
+	  stop 'error stop xit_start_end: internal error (2)'
 	else
 	  beta = 1. - xip(i1) - xip(i3)/a
 	end if
@@ -230,6 +243,33 @@ c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
         xie(i1) = 0.
         xie(i2) = 1.-ae
         xie(i3) = ae
+
+	if( gamma >= 0 ) then	!already computed
+	  !nothing
+	  iflag = 0
+	else if( beta == 1. ) then
+	  gamma = 0.
+	  iflag = 1
+	else if( xip(i1) == 0. ) then
+	  gamma = 0.
+	  iflag = 2
+	else
+	  gamma = xip(i1)/(1.-beta)
+	  iflag = 3
+	end if
+
+	s = 1. - gamma
+	if( gamma == 1. ) s = 0.
+
+	if( s < 0. .or. s > 1. ) then
+	  write(6,*) 'error computing s: ',s,gamma
+	  write(6,*) alpha,a,beta
+	  write(6,*) i1,iflag,ielem
+	  write(6,*) xip
+	  write(6,*) xis
+	  write(6,*) xie
+	  stop 'error stop xit_start_end: internal error (1)'
+	end if
 
 	end
 

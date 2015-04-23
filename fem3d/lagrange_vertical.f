@@ -1,6 +1,10 @@
 c
 c deal with vertical velocities
 c
+c revision log :
+c
+c 23.04.2015    ggu     internal coodinates finished
+c
 c******************************************************
 
 	subroutine getzvel(ie,z0,l0,is_in,is_out,a_in,a_out,w)
@@ -107,28 +111,31 @@ c returns vertical velocity at point given by ie,l0,is,a
 
 c******************************************************
 
-	subroutine lagr_layer_thickness(ie,nlv,hl)
+	subroutine lagr_layer_thickness(ie,lmax,hl)
 
 c computes layer thickness for element ie
 
 	implicit none
 
 	integer ie		!element number
-	integer nlv		!max number of layers
-	real hl(nlv)		!layer thickness (return)
+	integer lmax		!max number of layers (dimension in, actual out)
+	real hl(lmax)		!layer thickness (return)
 
 	include 'param.h'
 	include 'levels.h'
 	include 'depth.h'
 	include 'hydro.h'
 
-	integer lmax,nsigma,ii
+	integer nlv,nsigma,ii,lmax_act
 	real hsigma
 	real z,h
 
-        !call compute_sigma_info(lmax,hlv,nsigma,hsigma)
-	call get_sigma_info(lmax,nsigma,hsigma)
-	if( lmax > nlv ) goto 99
+        !call compute_sigma_info(nlv,hlv,nsigma,hsigma)
+	call get_sigma_info(nlv,nsigma,hsigma)
+	lmax_act = ilhv(ie)
+	if( lmax_act > lmax ) goto 99
+	if( lmax_act > nlv ) goto 99
+	lmax = lmax_act
 
 	h = hev(ie)
 	z = 0.
@@ -141,7 +148,7 @@ c computes layer thickness for element ie
 
 	return
    99	continue
-	write(6,*) 'nlv,lmax: ',nlv,lmax
+	write(6,*) 'nlv,lmax,lmax_act: ',nlv,lmax,lmax_act
 	stop 'error stop lagr_layer_thickness: incompatible layers'
 	end
 
@@ -214,6 +221,601 @@ c************************************************************
 	end if
 	
 	end 
+
+c************************************************************
+c************************************************************
+c************************************************************
+c
+c z = 0		top of layer
+c z = 1		bottom of layer
+c
+c************************************************************
+
+	subroutine track_xi(id,iel,lb,xi,z,time)
+
+	implicit none
+
+	include 'param.h'
+	include 'lagrange.h'
+
+	integer id
+	integer iel
+	integer lb
+	double precision xi(3)
+	double precision z
+	real time
+
+	logical bdebug
+	logical bsurf,bbott
+	integer iflux,lmax,ii
+	integer ieorig,lborig
+	double precision s,alpha
+	double precision dist,dh,dv,ds
+	double precision t,th,tv,tt
+	double precision vel,w
+	double precision dz,hd
+	double precision xis(3)
+	double precision xie(3)
+
+	blgrdebug = id == 0
+	!blgrdebug = .true.
+	bdebug = .false.
+	bdebug = .true.
+	bdebug = blgrdebug
+
+	ieorig = iel
+	lborig = lb
+
+	!write(6,*) 'tracking particle: ',id,time
+	call track_xi_check('start track_xi',xi)
+
+	!-----------------------------------------------
+	! get advection information
+	!-----------------------------------------------
+
+	call track_xi_get_vertical(id,iel,lb,lmax,hd,w)
+	call track_xi_get_flux(iel,lb,iflux,alpha,vel)
+
+	if( vel < 0. ) then
+	  write(6,*) 'vel is 0'
+	  write(6,*) vel,iel,lb,lmax
+	  write(6,*) (flux3d(lb,ii,iel),ii=1,3)
+	end if
+
+	!-----------------------------------------------
+	! handle particles on surface or on bottom
+	!-----------------------------------------------
+
+	bsurf = lb .eq. 1 .and. z .eq. 0.	!particle on surface
+	bbott = lb .eq. lmax .and. z .eq. 1.	!particle on bottom
+
+	if( bsurf .and. w > 0. ) w = 0.
+	if( bbott .and. w < 0. ) w = 0.
+	if( blgrsurf ) w = 0.			!advection only in surface layer
+
+	!-----------------------------------------------
+	! determine time to leave element (th)
+	!-----------------------------------------------
+
+	th = 2.*time
+
+	if( bdebug ) then
+	  write(6,*) 'debugging for particle id ',id
+	  write(6,*) iel,lb,iflux
+	  write(6,*) alpha,vel,z
+	  write(6,*) xi
+	  call track_xi_info_element(iel)
+	end if
+
+	if( vel > 0. ) then
+	  if( iflux > 0 ) then		!out of flux node
+	    call xit_start_end(iflux,alpha,xi,xis,xie,s)
+	  else if( iflux < 0 ) then	!into flux node
+	    call xit_start_end(-iflux,alpha,xi,xie,xis,s)
+	    s = 1. - s
+	  else
+	    goto 99
+	  end if
+	  call xi_dist(iel,xis,xie,dist)
+	  dh = dist*(1.-s)		!distance to travel in element
+	  th = dh / vel			!time to arrive at edge of element
+	else
+	  s = 1.
+	  dist = 0.
+	  dh = 0.
+	  xis = xi
+	  xie = xi
+	end if
+
+	!-----------------------------------------------
+	! determine time to leave layer (tv)
+	!-----------------------------------------------
+
+	tv = 2.*time
+
+	if( w /= 0. ) then
+	  if( w > 0. ) then
+	    dv = hd*z
+	    tv = dv / w
+	  else
+	    dv = hd*(1.-z)
+	    tv = dv / (-w)
+	  end if
+	else
+	  dv = 0.
+	end if
+
+	!-----------------------------------------------
+	! what happens first? (tt is total time available)
+	!-----------------------------------------------
+
+	tt = time
+	t = min(th,tv,tt)
+
+	if( bdebug ) then
+	  write(6,*) 'times...'
+	  write(6,*) th,tv,tt
+	  write(6,*) dist,s,dh
+	  write(6,*) xis
+	  write(6,*) xie
+	end if
+
+	!-----------------------------------------------
+	! handle horizontal advection
+	!-----------------------------------------------
+
+	if( th > t ) then		!body remains in element
+	  ds = (1.-s)*t/th
+	  s = s + ds
+	  if( s > 1. ) goto 97
+	  xi = (1.-s)*xis + s*xie
+	  call track_xi_check('after advection track_xi 1',xi)
+	else				!body reaches border of element
+	  xi = xie
+	  call track_xi_check('before advection track_xi 2',xi)
+	  call track_xi_next_element(iel,xi)
+	  call track_xi_check('after advection track_xi 2',xi)
+	end if
+
+	call track_xi_check('after advection track_xi',xi)
+
+	if( bdebug ) then
+	  write(6,*) 'final...'
+	  write(6,*) th,t,iel
+	  write(6,*) s
+	  write(6,*) xi
+	end if
+
+	!-----------------------------------------------
+	! handle vertical advection
+	!-----------------------------------------------
+
+	if( tv > t ) then		!body remains in layer
+	  dz = w*t/hd
+	  z = z - dz
+	else
+	  if( w > 0. ) then
+	    if( lb > 1 ) then
+	      lb = lb - 1
+	      z = 1.
+	    else
+	      z = 0.
+	    end if
+	  else
+	    if( lb < lmax ) then
+	      lb = lb + 1
+	      z = 0.
+	    else
+	      z = 1.
+	    end if
+	  end if
+	end if
+
+	!-----------------------------------------------
+	! compute remaining time and check for error
+	!-----------------------------------------------
+
+	if( iel .ne. ieorig .and. iel > 0 ) then
+	  call track_xi_adjust_layer(iel,lb,z)
+	end if
+
+	time = tt - t
+
+	if( bdebug ) then
+	  write(6,*) 'final time: ',time
+	end if
+
+	if( z < 0. .or. z > 1. ) goto 98
+
+	!-----------------------------------------------
+	! end of routine
+	!-----------------------------------------------
+
+	return 
+   97	continue
+	write(6,*) 's,t,th: ',s,t,th
+	write(6,*) 'ds,sorig: ',ds,s-ds
+	stop 'error stop track_xi: internal error (3)'
+   98	continue
+	write(6,*) 'id,iel ',id,iel
+	write(6,*) 'tv,t ',tv,t
+	write(6,*) 'dz,w,hd: ',dz,w,hd
+	write(6,*) 'z,lb,lmax ',z,lb,lmax
+	stop 'error stop track_xi: internal error (2)'
+   99	continue
+	stop 'error stop track_xi: internal error (1)'
+	end
+
+c************************************************************
+
+	subroutine track_xi_next_element(ie,xi)
+
+c copies internal coordinates to new element - avoid falling on vertex
+
+	implicit none
+
+	integer ie
+	double precision xi(3)
+
+	include 'param.h'
+	include 'geom.h'
+	include 'lagrange.h'
+
+	logical bdebug
+	integer ii,in,it
+	integer ia1,ia2,ia3
+	integer ib1,ib2,ib3
+	integer ieb
+	double precision r,eps
+	double precision xiaux(3)
+
+	eps = 1.e-5
+	bdebug = blgrdebug
+
+	!---------------------------------------
+	! check xi - how many zeros
+	!---------------------------------------
+
+	in = 0
+	it = 0
+	do ii=1,3
+	  if( xi(ii) == 0. ) then
+	    in = in + 1
+	    it = it + ii
+	  end if
+	end do
+
+	if( bdebug ) then
+	  write(6,*) 'track_xi_next_element: ',in,it
+	end if
+
+	!---------------------------------------
+	! assign pointers - ia1 indicates side of particle
+	!---------------------------------------
+
+	if( in == 1 ) then	!normal mode - particle on side
+	  ia1 = it
+	  ia2 = mod(ia1,3) + 1
+	  ia3 = mod(ia2,3) + 1
+	else if( in == 2 ) then	!particle on vertex - must move
+	  write(6,*) 'in==2 ',xi
+	  r = 0.
+	  do while( r == 0. )
+	    call random_number(r)
+	    r = eps*(r-0.5)
+	  end do
+	  it = 6 - it
+	  if( r < 0. ) then
+	    ia1 = mod(it+1,3) + 1
+	    ia2 = mod(ia1,3) + 1
+	    ia3 = mod(ia2,3) + 1
+	    xi(ia2) = 1. - r
+	    xi(ia3) = r
+	  else
+	    ia1 = mod(it,3) + 1
+	    ia2 = mod(ia1,3) + 1
+	    ia3 = mod(ia2,3) + 1
+	    xi(ia2) = r
+	    xi(ia3) = 1. - r
+	  end if
+	else
+	  write(6,*) 'xi not on side or impossible'
+	  write(6,*) ie,in,it
+	  write(6,*) xi
+	  stop 'error stop track_xi_next_element: erroneous xi'
+	end if
+
+	!---------------------------------------
+	! sanity checks (may be removed)
+	!---------------------------------------
+
+	if( xi(ia1) /= 0. ) goto 99
+	if( abs(xi(ia2)+xi(ia3)-1.) > eps ) goto 99
+
+	!---------------------------------------
+	! look for neigboring element
+	!---------------------------------------
+
+	ieb = ieltv(ia1,ie)
+	if( ieb < 1 ) then	!no element or open boundary
+	  ie = -ie
+	  return
+	end if
+
+	if( bdebug ) then
+	  write(6,*) ia1,ia2,ia3,ieb
+	end if
+
+	!---------------------------------------
+	! look for side of particle in new element
+	!---------------------------------------
+
+	do ii=1,3
+	  if( ieltv(ii,ieb) == ie ) exit
+	end do
+	if( ii > 3 ) goto 99
+
+	!---------------------------------------
+	! copy xi to new elements
+	!---------------------------------------
+
+	ib1 = ii
+	ib2 = mod(ib1,3) + 1
+	ib3 = mod(ib2,3) + 1
+
+	xiaux = xi
+
+	xi(ib1) = 0.
+	xi(ib2) = xiaux(ia3)
+	xi(ib3) = xiaux(ia2)
+
+	ie = ieb
+
+	!---------------------------------------
+	! end of routine
+	!---------------------------------------
+
+	return
+   99	continue
+	write(6,*) ie,in,it,ia1,ieb
+	write(6,*) xi
+	write(6,*) (ieltv(ii,ieb),ii=1,3)
+	stop 'error stop track_xi_next_element: erroneous ieltv'
+	end
+
+c************************************************************
+
+	subroutine track_xi_adjust_layer(iel,lb,z)
+
+c adjusts layer when passing from one element to the next
+c
+c is only temporary - must also adjust w
+
+	implicit none
+
+	integer iel
+	integer lb
+	double precision z
+
+	include 'param.h'
+	include 'levels.h'
+
+	integer lmax
+
+	lmax = ilhv(iel)
+
+	if( lb > lmax ) then
+	  lb = lmax
+	  z = 1.
+	end if
+
+	end
+
+c************************************************************
+
+	subroutine track_xi_get_flux(iel,lb,iflux,alpha,vel)
+
+c gets flux and vel information for element and layer
+
+	implicit none
+
+	integer iel			!element number
+	integer lb			!layer
+	integer iflux			!node of flux line
+	double precision alpha		!fraction of opsosite side
+	double precision vel		!velocity in element (always positive)
+
+	include 'param.h'
+	include 'lagrange.h'
+	include 'hydro_vel.h'
+
+	logical bdebug
+	integer ii,in,it,inext
+	real az,azt,u,v
+	double precision flux(3)
+	double precision ff,fp,fm
+
+	bdebug = blgrdebug
+	bdebug = .false.
+
+	az = azlgr
+	azt = 1. - az
+
+	flux = flux3d(lb,:,iel)		!fluxes over side into element
+
+	u = azt*ulov(lb,iel) + az*ulnv(lb,iel)
+	v = azt*vlov(lb,iel) + az*vlnv(lb,iel)
+	vel = sqrt(u*u+v*v)
+
+	if( bdebug ) then
+	  write(6,*) 'track_xi_get_flux: ',iel,lb
+	  write(6,*) flux
+	  write(6,*) vel
+	end if
+
+	in = 0
+	it = 0
+	ff = 0.
+	fp = 0.
+	fm = 0.
+	do ii=1,3
+	  if( flux(ii) > 0. ) then	!flux into element
+	    in = in + 1
+	    it = it + ii
+	    fp = fp + flux(ii)
+	  else
+	    fm = fm - flux(ii)
+	  end if
+	end do
+
+	if( in == 1 ) then
+	  iflux = -it
+	  inext = mod(it,3) + 1
+	  alpha = 1 + flux(inext)/fm
+	else if( in == 2 ) then
+	  iflux = 6 - it
+	  inext = mod(iflux,3) + 1
+	  alpha = 1 - flux(inext)/fp
+	else
+	  iflux = 0
+	  alpha = 0.
+	  vel = 0.
+	end if
+
+	if( bdebug ) then
+	  write(6,*) in,it
+	  write(6,*) iflux,inext
+	  write(6,*) fp,fm,alpha
+	  write(6,*) 'track_xi_get_flux end'
+	end if
+
+	if( bback ) iflux = -iflux
+
+	alpha = min(alpha,1.)
+	alpha = max(alpha,0.)
+
+	end
+
+c************************************************************
+
+	subroutine track_xi_get_vertical(id,iel,lb,lmax,hd,w)
+
+	implicit none
+
+	integer id			!id of particle
+	integer iel			!element number
+	integer lb			!layer
+	integer lmax			!maximum layers in element (return)
+	double precision hd		!layer thickness (return)
+	double precision w		!vertical velocity (return)
+
+	include 'param.h'
+	include 'basin.h'
+	include 'hydro_vel.h'
+	include 'nlevel.h'
+
+	integer ii,k
+	real wo,wn
+	real hl(nlv)
+
+	lmax = nlv
+	call lagr_layer_thickness(iel,lmax,hl)
+
+	if( lb > lmax ) goto 99
+
+	hd = hl(lb)
+
+	w = 0.
+	do ii=1,3
+	  k = nen3v(ii,iel)
+	  wo = wlov(lb,k) + wlov(lb-1,k)
+	  wn = wlnv(lb,k) + wlnv(lb-1,k)
+	  w = w + wo + wn
+	end do
+
+	w = w / 12.
+
+	return
+   99	continue
+	write(6,*) 'id,iel,l,lmax: ',id,iel,lb,lmax
+	stop 'error stop track_xi_get_vertical: no such layer'
+	end
+
+c************************************************************
+
+	subroutine track_xi_check(text,xi)
+
+	implicit none
+
+	character*(*) text
+	double precision xi(3)
+
+	logical berror
+	integer ii
+	double precision tot,eps
+
+	berror = .false.
+	eps = 1.e-5
+
+	tot = 0.
+	do ii=1,3
+	  tot = tot + xi(ii)
+	  if( xi(ii) > 1. ) berror = .true.
+	  if( xi(ii) < 0. ) berror = .true.
+	end do
+	if( abs(tot-1.) > eps ) berror = .true.
+
+	if( berror ) then
+	  write(6,*) text
+	  write(6,*) xi
+	  stop 'error stop track_xi_check: wrong xi'
+	end if
+
+	end
+
+c************************************************************
+
+	subroutine track_xi_info_element(ie)
+
+c prints information on element
+
+	implicit none
+
+	integer ie
+
+	include 'param.h'
+	include 'lagrange.h'
+	include 'basin.h'
+	include 'ev.h'
+	include 'geom.h'
+	include 'nlevel.h'
+	include 'hydro_vel.h'
+
+	integer ii,k,lmax,l
+	real hl(nlv)
+
+	write(6,*) 'info on element ',ie
+
+	do ii=1,3
+	  k = nen3v(ii,ie)
+	  write(6,*) ii,k,xgv(k),ygv(k)
+	end do
+
+	write(6,*) (ieltv(ii,ie),ii=1,3)
+
+	lmax = nlv
+	call lagr_layer_thickness(ie,lmax,hl)
+	write(6,*) lmax
+	write(6,*) (hl(l),l=1,lmax)
+
+	write(6,*) (ulov(l,ie),l=1,lmax)
+	write(6,*) (vlov(l,ie),l=1,lmax)
+	write(6,*) (ulnv(l,ie),l=1,lmax)
+	write(6,*) (vlnv(l,ie),l=1,lmax)
+
+	write(6,*) 'info on element end'
+
+	end
 
 c************************************************************
 

@@ -8,6 +8,7 @@ c 06.04.1999    ggu     some cosmetic changes
 c 03.12.2001    ggu     some extra output -> place of min/max
 c 09.12.2003    ggu     check for NaN introduced
 c 07.03.2007    ggu     easier call
+c 23.04.2015    ggu     for new version 5
 c
 c**************************************************************
 
@@ -22,8 +23,9 @@ c reads nos file
 	integer nread,nin,i,it
 	integer mtype,nvers
 	integer nbdy,nn,nout
-	integer ip,ie,ies
-	real x,y,xs,ys
+	integer id,ie,ies,lmax,lb
+	real x,y,z,xs,ys
+	integer id_special
 
 	integer iapini
 	integer ifem_open_file
@@ -31,6 +33,9 @@ c reads nos file
 c--------------------------------------------------------------
 
 	nread=0
+	id_special = 1
+	id_special = 4
+	id_special = 0
 
 c--------------------------------------------------------------
 c open simulation
@@ -44,6 +49,7 @@ c--------------------------------------------------------------
 
 	read(nin) mtype,nvers
 	write(6,*) 'mtype,nvers: ',mtype,nvers
+	if( nvers > 4 ) read(nin) lmax
 	if( mtype .ne. 367265 ) stop 'error stop: mtype'
 
 c--------------------------------------------------------------
@@ -58,8 +64,15 @@ c--------------------------------------------------------------
 	   nread = nread + 1
 
 	   do i=1,nn
-	     read(nin) ip,x,y,ie,xs,ys,ies
+	     if( nvers < 5 ) then
+	       read(nin) id,x,y,z,ie,xs,ys,ies
+	     else
+	       read(nin) id,x,y,z,ie,lb,xs,ys,ies
+	     end if
 	     !if( ie .lt. 0 ) write(6,*) -ie,x,y
+	     if( id_special < 0 .or. id == id_special ) then
+	       write(6,*) id,x,y,z,lb
+	     end if
 	   end do
 
 	end do	!do while

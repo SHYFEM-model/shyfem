@@ -11,17 +11,56 @@ c 15.02.2009    ggu     cleaned version
 c 20.10.2011    ggu     fx renamed to flux2d, new flux3d and vel3d_ie
 c 16.12.2011    ggu     new array id_body, new vars idbdy, lunit
 c
-c******************************************************************
+c*****************************************************************
 
-c-------------------------------------------------- main variables
+c--------------------------------------------------
+c main parameters
+c--------------------------------------------------
 
-	logical bsurf				!particle only in surface layer
-	parameter ( bsurf = .true. )
+	logical blgrxi				!new version with xi coords
+	parameter (blgrxi=.true.)
 
+	logical blgrdebug,blgrsurf
+	common /lagr_b/blgrdebug,blgrsurf
+	save /lagr_b/
+
+        integer ilagr				!type of lagrangian simulation
         integer nbdy				!total number of particles
         integer idbdy				!max id used
         integer lunit				!unit for messages
-        common /lagr_i/nbdy,idbdy,lunit
+        integer ipvert				!vertical release
+        common /lagr_i/ilagr,nbdy,idbdy,lunit,ipvert
+	save /lagr_i/
+
+c--------------------------------------------------
+c special variables
+c--------------------------------------------------
+
+	real azlgr				!az parameter
+	common /azlgr/azlgr
+
+	real tdecay				!decay time - do not use
+	common /tdecay/tdecay
+
+	real fall				!vertical sinking velocity
+	common /fall/fall
+
+	integer artype				!special element type
+	common /artype/artype
+
+c--------------------------------------------------
+c horizontal diffusion
+c--------------------------------------------------
+	
+	real rwhpar				!horizontal diffusivity
+	common /rwhpar/rwhpar
+	
+	real rwhvar(neldim)			!horizontal diffusivity (vary)
+	common /rwhvar/rwhvar
+		
+c--------------------------------------------------
+c arrays
+c--------------------------------------------------
 
         integer est(nbdydim)			!initial element number
         common /est/est
@@ -65,22 +104,13 @@ c-------------------------------------------------- main variables
         integer id_body(nbdydim)		!id of particle
         common /id_body/id_body
 
-c-------------------------------------------------- random walk
-	
-	real rwhpar				!horizontal diffusivity
-	common /rwhpar/rwhpar
-	
-	real rwhvar(neldim)			!horizontal diffusivity (vary)
-	common /rwhvar/rwhvar
-		
-c-------------------------------------------------- backtracking
+c--------------------------------------------------
+c backtracking
+c--------------------------------------------------
 
 	integer nback
 	logical bback
 	common /backtrack/ nback, bback
-
-	logical bsurface			!keep particles on surface
-	parameter (bsurface=.true.)
 
 	real v_lag(neldim), u_lag(neldim)	!backtracking velocity
 	common /v_lag/v_lag, /u_lag/u_lag
@@ -97,7 +127,9 @@ c-------------------------------------------------- backtracking
         real z_back(neldim)			!backtracking z-coordinate
 	common /z_back/z_back
 
-c-------------------------------------------------- fluxes and velocities
+c--------------------------------------------------
+c fluxes and velocities
+c--------------------------------------------------
 	
         real flux2d(3,neldim)			!fluxes of sides
         common /flux2d/flux2d
@@ -114,18 +146,9 @@ c-------------------------------------------------- fluxes and velocities
         real dvert(3,neldim)
         common /dvert/dvert
 
-c-------------------------------------------------- special variables
-
-	real tdecay				!decay time - do not use
-	common /tdecay/tdecay
-
-	real fall				!vertical sinking velocity
-	common /fall/fall
-
-	integer artype				!special element type
-	common /artype/artype
-
-c------------------------------------------------------------
+c--------------------------------------------------
+c conncectivity
+c--------------------------------------------------
 
 	integer i_count(neldim)
 	double precision t_count(neldim)
@@ -134,11 +157,11 @@ c------------------------------------------------------------
 	common /t_count/t_count
 	save /i_count/,/t_count/
 
-c------------------------------------------------------------
+c--------------------------------------------------
 
 	integer*8 lgr_bitmap_in(nbdydim)	!bitmap for entry
 	integer*8 lgr_bitmap_out(nbdydim)	!bitmap for leave
 	common /lgr_bitmap/lgr_bitmap_in,lgr_bitmap_out
 
-c------------------------------------------------------------
+c--------------------------------------------------
 

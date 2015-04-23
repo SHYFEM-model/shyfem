@@ -201,7 +201,8 @@ HTOBJS = \
 	subets.o subetsa.o \
 	$(IFF_FILES) \
 	$(ECOLOGICAL_OBJ) \
-	$(NETCDF_OBJ) $(PARALLEL_OBJ)
+	$(NETCDF_OBJ) $(PARALLEL_OBJ) \
+	subxi.o
 
 # objects for pre-processor vp
 
@@ -846,7 +847,8 @@ lagrange_dif.o: param.h femtime.h lagrange.h
 lagrange_flux.o: depth.h hydro.h param.h nlevel.h ev.h femtime.h \
 		lagrange.h nbasin.h levels.h basin.h links.h 
 lagrange_init.o: nbasin.h param.h basin.h aux_array.h
-lagrange_inout.o: param.h basin.h ev.h femtime.h lagrange.h
+lagrange_inout.o: param.h basin.h ev.h nlevel.h femtime.h \
+		lagrange.h 
 lagrange_larve.o: param.h lagrange.h
 lagrange_main.o: nbasin.h param.h basin.h femtime.h lagrange.h
 lagrange_oil.o: nbasin.h param.h femtime.h ev.h lagrange.h \
@@ -855,8 +857,8 @@ lagrange_track.o: hydro_vel.h param.h levels.h basin.h nlevel.h \
 		lagrange.h geom.h 
 lagrange_util.o: nbasin.h param_dummy.h ev.h basin.h
 lagrange_util_tr.o: param_dummy.h basin.h
-lagrange_vertical.o: depth.h hydro_vel.h hydro.h param.h levels.h \
-		basin.h 
+lagrange_vertical.o: depth.h hydro_vel.h hydro.h param.h ev.h \
+		nlevel.h lagrange.h levels.h basin.h geom.h 
 lgrelab.o: nbasin.h depth.h param.h basin.h
 lgrinf.o: param.h
 loading.o: nbasin.h param.h levels.h

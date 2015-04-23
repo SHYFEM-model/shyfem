@@ -112,6 +112,7 @@ c	--------------------------------------------
 
 	call getaz(azpar)
 	az = azpar
+	azlgr = az		!store in include file
 
         do ie=1,nel
 	  lmax = ilhv(ie)

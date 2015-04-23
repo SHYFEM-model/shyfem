@@ -428,13 +428,13 @@ c release in partial area
 
 	implicit none
 
-	include 'param.h'
-
 	real dxy
 	integer n
 	real x(1),y(1)
 
+	include 'param.h'
 	include 'nbasin.h'
+	!include 'lagrange.h'
 
 	integer iflag(neldim)
 
@@ -511,7 +511,7 @@ c-----------------------------------------------------------------
               if( iin .ne. 0 ) then
 		if( ifl .eq. 1 .or. inpoly(n,x,y,xp,yp) ) then
                   np = np + 1
-                  call insert_particle(ie,0.,xp,yp)
+                  call insert_particle_3d(ie,0.,xp,yp)
 		end if
               end if
             end do
@@ -538,7 +538,9 @@ c release in total area
 
 	real dxy
 
+	!include 'param.h'
 	include 'nbasin.h'
+	!include 'lagrange.h'
 
 	integer ie,i,j
 	integer nin,iin
@@ -575,7 +577,7 @@ c------------------------------------------------------------------
 
 	      if( iin .ne. 0 ) then
 		nin = nin + 1
-	  	call insert_particle(ie,0.,xp,yp)
+	  	call insert_particle_3d(ie,0.,xp,yp)
 	      end if
 	    end do
 	  end do

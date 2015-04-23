@@ -1,14 +1,178 @@
 
 c*****************************************************************
+c
+c test internal routines
+c
+c*****************************************************************
 
-	program lagxitest
+	program xi_test_main
+
+	include 'param.h'
+	include 'basin.h'
+	include 'evmain.h'
+
+	integer iapini
+
+        if(iapini(1,nkndim,neldim,0).eq.0) then
+                stop 'error stop : iapini'
+        end if
+	call set_ev
+	write(6,*) nkn,nel
+
+	call lagxi_path_plot_test
+	call lagxi_path_test
+	call lagxi_dist_test
+	call lagxi_conv_test		!conversion routines
+
+	end
+
+c*****************************************************************
+
+	subroutine lagxi_dist_test
+
+c tests the internal coordinates and distances
+
+	implicit none
+
+	include 'param.h'
+	include 'basin.h'
+	include 'evmain.h'
+
+	logical bdebug
+	integer ie,i,ii,n,ifreq
+	double precision xia(3),xib(3)
+	double precision xa,ya,xb,yb
+	double precision l,lxy,r,eps
+
+	n = 100000
+	ifreq = n / 10
+	ifreq = max(ifreq,1)
+	eps = 1.e-5
+	bdebug = .false.
+
+	write(6,*) 'running lagxi_dist_test: ',n
+
+	do i=1,n
+	  call random_number(r)
+	  ie = r*nel + 1
+	  ie = min(ie,nel)
+	  call make_side_point(xia)
+	  call make_side_point(xib)
+	  call xi_dist(ie,xia,xib,l)
+	  call xi2xy(ie,xa,ya,xia)
+	  call xi2xy(ie,xb,yb,xib)
+	  lxy = sqrt((xa-xb)**2+(ya-yb)**2)
+	  if( mod(i,ifreq) == 0 ) write(6,*) i,ie,l,lxy
+	  if( abs(l-lxy) > eps ) goto 99
+	end do
+
+	return
+   99	continue
+	  write(6,*) 'error in length: ',l,lxy
+	  write(6,*) ie,nel
+	  write(6,*) xia
+	  write(6,*) xib
+	  write(6,*) (ev(10+ii,ie),ii=1,3)
+	  write(6,*) (ev(16+ii,ie),ii=1,3)
+	stop 'error stop: distances'
+	end
+
+c*****************************************************************
+
+	subroutine make_side_point(xi)
+
+	implicit none
+
+	double precision xi(3)
+
+	integer i
+	double precision r,eps
+
+	eps = 0.05
+
+	call random_number(r)
+	i = 1 + 3.*r
+	i = min(i,3)
+	
+	xi(i) = 0.
+
+	i = mod(i,3) + 1
+	call random_number(r)
+	if( r < eps ) r = 0.
+	xi(i) = r
+
+	i = mod(i,3) + 1
+	xi(i) = 1. - r
+
+	end
+
+c*****************************************************************
+
+	subroutine lagxi_path_test
 
 c tests the internal coordinates and paths in one triangle
 
 	implicit none
 
-	integer i,iflux
-	double precision r
+	include 'param.h'
+	include 'basin.h'
+	include 'evmain.h'
+
+	integer n,ie,ii,i,iflux,ifreq
+	double precision r,s,diff,eps
+	double precision xp,yp
+	double precision alpha
+	double precision xx(3),yy(3)
+	double precision xip(3)
+	double precision xis(3)
+	double precision xie(3)
+	double precision xi(3)
+
+	n = 1000
+	ifreq = n / 10
+	ifreq = max(ifreq,1)
+	eps = 1.e-5
+
+	write(6,*) 'running lagxi_path_test: ',n
+
+	do i=1,n
+	  call make_triangle(ie,xx,yy)
+	  call make_test_point(xip)
+	  call random_number(alpha)
+	  call random_number(r)
+	  iflux = 3*r + 1
+	  iflux = min(3,iflux)
+	  call xit_start_end(iflux,alpha,xip,xis,xie,s)
+	  diff = 0.
+	  do ii=1,3
+	    xi(ii) = (1.-s)*xis(ii) + s*xie(ii)
+	    diff = diff + abs(xi(ii)-xip(ii))
+	  end do
+	  if( mod(i,ifreq) == 0 ) write(6,*) i,ie,s,diff
+	  if( diff > eps ) goto 99
+	end do
+
+	return
+   99	continue
+	  write(6,*) 'error in parameter s: ',s,diff
+	  write(6,*) ie,nel
+	  write(6,*) xis
+	  write(6,*) xie
+	  write(6,*) xip
+	  write(6,*) xi
+	stop 'error stop: distances'
+	end
+
+c*****************************************************************
+
+	subroutine lagxi_path_plot_test
+
+c tests the internal coordinates and paths in one triangle and plot
+
+	implicit none
+
+	integer n,ie,i,iflux
+	double precision r,s
 	double precision xp,yp
 	double precision alpha
 	double precision xx(3),yy(3)
@@ -22,20 +186,50 @@ c tests the internal coordinates and paths in one triangle
 	yy(2) = 6.
 	xx(3) = 7.
 	yy(3) = 9.
-	alpha = 0.4
 
-	do i=1,15
+	n = 15
+	write(6,*) 'running lagxi_path_plot_test: ',n
+
+	do i=1,n
+	  call make_triangle(ie,xx,yy)
 	  call make_test_point(xip)
 	  call random_number(alpha)
 	  call random_number(r)
 	  iflux = 3*r + 1
 	  iflux = min(3,iflux)
+	  !call xit_start_end(iflux,alpha,xip,xis,xie,s)
 	  call follow_path(iflux,xx,yy,xip,alpha)
 	end do
 
-	!call xi_test
-
 	call qclose
+
+	end
+
+c*****************************************************************
+
+	subroutine make_triangle(ie,xx,yy)
+
+	implicit none
+
+	integer ie
+	double precision xx(3),yy(3)
+	
+	include 'param.h'
+	include 'basin.h'
+	include 'evmain.h'
+
+	integer ii,k
+	double precision r
+
+	call random_number(r)
+	ie = r*nel + 1
+	ie = min(ie,nel)
+
+	do ii=1,3
+	  k = nen3v(ii,ie)
+	  xx(ii) = xgv(k)
+	  yy(ii) = ygv(k)
+	end do
 
 	end
 
@@ -68,17 +262,22 @@ c*****************************************************************
 	double precision xip(3)
 	double precision alpha
 
+	logical bdebug
 	real x,y
 	double precision xp,yp
 	double precision beta,ap,gamma
 
+	bdebug = .false.
+
 	call xit2xy(xx,yy,xp,yp,xip)
 
-	write(6,*) '========================= ',iflux
-	write(6,*) xx
-	write(6,*) yy
-	write(6,*) xip
-	write(6,*) xp,yp
+	write(6,*) '== ',iflux,alpha
+	if( bdebug ) then
+	  write(6,*) xx
+	  write(6,*) yy
+	  write(6,*) xip
+	  write(6,*) xp,yp
+	end if
 
 	call qstart
 
@@ -113,9 +312,9 @@ c*****************************************************************
 
 	integer i,n,i1
 	real x,y
-	double precision beta,s
+	double precision s
 
-	call xit_start_end(iflux,alpha,xip,xis,xie)
+	call xit_start_end(iflux,alpha,xip,xis,xie,s)
 
 	call xit2xy(xx,yy,xp,yp,xis)
 	x = xp
@@ -153,8 +352,8 @@ c*****************************************************************
 	xip(i2) = 1.-alpha
 	xip(i3) = alpha
 
-	write(6,*) 'alpha = ',alpha
-	write(6,*) xip
+	!write(6,*) 'alpha = ',alpha
+	!write(6,*) xip
 
 	x = xx(i1)
 	y = yy(i1)
@@ -208,18 +407,26 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine xi_test
+	subroutine lagxi_conv_test
+
+c tests conversion routines from and to internal coordinates
 
 	double precision xx(3),yy(3)
 	double precision xi(3),xip(3)
 	double precision x,y
 	double precision xis,xips,xidiff
 	double precision eps,area,reg
-	integer n,ii
+	integer i,n,ii
 
+	n = 500000
+	ifreq = n / 10
+	ifreq = max(ifreq,1)
 	eps = 1.e-7
+	i = 0
 
-	do n=1,500000
+	write(6,*) 'running lagxi_conv_test: ',n
+
+	do while( i < n )
 	  do ii=1,3
 	    call random_number(xx(ii))
 	    call random_number(yy(ii))
@@ -228,9 +435,10 @@ c*****************************************************************
 
 	  call xit_check(xx,yy,area,reg)
 	  if( area <= 0. ) cycle
-	  if( area <= 1.e-5 ) cycle
-	  if( reg <= 1.e-4 ) cycle
+	  if( area <= 1.e-4 ) cycle
+	  if( reg <= 1.e-3 ) cycle
 
+	  i = i + 1
 	  !xi(1) = 1.
 	  xi(2) = xi(2)*(1.-xi(1))
 	  xi(3) = 1. - xi(1) - xi(2)
@@ -246,8 +454,7 @@ c*****************************************************************
 	  xis = xi(1) + xi(2) + xi(3)
 	  xips = xip(1) + xip(2) + xip(3)
 
-	  !write(6,*) n,xis,xips
-	  write(6,*) n,xidiff
+	  if( mod(i,ifreq) == 0 ) write(6,*) i,xidiff
 	  if( xidiff .gt. eps ) then
 	    write(6,*) x,y
 	    write(6,*) xx

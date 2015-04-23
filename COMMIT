@@ -1,5 +1,37 @@
 ============================================================
 
+Thu Apr 23 15:43:09 CEST 2015
+
+lagrangian 3d
+
+ .gitignore                |    1 +
+ LOG                       |   24 ++
+ RELEASE_NOTES             |    8 +
+ fem3d/Makefile            |   10 +-
+ fem3d/lagrange.h          |   87 ++++---
+ fem3d/lagrange_cont.f     |    4 +-
+ fem3d/lagrange_flux.f     |    1 +
+ fem3d/lagrange_init.f     |   10 +-
+ fem3d/lagrange_inout.f    |  185 +++++++++++++-
+ fem3d/lagrange_main.f     |  129 +++++++---
+ fem3d/lagrange_track.f    |   12 +-
+ fem3d/lagrange_vertical.f |  618 ++++++++++++++++++++++++++++++++++++++++++++-
+ fem3d/lgrinf.f            |   19 ++-
+ fem3d/param.h             |    6 +-
+ fem3d/subnev.f            |  128 +++++++++-
+ fem3d/subxi.f             |   46 +++-
+ femadj/param.h            |    6 +-
+ femdoc/final/shyfem.pdf   |  Bin 293718 -> 293716 bytes
+ femdoc/final/shyfem.ps    |   30 +-
+ femplot/Makefile          |    1 +
+ femplot/lagxitest.f       |  253 +++++++++++++++++--
+ femplot/param.h           |    6 +-
+ femplot/suplag.f          |   52 +++-
+ param.h                   |    6 +-
+ 24 files changed, 1464 insertions(+), 178 deletions(-)
+
+============================================================
+
 Wed Apr  1 19:00:17 CEST 2015
 
 New version 7_1_7

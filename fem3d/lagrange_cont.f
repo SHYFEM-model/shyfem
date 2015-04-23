@@ -286,7 +286,7 @@ c*******************************************************************
 	  rt = ggrand(77)
 	  x = x1 + rl*dx
 	  y = y1 + rl*dy
-	  call insert_particle(ie1,rt,x,y)
+	  call insert_particle_3d(ie1,rt,x,y)
 	  !write(6,*) i,rl,x,y,ie1
 	end do
 
@@ -371,7 +371,7 @@ c release from one point
 
 	do i=1,n
 	  rt = ggrand(77)			!vary time
-	  call insert_particle(ie,rt,x,y)
+	  call insert_particle_3d(ie,rt,x,y)
 	  !write(55,*) 'gguuyy particle: ',ie,rt,x,y
 	end do
 

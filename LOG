@@ -1,4 +1,28 @@
 
+23.04.2015
+
+lagrangian 3d
+
+c ./femplot/suplag.f:
+c 23.04.2015    ggu     plotting for 3d particles
+c
+c ./fem3d/lgrinf.f:
+c 23.04.2015    ggu     for new version 5
+c
+c ./fem3d/lagrange_main.f:
+c 23.04.2015    ggu     internal coordinates implemented (blgrxi)
+c
+c ./fem3d/subnev.f:
+c 19.04.2015    ggu     new routines for internal coordinates (distance)
+c 22.04.2015    ggu     bug fix in xi2xy - x/y were exchanged
+c
+c ./fem3d/subxi.f:
+c 23.04.2015    ggu     compute s value for particle path
+c
+c ./fem3d/lagrange_vertical.f:
+c 23.04.2015    ggu     internal coodinates finished
+
+
 01.04.2015
 
 intermediate version

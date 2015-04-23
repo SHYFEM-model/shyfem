@@ -74,6 +74,7 @@ c 22.10.2012    ggu     call connectivity also after diffusion
 c 22.10.2012    ggu     limit release to itranf/end
 c 28.03.2014    ggu     code cleaned - connectivity
 c 10.04.2014    ggu     new code for lagr_count
+c 23.04.2015    ggu     internal coordinates implemented (blgrxi)
 c
 c****************************************************************            
 
@@ -95,7 +96,6 @@ c lagranian main routine
 	logical blarvae
 	save brelease,bcompres,boilsim,blarvae
 
-        integer ilagr
         integer itlanf,itlend
 	integer idtl,itranf,itrend,itrnext
 	integer itmlgr,idtlgr,itmnext
@@ -152,22 +152,11 @@ c---------------------------------------------------------------
           itranf=getpar('itranf') 	!time of initial continuous release
           itrend=getpar('itrend') 	!time of final continuous release
 
-          artype=getpar('artype')	!store special type in common block
-          rwhpar=getpar('rwhpar')	!lagrangian diffusion
-
           ldecay=getpar('ldecay')	!decay time for particles
           boilsim=nint(getpar('ioil')).gt.0
           blarvae=nint(getpar('ilarv')).gt.0
 
-	  lunit = ifemop('.lgi','form','new') !unit for lagrangian info
-	  if( lunit .le. 0 ) then
-	    write(6,*) 'lunit = ',lunit
-	    stop 'error stop lagrange: cannot open info file'
-	  end if
-
-	  nbdy = 0 		!number of particles to insert
-	  idbdy = 0		!id body unique 
-	  tdecay = 0		!not used anymore
+	  call lagr_init_common
 
 c	  if( boilsim ) call init_diff_oil
 
@@ -302,6 +291,56 @@ c---------------------------------------------------------------
 
 c**********************************************************************
 
+	subroutine lagr_init_common
+
+c initializes common block
+
+	implicit none
+
+	include 'param.h'
+	include 'lagrange.h'
+
+	real getpar
+	integer ifemop
+
+        artype=getpar('artype')	!store special type in common block
+        rwhpar=getpar('rwhpar')	!lagrangian diffusion
+
+	lunit = ifemop('.lgi','form','new') !unit for lagrangian info
+	if( lunit .le. 0 ) then
+	  write(6,*) 'lunit = ',lunit
+	  stop 'error stop lagrange: cannot open info file'
+	end if
+
+	nbdy = 0 		!number of particles to insert
+	idbdy = 0		!id body unique 
+	tdecay = 0		!not used anymore
+
+	blgrdebug = .false.
+
+c ilagr = 1	surface lagrangian
+c ilagr = 2	2d lagrangian (not implemented)
+c ilagr = 3	3d lagrangian
+
+	blgrsurf = ilagr == 1
+	if( ilagr /= 1 .and. ilagr /= 3 ) then
+	  write(6,*) 'ilagr = ',ilagr
+	  stop 'error stop lagr_init_common: value for ilagr not allowed'
+	end if
+
+c vertical distribution of particles
+c n = abs(ipvert)
+c ipvert == 0    realase one particle in surface layer
+c ipvert > 0     realase n particles regularly
+c ipvert < 0     realase n particles randomly
+
+	ipvert = 1
+	ipvert = 4
+
+	end
+
+c**********************************************************************
+
 	subroutine drogue
 
 	implicit none
@@ -351,8 +390,8 @@ c**********************************************************************
 c	write(lunit,*) 'lagrangian: (tot,out,in) ',nbdy,nf,nbdy-nf
 c	write(lunit,'(a,i10,12i5)') 'parallel: ',nbdy,(ic(ii),ii=0,n-1)
 
-	write(iuinfo,*) 'lagrange: ',nbdy
-	write(6,*) 'lagrange: ',nbdy
+	write(iuinfo,*) 'lagrange_nbdy: ',nbdy
+	!write(6,*) 'lagrange_nbdy: ',nbdy
 
 	end
 
@@ -396,8 +435,13 @@ c	call lagr_surv(i)
 	if( tmax .lt. 0. ) stop 'error stop drogue: internal error'
 	ttime = min(tmax,dt)
 
-        if( lb > 0 ) call track_body(i,id,x,y,z,lb,ie,ttime) 
-        !if( lb > 0 ) call track_body_xi(i,id,x,y,z,xi,ie,lb,ttime) 
+	if( lb > 0 ) then
+	  if( blgrxi ) then
+            call track_body_xi(i,id,x,y,z,xi,ie,lb,ttime) 
+	  else
+            call track_body(i,id,x,y,z,lb,ie,ttime) 
+	  end if
+	end if
 
 	x_body(i)=x
 	y_body(i)=y
@@ -433,13 +477,8 @@ c tracks one particle - uses internal coordinates
 	
 	include 'basin.h'
         
-	integer nl
-	integer ltbdy
-	integer ieold,ieorig
-	!integer ielem		!element number to check
-	real torig
-	real xn,yn,zn
-	integer ly
+	integer n
+	double precision xx,yy,zz
 
         if(iel.le.0) return	!particle out of domain
 
@@ -447,33 +486,49 @@ c---------------------------------------------------------------
 c initialize
 c---------------------------------------------------------------
 
-        nl = 100		!maximum loop count
-
-	xn = x
-	yn = y
-	zn = z
-	ly = lb
+        n = 100		!maximum loop count
+	zz = z
 
 c---------------------------------------------------------------
 c track particle
 c---------------------------------------------------------------
 
-	do while ( ttime.gt.0 .and. iel.eq.ieold )
-          !call track_orig(ttime,id,iel,xn,yn,zn,ly,ltbdy)
+	do while ( ttime.gt.0 .and. n > 0 )
+          call track_xi(id,iel,lb,xi,zz,ttime)
+	  if( iel < 1 ) exit
+	  if( lb < 1 ) exit
+	  n = n - 1
 	end do
+
+	call xi2xy(abs(iel),xx,yy,xi)
+	x = xx
+	y = yy
+	z = zz
+
+	if( id == 0 ) then
+	  write(6,*) 'lgrggu: ',iel,lb,ttime
+	  write(6,*) 'lgrggu: ',x,y,z
+	  write(6,*) 'lgrggu: ',xi
+	end if
 
 c---------------------------------------------------------------
 c special treatment and finish up
 c---------------------------------------------------------------
 
+	if( ttime > 0. ) then
+	  if( n == 0 ) then
+	    write(6,*) 'killing particle ',id,iel,n,ttime
+	    iel = -iel
+	  else if( iel < 1 ) then
+	    !write(6,*) 'loosing particle ',id,iel,n,ttime
+	  else
+	    write(6,*) 'unknown error ',id,iel,n,ttime
+	  end if
+	end if
+
         if( .not. bback ) then
           if( iel.gt.0 .and. iarv(iel).eq.artype ) iel = -iel
 	end if
-
-	x = xn
-	y = yn
-	z = zn
-	lb = ly
 
 c---------------------------------------------------------------
 c end of routine
