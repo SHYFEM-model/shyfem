@@ -239,6 +239,7 @@ c 23.01.2015	ggu	version 7.1.4
 c 25.02.2015	ggu	version 7.1.5
 c 26.02.2015	ggu	version 7.1.6
 c 01.04.2015	ggu	version 7.1.7	first of aprile version
+c 23.04.2015	ggu	version 7.1.8	St. George's release '
 c
 c*****************************************************************
 
@@ -246,15 +247,15 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.1.7}
-c \newcommand{\version}{7\_1\_7}
+c \newcommand{\VERSION}{7.1.8}
+c \newcommand{\version}{7\_1\_8}
 c
 c DOCS	END
 
         implicit none
 
         character*10 version
-	parameter (version='7.1.7')
+	parameter (version='7.1.8')
 
         character*30 string
 	parameter (string='SHYFEM VERSION = '//version)
