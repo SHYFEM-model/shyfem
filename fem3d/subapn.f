@@ -30,6 +30,7 @@ c 27.02.2013	ggu	pass what parameter into nlsa
 c 05.09.2013	ggu	read_apn_file() needs integer now
 c 14.01.2015	ggu	reorganized and cleaned
 c 10.02.2015	ggu	debugged, bcompat gives compatibility with old versions
+c 29.04.2015	ggu	generic changes - now works as anticipated
 c
 c notes :
 c
@@ -43,6 +44,9 @@ c		->   call assnam
 c		->   call read_bas_file(nkndi,neldi)
 c		->   call sp131k(matdim)
 c
+c .memory is only changed with bask == .true.
+c .memory is read with bmem == .true., but not changed
+c
 c****************************************************************
 
 	subroutine assnam(mode)
@@ -51,7 +55,7 @@ c assigns name for run and basin (also interactivly)
 c
 c mode          1:assign basin 2:assign run 4:assign parameter file
 c
-c mode < 0	do not change names
+c mode < 0	do not ask for names
 c
 c combinations are possible, all together : 7
 
@@ -59,18 +63,18 @@ c combinations are possible, all together : 7
 
 	integer mode
 
-	logical bchang,bask
+	logical bchange,bask
 	character*80 runnam,basnam
-	character*80 runaux,basaux
+	character*80 runmem,basmem
 
 c---------------------------------------------------------------------
 c read memory file
 c---------------------------------------------------------------------
 
 	bask = mode .gt. 0
-	bchang = .false.
+	bchange = .false.
 
-	call read_memory(runaux,basaux)
+	call read_memory(runmem,basmem)
 
 c---------------------------------------------------------------------
 c if we already have the names through the title section -> use these
@@ -83,15 +87,15 @@ c---------------------------------------------------------------------
 	call triml(runnam)
 	call triml(basnam)
 
-	if( runnam .eq. ' ' ) runnam = runaux
-	if( basnam .eq. ' ' ) basnam = basaux
+	if( runnam .eq. ' ' ) runnam = runmem
+	if( basnam .eq. ' ' ) basnam = basmem
 
 c---------------------------------------------------------------------
 c if necessary ask for new values
 c---------------------------------------------------------------------
 
 	if( bask ) then
-	  call ask_memory(mode,runnam,basnam,bchang)
+	  call ask_memory(mode,runnam,basnam,bchange)
 	end if
 
 c---------------------------------------------------------------------
@@ -121,7 +125,7 @@ c---------------------------------------------------------------------
 	call putfnm('runnam',runnam)
 	call putfnm('basnam',basnam)
 
-	if(bchang) call write_memory(runnam,basnam)
+	if(bchange) call write_memory(runnam,basnam)
 
 c---------------------------------------------------------------------
 c end of routine
@@ -149,17 +153,40 @@ c sets basin and simulation
 
 c*************************************************************
 
-	subroutine ap_init(mode,nkndi,neldi)
+	subroutine ap_get_names(basin,simul)
+
+c sets basin and simulation
+
+	character*(*) basin,simul
+
+	logical haspar
+
+	basin = ' '
+	simul = ' '
+
+	if( haspar('runnam') ) call getfnm('runnam',simul)
+	if( haspar('basnam') ) call getfnm('basnam',basin)
+
+	end
+
+c*************************************************************
+c*************************************************************
+c*************************************************************
+
+	subroutine ap_init(bask,mode,nkndi,neldi)
 
 c initializes post processing
 
 	implicit none
 
+	logical bask
 	integer mode,nkndi,neldi
 
-	integer iapini
-
-	if( iapini(mode,nkndi,neldi,0) .le. 0 ) stop
+	if( bask ) then
+	  call iap_init(mode,nkndi,neldi,0)
+	else
+	  call iap_init(-mode,nkndi,neldi,0)
+	end if
 
 	end
 
@@ -188,20 +215,12 @@ c mode negative: do not ask for new basin and simulation
 
 	logical bcompat
 	integer nmode,iauto
+
 	real getpar
 
-	iapini = 1
 	bcompat = .false.	!set to .true. for compatibility
 
-c---------------------------------------------------------------------
-c assign new parameter file
-c---------------------------------------------------------------------
-
-	call pardef(mode)
-
-c---------------------------------------------------------------------
-c get names of basin and simulation
-c---------------------------------------------------------------------
+	call pardef		!we need this for iauto
 
 	nmode = mode
 	iauto = nint(getpar('iauto'))
@@ -209,7 +228,45 @@ c---------------------------------------------------------------------
 
 	if( .not. bcompat ) nmode = -abs(mode)	!never ask
 
-	call assnam(nmode)
+	call iap_init(nmode,nkndi,neldi,matdim)
+
+	iapini = 1
+
+	end
+
+c*************************************************************
+
+	subroutine iap_init(mode,nkndi,neldi,matdim)
+
+c init routine for ap routines
+c
+c calls pardef
+c calls assnam
+c reads basin
+c
+c iapini        1:success 0:error
+c mode          for assnam 1:assign basin 2:assign run 3:both
+c nkndim        dimension for nkn for reading bas file
+c neldim        dimension for nel for reading bas file
+c matdim        (probably useless...)
+c
+c mode negative: do not ask for new basin and simulation
+
+	implicit none
+
+	integer mode,nkndi,neldi,matdim
+
+c---------------------------------------------------------------------
+c assign new parameter file
+c---------------------------------------------------------------------
+
+	call pardef
+
+c---------------------------------------------------------------------
+c get names of basin and simulation
+c---------------------------------------------------------------------
+
+	call assnam(mode)
 
 c---------------------------------------------------------------------
 c if no bas file has to be opened we are done
@@ -238,14 +295,14 @@ c---------------------------------------------------------------------
 	end
 
 c**************************************************************
+c**************************************************************
+c**************************************************************
 
-	subroutine pardef(mode)
+	subroutine pardef
 
 c reads default parameters nls and fnm
 
 	implicit none
-
-	integer mode
 
 	character*80 apnnam
 
@@ -278,7 +335,7 @@ c**************************************************************
 	integer nin
 	integer ifileo
 
-	nin=ifileo(0,'apnstd.str','form','old')
+	nin=ifileo(-1,'apnstd.str','form','old')
 	if( nin .le. 0 ) return
 
 	call nlsa(nin,ivar)
@@ -311,7 +368,7 @@ c**************************************************************
 
 	call getfnm('memfil',memfil)
 
-	if(memfil.ne.' ') imem=ifileo(0,memfil,'form','old')
+	if(memfil.ne.' ') imem=ifileo(-1,memfil,'form','old')
 
 	simul=' '
 	basin=' '

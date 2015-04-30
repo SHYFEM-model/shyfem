@@ -4,8 +4,9 @@
 #
 #########################################################
 
-version=1.60
+version=1.61
 
+# 1.61	27.04.2015	-sy now working, logarithmic axis introduced
 # 1.60	23.01.2014	new options -color -width -showcolor, restructuring
 # 1.51	23.01.2012	new option -logo
 # 1.50	05.05.2011	new option -sy (not yet working)
@@ -37,6 +38,8 @@ orientation="landscape"
 terminal="postscript"
 using="using 1:2"
 grid="NO"
+xlog="NO"
+ylog="NO"
 verbose="NO"
 nolegend="xyz*^+="	# something very unlikely
 ppp="0"			# plots per page
@@ -100,6 +103,7 @@ FullUsage()
   echo "  -p               portrait mode"
   echo "  -ppp n           put n plots per page (default: all plots)"
   echo "  -grid            plots grid underneath plot"
+  echo "  -xlog|-ylog      use logarithmic scaling for x/y axis"
   echo "  -style style     sets line style for following files"
   echo "  -color color     sets line color for following files"
   echo "  -width width     sets line width (integer) for following files"
@@ -393,6 +397,8 @@ do
 	-style)		style=$2; shift;;
 	-color)		color=$2; shift;;
 	-width)		width=$2; shift;;
+	-xlog)		xlog="YES";;
+	-ylog)		ylog="YES";;
 	-png)		terminal="png";;
 	-u)		using="using $2"; shift;;
 	-t)		title=$2; shift;;
@@ -475,6 +481,14 @@ if [ $grid = "YES" ]; then
   echo "set grid" >> gnu.tmp
 fi
 
+if [ $xlog = "YES" ]; then
+  echo "set logscale x" >> gnu.tmp
+fi
+
+if [ $ylog = "YES" ]; then
+  echo "set logscale y" >> gnu.tmp
+fi
+
 if [ -n "$xtics" ]; then
   if [ "$xtics" = "xdtics" ]; then
     echo "set xdtics" >> gnu.tmp
@@ -528,14 +542,15 @@ fi
 
 ######################################################### scale plot
 
-if [ $xfact != "1" ]; then
+if [ $xfact != "1" -o $yfact != "1" ]; then
   newfiles=""
   m=0
   while [ $m -lt ${#afiles[@]} ]
   do
     file=${afiles[$m]}
     newfile=${file}_
-    $scalecol -s $xfact $file > $newfile
+    $scalecol -s $xfact $file > tmp.tmp
+    $scalecol -s $yfact -c 2 tmp.tmp > $newfile
     afiles[$m]=$newfile
     ((m++))
   done

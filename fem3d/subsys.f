@@ -2101,6 +2101,8 @@ c |qflux|	File with heat flux data. This file must be in
 c		a special format to account for the various parameters
 c		that are needed by the heat flux module to run. Please
 c		refer to the information on the file |qflux|.
+c |ice|		File with ice cover. The values range from 0 (no ice cover)
+c		to 1 (complete ice cover).
 c |restrt|	Name of the file if a restart is to be performed. The
 c		file has to be produced by a previous run
 c		with the parameter |idtrst| different
@@ -2117,6 +2119,7 @@ c |conzin|	Name of file containing initial conditions for concentration
 	call addfnm('wind',' ')
         call addfnm('rain',' ')
         call addfnm('qflux',' ')
+        call addfnm('ice',' ')
 
 	call addfnm('restrt',' ')
 	call addfnm('gotmpa',' ')

@@ -13,6 +13,7 @@ c 02.12.2011    ggu     bug fix for call to get_sigma_info() (missing argument)
 c 21.01.2013    ggu     added two new routines comp_vel2d, comp_barotropic
 c 05.09.2013    ggu     new call to get_layer_thickness()
 c 20.01.2014    ggu     new helper routines
+c 29.04.2015    ggu     new helper routines for start/end time in file
 c
 c******************************************************************
 
@@ -485,5 +486,68 @@ c asks for name and opens ous file
 
 c***************************************************************
 c***************************************************************
+c***************************************************************
+
+        subroutine ous_get_it_start(file,itstart)
+
+c gets it of first record
+
+        implicit none
+
+        character*(*) file
+        integer itstart
+
+        integer nunit,nvers
+        integer it,ierr
+        character*80 title
+
+        nvers = 2
+        itstart = -1
+
+        call open_ous_file(file,'old',nunit)
+        call ous_init(nunit,nvers)
+        call ous_skip_header(nunit,ierr)
+        if( ierr .ne. 0 ) return
+        call ous_skip_record(nunit,it,ierr)
+        if( ierr .ne. 0 ) return
+        itstart = it
+
+        end
+
+c***************************************************************
+
+        subroutine ous_get_it_end(file,itend)
+
+c gets it of last record
+
+        implicit none
+
+        character*(*) file
+        integer itend
+
+        integer nunit,nvers
+        integer it,itlast,ierr
+        character*80 title
+
+        nvers = 2
+        itend = -1
+        itlast = -1
+
+        call open_ous_file(file,'old',nunit)
+        call ous_init(nunit,nvers)
+        call ous_skip_header(nunit,ierr)
+        if( ierr .ne. 0 ) return
+
+    1   continue
+        call ous_skip_record(nunit,it,ierr)
+        if( ierr .gt. 0 ) return
+        if( ierr .lt. 0 ) goto 2
+        itlast = it
+        goto 1
+    2   continue
+        itend = itlast
+
+        end
+
 c***************************************************************
 

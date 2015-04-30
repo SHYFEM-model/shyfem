@@ -1,5 +1,52 @@
 ============================================================
 
+Thu Apr 30 15:01:41 CEST 2015
+
+ice, other minor changes
+
+ LOG                      |   24 ++
+ RELEASE_NOTES            |    7 +
+ fem3d/Makefile           |   15 +-
+ fem3d/lagrange_connect.f |  634 +--------------------------------
+ fem3d/lagrange_connect.h |   63 +----
+ fem3d/lagrange_larve.h   |   57 ---
+ fem3d/lagrange_main.f    |    8 +-
+ fem3d/meteo.h            |    3 +
+ fem3d/newini.f           |    6 +
+ fem3d/newnohydro.f       |  905 +---------------------------------------------
+ fem3d/nonhydro_pard.f    |   82 +----
+ fem3d/nonhydro_spk.f     |  157 --------
+ fem3d/nosinf.f           |   92 +++--
+ fem3d/ousaver.f          |    2 +-
+ fem3d/ousextr_cat.f      |   23 +-
+ fem3d/ousutil.f          |   64 ++++
+ fem3d/param.h            |    6 +-
+ fem3d/subapn.f           |  111 +++++--
+ fem3d/subfil.f           |   15 +-
+ fem3d/submet.f           |   10 +-
+ fem3d/submeteo2.f        |  124 ++++++-
+ fem3d/subn35.f           |   13 +-
+ fem3d/subous.f           |    2 +-
+ fem3d/subqfxt.f          |    2 +-
+ fem3d/subsys.f           |    3 +
+ fem3d/subtime.f          |    1 +
+ fem3d/subuti.f           |   26 +-
+ fem3d/subwrt.f           |    1 +
+ fem3d/vp.f               |    2 +-
+ femadj/param.h           |    6 +-
+ fembin/aver              |    5 +-
+ fembin/average           |    1 +
+ fembin/gp                |   21 +-
+ femdoc/final/shyfem.pdf  |  Bin 293716 -> 293784 bytes
+ femdoc/final/shyfem.ps   |  203 ++++++-----
+ femplot/param.h          |    6 +-
+ param.h                  |    6 +-
+ 37 files changed, 588 insertions(+), 2118 deletions(-)
+ deleted:
+    fem3d/lagrange_larve.h
+
+============================================================
+
 Thu Apr 23 15:44:45 CEST 2015
 
 New version 7_1_8

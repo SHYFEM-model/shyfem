@@ -425,9 +425,9 @@ c	call lagr_surv(i)
 	  xi(ii) = xi_body(ii,i)
 	end do
 
-	if( mod(i,100) .eq. 0 ) then
-	  write(56,*) 'gguuaa: ',i,ie,lb,x,y,z
-	end if
+	!if( mod(i,100) .eq. 0 ) then
+	!  write(56,*) 'gguuaa: ',i,ie,lb,x,y,z
+	!end if
 
 	id = id_body(i) 
 
@@ -436,7 +436,7 @@ c	call lagr_surv(i)
 	ttime = min(tmax,dt)
 
 	if( lb > 0 ) then
-	  if( blgrxi ) then
+	  if( blgrxi ) then		!use internal coordinates
             call track_body_xi(i,id,x,y,z,xi,ie,lb,ttime) 
 	  else
             call track_body(i,id,x,y,z,lb,ie,ttime) 

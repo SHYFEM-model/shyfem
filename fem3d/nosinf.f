@@ -30,7 +30,7 @@ c reads nos file
 	real hlv(nlvdim)
 	real hev(neldim)
 
-	logical bwrite,bquiet,bask
+	logical bwrite,bquiet,bask,bmem
 	logical bdate
 	integer date,time
 	integer nread,nin
@@ -42,6 +42,7 @@ c reads nos file
 	character*80 title
 	character*20 dline
 	character*80 infile
+	character*80 basin,simul
 	real rnull
 	real cmin,cmax,caver
 
@@ -62,26 +63,28 @@ c--------------------------------------------------------------
 
         call clo_add_info('returns info on a nos file')
 
+        call clo_add_option('mem',.false.,'if no file given use memory')
+        call clo_add_option('ask',.false.,'ask for simulation')
         call clo_add_option('write',.false.,'write min/max of values')
         call clo_add_option('quiet',.false.,'do not be verbose')
-        call clo_add_option('ask',.false.,'ask for simulation')
 
         call clo_parse_options
 
+        call clo_get_option('mem',bmem)
+        call clo_get_option('ask',bask)
         call clo_get_option('write',bwrite)
         call clo_get_option('quiet',bquiet)
-        call clo_get_option('ask',bask)
 
-	if( .not. bask ) call clo_check_files(1)
+	if( .not. bask .and. .not. bmem ) call clo_check_files(1)
 	call clo_get_file(1,infile)
+	call ap_set_names(' ',infile)
+	!write(6,*) 'infile: ',infile
 
 	if( .not. bquiet ) then
 	  call shyfem_copyright('nosinf - Info on NOS files')
 	end if
 
-	if(iapini(2,nkndim,neldim,0).eq.0) then
-		stop 'error stop : iapini'
-	end if
+	call ap_init(bask,2,nkndim,neldim)
 
 	call open_nos_type('.nos','old',nin)
 
@@ -99,29 +102,33 @@ c--------------------------------------------------------------
 
 	do while(.true.)
 
-	   call nos_read_record(nin,it,ivar,nlvdim,ilhkv,cv3,ierr)
+	  call nos_read_record(nin,it,ivar,nlvdim,ilhkv,cv3,ierr)
 
-           if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
-           if(ierr.ne.0) goto 100
+          if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
+          if(ierr.ne.0) goto 100
 
-	   nread=nread+1
-	   if( bdate ) then
-	     call dtsgf(it,dline)
-	     write(6,*) 'time : ',it,'  ',dline,'   ivar : ',ivar
-	   else
-	     write(6,*) 'time : ',it,'   ivar : ',ivar
-	   end if
+	  nread=nread+1
+	  if( .not. bquiet ) then
+	    if( bdate ) then
+	      call dtsgf(it,dline)
+	      write(6,*) 'time : ',it,'  ',dline,'   ivar : ',ivar
+	    else
+	      write(6,*) 'time : ',it,'   ivar : ',ivar
+	    end if
+	  end if
 
-	   do l=1,nlv
-	     do k=1,nkn
-	       cv(k)=cv3(l,k)
-	       if( l .gt. ilhkv(k) ) cv(k) = rnull
-	     end do
-	     call mimar(cv,nkn,cmin,cmax,rnull)
-             call aver(cv,nkn,caver,rnull)
-             call check1Dr(nkn,cv,0.,-1.,"NaN check","cv")
-	     write(6,*) 'l,min,max,aver : ',l,cmin,cmax,caver
-	   end do
+	  if( bwrite ) then
+	    do l=1,nlv
+	      do k=1,nkn
+	        cv(k)=cv3(l,k)
+	        if( l .gt. ilhkv(k) ) cv(k) = rnull
+	      end do
+	      call mimar(cv,nkn,cmin,cmax,rnull)
+              call aver(cv,nkn,caver,rnull)
+              call check1Dr(nkn,cv,0.,-1.,"NaN check","cv")
+	      write(6,*) 'l,min,max,aver : ',l,cmin,cmax,caver
+	    end do
+	  end if
 
 	end do	!do while
 
@@ -134,6 +141,11 @@ c--------------------------------------------------------------
 	write(6,*)
 	write(6,*) nread,' records read'
 	write(6,*)
+
+	call ap_get_names(basin,simul)
+	write(6,*) 'names used: '
+	write(6,*) 'basin: ',trim(basin)
+	write(6,*) 'simul: ',trim(simul)
 
 c--------------------------------------------------------------
 c end of routine
@@ -278,23 +290,25 @@ c	computes statistics on levels
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
-		if( lmax .gt. nlvdim ) stop 'error stop depth_stats: lmax'
-		count(lmax) = count(lmax) + 1
-		nlv = max(nlv,lmax)
+	  if( lmax .gt. nlvdim ) stop 'error stop depth_stats: lmax'
+	  count(lmax) = count(lmax) + 1
+	  nlv = max(nlv,lmax)
 	end do
 
 	do l=nlv,1,-1
-		nc = count(l)
+	  nc = count(l)
 	  do ll=1,l
-			ccount(ll) = ccount(ll) + nc
-		end do
+	    ccount(ll) = ccount(ll) + nc
+	  end do
 	end do
 
 	nc = 0
-	write(6,*) 'statistics for depth: ',nlv
+	write(6,*) 'statistics for layers: ',nlv
 	do l=1,nlv
-	  write(6,*) l,count(l),ccount(l)
-		nc = nc + count(l)
+	  if( count(l) > 0 ) then
+	    write(6,*) l,count(l),ccount(l)
+	    nc = nc + count(l)
+	  end if
 	end do
 	write(6,*) 'total count: ',nc
 

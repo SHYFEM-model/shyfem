@@ -839,8 +839,6 @@ ht.o: internal.h ts.h evmain.h nudging.h tides.h nbasin.h \
 intp.o: nbasin.h hydro.h param_dummy.h
 lagrange_back.o: depth.h nbasin.h hydro.h param.h basin.h \
 		hydro_print.h lagrange.h 
-lagrange_connect.o: depth.h nbasin.h param.h femtime.h lagrange.h \
-		lagrange_connect.h 
 lagrange_cont.o: param.h links.h basin.h lagrange.h
 lagrange_decay.o: param.h femtime.h lagrange.h
 lagrange_dif.o: param.h femtime.h lagrange.h
@@ -904,10 +902,6 @@ newfix.o: depth.h hydro_vel.h hydro.h internal.h param.h \
 newini.o: depth.h hydro.h internal.h param.h mkonst.h nlevel.h \
 		pkonst.h nbasin.h levels.h roughness.h basin.h \
 		diff_visc_fric.h 
-newnohydro.o: depth.h internal.h nlevel.h ev.h nohyd.h nbasin.h \
-		nohydlinks.h diff_visc_fric.h hydro_vel.h param.h \
-		hydro.h femtime.h pkonst.h levels.h links.h area.h \
-		basin.h hydro_print.h 
 newnudge.o: hydro.h param.h nudge.h femtime.h basin.h nudging.h
 newrog.o: param_dummy.h basin.h
 newsig.o: param_dummy.h levels.h nlevel.h
@@ -918,10 +912,6 @@ newtra.o: depth.h hydro_vel.h hydro.h param.h ev.h nlevel.h \
 		basin.h hydro_print.h aux_array.h 
 newtvd.o: depth.h hydro_vel.h param.h ev.h tvd.h levels.h basin.h \
 		hydro_print.h 
-nonhydro_pard.o: param.h param_dummy.h nohydlinks.h common.h \
-		levels.h nkonst.h nlevel.h 
-nonhydro_spk.o: param.h nohydlinks.h levels.h basin.h nlevel.h \
-		nohyd.h 
 nos2nc.o: depth.h hydro.h param.h levels.h evmain.h basin.h
 nos_elab.o: param.h basin.h
 nosadmin.o: param.h
@@ -1106,8 +1096,9 @@ subtime.o: femtime.h
 subtrace.o: hydro_vel.h hydro.h param.h femtime.h geom_dynamic.h \
 		hydro_baro.h levels.h basin.h 
 subtsuvfile.o: intp_fem_file.mod param.h
-subuti.o: depth.h hydro.h param.h ev.h pkonst.h geom_dynamic.h \
-		levels.h hydro_baro.h basin.h links.h 
+subuti.o: depth.h hydro.h param.h ts.h ev.h pkonst.h \
+		geom_dynamic.h levels.h hydro_baro.h basin.h \
+		links.h 
 subvola.o: param_dummy.h femtime.h nbasin.h volcomp.h modules.h \
 		basin.h geom.h aux_array.h 
 subwat.o: nbasin.h hydro.h param_dummy.h levels.h links.h ev.h \

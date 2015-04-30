@@ -431,6 +431,8 @@ c--------------------------------------------------------------
 
 	call check_levels
 
+	write(6,*) 'finished adjusting layer structure'
+
 c--------------------------------------------------------------
 c end of routine
 c--------------------------------------------------------------
@@ -940,6 +942,10 @@ c------------------------------------------------------------
 	write(6,*) 'hlvmin = ',hlvmin
 	stop 'error stop set_last_layer: hlvmin'
    99	continue
+	write(6,*) 'ie,l,hold,h: ',ie,l,hold,h
+	if( nsigma > 0 .and. hold < 0. ) then
+	  write(6,*) 'cannot yet handle sat marshes with sigma layers'
+	end if
 	stop 'error stop set_last_layer: layer depth 0 (internal error)'
 	end
 

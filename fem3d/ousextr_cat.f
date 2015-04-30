@@ -12,6 +12,7 @@ c 26.03.2010	ggu	bug fix: set nkn and nel
 c 03.06.2011    ggu     routine adjourned
 c 08.06.2011    ggu     routine rewritten
 c 31.01.2012    ggu     choice of concatenation mode (mode, itc)
+c 29.04.2015    ggu     mode 1 implemented
 c
 c***************************************************************
 
@@ -47,6 +48,7 @@ c concatenates two ous files into one
 	integer ilnv(nlvdim,nkndim)
 
 	character*80 name,file
+	character*80 file1,file2
 	logical ball,bwrite
         integer nvers,nin,nlv
         integer itanf,itend,idt,idtous
@@ -96,15 +98,30 @@ c-------------------------------------------------------------------
 	  write(6,*) 'Enter time up to when to read first file:'
 	  read(5,'(i10)') itc
 	end if
+        write(6,*) 'mode,itc: ',mode,itc
+
+        write(6,*) 'Enter first file:'
+        read(5,'(a)') file1
+        write(6,*) file1
+
+        write(6,*) 'Enter second file:'
+        read(5,'(a)') file2
+        write(6,*) file2
+
 	if( mode .eq. 1 ) then
-	  stop 'error stop: mode = 1 not yet ready...'
+          call ous_get_it_start(file2,itc)
+          if( itc .eq. -1 ) then
+            write(6,*) 'cannot read starting time of second file'
+            stop 'error stop: starting time'
+          end if
+          itc = itc - 1         !last time for first file
 	end if
 
 c--------------------------------------------------------------------
 c open first OUS file and read header
 c--------------------------------------------------------------------
 
-	call qopen_ous_file('Enter first file: ','old',nin)
+	call open_ous_file(file1,'old',nin)
 
 	nvers=1
         call rfous(nin
@@ -179,7 +196,7 @@ c--------------------------------------------------------------------
 c open second OUS file and read header
 c--------------------------------------------------------------------
 
-	call qopen_ous_file('Enter second file: ','old',nin)
+	call open_ous_file(file2,'old',nin)
 
 	nvers=1
         call rfous(nin

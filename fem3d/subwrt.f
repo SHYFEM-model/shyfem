@@ -863,6 +863,7 @@ c---------------------------------------------------------------
 
 	amax = cmax
 	if( ctop .gt. 0. .and. amax .gt. ctop ) amax = ctop
+	if( ctop .lt. 0. ) amax = -ctop
 	write(iu,*) 'cmax: ',it,cmax,amax
 
 c---------------------------------------------------------------

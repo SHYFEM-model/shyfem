@@ -125,7 +125,7 @@ c
 c
 c get name of basin
 c
-	call pardef(0)
+	call pardef
 	ianz=igetxt('Enter name of basin : ',basnam)
 	if(ianz.le.0) stop
 	call putfnm('basnam',basnam)

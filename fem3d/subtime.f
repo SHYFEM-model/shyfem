@@ -392,6 +392,7 @@ c                                !      no computation of rindex
 c                                !  0:  time step fixed
 c                                !  1:  split time step
 c                                !  2:  optimize time step (no multiple)
+c                                !  3:  optimize time step (fractional)
 c	 idtmin = 1		 !minimum time step allowed
 c	 tfact = 0		 !factor of maximum decrease of time step
 c----------------------------------------------------------------------

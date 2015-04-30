@@ -36,7 +36,7 @@ c reads ous file and averages with frequency nfreq
 	real hev(neldim)
 	real weight(nlvdim,nkndim)
 
-	real znv(nkndim)
+	!real znv(nkndim)
 	include 'hydro.h'
 
 	real aux(nkndim)

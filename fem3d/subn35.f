@@ -34,6 +34,7 @@ c 10.12.2008    ggu     re-organized, deleted sp135r(), use bottom_friction()
 c 29.01.2009    ggu     ausdef eliminated (chezy(5,.) is not used anymore)
 c 16.02.2011    ggu     new routines to deal with nodal area code
 c 21.06.2012    ggu&aar new friction for mud module
+c 28.04.2015    ggu     czdef is default for all areas not given
 c
 c***********************************************************
 c
@@ -121,7 +122,6 @@ c computes bottom friction
 	real hzg,alpha
 	real hzoff
 	real uso,vso,uv
-	real rlamb
 	real rfric,raux,rr,ss
 
 	real getpar,cdf
@@ -130,7 +130,6 @@ c-------------------------------------------------------------------
 c get variables
 c-------------------------------------------------------------------
 
-	rlamb = getpar('czdef')			! not used
 	hzoff = getpar('hzoff')
 	ireib = nint(getpar('ireib'))
 
@@ -631,6 +630,12 @@ c checks values for chezy parameters
 
 	implicit none
 
+c czdum(1,ia) 		!default friction value for area ia
+c czdum(2,ia) 		!alternative friction value
+c czdum(3,ia) 		!node number (start of arrow indicating direction)
+c czdum(4,ia) 		!node number (end of arrow indicating direction)
+c czdum(5,ia) 		!diffusion (not used)
+c czdum(6,ia) 		!actual value of friction parameter (changed by routine)
 
 	include 'param.h'
 	include 'chezy.h'
@@ -649,13 +654,12 @@ c checks values for chezy parameters
 c get default values
 
         ireib=nint(getpar('ireib'))
-	!if( ireib .le. 0 ) return
 
 	bpos = ireib .gt. 1 .and. ireib .ne. 5	!must be strictly positive
 
         czdef=getpar('czdef')
 
-        if(czdum(1,0).gt.0.) czdef=czdum(1,0)
+        !if(czdum(1,0).gt.0.) czdef=czdum(1,0)	!ggu 28.04.2015
 
 c compute maximum value of area code
 
@@ -715,6 +719,7 @@ c check read in values
            czdum(4,i)=knode
          end if
 
+         czdum(5,i)=0.
          czdum(6,i)=0.
 
         end do

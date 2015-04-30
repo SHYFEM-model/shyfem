@@ -30,6 +30,7 @@ c 16.05.2000	ggu	routine volel removed
 c 28.04.2009    ggu     links re-structured
 c 08.06.2010    ggu     new routine for computing 3D kin/pot energy
 c 07.07.2011    ggu     bug fix in areael (unstable computation)
+c 29.04.2015    ggu     energy now in Joule
 c
 c******************************************
 
@@ -319,11 +320,12 @@ c	kin = (1/2) * aj * 12 * u*u/h
 	include 'depth.h'
 
 	include 'hydro.h'
+	include 'ts.h'
 
 c local
-	integer ie,ii,l,lmax,ia
+	integer ie,ii,l,lmax,ia,k
 	double precision area,pot,kin,z,zz
-	double precision h,uu,vv
+	double precision h,uu,vv,rho
 
 	kin=0.
 	pot=0.
@@ -334,19 +336,29 @@ c local
 	  ia = iarv(ie)
 	  if( ia .eq. ia_ignore ) cycle
 
-	  z=0.
+	  zz=0.
+	  rho = 0.
 	  do ii=1,3
-	    zz = zenv(ii,ie)
-	    z = z + zz*zz
+	    k = nen3v(ii,ie)
+	    rho = rho + rhov(1,k)
+	    z = zenv(ii,ie)
+	    zz = zz + z*z
 	  end do
-          pot=pot+area*z/3.
+	  rho = rowass + rho/3.
+          pot = pot + area * rho * zz/3.
 
 	  lmax = ilhv(ie)
 	  do l=1,lmax
+	    rho = 0.
+	    do ii=1,3
+	      k = nen3v(ii,ie)
+	      rho = rho + rhov(l,k)
+	    end do
+	    rho = rowass + rho/3.
 	    h = hdenv(l,ie)
 	    uu = utlnv(l,ie)
 	    vv = vtlnv(l,ie)
-	    kin = kin + area * (uu*uu + vv*vv) / h
+	    kin = kin + area * rho * (uu*uu + vv*vv) / h
 	    !write(13,*) ie,l,uu,vv,h,kin
 	  end do
 

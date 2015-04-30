@@ -19,6 +19,7 @@ c 16.02.2012    ggu	new routine meteo_get_solar_radiation()
 c 22.02.2012    ggu	new routines for regular and ts reading of meteo
 c 23.02.2012    ggu&ccf	bug fix meteo_copy_to_old and meteo_interpolate_in_time
 c 20.05.2014    ggu	new routines for new file format
+c 30.04.2015    ggu	ice integrated
 c
 c notes :
 c
@@ -122,7 +123,7 @@ c DOCS  END
 	real, parameter :: dstd = 2.5e-3	!standard drag coefficient
 	real, parameter :: nmile = 1852.	!nautical mile in m
 
-	integer, save :: idwind,idheat,idrain
+	integer, save :: idwind,idheat,idrain,idice
 
 	integer, parameter :: nfreq = 0		!debug output
 	integer, save :: iumet = 0
@@ -130,6 +131,7 @@ c DOCS  END
 	integer, save :: iwtype,itdrag
 	integer, save :: irtype
 	integer, save :: ihtype
+	integer, save :: ictype
 	real, save :: wsmax,wslim,dragco,roluft,rowass
 	real, save :: pfact = 1.
 	real, save :: wfact = 1.
@@ -151,6 +153,7 @@ c DOCS  END
 	character*80, save :: pamb = 'pressure (atmospheric) [mbar]'
 
 	character*80, save :: rain = 'rain [mm/day]'
+	character*80, save :: ice = 'ice cover [0-1]'
 
         character*80, save :: srad = 'solar radiation [W/m**2]'
         character*80, save :: tair = 'air temperature [C]'
@@ -180,7 +183,7 @@ c DOCS  END
 
 	include 'meteo.h'
 
-	character*60 windfile,heatfile,rainfile
+	character*60 windfile,heatfile,rainfile,icefile
 	character*4 what
 
 	integer nvar,lmax
@@ -215,6 +218,7 @@ c DOCS  END
 	  call getfnm('wind',windfile)
 	  call getfnm('qflux',heatfile)
 	  call getfnm('rain',rainfile)
+	  call getfnm('ice',icefile)
 
 	  !it0 = itanf
 	  dtime0 = itanf
@@ -228,6 +232,16 @@ c DOCS  END
 	  call iff_set_description(idwind,0,'meteo wind')
 
 	  call meteo_set_wind_data(idwind,nvar)
+
+	  nvar = 1
+	  nintp = 2
+	  what = 'ice'
+	  vconst = (/ 0., 0., 0., 0. /)
+	  call iff_init(dtime0,icefile,nvar,nkn,0,nintp
+     +				,nodes,vconst,idice)
+	  call iff_set_description(idice,0,'meteo ice')
+
+	  call meteo_set_ice_data(idice,nvar)
 
 	  nvar = 1
 	  nintp = 2
@@ -264,6 +278,11 @@ c DOCS  END
 	dtime = it
 	lmax = 1
 
+	if( .not. iff_is_constant(idice) .or. icall == 1 ) then
+	  call iff_read_and_interpolate(idice,dtime)
+	  call iff_time_interpolate(idice,dtime,1,nkn,lmax,metice)
+	end if
+
 	if( .not. iff_is_constant(idwind) .or. icall == 1 ) then
 	  call iff_read_and_interpolate(idwind,dtime)
 	  call iff_time_interpolate(idwind,dtime,1,nkn,lmax,wxv)
@@ -294,9 +313,13 @@ c DOCS  END
 ! extra treatment of data
 !------------------------------------------------------------------
 
+	if( .not. iff_is_constant(idice) .or. icall == 1 ) then
+	  call meteo_convert_rain_data(idice,nkn,metice)
+	end if
+
 	if( .not. iff_is_constant(idwind) .or. icall == 1 ) then
 	  call meteo_convert_wind_data(idwind,nkn,wxv,wyv
-     +			,windcd,tauxnv,tauynv,metws,ppv)
+     +			,windcd,tauxnv,tauynv,metws,ppv,metice)
 	end if
 
 !	write(166,*) (wxv(i),wyv(i),windcd(i),tauxnv(i),tauynv(i)
@@ -489,7 +512,8 @@ c DOCS  END
 
 !*********************************************************************
 
-	subroutine meteo_convert_wind_data(id,n,wx,wy,cdv,tx,ty,ws,pp)
+	subroutine meteo_convert_wind_data(id,n,wx,wy,cdv,tx,ty,ws
+     +						,pp,cice)
 
 	integer id
 	integer n
@@ -498,11 +522,12 @@ c DOCS  END
 	real tx(n),ty(n)
 	real ws(n)
 	real pp(n)
+	real cice(n)
 
 	logical bnowind,bstress,bspeed
 	integer k
 	integer itact
-	real cd,wxymax,txy,wspeed,wdir,fact
+	real cd,wxymax,txy,wspeed,wdir,fact,fice
 
 	bnowind = iwtype == 0
 	bstress = iwtype == 2
@@ -519,8 +544,9 @@ c DOCS  END
         else if( bstress ) then         !data is stress -> normalize it
           if( cd .le. 0 ) cd = dstd
           do k=1,n
-            tx(k) = wfact * wx(k)
-            ty(k) = wfact * wy(k)
+	    fice = 1. - cice(k)
+            tx(k) = fice * wfact * wx(k)
+            ty(k) = fice * wfact * wy(k)
             txy = sqrt( tx(k)**2 + ty(k)**2 )
             wspeed = sqrt(txy/cd)
             wxymax = max(wxymax,wspeed)
@@ -544,14 +570,16 @@ c DOCS  END
 	  end if
 
           do k=1,n
+	    fice = 1. - cice(k)
+	if( k .eq. 1000 ) write(6,*) k,fice
             wspeed = ws(k)
             wxymax = max(wxymax,wspeed)
 	    cd = cdv(k)
             if( itdrag .gt. 0 .and. itdrag .le. 2 ) then
 		call get_drag(itdrag,wspeed,cd)
 	    end if
-            tx(k) = wfact * cd * wspeed * wx(k)
-            ty(k) = wfact * cd * wspeed * wy(k)
+            tx(k) = fice * wfact * cd * wspeed * wx(k)
+            ty(k) = fice * wfact * cd * wspeed * wy(k)
           end do
         end if
 
@@ -566,6 +594,7 @@ c DOCS  END
 	  call get_act_time(itact)
 	  write(111,*) 'limiting wind speed: ',itact,wxymax
           do k=1,n
+	    fice = 1. - cice(k)
             wspeed = ws(k)
 	    if( wspeed <= wslim ) cycle
 	    ws(k) = wslim
@@ -574,8 +603,8 @@ c DOCS  END
 	    wy(k) = fact*wy(k)
             wspeed = ws(k)
             if( itdrag .gt. 0 ) call get_drag(itdrag,wspeed,cd)
-            tx(k) = wfact * cd * wspeed * wx(k)
-            ty(k) = wfact * cd * wspeed * wy(k)
+            tx(k) = fice * wfact * cd * wspeed * wx(k)
+            ty(k) = fice * wfact * cd * wspeed * wy(k)
           end do
 	  wxymax = wslim
 	end if
@@ -688,6 +717,79 @@ c convert rain from mm/day to m/s
 
 	end subroutine meteo_convert_rain_data
 
+!*********************************************************************
+
+	subroutine meteo_set_ice_data(id,nvar)
+
+	integer id
+	integer nvar
+
+	character*60 string
+
+!	---------------------------------------------------------
+!	check nvar and get parameters
+!	---------------------------------------------------------
+
+	if( nvar /= 1 ) then
+	  write(6,*) 'no support for nvar = ',nvar
+	  stop 'error stop meteo_set_ice_data: ice'
+	end if
+
+!	---------------------------------------------------------
+!	handle ice
+!	---------------------------------------------------------
+
+	call iff_get_var_description(id,1,string)
+
+	if( string == ' ' ) then	!TS file or constant
+	  ictype = 0
+	  if( iff_has_file(id) ) ictype = 1
+
+	  if( ictype == 1 ) then
+	    call iff_set_var_description(id,1,ice)
+	  end if
+	else
+	  if( string == ice ) then
+	    ictype = 1
+	  else
+	    write(6,*) 'description string for ice not recognized: '
+	    write(6,*) string
+	    stop 'error stop meteo_set_ice_data: ice description'
+	  end if
+	end if
+
+!	---------------------------------------------------------
+!	remember values and write to monitor
+!	---------------------------------------------------------
+
+	if( ictype == 0 ) then
+	  write(6,*) 'no ice file opened'
+	else
+	  write(6,*) 'ice file opened: ',ictype
+	  call iff_get_var_description(id,1,string)
+	  write(6,*) 'content: '
+	  write(6,*) ' 1    ',string
+	end if
+
+!	---------------------------------------------------------
+!	end of routine
+!	---------------------------------------------------------
+
+	end subroutine meteo_set_ice_data
+
+!*********************************************************************
+
+	subroutine meteo_convert_ice_data(id,n,r)
+
+c convert ice data (nothing to do)
+
+	integer id
+	integer n
+	real r(n)
+
+	end subroutine meteo_convert_ice_data
+
+!*********************************************************************
 !*********************************************************************
 
 	subroutine meteo_set_heat_data(id,nvar)

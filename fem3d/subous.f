@@ -991,7 +991,7 @@ c reads data record of OUS file
 
 	call getous(iunit,nvers,nkn,nel,nlv)
 
-	if( nlvdim .lt. nlv ) goto 97
+	if( bdata .and. nlvdim .lt. nlv ) goto 97
 
 	if( .not. bdata ) then
 	  nkn = 0

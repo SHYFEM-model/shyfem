@@ -21,6 +21,9 @@
         real windcd(nkndim)          !wave drag coefficient
         common /windcd/windcd
 
+        real metice(nkndim)          !ice cover
+        common /metice/metice
+
 	real evapv(nkndim)		!evaporation
 	common /evapv/evapv
 

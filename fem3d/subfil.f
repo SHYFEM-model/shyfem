@@ -24,6 +24,7 @@ c 10.12.2001	ggu	filna still revisited, new routine useunit
 c 31.03.2008	ggu	in ifileo remember last unit number
 c 09.01.2009	ggu	re-formatted, safeguard units 5 and 6
 c 26.03.2012	ggu	if opening already open file -> better error message
+c 28.04.2014	ggu	if iunit < 0 -> does not complain
 c
 c********************************************************
 
@@ -76,6 +77,8 @@ c routine tries to open file at iunit. If this is not possible
 c ...higher unit numbers are tested and the file is eventually
 c ...opened at one of these units. The effective unit number
 c ...is passed back in ifileo. -1 is returned if no file is opened.
+c use iunit <= 0 to use standard unit number
+c iunit < 0 does not complain if not existing
 
 	implicit none
 
@@ -84,7 +87,7 @@ c ...is passed back in ifileo. -1 is returned if no file is opened.
 	character*(*) file,format,status
 
 	integer iu,nfile,ios
-	logical found,error,opened,ex,od
+	logical found,error,opened,ex,od,bquiet
 	character*1 cf,cs
 	character*15 form,stat,access
 
@@ -101,6 +104,7 @@ c----------------------------------------------------------------
 
 	ifileo=-1
 	iu=iunit
+	bquiet = ( iu < 0 )		!if unit negative do not complain
 	if( iu .le. 0 ) iu = iustd
 
 c----------------------------------------------------------------
@@ -146,11 +150,10 @@ c----------------------------------------------------------------
 
 	inquire(file=file,exist=ex)
 	if(.not.ex.and.stat.eq.'old') then
-		nfile=ichanm0(file)
-		if(nfile.le.0) nfile=1
-		write(6,*) 'file does not exist : ',file
-		!write(6,*) 'file does not exist : ',file(1:nfile)
-		return
+	  if( .not. bquiet ) then
+	    write(6,*) 'file does not exist : ',trim(file)
+	  end if
+	  return
 	end if
 
 c----------------------------------------------------------------

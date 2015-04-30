@@ -1,4 +1,28 @@
 
+30.04.2015
+
+c ./fem3d/submeteo2.f:
+c 30.04.2015    ggu     ice integrated
+c
+c ./fem3d/submet.f:
+c 30.04.2015    ggu     ice cover implemented
+c
+c ./fem3d/subn35.f:
+c 28.04.2015    ggu     czdef is default for all areas not given
+c
+c ./fem3d/ousextr_cat.f:
+c 29.04.2015    ggu     mode 1 implemented
+c
+c ./fem3d/ousutil.f:
+c 29.04.2015    ggu     new helper routines for start/end time in file
+c
+c ./fem3d/subuti.f:
+c 29.04.2015    ggu     energy now in Joule
+c
+c ./fem3d/subapn.f:
+c 29.04.2015    ggu     generic changes - now works as anticipated
+
+
 23.04.2015
 
 lagrangian 3d

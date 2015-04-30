@@ -193,7 +193,7 @@ c---------------------------------------------------------
 
           itdrag = nint(getpar('itdrag'))
 	  bwind = itdrag .eq. 4
-	  if ( bwind .and. iheat .ne. 6) then
+	  if ( bwind .and. iheat .ne. 6 ) then
             write(6,*) 'Erroneous value for itdrag = ',itdrag
             write(6,*) 'Use itdrag = 4 only with iheat = 6'
             stop 'error stop qflux3d: itdrag'

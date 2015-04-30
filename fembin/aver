@@ -163,12 +163,15 @@ sub scale
 {
     my ($ra,$fact) = @_;
 
-    return $ra if not defined $fact or $fact == 0 or $fact == 1;
+    #return $ra if not defined $fact or $fact == 0 or $fact == 1;
+
+    $fact = 1 if not defined $fact or $fact == 0;
 
     my @new = ();
 
     foreach (@$ra) {
 	s/^\s+//;
+	next if /^\#/;
 	my @f = split;
 	$f[$column] *= $fact;
 	my $line = join(" ",@f);

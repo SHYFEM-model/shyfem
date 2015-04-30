@@ -8,6 +8,7 @@ c
 c 16.02.2011    ggu     created by copying mainly from subn11.f
 c 30.05.2014    ggu     new imreg == 3
 c 10.07.2014    ggu     only new file format allowed
+c 30.04.2015    ggu     ice cover implemented
 c
 c*********************************************************************
 
@@ -231,10 +232,13 @@ c returns ice cover [fraction 0-1]
 
 	implicit none
 
+	include 'param.h'
+	include 'meteo.h'
+
         integer k               !node number
         real ice_cover          ![0-1]
 
-	ice_cover = 0.
+	ice_cover = metice(k)
 
         end
 
@@ -246,14 +250,16 @@ c returns ice cover array [fraction 0-1]
 
 	implicit none
 
+	include 'param.h'
 	include 'nbasin.h'
+	include 'meteo.h'
 
         real ice_cover(nkn)          ![0-1]
 
 	integer k
 
 	do k=1,nkn
-	  ice_cover(k) = 0.
+	  ice_cover(k) = metice(k)
 	end do
 
         end

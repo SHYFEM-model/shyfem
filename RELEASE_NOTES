@@ -1,4 +1,11 @@
 
+30.04.2015    VERS_7_1_9
+
+	ice cover integrated
+	czdef default friction for all areas not given
+	minor changes
+	post processing - new initialization
+
 23.04.2015    VERS_7_1_8
 
 	lagrangian 3d finished !!!!
