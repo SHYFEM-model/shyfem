@@ -9,7 +9,7 @@ c iopbnd(k) < 0		internal open BC (ibtyp=3)
 c
 c----------------------------------------------------------------------
 
-	integer iopbnd(1)
+	integer iopbnd(nkndim)
 	common /iopbnd/iopbnd
 	save /iopbnd/
 

@@ -15,6 +15,7 @@ c 13.08.2003    ggu     in update_geom do not call setweg and setnod
 c 06.11.2008    ggu     better error handling
 c 06.04.2009    ggu     nlidim -> nlkdim
 c 02.12.2011    ggu     print_bound_nodes() for writing out boundary nodes
+c 04.05.2015    ggu     remove equivalence - use winkv as local array
 c
 c*****************************************************************
 
@@ -297,8 +298,7 @@ c functions
         integer ipext
 	integer itybnd,nkbnds,kbnds,nbnds
 c equivalence
-        real winkv(1)
-        equivalence(inodv(1),winkv(1))
+        real winkv(nkn)
 
 	ii = 0
 c

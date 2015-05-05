@@ -23,6 +23,7 @@
 
         real metice(nkndim)          !ice cover
         common /metice/metice
+	save /metice/
 
 	real evapv(nkndim)		!evaporation
 	common /evapv/evapv

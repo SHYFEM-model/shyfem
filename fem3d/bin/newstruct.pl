@@ -36,6 +36,21 @@ my @ignore_files = (
 			,"ecological_dummy.f"
 			,"subbfm.f"
 			,"weutro.f"
+
+			,"subnos.f"
+			,"subous.f"
+			,"subets.f"
+			,"subsss.f"
+		        ,"subpar3.f"
+			,"subnls.f"
+			,"subdts.f"
+			,"subfil.f"
+			,"nosutil.f"
+			,"ousutil.f"
+			,"genutil.f"
+
+			,"submod.f"
+			,"subcst.f"
 		);
 
 #----------------------------------------------------------------

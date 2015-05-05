@@ -624,6 +624,9 @@ c******************************************************************
 	real vismol,rrho0
 	real dt
 
+	double precision tempo
+
+	double precision openmp_get_wtime
 	real getpar
 
 c-------------------------------------------------------------
@@ -677,10 +680,13 @@ c-------------------------------------------------------------
 c loop over elements
 c-------------------------------------------------------------
 
-ccc !$OMP PARALLEL PRIVATE(ie)
+	tempo = openmp_get_wtime()
+
 ccc !$OMP DO SCHEDULE(DYNAMIC,chunk)      
 ccc !$OMP DO SCHEDULE(STATIC,chunk)      
 
+!$OMP PARALLEL PRIVATE(ie)
+!$OMP DO 
 	do ie=1,nel
 
 	  !call openmp_get_thread_num(ith)
@@ -689,9 +695,11 @@ ccc !$OMP DO SCHEDULE(STATIC,chunk)
      +			,vismol,rrho0,dt)
 
 	end do
+!$OMP END DO NOWAIT     
+!$OMP END PARALLEL      
 
-ccc !$OMP END DO NOWAIT     
-ccc !$OMP END PARALLEL      
+	tempo = openmp_get_wtime() - tempo
+	!write(6,*) 'tempo = ',tempo
 
 c-------------------------------------------------------------
 c end of loop over elements

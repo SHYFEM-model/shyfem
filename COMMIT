@@ -1,5 +1,31 @@
 ============================================================
 
+Tue May  5 18:05:48 CEST 2015
+
+after work with Eric, small changes, compiler bugs
+
+ LOG                     |    9 +++++++
+ RELEASE_NOTES           |    9 +++++++
+ Rules.make              |    3 +-
+ fem3d/bin/fortran.pm    |   33 ++++++++++++++++++++++++--
+ fem3d/bin/newstruct.pl  |   15 ++++++++++++
+ fem3d/common.h          |    4 +-
+ fem3d/meteo.h           |    1 +
+ fem3d/new3di.f          |   14 +++++++++--
+ fem3d/param_dummy.h     |   58 +++++++++++++++++++++++++++++++++++-----------
+ fem3d/sublnka.f         |    4 +-
+ fem3d/submeteo2.f       |    7 ++++-
+ fem3d/subnev.f          |   11 +++++----
+ fem3d/subomp.f          |   15 ++++++++++++
+ fem3d/subomp_dummy.f    |   14 +++++++++++
+ fem3d/testbndo.h        |    2 +-
+ fembin/mail_shyfem.sh   |   17 ++++++++++---
+ femdoc/final/shyfem.pdf |  Bin 293784 -> 293782 bytes
+ femdoc/final/shyfem.ps  |   36 ++++++++++++++--------------
+ 18 files changed, 197 insertions(+), 55 deletions(-)
+
+============================================================
+
 Thu Apr 30 15:03:16 CEST 2015
 
 New version 7_1_9

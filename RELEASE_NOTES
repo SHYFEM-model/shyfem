@@ -1,4 +1,13 @@
 
+04.05.2015    VERS_7_1_10
+
+	ice cover bug eliminated
+	some adjustments in include files (global arrays)
+	winkv equivalence eliminated
+	compiler bug adjustments:
+		gfortran: use -O instead of -O3
+		ifort: remove -check uninit
+
 30.04.2015    VERS_7_1_9
 
 	ice cover integrated

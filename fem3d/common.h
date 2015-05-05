@@ -36,7 +36,7 @@
 ! common of shyfem
 !---------------------------------------------------------------------
 
-	integer nen3v(3,1)
+	integer nen3v(3,neldim)
         common /nen3v/nen3v
 
         !real vs1v(nkndim),vs2v(nkndim),vs3v(nkndim)
@@ -45,7 +45,7 @@
         common /vs1v/vs1v, /vs2v/vs2v, /vs3v/vs3v, /is2v/is2v
 	save /vs1v/,/vs2v/,/vs3v/,/is2v/
 
-        real znv(1)
+        real znv(nkndim)
         common /znv/znv
 
 !---------------------------------------------------------------------

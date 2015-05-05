@@ -109,3 +109,18 @@ c***************************************************************
 
 c***************************************************************
 
+        function openmp_get_wtime()
+
+c gets time
+
+        implicit none
+
+        double precision openmp_get_wtime
+	double precision OMP_GET_WTIME
+
+	openmp_get_wtime = OMP_GET_WTIME()
+	
+	end
+
+c***************************************************************
+

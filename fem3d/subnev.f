@@ -512,16 +512,17 @@ c the two points must be lying on the sides of the triangle
 
 	double precision pi,rad
 	parameter (pi=4.D+0*atan(1.D+0),rad=pi/180.D+0)
-	integer ilbase,icbase,ii
-	parameter (ilbase=16,icbase=10)
-	double precision length,cosine
-	length(ii) = ev(ilbase+ii,ie)
-	cosine(ii) = cos(rad*ev(icbase+ii,ie))
 
 	integer na0,nb0,ia0,ib0
 	integer ia1,ib1,ia2,ib2,ia3,ib3
 	integer il,il1,il2,il3
 	double precision dla,dlb,cc
+
+	integer ilbase,icbase,ii
+	parameter (ilbase=16,icbase=10)
+	double precision length,cosine
+	length(ii) = ev(ilbase+ii,ie)
+	cosine(ii) = cos(rad*ev(icbase+ii,ie))
 
 	ia0 = 0
 	ib0 = 0

@@ -20,6 +20,7 @@ c 22.02.2012    ggu	new routines for regular and ts reading of meteo
 c 23.02.2012    ggu&ccf	bug fix meteo_copy_to_old and meteo_interpolate_in_time
 c 20.05.2014    ggu	new routines for new file format
 c 30.04.2015    ggu	ice integrated
+c 04.05.2015    ggu	bug in ice eliminated
 c
 c notes :
 c
@@ -282,6 +283,8 @@ c DOCS  END
 	  call iff_read_and_interpolate(idice,dtime)
 	  call iff_time_interpolate(idice,dtime,1,nkn,lmax,metice)
 	end if
+	!write(6,*) (metice(i),i=1,nkn,50)
+	!write(6,*) 'constant: ',iff_is_constant(idice)
 
 	if( .not. iff_is_constant(idwind) .or. icall == 1 ) then
 	  call iff_read_and_interpolate(idwind,dtime)
@@ -314,7 +317,7 @@ c DOCS  END
 !------------------------------------------------------------------
 
 	if( .not. iff_is_constant(idice) .or. icall == 1 ) then
-	  call meteo_convert_rain_data(idice,nkn,metice)
+	  call meteo_convert_ice_data(idice,nkn,metice)
 	end if
 
 	if( .not. iff_is_constant(idwind) .or. icall == 1 ) then
@@ -571,7 +574,7 @@ c DOCS  END
 
           do k=1,n
 	    fice = 1. - cice(k)
-	if( k .eq. 1000 ) write(6,*) k,fice
+	    !if( k .eq. 1000 ) write(6,*) 'ice: ',k,fice
             wspeed = ws(k)
             wxymax = max(wxymax,wspeed)
 	    cd = cdv(k)

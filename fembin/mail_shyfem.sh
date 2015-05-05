@@ -29,12 +29,15 @@ mail="YES"
 if [ "$1" = "-no_mail" ]; then
   mail="NO"
   shift
+elif [ "$1" = "-all_mail" ]; then
+  mail="ALL"
+  shift
 fi
 
 file=$1
 
 if [ $# -eq 0 ]; then
-  echo "Usage: mail_shyfem.sh [-no_mail] tar-file"
+  echo "Usage: mail_shyfem.sh [-no_mail|-all_mail] tar-file"
   exit 1
 elif [ ! -f "$file" ]; then
   echo "*** no such file: $file ...aborting"
@@ -73,7 +76,7 @@ echo "uploading and emailing..."
 #------------------------------------------------------------------
 
 echo "uploading file $file to google drive..."
-drive upload --file $file --parent $shyfemdir
+#drive upload --file $file --parent $shyfemdir
 status=$?
 [ $status -ne 0 ] && echo "*** error uploading file" && exit 1
 
@@ -81,9 +84,15 @@ status=$?
 
 [ "$mail" = "NO" ] && exit 0
 
-echo "sending mail..."
+#echo "sending mail to gmail..."
 #gmutt -auto -s "$subject" -i $tmpfile gmail
-gmutt -auto -s "$subject" -i $tmpfile shyfem
+echo "sending mail to shyfem..."
+#gmutt -auto -s "$subject" -i $tmpfile shyfem
+
+[ "$mail" = "YES" ] && exit 0
+
+echo "sending mail to shyfem..."
+#gmutt -auto -s "$subject" -i $tmpfile shyfem_aux
 
 #------------------------------------------------------------------
 

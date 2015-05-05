@@ -318,8 +318,8 @@ endif
 
 FGNU_OPT   = 
 ifeq ($(OPTIMIZE),true)
-  FGNU_OPT   = -O
   FGNU_OPT   = -O3
+  FGNU_OPT   = -O
 endif
 
 FGNU_OMP   =
@@ -506,6 +506,7 @@ ifeq ($(DEBUG),true)
   FINTEL_NOOPT = -g -traceback -check all
   FINTEL_NOOPT = -g -traceback -check uninit -check bounds 
   FINTEL_NOOPT = -g -traceback -check uninit 
+  FINTEL_NOOPT = -g -traceback 
 endif
 
 # FINTEL_OPT   = -O -g -Mprof=time

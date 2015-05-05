@@ -240,7 +240,8 @@ sub read_routine {
 
     s/^\s*\d+\s+/ /;	# get rid of label number
     s/\s+//g;		# no space
-    s/\!.*//g;		# line comment
+    #s/\!.*//g;		# line comment
+    $_ = $self->clean_comment($_) if /\!/;
 
     if( /^INTERFACE$/i ) { 
       $in_interface = 1;
@@ -266,6 +267,29 @@ sub read_routine {
   return ($name,$type,\@code);
 }
 
+sub clean_comment {
+
+  my ($self,$string) = @_;
+
+  my $orig = $_;
+  my $ap = 0;
+  my @new = ();
+
+  foreach my $c (split //, $string) {
+    $ap++ if $c eq "'";
+    if( $c eq '!' ) {
+      last if $ap%2 == 0;
+    }
+    push(@new,$c);
+  }
+
+  $string = join("",@new);
+
+  #print STDERR "clean_comment: |$orig|$_|\n";
+
+  return $string;
+}
+
 sub parse_initial {
 
   my ($self,$next) = @_;
@@ -273,7 +297,8 @@ sub parse_initial {
   $_ = $next;
   s/^\s*\d+\s+/ /;	# get rid of label number
   s/\s+//g;		# no space
-  s/\!.*//g;		# line comment
+  #s/\!.*//g;		# line comment
+  $_ = $self->clean_comment($_) if /\!/;
 
   if( /^PROGRAM(\w+)/i ) { 
     die "*** more than one main program: $next\n" if $self->{has_program};
@@ -598,7 +623,9 @@ sub clean_line {
 
   $line =~ s/^\s*\d+\s+/ /;		# get rid of label number
   $line =~ s/^[cC!*].*$//;		# line comment
-  $line =~ s/\s*!.*$//;			# trailing comment
+  #$line =~ s/\s*!.*$//;		# trailing comment
+  $line = $self->clean_comment($line) if $line =~ /\!/;
+  $line =~ s/\s+$//;			# trailing space
   $line =~ s/^\s+$//;			# empty line
 
   return $line;

@@ -1,4 +1,13 @@
 
+04.05.2015
+
+c ./fem3d/sublnka.f:
+c 04.05.2015    ggu     remove equivalence - use winkv as local array
+c
+c ./fem3d/submeteo2.f:
+c 04.05.2015    ggu     bug in ice eliminated
+
+
 30.04.2015
 
 c ./fem3d/submeteo2.f:
