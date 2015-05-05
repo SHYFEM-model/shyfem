@@ -172,7 +172,7 @@ c parameter
 	double precision eps
 	parameter ( eps = 1.d-14 )
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 	include 'reg.h'
 c local
@@ -281,7 +281,7 @@ c parameter
 	double precision eps
 	parameter ( eps = 1.d-14 )
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 	include 'reg.h'
 c local
@@ -428,7 +428,7 @@ c parameter
 	double precision eps
 	parameter ( eps = 1.d-14 )
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c pxareg,pyareg         coordinates of lower left point of matrix
 c pxdreg,pydreg         grid size of matrix
@@ -555,7 +555,7 @@ c interpolation 3d of fem values to regular grid using fm matrix
         real fm(4,nx,ny)		!interpolation matrix
         real am(nlv,nx,ny)		!interpolated values (return)
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	include 'reg.h'
@@ -742,7 +742,7 @@ c		> 0	values of flag used in interpolation
 	real femval(*)		!interpolated values on fem grid (return)
 	integer ierr		!error code (return)
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	logical bextra
@@ -832,7 +832,7 @@ c arguments
 	real av(1)
 	real am(ip,jp)
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 	include 'reg.h'
 c local
@@ -981,7 +981,7 @@ c arguments
 	real av(1)
 	real am(ip,jp)
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 	include 'reg.h'
 c local
@@ -1057,7 +1057,7 @@ c arguments
 	real zv(1)
 	real href,hzoff
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'basin.h'
 	include 'hydro.h'
 c local
@@ -1153,7 +1153,7 @@ c arguments
 	logical bwater(1)
 	logical bkwater(1)
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c local
 	integer ie,ii,k
@@ -1200,7 +1200,7 @@ c arguments
 	logical bwater(1)
 	logical bkwater(1)
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c local
 	integer ie,ii,k
@@ -1418,7 +1418,7 @@ c uses data structure ev and ieltv
 
 	implicit none
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'ev.h'
 
 	integer ieold
@@ -1607,7 +1607,7 @@ c checks if point (xp,yp) is in element ie
 	integer ie
 	real xp,yp
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	integer ii,k,in
@@ -1649,7 +1649,7 @@ c returns x,y of vertices of element ie
 	integer ie
 	real x(3), y(3)
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	integer ii,k
@@ -1674,7 +1674,7 @@ c returns s at vertices of element ie
 	real sv(1)
 	real s(3)
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	integer ii,k

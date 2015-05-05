@@ -44,7 +44,7 @@ c local variables
 	integer i,kkk
 	real xb,yb
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	xb=0.
@@ -72,7 +72,7 @@ c arguments
         real area_element
         integer ie
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c local
         integer kn1,kn2,kn3
@@ -107,7 +107,7 @@ c returns coordinates of node k (internal)
 	integer k
 	real x,y
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	x = xgv(k)
@@ -127,7 +127,7 @@ c
 	implicit none
 	integer ipext
 	integer k
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c
 	if(k.lt.1.or.k.gt.nkn) then
@@ -151,7 +151,7 @@ c
 	implicit none
 	integer ieext
 	integer k
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c
 	if(k.lt.1.or.k.gt.nel) then
@@ -175,7 +175,7 @@ c
 	implicit none
 	integer ipint
 	integer k,i
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c
 	do i=1,nkn
@@ -200,7 +200,7 @@ c
 	implicit none
 	integer ieint
 	integer k,i
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c
 	do i=1,nel

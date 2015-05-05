@@ -66,7 +66,7 @@ c write 2d nos file
 	integer nb
         character*(*) name,title
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'depth.h'
 

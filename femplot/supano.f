@@ -47,7 +47,7 @@ c writes annotation for simulation
 
 	character*(*) var
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'simul.h'
 
 	character*80 line
@@ -1988,7 +1988,7 @@ c	+---+---+
 	integer iqc(4)
 
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	character*80 line

@@ -88,14 +88,12 @@ make check_var
 make dist
 git add -u
 gitcommit
-make test_stable
 
 gittag
 gittar
 
 mail_shyfem.sh tar-file
 mv tar-file arc
-make stable
 
 EOI
 

@@ -87,7 +87,7 @@ c********************************************************************
 
 	integer nsigma
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'levels.h'
 
 	integer l
@@ -111,7 +111,7 @@ c********************************************************************
 	integer lmin
 	real hmin,dzreg
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nlevel.h'
 
 	include 'levels.h'

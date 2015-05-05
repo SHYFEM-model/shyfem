@@ -118,7 +118,7 @@ c arguments
 	real c(nlvdi,1)		!concentration (cconz,salt,temp,...)
 	real rbc(1)		!boundary condition
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'mkonst.h'
 	include 'levels.h'
@@ -153,7 +153,7 @@ c arguments
 	integer nlvbnd		!vertical dimension of boundary conditions
 	real rbc(nlvbnd,1)	!boundary condition
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'mkonst.h'
 	include 'levels.h'
@@ -212,7 +212,7 @@ c on return iu = -1 means that no file has been opened and is not written
 	integer nvar		!total number of variables to write    (in)
 	character*(*) type	!extension of file		       (in)
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'simul.h'
 	include 'nbasin.h'
 	include 'femtime.h'
@@ -303,7 +303,7 @@ c writes NOS file
 	integer nlvdi		!vertical dimension of c
 	real c(nlvdi,1)		!scalar to write
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
 	include 'levels.h'
 
@@ -397,7 +397,7 @@ c on return iu = -1 means that no file has been opened and is not written
 	integer nvar		!total number of variables to write    (in)
 	character*(*) type	!extension of file		       (in)
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
 
 	include 'simul.h'
@@ -478,7 +478,7 @@ c the file must be open, the file will be written unconditionally
 	integer nlvdi		!vertical dimension of c
 	real c(nlvdi,1)		!scalar to write
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
 
 	include 'levels.h'
@@ -535,7 +535,7 @@ c arguments
 	real c(nlvdi,1)		!concentration (cconz,salt,temp,...)
         real cmin,cmax
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'levels.h'
 c local
@@ -587,7 +587,7 @@ c arguments
 	real c(nlvdi,1)		!concentration (cconz,salt,temp,...)
         real cmin,cmax
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'femtime.h'
 	include 'levels.h'

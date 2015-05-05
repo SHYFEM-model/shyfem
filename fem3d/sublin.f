@@ -134,7 +134,7 @@ c tests for adjacency between nodes
 	logical iskadj
 	integer k1,k2
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 	include 'links.h'
 

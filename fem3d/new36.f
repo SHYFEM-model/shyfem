@@ -104,7 +104,7 @@ c vdate		velocity variable used in mode
 
 	integer ic		!0 if no change in configuration   (out)
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'close.h'
 
 c common

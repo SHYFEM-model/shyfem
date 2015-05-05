@@ -1,9 +1,10 @@
 
-04.05.2015    VERS_7_1_10
+05.05.2015    VERS_7_1_10
 
 	ice cover bug eliminated
 	some adjustments in include files (global arrays)
 	winkv equivalence eliminated
+	all param_dummy.h substituted by param.h
 	compiler bug adjustments:
 		gfortran: use -O instead of -O3
 		ifort: remove -check uninit

@@ -206,7 +206,7 @@ c local variables
         integer i,kkk
         real xb,yb
 
-        include 'param_dummy.h'
+        include 'param.h'
         include 'basin.h'
         include 'tides.h'
 

@@ -59,7 +59,7 @@ c sets dry elements
 
 	integer ie
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'geom_dynamic.h'
 
 	if( iwegv(ie) .eq. 0 ) then
@@ -109,7 +109,7 @@ c
 c arguments
         integer iweich,iw
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'geom_dynamic.h'
 	include 'basin.h'
 	include 'hydro.h'
@@ -321,7 +321,7 @@ c
         implicit none
 c
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
 	include 'geom_dynamic.h'
 	include 'basin.h'
@@ -551,7 +551,7 @@ c sets array zenv from znv
         implicit none
 
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'geom_dynamic.h'
 	include 'basin.h'
 	include 'hydro.h'
@@ -577,7 +577,7 @@ c sets array znv from zenv
         implicit none
 
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'mkonst.h'
 
 	include 'geom_dynamic.h'
@@ -675,7 +675,7 @@ c
 c arguments
         real zv(1),av(1)
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'geom_dynamic.h'
 	include 'basin.h'
 	include 'hydro.h'

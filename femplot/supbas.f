@@ -257,7 +257,7 @@ c	4: net in gray (for scalar and velocities - use bsgray)
 
 	integer mode
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 	include 'geom.h'
 
@@ -328,7 +328,7 @@ c	positive: external    negative: internal
 
 	integer mode
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 	include 'geom.h'
 
@@ -481,7 +481,7 @@ c mode	0: exact dimensions  1: larger dimensions
 
 	integer mode
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	real xmin,ymin,xmax,ymax
@@ -1670,7 +1670,7 @@ c plots islands gray
 	real cgray	!color
 	
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'geom.h'
 	include 'basin.h'
 

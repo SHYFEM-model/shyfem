@@ -57,7 +57,7 @@ c nli < 2*nkn + nel
 c arguments
         integer nnkn,nnel,nnbn,nnli,nnis,nnod
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'nbasin.h'
 	include 'geom_dynamic.h'
 	include 'links.h'
@@ -117,7 +117,7 @@ c ... iwegv has already been set
         implicit none
 
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'femtime.h'
 	include 'geom.h'
@@ -165,7 +165,7 @@ c arguments
 	real winkk
         integer k
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'nbasin.h'
 	include 'geom_dynamic.h'
 	include 'ev.h'
@@ -203,7 +203,7 @@ c
 c arguments
         integer nar
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'geom.h'
 	include 'geom_dynamic.h'
 	include 'basin.h'
@@ -274,7 +274,7 @@ c
 c arguments
         real wink
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'geom_dynamic.h'
 	include 'basin.h'
 	include 'ev.h'
@@ -313,7 +313,7 @@ c
         implicit none
 c
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'femtime.h'
 	include 'geom_dynamic.h'

@@ -86,7 +86,7 @@ c writes output to terminal or log file
 
 	implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
 	!include 'basin.h'
 	include 'modules.h'
 	include 'femtime.h'
@@ -169,7 +169,7 @@ c id    identifier
 
 	integer id
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 	include 'modules.h'
 
@@ -311,7 +311,7 @@ c 18.03.1998	ggu	use variable section instead name
 
 	integer iunit
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'modules.h'
 
 c---------------------------------------------------------------
@@ -468,7 +468,7 @@ c reads title section
 
 	implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'simul.h'
 
 	character*80 line,extra

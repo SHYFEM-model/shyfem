@@ -1,5 +1,60 @@
 ============================================================
 
+Tue May  5 18:36:31 CEST 2015
+
+param_dummy.h subst by param.h
+
+ RELEASE_NOTES            |    3 +-
+ fem3d/Makefile           |   67 ++++++++++++++++++++++-----------------------
+ fem3d/intp.f             |    2 +-
+ fem3d/lagrange_util.f    |    6 ++--
+ fem3d/lagrange_util_tr.f |    6 ++--
+ fem3d/new36.f            |    2 +-
+ fem3d/newcra.f           |    2 +-
+ fem3d/newrog.f           |    2 +-
+ fem3d/newsig.f           |    4 +-
+ fem3d/param_dummy.h      |   52 -----------------------------------
+ fem3d/subcon1.f          |   16 +++++-----
+ fem3d/subdep.f           |   26 +++++++++---------
+ fem3d/subdry.f           |   12 ++++----
+ fem3d/subexta.f          |   14 +++++-----
+ fem3d/subgrd.f           |    2 +-
+ fem3d/sublin.f           |    2 +-
+ fem3d/sublnka.f          |   20 +++++++-------
+ fem3d/sublnks.f          |   12 ++++----
+ fem3d/sublnku.f          |   36 ++++++++++++------------
+ fem3d/sublpl.f           |    2 +-
+ fem3d/subnev.f           |   10 +++---
+ fem3d/subnosa.f          |    2 +-
+ fem3d/subnsa.f           |    4 +-
+ fem3d/subnsh.f           |    8 +++---
+ fem3d/subnsu.f           |   14 +++++-----
+ fem3d/subouta.f          |    2 +-
+ fem3d/subproj.f          |    2 +-
+ fem3d/subreg.f           |   28 +++++++++---------
+ fem3d/subvola.f          |   20 +++++++-------
+ fem3d/subwat.f           |   16 +++++-----
+ femadj/Makefile          |    2 +-
+ femadj/param_dummy.h     |   22 ---------------
+ femadj/subgrd.f          |    2 +-
+ fembin/gitinfo           |    2 -
+ femdoc/final/shyfem.pdf  |  Bin 293782 -> 293782 bytes
+ femdoc/final/shyfem.ps   |    4 +-
+ femplot/Makefile         |   12 ++++----
+ femplot/param_dummy.h    |   22 ---------------
+ femplot/supano.f         |    4 +-
+ femplot/supbas.f         |    8 +++---
+ femplot/supdep.f         |   10 +++---
+ femplot/supint.f         |    4 +-
+ femplot/supiso.f         |    6 ++--
+ 43 files changed, 197 insertions(+), 295 deletions(-)
+ deleted:
+    fem3d/param_dummy.h
+    femadj/param_dummy.h
+    femplot/param_dummy.h
+
+============================================================
+
 Tue May  5 18:05:48 CEST 2015
 
 after work with Eric, small changes, compiler bugs

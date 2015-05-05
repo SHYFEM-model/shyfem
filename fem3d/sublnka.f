@@ -26,7 +26,7 @@ c sets up geometrical arrays
         implicit none
 
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 
 	include 'basin.h'
 	include 'links.h'
@@ -116,7 +116,7 @@ c updates geometrical array (ieltv)
         implicit none
 
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 
 	include 'geom_dynamic.h'
@@ -145,7 +145,7 @@ c checks geometrical arrays
         implicit none
 
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'nbasin.h'
 
 	include 'links.h'
@@ -177,7 +177,7 @@ c checks various subroutines
 
         implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
         include 'links.h'
 
 	include 'nbasin.h'
@@ -286,7 +286,7 @@ c parameter
 	real winmax
 	parameter(winmax=359.8)
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'geom_dynamic.h'
 	include 'basin.h'
 	include 'ev.h'
@@ -381,7 +381,7 @@ c****************************************************************
 	logical is_internal_node
 	integer k
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'geom_dynamic.h'
 
 	is_internal_node = inodv(k) .eq. 0
@@ -397,7 +397,7 @@ c****************************************************************
 	logical is_boundary_node
 	integer k
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'geom_dynamic.h'
 
 	is_boundary_node = inodv(k) .ne. 0 .and. inodv(k) .ne. -2
@@ -413,7 +413,7 @@ c****************************************************************
 	logical is_open_boundary_node
 	integer k
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'geom_dynamic.h'
 
 	is_open_boundary_node = inodv(k) .gt. 0
@@ -429,7 +429,7 @@ c****************************************************************
 	logical is_dry_node
 	integer k
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'geom_dynamic.h'
 
 	is_dry_node = inodv(k) .eq. -2
@@ -447,7 +447,7 @@ c****************************************************************
         integer nkn
         real aux(nkn)
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'geom.h'
 
         integer ib,k,kn,kstart

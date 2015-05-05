@@ -183,13 +183,13 @@ ousinfo.o: hydro.h param.h levels.h nlevel.h basin.h
 plotsim.o: depth.h hydro_vel.h hydro.h param.h nlevel.h mkonst.h \
 		evmain.h pkonst.h levels.h basin.h hydro_print.h \
 		hydro_plot.h aux_array.h geom.h plot_aux.h 
-supano.o: color.h param_dummy.h basin.h legend.h simul.h
-supbas.o: nbasin.h param_dummy.h supout.h basin.h geom.h
+supano.o: color.h param.h basin.h legend.h simul.h
+supbas.o: nbasin.h param.h supout.h basin.h geom.h
 supcol.o: color.h
-supdep.o: depth.h hydro.h param_dummy.h ev.h nlevel.h nbasin.h \
-		levels.h basin.h plot_aux.h aux_array.h 
-supint.o: param_dummy.h levels.h
-supiso.o: color.h param_dummy.h basin.h
+supdep.o: depth.h hydro.h param.h ev.h nlevel.h nbasin.h levels.h \
+		basin.h plot_aux.h aux_array.h 
+supint.o: param.h levels.h
+supiso.o: color.h param.h basin.h
 suplag.o: param.h basin.h
 suplin.o: depth.h color.h param.h levels.h nlevel.h basin.h \
 		hydro_print.h 

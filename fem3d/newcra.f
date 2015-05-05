@@ -33,7 +33,7 @@ c parameters
 	integer ndim
 	parameter (ndim=55)
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'ev.h'
 	include 'pkonst.h'
 	include 'femtime.h'

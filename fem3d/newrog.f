@@ -69,7 +69,7 @@ c parameters
 	parameter (tiden='/d4/georg/hamsom/daten/rogtides.data')
 	parameter (rad=3.14159/180.)
 c common (just for debug)	!$$TEST
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c local
 	real hsing(lanz,ndim),hcosg(lanz,ndim)

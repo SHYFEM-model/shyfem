@@ -18,7 +18,7 @@ c dati gli estremi calcolo i coefficienti a, b della retta passante
 	integer ext(2),i,el
 	integer p1,p2
 	
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 	
         real x1,y1,x2,y2
@@ -77,7 +77,7 @@ c_________________________| rette in particolare an il coefficiente
 c                           angolare an
 	implicit none
 	
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 	
 	integer pb(2),ipb(2),pi
@@ -252,7 +252,7 @@ c calcolo della distanza (dist) del punto x,y dall'estremo piu distante
         real d ! distanza dal punto piu lontano
 	integer near,far ! puntatore dell'estremo piu lontano e piu vicino
 			 ! rispetto al punto x,y
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
         integer p1,p2,el

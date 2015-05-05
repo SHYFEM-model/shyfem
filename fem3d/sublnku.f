@@ -51,7 +51,7 @@ c arguments
 	integer kthis
         integer i,ie
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	kthis = nen3v(i,ie)
@@ -73,7 +73,7 @@ c arguments
 	integer knext
         integer k,ie
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c local
         integer i
@@ -105,7 +105,7 @@ c arguments
 	integer kbhnd
         integer k,ie
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c local
         integer i
@@ -137,7 +137,7 @@ c arguments
 	integer ithis
         integer k,ie
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c local
         integer i
@@ -169,7 +169,7 @@ c arguments
 	integer inext
         integer k,ie
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c local
         integer i
@@ -201,7 +201,7 @@ c arguments
 	integer ibhnd
         integer k,ie
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c local
         integer i
@@ -231,7 +231,7 @@ c returns filling of linkv
 c arguments
         integer n       !filling of linkv (return)
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'nbasin.h'
 	include 'links.h'
 
@@ -258,7 +258,7 @@ c       end do
 
 	integer k,ipf,ipl
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'links.h'
 
         ipf = ilinkv(k)+1
@@ -285,7 +285,7 @@ c       end do
 
 	integer k,ipf,ipl
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'links.h'
 
         ipf = ilinkv(k)+1
@@ -310,7 +310,7 @@ c       end do
 
 	integer k,n,ibase
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'links.h'
 
 	n = ilinkv(k+1)-ilinkv(k)
@@ -337,7 +337,7 @@ c       end do
 
 	integer k,n,ibase
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'links.h'
 
 	n = ilinkv(k+1)-ilinkv(k)
@@ -363,7 +363,7 @@ c       end do
 	integer k,n
 	integer i,ibase
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'links.h'
 
 	n = ilinkv(k+1)-ilinkv(k)
@@ -400,7 +400,7 @@ c       end do
 	integer k,n
 	integer i,ibase
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'links.h'
 
 	n = ilinkv(k+1)-ilinkv(k)
@@ -429,7 +429,7 @@ c returns all elems around node k
 
 	integer i,ibase
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'links.h'
 
 	n = ilinkv(k+1)-ilinkv(k)
@@ -458,7 +458,7 @@ c returns all nodes around node k
 
 	integer i,ibase
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'links.h'
 
 	n = ilinkv(k+1)-ilinkv(k)
@@ -489,7 +489,7 @@ c if no such segment, both ie are zero
 c arguments
         integer k1,k2,ie1,ie2
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'links.h'
 
         integer k,ipf,ipl,ip,ip2
@@ -540,7 +540,7 @@ c ipl   last  element (return)
 c arguments
         integer k,ipf,ipl
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'links.h'
 
         ipf=ilinkv(k)+1
@@ -564,7 +564,7 @@ c arguments
         integer ie              !element
         integer ip(3,3)         !pointer into linkv
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'links.h'
 	include 'basin.h'
 

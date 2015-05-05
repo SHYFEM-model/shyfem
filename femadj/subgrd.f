@@ -589,7 +589,7 @@ c
 	logical btitle
 	!real f(10)
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 	include 'pkonst.h'
 	include 'subgrd.h'

@@ -77,7 +77,7 @@ c arguments
 	real flag		!flag to distinguish boundary condition
 c common
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 	include 'ev.h'
 c local

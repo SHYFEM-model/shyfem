@@ -144,5 +144,5 @@ adjgrd.o: nbstatic.h
 adjneu.o: depth.h param.h basin.h grade.h
 adjplo.o: param.h basin.h grade.h
 adjvar.o: param.h nbstatic.h basin.h grade.h
-subgrd.o: pkonst.h param_dummy.h subgrd.h basin.h
+subgrd.o: pkonst.h param.h subgrd.h basin.h
 

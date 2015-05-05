@@ -111,7 +111,7 @@ c kvol()	node numbers defining areas
 
         implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'volcomp.h'
 
         nvols = -1	!must still be initialized
@@ -128,7 +128,7 @@ c******************************************************************
 
         implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'volcomp.h'
 
 	integer nfxdi
@@ -157,7 +157,7 @@ c******************************************************************
 
         implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'volcomp.h'
 
 
@@ -183,7 +183,7 @@ c******************************************************************
 
 	implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'volcomp.h'
 
 	
@@ -266,7 +266,7 @@ c******************************************************************
 
 	implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'volcomp.h'
 
 	
@@ -295,7 +295,7 @@ c write of vol data
         integer iscdim
         parameter(iscdim=500)
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'volcomp.h'
 
 
@@ -583,7 +583,7 @@ c initializes vol routines finally
 
 	implicit none
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'volcomp.h'
 
 
@@ -786,7 +786,7 @@ c close line -> nodes will be unique (first & last are different)
 	integer kline(1)
 	real xline(1), yline(1)
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	include 'geom.h'
@@ -849,7 +849,7 @@ c******************************************************************
 	integer ietype
 
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'aux_array.h'
 
 
@@ -906,7 +906,7 @@ c******************************************************************
 	integer il,iltype
 
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	integer k,i

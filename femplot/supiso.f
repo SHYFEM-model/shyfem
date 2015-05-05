@@ -47,7 +47,7 @@ c argument
 	integer mode
 c common
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c color
 	include 'color.h'
@@ -836,7 +836,7 @@ c returns x,y,val of element, and indication of flag values
         real f(3),x(3),y(3)     !return values of val,x,y
         integer inull           !total number of flags found
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	integer ii,kn
@@ -864,7 +864,7 @@ c returns x,y of element
         integer ie              !element for which info is needed
         real x(3),y(3)          !return values of x,y
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	integer ii,kn

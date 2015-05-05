@@ -34,7 +34,7 @@ c makes hkv (nodewise depth)
 	implicit none
 
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'basin.h'
 	include 'depth.h'
 	include 'aux_array.h'
@@ -70,7 +70,7 @@ c makes hev (elementwise depth)
 	implicit none
 
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'basin.h'
 	include 'depth.h'
 c local
@@ -102,7 +102,7 @@ c arguments
 	real hetv(1)
 	real href
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'nlevel.h'
 
@@ -176,7 +176,7 @@ c arguments
 	real het3v(nlvdi,1)
 	real href
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'levels.h'
 	include 'depth.h'
@@ -260,7 +260,7 @@ c makes area of finite volume
 	implicit none
 
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'basin.h'
 	include 'plot_aux.h'
 	include 'ev.h'

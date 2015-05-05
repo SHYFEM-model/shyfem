@@ -46,7 +46,7 @@ c iunit		unit number of file
 	integer iv_in,iv_read
 	real getpar
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'simul.h'
 
 	bdebug = .true.
@@ -130,7 +130,7 @@ c reads title section of apn files
 
         implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'simul.h'
 
         character*80 line

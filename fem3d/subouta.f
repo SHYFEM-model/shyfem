@@ -22,7 +22,7 @@ c writes and administers out file
 
 	implicit none
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'femtime.h'
 	include 'simul.h'

@@ -50,7 +50,7 @@ c revised 29.06.97 by ggu	$$ndim - dimension of f is passed
 	integer k,ndim
 	real f(1)
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	integer iact,ie,i,ii
@@ -104,7 +104,7 @@ c               -1      error
 	real high
 	parameter(high=1.e+30)
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	logical buniq
@@ -173,7 +173,7 @@ c hkv            array with unique depth values
 	real hkv(1)
 
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	integer ie,ii,k
@@ -238,7 +238,7 @@ c makes hev (elementwise depth)
 c arguments
         real hev(1)
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 c local
         integer ie,ii
@@ -266,7 +266,7 @@ c arguments
         real hkv(1)
         real haux(1)   !aux array -> bug - was integer
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 	include 'ev.h'
 c local
@@ -308,7 +308,7 @@ c itype:  -1: min  0; aver  +1: max
         integer itype
 
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
         integer k,ie,ii
@@ -365,7 +365,7 @@ c adjusts depth to reference and min/max values
 
 	real hmin,hmax,href
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 
 	integer iaux,ie,ii
@@ -493,7 +493,7 @@ c adjusts nodal depth values
 
 	implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'depth.h'
 	include 'aux_array.h'
 
@@ -511,7 +511,7 @@ c adjusts elemental depth values
 
 	implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'depth.h'
 
         call makehev(hev)
@@ -541,7 +541,7 @@ c adjourns hev and hkv from hm3v (if it has been changed)
 	implicit none
 
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'basin.h'
 	include 'depth.h'
 
@@ -570,7 +570,7 @@ c uses information about sigma layers and hsigma (hybrid)
 	implicit none
 
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'basin.h'
 	include 'depth.h'
 	include 'aux_array.h'
@@ -690,7 +690,7 @@ c********************************************************************
 
 	character*(*) file
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'depth.h'
 
@@ -714,7 +714,7 @@ c********************************************************************
 
 	character*(*) file
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'depth.h'
 

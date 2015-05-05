@@ -49,7 +49,7 @@ c arguments
 	integer k
 	real vol,dz
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'basin.h'
 	include 'hydro.h'
 	include 'ev.h'
@@ -95,7 +95,7 @@ c dz		rise of water level to achieve
 c arguments
 	real dz
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'hydro.h'
 c local
@@ -133,7 +133,7 @@ c arguments
 	integer ielem
 	real dz
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'nbasin.h'
 	include 'hydro.h'
 c local
@@ -182,7 +182,7 @@ c arguments
 	real con,dz
 	real coe(3,1)
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'hydro.h'
 	include 'basin.h'
 	include 'ev.h'
@@ -264,7 +264,7 @@ c arguments
 	real dz,con
 	real coe(3,1)
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'hydro.h'
 	include 'basin.h'
 c local
@@ -308,7 +308,7 @@ c arguments
 	integer k
 	real dvol
 c common
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'basin.h'
 	include 'hydro.h'
 	include 'ev.h'
@@ -360,7 +360,7 @@ c arguments
 	real vol0		!volume of first layer			(out)
 	real svol		!total mass of s in column		(out)
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'levels.h'
 c local
 	integer l,ilevel,nlev
@@ -405,7 +405,7 @@ c arguments
 	real dvol		!change in water volume (whole time step)
 	real dcon		!concentration of new volume dvol
 c common
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'levels.h'
 c local
 	logical debug

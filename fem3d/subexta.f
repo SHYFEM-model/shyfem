@@ -51,7 +51,7 @@ c******************************************************************
 
 	implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'extra.h'
 
 	knausm = 0
@@ -65,7 +65,7 @@ c******************************************************************
 
 	implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'extra.h'
 
 	logical handlesec
@@ -97,7 +97,7 @@ c******************************************************************
 
 	implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'extra.h'
 
 	integer k,knode
@@ -126,7 +126,7 @@ c******************************************************************
 
 	implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'extra.h'
 
 	integer i
@@ -149,7 +149,7 @@ c******************************************************************
 
 	implicit none
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'extra.h'
 
 	integer i
@@ -170,7 +170,7 @@ c writes and administers ext file
 
 	integer it
 
-	include 'param_dummy.h' !COMMON_GGU_SUBST
+	include 'param.h' !COMMON_GGU_SUBST
 	include 'extra.h'
 	include 'hydro_print.h'
 
@@ -253,7 +253,7 @@ c ...ndim is dummy argument
 	integer nmax
 	parameter(nmax=50)
 
-	include 'param_dummy.h'
+	include 'param.h'
 	include 'simul.h'
 	include 'aux_array.h'
 

@@ -836,7 +836,7 @@ ht.o: internal.h ts.h evmain.h nudging.h tides.h nbasin.h \
 		geom.h hydro_vel.h hydro.h bound_names.h femtime.h \
 		sinking.h intp_fem_file.mod hydro_baro.h \
 		meteo_aux.h basin.h hydro_print.h 
-intp.o: nbasin.h hydro.h param_dummy.h
+intp.o: nbasin.h hydro.h param.h
 lagrange_back.o: depth.h nbasin.h hydro.h param.h basin.h \
 		hydro_print.h lagrange.h 
 lagrange_cont.o: param.h links.h basin.h lagrange.h
@@ -853,8 +853,8 @@ lagrange_oil.o: nbasin.h param.h femtime.h ev.h lagrange.h \
 		aux_array.h 
 lagrange_track.o: hydro_vel.h param.h levels.h basin.h nlevel.h \
 		lagrange.h geom.h 
-lagrange_util.o: nbasin.h param_dummy.h ev.h basin.h
-lagrange_util_tr.o: param_dummy.h basin.h
+lagrange_util.o: nbasin.h param.h ev.h basin.h
+lagrange_util_tr.o: param.h basin.h
 lagrange_vertical.o: depth.h hydro_vel.h hydro.h param.h ev.h \
 		nlevel.h lagrange.h levels.h basin.h geom.h 
 lgrelab.o: nbasin.h depth.h param.h basin.h
@@ -865,7 +865,7 @@ matrix49.o: regflux.h
 mod_tides.mod: mod_tides.o
 netcdf.o: depth.h param.h netcdf.h levels.h netcdf.inc basin.h
 netcdf_util.o: param.h basin.h
-new36.o: param_dummy.h bound_dynamic.h mkonst.h femtime.h close.h \
+new36.o: param.h bound_dynamic.h mkonst.h femtime.h close.h \
 		nbasin.h basin.h hydro_print.h diff_visc_fric.h 
 new3di.o: testbndo.h depth.h internal.h bound_dynamic.h mkonst.h \
 		ev.h nlevel.h tides.h nudging.h nbasin.h \
@@ -889,7 +889,7 @@ newcon.o: testbndo.h depth.h bound_dynamic.h ts.h ev.h mkonst.h \
 newconz.o: depth.h conz.h param.h bound_names.h ts.h nlevel.h \
 		mkonst.h femtime.h nbasin.h levels.h \
 		diff_visc_fric.h aux_array.h 
-newcra.o: depth.h hydro.h param_dummy.h bound_dynamic.h mkonst.h \
+newcra.o: depth.h hydro.h param.h bound_dynamic.h mkonst.h \
 		femtime.h ev.h pkonst.h hydro_baro.h basin.h \
 		bnd_aux.h 
 newexpl.o: depth.h internal.h ts.h ev.h nlevel.h bound_geom.h \
@@ -903,8 +903,8 @@ newini.o: depth.h hydro.h internal.h param.h mkonst.h nlevel.h \
 		pkonst.h nbasin.h levels.h roughness.h basin.h \
 		diff_visc_fric.h 
 newnudge.o: hydro.h param.h nudge.h femtime.h basin.h nudging.h
-newrog.o: param_dummy.h basin.h
-newsig.o: param_dummy.h levels.h nlevel.h
+newrog.o: param.h basin.h
+newsig.o: param.h levels.h nlevel.h
 newstab.o: conz.h param.h nlevel.h nbasin.h levels.h basin.h \
 		diff_visc_fric.h stab.h aux_array.h 
 newtra.o: depth.h hydro_vel.h hydro.h param.h ev.h nlevel.h \
@@ -983,8 +983,8 @@ subboxa.o: depth.h ev.h ts.h nlevel.h subboxa.h meteo.h \
 		hydro.h femtime.h modules.h levels.h \
 		geom_dynamic.h basin.h 
 clo.mod: subclo.o
-subcon1.o: depth.h param_dummy.h bound_dynamic.h nlevel.h \
-		femtime.h mkonst.h simul.h nbasin.h levels.h 
+subcon1.o: depth.h param.h bound_dynamic.h nlevel.h femtime.h \
+		mkonst.h simul.h nbasin.h levels.h 
 subcoo.o: param.h common.h nkonst.h
 subcoord.o: coords_cpp.h coords.h coords_utm.h coords_gb.h
 subcst.o: pkonst.h modules.h mkonst.h
@@ -993,14 +993,14 @@ subcus.o: depth.h internal.h ev.h nlevel.h ts.h nbasin.h \
 		hydro.h conz.h femtime.h fluidmud.h meteo_aux.h \
 		levels.h geom_dynamic.h hydro_baro.h area.h \
 		basin.h hydro_print.h 
-subdep.o: nbasin.h depth.h param_dummy.h ev.h basin.h aux_array.h
+subdep.o: nbasin.h depth.h param.h ev.h basin.h aux_array.h
 subdif.o: depth.h hydro.h param.h nlevel.h femtime.h ev.h \
 		diff_aux.h nbasin.h geom_dynamic.h levels.h \
 		basin.h hydro_print.h diff_visc_fric.h geom.h \
 		aux_array.h 
 subdim.o: nbasin.h nbound.h
-subdry.o: hydro.h param_dummy.h mkonst.h femtime.h ev.h \
-		geom_dynamic.h hydro_baro.h basin.h aux_array.h 
+subdry.o: hydro.h param.h mkonst.h femtime.h ev.h geom_dynamic.h \
+		hydro_baro.h basin.h aux_array.h 
 subdts.o: subdts.h
 subdwq.o: nbasin.h param.h geom_dynamic.h hydro_baro.h basin.h \
 		femtime.h 
@@ -1010,8 +1010,8 @@ subets.o: etsinf.h
 subetsa.o: depth.h hydro.h param.h ts.h nlevel.h femtime.h tides.h \
 		simul.h nbasin.h levels.h modules.h hydro_print.h \
 		subetsa.h waves.h 
-subexta.o: param_dummy.h modules.h femtime.h hydro_print.h \
-		aux_array.h simul.h extra.h 
+subexta.o: param.h modules.h femtime.h hydro_print.h aux_array.h \
+		simul.h extra.h 
 intp_fem_file.mod: subfemintp.o
 subflx3d.o: hydro_vel.h testbndo.h hydro.h param.h bound_dynamic.h \
 		femtime.h ev.h geom_dynamic.h hydro_baro.h \
@@ -1030,17 +1030,17 @@ subgotm_mud.o: depth.h ev.h ts.h nlevel.h nbasin.h turbulence.h \
 		hydro_vel.h hydro.h param.h debug_aux2.h femtime.h \
 		sinking.h pkonst.h fluidmud.h levels.h meteo_aux.h \
 		basin.h hydro_print.h 
-subgrd.o: pkonst.h param_dummy.h subgrd.h basin.h
+subgrd.o: pkonst.h param.h subgrd.h basin.h
 subhisto.o: histo.h
 subinterpol.o: depth.h param.h basin.h
 subinterpol1.o: nbasin.h depth.h param.h basin.h
-sublin.o: param_dummy.h links.h basin.h
-sublnka.o: geom_aux.h param_dummy.h ev.h nbasin.h geom_dynamic.h \
-		basin.h links.h geom.h 
-sublnks.o: param_dummy.h ev.h femtime.h nbasin.h geom_dynamic.h \
-		links.h basin.h geom.h 
-sublnku.o: nbasin.h param_dummy.h links.h basin.h
-sublpl.o: nbasin.h param_dummy.h ev.h basin.h
+sublin.o: param.h links.h basin.h
+sublnka.o: geom_aux.h param.h ev.h nbasin.h geom_dynamic.h basin.h \
+		links.h geom.h 
+sublnks.o: param.h ev.h femtime.h nbasin.h geom_dynamic.h links.h \
+		basin.h geom.h 
+sublnku.o: nbasin.h param.h links.h basin.h
+sublpl.o: nbasin.h param.h ev.h basin.h
 submet.o: param.h bound_dynamic.h ts.h femtime.h ev.h nbasin.h \
 		meteo_forcing_module.mod meteo.h basin.h \
 		aux_array.h 
@@ -1059,25 +1059,25 @@ subn11.o: hydro.h param.h bound_dynamic.h nlevel.h mkonst.h \
 subn35.o: depth.h hydro.h param.h pkonst.h fluidmud.h levels.h \
 		basin.h roughness.h hydro_print.h chezy.h \
 		diff_visc_fric.h 
-subnev.o: nbasin.h param_dummy.h basin.h ev.h
+subnev.o: nbasin.h param.h basin.h ev.h
 nls.mod: subnls.o
 subnos.o: nosinf.h
-subnosa.o: depth.h nbasin.h param_dummy.h
-subnsa.o: param_dummy.h simul.h
-subnsh.o: param_dummy.h semi.h nlevel.h femtime.h nbound.h simul.h \
+subnosa.o: depth.h nbasin.h param.h
+subnsa.o: param.h simul.h
+subnsh.o: param.h semi.h nlevel.h femtime.h nbound.h simul.h \
 		modules.h levels.h basin.h 
-subnsu.o: param_dummy.h basin.h
+subnsu.o: param.h basin.h
 suboff.o: hydro_vel.h nbasin.h hydro.h param.h levels.h ts.h \
 		femtime.h hydro_print.h 
 subous.o: ousinf.h
 subousa.o: depth.h hydro.h param.h nlevel.h femtime.h simul.h \
 		nbasin.h levels.h 
-subouta.o: nbasin.h hydro.h param_dummy.h hydro_baro.h femtime.h \
+subouta.o: nbasin.h hydro.h param.h hydro_baro.h femtime.h \
 		hydro_print.h simul.h 
 suboutput.o: femtime.h
 para.mod: subpar3.o
 subpard.o: param.h omp_lib.mod common.h nkonst.h
-subproj.o: param_dummy.h param.h basin.h tides.h
+subproj.o: param.h basin.h tides.h
 subqfxf.o: subqfx.h
 subqfxm1.o: subqfxm.h
 subqfxm2.o: subqfxm.h
@@ -1086,7 +1086,7 @@ subqfxm4.o: subqfxm.h
 subqfxm5.o: subqfxm.h
 subqfxt.o: param.h levels.h meteo.h ts.h subqfxm.h
 subqfxu4.o: subqfxm.h
-subreg.o: nbasin.h reg.h hydro.h param_dummy.h ev.h basin.h geom.h
+subreg.o: nbasin.h reg.h hydro.h param.h ev.h basin.h geom.h
 subres.o: depth.h hydro.h param.h ts.h nlevel.h femtime.h simul.h \
 		nbasin.h hydro_baro.h levels.h basin.h aux_array.h 
 subrst.o: hydro_vel.h conz.h hydro.h param.h ts.h nlevel.h \
@@ -1099,10 +1099,9 @@ subtsuvfile.o: intp_fem_file.mod param.h
 subuti.o: depth.h hydro.h param.h ts.h ev.h pkonst.h \
 		geom_dynamic.h levels.h hydro_baro.h basin.h \
 		links.h 
-subvola.o: param_dummy.h femtime.h nbasin.h volcomp.h modules.h \
-		basin.h geom.h aux_array.h 
-subwat.o: nbasin.h hydro.h param_dummy.h levels.h links.h ev.h \
-		basin.h 
+subvola.o: param.h femtime.h nbasin.h volcomp.h modules.h basin.h \
+		geom.h aux_array.h 
+subwat.o: nbasin.h hydro.h param.h levels.h links.h ev.h basin.h
 subwaves.o: depth.h internal.h evmain.h nlevel.h nbasin.h meteo.h \
 		roughness.h geom.h aux_array.h waves.h hydro_vel.h \
 		param.h hydro.h femtime.h pkonst.h hydro_baro.h \
