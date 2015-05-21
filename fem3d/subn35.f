@@ -35,8 +35,43 @@ c 29.01.2009    ggu     ausdef eliminated (chezy(5,.) is not used anymore)
 c 16.02.2011    ggu     new routines to deal with nodal area code
 c 21.06.2012    ggu&aar new friction for mud module
 c 28.04.2015    ggu     czdef is default for all areas not given
+c 12.05.2015    ggu     rewritten with modules and allocatable
 c
 c***********************************************************
+c***********************************************************
+c***********************************************************
+
+!==================================================================
+        module chezy
+!==================================================================
+
+        implicit none
+
+        integer, save :: nczdum = 0
+        real, save, allocatable :: czdum(:,:)
+
+        integer, save :: nz_lines = 0
+	character*80, save, allocatable :: cz_lines(:)
+
+!==================================================================
+        contains
+!==================================================================
+
+	subroutine chezy_init(n)
+
+	integer n
+
+	nczdum = n
+	allocate(czdum(6,0:n))
+
+	czdum = -1.
+
+	end subroutine chezy_init
+
+!==================================================================
+        end module chezy
+!==================================================================
+
 c
 c-------------------------------------------------------------------
 c
@@ -316,12 +351,11 @@ c***********************************************************
 
 	subroutine n_chezy_values(nareas)
 
+	use chezy
+
 	implicit none
 
 	integer nareas
-
-	include 'param.h'
-	include 'chezy.h'
 
 	nareas = nczdum
 
@@ -331,10 +365,9 @@ c***********************************************************
 
 	subroutine get_chezy_values(iar,valin,valout)
 
-	implicit none
+	use chezy
 
-	include 'param.h'
-	include 'chezy.h'
+	implicit none
 
 	integer iar
 	real valin,valout
@@ -354,10 +387,9 @@ c***********************************************************
 
 	subroutine set_chezy_values(iar,valin,valout)
 
-	implicit none
+	use chezy
 
-	include 'param.h'
-	include 'chezy.h'
+	implicit none
 
 	integer iar
 	real valin,valout
@@ -383,12 +415,11 @@ c***********************************************************
 
 c initializes chezy arrays
 
+	use chezy
+
 	implicit none
 
-
 	include 'param.h'
-	include 'chezy.h'
-
 	include 'basin.h'
 	include 'diff_visc_fric.h'
 
@@ -407,14 +438,9 @@ c***********************************************************
 
 c initializes chezy arrays
 
+	use chezy
+
 	implicit none
-
-
-	include 'param.h'
-	include 'chezy.h'
-
-	include 'basin.h'
-	include 'diff_visc_fric.h'
 
 	logical bdebug
 	integer i
@@ -438,13 +464,11 @@ c***********************************************************
 
 c adjusts chezy arrays
 
+	use chezy
+
 	implicit none
 
-
 	include 'param.h'
-	include 'chezy.h'
-
-	include 'diff_visc_fric.h'
 	include 'basin.h'
 	include 'hydro_print.h'
 
@@ -490,10 +514,9 @@ c***********************************************************
 
 c prints chezy arrays
 
-	implicit none
+	use chezy
 
-	include 'param.h'
-	include 'chezy.h'
+	implicit none
 
 	integer i
 	integer iunit
@@ -513,14 +536,13 @@ c***********************************************************
 
 c checks chezy arrays
 
+	use chezy
+
 	implicit none
 
 
 	include 'param.h'
-	include 'chezy.h'
-
 	include 'basin.h'
-	include 'diff_visc_fric.h'
 
 	integer ie,iar
 	integer i,j,k
@@ -569,45 +591,65 @@ c***********************************************************
 
 c reads area section (chezy) from STR file
 
+	use nls
+	use chezy
+
 	implicit none
 
-	include 'param.h'
-	include 'chezy.h'
+	integer n,i
+
+	n = nls_read_table()
+
+	if( n > 0 ) then
+	  nz_lines = n
+	  allocate(cz_lines(n))
+	  call nls_copy_char_vect(n,cz_lines)
+	end if
+
+	end
+
+c***********************************************************
+
+	subroutine parse_area
+
+c parses area section (chezy) from STR file
+
+	use chezy
+
+	implicit none
 
 	character*80 line
-	integer ianz,iar,i
-	real f(20)
+	integer ianz,iar,i,n,il
+	real f(10)
 
-	integer nrdlin,iscan,iround
+	integer iscanf
 
-c DOCS	START	S_area
-c
-c DOCS	AREA	description of area code (Chezy)
-
-	call inarea		! just to be sure
-
-	do while( nrdlin(line) .ne. 0 )
-		ianz = iscan(line,1,f)
-		if( ianz .gt. 0 ) then
-			iar = iround(f(1))
-                        if(iar.lt.0) goto 88
-			if( ianz .gt. 7 ) goto 86
-                        if(iar.gt.nczdum) nczdum=iar
-                        if(iar.gt.nardim) goto 75
-			do i=2,ianz
-			  czdum(i-1,iar) = f(i)
-			end do
-		else if( ianz .lt. 0 ) then
+	do il=1,nz_lines
+	  line = cz_lines(il)
+	  !write(6,*) il,trim(line)
+	  ianz = iscanf(line,f,10)
+	  if( ianz .gt. 0 ) then
+	    iar = nint(f(1))
+            if(iar.lt.0) goto 88
+	    if( ianz .gt. 7 ) goto 86
+            if(iar.gt.nczdum) then
+	      write(6,*) 'warning: no such area code... ignoring ',iar
+	      cycle
+	    end if
+	    do i=2,ianz
+	      czdum(i-1,iar) = f(i)
+	    end do
+	  else if( ianz .lt. 0 ) then
 			goto 98
-		end if
+	  end if
 	end do
 
+	if( nz_lines > 0 ) then
+	  nz_lines = 0
+	  deallocate(cz_lines)	!we dont need it anymore
+	end if
+
 	return
-   75   continue
-        write(6,*) 'Dimension error for nardim'
-        write(6,*) '   iar :',   iar
-        write(6,*) 'nardim :',nardim
-        stop 'error stop : rdarea'
    86   continue
         write(6,*) 'Too much data on line'
         write(6,*) line
@@ -628,25 +670,18 @@ c***********************************************************
 
 c checks values for chezy parameters
 
+	use chezy
+
 	implicit none
 
-c czdum(1,ia) 		!default friction value for area ia
-c czdum(2,ia) 		!alternative friction value
-c czdum(3,ia) 		!node number (start of arrow indicating direction)
-c czdum(4,ia) 		!node number (end of arrow indicating direction)
-c czdum(5,ia) 		!diffusion (not used)
-c czdum(6,ia) 		!actual value of friction parameter (changed by routine)
-
 	include 'param.h'
-	include 'chezy.h'
-
 	include 'basin.h'
 
-	integer i,knode,knodeh,ireib
+	integer i,knode,knodeh,ireib,nczmax
 	logical bstop,bpos
 	real czdef
 
-	integer iround,ipint
+	integer ipint
 	real getpar
 
 	bstop = .false.
@@ -654,26 +689,23 @@ c czdum(6,ia) 		!actual value of friction parameter (changed by routine)
 c get default values
 
         ireib=nint(getpar('ireib'))
+	!if( ireib .le. 0 ) return
 
 	bpos = ireib .gt. 1 .and. ireib .ne. 5	!must be strictly positive
 
         czdef=getpar('czdef')
 
-        !if(czdum(1,0).gt.0.) czdef=czdum(1,0)	!ggu 28.04.2015
-
 c compute maximum value of area code
 
-	nczdum = 0
+	nczmax = 0
 	do i=1,nel
-          if(iarv(i).gt.nczdum) nczdum=iarv(i)
+          if(iarv(i).gt.nczmax) nczmax=iarv(i)
         end do
 
-        if(nczdum.gt.nardim) then
-                write(6,*) 'section AREA : dimension nardim  ',nardim
-                write(6,*) '               maximum area code ',nczdum
-                nczdum=nardim
-                bstop=.true.
-        end if
+c allocate and parse arrays
+
+	call chezy_init(nczmax)
+	call parse_area
 
 c check read in values
 
@@ -698,7 +730,7 @@ c check read in values
          if(czdum(3,i).eq.-1. .or. czdum(3,i).eq.0.) then
            czdum(3,i)=0.
          else
-           knodeh=iround(czdum(3,i))
+           knodeh=nint(czdum(3,i))
            knode=ipint(knodeh)          !$$EXTINW
            if(knode.le.0) then
                 write(6,*) 'section AREA : node not found ',knodeh
@@ -710,7 +742,7 @@ c check read in values
          if(czdum(4,i).eq.-1. .or. czdum(4,i).eq.0.) then
            czdum(4,i)=0.
          else
-           knodeh=iround(czdum(4,i))
+           knodeh=nint(czdum(4,i))
            knode=ipint(knodeh)          !$$EXTINW
            if(knode.le.0) then
                 write(6,*) 'section AREA : node not found ',knodeh
@@ -719,7 +751,7 @@ c check read in values
            czdum(4,i)=knode
          end if
 
-         czdum(5,i)=0.
+         if(czdum(5,i).eq.-1.) czdum(5,i)=0.
          czdum(6,i)=0.
 
         end do
@@ -734,13 +766,12 @@ c***********************************************************
 
 c prints chezy values to log file
 
+	use chezy
+
 	implicit none
 
-	include 'param.h'
-	include 'chezy.h'
-
 	integer ianf,i
-	integer ipext,iround
+	integer ipext
 
         ianf=0
         if(czdum(1,0).eq.0) ianf=1
@@ -750,8 +781,8 @@ c prints chezy values to log file
         do i=ianf,nczdum
             if(czdum(2,i).ne.0.) then			!with two chezy
                 write(6,1008) i,czdum(1,i),czdum(2,i)
-     +                          ,ipext(iround(czdum(3,i)))
-     +                          ,ipext(iround(czdum(4,i)))
+     +                          ,ipext(nint(czdum(3,i)))
+     +                          ,ipext(nint(czdum(4,i)))
             else					!just one chezy
                 write(6,1008) i,czdum(1,i)
             end if
@@ -768,10 +799,9 @@ c***********************************************************
 
 c prints test message to terminal
 
-	implicit none
+	use chezy
 
-	include 'param.h'
-	include 'chezy.h'
+	implicit none
 
 	integer j,i
 
@@ -789,19 +819,9 @@ c***********************************************************
 
 c initializes chezy values
 
+	use chezy
+
 	implicit none
-
-	include 'param.h'
-	include 'chezy.h'
-
-	integer i,j
-
-	nczdum = 0
-        do i=0,nardim
-         do j=1,6
-           czdum(j,i) = -1.
-         end do
-	end do
 
 	end
 

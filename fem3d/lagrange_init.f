@@ -11,6 +11,7 @@ c 11.03.2010    ggu	small bug fix in lagbound_seed_particles() -> init np
 c 11.03.2010    ggu	in lgr_init_line() check if at least one line is read
 c 06.10.2011    ggu	in check_elements() initialize iout, icheck (bug)
 c 16.02.2012    ggu	bug fix reading lines
+c 20.05.2015    ccf	give type to released particles
 c
 c*******************************************************************
 
@@ -63,6 +64,7 @@ c*******************************************************************
 	subroutine lgr_init_line(npoints)
 
 c manages release of particles inside polygon(s)
+c particles in different polygons have different types
 
 	implicit none
 
@@ -87,7 +89,7 @@ c manages release of particles inside polygon(s)
 	do while( lagbound_read_next(iunit,ndim,n,x,y) )
 	  nline = nline + 1
 	  write(6,*) 'new line read: ',nline,n
-	  call lagbound_seed_particles(dxy,n,x,y)
+	  call lagbound_seed_particles(dxy,nline,n,x,y)
 	end do
 	call lagbound_close_file(iunit)
 	write(6,*) 'total number of lines read: ',nline
@@ -422,19 +424,20 @@ c checks if one of the line points is in element given by xe,ye
 
 c*******************************************************************
 
-	subroutine lagbound_seed_particles(dxy,n,x,y)
+	subroutine lagbound_seed_particles(dxy,iln,n,x,y)
 
 c release in partial area
 
 	implicit none
 
 	real dxy
+	integer iln		!line number for particle type
 	integer n
 	real x(1),y(1)
 
 	include 'param.h'
 	include 'nbasin.h'
-	!include 'lagrange.h'
+	include 'lagrange.h'
 
 	integer iflag(neldim)
 
@@ -511,7 +514,7 @@ c-----------------------------------------------------------------
               if( iin .ne. 0 ) then
 		if( ifl .eq. 1 .or. inpoly(n,x,y,xp,yp) ) then
                   np = np + 1
-                  call insert_particle_3d(ie,0.,xp,yp)
+                  call insert_particle_3d(ie,iln,0.,xp,yp)
 		end if
               end if
             end do
@@ -551,6 +554,7 @@ c release in total area
 	real xe(3),ye(3)
 
 	integer intri
+	integer, parameter :: ity=0	!particle type = 0 everywere
 
 c------------------------------------------------------------------
 c compute regular mesh and insert particles
@@ -577,7 +581,7 @@ c------------------------------------------------------------------
 
 	      if( iin .ne. 0 ) then
 		nin = nin + 1
-	  	call insert_particle_3d(ie,0.,xp,yp)
+	  	call insert_particle_3d(ie,ity,0.,xp,yp)
 	      end if
 	    end do
 	  end do

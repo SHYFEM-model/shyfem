@@ -190,7 +190,7 @@ supdep.o: depth.h hydro.h param.h ev.h nlevel.h nbasin.h levels.h \
 		basin.h plot_aux.h aux_array.h 
 supint.o: param.h levels.h
 supiso.o: color.h param.h basin.h
-suplag.o: param.h basin.h
+suplag.o: color.h param.h basin.h plot_aux.h
 suplin.o: depth.h color.h param.h levels.h nlevel.h basin.h \
 		hydro_print.h 
 suplin1.o: hydro_vel.h hydro.h param.h ev.h nlevel.h nbasin.h \

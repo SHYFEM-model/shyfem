@@ -65,10 +65,10 @@ c applies decay to all particles
         if( ldecay .le. 0. ) return !FIXME
 
         do i=1,nbdy
-          age=it-tin(i)
+          age=it-lgr_ar(i)%tin
           tdd=exp(-age/ldecay)
           nmb=ggrand(2387)
-          if(nmb.gt.tdd) ie_body(i) = 0	! set as if out of domain
+          if(nmb.gt.tdd) lgr_ar(i)%ie = 0	! set as if out of domain
         end do
 
         end
@@ -104,14 +104,14 @@ c allora la particella sparisce dal calcolo
 
         if( tdecay .le. 0. ) return !FIXME
 
-        dt=it-tin(n)
+        dt=it-lgr_ar(n)%tin
         tdd=exp(dt/tdecay)
 
         rdc=1-(1/tdd)
 
         nmb=ggrand(2387)
 
-        if(nmb.le.rdc) ie_body(n) = 0	! set as if out of domain
+        if(nmb.le.rdc) lgr_ar(n)%ie = 0	! set as if out of domain
 
         end
 
@@ -137,13 +137,13 @@ c*********************************************************************
         save m
         data m / 150000 /	!mg/l
 
-        if(it.le.tin(i)) return
+        if(it.le.lgr_ar(i)%tin) return
 
-        time=it-tin(i)       
+        time=it-lgr_ar(i)%tin       
         a=2*sqrt(pi*time*rwhpar)
         b=m/a
         di=b*exp(-1.)
-        lgr_var(i)=di
+        lgr_ar(i)%c=di
 
         end 
                 
@@ -188,7 +188,7 @@ c particles older than tdead are eliminated
 	if( tdead .le. 0 ) return
 
 	t = it 
-	ts = tin(i)  
+	ts = lgr_ar(i)%tin  
 
 	deltat = t-ts		!age of particle
 
@@ -198,7 +198,7 @@ c particles older than tdead are eliminated
 	if( psurv .le. 0 ) then	!particle is dead
 	  icount = icount+1 
 c	  write(77,*) it,i,icount,deltat
-	  ie_body(i) = -ie_body(i)
+	  lgr_ar(i)%ie = -lgr_ar(i)%ie
 	endif
 
 	end 

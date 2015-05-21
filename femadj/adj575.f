@@ -219,7 +219,7 @@ c adjust coordinates
 	xgv(nkn) = xm + (2./3.) * ( x - xm )
 	ygv(nkn) = ym + (2./3.) * ( y - ym )
 
-c	call plosel2(nel-1,nel,nkn,nel,ngrdim,nen3v,ngrade,ngri)
+c	call plosel2(nel-1,nel)
 
 	end
 

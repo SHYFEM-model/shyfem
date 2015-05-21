@@ -1,4 +1,15 @@
 
+21.05.2015    VERS_7_1_11
+
+	this is a big and unfocused release...
+	some central parts rewritten for OMP (new3di.f, newcon.f)
+	new data structure mklenkii
+	lagrangian completely rewritten (based on structure)
+	ext, flx, ets, frcition to modules
+	plotting with logarithmic scale and color bar
+	bug fixes in offline
+	ia_icefree for ice cover implemented
+
 05.05.2015    VERS_7_1_10
 
 	ice cover bug eliminated

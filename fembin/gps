@@ -142,6 +142,7 @@ Convert()
     target=$base$newext
 
     echo "$source  ->  $target"
+    #echo "options: $dpi $rotate $format"
 
     rotate=`RotateEps $source $ext`	# this rotates Landscape ps/eps files
 

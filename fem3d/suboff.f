@@ -8,6 +8,8 @@ c
 c 13.06.2013    ggu     new routines written from scratch
 c 17.06.2013    ggu     eliminated compiler warnings
 c 25.03.2014    ggu     new offline (for T/S)
+c 06.05.2015    ccf     write offline to .off file
+c 06.05.2015    ccf     read offline from offlin file in section name
 c
 c****************************************************************
 
@@ -55,6 +57,7 @@ c-----------------------------------------------------
 
 	double precision dtr
 	integer time(nintp)
+	save time
 	double precision ut(nlvdim,neldim,nintp)
 	double precision vt(nlvdim,neldim,nintp)
 	double precision ze(3,neldim,nintp)
@@ -66,13 +69,15 @@ c-----------------------------------------------------
 	save ut,vt,ze,wn,zn,sn,tn
 
 	integer iwhat,iread
-	integer idtoff,itstart
+	integer idtoff,itmoff,itstart
 	integer ierr,ig
 	real dt
 	character*60 name,status
+	save idtoff, itmoff, iwhat
 
 	real getpar
 
+        integer ifemop, ifileo
 	integer iu,it1,it2,itoff
 	save iu,it1,it2,itoff
 
@@ -83,38 +88,48 @@ c-----------------------------------------------------
 	if( icall .lt. 0 ) return
 
 c-------------------------------------------------------------
-c set parameters
-c-------------------------------------------------------------
-
-	idtoff = getpar('idtoff')
-
-	if( idtoff .eq. 0 ) iwhat = 0		!nothing
-	if( idtoff .gt. 0 ) iwhat = 1		!write
-	if( idtoff .lt. 0 ) iwhat = 2		!read
-
-c-------------------------------------------------------------
 c initialize
 c-------------------------------------------------------------
 
 	if( icall .eq. 0 ) then
 	  ioffline = 0
+
+          call convert_date('itmoff',itmoff)
+          call convert_time('idtoff',idtoff)
+
+	  if( it .lt. itmoff ) return
+
+  	  if( idtoff .eq. 0 ) iwhat = 0		!nothing
+	  if( idtoff .gt. 0 ) iwhat = 1		!write
+	  if( idtoff .lt. 0 ) iwhat = 2		!read
+
 	  if( iwhat .le. 0 ) icall = -1
 	  if( idtoff .eq. 0 ) icall = -1
 	  if( icall .lt. 0 ) return
-	  iu = 333
 	  if( iwhat .eq. 1 ) then
-	    name = 'off_out.dat'
-	    status = 'unknown'
+            if (iu .le. 0 ) then
+              iu = ifemop('.off','unform','new') !unit for writing offline
+              if( iu .le. 0 ) then
+                write(6,*) 'iu = ',iu
+                stop 'error stop offline: cannot open output file'
+              end if
+	      write(6,*) 'Start writing offline file'
+            end if
 	  else
-	    name = 'off_in.dat'
-	    status = 'old'
+            call getfnm('offlin',name)
+            iu = ifileo(1,name,'unformatted','old')
+            if( iu .le. 0 ) then
+              write(6,*) '*** Cannot find offline file: '
+              write(6,*) name
+              stop
+            end if
+            write(6,*) '---------------------------------------------'
+            write(6,*) '... performing offline from file: '
+            write(6,*) name
+            write(6,*) '---------------------------------------------'
 	  end if
-	  open(iu,file=name,status=status,form='unformatted')
-	  write(6,*) 'offline file opened: '
-	  write(6,*) name
-	  write(6,*) status
 	  call off_init(dtr,ut,vt,ze,wn,zn,sn,tn)
-	  itoff = itanf + idtoff
+	  itoff = itmoff + idtoff
 	  ioffline = -idtoff
 	end if
 
@@ -135,7 +150,7 @@ c	  -------------------------------------------------------------
 
 	  if( icall .eq. 0 ) then
 	    call off_aver(dtr,ut,vt,ze,wn,zn,sn,tn)
-	    call off_write(iu,itanf,ut,vt,ze,wn,zn,sn,tn)
+	    call off_write(iu,itmoff,ut,vt,ze,wn,zn,sn,tn)
 	    call off_init(dtr,ut,vt,ze,wn,zn,sn,tn)
 	    icall = 1
 	  end if
@@ -161,10 +176,10 @@ c	  -------------------------------------------------------------
 	    call can_do_offline(iread)
 	    if( it .lt. time(1) ) goto 99
 	    call get_timestep(dt)
-	    if( it .eq. itanf ) then
+	    if( it .eq. itmoff ) then
 	      itstart = it
 	    else
-	      itstart = max(it-nint(dt),itanf)
+	      itstart = max(it-nint(dt),itmoff)
 	    end if
 	    call off_intp_all(iu,nintp,itstart,time,ut,vt,ze,wn,zn,sn,tn)
 	    icall = 1
@@ -317,7 +332,7 @@ c	---------------------------------------------------------
 	if( nintp .eq. 4 ) ip = 3
 
 	call is_offline(1,bhydro)		!hydro
-	call is_offline(1,bts)			!T/S
+	call is_offline(2,bts)			!T/S
 
 c	---------------------------------------------------------
 c	find new records for time
@@ -949,8 +964,8 @@ c****************************************************************
 	double precision ze(3,neldim,1)
 	double precision wn(0:nlvdim,nkndim,1)
 	double precision zn(nkndim,1)
-	double precision sn(nlvdim,nkndim)
-	double precision tn(nlvdim,nkndim)
+	double precision sn(nlvdim,nkndim,1)
+	double precision tn(nlvdim,nkndim,1)
 	integer ierr
 	integer iread
 
@@ -979,8 +994,8 @@ c****************************************************************
 	read(iu) ((ze(ii,ie,ig),ii=1,3),ie=1,nel)
 	read(iu) ((wn(l,k,ig),l=1,ilhkv(k)-1),k=1,nkn)
 	read(iu) (zn(k,ig),k=1,nkn)
-	read(iu) ((sn(l,k),l=1,ilhkv(k)),k=1,nkn)
-	read(iu) ((tn(l,k),l=1,ilhkv(k)),k=1,nkn)
+	read(iu) ((sn(l,k,ig),l=1,ilhkv(k)),k=1,nkn)
+	read(iu) ((tn(l,k,ig),l=1,ilhkv(k)),k=1,nkn)
 
 	ierr = 0
 

@@ -8,7 +8,48 @@ c
 c 08.05.1998	ggu	changed read of node numbers through nrdveci
 c 20.01.2000    ggu     common block /dimdim/ eliminated
 c 01.02.2000    ggu     module framework introduced
+c 20.05.2015    ggu     modules introduced
 c
+c******************************************************************
+c******************************************************************
+c******************************************************************
+
+!==================================================================
+        module extra
+!==================================================================
+
+        implicit none
+
+        integer, save :: knausm = 0
+        integer, save, allocatable :: knaus(:)
+
+!==================================================================
+        contains
+!==================================================================
+
+!==================================================================
+        end module extra
+!==================================================================
+
+	subroutine extra_read_section(n)
+
+	use extra
+	use nls
+
+	integer n
+
+	n = nls_read_vector()
+	knausm = n
+
+	if( n > 0 ) then
+	  allocate(knaus(n))
+	  call nls_copy_int_vect(n,knaus)
+	end if
+
+	end subroutine extra_read_section
+
+c******************************************************************
+c******************************************************************
 c******************************************************************
 
 	subroutine mod_ext(mode)
@@ -51,41 +92,25 @@ c******************************************************************
 
 	implicit none
 
-	include 'param.h'
-	include 'extra.h'
-
-	knausm = 0
-	!stop 'error stop subexta: extra not supported anymore'
-
 	end
 
 c******************************************************************
 
 	subroutine rdexta
 
+	use extra
+
 	implicit none
 
-	include 'param.h'
-	include 'extra.h'
-
+	integer n
 	logical handlesec
-	integer nexdi
-	integer nrdveci
 
-	!stop 'error stop subexta: extra not supported anymore'
 	if( .not. handlesec('extra') ) return
 
-	call getdim('nexdim',nexdi)
+	call extra_read_section(n)
 
-	knausm = nrdveci(knaus,nexdi)
-
-	if( knausm .lt. 0 ) then
-	  if( knausm .eq. -1 ) then
-	    write(6,*) 'dimension error nexdim in section $extra : '
-     +				,nexdi
-	  else
-	    write(6,*) 'read error in section $extra'
-	  end if
+	if( n .lt. 0 ) then
+	  write(6,*) 'read error in section $extra'
 	  stop 'error stop rdexta'
 	end if
 
@@ -95,10 +120,9 @@ c******************************************************************
 
 	subroutine ckexta
 
-	implicit none
+	use extra
 
-	include 'param.h'
-	include 'extra.h'
+	implicit none
 
 	integer k,knode
 	integer ipint
@@ -124,10 +148,9 @@ c******************************************************************
 
 	subroutine prexta
 
-	implicit none
+	use extra
 
-	include 'param.h'
-	include 'extra.h'
+	implicit none
 
 	integer i
 	integer ipext
@@ -147,10 +170,9 @@ c******************************************************************
 
 	subroutine tsexta
 
-	implicit none
+	use extra
 
-	include 'param.h'
-	include 'extra.h'
+	implicit none
 
 	integer i
 
@@ -166,12 +188,13 @@ c******************************************************************
 
 c writes and administers ext file
 
+	use extra
+
 	implicit none
 
 	integer it
 
-	include 'param.h' !COMMON_GGU_SUBST
-	include 'extra.h'
+	include 'param.h'
 	include 'hydro_print.h'
 
 	integer nbext

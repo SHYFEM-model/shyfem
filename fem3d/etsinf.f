@@ -9,26 +9,17 @@ c**************************************************************
 
 	program etsinf
 
+	use ets
+
 c reads ets file
 
 	implicit none
 
 	include 'param.h'
 
-        integer ndim
-        parameter (ndim=100)
-
-	real cv(nkndim)
-	real cv3(nlvdim,nexdim)
-	integer ivars(ndim)
-
-	integer ilets(nexdim)
-	real hlv(nlvdim)
-	real hets(nexdim)
-	integer nodes(nexdim)
-	real xg(nexdim)
-	real yg(nexdim)
-	character*80 desc(nexdim)
+	real, allocatable :: cv3(:,:)
+	integer, allocatable :: ivars(:)
+	real,allocatable :: hlv(:)
 
 	logical bwrite
 	integer nread,nin
@@ -61,11 +52,16 @@ c--------------------------------------------------------------
 
 	call open_ets_type('.ets','old',nin)
 
-        call read_ets_header(nin,nkndim,nlvdim,ilets,hlv,hets
-     +                                  ,nodes,xg,yg,desc)
-	call ets_get_params(nin,nkn,nlv,nvar)
+	call read_ets_header1(nin,nkn,nlv,nvar)
+	call ets_init_module(nkn)
 
-        if( nvar .gt. ndim ) goto 95
+	allocate(hlv(nlv))
+	allocate(ivars(nvar))
+	allocate(cv3(nlv,nkn))
+
+        call read_ets_header2(nin,nkn,nlv,ilets,hlv,hets
+     +                                  ,nkets,xets,yets,chets)
+
         call ets_get_vars(nin,nvar,ivars)
 
         write(6,*) 'Available variables: ',nvar
@@ -77,7 +73,7 @@ c--------------------------------------------------------------
 
 	do while(.true.)
 
-	  call ets_read_record(nin,it,ivar,nlvdim,ilets,cv3,ierr)
+	  call ets_read_record(nin,it,ivar,nlv,ilets,cv3,ierr)
 
           if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
           if(ierr.ne.0) goto 100
@@ -109,10 +105,6 @@ c--------------------------------------------------------------
 c end of routine
 c--------------------------------------------------------------
 
-	stop
-   95	continue
-	write(6,*) 'nvar = ',nvar,'   ndim = ',ndim
-	stop 'error stop: ndim'
 	end
 
 c***************************************************************

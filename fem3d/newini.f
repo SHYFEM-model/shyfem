@@ -75,11 +75,18 @@ c set up time independent vertical vectors
 
 	implicit none
 
+	include 'param.h'
+	include 'nlevel.h'
+	include 'levels.h'
+
 	write(6,*) 'setting up vertical structure'
 
 c------------------------------------------------------------------
 c sanity check
 c------------------------------------------------------------------
+
+	nlv = nlvdim
+	call copy_hlv1(nlv,hlv)
 
 	call check_nlv
 
@@ -944,7 +951,7 @@ c------------------------------------------------------------
    99	continue
 	write(6,*) 'ie,l,hold,h: ',ie,l,hold,h
 	if( nsigma > 0 .and. hold < 0. ) then
-	  write(6,*) 'cannot yet handle sat marshes with sigma layers'
+	  write(6,*) 'cannot yet handle salt marshes with sigma layers'
 	end if
 	stop 'error stop set_last_layer: layer depth 0 (internal error)'
 	end

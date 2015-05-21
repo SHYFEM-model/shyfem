@@ -359,7 +359,7 @@ c********************************************************************
 
 	subroutine depadj(hmin,hmax,href)
 
-c adjusts depth to reference and min/max values
+c adjusts depth to reference and min/max values - only hm3v is changed
 
 	implicit none
 
@@ -444,7 +444,7 @@ c********************************************************************
 
 	subroutine adjust_depth
 
-c adjusts depth values
+c adjusts depth values - only hm3v is changed
 
 	implicit none
 

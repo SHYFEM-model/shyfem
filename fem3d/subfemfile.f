@@ -1013,6 +1013,31 @@ c************************************************************
 
 c************************************************************
 
+	subroutine fem_file_convert_atime(datetime,dtime,atime)
+
+c converts from atime to datetime and dtime (only if in atime is real date)
+
+	implicit none
+
+	integer datetime(2)		!reference date (return)
+	double precision dtime		!relative time (return)
+	double precision atime		!absolute time (in)
+
+	double precision atime1000	!1000 year limit
+	parameter (atime1000 = 1000*365*86400.)
+
+	if( atime > atime1000 ) then	!real date
+	  call dts_from_abs_time(datetime(1),datetime(2),atime)
+	  dtime = 0.
+	else				!no date - keep relative time
+	  datetime = 0
+	  dtime = atime
+	end if
+
+	end
+
+c************************************************************
+
 	subroutine fem_file_make_type(ntype,imax,itype)
 
 	implicit none

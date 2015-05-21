@@ -12,6 +12,7 @@ c 04.10.2004    ggu     adjust amin and decimal point in colauto
 c 21.04.2009    ggu     allow for constant values (make 2 isolines)
 c 13.06.2013    ggu     small bug fix for computation of dval with rnext
 c 01.10.2013    ggu     bug fix for valmin/valmax too close
+c 06.05.2015    ggu     logarithmic scale introduced (ilog, blog)
 c
 c**********************************************************
 c
@@ -67,10 +68,10 @@ c sets up color table after read from $color section
 
 	logical bdebug
 	integer niso,nisomx,nisodf
-	integer icolor
+	integer icolor,ipllog
 	real rfiso
 	real colmin,colmax,valmin,valmax,dval
-	logical bisord,bcolrd,bfunc
+	logical bisord,bcolrd,bfunc,blog
 
 	real getpar
 
@@ -91,6 +92,7 @@ c-------------------------------------------------
 	valmax = getpar('valmax')	!max isovalue
 	dval   = getpar('dval')		!distance of isovalues
 	rfiso  = getpar('rfiso')	!interpolating function
+	ipllog = nint(getpar('ipllog'))	!logarithmic scale
 	niso   = nint(getpar('niso'))	!total number of isovalues to use
 	nisomx = nint(getpar('nisomx'))	!maximum number of isovalues allowed
 	nisodf = nint(getpar('nisodf'))	!default number of isovalues to use
@@ -112,9 +114,10 @@ c-------------------------------------------------
 
 	bisord = nisord .gt. 0		!isovalues have been read
 	bcolrd = ncolrd .gt. 0		!colors have been read
-	bfunc = rfiso .ne. 0		!logarithmic scale
+	bfunc = rfiso .ne. 0		!power scale
+	blog = ipllog .ne. 0		!logarithmic scale
 	iusear = 0			!use array for lookup
-	if( bfunc ) iusear = 1
+	if( bfunc .or. blog ) iusear = 1
 
 c-----------------------------------------------------
 c see what has been read -> compute niso
@@ -223,14 +226,14 @@ c	  --------------------------------------------
 	  if( niso .le. 0 ) stop 'internal error colsetup (1)'
 
 	  if( .not. bcolrd ) then
-	    call mkval(niso+1,ciso,colmin,colmax,0.)
+	    call mkval(niso+1,ciso,colmin,colmax,0.,0)
 	    call adjcoltab(icolor,niso+1,ciso)
 	  end if
 	  if( .not. bisord ) then
-	    if( bfunc ) then
-	      call mkval(-niso,fiso,valmin,valmax,rfiso)
+	    if( bfunc .or. blog ) then
+	      call mkval(-niso,fiso,valmin,valmax,rfiso,ipllog)
 	    else
-	      call mkval(niso,fiso,valmin,valmax,dval)
+	      call mkval(niso,fiso,valmin,valmax,dval,ipllog)
 	    end if
 	  end if
 
@@ -243,7 +246,7 @@ c	  --------------------------------------------
 	  if( niso .gt. 0 ) then
 
 	    if( .not. bcolrd ) then
-	      call mkval(niso+1,ciso,colmin,colmax,0.)
+	      call mkval(niso+1,ciso,colmin,colmax,0.,0)
 	      call adjcoltab(icolor,niso+1,ciso)
 	    end if
 	    if( bisord ) stop 'internal error colsetup (2)'
@@ -282,14 +285,14 @@ c sets up color table in automatic mode
 
 	include 'color.h'
 
-	logical bdebug,bfunc
+	logical bdebug,bfunc,blog
 	integer i
 	integer niso,nisomx,nisodf
 	integer icolor
 	real colmin,colmax,dval
 	real amin,amax
         real fact,val,fdec,eps
-        integer ndec,idec
+        integer ndec,idec,ipllog
 	real rfiso
 
 	real getpar
@@ -327,13 +330,15 @@ c-------------------------------------------------
 	dval   = getpar('dval')		!distance of isovalues
 	niso   = nint(getpar('niso'))	!total number of isovalues
 	rfiso  = getpar('rfiso')	!interpolating function
+	ipllog = nint(getpar('ipllog'))	!logarithmic scale
 	nisomx = nint(getpar('nisomx'))	!maximum number of isovalues allowed
 	nisodf = nint(getpar('nisodf'))	!default number of isovalues to use
 	icolor = nint(getpar('icolor'))	!color table
 
 	bfunc = rfiso .ne. 0
+	blog = ipllog .ne. 0
 	iusear = 0			!use array for lookup
-	if( bfunc ) iusear = 1
+	if( bfunc .or. blog ) iusear = 1
 
 	if( bdebug ) then
 	  write(6,*) 'colmin/max: ',colmin,colmax
@@ -352,10 +357,10 @@ c	  we already know how many isolines to draw (and color table)
 c	  ----------------------------------------
 
 	  dval = 0.
-	  if( bfunc ) then
-	    call mkval(-niso,fiso,valmin,valmax,rfiso)
+	  if( bfunc .or. blog ) then
+	    call mkval(-niso,fiso,valmin,valmax,rfiso,ipllog)
 	  else
-	    call mkval(niso,fiso,valmin,valmax,dval)
+	    call mkval(niso,fiso,valmin,valmax,dval,ipllog)
 	  end if
 
 	else
@@ -452,12 +457,12 @@ c	  ----------------------------------------
 c	  set up arrays
 c	  ----------------------------------------
 
-	  if( bfunc ) then
-	    call mkval(-niso,fiso,valmin,valmax,rfiso)
+	  if( bfunc .or. blog ) then
+	    call mkval(-niso,fiso,valmin,valmax,rfiso,ipllog)
 	  else
-	    call mkval(niso,fiso,valmin,valmax,dval)
+	    call mkval(niso,fiso,valmin,valmax,dval,ipllog)
 	  end if
-	  call mkval(niso+1,ciso,colmin,colmax,0.)
+	  call mkval(niso+1,ciso,colmin,colmax,0.,0)
 	  call adjcoltab(icolor,niso+1,ciso)
 
 	end if
@@ -481,11 +486,12 @@ c	  ----------------------------------------
 
 c**********************************************************
 
-	subroutine mkval(nn,array,amin,amax,da)
+	subroutine mkval(nn,array,amin,amax,da,ilog)
 
 c makes array of values
 c
 c if nn is negative in da is power of function to use
+c if nn is negatice and ilog is not zero - use logarithmic scale
 
 	implicit none
 
@@ -493,10 +499,11 @@ c if nn is negative in da is power of function to use
 	real array(1)
 	real amin,amax
 	real da
+	integer ilog		!logarithmic scale
 
 	logical bfunc
 	integer i,n
-	real dval,r,rn
+	real dval,r,rn,val
 
 	bfunc = nn .lt. 0
 	n = abs(nn)
@@ -511,20 +518,34 @@ c if nn is negative in da is power of function to use
 	  if( dval .eq. 0. ) dval = (amax-amin) / (n-1)
 	end if
 
-	if( bfunc .and. da .ne. 0. ) then	!polynomial division
-	  write(6,*) 'using polynomial scale... ',da
-	  dval = amax-amin
-	  do i=1,n
-	    !r = float(i)/n
-	    !array(i) = amin+dval*log(1.+r)/log(2.)
-	    !array(i) = amin+dval*(exp(r)-1.)/(exp(1.)-1.)
-	    if( da .gt. 0 ) then
-	      array(i) = amin+dval*((i-1)/(n-1.))**da
-	    else
-	      array(i) = amin+dval*((i/rn)**da)/((1./rn)**da)
+	if( bfunc ) then			!non-linear division
+	  if( ilog .ne. 0 ) then		!logarithmic division
+	    write(6,*) 'using logarithmic scale... '
+	    if( amin .le. 0 ) then
+	      write(6,*) 'amin,amax: ',amin,amax
+	      write(6,*) 'need amin > 0 for logarithmic scale'
+	      stop 'error stop mkval: amin <= 0'
 	    end if
-	  end do
-	else				!linear division
+	    do i=1,n
+              r = float(i-1)/(n-1)
+              val = amin * (amax/amin)**r
+	      array(i) = val
+	    end do
+	  else if( da .ne. 0. ) then			!polynomial division
+	    write(6,*) 'using polynomial scale... ',da
+	    dval = amax-amin
+	    do i=1,n
+	      if( da .gt. 0 ) then
+	        array(i) = amin+dval*((i-1)/(n-1.))**da
+	      else
+	        array(i) = amin+dval*((i/rn)**da)/((1./rn)**da)
+	      end if
+	    end do
+	  else
+	    write(6,*) 'nn,da,ilog: ',nn,da,ilog
+	    stop 'error stop mkval: error in parameters'
+	  end if
+	else					!linear division
 	  do i=1,n
 	    array(i) = amin + (i-1) * dval
 	  end do
@@ -543,9 +564,9 @@ c adjusts color table (only hsb and gray)
 
 	implicit none
 
-	integer icolor
-	integer ncol
-	real ciso(1)
+	integer icolor		!color mode
+	integer ncol		!number of colors
+	real ciso(ncol)		!colors
 
 	integer i
         integer n

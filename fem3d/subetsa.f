@@ -6,7 +6,30 @@ c
 c revision log :
 c
 c 24.01.2014    ggu     copied from subexta.f
+c 30.05.2015    ggu     new read from STR file, using module ets
 c
+c******************************************************************
+c******************************************************************
+c******************************************************************
+
+        subroutine ets_read_section(n)
+
+        use ets
+        use nls
+
+        integer n
+
+        n = nls_read_ictable()
+
+        if( n > 0 ) then
+	  call ets_init_module(n)
+          call nls_copy_ictable(n,nkets,chets)
+        end if
+
+        end subroutine ets_read_section
+
+c******************************************************************
+c******************************************************************
 c******************************************************************
 
 	subroutine mod_ets(mode)
@@ -47,40 +70,29 @@ c******************************************************************
 
 	implicit none
 
-	include 'param.h'
-	include 'subetsa.h'
-
-	nets = 0
-
 	end
 
 c******************************************************************
 
 	subroutine rdetsa
 
+	use ets
+
 	implicit none
 
-	include 'param.h'
-	include 'subetsa.h'
-
+	integer n
 	logical handlesec
-	integer nrdtable
 
 	if( .not. handlesec('extts') ) return
 
-	nets = nrdtable(nkets,chets,nexdim)
+        call ets_read_section(n)
 
-	if( nets .lt. 0 ) then
-	  if( nets .eq. -1 ) then
-	    write(6,*) 'dimension error nexdim in section $extts : '
-     +				,nexdim
-	  else
-	    write(6,*) 'read error in section $extts'
-	    write(6,*) 'please remember that the format is:'
-	    write(6,*) 'node  ''text'''
-	    write(6,*) 'text may be missing'
-	    write(6,*) 'only one node per line is allowed'
-	  end if
+	if( n .lt. 0 ) then
+	  write(6,*) 'read error in section $extts'
+	  write(6,*) 'please remember that the format is:'
+	  write(6,*) 'node  ''text'''
+	  write(6,*) 'text may be missing'
+	  write(6,*) 'only one node per line is allowed'
 	  stop 'error stop rdetsa'
 	end if
 
@@ -90,10 +102,9 @@ c******************************************************************
 
 	subroutine cketsa
 
-	implicit none
+	use ets
 
-	include 'param.h'
-	include 'subetsa.h'
+	implicit none
 
 	integer k,kext,kint
 	integer ipint
@@ -111,6 +122,9 @@ c******************************************************************
            nkets(k)=kint
 	   xets(k) = 0.
 	   yets(k) = 0.
+	   if( chets(k) == ' ' ) then
+	     write(chets(k),'(a,i5)') 'Extra node ',k
+	   end if
         end do
 
 	if( bstop ) stop 'error stop: cketsa'
@@ -121,10 +135,9 @@ c******************************************************************
 
 	subroutine pretsa
 
-	implicit none
+	use ets
 
-	include 'param.h'
-	include 'subetsa.h'
+	implicit none
 
 	integer i,k
 	real x,y
@@ -155,10 +168,9 @@ c******************************************************************
 
 	subroutine tsetsa
 
-	implicit none
+	use ets
 
-	include 'param.h'
-	include 'subetsa.h'
+	implicit none
 
 	integer i
 
@@ -179,10 +191,11 @@ c******************************************************************
 
 c writes and administers ets file
 
+	use ets
+
 	implicit none
 
 	include 'param.h'
-	include 'subetsa.h'
 	include 'waves.h'
 
 	integer it
@@ -191,7 +204,6 @@ c writes and administers ets file
 	integer date,time
 	integer nvers,nvar,ivar
 	character*80 title,femver
-	real out(nlvdim,nexdim)
 
 	include 'simul.h'
 	include 'nbasin.h'
@@ -236,6 +248,8 @@ c writes and administers ets file
                 if(nbext.le.0) goto 77
 		ia_out(4) = nbext
 
+		allocate( outets(nlvdim,nets) )
+
 		nvers = 1
 		nvar = 5
 	        bwave = has_waves()
@@ -266,8 +280,8 @@ c writes and administers ets file
 	nbext =	ia_out(4)
 
 	ivar = 1
-	call routets(1,ilhkv,znv,out)
-        call ets_write_record(nbext,it,ivar,1,ilets,out,ierr)
+	call routets(1,ilhkv,znv,outets)
+        call ets_write_record(nbext,it,ivar,1,ilets,outets,ierr)
         if(ierr.ne.0.) goto 79
 
 	if ( bwave ) then
@@ -278,29 +292,29 @@ c writes and administers ets file
 	  waves(3,:) = wavepp
 	  waves(4,:) = waved
 	  il4kv = nvars
-	  call routets(nvars,il4kv,waves,out)
-          call ets_write_record(nbext,it,ivar,nvars,ilets,out,ierr)
+	  call routets(nvars,il4kv,waves,outets)
+          call ets_write_record(nbext,it,ivar,nvars,ilets,outets,ierr)
           if(ierr.ne.0.) goto 79
         end if
 
 	ivar = 6
-	call routets(nlvdim,ilhkv,uprv,out)
-        call ets_write_record(nbext,it,ivar,nlvdim,ilets,out,ierr)
+	call routets(nlvdim,ilhkv,uprv,outets)
+        call ets_write_record(nbext,it,ivar,nlvdim,ilets,outets,ierr)
         if(ierr.ne.0.) goto 79
 
 	ivar = 7
-	call routets(nlvdim,ilhkv,vprv,out)
-        call ets_write_record(nbext,it,ivar,nlvdim,ilets,out,ierr)
+	call routets(nlvdim,ilhkv,vprv,outets)
+        call ets_write_record(nbext,it,ivar,nlvdim,ilets,outets,ierr)
         if(ierr.ne.0.) goto 79
 
 	ivar = 11
-	call routets(nlvdim,ilhkv,saltv,out)
-        call ets_write_record(nbext,it,ivar,nlvdim,ilets,out,ierr)
+	call routets(nlvdim,ilhkv,saltv,outets)
+        call ets_write_record(nbext,it,ivar,nlvdim,ilets,outets,ierr)
         if(ierr.ne.0.) goto 79
 
 	ivar = 12
-	call routets(nlvdim,ilhkv,tempv,out)
-        call ets_write_record(nbext,it,ivar,nlvdim,ilets,out,ierr)
+	call routets(nlvdim,ilhkv,tempv,outets)
+        call ets_write_record(nbext,it,ivar,nlvdim,ilets,outets,ierr)
         if(ierr.ne.0.) goto 79
 
 	return
@@ -325,10 +339,11 @@ c******************************************************************
 
 	subroutine ets_setup
 
+	use ets
+
 	implicit none
 
 	include 'param.h'
-	include 'subetsa.h'
 
 	integer i,k
 
@@ -353,10 +368,9 @@ c******************************************************************
 
 c extracts nodal information and stores it in array
 
-	implicit none
+	use ets
 
-	include 'param.h'
-	include 'subetsa.h'
+	implicit none
 
 	integer nlv		!vertical dimension of data
 	integer ilhkv(1)

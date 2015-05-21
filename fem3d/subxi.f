@@ -10,6 +10,7 @@ c revision log :
 c
 c 21.01.2015	ggu	new routine compute_cartesian_coords()
 c 23.04.2015	ggu	compute s value for particle path
+c 16.05.2015	ccf	add some more check in xit_start_end for small numbers
 c
 c***********************************************************
 c***********************************************************
@@ -196,14 +197,18 @@ c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 	double precision xie(3)		!end coordinate (return)
 	double precision s		!point parameter [0-1] (return)
 
-	integer i1,i2,i3
+	integer i1,i2,i3,ii
 	integer iflag,ielem
 	double precision as,ae
 	double precision beta,xi3,a,gamma
+	double precision, parameter  :: small=1.d-12
 
-	gamma = -1			!not yet computed
+	xis = 0.d0
+	xie = 0.d0
+
+	gamma = -1.d0			!not yet computed
 	i1 = iflux
-	xi3 = alpha*(1.-xip(i1))
+	xi3 = alpha*(1.d0-xip(i1))
 	i3 = mod(i1+1,3) + 1
 
 	if( xi3 > xip(i3) ) then	!right sub-triangle
@@ -211,57 +216,63 @@ c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 	  a = alpha
 	  i2 = mod(i1,3) + 1
 	  i3 = mod(i2,3) + 1
-	  if( xip(i3) == 0 ) gamma = 1
-	  if( xip(i1) == 0 ) gamma = 0
+	  if( xip(i3) == 0.d0 ) gamma = 1.d0
+	  if( xip(i1) == 0.d0 ) gamma = 0.d0
 	else				!left sub-triangle
 	  ielem = 2
-	  a = 1. - alpha
+	  a = 1.d0 - alpha
 	  i3 = mod(i1,3) + 1
 	  i2 = mod(i3,3) + 1
-	  if( xip(i3) == 0 ) gamma = 1
-	  if( xip(i1) == 0 ) gamma = 0
+	  if( xip(i3) == 0.d0 ) gamma = 1.d0
+	  if( xip(i1) == 0.d0 ) gamma = 0.d0
 	end if
 
-	if( a .eq. 0. ) then
-	  beta = 0.
+	if( a .eq. 0.d0 ) then
+	  beta = 0.d0
 	else if( xip(i3) > a ) then
 	  write(6,*) iflux,alpha
 	  write(6,*) i1,i2,i3,a
 	  write(6,*) xip
 	  stop 'error stop xit_start_end: internal error (2)'
 	else
-	  beta = 1. - xip(i1) - xip(i3)/a
+	  beta = 1.d0 - xip(i1) - xip(i3)/a
 	end if
 
+	beta = dmin1(beta,1.0d0)
+        if ( beta < small ) beta = 0.d0
+
 	as = beta
-	ae = a*(1.-beta)
+	ae = a*(1.d0-beta)
 
-        xis(i1) = 1.-as
+        xis(i1) = 1.d0-as
         xis(i2) = as
-        xis(i3) = 0.
+        xis(i3) = 0.d0
 
-        xie(i1) = 0.
-        xie(i2) = 1.-ae
+        xie(i1) = 0.d0
+        xie(i2) = 1.d0-ae
         xie(i3) = ae
 
-	if( gamma >= 0 ) then	!already computed
+	if( gamma >= 0.d0 ) then	!already computed
 	  !nothing
 	  iflag = 0
-	else if( beta == 1. ) then
-	  gamma = 0.
+	else if( beta == 1.d0 ) then
+	  gamma = 0.d0
 	  iflag = 1
-	else if( xip(i1) == 0. ) then
-	  gamma = 0.
+	else if( xip(i1) == 0.d0 ) then
+	  gamma = 0.d0
 	  iflag = 2
 	else
-	  gamma = xip(i1)/(1.-beta)
+	  gamma = xip(i1)/(1.d0-beta)
 	  iflag = 3
 	end if
 
-	s = 1. - gamma
-	if( gamma == 1. ) s = 0.
+	gamma = dmin1(gamma,1.0d0)
+        if ( gamma < small ) gamma = 0.d0
 
-	if( s < 0. .or. s > 1. ) then
+        s = 1.d0 - gamma
+	if( gamma .eq. 1.d0 ) s = 0.d0
+
+	if( s < 0.d0 .or. s > 1.d0 ) then
 	  write(6,*) 'error computing s: ',s,gamma
 	  write(6,*) alpha,a,beta
 	  write(6,*) i1,iflag,ielem

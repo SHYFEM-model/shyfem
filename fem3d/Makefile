@@ -198,11 +198,11 @@ HTOBJS = \
 	subflxa.o subflx3d.o subflx.o subflxu.o \
 	subboxa.o \
 	newnohydro.o suboff.o \
-	subets.o subetsa.o \
+	subets.o subetsa.o subetsm.o \
 	$(IFF_FILES) \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ) $(PARALLEL_OBJ) \
-	subxi.o
+	subxi.o newlevels.o
 
 # objects for pre-processor vp
 
@@ -235,7 +235,7 @@ BASEXTRA = subgeo.o subgrd.o subsrt.o sublnka.o links.o sublnku.o \
 
 NOSOBJS = subnos.o nosutil.o genutil.o subeos.o
 OUSOBJS = subous.o ousutil.o genutil.o 
-ETSOBJS = subets.o etsutil.o genutil.o 
+ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
 		genutil.o
 GRDOBJS = subgrd.o grdutil.o subsrt.o subcoord.o
@@ -253,7 +253,7 @@ LAGRANGE =	lagrange_main.o \
 		lagrange_inout.o lagrange_util.o \
 		lagrange_larve.o lagrange_flux.o \
 		lagrange_track.o lagrange_util_tr.o \
-		lagrange_decay.o \
+		lagrange_decay.o lagrange_sedim.o \
 		lagrange_connect.o lagrange_vertical.o
 
 # heat flux module
@@ -301,7 +301,7 @@ EXEBAS   = bastreat basbathy scalintp
 EXEVAR   = nosinit nosresidence scal_intp bashsigma
 EXEUTIL  = bc2fem
 
-NOSVAR   = nos_elab nossum nosdiff noswrite nosadmin
+NOSVAR   = nos_elab nossum nosdiff noswrite nosadmin noselab
 NOSAVER  = nosaver_basin nosaver_vert nosaver_time
 NOSEXTR  = nosextr_nodes nosextr_gis nosextr_records nosextr_custom \
 		nosextr_cat
@@ -563,6 +563,9 @@ nosextr_cat:  nosextr_cat.o $(NOSOUSOBJS) $(OUTOBJS)
 nosextr_fluxes:  nosextr_fluxes.o $(NOSOUSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
 
+noselab: noselab.o $(NOSOBJS) $(OUTOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+
 nosaver: $(NOSAVER)
 
 nosaver_basin:  nosaver_basin.o $(NOSOBJS) $(OUTOBJS) 
@@ -818,7 +821,7 @@ bio3d.o: param.h nlevel.h mkonst.h nbasin.h levels.h basin.h \
 bio3d_util.o: nbasin.h param.h levels.h donata.h
 debug.o: debug_aux1.h
 eosinf.o: param.h
-etsinf.o: param.h
+etsinf.o: param.h ets.mod
 femelab.o: clo.mod
 feminf.o: clo.mod
 filetype.o: clo.mod
@@ -844,19 +847,22 @@ lagrange_decay.o: param.h femtime.h lagrange.h
 lagrange_dif.o: param.h femtime.h lagrange.h
 lagrange_flux.o: depth.h hydro.h param.h nlevel.h ev.h femtime.h \
 		lagrange.h nbasin.h levels.h basin.h links.h 
-lagrange_init.o: nbasin.h param.h basin.h aux_array.h
-lagrange_inout.o: param.h basin.h ev.h nlevel.h femtime.h \
-		lagrange.h 
+lagrange_init.o: nbasin.h param.h basin.h lagrange.h aux_array.h
+lagrange_inout.o: depth.h param.h ev.h nlevel.h femtime.h \
+		lagrange.h levels.h basin.h 
 lagrange_larve.o: param.h lagrange.h
-lagrange_main.o: nbasin.h param.h basin.h femtime.h lagrange.h
+lagrange_main.o: nbasin.h param.h basin.h femtime.h \
+		lgr_sedim_module.mod lagrange.h 
 lagrange_oil.o: nbasin.h param.h femtime.h ev.h lagrange.h \
 		aux_array.h 
+lgr_sedim_module.mod: lagrange_sedim.o
+lagrange_sedim.o: param.h levels.h lagrange.h
 lagrange_track.o: hydro_vel.h param.h levels.h basin.h nlevel.h \
 		lagrange.h geom.h 
 lagrange_util.o: nbasin.h param.h ev.h basin.h
 lagrange_util_tr.o: param.h basin.h
-lagrange_vertical.o: depth.h hydro_vel.h hydro.h param.h ev.h \
-		nlevel.h lagrange.h levels.h basin.h geom.h 
+lagrange_vertical.o: depth.h hydro_vel.h hydro.h param.h nlevel.h \
+		lagrange.h levels.h basin.h geom.h 
 lgrelab.o: nbasin.h depth.h param.h basin.h
 lgrinf.o: param.h
 loading.o: nbasin.h param.h levels.h
@@ -883,7 +889,7 @@ newchk.o: testbndo.h depth.h internal.h bound_dynamic.h ev.h \
 		geom_dynamic.h meteo_aux.h hydro_baro.h area.h \
 		basin.h hydro_print.h 
 newcon.o: testbndo.h depth.h bound_dynamic.h ts.h ev.h mkonst.h \
-		nlevel.h const_aux.h nbasin.h aux_array.h \
+		nlevel.h const_aux.h nbasin.h aux_array.h geom.h \
 		hydro_vel.h param.h hydro.h femtime.h diff_aux.h \
 		levels.h area.h basin.h hydro_print.h 
 newconz.o: depth.h conz.h param.h bound_names.h ts.h nlevel.h \
@@ -902,6 +908,8 @@ newfix.o: depth.h hydro_vel.h hydro.h internal.h param.h \
 newini.o: depth.h hydro.h internal.h param.h mkonst.h nlevel.h \
 		pkonst.h nbasin.h levels.h roughness.h basin.h \
 		diff_visc_fric.h 
+levels.mod: newlevels.o
+newlevels.o: nls.mod
 newnudge.o: hydro.h param.h nudge.h femtime.h basin.h nudging.h
 newrog.o: param.h basin.h
 newsig.o: param.h levels.h nlevel.h
@@ -919,6 +927,7 @@ nosaver_basin.o: depth.h param.h basin.h
 nosaver_time.o: param.h
 nosaver_vert.o: depth.h param.h basin.h
 nosdiff.o: param.h
+noselab.o: param.h clo.mod
 nosextr_cat.o: param.h
 nosextr_custom.o: param.h basin.h
 nosextr_fluxes.o: param.h basin.h simul.h
@@ -1008,15 +1017,18 @@ subele.o: depth.h hydro.h param.h ev.h nbasin.h levels.h basin.h \
 		area.h aux_array.h 
 subets.o: etsinf.h
 subetsa.o: depth.h hydro.h param.h ts.h nlevel.h femtime.h tides.h \
-		simul.h nbasin.h levels.h modules.h hydro_print.h \
-		subetsa.h waves.h 
-subexta.o: param.h modules.h femtime.h hydro_print.h aux_array.h \
-		simul.h extra.h 
+		simul.h nbasin.h nls.mod levels.h modules.h \
+		hydro_print.h ets.mod waves.h 
+ets.mod: subetsm.o
+extra.mod: subexta.o
+subexta.o: param.h nls.mod modules.h femtime.h hydro_print.h \
+		aux_array.h simul.h 
 intp_fem_file.mod: subfemintp.o
 subflx3d.o: hydro_vel.h testbndo.h hydro.h param.h bound_dynamic.h \
 		femtime.h ev.h geom_dynamic.h hydro_baro.h \
 		levels.h links.h geom.h 
-subflxa.o: conz.h param.h subflxa.h modules.h ts.h femtime.h
+flux.mod: subflxa.o
+subflxa.o: conz.h param.h nls.mod modules.h ts.h femtime.h
 subflxu.o: param.h levels.h links.h
 subfvl.o: depth.h nbasin.h param.h levels.h area.h nlevel.h \
 		aux_array.h 
@@ -1046,7 +1058,7 @@ submet.o: param.h bound_dynamic.h ts.h femtime.h ev.h nbasin.h \
 		aux_array.h 
 meteo_forcing_module.mod: submeteo2.o
 submeteo2.o: depth.h param.h nlevel.h femtime.h intp_fem_file.mod \
-		nbasin.h meteo_aux.h levels.h meteo.h 
+		nbasin.h meteo_aux.h levels.h meteo.h basin.h 
 submud.o: depth.h param.h bound_names.h bound_dynamic.h sinking.h \
 		ts.h nlevel.h bound_geom.h pkonst.h nbasin.h \
 		fluidmud.h levels.h roughness.h basin.h gotm_aux.h \
@@ -1056,8 +1068,9 @@ subn11.o: hydro.h param.h bound_dynamic.h nlevel.h mkonst.h \
 		femtime.h bound_geom.h pkonst.h intp_fem_file.mod \
 		nbasin.h geom_dynamic.h levels.h basin.h \
 		hydro_print.h bnd_aux.h 
-subn35.o: depth.h hydro.h param.h pkonst.h fluidmud.h levels.h \
-		basin.h roughness.h hydro_print.h chezy.h \
+chezy.mod: subn35.o
+subn35.o: depth.h hydro.h param.h pkonst.h fluidmud.h nls.mod \
+		levels.h basin.h roughness.h hydro_print.h \
 		diff_visc_fric.h 
 subnev.o: nbasin.h param.h basin.h ev.h
 nls.mod: subnls.o
@@ -1107,7 +1120,7 @@ subwaves.o: depth.h internal.h evmain.h nlevel.h nbasin.h meteo.h \
 		param.h hydro.h femtime.h pkonst.h hydro_baro.h \
 		levels.h meteo_aux.h basin.h 
 subwrt.o: depth.h conz.h param.h ev.h nlevel.h femtime.h simul.h \
-		nbasin.h levels.h basin.h aux_array.h 
+		nbasin.h levels.h basin.h 
 tideg.o: depth.h nbasin.h pkonst.h hydro.h param.h basin.h tides.h
 ts2nc.o: depth.h hydro.h param.h levels.h basin.h evmain.h simul.h
 tsinf.o: clo.mod

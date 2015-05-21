@@ -1,5 +1,87 @@
 ============================================================
 
+Thu May 21 16:31:20 CEST 2015
+
+big and various changes, omp, lagrange, ...
+
+ LOG                       |   97 +++
+ RELEASE_NOTES             |   11 +
+ fem3d/Makefile            |   57 +-
+ fem3d/bin/ht_struct.sh    |   10 +
+ fem3d/etsinf.f            |   38 +-
+ fem3d/etsutil.f           |   63 ++-
+ fem3d/femelab.f           |    7 +-
+ fem3d/flxinf.f            |    7 +-
+ fem3d/geom.h              |    4 +-
+ fem3d/lagrange.h          |   69 +-
+ fem3d/lagrange_back.f     |   22 +-
+ fem3d/lagrange_connect.f  |    8 +-
+ fem3d/lagrange_cont.f     |   23 +-
+ fem3d/lagrange_decay.f    |   18 +-
+ fem3d/lagrange_init.f     |   14 +-
+ fem3d/lagrange_inout.f    |  189 +++--
+ fem3d/lagrange_larve.f    |   17 +-
+ fem3d/lagrange_main.f     |   91 ++-
+ fem3d/lagrange_sedim.f    |  150 ++++
+ fem3d/lagrange_vertical.f |  201 ++++-
+ fem3d/lgrinf.f            |    2 +-
+ fem3d/links.f             |   76 ++
+ fem3d/links.h             |    4 +-
+ fem3d/new3di.f            |  186 ++---
+ fem3d/newbcl.f            |   32 +-
+ fem3d/newcon.f            |  185 +++--
+ fem3d/newini.f            |    9 +-
+ fem3d/newlevels.f         |  152 ++++
+ fem3d/newstab.f           |   11 +-
+ fem3d/noselab.f           |  454 +++++++++++
+ fem3d/nosinf.f            |    1 +
+ fem3d/noswrite.f          |    1 -
+ fem3d/subclo.f            |    2 +-
+ fem3d/subdep.f            |    4 +-
+ fem3d/subetsa.f           |  112 ++--
+ fem3d/subetsm.f           |   55 ++
+ fem3d/subexta.f           |   89 ++-
+ fem3d/subfemfile.f        |   25 +
+ fem3d/subflxa.f           |  194 +++--
+ fem3d/subinterpol.f       |   26 +-
+ fem3d/sublnka.f           |    2 +
+ fem3d/submeteo2.f         |   37 +
+ fem3d/subn35.f            |  228 +++---
+ fem3d/subnls.f            |  108 ++-
+ fem3d/subnsh.f            |    6 +-
+ fem3d/suboff.f            |   73 +-
+ fem3d/subsss.f            |   97 +++
+ fem3d/subsys.f            |   52 ++-
+ fem3d/subtsuvfile.f       |    2 +-
+ fem3d/subuti.f            |   94 +--
+ fem3d/subver.f            |    4 +-
+ fem3d/subwrt.f            |   92 ++-
+ fem3d/subxi.f             |   61 +-
+ femadj/adj575.f           |    2 +-
+ femadj/adj5el.f           |    2 +-
+ fembin/gps                |    1 +
+ fembin/heat524.pl         |   21 +
+ fembin/mail_shyfem.sh     |    8 +-
+ fembin/strparse.pl        |   29 +-
+ femdoc/final/shyfem.pdf   |  Bin 293782 -> 294940 bytes
+ femdoc/final/shyfem.ps    | 1983 +++++++++++++++++++++++----------------------
+ femlib/perl/str.pm        |   36 +-
+ femplot/Makefile          |    2 +-
+ femplot/col.f             |   95 ++-
+ femplot/supano.f          |   54 +-
+ femplot/suplag.f          |  245 +++++-
+ femplot/suplin.f          |    6 +-
+ 67 files changed, 4077 insertions(+), 1979 deletions(-)
+ new file:
+   fem3d/bin/ht_struct.sh
+   fem3d/lagrange_sedim.f
+   fem3d/newlevels.f
+   fem3d/noselab.f
+   fem3d/subetsm.f
+   fembin/heat524.pl
+
+============================================================
+
 Tue May  5 18:38:50 CEST 2015
 
 New version 7_1_10

@@ -4,6 +4,8 @@
 
         integer lenkv(nlkdim)
         common /lenkv/lenkv
+        integer lenkiiv(nlkdim)
+        common /lenkiiv/lenkiiv
         integer linkv(nlkdim)
         common /linkv/linkv
 
@@ -16,6 +18,6 @@
         real dxv(nkndim), dyv(nkndim)
         common /dxv/dxv, /dyv/dyv
 
-	save /ilinkv/,/lenkv/,/linkv/
+	save /ilinkv/,/lenkv/,/linkv/,/lenkiiv/
 	save /ieltv/,/kantv/,/dxv/,/dyv/
 

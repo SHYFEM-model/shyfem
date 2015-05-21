@@ -32,26 +32,25 @@ c manages larvae
 	if( icall .eq. 0 ) then
 	  rlinit = 0.
 	  do i=1,nbdy
-	    lgr_var(i) = rlinit
+	    lgr_ar(i)%c = rlinit
 	  end do
 	end if
 
 	icall = icall + 1
 
 	do i=1,nbdy
-          x = x_body(i)
-          y = y_body(i)
-	  ie = ie_body(i)
-
-          z = z_body(i)		!rel. depth   0=surface  1=bottom
-	  rl = lgr_var(i)
+          x  = lgr_ar(i)%x
+          y  = lgr_ar(i)%y
+	  ie = lgr_ar(i)%ie
+          z  = lgr_ar(i)%z		!rel. depth   0=surface  1=bottom
+	  rl = lgr_ar(i)%c
 	  
 	  if( ie .gt. 0 ) then
 	    call treat_larva(x,y,z,ie,rl)
 	  end if
 
-	  lgr_var(i) = rl
-          z_body(i) = z
+	  lgr_ar(i)%c = rl
+          lgr_ar(i)%z = z
 	end do
 
 c----------------------------------------------------------------

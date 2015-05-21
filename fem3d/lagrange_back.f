@@ -80,23 +80,23 @@ c**********************************************************************
 	call get_timestep(dt)
 
         do i=1,nback
-          x=x_back(i)
-          y=y_back(i)
-          z=z_body(i)
-          lb=l_body(i)
+          x  = x_back(i)
+          y  = y_back(i)
+          z  = lgr_ar(i)%z
+          lb = lgr_ar(i)%l
 
-          ie=ie_back(i)
-	  id = id_body(i)
+          ie = ie_back(i)
+	  id = lgr_ar(i)%id
 
 	  ttime=dt
           call track_body(i,id,x,y,z,lb,ie,ttime)
 
-          x_back(i)=x
-          y_back(i)=y
-          z_body(i)=z
-          l_body(i)=lb
+          x_back(i) = x
+          y_back(i) = y
+          lgr_ar(i)%z = z
+          lgr_ar(i)%l = lb
 
-          ie_back(i)=ie
+          ie_back(i) = ie
         end do
 
 	end	

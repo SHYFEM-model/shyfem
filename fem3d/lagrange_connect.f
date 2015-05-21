@@ -9,11 +9,13 @@ c 23.01.2012    ggu	new routine for release in point, connectivity
 c
 c*******************************************************************
 
-	subroutine lagr_connect_continuous_points
+	subroutine lagr_connect_continuous_points(brelease)
 
 c continuous release from points
 
 	implicit none
+
+	logical brelease
 
 	end
 
@@ -21,11 +23,11 @@ c*******************************************************************
 c*******************************************************************
 c*******************************************************************
 
-	subroutine lagr_connect_count(ibdy,ie,time,ic)
+	subroutine lagr_connect_count(ibdy,ie,ieorig,time,ic)
 
 	implicit none
 
-	integer ibdy,ie
+	integer ibdy,ie,ieorig
 	real time
 	integer ic
 

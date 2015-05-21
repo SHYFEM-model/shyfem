@@ -4,6 +4,7 @@ c
 c revision log :
 c
 c 24.01.2014    ggu     copied from nosutil.f
+c 30.05.2015    ggu     new code for reading header 1 and 2 indipendently
 c
 c***************************************************************
 
@@ -61,14 +62,32 @@ c other variables are stored internally
 	real yg(nkndim)
 	character*(*) desc(nkndim)
 
+	integer nkn,nlv,nvar
+
+	call read_ets_header1(iu,nkn,nlv,nvar)
+
+	call dimets(iu,nkndim,nlvdim)
+
+	call read_ets_header2(iu,nkn,nlv,ilets,hlv,hets
+     +				,nodes,xg,yg,desc)
+
+	end
+
+c***************************************************************
+
+	subroutine read_ets_header1(iu,nkn,nlv,nvar)
+
+c reads first header of ets file
+
+	implicit none
+
+	integer iu
+	integer nkn,nlv,nvar
+
 	integer nvers
-	integer nkn,nel,nlv,nvar
 	integer ierr
-	integer l,lmax,i,k
 	integer date,time
-	real x,y,h
 	character*50 title,femver
-	character*60 s
 
 	nvers = 1
 
@@ -77,19 +96,47 @@ c other variables are stored internally
 	call ets_read_header(iu,nkn,nlv,nvar,ierr)
 	if( ierr .ne. 0 ) goto 99
 
-	call dimets(iu,nkndim,nlvdim)
-
 	call getets(iu,nvers,nkn,nlv,nvar)
 	call ets_get_date(iu,date,time)
 	call ets_get_title(iu,title)
 	call ets_get_femver(iu,femver)
 
         write(6,*) 'nvers     : ',nvers
-        write(6,*) 'nkn,nel   : ',nkn
+        write(6,*) 'nkn       : ',nkn
         write(6,*) 'nlv,nvar  : ',nlv,nvar
         write(6,*) 'title     : ',title
         write(6,*) 'femver    : ',femver
         write(6,*) 'date,time : ',date,time
+
+	return
+   99	continue
+	write(6,*) 'error in reading header of ETS file'
+	stop 'error stop read_ets_header1: reading header'
+	end
+
+c***************************************************************
+
+	subroutine read_ets_header2(iu,nkn,nlv,ilets,hlv,hets
+     +					,nodes,xg,yg,desc)
+
+c other variables are stored internally
+
+	implicit none
+
+	integer iu
+	integer nkn,nlv
+	integer ilets(nkn)
+	real hlv(nlv)
+	real hets(nkn)
+	integer nodes(nkn)
+	real xg(nkn)
+	real yg(nkn)
+	character*(*) desc(nkn)
+
+	integer ierr
+	integer l,lmax,i,k
+	real x,y,h
+	character*60 s
 
 	call ets_read_header2(iu,ilets,hlv,hets
      +				,nodes,xg,yg,desc,ierr)
@@ -116,7 +163,7 @@ c other variables are stored internally
 	return
    99	continue
 	write(6,*) 'error in reading header of ETS file'
-	stop 'error stop read_ets_header: reading header'
+	stop 'error stop read_ets_header2: reading header'
  1009   format(i3,i10,i5,3e14.6)
  1008   format(i3,1x,a)
 	end

@@ -112,6 +112,7 @@ c 10.04.2014	ccf	new section "wrt" for water renewal time
 c 30.05.2014	ggu	new default for dragco, new metpnt
 c 20.10.2014	ggu	new default for date (-1)
 c 01.12.2014	ccf	wave parameters moved to subwave.f
+c 06.05.2015	ccf	new parameters itmoff and offlin
 c
 c************************************************************************
 
@@ -262,6 +263,25 @@ c			if |netcdf| is 1, else the format is unformatted
 c			fortran files. (Default 0)
 
 	call addpar('netcdf',0.)
+
+c |idtoff|	handles offline mode (default 0):
+c		\begin{description}
+c		\item[0] do nothing (no offline routines called)
+c		\item[$>$0] write offline data file (.off) with time step |idtoff|.
+c		\item[$<$0] reads offline data from file |offlin|
+c		defined in section |name|. Usage:
+c		\begin{description}
+c		\item[-1] uses offline hydro results
+c		\item[-2] uses offline T/S results
+c		\item[-4] uses offline turbulence results
+c		\end{description}
+c		\end{description}
+
+	call addpar('idtoff',0.)
+
+c |itmoff|	Start time for writing to file OFF,
+c		the file containing data for offline runs.
+	call addpar('itmoff',-1.)
 
 cc------------------------------------------------------------------------
 
@@ -794,7 +814,6 @@ cc rain
 
 	call addpar('idtbox',0.)	!for boxes
 	call addpar('itmbox',-1.)
-	call addpar('idtoff',0.)	!for offline
 
 	call addpar('inohyd',0.)	!for non-hydrostatic model
 
@@ -841,8 +860,13 @@ c Please find all details here below.
         call sctfnm('lagrg')
 
 c |ilagr|	Switch that indicates that the lagrangian module
-c		should be run. Default is 0, which indicates not
-c		to run the lagrangian module
+c		should be run (default 0):
+c		\begin{description}
+c		\item[0] do nothing
+c		\item[1] surface lagrangian
+c		\item[2] 2d lagrangian (not implemented)
+c		\item[3] 3d lagrangian
+c		\end{description}
 
 	call addpar('ilagr',0.)         !LAGR
 
@@ -885,6 +909,15 @@ c			whole lagrangian simulation period.
         call addpar('itranf',-1.)
         call addpar('itrend',-1.)
 
+c |ipvert|	Set the vertical distribution of particles:
+c		\begin{description}
+c		\item[0] realase one particle in surface layer
+c		\item[$>$0] realase n particles regularly
+c		\item[$<$0] realase n particles randomly
+c		\end{description}
+
+        call addpar('ipvert',0.)
+
 c |lagra|	File name that contains closed lines of the area where
 c		the particles have to be released. If not given, the particles
 c		are released over the whole domain.
@@ -904,6 +937,7 @@ cc still to be commented
         call addpar('ldecay',0.)
         call addpar('ioil',0.)
         call addpar('ilarv',0.)
+        call addpar('ised',0.)
 
 c DOCS	END
 
@@ -1587,6 +1621,13 @@ c			for |rfiso| greater than 0 capture higher detail in
 c			the lower values, whereas values less than 1 do
 c			the opposite.
 c			(Default 0)
+c |ipllog|		Indicates the usage of a logarithmic color scale.
+c			The possible values are 0-3. The value of 0
+c			indicates not to use a logarithmic scale.
+c			If 1, the values of
+c			the scale are 1,10,100,etc., if 2 the values
+c			1,2,10,20,100,etc. are used, and for 3 the values
+c			are 1,2,5,10,20,50,100,etc. (Default 0)
 c |dval|		Difference of values between isolines. If this
 c			value is greater then 0 the values for isolines 
 c			and the total number of isolines are computed 
@@ -1600,6 +1641,7 @@ c			(Default 0)
         call addpar('valmin',0.)       !min isovalue
         call addpar('valmax',0.)       !max isovalue
 	call addpar('rfiso',0.)	       !function for intermediate values
+	call addpar('ipllog',0.)       !logarithmic scale
 	call addpar('dval',0.)	       !increment for autom. color sep.
 
 c Since there is a great choice of combinations between the parameters,
@@ -2113,6 +2155,9 @@ c		GOTM turbulence model (iturb = 1).
 c |saltin|	Name of file containing initial conditions for salinity
 c |tempin|	Name of file containing initial conditions for temperature
 c |conzin|	Name of file containing initial conditions for concentration
+c |offlin|	Name of the file if a offline is to be performed. The
+c		file has to be produced by a previous run
+c		with the parameter |idtoff| greater than 0.
 
 
 	call addfnm('zinit',' ')
@@ -2127,6 +2172,7 @@ c |conzin|	Name of file containing initial conditions for concentration
         call addfnm('saltin',' ')
         call addfnm('tempin',' ')
         call addfnm('conzin',' ')
+	call addfnm('offlin',' ')
 
 c DOCS	END
 

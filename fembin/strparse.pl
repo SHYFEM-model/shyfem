@@ -26,6 +26,7 @@ $::sect = "" unless $::sect;
 $::txt = 0 unless $::txt;
 $::debug = 0 unless $::debug;
 $::value = "" unless $::value;
+$::replace = "" unless $::replace;
 #-------------------------------------------------------------
 
 #-------------------------------------------------------------
@@ -34,7 +35,7 @@ $::value = "" unless $::value;
 @::bound_names = qw/ boundn conzn tempn saltn
 		bio2dn sed2dn tox3dn
 		bfm1bc bfm2bc bfm3bc /;
-@::name_names = qw/ bound wind rain qflux restrt gotmpa
+@::name_names = qw/ bound wind rain qflux ice restrt gotmpa
 		bio bios toxi
 		conzin saltin tempin /;
 @::aquabc_names = qw/ biocon bioscon biolight bioaow 
@@ -68,10 +69,16 @@ if( $::h or $::help ) {
 } elsif( $::sect ) {
   show_sect($str,$::sect);
 } elsif( $::value ) {
-  my $val = show_value($str,$::value);
-  $val = "(unknown)" unless $val;
-  #print "$::value = $val\n";
-  print "$val\n";
+  if( $::replace ) {
+    replace_value($str,$::value,$::replace);
+    $str->write_str("replace.str");;
+    print STDERR "str-file written to replace.str\n";
+  } else {
+    my $val = show_value($str,$::value);
+    $val = "(unknown)" unless $val;
+    #print "$::value = $val\n";
+    print "$val\n";
+  }
 } else {
   Usage();
 }
@@ -96,8 +103,10 @@ sub FullUsage {
   print STDERR "    -zip          zips forcing files, grid, str in one file\n";
   print STDERR "    -rewrite      rewrite the str file\n";
   print STDERR "    -value=var    show value of var ([sect:]var)\n";
+  print STDERR "    -replace=val  replace value of var with val and rewrite\n";
   #print STDERR "    -sect=sect    writes contents of section\n";
   print STDERR "    -txt          write nodes as text and not in grd format\n";
+  print STDERR "  if -replace is given also -value must be specified\n";
   exit 0;
 }
 
@@ -229,6 +238,16 @@ sub show_files {
   }
 
   return \@files;
+}
+
+sub replace_value {
+
+  my ($str,$name,$replace,$sect_name,$sect_number) = @_;
+
+  #$sect_name = "para" unless $sect_name;
+  #$sect_number = "" unless $sect_number;
+
+  $str->set_value($name,$replace,$sect_name,$sect_number);
 }
 
 sub show_value {

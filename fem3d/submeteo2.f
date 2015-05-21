@@ -21,6 +21,7 @@ c 23.02.2012    ggu&ccf	bug fix meteo_copy_to_old and meteo_interpolate_in_time
 c 20.05.2014    ggu	new routines for new file format
 c 30.04.2015    ggu	ice integrated
 c 04.05.2015    ggu	bug in ice eliminated
+c 12.05.2015    ggu	introduced ia_icefree for icefree elements
 c
 c notes :
 c
@@ -743,6 +744,7 @@ c convert rain from mm/day to m/s
 !	---------------------------------------------------------
 
 	call iff_get_var_description(id,1,string)
+	string = adjustl(string)
 
 	if( string == ' ' ) then	!TS file or constant
 	  ictype = 0
@@ -757,6 +759,7 @@ c convert rain from mm/day to m/s
 	  else
 	    write(6,*) 'description string for ice not recognized: '
 	    write(6,*) string
+	    write(6,*) 'expecting: ',trim(ice)
 	    stop 'error stop meteo_set_ice_data: ice description'
 	  end if
 	end if
@@ -789,6 +792,40 @@ c convert ice data (nothing to do)
 	integer id
 	integer n
 	real r(n)
+
+	include 'param.h'
+	include 'basin.h'
+
+	integer k,ie,ii,ia
+	integer ia_icefree
+	double precision racu,rorig
+
+	ia_icefree = -1		!this does not change ice cover
+	ia_icefree = 0
+
+	racu = 0.
+	do k=1,n
+	  racu = racu + r(k)
+	end do
+	rorig = racu / n
+
+	do ie=1,nel
+	  ia = iarv(ie)
+	  if( ia == ia_icefree ) then
+	    do ii=1,3
+	      k = nen3v(ii,ie)
+	      r(k) = 0.
+	    end do
+	  end if
+	end do
+
+	racu = 0.
+	do k=1,n
+	  racu = racu + r(k)
+	end do
+	racu = racu / n
+
+	!write(6,*) rorig,racu
 
 	end subroutine meteo_convert_ice_data
 

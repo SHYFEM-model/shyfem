@@ -36,6 +36,7 @@ c 01.06.2012  ggu     new circle item for legend, auto determ for ndec
 c 05.09.2013  ggu     adjust for scale distortion in ref and wind arrows
 c 05.03.2014  ggu     in annotation use date information
 c 16.10.2014  ggu     annotes doesnt need it anymore
+c 06.05.2015  ggu     prepared for logarithmic color bar
 c
 c***************************************************************
 
@@ -580,7 +581,7 @@ c shell for color bar
 
 	character*80 line
 	integer ndec
-	integer nctick
+	integer nctick,ipllog
 	logical bhoriz
 	real fact
 	real x0,y0,x1,y1
@@ -600,16 +601,17 @@ c shell for color bar
 	fact = getpar('faccol')
 	ndec = iround(getpar('ndccol'))
 	nctick = iround(getpar('nctick'))
+	ipllog = iround(getpar('ipllog'))
 	call getfnm('legcol',line)
 
 	!write(6,*) 'colsh : ',nctick,ndec,fact,x0,y0,x1,y1
-	call colbar(line,bhoriz,nctick,ndec,fact,x0,y0,x1,y1)
+	call colbar(line,bhoriz,nctick,ipllog,ndec,fact,x0,y0,x1,y1)
 
 	end
 
 c******************************************************************
 
-	subroutine colbar(title,bhoriz,nticks,ndec,fact
+	subroutine colbar(title,bhoriz,nticks,ipllog,ndec,fact
      +				,xmin,ymin,xmax,ymax)
 
 c writes color bar
@@ -619,6 +621,7 @@ c writes color bar
 	character*(*) title
 	logical bhoriz		!horizontal?
 	integer nticks		!number of ticks to comment (0 -> all colors)
+	integer ipllog
 	integer ndec
 	real fact
 	real xmin,ymin,xmax,ymax
@@ -626,6 +629,11 @@ c writes color bar
 c color
 	integer isoanz
 	real fnull
+
+	integer ndim
+	parameter (ndim=100)
+	real aval(ndim)
+	real rval(ndim)
 
 	character*80 line
 	integer i,imax,nw
@@ -644,11 +652,13 @@ c color
 	real width, height
 	real dtick,dt,rit
 	real xperc,yperc
-	real ylow,yhigh,dyc
+	real ylow,yhigh,dyc,dxy
 	real xcm,ycm,dxtick,dytick
+	real amin,amax
+	integer idiv,ntkl
 	integer it
 
-	logical bdebug
+	logical bdebug,blog
 	integer iround,isoget,ialfa,ideci
 	real getcolval
 	real getpar
@@ -750,26 +760,41 @@ c write legend
 	end if
 
 	ntk = nticks
-	if( ntk .le. 0 .or. ntk .gt. imax ) then	!real boxes, all colors
+	blog = ipllog .ne. 0
+	if( blog ) ntk = -1
+
+	if( ntk .eq. 0 .or. ntk .gt. isoanz ) then	!real boxes, all colors
 	  ntk = isoanz
 	  dtick = 1.
 	  y2 = y1
 	  x2 = x0
-	else						!only ticks, skip some
+	else if( ntk .gt. 0 ) then			!only ticks, skip some
 	  if( ntk .eq. 1 ) ntk = 2			!just in case...
 	  dtick = float(isoanz-1) / (ntk-1)
 	  y2 = y0-dytick
 	  x2 = x1+dxtick
+	else						!negative -> log
+	  idiv = ipllog
+	  y2 = y0-dytick
+	  x2 = x1+dxtick
+	  amin = getcolval(1.)
+	  amax = getcolval(float(isoanz))
+	  ntk = ndim
+	  call logvals(amin,amax,idiv,ntk,rval,aval)
+	  write(6,*) 'amin,amax: ',amin,amax
+	  write(6,*) 'idiv,ntk: ',idiv,ntk
+	end if
+
+	if( bhoriz ) then
+	  dxy = x1-x0-2.*dxc
+	else
+	  dxy = y1-y0-2.*dyc
 	end if
 
 	if( ntk .eq. 1 ) then				!bug fix for 1 isoline
 	  dt = 0.
 	else
-	  if( bhoriz ) then
-	    dt = (x1-x0-2.*dxc) / (ntk-1)		!distance between ticks
-	  else
-	    dt = (y1-y0-2.*dyc) / (ntk-1)		!distance between ticks
-	  end if
+	  dt = dxy / (ntk-1)				!distance between ticks
 	end if
 
 	call qgray(0.)
@@ -777,12 +802,17 @@ c write legend
 	do i=1,ntk
 	  rit = 1. + (i-1)*dtick
 	  value = getcolval(rit)
+	  if( blog ) value = aval(i)
 	  value = fact * value
 	  idec = ndec
 	  if( idec .eq. 0 ) idec = ideci(value)
 	  nw = ialfa(value,line,idec,-1)
 	  x = x0 + dxc + (i-1) * dt
 	  y = y0 + dyc + (i-1) * dt
+	  if( blog ) then
+	    x = x0 + dxc + rval(i)*dxy
+	    y = y0 + dyc + rval(i)*dxy
+	  end if
 	  if( bhoriz ) then
 	    call qline(x,y0,x,y2)
 	    call qtext(x,y0,line)

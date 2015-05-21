@@ -44,6 +44,7 @@ c 12.02.1999	ggu	new routine triml
 c 26.01.2009	ggu	minor changes to avoid compiler warnings
 c 16.02.2011	ggu	new routine trimline()
 c 30.05.2014	ggu	new routine rnextsub()
+c 06.05.2015	ggu	new routine logvals() for logarithmic values
 c
 c***********************************************************
 c
@@ -1350,6 +1351,102 @@ c trims line (deleting leading spaces) and gives back length
 	il = n
 
 	end
+
+c************************************************************
+
+        subroutine logvals(amin,amax,idiv,ntk,rval,aval)
+
+        implicit none
+
+        real amin,amax          !min/max of scale
+        integer idiv            !division of log scale (see below) [1-3]
+        integer ntk             !dimension of aval (in), values in aval (out)
+        real rval(ntk)          !relative x values (return)
+        real aval(ntk)          !log scale values (return)
+
+        real a1,a2,aa1,aa2,val
+        real a,aaux,fact,r
+        real aamin,aamax
+        integer ia1,ia2,i
+        integer ndim,ip
+
+        real eps
+        parameter (eps=0.1)
+
+c idiv must be in [1-3]
+c idiv = 1      1 10 100
+c idiv = 2      1 2 10 20 100
+c idiv = 3      1 2 5 10 20 50 100
+
+        if( idiv .lt. 1 .or. idiv .gt. 3 ) goto 99
+        if( amin .le. 0. .or. amin .ge. amax ) goto 97
+
+        ndim = ntk
+
+        a1 = alog10(amin)
+        a2 = alog10(amax)
+        ia1 = a1
+        ia2 = a2
+
+        if( abs(a1-ia1) .gt. eps ) then
+          aa1 = ceiling(a1)
+        else
+          aa1 = nint(a1)
+        end if
+        ia1 = nint(aa1)
+
+        if( abs(a2-ia2) .gt. eps ) then
+          aa2 = floor(a2)
+        else
+          aa2 = nint(a2)
+        end if
+        ia2 = nint(aa2)
+
+        aamin = 10.**ia1
+        aamax = 10.**ia2
+
+        write(6,*) 'log general: ',idiv,ndim,ia2-ia1+1
+        write(6,*) 'log min: ',amin,a1,aa1,ia1
+        write(6,*) 'log max: ',amax,a2,aa2,ia2
+        write(6,*) 'log aa: ',aamin,aamax
+
+        ip = 0
+        a = aamin
+        do while( a <= aamax )
+          write(6,*) ip,a
+          do i=1,idiv
+            fact = i
+            if( i .eq. 3 ) fact = 5
+            aaux = a*fact
+            if( aaux >= amin .and. aaux <= amax ) then
+              ip = ip + 1
+              if( ip .gt. ndim ) goto 98
+              aval(ip) = aaux
+              r = alog10(aaux)
+              r = (r-a1)/(a2-a1)
+              rval(ip) = r
+            end if
+          end do
+          a = 10. * a
+        end do
+        ntk = ip
+
+        write(6,*) 'log scale: ',ntk
+        write(6,*) (aval(i),i=1,ntk)
+        write(6,*) (rval(i),i=1,ntk)
+
+        return
+   97   continue
+        write(6,*) 'amin,amax: ',amin,amax
+        stop 'error stop logval_adjust: amin,amax'
+   98   continue
+        write(6,*) 'ndim = ',ndim
+        write(6,*) (aval(i),i=1,ndim)
+        stop 'error stop logval_adjust: ndim'
+   99   continue
+        write(6,*) 'idiv = ',idiv
+        stop 'error stop logval_adjust: idiv'
+        end
 
 c************************************************************
 

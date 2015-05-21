@@ -141,7 +141,7 @@ c	real sigma
 	logical has_restart,has_output,next_output
 
 	integer tid
-c	integer OMP_GET_THREAD_NUM
+	!integer openmp_get_thread_num
 	
 	double precision theatold,theatnew
 	double precision theatconv1,theatconv2,theatqfl1,theatqfl2
@@ -227,13 +227,9 @@ c		--------------------------------------------
 c		initialize observations and relaxation times
 c		--------------------------------------------
 
-		do k=1,nkn
-		  do l=1,nlv
-		    tobsv(l,k) = 0.
-		    sobsv(l,k) = 0.
-		    rtauv(l,k) = 0.
-		  end do
-		end do
+		tobsv = 0.
+		sobsv = 0.
+		rtauv = 0.
 
 c		--------------------------------------------
 c		initialize open boundary conditions
@@ -326,8 +322,8 @@ c----------------------------------------------------------
 !$OMP SECTIONS
 !$OMP SECTION
 
-c	  tid = OMP_GET_THREAD_NUM()
-c	  write(6,*) 'number of thread of temp: ',tid
+	  call openmp_get_thread_num(tid)
+	  !write(6,*) 'number of thread of temp: ',tid
 
           if( itemp .gt. 0 ) then
 		what = 'temp'
@@ -343,8 +339,8 @@ c	  write(6,*) 'number of thread of temp: ',tid
 
 !$OMP SECTION
 
-c	  tid = OMP_GET_THREAD_NUM()
-c	  write(6,*) 'number of thread of salt: ',tid
+	  call openmp_get_thread_num(tid)
+	  !write(6,*) 'number of thread of salt: ',tid
 
           if( isalt .gt. 0 ) then
 		what = 'salt'
@@ -607,8 +603,8 @@ c*******************************************************************
 	integer it
 	integer nlv
 	integer nkn
-	real tempv(nlvdim,1)
-	real saltv(nlvdim,1)
+	real tempv(nlvdim,nkn)
+	real saltv(nlvdim,nkn)
 
 	character*80 tempf,saltf
 	integer iutemp(3),iusalt(3)
@@ -646,8 +642,8 @@ c*******************************************************************
 	integer it
 	integer nlv
 	integer nkn
-	real tobsv(nlvdim,1)
-	real sobsv(nlvdim,1)
+	real tobsv(nlvdim,nkn)
+	real sobsv(nlvdim,nkn)
 
 	character*80 tempf,saltf
 	integer iutemp(3),iusalt(3)
@@ -789,8 +785,8 @@ c initialization of T/S from file
         integer it0
         integer nlv
         integer nkn
-        real tempv(nlvdim,1)
-        real saltv(nlvdim,1)
+        real tempv(nlvdim,nkn)
+        real saltv(nlvdim,nkn)
 
         character*80 tempf,saltf
 

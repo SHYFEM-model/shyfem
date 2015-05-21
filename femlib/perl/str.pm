@@ -62,7 +62,7 @@ sub make_arrays {
 
   my ($self) = @_;
 
-  my @param_sections = qw/ para bound name color legvar wrt sedtr /;
+  my @param_sections = qw/ para bound name color legvar wrt sedtr waves /;
   my @number_sections = qw/ extra flux levels /;
   my @table_sections = qw/ area extts /;
   my @title_sections = qw/ title /;
@@ -335,7 +335,9 @@ sub parse_section {
   if( $type ) {
     #print STDERR "The section is of type $type\n";
   } else {
-    die "*** Unknown type of section: $section_name\n";
+    print STDERR "*** Unknown type of section: $section_name\n";
+    $type = "unknown";
+    #die "*** Unknown type of section: $section_name\n";
   }
 
   if( $type eq "param" ) {
@@ -347,7 +349,8 @@ sub parse_section {
   } elsif( $type eq "table" ) {
     $self->parse_table_section($sect);
   } else {
-    die "*** Cannot yet parse section type $type\n";
+    $self->skip_section($sect);
+    #die "*** Cannot yet parse section type $type\n";
   }
 }
 
@@ -455,6 +458,13 @@ sub parse_table_section {
   # no parsing
 }
 
+sub skip_section {
+
+  my ($self,$sect) = @_;
+
+  # no parsing
+}
+
 #-----------------------------------------------------------------
 # apply function to sections
 #-----------------------------------------------------------------
@@ -553,6 +563,8 @@ sub write_section {
   my $data		=	$sect->{data};
   my $type		=	$self->{section_types}->{$name};
 
+  $type = "unknown" unless $type;
+
   $self->write_start_of_section($sect);
 
   #print "+++++++++ type: $type  $name  ($data)\n";
@@ -567,7 +579,8 @@ sub write_section {
   } elsif( $type eq "table" ) {
     $self->write_table_section($sect);
   } else {
-    die "*** Cannot yet write section type $type\n";
+    $self->write_unknown_section($sect);
+    #die "*** Cannot yet write section type $type\n";
   }
 
   $self->write_end_of_section($sect);
@@ -582,6 +595,8 @@ sub write_start_of_section {
   my $info		=	$sect->{info};
   my $type		=	$self->{section_types}->{$name};
 
+  $type = "unknown" unless $type;
+
   return if $type eq "comment";
   
   my $line = "$name$number";
@@ -595,6 +610,8 @@ sub write_end_of_section {
 
   my $name		=	$sect->{name};
   my $type		=	$self->{section_types}->{$name};
+
+  $type = "unknown" unless $type;
 
   return if $type eq "comment";
 
@@ -668,6 +685,17 @@ sub write_array {
 }
 
 sub write_table_section {
+
+  my ($self,$sect) = @_;
+
+  my $data = $sect->{data};
+
+  foreach my $line (@$data) {
+    print "$line\n";
+  }
+}
+
+sub write_unknown_section {	# simply copy
 
   my ($self,$sect) = @_;
 

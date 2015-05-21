@@ -4,6 +4,7 @@
 ! revision log :
 !
 ! 14.01.2015    ggu     adapted from feminf
+! 20.05.2015    ggu     use bhuman to convert to human readable time
 !
 !******************************************************************
 
@@ -110,7 +111,7 @@ c writes info on fem file
 	integer datetime(2),dateanf(2),dateend(2)
 	real regpar(7)
 	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
-	logical bquiet
+	logical bquiet,bhuman
 	character*50, allocatable :: strings(:)
 	character*20 line
 	character*80 stmin,stmax
@@ -121,6 +122,7 @@ c writes info on fem file
 
 	bdebug = .true.
 	bdebug = .false.
+	bhuman = .true.
 
         datetime = 0
         irec = 0
@@ -270,6 +272,9 @@ c--------------------------------------------------------------
 	  if( btmax ) boutput = boutput .and. atime <= atmax
 
           if( boutput ) then
+	    if( bhuman ) then
+	      call fem_file_convert_atime(datetime,dtime,atime)
+	    end if
             call fem_file_write_header(iformat,iout,dtime
      +                          ,nvers,np,lmax,nvar,ntype,lmax
      +                          ,hlv,datetime,regpar)

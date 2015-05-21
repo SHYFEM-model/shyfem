@@ -76,7 +76,7 @@ echo "uploading and emailing..."
 #------------------------------------------------------------------
 
 echo "uploading file $file to google drive..."
-#drive upload --file $file --parent $shyfemdir
+drive upload --file $file --parent $shyfemdir
 status=$?
 [ $status -ne 0 ] && echo "*** error uploading file" && exit 1
 
@@ -87,12 +87,12 @@ status=$?
 #echo "sending mail to gmail..."
 #gmutt -auto -s "$subject" -i $tmpfile gmail
 echo "sending mail to shyfem..."
-#gmutt -auto -s "$subject" -i $tmpfile shyfem
+gmutt -auto -s "$subject" -i $tmpfile shyfem
 
 [ "$mail" = "YES" ] && exit 0
 
-echo "sending mail to shyfem..."
-#gmutt -auto -s "$subject" -i $tmpfile shyfem_aux
+echo "sending mail to shyfem_aux..."
+gmutt -auto -s "$subject" -i $tmpfile shyfem_aux
 
 #------------------------------------------------------------------
 

@@ -70,7 +70,7 @@ c reads flx files
 	integer nin
 	integer idfile,nvers,nsect,kfluxm,nlmax
 	integer i,it,idtflx
-	integer j,l,lmax,ierr,ivar
+	integer j,l,lmax,ierr,ivar,irec
 	integer kflux(nfxdim)
 	integer nlayers(nfxdim)
 	real ptot(4,nfxdim)
@@ -103,13 +103,18 @@ c---------------------------------------------------------------
 c loop on data
 c---------------------------------------------------------------
 
+	irec = 0
+
 	do while(.true.)
 
           call rdflx(nin,it,nlvdim,nsect,ivar,nlayers,fluxes,ierr)
 	  if( ierr .ne. 0 ) goto 2
 
 	  if( ivar .eq. 0 ) then
+	   irec = irec + 1
+	   if( mod(irec,100) .eq. 0 ) then
 	    write(6,'(i10,10i7)') it,(nint(fluxes(0,1,i)),i=1,nsect)
+	   end if
 	  end if
 
 	  call fluxes_2d(it,nlvdim,nsect,ivar,ptot,fluxes)

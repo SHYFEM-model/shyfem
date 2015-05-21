@@ -234,22 +234,19 @@ c statement function
 c*****************************************************************
 
 	subroutine energ(ielem,kenerg,penerg)
+
+c computation of kinetic & potential energy [Joule]
 c
-c computation of kinetic & potential energy (per unit mass) in element ielem
-c
-c for ielem=0 --> total kinetic & potential energy
-c
-c	pot = (g/2) * aj * 4  * z(m)*z(m)
-c	kin = (1/2) * aj * 12 * u*u/h
-c
+c	pot = (g/2) * rho * area * z*z
+c	kin = (1/2) * rho * area * (U*U+V*V)/H
+
 	implicit none
 
-	include 'param.h'
+	integer ielem		!element (0 for total energy - all elements)
+	real kenerg		!kinetic energy (return)
+	real penerg		!potential energy relative to z=0 (return)
 
-c arguments
-	integer ielem
-	real kenerg,penerg
-c common
+	include 'param.h'
 	include 'pkonst.h'
 	include 'basin.h'
 	include 'hydro.h'
@@ -257,72 +254,59 @@ c common
 	include 'hydro_baro.h'
 	include 'ev.h'
 
+	integer ie,ii,ie1,ie2
+	double precision aj,pot,kin,z,zz
 
-c local
-	integer ie,ii
-	real*8 aj,pot,kin,z,zz
-c
-	ie=ielem
-c
 	if(ie.gt.0.and.ie.le.nel) then
-	  z=0.
+	  ie1 = ielem
+	  ie2 = ielem
+	else
+	  ie1 = 1
+	  ie2 = nel
+	end if
+
+	kin=0.
+	pot=0.
+	do ie=ie1,ie2
+	  zz=0.
 	  aj=ev(10,ie)
 	  do ii=1,3
-	    zz = zenv(ii,ie)
-	    z=z+zz*zz
+	    z = zenv(ii,ie)
+	    zz = zz + z*z
 	  end do
-	  pot=aj*z
-	  kin=aj*(unv(ie)**2+vnv(ie)**2)/hev(ie)
-	else
-	  kin=0.
-	  pot=0.
-	  do ie=1,nel
-	    z=0.
-	    aj=ev(10,ie)
-	    do ii=1,3
-	      zz = zenv(ii,ie)
-	      z=z+zz*zz
-	    end do
-	    pot=pot+aj*z
-	    kin=kin+aj*(unv(ie)**2+vnv(ie)**2)/hev(ie)
-	  end do
-	end if
-c
+	  pot=pot+aj*zz
+	  kin=kin+aj*(unv(ie)**2+vnv(ie)**2)/hev(ie)
+	end do
+
 	penerg=2.*grav*pot	! 2 = 12 / 3 / 2
 	kenerg=6.*kin		! 6 = 12 / 2
-c
-	return
+
 	end
 
 c***************************************************************
 
 	subroutine energ3d(kenergy,penergy,ia_ignore)
 
-c computation of kinetic & potential energy (per unit mass) in element ielem
+c computation of kinetic & potential energy [Joule]
 c
-c for ielem=0 --> total kinetic & potential energy
-c
-c	pot = (g/2) * aj * 4  * z(m)*z(m)
-c	kin = (1/2) * aj * 12 * u*u/h
+c	pot = (g/2) * rho * area * z*z
+c	kin = (1/2) * rho * area * (U*U+V*V)/H
 
 	implicit none
 
-	real kenergy,penergy
+	real kenergy		!kinetic energy (return)
+	real penergy		!potential energy relative to z=0 (return)
 	integer ia_ignore	!area code to be ignored
 
 	include 'param.h'
 	include 'ev.h'
-
 	include 'basin.h'
 	include 'pkonst.h'
-
 	include 'levels.h'
 	include 'depth.h'
-
 	include 'hydro.h'
 	include 'ts.h'
 
-c local
 	integer ie,ii,l,lmax,ia,k
 	double precision area,pot,kin,z,zz
 	double precision h,uu,vv,rho
@@ -345,7 +329,8 @@ c local
 	    zz = zz + z*z
 	  end do
 	  rho = rowass + rho/3.
-          pot = pot + area * rho * zz/3.
+	  zz = zz / 3.
+          pot = pot + area * rho * zz
 
 	  lmax = ilhv(ie)
 	  do l=1,lmax
@@ -359,15 +344,12 @@ c local
 	    uu = utlnv(l,ie)
 	    vv = vtlnv(l,ie)
 	    kin = kin + area * rho * (uu*uu + vv*vv) / h
-	    !write(13,*) ie,l,uu,vv,h,kin
 	  end do
 
 	end do
 
-        penergy = 0.5*grav*pot      ! 0.5 = 1 / 2
-        kenergy = 0.5*kin           ! 0.5 = 1 / 2
-
-	!write(6,*) kenergy,penergy
+        penergy = 0.5*grav*pot
+        kenergy = 0.5*kin
 
 	end
 

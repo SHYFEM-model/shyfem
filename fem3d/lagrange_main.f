@@ -82,6 +82,8 @@ c****************************************************************
 
 c lagranian main routine
 
+        use lgr_sedim_module
+
 	implicit none
 
         include 'param.h'
@@ -92,9 +94,7 @@ c lagranian main routine
 
 	logical brelease
 	logical bcompres
-	logical boilsim
-	logical blarvae
-	save brelease,bcompres,boilsim,blarvae
+	save brelease,bcompres
 
         integer itlanf,itlend
 	integer idtl,itranf,itrend,itrnext
@@ -131,8 +131,8 @@ c tdecay	ldecay
 c boilsim	ioil
 c blarvae	ilarv
 
-	bcompres = .false.	!compress particles
 	bcompres = .true.	!compress particles
+	bcompres = .false.	!compress particles
 
 c---------------------------------------------------------------
 c initialization
@@ -144,17 +144,20 @@ c---------------------------------------------------------------
           if( icall .eq. -1 ) return
 	  icall = 1
 
-          itmlgr=getpar('itmlgr')	!startime write output to file
-          idtlgr=getpar('idtlgr')	!frequency output to file
-          itlanf=getpar('itlanf')	!start of lagrangian sim
-          itlend=getpar('itlend')	!end of lagrangian sim
-          idtl=getpar('idtl') 		!frequency of release
-          itranf=getpar('itranf') 	!time of initial continuous release
-          itrend=getpar('itrend') 	!time of final continuous release
+	  call convert_date('itmlgr',itmlgr)   !startime write output to file
+	  call convert_time('idtlgr',idtlgr)   !frequency output to file
+	  call convert_date('itlanf',itlanf)   !start of lagrangian sim
+	  call convert_date('itlend',itlend)   !end of lagrangian sim
+	  call convert_time('idtl',idtl)       !frequency of release
+	  call convert_date('itranf',itranf)   !time of initial cont. release
+	  call convert_date('itrend',itrend)   !time of final continuous release
 
-          ldecay=getpar('ldecay')	!decay time for particles
-          boilsim=nint(getpar('ioil')).gt.0
-          blarvae=nint(getpar('ilarv')).gt.0
+          ldecay =  getpar('ldecay')           !decay time for particles
+          boilsim = nint(getpar('ioil')).gt.0  !activate oil module if true
+          blarvae = nint(getpar('ilarv')).gt.0 !activate larvae module if true
+	  bsedim  = nint(getpar('ised')).gt.0  !activate sediment module if true
+
+	  if ( bsedim ) call lgr_sedim_init
 
 	  call lagr_init_common
 
@@ -248,6 +251,14 @@ c---------------------------------------------------------------
  	call drogue
 
 c---------------------------------------------------------------
+c sediment module
+c---------------------------------------------------------------
+
+	if( bsedim ) then
+ 	  call lgr_sediment(it)
+	end if
+
+c---------------------------------------------------------------
 c connectivity module ?
 c---------------------------------------------------------------
 
@@ -334,8 +345,7 @@ c ipvert == 0    realase one particle in surface layer
 c ipvert > 0     realase n particles regularly
 c ipvert < 0     realase n particles randomly
 
-	ipvert = 1
-	ipvert = 4
+        ipvert = nint(getpar('ipvert'))
 
 	end
 
@@ -360,6 +370,9 @@ c**********************************************************************
         save iuinfo
         data iuinfo / 0 /
 
+        double precision tempo
+        double precision openmp_get_wtime
+
         if( iuinfo .eq. 0 ) then
           call getinfo(iuinfo)  !unit number of info file
         end if
@@ -375,6 +388,8 @@ c**********************************************************************
 	  ic(ii) = 0
 	end do
 
+        tempo = openmp_get_wtime()
+
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(i,ii)
 !$OMP DO SCHEDULE(DYNAMIC,chunk)
 
@@ -386,6 +401,9 @@ c**********************************************************************
 
 !$OMP END DO NOWAIT
 !$OMP END PARALLEL
+
+        tempo = openmp_get_wtime() - tempo
+!        write(88,*) 'tempo = ',tempo
 
 c	write(lunit,*) 'lagrangian: (tot,out,in) ',nbdy,nf,nbdy-nf
 c	write(lunit,'(a,i10,12i5)') 'parallel: ',nbdy,(ic(ii),ii=0,n-1)
@@ -410,53 +428,55 @@ c advection of particles
 
 	integer i,id,ie,nf,lb,ii
 	real x,y,z
+	double precision sv
 	double precision xi(3)
 	real dt,ttime,tmax
                 
 c       call lagr_func(i)		!varying the variable typ(i)
 c	call lagr_surv(i)
 
-	x=x_body(i)
-	y=y_body(i)
-	z=z_body(i)
-	lb=l_body(i)
-        ie = ie_body(i)
+	x  = lgr_ar(i)%x
+	y  = lgr_ar(i)%y
+	z  = lgr_ar(i)%z
+	lb = lgr_ar(i)%l
+        ie = lgr_ar(i)%ie
+	sv = lgr_ar(i)%sv
+	id = lgr_ar(i)%id 
+
 	do ii=1,3
-	  xi(ii) = xi_body(ii,i)
+	  xi(ii) = lgr_ar(i)%xi(ii)
 	end do
 
 	!if( mod(i,100) .eq. 0 ) then
 	!  write(56,*) 'gguuaa: ',i,ie,lb,x,y,z
 	!end if
 
-	id = id_body(i) 
-
-	tmax = it - tin(i) 
+	tmax = it - lgr_ar(i)%tin 
 	if( tmax .lt. 0. ) stop 'error stop drogue: internal error'
 	ttime = min(tmax,dt)
 
 	if( lb > 0 ) then
 	  if( blgrxi ) then		!use internal coordinates
-            call track_body_xi(i,id,x,y,z,xi,ie,lb,ttime) 
+            call track_body_xi(i,id,x,y,z,sv,xi,ie,lb,ttime) 
 	  else
             call track_body(i,id,x,y,z,lb,ie,ttime) 
 	  end if
 	end if
 
-	x_body(i)=x
-	y_body(i)=y
-	z_body(i)=z
-	l_body(i)=lb
-        ie_body(i)=ie
+	lgr_ar(i)%x  = x
+	lgr_ar(i)%y  = y
+	lgr_ar(i)%z  = z
+	lgr_ar(i)%l  = lb
+        lgr_ar(i)%ie = ie
 	do ii=1,3
-	  xi_body(ii,i) = xi(ii)
+	  lgr_ar(i)%xi(ii) = xi(ii)
 	end do
 
 	end	
 
 c**********************************************************************
 
-        subroutine track_body_xi(i,id,x,y,z,xi,iel,lb,ttime)
+        subroutine track_body_xi(i,id,x,y,z,sv,xi,iel,lb,ttime)
 
 c tracks one particle - uses internal coordinates
 
@@ -470,6 +490,7 @@ c tracks one particle - uses internal coordinates
 	real x			!x-coordinate
 	real y			!y-coordinate
 	real z 			!relative vertical position
+	double precision sv 	!settling velocity
 	double precision xi(3)	!internal coordinates
 	integer iel		!element number
 	integer lb 		!layer 
@@ -494,7 +515,7 @@ c track particle
 c---------------------------------------------------------------
 
 	do while ( ttime.gt.0 .and. n > 0 )
-          call track_xi(id,iel,lb,xi,zz,ttime)
+          call track_xi(id,iel,lb,sv,xi,zz,ttime)
 	  if( iel < 1 ) exit
 	  if( lb < 1 ) exit
 	  n = n - 1
@@ -520,7 +541,7 @@ c---------------------------------------------------------------
 	    write(6,*) 'killing particle ',id,iel,n,ttime
 	    iel = -iel
 	  else if( iel < 1 ) then
-	    !write(6,*) 'loosing particle ',id,iel,n,ttime
+	    write(6,*) 'loosing particle ',id,iel,n,ttime
 	  else
 	    write(6,*) 'unknown error ',id,iel,n,ttime
 	  end if

@@ -12,6 +12,7 @@ c 28.02.2012	ggu&deb	completely restructured
 c 16.03.2012	ggu	use idtwrt=-1 for no renewal computation
 c 10.05.2014	ccf	parameters from the str file
 c 31.03.2015	ggu	compute res time for different areas
+c 20.05.2015	ggu	rinside computed only once, bug fix for conz==0
 c
 c******************************************************************
 c Parameters to be set in section $wrt of the parameter input file
@@ -38,6 +39,17 @@ c
 c ctop          maximum to be used for frequency curve
 c ccut          cut renewal time at this level (for res time computation)
 c------------------------------------------------------------
+c
+c computation through logarithm:
+c
+c c = c0*exp(-at)  with a = 1/tau and tau is the residence time
+c log(c/c0) = -at  and  log(c0/c) = at
+c define y=log(c0/c)=-log(c/c0) then y = at
+c minimum squares: f(a) = sum_i (y(i)-at(i))**2
+c df/da = 0 => sum_i (y(i)-at(i)) = 0 => a = sum_i(y(i))/sum_i(t(i)) 
+c and finally: tau = sum_i(t(i))/sum_i(y(i)) = sum_i(t(i))/sum_i(log(c0/c(i)))
+c
+c------------------------------------------------------------
 
         subroutine renewal_time
 
@@ -53,7 +65,7 @@ c------------------------------------------------------------
 
 	include 'levels.h'
 	include 'conz.h'
-	include 'aux_array.h'
+	!include 'aux_array.h'
 	include 'depth.h'
 
 	integer ndim
@@ -83,6 +95,9 @@ c------------------------------------------------------------
 	double precision cvacu(nlvdim,nkndim)   !conz integrated
 	double precision volacu(nlvdim,nkndim)  !volume integrated
 	save cvacu,volacu
+
+	real rinside(nkndim)
+	save rinside
 
 	integer ifemop
 
@@ -177,6 +192,8 @@ c------------------------------------------------------------
 	  ccut = dgetpar('ccut')
 	  it0 = it
 
+	  call wrt_flag_inside(rinside,iaout)
+
 	  iu = ifemop('.jas','formatted','new')
 	  iuf = ifemop('.frq','formatted','new')
 	  iua = ifemop('.jaa','formatted','new')
@@ -230,7 +247,7 @@ c------------------------------------------------------------
 c flag nodes that are inside lagoon (v1v(k)=1)
 c------------------------------------------------------------
 
-	call wrt_flag_inside(v1v,iaout)
+	!call wrt_flag_inside(v1v,iaout)	!done during initialization
 
 c------------------------------------------------------------
 c elaborate results
@@ -238,16 +255,16 @@ c------------------------------------------------------------
 
 	conz = 0.
 	if( belab ) then
-	  call wrt_massvolconz(cnv,v1v,vol,mass,volume)
+	  call wrt_massvolconz(cnv,rinside,vol,mass,volume)
 	  call wrt_mass_area(iadim,cnv,massa)
 	  call wrt_write_area(iua,it,iadim,massa,massa0)
 	  conz = mass / volume
 
-	  if( bstir ) call wrt_bstir(conz,cnv,v1v)	!stirred tank
-          if( bnoret ) call wrt_bnoret(cnv,v1v)		!no return flow
+	  if( bstir ) call wrt_bstir(conz,cnv,rinside)	!stirred tank
+          if( bnoret ) call wrt_bnoret(cnv,rinside)	!no return flow
 
 	  tacu = tacu + (it-it0)
-	  call acu_acum(blog,it,c0,cnv,vol,cvacu,volacu)
+	  call acu_acum(blog,it,c0,cnv,vol,rinside,cvacu,volacu)
 
 	  call wrt_restime_summary(iu,it,it0,mass,mass0,rcorrect)
 	end if
@@ -273,7 +290,7 @@ c------------------------------------------------------------
 	    call acu_comp(ia_out,blog,badj,it,c0,ccut,rcorrect
      +				,tacu,cvacu
      +				,cnv,cvres3)
-	    call acu_freq(iuf,it,ctop,cvres3,volacu)
+	    call acu_freq(iuf,it,ctop,rinside,cvres3,volacu)
 	    nrepl = nrepl + 1
 
 	    write(6,*) '-------------------------------------------'
@@ -285,17 +302,17 @@ c------------------------------------------------------------
 	  tacu = 0.
 	  call acu_reset(cvacu)
 	  call acu_reset(volacu)
-	  call wrt_breset(c0,cnv,v1v)
+	  call wrt_breset(c0,cnv,rinside)
 	  if( bdebug ) then
 	    write(6,*) 'WRT debug:'
 	    nin = 0
 	    do k=1,nkn
-	      if( v1v(k) .ne. 0. ) nin = nin + 1
+	      if( rinside(k) .ne. 0. ) nin = nin + 1
 	    end do
 	    write(6,*) 'resetting: ',it,c0,nin
 	  end if
 
-	  call wrt_massvolconz(cnv,v1v,vol,mass,volume)
+	  call wrt_massvolconz(cnv,rinside,vol,mass,volume)
 	  mass0 = mass
 
 	  call wrt_mass_area(iadim,cnv,massa)
@@ -516,10 +533,10 @@ c computes mass and volume on internal nodes
 
 	include 'param.h'
 
-	real cnv(nlvdim,1)
+	real cnv(nlvdim,1)		!concentration
 	real rinside(1)			!flag if node is inside domain
-	real vol(nlvdim,1)
-	double precision mass,volume
+	real vol(nlvdim,1)		!volume on node (return)
+	double precision mass,volume	!total mass/volume (return)
 
 	include 'nbasin.h'
 	include 'levels.h'
@@ -604,7 +621,7 @@ c resets acumulated value
 
 c***************************************************************
 
-	subroutine acu_acum(blog,it,c0,cnv,vol,cvacu,volacu)
+	subroutine acu_acum(blog,it,c0,cnv,vol,rinside,cvacu,volacu)
 
 	implicit none
 
@@ -615,34 +632,48 @@ c***************************************************************
 	real c0					!value used for initialization
 	real cnv(nlvdim,nkndim)
 	real vol(nlvdim,nkndim)
+	real rinside(nkndim)
 	double precision cvacu(nlvdim,nkndim)
 	double precision volacu(nlvdim,nkndim)
 
 	include 'nbasin.h'
 	include 'levels.h'
 
+	logical binside
 	integer k,l,lmax
-	real rl,conz,dt
+	real dt
+	double precision conz,volume
+	double precision rl,ddt,cc0
 
 	call get_timestep(dt)
 
+	ddt = dt
+	cc0 = c0
+
         do k=1,nkn
+	  binside = rinside(k) > 0.
           lmax = ilhkv(k)
           do l=1,lmax
             conz = cnv(l,k)
-	    if ( conz .gt. c0 ) conz = c0
+	    if( .not. binside ) conz = 0.
+	    volume = vol(l,k)
+	    if ( conz .gt. cc0 ) conz = cc0
 	    if ( conz .lt. 0. ) conz = 0.
 	    if( blog ) then
 	      if( conz .gt. 0 ) then
-	        rl = - log(conz/c0)
+	        rl = - log(conz/cc0)
                 cvacu(l,k) = cvacu(l,k) + rl
 	      end if
 	    else
-              cvacu(l,k) = cvacu(l,k) + conz*dt
+              cvacu(l,k) = cvacu(l,k) + conz*ddt
 	    end if
-            volacu(l,k) = volacu(l,k) + vol(l,k)*dt
+            volacu(l,k) = volacu(l,k) + volume*ddt
           end do
         end do
+
+	!l = 4
+	!k = 106
+	!write(166,*) it,cnv(l,k),vol(l,k)
 
 	!l = 1
 	!k = 100
@@ -677,8 +708,8 @@ c compute renewal time and write to file
 	include 'levels.h'
 
 	integer k,lmax,l,ivar,ierr
-	real conz,conze,rconv,corr
-	real secs_in_day
+	double precision conz,conze,rconv,corr,cc0
+	double precision secs_in_day,ttacu
 
 c---------------------------------------------------------------
 c set parameters
@@ -686,8 +717,9 @@ c---------------------------------------------------------------
 
 	secs_in_day = 86400.
 
-	tacu = tacu / secs_in_day
 	rconv = 1. / secs_in_day
+	ttacu = tacu
+	cc0 = c0
 
 c---------------------------------------------------------------
 c compute renewal times -> put in cvres3
@@ -697,13 +729,15 @@ c---------------------------------------------------------------
           lmax = ilhkv(k)
           do l=1,lmax
             conz = cvacu(l,k)
-	    if( blog ) then
-	      conz = tacu / conz
+	    if( conz .le. 0. ) then
+	      !nothing - leave WRT zero
+	    else if( blog ) then
+	      conz = ttacu / conz
 	    else
-              conz = rconv * conz / c0		!convert to days
+              conz = conz / cc0			!remnant
 	      if( badj ) then
 		if( rcorrect .le. 0. ) then
-	          conze = cnv(l,k) / c0
+	          conze = cnv(l,k) / cc0
 	          if( conze .ge. 1 ) conze = 0.
 	          if( conze .le. 0 ) conze = 0.
 		  corr = 1. /  ( 1. - conze )
@@ -713,6 +747,7 @@ c---------------------------------------------------------------
                 conz = corr * conz 		!adjusted res time
 	      end if
 	    end if
+	    conz = rconv * conz
 	    if ( ccut .gt. 0. .and. conz .gt. ccut ) conz = ccut
             cvres3(l,k) = conz
           end do
@@ -817,7 +852,7 @@ c**********************************************************************
 c**********************************************************************
 c**********************************************************************
 
-	subroutine acu_freq(iu,it,ctop,cvres3,volacu)
+	subroutine acu_freq(iu,it,ctop,rinside,cvres3,volacu)
 
 c write histogram
 
@@ -828,6 +863,7 @@ c write histogram
 	integer iu
 	integer it
 	real ctop			!cut at this value of renewal time
+	real rinside(nkndim)		!point is intern
 	real cvres3(nlvdim,nkndim)
 	double precision volacu(nlvdim,nkndim)
 
@@ -873,6 +909,7 @@ c---------------------------------------------------------------
 	tot = 0.
 	vtot = 0.
         do k=1,nkn
+	  if( rinside(k) .le. 0. ) cycle
           lmax = ilhkv(k)
           do l=1,lmax
 	    conz = cvres3(l,k)
@@ -895,6 +932,7 @@ c---------------------------------------------------------------
 	end do
 
         do k=1,nkn
+	  if( rinside(k) .le. 0. ) cycle
           lmax = ilhkv(k)
           do l=1,lmax
 	    conz = cvres3(l,k)

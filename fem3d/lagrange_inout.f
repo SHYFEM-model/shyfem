@@ -11,10 +11,12 @@ c 23.01.2012    ggu	new call to insert_particle, new id_body
 c 01.10.2012    ggu	output concentrations only for one station
 c 28.03.2014    ggu	bug fix for insert with ie=0, area in concentrations
 c 23.04.2014    ggu	new 3d insertion, new version of lgr file, new copy
+c 06.05.2015    ccf	write relative total depth and type to output
+c 07.05.2015    ccf	assign settling velocity to particles
 c
 c*******************************************************************
 
-	subroutine insert_particle(ie,lb,rtime,x,y,z)
+	subroutine insert_particle(ie,ity,lb,rtime,x,y,z)
 
 c inserts particle at position x,y
 c
@@ -30,10 +32,15 @@ c z = 0.5 (corresponding to larva in water)
 	include 'femtime.h'
 
 	integer ie	!element of particle - if unknown use 0
+	integer ity	!particle type
 	integer lb	!layer [1-lmax]
 	real rtime	!fraction of time step to be inserted (0 for all) [0-1]
 	real x,y	!coordinates of particle to be inserted
 	real z		!vertical (relative) coordinate [0-1]
+
+	integer pt	!particle type
+	real pc		!custom property
+	double precision ps		!settling velocity of particle [m/s]
 
 c rtime is the relative time position when the particle is inserted
 c 0 inserts at the beginning of the time step - advection for full time step
@@ -47,7 +54,7 @@ c 1 inserts at end of time step - no advection for this time step needed
 
 	if( nbdy .gt. nbdydim ) goto 99
 
-        tin(nbdy) = t_act - dt_act*(1.-rtime)
+        lgr_ar(nbdy)%tin = t_act - dt_act*(1.-rtime)
         !tin(nbdy) = it - real(idt)*(1.-rtime)
         !tin(nbdy) = it				!old
 
@@ -60,30 +67,37 @@ c 1 inserts at end of time step - no advection for this time step needed
 
 	!call lagr_connect_get_station(ie,ip,z)	!connectivity (z is color)
 
-        est(nbdy)=ie
-        xst(nbdy)=x
-        yst(nbdy)=y
-	zst(nbdy) = z
-
-        ie_body(nbdy)=ie
-        l_body(nbdy)=lb
-        x_body(nbdy)=x
-        y_body(nbdy)=y
-	z_body(nbdy) = z
+        lgr_ar(nbdy)%est = ie
+        lgr_ar(nbdy)%xst = x
+        lgr_ar(nbdy)%yst = y
+        lgr_ar(nbdy)%zst = z
+        lgr_ar(nbdy)%ie  = ie
+        lgr_ar(nbdy)%l   = lb
+        lgr_ar(nbdy)%x   = x
+        lgr_ar(nbdy)%y   = y
+        lgr_ar(nbdy)%z   = z
 
 	xi = 1./3.
 	if( ie > 0 ) then
 	  xx = x
 	  yy = y
 	  call xy2xi(ie,xx,yy,xi)
-	  xi_body(:,nbdy) = xi
+	  lgr_ar(nbdy)%xi(:) = xi
 	end if
 
-	lgr_var(nbdy) = 0
-	id_body(nbdy) = idbdy
+	lgr_ar(nbdy)%id = idbdy
 
 	lgr_bitmap_in(nbdy) = 0
 	lgr_bitmap_out(nbdy) = 0
+
+	pt = ity
+	call lgr_set_properties(bsedim,blarvae,boilsim,pt,ps,pc)
+
+	lgr_ar(nbdy)%ty = pt
+	lgr_ar(nbdy)%sv = ps
+	lgr_ar(nbdy)%c  = pc
+
+! ..............
 
 	return
    99	continue
@@ -95,11 +109,12 @@ c 1 inserts at end of time step - no advection for this time step needed
 
 c*******************************************************************
 
-	subroutine insert_particle_3d(ie,rtime,x,y)
+	subroutine insert_particle_3d(ie,ity,rtime,x,y)
 
 	implicit none
 
 	integer ie	!element of particle - if unknown use 0
+	integer ity	!type of particle to be inserted
 	real rtime	!fraction of time step to be inserted (0 for all) [0-1]
 	real x,y	!coordinates of particle to be inserted
 
@@ -120,8 +135,8 @@ c itype < 0	realase n particles randomly
 	real z		!vertical (relative) coordinate [0-1]
 	real hl(nlv)
 
-	bdebug = .false.
 	bdebug = .true.
+	bdebug = .false.
 
 	itype = ipvert
 	b2d = nlv <= 1
@@ -133,7 +148,7 @@ c itype < 0	realase n particles randomly
 	if( blgrsurf .or. b2d .or. itype == 0 ) then
 	  lb = 1
 	  z = 0.5
-	  call insert_particle(ie,lb,rtime,x,y,z)
+	  call insert_particle(ie,ity,lb,rtime,x,y,z)
 	  return
 	end if
 
@@ -161,7 +176,7 @@ c itype < 0	realase n particles randomly
 	    hact = r*h
 	  end if
 	  call find_vertical_position(lmax,hl,hact,lb,z)
-	  call insert_particle(ie,lb,rtime,x,y,z)
+	  call insert_particle(ie,ity,lb,rtime,x,y,z)
 	  if( bdebug ) write(6,*) '   ',i,hact,lb,z
 	end do
 	
@@ -173,11 +188,12 @@ c itype < 0	realase n particles randomly
 
 c*******************************************************************
 
-	subroutine insert_particle_surface(ie,rtime,x,y)
+	subroutine insert_particle_surface(ie,ity,rtime,x,y)
 
 	implicit none
 
 	integer ie	!element of particle - if unknown use 0
+	integer ity	!type of particle to be inserted
 	real rtime	!fraction of time step to be inserted (0 for all) [0-1]
 	real x,y	!coordinates of particle to be inserted
 
@@ -187,7 +203,7 @@ c*******************************************************************
 	lb = 1
 	z = 0.5
 
-	call insert_particle(ie,lb,rtime,x,y,z)
+	call insert_particle(ie,ity,lb,rtime,x,y,z)
 
 	end
 
@@ -242,26 +258,29 @@ c copies particle from ifrom to ito
 
 	if( ifrom .eq. ito ) return
 
-        tin(ito) = tin(ifrom)
+        lgr_ar(ito) = lgr_ar(ifrom)
 
-        est(ito) = est(ifrom)
-        xst(ito) = xst(ifrom)
-        yst(ito) = yst(ifrom)
-        zst(ito) = zst(ifrom)
+	return
 
-        ie_body(ito) = ie_body(ifrom)
-        l_body(ito)  = l_body(ifrom)
-        x_body(ito)  = x_body(ifrom)
-        y_body(ito)  = y_body(ifrom)
-        z_body(ito)  = z_body(ifrom)
+        lgr_ar(ito)%est = lgr_ar(ifrom)%est
+        lgr_ar(ito)%xst = lgr_ar(ifrom)%xst
+        lgr_ar(ito)%yst = lgr_ar(ifrom)%yst
+        lgr_ar(ito)%zst = lgr_ar(ifrom)%zst
 
-        xi_body(:,ito)  = xi_body(:,ifrom)
+        lgr_ar(ito)%ie  = lgr_ar(ifrom)%ie
+        lgr_ar(ito)%l   = lgr_ar(ifrom)%l 
+        lgr_ar(ito)%x   = lgr_ar(ifrom)%x 
+        lgr_ar(ito)%y   = lgr_ar(ifrom)%y 
+        lgr_ar(ito)%z   = lgr_ar(ifrom)%z 
 
-	tin(ito) = tin(ifrom)
-	lgr_var(ito) = lgr_var(ifrom)
-	lgr_Ww(ito) = lgr_Ww(ifrom)
-	id_body(ito) = id_body(ifrom)
+	lgr_ar(ito)%tin = lgr_ar(ifrom)%tin
+	lgr_ar(ito)%ty  = lgr_ar(ifrom)%ty
+	lgr_ar(ito)%sv  = lgr_ar(ifrom)%sv
+	lgr_ar(ito)%c   = lgr_ar(ifrom)%c
+	lgr_ar(ito)%id  = lgr_ar(ifrom)%id
 	
+        lgr_ar(ito)%xi(:)  = lgr_ar(ifrom)%xi(:)
+
 	lgr_bitmap_in(ito) = lgr_bitmap_in(ifrom)
 	lgr_bitmap_out(ito) = lgr_bitmap_out(ifrom)
 
@@ -281,7 +300,7 @@ c deletes particle ip
 	integer ip
 
 	!if( ie_body(ip) .gt. 0 ) ie_body(ip) = -ie_body(ip)
-	if( ie_body(ip) .gt. 0 ) ie_body(ip) = 0
+	if( lgr_ar(ip)%ie .gt. 0 ) lgr_ar(ip)%ie = 0
 
 	end
 
@@ -305,6 +324,34 @@ c returns total number of particles
 c*******************************************************************
 c*******************************************************************
 c*******************************************************************
+! set properties of particles
+!   - settling velocity [m/s]
+!   - particle type 
+!   - curstom property
+
+        subroutine lgr_set_properties(bsedim,blarvae,boilsim,pt,ps,pc)
+
+        use lgr_sedim_module, only : lgr_set_sedim
+
+        implicit none
+
+	logical, intent(in)           :: bsedim	 !true for sediment lagrangian module
+	logical, intent(in)           :: blarvae !true for larvae module
+	logical, intent(in)           :: boilsim !true for oil module
+        integer, intent(inout)        :: pt      !particle type
+        double precision, intent(out) :: ps      !settling velocity [m/s]
+        real, intent(out)             :: pc      !custom property
+
+	ps = 0.
+	pc = 0.
+	
+	if ( bsedim ) call lgr_set_sedim(pt,ps,pc)
+	!if ( blarvae ) call lgr_set_larvae(pt,ps,pc) 	!TODO ccf
+	!if ( boilsim ) call lgr_set_boilsim(pt,ps,pc) 	!TODO ccf
+
+        end subroutine lgr_set_properties
+
+c*******************************************************************
 
 	subroutine lgr_output(iu,it)
 
@@ -318,14 +365,17 @@ c once it has been written to output with negative ie, it is set to 0
         include 'param.h'
         include 'nlevel.h'
         include 'lagrange.h'
+	include 'depth.h'
+	include 'levels.h'
 
 	integer iu,it
 
 	integer nvers,mtype
 	parameter ( nvers = 5 , mtype = 367265 )
 
-	integer nn,nout,ie,i,id,lb
-	real x,y,z
+	integer nn,nout,ie,i,id,lb,l,ty,est
+	real x,y,z,c,xst,yst,zst,tin
+	real hl,ht,hr
 	real getpar
 
 	integer icall
@@ -351,7 +401,7 @@ c----------------------------------------------------------------
 	nn = 0
 	nout = 0
 	do i=1,nbdy
-	  ie = ie_body(i)
+	  ie = lgr_ar(i)%ie
 	  if( ie .ne. 0 ) nn = nn + 1
 	  if( ie .lt. 0 ) nout = nout + 1
 	end do
@@ -363,26 +413,47 @@ c----------------------------------------------------------------
 	write(iu) it,nbdy,nn,nout
 
 	do i=1,nbdy
-          x = x_body(i)
-          y = y_body(i)
-          z = z_body(i)
-	  ie = ie_body(i)
-	  lb = l_body(i)
-	  id = id_body(i)
+          x   = lgr_ar(i)%x
+          y   = lgr_ar(i)%y
+          z   = lgr_ar(i)%z
+	  ie  = lgr_ar(i)%ie
+	  lb  = lgr_ar(i)%l
+	  id  = lgr_ar(i)%id
+	  ty  = lgr_ar(i)%ty
+	  c   = lgr_ar(i)%c
+          est = lgr_ar(i)%est
+          xst = lgr_ar(i)%xst
+          yst = lgr_ar(i)%yst
+          zst = lgr_ar(i)%zst
+	  tin = lgr_ar(i)%tin
+
+	  hl = 0.
+	  ht = 0.
+	  hr = 0.
+	  do l = 1,lb-1
+	    hl = hl + hdenv(l,ie)
+	    ht = ht + hdenv(l,ie)
+	  end do
+	  hl = hl + z*hdenv(lb,ie)
+	  do l = lb,ilhv(ie)
+	    ht = ht + hdenv(l,ie)
+	  end do
+	  hr = hl / ht
+
 	  if( ie .ne. 0 ) then
 	    if( nvers .eq. 3 ) then
-	      write(iu) id,x,y,z,ie,xst(i),yst(i),zst(i),est(i)
+	      write(iu) id,x,y,z,ie,xst,yst,zst,est
 	    else if( nvers .eq. 4 ) then
-	      write(iu) id,x,y,z,ie,xst(i),yst(i),zst(i),est(i),tin(i)
+	      write(iu) id,x,y,z,ie,xst,yst,zst,est,tin
 	    else if( nvers .eq. 5 ) then
-	      write(iu) id,x,y,z,ie,lb
-     +			,xst(i),yst(i),zst(i),est(i),tin(i)
+	      write(iu) id,x,y,z,ie,lb,hr,ty,c
+     +			,xst,yst,zst,est,tin
 	    else
 	      write(6,*) 'nvers = ',nvers
 	      stop 'error stop lgr_output: nvers unknown'
 	    end if
 	  end if
-	  if( ie .lt. 0 ) ie_body(i) = 0		!flag as out
+	  if( ie .lt. 0 ) lgr_ar(i)%ie = 0		!flag as out
 	end do
 
 c----------------------------------------------------------------
@@ -444,8 +515,8 @@ c count particles in elements
 c---------------------------------------------------------
 
 	do i=1,nbdy
-	  ie = ie_body(i)
-          z = z_body(i)
+	  ie = lgr_ar(i)%ie
+          z  = lgr_ar(i)%z
 	  call lagr_connect_get_station(ie,ip,z)	! connectivity
 	  if( ie .ne. 0 ) then
 	    if( ip*ip_station .eq. 0 .or. ip .eq. ip_station ) then
@@ -511,7 +582,7 @@ c writes element numbers of particles to terminal
 	write(6,*) text
 	write(6,*) 'particles: ',nbdy
 	do i=1,nbdy,10
-	  write(6,*) (ie_body(ii),ii=i,min(i+9,nbdy))
+	  write(6,*) (lgr_ar(ii)%ie,ii=i,min(i+9,nbdy))
 	end do
 
 	end
@@ -533,8 +604,8 @@ c deletes particles not in system and compresses array
 	integer nbefore
 
 	logical is_free,is_particle
-	is_free(i) = ie_body(i) .le. 0
-	is_particle(i) = ie_body(i) .gt. 0
+	is_free(i) = lgr_ar(i)%ie .le. 0
+	is_particle(i) = lgr_ar(i)%ie .gt. 0
 
 	ifree = 0
 	icopy = nbdy+1
@@ -606,7 +677,7 @@ c tests compress routine
 
 	do i=1,nadd
 	  ie = ie + 1
-	  call insert_particle_surface(ie,0.,1.,1.)
+	  call insert_particle_surface(ie,0,0.,1.,1.)
 	end do
 
 	call ntot_particles(ntot)

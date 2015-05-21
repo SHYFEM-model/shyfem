@@ -330,6 +330,7 @@ c	integer nrdsec,nrdveci,nrdvecr
 
 	bdebug = .true.
 	bdebug = .false.
+
         nlv = 0         !is initialized really only in adjust_levels
 
 	nsc = 0
@@ -391,8 +392,9 @@ c read loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		else if(section.eq.'bfmsc')then        ! BFM ECO TOOL
                         call nrdins(section)
 		else if(section.eq.'levels') then
-			nlv = nrdvecr(hlv,nlvdi)
-			if( nlv .lt. 0 ) goto 77
+			call read_hlv
+			!nlv = nrdvecr(hlv,nlvdi)
+			!if( nlv .lt. 0 ) goto 77
                 else if(section.eq.'lagrg')then
                         call nrdins(section)
                 else if(section.eq.'sedtr')then         !sediment

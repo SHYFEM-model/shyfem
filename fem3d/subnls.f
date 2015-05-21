@@ -26,6 +26,7 @@ c 20.01.2014	ggu	new routine nrdtable()
 c 08.01.2015	ggu	new version for nrdvec*()
 c 05.02.2015	ggu	program completely rewritten (modules introduced)
 c 08.02.2015	ggu	accept also '!' and '#' for end comment on line
+c 12.05.2015	ggu	new char table
 c
 c notes :
 c
@@ -800,7 +801,78 @@ c copies values read from internal storage to vector rvect
 
 c******************************************************************
 
+	subroutine nls_copy_char_vect(n,cvect)
+
+c copies values read from internal storage to vector cvect
+
+	integer n
+	character*(*) cvect(n)
+
+	integer i
+
+	do i=1,n
+	  cvect(i) = nls_string(i)
+	end do
+
+	end subroutine nls_copy_char_vect
+
+c******************************************************************
+
 	function nls_read_table()
+
+c reads table in section
+c
+c every line is read as character
+c
+c	string1
+c	string2
+c	etc..
+c
+c returns total number of lines read
+c returns -1 in case of dimension error
+c returns -2 in case of read error
+
+	integer nls_read_table	!total number of lines read
+
+	integer n
+	character*80 text
+	character*10 sect
+
+	nls_read_table = -1
+	n = 0
+
+	do while( nls_next_data_line(text,.true.) )
+	  if( nls_is_section(sect) ) then
+	    if( sect /= 'end' ) goto 97
+	    exit
+	  end if
+
+	  n=n+1
+	  if(n.gt.nlsdim) call nls_alloc
+	  nls_string(n)=text
+	end do
+
+	nls_read_table = n
+
+c--------------------------------------------------------
+c end of routine
+c--------------------------------------------------------
+
+	return
+   95	continue
+	write(6,*) 'in nls_read_table reading section: ',sname
+	write(6,*) 'error reading table in following line'
+	write(6,*) line
+	return
+   97	continue
+	write(6,*) 'no end of section found: ',sname
+	write(6,*) line
+	return
+	end function nls_read_table
+
+c******************************************************************
+
+	function nls_read_ictable()
 
 c reads table in section
 c
@@ -822,7 +894,7 @@ c returns -1 in case of dimension error
 c returns -2 in case of read error
 
 
-	integer nls_read_table		!total number of elements read
+	integer nls_read_ictable	!total number of elements read
 
 	integer n
 	integer itable
@@ -854,7 +926,7 @@ c--------------------------------------------------------
 c now read the table
 c--------------------------------------------------------
 
-	nls_read_table = -1
+	nls_read_ictable = -1
 	n = 0
 
 	do
@@ -864,7 +936,7 @@ c--------------------------------------------------------
 	    call nls_read_text(sname,text)
 	    if( nls_skip_whitespace_on_line(.true.) ) goto 95
 	  else
-	    write(text,'(a,i3)') 'Extra node ',n	!default text
+	    text = ' '			!default text (empty)
 	  end if
 	  n=n+1
 	  if(n.gt.nlsdim) call nls_alloc
@@ -878,7 +950,7 @@ c--------------------------------------------------------
 	  end if
 	end do
 
-	nls_read_table = n
+	nls_read_ictable = n
 
 c--------------------------------------------------------
 c end of routine
@@ -886,7 +958,7 @@ c--------------------------------------------------------
 
 	return
    95	continue
-	write(6,*) 'in nls_read_table reading section: ',sname
+	write(6,*) 'in nls_read_ictable reading section: ',sname
 	write(6,*) 'error reading table in following line'
 	write(6,*) line
 	return
@@ -894,26 +966,22 @@ c--------------------------------------------------------
 	write(6,*) 'no end of section found: ',sname
 	write(6,*) line
 	return
-	end function nls_read_table
+	end function nls_read_ictable
 
 c******************************************************************
 
-	subroutine nls_copy_table(n,ivect,cvect)
+	subroutine nls_copy_ictable(n,ivect,cvect)
 
 c copies values read from internal storage to vector rvect
 
 	integer n
 	integer ivect(n)
-	character*80 cvect(n)
+	character*(*) cvect(n)
 
-	integer i
+	call nls_copy_int_vect(n,ivect)
+	call nls_copy_char_vect(n,cvect)
 
-	do i=1,n
-	  ivect(i) = nint(nls_val(i))
-	  cvect(i) = nls_string(i)
-	end do
-
-	end subroutine nls_copy_table
+	end subroutine nls_copy_ictable
 
 !==================================================================
         end module nls
@@ -978,7 +1046,7 @@ c reads real vector in section (compatibility)
 
 c******************************************************************
 
-	function nrdtable(ivect,cvect,ndim)
+	function nrdictable(ivect,cvect,ndim)
 
 c reads table in section
 
@@ -986,17 +1054,17 @@ c reads table in section
 
 	implicit none
 
-	integer nrdtable		!total number of elements read
+	integer nrdictable		!total number of elements read
 	integer ndim			!dimension of vector
 	integer ivect(ndim)		!vector
 	character*80 cvect(ndim)	!vector
 
 	integer n
 
-	n = nls_read_table()
+	n = nls_read_ictable()
 	if( n > ndim) n = -n			!flag dimension error
-	if( n > 0 ) call nls_copy_table(n,ivect,cvect)
-	nrdtable = n
+	if( n > 0 ) call nls_copy_ictable(n,ivect,cvect)
+	nrdictable = n
 
 	end
 

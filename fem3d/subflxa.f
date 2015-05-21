@@ -45,6 +45,7 @@ c 07.10.2011    ggu     adjusted for 3d flux routines
 c 19.10.2011    ggu     added T/S variables, created fluxes_*() routines
 c 19.10.2011    ggu     added conz variables, created fluxes_template()
 c 10.05.2013    ggu     introduced subflxa.h, common routines to subflxu.f
+c 20.05.2015    ggu     modules introduced
 c
 c notes :
 c
@@ -59,6 +60,98 @@ c Initialization can be done anytime.
 c
 c******************************************************************
 c******************************************************************
+c******************************************************************
+
+!==================================================================
+        module flux
+!==================================================================
+
+        implicit none
+
+        integer, save :: nsect = -1
+        integer, save :: kfluxm = 0
+        integer, save, allocatable :: kflux(:)
+        integer, save, allocatable :: iflux(:,:)
+
+        integer, save, allocatable :: nlayers(:)
+        real, save, allocatable :: fluxes(:,:,:)
+
+        real, save, allocatable :: masst(:,:,:)
+        real, save, allocatable :: saltt(:,:,:)
+        real, save, allocatable :: tempt(:,:,:)
+        real, save, allocatable :: conzt(:,:,:)
+
+        integer, save, allocatable :: nrcc(:)
+        real, save, allocatable :: cflux(:,:,:,:)
+
+!==================================================================
+        contains
+!==================================================================
+
+!==================================================================
+        end module flux
+!==================================================================
+
+        subroutine flux_read_section(n)
+
+        use flux
+        use nls
+
+        integer n
+
+        n = nls_read_vector()
+        kfluxm = n
+
+        if( n > 0 ) then
+          allocate(kflux(n))
+          allocate(iflux(3,n))
+          call nls_copy_int_vect(n,kflux)
+        end if
+
+        end subroutine flux_read_section
+
+c******************************************************************
+
+        subroutine flux_alloc_arrays(nl,ns)
+
+	use flux
+
+	implicit none
+
+	integer nl	!layers
+	integer ns	!sections
+
+	if( ns <= 0 ) return
+
+        allocate(nlayers(ns))
+        allocate(fluxes(0:nl,3,ns))
+
+        allocate(masst(0:nl,3,ns))
+        allocate(saltt(0:nl,3,ns))
+        allocate(tempt(0:nl,3,ns))
+        allocate(conzt(0:nl,3,ns))
+
+	end
+
+c******************************************************************
+
+        subroutine flux_alloc_conz_arrays(nl,ns,nc)
+
+	use flux
+
+	implicit none
+
+	integer nl	!layers
+	integer ns	!sections
+	integer nc	!number of concentrations
+
+	if( ns <= 0 .or. nc <= 0 ) return
+
+        allocate(nrcc(nc))
+        allocate(cflux(0:nl,3,ns,nc))
+
+	end
+
 c******************************************************************
 c******************************************************************
 c******************************************************************
@@ -98,7 +191,6 @@ c          nothing
 
 c******************************************************************
 
-
         subroutine inflxa
 
 c nsect		total number of sections
@@ -107,37 +199,22 @@ c kflux()	node numbers defining sections
 
         implicit none
 
-	include 'param.h'
-	include 'subflxa.h'
-
-        nsect = -1	!must still be initialized
-        kfluxm = 0
-
         end
 
 c******************************************************************
 
         subroutine rdflxa
 
+	use flux
+
         implicit none
 
-	include 'param.h'
-	include 'subflxa.h'
+	integer n
 
-	!integer nfxdim
-        integer nrdveci
+        call flux_read_section(n)
 
-	!nfxdim = nfxflxdim
-
-        kfluxm = nrdveci(kflux,nfxdim)
-
-        if( kfluxm .lt. 0 ) then
-          if( kfluxm .eq. -1 ) then
-            write(6,*) 'dimension error nfxdim in section $flux : '
-     +                          ,nfxdim
-          else
-            write(6,*) 'read error in section $flux'
-          end if
+        if( n .lt. 0 ) then
+          write(6,*) 'read error in section $flux'
           stop 'error stop rdflxa'
         end if
 
@@ -147,10 +224,9 @@ c******************************************************************
 
         subroutine ckflxa
 
-        implicit none
+	use flux
 
-	include 'param.h'
-	include 'subflxa.h'
+        implicit none
 
 	integer k,ii
         logical berror
@@ -180,10 +256,9 @@ c******************************************************************
 
 	subroutine prflxa
 
-	implicit none
+	use flux
 
-	include 'param.h'
-	include 'subflxa.h'
+	implicit none
 
 	integer nnode,ifirst,ilast
 	integer ntotal,ns
@@ -216,10 +291,9 @@ c******************************************************************
 
 	subroutine tsflxa
 
-	implicit none
+	use flux
 
-	include 'param.h'
-	include 'subflxa.h'
+	implicit none
 
 	integer i,ii
 
@@ -242,10 +316,11 @@ c******************************************************************
 
 c administers writing of flux data
 
+	use flux
+
 	implicit none
 
 	include 'param.h'
-	include 'subflxa.h'
 
 	integer it
 
@@ -261,17 +336,6 @@ c administers writing of flux data
 	real getpar
 	double precision dgetpar
 	logical has_output,next_output,is_over_output
-
-	real fluxes(0:nlvdim,3,nscflxdim)
-
-	integer nlayers(nscflxdim)		!number of layers in section
-	real masst(0:nlvdim,3,nscflxdim)	!accumulator mass
-	real saltt(0:nlvdim,3,nscflxdim)	!accumulator salt
-	real tempt(0:nlvdim,3,nscflxdim)	!accumulator temp
-	real conzt(0:nlvdim,3,nscflxdim)	!accumulator conz
-
-	save nlayers
-        save masst,saltt,tempt,conzt
 
         integer nrm,nrs,nrt,nrc
 	save nrm,nrs,nrt,nrc
@@ -305,9 +369,11 @@ c-----------------------------------------------------------------
                 if( nsect .le. 0 ) nbflx = -1
                 if( nbflx .eq. -1 ) return
 
-                if( nsect .gt. nscflxdim ) then
-                  stop 'error stop wrflxa: dimension nscflxdim'
-                end if
+        	call flux_alloc_arrays(nlvdim,nsect)
+
+                !if( nsect .gt. nscflxdim ) then
+                !  stop 'error stop wrflxa: dimension nscflxdim'
+                !end if
 
 		ibarcl = nint(getpar('ibarcl'))
 		iconz = nint(getpar('iconz'))
@@ -432,10 +498,9 @@ c******************************************************************
 
 c initializes flux routines finally (wrapper for flx_init)
 
-	implicit none
+	use flux
 
-	include 'param.h'
-	include 'subflxa.h'
+	implicit none
 
 	call flx_init(kfluxm,kflux,nsect,iflux)
 
@@ -464,27 +529,19 @@ c iconz		how many parameters actually needed
 c csc		new extension for file
 c ivar_base	base of variable numbering
 
-	implicit none
+	use flux
 
-	include 'param.h'
-	include 'subflxa.h'
+	implicit none
 
 	integer it
 
+	include 'param.h'
 	include 'conz.h'
 
 	integer itend
 	integer j,i,k,l,lmax,nlmax,ivar,nvers,ivar_base
 	integer iconz
 	real az,azpar,rr
-
-	real fluxes(0:nlvdim,3,nscflxdim)
-
-	integer nlayers(nscflxdim)		!number of layers in section
-	integer nrc(ncsdim)			!counter
-	real cflux(0:nlvdim,3,nscflxdim,ncsdim)	!accumulator
-
-	save nlayers,nrc,cflux
 
         integer idtflx,itflx,itmflx,nbflx
         save idtflx,itflx,itmflx,nbflx
@@ -519,9 +576,12 @@ c-----------------------------------------------------------------
                 if( iconz .le. 0 ) nbflx = -1
                 if( nbflx .eq. -1 ) return
 
-                if( nsect .gt. nscflxdim ) then
-                  stop 'error stop fluxes_template: dimension nscflxdim'
-                end if
+		!be sure that other arrays are already allocated!!!!
+        	call flux_alloc_conz_arrays(nlvdim,nsect,iconz)
+
+                !if( nsect .gt. nscflxdim ) then
+                !  stop 'error stop fluxes_template: dimension nscflxdim'
+                !end if
 
                 itflx = itmflx + idtflx
 		itmflx = itmflx + 1	!start from next time step
@@ -530,7 +590,7 @@ c-----------------------------------------------------------------
 
 		do k=1,iconz
 		  call fluxes_init(nlvdim,nsect,nlayers
-     +				,nrc(k),cflux(0,1,1,k))
+     +				,nrcc(k),cflux(0,1,1,k))
 		end do
 
                 nbflx=ifemop('.csc','unform','new')
@@ -566,7 +626,7 @@ c	-------------------------------------------------------
 	  ivar = ivar_base + k
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,conzv(1,1,k))
 	  call fluxes_accum(nlvdim,nsect,nlayers
-     +			,nrc(k),cflux(0,1,1,k),fluxes)
+     +			,nrcc(k),cflux(0,1,1,k),fluxes)
 	end do
 
 c	-------------------------------------------------------
@@ -583,7 +643,7 @@ c	-------------------------------------------------------
 	do k=1,iconz
 	  ivar = ivar_base + k
 	  call fluxes_aver(nlvdim,nsect,nlayers
-     +			,nrc(k),cflux(0,1,1,k),fluxes)
+     +			,nrcc(k),cflux(0,1,1,k),fluxes)
 	  call wrflx(nbflx,it,nlvdim,nsect,ivar,nlayers,fluxes)
 	end do
 
@@ -593,7 +653,7 @@ c	-------------------------------------------------------
 
 	do k=1,iconz
 	  call fluxes_init(nlvdim,nsect,nlayers
-     +			,nrc(k),cflux(0,1,1,k))
+     +			,nrcc(k),cflux(0,1,1,k))
 	end do
 
 c-----------------------------------------------------------------

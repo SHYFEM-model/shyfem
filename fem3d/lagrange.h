@@ -62,47 +62,33 @@ c--------------------------------------------------
 c arrays
 c--------------------------------------------------
 
-        integer est(nbdydim)			!initial element number
-        common /est/est
+        type  :: entry
+	  sequence
+	  double precision :: xi(3)		!internal coordinate
+          double precision :: sv  		!sinking velocity
+          real    :: xst			!initial x-coordinate
+          real    :: yst			!initial y-coordinate
+          real    :: zst			!initial z-coordinate
+          real    :: x  			!x-coordinate
+          real    :: y  			!y-coordinate
+          real    :: z  			!z-coordinate
+          real    :: c   			!custom property for plot
+	  real    :: tin			!time of release
+          integer :: est			!initial element number
+          integer :: id				!id of particle
+          integer :: ty				!type of particle
+          integer :: ie 			!element number
+          integer :: l				!layer number
+          integer :: dummy			!dummy argument for sequence
+        end type entry
 
-        real xst(nbdydim)			!initial x-coordinate
-        common /xst/xst
+        type(entry) :: lgr_ar(nbdydim)
 
-        real yst(nbdydim)			!initial y-coordinate
-        common /yst/yst
+	common /lgr_cc/lgr_ar
+	save /lgr_cc/
 
-	real zst(nbdydim)			!initial z-coordinate
-	common /zst/zst
-
-        integer ie_body(nbdydim)		!element number
-        common /ie_body/ie_body
-
-        integer l_body(nbdydim)			!layer
-        common /l_body/l_body
-
-        real x_body(nbdydim)			!x-coordinate
-        common /x_body/x_body
-
-        real y_body(nbdydim)			!y-coordinate
-        common /y_body/y_body
-
-	real z_body(nbdydim)			!z-coordinate
-	common /z_body/z_body
-
-	double precision xi_body(3,nbdydim)	!internal coordinate
-	common /xi_body/xi_body
-
-	real tin(nbdydim)			!time of release
-	common /tin/tin
-
- 	real lgr_var(nbdydim)			!custom variable
- 	common /lgr_var/lgr_var
-
- 	real lgr_Ww(nbdydim)			!custom variable
- 	common /lgr_Ww/lgr_Ww
-
-        integer id_body(nbdydim)		!id of particle
-        common /id_body/id_body
+	logical bsedim, blarvae, boilsim
+	common /lgrlogic/ bsedim, blarvae, boilsim
 
 c--------------------------------------------------
 c backtracking
@@ -164,4 +150,5 @@ c--------------------------------------------------
 	common /lgr_bitmap/lgr_bitmap_in,lgr_bitmap_out
 
 c--------------------------------------------------
+
 

@@ -166,26 +166,20 @@ c 29.10.2013    ggu	nudging implemented
 c 29.11.2013    ggu	zeta correction
 c 25.03.2014    ggu     new offline
 c 10.04.2014    ggu     cleaning up of a lot of stuff
+c 06.05.2015    ggu     cleaning up of sp256f
+c 20.05.2015    ggu&erp sp256v parallelized
 c
 c******************************************************************
 
 	subroutine sp259f
-c
-c administrates one time step for system to solve
-c
-c delta with itbas : 1 overhead,initialize  2 boundary line  3 assemble
-c			4 preconditioning  5 choleski  6 solve
-c			7 uv bound. cond.  8 dry areas
+
+c administrates one hydrodynamic time step for system to solve
 c
 c written on 27.07.88 by ggu   (from sp159f)
-c
+
 	implicit none
-c
-c new :::::: nlv
-c
-c parameter
+
 	include 'param.h'
-c common
 	include 'nlevel.h'
 	include 'femtime.h'
 	include 'nbasin.h'
@@ -195,27 +189,11 @@ c common
 	include 'hydro.h'
 	include 'hydro_vel.h'
 	include 'hydro_baro.h'
+	include 'hydro_print.h'
 
 	include 'depth.h'
-
- 
 	include 'area.h'
 
-cccccccccccccccccccccccccccc
-	include 'hydro_print.h'
-cccccccccccccccccccccccccccc
-ccccccccccccc
-ccccccccccccc
-c	real hm3v(3,1),crad(1)
-c	common /hm3v/hm3v, /crad/crad
-c	real hhh
-c	integer ii
-c	integer ielist(5)
-c	real xlist(5)
-c	data ielist /77,163,698,746,1346/
-ccccccccccccc
-ccccccccccccc
-c local
 	logical boff
 	logical bzcorr
 	integer i,l,k,ie,ier,ii
@@ -224,116 +202,106 @@ c local
 	integer nmat
 	integer kspecial
 	integer iwhat
-c	integer ninf
 	real res
-	real epseps
-c	real voltot,deptot
-c	real kin,pot
-cccccccccccccccccccccccccccc
-c	real v1,v2(25)
-c	integer i1,i2,i3
-cccccccccccccccccccccccccccc
-c function
-c	integer iround,ideffi
+
 	integer iround
 	real getpar,resi
 	integer inohyd
 	logical bnohyd
-c save
-	save epseps
-c data
-        data epseps / 1.e-6 /
 
-	kspecial = 3878
+        real epseps
+        parameter (epseps = 1.e-6)
+
 	kspecial = 0
 
+c-----------------------------------------------------------------
 c set parameter for hydro or non hydro 
+c-----------------------------------------------------------------
 
         inohyd = nint(getpar('inohyd'))
 	bnohyd = inohyd .eq. 1
 
-c constants...%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp259f'
 
+c-----------------------------------------------------------------
 c offline
+c-----------------------------------------------------------------
 
 	call is_offline(1,boff)
 	if( boff ) return
 
+c-----------------------------------------------------------------
 c dry areas
+c-----------------------------------------------------------------
 
 	iw=0
 	call sp136(iw)
 
-	!call set_dry
+c-----------------------------------------------------------------
+c copy variables to old time level
+c-----------------------------------------------------------------
 
 	call copy_uvz		!copies uvz to old time level
 	call nonhydro_copy	!copies non hydrostatic pressure terms
 	call copy_depth
 
-	!call make_old_depth	!probably not needed -> FIXME
-	!call check_diff_depth
+	call diff_h_set		!horizontal viscosity
 
-	!call copydepth(nlvdim,hdknv,hdkov,hdenv,hdeov)
-	!call setdepth(nlvdim,hdkov,hdeov,zeov,areakv)
-
-c austauch contribution %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-	call diff_h_set
-
-c solution %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-	call sp256v	!FIXME -> this should prob. go into loop
-
-c---------------------------------------------------------- z solution
+c-----------------------------------------------------------------
+c solve for hydrodynamic variables
+c-----------------------------------------------------------------
 
 	iw = 1
-	do while( iw .gt. 0 )	!loop over changing domain
+	do while( iw .gt. 0 )		!loop over changing domain
 
-	  call setnod
+	  call sp256v			!compute intermediate transports
+
+	  call setnod			!set info on dry nodes
 	  call set_link_info
 	  call adjust_mass_flux		!cope with dry nodes
 
-	  call system_init
+	  call system_init		!initializes matrix
 
-	  call sp256z(rqv)
+	  call sp256z(rqv)		!assemble system matrix for z
 
-	  call system_solve_z
+	  call system_solve_z		!solves system matrix for z
 
-	  call system_adjust_z
+	  call system_adjust_z		!copies solution to new z
 
-	  call setweg(1,iw)	!controll intertidal flats
+	  call setweg(1,iw)		!controll intertidal flats
 
 	end do	!do while( iw .gt. 0 )
 
-c---------------------------------------------------------- end of z solution
+	call sp256n			!final transports (also barotropic)
 
-	!call check_node(kspecial)
+c-----------------------------------------------------------------
+c end of soulution for hydrodynamic variables
+c-----------------------------------------------------------------
 
-	call sp256n	!new velocities (also barotropic)
+        call setzev			!copy znv to zenv
+        call setuvd			!set velocities in dry areas
+	call baro2l 			!sets transports in dry areas
 
-c end of solution %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-        call setzev     !znv -> zenv
-        call setuvd	!set velocities in dry areas
-
-	call baro2l 
-	!call setdepth(nlvdim,hdknv,hdenv,zenv,areakv) !only now zenv ready
 	call make_new_depth
-	call check_volume			!checks for negative volume 
+	call check_volume		!checks for negative volume 
         call arper
 
 	res=resi(zov,znv,nkn)
 
-c w-values %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+c-----------------------------------------------------------------
+c vertical velocities and non-hydrostatic step
+c-----------------------------------------------------------------
 
 	if (bnohyd) then
 	  call sp256wnh
 	  call nonhydro_adjust
 	end if
 
-	call sp256w(v1v,saux1,saux2)	!$$VERVEL
+	call sp256w(v1v,saux1,saux2)	!compute vertical velocities
+
+c-----------------------------------------------------------------
+c correction for zeta
+c-----------------------------------------------------------------
 
 	bzcorr = .true.
 	bzcorr = .false.
@@ -344,16 +312,23 @@ c w-values %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	  call sp256w(v1v,saux1,saux2)	!$$VERVEL
 	end if
 
+c-----------------------------------------------------------------
+c some checks
+c-----------------------------------------------------------------
+
 	call vol_mass(1)		!computes and writes total volume
 	call mass_conserve(saux1,saux2)	!check mass balance
 
-c compute velocities from transports %%%%%%%%%%%%%%%%%%%%%%%%%
+c-----------------------------------------------------------------
+c compute velocities on elements and nodes
+c-----------------------------------------------------------------
 
 	call ttov
-
-c compute nodal values for velocities %%%%%%%%%%%%%%%%%%%%%%%%
-
 	call make_prvel
+
+c-----------------------------------------------------------------
+c end of routine
+c-----------------------------------------------------------------
 
 	return
    99	continue
@@ -618,6 +593,7 @@ c******************************************************************
 	integer count0,dcount,chunk,nt
 	integer ibaroc
 	integer ilin,itlin
+	integer num_threads,myid,el_do,rest_do,init_do,end_do
 	logical bcolin,baroc
 	real az,am,af,at,av,azpar,ampar
 	real rlin,radv
@@ -627,6 +603,7 @@ c******************************************************************
 	double precision tempo
 
 	double precision openmp_get_wtime
+	!integer openmp_get_num_threads,openmp_get_thread_num
 	real getpar
 
 c-------------------------------------------------------------
@@ -682,24 +659,32 @@ c-------------------------------------------------------------
 
 	tempo = openmp_get_wtime()
 
-ccc !$OMP DO SCHEDULE(DYNAMIC,chunk)      
-ccc !$OMP DO SCHEDULE(STATIC,chunk)      
+!$OMP PARALLEL PRIVATE(num_threads,myid,el_do,rest_do,init_do,end_do,ie)
 
-!$OMP PARALLEL PRIVATE(ie)
-!$OMP DO 
-	do ie=1,nel
+        call openmp_get_num_threads(num_threads)
+	if( num_threads == 0 ) num_threads = 1
+        call openmp_get_thread_num(myid)
+        el_do = nel/num_threads
+        rest_do = MOD(nel,num_threads)
+        init_do = el_do*myid+1
+        end_do = init_do+el_do-1
+        if( myid .eq. num_threads-1 ) end_do = end_do+rest_do
 
-	  !call openmp_get_thread_num(ith)
-	  !write(6,*) ie,ith
+        !print *,'num_threads = ',num_threads
+        !print *,"th = ",myid," el_do = ", el_do," rest_do = ", rest_do
+        !print *,"init_do = ",init_do," end_do = ",end_do," nel  =", nel
+
+	do ie=init_do,end_do
+
 	  call sp256v_intern(ie,bcolin,baroc,az,am,af,at,radv
      +			,vismol,rrho0,dt)
 
 	end do
-!$OMP END DO NOWAIT     
+
 !$OMP END PARALLEL      
 
 	tempo = openmp_get_wtime() - tempo
-	!write(6,*) 'tempo = ',tempo
+	!write(66,*) it,tempo
 
 c-------------------------------------------------------------
 c end of loop over elements
@@ -715,6 +700,8 @@ c-------------------------------------------------------------
 	end
 
 c******************************************************************
+
+!DEC$ ATTRIBUTES INLINE :: sp256v_intern
 
 	subroutine sp256v_intern(ie,bcolin,baroc,az,am,af,at,radv
      +			,vismol,rrho0,dt)
@@ -798,7 +785,6 @@ c	real beta
         real hhi,hhim,hhip,uui,uuim,uuip,vvi,vvim,vvip
 c	real bb,bbt,cc,cct,aa,aat,ppx,ppy,aux,aux1,aux2
 	real bb,bbt,cc,cct,aa,aat,aux
-        real epseps
 	real aust
 	real fact                       !$$BCHAO - not used
 	real uuadv,uvadv,vuadv,vvadv
@@ -839,10 +825,9 @@ c	real ppaux,ppmin,ppmax
 	real auxaux(-2:+2)
 c function
 	integer locssp,iround
-c save
-	save epseps
-c data
-	data epseps / 1.e-6 /
+
+        real epseps
+        parameter (epseps = 1.e-6)
 
 	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp256v'
 
@@ -1737,7 +1722,7 @@ c common
 c local
         integer ii,ie,k,ii1,ii2,kk1,kk2,ier
 	integer idry
-        real epseps,z,aj,hh999
+        real z,aj,hh999
         real b(3),c(3)
 c functions
         logical iskbnd,iskout,iseout
@@ -1781,7 +1766,6 @@ c
 
 	!stop 'error stop dryz: drying routine not yet working '	!ASYM
 
-        !epseps=1.e-6
         !call mchb(v1,rmat,nkn,1,mbw,-1,epseps,ier)
         !if(ier.ne.0) goto 99
 

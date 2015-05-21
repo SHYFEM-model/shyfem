@@ -6,6 +6,8 @@
         common /ilinkv/ ilinkv
         integer lenkv(nlkdim)
         common /lenkv/ lenkv
+        integer lenkiiv(nlkdim)
+        common /lenkiiv/ lenkiiv
         integer linkv(nlkdim)
         common /linkv/ linkv
 
@@ -22,6 +24,6 @@
 	integer lnk_elems(maxlnk)
 	common /lnk_elems/ lnk_elems
 
-	save /ilinkv/,/lenkv/,/linkv/
+	save /ilinkv/,/lenkv/,/linkv/,/lenkiiv/
 	save /lnk_nodes/,/lnk_elems/
 

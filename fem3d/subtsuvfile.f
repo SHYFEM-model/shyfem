@@ -31,7 +31,7 @@ c*******************************************************************
 	subroutine ts_next_record(it,iunit,nkn,nlv,value)
 	include 'param.h'
 	integer iunit(3)
-	real value(nlvdim,1)
+	real value(nlvdim,nkn)
 	  call ts_next_record_1(it,iunit,nkn,nlv,value)
 	end
 

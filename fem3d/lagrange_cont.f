@@ -75,7 +75,7 @@ c continuous release - number of particles depends on volume flux
 	      if( np .gt. 0 ) then
 		rp = rp - np
 		iptot = iptot + np
-	        call create_parts(np,k1,k2)
+	        call create_parts(ibc,np,k1,k2)
 	      end if
 	    end do
 
@@ -137,7 +137,7 @@ c continuous release - number of particles is independent of boundary length
 	      if( np .gt. 0 ) then
 		rp = rp - np
 		iptot = iptot + np
-	        call create_parts(np,k1,k2)
+	        call create_parts(ibc,np,k1,k2)
 	      end if
 	    end do
 
@@ -214,7 +214,7 @@ c replaces the routines above
 	      if( np .gt. 0 ) then
 		rp = rp - np
 		iptot = iptot + np
-	        call create_parts(np,k1,k2)
+	        call create_parts(ibc,np,k1,k2)
 	      end if
 	    end do
 
@@ -230,7 +230,7 @@ c replaces the routines above
 	        q = 1
 	      end if
 	      rp = rp + q*pps*dt 
-	      call release_on_node(rp,k,np)
+	      call release_on_node(ibc,rp,k,np)
 	      rp = rp - np
 	      iptot = iptot + np
 	    end do
@@ -248,10 +248,11 @@ c replaces the routines above
 
 c*******************************************************************
 
-	subroutine create_parts(np,k1,k2)
+	subroutine create_parts(ity,np,k1,k2)
 
 	implicit none
 
+	integer ity
 	integer np,k1,k2
 
 	include 'param.h'
@@ -286,7 +287,7 @@ c*******************************************************************
 	  rt = ggrand(77)
 	  x = x1 + rl*dx
 	  y = y1 + rl*dy
-	  call insert_particle_3d(ie1,rt,x,y)
+	  call insert_particle_3d(ie1,ity,rt,x,y)
 	  !write(6,*) i,rl,x,y,ie1
 	end do
 
@@ -326,12 +327,13 @@ c*******************************************************************
 c*******************************************************************
 c*******************************************************************
 
-	subroutine release_on_node(ppts,k,n)
+	subroutine release_on_node(ity,ppts,k,n)
 
 c release on node
 
 	implicit none
 
+	integer ity		!type of particle
 	real ppts		!particles to be released per time step
 	integer k		!node where particle is released
 	integer n
@@ -346,18 +348,19 @@ c release on node
 	x = xgv(k)
 	y = ygv(k)
 
-	call release_on_point(ppts,ie,x,y,n)
+	call release_on_point(ity,ppts,ie,x,y,n)
 
 	end
 
 c*******************************************************************
 
-	subroutine release_on_point(ppts,ie,x,y,n)
+	subroutine release_on_point(ity,ppts,ie,x,y,n)
 
 c release from one point
 
 	implicit none
 
+	integer ity		!type of particle
 	real ppts		!particles to be released per time step
 	integer ie		!element where particle is released
 	real x,y		!coordinates where to release
@@ -371,7 +374,7 @@ c release from one point
 
 	do i=1,n
 	  rt = ggrand(77)			!vary time
-	  call insert_particle_3d(ie,rt,x,y)
+	  call insert_particle_3d(ie,ity,rt,x,y)
 	  !write(55,*) 'gguuyy particle: ',ie,rt,x,y
 	end do
 

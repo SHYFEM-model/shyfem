@@ -154,7 +154,7 @@ c find elements that have to be deleted
 	  write(6,*) (nen3v(ii,ie1),ii=1,3)
 	  write(6,*) ie2,k,ngav(ip-1),ngav(ip)
 	  write(6,*) (nen3v(ii,ie2),ii=1,3)
-	  call plosel2(ie1,ie2,nkn,nel,ngrdim,nen3v,ngrade,ngri)
+	  call plosel2(ie1,ie2)
 	end if
 
 c delete elements

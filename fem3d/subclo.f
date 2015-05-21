@@ -232,7 +232,7 @@
 	character*(*) name
 	character*(*) text
 
-	write(6,*) 'for option ',name,' raised error: ',text
+	write(6,*) 'option ',name,' error: ',text
 
 	stop 'error stop clo_error'
 	end subroutine clo_error

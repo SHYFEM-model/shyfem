@@ -4,6 +4,9 @@ c
 c revision log :
 c
 c 23.04.2015    ggu     internal coodinates finished
+c 06.05.2015    ccf     included settling velocity for lagrangian
+c 08.05.2015    ggu&ccf bug fix in track_xi_next_element
+c 14.05.2015    ccf     bug fix in track_xi
 c
 c******************************************************
 
@@ -231,7 +234,7 @@ c z = 1		bottom of layer
 c
 c************************************************************
 
-	subroutine track_xi(id,iel,lb,xi,z,time)
+	subroutine track_xi(id,iel,lb,sv,xi,z,time)
 
 	implicit none
 
@@ -241,6 +244,7 @@ c************************************************************
 	integer id
 	integer iel
 	integer lb
+	double precision sv		!sinking velocity
 	double precision xi(3)
 	double precision z
 	real time
@@ -257,6 +261,10 @@ c************************************************************
 	double precision xis(3)
 	double precision xie(3)
 
+	logical track_xi_on_material_boundary
+
+	blgrdebug = id == 172
+	blgrdebug = id == 1
 	blgrdebug = id == 0
 	!blgrdebug = .true.
 	bdebug = .false.
@@ -267,31 +275,52 @@ c************************************************************
 	lborig = lb
 
 	!write(6,*) 'tracking particle: ',id,time
-	call track_xi_check('start track_xi',xi)
+	call track_xi_check('start track_xi',id,xi)
 
 	!-----------------------------------------------
 	! get advection information
 	!-----------------------------------------------
 
 	call track_xi_get_vertical(id,iel,lb,lmax,hd,w)
-	call track_xi_get_flux(iel,lb,iflux,alpha,vel)
-
-	if( vel < 0. ) then
-	  write(6,*) 'vel is 0'
-	  write(6,*) vel,iel,lb,lmax
-	  write(6,*) (flux3d(lb,ii,iel),ii=1,3)
-	end if
+	w = w - sv
 
 	!-----------------------------------------------
 	! handle particles on surface or on bottom
 	!-----------------------------------------------
 
-	bsurf = lb .eq. 1 .and. z .eq. 0.	!particle on surface
-	bbott = lb .eq. lmax .and. z .eq. 1.	!particle on bottom
+	bsurf = lb .eq. 1 .and. z .eq. 0.d0	!particle on surface
+	bbott = lb .eq. lmax .and. z .eq. 1.d0	!particle on bottom
 
-	if( bsurf .and. w > 0. ) w = 0.
-	if( bbott .and. w < 0. ) w = 0.
-	if( blgrsurf ) w = 0.			!advection only in surface layer
+	if( bsedim .and. bbott ) then		!stop bottom particles if bsedim
+	  lb = -1
+	  time = 0.
+	  return
+	end if
+
+	if( bsurf .and. w > 0.d0 ) w = 0.d0
+	if( bbott .and. w < 0.d0 ) w = 0.d0
+	if( blgrsurf ) w = 0.d0			!advection only in surface layer
+
+	if ( w > 0.d0 .and. z == 0.d0 ) then
+	  lb = lb - 1
+	  z  = 1.d0
+	end if
+	if ( w < 0.d0 .and. z == 1.d0 ) then
+	  lb = lb + 1
+	  z  = 0.d0
+	end if
+
+	!-----------------------------------------------
+	! gets flux and vel information for element and layer
+	!-----------------------------------------------
+
+	call track_xi_get_flux(iel,lb,iflux,alpha,vel)
+
+	if( vel < 0.d0 ) then
+	  write(6,*) 'vel is 0'
+	  write(6,*) vel,iel,lb,lmax
+	  write(6,*) (flux3d(lb,ii,iel),ii=1,3)
+	end if
 
 	!-----------------------------------------------
 	! determine time to leave element (th)
@@ -300,7 +329,7 @@ c************************************************************
 	th = 2.*time
 
 	if( bdebug ) then
-	  write(6,*) 'debugging for particle id ',id
+	  write(6,*) 'track_xi start debugging: ',id
 	  write(6,*) iel,lb,iflux
 	  write(6,*) alpha,vel,z
 	  write(6,*) xi
@@ -312,12 +341,12 @@ c************************************************************
 	    call xit_start_end(iflux,alpha,xi,xis,xie,s)
 	  else if( iflux < 0 ) then	!into flux node
 	    call xit_start_end(-iflux,alpha,xi,xie,xis,s)
-	    s = 1. - s
+	    s = 1.d0 - s
 	  else
 	    goto 99
 	  end if
 	  call xi_dist(iel,xis,xie,dist)
-	  dh = dist*(1.-s)		!distance to travel in element
+	  dh = dist*(1.d0 - s)		!distance to travel in element
 	  th = dh / vel			!time to arrive at edge of element
 	else
 	  s = 1.
@@ -361,6 +390,19 @@ c************************************************************
 	end if
 
 	!-----------------------------------------------
+	! if landing on material boundary - artificially slow down particle
+	!-----------------------------------------------
+
+	if( track_xi_on_material_boundary(iel,xie) ) then
+	  th = 2.*min(tv,tt)	!longer than other times
+	  t = min(th,tv,tt)
+	  if( bdebug ) then
+	    write(6,*) 'material boundary: ',id,iel,lb
+	    write(6,*) th,tv,tt
+	  end if
+	end if
+
+	!-----------------------------------------------
 	! handle horizontal advection
 	!-----------------------------------------------
 
@@ -369,15 +411,15 @@ c************************************************************
 	  s = s + ds
 	  if( s > 1. ) goto 97
 	  xi = (1.-s)*xis + s*xie
-	  call track_xi_check('after advection track_xi 1',xi)
+	  call track_xi_check('after advection track_xi 1',id,xi)
 	else				!body reaches border of element
 	  xi = xie
-	  call track_xi_check('before advection track_xi 2',xi)
+	  call track_xi_check('before advection track_xi 2',id,xi)
 	  call track_xi_next_element(iel,xi)
-	  call track_xi_check('after advection track_xi 2',xi)
+	  call track_xi_check('after advection track_xi 2',id,xi)
 	end if
 
-	call track_xi_check('after advection track_xi',xi)
+	call track_xi_check('after advection track_xi',id,xi)
 
 	if( bdebug ) then
 	  write(6,*) 'final...'
@@ -423,6 +465,7 @@ c************************************************************
 
 	if( bdebug ) then
 	  write(6,*) 'final time: ',time
+	  write(6,*) 'track_xi end debugging'
 	end if
 
 	if( z < 0. .or. z > 1. ) goto 98
@@ -498,7 +541,7 @@ c copies internal coordinates to new element - avoid falling on vertex
 	  ia2 = mod(ia1,3) + 1
 	  ia3 = mod(ia2,3) + 1
 	else if( in == 2 ) then	!particle on vertex - must move
-	  write(6,*) 'in==2 ',xi
+	  if( bdebug ) write(6,*) 'in==2 ',xi
 	  r = 0.
 	  do while( r == 0. )
 	    call random_number(r)
@@ -509,8 +552,8 @@ c copies internal coordinates to new element - avoid falling on vertex
 	    ia1 = mod(it+1,3) + 1
 	    ia2 = mod(ia1,3) + 1
 	    ia3 = mod(ia2,3) + 1
-	    xi(ia2) = 1. - r
-	    xi(ia3) = r
+	    xi(ia2) = 1. + r
+	    xi(ia3) = -r
 	  else
 	    ia1 = mod(it,3) + 1
 	    ia2 = mod(ia1,3) + 1
@@ -585,6 +628,33 @@ c copies internal coordinates to new element - avoid falling on vertex
 
 c************************************************************
 
+	function track_xi_on_material_boundary(ie,xi)
+
+c checks if particle is on material boundary
+
+	implicit none
+
+	logical track_xi_on_material_boundary
+	integer ie
+	double precision xi(3)
+
+	include 'param.h'
+	include 'geom.h'
+
+	integer ii
+
+	track_xi_on_material_boundary = .false.
+
+	do ii=1,3
+	  if( xi(ii) == 0. .and. ieltv(ii,ie) == 0 ) then
+	    track_xi_on_material_boundary = .true.
+	  end if
+	end do
+
+	end
+
+c************************************************************
+
 	subroutine track_xi_adjust_layer(iel,lb,z)
 
 c adjusts layer when passing from one element to the next
@@ -628,20 +698,30 @@ c gets flux and vel information for element and layer
 	include 'param.h'
 	include 'lagrange.h'
 	include 'hydro_vel.h'
+	include 'geom.h'
 
 	logical bdebug
-	integer ii,in,it,inext
+	integer ii,in,io,nn,no,inext,imax
 	real az,azt,u,v
 	double precision flux(3)
-	double precision ff,fp,fm
+	double precision fp,fm,fmmax,fact
 
-	bdebug = blgrdebug
 	bdebug = .false.
+	bdebug = blgrdebug
 
 	az = azlgr
 	azt = 1. - az
 
 	flux = flux3d(lb,:,iel)		!fluxes over side into element
+
+	do ii=1,3
+	  if( ieltv(ii,iel) .eq. 0 ) then	!closed boundary - set to 0
+	    if( flux(ii) .ne. 0. ) then
+	      write(6,*) 'material boundary: ',iel,ii,flux(ii)
+	      flux(ii) = 0.
+	    end if
+	  end if
+	end do
 
 	u = azt*ulov(lb,iel) + az*ulnv(lb,iel)
 	v = azt*vlov(lb,iel) + az*vlnv(lb,iel)
@@ -654,36 +734,65 @@ c gets flux and vel information for element and layer
 	end if
 
 	in = 0
-	it = 0
-	ff = 0.
+	io = 0
+	nn = 0
+	no = 0
 	fp = 0.
 	fm = 0.
 	do ii=1,3
 	  if( flux(ii) > 0. ) then	!flux into element
 	    in = in + 1
-	    it = it + ii
+	    nn = nn + ii
 	    fp = fp + flux(ii)
 	  else
+	    io = io + 1
+	    no = no + ii
 	    fm = fm - flux(ii)
 	  end if
 	end do
 
-	if( in == 1 ) then
-	  iflux = -it
-	  inext = mod(it,3) + 1
+c fact is introduced to compense for flux if fp /= fm
+c always scale to outgoing flux fm
+
+	if( in == 1 .and. io > 0 ) then
+	  iflux = -nn			!into this node
+	  inext = mod(nn,3) + 1
+	  fact = fm/fp
 	  alpha = 1 + flux(inext)/fm
-	else if( in == 2 ) then
-	  iflux = 6 - it
+	else if( in == 2 .and. io > 0 ) then
+	  iflux = 6 - nn		!out from this node
 	  inext = mod(iflux,3) + 1
+	  fact = fm/fp
 	  alpha = 1 - flux(inext)/fp
-	else
+	else if( io == 0 ) then		!only ingoing - do not advect
 	  iflux = 0
 	  alpha = 0.
 	  vel = 0.
+	  fact = 0.
+	else if( in == 0 .and. io > 0 ) then	!only outgoing - special
+	  imax = 0
+	  fmmax = 0.
+	  do ii=1,3
+	    if( flux(ii) < fmmax ) then
+	      fmmax = flux(ii)
+	      imax = ii
+	    end if
+	  end do
+	  iflux = imax
+	  inext = mod(iflux,3) + 1
+	  alpha = 1 - flux(inext)/fm
+	  fact = 1.
+	else				!just to be sure...
+	  iflux = 0
+	  alpha = 0.
+	  vel = 0.
+	  fact = 0.
 	end if
 
+	vel = vel * fact
+
 	if( bdebug ) then
-	  write(6,*) in,it
+	  write(6,*) in,nn
 	  write(6,*) iflux,inext
 	  write(6,*) fp,fm,alpha
 	  write(6,*) 'track_xi_get_flux end'
@@ -691,8 +800,8 @@ c gets flux and vel information for element and layer
 
 	if( bback ) iflux = -iflux
 
-	alpha = min(alpha,1.)
-	alpha = max(alpha,0.)
+	alpha = dmin1(alpha,1.d0)
+	alpha = dmax1(alpha,0.d0)
 
 	end
 
@@ -743,11 +852,12 @@ c************************************************************
 
 c************************************************************
 
-	subroutine track_xi_check(text,xi)
+	subroutine track_xi_check(text,id,xi)
 
 	implicit none
 
 	character*(*) text
+	integer id
 	double precision xi(3)
 
 	logical berror
@@ -755,18 +865,19 @@ c************************************************************
 	double precision tot,eps
 
 	berror = .false.
-	eps = 1.e-5
+	eps = 1.d-5
 
-	tot = 0.
+	tot = 0.d0
 	do ii=1,3
 	  tot = tot + xi(ii)
-	  if( xi(ii) > 1. ) berror = .true.
-	  if( xi(ii) < 0. ) berror = .true.
+	  if( xi(ii) > 1.d0 ) berror = .true.
+	  if( xi(ii) < 0.d0 ) berror = .true.
 	end do
-	if( abs(tot-1.) > eps ) berror = .true.
+	if( abs(tot-1.d0) > eps ) berror = .true.
 
 	if( berror ) then
 	  write(6,*) text
+	  write(6,*) id
 	  write(6,*) xi
 	  stop 'error stop track_xi_check: wrong xi'
 	end if
@@ -784,9 +895,7 @@ c prints information on element
 	integer ie
 
 	include 'param.h'
-	include 'lagrange.h'
 	include 'basin.h'
-	include 'ev.h'
 	include 'geom.h'
 	include 'nlevel.h'
 	include 'hydro_vel.h'

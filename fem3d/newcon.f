@@ -171,6 +171,7 @@ c 15.05.2014    ggu     write min/max error only for levdbg >= 3
 c 10.07.2014    ggu     only new file format allowed
 c 20.10.2014    ggu     accept ids from calling routines
 c 22.10.2014    ccf     load in call to scal3sh
+c 20.05.2015    ggu     accumulate over nodes (for parallel version)
 c
 c*********************************************************************
 
@@ -202,6 +203,9 @@ c shell for scalar (for parallel version)
 	include 'const_aux.h'
 
         real r3v(nlvdim,nkndim)
+        real caux(0:nlvdim,nkndim)
+	real load(nlvdim,nkndim)	!load [kg/s]
+	real cobs(nlvdim,nkndim)	!load [kg/s]
 
 	double precision dtime
 	real robs,rload
@@ -210,7 +214,10 @@ c shell for scalar (for parallel version)
 
 	robs = 0.
 	rload = 0.
-	call const3d_setup
+	!call const3d_setup
+	caux = 1.
+	cobs = 1.
+	load = 1.
 
 c--------------------------------------------------------------
 c make identifier for variable
@@ -238,8 +245,8 @@ c--------------------------------------------------------------
 
         call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdim
-     +                          ,r3v,scal,robs
-     +				,rkpar,wsink,const3d,rload,scal
+     +                          ,r3v,cobs,robs
+     +				,rkpar,wsink,caux,rload,load
      +                          ,difhv,difv,difmol)
 
 c--------------------------------------------------------------
@@ -282,6 +289,8 @@ c shell for scalar with nudging (for parallel version)
 	include 'const_aux.h'
 
         real r3v(nlvdim,nkndim)
+        real caux(0:nlvdim,nkndim)
+	real load(nlvdim,nkndim)	!load [kg/s]
 
 	integer ierr,l,k,lmax
 	real eps
@@ -291,7 +300,9 @@ c shell for scalar with nudging (for parallel version)
 	character*10 whatvar,whataux
 
 	rload = 0.
-	call const3d_setup
+	!call const3d_setup
+	caux = 1.
+	load = 1.
 
 c--------------------------------------------------------------
 c make identifier for variable
@@ -320,7 +331,7 @@ c--------------------------------------------------------------
         call scal3sh(whatvar(1:iwhat)
      +				,scal,nlvdim
      +                          ,r3v,sobs,robs
-     +				,rkpar,wsink,const3d,rload,scal
+     +				,rkpar,wsink,caux,rload,load
      +                          ,difhv,difv,difmol)
 
 c--------------------------------------------------------------
@@ -475,7 +486,6 @@ c common
 	include 'femtime.h'
 	include 'mkonst.h'
 	include 'nlevel.h'
-
 	include 'hydro_print.h'
 
 c local
@@ -530,6 +540,7 @@ c-------------------------------------------------------------
 
 	call get_timestep(dt)
 
+	saux = 0.
 	call make_stability(dt,robs,wsink,wsinkv,rkpar,sindex,istot,saux)
 
         write(iuinfo,*) 'stability_',what,':',it,sindex,istot
@@ -717,9 +728,10 @@ c arguments
 c common
 	include 'femtime.h'
 	include 'ev.h'
-	include 'hydro_print.h'
+	!include 'hydro_print.h'
 	include 'levels.h'
 	include 'ts.h'
+	include 'geom.h'
 
 	include 'hydro.h'
 
@@ -737,7 +749,7 @@ c common
 
 c local
 	logical bdebug,bdebug1,debug,btvdv
-	integer k,ie,ii,l,iii,ll
+	integer k,ie,ii,l,iii,ll,ibase
 	integer lstart
 	integer ilevel
 	integer itot,isum	!$$flux
@@ -769,7 +781,7 @@ c local
 
 c	double precision explh(nlvdim,nlkdim)
 
-	double precision cdummy
+	double precision cexpl
 	double precision cbm,ccm
 	double precision fw(3),fd(3)
 	double precision fl(3),fnudge(3)
@@ -777,7 +789,13 @@ c	double precision explh(nlvdim,nlkdim)
         double precision wdiff(3),waux
 c local (new)
 	double precision clc(nlvdim,3), clm(nlvdim,3), clp(nlvdim,3)
-c	double precision clce(nlvdim,3), clme(nlvdim,3), clpe(nlvdim,3)
+	double precision cle(nlvdim,3)
+
+	double precision cclc(nlvdim,3,neldim)
+	double precision cclm(nlvdim,3,neldim)
+	double precision cclp(nlvdim,3,neldim)
+	double precision ccle(nlvdim,3,neldim)
+
 	double precision cl(0:nlvdim+1,3)
 	double precision wl(0:nlvdim+1,3)
 	double precision vflux(0:nlvdim+1,3)
@@ -905,6 +923,7 @@ c	after accumulation we copy them onto the global arrays
 
         do l=1,nlv
 	  do ii=1,3
+	    cle(l,ii) = 0.
 	    clc(l,ii) = 0.
 	    clm(l,ii) = 0.
 	    clp(l,ii) = 0.
@@ -914,17 +933,6 @@ c	after accumulation we copy them onto the global arrays
 c	----------------------------------------------------------------
 c	define vertical velocities
 c	----------------------------------------------------------------
-
-	do k=1,nkn
-	  do l=0,nlv
-!	    wprv(l,k) =  	(
-!     +				   az*wlnv(l,k) 
-!     +				+ azt*wlov(l,k) 
-!     +				)
-!	    wprv(l,k) = wlov(l,k)	!BUGFIX -> see definition in sp256w
-	    wprv(l,k) = wlnv(l,k)	!BUGFIX -> see definition in sp256w
-	  end do
-	end do
 
 c----------------------------------------------------------------
 c loop over elements
@@ -964,7 +972,7 @@ c	----------------------------------------------------------------
 	    cl(l,ii) = co(l,k)
 	    cob(l,ii) = cobs(l,k)	!observations
 	    rtau(l,ii) = rtauv(l,k)	!observations
-	    wl(l,ii) = wprv(l,k) - wsink * wsinkv(l,k)
+	    wl(l,ii) = wlnv(l,k) - wsink * wsinkv(l,k)
 	  end do
 	end do
 
@@ -1023,6 +1031,7 @@ c	  initialization to be sure we are in a clean state
 c	  ----------------------------------------------------------------
 
 	  fw(ii) = 0.
+	  cle(l,ii) = 0.
 	  clc(l,ii) = 0.
 	  clm(l,ii) = 0.
 	  clp(l,ii) = 0.
@@ -1062,9 +1071,6 @@ c	  time dependent layer thickness
      +			(cl(l-1,ii)-cl(l,ii))*hmotop
      +			  )
 
-c	  clce(l,ii) = clce(l,ii) - adt * ( hmtop + hmbot )
-c	  clme(l,ii) = clme(l,ii) + adt * ( hmtop )
-c	  clpe(l,ii) = clpe(l,ii) + adt * ( hmbot )
 	  clc(l,ii) = clc(l,ii) + ad * ( hmntop + hmnbot )
 	  clm(l,ii) = clm(l,ii) - ad * ( hmntop )
 	  clp(l,ii) = clp(l,ii) - ad * ( hmnbot )
@@ -1085,12 +1091,10 @@ c	  if we are in first layer, w(l-1,ii) is zero (see above)
 	  if( w .ge. 0. ) then
 	    fw(ii) = aat*w*cl(l,ii)
 	    flux_top = w*cl(l,ii)
-c	    clce(l,ii) = clce(l,ii) - aat*w
 	    clc(l,ii) = clc(l,ii) + aa*w
 	  else
 	    fw(ii) = aat*w*cl(l-1,ii)
 	    flux_top = w*cl(l-1,ii)
-c	    clme(l,ii) = clme(l,ii) - aat*w
 	    clm(l,ii) = clm(l,ii) + aa*w
 	  end if
 
@@ -1099,12 +1103,10 @@ c	    clme(l,ii) = clme(l,ii) - aat*w
 	  if( w .gt. 0. ) then
 	    fw(ii) = fw(ii) - aat*w*cl(l+1,ii)
 	    flux_bot = w*cl(l+1,ii)
-c	    clpe(l,ii) = clpe(l,ii) + aat*w
 	    clp(l,ii) = clp(l,ii) - aa*w
 	  else
 	    fw(ii) = fw(ii) - aat*w*cl(l,ii)
 	    flux_bot = w*cl(l,ii)
-c	    clce(l,ii) = clce(l,ii) + aat*w
 	    clc(l,ii) = clc(l,ii) - aa*w
 	  end if
 
@@ -1189,11 +1191,8 @@ c	sum explicit contributions
 c	----------------------------------------------------------------
 
 	do ii=1,3
-	  k=kn(ii)
-          !hmed = hold(l,ii)                  !ERROR - do not use this!!!
           hmed = haver(l)                    !new ggu   !HACK
-          !hmed = hdv(l)                      !new ggu   !HACK
-	  cdummy = aj4 * ( hold(l,ii)*cl(l,ii)
+	  cexpl = aj4 * ( hold(l,ii)*cl(l,ii)
      +				+ dt *  ( 
      +					    hold(l,ii)*fnudge(ii)
      +					  + 3.*fl(ii) 
@@ -1201,12 +1200,11 @@ c	----------------------------------------------------------------
      +					  - rk3*hmed*wdiff(ii)
      +					  - fd(ii)
      +					)
-     +			               )
-	  cn(l,k) = cn(l,k) + cdummy
+     +		         )
+	  cle(l,ii) = cle(l,ii) + cexpl
+	  !k=kn(ii)
+	  !cn(l,k) = cn(l,k) + cexpl
 	end do
-
-c     +					  - rk3*hmed*b(ii)*cbm
-c     +					  - rk3*hmed*c(ii)*ccm
 
 	end do		! loop over l
 
@@ -1230,13 +1228,29 @@ c clm -> top
 	  clp(ilevel,ii) = 0.
 	end do
 
-        do l=1,ilevel
-	  do ii=1,3
-	    k=kn(ii)
-	    clow(l,k)  = clow(l,k)  + aj4 * dt * clm(l,ii)
-	    chigh(l,k) = chigh(l,k) + aj4 * dt * clp(l,ii)
-	    cdiag(l,k) = cdiag(l,k) + aj4 * dt * clc(l,ii)
-	    cdiag(l,k) = cdiag(l,k) + aj4 * hnew(l,ii)
+        !do l=1,ilevel
+	!  do ii=1,3
+	!    k=kn(ii)
+	!    cn(l,k)    = cn(l,k)    +            cle(l,ii)
+	!    clow(l,k)  = clow(l,k)  + aj4 * dt * clm(l,ii)
+	!    chigh(l,k) = chigh(l,k) + aj4 * dt * clp(l,ii)
+	!    cdiag(l,k) = cdiag(l,k) + aj4 * dt * clc(l,ii)
+	!    cdiag(l,k) = cdiag(l,k) + aj4 * hnew(l,ii)
+	!  end do
+	!end do
+
+	do ii=1,3
+          do l=1,ilevel
+	    ccle(l,ii,ie) =            cle(l,ii)
+	    cclm(l,ii,ie) = aj4 * dt * clm(l,ii)
+	    cclp(l,ii,ie) = aj4 * dt * clp(l,ii)
+	    cclc(l,ii,ie) = aj4 * ( dt * clc(l,ii) + hnew(l,ii) )
+	  end do
+          do l=ilevel+1,nlv
+	    ccle(l,ii,ie) = 0.
+	    cclm(l,ii,ie) = 0.
+	    cclp(l,ii,ie) = 0.
+	    cclc(l,ii,ie) = 0.
 	  end do
 	end do
 
@@ -1250,6 +1264,41 @@ c in cdiag, chigh, clow is matrix (implicit part)
 c if explicit calculation, chigh=clow=0 and in cdiag is volume of node [m**3]
 c in cnv is mass of node [kg]
 c for explicit treatment, cnv/cdiag gives new concentration [kg/m**3]
+
+c----------------------------------------------------------------
+c accumulate contributions on each node
+c----------------------------------------------------------------
+
+! here we could make just one loop over nkn
+! this would include this loop, the boundary conditions
+! and then  the solution of the vertical system
+! in this case we would only need the following arrays:
+! cn(l),clow(l),chigh(l),cdiag(l) (one dimensional arrays over the vertical)
+
+	do k=1,nkn
+	  n = ilinkv(k+1)-ilinkv(k)
+	  ibase = ilinkv(k)
+	  if( lenkv(ibase+n) .le. 0 ) n = n - 1
+	  ilevel = ilhkv(k)
+	  do i=1,n
+	    ie = lenkv(ibase+i)
+	    !ii = lenkiiv(ibase+i)
+	    !the next 4 lines are a hack, they will disappear in the new dist
+	    ii = 0
+	    if( nen3v(1,ie) == k ) ii = 1
+	    if( nen3v(2,ie) == k ) ii = 2
+	    if( nen3v(3,ie) == k ) ii = 3
+	    if( ii == 0 .or. nen3v(ii,ie) /= k ) then
+	      stop 'error stop: cannot find ii...'
+	    end if
+	    do l=1,ilevel
+	      cn(l,k)    = cn(l,k)    + ccle(l,ii,ie)
+	      clow(l,k)  = clow(l,k)  + cclm(l,ii,ie)
+	      chigh(l,k) = chigh(l,k) + cclp(l,ii,ie)
+	      cdiag(l,k) = cdiag(l,k) + cclc(l,ii,ie)
+	    end do
+	  end do
+	end do
 
 c----------------------------------------------------------------
 c integrate boundary conditions
@@ -1308,12 +1357,10 @@ c----------------------------------------------------------------
 	  chigh(1,k)=chigh(1,k)*aux
 	  cn(1,k)=cn(1,k)*aux
 	  do l=2,ilevel
-c	    if(cdiag(l,k).eq.0) goto 7
 	    aux=1./(cdiag(l,k)-clow(l,k)*chigh(l-1,k))
 	    chigh(l,k)=chigh(l,k)*aux
 	    cn(l,k)=(cn(l,k)-clow(l,k)*cn(l-1,k))*aux
 	  end do
-c    7	  lstart=l-2
 	  lstart = ilevel-1
 	  do l=lstart,1,-1	!$$LEV0 bug 14.08.1998 -> ran to 0
 	    cn(l,k)=cn(l,k)-cn(l+1,k)*chigh(l,k)
@@ -1336,8 +1383,10 @@ c----------------------------------------------------------------
 
 c*****************************************************************
 
-        subroutine conzstab(cn1,co1
-     +			,ddt
+!        subroutine conzstab(cn1,co1
+!     +			,ddt
+        subroutine conzstab(
+     +			ddt
      +			,robs,wsink,wsinkv
      +                  ,rkpar,difhv,difv
      +			,difmol,azpar
@@ -1403,7 +1452,7 @@ c parameters
         include 'param.h'
 c arguments
 	integer nlvdi,nlv
-        real cn1(nlvdi,1),co1(nlvdi,1)		!DPGGU
+        !real cn1(nlvdi,1),co1(nlvdi,1)		!DPGGU
         real difv(0:nlvdi,1)
         real difhv(nlvdi,1)
 	real difmol
@@ -1417,7 +1466,7 @@ c common
 
 	include 'basin.h'
 	include 'ev.h'
-	include 'hydro_print.h'
+	!include 'hydro_print.h'
 	include 'hydro_vel.h'
 	include 'levels.h'
 
@@ -1477,7 +1526,7 @@ c------------------------------------------------------------
 c end of big arrays
 c------------------------------------------------------------
 
-	double precision cdummy
+	double precision cexpl
 	double precision fw(3),fd(3)
 	double precision fl(3)
 c local (new)
@@ -1494,9 +1543,9 @@ c
         integer kstab
 	real dtorig
 
-        integer iustab
-        save iustab
-        data iustab /0/
+        !integer iustab
+        !save iustab
+        !data iustab /0/
 c functions
 	logical is_zeta_bound
 	real getpar
@@ -1606,16 +1655,6 @@ c	-----------------------------------------------------------------
 c	vertical velocities
 c	-----------------------------------------------------------------
 
-	do k=1,nkn
-	  do l=0,nlv
-!	    wprv(l,k) =  	(                       !Malta
-!     +				   az*wlnv(l,k) 
-!     +				+ azt*wlov(l,k) 
-!     +				)
-	    wprv(l,k) = wlnv(l,k)	!BUGFIX -> see definition in sp256w
-	  end do
-	end do
-
 c-----------------------------------------------------------------
 c loop over elements
 c-----------------------------------------------------------------
@@ -1646,7 +1685,7 @@ c set up vectors for use in assembling contributions
 	    hold(l,ii) = rso * hn + rsot * ho
 	    hnew(l,ii) = rsn * hn + rsnt * ho
 	    !cl(l,ii) = co(l,k)
-	    wl(l,ii) = wprv(l,k) - wsink * wsinkv(l,k)
+	    wl(l,ii) = wlnv(l,k) - wsink * wsinkv(l,k)
 	  end do
 	end do
 
@@ -1751,14 +1790,14 @@ c sum explicit contributions
 	do ii=1,3
 	  k=kn(ii)
           hmed = hold(l,ii)                      !new ggu   !HACK
-          cdummy = dt * aj4 * rk3 * hmed * wdiff(ii)	!bug fix 12.2.2010
-	  clow(l,k) = clow(l,k) + cdummy
-          cdummy = dt * aj4 * 3. * f(ii)
-          if( cdummy .lt. 0. ) then             !flux out of node
-	    !chigh(l,k) = chigh(l,k) - cdummy
+          cexpl = dt * aj4 * rk3 * hmed * wdiff(ii)	!bug fix 12.2.2010
+	  clow(l,k) = clow(l,k) + cexpl
+          cexpl = dt * aj4 * 3. * f(ii)
+          if( cexpl .lt. 0. ) then             !flux out of node
+	    !chigh(l,k) = chigh(l,k) - cexpl
           end if
-          if( cdummy .gt. 0. ) then             !flux into node
-	    chigh(l,k) = chigh(l,k) + cdummy
+          if( cexpl .gt. 0. ) then             !flux into node
+	    chigh(l,k) = chigh(l,k) + cexpl
           end if
           cn(l,k) = cn(l,k) + dt * aj4 * ( fw(ii) + fd(ii) )
           co(l,k) = co(l,k) + dt * aj4 * hmed * robs * rtauv(l,k) !nudging

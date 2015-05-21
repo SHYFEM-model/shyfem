@@ -87,7 +87,7 @@ c elems(1) is not used, etc..
 	real xcm,ycm
 	real fact,r
 	real xscale,yscale
-	integer ndec,nctick
+	integer ndec,nctick,ipllog
 	integer isphe
 
 	real x0s,y0s,x1s,y1s
@@ -579,10 +579,12 @@ c--------------------------------------------------------------------
         fact = getpar('faccol')
         ndec = nint(getpar('ndccol'))
         nctick = nint(getpar('nctick'))
+        ipllog = nint(getpar('ipllog'))
         call getfnm('legcol',line)
 
 	call qgray(0.0)
-	call colbar(line,bhoriz,nctick,ndec,fact,xrmin,yrmin,xrmax,yrmax)
+	call colbar(line,bhoriz,nctick,ipllog,ndec,fact
+     +				,xrmin,yrmin,xrmax,yrmax)
 
 c--------------------------------------------------------------------
 c plot in/out indicator

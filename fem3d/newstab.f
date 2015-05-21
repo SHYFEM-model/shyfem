@@ -16,6 +16,7 @@ c 12.07.2011    ggu     new routine output_stability()
 c 14.07.2011    ggu     new routine output_stability_node()
 c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
 c 08.04.2014    ggu	use rlin to determine advective stability
+c 20.05.2015    ggu	always compute stability, call to conzstab changed
 c
 c*****************************************************************
 c*****************************************************************
@@ -88,8 +89,10 @@ c----------------------------------------------------------------
 c call conzstab
 c----------------------------------------------------------------
 
-        call conzstab(cnv,saux
-     +          ,ddt,robs,wsink,wsinkv,rkpar,difhv,difv
+        !call conzstab(cnv,saux
+!     +          ,ddt,robs,wsink,wsinkv,rkpar,difhv,difv
+        call conzstab(
+     +          ddt,robs,wsink,wsinkv,rkpar,difhv,difv
      +		,difmol,azpar,adpar,aapar
      +          ,rindex,istot,isact,nlvdi,nlv)
 
@@ -126,7 +129,7 @@ c----------------------------------------------------------------
 c see if already computed (only for wsink == 0)
 c----------------------------------------------------------------
 
-	if( wsink .eq. 0. .and. exist_stability(rkpar,rindex) ) goto 1
+	!if( wsink .eq. 0. .and. exist_stability(rkpar,rindex) ) goto 1
 	  
 c----------------------------------------------------------------
 c compute stability index
@@ -139,7 +142,7 @@ c----------------------------------------------------------------
 c insert stability index (only for wsink == 0)
 c----------------------------------------------------------------
 
-	if( wsink .eq. 0. ) call insert_stability(rkpar,rindex)
+	!if( wsink .eq. 0. ) call insert_stability(rkpar,rindex)
 
 c----------------------------------------------------------------
 c scale to real time step dt

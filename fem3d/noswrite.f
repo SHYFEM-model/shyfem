@@ -38,7 +38,6 @@ c writes nos file from data file
 	real hev(neldim)
 	real weight(nlvdim,nkndim)
 
-	real znv(nkndim)
 	include 'hydro.h'
 
 	real aux(nkndim)

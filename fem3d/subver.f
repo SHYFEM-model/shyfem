@@ -266,6 +266,7 @@ c DOCS	END
         character*30 shystr
         common /shyver/shyver,shystr
         save /shyver/
+
         data shyver / version /
         data shystr / string /
 
@@ -284,7 +285,8 @@ c returns version of model
 	character*(*) version
 
         character*10 shyver
-        common /shyver/shyver
+        character*30 shystr
+        common /shyver/shyver,shystr
         save /shyver/
 
 	version = shyver

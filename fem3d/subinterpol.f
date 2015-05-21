@@ -4,6 +4,7 @@ c
 c revision log :
 c
 c 21.02.2014	ggu	subroutines copied from basbathy
+c 06.05.2015	ggu	set number of max iterations (imax)
 c
 c****************************************************************
 
@@ -75,14 +76,12 @@ c interpolates depth values
 	real dp(np)
 
 	include 'param.h'
-
-
 	include 'basin.h'
 	include 'depth.h'
 
-
 	integer ie,ii,k
 	integer netot
+	integer imax
 	real x,y,d
 	real depth
 	integer iaux,inum,ityp
@@ -92,10 +91,25 @@ c interpolates depth values
 	real xmin,ymin,xmax,ymax
 	real hmed
 	real fact,dx,dy
+	real flag
 	integer ihev(neldim)
 	logical bmin
 	logical ok(neldim)
 	logical inconvex,inquad
+
+c-----------------------------------------------------------------
+c set maximum iteration imax
+c
+c imax very high makes all necessary iterations to find depth
+c imax < 0 only looks in element
+c imax = 0 looks also in bordering rectangle
+c imax > 0 makes imax iterations increasing rectangle size
+c-----------------------------------------------------------------
+
+	imax = 0
+	imax = 9999999
+
+	flag = -999.
 
 c-----------------------------------------------------------------
 c initialize
@@ -164,7 +178,7 @@ c next interpolation -> point in square
 c-----------------------------------------------------------------
 
 	i = 0
-	do while( netot .lt. nel )
+	do while( netot .lt. nel .and. i .le. imax )
 	 netot = 0
 	 do ie=1,nel
 	  if( .not. ok(ie) ) then
@@ -220,7 +234,9 @@ c-----------------------------------------------------------------
 	    netot = netot + 1
 	    hmed = hev(ie)
 	  else
-	    stop 'error stop interpolq: no depth for element'
+	    write(6,*) '*** warning interpolq: no depth for ie = ',ie
+	    !stop 'error stop interpolq: no depth for element'
+	    hmed = flag
 	  end if
 	  do ii=1,3
 	    hm3v(ii,ie) = hmed

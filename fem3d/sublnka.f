@@ -16,6 +16,7 @@ c 06.11.2008    ggu     better error handling
 c 06.04.2009    ggu     nlidim -> nlkdim
 c 02.12.2011    ggu     print_bound_nodes() for writing out boundary nodes
 c 04.05.2015    ggu     remove equivalence - use winkv as local array
+c 20.05.2015    ggu     new call to mklenkii to set up lenkiiv
 c
 c*****************************************************************
 
@@ -52,6 +53,7 @@ c make static arrays
 c-------------------------------------------------------------
 
         call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
+        call mklenkii(nlkdi,nkn,nel,nen3v,ilinkv,lenkv,lenkiiv)
         call mklink(nkn,ilinkv,lenkv,linkv)
 
         call mkkant(nkn,ilinkv,lenkv,linkv,kantv)
