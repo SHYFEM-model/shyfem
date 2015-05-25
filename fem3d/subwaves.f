@@ -102,19 +102,13 @@ c**************************************************************
 ! initialize wave arrays
 !-------------------------------------------------------------
 
-        do ie = 1,neldim
-  	  do l = 1,nlvdim
-            wavefx(l,ie) = 0.
-            wavefy(l,ie) = 0.
-	  end do
-        end do
+	wavefx = 0.
+	wavefy = 0.
 
-	do k = 1,nkndim
-          waveh(k) = 0.
-          wavep(k) = 0.
-          waved(k) = 0.
-          waveov(k) = 0.
-        end do
+        waveh = 0.
+        wavep = 0.
+        waved = 0.
+        waveov = 0.
 
 !-------------------------------------------------------------
 ! find out what to do
@@ -272,13 +266,9 @@ c local
 	    tramp = 0.
 	    tramp = 86400.
 	    wfact = 1. / rowass
-            do k = 1,nkndim
-              do l = 1,nlvdim
-		 SXX3D(l,k) = 0.
-		 SXY3D(l,k) = 0.
-		 SYY3D(l,k) = 0.
-              end do
-            end do
+	    SXX3D = 0.
+	    SXY3D = 0.
+	    SYY3D = 0.
             icall = 1
         end if
 
@@ -709,16 +699,12 @@ c local
 !       Initialization
 !       -----------------------------------------------
 
-        do ie = 1,neldim
-          do l = 1,nlvdim
-            stokesze(l,ie) = 0.
-	    stxe(l,ie) = 0.
-	    stye(l,ie) = 0.
-	    wavefx(l,ie) = 0.d0
-	    wavefy(l,ie) = 0.d0
-          end do
-          stokesze(0,ie) = 0.
-        end do
+        stokesze = 0.
+	stxe = 0.
+	stye = 0.
+	wavefx = 0.d0
+	wavefy = 0.d0
+        stokesze = 0.
 
 !       -----------------------------------------------
 !       Computes wave forcing terms due to horizontal stokes

@@ -59,13 +59,9 @@ c-----------------------------------------------------------------
 	high = 1.e+30
 
 	naccum = 0
-        do l=1,nlvdim
-          do k=1,nkndim
-            accum(l,k) = 0.
-            amin(l,k) = high
-            amax(l,k) = -high
-          end do
-        end do
+	accum = 0.
+	amin = high
+	amax = -high
 
 c-----------------------------------------------------------------
 c open input file
@@ -162,13 +158,9 @@ c	----------------------------------------------------------
 	  call wrnos(nbsum,it,ivar,nlvdim,ilhkv,asum,ierr)	!sum
 
 	  naccum = 0
-          do l=1,nlvdim
-            do k=1,nkndim
-              accum(l,k) = 0.
-              amin(l,k) = high
-              amax(l,k) = -high
-            end do
-          end do
+	  accum = 0.
+	  amin = high
+	  amax = -high
 
 	end if
 

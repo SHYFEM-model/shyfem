@@ -1,5 +1,57 @@
 ============================================================
 
+Mon May 25 17:05:07 CEST 2015
+
+intermediate version
+
+ LOG                             |   15 ++
+ fem3d/Makefile                  |   27 ++--
+ fem3d/aquabc_II_fem_interface.f |   42 ++----
+ fem3d/bin/handle_common.sh      |   14 +-
+ fem3d/bin/newsubst.pl           |   38 +++--
+ fem3d/change.txt                |    2 +
+ fem3d/check_debug.f             |   31 ++++-
+ fem3d/common.h                  |   12 +-
+ fem3d/cp_fem3d.sh               |   17 ++
+ fem3d/ht.f                      |   53 +++++--
+ fem3d/new3di.f                  |   93 ++----------
+ fem3d/newdum.f                  |   14 ++
+ fem3d/newini.f                  |  328 ++++++++++++--------------------------
+ fem3d/newlevels.f               |   39 +++++
+ fem3d/newnudge.f                |    2 +-
+ fem3d/newsig.f                  |   17 +--
+ fem3d/newstab.f                 |    4 +-
+ fem3d/nosaver_time.f            |   20 +--
+ fem3d/param.h                   |    6 +-
+ fem3d/prep_fem3d.sh             |   21 +++
+ fem3d/rstinf.f                  |    6 +-
+ fem3d/simsys_lp.f               |   18 ++-
+ fem3d/simsys_pard.f             |   16 ++-
+ fem3d/simsys_spk.f              |   24 ++-
+ fem3d/subbas.f                  |  118 ++++++++++++++
+ fem3d/subcst.f                  |   11 +-
+ fem3d/subcus.f                  |    2 -
+ fem3d/subdep.f                  |  125 +++++++++-------
+ fem3d/submud_dummy.f            |    6 +-
+ fem3d/subnev.f                  |   28 ++++-
+ fem3d/subnsa.f                  |   31 +++-
+ fem3d/subrst.f                  |   16 +-
+ fem3d/subspk.f                  |   13 ++-
+ fem3d/subwaves.f                |   44 ++----
+ fem3d/wininf.f                  |    5 +-
+ femadj/param.h                  |    6 +-
+ femdoc/final/shyfem.pdf         |  Bin 294940 -> 294940 bytes
+ femdoc/final/shyfem.ps          |   26 ++--
+ femplot/param.h                 |    6 +-
+ param.h                         |    6 +-
+ 40 files changed, 717 insertions(+), 585 deletions(-)
+ new file:
+   fem3d/change.txt
+   fem3d/cp_fem3d.sh
+   fem3d/prep_fem3d.sh
+
+============================================================
+
 Thu May 21 16:32:38 CEST 2015
 
 New version 7_1_11

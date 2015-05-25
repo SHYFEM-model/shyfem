@@ -19,7 +19,125 @@ c 12.01.2011	ggu	debug routine introduced (sp13ts)
 c 23.10.2014	ggu	introduced ftype and nvers = 4
 c 04.01.2015	ggu	new routine sp13_get_par()
 c 31.03.2015	ggu	set iarnv on read
+c 25.05.2015	ggu	module introduced
 c
+c***********************************************************
+c***********************************************************
+c***********************************************************
+
+!==================================================================
+        module basin
+!==================================================================
+
+        implicit none
+
+        integer, save :: nkn = 0
+        integer, save :: nel = 0
+        integer, save :: ngr = 0
+        integer, save :: mbw = 0
+
+        real, save :: dcorbas = 0.
+        real, save :: dirnbas = 0.
+
+        character*80, save :: descrr = ' '
+
+        integer, save, allocatable :: nen3v(:,:)
+        integer, save, allocatable :: ipev(:)
+        integer, save, allocatable :: ipv(:)
+        integer, save, allocatable :: iarv(:)
+        integer, save, allocatable :: iarnv(:)
+
+        real, save, allocatable :: xgv(:)
+        real, save, allocatable :: ygv(:)
+        real, save, allocatable :: hm3v(:,:)
+
+!==================================================================
+        contains
+!==================================================================
+
+	subroutine basin_init(nk,ne)
+
+	integer nk,ne
+
+	if( nkn == nk .and. nel == ne ) return
+
+	if( nkn > 0 .or. nel > 0 ) then
+	end if
+
+	nkn = nk
+	nel = ne
+
+	if( nkn > 0 .or. nel > 0 ) then
+	  allocate(nen3v(3,nel))
+	  allocate(ipev(nel))
+	  allocate(ipv(nkn))
+	  allocate(iarv(nel))
+	  allocate(iarnv(nkn))
+	  allocate(xgv(nkn))
+	  allocate(ygv(nkn))
+	  allocate(hm3v(3,nel))
+	end if
+
+	end subroutine basin_init
+
+c***********************************************************
+
+	subroutine basin_read(iunit)
+
+! reads basin or fails if error
+
+	integer iunit
+
+	integer nk,ne
+
+	call sp13_get_par(iunit,nk,ne,ngr,mbw)
+	call basin_init(nk,ne)
+	rewind(iunit)
+	call sp13rr(iunit,nkn,nel)
+
+	end subroutine basin_read
+
+c***********************************************************
+
+	function is_basin(iunit)
+
+	logical is_basin
+	integer iunit
+
+	integer nvers
+
+	call sp13test(iunit,nvers)
+
+	is_basin = nvers > 0
+
+	end function is_basin
+
+c***********************************************************
+
+	function is_basin_file(file)
+
+	logical is_basin_file
+	character*(*) file
+
+	integer ios,iunit
+
+	is_basin_file = .false.
+
+	open(iunit,file=file,status='old',form='unformatted',iostat=ios)
+
+	if( ios /= 0 ) return
+	is_basin_file = is_basin(iunit)
+
+	close(iunit)
+
+	end function is_basin_file
+
+!==================================================================
+        end module basin
+!==================================================================
+
+c***********************************************************
+c***********************************************************
 c***********************************************************
 
 	subroutine sp13test(nb,nvers)

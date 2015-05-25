@@ -31,7 +31,7 @@ c                 12345678901234567890123456789012345678901234567890123
 
     1	continue
 
-	call skip_rst(iunit,atime,nvers,nrec,nkn,nel,nlv,iflag,ierr)
+	call skip_rst(iunit,atime,it,nvers,nrec,nkn,nel,nlv,iflag,ierr)
 	if( ierr .ne. 0 ) goto 2
 
 	if( nread == 0 ) then
@@ -43,7 +43,7 @@ c                 12345678901234567890123456789012345678901234567890123
 
 	nread = nread + 1
 	call dts_format_abs_time(atime,line)
-	write(6,1011) nread,atime,line
+	write(6,1011) nread,atime,it,line
 	atime_end = atime
 
 	goto 1
@@ -72,5 +72,5 @@ c                 12345678901234567890123456789012345678901234567890123
  1000	format(a52)
  1001	format(a48)
  1010	format(i7,i5,4i10)
- 1011	format(i7,d20.1,1x,a20)
+ 1011	format(i7,d20.1,i20,1x,a20)
 	end

@@ -163,15 +163,17 @@ c sets up modules
 
 c********************************************************************
 
-	subroutine cstfile(nkndim,neldim)
+	subroutine cstfile
 
 c reads files (str and bas)
 
 	implicit none
 
-	integer nkndim,neldim
+	include 'param.h'
+	include 'basin.h'
+
 	integer nin
-	character*80 file,basnam
+	character*80 basnam
 
 	integer idefbas
 
@@ -180,7 +182,8 @@ c reads files (str and bas)
 
         call getfnm('basnam',basnam)
         nin = idefbas(basnam,'old')
-	call sp13rr(nin,nkndim,neldim)
+	call basin_read(nin)
+	!call sp13rr(nin,nkndim,neldim)
 	close(nin)
 
 	end

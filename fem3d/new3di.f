@@ -194,7 +194,7 @@ c written on 27.07.88 by ggu   (from sp159f)
 	include 'depth.h'
 	include 'area.h'
 
-	logical boff
+	logical boff,bdebout
 	logical bzcorr
 	integer i,l,k,ie,ier,ii
 	integer nrand
@@ -213,6 +213,7 @@ c written on 27.07.88 by ggu   (from sp159f)
         parameter (epseps = 1.e-6)
 
 	kspecial = 0
+	bdebout = .false.
 
 c-----------------------------------------------------------------
 c set parameter for hydro or non hydro 
@@ -254,7 +255,9 @@ c-----------------------------------------------------------------
 	iw = 1
 	do while( iw .gt. 0 )		!loop over changing domain
 
+	  if( bdebout ) call debug_output(it+2)
 	  call sp256v			!compute intermediate transports
+	  if( bdebout ) call debug_output(it+3)
 
 	  call setnod			!set info on dry nodes
 	  call set_link_info
@@ -262,17 +265,23 @@ c-----------------------------------------------------------------
 
 	  call system_init		!initializes matrix
 
+	  if( bdebout ) call debug_output(it+14)
 	  call sp256z(rqv)		!assemble system matrix for z
+	  if( bdebout ) call debug_output(it+15)
 
-	  call system_solve_z		!solves system matrix for z
+	  call system_solve_z(nkn,znv)	!solves system matrix for z
+	  if( bdebout ) call debug_output(it+16)
 
-	  call system_adjust_z		!copies solution to new z
+	  call system_adjust_z(nkn,znv)	!copies solution to new z
+	  if( bdebout ) call debug_output(it+17)
 
 	  call setweg(1,iw)		!controll intertidal flats
 
 	end do	!do while( iw .gt. 0 )
 
+	if( bdebout ) call debug_output(it+4)
 	call sp256n			!final transports (also barotropic)
+	if( bdebout ) call debug_output(it+5)
 
 c-----------------------------------------------------------------
 c end of soulution for hydrodynamic variables
@@ -317,6 +326,7 @@ c some checks
 c-----------------------------------------------------------------
 
 	call vol_mass(1)		!computes and writes total volume
+	if( bdebout ) call debug_output(it)
 	call mass_conserve(saux1,saux2)	!check mass balance
 
 c-----------------------------------------------------------------
@@ -570,7 +580,7 @@ c-------------------------------------------------------------
 c end of loop over elements
 c-------------------------------------------------------------
 
-	call system_add_rhs(dt,vqv)
+	call system_add_rhs(dt,nkn,vqv)
 
 c-------------------------------------------------------------
 c end of routine
@@ -1846,81 +1856,6 @@ c**************************************************
 
         diff = diff / ngl
         write(6,*) 'weighted difference for matrix: ',diff
-
-        end
-
-c*******************************************************************
-
-        subroutine interpolare_scalar
-
-	implicit none
-
-        call system_init
-        call assamble_interpolare_scalar
-        call system_solve_z
-        call system_adjust_z
-
-        end
-
-c*******************************************************************
-
-        subroutine assamble_interpolare_scalar
-
-        implicit none
-
-	include 'param.h' !COMMON_GGU_SUBST
-	include 'mkonst.h'
-	include 'basin.h'
-	include 'bound_dynamic.h'
-	include 'ev.h'
-
-        integer ie,i,kk
-        integer n,m,j1,j2
-        integer kn(3)
-        real aj,hh999,rw
-        real hia(3,3)
-        real hik(3)
-        real b(3),c(3)
-
-        do ie=1,nel
-
-	  do i=1,3
-		kk=nen3v(i,ie)
-		kn(i)=kk
-		b(i)=ev(i+3,ie)
-		c(i)=ev(i+6,ie)
-	  end do
-
-          aj = ev(10,ie)
-          hh999=aj*12.
-
-          do n=1,3
-            do m=1,3
-              hia(n,m)=hh999*(b(n)*b(m)+c(n)*c(m))
-            end do
-            hik(n)=0.
-          end do
-
-	  do i=1,3
-	    if(rzv(kn(i)).ne.flag) then
-		rw=rzv(kn(i))			!FIXME !ZNEW (this for znew)
-		j1=mod(i,3)+1
-		j2=mod(i+1,3)+1
-		hik(j1)=hik(j1)-rw*hia(j1,i)
-		hik(j2)=hik(j2)-rw*hia(j2,i)
-		hia(i,j1)=0.
-		hia(i,j2)=0.
-		hia(j1,i)=0.
-		hia(j2,i)=0.
-		hik(i)=rw*hia(i,i)
-	    end if
-	  end do
-
-c in hia(i,j),hik(i),i,j=1,3 is system
-
-	  call system_assemble(nkn,mbw,kn,hia,hik)
-
-	end do
 
         end
 

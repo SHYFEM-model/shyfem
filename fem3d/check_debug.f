@@ -9,21 +9,29 @@ c checks two files written with check_debug from ht
 	parameter (ndim=2000000)
 
 	character*60 name_one,name_two
-	logical bcheck
+	character*80 text1,text2,text
+	logical bcheck,bstop,bverbose
 	integer it1,it2,it
 	integer nt1,nt2,nt
 	integer nf1,nf2,nf
 	integer nrec
-	integer i,idiff
+	integer i,idiff,idiff_tot
 
 	real val1(ndim)
 	real val2(ndim)
+
+	bstop = .false.			!stop on error
+	bstop = .true.			!stop on error
+	bverbose = .false.		!only write error
+	bcheck = .true.			!check for differences
 
 	name_one = 'debug_one.dat'
 	name_two = 'debug_two.dat'
 
 	open(1,file=name_one,status='old',form='unformatted')
 	open(2,file=name_two,status='old',form='unformatted')
+
+	idiff_tot = 0
 
 	do while(.true.)
 
@@ -32,6 +40,7 @@ c checks two files written with check_debug from ht
 	  if( it1 .ne. it2 ) goto 99
 	  it = it1
 	  write(6,*) 'time = ',it
+
 
 	  nrec = 0
 	  do while(.true.)
@@ -46,26 +55,37 @@ c checks two files written with check_debug from ht
 	    if( nt .eq. 0 ) exit
 	    if( nt .gt. ndim ) goto 97
 
+	    read(1,end=9) text1
+	    read(2,end=9) text2
+	    if( text1 .ne. text2 ) goto 96
+	    text = text1
+
 	    read(1) (val1(i),i=1,nt)
 	    read(2) (val2(i),i=1,nt)
 
 	    idiff = 0
-	    bcheck = .true.
 	    !bcheck = it .ge. 87300
 	    !bcheck = bcheck .and. nrec .ne. 5
 	    if( bcheck ) then
 	      call check_val(it,nrec,nt,nf,val1,val2,idiff)
-	      write(6,*) nrec,nt,nf,idiff
+	      if( idiff > 0 .or. bverbose ) then
+	        write(6,*) trim(text),nrec,nt,nf,idiff
+	      end if
+	      idiff_tot = idiff_tot + idiff
 	    end if
 
 	  end do
 
+	  if( bstop .and. idiff_tot > 0 ) exit
+	  if( bverbose ) write(6,*) 'nrecs checked: ',nrec
 	end do
 
     9	continue
 
 	close(1)
 	close(2)
+
+	write(6,*) 'total differences found: ',idiff_tot
 
 	stop
    99	continue
@@ -77,6 +97,9 @@ c checks two files written with check_debug from ht
    97	continue
 	write(6,*) it,nrec,nt,ndim
 	stop 'error stop check_debug: dimension'
+   96	continue
+	write(6,*) trim(text1),trim(text2)
+	stop 'error stop check_debug: text mismatch'
 	end
 
 c*******************************************************************

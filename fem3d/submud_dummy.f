@@ -22,11 +22,7 @@ c*******************************************************************
 
 	integer k,l
 
-	do k=1,nkndim
-	  do l=1,nlvdim
-	    vts(l,k) = 0.
-	  end do
-	end do
+	vts = 0.
 
 	call nrdskp
 

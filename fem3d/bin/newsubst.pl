@@ -1113,17 +1113,9 @@ sub is_include {
 
 #--------------------------------------------------------------
 
-sub inc2use {
-
-  my $fortran = shift;
-
-  #include2use($fortran,"hydro.h","fem_hydro.f");
-  include2use($fortran,"tides.h","fem_tides");
-}
-
 sub include2use {
 
-  my ($fortran,$include,$use) = @_;
+  my ($fortran,$include,$use,$only) = @_;
 
   my @list = sort keys %{$fortran->{all_routines}};
   foreach my $rname (@list) {
@@ -1132,21 +1124,25 @@ sub include2use {
     my $file = $ritem->{file};
 
     if( $ritem->{include}->{$include} ) {
-      print STDERR "    routine $name contains include... substituting\n";
-      substitute_use($fortran,$ritem,$include,$use);
-      $fortran->set_changed($file);
+      if( not $ritem->{use}->{$use} ) {		#not yet included
+        print STDERR "    routine $name contains include... substituting\n";
+        substitute_use($fortran,$ritem,$include,$use,$only);
+        $fortran->set_changed($file);
+      }
     }
   }
 }
 
 sub substitute_use {
 
-  my ($fortran,$ritem,$include,$use) = @_;
+  my ($fortran,$ritem,$include,$use,$only) = @_;
 
   my $code = $ritem->{code};
   my @new = ();
   my $nline = 0;
   my $used = 0;
+
+  $only = ", only : $only" if $only;
 
   foreach my $l (@$code) {
     $nline++;
@@ -1155,7 +1151,7 @@ sub substitute_use {
       if( $line ) {				# first good line found
         $line =~ s/\s+//g;
 	unless( $used ) {
-          my $aline = "\tuse $use !COMMON_GGU_SUBST";
+          my $aline = "\tuse $use$only !COMMON_GGU_SUBST";
           push(@new,$aline);
 	  unless( is_use($line) ) {		# add empty line
             push(@new,"");
@@ -1184,6 +1180,20 @@ sub is_use {
   } else {
     return "";
   }
+}
+
+#--------------------------------------------------------------
+#--------------------------------------------------------------
+#--------------------------------------------------------------
+
+sub inc2use {
+
+  my $fortran = shift;
+
+  #include2use($fortran,"hydro.h","fem_hydro.f");
+  #include2use($fortran,"tides.h","fem_tides");
+  include2use($fortran,"basin.h","basin");
+  include2use($fortran,"nbasin.h","basin","nkn,nel,ngr,mbw");
 }
 
 #--------------------------------------------------------------

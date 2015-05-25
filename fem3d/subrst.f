@@ -11,7 +11,7 @@ c subroutine admrst		administers writing of restart file
 c subroutine wrrst(it,iunit)	writes one record of restart data
 c subroutine rdrst(itrst,iunit)	reads one record of restart data
 c
-c subroutine skip_rst(iunit,it,nvers,nrec,nkn,nel,nlv,iflag,ierr)
+c subroutine skip_rst(iunit,atime,it,nvers,nrec,nkn,nel,nlv,iflag,ierr)
 c				returns info on record in restart file
 c
 c revision log :
@@ -422,7 +422,7 @@ c reads restart file until it finds itrst
 	blast = atrst .eq. -1		! take last record
 
         do while( bloop )
-          call rdrst_record(atime,iunit,ierr)
+          call rdrst_record(atime,it,iunit,ierr)
           if( ierr .eq. 0 ) irec = irec + 1
 	  bnext = atime .lt. atrst .or. blast	!look for more records
           bloop = ierr .eq. 0 .and. bnext
@@ -467,16 +467,17 @@ c reads restart file until it finds itrst
 
 c*******************************************************************
 
-	subroutine skip_rst(iunit,atime,nvers,nrec,nkn,nel,nlv,iflag,ierr)
+	subroutine skip_rst(iunit,atime,it,nvers,nrec
+     +				,nkn,nel,nlv,iflag,ierr)
 
 c returns info on record in restart file and skips data records
 
 	implicit none
 
-	integer iunit,nvers,nrec,nkn,nel,nlv,iflag,ierr
+	integer iunit,it,nvers,nrec,nkn,nel,nlv,iflag,ierr
 	double precision atime
 	integer ibarcl,iconz,iwvert,ieco
-	integer it,date,time
+	integer date,time
 
 	iflag = 0
 	date = 0
@@ -548,13 +549,14 @@ c returns info on record in restart file and skips data records
 
 c*******************************************************************
 
-        subroutine rdrst_record(atime,iunit,ierr)
+        subroutine rdrst_record(atime,it,iunit,ierr)
 
 c reads one record of restart data
 
         implicit none
 
         double precision atime
+	integer it
         integer iunit
         integer ierr            !error code - different from 0 if error
 
@@ -577,7 +579,7 @@ c reads one record of restart data
         integer ii,l,ie,k,i
         integer nversaux,nrec
         integer nknaux,nelaux,nlvaux
-	integer it,date,time
+	integer date,time
 
         read(iunit,end=97) it,nvers,nrec
         if( nvers .lt. 3 ) goto 98

@@ -619,8 +619,8 @@ c outputs stability index for hydro timestep (internal)
 	include 'param.h'
 
         real dt
-	real sauxe1(nlvdim,neldim)
-	real sauxe2(nlvdim,neldim)
+	real sauxe1(nlvdim,neldim)	!advective stability index
+	real sauxe2(nlvdim,neldim)	!diffusive stability index
 
 	include 'nlevel.h'
 	include 'basin.h'

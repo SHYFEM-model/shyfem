@@ -26,6 +26,7 @@ c 17.05.2011	ggu	new routines to adjourn depth
 c 18.11.2011	ggu	new routine makehkv_minmax()
 c 05.09.2013	ggu	new routine set_sigma_hkv_and_hev() from newsig.f
 c 25.06.2014	ggu	computa also hkv_min and hkv_max
+c 25.05.2015	ggu	some changes in depth computation
 c
 c********************************************************************
 
@@ -268,10 +269,11 @@ c arguments
 c common
 	include 'param.h'
 	include 'basin.h'
-	include 'ev.h'
 c local
         integer ie,ii,k,kn
-	real area
+	real weight
+
+	real weight_elem
 
         do k=1,nkn
           hkv(k) = 0.
@@ -279,11 +281,11 @@ c local
         end do
 
         do ie=1,nel
-	  area = ev(10,ie)
+	  weight = weight_elem(ie)
           do ii=1,3
             kn=nen3v(ii,ie)
-            hkv(kn)=hkv(kn)+hm3v(ii,ie)*area	!ccf
-            haux(kn)=haux(kn)+area
+            hkv(kn)=hkv(kn)+hm3v(ii,ie)*weight	!ccf
+            haux(kn)=haux(kn)+weight
           end do
         end do
 
@@ -299,7 +301,7 @@ c********************************************************************
 
 c makes hkv (nodewise depth)
 c
-c itype:  -1: min  0; aver  +1: max
+c itype:  -1: min  0: aver  +1: max
 
         implicit none
 
@@ -477,11 +479,43 @@ c sets up depth arrays
 	bsigma = nsigma .gt. 0
 
 	if( bsigma ) then	!sigma or hybrid layers
-	  call set_sigma_hkv_and_hev
-	else			!only zeta layers
-	  call make_hev
-	  call adjourn_depth_from_hev
+	  call check_sigma_hsigma
+	  call flatten_hm3v(hsigma)
+	else
+	  call flatten_hm3v(-999.)
 	end if
+
+	call make_hev
+	call make_hkv
+
+	end
+
+c********************************************************************
+
+	subroutine flatten_hm3v(hsigma)
+
+	implicit none
+
+	real hsigma
+
+	include 'param.h'
+	include 'basin.h'
+
+	integer ie,ii
+	real hm
+
+	do ie=1,nel
+	  hm = 0.
+	  do ii=1,3
+	    hm = hm + hm3v(ii,ie)
+	  end do
+	  hm = hm / 3.
+	  if( hm .gt. hsigma ) then
+	    do ii=1,3
+	      hm3v(ii,ie) = hm
+	    end do
+	  end if
+	end do
 
 	end
 
@@ -494,8 +528,10 @@ c adjusts nodal depth values
 	implicit none
 
 	include 'param.h'
+	include 'nbasin.h'
 	include 'depth.h'
-	include 'aux_array.h'
+
+	real v1v(nkn)
 
         call makehkv(hkv,v1v)		!computes hkv as average
         call makehkv_minmax(hkv_min,v1v,-1)
@@ -541,7 +577,7 @@ c adjourns hev and hkv from hm3v (if it has been changed)
 	implicit none
 
 
-	include 'param.h' !COMMON_GGU_SUBST
+	include 'param.h'
 	include 'basin.h'
 	include 'depth.h'
 
@@ -562,25 +598,24 @@ c********************************************************************
 c********************************************************************
 c********************************************************************
 
-	subroutine set_sigma_hkv_and_hev
+	subroutine check_sigma_hsigma
 
-c sets hkv and hev from hm3v
+c checks hkv and hsigma
 c uses information about sigma layers and hsigma (hybrid)
 
 	implicit none
 
-
-	include 'param.h' !COMMON_GGU_SUBST
+	include 'param.h'
 	include 'basin.h'
-	include 'depth.h'
-	include 'aux_array.h'
 
 	logical berror
 	integer k,ie,ii
 	integer inc,ihmin,ihmax
 	integer nlv,nsigma
+	real flag
 	real hm,h
 	real hsigma
+	real hkv(nkn)		!local
 
 c-------------------------------------------------------
 c initialize
@@ -588,54 +623,51 @@ c-------------------------------------------------------
 
 	call get_sigma_info(nlv,nsigma,hsigma)
 
+	if( nsigma == 0 ) return
+
+	flag = -999.
+
 	do k=1,nkn
-	  hkv(k) = 0.
-	  v1v(k) = 0.
+	  hkv(k) = flag
 	end do
 
 	berror = .false.
 	inc = 0
 
 c-------------------------------------------------------
-c set hkv and hev
+c set if hkv is continuous in sigma layers
 c-------------------------------------------------------
 
 	do ie=1,nel
+
 	  hm = 0.
 	  do ii=1,3
 	    h = hm3v(ii,ie)
+	    hm = hm + h
+	  end do
+	  hm = hm / 3.
+
+	  if( hm > hsigma ) cycle
+
+	  do ii=1,3
+	    h = hm3v(ii,ie)
 	    k = nen3v(ii,ie)
-	    if( v1v(k) .eq. 0. ) then
+	    if( hkv(k) .eq. flag ) then
 	      hkv(k) = h
-	      v1v(k) = 1.
 	    else
 	      if( h .ne. hkv(k) ) then
 		write(6,*) 'depth of node not unique: ',ie,k,h,hkv(k)
 	        inc = inc + 1
 	      end if
 	    end if
-	    hm = hm + h
 	  end do
-	  hev(ie) = hm / 3.
+
 	end do
 
 	if( inc .gt. 0 ) then
 	  write(6,*) 'number of occurences found: ',inc
 	  stop 'error stop set_hkv_and_hev: depth not unique'
 	end if
-
-c-------------------------------------------------------
-c check hkv
-c-------------------------------------------------------
-
-	do k=1,nkn
-	  if( v1v(k) .le. 0. ) then
-	    write(6,*) 'no depth in node: ',k
-	    berror = .true.
-	  end if
-	end do
-
-	if( berror ) stop 'error stop set_hkv_and_hev: no depth in node'
 
 c-------------------------------------------------------
 c check hsigma crossing
@@ -664,19 +696,6 @@ c-------------------------------------------------------
 	end if
 
 c-------------------------------------------------------
-c flatten elements of zeta coordinates
-c-------------------------------------------------------
-
-	do ie=1,nel
-	  hm = hev(ie)
-	  if( hm .gt. hsigma ) then
-	    do ii=1,3
-	      hm3v(ii,ie) = hm
-	    end do
-	  end if
-	end do
-
-c-------------------------------------------------------
 c end of routine
 c-------------------------------------------------------
 
@@ -690,7 +709,7 @@ c********************************************************************
 
 	character*(*) file
 
-	include 'param.h' !COMMON_GGU_SUBST
+	include 'param.h'
 	include 'nbasin.h'
 	include 'depth.h'
 
@@ -714,7 +733,7 @@ c********************************************************************
 
 	character*(*) file
 
-	include 'param.h' !COMMON_GGU_SUBST
+	include 'param.h'
 	include 'nbasin.h'
 	include 'depth.h'
 

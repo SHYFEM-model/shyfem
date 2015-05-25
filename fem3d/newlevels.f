@@ -70,9 +70,23 @@
 
 	integer nl
 
+	integer n
+	real, allocatable :: hlv_aux(:)
+	real, allocatable :: hldv_aux(:)
+
 	if( nlv_alloc == nl ) return
 
+	n = min(nl,nlv_alloc)
+
 	if( nlv_alloc > 0 ) then
+	  if( nl > 0 ) then
+	    allocate(hlv_aux(nl))
+	    allocate(hldv_aux(nl))
+	    hlv_aux = 0.
+	    hldv_aux = 0.
+	    hlv_aux(1:n) = hlv(1:n)
+	    hldv_aux(1:n) = hldv(1:n)
+	  end if
 	  deallocate(hlv)
 	  deallocate(hldv)
 	end if
@@ -84,6 +98,14 @@
 	if( nl > 0 ) then
 	  allocate(hlv(nl))
 	  allocate(hldv(nl))
+	  hlv=0.
+	  hldv=0.
+	  if( n > 0 ) then
+	    hlv(1:n) = hlv_aux(1:n)
+	    hldv(1:n) = hldv_aux(1:n)
+	    deallocate(hlv_aux)
+	    deallocate(hldv_aux)
+	  end if
 	end if
 	
 	end subroutine levels_reinit
@@ -113,6 +135,23 @@
         end module levels
 !==================================================================
 
+	subroutine get_nlv_read(nlv_read)
+
+	use levels
+
+	implicit none
+
+	integer nlv_read
+
+	nlv_read = nlv_aux
+
+	end subroutine get_nlv_read
+
+!******************************************************************
+
+	subroutine read_hlv
+
+	use levels
 	subroutine read_hlv
 
 	use levels

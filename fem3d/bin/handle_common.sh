@@ -7,18 +7,22 @@
 bindir=/home/georg/fem/fem3d/bin
 
 what=$1
+files=$2
 
-files=`ls *.f`
-#files=`ls sub*.f`
-#files=`ls ht.f 2> /dev/null`
+if [ -z "$2" ]; then
+  files=`ls *.f`
+fi
+
+#echo $files
+#exit 1
 
 #---------------------------------------------------------------
 
 if [ -z "$what" ]; then
-  echo "Usage: handle_common.sh [-h|-help] [-option]"
+  echo "Usage: handle_common.sh [-h|-help] [-option] [files]"
   exit 1
 elif [ $what = "-h" -o $what = "-help" ]; then
-  echo "Usage: handle_common.sh [-h|-help] [-option]"
+  echo "Usage: handle_common.sh [-h|-help] [-option] [files]"
   echo "  options:"
   echo "    -h|-help     this help screen"
   echo "    -subst       substitutes common and creates .new"

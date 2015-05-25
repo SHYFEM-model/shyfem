@@ -66,9 +66,6 @@ c---------------------------------------------------------------
 	itot=0
 
 	nkndim = 0
-        !do i=1,nkndim
-        !  p(i) = 0.
-        !end do
 
 	write(6,*) 'Enter name of wind file :'
 	read(5,'(a)') infile
@@ -238,7 +235,7 @@ c*********************************************************************
 	  allocate(wy(n))
 	  allocate(s(n))
 	  allocate(p(n))
-          do i=1,nkndim
+          do i=1,n
             p(i) = 0.
           end do
 	end if

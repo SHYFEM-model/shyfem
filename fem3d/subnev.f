@@ -76,7 +76,7 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	double precision xlon1,ylat1,xlon2,ylat2,xlon3,ylat3	!lat/long [rad]
 	double precision dlat0,dlon0			!center of projection
 
-	call check_spheric_ev	!checks and sets isphe_ev
+	call check_spheric_ev	!checks and sets isphe_ev and init_ev
 	call get_coords_ev(isphe)
 
         one = 1.
@@ -826,6 +826,8 @@ c adjusts b/c so that sum = 0
 	end
 
 c***********************************************************
+c***********************************************************
+c***********************************************************
 
 	function area_elem(ie)
 
@@ -856,6 +858,30 @@ c returns aomega of element ie
 	include 'ev.h'
 
 	aomega_elem = ev(10,ie)
+
+	end
+
+c***********************************************************
+
+	function weight_elem(ie)
+
+c returns weight for element ie - if ev is not setup, return 1
+
+	implicit none
+
+	real weight_elem
+	integer ie
+
+	include 'ev.h'
+
+	integer isphe_ev,init_ev
+	common /evcommon/ isphe_ev,init_ev
+
+	if( init_ev > 0 ) then
+	  weight_elem = ev(10,ie)
+	else
+	  weight_elem = 1.
+	end if
 
 	end
 

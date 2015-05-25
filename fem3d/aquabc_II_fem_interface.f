@@ -399,8 +399,6 @@
       real FDAY             ! equal to 1 in this version for compatibilty with older code
 
 
-       !integer ipv(nkndim)
-       !common /ipv/ipv
 
 
 
@@ -533,7 +531,7 @@
           rkpar=getpar('chpar')
           difmol=getpar('difmol')
 
-          do i=1,nkndim
+          do i=1,nkn
            ilhkv_sed(i)= NOSLAY
           enddo
 
@@ -1131,15 +1129,8 @@ c*************************************************************
 !     eload(3,neldim,nstate) -----> eload(nlvdim,nkndim,nstate)
 	real eload(nlvdim,nkndim,nstate)
 
-      integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-      common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-
-	real ev(13,1)
-	common /ev/ev
-	integer nen3v(3,1)
-	common /nen3v/nen3v
-	real hm3v(3,1)
-	common /hm3v/hm3v
+	include 'basin.h'
+	include 'ev.h'
 
 !	ADDED BY PETRAS AND ALI
 !     CORPI, 19 July 2004
@@ -1351,8 +1342,6 @@ c*************************************************************
 
 !	ADDED BY ALI
 !     CORPI, 02 August 2004
-      integer ipv(nkndim)	!external node numbers
-      common  /ipv/ipv
 
 
 !	ADDED BY PETRAS AND ALI
@@ -1956,10 +1945,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real e(nlvdim,nkndim,nstate)	        !state vector
       real es(NOSLAY,nkndim,nsstate)		!sediment state variables
 
-        integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        integer nlvdi,nlv
-        common /level/ nlvdi,nlv
+	include 'nbasin.h'
+	include 'nlevel.h'
 
         character*16 text
         integer i
@@ -1992,9 +1979,8 @@ c Made from check2Dr by P.Zemlys 11 January 2005
         implicit none
 
         include 'param.h'
+        include 'basin.h'
 
-        integer ipv(nkndim) !external numbers of nodes
-        common /ipv/ipv
         integer nlv,n
         integer nvar         !state variable number
         real a(nlvdim,1)     !array of variable values for levels and nodes
@@ -2083,10 +2069,7 @@ c initializes variables nodal value for water column from file
                                     !3 - homogeneous layers
                                     !4 - heterogenous for repeated runs
 
-        !integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        !common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real hlv(1)       !hlv(i)absolute depth of layer bottom  i
-        common /hlv/hlv
+	include 'levels.h'
 
         character*80 file
         integer nb,irec
@@ -2331,10 +2314,7 @@ c initializes variables nodal value  for bottom sediment from file
                                     !3 - homogeneous layers for BS
                                     !4 - heterogenous for repeated runs
 
-        !integer nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        !common /nkonst/ nkn,nel,nrz,nrq,nrb,nbc,ngr,mbw
-        real hlv(1)       !hlv(i)absolute depth of bottom of layer i
-        common /hlv/hlv
+	include 'levels.h'
 
         character*80 file
         integer nb,irec
@@ -2590,8 +2570,7 @@ c prints stats after last time step
         character  date*8, time*10           !Added by Petras 11.09.2004
         character  startdate*8, starttime*10
 
-        integer itanf,itend,idt,nits,niter,it
-        common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
 	write(6,1035) it,niter
  1035   format(' program stop at time =',i10,' seconds'/
@@ -2914,8 +2893,7 @@ C         Read RECORD 6
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       implicit none
       include 'param.h'
-      integer itanf,itend,idt,nits,niter,it
-      common /femtim/ itanf,itend,idt,nits,niter,it
+	include 'femtime.h'
 
       real e(nlvd,nkndim,noutput)	!state variables
       real dg  (nlvd,nkndim,nstate,NDIAGVAR) !intermediate variables

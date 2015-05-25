@@ -40,7 +40,7 @@ c iunit		unit number of file
 	character*80 name,line,section,extra
 	character*20 what0,whatin
 	character*6 sect
-	logical bdebug,bread,bverbose
+	logical bdebug,bread,bverbose,bskip
 	integer num
 	integer nrdsec,nrdlin,ichanm
 	integer iv_in,iv_read
@@ -52,6 +52,7 @@ c iunit		unit number of file
 	bdebug = .true.
 	bdebug = .false.
 	bverbose = .false.
+	bverbose = .true.
 
 	iv_in = ivar
 
@@ -67,9 +68,9 @@ c loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	do while( nrdsec(section,num,extra) .eq. 1 )
 
-		sect = section(1:ichanm(section))
-		if( bdebug ) then
-		  write(6,*) 'new section: ',section(1:ichanm(section)),num
+		sect = trim(section)
+		if( bverbose ) then
+		  write(6,*) 'new section: ',trim(section),num,trim(extra)
 		end if
 
 		iv_read = -1
@@ -78,19 +79,23 @@ c loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		end if
 
 		bread = iv_read .eq. iv_in
+		bskip = .not. bread
 		if( bverbose ) then
 		  write(6,*) 'nlsa : ',bread,sect,iv_in,iv_read
 		end if
 
 		if( bread ) then
                   call setsec(section,num)                !remember section
-		  if( bverbose ) write(6,'(a,a)') '$',section(1:60)
-		else
-		  section = 'skip'
+		  if( bverbose ) then
+		    write(6,'(a,a)') ' reading $',section(1:60)
+		  end if
 		end if
 
-		if(section.eq.'skip') then
+		if( bskip ) then
 			call nrdskp
+		  	if( bverbose ) then
+		    	  write(6,'(a,a)') ' skipping $',section(1:60)
+		  	end if
 		else if(section.eq.'title') then
 			call rdtita
 		else if(section.eq.'para') then
@@ -179,6 +184,12 @@ c************************************************************************
 
         subroutine string2ivar(string,iv)
 
+c interprets string to associate a variable number iv
+c
+c see below for possible string names
+c
+c the special name ivar# can be used to directtly give the variable number #
+
         implicit none
 
         character*(*) string
@@ -247,6 +258,8 @@ c************************************************************************
           iv = 99
         else if( string(is:ie4) .eq. 'resi' ) then
           iv = 99
+        else if( string(is:ie4) .eq. 'ivar' ) then
+	  read(string(ie4+1:),'(i5)') iv
         else if( string(is:ie3) .eq. 'nos' ) then
           !generic - no id
         else if( string(is:ie3) .eq. 'fem' ) then
@@ -280,6 +293,8 @@ c******************************************************
           string = 'mass field'
         else if( iv .eq. 1 ) then
           string = 'water level'
+        else if( iv .eq. 5 ) then
+          string = 'bathymetry'
         else if( iv .eq. 10 ) then
           string = 'generic tracer'
         else if( iv .eq. 30 ) then

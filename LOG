@@ -1,4 +1,19 @@
 
+25.05.2015
+
+c ./fem3d/simsys_spk.f:
+c 25.05.2015    ggu     some calls chenaged (pass array in)
+c
+c ./fem3d/subdep.f:
+c 25.05.2015    ggu     some changes in depth computation
+c
+c ./fem3d/newini.f:
+c 25.05.2015    ggu     file cleaned and prepared for module
+c
+c ./fem3d/subbas.f:
+c 25.05.2015    ggu     module introduced
+
+
 21.05.2015
 
 c ./femplot/supano.f:

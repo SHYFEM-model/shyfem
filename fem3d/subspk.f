@@ -17,6 +17,7 @@ c*************************************************************************
 
       implicit none
       include 'common.h'
+      include 'basin.h'
 
       integer n
 
@@ -45,12 +46,17 @@ c*************************************************************************
 
 c*************************************************************************
 
-      subroutine spk_solve_system
+      subroutine spk_solve_system(n,z)
 
 ! Solver routine with Sparskit iterative methods.
 
       implicit none
+
+	integer n
+	real z(n)	!first guess
+
       include 'common.h'
+      !include 'basin.h'
       integer k
 
       real*8 csr(csrdim)
@@ -71,6 +77,7 @@ c*************************************************************************
       real*8   alu(csrdim*2), fpar(16), wilut(nkndim+1)
       real*8   wksp(8*nkndim)
       real*8   guess(nkndim)
+	integer nkn
       integer  ju(nkndim), jlu(2*csrdim), iperm(2*nkndim)
       integer  iw(nkndim), jw(2*nkndim), ipar(16)
       integer  ierr, lfil, iwk, itsol, itpre, mbloc
@@ -80,6 +87,8 @@ c*************************************************************************
       !ITPACK
       integer IPARIT(12),IWKSP(3*nkndim), INW
       real*8  FPARIT(12),WKSPIT(6*nkndim+4*itermax), INIU(nkndim)
+
+	nkn = n
 
 !--------------------------------------------------
 ! CONVERSION AND SORTING
@@ -140,7 +149,7 @@ c*************************************************************************
 
 	do k=1,nkn
 	  !guess(k) = 0.
-	  guess(k) = znv(k)	!ggu
+	  guess(k) = z(k)	!ggu
 	end do
 
        if (itsol .eq. 1) then

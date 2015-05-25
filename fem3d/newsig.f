@@ -81,14 +81,12 @@ c********************************************************************
 c********************************************************************
 c********************************************************************
 
-	subroutine make_sigma_levels(nsigma)
+	subroutine make_sigma_levels(nsigma,hlv)
 
 	implicit none
 
 	integer nsigma
-
-	include 'param.h'
-	include 'levels.h'
+	real hlv(nsigma)
 
 	integer l
 	real hl
@@ -104,17 +102,14 @@ c********************************************************************
 
 c********************************************************************
 
-	subroutine make_zeta_levels(lmin,hmin,dzreg)
+	subroutine make_zeta_levels(lmin,hmin,dzreg,nlv,hlv)
 
 	implicit none
 
 	integer lmin
 	real hmin,dzreg
-
-	include 'param.h' !COMMON_GGU_SUBST
-	include 'nlevel.h'
-
-	include 'levels.h'
+	integer nlv
+	real hlv(nlv)
 
 	integer l
 	real hbot
@@ -124,7 +119,7 @@ c********************************************************************
         hbot = hmin
 	if( lmin .gt. 0 ) hlv(lmin) = hbot
 
-        do l=lmin+1,nlvdi
+        do l=lmin+1,nlv
           hbot = hbot + dzreg
           hlv(l) = hbot
         end do

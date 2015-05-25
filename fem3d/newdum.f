@@ -74,3 +74,17 @@ c dummies for oxygen module
 
 c*****************************************************************
 
+	subroutine basin_read(nin)
+
+	implicit none
+
+	integer nin
+
+	include 'param.h'
+
+	call sp13rr(nin,nkndim,neldim)
+
+	end
+
+c*****************************************************************
+

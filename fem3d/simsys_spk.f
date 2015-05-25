@@ -3,6 +3,7 @@ c revision log :
 c
 c 12.01.2009	ggu	new file for system routines
 c 31.03.2009	ggu	call renamed to spk_*
+c 25.05.2015	ggu	some calls chenaged (pass array in)
 c
 c******************************************************************
 
@@ -33,13 +34,16 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine system_solve_z
+	subroutine system_solve_z(n,z)
 
 	implicit none
 
+	integer n
+	real z(n)
+
 	include 'common.h'
 
-	call spk_solve_system
+	call spk_solve_system(n,z)
 
 	end
 
@@ -73,34 +77,38 @@ c******************************************************************
 
 c******************************************************************
 
-        subroutine system_adjust_z
+        subroutine system_adjust_z(n,z)
 
         implicit none
+
+	integer n
+	real z(n)
 
 	include 'common.h'
 
         integer k
 
-        do k=1,nkn
-          znv(k) = rvec(k)
+        do k=1,n
+          z(k) = rvec(k)
         end do
 
         end
 
 c******************************************************************
 
-        subroutine system_add_rhs(dt,array)
+        subroutine system_add_rhs(dt,n,array)
 
         implicit none
 
         real dt
-        real array(1)
+	integer n
+        real array(n)
 
 	include 'common.h'
 
         integer k
 
-        do k=1,nkn
+        do k=1,n
           rvec(k) = rvec(k) + dt * array(k)
         end do
 

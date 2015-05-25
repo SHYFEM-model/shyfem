@@ -256,6 +256,10 @@ c local variables
 	integer nsp
 	integer date,time
 
+	logical bdebout
+
+	bdebout = .true.
+
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%% code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -277,7 +281,7 @@ c read STR file
 c-----------------------------------------------------------
 
 	call cstinit
-	call cstfile(nkndim,neldim)	! read basin
+	call cstfile				!read STR and basin
 
 	call bas_get_para(nkn,nel,ngr,mbw)	!to be deleted later
 
@@ -315,8 +319,9 @@ c-----------------------------------------------------------
 c inititialize time independent vertical arrays
 c-----------------------------------------------------------
 
-	call adjust_depth
-	call init_vertical	!makes nlv, hlv, hldv , ilhv, ilhkv, hev, hkv
+	call adjust_depth	!adjusts hm3v
+	call init_vertical	!makes nlv,hlv,hldv,ilhv,ilhkv, adjusts hm3v
+	call set_depth		!makes hev,hkv
 
 c-----------------------------------------------------------
 c initialize barene data structures
@@ -419,6 +424,8 @@ c        call bclevvar_ini       	!chao debora
 
 	call check_parameter_values('before main')
 
+	if( bdebout ) call debug_output(it)
+
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -484,7 +491,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
            call write_wwm
 
-	   !call debug_output(it)
+	   if( bdebout ) call debug_output(it)
 
 	   !if( it .gt. 50400 ) call test3d(66,100)
 
@@ -542,17 +549,27 @@ c*****************************************************************
 
 	write(66) it
 
-	call debug_output_record(3*neldim,3,zeov)
-	call debug_output_record(nlvdim*neldim,nlvdim,hdeov)
-	call debug_output_record(nlvdim*neldim,nlvdim,utlov)
-	call debug_output_record(nlvdim*neldim,nlvdim,vtlov)
-        call debug_output_record(nlvdim*nkndim,nlvdim,saltv)
-        call debug_output_record(nlvdim*nkndim,nlvdim,tempv)
-	call debug_output_record((nlvdim+1)*nkndim,nlvdim+1,visv)
-	call debug_output_record((nlvdim+1)*nkndim,nlvdim+1,wlov)
-	call debug_output_record(nkndim,1,z0bk)
-	call debug_output_record(nkndim,1,tauxnv)
-	call debug_output_record(nkndim,1,tauynv)
+	call debug_output_record(3*nel,3,hm3v,'hm3v')
+	call debug_output_record(nkn,1,xgv,'xgv')
+	call debug_output_record(nkn,1,ygv,'ygv')
+
+	call debug_output_record(3*nel,3,zeov,'zeov')
+	call debug_output_record(3*nel,3,zenv,'zenv')
+	call debug_output_record(nkn,1,zov,'zov')
+	call debug_output_record(nkn,1,znv,'znv')
+	call debug_output_record(nlvdim*neldim,nlvdim,hdeov,'hdeov')
+	call debug_output_record(nlvdim*neldim,nlvdim,utlov,'utlov')
+	call debug_output_record(nlvdim*neldim,nlvdim,vtlov,'vtlov')
+	call debug_output_record(nlvdim*neldim,nlvdim,utlnv,'utlnv')
+	call debug_output_record(nlvdim*neldim,nlvdim,vtlnv,'vtlnv')
+        call debug_output_record(nlvdim*nkndim,nlvdim,saltv,'saltv')
+        call debug_output_record(nlvdim*nkndim,nlvdim,tempv,'tempv')
+	call debug_output_record((nlvdim+1)*nkndim,nlvdim+1,visv,'visv')
+	call debug_output_record((nlvdim+1)*nkndim,nlvdim+1,wlov,'wlov')
+	call debug_output_record((nlvdim+1)*nkndim,nlvdim+1,wlnv,'wlnv')
+	call debug_output_record(nkn,1,z0bk,'z0bk')
+	call debug_output_record(nkn,1,tauxnv,'tauxnv')
+	call debug_output_record(nkn,1,tauynv,'tauynv')
 
 	write(66) 0,0
 
@@ -560,11 +577,15 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine debug_output_record(ntot,nfirst,val)
+	subroutine debug_output_record(ntot,nfirst,val,text)
 	implicit none
 	integer ntot,nfirst
 	real val(ntot)
+	character*(*) text
+	character*80 text1
+	text1=text
 	write(66) ntot,nfirst
+	write(66) text1
 	write(66) val
 	end
 
