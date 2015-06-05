@@ -1,3 +1,84 @@
+version  7_1_12    05-06-2015    VERS_7_1_12
+
+========================================================== 05-06-2015 - 7_1_12
+
+c ./fem3d_05/simsys_spk.f:
+c 25.05.2015	ggu	some calls chenaged (pass array in)
+c
+c ./fem3d_05/subdep.f:
+c 25.05.2015	ggu	some changes in depth computation
+c
+c ./fem3d_05/newini.f:
+c 25.05.2015    ggu	file cleaned and prepared for module
+c
+c ./fem3d_05/subbas.f:
+c 25.05.2015	ggu	module introduced
+c
+c ./fem3d_04/simsys_spk.f:
+c 25.05.2015	ggu	some calls chenaged (pass array in)
+c
+c ./fem3d_04/subdep.f:
+c 25.05.2015	ggu	some changes in depth computation
+c
+c ./fem3d_04/newini.f:
+c 25.05.2015    ggu	file cleaned and prepared for module
+c
+c ./fem3d_04/subbas.f:
+c 25.05.2015	ggu	module introduced
+c
+c ./fem3d_06/simsys_spk.f:
+c 25.05.2015	ggu	some calls chenaged (pass array in)
+c
+c ./fem3d_06/subdep.f:
+c 25.05.2015	ggu	some changes in depth computation
+c
+c ./fem3d_06/newini.f:
+c 25.05.2015    ggu	file cleaned and prepared for module
+c
+c ./fem3d_06/subbas.f:
+c 25.05.2015	ggu	module introduced
+c
+c ./femplot/supsim.f:
+c 05.06.2015    ggu	some plotting routines adjourned (flag)
+c
+c ./femplot/supano.f:
+c 05.06.2015  ggu     new keyword vart in legend for variable text
+c
+c ./fem3d/subclo.f:
+! 28.05.2015    ggu     new routine clo_add_sep()
+!
+c ./fem3d/tmp/alloc1/3/new/subnos1.f:
+! 30.05.2015	ggu	module introduced
+!
+c ./fem3d/simsys_spk.f:
+c 25.05.2015	ggu	some calls changed (pass array in)
+c
+c ./fem3d/subver.f:
+c 05.06.2015	ggu	version 7.1.12
+c
+c ./fem3d/subwrt.f:
+c 05.06.2015	ggu	new routine to limit concentration between 0 and c0
+c
+c ./fem3d/femelab.f:
+! 05.06.2015    ggu     iextract to extract nodal value
+c
+c ./fem3d/noselab.f:
+c 05.06.2015    ggu     many more features added
+c
+c ./fem3d/subdep.f:
+c 25.05.2015	ggu	some changes in depth computation
+c
+c ./fem3d/newini.f:
+c 25.05.2015    ggu	file cleaned and prepared for module
+c
+c ./fem3d/subbas.f:
+c 25.05.2015	ggu	module introduced
+c
+c ./fem3d_03/newini.f:
+c 25.05.2015    ggu	file cleaned and prepared for module
+
+==========================================================
+
 version  7_1_11    21-05-2015    VERS_7_1_11   commit_2015-06-05
 
 version  7_1_11    21-05-2015    VERS_7_1_11   commit_2015-05-25
