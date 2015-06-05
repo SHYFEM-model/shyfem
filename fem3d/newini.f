@@ -77,6 +77,7 @@ c set up time independent vertical vectors
 	implicit none
 
 	include 'param.h'
+	include 'nbasin.h'
 	include 'nlevel.h'
 	include 'levels.h'
 
@@ -92,12 +93,12 @@ c------------------------------------------------------------------
 	nlv_est = nlv_read
 	call estimate_nlv(nlv_est)
 
-	nlv = nlvdi
-	call copy_hlv1(nlv,hlv)
-
 	call check_nlv
 
-	call get_nlv_read(nlv_read)
+	nlv = nlvdi
+	call levels_init(nkn,nel,nlv_est)
+	nlvdi = nlv_est
+	call transfer_hlv
 
 c------------------------------------------------------------------
 c levels read in from $levels section
@@ -117,6 +118,9 @@ c------------------------------------------------------------------
 c------------------------------------------------------------------
 c check data structure
 c------------------------------------------------------------------
+
+	call levels_reinit(nlv)
+	nlvdi = nlvdim		!to be removed later
 
 	call check_vertical
 
@@ -297,9 +301,9 @@ c estimates maximum value for nlv
 	call get_sigma(nsigma,hsigma)
 
 	nreg = 0
-	if( dzreg > 0 ) nreg = hmax/dzreg + 1
+	if( dzreg > 0 ) nreg = hmax/dzreg
 
-	nlv_est = nlv_est + nsigma + nreg
+	nlv_est = nlv_est + nsigma + nreg + 1
 
 	end
 

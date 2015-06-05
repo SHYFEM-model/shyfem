@@ -257,7 +257,7 @@ c	kin = (1/2) * rho * area * (U*U+V*V)/H
 	integer ie,ii,ie1,ie2
 	double precision aj,pot,kin,z,zz
 
-	if(ie.gt.0.and.ie.le.nel) then
+	if(ielem.gt.0.and.ielem.le.nel) then
 	  ie1 = ielem
 	  ie2 = ielem
 	else

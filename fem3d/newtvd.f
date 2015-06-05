@@ -70,17 +70,17 @@ c initializes horizontal tvd scheme
 
 c*****************************************************************
 
-        subroutine tvd_grad_3d(cc,gx,gy,aux,nlvdi,nlv)
+        subroutine tvd_grad_3d(cc,gx,gy,aux,nlvddi)
 
 c computes gradients for scalar cc (average gradient information)
 
         implicit none
 
-	integer nlvdi,nlv
-	real cc(nlvdi,1)
-	real gx(nlvdi,1)
-	real gy(nlvdi,1)
-	real aux(nlvdi,1)
+	integer nlvddi
+	real cc(nlvddi,1)
+	real gx(nlvddi,1)
+	real gy(nlvddi,1)
+	real aux(nlvddi,1)
 
         
 	include 'param.h' !COMMON_GGU_SUBST

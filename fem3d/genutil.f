@@ -248,15 +248,20 @@ c******************************************************************
         integer it
 
         integer i
-        character*10 naux
+        character*20 line
 
-        write(naux,'(i10)') it
+	logical dts_has_date
 
-        do i=1,10
-          if( naux(i:i) .eq. ' ' ) naux(i:i) = '_'
-        end do
-
-        name = pre // naux // post
+	if( dts_has_date() ) then
+	  call dtsgf(it,line)
+          name = pre // line // post
+	else
+          write(line,'(i10)') it
+          do i=1,10
+            if( line(i:i) .eq. ' ' ) line(i:i) = '_'
+          end do
+          name = pre // line(1:10) // post
+	end if
 
         end
 

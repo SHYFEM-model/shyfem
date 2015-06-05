@@ -4,8 +4,10 @@
 #
 #########################################################
 
-version=1.61
+version=1.70
 
+# 1.71	05.06.2015	new -dash for different dash styles
+# 1.70	27.05.2015	new -ty2 -ry2 -y2 for second y-axis
 # 1.61	27.04.2015	-sy now working, logarithmic axis introduced
 # 1.60	23.01.2014	new options -color -width -showcolor, restructuring
 # 1.51	23.01.2012	new option -logo
@@ -107,6 +109,7 @@ FullUsage()
   echo "  -style style     sets line style for following files"
   echo "  -color color     sets line color for following files"
   echo "  -width width     sets line width (integer) for following files"
+  echo "  -dash dash       sets dash style (integer) for following files"
   echo "  -xtics xtics     sets tics style for x-axis"
   echo "  -u  x:y          using columns x and y for x/y values (Default 1:2)"
   echo "  -u  all          plot all columns (x:all also possible)"
@@ -115,6 +118,10 @@ FullUsage()
   echo "  -ty ylabel       give y-label of plot"
   echo "  -rx xmin:xmax    give x-range of plot"
   echo "  -ry ymin:ymax    give y-range of plot"
+  echo "  -ty2 ylabel      give y-label of plot for second y-axis"
+  echo "  -ry2 ymin:ymax   give y-range of plot for second y-axis"
+  echo "  -y1              use first y-axis for following files (default)"
+  echo "  -y2              use second y-axis for following files"
   echo "  -sx xfact        scale x-coordinate with xfact"
   echo "  -sy yfact        scale y-coordinate with yfact"
   echo "  -l  string       string that is removed from legend if found"
@@ -129,6 +136,7 @@ FullUsage()
   echo "Possible color options are:"
   echo "   red, blue, green, etc.."
   echo "   to see all color names run gp with -showcolor"
+  echo "Possible dash styles are: 1,2,3,... (1 solid line)"
   echo "Possible xtics options are:"
   echo "   xdtics, xmtics, mesi, months or (custom)"
   echo "Column 0 indicates automatically generated index"
@@ -196,6 +204,8 @@ HandleFiles()
     astyles[$n]=$style
     acolors[$n]=$color
     awidths[$n]=$width
+    aaxes[$n]=$axes
+    adash[$n]=$dash
     ((n++))
   done
 }
@@ -205,6 +215,8 @@ InsertFiles()
   local s=${astyles[0]}
   local c=${acolors[0]}
   local w=${awidths[0]}
+  local x=${aaxes[0]}
+  local d=${adash[0]}
 
   local n=0
 
@@ -215,6 +227,8 @@ InsertFiles()
     astyles[$n]=$s
     acolors[$n]=$c
     awidths[$n]=$w
+    aaxes[$n]=$x
+    adash[$n]=$d
     ((n++))
   done
 }
@@ -232,7 +246,9 @@ ShowFiles()
      s=${astyles[$m]}
      c=${acolors[$m]}
      w=${awidths[$m]}
-     echo "$mm/$n $f $s $c $w}"
+     x=${aaxes[$m]}
+     d=${adash[$m]}
+     echo "$mm/$n $f $s $c $w $x $d"
      ((m++))
      ((mm++))
   done
@@ -255,10 +271,13 @@ Plotting()
     style=${astyles[$1]}
     color=${acolors[$1]}
     width=${awidths[$1]}
+    axes=${aaxes[$1]}
+    dash=${adash[$1]}
 
     with=""
     lc=""
     lw=""
+    lt=""
     use=$using
     if [ -n "$style" ]; then
       with="w $style"
@@ -277,6 +296,12 @@ Plotting()
         use="using 1:2:3"
       fi
     fi
+    if [ -n "$axes" ]; then
+      axes="axes $axes"
+    fi
+    if [ -n "$dash" ]; then
+      lt="lt $dash"
+    fi
     if [ -n "$color" ]; then
       lc="lc rgb '$color'"
     fi
@@ -287,7 +312,7 @@ Plotting()
     [ -z "$2" ] && eol=' '
 
     legend=`MakeLegend $file`
-    line="     \"$file\" $use title \"$legend\" $with $lc $lw"
+    line="     \"$file\" $use $axes title \"$legend\" $with $lt $lc $lw"
     echo "$cont $line $eol" >> gnu.tmp
     cont=', '
 
@@ -381,6 +406,8 @@ declare -a afiles		#must be global
 declare -a astyles
 declare -a acolors
 declare -a awidths
+declare -a aaxes
+declare -a adash
 
 ######################################################### read options
 
@@ -397,6 +424,7 @@ do
 	-style)		style=$2; shift;;
 	-color)		color=$2; shift;;
 	-width)		width=$2; shift;;
+	-dash)		dash=$2; shift;;
 	-xlog)		xlog="YES";;
 	-ylog)		ylog="YES";;
 	-png)		terminal="png";;
@@ -406,6 +434,10 @@ do
 	-ty)		ylabel=$2; shift;;
 	-rx)		xrange=$2; shift;;
 	-ry)		yrange=$2; shift;;
+	-ty2)		y2label=$2; shift;;
+	-ry2)		y2range=$2; shift;;
+	-y1)		axes="x1y1";;
+	-y2)		axes="x1y2";;
 	-sx)		xfact=$2; shift;;
 	-sy)		yfact=$2; shift;;
 	-l)		nolegend=$2; shift;;
@@ -503,6 +535,17 @@ if [ -n "$xtics" ]; then
   fi
 fi
 
+if [ -n "$y2label" -o -n "$y2range" ]; then		#second y-axis
+  echo "set ytics nomirror" >> gnu.tmp
+  echo "set y2tics" >> gnu.tmp
+  if [ -n "$y2label" ]; then
+    echo "set y2label \"$y2label\"" >> gnu.tmp
+  fi
+  if [ -n "$y2range" ]; then
+    echo "set y2range [$y2range]" >> gnu.tmp
+  fi
+fi
+
 echo "" >> gnu.tmp
 
 ######################################################### files to plot
@@ -521,7 +564,8 @@ if [[ $aux =~ all ]]; then
 else
   allcol="NO"
 fi
-echo "allcol=$allcol  xcol=$xcol"
+
+#echo "allcol=$allcol  xcol=$xcol"
 #exit 0
 
 if [ $allcol = "YES" ]; then

@@ -5,6 +5,7 @@
 !
 ! 14.01.2015    ggu     adapted from feminf
 ! 20.05.2015    ggu     use bhuman to convert to human readable time
+! 05.06.2015    ggu     iextract to extract nodal value
 !
 !******************************************************************
 
@@ -16,7 +17,7 @@ c writes info on fem file
 
 	implicit none
 
-	character*50 name,string,infile
+	character*80 name,string,infile
 	integer nfile
 	double precision tmin,tmax
 	character*80 stmin,stmax
@@ -95,12 +96,12 @@ c writes info on fem file
 
 	character*(*) infile
 
-	character*50 name,string
+	character*80 name,string
 	integer np,iunit,iout
 	integer nvers,lmax,nvar,ntype
 	integer nvar0,lmax0,np0
 	integer idt,idtact
-	double precision dtime,atmin,atmax,dtime0
+	double precision dtime,atmin,atmax,atime0,atime1997
 	double precision atime,atimeold,atimeanf,atimeend
 	real dmin,dmax
 	integer ierr
@@ -109,6 +110,7 @@ c writes info on fem file
 	integer itype(2)
 	integer iformat
 	integer datetime(2),dateanf(2),dateend(2)
+	integer iextract,it
 	real regpar(7)
 	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
 	logical bquiet,bhuman
@@ -116,6 +118,7 @@ c writes info on fem file
 	character*20 line
 	character*80 stmin,stmax
 	real,allocatable :: data(:,:,:)
+	real,allocatable :: dext(:)
 	real,allocatable :: hd(:)
 	real,allocatable :: hlv(:)
 	integer,allocatable :: ilhkv(:)
@@ -123,6 +126,13 @@ c writes info on fem file
 	bdebug = .true.
 	bdebug = .false.
 	bhuman = .true.
+
+	iextract = 5
+	datetime = 0
+	datetime(1) = 19970101
+	dtime = 0.
+	call fem_file_convert_time(datetime,dtime,atime)
+	atime1997 = atime
 
         datetime = 0
         irec = 0
@@ -210,11 +220,18 @@ c--------------------------------------------------------------
 	end if
 
 	call fem_file_convert_time(datetime,dtime,atime)
+	atime0 = atime		!absolute time of first record
+
+	if( iextract > 0 ) then
+	  bskip = .false.
+	  write(88,'(a,2i10)') '#date: ',datetime
+	end if
 
 	nvar0 = nvar
 	lmax0 = lmax
 	np0 = np
 	allocate(strings(nvar))
+	allocate(dext(nvar))
 	allocate(data(lmax,np,nvar))
 	allocate(hd(np))
 	allocate(ilhkv(np))
@@ -223,7 +240,7 @@ c--------------------------------------------------------------
 	  call fem_file_skip_data(iformat,iunit
      +                          ,nvers,np,lmax,string,ierr)
 	  if( ierr .ne. 0 ) goto 97
-	  if( .not. bquiet ) write(6,*) 'data:   ',i,'  ',string
+	  if( .not. bquiet ) write(6,*) 'data:   ',i,'  ',trim(string)
 	  strings(i) = string
 	end do
 
@@ -306,7 +323,16 @@ c--------------------------------------------------------------
 	      write(6,1100) irec,i,atime,dmin,dmax,line
  1100	      format(i6,i3,f15.2,2g16.5,1x,a20)
 	    end if
+	    if( iextract > 0 ) then
+	      dext(i) = data(1,iextract,i)
+	    end if
 	  end do
+
+	  if( iextract > 0 ) then
+	    it = nint(atime-atime0)
+	    it = nint(atime-atime1997)
+	    write(88,*) it,dext
+	  end if
 
 	  if( atime <= atimeold ) then
 	    ich = ich + 1
@@ -335,6 +361,12 @@ c--------------------------------------------------------------
 	close(iunit)
 	if( iout > 0 ) close(iout)
 
+	if( iextract > 0 ) then
+	  write(6,*) '********** warning **************'
+	  write(6,*) 'iextract = ',iextract
+	  write(6,*) 'data written to fort.88'
+	  write(6,*) '********** warning **************'
+	end if
 c--------------------------------------------------------------
 c end of routine
 c--------------------------------------------------------------

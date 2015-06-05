@@ -43,6 +43,7 @@ c--------------------------------------------------
 	real hl(nlvdim)
 
 
+	include 'nlevel.h'
 	include 'levels.h'
 	include 'depth.h'
 
@@ -52,7 +53,7 @@ c--------------------------------------------------
 	integer nkn1,nkn2,nel1,nel2,nlv1,nlv2
         integer l,lmax,k
 	integer itstart,itend
-	integer nin,nvers,nlv,nvar
+	integer nin,nvers,nvar
 	integer it,ivar,ierr,it0
 	integer nread,nused,nrepl
 	integer minused

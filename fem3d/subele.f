@@ -570,10 +570,8 @@ c computes nodal values from element values (scalar)
 	do ie=1,nel
 
 	  area = areaele(ie)
-	  !call elebase(ie,n,ibase)
-	  n = 3
 
-	  do ip=1,n
+	  do ii=1,3
 	    k = nen3v(ii,ie)
 	    vol = area * ( hm3v(ii,ie) + zenv(ii,ie) )
 	    sv(k) = sv(k) + sev(ii,ie) * vol
@@ -907,7 +905,7 @@ c	common /zenv/zenv
         logical bdebug
         logical bsigma
 	integer k,l,ie,ii
-	integer lmax,n,nlv,nsigma,levmin
+	integer lmax,n,nlev,nsigma,levmin
 	real hfirst,hlast,h,htot,z,zmed,hm
 	real hacu,hlevel,hsigma,hsig
 
@@ -936,7 +934,7 @@ c----------------------------------------------------------------
 c compute volumes at node
 c----------------------------------------------------------------
 
-	call get_sigma_info(nlv,nsigma,hsigma)
+	call get_sigma_info(nlev,nsigma,hsigma)
 	bsigma = nsigma .gt. 0
 	hfirst = hldv(1)
 

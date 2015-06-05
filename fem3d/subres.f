@@ -618,13 +618,13 @@ c-------------------------------------------------------------
 
 c********************************************************************
 
-	subroutine cmed_init(ext,id,nvar,nlvdii,idtc,itmc
+	subroutine cmed_init(ext,id,nvar,nlvddi,idtc,itmc
      +                          ,cmed,cmin,cmax,ivect)
 
 c computes average of scalar values - initialization
 c
-c for 2D arrays call with nlvdii = 1
-c for 3D arrays call with nlvdii = nlvdim
+c for 2D arrays call with nlvddi = 1
+c for 3D arrays call with nlvddi = nlvdim
 
 	implicit none
 
@@ -635,12 +635,12 @@ c parameter
 	character*(*) ext	!extension of file
 	integer id		!id number for variables to be written
 	integer nvar		!number of variables to be handled
-	integer nlvdii		!number of layers (either nlvdim or 1)
+	integer nlvddi		!number of layers (either nlvdim or 1)
 	integer idtc		!frequency of file to be written
 	integer itmc		!start time for accumulation
-	double precision cmed(nlvdii,nkndim,1)	!average
-	real cmin(nlvdii,nkndim,1)		!minimum
-	real cmax(nlvdii,nkndim,1)		!maximum
+	double precision cmed(nlvddi,nkndim,1)	!average
+	real cmin(nlvddi,nkndim,1)		!minimum
+	real cmax(nlvddi,nkndim,1)		!maximum
 	integer ivect(8)	!info array that is set up
 
 c common
@@ -666,7 +666,7 @@ c-------------------------------------------------------------
 
 	if( bdebug ) then
 	  write(6,*) 'cmed_init called... ',ext
-	  write(6,*) id,nvar,nlvdi,idtc,itmc,itanf,itend,idt
+	  write(6,*) id,nvar,nlvddi,idtc,itmc,itanf,itend,idt
 	end if
 
 	do i=1,8
@@ -677,9 +677,9 @@ c-------------------------------------------------------------
 c check levels
 c-------------------------------------------------------------
 
-        if( nlvdi .ne. 1 .and. nlvdi .ne. nlvdim ) then
-          write(6,*) 'nlvdi,nlvdim: ',nlvdi,nlvdim
-          stop 'error stop cmed_init: invalid nlvdi'
+        if( nlvddi .ne. 1 .and. nlvddi .ne. nlvdim ) then
+          write(6,*) 'nlvddi,nlvdim: ',nlvddi,nlvdim
+          stop 'error stop cmed_init: invalid nlvddi'
         end if
 
 c-------------------------------------------------------------
@@ -690,14 +690,14 @@ c-------------------------------------------------------------
 	ivect(3) = nvar
 	ivect(5) = idtc
 	ivect(6) = itmc
-	ivect(8) = nlvdi
+	ivect(8) = nlvddi
 
 	if(itmc.lt.itanf) itmc=itanf
 	if(idtc.le.0) return
 	if(itmc+idtc.gt.itend) return
 
 	nout = 0
-	nlvuse = min(nlvdii,nlv)
+	nlvuse = min(nlvddi,nlv)
         call confop(nout,itmc,idtc,nlvuse,3*nvar,ext)
 
 	if( nout .le. 0 ) then
@@ -716,7 +716,7 @@ c-------------------------------------------------------------
 	nr=0
 	do i=1,nvar
 	  do k=1,nkn
-	    nlev = min(nlvdi,ilhkv(k))
+	    nlev = min(nlvddi,ilhkv(k))
 	    do l=1,nlev
 	      cmed(l,k,i) = 0.
 	      cmin(l,k,i) = high
@@ -736,7 +736,7 @@ c-------------------------------------------------------------
 	ivect(5) = idtc
 	ivect(6) = itmc
 	ivect(7) = itc
-	ivect(8) = nlvdi
+	ivect(8) = nlvddi
 
 c-------------------------------------------------------------
 c end of routine
@@ -746,12 +746,12 @@ c-------------------------------------------------------------
 
 c********************************************************************
 
-	subroutine cmed_accum(nlvdi,cvec,cmed,cmin,cmax,ivect)
+	subroutine cmed_accum(nlvddi,cvec,cmed,cmin,cmax,ivect)
 
 c computes average of scalar values - accumulation and writing
 c
-c for 2D arrays call with nlvdi = 1
-c for 3D arrays call with nlvdi = nlvdim
+c for 2D arrays call with nlvddi = 1
+c for 3D arrays call with nlvddi = nlvdim
 
 	implicit none
 
@@ -759,11 +759,11 @@ c parameter
 
 	include 'param.h'
 
-	integer nlvdi		                !number of layers (nlvdim or 1)
-	real cvec(nlvdi,nkndim,1)		!array with concentration
-	double precision cmed(nlvdi,nkndim,1)	!average
-	real cmin(nlvdi,nkndim,1)		!minimum
-	real cmax(nlvdi,nkndim,1)		!maximum
+	integer nlvddi		                !number of layers (nlvdim or 1)
+	real cvec(nlvddi,nkndim,1)		!array with concentration
+	double precision cmed(nlvddi,nkndim,1)	!average
+	real cmin(nlvddi,nkndim,1)		!minimum
+	real cmax(nlvddi,nkndim,1)		!maximum
 	integer ivect(8)                	!info array that is set up
 
 c common
@@ -778,7 +778,7 @@ c local
 	integer nout,id
 	integer nvar,nr
 	integer idtc,itmc,itc
-	integer i,k,l,nlev,nlv
+	integer i,k,l,nlev
 	real high
 	real c
 	double precision rr
@@ -799,13 +799,13 @@ c-------------------------------------------------------------
 	idtc = ivect(5)
 	itmc = ivect(6)
 	itc  = ivect(7)
-	nlv  = ivect(8)
+	nlev = ivect(8)
 
 	if( nout .le. 0 ) return
 
-        if( nlvdi .ne. nlv ) then
-          write(6,*) 'nlvdi,nlv: ',nlvdi,nlv
-          stop 'error stop cmed_accum: invalid nlvdi or nlv'
+        if( nlvddi .ne. nlev ) then
+          write(6,*) 'nlvddi,nlev: ',nlvddi,nlev
+          stop 'error stop cmed_accum: invalid nlvddi or nlv'
         end if
 
 c	if( bdebug ) write(6,*) it,nout,id,nvar,nr,idtc,itmc,itc,nlv
@@ -819,7 +819,7 @@ c-------------------------------------------------------------
 	nr=nr+1
 	do i=1,nvar
 	  do k=1,nkn
-	    nlev = min(nlvdi,ilhkv(k))
+	    nlev = min(nlvddi,ilhkv(k))
 	    do l=1,nlev
 	      c = cvec(l,k,i)
 	      cmed(l,k,i) = cmed(l,k,i) + c
@@ -845,20 +845,20 @@ c-------------------------------------------------------------
 
 	do i=1,nvar
 	  do k=1,nkn
-	    nlev = min(nlvdi,ilhkv(k))
+	    nlev = min(nlvddi,ilhkv(k))
 	    do l=1,nlev
 	      saux1(l,k) = cmed(l,k,i) * rr     !needed because cmed is real*8
               if( l .eq. 1 ) v3v(k) = saux1(l,k)
 	    end do
 	  end do
-          !if( nlvdi .eq. 1 ) then
-	  !  call confil(nout,itmc,idtc,id+1,nlvdi,v3v)
+          !if( nlvddi .eq. 1 ) then
+	  !  call confil(nout,itmc,idtc,id+1,nlvddi,v3v)
           !else
-	  !  call confil(nout,itmc,idtc,id+1,nlvdi,saux1)
+	  !  call confil(nout,itmc,idtc,id+1,nlvddi,saux1)
           !end if
-	  call confil(nout,itmc,idtc,id+1,nlvdi,saux1)
-	  call confil(nout,itmc,idtc,id+2,nlvdi,cmin(1,1,i))
-	  call confil(nout,itmc,idtc,id+3,nlvdi,cmax(1,1,i))
+	  call confil(nout,itmc,idtc,id+1,nlvddi,saux1)
+	  call confil(nout,itmc,idtc,id+2,nlvddi,cmin(1,1,i))
+	  call confil(nout,itmc,idtc,id+3,nlvddi,cmax(1,1,i))
 	  id = id + 3
 	end do
 
@@ -869,7 +869,7 @@ c	-------------------------------------------------------------
 	nr=0
 	do i=1,nvar
 	  do k=1,nkn
-	    nlev = min(nlvdi,ilhkv(k))
+	    nlev = min(nlvddi,ilhkv(k))
 	    do l=1,nlev
 	      cmed(l,k,i) = 0.
 	      cmin(l,k,i) = high

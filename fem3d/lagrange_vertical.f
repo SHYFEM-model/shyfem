@@ -129,15 +129,15 @@ c computes layer thickness for element ie
 	include 'depth.h'
 	include 'hydro.h'
 
-	integer nlv,nsigma,ii,lmax_act
+	integer nlev,nsigma,ii,lmax_act
 	real hsigma
 	real z,h
 
-        !call compute_sigma_info(nlv,hlv,nsigma,hsigma)
-	call get_sigma_info(nlv,nsigma,hsigma)
+        !call compute_sigma_info(nlev,hlv,nsigma,hsigma)
+	call get_sigma_info(nlev,nsigma,hsigma)
 	lmax_act = ilhv(ie)
 	if( lmax_act > lmax ) goto 99
-	if( lmax_act > nlv ) goto 99
+	if( lmax_act > nlev ) goto 99
 	lmax = lmax_act
 
 	h = hev(ie)
@@ -151,7 +151,7 @@ c computes layer thickness for element ie
 
 	return
    99	continue
-	write(6,*) 'nlv,lmax,lmax_act: ',nlv,lmax,lmax_act
+	write(6,*) 'nlev,lmax,lmax_act: ',nlev,lmax,lmax_act
 	stop 'error stop lagr_layer_thickness: incompatible layers'
 	end
 
@@ -176,9 +176,9 @@ c cpstd		computed distance to be traveled
 
 	real cpdst,lstd
 
+	lstd = 0
         if(w.gt.0) lstd=layd*(1-zn0)
         if(w.lt.0) lstd=-layd*zn0
-        if(w.eq.0) lstd=0
 
         cpdst=deltat*w
         zn1=zn0+(cpdst/layd)

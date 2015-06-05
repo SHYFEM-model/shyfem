@@ -21,10 +21,10 @@ c***************************************************************
 
 	integer nlvdim
 	integer nkn
-	integer ilhkv(1)
-	real cv3(nlvdim,1)
-	real vol3(nlvdim,1)
-	real cv2(1)
+	integer ilhkv(nkn)
+	real cv3(nlvdim,nkn)
+	real vol3(nlvdim,nkn)
+	real cv2(nkn)
 
 	integer k,l,lmax
 	double precision c,v
@@ -55,9 +55,9 @@ c***************************************************************
 
 	integer nlvdim
 	integer nkn
-	integer ilhkv(1)
-	real cv3(nlvdim,1)
-	real vol3(nlvdim,1)
+	integer ilhkv(nkn)
+	real cv3(nlvdim,nkn)
+	real vol3(nlvdim,nkn)
 	real cmin,cmax,cmed,vtot
 
 	integer k,l,lmax
@@ -94,9 +94,9 @@ c***************************************************************
 
 	integer nlvdim
 	integer nkn
-	integer ilhkv(1)
-	real cv3(nlvdim,1)
-	real cvacu(nlvdim,1)
+	integer ilhkv(nkn)
+	real cv3(nlvdim,nkn)
+	real cvacu(nlvdim,nkn)
 
 	integer k,l,lmax
 
@@ -289,21 +289,20 @@ c we could do better using information on node area and depth structure
 
 	integer nlvdim
 	integer nkn,nel,nlv
-	integer nen3v(3,1)
-	integer ilhkv(1)
-	real hlv(1)
-	real hev(1)
-	real hl(1)		!aux vector for layer thickness
-	real vol3(nlvdim,1)
+	integer nen3v(3,nel)
+	integer ilhkv(nkn)
+	real hlv(nlv)
+	real hev(nel)
+	real hl(nlv)		!aux vector for layer thickness
+	real vol3(nlvdim,nkn)
 
-        include 'ev.h'
-
-	logical belem,bsigma
+	logical bsigma
 	integer ie,ii,k,l,lmax,nsigma,nlvaux
 	real area,hsigma
 	real zeta
 
-	call is_init_ev(belem)		!use ev if initialized
+	real weight_elem
+
         call get_sigma_info(nlvaux,nsigma,hsigma)
         bsigma = nsigma .gt. 0
 	zeta = 0.			!do not use water level
@@ -316,10 +315,7 @@ c we could do better using information on node area and depth structure
 	end do
 
 	do ie=1,nel
-	  area = 1.
-	  if( belem ) area = 4. * ev(10,ie)
-	  !lmax = ilhv(ie)
-	  !call get_layer_thickness_e(ie,nlv,bzeta,nsigma,hsigma,hl)
+	  area = 4. * weight_elem(ie)
 	  call get_layer_thickness(nlv,nsigma,hsigma,zeta,hev(ie),hlv,hl)
 	  do ii=1,3
 	    k = nen3v(ii,ie)
@@ -396,8 +392,8 @@ c tests array to be equal
 
 	character*(*) text
 	integer n
-	integer a1(1)
-	integer a2(1)
+	integer a1(n)
+	integer a2(n)
 
 	integer i,imin,imax
 
@@ -427,8 +423,8 @@ c tests array to be equal
 
 	character*(*) text
 	integer n
-	real a1(1)
-	real a2(1)
+	real a1(n)
+	real a2(n)
 
 	integer i,imin,imax
 

@@ -66,6 +66,7 @@ c 13.06.2013    ggu	new routine plofem()
 c 05.09.2013    ggu	endtime() and nplot introduced
 c 30.05.2014    ggu	flag no data points and do not plot
 c 20.10.2014    ggu	new time management
+c 05.06.2015    ggu	some plotting routines adjourned (flag)
 c
 c notes :
 c
@@ -686,8 +687,8 @@ c	-----------------------------------------------------------
 c	locally defined parameters (please change here)
 c	-----------------------------------------------------------
 
-	bnode = .false.		!plot arrows on nodes
 	bnode = .true.		!plot arrows on nodes
+	bnode = .false.		!plot arrows on nodes
 	bbound = .true. 	!plot arrows on boundary nodes
 	bbound = .false. 	!plot arrows on boundary nodes
 	fscale = 3.		!extra empirical factor for computing arrows
@@ -879,11 +880,11 @@ c------------------------------------------------------------------
 	  write(6,*) 'regular grid: ',dx,dy,nx,ny
 	  do j=1,nydim				!FIXME -> maybe nx,ny is enough
 	    do i=1,nxdim
-	      if( ureg(i,j) .ne. flag ) then	!can plot
+	      u = ureg(i,j)
+	      v = vreg(i,j)
+	      if( u > flag .and. v > flag ) then
 		xm = x0 + i * dx
 		ym = y0 + j * dy
-		u = ureg(i,j)
-		v = vreg(i,j)
 		call comp_scale(inorm,typsca,valmin,valref,u,v,scale)
 	        call pfeil(xm,ym,ureg(i,j),vreg(i,j),scale)
 	      end if
@@ -893,16 +894,20 @@ c------------------------------------------------------------------
 	  do k=1,nkn
 	    u = uv(k)
 	    v = vv(k)
-	    call comp_scale(inorm,typsca,valmin,valref,u,v,scale)
-	    call pfeil(xgv(k),ygv(k),u,v,scale)
+	    if( u > flag .and. v > flag ) then
+	      call comp_scale(inorm,typsca,valmin,valref,u,v,scale)
+	      call pfeil(xgv(k),ygv(k),u,v,scale)
+	    end if
 	  end do
 	else
 	  do ie=1,nel
 	    call baric(ie,xm,ym)
 	    u = uvnv(ie)
 	    v = vvnv(ie)
-	    call comp_scale(inorm,typsca,valmin,valref,u,v,scale)
-	    call pfeil(xm,ym,u,v,scale)
+	    if( u > flag .and. v > flag ) then
+	      call comp_scale(inorm,typsca,valmin,valref,u,v,scale)
+	      call pfeil(xm,ym,u,v,scale)
+	    end if
 	  end do
 	end if
 
@@ -922,6 +927,7 @@ c------------------------------------------------------------------
 c end of plot
 c------------------------------------------------------------------
 
+	call bash(4)
 	call bash(2)
 	call qend
 
@@ -1511,7 +1517,7 @@ c computes modulus for velocity vector and maximum and average
 	real um,vm,rmod,rmax,rmed
 	real flag
 
-	flag = -999.
+        call get_flag(flag)
 	rmax = 0.
 	rmed = 0.
 	nn = 0
@@ -1578,7 +1584,7 @@ c compute elemental values vev()
 	integer ie,ii,k,iflag
 	real sum,flag
 
-	flag = -999.
+        call get_flag(flag)
 
 	do ie=1,nel
 	  if( bwater(ie) ) then
@@ -1618,7 +1624,7 @@ c compute nodal values vnv()
 	integer ie,ii,k
 	real r,flag
 
-	flag = -999.
+        call get_flag(flag)
 
 	do k=1,nkn
 	  vnv(k) = 0.

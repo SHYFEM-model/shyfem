@@ -88,3 +88,56 @@ c*****************************************************************
 
 c*****************************************************************
 
+	subroutine levels_init(nkn,nel,nl)
+	implicit none
+	integer nkn,nel,nl
+	include 'nlevel.h'
+	nl = nlvdi
+	end
+
+	subroutine levels_reinit(nl)
+	implicit none
+	integer nl
+	include 'param.h'
+	include 'nlevel.h'
+	nlvdi = nlvdim
+	end
+
+	subroutine transfer_hlv
+
+	use levels, only : copy_hlv
+
+	implicit none
+
+	include 'param.h'
+	include 'nlevel.h'
+	include 'levels.h'
+
+        integer l
+
+	nlv = nlvdi
+        call copy_hlv(nlv,hlv)
+
+        write(6,*) 'hlv copied: ',nlv
+        write(6,*) (hlv(l),l=1,nlv)
+
+	end
+
+c*****************************************************************
+
+	subroutine mod_hydro_init(nkn,nel,nlv)
+	implicit none
+	integer nkn,nel,nlv
+	end
+
+	subroutine mod_hydro_vel_init(nkn,nel,nlv)
+	implicit none
+	integer nkn,nel,nlv
+	end
+
+c*****************************************************************
+
+
+
+
+

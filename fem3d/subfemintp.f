@@ -144,7 +144,7 @@
 	logical debug
 	integer ilast,ifirst
 	character*38 name
-	character*10 descrp
+	character*80 descrp
 
 	iu = 6
 	if( present(iunit) ) iu = iunit
@@ -170,7 +170,7 @@
 	  write(iu,1000) id,pinfo(id)%ibc
      +			,pinfo(id)%iunit,pinfo(id)%nvar
      +			,pinfo(id)%nintp,pinfo(id)%iformat
-     +			,descrp,name
+     +			,descrp(1:10),name
 	end do
 
 	if( .not. debug ) return

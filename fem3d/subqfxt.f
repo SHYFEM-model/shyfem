@@ -106,7 +106,7 @@ c reads new meteo data
 
 c*****************************************************************************
 
-	subroutine qflux3d(it,dt,nkn,nlvdi,temp,dq)
+	subroutine qflux3d(it,dt,nkn,nlvddi,temp,dq)
 
 c computes new temperature (forced by heat flux) - 3d version
 
@@ -119,8 +119,8 @@ c computes new temperature (forced by heat flux) - 3d version
 	integer it
 	real dt
 	integer nkn
-	integer nlvdi
-	real temp(nlvdi,1)
+	integer nlvddi
+	real temp(nlvddi,1)
 	double precision dq	!total energy introduced [(W/m**2)*dt*area = J]
 
 	include 'levels.h'

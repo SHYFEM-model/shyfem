@@ -37,6 +37,7 @@ c 05.09.2013  ggu     adjust for scale distortion in ref and wind arrows
 c 05.03.2014  ggu     in annotation use date information
 c 16.10.2014  ggu     annotes doesnt need it anymore
 c 06.05.2015  ggu     prepared for logarithmic color bar
+c 05.06.2015  ggu     new keyword vart in legend for variable text
 c
 c***************************************************************
 
@@ -981,6 +982,11 @@ c
 	  if( istof(line,y,ioff) .le. 0 ) goto 99
 	  if( istof(line,size,ioff) .le. 0 ) goto 99
 	  if( istos(line,text,ioff) .le. 0 ) goto 99
+	else if( keyword .eq. 'vart' ) then
+	  if( istof(line,x,ioff) .le. 0 ) goto 99
+	  if( istof(line,y,ioff) .le. 0 ) goto 99
+	  if( istof(line,size,ioff) .le. 0 ) goto 99
+	  if( istos(line,text,ioff) .le. 0 ) goto 99
 	else if( keyword .eq. 'rect' ) then
 	  if( istof(line,x,ioff) .le. 0 ) goto 99
 	  if( istof(line,y,ioff) .le. 0 ) goto 99
@@ -1162,6 +1168,10 @@ c plots legend
 	real dcolor		!default color
         real scale
 
+	integer icall
+	save icall
+	data icall /0/
+
 	call legini
 	if( nlegdi .ne. legdim ) call legerr
 
@@ -1192,6 +1202,11 @@ c plots legend
 	  text = legleg(i)
 
 	  if( what .eq. 'text' ) then
+	    if( isize .gt. 0 ) call qtxts(isize)
+	    call make_absolute1(xleg(1,i),yleg(1,i))
+	    call qtext(xleg(1,i),yleg(1,i),text)
+	  else if( what .eq. 'vart' ) then
+	    call adjust_vartext(icall,text)
 	    if( isize .gt. 0 ) call qtxts(isize)
 	    call make_absolute1(xleg(1,i),yleg(1,i))
 	    call qtext(xleg(1,i),yleg(1,i),text)
@@ -1257,10 +1272,44 @@ c        call legwind(2200.,-600.,60.,20)    !FIXME
 	call legdate
 	call legwind
 
+	icall = icall + 1
+
 	return
    99	continue
 	write(6,*) 'Unknown keyword ',what
 	stop 'error stop legplo: keyword error'
+	end
+
+c*****************************************************************
+
+	subroutine adjust_vartext(iadd,text)
+
+	implicit none
+
+	integer iadd
+	character*(*) text
+
+	integer al,au,zl,zu,one,nine
+	parameter (al=ichar('a'),au=ichar('A'))
+	parameter (zl=ichar('z'),zu=ichar('Z'))
+	parameter (one=ichar('1'),nine=ichar('9'))
+
+	integer i,ic,add
+	character*1 c
+
+	do i=1,len(text)
+	  c = text(i:i)
+	  ic = ichar(c)
+	  add = 0
+	  if( ic >= al .and. ic <= zl ) add = iadd
+	  if( ic >= au .and. ic <= zu ) add = iadd
+	  if( ic >= one .and. ic <= nine ) add = iadd
+	  ic = ic + add
+	  text(i:i) = char(ic)
+	end do
+
+	write(6,*) 'adjusting vartext: ',iadd,trim(text)
+
 	end
 
 c*****************************************************************

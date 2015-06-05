@@ -260,6 +260,8 @@ c the special name ivar# can be used to directtly give the variable number #
           iv = 99
         else if( string(is:ie4) .eq. 'ivar' ) then
 	  read(string(ie4+1:),'(i5)') iv
+        else if( string(is:ie3) .eq. 'var' ) then
+	  read(string(ie3+1:),'(i5)') iv
         else if( string(is:ie3) .eq. 'nos' ) then
           !generic - no id
         else if( string(is:ie3) .eq. 'fem' ) then

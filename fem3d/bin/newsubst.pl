@@ -1127,6 +1127,10 @@ sub include2use {
       if( not $ritem->{use}->{$use} ) {		#not yet included
         print STDERR "    routine $name contains include... substituting\n";
         substitute_use($fortran,$ritem,$include,$use,$only);
+        $ritem->{use}->{$use} = 1;
+        $fortran->set_changed($file);
+      } else {
+	delete_include($ritem,$include);
         $fortran->set_changed($file);
       }
     }
@@ -1143,6 +1147,7 @@ sub substitute_use {
   my $used = 0;
 
   $only = ", only : $only" if $only;
+  $only = "" unless $only;
 
   foreach my $l (@$code) {
     $nline++;
@@ -1192,8 +1197,12 @@ sub inc2use {
 
   #include2use($fortran,"hydro.h","fem_hydro.f");
   #include2use($fortran,"tides.h","fem_tides");
+
   include2use($fortran,"basin.h","basin");
   include2use($fortran,"nbasin.h","basin","nkn,nel,ngr,mbw");
+  include2use($fortran,"levels.h","levels");
+  include2use($fortran,"nlevel.h","levels","nlvdi,nlv");
+  include2use($fortran,"hydro.h","hydro");
 }
 
 #--------------------------------------------------------------

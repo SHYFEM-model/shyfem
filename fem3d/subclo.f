@@ -9,6 +9,7 @@
 ! 26.01.2015    ggu     make argument to clo_parse_options() optional
 ! 26.01.2015    ggu     new routine clo_check_files()
 ! 08.02.2015    ggu     bug fix in clo_get_option, new routine clo_info
+! 28.05.2015    ggu     new routine clo_add_sep()
 !
 ! notes :
 !
@@ -25,6 +26,7 @@
 !	 call clo_add_info('elaborates and rewrites a fem file')
 !        call clo_add_option('write',.false.,'write min/max of values')
 !        call clo_add_option('out',.false.,'create output file')
+!	 call clo_add_sep('other options')
 !        call clo_add_option('tmin time',-1
 !     +                          ,'only process starting from time')
 !        call clo_add_option('tmax time',-1
@@ -169,6 +171,7 @@
 	pentry(id)%flag = .false.
 	pentry(id)%string = ' '
 	pentry(id)%text = ' '
+	pentry(id)%textra = ' '
 	
 	end subroutine clo_init_id
 
@@ -393,7 +396,7 @@
 	if( id /= 0 ) call clo_error(name1,'option already existing')
 	call clo_init_new_id(id)
 
-	pentry(id)%name = name1
+	pentry(id)%name = name1(1:20)
 	pentry(id)%itype = 1
 	pentry(id)%value = value
 	pentry(id)%textra = name2
@@ -447,13 +450,29 @@
 	if( id /= 0 ) call clo_error(name1,'option already existing')
 	call clo_init_new_id(id)
 
-	pentry(id)%name = name1
+	pentry(id)%name = name1(1:20)
 	pentry(id)%itype = 3
 	pentry(id)%string = string
 	pentry(id)%textra = name2
 	if( present(text) ) pentry(id)%text = text
 
 	end subroutine clo_add_option_s
+
+!******************************************************************
+
+	subroutine clo_add_sep(text)
+
+	character*(*) text
+
+	integer id
+
+	call clo_init_new_id(id)
+
+	pentry(id)%name = ' '
+	pentry(id)%itype = 4
+	pentry(id)%text = text
+
+	end subroutine clo_add_sep
 
 !******************************************************************
 !******************************************************************
@@ -841,8 +860,8 @@
 
 	write(6,*) 'Usage: ',routine_name(1:nr)
      +			,' [-h|-help] [-options] ',files_name(1:nf)
-	if( info /= ' ' ) write(6,*) '  ',info(1:len_trim(info))
-	write(6,*) '  options:'
+	if( info /= ' ' ) write(6,*) ' ',info(1:len_trim(info))
+	write(6,*) ' options:'
 	call clo_write_line(length,'h|-help',' ','this help screen')
 	call clo_write_line(length,'v|-version',' ','version of routine')
 
@@ -850,7 +869,11 @@
 	  name = pentry(id)%name
 	  textra = pentry(id)%textra
 	  text = pentry(id)%text
-	  call clo_write_line(length,name,textra,text)
+	  if( name == ' ' ) then
+	    write(6,*) ' ',trim(text)
+	  else
+	    call clo_write_line(length,name,textra,text)
+	  end if
 	end do
 
 	do ie=1,ielast

@@ -13,6 +13,7 @@ c 16.03.2012	ggu	use idtwrt=-1 for no renewal computation
 c 10.05.2014	ccf	parameters from the str file
 c 31.03.2015	ggu	compute res time for different areas
 c 20.05.2015	ggu	rinside computed only once, bug fix for conz==0
+c 05.06.2015	ggu	new routine to limit concentration between 0 and c0
 c
 c******************************************************************
 c Parameters to be set in section $wrt of the parameter input file
@@ -75,7 +76,7 @@ c------------------------------------------------------------
         logical bnoret,bstir
 	logical blog,badj
 	logical bdebug
-	logical bresarea
+	logical bresarea,blimit
 
 	integer iaout,itmin,itmax,idtwrt
 	integer iret,istir,iadj,ilog
@@ -110,8 +111,8 @@ c------------------------------------------------------------
 	save it0
 	double precision tacu
 	save tacu
-        double precision mass0
-        save mass0
+        double precision mass0,vol0,conz0
+        save mass0,vol0,conz0
 	integer ia_out(4)
 	save ia_out
 
@@ -122,7 +123,11 @@ c------------------------------------------------------------
 
 	double precision massa(0:ndim)
 	double precision massa0(0:ndim)
-	save massa,massa0
+	double precision vola(0:ndim)
+	double precision vola0(0:ndim)
+	double precision conza(0:ndim)
+	double precision conza0(0:ndim)
+	save massa,massa0,vola,vola0,conza,conza0
 
         integer icall
         save icall
@@ -137,6 +142,7 @@ c------------------------------------------------------------
 	bdebug = .false.
 
 	bresarea = .true.	!compute masses for single areas
+	blimit = .true.		!limit concentration between 0 and c0
 
 	if( icall .lt. 0 ) return
 
@@ -255,9 +261,11 @@ c------------------------------------------------------------
 
 	conz = 0.
 	if( belab ) then
+	  if( blimit ) call wrt_limit_conz(c0,cnv)
 	  call wrt_massvolconz(cnv,rinside,vol,mass,volume)
-	  call wrt_mass_area(iadim,cnv,massa)
-	  call wrt_write_area(iua,it,iadim,massa,massa0)
+	  call wrt_mass_area(iadim,cnv,massa,vola,conza)
+	  !call wrt_write_area(iua,it,iadim,massa,massa0)
+	  call wrt_write_area(iua,it,iadim,conza,conza0)
 	  conz = mass / volume
 
 	  if( bstir ) call wrt_bstir(conz,cnv,rinside)	!stirred tank
@@ -314,10 +322,15 @@ c------------------------------------------------------------
 
 	  call wrt_massvolconz(cnv,rinside,vol,mass,volume)
 	  mass0 = mass
+	  vol0 = volume
+	  conz0 = mass0/vol0
 
-	  call wrt_mass_area(iadim,cnv,massa)
+	  call wrt_mass_area(iadim,cnv,massa,vola,conza)
 	  massa0 = massa
-	  call wrt_write_area(iua,it,iadim,massa,massa0)
+	  vola0 = vola
+	  conza0 = conza
+	  !call wrt_write_area(iua,it,iadim,massa,massa0)
+	  call wrt_write_area(iua,it,iadim,conza,conza0)
 
 	  call wrt_restime_summary(-iu,it,it0,mass,mass0,rcorrect)	!reset
 	end if
@@ -470,7 +483,7 @@ c computes masses for different areas
 
 c******************************************************
 
-	subroutine wrt_mass_area(ndim,cnv,massa)
+	subroutine wrt_mass_area(ndim,cnv,massa,vola,conza)
 
 c computes masses for different areas
 
@@ -481,6 +494,8 @@ c computes masses for different areas
 	integer ndim
 	real cnv(nlvdim,1)
 	double precision massa(0:ndim)
+	double precision vola(0:ndim)
+	double precision conza(0:ndim)
 
 	include 'basin.h'
 	include 'levels.h'
@@ -495,6 +510,7 @@ c computes masses for different areas
 	if( ndim .le. 0 ) return
 
 	massa = 0.
+	vola = 0.
 
 	do ie=1,nel
 	  ia = iarv(ie)
@@ -510,9 +526,12 @@ c computes masses for different areas
               v = area * hdep
               conz = cnv(l,k)
               massa(ia) = massa(ia) + v*conz
+              vola(ia) = vola(ia) + v
 	    end do
 	  end do
 	end do
+
+	conza = massa / vola
 
 	return
    98	continue
@@ -521,6 +540,34 @@ c computes masses for different areas
    99	continue
 	write(6,*) 'ie,ia: ',ie,ia
 	stop 'error stop wrt_mass_area: internal error (1)'
+	end
+
+c******************************************************
+
+	subroutine wrt_limit_conz(c0,cnv)
+
+c limits concentration between 0 and c0
+
+	implicit none
+
+	include 'param.h'
+
+	real c0
+	real cnv(nlvdim,1)		!concentration
+
+	include 'nbasin.h'
+	include 'levels.h'
+
+	integer k,l,lmax
+
+        do k=1,nkn
+          lmax = ilhkv(k)
+          do l=1,lmax
+            cnv(l,k) = min(cnv(l,k),c0)
+            cnv(l,k) = max(cnv(l,k),0.)
+          end do
+        end do
+
 	end
 
 c******************************************************

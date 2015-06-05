@@ -1,5 +1,91 @@
 ============================================================
 
+Fri Jun  5 16:20:22 CEST 2015
+
+more on module transition
+
+ .gitignore                     |    1 +
+ RELEASE_NOTES                  |    5 +
+ fem3d/Makefile                 |  192 +++++++++--------
+ fem3d/bin/check_include.pl     |   46 ++++
+ fem3d/bin/newsubst.pl          |    9 +
+ fem3d/cp_fem3d.sh              |    6 +-
+ fem3d/ev.h                     |    2 +
+ fem3d/evmain.h                 |    2 +
+ fem3d/femelab.f                |   40 +++-
+ fem3d/genutil.f                |   23 ++-
+ fem3d/ht.f                     |   73 +++++--
+ fem3d/lagrange_vertical.f      |   12 +-
+ fem3d/mod/marco.zip            |  Bin 0 -> 5119 bytes
+ fem3d/mod/mod_diff_visc_fric.f |   80 +++++++
+ fem3d/mod/mod_hydro_baro.f     |   48 ++++
+ fem3d/mod/mod_hydro_print.f    |   80 +++++++
+ fem3d/mod/mod_levels.f         |   71 ++++++
+ fem3d/mod/mod_roughness.f      |   42 ++++
+ fem3d/mod_hydro.f              |   83 +++++++
+ fem3d/mod_hydro_vel.f          |   74 +++++++
+ fem3d/newcon.f                 |   80 ++++----
+ fem3d/newdum.f                 |   53 +++++
+ fem3d/newini.f                 |   16 +-
+ fem3d/newlevels.f              |   33 +++-
+ fem3d/newtra.f                 |   37 +--
+ fem3d/newtvd.f                 |   12 +-
+ fem3d/noselab.f                |  471 ++++++++++++++++++++++++++++++++++------
+ fem3d/nosextr_gis.f            |   11 +-
+ fem3d/nosextr_nodes.f          |    3 +-
+ fem3d/nosresidence.f           |    3 +-
+ fem3d/nosutil.f                |   54 ++---
+ fem3d/ousextr_cat.f            |    3 +-
+ fem3d/ousextr_gis.f            |    3 +-
+ fem3d/ousextr_nodes.f          |    3 +-
+ fem3d/ousextr_records.f        |    3 +-
+ fem3d/ousinf.f                 |    3 +-
+ fem3d/ousutil.f                |   15 +-
+ fem3d/param.h                  |    6 +-
+ fem3d/simsys_spk.f             |    2 +-
+ fem3d/subapn.f                 |   54 +++--
+ fem3d/subbas.f                 |    3 +
+ fem3d/subbndo.f                |   18 +-
+ fem3d/subclo.f                 |   33 +++-
+ fem3d/subcon1.f                |  106 +++++-----
+ fem3d/subele.f                 |    8 +-
+ fem3d/subetsa.f                |    2 +-
+ fem3d/subfemintp.f             |    4 +-
+ fem3d/submeteo2.f              |   36 +++-
+ fem3d/subnev.f                 |   10 +
+ fem3d/subnls.f                 |    2 +-
+ fem3d/subnsa.f                 |    2 +
+ fem3d/subous.f                 |   23 +--
+ fem3d/subqfxm5.f               |    2 +
+ fem3d/subqfxt.f                |    6 +-
+ fem3d/subres.f                 |   74 +++---
+ fem3d/subuti.f                 |    2 +-
+ fem3d/subwat.f                 |   16 +-
+ fem3d/subwrt.f                 |   65 +++++-
+ femadj/param.h                 |    6 +-
+ fembin/average                 |   52 ++++-
+ fembin/gp                      |   52 ++++-
+ fembin/mkdp.pl                 |    5 +
+ femdoc/final/shyfem.pdf        |  Bin 294940 -> 294942 bytes
+ femdoc/final/shyfem.ps         |   12 +-
+ femplot/param.h                |    6 +-
+ femplot/supano.f               |   49 ++++
+ femplot/supsim.f               |   28 ++-
+ param.h                        |    6 +-
+ 68 files changed, 1842 insertions(+), 540 deletions(-)
+ new file:
+   fem3d/bin/check_include.pl
+   fem3d/mod/marco.zip
+   fem3d/mod/mod_diff_visc_fric.f
+   fem3d/mod/mod_hydro_baro.f
+   fem3d/mod/mod_hydro_print.f
+   fem3d/mod/mod_levels.f
+   fem3d/mod/mod_roughness.f
+   fem3d/mod_hydro.f
+   fem3d/mod_hydro_vel.f
+
+============================================================
+
 Mon May 25 17:05:07 CEST 2015
 
 intermediate version

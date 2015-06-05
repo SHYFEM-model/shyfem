@@ -141,7 +141,7 @@ c******************************************************************
 
 	integer i,k
 	real x,y
-	character*65 s
+	character*80 s
 	integer ipext
 
         if(nets.le.0) return

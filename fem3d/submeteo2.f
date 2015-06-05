@@ -381,7 +381,7 @@ c DOCS  END
 	integer nvar
 
 	integer il
-	character*60 string,string1,string2
+	character*80 string,string1,string2
 
 	real, external :: getpar
 
@@ -452,8 +452,8 @@ c DOCS  END
 	    iwtype = 4
 	  else
 	    write(6,*) 'description string for wind not recognized: '
-	    write(6,*) string1
-	    write(6,*) string2
+	    write(6,*) trim(string1)
+	    write(6,*) trim(string2)
 	    stop 'error stop meteo_set_wind_data: wind description'
 	  end if
 
@@ -477,12 +477,11 @@ c DOCS  END
 	    pfact = 100.
 	  else
 	    write(6,*) 'description string for pressure not recognized: '
-	    write(6,*) string
+	    write(6,*) trim(string)
 	    stop 'error stop meteo_set_wind_data: pressure description'
 	  end if
 	  if( bdebug ) then
-	    il = len_trim(string)
-	    write(6,*) 'pressure initialized: ',pfact,string(1:il)
+	    write(6,*) 'pressure initialized: ',pfact,trim(string)
 	    write(6,*) 'wind type: ',iwtype
 	  end if
 	end if
@@ -500,11 +499,11 @@ c DOCS  END
 	  call iff_get_var_description(id,1,string1)
 	  call iff_get_var_description(id,2,string2)
 	  write(6,*) 'content: '
-	  write(6,*) ' 1    ',string1
-	  write(6,*) ' 2    ',string2
+	  write(6,*) ' 1    ',trim(string1)
+	  write(6,*) ' 2    ',trim(string2)
 	  if( nvar == 3 ) then
 	    call iff_get_var_description(id,3,string)
-	    write(6,*) ' 3    ',string
+	    write(6,*) ' 3    ',trim(string)
 	  end if
 	end if
 
@@ -606,7 +605,10 @@ c DOCS  END
 	    wx(k) = fact*wx(k)
 	    wy(k) = fact*wy(k)
             wspeed = ws(k)
-            if( itdrag .gt. 0 ) call get_drag(itdrag,wspeed,cd)
+	    cd = cdv(k)
+            if( itdrag .gt. 0 .and. itdrag .le. 2 ) then
+		call get_drag(itdrag,wspeed,cd)
+	    end if
             tx(k) = fice * wfact * cd * wspeed * wx(k)
             ty(k) = fice * wfact * cd * wspeed * wy(k)
           end do
@@ -795,10 +797,13 @@ c convert ice data (nothing to do)
 
 	include 'param.h'
 	include 'basin.h'
+	include 'ev.h'
+	include 'femtime.h'
 
 	integer k,ie,ii,ia
 	integer ia_icefree
 	double precision racu,rorig
+	double precision rice,rarea,area
 
 	ia_icefree = -1		!this does not change ice cover
 	ia_icefree = 0
@@ -809,12 +814,22 @@ c convert ice data (nothing to do)
 	end do
 	rorig = racu / n
 
+	rice = 0.
+	rarea = 0.
+
 	do ie=1,nel
 	  ia = iarv(ie)
+	  area = 4. * ev(10,ie)
 	  if( ia == ia_icefree ) then
 	    do ii=1,3
 	      k = nen3v(ii,ie)
 	      r(k) = 0.
+	    end do
+	  else
+	    do ii=1,3
+	      k = nen3v(ii,ie)
+	      rice = rice + area*r(k)
+	      rarea = rarea + area
 	    end do
 	  end if
 	end do
@@ -826,6 +841,7 @@ c convert ice data (nothing to do)
 	racu = racu / n
 
 	!write(6,*) rorig,racu
+	!write(166,*) it,rice/rarea
 
 	end subroutine meteo_convert_ice_data
 

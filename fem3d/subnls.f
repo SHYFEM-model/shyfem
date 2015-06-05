@@ -439,7 +439,7 @@ c skips over data in section
 	integer num
 	character*10 section,extra,old_section
 
-	old_section = sname
+	old_section = sname(1:10)
 
 	if( nls_next_section(section,num,extra) ) then
 	  if( section .eq. 'end' ) return

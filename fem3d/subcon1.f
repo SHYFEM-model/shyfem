@@ -5,18 +5,18 @@ c routines for concentration (utilities) (old newcon1.f)
 c
 c contents :
 c
-c subroutine conini0(nlvdi,c,cref)                      sets initial conditions
-c subroutine conini(nlvdi,c,cref,cstrat)		sets initial conditions
+c subroutine conini0(nlvddi,c,cref)                      sets initial conditions
+c subroutine conini(nlvddi,c,cref,cstrat)		sets initial conditions
 c
-c subroutine conbnd(nlvdi,c,rbc)			boundary condition
-c subroutine con3bnd(nlvdi,c,nlvbnd,rbc)		boundary condition (3D)
+c subroutine conbnd(nlvddi,c,rbc)			boundary condition
+c subroutine con3bnd(nlvddi,c,nlvbnd,rbc)		boundary condition (3D)
 c
 c subroutine confop(iu,itmcon,idtcon,nlv,nvar,type)	opens (NOS) file
-c subroutine confil(iu,itmcon,idtcon,ivar,nlvdi,c)	writes NOS file
-c subroutine conwrite(iu,type,nvar,ivar,nlvdi,c)        shell for writing file
+c subroutine confil(iu,itmcon,idtcon,ivar,nlvddi,c)	writes NOS file
+c subroutine conwrite(iu,type,nvar,ivar,nlvddi,c)        shell for writing file
 c
-c subroutine conmima(nlvdi,c,cmin,cmax)                 computes min/max
-c subroutine conmimas(nlvdi,c,cmin,cmax)                computes scalar min/max
+c subroutine conmima(nlvddi,c,cmin,cmax)                 computes min/max
+c subroutine conmimas(nlvddi,c,cmin,cmax)                computes scalar min/max
 c
 c notes :
 c
@@ -51,14 +51,14 @@ c 20.01.2014    ggu	new writing format for nos files in confop, confil
 c
 c*****************************************************************
 
-	subroutine conini0(nlvdi,c,cref)
+	subroutine conini0(nlvddi,c,cref)
 
 c sets initial conditions (no stratification)
 
 	implicit none
 
-	integer nlvdi		!vertical dimension of c
-	real c(nlvdi,1)		!variable to initialize
+	integer nlvddi		!vertical dimension of c
+	real c(nlvddi,1)		!variable to initialize
 	real cref		!reference value
 c common
 	include 'nbasin.h'
@@ -67,7 +67,7 @@ c local
 	real depth,hlayer
 
 	do k=1,nkn
-	  do l=1,nlvdi
+	  do l=1,nlvddi
 	    c(l,k) = cref
 	  end do
 	end do
@@ -76,17 +76,17 @@ c local
 
 c*****************************************************************
 
-	subroutine conini(nlvdi,c,cref,cstrat,hdko)
+	subroutine conini(nlvddi,c,cref,cstrat,hdko)
 
 c sets initial conditions (with stratification)
 
 	implicit none
 
-	integer nlvdi		!vertical dimension of c
-	real c(nlvdi,1)		!variable to initialize
+	integer nlvddi		!vertical dimension of c
+	real c(nlvddi,1)		!variable to initialize
 	real cref		!reference value
 	real cstrat		!stratification [conc/km]
-	real hdko(nlvdi,1)	!layer thickness
+	real hdko(nlvddi,1)	!layer thickness
 c common
 	include 'nbasin.h'
 c local
@@ -95,7 +95,7 @@ c local
 
 	do k=1,nkn
 	  depth=0.
-	  do l=1,nlvdi
+	  do l=1,nlvddi
 	    hlayer = 0.5 * hdko(l,k)
 	    depth = depth + hlayer
 	    c(l,k) = cref + cstrat*depth/1000.
@@ -107,15 +107,15 @@ c local
 
 c*************************************************************
 
-	subroutine conbnd(nlvdi,c,rbc)
+	subroutine conbnd(nlvddi,c,rbc)
 
 c implements boundary condition (simplicistic version)
 
 	implicit none
 
 c arguments
-	integer nlvdi		!vertical dimension of c
-	real c(nlvdi,1)		!concentration (cconz,salt,temp,...)
+	integer nlvddi		!vertical dimension of c
+	real c(nlvddi,1)		!concentration (cconz,salt,temp,...)
 	real rbc(1)		!boundary condition
 c common
 	include 'param.h' !COMMON_GGU_SUBST
@@ -141,15 +141,15 @@ c local
 
 c*************************************************************
 
-	subroutine con3bnd(nlvdi,c,nlvbnd,rbc)
+	subroutine con3bnd(nlvddi,c,nlvbnd,rbc)
 
 c implements boundary condition (simplicistic 3D version)
 
 	implicit none
 
 c arguments
-	integer nlvdi		!vertical dimension of c
-	real c(nlvdi,1)		!concentration (cconz,salt,temp,...)
+	integer nlvddi		!vertical dimension of c
+	real c(nlvddi,1)		!concentration (cconz,salt,temp,...)
 	integer nlvbnd		!vertical dimension of boundary conditions
 	real rbc(nlvbnd,1)	!boundary condition
 c common
@@ -163,12 +163,12 @@ c local
 	real rb
         integer ipext
 
-	if( nlvbnd .ne. 1 .and. nlvbnd .ne. nlvdi ) then
-	  write(6,*) 'nlvdi,nlvbnd: ',nlvdi,nlvbnd
+	if( nlvbnd .ne. 1 .and. nlvbnd .ne. nlvddi ) then
+	  write(6,*) 'nlvddi,nlvbnd: ',nlvddi,nlvbnd
 	  stop 'error stop con3bnd: impossible nlvbnd'
 	end if
-	if( nlvbnd .ne. nlvdi ) then
-	  write(6,*) 'nlvdi,nlvbnd: ',nlvdi,nlvbnd
+	if( nlvbnd .ne. nlvddi ) then
+	  write(6,*) 'nlvddi,nlvbnd: ',nlvddi,nlvbnd
 	  stop 'error stop con3bnd: only 3D boundary conditions'
 	end if
 
@@ -197,7 +197,7 @@ c*************************************************************
 c*************************************************************
 c*************************************************************
 
-	subroutine confop(iu,itmcon,idtcon,nlv,nvar,type)
+	subroutine confop(iu,itmcon,idtcon,nl,nvar,type)
 
 c opens (NOS) file
 
@@ -208,7 +208,7 @@ c on return iu = -1 means that no file has been opened and is not written
 	integer iu		!unit				       (in/out)
 	integer itmcon		!time of first write		       (in/out)
 	integer idtcon		!time intervall of writes	       (in/out)
-	integer nlv		!vertical dimension of scalar          (in)
+	integer nl		!vertical dimension of scalar          (in)
 	integer nvar		!total number of variables to write    (in)
 	character*(*) type	!extension of file		       (in)
 
@@ -264,7 +264,7 @@ c-----------------------------------------------------
 	call nos_set_title(iu,title)
 	call nos_set_date(iu,date,time)
 	call nos_set_femver(iu,femver)
-	call nos_write_header(iu,nkn,nel,nlv,nvar,ierr)
+	call nos_write_header(iu,nkn,nel,nl,nvar,ierr)
         if(ierr.gt.0) goto 99
 	call nos_write_header2(iu,ilhkv,hlv,hev,ierr)
         if(ierr.gt.0) goto 99
@@ -290,7 +290,7 @@ c-----------------------------------------------------
 
 c*************************************************************
 
-	subroutine confil(iu,itmcon,idtcon,ivar,nlvdi,c)
+	subroutine confil(iu,itmcon,idtcon,ivar,nlvddi,c)
 
 c writes NOS file
 
@@ -300,8 +300,8 @@ c writes NOS file
 	integer itmcon		!time of first write
 	integer idtcon		!time intervall of writes
 	integer ivar		!id of variable to be written
-	integer nlvdi		!vertical dimension of c
-	real c(nlvdi,1)		!scalar to write
+	integer nlvddi		!vertical dimension of c
+	real c(nlvddi,1)		!scalar to write
 
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
@@ -324,7 +324,7 @@ c-----------------------------------------------------
 c write file
 c-----------------------------------------------------
 
-	call nos_write_record(iu,it,ivar,nlvdi,ilhkv,c,ierr)
+	call nos_write_record(iu,it,ivar,nlvddi,ilhkv,c,ierr)
 	if(ierr.gt.0) goto 99
 
 c-----------------------------------------------------
@@ -347,7 +347,7 @@ c-----------------------------------------------------
 
 c*************************************************************
 
-	subroutine conwrite(iu,type,nvar,ivar,nlvdim,c)
+	subroutine conwrite(iu,type,nvar,ivar,nlvddi,c)
 
 c shell for writing file unconditionally to disk
 
@@ -357,26 +357,24 @@ c shell for writing file unconditionally to disk
         character*(*) type      !type of file
 	integer nvar		!total number of variables
 	integer ivar		!id of variable to be written
-	integer nlvdim		!vertical dimension of c
-	real c(nlvdim,1)	!concentration to write
+	integer nlvddi		!vertical dimension of c
+	real c(nlvddi,1)	!concentration to write
 
 	include 'femtime.h'
 	include 'nlevel.h'
 
         integer itmcon,idtcon,lmax
 
-        !if(nlvdim.ne.nlvdi) stop 'error stop conwrite: level dimension'
-
         itmcon = itanf
 	idtcon = idt
 	idtcon = 1
-	lmax = min(nlvdim,nlv)
+	lmax = min(nlvddi,nlv)
 
         if( iu .eq. 0 ) then
 	  call confop(iu,itmcon,idtcon,lmax,nvar,type)
         end if
 
-	call confil(iu,itmcon,idtcon,ivar,nlvdim,c)
+	call confil(iu,itmcon,idtcon,ivar,nlvddi,c)
 
         end
 
@@ -384,7 +382,7 @@ c*************************************************************
 c*************************************************************
 c*************************************************************
 
-	subroutine open_scalar_file(ia_out,nlv,nvar,type)
+	subroutine open_scalar_file(ia_out,nl,nvar,type)
 
 c opens (NOS) file
 
@@ -393,7 +391,7 @@ c on return iu = -1 means that no file has been opened and is not written
 	implicit none
 
 	integer ia_out(4)	!time information		       (in/out)
-	integer nlv		!vertical dimension of scalar          (in)
+	integer nl		!vertical dimension of scalar          (in)
 	integer nvar		!total number of variables to write    (in)
 	character*(*) type	!extension of file		       (in)
 
@@ -439,7 +437,7 @@ c-----------------------------------------------------
 	call nos_set_title(iu,title)
 	call nos_set_date(iu,date,time)
 	call nos_set_femver(iu,femver)
-	call nos_write_header(iu,nkn,nel,nlv,nvar,ierr)
+	call nos_write_header(iu,nkn,nel,nl,nvar,ierr)
         if(ierr.gt.0) goto 99
 	call nos_write_header2(iu,ilhkv,hlv,hev,ierr)
         if(ierr.gt.0) goto 99
@@ -465,7 +463,7 @@ c-----------------------------------------------------
 
 c*************************************************************
 
-	subroutine write_scalar_file(ia_out,ivar,nlvdi,c)
+	subroutine write_scalar_file(ia_out,ivar,nlvddi,c)
 
 c writes NOS file
 c
@@ -475,8 +473,8 @@ c the file must be open, the file will be written unconditionally
 
 	integer ia_out(4)	!time information
 	integer ivar		!id of variable to be written
-	integer nlvdi		!vertical dimension of c
-	real c(nlvdi,1)		!scalar to write
+	integer nlvddi		!vertical dimension of c
+	real c(nlvddi,1)		!scalar to write
 
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
@@ -499,7 +497,7 @@ c-----------------------------------------------------
 c write file
 c-----------------------------------------------------
 
-	call nos_write_record(iu,it,ivar,nlvdi,ilhkv,c,ierr)
+	call nos_write_record(iu,it,ivar,nlvddi,ilhkv,c,ierr)
 	if(ierr.gt.0) goto 99
 
 c-----------------------------------------------------
@@ -524,15 +522,15 @@ c*************************************************************
 c*************************************************************
 c*************************************************************
 
-        subroutine conmima(nlvdi,c,cmin,cmax)
+        subroutine conmima(nlvddi,c,cmin,cmax)
 
 c computes min/max for scalar field
 
 	implicit none
 
 c arguments
-	integer nlvdi		!vertical dimension of c
-	real c(nlvdi,1)		!concentration (cconz,salt,temp,...)
+	integer nlvddi		!vertical dimension of c
+	real c(nlvddi,1)		!concentration (cconz,salt,temp,...)
         real cmin,cmax
 c common
 	include 'param.h' !COMMON_GGU_SUBST
@@ -576,15 +574,15 @@ c local
 
 c*************************************************************
 
-        subroutine conmimas(nlvdi,c,cmin,cmax)
+        subroutine conmimas(nlvddi,c,cmin,cmax)
 
 c computes min/max for scalar field -> writes some info
 
 	implicit none
 
 c arguments
-	integer nlvdi		!vertical dimension of c
-	real c(nlvdi,1)		!concentration (cconz,salt,temp,...)
+	integer nlvddi		!vertical dimension of c
+	real c(nlvddi,1)		!concentration (cconz,salt,temp,...)
         real cmin,cmax
 c common
 	include 'param.h' !COMMON_GGU_SUBST

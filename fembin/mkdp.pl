@@ -10,6 +10,7 @@
 
 use strict;
 
+$::moddir = "" unless $::moddir;
 $::nomake = 1 if $::nomake;
 $::debug = 1 if $::debug;
 
@@ -61,6 +62,8 @@ sub handle_file {
       $hfile = $1;
     } elsif( /^\s*\#\s*include\s*['"]\s*([\w.]+)\s*['"]\s*$/) {
       $hfile = $1;
+    } elsif( /^\s+use\s+(\w+)\s*,\s*only\s*:/) {
+      $mfile = "$1.mod";
     } elsif( /^\s+use\s+(\w+)\s*,$/) {
       print STDERR "*** cannot handle more than 1 module per line yet\n";
     } elsif( /^\s+use\s+(\w+)\s*$/) {
@@ -72,6 +75,7 @@ sub handle_file {
       $fileo =~ s/\.f$/.o/;
       $fileo =~ s/\.f90$/.o/;
       my $line = "$module.mod: $fileo";
+      $line = "$::moddir/$line" if $::moddir;
       push(@$rlines,$line);
     }
 
@@ -87,6 +91,7 @@ sub handle_file {
       if( $modules_in_file{$mfile} ) {
 	print STDERR "*** avoid circular reference for module: $mfile\n";
       } else {
+        $mfile = "$::moddir/$mfile" if $::moddir;
         insert_inc($rlist,$mfile);
       }
       $mfile = "";

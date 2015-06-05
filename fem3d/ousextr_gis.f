@@ -33,6 +33,7 @@ c reads ous file and writes extracted records in ascii to new file
 
 	include 'basin.h'
 
+	include 'nlevel.h'
 	include 'levels.h'
 
 	include 'depth.h'
@@ -51,7 +52,7 @@ c reads ous file and writes extracted records in ascii to new file
 	integer ilnv(nlvdim,nkndim)
 
 	character*80 name,file
-        integer nvers,nin,nlv
+        integer nvers,nin
         integer itanf,itend,idt,idtous
 	integer it,ie,i
         integer ierr,nread,nextr,nb

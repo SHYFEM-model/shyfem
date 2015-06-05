@@ -48,6 +48,8 @@
 
 	integer nkn,nel,nl
 
+	if( nl == 0 ) stop 'error stop levels_init: nl == 0'
+
 	nlv = nl
 	nlvdi = nl
 	nlv_alloc = nl
@@ -77,6 +79,7 @@
 	if( nlv_alloc == nl ) return
 
 	n = min(nl,nlv_alloc)
+	write(6,*) 'levels_reinit: ',nl,nlv_alloc,n
 
 	if( nlv_alloc > 0 ) then
 	  if( nl > 0 ) then
@@ -91,6 +94,7 @@
 	  deallocate(hldv)
 	end if
 
+	write(6,*) 'levels_reinit: ',nl,nlv_alloc,n
 	nlv = nl
 	nlvdi = nl
 	nlv_alloc = nl
@@ -109,6 +113,20 @@
 	end if
 	
 	end subroutine levels_reinit
+
+!******************************************************************
+
+	subroutine transfer_hlv
+
+	if( nlv < nlv_aux ) then
+	  write(6,*) 'nlv,nlv_read: ',nlv,nlv_aux
+	  stop 'error stop transfer_hlv: nlv'
+	end if
+
+	nlv = nlv_aux
+	hlv(1:nlv) = hlv_aux(1:nlv)
+
+	end subroutine transfer_hlv
 
 !******************************************************************
 
@@ -131,6 +149,16 @@
 
 	end subroutine copy_hlv
 
+!******************************************************************
+
+	function get_nlv_aux()
+
+	integer get_nlv_aux
+
+	get_nlv_aux = nlv_aux
+
+	end function get_nlv_aux
+
 !==================================================================
         end module levels
 !==================================================================
@@ -143,15 +171,12 @@
 
 	integer nlv_read
 
-	nlv_read = nlv_aux
+	nlv_read = get_nlv_aux()
 
 	end subroutine get_nlv_read
 
 !******************************************************************
 
-	subroutine read_hlv
-
-	use levels
 	subroutine read_hlv
 
 	use levels

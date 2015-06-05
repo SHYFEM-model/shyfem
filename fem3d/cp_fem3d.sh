@@ -12,6 +12,8 @@ if [ -d $dir ]; then
   exit 1
 fi
 
-mkdir $dir
-cp -a * $dir
+mkdir $dir $dir/bin
+#cp -a * $dir
+cp * $dir
+cp bin/* $dir/bin
 

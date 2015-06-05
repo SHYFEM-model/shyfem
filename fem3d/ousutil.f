@@ -25,8 +25,6 @@ c transforms transports at elements to velocities at nodes
 
         implicit none
 
-	include 'ev.h'
-
         integer nel
         integer nkn
 	integer nlv
@@ -48,6 +46,8 @@ c transforms transports at elements to velocities at nodes
         real hmed,u,v,area,zeta
 	real hsigma
 
+	real area_elem
+
 	call get_sigma_info(nlvaux,nsigma,hsigma)
 	if( nlvaux .gt. nlvdim ) stop 'error stop transp2vel: nlvdim'
 	bsigma = nsigma .gt. 0
@@ -62,7 +62,7 @@ c transforms transports at elements to velocities at nodes
 	      
         do ie=1,nel
 
-	  area = 12. * ev(10,ie)
+	  area = area_elem(ie)
 	  lmax = ilhv(ie)
 	  call compute_levels_on_element(ie,zenv,zeta)
 	  call get_layer_thickness(lmax,nsigma,hsigma,zeta,hev(ie),hlv,hl)
@@ -242,17 +242,18 @@ c***************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'ev.h'
 
 	integer nel
-	real zenv(3,neldim)
-	real hev(neldim)
+	real zenv(3,1)
+	real hev(1)
 	real volume
 
 	integer ie,ii
 	real zav,area
 	double precision vol,voltot,areatot
+
+	real area_elem
 
 	voltot = 0.
 	areatot = 0.
@@ -262,7 +263,7 @@ c***************************************************************
 	  do ii=1,3
 	    zav = zav + zenv(ii,ie)
 	  end do
-	  area = 12. * ev(10,ie)
+	  area = area_elem(ie)
 	  vol = area * (hev(ie) + zav/3.)
 	  voltot = voltot + vol
 	  !areatot = areatot + area

@@ -251,14 +251,13 @@ c turbulence
 
 c local variables
 
-	integer iwhat
-	logical debwin
-	integer nsp
+	logical bdebout
+	integer iwhat,levdbg
 	integer date,time
 
-	logical bdebout
+	real getpar
 
-	bdebout = .true.
+	bdebout = .false.
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%% code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -285,6 +284,8 @@ c-----------------------------------------------------------
 
 	call bas_get_para(nkn,nel,ngr,mbw)	!to be deleted later
 
+	call allocate_2D_arrays
+
 c-----------------------------------------------------------
 c check dimensions
 c-----------------------------------------------------------
@@ -293,6 +294,9 @@ c-----------------------------------------------------------
 	call sp131b(nrbdim,nbcdim)
 	call sp131m(mbwdim)
 	call sp131g(mardim,2,2*nlvdim,2,0)
+
+	levdbg = nint(getpar('levdbg'))
+	bdebout = ( levdbg == -1 )
 
 c-----------------------------------------------------------
 c check parameters read and set time and Coriolis
@@ -322,6 +326,12 @@ c-----------------------------------------------------------
 	call adjust_depth	!adjusts hm3v
 	call init_vertical	!makes nlv,hlv,hldv,ilhv,ilhkv, adjusts hm3v
 	call set_depth		!makes hev,hkv
+
+c-----------------------------------------------------------
+c allocates arrays
+c-----------------------------------------------------------
+
+	call allocate_3D_arrays
 
 c-----------------------------------------------------------
 c initialize barene data structures
@@ -557,16 +567,16 @@ c*****************************************************************
 	call debug_output_record(3*nel,3,zenv,'zenv')
 	call debug_output_record(nkn,1,zov,'zov')
 	call debug_output_record(nkn,1,znv,'znv')
-	call debug_output_record(nlvdim*neldim,nlvdim,hdeov,'hdeov')
-	call debug_output_record(nlvdim*neldim,nlvdim,utlov,'utlov')
-	call debug_output_record(nlvdim*neldim,nlvdim,vtlov,'vtlov')
-	call debug_output_record(nlvdim*neldim,nlvdim,utlnv,'utlnv')
-	call debug_output_record(nlvdim*neldim,nlvdim,vtlnv,'vtlnv')
-        call debug_output_record(nlvdim*nkndim,nlvdim,saltv,'saltv')
-        call debug_output_record(nlvdim*nkndim,nlvdim,tempv,'tempv')
-	call debug_output_record((nlvdim+1)*nkndim,nlvdim+1,visv,'visv')
-	call debug_output_record((nlvdim+1)*nkndim,nlvdim+1,wlov,'wlov')
-	call debug_output_record((nlvdim+1)*nkndim,nlvdim+1,wlnv,'wlnv')
+	call debug_output_record(nlvdim*nel,nlvdim,hdeov,'hdeov')
+	call debug_output_record(nlvdim*nel,nlvdim,utlov,'utlov')
+	call debug_output_record(nlvdim*nel,nlvdim,vtlov,'vtlov')
+	call debug_output_record(nlvdim*nel,nlvdim,utlnv,'utlnv')
+	call debug_output_record(nlvdim*nel,nlvdim,vtlnv,'vtlnv')
+        call debug_output_record(nlvdim*nkn,nlvdim,saltv,'saltv')
+        call debug_output_record(nlvdim*nkn,nlvdim,tempv,'tempv')
+	call debug_output_record((nlvdim+1)*nkn,nlvdim+1,visv,'visv')
+	call debug_output_record((nlvdim+1)*nkn,nlvdim+1,wlov,'wlov')
+	call debug_output_record((nlvdim+1)*nkn,nlvdim+1,wlnv,'wlnv')
 	call debug_output_record(nkn,1,z0bk,'z0bk')
 	call debug_output_record(nkn,1,tauxnv,'tauxnv')
 	call debug_output_record(nkn,1,tauynv,'tauynv')
@@ -628,6 +638,8 @@ c*****************************************************************
 
 	subroutine check_special
 
+	implicit none
+
 	include 'param.h'
 
 	include 'nbasin.h'
@@ -646,6 +658,37 @@ c*****************************************************************
 	    end if
 	  end do
 	end do
+
+	end
+
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine allocate_2d_arrays
+
+	implicit none
+
+	end
+
+c*****************************************************************
+
+	subroutine allocate_3d_arrays
+
+	implicit none
+
+	include 'param.h'
+	include 'nbasin.h'
+	include 'nlevel.h'
+	include 'hydro.h'
+	include 'hydro_vel.h'
+
+	integer nlvddi
+
+	nlvddi = nlvdim
+
+	call mod_hydro_init(nkn,nel,nlvddi)
+	call mod_hydro_vel_init(nkn,nel,nlvddi)
 
 	end
 

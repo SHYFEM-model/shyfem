@@ -450,7 +450,7 @@ c----------------------------------------------------------
 
 c***********************************************************************
 
-        subroutine bndo_impbc(it,what,nlvdi,cv,rbc)
+        subroutine bndo_impbc(it,what,nlvddi,cv,rbc)
 
 c imposes boundary conditions on open boundary
 
@@ -458,9 +458,9 @@ c imposes boundary conditions on open boundary
 
         integer it
         character*(*) what      !conz/temp/salt or else
-        integer nlvdi
-        real cv(nlvdi,1)
-        real rbc(nlvdi,1)	!boundary condition (3D)
+        integer nlvddi
+        real cv(nlvddi,1)
+        real rbc(nlvddi,1)	!boundary condition (3D)
 
 	include 'param.h'
         include 'subbndo.h'
@@ -512,7 +512,7 @@ c imposes boundary conditions on open boundary
 
 c***********************************************************************
 
-	subroutine bndo_adjbc(it,what,nlvdi,cv,uprv,vprv)
+	subroutine bndo_adjbc(it,what,nlvddi,cv,uprv,vprv)
 
 c adjusts boundary conditions on open boundary (values on bnd already set)
 c
@@ -522,10 +522,10 @@ c adjusts for ambient value, no gradient or outgoing flow
 
 	integer it
         character*(*) what	!conz/temp/salt or else
-	integer nlvdi
-	real cv(nlvdi,1)
-	real uprv(nlvdi,1)
-	real vprv(nlvdi,1)
+	integer nlvddi
+	real cv(nlvddi,1)
+	real uprv(nlvddi,1)
+	real vprv(nlvddi,1)
 
 	include 'param.h'
 	include 'subbndo.h'

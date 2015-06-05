@@ -31,6 +31,7 @@ c reads ous file and writes extracted records to new ous file
 
 	include 'basin.h'
 
+	include 'nlevel.h'
 	include 'levels.h'
 
 	include 'depth.h'
@@ -47,7 +48,7 @@ c reads ous file and writes extracted records to new ous file
 
 	character*80 name,file
 	logical ball,bwrite
-        integer nvers,nin,nlv
+        integer nvers,nin
         integer itanf,itend,idt,idtous
 	integer it,ie,i
         integer ierr,nread,nextr,nb

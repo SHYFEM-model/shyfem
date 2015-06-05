@@ -33,6 +33,7 @@ c concatenates two ous files into one
 
 	include 'basin.h'
 
+	include 'nlevel.h'
 	include 'levels.h'
 
 	include 'depth.h'
@@ -50,7 +51,7 @@ c concatenates two ous files into one
 	character*80 name,file
 	character*80 file1,file2
 	logical ball,bwrite
-        integer nvers,nin,nlv
+        integer nvers,nin
         integer itanf,itend,idt,idtous
 	integer it,ie,i
 	integer itfirst,itsecond

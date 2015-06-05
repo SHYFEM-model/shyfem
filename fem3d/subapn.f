@@ -290,8 +290,6 @@ c---------------------------------------------------------------------
 c end of routine
 c---------------------------------------------------------------------
 
-	!call nbasin_transfer
-
 	end
 
 c**************************************************************
@@ -344,14 +342,6 @@ c**************************************************************
 	end
 
 c**************************************************************
-
-        subroutine nbasin_transfer
-        implicit none
-        include 'nbasin.h'
-        call bas_get_para(nkn,nel,ngr,mbw)
-        end
-
-c**************************************************************
 c**************************************************************
 c**************************************************************
 
@@ -366,18 +356,21 @@ c**************************************************************
 
 	integer ifileo
 
-	call getfnm('memfil',memfil)
-
-	if(memfil.ne.' ') imem=ifileo(-1,memfil,'form','old')
-
 	simul=' '
 	basin=' '
 
-	if(imem.gt.0) then
-		read(imem,'(a)') simul
-		read(imem,'(a)') basin
-		close(imem)
-	end if
+	call getfnm('memfil',memfil)
+
+	if(memfil.eq.' ') return
+
+	imem=ifileo(-1,memfil,'form','old')
+
+	if(imem.le.0) return
+
+	read(imem,'(a)') simul
+	read(imem,'(a)') basin
+
+	close(imem)
 
 	end
 
@@ -396,13 +389,16 @@ c**************************************************************
 
 	call getfnm('memfil',memfil)
 
-	if(memfil.ne.' ') imem=ifileo(0,memfil,'form','new')
+	if(memfil.eq.' ') return
 
-	if(imem.gt.0) then
-		read(imem,'(a)') simul(1:len_trim(simul))
-		read(imem,'(a)') basin(1:len_trim(basin))
-		close(imem)
-	end if
+	imem=ifileo(0,memfil,'form','new')
+
+	if(imem.le.0) return
+
+	write(imem,'(a)') trim(simul)
+	write(imem,'(a)') trim(basin)
+
+	close(imem)
 
 	end
 
@@ -453,6 +449,8 @@ c**************************************************************
 
 c opens and reads basin file
 
+	use basin
+
 	implicit none
 
 	integer nkndi,neldi
@@ -475,7 +473,13 @@ c opens and reads basin file
 	if(iunit.le.0) then
 	  stop 'error stop read_bas_file: error reading basin'
 	end if
-	call sp13rr(iunit,nkndi,neldi)
+
+	if( nkndi <= 0 .or. neldi <= 0 ) then	!use module
+	  call sp13rr(iunit,nkndi,neldi)
+	else
+	  call sp13rr(iunit,nkndi,neldi)
+	end if
+
 	close(iunit)
 
 	basold=basnew

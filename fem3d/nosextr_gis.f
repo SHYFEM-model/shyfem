@@ -51,13 +51,14 @@ c--------------------------------------------------
 	real hlv(nlvdim)
 	real hev(neldim)
 
-	logical ball,bwrite
+	logical ball,bwrite,bdate
         integer nread,ivarold,nextr
         integer l,k,nin,nb
         integer nkn1,nel1,nlv,nvar
         integer it,ivar
         integer ierr
         integer nvers
+	integer date,time
         real r,rnull
 	real conz,high
 
@@ -109,6 +110,10 @@ c-------------------------------------------------------------------
 	write(6,*) 'Available levels: ',nlv
 	write(6,*) (hlv(l),l=1,nlv)
 
+	call nos_get_date(nin,date,time)
+        bdate = date .gt. 0
+        if( bdate ) call dtsini(date,time)
+
 c-------------------------------------------------------------------
 c get records to extract from STDIN
 c-------------------------------------------------------------------
@@ -147,8 +152,8 @@ c-------------------------------------------------------------------
 
 	if( bwrite ) then
 	  !call wrgis_surf(nb,it,ivar,nkn,cv3)
-	  !call wrgis_sep(it,ivar,nkn,cv3)
-	  call wrgis_3d(nb,it,ivar,nkn,ilhkv,cv3)
+	  call wrgis_sep(it,ivar,nkn,cv3)
+	  !call wrgis_3d(nb,it,ivar,nkn,ilhkv,cv3)
 	  nextr = nextr + 1
 	end if
 

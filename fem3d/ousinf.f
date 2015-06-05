@@ -30,6 +30,7 @@ c we would not even need to read basin
 	include 'simul.h'
 
 
+	include 'nlevel.h'
 	include 'levels.h'
 
 	include 'depth.h'
@@ -41,7 +42,7 @@ c we would not even need to read basin
         real u2v(neldim)
         real v2v(neldim)
 
-        integer nvers,nin,nlv
+        integer nvers,nin,nlev
         integer itanf,itend,idt,idtous
 	integer it,ie,i
         integer ierr,nread,ndry

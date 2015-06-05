@@ -44,7 +44,7 @@ c     +                  ,wsink,wsinkv
 c     +                  ,rload,load
 c     +                  ,azpar,adpar,aapar
 c     +                  ,istot,isact
-c     +                  ,nlvdi,nlv)
+c     +                  ,nlvddi,nlv)
 c
 c subroutine conzstab(cn1,co1
 c     +                  ,ddt
@@ -54,11 +54,11 @@ c     +                  ,difmol,azpar
 c     +                  ,adpar,aapar
 c     +                  ,sindex
 c     +                  ,istot,isact
-c     +                  ,nlvdi,nlv)
+c     +                  ,nlvddi,nlv)
 c
 c-------------------------------------------------------------
 c
-c subroutine massconc(mode,cn,nlvdi,mass)
+c subroutine massconc(mode,cn,nlvddi,mass)
 c		computes total mass of conc
 c
 c subroutine check_scal_bounds(cnv,cmin,cmax,eps,bstop)
@@ -67,7 +67,7 @@ c
 c subroutine assert_min_max_property(cnv,cov,sbconz,rmin,rmax,eps)
 c		checks min/max property
 c
-c subroutine stb_histo(it,nlvdi,nkn,ilhkv,cwrite)
+c subroutine stb_histo(it,nlvddi,nkn,ilhkv,cwrite)
 c		writes histogram info about stability index
 c
 c subroutine const3d_setup
@@ -89,7 +89,7 @@ c         call make_scal_flux(...,cnv,r3v,sbconz,...)
 c	  do
 c           call conz3d(...,cnv,sbconz,...)
 c           call assert_min_max_property(...,cnv,sbconz,...)
-c           call bndo_setbc(it,what,nlvdi,cnv,rcv,uprv,vprv)
+c           call bndo_setbc(it,what,nlvddi,cnv,rcv,uprv,vprv)
 c	  end do
 c
 c-------------------------------------------------------------
@@ -581,7 +581,7 @@ c-------------------------------------------------------------
 	  call make_scal_flux(what,rcv,cnv,sbflux,sbconz,ssurface)
 	  !call check_scal_flux(what,cnv,sbconz)
 
-	  if( btvd1 ) call tvd_grad_3d(cnv,gradxv,gradyv,saux,nlvdi,nlv)
+	  if( btvd1 ) call tvd_grad_3d(cnv,gradxv,gradyv,saux,nlvdi)
 
           call conz3d(
      +           cnv
@@ -641,7 +641,7 @@ c**************************************************************
      +			,rload,load
      +			,azpar,adpar,aapar
      +			,istot,isact
-     +			,nlvdi,nlv)
+     +			,nlvddi,nlev)
 c
 c computes concentration
 c
@@ -670,7 +670,7 @@ c adpar  time weighting parameter for vertical diffusion (ad)
 c aapar  time weighting parameter for vertical advection (aa)
 c istot	 total inter time steps
 c isact	 actual inter time step
-c nlvdi	 dimension in z direction
+c nlvddi	 dimension in z direction
 c nlv	 actual needed levels
 c
 c written 09.01.94 by ggu  (from scratch)
@@ -707,28 +707,29 @@ c
 c parameters
         include 'param.h'
 c arguments
-	integer nlvdi,nlv
-        real cn1(nlvdi,1),co1(nlvdi,1)		!DPGGU
-        real difv(0:nlvdi,1)
-        real difhv(nlvdi,1)
+	integer nlvddi,nlev
+        real cn1(nlvddi,1),co1(nlvddi,1)		!DPGGU
+        real difv(0:nlvddi,1)
+        real difhv(nlvddi,1)
 	real difmol
-        real cbound(nlvdi,1)
+        real cbound(nlvddi,1)
 	integer itvd
 	integer itvdv
-	real gradxv(nlvdi,1)
-	real gradyv(nlvdi,1)
-	real cobs(nlvdi,1)
+	real gradxv(nlvddi,1)
+	real gradyv(nlvddi,1)
+	real cobs(nlvddi,1)
 	real robs
 	real wsink
-	real wsinkv(0:nlvdi,1)
+	real wsinkv(0:nlvddi,1)
 	real rload
-        real load(nlvdi,1)                      !ccf_load
+        real load(nlvddi,1)                      !ccf_load
         real ddt,rkpar,azpar,adpar,aapar			!$$azpar
 	integer istot,isact
 c common
 	include 'femtime.h'
 	include 'ev.h'
 	!include 'hydro_print.h'
+	include 'nlevel.h'
 	include 'levels.h'
 	include 'ts.h'
 	include 'geom.h'
@@ -836,7 +837,8 @@ c	integer ipint,ieint
 
 	include 'testbndo.h'
 
-        if(nlvdim.ne.nlvdi) stop 'error stop conz3d: level dimension'
+        if(nlvdim.ne.nlvddi) stop 'error stop conz3d: level dimension'
+        if(nlv.ne.nlev) stop 'error stop conzstab: level'
 
 c----------------------------------------------------------------
 c initialize variables and parameters
@@ -1393,7 +1395,7 @@ c*****************************************************************
      +			,adpar,aapar
      +                  ,sindex
      +			,istot,isact
-     +			,nlvdi,nlv)
+     +			,nlvddi,nlev)
 c
 c checks stability
 c
@@ -1414,7 +1416,7 @@ c aapar  time weighting parameter for vertical advection (aa)
 c sindex stability index
 c istot	 total inter time steps
 c isact	 actual inter time step
-c nlvdi	 dimension in z direction
+c nlvddi	 dimension in z direction
 c nlv	 actual needed levels
 c
 c written 09.01.94 by ggu  (from scratch)
@@ -1451,14 +1453,14 @@ c
 c parameters
         include 'param.h'
 c arguments
-	integer nlvdi,nlv
-        !real cn1(nlvdi,1),co1(nlvdi,1)		!DPGGU
-        real difv(0:nlvdi,1)
-        real difhv(nlvdi,1)
+	integer nlvddi,nlev
+        !real cn1(nlvddi,1),co1(nlvddi,1)		!DPGGU
+        real difv(0:nlvddi,1)
+        real difhv(nlvddi,1)
 	real difmol
         real ddt,rkpar,azpar,adpar,aapar			!$$azpar
 	real robs,wsink
-	real wsinkv(0:nlvdi,1)
+	real wsinkv(0:nlvddi,1)
 	integer istot,isact
 c common
 	include 'femtime.h'
@@ -1468,6 +1470,7 @@ c common
 	include 'ev.h'
 	!include 'hydro_print.h'
 	include 'hydro_vel.h'
+	include 'nlevel.h'
 	include 'levels.h'
 
 	include 'hydro.h'
@@ -1553,7 +1556,8 @@ c functions
 
 	!write(6,*) 'conzstab called...'
 
-        if(nlvdim.ne.nlvdi) stop 'error stop conzstab: level dimension'
+        if(nlvdim.ne.nlvddi) stop 'error stop conzstab: level dimension'
+        if(nlv.ne.nlev) stop 'error stop conzstab: level'
 
 c-----------------------------------------------------------------
 c initialization
@@ -1569,7 +1573,7 @@ c-----------------------------------------------------------------
         if( bdebug1 ) then
                 write(6,*) 'debug parameters in conz3d'
 		write(6,*) ddt,rkpar,difmol,azpar,adpar,aapar
-                write(6,*) istot,isact,nlvdi,nlv
+                write(6,*) istot,isact,nlvddi,nlv
                 write(6,*) nkn,nel
         end if
 
@@ -1900,7 +1904,7 @@ c		  end if
 	end do
 
 c        write(6,*) 'stab check: ',nkn,nlv
-c        call check2Dr(nlvdi,nlv,nkn,cwrite,0.,0.,"NaN check","cstab")
+c        call check2Dr(nlvddi,nlv,nkn,cwrite,0.,0.,"NaN check","cstab")
 
 c-----------------------------------------------------------------
 c in stabind is stability index (advection and diffusion)
@@ -1921,10 +1925,10 @@ c-----------------------------------------------------------------
 c        if( .false. ) then
 c        !if( idt .le. 3 ) then
 c	  write(6,*) 'kstab = ',kstab,'  stabind = ',stabind
-c          call conwrite(iustab,'.stb',1,777,nlvdi,cwrite)
+c          call conwrite(iustab,'.stb',1,777,nlvddi,cwrite)
 c        end if
 
-c        call stb_histo(it,nlvdi,nkn,ilhkv,cwrite)
+c        call stb_histo(it,nlvddi,nkn,ilhkv,cwrite)
 
 c-----------------------------------------------------------------
 c end of routine
@@ -1939,7 +1943,7 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine massconc(mode,cn,nlvdi,mass)
+	subroutine massconc(mode,cn,nlvddi,mass)
 
 c computes total mass of conc
 
@@ -1947,8 +1951,8 @@ c computes total mass of conc
 
 c arguments
 	integer mode
-	integer nlvdi
-	real cn(nlvdi,1)
+	integer nlvddi
+	real cn(nlvddi,1)
 	real mass
 c parameter
         include 'param.h'
@@ -1962,7 +1966,7 @@ c local
 	double precision sum,masstot
 	real volnode
 
-	if(nlvdim.ne.nlvdi) then
+	if(nlvdim.ne.nlvddi) then
 	  stop 'error stop : level dimension in massconc'
 	end if
 
@@ -2187,16 +2191,16 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-        subroutine stb_histo(it,nlvdi,nkn,ilhkv,cwrite)
+        subroutine stb_histo(it,nlvddi,nkn,ilhkv,cwrite)
 
 c writes histogram info about stability index
 
         implicit none
 
         integer it
-        integer nlvdi,nkn
+        integer nlvddi,nkn
         integer ilhkv(1)
-        real cwrite(nlvdi,1)
+        real cwrite(nlvddi,1)
 
         integer ndim
         parameter(ndim=11)

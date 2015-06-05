@@ -51,7 +51,6 @@ c parameters
 	include 'param.h'
 c common
 	include 'nbasin.h'
-	include 'nlevel.h'
 	include 'levels.h'
 	include 'hydro.h'
 	include 'hydro_vel.h'
@@ -59,8 +58,6 @@ c common
 c local
 	integer ie,l,ilevel
 	real h,rh
-
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in ttov'
 
 	do ie=1,nel
 
@@ -89,7 +86,6 @@ c parameters
 	include 'param.h'
 c common
 	include 'nbasin.h'
-	include 'nlevel.h'
 	include 'levels.h'
 	include 'hydro.h'
 	include 'hydro_vel.h'
@@ -97,8 +93,6 @@ c common
 c local
 	integer ie,l,ilevel
 	real h
-
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in vtot'
 
 	do ie=1,nel
 
@@ -277,8 +271,6 @@ c local
 	integer ie,l,k,ii
 	real u,v
 c
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in prtouv'
-c
 c baroclinic part
 c
 	do ie=1,nel
@@ -325,7 +317,6 @@ c
 c parameter
 	include 'param.h'
 c common
-	include 'nlevel.h'
 	include 'nbasin.h'
 	include 'levels.h'
 	include 'hydro_baro.h'
@@ -333,8 +324,6 @@ c common
 c local
 	integer ie,l
 	real u,v
-c
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension uvint'
 c
 	do ie=1,nel
 	  u=0.
@@ -697,7 +686,7 @@ c-----------------------------------------------------------
 
 c******************************************************************
 
-	subroutine e2n3d(nlvdi,elv,nov,aux)
+	subroutine e2n3d(nlvddi,elv,nov,aux)
 
 c transforms element values to nodal values (weights are area)
 c
@@ -706,10 +695,10 @@ c (3D version)
 	implicit none
 
 c arguments
-	integer nlvdi
-        real elv(nlvdi,1)     !array with element values (in)
-        real nov(nlvdi,1)     !array with nodal values (out)
-        real aux(nlvdi,1)     !aux array (nkndim)
+	integer nlvddi
+        real elv(nlvddi,1)     !array with element values (in)
+        real nov(nlvddi,1)     !array with nodal values (out)
+        real aux(nlvddi,1)     !aux array (nkndim)
 
 c common
 	include 'param.h' !COMMON_GGU_SUBST
@@ -771,7 +760,7 @@ c-----------------------------------------------------------
 
 c******************************************************************
 
-	subroutine e2n3d_minmax(mode,nlvdi,elv,nov)
+	subroutine e2n3d_minmax(mode,nlvddi,elv,nov)
 
 c transforms element values to nodal values (no weights - use min/max)
 c
@@ -781,9 +770,9 @@ c (3D version)
 
 c arguments
 	integer mode		!min (-1) or max (+1)
-	integer nlvdi		!vertical dimension
-        real elv(nlvdi,1)      !array with element values (in)
-        real nov(nlvdi,1)      !array with nodal values (out)
+	integer nlvddi		!vertical dimension
+        real elv(nlvddi,1)      !array with element values (in)
+        real nov(nlvddi,1)      !array with nodal values (out)
 
 c common
 	include 'param.h' !COMMON_GGU_SUBST
@@ -882,7 +871,7 @@ c-----------------------------------------------------------
 
 c******************************************************************
 
-        subroutine n2e3d(nlvdi,nov,elv)
+        subroutine n2e3d(nlvddi,nov,elv)
 
 c transforms nodal values to element values
 c
@@ -891,9 +880,9 @@ c (3D version)
         implicit none
 
 c arguments
-        integer nlvdi		!vertical dimension of arrays
-        real nov(nlvdi,1)	!array with nodal values (in)
-        real elv(nlvdi,1)	!array with element values (out)
+        integer nlvddi		!vertical dimension of arrays
+        real nov(nlvddi,1)	!array with nodal values (in)
+        real elv(nlvddi,1)	!array with element values (out)
 
 c common
 	include 'param.h'

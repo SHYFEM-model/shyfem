@@ -30,6 +30,7 @@ c--------------------------------------------------
 	character*80 title
 
 
+	include 'nlevel.h'
 	include 'levels.h'
 	include 'depth.h'
 
@@ -40,7 +41,7 @@ c--------------------------------------------------
 
 	character*80 format
 	integer nread,ierr
-	integer nvers,nin,nlv
+	integer nvers,nin
 	integer nknnos,nelnos
 
 	integer it

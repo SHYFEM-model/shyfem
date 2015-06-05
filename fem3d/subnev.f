@@ -840,6 +840,11 @@ c returns area of element ie
 
 	include 'ev.h'
 
+	integer isphe_ev,init_ev
+	common /evcommon/ isphe_ev,init_ev
+
+	if( init_ev == 0 ) stop 'error stop area_elem: ev not set up'
+
 	area_elem = 12. * ev(10,ie)
 
 	end
@@ -856,6 +861,11 @@ c returns aomega of element ie
 	integer ie
 
 	include 'ev.h'
+
+	integer isphe_ev,init_ev
+	common /evcommon/ isphe_ev,init_ev
+
+	if( init_ev == 0 ) stop 'error stop aomega_elem: ev not set up'
 
 	aomega_elem = ev(10,ie)
 

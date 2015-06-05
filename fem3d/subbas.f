@@ -120,9 +120,12 @@ c***********************************************************
 	character*(*) file
 
 	integer ios,iunit
+	integer ifileo
 
 	is_basin_file = .false.
 
+	iunit = ifileo(0,file,'form','old')
+	if( iunit .le. 0 ) return
 	open(iunit,file=file,status='old',form='unformatted',iostat=ios)
 
 	if( ios /= 0 ) return

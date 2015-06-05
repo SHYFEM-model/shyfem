@@ -12,5 +12,7 @@ c please change this info also in main
 	double precision ev(evdim,neldim)
 	common /ev/ev
 
+	save /ev/
+
 c------------------------------------------------
 

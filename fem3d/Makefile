@@ -8,7 +8,7 @@ DIR	= fem3d
 #------------------------------------------------------------ just for default
 FEMDIR = ..
 DIRLIB = $(FEMDIR)/femlib
-F77    = g77
+F77    = gfortran
 FFLAGS =  -O
 LINKER = $(F77)
 #------------------------------------------------------------
@@ -113,7 +113,7 @@ MAKEDEPEND = $(FEMBIN)/mkdp.pl
 
 # 3D objects for 3D model
 
-MODULES = mod_tides.o
+MODULES = mod_tides.o newlevels.o mod_hydro.o mod_hydro_vel.o
 
 NEWOBJS = \
 	  new3di.o \
@@ -202,7 +202,7 @@ HTOBJS = \
 	$(IFF_FILES) \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ) $(PARALLEL_OBJ) \
-	subxi.o newlevels.o
+	subxi.o
 
 # objects for pre-processor vp
 
@@ -228,13 +228,14 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subvintp.o subver.o sigmautil.o suboutput.o \
 	  subclo.o
 
-RSTOBJS = subrst.o ecological_dummy.o
+RSTOBJS = subrst.o ecological_dummy.o newlevels.o
 
 BASEXTRA = subgeo.o subgrd.o subsrt.o sublnka.o links.o sublnku.o \
 		subinterpol.o subinterpol1.o subnos.o
 
-NOSOBJS = subnos.o nosutil.o genutil.o subeos.o
-OUSOBJS = subous.o ousutil.o genutil.o 
+GENOBJS = newlevels.o
+NOSOBJS = subnos.o nosutil.o genutil.o subeos.o newlevels.o
+OUSOBJS = subous.o ousutil.o genutil.o newlevels.o
 ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
 		genutil.o
@@ -315,10 +316,12 @@ EXEEXTRA = wincrea windcrea \
 		nos2nc ous2nc ts2nc \
 		ouswork ouswork1 ouswrite prep_input \
 		basbox
+EXEAUX   = baschk bascomp check_debug femelab laplap mkgeom \
+		optintp ousaver ousvdiff
 
 EXES     = $(EXEMAIN) $(EXEINFO) $(EXESPLIT) $(EXELAP) $(EXEBAS) \
 		$(EXEVAR) $(EXEUTIL) $(NOSEXTR) $(OUSEXTR) $(NOSAVER) \
-		$(EXEEXTRA) $(EXENC) $(NOSVAR)
+		$(EXEEXTRA) $(EXENC) $(NOSVAR) $(EXEAUX)
 
 #------------------------------------------------
 
@@ -654,7 +657,7 @@ headers:
 #------------------------------------------------
 
 depend:
-	$(MAKEDEPEND) *.f *.f90
+	$(MAKEDEPEND) -moddir=$(MODDIR) *.f *.f90
 
 #---------------------------------------------------
 
@@ -667,7 +670,7 @@ options:
 clean: cleanobj cleanexe cleanvar cleantex cleanlahey cleanexport cleandoc \
 	cleanifc cleanlinks
 
-cleanall: clean cleanzip cleanlib cleanextra cleandiff
+cleanall: clean cleanzip cleanlib cleanextra cleandiff cleanmod
 
 cleanlinks:
 	@$(FEMBIN)/symlink -remove $(FEMBIN) \
@@ -728,6 +731,9 @@ cleanzip:
 
 cleanlib:
 	-rm -f $(LIBFFEM)
+
+cleanmod:
+	-rm -f $(MODDIR)/*.mod
 
 cleanextra:
 	-rm -f LASTZIP
@@ -795,11 +801,12 @@ last:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-para_aqua.mod: aquabc_II_apara.o
-aquabc_II_fem_interface.o: aquabc_II.h param.h ev.h femtime.h \
-		nlevel.h mkonst.h nbasin.h aquabc_II_aout.h \
-		aquabc_II_sed_ini.mod levels.h basin.h \
-		para_aqua.mod diff_visc_fric.h 
+../femlib/mod/para_aqua.mod: aquabc_II_apara.o
+aquabc_II_fem_interface.o: aquabc_II.h param.h \
+		../femlib/mod/aquabc_II_sed_ini.mod ev.h femtime.h \
+		nlevel.h mkonst.h nbasin.h \
+		../femlib/mod/para_aqua.mod aquabc_II_aout.h \
+		levels.h basin.h diff_visc_fric.h 
 aquabc_II_util.o: param.h
 atoxi3d.o: nbasin.h param.h levels.h nlevel.h mkonst.h \
 		diff_visc_fric.h 
@@ -821,10 +828,10 @@ bio3d.o: param.h nlevel.h mkonst.h nbasin.h levels.h basin.h \
 bio3d_util.o: nbasin.h param.h levels.h donata.h
 debug.o: debug_aux1.h
 eosinf.o: param.h
-etsinf.o: param.h ets.mod
-femelab.o: clo.mod
-feminf.o: clo.mod
-filetype.o: clo.mod
+etsinf.o: param.h ../femlib/mod/ets.mod
+femelab.o: ../femlib/mod/clo.mod
+feminf.o: ../femlib/mod/clo.mod
+filetype.o: ../femlib/mod/clo.mod
 flux.o: regflux.h hydro.h param.h ev.h femtime.h nbasin.h \
 		hydro_baro.h basin.h links.h 
 flxinf.o: param.h
@@ -837,8 +844,8 @@ ht.o: internal.h ts.h evmain.h nudging.h tides.h nbasin.h \
 		bound_dynamic.h mkonst.h nlevel.h bound_geom.h \
 		simul.h meteo.h roughness.h aux_array.h waves.h \
 		geom.h hydro_vel.h hydro.h bound_names.h femtime.h \
-		sinking.h intp_fem_file.mod hydro_baro.h \
-		meteo_aux.h basin.h hydro_print.h 
+		sinking.h hydro_baro.h meteo_aux.h basin.h \
+		../femlib/mod/intp_fem_file.mod hydro_print.h 
 intp.o: nbasin.h hydro.h param.h
 lagrange_back.o: depth.h nbasin.h hydro.h param.h basin.h \
 		hydro_print.h lagrange.h 
@@ -848,14 +855,15 @@ lagrange_dif.o: param.h femtime.h lagrange.h
 lagrange_flux.o: depth.h hydro.h param.h nlevel.h ev.h femtime.h \
 		lagrange.h nbasin.h levels.h basin.h links.h 
 lagrange_init.o: nbasin.h param.h basin.h lagrange.h aux_array.h
-lagrange_inout.o: depth.h param.h ev.h nlevel.h femtime.h \
-		lagrange.h levels.h basin.h 
+lagrange_inout.o: depth.h param.h ev.h \
+		../femlib/mod/lgr_sedim_module.mod nlevel.h \
+		femtime.h lagrange.h levels.h basin.h 
 lagrange_larve.o: param.h lagrange.h
 lagrange_main.o: nbasin.h param.h basin.h femtime.h \
-		lgr_sedim_module.mod lagrange.h 
+		../femlib/mod/lgr_sedim_module.mod lagrange.h 
 lagrange_oil.o: nbasin.h param.h femtime.h ev.h lagrange.h \
 		aux_array.h 
-lgr_sedim_module.mod: lagrange_sedim.o
+../femlib/mod/lgr_sedim_module.mod: lagrange_sedim.o
 lagrange_sedim.o: param.h levels.h lagrange.h
 lagrange_track.o: hydro_vel.h param.h levels.h basin.h nlevel.h \
 		lagrange.h geom.h 
@@ -868,7 +876,9 @@ lgrinf.o: param.h
 loading.o: nbasin.h param.h levels.h
 map_influence.o: depth.h param.h basin.h
 matrix49.o: regflux.h
-mod_tides.mod: mod_tides.o
+../femlib/mod/hydro.mod: mod_hydro.o
+../femlib/mod/hydro_vel.mod: mod_hydro_vel.o
+../femlib/mod/mod_tides.mod: mod_tides.o
 netcdf.o: depth.h param.h netcdf.h levels.h netcdf.inc basin.h
 netcdf_util.o: param.h basin.h
 new36.o: param.h bound_dynamic.h mkonst.h femtime.h close.h \
@@ -898,7 +908,7 @@ newconz.o: depth.h conz.h param.h bound_names.h ts.h nlevel.h \
 newcra.o: depth.h hydro.h param.h bound_dynamic.h mkonst.h \
 		femtime.h ev.h pkonst.h hydro_baro.h basin.h \
 		bnd_aux.h 
-newdum.o: param.h
+newdum.o: ../femlib/mod/levels.mod param.h levels.h nlevel.h
 newexpl.o: depth.h internal.h ts.h ev.h nlevel.h bound_geom.h \
 		nbasin.h diff_visc_fric.h aux_array.h geom.h \
 		hydro_vel.h param.h hydro.h pkonst.h levels.h \
@@ -909,14 +919,14 @@ newfix.o: depth.h hydro_vel.h hydro.h internal.h param.h \
 newini.o: hydro.h internal.h param.h mkonst.h nlevel.h nbasin.h \
 		pkonst.h levels.h roughness.h basin.h \
 		diff_visc_fric.h 
-levels.mod: newlevels.o
-newlevels.o: nls.mod
+../femlib/mod/levels.mod: newlevels.o
+newlevels.o: ../femlib/mod/nls.mod
 newnudge.o: hydro.h param.h nudge.h femtime.h basin.h nudging.h
 newrog.o: param.h basin.h
 newstab.o: conz.h param.h nlevel.h nbasin.h levels.h basin.h \
 		diff_visc_fric.h stab.h aux_array.h 
-newtra.o: depth.h hydro_vel.h hydro.h param.h ev.h nlevel.h \
-		nbasin.h geom_dynamic.h hydro_baro.h levels.h \
+newtra.o: depth.h hydro_vel.h hydro.h param.h nlevel.h ev.h \
+		nbasin.h geom_dynamic.h levels.h hydro_baro.h \
 		basin.h hydro_print.h aux_array.h 
 newtvd.o: depth.h hydro_vel.h param.h ev.h tvd.h levels.h basin.h \
 		hydro_print.h 
@@ -927,36 +937,37 @@ nosaver_basin.o: depth.h param.h basin.h
 nosaver_time.o: param.h
 nosaver_vert.o: depth.h param.h basin.h
 nosdiff.o: param.h
-noselab.o: param.h clo.mod
+noselab.o: param.h ../femlib/mod/clo.mod basin.h
 nosextr_cat.o: param.h
 nosextr_custom.o: param.h basin.h
 nosextr_fluxes.o: param.h basin.h simul.h
 nosextr_gis.o: param.h basin.h
-nosextr_nodes.o: depth.h param.h levels.h evmain.h basin.h
+nosextr_nodes.o: depth.h param.h levels.h nlevel.h evmain.h \
+		basin.h 
 nosextr_records.o: param.h
-nosinf.o: param.h clo.mod
+nosinf.o: param.h ../femlib/mod/clo.mod
 nosinit.o: param.h basin.h
 nosintp.o: param.h basin.h
 nosmaniq.o: param.h basin.h
-nosresidence.o: nbasin.h depth.h param.h levels.h basin.h evmain.h
+nosresidence.o: nbasin.h depth.h param.h levels.h nlevel.h basin.h \
+		evmain.h 
 nossplit.o: param.h
 nossum.o: param.h basin.h
-nosutil.o: ev.h
 noswrite.o: hydro.h param.h levels.h basin.h hydro_print.h simul.h
-optintp.o: depth.h param.h evmain.h basin.h clo.mod
+optintp.o: depth.h param.h ../femlib/mod/clo.mod evmain.h basin.h
 ous2nc.o: depth.h hydro.h param.h levels.h evmain.h basin.h
 ousaver.o: hydro.h param.h levels.h basin.h hydro_print.h simul.h
 ousextr_cat.o: hydro_vel.h depth.h hydro.h param.h levels.h \
-		basin.h 
-ousextr_gis.o: depth.h hydro.h param.h levels.h basin.h
-ousextr_nodes.o: depth.h hydro.h param.h levels.h evmain.h basin.h \
-		hydro_print.h 
+		nlevel.h basin.h 
+ousextr_gis.o: depth.h hydro.h param.h levels.h nlevel.h basin.h
+ousextr_nodes.o: depth.h hydro.h param.h levels.h nlevel.h \
+		evmain.h basin.h hydro_print.h 
 ousextr_records.o: hydro_vel.h depth.h hydro.h param.h levels.h \
-		basin.h 
-ousinf.o: depth.h hydro.h param.h levels.h basin.h evmain.h \
-		simul.h 
+		nlevel.h basin.h 
+ousinf.o: depth.h hydro.h param.h nlevel.h evmain.h simul.h \
+		levels.h basin.h 
 ousintp.o: hydro.h param.h levels.h basin.h hydro_print.h simul.h
-ousutil.o: param.h ev.h
+ousutil.o: ev.h
 ousvdiff.o: depth.h param.h levels.h basin.h simul.h
 ouswork.o: depth.h hydro.h param.h levels.h basin.h evmain.h \
 		simul.h 
@@ -977,8 +988,8 @@ simsys_pard.o: param.h common.h
 simsys_spk.o: param.h common.h
 splitets.o: param.h
 splitflx.o: param.h
-subapn.o: nbasin.h
-basin.mod: subbas.o
+subapn.o: ../femlib/mod/basin.mod
+../femlib/mod/basin.mod: subbas.o
 subbas.o: param.h basin.h
 subbfm.o: depth.h hydro.h param.h bound_names.h sinking.h ts.h \
 		nlevel.h nbasin.h pkonst.h levels.h basin.h \
@@ -987,12 +998,12 @@ subbnd.o: nbasin.h param.h bound_names.h bnd.h bound_geom.h \
 		nbound.h 
 subbndo.o: hydro.h param.h subbndo.h bound_geom.h nbasin.h \
 		levels.h basin.h geom.h 
-subbnds.o: intp_fem_file.mod
+subbnds.o: ../femlib/mod/intp_fem_file.mod
 subboxa.o: depth.h ev.h ts.h nlevel.h subboxa.h meteo.h \
 		diff_visc_fric.h hydro_vel.h param.h conz.h \
 		hydro.h femtime.h modules.h levels.h \
 		geom_dynamic.h basin.h 
-clo.mod: subclo.o
+../femlib/mod/clo.mod: subclo.o
 subcon1.o: depth.h param.h bound_dynamic.h nlevel.h femtime.h \
 		mkonst.h simul.h nbasin.h levels.h 
 subcoo.o: param.h common.h
@@ -1017,19 +1028,21 @@ subdwq.o: nbasin.h param.h geom_dynamic.h hydro_baro.h basin.h \
 subele.o: depth.h hydro.h param.h ev.h nbasin.h levels.h basin.h \
 		area.h aux_array.h 
 subets.o: etsinf.h
-subetsa.o: depth.h hydro.h param.h ts.h nlevel.h femtime.h tides.h \
-		simul.h nbasin.h nls.mod levels.h modules.h \
-		hydro_print.h ets.mod waves.h 
-ets.mod: subetsm.o
-extra.mod: subexta.o
-subexta.o: param.h nls.mod modules.h femtime.h hydro_print.h \
-		aux_array.h simul.h 
-intp_fem_file.mod: subfemintp.o
+subetsa.o: depth.h hydro.h param.h ../femlib/mod/ets.mod ts.h \
+		nlevel.h femtime.h tides.h simul.h nbasin.h \
+		levels.h modules.h hydro_print.h \
+		../femlib/mod/nls.mod waves.h 
+../femlib/mod/ets.mod: subetsm.o
+../femlib/mod/extra.mod: subexta.o
+subexta.o: param.h modules.h femtime.h hydro_print.h aux_array.h \
+		simul.h ../femlib/mod/nls.mod 
+../femlib/mod/intp_fem_file.mod: subfemintp.o
 subflx3d.o: hydro_vel.h testbndo.h hydro.h param.h bound_dynamic.h \
 		femtime.h ev.h geom_dynamic.h hydro_baro.h \
 		levels.h links.h geom.h 
-flux.mod: subflxa.o
-subflxa.o: conz.h param.h nls.mod modules.h ts.h femtime.h
+../femlib/mod/flux.mod: subflxa.o
+subflxa.o: conz.h param.h modules.h ts.h femtime.h \
+		../femlib/mod/nls.mod 
 subflxu.o: param.h levels.h links.h
 subfvl.o: depth.h nbasin.h param.h levels.h area.h nlevel.h \
 		aux_array.h 
@@ -1055,26 +1068,27 @@ sublnks.o: param.h ev.h femtime.h nbasin.h geom_dynamic.h links.h \
 sublnku.o: nbasin.h param.h links.h basin.h
 sublpl.o: nbasin.h param.h ev.h basin.h
 submet.o: param.h bound_dynamic.h ts.h femtime.h ev.h nbasin.h \
-		meteo_forcing_module.mod meteo.h basin.h \
-		aux_array.h 
-meteo_forcing_module.mod: submeteo2.o
-submeteo2.o: depth.h param.h nlevel.h femtime.h intp_fem_file.mod \
-		nbasin.h meteo_aux.h levels.h meteo.h basin.h 
+		../femlib/mod/meteo_forcing_module.mod meteo.h \
+		basin.h aux_array.h 
+../femlib/mod/meteo_forcing_module.mod: submeteo2.o
+submeteo2.o: depth.h param.h ev.h nlevel.h femtime.h nbasin.h \
+		meteo_aux.h levels.h meteo.h basin.h \
+		../femlib/mod/intp_fem_file.mod 
 submud.o: depth.h param.h bound_names.h bound_dynamic.h sinking.h \
 		ts.h nlevel.h bound_geom.h pkonst.h nbasin.h \
 		fluidmud.h levels.h roughness.h basin.h gotm_aux.h \
 		diff_visc_fric.h hydro_print.h 
 submud_dummy.o: param.h fluidmud.h
 subn11.o: hydro.h param.h bound_dynamic.h nlevel.h mkonst.h \
-		femtime.h bound_geom.h pkonst.h intp_fem_file.mod \
-		nbasin.h geom_dynamic.h levels.h basin.h \
-		hydro_print.h bnd_aux.h 
-chezy.mod: subn35.o
-subn35.o: depth.h hydro.h param.h pkonst.h fluidmud.h nls.mod \
-		levels.h basin.h roughness.h hydro_print.h \
-		diff_visc_fric.h 
+		femtime.h bound_geom.h pkonst.h nbasin.h \
+		geom_dynamic.h levels.h basin.h hydro_print.h \
+		../femlib/mod/intp_fem_file.mod bnd_aux.h 
+../femlib/mod/chezy.mod: subn35.o
+subn35.o: depth.h hydro.h param.h pkonst.h fluidmud.h levels.h \
+		basin.h roughness.h hydro_print.h diff_visc_fric.h \
+		../femlib/mod/nls.mod 
 subnev.o: nbasin.h param.h basin.h ev.h
-nls.mod: subnls.o
+../femlib/mod/nls.mod: subnls.o
 subnos.o: nosinf.h
 subnosa.o: depth.h nbasin.h param.h
 subnsa.o: param.h simul.h
@@ -1089,8 +1103,8 @@ subousa.o: depth.h hydro.h param.h nlevel.h femtime.h simul.h \
 subouta.o: nbasin.h hydro.h param.h hydro_baro.h femtime.h \
 		hydro_print.h simul.h 
 suboutput.o: femtime.h
-para.mod: subpar3.o
-subpard.o: param.h omp_lib.mod common.h
+../femlib/mod/para.mod: subpar3.o
+subpard.o: ../femlib/mod/omp_lib.mod param.h common.h
 subproj.o: param.h basin.h tides.h
 subqfxf.o: subqfx.h
 subqfxm1.o: subqfxm.h
@@ -1109,7 +1123,7 @@ subspk.o: param.h common.h basin.h
 subtime.o: femtime.h
 subtrace.o: hydro_vel.h hydro.h param.h femtime.h geom_dynamic.h \
 		hydro_baro.h levels.h basin.h 
-subtsuvfile.o: intp_fem_file.mod param.h
+subtsuvfile.o: param.h ../femlib/mod/intp_fem_file.mod
 subuti.o: depth.h hydro.h param.h ts.h ev.h pkonst.h \
 		geom_dynamic.h levels.h hydro_baro.h basin.h \
 		links.h 
@@ -1124,7 +1138,7 @@ subwrt.o: depth.h conz.h param.h ev.h nlevel.h femtime.h simul.h \
 		nbasin.h levels.h basin.h 
 tideg.o: depth.h nbasin.h pkonst.h hydro.h param.h basin.h tides.h
 ts2nc.o: depth.h hydro.h param.h levels.h basin.h evmain.h simul.h
-tsinf.o: clo.mod
+tsinf.o: ../femlib/mod/clo.mod
 vp.o: param.h basin.h
 weutro.o: donata.h weutro.h
 weutro_sedim.o: donata.h weutro.h
@@ -1132,16 +1146,20 @@ windcrea.o: depth.h param.h evmain.h basin.h
 winmerge.o: param.h
 winshift.o: param.h
 zinit.o: param.h basin.h simul.h
-aquabc_II.o: param.h aquabc_II_sed_ini.mod para_aqua.mod
-aquabc_II_sed_ini.mod: aquabc_II_ased_ini.o
-aquabc_II_ased_ini.o: nbasin.h aquabc_II.h para_aqua.mod
-AQUABC_II_GLOBAL.mod: aquabc_II_co2sys.o
-VECTOR_MATRIX_UTILS.mod: aquabc_II_co2sys.o
-CO2SYS_CDIAC.mod: aquabc_II_co2sys.o
-aquabc_II_pelagic_lib.o: AQUABC_II_GLOBAL.mod
-aquabc_II_pelagic_model.o: param.h AQUABC_II_GLOBAL.mod \
-		CO2SYS_CDIAC.mod para_aqua.mod 
-aquabc_II_sediment_lib.o: AQUABC_II_GLOBAL.mod
-aquabc_II_sediment_model_1.o: param.h AQUABC_II_GLOBAL.mod \
-		CO2SYS_CDIAC.mod para_aqua.mod 
+aquabc_II.o: param.h ../femlib/mod/aquabc_II_sed_ini.mod \
+		../femlib/mod/para_aqua.mod 
+../femlib/mod/aquabc_II_sed_ini.mod: aquabc_II_ased_ini.o
+aquabc_II_ased_ini.o: nbasin.h aquabc_II.h \
+		../femlib/mod/para_aqua.mod 
+../femlib/mod/AQUABC_II_GLOBAL.mod: aquabc_II_co2sys.o
+../femlib/mod/VECTOR_MATRIX_UTILS.mod: aquabc_II_co2sys.o
+../femlib/mod/CO2SYS_CDIAC.mod: aquabc_II_co2sys.o
+aquabc_II_pelagic_lib.o: ../femlib/mod/AQUABC_II_GLOBAL.mod
+aquabc_II_pelagic_model.o: ../femlib/mod/CO2SYS_CDIAC.mod param.h \
+		../femlib/mod/para_aqua.mod \
+		../femlib/mod/AQUABC_II_GLOBAL.mod 
+aquabc_II_sediment_lib.o: ../femlib/mod/AQUABC_II_GLOBAL.mod
+aquabc_II_sediment_model_1.o: ../femlib/mod/CO2SYS_CDIAC.mod \
+		param.h ../femlib/mod/para_aqua.mod \
+		../femlib/mod/AQUABC_II_GLOBAL.mod 
 

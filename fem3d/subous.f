@@ -87,31 +87,14 @@ c       call ous_close
 c
 c format of file:
 c
-c version 2
+c versions 1 and greater
 c
 c	ftype,nvers
 c	nkn,nel,nlv
 c	href,hzmin
 c	title
-c       date,time
-c       femver
-c
-c	(ilhv(ie),ie=1,nel)
-c	(hlv(l),l=1,nlv)
-c	(hev(ie),ie=1,nel)
-c	
-c	it
-c	(z(k),k=1,nkn)
-c	(ze(i),i=1,3*nel)
-c	((ut(l,ie),l=1,ilhv(k)),ie=1,nel)
-c	((vt(l,ie),l=1,ilhv(k)),ie=1,nel)
-c
-c version 1
-c
-c	ftype,nvers
-c	nkn,nel,nlv
-c	href,hzmin
-c	title
+c       date,time				(version 2)
+c       femver					(version 2)
 c
 c	(ilhv(ie),ie=1,nel)
 c	(hlv(l),l=1,nlv)

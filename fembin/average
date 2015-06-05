@@ -6,6 +6,9 @@
 # -col=c	averages only column c, else all columns
 # -fact=f	multiplies columns with f
 # -sum		computes total and not average
+# -std		computes standard deviation
+# -averstd	computes average and standard deviation
+# -format=val	number of significant digits (e.g., 0.01: 45.34, 1: no fract)
 #
 #------------------------------------------------------------------
 
@@ -18,6 +21,9 @@ $::move = 0 unless $::move;
 $::col = 0 unless $::col;
 $::fact = 0 unless $::fact;
 $::sum = 0 unless $::sum;
+$::std = 0 unless $::std;
+$::averstd = 0 unless $::averstd;
+$::format = 0 unless $::format;
 
 my @files = @ARGV;
 my $nfiles = @files;
@@ -40,8 +46,17 @@ if( $::move ) {
       print "$aver ";
     } else {
       for(my $i=1;$i<$n;$i++) {
-        my $aver = aver($cols[$i]);
-        print "$aver ";
+        my ($aver,$std) = aver($cols[$i]);
+	if( $::std ) {
+          print_format($std);
+	} elsif( $::averstd ) {
+          print_format($aver);
+	  print " +- ";
+          print_format($std);
+        } else {
+          print_format($aver);
+        }
+	print "  ";
       }
     }
     print "\n";
@@ -54,6 +69,7 @@ sub aver
     my $ra = shift;
 
     my $total = 0;
+    my $accum = 0;
     my $n = 0;
 
     foreach (@$ra) {
@@ -61,11 +77,19 @@ sub aver
 	$total += $_;
     }
 
-    if( not $::sum ) {
-      $total = $total / $n if $n;
-    }
+    return (0,0) unless $n;
 
-    return $total;
+    my $aver = $total / $n;
+
+    foreach (@$ra) {
+	$accum += ($_-$aver)*($_-$aver);
+    }
+    
+    my $std = sqrt( $accum / $n );
+
+    $aver = $total if $::sum;
+
+    return ($aver,$std);
 }
 
 ###############################################################
@@ -145,6 +169,24 @@ sub read_cols
     }
 
     return @cols;
+}
+
+sub print_format {
+
+  my $val = shift;
+
+  if( $::format ) {
+    my $f = $::format;
+    $val /= $f;
+    if( $val > 0 ) {
+      $val = int($val+0.5);
+    } else {
+      $val = int($val-0.5);
+    }
+    $val *= $f;
+  }
+
+  print "$val";
 }
 
 ###############################################################
