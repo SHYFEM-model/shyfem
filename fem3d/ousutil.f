@@ -353,6 +353,35 @@ c all other variables must have already been stored internally (title,date..)
 
 c***************************************************************
 
+        subroutine peek_ous_header(iu,nkn,nel,nlv)
+
+c get size of data
+
+        implicit none
+
+        integer iu
+        integer nkn,nel,nlv
+
+        integer nvers
+        integer ierr
+
+        nvers = 2
+        call ous_init(iu,nvers)
+
+        call ous_read_header(iu,nkn,nel,nlv,ierr)
+        if( ierr .ne. 0 ) goto 99
+
+        call ous_close(iu)
+        rewind(iu)
+
+        return
+   99   continue
+        write(6,*) 'error in reading header of OUS file'
+        stop 'error stop peek_ous_header: reading header'
+        end
+
+c***************************************************************
+
         subroutine read_ous_header(iu,nkndim,neldim,nlvdim,ilhv,hlv,hev)
 
 c other variables are stored internally

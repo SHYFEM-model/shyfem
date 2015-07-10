@@ -95,8 +95,11 @@ c------------------------------------------------------------------
 
 	call check_nlv
 
+	nlvdi = nlvdim
 	nlv = nlvdi
+	write(6,*) nlv,nlvdi,nlv_est
 	call levels_init(nkn,nel,nlv_est)
+	write(6,*) nlv,nlvdi,nlv_est
 	nlvdi = nlv_est
 	call transfer_hlv
 
@@ -120,7 +123,7 @@ c check data structure
 c------------------------------------------------------------------
 
 	call levels_reinit(nlv)
-	nlvdi = nlvdim		!to be removed later
+	!nlvdi = nlvdim		!to be removed later
 
 	call check_vertical
 
@@ -262,9 +265,12 @@ c checks nlv and associated parameters
 
 	include 'nlevel.h'
 
-	write(6,*) 'check_nlv : ',nlvdim,nlvdi,nlv
+	write(6,*) 'check_nlv : '
+	write(6,*) '   nlvdim : ',nlvdim
+	write(6,*) '    nlvdi : ',nlvdi
+	write(6,*) '      nlv : ',nlv
 
-	if(nlvdim.ne.nlvdi) stop 'error stop check_nlv: level dimension'
+	!if(nlvdim.ne.nlvdi) stop 'error stop check_nlv: level dimension'
 	if(nlv.gt.nlvdim) stop 'error stop check_nlv: level dimension'
 
 	end

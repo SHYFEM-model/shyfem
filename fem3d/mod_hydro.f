@@ -1,6 +1,6 @@
 
 !==================================================================
-	module hydro
+	module mod_hydro
 !==================================================================
 
 	implicit none
@@ -42,8 +42,14 @@
         if( nkn == nkn_hydro .and. nel == nel_hydro .and.
      +      nlv == nlv_hydro ) return
 
-        if( nkn_hydro > 0 .or. nel_hydro > 0 .or.
-     +      			nlv_hydro > 0 ) then
+        if( nel > 0 .or. nkn > 0 .or. nlv > 0 ) then
+          if( nel == 0 .or. nkn == 0 .or. nlv == 0 ) then
+            write(6,*) 'nel,nkn,nlv: ',nel,nkn,nlv
+            stop 'error stop mod_hydro_init: incompatible parameters'
+          end if
+        end if
+
+        if( nkn_hydro > 0 ) then
           deallocate(zov)
           deallocate(znv)
         
@@ -56,13 +62,11 @@
           deallocate(vtlnv)
         end if
 
-        if( nkn == 0 ) return
-        if( nel == 0 ) return
-        if( nlv == 0 ) return
-
         nkn_hydro = nkn
         nel_hydro = nel
         nlv_hydro = nlv
+
+        if( nkn == 0 ) return
 
         allocate(zov(nkn))
         allocate(znv(nkn))
@@ -78,6 +82,6 @@
         end subroutine mod_hydro_init
 
 !==================================================================
-        end module hydro
+        end module mod_hydro
 !==================================================================
 

@@ -16,6 +16,7 @@ c*************************************************************************
 ! Initialize vector and matrix      
 
       implicit none
+      include 'param.h'
       include 'common.h'
       include 'basin.h'
 
@@ -55,12 +56,13 @@ c*************************************************************************
 	integer n
 	real z(n)	!first guess
 
+      include 'param.h'
       include 'common.h'
-      !include 'basin.h'
+      !include 'nbasin.h'
       integer k
 
       real*8 csr(csrdim)
-      integer icsr(nkndim+1),jcsr(csrdim)
+      integer icsr(n+1),jcsr(csrdim)
       integer iwork(2*csrdim)
 
       external bcg
@@ -74,19 +76,19 @@ c*************************************************************************
 
       integer  itermax !Maximum number of iterations
       parameter (itermax=1000)
-      real*8   alu(csrdim*2), fpar(16), wilut(nkndim+1)
-      real*8   wksp(8*nkndim)
-      real*8   guess(nkndim)
+      real*8   alu(csrdim*2), fpar(16), wilut(n+1)
+      real*8   wksp(8*n)
+      real*8   guess(n)
 	integer nkn
-      integer  ju(nkndim), jlu(2*csrdim), iperm(2*nkndim)
-      integer  iw(nkndim), jw(2*nkndim), ipar(16)
+      integer  ju(n), jlu(2*csrdim), iperm(2*n)
+      integer  iw(n), jw(2*n), ipar(16)
       integer  ierr, lfil, iwk, itsol, itpre, mbloc
       double precision   droptol, permtol
       double precision   zero,one
 
       !ITPACK
-      integer IPARIT(12),IWKSP(3*nkndim), INW
-      real*8  FPARIT(12),WKSPIT(6*nkndim+4*itermax), INIU(nkndim)
+      integer IPARIT(12),IWKSP(3*n), INW
+      real*8  FPARIT(12),WKSPIT(6*n+4*itermax), INIU(n)
 
 	nkn = n
 
@@ -138,7 +140,7 @@ c*************************************************************************
       ipar(1) = 0      		! always 0 to start an iterative solver
       ipar(2) = 1  		! right preconditioning
       ipar(3) = 1      		! use convergence test scheme 1
-      ipar(4) = 8*nkndim	! size of the work array
+      ipar(4) = 8*nkn		! size of the work array
       !ipar(5) = 10		! size of the Krylov subspace 
 				!(used by GMRES and its variants)
       ipar(5) = 1

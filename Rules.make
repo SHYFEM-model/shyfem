@@ -211,6 +211,8 @@ DISTRIBUTION_TYPE = experimental
 DEFDIR  = $(HOME)
 FEMDIR  = ..
 DIRLIB  = $(FEMDIR)/femlib
+MODDIR  = 
+MODDIR  = $(DIRLIB)/mod
 
 LIBX = -L/usr/X11R6/lib -L/usr/X11/lib -L/usr/lib/X11  -lX11
 
@@ -299,6 +301,11 @@ WARNING = true
 #
 ##############################################
 
+FGNU_GENERAL = 
+ifdef MODDIR
+  FGNU_GENERAL = -J$(MODDIR)
+endif
+
 FGNU_PROFILE = 
 ifeq ($(PROFILE),true)
   FGNU_PROFILE = -p
@@ -306,9 +313,9 @@ endif
 
 FGNU_WARNING = 
 ifeq ($(WARNING),true)
-  FGNU_NOOPT = -Wall -pedantic
-  FGNU_NOOPT = -Wall -Wtabs -Wno-unused -Wno-uninitialized
-  FGNU_NOOPT = -Wall -Wtabs -Wno-unused
+  FGNU_WARNING = -Wall -pedantic
+  FGNU_WARNING = -Wall -Wtabs -Wno-unused -Wno-uninitialized
+  FGNU_WARNING = -Wall -Wtabs -Wno-unused
 endif
 
 FGNU_NOOPT = 
@@ -347,7 +354,7 @@ ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
   F95		= $(FGNU95)
   LINKER	= $(F77)
   LFLAGS	= $(FGNU_OPT) $(FGNU_PROFILE) $(FGNU_OMP)
-  FFLAGS	= $(LFLAGS) $(FGNU_NOOPT) $(FGNU_WARNING)
+  FFLAGS	= $(LFLAGS) $(FGNU_NOOPT) $(FGNU_WARNING) $(FGNU_GENERAL)
   FINFOFLAGS	= -v
 endif
 
@@ -486,6 +493,11 @@ FINTEL_ERSEM = $(DEFINES)
 
 #-------------------------------------------------
 
+FINTEL_GENERAL =
+ifdef MODDIR
+  FINTEL_GENERAL = -module $(MODDIR)
+endif
+
 FINTEL_PROFILE = 
 ifeq ($(PROFILE),true)
   FINTEL_PROFILE = -p
@@ -532,7 +544,7 @@ ifeq ($(FORTRAN_COMPILER),INTEL)
   F95     	= $(F77)
   LINKER	= $(F77)
   LFLAGS	= $(FINTEL_OPT) $(FINTEL_PROFILE) $(FINTEL_OMP)
-  FFLAGS	= $(LFLAGS) $(FINTEL_NOOPT) $(FINTEL_WARNING)
+  FFLAGS	= $(LFLAGS) $(FINTEL_NOOPT) $(FINTEL_WARNING) $(FINTEL_GENERAL)
   FINFOFLAGS	= -v
 endif
 

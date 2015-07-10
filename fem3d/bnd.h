@@ -1,8 +1,9 @@
 
-	integer nbndim
-	parameter(nbndim=100)
+	integer nbvdim
+	!parameter(nbvdim=100)
+	parameter(nbvdim=25)
 
-        real bnd(nbndim,nbcdim)
+        real bnd(nbvdim,nbcdim)
         common /bnd/bnd
 	save /bnd/
 

@@ -331,6 +331,7 @@ c administers writing of flux data
 
 	include 'ts.h'
 	include 'conz.h'
+	include 'nlevel.h'
 
 	integer ifemop
 	real getpar
@@ -369,7 +370,7 @@ c-----------------------------------------------------------------
                 if( nsect .le. 0 ) nbflx = -1
                 if( nbflx .eq. -1 ) return
 
-        	call flux_alloc_arrays(nlvdim,nsect)
+        	call flux_alloc_arrays(nlvdi,nsect)
 
                 !if( nsect .gt. nscflxdim ) then
                 !  stop 'error stop wrflxa: dimension nscflxdim'
@@ -380,13 +381,13 @@ c-----------------------------------------------------------------
 
 		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
 
-		call fluxes_init(nlvdim,nsect,nlayers,nrm,masst)
+		call fluxes_init(nlvdi,nsect,nlayers,nrm,masst)
 		if( ibarcl .gt. 0 ) then
-		  call fluxes_init(nlvdim,nsect,nlayers,nrs,saltt)
-		  call fluxes_init(nlvdim,nsect,nlayers,nrt,tempt)
+		  call fluxes_init(nlvdi,nsect,nlayers,nrs,saltt)
+		  call fluxes_init(nlvdi,nsect,nlayers,nrt,tempt)
 		end if
 		if( iconz .eq. 1 ) then
-		  call fluxes_init(nlvdim,nsect,nlayers,nrc,conzt)
+		  call fluxes_init(nlvdi,nsect,nlayers,nrc,conzt)
 		end if
 
                 nbflx=ifemop('.flx','unform','new')
@@ -421,21 +422,21 @@ c	-------------------------------------------------------
 
 	ivar = 0
 	call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,rhov)
-	call fluxes_accum(nlvdim,nsect,nlayers,nrm,masst,fluxes)
+	call fluxes_accum(nlvdi,nsect,nlayers,nrm,masst,fluxes)
 
 	if( ibarcl .gt. 0 ) then
 	  ivar = 11
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,saltv)
-	  call fluxes_accum(nlvdim,nsect,nlayers,nrs,saltt,fluxes)
+	  call fluxes_accum(nlvdi,nsect,nlayers,nrs,saltt,fluxes)
 	  ivar = 12
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,tempv)
-	  call fluxes_accum(nlvdim,nsect,nlayers,nrt,tempt,fluxes)
+	  call fluxes_accum(nlvdi,nsect,nlayers,nrt,tempt,fluxes)
 	end if
 
 	if( iconz .eq. 1 ) then
 	  ivar = 10
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,cnv)
-	  call fluxes_accum(nlvdim,nsect,nlayers,nrc,conzt,fluxes)
+	  call fluxes_accum(nlvdi,nsect,nlayers,nrc,conzt,fluxes)
 	end if
 
 c	-------------------------------------------------------
@@ -449,37 +450,37 @@ c	average and write results
 c	-------------------------------------------------------
 
 	ivar = 0
-	call fluxes_aver(nlvdim,nsect,nlayers,nrm,masst,fluxes)
-	call wrflx(nbflx,it,nlvdim,nsect,ivar,nlayers,fluxes)
+	call fluxes_aver(nlvdi,nsect,nlayers,nrm,masst,fluxes)
+	call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
 
 	if( ibarcl .gt. 0 ) then
 	  ivar = 11
-	  call fluxes_aver(nlvdim,nsect,nlayers,nrs,saltt,fluxes)
-	  call wrflx(nbflx,it,nlvdim,nsect,ivar,nlayers,fluxes)
+	  call fluxes_aver(nlvdi,nsect,nlayers,nrs,saltt,fluxes)
+	  call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
 	  ivar = 12
-	  call fluxes_aver(nlvdim,nsect,nlayers,nrt,tempt,fluxes)
-	  call wrflx(nbflx,it,nlvdim,nsect,ivar,nlayers,fluxes)
+	  call fluxes_aver(nlvdi,nsect,nlayers,nrt,tempt,fluxes)
+	  call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
 	end if
 
 	if( iconz .eq. 1 ) then
 	  ivar = 10
-	  call fluxes_aver(nlvdim,nsect,nlayers,nrc,conzt,fluxes)
-	  call wrflx(nbflx,it,nlvdim,nsect,ivar,nlayers,fluxes)
+	  call fluxes_aver(nlvdi,nsect,nlayers,nrc,conzt,fluxes)
+	  call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
 	end if
 
 c	-------------------------------------------------------
 c	reset variables
 c	-------------------------------------------------------
 
-	call fluxes_init(nlvdim,nsect,nlayers,nrm,masst)
+	call fluxes_init(nlvdi,nsect,nlayers,nrm,masst)
 
 	if( ibarcl .gt. 0 ) then
-	  call fluxes_init(nlvdim,nsect,nlayers,nrs,saltt)
-	  call fluxes_init(nlvdim,nsect,nlayers,nrt,tempt)
+	  call fluxes_init(nlvdi,nsect,nlayers,nrs,saltt)
+	  call fluxes_init(nlvdi,nsect,nlayers,nrt,tempt)
 	end if
 
 	if( iconz .eq. 1 ) then
-	  call fluxes_init(nlvdim,nsect,nlayers,nrc,conzt)
+	  call fluxes_init(nlvdi,nsect,nlayers,nrc,conzt)
 	end if
 
 c-----------------------------------------------------------------
@@ -536,6 +537,7 @@ c ivar_base	base of variable numbering
 	integer it
 
 	include 'param.h'
+	include 'nlevel.h'
 	include 'conz.h'
 
 	integer itend
@@ -577,7 +579,7 @@ c-----------------------------------------------------------------
                 if( nbflx .eq. -1 ) return
 
 		!be sure that other arrays are already allocated!!!!
-        	call flux_alloc_conz_arrays(nlvdim,nsect,iconz)
+        	call flux_alloc_conz_arrays(nlvdi,nsect,iconz)
 
                 !if( nsect .gt. nscflxdim ) then
                 !  stop 'error stop fluxes_template: dimension nscflxdim'
@@ -589,7 +591,7 @@ c-----------------------------------------------------------------
 		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
 
 		do k=1,iconz
-		  call fluxes_init(nlvdim,nsect,nlayers
+		  call fluxes_init(nlvdi,nsect,nlayers
      +				,nrcc(k),cflux(0,1,1,k))
 		end do
 
@@ -625,7 +627,7 @@ c	-------------------------------------------------------
 	do k=1,iconz
 	  ivar = ivar_base + k
 	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,conzv(1,1,k))
-	  call fluxes_accum(nlvdim,nsect,nlayers
+	  call fluxes_accum(nlvdi,nsect,nlayers
      +			,nrcc(k),cflux(0,1,1,k),fluxes)
 	end do
 
@@ -642,9 +644,9 @@ c	-------------------------------------------------------
 
 	do k=1,iconz
 	  ivar = ivar_base + k
-	  call fluxes_aver(nlvdim,nsect,nlayers
+	  call fluxes_aver(nlvdi,nsect,nlayers
      +			,nrcc(k),cflux(0,1,1,k),fluxes)
-	  call wrflx(nbflx,it,nlvdim,nsect,ivar,nlayers,fluxes)
+	  call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
 	end do
 
 c	-------------------------------------------------------
@@ -652,7 +654,7 @@ c	reset variables
 c	-------------------------------------------------------
 
 	do k=1,iconz
-	  call fluxes_init(nlvdim,nsect,nlayers
+	  call fluxes_init(nlvdi,nsect,nlayers
      +			,nrcc(k),cflux(0,1,1,k))
 	end do
 

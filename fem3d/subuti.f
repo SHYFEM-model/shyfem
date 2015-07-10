@@ -355,15 +355,15 @@ c	kin = (1/2) * rho * area * (U*U+V*V)/H
 
 c***************************************************************
 
-        subroutine stmima(a,nkn,nlvdim,ilhkv,amin,amax)
+        subroutine stmima(a,nkn,nlvddi,ilhkv,amin,amax)
 
 c computes min/max of 3d field
 
         implicit none
 
 c arguments
-        integer nkn,nlvdim
-        real a(nlvdim,1)
+        integer nkn,nlvddi
+        real a(nlvddi,1)
         integer ilhkv(1)
         real amin,amax
 c local

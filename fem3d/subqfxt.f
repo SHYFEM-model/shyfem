@@ -144,9 +144,10 @@ c local
 	real area
 
 	double precision ddq
-	real dtw(nkndim)	!Warm layer temp. diff
-	real tws(nkndim)	!Skin temperature (deg C)
-	save dtw,tws
+
+	real, save, allocatable :: dtw(:)	!Warm layer temp. diff
+	real, save, allocatable :: tws(:)	!Skin temperature (deg C)
+
 	real hb			!depth of modelled T in first layer [m]
 	real usw		!surface friction velocity [m/s]
 	real rad		!Net shortwave flux 
@@ -186,10 +187,10 @@ c---------------------------------------------------------
 	  write(6,*) 'qflux3d: iheat,hdecay,botabs: '
      +				,iheat,hdecay,botabs  
 
-	  do k = 1,nkn
-	    dtw(k) = 0.
-	    tws(k) = temp(1,k)
-	  end do
+	  allocate(dtw(nkn))
+	  allocate(tws(nkn))
+	  dtw = 0.
+	  tws(:) = temp(1,:)
 
           itdrag = nint(getpar('itdrag'))
 	  bwind = itdrag .eq. 4

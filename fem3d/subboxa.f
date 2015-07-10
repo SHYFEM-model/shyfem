@@ -1117,7 +1117,7 @@ c computes average zeta values for box
 	include 'ev.h'
 	include 'subboxa.h'
 
-        real zev(3,neldim)
+        real zev(3,nel)
 	real val(nbxdim)
 
 	include 'geom_dynamic.h'

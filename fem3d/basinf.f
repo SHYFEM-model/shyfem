@@ -81,6 +81,7 @@ c-----------------------------------------------------------------
 
 	!call write_grd_from_bas	!write grd from bas
         !call write_xy('basinf.xyz',nkn,ipv,xgv,ygv)
+	!call write_grd_with_unique_depth	!prepare for sigma levels
 
 	end
 
@@ -543,6 +544,77 @@ c areatr        element area (return value)
         areatr = f / 2.D0
 
         end
+
+c*******************************************************************
+
+	subroutine write_grd_with_unique_depth
+
+c writes grd file extracting info from bas file
+
+	implicit none
+
+	include 'param.h'
+	include 'basin.h'
+	include 'evmain.h'
+
+	logical bsort
+	integer k,ie,ii,ia,i
+	real x,y,h,area
+	integer ipdex(nel)	!for sorting
+	real hkv(nkn)
+	real weight(nkn)
+
+	bsort = .false.
+	bsort = .true.
+
+	hkv = 0.
+	weight = 0.
+
+	do ie=1,nel
+	  area = ev(10,ie)
+	  do ii=1,3
+	    h = hm3v(ii,ie)
+	    k = nen3v(ii,ie)
+	    hkv(k) = hkv(k) + h*area
+	    weight(k) = weight(k) + area
+	  end do
+	end do
+
+	do k=1,nkn
+	  if( weight(k) > 0. ) hkv(k) = hkv(k) / weight(k)
+	end do
+
+c-------------------------
+	
+	open(8,file='bas.grd',status='unknown',form='formatted')
+
+	call isort(nkn,ipv,ipdex)
+
+	do i=1,nkn
+	  k = i
+	  if( bsort ) k = ipdex(i)
+	  x = xgv(k)
+	  y = ygv(k)
+	  h = hkv(k)
+	  write(8,2000) 1,ipv(k),0,x,y,h
+	end do
+
+	call isort(nel,ipev,ipdex)
+
+	do i=1,nel
+	  ie = i
+	  if( bsort ) ie = ipdex(i)
+	  h = hm3v(1,ie)
+	  ia = iarv(ie)
+	  write(8,2100) 2,ipev(ie),ia,3,(ipv(nen3v(ii,ie)),ii=1,3)
+	end do
+	  
+	close(8)
+
+	return
+ 2000	format(i1,i10,i5,3e16.8)
+ 2100	format(i1,i10,2i5,3i10,e14.6)
+	end
 
 c*******************************************************************
 

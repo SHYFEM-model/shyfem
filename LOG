@@ -1,4 +1,10 @@
 
+10.07.2015
+
+c ./fem3d/subbnd.f:
+c 23.06.2015    ggu     setbc() deleted, nrz,nrq eliminated
+
+
 05.06.2015
 
 c ./femplot/supsim.f:

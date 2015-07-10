@@ -416,9 +416,10 @@ c	data amatr / 2.,1.,1.,1.,2.,1.,1.,1.,2. /	!original
 
         integer locsps,loclp,iround
 	real getpar
-	logical iskbnd,iskout,iseout
+	!logical iskbnd,iskout,iseout
+	logical iskbnd,iseout
         iskbnd(k) = inodv(k).ne.0 .and. inodv(k).ne.-2
-        iskout(k) = inodv(k).eq.-2
+        !iskout(k) = inodv(k).eq.-2
         iseout(ie) = iwegv(ie).ne.0
 
 c-------------------------------------------------------------
@@ -542,6 +543,7 @@ c	------------------------------------------------------
 		!hia(i,i)=12.*aj
 		hik(i)=rw*hia(i,i)
 	  end if
+	  !call handle_ship_boundary(it,i,k,hia,hik)
 	end do
 
 c	------------------------------------------------------
@@ -1396,8 +1398,8 @@ c statement functions
 	logical is_zeta_bound
 	real volnode
 
-	logical isein
-        isein(ie) = iwegv(ie).eq.0
+	!logical isein
+        !isein(ie) = iwegv(ie).eq.0
 
 	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp256w'
 
@@ -1585,8 +1587,8 @@ c statement functions
 
 	include 'testbndo.h'
 
-	logical isein
-        isein(ie) = iwegv(ie).eq.0
+	!logical isein
+        !isein(ie) = iwegv(ie).eq.0
 
 	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp256w'
 

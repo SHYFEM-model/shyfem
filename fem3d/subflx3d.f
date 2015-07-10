@@ -226,22 +226,21 @@ c -> has been done - other sources of mfluxv (rain, etc.) are also eliminated
 	implicit none
 
 	include 'param.h'
+	include 'ev.h'
+	include 'links.h'
+	include 'testbndo.h'
+	include 'hydro.h'
+	include 'hydro_vel.h'
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'bound_dynamic.h'
 
 	integer k		!node number of finite volume
 	integer istype		!type of node (see flxtype)
 	real az			!time weighting parameter
 	integer lkmax		!maximum layer in finite volume k (return)
 	integer n		!dimension/size of transp (entry/return)
-	real transp(nlvdim,1)	!computed fluxes (return)
-
-	include 'ev.h'
-	include 'links.h'
-	include 'testbndo.h'
-
-	include 'hydro.h'
-	include 'hydro_vel.h'
-	include 'levels.h'
-	include 'bound_dynamic.h'
+	real transp(nlvdi,1)	!computed fluxes (return)
 
 	logical bdebug
 	integer i,ie,ii,ne,ndim
@@ -252,8 +251,8 @@ c -> has been done - other sources of mfluxv (rain, etc.) are also eliminated
 	real azt
 	real div,dvdt,q,qw_top,qw_bot
 
-	real dvol(nlvdim)
-	real areal(nlvdim+1)
+	real dvol(nlvdi)
+	real areal(nlvdi+1)
 
 	integer ithis
 	real areanode,volnode
@@ -342,32 +341,29 @@ c passed in are pointers to these section in lnk structure
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
+	include 'femtime.h'
+	include 'ev.h'
+	include 'links.h'
+	include 'nlevel.h'
 
 	integer k		!node number of finite volume
 	integer ibefor,iafter	!pointer to pre/post node
 	integer istype		!type of node (see flxtype)
 	real az			!time weighting parameter
 	integer lkmax		!maximum layer in finite volume k (return)
-	real flux(nlvdim)	!computed fluxes (return)
-
-	integer ndim		!must be at least ngr
-	parameter (ndim=100)
-
-	include 'femtime.h'
-
-	include 'ev.h'
-	include 'links.h'
+	real flux(nlvdi)	!computed fluxes (return)
 
 	logical bdebug
 	integer i,n
 	integer l
 	real ttot
 
-	real tt(nlvdim)
+	real tt(nlvdi)
 
-	real transp(nlvdim,ndim)
-	real weight(ndim)
-	real weight1(ndim)
+	real transp(nlvdi,ngr)
+	real weight(ngr)
+	real weight1(ngr)
 
 	bdebug = k .eq. 6615
 	bdebug = k .eq. 0
@@ -376,7 +372,7 @@ c---------------------------------------------------------
 c compute transport through finite volume k
 c---------------------------------------------------------
 
-	n = ndim
+	n = ngr
 	call flx3d_k(k,istype,az,lkmax,n,transp)
 
 	if( bdebug ) then
@@ -588,17 +584,19 @@ c if on boundary (itype>1) rflux(n) is not used (because not defined)
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
+	include 'nlevel.h'
 
 	integer k		!node
 	integer itype		!type of node (1=int,2=bnd,3=BOO,4=OOB,5=OOO)
 	integer lkmax		!number of layers
 	integer n		!number of sides (tfluxes)
-	real rflux(nlvdim,n)	!fluxes into node (element)
-	real tflux(nlvdim,n)	!fluxes through sides (return value)
+	real rflux(nlvdi,n)	!fluxes into node (element)
+	real tflux(nlvdi,n)	!fluxes through sides (return value)
 
 	integer i,l
-	real rf(ngrdim)
-	real tf(ngrdim)
+	real rf(ngr)
+	real tf(ngr)
 
 	do l=1,lkmax
 

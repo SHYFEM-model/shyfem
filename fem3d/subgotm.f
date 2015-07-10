@@ -79,16 +79,16 @@ c---------------------------------------------------------------
 c aux arrays superposed onto other aux arrays
 c---------------------------------------------------------------
 
-	real shearf2(nlvdim,nkndim)
-	real buoyf2(nlvdim,nkndim)
-	real richard(nlvdim,nkndim)
+	real shearf2(nlvdi,nkn)
+	real buoyf2(nlvdi,nkn)
+	real richard(nlvdi,nkn)
+	real h(nlvdi)
 
 	include 'diff_visc_fric.h'
 
 	integer k,l
 	integer nlev
 	integer mode
-	real h(nlvdim)
 	real ri,vis,dif
 	real diftur,vistur
 	real a,b,alpha,beta
@@ -115,7 +115,7 @@ c------------------------------------------------------
 c set up buoyancy frequency and shear frequency
 c------------------------------------------------------
 
-	call setm2n2(nlvdim,buoyf2,shearf2)
+	call setm2n2(nlvdi,buoyf2,shearf2)
 
 c------------------------------------------------------
 c set up parameters
@@ -178,47 +178,37 @@ c computes turbulent quantities with GOTM model
 	implicit none
 
 	include 'param.h'
-
-	integer ndim
-	parameter(ndim=nlvdim)
+	include 'gotm_aux.h'
+	include 'femtime.h'
+	include 'nlevel.h'
+	include 'pkonst.h'
+	include 'basin.h'
+	include 'ts.h'
+	include 'hydro_print.h'
+	include 'meteo_aux.h'
+	include 'roughness.h'
+	include 'diff_visc_fric.h'
 
 	double precision dt
 	double precision u_taus,u_taub
 
-	double precision hh(0:ndim)
-	double precision nn(0:ndim), ss(0:ndim)
+	double precision hh(0:nlvdi)
+	double precision nn(0:nlvdi), ss(0:nlvdi)
 
-	double precision num(0:ndim), nuh(0:ndim)
-	double precision ken(0:ndim), dis(0:ndim)
-	double precision len(0:ndim)
+	double precision num(0:nlvdi), nuh(0:nlvdi)
+	double precision ken(0:nlvdi), dis(0:nlvdi)
+	double precision len(0:nlvdi)
 
-	double precision num_old(0:ndim), nuh_old(0:ndim)
-	double precision ken_old(0:ndim), dis_old(0:ndim)
-	double precision len_old(0:ndim)
-
+	double precision num_old(0:nlvdi), nuh_old(0:nlvdi)
+	double precision ken_old(0:nlvdi), dis_old(0:nlvdi)
+	double precision len_old(0:nlvdi)
  
-	include 'gotm_aux.h'
- 
-
-	include 'femtime.h'
-	include 'nlevel.h'
-	include 'pkonst.h'
-
-	include 'basin.h'
-	include 'ts.h'
-
 c---------------------------------------------------------------
 c aux arrays superposed onto other aux arrays
 c---------------------------------------------------------------
 
-
-	real taub(nkndim)
-	real areaac(nkndim)
-
-	include 'hydro_print.h'
-	include 'meteo_aux.h'
-
-	include 'diff_visc_fric.h'
+	real taub(nkn)
+	real areaac(nkn)
 
 	integer ioutfreq,ks
 	integer k,l
@@ -228,14 +218,13 @@ c---------------------------------------------------------------
 	real czdef
 	save czdef
 
-	real h(nlvdim)
+	real h(nlvdi)
 	double precision depth		!total depth [m]
 	double precision z0s,z0b	!surface/bottom roughness length [m]
 	double precision rlmax
 	integer nltot
 	logical bwrite
 
-	include 'roughness.h'
 	real charnock_val		!emp. Charnok constant (1955)
 	parameter(charnock_val=1400.)	!default value = 1400.
 	double precision z0s_min	!minimum value of z0s
@@ -287,7 +276,7 @@ c         --------------------------------------------------------
 
           call getfnm('gotmpa',fn)
 
-	  call init_gotm_turb(10,fn,ndim)
+	  call init_gotm_turb(10,fn,nlvdi)
 
 	  icall = 1
 	end if
@@ -308,7 +297,7 @@ c------------------------------------------------------
 
 	shearf2 = 0.
  	buoyf2 = 0.
-	call setm2n2(nlvdim,buoyf2,shearf2)
+	call setm2n2(nlvdi,buoyf2,shearf2)
 
 c------------------------------------------------------
 c call gotm for each water column
@@ -466,7 +455,7 @@ c           ------------------------------------------------------
     1     continue
 	end do
 
-	call checka(nlvdim,shearf2,buoyf2,taub)
+	call checka(nlvdi,shearf2,buoyf2,taub)
  
 	!write(70,*) 'rlmax: ',it,rlmax,nltot
 
@@ -761,17 +750,15 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 	real shearf2(nldim,1)
 
 	include 'param.h'
-
 	include 'nbasin.h'
 	include 'pkonst.h'
 	include 'femtime.h'
-
 	include 'ts.h'
 	include 'hydro_print.h'
 
 	integer k,l,nlev
 	real aux,dh,du,dv,m2,dbuoy
-	real h(nlvdim)
+	real h(nldim)
 	real cnpar			!numerical "implicitness" parameter
 	real n2max,n2
 	real nfreq,nperiod
@@ -780,8 +767,6 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 	save iuinfo
 	data iuinfo / 0 /
  
-	if( nldim .ne. nlvdim ) stop 'error stop setbuoyf: dimension'
-
         aux = -grav / rowass
 	cnpar = 1
 	n2max = 0.
@@ -924,19 +909,17 @@ c checks arrays for nan or other strange values
 	include 'hydro_print.h'
 	include 'meteo_aux.h'
 
-	if( nlvdim .ne. nldim ) stop 'error stop checka'
-
-	call nantest(nkn*nlvdim,shearf2,'shearf2')
-	call nantest(nkn*nlvdim,buoyf2,'buoyf2')
+	call nantest(nkn*nldim,shearf2,'shearf2')
+	call nantest(nkn*nldim,buoyf2,'buoyf2')
 	call nantest(nkn,taub,'taub')
 
-	call nantest(nkn*(nlvdim+1),visv,'visv')
-	call nantest(nkn*(nlvdim+1),difv,'difv')
+	call nantest(nkn*(nldim+1),visv,'visv')
+	call nantest(nkn*(nldim+1),difv,'difv')
 
-	call nantest(nkn*nlvdim,uprv,'uprv')
-	call nantest(nkn*nlvdim,vprv,'vprv')
-	call nantest(nel*nlvdim,ulnv,'ulnv')
-	call nantest(nel*nlvdim,vlnv,'vlnv')
+	call nantest(nkn*nldim,uprv,'uprv')
+	call nantest(nkn*nldim,vprv,'vprv')
+	call nantest(nel*nldim,ulnv,'ulnv')
+	call nantest(nel*nldim,vlnv,'vlnv')
 
 	call nantest(nkn,tauxnv,'tauxnv')
 	call nantest(nkn,tauynv,'tauynv')
@@ -954,13 +937,10 @@ c checks arrays for strange values
 	character*(*) text
 
 	include 'param.h'
-
 	include 'nbasin.h'
-
+	include 'nlevel.h'
 	include 'diff_visc_fric.h'
-
 	include 'hydro.h'
-
 	include 'ts.h'
 	include 'hydro_vel.h'
 	include 'hydro_print.h'
@@ -979,19 +959,19 @@ c checks arrays for strange values
 	call valtest(three,nel,-valmax,valmax,zenv,text,'zenv')
 
 	valmax = 10000.
-	call valtest(nlvdim+1,nkn,zero,valmax,visv,text,'visv')
-	call valtest(nlvdim+1,nkn,zero,valmax,difv,text,'difv')
+	call valtest(nlvdi+1,nkn,zero,valmax,visv,text,'visv')
+	call valtest(nlvdi+1,nkn,zero,valmax,difv,text,'difv')
 
 	valmax = 100.
-	call valtest(nlvdim,nkn,-valmax,valmax,rhov,text,'rhov')
+	call valtest(nlvdi,nkn,-valmax,valmax,rhov,text,'rhov')
 
 	valmax = 3.
-	call valtest(nlvdim,nel,-valmax,valmax,ulnv,text,'ulnv')
-	call valtest(nlvdim,nel,-valmax,valmax,vlnv,text,'vlnv')
+	call valtest(nlvdi,nel,-valmax,valmax,ulnv,text,'ulnv')
+	call valtest(nlvdi,nel,-valmax,valmax,vlnv,text,'vlnv')
 
 	valmax = 100.
-	call valtest(nlvdim,nel,-valmax,valmax,utlnv,text,'utlnv')
-	call valtest(nlvdim,nel,-valmax,valmax,vtlnv,text,'vtlnv')
+	call valtest(nlvdi,nel,-valmax,valmax,utlnv,text,'utlnv')
+	call valtest(nlvdi,nel,-valmax,valmax,vtlnv,text,'vtlnv')
 
 	end
 
@@ -1074,19 +1054,15 @@ c       parameter(kmin=1.e-10,epsmin=1.e-12,lenmin=0.01)
         parameter(avumol=1.3e-6,avtmol=1.4e-7,avsmol=1.1e-9)
 
 	include 'param.h'
-
 	include 'nbasin.h'
-
-
-
+	include 'nlevel.h'
 	include 'diff_visc_fric.h'
-
 	include 'turbulence.h'
 
         integer k,l
 
 	do k=1,nkn
-          do l=0,nlvdim
+          do l=0,nlvdi
             tken(l,k) = kmin
             eps(l,k) = epsmin
             rls(l,k) = lenmin

@@ -103,8 +103,8 @@ c------------------------------------------------------------
 	integer ifemop
 
 	integer k,nin,nvar,ie
-	integer iu,iuf,iua
-	save iu,iuf,iua
+	integer ius,iuf,iua
+	save ius,iuf,iua
 	integer nrepl
 	save nrepl
 	integer it0
@@ -200,7 +200,7 @@ c------------------------------------------------------------
 
 	  call wrt_flag_inside(rinside,iaout)
 
-	  iu = ifemop('.jas','formatted','new')
+	  ius = ifemop('.jas','formatted','new')
 	  iuf = ifemop('.frq','formatted','new')
 	  iua = ifemop('.jaa','formatted','new')
 
@@ -246,7 +246,7 @@ c belab		elaborates (accumulates) concentrations
 	if( bdebug ) then
 	  write(6,*) 'WRT debug:'
 	  write(6,*) nrepl,binit,breset,belab,bcompute,bnoret
-	  write(6,*) it,iu
+	  write(6,*) it,ius
 	end if
 
 c------------------------------------------------------------
@@ -274,7 +274,7 @@ c------------------------------------------------------------
 	  tacu = tacu + (it-it0)
 	  call acu_acum(blog,it,c0,cnv,vol,rinside,cvacu,volacu)
 
-	  call wrt_restime_summary(iu,it,it0,mass,mass0,rcorrect)
+	  call wrt_restime_summary(ius,it,it0,mass,mass0,rcorrect)
 	end if
 
 	if( bdebug ) then
@@ -332,7 +332,7 @@ c------------------------------------------------------------
 	  !call wrt_write_area(iua,it,iadim,massa,massa0)
 	  call wrt_write_area(iua,it,iadim,conza,conza0)
 
-	  call wrt_restime_summary(-iu,it,it0,mass,mass0,rcorrect)	!reset
+	  call wrt_restime_summary(-ius,it,it0,mass,mass0,rcorrect)	!reset
 	end if
 
 c------------------------------------------------------------
@@ -815,7 +815,7 @@ c---------------------------------------------------------------
 
 c**********************************************************************
 
-	subroutine wrt_restime_summary(iu,it,it0,mass,mass0,rcorrect)
+	subroutine wrt_restime_summary(ius,it,it0,mass,mass0,rcorrect)
 
 c perc		percentage of mass still in domain
 c restime	renewal time computed by integrating
@@ -826,7 +826,7 @@ c resstd	standard deviation of renewal time
 
      	implicit none
 	
-	integer iu		!negative if reset and summary write
+	integer ius		!negative if reset and summary write
 	integer it,it0
 	double precision mass
 	double precision mass0
@@ -838,7 +838,8 @@ c resstd	standard deviation of renewal time
 	real restime,restimel,restimec
         real resmed,resstd
 
-	integer ndata
+	logical breset
+	integer ndata,iu
 	double precision remint,remlog,remtim
 	double precision rsum,rsumsq
 	save ndata
@@ -846,17 +847,17 @@ c resstd	standard deviation of renewal time
 	save rsum,rsumsq
 	data ndata / 0 /
 
-	if( iu .le. 0 ) then	!reset
+	breset = ius .le. 0
+	iu = abs(ius)
+
+	if( breset ) then	!reset
 	  ndata = 0
 	  remint = 0.
 	  remlog = 0.
 	  remtim = 0.
 	  rsum = 0.
 	  rsumsq = 0.
-	  !if( iu .ne. 0 ) then
-	  ! write(-iu,1000) it,perc,restime,restimec,restimel,resmed,resstd
-	  !end if
-	  return
+	  !return
 	end if
 
 	call get_timestep(dt)

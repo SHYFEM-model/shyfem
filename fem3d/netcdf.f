@@ -205,7 +205,7 @@ c---------------------
 
 	what = 'units'
 	call nc_convert_date(date0,time0,date)
-	text = 'seconds since '//date
+	text = 'seconds since '//trim(date)
 	call nc_define_attr(ncid,what,text,varid)
 
 	what = 'standard_name'
@@ -439,7 +439,7 @@ c---------------------
 
 	what = 'units'
 	call nc_convert_date(date0,time0,date)
-	text = 'seconds since '//date
+	text = 'seconds since '//trim(date)
 	call nc_define_attr(ncid,what,text,varid)
 
 	what = 'standard_name'
@@ -578,7 +578,7 @@ c---------------------
 
 	what = 'units'
 	call nc_convert_date(date0,time0,date)
-	text = 'seconds since '//date
+	text = 'seconds since '//trim(date)
 	call nc_define_attr(ncid,what,text,varid)
 
 	what = 'standard_name'
@@ -1912,7 +1912,7 @@ c writes global conventions
 
 	call nc_current_time(cdate)
 	what = 'history'
-	text = 'created on ' // cdate
+	text = 'created on ' // trim(cdate)
 	call nc_strip(text)
 	call nc_define_attr(ncid,what,text,varid)
 

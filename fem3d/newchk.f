@@ -637,6 +637,7 @@ c checks mass conservation of single boxes (finite volumes)
 	real va(nlvdim,1)
 
 	include 'basin.h'
+	include 'mkonst.h'
 	include 'hydro.h'
 	include 'hydro_vel.h'
 	include 'levels.h'
@@ -762,6 +763,7 @@ c----------------------------------------------------------------
 	vmax = 0.
 	do k=1,nkn
 	 !if( is_inner(k) ) then
+	 if( rzv(k) .ne. flag ) cycle
 	 if( .not. is_external_boundary(k) ) then
 	  bdebug = k .eq. kss
 	  if( bdebug ) write(78,*) '============================='

@@ -193,15 +193,12 @@ c copies depth values from elems/nodes to nodes/elems
 	real ht(1)	!this is interpolated depth
 
 	include 'param.h'
-
-
 	include 'basin.h'
-
 	include 'depth.h'
 
 	integer k,ie,ii
 	real depth
-	integer ic(nkndim)
+	integer ic(nkn)
 
 	if( ike .eq. 1 ) then		!elementwise
 

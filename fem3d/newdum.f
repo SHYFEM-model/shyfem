@@ -83,7 +83,13 @@ c*****************************************************************
 	include 'param.h'
 
 	call sp13rr(nin,nkndim,neldim)
+	write(6,*) 'finished basin_read (include)'
 
+	end
+
+	subroutine basin_init(nk,ne)
+	implicit none
+	integer nk,ne
 	end
 
 c*****************************************************************
@@ -91,8 +97,10 @@ c*****************************************************************
 	subroutine levels_init(nkn,nel,nl)
 	implicit none
 	integer nkn,nel,nl
+	include 'param.h'
 	include 'nlevel.h'
-	nl = nlvdi
+	nlvdi = nlvdim
+	nlv = nl
 	end
 
 	subroutine levels_reinit(nl)
@@ -101,26 +109,7 @@ c*****************************************************************
 	include 'param.h'
 	include 'nlevel.h'
 	nlvdi = nlvdim
-	end
-
-	subroutine transfer_hlv
-
-	use levels, only : copy_hlv
-
-	implicit none
-
-	include 'param.h'
-	include 'nlevel.h'
-	include 'levels.h'
-
-        integer l
-
-	nlv = nlvdi
-        call copy_hlv(nlv,hlv)
-
-        write(6,*) 'hlv copied: ',nlv
-        write(6,*) (hlv(l),l=1,nlv)
-
+	nlv = nl
 	end
 
 c*****************************************************************
@@ -135,9 +124,241 @@ c*****************************************************************
 	integer nkn,nel,nlv
 	end
 
+	subroutine mod_hydro_print_init(nkn,nlv)
+	implicit none
+	integer nkn,nlv
+	end
+
+	subroutine mod_hydro_baro_init(nel)
+	implicit none
+	integer nel
+	end
+
+	subroutine mod_diff_visc_fric_init(nkn,nel,nlv)
+	implicit none
+	integer nkn,nel,nlv
+	end
+
+	subroutine mod_roughness_init(nkn)
+	implicit none
+	integer nkn
+	end
+
+	subroutine mod_ts_init(nkn,nlv)
+	implicit none
+	integer nkn,nlv
+	end
+
+	subroutine mod_area_init(nkn,nlv)
+	implicit none
+	integer nkn,nlv
+	end
+
+	subroutine mod_aux_array_init(nkn,nel,nlv)
+	implicit none
+	integer nkn,nel,nlv
+	end
+
+	subroutine mod_bound_dynamic_init(nkn,nlv)
+	implicit none
+	integer nkn,nlv
+	end
+
+	subroutine mod_gotm_aux_init(nkn,nlv)
+	implicit none
+	integer nkn,nlv
+	end
+
+	subroutine mod_diff_aux_init(nel)
+	implicit none
+	integer nel
+	end
+
+        subroutine mod_bnd_aux_init(nkn,nel)
+	implicit none
+	integer nkn,nel
+	end
+
+        subroutine mod_geom_dynamic_init(nkn,nel)
+	implicit none
+	integer nkn,nel
+	end
+
+        subroutine mod_nudging_init(nkn)
+	implicit none
+	integer nkn
+	end
+
+        subroutine mod_depth_init(nkn,nel,nlv)
+	implicit none
+	integer nkn,nel,nlv
+	end
+
+        subroutine mod_internal_init(nkn,nel,nlv)
+	implicit none
+	integer nkn,nel,nlv
+	end
+
+        subroutine mod_nohyd_init(nkn,nlv)
+	implicit none
+	integer nkn,nlv
+	end
+
+        subroutine mod_bclfix_init(nkn,nel,nlv)
+	implicit none
+	integer nkn,nel,nlv
+	end
+
+        subroutine mod_fluidmud_init(nkn,nlv)
+	implicit none
+	integer nkn,nlv
+	end
+
+        subroutine mod_sinking_init(nkn,nlv)
+	implicit none
+	integer nkn,nlv
+	end
+
+        subroutine mod_turbulence_init(nkn,nlv)
+	implicit none
+	integer nkn,nlv
+	end
+
+        subroutine mod_waves_init(nkn,nel,nlv)
+	implicit none
+	integer nkn,nel,nlv
+	end
+
+        subroutine mod_meteo_init(nkn)
+	implicit none
+	integer nkn
+	end
+
+	subroutine mod_geom_init(nkn,nel,ngr)
+	implicit none
+	integer nkn,nel,ngr
+	end
+
+	subroutine ev_init(nel)
+	implicit none
+	integer nel
+	end
+
+	subroutine mod_conz_init(ncs,nkn,nlv)
+	implicit none
+	integer ncs,nkn,nlv
+	end
+
+	subroutine mod_bound_geom_init(nkn,nrb)
+	implicit none
+	integer nkn,nrb
+	end
+
+	subroutine mod_bound_geom_reinit(nkn,nrb)
+	implicit none
+	integer nkn,nrb
+	end
+
+	subroutine mod_irv_init(nrb)
+	implicit none
+	integer nrb
+	end
+
 c*****************************************************************
 
+        subroutine mod_bound_geom_info
 
+	include 'param.h'
+	include 'nbasin.h'
+	include 'nbound.h'
+	include 'bound_geom.h'
 
+        integer iu,i
 
+        iu = 88
+
+        write(iu,*) 'mod_bound_geom_info: ',nkn,nrb
+        write(iu,*) 'irv: ',nrb,(irv(i),i=1,nrb)
+        write(iu,*) 'ierv: ',(ierv(1,i),i=1,nrb)
+        write(iu,*) 'ierv: ',(ierv(2,i),i=1,nrb)
+        write(iu,*) 'rhv: ',(rhv(i),i=1,nrb)
+        write(iu,*) 'rlv: ',(rlv(i),i=1,nrb)
+        write(iu,*) 'rrv: ',(rrv(i),i=1,nrb)
+        write(iu,*) 'iopbnd: '
+        do i=1,nkn
+          if( iopbnd(i) .ne. 0 ) write(iu,*) i,iopbnd(i)
+        end do
+        write(iu,*) 'mod_bound_geom_info end'
+
+        end subroutine mod_bound_geom_info
+
+c*****************************************************************
+
+        subroutine mod_bnd_init(nb)
+	implicit none
+	integer nb
+	end
+
+        subroutine mod_bnd_adjust(nb)
+	implicit none
+	integer nb
+	end
+
+        subroutine mod_bnd_reinit(nb)
+	implicit none
+	integer nb
+	end
+
+        subroutine mod_tvd_init(nel)
+	implicit none
+	integer nel
+	end
+
+        subroutine mod_tides_init(nkn)
+	implicit none
+	integer nkn
+	end
+
+        subroutine mod_bndo_init(ngr,nrb)
+	implicit none
+	integer ngr,nrb
+	end
+
+        subroutine mod_nudge_init(nkn)
+	implicit none
+	integer nkn
+	end
+
+c*****************************************************************
+
+c*****************************************************************
+
+        subroutine basin_get_dimension(nk,ne)
+
+! returns dimension of arrays (static)
+
+        integer nk,ne
+
+        include 'param.h'
+
+        nk = nkndim
+        ne = neldim
+
+        end subroutine basin_get_dimension
+
+c*****************************************************************
+
+        subroutine levels_get_dimension(nl)
+
+! returns vertical dimension (static)
+
+        integer nl
+
+        include 'param.h'
+
+        nl = nlvdim
+
+        end subroutine levels_get_dimension
+
+c*****************************************************************
 

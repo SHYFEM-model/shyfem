@@ -1129,7 +1129,7 @@ c	 2	time series
 	double precision dtime
 
 	integer iunit,nvers,np,lmax
-	integer nlvdim,nvar
+	integer nlvddi,nvar
 	integer ierr,i,iformat
 	logical bnofile,bts
 	character*60 string
@@ -1146,7 +1146,7 @@ c	 2	time series
 	lmax = pinfo(id)%lmax
 	nvar = pinfo(id)%nvar
 
-	nlvdim = lmax
+	nlvddi = lmax
 
 	if( bts ) then
 	  ! ts data has already been read
@@ -1157,7 +1157,7 @@ c	 2	time series
      +                          ,string
      +                          ,pinfo(id)%ilhkv_file
      +                          ,pinfo(id)%hd_file
-     +                          ,nlvdim
+     +                          ,nlvddi
      +				,pinfo(id)%data_file(1,1,i)
      +				,ierr)
 	    if( ierr /= 0 ) goto 99

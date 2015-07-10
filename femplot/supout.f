@@ -175,6 +175,7 @@ c******************************************************
 	include 'nbasin.h'
 
 	include 'plot_aux.h'
+	include 'plot_aux_3d.h'
 
 	integer k,idry
 	real vol,area,h
@@ -349,6 +350,7 @@ c******************************************************
 	include 'supout.h'
 
 	integer nknaux,nelaux,nlvaux
+	integer nknddi,nelddi,nlvddi
 	integer nvers,nvar
 	integer date,time
 
@@ -360,11 +362,14 @@ c open file
 
         call open_nos_type('.wav','old',nunit)
 
-        call read_nos_header(nunit,nkndim,neldim,nlvdim,ilhkv,hlv,hev)
-        call nos_get_params(nunit,nknaux,nelaux,nlvaux,nvar)
-        if( nkn .ne. nknaux ) goto 99
-        if( nel .ne. nelaux ) goto 99
+	call peek_nos_header(nunit,nknaux,nelaux,nlvaux,nvar)
+	if( nkn .ne. nknaux ) goto 99
+	if( nel .ne. nelaux ) goto 99
         nlv = nlvaux
+	call allocate_simulation
+	call get_dimension_post(nknddi,nelddi,nlvddi)
+        call read_nos_header(nunit,nknddi,nelddi,nlvddi,ilhkv,hlv,hev)
+
 	if( nvar .ne. 3 ) goto 99
 
 	call level_k2e_sh
@@ -407,9 +412,11 @@ c******************************************************
 	include 'levels.h'
 
         integer ierr,nlvddi,ivar
+	real v1v(nkn)
+	real v2v(nkn)
+	real v3v(nkn)
 
 	include 'hydro_plot.h'
-	include 'aux_array.h'
 
 	call waveini
 	nunit = nunit_wave
@@ -580,6 +587,7 @@ c opens OUS file and reads header
 	integer nvers
 	integer nknaux,nelaux,nlvaux,nvar
 	integer nknous,nelous,nlvous
+	integer nknddi,nelddi,nlvddi
 	integer ierr
         integer i,l
 	integer date,time
@@ -594,11 +602,13 @@ c open and read header
 
         call open_ous_type('.ous','old',nunit)
 
-        call read_ous_header(nunit,nkndim,neldim,nlvdim,ilhv,hlv,hev)
-        call ous_get_params(nunit,nknous,nelous,nlvous)
+	call peek_ous_header(nunit,nknous,nelous,nlvous)
 	if( nkn .ne. nknous ) goto 99
 	if( nel .ne. nelous ) goto 99
         nlv = nlvous
+	call allocate_simulation
+	call get_dimension_post(nknddi,nelddi,nlvddi)
+        call read_ous_header(nunit,nknddi,nelddi,nlvddi,ilhv,hlv,hev)
 
 	call level_e2k_sh			!computes ilhkv
         call init_sigma_info(nlv,hlv)
@@ -750,6 +760,7 @@ c opens NOS file and reads header
 	integer nvers
 	integer nknaux,nelaux,nlvaux,nvar
 	integer nknnos,nelnos,nlvnos
+	integer nknddi,nelddi,nlvddi
 	integer date,time
 	integer ierr,l
 	integer ifemop
@@ -762,12 +773,15 @@ c open file
 
         call open_nos_type('.nos','old',nunit)
 
-        call read_nos_header(nunit,nkndim,neldim,nlvdim,ilhkv,hlv,hev)
-        call nos_get_params(nunit,nknnos,nelnos,nlvnos,nvar)
-        if( nkn .ne. nknnos ) goto 99
-        if( nel .ne. nelnos ) goto 99
+	call peek_nos_header(nunit,nknnos,nelnos,nlvnos,nvar)
+	if( nkn .ne. nknnos ) goto 99
+	if( nel .ne. nelnos ) goto 99
         nlv = nlvnos
+	call allocate_simulation
+	call get_dimension_post(nknddi,nelddi,nlvddi)
+        call read_nos_header(nunit,nknddi,nelddi,nlvddi,ilhkv,hlv,hev)
 
+	call level_e2k_sh			!computes ilhkv
 	call level_k2e_sh
         call init_sigma_info(nlv,hlv)
 
@@ -929,8 +943,8 @@ c opens FVL file and reads header
 	include 'depth.h'
 	include 'levels.h'
 
-        real hlv1(nlvdim), hev1(neldim)
-        integer ilhkv1(nkndim)
+        real hlv1(nlv), hev1(nel)
+        integer ilhkv1(nkn)
 
 	character*80 file
 
@@ -1150,6 +1164,7 @@ c opens EOS file and reads header
 
 	integer nvers
 	integer nknaux,nelaux,nlvaux,nvar
+	integer nknddi,nelddi,nlvddi
 	integer ierr
 	integer ifemop
 
@@ -1188,9 +1203,11 @@ c read first header
 
 	if( nkn .ne. nknaux ) goto 99
 	if( nelaux .ne. 0 .and. nel .ne. nelaux ) goto 99
-	if( nlvdi .lt. nlvaux ) goto 99
 
 	nlv = nlvaux
+	call allocate_simulation
+	call get_dimension_post(nknddi,nelddi,nlvddi)
+	if( nlvddi .lt. nlv ) goto 99
 
 c read second header
 
@@ -1422,6 +1439,7 @@ c opens FEM file and reads header
 	logical bformat,breg
 	integer nvers,np,it,lmax,ntype
 	integer nknaux,nelaux,nlvaux,nvar
+	integer nknddi,nelddi,nlvddi
 	integer ierr,l
 	integer datetime(2)
 	real regpar(7)
@@ -1473,10 +1491,13 @@ c read first header
 	if( .not. breg .and. nkn .ne. np ) goto 99
 	if( nkn .lt. np ) goto 99
 	if( breg .and. lmax > 1 ) goto 98
-	if( nlvdi .lt. lmax ) goto 99
+
+        nlv = lmax
+	call allocate_simulation
+	call get_dimension_post(nknddi,nelddi,nlvddi)
+	if( nlvddi .lt. lmax ) goto 99
 
 	it = nint(dtime)
-	nlv = lmax
 
 c read second header
 
@@ -1533,7 +1554,6 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	include 'supout.h'
 	include 'nlevel.h'
 	include 'levels.h'
-	include 'aux_array.h'
 
 	logical bfound,bformat,breg
 	integer ierr
@@ -1541,6 +1561,7 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	integer nvers,np,lmax,nvar,ntype
 	integer datetime(2)
 	real regpar(7)
+	real v1v(nkn)
 	double precision dtime
 	real fact
 	character*80 string

@@ -16,11 +16,11 @@ c
 c function is_zeta_bound(k)
 c	checks if node k is a zeta boundary
 c
-c subroutine bndo_setbc(it,what,nlvdim,cv,rbc,uprv,vprv)
+c subroutine bndo_setbc(it,what,nlvddi,cv,rbc,uprv,vprv)
 c	sets open boundary condition for level boundaries
-c subroutine bndo_impbc(it,what,nlvdim,cv,rbc)
+c subroutine bndo_impbc(it,what,nlvddi,cv,rbc)
 c       imposes boundary conditions on open boundary
-c subroutine bndo_adjbc(it,nlvdim,cv,uprv,vprv)
+c subroutine bndo_adjbc(it,nlvddi,cv,uprv,vprv)
 c       adjusts boundary conditions on open boundary (values on bnd already set)
 c
 c subroutine bndo_radiat(it,rzv)
@@ -37,7 +37,7 @@ c       integer nbndo                   !total number of OB nodes
 c
 c	real xynorm(2,kbcdim)		!normal direction for OB node
 c
-c	integer iopbnd(nkndim)		!if >0 pointer into array irv
+c	integer iopbnd(nknddi)		!if >0 pointer into array irv
 c					!if <0 internal boundary (= -ibc)
 c
 c	integer ibcnod(kbcdim)		!number of boundary
@@ -264,6 +264,8 @@ c----------------------------------------------------------
 
 	if( berror ) stop 'error stop bndo'
 
+	write(6,*) 'finished setting up bndo_init, nbndo = ',nbndo
+
 c----------------------------------------------------------
 c end of routine
 c----------------------------------------------------------
@@ -414,7 +416,7 @@ c checks if node k is a zeta boundary
 
 c***********************************************************************
 
-        subroutine bndo_setbc(it,what,nlvdim,cv,rbc,uprv,vprv)
+        subroutine bndo_setbc(it,what,nlvddi,cv,rbc,uprv,vprv)
 
 c sets open boundary condition for level boundaries
 c
@@ -424,23 +426,23 @@ c simply calls bndo_impbc() and bndo_adjbc()
 
         integer it
         character*(*) what      !conz/temp/salt or else
-        integer nlvdim
-        real cv(nlvdim,1)
-        real rbc(nlvdim,1)	!boundary condition (3D)
-	real uprv(nlvdim,1)
-	real vprv(nlvdim,1)
+        integer nlvddi
+        real cv(nlvddi,1)
+        real rbc(nlvddi,1)	!boundary condition (3D)
+	real uprv(nlvddi,1)
+	real vprv(nlvddi,1)
 
 c----------------------------------------------------------
 c simply imposes whatever is in rbc
 c----------------------------------------------------------
 
-        call bndo_impbc(it,what,nlvdim,cv,rbc)
+        call bndo_impbc(it,what,nlvddi,cv,rbc)
 
 c----------------------------------------------------------
 c adjusts for ambient value, no gradient or outgoing flow
 c----------------------------------------------------------
 
-	call bndo_adjbc(it,what,nlvdim,cv,uprv,vprv)
+	call bndo_adjbc(it,what,nlvddi,cv,uprv,vprv)
 
 c----------------------------------------------------------
 c end of routine

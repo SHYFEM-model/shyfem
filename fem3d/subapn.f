@@ -6,7 +6,7 @@ c
 c contents :
 c
 c subroutine assnam(mode)                       assigns run/bas interactivly
-c function iapini(mode,nkndim,neldim,matdim)    init routine for ap routines
+c function iapini(mode,nknddi,nelddi,matdim)    init routine for ap routines
 c subroutine pardef                             reads nls and fnm
 c
 c revision log :
@@ -202,8 +202,8 @@ c reads basin
 c
 c iapini        1:success 0:error
 c mode          for assnam 1:assign basin 2:assign run 3:both
-c nkndim        dimension for nkn for reading bas file
-c neldim        dimension for nel for reading bas file
+c nknddi        dimension for nkn for reading bas file
+c nelddi        dimension for nel for reading bas file
 c matdim        (probably useless...)
 c
 c mode negative: do not ask for new basin and simulation
@@ -246,8 +246,8 @@ c reads basin
 c
 c iapini        1:success 0:error
 c mode          for assnam 1:assign basin 2:assign run 3:both
-c nkndim        dimension for nkn for reading bas file
-c neldim        dimension for nel for reading bas file
+c nknddi        dimension for nkn for reading bas file
+c nelddi        dimension for nel for reading bas file
 c matdim        (probably useless...)
 c
 c mode negative: do not ask for new basin and simulation
@@ -474,11 +474,7 @@ c opens and reads basin file
 	  stop 'error stop read_bas_file: error reading basin'
 	end if
 
-	if( nkndi <= 0 .or. neldi <= 0 ) then	!use module
-	  call sp13rr(iunit,nkndi,neldi)
-	else
-	  call sp13rr(iunit,nkndi,neldi)
-	end if
+	call basin_read(iunit)
 
 	close(iunit)
 

@@ -99,6 +99,7 @@ c inizializzazione parametri
 
 	nnm=nnm+1
         fsum=0
+	lb = lybdy
 
 c==========================================================
 c INDIVIDUAZIONE CASI
@@ -698,6 +699,7 @@ c inizializzazione parametri
 	nl = 0
 	ng = 0
 	ps = 0
+	lb = lybdy
 
 	lmax = ilhv(ie)
 

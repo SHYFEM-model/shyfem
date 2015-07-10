@@ -1364,6 +1364,8 @@
       dK_bl  = cff*(nuh(k)-nuh(k-1))
       Gt1    = K_bl/(zbl*ws+eps)
 
+      dGt1dS = 0.
+
 # ifdef KPP_CLIP_GS
       dGt1dS = min(_ZERO_,-dK_bl/(ws+eps)-K_bl*f1)
 # else
@@ -1826,6 +1828,8 @@
 !  Compute nondimensional shape function for diffusion of temperature
 !  "Gt1" and its vertical derivative "dGt1dS" evaluated at "zbbl".
 !
+   dGt1dS = 0.	!compiler warning
+
    K_bl   =  cff_dn*nuh(k)+cff_up*nuh(k-1)
    dK_bl  =  cff*(nuh(k)-nuh(k-1))
    Gt1    =   K_bl/(zbl*ws+eps)

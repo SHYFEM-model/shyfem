@@ -114,9 +114,15 @@ c revised 13.06.97 by ggu !$$kranf - check if kranf <= krend
 
 	include 'modules.h'
 
+	include 'param.h'
 	include 'mkonst.h'
 	include 'pkonst.h'
-	real getpar
+        include 'nbasin.h'
+        include 'nbound.h'
+        include 'bound_geom.h'
+
+        real getpar
+        integer nkbnd
 
 c parameters read from STR file
 
@@ -131,6 +137,11 @@ c	call ckexta	!extra output points
 	call ckflxa	!flux sections
 	call ckvola	!flux sections
 	call ckarea	!chezy values
+
+c re-allocate boundary arrays
+
+        call mod_bound_geom_reinit(nkn,nrb)
+	call mod_bnd_reinit(nbc)
 	call ckbnds	!boundary conditions
 
 	call ckclos
@@ -183,7 +194,6 @@ c reads files (str and bas)
         call getfnm('basnam',basnam)
         nin = idefbas(basnam,'old')
 	call basin_read(nin)
-	!call sp13rr(nin,nkndim,neldim)
 	close(nin)
 
 	end

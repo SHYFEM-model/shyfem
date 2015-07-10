@@ -423,15 +423,16 @@ c channel output
 
 	integer it
 
+	include 'nlevel.h'
 	include 'levels.h'
 	include 'hydro_vel.h'
 	include 'ts.h'
  
-        real num(0:nlvdim)
-        real nuh(0:nlvdim)
-        real tk(0:nlvdim)
-        real ep(0:nlvdim)
-        real rl(0:nlvdim)
+        real num(0:nlvdi)
+        real nuh(0:nlvdi)
+        real tk(0:nlvdi)
+        real ep(0:nlvdi)
+        real rl(0:nlvdi)
 
 	logical berror
 	integer i,k,l,nlev,nlev1
@@ -583,6 +584,7 @@ c channel velocity output
 	integer it
 
 
+	include 'nlevel.h'
 	include 'levels.h'
 	include 'hydro_print.h'
 	include 'basin.h'
@@ -634,9 +636,9 @@ c channel velocity output
 	  end if
 	end if
 
-	call nantest(nkn*nlvdim,uprv,'uprv')
-	call nantest(nkn*nlvdim,vprv,'vprv')
-	call nantest(nkn*nlvdim,tempv,'tempv')
+	call nantest(nkn*nlvdi,uprv,'uprv')
+	call nantest(nkn*nlvdi,vprv,'vprv')
+	call nantest(nkn*nlvdi,tempv,'tempv')
 
 	if( b1 ) then
 	write(92,*) it,ndim
@@ -695,6 +697,7 @@ c set up zeta and conc for mass conservation test
 	integer it
 
 
+	include 'nlevel.h'
 	include 'levels.h'
 	include 'basin.h'
 	include 'conz.h'
@@ -752,7 +755,7 @@ c set up zeta and conc for mass conservation test
 
 	end if
 
-	call massconc(1,cnv,nlvdim,res)
+	call massconc(1,cnv,nlvdi,res)
 	write(6,*) 'total dissolved mass: ',res
 	write(6,*) 'values: ',(cnv(1,kn(ii)),ii=1,5)
 
@@ -771,6 +774,7 @@ c mass conservation test
 	include 'param.h'
 
 	include 'nbasin.h'
+	include 'nlevel.h'
 	include 'geom_dynamic.h'
 	include 'conz.h'
 
@@ -782,7 +786,7 @@ c mass conservation test
 	  if(iwegv(ie) .ne. 0 ) iweg = iweg + 1
 	end do
 
-	call massconc(1,cnv,nlvdim,res)		!3D
+	call massconc(1,cnv,nlvdi,res)		!3D
 
 	write(6,*) 'total dissolved mass: ',it,res,iweg
 c	call debug_node(4179)
@@ -1681,12 +1685,9 @@ c*****************************************************************
 	include 'conz.h'
 	include 'aux_array.h'
 
-	real conzs(nkndim)
-	save conzs
-	real conza(nkndim)
-	save conza
-	real conzh(nkndim)
-	save conzh
+	real, save, allocatable :: conzs(:)
+	real, save, allocatable :: conza(:)
+	real, save, allocatable :: conzh(:)
 
         integer ie,ii,k,lmax,l,ia
 	integer iunit
@@ -1724,15 +1725,13 @@ c------------------------------------------------------------
 
           write(6,*) 'initialization of routine sedimt: ',wsink
 
-	  do k=1,nkn
-	    conzs(k) = 0.
-	    conza(k) = 0.
-	    conzh(k) = 0.
-            lmax = ilhkv(k)
-            do l=1,lmax
-              cnv(l,k) = 0.
-            end do
-	  end do
+	  allocate(conzs(nkn))
+	  allocate(conza(nkn))
+	  allocate(conzh(nkn))
+	  conzs = 0.
+	  conza = 0.
+	  conzh = 0.
+	  cnv = 0.
 
 	  itstart = nint(getpar('tcust'))
 
@@ -1954,7 +1953,6 @@ c*****************************************************************
 	  end do
 	end do
 
-	!call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)
 	call make_new_depth
 
 	do ie=1,nel
@@ -2348,6 +2346,7 @@ c C(x,t) =  1/(4*pi*a*t) * exp( -|x|**2/(4*a*t) )		(n=2)
 
 	include 'param.h'
 
+	include 'nlevel.h'
 	include 'femtime.h'
 	include 'conz.h'
 
@@ -2392,10 +2391,10 @@ c----------------------------------------------------------
 	  do k=kin,kin
 	    cnv(1,k) = c0
 	  end do
-	  call tsmass(cnv,+1,nlvdim,ctot)
+	  call tsmass(cnv,+1,nlvdi,ctot)
 	  write(6,*) 'diffus2d initialized (1): ',c0,ctot
 	  call cv_init(it0,k0,rk,c0,ct0,cnv)
-	  call tsmass(cnv,+1,nlvdim,ctot)
+	  call tsmass(cnv,+1,nlvdi,ctot)
 	  write(6,*) 'diffus2d initialized: ',it0,it,itanf,idt
 	  write(6,*) 'diffus2d initialized: ',c0,ctot,ct0
 	  ct0 = ctot/depth
@@ -2411,7 +2410,7 @@ c----------------------------------------------------------
 	if( mod(itt,idtfrq) .ne. 0 ) return
 
 	rk = getpar('chpar')
-	call tsmass(cnv,+1,nlvdim,ctot)
+	call tsmass(cnv,+1,nlvdi,ctot)
 	kin = ipint(k0)
 	c = cnv(1,kin)
 	write(6,*) 'diffus2d: ',c0,c,ctot,ct0
@@ -2537,12 +2536,12 @@ c initializes cnv with analytic solution (2D)
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
+	include 'nlevel.h'
 
 	integer it,k0
 	real rk,c0,ct0
-        real cv(nlvdim,nkndim)
-
-	include 'basin.h'
+        real cv(nlvdi,nkn)
 
 	integer i,k,kin
 	real x,y,dx,dy,r
@@ -2581,16 +2580,16 @@ c extracts conz from array
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
+	include 'nlevel.h'
 
-        real cv(nlvdim,nkndim)
+        real cv(nlvdi,nkn)
 	integer ndim
 	integer n
 	real xv(ndim)
 	real yv(ndim)
 	integer k0
 	real dx,phi
-
-	include 'basin.h'
 
 	integer i,kin0,ie,ip
 	real x0,y0
@@ -2698,13 +2697,13 @@ c****************************************************************
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
+	include 'nlevel.h'
 
 	integer ie
 	real x,y
-	real cv(nlvdim,nkndim)
+	real cv(nlvdi,nkn)
 	real zp
-
-	include 'basin.h'
 
 	integer ii,k
 	real z(3)
@@ -2731,14 +2730,14 @@ c extracts conz from array
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
+	include 'nlevel.h'
 
-        real cv(nlvdim,nkndim)
+        real cv(nlvdi,nkn)
 	integer ndim
 	real xv(ndim)
 	real yv(ndim)
 	integer k0,kmin,kmax,kstep
-
-	include 'basin.h'
 
 	integer i,k,kin
 	real x,y,dx,dy,dxy
@@ -2895,7 +2894,7 @@ c the solution is normalized, i.e.  int(C(x,t)dx) = 1 over the whole area
 	integer k,i,l,lc,lmax
 	integer it0
 	real c0,cmed,pi,a,t,aux,x2,cc,dc
-	real caux(nlvdim)
+	real caux(nlvdi)
 	save it0
 
 	real getpar
@@ -2963,9 +2962,10 @@ c****************************************************************
         real u,v
         double precision uz,cdir
 
-        real rdebug(nkndim)
+        real rdebug(nkn)
+
         integer iudeb
-        save rdebug,iudeb
+        save iudeb
         data iudeb /0/
 
         do k = 1,nkn
@@ -3142,6 +3142,7 @@ c introduce le condizioni iniziali per la concentrazione
         implicit none
 
         include 'param.h'
+        include 'nbasin.h'
 
 	include 'conz.h'
 
@@ -3152,7 +3153,7 @@ c introduce le condizioni iniziali per la concentrazione
         data icall / 0 /
 
 	ks = 4312
-        if( icall .eq. 0 .and. nkndim .ge. ks )then
+        if( icall .eq. 0 .and. nkn .ge. ks .and. ks > 0 ) then
           cnv(1,ks-1)=100.
           cnv(1,ks)=100.
        	  icall=1
@@ -3299,8 +3300,8 @@ c**********************************************************************
 	implicit none
 
 	include 'param.h'
-
 	include 'basin.h'
+	include 'nlevel.h'
 	include 'ts.h'
 
 	integer k,l
@@ -3354,7 +3355,7 @@ c**********************************************************************
 
 	  if( tau .gt. 0. ) tau = 1. / tau
 
-	  do l=1,nlvdim
+	  do l=1,nlvdi
 	    rtauv(l,k) = tau
 	  end do
 	end do
@@ -3542,13 +3543,12 @@ c time of inundation for theseus
 	real sedim_reed,sedim_salt
 	real sfact
 
-	integer idry(neldim)
-	save idry
+	integer, save, allocatable :: idry(:)
+	double precision, save, allocatable :: salt_aver_k(:)
+	real, save, allocatable :: salt_aver_e(:)
+
 	real sedim_save
 	save sedim_save
-	double precision salt_aver_k(nkndim)
-	real salt_aver_e(neldim)
-	save salt_aver_k,salt_aver_e
 	integer isum
 	save isum
 
@@ -3569,9 +3569,16 @@ c first call
 c-----------------------------------------
 
 	if( icall .eq. 0 ) then
+	  allocate(idry(nel))
+	  allocate(salt_aver_k(nkn))
+	  allocate(salt_aver_e(nel))
+
+	  idry = 0.
+	  salt_aver_k = 0.
+	  salt_aver_e = smed
+
 	  area = 0.
 	  do ie=1,nel
-	    idry(ie) = 0
 	    area = area + ev(10,ie)
 	  end do
 	  area = area * 12.
@@ -3582,12 +3589,6 @@ c-----------------------------------------
 	    sedim_save = -sedim_save
 	    binit = .true.		! initialize hev from file
 	  end if
-	  do k=1,nkn
-	    salt_aver_k(k) = 0.
-	  end do
-	  do ie=1,nel
-	    salt_aver_e(ie) = smed
-	  end do
 	  isum = 0
 	end if
 
@@ -3773,9 +3774,8 @@ c**********************************************************************
 	implicit none
 
 	include 'param.h'
-
-
 	include 'basin.h'
+	include 'nlevel.h'
 	include 'meteo_aux.h'
 	include 'fluidmud.h'
 
@@ -3788,7 +3788,7 @@ c**********************************************************************
 	if( icall .eq. 10 ) then
 	  write(6,*) '********** fluid mud concentration initialized'
 	  do k=1,nkn
-	    lmax = nlvdim
+	    lmax = nlvdi
 	    do l=1,lmax
 	      mudc(l,k) = l*10.
 	      if( 2*(l/2) .eq. l ) mudc(l,k) = 0.

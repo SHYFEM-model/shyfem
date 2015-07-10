@@ -760,6 +760,7 @@ c write legend
 	  end if
 	end if
 
+	dtick = 1.
 	ntk = nticks
 	blog = ipllog .ne. 0
 	if( blog ) ntk = -1

@@ -19,6 +19,7 @@ c******************************************************************
 
 	implicit none
 
+	include 'param.h'
 	include 'common.h'
 
 	write(6,*) '----------------------------------------'
@@ -34,6 +35,7 @@ c******************************************************************
 
 	implicit none
 
+	include 'param.h'
 	include 'common.h'
 	include 'nbasin.h'
 
@@ -52,6 +54,7 @@ c******************************************************************
 
 	implicit none
 
+	include 'param.h'
 	include 'common.h'
 	include 'nbasin.h'
 
@@ -75,6 +78,7 @@ c******************************************************************
 	real mass(3,3)
 	real rhs(3)
 
+	include 'param.h'
 	include 'common.h'
 
         double precision amat(matdim)
@@ -105,6 +109,7 @@ c******************************************************************
 	integer n
 	real z(n)
 
+	include 'param.h'
 	include 'common.h'
 
         integer k
@@ -125,6 +130,7 @@ c******************************************************************
 	integer n
         real array(n)
 
+	include 'param.h'
 	include 'common.h'
 
         integer k

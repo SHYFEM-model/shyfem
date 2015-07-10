@@ -77,6 +77,9 @@ c---------------------------------------------------------------
 		stop 'error stop : iapini'
 	end if
 
+	call ev_init(nel)
+	call mod_depth_init(nkn,nel,1)
+
 	call set_ev
 
 c---------------------------------------------------------------
@@ -102,6 +105,7 @@ c---------------------------------------------------------------
 	if( nkn .ne. nknnos .or. nel .ne. nelnos ) goto 94
 
         call dimnos(nin,nkndim,neldim,nlvdim)
+	call levels_init(nkn,nel,nlv)
 
 	call rsnos(nin,ilhkv,hlv,hev,ierr)
         if(ierr.ne.0) goto 100

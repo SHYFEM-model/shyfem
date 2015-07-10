@@ -13,9 +13,9 @@ c subroutine conele(ielem,dz,con,coe)	changes concentration in element ielem
 c
 c subroutine volz3(k,dvol)                      inputs water volume
 c
-c subroutine volco0(k,lmax,nlvdim,s,area,vol,vol0,svol)
+c subroutine volco0(k,lmax,nlvddi,s,area,vol,vol0,svol)
 c       computes volume and total mass of concentration in column of node k
-c subroutine volno0(k,lmax,nlvdim,s,dvol,dcon)
+c subroutine volno0(k,lmax,nlvddi,s,dvol,dcon)
 c       inputs concentration in finite volume (node) k
 c
 c revision log :

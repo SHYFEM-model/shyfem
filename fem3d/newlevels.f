@@ -159,6 +159,16 @@
 
 	end function get_nlv_aux
 
+!******************************************************************
+
+	subroutine levels_get_dimension(nl)
+
+	integer nl
+
+	nl = nlvdi
+
+	end subroutine levels_get_dimension
+
 !==================================================================
         end module levels
 !==================================================================

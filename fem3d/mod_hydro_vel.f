@@ -1,5 +1,5 @@
 
-	module hydro_vel
+	module mod_hydro_vel
 
 	implicit none
 
@@ -39,31 +39,32 @@
         if( nkn == nkn_hydro_vel .and. nel == nel_hydro_vel .and.
      +      nlv == nlv_hydro_vel ) return
 
-        if( nkn_hydro_vel > 0 .or. nel_hydro_vel > 0 .or.
-     +      nlv_hydro_vel > 0 ) then
+        if( nel > 0 .or. nkn > 0 .or. nlv > 0 ) then
+          if( nel == 0 .or. nkn == 0 .or. nlv == 0 ) then
+            write(6,*) 'nel,nkn,nlv: ',nel,nkn,nlv
+            stop 'error stop mod_hydro_vel_init: incompatible params'
+          end if
+        end if
+
+        if( nkn_hydro_vel > 0 ) then
           deallocate(ulov)
           deallocate(ulnv)
           deallocate(vlov)
           deallocate(vlnv)
-
           deallocate(wlov)
           deallocate(wlnv)
         end if
-
-        if( nkn == 0 ) return
-        if( nel == 0 ) return
-        if( nlv == 0 ) return
 
         nkn_hydro_vel = nkn
         nel_hydro_vel = nel
         nlv_hydro_vel = nlv
 
+        if( nkn == 0 ) return
+
         allocate(ulov(nlv,nel))
         allocate(ulnv(nlv,nel))
-
         allocate(vlov(nlv,nel))
         allocate(vlnv(nlv,nel))
-
         allocate(wlov(0:nlv,nkn))
         allocate(wlnv(0:nlv,nkn))
 
@@ -71,4 +72,4 @@
 
 !************************************************************
 
-        end module hydro_vel
+        end module mod_hydro_vel

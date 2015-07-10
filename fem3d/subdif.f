@@ -883,8 +883,6 @@ c local
 c functions
 	real getpar
 
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in austau'
-
 	if( getpar('ahpar') .le. 0. ) return
 
 	do k=1,nkn

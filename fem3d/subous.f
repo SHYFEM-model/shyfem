@@ -9,7 +9,7 @@ c        subroutine inious
 c        subroutine setous(iunit,nvers,nkn,nel,nlv)
 c        subroutine getous(iunit,nvers,nkn,nel,nlv)
 c        subroutine delous(iunit)
-c        subroutine dimous(iunit,nkndim,neldim,nlvdim)
+c        subroutine dimous(iunit,nknddi,nelddi,nlvddi)
 c
 c        subroutine errous(iunit,routine,text)
 c        subroutine findous_err(iunit,routine,text,n)
@@ -18,7 +18,7 @@ c        subroutine infoous(iunit,iout)
 c
 c        subroutine ous_init(iunit,nversion)
 c        subroutine ous_close(iunit)
-c        subroutine ous_check_dimension(iunit,nkndim,neldim,nlvdim)
+c        subroutine ous_check_dimension(iunit,nknddi,nelddi,nlvddi)
 c
 c        subroutine ous_get_date(iunit,date,time)
 c        subroutine ous_set_date(iunit,date,time)
@@ -38,8 +38,8 @@ c        subroutine ous_read_header(iunit,nkn,nel,nlv,ierr)
 c        subroutine ous_write_header(iunit,nkn,nel,nlv,ierr)
 c        subroutine ous_read_header2(iu,ilhv,hlv,hev,ierr)
 c        subroutine ous_write_header2(iunit,ilhv,hlv,hev,ierr)
-c	 subroutine ous_read_record(iu,it,nlvdim,ilhv,z,ze,ut,vt,ierr)
-c	 subroutine ous_write_record(iunit,it,nlvdim,ilhv,z,ze,ut,vt,ierr)
+c	 subroutine ous_read_record(iu,it,nlvddi,ilhv,z,ze,ut,vt,ierr)
+c	 subroutine ous_write_record(iunit,it,nlvddi,ilhv,z,ze,ut,vt,ierr)
 c
 c        subroutine ous_next_record(iunit,it,ierr)
 c        subroutine ous_back_record(iunit)
@@ -244,27 +244,27 @@ c please note that the file has still to be closed manually
 
 c************************************************************
 
-	subroutine dimous(iunit,nkndim,neldim,nlvdim)
+	subroutine dimous(iunit,nknddi,nelddi,nlvddi)
 
 c checks dimension of arrays
 
 	implicit none
 
-	integer iunit,nkndim,neldim,nlvdim
+	integer iunit,nknddi,nelddi,nlvddi
 
 	integer nvers,nkn,nel,nlv
 
 	call getous(iunit,nvers,nkn,nel,nlv)
 
-        if( nkn .gt. nkndim ) goto 99
-        if( nel .gt. neldim ) goto 99
-        if( nlv .gt. nlvdim ) goto 99
+        if( nkn .gt. nknddi ) goto 99
+        if( nel .gt. nelddi ) goto 99
+        if( nlv .gt. nlvddi ) goto 99
 
 	return
    99   continue
-        write(6,*) 'nkn,nkndim : ',nkn,nkndim
-        write(6,*) 'nel,neldim : ',nel,neldim
-        write(6,*) 'nlv,nlvdim : ',nlv,nlvdim
+        write(6,*) 'nkn,nknddi : ',nkn,nknddi
+        write(6,*) 'nel,nelddi : ',nel,nelddi
+        write(6,*) 'nlv,nlvddi : ',nlv,nlvddi
         stop 'error stop dimous: dimension error'
 	end
 
@@ -446,13 +446,13 @@ c************************************************************
 
 c************************************************************
 
-        subroutine ous_check_dimension(iunit,nkndim,neldim,nlvdim)
+        subroutine ous_check_dimension(iunit,nknddi,nelddi,nlvddi)
 
         implicit none
 
-        integer iunit,nkndim,neldim,nlvdim
+        integer iunit,nknddi,nelddi,nlvddi
 
-        call dimous(iunit,nkndim,neldim,nlvdim)
+        call dimous(iunit,nknddi,nelddi,nlvddi)
 
         end
 
@@ -947,7 +947,7 @@ c write records
 
 c************************************************************
 
-	subroutine ous_read_record(iu,it,nlvdim,ilhv,z,ze,ut,vt,ierr)
+	subroutine ous_read_record(iu,it,nlvddi,ilhv,z,ze,ut,vt,ierr)
 
 c reads data record of OUS file
 
@@ -956,12 +956,12 @@ c reads data record of OUS file
         include 'ousinf.h'
 
 	integer iu,it
-	integer nlvdim
+	integer nlvddi
 	integer ilhv(1)
 	real z(1)
 	real ze(1)
-	real ut(nlvdim,1)
-	real vt(nlvdim,1)
+	real ut(nlvddi,1)
+	real vt(nlvddi,1)
 	integer ierr
 
 	integer l,k,ie,i,lmax
@@ -974,7 +974,7 @@ c reads data record of OUS file
 
 	call getous(iunit,nvers,nkn,nel,nlv)
 
-	if( bdata .and. nlvdim .lt. nlv ) goto 97
+	if( bdata .and. nlvddi .lt. nlv ) goto 97
 
 	if( .not. bdata ) then
 	  nkn = 0
@@ -1003,8 +1003,8 @@ c reads data record of OUS file
 	ierr=-1
 	return
    97	continue
-	write(6,*) 'ous_read_record:: nlvdim < nlv'
-	write(6,*) 'nlvdim = ',nlvdim,'  nlv = ',nlv
+	write(6,*) 'ous_read_record:: nlvddi < nlv'
+	write(6,*) 'nlvddi = ',nlvddi,'  nlv = ',nlv
 	ierr=97
 	return
    98	continue
@@ -1022,7 +1022,7 @@ c reads data record of OUS file
 
 c************************************************************
 
-	subroutine ous_write_record(iunit,it,nlvdim,ilhv,z,ze,ut,vt,ierr)
+	subroutine ous_write_record(iunit,it,nlvddi,ilhv,z,ze,ut,vt,ierr)
 
 c writes data record of OUS file
 
@@ -1032,12 +1032,12 @@ c writes data record of OUS file
 
 c arguments
 	integer iunit,it
-	integer nlvdim
+	integer nlvddi
 	integer ilhv(1)
 	real z(1)
 	real ze(1)
-	real ut(nlvdim,1)
-	real vt(nlvdim,1)
+	real ut(nlvddi,1)
+	real vt(nlvddi,1)
 	integer ierr
 c local
 	integer l,k,ie,i
@@ -1045,7 +1045,7 @@ c local
 
 	call getous(iunit,nvers,nkn,nel,nlv)
 
-	if( nlvdim .lt. nlv ) goto 97
+	if( nlvddi .lt. nlv ) goto 97
 
 	write(iunit) it
 	write(iunit) (z(k),k=1,nkn)
@@ -1062,8 +1062,8 @@ c local
 
 	return
    97	continue
-	write(6,*) 'ous_write_record:: nlvdim < nlv'
-	write(6,*) 'nlvdim = ',nlvdim,'  nlv = ',nlv
+	write(6,*) 'ous_write_record:: nlvddi < nlv'
+	write(6,*) 'nlvddi = ',nlvddi,'  nlv = ',nlv
 	ierr=97
 	return
 	end
@@ -1080,13 +1080,13 @@ c skips data record - only reads header of record
 
         integer iunit,it,ierr
 
-        integer nlvdim
+        integer nlvddi
         integer ilhv(1)
 	real z(1),ze(1)
         real ut(1,1),vt(1,1)
 
-	nlvdim = 1
-	call ous_read_record(-iunit,it,nlvdim,ilhv,z,ze,ut,vt,ierr)
+	nlvddi = 1
+	call ous_read_record(-iunit,it,nlvddi,ilhv,z,ze,ut,vt,ierr)
 
         end
 
@@ -1223,39 +1223,39 @@ c************************************************************
 
 c************************************************************
 
-	subroutine rdous(iunit,it,nlvdim,ilhv,z,ze,ut,vt,ierr)
+	subroutine rdous(iunit,it,nlvddi,ilhv,z,ze,ut,vt,ierr)
 
 	implicit none
 
 	integer iunit,it
-	integer nlvdim
+	integer nlvddi
 	integer ilhv(1)
 	real z(1)
 	real ze(1)
-	real ut(nlvdim,1)
-	real vt(nlvdim,1)
+	real ut(nlvddi,1)
+	real vt(nlvddi,1)
 	integer ierr
 
-	call ous_read_record(iunit,it,nlvdim,ilhv,z,ze,ut,vt,ierr)
+	call ous_read_record(iunit,it,nlvddi,ilhv,z,ze,ut,vt,ierr)
 
 	end
 
 c************************************************************
 
-	subroutine wrous(iunit,it,nlvdim,ilhv,z,ze,ut,vt,ierr)
+	subroutine wrous(iunit,it,nlvddi,ilhv,z,ze,ut,vt,ierr)
 
 	implicit none
 
 	integer iunit,it
-	integer nlvdim
+	integer nlvddi
 	integer ilhv(1)
 	real z(1)
 	real ze(1)
-	real ut(nlvdim,1)
-	real vt(nlvdim,1)
+	real ut(nlvddi,1)
+	real vt(nlvddi,1)
 	integer ierr
 
-	call ous_write_record(iunit,it,nlvdim,ilhv,z,ze,ut,vt,ierr)
+	call ous_write_record(iunit,it,nlvddi,ilhv,z,ze,ut,vt,ierr)
 
 	end
 

@@ -246,7 +246,7 @@ c****************************************************************
 
 	include 'geom.h'
 
-	character*80 basin
+	character*80 basfil
 	integer nodes(ndim)
 	integer n,nb,nl
 	real x(ndim), y(ndim)
@@ -255,11 +255,11 @@ c****************************************************************
 
 	call read_line(ndim,nl,x,y)
 
-	call read_memory_basin(basin)
-	if( basin .eq. ' ' ) stop
+	call read_memory_basin(basfil)
+	if( basfil .eq. ' ' ) stop
 
 	nb = 1
-	open(nb,file=basin,status='old',form='unformatted')
+	open(nb,file=basfil,status='old',form='unformatted')
 	call sp13rr(nb,nkndim,neldim)
 	close(nb)
 

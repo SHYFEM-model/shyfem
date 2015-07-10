@@ -1,5 +1,221 @@
 ============================================================
 
+Fri Jul 10 17:23:16 CEST 2015
+
+big release introducing modules
+
+ LOG                            |    6 +
+ Makefile                       |    1 +
+ RELEASE_NOTES                  |   14 +
+ Rules.make                     |   22 +-
+ cp_fem.sh                      |   36 ++
+ fem3d/Makefile                 |  150 ++++--
+ fem3d/bashsigma.f              |    5 +-
+ fem3d/basinf.f                 |   72 +++
+ fem3d/bin/handle_common.sh     |    5 +-
+ fem3d/bin/newsubst.pl          |   60 ++-
+ fem3d/bnd.h                    |    7 +-
+ fem3d/check_debug.f            |   16 +-
+ fem3d/chezy.h                  |    4 +-
+ fem3d/common.h                 |    2 +-
+ fem3d/cp_fem3d.sh              |   19 -
+ fem3d/grdutil.f                |   60 +++
+ fem3d/ht.f                     |  117 ++++-
+ fem3d/incstats.pl              |   74 +++
+ fem3d/incstats.sh              |    4 +
+ fem3d/lagrange_track.f         |    2 +
+ fem3d/links.f                  |   10 +-
+ fem3d/meteo_aux.h              |   23 +-
+ fem3d/mod/marco.zip            |  Bin 5119 -> 0 bytes
+ fem3d/mod/mod_diff_visc_fric.f |   80 ---
+ fem3d/mod/mod_hydro_baro.f     |   48 --
+ fem3d/mod/mod_hydro_print.f    |   80 ---
+ fem3d/mod/mod_levels.f         |   71 ---
+ fem3d/mod/mod_roughness.f      |   42 --
+ fem3d/mod_area.f               |   54 ++
+ fem3d/mod_aux_array.f          |  103 ++++
+ fem3d/mod_bclfix.f             |   72 +++
+ fem3d/mod_bnd.f                |   91 ++++
+ fem3d/mod_bnd_aux.f            |   60 +++
+ fem3d/mod_bndo.f               |   99 ++++
+ fem3d/mod_bound_dynamic.f      |   71 +++
+ fem3d/mod_bound_geom.f         |  222 ++++++++
+ fem3d/mod_conz.f               |   57 ++
+ fem3d/mod_depth.f              |   95 ++++
+ fem3d/mod_diff_aux.f           |   42 ++
+ fem3d/mod_diff_visc_fric.f     |   78 +++
+ fem3d/mod_fluidmud.f           |  116 ++++
+ fem3d/mod_geom.f               |  102 ++++
+ fem3d/mod_geom_dynamic.f       |   69 +++
+ fem3d/mod_gotm_aux.f           |   93 ++++
+ fem3d/mod_hydro.f              |  170 +++---
+ fem3d/mod_hydro_baro.f         |   49 ++
+ fem3d/mod_hydro_print.f        |   87 +++
+ fem3d/mod_hydro_vel.f          |  149 +++---
+ fem3d/mod_internal.f           |   89 ++++
+ fem3d/mod_meteo.f              |  111 ++++
+ fem3d/mod_nohyd.f              |   54 ++
+ fem3d/mod_nudging.f            |   39 ++
+ fem3d/mod_roughness.f          |   42 ++
+ fem3d/mod_sinking.f            |   50 ++
+ fem3d/mod_system.f             |   78 +++
+ fem3d/mod_tides.f              |    5 +-
+ fem3d/mod_ts.f                 |  106 ++++
+ fem3d/mod_turbulence.f         |   60 +++
+ fem3d/mod_tvd.f                |   45 ++
+ fem3d/mod_waves.f              |  104 ++++
+ fem3d/nbvdim.h                 |    4 +
+ fem3d/netcdf.f                 |    8 +-
+ fem3d/new3di.f                 |   14 +-
+ fem3d/newchk.f                 |    2 +
+ fem3d/newcon.f                 |   40 +--
+ fem3d/newdum.f                 |  249 +++++++++-
+ fem3d/newdum1.f                |   25 +
+ fem3d/newdum_out.f             |   17 +
+ fem3d/newexpl.f                |    6 +-
+ fem3d/newini.f                 |   12 +-
+ fem3d/newlevels.f              |   10 +
+ fem3d/newnudge.f               |   70 +++
+ fem3d/noselab.f                |    1 +
+ fem3d/nosextr_nodes.f          |    4 +
+ fem3d/nosutil.f                |   29 +
+ fem3d/ousutil.f                |   29 +
+ fem3d/prep_fem3d.sh            |   21 +-
+ fem3d/sedtrans05.f             |    2 +
+ fem3d/simsys_lp.f              |    6 +
+ fem3d/simsys_pard.f            |    6 +
+ fem3d/simsys_spk.f             |    6 +
+ fem3d/subapn.f                 |   16 +-
+ fem3d/subbas.f                 |   95 +++-
+ fem3d/subbnd.f                 |  130 ++----
+ fem3d/subbndo.f                |   26 +-
+ fem3d/subbnds.f                |   14 +-
+ fem3d/subboxa.f                |    2 +-
+ fem3d/subcmv.f                 |   14 +-
+ fem3d/subcoo.f                 |    3 +
+ fem3d/subcst.f                 |   14 +-
+ fem3d/subcus.f                 |  124 +++---
+ fem3d/subdif.f                 |    2 -
+ fem3d/subdim.f                 |   46 +-
+ fem3d/subele.f                 |   60 +--
+ fem3d/subeos.f                 |   40 +-
+ fem3d/subets.f                 |   48 +-
+ fem3d/subetsa.f                |   23 +-
+ fem3d/subfemfile.f             |   18 +-
+ fem3d/subfemintp.f             |    6 +-
+ fem3d/subflx.f                 |   28 +-
+ fem3d/subflx3d.f               |   56 +-
+ fem3d/subflxa.f                |   56 +-
+ fem3d/subflxu.f                |   36 +-
+ fem3d/subgotm.f                |  120 ++---
+ fem3d/subgrd.f                 |   15 +
+ fem3d/subinterpol.f            |   18 +-
+ fem3d/subinterpol1.f           |    5 +-
+ fem3d/sublnka.f                |  203 +-------
+ fem3d/sublnkd.f                |  227 ++++++++
+ fem3d/submet.f                 |    4 +-
+ fem3d/subn11.f                 |   77 ++--
+ fem3d/subnev_new.f             | 1129 ++++++++++++++++++++++++++++++++++++++++
+ fem3d/subnos.f                 |   74 ++--
+ fem3d/subnosa.f                |    8 +-
+ fem3d/subnsh.f                 |   11 +-
+ fem3d/suboff.f                 |   12 +-
+ fem3d/subous.f                 |   84 ++--
+ fem3d/subousa.f                |    2 +-
+ fem3d/subpard.f                |    2 +
+ fem3d/subqfxt.f                |   15 +-
+ fem3d/subres.f                 |  156 +++---
+ fem3d/subros.f                 |    2 +-
+ fem3d/subrst.f                 |    4 +-
+ fem3d/subspk.f                 |   22 +-
+ fem3d/subsrt.f                 |    5 +-
+ fem3d/subsss.f                 |   34 +-
+ fem3d/subuti.f                 |    6 +-
+ fem3d/subwat.f                 |    4 +-
+ fem3d/subwrt.f                 |   29 +-
+ fem3d/vp.f                     |  188 +++----
+ fem3d/weutro.f                 |    2 +-
+ femadj/adj5el.f                |    2 +-
+ femadj/adjele.f                |   34 +-
+ femadj/adjplo.f                |    6 +-
+ femadj/adjvar.f                |    6 +-
+ fembin/vpgrd                   |    3 +-
+ femdoc/final/shyfem.pdf        |  Bin 294942 -> 294942 bytes
+ femdoc/final/shyfem.ps         |   26 +-
+ femgotm/eqstate.F90            |    1 +
+ femgotm/kpp.F90                |    4 +
+ femgotm/turbulence.F90         |   14 +
+ femplot/Makefile               |   38 +-
+ femplot/basin.h                |    2 +-
+ femplot/ev.h                   |    2 +
+ femplot/evmain.h               |    2 +
+ femplot/geom.h                 |    4 +-
+ femplot/line_nodes.f           |    8 +-
+ femplot/mod_hydro_plot.f       |   75 +++
+ femplot/mod_plot2d.f           |   66 +++
+ femplot/mod_plot3d.f           |   63 +++
+ femplot/plot_aux.h             |   16 +-
+ femplot/plot_aux_3d.h          |   16 +
+ femplot/plotsim.f              |  151 +++++-
+ femplot/supano.f               |    1 +
+ femplot/supbas.f               |    6 +-
+ femplot/supdep.f               |   11 +-
+ femplot/supdum.f               |  108 ++++
+ femplot/suplin1.f              |    1 +
+ femplot/supout.f               |   55 ++-
+ femplot/supsim.f               |   12 +-
+ femplot/supver.f               |    1 +
+ prep_dirs.sh                   |   45 ++
+ prep_fem.sh                    |   32 ++
+ 163 files changed, 6511 insertions(+), 1868 deletions(-)
+ new file:
+   cp_fem.sh
+   fem3d/incstats.pl
+   fem3d/incstats.sh
+   fem3d/mod_area.f
+   fem3d/mod_aux_array.f
+   fem3d/mod_bclfix.f
+   fem3d/mod_bnd.f
+   fem3d/mod_bnd_aux.f
+   fem3d/mod_bndo.f
+   fem3d/mod_bound_dynamic.f
+   fem3d/mod_bound_geom.f
+   fem3d/mod_conz.f
+   fem3d/mod_depth.f
+   fem3d/mod_diff_aux.f
+   fem3d/mod_fluidmud.f
+   fem3d/mod_geom.f
+   fem3d/mod_geom_dynamic.f
+   fem3d/mod_gotm_aux.f
+   fem3d/mod_internal.f
+   fem3d/mod_meteo.f
+   fem3d/mod_nohyd.f
+   fem3d/mod_nudging.f
+   fem3d/mod_sinking.f
+   fem3d/mod_system.f
+   fem3d/mod_ts.f
+   fem3d/mod_turbulence.f
+   fem3d/mod_tvd.f
+   fem3d/mod_waves.f
+   fem3d/nbvdim.h
+   fem3d/newdum1.f
+   fem3d/newdum_out.f
+   fem3d/sublnkd.f
+   fem3d/subnev_new.f
+   femplot/mod_hydro_plot.f
+   femplot/mod_plot2d.f
+   femplot/mod_plot3d.f
+   femplot/plot_aux_3d.h
+   femplot/supdum.f
+   prep_dirs.sh
+   prep_fem.sh
+ deleted:
+    fem3d/cp_fem3d.sh
+    fem3d/mod/marco.zip
+    fem3d/mod/mod_levels.f
+
+============================================================
+
 Fri Jun  5 16:22:29 CEST 2015
 
 New version 7_1_12

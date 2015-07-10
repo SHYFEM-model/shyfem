@@ -63,6 +63,19 @@ c 08.01.2015    ggu     common blocks in include file
 c
 c**********************************************************
 
+	module grd
+
+	implicit none
+
+        real, save :: xscale,yscale,zscale
+        integer, save :: nin,iline,ianz
+        real, save :: f(80)
+        character*132, save :: line
+
+	end module grd
+
+c**********************************************************
+
 	subroutine rdgrd(
      +			 file
      +			,bstop
@@ -431,6 +444,8 @@ c reads lines from .grd file
           ialv(nli) = itype
 	  hlv(nli)  = depth
 	  ipntlv(nli) = ipntlv(nli-1) + nvert
+	else
+	  ipntlv(0) = ipntlv(0) + nvert	!save here total number of nodes
 	end if
 
 	return

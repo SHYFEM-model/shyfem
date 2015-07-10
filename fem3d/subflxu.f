@@ -49,14 +49,14 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	subroutine fluxes_init(nlvdim,nsect,nlayers,nr,masst)
+	subroutine fluxes_init(nlvddi,nsect,nlayers,nr,masst)
 
 	implicit none
 
-	integer nlvdim,nsect
+	integer nlvddi,nsect
 	integer nlayers(1)
 	integer nr
-	real masst(0:nlvdim,3,1)
+	real masst(0:nlvddi,3,1)
 
 	integer i,l,lmax
 
@@ -74,15 +74,15 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine fluxes_accum(nlvdim,nsect,nlayers,nr,masst,fluxes)
+	subroutine fluxes_accum(nlvddi,nsect,nlayers,nr,masst,fluxes)
 
 	implicit none
 
-	integer nlvdim,nsect
+	integer nlvddi,nsect
 	integer nlayers(1)
 	integer nr
-	real masst(0:nlvdim,3,1)
-	real fluxes(0:nlvdim,3,1)
+	real masst(0:nlvddi,3,1)
+	real fluxes(0:nlvddi,3,1)
 
 	integer i,l,lmax
 
@@ -100,15 +100,15 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine fluxes_aver(nlvdim,nsect,nlayers,nr,masst,fluxes)
+	subroutine fluxes_aver(nlvddi,nsect,nlayers,nr,masst,fluxes)
 
 	implicit none
 
-	integer nlvdim,nsect
+	integer nlvddi,nsect
 	integer nlayers(1)
 	integer nr
-	real masst(0:nlvdim,3,1)
-	real fluxes(0:nlvdim,3,1)
+	real masst(0:nlvddi,3,1)
+	real fluxes(0:nlvddi,3,1)
 
 	integer i,l,lmax
 	real rr
@@ -140,14 +140,15 @@ c flux are divided into total, positive and negative
 	implicit none
 
 	include 'param.h'
+	include 'nlevel.h'
 
 	integer kfluxm
 	integer kflux(1)
 	integer iflux(3,1)
 	real az
-	real fluxes(0:nlvdim,3,1)	!computed fluxes (return)
+	real fluxes(0:nlvdi,3,1)	!computed fluxes (return)
 	integer is			!type of scalar (0=mass)
-	real scalar(nlvdim,1)
+	real scalar(nlvdi,1)
 
 	integer nnode,ifirst,ilast,ntotal
 	integer ns
@@ -175,21 +176,22 @@ c computes flux through one section
 	implicit none
 
 	include 'param.h'
+	include 'nlevel.h'
 
 	integer n
 	integer kflux(1)
 	integer iflux(3,1)
 	real az
-	real fluxes(0:nlvdim,3)		!computed fluxes (return)
+	real fluxes(0:nlvdi,3)		!computed fluxes (return)
 	integer is			!type of scalar (0=mass)
-	real scalar(nlvdim,1)
+	real scalar(nlvdi,1)
 
 	integer i,k,l,lkmax
 	integer istype,iafter,ibefor
 	real port,ptot,port2d,sport,sptot
-	real flux(nlvdim)
+	real flux(nlvdi)
 
-	do l=0,nlvdim
+	do l=0,nlvdi
 	  fluxes(l,1) = 0.
 	  fluxes(l,2) = 0.
 	  fluxes(l,3) = 0.

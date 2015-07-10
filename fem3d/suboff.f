@@ -413,18 +413,18 @@ c	---------------------------------------------------------
 
 c****************************************************************
 
-	subroutine off_intp(nintp,it,time,nlvdim,ndim,il,n,dval,rval)
+	subroutine off_intp(nintp,it,time,nlvddi,ndim,il,n,dval,rval)
 
 	implicit none
 
 	integer nintp
 	integer it
 	integer time(nintp)
-	integer nlvdim,ndim
+	integer nlvddi,ndim
 	integer il(ndim)
 	integer n
-	double precision dval(nlvdim,ndim,nintp)
-	real rval(nlvdim,ndim)
+	double precision dval(nlvddi,ndim,nintp)
+	real rval(nlvddi,ndim)
 
 	integer l,lmax,i,j
 	real x(4),y(4),t
@@ -443,7 +443,7 @@ c****************************************************************
 
 	do i=1,n
 	  lmax = 1
-	  if( nlvdim .gt. 1 ) lmax = il(i)
+	  if( nlvddi .gt. 1 ) lmax = il(i)
 	  do l=1,lmax
 	    do j=1,nintp
 	      y(j) = dval(l,i,j)
@@ -471,9 +471,7 @@ c****************************************************************
 	double precision zn(nkndim,4)
 
 	include 'nbasin.h'
-
 	include 'levels.h'
-
 	include 'hydro_vel.h'
 	include 'hydro.h'
 

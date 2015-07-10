@@ -21,6 +21,7 @@ c*******************************************************************
 	include 'nlevel.h'
 
 	include 'plot_aux.h'
+	include 'plot_aux_3d.h'
 
 	include 'hydro_print.h'
 

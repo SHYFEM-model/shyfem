@@ -25,7 +25,8 @@ LIBPOST = post
 NPOBJS  = supbas.o supiso.o supdep.o supano.o supcol.o \
 		suptim.o supout.o suputi.o supsim.o \
 		supint.o supver.o col.o suplag.o \
-		suplin.o suplin1.o
+		suplin.o suplin1.o supdum.o \
+		mod_plot2d.o mod_plot3d.o mod_hydro_plot.o
 
 LPOBJS = subfil.o subbas.o links.o sublnku.o subnsu.o	# not used anymore
 LPOBJS = 
@@ -144,7 +145,7 @@ diff:
 	@echo "differences written to file DIFFS"
 
 depend:
-	$(MAKEDEPEND) *.f
+	$(MAKEDEPEND) -moddir=$(MODDIR) *.f
 	
 list:
 	pwd; ls
@@ -179,29 +180,34 @@ strip:	$(EXES)
 col.o: color.h
 lagxitest.o: param.h evmain.h basin.h
 line_nodes.o: param.h basin.h geom.h
+../femlib/mod/mod_hydro_plot.mod: mod_hydro_plot.o
+../femlib/mod/mod_plot2d.mod: mod_plot2d.o
+../femlib/mod/mod_plot3d.mod: mod_plot3d.o
 ousinfo.o: hydro.h param.h levels.h nlevel.h basin.h
-plotsim.o: depth.h hydro_vel.h hydro.h param.h nlevel.h mkonst.h \
-		evmain.h pkonst.h levels.h basin.h hydro_print.h \
-		hydro_plot.h aux_array.h geom.h plot_aux.h 
+plotsim.o: depth.h plot_aux_3d.h nlevel.h mkonst.h evmain.h \
+		nbasin.h plot_aux.h geom.h hydro_vel.h param.h \
+		hydro.h pkonst.h levels.h basin.h hydro_print.h \
+		hydro_plot.h 
 supano.o: color.h param.h basin.h legend.h simul.h
 supbas.o: nbasin.h param.h supout.h basin.h geom.h
 supcol.o: color.h
 supdep.o: depth.h hydro.h param.h ev.h nlevel.h nbasin.h levels.h \
-		basin.h plot_aux.h aux_array.h 
+		basin.h plot_aux.h 
+supdum.o: param.h
 supint.o: param.h levels.h
 supiso.o: color.h param.h basin.h
 suplag.o: color.h param.h basin.h plot_aux.h
 suplin.o: depth.h color.h param.h levels.h nlevel.h basin.h \
 		hydro_print.h 
-suplin1.o: hydro_vel.h hydro.h param.h ev.h nlevel.h nbasin.h \
-		levels.h basin.h hydro_print.h plot_aux.h 
-supout.o: depth.h hydro.h param.h nlevel.h simul.h nbasin.h \
-		levels.h supout.h basin.h hydro_print.h \
-		aux_array.h plot_aux.h hydro_plot.h 
-supsim.o: hydro_vel.h depth.h hydro.h param.h nlevel.h nbasin.h \
-		levels.h basin.h geom.h plot_aux.h hydro_plot.h \
-		aux_array.h 
+suplin1.o: hydro_vel.h hydro.h param.h plot_aux_3d.h ev.h nlevel.h \
+		nbasin.h levels.h basin.h hydro_print.h plot_aux.h 
+supout.o: depth.h hydro.h param.h plot_aux_3d.h nlevel.h simul.h \
+		nbasin.h levels.h supout.h basin.h hydro_print.h \
+		plot_aux.h hydro_plot.h 
+supsim.o: hydro_vel.h depth.h hydro.h param.h plot_aux_3d.h \
+		nlevel.h nbasin.h levels.h basin.h geom.h \
+		plot_aux.h hydro_plot.h 
 suptim.o: timlim.h
-supver.o: hydro_vel.h hydro.h param.h levels.h basin.h nlevel.h \
-		ev.h plot_aux.h 
+supver.o: hydro_vel.h hydro.h param.h plot_aux_3d.h levels.h \
+		basin.h nlevel.h ev.h plot_aux.h 
 

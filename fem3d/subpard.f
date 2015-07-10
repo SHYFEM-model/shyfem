@@ -6,6 +6,7 @@ c*************************************************************************
 ! Initialize vector and matrix      
 
       implicit none
+      include 'param.h'
       include 'common.h'
 
       integer n
@@ -37,6 +38,7 @@ c*************************************************************************
 	subroutine pard_solve_system
 
 	implicit none
+        include 'param.h'
 	include 'common.h'
 	integer k
 

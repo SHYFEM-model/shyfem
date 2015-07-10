@@ -21,6 +21,74 @@ c 23.01.2012    ggu     new from basinf
 c
 c****************************************************************
 
+!==================================================================
+        module mod_nudge
+!==================================================================
+
+        implicit none
+
+	integer, parameter :: ndgdim = 50		!max size of variables
+	integer, parameter :: ndgdatdim	= 10*ndgdim	!max size for BC file
+
+	integer, save, private :: nkn_nudge = 0
+
+	integer, save :: nvar = 0
+	real, save :: tramp = 0.
+
+	real, allocatable :: andg_data(:)		!data of observations
+	integer, allocatable :: ndg_nodelist(:)		!nodes of obs
+	integer, allocatable :: ndg_use(:)		!use observations
+	character*40, allocatable :: ndg_names(:)	!name of stations
+
+	real, allocatable :: andg_dist(:)	!distance to be used
+	real, allocatable :: andg_weight(:)	!weight to be used
+	real, allocatable :: andg_obs(:)	!observations to be used
+
+	integer, allocatable :: ndg_nodes(:)	!nodes of influence
+	integer, allocatable :: ndg_area(:)	!area of influence
+
+!==================================================================
+        contains
+!==================================================================
+
+	subroutine mod_nudge_init(nkn)
+
+	integer nkn
+
+	if( nkn == nkn_nudge ) return
+
+	if( nkn_nudge > 0 ) then
+	  deallocate(andg_data)
+	  deallocate(ndg_nodelist)
+	  deallocate(ndg_use)
+	  deallocate(ndg_names)
+	  deallocate(andg_dist)
+	  deallocate(andg_weight)
+	  deallocate(andg_obs)
+	  deallocate(ndg_nodes)
+	  deallocate(ndg_area)
+	end if
+
+	nkn_nudge = nkn
+
+	if( nkn == 0 ) return
+
+	allocate(andg_data(ndgdatdim))
+	allocate(ndg_nodelist(ndgdim))
+	allocate(ndg_use(ndgdim))
+	allocate(ndg_names(ndgdim))
+	allocate(andg_dist(nkn))
+	allocate(andg_weight(nkn))
+	allocate(andg_obs(nkn))
+	allocate(ndg_nodes(nkn))
+	allocate(ndg_area(nkn))
+	
+	end subroutine mod_nudge_init
+
+!==================================================================
+        end module mod_nudge
+!==================================================================
+
 	subroutine nudge_init
 
 	implicit none
@@ -64,6 +132,8 @@ c****************************************************************
 	if( nvar .gt. ndgdim ) stop 'error stop nudge_init: ndgdim'
 
 	if( nvar .le. 0 ) return
+
+	call mod_nudge_init(nkn)
 
 	nintp = 4
 	nsize = 1

@@ -90,6 +90,7 @@ c 3D concentrations
 
 	include 'nbasin.h'
 	include 'plot_aux.h'
+	include 'plot_aux_3d.h'
 
         character*80 line
 	integer nrec,ivel,nplot
@@ -186,6 +187,7 @@ c 3D concentrations
 
 	include 'nbasin.h'
 	include 'plot_aux.h'
+	include 'plot_aux_3d.h'
 
         character*80 line
 	integer nrec,it,nplot
@@ -247,6 +249,7 @@ c 3D concentrations (element values)
 
 	include 'nbasin.h'
 	include 'plot_aux.h'
+	include 'plot_aux_3d.h'
 
         character*80 line
 	integer nrec,it,nplot
@@ -435,6 +438,7 @@ c**********************************************************
         integer ivel,isect
 
 	include 'plot_aux.h'
+	include 'plot_aux_3d.h'
 
 	logical velnext,ptime_ok,ptime_end
 	integer getisec
@@ -636,7 +640,6 @@ c ivel = 4	waves
 
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'basin.h'
-	include 'aux_array.h'
 	include 'hydro_plot.h'
 
 	include 'depth.h'
@@ -646,6 +649,7 @@ c ivel = 4	waves
 
 	real ureg(nxdim,nydim)
 	real vreg(nxdim,nydim)
+	real v1v(nkn)
 
 	logical boverl,bnode,bbound,bnorm
         logical bspecial
@@ -1409,7 +1413,7 @@ c**************************************************************
 
 	call qstart
 
-        call basin(0)
+        call plot_basin(0)
 	call frame(0)
 
         call qcomm('Plotting elements')
@@ -1418,7 +1422,7 @@ c**************************************************************
 	end do
 
         call qcomm('Plotting basin')
-        call basin(2)
+        call plot_basin(2)
 
 	call qend
 
@@ -1618,11 +1622,11 @@ c compute nodal values vnv()
 
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'aux_array.h'
 	include 'basin.h'
 
 	integer ie,ii,k
 	real r,flag
+	real v2v(nkn)
 
         call get_flag(flag)
 

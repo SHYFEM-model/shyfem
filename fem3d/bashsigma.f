@@ -21,7 +21,7 @@ c needs continuous depth and produces continuous depth
 
 	include 'depth.h'
 
-	include 'aux_array.h'
+	!include 'aux_array.h'
 	real haux(nkndim)
 
 	logical bnode,belem
@@ -187,13 +187,14 @@ c checks and adjusts hsigma crossing
 	include 'param.h'
 	include 'basin.h'
 
-	include 'aux_array.h'
+	!include 'aux_array.h'
 
         logical berror,bdebug
         integer k,ie,ii
         integer ihmin,ihmax
         real h,hm
         real f(3)
+        real v1v(nkn)
 
         bdebug = .true.
         bdebug = .false.

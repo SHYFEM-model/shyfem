@@ -174,12 +174,14 @@ c computes heat flux through bulk formulas
 
 	include 'femtime.h'
 	include 'nbasin.h'
+	include 'nlevel.h'
 	include 'ts.h'
+
 	double precision dq
 	real dt
 
         call get_timestep(dt)
-        call qflux3d(it,dt,nkn,nlvdim,tempv,dq)	!compute heat flux
+        call qflux3d(it,dt,nkn,nlvdi,tempv,dq)	!compute heat flux
 
 	end
 

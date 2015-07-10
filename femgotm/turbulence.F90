@@ -2761,6 +2761,8 @@
 !BOC
 ! check for correct function call
 
+   k_bc = 0.
+
    select case(type)
 
       case(viscous)
@@ -2902,6 +2904,9 @@
 !-----------------------------------------------------------------------
 !BOC
 ! Compute the boundary conditions
+
+   q2over2_bc = 0.
+
    select case(type)
 
       case(viscous)
@@ -3043,6 +3048,9 @@
 !-----------------------------------------------------------------------
 !BOC
 ! Compute the boundary conditions
+
+   epsilon_bc = 0.
+
    select case(type)
       case(viscous)
          STDERR 'Sorry, viscous boundary layers not yet implemented.'
@@ -3176,6 +3184,9 @@
 !-----------------------------------------------------------------------
 !BOC
 ! Compute the boundary conditions
+
+   psi_bc = 0.
+
    select case(type)
       case(viscous)
          STDERR 'Sorry, viscous boundary layers not yet implemented.'
@@ -3313,6 +3324,9 @@
 !-----------------------------------------------------------------------
 !BOC
 ! Compute the boundary conditions
+
+   q2l_bc = 0.
+
    select case(type)
       case(viscous)
          STDERR 'Sorry, viscous boundary layers not yet implemented.'

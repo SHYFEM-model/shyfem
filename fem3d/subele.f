@@ -520,14 +520,12 @@ c computes nodal values from element values (scalar)
 	implicit none
 
 	include 'param.h'
-
-	real sev(3,neldim)
-	real sv(nkndim)
-
-
 	include 'aux_array.h'
 	include 'basin.h'
 	include 'hydro.h'
+
+	real sev(3,nel)
+	real sv(nkn)
 
 	integer ie,k,ii,n
 	integer ip
@@ -801,10 +799,10 @@ c shell (helper) for copydepth
 	implicit none
 
 	include 'param.h'
-
 	include 'depth.h'
+	include 'nlevel.h'
 
-	call copydepth(nlvdim,hdknv,hdkov,hdenv,hdeov)
+	call copydepth(nlvdi,hdknv,hdkov,hdenv,hdeov)
 
 	end
 
@@ -821,8 +819,9 @@ c shell (helper) for setdepth
 	include 'hydro.h'
 	include 'depth.h'
 	include 'area.h'
+	include 'nlevel.h'
 
-	call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)
+	call setdepth(nlvdi,hdknv,hdenv,zenv,areakv)
 
 	end
 
@@ -839,8 +838,9 @@ c shell (helper) for setdepth
 	include 'hydro.h'
 	include 'depth.h'
 	include 'area.h'
+	include 'nlevel.h'
 
-	call setdepth(nlvdim,hdkov,hdeov,zeov,areakv)
+	call setdepth(nlvdi,hdkov,hdeov,zeov,areakv)
 
 	end
 
@@ -853,9 +853,8 @@ c checks differences between old and new depth values (debug)
 	implicit none
 
 	include 'param.h'
-
 	include 'nbasin.h'
-
+	include 'nlevel.h'
 	include 'depth.h'
 
 	integer k,ie,l,idiff
@@ -863,13 +862,13 @@ c checks differences between old and new depth values (debug)
 	idiff = 0
 
 	do k=1,nkn
-	  do l=1,nlvdim
+	  do l=1,nlvdi
 	    if( hdkov(l,k) .ne. hdknv(l,k) ) idiff = idiff + 1
 	  end do
 	end do
 
 	do ie=1,nel
-	  do l=1,nlvdim
+	  do l=1,nlvdi
 	    if( hdeov(l,ie) .ne. hdenv(l,ie) ) idiff = idiff + 1
 	  end do
 	end do
@@ -897,8 +896,6 @@ c sets up depth array for nodes
 	include 'levels.h'
 	include 'depth.h'
 	include 'basin.h'
-c	real zenv(3,neldim)
-c	common /zenv/zenv
 
 	include 'ev.h'
 
@@ -1090,14 +1087,13 @@ c computes content of scalar in total domain
         implicit none
 
 	include 'param.h'
+	include 'nbasin.h'
+	include 'nlevel.h'
+	include 'levels.h'
 
 	double precision scalcont
 	integer mode
-	real scal(nlvdim,nkndim)
-
-	include 'nbasin.h'
-
-	include 'levels.h'
+	real scal(nlvdi,nkn)
 
 	logical bdebug
 	integer k,l,nlev
@@ -1130,14 +1126,13 @@ c computes content of scalar at node k
         implicit none
 
         include 'param.h'
+	include 'nbasin.h'
+	include 'nlevel.h'
+	include 'levels.h'
  
         double precision scalcontk
         integer mode,k
-        real scal(nlvdim,nkndim)
- 
-	include 'nbasin.h'
- 
-	include 'levels.h'
+        real scal(nlvdi,nkn)
  
         integer l,nlev
         double precision total
@@ -1163,15 +1158,14 @@ c computes content of scalar at node k (with given depth)
         implicit none
 
         include 'param.h'
+	include 'nbasin.h'
+	include 'nlevel.h'
+	include 'levels.h'
 
         double precision scalcontkh
         integer k
-        real scal(nlvdim,nkndim)
+        real scal(nlvdi,nkn)
         real depth
- 
-	include 'nbasin.h'
- 
-	include 'levels.h'
  
         integer l,nlev
         double precision total
@@ -1197,12 +1191,12 @@ c this routine into another file... FIXME
         implicit none
 
         include 'param.h'
+	include 'nbasin.h'
+	include 'nlevel.h'
 
-        real scal(nlvdim,nkndim)        !scalar field for which to compute mass
+        real scal(nlvdi,nkn)        !scalar field for which to compute mass
         real depth                      !depth of column
         real tstot                      !total mass (return)
-
-	include 'nbasin.h'
 
         integer k
         double precision scalcontkh

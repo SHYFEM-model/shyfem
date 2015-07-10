@@ -144,6 +144,35 @@ c all other variables must have already been stored internally (title,date..)
 
 c***************************************************************
 
+	subroutine peek_nos_header(iu,nkn,nel,nlv,nvar)
+
+c get size of data
+
+	implicit none
+
+	integer iu
+	integer nkn,nel,nlv,nvar
+
+	integer nvers
+	integer ierr
+
+	nvers = 5
+	call nos_init(iu,nvers)
+
+	call nos_read_header(iu,nkn,nel,nlv,nvar,ierr)
+	if( ierr .ne. 0 ) goto 99
+
+	call nos_close(iu)
+	rewind(iu)
+
+	return
+   99	continue
+	write(6,*) 'error in reading header of NOS file'
+	stop 'error stop peek_nos_header: reading header'
+	end
+
+c***************************************************************
+
 	subroutine read_nos_header(iu,nkndim,neldim,nlvdim,ilhkv,hlv,hev)
 
 c other variables are stored internally

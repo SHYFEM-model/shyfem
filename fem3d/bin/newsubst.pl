@@ -1195,14 +1195,66 @@ sub inc2use {
 
   my $fortran = shift;
 
-  #include2use($fortran,"hydro.h","fem_hydro.f");
-  #include2use($fortran,"tides.h","fem_tides");
-
   include2use($fortran,"basin.h","basin");
   include2use($fortran,"nbasin.h","basin","nkn,nel,ngr,mbw");
   include2use($fortran,"levels.h","levels");
   include2use($fortran,"nlevel.h","levels","nlvdi,nlv");
-  include2use($fortran,"hydro.h","hydro");
+
+  include2use($fortran,"hydro.h","mod_hydro");
+  include2use($fortran,"hydro_vel.h","mod_hydro_vel");
+  include2use($fortran,"hydro_print.h","mod_hydro_print");
+  include2use($fortran,"hydro_baro.h","mod_hydro_baro");
+
+  include2use($fortran,"diff_visc_fric.h","mod_diff_visc_fric");
+  include2use($fortran,"roughness.h","mod_roughness");
+
+  include2use($fortran,"ts.h","mod_ts");
+  include2use($fortran,"area.h","mod_area");
+  include2use($fortran,"aux_array.h","mod_aux_array");
+  include2use($fortran,"bound_dynamic.h","mod_bound_dynamic");
+  include2use($fortran,"diff_aux.h","mod_diff_aux");
+  include2use($fortran,"gotm_aux.h","mod_gotm_aux");
+
+  include2use($fortran,"bnd_aux.h","mod_bnd_aux");
+  include2use($fortran,"depth.h","mod_depth");
+  include2use($fortran,"geom_dynamic.h","mod_geom_dynamic");
+  include2use($fortran,"internal.h","mod_internal");
+  include2use($fortran,"nohyd.h","mod_nohyd");
+  include2use($fortran,"nudging.h","mod_nudging");
+
+  include2use($fortran,"bclfix.h","mod_bclfix");
+  include2use($fortran,"fluidmud.h","mod_fluidmud");
+  include2use($fortran,"sinking.h","mod_sinking");
+  include2use($fortran,"turbulence.h","mod_turbulence");
+  include2use($fortran,"waves.h","mod_waves");
+
+  include2use($fortran,"meteo.h","mod_meteo");
+  include2use($fortran,"meteo_aux.h","mod_meteo");
+
+  include2use($fortran,"geom.h","mod_geom");
+  include2use($fortran,"geom_aux.h","mod_geom");
+  include2use($fortran,"links.h","mod_geom");
+
+  include2use($fortran,"ev.h","evgeom");
+  include2use($fortran,"evmain.h","evgeom");
+  include2use($fortran,"conz.h","mod_conz");
+
+  include2use($fortran,"bound_geom.h","mod_bound_geom");
+  include2use($fortran,"testbndo.h","mod_bound_geom");
+  include2use($fortran,"bnd.h","mod_bnd");
+  include2use($fortran,"nbound.h","mod_bnd");
+  include2use($fortran,"nbvdim.h","mod_bnd");
+
+  include2use($fortran,"tvd.h","mod_tvd");
+  include2use($fortran,"tides.h","mod_tides");
+
+  include2use($fortran,"subbndo.h","mod_bndo");
+  include2use($fortran,"nudge.h","mod_nudge");
+
+  include2use($fortran,"plot_aux_3d.h","mod_plot3d");
+  include2use($fortran,"plot_aux.h","mod_plot2d");
+  include2use($fortran,"hydro_plot.h","mod_hydro_plot");
+
 }
 
 #--------------------------------------------------------------

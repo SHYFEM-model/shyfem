@@ -9,7 +9,7 @@ c	 subroutine ininos
 c	 subroutine setnos(iunit,nvers,nkn,nel,nlv,nvar)
 c	 subroutine getnos(iunit,nvers,nkn,nel,nlv,nvar)
 c	 subroutine delnos(iunit)
-c	 subroutine dimnos(iunit,nkndim,neldim,nlvdim)
+c	 subroutine dimnos(iunit,nknddi,nelddi,nlvddi)
 c
 c        subroutine errnos(iunit,routine,text)
 c        subroutine findnos_err(iunit,routine,text,n)
@@ -18,7 +18,7 @@ c        subroutine infonos(iunit,iout)
 c
 c        subroutine nos_init(iunit,nversion)
 c        subroutine nos_close(iunit)
-c        subroutine nos_check_dimension(iunit,nkndim,neldim,nlvdim)
+c        subroutine nos_check_dimension(iunit,nknddi,nelddi,nlvddi)
 c
 c        subroutine nos_get_date(iunit,date,time)
 c        subroutine nos_set_date(iunit,date,time)
@@ -36,8 +36,8 @@ c        subroutine nos_read_header(iunit,nkn,nel,nlv,nvar,ierr)
 c        subroutine nos_write_header(iunit,nkn,nel,nlv,nvar,ierr)
 c        subroutine nos_read_header2(iu,ilhkv,hlv,hev,ierr)
 c        subroutine nos_write_header2(iunit,ilhkv,hlv,hev,ierr)
-c        subroutine nos_read_record(iu,it,ivar,nlvdim,ilhkv,c,ierr)
-c        subroutine nos_write_record(iunit,it,ivar,nlvdim,ilhkv,c,ierr)
+c        subroutine nos_read_record(iu,it,ivar,nlvddi,ilhkv,c,ierr)
+c        subroutine nos_write_record(iunit,it,ivar,nlvddi,ilhkv,c,ierr)
 c
 c        subroutine nos_back_record(iunit)
 c        subroutine nos_skip_header(iunit,nvar,ierr)
@@ -277,27 +277,27 @@ c please note that the file has still to be closed manually
 
 c************************************************************
 
-	subroutine dimnos(iunit,nkndim,neldim,nlvdim)
+	subroutine dimnos(iunit,nknddi,nelddi,nlvddi)
 
 c checks dimension of arrays - internal routine
 
 	implicit none
 
-	integer iunit,nkndim,neldim,nlvdim
+	integer iunit,nknddi,nelddi,nlvddi
 
 	integer nvers,nkn,nel,nlv,nvar
 
 	call getnos(iunit,nvers,nkn,nel,nlv,nvar)
 
-        if( nkn .gt. nkndim ) goto 99
-        if( nel .gt. neldim ) goto 99
-        if( nlv .gt. nlvdim ) goto 99
+        if( nkn .gt. nknddi ) goto 99
+        if( nel .gt. nelddi ) goto 99
+        if( nlv .gt. nlvddi ) goto 99
 
 	return
    99   continue
-        write(6,*) 'nkn,nkndim : ',nkn,nkndim
-        write(6,*) 'nel,neldim : ',nel,neldim
-        write(6,*) 'nlv,nlvdim : ',nlv,nlvdim
+        write(6,*) 'nkn,nknddi : ',nkn,nknddi
+        write(6,*) 'nel,nelddi : ',nel,nelddi
+        write(6,*) 'nlv,nlvddi : ',nlv,nlvddi
         stop 'error stop dimnos: dimension error'
 	end
 
@@ -470,13 +470,13 @@ c************************************************************
 
 c************************************************************
 
-	subroutine nos_check_dimension(iunit,nkndim,neldim,nlvdim)
+	subroutine nos_check_dimension(iunit,nknddi,nelddi,nlvddi)
 
 	implicit none
 
-	integer iunit,nkndim,neldim,nlvdim
+	integer iunit,nknddi,nelddi,nlvddi
 
-	call dimnos(iunit,nkndim,neldim,nlvdim)
+	call dimnos(iunit,nknddi,nelddi,nlvddi)
 
 	end
 
@@ -932,7 +932,7 @@ c write records
 
 c************************************************************
 
-	subroutine nos_read_record(iu,it,ivar,nlvdim,ilhkv,c,ierr)
+	subroutine nos_read_record(iu,it,ivar,nlvddi,ilhkv,c,ierr)
 
 c reads data record of NOS file
 
@@ -940,9 +940,9 @@ c reads data record of NOS file
 
 c arguments
 	integer iu,it,ivar
-	integer nlvdim
+	integer nlvddi
 	integer ilhkv(1)
-	real c(nlvdim,1)
+	real c(nlvddi,1)
 	integer ierr
 c local
 	integer l,k,lmax
@@ -955,7 +955,7 @@ c local
 
 	call getnos(iunit,nvers,nkn,nel,nlv,nvar)
 
-	lmax = min(nlv,nlvdim)
+	lmax = min(nlv,nlvddi)
 
 	if( nvers .eq. 1 ) then
 	   ivar = 1
@@ -1006,7 +1006,7 @@ c local
 
 c************************************************************
 
-	subroutine nos_write_record(iunit,it,ivar,nlvdim,ilhkv,c,ierr)
+	subroutine nos_write_record(iunit,it,ivar,nlvddi,ilhkv,c,ierr)
 
 c writes data record of NOS file
 
@@ -1014,9 +1014,9 @@ c writes data record of NOS file
 
 c arguments
 	integer iunit,it,ivar
-	integer nlvdim
+	integer nlvddi
 	integer ilhkv(1)
-	real c(nlvdim,1)
+	real c(nlvddi,1)
 	integer ierr
 c local
 	integer l,k,lmax
@@ -1024,7 +1024,7 @@ c local
 
 	call getnos(iunit,nvers,nkn,nel,nlv,nvar)
 
-	lmax = min(nlv,nlvdim)
+	lmax = min(nlv,nlvddi)
 
 	write(iunit) it,ivar,lmax
 
@@ -1083,12 +1083,12 @@ c************************************************************
 
 	integer iunit,it,ivar,ierr
 
-	integer nlvdim
+	integer nlvddi
 	integer ilhkv(1)
 	real c(1,1)
 
-	nlvdim = 1
-	call nos_read_record(-iunit,it,ivar,nlvdim,ilhkv,c,ierr)
+	nlvddi = 1
+	call nos_read_record(-iunit,it,ivar,nlvddi,ilhkv,c,ierr)
 
 	end
 
@@ -1101,7 +1101,7 @@ c************************************************************
 c************************************************************
 
 	subroutine rhnos	(iunit,nvers
-     +				,nkndim,neldim,nlvdim
+     +				,nknddi,nelddi,nlvddi
      +				,nkn,nel,nlv,nvar
      +				,ilhkv,hlv,hev
      +				,title
@@ -1118,7 +1118,7 @@ c		on return actual version read
 
 c arguments
 	integer iunit,nvers
-	integer nkndim,neldim,nlvdim
+	integer nknddi,nelddi,nlvddi
 	integer nkn,nel,nlv,nvar
 	integer date,time
 	integer ilhkv(1)
@@ -1139,7 +1139,7 @@ c local
         write(6,*) 'date,time: ',date,time
         write(6,*) 'title    : ',title
 
-        call dimnos(iunit,nkndim,neldim,nlvdim)
+        call dimnos(iunit,nknddi,nelddi,nlvddi)
 
         call rsnos(iunit,ilhkv,hlv,hev,ierr)
         if(ierr.ne.0) goto 98
@@ -1277,33 +1277,33 @@ c************************************************************
 
 c************************************************************
 
-	subroutine rdnos(iunit,it,ivar,nlvdim,ilhkv,c,ierr)
+	subroutine rdnos(iunit,it,ivar,nlvddi,ilhkv,c,ierr)
 
 	implicit none
 
 	integer iunit,it,ivar
-	integer nlvdim
+	integer nlvddi
 	integer ilhkv(1)
-	real c(nlvdim,1)
+	real c(nlvddi,1)
 	integer ierr
 
-	call nos_read_record(iunit,it,ivar,nlvdim,ilhkv,c,ierr)
+	call nos_read_record(iunit,it,ivar,nlvddi,ilhkv,c,ierr)
 
 	end
 
 c************************************************************
 
-	subroutine wrnos(iunit,it,ivar,nlvdim,ilhkv,c,ierr)
+	subroutine wrnos(iunit,it,ivar,nlvddi,ilhkv,c,ierr)
 
 	implicit none
 
 	integer iunit,it,ivar
-	integer nlvdim
+	integer nlvddi
 	integer ilhkv(1)
-	real c(nlvdim,1)
+	real c(nlvddi,1)
 	integer ierr
 
-	call nos_write_record(iunit,it,ivar,nlvdim,ilhkv,c,ierr)
+	call nos_write_record(iunit,it,ivar,nlvddi,ilhkv,c,ierr)
 
 	end
 

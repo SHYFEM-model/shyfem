@@ -181,6 +181,7 @@
 !
 !-----------------------------------------------------------------------
 !BOC
+   x = 0.
    select case (eq_state_mode)
       case(1)
       select case (eq_state_method)

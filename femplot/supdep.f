@@ -8,7 +8,7 @@ c
 c subroutine mkhkv(hkv,auxv,nkn,nel)	makes hkv (nodewise depth)
 c subroutine mkhev(hev,nel)		makes hev (elementwise depth)
 c subroutine mkht(hetv,href)		makes hetv (elem depth of actual layer)
-c subroutine mkht3(nlvdi,het3v,href)	makes het3v (3D depth structure)
+c subroutine mkht3(nlvddi,het3v,href)	makes het3v (3D depth structure)
 c function hlthick(l,lmax,hl)		layer thickness
 c
 c revision log :
@@ -37,9 +37,9 @@ c common
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'basin.h'
 	include 'depth.h'
-	include 'aux_array.h'
 c local
 	integer ie,ii,k,kn
+	real v1v(nkn)
 
         do k=1,nkn
           hkv(k) = 0.
@@ -109,7 +109,6 @@ c common
 	include 'depth.h'
 	include 'levels.h'
 	include 'hydro.h'
-	include 'aux_array.h'
 c local
 	logical bdebug
 	integer ie,ii
@@ -165,15 +164,15 @@ c-------------------------------------------------------------------
 
 c******************************************************************
 
-	subroutine mkht3(nlvdi,het3v,href)
+	subroutine mkht3(nlvddi,het3v,href)
 
 c makes het3v (3D depth structure)
 
 	implicit none
 
 c arguments
-	integer nlvdi
-	real het3v(nlvdi,1)
+	integer nlvddi
+	real het3v(nlvddi,1)
 	real href
 c common
 	include 'param.h' !COMMON_GGU_SUBST

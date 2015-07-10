@@ -58,6 +58,7 @@ c common
 
 	include 'hydro_vel.h'
 	include 'plot_aux.h'
+	include 'plot_aux_3d.h'
 
 c local
 	logical byaron

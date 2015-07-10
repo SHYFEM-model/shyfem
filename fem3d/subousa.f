@@ -91,7 +91,7 @@ c writes and administers ous file
 
 	if( .not. next_output(ia_out) ) return
 
-	call ous_write_record(nbout,it,nlvdim,ilhv,znv,zenv
+	call ous_write_record(nbout,it,nlvdi,ilhv,znv,zenv
      +					,utlnv,vtlnv,ierr)
 	if(ierr.ne.0.) goto 79
 

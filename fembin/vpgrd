@@ -56,6 +56,7 @@ fi
 dir=`dirname $1`
 name=`basename $1 .grd`
 file=$dir/$name.grd
+filen=$dir/$name
 
 if [ ! -f $file ]; then
   echo "No such file: $file"
@@ -79,7 +80,7 @@ fi
 
 ##################################### run vp
 
-echo $name > vpinput.tmp		# name of basin
+echo $filen > vpinput.tmp		# name of basin
 echo $opt >> vpinput.tmp		# optimization
 echo "YES" >> vpinput.tmp		# automatic optimization
 

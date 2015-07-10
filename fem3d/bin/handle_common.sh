@@ -7,9 +7,10 @@
 bindir=/home/georg/fem/fem3d/bin
 
 what=$1
-files=$2
+shift
+files=$*
 
-if [ -z "$2" ]; then
+if [ -z "$files" ]; then
   files=`ls *.f`
 fi
 

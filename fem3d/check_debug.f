@@ -16,20 +16,31 @@ c checks two files written with check_debug from ht
 	integer nf1,nf2,nf
 	integer nrec
 	integer i,idiff,idiff_tot
+	integer nc
 
 	real val1(ndim)
 	real val2(ndim)
 
 	bstop = .false.			!stop on error
 	bstop = .true.			!stop on error
+	bverbose = .true.		!only write error
 	bverbose = .false.		!only write error
 	bcheck = .true.			!check for differences
 
-	name_one = 'debug_one.dat'
-	name_two = 'debug_two.dat'
+	nc = command_argument_count()
+	if( nc .ne. 2 ) then
+	  write(6,*) 'Usage: check_debug file1 file2'
+	  stop 'error stop check_debug: no files given'
+	end if
+
+	call get_command_argument(1,name_one)
+	call get_command_argument(2,name_two)
 
 	open(1,file=name_one,status='old',form='unformatted')
 	open(2,file=name_two,status='old',form='unformatted')
+
+	write(6,*) 'file 1: ',trim(name_one)
+	write(6,*) 'file 2: ',trim(name_two)
 
 	idiff_tot = 0
 
@@ -40,7 +51,6 @@ c checks two files written with check_debug from ht
 	  if( it1 .ne. it2 ) goto 99
 	  it = it1
 	  write(6,*) 'time = ',it
-
 
 	  nrec = 0
 	  do while(.true.)

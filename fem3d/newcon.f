@@ -70,9 +70,6 @@ c
 c subroutine stb_histo(it,nlvddi,nkn,ilhkv,cwrite)
 c		writes histogram info about stability index
 c
-c subroutine const3d_setup
-c		sets up constant 3D array
-c
 c-------------------------------------------------------------
 c
 c notes:
@@ -200,7 +197,7 @@ c shell for scalar (for parallel version)
 	include 'femtime.h'
 	include 'nlevel.h'
 
-	include 'const_aux.h'
+	!include 'const_aux.h'
 
         real r3v(nlvdim,nkndim)
         real caux(0:nlvdim,nkndim)
@@ -214,7 +211,6 @@ c shell for scalar (for parallel version)
 
 	robs = 0.
 	rload = 0.
-	!call const3d_setup
 	caux = 1.
 	cobs = 1.
 	load = 1.
@@ -286,7 +282,7 @@ c shell for scalar with nudging (for parallel version)
 	include 'nlevel.h'
 	include 'levels.h'
 
-	include 'const_aux.h'
+	!include 'const_aux.h'
 
         real r3v(nlvdim,nkndim)
         real caux(0:nlvdim,nkndim)
@@ -300,7 +296,6 @@ c shell for scalar with nudging (for parallel version)
 	character*10 whatvar,whataux
 
 	rload = 0.
-	!call const3d_setup
 	caux = 1.
 	load = 1.
 
@@ -2234,34 +2229,3 @@ c writes histogram info about stability index
 
 c*****************************************************************
 
-        subroutine const3d_setup
-
-c sets up constant 3D array
-
-        implicit none
-
-        include 'param.h'
-
-	include 'nbasin.h'
-
-	include 'const_aux.h'
-
-        integer k,l
-
-        integer icall
-        save icall
-        data icall /0/
-
-        if( icall .gt. 0 ) return
-
-        do k=1,nkn
-          do l=0,nlvdim
-            const3d(l,k) = 1.
-          end do
-        end do
-
-        icall = 1
-
-        end
-
-c*****************************************************************

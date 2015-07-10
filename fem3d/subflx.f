@@ -8,7 +8,7 @@ c
 c	subroutine iniflx
 c
 c	subroutine rfflx	(iunit,nvers
-c     +				,nscdim,kfxdim,nlvdim
+c     +				,nscdim,kfxdim,nlvddi
 c     +				,nsect,kfluxm,idtflx,nlmax
 c     +				,kflux
 c     +				,nlayers
@@ -18,8 +18,8 @@ c     +				,nsect,kfluxm,idtflx,nlmax
 c     +				,kflux
 c     +				,nlayers
 c     +				)
-c	subroutine rdflx(iunit,it,nlvdim,nsect,nlayers,fluxes,ierr)
-c	subroutine wrflx(iunit,it,nlvdim,nsect,nlayers,fluxes)
+c	subroutine rdflx(iunit,it,nlvddi,nsect,nlayers,fluxes,ierr)
+c	subroutine wrflx(iunit,it,nlvddi,nsect,nlayers,fluxes)
 c
 c revision log :
 c
@@ -65,7 +65,7 @@ c************************************************************
 c************************************************************
 
 	subroutine rfflx	(iunit,nvers
-     +				,nscdim,kfxdim,nlvdim
+     +				,nscdim,kfxdim,nlvddi
      +				,nsect,kfluxm,idtflx,nlmax
      +				,kflux
      +				,nlayers
@@ -82,7 +82,7 @@ c		on return actual version read
 
 c arguments
 	integer iunit,nvers
-	integer nscdim,kfxdim,nlvdim
+	integer nscdim,kfxdim,nlvddi
 	integer nsect,kfluxm,idtflx,nlmax
 	integer kflux(1)
 	integer nlayers(1)
@@ -149,9 +149,9 @@ c next records
 	  read(iunit,err=99)	(nlayers(i),i=1,nsect)
 	end if
 
-	if( nlmax .gt. nlvdim ) then
-	  write(6,*) 'nlvdim,nlmax: ',nlvdim,nlmax
-	  stop 'error stop rfflx: dimension nlvdim'
+	if( nlmax .gt. nlvddi ) then
+	  write(6,*) 'nlvddi,nlmax: ',nlvddi,nlmax
+	  stop 'error stop rfflx: dimension nlvddi'
 	end if
 
 	return
@@ -231,7 +231,7 @@ c control newest version number for call
 
 c************************************************************
 
-	subroutine rdflx(iunit,it,nlvdim,nsect,ivar,nlayers,fluxes,ierr)
+	subroutine rdflx(iunit,it,nlvddi,nsect,ivar,nlayers,fluxes,ierr)
 
 c reads data record of FLX file
 
@@ -239,11 +239,11 @@ c reads data record of FLX file
 
 c arguments
 	integer iunit,it
-	integer nlvdim
+	integer nlvddi
 	integer nsect
 	integer ivar
 	integer nlayers(1)
-	real fluxes(0:nlvdim,3,1)
+	real fluxes(0:nlvddi,3,1)
 	integer ierr
 c common
 	integer mtype,maxver,vers
@@ -289,7 +289,7 @@ c local
 
 c************************************************************
 
-	subroutine wrflx(iunit,it,nlvdim,nsect,ivar,nlayers,fluxes)
+	subroutine wrflx(iunit,it,nlvddi,nsect,ivar,nlayers,fluxes)
 
 c writes data record of FLX file
 
@@ -297,11 +297,11 @@ c writes data record of FLX file
 
 c arguments
 	integer iunit,it
-	integer nlvdim
+	integer nlvddi
 	integer nsect
 	integer ivar
 	integer nlayers(1)
-	real fluxes(0:nlvdim,3,1)
+	real fluxes(0:nlvddi,3,1)
 c common
 	integer mtype,maxver,vers
 	common /flxcom/ mtype,maxver,vers

@@ -30,7 +30,7 @@ c		...unveraendert lassen
 c nhil    anzahl der indexpaare auf khil (max. ndim)
 c kvert		indexpaare die bereits miteinander
 c		...vertauscht worden sind
-c nvert		anzahl der indexpaare auf kvert (max. nkndim)
+c nvert		anzahl der indexpaare auf kvert (max. nkn)
 c		...wird auf 0 gesetzt wenn es gelingt zwei
 c		...indizes zu vertauschen bei denen die
 c		...bandbreite erniedrigt wird

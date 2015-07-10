@@ -94,7 +94,7 @@ c************************************************************
 	subroutine fem_file_write_header(iformat,iunit,it
      +				,nvers,np,lmax
      +				,nvar,ntype
-     +				,nlvdim,hlv,datetime,regpar)
+     +				,nlvddi,hlv,datetime,regpar)
 
 c writes header of fem file
 
@@ -108,8 +108,8 @@ c writes header of fem file
 	integer lmax		!maximum vertical values (1 for 2d)
 	integer nvar		!number of variables to write
 	integer ntype		!type of information contained
-	integer nlvdim		!vertical dimension of data
-	real hlv(nlvdim)	!depth at bottom of layer
+	integer nlvddi		!vertical dimension of data
+	real hlv(nlvddi)	!depth at bottom of layer
 	integer datetime(2)	!date and time parameters
 	real regpar(7)		!parameters for regular field
 
@@ -224,7 +224,7 @@ c************************************************************
      +				,nvers,np,lmax
      +				,string
      +				,ilhkv,hd
-     +				,nlvdim,data)
+     +				,nlvddi,data)
 
 c writes data of the file
 
@@ -238,8 +238,8 @@ c writes data of the file
 	character*(*) string	!string explanation
 	integer ilhkv(np)	!number of layers in point k (node)
 	real hd(np)		!total depth
-	integer nlvdim		!vertical dimension of data
-	real data(nlvdim,np)	!data
+	integer nlvddi		!vertical dimension of data
+	real data(nlvddi,np)	!data
 
 	logical b2d
 	integer k,lm,l,nv
@@ -808,7 +808,7 @@ c************************************************************
      +				,nvers,np,lmax
      +				,string
      +				,ilhkv,hd
-     +				,nlvdim,data
+     +				,nlvddi,data
      +				,ierr)
 
 c reads data of the file
@@ -823,8 +823,8 @@ c reads data of the file
 	character*(*) string	!string explanation
 	integer ilhkv(np)	!number of layers in point k (node)
 	real hd(np)		!total depth
-	integer nlvdim		!vertical dimension of data
-	real data(nlvdim,np)	!data
+	integer nlvddi		!vertical dimension of data
+	real data(nlvddi,np)	!data
 	integer ierr		!return error code
 
 	logical b2d

@@ -122,6 +122,7 @@ param:
 
 directories:
 	-mkdir -p tmp
+	-mkdir -p femlib/mod
 
 links:
 	-rm -f bin lib

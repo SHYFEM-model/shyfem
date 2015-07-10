@@ -22,9 +22,9 @@ c
 c subroutine init_scal_bc(r3v)		initializes array for scalar BC
 c subroutine mult_scal_bc(r3v,value)	multiplies array for scalar BC by value
 c 
-c subroutine dist_3d(nlvdim,r3v,kn,nbdim,values)
-c subroutine dist_horizontal(nlvdim,r3v,n,value)
-c subroutine aver_horizontal(nlvdim,r3v,n,value)
+c subroutine dist_3d(nlvddi,r3v,kn,nbdim,values)
+c subroutine dist_horizontal(nlvddi,r3v,n,value)
+c subroutine aver_horizontal(nlvddi,r3v,n,value)
 c
 c subroutine print_scal_bc(r3v)		prints non-flag entries of scalar BC
 c subroutine get_bflux(k,flux)		returns boundary flux of node k
@@ -232,9 +232,11 @@ c	-----------------------------------------------------
 	dtime0 = itanf
 	nvar = 1
 	vconst = 0.
+	ids = 0
 
 	do ibc=1,nbc
           nk = nkbnds(ibc)
+	  if( nk .le. 0 ) cycle
 	  do i=1,nk
             nodes(i) = kbnds(ibc,i)
 	  end do
@@ -244,8 +246,8 @@ c	-----------------------------------------------------
 	  if( intpol .le. 0 ) then
 	    intpol = 2
 	    if( ibtyp .eq. 1 ) intpol = 4
-	    write(6,*) 'sp111: (ibc,ibtyp,intpol) ',ibc,ibtyp,intpol
 	  end if
+	  write(6,*) 'sp111: (ibc,ibtyp,intpol) ',ibc,ibtyp,intpol
           call iff_init(dtime0,zfile,nvar,nk,0,intpol
      +                          ,nodes,vconst,id)
 	  if( ibtyp .le. 0 ) then
@@ -277,9 +279,10 @@ c	-----------------------------------------------------
 	do ibc=1,nbc
 	  ibtyp=itybnd(ibc)
 	  nk = nkbnds(ibc)
+	  id = ids(ibc)
+	  if( id .le. 0 ) cycle
 
 	  if(const.eq.flag.and.ibtyp.eq.1) then
-	        id = ids(ibc)
 	        call iff_read_and_interpolate(id,dtime)
 	        call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
 	  	call adjust_bound(id,ibc,it,nk,rwv2)
@@ -354,17 +357,19 @@ c	-----------------------------------------------------
           call get_bnd_ipar(ibc,'ibtyp',ibtyp)
           call get_bnd_ipar(ibc,'levflx',levflx)
           call get_bnd_par(ibc,'tramp',tramp)
+	  id = ids(ibc)
+
+	  if( ibtyp .le. 0 ) cycle
+	  if( id .le. 0 ) cycle
 
           nk = nkbnds(ibc)   !total number of nodes of this boundary
 
 	  rmu = 0.
 	  rmv = 0.
 
-	  id = ids(ibc)
 	  call iff_read_and_interpolate(id,dtime)
 	  call iff_time_interpolate(id,dtime,ivar,nk,lmax,rwv2)
 	  call adjust_bound(id,ibc,it,nk,rwv2)
-	  if( ibtyp .eq. 0 ) nk = 0	!switched off
 
 	  alpha = 1.
 	  if( tramp .gt. 0. .and. it-itanf .le. tramp ) then
@@ -645,7 +650,7 @@ c finds tilting node in boundary node list
 	call get_bnd_ipar(ibc,'ktilt',ktilt)
 	if(ktilt.le.0) return
 
-        call kanfend(ibc,kranf,krend)
+	call kanfend(ibc,kranf,krend)
 
 	berr = .true.
 	do i=kranf,krend
@@ -798,9 +803,8 @@ c sets up (water) mass flux array mfluxv (3d) and rqv (vertically integrated)
 	include 'param.h'
 	include 'nbasin.h'
 
-	include 'nlevel.h'
-
 	include 'levels.h'
+	include 'nlevel.h'
 	include 'bound_dynamic.h'
 
 	logical debug
@@ -808,7 +812,7 @@ c sets up (water) mass flux array mfluxv (3d) and rqv (vertically integrated)
 	integer ibtyp,levmax,levmin
 	integer nbc
 	real flux,vol,voltot,fluxtot,fluxnode
-	real vols(nkndim)
+	real vols(nkn)
 
 	integer nkbnds,kbnds,nbnds
 	real volnode		!function to compute volume of node
@@ -965,17 +969,17 @@ c computes scalar flux from fluxes and concentrations
 	implicit none
 
 	include 'param.h'
+	include 'nlevel.h'
 
 	character*(*) what
-	real r3v(nlvdim,1)	!concentration for boundary condition
-	real scal(nlvdim,1)	!concentration of scalar
-	real sflux(nlvdim,1)	!mass flux for each finite volume (return)
-	real sconz(nlvdim,1)	!concentration for each finite volume (return)
+	real r3v(nlvdi,1)	!concentration for boundary condition
+	real scal(nlvdi,1)	!concentration of scalar
+	real sflux(nlvdi,1)	!mass flux for each finite volume (return)
+	real sconz(nlvdi,1)	!concentration for each finite volume (return)
 	real ssurf		!value of scalar for surface flux
 
 	include 'nbasin.h'
 	include 'mkonst.h'
-	include 'nlevel.h'
 
 	include 'levels.h'
 	include 'bound_dynamic.h'
@@ -1039,11 +1043,12 @@ c**********************************************************************
 	implicit none
 
 	include 'param.h'
+	include 'nlevel.h'
 
 	character*(*) what
-	real mfluxv(nlvdim,1)	!mass flux
-	real sflux(nlvdim,1)	!scalar flux
-	real sconz(nlvdim,1)	!concentration for each finite volume
+	real mfluxv(nlvdi,1)	!mass flux
+	real sflux(nlvdi,1)	!scalar flux
+	real sconz(nlvdi,1)	!concentration for each finite volume
 
 	include 'nbasin.h'
 	include 'femtime.h'
@@ -1086,15 +1091,15 @@ c checks scalar flux
 	implicit none
 
 	include 'param.h'
+	include 'nlevel.h'
 
 	character*(*) what
-	real scal(nlvdim,1)	!concentration of scalar
-	real sconz(nlvdim,1)	!concentration for each finite volume
+	real scal(nlvdi,1)	!concentration of scalar
+	real sconz(nlvdi,1)	!concentration for each finite volume
 
 	include 'nbasin.h'
 	include 'mkonst.h'
 	include 'femtime.h'
-	include 'nlevel.h'
 
 	include 'levels.h'
 	include 'bound_dynamic.h'
@@ -1133,7 +1138,7 @@ c initializes array for scalar boundary condition
 
 	include 'param.h'
 
-	real r3v(nlvdim,nkndim)
+	real r3v(nlvdi,nkn)
 
 	include 'nbasin.h'
 	include 'nlevel.h'
@@ -1159,7 +1164,7 @@ c multiplies array for scalar boundary condition with value
 
 	include 'param.h'
 
-	real r3v(nlvdim,nkndim)
+	real r3v(nlvdi,nkn)
 	real value
 
 	include 'nbasin.h'
@@ -1179,12 +1184,12 @@ c multiplies array for scalar boundary condition with value
 
 c*******************************************************************
 
-	subroutine dist_3d(nlvdim,r3v,kn,nbdim,values)
+	subroutine dist_3d(nlvddi,r3v,kn,nbdim,values)
 
 	implicit none
 
-	integer nlvdim
-	real r3v(nlvdim,1)
+	integer nlvddi
+	real r3v(nlvddi,1)
 	integer kn
 	integer nbdim
 	real values(1)
@@ -1194,14 +1199,14 @@ c*******************************************************************
 	if( nbdim .eq. 0 ) then
 	  lmax = 1
 	else
-	  lmax = min(nbdim,nlvdim)
+	  lmax = min(nbdim,nlvddi)
 	end if
 
 	do l=1,lmax
 	  r3v(l,kn) = values(l)
 	end do
 	  
-	do l=lmax+1,nlvdim
+	do l=lmax+1,nlvddi
 	  !r3v(l,kn) = values(nbdim)	!BUGFIX
 	  r3v(l,kn) = r3v(lmax,kn)
 	end do
@@ -1210,12 +1215,12 @@ c*******************************************************************
 
 c**********************************************************************
 
-	subroutine dist_horizontal(nlvdim,r3v,n,value)
+	subroutine dist_horizontal(nlvddi,r3v,n,value)
 
 	implicit none
 
-	integer nlvdim
-	real r3v(nlvdim,1)
+	integer nlvddi
+	real r3v(nlvddi,1)
 	integer n
 	real value
 
@@ -1229,12 +1234,12 @@ c**********************************************************************
 
 c**********************************************************************
 
-        subroutine aver_horizontal(nlvdim,r3v,n,value)
+        subroutine aver_horizontal(nlvddi,r3v,n,value)
 
         implicit none
 
-        integer nlvdim
-        real r3v(nlvdim,1)
+        integer nlvddi
+        real r3v(nlvddi,1)
         integer n
         real value
 
@@ -1258,7 +1263,7 @@ c prints non-flag entries of array for scalar boundary condition
 
 	include 'param.h'
 
-	real r3v(nlvdim,nkndim)
+	real r3v(nlvdi,nkn)
 
 	include 'nbasin.h'
 	include 'nlevel.h'

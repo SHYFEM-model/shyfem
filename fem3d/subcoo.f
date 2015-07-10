@@ -15,6 +15,7 @@ c
 ! construct pointers for co matrix
 
 	implicit none
+	include 'param.h'
 	include 'common.h'
 
 	integer nnel,nnkn,mmbw		!size of elements, nodes, bandwidth
@@ -183,6 +184,7 @@ c
 ! internal routine for insertion of non 0 elements
 
 	implicit none
+	include 'param.h'
 	include 'common.h'
 
 	integer k1,k2,n,nnkn,mmbw
@@ -226,6 +228,7 @@ c
 c localize for COO routines
 
 	implicit none
+	include 'param.h'
 	include 'common.h'
 
 	integer loccoo			!position

@@ -9,14 +9,14 @@ c subroutine inieos
 c subroutine seteos(iunit,nvers,nkn,nel,nlv,nvar)
 c subroutine geteos(iunit,nvers,nkn,nel,nlv,nvar)
 c
-c subroutine dimeos(iunit,nkndim,neldim,nlvdim)
+c subroutine dimeos(iunit,nknddi,nelddi,nlvddi)
 c
 c subroutine rfeos(iunit,nvers,nkn,nel,nlv,nvar,title,ierr)
 c subroutine wfeos(iunit,nvers,nkn,nel,nlv,nvar,title,ierr)
 c subroutine rseos(iunit,ilhv,hlv,hev,ierr)
 c subroutine wseos(iunit,ilhv,hlv,hev,ierr)
-c subroutine rdeos(iunit,it,ivar,nlvdim,ilhv,c,ierr)
-c subroutine wreos(iunit,it,ivar,nlvdim,ilhv,c,ierr)
+c subroutine rdeos(iunit,it,ivar,nlvddi,ilhv,c,ierr)
+c subroutine wreos(iunit,it,ivar,nlvddi,ilhv,c,ierr)
 c
 c revision log :
 c
@@ -221,28 +221,28 @@ c common
 
 c************************************************************
 
-	subroutine dimeos(iunit,nkndim,neldim,nlvdim)
+	subroutine dimeos(iunit,nknddi,nelddi,nlvddi)
 
 c checks dimension of arrays
 
 	implicit none
 
 c arguments
-	integer iunit,nkndim,neldim,nlvdim
+	integer iunit,nknddi,nelddi,nlvddi
 c local
 	integer nvers,nkn,nel,nlv,nvar
 
 	call geteos(iunit,nvers,nkn,nel,nlv,nvar)
 
-        if( nkn .gt. nkndim ) goto 99
-        if( nel .gt. neldim ) goto 99
-        if( nlv .gt. nlvdim ) goto 99
+        if( nkn .gt. nknddi ) goto 99
+        if( nel .gt. nelddi ) goto 99
+        if( nlv .gt. nlvddi ) goto 99
 
 	return
    99   continue
-        write(6,*) 'nkn,nkndim : ',nkn,nkndim
-        write(6,*) 'nel,neldim : ',nel,neldim
-        write(6,*) 'nlv,nlvdim : ',nlv,nlvdim
+        write(6,*) 'nkn,nknddi : ',nkn,nknddi
+        write(6,*) 'nel,nelddi : ',nel,nelddi
+        write(6,*) 'nlv,nlvddi : ',nlv,nlvddi
         stop 'error stop dimeos: dimension error'
 	end
 
@@ -512,7 +512,7 @@ c write records
 
 c************************************************************
 
-	subroutine rdeos(iunit,it,ivar,nlvdim,ilhv,c,ierr)
+	subroutine rdeos(iunit,it,ivar,nlvddi,ilhv,c,ierr)
 
 c reads data record of EOS file
 
@@ -520,9 +520,9 @@ c reads data record of EOS file
 
 c arguments
 	integer iunit,it,ivar
-	integer nlvdim
+	integer nlvddi
 	integer ilhv(1)
-	real c(nlvdim,1)
+	real c(nlvddi,1)
 	integer ierr
 c common
 	integer mtype,maxver
@@ -566,7 +566,7 @@ c local
 
 c************************************************************
 
-	subroutine wreos(iunit,it,ivar,nlvdim,ilhv,c,ierr)
+	subroutine wreos(iunit,it,ivar,nlvddi,ilhv,c,ierr)
 
 c writes data record of EOS file
 
@@ -574,9 +574,9 @@ c writes data record of EOS file
 
 c arguments
 	integer iunit,it,ivar
-	integer nlvdim
+	integer nlvddi
 	integer ilhv(1)
-	real c(nlvdim,1)
+	real c(nlvddi,1)
 	integer ierr
 c common
 	integer mtype,maxver
@@ -603,7 +603,7 @@ c local
 c************************************************************
 
 	subroutine rheos	(iunit,nvers
-     +				,nkndim,neldim,nlvdim
+     +				,nknddi,nelddi,nlvddi
      +				,nkn,nel,nlv,nvar
      +				,ilhv,hlv,hev
      +				,title
@@ -620,7 +620,7 @@ c		on return actual version read
 
 c arguments
 	integer iunit,nvers
-	integer nkndim,neldim,nlvdim
+	integer nknddi,nelddi,nlvddi
 	integer nkn,nel,nlv,nvar
 	integer ilhv(1)
 	real hlv(1)
@@ -637,7 +637,7 @@ c local
         write(6,*) 'nlv,nvar : ',nlv,nvar
         write(6,*) 'title    : ',title
 
-        call dimeos(iunit,nkndim,neldim,nlvdim)
+        call dimeos(iunit,nknddi,nelddi,nlvddi)
 
         call rseos(iunit,ilhv,hlv,hev,ierr)
         if(ierr.ne.0) goto 98

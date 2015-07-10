@@ -20,7 +20,7 @@ c 09.12.2008    ggu     small changes to Makefile
 c 26.01.2009    ggu     makedepend, compiler warnings
 c 06.04.2009    ggu     new param.h, include basin.h, better error handling
 c 24.04.2009    ggu     new call to rdgrd()
-c 30.03.2012    ggu     new call to nodeinfo() (was bug)
+c 30.03.2012    ggu     new call to node_info() (was bug)
 c
 c notes :
 c
@@ -126,7 +126,7 @@ c make boundary nodes (flag nbound)
         call mkstatic(nkn,ianv,nbound)
 	call stats('boundary nodes')
 
-	call nodeinfo(kspecial)
+	call node_info(kspecial)
 
 c plot grade
 
@@ -143,7 +143,7 @@ c eliminate 4- grades
 	call elimlow
 	if( bplot) call plobas
 	call stats('4- grades')
-	call nodeinfo(kspecial)
+	call node_info(kspecial)
 
 c eliminate 8+ grades
 
@@ -154,7 +154,7 @@ c eliminate 8+ grades
 
 	write(6,*) 'checking after 8+'
 	call chkgrd
-	call nodeinfo(kspecial)
+	call node_info(kspecial)
 
 c eliminate 7+ grades
 
@@ -165,15 +165,15 @@ c eliminate 7+ grades
 
 	write(6,*) 'checking after 7+'
 	call chkgrd
-	call nodeinfo(kspecial)
+	call node_info(kspecial)
 
 c smoothing
 
-	call wrgrd('new_nosmooth.grd')
+	call write_grid('new_nosmooth.grd')
 
-        call smooth(50,0.1)
+        call smooth_grid(50,0.1)
 	if( bplot) call plobas
-	call nodeinfo(kspecial)
+	call node_info(kspecial)
 
 c again ...
 
@@ -183,11 +183,11 @@ c again ...
 	call elimhigh(7)
 	if( bplot) call plobas
 	call stats('one more time')
-	call nodeinfo(kspecial)
+	call node_info(kspecial)
 
 c eliminate 5 grades
 
-	call wrgrd('new_help.grd')
+	call write_grid('new_help.grd')
 
 	call chkgrd
 	call elim5
@@ -196,7 +196,7 @@ c eliminate 5 grades
 
 	write(6,*) 'checking after 5'
 	call chkgrd
-	call nodeinfo(kspecial)
+	call node_info(kspecial)
 
 c eliminate 5-5 grades
 
@@ -206,7 +206,7 @@ c eliminate 5-5 grades
 
 	write(6,*) 'checking after 5-5'
 	call chkgrd
-	call nodeinfo(kspecial)
+	call node_info(kspecial)
 
 c one more time
 
@@ -217,19 +217,19 @@ c one more time
         call elim57
         call stats('all again')
 	call chkgrd
-	call nodeinfo(kspecial)
+	call node_info(kspecial)
 
 c smoothing
 
-        call smooth(50,0.1)
+        call smooth_grid(50,0.1)
 	if( bplot) call plobas
-	call nodeinfo(kspecial)
+	call node_info(kspecial)
 
 c write to grd file
 
 	call chkgrd
-	call nodeinfo(kspecial)
-	call wrgrd('new.grd')
+	call node_info(kspecial)
+	call write_grid('new.grd')
 
 	call qclose
 

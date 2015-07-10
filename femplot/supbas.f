@@ -154,7 +154,7 @@ c**************************************************************
 	  call setgeo(x,y,dxygrd,dxygrd,-999.)
 
 	  call annote		!annotation
-	  call basin(0)		!scaling
+	  call plot_basin(0)	!scaling
 	  call label_reg_grid
 	  call plot_islands(cgray)
 
@@ -171,7 +171,7 @@ c**************************************************************
 !--------------------------------------
 
         call qcomm('Plotting basin')
-        call basin(mode)
+        call plot_basin(mode)
 
 !--------------------------------------
 ! end of plot - now only labeling
@@ -242,7 +242,7 @@ c**************************************************************
 
 c*************************************************************
 
-	subroutine basin(mode)
+	subroutine plot_basin(mode)
 
 c plots basin
 c

@@ -6,7 +6,7 @@ c
 c contents :
 c
 c subroutine sp13test(nb,nvers)			tests if file is BAS file
-c subroutine sp13rr(nb,nkndim,neldim)		unformatted read from lagoon
+c subroutine sp13rr(nb,nknddi,nelddi)		unformatted read from lagoon
 c subroutine sp13uw(nb)				unformatted write to lagoon
 c subroutine sp13ts(nvers,nb,n)			test write to unit nb
 c
@@ -61,22 +61,37 @@ c***********************************************************
 
 	if( nkn == nk .and. nel == ne ) return
 
-	if( nkn > 0 .or. nel > 0 ) then
+        if( ne > 0 .or. nk > 0 ) then
+          if( ne == 0 .or. nk == 0 ) then
+            write(6,*) 'nel,nkn: ',ne,nk
+            stop 'error stop basin_init: incompatible parameters'
+          end if
+        end if
+
+	if( nkn > 0 ) then
+	  deallocate(nen3v)
+	  deallocate(ipev)
+	  deallocate(ipv)
+	  deallocate(iarv)
+	  deallocate(iarnv)
+	  deallocate(xgv)
+	  deallocate(ygv)
+	  deallocate(hm3v)
 	end if
 
 	nkn = nk
 	nel = ne
 
-	if( nkn > 0 .or. nel > 0 ) then
-	  allocate(nen3v(3,nel))
-	  allocate(ipev(nel))
-	  allocate(ipv(nkn))
-	  allocate(iarv(nel))
-	  allocate(iarnv(nkn))
-	  allocate(xgv(nkn))
-	  allocate(ygv(nkn))
-	  allocate(hm3v(3,nel))
-	end if
+	if( nk == 0 ) return
+
+	allocate(nen3v(3,nel))
+	allocate(ipev(nel))
+	allocate(ipv(nkn))
+	allocate(iarv(nel))
+	allocate(iarnv(nkn))
+	allocate(xgv(nkn))
+	allocate(ygv(nkn))
+	allocate(hm3v(3,nel))
 
 	end subroutine basin_init
 
@@ -91,11 +106,25 @@ c***********************************************************
 	integer nk,ne
 
 	call sp13_get_par(iunit,nk,ne,ngr,mbw)
-	call basin_init(nk,ne)
+	call basin_init(nk,ne)			!here we set nkn, nel
 	rewind(iunit)
 	call sp13rr(iunit,nkn,nel)
+	write(6,*) 'finished basin_read (module)'
 
 	end subroutine basin_read
+
+c***********************************************************
+
+	subroutine basin_get_dimension(nk,ne)
+
+! returns dimension of arrays (already allocated)
+
+	integer nk,ne
+
+	nk = nkn
+	ne = nel
+
+	end subroutine basin_get_dimension
 
 c***********************************************************
 
@@ -138,6 +167,38 @@ c***********************************************************
 !==================================================================
         end module basin
 !==================================================================
+
+        subroutine basin_check(text)
+
+        use basin
+
+        implicit none
+
+        character*(*), optional :: text
+
+        integer ie,k,ii
+        character*80 string
+
+        string = ' '
+        if( present(text) ) string = text
+
+        write(6,*) 'checking basin data: ',trim(string)
+        write(6,*) nkn,nel,ngr,mbw
+
+        do ie=1,nel
+          do ii=1,3
+            k = nen3v(ii,ie)
+            if( k .le. 0 .or. k .gt. nkn ) then
+              write(6,*) ii,ie,k
+              write(6,*) 'error checking basin: ',trim(string)
+              stop 'error stop basin_check: nen3v'
+            end if
+          end do
+        end do
+
+        write(6,*) 'basin data is ok...'
+
+        end subroutine basin_check
 
 c***********************************************************
 c***********************************************************
@@ -230,7 +291,7 @@ c iunit		unit number of file to be read
 
 c***********************************************************
 
-	subroutine sp13rr(nb,nkndi,neldi)
+	subroutine sp13rr(nb,nknddi,nelddi)
 
 c unformatted read from lagoon file
 c
@@ -238,7 +299,7 @@ c iunit		unit number of file to be read
 
 	implicit none
 
-	integer nb,nkndi,neldi
+	integer nb,nknddi,nelddi
 
 	include 'param.h'
 	include 'basin.h'
@@ -254,7 +315,7 @@ c iunit		unit number of file to be read
 	read(nb) dcorbas,dirnbas
 	read(nb) descrr
 
-	if(nkn.gt.nkndi.or.nel.gt.neldi) goto 97
+	if(nkn.gt.nknddi.or.nel.gt.nelddi) goto 97
 
 	read(nb)((nen3v(ii,i),ii=1,3),i=1,nel)
 	read(nb)(ipv(i),i=1,nkn)
@@ -280,7 +341,7 @@ c	call sp13ts(nvers,79,0)
 	write(6,*) 'nvers = ',-nvers
 	stop 'error stop sp13rr: error in version'
    97	continue
-	write(6,*) 'nkndim,neldim :',nkndi,neldi
+	write(6,*) 'nknddi,nelddi :',nknddi,nelddi
 	write(6,*) 'nkn,nel       :',nkn,nel
 	write(6,*) 'ngr,mbw       :',ngr,mbw
 	stop 'error stop sp13rr: dimension error'

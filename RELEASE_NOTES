@@ -1,4 +1,18 @@
 
+10.07.2015    VERS_7_1_50
+
+	this is a big release of changes
+	nobody should really use this version
+	this is only used to prepare the new major version with
+		modules instead of common blocks (inludes)
+		and arrays allocated on the heap
+	most of the conversion has been finished, but some points
+		still have to be done
+	some files will not be converted before the next major release:
+		lagrange
+		box
+		bfm
+
 05.06.2015    VERS_7_1_12
 
 	some more work for transition to module structure

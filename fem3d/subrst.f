@@ -655,9 +655,9 @@ c reads one record of restart data
         stop 'error stop rdrst: cannot read this version'
    99   continue
         write(6,*) 'reading restart file...'
-        write(6,*) nkn,nel,nlv,nlvdim
+        write(6,*) nkn,nel,nlv
         write(6,*) nknaux,nelaux,nlvaux
-        stop 'error stop rdrst: dimensions'
+        stop 'error stop rdrst: incompatible parameters'
         end
 
 c*******************************************************************

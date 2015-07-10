@@ -9,7 +9,7 @@ c	 subroutine iniets
 c	 subroutine setets(iunit,nvers,nkn,nlv,nvar)
 c	 subroutine getets(iunit,nvers,nkn,nlv,nvar)
 c	 subroutine delets(iunit)
-c	 subroutine dimets(iunit,nkndim,nlvdim)
+c	 subroutine dimets(iunit,nknddi,nlvddi)
 c
 c        subroutine errets(iunit,routine,text)
 c        subroutine findets_err(iunit,routine,text,n)
@@ -18,7 +18,7 @@ c        subroutine infoets(iunit,iout)
 c
 c        subroutine ets_init(iunit,nversion)
 c        subroutine ets_close(iunit)
-c        subroutine ets_check_dimension(iunit,nkndim,nlvdim)
+c        subroutine ets_check_dimension(iunit,nknddi,nlvddi)
 c
 c        subroutine ets_get_date(iunit,date,time)
 c        subroutine ets_set_date(iunit,date,time)
@@ -38,8 +38,8 @@ c        subroutine ets_read_header2(iu,ilhkv,hlv,hkv
 c     +					,nodes,xg,yg,desc,ierr)
 c        subroutine ets_write_header2(iunit,ilhkv,hlv,hkv
 c     +					,nodes,xg,yg,desc,ierr)
-c        subroutine ets_read_record(iu,it,ivar,nlvdim,ilhkv,c,ierr)
-c        subroutine ets_write_record(iunit,it,ivar,nlvdim,ilhkv,c,ierr)
+c        subroutine ets_read_record(iu,it,ivar,nlvddi,ilhkv,c,ierr)
+c        subroutine ets_write_record(iunit,it,ivar,nlvddi,ilhkv,c,ierr)
 c
 c        subroutine ets_next_record(iunit,it,ivar,ierr)
 c        subroutine ets_back_record(iunit)
@@ -235,25 +235,25 @@ c please note that the file has still to be closed manually
 
 c************************************************************
 
-	subroutine dimets(iunit,nkndim,nlvdim)
+	subroutine dimets(iunit,nknddi,nlvddi)
 
 c checks dimension of arrays - internal routine
 
 	implicit none
 
-	integer iunit,nkndim,nlvdim
+	integer iunit,nknddi,nlvddi
 
 	integer nvers,nkn,nlv,nvar
 
 	call getets(iunit,nvers,nkn,nlv,nvar)
 
-        if( nkn .gt. nkndim ) goto 99
-        if( nlv .gt. nlvdim ) goto 99
+        if( nkn .gt. nknddi ) goto 99
+        if( nlv .gt. nlvddi ) goto 99
 
 	return
    99   continue
-        write(6,*) 'nkn,nkndim : ',nkn,nkndim
-        write(6,*) 'nlv,nlvdim : ',nlv,nlvdim
+        write(6,*) 'nkn,nknddi : ',nkn,nknddi
+        write(6,*) 'nlv,nlvddi : ',nlv,nlvddi
         stop 'error stop dimets: dimension error'
 	end
 
@@ -426,13 +426,13 @@ c************************************************************
 
 c************************************************************
 
-	subroutine ets_check_dimension(iunit,nkndim,nlvdim)
+	subroutine ets_check_dimension(iunit,nknddi,nlvddi)
 
 	implicit none
 
-	integer iunit,nkndim,nlvdim
+	integer iunit,nknddi,nlvddi
 
-	call dimets(iunit,nkndim,nlvdim)
+	call dimets(iunit,nknddi,nlvddi)
 
 	end
 
@@ -895,7 +895,7 @@ c write records
 
 c************************************************************
 
-	subroutine ets_read_record(iu,it,ivar,nlvdim,ilhkv,c,ierr)
+	subroutine ets_read_record(iu,it,ivar,nlvddi,ilhkv,c,ierr)
 
 c reads data record of ETS file
 
@@ -903,9 +903,9 @@ c reads data record of ETS file
 
 c arguments
 	integer iu,it,ivar
-	integer nlvdim
+	integer nlvddi
 	integer ilhkv(1)
-	real c(nlvdim,1)
+	real c(nlvddi,1)
 	integer ierr
 c local
 	integer l,k,lmax
@@ -918,7 +918,7 @@ c local
 
 	call getets(iunit,nvers,nkn,nlv,nvar)
 
-	lmax = min(nlv,nlvdim)
+	lmax = min(nlv,nlvddi)
 
 	if( nvers .ge. 1 ) then
 	   ivar = 1
@@ -957,7 +957,7 @@ c local
 
 c************************************************************
 
-	subroutine ets_write_record(iunit,it,ivar,nlvdim,ilhkv,c,ierr)
+	subroutine ets_write_record(iunit,it,ivar,nlvddi,ilhkv,c,ierr)
 
 c writes data record of ETS file
 
@@ -965,9 +965,9 @@ c writes data record of ETS file
 
 c arguments
 	integer iunit,it,ivar
-	integer nlvdim
+	integer nlvddi
 	integer ilhkv(1)
-	real c(nlvdim,1)
+	real c(nlvddi,1)
 	integer ierr
 c local
 	integer l,k,lmax
@@ -975,7 +975,7 @@ c local
 
 	call getets(iunit,nvers,nkn,nlv,nvar)
 
-	lmax = min(nlv,nlvdim)
+	lmax = min(nlv,nlvddi)
 
 	write(iunit) it,ivar,lmax
 
@@ -1002,12 +1002,12 @@ c skips data record - only reads header of record
 
 	integer iunit,it,ivar,ierr
 
-	integer nlvdim
+	integer nlvddi
 	integer ilhkv(1)
 	real c(1,1)
 
-	nlvdim = 1
-	call ets_read_record(-iunit,it,ivar,nlvdim,ilhkv,c,ierr)
+	nlvddi = 1
+	call ets_read_record(-iunit,it,ivar,nlvddi,ilhkv,c,ierr)
 
 	end
 

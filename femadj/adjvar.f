@@ -7,7 +7,7 @@ c various utility routines for adj
 c
 c contents :
 c
-c subroutine smooth(npass,omega,nkn,nel,nen3v,nbound,xgv,ygv,dx,dy,ic)
+c subroutine smooth_grid(npass,omega,nkn,nel,nen3v,nbound,xgv,ygv,dx,dy,ic)
 c               smoothing of internal nodes
 c subroutine chkgrd
 c               check of grid
@@ -19,7 +19,7 @@ c 10.03.2010    ggu     area computation changed in checkarea (bug in 64 bit)
 c
 c**************************************************************
 
-	subroutine smooth(npass,omega)
+	subroutine smooth_grid(npass,omega)
 
 c smoothing of internal nodes
 
@@ -347,7 +347,7 @@ c check if area is positive
 
 c*******************************************************
 
-	subroutine nodeinfo(k)
+	subroutine node_info(k)
 
 c writes info on node
 

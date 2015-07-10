@@ -202,7 +202,7 @@ c-------------------------------------------------------------------
 c check structure
 c-------------------------------------------------------------------
 
-	call checklenk(nkn,ilinkv,lenkv)
+	call checklenk(nkn,ilinkv,lenkv,nen3v)
 
 c-------------------------------------------------------------------
 c end of routine
@@ -228,7 +228,7 @@ c-------------------------------------------------------------------
 
 c****************************************************************
 
-        subroutine checklenk(nkn,ilinkv,lenkv)
+        subroutine checklenk(nkn,ilinkv,lenkv,nen3v)
 
 c checks structure of lenkv
 
@@ -238,11 +238,13 @@ c arguments
         integer nkn
         integer ilinkv(1)
         integer lenkv(1)
+	integer nen3v(3,1)
 c local
 	integer nbnd,nnull
 	integer k,k0,k1,ie,ie0,ie1
 	integer ip,ip0,ip1
 	integer i
+	integer ipp,ii
 	integer kbhnd,knext,kthis
 	logical bverbose
 
@@ -283,6 +285,10 @@ c-------------------------------------------------------------------
               write(6,*) ie0,(kthis(i,ie0),i=1,3)
               write(6,*) ie1,(kthis(i,ie1),i=1,3)
               write(6,*) (lenkv(i),i=ip0,ip1)
+	      do ipp=ip0,ip1
+		ie = lenkv(ipp)
+		write(6,*) ie,(nen3v(ii,ie),ii=1,3)
+	      end do
               stop 'error stop checklenk: structure of lenkv (3)'
             end if
           end do

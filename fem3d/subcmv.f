@@ -141,7 +141,7 @@ c asks about what to do (CMV algorithm)
 	integer ianz
 	real f(10)
 
-	integer inquir,iround
+	integer inquire_numbers,iround
 
 	write(6,*) '0   save numbering and exit'
 	write(6,*) '1   numbering for grades'
@@ -151,7 +151,7 @@ c asks about what to do (CMV algorithm)
 	iwei = -1
 	do while( iwei .lt. 0 .or. iwei .gt. 3 )
 	  iwei = 0
-	  ianz = inquir('give number :',f)
+	  ianz = inquire_numbers('give number :',f)
 	  if( ianz .gt. 0 ) iwei = iround(f(1))
 	end do
 
@@ -171,7 +171,7 @@ c gets min/max grades to use for a starting point minimization
 
 	real f(10)
 	integer ianz,jz,n,j
-	integer inquir
+	integer inquire_numbers
 
 	do n=1,ngr
             jz=0
@@ -186,7 +186,7 @@ c gets min/max grades to use for a starting point minimization
 
 	ianz = -1
 	do while( ianz .lt. 0 .or. ianz .gt. 2 )
-	  ianz=inquir('give min/max grade (default 1/4) :',f)
+	  ianz=inquire_numbers('give min/max grade (default 1/4) :',f)
 	  if(ianz.eq.2) then
 		jgrmin=f(1)
 		jgrmax=f(2)
@@ -219,14 +219,14 @@ c gets first level interactively
 	integer node,noden
 	real f(10)
 
-	integer ipint,inquir,iround
+	integer ipint,inquire_numbers,iround
 
 	knum=0
 	call zernum(nkn,iphv,kphv)
 
 	write(6,*)'give nodes of first level (<cr> to end)'
 
-	ianz=inquir(' : ',f)
+	ianz=inquire_numbers(' : ',f)
 	do while(ianz.gt.0)
 		if(ianz.gt.1) then
 		  write(6,*)'only one node a time -> repeat'
@@ -241,7 +241,7 @@ c gets first level interactively
 			write(6,*)'invalid node number'
 		  end if
 		end if
-		ianz=inquir(' : ',f)
+		ianz=inquire_numbers(' : ',f)
 	end do
 
 	if(knum.eq.0) then	!no node

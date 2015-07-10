@@ -316,10 +316,10 @@ c******************************************************************
 	real wm,wmax
         real getpar
 
-	logical is_material_boundary_node
+	!logical is_material_boundary_node
 
-	is_material_boundary_node(k) = inodv(k) .ne. 0 
-     +					.and. iopbnd(k) .le. 0
+!	is_material_boundary_node(k) = inodv(k) .ne. 0 
+!     +					.and. iopbnd(k) .le. 0
 
 	call get_timestep(dt)
 

@@ -32,7 +32,7 @@ c eliminates low grades
           n = ngrade(k)
           if( n .eq. 5 .and. nbound(k) .eq. 0 ) then
             call elim55(k)
-c	    call nodeinfo(1290)
+c	    call node_info(1290)
 	    call chkgrd
           end if
         end do

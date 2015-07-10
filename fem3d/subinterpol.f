@@ -92,9 +92,9 @@ c interpolates depth values
 	real hmed
 	real fact,dx,dy
 	real flag
-	integer ihev(neldim)
+	integer ihev(nel)
 	logical bmin
-	logical ok(neldim)
+	logical ok(nel)
 	logical inconvex,inquad
 
 c-----------------------------------------------------------------
@@ -320,12 +320,7 @@ c interpolates depth values
 	real area,x0,y0,sig2
 	real pi
 
-	!real xt(neldim)
-	!real yt(neldim)
-	!real at(neldim)
-	!real ht(neldim)
-	!integer ic(neldim)
-	logical ok(neldim)
+	logical ok(nel)
 
 	real dist2
 	logical inconvex,inquad
@@ -612,12 +607,7 @@ c interpolates depth values with auto-correlation
 	real pi
 	real ufact,umfact,a
 
-	!real xt(neldim)
-	!real yt(neldim)
-	!real at(neldim)
-	!real ht(neldim)
-	!integer ic(neldim)
-	logical ok(neldim)
+	logical ok(nel)
 
 	real dist2
 	logical inconvex,inquad

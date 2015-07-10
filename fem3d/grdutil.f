@@ -123,6 +123,66 @@ c hev or hkv must be set
 
 c*******************************************************************
 
+	subroutine info_grd(gfile,nk,ne,nl,nn)
+
+c reads grd file to obtain basic parameters
+
+	implicit none
+
+	character*(*) gfile
+	integer nk		!total number of nodes
+	integer ne		!total number of elems
+	integer nl		!total number of lines
+	integer nn		!total number of nodes in lines
+
+	include 'param.h'
+	include 'basin.h'
+	include 'grd_extra.h'
+
+	logical bstop
+	integer ner,nco
+	integer nkndim0,neldim0,nlidim0,nlndim0
+
+	real hev(neldim)
+	real hkv(nkndim)
+
+        integer ipntlv0(0:0)
+
+c-----------------------------------------------------------------
+c initialize parameters
+c-----------------------------------------------------------------
+
+        ner = 6
+        bstop = .false.
+
+        nkndim0 = 0
+        neldim0 = 0
+        nlidim0 = 0
+        nlndim0 = 0
+
+c-----------------------------------------------------------------
+c read grd file
+c-----------------------------------------------------------------
+
+        call rdgrd(
+     +                   gfile
+     +                  ,bstop
+     +                  ,nco,nk,ne,nl
+     +                  ,nkndim0,neldim0,nlidim0,nlndim0
+     +                  ,ipv,ipev,iplv
+     +                  ,iarnv,iarv,iarlv
+     +                  ,hkv,hev,hllv
+     +                  ,xgv,ygv
+     +                  ,nen3v
+     +                  ,ipntlv0,inodlv
+     +                  )
+
+	nn = ipntlv0(0)
+
+	end
+
+c*******************************************************************
+
 	subroutine read_grd(gfile,hkv,hev,ike)
 
 c reads grd file into basin structure

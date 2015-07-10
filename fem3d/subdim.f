@@ -5,12 +5,12 @@ c dimension handling routines
 c
 c contents :
 c
-c subroutine sp131a(nkndim,neldim)		check dimension for nkn,nel
+c subroutine sp131a(nknddi,nelddi)		check dimension for nkn,nel
 c subroutine sp131b(nrbdim,nbcdim)		check dimension for nrb,nbc
 c subroutine sp131k(matdim)			check dimension for matrix
 c subroutine sp131g(matdim,mbwdim,ngl,mbw,isym) check matrix dimension
 c subroutine sp131m(mbwdim)			check dimension for band width
-c subroutine cstdim(nkndim,...)			writes dimension to common block
+c subroutine cstdim(nknddi,...)			writes dimension to common block
 c
 c revision log :
 c
@@ -28,21 +28,21 @@ c 21.04.2009    ggu     new routine sp131m() for band width
 c
 c***********************************************************
 
-	subroutine sp131a(nkndim,neldim)
+	subroutine sp131a(nknddi,nelddi)
 
 c check dimension for nkn,nel
 c
-c nkndim	dimension for nkn
-c neldim	dimension for nel
+c nknddi	dimension for nkn
+c nelddi	dimension for nel
 
 	implicit none
 
-	integer nkndim,neldim
+	integer nknddi,nelddi
 
 	include 'nbasin.h'
 
-	if(nkndim.lt.nkn) goto 99
-	if(neldim.lt.nel) goto 99
+	if(nknddi.lt.nkn) goto 99
+	if(nelddi.lt.nel) goto 99
 
 	if(nkn.le.0) goto 98
 	if(nel.le.0) goto 98
@@ -55,7 +55,7 @@ c neldim	dimension for nel
    99	continue
 	write(6,*) 'dimension error'
 	write(6,*) 'nkn,nel :',nkn,nel
-	write(6,*) 'nkndim,neldim :',nkndim,neldim
+	write(6,*) 'nknddi,nelddi :',nknddi,nelddi
 	stop 'error stop sp131a: dimensions'
 	end
 
@@ -72,24 +72,26 @@ c nbcdim	dimension for nbc
 
 	integer nrbdim,nbcdim
 
-	include 'nbound.h'
+	integer nrb,nbc
+	!integer nkbnd,nbnds
 
-	if(nrbdim.lt.nrb) goto 99
-	if(nbcdim.lt.nbc) goto 99
+	!nrb = nkbnd()
+	!nbc = nbnds()
 
-	if(nrz.lt.0) goto 98
-	if(nrq.lt.0) goto 98
-	if(nrb.lt.0) goto 98
-	if(nbc.lt.0) goto 98
+	!if(nrbdim.lt.nrb) goto 99
+	!if(nbcdim.lt.nbc) goto 99
+
+	!if(nrb.lt.0) goto 98
+	!if(nbc.lt.0) goto 98
 
 	return
    98	continue
 	write(6,*) 'error in constants'
-	write(6,*) 'nrz,nrq,nrb,nbc :',nrz,nrq,nrb,nbc
+	write(6,*) 'nrb,nbc :',nrb,nbc
 	stop 'error stop sp131b: constants'
    99	continue
 	write(6,*) 'dimension error'
-	write(6,*) 'nrz,nrq,nrb,nbc :',nrz,nrq,nrb,nbc
+	write(6,*) 'nrb,nbc :',nrb,nbc
 	write(6,*) 'nrbdim,nbcdim :',nrbdim,nbcdim
 	stop 'error stop sp131b: dimensions'
 	end
@@ -199,18 +201,18 @@ c check dimension for band width
 
 c******************************************
 
-	subroutine cstdim(nkndim,neldim,nrbdim,nbcdim,mbwdim,ngrdim
+	subroutine cstdim(nknddi,nelddi,nrbdim,nbcdim,mbwdim,ngrdim
      +                  ,nardim,nexdim,nfxdim,nlkdim)
 
 c stores dimensions for later use
 
 	implicit none
 
-	integer nkndim,neldim,nrbdim,nbcdim,mbwdim,ngrdim
+	integer nknddi,nelddi,nrbdim,nbcdim,mbwdim,ngrdim
 	integer nardim,nexdim,nfxdim,nlkdim
 
-	call setdim('nkndim',nkndim)
-	call setdim('neldim',neldim)
+	call setdim('nkndim',nknddi)
+	call setdim('neldim',nelddi)
 	call setdim('nrbdim',nrbdim)
 	call setdim('nbcdim',nbcdim)
 	call setdim('mbwdim',mbwdim)

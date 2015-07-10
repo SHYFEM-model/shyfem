@@ -54,34 +54,30 @@ c********************************************************
         character*80 descrg,descra,basnam
         logical bstop,bopti
 
-        integer ipdex(nkndim), iedex(neldim)
+        integer, save, allocatable :: ipdex(:), iedex(:)
+        integer, save, allocatable :: iphv(:), kphv(:)
+        integer, save, allocatable :: iphev(:), iaux(:)
+	integer, save, allocatable :: neaux(:,:)
+        real, save, allocatable :: raux(:)
+        real, save, allocatable :: hev(:)
+        real, save, allocatable :: hkv(:)
+        real, save, allocatable :: rphv(:)
+        integer, save, allocatable :: ng(:)
+        integer, save, allocatable :: kvert(:,:)
 
-        integer iphv(nkndim), kphv(nkndim)
-        integer iphev(neldim), iaux(neldim)
-	integer neaux(3,neldim)
-        real raux(neldim)
-        real hev(neldim)
-        real hkv(nkndim)
-        real rphv(nkndim)
+	integer, save, allocatable :: iknot(:,:)
 
 	integer ngrdim1
 	parameter (ngrdim1=ngrdim+1)
-
-        integer ng(nkndim),iknot(ngrdim1,nkndim)
-        integer kvert(2,nkndim)
-
-c        common /iphv/iphv(nkndim), /kphv/kphv(nkndim)
-c        common /iphev/iphev(neldim), /iaux/iaux(neldim)
-c        common /ng/ng(nkndim), /iknot/iknot(ngrdim1,nkndim)
-c        common /kvert/kvert(2,nkndim) !aux vector for rosen
-c        common /hev/hev(neldim)
-c        common /hkv/hkv(nkndim) !for depths
 
 	integer ianz,idepth,itief
 	integer ie,k
 	integer nat,net,ner,nb1,nb2,nb3,nb4,nb9
 
+	integer nk,ne,nl,nn
         integer nknh,nelh,nli,nco
+	integer nknddi,nelddi
+	integer ngr1
 	integer nrec
 	integer nlidim,nlndim
 	real hflag
@@ -110,9 +106,6 @@ c
 
 	hflag = -999.
 
-c        xscal=1.
-c        yscal=1.
-c        hscal=1.
 	itief=0		!0=read by element  1=read by node
 c
 c open error file
@@ -131,22 +124,44 @@ c
 	call putfnm('basnam',basnam)
 	!write(6,*) 'basnam: ',basnam
 c
-c read all ?
-c
-c	idepth=-1
-c	do while(idepth.eq.-1)
-c	  idepth=iantw(' Change only in depth data ?')
-c	  if(idepth.eq.-1) write(nat,*) ' Read error. Try again!'
-c	end do
-c
 c always process whole file
 
 	idepth = 0
-c
-c read input file
-c
+
+c--------------------------------------------------------
+c get grid info
+c--------------------------------------------------------
+
         file=basnam(1:ichanm(basnam))//'.grd'
         write(6,*) ' ...reading file ',file(1:ichanm(file))
+
+	call info_grd(file,nk,ne,nl,nn)
+	write(6,*) 'grid info: ',nk,ne,nl,nn
+
+	call basin_init(nk,ne)
+	call basin_get_dimension(nknddi,nelddi)
+
+	if(nk.gt.nknddi) goto 99900
+	if(ne.gt.nelddi) goto 99900
+
+c--------------------------------------------------------
+c allocate arrays
+c--------------------------------------------------------
+
+	allocate(ipdex(nk), iedex(ne))
+	allocate(iphv(nk), kphv(nk))
+	allocate(iphev(ne), iaux(ne))
+	allocate(neaux(3,ne))
+	allocate(raux(ne))
+	allocate(hev(ne))
+	allocate(hkv(nk))
+	allocate(rphv(nk))
+	allocate(ng(nk))
+	allocate(kvert(2,nk))
+
+c--------------------------------------------------------
+c read grid
+c--------------------------------------------------------
 
 	nlidim = 0
 	nlndim = 0
@@ -210,18 +225,6 @@ c
 	  write(nat,*) '********************************************'
 	end if
 c
-c process geometry ?
-c
-	if(idepth.ne.0) then
-	  do k=1,nkn
-	    iphv(k)=k
-	  end do
-	  do ie=1,nel
-	    iphev(ie)=ie
-	  end do
-	  goto 1
-	end if
-c
 c open files
 c
 	nb2=idefbas(basnam,'new')
@@ -275,10 +278,12 @@ c end reading ----------------------------------------------------
 
 	write(nat,*) ' ...setting up side index'
 
-        call test_grade(nkn,nel,nen3v,ng,ngrdim1)
-        call sidei(nkn,nel,nen3v,ng,iknot,ngrdim1,ngr)
-        call check_sidei(nkn,nel,nen3v,ipv,ng,iknot,ngrdim1,iaux)
-	call knscr(nkn,ngr,ngrdim1,iknot)
+        call test_grade(nkn,nel,nen3v,ng,ngr1)
+	allocate(iknot(ngr1,nk))
+
+        call sidei(nkn,nel,nen3v,ng,iknot,ngr1,ngr)
+        call check_sidei(nkn,nel,nen3v,ipv,ng,iknot,ngr1,iaux)
+	call knscr(nkn,ngr,ngr1,iknot)
 
 	write(nat,*) ' Maximum grade of nodes is ',ngr
 
@@ -331,35 +336,35 @@ c write to nb2 -----------------------------------------------------
 	call ketest(nel,nen3v)
 	call gtest('write',neldim,nkn,nel,nen3v)
 
-	call sp13uw(nb2)
+!	call sp13uw(nb2)
 
-	close(nb2)
+!	close(nb2)
 
 c*****************************************
 c	end part 1
 c*****************************************
 
-    1   continue
-c
+!    1   continue
+
 c open bas file
-c
-	nb2=idefbas(basnam,'old')
-	if(nb2.le.0) stop
-c
+
+!	nb2=idefbas(basnam,'old')
+!	if(nb2.le.0) stop
+
 c read from nb2
-c
-	call sp13rr(nb2,nkndim,neldim)
-c
-	if(nkn.gt.nkndim) goto 99900
-	if(nel.gt.neldim) goto 99900
-	if(ngr.gt.ngrdim1) goto 99900
-c
-	descrg=descrr
-c
+
+!	call sp13rr(nb2,nkndim,neldim)
+
+!	if(nkn.gt.nkndim) goto 99900
+!	if(nel.gt.neldim) goto 99900
+!	if(ngr.gt.ngrdim1) goto 99900
+
+!	descrg=descrr
+
 c process depths -------------------------------------------------
 
         write(nat,*) ' ...processing depths'
-c
+
 	call init_hm3v(nel,hm3v,hflag)
 
 	if(itief.eq.0) then
@@ -386,40 +391,18 @@ c
 	end if
 
 	call ketest(nel,nen3v)
-c
-c get description of data file
-c
-c	write(nat,*)
-c	write(nat,*) ' Possible descriptions for file :'
-c	write(nat,*)
-c        write(nat,*) '        1 --> (default)'
-c	write(nat,*) descrg
-c        write(nat,*) '        2 --> (new text)'
-c	write(nat,*)
-c
-c        ianz=ideflt(1,' Enter value:')
-c        if(ianz.eq.2) then
-c		write(nat,*) ' Enter text :'
-c		read(net,6000) descra
-c		call tablnc(descra,descrr)
-c	else
-c          descrr=descrg
-c	end if
-
-c	write(nat,*) ' Description for file :'
-c	write(nat,*) descrg
 
 	descrr=descrg
-c
+
 c write to nb2
-c
-	write(nat,*) ' ...writing file'
+
+	write(nat,*) ' ...writing file ',nb2
 	write(nat,*)
-c
+
 	call sp13uw(nb2)
-c
+
 	close(nb2)
-c
+
 	call bas_info
 
 	if( mbw .gt. mbwdim ) then
@@ -430,6 +413,12 @@ c
 	end if
 
 	stop ' Successful completion'
+
+   95	continue
+	write(6,*) 'ngr grade possibly too small...'
+	write(6,*) 'estimated ngr = ',ngr,'   ngrdim = ',ngrdim1
+	write(6,*) 'please adjust and recompile'
+	stop 'error stop test_grade: ngrdim'
 
 99900	write(nat,*)' (00) error in dimension declaration'
 	goto 99
@@ -712,7 +701,7 @@ c test for anti-clockwise sense of nodes
 
 c*****************************************************************
 
-        subroutine test_grade(nkn,nel,nen3v,ng,ngrdim)
+        subroutine test_grade(nkn,nel,nen3v,ng,ngr)
 
 c tests if ngrdim is big enough
 
@@ -741,13 +730,6 @@ c tests if ngrdim is big enough
           ngr = max(ngr,ng(i))
 	end do
 	ngr = ngr + 1		!account for boundary nodes
-
-	if( ngr .gt. ngrdim ) then
-	  write(6,*) 'ngr grade possibly too small...'
-	  write(6,*) 'estimated ngr = ',ngr,'   ngrdim = ',ngrdim
-	  write(6,*) 'please adjust and recompile'
-	  stop 'error stop test_grade: ngrdim'
-	end if
 
 	end
 

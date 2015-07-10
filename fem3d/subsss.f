@@ -310,38 +310,42 @@ c
 c
 	return
 	end
-c
+
 c********************************************
-c
-	function inquir(l,f)
-c
+
+	function inquire_numbers(l,f)
+
 c gets numbers from terminal (see also iscan)
 c
 c do not use -> no way to know if we are out of bounds
 c
 c l		text written to terminal
 c f		array in which the values are stored (return value)
-c inquir	total number of values read in
-c
+c inquire_numbers	total number of values read in
+
+	implicit none
+
+	integer inquire_numbers
 	character*(*) l
 	real f(1)
-c
+
 	character*80 lh
+	integer net,nat
+	integer iscan
 	data net,nat /5,6/
-c
+
 	lh=' '
-c
+
 	write(nat,1000) l
  1000	format(1x,a)
-c
+
 	read(net,2000) lh
  2000	format(a)
-c
-	inquir=iscan(lh,1,f)
-c
-	return
+
+	inquire_numbers=iscan(lh,1,f)
+
 	end
-c
+
 c********************************************
 c
 	function getnum(prompt)

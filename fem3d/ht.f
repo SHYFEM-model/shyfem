@@ -269,7 +269,7 @@ c-----------------------------------------------------------
 c dimensions
 c-----------------------------------------------------------
 
-	nlvdi=nlvdim
+	!nlvdi=nlvdim
 
 	call cstdim(nkndim,neldim,nrbdim,nbcdim
      +			,mbwdim,ngrdim,nardim,nexdim
@@ -284,7 +284,7 @@ c-----------------------------------------------------------
 
 	call bas_get_para(nkn,nel,ngr,mbw)	!to be deleted later
 
-	call allocate_2D_arrays
+	call allocate_2d_arrays
 
 c-----------------------------------------------------------
 c check dimensions
@@ -325,13 +325,15 @@ c-----------------------------------------------------------
 
 	call adjust_depth	!adjusts hm3v
 	call init_vertical	!makes nlv,hlv,hldv,ilhv,ilhkv, adjusts hm3v
-	call set_depth		!makes hev,hkv
 
 c-----------------------------------------------------------
 c allocates arrays
 c-----------------------------------------------------------
 
-	call allocate_3D_arrays
+	call allocate_3d_arrays
+	call set_depth		!makes hev,hkv
+
+	call check_point('checking ht 1')
 
 c-----------------------------------------------------------
 c initialize barene data structures
@@ -344,6 +346,8 @@ c-----------------------------------------------------------
 c-----------------------------------------------------------
 c initialize boundary conditions
 c-----------------------------------------------------------
+
+	call check_point('checking ht 2')
 
 	call get_date_time(date,time)
 	call iff_init_global(nkn,nlv,ilhkv,hkv_max,hlv,date,time)
@@ -378,6 +382,8 @@ c-----------------------------------------------------------
 c initialize open boundary routines
 c-----------------------------------------------------------
 
+	call check_point('checking ht 3')
+
 	call bndo_init
 	call bndo_info_file('bndo_info.dat')
 
@@ -409,6 +415,8 @@ c-----------------------------------------------------------
 c-----------------------------------------------------------
 c write input values to log file and perform check
 c-----------------------------------------------------------
+
+	call check_point('checking ht 4')
 
 	call check_fem
 	call check_values
@@ -669,6 +677,43 @@ c*****************************************************************
 
 	implicit none
 
+	include 'param.h'
+	include 'nbasin.h'
+	include 'nbound.h'
+	include 'tides.h'
+	include 'hydro_baro.h'
+	include 'roughness.h'
+	include 'diff_aux.h'
+	include 'bnd_aux.h'
+	include 'geom_dynamic.h'
+	include 'nudging.h'
+	include 'meteo.h'
+	include 'geom.h'
+	include 'evmain.h'
+	include 'bound_geom.h'
+	include 'subbndo.h'
+	include 'tvd.h'
+
+	call mod_tides_init(nel)
+
+	call mod_hydro_baro_init(nel)
+	call mod_roughness_init(nkn)
+	call mod_diff_aux_init(nel)
+
+	call mod_bnd_aux_init(nkn,nel)
+	call mod_geom_dynamic_init(nkn,nel)
+	call mod_nudging_init(nkn)
+
+	call mod_meteo_init(nkn)
+	call mod_geom_init(nkn,nel,ngr)
+	call mod_bndo_init(ngr,nrb)
+
+	call ev_init(nel)
+
+	call mod_tvd_init(nel)
+
+	write(6,*) '2D arrays allocated: ',nkn,nel,ngr
+
 	end
 
 c*****************************************************************
@@ -682,13 +727,75 @@ c*****************************************************************
 	include 'nlevel.h'
 	include 'hydro.h'
 	include 'hydro_vel.h'
+	include 'hydro_print.h'
+	include 'diff_visc_fric.h'
+	include 'ts.h'
+	include 'area.h'
+	include 'bound_dynamic.h'
+	include 'aux_array.h'
+	include 'gotm_aux.h'
+	include 'depth.h'
+	include 'internal.h'
+	include 'nohyd.h'
+	include 'bclfix.h'
+	include 'fluidmud.h'
+	include 'sinking.h'
+	include 'turbulence.h'
+	include 'waves.h'
+	include 'conz.h'
 
-	integer nlvddi
+	integer nlvddi,ncs
 
+	nlvdi = nlvdim
 	nlvddi = nlvdim
+	ncs = ncsdim
 
 	call mod_hydro_init(nkn,nel,nlvddi)
 	call mod_hydro_vel_init(nkn,nel,nlvddi)
+	call mod_hydro_print_init(nkn,nlvddi)
+
+	call mod_diff_visc_fric_init(nkn,nel,nlvddi)
+
+	call mod_ts_init(nkn,nlvddi)
+
+	call mod_area_init(nkn,nlvddi)
+	call mod_bound_dynamic_init(nkn,nlvddi)
+	call mod_aux_array_init(nkn,nel,nlvddi)
+	call mod_gotm_aux_init(nkn,nlvddi)
+
+	call mod_depth_init(nkn,nel,nlvddi)
+	call mod_internal_init(nkn,nel,nlvddi)
+	call mod_nohyd_init(nkn,nlvddi)
+
+	call mod_bclfix_init(nkn,nel,nlvddi)
+	call mod_fluidmud_init(nkn,nlvddi)
+	call mod_sinking_init(nkn,nlvddi)
+	call mod_turbulence_init(nkn,nlvddi)
+	call mod_waves_init(nkn,nel,nlvddi)
+
+	call mod_conz_init(ncs,nkn,nlvddi)
+
+	write(6,*) '3D arrays allocated: ',nkn,nel,ngr,nlvddi
+
+	end
+
+c*****************************************************************
+
+	subroutine check_point(text)
+
+	use mod_bndo
+
+	implicit none
+
+	character*(*) text
+
+	return
+
+	write(6,*) '========= start of check_point ========='
+	write(6,*) text
+	call mod_bndo_info
+	call check_ilevels
+	write(6,*) '========= end of check_point ========='
 
 	end
 

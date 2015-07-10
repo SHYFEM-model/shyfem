@@ -90,11 +90,14 @@ c writes output to terminal or log file
 	!include 'basin.h'
 	include 'modules.h'
 	include 'femtime.h'
-	include 'nbound.h'
+	include 'simul.h'
 
 	character*80 name
+        integer nrb,nbc
+        integer nkbnd,nbnds
 
-	include 'simul.h'
+        nrb = nkbnd()
+        nbc = nbnds()
 
 	call getfnm('runnam',name)
 	write(6,*)
@@ -120,7 +123,7 @@ c writes output to terminal or log file
 
 	write(6,*) '     Description of boundary values :'
 	write(6,*)
-	write(6,*) '     nbc,nrz,nrq,nrb     :',nbc,nrz,nrq,nrb
+	write(6,*) '     nbc,nrb     :',nbc,nrb
 
 	write(6,*)
 	write(6,*) '     Values from parameter file :'
@@ -435,7 +438,7 @@ c end of read %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	  stop 'error stop nlsh2d: read error'
 	else
 	  write(6,*) 'dimension error in section $levels'
-	  write(6,*) 'nlvdim = ',nlvdi,'   number of data read = ',-nlv
+	  write(6,*) 'nlvdi = ',nlvdi,'   number of data read = ',-nlv
 	  stop 'error stop nlsh2d: dimension error'
 	end if
    97	continue

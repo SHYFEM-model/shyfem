@@ -496,7 +496,7 @@ c prints parameters for weutro
 	write (6,*) 'graztype', graztype 
 	write (6,*) 'CCHL' ,CCHL
 	write (6,*) 'NUTLIM',NUTLIM
-	write (6,*)  'growth and respiration'                                
+	write (6,*) 'growth and respiration'
 	write (6,*) 'K1RT',K1RT
 	write (6,*) 'K1RC',K1RC
 	write (6,*) 'K1T',K1T

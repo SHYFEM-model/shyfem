@@ -215,9 +215,8 @@ c writes and administers ets file
 	include 'hydro_print.h'
 	include 'ts.h'
 
-	real waves(4,nkndim)
-
-        integer il4kv(nkndim)
+	real waves(4,nkn)
+        integer il4kv(nkn)
 
 	integer ifemop
 	real getpar
@@ -248,7 +247,7 @@ c writes and administers ets file
                 if(nbext.le.0) goto 77
 		ia_out(4) = nbext
 
-		allocate( outets(nlvdim,nets) )
+		allocate( outets(nlvdi,nets) )
 
 		nvers = 1
 		nvar = 5
@@ -298,23 +297,23 @@ c writes and administers ets file
         end if
 
 	ivar = 6
-	call routets(nlvdim,ilhkv,uprv,outets)
-        call ets_write_record(nbext,it,ivar,nlvdim,ilets,outets,ierr)
+	call routets(nlvdi,ilhkv,uprv,outets)
+        call ets_write_record(nbext,it,ivar,nlvdi,ilets,outets,ierr)
         if(ierr.ne.0.) goto 79
 
 	ivar = 7
-	call routets(nlvdim,ilhkv,vprv,outets)
-        call ets_write_record(nbext,it,ivar,nlvdim,ilets,outets,ierr)
+	call routets(nlvdi,ilhkv,vprv,outets)
+        call ets_write_record(nbext,it,ivar,nlvdi,ilets,outets,ierr)
         if(ierr.ne.0.) goto 79
 
 	ivar = 11
-	call routets(nlvdim,ilhkv,saltv,outets)
-        call ets_write_record(nbext,it,ivar,nlvdim,ilets,outets,ierr)
+	call routets(nlvdi,ilhkv,saltv,outets)
+        call ets_write_record(nbext,it,ivar,nlvdi,ilets,outets,ierr)
         if(ierr.ne.0.) goto 79
 
 	ivar = 12
-	call routets(nlvdim,ilhkv,tempv,outets)
-        call ets_write_record(nbext,it,ivar,nlvdim,ilets,outets,ierr)
+	call routets(nlvdi,ilhkv,tempv,outets)
+        call ets_write_record(nbext,it,ivar,nlvdi,ilets,outets,ierr)
         if(ierr.ne.0.) goto 79
 
 	return

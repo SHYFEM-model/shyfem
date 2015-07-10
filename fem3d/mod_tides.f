@@ -12,7 +12,6 @@
         !common /xcartv/xcartv, /ycartv/ycartv
         !save /xcartv/, /ycartv/
 
-
 	integer, private, save :: nkn_tides = 0
 
 	real, allocatable, save :: xgeov(:)
@@ -39,9 +38,9 @@
 	  deallocate(zeqv)
 	end if
 
-	if( nkn == 0 ) return
-
 	nkn_tides = nkn
+
+	if( nkn == 0 ) return
 
 	allocate(xgeov(nkn))
 	allocate(ygeov(nkn))

@@ -13,7 +13,7 @@ c subroutine pltgrd(n,k,k1,k2,xgv,ygv)
 c			plots grade in color
 c subroutine pltsgrd(igr,nkn,nel,nen3v,ngrade,xgv,ygv)
 c			plots only special grade
-c subroutine wrgrd(file,nkn,nel,xgv,ygv,nen3v)
+c subroutine write_grid(file,nkn,nel,xgv,ygv,nen3v)
 c			writes quick and dirty results to file
 c
 c revision log :
@@ -140,13 +140,13 @@ c writes quick and dirty results from basin to file
 
 	implicit none
 
-	call wrgrd('new0.grd')
+	call write_grid('new0.grd')
 
 	end
 
 c***********************************************************
 
-	subroutine wrgrd(file)
+	subroutine write_grid(file)
 
 c writes quick and dirty results to file
 
