@@ -80,8 +80,6 @@ c save & data
 	save icall
 	data icall /0/
 
-	if(nlvdim.ne.nlvdi) stop 'error stop conz3sh: level dimension'
-
 	if(icall.eq.-1) return
 
 	binfo = .true.		! writes info to info file
@@ -106,7 +104,7 @@ c-------------------------------------------------------------
           if( .not. has_restart(4) ) then	!no restart of conzentrations
 	    call conini0(nlvdi,cnv,cref)
 	  end if
-	  call conz_init(itanf,nlv,nkn,cnv)	!read from file if name given
+	  call conz_init(itanf,nlvdi,nlv,nkn,cnv) !read from file if name given
 
 	  nvar = 1
           call init_output('itmcon','idtcon',ia_out)
@@ -161,7 +159,7 @@ c-------------------------------------------------------------
 	end if
 
 	if( iprogr .gt. 0 .and. mod(icall,iprogr) .eq. 0 ) then
-	  call extract_level(nlvdim,nkn,level,cnv,v1v)
+	  call extract_level(nlvdi,nkn,level,cnv,v1v)
 	  call wrnos2d_index(it,icall,'conz','concentration',v1v)
 	end if
 
@@ -170,7 +168,7 @@ c write to info file
 c-------------------------------------------------------------
 
         if( binfo ) then
-          call tsmass(cnv,+1,nlvdim,ctot)
+          call tsmass(cnv,+1,nlvdi,ctot)
           call conmima(nlvdi,cnv,cmin,cmax)
           write(ninfo,2021) 'conzmima: ',it,cmin,cmax,ctot
  2021     format(a,i10,2f10.4,e14.6)
@@ -192,16 +190,13 @@ c shell for conz with multi dimensions
 
 c parameter
         include 'param.h'
-c common
 	include 'nbasin.h'
 	include 'femtime.h'
 	include 'mkonst.h'
 	include 'nlevel.h'
-
 	include 'diff_visc_fric.h'
 	include 'aux_array.h'
 	include 'bound_names.h'
-
 	include 'conz.h'
 
 c--------------------------------------------
@@ -256,8 +251,6 @@ c save & data
 	integer icall
 	save icall
 	data icall /0/
-
-	if(nlvdim.ne.nlvdi) stop 'error stop conz3sh: level dimension'
 
 	if(icall.eq.-1) return
 
@@ -347,7 +340,7 @@ c write to file
 c-------------------------------------------------------------
 
 	do i=1,nvar
-	  call massconc(+1,conzv(1,1,i),nlvdim,mass)
+	  call massconc(+1,conzv(1,1,i),nlvdi,mass)
 	  if( i .le. ndim ) massv(i) = mass
 	end do
 	!write(65,*) it,massv
@@ -379,6 +372,9 @@ c simulates decay for concentration
         implicit none
 
         include 'param.h'
+	include 'nbasin.h'
+	include 'nlevel.h'
+	include 'levels.h'
 
 	real alpha_t90
 	!parameter( alpha_t90 = 1./2.302585 )	!-1./ln(0.1) - prob wrong
@@ -389,10 +385,7 @@ c simulates decay for concentration
 	integer ivar			!state variable to use
         real dt				!time step in seconds
 	real tau			!decay time in days (0 for no decay)
-        real e(nlvdim,nkndim,nsdim)     !state vector
-
-	include 'nbasin.h'
-	include 'levels.h'
+        real e(nlvdi,nkn,nsdim)         !state vector
 
         integer k,l,i,lmax
         real aux,tauaux
@@ -421,6 +414,11 @@ c simulates decay for concentration
         implicit none
 
         include 'param.h'
+	include 'nbasin.h'
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'depth.h'
+	include 'ts.h'
 
 	real alpha_t90
 	parameter( alpha_t90 = 1./2.302585 )	!-1./ln(0.1)
@@ -430,13 +428,7 @@ c simulates decay for concentration
 	integer ivar			!state variable to use
         real dt				!time step in seconds
 	real tau			!decay time in days (0 for no decay)
-        real e(nlvdim,nkndim,nsdim)     !state vector
-
-	include 'nbasin.h'
-	include 'levels.h'
-
-	include 'depth.h'
-	include 'ts.h'
+        real e(nlvdi,nkn,nsdim)         !state vector
 
         integer k,l,i,lmax
         real aux,dtt,rk,alpha
@@ -473,7 +465,7 @@ c simulates decay for concentration
 
 c*********************************************************************
 
-        subroutine conz_init(it,nlv,nkn,cnv)
+        subroutine conz_init(it,nlvddi,nlv,nkn,cnv)
 
 c initialization of conz from file
 
@@ -482,9 +474,10 @@ c initialization of conz from file
         include 'param.h'
 
         integer it
+        integer nlvddi
         integer nlv
         integer nkn
-        real cnv(nlvdim,1)
+        real cnv(nlvddi,1)
 
         character*80 conzf
 
@@ -499,7 +492,7 @@ c initialization of conz from file
           write(6,*) 'conz_init: opening file for concentration'
           call ts_file_open(conzf,it,nkn,nlv,iuconz)
 	  call ts_file_descrp(iuconz,'conz init')
-          call ts_next_record(itc,iuconz,nkn,nlv,cnv)
+          call ts_next_record(itc,iuconz,nlvddi,nkn,nlv,cnv)
           call ts_file_close(iuconz)
           write(6,*) 'concentration initialized from file ',conzf
         end if

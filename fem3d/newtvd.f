@@ -76,17 +76,16 @@ c computes gradients for scalar cc (average gradient information)
 
         implicit none
 
-	integer nlvddi
-	real cc(nlvddi,1)
-	real gx(nlvddi,1)
-	real gy(nlvddi,1)
-	real aux(nlvddi,1)
-
-        
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'basin.h'
 	include 'levels.h'
 	include 'ev.h'
+        
+	integer nlvddi
+	real cc(nlvddi,nkn)
+	real gx(nlvddi,nkn)
+	real gy(nlvddi,nkn)
+	real aux(nlvddi,nkn)
         
         integer k,l,ie,ii,lmax
 	real b,c,area
@@ -144,16 +143,15 @@ c computes gradients for scalar cc (only 2D - used in sedi3d)
 
         implicit none
 
-	real cc(1)
-	real gx(1)
-	real gy(1)
-	real aux(1)
-
-        
 	include 'param.h'
 	include 'basin.h'
 	include 'ev.h'
         
+	real cc(nkn)
+	real gx(nkn)
+	real gy(nkn)
+	real aux(nkn)
+
         integer k,ie,ii
 	real b,c,area
 	real ggx,ggy
@@ -202,15 +200,15 @@ c computes concentration of upwind node (using info on upwind node)
         implicit none
 
         include 'param.h'
+        include 'nlevel.h'
         include 'tvd.h'
+	include 'basin.h'
+	include 'levels.h'
 
         integer ie,l
 	integer ic,id
         real cu
-        real cv(nlvdim,1)
-
-	include 'basin.h'
-	include 'levels.h'
+        real cv(nlvdi,nkn)
 
         integer ienew
         integer ii,k
@@ -354,24 +352,24 @@ c computes horizontal tvd fluxes for one element
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
+	include 'nlevel.h'
+	include 'hydro_vel.h'
         include 'tvd.h'
         include 'ev.h'
 
 	integer ie,l
 	integer itot,isum
 	double precision dt
-	double precision cl(0:nlvdim+1,3)		!bug fix
-	real cv(nlvdim,nkndim)
-        real gxv(nlvdim,nkndim)
-        real gyv(nlvdim,nkndim)
+	double precision cl(0:nlvdi+1,3)		!bug fix
+	real cv(nlvdi,nkn)
+        real gxv(nlvdi,nkn)
+        real gyv(nlvdi,nkn)
 	double precision f(3)
 	double precision fl(3)
 
 	real eps
 	parameter (eps=1.e-8)
-
-	include 'basin.h'
-	include 'hydro_vel.h'
 
         logical bgradup
         logical bdebug
@@ -511,18 +509,19 @@ c ------------------- l+2 -----------------------
 	implicit none
 
 	include 'param.h'
+	include 'nbasin.h'
+	include 'levels.h'
+	include 'nlevel.h'
+	include 'hydro_print.h'
+	include 'depth.h'
 
 	logical btvdv			!use vertical tvd?
 	integer k			!node of vertical
 	real dt				!time step
 	real wsink			!sinking velocity (positive downwards)
-	real cv(nlvdim,nkndim)		!scalar to be advected
-	real vvel(0:nlvdim)		!velocities at interface (return)
-	real vflux(0:nlvdim)		!fluxes at interface (return)
-
-	include 'levels.h'
-	include 'hydro_print.h'
-	include 'depth.h'
+	real cv(nlvdi,nkn)		!scalar to be advected
+	real vvel(0:nlvdi)		!velocities at interface (return)
+	real vflux(0:nlvdi)		!fluxes at interface (return)
 
         real eps
         parameter (eps=1.e-8)
@@ -602,16 +601,17 @@ c ------------------- l+2 -----------------------
 	implicit none
 
 	include 'param.h'
+	include 'nlevel.h'
 
 	logical btvdv				!use vertical tvd?
 	integer ie				!element
 	integer lmax				!total number of layers
 	double precision dt			!time step
 	double precision wsink			!sinking velocity (+ downwards)
-	double precision cl(0:nlvdim+1,3)	!scalar to be advected
-	double precision hold(0:nlvdim+1,3)	!depth of layers
-	double precision wvel(0:nlvdim+1,3)	!velocities at interface
-	double precision vflux(0:nlvdim+1,3)	!fluxes at interface (return)
+	double precision cl(0:nlvdi+1,3)	!scalar to be advected
+	double precision hold(0:nlvdi+1,3)	!depth of layers
+	double precision wvel(0:nlvdi+1,3)	!velocities at interface
+	double precision vflux(0:nlvdi+1,3)	!fluxes at interface (return)
 
         double precision eps
         parameter (eps=1.e-8)

@@ -1,5 +1,55 @@
 ============================================================
 
+Mon Jul 13 18:04:55 CEST 2015
+
+new intermediate version
+
+ fem3d/Makefile             |   47 +++--
+ fem3d/bin/handle_common.sh |    2 +-
+ fem3d/bin/newsubst.pl      |   16 ++-
+ fem3d/ht.f                 |   13 ++-
+ fem3d/new3di.f             |   58 +++----
+ fem3d/newbcl.f             |  129 +++++++-------
+ fem3d/newchk.f             |   72 +++-----
+ fem3d/newcon.f             |    9 +-
+ fem3d/newconz.f            |   43 ++---
+ fem3d/newdum.f             |   66 -------
+ fem3d/newdum_basin.f       |   68 +++++++
+ fem3d/newdum_levels.f      |   49 +++++
+ fem3d/newexpl.f            |   53 ++----
+ fem3d/newfix.f             |   14 +-
+ fem3d/newini.f             |   92 ++++++++--
+ fem3d/newlevels.f          |  150 +++------------
+ fem3d/newnudge.f           |   10 +-
+ fem3d/newstab.f            |   81 ++++----
+ fem3d/newtra.f             |   12 +-
+ fem3d/newtvd.f             |   70 ++++----
+ fem3d/param.h              |    6 +-
+ fem3d/prep_fem3d.sh        |    4 +-
+ fem3d/subgotm.f            |    2 +
+ fem3d/subgrd.f             |  118 ++++++------
+ fem3d/subnsh.f             |   30 +++-
+ fem3d/suboff.f             |  432 +++++++++++++++++++-------------------------
+ fem3d/subres.f             |   38 ++--
+ fem3d/subtsuvfile.f        |   15 +-
+ fem3d/subwrt.f             |  168 ++++++++++-------
+ femadj/param.h             |    6 +-
+ fembin/gitcommit           |    1 +
+ fembin/mail_shyfem.sh      |   26 ++--
+ femdoc/final/shyfem.pdf    |  Bin 294942 -> 294949 bytes
+ femdoc/final/shyfem.ps     |   26 ++--
+ femplot/param.h            |    6 +-
+ femplot/prep_femplot.sh    |   40 ++++
+ femplot/supout.f           |    1 -
+ param.h                    |    6 +-
+ 38 files changed, 1001 insertions(+), 978 deletions(-)
+ new file:
+   fem3d/newdum_basin.f
+   fem3d/newdum_levels.f
+   femplot/prep_femplot.sh
+
+============================================================
+
 Fri Jul 10 17:24:56 CEST 2015
 
 New version 7_1_50

@@ -74,44 +74,6 @@ c dummies for oxygen module
 
 c*****************************************************************
 
-	subroutine basin_read(nin)
-
-	implicit none
-
-	integer nin
-
-	include 'param.h'
-
-	call sp13rr(nin,nkndim,neldim)
-	write(6,*) 'finished basin_read (include)'
-
-	end
-
-	subroutine basin_init(nk,ne)
-	implicit none
-	integer nk,ne
-	end
-
-c*****************************************************************
-
-	subroutine levels_init(nkn,nel,nl)
-	implicit none
-	integer nkn,nel,nl
-	include 'param.h'
-	include 'nlevel.h'
-	nlvdi = nlvdim
-	nlv = nl
-	end
-
-	subroutine levels_reinit(nl)
-	implicit none
-	integer nl
-	include 'param.h'
-	include 'nlevel.h'
-	nlvdi = nlvdim
-	nlv = nl
-	end
-
 c*****************************************************************
 
 	subroutine mod_hydro_init(nkn,nel,nlv)
@@ -333,32 +295,4 @@ c*****************************************************************
 
 c*****************************************************************
 
-        subroutine basin_get_dimension(nk,ne)
-
-! returns dimension of arrays (static)
-
-        integer nk,ne
-
-        include 'param.h'
-
-        nk = nkndim
-        ne = neldim
-
-        end subroutine basin_get_dimension
-
-c*****************************************************************
-
-        subroutine levels_get_dimension(nl)
-
-! returns vertical dimension (static)
-
-        integer nl
-
-        include 'param.h'
-
-        nl = nlvdim
-
-        end subroutine levels_get_dimension
-
-c*****************************************************************
 

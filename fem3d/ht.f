@@ -562,6 +562,7 @@ c*****************************************************************
 	include 'diff_visc_fric.h'
 	include 'roughness.h'
 	include 'hydro_vel.h'
+	include 'gotm_aux.h'
 
 	include 'ts.h'
 
@@ -575,19 +576,29 @@ c*****************************************************************
 	call debug_output_record(3*nel,3,zenv,'zenv')
 	call debug_output_record(nkn,1,zov,'zov')
 	call debug_output_record(nkn,1,znv,'znv')
-	call debug_output_record(nlvdim*nel,nlvdim,hdeov,'hdeov')
+
 	call debug_output_record(nlvdim*nel,nlvdim,utlov,'utlov')
 	call debug_output_record(nlvdim*nel,nlvdim,vtlov,'vtlov')
 	call debug_output_record(nlvdim*nel,nlvdim,utlnv,'utlnv')
 	call debug_output_record(nlvdim*nel,nlvdim,vtlnv,'vtlnv')
+
         call debug_output_record(nlvdim*nkn,nlvdim,saltv,'saltv')
         call debug_output_record(nlvdim*nkn,nlvdim,tempv,'tempv')
 	call debug_output_record((nlvdim+1)*nkn,nlvdim+1,visv,'visv')
 	call debug_output_record((nlvdim+1)*nkn,nlvdim+1,wlov,'wlov')
 	call debug_output_record((nlvdim+1)*nkn,nlvdim+1,wlnv,'wlnv')
+
 	call debug_output_record(nkn,1,z0bk,'z0bk')
 	call debug_output_record(nkn,1,tauxnv,'tauxnv')
 	call debug_output_record(nkn,1,tauynv,'tauynv')
+
+	call debug_output_record(nlvdim*nel,nlvdim,hdeov,'hdeov')
+        call debug_output_record(nlvdim*nel,nlvdim,hdenv,'hdenv')
+        call debug_output_record(nlvdim*nkn,nlvdim,hdkov,'hdkov')
+        call debug_output_record(nlvdim*nkn,nlvdim,hdknv,'hdknv')
+
+        call debug_output_record(nlvdim*nkn,nlvdim,hdknv,'shearf2')
+        call debug_output_record(nlvdim*nkn,nlvdim,hdknv,'buoyf2')
 
 	write(66) 0,0
 

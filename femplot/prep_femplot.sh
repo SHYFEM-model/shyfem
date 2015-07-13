@@ -2,17 +2,25 @@
 #
 #----------------------------------------
 
+force="NO"
+if [ "$1" = "-force" ]; then
+  force="YES"
+  shift
+fi
+
 files=$*
 
 act=`pwd`
 echo $act
 
-dist="/home/georg/fem/fem3d"
+dist="/home/georg/fem/femplot"
 handle=/home/georg/fem/fem3d/bin/handle_common.sh
 
-if [ $act = $dist ]; then
+if [ $force != "YES" ]; then
+ if [ $act = $dist ]; then
   echo "we are in distribution ... aborting"
   exit 1
+ fi
 fi
 
 $handle -inc2use $files
@@ -20,13 +28,13 @@ $handle -inc2use $files
 $handle -new
 $handle -clean
 
-#rm -f newdum.f newdum1.f
-#touch newdum.f newdum1.f
+#rm -f supdum.f
+#touch supdum.f
 
-if [ -f subnev_new.f ]; then
-  mv -f subnev.f subnev_old.f
-  mv -f subnev_new.f subnev.f
-fi
+#if [ -f subnev_new.f ]; then
+#  mv -f subnev.f subnev_old.f
+#  mv -f subnev_new.f subnev.f
+#fi
 
 make depend
 

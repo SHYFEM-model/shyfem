@@ -168,28 +168,22 @@ c fix or nudge  velocities on open boundaries
         include 'bclfix.h' 
 
 	include 'nbasin.h'
-
 	include 'femtime.h'
-
 	include 'nlevel.h'
-
+	include 'levels.h'
 	include 'bound_names.h'
-
 	include 'geom_dynamic.h'
-
 	include 'internal.h'
 	include 'hydro_vel.h'
 	include 'hydro.h'
 	include 'depth.h'
-
-	include 'levels.h'
 
 	real tnudge	!relaxation time for nudging [s]
 	real tramp	!time for smooth init
 
         integer ie,l,i,k,ii,n
 	integer lmax
-        real u(nlvdim),v(nlvdim)
+        real u(nlvdi),v(nlvdi)
         real h,t
         real alpha
 	real uexpl,vexpl
@@ -237,8 +231,8 @@ c------------------------------------------------------------------
         dtime = it
 
         call bnds_read_new(what,idvel,dtime)
-        call bnds_trans_new(what,idvel,dtime,1,nkn,nlv,nlvdim,ubound)
-        call bnds_trans_new(what,idvel,dtime,2,nkn,nlv,nlvdim,vbound)
+        call bnds_trans_new(what,idvel,dtime,1,nkn,nlv,nlvdi,ubound)
+        call bnds_trans_new(what,idvel,dtime,2,nkn,nlv,nlvdi,vbound)
 
 c------------------------------------------------------------------
 c simulate smooth initial discharge with tramp

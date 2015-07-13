@@ -781,7 +781,6 @@ c open file
 	call get_dimension_post(nknddi,nelddi,nlvddi)
         call read_nos_header(nunit,nknddi,nelddi,nlvddi,ilhkv,hlv,hev)
 
-	call level_e2k_sh			!computes ilhkv
 	call level_k2e_sh
         call init_sigma_info(nlv,hlv)
 

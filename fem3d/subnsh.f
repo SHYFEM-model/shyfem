@@ -396,8 +396,6 @@ c read loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                         call nrdins(section)
 		else if(section.eq.'levels') then
 			call read_hlv
-			!nlv = nrdvecr(hlv,nlvdi)
-			!if( nlv .lt. 0 ) goto 77
                 else if(section.eq.'lagrg')then
                         call nrdins(section)
                 else if(section.eq.'sedtr')then         !sediment
@@ -464,6 +462,34 @@ c************************************************************************
 
 	stop 'error stop section_deleted: section has been removed'
 	end
+
+c************************************************************************
+
+        subroutine read_hlv
+
+        use nls
+
+        implicit none
+
+	include 'param.h'
+	include 'nbasin.h'
+	include 'nlevel.h'
+	include 'levels.h'
+
+        integer n,nlvddi
+
+        n = nls_read_vector()
+        !call levels_init(nkn,nel,n)
+	call levels_hlv_init(n)
+	nlv = n
+	call levels_get_dimension(nlvddi)
+	if( n > nlvddi ) then
+	  write(6,*) 'nlv,nlvddi: ',nlv,nlvddi
+	  stop 'error stop read_hlv: dimension error'
+	end if
+        call nls_copy_real_vect(n,hlv)
+
+        end subroutine read_hlv
 
 c************************************************************************
 

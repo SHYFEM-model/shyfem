@@ -62,6 +62,7 @@ echo "" 				>> log.tmp
 git diff --cached --stat 		>> log.tmp
 GetSpecial "new file:"			>> log.tmp
 GetSpecial "deleted:"			>> log.tmp
+GetSpecial "renamed:"			>> log.tmp
 echo ""					>> log.tmp
 
 vi log.tmp

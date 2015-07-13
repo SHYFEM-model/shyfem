@@ -295,8 +295,8 @@ c sets up andg_dist and andg_weight
 	integer k,kk,iu
 	real dx,dy,dist,dist2,w,s
 
-	real d(nkndim)
-	real dw(nkndim)
+	real d(nkn)
+	real dw(nkn)
 
 	s = 2.*sigma*sigma
 
@@ -339,9 +339,9 @@ c sets up icol (local) and ndg_nodes and ndg_area
 	include 'basin.h'
 	include 'nudge.h'
 
-	integer icol(nkndim)
-	integer icolaux(nkndim)
-	real d(nkndim)
+	integer icol(nkn)
+	integer icolaux(nkn)
+	real d(nkn)
 
 	logical binsert
 	integer k,ie,ii,it,is,ic,isc,i

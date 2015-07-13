@@ -81,7 +81,8 @@ c set up time independent vertical vectors
 	include 'nlevel.h'
 	include 'levels.h'
 
-	integer nlv_est,nlv_read
+	integer nlv_est,nlv_read,nlv_final
+	real, allocatable :: hlv_aux(:)
 
 	write(6,*) 'setting up vertical structure'
 
@@ -89,19 +90,26 @@ c------------------------------------------------------------------
 c sanity check
 c------------------------------------------------------------------
 
-	call get_nlv_read(nlv_read)
-	nlv_est = nlv_read
+	nlv_est = nlv
 	call estimate_nlv(nlv_est)
+	write(6,*) 'nlv,nlv_est,nlvdi: ',nlv,nlv_est,nlvdi
 
 	call check_nlv
 
-	nlvdi = nlvdim
-	nlv = nlvdi
-	write(6,*) nlv,nlvdi,nlv_est
+	if( nlv > 0 ) then
+	  allocate(hlv_aux(nlv))
+	  hlv_aux(1:nlv) = hlv(1:nlv)
+	  call levels_hlv_init(0)
+	end if
 	call levels_init(nkn,nel,nlv_est)
-	write(6,*) nlv,nlvdi,nlv_est
-	nlvdi = nlv_est
-	call transfer_hlv
+	if( nlv > 0 ) then
+	  hlv(1:nlv) = hlv_aux(1:nlv)
+	  deallocate(hlv_aux)
+	end if
+
+	!write(6,*) nlv,nlvdi,nlv_est
+	!call levels_reinit(nlv_est)
+	!write(6,*) nlv,nlvdi,nlv_est
 
 c------------------------------------------------------------------
 c levels read in from $levels section
@@ -113,8 +121,11 @@ c------------------------------------------------------------------
 c set up layer vectors
 c------------------------------------------------------------------
 
+	write(6,*) '... ',nlv
 	call set_ilhv		!sets nlv, ilhv (elemental)
+	write(6,*) '... ',nlv
 	call set_last_layer	!adjusts nlv, ilhv, hm3v
+	write(6,*) '... ',nlv
 	call set_ilhkv		!sets ilhkv (nodal)
 	call set_min_levels	!sets ilmkv and ilmv
 
@@ -122,8 +133,9 @@ c------------------------------------------------------------------
 c check data structure
 c------------------------------------------------------------------
 
-	call levels_reinit(nlv)
-	!nlvdi = nlvdim		!to be removed later
+	nlv_final = nlv
+	nlv_final = nlvdim		!to be removed later
+	call levels_reinit(nlv_final)
 
 	call check_vertical
 
@@ -248,8 +260,26 @@ c checks arrays containing vertical structure
 	implicit none
 
 	call check_nlv
+	call check_hlv
 	call check_levels
 	call check_ilevels
+
+	end
+
+c*****************************************************************
+
+	subroutine check_hlv
+
+	implicit none
+
+	include 'param.h'
+	include 'nlevel.h'
+	include 'levels.h'
+
+	integer l
+
+	write(6,*) 'check_hlv: ',nlv,nlvdi
+	write(6,*) (hlv(l),l=1,nlv)
 
 	end
 
@@ -270,8 +300,7 @@ c checks nlv and associated parameters
 	write(6,*) '    nlvdi : ',nlvdi
 	write(6,*) '      nlv : ',nlv
 
-	!if(nlvdim.ne.nlvdi) stop 'error stop check_nlv: level dimension'
-	if(nlv.gt.nlvdim) stop 'error stop check_nlv: level dimension'
+	if(nlv.gt.nlvdi) stop 'error stop check_nlv: level dimension'
 
 	end
 
@@ -309,7 +338,9 @@ c estimates maximum value for nlv
 	nreg = 0
 	if( dzreg > 0 ) nreg = hmax/dzreg
 
-	nlv_est = nlv_est + nsigma + nreg + 1
+	!nlv_est = nlv_est + nsigma + nreg + 1
+	nlv_est = nlv_est + nsigma + nreg
+	nlv_est = max(nlv_est,1)
 
 	end
 
@@ -488,7 +519,7 @@ c--------------------------------------------------------------
 
 	call check_levels
 
-	write(6,*) 'finished adjusting layer structure'
+	write(6,*) 'finished adjusting layer structure ',nlv
 
 c--------------------------------------------------------------
 c end of routine
@@ -644,9 +675,12 @@ c sets nlv and ilhv - only needs hm3v and hlv, hev is temporary array
 c local
 	logical bsigma
 	integer ie,ii,l,lmax,nsigma
-	real h,hmax,hsigma,hm
+	real hsigma
 
+	real h,hmax,hm
 	real hev(nel)		!local
+	!double precision h,hmax,hm
+	!double precision hev(nel)		!local
 
 	lmax=0
 	hmax = 0.
@@ -684,11 +718,17 @@ c local
 
 	nlv = lmax
 
+	write(6,*) 'finished setting ilhv and nlv'
+	write(6,*) 'nsigma,hsigma: ',nsigma,hsigma
+	write(6,*) 'lmax,hmax: ',lmax,hmax
+	write(6,*) 'nlv,hlv: ',nlv,(hlv(l),l=1,nlv)
+
 	return
    99	continue
 	write(6,*) ie,l,nlv,h,hlv(nlv)
 	write(6,*) 'maximum basin depth: ',hmax
 	write(6,*) 'maximum layer depth: ',hlv(nlv)
+	write(6,*) 'nlv,hlv: ',nlv,(hlv(l),l=1,nlv)
 	stop 'error stop set_ilhv: not enough layers'
 	end
 
@@ -717,6 +757,12 @@ c set ilhkv array - only needs ilhv
 	    if(l.gt.ilhkv(k)) ilhkv(k)=l
 	  end do
 	end do
+
+	!do k=1,nkn
+	!  if( ilhkv(k) .eq. 2 ) then
+	!    write(6,*) '2 layer node: ',k,ilhkv(k)
+	!  end if
+	!end do
 
 	end
 
@@ -858,9 +904,11 @@ c adjusts nlv, hm3v, ilhv
 	integer ilytyp
         integer ic1,ic2,ic3
 	integer nsigma
-	real h,hold,hnew,hlast,hm
+	real h,hold,hnew,hlast
 	real hlvmin
 	real hmin,hmax,hsigma
+	real hm
+	!double precision hm
 
 	integer ieext
 	real getpar
@@ -1006,6 +1054,8 @@ c------------------------------------------------------------
 	stop 'error stop set_last_layer: hlvmin'
    99	continue
 	write(6,*) 'ie,l,hold,h: ',ie,l,hold,h
+	write(6,*) 'nsigma,hsigma: ',nsigma,hsigma
+	write(6,*) 'hlv: ',nlv,(hlv(l),l=1,nlv)
 	if( nsigma > 0 .and. hold < 0. ) then
 	  write(6,*) 'cannot yet handle salt marshes with sigma layers'
 	end if
@@ -1153,13 +1203,14 @@ c initializes nodal value variable from file
 	implicit none
 
 	include 'param.h'
+	include 'nbasin.h'
+	include 'nlevel.h'
 
 	character*(*) name		!name of variable
-	real var(nlvdim,nkndim,1)	!variable to set
+	real var(nlvdi,nkn,1)		!variable to set
         integer nvar
 
 	integer it
-	integer nlvdi
 	character*80 file
 
 	call getfnm(name,file)
@@ -1181,9 +1232,10 @@ c initializes nodal value variable from file (2D version)
 	implicit none
 
 	include 'param.h'
+	include 'nbasin.h'
 
 	character*(*) name		!name of variable
-	real var(nkndim,1)		!variable to set
+	real var(nkn,1)			!variable to set
         integer nvar
 
 	integer it

@@ -142,18 +142,16 @@ c stability is computed for dt == 1
 
         include 'param.h'
 	include 'ev.h'
-
-	real ahpar
-	real rindex
-	real dstab(nlvdim,neldim)
-
 	include 'nlevel.h'
-
 	include 'basin.h'
 	include 'geom.h'
 	include 'levels.h'
 	include 'diff_visc_fric.h'
 	include 'internal.h'
+
+	real ahpar
+	real rindex
+	real dstab(nlvdi,nel)
 
 	integer ie,ii,iei,l,lmax,k
 	real u,v,ui,vi
@@ -639,22 +637,18 @@ c stability is computed for dt == 1
 	implicit none
 
         include 'param.h'
-
-	real rlin		   !factor for advective terms - normally 1
-	real rindex		   !stability index (return)
-	real astab(nlvdim,neldim)  !stability matrix (return)
-
-        !common /nlv/nlv
-	include 'nlevel.h'
-
-
 	include 'ev.h'
 	include 'hydro.h'
 	include 'depth.h'
+	include 'nlevel.h'
 	include 'levels.h'
 	include 'basin.h'
 	include 'geom_dynamic.h'
 	include 'internal.h'
+
+	real rlin		   !factor for advective terms - normally 1
+	real rindex		   !stability index (return)
+	real astab(nlvdi,nel)      !stability matrix (return)
 
 	integer ie,l,ii,k,lmax,iweg
 	real cc,cmax
@@ -753,13 +747,12 @@ c******************************************************************
         implicit none
          
         include 'param.h'
+	include 'nbasin.h'
+	include 'internal.h'
         
 	integer ie,l
 	real xadv,yadv,dt
-        real uadv(neldim),vadv(neldim)
-
-	include 'nbasin.h'
-	include 'internal.h'
+        real uadv(nel),vadv(nel)
 
 	call get_timestep(dt)
 
@@ -807,14 +800,6 @@ c******************************************************************
 
         real rhop,presbt,presbcx,presbcy,dprescx,dprescy,br,cr!deb
         real b,c
-c        integer icall
-c        save icall
-c        data icall /0/
-
-        if( nlvdim .ne. nlvdi ) stop 'error stop set_barocl: nlvdim'
-
-c        if(icall.eq.-1) return
-
 
         call get_timestep(dt)
 
@@ -899,8 +884,6 @@ c cannot use this for sigma levels
         double precision raux,rhop,presbcx,presbcy
         double precision b,c,br,cr
 
-        if(nlvdim.ne.nlvdi) stop 'error stop set_barocl_new: nlvdi'
-
         raux=grav/rowass
 	call get_bsigma(bsigma)
 
@@ -970,12 +953,10 @@ c do not use this routine !
         double precision raux,rhop,presbcx,presbcy
         double precision b,c,br,cr
 
-	double precision px(0:nlvdim)
-	double precision py(0:nlvdim)
+	double precision px(0:nlvdi)
+	double precision py(0:nlvdi)
 
 	stop 'error stop set_barocl_old: do not use this routine'
-
-        if(nlvdim.ne.nlvdi) stop 'error stop set_barocl_new: nlvdi'
 
         raux=grav/rowass
 
@@ -1048,8 +1029,8 @@ c this routine works with Z and sigma layers
 
 c---------- DEB SIG
 	real hkk
-	real hkko(0:nlvdim,nkndim)	!depth of interface at node
-	real hkkom(0:nlvdim,nkndim)	!average depth of layer at node
+	real hkko(0:nlvdi,nkn)	!depth of interface at node
+	real hkkom(0:nlvdi,nkn)	!average depth of layer at node
 	real hele
 	real helei
 	real alpha,aux,bn,cn,bt,ct
@@ -1071,8 +1052,6 @@ c---------- DEB SIG
         double precision b,c,br,cr,brup,crup,brint,crint
 	double precision rhoup,psigma
 	double precision b3,c3
-
-        if(nlvdim.ne.nlvdi) stop 'error stop set_barocl_new: nlvdi'
 
 	bsigadjust = .false.		!regular sigma coordinates
 	bsigadjust = .true.		!interpolate on horizontal surfaces

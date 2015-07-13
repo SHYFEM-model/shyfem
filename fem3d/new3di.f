@@ -18,15 +18,15 @@ c ASYM			passage to asymmetrix matrix
 c ASYM_OPSPLT		new version without operator splitting (can leave)
 c ASYM_OPSPLT_CH	new version -> change here
 c
-c nkndim	dimension for total number of nodes
-c neldim	dimension for total number of elements
-c nrbdim	dimension for total number of boundary condition nodes
-c nbcdim	dimension for total number of open boundaries
-c mbwdim	dimension for bandwidth
-c ngrdim	dimension for grade of nodes (number of elements attached
+c nknddi	dimension for total number of nodes
+c nelddi	dimension for total number of elements
+c nrbddi	dimension for total number of boundary condition nodes
+c nbcddi	dimension for total number of open boundaries
+c mbwddi	dimension for bandwidth
+c ngrddi	dimension for grade of nodes (number of elements attached
 c		...to one node)
-c nardim	dimension for total number of area codes
-c nexdim	dimension for total number of extra nodes for output
+c narddi	dimension for total number of area codes
+c nexddi	dimension for total number of extra nodes for output
 c
 c nkn,nel	total number of nodes/elements
 c nrz,nrq	total number of nodes with water level/flux boundary conditions
@@ -221,8 +221,6 @@ c-----------------------------------------------------------------
 
         inohyd = nint(getpar('inohyd'))
 	bnohyd = inohyd .eq. 1
-
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp259f'
 
 c-----------------------------------------------------------------
 c offline
@@ -817,15 +815,13 @@ c	real bb,bbt,cc,cct,aa,aat,ppx,ppy,aux,aux1,aux2
 	include 'roughness.h'
 
 c-----------------------------------------
-	real hact(0:nlvdim+1)
-	real rhact(0:nlvdim+1)
-	real alev(0:nlvdim)
+	real hact(0:nlvdi+1)
+	real rhact(0:nlvdi+1)
+	real alev(0:nlvdi)
 c-----------------------------------------
-	double precision rmat(10*nlvdim)
-	double precision rvec(6*nlvdim)		!ASYM (3 systems to solve)
+	double precision rmat(10*nlvdi)
+	double precision rvec(6*nlvdi)		!ASYM (3 systems to solve)
 	double precision ppx,ppy
-
-
 c-----------------------------------------
 c	integer iaux
 c	real*8 uaux,vaux
@@ -840,8 +836,6 @@ c function
 
         real epseps
         parameter (epseps = 1.e-6)
-
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp256v'
 
 c-------------------------------------------------------------
 c initialization and baroclinic terms
@@ -938,7 +932,7 @@ c-------------------------------------------------------------
 	  hact(l) = hdeov(l,ie)
 	end do
 	hact(ilevel+1) = 0.
-	hact(nlvdim+1) = 0.
+	hact(nlvdi+1) = 0.
 
 	if( bcolin ) then
 	  hact(1) = hact(1) - zmm		!FIXME
@@ -1250,8 +1244,6 @@ c function
 	integer iround
 	real getpar
 
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp256n'
-
 c-------------------------------------------------------------
 c initialize
 c-------------------------------------------------------------
@@ -1368,10 +1360,10 @@ c 20.08.1998	ggu	some documentation
 c parameters
 	include 'param.h'
 c arguments
-	!real vv(0:nlvdim,1)	!$$VERVEL
+	!real vv(0:nlvdi,1)	!$$VERVEL
 	real dzeta(1)
-	real vf(nlvdim,1)
-	real va(nlvdim,1)
+	real vf(nlvdi,1)
+	real va(nlvdi,1)
 c common
 	include 'nlevel.h'
 	include 'basin.h'
@@ -1400,8 +1392,6 @@ c statement functions
 
 	!logical isein
         !isein(ie) = iwegv(ie).eq.0
-
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp256w'
 
 c initialize
 
@@ -1551,10 +1541,10 @@ c 20.08.1998	ggu	some documentation
 c parameters
 	include 'param.h'
 c arguments
-	!real vv(0:nlvdim,1)	!$$VERVEL
+	!real vv(0:nlvdi,1)	!$$VERVEL
 	real dzeta(1)
-	real vf(nlvdim,1)
-	real va(nlvdim,1)
+	real vf(nlvdi,1)
+	real va(nlvdi,1)
 c common
 	include 'nlevel.h'
 	include 'basin.h'
@@ -1577,9 +1567,9 @@ c local
 	double precision ffn,ffo
 	double precision volo,voln,ddt,dvdt,q
 	double precision dzmax,dz
-	double precision vfd(nlvdim,nkndim)
-	double precision vad(nlvdim,nkndim)
-	double precision wlndv(0:nlvdim,nkndim)
+	double precision vfd(nlvdi,nkn)
+	double precision vad(nlvdi,nkn)
+	double precision wlndv(0:nlvdi,nkn)
 c statement functions
 
 	logical is_zeta_bound
@@ -1589,8 +1579,6 @@ c statement functions
 
 	!logical isein
         !isein(ie) = iwegv(ie).eq.0
-
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in sp256w'
 
 c initialize
 

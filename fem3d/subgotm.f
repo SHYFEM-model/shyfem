@@ -413,6 +413,7 @@ c           ------------------------------------------------------
 	    end do
 
 	    bwrite = .false.
+	    bwrite = k == 34
 	    if( bwrite ) then
 
 	      !write(45,*) it,k
@@ -451,6 +452,7 @@ c           ------------------------------------------------------
 	      visv(l,k) = num(laux)
 	      difv(l,k) = nuh(laux)
 	    end do
+	!write(84,*) k,nlev,(visv(l,k),l=0,nlev
 
     1     continue
 	end do

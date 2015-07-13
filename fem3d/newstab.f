@@ -51,19 +51,18 @@ c computes stability index
 	implicit none
 
         include 'param.h'
+        include 'basin.h'
+	include 'nlevel.h'
+	include 'conz.h'
+	include 'diff_visc_fric.h'
 
 	real robs
 	real wsink
-	real wsinkv(0:nlvdim,nkndim)
+	real wsinkv(0:nlvdi,nkn)
         real rkpar
         real azpar
         real rindex
-        real saux(nlvdim,nkndim)
-
-	include 'nlevel.h'
-
-	include 'conz.h'
-	include 'diff_visc_fric.h'
+        real saux(nlvdi,nkn)
 
         real adpar,aapar
         real difmol
@@ -112,15 +111,17 @@ c gets stability index (if necessary computes it)
         implicit none
 
 	include 'param.h'
+	include 'basin.h'
+	include 'nlevel.h'
 
 	real dt
 	real robs
 	real wsink
-	real wsinkv(0:nlvdim,nkndim)
+	real wsinkv(0:nlvdi,nkn)
         real rkpar
         real rindex
         integer istot
-	real saux(nlvdim,nkndim)
+	real saux(nlvdi,nkn)
 
 	real azpar
 	logical exist_stability
@@ -168,18 +169,17 @@ c gets stability index (if necessary computes it)
         implicit none
 
 	include 'param.h'
+	include 'nbasin.h'
+	include 'nlevel.h'
 
         real dt
 	real robs
 	real wsink
-	real wsinkv(0:nlvdim,nkndim)
+	real wsinkv(0:nlvdi,nkn)
         real rkpar
         real rindex
         integer istot
-	real saux(nlvdim,nkndim)
-
-	include 'nlevel.h'
-	include 'nbasin.h'
+	real saux(nlvdi,nkn)
 
 	integer ia,iustab
 	integer l,k
@@ -458,15 +458,14 @@ c outputs stability index for hydro timestep (internal) (error handling)
         implicit none
 
 	include 'param.h'
+	include 'nbasin.h'
+	include 'nlevel.h'
+	include 'levels.h'
 
         real dt
-	real sauxe1(nlvdim,neldim)
-	real sauxe2(nlvdim,neldim)
-	real sauxn(nlvdim,nkndim)
-
-	include 'nlevel.h'
-	include 'nbasin.h'
-	include 'levels.h'
+	real sauxe1(nlvdi,nel)
+	real sauxe2(nlvdi,nel)
+	real sauxn(nlvdi,nkn)
 
 	logical bnos
 	integer ie,l,lmax
@@ -523,16 +522,16 @@ c set ifnos in order to have output to nos file
 	end if
 
 	if( ifnos .gt. 0 .and. mod(icall,ifnos) .eq. 0 ) then
-	  call e2n3d_minmax(+1,nlvdim,sauxe1,sauxn)
+	  call e2n3d_minmax(+1,nlvdi,sauxe1,sauxn)
 	  call conwrite(iustab,'.sta',1,778,nlvdi,sauxn)
-	  call e2n3d_minmax(+1,nlvdim,sauxe2,sauxn)
+	  call e2n3d_minmax(+1,nlvdi,sauxe2,sauxn)
 	  call conwrite(iustab,'.sta',1,778,nlvdi,sauxn)
 	  do ie=1,nel
 	    do l=1,nlv
 	      sauxe1(l,ie) = sauxe1(l,ie) + sauxe2(l,ie)
 	    end do
 	  end do
-	  call e2n3d_minmax(+1,nlvdim,sauxe1,sauxn)
+	  call e2n3d_minmax(+1,nlvdi,sauxe1,sauxn)
 	  call conwrite(iustab,'.sta',1,778,nlvdi,sauxn)
 	end if
 
@@ -547,16 +546,14 @@ c outputs stability index for hydro timestep (internal)
         implicit none
 
 	include 'param.h'
-
-        real dt
-	real cwrite(nlvdim,nkndim)
-
-	include 'nlevel.h'
 	include 'basin.h'
+	include 'nlevel.h'
 	include 'levels.h'
 
-	real smax(nkndim)
-	save smax
+        real dt
+	real cwrite(nlvdi,nkn)
+
+	real, save, allocatable :: smax(:)
 
 	logical bnos
 	integer ie,ii,k,l,lmax
@@ -578,6 +575,7 @@ c outputs stability index for hydro timestep (internal)
 	  if( .not. has_output(ia_out) ) icall = -1
 	  if( icall .lt. 0 ) return
 	  call open_scalar_file(ia_out,1,1,'.stb')
+	  allocate(smax(nkn))
 	  smax = 0.
 	end if
 
@@ -617,17 +615,15 @@ c outputs stability index for hydro timestep (internal)
         implicit none
 
 	include 'param.h'
-
-        real dt
-	real sauxe1(nlvdim,neldim)	!advective stability index
-	real sauxe2(nlvdim,neldim)	!diffusive stability index
-
-	include 'nlevel.h'
 	include 'basin.h'
+	include 'nlevel.h'
 	include 'levels.h'
 
-	real smax(nkndim)
-	save smax
+        real dt
+	real sauxe1(nlvdi,nel)	!advective stability index
+	real sauxe2(nlvdi,nel)	!diffusive stability index
+
+	real, save, allocatable :: smax(:)
 
 	logical bnos
 	integer ie,ii,k,l,lmax
@@ -654,6 +650,7 @@ c	itmsti = -1
 	  if( .not. has_output(ia_out) ) icall = -1
 	  if( icall .lt. 0 ) return
 	  call open_scalar_file(ia_out,1,1,'sti')
+	  allocate(smax(nkn))
 	  smax = 0.
 	end if
 
@@ -698,11 +695,13 @@ c tests parallel implementation
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
+	include 'nlevel.h'
 
 	real dt,rkpar,azpar,rindex
 	real robs,wsink
-	real wsinkv(0:nlvdim,nkndim)
-	real saux(nlvdim,nkndim)
+	real wsinkv(0:nlvdi,nkn)
+	real saux(nlvdi,nkn)
 
 	azpar = 0.
 	rkpar = 0.

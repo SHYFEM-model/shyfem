@@ -80,7 +80,7 @@ c**********************************************************
      +			 file
      +			,bstop
      +			,nco,nkn,nel,nli
-     +			,nkndim,neldim,nlidim,nlndim
+     +			,nknddi,nelddi,nliddi,nlnddi
      +			,ipnv,ipev,iplv
      +			,ianv,iaev,ialv
      +			,hnv,hev,hlv
@@ -107,30 +107,30 @@ c works only with triangles as elements
 	integer nel		!total number of elements read
 	integer nli		!total number of lines read
 
-	integer nkndim		!dimension for number of nodes
-	integer neldim		!dimension for number of elements
-	integer nlidim		!dimension for number of lines
-	integer nlndim		!dimension for node numbers of lines
+	integer nknddi		!dimension for number of nodes
+	integer nelddi		!dimension for number of elements
+	integer nliddi		!dimension for number of lines
+	integer nlnddi		!dimension for node numbers of lines
 
-	integer ipnv(nkndim)	!external node number
-	integer ipev(neldim)	!external element number
-	integer iplv(nlidim)	!external line number
+	integer ipnv(nknddi)	!external node number
+	integer ipev(nelddi)	!external element number
+	integer iplv(nliddi)	!external line number
 
-	integer ianv(nkndim) 	!node type
-	integer iaev(neldim)	!element type
-	integer ialv(nlidim)	!line type
+	integer ianv(nknddi) 	!node type
+	integer iaev(nelddi)	!element type
+	integer ialv(nliddi)	!line type
 
-	real hnv(nkndim)	!depth of node
-	real hev(neldim)	!depth of element
-	real hlv(nlidim)	!depth of line
+	real hnv(nknddi)	!depth of node
+	real hev(nelddi)	!depth of element
+	real hlv(nliddi)	!depth of line
 
-	real xgv(nkndim)	!x coordinate of node
-	real ygv(nkndim)	!y coordinate of node
+	real xgv(nknddi)	!x coordinate of node
+	real ygv(nknddi)	!y coordinate of node
 
-	integer nen3v(3,neldim)	!element index
+	integer nen3v(3,nelddi)	!element index
 
-	integer ipntlv(0:nlidim)!pointer into inodlv
-	integer inodlv(nlndim)	!node numbers of lines (dim. nlndim)
+	integer ipntlv(0:nliddi)!pointer into inodlv
+	integer inodlv(nlnddi)	!node numbers of lines (dim. nlnddi)
 
 	include 'subgrd.h'
 
@@ -175,13 +175,13 @@ c--------------------------------------------------------------------
           if( iwhat.eq.0 ) then  !comment or error
 		call rdcom(nco,bstop)
           else if(iwhat.eq.1) then              !node
-        	call rdnode(nkn,nkndim,bstop
+        	call rdnode(nkn,nknddi,bstop
      +				,ipnv,ianv,xgv,ygv,hnv)
           else if(iwhat.eq.2) then              !element
-        	call rdelem(nel,neldim,bstop
+        	call rdelem(nel,nelddi,bstop
      +				,ipev,iaev,nen3v,hev)
           else if(iwhat.eq.3) then              !line
-        	call rdline(nli,nlidim,nlndim,bstop
+        	call rdline(nli,nliddi,nlnddi,bstop
      +				,iplv,ialv,ipntlv,inodlv,hlv)
           else
 	  	call rdunknown(iwhat,bstop)
@@ -236,19 +236,19 @@ c reads comment
 
 c**********************************************************
 
-        subroutine rdnode(nkn,nkndim,bstop
+        subroutine rdnode(nkn,nknddi,bstop
      +				,ipnv,ianv,xgv,ygv,hnv)
 
 c reads nodes from .grd file
 
         implicit none
 
-	integer nkn,nkndim
+	integer nkn,nknddi
 	logical bstop
-        integer ipnv(nkndim)
-        integer ianv(nkndim)         !node type
-	real xgv(nkndim),ygv(nkndim)
-	real hnv(nkndim)
+        integer ipnv(nknddi)
+        integer ianv(nknddi)         !node type
+	real xgv(nknddi),ygv(nknddi)
+	real hnv(nknddi)
 
 	include 'subgrd.h'
 
@@ -260,7 +260,7 @@ c reads nodes from .grd file
 
 	ner = 6
 
-	bread = nkndim .gt. 0		!read nodes?
+	bread = nknddi .gt. 0		!read nodes?
 
 	call grd_nvals(ianz)
         if(ianz.lt.5) goto 88
@@ -269,11 +269,11 @@ c reads nodes from .grd file
 
         nkn=nkn+1
 	if( .not. bread ) return
-	if(bread .and. nkn.gt.nkndim) then
+	if(bread .and. nkn.gt.nknddi) then
 	  bread = .false.
 	  bstop = .true.
-	  if( nkn .eq. nkndim+1 ) then		!just one time
-	    write(ner,*) 'dimension of nkndim too low: ',nkndim
+	  if( nkn .eq. nknddi+1 ) then		!just one time
+	    write(ner,*) 'dimension of nknddi too low: ',nknddi
 	  end if
 	end if
 	if( .not. bread ) return
@@ -299,24 +299,24 @@ c reads nodes from .grd file
 	bstop=.true.
 	return
    99	continue
-	write(ner,*) 'dimension of nkndim too low: ',nkndim
-	stop 'error stop rdnode: nkndim'
+	write(ner,*) 'dimension of nknddi too low: ',nknddi
+	stop 'error stop rdnode: nknddi'
         end
 
 c**********************************************************
 
-        subroutine rdelem(nel,neldim,bstop
+        subroutine rdelem(nel,nelddi,bstop
      +				,ipev,iaev,nen3v,hev)
 
 c reads elements from .grd file
 
         implicit none
 
-	integer nel,neldim
+	integer nel,nelddi
 	logical bstop
-        integer ipev(neldim),iaev(neldim)
-	integer nen3v(3,neldim)
-	real hev(neldim)
+        integer ipev(nelddi),iaev(nelddi)
+	integer nen3v(3,nelddi)
+	real hev(nelddi)
 
 	logical bread
 	integer ner,ii
@@ -328,18 +328,18 @@ c reads elements from .grd file
 
 	ner = 6
 
-	bread = neldim .gt. 0		!read elements?
+	bread = nelddi .gt. 0		!read elements?
 
 	call grd_nvals(ianz)
         if(ianz.lt.4) goto 88
 	call grd_vals(4,f)
 
         nel=nel+1
-	if(bread .and. nel.gt.neldim) then
+	if(bread .and. nel.gt.nelddi) then
 	  bread = .false.
 	  bstop = .true.
-	  if( nel .eq. neldim+1 ) then		!just one time
-	    write(ner,*) 'dimension of neldim too low: ',neldim
+	  if( nel .eq. nelddi+1 ) then		!just one time
+	    write(ner,*) 'dimension of nelddi too low: ',nelddi
 	  end if
 	end if
 
@@ -384,25 +384,25 @@ c reads elements from .grd file
 	bstop=.true.
 	return
    99	continue
-	write(ner,*) 'dimension of neldim too low: ',neldim
-	stop 'error stop rdelem: neldim'
+	write(ner,*) 'dimension of nelddi too low: ',nelddi
+	stop 'error stop rdelem: nelddi'
 	end
 
 c**********************************************************
 
-        subroutine rdline(nli,nlidim,nlndim,bstop
+        subroutine rdline(nli,nliddi,nlnddi,bstop
      +				,iplv,ialv,ipntlv,inodlv,hlv)
 
 c reads lines from .grd file
 
         implicit none
 
-	integer nli,nlidim,nlndim
+	integer nli,nliddi,nlnddi
 	logical bstop
-        integer iplv(nlidim),ialv(nlidim)
-	integer ipntlv(0:nlidim)		!pointer into inodlv
-	integer inodlv(nlndim)			!node numbers of lines
-	real hlv(nlidim)
+        integer iplv(nliddi),ialv(nliddi)
+	integer ipntlv(0:nliddi)		!pointer into inodlv
+	integer inodlv(nlnddi)			!node numbers of lines
+	real hlv(nliddi)
 
 	logical bread
 	integer ner
@@ -413,14 +413,14 @@ c reads lines from .grd file
 
 	ner = 6
 
-	bread = nlidim .gt. 0		!read lines?
+	bread = nliddi .gt. 0		!read lines?
 
 	call grd_nvals(ianz)
         if(ianz.lt.4) goto 88
 	call grd_vals(4,f)
 
         nli=nli+1
-	if(bread .and. nli.gt.nlidim) goto 99
+	if(bread .and. nli.gt.nliddi) goto 99
         inum=nint(f(2))
         itype=nint(f(3))
         nvert=nint(f(4))
@@ -429,7 +429,7 @@ c reads lines from .grd file
         ivert=nvert
 	if( bread ) then
 	  ipnt = ipntlv(nli-1)
-	  if( ipnt + nvert .gt. nlndim ) goto 98
+	  if( ipnt + nvert .gt. nlnddi ) goto 98
 	else
 	  ipnt = 0
 	  ivert = -ivert
@@ -460,11 +460,11 @@ c reads lines from .grd file
 	bstop=.true.
 	return
    98	continue
-	write(6,*) 'dimension of nlndim too low: ',nlndim
-	stop 'error stop rdline: nlndim'
+	write(6,*) 'dimension of nlnddi too low: ',nlnddi
+	stop 'error stop rdline: nlnddi'
    99	continue
-	write(6,*) 'dimension of nlidim too low: ',nlidim
-	stop 'error stop rdline: nlidim'
+	write(6,*) 'dimension of nliddi too low: ',nliddi
+	stop 'error stop rdline: nliddi'
 	end
 
 c**********************************************************
@@ -946,7 +946,7 @@ c works only with triangles as elements
 	integer nen3v(3,nel)	!element index
 
 	integer ipntlv(0:nli)	!pointer into inodlv
-	integer inodlv(1)	!node numbers of lines (dim. nlndim)
+	integer inodlv(1)	!node numbers of lines (dim. nlnddi)
 
 	integer nout
 	integer i,ii

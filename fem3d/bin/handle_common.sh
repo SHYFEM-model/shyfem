@@ -7,7 +7,7 @@
 bindir=/home/georg/fem/fem3d/bin
 
 what=$1
-shift
+[ -n "$what" ] && shift
 files=$*
 
 if [ -z "$files" ]; then

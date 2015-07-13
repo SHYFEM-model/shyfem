@@ -263,8 +263,7 @@ c	integer wfnov,wrnov,ifileo
 	real getpar
 	logical has_output,is_over_output,next_output
 c save
-	double precision rms(neldim)
-	save rms
+	double precision, save, allocatable :: rms(:)
 	logical bdebug
 	save bdebug
 	integer ia_out(4)
@@ -288,10 +287,9 @@ c save
 
 	  if( bdebug ) write(6,*) 'rmsvel : rms-file opened ',it
 
+	  allocate(rms(nel))
 	  nr=0
-	  do ie=1,nel
-	    rms(ie)=0.
-	  end do
+	  rms = 0.
 	end if
 
 	icall=icall+1
@@ -612,6 +610,9 @@ c for 3D arrays call with nlvddi = nlvdi
 c parameter
 
 	include 'param.h'
+	include 'femtime.h'
+	include 'nbasin.h'
+	include 'levels.h'
 	include 'nlevel.h'
 
 	character*(*) ext	!extension of file
@@ -620,15 +621,11 @@ c parameter
 	integer nlvddi		!number of layers (either nlvdi or 1)
 	integer idtc		!frequency of file to be written
 	integer itmc		!start time for accumulation
-	double precision cmed(nlvddi,nkndim,1)	!average
-	real cmin(nlvddi,nkndim,1)		!minimum
-	real cmax(nlvddi,nkndim,1)		!maximum
+	double precision cmed(nlvddi,nkn,nvar)	!average
+	real cmin(nlvddi,nkn,nvar)		!minimum
+	real cmax(nlvddi,nkn,nvar)		!maximum
 	integer ivect(8)	!info array that is set up
 
-c common
-	include 'nbasin.h'
-	include 'femtime.h'
-	include 'levels.h'
 c local
 	logical bdebug
 	integer i,k,l,nlev,nlvuse
@@ -738,19 +735,18 @@ c for 3D arrays call with nlvddi = nlvdi
 c parameter
 
 	include 'param.h'
+	include 'femtime.h'
+	include 'nbasin.h'
+	include 'levels.h'
+	include 'aux_array.h'
 
 	integer nlvddi		                !number of layers (nlvdi or 1)
-	real cvec(nlvddi,nkndim,1)		!array with concentration
-	double precision cmed(nlvddi,nkndim,1)	!average
-	real cmin(nlvddi,nkndim,1)		!minimum
-	real cmax(nlvddi,nkndim,1)		!maximum
+	real cvec(nlvddi,nkn,1)			!array with concentration
+	double precision cmed(nlvddi,nkn,1)	!average
+	real cmin(nlvddi,nkn,1)			!minimum
+	real cmax(nlvddi,nkn,1)			!maximum
 	integer ivect(8)                	!info array that is set up
 
-c common
-	include 'nbasin.h'
-	include 'femtime.h'
-	include 'aux_array.h'
-	include 'levels.h'
 c local
 	logical bdebug
 	integer nout,id

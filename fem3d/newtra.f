@@ -20,7 +20,7 @@ c subroutine make_prvel                 makes print velocities and xv
 c subroutine init_uv                    initializes uvz values
 c subroutine e2n2d(elv,nov,aux)         transforms element to nodal values
 c subroutine n2e2d(nov,elv)             transforms nodal to element values 2D
-c subroutine n2e3d(nlvdim,nov,elv)      transforms nodal to element values 3D
+c subroutine n2e3d(nlvdi,nov,elv)       transforms nodal to element values 3D
 c
 c revision log :
 c
@@ -29,7 +29,7 @@ c 18.09.2003    ggu     new routine e2n2d
 c 04.12.2003    ggu     new routine n2e2d
 c 30.03.2004	ccf	new routine n2e2d and n2e3d
 c 15.10.2004	ggu	new routine smagorinsky started
-c 14.01.2005	ggu	bug (nlvdim) in n2e3d fixed
+c 14.01.2005	ggu	bug (nlvdi) in n2e3d fixed
 c 24.02.2005	ggu	smagorinsky into subdif.f
 c 15.03.2005	ggu	austv eliminated, austau() into subdif.f
 c 27.06.2005	ggu	bug in vtot corrected
@@ -197,8 +197,6 @@ c common
 c local
 	integer ie,l,k,ii
 	real aj
-c
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in uvtopr'
 c
 	do k=1,nkn
 	  do l=1,nlv
@@ -438,8 +436,6 @@ c local
 c functions
         integer ieext
 
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in ttov'
-
 	call get_sigma(nsigma,hsigma)
 	bsigma = nsigma .gt. 0
 
@@ -634,7 +630,7 @@ c (2D version)
 c arguments
         real elv(1)     !array with element values (in)
         real nov(1)     !array with nodal values (out)
-        real aux(1)     !aux array (nkndim)
+        real aux(1)     !aux array (nkn)
 
 c common
 	include 'param.h'
@@ -698,7 +694,7 @@ c arguments
 	integer nlvddi
         real elv(nlvddi,1)     !array with element values (in)
         real nov(nlvddi,1)     !array with nodal values (out)
-        real aux(nlvddi,1)     !aux array (nkndim)
+        real aux(nlvddi,1)     !aux array (nkn)
 
 c common
 	include 'param.h' !COMMON_GGU_SUBST

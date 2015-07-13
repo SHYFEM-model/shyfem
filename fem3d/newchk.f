@@ -9,7 +9,7 @@ c subroutine test3d(iunit,nn)           test output for new variables
 c subroutine check_all			checks arrays for sanity (shell)
 c subroutine check_fem			checks arrays for sanity
 c subroutine check_values		checks important variables
-c subroutine tsmass(ts,z,nlvdim,tstot)  computes mass of T/S or any conc. ts
+c subroutine tsmass(ts,z,nlvdi,tstot)   computes mass of T/S or any conc. ts
 c subroutine debug_dry			writes debug information on dry areas
 c subroutine debug_node(k)		writes debug information on node k
 c subroutine mimafem(string)		writes some min/max values to stdout
@@ -91,8 +91,6 @@ c local
 	logical bmeteo
 	integer i,l,nk,ne
 	integer iu,ii
-
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dimension in test3d'
 
 	bmeteo = .false.
 
@@ -254,17 +252,10 @@ c checks important variables
 	include 'nbasin.h'
 	include 'femtime.h'
 	include 'nlevel.h'
-
 	include 'depth.h'
-
-
-
 	include 'hydro.h'
 	include 'hydro_baro.h'
-
 	include 'ts.h'
-
-
 	include 'hydro_vel.h'
 
 	character*16 text
@@ -280,20 +271,20 @@ c checks important variables
 	call check1Dr(nkn,unv,-10000.,+10000.,text,'unv')
 	call check1Dr(nkn,vnv,-10000.,+10000.,text,'vnv')
 
-	call check2Dr(nlvdim,nlv,nkn,utlnv,-10000.,+10000.,text,'utlnv')
-	call check2Dr(nlvdim,nlv,nkn,vtlnv,-10000.,+10000.,text,'vtlnv')
+	call check2Dr(nlvdi,nlv,nkn,utlnv,-10000.,+10000.,text,'utlnv')
+	call check2Dr(nlvdi,nlv,nkn,vtlnv,-10000.,+10000.,text,'vtlnv')
 
-	call check2Dr(nlvdim,nlv,nkn,ulnv,-10.,+10.,text,'ulnv')
-	call check2Dr(nlvdim,nlv,nkn,vlnv,-10.,+10.,text,'vlnv')
+	call check2Dr(nlvdi,nlv,nkn,ulnv,-10.,+10.,text,'ulnv')
+	call check2Dr(nlvdi,nlv,nkn,vlnv,-10.,+10.,text,'vlnv')
 
-	call check2Dr(nlvdim,nlv,nkn,tempv,-30.,+70.,text,'tempv')
-	call check2Dr(nlvdim,nlv,nkn,saltv,-1.,+50.,text,'saltv')
+	call check2Dr(nlvdi,nlv,nkn,tempv,-30.,+70.,text,'tempv')
+	call check2Dr(nlvdi,nlv,nkn,saltv,-1.,+50.,text,'saltv')
 
-	call check2Dr(nlvdim,nlv,nkn,hdknv,0.,+10000.,text,'hdknv')
-	call check2Dr(nlvdim,nlv,nkn,hdkov,0.,+10000.,text,'hdkov')
+	call check2Dr(nlvdi,nlv,nkn,hdknv,0.,+10000.,text,'hdknv')
+	call check2Dr(nlvdi,nlv,nkn,hdkov,0.,+10000.,text,'hdkov')
 
-	call check2Dr(nlvdim,nlv,nel,hdenv,0.,+10000.,text,'hdenv')
-	call check2Dr(nlvdim,nlv,nel,hdeov,0.,+10000.,text,'hdeov')
+	call check2Dr(nlvdi,nlv,nel,hdenv,0.,+10000.,text,'hdenv')
+	call check2Dr(nlvdi,nlv,nel,hdeov,0.,+10000.,text,'hdeov')
 
 	end
 
@@ -315,10 +306,6 @@ c
 
 	double precision scalcont
 
-	if( nlvdi .ne. nlvdim ) then
-	  write(6,*) nlvdi,nlvdim
-	  stop 'error stop tsmass: nlvdim'
-	end if
 	if( mode .ne. 1 .and. mode .ne. -1 ) then
 	  write(6,*) 'mode = ',mode
 	  stop 'error stop tsmass: wrong value for mode'
@@ -509,8 +496,6 @@ c-----------------------------------------------------
 c initial check and write
 c-----------------------------------------------------
 
-	if(nlvdim.ne.nlvdi) stop 'error stop mimafem: level dimension'
-
         !return  !FIXME
         write(6,*) '------------------ ',string,' ',it
 
@@ -633,13 +618,14 @@ c checks mass conservation of single boxes (finite volumes)
 
 	include 'param.h'
 
-	real vf(nlvdim,1)
-	real va(nlvdim,1)
+	real vf(nlvdi,1)
+	real va(nlvdi,1)
 
 	include 'basin.h'
 	include 'mkonst.h'
 	include 'hydro.h'
 	include 'hydro_vel.h'
+	include 'nlevel.h'
 	include 'levels.h'
 	include 'bound_dynamic.h'
 	include 'ev.h'
@@ -947,30 +933,30 @@ c*************************************************************
 
 	call check_crc_1d(iucrc,'znv',nkn,znv)
 	call check_crc_1d(iucrc,'zenv',3*nel,zenv)
-	call check_crc_2d(iucrc,'utlnv',nlvdim,nel,ilhv,utlnv)
-	call check_crc_2d(iucrc,'vtlnv',nlvdim,nel,ilhv,vtlnv)
-	call check_crc_2d(iucrc,'saltv',nlvdim,nkn,ilhkv,saltv)
-	call check_crc_2d(iucrc,'tempv',nlvdim,nkn,ilhkv,tempv)
-	call check_crc_2d(iucrc,'rhov',nlvdim,nkn,ilhkv,rhov)
+	call check_crc_2d(iucrc,'utlnv',nlvdi,nel,ilhv,utlnv)
+	call check_crc_2d(iucrc,'vtlnv',nlvdi,nel,ilhv,vtlnv)
+	call check_crc_2d(iucrc,'saltv',nlvdi,nkn,ilhkv,saltv)
+	call check_crc_2d(iucrc,'tempv',nlvdi,nkn,ilhkv,tempv)
+	call check_crc_2d(iucrc,'rhov',nlvdi,nkn,ilhkv,rhov)
 
 	if( icrc .le. 1 ) return
 
 	!call check_crc_1d(iucrc,'ev',evdim*nel,ev)	!FIXME - double
 	call check_crc_1d(iucrc,'hev',nel,hev)
 	call check_crc_1d(iucrc,'fcorv',nel,fcorv)
-	call check_crc_2d(iucrc,'visv',nlvdim,nkn,ilhkv,visv)
-	call check_crc_2d(iucrc,'difv',nlvdim,nkn,ilhkv,difv)
-	call check_crc_2d(iucrc,'hdknv',nlvdim,nkn,ilhkv,hdknv)
-	call check_crc_2d(iucrc,'hdenv',nlvdim,nel,ilhv,hdenv)
+	call check_crc_2d(iucrc,'visv',nlvdi,nkn,ilhkv,visv)
+	call check_crc_2d(iucrc,'difv',nlvdi,nkn,ilhkv,difv)
+	call check_crc_2d(iucrc,'hdknv',nlvdi,nkn,ilhkv,hdknv)
+	call check_crc_2d(iucrc,'hdenv',nlvdi,nel,ilhv,hdenv)
 
 	if( icrc .le. 2 ) return
 
-	call check_crc_2d(iucrc,'ulnv',nlvdim,nel,ilhv,ulnv)
-	call check_crc_2d(iucrc,'vlnv',nlvdim,nel,ilhv,vlnv)
-	call check_crc_2d(iucrc,'mfluxv',nlvdim,nkn,ilhkv,mfluxv)
-	call check_crc_2d(iucrc,'areakv',nlvdim,nkn,ilhkv,areakv)
-	call check_crc_2d(iucrc,'wlnv',nlvdim+1,nkn,ilhkv,wlnv)
-	call check_crc_2d(iucrc,'wprv',nlvdim+1,nkn,ilhkv,wprv)
+	call check_crc_2d(iucrc,'ulnv',nlvdi,nel,ilhv,ulnv)
+	call check_crc_2d(iucrc,'vlnv',nlvdi,nel,ilhv,vlnv)
+	call check_crc_2d(iucrc,'mfluxv',nlvdi,nkn,ilhkv,mfluxv)
+	call check_crc_2d(iucrc,'areakv',nlvdi,nkn,ilhkv,areakv)
+	call check_crc_2d(iucrc,'wlnv',nlvdi+1,nkn,ilhkv,wlnv)
+	call check_crc_2d(iucrc,'wprv',nlvdi+1,nkn,ilhkv,wprv)
 
 	if( icrc .le. 3 ) return
 

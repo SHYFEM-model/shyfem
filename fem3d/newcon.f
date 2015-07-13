@@ -569,6 +569,7 @@ c-------------------------------------------------------------
 c transport and diffusion
 c-------------------------------------------------------------
 
+
 	call massconc(-1,cnv,nlvdim,massold)
 
 	do isact=1,istot
@@ -787,10 +788,10 @@ c local (new)
 	double precision clc(nlvdim,3), clm(nlvdim,3), clp(nlvdim,3)
 	double precision cle(nlvdim,3)
 
-	double precision cclc(nlvdim,3,neldim)
-	double precision cclm(nlvdim,3,neldim)
-	double precision cclp(nlvdim,3,neldim)
-	double precision ccle(nlvdim,3,neldim)
+	double precision cclc(nlvdim,3,nel)
+	double precision cclm(nlvdim,3,nel)
+	double precision cclp(nlvdim,3,nel)
+	double precision ccle(nlvdim,3,nel)
 
 	double precision cl(0:nlvdim+1,3)
 	double precision wl(0:nlvdim+1,3)
