@@ -89,6 +89,7 @@ c 3D concentrations
 	integer ivarin
 
 	include 'nbasin.h'
+	include 'nlevel.h'
 	include 'plot_aux.h'
 	include 'plot_aux_3d.h'
 
@@ -113,7 +114,7 @@ c 3D concentrations
         call mkvarline(ivar,line)
 	ivaria = ivar
 
-	do while( femnext(atime,ivaria,nlvdim,nkn,p3) )
+	do while( femnext(atime,ivaria,nlvdi,nkn,p3) )
 	  nrec = nrec + 1
 	  write(6,*) 'new record: ',nrec,ivaria,ivar,atime
 	  if( ivar .ne. ivaria ) goto 99
@@ -125,11 +126,11 @@ c 3D concentrations
 	      write(6,*) '..........horizontal plotting nodes ',nplot
 	      if( ivar .eq. 21 ) then	!wind
 		ivel = 3		!wind
-		call set_uv(nlvdim,nkn,p3)
+		call set_uv(nlvdi,nkn,p3)
 	        call reset_dry_mask
 	        call plovel(ivel)
 	      else
-	        call extnlev(level,nlvdim,nkn,p3,parray)
+	        call extnlev(level,nlvdi,nkn,p3,parray)
 	        call prepare_dry_mask
 	        call ploval(nkn,parray,line)
 	      end if
@@ -186,6 +187,7 @@ c 3D concentrations
 	integer ivar_in		!desired variable id
 
 	include 'nbasin.h'
+	include 'nlevel.h'
 	include 'plot_aux.h'
 	include 'plot_aux_3d.h'
 
@@ -208,9 +210,9 @@ c 3D concentrations
 
         call mkvarline(ivar,line)
 
-	do while( nosnext(it,ivaria,nlvdim,p3) )
+	do while( nosnext(it,ivaria,nlvdi,p3) )
 	  nrec = nrec + 1
-	  call fvlnext(it,nlvdim,fvlv)
+	  call fvlnext(it,nlvdi,fvlv)
 	  write(6,*) 'new record: ',nrec,it,ivaria,ivar
 	  !call ptime_info()
 	  if( ptime_end() ) exit
@@ -218,7 +220,7 @@ c 3D concentrations
 	    nplot = nplot + 1
             if( isect .eq. 0 ) then
 	      write(6,*) '..........horizontal plotting nodes ',nplot
-	      call extnlev(level,nlvdim,nkn,p3,parray)
+	      call extnlev(level,nlvdi,nkn,p3,parray)
 	      call prepare_dry_mask
 	      call ploval(nkn,parray,line)
             else
@@ -248,6 +250,7 @@ c 3D concentrations (element values)
 	integer ivar_in		!desired variable id
 
 	include 'nbasin.h'
+	include 'nlevel.h'
 	include 'plot_aux.h'
 	include 'plot_aux_3d.h'
 
@@ -269,7 +272,7 @@ c 3D concentrations (element values)
 
         call mkvarline(ivar,line)
 
-	do while( eosnext(it,ivaria,nlvdim,p3) )
+	do while( eosnext(it,ivaria,nlvdi,p3) )
 	  nrec = nrec + 1
 	  write(6,*) nrec,it,ivaria,ivar
 	  if( ptime_end() ) exit
@@ -277,8 +280,8 @@ c 3D concentrations (element values)
 	    nplot = nplot + 1
             if( isect .eq. 0 ) then
 	      write(6,*) '..........horizontal plotting elements ',nplot
-	      !call extelev(level,nlvdim,nkn,p3,parray)
-	      call extelev(level,nlvdim,nel,p3,parray)
+	      !call extelev(level,nlvdi,nkn,p3,parray)
+	      call extelev(level,nlvdi,nel,p3,parray)
 	      call prepare_dry_mask
 	      call ploeval(nel,parray,line)
             else
@@ -949,17 +952,10 @@ c**********************************************************
 
 	integer ivel
 
-c	integer nlvdim
-c	parameter ( nlvdim = 14 )
-
 	include 'param.h'
-
 	include 'nbasin.h'
-
 	include 'nlevel.h'
-
 	include 'levels.h'
-
 	include 'hydro.h'
 	include 'hydro_vel.h'
 	include 'hydro_plot.h'
@@ -973,8 +969,6 @@ c	parameter ( nlvdim = 14 )
 
 	bdebug = .true.
 	bdebug = .false.
-
-	if( nlvdi .ne. nlvdim ) stop 'error stop plo3vel: nlvdim'
 
 c make vertical velocities
 

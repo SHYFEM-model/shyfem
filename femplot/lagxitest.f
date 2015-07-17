@@ -13,7 +13,7 @@ c*****************************************************************
 
 	integer iapini
 
-        if(iapini(1,nkndim,neldim,0).eq.0) then
+        if(iapini(1,0,0,0).eq.0) then
                 stop 'error stop : iapini'
         end if
 	call set_ev

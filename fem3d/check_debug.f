@@ -108,7 +108,7 @@ c checks two files written with check_debug from ht
 	write(6,*) it,nrec,nt,ndim
 	stop 'error stop check_debug: dimension'
    96	continue
-	write(6,*) trim(text1),trim(text2)
+	write(6,*) trim(text1),' - ',trim(text2)
 	stop 'error stop check_debug: text mismatch'
 	end
 

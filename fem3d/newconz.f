@@ -22,6 +22,46 @@ c 10.02.2015    ggu     call to bnds_read_new() introduced
 c
 c*********************************************************************
 
+	subroutine tracer
+
+	implicit none
+
+	include 'param.h'
+	include 'nbasin.h'
+	include 'nlevel.h'
+	include 'conz.h'
+
+	integer, save :: iconz = 0
+
+	real getpar
+
+	if( iconz < 0 ) return
+
+        if( iconz == 0 ) then
+          iconz=nint(getpar('iconz'))
+          if( iconz <= 0 ) iconz = -1
+          if( iconz < 0 ) return
+
+          if( iconz > ncsdim ) then
+            write(6,*) 'iconz,ncsdim: ',iconz,ncsdim
+            stop 'error stop tracer: iconz > ncsdim'
+          end if
+
+          write(6,*) 'initializing tracer: ',iconz,nkn,nlvdi
+          call mod_conz_init(iconz,nkn,nlvdi)
+          write(6,*) 'tracer initialized: ',iconz,nkn,nlvdi
+        end if
+
+	if( iconz == 1 ) then
+	  call conz3sh
+	else
+	  call conzm3sh
+	end if
+
+	end
+
+c*********************************************************************
+
 	subroutine conz3sh
 
 c shell for conz (new version)
@@ -125,11 +165,13 @@ c-------------------------------------------------------------
 	  if( level .le. 0 ) iprogr = 0
 	end if
 
+	icall=icall+1
+
+	if( it .eq. itanf ) return
+
 c-------------------------------------------------------------
 c normal call
 c-------------------------------------------------------------
-
-	icall=icall+1
 
 	wsink = 0.
 	t = it
@@ -223,7 +265,8 @@ c local
         real sindex
 	real wsink,tau,mass
 	real t,dt
-	real cdefs(ncsdim)
+	real, save, allocatable :: cdefs(:)
+	real, save, allocatable :: tauv(:)
 	double precision dtime,dtime0
 c function
 	logical has_restart,next_output
@@ -243,8 +286,7 @@ c save & data
         save ninfo
         integer iprogr
         save iprogr
-	integer idconz(nbcdim)
-	save idconz
+	integer, save :: idconz(nbcdim)
 	integer ia_out(4)
 	save ia_out
 
@@ -262,7 +304,6 @@ c-------------------------------------------------------------
 	  iconz=nint(getpar('iconz'))
 	  if( iconz .le. 1 ) icall=-1
 	  if(icall.eq.-1) return
-	  if( iconz .gt. ncsdim ) goto 99
 
 	  nvar = iconz
 
@@ -271,14 +312,19 @@ c-------------------------------------------------------------
 	  difmol=getpar('difmol')
 	  contau = getpar('contau')
 
-          what = 'conzm'
+          what = 'conz'
 
-	  do i=1,nvar
-	    cdefs(i) = 0.			!default boundary concentration
-            if( .not. has_restart(4) ) then	!no restart of conzentrations
+	  allocate(tauv(nvar))
+	  tauv = contau
+	  tauv(1:ndim) = taupar(1:ndim)
+	  allocate(cdefs(nvar))
+	  cdefs = 0.				!default boundary condition
+
+          if( .not. has_restart(4) ) then	!no restart of conzentrations
+	    do i=1,nvar
 	      call conini0(nlvdi,conzv(1,1,i),cref)
-	    end if
-	  end do
+	    end do
+	  end if
 
           call init_output('itmcon','idtcon',ia_out)
           call open_scalar_file(ia_out,nlv,nvar,'con')
@@ -293,11 +339,13 @@ c-------------------------------------------------------------
 
 	end if
 
+	icall=icall+1
+
+	if( it .eq. itanf ) return
+
 c-------------------------------------------------------------
 c normal call
 c-------------------------------------------------------------
-
-	icall=icall+1
 
 	nvar = iconz
 	wsink = 0.
@@ -325,11 +373,7 @@ c simulate decay
 c-------------------------------------------------------------
 
 	do i=1,nvar
-	  if( i .le. ndim ) then
-	    tau = taupar(i)
-	  else
-	    tau = contau
-	  end if
+	  tau = tauv(i)
 	  !write(6,*) 'decay : ',i,tau
           call decay_conz(ncsdim,nvar,i,dt,tau,conzv)
           !call decay_conz_variable(nsdim,nvar,ivar,dt,tau,e)
@@ -356,11 +400,6 @@ c-------------------------------------------------------------
 c end of routine
 c-------------------------------------------------------------
 
-	return
-   99	continue
-	write(6,*) 'iconz,ncsdim: ',iconz,ncsdim
-	write(6,*) 'ncsdim must be greater or equal iconz'
-	stop 'error stop conzm3sh: ncsdim'
 	end
 
 c*********************************************************************

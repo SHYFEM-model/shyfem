@@ -125,7 +125,7 @@ MODULES = mod_tides.o newlevels.o \
 		mod_fluidmud.o mod_sinking.o mod_waves.o \
 		mod_meteo.o mod_geom.o mod_conz.o \
 		mod_bound_geom.o mod_bnd.o \
-		mod_tvd.o mod_bndo.o
+		mod_tvd.o mod_bndo.o mod_system.o
 
 NEWOBJS = \
 	  new3di.o \
@@ -170,7 +170,8 @@ SOBJS   = \
 	  subeos.o sigmautil.o \
 	  nosutil.o ousutil.o subfemfile.o subvintp.o \
 	  genutil.o subfemintp.o subtsfile.o subxi.o \
-	  $(MODULES)
+	  $(MODULES) \
+	  newdum.o newdum_basin.o newdum_levels.o
 
 	  #mod_bnd.o
 
@@ -856,8 +857,6 @@ etsinf.o: param.h ../femlib/mod/ets.mod
 femelab.o: ../femlib/mod/clo.mod
 feminf.o: ../femlib/mod/clo.mod
 filetype.o: ../femlib/mod/clo.mod
-flux.o: regflux.h hydro.h param.h ev.h femtime.h nbasin.h \
-		hydro_baro.h basin.h links.h 
 flxinf.o: param.h
 gotm3d.o: gotmturb.i debug_aux1.h
 grdutil.o: grd_extra.h param.h basin.h
@@ -902,7 +901,6 @@ lgrelab.o: nbasin.h depth.h param.h basin.h
 lgrinf.o: param.h
 loading.o: nbasin.h param.h levels.h
 map_influence.o: depth.h param.h basin.h
-matrix49.o: regflux.h
 ../femlib/mod/mod_area.mod: mod_area.o
 ../femlib/mod/mod_aux_array.mod: mod_aux_array.o
 ../femlib/mod/mod_bclfix.mod: mod_bclfix.o
@@ -958,8 +956,8 @@ newcon.o: testbndo.h depth.h bound_dynamic.h ts.h ev.h mkonst.h \
 		nlevel.h nbasin.h aux_array.h geom.h hydro_vel.h \
 		param.h hydro.h femtime.h diff_aux.h levels.h \
 		area.h basin.h hydro_print.h 
-newconz.o: depth.h conz.h param.h bound_names.h ts.h nlevel.h \
-		mkonst.h femtime.h nbasin.h levels.h \
+newconz.o: depth.h conz.h param.h bound_names.h ts.h mkonst.h \
+		femtime.h nlevel.h nbasin.h levels.h \
 		diff_visc_fric.h aux_array.h 
 newcra.o: depth.h hydro.h param.h bound_dynamic.h mkonst.h \
 		femtime.h ev.h pkonst.h hydro_baro.h basin.h \
@@ -1042,9 +1040,9 @@ sedi3d.o: testbndo.h depth.h ts.h evmain.h nlevel.h nbasin.h \
 		bound_names.h sed_param.h geom_dynamic.h levels.h \
 		area.h basin.h 
 sigmautil.o: sigma.h
-simsys_lp.o: nbasin.h param.h common.h
-simsys_pard.o: param.h common.h
-simsys_spk.o: param.h common.h
+simsys_lp.o: nbasin.h param.h common.h common_amat.h
+simsys_pard.o: nbasin.h param.h common.h
+simsys_spk.o: nbasin.h param.h common.h
 splitets.o: param.h
 splitflx.o: param.h
 subapn.o: ../femlib/mod/basin.mod

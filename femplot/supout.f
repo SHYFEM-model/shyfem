@@ -662,12 +662,10 @@ c reads next OUS record - is true if a record has been read, false if EOF
 
 	integer ierr
 
-	if( nlvdim .ne. nlvdi ) stop 'error stop ousnext: nlvdim'
-
 	call ousini
 	nunit = nunit_ous
 
-	call rdous(nunit,it,nlvdim,ilhv,znv,zenv,utlnv,vtlnv,ierr)
+	call rdous(nunit,it,nlvdi,ilhv,znv,zenv,utlnv,vtlnv,ierr)
 
 c set return value
 

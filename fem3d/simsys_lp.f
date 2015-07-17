@@ -20,12 +20,16 @@ c******************************************************************
 	implicit none
 
 	include 'param.h'
+	include 'nbasin.h'
 	include 'common.h'
 
 	write(6,*) '----------------------------------------'
 	write(6,*) 'initializing matrix inversion routines'
 	write(6,*) 'using Gaussian elimination'
 	write(6,*) '----------------------------------------'
+
+	call mod_system_init(nkn,nel,mbw)
+	call mod_system_amat_init(nkn,mbw)
 
 	end
 
@@ -37,11 +41,8 @@ c******************************************************************
 
 	include 'param.h'
 	include 'common.h'
+	include 'common_amat.h'
 	include 'nbasin.h'
-
-        double precision amat(matdim)
-        common /amat/amat
-        save /amat/
 
 	!call lp_init_system(nkn,mbw,amat,vs1v)
 	call dlp_init_system(nkn,mbw,amat,vs1v)
@@ -56,11 +57,8 @@ c******************************************************************
 
 	include 'param.h'
 	include 'common.h'
+	include 'common_amat.h'
 	include 'nbasin.h'
-
-        double precision amat(matdim)
-        common /amat/amat
-        save /amat/
 
 	!call lp_solve_system(nkn,mbw,amat,vs1v,is2v,vs3v)
 	call dlp_solve_system(nkn,mbw,amat,vs1v,is2v,vs3v)
@@ -80,10 +78,7 @@ c******************************************************************
 
 	include 'param.h'
 	include 'common.h'
-
-        double precision amat(matdim)
-        common /amat/amat
-        save /amat/
+	include 'common_amat.h'
 
 	integer i,j,kk
 

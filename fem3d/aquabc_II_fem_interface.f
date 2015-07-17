@@ -2960,21 +2960,21 @@ C         Read RECORD 6
 
 !     Producing output format lines
       write(noutput_char,'(i2)') noutput
-      FMT_many   = '(I15,I5,' // noutput_char   // '(1x,G13.4))'             !for many layers in seconds
+      FMT_many   = '(I15,I5,' // noutput_char   // '(1x,G13.4))'
       FMT_many_d = '(I4.4,2I2.2,1x,3I2.2,I5,'   //
-     +                             noutput_char // '(1x,G13.4))'             !for many layers with date and time
-      FMT_1      = '(I15,'    // noutput_char   // '(1x,G13.4))'             !for one layer state variables in seconds
+     +                             noutput_char // '(1x,G13.4))'
+      FMT_1      = '(I15,'    // noutput_char   // '(1x,G13.4))'
       FMT_1_d    = '(I4.4,2I2.2,1x,3I2.2,'      //
-     +                            noutput_char  // '(1x,G13.4))'             !for one layer state variables with date and time
+     +                            noutput_char  // '(1x,G13.4))'
 
       write(NDIAGVAR_char,'(i2)') NDIAGVAR
 
-      FMT_diag_many   = '(I15,I5,' // NDIAGVAR_char //'(1x,G13.6))'           !for many layers in seconds
+      FMT_diag_many   = '(I15,I5,' // NDIAGVAR_char //'(1x,G13.6))'
       FMT_diag_many_d = '(I4.4,2I2.2,1x,3I2.2,I5,'  //
-     +                                NDIAGVAR_char //'(1x,G13.6))'            !for many layers with date and time
-      FMT_diag_1      = '(I15,'    // NDIAGVAR_char //'(1x,G13.6))'            !for one layer diagnostic variables in seconds
+     +                                NDIAGVAR_char //'(1x,G13.6))'
+      FMT_diag_1      = '(I15,'    // NDIAGVAR_char //'(1x,G13.6))'
       FMT_diag_1_d    = '(I4.4,2I2.2,1x,3I2.2,'     //
-     +                                NDIAGVAR_char //'(1x,G13.6))'            !for one layer diagnostic variables with date and time
+     +                                NDIAGVAR_char //'(1x,G13.6))'
 
 
 
@@ -3582,7 +3582,7 @@ C     INITIALIZE ARRAYS BEFORE READING
               if(iassign .eq. 0) then
                print *, 'CUR_PARAM_READ: Parameter did no get value'
                print *, 'Parameter name', trim(name) 
-               print *, 'Add it to the lists in routines:'                
+               print *, 'Add it to the lists in routines:'
                print *, 'cur_param read_ini_wc or' 
                print *, 'cur_param read_ini_bs'
                stop 

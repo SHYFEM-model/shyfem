@@ -357,7 +357,7 @@ c	if section is not numbered, num = 0
 	integer, optional :: num_opt		!number of section
 	character*(*) , optional ::extra_opt	!extra information
 
-	character*80 linaux,name,extra
+	character*80 name,extra
 	character*1 c
 	real f(5)
 	integer i,ios,ianz,num

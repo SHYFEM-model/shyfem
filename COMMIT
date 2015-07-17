@@ -1,5 +1,67 @@
 ============================================================
 
+Fri Jul 17 15:43:13 CEST 2015
+
+preparing allocation
+
+ RELEASE_NOTES                        |    4 +
+ fem3d/Makefile                       |   18 +-
+ fem3d/aquabc_II_fem_interface.f      |   18 +-
+ fem3d/aquabc_II_sediment_model_1.f90 |    4 +-
+ fem3d/bdist.f                        |    2 +-
+ fem3d/bin/newsubst.pl                |    2 +
+ fem3d/check_debug.f                  |    2 +-
+ fem3d/common.h                       |    5 -
+ fem3d/common_amat.h                  |    5 +
+ fem3d/flux.f                         | 1384 ----------------------------------
+ fem3d/grdutil.f                      |   37 +-
+ fem3d/ht.f                           |   23 +-
+ fem3d/lagrange_inout.f               |    8 +-
+ fem3d/matrix49.f                     |  273 -------
+ fem3d/mod_system.f                   |   51 ++
+ fem3d/newcon.f                       |  210 +++---
+ fem3d/newconz.f                      |   87 ++-
+ fem3d/newdum.f                       |   10 +
+ fem3d/regflux.h                      |   71 --
+ fem3d/simsys_lp.f                    |   19 +-
+ fem3d/simsys_pard.f                  |    3 +
+ fem3d/simsys_spk.f                   |    3 +
+ fem3d/subcus.f                       |   13 +
+ fem3d/subnls.f                       |    2 +-
+ fem3d/vp.f                           |  103 ++--
+ femdoc/final/shyfem.pdf              |  Bin 294949 -> 294947 bytes
+ femdoc/final/shyfem.ps               |   26 +-
+ femgotm/kpp.F90                      |    1 +
+ femplot/Makefile                     |    8 +-
+ femplot/lagxitest.f                  |    2 +-
+ femplot/line_nodes.f                 |    2 +-
+ femplot/mod_hydro_plot.f             |   11 -
+ femplot/mod_plot2d.f                 |    7 -
+ femplot/mod_plot3d.f                 |    5 -
+ femplot/ousinfo.f                    |   91 ---
+ femplot/plotsim.f                    |   11 +-
+ femplot/scalar.f                     |  155 ----
+ femplot/supdum.f                     |   13 -
+ femplot/suplin.f                     |   26 +-
+ femplot/suplin1.f                    |    7 +-
+ femplot/supout.f                     |    4 +-
+ femplot/supsim.f                     |   30 +-
+ femplot/supver.f                     |    5 -
+ femplot/turb.f                       |  169 -----
+ prep_dirs.sh                         |   46 +-
+ 45 files changed, 452 insertions(+), 2524 deletions(-)
+ new file:
+   fem3d/common_amat.h
+ deleted:
+    fem3d/flux.f
+    fem3d/matrix49.f
+    fem3d/regflux.h
+    femplot/ousinfo.f
+    femplot/scalar.f
+    femplot/turb.f
+
+============================================================
+
 Mon Jul 13 18:06:07 CEST 2015
 
 New version 7_1_51

@@ -5,17 +5,6 @@
 
 	implicit none
 
-        !real uv(nkndim)
-        !real vv(nkndim)
-
-        !real uvnv(neldim)
-        !real vvnv(neldim)
-
-        !real usnv(neldim)
-        !real vsnv(neldim)
-        !real wsnv(nkndim)
-
-
 	integer, private, save  :: nkn_hydro_plot = 0
 	integer, private, save  :: nel_hydro_plot = 0
 

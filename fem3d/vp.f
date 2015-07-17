@@ -23,19 +23,19 @@ c 17.10.2001    ggu     accept also grd files with some missing data
 c 18.10.2005    ggu     some error messages slightly changed
 c 06.04.2009    ggu     read param.h
 c 24.04.2009    ggu     new call to rdgrd()
-c 04.03.2011    ggu     new routine test_grade()
+c 04.03.2011    ggu     new routine estimate_grade()
 c 30.03.2011    ggu     new routine check_sidei(), text in optest()
 c 15.07.2011    ggu     calls to ideffi substituted
 c 15.11.2011    ggu     new routines for mixed depth (node and elem), hflag
 c 09.03.2012    ggu     delete useless error messages, handle nkn/nel better
-c 29.03.2012    ggu     use ngrdim1 to avoid too small dimension for ngrdim
+c 29.03.2012    ggu     use ngr1 to avoid too small dimension for ngr
 c 04.10.2013    ggu     in optest better error handling
 c
 c notes :
 c
 c could eliminate scrambling of iknot ->
 c       no knscr()
-c       pass ngrdim to bandop
+c       pass ngr1 to bandop
 c       change cmv,rosen
 c
 c********************************************************
@@ -66,9 +66,6 @@ c********************************************************
         integer, save, allocatable :: kvert(:,:)
 
 	integer, save, allocatable :: iknot(:,:)
-
-	integer ngrdim1
-	parameter (ngrdim1=ngrdim+1)
 
 	integer ianz,idepth,itief
 	integer ie,k
@@ -169,7 +166,7 @@ c--------------------------------------------------------
      +                   file
      +                  ,bstop
      +                  ,nco,nkn,nel,nli
-     +                  ,nkndim,neldim,nlidim,nlndim
+     +                  ,nknddi,nelddi,nlidim,nlndim
      +                  ,ipv,ipev,iaux
      +                  ,iaux,iarv,iaux
      +                  ,hkv,hev,raux
@@ -233,7 +230,7 @@ c
 c end reading ----------------------------------------------------
 
 	call ketest(nel,nen3v)
-	call gtest('end read',neldim,nkn,nel,nen3v)
+	call gtest('end read',nelddi,nkn,nel,nen3v)
 
         bstop=.false.
 
@@ -251,7 +248,7 @@ c end reading ----------------------------------------------------
 
         call uniqn(nel,ipev,iedex,ner,bstop)
 
-	call gtest('end uniqn',neldim,nkn,nel,nen3v)
+	call gtest('end uniqn',nelddi,nkn,nel,nen3v)
 
         write(nat,*) ' ...controlling uniqueness of elements'
 
@@ -271,14 +268,14 @@ c end reading ----------------------------------------------------
 	write(nat,*) ' ...testing sense of nodes in index'
 
 	call ketest(nel,nen3v)
-	call gtest('end sense',neldim,nkn,nel,nen3v)
+	call gtest('end sense',nelddi,nkn,nel,nen3v)
 
         call clockw(nkn,nel,nen3v,ipev,xgv,ygv,ner,bstop)
 	if(bstop) goto 99930
 
 	write(nat,*) ' ...setting up side index'
 
-        call test_grade(nkn,nel,nen3v,ng,ngr1)
+        call estimate_grade(nkn,nel,nen3v,ng,ngr1)
 	allocate(iknot(ngr1,nk))
 
         call sidei(nkn,nel,nen3v,ng,iknot,ngr1,ngr)
@@ -289,31 +286,31 @@ c end reading ----------------------------------------------------
 
 c bandwidth optimization -------------------------------------------
 
-	call gtest('bandwidth',neldim,nkn,nel,nen3v)
+	call gtest('bandwidth',nelddi,nkn,nel,nen3v)
 
         write(nat,*) ' ...optimizing band width'
 
         call bandw(nel,nen3v,mbw)
 
-	call gtest('bandwidth 1',neldim,nkn,nel,nen3v)
+	call gtest('bandwidth 1',nelddi,nkn,nel,nen3v)
 	write(nat,*) ' Bandwidth is ',mbw
 
         call bandop(nkn,ngr,ipv,iphv,kphv,ng,iknot,kvert,bopti)
 
-	call gtest('bandwidth 2',neldim,nkn,nel,nen3v)
+	call gtest('bandwidth 2',nelddi,nkn,nel,nen3v)
         if(bopti) then
           call bandex(nkn,nel,nen3v,neaux,kphv,iphv,rphv
      +				,ipv,xgv,ygv,hkv)
-	call gtest('bandwidth 3',neldim,nkn,nel,nen3v)
+	call gtest('bandwidth 3',nelddi,nkn,nel,nen3v)
           call bandw(nel,nen3v,mbw)
-	call gtest('bandwidth 4',neldim,nkn,nel,nen3v)
+	call gtest('bandwidth 4',nelddi,nkn,nel,nen3v)
 	  write(nat,*) ' Optimized bandwidth is ',mbw
 	end if
 
 c ------------------------------------------------------------------
 
 	call ketest(nel,nen3v)
-	call gtest('end bandwidth',neldim,nkn,nel,nen3v)
+	call gtest('end bandwidth',nelddi,nkn,nel,nen3v)
 
 	write(nat,*) ' ...renumbering elements'
 
@@ -334,7 +331,7 @@ c save pointers for depth ------------------------------------------
 c write to nb2 -----------------------------------------------------
 
 	call ketest(nel,nen3v)
-	call gtest('write',neldim,nkn,nel,nen3v)
+	call gtest('write',nelddi,nkn,nel,nen3v)
 
 !	call sp13uw(nb2)
 
@@ -353,11 +350,10 @@ c open bas file
 
 c read from nb2
 
-!	call sp13rr(nb2,nkndim,neldim)
+!	call sp13rr(nb2,nknddi,nelddi)
 
-!	if(nkn.gt.nkndim) goto 99900
-!	if(nel.gt.neldim) goto 99900
-!	if(ngr.gt.ngrdim1) goto 99900
+!	if(nkn.gt.nknddi) goto 99900
+!	if(nel.gt.nelddi) goto 99900
 
 !	descrg=descrr
 
@@ -414,12 +410,6 @@ c write to nb2
 
 	stop ' Successful completion'
 
-   95	continue
-	write(6,*) 'ngr grade possibly too small...'
-	write(6,*) 'estimated ngr = ',ngr,'   ngrdim = ',ngrdim1
-	write(6,*) 'please adjust and recompile'
-	stop 'error stop test_grade: ngrdim'
-
 99900	write(nat,*)' (00) error in dimension declaration'
 	goto 99
 99909	write(nat,*)' (09) error : no unique definition of nodes'
@@ -433,8 +423,8 @@ c write to nb2
 99930	write(nat,*)' (30) error in element index'
 	goto 99
 99990	continue
-	write(6,*) 'nkndim = ',nkndim,'    nkn = ',nkn
-	write(6,*) 'neldim = ',neldim,'    nel = ',nel
+	write(6,*) 'nknddi = ',nknddi,'    nkn = ',nkn
+	write(6,*) 'nelddi = ',nelddi,'    nel = ',nel
 	write(nat,*)' (90) error reading grid file'
 	write(nat,*)' plaese have a look at the error messages'
 	write(nat,*)' if there are errors in the file please adjust'
@@ -701,14 +691,13 @@ c test for anti-clockwise sense of nodes
 
 c*****************************************************************
 
-        subroutine test_grade(nkn,nel,nen3v,ng,ngr)
+        subroutine estimate_grade(nkn,nel,nen3v,ng,ngr)
 
-c tests if ngrdim is big enough
+c estimates ngr
 
         implicit none
 
         integer nkn,nel
-        integer ngrdim
         integer nen3v(3,nel)
         integer ng(nkn)
 
@@ -780,22 +769,22 @@ c set up side index and find grade
 
 c*****************************************************************
 
-        subroutine sidei(nkn,nel,nen3v,ng,iknot,ngrdim,ngr)
+        subroutine sidei(nkn,nel,nen3v,ng,iknot,ngr1,ngr)
 
-c set up side index and find grade
+c set up side index and find grade ngr
 
         implicit none
 
         integer nkn,nel,ngr
-        integer ngrdim
+        integer ngr1
         integer nen3v(3,nel)
         integer ng(nkn)
-        integer iknot(ngrdim,nkn)
+        integer iknot(ngr1,nkn)
 
         integer i,ii,iii,ie,k1,k2
 
 	do i=1,nkn
-	  do ii=1,ngrdim
+	  do ii=1,ngr1
 	    iknot(ii,i)=0
 	  end do
           ng(i)=0
@@ -810,10 +799,10 @@ c set up side index and find grade
               if(iknot(i,k1).eq.k2) goto 1    !already there
             end do
             ng(k1)=ng(k1)+1        !side not yet in index
-	    if(ng(k1).gt.ngrdim) goto 99
+	    if(ng(k1).gt.ngr1) goto 99
             iknot(ng(k1),k1)=k2
             ng(k2)=ng(k2)+1        !has to be added to index
-	    if(ng(k2).gt.ngrdim) goto 99
+	    if(ng(k2).gt.ngr1) goto 99
             iknot(ng(k2),k2)=k1
     1       continue
           end do
@@ -826,13 +815,13 @@ c set up side index and find grade
 
         return
    99	continue
-	write(6,*) 'dimension of ngrdim is too low: ',ngrdim
-	stop 'error stop sidei: ngrdim'
+	write(6,*) 'dimension of ngr1 is too low: ',ngr1
+	stop 'error stop sidei: ngr1'
         end
 
 c**********************************************************
 
-	subroutine knscr(nkn,ngr,ngrdim,iknot)
+	subroutine knscr(nkn,ngr,ngr1,iknot)
 
 c scrambles side index for cmv and rosen
 
@@ -840,14 +829,14 @@ c -> please eliminate need for this
 
 	implicit none
 
-	integer nkn,ngr,ngrdim
-        integer iknot(ngrdim*nkn)
+	integer nkn,ngr,ngr1
+        integer iknot(ngr1*nkn)
 
 	integer k,j
 
         do k=1,nkn
           do j=1,ngr
-            iknot((k-1)*ngr+j)=iknot((k-1)*ngrdim+j)
+            iknot((k-1)*ngr+j)=iknot((k-1)*ngr1+j)
           end do
         end do
 
@@ -888,18 +877,18 @@ c determine bandwidth mbw
 
 c**********************************************************
 
-        subroutine bandop(nkn,ngrdim,ipv,iphv,kphv,ng,iknot,kvert,bopti)
+        subroutine bandop(nkn,ngr1,ipv,iphv,kphv,ng,iknot,kvert,bopti)
 
 c optimize band width
 
         implicit none
 
-        integer nkn,ngrdim
+        integer nkn,ngr1
         logical bopti
         integer ipv(nkn)
         integer iphv(nkn),kphv(nkn)
         integer ng(nkn)
-        integer iknot(ngrdim,nkn)
+        integer iknot(ngr1,nkn)
         integer kvert(2,nkn)
 
         integer iantw
@@ -912,11 +901,11 @@ c optimize band width
 	if( bauto ) then
 	  call ininum(nkn,iphv,kphv)
 	  call optest('before optimization: ',nkn,ipv,iphv,kphv)
-	  call cmgrade(nkn,ngrdim,ipv,iphv,kphv,ng,iknot,1,4)
+	  call cmgrade(nkn,ngr1,ipv,iphv,kphv,ng,iknot,1,4)
 	  call optest('after Cuthill McKee: ',nkn,ipv,iphv,kphv)
 	  call revnum(nkn,iphv,kphv)
 	  call optest('after reversing nodes: ',nkn,ipv,iphv,kphv)
-          call rosen(nkn,ngrdim,iphv,kphv,ng,iknot,kvert)
+          call rosen(nkn,ngr1,iphv,kphv,ng,iknot,kvert)
 	  call optest('after Rosen: ',nkn,ipv,iphv,kphv)
 	  return
 	end if
@@ -924,10 +913,10 @@ c optimize band width
         do while( bopti )
 	  call ininum(nkn,iphv,kphv)
 
-c	  call anneal(nkn,ngrdim,kphv,ng,iknot,iphv,kvert)
+c	  call anneal(nkn,ngr1,kphv,ng,iknot,iphv,kvert)
 
           if( iantw(' Cuthill McKee algorithm ?') .gt. 0 ) then
-            call cmv(nkn,ngrdim,ipv,iphv,kphv,ng,iknot)
+            call cmv(nkn,ngr1,ipv,iphv,kphv,ng,iknot)
 	  end if
 
           if( iantw(' Reverse numbering of nodes ?') .gt. 0 ) then
@@ -935,7 +924,7 @@ c	  call anneal(nkn,ngrdim,kphv,ng,iknot,iphv,kvert)
 	  end if
 
           if( iantw(' Rosen algorithm ?') .gt. 0 ) then
-            call rosen(nkn,ngrdim,iphv,kphv,ng,iknot,kvert)
+            call rosen(nkn,ngr1,iphv,kphv,ng,iknot,kvert)
 	  end if
 
 	  bopti = iantw(' Repeat optimization of bandwidth ?') .gt. 0
@@ -1365,13 +1354,13 @@ c depth by nodes
 
 c**********************************************************
 
-	subroutine gtest(text,neldim,nkn,nel,nen3v)
+	subroutine gtest(text,nelddi,nkn,nel,nen3v)
 
 	implicit none
 
 	character*(*) text
-	integer neldim,nkn,nel
-	integer nen3v(3,neldim)
+	integer nelddi,nkn,nel
+	integer nen3v(3,nelddi)
 
 	integer ie,ii,k
 	integer iii

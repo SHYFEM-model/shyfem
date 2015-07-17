@@ -25,8 +25,9 @@ LIBPOST = post
 NPOBJS  = supbas.o supiso.o supdep.o supano.o supcol.o \
 		suptim.o supout.o suputi.o supsim.o \
 		supint.o supver.o col.o suplag.o \
-		suplin.o suplin1.o supdum.o \
-		mod_plot2d.o mod_plot3d.o mod_hydro_plot.o
+		suplin.o suplin1.o \
+		mod_plot2d.o mod_plot3d.o mod_hydro_plot.o \
+		supdum.o 
 
 LPOBJS = subfil.o subbas.o links.o sublnku.o subnsu.o	# not used anymore
 LPOBJS = 
@@ -46,7 +47,7 @@ LIBIPS  = $(DIRLIB)/lib$(LIBPOST).a
 
 SPECIAL = Makefile VERSION COMMIT
 
-EXES    = plotsim plotcolb ousinfo windrose turb testdash scalar \
+EXES    = plotsim plotcolb windrose testdash \
 		reg2fem line_nodes
 
 MAKEDEPEND = $(FEMBIN)/mkdp.pl
@@ -183,7 +184,6 @@ line_nodes.o: param.h basin.h geom.h
 ../femlib/mod/mod_hydro_plot.mod: mod_hydro_plot.o
 ../femlib/mod/mod_plot2d.mod: mod_plot2d.o
 ../femlib/mod/mod_plot3d.mod: mod_plot3d.o
-ousinfo.o: hydro.h param.h levels.h nlevel.h basin.h
 plotsim.o: depth.h plot_aux_3d.h nlevel.h mkonst.h evmain.h \
 		nbasin.h plot_aux.h geom.h hydro_vel.h param.h \
 		hydro.h pkonst.h levels.h basin.h hydro_print.h \

@@ -12,12 +12,15 @@ c******************************************************************
         implicit none
 
         include 'param.h'
+        include 'nbasin.h'
         include 'common.h'
 
         write(6,*) '----------------------------------------'
         write(6,*) 'initializing matrix inversion routines'
         write(6,*) 'using Sparskit routines'
         write(6,*) '----------------------------------------'
+
+        call mod_system_init(nkn,nel,mbw)
 
         end
 

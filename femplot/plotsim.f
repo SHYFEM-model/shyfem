@@ -91,16 +91,13 @@ c----------------------------------------------
 	high=1.e+35
 	grav=9.81
 
-	!nlvdi = nlvdim
-	!nlv = nlvdim
-
 	call set_flag(sflag)
 
 c----------------------------------------------
 c read basin
 c----------------------------------------------
 
-	if(iapini(7,nkndim,neldim,0).eq.0) then
+	if(iapini(7,0,0,0).eq.0) then
 		stop 'error stop : iapini'
 	end if
 	write(6,*) 'Basin:   nkn = ',nkn,'  nel = ',nel
@@ -333,13 +330,7 @@ c*****************************************************************
 
 	real flag
 
-	if( nlv .gt .nlvdim ) then
-	  write(6,*) 'nlv,nlvdim: ',nlv,nlvdim
-	  stop 'error stop allocate_simulation: dimension nlv'
-	end if
-
 	nlvdi = nlvdim
-	!nlvdi = max(nlvdim,nlv)
 
 	call levels_init(nkn,nel,nlvdi)
 	call mod_hydro_init(nkn,nel,nlvdi)

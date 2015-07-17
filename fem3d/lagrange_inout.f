@@ -484,10 +484,10 @@ c outputs particles as density (concentration) to NOS file
 	integer nvar,ivar,nlvdi
 	real area_elem,area_node,z
 
-        integer ecount(neldim)
-        integer kcount(nkndim)
-        real area(nkndim)
-        real density(nkndim)
+        integer ecount(nel)
+        integer kcount(nkn)
+        real area(nkn)
+        real density(nkn)
 
 	integer ifem_open_file
 

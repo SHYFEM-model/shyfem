@@ -15,7 +15,7 @@ c*******************************************************************
 
 	include 'param.h'
 
-	real pp3(nlvdim,nkndim)
+	real pp3(nlvdi,nkn)
 
 	include 'nbasin.h'
 	include 'nlevel.h'
@@ -32,7 +32,7 @@ c*******************************************************************
 	call vertical		!compute wlnv from utlnv,vtlnv
 
 	href = 0.
-	call mkht3(nlvdim,het3v,href)
+	call mkht3(nlvdi,het3v,href)
 
 	call make_vel_from_tra(het3v)
 	call vel_to_node
@@ -56,12 +56,13 @@ c*******************************************************************
 
 	include 'param.h'
 
-        real het3v(nlvdim,neldim)
+        real het3v(nlvdi,nel)
 
 	include 'nbasin.h'
 
 	include 'hydro.h'
 	include 'hydro_vel.h'
+	include 'nlevel.h'
 	include 'levels.h'
 
 	integer ie,l,lmax

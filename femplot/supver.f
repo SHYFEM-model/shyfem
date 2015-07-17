@@ -67,11 +67,6 @@ c local
 	integer inwater
         real aj,wbot,wtop,ff
 
-        if(nlvdim.ne.nlvdi) then
-	  write(6,*) nlvdim,nlvdi
-	  stop 'error stop : level dimension in sp256w'
-	end if
-
 c initialize
 
 	byaron = .true.

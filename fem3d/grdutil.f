@@ -141,10 +141,10 @@ c reads grd file to obtain basic parameters
 
 	logical bstop
 	integer ner,nco
-	integer nkndim0,neldim0,nlidim0,nlndim0
+	integer nkndi0,neldi0,nlidi0,nlndi0
 
-	real hev(neldim)
-	real hkv(nkndim)
+	real hev(1)
+	real hkv(1)
 
         integer ipntlv0(0:0)
 
@@ -155,10 +155,10 @@ c-----------------------------------------------------------------
         ner = 6
         bstop = .false.
 
-        nkndim0 = 0
-        neldim0 = 0
-        nlidim0 = 0
-        nlndim0 = 0
+        nkndi0 = 0
+        neldi0 = 0
+        nlidi0 = 0
+        nlndi0 = 0
 
 c-----------------------------------------------------------------
 c read grd file
@@ -168,7 +168,7 @@ c-----------------------------------------------------------------
      +                   gfile
      +                  ,bstop
      +                  ,nco,nk,ne,nl
-     +                  ,nkndim0,neldim0,nlidim0,nlndim0
+     +                  ,nkndi0,neldi0,nlidi0,nlndi0
      +                  ,ipv,ipev,iplv
      +                  ,iarnv,iarv,iarlv
      +                  ,hkv,hev,hllv
@@ -190,8 +190,8 @@ c reads grd file into basin structure
 	implicit none
 
 	character*(*) gfile
-	real hkv(1)
-	real hev(1)
+	real hkv(nkn)
+	real hev(nel)
 	integer ike
 
 	include 'param.h'
@@ -200,13 +200,14 @@ c reads grd file into basin structure
 
 	logical bstop
 	integer ner,nco
-	integer nlidim0
+	integer nlidi0,nlndi0
 	integer nknh,nelh
+	integer nknddi,nelddi
 	integer nl
 
-	integer iaux(neldim)
-	integer ipaux(neldim)
-	real raux(neldim)
+	integer iaux(nel)
+	integer ipaux(nel)
+	real raux(nel)
 
 c-----------------------------------------------------------------
 c initialize parameters
@@ -215,8 +216,10 @@ c-----------------------------------------------------------------
         ner = 6
         bstop = .false.
 
-        nlidim0 = 0		!use this to not read lines
-        nlidim0 = nlidim	!use this to read lines
+	call basin_get_dimension(nknddi,nelddi)
+        nlidi0 = nlidim		!use this to read lines
+        nlidi0 = 0		!use this to not read lines
+	nlndi0 = 0
 
 c-----------------------------------------------------------------
 c read grd file
@@ -226,7 +229,7 @@ c-----------------------------------------------------------------
      +                   gfile
      +                  ,bstop
      +                  ,nco,nkn,nel,nli
-     +                  ,nkndim,neldim,nlidim0,nlndim
+     +                  ,nknddi,nelddi,nlidi0,nlndi0
      +                  ,ipv,ipev,iplv
      +                  ,iarnv,iarv,iarlv
      +                  ,hkv,hev,hllv

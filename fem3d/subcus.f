@@ -1295,10 +1295,13 @@ c computes residence time online - one value for whole lagoon
 	integer ifemop
 	integer iaout,itmin,idtreset
 	integer secsmonth
+	integer iconz
 	real dt,c0
 	real restime,restime1,restimec
 	real remnant,rlast
 	real resmed,resstd
+
+	real getpar
 
 	integer iu,it0,ndata
 	save iu,it0,ndata
@@ -1379,6 +1382,16 @@ c do not change anything after this point
 c------------------------------------------------------------
 
 	if( itmin .eq. -1 ) itmin = itanf
+
+c------------------------------------------------------------
+c can we run the routine?
+c------------------------------------------------------------
+
+	iconz = nint(getpar('iconz'))
+	if( iconz <= 0 ) then
+	  write(6,*) 'iconz = ',iconz
+	  stop 'error stop jamal: iconz must be 1'
+	end if
 
 c------------------------------------------------------------
 c is it time to run the routine?

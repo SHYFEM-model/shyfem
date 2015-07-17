@@ -260,7 +260,7 @@ c****************************************************************
 
 	nb = 1
 	open(nb,file=basfil,status='old',form='unformatted')
-	call sp13rr(nb,nkndim,neldim)
+	call basin_read(nb)
 	close(nb)
 
         call mklenk(nlkdim,nkn,nel,nen3v,ilinkv,lenkv)

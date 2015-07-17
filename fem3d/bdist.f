@@ -45,7 +45,7 @@ c   rdist:   0   0  1/4 2/4 3/4  1   1   1   ...
 
 c local variables
 
-        integer idist(nkndim)
+        integer idist(nkn)
 
         integer i,k,kk
         integer nadist,nad

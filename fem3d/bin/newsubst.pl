@@ -1267,6 +1267,8 @@ sub inc2use {
   include2use($fortran,"plot_aux.h","mod_plot2d");
   include2use($fortran,"hydro_plot.h","mod_hydro_plot");
 
+  include2use($fortran,"common.h","mod_system");
+  include2use($fortran,"common_amat.h","mod_system");
 }
 
 #--------------------------------------------------------------

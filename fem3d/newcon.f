@@ -29,7 +29,7 @@ c		special version for cohesive sediments with factor
 c
 c-------------------------------------------------------------
 c
-c subroutine scal3sh(what,cnv,nlvbnd,rcv,cobs,robs,rkpar
+c subroutine scal3sh(what,cnv,nlvddi,rcv,cobs,robs,rkpar
 c					,wsink,wsinkv,rload,load
 c     +                                 ,difhv,difv,difmol)
 c		shell for scalar T/D
@@ -106,7 +106,7 @@ c 05.12.2001    ggu     variable horizontal diffusion, limit on dif.coef.
 c 11.10.2002    ggu     file cleaned, t/shdif are set equal
 c 11.10.2002    ggu     con3sh removed, conzstab better commented
 c 14.10.2002    ggu     rstot re-introduced as rstol
-c 09.09.2003    ggu     call to scal3sh changed -> new arg nlvbnd
+c 09.09.2003    ggu     call to scal3sh changed -> new arg nlvddi
 c 10.03.2004    ggu     call conwrite() to write stability param to nos file
 c 13.03.2004    ggu     new boundary conditions through flux (cbound)
 c 15.10.2004    ggu     boundary conditions back to old
@@ -160,7 +160,7 @@ c 16.02.2011    ggu     pass robs to info_stability()
 c 23.03.2011    ggu     new parameter itvdv
 c 25.03.2011    ggu     error check for aapar and itvdv
 c 01.06.2011    ggu     wsink for stability integrated
-c 12.07.2011    ggu     run over nlv, not nlvdim, vertical_flux() for lmax>1
+c 12.07.2011    ggu     run over nlv, not nlvddi, vertical_flux() for lmax>1
 c 15.07.2011    ggu     call vertical_flux() anyway (BUG)
 c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
 c 03.12.2013    ggu&deb bug fix for horizontal diffusion
@@ -185,12 +185,12 @@ c shell for scalar (for parallel version)
 
         character*(*) what
 	integer ivar
-        real scal(nlvdim,nkndim)
+        real scal(nlvdi,nkn)
         integer ids(nbcdim)
         real rkpar
 	real wsink
-        real difhv(nlvdim,1)
-	real difv(0:nlvdim,1)
+        real difhv(nlvdi,nel)
+	real difv(0:nlvdi,nkn)
         real difmol
 
 	include 'nbasin.h'
@@ -199,10 +199,10 @@ c shell for scalar (for parallel version)
 
 	!include 'const_aux.h'
 
-        real r3v(nlvdim,nkndim)
-        real caux(0:nlvdim,nkndim)
-	real load(nlvdim,nkndim)	!load [kg/s]
-	real cobs(nlvdim,nkndim)	!load [kg/s]
+        real r3v(nlvdi,nkn)
+        real caux(0:nlvdi,nkn)
+	real load(nlvdi,nkn)	!load [kg/s]
+	real cobs(nlvdi,nkn)	!load [kg/s]
 
 	double precision dtime
 	real robs,rload
@@ -233,14 +233,14 @@ c--------------------------------------------------------------
 	dtime = it
 
 	call bnds_trans_new(whatvar(1:iwhat)
-     +			,ids,dtime,ivar,nkn,nlv,nlvdim,r3v)
+     +			,ids,dtime,ivar,nkn,nlv,nlvdi,r3v)
 
 c--------------------------------------------------------------
 c do advection and diffusion
 c--------------------------------------------------------------
 
         call scal3sh(whatvar(1:iwhat)
-     +				,scal,nlvdim
+     +				,scal,nlvdi
      +                          ,r3v,cobs,robs
      +				,rkpar,wsink,caux,rload,load
      +                          ,difhv,difv,difmol)
@@ -267,14 +267,14 @@ c shell for scalar with nudging (for parallel version)
 
         character*(*) what
 	integer ivar
-        real scal(nlvdim,nkndim)
+        real scal(nlvdi,nkn)
         integer ids(nbcdim)
         real rkpar
 	real wsink
-        real difhv(nlvdim,1)
-	real difv(0:nlvdim,1)
+        real difhv(nlvdi,nel)
+	real difv(0:nlvdi,nkn)
         real difmol
-	real sobs(nlvdim,1)		!observations
+	real sobs(nlvdi,nkn)		!observations
 	real robs
 
 	include 'nbasin.h'
@@ -284,9 +284,9 @@ c shell for scalar with nudging (for parallel version)
 
 	!include 'const_aux.h'
 
-        real r3v(nlvdim,nkndim)
-        real caux(0:nlvdim,nkndim)
-	real load(nlvdim,nkndim)	!load [kg/s]
+        real r3v(nlvdi,nkn)
+        real caux(0:nlvdi,nkn)
+	real load(nlvdi,nkn)	!load [kg/s]
 
 	integer ierr,l,k,lmax
 	real eps
@@ -317,14 +317,14 @@ c--------------------------------------------------------------
 	dtime = it
 
 	call bnds_trans_new(whatvar(1:iwhat)
-     +			,ids,dtime,ivar,nkn,nlv,nlvdim,r3v)
+     +			,ids,dtime,ivar,nkn,nlv,nlvdi,r3v)
 
 c--------------------------------------------------------------
 c do advection and diffusion
 c--------------------------------------------------------------
 
         call scal3sh(whatvar(1:iwhat)
-     +				,scal,nlvdim
+     +				,scal,nlvdi
      +                          ,r3v,sobs,robs
      +				,rkpar,wsink,caux,rload,load
      +                          ,difhv,difv,difmol)
@@ -353,22 +353,22 @@ c special version with factor for BC, variable sinking velocity and loads
         character*(*) what
 	integer ivar
 	real fact			!factor for boundary condition
-        real scal(nlvdim,nkndim)
+        real scal(nlvdi,nkn)
         integer ids(nbcdim)
         real rkpar
 	real wsink
-	real wsinkv(0:nlvdim,nkndim)
+	real wsinkv(0:nlvdi,nkn)
 	real rload			!load factor (1 for load given)
-	real load(nlvdim,nkndim)	!load [kg/s]
-        real difhv(nlvdim,1)
-	real difv(0:nlvdim,1)
+	real load(nlvdi,nkn)		!load [kg/s]
+        real difhv(nlvdi,nel)
+	real difv(0:nlvdi,nkn)
         real difmol
 
 	include 'nbasin.h'
 	include 'femtime.h'
 	include 'nlevel.h'
 
-        real r3v(nlvdim,nkndim)
+        real r3v(nlvdi,nkn)
 
 	double precision dtime
 	real robs
@@ -395,7 +395,7 @@ c--------------------------------------------------------------
 	dtime = it
 
 	call bnds_trans_new(whatvar(1:iwhat)
-     +			,ids,dtime,ivar,nkn,nlv,nlvdim,r3v)
+     +			,ids,dtime,ivar,nkn,nlv,nlvdi,r3v)
 
 c--------------------------------------------------------------
 c multiply boundary condition with factor
@@ -410,7 +410,7 @@ c do advection and diffusion
 c--------------------------------------------------------------
 
         call scal3sh(whatvar(1:iwhat)
-     +				,scal,nlvdim
+     +				,scal,nlvdi
      +                          ,r3v,scal,robs
      +				,rkpar,wsink,wsinkv,rload,load
      +                          ,difhv,difv,difmol)
@@ -445,7 +445,7 @@ c*********************************************************************
 c*********************************************************************
 c*********************************************************************
 
-	subroutine scal3sh(what,cnv,nlvbnd,rcv,cobs,robs,rkpar
+	subroutine scal3sh(what,cnv,nlvddi,rcv,cobs,robs,rkpar
      +					,wsink,wsinkv,rload,load
      +					,difhv,difv,difmol)
 
@@ -457,18 +457,18 @@ c parameter
         include 'param.h'
 c arguments
         character*(*) what
-        real cnv(nlvdim,nkndim)
-	integer nlvbnd		!vertical dimension of boundary condition
-        real rcv(nlvbnd,1)	!boundary condition (value of scalar)
-	real cobs(nlvdim,1)	!observations (for nudging)
+        real cnv(nlvddi,nkn)
+	integer nlvddi		!vertical dimension
+        real rcv(nlvddi,nkn)	!boundary condition (value of scalar)
+	real cobs(nlvddi,nkn)	!observations (for nudging)
 	real robs		!use nudging
         real rkpar
 	real wsink
-	real wsinkv(0:nlvdim,nkndim)
+	real wsinkv(0:nlvddi,nkn)
 	real rload
-	real load(nlvdim,nkndim)	!load [kg/s]
-        real difhv(nlvdim,1)
-	real difv(0:nlvdim,1)
+	real load(nlvddi,nkn)		!load [kg/s]
+        real difhv(nlvddi,nel)
+	real difv(0:nlvddi,nkn)
         real difmol
 c parameters
 	integer istot_max
@@ -484,11 +484,11 @@ c common
 	include 'hydro_print.h'
 
 c local
-        real saux(nlvdim,nkndim)		!aux array
-        real sbflux(nlvdim,nkndim)		!flux boundary conditions
-        real sbconz(nlvdim,nkndim)		!conz boundary conditions
-	real gradxv(nlvdim,nkndim)		!gradient in x for tvd
-	real gradyv(nlvdim,nkndim)		!gradient in y for tvd
+        real saux(nlvddi,nkn)		!aux array
+        real sbflux(nlvddi,nkn)		!flux boundary conditions
+        real sbconz(nlvddi,nkn)		!conz boundary conditions
+	real gradxv(nlvddi,nkn)		!gradient in x for tvd
+	real gradyv(nlvddi,nkn)		!gradient in y for tvd
 
 	logical btvd,btvd1
 	integer isact
@@ -508,8 +508,6 @@ c function
 c-------------------------------------------------------------
 c start of routine
 c-------------------------------------------------------------
-
-	if(nlvdim.ne.nlvdi) stop 'error stop scal3sh: level dimension'
 
 c-------------------------------------------------------------
 c initialization
@@ -570,14 +568,14 @@ c transport and diffusion
 c-------------------------------------------------------------
 
 
-	call massconc(-1,cnv,nlvdim,massold)
+	call massconc(-1,cnv,nlvddi,massold)
 
 	do isact=1,istot
 
 	  call make_scal_flux(what,rcv,cnv,sbflux,sbconz,ssurface)
 	  !call check_scal_flux(what,cnv,sbconz)
 
-	  if( btvd1 ) call tvd_grad_3d(cnv,gradxv,gradyv,saux,nlvdi)
+	  if( btvd1 ) call tvd_grad_3d(cnv,gradxv,gradyv,saux,nlvddi)
 
           call conz3d(
      +           cnv
@@ -591,12 +589,12 @@ c-------------------------------------------------------------
      +		,rload,load
      +		,azpar,adpar,aapar
      +          ,istot,isact
-     +          ,nlvdi,nlv
+     +          ,nlvddi,nlv
      +               )
 
 	  call assert_min_max_property(cnv,saux,sbconz,gradxv,gradyv,eps)
 
-          call bndo_setbc(it,what,nlvdi,cnv,rcv,uprv,vprv)
+          call bndo_setbc(it,what,nlvddi,cnv,rcv,uprv,vprv)
 
 	end do
 
@@ -607,7 +605,7 @@ c-------------------------------------------------------------
 c check total mass
 c-------------------------------------------------------------
 
-	call massconc(+1,cnv,nlvdim,mass)
+	call massconc(+1,cnv,nlvddi,mass)
 	massdiff = mass - massold
 
 	write(iuinfo,1000) 'scal3sh_',what,':'
@@ -770,13 +768,11 @@ c local
 	double precision rso,rsn,rsot,rsnt,rstot
 	double precision hn,ho
 
-	double precision cn(nlvdim,nkndim)		!DPGGU	!FIXME
-	double precision co(nlvdim,nkndim)
-	double precision cdiag(nlvdim,nkndim)
-	double precision clow(nlvdim,nkndim)
-	double precision chigh(nlvdim,nkndim)
-
-c	double precision explh(nlvdim,nlkdim)
+	double precision cn(nlvddi,nkn)		!DPGGU	!FIXME
+	double precision co(nlvddi,nkn)
+	double precision cdiag(nlvddi,nkn)
+	double precision clow(nlvddi,nkn)
+	double precision chigh(nlvddi,nkn)
 
 	double precision cexpl
 	double precision cbm,ccm
@@ -785,32 +781,32 @@ c	double precision explh(nlvdim,nlkdim)
 	double precision flux_tot,flux_tot1,flux_top,flux_bot
         double precision wdiff(3),waux
 c local (new)
-	double precision clc(nlvdim,3), clm(nlvdim,3), clp(nlvdim,3)
-	double precision cle(nlvdim,3)
+	double precision clc(nlvddi,3), clm(nlvddi,3), clp(nlvddi,3)
+	double precision cle(nlvddi,3)
 
-	double precision cclc(nlvdim,3,nel)
-	double precision cclm(nlvdim,3,nel)
-	double precision cclp(nlvdim,3,nel)
-	double precision ccle(nlvdim,3,nel)
+	double precision cclc(nlvddi,3,nel)
+	double precision cclm(nlvddi,3,nel)
+	double precision cclp(nlvddi,3,nel)
+	double precision ccle(nlvddi,3,nel)
 
-	double precision cl(0:nlvdim+1,3)
-	double precision wl(0:nlvdim+1,3)
-	double precision vflux(0:nlvdim+1,3)
-	double precision cob(0:nlvdim+1,3)
-	double precision rtau(0:nlvdim+1,3)
+	double precision cl(0:nlvddi+1,3)
+	double precision wl(0:nlvddi+1,3)
+	double precision vflux(0:nlvddi+1,3)
+	double precision cob(0:nlvddi+1,3)
+	double precision rtau(0:nlvddi+1,3)
 
-	double precision hdv(0:nlvdim+1)
-	double precision haver(0:nlvdim+1)
-	double precision hnew(0:nlvdim+1,3)
-	double precision hold(0:nlvdim+1,3)
-	double precision htnew(0:nlvdim+1,3)
-	double precision htold(0:nlvdim+1,3)
-	double precision present(0:nlvdim+1)
+	double precision hdv(0:nlvddi+1)
+	double precision haver(0:nlvddi+1)
+	double precision hnew(0:nlvddi+1,3)
+	double precision hold(0:nlvddi+1,3)
+	double precision htnew(0:nlvddi+1,3)
+	double precision htold(0:nlvddi+1,3)
+	double precision present(0:nlvddi+1)
 
-	double precision cauxn(nlvdim)	!FIXME
-	double precision cauxd(nlvdim)
-	double precision cauxh(nlvdim)
-	double precision cauxl(nlvdim)
+	double precision cauxn(nlvddi)	!FIXME
+	double precision cauxd(nlvddi)
+	double precision cauxh(nlvddi)
+	double precision cauxl(nlvddi)
 c tvd
 	logical btvd,bgradup
 	integer ic,kc,id,kd,ippp
@@ -833,7 +829,6 @@ c	integer ipint,ieint
 
 	include 'testbndo.h'
 
-        if(nlvdim.ne.nlvddi) stop 'error stop conz3d: level dimension'
         if(nlv.ne.nlev) stop 'error stop conzstab: level'
 
 c----------------------------------------------------------------
@@ -1515,12 +1510,12 @@ c local
 c------------------------------------------------------------
 c big arrays
 c------------------------------------------------------------
-	double precision cn(nlvdim,nkndim)		!DPGGU	!FIXME
-	double precision co(nlvdim,nkndim)
-	double precision cdiag(nlvdim,nkndim)
-	double precision clow(nlvdim,nkndim)
-	double precision chigh(nlvdim,nkndim)
-        real cwrite(nlvdim,nkndim)
+	double precision cn(nlvddi,nkn)		!DPGGU	!FIXME
+	double precision co(nlvddi,nkn)
+	double precision cdiag(nlvddi,nkn)
+	double precision clow(nlvddi,nkn)
+	double precision chigh(nlvddi,nkn)
+        real cwrite(nlvddi,nkn)
 c------------------------------------------------------------
 c end of big arrays
 c------------------------------------------------------------
@@ -1529,15 +1524,15 @@ c------------------------------------------------------------
 	double precision fw(3),fd(3)
 	double precision fl(3)
 c local (new)
-	double precision clc(nlvdim,3), clm(nlvdim,3), clp(nlvdim,3)
-	!double precision cl(0:nlvdim+1,3)
-	double precision wl(0:nlvdim+1,3)
+	double precision clc(nlvddi,3), clm(nlvddi,3), clp(nlvddi,3)
+	!double precision cl(0:nlvddi+1,3)
+	double precision wl(0:nlvddi+1,3)
 c
-	double precision hdv(0:nlvdim+1)
-	double precision haver(0:nlvdim+1)
-	double precision hnew(0:nlvdim+1,3)
-	double precision hold(0:nlvdim+1,3)
-	double precision present(0:nlvdim+1)
+	double precision hdv(0:nlvddi+1)
+	double precision haver(0:nlvddi+1)
+	double precision hnew(0:nlvddi+1,3)
+	double precision hold(0:nlvddi+1,3)
+	double precision present(0:nlvddi+1)
 
         integer kstab
 	real dtorig
@@ -1552,7 +1547,6 @@ c functions
 
 	!write(6,*) 'conzstab called...'
 
-        if(nlvdim.ne.nlvddi) stop 'error stop conzstab: level dimension'
         if(nlv.ne.nlev) stop 'error stop conzstab: level'
 
 c-----------------------------------------------------------------
@@ -1962,10 +1956,6 @@ c local
 	double precision sum,masstot
 	real volnode
 
-	if(nlvdim.ne.nlvddi) then
-	  stop 'error stop : level dimension in massconc'
-	end if
-
         masstot = 0.
 
         do k=1,nkn
@@ -1994,12 +1984,13 @@ c checks if scalar is out of bounds
 
         include 'param.h'
 
-        real cnv(nlvdim,1)
+        real cnv(nlvdi,nkn)
         real cmin,cmax
 	real eps
 	logical bstop		!stop simulation if true
 
 	include 'nbasin.h'
+	include 'nlevel.h'
 	include 'levels.h'
 
 	logical berror
@@ -2044,17 +2035,18 @@ c checks min/max property
 	include 'param.h'
 	include 'testbndo.h'
 
-        real cnv(nlvdim,nkndim)			!new concentration
-        real cov(nlvdim,nkndim)			!old concentration
-        real sbconz(nlvdim,nkndim)		!conz boundary conditions
-	real rmin(nlvdim,nkndim)		!aux arrray to contain min
-	real rmax(nlvdim,nkndim)		!aux arrray to contain max
+        real cnv(nlvdi,nkn)			!new concentration
+        real cov(nlvdi,nkn)			!old concentration
+        real sbconz(nlvdi,nkn)		!conz boundary conditions
+	real rmin(nlvdi,nkn)		!aux arrray to contain min
+	real rmax(nlvdi,nkn)		!aux arrray to contain max
 	real eps
 
 	include 'femtime.h'
 
 	include 'basin.h'
 	include 'bound_dynamic.h'
+	include 'nlevel.h'
 	include 'levels.h'
 
 	logical bwrite,bstop

@@ -5,11 +5,6 @@
 
 	implicit none
 
-        !real fvlv(nlvdim,nkndim)
-        !real wauxv(0:nlvdim,nkndim)
-        !real het3v(nlvdim,neldim)
-        !real p3(nlvdim,2*neldim)        !is good for nodes, elements & arrays
-
 	integer, private, save  :: nkn_plot3d = 0
 	integer, private, save  :: nel_plot3d = 0
 	integer, private, save  :: nlv_plot3d = 0

@@ -1614,6 +1614,7 @@
    REALTYPE, dimension (0:nlev) :: Bflux
    REALTYPE, dimension (0:nlev) :: FC
 
+   dGt1dS = 0.
 
 !-----------------------------------------------------------------------
 !BOC

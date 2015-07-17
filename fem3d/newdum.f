@@ -293,6 +293,16 @@ c*****************************************************************
 
 c*****************************************************************
 
+	subroutine mod_system_init(nkn,nel,mbw)
+	implicit none
+	integer nkn,nel,mbw
+	end
+
+	subroutine mod_system_amat_init(nkn,mbw)
+	implicit none
+	integer nkn,mbw
+	end
+
 c*****************************************************************
 
 

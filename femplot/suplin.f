@@ -37,7 +37,7 @@ c plots section
         include 'param.h'
 
 	logical bvel			!plot velocities
-	real sv(nlvdim,nkndim)		!scalar to be plotted
+	real sv(nlvdi,nkn)		!scalar to be plotted
 
 	integer nldim
 	parameter (nldim=200)
@@ -49,8 +49,8 @@ c plots section
 
 c elems(1) is not used, etc..
 
-	real val(0:2*nlvdim,nldim)	!scalar value along line
-	real vel(3,0:2*nlvdim,nldim)	!projected velocities along line
+	real val(0:2*nlvdi,nldim)	!scalar value along line
+	real vel(3,0:2*nlvdi,nldim)	!projected velocities along line
 	integer nodes(nldim)		!nodes along line
 	integer elems(nldim)		!elements along line
 	integer lelems(nldim)		!levels in element
@@ -59,7 +59,7 @@ c elems(1) is not used, etc..
 	real dxy(2,nldim)		!direction of projection line
 	real xy(nldim)			!linear distance
 
-	real ya(2,0:nlvdim)
+	real ya(2,0:nlvdi)
 	real xbot(2*nldim+2)
 	real ybot(2*nldim+2)
 
@@ -1028,6 +1028,8 @@ c modes: 0=use normal vel   1=use tangent vel   as scalar velocity
 	implicit none
 
 	include 'param.h'
+	include 'nlevel.h'
+	include 'hydro_print.h'
 
 	integer mode			!what to use as scalar vel
 	integer n			!total number of nodes
@@ -1035,12 +1037,10 @@ c modes: 0=use normal vel   1=use tangent vel   as scalar velocity
 	integer lnodes(n)		!total nuber of layers
 	integer ilhkv(1)		!number of layers in node
 	real dxy(2,n)			!direction of line (for projection)
-	real vel(3,0:2*nlvdim,n)	!projected velocities along line (ret)
-	real val(0:2*nlvdim,n)		!scalar velocity for overlay (ret)
+	real vel(3,0:2*nlvdi,n)		!projected velocities along line (ret)
+	real val(0:2*nlvdi,n)		!scalar velocity for overlay (ret)
 	real vmin,vmax			!min/max of scalar vel (ret)
 	real vhmin,vhmax		!min/max of tangent vel (ret)
-
-	include 'hydro_print.h'
 
 	integer i,k,l,lmax,llayer
 	real ut,un,w
@@ -1102,18 +1102,19 @@ c computes flux through section
 	implicit none
 
 	include 'param.h'
+	include 'nlevel.h'
 
 	integer n			!total number of nodes
 	real xy(n)			!coordinates along section
 	integer lelems(n)		!total nuber of layers
 	real helems(2,n)		!depth elems
 	real hlv(*)			!depth structure
-	real val(0:2*nlvdim,n)		!scalar velocity for overlay (ret)
+	real val(0:2*nlvdi,n)		!scalar velocity for overlay (ret)
 	real flux			!computed flux (return)
 
 	integer i,l,ltot,lc,ivert
 	real dx,dh1,dh2,thick,value,hvmax
-	real ya(2,0:nlvdim)
+	real ya(2,0:nlvdi)
 	double precision acum
 
 	ivert = 0
@@ -1171,13 +1172,14 @@ c inserts scalar values into matrix section
 	implicit none
 
 	include 'param.h'
+	include 'nlevel.h'
 
 	integer n
 	integer nodes(n)
 	integer lnodes(n)
 	integer ilhkv(1)		!number of layers in node
-	real sv(nlvdim,1)
-	real values(0:2*nlvdim,n)
+	real sv(nlvdi,1)
+	real values(0:2*nlvdi,n)
 	real vmin,vmax
 
 	integer i,k,lmax,l,llayer

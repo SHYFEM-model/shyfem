@@ -2300,6 +2300,8 @@ function SED_MOD_1_ALUKAS_MOLDI_C(SVARNO, T, SAL, TVAR) result(MOL_DIFF)
     
     double precision MOL_DIFF
     
+    MOL_DIFF = 0.
+
     TK = T + 273.16
     
     !NH4N

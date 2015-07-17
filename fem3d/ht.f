@@ -410,6 +410,7 @@ c-----------------------------------------------------------
 	call cstsetup
 	call sp136(ic)
         call shdist(rdistv)
+	call tracer
 	call renewal_time
 
 c-----------------------------------------------------------
@@ -474,8 +475,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	   call wrfvla			!write finite volume
 
-	   call conz3sh			!concentration (for iconz == 1)
-	   call conzm3sh		!multi concentration (for iconz > 1)
+	   call tracer
 	   call barocl(1)		!baroclinic contribution
 
 	   !call compute_heat_flux
@@ -563,6 +563,10 @@ c*****************************************************************
 	include 'roughness.h'
 	include 'hydro_vel.h'
 	include 'gotm_aux.h'
+	include 'waves.h'
+	include 'internal.h'
+	include 'aux_array.h'
+	include 'fluidmud.h'
 
 	include 'ts.h'
 
@@ -599,6 +603,16 @@ c*****************************************************************
 
         call debug_output_record(nlvdim*nkn,nlvdim,hdknv,'shearf2')
         call debug_output_record(nlvdim*nkn,nlvdim,hdknv,'buoyf2')
+
+        call debug_output_record(nlvdim*nel,nlvdim,fxv,'fxv')
+        call debug_output_record(nlvdim*nel,nlvdim,fyv,'fyv')
+        call debug_output_record(nlvdim*nel,nlvdim,wavefx,'wavefx')
+        call debug_output_record(nlvdim*nel,nlvdim,wavefy,'wavefy')
+        call debug_output_record(nel,1,rfricv,'rfricv')
+
+        call debug_output_record(nlvdim*nkn,nlvdim,saux2,'saux2')
+        call debug_output_record(nlvdim*nkn,nlvdim,saux3,'saux3')
+        call debug_output_record((nlvdim+1)*nkn,nlvdim+1,vts,'vts')
 
 	write(66) 0,0
 
@@ -755,11 +769,10 @@ c*****************************************************************
 	include 'waves.h'
 	include 'conz.h'
 
-	integer nlvddi,ncs
+	integer nlvddi
 
 	nlvdi = nlvdim
 	nlvddi = nlvdim
-	ncs = ncsdim
 
 	call mod_hydro_init(nkn,nel,nlvddi)
 	call mod_hydro_vel_init(nkn,nel,nlvddi)
@@ -783,8 +796,6 @@ c*****************************************************************
 	call mod_sinking_init(nkn,nlvddi)
 	call mod_turbulence_init(nkn,nlvddi)
 	call mod_waves_init(nkn,nel,nlvddi)
-
-	call mod_conz_init(ncs,nkn,nlvddi)
 
 	write(6,*) '3D arrays allocated: ',nkn,nel,ngr,nlvddi
 

@@ -77,19 +77,6 @@ c*****************************************************************
 
 c*****************************************************************
 
-        subroutine basin_get_dimension(nk,ne)
-
-! returns dimension of arrays (static)
-
-        integer nk,ne
-
-	include 'param.h'
-
-        nk = nkndim
-        ne = neldim
-
-        end subroutine basin_get_dimension
-
 c*****************************************************************
 
         subroutine levels_get_dimension(nl)

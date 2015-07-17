@@ -5,13 +5,6 @@
 
 	implicit none
 
-        !real arfvlv(nkndim)
-        !real hetv(neldim)
-        !real parray(neldim)             !is good for nodes and elements
-
-        !logical bwater(neldim)
-        !logical bkwater(nkndim)
-
 	integer, private, save  :: nkn_plot2d = 0
 	integer, private, save  :: nel_plot2d = 0
 
