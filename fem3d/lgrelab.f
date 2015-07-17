@@ -11,16 +11,19 @@ c**************************************************************
 
 c reads nos file
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
 c--------------------------------------------------
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 c--------------------------------------------------
 
 	integer nread,nin,i,it
@@ -164,6 +167,8 @@ c***************************************************************
 
 	subroutine elab_elems(ielems)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ielems(0:3,1)
@@ -171,7 +176,7 @@ c***************************************************************
 	include 'param.h'
 
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer nodes(0:3,nkndim)
 	integer icount(nkndim)
@@ -261,6 +266,9 @@ c***************************************************************
 
 c shell for writing file unconditionally to disk
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
         integer iu              !unit (0 for first call, set on return)
@@ -272,8 +280,8 @@ c shell for writing file unconditionally to disk
 
 	include 'param.h'
 
-	include 'nbasin.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ierr,nvers,nlv
 	integer ilhkv(1)

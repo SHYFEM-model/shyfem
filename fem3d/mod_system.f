@@ -17,6 +17,7 @@
 
 	integer, save :: iprec = 0
 	integer, save :: nnzero = 0
+	integer, save :: csrdim = 0
 
         double precision, allocatable, save :: vs1v(:)
         double precision, allocatable, save :: vs2v(:)
@@ -73,6 +74,7 @@
         mbw_system = mbw
 
 	csr = 9 * nel
+	csrdim = csr			!may be deleted later
 	mat = nkn*(1+3*mbw)
 
         if( nkn == 0 ) return

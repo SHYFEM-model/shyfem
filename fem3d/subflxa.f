@@ -316,6 +316,9 @@ c******************************************************************
 
 c administers writing of flux data
 
+	use mod_conz !COMMON_GGU_SUBST
+	use mod_ts !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
 	use flux
 
 	implicit none
@@ -329,9 +332,9 @@ c administers writing of flux data
 	integer idtflx
 	real az,azpar,rr
 
-	include 'ts.h'
-	include 'conz.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'ts.h'
+COMMON_GGU_DELETED	include 'conz.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 	integer ifemop
 	real getpar
@@ -530,6 +533,8 @@ c iconz		how many parameters actually needed
 c csc		new extension for file
 c ivar_base	base of variable numbering
 
+	use mod_conz !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
 	use flux
 
 	implicit none
@@ -537,8 +542,8 @@ c ivar_base	base of variable numbering
 	integer it
 
 	include 'param.h'
-	include 'nlevel.h'
-	include 'conz.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'conz.h'
 
 	integer itend
 	integer j,i,k,l,lmax,nlmax,ivar,nvers,ivar_base

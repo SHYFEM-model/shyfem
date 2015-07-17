@@ -28,14 +28,18 @@ c performs scalar interpolation in basin
 c
 c takes care of lat/lon coordinates
 
+	use mod_depth !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 	include 'simul.h'
 	include 'pkonst.h'
-	include 'basin.h'
-	include 'depth.h'
-	include 'evmain.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'evmain.h'
 
 	integer ndim
 	parameter(ndim=1200000)

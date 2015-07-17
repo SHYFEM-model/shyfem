@@ -17,10 +17,13 @@ c averages records over basin
 c
 c creates 4 values: aver, min, max, sum
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	character*80 title
 	real cv3(nlvdim,nkndim)
@@ -33,7 +36,7 @@ c creates 4 values: aver, min, max, sum
 	real hev2(neldim)
 	real hl(nlvdim)
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	logical bvol
         integer nread

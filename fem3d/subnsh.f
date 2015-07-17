@@ -168,12 +168,14 @@ c test output of all constants and variables
 c
 c id    identifier
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer id
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'modules.h'
 
 	include 'simul.h'
@@ -310,6 +312,8 @@ c revised 07.04.95 by ggu !$$baroc - impl. of baroclinic salt/temp (21/22)
 c revised ...06.97 by ggu !complete revision
 c 18.03.1998	ggu	use variable section instead name
 
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer iunit
@@ -318,8 +322,8 @@ c 18.03.1998	ggu	use variable section instead name
 	include 'modules.h'
 
 c---------------------------------------------------------------
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 c---------------------------------------------------------------
 
 	character*6 section,extra,last
@@ -467,14 +471,16 @@ c************************************************************************
 
         subroutine read_hlv
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
         use nls
 
         implicit none
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
         integer n,nlvddi
 

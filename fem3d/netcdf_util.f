@@ -191,6 +191,8 @@ c******************************************************************
 
 c gets dimensions for reguar grid
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -201,7 +203,7 @@ c gets dimensions for reguar grid
 	real ylat(nydim)
 
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer i,n
 	real x1,y1,dxy

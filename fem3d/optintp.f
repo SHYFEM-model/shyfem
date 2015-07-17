@@ -34,18 +34,21 @@ c****************************************************************
 
 c optimal interpolation interpolation
 
+	use mod_depth !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
 	use clo
 
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
-	include 'evmain.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'evmain.h'
 
 	integer nobdim
 	parameter (nobdim = 1000)
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	real xobs(nobdim)
 	real yobs(nobdim)
@@ -308,10 +311,12 @@ c****************************************************************
 	subroutine setup_background(ndim,dx,dy,xmin,ymin,xmax,ymax
      +			,nback,xback,yback,regpar)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ndim
 	real dx,dy
@@ -414,10 +419,12 @@ c	k2, val2
 c	...
 c	kn, valn
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	logical bmulti
 	integer iuobs

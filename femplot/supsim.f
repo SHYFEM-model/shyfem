@@ -81,6 +81,11 @@ c**********************************************************
 
 c 3D concentrations
 
+	use mod_plot2d !COMMON_GGU_SUBST
+	use mod_plot3d !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -88,10 +93,10 @@ c 3D concentrations
 	character*(*) type
 	integer ivarin
 
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'plot_aux.h'
-	include 'plot_aux_3d.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'plot_aux.h'
+COMMON_GGU_DELETED	include 'plot_aux_3d.h'
 
         character*80 line
 	integer nrec,ivel,nplot
@@ -155,6 +160,8 @@ c**********************************************************
 
 	subroutine set_uv(nlvddi,nkn,p3)
 
+	use mod_hydro_plot !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nlvddi
@@ -162,7 +169,7 @@ c**********************************************************
 	real p3(nlvddi,nkn,2)
 
 	include 'param.h'
-	include 'hydro_plot.h'
+COMMON_GGU_DELETED	include 'hydro_plot.h'
 
 	integer k
 
@@ -179,6 +186,11 @@ c**********************************************************
 
 c 3D concentrations
 
+	use mod_plot2d !COMMON_GGU_SUBST
+	use mod_plot3d !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -186,10 +198,10 @@ c 3D concentrations
 	character*(*) type	!default extension for file
 	integer ivar_in		!desired variable id
 
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'plot_aux.h'
-	include 'plot_aux_3d.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'plot_aux.h'
+COMMON_GGU_DELETED	include 'plot_aux_3d.h'
 
         character*80 line
 	integer nrec,it,nplot
@@ -242,6 +254,11 @@ c**********************************************************
 
 c 3D concentrations (element values)
 
+	use mod_plot2d !COMMON_GGU_SUBST
+	use mod_plot3d !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -249,10 +266,10 @@ c 3D concentrations (element values)
 	character*(*) type	!default extension for file
 	integer ivar_in		!desired variable id
 
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'plot_aux.h'
-	include 'plot_aux_3d.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'plot_aux.h'
+COMMON_GGU_DELETED	include 'plot_aux_3d.h'
 
         character*80 line
 	integer nrec,it,nplot
@@ -324,11 +341,14 @@ c**********************************************************
 
 	subroutine plozet
 
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer nrec,it,k,nplot
 	logical ousnext,ptime_ok,ptime_end
@@ -362,11 +382,14 @@ c**********************************************************
 
 c plots barene
 
+	use mod_plot2d !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
-	include 'plot_aux.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'plot_aux.h'
 
 	integer nrec,it,k,nplot
 	logical ousnext,ptime_ok,ptime_end
@@ -431,6 +454,9 @@ c**********************************************************
 
 	subroutine plosim(bvel)
 
+	use mod_plot2d !COMMON_GGU_SUBST
+	use mod_plot3d !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -440,8 +466,8 @@ c**********************************************************
 	integer nrec,it,nplot
         integer ivel,isect
 
-	include 'plot_aux.h'
-	include 'plot_aux_3d.h'
+COMMON_GGU_DELETED	include 'plot_aux.h'
+COMMON_GGU_DELETED	include 'plot_aux_3d.h'
 
 	logical velnext,ptime_ok,ptime_end
 	integer getisec
@@ -488,6 +514,8 @@ c**********************************************************
 
 c plots node values
 
+	use mod_plot2d !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nkn
@@ -495,7 +523,7 @@ c plots node values
         character*(*) title
 
 	include 'param.h'
-	include 'plot_aux.h'
+COMMON_GGU_DELETED	include 'plot_aux.h'
 
 	real pmin,pmax,flag
 	real getpar
@@ -530,6 +558,8 @@ c**********************************************************
 
 c plots element values
 
+	use mod_plot2d !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nel
@@ -537,7 +567,7 @@ c plots element values
         character*(*) title
 
 	include 'param.h'
-	include 'plot_aux.h'
+COMMON_GGU_DELETED	include 'plot_aux.h'
 
 	real pmin,pmax,flag
 	real getpar
@@ -569,11 +599,14 @@ c**********************************************************
 
 	subroutine plozbar
 
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'hydro.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	logical bdry
 	integer ie,ii,k
@@ -632,6 +665,12 @@ c ivel = 2	transports
 c ivel = 3	wind
 c ivel = 4	waves
 
+	use mod_hydro_plot !COMMON_GGU_SUBST
+	use mod_plot2d !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ivel			!what to plot
@@ -642,13 +681,13 @@ c ivel = 4	waves
 
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'basin.h'
-	include 'hydro_plot.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro_plot.h'
 
-	include 'depth.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
-	include 'plot_aux.h'
+COMMON_GGU_DELETED	include 'plot_aux.h'
 
 	real ureg(nxdim,nydim)
 	real vreg(nxdim,nydim)
@@ -948,17 +987,23 @@ c**********************************************************
 
 	subroutine plo3vel(ivel)
 
+	use mod_hydro_plot !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ivel
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'levels.h'
-	include 'hydro.h'
-	include 'hydro_vel.h'
-	include 'hydro_plot.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro_plot.h'
 
 	integer ie,ii,k,l
 	integer level,lmax,lact
@@ -1069,13 +1114,16 @@ c**********************************************************
 
 	subroutine plobas
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	logical bnumber,belem
         real pmin,pmax
@@ -1369,13 +1417,15 @@ c**************************************************************
 
 	subroutine plotel( ie , color )
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ie
 	real color
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ii,k
 	real xp(3),yp(3)
@@ -1428,15 +1478,18 @@ c*****************************************************************
 
 c sets values on boundary to val
 
+	use mod_geom !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	real a(1)
 	real val
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'geom.h'
 
 	integer k
 
@@ -1569,6 +1622,8 @@ c*****************************************************************
 
 c compute elemental values vev()
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         real vnv(1)
@@ -1577,7 +1632,7 @@ c compute elemental values vev()
 
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie,ii,k,iflag
 	real sum,flag
@@ -1608,6 +1663,8 @@ c*****************************************************************
 
 c compute nodal values vnv()
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	real vev(1)
@@ -1616,7 +1673,7 @@ c compute nodal values vnv()
 
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie,ii,k
 	real r,flag
@@ -1881,11 +1938,14 @@ c*****************************************************************
 
 c plots node values
 
+	use mod_plot2d !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
-	include 'plot_aux.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'plot_aux.h'
 
 	integer ie
 	real dgray

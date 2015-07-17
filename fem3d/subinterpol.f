@@ -68,6 +68,9 @@ c*******************************************************************
 
 c interpolates depth values
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer np
@@ -76,8 +79,8 @@ c interpolates depth values
 	real dp(np)
 
 	include 'param.h'
-	include 'basin.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ie,ii,k
 	integer netot
@@ -282,6 +285,9 @@ c*******************************************************************
 
 c interpolates depth values
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer np
@@ -299,8 +305,8 @@ c interpolates depth values
 	include 'param.h'
 
 
-	include 'basin.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 
 	integer k
@@ -449,6 +455,9 @@ c*******************************************************************
 
 c prepares xt,yt,at,ht on nodes
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nt	!total number of points prepared
@@ -464,8 +473,8 @@ c if ufact > 0: use it directly as sigma
 	include 'param.h'
 
 
-	include 'basin.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 
 	integer ie,ii,k
@@ -505,6 +514,9 @@ c*******************************************************************
 
 c prepares xt,yt,at,ht on nodes
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nt
@@ -520,8 +532,8 @@ c if ufact > 0: use it directly as sigma
 	include 'param.h'
 
 
-	include 'basin.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 
 	integer ie,ii,k
@@ -569,6 +581,9 @@ c*******************************************************************
 
 c interpolates depth values with auto-correlation
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer np
@@ -585,8 +600,8 @@ c interpolates depth values with auto-correlation
 	include 'param.h'
 
 
-	include 'basin.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 
 	integer k

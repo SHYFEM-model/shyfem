@@ -25,16 +25,21 @@ c****************************************************************
 
 c works on basin data structure
 
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
-	include 'evmain.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'evmain.h'
 
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'geom.h'
 
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	real haux(nkndim)
 
@@ -81,14 +86,17 @@ c*******************************************************************
 
 c creates boundary condition for circular flume
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	logical bnode
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	!call bnd_nodes(1563,551,-11)	!circular_flume_7680
 	call bnd_nodes(1024,386,-11)	!Hafenmodell_7680
@@ -99,10 +107,13 @@ c*****************************************************************
 
 	subroutine bnd_nodes(kstart,kend,kd)
 
+	use mod_geom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer kstart,kend,kd
 
@@ -113,7 +124,7 @@ c*****************************************************************
 	integer kint(ndim)
 	real tang(2,ndim)
 
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'geom.h'
 
 	integer ip,k,i,lmax
 	integer ka,kb
@@ -211,10 +222,12 @@ c*****************************************************************
 
 c writes statistics on basin
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie,ii,k
 	integer imin,imax
@@ -408,11 +421,13 @@ c
 c ie            number of element (internal)
 c areatr        element area (return value)
 
+	use basin !COMMON_GGU_SUBST
+
 	real areatr
 	integer ie
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ii,i1,i2,k1,k2
 	double precision f,x(3),y(3)
@@ -433,10 +448,12 @@ c*******************************************************************
 
 	subroutine distance
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	real d(nkndim)
 	real dd(nkndim)

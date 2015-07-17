@@ -18,6 +18,8 @@ c extracts whole records from nos file and writes in gis format
 c
 c records have to be specified on stdin
 
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 	include 'param.h'
@@ -34,7 +36,7 @@ c records have to be specified on stdin
 	integer irec(nrdim)
 
 c--------------------------------------------------
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 
 c--------------------------------------------------
@@ -199,6 +201,8 @@ c***************************************************************
 
 c writes one record to file nb (3D)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -207,7 +211,7 @@ c writes one record to file nb (3D)
 	integer ilhkv(nlvdim)
 	real cv3(nlvdim,nkndim)
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer k,l,lmax
 	real x,y
@@ -231,6 +235,8 @@ c***************************************************************
 
 c writes one record to file nb (2D)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -238,7 +244,7 @@ c writes one record to file nb (2D)
 	integer nb,it,ivar,nk
 	real cv3(nlvdim,nkndim)
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer k,level
 	real x,y,c
@@ -264,6 +270,8 @@ c***************************************************************
 
 c writes one record to single files
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -271,7 +279,7 @@ c writes one record to single files
 	integer it,ivar,nk
 	real cv3(nlvdim,nkndim)
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer k,level,nb
 	real x,y,c

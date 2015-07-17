@@ -24,22 +24,27 @@ c performs modifications on basin
 c
 c takes care of lat/lon coordinates
 
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ndim
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
         real raux(neldim)
         integer iaux(neldim)
         integer ipaux(nkndim)
 
-	include 'evmain.h'
+COMMON_GGU_DELETED	include 'evmain.h'
 
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'geom.h'
 
         character*40 bfile,gfile,nfile
         character*60 line
@@ -236,6 +241,9 @@ c*******************************************************************
 
 c copies depth values from elems/nodes to nodes/elems
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ike
@@ -243,9 +251,9 @@ c copies depth values from elems/nodes to nodes/elems
 	include 'param.h'
 
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer k,ie,ii
 	real depth
@@ -290,6 +298,9 @@ c*******************************************************************
 
 c handles depth values
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer idepth
@@ -297,9 +308,9 @@ c handles depth values
 
 	include 'param.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer k,ie
 
@@ -324,12 +335,14 @@ c
 c ie            number of element (internal)
 c areatr        element area (return value)
 
+	use basin !COMMON_GGU_SUBST
+
 	real areatr
 	integer ie
 
 	include 'param.h'
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 
 	real aj
@@ -372,6 +385,9 @@ c*******************************************************************
 
 	subroutine limit_depth(ike,hmin,hmax)
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ike
@@ -379,8 +395,8 @@ c*******************************************************************
 
 	include 'param.h'
 
-	include 'nbasin.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ie,k
 
@@ -428,17 +444,21 @@ c*******************************************************************
 
 c smoothes depth values
 
+	use mod_depth !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer niter
 	real f(4)
 
 	include 'param.h'
-	include 'evmain.h'
+COMMON_GGU_DELETED	include 'evmain.h'
 
 
-	include 'basin.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 
 	integer ie,ii,k,i,nok
@@ -575,6 +595,10 @@ c*******************************************************************
 
 c deletes elements with depth lower then hmin
 
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	real hmin
@@ -582,12 +606,12 @@ c deletes elements with depth lower then hmin
 	include 'param.h'
 
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'geom.h'
 
 	integer icon(neldim)
 
@@ -645,14 +669,17 @@ c*******************************************************************
 
 c deletes elements with depth lower then hmin
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	real hmin
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ie,ii,k
 	integer n,ieh,kh
@@ -779,16 +806,19 @@ c*******************************************************************
 
 	subroutine check_connection(icon,icol,ibig)
 
+	use mod_geom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-        include 'links.h'
+COMMON_GGU_DELETED        include 'links.h'
 
 	integer icon(neldim)
 	integer icol,ibig
 
-	include 'basin.h'
-	include 'geom_aux.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'geom_aux.h'
 
 	integer ie
 	integer i,nc,ic
@@ -834,15 +864,17 @@ c*******************************************************************
 
 	subroutine color_area(iestart,icol,icon)
 
+	use mod_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-        include 'links.h'
+COMMON_GGU_DELETED        include 'links.h'
 
 	integer iestart,icol
 	integer icon(neldim)
 
-	include 'geom_aux.h'
+COMMON_GGU_DELETED	include 'geom_aux.h'
 
 	integer ip,ien,ii,ie
 	integer list(neldim)

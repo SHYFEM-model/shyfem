@@ -130,6 +130,10 @@ c********************************************************************
 
 c eco-model cosimo
 
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -147,13 +151,13 @@ c eco-model cosimo
 	real es(nkndim,nsstate)		!sediment state variables
 	save e,eload,es
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'mkonst.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
-	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
         character*10 what,whataux
 	character*2 whatn
@@ -655,6 +659,9 @@ c*************************************************************
 
 c checks bio vars
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -668,8 +675,8 @@ c checks bio vars
 	real e(nlvdim,nkndim,nstate)	!state vector
 	real es(nkndim,nsstate)		!sediment state variables
 
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
         character*20 text
 	integer i
@@ -696,6 +703,9 @@ c*************************************************************
 
 c simulates decay for virus and bacteria
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -706,9 +716,9 @@ c simulates decay for virus and bacteria
         real dt
 	real e(nlvdim,nkndim,nstate)	!state vector
 
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
         integer k,l,i,lmax
         real aux,tau
@@ -808,6 +818,10 @@ c
 c reactor must be commented
 c einit must be 1.
 
+	use mod_aux_array !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -819,10 +833,10 @@ c einit must be 1.
 	real dt
 	real e(nlvdim,nkndim,nstate)	!state vector
 
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'levels.h'
-	include 'aux_array.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'aux_array.h'
 
 	integer k,lmax,l,i
 	integer istate,itper
@@ -955,13 +969,15 @@ c computes valied nodes (nodes that are inside lagoon)
 c
 c must be customized
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	real val(1)
 
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer k,ie,ii,ia
 	integer iaout
@@ -992,6 +1008,9 @@ c*************************************************************
 
 c computes total mass of state variables (only where v1v is not 0)
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -1003,9 +1022,9 @@ c computes total mass of state variables (only where v1v is not 0)
 	real v1v(1)
 	double precision mass(1)
 
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer k,lmax,l,i
 	real vol,conz
@@ -1037,6 +1056,8 @@ c****************************************************************
 
         subroutine bioprint(it,e,nstate)
 
+	use levels !COMMON_GGU_SUBST
+
         implicit none
 
         include 'param.h'
@@ -1047,7 +1068,7 @@ c****************************************************************
         integer i,k,n
         logical berror
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
         integer icall
         save icall

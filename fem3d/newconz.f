@@ -24,12 +24,16 @@ c*********************************************************************
 
 	subroutine tracer
 
+	use mod_conz !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'conz.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'conz.h'
 
 	integer, save :: iconz = 0
 
@@ -66,21 +70,27 @@ c*********************************************************************
 
 c shell for conz (new version)
 
+	use mod_conz !COMMON_GGU_SUBST
+	use mod_aux_array !COMMON_GGU_SUBST
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 c parameter
         include 'param.h'
 c common
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
 	include 'mkonst.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'diff_visc_fric.h'
-	include 'aux_array.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'aux_array.h'
 	include 'bound_names.h'
 
-	include 'conz.h'
+COMMON_GGU_DELETED	include 'conz.h'
 
 c local
 	logical binfo
@@ -228,18 +238,24 @@ c*********************************************************************
 
 c shell for conz with multi dimensions 
 
+	use mod_conz !COMMON_GGU_SUBST
+	use mod_aux_array !COMMON_GGU_SUBST
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 c parameter
         include 'param.h'
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
 	include 'mkonst.h'
-	include 'nlevel.h'
-	include 'diff_visc_fric.h'
-	include 'aux_array.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'aux_array.h'
 	include 'bound_names.h'
-	include 'conz.h'
+COMMON_GGU_DELETED	include 'conz.h'
 
 c--------------------------------------------
 c isabella
@@ -408,12 +424,15 @@ c*********************************************************************
 
 c simulates decay for concentration
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
         include 'param.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	real alpha_t90
 	!parameter( alpha_t90 = 1./2.302585 )	!-1./ln(0.1) - prob wrong
@@ -447,14 +466,19 @@ c*********************************************************************
 
 c simulates decay for concentration
 
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_ts !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
         include 'param.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'levels.h'
-	include 'depth.h'
-	include 'ts.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'ts.h'
 
 	real alpha_t90
 	parameter( alpha_t90 = 1./2.302585 )	!-1./ln(0.1)

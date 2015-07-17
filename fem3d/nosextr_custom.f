@@ -13,12 +13,14 @@ c****************************************************************
 
 c extracts single nodes from nos file -> creates time series
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
 c--------------------------------------------------
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 
 c--------------------------------------------------

@@ -29,6 +29,10 @@ c performs bathymetry interpolation in basin
 c
 c takes care of lat/lon coordinates
 
+	use mod_depth !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -44,16 +48,16 @@ c takes care of lat/lon coordinates
 
 	include 'pkonst.h'
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
         real raux(neldim)
         integer iaux(neldim)
         integer ipaux(nkndim)
 
-	include 'evmain.h'
+COMMON_GGU_DELETED	include 'evmain.h'
 
         character*40 bfile,gfile,nfile
         character*60 line

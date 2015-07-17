@@ -596,6 +596,8 @@ c 0 (FEM-SCALE) 0.5 0.5 2.
 c 0 (FEM-LATID) 45.0
 c 0 (FEM-NORTH) 90.0
 c
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 	character*(*) gline
@@ -606,7 +608,7 @@ c
 	!real f(10)
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'pkonst.h'
 	include 'subgrd.h'
 

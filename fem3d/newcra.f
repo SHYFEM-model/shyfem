@@ -23,6 +23,14 @@ c
 c
 c computes wave celerity in triangle
 c
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_bnd_aux !COMMON_GGU_SUBST
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+	use mod_hydro_baro !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 c
 c arguments
@@ -34,16 +42,16 @@ c parameters
 	parameter (ndim=55)
 c common
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'ev.h'
 	include 'pkonst.h'
 	include 'femtime.h'
 	include 'mkonst.h'
-	include 'depth.h'
-	include 'hydro.h'
-	include 'hydro_baro.h'
-	include 'bound_dynamic.h'
-	include 'basin.h'
-	include 'bnd_aux.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_baro.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'bnd_aux.h'
 c local
 	integer ie,ii,k,irand,n
 	real dt,area,bcz,c,cmax

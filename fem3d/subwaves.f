@@ -89,10 +89,12 @@ c**************************************************************
 
 ! initialize arrays and open pipes in case of coupling with WWM
 
+	use mod_waves !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
-	include 'waves.h'
+COMMON_GGU_DELETED	include 'waves.h'
 
 	integer itdrag		!drag coefficient type
 	real getpar		!get parameter function
@@ -194,23 +196,29 @@ c**************************************************************
 
 ! reads from PIPE
 
+	use mod_meteo !COMMON_GGU_SUBST
+	use mod_waves !COMMON_GGU_SUBST
+	use mod_roughness !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
 c parameters
         include 'param.h'
-	include 'waves.h'
-	include 'meteo.h'
+COMMON_GGU_DELETED	include 'waves.h'
+COMMON_GGU_DELETED	include 'meteo.h'
 
 c common
 	include 'femtime.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
 	include 'pkonst.h'
 
-	include 'roughness.h'
+COMMON_GGU_DELETED	include 'roughness.h'
 
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 c local
         integer k,l, ie
@@ -452,19 +460,26 @@ c local
 
 ! write to PIPE
 
+	use mod_meteo !COMMON_GGU_SUBST
+	use mod_waves !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
 c parameters
         include 'param.h'
-	include 'meteo.h'
-	include 'waves.h'
+COMMON_GGU_DELETED	include 'meteo.h'
+COMMON_GGU_DELETED	include 'waves.h'
 
 c common
-	include 'nbasin.h'
-	include 'hydro.h'
-	include 'depth.h'
-	include 'levels.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 c local
         integer it              !time [s]
@@ -575,12 +590,15 @@ c local
 
 !routine to write boundary node file for wwm (fort.22)
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer i,knode,nn,ibc,nbc
 	integer nbnds,nkbnds,kbnds
@@ -607,10 +625,14 @@ c local
 
         subroutine diffxy(SXX3D,SYY3D,SXY3D,wavefx,wavefy)
 
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
         include 'param.h'
-        include 'evmain.h'
+COMMON_GGU_DELETED        include 'evmain.h'
 
         real SXX3D(nlvdim,nkndim)       !radiation stress xx
         real SYY3D(nlvdim,nkndim)       !radiation stress yy
@@ -619,8 +641,8 @@ c local
         real wavefx(nlvdim,neldim)      !wave forcing term x
         real wavefy(nlvdim,neldim)      !wave forcing term y
 
-	include 'levels.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
         double precision b,c           !x and y derivated form function [1/m]
 	integer k,ie,ii,l,ilevel
         real radsx,radsy
@@ -653,11 +675,18 @@ c local
 
 	subroutine wave_vortex(stokesx,stokesy,wavejb,wavefx,wavefy)
 
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 c parameters
         include 'param.h'
-        include 'evmain.h'
+COMMON_GGU_DELETED        include 'evmain.h'
 
 c arguments
         double precision stokesx(nlvdim,nkndim) !x stokes velocity
@@ -668,11 +697,11 @@ c arguments
 
 c common
 	include 'pkonst.h'
-	include 'levels.h'
-	include 'basin.h'
-	include 'hydro_vel.h'
-	include 'internal.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'internal.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 c local
         real stokesz(nlvdim,nkndim)	!z stokes velocity on node k
@@ -812,11 +841,15 @@ c local
 
 	subroutine stokes_vv(vf,va,stxe,stye,auxstz,stokesze)
 
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 c parameters
         include 'param.h'
-        include 'evmain.h'
+COMMON_GGU_DELETED        include 'evmain.h'
 c arguments
         real vf(nlvdim,nkndim)		!auxiliary array
         real va(nlvdim,nkndim)		!auxiliary array
@@ -826,9 +859,9 @@ c arguments
 	real stokesze(0:nlvdim,neldim)	!z stokes velocity on elements
 
 c common
-	include 'nlevel.h'
-	include 'basin.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 c local
 	real stokesz(0:nlvdim,nkndim) 	!z stokes velocity on node k
@@ -982,15 +1015,20 @@ c**************************************************************
 
         subroutine parwaves(it)
 
+	use mod_meteo !COMMON_GGU_SUBST
+	use mod_waves !COMMON_GGU_SUBST
+	use mod_aux_array !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
         include 'param.h'
-	include 'waves.h'
+COMMON_GGU_DELETED	include 'waves.h'
 
         integer it
 
-	include 'basin.h'
-	include 'meteo_aux.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'meteo_aux.h'
 
 c --- input variable
         real winds(neldim)	!wind speed at 10m [m/s]
@@ -1010,7 +1048,7 @@ c --- stress variables
         real twv(neldim)
         real tmv(neldim)
 
-	include 'aux_array.h'
+COMMON_GGU_DELETED	include 'aux_array.h'
 
 c --- local variable
 	logical debug
@@ -1232,11 +1270,13 @@ c**************************************************************
 c This subroutine computes the wind fetch for each element of the
 c grid given the wind direction.
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
   
         include 'param.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
         real windd(neldim)	!wind direction [degree north]
         real fet(neldim)        !wind fetch length [m]
@@ -1297,10 +1337,12 @@ c**************************************************************
 c This subroutine computes the wind fetch for each element of the
 c grid given the wind direction.
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
   
         include 'param.h'
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer ie
 	real xein,yein
@@ -1375,6 +1417,9 @@ c******************************************************************
 c this routine computes the coordinate of the intersection beetwen the
 c line and one of the border line of the element
 
+	use mod_geom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
         integer iie		!element number
@@ -1386,8 +1431,8 @@ c line and one of the border line of the element
 	logical bdebug
 
 	include 'param.h'
-	include 'basin.h'
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'geom.h'
 
         real x0(3),y0(3)        !element vertices coordinates [m]
         real xg0(3),yg0(3)      !element vertices coordinates [degrees]
@@ -1481,6 +1526,9 @@ c******************************************************************
 
 c computes stress parameters
 
+	use mod_hydro_baro !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
         include 'param.h'
@@ -1490,7 +1538,7 @@ c computes stress parameters
         real twv(1)
         real tmv(1)
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
         real pi,karm,rho,g
         real depth,ux,uy,uc2
@@ -1505,7 +1553,7 @@ c computes stress parameters
         real waeh(neldim)	!wave height [m]
         real waep(neldim)	!wave period [s]
 
-	include 'hydro_baro.h'
+COMMON_GGU_DELETED	include 'hydro_baro.h'
 
         real depele
         logical is_r_nan
@@ -1576,10 +1624,12 @@ c******************************************************************
 c returns significant wave heigh, wave periods (mean and peak) and 
 c mean wave direction
 
+	use mod_waves !COMMON_GGU_SUBST
+
         implicit none
 
 	include 'param.h'
-        include 'waves.h'
+COMMON_GGU_DELETED        include 'waves.h'
 
         integer k
         real wh                 !sign. wave height [m]
@@ -1600,10 +1650,12 @@ c mean wave direction
 
 c gives indication if waves are computed
 
+	use mod_waves !COMMON_GGU_SUBST
+
         implicit none
 
 	include 'param.h'
-        include 'waves.h'
+COMMON_GGU_DELETED        include 'waves.h'
 
         logical has_waves
 

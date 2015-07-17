@@ -38,13 +38,15 @@ c******************************************
 
 c gets coordinates x/y for node k
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer k
 	real x,y
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	x = xgv(k)
 	y = ygv(k)
@@ -57,6 +59,8 @@ c******************************************
 
 c gets coordinates x/y for element ie
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ie
@@ -65,7 +69,7 @@ c gets coordinates x/y for element ie
 	integer k,ii
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	do ii=1,3
 	  k = nen3v(ii,ie)
@@ -83,6 +87,8 @@ c area for element ie
 c
 c double precision version - bug fix 07.07.2011
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -90,7 +96,7 @@ c arguments
 	integer ie
 c common
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 c local
 	integer kn1,kn2,kn3
 	real*8 x1,x2,x3,y1,y2,y3
@@ -125,6 +131,10 @@ c******************************************
 
 c area for finite volume k
 
+	use mod_geom !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -132,9 +142,9 @@ c arguments
 	integer k
 c common
 	include 'param.h'
-	include 'links.h'
-	include 'basin.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'links.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'ev.h'
 c local
 	logical blink
 	integer ie,ii,i,nl
@@ -180,6 +190,11 @@ c
 c discharge into node n:     Q = 12 * aj * ( b(n)*U + c(n)*V )
 c volume difference:         dV = dt * Q
 
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_hydro_baro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 c arguments
@@ -187,10 +202,10 @@ c arguments
         integer k
 c common
 	include 'param.h'
-	include 'hydro_baro.h'
-	include 'basin.h'
-	include 'ev.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'hydro_baro.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'ev.h'
+COMMON_GGU_DELETED	include 'links.h'
 c local
         real flux
         integer i,nl,ie,ii
@@ -240,6 +255,12 @@ c
 c	pot = (g/2) * rho * area * z*z
 c	kin = (1/2) * rho * area * (U*U+V*V)/H
 
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro_baro !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ielem		!element (0 for total energy - all elements)
@@ -248,11 +269,11 @@ c	kin = (1/2) * rho * area * (U*U+V*V)/H
 
 	include 'param.h'
 	include 'pkonst.h'
-	include 'basin.h'
-	include 'hydro.h'
-	include 'depth.h'
-	include 'hydro_baro.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'hydro_baro.h'
+COMMON_GGU_DELETED	include 'ev.h'
 
 	integer ie,ii,ie1,ie2
 	double precision aj,pot,kin,z,zz
@@ -292,6 +313,13 @@ c
 c	pot = (g/2) * rho * area * z*z
 c	kin = (1/2) * rho * area * (U*U+V*V)/H
 
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_ts !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	real kenergy		!kinetic energy (return)
@@ -299,13 +327,13 @@ c	kin = (1/2) * rho * area * (U*U+V*V)/H
 	integer ia_ignore	!area code to be ignored
 
 	include 'param.h'
-	include 'ev.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'ev.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'pkonst.h'
-	include 'levels.h'
-	include 'depth.h'
-	include 'hydro.h'
-	include 'ts.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'ts.h'
 
 	integer ie,ii,l,lmax,ia,k
 	double precision area,pot,kin,z,zz
@@ -388,6 +416,10 @@ c**********************************************************************
 
 c copies concentrations from node value to element value (only wet areas)
 
+	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
         real cn(1)
@@ -395,9 +427,9 @@ c copies concentrations from node value to element value (only wet areas)
 
 
 	include 'param.h'
-	include 'basin.h'
-	include 'geom_dynamic.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'geom_dynamic.h'
+COMMON_GGU_DELETED	include 'ev.h'
 
         integer ie,ii,k
 

@@ -12,11 +12,14 @@ c****************************************************************
 
 c compares depth of two basins
 
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
-	include 'evmain.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'evmain.h'
 
 	real hm3v1(3,neldim)
 
@@ -91,11 +94,13 @@ c
 c ie            number of element (internal)
 c areatr        element area (return value)
 
+	use basin !COMMON_GGU_SUBST
+
 	real areatr
 	integer ie
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	real aj
 	integer ii,i1,i2,k1,k2
@@ -122,12 +127,14 @@ c*******************************************************************
 
 c writes grd file from bas
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer iunit
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer k,ie,ii
 
@@ -155,13 +162,15 @@ c*******************************************************************
 
 c gets neibors of node node (nit iterations)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer node
 	integer nit
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer nodes(nkndim)
 	integer icol(nkndim)
@@ -233,12 +242,14 @@ c*******************************************************************
 
 	subroutine wnodes(file)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	character*(*) file
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer node,it,k
 	integer ipint
@@ -266,12 +277,14 @@ c*******************************************************************
 
 	subroutine wnodeef(file)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	character*(*) file
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ndim
 	parameter (ndim=1000)
@@ -342,10 +355,12 @@ c*******************************************************************
 
 c writes depth values distributed in elements
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ntot	!number of subdivisions in element
 
@@ -475,12 +490,14 @@ c*******************************************************************
 
 c interpolates depth values
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	character*(*) file
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie,ii,k
 	integer netot

@@ -79,14 +79,19 @@ c***********************************************************************
 
 c sets up bndo data structure
 
+	use mod_bndo !COMMON_GGU_SUBST
+	use mod_bound_geom !COMMON_GGU_SUBST
+	use mod_geom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'subbndo.h'
+COMMON_GGU_DELETED	include 'subbndo.h'
 
-	include 'bound_geom.h'
-	include 'geom.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'geom.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	logical bexternal
 	logical berror
@@ -285,6 +290,8 @@ c***********************************************************************
 
 c inserts node kn with weight area into list (internal routine)
 
+	use mod_bndo !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ib		!nodal index
@@ -292,7 +299,7 @@ c inserts node kn with weight area into list (internal routine)
 	integer kn		!node number to insert
 
 	include 'param.h'
-	include 'subbndo.h'
+COMMON_GGU_DELETED	include 'subbndo.h'
 
 	integer nb,j,k
 
@@ -343,16 +350,20 @@ c***********************************************************************
 
 c writes info on open boundary nodes to terminal
 
+	use mod_bndo !COMMON_GGU_SUBST
+	use mod_bound_geom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
         integer iunit
 
 	include 'param.h'
-	include 'subbndo.h'
+COMMON_GGU_DELETED	include 'subbndo.h'
 
-	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer i,k,ibc,nb,j,iu
 	integer itybnd,ipext
@@ -391,15 +402,18 @@ c***********************************************************************
 
 c checks if node k is a zeta boundary
 
+	use mod_bndo !COMMON_GGU_SUBST
+	use mod_bound_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	logical is_zeta_bound
 	integer k
 
 	include 'param.h'
-	include 'subbndo.h'
+COMMON_GGU_DELETED	include 'subbndo.h'
 
-	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
 
 	integer ip
 
@@ -456,6 +470,11 @@ c***********************************************************************
 
 c imposes boundary conditions on open boundary
 
+	use mod_bndo !COMMON_GGU_SUBST
+	use mod_bound_geom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
         integer it
@@ -465,12 +484,12 @@ c imposes boundary conditions on open boundary
         real rbc(nlvddi,1)	!boundary condition (3D)
 
 	include 'param.h'
-        include 'subbndo.h'
+COMMON_GGU_DELETED        include 'subbndo.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'bound_geom.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
         logical bgrad0
         logical bdebug
@@ -520,6 +539,11 @@ c adjusts boundary conditions on open boundary (values on bnd already set)
 c
 c adjusts for ambient value, no gradient or outgoing flow
 
+	use mod_bndo !COMMON_GGU_SUBST
+	use mod_bound_geom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer it
@@ -530,12 +554,12 @@ c adjusts for ambient value, no gradient or outgoing flow
 	real vprv(nlvddi,1)
 
 	include 'param.h'
-	include 'subbndo.h'
+COMMON_GGU_DELETED	include 'subbndo.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'bound_geom.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	logical bgrad0
 	logical blevel
@@ -647,19 +671,24 @@ c***********************************************************************
 
 c imposes radiation condition for levels
 
+	use mod_bndo !COMMON_GGU_SUBST
+	use mod_bound_geom !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer it
 	real rzv(1)
 
 	include 'param.h'
-	include 'subbndo.h'
+COMMON_GGU_DELETED	include 'subbndo.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
-	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
 
 	logical bdebug
 	integer i,j,k,l

@@ -199,6 +199,9 @@
 !***********************************************
       subroutine aquabc_II_fem_interface (dt)
 
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
       use aquabc_II_sed_ini
 
       implicit none
@@ -207,11 +210,11 @@
       include 'aquabc_II.h'      !Main aquabc parameters
       include 'aquabc_II_aout.h' !variables and parameters for output to ASCII file
       ! former common blocks:
-      include 'basin.h'
+COMMON_GGU_DELETED      include 'basin.h'
       include 'mkonst.h'
-      include 'nlevel.h'
-      include 'levels.h'
-      include 'diff_visc_fric.h'
+COMMON_GGU_DELETED      include 'nlevel.h'
+COMMON_GGU_DELETED      include 'levels.h'
+COMMON_GGU_DELETED      include 'diff_visc_fric.h'
       include 'femtime.h'
 
       !integer it	!time in seconds. Comes from femtime.h now
@@ -1117,6 +1120,9 @@ c*************************************************************
 !                              TIME STEP has been fixed
 
 
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
       include 'param.h'
@@ -1129,8 +1135,8 @@ c*************************************************************
 !     eload(3,neldim,nstate) -----> eload(nlvdim,nkndim,nstate)
 	real eload(nlvdim,nkndim,nstate)
 
-	include 'basin.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'ev.h'
 
 !	ADDED BY PETRAS AND ALI
 !     CORPI, 19 July 2004
@@ -1928,6 +1934,9 @@ C Developped by G.Umgiesser
 C Modified for use for biogeochemical variables by P.Zemlys
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
       include 'param.h'
@@ -1945,8 +1954,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real e(nlvdim,nkndim,nstate)	        !state vector
       real es(NOSLAY,nkndim,nsstate)		!sediment state variables
 
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
         character*16 text
         integer i
@@ -1976,10 +1985,12 @@ c***************************************************************
 c tests array for nan and strange values for EUTRO variables
 c Made from check2Dr by P.Zemlys 11 January 2005
 
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
         include 'param.h'
-        include 'basin.h'
+COMMON_GGU_DELETED        include 'basin.h'
 
         integer nlv,n
         integer nvar         !state variable number
@@ -2054,10 +2065,13 @@ c*********************************************************
        subroutine inicfil_aquabc(name,var,nvar)
 c initializes variables nodal value for water column from file
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
         include 'param.h'
-        include 'nbasin.h'
+COMMON_GGU_DELETED        include 'nbasin.h'
 
         character*(*) name           !name of variable
         real var(nlvdim,nkndim,1)    !variable to set for water column (name='bio')
@@ -2069,7 +2083,7 @@ c initializes variables nodal value for water column from file
                                     !3 - homogeneous layers
                                     !4 - heterogenous for repeated runs
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
         character*80 file
         integer nb,irec
@@ -2298,11 +2312,14 @@ c*********************************************************
        subroutine inicfils_aquabc(name,var,nvar)
 c initializes variables nodal value  for bottom sediment from file
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
         include 'param.h'
         include 'aquabc_II.h'
-        include 'nbasin.h'
+COMMON_GGU_DELETED        include 'nbasin.h'
 
         character*(*) name           !name of variable
 
@@ -2314,7 +2331,7 @@ c initializes variables nodal value  for bottom sediment from file
                                     !3 - homogeneous layers for BS
                                     !4 - heterogenous for repeated runs
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
         character*80 file
         integer nb,irec

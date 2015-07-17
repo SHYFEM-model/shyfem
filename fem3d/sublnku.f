@@ -45,6 +45,8 @@ c
 c i     position
 c ie    element
 
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 c arguments
@@ -52,7 +54,7 @@ c arguments
         integer i,ie
 c common
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	kthis = nen3v(i,ie)
 
@@ -67,6 +69,8 @@ c
 c k     actual node
 c ie    element
 c
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 c
 c arguments
@@ -74,7 +78,7 @@ c arguments
         integer k,ie
 c common
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 c local
         integer i
 c
@@ -99,6 +103,8 @@ c
 c k     actual node
 c ie    element
 c
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 c
 c arguments
@@ -106,7 +112,7 @@ c arguments
         integer k,ie
 c common
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 c local
         integer i
 c
@@ -131,6 +137,8 @@ c
 c k     actual node
 c ie    element
 c
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 c
 c arguments
@@ -138,7 +146,7 @@ c arguments
         integer k,ie
 c common
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 c local
         integer i
 c
@@ -163,6 +171,8 @@ c
 c k     actual node
 c ie    element
 c
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 c
 c arguments
@@ -170,7 +180,7 @@ c arguments
         integer k,ie
 c common
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 c local
         integer i
 c
@@ -195,6 +205,8 @@ c
 c k     actual node
 c ie    element
 c
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 c
 c arguments
@@ -202,7 +214,7 @@ c arguments
         integer k,ie
 c common
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 c local
         integer i
 c
@@ -226,14 +238,17 @@ c****************************************************************
 
 c returns filling of linkv
 
+	use mod_geom !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
 c arguments
         integer n       !filling of linkv (return)
 c common
 	include 'param.h'
-	include 'nbasin.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'links.h'
 
         n = ilinkv(nkn+1)
 
@@ -254,12 +269,14 @@ c       do ip=ipf,ipl
 c         ien = lenkv(ip)          !ien is number of neibor element
 c       end do
 
+	use mod_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer k,ipf,ipl
 
 	include 'param.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'links.h'
 
         ipf = ilinkv(k)+1
         ipl = ilinkv(k+1)
@@ -281,12 +298,14 @@ c       do ip=ipf,ipl
 c         kn = linkv(ip)          !kn is number of neibor node
 c       end do
 
+	use mod_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer k,ipf,ipl
 
 	include 'param.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'links.h'
 
         ipf = ilinkv(k)+1
         ipl = ilinkv(k+1)
@@ -306,12 +325,14 @@ c       do i=1,n
 c         ien = lenkv(ibase+i)          !ien is number of neibor element
 c       end do
 
+	use mod_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer k,n,ibase
 
 	include 'param.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'links.h'
 
 	n = ilinkv(k+1)-ilinkv(k)
 	ibase = ilinkv(k)
@@ -333,12 +354,14 @@ c       do i=1,n
 c         kn = linkv(ibase+i)          !kn is number of neibor node
 c       end do
 
+	use mod_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer k,n,ibase
 
 	include 'param.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'links.h'
 
 	n = ilinkv(k+1)-ilinkv(k)
 	ibase = ilinkv(k)
@@ -358,13 +381,15 @@ c       do i=1,n
 c         ien = lnk_elems(ibase+i)          !ien is number of neibor element
 c       end do
 
+	use mod_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer k,n
 	integer i,ibase
 
 	include 'param.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'links.h'
 
 	n = ilinkv(k+1)-ilinkv(k)
 	ibase = ilinkv(k)
@@ -395,13 +420,15 @@ c       do i=1,n
 c         kn = lnk_nodes(ibase+i)          !kn is number of neibor node
 c       end do
 
+	use mod_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer k,n
 	integer i,ibase
 
 	include 'param.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'links.h'
 
 	n = ilinkv(k+1)-ilinkv(k)
 	ibase = ilinkv(k)
@@ -420,6 +447,8 @@ c****************************************************************
 
 c returns all elems around node k
 
+	use mod_geom !COMMON_GGU_SUBST
+
         implicit none
 
         integer k               !central node
@@ -430,7 +459,7 @@ c returns all elems around node k
 	integer i,ibase
 
 	include 'param.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'links.h'
 
 	n = ilinkv(k+1)-ilinkv(k)
 	ibase = ilinkv(k)
@@ -449,6 +478,8 @@ c****************************************************************
 
 c returns all nodes around node k
 
+	use mod_geom !COMMON_GGU_SUBST
+
         implicit none
 
         integer k               !central node
@@ -459,7 +490,7 @@ c returns all nodes around node k
 	integer i,ibase
 
 	include 'param.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'links.h'
 
 	n = ilinkv(k+1)-ilinkv(k)
 	ibase = ilinkv(k)
@@ -484,13 +515,15 @@ c ie1 is to the left of segment k1-k2, ie2 to the right
 c if boundary segment only one ie is set, the other is zero
 c if no such segment, both ie are zero
 
+	use mod_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
         integer k1,k2,ie1,ie2
 c common
 	include 'param.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'links.h'
 
         integer k,ipf,ipl,ip,ip2
 
@@ -535,13 +568,15 @@ c k     actual node
 c ipf   first element (return)
 c ipl   last  element (return)
 
+	use mod_geom !COMMON_GGU_SUBST
+
         implicit none
 
 c arguments
         integer k,ipf,ipl
 c common
 	include 'param.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'links.h'
 
         ipf=ilinkv(k)+1
         ipl=ilinkv(k+1)
@@ -558,6 +593,9 @@ c gets pointer to linkv for element ie
 c
 c attention - this is really CPU intensive
 
+	use mod_geom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 c arguments
@@ -565,8 +603,8 @@ c arguments
         integer ip(3,3)         !pointer into linkv
 c common
 	include 'param.h'
-	include 'links.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'links.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
         integer ii,iii,k,kn,i
         integer ipf,ipl

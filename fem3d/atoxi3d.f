@@ -37,14 +37,18 @@ c***********************************************
 
 c toxi module ARPAV
 
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'mkonst.h'
-	include 'nlevel.h'
-	include 'levels.h'
-	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
 	integer it	!time in seconds
 	real dt		!time step in seconds
@@ -52,8 +56,8 @@ c toxi module ARPAV
 	integer nstate
 	parameter( nstate = 1 )
 
-	real e(nlvdim,nkndi,nstate)	!state vector
-	real eb(nlvdim,nkndi,nstate)	!boundary vector of state vectors
+	real e(nlvdim,nkndim,nstate)	!state vector
+	real eb(nlvdim,nkndim,nstate)	!boundary vector of state vectors
 	save e,eb
 
         real tstot(nstate)              !for mass test
@@ -302,7 +306,7 @@ c	-------------------------------------------------------------------
 c        k = 100
 c        l = 1
 c        call getts(l,k,t,s)
-c        call writeet(95,it,k,l,e,t,s,nlvdim,nkndi,nstate)
+c        call writeet(95,it,k,l,e,t,s,nlvdim,nkndim,nstate)
 
 c	-------------------------------------------------------------------
 c	end of routine
@@ -410,6 +414,9 @@ c*************************************************************
 
 c checks bio vars
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -420,8 +427,8 @@ c checks bio vars
 	character*(*) title
 	real e(nlvdim,nkndim,nstate)	!state vector
 
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
         character*20 text
 	integer i

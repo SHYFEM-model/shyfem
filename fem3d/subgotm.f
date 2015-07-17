@@ -66,13 +66,17 @@ c**************************************************************
 
 c computes turbulent quantities with Munk - Anderson model
 
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
 	include 'femtime.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 	include 'pkonst.h'
 
 c---------------------------------------------------------------
@@ -84,7 +88,7 @@ c---------------------------------------------------------------
 	real richard(nlvdi,nkn)
 	real h(nlvdi)
 
-	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
 	integer k,l
 	integer nlev
@@ -175,19 +179,28 @@ c**************************************************************
 
 c computes turbulent quantities with GOTM model
 
+	use mod_meteo !COMMON_GGU_SUBST
+	use mod_gotm_aux !COMMON_GGU_SUBST
+	use mod_ts !COMMON_GGU_SUBST
+	use mod_roughness !COMMON_GGU_SUBST
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'gotm_aux.h'
+COMMON_GGU_DELETED	include 'gotm_aux.h'
 	include 'femtime.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 	include 'pkonst.h'
-	include 'basin.h'
-	include 'ts.h'
-	include 'hydro_print.h'
-	include 'meteo_aux.h'
-	include 'roughness.h'
-	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'ts.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'meteo_aux.h'
+COMMON_GGU_DELETED	include 'roughness.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
 	double precision dt
 	double precision u_taus,u_taub
@@ -480,15 +493,19 @@ c**************************************************************
 
 c initializes gotm arrays
 
+	use mod_gotm_aux !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 
-	include 'gotm_aux.h'
+COMMON_GGU_DELETED	include 'gotm_aux.h'
 
 
 	integer l,k
@@ -519,6 +536,8 @@ c**************************************************************
 
 c returns internal parameters from turbulence closure
 
+	use mod_gotm_aux !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer k		!node
@@ -532,7 +551,7 @@ c returns internal parameters from turbulence closure
 	include 'param.h'
 
 
-	include 'gotm_aux.h'
+COMMON_GGU_DELETED	include 'gotm_aux.h'
 
 
 	integer l,laux
@@ -745,6 +764,10 @@ c in rhov is already rho^prime = rho - rho0 (deviation)
 c
 c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 
+	use mod_ts !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nldim
@@ -752,11 +775,11 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 	real shearf2(nldim,1)
 
 	include 'param.h'
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'pkonst.h'
 	include 'femtime.h'
-	include 'ts.h'
-	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'ts.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
 
 	integer k,l,nlev
 	real aux,dh,du,dv,m2,dbuoy
@@ -831,6 +854,11 @@ c
 c this is evaluated for every element and then averaged for each node
 c taub (stress at bottom) is accumulated and weighted by area
  
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	real czdef
@@ -838,12 +866,12 @@ c taub (stress at bottom) is accumulated and weighted by area
 	real areaac(1)
 
 	include 'param.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'ev.h'
 
 
-	include 'basin.h'
-	include 'hydro_vel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer k,ie,ii,n,nlev
 	real aj,taubot
@@ -894,6 +922,12 @@ c**************************************************************
 
 c checks arrays for nan or other strange values
 
+	use mod_meteo !COMMON_GGU_SUBST
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nldim
@@ -903,13 +937,13 @@ c checks arrays for nan or other strange values
 
 	include 'param.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
-	include 'hydro_vel.h'
-	include 'hydro_print.h'
-	include 'meteo_aux.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'meteo_aux.h'
 
 	call nantest(nkn*nldim,shearf2,'shearf2')
 	call nantest(nkn*nldim,buoyf2,'buoyf2')
@@ -934,19 +968,28 @@ c**************************************************************
 
 c checks arrays for strange values
 
+	use mod_meteo !COMMON_GGU_SUBST
+	use mod_ts !COMMON_GGU_SUBST
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	character*(*) text
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'diff_visc_fric.h'
-	include 'hydro.h'
-	include 'ts.h'
-	include 'hydro_vel.h'
-	include 'hydro_print.h'
-	include 'meteo_aux.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'ts.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'meteo_aux.h'
 
 	integer one,three
 	real zero,valmax
@@ -981,24 +1024,32 @@ c**************************************************************
 
 	subroutine keps_shell
 
+	use mod_turbulence !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_ts !COMMON_GGU_SUBST
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
-	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
 
 
 
-	include 'ts.h'
-	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'ts.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
-	include 'turbulence.h'
+COMMON_GGU_DELETED	include 'turbulence.h'
 
 	integer k,lmax,l
 	real rho0,rhoair
@@ -1048,6 +1099,11 @@ c**************************************************************
 
 c initializes arrays for keps routine
 
+	use mod_turbulence !COMMON_GGU_SUBST
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
 	real kmin,epsmin,lenmin,avumol,avtmol,avsmol
@@ -1056,10 +1112,10 @@ c       parameter(kmin=1.e-10,epsmin=1.e-12,lenmin=0.01)
         parameter(avumol=1.3e-6,avtmol=1.4e-7,avsmol=1.1e-9)
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'diff_visc_fric.h'
-	include 'turbulence.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'turbulence.h'
 
         integer k,l
 

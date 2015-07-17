@@ -38,11 +38,14 @@ c****************************************************************
 
 c optimal interpolation
 
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
-	include 'evmain.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'evmain.h'
 
 	integer ndim
 	parameter (ndim = 100)
@@ -167,10 +170,12 @@ c******************************************************************
 
 	subroutine read_data(mode,ndim,np,xp,yp,zp)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer mode
 	integer ndim,np
@@ -222,6 +227,9 @@ c interpolates depth values
 c
 c exponential interpolation with max radius
 
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	real afact
@@ -230,8 +238,8 @@ c exponential interpolation with max radius
 	real zv(1)
 
 	include 'param.h'
-	include 'basin.h'
-	include 'evmain.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'evmain.h'
 
 	integer ie,ii,k
 	integer nktot

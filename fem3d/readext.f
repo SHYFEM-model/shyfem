@@ -38,6 +38,8 @@ c*****************************************************************
 
 	program readext
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer noddim
@@ -61,7 +63,7 @@ c*****************************************************************
 	integer iz(noddim)
 
 c global data ------------------------------------
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 c ------------------------------------------------
 
 	integer iapini, ideffi, ifileo

@@ -133,6 +133,14 @@ c***********************************************************
 
 c computes bottom friction
 
+	use mod_fluidmud !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_roughness !COMMON_GGU_SUBST
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -142,15 +150,15 @@ c computes bottom friction
 
 	include 'pkonst.h'
 
-	include 'basin.h'
-	include 'levels.h'
-	include 'diff_visc_fric.h'
-	include 'roughness.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'roughness.h'
 
-	include 'fluidmud.h'
+COMMON_GGU_DELETED	include 'fluidmud.h'
 
-	include 'hydro.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ie,ii,k,lmax
 	integer ireib
@@ -296,10 +304,12 @@ c***********************************************************
 
 c interpolates area codes from elements to nodes (min or max)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer init,mode
 	integer k,ie,ii,ia
@@ -331,13 +341,15 @@ c***********************************************************
 
 	subroutine get_nodal_area_code(k,ncode)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer k	!node number
 	integer ncode	!nodal area code (return)
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	ncode = iarnv(k)
 
@@ -415,13 +427,15 @@ c***********************************************************
 
 c initializes chezy arrays
 
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
 	use chezy
 
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
-	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
 	integer ie,iar
 
@@ -464,13 +478,15 @@ c***********************************************************
 
 c adjusts chezy arrays
 
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
 	use chezy
 
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
-	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
 
 	logical bdebug
 	integer i,k1,k2
@@ -536,13 +552,14 @@ c***********************************************************
 
 c checks chezy arrays
 
+	use basin !COMMON_GGU_SUBST
 	use chezy
 
 	implicit none
 
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie,iar
 	integer i,j,k
@@ -670,12 +687,13 @@ c***********************************************************
 
 c checks values for chezy parameters
 
+	use basin !COMMON_GGU_SUBST
 	use chezy
 
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer i,knode,knodeh,ireib,nczmax
 	logical bstop,bpos

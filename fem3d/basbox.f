@@ -12,21 +12,26 @@ c****************************************************************
 
 c reads grid with box information and writes index file boxes.txt
 
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
-	include 'evmain.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'evmain.h'
 
 	integer ndim
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
         real raux(neldim)
         integer iaux(neldim)
         integer ipaux(nkndim)
 
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'geom.h'
 
         character*40 bfile,gfile,nfile
         character*60 line
@@ -130,10 +135,12 @@ c	ii=2	second node
 c	ii=3	box number of neibor
 c there are nblink(ib) node pairs in boxinf, so n=1,nblink(ib)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer nbxdim,nlbdim,nbox
 	integer nblink(nbxdim)
@@ -354,10 +361,12 @@ c*******************************************************************
 
 	subroutine write_boxes(nbxdim,nlbdim,nbox,nblink,boxinf)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer nbxdim,nlbdim,nbox
 	integer nblink(nbxdim)
@@ -391,10 +400,13 @@ c*******************************************************************
 
 	subroutine check_boxes(nbxdim,nbox,nblink)
 
+	use mod_geom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer nbxdim,nbox
 	integer nblink(nbxdim)
@@ -402,7 +414,7 @@ c*******************************************************************
 	integer ib,ie,ien,ii,i1,i2
 	integer ia,n,nb
 
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'geom.h'
 
 	nbox = 0
 	do ib=1,nbxdim
@@ -434,10 +446,13 @@ c*******************************************************************
 
 	subroutine handle_boxes(nbxdim,nlbdim,nbox,nblink,boxinf)
 
+	use mod_geom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer nbxdim,nlbdim,nbox
 	integer nblink(nbxdim)
@@ -446,7 +461,7 @@ c*******************************************************************
 	integer ib,ie,ien,ii,i1,i2
 	integer ia,ian,n
 
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'geom.h'
 
 	nbox = 0
 	do ib=1,nbxdim
@@ -495,13 +510,16 @@ c*******************************************************************
 
 c checks if all boxes are connected
 
+	use mod_geom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-        include 'basin.h'
-        include 'links.h'
+COMMON_GGU_DELETED        include 'basin.h'
+COMMON_GGU_DELETED        include 'links.h'
 
-	include 'geom_aux.h'
+COMMON_GGU_DELETED	include 'geom_aux.h'
 
 	integer ie
 	integer i,nc,ic,nt
@@ -573,18 +591,21 @@ c colors only elements with same area code
 c uses this area code to color the elements
 c area code 0 is not allowed !!!!
 
+	use mod_geom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-        include 'links.h'
+COMMON_GGU_DELETED        include 'links.h'
 
 	integer iestart
 	integer icon(neldim)
 	integer icol		!color used (return)
 	integer nc		!total number of elements colored (return)
 
-	include 'basin.h'
-	include 'geom_aux.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'geom_aux.h'
 
 	integer ip,ien,ii,ie
 	integer list(neldim)

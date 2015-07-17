@@ -14,11 +14,13 @@ c*******************************************************************
 
 	subroutine readmud
 
+	use mod_fluidmud !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'fluidmud.h'
+COMMON_GGU_DELETED	include 'fluidmud.h'
 
 	integer k,l
 

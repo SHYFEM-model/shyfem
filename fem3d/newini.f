@@ -74,12 +74,15 @@ c**************************************************************
 
 c set up time independent vertical vectors
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer nlv_est,nlv_read,nlv_final
 	real, allocatable :: hlv_aux(:)
@@ -172,14 +175,18 @@ c*****************************************************************
 
 c sets vertical eddy coefficient
 
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
 	integer k,l
 	real vistur,diftur
@@ -216,14 +223,18 @@ c*****************************************************************
 
 c checks vertical eddy coefficient
 
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
 	integer k,l
 	real v,d
@@ -270,11 +281,13 @@ c*****************************************************************
 
 	subroutine check_hlv
 
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer l
 
@@ -289,11 +302,13 @@ c*****************************************************************
 
 c checks nlv and associated parameters
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 	write(6,*) 'check_nlv : '
 	write(6,*) '   nlvdim : ',nlvdim
@@ -310,12 +325,14 @@ c*****************************************************************
 
 c estimates maximum value for nlv
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nlv_est		!nlv_read on entry, estimate on return
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie,ii
 	integer nsigma,nreg
@@ -370,13 +387,16 @@ c sigma levels, dzreg and hsigma	hybrid levels
 c zeta levels, nsigma and hsigma	hybrid levels
 c sigma and zeta levels and hsigma	hybrid levels
 
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 c common
 	include 'param.h'
-	include 'basin.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 c local
 	logical bsigma,bhybrid,bzeta
@@ -580,12 +600,14 @@ c*****************************************************************
 
 c checks arrays hlv and hldv
 
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 c common
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 c local
 	logical bstop,bsigma
@@ -665,12 +687,15 @@ c*****************************************************************
 
 c sets nlv and ilhv - only needs hm3v and hlv, hev is temporary array
 
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'basin.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 c local
 	logical bsigma
@@ -738,11 +763,14 @@ c*****************************************************************
 
 c set ilhkv array - only needs ilhv
 
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'levels.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie,ii,k,l
 
@@ -772,12 +800,15 @@ c*****************************************************************
 
 c set minimum number of levels for node and element
 
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nlevel.h'
-	include 'levels.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie,ii,k,l
 	integer lmin,lmax
@@ -822,12 +853,15 @@ c*****************************************************************
 
 c checks arrays ilhv and ilhkv
 
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'basin.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	logical bsigma,bspure
 	integer nsigma
@@ -890,12 +924,15 @@ c sets last layer thickness
 c
 c adjusts nlv, hm3v, ilhv
 
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'basin.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	logical bwrite
 	logical badjust,b2d,bsigma,binsigma
@@ -1068,6 +1105,9 @@ c*****************************************************************
 
 c sets coriolis parameter
 
+	use mod_internal !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	real omega2	!double frequency of earth rotation
@@ -1079,8 +1119,8 @@ c sets coriolis parameter
 	include 'mkonst.h'
 	include 'pkonst.h'
 
-	include 'basin.h'
-	include 'internal.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'internal.h'
 
 	integer k,ie,ii
 	integer icor
@@ -1170,12 +1210,15 @@ c*****************************************************************
 
 c checks coriolis parameter
 
+	use mod_internal !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'internal.h'
+COMMON_GGU_DELETED	include 'internal.h'
 
 	integer ie
 	real f,fmax
@@ -1200,11 +1243,14 @@ c*****************************************************************
 
 c initializes nodal value variable from file
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 	character*(*) name		!name of variable
 	real var(nlvdi,nkn,1)		!variable to set
@@ -1229,10 +1275,12 @@ c*****************************************************************
 
 c initializes nodal value variable from file (2D version)
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
 	character*(*) name		!name of variable
 	real var(nkn,1)			!variable to set
@@ -1300,14 +1348,17 @@ c*****************************************************************
 
 c initializes water level with constant
 
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	real const		!constant z value to impose
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer k,ie,ii
 
@@ -1333,15 +1384,18 @@ c*******************************************************************
 
 c initializes water level from file
 
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	character*(*) name	!file name
 
 	include 'param.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer nb,k
 	integer ifileo
@@ -1372,10 +1426,12 @@ c*******************************************************************
 
 c initializes transport in levels
 
+	use mod_hydro !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	utlnv = 0.
 	vtlnv = 0.
@@ -1388,13 +1444,16 @@ c*******************************************************************
 
 c initializes surface z0sk(k) and bottom z0bn(k) roughness 
 
+	use mod_roughness !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'roughness.h'
+COMMON_GGU_DELETED	include 'roughness.h'
 
 	integer k
 

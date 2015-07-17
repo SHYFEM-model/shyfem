@@ -21,21 +21,27 @@ c reads ous file and writes info to terminal
 c
 c we would not even need to read basin
 
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
-	include 'evmain.h'
+COMMON_GGU_DELETED	include 'evmain.h'
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'simul.h'
 
 
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
         real ut2v(neldim)
         real vt2v(neldim)

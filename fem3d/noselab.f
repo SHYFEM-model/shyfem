@@ -17,6 +17,7 @@ c**************************************************************
 
 	program noselab
 
+	use basin !COMMON_GGU_SUBST
 	use clo
 
 c elaborates nos file
@@ -24,7 +25,7 @@ c elaborates nos file
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer, parameter :: ndim = 1000
 	integer iusplit(ndim)
@@ -772,10 +773,12 @@ c***************************************************************
 
 	subroutine convert_internal_node(node)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer node
 

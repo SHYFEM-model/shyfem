@@ -35,11 +35,13 @@ c
 c nknddi	dimension for nkn
 c nelddi	dimension for nel
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nknddi,nelddi
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
 	if(nknddi.lt.nkn) goto 99
 	if(nelddi.lt.nel) goto 99
@@ -104,11 +106,13 @@ c check dimension for global matrix (probably not needed anymore)
 c
 c matdim	dimension for matrix
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer matdim
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
 	if(matdim.lt.nkn*ngr) goto 99
 
@@ -178,11 +182,13 @@ c*************************************************
 
 c check dimension for band width
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer mbwdim
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
 	if(mbwdim.lt.mbw) goto 99
 	if(mbw.le.0) goto 98

@@ -47,11 +47,13 @@ c
 
 	subroutine lgr_sediment(it)
 
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 	include 'lagrange.h'
-        include 'levels.h'
+COMMON_GGU_DELETED        include 'levels.h'
 
 	integer, intent(in)   :: it
 	integer               :: i,ie,lb,lmax

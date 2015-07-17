@@ -55,13 +55,15 @@ c*****************************************************************
 
 c sets initial conditions (no stratification)
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nlvddi		!vertical dimension of c
 	real c(nlvddi,1)		!variable to initialize
 	real cref		!reference value
 c common
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 c local
 	integer k,l
 	real depth,hlayer
@@ -80,6 +82,8 @@ c*****************************************************************
 
 c sets initial conditions (with stratification)
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nlvddi		!vertical dimension of c
@@ -88,7 +92,7 @@ c sets initial conditions (with stratification)
 	real cstrat		!stratification [conc/km]
 	real hdko(nlvddi,1)	!layer thickness
 c common
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 c local
 	integer k,l
 	real depth,hlayer
@@ -111,6 +115,9 @@ c*************************************************************
 
 c implements boundary condition (simplicistic version)
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -119,9 +126,9 @@ c arguments
 	real rbc(1)		!boundary condition
 c common
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'mkonst.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 c local
 	integer k,l,lmax
 	real rb
@@ -145,6 +152,10 @@ c*************************************************************
 
 c implements boundary condition (simplicistic 3D version)
 
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -154,10 +165,10 @@ c arguments
 	real rbc(nlvbnd,1)	!boundary condition
 c common
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'mkonst.h'
-	include 'levels.h'
-	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
 c local
 	integer k,l,lmax
 	real rb
@@ -203,6 +214,10 @@ c opens (NOS) file
 
 c on return iu = -1 means that no file has been opened and is not written
 
+	use mod_depth !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer iu		!unit				       (in/out)
@@ -214,10 +229,10 @@ c on return iu = -1 means that no file has been opened and is not written
 
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'simul.h'
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
-	include 'levels.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer nvers
 	integer date,time
@@ -294,6 +309,8 @@ c*************************************************************
 
 c writes NOS file
 
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer iu		!unit
@@ -305,7 +322,7 @@ c writes NOS file
 
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	logical binfo
 	integer ierr
@@ -351,6 +368,8 @@ c*************************************************************
 
 c shell for writing file unconditionally to disk
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+
         implicit none
 
 	integer iu		!unit (0 for first call, set on return)
@@ -361,7 +380,7 @@ c shell for writing file unconditionally to disk
 	real c(nlvddi,1)	!concentration to write
 
 	include 'femtime.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
         integer itmcon,idtcon,lmax
 
@@ -388,6 +407,10 @@ c opens (NOS) file
 
 c on return iu = -1 means that no file has been opened and is not written
 
+	use mod_depth !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ia_out(4)	!time information		       (in/out)
@@ -399,9 +422,9 @@ c on return iu = -1 means that no file has been opened and is not written
 	include 'femtime.h'
 
 	include 'simul.h'
-	include 'nbasin.h'
-	include 'levels.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer nvers
 	integer date,time
@@ -469,6 +492,8 @@ c writes NOS file
 c
 c the file must be open, the file will be written unconditionally
 
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ia_out(4)	!time information
@@ -479,7 +504,7 @@ c the file must be open, the file will be written unconditionally
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	logical binfo
 	integer iu,ierr
@@ -526,6 +551,9 @@ c*************************************************************
 
 c computes min/max for scalar field
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -534,8 +562,8 @@ c arguments
         real cmin,cmax
 c common
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
 c local
 	integer k,l,lmax
 	real cc
@@ -578,6 +606,9 @@ c*************************************************************
 
 c computes min/max for scalar field -> writes some info
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -586,9 +617,9 @@ c arguments
         real cmin,cmax
 c common
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 c local
 	integer k,l,lmax
         integer ntot

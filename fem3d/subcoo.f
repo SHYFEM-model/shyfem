@@ -14,9 +14,11 @@ c
 
 ! construct pointers for co matrix
 
+	use mod_system !COMMON_GGU_SUBST
+
 	implicit none
 	include 'param.h'
-	include 'common.h'
+COMMON_GGU_DELETED	include 'common.h'
 
 	integer nnel,nnkn,mmbw		!size of elements, nodes, bandwidth
 	integer nnen3v(3,1)		!element index
@@ -183,9 +185,11 @@ c
 
 ! internal routine for insertion of non 0 elements
 
+	use mod_system !COMMON_GGU_SUBST
+
 	implicit none
 	include 'param.h'
-	include 'common.h'
+COMMON_GGU_DELETED	include 'common.h'
 
 	integer k1,k2,n,nnkn,mmbw
 	integer ip(-mmbw:mmbw,nnkn)
@@ -227,9 +231,11 @@ c
 
 c localize for COO routines
 
+	use mod_system !COMMON_GGU_SUBST
+
 	implicit none
 	include 'param.h'
-	include 'common.h'
+COMMON_GGU_DELETED	include 'common.h'
 
 	integer loccoo			!position
 	integer i,j			!row and col

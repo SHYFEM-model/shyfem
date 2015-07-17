@@ -55,6 +55,11 @@ c for a boundary node n == ne + 1
 c in any case it is the number of internal sections that is returned
 c for a boundary node, transp(n) = 0
 
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_hydro_baro !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer k		!node number of finite volume
@@ -64,11 +69,11 @@ c for a boundary node, transp(n) = 0
 	real transp(1)		!fluxes into elements (flux corrected, return) 
 
 	include 'param.h'
-	include 'ev.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'ev.h'
+COMMON_GGU_DELETED	include 'links.h'
 
-	include 'hydro_baro.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_baro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	logical bdebug
 	integer i,ie,ii,ne,ndim
@@ -146,6 +151,9 @@ c
 c internal section is defined by:  kbefor - k - kafter
 c passed in are pointers to these section in lnk structure
 
+	use mod_geom !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer k		!node number of finite volume
@@ -158,8 +166,8 @@ c passed in are pointers to these section in lnk structure
 	parameter (ndim=100)
 
 	include 'param.h'
-	include 'ev.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'ev.h'
+COMMON_GGU_DELETED	include 'links.h'
 
 	logical bdebug
 	integer i,n
@@ -223,17 +231,25 @@ c if we are on a flux boundary this is not working
 c we should exclude mfluxv from the divergence computation
 c -> has been done - other sources of mfluxv (rain, etc.) are also eliminated
 
+	use mod_bound_geom !COMMON_GGU_SUBST
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'ev.h'
-	include 'links.h'
-	include 'testbndo.h'
-	include 'hydro.h'
-	include 'hydro_vel.h'
-	include 'nlevel.h'
-	include 'levels.h'
-	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'ev.h'
+COMMON_GGU_DELETED	include 'links.h'
+COMMON_GGU_DELETED	include 'testbndo.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
 
 	integer k		!node number of finite volume
 	integer istype		!type of node (see flxtype)
@@ -338,14 +354,19 @@ c
 c internal section is defined by:  kbefor - k - kafter
 c passed in are pointers to these section in lnk structure
 
+	use mod_geom !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'femtime.h'
-	include 'ev.h'
-	include 'links.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'ev.h'
+COMMON_GGU_DELETED	include 'links.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 	integer k		!node number of finite volume
 	integer ibefor,iafter	!pointer to pre/post node
@@ -526,21 +547,25 @@ c
 c uses inodv only for determination of open bounday nodes
 c else uses kantv
 
+	use mod_bound_geom !COMMON_GGU_SUBST
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_geom_dynamic !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer flxtype		!type of node (1=int,2=bnd,3=BOO,4=OOB,5=OOO)
 	integer k		!node number of finite volume
 
 	include 'param.h'
-	include 'geom_dynamic.h'
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'geom_dynamic.h'
+COMMON_GGU_DELETED	include 'geom.h'
 
 	integer ktype
 	integer kafter,kbefor
 
 	integer ipext
 
-	include 'testbndo.h'
+COMMON_GGU_DELETED	include 'testbndo.h'
 
 	if( kantv(1,k) .eq. 0 ) then			!inner point
 	   ktype = 1
@@ -581,11 +606,14 @@ c 3d version
 c
 c if on boundary (itype>1) rflux(n) is not used (because not defined)
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 	integer k		!node
 	integer itype		!type of node (1=int,2=bnd,3=BOO,4=OOB,5=OOO)

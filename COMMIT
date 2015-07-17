@@ -1,5 +1,261 @@
 ============================================================
 
+Fri Jul 17 18:39:52 CEST 2015
+
+first version with modules and allocatable arrays
+
+ RELEASE_NOTES                   |   14 +
+ fem3d/Makefile                  |  935 +++++++++++++++++++++++----------
+ fem3d/aquabc_II_fem_interface.f |   43 +-
+ fem3d/atoxi3d.f                 |   25 +-
+ fem3d/basbathy.f                |   10 +-
+ fem3d/basbox.f                  |   53 ++-
+ fem3d/baschk.f                  |   18 +-
+ fem3d/bascomp.f                 |   35 +-
+ fem3d/bashsigma.f               |   37 +-
+ fem3d/basinf.f                  |   54 ++-
+ fem3d/basproj.f                 |    4 +-
+ fem3d/basres.f                  |   12 +-
+ fem3d/bastreat.f                |   80 ++-
+ fem3d/baswork.f                 |   39 +-
+ fem3d/bdist.f                   |   12 +-
+ fem3d/bio3d.f                   |   57 ++-
+ fem3d/bio3d_util.f              |   11 +-
+ fem3d/grdutil.f                 |   24 +-
+ fem3d/h/adria.h                 |   25 -
+ fem3d/h/adriatot.h              |   42 --
+ fem3d/h/adrtot.h                |   42 --
+ fem3d/h/channel.h               |   42 --
+ fem3d/h/channel2.h              |   42 --
+ fem3d/h/com.h                   |   42 --
+ fem3d/h/comune.h                |   42 --
+ fem3d/h/comune1.h               |   24 -
+ fem3d/h/donata.h                |   42 --
+ fem3d/h/haka.h                  |   43 --
+ fem3d/h/issykkul.h              |   43 --
+ fem3d/h/lago.h                  |   24 -
+ fem3d/h/lagos.h                 |   24 -
+ fem3d/h/leman.h                 |   48 --
+ fem3d/h/lip.h                   |   21 -
+ fem3d/h/lipvanni.h              |   25 -
+ fem3d/h/morfo.h                 |   24 -
+ fem3d/h/narva.h                 |   42 --
+ fem3d/h/param.h                 |   43 --
+ fem3d/h/param59.h               |   25 -
+ fem3d/h/param92.h               |   20 -
+ fem3d/h/rosa.h                  |   25 -
+ fem3d/h/rosk.h                  |   24 -
+ fem3d/h/special/chao.h          |   69 ---
+ fem3d/h/special/defines.h       |   69 ---
+ fem3d/h/taranto.h               |   24 -
+ fem3d/h/venlag.h                |   42 --
+ fem3d/h/venlag_2.h              |   48 --
+ fem3d/h/venlag_new.h            |   48 --
+ fem3d/ht.f                      |  256 ++++++---
+ fem3d/intp.f                    |    7 +-
+ fem3d/lagrange_back.f           |   17 +-
+ fem3d/lagrange_cont.f           |   12 +-
+ fem3d/lagrange_flux.f           |   64 ++-
+ fem3d/lagrange_init.f           |   15 +-
+ fem3d/lagrange_inout.f          |   20 +-
+ fem3d/lagrange_main.f           |   19 +-
+ fem3d/lagrange_oil.f            |   14 +-
+ fem3d/lagrange_sedim.f          |    4 +-
+ fem3d/lagrange_track.f          |   28 +-
+ fem3d/lagrange_util.f           |   19 +-
+ fem3d/lagrange_util_tr.f        |   12 +-
+ fem3d/lagrange_vertical.f       |   59 ++-
+ fem3d/lgrelab.f                 |   18 +-
+ fem3d/loading.f                 |   18 +-
+ fem3d/map_influence.f           |    7 +-
+ fem3d/mod_system.f              |    2 +
+ fem3d/netcdf.f                  |   14 +-
+ fem3d/netcdf_util.f             |    4 +-
+ fem3d/new36.f                   |   17 +-
+ fem3d/new3di.f                  |  227 ++++++---
+ fem3d/newbcl.f                  |   67 ++-
+ fem3d/newchao.f                 |   13 +-
+ fem3d/newchk.f                  |  238 ++++++---
+ fem3d/newcon.f                  |  142 ++++--
+ fem3d/newconz.f                 |   66 ++-
+ fem3d/newcra.f                  |   22 +-
+ fem3d/newdum.f                  |   10 +-
+ fem3d/newdum1.f                 |    4 +-
+ fem3d/newdum_levels.f           |   12 +-
+ fem3d/newexpl.f                 |  254 ++++++---
+ fem3d/newfix.f                  |   40 +-
+ fem3d/newini.f                  |  149 ++++--
+ fem3d/newnudge.f                |   37 +-
+ fem3d/newrog.f                  |    4 +-
+ fem3d/newstab.f                 |   73 ++-
+ fem3d/newtra.f                  |  220 ++++++---
+ fem3d/newtvd.f                  |   75 ++-
+ fem3d/nos2nc.f                  |   16 +-
+ fem3d/nos_elab.f                |    4 +-
+ fem3d/nosaver_basin.f           |    7 +-
+ fem3d/nosaver_vert.f            |    7 +-
+ fem3d/noselab.f                 |    7 +-
+ fem3d/nosextr_custom.f          |    4 +-
+ fem3d/nosextr_fluxes.f          |    8 +-
+ fem3d/nosextr_gis.f             |   16 +-
+ fem3d/nosextr_nodes.f           |   15 +-
+ fem3d/nosinit.f                 |    4 +-
+ fem3d/nosintp.f                 |    4 +-
+ fem3d/nosmaniq.f                |    4 +-
+ fem3d/nosresidence.f            |   31 +-
+ fem3d/nossum.f                  |    4 +-
+ fem3d/noswrite.f                |   13 +-
+ fem3d/optintp.f                 |   17 +-
+ fem3d/ous2nc.f                  |   16 +-
+ fem3d/ousaver.f                 |   13 +-
+ fem3d/ousextr_cat.f             |   18 +-
+ fem3d/ousextr_gis.f             |   23 +-
+ fem3d/ousextr_nodes.f           |   21 +-
+ fem3d/ousextr_records.f         |   18 +-
+ fem3d/ousinf.f                  |   18 +-
+ fem3d/ousintp.f                 |   17 +-
+ fem3d/ousutil.f                 |    4 +-
+ fem3d/ousvdiff.f                |   10 +-
+ fem3d/ouswork.f                 |   16 +-
+ fem3d/ouswork1.f                |   16 +-
+ fem3d/ouswrite.f                |   13 +-
+ fem3d/param.h                   |    6 +-
+ fem3d/readext.f                 |    4 +-
+ fem3d/reg/cat_reg_input.f       |  183 -------
+ fem3d/reg/cat_ts_input.f        |  185 -------
+ fem3d/reg/check_rain.f          |  100 ----
+ fem3d/reg/check_reg_input.f     |  110 ----
+ fem3d/reg/clean_reg_input.f     |  111 ----
+ fem3d/reg/extract_reg_input.f   |  126 -----
+ fem3d/scal_intp.f               |   18 +-
+ fem3d/scalintp.f                |   10 +-
+ fem3d/sedi3d.f                  |  138 ++++--
+ fem3d/simsys_lp.f               |   39 +-
+ fem3d/simsys_pard.f             |   27 +-
+ fem3d/simsys_spk.f              |   27 +-
+ fem3d/subbas.f                  |   28 +-
+ fem3d/subbfm.f                  |   42 +-
+ fem3d/subbnd.f                  |   89 +++-
+ fem3d/subbndo.f                 |   73 ++-
+ fem3d/subboxa.f                 |  131 ++++--
+ fem3d/subcon1.f                 |   71 ++-
+ fem3d/subcoo.f                  |   12 +-
+ fem3d/subcst.f                  |   14 +-
+ fem3d/subcus.f                  |  452 +++++++++++-----
+ fem3d/subdep.f                  |   68 ++-
+ fem3d/subdif.f                  |  112 +++--
+ fem3d/subdim.f                  |   12 +-
+ fem3d/subdry.f                  |   72 ++-
+ fem3d/subele.f                  |  184 +++++--
+ fem3d/subetsa.f                 |   32 +-
+ fem3d/subexta.f                 |    7 +-
+ fem3d/subflx3d.f                |   74 ++-
+ fem3d/subflxa.f                 |   15 +-
+ fem3d/subflxu.f                 |   16 +-
+ fem3d/subfvl.f                  |   18 +-
+ fem3d/subgotm.f                 |  148 ++++--
+ fem3d/subgotm_mud.f             |  195 +++++---
+ fem3d/subgrd.f                  |    4 +-
+ fem3d/subinterpol.f             |   35 +-
+ fem3d/subinterpol1.f            |   32 +-
+ fem3d/sublin.f                  |    7 +-
+ fem3d/sublnka.f                 |   29 +-
+ fem3d/sublnkd.f                 |   36 +-
+ fem3d/sublnks.f                 |   60 ++-
+ fem3d/sublnku.f                 |   78 ++-
+ fem3d/sublpl.f                  |   11 +-
+ fem3d/submet.f                  |   62 ++-
+ fem3d/submeteo2.f               |   53 ++-
+ fem3d/submud.f                  |  247 ++++++---
+ fem3d/submud_dummy.f            |    4 +-
+ fem3d/subn11.f                  |  139 ++++--
+ fem3d/subn35.f                  |   48 ++-
+ fem3d/subnev.f                  |  193 ++++---
+ fem3d/subnev_new.f              | 1129 ---------------------------------------
+ fem3d/subnosa.f                 |    7 +-
+ fem3d/subnsh.f                  |   18 +-
+ fem3d/subnsu.f                  |   28 +-
+ fem3d/suboff.f                  |  107 +++--
+ fem3d/subousa.f                 |   15 +-
+ fem3d/subouta.f                 |   13 +-
+ fem3d/subpard.f                 |    8 +-
+ fem3d/subproj.f                 |   28 +-
+ fem3d/subqfxt.f                 |   10 +-
+ fem3d/subreg.f                  |   85 +++-
+ fem3d/subres.f                  |   72 ++-
+ fem3d/subrst.f                  |   44 +-
+ fem3d/subspk.f                  |   11 +-
+ fem3d/subtrace.f                |   35 +-
+ fem3d/subuti.f                  |   80 ++-
+ fem3d/subvola.f                 |   34 +-
+ fem3d/subwat.f                  |   65 ++-
+ fem3d/subwaves.f                |  132 ++++--
+ fem3d/subwrt.f                  |  111 +++--
+ fem3d/tideg.f                   |   27 +-
+ fem3d/ts2nc.f                   |   16 +-
+ fem3d/vp.f                      |    4 +-
+ fem3d/zinit.f                   |    4 +-
+ femadj/param.h                  |    6 +-
+ femdoc/final/shyfem.pdf         |  Bin 294949 -> 294949 bytes
+ femdoc/final/shyfem.ps          |   24 +-
+ femplot/Makefile                |   88 +++-
+ femplot/lagxitest.f             |   28 +-
+ femplot/line_nodes.f            |   23 +-
+ femplot/param.h                 |    6 +-
+ femplot/plotsim.f               |   84 ++-
+ femplot/supano.f                |    4 +-
+ femplot/supbas.f                |   29 +-
+ femplot/supdep.f                |   52 ++-
+ femplot/supint.f                |    8 +-
+ femplot/supiso.f                |   12 +-
+ femplot/suplag.f                |    7 +-
+ femplot/suplin.f                |   27 +-
+ femplot/suplin1.f               |   49 ++-
+ femplot/supout.f                |  182 +++++--
+ femplot/supsim.f                |  146 ++++--
+ femplot/supver.f                |   24 +-
+ param.h                         |    6 +-
+ 211 files changed, 6264 insertions(+), 5791 deletions(-)
+ deleted:
+    fem3d/h/adria.h
+    fem3d/h/adriatot.h
+    fem3d/h/adrtot.h
+    fem3d/h/channel.h
+    fem3d/h/channel2.h
+    fem3d/h/com.h
+    fem3d/h/comune.h
+    fem3d/h/comune1.h
+    fem3d/h/donata.h
+    fem3d/h/haka.h
+    fem3d/h/issykkul.h
+    fem3d/h/lago.h
+    fem3d/h/lagos.h
+    fem3d/h/leman.h
+    fem3d/h/lip.h
+    fem3d/h/lipvanni.h
+    fem3d/h/morfo.h
+    fem3d/h/narva.h
+    fem3d/h/param.h
+    fem3d/h/param59.h
+    fem3d/h/param92.h
+    fem3d/h/rosa.h
+    fem3d/h/rosk.h
+    fem3d/h/special/chao.h
+    fem3d/h/special/defines.h
+    fem3d/h/taranto.h
+    fem3d/h/venlag.h
+    fem3d/h/venlag_2.h
+    fem3d/h/venlag_new.h
+    fem3d/reg/cat_reg_input.f
+    fem3d/reg/cat_ts_input.f
+    fem3d/reg/check_rain.f
+    fem3d/reg/check_reg_input.f
+    fem3d/reg/clean_reg_input.f
+    fem3d/reg/extract_reg_input.f
+    fem3d/subnev_new.f
+
+============================================================
+
 Fri Jul 17 18:14:56 CEST 2015
 
 New version 7_1_53

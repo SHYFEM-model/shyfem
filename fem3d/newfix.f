@@ -26,16 +26,21 @@ c*****************************************************************
 
 c initialization of bclfix routines
 
+	use mod_bclfix !COMMON_GGU_SUBST
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_aux_array !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none 
 
         include 'param.h' 
-        include 'bclfix.h' 
+COMMON_GGU_DELETED        include 'bclfix.h' 
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
-	include 'aux_array.h'
+COMMON_GGU_DELETED	include 'aux_array.h'
 
-	include 'internal.h'
+COMMON_GGU_DELETED	include 'internal.h'
 
 	real tnudge	!relaxation time for nudging [s]
 
@@ -162,21 +167,30 @@ c*****************************************************************
 
 c fix or nudge  velocities on open boundaries
 
+	use mod_bclfix !COMMON_GGU_SUBST
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none 
 
         include 'param.h' 
-        include 'bclfix.h' 
+COMMON_GGU_DELETED        include 'bclfix.h' 
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 	include 'bound_names.h'
-	include 'geom_dynamic.h'
-	include 'internal.h'
-	include 'hydro_vel.h'
-	include 'hydro.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'geom_dynamic.h'
+COMMON_GGU_DELETED	include 'internal.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	real tnudge	!relaxation time for nudging [s]
 	real tramp	!time for smooth init

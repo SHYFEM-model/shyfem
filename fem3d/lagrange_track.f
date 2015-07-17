@@ -21,11 +21,16 @@ c fino al successivo punto interno allo stesso elemento
 c se entro il time step il body esce dall''elemento 
 c si passa alla successiva subroutine con time
 
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
         
 	include 'param.h' 
 	include 'lagrange.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
  
 	real time	!total time to travel
 	integer bdy	!number of body
@@ -40,11 +45,11 @@ c si passa alla successiva subroutine con time
  
         real deltat ! frazione di time step body si muove in ie
  
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'geom.h'
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
-	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
 
 	real v_ent ! valore mediato tra velocita' int e out
 	real v_int ! modulo della velocita' di entrata
@@ -625,6 +630,11 @@ c da un punto sul lato dell''elemento ie
 c questa subroutine e'' chiamata ogni qualvolta un body
 c nello stesso timestep arriva in un nuovo elemento
 
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
         
 	include 'param.h' 
@@ -643,14 +653,14 @@ c nello stesso timestep arriva in un nuovo elemento
 
         real deltat ! frazione di time step body si muove in ie
  
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'geom.h'
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
-	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
 
-	include 'levels.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 	real v_ent ! valore mediato tra velocita' int e out
 	real v_int ! modulo della velocita' di entrata

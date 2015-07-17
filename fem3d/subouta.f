@@ -20,16 +20,21 @@ c********************************************************
 
 c writes and administers out file
 
+	use mod_hydro_baro !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
 	include 'simul.h'
 
-	include 'hydro_print.h'
-	include 'hydro.h'
-	include 'hydro_baro.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_baro.h'
 
 	integer itmout,ierr
 	real href,hzoff

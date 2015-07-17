@@ -467,12 +467,14 @@ c******************************************************************
 
 c computes vol in total basin
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	real voltotal
 	logical bz	!if true use new zeta to compute volume
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer ie,mode
 	real volume
@@ -501,11 +503,13 @@ c******************************************************************
 
 c computes area in total basin
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	real areatotal
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer ie
 	real area
@@ -581,13 +585,15 @@ c******************************************************************
 
 c initializes vol routines finally
 
+	use mod_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'volcomp.h'
 
 
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'geom.h'
 	
 	integer idummy
 
@@ -655,6 +661,8 @@ c******************************************************************
 
 c sets up element info structure ivol(1) from kvol(1) for one area
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nv		!progressive number of line	(in)
@@ -664,7 +672,7 @@ c sets up element info structure ivol(1) from kvol(1) for one area
 	integer ivolm		!filling of ivol		(out)
 	integer ivol(1)		!element numbers of volumes     (out)
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
 	real xline(nkn), yline(nkn)
 	integer kline(nkn)
@@ -778,6 +786,9 @@ c******************************************************************
 
 c close line -> nodes will be unique (first & last are different)
 
+	use mod_geom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer n		!size of kvol
@@ -787,9 +798,9 @@ c close line -> nodes will be unique (first & last are different)
 	real xline(1), yline(1)
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'geom.h'
 
 	integer i,k
 	integer kfirst,kstart,knext
@@ -841,6 +852,9 @@ c******************************************************************
 
 	subroutine wrtelem(iunit,n,ielems,ietype)
 
+	use mod_aux_array !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer iunit
@@ -850,11 +864,11 @@ c******************************************************************
 
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'aux_array.h'
+COMMON_GGU_DELETED	include 'aux_array.h'
 
 
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer k,i,ii,ie,nvert
 	integer kn(10)
@@ -898,6 +912,8 @@ c******************************************************************
 
 	subroutine wrtline(iunit,n,inodes,il,iltype)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer iunit
@@ -907,7 +923,7 @@ c******************************************************************
 
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer k,i
 	integer istart

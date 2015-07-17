@@ -18,6 +18,12 @@ c***************************************************************
 
 c reads ous file and writes extracted records to new ous file
 
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
@@ -29,15 +35,15 @@ c reads ous file and writes extracted records to new ous file
 
 	character*80 title
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
-	include 'hydro.h'
-	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
 
 	real ut2v(neldim)
 	real vt2v(neldim)

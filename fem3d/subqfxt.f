@@ -110,11 +110,15 @@ c*****************************************************************************
 
 c computes new temperature (forced by heat flux) - 3d version
 
+	use mod_meteo !COMMON_GGU_SUBST
+	use mod_ts !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
         include 'subqfxm.h'
-        include 'meteo.h'
+COMMON_GGU_DELETED        include 'meteo.h'
 
 	integer it
 	real dt
@@ -123,8 +127,8 @@ c computes new temperature (forced by heat flux) - 3d version
 	real temp(nlvddi,1)
 	double precision dq	!total energy introduced [(W/m**2)*dt*area = J]
 
-	include 'levels.h'
-	include 'ts.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'ts.h'
 
 c local
 	logical bdebug

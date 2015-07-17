@@ -14,13 +14,15 @@ c*******************************************************************
 
 c returns distance between two nodes
 
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
         real dist_node
         integer k1,k2
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
         real x1,y1,x2,y2,dx,dy
 
@@ -100,12 +102,14 @@ c*******************************************************************
 
 c returns center of gravity of total basin
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	real xm,ym
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	call xy_center(nkn,xgv,ygv,xm,ym)
 
@@ -144,6 +148,8 @@ c*******************************************************************
 
 c returns x,y and min/max coordinates of vertices of element ie
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ie
@@ -152,7 +158,7 @@ c returns x,y and min/max coordinates of vertices of element ie
 	real ymin,ymax
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ii,k
 
@@ -173,13 +179,16 @@ c*******************************************************************
 
 	subroutine compute_total_area(area)
 
+	use evgeom !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	real area
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'ev.h'
 
 	integer ie
 	double precision a,tot_area

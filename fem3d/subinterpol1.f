@@ -43,14 +43,17 @@ c*******************************************************************
 
 	subroutine read_basin(name)
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	character*(*) name
 	integer nknddi,nelddi
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'basin.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ie,ii
 	real h
@@ -187,14 +190,17 @@ c*******************************************************************
 
 c copies depth values from elems/nodes to nodes/elems
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ike
 	real ht(1)	!this is interpolated depth
 
 	include 'param.h'
-	include 'basin.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer k,ie,ii
 	real depth
@@ -248,6 +254,9 @@ c*******************************************************************
 
 c handles depth values
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer idepth		!1: only at missing points 2: everywhere
@@ -255,9 +264,9 @@ c handles depth values
 
 	include 'param.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer k,ie
 	real flag
@@ -291,6 +300,9 @@ c*******************************************************************
 
 c writes grd file from bas
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer iunit
@@ -299,10 +311,10 @@ c writes grd file from bas
 	include 'param.h'
 
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer k,ie,ii
 
@@ -337,11 +349,13 @@ c*******************************************************************
 
 	subroutine node_test
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	logical bstop
 	integer ie,ii,iii,k,k1

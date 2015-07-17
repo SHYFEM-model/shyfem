@@ -34,6 +34,9 @@ c areaload      total loadings [kg/day] for areas
 c
 c  the node numbers in karee are external node numbers
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
@@ -42,9 +45,9 @@ c  the node numbers in karee are external node numbers
 
 	real eload(nlvdim,nkndim,nstate)
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer nareas
 	parameter (nareas=5)
@@ -228,6 +231,8 @@ c the specified loadings in sload are in [kg/day] or [kg/(m**2 day)]
 c
 c please set afact according to the choice of unit of sload (see below)
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
@@ -237,7 +242,7 @@ c please set afact according to the choice of unit of sload (see below)
 	real eload(nlvdim,nkndim,nstate)	!loading matrix for eutro
 	real sload(nstate)			!surface load for each var
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
 	real areav(nkndim)
 	real volv(nkndim)
@@ -356,6 +361,9 @@ c*************************************************************
 
 c makes total volume of areas
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
         integer nareas
@@ -363,8 +371,8 @@ c makes total volume of areas
         integer aree(1)
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
         integer mode,i,k,ia,lmax,l
 

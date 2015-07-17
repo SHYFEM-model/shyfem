@@ -177,22 +177,33 @@ c administrates one hydrodynamic time step for system to solve
 c
 c written on 27.07.88 by ggu   (from sp159f)
 
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+	use mod_aux_array !COMMON_GGU_SUBST
+	use mod_area !COMMON_GGU_SUBST
+	use mod_hydro_baro !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 	include 'femtime.h'
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'bound_dynamic.h'
-	include 'aux_array.h'
-	include 'hydro.h'
-	include 'hydro_vel.h'
-	include 'hydro_baro.h'
-	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'aux_array.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro_baro.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
 
-	include 'depth.h'
-	include 'area.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'area.h'
 
 	logical boff,bdebout
 	logical bzcorr
@@ -360,10 +371,21 @@ c changed on 04.06.91 by ggu  (c=(1) : friction term has been corrected)
 c changed on 01.10.92 by ggu  (staggered FE - completely restructured)
 c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 
+	use mod_nudging !COMMON_GGU_SUBST
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+	use mod_hydro_baro !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'ev.h'
 
 	real vqv(1)
 
@@ -374,19 +396,19 @@ c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 	include 'pkonst.h'
 	include 'femtime.h'
 
-	include 'basin.h'
-	include 'levels.h'
-	include 'bound_dynamic.h'
-	include 'depth.h'
-	include 'hydro_baro.h'
-	include 'hydro.h'
-	include 'geom_dynamic.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'hydro_baro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
-	include 'internal.h'
+COMMON_GGU_DELETED	include 'internal.h'
         integer afix            !chao deb
 
 
-	include 'nudging.h'
+COMMON_GGU_DELETED	include 'nudging.h'
 
 	logical bcolin
 	logical bdebug
@@ -592,9 +614,11 @@ c******************************************************************
 
 	subroutine sp256v
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'pkonst.h'
 	include 'femtime.h'
 
@@ -722,6 +746,22 @@ c semi-implicit scheme for 3d model
 c
 c written on 18.02.91 by ggu  (from scratch)
 c
+	use mod_tides !COMMON_GGU_SUBST
+	use mod_meteo !COMMON_GGU_SUBST
+	use mod_waves !COMMON_GGU_SUBST
+	use mod_fluidmud !COMMON_GGU_SUBST
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_aux_array !COMMON_GGU_SUBST
+	use mod_roughness !COMMON_GGU_SUBST
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use mod_hydro_baro !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ie
@@ -744,29 +784,29 @@ c common
 	include 'mkonst.h'
 	include 'pkonst.h'
 	include 'femtime.h'
-	include 'nlevel.h'
-	include 'basin.h'
-	include 'levels.h'
-	include 'depth.h'
-	include 'hydro.h'
-	include 'hydro_print.h'
-	include 'aux_array.h'
-	include 'hydro_baro.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'aux_array.h'
+COMMON_GGU_DELETED	include 'hydro_baro.h'
+COMMON_GGU_DELETED	include 'ev.h'
 
        integer afix             !chao deb
 
 
-	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
 
-	include 'meteo_aux.h'
+COMMON_GGU_DELETED	include 'meteo_aux.h'
 
-	include 'tides.h'
+COMMON_GGU_DELETED	include 'tides.h'
 
-	include 'internal.h'
+COMMON_GGU_DELETED	include 'internal.h'
 
-	include 'fluidmud.h'
+COMMON_GGU_DELETED	include 'fluidmud.h'
 
 c local
 
@@ -809,10 +849,10 @@ c	real bb,bbt,cc,cct,aa,aat,ppx,ppy,aux,aux1,aux2
         
 	real rraux,cdf
 
-	include 'waves.h'
+COMMON_GGU_DELETED	include 'waves.h'
 
 	real ss
-	include 'roughness.h'
+COMMON_GGU_DELETED	include 'roughness.h'
 
 c-----------------------------------------
 	real hact(0:nlvdi+1)
@@ -1209,6 +1249,14 @@ c post processing of time step
 c
 c written on 23.07.1997 by ggu  (from scratch)
 c
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro_baro !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 c
 c parameters
@@ -1219,17 +1267,17 @@ c common
 	include 'mkonst.h'
 	include 'pkonst.h'
 	include 'femtime.h'
-	include 'nlevel.h'
-	include 'basin.h'
-	include 'levels.h'
-	include 'depth.h'
-	include 'hydro_baro.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'hydro_baro.h'
+COMMON_GGU_DELETED	include 'ev.h'
 
-	include 'internal.h'
+COMMON_GGU_DELETED	include 'internal.h'
         integer afix            !chao deb
 
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 
 c local
@@ -1355,6 +1403,15 @@ c written on 27.08.91 by ggu  (from scratch)
 c 14.08.1998	ggu	w = 0 at open boundary nodes
 c 20.08.1998	ggu	some documentation
 
+	use mod_bound_geom !COMMON_GGU_SUBST
+	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 c parameters
@@ -1365,14 +1422,14 @@ c arguments
 	real vf(nlvdi,1)
 	real va(nlvdi,1)
 c common
-	include 'nlevel.h'
-	include 'basin.h'
-	include 'hydro_vel.h'
-	include 'hydro.h'
-	include 'levels.h'
-	include 'geom_dynamic.h'
-	include 'bound_dynamic.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'geom_dynamic.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'ev.h'
 c local
 	logical debug
 	integer k,ie,ii,kk,l,lmax
@@ -1385,7 +1442,7 @@ c local
 	real volo,voln,dt,dvdt,q
 	real dzmax,dz
 c statement functions
-	include 'testbndo.h'
+COMMON_GGU_DELETED	include 'testbndo.h'
 
 	logical is_zeta_bound
 	real volnode
@@ -1536,6 +1593,15 @@ c written on 27.08.91 by ggu  (from scratch)
 c 14.08.1998	ggu	w = 0 at open boundary nodes
 c 20.08.1998	ggu	some documentation
 
+	use mod_bound_geom !COMMON_GGU_SUBST
+	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 c parameters
@@ -1546,14 +1612,14 @@ c arguments
 	real vf(nlvdi,1)
 	real va(nlvdi,1)
 c common
-	include 'nlevel.h'
-	include 'basin.h'
-	include 'hydro.h'
-	include 'hydro_vel.h'
-	include 'levels.h'
-	include 'geom_dynamic.h'
-	include 'bound_dynamic.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'geom_dynamic.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'ev.h'
 c local
 	logical debug
 	integer k,ie,ii,kk,l,lmax
@@ -1575,7 +1641,7 @@ c statement functions
 	logical is_zeta_bound
 	real volnode
 
-	include 'testbndo.h'
+COMMON_GGU_DELETED	include 'testbndo.h'
 
 	!logical isein
         !isein(ie) = iwegv(ie).eq.0
@@ -1710,15 +1776,19 @@ c               ...to assemble constant vector
 c v2		pivot for rmat
 c zv		vector with new water levels
 c
+	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 c
 c arguments
         real rmat(1),v1(1),v2(1),zv(1)
 c common
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'geom_dynamic.h'
-	include 'basin.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'geom_dynamic.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'ev.h'
 c local
         integer ii,ie,k,ii1,ii2,kk1,kk2,ier
 	integer idry
@@ -1855,15 +1925,21 @@ c*******************************************************************
 
 c momentum input for yaron
 
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'ev.h'
 
-	include 'levels.h'
-	include 'basin.h'
-	include 'depth.h'
-	include 'internal.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'internal.h'
 
 	integer kin,lin,ie,ii,k,lmax,nelem
 	real rnx,rny,rfact,q,area,h,fact
@@ -1902,13 +1978,16 @@ c*******************************************************************
 
 	subroutine correct_zeta(dzeta)
 
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	real dzeta(1)		!zeta correction
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer k
 

@@ -250,13 +250,15 @@ c*******************************************************************
 
 	subroutine create_parts(ity,np,k1,k2)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ity
 	integer np,k1,k2
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer i,ie1,ie2
 	real x1,y1,x2,y2,dx,dy
@@ -297,6 +299,8 @@ c*******************************************************************
 
 	function get_bflux_ppv(k1,k2)
 
+	use mod_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	real get_bflux_ppv
@@ -304,7 +308,7 @@ c*******************************************************************
 
         include 'param.h'
         include 'lagrange.h'
-        include 'links.h'
+COMMON_GGU_DELETED        include 'links.h'
 
 	integer ie1,ie2,ii
 
@@ -331,6 +335,8 @@ c*******************************************************************
 
 c release on node
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ity		!type of particle
@@ -339,7 +345,7 @@ c release on node
 	integer n
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie
 	real x,y

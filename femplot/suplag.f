@@ -258,12 +258,15 @@ c**********************************************************
 
 	subroutine plolagr
 
+	use mod_plot2d !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'basin.h'
-        include 'plot_aux.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED        include 'plot_aux.h'
 
 	integer ndim
 	parameter(ndim=nbdydim)

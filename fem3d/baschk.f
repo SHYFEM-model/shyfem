@@ -13,11 +13,14 @@ c****************************************************************
 
 c writes information on basin about nodes and elements
 
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
-	include 'evmain.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'evmain.h'
 
 	logical bnode,belem
 	integer iapini
@@ -54,6 +57,9 @@ c*******************************************************************
 
 c writes statistics on basin
 
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -62,9 +68,9 @@ c writes statistics on basin
 
 	include 'pkonst.h'
 
-	include 'evmain.h'
+COMMON_GGU_DELETED	include 'evmain.h'
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 
 	integer ie,ii,k,i
@@ -159,12 +165,14 @@ c
 c ie            number of element (internal)
 c areatr        element area (return value)
 
+	use basin !COMMON_GGU_SUBST
+
 	real areatr
 	integer ie
 
 	include 'param.h'
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 
 	real aj

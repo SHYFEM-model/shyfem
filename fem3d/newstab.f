@@ -48,13 +48,18 @@ c*****************************************************************
 
 c computes stability index
 
+	use mod_conz !COMMON_GGU_SUBST
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
-        include 'basin.h'
-	include 'nlevel.h'
-	include 'conz.h'
-	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED        include 'basin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'conz.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
 	real robs
 	real wsink
@@ -108,11 +113,14 @@ c*****************************************************************
 
 c gets stability index (if necessary computes it)
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 	include 'param.h'
-	include 'basin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 	real dt
 	real robs
@@ -166,11 +174,14 @@ c*****************************************************************
 
 c gets stability index (if necessary computes it)
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
         real dt
 	real robs
@@ -369,6 +380,10 @@ c mode = 0		normal call, compute stability
 c mode = 1		error call, compute stability and write error message
 c mode = 2		eliminate elements with r>rindex
 
+	use mod_aux_array !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
 	include 'param.h'
@@ -377,11 +392,11 @@ c mode = 2		eliminate elements with r>rindex
         real dt			!time step to be used
         real rindex		!stability index (return)
 
-	include 'nlevel.h'
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'aux_array.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'aux_array.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer ie,l,lmax,iweg
         real rkpar,azpar,ahpar,rlin
@@ -455,12 +470,15 @@ c*****************************************************************
 
 c outputs stability index for hydro timestep (internal) (error handling)
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
         real dt
 	real sauxe1(nlvdi,nel)
@@ -543,12 +561,15 @@ c*****************************************************************
 
 c outputs stability index for hydro timestep (internal)
 
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 	include 'param.h'
-	include 'basin.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
         real dt
 	real cwrite(nlvdi,nkn)
@@ -612,12 +633,15 @@ c*****************************************************************
 
 c outputs stability index for hydro timestep (internal)
 
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 	include 'param.h'
-	include 'basin.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
         real dt
 	real sauxe1(nlvdi,nel)	!advective stability index
@@ -692,11 +716,14 @@ c*****************************************************************
 
 c tests parallel implementation
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 	real dt,rkpar,azpar,rindex
 	real robs,wsink

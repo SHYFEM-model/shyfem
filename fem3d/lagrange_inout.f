@@ -111,6 +111,8 @@ c*******************************************************************
 
 	subroutine insert_particle_3d(ie,ity,rtime,x,y)
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ie	!element of particle - if unknown use 0
@@ -125,7 +127,7 @@ c itype < 0	realase n particles randomly
 
 	include 'param.h'
 	include 'lagrange.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 	logical b2d,bdebug
 	integer n,lmax,l,i
@@ -360,13 +362,16 @@ c
 c if body has exited the element number is negativ (last element)
 c once it has been written to output with negative ie, it is set to 0
 
+	use mod_depth !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
-        include 'nlevel.h'
+COMMON_GGU_DELETED        include 'nlevel.h'
         include 'lagrange.h'
-	include 'depth.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer iu,it
 
@@ -468,15 +473,18 @@ c*******************************************************************
 
 c outputs particles as density (concentration) to NOS file
 
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
         include 'param.h'
         include 'lagrange.h'
-        include 'ev.h'
+COMMON_GGU_DELETED        include 'ev.h'
 
 	include 'femtime.h'
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie,ii,k
 	integer ic,i

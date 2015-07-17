@@ -35,30 +35,42 @@ c*************************************************************
 
 c plots simulation
 
+	use mod_hydro_plot !COMMON_GGU_SUBST
+	use mod_plot2d !COMMON_GGU_SUBST
+	use mod_plot3d !COMMON_GGU_SUBST
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 c parameters
 
 	include 'param.h'
-	include 'basin.h'
-	include 'evmain.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'evmain.h'
 
 	include 'mkonst.h'
 	include 'pkonst.h'
 
-	include 'geom.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'geom.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
-	include 'hydro.h'
-	include 'hydro_vel.h'
-	include 'hydro_print.h'
-	include 'hydro_plot.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'hydro_plot.h'
 
-	include 'plot_aux.h'
-	include 'plot_aux_3d.h'
+COMMON_GGU_DELETED	include 'plot_aux.h'
+COMMON_GGU_DELETED	include 'plot_aux_3d.h'
 
 c local
 	character*20 what
@@ -286,17 +298,24 @@ c*****************************************************************
 
 	subroutine allocate_2d_arrays
 
+	use mod_hydro_plot !COMMON_GGU_SUBST
+	use mod_plot2d !COMMON_GGU_SUBST
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'nbasin.h'
-	include 'evmain.h'
-	include 'geom.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'evmain.h'
+COMMON_GGU_DELETED	include 'geom.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
-	include 'hydro_plot.h'
-	include 'plot_aux.h'
+COMMON_GGU_DELETED	include 'hydro_plot.h'
+COMMON_GGU_DELETED	include 'plot_aux.h'
 
 	call ev_init(nel)
 	call mod_geom_init(nkn,nel,ngr)
@@ -314,19 +333,26 @@ c*****************************************************************
 
 	subroutine allocate_simulation
 
+	use mod_plot3d !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
-	include 'hydro.h'
-	include 'hydro_vel.h'
-	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
 
-	include 'plot_aux_3d.h'
+COMMON_GGU_DELETED	include 'plot_aux_3d.h'
 
 	real flag
 
@@ -366,12 +392,14 @@ c*****************************************************************
 
 	subroutine get_dimension_post_2d(nknddi,nelddi)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nknddi,nelddi
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	call basin_get_dimension(nknddi,nelddi)
 
@@ -381,12 +409,14 @@ c*****************************************************************
 
 	subroutine get_dimension_post_3d(nlvddi)
 
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nlvddi
 
 	include 'param.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	call levels_get_dimension(nlvddi)
 

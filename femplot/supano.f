@@ -2056,6 +2056,8 @@ c	+---+---+
 c	| 1 | 2 |
 c	+---+---+
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer iquad		!quadrante that is free
@@ -2069,7 +2071,7 @@ c	+---+---+
 
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	character*80 line
 	integer i,j,k,n

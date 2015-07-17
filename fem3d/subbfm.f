@@ -144,6 +144,15 @@ c**************************************************************
 
 c computes ecological scalars with BFM  model
 
+	use mod_sinking !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_ts !COMMON_GGU_SUBST
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer it
@@ -156,14 +165,14 @@ c computes ecological scalars with BFM  model
 	parameter(ndim=nlvdim)
 
 	include 'pkonst.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'basin.h'
-	include 'ts.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'ts.h'
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 	
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 ! OBC ARRAY AND VARIABLES
 
@@ -331,12 +340,12 @@ c computes ecological scalars with BFM  model
 
 	integer itmbfm,idtbfm,ivs1,ivs2,ivs3
 	 
-	include 'levels.h'
-	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
 
 
-	include 'diff_visc_fric.h'
-	include 'sinking.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'sinking.h'
 
 	real load(nlvdim,nkndim)
 	common /load/load
@@ -637,12 +646,15 @@ c**************************************************************
 
 c initializes bfm  arrays
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 	include 'bfm_common.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 	
 	integer nbfmv1
 	real b1cn(nlvdim,nkndim,nbfmv1)
@@ -789,6 +801,8 @@ c**************************************************************
 
 	subroutine write_restart_eco(iunit)
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -796,7 +810,7 @@ c**************************************************************
 
 	integer iunit
 	integer k,nstate
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
 	nstate = 48
 
@@ -885,6 +899,8 @@ c**************************************************************
 
 	subroutine read_restart_eco(iunit)
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -894,7 +910,7 @@ c**************************************************************
 
 	integer k,nstate
 	integer nstate_aux,nkn_aux
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
 	nstate = 48
 

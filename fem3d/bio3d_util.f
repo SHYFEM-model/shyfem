@@ -17,6 +17,8 @@ c EUTRO 0-D (LOICZ BUdgeting Procedure)
 c
 c new version -> does everything: initializes, accumulates, writes
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nlzstate
@@ -29,7 +31,7 @@ c new version -> does everything: initializes, accumulates, writes
         include 'param.h'
         include 'donata.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
         real elz(nkndim,nlzstate)               !loicz budg proc ariables
         save elz                                !SAVEloicz
@@ -272,6 +274,9 @@ c********************************************************************
 
 c sets up sediment loading
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
         integer nlvdi,nknddi,nstate
@@ -279,8 +284,8 @@ c sets up sediment loading
         real elini(nstate)
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
         integer mode,i,k,l,lmax
         real d,vol,area

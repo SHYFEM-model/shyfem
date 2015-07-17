@@ -19,18 +19,23 @@ c***************************************************************
 
 c writes nos file from data file
 
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
 	character title
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'simul.h'
 
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
-	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
 
 	logical bwater(neldim)
 	integer iwet(neldim)
@@ -38,7 +43,7 @@ c writes nos file from data file
 	real hev(neldim)
 	real weight(nlvdim,nkndim)
 
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	real aux(nkndim)
 

@@ -126,12 +126,17 @@ c
 c mode		1 : first call, initialize b.c.
 c		2 : read in b.c.
 
+	use mod_bound_geom !COMMON_GGU_SUBST
+	use mod_bnd_aux !COMMON_GGU_SUBST
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
 	use intp_fem_file
 
 	implicit none
 
         include 'param.h'
-        include 'nbasin.h'
+COMMON_GGU_DELETED        include 'nbasin.h'
 
 	integer mode
 
@@ -139,12 +144,12 @@ c		2 : read in b.c.
 
 	include 'mkonst.h'
 
-	include 'bound_geom.h'
-	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
 
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'bnd_aux.h'
+COMMON_GGU_DELETED	include 'bnd_aux.h'
 
 	real rwv2(nkn)
 	integer ids(nbcdim)		!id values for boundary conditions
@@ -476,14 +481,18 @@ c	between these two values
 c if ktilt is given then this node will be set to z=0 and the other
 c	nodes are linearly interpolated between start-ktilt and ktilt-end
 
+	use mod_bound_geom !COMMON_GGU_SUBST
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'femtime.h'
 
-	include 'bound_geom.h'
-	include 'bound_dynamic.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ibc,ibtyp,ktilt
 	integer nbc
@@ -551,6 +560,12 @@ c
 c if ztilt is given then z_tilt() is used to tilt water level
 c if ktilt is not given nothing is tilted
 
+	use mod_bound_geom !COMMON_GGU_SUBST
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
@@ -559,13 +574,13 @@ c if ktilt is not given nothing is tilted
 	include 'pkonst.h'
 	include 'mkonst.h'
 
-	include 'bound_geom.h'
-	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
 
-	include 'hydro.h'
-	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ibc,ibtyp,kranf,krend,ktilt,k,kn1,kn2
 	integer nbc
@@ -675,13 +690,16 @@ c******************************************************************
 
 c initializes flux boundary
 
+	use mod_bound_geom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         integer ibc
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'bound_geom.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer kranf,krend
 	integer ie,i,k1,k2,kk1,kk2,ii1,ii2
@@ -798,14 +816,18 @@ c*******************************************************************
 
 c sets up (water) mass flux array mfluxv (3d) and rqv (vertically integrated)
 
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'levels.h'
-	include 'nlevel.h'
-	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
 
 	logical debug
 	integer i,k,l,lmin,lmax,nk,ibc,mode
@@ -933,15 +955,20 @@ c**********************************************************************
 
 c adjusts mass flux for dry nodes
 
+	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'geom_dynamic.h'
-	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'geom_dynamic.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
 
 	integer k,l
 
@@ -966,10 +993,14 @@ c**********************************************************************
 
 c computes scalar flux from fluxes and concentrations
 
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 	character*(*) what
 	real r3v(nlvdi,1)	!concentration for boundary condition
@@ -978,11 +1009,11 @@ c computes scalar flux from fluxes and concentrations
 	real sconz(nlvdi,1)	!concentration for each finite volume (return)
 	real ssurf		!value of scalar for surface flux
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'mkonst.h'
 
-	include 'levels.h'
-	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
 
 	integer k,l,lmax,ks
 	real flux,conz
@@ -1040,20 +1071,23 @@ c**********************************************************************
 
 	subroutine flux_debug(what,mfluxv,sflux,sconz)
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 	character*(*) what
 	real mfluxv(nlvdi,1)	!mass flux
 	real sflux(nlvdi,1)	!scalar flux
 	real sconz(nlvdi,1)	!concentration for each finite volume
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer k,l,lmax
 	integer ifemop
@@ -1088,21 +1122,25 @@ c**********************************************************************
 
 c checks scalar flux
 
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 	character*(*) what
 	real scal(nlvdi,1)	!concentration of scalar
 	real sconz(nlvdi,1)	!concentration for each finite volume
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'mkonst.h'
 	include 'femtime.h'
 
-	include 'levels.h'
-	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
 
 	integer k,l,lmax,ks
 	real cconz,qflux,mflux
@@ -1134,14 +1172,17 @@ c**********************************************************************
 
 c initializes array for scalar boundary condition
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
 	real r3v(nlvdi,nkn)
 
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 	include 'mkonst.h'
 
 	integer k,l
@@ -1160,6 +1201,9 @@ c*******************************************************************
 
 c multiplies array for scalar boundary condition with value
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -1167,8 +1211,8 @@ c multiplies array for scalar boundary condition with value
 	real r3v(nlvdi,nkn)
 	real value
 
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 	include 'mkonst.h'
 
 	integer k,l
@@ -1259,14 +1303,17 @@ c**********************************************************************
 
 c prints non-flag entries of array for scalar boundary condition
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
 	real r3v(nlvdi,nkn)
 
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 	include 'mkonst.h'
 
 	integer k,l
@@ -1289,13 +1336,15 @@ c**********************************************************************
 
 c returns boundary flux of node k
 
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer k	!node
 	real flux	!flux in node k (return)
 
 	include 'param.h'
-	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
 
 	flux = rqv(k)
 
@@ -1307,6 +1356,8 @@ c**********************************************************************
 
 c compute discharge from water level
 
+	use mod_hydro !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer it		!type of function
@@ -1315,7 +1366,7 @@ c compute discharge from water level
 	real rw			!discharge computed
 
 	include 'param.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	real z,a,b,c,z0
 
@@ -1434,13 +1485,15 @@ c**********************************************************************
 c returns discharge through boundary ibc for points sources
 c for z-boundaries 0 is returned
 
+	use mod_bound_dynamic !COMMON_GGU_SUBST
+
 	implicit none
 
 	real get_discharge
 	integer ibc
 
 	include 'param.h'
-	include 'bound_dynamic.h'
+COMMON_GGU_DELETED	include 'bound_dynamic.h'
 
 	integer itype,nk,i,k
 	real acc

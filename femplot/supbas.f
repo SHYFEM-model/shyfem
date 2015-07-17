@@ -253,13 +253,16 @@ c	2: boundary
 c	3: net in gray (for bathymetry - use bgray)
 c	4: net in gray (for scalar and velocities - use bsgray)
 
+	use mod_geom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer mode
 
 	include 'param.h'
-	include 'basin.h'
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'geom.h'
 
 	real xmin,ymin,xmax,ymax
 	common /bamima/ xmin,ymin,xmax,ymax
@@ -324,13 +327,16 @@ c
 c mode	1: node number   2: element number
 c	positive: external    negative: internal
 
+	use mod_geom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer mode
 
 	include 'param.h'
-	include 'basin.h'
-	include 'geom.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'geom.h'
 
 	real xmin,ymin,xmax,ymax
 	common /bamima/ xmin,ymin,xmax,ymax
@@ -477,12 +483,14 @@ c computes min/max of basin
 c
 c mode	0: exact dimensions  1: larger dimensions
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer mode
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	real xmin,ymin,xmax,ymax
 	common /bamima/ xmin,ymin,xmax,ymax
@@ -683,9 +691,11 @@ c dxygrd is used first
 c then typls is used if given
 c else it is computed from grid
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer ie
 	real area,ao
@@ -1665,14 +1675,17 @@ c**************************************************************
 
 c plots islands gray
 
+	use mod_geom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	real cgray	!color
 	
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'geom.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'geom.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	real xmin,ymin,xmax,ymax
 	common /bamima/ xmin,ymin,xmax,ymax

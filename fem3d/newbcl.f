@@ -75,6 +75,15 @@ c mode : =0 initialize  >0 normal call
 c
 c written 09.01.94 by ggu  (from scratch)
 c
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_aux_array !COMMON_GGU_SUBST
+	use mod_ts !COMMON_GGU_SUBST
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 c
 c parameter
@@ -85,16 +94,16 @@ c common
 	include 'femtime.h'
 	include 'pkonst.h'
 	include 'mkonst.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'ts.h'
-	include 'hydro_print.h'
-	include 'levels.h'
-	include 'aux_array.h'
-	include 'hydro.h'
-	include 'depth.h'
-	include 'diff_visc_fric.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'ts.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'aux_array.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
                       
 	include 'bound_names.h'
@@ -469,6 +478,11 @@ c in rhov()   is rho_prime (=sigma_prime)
 c
 c brespv() and rhov() are given at node and layer interface
 
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_ts !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	real resid
@@ -478,13 +492,13 @@ c common
 
 	include 'femtime.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'pkonst.h'
-	include 'nlevel.h'
-	include 'levels.h'
-	include 'ts.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'ts.h'
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 c local
 	logical bdebug,debug,bsigma
@@ -559,14 +573,18 @@ c*******************************************************************
 
 c checks values of t/s/rho
 
+	use mod_ts !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'nbasin.h'
-	include 'ts.h'
-	include 'levels.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'ts.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 	real smin,smax,tmin,tmax,rmin,rmax
 	character*30 text
@@ -882,6 +900,8 @@ c*******************************************************************
 
 c accessor routine to get T/S
 
+	use mod_ts !COMMON_GGU_SUBST
+
         implicit none
 
         integer k,l
@@ -889,7 +909,7 @@ c accessor routine to get T/S
 
 	include 'param.h'
 
-	include 'ts.h'
+COMMON_GGU_DELETED	include 'ts.h'
 
         t = tempv(l,k)
         s = saltv(l,k)
@@ -900,12 +920,15 @@ c******************************************************************
 
 	subroutine check_layers(what,vals)
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	character*(*) what
 	real vals(nlvdi,nkn)

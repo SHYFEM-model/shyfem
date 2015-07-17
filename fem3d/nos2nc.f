@@ -20,11 +20,17 @@ c***************************************************************
 
 c reads nos file and writes NetCDF file
 
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
-        include 'basin.h'
-	include 'evmain.h'
+COMMON_GGU_DELETED        include 'basin.h'
+COMMON_GGU_DELETED	include 'evmain.h'
 
 c-------------------------------------------------
 
@@ -40,10 +46,10 @@ c-------------------------------------------------
 	integer ivars(ndim)
 	integer var_ids(ndim)
 
-	include 'levels.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	real uprv(nlvdim,nkndim)
 	real vprv(nlvdim,nkndim)

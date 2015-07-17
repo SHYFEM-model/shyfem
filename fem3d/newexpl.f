@@ -48,14 +48,18 @@ c******************************************************************
 
 	subroutine set_explicit
 
+	use mod_internal !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
         
         include 'param.h'
 
 	integer ie,l
-	include 'nlevel.h'
-	include 'nbasin.h'
-	include 'internal.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'internal.h'
         
         logical bbarcl
         integer ilin,itlin,ibarcl
@@ -138,16 +142,23 @@ c computes stability for viscosity
 c
 c stability is computed for dt == 1
 
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
-	include 'ev.h'
-	include 'nlevel.h'
-	include 'basin.h'
-	include 'geom.h'
-	include 'levels.h'
-	include 'diff_visc_fric.h'
-	include 'internal.h'
+COMMON_GGU_DELETED	include 'ev.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'geom.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'internal.h'
 
 	real ahpar
 	real rindex
@@ -204,20 +215,28 @@ c******************************************************************
 
 	subroutine set_diff_horizontal_new1
 
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'ev.h'
 
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'internal.h'
+COMMON_GGU_DELETED	include 'internal.h'
 
-	include 'geom.h'
-	include 'levels.h'
-	include 'hydro.h'
-	include 'diff_visc_fric.h'
+COMMON_GGU_DELETED	include 'geom.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
 	integer ie,ii,iei,l,lmax
 	integer noslip
@@ -285,25 +304,34 @@ c******************************************************************
 
 	subroutine set_diff_horizontal_new
 
+	use mod_bound_geom !COMMON_GGU_SUBST
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use mod_aux_array !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
 
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'internal.h'
+COMMON_GGU_DELETED	include 'internal.h'
 
         real cb,cd 
         real ahpar,khpar 
         real vismol                     !constant vertical molecular viscosity
-	include 'geom_dynamic.h'
-	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'geom_dynamic.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
 
-	include 'aux_array.h'
-	include 'ev.h'
-	include 'levels.h'
-	include 'basin.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'aux_array.h'
+COMMON_GGU_DELETED	include 'ev.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer ie,k,ii,l,lmax
 	!logical bnoslip
@@ -405,21 +433,29 @@ c******************************************************************
 
 c sets aux arrays saux1/2/3
 
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_aux_array !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
         include 'param.h'
 
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 
-	include 'aux_array.h'
+COMMON_GGU_DELETED	include 'aux_array.h'
 
-	include 'hydro.h'
-	include 'hydro_print.h'
-	include 'depth.h'
-	include 'ev.h'
-	include 'basin.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'ev.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
         integer ii,ie,k,l,lmax
         real b,c
@@ -496,25 +532,35 @@ c******************************************************************
 
         subroutine set_advective(rlin)
 
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_aux_array !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
         include 'param.h'
 
 	real rlin		!strength of advection terms - normally 1
 
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 
-	include 'aux_array.h'
+COMMON_GGU_DELETED	include 'aux_array.h'
 
-	include 'internal.h'
-	include 'hydro.h'
-	include 'hydro_vel.h'
-	include 'hydro_print.h'
-	include 'depth.h'
-	include 'ev.h'
-	include 'basin.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'internal.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'ev.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	logical bvertadv		! new vertical advection for momentum
 	real zxadv,zyadv
@@ -634,17 +680,25 @@ c computes courant number of advective terms in momentum equation
 c
 c stability is computed for dt == 1
 
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
-	include 'ev.h'
-	include 'hydro.h'
-	include 'depth.h'
-	include 'nlevel.h'
-	include 'levels.h'
-	include 'basin.h'
-	include 'geom_dynamic.h'
-	include 'internal.h'
+COMMON_GGU_DELETED	include 'ev.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'geom_dynamic.h'
+COMMON_GGU_DELETED	include 'internal.h'
 
 	real rlin		   !factor for advective terms - normally 1
 	real rindex		   !stability index (return)
@@ -744,11 +798,14 @@ c******************************************************************
 
 	subroutine set_semi_lagrange
 
+	use mod_internal !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
          
         include 'param.h'
-	include 'nbasin.h'
-	include 'internal.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'internal.h'
         
 	integer ie,l
 	real xadv,yadv,dt
@@ -774,15 +831,22 @@ c******************************************************************
 
         subroutine set_barocl
 
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_ts !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
          
         include 'param.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'ev.h'
         
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 	include 'pkonst.h'
-	include 'internal.h'
-	include 'ts.h'
+COMMON_GGU_DELETED	include 'internal.h'
+COMMON_GGU_DELETED	include 'ts.h'
         !integer itanf,itend,idt,nits,niter,it
         !real k,l,ie,ii				!BUG
         integer k,l,ie,ii			!BUG
@@ -791,12 +855,12 @@ c******************************************************************
         real salref,temref,sstrat,tstrat
         real hlayer
         real hhi
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
         real xbcl,ybcl
         integer lmax
-	include 'levels.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
         real rhop,presbt,presbcx,presbcy,dprescx,dprescy,br,cr!deb
         real b,c
@@ -863,19 +927,26 @@ c computes baroclinic contribution centered on layers
 c
 c cannot use this for sigma levels
 
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_ts !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
          
         include 'param.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'ev.h'
         
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 	include 'pkonst.h'
 
-	include 'internal.h'
-	include 'ts.h'
-	include 'depth.h'
-	include 'levels.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'internal.h'
+COMMON_GGU_DELETED	include 'ts.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	logical bsigma
         integer k,l,ie,ii,lmax,lmin
@@ -933,19 +1004,26 @@ c**********************************************************************
 
 c do not use this routine !
 
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_ts !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
          
         include 'param.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'ev.h'
         
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 	include 'pkonst.h'
 
-	include 'internal.h'
-	include 'ts.h'
-	include 'depth.h'
-	include 'levels.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'internal.h'
+COMMON_GGU_DELETED	include 'ts.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
         integer k,l,ie,ii,lmax,lmin
         double precision hlayer,hhi
@@ -1012,20 +1090,28 @@ c computes baroclinic contribution centered on interfaces
 c
 c this routine works with Z and sigma layers
 
+	use mod_internal !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_ts !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
          
         include 'param.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'ev.h'
         
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 	include 'pkonst.h'
 
-	include 'internal.h'
-	include 'ts.h'
-	include 'hydro.h'
-	include 'depth.h'
-	include 'levels.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'internal.h'
+COMMON_GGU_DELETED	include 'ts.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 c---------- DEB SIG
 	real hkk

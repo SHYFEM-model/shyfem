@@ -110,6 +110,10 @@ c revised 07.04.95 by ggu !$$conzfl - conz compared to iflag (bug)
 c revised 07.04.95 by ggu !$$baroc - impl. of baroclinic salt/temp (21/22)
 c revised 13.06.97 by ggu !$$kranf - check if kranf <= krend
 
+	use mod_bnd !COMMON_GGU_SUBST
+	use mod_bound_geom !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'modules.h'
@@ -117,9 +121,9 @@ c revised 13.06.97 by ggu !$$kranf - check if kranf <= krend
 	include 'param.h'
 	include 'mkonst.h'
 	include 'pkonst.h'
-        include 'nbasin.h'
-        include 'nbound.h'
-        include 'bound_geom.h'
+COMMON_GGU_DELETED        include 'nbasin.h'
+COMMON_GGU_DELETED        include 'nbound.h'
+COMMON_GGU_DELETED        include 'bound_geom.h'
 
         real getpar
         integer nkbnd
@@ -178,10 +182,12 @@ c********************************************************************
 
 c reads files (str and bas)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer nin
 	character*80 basnam

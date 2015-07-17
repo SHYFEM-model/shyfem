@@ -1,4 +1,18 @@
 
+17.07.2015    VERS_7_1_80
+
+	first release based on modules and allocatable arrays
+	this is still an experimental release
+	only a limited number of programs are working:
+		ht, vp, plotsim (plots)
+	all other programs (mostly post processing) still have to be upgraded
+	in this case please use an older version
+	the following modules still do not work in the new version:
+		waves, sediments, lagrangian
+		fluidmud, atoxi
+		biological reactors (bio3d, aquabc, bfm)
+		boxes
+
 17.07.2015    VERS_7_1_53
 
 	new intermediate release ... do not use ...

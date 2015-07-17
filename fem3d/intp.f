@@ -644,13 +644,16 @@ c********************************************************
 
 c raises water level of lagoon
 
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	real dz		!water level rise per time step [m]
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
         integer ie,ii,k
 

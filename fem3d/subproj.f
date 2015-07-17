@@ -49,11 +49,14 @@ c****************************************************************
 
 c handles projection - converts x/y to lat/lon
 
+	use mod_tides !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
-	include 'basin.h'
-	include 'tides.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'tides.h'
 
 	integer mode,iproj,i
 	double precision c_param(9)
@@ -126,11 +129,14 @@ c****************************************************************
 
 c handles projection - converts lat/lon to x/y
 
+	use mod_tides !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
-	include 'basin.h'
-	include 'tides.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'tides.h'
 
 	integer mode,iproj,i,k
 	double precision c_param(9)
@@ -196,6 +202,9 @@ c
 c ie            number of element
 c x,y           coordinates of baricentre (return value)
 
+	use mod_tides !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 c arguments
@@ -207,8 +216,8 @@ c local variables
         real xb,yb
 
         include 'param.h'
-        include 'basin.h'
-        include 'tides.h'
+COMMON_GGU_DELETED        include 'basin.h'
+COMMON_GGU_DELETED        include 'tides.h'
 
         xb=0.
         yb=0.
@@ -229,6 +238,9 @@ c****************************************************************
 
 c gets coordinates x/y for element ie
 
+	use mod_tides !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
         integer ie
@@ -237,8 +249,8 @@ c gets coordinates x/y for element ie
         integer k,ii
 
         include 'param.h'
-        include 'basin.h'
-        include 'tides.h'
+COMMON_GGU_DELETED        include 'basin.h'
+COMMON_GGU_DELETED        include 'tides.h'
 
         do ii=1,3
           k = nen3v(ii,ie)

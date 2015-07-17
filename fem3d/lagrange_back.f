@@ -19,12 +19,14 @@ c**********************************************************************
 
 c handles lagrangian backtracing
 
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
         include 'lagrange.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
                 
 	real uadv(1), vadv(1)
         
@@ -107,6 +109,11 @@ c**********************************************************************
 
 c interpolation of velocities on the points that have been backtraced
         
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
         include 'param.h'
@@ -115,13 +122,13 @@ c interpolation of velocities on the points that have been backtraced
 	real uadv(1), vadv(1)
 
                 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
        
-	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
         
 
-	include 'hydro.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'depth.h'
        
         real x,y
         real vold,vnow

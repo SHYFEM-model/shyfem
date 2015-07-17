@@ -32,6 +32,10 @@ c************************************************************************
 
 c plots section
 
+	use mod_depth !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
@@ -42,10 +46,10 @@ c plots section
 	integer nldim
 	parameter (nldim=200)
 
-	include 'depth.h'
-	include 'basin.h'
-	include 'levels.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 c elems(1) is not used, etc..
 
@@ -1025,11 +1029,14 @@ c in vel is normal/tangential/vertical velocity
 c in val is scalar velocity used for overlay
 c modes: 0=use normal vel   1=use tangent vel   as scalar velocity
  
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nlevel.h'
-	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
 
 	integer mode			!what to use as scalar vel
 	integer n			!total number of nodes
@@ -1099,10 +1106,12 @@ c************************************************************************
 
 c computes flux through section
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 	integer n			!total number of nodes
 	real xy(n)			!coordinates along section
@@ -1169,10 +1178,12 @@ c************************************************************************
 
 c inserts scalar values into matrix section
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 	integer n
 	integer nodes(n)

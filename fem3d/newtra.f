@@ -45,16 +45,22 @@ c
 c
 c transforms transports to velocities
 c
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 c
 c parameters
 	include 'param.h'
 c common
-	include 'nbasin.h'
-	include 'levels.h'
-	include 'hydro.h'
-	include 'hydro_vel.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'depth.h'
 c local
 	integer ie,l,ilevel
 	real h,rh
@@ -80,16 +86,22 @@ c******************************************************************
 
 c transforms velocities to transports
 
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 c parameters
 	include 'param.h'
 c common
-	include 'nbasin.h'
-	include 'levels.h'
-	include 'hydro.h'
-	include 'hydro_vel.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'depth.h'
 c local
 	integer ie,l,ilevel
 	real h
@@ -114,20 +126,28 @@ c
 c
 c transforms barotropic transports to nodal velocities
 c
+	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro_baro !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 c
 c arguments
 	real vv(1)
 c common
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'basin.h'
-	include 'hydro_print.h'
-	include 'hydro_baro.h'
-	include 'hydro.h'
-	include 'depth.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'hydro_baro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'ev.h'
 
-	include 'geom_dynamic.h'
+COMMON_GGU_DELETED	include 'geom_dynamic.h'
 c local
 	logical bcolin
 	integer ie,k,ii
@@ -179,6 +199,13 @@ c
 c
 c transforms velocities to nodal values
 c
+	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 c
 c parameters
@@ -186,14 +213,14 @@ c parameters
 c arguments
 	real vv(1)
 c common
-	include 'nlevel.h'
-	include 'levels.h'
-	include 'basin.h'
-	include 'hydro_vel.h'
-	include 'hydro_print.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'ev.h'
 
-	include 'geom_dynamic.h'
+COMMON_GGU_DELETED	include 'geom_dynamic.h'
 c local
 	integer ie,l,k,ii
 	real aj
@@ -254,17 +281,23 @@ c
 c
 c transforms nodal values to element values (velocities)
 c
+	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 c
 c parameters
 	include 'param.h'
 c common
-	include 'nlevel.h'
-	include 'levels.h'
-	include 'basin.h'
-	include 'hydro_vel.h'
-	include 'hydro_print.h'
-	include 'geom_dynamic.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'geom_dynamic.h'
 c local
 	integer ie,l,k,ii
 	real u,v
@@ -310,15 +343,20 @@ c
 c
 c computation of barotropic part of transports
 c
+	use mod_hydro_baro !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 c
 c parameter
 	include 'param.h'
 c common
-	include 'nbasin.h'
-	include 'levels.h'
-	include 'hydro_baro.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro_baro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 c local
 	integer ie,l
 	real u,v
@@ -345,16 +383,21 @@ c checks for negative volume (depth)
 c
 c only first layer has to be checked
 
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 c parameters
 	include 'param.h'
 c common
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'hydro.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	logical bstop,bsigma
 	integer nsigma
@@ -416,18 +459,25 @@ c
 
 c distribute barotropic velocities onto layers (only in dry elements)
 
+	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use mod_hydro_baro !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 c parameters
 	include 'param.h'
 c common
-	include 'nlevel.h'
-	include 'hydro_vel.h'
-	include 'levels.h'
-	include 'geom_dynamic.h'
-	include 'hydro_baro.h'
-	include 'hydro.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'geom_dynamic.h'
+COMMON_GGU_DELETED	include 'hydro_baro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'basin.h'
 c local
 	logical bsigma
 	integer nsigma
@@ -469,13 +519,17 @@ c******************************************************************
 
 c sets obsolete data structure xv
 
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 c common
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
-	include 'hydro_print.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 c local
 	integer k
 
@@ -493,6 +547,8 @@ c******************************************************************
 
 c accessor routine to get velocities u/v
 
+	use mod_hydro_print !COMMON_GGU_SUBST
+
 	implicit none
 
         integer l,k
@@ -501,7 +557,7 @@ c accessor routine to get velocities u/v
 c parameters
 	include 'param.h'
 c common
-	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
 
         u = uprv(l,k)
         v = vprv(l,k)
@@ -514,23 +570,30 @@ c******************************************************************
 
 c copies u/v/z to old time step
 
+	use mod_hydro_baro !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
 
-	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
 
-	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
 
 
 
-	include 'hydro_baro.h'
+COMMON_GGU_DELETED	include 'hydro_baro.h'
 
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer k,ie,ii,l
 
@@ -576,11 +639,13 @@ c******************************************************************
 
 c makes print velocities and xv from new level arrays
 
+	use mod_aux_array !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'aux_array.h'
+COMMON_GGU_DELETED	include 'aux_array.h'
 
 	call uvtopr(v1v)
 	call uvtop0(v1v)
@@ -594,11 +659,13 @@ c******************************************************************
 
 c initializes uvz values from zenv, utlnv, vtlnv, hdenv
 
+	use mod_aux_array !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'aux_array.h'
+COMMON_GGU_DELETED	include 'aux_array.h'
 
 	logical has_restart
 
@@ -625,6 +692,9 @@ c transforms element values to nodal values (weights are area)
 c
 c (2D version)
 
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -634,8 +704,8 @@ c arguments
 
 c common
 	include 'param.h'
-	include 'basin.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'ev.h'
 
 c local
         integer k,ie,ii
@@ -688,6 +758,10 @@ c transforms element values to nodal values (weights are area)
 c
 c (3D version)
 
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -698,9 +772,9 @@ c arguments
 
 c common
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'basin.h'
-	include 'levels.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'ev.h'
 
 c local
         integer k,ie,ii,l,lmax
@@ -762,6 +836,9 @@ c transforms element values to nodal values (no weights - use min/max)
 c
 c (3D version)
 
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -772,8 +849,8 @@ c arguments
 
 c common
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'basin.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 c local
         integer k,ie,ii,l,lmax
@@ -833,6 +910,8 @@ c transforms nodal values to element values
 c
 c (2D version)
 
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
         real nov(1)     !array with nodal values (in)
@@ -840,7 +919,7 @@ c (2D version)
 
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
         integer k,ie,ii
         real acu,value
@@ -873,6 +952,9 @@ c transforms nodal values to element values
 c
 c (3D version)
 
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 c arguments
@@ -882,8 +964,8 @@ c arguments
 
 c common
 	include 'param.h'
-	include 'levels.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 c local
         integer k,ie,ii,l,lmax

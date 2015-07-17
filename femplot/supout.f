@@ -79,10 +79,12 @@ c******************************************************
 
 c resets mask data structure
 
+	use mod_plot2d !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'plot_aux.h'
+COMMON_GGU_DELETED	include 'plot_aux.h'
 
         call init_dry_mask(bwater)
 	call make_dry_node_mask(bwater,bkwater)
@@ -95,12 +97,16 @@ c******************************************************
 
 c prepares simulation for use - computes wet and dry areas
 
+	use mod_plot2d !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'plot_aux.h'
-	include 'levels.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'plot_aux.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	logical bshowdry
 	integer level
@@ -165,6 +171,10 @@ c******************************************************
 
 	subroutine set_dry_volume_mask(bkw,hdry)
 
+	use mod_plot2d !COMMON_GGU_SUBST
+	use mod_plot3d !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	logical bkw(1)
@@ -172,10 +182,10 @@ c******************************************************
 
 	include 'param.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'plot_aux.h'
-	include 'plot_aux_3d.h'
+COMMON_GGU_DELETED	include 'plot_aux.h'
+COMMON_GGU_DELETED	include 'plot_aux_3d.h'
 
 	integer k,idry
 	real vol,area,h
@@ -214,16 +224,22 @@ c	hev			is set after basin read, newly set by 3d read
 c	ilhv			ilhv(ie) = 1 for 2d
 c	znv,utlnv,vtlnv 	-> set zenv, usnv, vsnv
 
+	use mod_hydro_plot !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
 
-	include 'hydro.h'
-	include 'basin.h'
-	include 'hydro_print.h'
-	include 'levels.h'
-	include 'hydro_plot.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro_plot.h'
 
 	integer k,ie,ii,l,lmax
 	real utot,vtot
@@ -271,14 +287,19 @@ c outdated -> do not call - arrays are set in outnext()
 c
 c	xv,zenv,usnv,vsnv -> set znv
 
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'hydro.h'
-	include 'hydro_print.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer k,ie
 
@@ -337,15 +358,19 @@ c******************************************************
 
 	subroutine waveopen
 
+	use mod_depth !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
 	include 'simul.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'depth.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	include 'supout.h'
 
@@ -399,6 +424,10 @@ c******************************************************
 
 	function wavenext(it)
 
+	use mod_hydro_plot !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	logical wavenext
@@ -407,16 +436,16 @@ c******************************************************
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'supout.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
         integer ierr,nlvddi,ivar
 	real v1v(nkn)
 	real v2v(nkn)
 	real v3v(nkn)
 
-	include 'hydro_plot.h'
+COMMON_GGU_DELETED	include 'hydro_plot.h'
 
 	call waveini
 	nunit = nunit_wave
@@ -569,6 +598,10 @@ c******************************************************
 
 c opens OUS file and reads header
 
+	use mod_depth !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -576,11 +609,11 @@ c opens OUS file and reads header
 	include 'supout.h'
 
 	include 'simul.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'depth.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	character*80 file
 
@@ -648,6 +681,9 @@ c******************************************************
 
 c reads next OUS record - is true if a record has been read, false if EOF
 
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 	logical ousnext		!true if record read, flase if EOF
@@ -656,9 +692,9 @@ c reads next OUS record - is true if a record has been read, false if EOF
         include 'param.h'
 
 	include 'supout.h'
-	include 'nlevel.h'
-	include 'levels.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer ierr
 
@@ -738,6 +774,10 @@ c******************************************************
 
 c opens NOS file and reads header
 
+	use mod_depth !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
@@ -747,11 +787,11 @@ c opens NOS file and reads header
 	include 'supout.h'
 
 	include 'simul.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'depth.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	character*80 file
 
@@ -814,6 +854,8 @@ c******************************************************
 
 c reads next NOS record - is true if a record has been read, false if EOF
 
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 	logical nosnext		!true if record read, flase if EOF
@@ -824,8 +866,8 @@ c reads next NOS record - is true if a record has been read, false if EOF
 
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'supout.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer ierr
 
@@ -925,6 +967,10 @@ c******************************************************
 
 c opens FVL file and reads header
 
+	use mod_depth !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	character*(*) type
@@ -934,11 +980,11 @@ c opens FVL file and reads header
 	include 'supout.h'
 
 	include 'simul.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'depth.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
         real hlv1(nlv), hev1(nel)
         integer ilhkv1(nkn)
@@ -1025,6 +1071,8 @@ c******************************************************
 
 c reads next FVL record
 
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer it		!time of record
@@ -1033,8 +1081,8 @@ c reads next FVL record
 
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'supout.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer ierr
 	integer ivar		!type of variable
@@ -1143,6 +1191,10 @@ c******************************************************
 
 c opens EOS file and reads header
 
+	use mod_depth !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	character*(*) type
@@ -1151,11 +1203,11 @@ c opens EOS file and reads header
 	include 'supout.h'
 
 	include 'simul.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'depth.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	character*80 file
 
@@ -1233,6 +1285,8 @@ c******************************************************
 
 c reads next EOS record - is true if a record has been read, false if EOF
 
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 	logical eosnext		!true if record read, flase if EOF
@@ -1243,8 +1297,8 @@ c reads next EOS record - is true if a record has been read, false if EOF
 
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'supout.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer ierr
 
@@ -1283,12 +1337,15 @@ c******************************************************
 
 c computes max level at nodes from elements
 
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'basin.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	call level_e2k(nkn,nel,nen3v,ilhv,ilhkv)
 
@@ -1300,12 +1357,15 @@ c******************************************************
 
 c computes level at elems from nodes (not exact)
 
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'basin.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	call level_k2e(nkn,nel,nen3v,ilhkv,ilhv)
 
@@ -1417,6 +1477,10 @@ c******************************************************
 
 c opens FEM file and reads header
 
+	use mod_depth !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	character*(*) type
@@ -1425,11 +1489,11 @@ c opens FEM file and reads header
 	include 'supout.h'
 
 	include 'simul.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'depth.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	character*80 file
 
@@ -1537,6 +1601,8 @@ c******************************************************
 
 c reads next FEM record - is true if a record has been read, false if EOF
 
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 	logical femnext			!true if record read, flase if EOF
@@ -1549,8 +1615,8 @@ c reads next FEM record - is true if a record has been read, false if EOF
 
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'supout.h'
-	include 'nlevel.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	logical bfound,bformat,breg
 	integer ierr

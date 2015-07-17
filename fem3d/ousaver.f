@@ -18,17 +18,22 @@ c***************************************************************
 
 c reads ous file and averages with frequency nfreq
 
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'simul.h'
 
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
-	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
 
 	logical bwater(neldim)
 	integer iwet(neldim)
@@ -37,7 +42,7 @@ c reads ous file and averages with frequency nfreq
 	real weight(nlvdim,nkndim)
 
 	!real znv(nkndim)
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	real aux(nkndim)
 

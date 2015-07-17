@@ -18,15 +18,21 @@ c***************************************************************
 
 c reads file and writes time series to nc file
 
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
-	include 'evmain.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'evmain.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'simul.h'
-	include 'levels.h'
-	include 'hydro.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ndsdim
 	parameter(ndsdim=1)

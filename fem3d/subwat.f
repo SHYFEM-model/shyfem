@@ -43,6 +43,11 @@ c revised 19.01.94 by ggu   $$conz - implementation of concentration
 c revised 20.01.94 by ggu   $$lumpc - evaluate conz at node
 c revised 04.12.97 by ggu   concentration not adjusted anymore
 
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -50,10 +55,10 @@ c arguments
 	real vol,dz
 c common
 	include 'param.h'
-	include 'basin.h'
-	include 'hydro.h'
-	include 'ev.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'ev.h'
+COMMON_GGU_DELETED	include 'links.h'
 c local
 	real area
 	integer ie,i,ii,nl
@@ -90,14 +95,17 @@ c inputs water distributed over total surface
 c
 c dz		rise of water level to achieve
 
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
 	real dz
 c common
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 c local
 	integer ie,ii,k
 
@@ -127,6 +135,9 @@ c
 c written 24.03.94 by ggu   from volnod
 c revised 04.12.97 by ggu   concentration not adjusted anymore
 
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -134,8 +145,8 @@ c arguments
 	real dz
 c common
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 c local
 	integer ie,ii
 	integer ie1,ie2
@@ -175,6 +186,11 @@ c revised 20.01.94 by ggu   $$lumpc - evaluate conz at node
 c revised 04.12.97 by ggu   concentration adjusted in own routine
 c 16.01.2001 by ggu   new concentration unique for node
 
+	use mod_geom !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -183,10 +199,10 @@ c arguments
 	real coe(3,1)
 c common
 	include 'param.h'
-	include 'hydro.h'
-	include 'basin.h'
-	include 'ev.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'ev.h'
+COMMON_GGU_DELETED	include 'links.h'
 c local
 	integer ie,i,ii,nl
 	integer ibase
@@ -257,6 +273,9 @@ c
 c written 24.03.94 by ggu   from volnod
 c revised 04.12.97 by ggu   concentration adjusted in own routine
 
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -265,8 +284,8 @@ c arguments
 	real coe(3,1)
 c common
 	include 'param.h'
-	include 'hydro.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'basin.h'
 c local
 	real depth
 	integer ie,ii
@@ -302,6 +321,10 @@ c
 c written 07.04.95 by ggu   copied from volno3
 c revised 06.08.97 by ggu   use zenv for water level
 
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -309,9 +332,9 @@ c arguments
 	real dvol
 c common
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'basin.h'
-	include 'hydro.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'ev.h'
 c local
         integer ie,ii
         real area,zz
@@ -348,6 +371,8 @@ c computes volume and total mass of concentration in column of node k
 c + volume of upper layer
 c new version that computes only up to layer lmax (lmax > 0)
 
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -361,7 +386,7 @@ c arguments
 	real svol		!total mass of s in column		(out)
 c common
 	include 'param.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 c local
 	integer l,ilevel,nlev
 	integer mode
@@ -395,6 +420,8 @@ c******************************************************
 c inputs concentration in finite volume (node) k
 c ( 3d version ) -> only up to layer lmax
 
+	use levels !COMMON_GGU_SUBST
+
 	implicit none
 
 c arguments
@@ -406,7 +433,7 @@ c arguments
 	real dcon		!concentration of new volume dvol
 c common
 	include 'param.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 c local
 	logical debug
 	integer l,nlev

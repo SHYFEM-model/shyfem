@@ -175,15 +175,20 @@ c DOCS  END
 !
 ! in order to use these routines, please set imreg = 3 in the STR file
 
+	use mod_meteo !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	include 'param.h'
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'levels.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
-	include 'meteo.h'
+COMMON_GGU_DELETED	include 'meteo.h'
 
 	character*60 windfile,heatfile,rainfile,icefile
 	character*4 what
@@ -791,13 +796,16 @@ c convert rain from mm/day to m/s
 
 c convert ice data (nothing to do)
 
+	use evgeom !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	integer id
 	integer n
 	real r(n)
 
 	include 'param.h'
-	include 'basin.h'
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'ev.h'
 	include 'femtime.h'
 
 	integer k,ie,ii,ia
@@ -992,10 +1000,12 @@ c convert ice data (nothing to do)
 
 ! computes wet bulb temperature
 
+	use mod_meteo !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'meteo.h'
+COMMON_GGU_DELETED	include 'meteo.h'
 
 	integer mode
 	integer n
@@ -1091,10 +1101,12 @@ c convert ice data (nothing to do)
 !
 ! pressure is returned in [mb]
 
+	use mod_meteo !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'meteo.h'
+COMMON_GGU_DELETED	include 'meteo.h'
 
         integer k                       !node number
         real qs                         !solar radiation [W/m**2]
@@ -1130,10 +1142,12 @@ c returns precipitation and evaporation values
 c
 c eeff is evaporation used in model, if ievap==0 => eeff==0.
 
+	use mod_meteo !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'meteo.h'
+COMMON_GGU_DELETED	include 'meteo.h'
 
 	integer k
 	real r			!rain [m/s]
@@ -1160,10 +1174,12 @@ c eeff is evaporation used in model, if ievap==0 => eeff==0.
 
 c sets evaporation
 
+	use mod_meteo !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'meteo.h'
+COMMON_GGU_DELETED	include 'meteo.h'
 
 	integer k
 	real e			!evaporation [m/s]
@@ -1176,10 +1192,12 @@ c sets evaporation
 
 	subroutine meteo_get_solar_radiation(k,qs)
 
+	use mod_meteo !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'meteo.h'
+COMMON_GGU_DELETED	include 'meteo.h'
 
         integer k                       !node number
         real qs                         !solar radiation [W/m**2]
@@ -1194,10 +1212,12 @@ c sets evaporation
 
 ! helper function -> return wind for node k
 
+	use mod_meteo !COMMON_GGU_SUBST
+
         implicit none
 
 	include 'param.h'
-	include 'meteo.h'
+COMMON_GGU_DELETED	include 'meteo.h'
 
         integer k
         real wx,wy
@@ -1213,14 +1233,17 @@ c sets evaporation
 
 c interpolates files spatially - to be deleted
 
+	use mod_meteo !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
         implicit none
 
         real qs,ta,rh,wb,uw,cc
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'meteo_aux.h'
+COMMON_GGU_DELETED	include 'meteo_aux.h'
 
         integer k
 

@@ -95,13 +95,15 @@ c combinations are possible: -3,-7
 c
 c-----------------------------------------------------
 
+	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
 	use mod_offline
 
 	implicit none
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 	include 'femtime.h'
 
 	integer mode
@@ -323,6 +325,11 @@ c****************************************************************
 
 	subroutine off_intp_all(iu,it)
 
+	use mod_ts !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
 	use mod_offline
 
 	implicit none
@@ -331,12 +338,12 @@ c****************************************************************
 	integer it
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'levels.h'
-	include 'hydro_vel.h'
-	include 'hydro.h'
-	include 'ts.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'ts.h'
 
 	logical boff,bhydro,bts
 	integer ierr,iread
@@ -480,6 +487,10 @@ c****************************************************************
 
 	subroutine off_intp4(it)
 
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
 	use mod_offline
 
 	implicit none
@@ -487,10 +498,10 @@ c****************************************************************
 	integer it
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'levels.h'
-	include 'hydro_vel.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer ie,ii,k,l,lmax,i,nintpol
 	real x(4),y(4),t
@@ -544,6 +555,10 @@ c****************************************************************
 
 	subroutine off_intp2(it)
 
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
 	use mod_offline
 
 	implicit none
@@ -551,10 +566,10 @@ c****************************************************************
 	integer it
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'levels.h'
-	include 'hydro_vel.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer ie,ii,k,l,lmax
 	integer it1,it2
@@ -594,13 +609,15 @@ c****************************************************************
 
 	subroutine off_copy
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
 	use mod_offline
 
 	implicit none
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer ie,ii,k,l,lmax
 	integer ito,ifrom
@@ -642,13 +659,15 @@ c****************************************************************
 	
 	subroutine off_init
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
 	use mod_offline
 
 	implicit none
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer ie,ii,k,l,lmax
 
@@ -682,6 +701,11 @@ c****************************************************************
 	
 	subroutine off_accum(dt)
 
+	use mod_ts !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
 	use mod_offline
 
 	implicit none
@@ -689,11 +713,11 @@ c****************************************************************
 	real dt
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'levels.h'
-	include 'hydro_vel.h'
-	include 'hydro.h'
-	include 'ts.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'ts.h'
 
 	integer ie,ii,k,l,lmax
 	double precision dtt
@@ -738,13 +762,15 @@ c****************************************************************
 	
 	subroutine off_aver
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
 	use mod_offline
 
 	implicit none
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer ie,ii,k,l,lmax
 	double precision rr
@@ -782,6 +808,11 @@ c****************************************************************
 
 	subroutine off_check(ig)
 
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
 	use mod_offline
 
 	implicit none
@@ -789,11 +820,11 @@ c****************************************************************
 	integer ig
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'levels.h'
-	include 'hydro_vel.h'
-	include 'hydro_print.h'
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'hydro_vel.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer ie,ii,k,l,lmax
 	integer ierr
@@ -872,6 +903,8 @@ c****************************************************************
 	
 	subroutine off_write(iu,it)
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
 	use mod_offline
 
 	implicit none
@@ -879,8 +912,8 @@ c****************************************************************
 	integer iu,it
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer ie,ii,k,l,lmax
 
@@ -901,6 +934,8 @@ c****************************************************************
 
 	subroutine off_read(iu,ig,ierr,iread)
 
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
 	use mod_offline
 
 	implicit none
@@ -910,8 +945,8 @@ c****************************************************************
 	integer iread
 
 	include 'param.h'
-	include 'nbasin.h'
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer ie,ii,k,l,lmax,it
 	integer nknaux,nelaux

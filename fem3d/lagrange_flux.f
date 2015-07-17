@@ -34,13 +34,15 @@ c****************************************************************
 
 c initializes length of element sides
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 	
 	include 'param.h'
 	include 'lagrange.h'
 
 	
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 
 	real x1,x2,y1,y2,dx,dy,ddx,ddy,d
@@ -83,15 +85,19 @@ c******************************************************************
 
 c sets up fluxes in 3d - has to be done every time step
 
+	use mod_geom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 	include 'lagrange.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'links.h'
 	
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
 	integer k,ie,ii,i
 	integer nn,ne
@@ -155,13 +161,16 @@ c******************************************************************
 
 c sets up fluxes - has to be done every time step
 
+	use mod_geom !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 	include 'lagrange.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'links.h'
 	
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer k,ie,ii,i
 	integer nn,ne
@@ -239,6 +248,9 @@ c computes flux through finite volume k
 c
 c internal section is defined by:  kbefor - k - kafter
 
+	use mod_hydro !COMMON_GGU_SUBST
+	use evgeom !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
@@ -250,10 +262,10 @@ c internal section is defined by:  kbefor - k - kafter
 
 	include 'femtime.h'
 
-	include 'ev.h'
+COMMON_GGU_DELETED	include 'ev.h'
         !real uov(1),vov(1),unv(1),vnv(1)
         !common /uov/uov, /vov/vov, /unv/unv, /vnv/vnv
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer i,ip,ie,ii
 	integer l
@@ -414,16 +426,19 @@ c
 c maybe not existing fluxes are set in flux3d
 c we do not use lkmax, but lmax
 
+	use mod_geom !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+
         implicit none
 
         include 'param.h'
 	include 'lagrange.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'links.h'
 
         integer k,lkmax,n
 	real tflux(nlvdim,1)       !fluxes across sides of element
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
         integer i,ie,ne,l,lmax
         integer j,n1,n2
@@ -455,6 +470,8 @@ c******************************************************************
 
 c computes fluxes in element
 
+	use mod_geom !COMMON_GGU_SUBST
+
         implicit none
 
         integer k,n
@@ -463,7 +480,7 @@ c computes fluxes in element
 
         include 'param.h'
 	include 'lagrange.h'
-	include 'links.h'
+COMMON_GGU_DELETED	include 'links.h'
 
         integer i,ie,ne
         integer j,n1,n2
@@ -510,20 +527,25 @@ c		= dH + (z1+z2-2*z3)/6
 c
 c all this has to be revised for sigma layers
 
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 	include 'lagrange.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
 
-	include 'levels.h'
+COMMON_GGU_DELETED	include 'levels.h'
 
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	logical bsigma
 	integer ie,ii,i1,i2
@@ -584,16 +606,20 @@ c		= dH + (z1+z2-2*z3)/6
 c
 c all this has to be revised for sigma layers
 
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 	include 'lagrange.h'
 
-	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
 
-	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro.h'
 
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ie,ii,i1,i2
 	real flx,dh,zi1,zi2,zi3,dp,ar,dst

@@ -13,13 +13,15 @@ c**********************************************************************
 	
 c dati gli estremi calcolo i coefficienti a, b della retta passante
 	
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 	
 	integer ext(2),i,el
 	integer p1,p2
 	
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	
         real x1,y1,x2,y2
         real cy,cx,b ! parametri retta cyY=cxX+b
@@ -75,10 +77,12 @@ c    <------------------> | ratio. Quindi trovo le nuove coordinate del punto
 c	        pini      | pini. Da pini e pfin trovo il fascio di
 c_________________________| rette in particolare an il coefficiente
 c                           angolare an
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 	
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	
 	integer pb(2),ipb(2),pi
 	
@@ -245,6 +249,8 @@ c**********************************************************************
 
 c calcolo della distanza (dist) del punto x,y dall'estremo piu distante
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         real x,y ! punto da cui determinare la distanza
@@ -253,7 +259,7 @@ c calcolo della distanza (dist) del punto x,y dall'estremo piu distante
 	integer near,far ! puntatore dell'estremo piu lontano e piu vicino
 			 ! rispetto al punto x,y
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
         integer p1,p2,el
         real x1,x2,y1,y2

@@ -191,12 +191,19 @@ c******************************************************************
 
 c writes and administers ets file
 
+	use mod_waves !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use mod_ts !COMMON_GGU_SUBST
+	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
 	use ets
 
 	implicit none
 
 	include 'param.h'
-	include 'waves.h'
+COMMON_GGU_DELETED	include 'waves.h'
 
 	integer it
 
@@ -206,14 +213,14 @@ c writes and administers ets file
 	character*80 title,femver
 
 	include 'simul.h'
-	include 'nbasin.h'
-	include 'nlevel.h'
-	include 'levels.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'nbasin.h'
+COMMON_GGU_DELETED	include 'nlevel.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
-	include 'hydro.h'
-	include 'hydro_print.h'
-	include 'ts.h'
+COMMON_GGU_DELETED	include 'hydro.h'
+COMMON_GGU_DELETED	include 'hydro_print.h'
+COMMON_GGU_DELETED	include 'ts.h'
 
 	real waves(4,nkn)
         integer il4kv(nkn)
@@ -338,6 +345,9 @@ c******************************************************************
 
 	subroutine ets_setup
 
+	use mod_tides !COMMON_GGU_SUBST
+	use mod_depth !COMMON_GGU_SUBST
+	use levels !COMMON_GGU_SUBST
 	use ets
 
 	implicit none
@@ -346,9 +356,9 @@ c******************************************************************
 
 	integer i,k
 
-	include 'levels.h'
-	include 'depth.h'
-	include 'tides.h'
+COMMON_GGU_DELETED	include 'levels.h'
+COMMON_GGU_DELETED	include 'depth.h'
+COMMON_GGU_DELETED	include 'tides.h'
 
 	do i=1,nets
 	  k = nkets(i)

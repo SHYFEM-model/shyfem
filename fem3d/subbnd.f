@@ -85,9 +85,11 @@ c************************************************************************
 
 c initializes boundary parameters
 
+	use mod_bnd !COMMON_GGU_SUBST
+
 	implicit none
 
-	include 'nbound.h'
+COMMON_GGU_DELETED	include 'nbound.h'
 
 	nbc = 0
 	nrb = 0
@@ -100,13 +102,16 @@ c************************************************************************
 
 c reads boundary info from STR file
 
+	use mod_bnd !COMMON_GGU_SUBST
+	use mod_bound_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ibc
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbound.h'
-	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'nbound.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
 
 	include 'bound_names.h'
 !AR mud
@@ -511,11 +516,14 @@ c********************************************************************
 
 c checks boundary information read from STR
 
+	use mod_bnd !COMMON_GGU_SUBST
+	use mod_bound_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbound.h'
-	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'nbound.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
 	include 'bound_names.h'
 
 	logical bstop
@@ -637,14 +645,17 @@ c********************************************************************
 
 	subroutine prbnds
 
+	use mod_bnd !COMMON_GGU_SUBST
+	use mod_bound_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbound.h'
+COMMON_GGU_DELETED	include 'nbound.h'
 
 	include 'bound_names.h'
 
-	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
 
 	integer i,ibc
 	integer ibtyp,kranf,krend
@@ -699,16 +710,19 @@ c********************************************************************
 
 	subroutine tsbnds
 
+	use mod_bnd !COMMON_GGU_SUBST
+	use mod_bound_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'nbound.h'
+COMMON_GGU_DELETED	include 'nbound.h'
 
 	include 'bound_names.h'
 
-	include 'bnd.h'
+COMMON_GGU_DELETED	include 'bnd.h'
 
-	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
 
 	integer j,i
 
@@ -808,11 +822,13 @@ c********************************************************************
 
 c returns total number of open boundaries
 
+	use mod_bnd !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nbnds
 
-	include 'nbound.h'
+COMMON_GGU_DELETED	include 'nbound.h'
 
 	nbnds = nbc
 
@@ -824,11 +840,13 @@ c********************************************************************
 
 c returns total number of open boundary nodes
 
+	use mod_bnd !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer nkbnd
 
-	include 'nbound.h'
+COMMON_GGU_DELETED	include 'nbound.h'
 
 	nkbnd = nrb
 
@@ -863,14 +881,17 @@ c********************************************************************
 
 c returns i th node of all boundary nodes
 
+	use mod_bnd !COMMON_GGU_SUBST
+	use mod_bound_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer kbnd
 	integer i
 
 	include 'param.h' !COMMON_GGU_SUBST
-	include 'nbound.h'
-	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'nbound.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
 
         if( i .gt. nrb ) then
             write(6,*) 'i, nrb, nbc : ',i,nrb,nbc
@@ -935,6 +956,8 @@ c********************************************************************
 
 c returns i th node of boundary ibc
 
+	use mod_bound_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer kbnds
@@ -942,7 +965,7 @@ c returns i th node of boundary ibc
 	integer i
 
 	include 'param.h'
-	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
 
 	integer kranf,krend,n
 
@@ -968,6 +991,8 @@ c********************************************************************
 
 c returns nodes of boundary ibc (maximum ndim)
 
+	use mod_bound_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ibc			!number of open boundary  (in)
@@ -976,7 +1001,7 @@ c returns nodes of boundary ibc (maximum ndim)
 	integer nodes(1)		!boundary nodes           (out)
 
 	include 'param.h'
-	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
 
 	integer i,imaxi
 	integer kranf,krend
@@ -1012,6 +1037,8 @@ c********************************************************************
 
 c sets boundary ibc to value in barray (apparently not used)
 
+	use mod_bound_geom !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ibc
@@ -1019,7 +1046,7 @@ c sets boundary ibc to value in barray (apparently not used)
 	real barray(1)
 
 	include 'param.h'
-	include 'bound_geom.h'
+COMMON_GGU_DELETED	include 'bound_geom.h'
 
 	integer kranf,krend,k,kn
 
@@ -1041,12 +1068,14 @@ c********************************************************************
  
 c checks if ibc is in bounds
  
+	use mod_bnd !COMMON_GGU_SUBST
+
         implicit none
  
         integer ibc
 	character*(*) errtext
  
-	include 'nbound.h'
+COMMON_GGU_DELETED	include 'nbound.h'
  
         if( ibc .lt. 1 .or. ibc .gt. nbc ) then
 	    write(6,*) errtext
@@ -1149,12 +1178,14 @@ c********************************************************************
 
 c initializes boundary ibc
 
+	use mod_bnd !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ibc
 
 	include 'param.h'
-	include 'bnd.h'
+COMMON_GGU_DELETED	include 'bnd.h'
 
 	integer i
 
@@ -1172,6 +1203,8 @@ c********************************************************************
 
 c sets/gets value at entry ientry
 
+	use mod_bnd !COMMON_GGU_SUBST
+
         implicit none
 
         integer ibc
@@ -1181,7 +1214,7 @@ c sets/gets value at entry ientry
         logical bset
 
 	include 'param.h'
-	include 'bnd.h'
+COMMON_GGU_DELETED	include 'bnd.h'
 
         call chkibc(ibc,'setget_bnd_par:')
 
@@ -1238,11 +1271,13 @@ c********************************************************************
 
 	subroutine get_bnd_nbnd(nbnd)
 
+	use mod_bnd !COMMON_GGU_SUBST
+
         implicit none
 
 	integer nbnd
 
-	include 'nbvdim.h'
+COMMON_GGU_DELETED	include 'nbvdim.h'
 
 	nbnd = nbvdim
 
@@ -1267,13 +1302,15 @@ c********************************************************************
 
         function iget_bnd_id(name,berror)
 
+	use mod_bnd !COMMON_GGU_SUBST
+
         implicit none
 
         integer iget_bnd_id
         character*(*) name
 	logical berror		!raises error if name not existing
 
-	include 'nbvdim.h'
+COMMON_GGU_DELETED	include 'nbvdim.h'
 
         integer id
         character*6 bname
@@ -1305,12 +1342,14 @@ c to add a variable:
 c	add to names
 c	increase nbvdim (more instances in file)
 
+	use mod_bnd !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer id
         character*(*) name
 
-	include 'nbvdim.h'
+COMMON_GGU_DELETED	include 'nbvdim.h'
 
         character*6 names(nbvdim)
         save names
@@ -1335,11 +1374,13 @@ c********************************************************************
 
 	subroutine check_bnd_entries(ibc)
 
+	use mod_bnd !COMMON_GGU_SUBST
+
 	implicit none
 
 	integer ibc
 
-	include 'nbvdim.h'
+COMMON_GGU_DELETED	include 'nbvdim.h'
 
         integer i
 	real value
