@@ -52,8 +52,6 @@ c next n lines give (u,v,z) for every node written.
 	!parameter (datdim=80000)
 	parameter (datdim=100000)
 
-	integer nkndim,neldim
-
 	character*80 line,file
 	integer nvers,knausm,nb
 	integer nrec,it,i,nin,kn,in,nout
@@ -88,7 +86,7 @@ c---------------------------------------------------------------
 c open files
 c---------------------------------------------------------------
 
-        if(iapini(2,nkndim,neldim,0).eq.0) then
+        if(iapini(2,0,0,0).eq.0) then
                 stop 'error stop : iapini'
         end if
 

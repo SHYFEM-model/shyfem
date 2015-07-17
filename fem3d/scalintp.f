@@ -31,6 +31,11 @@ c takes care of lat/lon coordinates
 	implicit none
 
 	include 'param.h'
+	include 'simul.h'
+	include 'pkonst.h'
+	include 'basin.h'
+	include 'depth.h'
+	include 'evmain.h'
 
 	integer ndim
 	parameter(ndim=1200000)
@@ -38,21 +43,6 @@ c takes care of lat/lon coordinates
 	real yp(ndim)
 	real dp(ndim)
 	real ap(ndim)
-
-	include 'simul.h'
-
-	include 'pkonst.h'
-
-	include 'basin.h'
-
-
-	include 'depth.h'
-
-        real raux(neldim)
-        integer iaux(neldim)
-        integer ipaux(nkndim)
-
-	include 'evmain.h'
 
         character*40 bfile,gfile,nfile
         character*60 line
@@ -69,10 +59,10 @@ c takes care of lat/lon coordinates
 	logical bstop,bbasin
 	integer iscanf
 
-	real xt(neldim)
-	real yt(neldim)
-	real at(neldim)
-	real ht(neldim)
+	real, allocatable :: xt(:)
+	real, allocatable :: yt(:)
+	real, allocatable :: at(:)
+	real, allocatable :: ht(:)
 
 c-----------------------------------------------------------------
 c what to do
@@ -155,7 +145,9 @@ c-----------------------------------------------------------------
 	call check_basin_name(gfile,bbasin)
 
 	write(6,*) 'reading basin as bas file...'
-	call read_basin(gfile,nkndim,neldim)
+	call read_basin(gfile)
+
+	allocate(xt(nel),yt(nel),at(nel),ht(nel))
 
 c-----------------------------------------------------------------
 c handling of depth and coordinates

@@ -177,7 +177,7 @@ c-----------------------------------------------------------------
 	if( bbasin ) then
 
 	  write(6,*) 'reading basin as bas file...'
-	  call read_basin(gfile,nkndim,neldim)
+	  call read_basin(gfile)
 
 	else
 

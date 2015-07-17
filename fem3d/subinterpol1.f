@@ -41,12 +41,12 @@ c*******************************************************************
 
 c*******************************************************************
 
-	subroutine read_basin(name,nkndi,neldi)
+	subroutine read_basin(name)
 
 	implicit none
 
 	character*(*) name
-	integer nkndi,neldi
+	integer nknddi,nelddi
 
 	include 'param.h' !COMMON_GGU_SUBST
 	include 'basin.h'
@@ -56,7 +56,7 @@ c*******************************************************************
 	real h
 
 	open(1,file=name,status='old',form='unformatted')
-	call sp13rr(1,nkndi,neldi)
+	call basin_read(1)
 	close(1)
 
 	do ie=1,nel

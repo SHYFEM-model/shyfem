@@ -379,13 +379,17 @@ c common
 	real getpar
 	integer ipext,ieext
 
-	integer netot
-	integer kinf(2,ngrdim)
-	save netot,kinf
+	integer, save :: netot
+	integer, save, allocatable :: kinf(:,:)
 
 	integer kmem
 	save kmem
 	data kmem / 0 /
+
+	if( k == 0 ) then
+	  allocate(kinf(2,ngr))
+	  kinf = 0
+	end if
 
 	if( k .ne. kmem ) then
 	  netot = 0
@@ -394,8 +398,8 @@ c common
 	      kk = nen3v(ii,ie)
 	      if( kk .eq. k ) then
 	        netot = netot + 1
-	        if( netot .gt. ngrdim ) then
-		  stop 'error stop debug_node: ngrdim'
+	        if( netot .gt. ngr ) then
+		  stop 'error stop debug_node: ngr'
 	        end if
 	        kinf(1,netot) = ie
 	        kinf(2,netot) = ii

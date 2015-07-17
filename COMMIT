@@ -1,5 +1,67 @@
 ============================================================
 
+Fri Jul 17 18:13:56 CEST 2015
+
+nearly ready with modules
+
+ RELEASE_NOTES           |    4 +
+ fem3d/Makefile          |   28 +--
+ fem3d/atoxi3d.f         |   25 +-
+ fem3d/basbathy.f        |    2 +-
+ fem3d/basin.h           |    6 +
+ fem3d/bio3d_util.f      |    6 +-
+ fem3d/etsinf.f          |    2 +-
+ fem3d/etsutil.f         |   20 +-
+ fem3d/ht.f              |    4 +-
+ fem3d/lagrange_flux.f   |   60 +----
+ fem3d/map_influence.f   |    2 +-
+ fem3d/netcdf.f          |   12 +-
+ fem3d/newchk.f          |   14 +-
+ fem3d/newconz.f         |   24 +-
+ fem3d/nosutil.f         |   50 ++--
+ fem3d/optintp.f         |   19 +-
+ fem3d/ousutil.f         |   64 ++--
+ fem3d/param.h           |    6 +-
+ fem3d/readext.f         |    2 +-
+ fem3d/scal_intp.f       |   12 +-
+ fem3d/scalintp.f        |   32 +--
+ fem3d/splitets.f        |    2 +-
+ fem3d/splitext.f        |    4 +-
+ fem3d/splitext_big.f    |    4 +-
+ fem3d/subane.f          |   42 ++--
+ fem3d/subapn.f          |   26 +-
+ fem3d/subbas.f          |   11 +-
+ fem3d/subcmv.f          |   30 +-
+ fem3d/subdim.f          |    1 -
+ fem3d/subdwq.f          |  750 -----------------------------------------------
+ fem3d/subinterpol1.f    |    6 +-
+ fem3d/subros.f          |    8 +-
+ fem3d/ts2nc.f           |   14 +-
+ fem3d/tsinf.f           |    2 +-
+ fem3d/vp.f              |   26 +--
+ fem3d/wincrea.f         |  175 -----------
+ fem3d/windcrea.f        |  217 --------------
+ fem3d/wininf.f          |  247 ----------------
+ fem3d/winmerge.f        |  165 -----------
+ fem3d/winshift.f        |  133 ---------
+ fem3d/zinit.f           |    6 +-
+ femadj/param.h          |    6 +-
+ femdoc/final/shyfem.pdf |  Bin 294947 -> 294949 bytes
+ femdoc/final/shyfem.ps  |   24 +-
+ femplot/basin.h         |    6 +
+ femplot/param.h         |    6 +-
+ param.h                 |    6 +-
+ 47 files changed, 267 insertions(+), 2044 deletions(-)
+ deleted:
+    fem3d/subdwq.f
+    fem3d/wincrea.f
+    fem3d/windcrea.f
+    fem3d/wininf.f
+    fem3d/winmerge.f
+    fem3d/winshift.f
+
+============================================================
+
 Fri Jul 17 15:44:55 CEST 2015
 
 New version 7_1_52

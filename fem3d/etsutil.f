@@ -45,7 +45,7 @@ c all other variables must have already been stored internally (title,date..)
 
 c***************************************************************
 
-	subroutine read_ets_header(iu,nkndim,nlvdim,ilets,hlv,hets
+	subroutine read_ets_header(iu,nknddi,nlvddi,ilets,hlv,hets
      +					,nodes,xg,yg,desc)
 
 c other variables are stored internally
@@ -53,20 +53,20 @@ c other variables are stored internally
 	implicit none
 
 	integer iu
-	integer nkndim,neldim,nlvdim
-	integer ilets(nkndim)
-	real hlv(nlvdim)
-	real hets(nkndim)
-	integer nodes(nkndim)
-	real xg(nkndim)
-	real yg(nkndim)
-	character*(*) desc(nkndim)
+	integer nknddi,nelddi,nlvddi
+	integer ilets(nknddi)
+	real hlv(nlvddi)
+	real hets(nknddi)
+	integer nodes(nknddi)
+	real xg(nknddi)
+	real yg(nknddi)
+	character*(*) desc(nknddi)
 
 	integer nkn,nlv,nvar
 
 	call read_ets_header1(iu,nkn,nlv,nvar)
 
-	call dimets(iu,nkndim,nlvdim)
+	call dimets(iu,nknddi,nlvddi)
 
 	call read_ets_header2(iu,nkn,nlv,ilets,hlv,hets
      +				,nodes,xg,yg,desc)

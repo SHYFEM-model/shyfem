@@ -160,7 +160,7 @@ SOBJS   = \
           subgrd.o subreg.o \
           subbnd.o \
           subexta.o subouta.o subdep.o subflxa.o subflx3d.o subflx.o \
-	  subdum.o subcus.o subdwq.o \
+	  subdum.o subcus.o \
 	  $(BCTSOBJS) \
 	  $(QFLUX) \
 	  subnos.o subcon1.o subrnd.o sublin.o \
@@ -318,7 +318,7 @@ LAGINTP = submir.o
 
 EXEMAIN  = ht vp
 
-EXEINFO  = ousinf flxinf volinf basinf nosinf wininf extinf rstinf \
+EXEINFO  = ousinf flxinf volinf basinf nosinf extinf rstinf \
 		feminf tsinf filetype \
 		offinf lgrinf etsinf
 EXESPLIT = nossplit splitext splitflx splitets
@@ -336,7 +336,7 @@ NOSALL   = $(NOSEXTR) $(NOSAVER) $(NOSVAR)
 OUSEXTR  = ousextr_nodes ousextr_records ousextr_gis \
 		ousextr_cat
 
-EXEEXTRA = wincrea windcrea \
+EXEEXTRA = \
 		basproj baswork eosinf \
 		nos2nc ous2nc ts2nc \
 		ouswork ouswork1 ouswrite prep_input \
@@ -413,21 +413,6 @@ lgrinf:  lgrinf.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
 
 zinit:  zinit.o $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
-
-wincrea:   wincrea.o
-	$(LINKER) $(LFLAGS) $@.o -o $@
-
-windcrea:  windcrea.o $(OUTOBJS) subgeo.o
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) subgeo.o -o $@
-
-wininf:   wininf.o $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
-
-winshift:   winshift.o $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
-
-winmerge:   winmerge.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
 
 mkgeom:   mkgeom.o
@@ -833,7 +818,7 @@ aquabc_II_fem_interface.o: aquabc_II.h param.h \
 		../femlib/mod/para_aqua.mod aquabc_II_aout.h \
 		levels.h basin.h diff_visc_fric.h 
 aquabc_II_util.o: param.h
-atoxi3d.o: nbasin.h param.h levels.h nlevel.h mkonst.h \
+atoxi3d.o: nbasin.h param.h levels.h nlevel.h mkonst.h basin.h \
 		diff_visc_fric.h 
 basbathy.o: depth.h pkonst.h param.h evmain.h basin.h simul.h
 basbox.o: geom_aux.h depth.h param.h links.h evmain.h basin.h \
@@ -1081,8 +1066,6 @@ subdim.o: nbasin.h
 subdry.o: hydro.h param.h mkonst.h femtime.h ev.h geom_dynamic.h \
 		hydro_baro.h basin.h aux_array.h 
 subdts.o: subdts.h
-subdwq.o: nbasin.h param.h geom_dynamic.h hydro_baro.h basin.h \
-		femtime.h 
 subele.o: depth.h hydro.h param.h nlevel.h ev.h nbasin.h levels.h \
 		basin.h area.h aux_array.h 
 subets.o: etsinf.h
@@ -1205,9 +1188,6 @@ tsinf.o: ../femlib/mod/clo.mod
 vp.o: param.h basin.h
 weutro.o: donata.h weutro.h
 weutro_sedim.o: donata.h weutro.h
-windcrea.o: depth.h param.h evmain.h basin.h
-winmerge.o: param.h
-winshift.o: param.h
 zinit.o: param.h basin.h simul.h
 aquabc_II.o: param.h ../femlib/mod/aquabc_II_sed_ini.mod \
 		../femlib/mod/para_aqua.mod 

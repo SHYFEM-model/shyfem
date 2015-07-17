@@ -85,7 +85,7 @@ c writes info on ts file
 
 	character*50 name,string
 	integer np,iunit,iout
-	integer nvers,lmax,nvar,ntype,nlvdim
+	integer nvers,lmax,nvar,ntype
 	integer nvar0,lmax0,np0
 	integer idt,idtact
 	double precision dtime,tmin,tmax,dtime0

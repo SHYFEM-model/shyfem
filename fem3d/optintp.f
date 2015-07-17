@@ -51,10 +51,13 @@ c optimal interpolation interpolation
 	real yobs(nobdim)
 	real zobs(nobdim)
 	real bobs(nobdim)
-	real xback(nkndim)
-	real yback(nkndim)
-	real zback(nkndim)
-	real zanal(nkndim)
+
+	real, allocatable :: xback(:)
+	real, allocatable :: yback(:)
+	real, allocatable :: zback(:)
+	real, allocatable :: zanal(:)
+	real, allocatable :: hd(:)
+	integer, allocatable :: ilhkv(:)
 
 	integer nvers,ntype,nvar,nlvdi
 	integer iformat,lmax,np
@@ -62,9 +65,7 @@ c optimal interpolation interpolation
 	integer jmax,j
 	double precision dtime
 	real hlv(1)
-	real hd(nkndim)
 	real regpar(7)
-	integer ilhkv(nkndim)
 	integer datetime(2)
 	character*30 string,format
 
@@ -133,7 +134,6 @@ c--------------------------------------------------------------
 
 	!call clo_info()
 
-	ndim = nkndim
 	bback = .false.
 	call clo_get_file(1,file)
 
@@ -142,7 +142,10 @@ c read in basin
 c-----------------------------------------------------------------
 
 	call ap_set_names(basin,' ')
-	call ap_init(1,nkndim,neldim)
+	call ap_init(1,0,0)
+
+	allocate(xback(nkn),yback(nkn),zback(nkn),zanal(nkn))
+	ndim = nkn
 
 	call bas_get_minmax(xmin,ymin,xmax,ymax)
 	dxy = max((xmax-xmin),(ymax-ymin))

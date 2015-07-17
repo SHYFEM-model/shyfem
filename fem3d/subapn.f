@@ -41,7 +41,7 @@ c			->   call fnminh
 c	  		->   call read_apn_file(-1)
 c				->   call nlsa
 c		->   call assnam
-c		->   call read_bas_file(nkndi,neldi)
+c		->   call read_bas_file(nknddi,nelddi)
 c		->   call sp131k(matdim)
 c
 c .memory is only changed with bask == .true.
@@ -173,26 +173,26 @@ c*************************************************************
 c*************************************************************
 c*************************************************************
 
-	subroutine ap_init(bask,mode,nkndi,neldi)
+	subroutine ap_init(bask,mode,nknddi,nelddi)
 
 c initializes post processing
 
 	implicit none
 
 	logical bask
-	integer mode,nkndi,neldi
+	integer mode,nknddi,nelddi
 
 	if( bask ) then
-	  call iap_init(mode,nkndi,neldi,0)
+	  call iap_init(mode,nknddi,nelddi,0)
 	else
-	  call iap_init(-mode,nkndi,neldi,0)
+	  call iap_init(-mode,nknddi,nelddi,0)
 	end if
 
 	end
 
 c*************************************************************
 
-	function iapini(mode,nkndi,neldi,matdim)
+	function iapini(mode,nknddi,nelddi,matdim)
 
 c init routine for ap routines
 c
@@ -211,7 +211,7 @@ c mode negative: do not ask for new basin and simulation
 	implicit none
 
 	integer iapini
-	integer mode,nkndi,neldi,matdim
+	integer mode,nknddi,nelddi,matdim
 
 	logical bcompat
 	integer nmode,iauto
@@ -228,7 +228,7 @@ c mode negative: do not ask for new basin and simulation
 
 	if( .not. bcompat ) nmode = -abs(mode)	!never ask
 
-	call iap_init(nmode,nkndi,neldi,matdim)
+	call iap_init(nmode,nknddi,nelddi,matdim)
 
 	iapini = 1
 
@@ -236,7 +236,7 @@ c mode negative: do not ask for new basin and simulation
 
 c*************************************************************
 
-	subroutine iap_init(mode,nkndi,neldi,matdim)
+	subroutine iap_init(mode,nknddi,nelddi,matdim)
 
 c init routine for ap routines
 c
@@ -254,7 +254,7 @@ c mode negative: do not ask for new basin and simulation
 
 	implicit none
 
-	integer mode,nkndi,neldi,matdim
+	integer mode,nknddi,nelddi,matdim
 
 c---------------------------------------------------------------------
 c assign new parameter file
@@ -278,7 +278,7 @@ c---------------------------------------------------------------------
 c open bas file
 c---------------------------------------------------------------------
 
-	call read_bas_file(nkndi,neldi)
+	call read_bas_file(nknddi,nelddi)
 
 c---------------------------------------------------------------------
 c set up boundary nodes
@@ -445,7 +445,7 @@ c**************************************************************
 
 c**************************************************************
 
-	subroutine read_bas_file(nkndi,neldi)
+	subroutine read_bas_file(nknddi,nelddi)
 
 c opens and reads basin file
 
@@ -453,7 +453,7 @@ c opens and reads basin file
 
 	implicit none
 
-	integer nkndi,neldi
+	integer nknddi,nelddi
 
 	integer iunit
 	character*80 basnew

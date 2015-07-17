@@ -268,14 +268,14 @@ c save
 
 c********************************************************************
 
-        subroutine setsedload(nlvdi,nkndi,nstate,eload,elini)
+        subroutine setsedload(nlvdi,nknddi,nstate,eload,elini)
 
 c sets up sediment loading
 
         implicit none
 
-        integer nlvdi,nkndi,nstate
-        real eload(nlvdi,nkndi,nstate)
+        integer nlvdi,nknddi,nstate
+        real eload(nlvdi,nknddi,nstate)
         real elini(nstate)
 
 	include 'param.h' !COMMON_GGU_SUBST

@@ -13,7 +13,7 @@ c
 	include 'basin.h'
 	include 'simul.h'
 
-	real hv(nkndim)
+	real, allocatable :: hv(:)
 c
 c----------------------------------------------------------------
 c k1,k2		nodes that define x/y of node 1/2
@@ -42,7 +42,9 @@ c	data z1,z2 / -.40,+.40 /
 c	data mode /2/
 c----------------------------------------------------------------
 c
-	if(iapini(1,nkndim,neldim,0).eq.0) stop
+	if(iapini(1,0,0,0).eq.0) stop
+
+	allocate(hv(nkn))
 c
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c

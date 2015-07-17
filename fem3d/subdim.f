@@ -126,7 +126,6 @@ c matdim	dimension for matrix
 	write(6,*) 'nkn*ngr :',nkn*ngr
 	write(6,*) 'matdim :',matdim
         write(6,*) 'Dimension matdim must be at least nkn*ngr'
-	write(6,*) 'Be sure that ngrdim is greater or equal to ngr'
 	stop 'error stop sp131k: dimensions'
 	end
 

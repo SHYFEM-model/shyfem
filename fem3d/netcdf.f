@@ -1816,13 +1816,13 @@ c compact data for write
 c*****************************************************************
 c*****************************************************************
 
-	subroutine nc_compact_3d_reg(nlvdim,nlv,nx,ny,var_in,var_out)
+	subroutine nc_compact_3d_reg(nlvddi,nlv,nx,ny,var_in,var_out)
 
 	implicit none
 
-	integer nlvdim
+	integer nlvddi
 	integer nlv,nx,ny
-	real var_in(nlvdim,nx,ny)
+	real var_in(nlvddi,nx,ny)
 	real var_out(nlv,nx,ny)
 
 	integer l,ix,iy
@@ -1839,13 +1839,13 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine nc_compact_3d(nlvdim,nlv,nkn,var_in,var_out)
+	subroutine nc_compact_3d(nlvddi,nlv,nkn,var_in,var_out)
 
 	implicit none
 
-	integer nlvdim
+	integer nlvddi
 	integer nlv,nkn
-	real var_in(nlvdim,nkn)
+	real var_in(nlvddi,nkn)
 	real var_out(nlv,nkn)
 
 	integer k,l

@@ -73,7 +73,7 @@ c ------------------------------------------------
 
 c open files ---------------------------------------------------
 
-        if(iapini(2,nkndim,neldim,0).eq.0) then
+        if(iapini(2,0,0,0).eq.0) then
                 stop 'error stop : iapini'
         end if
 

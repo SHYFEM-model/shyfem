@@ -40,6 +40,11 @@ c toxi module ARPAV
 	implicit none
 
 	include 'param.h'
+	include 'basin.h'
+	include 'mkonst.h'
+	include 'nlevel.h'
+	include 'levels.h'
+	include 'diff_visc_fric.h'
 
 	integer it	!time in seconds
 	real dt		!time step in seconds
@@ -47,19 +52,11 @@ c toxi module ARPAV
 	integer nstate
 	parameter( nstate = 1 )
 
-	real e(nlvdim,nkndim,nstate)	!state vector
-	real eb(nlvdim,nkndim,nstate)	!boundary vector of state vectors
+	real e(nlvdim,nkndi,nstate)	!state vector
+	real eb(nlvdim,nkndi,nstate)	!boundary vector of state vectors
 	save e,eb
 
         real tstot(nstate)              !for mass test
-
-	include 'nbasin.h'
-	include 'mkonst.h'
-	include 'nlevel.h'
-
-	include 'levels.h'
-
-	include 'diff_visc_fric.h'
 
         character*10 what
 
@@ -305,7 +302,7 @@ c	-------------------------------------------------------------------
 c        k = 100
 c        l = 1
 c        call getts(l,k,t,s)
-c        call writeet(95,it,k,l,e,t,s,nlvdim,nkndim,nstate)
+c        call writeet(95,it,k,l,e,t,s,nlvdim,nkndi,nstate)
 
 c	-------------------------------------------------------------------
 c	end of routine
@@ -315,7 +312,7 @@ c	-------------------------------------------------------------------
 
 c*************************************************************
 
-	subroutine writeet(iunit,it,k,l,e,t,s,nlvdim,nkndim,nstate)
+	subroutine writeet(iunit,it,k,l,e,t,s,nlvdim,nknddi,nstate)
 
 c formatted write for debug
 
@@ -323,8 +320,8 @@ c formatted write for debug
 
 	integer iunit
 	integer it,k,l
-	integer nlvdim,nkndim,nstate
-	real e(nlvdim,nkndim,nstate)
+	integer nlvdim,nknddi,nstate
+	real e(nlvdim,nknddi,nstate)
 	real t
 	real s
 

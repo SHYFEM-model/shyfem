@@ -17,7 +17,7 @@ c 29.04.2015    ggu     new helper routines for start/end time in file
 c
 c******************************************************************
 
-        subroutine transp2vel(nel,nkn,nlv,nlvdim,hev,zenv,nen3v
+        subroutine transp2vel(nel,nkn,nlv,nlvddi,hev,zenv,nen3v
      +				,ilhv,hlv,utlnv,vtlnv
      +                          ,uprv,vprv,weight,hl)
 
@@ -28,17 +28,17 @@ c transforms transports at elements to velocities at nodes
         integer nel
         integer nkn
 	integer nlv
-        integer nlvdim
+        integer nlvddi
         real hev(1)
         real zenv(3,1)
 	integer nen3v(3,1)
 	integer ilhv(1)
 	real hlv(1)
-        real utlnv(nlvdim,1)
-        real vtlnv(nlvdim,1)
-        real uprv(nlvdim,1)
-        real vprv(nlvdim,1)
-        real weight(nlvdim,1)		!aux variable for weights
+        real utlnv(nlvddi,1)
+        real vtlnv(nlvddi,1)
+        real uprv(nlvddi,1)
+        real vprv(nlvddi,1)
+        real weight(nlvddi,1)		!aux variable for weights
 	real hl(1)			!aux variable for real level thickness
 
 	logical bsigma
@@ -49,7 +49,7 @@ c transforms transports at elements to velocities at nodes
 	real area_elem
 
 	call get_sigma_info(nlvaux,nsigma,hsigma)
-	if( nlvaux .gt. nlvdim ) stop 'error stop transp2vel: nlvdim'
+	if( nlvaux .gt. nlvddi ) stop 'error stop transp2vel: nlvddi'
 	bsigma = nsigma .gt. 0
 
 	do k=1,nkn
@@ -95,7 +95,7 @@ c transforms transports at elements to velocities at nodes
 
 c******************************************************************
 
-        subroutine transp2nodes(nel,nkn,nlv,nlvdim,hev,zenv,nen3v
+        subroutine transp2nodes(nel,nkn,nlv,nlvddi,hev,zenv,nen3v
      +				,ilhv,hlv,utlnv,vtlnv
      +                          ,utprv,vtprv,weight)
 
@@ -106,17 +106,17 @@ c transforms transports at elements to transports at nodes
         integer nel
         integer nkn
 	integer nlv
-        integer nlvdim
+        integer nlvddi
         real hev(1)
         real zenv(3,1)
 	integer nen3v(3,1)
 	integer ilhv(1)
 	real hlv(1)
-        real utlnv(nlvdim,1)
-        real vtlnv(nlvdim,1)
-        real utprv(nlvdim,1)
-        real vtprv(nlvdim,1)
-        real weight(nlvdim,1)
+        real utlnv(nlvddi,1)
+        real vtlnv(nlvddi,1)
+        real utprv(nlvddi,1)
+        real vtprv(nlvddi,1)
+        real weight(nlvddi,1)
 
         integer ie,ii,k,l,lmax
         real u,v,w
@@ -205,17 +205,17 @@ c computes 2D velocities from 2D transports - returns result in u2v,v2v
 
 c***************************************************************
 
-	subroutine comp_barotropic(nel,nlvdim,ilhv
+	subroutine comp_barotropic(nel,nlvddi,ilhv
      +			,utlnv,vtlnv,ut2v,vt2v)
 
 c computes barotropic transport
 
 	implicit none
 
-	integer nel,nlvdim
+	integer nel,nlvddi
 	integer ilhv(1)
-	real utlnv(nlvdim,1)
-	real vtlnv(nlvdim,1)
+	real utlnv(nlvddi,1)
+	real vtlnv(nlvddi,1)
 	real ut2v(1)
 	real vt2v(1)
 
@@ -276,7 +276,7 @@ c***************************************************************
 c***************************************************************
 
         subroutine debug_write_node(ks,it,nrec
-     +		,nkndim,neldim,nlvdim,nkn,nel,nlv
+     +		,nknddi,nelddi,nlvddi,nkn,nel,nlv
      +          ,nen3v,zenv,znv,utlnv,vtlnv)
 
 c debug write
@@ -285,12 +285,12 @@ c debug write
 
 	integer ks	!internal node number to output (0 for none)
         integer it,nrec
-        integer nkndim,neldim,nlvdim,nkn,nel,nlv
-        integer nen3v(3,neldim)
-        real znv(nkndim)
-        real zenv(3,neldim)
-        real utlnv(nlvdim,neldim)
-        real vtlnv(nlvdim,neldim)
+        integer nknddi,nelddi,nlvddi,nkn,nel,nlv
+        integer nen3v(3,nelddi)
+        real znv(nknddi)
+        real zenv(3,nelddi)
+        real utlnv(nlvddi,nelddi)
+        real vtlnv(nlvddi,nelddi)
 
         integer ie,ii,k,l
         logical bk
@@ -382,17 +382,17 @@ c get size of data
 
 c***************************************************************
 
-        subroutine read_ous_header(iu,nkndim,neldim,nlvdim,ilhv,hlv,hev)
+        subroutine read_ous_header(iu,nknddi,nelddi,nlvddi,ilhv,hlv,hev)
 
 c other variables are stored internally
 
         implicit none
 
         integer iu
-        integer nkndim,neldim,nlvdim
-        integer ilhv(nkndim)
-        real hlv(nlvdim)
-        real hev(neldim)
+        integer nknddi,nelddi,nlvddi
+        integer ilhv(nknddi)
+        real hlv(nlvddi)
+        real hev(nelddi)
 
         integer nvers
         integer nkn,nel,nlv,nvar
@@ -409,7 +409,7 @@ c other variables are stored internally
         call ous_read_header(iu,nkn,nel,nlv,ierr)
         if( ierr .ne. 0 ) goto 99
 
-        call dimous(iu,nkndim,neldim,nlvdim)
+        call dimous(iu,nknddi,nelddi,nlvddi)
 	!call infoous(iu,6)
 
         call getous(iu,nvers,nkn,nel,nlv)

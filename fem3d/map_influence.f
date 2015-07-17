@@ -91,7 +91,7 @@ c---------------------------------------------------------------
 c open simulation and basin
 c---------------------------------------------------------------
 
-	if(iapini(3,nkndim,neldim,0).eq.0) then
+	if(iapini(3,0,0,0).eq.0) then
 		stop 'error stop : iapini'
 	end if
 

@@ -82,7 +82,7 @@ c 20.05.2011    ggu	iwetv introduced, wet and dry from main
 c 25.10.2011    ggu	hlhv eliminated
 c 18.11.2011    ggu	new routine handle_projection
 c 24.01.2012    ggu	new call to setup_parallel()
-c 23.02.2012    ggu&ccf	meteo arrays adjusted (3*nkndim)
+c 23.02.2012    ggu&ccf	meteo arrays adjusted (3*nkn)
 c 09.03.2012    ggu	call to residence time added
 c 21.06.2012    ggu&aar	fluid mud variables integrated
 c 05.08.2012    ggu	bug because lam2dn and dmfd2n not defined
@@ -554,7 +554,6 @@ c*****************************************************************
 
 	include 'param.h'
 	include 'meteo.h'
-
 	include 'basin.h'
 	include 'levels.h'
 	include 'hydro.h'
@@ -567,7 +566,6 @@ c*****************************************************************
 	include 'internal.h'
 	include 'aux_array.h'
 	include 'fluidmud.h'
-
 	include 'ts.h'
 
 	write(66) it

@@ -101,8 +101,8 @@ c sets up fluxes in 3d - has to be done every time step
 	real az,azpar
 	real tdif
 	
-	real rflux(nlvdim,ngrdim)       !fluxes across finite volume k
-	real tflux(nlvdim,ngrdim)       !fluxes across sides of element
+	real rflux(nlvdim,ngr)       !fluxes across finite volume k
+	real tflux(nlvdim,ngr)       !fluxes across sides of element
 	
 	integer flxtype
 
@@ -130,7 +130,7 @@ c	--------------------------------------------
         do k=1,nkn
           itype=flxtype(k)
 
-	  n = ngrdim
+	  n = ngr
 	  call flx3d_k(k,itype,az,lkmax,n,rflux)
 	  call make_fluxes_3d(k,itype,lkmax,n,rflux,tflux)
 
@@ -170,9 +170,9 @@ c sets up fluxes - has to be done every time step
 	real az,azpar
 	real tdif
 	
-	real rflux(ngrdim)       !fluxes across finite volume k
-	real tflux(ngrdim)       !fluxes across sides of element
-	real tflux_aux(ngrdim)   !fluxes across sides of element (aux)
+	real rflux(ngr)       !fluxes across finite volume k
+	real tflux(ngr)       !fluxes across sides of element
+	real tflux_aux(ngr)   !fluxes across sides of element (aux)
 	real flux2d_aux(3,neldim)
 	
 	integer flxtype
@@ -191,73 +191,27 @@ c sets up fluxes - has to be done every time step
           itype=flxtype(k)
 
 c	  --------------------------------------------
-c	  old way to set-up  rflux,tflux ... delete
-c	  --------------------------------------------
-
-	  !call set_elem_links(k,ne)
-	  !nn = ne
-          !if( itype .gt. 1 ) nn = nn + 1   !boundary
-          !if( nn .gt. ngrdim ) stop 'error stop flxnod: ndim'
-	  !rflux(nn) = 0.
-	
-    	  !call mk_rflux(k,nn,itype,az,rflux,ne,lnk_elems)
-  	  !call mk_tflux(k,nn,itype,rflux,tflux_aux)
-
-	  !write(6,*) 'flux old ',k,nn,ne,itype
-	  !write(6,*) 'rflux old ',(rflux(j),j=1,nn)
-	  !write(6,*) 'tflux old ',(tflux_aux(j),j=1,nn)
-
-c	  --------------------------------------------
 c	  new way to set-up rflux,tflux
 c	  --------------------------------------------
 
-	  n = ngrdim
+	  n = ngr
 	  call flx2d_k(k,itype,az,n,rflux)
 	  call make_fluxes_2d(k,itype,n,rflux,tflux)
-
-	  !write(6,*) 'flux new ',k,n,itype
-	  !write(6,*) 'rflux new ',(rflux(j),j=1,n)
-	  !write(6,*) 'tflux new ',(tflux(j),j=1,n)
 
 c	  --------------------------------------------
 c	  error check ... delete
 c	  --------------------------------------------
 
-	  !if( n .ne. nn ) then
-	  !  stop 'error stop setup_fluxes: n .ne. nn'
-	  !end if
-	  !do i=1,n
-	  !  tdif = abs( tflux_aux(i) - tflux(i) )
-	  !  if( tdif .gt. 1.e-4 ) then
-	  !    write(6,*) k,i
-	  !    write(6,*) (tflux_aux(j),j=1,n)
-	  !    write(6,*) (tflux(j),j=1,n)
-	  !    stop 'error stop setup_fluxes: tflux .ne. tflux_aux'
-	  !  end if
-	  !end do
-
 c	  --------------------------------------------
 c	  set-up lagrangian fluxes
 c	  --------------------------------------------
 
-  	  !call setup_fx(k,nn,tflux,ne,lnk_elems)	!old
-  	  !call setup_flux2d(k,n,tflux,flux2d_aux)	!new
   	  call setup_flux2d(k,n,tflux,flux2d)		!new
         end do
 
 c	--------------------------------------------
 c	error check ... delete
 c	--------------------------------------------
-
-        !do ie=1,nel
-        !  do ii=1,3
-	!    tdif = abs( flux2d(ii,ie) - flux2d_aux(ii,ie) )
-	!    if( tdif .gt. 1.e-4 ) then
-	!      write(6,*) ie,ii,flux2d(ii,ie),flux2d_aux(ii,ie)
-	!      stop 'error stop setup_fluxes: flux2d'
-	!    end if
-        !  end do
-        !end do
 
 c	--------------------------------------------
 c	compute velocities

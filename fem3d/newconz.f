@@ -189,7 +189,7 @@ c-------------------------------------------------------------
 c simulate decay
 c-------------------------------------------------------------
 
-        call decay_conz(1,1,1,dt,tau,cnv)
+        call decay_conz(dt,tau,cnv)
 
 c-------------------------------------------------------------
 c write to file
@@ -375,8 +375,8 @@ c-------------------------------------------------------------
 	do i=1,nvar
 	  tau = tauv(i)
 	  !write(6,*) 'decay : ',i,tau
-          call decay_conz(ncsdim,nvar,i,dt,tau,conzv)
-          !call decay_conz_variable(nsdim,nvar,ivar,dt,tau,e)
+          call decay_conz(dt,tau,conzv(1,1,i))
+          !call decay_conz_variable(dt,tau,e(1,1,i))
 	end do
 
 c-------------------------------------------------------------
@@ -404,7 +404,7 @@ c-------------------------------------------------------------
 
 c*********************************************************************
 
-        subroutine decay_conz(nsdim,nvar,ivar,dt,tau,e)
+        subroutine decay_conz(dt,tau,e)
 
 c simulates decay for concentration
 
@@ -419,12 +419,9 @@ c simulates decay for concentration
 	!parameter( alpha_t90 = 1./2.302585 )	!-1./ln(0.1) - prob wrong
 	parameter( alpha_t90 = 2.302585 )	!-1./ln(0.1)
 
-	integer nsdim			!dimension of state variables for e
-	integer nvar			!actual number of state variables
-	integer ivar			!state variable to use
         real dt				!time step in seconds
 	real tau			!decay time in days (0 for no decay)
-        real e(nlvdi,nkn,nsdim)         !state vector
+        real e(nlvdi,nkn)	        !state vector
 
         integer k,l,i,lmax
         real aux,tauaux
@@ -438,7 +435,7 @@ c simulates decay for concentration
         do k=1,nkn
           lmax = ilhkv(k)
           do l=1,lmax
-            e(l,k,ivar) = aux * e(l,k,ivar)
+            e(l,k) = aux * e(l,k)
           end do
         end do
 
@@ -446,7 +443,7 @@ c simulates decay for concentration
 
 c*********************************************************************
 
-        subroutine decay_conz_variable(nsdim,nvar,ivar,dt,tau,e)
+        subroutine decay_conz_variable(dt,tau,e)
 
 c simulates decay for concentration
 
@@ -462,12 +459,9 @@ c simulates decay for concentration
 	real alpha_t90
 	parameter( alpha_t90 = 1./2.302585 )	!-1./ln(0.1)
 
-	integer nsdim			!dimension of state variables for e
-	integer nvar			!actual number of state variables
-	integer ivar			!state variable to use
         real dt				!time step in seconds
 	real tau			!decay time in days (0 for no decay)
-        real e(nlvdi,nkn,nsdim)         !state vector
+        real e(nlvdi,nkn)               !state vector
 
         integer k,l,i,lmax
         real aux,dtt,rk,alpha
@@ -496,7 +490,7 @@ c simulates decay for concentration
 	    kappa = alpha * 1.040**(t-20.) * 1.012**s +
      +			0.113 * solrad * exp(-z/rk)
             aux = exp(-dtt*kappa)
-            e(l,k,ivar) = aux * e(l,k,ivar)
+            e(l,k) = aux * e(l,k)
           end do
         end do
 

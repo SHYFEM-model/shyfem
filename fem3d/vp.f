@@ -333,29 +333,9 @@ c write to nb2 -----------------------------------------------------
 	call ketest(nel,nen3v)
 	call gtest('write',nelddi,nkn,nel,nen3v)
 
-!	call sp13uw(nb2)
-
-!	close(nb2)
-
 c*****************************************
 c	end part 1
 c*****************************************
-
-!    1   continue
-
-c open bas file
-
-!	nb2=idefbas(basnam,'old')
-!	if(nb2.le.0) stop
-
-c read from nb2
-
-!	call sp13rr(nb2,nknddi,nelddi)
-
-!	if(nkn.gt.nknddi) goto 99900
-!	if(nel.gt.nelddi) goto 99900
-
-!	descrg=descrr
 
 c process depths -------------------------------------------------
 
@@ -724,18 +704,18 @@ c estimates ngr
 
 c*****************************************************************
 
-        subroutine check_sidei(nkn,nel,nen3v,ipv,ng,iknot,ngrdim,iaux)
+        subroutine check_sidei(nkn,nel,nen3v,ipv,ng,iknot,ngr1,iaux)
 
 c set up side index and find grade
 
         implicit none
 
         integer nkn,nel,ngr
-        integer ngrdim
+        integer ngr1
         integer nen3v(3,nel)
         integer ipv(nkn)
         integer ng(nkn)
-        integer iknot(ngrdim,nkn)
+        integer iknot(ngr1,nkn)
         integer iaux(nkn)
 
         integer ii,ie,k

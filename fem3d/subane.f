@@ -1,15 +1,15 @@
 c
 c $Id: subane.f,v 1.4 2000/03/02 09:31:22 georg Exp $
 c
-	subroutine anneal(nkn,ngrdim,kphv,ng,iknot,maux,iaux)
+	subroutine anneal(nkn,ngrddi,kphv,ng,iknot,maux,iaux)
 c
 c simulated annealing
 c
 	implicit none
 
-	integer nkn,ngrdim
+	integer nkn,ngrddi
 	integer kphv(nkn)
-	integer ng(nkn),iknot(ngrdim,nkn)
+	integer ng(nkn),iknot(ngrddi,nkn)
 	integer maux(nkn),iaux(nkn)
 
 	integer nover,nlimit,itmax
@@ -47,7 +47,7 @@ c
 
 	write(6,*) 'initial mbw : ',mbw
 
-	mbw=mband(nkn,ngrdim,ng,iknot,kphv)
+	mbw=mband(nkn,ngrddi,ng,iknot,kphv)
 
 	write(6,*) 'initial mbw : ',mbw
 
@@ -59,15 +59,15 @@ c
 	    i2=iknot(id,i1)
 	    if(i1.lt.1.or.i1.gt.nkn) stop '1'
 	    if(id.lt.1.or.id.gt.ng(i1)) stop '2'
-	    m1=mbandk(nkn,ngrdim,i1,kphv(i2),ng,iknot,kphv)
-	    m2=mbandk(nkn,ngrdim,i2,kphv(i1),ng,iknot,kphv)
+	    m1=mbandk(nkn,ngrddi,i1,kphv(i2),ng,iknot,kphv)
+	    m2=mbandk(nkn,ngrddi,i2,kphv(i1),ng,iknot,kphv)
 	    m=max(m1,m2,abs(kphv(i2)-kphv(i1)))
 	    md=m-mbw
 	    if(metrop(float(md),t)) then
 		nsucc=nsucc+1
-		call exchi(nkn,ngrdim,i1,i2,kphv,ng,iknot,maux,mbw)
+		call exchi(nkn,ngrddi,i1,i2,kphv,ng,iknot,maux,mbw)
 	    end if
-c	    call mcontr(nkn,ngrdim,ng,iknot,kphv,maux,iaux,mbw)
+c	    call mcontr(nkn,ngrddi,ng,iknot,kphv,maux,iaux,mbw)
 c	    write(6,*) iover,i1,i2,md,mbw,nsucc
 c	if(mod(iover,100).eq.0) read(5,'(i10)') i
 	    if(nsucc.gt.nlimit) goto 1
@@ -116,17 +116,17 @@ c	metrop = (md.lt.0) .or. (ran(iseed).lt.exp(-md/t))
 
 c*****************************************************************
 
-	subroutine exchi(nkn,ngrdim,i1,i2,kphv,ng,iknot,maux,mbw)
+	subroutine exchi(nkn,ngrddi,i1,i2,kphv,ng,iknot,maux,mbw)
 
 c exchanges indices
 
 	implicit none
 
-	integer nkn,ngrdim,mbw
+	integer nkn,ngrddi,mbw
 	integer i1,i2
 	integer kphv(nkn)
 	integer ng(nkn)
-	integer iknot(ngrdim,nkn)
+	integer iknot(ngrddi,nkn)
 	integer maux(nkn)
 
 	integer k1,k2,k,i
@@ -175,16 +175,16 @@ c exchanges indices
 
 c*****************************************************************
 
-	function mband(nkn,ngrdim,ng,iknot,kphv)
+	function mband(nkn,ngrddi,ng,iknot,kphv)
 
 c computes bandwidth
 
 	implicit none
 
 	integer mband
-	integer nkn,ngrdim
+	integer nkn,ngrddi
 	integer ng(nkn)
-	integer iknot(ngrdim,nkn)
+	integer iknot(ngrddi,nkn)
 	integer kphv(nkn)
 
 	integer mbw,i,m
@@ -192,7 +192,7 @@ c computes bandwidth
 
 	mbw=0
 	do i=1,nkn
-	  m=mbandk(nkn,ngrdim,i,kphv(i),ng,iknot,kphv)
+	  m=mbandk(nkn,ngrddi,i,kphv(i),ng,iknot,kphv)
 	  if(m.gt.mbw) mbw=m
 	end do
 
@@ -203,7 +203,7 @@ c computes bandwidth
 
 c*****************************************************************
 
-	function mbandk(nkn,ngrdim,j,k,ng,iknot,kphv)
+	function mbandk(nkn,ngrddi,j,k,ng,iknot,kphv)
 
 c computes bandwidth for node at index j and node number k
 
@@ -212,10 +212,10 @@ c if real bandwidth is desired, call function with k=kphv(j)
 	implicit none
 
 	integer mbandk
-	integer nkn,ngrdim
+	integer nkn,ngrddi
 	integer j,k
 	integer ng(nkn)
-	integer iknot(ngrdim,nkn)
+	integer iknot(ngrddi,nkn)
 	integer kphv(nkn)
 
 	integer m,mh,i,kk
@@ -234,15 +234,15 @@ c if real bandwidth is desired, call function with k=kphv(j)
 
 c****************************************************************
 
-	subroutine mcontr(nkn,ngrdim,ng,iknot,kphv,maux,iaux,mbw)
+	subroutine mcontr(nkn,ngrddi,ng,iknot,kphv,maux,iaux,mbw)
 
 c controlls array maux if it is up to date
 
 	implicit none
 
-	integer nkn,ngrdim,mbw
+	integer nkn,ngrddi,mbw
 	integer ng(nkn)
-	integer iknot(ngrdim,nkn)
+	integer iknot(ngrddi,nkn)
 	integer kphv(nkn)
 	integer maux(nkn),iaux(nkn)
 

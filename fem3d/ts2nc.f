@@ -22,24 +22,14 @@ c reads file and writes time series to nc file
 
         include 'param.h'
 	include 'evmain.h'
+	include 'basin.h'
+	include 'simul.h'
+	include 'levels.h'
+	include 'hydro.h'
+	include 'depth.h'
 
 	integer ndsdim
 	parameter(ndsdim=1)
-
-	include 'basin.h'
-	include 'simul.h'
-
-
-	include 'levels.h'
-	include 'hydro.h'
-
-	include 'depth.h'
-
-	real haux(nkndim)
-	real uprv(nlvdim,nkndim)
-	real vprv(nlvdim,nkndim)
-
-	real var3d(nlvdim*nkndim)
 
         integer nvers,nin,nlv
         integer itanf,itend,idt,idtous

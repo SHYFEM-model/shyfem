@@ -36,6 +36,11 @@ c***********************************************************
         integer, save :: ngr = 0
         integer, save :: mbw = 0
 
+        integer, save :: nkndi = 0
+        integer, save :: neldi = 0
+        integer, save :: ngrdi = 0
+        integer, save :: mbwdi = 0
+
         real, save :: dcorbas = 0.
         real, save :: dirnbas = 0.
 
@@ -81,6 +86,8 @@ c***********************************************************
 
 	nkn = nk
 	nel = ne
+	nkndi = nk
+	neldi = ne
 
 	if( nk == 0 ) return
 
@@ -121,8 +128,8 @@ c***********************************************************
 
 	integer nk,ne
 
-	nk = nkn
-	ne = nel
+	nk = nkndi
+	ne = neldi
 
 	end subroutine basin_get_dimension
 
