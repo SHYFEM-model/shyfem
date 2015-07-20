@@ -8,8 +8,6 @@ c*****************************************************************
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
         integer l
 

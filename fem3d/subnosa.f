@@ -61,17 +61,15 @@ c***************************************************************************
 
 c write 2d nos file
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
 	integer nb
         character*(*) name,title
 
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'depth.h'
+	include 'param.h'
 
         character*80 pfile
         character*80 ptitle

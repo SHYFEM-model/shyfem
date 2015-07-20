@@ -137,16 +137,14 @@ c*****************************************************************
 
 c computes total volume in basin
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_geom_dynamic
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	integer it
 
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
+	include 'param.h'
 
 	integer iwet,ie
 	real area,voldry,volwet,vol,a,v
@@ -186,8 +184,8 @@ c*****************************************************************
 
 c test some nodes and elements
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
+	use mod_geom_dynamic
+	use mod_hydro
 
 	implicit none
 
@@ -197,9 +195,7 @@ c test some nodes and elements
 	integer ipint,ieint
 	integer n,ibase
 
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
-COMMON_GGU_DELETED	include 'hydro.h'
+	include 'param.h'
 
 	integer icall,k1,k2,ie1,ie2,ie3
 	save icall,k1,k2,ie1,ie2,ie3
@@ -231,7 +227,7 @@ c*****************************************************************
 
 c q-flux test
 
-	use mod_ts !COMMON_GGU_SUBST
+	use mod_ts
 
 	implicit none
 
@@ -245,7 +241,6 @@ c q-flux test
 	integer ndim
 	parameter(ndim=5)
 
-COMMON_GGU_DELETED	include 'ts.h'
 
 	integer nodes(ndim)
 	save nodes
@@ -262,8 +257,8 @@ c*****************************************************************
 
 c adjust depth at inlets -> must be called from cst routines
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
@@ -272,9 +267,7 @@ c adjust depth at inlets -> must be called from cst routines
 	real getpar
 
 
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
+	include 'param.h'
 
 	write(6,*) 'adjusting depth at inlets...'
 
@@ -428,9 +421,9 @@ c*****************************************************************
 
 c channel output
 
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
+	use mod_ts
+	use mod_hydro_vel
+	use levels
 
 	implicit none
 
@@ -438,10 +431,6 @@ c channel output
 
 	integer it
 
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'ts.h'
  
         real num(0:nlvdi)
         real nuh(0:nlvdi)
@@ -533,7 +522,7 @@ c*****************************************************************
 
 c channel output
 
-	use mod_hydro_baro !COMMON_GGU_SUBST
+	use mod_hydro_baro
 
 	implicit none
 
@@ -541,7 +530,6 @@ c channel output
 
 	integer it
 
-COMMON_GGU_DELETED	include 'hydro_baro.h'
 
 	integer ie,i
 	integer iunit
@@ -594,11 +582,11 @@ c*****************************************************************
 
 c channel velocity output
 
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_ts
+	use mod_hydro_print
+	use mod_hydro
+	use levels
+	use basin
 
 	implicit none
 
@@ -607,12 +595,6 @@ c channel velocity output
 	integer it
 
 
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'hydro_print.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 
 	logical berror
 	logical b1,b2,b3,b4
@@ -713,10 +695,10 @@ c*****************************************************************
 
 c set up zeta and conc for mass conservation test
 
-	use mod_conz !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_conz
+	use mod_hydro
+	use levels
+	use basin
 
 	implicit none
 
@@ -725,11 +707,6 @@ c set up zeta and conc for mass conservation test
 	integer it
 
 
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'conz.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer k,ie,ii,n,ip,l
 	integer ntot,nlev
@@ -795,10 +772,10 @@ c*****************************************************************
 
 c mass conservation test
 
-	use mod_conz !COMMON_GGU_SUBST
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_conz
+	use mod_geom_dynamic
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -806,10 +783,6 @@ c mass conservation test
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
-COMMON_GGU_DELETED	include 'conz.h'
 
 	real res
 	integer i,ie,iweg
@@ -856,10 +829,10 @@ c*****************************************************************
 
 	subroutine hakanode(iunit,it,k)
 
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
+	use mod_ts
+	use mod_diff_visc_fric
+	use mod_hydro_print
+	use levels
 
 	implicit none
 
@@ -869,10 +842,6 @@ c*****************************************************************
 
         include 'param.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'hydro_print.h'
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
         integer nlev
 
@@ -987,15 +956,13 @@ c*****************************************************************
 
 	subroutine close_inlets1
 
-	use mod_hydro !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_hydro
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'nbasin.h'
+	include 'param.h'
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 c local
         integer ie,ii,k
 c	integer ibc,nbc
@@ -1153,11 +1120,11 @@ c*****************************************************************
 
 	subroutine node3d(iunit,it,k)
 
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
+	use mod_ts
+	use mod_hydro_print
+	use mod_hydro_vel
+	use mod_hydro
+	use levels
 
 	implicit none
 
@@ -1167,11 +1134,6 @@ c*****************************************************************
 
         include 'param.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'hydro_print.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
 
         integer nlev
 	integer l
@@ -1201,9 +1163,9 @@ c*****************************************************************
 
 	subroutine lago(it)
 
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
+	use mod_hydro_print
+	use mod_hydro_vel
+	use levels
 
 	implicit none
 
@@ -1211,9 +1173,6 @@ c*****************************************************************
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'hydro_print.h'
 
 	logical berror
 	integer i,k
@@ -1251,9 +1210,9 @@ c*****************************************************************
 
 	subroutine aldo(it)
 
-	use mod_conz !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_conz
+	use levels
+	use basin
 
 	implicit none
 
@@ -1261,9 +1220,6 @@ c*****************************************************************
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'conz.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer l,k,lmax
         real x0,y0,x1,y1,x2,y2,x3,y3
@@ -1330,10 +1286,10 @@ c*****************************************************************
 
 c computes residence time online - one value for whole lagoon
 
-	use mod_conz !COMMON_GGU_SUBST
-	use mod_aux_array !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_conz
+	use mod_aux_array
+	use levels
+	use basin
 
         implicit none
 
@@ -1341,10 +1297,6 @@ c computes residence time online - one value for whole lagoon
 
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'conz.h'
-COMMON_GGU_DELETED	include 'aux_array.h'
 
         integer ie,ii,k,lmax,l,ia
         logical bnoret,breset,bstir
@@ -1657,10 +1609,10 @@ c*****************************************************************
 
 c reset conz for fra
 
-	use mod_conz !COMMON_GGU_SUBST
-	use mod_aux_array !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_conz
+	use mod_aux_array
+	use levels
+	use basin
 
         implicit none
 
@@ -1668,10 +1620,6 @@ c reset conz for fra
 
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'conz.h'
-COMMON_GGU_DELETED	include 'aux_array.h'
 
         integer ie,ii,k,lmax,l,ia
         logical bnoret,breset,bstir
@@ -1752,10 +1700,10 @@ c*****************************************************************
 
         subroutine sedimt
 
-	use mod_conz !COMMON_GGU_SUBST
-	use mod_aux_array !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_conz
+	use mod_aux_array
+	use levels
+	use basin
 
         implicit none
 
@@ -1763,10 +1711,6 @@ c*****************************************************************
 
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'conz.h'
-COMMON_GGU_DELETED	include 'aux_array.h'
 
 	real, save, allocatable :: conzs(:)
 	real, save, allocatable :: conza(:)
@@ -1989,13 +1933,13 @@ c*****************************************************************
 
 	subroutine init_kreis
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_aux_array !COMMON_GGU_SUBST
-	use mod_area !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_aux_array
+	use mod_area
+	use mod_hydro_vel
+	use mod_hydro
+	use levels, only : nlvdi,nlv
+	use basin
 
 	implicit none
 
@@ -2006,16 +1950,9 @@ c*****************************************************************
 	real aux,r02,r2
 	real x,y,z,u,v
 
-COMMON_GGU_DELETED	include 'nlevel.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'area.h'
 
-COMMON_GGU_DELETED	include 'aux_array.h'
 
 	pi = 4.*atan(1.)
 	dcori = 45.
@@ -2068,16 +2005,15 @@ c*****************************************************************
 c*****************************************************************
         subroutine bclevvar
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_hydro_vel
+	use mod_hydro
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none 
 
         include 'param.h' 
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	include 'femtime.h'
 
@@ -2098,9 +2034,6 @@ c     !+         /!grid bati_gradino.grd
         integer ie,l,i
         logical berror          !true on return if error
         
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
         real u,v
         real ut,vt
@@ -2157,17 +2090,16 @@ COMMON_GGU_DELETED	include 'depth.h'
 c*****************************************************************
         subroutine bclevvar_ini !deb
 
-	use mod_internal !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_internal
+	use mod_depth
+	use mod_hydro_vel
+	use mod_hydro
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none 
 
         include 'param.h' 
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
         integer edim
         parameter(edim = 20) !number of element near the open boundary
@@ -2187,13 +2119,9 @@ c    ! +     /!grid bati_gradino.grd
         integer ie,l,i,ii
         logical berror          !true on return if error
        
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-
-COMMON_GGU_DELETED	include 'depth.h'
 
 
-COMMON_GGU_DELETED	include 'internal.h'
+
 
         real u,v
         real ut,vt
@@ -2282,19 +2210,16 @@ c*****************************************************************
 
         subroutine tsinitdebora(it)
 
-	use mod_ts !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_ts
+	use levels, only : nlvdi,nlv
+	use basin
 
 	implicit none
 
         include 'param.h'
 
-COMMON_GGU_DELETED	include 'nlevel.h'
 	integer ie,k,i,l,it
         integer itype
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ts.h'
 
 	integer icall
 	save icall
@@ -2326,14 +2251,12 @@ c*****************************************************************
 
 	subroutine zinit
 
-	use mod_hydro !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_hydro
+	use basin
 
 	implicit none
 
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro.h'
+	include 'param.h'
 
 	integer k,ie,ii
 	real xmin,xmax,ymin,ymax
@@ -2387,9 +2310,9 @@ c****************************************************************
 
 	subroutine cprint(it)
 
-	use mod_conz !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
+	use mod_conz
+	use mod_ts
+	use levels
 
 	implicit none
 
@@ -2400,9 +2323,6 @@ c****************************************************************
 	integer i,k,lmax,l
 	logical berror
 
-COMMON_GGU_DELETED	include 'conz.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	integer icall
 	save icall
@@ -2455,16 +2375,14 @@ c C(x,t) =  1/sqrt(4*pi*a*t) * exp( -x**2/(4*a*t) )		(n=1)
 c
 c C(x,t) =  1/(4*pi*a*t) * exp( -|x|**2/(4*a*t) )		(n=2)
 
-	use mod_conz !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use mod_conz
+	use levels, only : nlvdi,nlv
 
 	implicit none
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'nlevel.h'
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'conz.h'
 
 	integer ndim
 	parameter (ndim=101)
@@ -2649,14 +2567,12 @@ c****************************************************************
 
 c initializes cnv with analytic solution (2D)
 
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
 	integer it,k0
 	real rk,c0,ct0
@@ -2696,14 +2612,12 @@ c****************************************************************
 
 c extracts conz from array
 
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
         real cv(nlvdi,nkn)
 	integer ndim
@@ -2816,14 +2730,12 @@ c****************************************************************
 
 	subroutine intp_on_node(ie,x,y,cv,zp)
 
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
 	integer ie
 	real x,y
@@ -2852,14 +2764,12 @@ c****************************************************************
 
 c extracts conz from array
 
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
         real cv(nlvdi,nkn)
 	integer ndim
@@ -2906,14 +2816,13 @@ c****************************************************************
 
 c test for horizontal diffusion algorithm
 
-	use mod_conz !COMMON_GGU_SUBST
+	use mod_conz
 
 	implicit none
 
 	include 'param.h'
 
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'conz.h'
 
 	integer k,k0,k1,i
 	real c0,cmed
@@ -2966,17 +2875,15 @@ c****************************************************************
 
 c viscosity algorithm
 
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use mod_hydro_print
+	use levels, only : nlvdi,nlv
 
 	implicit none
 
 	include 'param.h'
 
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
-COMMON_GGU_DELETED	include 'hydro_print.h'
 
 	integer k,i,l
 
@@ -3012,9 +2919,9 @@ c for 1 dimension
 c
 c the solution is normalized, i.e.  int(C(x,t)dx) = 1 over the whole area
 
-	use mod_conz !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_conz
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -3022,11 +2929,7 @@ c the solution is normalized, i.e.  int(C(x,t)dx) = 1 over the whole area
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'conz.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	integer k,i,l,lc,lmax
 	integer it0
@@ -3088,15 +2991,13 @@ c****************************************************************
 
         subroutine uv_bottom
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
         include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
         integer k,l,m
         real u,v
@@ -3130,21 +3031,16 @@ c********************************************************************
 
 c writes node list for Malta Coastal Model
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_aux_array !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_aux_array
+	use levels
+	use basin
 
 	implicit none
 
         include 'param.h'
 
-COMMON_GGU_DELETED	include 'nlevel.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'aux_array.h'
 
         integer k,l,ie,ii,i
 	integer nbc
@@ -3284,15 +3180,13 @@ c********************************************************************
 
 c introduce le condizioni iniziali per la concentrazione
 
-	use mod_conz !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_conz
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
         include 'param.h'
-COMMON_GGU_DELETED        include 'nbasin.h'
 
-COMMON_GGU_DELETED	include 'conz.h'
 
 	integer ks
 
@@ -3315,8 +3209,8 @@ c********************************************************************
 
 c introduce le condizioni iniziali per la concentrazione
 
-	use mod_conz !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_conz
+	use basin
 
         implicit none
 
@@ -3333,8 +3227,6 @@ c introduce le condizioni iniziali per la concentrazione
 	real yco(ndim)
 	save nelems,iel,conz,yco
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'conz.h'
 
 	integer i,ii,ie,k,ien
 	integer igrad
@@ -3448,16 +3340,13 @@ c**********************************************************************
 
 	subroutine black_sea_nudge
 
-	use mod_ts !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_ts
+	use levels, only : nlvdi,nlv
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'ts.h'
 
 	integer k,l
 	real xc1,yc1,xc2,yc2
@@ -3523,26 +3412,20 @@ c**********************************************************************
 
         subroutine ggu_ginevra
 
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_ts
+	use mod_diff_visc_fric
+	use mod_hydro_print
+	use mod_hydro
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'hydro_print.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
 
 	integer ks,lmax,l
 
@@ -3619,19 +3502,16 @@ c**********************************************************************
 
         subroutine write_meteo
 
-	use mod_ts !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_ts
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'ts.h'
 
 	integer l,k,lmax,ks
 	real qs,ta,rh,wb,uw,cc,p
@@ -3659,19 +3539,16 @@ c**********************************************************************
 
         subroutine limit_temp
 
-	use mod_ts !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_ts
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'ts.h'
 
 	integer l,k,lmax
 	real tmin
@@ -3693,23 +3570,18 @@ c**********************************************************************
 
 c time of inundation for theseus
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_geom_dynamic
+	use mod_depth
+	use mod_ts
+	use evgeom
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'ev.h'
 
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'ts.h'
 
 	logical binit,blast
 	integer ie,n,k,ii
@@ -3884,19 +3756,16 @@ c**********************************************************************
 
         subroutine init_ts
 
-	use mod_ts !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_ts
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'ts.h'
 
 c	integer ndim
 c	parameter (ndim=10)	!must be at least the number of layers used
@@ -3951,18 +3820,14 @@ c**********************************************************************
 
 	subroutine fluid_mud
 
-	use mod_meteo !COMMON_GGU_SUBST
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_meteo
+	use mod_fluidmud
+	use levels, only : nlvdi,nlv
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'meteo_aux.h'
-COMMON_GGU_DELETED	include 'fluidmud.h'
 
 	integer k,l,lmax
 
@@ -4019,18 +3884,15 @@ c**********************************************************************
 
 	subroutine conz_decay_curonian
 
-	use mod_conz !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_conz
+	use levels
+	use basin
 
 	implicit none
 
 	include 'param.h'
 
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'conz.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	integer k,l,lmax
 	real tau1,tau2,aux1,aux2,aux

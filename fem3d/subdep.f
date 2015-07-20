@@ -45,7 +45,7 @@ c
 c revised 02.02.94 by ggu	$$nmax - check error condtion nmax
 c revised 29.06.97 by ggu	$$ndim - dimension of f is passed
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -54,7 +54,6 @@ c revised 29.06.97 by ggu	$$ndim - dimension of f is passed
 	real f(1)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer iact,ie,i,ii
 
@@ -98,7 +97,7 @@ c               1       unique depth
 c               0       no unique depth
 c               -1      error
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -110,7 +109,6 @@ c               -1      error
 	parameter(high=1.e+30)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	logical buniq
 	integer ie,ii,i,k
@@ -172,7 +170,7 @@ c
 c hev		element averaged depth values
 c hkv            array with unique depth values
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -181,7 +179,6 @@ c hkv            array with unique depth values
 
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie,ii,k
 	logical bstop
@@ -240,7 +237,7 @@ c********************************************************************
 
 c makes hev (elementwise depth)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
@@ -248,7 +245,6 @@ c arguments
         real hev(1)
 c common
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 c local
         integer ie,ii
 	real hm
@@ -269,7 +265,7 @@ c********************************************************************
 
 c makes hkv (nodewise depth)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
@@ -278,7 +274,6 @@ c arguments
         real haux(1)   !aux array -> bug - was integer
 c common
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 c local
         integer ie,ii,k,kn
 	real weight
@@ -313,7 +308,7 @@ c makes hkv (nodewise depth)
 c
 c itype:  -1: min  0: aver  +1: max
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
@@ -323,7 +318,6 @@ c itype:  -1: min  0: aver  +1: max
 
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
         integer k,ie,ii
         real hinit,h
@@ -375,14 +369,13 @@ c********************************************************************
 
 c adjusts depth to reference and min/max values - only hm3v is changed
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	real hmin,hmax,href
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer iaux,ie,ii
 	real hmed
@@ -508,14 +501,13 @@ c********************************************************************
 
 	subroutine flatten_hm3v(hsigma)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	real hsigma
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie,ii
 	real hm
@@ -541,14 +533,12 @@ c********************************************************************
 
 c adjusts nodal depth values
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	real v1v(nkn)
 
@@ -564,12 +554,11 @@ c********************************************************************
 
 c adjusts elemental depth values
 
-	use mod_depth !COMMON_GGU_SUBST
+	use mod_depth
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
         call makehev(hev)
 
@@ -595,15 +584,13 @@ c********************************************************************
 
 c adjourns hev and hkv from hm3v (if it has been changed)
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ie,ii
 
@@ -627,12 +614,11 @@ c********************************************************************
 c checks hkv and hsigma
 c uses information about sigma layers and hsigma (hybrid)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	logical berror
 	integer k,ie,ii
@@ -733,14 +719,12 @@ c********************************************************************
 
 	subroutine read_in_hev(file)
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use basin, only : nkn,nel,ngr,mbw
 
 	character*(*) file
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ie
 
@@ -760,14 +744,12 @@ c********************************************************************
 
 	subroutine write_out_hev(file)
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use basin, only : nkn,nel,ngr,mbw
 
 	character*(*) file
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ie
 

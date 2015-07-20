@@ -31,8 +31,8 @@ c*****************************************************************
 
 c checks stability of diffusion (old, not used)
 
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use evgeom
+	use basin
 
         implicit none
 
@@ -43,8 +43,6 @@ c checks stability of diffusion (old, not used)
         real gamma              !stability parameter -> must be < 1.
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
 
         integer k,ie,ii
         real alpha,beta,area,b,c,bmin,bmax
@@ -92,8 +90,8 @@ c*************************************************************
 
 c checks stability of diffusion (with variable diffusion coef.)
 
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use evgeom
+	use basin
 
         implicit none
 
@@ -104,8 +102,6 @@ c checks stability of diffusion (with variable diffusion coef.)
         real gamma              !stability parameter -> must be < 1.
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
 
         integer k,ie,ii
         real alpha,beta,area,b,c,bmin,bmax
@@ -151,16 +147,13 @@ c computes weight for diffusion
 c
 c weights in main diagonal are positive => weights out of diag are negative
 
-	use mod_diff_aux !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_diff_aux
+	use evgeom
+	use basin
 
         implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
-COMMON_GGU_DELETED	include 'diff_aux.h'
 
 	logical bdebug,berror
         integer k,ie,ii,iii,i
@@ -341,8 +334,8 @@ c*************************************************************
 
 c limits diffusion parameter
 
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use evgeom
+	use basin
 
         implicit none
 
@@ -352,8 +345,6 @@ c limits diffusion parameter
         real gammax             !max for stability parameter, should be < 1
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
 
         integer k,ie,ii
         integer nchange
@@ -396,19 +387,16 @@ c*************************************************************
 
 c adjusts diffusion coefficient
 
-	use mod_depth !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use evgeom
+	use basin
 
         implicit none
 
         integer mode
         real rkv(1)
 
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
-COMMON_GGU_DELETED	include 'depth.h'
+	include 'param.h'
 
         integer k,ie,ii
         real h,aux,fact
@@ -470,23 +458,18 @@ c	0	constant
 c	1	variable with area ( ah = alpha * dx**(4/3) )
 c	2	smagorinsky (variable with area and time)
 
-	use mod_aux_array !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_aux_array
+	use mod_diff_visc_fric
+	use evgeom
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
         include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'aux_array.h'
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'ev.h'
 
         character*80 file,title
         integer ie,l,lmax
@@ -660,24 +643,18 @@ c***************************************************************************
 
         subroutine smagorinsky
 
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_diff_visc_fric
+	use mod_hydro_print
+	use evgeom
+	use levels
+	use basin
 
         implicit none
 
         include 'param.h'
         
-COMMON_GGU_DELETED	include 'nlevel.h'
 	include 'femtime.h'
         
-COMMON_GGU_DELETED	include 'ev.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro_print.h'
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
         
         real b(3),c(3),ux,uy,vx,vy
         real dt,ds,dd,dl,aj
@@ -752,11 +729,11 @@ c solves green identity for reynolds stresses
 
 c ieltv:  >0 element  0: boundary  -1: open boundary
 
-	use mod_geom !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_geom
+	use mod_hydro
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
@@ -766,11 +743,6 @@ c ieltv:  >0 element  0: boundary  -1: open boundary
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'ev.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'geom.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer k,i,ii,iii,ienb,i1,i2
 	real dl(3)
@@ -899,12 +871,12 @@ c***********************************************************************
 
 c computes aux vectors for austausch term		!$$AUST
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use mod_aux_array !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_geom_dynamic
+	use mod_aux_array
+	use mod_hydro
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
@@ -912,13 +884,6 @@ c parameters
 	include 'param.h'
 	real vv(1)
 c common
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'aux_array.h'
-COMMON_GGU_DELETED	include 'ev.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
 c local
 	integer ie,l,k,ii
 	real aj,ut,vt,b,c,rv

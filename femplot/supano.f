@@ -2056,7 +2056,7 @@ c	+---+---+
 c	| 1 | 2 |
 c	+---+---+
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -2071,7 +2071,6 @@ c	+---+---+
 
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	character*80 line
 	integer i,j,k,n

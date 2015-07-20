@@ -38,10 +38,10 @@ c
 c
 c computes residual currents
 c
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_hydro
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 c
@@ -49,13 +49,8 @@ c parameter
         include 'param.h'
 c common
 	include 'simul.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 c local
 	character*80 nam,dir,file
@@ -247,10 +242,10 @@ c
 c
 c computes rms currents
 c
-	use mod_aux_array !COMMON_GGU_SUBST
-	use mod_hydro_baro !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_aux_array
+	use mod_hydro_baro
+	use mod_hydro
+	use basin
 
 	implicit none
 c
@@ -259,10 +254,6 @@ c parameter
 c common
 	include 'simul.h'
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'hydro_baro.h'
-COMMON_GGU_DELETED	include 'aux_array.h'
 c local
 	double precision rr
 	integer ii,ie,k,id
@@ -426,10 +417,10 @@ c********************************************************************
 
 c computes average of scalar values
 
-	use mod_aux_array !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_aux_array
+	use mod_ts
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -438,13 +429,8 @@ c parameter
 	include 'param.h'
 
 c common
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
-COMMON_GGU_DELETED	include 'aux_array.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'levels.h'
 c local
 	double precision rr
 	real tact,sact
@@ -620,7 +606,7 @@ c
 c for 2D arrays call with nlvddi = 1
 c for 3D arrays call with nlvddi = nlvdi
 
-	use levels !COMMON_GGU_SUBST
+	use levels
 	use basin
 
 	implicit none
@@ -629,9 +615,6 @@ c parameter
 
 	include 'param.h'
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
 	character*(*) ext	!extension of file
 	integer id		!id number for variables to be written
@@ -748,9 +731,9 @@ c
 c for 2D arrays call with nlvddi = 1
 c for 3D arrays call with nlvddi = nlvdi
 
-	use mod_aux_array !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_aux_array
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -758,9 +741,6 @@ c parameter
 
 	include 'param.h'
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'aux_array.h'
 
 	integer nlvddi		                !number of layers (nlvdi or 1)
 	real cvec(nlvddi,nkn,1)			!array with concentration
@@ -887,18 +867,15 @@ c********************************************************************
 
 	subroutine ts_shell
 
-	use mod_ts !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_ts
+	use levels, only : nlvdi,nlv
+	use basin
 
 	implicit none
 
 c parameter
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'ts.h'
 c local
 	integer idtc,itmc,itsmed
 	integer id,nvar

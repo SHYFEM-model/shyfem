@@ -24,17 +24,14 @@ c*****************************************************************
 
 c sets up geometrical arrays
 
-	use mod_geom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_geom
+	use basin
 
         implicit none
 
 c common
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'links.h'
-COMMON_GGU_DELETED	include 'geom_aux.h'
 c local
 	logical bverbose
         integer i,n
@@ -118,17 +115,14 @@ c*****************************************************************
 
 c checks geometrical arrays
 
-	use mod_geom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_geom
+	use basin
 
         implicit none
 
 c common
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
-COMMON_GGU_DELETED	include 'links.h'
-COMMON_GGU_DELETED	include 'geom_aux.h'
 
 c-------------------------------------------------------------
 c check static arrays
@@ -154,15 +148,13 @@ c*****************************************************************
 
 c checks various subroutines
 
-	use mod_geom !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_geom
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED        include 'links.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer k,n,ne,ipf,ipl,ibase
 	integer nl,i,ip,ie1,ie2,nn,k1,k2
@@ -256,7 +248,7 @@ c****************************************************************
 
         subroutine print_bound_nodes(nkn,aux)
 
-	use mod_geom !COMMON_GGU_SUBST
+	use mod_geom
 
         implicit none
 
@@ -264,7 +256,6 @@ c****************************************************************
         real aux(nkn)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'geom.h'
 
         integer ib,k,kn,kstart
 

@@ -20,23 +20,19 @@ c reads ous file and interpolates velocities
 c
 c we would not even need to read basin
 
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_hydro_print
+	use mod_hydro
+	use levels
+	use basin
 
 	implicit none
 
         include 'param.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'simul.h'
 
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 
-COMMON_GGU_DELETED	include 'hydro_print.h'
 
 	real hev(neldim)
 	real weight(nlvdim,nkndim)
@@ -394,7 +390,7 @@ c******************************************************************
 
 c writes value of fem grid to file
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -405,7 +401,6 @@ c writes value of fem grid to file
         real value(1)           !values of fem grid
 
 
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer k
 	real x,y,v

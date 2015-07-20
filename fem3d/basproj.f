@@ -13,12 +13,11 @@ c****************************************************************
 
 c projection of basin
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	character*50 gfile,nfile
 	character*80 title

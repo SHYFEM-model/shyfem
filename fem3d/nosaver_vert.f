@@ -16,13 +16,12 @@ c**********************************************************
 
 c averages vertically records
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
         implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	character*80 title
 	real cv3(nlvdim,nkndim)
@@ -36,7 +35,6 @@ COMMON_GGU_DELETED	include 'basin.h'
 	real hev2(neldim)
 	real hl(nlvdim)
 
-COMMON_GGU_DELETED	include 'depth.h'
 
 	logical bvol
         integer nread

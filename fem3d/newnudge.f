@@ -91,17 +91,14 @@ c****************************************************************
 
 	subroutine nudge_init
 
-	use mod_nudge !COMMON_GGU_SUBST
-	use mod_nudging !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_nudge
+	use mod_nudging
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'nudge.h'
 
-COMMON_GGU_DELETED	include 'nudging.h'
 
 	logical binfl,binsert
 	integer nintp,nsize,ndim
@@ -205,21 +202,17 @@ c****************************************************************
 
 	subroutine nudge_zeta
 
-	use mod_nudge !COMMON_GGU_SUBST
-	use mod_nudging !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_nudge
+	use mod_nudging
+	use mod_hydro
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'nudge.h'
 
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'nudging.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer i,k,kk,ia
 	integer nnudge,iuse,iu
@@ -292,14 +285,12 @@ c*******************************************************************
 
 c sets up andg_dist and andg_weight
 
-	use mod_nudge !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_nudge
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'nudge.h'
 
 	real ttau		!relaxation time
 	real sigma		!sigma distance
@@ -345,14 +336,12 @@ c*******************************************************************
 
 c sets up icol (local) and ndg_nodes and ndg_area
 
-	use mod_nudge !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_nudge
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'nudge.h'
 
 	integer icol(nkn)
 	integer icolaux(nkn)

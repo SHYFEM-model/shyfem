@@ -349,7 +349,7 @@ c**********************************************************
 
 c extract level from 3d array (nodes)
 
-	use levels !COMMON_GGU_SUBST
+	use levels
 
 	implicit none
 
@@ -360,7 +360,6 @@ c extract level from 3d array (nodes)
 	real p2(nkn)		!2d array filled on return
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	call extlev(level,nlvddi,nkn,ilhkv,p3,p2)
 
@@ -372,7 +371,7 @@ c**********************************************************
 
 c extract level from 3d array (elements)
 
-	use levels !COMMON_GGU_SUBST
+	use levels
 
 	implicit none
 
@@ -383,7 +382,6 @@ c extract level from 3d array (elements)
 	real p2(nel)		!2d array filled on return
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	call extlev(level,nlvddi,nel,ilhv,p3,p2)
 

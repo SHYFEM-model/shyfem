@@ -137,12 +137,11 @@ c computes flux through all sections and returns them in flux
 c
 c flux are divided into total, positive and negative
 
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
 	integer kfluxm
 	integer kflux(1)
@@ -175,12 +174,11 @@ c******************************************************************
 
 c computes flux through one section
 
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
 	integer n
 	integer kflux(1)
@@ -335,7 +333,7 @@ c******************************************************************
 
 c gets number of internal section in link index of k1
 
-	use mod_geom !COMMON_GGU_SUBST
+	use mod_geom
 
 	implicit none
 
@@ -343,7 +341,6 @@ c gets number of internal section in link index of k1
 	integer k1,k2
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'links.h'
 
 	integer k,i,n,ie
 
@@ -392,7 +389,7 @@ c**********************************************************************
 
 	subroutine get_nlayers(kfluxm,kflux,nlayers,nlmax)
 
-	use levels !COMMON_GGU_SUBST
+	use levels
 
 	implicit none
 
@@ -402,7 +399,6 @@ c**********************************************************************
 	integer nlmax
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	integer ns
 	integer nnode,ifirst,ilast

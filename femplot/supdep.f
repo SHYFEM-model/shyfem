@@ -31,15 +31,13 @@ c******************************************************************
 
 c makes hkv (nodewise depth)
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
 c common
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
+	include 'param.h'
 c local
 	integer ie,ii,k,kn
 	real v1v(nkn)
@@ -70,15 +68,13 @@ c******************************************************************
 
 c makes hev (elementwise depth)
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
 c common
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
+	include 'param.h'
 c local
 	integer ie,ii
 	real h
@@ -102,10 +98,10 @@ c makes hetv (elementwise depth of actual layer)
 c
 c uses level to decide what to do
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_hydro
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -113,13 +109,8 @@ c arguments
 	real hetv(1)
 	real href
 c common
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
+	include 'param.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 c local
 	logical bdebug
 	integer ie,ii
@@ -179,10 +170,10 @@ c******************************************************************
 
 c makes het3v (3D depth structure)
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_hydro
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -191,11 +182,7 @@ c arguments
 	real het3v(nlvddi,1)
 	real href
 c common
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'hydro.h'
+	include 'param.h'
 c local
 	logical bdebug
 	integer ie,ii
@@ -272,17 +259,14 @@ c******************************************************************
 
 c makes area of finite volume
 
-	use mod_plot2d !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_plot2d
+	use evgeom
+	use basin
 
 	implicit none
 
 c common
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'plot_aux.h'
-COMMON_GGU_DELETED	include 'ev.h'
+	include 'param.h'
 c local
 	integer ie,ii,k
 	real afvl

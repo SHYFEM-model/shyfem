@@ -16,19 +16,15 @@ c*********************************************************************
 
 c converts distributed source from [m/s] to [m**3/s]
 
-	use mod_bound_dynamic !COMMON_GGU_SUBST
-	use mod_aux_array !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_bound_dynamic
+	use mod_aux_array
+	use evgeom
+	use basin
 
 	implicit none
 
 
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'bound_dynamic.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
-COMMON_GGU_DELETED	include 'aux_array.h'
+	include 'param.h'
 
 	integer k,ie,ii
 	real area3
@@ -59,15 +55,13 @@ c*******************************************************************
 
 c initializes evaporation mass flux
 
-	use mod_meteo !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_meteo
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'meteo.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer k
 
@@ -83,17 +77,14 @@ c*******************************************************************
 
 c adds evaporation mass flux to distributed source
 
-	use mod_meteo !COMMON_GGU_SUBST
-	use mod_bound_dynamic !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_meteo
+	use mod_bound_dynamic
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'meteo.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'bound_dynamic.h'
 
 	integer k,ievap
 	real getpar
@@ -114,15 +105,13 @@ c*******************************************************************
 
 c initializes evaporation mass flux
 
-	use mod_meteo !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_meteo
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'meteo.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer k
 	real dragco
@@ -183,18 +172,15 @@ c*******************************************************************
 
 c computes heat flux through bulk formulas
 
-	use mod_ts !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_ts
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
 
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'ts.h'
 
 	double precision dq
 	real dt
@@ -212,7 +198,7 @@ c*******************************************************************
 
 c returns wind (wx/y), normalized stress (taux/yn) and pressure (p)
 
-	use mod_meteo !COMMON_GGU_SUBST
+	use mod_meteo
 
 	implicit none
 
@@ -222,7 +208,6 @@ c returns wind (wx/y), normalized stress (taux/yn) and pressure (p)
 	real p			!pressure [Pa]
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'meteo.h'
 
 	wx = wxv(k)
 	wy = wyv(k)
@@ -253,12 +238,11 @@ c*******************************************************************
 
 c returns ice cover [fraction 0-1]
 
-	use mod_meteo !COMMON_GGU_SUBST
+	use mod_meteo
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'meteo.h'
 
         integer k               !node number
         real ice_cover          ![0-1]
@@ -273,14 +257,12 @@ c*******************************************************************
 
 c returns ice cover array [fraction 0-1]
 
-	use mod_meteo !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_meteo
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'meteo.h'
 
         real ice_cover(nkn)          ![0-1]
 

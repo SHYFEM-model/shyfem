@@ -43,17 +43,15 @@ c*******************************************************************
 
 	subroutine read_basin(name)
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
 	character*(*) name
 	integer nknddi,nelddi
 
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
+	include 'param.h'
 
 	integer ie,ii
 	real h
@@ -190,8 +188,8 @@ c*******************************************************************
 
 c copies depth values from elems/nodes to nodes/elems
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
@@ -199,8 +197,6 @@ c copies depth values from elems/nodes to nodes/elems
 	real ht(1)	!this is interpolated depth
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer k,ie,ii
 	real depth
@@ -254,8 +250,8 @@ c*******************************************************************
 
 c handles depth values
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -264,9 +260,7 @@ c handles depth values
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer k,ie
 	real flag
@@ -300,8 +294,8 @@ c*******************************************************************
 
 c writes grd file from bas
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
@@ -311,10 +305,8 @@ c writes grd file from bas
 	include 'param.h'
 
 
-COMMON_GGU_DELETED	include 'basin.h'
 
 
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer k,ie,ii
 
@@ -349,13 +341,12 @@ c*******************************************************************
 
 	subroutine node_test
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
 
 	logical bstop
 	integer ie,ii,iii,k,k1

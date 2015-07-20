@@ -5,14 +5,13 @@ c
 
 c prepares initial z condition
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         include 'param.h'
 
 c
 	integer iapini
 c
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'simul.h'
 
 	real, allocatable :: hv(:)

@@ -62,8 +62,8 @@ c******************************************************
 
 c returns vertical velocity at point given by ie,l0,is,a
 
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_hydro_vel
+	use basin
 
 	implicit none
 
@@ -74,8 +74,6 @@ c returns vertical velocity at point given by ie,l0,is,a
 	real w		!computed vertical velocity for ie and l0 (return)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
 
 	integer ii,k1,k2
 	real wo1,wo2,wn1,wn2
@@ -121,9 +119,9 @@ c******************************************************
 
 c computes layer thickness for element ie
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_hydro
+	use levels
 
 	implicit none
 
@@ -132,9 +130,6 @@ c computes layer thickness for element ie
 	real hl(lmax)		!layer thickness (return)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer nlev,nsigma,ii,lmax_act
 	real hsigma
@@ -502,7 +497,7 @@ c************************************************************
 
 c copies internal coordinates to new element - avoid falling on vertex
 
-	use mod_geom !COMMON_GGU_SUBST
+	use mod_geom
 
 	implicit none
 
@@ -510,7 +505,6 @@ c copies internal coordinates to new element - avoid falling on vertex
 	double precision xi(3)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'geom.h'
 	include 'lagrange.h'
 
 	logical bdebug
@@ -641,7 +635,7 @@ c************************************************************
 
 c checks if particle is on material boundary
 
-	use mod_geom !COMMON_GGU_SUBST
+	use mod_geom
 
 	implicit none
 
@@ -650,7 +644,6 @@ c checks if particle is on material boundary
 	double precision xi(3)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'geom.h'
 
 	integer ii
 
@@ -672,7 +665,7 @@ c adjusts layer when passing from one element to the next
 c
 c is only temporary - must also adjust w
 
-	use levels !COMMON_GGU_SUBST
+	use levels
 
 	implicit none
 
@@ -681,7 +674,6 @@ c is only temporary - must also adjust w
 	double precision z
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	integer lmax
 
@@ -700,8 +692,8 @@ c************************************************************
 
 c gets flux and vel information for element and layer
 
-	use mod_geom !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
+	use mod_geom
+	use mod_hydro_vel
 
 	implicit none
 
@@ -713,8 +705,6 @@ c gets flux and vel information for element and layer
 
 	include 'param.h'
 	include 'lagrange.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'geom.h'
 
 	logical bdebug
 	integer ii,in,io,nn,no,inext,imax
@@ -825,9 +815,9 @@ c************************************************************
 
 	subroutine track_xi_get_vertical(id,iel,lb,lmax,hd,w)
 
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_hydro_vel
+	use levels, only : nlvdi,nlv
+	use basin
 
 	implicit none
 
@@ -839,9 +829,6 @@ c************************************************************
 	double precision w		!vertical velocity (return)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
 	integer ii,k
 	real wo,wn
@@ -910,20 +897,16 @@ c************************************************************
 
 c prints information on element
 
-	use mod_geom !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_geom
+	use mod_hydro_vel
+	use levels, only : nlvdi,nlv
+	use basin
 
 	implicit none
 
 	integer ie
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'geom.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
 
 	integer ii,k,lmax,l
 	real hl(nlv)

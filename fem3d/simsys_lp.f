@@ -17,14 +17,12 @@ c******************************************************************
 
 	subroutine system_initialize
 
-	use mod_system !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_system
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'common.h'
 
 	write(6,*) '----------------------------------------'
 	write(6,*) 'initializing matrix inversion routines'
@@ -40,15 +38,12 @@ c******************************************************************
 
 	subroutine system_init
 
-	use mod_system !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_system
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'common.h'
-COMMON_GGU_DELETED	include 'common_amat.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	!call lp_init_system(nkn,mbw,amat,vs1v)
 	call dlp_init_system(nkn,mbw,amat,vs1v)
@@ -59,15 +54,12 @@ c******************************************************************
 
 	subroutine system_solve_z
 
-	use mod_system !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_system
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'common.h'
-COMMON_GGU_DELETED	include 'common_amat.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	!call lp_solve_system(nkn,mbw,amat,vs1v,is2v,vs3v)
 	call dlp_solve_system(nkn,mbw,amat,vs1v,is2v,vs3v)
@@ -78,7 +70,7 @@ c******************************************************************
 
 	subroutine system_assemble(n,m,kn,mass,rhs)
 
-	use mod_system !COMMON_GGU_SUBST
+	use mod_system
 
 	implicit none
 
@@ -88,8 +80,6 @@ c******************************************************************
 	real rhs(3)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'common.h'
-COMMON_GGU_DELETED	include 'common_amat.h'
 
 	integer i,j,kk
 
@@ -110,7 +100,7 @@ c******************************************************************
 
         subroutine system_adjust_z(n,z)
 
-	use mod_system !COMMON_GGU_SUBST
+	use mod_system
 
         implicit none
 
@@ -118,7 +108,6 @@ c******************************************************************
 	real z(n)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'common.h'
 
         integer k
 
@@ -132,7 +121,7 @@ c******************************************************************
 
         subroutine system_add_rhs(dt,n,array)
 
-	use mod_system !COMMON_GGU_SUBST
+	use mod_system
 
         implicit none
 
@@ -141,7 +130,6 @@ c******************************************************************
         real array(n)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'common.h'
 
         integer k
 

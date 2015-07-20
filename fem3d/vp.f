@@ -42,12 +42,11 @@ c********************************************************
 
         program vp
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
         include 'param.h'
-COMMON_GGU_DELETED        include 'basin.h'
 
 	character*80 name
 	character*80 file

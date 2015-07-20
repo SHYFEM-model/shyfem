@@ -179,8 +179,8 @@ c*********************************************************************
 
 c shell for scalar (for parallel version)
 
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -196,9 +196,7 @@ c shell for scalar (for parallel version)
 	real difv(0:nlvdi,nkn)
         real difmol
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
 	!include 'const_aux.h'
 
@@ -264,8 +262,8 @@ c*********************************************************************
 
 c shell for scalar with nudging (for parallel version)
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -283,10 +281,7 @@ c shell for scalar with nudging (for parallel version)
 	real sobs(nlvdi,nkn)		!observations
 	real robs
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	!include 'const_aux.h'
 
@@ -352,8 +347,8 @@ c shell for scalar (for parallel version)
 c
 c special version with factor for BC, variable sinking velocity and loads
 
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -373,9 +368,7 @@ c special version with factor for BC, variable sinking velocity and loads
 	real difv(0:nlvdi,nkn)
         real difmol
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
         real r3v(nlvdi,nkn)
 
@@ -460,9 +453,9 @@ c*********************************************************************
 
 c shell for scalar T/D
 
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_hydro_print
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -490,11 +483,8 @@ c parameters
 	!parameter ( istot_max = 300 )
 	parameter ( istot_max = 1000 )
 c common
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
 	include 'mkonst.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'hydro_print.h'
 
 c local
         real saux(nlvddi,nkn)		!aux array
@@ -709,18 +699,18 @@ c the solution is normalized, i.e.  int(C(x,t)dx) = 1 over the whole area
 c
 c DPGGU -> introduced double precision to stabilize solution
 
-	use mod_bound_geom !COMMON_GGU_SUBST
-	use mod_geom !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_diff_aux !COMMON_GGU_SUBST
-	use mod_bound_dynamic !COMMON_GGU_SUBST
-	use mod_area !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_bound_geom
+	use mod_geom
+	use mod_depth
+	use mod_diff_aux
+	use mod_bound_dynamic
+	use mod_area
+	use mod_ts
+	use mod_hydro_vel
+	use mod_hydro
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 c
@@ -747,26 +737,14 @@ c arguments
 	integer istot,isact
 c common
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'ev.h'
 	!include 'hydro_print.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'geom.h'
 
-COMMON_GGU_DELETED	include 'hydro.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
  
  
-COMMON_GGU_DELETED	include 'area.h'
 
-COMMON_GGU_DELETED	include 'diff_aux.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
 
-COMMON_GGU_DELETED	include 'bound_dynamic.h'
 
 c local
 	logical bdebug,bdebug1,debug,btvdv
@@ -853,7 +831,6 @@ c functions
 c	integer ipint,ieint
 	integer ipext
 
-COMMON_GGU_DELETED	include 'testbndo.h'
 
         if(nlv.ne.nlev) stop 'error stop conzstab: level'
 
@@ -1465,18 +1442,18 @@ c the solution is normalized, i.e.  int(C(x,t)dx) = 1 over the whole area
 c
 c DPGGU -> introduced double precision to stabilize solution
 
-	use mod_bound_geom !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_diff_aux !COMMON_GGU_SUBST
-	use mod_bound_dynamic !COMMON_GGU_SUBST
-	use mod_aux_array !COMMON_GGU_SUBST
-	use mod_area !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_bound_geom
+	use mod_depth
+	use mod_diff_aux
+	use mod_bound_dynamic
+	use mod_aux_array
+	use mod_area
+	use mod_ts
+	use mod_hydro_vel
+	use mod_hydro
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 c
@@ -1496,27 +1473,15 @@ c common
 	include 'femtime.h'
 	include 'mkonst.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
 	!include 'hydro_print.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
-COMMON_GGU_DELETED	include 'hydro.h'
 
-COMMON_GGU_DELETED	include 'bound_dynamic.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
  
  
-COMMON_GGU_DELETED	include 'area.h'
 
-COMMON_GGU_DELETED	include 'diff_aux.h'
 
-COMMON_GGU_DELETED	include 'aux_array.h'
 
-COMMON_GGU_DELETED	include 'ts.h'
 
 c local
 	logical bdebug,bdebug1,debug
@@ -1582,7 +1547,6 @@ c
 c functions
 	logical is_zeta_bound
 	real getpar
-COMMON_GGU_DELETED	include 'testbndo.h'
 
 	!write(6,*) 'conzstab called...'
 
@@ -1976,8 +1940,8 @@ c*****************************************************************
 
 c computes total mass of conc
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -1989,9 +1953,7 @@ c arguments
 c parameter
         include 'param.h'
 c common
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'levels.h'
 c local
 	integer k,l,lmax
         double precision vol
@@ -2022,8 +1984,8 @@ c**************************************************************
 
 c checks if scalar is out of bounds
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
@@ -2034,9 +1996,6 @@ c checks if scalar is out of bounds
 	real eps
 	logical bstop		!stop simulation if true
 
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	logical berror
         integer k,l,lmax,kext
@@ -2075,15 +2034,14 @@ c*****************************************************************
 
 c checks min/max property
 
-	use mod_bound_geom !COMMON_GGU_SUBST
-	use mod_bound_dynamic !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_bound_geom
+	use mod_bound_dynamic
+	use levels
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'testbndo.h'
 
         real cnv(nlvdi,nkn)			!new concentration
         real cov(nlvdi,nkn)			!old concentration
@@ -2094,10 +2052,6 @@ COMMON_GGU_DELETED	include 'testbndo.h'
 
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'bound_dynamic.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	logical bwrite,bstop
 	integer k,ie,l,ii,lmax,ierr

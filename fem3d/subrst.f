@@ -326,13 +326,13 @@ c*******************************************************************
 
 c writes one record of restart data
 
-	use mod_conz !COMMON_GGU_SUBST
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_conz
+	use mod_geom_dynamic
+	use mod_ts
+	use mod_hydro_vel
+	use mod_hydro
+	use levels, only : nlvdi,nlv
+	use basin
 
         implicit none
 
@@ -341,15 +341,8 @@ c writes one record of restart data
 
         include 'param.h'
 
-COMMON_GGU_DELETED	include 'nlevel.h'
 
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
 
-COMMON_GGU_DELETED	include 'conz.h'
 
         integer ii,l,ie,k,i
 	integer ibarcl,iconz,ieco
@@ -561,13 +554,13 @@ c*******************************************************************
 
 c reads one record of restart data
 
-	use mod_conz !COMMON_GGU_SUBST
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_conz
+	use mod_geom_dynamic
+	use mod_ts
+	use mod_hydro_vel
+	use mod_hydro
+	use levels, only : nlvdi,nlv
+	use basin
 
         implicit none
 
@@ -578,15 +571,8 @@ c reads one record of restart data
 
         include 'param.h'
 
-COMMON_GGU_DELETED	include 'nlevel.h'
 
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
 
-COMMON_GGU_DELETED	include 'conz.h'
 
 	integer iokrst,nvers,ibarcl,iconz,iwvert,ieco
 	common /rstrst/ iokrst,nvers,ibarcl,iconz,iwvert,ieco

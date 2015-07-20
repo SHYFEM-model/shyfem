@@ -41,14 +41,13 @@ c*****************************************************************
 
 c initializes horizontal tvd scheme
 
-	use mod_tvd !COMMON_GGU_SUBST
+	use mod_tvd
 
         implicit none
 
 	integer itvd
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'tvd.h'
 
 	integer icall
 	save icall
@@ -76,16 +75,13 @@ c*****************************************************************
 
 c computes gradients for scalar cc (average gradient information)
 
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use evgeom
+	use levels
+	use basin
 
         implicit none
 
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'ev.h'
+	include 'param.h'
         
 	integer nlvddi
 	real cc(nlvddi,nkn)
@@ -147,14 +143,12 @@ c*****************************************************************
 
 c computes gradients for scalar cc (only 2D - used in sedi3d)
 
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use evgeom
+	use basin
 
         implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
         
 	real cc(nkn)
 	real gx(nkn)
@@ -206,17 +200,13 @@ c*****************************************************************
 
 c computes concentration of upwind node (using info on upwind node)
 
-	use mod_tvd !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_tvd
+	use levels
+	use basin
 
         implicit none
 
         include 'param.h'
-COMMON_GGU_DELETED        include 'nlevel.h'
-COMMON_GGU_DELETED        include 'tvd.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
         integer ie,l
 	integer ic,id
@@ -252,15 +242,13 @@ c initializes position of upwind node
 c
 c sets position and element of upwind node
 
-	use mod_tvd !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_tvd
+	use basin
 
         implicit none
 
         include 'param.h'
-COMMON_GGU_DELETED        include 'tvd.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
 
 	logical bsphe,bdebug
 	integer inode
@@ -365,20 +353,15 @@ c*****************************************************************
 
 c computes horizontal tvd fluxes for one element
 
-	use mod_tvd !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_tvd
+	use mod_hydro_vel
+	use evgeom
+	use levels, only : nlvdi,nlv
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED        include 'tvd.h'
-COMMON_GGU_DELETED        include 'ev.h'
 
 	integer ie,l
 	integer itot,isum
@@ -528,19 +511,14 @@ c ------------------- l+1 -----------------------
 c                     l+2             u
 c ------------------- l+2 -----------------------
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_hydro_print
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'hydro_print.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	logical btvdv			!use vertical tvd?
 	integer k			!node of vertical
@@ -625,12 +603,11 @@ c ------------------- l+1 -----------------------
 c                     l+2             u
 c ------------------- l+2 -----------------------
 
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
 	logical btvdv				!use vertical tvd?
 	integer ie				!element

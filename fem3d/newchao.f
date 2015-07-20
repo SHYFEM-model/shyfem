@@ -14,22 +14,18 @@ c******************************************************************
 
 c written on 06.06.96 by ggu   (from sp159f)
 
-	use mod_hydro_baro !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_hydro_baro
+	use mod_hydro
+	use levels, only : nlvdi,nlv
+	use basin
 
 	implicit none
 
 c parameter
 	include 'param.h'
 c common
-COMMON_GGU_DELETED	include 'nlevel.h'
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'hydro_baro.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	real umax,dz,fact
 	integer ie,l,last,iex

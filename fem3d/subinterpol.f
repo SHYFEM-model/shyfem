@@ -68,8 +68,8 @@ c*******************************************************************
 
 c interpolates depth values
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
@@ -79,8 +79,6 @@ c interpolates depth values
 	real dp(np)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ie,ii,k
 	integer netot
@@ -285,8 +283,8 @@ c*******************************************************************
 
 c interpolates depth values
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
@@ -305,8 +303,6 @@ c interpolates depth values
 	include 'param.h'
 
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 
 	integer k
@@ -455,8 +451,8 @@ c*******************************************************************
 
 c prepares xt,yt,at,ht on nodes
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
@@ -473,8 +469,6 @@ c if ufact > 0: use it directly as sigma
 	include 'param.h'
 
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 
 	integer ie,ii,k
@@ -514,8 +508,8 @@ c*******************************************************************
 
 c prepares xt,yt,at,ht on nodes
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
@@ -532,8 +526,6 @@ c if ufact > 0: use it directly as sigma
 	include 'param.h'
 
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 
 	integer ie,ii,k
@@ -581,8 +573,8 @@ c*******************************************************************
 
 c interpolates depth values with auto-correlation
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
@@ -600,8 +592,6 @@ c interpolates depth values with auto-correlation
 	include 'param.h'
 
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 
 	integer k

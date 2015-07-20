@@ -100,34 +100,34 @@ c----------------------------------------------------------------
 
 	program ht
 
-	use mod_tides !COMMON_GGU_SUBST
-	use mod_bound_geom !COMMON_GGU_SUBST
-	use mod_geom !COMMON_GGU_SUBST
-	use mod_meteo !COMMON_GGU_SUBST
-	use mod_waves !COMMON_GGU_SUBST
-	use mod_turbulence !COMMON_GGU_SUBST
-	use mod_sinking !COMMON_GGU_SUBST
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use mod_nudging !COMMON_GGU_SUBST
-	use mod_internal !COMMON_GGU_SUBST
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_bnd_aux !COMMON_GGU_SUBST
-	use mod_gotm_aux !COMMON_GGU_SUBST
-	use mod_diff_aux !COMMON_GGU_SUBST
-	use mod_bound_dynamic !COMMON_GGU_SUBST
-	use mod_aux_array !COMMON_GGU_SUBST
-	use mod_area !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_roughness !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use mod_hydro_baro !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_tides
+	use mod_bound_geom
+	use mod_geom
+	use mod_meteo
+	use mod_waves
+	use mod_turbulence
+	use mod_sinking
+	use mod_fluidmud
+	use mod_nudging
+	use mod_internal
+	use mod_geom_dynamic
+	use mod_depth
+	use mod_bnd_aux
+	use mod_gotm_aux
+	use mod_diff_aux
+	use mod_bound_dynamic
+	use mod_aux_array
+	use mod_area
+	use mod_ts
+	use mod_roughness
+	use mod_diff_visc_fric
+	use mod_hydro_baro
+	use mod_hydro_print
+	use mod_hydro_vel
+	use mod_hydro
+	use evgeom
+	use levels
+	use basin
 	use intp_fem_file
 
 	include 'param.h'
@@ -140,12 +140,10 @@ c variables and coefficients
 	include 'pkonst.h'
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'nlevel.h'
 
 c run and basin description
 
 	include 'simul.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 c boundary file names			!$$ST	!$$DESCRP
 
@@ -163,45 +161,33 @@ c basin arrays
 
 c static geometry information
 
-COMMON_GGU_DELETED	include 'evmain.h'
 
-COMMON_GGU_DELETED	include 'geom.h'
 
 
 
 c dynamic geometry information
 
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
 c boundary arrays
 
-COMMON_GGU_DELETED	include 'bound_geom.h'
 
-COMMON_GGU_DELETED	include 'bound_dynamic.h'
 
 c depth structure of levels
 
-COMMON_GGU_DELETED	include 'levels.h'
 
 
-COMMON_GGU_DELETED	include 'depth.h'
 
 c new depth and area arrays
 
 
 
-COMMON_GGU_DELETED	include 'area.h'
 
 c water level and velocity arrays
 
-COMMON_GGU_DELETED	include 'hydro.h'
-
-COMMON_GGU_DELETED	include 'hydro_baro.h'
-
-COMMON_GGU_DELETED	include 'hydro_vel.h'
 
 
-COMMON_GGU_DELETED	include 'hydro_print.h'
+
+
 
         
 
@@ -209,31 +195,24 @@ COMMON_GGU_DELETED	include 'hydro_print.h'
 c fluid mud (ARON: please comment what they are)
 c ARON: do these have to be global, or are they only needed in submud?
 
-COMMON_GGU_DELETED	include 'gotm_aux.h'
-COMMON_GGU_DELETED	include 'sinking.h'
 
 c concentration, salinity and temperature
 
 
-COMMON_GGU_DELETED	include 'ts.h'
 
 c coriolis parameter
 
 
 c friction and diffusion
 
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
-
-COMMON_GGU_DELETED	include 'diff_aux.h'
 
 
-COMMON_GGU_DELETED	include 'internal.h'
+
 
 
 
 c special boundary arrays
 
-COMMON_GGU_DELETED	include 'bnd_aux.h'
 
 c meteo (wind and pressure)
 
@@ -243,36 +222,28 @@ c	primary arrays
 
 c	derived arrays
 
-COMMON_GGU_DELETED	include 'meteo_aux.h'
 
 c wind drag coefficient (either from wave or COARE)
 
 
 c tidal potential
 
-COMMON_GGU_DELETED	include 'tides.h'
 
 c nudging
 
-COMMON_GGU_DELETED	include 'nudging.h'
 
 c wave sub-module
 
-COMMON_GGU_DELETED	include 'waves.h'
 
 
-COMMON_GGU_DELETED	include 'roughness.h'
 
-COMMON_GGU_DELETED	include 'fluidmud.h'
 
 
 c auxiliary arrays
 
-COMMON_GGU_DELETED	include 'aux_array.h'
 
 c turbulence
 
-COMMON_GGU_DELETED	include 'turbulence.h'
 
 c local variables
 
@@ -563,40 +534,26 @@ c*****************************************************************
 
 	subroutine debug_output(it)
 
-	use mod_meteo !COMMON_GGU_SUBST
-	use mod_waves !COMMON_GGU_SUBST
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use mod_internal !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_gotm_aux !COMMON_GGU_SUBST
-	use mod_aux_array !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_roughness !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_meteo
+	use mod_waves
+	use mod_fluidmud
+	use mod_internal
+	use mod_depth
+	use mod_gotm_aux
+	use mod_aux_array
+	use mod_ts
+	use mod_roughness
+	use mod_diff_visc_fric
+	use mod_hydro_vel
+	use mod_hydro
+	use levels
+	use basin
 
 	implicit none
 
 	integer it
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'meteo.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
-COMMON_GGU_DELETED	include 'roughness.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'gotm_aux.h'
-COMMON_GGU_DELETED	include 'waves.h'
-COMMON_GGU_DELETED	include 'internal.h'
-COMMON_GGU_DELETED	include 'aux_array.h'
-COMMON_GGU_DELETED	include 'fluidmud.h'
-COMMON_GGU_DELETED	include 'ts.h'
 
 	write(66) it
 
@@ -664,19 +621,16 @@ c*****************************************************************
 
 	subroutine check_max_depth
 
-	use mod_depth !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
 
 
 	integer k,l,lmax,ie
@@ -703,19 +657,16 @@ c*****************************************************************
 
 	subroutine check_special
 
-	use mod_ts !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_ts
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'ts.h'
 	
 	integer k,l,lmax
 
@@ -736,40 +687,25 @@ c*****************************************************************
 
 	subroutine allocate_2d_arrays
 
-	use mod_bndo !COMMON_GGU_SUBST
-	use mod_tides !COMMON_GGU_SUBST
-	use mod_tvd !COMMON_GGU_SUBST
-	use mod_bnd !COMMON_GGU_SUBST
-	use mod_bound_geom !COMMON_GGU_SUBST
-	use mod_geom !COMMON_GGU_SUBST
-	use mod_meteo !COMMON_GGU_SUBST
-	use mod_nudging !COMMON_GGU_SUBST
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use mod_bnd_aux !COMMON_GGU_SUBST
-	use mod_diff_aux !COMMON_GGU_SUBST
-	use mod_roughness !COMMON_GGU_SUBST
-	use mod_hydro_baro !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_bndo
+	use mod_tides
+	use mod_tvd
+	use mod_bnd
+	use mod_bound_geom
+	use mod_geom
+	use mod_meteo
+	use mod_nudging
+	use mod_geom_dynamic
+	use mod_bnd_aux
+	use mod_diff_aux
+	use mod_roughness
+	use mod_hydro_baro
+	use evgeom
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nbound.h'
-COMMON_GGU_DELETED	include 'tides.h'
-COMMON_GGU_DELETED	include 'hydro_baro.h'
-COMMON_GGU_DELETED	include 'roughness.h'
-COMMON_GGU_DELETED	include 'diff_aux.h'
-COMMON_GGU_DELETED	include 'bnd_aux.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
-COMMON_GGU_DELETED	include 'nudging.h'
-COMMON_GGU_DELETED	include 'meteo.h'
-COMMON_GGU_DELETED	include 'geom.h'
-COMMON_GGU_DELETED	include 'evmain.h'
-COMMON_GGU_DELETED	include 'bound_geom.h'
-COMMON_GGU_DELETED	include 'subbndo.h'
-COMMON_GGU_DELETED	include 'tvd.h'
 
 	call mod_tides_init(nel)
 
@@ -797,50 +733,30 @@ c*****************************************************************
 
 	subroutine allocate_3d_arrays
 
-	use mod_conz !COMMON_GGU_SUBST
-	use mod_waves !COMMON_GGU_SUBST
-	use mod_turbulence !COMMON_GGU_SUBST
-	use mod_sinking !COMMON_GGU_SUBST
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use mod_bclfix !COMMON_GGU_SUBST
-	use mod_nohyd !COMMON_GGU_SUBST
-	use mod_internal !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_gotm_aux !COMMON_GGU_SUBST
-	use mod_bound_dynamic !COMMON_GGU_SUBST
-	use mod_aux_array !COMMON_GGU_SUBST
-	use mod_area !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_conz
+	use mod_waves
+	use mod_turbulence
+	use mod_sinking
+	use mod_fluidmud
+	use mod_bclfix
+	use mod_nohyd
+	use mod_internal
+	use mod_depth
+	use mod_gotm_aux
+	use mod_bound_dynamic
+	use mod_aux_array
+	use mod_area
+	use mod_ts
+	use mod_diff_visc_fric
+	use mod_hydro_print
+	use mod_hydro_vel
+	use mod_hydro
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'hydro_print.h'
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'area.h'
-COMMON_GGU_DELETED	include 'bound_dynamic.h'
-COMMON_GGU_DELETED	include 'aux_array.h'
-COMMON_GGU_DELETED	include 'gotm_aux.h'
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'internal.h'
-COMMON_GGU_DELETED	include 'nohyd.h'
-COMMON_GGU_DELETED	include 'bclfix.h'
-COMMON_GGU_DELETED	include 'fluidmud.h'
-COMMON_GGU_DELETED	include 'sinking.h'
-COMMON_GGU_DELETED	include 'turbulence.h'
-COMMON_GGU_DELETED	include 'waves.h'
-COMMON_GGU_DELETED	include 'conz.h'
 
 	integer nlvddi
 

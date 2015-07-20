@@ -54,7 +54,7 @@ c this cell has been divided into two triangles
 c therefore the points of the border are 3 more
 c ==> 181 + 3 = 184
 c
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 c
@@ -72,7 +72,6 @@ c parameters
 	parameter (rad=3.14159/180.)
 c common (just for debug)	!$$TEST
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 c local
 	real hsing(lanz,ndim),hcosg(lanz,ndim)
 	real speed(lanz)

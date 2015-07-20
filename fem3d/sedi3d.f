@@ -83,11 +83,11 @@ c
 
       subroutine sedi(it,dt)
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_aux_array !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_aux_array
+	use mod_diff_visc_fric
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
       implicit none
 
@@ -101,16 +101,10 @@ c
 ! fem variables
 ! -------------------------------------------------------------
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
       real sedkpar,difmol
 
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'aux_array.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
-COMMON_GGU_DELETED	include 'nlevel.h'
 
 ! -------------------------------------------------------------
 ! local sediment variables
@@ -991,14 +985,13 @@ c DOCS  END
 
         subroutine inibed(gs,nscls,nbed,thick,gskm,percbd,bedn)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
         include 'param.h'
         include 'sed_param.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
 
         real sedpa(7)	                        !sediment parameter vector
         common /sedpa/sedpa
@@ -1363,17 +1356,16 @@ COMMON_GGU_DELETED	include 'basin.h'
      $	scn,eps,sedx,sedy,gdx,gdy,tao,gskm,percbd,bedn,
      $  salref,temref,wsink,sload,sflx)
 
-	use mod_waves !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_roughness !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_waves
+	use mod_depth
+	use mod_roughness
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
         include 'param.h'
         include 'sed_param.h'
-COMMON_GGU_DELETED	include 'waves.h'
 
 ! -------------------------------------------------------------
 ! local variables
@@ -1405,15 +1397,11 @@ COMMON_GGU_DELETED	include 'waves.h'
 	real totbed(nkndim)			!total bedload transport (kg/ms)
         real salref,temref			!salinity [psu] and temperature [C]
         real wsink(0:nlvdim,nkndim,nsdim)       !settling velocity for suspended sediment
-COMMON_GGU_DELETED	include 'roughness.h'
 
 ! -------------------------------------------------------------
 ! fem variables
 ! -------------------------------------------------------------
 
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'depth.h'
         real salt,temp			!salinity [psu] and temperature [C]
 
 ! -------------------------------------------------------------
@@ -1542,8 +1530,8 @@ COMMON_GGU_DELETED	include 'depth.h'
      $RLINP,BETA,TEM,SAL,BEDCHA,percbd,AULVA,TIMEDR,nscls,gs,UW,hzoff,
      $scn,sedx,sedy,ws,gdx,gdy,lmax,eps,tao,Z0,sload,sflx)
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_diff_visc_fric
 
         implicit none
 
@@ -1633,8 +1621,6 @@ COMMON_GGU_DELETED	include 'depth.h'
         real gdx,gdy			!slope gradients
         double precision alph           !slope effect
         real eps(0:nlvdim,nkndim,nsdim)	!vertical mixing coefficient
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 	double precision uslim
 	double precision pcoes		!% of  fine sediments
 	logical cohes
@@ -2398,18 +2384,15 @@ COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
         subroutine bedload(nscls,sedx,sedy,dt,bh,bflx)
 
-	use mod_bound_geom !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_bound_geom
+	use evgeom
+	use basin
 
         implicit none
 
         include 'param.h'
         include 'sed_param.h'
-COMMON_GGU_DELETED        include 'testbndo.h'
-COMMON_GGU_DELETED	include 'evmain.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
 
 ! --- input variables
         integer nscls				!number grainsize classes
@@ -2510,14 +2493,13 @@ COMMON_GGU_DELETED	include 'basin.h'
 
 	subroutine slope_lim_bh(nscls,bflx,bh)
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
         include 'param.h'
         include 'sed_param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
         integer nscls				!number of grainsize class
         double precision bflx(nsdim,nkndim)	!bedload sediment contribution [m3/m2]
         real bh(nkndim)				!bed elevation
@@ -2572,15 +2554,13 @@ COMMON_GGU_DELETED	include 'nbasin.h'
 
 	subroutine slopelim(bbk)
 
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use evgeom
+	use basin
 
         implicit none
 
         include 'param.h'
-COMMON_GGU_DELETED        include 'evmain.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
 
         double precision v1v(nkndim),v2v(nkndim),v3v(nkndim),v4v(nkndim)
 	double precision bbk(nkndim),bbe(neldim)
@@ -2698,7 +2678,7 @@ COMMON_GGU_DELETED	include 'basin.h'
         subroutine bedman(gs,nscls,timedr,bflux,sflux,bh,gskm,bdh,
      $	percbd,bedn)
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
@@ -2719,7 +2699,6 @@ COMMON_GGU_DELETED	include 'basin.h'
                                                 ! (2) critical erosion stress (Pa)
                                                 ! (3) dry bulk density (kg/m**3)
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	double precision bdh(nkndim)		!total elevation change [>0depo,<0ero]
         double precision dzco			!elevation variation due to compaction [m]
         double precision flx 			!bedload + suspended flux [m]
@@ -3555,18 +3534,15 @@ COMMON_GGU_DELETED	include 'nbasin.h'
 
         subroutine totcon(nscls,scn,tcon)
 
-	use mod_ts !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_ts
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
         include 'param.h'
         include 'sed_param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'ts.h'
 
 	real rhos,conc
         integer nscls				!number of grainsize class
@@ -3615,12 +3591,12 @@ COMMON_GGU_DELETED	include 'ts.h'
 
         subroutine upedepth(bdh)
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_aux_array !COMMON_GGU_SUBST
-	use mod_area !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_geom_dynamic
+	use mod_depth
+	use mod_aux_array
+	use mod_area
+	use mod_hydro
+	use basin
 
         implicit none
 
@@ -3628,14 +3604,8 @@ COMMON_GGU_DELETED	include 'ts.h'
 
         double precision bdh(nkndim)          !total elevation change [>0depo,<0ero]
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'area.h'
         real hlhv(neldim)
         common /hlhv/hlhv
-COMMON_GGU_DELETED	include 'aux_array.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
         real dh
         real evdep				!element depth variation
@@ -3717,9 +3687,9 @@ COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
         subroutine smooth_node(kvalue,kdiff,smooth,gdx,gdy,angrep)
 
-	use mod_geom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_geom
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
@@ -3737,9 +3707,6 @@ COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
         integer k,kn,n,ibase,i,l
 
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'geom.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
         if ( smooth .eq. 1.d0 ) return
 
@@ -3781,14 +3748,13 @@ COMMON_GGU_DELETED	include 'levels.h'
 
         subroutine resetsedi(it,adjtime,bh,scn)
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
         include 'param.h'
         include 'sed_param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer it                      !time in seconds
 	integer adjtime			!time for initialization [s]
@@ -3817,14 +3783,13 @@ COMMON_GGU_DELETED	include 'nbasin.h'
 
         subroutine sedcons(it,tcon,bh,bedn)
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
         include 'param.h'
         include 'sed_param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
         double precision bedn(nlbdim,3,nkndim)  !bed characteristics in 3 column table
                                                 ! (1) depth below sediment surface (m)
@@ -3861,29 +3826,22 @@ COMMON_GGU_DELETED	include 'nbasin.h'
 !
 ! compute bottom velocity on nodes
 !
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_geom_dynamic
+	use mod_depth
+	use mod_hydro_vel
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
 ! parameters
 	include 'param.h'
-COMMON_GGU_DELETED	include 'evmain.h'
 ! arguments
 	real vv(nkndim)
 	real vv1(nkndim)
 ! common
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
 
 ! local

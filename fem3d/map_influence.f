@@ -17,8 +17,8 @@ c****************************************************************
 
 c creates map of influence
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 	include 'param.h'
@@ -27,7 +27,6 @@ c creates map of influence
 	parameter (nsdim=3)	!number of tracers
 
 c--------------------------------------------------
-COMMON_GGU_DELETED	include 'basin.h'
 	integer nlv
 
 
@@ -51,7 +50,6 @@ c--------------------------------------------------
 	real hev2(neldim)
 	real hl(nlvdim)
 
-COMMON_GGU_DELETED	include 'depth.h'
 
 	logical berror
 	logical bvol

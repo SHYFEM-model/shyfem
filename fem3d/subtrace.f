@@ -52,8 +52,8 @@ c*****************************************************************
 
 	subroutine traccia
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
+	use mod_geom_dynamic
+	use mod_hydro
 
 	implicit none
 
@@ -61,8 +61,6 @@ c*****************************************************************
 
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
 	integer itnew,itold,ierr
 	real zp,zold,znew
@@ -160,9 +158,9 @@ c*****************************************************************
 
 	subroutine interpolate_traccia(iep,itp,itold,itnew,xp,yp,zp,uv)
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use mod_hydro_baro !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
+	use mod_geom_dynamic
+	use mod_hydro_baro
+	use mod_hydro
 
 	implicit none
 
@@ -176,9 +174,6 @@ c*****************************************************************
 	parameter (xinit=38889.,yinit=32745.2)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'hydro_baro.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
 	logical bintmiss
 	logical bnearpoint
@@ -263,7 +258,7 @@ c*****************************************************************
 
 c interpolates water level
 
-	use mod_hydro !COMMON_GGU_SUBST
+	use mod_hydro
 
 	implicit none
 
@@ -273,7 +268,6 @@ c interpolates water level
 	real zp
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 
 	real zold,znew
 
@@ -290,9 +284,9 @@ c*****************************************************************
 
 c interpolates current velocity
 
-	use mod_hydro_baro !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
+	use mod_hydro_baro
+	use mod_hydro_vel
+	use levels
 
 	implicit none
 
@@ -303,9 +297,6 @@ c interpolates current velocity
 	integer itp,itold,itnew
 	real uv(2)
 
-COMMON_GGU_DELETED	include 'hydro_baro.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	integer level,lmax
 	real uold,unew,vold,vnew
@@ -442,7 +433,7 @@ c*****************************************************************
 
 	function get_nearest_point(xp,yp)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -451,7 +442,6 @@ c*****************************************************************
 
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer knear,k
 	real dist,d

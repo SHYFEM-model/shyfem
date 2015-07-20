@@ -26,18 +26,15 @@ c*****************************************************************
 
 c updates geometrical array (ieltv)
 
-	use mod_geom !COMMON_GGU_SUBST
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_geom
+	use mod_geom_dynamic
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
 c common
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'nbasin.h'
+	include 'param.h'
 
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
-COMMON_GGU_DELETED	include 'geom.h'
 c local
         integer n
 
@@ -69,9 +66,9 @@ c	-2: out of system
 c
 c if open boundary node, inodv(k) is number of boundary (ggu 15.11.2001)
 c
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_geom_dynamic
+	use evgeom
+	use basin
 
         implicit none
 c
@@ -79,10 +76,7 @@ c parameter
 	real winmax
 	parameter(winmax=359.8)
 c common
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
+	include 'param.h'
 c local
         integer ie,ii,k,n
         integer ibc,ibtyp
@@ -169,7 +163,7 @@ c****************************************************************
 
 	function is_internal_node(k)
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use mod_geom_dynamic
 
 	implicit none
 
@@ -177,7 +171,6 @@ c****************************************************************
 	integer k
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
 	is_internal_node = inodv(k) .eq. 0
 
@@ -187,7 +180,7 @@ c****************************************************************
 
 	function is_boundary_node(k)
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use mod_geom_dynamic
 
 	implicit none
 
@@ -195,7 +188,6 @@ c****************************************************************
 	integer k
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
 	is_boundary_node = inodv(k) .ne. 0 .and. inodv(k) .ne. -2
 
@@ -205,7 +197,7 @@ c****************************************************************
 
 	function is_open_boundary_node(k)
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use mod_geom_dynamic
 
 	implicit none
 
@@ -213,7 +205,6 @@ c****************************************************************
 	integer k
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
 	is_open_boundary_node = inodv(k) .gt. 0
 
@@ -223,7 +214,7 @@ c****************************************************************
 
 	function is_dry_node(k)
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
+	use mod_geom_dynamic
 
 	implicit none
 
@@ -231,7 +222,6 @@ c****************************************************************
 	integer k
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
 	is_dry_node = inodv(k) .eq. -2
 

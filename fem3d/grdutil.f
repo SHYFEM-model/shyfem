@@ -34,7 +34,7 @@ c
 c ie            number of element (internal)
 c areatr        element area (return value)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -43,7 +43,6 @@ c areatr        element area (return value)
 
         include 'param.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
 
 
         integer ii,k
@@ -70,7 +69,7 @@ c writes grd file from bas
 c
 c hev or hkv must be set
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
@@ -80,7 +79,6 @@ c hev or hkv must be set
         real hev(1)
 
         include 'param.h'
-COMMON_GGU_DELETED        include 'basin.h'
 	include 'grd_extra.h'
 
         integer k,ie,ii,nl,il,ip,i
@@ -131,7 +129,7 @@ c*******************************************************************
 
 c reads grd file to obtain basic parameters
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -142,7 +140,6 @@ c reads grd file to obtain basic parameters
 	integer nn		!total number of nodes in lines
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'grd_extra.h'
 
 	logical bstop
@@ -193,7 +190,7 @@ c*******************************************************************
 
 c reads grd file into basin structure
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -203,7 +200,6 @@ c reads grd file into basin structure
 	integer ike
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'grd_extra.h'
 
 	logical bstop
@@ -290,12 +286,11 @@ c*******************************************************************
 
         subroutine node_testing
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
         include 'param.h'
-COMMON_GGU_DELETED        include 'basin.h'
 
 	logical bstop
         integer k,k1,ie,ii,iii
@@ -357,7 +352,7 @@ c*******************************************************************
 
 c sets hm3v values
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
@@ -366,7 +361,6 @@ c sets hm3v values
         integer ike
 
         include 'param.h'
-COMMON_GGU_DELETED        include 'basin.h'
 
         integer k,ie,ii
 

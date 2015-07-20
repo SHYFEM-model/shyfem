@@ -98,13 +98,12 @@ c revised on 31.08.88 by ggu (czv containes real chezy)
 c revised on 25.11.88 by ggu (czv eliminated)
 c revised on 28.01.92 by ggu (double precision, implicit none)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 	use evgeom
 
 	implicit none
 
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'basin.h'
+	include 'param.h'
 
 	integer ie,i,kn1,kn2,kn3
 	integer isphe
@@ -309,13 +308,12 @@ c****************************************************************
 
 c checks if coordinates are lat/lon
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 	use evgeom
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	logical bverbose
 	integer k,isphe
@@ -383,12 +381,11 @@ c****************************************************************
 
 c tests if ev is set up correctly
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 	use evgeom
 
 	implicit none
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer ie,ii,i,ip
 	real bmax,cmax,bs,cs,b,c
@@ -636,7 +633,7 @@ c returns a,b,c to compute xi
 c
 c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 	use evgeom
 
 	implicit none
@@ -645,8 +642,7 @@ c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 
 	double precision a(3),b(3),c(3)
 
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'basin.h'
+	include 'param.h'
 
 	integer ii
 	integer kn1,kn2,kn3
@@ -720,7 +716,7 @@ c***********************************************************
 
 	subroutine ev_make_center(ie,xm,ym)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -728,7 +724,6 @@ c***********************************************************
 	double precision xm,ym
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ii,k
 

@@ -162,7 +162,7 @@ c pxareg,pyareg         coordinates of lower left point of matrix
 c pxdreg,pydreg         grid size of matrix
 c pzlreg                value of z for land points
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -175,7 +175,6 @@ c parameter
 	parameter ( eps = 1.d-14 )
 c common
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'reg.h'
 c local
 	integer i,j,ii,iii,ie,k,kn,iin
@@ -272,7 +271,7 @@ c pxareg,pyareg         coordinates of lower left point of matrix
 c pxdreg,pydreg         grid size of matrix
 c pzlreg                value of z for land points
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -286,7 +285,6 @@ c parameter
 	parameter ( eps = 1.d-14 )
 c common
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'reg.h'
 c local
 	integer i,j,ii,iii,ie,k,kn,iin
@@ -421,7 +419,7 @@ c	    am(i,j) = a
 c	  end do
 c	end do
 	        
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -435,7 +433,6 @@ c parameter
 	parameter ( eps = 1.d-14 )
 c common
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 c pxareg,pyareg         coordinates of lower left point of matrix
 c pxdreg,pydreg         grid size of matrix
 c pzlreg                value of z for land points
@@ -552,7 +549,7 @@ c************************************************
 
 c interpolation 3d of fem values to regular grid using fm matrix
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
@@ -564,7 +561,6 @@ c interpolation 3d of fem values to regular grid using fm matrix
         real am(nlv,nx,ny)		!interpolated values (return)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	include 'reg.h'
 
@@ -741,7 +737,7 @@ c		0	no errors
 c		< 0	interpolation out of domain (extrapolation)
 c		> 0	values of flag used in interpolation
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -753,7 +749,6 @@ c		> 0	values of flag used in interpolation
 	integer ierr		!error code (return)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	logical bextra
 	integer k
@@ -835,7 +830,7 @@ c pxareg,pyareg         coordinates of lower left point of matrix
 c pxdreg,pydreg         grid size of matrix
 c pzlreg                value of z for land points
 c
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 c
@@ -845,7 +840,6 @@ c arguments
 	real am(ip,jp)
 c common
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'reg.h'
 c local
 	logical bextra
@@ -986,7 +980,7 @@ c pxareg,pyareg         coordinates of lower left point of matrix
 c pxdreg,pydreg         grid size of matrix
 c pzlreg                value of z for land points
 c
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 c
@@ -996,7 +990,6 @@ c arguments
 	real am(ip,jp)
 c common
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'reg.h'
 c local
 c	integer i,j,ii,iii,ie,k,kn,iin
@@ -1064,8 +1057,8 @@ c makes mask for dry and wet areas - zenv must be available
 c
 c bwater is elementwise mask:	true = water point
 
-	use mod_hydro !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_hydro
+	use basin
 
 	implicit none
 
@@ -1074,9 +1067,7 @@ c arguments
 	real zv(1)
 	real href,hzoff
 c common
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro.h'
+	include 'param.h'
 c local
 	integer itot,itot1
 	integer ie,ii
@@ -1109,14 +1100,13 @@ c initializes mask for water points
 c
 c bwater is elementwise mask:	true = water point
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 c arguments
 	logical bwater(1)
 c common
-COMMON_GGU_DELETED	include 'nbasin.h'
 c local
 	integer ie
 
@@ -1134,7 +1124,7 @@ c makes mask for water points (level)
 c
 c bwater is elementwise mask:	true = water point
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -1143,7 +1133,6 @@ c arguments
 	integer ilhv(1)
 	integer level
 c common
-COMMON_GGU_DELETED	include 'nbasin.h'
 c local
 	integer ie,nedry
 
@@ -1168,7 +1157,7 @@ c makes node mask from element mask
 c
 c bwater is elementwise mask:	true = water point
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -1177,7 +1166,6 @@ c arguments
 	logical bkwater(1)
 c common
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 c local
 	integer ie,ii,k
 	integer nndry,nedry
@@ -1217,7 +1205,7 @@ c makes elem mask from node mask
 c
 c bwater is elementwise mask:	true = water point
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -1226,7 +1214,6 @@ c arguments
 	logical bkwater(1)
 c common
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 c local
 	integer ie,ii,k
 	integer nedry
@@ -1356,7 +1343,7 @@ c result is in zp
 c
 c needs array ev
 
-	use evgeom !COMMON_GGU_SUBST
+	use evgeom
 
         integer ie      !element
         real z(3)       !values on nodes
@@ -1366,7 +1353,6 @@ c needs array ev
         integer ii
         double precision zh,a,b,c,w
 
-COMMON_GGU_DELETED	include 'ev.h'
 
         zh=0.
         do ii=1,3
@@ -1443,22 +1429,19 @@ c finds element for point (xp,yp) starting from ieold
 c
 c uses data structure ev and ieltv
 
-	use mod_geom !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_geom
+	use evgeom
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'ev.h'
+	include 'param.h'
 
 	integer ieold
 	real xp,yp
 	integer ielem	!element number on return
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
-COMMON_GGU_DELETED	include 'geom.h'
 
 	logical binit,bdebug
 	integer ie,ii,iside,lmax,loop
@@ -1533,7 +1516,7 @@ c******************************************************
 
 c finds element for point (xp,yp) starting from ieold
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -1541,7 +1524,6 @@ c finds element for point (xp,yp) starting from ieold
 	real xp,yp
 	integer ielem	!element number on return
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	logical in_element
 	integer iem,iep
@@ -1607,14 +1589,13 @@ c******************************************************
 
 c finds element for point (xp,yp)
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	real xp,yp
 	integer ielem	!element number on return
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer ie
 	logical in_element
@@ -1636,7 +1617,7 @@ c******************************************************
 
 c checks if point (xp,yp) is in element ie
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -1645,7 +1626,6 @@ c checks if point (xp,yp) is in element ie
 	real xp,yp
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ii,k,in
 	real xmin,ymin,xmax,ymax
@@ -1681,7 +1661,7 @@ c******************************************************
 
 c returns x,y of vertices of element ie
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -1689,7 +1669,6 @@ c returns x,y of vertices of element ie
 	real x(3), y(3)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ii,k
 
@@ -1707,7 +1686,7 @@ c******************************************************
 
 c returns s at vertices of element ie
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -1716,7 +1695,6 @@ c returns s at vertices of element ie
 	real s(3)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ii,k
 

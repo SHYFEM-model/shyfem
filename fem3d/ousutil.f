@@ -240,11 +240,10 @@ c***************************************************************
 
 	subroutine compute_volume(nel,zenv,hev,volume)
 
-	use evgeom !COMMON_GGU_SUBST
+	use evgeom
 
 	implicit none
 
-COMMON_GGU_DELETED	include 'ev.h'
 
 	integer nel
 	real zenv(3,1)

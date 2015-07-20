@@ -82,8 +82,8 @@ c****************************************************************
 
 c computes total (average) depth of element ie
 
-	use mod_hydro !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_hydro
+	use basin
 
 	implicit none
 
@@ -93,8 +93,6 @@ c computes total (average) depth of element ie
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
 	real depele	!depth (return)
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer ii,n
 	real hmed
@@ -128,8 +126,8 @@ c****************************************************************
 
 c computes (average) depth of element ie for all layers
 
-	use mod_depth !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
+	use mod_depth
+	use levels
 
 	implicit none
 
@@ -140,9 +138,7 @@ c computes (average) depth of element ie for all layers
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer l
 
@@ -168,8 +164,8 @@ c****************************************************************
 
 c computes depth of node k for all layers
 
-	use mod_depth !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
+	use mod_depth
+	use levels
 
 	implicit none
 
@@ -180,9 +176,7 @@ c computes depth of node k for all layers
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer l
 
@@ -208,7 +202,7 @@ c****************************************************************
 
 c computes (average) zeta of element ie
 
-	use mod_hydro !COMMON_GGU_SUBST
+	use mod_hydro
 
 	implicit none
 
@@ -218,7 +212,6 @@ c computes (average) zeta of element ie
 	integer ie	!number of element
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
 
-COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer ii,n
 	real hmed
@@ -272,14 +265,13 @@ c****************************************************************
 
 c computes area of element ie
 
-	use evgeom !COMMON_GGU_SUBST
+	use evgeom
 
         implicit none
 
         integer ie      !number of element
         real areaele    !volume (return)
 
-COMMON_GGU_DELETED	include 'ev.h'
 
 	areaele = 12. * ev(10,ie)
 
@@ -291,7 +283,7 @@ c****************************************************************
 
 c returns node index for one element
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -301,7 +293,6 @@ c returns node index for one element
 	integer n	!total number of nodes in element (3 for triangle)
 	integer kn(1)	!node index
 
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ii
 
@@ -320,7 +311,7 @@ c****************************************************************
 
 c sets depth for element ie
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -329,7 +320,6 @@ c sets depth for element ie
 	integer ie      !number of element
 	real h		!depth to use
 
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ii,n
 
@@ -348,8 +338,8 @@ c****************************************************************
 
 c computes depth of vertices in element ie
 
-	use mod_hydro !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_hydro
+	use basin
 
 	implicit none
 
@@ -360,8 +350,6 @@ c computes depth of vertices in element ie
 	integer n	!total number of vertices (return)
 	real h(1)	!depth at vertices (return)
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer ii
 
@@ -390,8 +378,8 @@ c****************************************************************
 
 c computes total depth in vertex ii of element ie
 
-	use mod_hydro !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_hydro
+	use basin
 
 	implicit none
 
@@ -402,8 +390,6 @@ c computes total depth in vertex ii of element ie
 	integer ii	!number of vertex
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer n
 	real h
@@ -540,16 +526,13 @@ c***********************************************************
 
 c computes nodal values from element values (scalar)
 
-	use mod_aux_array !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_aux_array
+	use mod_hydro
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'aux_array.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 
 	real sev(3,nel)
 	real sv(nkn)
@@ -638,8 +621,8 @@ c***********************************************************
 
 c sets up area for nodes
 
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use levels
+	use basin
 
 	implicit none
 
@@ -648,8 +631,6 @@ c sets up area for nodes
 	integer levdim
 	real area(levdim,1)
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer k,l,ie,ii
 	integer nlev,n
@@ -691,8 +672,8 @@ c***********************************************************
 
 c returns depth, volume and area of node k on level l
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_area !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_area
 
 	implicit none
 
@@ -705,8 +686,6 @@ c returns depth, volume and area of node k on level l
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'area.h'
 
 	if( mode .gt. 0 ) then
 	  dep = hdknv(l,k)
@@ -728,7 +707,7 @@ c***********************************************************
 
 c returns depth of node k on level l
 
-	use mod_depth !COMMON_GGU_SUBST
+	use mod_depth
 
 	implicit none
 
@@ -739,7 +718,6 @@ c returns depth of node k on level l
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
 
 	if( mode .gt. 0 ) then
 	  depnode = hdknv(l,k)
@@ -777,7 +755,7 @@ c***********************************************************
 
 c returns area of node k on level l
 
-	use mod_area !COMMON_GGU_SUBST
+	use mod_area
 
 	implicit none
 
@@ -787,7 +765,6 @@ c returns area of node k on level l
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'area.h'
 
 	areanode = areakv(l,k)
 
@@ -799,7 +776,7 @@ c***********************************************************
 
 c sets up depth array for nodes
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -809,7 +786,6 @@ c sets up depth array for nodes
 	real hden(levdim,1)	!depth at element, new time level
 	real hdeo(levdim,1)	!depth at element, old time level
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer k,ie,l
 
@@ -835,14 +811,12 @@ c***********************************************************
 
 c shell (helper) for copydepth
 
-	use mod_depth !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use mod_depth
+	use levels, only : nlvdi,nlv
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
 	call copydepth(nlvdi,hdknv,hdkov,hdenv,hdeov)
 
@@ -854,19 +828,15 @@ c***********************************************************
 
 c shell (helper) for setdepth
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_area !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_area
+	use mod_hydro
+	use levels, only : nlvdi,nlv
 
 	implicit none
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'area.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
 	call setdepth(nlvdi,hdknv,hdenv,zenv,areakv)
 
@@ -878,19 +848,15 @@ c***********************************************************
 
 c shell (helper) for setdepth
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_area !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_area
+	use mod_hydro
+	use levels, only : nlvdi,nlv
 
 	implicit none
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'area.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
 	call setdepth(nlvdi,hdkov,hdeov,zeov,areakv)
 
@@ -902,16 +868,13 @@ c***********************************************************
 
 c checks differences between old and new depth values (debug)
 
-	use mod_depth !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer k,ie,l,idiff
 
@@ -939,10 +902,10 @@ c***********************************************************
 
 c sets up depth array for nodes
 
-	use mod_depth !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
@@ -954,11 +917,7 @@ c sets up depth array for nodes
 	real zenv(3,1)    	!water level at new time level
 	real area(levdim,1)
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
-COMMON_GGU_DELETED	include 'ev.h'
 
         logical bdebug
         logical bsigma
@@ -1111,8 +1070,8 @@ c***********************************************************
 
 c computes content of water mass in total domain
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
@@ -1121,9 +1080,7 @@ c computes content of water mass in total domain
 	double precision masscont
 	integer mode
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
 
 	integer k,l,nlev
 	double precision total
@@ -1148,15 +1105,12 @@ c***********************************************************
 
 c computes content of scalar in total domain
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	double precision scalcont
 	integer mode
@@ -1190,15 +1144,12 @@ c***********************************************************
  
 c computes content of scalar at node k
  
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
         include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
  
         double precision scalcontk
         integer mode,k
@@ -1225,15 +1176,12 @@ c***********************************************************
  
 c computes content of scalar at node k (with given depth)
  
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
         include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
         double precision scalcontkh
         integer k
@@ -1261,14 +1209,12 @@ c***********************************************************
 
 c this routine into another file... FIXME
 
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
         include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
         real scal(nlvdi,nkn)        !scalar field for which to compute mass
         real depth                      !depth of column

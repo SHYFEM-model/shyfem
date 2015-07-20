@@ -17,16 +17,14 @@ c********************************************************************
 
 	subroutine tideini
 
-	use mod_tides !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_tides
+	use basin
 
 	implicit none
 
-	include 'param.h' !COMMON_GGU_SUBST
+	include 'param.h'
 	include 'pkonst.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'tides.h'
 
 	real rtide
 	common /tidcom/ rtide
@@ -70,18 +68,16 @@ c********************************************************************
 
 	subroutine tidenew(it)
 
-	use mod_tides !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_tides
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	integer it
 
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'nbasin.h'
+	include 'param.h'
 	include 'pkonst.h'
 
-COMMON_GGU_DELETED	include 'tides.h'
 
 	real rtide
 	common /tidcom/ rtide
@@ -159,23 +155,19 @@ COMMON_GGU_DELETED	include 'tides.h'
 
 	subroutine tideforc(it)
 
-	use mod_tides !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_tides
+	use mod_depth
+	use mod_hydro
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	integer it
 
 ! common
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'nbasin.h'
+	include 'param.h'
 	include 'pkonst.h'
 
-COMMON_GGU_DELETED	include 'tides.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	real rtide
 	common /tidcom/ rtide

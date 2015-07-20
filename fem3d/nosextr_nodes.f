@@ -19,25 +19,20 @@ c***************************************************************
 
 c extracts single nodes from NOS file -> creates time series
 
-	use mod_depth !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'evmain.h'
 
 c--------------------------------------------------
 
 	character*80 title
 
 
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	real, allocatable :: hl(:)
 	real, allocatable :: haux(:)

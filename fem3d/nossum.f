@@ -17,7 +17,7 @@ c****************************************************************
 
 c sums all concentrations in .com file to one concentration in .con file
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 	include 'param.h'
@@ -26,7 +26,6 @@ c sums all concentrations in .com file to one concentration in .con file
 	parameter (nsdim=3)	!number of tracers
 
 c--------------------------------------------------
-COMMON_GGU_DELETED	include 'basin.h'
 	integer nlv
 
 

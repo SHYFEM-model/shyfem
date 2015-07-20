@@ -1499,7 +1499,7 @@ c*****************************************************************
 
 	subroutine nc_write_coords_reg(ncid,nx,ny,xlon,ylat,depth)
 
-	use levels !COMMON_GGU_SUBST
+	use levels
 
 	implicit none
 
@@ -1513,7 +1513,6 @@ c*****************************************************************
 	real ylat(ny)
 	real depth(nx,ny)
 
-COMMON_GGU_DELETED	include 'levels.h'
 
 	integer lon_varid,lat_varid,lvl_varid,dep_varid
 	integer eix_varid,top_varid
@@ -1550,9 +1549,9 @@ c*****************************************************************
 
 	subroutine nc_write_coords(ncid)
 
-	use mod_depth !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use levels
+	use basin
 
 	implicit none
 
@@ -1562,9 +1561,6 @@ c*****************************************************************
 
 	integer ncid
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer lon_varid,lat_varid,lvl_varid,dep_varid
 	integer eix_varid,top_varid

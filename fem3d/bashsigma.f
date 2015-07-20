@@ -13,17 +13,14 @@ c changes basin to conform with hsigma value
 c
 c needs continuous depth and produces continuous depth
 
-	use mod_depth !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use evgeom
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'evmain.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
 
 	!include 'aux_array.h'
 	real haux(nkndim)
@@ -109,8 +106,8 @@ c*******************************************************************
 
 c checks for continuous depth
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
@@ -119,9 +116,7 @@ c checks for continuous depth
 	integer idp
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ie,ii,k
 	real h,hm
@@ -152,14 +147,13 @@ c*******************************************************************
 
 c checks for flag values
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	real hflag
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie,ii
 	integer iflag
@@ -188,7 +182,7 @@ c*******************************************************************
 
 c checks and adjusts hsigma crossing
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
@@ -196,7 +190,6 @@ c checks and adjusts hsigma crossing
         integer iadjust
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	!include 'aux_array.h'
 
@@ -323,13 +316,12 @@ c
 c ie            number of element (internal)
 c areatr        element area (return value)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	real areatr
 	integer ie
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ii,i1,i2,k1,k2
 	double precision f,x(3),y(3)
@@ -352,12 +344,11 @@ c*******************************************************************
 
 c writes grd file extracting info from bas file
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer k,ie,ii,ia
 	real x,y,h
@@ -393,7 +384,7 @@ c writes grd file from bas
 c
 c hev and hkv must be set
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
@@ -403,7 +394,6 @@ c hev and hkv must be set
         real hev(1)
 
         include 'param.h'
-COMMON_GGU_DELETED        include 'basin.h'
 
         integer k,ie,ii
         real h

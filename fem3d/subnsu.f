@@ -34,7 +34,7 @@ c
 c ie		number of element
 c x,y		coordinates of baricentre (return value)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -47,7 +47,6 @@ c local variables
 	real xb,yb
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	xb=0.
 	yb=0.
@@ -68,7 +67,7 @@ c***************************************************************
 
 c area for element ie
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
@@ -77,7 +76,6 @@ c arguments
         integer ie
 c common
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 c local
         integer kn1,kn2,kn3
         real*8 x1,x2,x3,y1,y2,y3
@@ -106,7 +104,7 @@ c***************************************************************
 
 c returns coordinates of node k (internal)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -114,7 +112,6 @@ c returns coordinates of node k (internal)
 	real x,y
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	x = xgv(k)
 	y = ygv(k)
@@ -130,13 +127,12 @@ c
 c k     internal node number
 c ipext external node number, 0 if error
 c
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 	integer ipext
 	integer k
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 c
 	if(k.lt.1.or.k.gt.nkn) then
 		ipext=0
@@ -156,13 +152,12 @@ c
 c k     internal element number
 c ieext external element number, 0 if error
 c
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 	integer ieext
 	integer k
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 c
 	if(k.lt.1.or.k.gt.nel) then
 		ieext=0
@@ -182,13 +177,12 @@ c
 c k     external node number
 c ipint internal node number, 0 if error
 c
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 	integer ipint
 	integer k,i
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 c
 	do i=1,nkn
 	if(ipv(i).eq.k) goto 1
@@ -209,13 +203,12 @@ c
 c k     external element number
 c ieint internal element number, 0 if error
 c
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 	integer ieint
 	integer k,i
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 c
 	do i=1,nel
 	if(ipev(i).eq.k) goto 1

@@ -9,14 +9,13 @@ c********************************************************
 
 c interpolates nos file onto regular grid
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	include 'param.h'
 
 c arrays from basin
 
 
-COMMON_GGU_DELETED	include 'basin.h'
 
 c arrays for nos
 

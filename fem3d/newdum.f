@@ -230,14 +230,11 @@ c*****************************************************************
 
         subroutine mod_bound_geom_info
 
-	use mod_bnd !COMMON_GGU_SUBST
-	use mod_bound_geom !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_bnd
+	use mod_bound_geom
+	use basin, only : nkn,nel,ngr,mbw
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nbound.h'
-COMMON_GGU_DELETED	include 'bound_geom.h'
 
         integer iu,i
 

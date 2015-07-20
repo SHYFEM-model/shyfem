@@ -17,14 +17,13 @@ c****************************************************************
 
 c computes fluxes of scalar (sediment) through section
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
 
 c--------------------------------------------------
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'simul.h'
 
 
@@ -348,7 +347,7 @@ c***************************************************************
 
 	subroutine setup_fluxes(nnodes,nodes,flx)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -359,7 +358,6 @@ c***************************************************************
 	real flx(2,nnodes)
 
 
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer i,ii,i1,i2,im,ip
 	integer k,k1,k2

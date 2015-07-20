@@ -15,7 +15,7 @@ c extracts single nodes from nos file -> creates time series
 c
 c interactive version
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -25,7 +25,6 @@ c interactive version
 	parameter (ntrdim=3)
 
 c--------------------------------------------------
-COMMON_GGU_DELETED	include 'basin.h'
 
 
 c--------------------------------------------------

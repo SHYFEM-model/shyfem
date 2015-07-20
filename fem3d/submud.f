@@ -14,14 +14,14 @@
 !
         subroutine submud(it,dt)
 
-	use mod_bound_geom !COMMON_GGU_SUBST
-	use mod_sinking !COMMON_GGU_SUBST
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_bound_geom
+	use mod_sinking
+	use mod_fluidmud
+	use mod_ts
+	use mod_diff_visc_fric
+	use mod_hydro_print
+	use levels
+	use basin
 
           implicit none
 
@@ -31,19 +31,13 @@
           include 'param.h'
   
 
-COMMON_GGU_DELETED	include 'levels.h'
         real difvm(0:nlvdim,nkndim)  !vertical diffusivity for transport of mud
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'ts.h'
         
 
         integer, save :: testnode, icycle
         logical, save :: ldebug,lsink,lhind,llambda,ladvlam
         logical, save :: lfloc,ladvfloc
-COMMON_GGU_DELETED	include 'basin.h'
 
-COMMON_GGU_DELETED	include 'hydro_print.h'
 
         integer, allocatable :: innode(:)          !in boundary node number array (bound1)
         integer, allocatable :: ounode(:)          !out boundary node number array (bound2)
@@ -58,7 +52,6 @@ COMMON_GGU_DELETED	include 'hydro_print.h'
 
         save nk, innode, ounode
 
-COMMON_GGU_DELETED	include 'bound_geom.h'
 
 ! -------------------------------------------------------------
 ! local mud variables
@@ -73,7 +66,6 @@ COMMON_GGU_DELETED	include 'bound_geom.h'
         integer k,l,lmax		!Counters
         character*10 what
         double precision rhow		!Fluid density (kg/m3)
-COMMON_GGU_DELETED	include 'fluidmud.h'
         double precision cgel(nlvdim),phigel(nlvdim)
         real mudref		!Initial fluid mud concentration (kg/m3)
         double precision visk		!molecular viscosity
@@ -84,7 +76,6 @@ COMMON_GGU_DELETED	include 'fluidmud.h'
         real mwsink			!Fluid mud floc settling velocity [m/s]
 	    real wsink,sinkaccel
 	    real fact, dm1 
-COMMON_GGU_DELETED	include 'sinking.h'
         real tsec			!Simulation time, real [s]
         real bnd3_mud(nb3dim,0:nbcdim)  !Array containing boundary state
         real bnd3_lam(nb3dim,0:nbcdim)  !Array containing boundary state
@@ -404,8 +395,8 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 ! -------------------------------------------------------------
        subroutine get_mudc(k,rhow,dm0,phi,phip,ldebug,testnode,icycle)
 
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
+	use mod_fluidmud
+	use levels
 
         implicit none
 
@@ -413,13 +404,11 @@ c     +	k.eq.365.or.k.eq.360.or.k.eq.353)then!DEB
 
         integer k,l,nlev
         double precision phip(nlvdim),phi(nlvdim)
-COMMON_GGU_DELETED	include 'fluidmud.h'
         double precision rhow          !Sediment mineral density (kg/m3)
         double precision dm0           !Actual and primary diameter
 
 
 	integer lmax
-COMMON_GGU_DELETED	include 'levels.h'
         integer testnode,icycle,iwrite
         logical ldebug
         save iwrite
@@ -451,8 +440,8 @@ COMMON_GGU_DELETED	include 'levels.h'
 ! -------------------------------------------------------------
        subroutine get_mudrho(k,rhow,dm0,ldebug,testnode,icycle)
 
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
+	use mod_fluidmud
+	use levels
 
         implicit none
 ! Purpose:
@@ -461,11 +450,9 @@ COMMON_GGU_DELETED	include 'levels.h'
         include 'param.h'
 
         integer k,l,nlev
-COMMON_GGU_DELETED	include 'fluidmud.h'
         double precision rhow          !Sediment mineral density (kg/m3)
         double precision dm0           !Actual and primary diameter
 	integer lmax
-COMMON_GGU_DELETED	include 'levels.h'
         integer testnode,icycle,iwrite
         logical ldebug
         save iwrite
@@ -492,7 +479,7 @@ COMMON_GGU_DELETED	include 'levels.h'
 ! -------------------------------------------------------------
        subroutine set_rhomud(k,l,rhop)
 
-	use mod_fluidmud !COMMON_GGU_SUBST
+	use mod_fluidmud
 
         implicit none
 ! Purpose:
@@ -500,7 +487,6 @@ COMMON_GGU_DELETED	include 'levels.h'
 !
         include 'param.h'
 
-COMMON_GGU_DELETED	include 'fluidmud.h'
         real*8 drho, maxdrho
 
         integer, intent(in) :: l,k
@@ -525,8 +511,8 @@ COMMON_GGU_DELETED	include 'fluidmud.h'
 ! -------------------------------------------------------------
        subroutine get_cgel(k,dm0,cgel,phigel,ldebug,testnode,icycle)
 
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
+	use mod_fluidmud
+	use levels
 
         implicit none
 ! Purpose:
@@ -543,8 +529,6 @@ COMMON_GGU_DELETED	include 'fluidmud.h'
         double precision cgel(nlvdim)  ! gel, concentration
         double precision phigel(nlvdim)! gel, concentration
 	integer lmax
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'fluidmud.h'
         integer testnode,icycle, iwrite
         logical ldebug
         save iwrite
@@ -574,11 +558,11 @@ COMMON_GGU_DELETED	include 'fluidmud.h'
      &                            ldebug,testnode,icycle,sinkaccel,
      &                            lcircle,lhind)
 
-	use mod_bound_geom !COMMON_GGU_SUBST
-	use mod_sinking !COMMON_GGU_SUBST
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
+	use mod_bound_geom
+	use mod_sinking
+	use mod_fluidmud
+	use mod_ts
+	use levels
 
         implicit none
 
@@ -592,14 +576,9 @@ COMMON_GGU_DELETED	include 'fluidmud.h'
         double precision d              !grain size
         double precision visk           !molecular viskosity 
         real getpar,vismol
-COMMON_GGU_DELETED	include 'fluidmud.h'
-COMMON_GGU_DELETED	include 'sinking.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
         integer l,k,lmax
 
-COMMON_GGU_DELETED	include 'bound_geom.h'
 
         double precision :: rhost,nu,dst,ws0,ws,rhow,fak,dmi
         double precision, intent(in):: phi(nlvdim)         !Fluid density (kg/m3)
@@ -676,10 +655,10 @@ COMMON_GGU_DELETED	include 'bound_geom.h'
 ! -------------------------------------------------------------
         subroutine stress_mud(nldim,k,ldebug,testnode,icycle)
 
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use mod_gotm_aux !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_fluidmud
+	use mod_gotm_aux
+	use mod_ts
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
@@ -691,12 +670,8 @@ COMMON_GGU_DELETED	include 'bound_geom.h'
 ! Computes the rheoligical stresses and the viscosity of the mud
 !
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'pkonst.h'
 
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'fluidmud.h'
-COMMON_GGU_DELETED	include 'gotm_aux.h'
 
         integer k,l,nlev
         real*8 aux,dh,du,dv,m2,dbuoy,tau_test,lambda_e,visk_new
@@ -766,12 +741,12 @@ COMMON_GGU_DELETED	include 'gotm_aux.h'
 ! -------------------------------------------------------------
         subroutine set_yield(nldim,k,tstress,ldebug,testnode,icycle)
 
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use mod_gotm_aux !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_roughness !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_fluidmud
+	use mod_gotm_aux
+	use mod_ts
+	use mod_roughness
+	use mod_diff_visc_fric
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
@@ -781,15 +756,9 @@ COMMON_GGU_DELETED	include 'gotm_aux.h'
 ! Purpose:
 ! Computes the yield stress and sets the certain visc. to model the yield stress regime
 !
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'pkonst.h'
 
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'gotm_aux.h'
         real tstress(nlvdim)
-COMMON_GGU_DELETED	include 'fluidmud.h'
-COMMON_GGU_DELETED	include 'roughness.h'
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
         integer k,l,nlev
         real aux,dh,du,dv,m2,dbuoy,tau_test,lambda_e
@@ -885,13 +854,13 @@ COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 !Purpose:
 !Computes the roughness reduction due to the presence of mud
 
-	use mod_sinking !COMMON_GGU_SUBST
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use mod_gotm_aux !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_sinking
+	use mod_fluidmud
+	use mod_gotm_aux
+	use mod_ts
+	use mod_diff_visc_fric
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
@@ -900,14 +869,9 @@ COMMON_GGU_DELETED	include 'diff_visc_fric.h'
         include 'param.h'
 
 	integer lmax
-COMMON_GGU_DELETED	include 'nbasin.h'
 	real alpha
 	include 'pkonst.h'
 
-COMMON_GGU_DELETED	include 'sinking.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'fluidmud.h'
-COMMON_GGU_DELETED	include 'gotm_aux.h'
 
         integer k,nlev
 
@@ -920,10 +884,8 @@ COMMON_GGU_DELETED	include 'gotm_aux.h'
         real, parameter :: beta = 0.7
         real, parameter :: mpar = 1.
 
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
 	integer i
-COMMON_GGU_DELETED	include 'levels.h'
         real h(nlvdim)
 
         call dep3dnod(k,+1,nlev,h)
@@ -962,13 +924,13 @@ COMMON_GGU_DELETED	include 'levels.h'
 ! -------------------------------------------------------------
         subroutine set_bottom_stress(k,tstress)
 
-	use mod_sinking !COMMON_GGU_SUBST
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use mod_gotm_aux !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_sinking
+	use mod_fluidmud
+	use mod_gotm_aux
+	use mod_ts
+	use mod_diff_visc_fric
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 !Purpose: Computes discrete bottom stress 
@@ -978,14 +940,9 @@ COMMON_GGU_DELETED	include 'levels.h'
         include 'param.h'
 
 	integer lmax
-COMMON_GGU_DELETED	include 'nbasin.h'
 	real alpha
 	include 'pkonst.h'
 
-COMMON_GGU_DELETED	include 'sinking.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'fluidmud.h'
-COMMON_GGU_DELETED	include 'gotm_aux.h'
 
         integer k,l,nlev
         real tstress
@@ -994,8 +951,6 @@ COMMON_GGU_DELETED	include 'gotm_aux.h'
         real*8 cnpar,stress_x,stress_y, rhobar
         real*8  g_dot, rhop, tau,visk, drho, ri
 
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
         lmax = ilhkv(k)
         g_dot = sqrt(shearf2(lmax,k))
@@ -1008,8 +963,8 @@ COMMON_GGU_DELETED	include 'levels.h'
 ! -------------------------------------------------------------
         subroutine set_bottom_visk(k,ufric,depth,visk1,visk2)
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
@@ -1020,12 +975,10 @@ COMMON_GGU_DELETED	include 'levels.h'
         include 'param.h'
 
 	integer lmax
-COMMON_GGU_DELETED	include 'nbasin.h'
 
         integer k,l,nlev
         real*8 ufric,depth
         real visk1,visk2
-COMMON_GGU_DELETED	include 'levels.h'
         real h(nlvdim)
 
         call dep3dnod(k,+1,nlev,h)
@@ -1041,12 +994,12 @@ COMMON_GGU_DELETED	include 'levels.h'
 !
 ! -------------------------------------------------------------
       subroutine get_floc_diam(k,nldim,dt,dm0,ldebug,testnode,icycle)
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use mod_gotm_aux !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_fluidmud
+	use mod_gotm_aux
+	use mod_ts
+	use mod_diff_visc_fric
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
@@ -1056,15 +1009,9 @@ COMMON_GGU_DELETED	include 'levels.h'
 
         include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'pkonst.h'
 
-COMMON_GGU_DELETED	include 'fluidmud.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'gotm_aux.h'
 
         real, intent(in)    :: dt                   ! time step
         double precision, intent(in)    :: dm0                  ! Size of primary floc
@@ -1230,11 +1177,11 @@ COMMON_GGU_DELETED	include 'gotm_aux.h'
 !
 ! -------------------------------------------------------------       
         subroutine get_lambda(k,nldim,dt,ldebug,testnode,icycle)
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use mod_gotm_aux !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_fluidmud
+	use mod_gotm_aux
+	use mod_ts
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
@@ -1244,17 +1191,12 @@ COMMON_GGU_DELETED	include 'gotm_aux.h'
 !
         include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'pkonst.h'
 
         logical ldebug
         integer testnode, icycle
 
-COMMON_GGU_DELETED	include 'fluidmud.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'gotm_aux.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
 
         real, intent(in)    :: dt                   ! time step
 
@@ -1553,15 +1495,13 @@ COMMON_GGU_DELETED	include 'levels.h'
 ! shell for scalar (for parallel version)
 ! special version with factor for BC and variable sinking velocity
 !--------------------------------------------------------------
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none 
         include 'param.h'
 
 	integer k,l !DEB
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 	character*(*) what
         integer ivar
         real fact           !factor for boundary condition
@@ -1635,10 +1575,10 @@ COMMON_GGU_DELETED	include 'nlevel.h'
 
         subroutine circflume(r3v,scal)
 
-	use mod_bound_geom !COMMON_GGU_SUBST
-	use mod_bound_dynamic !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
+	use mod_bound_geom
+	use mod_bound_dynamic
+	use mod_hydro_print
+	use levels
 
         implicit none
 
@@ -1646,10 +1586,7 @@ COMMON_GGU_DELETED	include 'nlevel.h'
 
         real r3v(nlvdim,1)              !boundary conc array
 
-COMMON_GGU_DELETED	include 'bound_geom.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
         real scal(nlvdim,1)             !Fluid mud concentration array (kg/m3)      !ccf
-COMMON_GGU_DELETED	include 'bound_dynamic.h'
 
         integer, allocatable :: innode(:)          !in boundary node number array (bound1)
         integer, allocatable :: ounode(:)          !out boundary node number array (bound2)
@@ -1663,9 +1600,7 @@ COMMON_GGU_DELETED	include 'bound_dynamic.h'
         save innode,ounode,nk,nnode
         data icall /0/
 
-COMMON_GGU_DELETED	include 'hydro_print.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
         integer lmax
         real diff
 
@@ -1732,9 +1667,9 @@ COMMON_GGU_DELETED	include 'levels.h'
 ! -------------------------------------------------------------
         subroutine mudboundary(r3v,mudref)
 
-	use mod_bound_geom !COMMON_GGU_SUBST
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use mod_bound_geom
+	use mod_fluidmud
+	use levels, only : nlvdi,nlv
 
         implicit none
 
@@ -1742,11 +1677,8 @@ COMMON_GGU_DELETED	include 'levels.h'
 
         real,intent(in) :: mudref       !mudref  
  
-COMMON_GGU_DELETED	include 'bound_geom.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
         real r3v(nlvdim,1)              !boundary conc array
 
-COMMON_GGU_DELETED	include 'fluidmud.h'
 
         integer, allocatable :: innode(:)          !in boundary node number array (bound1)
         integer, allocatable :: ounode(:)          !out boundary node number array (bound2)
@@ -1818,13 +1750,13 @@ COMMON_GGU_DELETED	include 'fluidmud.h'
 !
 ! -------------------------------------------------------------
       subroutine write_xfn
-	use mod_fluidmud !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_gotm_aux !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_fluidmud
+	use mod_depth
+	use mod_gotm_aux
+	use mod_ts
+	use mod_diff_visc_fric
+	use mod_hydro_print
+	use basin
 
         implicit none
 
@@ -1834,14 +1766,7 @@ COMMON_GGU_DELETED	include 'fluidmud.h'
 
 	include 'pkonst.h'
 
-COMMON_GGU_DELETED	include 'fluidmud.h'
 
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'gotm_aux.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'hydro_print.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
         logical, save :: lfirst
         data lfirst/.true./
@@ -1908,15 +1833,13 @@ COMMON_GGU_DELETED	include 'depth.h'
 ! -------------------------------------------------------------
         subroutine masscons(it,mudc)
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
         include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
         integer it
         real mudc(nlvdim,nkndim)    !Fluid mud concentration array (kg/m3)

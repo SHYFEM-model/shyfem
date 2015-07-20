@@ -100,26 +100,22 @@ c
 c zdate,zdiff	water level variables used in mode
 c vdate		velocity variable used in mode
 
-	use mod_bound_dynamic !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_bound_dynamic
+	use mod_diff_visc_fric
+	use mod_hydro_print
+	use basin
 
 	implicit none
 
 	integer ic		!0 if no change in configuration   (out)
 
-	include 'param.h' !COMMON_GGU_SUBST
+	include 'param.h'
 	include 'close.h'
 
 c common
 	include 'femtime.h'
 	include 'mkonst.h'
 
-COMMON_GGU_DELETED	include 'hydro_print.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'bound_dynamic.h'
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
 c local
 	logical bclos,bopen,bimm,bact
@@ -1296,7 +1292,7 @@ c
 c z             fixed water level, to be used with mode = 0
 c volag         volume of water in basin (return value)
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
@@ -1304,7 +1300,6 @@ c volag         volume of water in basin (return value)
         integer mode
         real z
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
         integer ie
         real w,vol,area

@@ -20,10 +20,10 @@ c***************************************************************
 
 c reads ous file and writes extracted records in ascii to new file
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_hydro
+	use levels
+	use basin
 
 	implicit none
 
@@ -36,14 +36,9 @@ c reads ous file and writes extracted records in ascii to new file
 
 	character*80 title
 
-COMMON_GGU_DELETED	include 'basin.h'
 
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
 
-COMMON_GGU_DELETED	include 'hydro.h'
 
 	real uprv(nlvdim,nkndim)
 	real vprv(nlvdim,nkndim)
@@ -221,7 +216,7 @@ c znv(k)	water level of node k
 c uprv(l,k)	current velocity in x of node k and level l
 c vprv(l,k)	current velocity in y of node k and level l
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
@@ -233,7 +228,6 @@ c vprv(l,k)	current velocity in y of node k and level l
         real uprv(nlvdim,nkndim)
         real vprv(nlvdim,nkndim)
 
-COMMON_GGU_DELETED	include 'basin.h'
 
         integer k,l,lmax
         real x,y
@@ -258,7 +252,7 @@ c******************************************************************
 
 c writes one record to file nb (3D)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
@@ -274,7 +268,6 @@ c writes one record to file nb (3D)
         parameter ( x0 = 2330000.-50000., y0 = 5000000. )
         !parameter ( x0 = 0., y0 = 0. )
 
-COMMON_GGU_DELETED	include 'basin.h'
 
 	logical bwrite
         integer k,l,lmax,n

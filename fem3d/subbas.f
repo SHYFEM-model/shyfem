@@ -304,14 +304,13 @@ c unformatted read from lagoon file
 c
 c iunit		unit number of file to be read
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	integer nb,nknddi,nelddi
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer i,ii,nvers
 
@@ -364,14 +363,13 @@ c unformatted write to lagoon file
 c
 c nb		unit number for write
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	integer nb
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer i,ii
 
@@ -413,14 +411,13 @@ c test write to unit nb
 
 c writes first n values, if n=0 -> all values
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	integer nvers,nb,n
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer i,ii
 	integer nkn1,nel1
@@ -454,12 +451,11 @@ c*************************************************
 
 	subroutine bas_info
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
         write(6,*)
         write(6,*) trim(descrr)
@@ -476,12 +472,11 @@ c*************************************************
 
 	subroutine bas_get_geom(dcor,dirn)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	real dcor,dirn
 
@@ -494,12 +489,11 @@ c*************************************************
 
 	subroutine bas_get_para(nkna,nela,ngra,mbwa)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer nkna,nela,ngra,mbwa
 
@@ -514,12 +508,11 @@ c*************************************************
 
 	subroutine bas_get_minmax(xmin,ymin,xmax,ymax)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	real xmin,ymin,xmax,ymax
 

@@ -33,12 +33,23 @@
 #
 ##############################################
 
-export MBWDIM = 300
-export NGRDIM = 12
+export NKNDIM = 1
+export NELDIM = 1
 export NLVDIM = 1
 
-export NKNDIM = 11000
-export NELDIM = 22000
+export MBWDIM = 1
+export NGRDIM = 1
+
+export NBCDIM = 100
+export NRBDIM = 1
+export NB3DIM = 1
+
+export NARDIM = 1
+export NEXDIM = 100
+export NFXDIM = 5000
+export NCSDIM = 1
+
+export NBDYDIM = 100000
 
 ##############################################
 # Compiler

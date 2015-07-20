@@ -5,34 +5,31 @@ c*****************************************************************
 
 
 	subroutine levels_init(nkn,nel,nl)
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv
 
 	implicit none
 	integer nkn,nel,nl
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 	if( nl > nlvdim ) stop 'error stop levels_init: nlvdim'
 	nlvdi = nlvdim
 	end
 
 	subroutine levels_reinit(nl)
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv
 
 	implicit none
 	integer nl
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 	if( nl > nlvdim ) stop 'error stop levels_reinit: nlvdim'
 	nlvdi = nlvdim
 	end
 
 	subroutine levels_hlv_init(nl)
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv
 
 	implicit none
 	integer nl
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 	if( nl > nlvdim ) stop 'error stop levels_reinit: nlvdim'
 	nlvdi = nlvdim
 	end

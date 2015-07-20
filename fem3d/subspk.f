@@ -15,13 +15,11 @@ c*************************************************************************
 
 ! Initialize vector and matrix      
 
-	use mod_system !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_system
+	use basin
 
       implicit none
       include 'param.h'
-COMMON_GGU_DELETED      include 'common.h'
-COMMON_GGU_DELETED      include 'basin.h'
 
       integer n
 
@@ -54,7 +52,7 @@ c*************************************************************************
 
 ! Solver routine with Sparskit iterative methods.
 
-	use mod_system !COMMON_GGU_SUBST
+	use mod_system
 
       implicit none
 
@@ -62,7 +60,6 @@ c*************************************************************************
 	real z(n)	!first guess
 
       include 'param.h'
-COMMON_GGU_DELETED      include 'common.h'
       !include 'nbasin.h'
       integer k
 

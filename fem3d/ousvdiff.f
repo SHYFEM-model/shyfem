@@ -17,20 +17,17 @@ c***************************************************************
 
 c reads ous files and computes difference
 
-	use mod_depth !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use levels
+	use basin
 
 	implicit none
 
         include 'param.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'simul.h'
 
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
         real utln1v(nlvdim,neldim)
         real vtln1v(nlvdim,neldim)

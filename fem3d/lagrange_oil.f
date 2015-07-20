@@ -3,14 +3,13 @@ c*******************************************************************
 
 	subroutine init_diff_oil
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
         include 'param.h'
         include 'lagrange.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer ie
 
@@ -24,21 +23,18 @@ c*******************************************************************
 
 	subroutine set_diff_oil
 
-	use mod_aux_array !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_aux_array
+	use evgeom
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
         include 'param.h'
         include 'lagrange.h'
 
-COMMON_GGU_DELETED	include 'ev.h'
 
-COMMON_GGU_DELETED	include 'aux_array.h'
 
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	real oil(nel)
 	real zfilm(nel)

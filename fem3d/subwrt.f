@@ -95,10 +95,10 @@ c------------------------------------------------------------
 
         subroutine renewal_time
 
-	use mod_conz !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_conz
+	use mod_depth
+	use levels
+	use basin
 	use mod_renewal_time
 
         implicit none
@@ -108,13 +108,8 @@ c------------------------------------------------------------
 
 	include 'simul.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'conz.h'
 	!include 'aux_array.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ndim
 	parameter (ndim=100)
@@ -402,12 +397,11 @@ c flags inside nodes (nodes with area code different from iaout)
 c
 c on return rinside(k) = 1 for nodes inside domain
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	real rinside(nkn)
 	integer iaout		!area code for outside elements
@@ -436,15 +430,12 @@ c*****************************************************************
 
 c resets concentration for start of new computation
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	real c0				!concentration for nodes inside domain
 	real cnv(nlvdi,nkn)
@@ -470,15 +461,12 @@ c*****************************************************************
 
 c simulates stirred tank
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	real c0				!concentration to impose
 	real cnv(nlvdi,nkn)
@@ -534,17 +522,13 @@ c******************************************************
 
 c computes masses for different areas
 
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'ev.h'
 
 	integer ndim
 	real cnv(nlvdi,nkn)
@@ -599,15 +583,12 @@ c******************************************************
 
 c limits concentration between 0 and c0
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	real c0
 	real cnv(nlvdi,nkn)		!concentration
@@ -630,15 +611,12 @@ c******************************************************
 
 c computes mass and volume on internal nodes
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	real cnv(nlvdi,nkn)		!concentration
 	real rinside(nkn)		!flag if node is inside domain
@@ -674,15 +652,12 @@ c****************************************************
 
 c sets concentration to zero outside of domain
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
         real cnv(nlvdi,nkn)
 	real rinside(nkn)		!flag if node is inside domain
@@ -706,15 +681,12 @@ c***************************************************************
 
 c resets acumulated value
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	double precision cvacu(nlvdi,nkn)
 
@@ -733,15 +705,12 @@ c***************************************************************
 
 	subroutine acu_acum(blog,it,c0,cnv,vol,rinside,cvacu,volacu)
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	logical blog				!use logarithm to compute
 	integer it
@@ -802,15 +771,12 @@ c***************************************************************
 
 c compute renewal time and write to file
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	integer ia_out(4)
 	logical blog,badj
@@ -973,15 +939,12 @@ c**********************************************************************
 
 c write histogram
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	integer iu
 	integer it

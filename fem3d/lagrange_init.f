@@ -259,8 +259,8 @@ c*******************************************************************
 
 c flags elements which are in/out-side or at border of line
 
-	use mod_aux_array !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_aux_array
+	use basin
 
 	implicit none
 
@@ -269,8 +269,6 @@ c flags elements which are in/out-side or at border of line
 	integer iflag(1)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'aux_array.h'
 
 	logical inpoly
 	logical debug
@@ -433,7 +431,7 @@ c*******************************************************************
 
 c release in partial area
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -443,7 +441,6 @@ c release in partial area
 	real x(1),y(1)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'lagrange.h'
 
 	integer iflag(nel)
@@ -544,14 +541,13 @@ c*******************************************************************
 
 c release in total area
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	real dxy
 
 	!include 'param.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
 	!include 'lagrange.h'
 
 	integer ie,i,j

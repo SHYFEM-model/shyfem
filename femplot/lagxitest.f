@@ -7,12 +7,10 @@ c*****************************************************************
 
 	program xi_test_main
 
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use evgeom
+	use basin
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'evmain.h'
 
 	integer iapini
 
@@ -35,14 +33,12 @@ c*****************************************************************
 
 c tests the internal coordinates and distances
 
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use evgeom
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'evmain.h'
 
 	logical bdebug
 	integer ie,i,ii,n,ifreq
@@ -118,14 +114,12 @@ c*****************************************************************
 
 c tests the internal coordinates and paths in one triangle
 
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use evgeom
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'evmain.h'
 
 	integer n,ie,ii,i,iflux,ifreq
 	double precision r,s,diff,eps
@@ -218,8 +212,8 @@ c*****************************************************************
 
 	subroutine make_triangle(ie,xx,yy)
 
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use evgeom
+	use basin
 
 	implicit none
 
@@ -227,8 +221,6 @@ c*****************************************************************
 	double precision xx(3),yy(3)
 	
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'evmain.h'
 
 	integer ii,k
 	double precision r

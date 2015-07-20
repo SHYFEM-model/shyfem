@@ -188,7 +188,7 @@ c******************************************************************
 
 c writes and administers ext file
 
-	use mod_hydro_print !COMMON_GGU_SUBST
+	use mod_hydro_print
 	use extra
 
 	implicit none
@@ -196,7 +196,6 @@ c writes and administers ext file
 	integer it
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'hydro_print.h'
 
 	integer nbext
 	real err,href,hzoff
@@ -267,7 +266,7 @@ c ...depth has not to be passed but is computed in routine
 c ...pass only dummy vector
 c ...ndim is dummy argument
 
-	use mod_aux_array !COMMON_GGU_SUBST
+	use mod_aux_array
 
 	implicit none
 
@@ -281,7 +280,6 @@ c ...ndim is dummy argument
 
 	include 'param.h'
 	include 'simul.h'
-COMMON_GGU_DELETED	include 'aux_array.h'
 
 	integer i,n,ndim
 	real hmin,hmax

@@ -22,24 +22,19 @@ c********************************************************
 
 c writes and administers ous file
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_hydro
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
 	include 'simul.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer itmout,ierr
 	real href,hzoff

@@ -31,7 +31,6 @@ c new version -> does everything: initializes, accumulates, writes
         include 'param.h'
         include 'donata.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
         real, save, allocatable :: elz(:,:)     !loicz budg proc ariables
 
@@ -283,8 +282,8 @@ c********************************************************************
 
 c sets up sediment loading
 
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
@@ -292,9 +291,7 @@ c sets up sediment loading
         real eload(nlvddi,nknddi,nstate)
         real elini(nstate)
 
-	include 'param.h' !COMMON_GGU_SUBST
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'levels.h'
+	include 'param.h'
 
         integer mode,i,k,l,lmax
         real d,vol,area

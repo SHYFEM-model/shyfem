@@ -23,7 +23,7 @@ c	nkn,nel,mbw
 c	nen3v
 c	ev
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -34,7 +34,6 @@ c arguments
 	real flag		!flag to distinguish boundary condition
 
 c common
-COMMON_GGU_DELETED	include 'nbasin.h'
 c local
 	integer i,k
 	integer matdim
@@ -70,8 +69,8 @@ c******************************************************************
 
 c assembles linear system matrix for laplacian
 
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use evgeom
+	use basin
 
 	implicit none
 
@@ -83,8 +82,6 @@ c arguments
 c common
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
 c local
 	integer kn(3)
 	integer ie,i,j,j1,j2,n,m,kk

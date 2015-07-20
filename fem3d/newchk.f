@@ -63,16 +63,16 @@ c test output for new variables
 c
 c nn	number of first array elements to be printed
 
-	use mod_meteo !COMMON_GGU_SUBST
-	use mod_internal !COMMON_GGU_SUBST
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_meteo
+	use mod_internal
+	use mod_geom_dynamic
+	use mod_depth
+	use mod_ts
+	use mod_diff_visc_fric
+	use mod_hydro_vel
+	use mod_hydro
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -83,20 +83,9 @@ c parameter
 	include 'param.h'
 c common
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
-COMMON_GGU_DELETED	include 'internal.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
-COMMON_GGU_DELETED	include 'meteo_aux.h'
 
 c local
 	logical bmeteo
@@ -256,26 +245,19 @@ c******************************************************************
 
 c checks important variables
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_hydro_baro !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_ts
+	use mod_hydro_baro
+	use mod_hydro_vel
+	use mod_hydro
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'hydro_baro.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
 
 	character*16 text
 
@@ -340,8 +322,8 @@ c************************************************************
 
 c writes debug information on dry areas
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_geom_dynamic
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -349,8 +331,6 @@ c writes debug information on dry areas
 
 c common
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
 	integer ie,iweg
 
@@ -369,15 +349,15 @@ c*************************************************************
 
 c writes debug information on final volume around node k (internal)
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_hydro_baro !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_geom_dynamic
+	use mod_depth
+	use mod_hydro_baro
+	use mod_hydro_print
+	use mod_hydro_vel
+	use mod_hydro
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
@@ -387,17 +367,7 @@ c writes debug information on final volume around node k (internal)
 
 c common
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 	include 'mkonst.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'hydro_print.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'hydro_baro.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
-COMMON_GGU_DELETED	include 'ev.h'
 
 	integer ie,ii,kk,l,i
 	integer ilevel
@@ -497,13 +467,13 @@ c*************************************************************
 
 c writes some min/max values to stdout
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_ts
+	use mod_hydro_print
+	use mod_hydro_vel
+	use mod_hydro
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
@@ -512,15 +482,8 @@ c writes some min/max values to stdout
         character*(*) string
 c common
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'hydro_print.h'
-COMMON_GGU_DELETED	include 'ts.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
 
 
 
@@ -658,13 +621,13 @@ c*************************************************************
 
 c checks mass conservation of single boxes (finite volumes)
 
-	use mod_bound_geom !COMMON_GGU_SUBST
-	use mod_bound_dynamic !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_bound_geom
+	use mod_bound_dynamic
+	use mod_hydro_vel
+	use mod_hydro
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
@@ -673,14 +636,7 @@ c checks mass conservation of single boxes (finite volumes)
 	real vf(nlvdi,1)
 	real va(nlvdi,1)
 
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'mkonst.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'bound_dynamic.h'
-COMMON_GGU_DELETED	include 'ev.h'
 
 	logical berror,bdebug
 	integer ie,l,ii,k,lmax,mode,ks,kss
@@ -698,7 +654,6 @@ COMMON_GGU_DELETED	include 'ev.h'
 	double precision vtotmax,vvv,vvm
 
 	real volnode,areanode,getpar
-COMMON_GGU_DELETED	include 'testbndo.h'
 
 	integer ninfo
 	save ninfo
@@ -942,40 +897,27 @@ c*************************************************************
 
 	subroutine check_crc
 
-	use mod_internal !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_bound_dynamic !COMMON_GGU_SUBST
-	use mod_area !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_internal
+	use mod_depth
+	use mod_bound_dynamic
+	use mod_area
+	use mod_ts
+	use mod_diff_visc_fric
+	use mod_hydro_print
+	use mod_hydro_vel
+	use mod_hydro
+	use evgeom
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'ev.h'
 
 	include 'femtime.h'
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'internal.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
-COMMON_GGU_DELETED	include 'ts.h'
 
-COMMON_GGU_DELETED	include 'bound_dynamic.h'
-COMMON_GGU_DELETED	include 'area.h'
-COMMON_GGU_DELETED	include 'hydro_print.h'
 
 	integer icrc,iucrc
 	save iucrc
@@ -1105,16 +1047,16 @@ c*************************************************************
 
 c writes debug information on node k
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_bound_dynamic !COMMON_GGU_SUBST
-	use mod_area !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_geom_dynamic
+	use mod_depth
+	use mod_bound_dynamic
+	use mod_area
+	use mod_ts
+	use mod_diff_visc_fric
+	use mod_hydro_vel
+	use mod_hydro
+	use levels
+	use basin
 
 	implicit none
 
@@ -1127,18 +1069,8 @@ c writes debug information on node k
 
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'bound_dynamic.h'
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'area.h'
 
 	integer iu
 	integer l,lmax,kk
@@ -1175,13 +1107,13 @@ c*************************************************************
 
 c writes debug information on element ie
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_geom_dynamic
+	use mod_depth
+	use mod_hydro_vel
+	use mod_hydro
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
@@ -1189,23 +1121,16 @@ c writes debug information on element ie
 	integer ie
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'ev.h'
 
 	integer iucheck
 	common /iucheck/iucheck
 
 	include 'femtime.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
-
-COMMON_GGU_DELETED	include 'depth.h'
-
-COMMON_GGU_DELETED	include 'hydro.h'
 
 
-COMMON_GGU_DELETED	include 'hydro_vel.h'
+
+
 
 
 	integer iu
@@ -1244,7 +1169,7 @@ c*************************************************************
 
 c writes debug information on nodes in element ie
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -1254,7 +1179,6 @@ c writes debug information on nodes in element ie
 	common /iucheck/iucheck
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ii,k,iu
 	integer ieext
@@ -1278,7 +1202,7 @@ c*************************************************************
 
 c writes debug information on elements around node k
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -1289,7 +1213,6 @@ c writes debug information on elements around node k
 
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie,ii,kk,iu
 	logical bdebug

@@ -37,18 +37,14 @@ c***********************************************
 
 c toxi module ARPAV
 
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_diff_visc_fric
+	use levels
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'mkonst.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
 
 	integer it	!time in seconds
 	real dt		!time step in seconds
@@ -414,8 +410,8 @@ c*************************************************************
 
 c checks bio vars
 
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -427,8 +423,6 @@ c checks bio vars
 	character*(*) title
 	real e(nlvdim,nkndim,nstate)	!state vector
 
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
         character*20 text
 	integer i

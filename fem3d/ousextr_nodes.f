@@ -20,31 +20,24 @@ c***************************************************************
 
 c extracts single nodes from OUS file -> creates time series
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_hydro_print
+	use mod_hydro
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
         include 'param.h'
-COMMON_GGU_DELETED        include 'basin.h'
-COMMON_GGU_DELETED        include 'evmain.h'
 
 c--------------------------------------------------
 
 	character*80 title
 
 
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'hydro_print.h'
 
 	real weight(nlvdim,nkndim)
 	real hl(nlvdim)

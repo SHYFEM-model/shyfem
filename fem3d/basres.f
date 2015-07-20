@@ -11,12 +11,11 @@ c****************************************************************
 
 c computes resolution in basin
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 c--------------------------------------------------
 c--------------------------------------------------
@@ -99,7 +98,7 @@ c***************************************************************
 
 c computes horizontal resolution
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -107,7 +106,6 @@ c computes horizontal resolution
 	real cvaux(1)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer k,ie,ii,iii,k1,k2
 	real dd
@@ -145,7 +143,7 @@ c***************************************************************
 
 c computes distance between nodes
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -153,7 +151,6 @@ c computes distance between nodes
 	integer k1,k2
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	real x1,x2,y1,y2,dx,dy
 

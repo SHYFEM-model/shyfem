@@ -19,16 +19,14 @@ c****************************************************************
 
 c analyzes CON file for residence time
 
-	use mod_depth !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'evmain.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 c--------------------------------------------------
 
@@ -48,9 +46,6 @@ c--------------------------------------------------
 	real hl(nlvdim)
 
 
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	logical bminmax,balways,breset
 	logical blog,badj,bvol
@@ -369,7 +364,7 @@ c***************************************************************
 
 	subroutine acu_reset_0(tacu,cvacu,ilhkv)
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -379,7 +374,6 @@ c***************************************************************
 	double precision cvacu(nlvdim,nkndim)
 	integer ilhkv(nkndim)
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer k,lmax,l
 
@@ -401,7 +395,7 @@ c***************************************************************
 
 c compute residence time
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -421,7 +415,6 @@ c compute residence time
 	real cv3(nlvdim,nkndim)				!computed RT 3D
 	real cv2(nkndim)				!computed RT 2D
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer k,lmax,l,ivar,ierr
 	real conz,conze,res,rese
@@ -491,7 +484,7 @@ c**********************************************************************
 
 	subroutine acu_final(it,ilhkv,nrepl,nb3,nb2,cv3,vol3,cv2)
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -505,7 +498,6 @@ c**********************************************************************
 	real vol3(nlvdim,nkndim)			!volumes
 	real cv2(nkndim)
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	integer k,lmax,l,ivar,ierr
 	real cmin,cmax,cmed,vtot
@@ -555,7 +547,7 @@ c**********************************************************************
 
 c write histogram
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -570,7 +562,6 @@ c write histogram
 	integer ndim
 	parameter (ndim=100)
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	logical bdebug
 	integer k,lmax,l,i,ic

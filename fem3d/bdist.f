@@ -35,7 +35,7 @@ c
 c   row i:   1   2   3   4   5   6   7   8   ...
 c   rdist:   0   0  1/4 2/4 3/4  1   1   1   ...
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -43,7 +43,6 @@ c   rdist:   0   0  1/4 2/4 3/4  1   1   1   ...
 
         real rdist(1)
 
-COMMON_GGU_DELETED	include 'basin.h'
 
 c local variables
 
@@ -125,7 +124,7 @@ c rdist of open boundary nodes is 1
 c other nodes are > 1 (integer)
 c example: neibors of rdist=1 nodes have rdist=2 etc.
 
-	use mod_geom !COMMON_GGU_SUBST
+	use mod_geom
 
         implicit none
 
@@ -135,7 +134,6 @@ c example: neibors of rdist=1 nodes have rdist=2 etc.
         real rdist(1)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'links.h'
 
         integer k,kk,i
         integer n
@@ -223,7 +221,7 @@ c rdist of open boundary nodes is 1
 c other nodes are > 1 (integer)
 c example: neibors of rdist=1 nodes have rdist=2 etc.
 
-	use mod_geom !COMMON_GGU_SUBST
+	use mod_geom
 
         implicit none
 
@@ -232,7 +230,6 @@ c example: neibors of rdist=1 nodes have rdist=2 etc.
         real rdist(1)
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'links.h'
 
 	logical bdebug
         integer k,kk,ka,i,ks

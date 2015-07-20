@@ -23,17 +23,14 @@ c****************************************************************
 
 c writes information on basin about nodes and elements
 
-	use mod_depth !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use evgeom
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'evmain.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
 
 	real haux(nkndim)
 
@@ -95,17 +92,15 @@ c*******************************************************************
 
 c info on node number
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
 	logical bnode
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ie,ii,in
 	integer kext,kint
@@ -171,14 +166,13 @@ c*****************************************************************
 
 c info on element number
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	logical belem
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie,ii,k
 	integer eext,eint
@@ -239,12 +233,11 @@ c*****************************************************************
 
 c writes statistics on basin
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ie,ii,k
 	integer imin,imax
@@ -435,18 +428,16 @@ c*******************************************************************
 
 c writes frequency distribution of depth
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ndim
 	parameter (ndim=10000)
 
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ie,i
 	integer imax,ih
@@ -538,13 +529,12 @@ c
 c ie            number of element (internal)
 c areatr        element area (return value)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	real areatr
 	integer ie
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ii,i1,i2,k1,k2
 	double precision f,x(3),y(3)
@@ -567,14 +557,12 @@ c*******************************************************************
 
 c writes grd file extracting info from bas file
 
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use evgeom
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'evmain.h'
 
 	logical bsort
 	integer k,ie,ii,ia,i
@@ -641,12 +629,11 @@ c*******************************************************************
 
 c writes grd file extracting info from bas file
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer k,ie,ii,ia
 	real x,y,h
@@ -680,14 +667,12 @@ c*******************************************************************
 
 c writes statistics on grid quality
 
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use evgeom
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'evmain.h'
 
 	real areav(nkndim)
 

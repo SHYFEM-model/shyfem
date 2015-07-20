@@ -11,11 +11,11 @@ c*******************************************************************
 
 	subroutine prepare_vel(pp3)
 
-	use mod_plot2d !COMMON_GGU_SUBST
-	use mod_plot3d !COMMON_GGU_SUBST
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_plot2d
+	use mod_plot3d
+	use mod_hydro_print
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -23,13 +23,8 @@ c*******************************************************************
 
 	real pp3(nlvdi,nkn)
 
-COMMON_GGU_DELETED	include 'nbasin.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
 
-COMMON_GGU_DELETED	include 'plot_aux.h'
-COMMON_GGU_DELETED	include 'plot_aux_3d.h'
 
-COMMON_GGU_DELETED	include 'hydro_print.h'
 
 	integer k,l
 	real u,v,w
@@ -58,10 +53,10 @@ c*******************************************************************
 
 	subroutine make_vel_from_tra(het3v)
 
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use mod_hydro_vel
+	use mod_hydro
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -69,12 +64,7 @@ c*******************************************************************
 
         real het3v(nlvdi,nel)
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
-COMMON_GGU_DELETED	include 'hydro.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'nlevel.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
 	integer ie,l,lmax
 	real h,rh
@@ -100,26 +90,20 @@ c*******************************************************************
 
 	subroutine vel_to_node
 
-	use mod_hydro_print !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_hydro_print
+	use mod_hydro_vel
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
 	include 'param.h'
 
-COMMON_GGU_DELETED	include 'nlevel.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
-COMMON_GGU_DELETED	include 'hydro_vel.h'
 
-COMMON_GGU_DELETED	include 'hydro_print.h'
 
-COMMON_GGU_DELETED	include 'ev.h'
 
 	integer ie,ii,k,l,lmax
 	real aj

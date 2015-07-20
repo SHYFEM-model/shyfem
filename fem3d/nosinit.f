@@ -14,12 +14,11 @@ c****************************************************************
 
 c creates files for initialization of NOS fields
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	include 'param.h'
 
 c--------------------------------------------------
-COMMON_GGU_DELETED	include 'basin.h'
 
 
 c--------------------------------------------------

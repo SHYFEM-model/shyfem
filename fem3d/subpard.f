@@ -5,11 +5,10 @@ c*************************************************************************
 
 ! Initialize vector and matrix      
 
-	use mod_system !COMMON_GGU_SUBST
+	use mod_system
 
       implicit none
       include 'param.h'
-COMMON_GGU_DELETED      include 'common.h'
 
       integer n
 
@@ -39,11 +38,10 @@ c*************************************************************************
 
 	subroutine pard_solve_system
 
-	use mod_system !COMMON_GGU_SUBST
+	use mod_system
 
 	implicit none
         include 'param.h'
-COMMON_GGU_DELETED	include 'common.h'
 	integer k
 
         real*8 csr(csrdim)

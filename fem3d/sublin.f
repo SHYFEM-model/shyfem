@@ -129,8 +129,8 @@ c******************************************************************
 
 c tests for adjacency between nodes
 
-	use mod_geom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_geom
+	use basin
 
 	implicit none
 
@@ -138,8 +138,6 @@ c tests for adjacency between nodes
 	integer k1,k2
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'links.h'
 
 	integer n,i,ie,ii
 

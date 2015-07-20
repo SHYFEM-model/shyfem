@@ -82,7 +82,7 @@ c****************************************************************
 
 c lagranian main routine
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
         use lgr_sedim_module
 
 	implicit none
@@ -90,7 +90,6 @@ c lagranian main routine
         include 'param.h'
         include 'lagrange.h'
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'femtime.h'
 
 	logical brelease
@@ -481,7 +480,7 @@ c**********************************************************************
 
 c tracks one particle - uses internal coordinates
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -499,7 +498,6 @@ c tracks one particle - uses internal coordinates
 	integer lb 		!layer 
 	real ttime		!time to advect
 	
-COMMON_GGU_DELETED	include 'basin.h'
         
 	integer n
 	double precision xx,yy,zz
@@ -572,7 +570,7 @@ c TRACK_ORIG if the particle is inside an element (first call)
 c
 c TRACK_LINE if the particle is on one side (normal situation)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -589,7 +587,6 @@ c TRACK_LINE if the particle is on one side (normal situation)
 	real z 			!relative vertical position
 	integer lb 		!layer 
 	
-COMMON_GGU_DELETED	include 'basin.h'
         
 	integer nl
 	integer ltbdy
@@ -710,7 +707,7 @@ c**********************************************************************
 
 	subroutine lagr_count_init
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -719,7 +716,6 @@ c**********************************************************************
 
 	integer ie
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	do ie=1,nel
 	  i_count(ie) = 0
@@ -753,7 +749,7 @@ c**********************************************************************
 
 	subroutine lagr_count_out(it)
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
@@ -765,7 +761,6 @@ c**********************************************************************
 	integer ie,iu
 	character*80 file
 
-COMMON_GGU_DELETED	include 'nbasin.h'
 
 	iu = 237
 	file = 'lagr_count_out.txt'

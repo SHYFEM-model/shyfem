@@ -10,13 +10,12 @@ c****************************************************************
 	program nosextr
 
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	include 'param.h'
 
 
 c--------------------------------------------------
-COMMON_GGU_DELETED	include 'basin.h'
 
 
 c--------------------------------------------------

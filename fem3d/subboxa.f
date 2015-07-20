@@ -230,12 +230,12 @@ c******************************************************************
 
 c administers writing of flux data
 
-	use mod_conz !COMMON_GGU_SUBST
-	use mod_ts !COMMON_GGU_SUBST
-	use mod_diff_visc_fric !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
+	use mod_conz
+	use mod_ts
+	use mod_diff_visc_fric
+	use mod_hydro_vel
+	use mod_hydro
+	use levels, only : nlvdi,nlv
 
 	implicit none
 
@@ -252,13 +252,7 @@ c administers writing of flux data
 	real az,azpar,rr
 	real dt
 
-COMMON_GGU_DELETED	include 'nlevel.h'
 
-COMMON_GGU_DELETED	include 'ts.h'
-COMMON_GGU_DELETED	include 'conz.h'
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'diff_visc_fric.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 
 	integer ifemop
 	real getpar
@@ -636,12 +630,11 @@ c******************************************************************
 
 	subroutine box_read
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'subboxa.h'
 
 	integer nb,id,n,ib1,ib2,i
@@ -710,12 +703,11 @@ c******************************************************************
 
 c inserts section in data structure
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'subboxa.h'
 
 	integer id,n,ib1,ib2
@@ -751,12 +743,11 @@ c sets up ikboxes - index of nodes to boxes
 c
 c is -1 if node belongs to more than one box
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'subboxa.h'
 
 	integer k,ie,ii,ib
@@ -800,16 +791,14 @@ c******************************************************************
 
 c computes max layers for each box
 
-	use mod_depth !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
 	include 'subboxa.h'
 
 	integer nblayers(nbxdim)		!number of layers in boxes
@@ -817,8 +806,6 @@ COMMON_GGU_DELETED	include 'ev.h'
 	real bvolume(nbxdim)			!volume of boxes
 	real bdepth(nbxdim)			!depth of boxes
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer ib,lmax,ie
 	real area,hdep
@@ -946,12 +933,11 @@ c******************************************************************
 
 	subroutine box_write_2d(it,fluxes,valt,vals,vale,valv,fluxes_ob)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'subboxa.h'
 
 	integer it
@@ -1009,12 +995,11 @@ c******************************************************************
 	subroutine box_write_3d(it,nblayers,nlayers
      +			,fluxes,valt,vals,vale,valv,fluxes_ob)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'subboxa.h'
 
 	integer it
@@ -1084,12 +1069,11 @@ c******************************************************************
 	subroutine box_write_vertical(it,nblayers
      +			,valw,valvis,valdif)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'subboxa.h'
 
 	integer it
@@ -1134,21 +1118,18 @@ c******************************************************************
 
 c computes average zeta values for box
 
-	use mod_geom_dynamic !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_geom_dynamic
+	use evgeom
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
 	include 'subboxa.h'
 
         real zev(3,nel)
 	real val(nbxdim)
 
-COMMON_GGU_DELETED	include 'geom_dynamic.h'
 
 	double precision vald(nbxdim)
 	double precision vold(nbxdim)
@@ -1190,24 +1171,19 @@ c******************************************************************
 
 c computes average velocity values (speed) for box
 
-	use mod_depth !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use mod_hydro
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
 	include 'subboxa.h'
 
 	real val(0:nlvdim,nbxdim)
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'depth.h'
-COMMON_GGU_DELETED	include 'hydro.h'
 
 	real h,u,v
 	real velspeed(nlvdim)
@@ -1266,24 +1242,20 @@ c******************************************************************
 
 c computes average scalar values for box
 
-	use mod_depth !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
 	include 'subboxa.h'
 
 	real scalar(0:nlvdim,nkndim)
 	real val(0:nlvdim,nbxdim)
 	integer iaver			!average or only accumulate
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	double precision vald(0:nlvdim,nbxdim)
 	double precision vold(0:nlvdim,nbxdim)
@@ -1332,23 +1304,19 @@ c******************************************************************
 
 c computes average scalar values for box
 
-	use mod_depth !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use evgeom
+	use levels
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
 	include 'subboxa.h'
 
 	real scalar(nlvdim,nkndim)
 	real val(0:nlvdim,nbxdim)
 
-COMMON_GGU_DELETED	include 'levels.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	double precision vald(0:nlvdim,nbxdim)
 	double precision vold(0:nlvdim,nbxdim)
@@ -1397,14 +1365,12 @@ c******************************************************************
 
 c computes average scalar values for box
 
-	use evgeom !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use evgeom
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'ev.h'
 	include 'subboxa.h'
 
 	real scalar(*)
@@ -1731,7 +1697,7 @@ c******************************************************************
 
 	subroutine boxes_meteo_accum(nbox,valm,val,ievap)
 
-	use mod_meteo !COMMON_GGU_SUBST
+	use mod_meteo
 
 	implicit none
 
@@ -1744,7 +1710,6 @@ c******************************************************************
         parameter( zconv = 1.e-3 / 86400. )
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'meteo.h'
 
 	integer i,ip
 	real econv
@@ -1800,12 +1765,11 @@ c******************************************************************
 
 	subroutine box_write_meteo(it,valm)
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'subboxa.h'
 
 	integer it
@@ -1845,12 +1809,11 @@ c******************************************************************
 
 c computes mass balance
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'subboxa.h'
 
 	real dtbox
@@ -1926,12 +1889,11 @@ c******************************************************************
 
 c computes mass balance
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'subboxa.h'
 
 	real dtbox

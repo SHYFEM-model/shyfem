@@ -43,30 +43,22 @@ c written on 27.08.91 by ggu  (from scratch)
 c 14.08.1998    ggu     w = 0 at open boundary nodes
 c 20.08.1998    ggu     some documentation
 
-	use mod_plot2d !COMMON_GGU_SUBST
-	use mod_plot3d !COMMON_GGU_SUBST
-	use mod_hydro_vel !COMMON_GGU_SUBST
-	use mod_hydro !COMMON_GGU_SUBST
-	use evgeom !COMMON_GGU_SUBST
-	use levels !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_plot2d
+	use mod_plot3d
+	use mod_hydro_vel
+	use mod_hydro
+	use evgeom
+	use levels
+	use basin
 
         implicit none
 
 c parameters
         include 'param.h'
-COMMON_GGU_DELETED        include 'ev.h'
 c common
-COMMON_GGU_DELETED	include 'nlevel.h'
 
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'levels.h'
 
-COMMON_GGU_DELETED	include 'hydro.h'
 
-COMMON_GGU_DELETED	include 'hydro_vel.h'
-COMMON_GGU_DELETED	include 'plot_aux.h'
-COMMON_GGU_DELETED	include 'plot_aux_3d.h'
 
 c local
 	logical byaron

@@ -38,7 +38,7 @@ c dis           distance of isolines (dis>0)
 c mode		0: isolines with dis  1: isolines in /isolin/
 c		2: color  3: color on element values
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -50,7 +50,6 @@ c argument
 c common
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 c color
 	include 'color.h'
 c local
@@ -830,7 +829,7 @@ c***************************************************************
 
 c returns x,y,val of element, and indication of flag values
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
@@ -841,7 +840,6 @@ c returns x,y,val of element, and indication of flag values
         integer inull           !total number of flags found
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ii,kn
 
@@ -863,7 +861,7 @@ c***************************************************************
 
 c returns x,y of element
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
@@ -871,7 +869,6 @@ c returns x,y of element
         real x(3),y(3)          !return values of x,y
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ii,kn
 
