@@ -40,7 +40,7 @@ c         function flxtype
 c	  subroutine get_elem_linkp
 c         subroutine mk_rflux           flux through volume k
 c         subroutine mk_tflux           flux through vertexes
-c         subroutine setup_fx           set up flux2d(3,neldim)
+c         subroutine setup_fx           set up flux2d(3,nel)
 c       end do
 c       subroutine setup_vl
 c

@@ -134,7 +134,8 @@ c******************************************************************
 	integer nfxdi
         integer nrdveci
 
-	call getdim('nfxdim',nfxdi)
+	!call getdim('nfxdim',nfxdi)
+	nfxdi = nfxdim
 
 	kvold = nfxdi
         kvolm = nrdveci(kvol,nfxdi)

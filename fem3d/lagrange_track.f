@@ -64,7 +64,7 @@ COMMON_GGU_DELETED	include 'hydro_vel.h'
 	integer l0,l1,addl,lmax
 	real ztime,lb,subtime,layd
 	real w
-	real hl(nlvdim)
+	real hl(nlvdi)
 	real a_int,a_out
         real in_d,ou_d
 	integer in_dm,in_dx,ou_dm,ou_dx
@@ -515,7 +515,7 @@ c          write(lunit,*) 'track orig',bdy
 	 call getalfa(l_out,ou_d,ou_dm,ou_dx,a_out)
          call getzvel(ie,zn0,l0,l_int,l_out,a_int,a_out,w)
 	 if( blgrsurf ) w = 0.
-	 lmax = nlvdim
+	 lmax = nlvdi
          call lagr_layer_thickness(ie,lmax,hl)
          layd=hl(l0)
 
@@ -675,7 +675,7 @@ COMMON_GGU_DELETED	include 'nlevel.h'
         integer l0,l1,addl,lmax
         real ztime,lb,subtime,layd
         real w
-        real hl(nlvdim)
+        real hl(nlvdi)
         real a_int,a_out
 	real in_d,ou_d
         integer in_dm,in_dx,ou_dm,ou_dx
@@ -1016,7 +1016,7 @@ c calcolo distanza massima percorribile all''interno di elemento
 	call getalfa(l_out,ou_d,ou_dm,ou_dx,a_out)
         call getzvel(ie,zn0,l0,l_int,l_out,a_int,a_out,w)
 	if( blgrsurf ) w = 0.
-	lmax = nlvdim
+	lmax = nlvdi
         call lagr_layer_thickness(ie,lmax,hl)
         layd=hl(l0)
 

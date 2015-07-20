@@ -134,9 +134,6 @@ c----------------------------------------------------------------
 
 c----------------------------------------------------------------
 
-	!parameter (ibndim=100)
-	parameter (mardim=nlvdim*10)
-
 c variables and coefficients
 
 	include 'mkonst.h'
@@ -297,12 +294,6 @@ c-----------------------------------------------------------
 c dimensions
 c-----------------------------------------------------------
 
-	!nlvdi=nlvdim
-
-	call cstdim(nkndim,neldim,nrbdim,nbcdim
-     +			,mbwdim,ngrdim,nardim,nexdim
-     +			,nfxdim,nlkdim)
-
 c-----------------------------------------------------------
 c read STR file
 c-----------------------------------------------------------
@@ -317,11 +308,6 @@ c-----------------------------------------------------------
 c-----------------------------------------------------------
 c check dimensions
 c-----------------------------------------------------------
-
-	call sp131a(nkndim,neldim)
-	call sp131b(nrbdim,nbcdim)
-	call sp131m(mbwdim)
-	call sp131g(mardim,2,2*nlvdim,2,0)
 
 	levdbg = nint(getpar('levdbg'))
 	bdebout = ( levdbg == -1 )
@@ -398,7 +384,7 @@ c-----------------------------------------------------------
 
 	call setnod
 
-	call setarea(nlvdim,areakv)
+	call setarea(nlvdi,areakv)
 
 	call make_new_depth
 	call copy_depth
@@ -440,6 +426,7 @@ c-----------------------------------------------------------
         call shdist(rdistv)
 	call tracer
 	call renewal_time
+
 
 c-----------------------------------------------------------
 c write input values to log file and perform check
@@ -622,38 +609,38 @@ COMMON_GGU_DELETED	include 'ts.h'
 	call debug_output_record(nkn,1,zov,'zov')
 	call debug_output_record(nkn,1,znv,'znv')
 
-	call debug_output_record(nlvdim*nel,nlvdim,utlov,'utlov')
-	call debug_output_record(nlvdim*nel,nlvdim,vtlov,'vtlov')
-	call debug_output_record(nlvdim*nel,nlvdim,utlnv,'utlnv')
-	call debug_output_record(nlvdim*nel,nlvdim,vtlnv,'vtlnv')
+	call debug_output_record(nlvdi*nel,nlvdi,utlov,'utlov')
+	call debug_output_record(nlvdi*nel,nlvdi,vtlov,'vtlov')
+	call debug_output_record(nlvdi*nel,nlvdi,utlnv,'utlnv')
+	call debug_output_record(nlvdi*nel,nlvdi,vtlnv,'vtlnv')
 
-        call debug_output_record(nlvdim*nkn,nlvdim,saltv,'saltv')
-        call debug_output_record(nlvdim*nkn,nlvdim,tempv,'tempv')
-	call debug_output_record((nlvdim+1)*nkn,nlvdim+1,visv,'visv')
-	call debug_output_record((nlvdim+1)*nkn,nlvdim+1,wlov,'wlov')
-	call debug_output_record((nlvdim+1)*nkn,nlvdim+1,wlnv,'wlnv')
+        call debug_output_record(nlvdi*nkn,nlvdi,saltv,'saltv')
+        call debug_output_record(nlvdi*nkn,nlvdi,tempv,'tempv')
+	call debug_output_record((nlvdi+1)*nkn,nlvdi+1,visv,'visv')
+	call debug_output_record((nlvdi+1)*nkn,nlvdi+1,wlov,'wlov')
+	call debug_output_record((nlvdi+1)*nkn,nlvdi+1,wlnv,'wlnv')
 
 	call debug_output_record(nkn,1,z0bk,'z0bk')
 	call debug_output_record(nkn,1,tauxnv,'tauxnv')
 	call debug_output_record(nkn,1,tauynv,'tauynv')
 
-	call debug_output_record(nlvdim*nel,nlvdim,hdeov,'hdeov')
-        call debug_output_record(nlvdim*nel,nlvdim,hdenv,'hdenv')
-        call debug_output_record(nlvdim*nkn,nlvdim,hdkov,'hdkov')
-        call debug_output_record(nlvdim*nkn,nlvdim,hdknv,'hdknv')
+	call debug_output_record(nlvdi*nel,nlvdi,hdeov,'hdeov')
+        call debug_output_record(nlvdi*nel,nlvdi,hdenv,'hdenv')
+        call debug_output_record(nlvdi*nkn,nlvdi,hdkov,'hdkov')
+        call debug_output_record(nlvdi*nkn,nlvdi,hdknv,'hdknv')
 
-        call debug_output_record(nlvdim*nkn,nlvdim,hdknv,'shearf2')
-        call debug_output_record(nlvdim*nkn,nlvdim,hdknv,'buoyf2')
+        call debug_output_record(nlvdi*nkn,nlvdi,hdknv,'shearf2')
+        call debug_output_record(nlvdi*nkn,nlvdi,hdknv,'buoyf2')
 
-        call debug_output_record(nlvdim*nel,nlvdim,fxv,'fxv')
-        call debug_output_record(nlvdim*nel,nlvdim,fyv,'fyv')
-        call debug_output_record(nlvdim*nel,nlvdim,wavefx,'wavefx')
-        call debug_output_record(nlvdim*nel,nlvdim,wavefy,'wavefy')
+        call debug_output_record(nlvdi*nel,nlvdi,fxv,'fxv')
+        call debug_output_record(nlvdi*nel,nlvdi,fyv,'fyv')
+        call debug_output_record(nlvdi*nel,nlvdi,wavefx,'wavefx')
+        call debug_output_record(nlvdi*nel,nlvdi,wavefy,'wavefy')
         call debug_output_record(nel,1,rfricv,'rfricv')
 
-        call debug_output_record(nlvdim*nkn,nlvdim,saux2,'saux2')
-        call debug_output_record(nlvdim*nkn,nlvdim,saux3,'saux3')
-        call debug_output_record((nlvdim+1)*nkn,nlvdim+1,vts,'vts')
+        call debug_output_record(nlvdi*nkn,nlvdi,saux2,'saux2')
+        call debug_output_record(nlvdi*nkn,nlvdi,saux3,'saux3')
+        call debug_output_record((nlvdi+1)*nkn,nlvdi+1,vts,'vts')
 
 	write(66) 0,0
 
@@ -857,8 +844,7 @@ COMMON_GGU_DELETED	include 'conz.h'
 
 	integer nlvddi
 
-	nlvdi = nlvdim
-	nlvddi = nlvdim
+	nlvddi = nlvdi
 
 	call mod_hydro_init(nkn,nel,nlvddi)
 	call mod_hydro_vel_init(nkn,nel,nlvddi)

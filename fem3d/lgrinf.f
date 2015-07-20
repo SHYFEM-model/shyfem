@@ -41,7 +41,7 @@ c--------------------------------------------------------------
 c open simulation
 c--------------------------------------------------------------
 
-	if(iapini(2,nkndim,neldim,0).eq.0) then
+	if(iapini(2,0,0,0).eq.0) then
 		stop 'error stop : iapini'
 	end if
 
@@ -137,7 +137,7 @@ c rnull		invalid value
 
 c***************************************************************
 
-        subroutine mimar_s(xx,nlvdim,n,xmin,xmax,rnull)
+        subroutine mimar_s(xx,nlvddi,n,xmin,xmax,rnull)
 
 c computes min/max of vector
 c
@@ -149,15 +149,15 @@ c rnull		invalid value
         implicit none
 
         integer n
-        integer nlvdim
-        real xx(nlvdim,n)
+        integer nlvddi
+        real xx(nlvddi,n)
         real xmin,xmax,rnull
 
         integer k,l
         real x
 
         do k=1,n
-          do l=1,nlvdim
+          do l=1,nlvddi
             x=xx(l,k)
 	    if(x.ne.rnull) then
               if( x .lt. xmin .or. x .gt. xmax ) then

@@ -383,13 +383,6 @@ c write to nb2
 
 	call bas_info
 
-	if( mbw .gt. mbwdim ) then
-	  write(6,*) '*** Attention:'
-	  write(6,*) 'mbwdim = ',mbwdim,'    mbw = ',mbw
-	  write(6,*) 'dimension for mbw is too small'
-	  write(6,*) 'before running the model please adjust dimension'
-	end if
-
 	stop ' Successful completion'
 
 99900	write(nat,*)' (00) error in dimension declaration'

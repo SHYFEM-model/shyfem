@@ -18,7 +18,7 @@ c 03.03.2004    ggu	decay function for bacteria decad_bio()
 c 04.03.2004    ggu	changes from donata integrated
 c 05.03.2004    ggu	initialization from file
 c 22.03.2004    ggu	change in call to massconc (bug)
-c 30.03.2004    ggu	bug fix -> call to confil with nlvdim
+c 30.03.2004    ggu	bug fix -> call to confil with nlvdi
 c 20.07.2004    dmk	new routine sed_av_shell (aver/min/max)
 c 24.08.2004    ggu	new version from donata (jeanmichel)
 c 24.08.2004	ggu     new check_es, changes in check_bio
@@ -78,7 +78,7 @@ c       ho integrato il conrollo di massa, ma c'e' da controllare
 c
 c todo :
 c
-c - * FIXME -> number of levels nlvdim, and not 1 (done)
+c - * FIXME -> number of levels nlvdi, and not 1 (done)
 c - wind speed and air temp is not available -> introduce (wmeteo)
 c
 c********************************************************************
@@ -132,7 +132,7 @@ c eco-model cosimo
 
 	use mod_diff_visc_fric !COMMON_GGU_SUBST
 	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -146,10 +146,9 @@ c eco-model cosimo
 	integer nsstate
 	parameter( nsstate = 2 )
 
-	real e(nlvdim,nkndim,nstate)	!state vector
-	real eload(nlvdim,nkndim,nstate)!vector of loadings
-	real es(nkndim,nsstate)		!sediment state variables
-	save e,eload,es
+	real, save, allocatable :: e(:,:,:)		!state vector
+	real, save, allocatable :: eload(:,:,:)		!loadings
+	real, save, allocatable :: es(:,:)		!sediment state vector
 
 COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'mkonst.h'
@@ -284,6 +283,10 @@ c-------------------------------------------------------------------
 c         --------------------------------------------------
 c	  initialize state variables with einit
 c         --------------------------------------------------
+
+	  allocate(e(nlvdi,nkndi,nstate))
+	  allocate(eload(nlvdi,nkndi,nstate))
+	  allocate(es(nkndi,nsstate))
 
 	  do k=1,nkn		!loop on nodes
             lmax = ilhkv(k)
@@ -499,7 +502,7 @@ c	-------------------------------------------------------------------
      +                          ,rkpar,wsink
      +                          ,difhv,difv,difmol)
 
-          call tsmass (e(1,1,i),1,nlvdim,tstot(i)) !mass control
+          call tsmass (e(1,1,i),1,nlvdi,tstot(i)) !mass control
 
 	end do
 
@@ -524,14 +527,14 @@ c	-------------------------------------------------------------------
 	  ia_out(4) = iub
 	  do i=1,nstate
 	    id = 70 + i
-	    call write_scalar_file(ia_out,id,nlvdim,e(1,1,i))
+	    call write_scalar_file(ia_out,id,nlvdi,e(1,1,i))
 	  end do
 
           if( bsedim ) then
 	    ia_out(4) = iubs
 	    do i=1,nsstate
 	      id = 90 + i
-	      call write_scalar_file(ia_out,id,nlvdim,e(1,1,i))
+	      call write_scalar_file(ia_out,id,nlvdi,e(1,1,i))
 	    end do
 	  end if
         end if
@@ -550,7 +553,7 @@ c	-------------------------------------------------------------------
         !k = 100
         !l = 1
         !call getts(l,k,t,s)
-        !call writee(95,it,k,l,e,t,s,nlvdim,nkndim,nstate)
+        !call writee(95,it,k,l,e,t,s,nlvdi,nkndi,nstate)
         !call bioprint(it,e,nstate)
 
 c	-------------------------------------------------------------------
@@ -561,7 +564,7 @@ c	-------------------------------------------------------------------
 
 c*************************************************************
 
-	subroutine writee(iunit,it,k,l,e,t,s,nlvdim,nkndim,nstate)
+	subroutine writee(iunit,it,k,l,e,t,s,nlvddi,nknddi,nstate)
 
 c formatted write for debug
 
@@ -569,8 +572,8 @@ c formatted write for debug
 
 	integer iunit
 	integer it,k,l
-	integer nlvdim,nkndim,nstate
-	real e(nlvdim,nkndim,nstate)
+	integer nlvddi,nknddi,nstate
+	real e(nlvddi,nknddi,nstate)
 	real t
 	real s
 
@@ -596,6 +599,9 @@ c e(1) max	== 263
 c e(2) average	== 264
 c ...
 
+	use basin
+	use levels
+
 	implicit none
 
 c parameter
@@ -605,7 +611,7 @@ c parameter
 	integer nstate
 	parameter( nstate = 9 )
 
-	real e(nlvdim,nkndim,nstate)	!state vector
+	real e(nlvdi,nkndi,nstate)	!state vector
 
 c local
 	integer idtc,itmc,itsmed
@@ -613,14 +619,12 @@ c local
 c function
 	real getpar
 c save
-	double precision bioacu(nlvdim,nkndim,nstate)
-	real biomin(nlvdim,nkndim,nstate)
-	real biomax(nlvdim,nkndim,nstate)
+	double precision, save, allocatable :: bioacu(:,:,:)
+	real, save, allocatable :: biomin(:,:,:)
+	real, save, allocatable :: biomax(:,:,:)
 
-	integer ivect(8)
-
-	save bioacu,biomin,biomax
 	save ivect
+	integer ivect(8)
 
 	integer icall
 	save icall
@@ -637,19 +641,23 @@ c save
             return
           end if
 
+	  allocate(bioacu(nlvdi,nkndi,nstate))
+	  allocate(biomin(nlvdi,nkndi,nstate))
+	  allocate(biomax(nlvdi,nkndi,nstate))
+
 	  idtc=nint(getpar('idtcon'))
 	  itmc=nint(getpar('itmcon'))
 
 	  nvar = nstate
 
 	  id = 260
-	  call cmed_init('bav',id,nvar,nlvdim,idtc,itmc
+	  call cmed_init('bav',id,nvar,nlvdi,idtc,itmc
      +				,bioacu,biomin,biomax,ivect)
 
 	  icall = 1
 	end if
 
-	call cmed_accum(nlvdim,e,bioacu,biomin,biomax,ivect)
+	call cmed_accum(nlvdi,e,bioacu,biomin,biomax,ivect)
 
 	end
 
@@ -660,7 +668,7 @@ c*************************************************************
 c checks bio vars
 
 	use levels, only : nlvdi,nlv !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -672,8 +680,8 @@ c checks bio vars
 	parameter( nsstate = 2 )
 
 	character*(*) title
-	real e(nlvdim,nkndim,nstate)	!state vector
-	real es(nkndim,nsstate)		!sediment state variables
+	real e(nlvdi,nkndi,nstate)	!state vector
+	real es(nkndi,nsstate)		!sediment state variables
 
 COMMON_GGU_DELETED	include 'nbasin.h'
 COMMON_GGU_DELETED	include 'nlevel.h'
@@ -686,7 +694,7 @@ c	write(6,*) 'check_bio: ',title
         text = '*** bio check e     '
 	do i=1,nstate
           write(text(18:19),'(i2)') i
-          call check2Dr(nlvdim,nlv,nkn,e(1,1,i),0.,1.e+20,text,title)
+          call check2Dr(nlvdi,nlv,nkn,e(1,1,i),0.,1.e+20,text,title)
 	end do
 
         text = '*** bio check es    '
@@ -704,7 +712,7 @@ c*************************************************************
 c simulates decay for virus and bacteria
 
 	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -714,7 +722,7 @@ c simulates decay for virus and bacteria
 	parameter( nstate = 9 )
 
         real dt
-	real e(nlvdim,nkndim,nstate)	!state vector
+	real e(nlvdi,nkndi,nstate)	!state vector
 
 COMMON_GGU_DELETED	include 'nbasin.h'
 COMMON_GGU_DELETED	include 'nlevel.h'
@@ -820,7 +828,7 @@ c einit must be 1.
 
 	use mod_aux_array !COMMON_GGU_SUBST
 	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -831,7 +839,7 @@ c einit must be 1.
 
 	integer it
 	real dt
-	real e(nlvdim,nkndim,nstate)	!state vector
+	real e(nlvdi,nkndi,nstate)	!state vector
 
 COMMON_GGU_DELETED	include 'nbasin.h'
 COMMON_GGU_DELETED	include 'nlevel.h'
@@ -1009,7 +1017,7 @@ c*************************************************************
 c computes total mass of state variables (only where v1v is not 0)
 
 	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -1018,7 +1026,7 @@ c computes total mass of state variables (only where v1v is not 0)
 	integer nstate
 	parameter( nstate = 9 )
 
-	real e(nlvdim,nkndim,nstate)	!state vector
+	real e(nlvdi,nkndi,nstate)	!state vector
 	real v1v(1)
 	double precision mass(1)
 
@@ -1057,13 +1065,14 @@ c****************************************************************
         subroutine bioprint(it,e,nstate)
 
 	use levels !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
         include 'param.h'
 
         integer it,nstate
-	real e(nlvdim,nkndim,nstate)	!state vector
+	real e(nlvdi,nkndi,nstate)	!state vector
 
         integer i,k,n
         logical berror

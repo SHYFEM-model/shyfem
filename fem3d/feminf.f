@@ -80,7 +80,7 @@ c writes info on fem file
 
 	character*50 name,string
 	integer np,iunit,iout
-	integer nvers,lmax,nvar,ntype,nlvdim
+	integer nvers,lmax,nvar,ntype
 	integer nvar0,lmax0,np0
 	integer idt,idtact
 	double precision dtime,tmin,tmax
@@ -318,13 +318,13 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-        subroutine minmax_data(nlvdim,np,ilhkv,data,vmin,vmax)
+        subroutine minmax_data(nlvddi,np,ilhkv,data,vmin,vmax)
 
         implicit none
 
-        integer nlvdim,np
+        integer nlvddi,np
         integer ilhkv(1)
-        real data(nlvdim,1)
+        real data(nlvddi,1)
 	real vmin,vmax
 
         integer k,l,lmax

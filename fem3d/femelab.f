@@ -402,13 +402,13 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-        subroutine minmax_data(nlvdim,np,ilhkv,data,vmin,vmax)
+        subroutine minmax_data(nlvddi,np,ilhkv,data,vmin,vmax)
 
         implicit none
 
-        integer nlvdim,np
+        integer nlvddi,np
         integer ilhkv(1)
-        real data(nlvdim,1)
+        real data(nlvddi,1)
 	real vmin,vmax
 
         integer k,l,lmax

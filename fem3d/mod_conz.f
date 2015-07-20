@@ -5,9 +5,6 @@
 
         implicit none
 
-        !real conzv(nlvdim,nkndim,ncsdim)        !multiple concentrations
-        !real cnv(nlvdim,nkndim)
-
         integer, private, save :: ncs_conz = 0
         integer, private, save :: nkn_conz = 0
         integer, private, save :: nlv_conz = 0

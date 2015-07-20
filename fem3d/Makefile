@@ -151,7 +151,7 @@ SOBJS   = \
           subcst.o submir.o subros.o \
           subn11.o subsrt.o \
           subdef.o subext.o subssc.o \
-          subbas.o subnev.o subdim.o \
+          subbas.o subnev.o \
           subnls.o subwat.o \
           subfil.o subn35.o subout.o subous.o subssg.o \
           subssm.o \
@@ -180,7 +180,7 @@ SOBJS   = \
 HTOBJS = \
 	subver.o \
 	subcst.o subsys.o subnsh.o subtime.o suboutput.o \
-	subbas.o subdim.o subnev.o \
+	subbas.o subnev.o \
 	subnsu.o subn35.o subdep.o \
 	subdef.o subfil.o subnls.o \
 	$(PARMOD) \
@@ -226,7 +226,7 @@ HTOBJS = \
 VPOBJS = \
 	subver.o \
         subros.o subcmv.o \
-        subdef.o subbas.o subdim.o \
+        subdef.o subbas.o \
         subfil.o \
         $(PARMOD) \
         subsrt.o subgrd.o \
@@ -240,7 +240,7 @@ VPOBJS = \
 
 OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subfil.o subdef.o subnsu.o subssv.o \
-	  subbas.o subsys.o subdim.o \
+	  subbas.o subsys.o \
 	  subapn.o subnsa.o subdum.o \
 	  subdts.o subdep.o \
 	  debug.o subreg.o subnev.o \
@@ -1312,7 +1312,6 @@ subdif.o: ../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/mod_diff_aux.mod \
 		../femlib/mod/mod_geom.mod 
-subdim.o: ../femlib/mod/basin.mod
 subdry.o: ../femlib/mod/mod_geom_dynamic.mod param.h \
 		../femlib/mod/basin.mod \
 		../femlib/mod/mod_aux_array.mod mkonst.h femtime.h \

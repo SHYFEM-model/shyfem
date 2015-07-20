@@ -137,7 +137,7 @@ c check data structure
 c------------------------------------------------------------------
 
 	nlv_final = nlv
-	nlv_final = nlvdim		!to be removed later
+	!nlv_final = nlvdim		!to be removed later
 	call levels_reinit(nlv_final)
 
 	call check_vertical
@@ -311,7 +311,6 @@ c checks nlv and associated parameters
 COMMON_GGU_DELETED	include 'nlevel.h'
 
 	write(6,*) 'check_nlv : '
-	write(6,*) '   nlvdim : ',nlvdim
 	write(6,*) '    nlvdi : ',nlvdi
 	write(6,*) '      nlv : ',nlv
 

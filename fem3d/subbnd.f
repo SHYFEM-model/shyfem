@@ -54,7 +54,7 @@ c 20.01.2000    ggu     call to rdbnds without dimension -> use getdim
 c 07.04.2000    ggu     new subroutine setbc
 c 07.05.2001    ggu     introduced new variable zfact
 c 25.09.2001    ggu     introduced bio2dn
-c 07.08.2003    ggu     check for nrbdim in rdbnds
+c 07.08.2003    ggu     check for nrb in rdbnds
 c 15.10.2004    ggu     new boundary types and sedin
 c 02.03.2005    ggu     new nbdim for 3D boundary values
 c 02.03.2005    ggu     some new helper functions
@@ -120,7 +120,7 @@ COMMON_GGU_DELETED	include 'bound_geom.h'
 	double precision dvalue
 	real value
 	integer n
-	integer nbcdi,nrbdi
+	integer nbcdi
 	integer i,kranf,krend,kref
 	integer iweich,id,nbnd
 	integer nrdpar
@@ -131,8 +131,7 @@ COMMON_GGU_DELETED	include 'bound_geom.h'
 	save icall
 	data icall / 0 /
 
-	call getdim('nbcdim',nbcdi)
-	call getdim('nrbdim',nrbdi)
+	nbcdi = nbcdim
 
 	if( icall .eq. 0 ) then		!initialize bnd array
 	  do i=1,nbcdi
@@ -447,7 +446,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccc
 	    if( name .eq. 'kbound' ) then	!$$1stnode
 		nrb=nrb+1
 		call mod_irv_init(nrb)
-		if( nrb .gt. nrbdi ) goto 76
 		irv(nrb)=nint(value)
 	    else if( iweich .eq. 3 ) then	!file name
 	        ! must be handeled later
@@ -491,10 +489,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccc
 	call check_parameter_values('after deleting section')
 
 	return
-   76	continue
-	write(6,*) 'Dimension error for nrbdim'
-	write(6,*) 'nrbdim :',nrbdi
-	stop 'error stop : rdbnds'
    77	continue
 	write(6,*) 'Dimension error for nbcdim'
 	write(6,*) 'nbcdim :',nbcdi

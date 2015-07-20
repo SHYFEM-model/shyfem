@@ -739,7 +739,7 @@ c DOCS  END
 
   35    continue
         write(6,*) 'Dimension error for nsdim'
-        write(6,*) 'nrbdim  :',nsdim
+        write(6,*) 'nsdim  :',nsdim
         write(6,*) 'nscls :',nrs
         stop 'error stop : readsed'
 

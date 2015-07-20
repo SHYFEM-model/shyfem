@@ -320,7 +320,7 @@ c writes copyright and version/dimension
         write(6,*) ' ----------------------------------------------'
         write(6,*)
         write(6,*) ' SHYFEM - Finite Element Model for coastal seas'
-        write(6,*) ' Copyright (c) The Shyfem Team 1985-2014'
+        write(6,*) ' Copyright (c) The Shyfem Team 1985-2015'
         write(6,*)
         write(6,*) ' version: ',vers
         write(6,*) ' routine: ',routine

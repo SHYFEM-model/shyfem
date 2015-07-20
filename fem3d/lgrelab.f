@@ -34,7 +34,7 @@ c--------------------------------------------------
 	real x,y,xs,ys
 
 	integer ibocche(0:3)
-	integer ielems(0:3,neldim)
+	integer, allocatable :: ielems(:,:)
 
 	integer iapini
 	integer ifem_open_file
@@ -48,7 +48,7 @@ c--------------------------------------------------------------
 c open simulation
 c--------------------------------------------------------------
 
-	if(iapini(3,nkndim,neldim,0).eq.0) then
+	if(iapini(3,0,0,0).eq.0) then
 		stop 'error stop : iapini'
 	end if
 
@@ -57,6 +57,8 @@ c--------------------------------------------------------------
 	read(nin) mtype,nvers
 	write(6,*) 'mtype,nvers: ',mtype,nvers
 	if( mtype .ne. 367265 ) stop 'error stop: mtype'
+
+	allocate(ielems(0:3,nel))
 
 	do i=0,3
 	  ibocche(i) = 0
@@ -178,9 +180,9 @@ c***************************************************************
 
 COMMON_GGU_DELETED	include 'basin.h'
 
-	integer nodes(0:3,nkndim)
-	integer icount(nkndim)
-	real vals(nkndim)
+	integer nodes(0:3,nkn)
+	integer icount(nkn)
+	real vals(nkn)
 
 	integer ic,ietot,ievar,ies,i3var
 	integer ie,i,k,ii,iu

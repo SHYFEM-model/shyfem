@@ -363,7 +363,9 @@ subroutine SEDIMENT_MODEL_1 &
     !End of new variables for DIC and ALK
 
     
-    
+    CONSIDER_INORG_C_DERIVATIVE = 0	!avoid compiler warnings
+    CONSIDER_ALKALNITY_DERIVATIVE = 0	!avoid compiler warnings
+
     
     !**************************************************************************
     !*                                                                        *

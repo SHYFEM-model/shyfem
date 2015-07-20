@@ -40,8 +40,8 @@ COMMON_GGU_DELETED	include 'aux_array.h'
 	include 'femtime.h'
 COMMON_GGU_DELETED	include 'nbasin.h'
 
-	real oil(neldim)
-	real zfilm(neldim)
+	real oil(nel)
+	real zfilm(nel)
 
 	integer ie,i
 	integer ioil,ifreq

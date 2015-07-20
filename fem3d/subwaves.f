@@ -1038,9 +1038,9 @@ c --- input variable
 
 c --- output variable
 
-        real waeh(neldim)	!wave height [m]
-        real waep(neldim)	!wave period [s]
-        real waed(neldim)	!wave direction (same as wind direction)
+        real, save, allocatable :: waeh(:)	!wave height [m]
+        real, save, allocatable :: waep(:)	!wave period [s]
+        real, save, allocatable :: waed(:)	!wave direction (same as wind
 c        common /waeh/waeh, /waep/waep, /waed/waed
 
 c --- stress variables
@@ -1103,6 +1103,10 @@ c ----------------------------------------------------------
 c         --------------------------------------------------
 c         Initialize state variables
 c         --------------------------------------------------
+
+	  allocate(waeh(nel))
+	  allocate(waep(nel))
+	  allocate(waed(nel))
 
           do ie = 1,nel
             waeh(ie) = 0.

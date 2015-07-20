@@ -35,7 +35,8 @@ c
 c  the node numbers in karee are external node numbers
 
 	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin
+	!use levels, only : nlvdi
 
 	implicit none
 
@@ -43,7 +44,7 @@ c  the node numbers in karee are external node numbers
 	integer nstate
 	parameter(nstate=9)
 
-	real eload(nlvdim,nkndim,nstate)
+	real eload(nlvdi,nkndi,nstate)
 
 COMMON_GGU_DELETED	include 'nbasin.h'
 
@@ -56,8 +57,7 @@ COMMON_GGU_DELETED	include 'levels.h'
 	real areaload(nstate,nareas)
 	save areaload
 
-	integer aree(nkndim)
-        save aree
+	integer, save, allocatable :: aree(:)
 
 	integer k,l,lmax,i,ia
 	real litri,kgs
@@ -166,6 +166,8 @@ c---------------------------------------------------------
         if( icall .eq. 0 ) then
           icall = 1
 
+	  allocate(aree(nkn))
+
           call load_init_area(nkn,aree)
 
           call load_add_area(1,nnodes1,nodes1,aree)
@@ -231,22 +233,23 @@ c the specified loadings in sload are in [kg/day] or [kg/(m**2 day)]
 c
 c please set afact according to the choice of unit of sload (see below)
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin
+	use levels, only : nlvdi
 
 	implicit none
 
         include 'param.h'
+
 	integer nstate
 	parameter(nstate=9)
 
-	real eload(nlvdim,nkndim,nstate)	!loading matrix for eutro
+	real eload(nlvdi,nkndi,nstate)	!loading matrix for eutro
 	real sload(nstate)			!surface load for each var
 
 COMMON_GGU_DELETED	include 'nbasin.h'
 
-	real areav(nkndim)
-	real volv(nkndim)
-        save areav,volv
+	real, save, allocatable :: areav(:)
+	real, save, allocatable :: volv(:)
 
 	integer k,i,mode,layer
 	real litri,kgs
@@ -272,6 +275,9 @@ c---------------------------------------------------------
         if( icall .eq. 0 ) then
           icall = 1
 	  mode = 1
+
+	  allocate(areav(nkn))
+	  allocate(volv(nkn))
 
 	  areatot = 0.
           do k=1,nkn

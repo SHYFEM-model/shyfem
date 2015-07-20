@@ -58,9 +58,10 @@ COMMON_GGU_DELETED	include 'hydro.h'
 	integer icwet
 	integer ifileo
 
-        integer nvers,nin,nlv
+        integer nvers,nin
         integer itanf,itend,idt,idtous
 	integer it,ie,i,k,iu,ivar
+	integer nlvnos
         integer ierr,nread,ndry
         integer nknous,nelous,nlvous
 	integer nknaux,nelaux
@@ -106,7 +107,7 @@ c-------------------------------------------------------------------
 
 	nbout = 55
 	nvers = 3
-	nlv = 1
+	nlvnos = 1
 	title = 'created from node file'
 	ivar = 222
 
@@ -120,7 +121,7 @@ c-------------------------------------------------------------------
 	  stop 'error stop: Cannot open NOS file for writing'
 	end if
 
-	call whnos(nbout,nvers,nkn,nel,nlv,1,ilhkv,hlv,hev,title)
+	call whnos(nbout,nvers,nkn,nel,nlvnos,1,ilhkv,hlv,hev,title)
 
 c-------------------------------------------------------------------
 c loop over records

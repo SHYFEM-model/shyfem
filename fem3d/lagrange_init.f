@@ -26,6 +26,8 @@ c manages release of particles
 	real getpar
 
 	npoints = nint(getpar('nbdy'))
+	if( npoints <= 0 ) return
+
         call getfnm('lagra',line)
 
         if( line .eq. ' ' ) then      !total lagoon
@@ -444,7 +446,7 @@ c release in partial area
 COMMON_GGU_DELETED	include 'nbasin.h'
 	include 'lagrange.h'
 
-	integer iflag(neldim)
+	integer iflag(nel)
 
 	integer ie,i,j
 	integer nin,iin,ifl,np

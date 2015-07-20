@@ -37,7 +37,7 @@ COMMON_GGU_DELETED	include 'depth.h'
 	integer ndsdim
 	parameter(ndsdim=1)
 
-        integer nvers,nin,nlv
+        integer nvers,nin
         integer itanf,itend,idt,idtous
 	integer it,ie,i
         integer ierr,nread,ndry

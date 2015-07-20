@@ -75,7 +75,7 @@ c*****************************************************************
 
 	logical bnew,bpres,bhlv
 	integer ios,it,id,n,n0,nvar,nvar0,itanf,nkn,i,j,itend
-	integer iunit,nvers,ntype,lmax,np,nlvdim,iformat
+	integer iunit,nvers,ntype,lmax,np,nlvdi,iformat
 	integer irec,ifreq,nlen,l,lmax0
 	integer datetime(2)
 	real regpar(7)
@@ -149,7 +149,7 @@ c*****************************************************************
 	ntype = 0
 	datetime = 0
 	np = n0
-	nlvdim = lmax
+	nlvdi = lmax
 
 	call dtsyear(date)
 	call setup_datetime(ntype,date,datetime,bdate0,dtime0)
@@ -175,13 +175,13 @@ c*****************************************************************
 	  call convert_date_time(bdate0,it,dtime0,datetime,dtime)
 
 	  call fem_file_write_header(iformat,iunit,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,nlvdim
+     +                          ,nvers,np,lmax,nvar,ntype,nlvdi
      +				,hlv,datetime,regpar)
           call fem_file_write_data(iformat,iunit
      +                          ,nvers,np,lmax
      +                          ,string
      +                          ,ilhkv,hd
-     +                          ,nlvdim,data)
+     +                          ,nlvdi,data)
 
 	  call progress(irec,1,60)
 	end do
@@ -235,7 +235,7 @@ c*****************************************************************
 
 	logical bnew,bpres
 	integer ios,it,id,n,n0,nvar,nvar0,itanf,nkn,i,j,itend,iv
-	integer iunit,nvers,ntype,lmax,np,nlvdim,iformat
+	integer iunit,nvers,ntype,lmax,np,nlvdi,iformat
 	integer irec,ifreq,nlen,l,lmax0
 	integer datetime(2)
 	real regpar(7)
@@ -311,7 +311,7 @@ c*****************************************************************
 	ntype = 0
 	np = n0
 	datetime = 0
-	nlvdim = lmax
+	nlvdi = lmax
 
 	call dtsyear(date)
 	call setup_datetime(ntype,date,datetime,bdate0,dtime0)
@@ -334,7 +334,7 @@ c*****************************************************************
 	  call convert_date_time(bdate0,it,dtime0,datetime,dtime)
 
 	  call fem_file_write_header(iformat,iunit,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,nlvdim
+     +                          ,nvers,np,lmax,nvar,ntype,nlvdi
      +				,hlv,datetime,regpar)
 
 	  do iv=1,nvar
@@ -348,7 +348,7 @@ c*****************************************************************
      +                          ,nvers,np,lmax
      +                          ,stringaux
      +                          ,ilhkv,hd
-     +                          ,nlvdim,data)
+     +                          ,nlvdi,data)
 
 	    call progress(irec,24,60)
 	  end do
@@ -403,7 +403,7 @@ c*****************************************************************
 
 	logical bnew,bpres
 	integer ios,it,id,n,n0,nvar,nvar0,itanf,nkn,i,j,itend
-	integer iunit,nvers,ntype,lmax,np,nlvdim,iformat
+	integer iunit,nvers,ntype,lmax,np,nlvdi,iformat
 	integer irec,ifreq,nlen,l,lmax0,iv
 	integer datetime(2)
 	real regpar(7)
@@ -476,7 +476,7 @@ c*****************************************************************
 	ntype = 0
 	np = n0
 	datetime = 0
-	nlvdim = lmax
+	nlvdi = lmax
 
 	call dtsyear(date)
 	call setup_datetime(ntype,date,datetime,bdate0,dtime0)
@@ -499,7 +499,7 @@ c*****************************************************************
 	  call convert_date_time(bdate0,it,dtime0,datetime,dtime)
 
 	  call fem_file_write_header(iformat,iunit,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,nlvdim
+     +                          ,nvers,np,lmax,nvar,ntype,nlvdi
      +				,hlv,datetime,regpar)
 
 	  do iv = 1,nvar
@@ -512,7 +512,7 @@ c*****************************************************************
      +                          ,nvers,np,lmax
      +                          ,strings(iv)
      +                          ,ilhkv,hd
-     +                          ,nlvdim,data)
+     +                          ,nlvdi,data)
 
 	  end do
 	  call progress(irec,24,60)
@@ -567,7 +567,7 @@ c*****************************************************************
 
 	logical bnew,bpres
 	integer ios,it,id,n,n0,nvar,nvar0,itanf,nkn,i,j,itend
-	integer iunit,nvers,ntype,lmax,np,nlvdim,iformat
+	integer iunit,nvers,ntype,lmax,np,nlvdi,iformat
 	integer irec,ifreq,nlen
 	integer nx,ny
 	double precision dtime
@@ -614,7 +614,7 @@ c*****************************************************************
 	nvers = 0
 	ntype = 10
 	lmax = 1
-	nlvdim = 1
+	nlvdi = 1
 	n0 = 0
 	nvar0 = 0
 	itanf = -1
@@ -656,7 +656,7 @@ c*****************************************************************
 	  call convert_date_time(bdate0,it,dtime0,datetime,dtime)
 
 	  call fem_file_write_header(iformat,iunit,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,nlvdim
+     +                          ,nvers,np,lmax,nvar,ntype,nlvdi
      +				,hlv,datetime,regpar)
 
 	  do i=1,nvar
@@ -668,7 +668,7 @@ c*****************************************************************
      +                          ,nvers,np,lmax
      +                          ,newstring
      +                          ,ilhkv,hd
-     +                          ,nlvdim,data)
+     +                          ,nlvdi,data)
 	  end do
 
 	  call progress(irec,2,60)
@@ -712,7 +712,7 @@ c*****************************************************************
 
 	logical bnew,bpres
 	integer ios,it,id,n,n0,nvar,nvar0,itanf,nkn,i,j,itend
-	integer iunit,nvers,ntype,lmax,np,nlvdim,iformat
+	integer iunit,nvers,ntype,lmax,np,nlvdi,iformat
 	integer irec,ifreq,nlen
 	double precision dtime
 	real hlv(1)
@@ -825,7 +825,7 @@ c*****************************************************************
 	ntype = 0
 	lmax = 1
 	np = n0
-	nlvdim = 1
+	nlvdi = 1
 	datetime = 0
 
 	call dtsyear(date)
@@ -872,14 +872,14 @@ c*****************************************************************
 	  call convert_date_time(bdate0,it,dtime0,datetime,dtime)
 
 	  call fem_file_write_header(iformat,iunit,dtime
-     +                          ,nvers,np,lmax,nvar,ntype,nlvdim
+     +                          ,nvers,np,lmax,nvar,ntype,nlvdi
      +				,hlv,datetime,regpar)
 	  do i=1,nvar
             call fem_file_write_data(iformat,iunit
      +                          ,nvers,np,lmax
      +                          ,strings(i)
      +                          ,ilhkv,hd
-     +                          ,nlvdim,data(1,i))
+     +                          ,nlvdi,data(1,i))
 	  end do
 
 	  call progress(irec,2,60)

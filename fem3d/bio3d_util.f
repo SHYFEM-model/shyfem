@@ -17,7 +17,7 @@ c EUTRO 0-D (LOICZ BUdgeting Procedure)
 c
 c new version -> does everything: initializes, accumulates, writes
 
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -33,8 +33,7 @@ c new version -> does everything: initializes, accumulates, writes
 
 COMMON_GGU_DELETED	include 'nbasin.h'
 
-        real elz(nkndim,nlzstate)               !loicz budg proc ariables
-        save elz                                !SAVEloicz
+        real, save, allocatable :: elz(:,:)     !loicz budg proc ariables
 
         logical bloicz
         integer i,k
@@ -67,6 +66,8 @@ c initialization
 c-----------------------------------------------------------
 
         if( icall .eq. 0 ) then
+
+	  allocate(elz(nkn,nlzstate))
 
           do i=1,nlzstate
             do k=1,nkn
@@ -137,6 +138,8 @@ c es1) max	== 363
 c es2) average	== 364
 c ...
 
+	use basin
+
 	implicit none
 
 c parameter
@@ -146,7 +149,7 @@ c parameter
 	integer nsstate
 	parameter( nsstate = 2 )
 
-	real es(nkndim,nsstate)	!state vector
+	real es(nkndi,nsstate)	!state vector
 
 c local
 	integer idtc,itmc,itsmed
@@ -154,13 +157,11 @@ c local
 c function
 	real getpar
 c save
-	double precision sedacu(nkndim,nsstate)
-	real sedmin(nkndim,nsstate)
-	real sedmax(nkndim,nsstate)
+	double precision, save, allocatable :: sedacu(:,:)
+	real, save, allocatable :: sedmin(:,:)
+	real, save, allocatable :: sedmax(:,:)
 
 	integer ivect(8)
-
-	save sedacu,sedmin,sedmax
 	save ivect
 
 	integer icall
@@ -182,6 +183,10 @@ c save
 	  itmc=nint(getpar('itmcon'))
 
 	  nvar = nsstate
+
+	  allocate(sedacu(nkn,nsstate))
+	  allocate(sedmin(nkn,nsstate))
+	  allocate(sedmax(nkn,nsstate))
 
 	  id = 360
 	  call cmed_init('sdv',id,nvar,1,idtc,itmc
@@ -208,6 +213,8 @@ c elz) max	== 463
 c elz) average	== 464
 c ...
 
+	use basin
+
 	implicit none
 
 c parameter
@@ -217,7 +224,7 @@ c parameter
 	integer nlzstate
 	parameter( nlzstate = 3 )
 
-	real elz(nkndim,nlzstate)	!state vector
+	real elz(nkndi,nlzstate)	!state vector
 
 c local
 	integer idtc,itmc,itsmed
@@ -225,13 +232,11 @@ c local
 c function
 	real getpar
 c save
-	double precision lczacu(nkndim,nlzstate)
-	real lczmin(nkndim,nlzstate)
-	real lczmax(nkndim,nlzstate)
+	double precision, save, allocatable :: lczacu(:,:)
+	real, save, allocatable :: lczmin(:,:)
+	real, save, allocatable :: lczmax(:,:)
 
 	integer ivect(8)
-
-	save lczacu,lczmin,lczmax
 	save ivect
 
 	integer icall
@@ -254,6 +259,10 @@ c save
 
 	  nvar = nlzstate
 
+	  allocate(lczacu(nkn,nlzstate))
+	  allocate(lczmin(nkn,nlzstate))
+	  allocate(lczmax(nkn,nlzstate))
+
 	  write (6,*) 'cmed loicz inizializzato'
 	  id = 460
 	  call cmed_init('lzv',id,nvar,1,idtc,itmc
@@ -270,7 +279,7 @@ c save
 
 c********************************************************************
 
-        subroutine setsedload(nlvdi,nknddi,nstate,eload,elini)
+        subroutine setsedload(nlvddi,nknddi,nstate,eload,elini)
 
 c sets up sediment loading
 
@@ -279,8 +288,8 @@ c sets up sediment loading
 
         implicit none
 
-        integer nlvdi,nknddi,nstate
-        real eload(nlvdi,nknddi,nstate)
+        integer nlvddi,nknddi,nstate
+        real eload(nlvddi,nknddi,nstate)
         real elini(nstate)
 
 	include 'param.h' !COMMON_GGU_SUBST
@@ -309,12 +318,14 @@ c********************************************************************
 
         subroutine check_es(es)
 
+	use basin
+
         include 'param.h'
 
         integer nsstate
         parameter( nsstate = 2 )
 
-        real es(nkndim,nsstate)         !sediment state variables
+        real es(nkndi,nsstate)         !sediment state variables
 
         integer k,i
 

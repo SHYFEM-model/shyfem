@@ -541,6 +541,7 @@ c	------------------------------------------------------
 	  end do
 	  acu = hia(n,1)*z(1) + hia(n,2)*z(2) + hia(n,3)*z(3)
 	  andg = 4.*aj*dt*zndg(n)
+	  !hia(n,n) = hia(n,n) + 4 * dt * aj / tau
 	  hik(n) = acu + andg + 12.*aj*dt*( ut*b(n) + vt*c(n) )	!ZNEW
 	end do
 

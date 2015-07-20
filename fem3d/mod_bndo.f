@@ -5,20 +5,6 @@
 
 	implicit none
 
-        !parameter ( kbcdim = nrbdim )   !total number of open boundary nodes
-        !parameter ( kopdim = ngrdim )   !maximum number of nodes close to OB
-
-        !integer nopnod(kbcdim)          !number of internal nodes close to OB
-        !integer ibcnod(kbcdim)          !number of boundary
-        !integer kbcnod(kbcdim)          !number of boundary node
-        !integer itynod(kbcdim)          !type of boundary
-
-        !integer nopnodes(kopdim,kbcdim) !nodes close to OB
-
-        !real xynorm(2,kbcdim)           !normal direction for OB node
-        !real wopnodes(kopdim,kbcdim)    !weights of nodes close to OB
-
-
 	integer, private, save  :: nrb_bndo = 0
 	integer, private, save  :: ngr_bndo = 0
 

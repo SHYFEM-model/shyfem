@@ -64,7 +64,7 @@ COMMON_GGU_DELETED	include 'depth.h'
 
 	real var3d(nlvdim*nkndim)
 
-        integer nvers,nin,nlv,lmax,l
+        integer nvers,nin,lmax,l
         integer itanf,itend,idt
 	integer it,ie,i
         integer ierr,nread,ndry

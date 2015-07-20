@@ -356,7 +356,8 @@ COMMON_GGU_DELETED	include 'plot_aux_3d.h'
 
 	real flag
 
-	nlvdi = nlvdim
+	!nlvdi = nlvdim
+	nlvdi = nlv
 
 	call levels_init(nkn,nel,nlvdi)
 	call mod_hydro_init(nkn,nel,nlvdi)

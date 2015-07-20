@@ -1109,6 +1109,7 @@
    REALTYPE, dimension (0:nlev) :: Bflux
    REALTYPE, dimension (0:nlev) :: FC
 
+   dgt1ds = 0.	!just to avoid compiler warnings
 
 !-----------------------------------------------------------------------
 !BOC

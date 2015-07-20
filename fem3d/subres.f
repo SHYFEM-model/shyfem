@@ -621,7 +621,7 @@ c for 2D arrays call with nlvddi = 1
 c for 3D arrays call with nlvddi = nlvdi
 
 	use levels !COMMON_GGU_SUBST
-	use basin, only : nkn,nel,ngr,mbw !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
@@ -639,9 +639,9 @@ COMMON_GGU_DELETED	include 'nlevel.h'
 	integer nlvddi		!number of layers (either nlvdi or 1)
 	integer idtc		!frequency of file to be written
 	integer itmc		!start time for accumulation
-	double precision cmed(nlvddi,nkn,nvar)	!average
-	real cmin(nlvddi,nkn,nvar)		!minimum
-	real cmax(nlvddi,nkn,nvar)		!maximum
+	double precision cmed(nlvddi,nkndi,nvar)	!average
+	real cmin(nlvddi,nkndi,nvar)		!minimum
+	real cmax(nlvddi,nkndi,nvar)		!maximum
 	integer ivect(8)	!info array that is set up
 
 c local

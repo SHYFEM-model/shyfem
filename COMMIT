@@ -1,5 +1,65 @@
 ============================================================
 
+Mon Jul 20 17:55:15 CEST 2015
+
+no need to set dimensions
+
+ fem3d/Makefile                       |    9 +-
+ fem3d/aquabc_II_sediment_model_1.f90 |    4 +-
+ fem3d/bc2fem.f                       |   40 ++--
+ fem3d/bio3d.f                        |   77 ++++---
+ fem3d/bio3d_util.f                   |   49 +++--
+ fem3d/eosinf.f                       |    2 +-
+ fem3d/extinf.f                       |    4 +-
+ fem3d/femelab.f                      |    6 +-
+ fem3d/feminf.f                       |    8 +-
+ fem3d/ht.f                           |   64 ++---
+ fem3d/lagrange_flux.f                |    8 +-
+ fem3d/lagrange_init.f                |    4 +-
+ fem3d/lagrange_main.f                |    2 +-
+ fem3d/lagrange_oil.f                 |    4 +-
+ fem3d/lagrange_track.f               |    8 +-
+ fem3d/lgrelab.f                      |   12 +-
+ fem3d/lgrinf.f                       |   10 +-
+ fem3d/loading.f                      |   24 ++-
+ fem3d/mod_bndo.f                     |   14 --
+ fem3d/mod_bound_geom.f               |   18 --
+ fem3d/mod_conz.f                     |    3 -
+ fem3d/new3di.f                       |    1 +
+ fem3d/newalloc.f                     |   77 ------
+ fem3d/newconz.f                      |    6 -
+ fem3d/newini.f                       |    3 +-
+ fem3d/nos2nc.f                       |    2 +-
+ fem3d/noselab.f                      |  111 +++++----
+ fem3d/nosextr_nodes.f                |   32 ++-
+ fem3d/noswrite.f                     |    7 +-
+ fem3d/ous2nc.f                       |    2 +-
+ fem3d/param.h                        |    2 +-
+ fem3d/sedi3d.f                       |    2 +-
+ fem3d/subapn.f                       |    2 +-
+ fem3d/subbnd.f                       |   12 +-
+ fem3d/subdim.f                       |  421 ----------------------------------
+ fem3d/subres.f                       |    8 +-
+ fem3d/subver.f                       |    2 +-
+ fem3d/subvola.f                      |    3 +-
+ fem3d/subwaves.f                     |   10 +-
+ fem3d/ts2nc.f                        |    2 +-
+ fem3d/vp.f                           |    7 -
+ femadj/param.h                       |    2 +-
+ femcheck/test_compile.sh             |    3 +-
+ femdoc/final/shyfem.pdf              |  Bin 294949 -> 294947 bytes
+ femdoc/final/shyfem.ps               |   36 ++--
+ femgotm/kpp.F90                      |    1 +
+ femplot/param.h                      |    2 +-
+ femplot/plotsim.f                    |    3 +-
+ param.h                              |    2 +-
+ 49 files changed, 315 insertions(+), 816 deletions(-)
+ deleted:
+    fem3d/newalloc.f
+    fem3d/subdim.f
+
+============================================================
+
 Fri Jul 17 18:40:52 CEST 2015
 
 New version 7_1_80

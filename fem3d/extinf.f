@@ -17,8 +17,6 @@ c This routine reads an EXT file and writes information
 	integer noddim			!total number of nodes
 	parameter (noddim=200)
 
-	integer nkndim,neldim
-
 	character*80 line,file
 	integer nvers,knausm
 	integer nrec,it,i,nin,kn,in,nout
@@ -39,7 +37,7 @@ c---------------------------------------------------------------
 c open files
 c---------------------------------------------------------------
 
-        if(iapini(2,nkndim,neldim,0).eq.0) then
+        if(iapini(2,0,0,0).eq.0) then
                 stop 'error stop : iapini'
         end if
 

@@ -30,19 +30,19 @@ COMMON_GGU_DELETED	include 'basin.h'
 	integer, parameter :: ndim = 1000
 	integer iusplit(ndim)
 
-	real cv2(nkndim)
-	real cv3(nlvdim,nkndim)
-	real,allocatable :: cv(:)
+	real, allocatable :: cv2(:)
+	real, allocatable :: cv3(:,:)
+	real, allocatable :: cv(:)
+	real, allocatable :: vol3(:,:)
 
 	integer, allocatable :: naccu(:)
 	double precision, allocatable :: accum(:,:,:)
 
-	integer ilhkv(nkndim)
-	real hlv(nlvdim)
-	real hl(nlvdim)
-	real hev(neldim)
-	real hkv(nkndim)
-	real vol3(nlvdim,nkndim)
+	integer, allocatable :: ilhkv(:)
+	real, allocatable :: hlv(:)
+	real, allocatable :: hl(:)
+	real, allocatable :: hev(:)
+	real, allocatable :: hkv(:)
 
 	logical bwrite,bquiet,bask,bmem,bverb
 	logical btrans,bout,bopen,btimew
@@ -53,7 +53,7 @@ COMMON_GGU_DELETED	include 'basin.h'
 	integer date,time
 	integer nread,nin
 	integer nvers
-	integer nknnos,nelnos,nlv,nvar
+	integer nknnos,nelnos,nlv,nvar,nlvdi
 	integer nodesp,invar,lmaxsp
 	integer ierr
 	integer it,ivar
@@ -63,7 +63,7 @@ COMMON_GGU_DELETED	include 'basin.h'
 	character*80 title,name
 	character*20 dline
 	character*80 infile
-	character*80 basin,simul
+	character*80 basnam,simnam
 	character*80 stmin,stmax
 	real rnull
 	real cmin,cmax,cmed,vtot
@@ -167,11 +167,25 @@ c--------------------------------------------------------------
 	modeb = 2
 	if( bneedbasin ) modeb = 3
 
-	call ap_init(bask,modeb,nkndim,neldim)
+	call ap_init(bask,modeb,0,0)
 
 	call open_nos_type('.nos','old',nin)
 
-	call read_nos_header(nin,nkndim,neldim,nlvdim,ilhkv,hlv,hev)
+	call peek_nos_header(nin,nknnos,nelnos,nlv,nvar)
+
+	nlvdi = nlv
+
+	allocate(cv2(nknnos))
+	allocate(cv3(nlv,nknnos))
+	allocate(vol3(nlv,nknnos))
+
+	allocate(ilhkv(nknnos))
+	allocate(hlv(nlv))
+	allocate(hl(nlv))
+	allocate(hev(nelnos))
+	allocate(hkv(nknnos))
+
+	call read_nos_header(nin,nknnos,nelnos,nlvdi,ilhkv,hlv,hev)
 	call nos_get_params(nin,nknnos,nelnos,nlv,nvar)
 
 	call init_sigma_info(nlv,hlv)
@@ -185,14 +199,14 @@ c--------------------------------------------------------------
 	if( bneedbasin ) then
 	  if( nkn /= nknnos .or. nel /= nelnos ) goto 92
 	  call nos_make_hkv(nkn,nel,nen3v,hev,hkv)
-	  call init_volume(nlvdim,nkn,nel,nlv,nen3v,ilhkv
+	  call init_volume(nlvdi,nkn,nel,nlv,nen3v,ilhkv
      +                          ,hlv,hev,hl,vol3)
 	else
 	  nkn = nknnos
 	  nel = nelnos
 	end if
 
-	call depth_stats(nkn,ilhkv)
+	call depth_stats(nkn,nlvdi,ilhkv)
 
 	if( bnode ) then
 	  call convert_internal_node(nodesp)
@@ -245,7 +259,7 @@ c--------------------------------------------------------------
 	    ifreq = 0
 	  end if
 	  allocate(naccu(istep))
-	  allocate(accum(nlvdim,nkndim,istep))
+	  allocate(accum(nlvdi,nknnos,istep))
 	  naccum = 0
 	  naccu = 0
 	  accum = 0.
@@ -280,7 +294,7 @@ c--------------------------------------------------------------
 
 	do
 
-	  call nos_read_record(nin,it,ivar,nlvdim,ilhkv,cv3,ierr)
+	  call nos_read_record(nin,it,ivar,nlvdi,ilhkv,cv3,ierr)
 
           if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
           if(ierr.ne.0) exit
@@ -315,18 +329,18 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( btrans ) then
-	    call nos_time_aver(mode,nread,ifreq,istep,nkndim,nlvdim
+	    call nos_time_aver(mode,nread,ifreq,istep,nknnos,nlvdi
      +					,naccu,accum,cv3,boutput)
 	  end if
 
 	  if( baverbas ) then
-	    call make_aver(nlvdim,nkn,ilhkv,cv3,vol3
+	    call make_aver(nlvdi,nkn,ilhkv,cv3,vol3
      +                          ,cmin,cmax,cmed,vtot)
 	    call write_aver(it,ivar,cmin,cmax,cmed,vtot)
 	  end if
 
 	  if( b2d ) then
-	    call make_vert_aver(nlvdim,nkn,ilhkv,cv3,vol3,cv2)
+	    call make_vert_aver(nlvdi,nkn,ilhkv,cv3,vol3,cv2)
 	  end if
 
 	  if( bsplit ) then
@@ -339,7 +353,7 @@ c--------------------------------------------------------------
 	    if( b2d ) then
               call nos_write_record(nb,it,ivar,1,ilhkv,cv2,ierr)
 	    else
-              call nos_write_record(nb,it,ivar,nlvdim,ilhkv,cv3,ierr)
+              call nos_write_record(nb,it,ivar,nlvdi,ilhkv,cv3,ierr)
 	    end if
             if( ierr .ne. 0 ) goto 99
 	  end if
@@ -351,7 +365,7 @@ c--------------------------------------------------------------
 	      call write_node_2d(it,nvar,cv)
 	      invar = 0
 	    end if
-	    call write_node(nodesp,nlvdim,cv3,it,ivar,lmaxsp)
+	    call write_node(nodesp,nlvdi,cv3,it,ivar,lmaxsp)
 	  end if
 
 	end do	!do loop
@@ -371,10 +385,10 @@ c--------------------------------------------------------------
 	    !write(6,*) 'naccum: ',naccum
 	    if( naccum > 0 ) then
 	      write(6,*) 'final aver: ',ip,naccum
-	      call nos_time_aver(-mode,ip,ifreq,istep,nkndim,nlvdim
+	      call nos_time_aver(-mode,ip,ifreq,istep,nknnos,nlvdi
      +					,naccu,accum,cv3,boutput)
 	      if( bsumvar ) ivar = 30
-              call nos_write_record(nb,it,ivar,nlvdim,ilhkv,cv3,ierr)
+              call nos_write_record(nb,it,ivar,nlvdi,ilhkv,cv3,ierr)
               if( ierr .ne. 0 ) goto 99
 	    end if
 	  end do
@@ -400,16 +414,16 @@ c--------------------------------------------------------------
 	  write(6,*) 'output written to file out.nos'
 	end if
 
-	call ap_get_names(basin,simul)
+	call ap_get_names(basnam,simnam)
 	write(6,*) 'names used: '
-	write(6,*) 'basin: ',trim(basin)
-	write(6,*) 'simul: ',trim(simul)
+	write(6,*) 'basin: ',trim(basnam)
+	write(6,*) 'simul: ',trim(simnam)
 
 c--------------------------------------------------------------
 c end of routine
 c--------------------------------------------------------------
 
-	return
+	stop
    92	continue
 	write(6,*) 'incompatible basin: '
 	write(6,*) 'nkn,nknnos: ',nkn,nknnos
@@ -504,7 +518,7 @@ c rnull		invalid value
 
 c***************************************************************
 
-        subroutine mimar_s(xx,nlvdim,n,xmin,xmax,rnull)
+        subroutine mimar_s(xx,nlvddi,n,xmin,xmax,rnull)
 
 c computes min/max of vector (3d)
 c
@@ -516,15 +530,15 @@ c rnull		invalid value
         implicit none
 
         integer n
-        integer nlvdim
-        real xx(nlvdim,n)
+        integer nlvddi
+        real xx(nlvddi,n)
         real xmin,xmax,rnull
 
         integer k,l
         real x
 
         do k=1,n
-          do l=1,nlvdim
+          do l=1,nlvddi
             x=xx(l,k)
 	    if(x.ne.rnull) then
               if( x .lt. xmin .or. x .gt. xmax ) then
@@ -538,7 +552,7 @@ c rnull		invalid value
 
 c***************************************************************
 
-	subroutine depth_stats(nkn,ilhkv)
+	subroutine depth_stats(nkn,nlvddi,ilhkv)
 
 c	computes statistics on levels
 
@@ -547,22 +561,23 @@ c	computes statistics on levels
 	include 'param.h'
 
 	integer nkn
+	integer nlvddi
 	integer ilhkv(1)
 
-	integer count(nlvdim)
-	integer ccount(nlvdim)
+	integer count(nlvddi)
+	integer ccount(nlvddi)
 
 	integer nlv,lmax,l,k,nc,ll
 
 	nlv = 0
-	do l=1,nlvdim
+	do l=1,nlvddi
 	  count(l) = 0
 	  ccount(l) = 0
 	end do
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
-	  if( lmax .gt. nlvdim ) stop 'error stop depth_stats: lmax'
+	  if( lmax .gt. nlvddi ) stop 'error stop depth_stats: lmax'
 	  count(lmax) = count(lmax) + 1
 	  nlv = max(nlv,lmax)
 	end do
@@ -588,7 +603,7 @@ c	computes statistics on levels
 
 c***************************************************************
 
-	subroutine nos_time_aver(mode,nread,ifreq,istep,nkndim,nlvdim
+	subroutine nos_time_aver(mode,nread,ifreq,istep,nknnos,nlvddi
      +					,naccu,accum,cv3,bout)
 
 c mode:  1:aver  2:sum  3:min  4:max
@@ -599,10 +614,10 @@ c mode negative: only transform, do not accumulate
 
 	integer mode
 	integer nread,ifreq,istep
-	integer nkndim,nlvdim
+	integer nknnos,nlvddi
 	integer naccu(istep)
-	double precision accum(nlvdim,nkndim,istep)
-	real cv3(nlvdim,nkndim)
+	double precision accum(nlvddi,nknnos,istep)
+	real cv3(nlvddi,nknnos)
 	logical bout
 
 	integer ip,naccum
@@ -618,14 +633,14 @@ c mode negative: only transform, do not accumulate
 	  naccu(ip) = naccu(ip) + 1
 	  accum(:,:,ip) = accum(:,:,ip) + cv3(:,:)
 	else if( mode == 3 ) then
-	  do k=1,nkndim
-	    do l=1,nlvdim
+	  do k=1,nknnos
+	    do l=1,nlvddi
 	      accum(l,k,ip) = min(accum(l,k,ip),cv3(l,k))
 	    end do
 	  end do
 	else if( mode == 3 ) then
-	  do k=1,nkndim
-	    do l=1,nlvdim
+	  do k=1,nknnos
+	    do l=1,nlvddi
 	      accum(l,k,ip) = max(accum(l,k,ip),cv3(l,k))
 	    end do
 	  end do
@@ -735,13 +750,13 @@ c writes basin average to file
 
 c***************************************************************
 
-	subroutine write_node(node,nlvdim,cv3,it,ivar,lmax)
+	subroutine write_node(node,nlvddi,cv3,it,ivar,lmax)
 
 	implicit none
 
 	integer node
-	integer nlvdim
-	real cv3(nlvdim,*)
+	integer nlvddi
+	real cv3(nlvddi,*)
 	integer it
 	integer ivar
 	integer lmax

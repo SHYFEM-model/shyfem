@@ -107,8 +107,8 @@ COMMON_GGU_DELETED	include 'levels.h'
 	real az,azpar
 	real tdif
 	
-	real rflux(nlvdim,ngr)       !fluxes across finite volume k
-	real tflux(nlvdim,ngr)       !fluxes across sides of element
+	real rflux(nlvdi,ngr)       !fluxes across finite volume k
+	real tflux(nlvdi,ngr)       !fluxes across sides of element
 	
 	integer flxtype
 
@@ -182,7 +182,7 @@ COMMON_GGU_DELETED	include 'nbasin.h'
 	real rflux(ngr)       !fluxes across finite volume k
 	real tflux(ngr)       !fluxes across sides of element
 	real tflux_aux(ngr)   !fluxes across sides of element (aux)
-	real flux2d_aux(3,neldim)
+	real flux2d_aux(3,nel)
 	
 	integer flxtype
 
@@ -436,7 +436,7 @@ c we do not use lkmax, but lmax
 COMMON_GGU_DELETED	include 'links.h'
 
         integer k,lkmax,n
-	real tflux(nlvdim,1)       !fluxes across sides of element
+	real tflux(nlvdi,1)       !fluxes across sides of element
 
 COMMON_GGU_DELETED	include 'levels.h'
 

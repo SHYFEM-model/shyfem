@@ -46,12 +46,6 @@ COMMON_GGU_DELETED	include 'conz.h'
           if( iconz <= 0 ) iconz = -1
           if( iconz < 0 ) return
 
-          if( iconz > ncsdim ) then
-            write(6,*) 'iconz,ncsdim: ',iconz,ncsdim
-            stop 'error stop tracer: iconz > ncsdim'
-          end if
-
-          write(6,*) 'initializing tracer: ',iconz,nkn,nlvdi
           call mod_conz_init(iconz,nkn,nlvdi)
           write(6,*) 'tracer initialized: ',iconz,nkn,nlvdi
         end if

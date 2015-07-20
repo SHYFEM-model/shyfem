@@ -3,29 +3,11 @@
         module mod_bound_geom
 !==================================================================
 
-! nbound (bnd,dim,nsh)
-! bound_geom
-! bnd
-! bound_names
-
 c----------------------------------------------------------------------
 c iopbnd(k) = 0         no open BC
 c iopbnd(k) > 0         external open BC (ibtyp=1,2)
 c iopbnd(k) < 0         internal open BC (ibtyp=3)
 c----------------------------------------------------------------------
-
-	!integer nrz,nrq,nrb,nbc
-
-	!integer nbndim
-	!parameter(nbndim=100)
-        !real bnd(nbndim,nbcdim)
-
-        !integer ierv(2,nrbdim)
-        !real rhv(nrbdim), rlv(nrbdim)
-        !real rrv(nrbdim)
-        !integer irv(nrbdim)
-
-        !integer iopbnd(nkndim)
 
         implicit none
 
