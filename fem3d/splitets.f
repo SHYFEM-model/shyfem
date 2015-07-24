@@ -15,25 +15,23 @@ c This routine reads an EXT file and writes the data to unit 76
 
 	include 'param.h'
 
-	integer ndim
-	parameter (ndim=100)
-
 	character*80 line,file,format
 	integer nrec,it,i,nin,j,lmax,l
 	integer nkn,nlv,nvar
 	integer ivar,ierr,iunit
+	integer nexdi,nlvdi
 
-        integer ilets(nexdim)
-        real hlv(nlvdim)
-        real hets(nexdim)
-        integer nodes(nexdim)
-        real xg(nexdim)
-        real yg(nexdim)
-        character*80 desc(nexdim)
+        integer, allocatable :: ilets(:)
+        real, allocatable :: hets(:)
+        integer, allocatable :: nodes(:)
+        real, allocatable :: xg(:)
+        real, allocatable :: yg(:)
+        character*80, allocatable :: desc(:)
 
-	real cv3(nlvdim,nexdim)
-	real cv(nexdim)
-	integer ivars(ndim)
+        real, allocatable :: hlv(:)
+	real, allocatable :: cv3(:,:)
+	real, allocatable :: cv(:)
+	integer, allocatable :: ivars(:)
 
 	integer iapini, ifemop
 
@@ -53,11 +51,21 @@ c---------------------------------------------------------------
 
         call open_ets_type('.ets','old',nin)
 
-        call read_ets_header(nin,nexdim,nlvdim,ilets,hlv,hets
+	call ets_peek_header(nin,nkn,nlv,nvar,ierr)
+	if( ierr .ne. 0 ) goto 91
+
+	allocate(ilets(nkn),hets(nkn),nodes(nkn))
+	allocate(xg(nkn),yg(nkn),desc(nkn))
+	allocate(hlv(nlv),cv3(nlv,nkn),cv(nkn))
+	allocate(ivars(nvar))
+
+	nexdi = nkn
+	nlvdi = nlv
+
+        call read_ets_header(nin,nexdi,nlvdi,ilets,hlv,hets
      +                                  ,nodes,xg,yg,desc)
         call ets_get_params(nin,nkn,nlv,nvar)
 
-	if( nvar .gt. ndim ) goto 95
 	call ets_get_vars(nin,nvar,ivars)
 
         write(6,*) 'Available variables: ',nvar
@@ -80,7 +88,7 @@ c---------------------------------------------------------------
 
 	do while(.true.)
 
-	  call ets_read_record(nin,it,ivar,nlvdim,ilets,cv3,ierr)
+	  call ets_read_record(nin,it,ivar,nlvdi,ilets,cv3,ierr)
 
 	  if( ierr .gt. 0 ) write(6,*) 'error in reading file : ',ierr
 	  if( ierr .ne. 0 ) goto 100
@@ -116,9 +124,8 @@ c end of routine
 c---------------------------------------------------------------
 
 	stop
-   95   continue
-        write(6,*) 'nvar = ',nvar,'   ndim = ',ndim
-        stop 'error stop: ndim'
+   91	continue
+	stop 'error stop reading header of ets file: peek'
 	end
 
 c*******************************************************************

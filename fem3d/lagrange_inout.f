@@ -361,7 +361,7 @@ c
 c if body has exited the element number is negativ (last element)
 c once it has been written to output with negative ie, it is set to 0
 
-	use mod_depth
+	use mod_layer_thickness
 	use levels
 
 	implicit none

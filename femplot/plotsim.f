@@ -302,7 +302,7 @@ c*****************************************************************
 	call ev_init(nel)
 	call mod_geom_init(nkn,nel,ngr)
 
-	call mod_depth_init(nkn,nel,1)
+	call mod_depth_init(nkn,nel)
 
 	call mod_plot2d_init(nkn,nel)
 	call mod_hydro_plot_init(nkn,nel)

@@ -18,10 +18,12 @@ c***********************************************************
 
 c eliminates 5-7-5 grades
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
-        include 'basin.h'
+COMMON_GGU_DELETED        include 'basin.h'
         include 'grade.h'
 
         integer k,n
@@ -44,10 +46,12 @@ c***********************************************************
 
 c eliminates 5-7-5 connections
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
-        include 'basin.h'
+COMMON_GGU_DELETED        include 'basin.h'
         include 'grade.h'
 
 	integer k

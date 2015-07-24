@@ -444,7 +444,7 @@ c*********************************************************************
 
 c simulates decay for concentration
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_ts
 	use levels
 	use basin, only : nkn,nel,ngr,mbw

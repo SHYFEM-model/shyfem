@@ -69,12 +69,13 @@ c reads flx files
 
 	integer nin
 	integer idfile,nvers,nsect,kfluxm,nlmax
+	integer nfxdi,nlvdi
 	integer i,it,idtflx
 	integer j,l,lmax,ierr,ivar,irec
-	integer kflux(nfxdim)
-	integer nlayers(nfxdim)
-	real ptot(4,nfxdim)
-	real fluxes(0:nlvdim,3,nfxdim)
+	integer, allocatable :: kflux(:)
+	integer, allocatable :: nlayers(:)
+	real, allocatable :: ptot(:,:)
+	real, allocatable :: fluxes(:,:,:)
 
 	integer iapini,ideffi
 
@@ -90,8 +91,21 @@ c---------------------------------------------------------------
 	end if
 
 	nvers = 5
+
+        call infoflx      (nin,nvers
+     +                          ,nsect,kfluxm,idtflx,nlmax
+     +                          )
+
+	allocate(kflux(kfluxm))
+	allocate(nlayers(kfluxm))
+	allocate(ptot(4,kfluxm))
+	allocate(fluxes(0:nlmax,3,kfluxm))
+
+	nfxdi = kfluxm
+	nlvdi = nlmax
+
         call rfflx        (nin,nvers
-     +                          ,nfxdim,nfxdim,nlvdim
+     +                          ,nfxdi,nfxdi,nlvdi
      +                          ,nsect,kfluxm,idtflx,nlmax
      +                          ,kflux
      +                          ,nlayers

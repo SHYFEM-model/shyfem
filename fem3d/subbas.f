@@ -56,6 +56,14 @@ c***********************************************************
         real, save, allocatable :: ygv(:)
         real, save, allocatable :: hm3v(:,:)
 
+        INTERFACE basin_read
+        MODULE PROCEDURE basin_read_by_file, basin_read_by_unit
+        END INTERFACE
+
+        INTERFACE basin_is_basin
+        MODULE PROCEDURE basin_is_basin_by_file,basin_is_basin_by_unit
+        END INTERFACE
+
 !==================================================================
         contains
 !==================================================================
@@ -104,7 +112,53 @@ c***********************************************************
 
 c***********************************************************
 
-	subroutine basin_read(iunit)
+	function basin_open_file(file)
+
+! opens file or returns 0
+	
+	integer basin_open_file
+	character*(*) file
+
+	integer iunit,ios
+	integer ifileo
+
+	basin_open_file = 0
+
+	iunit = ifileo(0,file,'form','old')
+	if( iunit .le. 0 ) return
+	open(iunit,file=file,status='old',form='unformatted',iostat=ios)
+	if( ios /= 0 ) return
+
+	basin_open_file = iunit
+
+	end function basin_open_file
+
+c***********************************************************
+
+	subroutine basin_read_by_file(file)
+
+! reads basin or fails if error
+
+	character*(*) file
+
+	integer iunit
+
+	iunit = basin_open_file(file)
+
+	if( iunit .le. 0 ) then
+	  write(6,*) 'file: ',trim(file)
+	  stop 'error stop basin_read_by_file: cannot open file'
+	end if
+
+	call basin_read_by_unit(iunit)
+
+	close(iunit)
+
+	end subroutine basin_read_by_file
+
+c***********************************************************
+
+	subroutine basin_read_by_unit(iunit)
 
 ! reads basin or fails if error
 
@@ -118,7 +172,7 @@ c***********************************************************
 	call sp13rr(iunit,nkn,nel)
 	write(6,*) 'finished basin_read (module)'
 
-	end subroutine basin_read
+	end subroutine basin_read_by_unit
 
 c***********************************************************
 
@@ -135,41 +189,38 @@ c***********************************************************
 
 c***********************************************************
 
-	function is_basin(iunit)
+	function basin_is_basin_by_unit(iunit)
 
-	logical is_basin
+	logical basin_is_basin_by_unit
 	integer iunit
 
 	integer nvers
 
 	call sp13test(iunit,nvers)
 
-	is_basin = nvers > 0
+	basin_is_basin_by_unit = nvers > 0
 
-	end function is_basin
+	end function basin_is_basin_by_unit
 
 c***********************************************************
 
-	function is_basin_file(file)
+	function basin_is_basin_by_file(file)
 
-	logical is_basin_file
+	logical basin_is_basin_by_file
 	character*(*) file
 
-	integer ios,iunit
-	integer ifileo
+	integer iunit
 
-	is_basin_file = .false.
+	basin_is_basin_by_file = .false.
 
-	iunit = ifileo(0,file,'form','old')
+	iunit = basin_open_file(file)
 	if( iunit .le. 0 ) return
-	open(iunit,file=file,status='old',form='unformatted',iostat=ios)
 
-	if( ios /= 0 ) return
-	is_basin_file = is_basin(iunit)
+	basin_is_basin_by_file = basin_is_basin_by_unit(iunit)
 
 	close(iunit)
 
-	end function is_basin_file
+	end function basin_is_basin_by_file
 
 !==================================================================
         end module basin

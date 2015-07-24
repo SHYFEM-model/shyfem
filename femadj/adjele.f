@@ -32,6 +32,9 @@ c***************************************************************
 
 c adjusts elements after automatic mesh generator
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 c------------------------------------------------------- parameters
@@ -39,14 +42,15 @@ c------------------------------------------------------- parameters
 c------------------------------------------------------- grade index
 	include 'grade.h'
 c------------------------------------------------------- basin
-	include 'basin.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'depth.h'
 c------------------------------------------------------- local
 	integer kspecial
 	integer nlidim,nlndim
 	integer k
 	integer ner
 	integer nco,nknh,nli
+	integer nk,ne,nl,nne,nnl
 	logical bstop, bplot
 	character*80 file
 	real dx(nkndim),dy(nkndim)
@@ -74,32 +78,18 @@ c-------------------------------------------------------------------
 
 c read grid file with nodes and elements
 
-        nlidim = 0
-        nlndim = 0
-        call rdgrd(
-     +                   file
-     +                  ,bstop
-     +                  ,nco,nkn,nel,nli
-     +                  ,nkndim,neldim,nlidim,nlndim
-     +                  ,ipv,ipev,iaux
-     +                  ,ianv,iarv,iaux
-     +                  ,hkv,hev,raux
-     +                  ,xgv,ygv
-     +                  ,nen3v
-     +                  ,iaux,iaux
-     +                  )
+	call grd_read(file)
+	call grd_get_params(nk,ne,nl,nne,nnl)
 
-        if( bstop ) goto 97
+	write(6,'(a,5i7)') 'grid parameters: ',nk,ne,nl
+	if( nk .le. 0 ) stop
 
-	write(6,'(a,5i7)') 'grid parameters: ',nkn,nel,nli
-	if( nkn .le. 0 ) stop
-
-c external to internal numbering
-
-        call ex2in(nkn,3*nel,nlidim,ipv,ipaux,nen3v,iaux,bstop)
-        if( bstop ) goto 99
+	call grd_to_basin
 
 c save depth information in elements to nodes
+
+	call mod_depth_init(nkn,nel)
+	call grd_get_depth(ne,nk,hev,hkv)
 
 	nknh = 0
 	do k=1,nkn
@@ -113,10 +103,12 @@ c save depth information in elements to nodes
 
 c determine grade
 
-	call maxgrd(nkn,nel,nen3v,ngrade,ngr)
+	call maxgrd(nkn,nel,nen3v,ngr)
 
 	write(6,*) 'maximum grade: ',ngr
 	if( ngr .gt. ngrdim ) goto 98
+
+	call setgrd(nkn,nel,nen3v,ngrade)
 
 	call stats('first call')
 
@@ -254,11 +246,14 @@ c***********************************************************
 
 c saves information about depth to nodes
 
+	use mod_depth !COMMON_GGU_SUBST
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
-	include 'depth.h'
+COMMON_GGU_DELETED	include 'basin.h'
+COMMON_GGU_DELETED	include 'depth.h'
 
 	integer k,ie,ii
 	integer ic(nkn)
@@ -288,10 +283,12 @@ c***********************************************************
 
 	subroutine stats(text)
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'grade.h'
 
 	character*(*) text

@@ -75,7 +75,7 @@ c mode : =0 initialize  >0 normal call
 c
 c written 09.01.94 by ggu  (from scratch)
 c
-	use mod_depth
+	use mod_layer_thickness
 	use mod_aux_array
 	use mod_ts
 	use mod_diff_visc_fric
@@ -469,7 +469,7 @@ c in rhov()   is rho_prime (=sigma_prime)
 c
 c brespv() and rhov() are given at node and layer interface
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_ts
 	use levels
 	use basin, only : nkn,nel,ngr,mbw

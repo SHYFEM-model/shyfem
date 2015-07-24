@@ -30,7 +30,7 @@ LIBIPS  = $(DIRLIB)/lib$(LIBPOST).a
 
 #--------------------------------------------- macros
 
-OBJS	=	subgrd.o subsrt.o subssv.o subsss.o subfil.o subgeo.o
+OBJS	=	subsrt.o subssv.o subsss.o subfil.o subgeo.o
 
 ADJOBJS	=	adj4el.o adj5el.o adj7el.o adj575.o \
 		adjplo.o adjgrd.o adjneu.o adjvar.o 
@@ -103,7 +103,7 @@ diff:
 	@echo "differences written to file DIFFS"
 
 depend:
-	$(MAKEDEPEND) *.f
+	$(MAKEDEPEND) -moddir=$(MODDIR) *.f
 
 list:
 	pwd; ls
@@ -135,14 +135,15 @@ strip:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-adj4el.o: param.h basin.h grade.h
-adj575.o: param.h basin.h grade.h
-adj5el.o: param.h basin.h grade.h
-adj7el.o: param.h basin.h grade.h
-adjele.o: depth.h param.h basin.h grade.h
+adj4el.o: param.h ../femlib/mod/basin.mod grade.h
+adj575.o: param.h ../femlib/mod/basin.mod grade.h
+adj5el.o: param.h ../femlib/mod/basin.mod grade.h
+adj7el.o: param.h ../femlib/mod/basin.mod grade.h
+adjele.o: param.h ../femlib/mod/mod_depth.mod \
+		../femlib/mod/basin.mod grade.h 
 adjgrd.o: nbstatic.h
-adjneu.o: depth.h param.h basin.h grade.h
-adjplo.o: param.h basin.h grade.h
-adjvar.o: param.h nbstatic.h basin.h grade.h
-subgrd.o: pkonst.h param.h subgrd.h basin.h
+adjneu.o: param.h ../femlib/mod/mod_depth.mod \
+		../femlib/mod/basin.mod grade.h 
+adjplo.o: param.h ../femlib/mod/basin.mod grade.h
+adjvar.o: param.h ../femlib/mod/basin.mod nbstatic.h grade.h
 

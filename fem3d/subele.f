@@ -126,7 +126,7 @@ c****************************************************************
 
 c computes (average) depth of element ie for all layers
 
-	use mod_depth
+	use mod_layer_thickness
 	use levels
 
 	implicit none
@@ -164,7 +164,7 @@ c****************************************************************
 
 c computes depth of node k for all layers
 
-	use mod_depth
+	use mod_layer_thickness
 	use levels
 
 	implicit none
@@ -672,7 +672,7 @@ c***********************************************************
 
 c returns depth, volume and area of node k on level l
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_area
 
 	implicit none
@@ -707,7 +707,7 @@ c***********************************************************
 
 c returns depth of node k on level l
 
-	use mod_depth
+	use mod_layer_thickness
 
 	implicit none
 
@@ -811,7 +811,7 @@ c***********************************************************
 
 c shell (helper) for copydepth
 
-	use mod_depth
+	use mod_layer_thickness
 	use levels, only : nlvdi,nlv
 
 	implicit none
@@ -828,7 +828,7 @@ c***********************************************************
 
 c shell (helper) for setdepth
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_area
 	use mod_hydro
 	use levels, only : nlvdi,nlv
@@ -848,7 +848,7 @@ c***********************************************************
 
 c shell (helper) for setdepth
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_area
 	use mod_hydro
 	use levels, only : nlvdi,nlv
@@ -868,7 +868,7 @@ c***********************************************************
 
 c checks differences between old and new depth values (debug)
 
-	use mod_depth
+	use mod_layer_thickness
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
 

@@ -45,7 +45,7 @@ c
 c
 c transforms transports to velocities
 c
-	use mod_depth
+	use mod_layer_thickness
 	use mod_hydro_vel
 	use mod_hydro
 	use levels
@@ -81,7 +81,7 @@ c******************************************************************
 
 c transforms velocities to transports
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_hydro_vel
 	use mod_hydro
 	use levels
@@ -349,7 +349,7 @@ c checks for negative volume (depth)
 c
 c only first layer has to be checked
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_hydro
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw

@@ -511,7 +511,7 @@ c ------------------- l+1 -----------------------
 c                     l+2             u
 c ------------------- l+2 -----------------------
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_hydro_print
 	use levels
 	use basin, only : nkn,nel,ngr,mbw

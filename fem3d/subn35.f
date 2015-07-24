@@ -134,7 +134,7 @@ c***********************************************************
 c computes bottom friction
 
 	use mod_fluidmud
-	use mod_depth
+	use mod_layer_thickness
 	use mod_roughness
 	use mod_diff_visc_fric
 	use mod_hydro

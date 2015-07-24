@@ -123,6 +123,7 @@ fem3d/check_debug
 fem3d/baschk
 fem3d/bascomp
 fem3d/ousvdiff
+fem3d/zinit
 
 femadj/adjele
 fembin/extDiff

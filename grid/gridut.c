@@ -295,7 +295,10 @@ int *MakeIndex( int vertex )
 	int *new;
 
 	new = (int *) malloc( vertex * sizeof( int ) );
-	if( !new ) Error("MakeIndex : Cannot allocate index");
+	if( !new ) {
+	  printf("vertex = %d\n",vertex);
+	  Error("MakeIndex : Cannot allocate index");
+	}
 	return new;
 }
 

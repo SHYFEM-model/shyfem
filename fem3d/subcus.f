@@ -2006,6 +2006,7 @@ c*****************************************************************
         subroutine bclevvar
 
 	use mod_depth
+	use mod_layer_thickness
 	use mod_hydro_vel
 	use mod_hydro
 	use basin, only : nkn,nel,ngr,mbw
@@ -2092,6 +2093,7 @@ c*****************************************************************
 
 	use mod_internal
 	use mod_depth
+	use mod_layer_thickness
 	use mod_hydro_vel
 	use mod_hydro
 	use basin, only : nkn,nel,ngr,mbw
@@ -3572,6 +3574,7 @@ c time of inundation for theseus
 
 	use mod_geom_dynamic
 	use mod_depth
+	use mod_layer_thickness
 	use mod_ts
 	use evgeom
 	use basin

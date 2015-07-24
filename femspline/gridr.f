@@ -63,6 +63,10 @@ c smoothing program
 c
 c same as gridf but smooth on length of line, not points
 
+	use basin
+	use grd
+	use mod_depth
+
 	implicit none
 
 	integer nkndim,neldim,nlidim,nlndim,ndim
@@ -73,29 +77,12 @@ c same as gridf but smooth on length of line, not points
 	parameter( ndim = 40000 )
 
 	integer ner
-	integer nco,nkn,nel,nli
+	integer nco,nk,ne,nl,nne,nnl
 	logical bstop
 	character*80 file
 
-	integer ipv(nkndim)
-	integer ipev(neldim)
-	integer iaev(neldim)
-	integer ianv(nkndim)
-	integer nen3v(3,neldim)
-
-	real xgv(nkndim)
-	real ygv(nkndim)
-	real hkv(nkndim)
-	real hev(neldim)
-	real hlv(nlidim)
-
-	integer iplv(nlidim)
-	integer ialrv(nlidim)
-	integer ipntlv(0:nlidim)
-	integer inodlv(nlndim)
-
 	logical bperiod
-	integer nl,nt
+	integer nt,nll
 	real xt(ndim)
 	real yt(ndim)
 	real ht(ndim)
@@ -164,46 +151,35 @@ c------------------------------------------------------
 	nline = 0
 	nnode = 0
 
-	bstop = .false.
+        call grd_read(file)
+        call grd_get_params(nk,ne,nl,nne,nnl)
 
-        call rdgrd(
-     +                   file
-     +                  ,bstop
-     +                  ,nco,nkn,nel,nli
-     +                  ,nkndim,neldim,nlidim,nlndim
-     +                  ,ipv,ipev,iplv
-     +                  ,ianv,iaev,ialrv
-     +                  ,hkv,hev,hlv
-     +                  ,xgv,ygv
-     +                  ,nen3v
-     +                  ,ipntlv,inodlv
-     +                  )
+        write(6,'(a,5i7)') 'grid parameters: ',nk,ne,nl
+        if( nk .le. 0 ) stop
 
-        if( bstop ) stop 'error stop rdgrd'
+        call grd_to_basin
+	call mod_depth_init(nkn,nel)
 
-	write(6,*) 'comments : ',nco
-	write(6,*) 'nodes    : ',nkn
-	write(6,*) 'elements : ',nel
-	write(6,*) 'lines    : ',nli
+	write(6,*) 'nodes    : ',nk
+	write(6,*) 'elements : ',ne
+	write(6,*) 'lines    : ',nl
 
 	call insnod(nkn,ipv)
-c	call prline(nli,iplv,ialrv,ipntlv,inodlv)
-c	call prlixy(nli,iplv,ialrv,ipntlv,inodlv,xgv,ygv)
 
 	open(99,file='smooth.grd',status='unknown',form='formatted')
 	open(98,file='reduce.grd',status='unknown',form='formatted')
 
-	do l=1,nli
-	  nl = ndim
-	  nline = iplv(l)
-	  call extrli(l,nli,iplv,ialrv,ipntlv,inodlv,xgv,ygv,hkv
-     +				,xt,yt,ht,nl,nt)
-	  call mkperiod(xt,yt,nl,bperiod)
-	  call intpdep(nline,ht,nl,bperiod)
-	  call smooth(sigma,xt,yt,ht,nl,bperiod)
-	  call wrline(99,nline,nnode,nl,xt,yt,ht,nt,bperiod)
-	  call reduce(reduct,xt,yt,ht,nl)
-	  call wrline(98,nline,nnode,nl,xt,yt,ht,nt,bperiod)
+	do l=1,nl
+	  nll = ndim
+	  nline = ipplv(l)
+	  call extrli(l,nl,ipplv,ialv,ipntlv,inodlv,xgv,ygv,hkv
+     +				,xt,yt,ht,nll,nt)
+	  call mkperiod(xt,yt,nll,bperiod)
+	  call intpdep(nline,ht,nll,bperiod)
+	  call smooth(sigma,xt,yt,ht,nll,bperiod)
+	  call wrline(99,nline,nnode,nll,xt,yt,ht,nt,bperiod)
+	  call reduce(reduct,xt,yt,ht,nll)
+	  call wrline(98,nline,nnode,nll,xt,yt,ht,nt,bperiod)
 	end do
 
 	write(6,*) 'routine finished...'

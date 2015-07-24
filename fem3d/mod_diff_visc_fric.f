@@ -2,27 +2,6 @@
 
 	implicit none
 
-        !real rfricv(neldim)
-        !common /rfricv/rfricv
-        !real czv(neldim)
-        !common /czv/czv
-        !save /rfricv/,/czv/
-        !real austv(neldim)                     !$$AUST
-        !common /austv/austv
-        !real difhv(nlvdim,neldim)      !horizontal diffusion - 3D
-        !common /difhv/difhv
-        !save /austv/,/difhv/
-	!--- Commented in the old code
-        !!!real wdifhv(3,3,neldim)       !weights for horizontal diff.
-        !!!common /wdifhv/wdifhv
-        !!!save /wdifhv/
-	!---
-        !real visv(0:nlvdim,nkndim)      !viscosity (momentum)
-        !common /visv/visv
-        !real difv(0:nlvdim,nkndim)      !diffusivity (scalars)
-        !common /difv/difv
-        !save /visv/,/difv/
-
 	integer, private, save :: nkn_diff_visc_fric = 0
 	integer, private, save :: nel_diff_visc_fric = 0
 	integer, private, save :: nlv_diff_visc_fric = 0

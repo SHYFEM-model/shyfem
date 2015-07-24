@@ -45,8 +45,8 @@ export NRBDIM = 1
 export NB3DIM = 1
 
 export NARDIM = 1
-export NEXDIM = 100
-export NFXDIM = 5000
+export NEXDIM = 1
+export NFXDIM = 1
 export NCSDIM = 1
 
 export NBDYDIM = 100000

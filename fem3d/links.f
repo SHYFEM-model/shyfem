@@ -9,7 +9,7 @@ c revision log :
 c
 c 10.08.2003    ggu	new routines for ieltv, kantv
 c 18.10.2005    ggu	more debug output, new routines get_link, get_lenk
-c 06.04.2009    ggu	changed nlidim to nlkdim
+c 06.04.2009    ggu	changed nlidim to nlkddi
 c 30.03.2011    ggu	bverbose introduced
 c 30.05.2015    ggu	new subroutine mklenkii to compute lenkiiv
 c
@@ -17,7 +17,7 @@ c****************************************************************
 c****************************************************************
 c****************************************************************
 
-        subroutine mklenk(nlkdim,nkn,nel,nen3v,ilinkv,lenkv)
+        subroutine mklenk(nlkddi,nkn,nel,nen3v,ilinkv,lenkv)
 
 c sets up vector with element links and a pointer to it
 c
@@ -32,7 +32,7 @@ c links of node n           : ( lenkv ( ilinkv(n)+i ), i=1,nl )
         implicit none
 
 c arguments
-        integer nlkdim
+        integer nlkddi
         integer nkn
         integer nel
         integer nen3v(3,1)
@@ -78,7 +78,7 @@ c-------------------------------------------------------------------
         end do
         ilinkv(nkn+1)=n
 
-        if( n .gt. nlkdim ) goto 98
+        if( n .gt. nlkddi ) goto 98
 
 c-------------------------------------------------------------------
 c now enter the element numbers of the links
@@ -213,9 +213,9 @@ c-------------------------------------------------------------------
         write(6,*) 'node: ',k,'  nkn: ',nkn
         stop 'error stop mklenk : internal error (2)'
    98   continue
-        write(6,*) n,nlkdim
+        write(6,*) n,nlkddi
         write(6,*) nkn,nel,2*nkn+nel
-        stop 'errro stop mklenk: nlkdim'
+        stop 'errro stop mklenk: nlkddi'
    99   continue
         !write(6,*) k,ilinkv(k),ip,ip1
         write(6,*) 'node: ',k
@@ -317,7 +317,7 @@ c****************************************************************
 c****************************************************************
 c****************************************************************
 
-        subroutine mklenkii(nlkdim,nkn,nel,nen3v,ilinkv,lenkv,lenkiiv)
+        subroutine mklenkii(nlkddi,nkn,nel,nen3v,ilinkv,lenkv,lenkiiv)
 
 c sets up vector lenkiiv
 c
@@ -332,7 +332,7 @@ c links of node n           : ( lenkv ( ilinkv(n)+i ), i=1,nl )
         implicit none
 
 c arguments
-        integer nlkdim
+        integer nlkddi
         integer nkn
         integer nel
         integer nen3v(3,1)
@@ -346,7 +346,7 @@ c-------------------------------------------------------------------
 c compute the vertec number for elements connected to node k
 c-------------------------------------------------------------------
 
-	do i=1,nlkdim
+	do i=1,nlkddi
 	  lenkiiv(i) = 0
 	end do
 

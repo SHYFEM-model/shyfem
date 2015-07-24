@@ -1,5 +1,94 @@
 ============================================================
 
+Fri Jul 24 18:42:30 CEST 2015
+
+more work on eliminating dimensions
+
+ .gitignore                  |    1 +
+ RELEASE_NOTES               |    7 +
+ Rules.make                  |    4 +-
+ fem3d/Makefile              |  149 ++++---
+ fem3d/basbathy.f            |  123 ++++--
+ fem3d/basbox.f              |    4 +-
+ fem3d/basinf.f              |  103 ++---
+ fem3d/basproj.f             |   45 ++-
+ fem3d/bastreat.f            |   65 +--
+ fem3d/baswork.f             |    4 +-
+ fem3d/flxinf.f              |   24 +-
+ fem3d/grdutil.f             |  539 ++++++++---------------
+ fem3d/ht.f                  |    9 +-
+ fem3d/lagrange_flux.f       |    4 +-
+ fem3d/lagrange_inout.f      |    2 +-
+ fem3d/links.f               |   18 +-
+ fem3d/mod_depth.f           |   70 +---
+ fem3d/mod_diff_visc_fric.f  |   21 -
+ fem3d/mod_geom.f            |   15 -
+ fem3d/mod_layer_thickness.f |   59 +++
+ fem3d/new3di.f              |    3 +-
+ fem3d/newbcl.f              |    4 +-
+ fem3d/newchk.f              |    7 +-
+ fem3d/newcon.f              |    2 +
+ fem3d/newconz.f             |    2 +-
+ fem3d/newdum.f              |    7 +-
+ fem3d/newexpl.f             |   14 +-
+ fem3d/newfix.f              |    2 +-
+ fem3d/newtra.f              |    6 +-
+ fem3d/newtvd.f              |    2 +-
+ fem3d/nosextr_nodes.f       |    2 +-
+ fem3d/param.h               |    4 +-
+ fem3d/sedi3d.f              |    6 +-
+ fem3d/splitets.f            |   45 ++-
+ fem3d/splitflx.f            |   30 +-
+ fem3d/subbas.f              |   83 +++-
+ fem3d/subboxa.f             |    6 +-
+ fem3d/subcus.f              |    3 +
+ fem3d/subele.f              |   16 +-
+ fem3d/subets.f              |   65 +++
+ fem3d/subflx.f              |  104 ++++-
+ fem3d/subfvl.f              |    2 +-
+ fem3d/subgotm.f             |    2 +-
+ fem3d/subgrd.f              |  723 +++++++++++++++++++++++-------
+ fem3d/subinterpol1.f        |   44 --
+ fem3d/sublnka.f             |    1 -
+ fem3d/subn35.f              |    2 +-
+ fem3d/subuti.f              |    2 +-
+ fem3d/subwaves.f            |    1 +
+ fem3d/volinf.f              |   72 ---
+ fem3d/vp.f                  |   45 +--
+ femadj/Makefile             |   23 +-
+ femadj/adj4el.f             |   12 +-
+ femadj/adj575.f             |    8 +-
+ femadj/adj5el.f             |    8 +-
+ femadj/adj7el.f             |    8 +-
+ femadj/adjele.f             |   53 +--
+ femadj/adjgrd.f             |   34 ++-
+ femadj/adjneu.f             |   39 ++-
+ femadj/adjplo.f             |   47 +--
+ femadj/adjvar.f             |   28 +-
+ femadj/param.h              |    4 +-
+ femadj/subgrd.f             | 1035 -------------------------------------------
+ femadj/subgrd.h             |   13 -
+ femdoc/final/shyfem.pdf     |  Bin 294947 -> 294947 bytes
+ femdoc/final/shyfem.ps      |   26 +-
+ femplot/Makefile            |    3 +-
+ femplot/param.h             |    4 +-
+ femplot/plotsim.f           |    2 +-
+ femspline/Makefile          |   16 +-
+ femspline/gridr.f           |   76 ++--
+ femspline/subgrd.f          |  823 ++++++++++++++++++++++++++---------
+ grid/gridut.c               |    5 +-
+ param.h                     |    4 +-
+ 74 files changed, 2306 insertions(+), 2538 deletions(-)
+ new file:
+   fem3d/mod_layer_thickness.f
+ deleted:
+    fem3d/volinf.f
+    femadj/subgrd.h
+ renamed:
+    femadj/subgrd.f -> fem3d/subgrd.f
+
+============================================================
+
 Mon Jul 20 18:20:15 CEST 2015
 
 New version 7_1_81

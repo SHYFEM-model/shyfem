@@ -23,10 +23,12 @@ c***********************************************************
 
 c eliminates high grades
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
-        include 'basin.h'
+COMMON_GGU_DELETED        include 'basin.h'
         include 'grade.h'
 
 	integer nmax
@@ -50,10 +52,12 @@ c***********************************************************
 
 c eliminates high grades
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
         include 'param.h'
-        include 'basin.h'
+COMMON_GGU_DELETED        include 'basin.h'
         include 'grade.h'
 
 	integer k

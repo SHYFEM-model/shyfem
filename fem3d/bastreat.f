@@ -28,19 +28,11 @@ c takes care of lat/lon coordinates
 	use mod_depth
 	use evgeom
 	use basin
+	use grd
 
 	implicit none
 
 	include 'param.h'
-
-	integer ndim
-
-
-        real raux(neldim)
-        integer iaux(neldim)
-        integer ipaux(nkndim)
-
-
 
         character*40 bfile,gfile,nfile
         character*60 line
@@ -49,6 +41,7 @@ c takes care of lat/lon coordinates
         integer ner,nco,nknh,nelh,nli
 	integer nlidim,nlndim
 	integer ike,idepth
+	integer nlkdi
 	real hmin,hmax
 	real f(5)
 	logical bstop
@@ -113,50 +106,22 @@ c-----------------------------------------------------------------
 	end if
 
 c-----------------------------------------------------------------
-c read in bathymetry file
+c read in grid
 c-----------------------------------------------------------------
 
-	!np = ndim
-	!call readbat(bfile,np,xp,yp,dp)
-
-c-----------------------------------------------------------------
-c read in basin
-c-----------------------------------------------------------------
-
-        ner = 6
-        bstop = .false.
-
-        nlidim = 0
-        nlndim = 0
-        call rdgrd(
-     +                   gfile
-     +                  ,bstop
-     +                  ,nco,nkn,nel,nli
-     +                  ,nkndim,neldim,nlidim,nlndim
-     +                  ,ipv,ipev,iaux
-     +                  ,iaux,iarv,iaux
-     +                  ,hkv,hev,raux
-     +                  ,xgv,ygv
-     +                  ,nen3v
-     +                  ,iaux,iaux
-     +                  )
-
-        if( bstop ) stop 'error stop rdgrd'
-
-c        call rdgrd(gfile,ner,bstop,nco,nkn,nknh,nel,nelh,nli
-c     +                  ,nkndim,neldim,nliread
-c     +                  ,ipv,ipev,ianv,iarv,nen3v,xgv,ygv,hev,hkv)
-c
-c        call ex2in(nkn,nel,ipv,ipaux,nen3v,ner,bstop)
-
-        call ex2in(nkn,3*nel,nlidim,ipv,ipaux,nen3v,iaux,bstop)
-        if( bstop ) stop 'error stop ex2in'
+        call grd_read(gfile)
+        call grd_to_basin
 
 c-----------------------------------------------------------------
 c handling depth and coordinates
 c-----------------------------------------------------------------
 
+	call ev_init(nel)
 	call check_spheric_ev                       !sets lat/lon flag
+	call set_ev
+
+	call mod_depth_init(nkn,nel)
+	call grd_get_depth(nkn,nel,hkv,hev)
 	call set_depth_check(nknh,nelh)
 
 	ike = 1
@@ -180,9 +145,9 @@ c node_test
 c-----------------------------------------------------------------
 
 	call node_test
-	call set_ev
 
-        call mklenk(nlkdim,nkn,nel,nen3v,ilinkv,lenkv)
+	nlkdi = 3*nel + 2*nkn
+        call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
         call mklink(nkn,ilinkv,lenkv,linkv)
         call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
 
@@ -587,6 +552,7 @@ c deletes elements with depth lower then hmin
 
 	implicit none
 
+	integer nlkdi
 	real hmin
 
 	include 'param.h'
@@ -607,7 +573,8 @@ c deletes elements with depth lower then hmin
 	call delete_elements_depth(hmin)
 
 	call set_ev
-        call mklenk(nlkdim,nkn,nel,nen3v,ilinkv,lenkv)
+	nlkdi = 3*nel + 2*nkn
+        call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
         call mklink(nkn,ilinkv,lenkv,linkv)
         call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
 
@@ -630,7 +597,7 @@ c deletes elements with depth lower then hmin
 	call delete_elements_depth(hmin)
 
 	call set_ev
-        call mklenk(nlkdim,nkn,nel,nen3v,ilinkv,lenkv)
+        call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
         call mklink(nkn,ilinkv,lenkv,linkv)
         call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
 

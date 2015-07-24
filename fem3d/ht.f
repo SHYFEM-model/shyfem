@@ -539,6 +539,7 @@ c*****************************************************************
 	use mod_fluidmud
 	use mod_internal
 	use mod_depth
+	use mod_layer_thickness
 	use mod_gotm_aux
 	use mod_aux_array
 	use mod_ts
@@ -622,6 +623,7 @@ c*****************************************************************
 	subroutine check_max_depth
 
 	use mod_depth
+	use mod_layer_thickness
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
 
@@ -700,6 +702,7 @@ c*****************************************************************
 	use mod_diff_aux
 	use mod_roughness
 	use mod_hydro_baro
+	use mod_depth
 	use evgeom
 	use basin, only : nkn,nel,ngr,mbw
 
@@ -721,6 +724,8 @@ c*****************************************************************
 	call mod_geom_init(nkn,nel,ngr)
 	call mod_bndo_init(ngr,nrb)
 
+	call mod_depth_init(nkn,nel)
+
 	call ev_init(nel)
 
 	call mod_tvd_init(nel)
@@ -741,7 +746,7 @@ c*****************************************************************
 	use mod_bclfix
 	use mod_nohyd
 	use mod_internal
-	use mod_depth
+	use mod_layer_thickness
 	use mod_gotm_aux
 	use mod_bound_dynamic
 	use mod_aux_array
@@ -775,7 +780,7 @@ c*****************************************************************
 	call mod_aux_array_init(nkn,nel,nlvddi)
 	call mod_gotm_aux_init(nkn,nlvddi)
 
-	call mod_depth_init(nkn,nel,nlvddi)
+	call mod_layer_thickness_init(nkn,nel,nlvddi)
 	call mod_internal_init(nkn,nel,nlvddi)
 	call mod_nohyd_init(nkn,nlvddi)
 

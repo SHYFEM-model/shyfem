@@ -8,7 +8,7 @@ c
 c	subroutine iniflx
 c
 c	subroutine rfflx	(iunit,nvers
-c     +				,nscdim,kfxdim,nlvddi
+c     +				,nscddi,nfxddi,nlvddi
 c     +				,nsect,kfluxm,idtflx,nlmax
 c     +				,kflux
 c     +				,nlayers
@@ -64,8 +64,94 @@ c************************************************************
 c************************************************************
 c************************************************************
 
+	subroutine infoflx	(iunit,nvers
+     +				,nsect,kfluxm,idtflx,nlmax
+     +				)
+
+c reads first info record of FLX file
+c
+c nvers		on entry maximal version that can be read
+c		-> must be an input, used to check the corectness
+c		.. of the call parameters
+c		on return actual version read
+
+	implicit none
+
+c arguments
+	integer iunit,nvers
+	integer nsect,kfluxm,idtflx,nlmax
+c common
+	integer mtype,maxver,vers
+	common /flxcom/ mtype,maxver,vers
+c local
+	integer ntype,irec,i
+
+c initialize
+
+	call iniflx
+
+c control newest version number for call
+
+	if( maxver .ne. nvers ) goto 95
+
+c rewind file
+
+	rewind(iunit,err=96)
+
+c first record - find out what version
+
+	irec = 1
+	read(iunit,end=91,err=99) ntype,nvers
+
+c control version number and type of file
+
+	if( ntype .ne. mtype ) goto 97
+	if( nvers .le. 0 .or. nvers .gt. maxver ) goto 98
+	vers = nvers
+
+c next records
+
+	irec = 2
+	if( nvers .le. 3 ) then
+	   read(iunit,err=99)	 nsect,kfluxm,idtflx
+	   nlmax = 0
+	else if( nvers .ge. 4 ) then
+	   read(iunit,err=99)	 nsect,kfluxm,idtflx,nlmax
+	else
+	   stop 'error stop rfflx: internal error (1)'
+	end if
+
+	return
+   99	continue
+	write(6,*) 'rfflx: Error encountered while'
+	write(6,*) 'reading record number ',irec
+	write(6,*) 'of FLX file header'
+	write(6,*) 'nvers = ',nvers
+	stop 'error stop rfflx: error 99'
+   98	continue
+	write(6,*) 'rfflx: Version not recognized : ',nvers
+	stop 'error stop rfflx: error 98'
+   97	continue
+	write(6,*) 'rfflx: Wrong type of file : ',ntype
+	write(6,*) 'Expected ',mtype
+	stop 'error stop rfflx: error 97'
+   96	continue
+	write(6,*) 'rfflx: Cannot rewind file for unit : ',iunit
+	stop 'error stop rfflx: error 96'
+   95	continue
+	write(6,*) 'rfflx: Old function call ',nvers
+	write(6,*) 'nvers = ',nvers,'   maxver = ',maxver
+	write(6,*) 'Please adjust call to rfflx and recompile'
+	stop 'error stop rfflx: error 95'
+   91	continue
+	write(6,*) 'rfflx: File is empty'
+	stop 'error stop rfflx: error 91'
+	end
+
+c************************************************************
+
 	subroutine rfflx	(iunit,nvers
-     +				,nscdim,kfxdim,nlvddi
+     +				,nscddi,nfxddi,nlvddi
      +				,nsect,kfluxm,idtflx,nlmax
      +				,kflux
      +				,nlayers
@@ -82,7 +168,7 @@ c		on return actual version read
 
 c arguments
 	integer iunit,nvers
-	integer nscdim,kfxdim,nlvddi
+	integer nscddi,nfxddi,nlvddi
 	integer nsect,kfluxm,idtflx,nlmax
 	integer kflux(1)
 	integer nlayers(1)
@@ -127,12 +213,12 @@ c next records
 	   stop 'error stop rfflx: internal error (1)'
 	end if
 
-	if( nsect .gt. nscdim ) then
-	  write(6,*) 'nscdim,nsect: ',nscdim,nsect
-	  stop 'error stop rfflx: dimension nscdim'
-	else if( kfluxm .gt. kfxdim ) then
-	  write(6,*) 'kfxdim,kfluxm: ',kfxdim,kfluxm
-	  stop 'error stop rfflx: dimension kfxdim'
+	if( nsect .gt. nscddi ) then
+	  write(6,*) 'nscddi,nsect: ',nscddi,nsect
+	  stop 'error stop rfflx: dimension nscddi'
+	else if( kfluxm .gt. nfxddi ) then
+	  write(6,*) 'nfxddi,kfluxm: ',nfxddi,kfluxm
+	  stop 'error stop rfflx: dimension nfxddi'
 	end if
 
 	irec = 3

@@ -702,6 +702,7 @@ c DPGGU -> introduced double precision to stabilize solution
 	use mod_bound_geom
 	use mod_geom
 	use mod_depth
+	use mod_layer_thickness
 	use mod_diff_aux
 	use mod_bound_dynamic
 	use mod_area
@@ -1444,6 +1445,7 @@ c DPGGU -> introduced double precision to stabilize solution
 
 	use mod_bound_geom
 	use mod_depth
+	use mod_layer_thickness
 	use mod_diff_aux
 	use mod_bound_dynamic
 	use mod_aux_array

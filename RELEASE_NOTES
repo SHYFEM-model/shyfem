@@ -1,4 +1,11 @@
 
+24.07.2015    VERS_7_1_82
+
+	only dependency on fixed dimensions is nbcdim
+	some auxiliary programs are running
+	grd treatment has been completely revised
+	dealt with compilation errors in femadj and femspline
+
 20.07.2015    VERS_7_1_81
 
 	no need for setting dimensions anymore

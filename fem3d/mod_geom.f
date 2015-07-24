@@ -5,21 +5,6 @@
 
 	implicit none
 
-        !integer ilinkv(nkndim+1)
-        !integer lenkv(nlkdim)
-        !integer lenkiiv(nlkdim)
-        !integer linkv(nlkdim)
-
-        !integer ieltv(3,neldim)
-
-        !integer kantv(2,nkndim)
-        !real dxv(nkndim), dyv(nkndim)
-
-	!integer maxlnk
-	!parameter( maxlnk = 100 )
-	!integer lnk_nodes(maxlnk)
-	!integer lnk_elems(maxlnk)
-
 	integer, private, save  :: nkn_geom = 0
 	integer, private, save  :: nel_geom = 0
 	integer, private, save  :: ngr_geom = 0

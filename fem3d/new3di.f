@@ -732,6 +732,7 @@ c
 	use mod_fluidmud
 	use mod_internal
 	use mod_depth
+	use mod_layer_thickness
 	use mod_aux_array
 	use mod_roughness
 	use mod_diff_visc_fric
@@ -1861,7 +1862,7 @@ c*******************************************************************
 c momentum input for yaron
 
 	use mod_internal
-	use mod_depth
+	use mod_layer_thickness
 	use evgeom
 	use levels
 	use basin

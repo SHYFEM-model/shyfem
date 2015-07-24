@@ -26,7 +26,7 @@ c projection of basin
 	real hev(neldim)
 
 	logical berror
-	integer ike
+	integer nk,ne,nl,nne,nnl
 	integer mode,iproj,isphe
 	double precision c_param(10)
 
@@ -43,7 +43,17 @@ c---------------------------------------------------------------
         write(6,*) 'grid is read from file : ', gfile
         write(6,*)
 
-	call read_grd(gfile,hkv,hev,ike)
+        call grd_read(gfile)
+
+        call grd_get_params(nk,ne,nl,nne,nnl)
+        write(6,*) 'grid info: ',nk,ne,nl
+
+        if( nk == 0 .or. ne == 0 ) then
+          write(6,*) 'nk,ne: ',nk,ne
+          stop 'error stop vp: no nodes or elements in basin'
+        end if
+
+        call grd_to_basin
 
 	call check_spheric_ev
 	call get_coords_ev(isphe)
@@ -75,6 +85,13 @@ c        c_param(1) = 38.             !central latitude (phi)
 c        c_param(2) = 15.             !longitude of origin (lon0)
 c        c_param(3) = 38.             !latitude of origin (lat0)
 
+c Nador
+
+	iproj = 3	     	     !equidistant cylindrical
+        c_param(1) = 35.             !central latitude (phi)
+        c_param(2) = -3.             !longitude of origin (lon0)
+        c_param(3) = 35.             !latitude of origin (lat0)
+
 c Black Sea
 
 c	iproj = 3		     !equidistant cylindrical
@@ -84,13 +101,13 @@ c        c_param(3) = 43.5            !latitude of origin (lat0)
 
 c Klaipeda
 
-	iproj = 4		     !UTM Lithuania
-        c_param(1) = 24.             !longitude of origin (lon0)
-        c_param(2) = -500000.        !false easting
-        c_param(3) = 0.              !false northing
-        c_param(2) = -220000.        !false easting
-        c_param(3) = +6100000.              !false northing
-        c_param(4) = 0.9998          !scale factor
+c	iproj = 4		     !UTM Lithuania
+c        c_param(1) = 24.             !longitude of origin (lon0)
+c        c_param(2) = -500000.        !false easting
+c        c_param(3) = 0.              !false northing
+c        c_param(2) = -220000.        !false easting
+c        c_param(3) = +6100000.              !false northing
+c        c_param(4) = 0.9998          !scale factor
 
 c ??
 
@@ -134,9 +151,10 @@ c write new grd file
 c---------------------------------------------------------------
 
         nfile = 'proj.grd'
-        open(1,file=nfile,status='unknown',form='formatted')
-        call write_grd(1,hkv,hev,ike)
-        close(1)
+        call basin_to_grd
+
+	call grd_write(nfile)
+
         write(6,*) 'file has been written to ',nfile
 
 c---------------------------------------------------------------
@@ -145,9 +163,6 @@ c---------------------------------------------------------------
 
 	stop
 	end
-
-c***************************************************************
-
 
 c***************************************************************
 

@@ -35,15 +35,16 @@ c 19.05.2003    ggu     some changes in stats
 c
 c***********************************************************
 
-	subroutine maxgrd(nkn,nel,nen3v,ngrade,nmax)
+	subroutine maxgrd(nkn,nel,nen3v,nmax)
 
 c computes maximum grade (except boundary -> is one too low)
 
 	implicit none
 
 	integer nkn,nel,nmax
-	integer nen3v(3,1)
-	integer ngrade(1)
+	integer nen3v(3,nel)
+
+	integer ngrade(nkn)
 
 	integer k,ie,ii
 
@@ -61,6 +62,33 @@ c computes maximum grade (except boundary -> is one too low)
 	nmax = 0
 	do k=1,nkn
 	  if( ngrade(k) .gt. nmax ) nmax = ngrade(k)
+	end do
+
+	end
+
+c***********************************************************
+
+	subroutine setgrd(nkn,nel,nen3v,ngrade)
+
+c computes maximum grade (except boundary -> is one too low)
+
+	implicit none
+
+	integer nkn,nel
+	integer nen3v(3,1)
+	integer ngrade(1)
+
+	integer k,ie,ii
+
+	do k=1,nkn
+	  ngrade(k) = 0
+	end do
+
+	do ie=1,nel
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    ngrade(k) = ngrade(k) + 1
+	  end do
 	end do
 
 	end

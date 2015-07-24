@@ -36,6 +36,7 @@ c reads grid with box information and writes index file boxes.txt
         integer ner,nco,nknh,nelh,nli
 	integer nlidim,nlndim
 	integer ike,idepth
+	integer nlkdi
 	real f(5)
 	logical bstop
 
@@ -69,7 +70,8 @@ c-----------------------------------------------------------------
 
 	call set_ev
 
-        call mklenk(nlkdim,nkn,nel,nen3v,ilinkv,lenkv)
+	nlkdi = 3*nel + 2*nkn
+        call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
         call mklink(nkn,ilinkv,lenkv,linkv)
         call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
 

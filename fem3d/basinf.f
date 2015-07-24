@@ -32,7 +32,7 @@ c writes information on basin about nodes and elements
 	include 'param.h'
 
 
-	real haux(nkndim)
+	real, allocatable :: haux(:)
 
 	logical bnode,belem
 	integer iapini
@@ -41,11 +41,14 @@ c-----------------------------------------------------------------
 c read in basin
 c-----------------------------------------------------------------
 
-        if( iapini(1,nkndim,neldim,0) .le. 0 ) stop
+        if( iapini(1,0,0,0) .le. 0 ) stop
 
-	call bas_info
+	allocate(haux(nkn))
 
+	call ev_init(nel)
 	call set_ev
+
+	call mod_depth_init(nkn,nel)
 
 c-----------------------------------------------------------------
 c specific info
@@ -80,7 +83,7 @@ c-----------------------------------------------------------------
 
     1	continue
 
-	!call write_grd_from_bas	!write grd from bas
+	call write_grd_from_bas	!write grd from bas
         !call write_xy('basinf.xyz',nkn,ipv,xgv,ygv)
 	!call write_grd_with_unique_depth	!prepare for sigma levels
 
@@ -553,26 +556,19 @@ c areatr        element area (return value)
 
 c*******************************************************************
 
-	subroutine write_grd_with_unique_depth
+	subroutine make_unique_depth
 
-c writes grd file extracting info from bas file
+c makes unique depth 
 
 	use evgeom
 	use basin
 
 	implicit none
 
-	include 'param.h'
-
-	logical bsort
-	integer k,ie,ii,ia,i
-	real x,y,h,area
-	integer ipdex(nel)	!for sorting
-	real hkv(nkn)
-	real weight(nkn)
-
-	bsort = .false.
-	bsort = .true.
+	integer k,ie,ii
+	double precision h,area
+	double precision hkv(nkn)
+	double precision weight(nkn)
 
 	hkv = 0.
 	weight = 0.
@@ -591,36 +587,29 @@ c writes grd file extracting info from bas file
 	  if( weight(k) > 0. ) hkv(k) = hkv(k) / weight(k)
 	end do
 
-c-------------------------
-	
-	open(8,file='bas.grd',status='unknown',form='formatted')
-
-	call isort(nkn,ipv,ipdex)
-
-	do i=1,nkn
-	  k = i
-	  if( bsort ) k = ipdex(i)
-	  x = xgv(k)
-	  y = ygv(k)
-	  h = hkv(k)
-	  write(8,2000) 1,ipv(k),0,x,y,h
+	do ie=1,nel
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    hm3v(ii,ie) =  hkv(k)
+	  end do
 	end do
 
-	call isort(nel,ipev,ipdex)
+	end
 
-	do i=1,nel
-	  ie = i
-	  if( bsort ) ie = ipdex(i)
-	  h = hm3v(1,ie)
-	  ia = iarv(ie)
-	  write(8,2100) 2,ipev(ie),ia,3,(ipv(nen3v(ii,ie)),ii=1,3)
-	end do
-	  
-	close(8)
+c*******************************************************************
 
-	return
- 2000	format(i1,i10,i5,3e16.8)
- 2100	format(i1,i10,2i5,3i10,e14.6)
+	subroutine write_grd_with_unique_depth
+
+c writes grd file extracting info from bas file
+
+	implicit none
+
+	call make_unique_depth
+
+        call basin_to_grd
+
+        call grd_write('bas.grd')
+
 	end
 
 c*******************************************************************
@@ -629,36 +618,12 @@ c*******************************************************************
 
 c writes grd file extracting info from bas file
 
-	use basin
-
 	implicit none
 
-	include 'param.h'
+        call basin_to_grd
 
-	integer k,ie,ii,ia
-	real x,y,h
+        call grd_write('bas.grd')
 
-	open(8,file='bas.grd',status='unknown',form='formatted')
-
-	do k=1,nkn
-	  x = xgv(k)
-	  y = ygv(k)
-	  !write(8,2000) 1,k,0,x,y
-	  write(8,2000) 1,ipv(k),0,x,y
-	end do
-
-	do ie=1,nel
-	  h = hm3v(1,ie)
-	  ia = iarv(ie)
-	  !write(8,2100) 2,ie,0,3,(nen3v(ii,ie),ii=1,3),h
-	  write(8,2100) 2,ipev(ie),ia,3,(ipv(nen3v(ii,ie)),ii=1,3),h
-	end do
-	  
-	close(8)
-
-	return
- 2000	format(i1,i10,i5,2e16.8)
- 2100	format(i1,i10,2i5,3i10,e14.6)
 	end
 
 c*******************************************************************
@@ -674,7 +639,7 @@ c writes statistics on grid quality
 
 	include 'param.h'
 
-	real areav(nkndim)
+	real areav(nkn)
 
 	integer ie,ii,k
 	integer ia,ic,ilow,ihigh

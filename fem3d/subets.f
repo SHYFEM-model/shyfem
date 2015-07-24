@@ -32,6 +32,7 @@ c        subroutine ets_clone_params(iu_from,iu_to)
 c
 c	 subroutine ets_is_ets_file(iunit,nvers)
 c
+c	 subroutine ets_peek_header(iunit,nkn,nlv,nvar,ierr)
 c        subroutine ets_read_header(iunit,nkn,nlv,nvar,ierr)
 c        subroutine ets_write_header(iunit,nkn,nlv,nvar,ierr)
 c        subroutine ets_read_header2(iu,ilhkv,hlv,hkv
@@ -652,6 +653,70 @@ c nvers > 0     good nos file
 
 c************************************************************
 c************************************************************
+c************************************************************
+
+	subroutine ets_peek_header(iunit,nkn,nlv,nvar,ierr)
+
+	implicit none
+
+	include 'etsinf.h'
+
+	integer iunit
+	integer nkn,nlv,nvar
+	integer ierr
+
+	integer n,nvers
+	integer ntype,irec
+
+	call iniets
+
+c first record - find out what version
+
+	irec = 1
+	read(iunit,end=91,err=99) ntype,nvers
+
+c control version number and type of file
+
+	if( ntype .ne. ftype ) goto 97
+	if( nvers .le. 0 .or. nvers .gt. maxvers ) goto 98
+
+c next records
+
+	irec = 2
+	if( nvers .ge. 1 ) then
+	  read(iunit,err=99)	 nkn,nlv,nvar
+	else
+	   stop 'error stop ets_peek_header: internal error (1)'
+	end if
+
+	rewind(iunit)
+	rewind(iunit)
+
+	ierr = 0
+
+	return
+   99	continue
+	write(6,*) 'ets_peek_header: Error encountered while'
+	write(6,*) 'reading record number ',irec
+	write(6,*) 'of ETS file header'
+	write(6,*) 'nvers = ',nvers
+	ierr=99
+	return
+   98	continue
+	write(6,*) 'ets_peek_header: Version not recognized : ',nvers
+	ierr=98
+	return
+   97	continue
+	write(6,*) 'ets_peek_header: Wrong type of file : ',ntype
+	write(6,*) 'Expected ',ftype
+	ierr=97
+	return
+   91	continue
+	write(6,*) 'ets_peek_header: File is empty'
+	ierr=91
+	return
+	end
+
 c************************************************************
 
 	subroutine ets_read_header(iunit,nkn,nlv,nvar,ierr)

@@ -1357,7 +1357,7 @@ c DOCS  END
      $  salref,temref,wsink,sload,sflx)
 
 	use mod_waves
-	use mod_depth
+	use mod_layer_thickness
 	use mod_roughness
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
@@ -1531,6 +1531,7 @@ c DOCS  END
      $scn,sedx,sedy,ws,gdx,gdy,lmax,eps,tao,Z0,sload,sflx)
 
 	use mod_depth
+	use mod_layer_thickness
 	use mod_diff_visc_fric
 
         implicit none
@@ -3593,6 +3594,7 @@ c DOCS  END
 
 	use mod_geom_dynamic
 	use mod_depth
+	use mod_layer_thickness
 	use mod_aux_array
 	use mod_area
 	use mod_hydro
@@ -3827,7 +3829,7 @@ c DOCS  END
 ! compute bottom velocity on nodes
 !
 	use mod_geom_dynamic
-	use mod_depth
+	use mod_layer_thickness
 	use mod_hydro_vel
 	use evgeom
 	use levels

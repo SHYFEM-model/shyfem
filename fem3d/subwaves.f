@@ -659,6 +659,7 @@ c local
 
 	use mod_internal
 	use mod_depth
+	use mod_layer_thickness
 	use mod_hydro_vel
 	use evgeom
 	use levels

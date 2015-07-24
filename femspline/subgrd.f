@@ -32,7 +32,7 @@ c				changing extern with intern node numbers (list)
 c
 c	internal routines:
 c
-c	subroutine grd_init(file)
+c	subroutine grd_internal_init(file)
 c	function grd_next_line()
 c	subroutine grd_nvals(nvals)
 c	subroutine grd_vals(nvals,vals)
@@ -63,16 +63,288 @@ c 08.01.2015    ggu     common blocks in include file
 c
 c**********************************************************
 
+!==============================================================
+	module grd
+!==============================================================
+
+	implicit none
+
+        real, save :: xscale_grd = 1.
+        real, save :: yscale_grd = 1.
+        real, save :: zscale_grd = 1.
+	character*80, save :: title_grd = ' '
+	real, save :: dcor_grd = 0.
+	real, save :: dirn_grd = 0.
+
+        integer, save :: nin_grd,iline_grd,ianz_grd
+        real, save :: f_grd(80)
+        character*132, save :: line_grd
+
+	integer, save :: nk_grd = 0
+	integer, save :: ne_grd = 0
+	integer, save :: nl_grd = 0
+	integer, save :: nne_grd = 0
+	integer, save :: nnl_grd = 0
+
+	integer, save, allocatable :: ippnv(:),ippev(:),ipplv(:)
+	integer, save, allocatable :: ianv(:),iaev(:),ialv(:)
+        real, save, allocatable :: hhnv(:),hhev(:),hhlv(:)
+        real, save, allocatable :: xv(:),yv(:)
+
+        integer, save, allocatable :: ipntev(:),inodev(:)
+        integer, save, allocatable :: ipntlv(:),inodlv(:)
+
+!==============================================================
+	contains
+!==============================================================
+
+	subroutine grd_init(nk,ne,nl,nne,nnl)
+
+	integer nk,ne,nl,nne,nnl
+
+	if( nk .ne. nk_grd ) then
+	  if( nk_grd > 0 ) then
+	    deallocate(ippnv,ianv,hhnv,xv,yv)
+	  end if
+	  nk_grd = nk
+	  if( nk > 0 ) then
+	    allocate(ippnv(nk),ianv(nk),hhnv(nk),xv(nk),yv(nk))
+	  end if
+	end if
+
+	if( ne .ne. ne_grd ) then
+	  if( ne_grd > 0 ) then
+	    deallocate(ippev,iaev,hhev,ipntev)
+	  end if
+	  ne_grd = ne
+	  if( ne > 0 ) then
+	    allocate(ippev(ne),iaev(ne),hhev(ne))
+	  end if
+	end if
+	if( allocated(ipntev) ) deallocate(ipntev)
+	allocate(ipntev(0:ne))
+
+	if( nl .ne. nl_grd ) then
+	  if( nl_grd > 0 ) then
+	    deallocate(ipplv,ialv,hhlv,ipntlv)
+	  end if
+	  nl_grd = nl
+	  if( nl > 0 ) then
+	    allocate(ipplv(nl),ialv(nl),hhlv(nl))
+	  end if
+	end if
+	if( allocated(ipntlv) ) deallocate(ipntlv)
+	allocate(ipntlv(0:nl))
+
+	if( nne .ne. nne_grd ) then
+	  if( nne_grd > 0 ) then
+	    deallocate(inodev)
+	  end if
+	  nne_grd = nne
+	  if( nne > 0 ) then
+	    allocate(inodev(nne))
+	  end if
+	end if
+
+	if( nnl .ne. nnl_grd ) then
+	  if( nnl_grd > 0 ) then
+	    deallocate(inodlv)
+	  end if
+	  nnl_grd = nnl
+	  if( nnl > 0 ) then
+	    allocate(inodlv(nnl))
+	  end if
+	end if
+
+	end subroutine grd_init
+
+!==============================================================
+	end module grd
+!==============================================================
+
+c*****************************************************************
+
+	subroutine grd_get_params(nk,ne,nl,nne,nnl)
+
+	use grd
+
+	integer nk,ne,nl,nne,nnl
+
+	nk = nk_grd
+	ne = ne_grd
+	nl = nl_grd
+	nne = nne_grd
+	nnl = nnl_grd
+
+	end subroutine grd_get_params
+
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine grd_read(file)
+
+	use grd
+
+	implicit none
+
+	character(*) file
+	integer ner,nco
+	logical bstop
+	integer nk,ne,nl,nne,nnl
+	integer nkndi,neldi,nlidi,nendi,nlndi
+
+        call grd_info(file,nk,ne,nl,nne,nnl)
+
+	write(6,*) 'grd_info: ',nk,ne,nl,nne,nnl
+
+	nkndi = nk
+	neldi = ne
+	nlidi = nl
+	nendi = nne
+	nlndi = nnl
+
+	call grd_init(nkndi,neldi,nlidi,nendi,nlndi)
+
+        ner = 6
+        bstop = .false.
+
+	call rdgrd(
+     +			 file
+     +			,bstop
+     +			,nco,nk,ne,nl,nne,nnl
+     +			,nkndi,neldi,nlidi,nendi,nlndi
+     +			,ippnv,ippev,ipplv
+     +			,ianv,iaev,ialv
+     +			,hhnv,hhev,hhlv
+     +			,xv,yv
+     +                  ,ipntev,inodev
+     +                  ,ipntlv,inodlv
+     +			)
+
+	call ex2in(nk,nne,nnl,ippnv,inodev,inodlv,bstop)
+
+	if( bstop ) stop 'error stop grd_read: error reading grd file'
+
+	write(6,*) 'total number of lines read: ',iline_grd
+
+	end
+
+c*****************************************************************
+
+        subroutine grd_info(gfile,nk,ne,nl,nne,nnl)
+
+c reads grd file to obtain basic parameters
+
+        implicit none
+
+        character*(*) gfile
+        integer nk              !total number of nodes
+        integer ne              !total number of elems
+        integer nl              !total number of lines
+        integer nne             !total number of nodes in elems
+        integer nnl             !total number of nodes in lines
+
+        logical bstop
+        integer ner,nco
+        integer nkndi0,neldi0,nlidi0,nendi0,nlndi0
+
+	integer ippnv(1),ippev(1),ipplv(1)
+	integer ianv(1),iaev(1),ialv(1)
+        real hhnv(1),hhev(1),hhlv(1)
+        real xv(1),yv(1)
+
+        integer ipntev0(0:0),inodev(1)
+        integer ipntlv0(0:0),inodlv(1)
+
+c-----------------------------------------------------------------
+c initialize parameters
+c-----------------------------------------------------------------
+
+        ner = 6
+        bstop = .false.
+
+        nkndi0 = 0
+        neldi0 = 0
+        nlidi0 = 0
+        nendi0 = 0
+        nlndi0 = 0
+
+c-----------------------------------------------------------------
+c read grd file
+c-----------------------------------------------------------------
+
+        call rdgrd(
+     +                   gfile
+     +                  ,bstop
+     +                  ,nco,nk,ne,nl,nne,nnl
+     +                  ,nkndi0,neldi0,nlidi0,nendi0,nlndi0
+     +                  ,ippnv,ippev,ipplv
+     +                  ,ianv,iaev,ialv
+     +                  ,hhnv,hhev,hhlv
+     +                  ,xv,yv
+     +                  ,ipntev0,inodev
+     +                  ,ipntlv0,inodlv
+     +                  )
+
+        end
+
+c**********************************************************
+
+	subroutine grd_close
+
+	use grd
+
+	implicit none
+
+	call grd_init(0,0,0,0,0)
+
+	end
+
+c**********************************************************
+
+	subroutine grd_write(file)
+
+	use grd
+
+	implicit none
+
+	character*(*) file
+
+	integer nk,ne,nl,nne,nnl
+	integer nco
+
+	nco = 0
+
+	call grd_get_params(nk,ne,nl,nne,nnl)
+
+	call grd_write_grid(
+     +			 file
+     +			,nco,nk,ne,nl,nne,nnl
+     +			,ippnv,ippev,ipplv
+     +			,ianv,iaev,ialv
+     +			,hhnv,hhev,hhlv
+     +			,xv,yv
+     +                  ,ipntev,inodev
+     +                  ,ipntlv,inodlv
+     +			)
+
+	end
+
+c**********************************************************
+c**********************************************************
+c**********************************************************
+
 	subroutine rdgrd(
      +			 file
      +			,bstop
-     +			,nco,nkn,nel,nli
-     +			,nkndim,neldim,nlidim,nlndim
+     +			,nco,nkn,nel,nli,nne,nnl
+     +			,nknddi,nelddi,nliddi,nenddi,nlnddi
      +			,ipnv,ipev,iplv
      +			,ianv,iaev,ialv
      +			,hnv,hev,hlv
      +			,xgv,ygv
-     +                  ,nen3v
+     +                  ,ipntev,inodev
      +                  ,ipntlv,inodlv
      +			)
 
@@ -82,6 +354,8 @@ c after read nen3v and inodlv contain still external node numbers
 c use ex2in to convert external to internal node numbers
 c
 c works only with triangles as elements
+
+	!use grd
 
 	implicit none
 
@@ -93,33 +367,34 @@ c works only with triangles as elements
 	integer nkn		!total number of nodes read
 	integer nel		!total number of elements read
 	integer nli		!total number of lines read
+	integer nne		!total number of nodes in elems
+	integer nnl		!total number of nodes in lines
 
-	integer nkndim		!dimension for number of nodes
-	integer neldim		!dimension for number of elements
-	integer nlidim		!dimension for number of lines
-	integer nlndim		!dimension for node numbers of lines
+	integer nknddi		!dimension for number of nodes
+	integer nelddi		!dimension for number of elements
+	integer nliddi		!dimension for number of lines
+	integer nenddi		!dimension for node numbers of elems
+	integer nlnddi		!dimension for node numbers of lines
 
-	integer ipnv(nkndim)	!external node number
-	integer ipev(neldim)	!external element number
-	integer iplv(nlidim)	!external line number
+	integer ipnv(nknddi)	!external node number
+	integer ipev(nelddi)	!external element number
+	integer iplv(nliddi)	!external line number
 
-	integer ianv(nkndim) 	!node type
-	integer iaev(neldim)	!element type
-	integer ialv(nlidim)	!line type
+	integer ianv(nknddi) 	!node type
+	integer iaev(nelddi)	!element type
+	integer ialv(nliddi)	!line type
 
-	real hnv(nkndim)	!depth of node
-	real hev(neldim)	!depth of element
-	real hlv(nlidim)	!depth of line
+	real hnv(nknddi)	!depth of node
+	real hev(nelddi)	!depth of element
+	real hlv(nliddi)	!depth of line
 
-	real xgv(nkndim)	!x coordinate of node
-	real ygv(nkndim)	!y coordinate of node
+	real xgv(nknddi)	!x coordinate of node
+	real ygv(nknddi)	!y coordinate of node
 
-	integer nen3v(3,neldim)	!element index
-
-	integer ipntlv(0:nlidim)!pointer into inodlv
-	integer inodlv(nlndim)	!node numbers of lines (dim. nlndim)
-
-	include 'subgrd.h'
+	integer ipntev(0:nelddi)!pointer into inodev
+	integer inodev(nenddi)	!node numbers of elems
+	integer ipntlv(0:nliddi)!pointer into inodlv
+	integer inodlv(nlnddi)	!node numbers of lines
 
 	integer iwhat,ner
 	real value
@@ -137,18 +412,17 @@ c--------------------------------------------------------------------
         nkn=0
         nel=0
         nli=0
+	nne=0
+	nnl=0
 
-	xscale=1.
-	yscale=1.
-	zscale=1.
-
+	ipntev(0) = 0
 	ipntlv(0) = 0
 
 c--------------------------------------------------------------------
 c open file or STDIN
 c--------------------------------------------------------------------
 
-	call grd_init(file)
+	call grd_internal_init(file)
 
 c--------------------------------------------------------------------
 c loop on lines and read
@@ -162,19 +436,21 @@ c--------------------------------------------------------------------
           if( iwhat.eq.0 ) then  !comment or error
 		call rdcom(nco,bstop)
           else if(iwhat.eq.1) then              !node
-        	call rdnode(nkn,nkndim,bstop
+        	call rdnode(nkn,nknddi,bstop
      +				,ipnv,ianv,xgv,ygv,hnv)
           else if(iwhat.eq.2) then              !element
-        	call rdelem(nel,neldim,bstop
-     +				,ipev,iaev,nen3v,hev)
+        	call rdelem(nel,nne,nelddi,nenddi,bstop
+     +				,ipev,iaev,ipntev,inodev,hev)
           else if(iwhat.eq.3) then              !line
-        	call rdline(nli,nlidim,nlndim,bstop
+        	call rdline(nli,nnl,nliddi,nlnddi,bstop
      +				,iplv,ialv,ipntlv,inodlv,hlv)
           else
 	  	call rdunknown(iwhat,bstop)
           end if
 
         end do
+
+	call grd_internal_close
 
 c--------------------------------------------------------------------
 c end of routine
@@ -223,31 +499,31 @@ c reads comment
 
 c**********************************************************
 
-        subroutine rdnode(nkn,nkndim,bstop
+        subroutine rdnode(nkn,nknddi,bstop
      +				,ipnv,ianv,xgv,ygv,hnv)
 
 c reads nodes from .grd file
 
+	use grd, only : xscale_grd,yscale_grd,zscale_grd
+
         implicit none
 
-	integer nkn,nkndim
+	integer nkn,nknddi
 	logical bstop
-        integer ipnv(nkndim)
-        integer ianv(nkndim)         !node type
-	real xgv(nkndim),ygv(nkndim)
-	real hnv(nkndim)
-
-	include 'subgrd.h'
+        integer ipnv(nknddi)
+        integer ianv(nknddi)         !node type
+	real xgv(nknddi),ygv(nknddi)
+	real hnv(nknddi)
 
 	logical bread
 	integer ner
-	!integer ianz
-        !real f(6)
+	integer ianz
+        real f(6)
 	real depth
 
 	ner = 6
 
-	bread = nkndim .gt. 0		!read nodes?
+	bread = nknddi .gt. 0		!read nodes?
 
 	call grd_nvals(ianz)
         if(ianz.lt.5) goto 88
@@ -256,22 +532,22 @@ c reads nodes from .grd file
 
         nkn=nkn+1
 	if( .not. bread ) return
-	if(bread .and. nkn.gt.nkndim) then
+	if(bread .and. nkn.gt.nknddi) then
 	  bread = .false.
 	  bstop = .true.
-	  if( nkn .eq. nkndim+1 ) then		!just one time
-	    write(ner,*) 'dimension of nkndim too low: ',nkndim
+	  if( nkn .eq. nknddi+1 ) then		!just one time
+	    write(ner,*) 'dimension of nknddi too low: ',nknddi
 	  end if
 	end if
 	if( .not. bread ) return
 
         ipnv(nkn)=nint(f(2))
         ianv(nkn)=nint(f(3))
-        xgv(nkn)=f(4)*xscale
-        ygv(nkn)=f(5)*yscale
+        xgv(nkn)=f(4)*xscale_grd
+        ygv(nkn)=f(5)*yscale_grd
 
        	depth = -999.
-	if( ianz .ge. 6 ) depth = f(6)*zscale
+	if( ianz .ge. 6 ) depth = f(6)*zscale_grd
 	hnv(nkn) = depth
 
         return
@@ -286,47 +562,48 @@ c reads nodes from .grd file
 	bstop=.true.
 	return
    99	continue
-	write(ner,*) 'dimension of nkndim too low: ',nkndim
-	stop 'error stop rdnode: nkndim'
+	write(ner,*) 'dimension of nknddi too low: ',nknddi
+	stop 'error stop rdnode: nknddi'
         end
 
 c**********************************************************
 
-        subroutine rdelem(nel,neldim,bstop
-     +				,ipev,iaev,nen3v,hev)
+        subroutine rdelem(nel,nne,nelddi,nenddi,bstop
+     +				,ipev,iaev,ipntev,inodev,hev)
 
 c reads elements from .grd file
 
         implicit none
 
-	integer nel,neldim
+	integer nel,nne,nelddi,nenddi
 	logical bstop
-        integer ipev(neldim),iaev(neldim)
-	integer nen3v(3,neldim)
-	real hev(neldim)
+        integer ipev(nelddi),iaev(nelddi)
+	integer ipntev(0:nelddi)
+	integer inodev(nenddi)
+	real hev(nelddi)
 
 	logical bread
 	integer ner,ii
         real f(4)
 	integer ilist(10)
-	integer inum,itype,ianz
+	integer inum,itype,ianz,ipnt
 	integer ivert,nvert,istart
 	real depth
 
 	ner = 6
 
-	bread = neldim .gt. 0		!read elements?
+	bread = nelddi .gt. 0		!read elements?
 
 	call grd_nvals(ianz)
         if(ianz.lt.4) goto 88
 	call grd_vals(4,f)
 
         nel=nel+1
-	if(bread .and. nel.gt.neldim) then
+	if(bread .and. nel.gt.nelddi) then
 	  bread = .false.
 	  bstop = .true.
-	  if( nel .eq. neldim+1 ) then		!just one time
-	    write(ner,*) 'dimension of neldim too low: ',neldim
+	  if( nel .eq. nelddi+1 ) then		!just one time
+	    write(ner,*) 'dimension of nelddi too low: ',nelddi
 	  end if
 	end if
 
@@ -340,7 +617,17 @@ c reads elements from .grd file
         ivert=nvert
 	if( .not. bread ) ivert = -ivert
 
-	call read_node_list(ivert,istart,ilist,depth)
+        istart=4
+        ivert=nvert
+	if( bread ) then
+	  ipnt = ipntev(nel-1)
+	  if( ipnt + nvert .gt. nenddi ) goto 98
+	else
+	  ipnt = 0
+	  ivert = -ivert
+	end if
+
+	call read_node_list(ivert,istart,inodev(ipnt+1),depth)
 
 	if(ivert.lt.nvert) goto 86
 
@@ -348,10 +635,9 @@ c reads elements from .grd file
           ipev(nel) = inum
           iaev(nel) = itype
 	  hev(nel)  = depth
-	  do ii=1,3
-	    nen3v(ii,nel) = ilist(ii)
-	  end do
+	  ipntev(nel) = ipntev(nel-1) + nvert
 	end if
+	nne = nne + nvert
 
 	return
    86	continue
@@ -370,26 +656,29 @@ c reads elements from .grd file
 	call grd_write_line_info
 	bstop=.true.
 	return
+   98   continue
+        write(6,*) 'dimension of nenddi too low: ',nenddi
+        stop 'error stop rdelem: nenddi'
    99	continue
-	write(ner,*) 'dimension of neldim too low: ',neldim
-	stop 'error stop rdelem: neldim'
+	write(ner,*) 'dimension of nelddi too low: ',nelddi
+	stop 'error stop rdelem: nelddi'
 	end
 
 c**********************************************************
 
-        subroutine rdline(nli,nlidim,nlndim,bstop
+        subroutine rdline(nli,nnl,nliddi,nlnddi,bstop
      +				,iplv,ialv,ipntlv,inodlv,hlv)
 
 c reads lines from .grd file
 
         implicit none
 
-	integer nli,nlidim,nlndim
+	integer nli,nnl,nliddi,nlnddi
 	logical bstop
-        integer iplv(nlidim),ialv(nlidim)
-	integer ipntlv(0:nlidim)		!pointer into inodlv
-	integer inodlv(nlndim)			!node numbers of lines
-	real hlv(nlidim)
+        integer iplv(nliddi),ialv(nliddi)
+	integer ipntlv(0:nliddi)		!pointer into inodlv
+	integer inodlv(nlnddi)			!node numbers of lines
+	real hlv(nliddi)
 
 	logical bread
 	integer ner
@@ -400,14 +689,14 @@ c reads lines from .grd file
 
 	ner = 6
 
-	bread = nlidim .gt. 0		!read lines?
+	bread = nliddi .gt. 0		!read lines?
 
 	call grd_nvals(ianz)
         if(ianz.lt.4) goto 88
 	call grd_vals(4,f)
 
         nli=nli+1
-	if(bread .and. nli.gt.nlidim) goto 99
+	if(bread .and. nli.gt.nliddi) goto 99
         inum=nint(f(2))
         itype=nint(f(3))
         nvert=nint(f(4))
@@ -416,7 +705,7 @@ c reads lines from .grd file
         ivert=nvert
 	if( bread ) then
 	  ipnt = ipntlv(nli-1)
-	  if( ipnt + nvert .gt. nlndim ) goto 98
+	  if( ipnt + nvert .gt. nlnddi ) goto 98
 	else
 	  ipnt = 0
 	  ivert = -ivert
@@ -432,6 +721,7 @@ c reads lines from .grd file
 	  hlv(nli)  = depth
 	  ipntlv(nli) = ipntlv(nli-1) + nvert
 	end if
+	nnl = nnl + nvert
 
 	return
    86	continue
@@ -445,11 +735,11 @@ c reads lines from .grd file
 	bstop=.true.
 	return
    98	continue
-	write(6,*) 'dimension of nlndim too low: ',nlndim
-	stop 'error stop rdline: nlndim'
+	write(6,*) 'dimension of nlnddi too low: ',nlnddi
+	stop 'error stop rdline: nlnddi'
    99	continue
-	write(6,*) 'dimension of nlidim too low: ',nlidim
-	stop 'error stop rdline: nlidim'
+	write(6,*) 'dimension of nliddi too low: ',nliddi
+	stop 'error stop rdline: nliddi'
 	end
 
 c**********************************************************
@@ -458,6 +748,8 @@ c**********************************************************
 
 c reads node list
 
+	use grd, only : zscale_grd
+
 	implicit none
 
 	integer nvert		!number of vertices to read
@@ -465,10 +757,8 @@ c reads node list
 	integer nodes(1)
 	real depth
 
-	include 'subgrd.h'
-
 	logical bread,bline
-	integer i,ivert!,ianz
+	integer i,ivert,ianz
 	real value
 
 	logical grd_next_line
@@ -500,7 +790,7 @@ c reads node list
        	depth = -999.
 	if( i .lt. ianz ) then
 	  call grd_ival(i+1,value)
-	  depth = value*zscale
+	  depth = value*zscale_grd
 	end if
 
 	nvert = ivert		!pass back number of vertices read
@@ -581,6 +871,9 @@ c 0 (FEM-SCALE) 0.5 0.5 2.
 c 0 (FEM-LATID) 45.0
 c 0 (FEM-NORTH) 90.0
 c
+	use grd
+	!use basin
+
         implicit none
 
 	character*(*) gline
@@ -588,12 +881,6 @@ c
 	integer i,j,n
 	integer ifstch,iscan
 	logical btitle
-	!real f(10)
-
-	include 'param_dummy.h'
-	include 'basin.h'
-	include 'pkonst.h'
-	include 'subgrd.h'
 
 	save btitle
 	data btitle /.false./
@@ -603,31 +890,31 @@ c
 
 	if( i.gt.0 .and. i+10.lt.n ) then
 	  if( gline(i:i+10) .eq. '(FEM-TITLE)' ) then
-		descrr=gline(i+11:)
+		title_grd=gline(i+11:)
 		btitle=.true.
 	  else if( gline(i:i+10) .eq. '(FEM-SCALE)' ) then
-		j=iscan(gline(i+11:),1,f)
+		j=iscan(gline(i+11:),1,f_grd)
 		if(j.eq.3) then
-		  xscale=f(1)
-		  yscale=f(2)
-		  zscale=f(3)
+		  xscale_grd=f_grd(1)
+		  yscale_grd=f_grd(2)
+		  zscale_grd=f_grd(3)
 		else
 		  write(6,*) 'error reading (FEM-SCALE) :',j
 		  write(6,*) gline
 		  write(6,*) gline(i+11:)
 		end if
 	  else if( gline(i:i+10) .eq. '(FEM-LATID)' ) then
-		j=iscan(gline(i+11:),1,f)
+		j=iscan(gline(i+11:),1,f_grd)
 		if(j.eq.1) then
-		  dcor=f(1)
+		  dcor_grd=f_grd(1)
 		else
 		  write(6,*) 'error reading (FEM-LATID) :'
 		  write(6,*) gline
 		end if
 	  else if( gline(i:i+10) .eq. '(FEM-NORTH)' ) then
-		j=iscan(gline(i+11:),1,f)
+		j=iscan(gline(i+11:),1,f_grd)
 		if(j.eq.1) then
-		  dirn=f(1)
+		  dirn_grd=f_grd(1)
 		else
 		  write(6,*) 'error reading (FEM-NORTH) :'
 		  write(6,*) gline
@@ -638,18 +925,17 @@ c
 c use first comment as title
 
 	if( i.gt.0 .and. .not.btitle ) then
-		descrr=gline(i:)
+		title_grd=gline(i:)
 		btitle=.true.
 	end if
 
-	return
 	end
 
 c******************************************************************************
 c******************************************************************************
 c******************************************************************************
 
-	subroutine ex2in(nkn,ne,nl,ipnv,ipaux,nen3v,inodlv,bstop)
+	subroutine ex2in(nkn,ne,nl,ippnv,inodev,inodlv,bstop)
 
 c changing extern with intern node numbers in elements and lines
 c
@@ -659,14 +945,15 @@ c if no elements or lines are given, set ne or nl to 0
 
         integer nkn,ne,nl
         logical bstop
-        integer ipnv(nkn)
-        integer ipaux(nkn)
-        integer nen3v(ne)
+        integer ippnv(nkn)
+        integer inodev(ne)
         integer inodlv(nl)
 
-	call isort(nkn,ipnv,ipaux)
-	call chex2in(nkn,ne,nen3v,ipnv,ipaux,bstop)
-	call chex2in(nkn,nl,inodlv,ipnv,ipaux,bstop)
+        integer ipaux(nkn)	!local
+
+	call isort(nkn,ippnv,ipaux)
+	call chex2in(nkn,ne,inodev,ippnv,ipaux,bstop)
+	call chex2in(nkn,nl,inodlv,ippnv,ipaux,bstop)
 
 	end
 
@@ -707,9 +994,11 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-	subroutine grd_init(file)
+	subroutine grd_internal_init(file)
 
 c initializes reading from grid file
+
+	use grd
 
 	implicit none
 
@@ -718,25 +1007,40 @@ c initializes reading from grid file
 	integer ner
 	integer ifileo
 
-	include 'subgrd.h'
-
-	nin = 0
-	iline = 0
-	ianz = 0
+	nin_grd = 0
+	iline_grd = 0
+	ianz_grd = 0
 	ner = 6
 
+	xscale_grd=1.
+	yscale_grd=1.
+	zscale_grd=1.
+
         if( file .eq. ' ' ) then
-          nin = 5
+          nin_grd = 5
           write(ner,*) 'reading GRD file from stdin...'
         else
-	  nin = ifileo(nin,file,'formatted','old')
+	  nin_grd = ifileo(nin_grd,file,'formatted','old')
         end if
 
-	if(nin.le.0) then
+	if(nin_grd.le.0) then
 	  write(ner,*) 'error opening file'
 	  write(ner,*) file
-	  stop 'error stop grd_init: cannot open file'
+	  stop 'error stop grd_internal_init: cannot open file'
 	end if
+
+	end
+
+c*****************************************************************
+
+	subroutine grd_internal_close
+
+	use grd
+
+	implicit none
+
+	if( nin_grd .ne. 5 ) close(nin_grd)
+	nin_grd = 0
 
 	end
 
@@ -746,11 +1050,11 @@ c*****************************************************************
 
 c reads next line from file
 
+	use grd
+
 	implicit none
 
 	logical grd_next_line
-
-	include 'subgrd.h'
 
 	integer ner,ios
 	integer iscan
@@ -758,28 +1062,28 @@ c reads next line from file
 	ner = 6
 	grd_next_line = .false.
 
-        read(nin,'(a)',iostat=ios) line
+        read(nin_grd,'(a)',iostat=ios) line_grd
 
         if( ios .lt. 0 ) then
-          write(ner,*) iline,' lines read'
-	  close(nin)
+          !write(ner,*) iline,' lines read'
+	  close(nin_grd)
 	  return
         else if( ios .gt. 0 ) then
-          write(ner,*) 'read error close to line ',iline
-          write(ner,*) line
+          write(ner,*) 'read error close to line ',iline_grd
+          write(ner,*) line_grd
           stop 'error stop grd_next_line: reading line'
         end if
 
-	iline = iline + 1
-        ianz=iscan(line,1,f)
-	if( ianz .gt. 80 ) goto 99
+	iline_grd = iline_grd + 1
+        ianz_grd=iscan(line_grd,1,f_grd)
+	if( ianz_grd .gt. 80 ) goto 99
 
 	grd_next_line = .true.
 
 	return
    99	continue
-	write(ner,*) 'dimension of array f too low ',80,ianz
-	stop 'error stop grd_next_line: ianz'
+	write(ner,*) 'dimension of array f too low ',80,ianz_grd
+	stop 'error stop grd_next_line: ianz_grd'
 	end
 
 c*****************************************************************
@@ -788,13 +1092,13 @@ c*****************************************************************
 
 c returns number of values on line
 
+	use grd
+
 	implicit none
 
 	integer nvals
 
-	include 'subgrd.h'
-
-	nvals = ianz
+	nvals = ianz_grd
 
 	end
 
@@ -804,22 +1108,22 @@ c*****************************************************************
 
 c returns nvals in vals
 
+	use grd
+
 	implicit none
 
 	integer nvals
 	real vals(nvals)
 
-	include 'subgrd.h'
-
 	integer i,n,nmin,nmax
 
-	n = min(ianz,nvals)
+	n = min(ianz_grd,nvals)
 
 	do i=1,n
-	  vals(i) = f(i)
+	  vals(i) = f_grd(i)
 	end do
 
-c	if nvals is greater than ianz return zero
+c	if nvals is greater than ianz_grd return zero
 
 	nmin = max(1,n+1)
 	nmax = min(80,nvals)
@@ -836,33 +1140,33 @@ c*****************************************************************
 
 c returns value at position ival
 
+	use grd
+
 	implicit none
 
 	integer ival
 	real val
 
-	include 'subgrd.h'
-
 	val = 0.
-	if( ival .ge. 1 .and. ival .le. ianz ) val = f(ival)
+	if( ival .ge. 1 .and. ival .le. ianz_grd ) val = f_grd(ival)
 
 	end
 
 c*****************************************************************
 
-	subroutine grd_line_info(iline_grd,line_grd)
+	subroutine grd_line_info(iline_gr,line_gr)
 
 c returns info on line
 
+	use grd
+
 	implicit none
 
-	integer iline_grd
-	character*(*) line_grd
+	integer iline_gr
+	character*(*) line_gr
 
-	include 'subgrd.h'
-
-	iline_grd = iline
-	line_grd = line
+	iline_gr = iline_grd
+	line_gr = line_grd
 
 	end
 
@@ -872,16 +1176,16 @@ c*****************************************************************
 
 c write info on line
 
-	implicit none
+	use grd
 
-	include 'subgrd.h'
+	implicit none
 
 	integer ner
 
 	ner = 6
 
-	write(ner,*) 'line number: ',iline
-	write(ner,*) line
+	write(ner,*) 'line number: ',iline_grd
+	write(ner,*) line_grd
 
 	end
 
@@ -891,99 +1195,116 @@ c*****************************************************************
 
 	subroutine grd_write_grid(
      +			 file
-     +			,nco,nkn,nel,nli
-     +			,ipnv,ipev,iplv
+     +			,nco,nk,ne,nl,nne,nnl
+     +			,ippnv,ippev,ipplv
      +			,ianv,iaev,ialv
-     +			,hnv,hev,hlv
-     +			,xgv,ygv
-     +                  ,nen3v
+     +			,hhnv,hhev,hhlv
+     +			,xv,yv
+     +                  ,ipntev,inodev
      +                  ,ipntlv,inodlv
      +			)
 
 c writes grd file
-c
-c works only with triangles as elements
 
 	implicit none
 
 	character*(*) file	!file name
 
 	integer nco		!total number of comments read
-	integer nkn		!total number of nodes read
-	integer nel		!total number of elements read
-	integer nli		!total number of lines read
+	integer nk		!total number of nodes read
+	integer ne		!total number of elements read
+	integer nl		!total number of lines read
+	integer nne		!total number of nodes in elems 
+	integer nnl		!total number of nodes in lines
 
-	integer ipnv(nkn)	!external node number
-	integer ipev(nel)	!external element number
-	integer iplv(nli)	!external line number
+	integer ippnv(nk)	!external node number
+	integer ippev(ne)	!external element number
+	integer ipplv(nl)	!external line number
 
-	integer ianv(nkn) 	!node type
-	integer iaev(nel)	!element type
-	integer ialv(nli)	!line type
+	integer ianv(nk) 	!node type
+	integer iaev(ne)	!element type
+	integer ialv(nl)	!line type
 
-	real hnv(nkn)		!depth of node
-	real hev(nel)		!depth of element
-	real hlv(nli)		!depth of line
+	real hhnv(nk)		!depth of node
+	real hhev(ne)		!depth of element
+	real hhlv(nl)		!depth of line
 
-	real xgv(nkn)		!x coordinate of node
-	real ygv(nkn)		!y coordinate of node
+	real xv(nk)		!x coordinate of node
+	real yv(nk)		!y coordinate of node
 
-	integer nen3v(3,nel)	!element index
-
-	integer ipntlv(0:nli)	!pointer into inodlv
-	integer inodlv(1)	!node numbers of lines (dim. nlndim)
+	integer ipntev(0:ne)	!pointer into inodev
+	integer inodev(nne)	!node numbers of elems
+	integer ipntlv(0:nl)	!pointer into inodlv
+	integer inodlv(nnl)	!node numbers of lines
 
 	integer nout
-	integer i,ii
-	integer n,ibase
+	integer i
+	integer n,ib,nmax
+	integer k,ie,il
 	integer nodes(3)
 	real depth
+	logical bsort
+	integer, allocatable :: ipdex(:)
 
 	integer ifileo
+
+	bsort = .true.
+	bsort = .false.
 
 	nout = ifileo(1,file,'formatted','unknown')
 	if( nout .le. 0 ) goto 99
 
+	nmax = max(nk,ne,nl)
+	allocate(ipdex(nmax))
+	do i=1,nmax
+	  ipdex(i) = i
+	end do
+
 	write(nout,*)
 
-	do i=1,nkn
-	  depth = hnv(i)
+	if( bsort ) call isort(nk,ippnv,ipdex)
+
+	do i=1,nk
+	  k = ipdex(i)
+	  depth = hhnv(k)
 	  if( depth .eq. -999. ) then
-	    write(nout,1000) 1,ipnv(i),ianv(i),xgv(i),ygv(i)
+	    write(nout,1000) 1,ippnv(k),ianv(k),xv(k),yv(k)
 	  else
-	    write(nout,1000) 1,ipnv(i),ianv(i),xgv(i),ygv(i),depth
+	    write(nout,1000) 1,ippnv(k),ianv(k),xv(k),yv(k),depth
 	  end if
 	end do
 
 	write(nout,*)
 
-	do i=1,nel
-	  depth = hev(i)
-	  do ii=1,3
-	    nodes(ii) = ipnv( nen3v(ii,i) )
-	  end do
-	  if( depth .eq. -999. ) then
-	    write(nout,2000) 2,ipev(i),iaev(i)
-     +				,3,(nodes(ii),ii=1,3)
-	  else
-	    write(nout,2000) 2,ipev(i),iaev(i)
-     +				,3,(nodes(ii),ii=1,3),depth
-	  end if
+	if( bsort ) call isort(ne,ippev,ipdex)
+
+	do i=1,ne
+	  ie = ipdex(i)
+	  depth = hhev(ie)
+	  n = ipntev(ie) - ipntev(ie-1)
+	  ib = ipntev(ie-1)
+	  call grd_write_item(nout,2,ippev(ie),iaev(ie),n,
+     +				inodev(ib+1),ippnv,depth)
 	end do
 
 	write(nout,*)
 
-	do i=1,nli
-	  depth = hlv(i)
-	  n = ipntlv(i) - ipntlv(i-1)
-	  ibase = ipntlv(i-1)
-	  write(nout,3000) 3,iplv(i),ialv(i),n
-	  call grd_write_node_list(nout,n,inodlv(ibase+1),ipnv,depth)
+	if( bsort ) call isort(nl,ipplv,ipdex)
+
+	do i=1,nl
+	  il = ipdex(i)
+	  depth = hhlv(il)
+	  n = ipntlv(il) - ipntlv(il-1)
+	  ib = ipntlv(il-1)
+	  call grd_write_item(nout,3,ipplv(il),ialv(il),n,
+     +				inodlv(ib+1),ippnv,depth)
 	end do
 
 	write(nout,*)
 
 	close(nout)
+
+	deallocate(ipdex)
 
 	return
  1000	format(i1,2i10,3e16.8)
@@ -993,6 +1314,41 @@ c works only with triangles as elements
 	write(6,*) 'error opening output file'
 	write(6,*) file
 	stop 'error stop grd_write_grid: cannot open file'
+	end
+
+c*****************************************************************
+
+	subroutine grd_write_item(nout,iwhat,number,itype,n,
+     +				nodes,extern,depth)
+
+	implicit none
+
+	integer nout
+	integer iwhat
+	integer number
+	integer itype
+	integer n
+	integer nodes(n)
+	integer extern(*)
+	real depth
+
+	integer i
+	real, parameter :: flag = -999.
+
+	if( n > 3 ) then
+	  write(nout,3000) iwhat,number,itype,n
+	  call grd_write_node_list(nout,n,nodes,extern,depth)
+	else if( depth == flag ) then
+	  write(nout,2000) iwhat,number,itype,n,
+     +			(extern(nodes(i)),i=1,n)
+	else
+	  write(nout,2000) iwhat,number,itype,n,
+     +			(extern(nodes(i)),i=1,n),depth
+	end if
+
+	return
+ 2000	format(i1,6i10,e16.8)
+ 3000	format(i1,3i10)
 	end
 
 c*****************************************************************
@@ -1011,7 +1367,7 @@ c writes out node list
 
 	integer i,iend,ii,nend
 	integer lnodes(6)
-	character*20 format
+	character*30 format
 
 	do i=1,n,6
 	  iend = min(n,i+5)
@@ -1021,7 +1377,7 @@ c writes out node list
 	    lnodes(ii) = ipnv( nodes(i+ii-1) )
 	  end do
 	  if( iend .eq. n .and. depth .ne. -999. ) then
-	      write(format,'(a3,i1,a9)') '1x,',nend,'i10,e16.8'
+	      write(format,'(a4,i1,a10)') '(1x,',nend,'i10,e16.8)'
 	      write(nout,format) (lnodes(ii),ii=1,nend),depth
 	  else
 	      write(nout,3001) (lnodes(ii),ii=1,nend)
@@ -1030,6 +1386,61 @@ c writes out node list
 
 	return
  3001	format(1x,6i10)
+	end
+
+c*****************************************************************
+
+	subroutine grd_get_depth(ne,nk,hev,hkv)
+
+	use grd
+
+	implicit none
+
+	integer ne,nk
+	real hev(ne)
+	real hkv(nk)
+
+	if( ne > 0 ) then
+	  if( ne .ne. ne_grd ) then
+	    write(6,*) 'ne,ne_grd: ',ne,ne_grd
+	    stop 'error stop grd_get_depth: dimension mismatch'
+	  end if
+	  hev = hhev
+	end if
+
+	if( nk > 0 ) then
+	  if( nk .ne. nk_grd ) then
+	    write(6,*) 'nk,nk_grd: ',nk,nk_grd
+	    stop 'error stop grd_get_depth: dimension mismatch'
+	  end if
+	  hkv = hhnv
+	end if
+
+	end
+
+c*****************************************************************
+
+	subroutine grd_get_nodes(np,xp,yp,hp)
+
+	use grd
+
+	implicit none
+
+	integer np
+	real xp(np)
+	real yp(np)
+	real hp(np)
+
+	if( np < nk_grd ) then
+	  write(6,*) 'np,nk_grd: ',np,nk_grd
+	  stop 'error stop grd_get_nodes: np'
+	end if
+
+	np = nk_grd
+	xp(1:nk_grd) = xv(1:nk_grd)
+	yp(1:nk_grd) = yv(1:nk_grd)
+	hp(1:nk_grd) = hhnv(1:nk_grd)
+
 	end
 
 c*****************************************************************

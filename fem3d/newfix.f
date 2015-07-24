@@ -166,7 +166,7 @@ c fix or nudge  velocities on open boundaries
 	use mod_bclfix
 	use mod_internal
 	use mod_geom_dynamic
-	use mod_depth
+	use mod_layer_thickness
 	use mod_hydro_vel
 	use mod_hydro
 	use levels

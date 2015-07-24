@@ -11,7 +11,7 @@ c******************************************************************
 
 c write of finite volume data
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_aux_array
 	use mod_area
 	use levels

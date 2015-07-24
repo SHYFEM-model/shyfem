@@ -298,7 +298,7 @@ c
 c	pot = (g/2) * rho * area * z*z
 c	kin = (1/2) * rho * area * (U*U+V*V)/H
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_ts
 	use mod_hydro
 	use evgeom

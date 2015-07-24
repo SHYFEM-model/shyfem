@@ -32,34 +32,24 @@ c takes care of lat/lon coordinates
 	use mod_depth
 	use evgeom
 	use basin
+	use grd
 
 	implicit none
 
 	include 'param.h'
-
-	integer ndim
-	parameter(ndim=1200000)
-	real xp(ndim)
-	real yp(ndim)
-	real dp(ndim)
-	real ap(ndim)
-
 	include 'simul.h'
-
 	include 'pkonst.h'
 
-
-
-
-        real raux(neldim)
-        integer iaux(neldim)
-        integer ipaux(nkndim)
-
+	real, allocatable :: xp(:)
+	real, allocatable :: yp(:)
+	real, allocatable :: dp(:)
+	real, allocatable :: ap(:)
 
         character*40 bfile,gfile,nfile
         character*60 line
 	integer node,nit
 	integer mode,np,n,i,nt
+	integer nk,ne,nl,nne,nnl
         integer ner,nco,nknh,nelh,nli
 	integer nlidim,nlndim
 	integer ike,idepth
@@ -67,13 +57,16 @@ c takes care of lat/lon coordinates
 	integer isphe
 	real ufact,umfact
 	real f(5)
+	real flag
 	logical bstop,bbasin
 	integer iscanf
 
-        real xt(neldim)
-        real yt(neldim)
-        real at(neldim)
-        real ht(neldim)
+        real, allocatable :: xt(:)
+        real, allocatable :: yt(:)
+        real, allocatable :: at(:)
+        real, allocatable :: ht(:)
+
+	flag = -999.
 
 c-----------------------------------------------------------------
 c what to do
@@ -166,57 +159,56 @@ c read in bathymetry file
 c-----------------------------------------------------------------
 
 	write(6,*) 'reading bathymetry file : ',bfile
-	np = ndim
-	call readgrd(bfile,np,xp,yp,dp)
+
+	call grd_read(bfile)
+
+	call grd_get_params(nk,ne,nl,nne,nnl)
+
+	np = nk
+	allocate(xp(np),yp(np),dp(np),ap(np))
+
+	call grd_get_nodes(np,xp,yp,dp)
+
+	call grd_close
 
 c-----------------------------------------------------------------
 c read in basin
 c-----------------------------------------------------------------
 
-	call check_basin_name(gfile,bbasin)
+	bbasin = basin_is_basin(gfile)
 
 	if( bbasin ) then
 
 	  write(6,*) 'reading basin as bas file...'
-	  call read_basin(gfile)
+	  call basin_read(gfile)
 
 	else
 
 	  write(6,*) 'reading basin as grd file...'
-
-          ner = 6
-          bstop = .false.
-
-          nlidim = 0
-          nlndim = 0
-          call rdgrd(
-     +                   gfile
-     +                  ,bstop
-     +                  ,nco,nkn,nel,nli
-     +                  ,nkndim,neldim,nlidim,nlndim
-     +                  ,ipv,ipev,iaux
-     +                  ,iaux,iarv,iaux
-     +                  ,hkv,hev,raux
-     +                  ,xgv,ygv
-     +                  ,nen3v
-     +                  ,iaux,iaux
-     +                  )
-
-          if( bstop ) stop 'error stop rdgrd'
-
-          call ex2in(nkn,3*nel,nlidim,ipv,ipaux,nen3v,iaux,bstop)
-          if( bstop ) stop 'error stop ex2in'
+	  call grd_read(gfile)
+	  call grd_to_basin
 
 	end if
+
+	allocate(xt(nel),yt(nel),at(nel),ht(nel))
 
 c-----------------------------------------------------------------
 c handling of depth and coordinates
 c-----------------------------------------------------------------
 
+	call ev_init(nel)
 	call check_spheric_ev			!sets lat/lon flag
+	call set_ev
 	call get_coords_ev(isphe)
 	call set_dist(isphe)
 
+        call mod_depth_init(nkn,nel)
+	if( bbasin ) then
+	  call makehev(hev)
+	  hkv = flag
+	else
+          call grd_get_depth(nkn,nel,hkv,hev)
+	end if
 	call set_depth_i(idepth,nknh,nelh)
 
 c-----------------------------------------------------------------
@@ -233,7 +225,6 @@ c node_test
 c-----------------------------------------------------------------
 
 	call node_test
-	call set_ev
 
         if( ike .eq. 1 ) then                           !elementwise
           call prepare_on_elem(nt,xt,yt,at,ht,ufact)
@@ -285,5 +276,41 @@ c-----------------------------------------------------------------
 
 c*******************************************************************
 c*******************************************************************
+c*******************************************************************
+
+        subroutine set_depth_i(idepth,nknh,nelh)
+
+c handles depth values
+
+        use mod_depth
+        use basin, only : nkn,nel,ngr,mbw
+
+        implicit none
+
+        integer idepth          !1: only at missing points 2: everywhere
+        integer nknh,nelh       !return - depth values found
+
+        integer k,ie
+        real flag
+
+        flag = -999.
+
+        if( idepth .eq. 2 ) then
+	  hkv = flag
+	  hev = flag
+        end if
+
+        nknh = 0
+        nelh = 0
+
+        do k=1,nkn
+          if( hkv(k) .le. flag ) nknh = nknh + 1
+        end do
+        do ie=1,nel
+          if( hev(ie) .le. flag ) nelh = nelh + 1
+        end do
+
+        end
+
 c*******************************************************************
 

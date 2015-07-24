@@ -26,10 +26,12 @@ c***********************************************************
 
 c plots basin
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'grade.h'
 
 	integer ie,ii,k,n,i1,i2
@@ -152,29 +154,10 @@ c writes quick and dirty results to file
 
 	implicit none
 
-	include 'param.h'
-	include 'basin.h'
-
 	character*(*) file
 
-	integer k,ie,ii,it
-
-	open(1,file=file,status='unknown',form='formatted')
-
-	do k=1,nkn
-	  it = 0
-	  write(1,'(i1,2i8,2f14.4)') 1,k,it,xgv(k),ygv(k)
-	end do
-
-c	call primem(2*nkn)	!prints deleted nodes
-
-	do ie=1,nel
-	  if( ipev(ie) .gt. 0 ) then
-	    write(1,'(i1,3i8,3i8)') 2,ie,0,3,(nen3v(ii,ie),ii=1,3)
-	  end if
-	end do
-
-	close(1)
+	call grd_to_basin
+	call grd_write(file)
 
 	end
 
@@ -186,10 +169,12 @@ c***********************************************************
 
 c plots element
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'grade.h'
 
 	integer ie1,ie2
@@ -271,10 +256,12 @@ c***********************************************************
 
 c plots node and neighborhood
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'grade.h'
 
 	integer k
@@ -309,10 +296,12 @@ c***********************************************************
 
 c plots one node
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'grade.h'
 
 	integer k
@@ -339,10 +328,12 @@ c***********************************************************
 
 c plots node number
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'grade.h'
 
 	integer k
@@ -424,10 +415,12 @@ c******************************************************
 c computes min/max of (x,y) of node k
 c xmin... must be already initialized
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'grade.h'
 
 	integer k

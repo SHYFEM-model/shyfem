@@ -151,7 +151,12 @@ c*****************************************************************
 	integer nkn
 	end
 
-        subroutine mod_depth_init(nkn,nel,nlv)
+        subroutine mod_depth_init(nkn,nel)
+	implicit none
+	integer nkn,nel
+	end
+
+        subroutine mod_layer_thickness_init(nkn,nel,nlv)
 	implicit none
 	integer nkn,nel,nlv
 	end

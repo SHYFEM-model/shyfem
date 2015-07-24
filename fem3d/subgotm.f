@@ -990,7 +990,7 @@ c**************************************************************
 	subroutine keps_shell
 
 	use mod_turbulence
-	use mod_depth
+	use mod_layer_thickness
 	use mod_ts
 	use mod_diff_visc_fric
 	use mod_hydro_print

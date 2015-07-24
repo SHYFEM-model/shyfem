@@ -45,7 +45,6 @@ c get dimension for link array
 c-------------------------------------------------------------
 
 	nlkdi = 3*nel+2*nkn
-	write(6,*) 'set_geom: nlkdim = ',nlkdi
 	if( ngr .gt. maxlnk ) goto 98
 
 c-------------------------------------------------------------

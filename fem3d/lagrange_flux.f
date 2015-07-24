@@ -516,7 +516,7 @@ c		= dH + (z1+z2-2*z3)/6
 c
 c all this has to be revised for sigma layers
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_hydro
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
@@ -590,7 +590,7 @@ c		= dH + (z1+z2-2*z3)/6
 c
 c all this has to be revised for sigma layers
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_hydro
 	use basin, only : nkn,nel,ngr,mbw
 

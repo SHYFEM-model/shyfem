@@ -23,11 +23,13 @@ c**************************************************************
 
 c smoothing of internal nodes
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 	include 'grade.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer npass
 	real omega
@@ -124,11 +126,13 @@ c check of grid
 c
 c checks consistency of node and grade index
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
 	include 'grade.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 	include 'nbstatic.h'
 	
 	integer iaux(nkndim)
@@ -306,10 +310,12 @@ c*******************************************************
 
 c check if area is positive
 
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	logical bstop
 	integer ie,ii,i1,i2,k1,k2
@@ -351,13 +357,15 @@ c*******************************************************
 
 c writes info on node
 
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
 	integer k
 
 	include 'param.h'
 	include 'grade.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	integer i
 
@@ -379,10 +387,12 @@ c
 c rangle	angle [degrees] ,     rangle < 180 => right turn
 c k1,k2,k3	node numbers
 
+	use basin !COMMON_GGU_SUBST
+
 	implicit none
 
 	include 'param.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
 	real rangle
 	integer k1,k2,k3
@@ -405,13 +415,15 @@ c************************************************************
 
         subroutine nint2ext(kint,kext)
 
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
         integer kint,kext
 
 	include 'param.h'
 	include 'grade.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
         kext = ipv(kint)
 
@@ -421,13 +433,15 @@ c************************************************************
 
         subroutine eint2ext(ieint,ieext)
 
+	use basin !COMMON_GGU_SUBST
+
         implicit none
 
         integer ieint,ieext
 
 	include 'param.h'
 	include 'grade.h'
-	include 'basin.h'
+COMMON_GGU_DELETED	include 'basin.h'
 
         ieext = ipev(ieint)
 

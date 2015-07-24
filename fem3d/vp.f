@@ -78,6 +78,7 @@ c********************************************************
 	integer ngr1
 	integer nrec
 	integer nlidim,nlndim
+	integer nne,nnl
 	real hflag
 
 	integer igetxt,idefbas,ichanm,ifileo
@@ -127,20 +128,23 @@ c always process whole file
 	idepth = 0
 
 c--------------------------------------------------------
-c get grid info
+c read grid
 c--------------------------------------------------------
 
         file=basnam(1:ichanm(basnam))//'.grd'
         write(6,*) ' ...reading file ',file(1:ichanm(file))
 
-	call info_grd(file,nk,ne,nl,nn)
-	write(6,*) 'grid info: ',nk,ne,nl,nn
+	call grd_read(file)
 
-	call basin_init(nk,ne)
-	call basin_get_dimension(nknddi,nelddi)
+	call grd_get_params(nk,ne,nl,nne,nnl)
+	write(6,*) 'grid info: ',nk,ne,nl
 
-	if(nk.gt.nknddi) goto 99900
-	if(ne.gt.nelddi) goto 99900
+	if( nk == 0 .or. ne == 0 ) then
+	  write(6,*) 'nk,ne: ',nk,ne
+	  stop 'error stop vp: no nodes or elements in basin'
+	end if
+
+	call grd_to_basin
 
 c--------------------------------------------------------
 c allocate arrays
@@ -158,29 +162,10 @@ c--------------------------------------------------------
 	allocate(kvert(2,nk))
 
 c--------------------------------------------------------
-c read grid
+c handle depth
 c--------------------------------------------------------
 
-	nlidim = 0
-	nlndim = 0
-        call rdgrd(
-     +                   file
-     +                  ,bstop
-     +                  ,nco,nkn,nel,nli
-     +                  ,nknddi,nelddi,nlidim,nlndim
-     +                  ,ipv,ipev,iaux
-     +                  ,iaux,iarv,iaux
-     +                  ,hkv,hev,raux
-     +                  ,xgv,ygv
-     +                  ,nen3v
-     +                  ,iaux,iaux
-     +                  )
-
-        write(nat,*) ' ...end of read'
-
-	if(bstop) then
-	  goto 99990
-        end if
+	call grd_get_depth(nk,ne,hkv,hev)
 
 	nknh = 0
 	do k=1,nkn
@@ -258,8 +243,8 @@ c end reading ----------------------------------------------------
 
 	write(nat,*) ' ...changing extern with intern node numbers'
 
-        call chexin(nkn,nel,nen3v,ipv,ipdex,ner,bstop)
-	if(bstop) goto 99920
+        !call chexin(nkn,nel,nen3v,ipv,ipdex,ner,bstop)
+	!if(bstop) goto 99920
 
         write(nat,*) ' ...controlling node numbers'
 

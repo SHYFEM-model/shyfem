@@ -245,7 +245,7 @@ c******************************************************************
 
 c checks important variables
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_ts
 	use mod_hydro_baro
 	use mod_hydro_vel
@@ -467,7 +467,7 @@ c*************************************************************
 
 c writes some min/max values to stdout
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_ts
 	use mod_hydro_print
 	use mod_hydro_vel
@@ -899,6 +899,7 @@ c*************************************************************
 
 	use mod_internal
 	use mod_depth
+	use mod_layer_thickness
 	use mod_bound_dynamic
 	use mod_area
 	use mod_ts
@@ -1049,6 +1050,7 @@ c writes debug information on node k
 
 	use mod_geom_dynamic
 	use mod_depth
+	use mod_layer_thickness
 	use mod_bound_dynamic
 	use mod_area
 	use mod_ts
@@ -1109,6 +1111,7 @@ c writes debug information on element ie
 
 	use mod_geom_dynamic
 	use mod_depth
+	use mod_layer_thickness
 	use mod_hydro_vel
 	use mod_hydro
 	use evgeom

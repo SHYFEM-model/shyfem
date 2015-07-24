@@ -33,8 +33,8 @@
 	parameter ( nb3dim = 1 )
 
 	parameter ( nardim = 1 )
-	parameter ( nexdim = 100 )
-	parameter ( nfxdim = 5000 )
+	parameter ( nexdim = 1 )
+	parameter ( nfxdim = 1 )
 	parameter ( ncsdim = 1 )
 
 	parameter ( nbdydim = 100000 )

@@ -77,7 +77,7 @@ c---------------------------------------------------------------
 	end if
 
 	call ev_init(nel)
-	call mod_depth_init(nkn,nel,1)
+	call mod_depth_init(nkn,nel)
 
 	call set_ev
 

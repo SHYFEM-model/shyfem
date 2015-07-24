@@ -46,9 +46,7 @@ c-----------------------------------------------------------------
 c read in basin
 c-----------------------------------------------------------------
 
-	call setdim('nlkdim',nlkdim)
-
-        if( iapini(1,nkndim,neldim,0) .le. 0 ) stop
+        if( iapini(1,0,0,0) .le. 0 ) stop
 
 	call bas_info
 

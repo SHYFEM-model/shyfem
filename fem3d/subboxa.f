@@ -127,7 +127,7 @@ c******************************************************************
 
         if( kfluxm .lt. 0 ) then
           if( kfluxm .eq. -1 ) then
-            write(6,*) 'dimension error nfxdim in section $flux : '
+            write(6,*) 'dimension error ndim in section $flux : '
      +                          ,ndim
           else
             write(6,*) 'read error in section $fbox'
@@ -1171,7 +1171,7 @@ c******************************************************************
 
 c computes average velocity values (speed) for box
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_hydro
 	use evgeom
 	use levels
@@ -1304,7 +1304,7 @@ c******************************************************************
 
 c computes average scalar values for box
 
-	use mod_depth
+	use mod_layer_thickness
 	use evgeom
 	use levels
 	use basin

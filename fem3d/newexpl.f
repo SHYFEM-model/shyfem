@@ -406,7 +406,7 @@ c******************************************************************
 
 c sets aux arrays saux1/2/3
 
-	use mod_depth
+	use mod_layer_thickness
 	use mod_aux_array
 	use mod_hydro_print
 	use mod_hydro
@@ -498,7 +498,7 @@ c******************************************************************
         subroutine set_advective(rlin)
 
 	use mod_internal
-	use mod_depth
+	use mod_layer_thickness
 	use mod_aux_array
 	use mod_hydro_print
 	use mod_hydro_vel
@@ -637,7 +637,7 @@ c stability is computed for dt == 1
 
 	use mod_internal
 	use mod_geom_dynamic
-	use mod_depth
+	use mod_layer_thickness
 	use mod_hydro
 	use evgeom
 	use levels
@@ -777,7 +777,7 @@ c******************************************************************
         subroutine set_barocl
 
 	use mod_internal
-	use mod_depth
+	use mod_layer_thickness
 	use mod_ts
 	use evgeom
 	use levels
@@ -866,7 +866,7 @@ c
 c cannot use this for sigma levels
 
 	use mod_internal
-	use mod_depth
+	use mod_layer_thickness
 	use mod_ts
 	use evgeom
 	use levels
@@ -936,7 +936,7 @@ c**********************************************************************
 c do not use this routine !
 
 	use mod_internal
-	use mod_depth
+	use mod_layer_thickness
 	use mod_ts
 	use evgeom
 	use levels
@@ -1015,7 +1015,7 @@ c
 c this routine works with Z and sigma layers
 
 	use mod_internal
-	use mod_depth
+	use mod_layer_thickness
 	use mod_ts
 	use mod_hydro
 	use evgeom

@@ -246,50 +246,6 @@ c copies depth values from elems/nodes to nodes/elems
 
 c*******************************************************************
 
-	subroutine set_depth_i(idepth,nknh,nelh)
-
-c handles depth values
-
-	use mod_depth
-	use basin, only : nkn,nel,ngr,mbw
-
-	implicit none
-
-	integer idepth		!1: only at missing points 2: everywhere
-	integer nknh,nelh	!return - depth values found
-
-	include 'param.h'
-
-
-
-	integer k,ie
-	real flag
-
-	flag = -999.
-
-	if( idepth .eq. 2 ) then
-	  do k=1,nkn
-	    hkv(k) = flag
-	  end do
-	  do ie=1,nel
-	    hev(ie) = flag
-	  end do
-	end if
-	
-	nknh = 0
-	nelh = 0
-
-	do k=1,nkn
-	  if( hkv(k) .gt. -990 ) nknh = nknh + 1
-	end do
-	do ie=1,nel
-	  if( hev(ie) .gt. -990 ) nelh = nelh + 1
-	end do
-
-	end
-
-c*******************************************************************
-
 	subroutine wrgrd(iunit,ike)
 
 c writes grd file from bas

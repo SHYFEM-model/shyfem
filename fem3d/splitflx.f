@@ -17,8 +17,6 @@ c This routine reads an FLX file and writes the data to single files
 
 	include 'param.h'
 
-	integer nscdim			!total number of nodes in sections
-	parameter (nscdim=100)
 	integer datdim			!total number of data records
 	parameter (datdim=400000)
 
@@ -26,13 +24,14 @@ c This routine reads an FLX file and writes the data to single files
 	integer nvers,kfluxm,idfile,nsect
 	integer nrec,it,i,nin,kn,in,nout
 	integer idtflx,nlmax,ivar,ierr
+	integer nfxdi,nscdi,nlvdi
 
-	integer kflux(nfxdim)
-	integer nlayers(nfxdim)
+	integer, allocatable :: kflux(:)
+	integer, allocatable :: nlayers(:)
 
-	integer itime(datdim)
-	real pdata(datdim,nscdim)
-	real fluxes(0:nlvdim,3,nfxdim)
+	integer, allocatable :: itime(:)
+	real, allocatable :: pdata(:,:)
+	real, allocatable :: fluxes(:,:,:)
 
 	integer iapini, ifemop, ifileo
 
@@ -52,8 +51,23 @@ c read and write header information
 c---------------------------------------------------------------
 
         nvers = 5
+
+        call infoflx      (nin,nvers
+     +                          ,nsect,kfluxm,idtflx,nlmax
+     +                          )
+
+	nfxdi = kfluxm
+	nscdi = nsect
+	nlvdi = nlmax
+
+	allocate(kflux(nfxdi))
+	allocate(nlayers(nfxdi))
+	allocate(fluxes(0:nlvdi,3,nfxdi))
+	allocate(pdata(datdim,nscdi))
+	allocate(itime(datdim))
+
         call rfflx        (nin,nvers
-     +                          ,nfxdim,nfxdim,nlvdim
+     +                          ,nscdi,nfxdi,nlvdi
      +                          ,nsect,kfluxm,idtflx,nlmax
      +                          ,kflux
      +                          ,nlayers
