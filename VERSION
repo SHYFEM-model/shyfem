@@ -1,3 +1,24 @@
+version  7_1_83    30-07-2015    VERS_7_1_83
+
+========================================================== 30-07-2015 - 7_1_83
+
+c ./fem3d/shyfem.f:
+c 30.07.2015    ggu	routine renamed from ht to shyfem
+c
+c ./fem3d/subver.f:
+c 30.07.2015	ggu	version 7.1.83
+c
+c ./fem3d/subcst.f:
+c 30.07.2015    ggu     read str-file from command line
+c
+c ./fem3d/shypre.f:
+c 30.07.2015    ggu     vp renamed to shypre
+c
+c ./fem3d/shyelab.f:
+c 30.07.2015    ggu     shyelab started
+
+==========================================================
+
 version  7_1_82    24-07-2015    VERS_7_1_82   commit_2015-07-30
 
 version  7_1_82    24-07-2015    VERS_7_1_82
