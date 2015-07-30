@@ -69,13 +69,6 @@ c same as gridf but smooth on length of line, not points
 
 	implicit none
 
-	integer nkndim,neldim,nlidim,nlndim,ndim
-	parameter( nkndim = 50000 )
-	parameter( neldim = 10000 )
-	parameter( nlidim = 1000 )
-	parameter( nlndim = 50000 )
-	parameter( ndim = 40000 )
-
 	integer ner
 	integer nco,nk,ne,nl,nne,nnl
 	logical bstop
@@ -83,9 +76,10 @@ c same as gridf but smooth on length of line, not points
 
 	logical bperiod
 	integer nt,nll
-	real xt(ndim)
-	real yt(ndim)
-	real ht(ndim)
+
+	real, allocatable :: xt(:)
+	real, allocatable :: yt(:)
+	real, allocatable :: ht(:)
 
 	integer l
 	integer nline
@@ -164,13 +158,15 @@ c------------------------------------------------------
 	write(6,*) 'elements : ',ne
 	write(6,*) 'lines    : ',nl
 
+	allocate(xt(nnl),yt(nnl),ht(nnl))
+
 	call insnod(nkn,ipv)
 
 	open(99,file='smooth.grd',status='unknown',form='formatted')
 	open(98,file='reduce.grd',status='unknown',form='formatted')
 
 	do l=1,nl
-	  nll = ndim
+	  nll = nnl
 	  nline = ipplv(l)
 	  call extrli(l,nl,ipplv,ialv,ipntlv,inodlv,xgv,ygv,hkv
      +				,xt,yt,ht,nll,nt)

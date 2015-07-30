@@ -11,22 +11,22 @@ c subroutine maxgrd(nkn,nel,nen3v,ngrade,nmax)
 c			computes maximum grade (except boundary)
 c subroutine statgrd(nkn,nmax,nsg,ngrade)
 c			computes statistics on grade
-c subroutine mkbound(nkn,nel,ngrdim,nen3v,ngrade,ngri)
+c subroutine mkbound(nkn,nel,ngrddi,nen3v,ngrade,ngri)
 c			marks boundary nodes and determines exact grade
 c subroutine sortgr(n,iv)
 c			compacts array iv (throws out double numbers)
 c subroutine compat(n,iv)
 c			compacts array iv (throws out double numbers)
 c
-c function nextgr(k,kgr,ngrdim,ngrade,ngri)
+c function nextgr(k,kgr,ngrddi,ngrade,ngri)
 c	               finds next node in grade index
-c subroutine exchgr(k,kold,knew,ngrdim,ngrade,ngri)
+c subroutine exchgr(k,kold,knew,ngrddi,ngrade,ngri)
 c			exchanges node in grade index
-c subroutine delgr(k,kold,ngrdim,ngrade,ngri)
+c subroutine delgr(k,kold,ngrddi,ngrade,ngri)
 c	      	       deletes grade in index (kold from index of node k)
-c subroutine insgr(k,kafter,knew,ngrdim,ngrade,ngri)
+c subroutine insgr(k,kafter,knew,ngrddi,ngrade,ngri)
 c	               inserts grade in index 
-c subroutine prgr(k,ngrdim,ngrade,ngri)
+c subroutine prgr(k,ngrddi,ngrade,ngri)
 c	               prints grade index
 c
 c revision log :
@@ -175,17 +175,17 @@ c	ntheo = 6*nin + 4*nbn + 6*nis - 6	!theoretical grade
 
 c***********************************************************
 
-	subroutine mkbound(nkn,nel,ngrdim,nen3v,ngrade,nbound,ngri)
+	subroutine mkbound(nkn,nel,ngrddi,nen3v,ngrade,nbound,ngri)
 
 c marks boundary nodes and determines exact grade
 
 	implicit none
 
-	integer nkn,nel,ngrdim
+	integer nkn,nel,ngrddi
 	integer nen3v(3,1)
 	integer ngrade(1)
 	integer nbound(1)
-	integer ngri(2*ngrdim,1)
+	integer ngri(2*ngrddi,1)
 
 	integer k,ie,ii,n,nb
 	integer i1,i2
@@ -208,7 +208,7 @@ c marks boundary nodes and determines exact grade
 	    k  = nen3v(ii,ie)
 	    n = ngrade(k)
 c	    nodes are inserted in counter-clockwise sense
-	    if( n + 2 .gt. 2*ngrdim ) goto 99
+	    if( n + 2 .gt. 2*ngrddi ) goto 99
 	    ngri(n+1,k) = nen3v(i1,ie)
 	    ngri(n+2,k) = nen3v(i2,ie)
 	    ngrade(k) = ngrade(k) + 2
@@ -230,8 +230,8 @@ c	    nodes are inserted in counter-clockwise sense
 
 	return
    99	continue
-	write(6,*) 'internal error: grade too high: ',n+2,2*ngrdim
-	stop 'error stop mkbound: ngrdim'
+	write(6,*) 'internal error: grade too high: ',n+2,2*ngrddi
+	stop 'error stop mkbound: ngrddi'
 	end
 
 c***********************************************************
@@ -368,7 +368,7 @@ c***********************************************************
 c***********************************************************
 c***********************************************************
 
-	function nextgr(k,kgr,ngrdim,ngrade,ngri)
+	function nextgr(k,kgr,ngrddi,ngrade,ngri)
 
 c finds next node in grade index
 c
@@ -378,9 +378,9 @@ c does not take into account boundary nodes
 	implicit none
 
 	integer nextgr
-	integer k,kgr,ngrdim
+	integer k,kgr,ngrddi
 	integer ngrade(1)
-	integer ngri(2*ngrdim,1)
+	integer ngri(2*ngrddi,1)
 
 	integer i,n,kn,kext
 
@@ -393,7 +393,7 @@ c does not take into account boundary nodes
 	  if( kn .eq. kgr) goto 1
 	end do
 
-	write(6,*) k,kgr,n,ngrdim
+	write(6,*) k,kgr,n,ngrddi
         call nint2ext(k,kext)
         write(6,*) 'int/ext k: ',k,kext
         call nint2ext(kgr,kext)
@@ -410,15 +410,15 @@ c does not take into account boundary nodes
 
 c**************************************************************
 
-	subroutine exchgr(k,kold,knew,ngrdim,ngrade,ngri)
+	subroutine exchgr(k,kold,knew,ngrddi,ngrade,ngri)
 
 c exchanges node in grade index
 
 	implicit none
 
-	integer k,kold,knew,ngrdim
+	integer k,kold,knew,ngrddi
 	integer ngrade(1)
-	integer ngri(2*ngrdim,1)
+	integer ngri(2*ngrddi,1)
 
 	integer n,i
 
@@ -438,15 +438,15 @@ c exchanges node in grade index
 
 c**************************************************************
 
-	subroutine delgr(k,kold,ngrdim,ngrade,ngri)
+	subroutine delgr(k,kold,ngrddi,ngrade,ngri)
 
 c deletes grade in index (kold from index of node k)
 
 	implicit none
 
-	integer k,kold,ngrdim
+	integer k,kold,ngrddi
 	integer ngrade(1)
-	integer ngri(2*ngrdim,1)
+	integer ngri(2*ngrddi,1)
 
 	integer n,i,idiff
 
@@ -471,15 +471,15 @@ c deletes grade in index (kold from index of node k)
 
 c**************************************************************
 
-	subroutine insgrb(k,kbefor,knew,ngrdim,ngrade,ngri)
+	subroutine insgrb(k,kbefor,knew,ngrddi,ngrade,ngri)
 
 c inserts grade in index (knew in index of node k befor node kbefor)
 
 	implicit none
 
-	integer k,kbefor,knew,ngrdim
+	integer k,kbefor,knew,ngrddi
 	integer ngrade(1)
-	integer ngri(2*ngrdim,1)
+	integer ngri(2*ngrddi,1)
 
 	integer n,i
 
@@ -502,15 +502,15 @@ c inserts grade in index (knew in index of node k befor node kbefor)
 
 c**************************************************************
 
-	subroutine insgr(k,kafter,knew,ngrdim,ngrade,ngri)
+	subroutine insgr(k,kafter,knew,ngrddi,ngrade,ngri)
 
 c inserts grade in index (knew in index of node k after node kafter)
 
 	implicit none
 
-	integer k,kafter,knew,ngrdim
+	integer k,kafter,knew,ngrddi
 	integer ngrade(1)
-	integer ngri(2*ngrdim,1)
+	integer ngri(2*ngrddi,1)
 
 	integer n,i
 
@@ -533,15 +533,15 @@ c inserts grade in index (knew in index of node k after node kafter)
 
 c**************************************************************
 
-	subroutine prgr(k,ngrdim,ngrade,ngri)
+	subroutine prgr(k,ngrddi,ngrade,ngri)
 
 c prints grade index
 
 	implicit none
 
-	integer k,ngrdim
+	integer k,ngrddi
 	integer ngrade(1)
-	integer ngri(2*ngrdim,1)
+	integer ngri(2*ngrddi,1)
 
 	integer n,i
 

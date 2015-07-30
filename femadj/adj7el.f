@@ -7,9 +7,9 @@ c 7 grade routines
 c
 c contents :
 c
-c subroutine elimh(nmax,nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
+c subroutine elimh(nmax,nkn,nel,ngrddi,ngrade,nbound,ngri,nen3v)
 c               eliminates high grades
-c subroutine elim77(k,nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
+c subroutine elim77(k,nkn,nel,ngrddi,ngrade,nbound,ngri,nen3v)
 c               eliminates high grades
 c
 c revision log :
@@ -23,13 +23,12 @@ c***********************************************************
 
 c eliminates high grades
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
         include 'param.h'
-COMMON_GGU_DELETED        include 'basin.h'
-        include 'grade.h'
 
 	integer nmax
 
@@ -52,13 +51,12 @@ c***********************************************************
 
 c eliminates high grades
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
         include 'param.h'
-COMMON_GGU_DELETED        include 'basin.h'
-        include 'grade.h'
 
 	integer k
 
@@ -67,9 +65,9 @@ COMMON_GGU_DELETED        include 'basin.h'
 	integer ie1,ie2
 	integer np,nt,nn
 	integer nval,ip
-	integer ngav(0:ngrdim)
-	integer ngrv(0:ngrdim)
-	integer nbav(0:ngrdim)
+	integer ngav(0:ngrdi+1)
+	integer ngrv(0:ngrdi+1)
+	integer nbav(0:ngrdi+1)
 
 	real a1,a2
 
@@ -80,8 +78,8 @@ COMMON_GGU_DELETED        include 'basin.h'
 
 	bdebug = .false.
 c	if( k .eq. 543 ) bdebug = .true.
-	if( k .eq. 2643 ) bdebug = .true.
-	if( k .eq. 554 ) bdebug = .true.
+c	if( k .eq. 2643 ) bdebug = .true.
+c	if( k .eq. 554 ) bdebug = .true.
 
 c make circular list
 
@@ -129,7 +127,7 @@ c check if exchange is possible
 	  a2 = rangle(ngav(i-1),ngav(i),ngav(i+1))
 	  if( nval .gt. nmax ) then
 	    if( a1 .le. 180. .or. a2 .le. 180. ) then
-	      write(6,*) '************* not convex ',k,ngav(i),a1,a2
+	      write(6,*) '****** not convex ',k,ngav(i),a1,a2
 	    else
 	      nc = 1
 	      ip = i
@@ -164,22 +162,22 @@ c we decide to take the first choice
 	call setele(ie2,ngav(ip),ngav(ip+1),ngav(ip-1),nen3v)
 
 	if( bdebug ) then
-	  call prgr(k,ngrdim,ngrade,ngri)
-	  call prgr(ngav(ip),ngrdim,ngrade,ngri)
-	  call prgr(ngav(ip-1),ngrdim,ngrade,ngri)
-	  call prgr(ngav(ip+1),ngrdim,ngrade,ngri)
+	  call prgr(k,ngrdi,ngrade,ngri)
+	  call prgr(ngav(ip),ngrdi,ngrade,ngri)
+	  call prgr(ngav(ip-1),ngrdi,ngrade,ngri)
+	  call prgr(ngav(ip+1),ngrdi,ngrade,ngri)
 	end if
 
-	call insgr(ngav(ip-1),ngav(ip),ngav(ip+1),ngrdim,ngrade,ngri)
-	call insgr(ngav(ip+1),k,ngav(ip-1),ngrdim,ngrade,ngri)
-	call delgr(k,ngav(ip),ngrdim,ngrade,ngri)
-	call delgr(ngav(ip),k,ngrdim,ngrade,ngri)
+	call insgr(ngav(ip-1),ngav(ip),ngav(ip+1),ngrdi,ngrade,ngri)
+	call insgr(ngav(ip+1),k,ngav(ip-1),ngrdi,ngrade,ngri)
+	call delgr(k,ngav(ip),ngrdi,ngrade,ngri)
+	call delgr(ngav(ip),k,ngrdi,ngrade,ngri)
 
 	if( bdebug ) then
-	  call prgr(k,ngrdim,ngrade,ngri)
-	  call prgr(ngav(ip),ngrdim,ngrade,ngri)
-	  call prgr(ngav(ip-1),ngrdim,ngrade,ngri)
-	  call prgr(ngav(ip+1),ngrdim,ngrade,ngri)
+	  call prgr(k,ngrdi,ngrade,ngri)
+	  call prgr(ngav(ip),ngrdi,ngrade,ngri)
+	  call prgr(ngav(ip-1),ngrdi,ngrade,ngri)
+	  call prgr(ngav(ip+1),ngrdi,ngrade,ngri)
 	  call plosno(k)
 	end if
 

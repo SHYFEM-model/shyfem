@@ -147,8 +147,7 @@ c		2 : read in b.c.
 
 
 	real rwv2(nkn)
-	integer ids(nbcdim)		!id values for boundary conditions
-        save ids
+	integer, save, allocatable :: ids(:)		!id values for BC
 
 	integer nodes(nkn)
 	real vconst(nkn)
@@ -195,6 +194,14 @@ c---------------------------------------------------------------
 
     1	continue
 
+c	-----------------------------------------------------
+c       initialize boundary ids
+c	-----------------------------------------------------
+
+	nbc = nbnds()
+	allocate(ids(nbc))
+	ids = 0
+	
 c	-----------------------------------------------------
 c       initialize meteo
 c	-----------------------------------------------------

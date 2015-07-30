@@ -46,8 +46,10 @@ verbose="YES"
 [ -f .memory ] && rm -f .memory
 [ -f $log ] && rm -f $log
 
-CheckCommand ht ./fem3d/ht 
-CheckCommand vp ./fem3d/vp 
+#CheckCommand ht ./fem3d/ht 
+#CheckCommand vp ./fem3d/vp 
+CheckCommand shyfem ./fem3d/shyfem 
+CheckCommand shypre ./fem3d/shypre 
 CheckCommand basinf ./fem3d/basinf 
 
 CheckCommand plotsim ./femplot/plotsim 

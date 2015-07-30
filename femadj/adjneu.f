@@ -26,15 +26,13 @@ c***********************************************************
 
 c deletes element
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use mod_depth
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
-	include 'grade.h'
 
 	integer ie
 
@@ -60,15 +58,13 @@ c***********************************************************
 
 c new element
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use mod_depth
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
-	include 'grade.h'
 
 	integer nnew
 
@@ -81,9 +77,9 @@ COMMON_GGU_DELETED	include 'depth.h'
 	end do
 
 	nel = nel + 1
-	if( nel .gt. neldim ) stop 'error stop newele: neldim'
+	if( nel .gt. neldi ) stop 'error stop newele: neldi'
 
-	ipev(nel) = iemax
+	ipev(nel) = iemax + 1
 	iarv(nel) = 0
 	hev(nel) = 0.
 	do ii=1,3
@@ -102,15 +98,13 @@ c***********************************************************
 
 c substitutes node in indices (k subst by knew)
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use mod_depth
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
-	include 'grade.h'
 
 	integer k,knew
 
@@ -137,15 +131,13 @@ c***********************************************************
 
 c deletes node
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use mod_depth
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
-	include 'grade.h'
 
 	integer k
 
@@ -200,15 +192,13 @@ c***********************************************************
 
 c new node
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use mod_depth
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
-	include 'grade.h'
 
 	integer nnew
 	integer k,kmax
@@ -219,9 +209,9 @@ COMMON_GGU_DELETED	include 'depth.h'
 	end do
 
 	nkn = nkn + 1
-	if( nkn .gt. nkndim ) stop 'error stop newnod: nkndim'
+	if( nkn .gt. nkndi ) stop 'error stop newnod: nkndi'
 
-	ipv(nkn) = kmax
+	ipv(nkn) = kmax + 1
 	iarnv(nkn) = 0
 	xgv(nkn) = 0.
 	ygv(nkn) = 0.
@@ -242,12 +232,11 @@ c***********************************************************
 
 c finds element given three nodes
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer ifindel
 	integer k1,k2,k3

@@ -161,6 +161,7 @@ c eco-model cosimo
 	integer ibio
         integer id
 	integer nintp,ivar
+	integer nbc
 	real t,s
 	real u,v
 
@@ -174,8 +175,7 @@ c eco-model cosimo
 	real ebound(nstate)
 	save einit,esinit,elinit,ebound
 
-	integer idbio(nbcdim)
-	save idbio
+	integer, save, allocatable :: idbio(:)
 
         real tstot(nstate)              !for mass test
         real tsstot(nsstate)
@@ -209,6 +209,8 @@ c eco-model cosimo
 	real stp
         real mass
 	real wsink
+
+	integer nbnds
 
 	integer iespecial,inspecial
 	save iespecial,inspecial
@@ -316,6 +318,10 @@ c          write(6,*)' loading set'
 c         --------------------------------------------------
 c	  set boundary conditions for all state variables
 c         --------------------------------------------------
+
+          nbc = nbnds()
+          allocate(idbio(nbc))
+          idbio = 0
 
 	  call get_first_time(itanf)
           dtime0 = itanf

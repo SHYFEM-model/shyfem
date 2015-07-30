@@ -124,6 +124,11 @@ fem3d/baschk
 fem3d/bascomp
 fem3d/ousvdiff
 fem3d/zinit
+fem3d/noselab
+fem3d/ouselab
+fem3d/shyelab
+fem3d/shyfem
+fem3d/shypre
 
 femadj/adjele
 fembin/extDiff
@@ -172,6 +177,11 @@ fembin/etsinf
 fembin/fileinf
 fembin/splitets
 fembin/bc2fem
+fembin/noselab
+fembin/ouselab
+fembin/shyelab
+fembin/shyfem
+fembin/shypre
 
 fembin/grid
 fembin/mesh

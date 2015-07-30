@@ -568,3 +568,26 @@ c***************************************************************
 
 c***************************************************************
 
+	function check_nos_file(file)
+
+	implicit none
+
+	logical check_nos_file
+	character*(*) file
+
+	integer nb,nvers
+        integer ifileo
+
+	check_nos_file = .false.
+
+	nb = ifileo(0,file,'unform','old')
+	if( nb .le. 0 ) return
+	call nos_is_nos_file(nb,nvers)
+	close(nb)
+
+	check_nos_file = nvers > 0
+
+	end
+
+c***************************************************************
+

@@ -582,3 +582,26 @@ c gets it of last record
 
 c***************************************************************
 
+        function check_ous_file(file)
+
+        implicit none
+
+        logical check_ous_file
+        character*(*) file
+
+        integer nb,nvers
+        integer ifileo
+
+        check_ous_file = .false.
+
+        nb = ifileo(0,file,'unform','old')
+        if( nb .le. 0 ) return
+        call ous_is_ous_file(nb,nvers)
+        close(nb)
+
+        check_ous_file = nvers > 0
+        
+        end
+
+c***************************************************************
+

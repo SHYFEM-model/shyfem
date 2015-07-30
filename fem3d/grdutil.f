@@ -9,7 +9,7 @@
 	implicit none
 
 	integer nk,ne,nl,nne,nnl
-	integer k,ie,ii,ibase,n
+	integer k,ie,ii,ibase,n,i
 	integer nhn,nhe
 	real flag
 	logical bdebug
@@ -51,6 +51,7 @@
 	  ibase = ipntev(ie-1)
 	  n = ipntev(ie) - ipntev(ie-1)
 	  if( n .ne. 3 ) then
+	write(6,*) (ipntev(i),i=0,10)
 	    write(6,*) 'element is not triangle: ',ie,ippev(ie)
 	    stop 'error stop grd_to_basin: not a triangle'
 	  end if
@@ -145,6 +146,7 @@
 	nne = 3*nel
 	nnl = 0
 
+	write(6,*) 'basin_to_grd: ',nkn,nel
 	call grd_init(nkn,nel,nl,nne,nnl)
 
 !--------------------------------------------------------
@@ -159,12 +161,12 @@
 ! copy arrays
 !--------------------------------------------------------
 
-	xv = xgv
-	yv = ygv
-	ippev = ipev
-	ippnv = ipv
-	ianv = iarnv
-	iaev = iarv
+	xv(1:nkn) = xgv(1:nkn)
+	yv(1:nkn) = ygv(1:nkn)
+	ippev(1:nel) = ipev(1:nel)
+	ippnv(1:nkn) = ipv(1:nkn)
+	ianv(1:nkn) = iarnv(1:nkn)
+	iaev(1:nel) = iarv(1:nel)
 
 !--------------------------------------------------------
 ! copy element index

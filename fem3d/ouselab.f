@@ -15,9 +15,9 @@ c 05.06.2015    ggu     many more features added
 c
 c**************************************************************
 
-	program noselab_main
+	program ouselab_main
 
-	call noselab
+	call ouselab
 
 	end
 

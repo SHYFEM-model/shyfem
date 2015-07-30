@@ -177,13 +177,13 @@ c fix or nudge  velocities on open boundaries
         include 'param.h' 
 
 	include 'femtime.h'
-	include 'bound_names.h'
 
 	real tnudge	!relaxation time for nudging [s]
 	real tramp	!time for smooth init
 
         integer ie,l,i,k,ii,n
 	integer lmax
+	integer nbc
         real u(nlvdi),v(nlvdi)
         real h,t
         real alpha
@@ -192,9 +192,10 @@ c fix or nudge  velocities on open boundaries
 	integer nintp,nvar
 	real cdef(2)
         double precision dtime0,dtime
-        integer idvel(nbcdim)
-        save idvel
+        integer, save, allocatable :: idvel(:)
         character*10 what
+
+	integer nbnds
 
 	integer icall
 	save icall
@@ -214,6 +215,10 @@ c------------------------------------------------------------------
 	  end do
 
           if( icall .eq. -1 ) return
+
+          nbc = nbnds()
+          allocate(idvel(nbc))
+	  idvel = 0
 
           dtime0  = itanf
           nintp   = 2

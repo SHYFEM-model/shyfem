@@ -75,14 +75,12 @@ c common
 	include 'femtime.h'
 	include 'mkonst.h'
 
-	include 'bound_names.h'
-
-
 c local
 	logical binfo
         integer istot
 	integer level
 	integer nintp,nvar,ivar,id
+	integer nbc
 	real cdef(1)
         real cmin,cmax,ctot
         real sindex
@@ -91,6 +89,7 @@ c local
 	double precision dtime0,dtime
 c function
 	logical has_restart,next_output,has_output
+	integer nbnds
 	real getpar
 c save & data
         character*4 what
@@ -107,8 +106,7 @@ c save & data
         save ninfo
         integer iprogr
         save iprogr
-	integer idconz(nbcdim)
-	save idconz
+	integer, save, allocatable :: idconz(:)
 	integer ia_out(4)
 	save ia_out
 
@@ -149,6 +147,10 @@ c-------------------------------------------------------------
 	  end if
 
           call getinfo(ninfo)
+
+          nbc = nbnds()
+          allocate(idconz(nbc))
+          idconz = 0
 
 	  dtime0 = itanf
 	  nintp = 2
@@ -236,7 +238,6 @@ c parameter
         include 'param.h'
 	include 'femtime.h'
 	include 'mkonst.h'
-	include 'bound_names.h'
 
 c--------------------------------------------
 c isabella
@@ -257,6 +258,7 @@ c local
         integer istot
 	integer level
 	integer nintp,nvar,ivar,i,id
+	integer nbc
 	real cdef
         real cmin,cmax
         real sindex
@@ -266,6 +268,7 @@ c local
 	real, save, allocatable :: tauv(:)
 	double precision dtime,dtime0
 c function
+	integer nbnds
 	logical has_restart,next_output
 	real getpar
 c save & data
@@ -283,7 +286,7 @@ c save & data
         save ninfo
         integer iprogr
         save iprogr
-	integer, save :: idconz(nbcdim)
+	integer, save, allocatable :: idconz(:)
 	integer ia_out(4)
 	save ia_out
 
@@ -327,6 +330,10 @@ c-------------------------------------------------------------
           call open_scalar_file(ia_out,nlv,nvar,'con')
 
           call getinfo(ninfo)
+
+          nbc = nbnds()
+          allocate(idconz(nbc))
+          idconz = 0
 
 	  dtime0 = itanf
 	  nintp = 2

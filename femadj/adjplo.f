@@ -26,13 +26,12 @@ c***********************************************************
 
 c plots basin
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-	include 'grade.h'
 
 	integer ie,ii,k,n,i1,i2
 	real xmin,xmax,ymin,ymax
@@ -156,7 +155,7 @@ c writes quick and dirty results to file
 
 	character*(*) file
 
-	call grd_to_basin
+	call basin_to_grd
 	call grd_write(file)
 
 	end
@@ -169,13 +168,12 @@ c***********************************************************
 
 c plots element
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-	include 'grade.h'
 
 	integer ie1,ie2
 
@@ -256,13 +254,12 @@ c***********************************************************
 
 c plots node and neighborhood
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-	include 'grade.h'
 
 	integer k
 
@@ -296,13 +293,12 @@ c***********************************************************
 
 c plots one node
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-	include 'grade.h'
 
 	integer k
 
@@ -328,13 +324,12 @@ c***********************************************************
 
 c plots node number
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-	include 'grade.h'
 
 	integer k
 
@@ -374,10 +369,11 @@ c******************************************************
 
 c computes min/max of (x,y) of node k and neighbors
 
+	use mod_adj_grade
+
 	implicit none
 
 	include 'param.h'
-	include 'grade.h'
 
 	integer k
 	real xmin,xmax,ymin,ymax
@@ -415,13 +411,12 @@ c******************************************************
 c computes min/max of (x,y) of node k
 c xmin... must be already initialized
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-	include 'grade.h'
 
 	integer k
 	real xmin,xmax,ymin,ymax

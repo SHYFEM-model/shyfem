@@ -1,5 +1,153 @@
 ============================================================
 
+Thu Jul 30 18:18:30 CEST 2015
+
+cleaning up distribution
+
+ .gitignore                    |   10 +
+ LOG                           |   15 +
+ Makefile                      |    1 +
+ RELEASE_NOTES                 |   26 +
+ Rules.make                    |    2 +-
+ fem3d/Makefile                |  311 +++-------
+ fem3d/atoxi3d.f               |    9 +-
+ fem3d/bin/newsubst.pl         |    2 +
+ fem3d/bio3d.f                 |   10 +-
+ fem3d/bnd.h                   |    9 -
+ fem3d/bound_names.h           |   31 +-
+ fem3d/elabutil.f              |  571 ++++++++++++++++
+ fem3d/grdutil.f               |   16 +-
+ fem3d/ht.f                    |  818 -----------------------
+ fem3d/newbcl.f                |   15 +-
+ fem3d/newcon.f                |    6 +-
+ fem3d/newconz.f               |   21 +-
+ fem3d/newfix.f                |   11 +-
+ fem3d/nos_elab.f              |  255 --------
+ fem3d/nosadmin.f              |  212 ------
+ fem3d/nosaver_basin.f         |  183 ------
+ fem3d/nosaver_time.f          |  219 -------
+ fem3d/nosaver_vert.f          |  186 ------
+ fem3d/nosdiff.f               |  158 -----
+ fem3d/noselab.f               |  795 +----------------------
+ fem3d/noselab1.f              |  446 +++++++++++++
+ fem3d/nosextr_cat.f           |  217 ------
+ fem3d/nosextr_custom.f        |  206 ------
+ fem3d/nosextr_fluxes.f        |  413 ------------
+ fem3d/nosextr_gis.f           |  307 ---------
+ fem3d/nosextr_records.f       |  169 -----
+ fem3d/nosinf.f                |  319 ---------
+ fem3d/nosinit.f               |  198 ------
+ fem3d/nosintp.f               |  305 ---------
+ fem3d/nosmaniq.f              |  409 ------------
+ fem3d/nosresidence.f          |    8 +-
+ fem3d/nossplit.f              |  156 -----
+ fem3d/nossum.f                |  318 ---------
+ fem3d/nosutil.f               |   23 +
+ fem3d/noswrite.f              |  199 ------
+ fem3d/ousaver.f               |  427 ------------
+ fem3d/ouselab.f               |   25 +
+ fem3d/ouselab1.f              |  308 +++++++++
+ fem3d/ousextr_cat.f           |  283 --------
+ fem3d/ousextr_gis.f           |  311 ---------
+ fem3d/ousextr_nodes.f         |  245 -------
+ fem3d/ousextr_records.f       |  189 ------
+ fem3d/ousinf.f                |  148 -----
+ fem3d/ousintp.f               |  420 ------------
+ fem3d/ousutil.f               |   23 +
+ fem3d/ousvdiff.f              |  215 ------
+ fem3d/ouswork.f               |  449 -------------
+ fem3d/ouswork1.f              |  555 ----------------
+ fem3d/ouswrite.f              |  215 ------
+ fem3d/sedi3d.f                |    2 -
+ fem3d/shyelab.f               |   53 ++
+ fem3d/shyfem.f                |  713 ++++++++++++++++++++
+ fem3d/shypre.f                | 1451 +++++++++++++++++++++++++++++++++++++++++
+ fem3d/simsys_lp.f             |    5 +-
+ fem3d/simsys_pard.f           |    5 +-
+ fem3d/subbas.f                |    4 +-
+ fem3d/subbfm.f                |    2 -
+ fem3d/subbnd.f                |   11 +-
+ fem3d/subcst.f                |   20 +-
+ fem3d/subgotm.f               |    2 +-
+ fem3d/subgrd.f                |  124 +++-
+ fem3d/submud.f                |    2 -
+ fem3d/subn11.f                |   11 +-
+ fem3d/subnos.f                |   51 ++
+ fem3d/subous.f                |   44 ++
+ fem3d/subvola.f               |    8 +-
+ fem3d/vp.f                    | 1417 ----------------------------------------
+ femadj/Makefile               |   28 +-
+ femadj/adj4el.f               |   35 +-
+ femadj/adj575.f               |   90 ++-
+ femadj/adj5el.f               |   60 +-
+ femadj/adj7el.f               |   50 +-
+ femadj/adjele.f               |  119 ++--
+ femadj/adjgrd.f               |   62 +-
+ femadj/adjneu.f               |   51 +-
+ femadj/adjplo.f               |   35 +-
+ femadj/adjvar.f               |   45 +-
+ femadj/basin.h                |   37 -
+ femadj/depth.h                |   22 -
+ femadj/mod_adj_grade.f        |   24 +
+ femadj/pkonst.h               |   11 -
+ fembin/vpgrd                  |   14 +-
+ femcheck/check_compilation.sh |    6 +-
+ femdoc/final/shyfem.pdf       |  Bin 294947 -> 294949 bytes
+ femdoc/final/shyfem.ps        |   26 +-
+ femplot/Makefile              |    3 -
+ femplot/line_nodes.f          |   15 +-
+ femplot/plotsim.f             |    1 -
+ femplot/supdum.f              |   95 ---
+ femspline/gridr.f             |   18 +-
+ 95 files changed, 4437 insertions(+), 11733 deletions(-)
+ new file:
+   fem3d/elabutil.f
+   fem3d/noselab1.f
+   fem3d/ouselab.f
+   fem3d/ouselab1.f
+   fem3d/shyelab.f
+   femadj/mod_adj_grade.f
+ deleted:
+    fem3d/bnd.h
+    fem3d/nos_elab.f
+    fem3d/nosadmin.f
+    fem3d/nosaver_basin.f
+    fem3d/nosaver_time.f
+    fem3d/nosaver_vert.f
+    fem3d/nosdiff.f
+    fem3d/nosextr_cat.f
+    fem3d/nosextr_custom.f
+    fem3d/nosextr_fluxes.f
+    fem3d/nosextr_gis.f
+    fem3d/nosextr_records.f
+    fem3d/nosinf.f
+    fem3d/nosinit.f
+    fem3d/nosintp.f
+    fem3d/nosmaniq.f
+    fem3d/nossplit.f
+    fem3d/nossum.f
+    fem3d/noswrite.f
+    fem3d/ousaver.f
+    fem3d/ousextr_cat.f
+    fem3d/ousextr_gis.f
+    fem3d/ousextr_nodes.f
+    fem3d/ousextr_records.f
+    fem3d/ousinf.f
+    fem3d/ousintp.f
+    fem3d/ousvdiff.f
+    fem3d/ouswork.f
+    fem3d/ouswork1.f
+    fem3d/ouswrite.f
+    femadj/basin.h
+    femadj/depth.h
+    femadj/pkonst.h
+    femplot/supdum.f
+ renamed:
+    fem3d/ht.f -> fem3d/shyfem.f
+    fem3d/vp.f -> fem3d/shypre.f
+
+============================================================
+
 Fri Jul 24 18:43:26 CEST 2015
 
 New version 7_1_82

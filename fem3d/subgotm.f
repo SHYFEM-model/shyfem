@@ -414,8 +414,8 @@ c           ------------------------------------------------------
 
 	    end do
 
-	    bwrite = .false.
 	    bwrite = k == 34
+	    bwrite = .false.
 	    if( bwrite ) then
 
 	      !write(45,*) it,k

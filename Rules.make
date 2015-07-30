@@ -40,7 +40,7 @@ export NLVDIM = 1
 export MBWDIM = 1
 export NGRDIM = 1
 
-export NBCDIM = 100
+export NBCDIM = 1
 export NRBDIM = 1
 export NB3DIM = 1
 

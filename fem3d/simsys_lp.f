@@ -52,12 +52,15 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine system_solve_z
+	subroutine system_solve_z(n,z)
 
 	use mod_system
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
+
+	integer n
+	real z(n)
 
 	include 'param.h'
 

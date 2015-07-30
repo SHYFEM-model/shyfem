@@ -86,6 +86,12 @@ c**********************************************************
 	integer, save :: nne_grd = 0
 	integer, save :: nnl_grd = 0
 
+	integer, save :: nk_grd_alloc = 0
+	integer, save :: ne_grd_alloc = 0
+	integer, save :: nl_grd_alloc = 0
+	integer, save :: nne_grd_alloc = 0
+	integer, save :: nnl_grd_alloc = 0
+
 	integer, save, allocatable :: ippnv(:),ippev(:),ipplv(:)
 	integer, save, allocatable :: ianv(:),iaev(:),ialv(:)
         real, save, allocatable :: hhnv(:),hhev(:),hhlv(:)
@@ -102,59 +108,81 @@ c**********************************************************
 
 	integer nk,ne,nl,nne,nnl
 
+	logical :: bdebug = .false.
+
+	if( bdebug ) write(6,*) 'nk: ',nk,nk_grd,nk_grd_alloc
+
 	if( nk .ne. nk_grd ) then
-	  if( nk_grd > 0 ) then
+	!if( nk > nk_grd_alloc ) then
+	  if( nk_grd_alloc > 0 ) then
 	    deallocate(ippnv,ianv,hhnv,xv,yv)
 	  end if
-	  nk_grd = nk
+	  nk_grd_alloc = nk
 	  if( nk > 0 ) then
 	    allocate(ippnv(nk),ianv(nk),hhnv(nk),xv(nk),yv(nk))
 	  end if
 	end if
+	nk_grd = nk
+
+	if( bdebug ) write(6,*) 'ne: ',ne,ne_grd,ne_grd_alloc
 
 	if( ne .ne. ne_grd ) then
-	  if( ne_grd > 0 ) then
-	    deallocate(ippev,iaev,hhev,ipntev)
+	!if( ne > ne_grd_alloc ) then
+	  if( ne_grd_alloc > 0 ) then
+	    deallocate(ippev,iaev,hhev)
 	  end if
-	  ne_grd = ne
+	  ne_grd_alloc = ne
 	  if( ne > 0 ) then
 	    allocate(ippev(ne),iaev(ne),hhev(ne))
 	  end if
 	end if
+	ne_grd = ne
 	if( allocated(ipntev) ) deallocate(ipntev)
 	allocate(ipntev(0:ne))
 
-	if( nl .ne. nl_grd ) then
-	  if( nl_grd > 0 ) then
-	    deallocate(ipplv,ialv,hhlv,ipntlv)
+	if( bdebug ) write(6,*) 'nl: ',nl,nl_grd,nl_grd_alloc
+
+	if( nl .ne. nl_grd_alloc ) then
+	!if( nl > nl_grd_alloc ) then
+	  if( nl_grd_alloc > 0 ) then
+	    deallocate(ipplv,ialv,hhlv)
 	  end if
-	  nl_grd = nl
+	  nl_grd_alloc = nl
 	  if( nl > 0 ) then
 	    allocate(ipplv(nl),ialv(nl),hhlv(nl))
 	  end if
 	end if
+	nl_grd = nl
 	if( allocated(ipntlv) ) deallocate(ipntlv)
 	allocate(ipntlv(0:nl))
 
-	if( nne .ne. nne_grd ) then
-	  if( nne_grd > 0 ) then
+	if( bdebug ) write(6,*) 'nne: ',nne,nne_grd,nne_grd_alloc
+
+	if( nne .ne. nne_grd_alloc ) then
+	!if( nne > nne_grd_alloc ) then
+	  if( nne_grd_alloc > 0 ) then
 	    deallocate(inodev)
 	  end if
-	  nne_grd = nne
+	  nne_grd_alloc = nne
 	  if( nne > 0 ) then
 	    allocate(inodev(nne))
 	  end if
 	end if
+	nne_grd = nne
 
-	if( nnl .ne. nnl_grd ) then
-	  if( nnl_grd > 0 ) then
+	if( bdebug ) write(6,*) 'nnl: ',nnl,nnl_grd,nnl_grd_alloc
+
+	if( nnl .ne. nnl_grd_alloc ) then
+	!if( nnl > nnl_grd_alloc ) then
+	  if( nnl_grd_alloc > 0 ) then
 	    deallocate(inodlv)
 	  end if
-	  nnl_grd = nnl
+	  nnl_grd_alloc = nnl
 	  if( nnl > 0 ) then
 	    allocate(inodlv(nnl))
 	  end if
 	end if
+	nnl_grd = nnl
 
 	end subroutine grd_init
 
@@ -313,10 +341,31 @@ c**********************************************************
 
 	integer nk,ne,nl,nne,nnl
 	integer nco
+	integer i,iu
+	logical bdebug
 
+	bdebug = .false.
 	nco = 0
 
 	call grd_get_params(nk,ne,nl,nne,nnl)
+
+	if( bdebug ) then
+	iu = 91
+	write(iu,*) '========================================'
+	write(iu,*) 'grd_write: ',nk,ne,nl,nne,nnl
+	write(iu,*) trim(file)
+	write(iu,*)
+	write(iu,'(5i10)') (ippnv(i),i=1,nk)
+	write(iu,*)
+	write(iu,'(5i10)') (ippev(i),i=1,ne)
+	write(iu,*)
+	write(iu,'(5i10)') (ipntev(i),i=0,ne)
+	write(iu,*)
+	write(iu,'(5i10)') (inodev(i),i=1,nne)
+	write(iu,*)
+	write(iu,*) 'grd_write: ',nk,ne,nl,nne,nnl
+	write(iu,*) '========================================'
+	end if
 
 	call grd_write_grid(
      +			 file
@@ -1017,8 +1066,9 @@ c initializes reading from grid file
 	zscale_grd=1.
 
         if( file .eq. ' ' ) then
-          nin_grd = 5
-          write(ner,*) 'reading GRD file from stdin...'
+          write(ner,*) 'no file given...'
+          write(ner,*) 'cannot read GRD file from stdin...'
+	  stop 'error stop grd_internal_init: cannot read file'
         else
 	  nin_grd = ifileo(nin_grd,file,'formatted','old')
         end if
@@ -1241,15 +1291,21 @@ c writes grd file
 	integer i
 	integer n,ib,nmax
 	integer k,ie,il
-	integer nodes(3)
+	integer ia,ieext,ilext
 	real depth
-	logical bsort
+	logical bsort,bextern
 	integer, allocatable :: ipdex(:)
+	integer, allocatable :: nextern(:)
 
 	integer ifileo
 
-	bsort = .true.
+	bsort = .true.		!sort nodes on external numbering
 	bsort = .false.
+
+	bextern = .false.
+	bextern = .true.	!use external nodes
+
+	if( .not. bextern ) bsort = .false.
 
 	nout = ifileo(1,file,'formatted','unknown')
 	if( nout .le. 0 ) goto 99
@@ -1260,6 +1316,15 @@ c writes grd file
 	  ipdex(i) = i
 	end do
 
+	allocate(nextern(nk))
+	do k=1,nk
+	  if( bextern ) then
+	    nextern(k) = ippnv(k)		!use external numbering
+	  else
+	    nextern(k) = k			!use internal numbering
+	  end if
+	end do
+
 	write(nout,*)
 
 	if( bsort ) call isort(nk,ippnv,ipdex)
@@ -1268,9 +1333,9 @@ c writes grd file
 	  k = ipdex(i)
 	  depth = hhnv(k)
 	  if( depth .eq. -999. ) then
-	    write(nout,1000) 1,ippnv(k),ianv(k),xv(k),yv(k)
+	    write(nout,1000) 1,nextern(k),ianv(k),xv(k),yv(k)
 	  else
-	    write(nout,1000) 1,ippnv(k),ianv(k),xv(k),yv(k),depth
+	    write(nout,1000) 1,nextern(k),ianv(k),xv(k),yv(k),depth
 	  end if
 	end do
 
@@ -1280,11 +1345,14 @@ c writes grd file
 
 	do i=1,ne
 	  ie = ipdex(i)
+	  ieext = ie
+	  if( bextern ) ieext = ippev(ie)
+	  ia = iaev(ie)
 	  depth = hhev(ie)
 	  n = ipntev(ie) - ipntev(ie-1)
 	  ib = ipntev(ie-1)
-	  call grd_write_item(nout,2,ippev(ie),iaev(ie),n,
-     +				inodev(ib+1),ippnv,depth)
+	  call grd_write_item(nout,2,ieext,ia,n,
+     +				inodev(ib+1),nextern,depth)
 	end do
 
 	write(nout,*)
@@ -1293,11 +1361,14 @@ c writes grd file
 
 	do i=1,nl
 	  il = ipdex(i)
+	  ilext = il
+	  if( bextern ) ilext = ipplv(il)
+	  ia = ialv(il)
 	  depth = hhlv(il)
 	  n = ipntlv(il) - ipntlv(il-1)
 	  ib = ipntlv(il-1)
-	  call grd_write_item(nout,3,ipplv(il),ialv(il),n,
-     +				inodlv(ib+1),ippnv,depth)
+	  call grd_write_item(nout,3,ilext,ia,n,
+     +				inodlv(ib+1),nextern,depth)
 	end do
 
 	write(nout,*)
@@ -1305,6 +1376,7 @@ c writes grd file
 	close(nout)
 
 	deallocate(ipdex)
+	deallocate(nextern)
 
 	return
  1000	format(i1,2i10,3e16.8)

@@ -82,9 +82,7 @@
         real bnd3_dmf(nb3dim,0:nbcdim)  !Array containing boundary state
         real fmbnd(nsmud),fak,smooth
         real t_now,t_start		        !Boundary vector [kg/m3]
-	include 'bound_names.h'
         logical, save :: circle,ldumpmud,linitmud,lsetbound
-        !include 'testbndo.h'
 
         save what,mudref,lthick,sinkaccel
         save fmbnd

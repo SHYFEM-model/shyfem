@@ -32,33 +32,32 @@ c***************************************************************
 
 c adjusts elements after automatic mesh generator
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use mod_depth
+	use basin
 
 	implicit none
 
 c------------------------------------------------------- parameters
 	include 'param.h'
 c------------------------------------------------------- grade index
-	include 'grade.h'
 c------------------------------------------------------- basin
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
 c------------------------------------------------------- local
 	integer kspecial
 	integer nlidim,nlndim
 	integer k
-	integer ner
+	integer ner,nc
 	integer nco,nknh,nli
 	integer nk,ne,nl,nne,nnl
 	logical bstop, bplot
 	character*80 file
-	real dx(nkndim),dy(nkndim)
-	integer ic(nkndim)
-	integer ianv(nkndim)
-	integer ipaux(nkndim)
-	integer iaux(neldim)
-	real raux(neldim)
+
+	real, allocatable :: dx(:),dy(:)
+	integer, allocatable :: ic(:)
+	integer, allocatable :: ianv(:)
+	integer, allocatable :: ipaux(:)
+	integer, allocatable :: iaux(:)
+	real, allocatable :: raux(:)
 c------------------------------------------------------- end declaration
 
 	kspecial = 0		!set to 0 for no debug
@@ -76,6 +75,16 @@ c-------------------------------------------------------------------
 
 c-------------------------------------------------------------------
 
+c get file name from command line
+
+        nc = command_argument_count()
+        if( nc .ne. 1 ) then
+          write(6,*) 'Usage: adjele grd-file'
+          stop 'error stop adjele: no file given'
+        end if
+
+        call get_command_argument(1,file)
+
 c read grid file with nodes and elements
 
 	call grd_read(file)
@@ -86,10 +95,15 @@ c read grid file with nodes and elements
 
 	call grd_to_basin
 
+	allocate(dx(nkn),dy(nkn))
+	allocate(ic(nkn),ianv(nkn))
+	allocate(ipaux(nkn),iaux(nel))
+	allocate(raux(nel))
+
 c save depth information in elements to nodes
 
 	call mod_depth_init(nkn,nel)
-	call grd_get_depth(ne,nk,hev,hkv)
+	call grd_get_depth(nk,ne,hkv,hev)
 
 	nknh = 0
 	do k=1,nkn
@@ -106,7 +120,7 @@ c determine grade
 	call maxgrd(nkn,nel,nen3v,ngr)
 
 	write(6,*) 'maximum grade: ',ngr
-	if( ngr .gt. ngrdim ) goto 98
+	call mod_adj_grade_init(nkn,ngr)
 
 	call setgrd(nkn,nel,nen3v,ngrade)
 
@@ -114,7 +128,7 @@ c determine grade
 
 c make boundary nodes (flag nbound)
 
-	call mkbound(nkn,nel,ngrdim,nen3v,ngrade,nbound,ngri)
+	call mkbound(nkn,nel,ngrdi,nen3v,ngrade,nbound,ngri)
         call mkstatic(nkn,ianv,nbound)
 	call stats('boundary nodes')
 
@@ -128,10 +142,13 @@ c plot grade
 
 c eliminate 4- grades
 
+        write(6,*) '================================='
+        write(6,*) 'first cycle...'
+        write(6,*) '================================='
+
         write(6,*) 'start eliminating nodes ...'
 
-	call chkgrd
-        write(6,*) 'chkgrd ok ...'
+	call chkgrd(' ')
 	call elimlow
 	if( bplot) call plobas
 	call stats('4- grades')
@@ -139,37 +156,41 @@ c eliminate 4- grades
 
 c eliminate 8+ grades
 
-	call chkgrd
+	call chkgrd(' ')
 	call elimhigh(8)
 	if( bplot) call plobas
 	call stats('8+ grades')
 
-	write(6,*) 'checking after 8+'
-	call chkgrd
+	call chkgrd('checking after 8+')
 	call node_info(kspecial)
 
 c eliminate 7+ grades
 
-	call chkgrd
+	call chkgrd(' ')
 	call elimhigh(7)
 	if( bplot) call plobas
 	call stats('7+ grades')
 
-	write(6,*) 'checking after 7+'
-	call chkgrd
+	call chkgrd('checking after 7+')
 	call node_info(kspecial)
 
 c smoothing
 
-	call write_grid('new_nosmooth.grd')
+	!call write_grid('new_nosmooth.grd')
 
         call smooth_grid(50,0.1)
 	if( bplot) call plobas
 	call node_info(kspecial)
 
+	!call write_grid('new_smooth1.grd')
+
 c again ...
 
-	call chkgrd
+        write(6,*) '================================='
+        write(6,*) 'second cycle...'
+        write(6,*) '================================='
+
+	call chkgrd('start of second cycle')
         call elimlow
 	call elimhigh(8)
 	call elimhigh(7)
@@ -179,39 +200,48 @@ c again ...
 
 c eliminate 5 grades
 
-	call write_grid('new_help.grd')
+	!call write_grid('new_help.grd')
 
-	call chkgrd
+	call chkgrd(' ')
 	call elim5
 	if( bplot) call plobas
 	call stats('5 grades')
 
-	write(6,*) 'checking after 5'
-	call chkgrd
+	call chkgrd('checking after 5')
 	call node_info(kspecial)
 
 c eliminate 5-5 grades
 
+	call write_grid('new_help1.grd')
+
 	call elim57
+	!call write_grid('new_help2.grd')
 	if( bplot) call plobas
 	call stats('5-5 grades')
-
-	write(6,*) 'checking after 5-5'
-	call chkgrd
+	call chkgrd('checking after 5-5')
 	call node_info(kspecial)
 
 c one more time
 
-	write(6,*) 'one more round...'
+        write(6,*) '================================='
+        write(6,*) 'third cycle...'
+        write(6,*) '================================='
+
+	!call write_grid('cycle3_start.grd')
+
 	call elimhigh(8)
         call elimhigh(7)
         call elim5
         call elim57
         call stats('all again')
-	call chkgrd
+	call chkgrd(' ')
 	call node_info(kspecial)
 
 c smoothing
+
+        write(6,*) '================================='
+        write(6,*) 'final smoothing...'
+        write(6,*) '================================='
 
         call smooth_grid(50,0.1)
 	if( bplot) call plobas
@@ -219,7 +249,11 @@ c smoothing
 
 c write to grd file
 
-	call chkgrd
+        write(6,*) '================================='
+        write(6,*) 'writing to grid...'
+        write(6,*) '================================='
+
+	call chkgrd(' ')
 	call node_info(kspecial)
 	call write_grid('new.grd')
 
@@ -229,10 +263,6 @@ c write to grd file
    97	continue
 	write(6,*) 'error reading grd file'
 	stop 'error stop rdgrd'
-   98	continue
-	write(6,*) 'Grade is too high. Please increase ngrdim.'
-	write(6,*) '(you can set it in Rules.make)'
-	stop 'error stop: ngrdim'
    99	continue
 	write(6,*) 'error external to internal numbering'
 	stop 'error stop ex2in'
@@ -246,14 +276,12 @@ c***********************************************************
 
 c saves information about depth to nodes
 
-	use mod_depth !COMMON_GGU_SUBST
-	use basin !COMMON_GGU_SUBST
+	use mod_depth
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-COMMON_GGU_DELETED	include 'depth.h'
 
 	integer k,ie,ii
 	integer ic(nkn)
@@ -283,13 +311,12 @@ c***********************************************************
 
 	subroutine stats(text)
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-	include 'grade.h'
 
 	character*(*) text
 

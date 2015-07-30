@@ -7,9 +7,9 @@ c 5 grade routines
 c
 c contents :
 c
-c subroutine elim5(nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
+c subroutine elim5(nkn,nel,ngrddi,ngrade,nbound,ngri,nen3v)
 c			eliminates low grades
-c subroutine elim55(k,nkn,nel,ngrdim,ngrade,nbound,ngri,nen3v)
+c subroutine elim55(k,nkn,nel,ngrddi,ngrade,nbound,ngri,nen3v)
 c			eliminates 5-5 connections
 c
 c***********************************************************
@@ -18,13 +18,12 @@ c***********************************************************
 
 c eliminates low grades
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
         include 'param.h'
-COMMON_GGU_DELETED        include 'basin.h'
-        include 'grade.h'
 
         integer k,n
 
@@ -35,7 +34,7 @@ COMMON_GGU_DELETED        include 'basin.h'
           if( n .eq. 5 .and. nbound(k) .eq. 0 ) then
             call elim55(k)
 c	    call node_info(1290)
-	    call chkgrd
+	    call chkgrd(' ')
           end if
         end do
 
@@ -47,13 +46,12 @@ c***********************************************************
 
 c eliminates 5-5 connections
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
         include 'param.h'
-COMMON_GGU_DELETED        include 'basin.h'
-        include 'grade.h'
 
 	integer k
 
@@ -63,9 +61,9 @@ COMMON_GGU_DELETED        include 'basin.h'
 	integer ip1,ip2
 	integer np,nt,nn
 	integer nval,ip
-	integer ngav(0:ngrdim)
-	integer ngrv(0:ngrdim)
-	integer nbav(0:ngrdim)
+	integer ngav(0:ngrdi+1)
+	integer ngrv(0:ngrdi+1)
+	integer nbav(0:ngrdi+1)
 
 	integer ifindel
 
@@ -173,10 +171,10 @@ c delete elements
 
 	if( bdebug ) then
 	  write(6,*) 'grade index befor manipulation:'
-	  call prgr(k,ngrdim,ngrade,ngri)
-	  call prgr(ngav(ip),ngrdim,ngrade,ngri)
-	  call prgr(ngav(ip-1),ngrdim,ngrade,ngri)
-	  call prgr(ngav(ip+1),ngrdim,ngrade,ngri)
+	  call prgr(k,ngrdi,ngrade,ngri)
+	  call prgr(ngav(ip),ngrdi,ngrade,ngri)
+	  call prgr(ngav(ip-1),ngrdi,ngrade,ngri)
+	  call prgr(ngav(ip+1),ngrdi,ngrade,ngri)
 	end if
 
 c new coordinates for node
@@ -192,44 +190,44 @@ c substitute all occurrences of k with ngav(ip)
 
 	if( bdebug ) then
 	  write(6,*) 'after substitution...'
-	  call prgr(ngav(ip),ngrdim,ngrade,ngri)
-	  call prgr(ngav(ip-1),ngrdim,ngrade,ngri)
-	  call prgr(ngav(ip+1),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip),ngrdi,ngrade,ngri)
+	  call prgr(ngav(ip-1),ngrdi,ngrade,ngri)
+	  call prgr(ngav(ip+1),ngrdi,ngrade,ngri)
 	end if
 
 c adjourn grade (delete) for nodes ip-1, ip+1
 
-	call delgr(ngav(ip-1),ngav(ip),ngrdim,ngrade,ngri)
-	call delgr(ngav(ip+1),ngav(ip),ngrdim,ngrade,ngri)
+	call delgr(ngav(ip-1),ngav(ip),ngrdi,ngrade,ngri)
+	call delgr(ngav(ip+1),ngav(ip),ngrdi,ngrade,ngri)
 
 	if( bdebug ) then
 	  write(6,*) 'after deleting ip-1,ip+1...'
-	  call prgr(ngav(ip),ngrdim,ngrade,ngri)
-	  call prgr(ngav(ip-1),ngrdim,ngrade,ngri)
-	  call prgr(ngav(ip+1),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip),ngrdi,ngrade,ngri)
+	  call prgr(ngav(ip-1),ngrdi,ngrade,ngri)
+	  call prgr(ngav(ip+1),ngrdi,ngrade,ngri)
 	end if
 
 c adjourn grade index for ip and delete node k finally
 
-	call delgr(ngav(ip),ngav(ip),ngrdim,ngrade,ngri)
+	call delgr(ngav(ip),ngav(ip),ngrdi,ngrade,ngri)
 	call delnod(k)
 	call subval(n+2,ngav(0),nkn+1,k)	!if nkn is in ngav
 
 	if( bdebug ) then
 	  write(6,*) 'after deleting ip...'
-	  call prgr(ngav(ip),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip),ngrdi,ngrade,ngri)
 	end if
 
 	ip1 = mod(ip+2,n)
 	ip2 = mod(ip+3,n)
-	call insgr(ngav(ip),ngav(ip+1),ngav(ip1),ngrdim,ngrade,ngri)
-	call insgr(ngav(ip),ngav(ip1),ngav(ip2),ngrdim,ngrade,ngri)
+	call insgr(ngav(ip),ngav(ip+1),ngav(ip1),ngrdi,ngrade,ngri)
+	call insgr(ngav(ip),ngav(ip1),ngav(ip2),ngrdi,ngrade,ngri)
 
 	if( bdebug ) then
 	  write(6,*) 'grade index after manipulation:'
-	  call prgr(ngav(ip),ngrdim,ngrade,ngri)
-	  call prgr(ngav(ip-1),ngrdim,ngrade,ngri)
-	  call prgr(ngav(ip+1),ngrdim,ngrade,ngri)
+	  call prgr(ngav(ip),ngrdi,ngrade,ngri)
+	  call prgr(ngav(ip-1),ngrdi,ngrade,ngri)
+	  call prgr(ngav(ip+1),ngrdi,ngrade,ngri)
 	end if
 
 	if( bdebug ) then

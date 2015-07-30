@@ -1,18 +1,21 @@
 
-        character*80 boundn(nbcdim)
-        character*80 conzn(nbcdim)
-        character*80 saltn(nbcdim)
-        character*80 tempn(nbcdim)
-        character*80 bio2dn(nbcdim)
-        character*80 sed2dn(nbcdim)
-        character*80 mud2dn(nbcdim)
-        character*80 lam2dn(nbcdim)
-        character*80 dmf2dn(nbcdim)
-        character*80 tox3dn(nbcdim)
-        character*80 bfm1bc(nbcdim)
-        character*80 bfm2bc(nbcdim)
-        character*80 bfm3bc(nbcdim)
-        character*80 vel3dn(nbcdim)
+	integer nbc_dim
+	parameter ( nbc_dim = 100 )
+
+        character*80 boundn(nbc_dim)
+        character*80 conzn(nbc_dim)
+        character*80 saltn(nbc_dim)
+        character*80 tempn(nbc_dim)
+        character*80 bio2dn(nbc_dim)
+        character*80 sed2dn(nbc_dim)
+        character*80 mud2dn(nbc_dim)
+        character*80 lam2dn(nbc_dim)
+        character*80 dmf2dn(nbc_dim)
+        character*80 tox3dn(nbc_dim)
+        character*80 bfm1bc(nbc_dim)
+        character*80 bfm2bc(nbc_dim)
+        character*80 bfm3bc(nbc_dim)
+        character*80 vel3dn(nbc_dim)
 
         common /boundn/ boundn
         common /conzn/ conzn

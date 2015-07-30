@@ -331,7 +331,6 @@ c*****************************************************************
 
 	real flag
 
-	!nlvdi = nlvdim
 	nlvdi = nlv
 
 	call levels_init(nkn,nel,nlvdi)

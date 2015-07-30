@@ -33,7 +33,8 @@ LIBIPS  = $(DIRLIB)/lib$(LIBPOST).a
 OBJS	=	subsrt.o subssv.o subsss.o subfil.o subgeo.o
 
 ADJOBJS	=	adj4el.o adj5el.o adj7el.o adj575.o \
-		adjplo.o adjgrd.o adjneu.o adjvar.o 
+		adjplo.o adjgrd.o adjneu.o adjvar.o \
+		mod_adj_grade.o
 
 EXES	=	adjele
 
@@ -135,15 +136,24 @@ strip:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-adj4el.o: param.h ../femlib/mod/basin.mod grade.h
-adj575.o: param.h ../femlib/mod/basin.mod grade.h
-adj5el.o: param.h ../femlib/mod/basin.mod grade.h
-adj7el.o: param.h ../femlib/mod/basin.mod grade.h
+adj4el.o: param.h ../femlib/mod/basin.mod \
+		../femlib/mod/mod_adj_grade.mod 
+adj575.o: param.h ../femlib/mod/basin.mod \
+		../femlib/mod/mod_adj_grade.mod 
+adj5el.o: param.h ../femlib/mod/basin.mod \
+		../femlib/mod/mod_adj_grade.mod 
+adj7el.o: param.h ../femlib/mod/basin.mod \
+		../femlib/mod/mod_adj_grade.mod 
 adjele.o: param.h ../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod grade.h 
+		../femlib/mod/basin.mod \
+		../femlib/mod/mod_adj_grade.mod 
 adjgrd.o: nbstatic.h
 adjneu.o: param.h ../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod grade.h 
-adjplo.o: param.h ../femlib/mod/basin.mod grade.h
-adjvar.o: param.h ../femlib/mod/basin.mod nbstatic.h grade.h
+		../femlib/mod/basin.mod \
+		../femlib/mod/mod_adj_grade.mod 
+adjplo.o: param.h ../femlib/mod/basin.mod \
+		../femlib/mod/mod_adj_grade.mod 
+adjvar.o: param.h ../femlib/mod/basin.mod nbstatic.h \
+		../femlib/mod/mod_adj_grade.mod 
+../femlib/mod/mod_adj_grade.mod: mod_adj_grade.o
 

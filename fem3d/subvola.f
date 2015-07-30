@@ -134,7 +134,9 @@ c******************************************************************
 	integer nfxdi
         integer nrdveci
 
-	!call getdim('nfxdim',nfxdi)
+	!write(6,*) 'module not yet converted... do not use'
+	!stop 'error stop rdvola: cannot use'
+
 	nfxdi = nfxdim
 
 	kvold = nfxdi
@@ -364,6 +366,9 @@ c initialization
                 write(nbvol) (ivol(i),i=1,ivolm)
 
         end if
+
+	write(6,*) 'module not yet converted... do not use'
+	stop 'error stop wrvola: cannot use'
 
 c normal call
 
@@ -741,7 +746,6 @@ c	write(6,*) (ivol(ie),ie=1,ivolm)
    99	continue
 	write(6,*) 'idim: ',idim
 	write(6,*) 'Number of elements in volumes is too big.'
-	write(6,*) 'Please adjust nfxdim in param.h'
 	stop 'error stop volinf: dimension ivol'
 	end
 

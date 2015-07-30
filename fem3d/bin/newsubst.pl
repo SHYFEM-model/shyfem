@@ -1269,6 +1269,8 @@ sub inc2use {
 
   include2use($fortran,"common.h","mod_system");
   include2use($fortran,"common_amat.h","mod_system");
+
+  include2use($fortran,"grade.h","mod_adj_grade");
 }
 
 #--------------------------------------------------------------

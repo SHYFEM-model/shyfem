@@ -30,6 +30,7 @@ c 15.11.2011    ggu     new routines for mixed depth (node and elem), hflag
 c 09.03.2012    ggu     delete useless error messages, handle nkn/nel better
 c 29.03.2012    ggu     use ngr1 to avoid too small dimension for ngr
 c 04.10.2013    ggu     in optest better error handling
+c 30.07.2015    ggu     vp renamed to shypre
 c
 c notes :
 c
@@ -40,7 +41,7 @@ c       change cmv,rosen
 c
 c********************************************************
 
-        program vp
+        program shypre
 
 	use basin
 
@@ -52,8 +53,8 @@ c********************************************************
 	character*80 file
 	character*80 errfil
 	character*80 errtex
-        character*80 descrg,descra,basnam
-        logical bstop,bopti
+        character*80 descrg,descra,basnam,grdfile
+        logical bstop,bopti,bauto,binfo
 
         integer, save, allocatable :: ipdex(:), iedex(:)
         integer, save, allocatable :: iphv(:), kphv(:)
@@ -86,8 +87,6 @@ c********************************************************
 	data bstop /.false./
 	data errfil /'errout.dat'/
 
-	call shyfem_copyright('vp - preprocessing of FE grid')
-c
         dcorbas=0.
         dirnbas=0.
         descrg=' '
@@ -112,16 +111,16 @@ c
 	ner=ifileo(ner,errfil,'form','new')
 	if(ner.le.0) then
 		write(6,*) 'Cannot open error file'
-		stop 'error stop : vp'
+		stop 'error stop : shypre'
 	end if
 c
 c get name of basin
 c
+	call shypre_init(grdfile,bopti,bauto,binfo)
+
 	call pardef
-	ianz=igetxt('Enter name of basin : ',basnam)
-	if(ianz.le.0) stop
-	call putfnm('basnam',basnam)
-	!write(6,*) 'basnam: ',basnam
+	call putfnm('basnam',grdfile)
+	basnam = grdfile
 c
 c always process whole file
 
@@ -131,17 +130,15 @@ c--------------------------------------------------------
 c read grid
 c--------------------------------------------------------
 
-        file=basnam(1:ichanm(basnam))//'.grd'
-        write(6,*) ' ...reading file ',file(1:ichanm(file))
-
-	call grd_read(file)
+	write(6,*) 'grdfile: ',grdfile
+	call grd_read(grdfile)
 
 	call grd_get_params(nk,ne,nl,nne,nnl)
 	write(6,*) 'grid info: ',nk,ne,nl
 
 	if( nk == 0 .or. ne == 0 ) then
 	  write(6,*) 'nk,ne: ',nk,ne
-	  stop 'error stop vp: no nodes or elements in basin'
+	  stop 'error stop shypre: no nodes or elements in basin'
 	end if
 
 	call grd_to_basin
@@ -207,6 +204,8 @@ c--------------------------------------------------------
 	  write(nat,*) '********************************************'
 	  write(nat,*) '********************************************'
 	end if
+
+	if( binfo ) stop
 c
 c open files
 c
@@ -281,7 +280,7 @@ c bandwidth optimization -------------------------------------------
 	call gtest('bandwidth 1',nelddi,nkn,nel,nen3v)
 	write(nat,*) ' Bandwidth is ',mbw
 
-        call bandop(nkn,ngr,ipv,iphv,kphv,ng,iknot,kvert,bopti)
+        call bandop(nkn,ngr,ipv,iphv,kphv,ng,iknot,kvert,bopti,bauto)
 
 	call gtest('bandwidth 2',nelddi,nkn,nel,nen3v)
         if(bopti) then
@@ -410,7 +409,7 @@ c
 	  write(nat,*)
 	end if
 
-	stop ' error stop : vp'
+	stop ' error stop : shypre'
  6000	format(a)
  	end
 
@@ -836,27 +835,23 @@ c determine bandwidth mbw
 
 c**********************************************************
 
-        subroutine bandop(nkn,ngr1,ipv,iphv,kphv,ng,iknot,kvert,bopti)
+        subroutine bandop(nkn,ngr1,ipv,iphv,kphv,ng,iknot,kvert
+     +				,bopti,bauto)
 
 c optimize band width
 
         implicit none
 
         integer nkn,ngr1
-        logical bopti
+        logical bopti,bauto
         integer ipv(nkn)
         integer iphv(nkn),kphv(nkn)
         integer ng(nkn)
         integer iknot(ngr1,nkn)
         integer kvert(2,nkn)
 
-        integer iantw
-	logical bauto
+	integer iantw
 
-        bopti = iantw(' Optimization of bandwidth ?') .gt. 0
-	if( .not. bopti ) return
-
-        bauto = iantw(' Automatic optimization ?') .gt. 0
 	if( bauto ) then
 	  call ininum(nkn,iphv,kphv)
 	  call optest('before optimization: ',nkn,ipv,iphv,kphv)
@@ -1411,6 +1406,45 @@ c checks uniquness of nodes in elements
 	!end do
 
 	return
+	end
+
+c**********************************************************
+c**********************************************************
+c**********************************************************
+
+	subroutine shypre_init(grdfile,bopti,bauto,binfo)
+
+	use clo
+
+	implicit none
+
+	character*(*) grdfile
+	logical bopti,bauto,binfo
+
+	logical bnoopti,bmanual
+
+	call shyfem_copyright('shypre - preprocessing of FEM grid')
+
+	call clo_init('shypre','grd-file','3.0')
+
+        call clo_add_info('pre-processes grd file into bas file')
+
+	call clo_add_option('noopti',.false.,'do not optimize bandwidth')
+        call clo_add_option('manual',.false.,'manual optimization')
+	call clo_add_option('info',.false.,'only give info on grd file')
+
+	call clo_parse_options
+
+        call clo_get_option('noopti',bnoopti)
+        call clo_get_option('manual',bmanual)
+        call clo_get_option('info',binfo)
+
+	call clo_check_files(1)
+	call clo_get_file(1,grdfile)
+
+	bopti = .not. bnoopti
+	bauto = .not. bmanual
+
 	end
 
 c**********************************************************

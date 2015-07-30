@@ -35,6 +35,7 @@ c 11.02.2009    ggu     in cstfile set fixed name for STR file
 c 15.07.2011    ggu     new call to read basin
 c 20.10.2014    ggu     new routine ckdate()
 c 10.11.2014    ggu     time and date routines transfered to subtime.f
+c 30.07.2015    ggu     read str-file from command line
 c
 c************************************************************************
 
@@ -183,15 +184,24 @@ c reads files (str and bas)
 
 	implicit none
 
-	include 'param.h'
-
-	integer nin
+	integer nin,nc
 	character*80 basnam
+	character*80 strfile
 
-	integer idefbas
+	integer idefbas,ifileo
 
-	nin = 5
+	strfile = ' '
+        nc = command_argument_count()
+        if( nc .gt. 0 ) call get_command_argument(1,strfile)
+ 
+	if( strfile == ' ' ) then
+	  nin = 5
+	else
+	  nin = ifileo(0,strfile,'form','old')
+	end if
+
 	call nlsh2d(nin)
+	if( nin .ne. 5 ) close(nin)
 
         call getfnm('basnam',basnam)
         nin = idefbas(basnam,'old')

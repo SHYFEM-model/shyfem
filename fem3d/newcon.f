@@ -189,7 +189,7 @@ c shell for scalar (for parallel version)
         character*(*) what
 	integer ivar
         real scal(nlvdi,nkn)
-        integer ids(nbcdim)
+        integer ids(*)
         real rkpar
 	real wsink
         real difhv(nlvdi,nel)
@@ -272,7 +272,7 @@ c shell for scalar with nudging (for parallel version)
         character*(*) what
 	integer ivar
         real scal(nlvdi,nkn)
-        integer ids(nbcdim)
+        integer ids(*)
         real rkpar
 	real wsink
         real difhv(nlvdi,nel)
@@ -358,7 +358,7 @@ c special version with factor for BC, variable sinking velocity and loads
 	integer ivar
 	real fact			!factor for boundary condition
         real scal(nlvdi,nkn)
-        integer ids(nbcdim)
+        integer ids(*)
         real rkpar
 	real wsink
 	real wsinkv(0:nlvdi,nkn)

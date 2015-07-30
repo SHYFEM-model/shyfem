@@ -249,25 +249,24 @@ c****************************************************************
 	integer ndim
 	parameter (ndim=500)
 
-
 	character*80 basfil
 	integer nodes(ndim)
 	integer n,nb,nl
+	integer nlkdi
 	real x(ndim), y(ndim)
+
+	integer iapini
 
 	call shyfem_copyright('line_nodes - find node along line')
 
 	call read_line(ndim,nl,x,y)
 
-	call read_memory_basin(basfil)
-	if( basfil .eq. ' ' ) stop
+	if( iapini(1,0,0,0) .le. 0 ) stop
 
-	nb = 1
-	open(nb,file=basfil,status='old',form='unformatted')
-	call basin_read(nb)
-	close(nb)
+	call mod_geom_init(nkn,nel,ngr)
 
-        call mklenk(nlkdim,nkn,nel,nen3v,ilinkv,lenkv)
+	nlkdi = 3*nel + 2*nkn
+        call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
         call mklink(nkn,ilinkv,lenkv,linkv)
 
 	call find_line_nodes(nl,x,y,ndim,n,nodes)

@@ -128,7 +128,7 @@ c reads boundary info from STR file
 	save icall
 	data icall / 0 /
 
-	nbcdi = nbcdim
+	nbcdi = nbc_dim
 
 	if( icall .eq. 0 ) then		!initialize bnd array
 	  do i=1,nbcdi
@@ -487,8 +487,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccc
 
 	return
    77	continue
-	write(6,*) 'Dimension error for nbcdim'
-	write(6,*) 'nbcdim :',nbcdi
+	write(6,*) 'Dimension error for nbc_dim'
+	write(6,*) 'nbc_dim :',nbcdi
 	stop 'error stop : rdbnds'
    92	continue
 	write(6,*) 'Error in name list read : ',iweich
@@ -513,7 +513,6 @@ c checks boundary information read from STR
 	implicit none
 
 	include 'param.h'
-	include 'bound_names.h'
 
 	logical bstop
 	integer i,k,ibc
@@ -523,6 +522,7 @@ c checks boundary information read from STR
 	real period
 	real ztilt
 	integer ipint
+	character*80 file
 
 	bstop = .false.
 
@@ -575,8 +575,9 @@ c checks boundary information read from STR
 	 end if
 
 	 if( ibtyp .gt. 0 ) then
+	   call get_boundary_file(ibc,'zeta',file)
            call get_bnd_par(ibc,'period',period)
-	   if( period .le. 0. .and. boundn(i) .eq. ' ' ) then
+	   if( period .le. 0. .and. file .eq. ' ' ) then
 		write(6,'(a,i2,a)') 'section BOUND ',i,' :'
 		write(6,*) '   Period must be > 0'
 		write(6,*) '   period = ',period

@@ -40,13 +40,14 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine system_solve_z
+	subroutine system_solve_z(n,z)
 
 	use mod_system
 
 	implicit none
 
-        include 'param.h'
+        integer n
+        real z(n)
 
 	call pard_solve_system
 

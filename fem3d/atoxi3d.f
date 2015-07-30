@@ -64,10 +64,11 @@ c toxi module ARPAV
 	integer itoxi
         integer id
 	integer nintp,ivar
+	integer nbc
 	real t,s
 	real u,v
 
-	integer idtoxi(nbcdim)
+	integer, save, allocatable :: idtoxi(:)
 
 	real eaux(nstate)
 	real einit(nstate)
@@ -101,6 +102,8 @@ c toxi module ARPAV
 	real stp
         real mass
 	real wsink
+
+	integer nbnds
 
 	integer iespecial,inspecial
 	save iespecial,inspecial
@@ -159,6 +162,10 @@ c         --------------------------------------------------
 c         --------------------------------------------------
 c	  set boundary conditions for all state variables
 c         --------------------------------------------------
+
+          nbc = nbnds()
+          allocate(idtoxi(nbc))
+          idtoxi = 0
 
 	  call get_first_time(itanf)
 	  dtime0 = itanf

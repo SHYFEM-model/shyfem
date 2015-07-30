@@ -23,13 +23,12 @@ c**************************************************************
 
 c smoothing of internal nodes
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
 	include 'param.h'
-	include 'grade.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer npass
 	real omega
@@ -120,22 +119,23 @@ c marks nodes as static (not moveable)
 
 c**************************************************************
 
-	subroutine chkgrd
+	subroutine chkgrd(text)
 
 c check of grid
 c
 c checks consistency of node and grade index
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
 	include 'param.h'
-	include 'grade.h'
-COMMON_GGU_DELETED	include 'basin.h'
 	include 'nbstatic.h'
 	
-	integer iaux(nkndim)
+	character*(*) text
+
+	integer iaux(nkn)
 
 	logical bstop,bverb
 	integer n,k,ie,ii,kk,i,ke
@@ -149,6 +149,8 @@ COMMON_GGU_DELETED	include 'basin.h'
 	bverb = .false.
 
 c check element index for unknown nodes
+
+	if( text .ne. ' ' ) write(6,*) 'chkgrd: '//trim(text)
 
         if( bverb ) write(6,*) 'checking for unknown nodes ...'
 
@@ -188,7 +190,7 @@ c check grades for strange grades
 
 c check grade index for unknown nodes
 
-        if( bverb ) write(6,*) 'checking grade index for unkn nodes ...'
+        if( bverb ) write(6,*) 'checking grade index for nodes ...'
 
 	do k=1,nkn
 	  n = ngrade(k)
@@ -220,7 +222,7 @@ c ...still to be written
 	    i2 = mod(i1,3) + 1
 	    k2 = nen3v(i2,ie)
 
-	    kk = nextgr(k,k1,ngrdim,ngrade,ngri)
+	    kk = nextgr(k,k1,ngrdi,ngrade,ngri)
 	    if( kk .ne. k2 ) then
 		bstop =.true.
 		write(6,*) 'chkgrd (4): ',ie,k,k1,k2,kk
@@ -310,12 +312,11 @@ c*******************************************************
 
 c check if area is positive
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
         implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	logical bstop
 	integer ie,ii,i1,i2,k1,k2
@@ -357,15 +358,14 @@ c*******************************************************
 
 c writes info on node
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
         implicit none
 
 	integer k
 
 	include 'param.h'
-	include 'grade.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	integer i
 
@@ -373,7 +373,7 @@ COMMON_GGU_DELETED	include 'basin.h'
 
 	write(6,*) 'info on node k = ',k
 	write(6,*) ngrade(k),nbound(k),xgv(k),ygv(k)
-	write(6,*) nkn,nel,ngrdim
+	write(6,*) nkn,nel,ngrdi
 	write(6,*) (ngri(i,k),i=1,ngrade(k))
 
 	end
@@ -387,12 +387,11 @@ c
 c rangle	angle [degrees] ,     rangle < 180 => right turn
 c k1,k2,k3	node numbers
 
-	use basin !COMMON_GGU_SUBST
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
 	real rangle
 	integer k1,k2,k3
@@ -415,15 +414,14 @@ c************************************************************
 
         subroutine nint2ext(kint,kext)
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
         implicit none
 
         integer kint,kext
 
 	include 'param.h'
-	include 'grade.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
         kext = ipv(kint)
 
@@ -433,15 +431,14 @@ c************************************************************
 
         subroutine eint2ext(ieint,ieext)
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
         implicit none
 
         integer ieint,ieext
 
 	include 'param.h'
-	include 'grade.h'
-COMMON_GGU_DELETED	include 'basin.h'
 
         ieext = ipev(ieint)
 

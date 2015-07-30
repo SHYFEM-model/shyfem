@@ -93,12 +93,13 @@ c 29.10.2013    ggu	nudging implemented
 c 25.03.2014    ggu	new offline
 c 25.06.2014    ggu	new arrays hkv_min, hkv_max
 c 05.12.2014    ccf	new interface for waves
+c 30.07.2015    ggu	routine renamed from ht to shyfem
 c
 c*****************************************************************
 
 c----------------------------------------------------------------
 
-	program ht
+	program shyfem
 
 	use mod_tides
 	use mod_bound_geom
@@ -130,120 +131,14 @@ c----------------------------------------------------------------
 	use basin
 	use intp_fem_file
 
-	include 'param.h'
-
 c----------------------------------------------------------------
 
-c variables and coefficients
+c include files
 
+	include 'param.h'
 	include 'mkonst.h'
 	include 'pkonst.h'
 	include 'femtime.h'
-
-
-c run and basin description
-
-	include 'simul.h'
-
-c boundary file names			!$$ST	!$$DESCRP
-
-
-	include 'bound_names.h'
-  
-c various arrays
-
-	include 'extra.h'
-
-	include 'volcomp.h'
-
-c basin arrays
-
-
-c static geometry information
-
-
-
-
-
-c dynamic geometry information
-
-
-c boundary arrays
-
-
-
-c depth structure of levels
-
-
-
-
-c new depth and area arrays
-
-
-
-
-c water level and velocity arrays
-
-
-
-
-
-
-        
-
-
-c fluid mud (ARON: please comment what they are)
-c ARON: do these have to be global, or are they only needed in submud?
-
-
-c concentration, salinity and temperature
-
-
-
-c coriolis parameter
-
-
-c friction and diffusion
-
-
-
-
-
-
-
-c special boundary arrays
-
-
-c meteo (wind and pressure)
-
-c	primary arrays
-
-
-
-c	derived arrays
-
-
-c wind drag coefficient (either from wave or COARE)
-
-
-c tidal potential
-
-
-c nudging
-
-
-c wave sub-module
-
-
-
-
-
-
-c auxiliary arrays
-
-
-c turbulence
-
 
 c local variables
 

@@ -26,6 +26,7 @@ FullUsage()
 
 ##################################### options
 
+options=""
 opt="YES"	# optimization is on
 quiet="NO"	# be quiet
 info="NO"	# only info
@@ -34,9 +35,9 @@ envir="NO"	# info on environment
 while [ $# -gt 0 ]
 do
   case $1 in
-        -noopt) opt="NO";;
+        -noopt) opt="NO", options="$options -noopt";;
 	-quiet) quiet="YES";;
-	-info) info="YES";;
+	-info) info="YES", options="$options -info";;
 	-envir) envir="YES";;
         -help)  FullUsage; exit 0;;
         -h)     FullUsage; exit 0;;
@@ -73,6 +74,7 @@ $FEMDIR/fembin/grd_info.pl -dim $file		# write info on file
 [ $info = "YES" ] && exit 0
 
 vpexe="$BINDIR/vp"
+vpexe="$BINDIR/shypre"
 if [ ! -x "$vpexe" ]; then
   echo "No executable vp in $BINDIR"
   exit 1
@@ -84,10 +86,14 @@ echo $filen > vpinput.tmp		# name of basin
 echo $opt >> vpinput.tmp		# optimization
 echo "YES" >> vpinput.tmp		# automatic optimization
 
+echo "options: $options   file: $file"
+
 if [ $quiet = "YES" ]; then
-  $vpexe < vpinput.tmp > vpoutput.tmp
+  #$vpexe < vpinput.tmp > vpoutput.tmp
+  $vpexe $options $file > vpoutput.tmp
 else
-  $vpexe < vpinput.tmp
+  #$vpexe < vpinput.tmp
+  $vpexe $options $file
 fi
 
 

@@ -171,8 +171,6 @@ c computes ecological scalars with BFM  model
 
 ! OBC ARRAY AND VARIABLES
 
-	include 'bound_names.h'
-
 	character*10 what
 
 	integer nbfmv1   	!number of solutes transported var 

@@ -7,8 +7,8 @@ c 4 grade routines
 c
 c contents :
 c
-c subroutine elim4(nkn,nel,ngrdim,ngrade,ngri,nen3v)	eliminates grade=4 nodes
-c subroutine elim4n(k,nel,ngrdim,ngrade,ngri,nen3v)	eliminates node
+c subroutine elim4(nkn,nel,ngrddi,ngrade,ngri,nen3v)	eliminates grade=4 nodes
+c subroutine elim4n(k,nel,ngrddi,ngrade,ngri,nen3v)	eliminates node
 c subroutine el4to2(k,k1,k2,ieind,ienew)		four elements to two
 c subroutine unifel(k,ik1,ik2,inew)			unifies two elements
 c
@@ -18,13 +18,12 @@ c***********************************************************
 
 c eliminates grade=4 nodes (and less)
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-	include 'grade.h'
 
 	logical b3
 	integer k,n,nc
@@ -49,7 +48,7 @@ c iterate over 3 grades as long as there is no 3 grade node left
 	 end do
 	end do
 
-	call chkgrd
+	call chkgrd(' ')
 
 	write(6,*) 'eliminating 4 grades...'
 
@@ -58,7 +57,7 @@ c iterate over 3 grades as long as there is no 3 grade node left
 	    n = ngrade(k)
 	    if( n .eq. 4 ) then
 	      call elim4(k)
-	      call chkgrd	!FIXME
+	      call chkgrd(' ')	!FIXME
 	    end if
 	  end if
 	end do
@@ -71,13 +70,12 @@ c***********************************************************
 
 c eliminates node
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-	include 'grade.h'
 
 	integer k
 
@@ -102,9 +100,9 @@ c delete grade from neibors
 
 	do i=1,n
 	  kk = neibs(i)
-c	  call prgr(kk,ngrdim,ngrade,ngri)
-	  call delgr(kk,k,ngrdim,ngrade,ngri)
-c	  call prgr(kk,ngrdim,ngrade,ngri)
+c	  call prgr(kk,ngrdi,ngrade,ngri)
+	  call delgr(kk,k,ngrdi,ngrade,ngri)
+c	  call prgr(kk,ngrdi,ngrade,ngri)
 	end do
 
 c delete elements
@@ -133,13 +131,12 @@ c***********************************************************
 
 c eliminates node
 
-	use basin !COMMON_GGU_SUBST
+	use mod_adj_grade
+	use basin
 
 	implicit none
 
 	include 'param.h'
-COMMON_GGU_DELETED	include 'basin.h'
-	include 'grade.h'
 
 	integer k
 
@@ -273,7 +270,7 @@ c nodes that change grade -> adjust
 
 	do ip=ipos,4,2
 	  kk = neibs(ip)
-	  call delgr(kk,k,ngrdim,ngrade,ngri)
+	  call delgr(kk,k,ngrdi,ngrade,ngri)
 	end do
 
 c	write(6,*) '***',1764,(nen3v(ii,1764),ii=1,3)
@@ -285,8 +282,8 @@ c nodes that do not change grade -> exchange information
 	k1 = neibs(ipos1)
 	k2 = neibs(ipos2)
 
-	call exchgr(k1,k,k2,ngrdim,ngrade,ngri)
-	call exchgr(k2,k,k1,ngrdim,ngrade,ngri)
+	call exchgr(k1,k,k2,ngrdi,ngrade,ngri)
+	call exchgr(k2,k,k1,ngrdi,ngrade,ngri)
 
 c	write(6,*) '***',1764,(nen3v(ii,1764),ii=1,3)
 

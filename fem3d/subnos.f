@@ -1040,6 +1040,57 @@ c local
 	end
 
 c************************************************************
+
+	subroutine nos_peek_record(iu,it,ivar,ierr)
+
+c peeks into data record of NOS file
+
+	implicit none
+
+c arguments
+	integer iu,it,ivar
+	integer ierr
+c local
+	integer l,k,lmax
+	integer nvers,nkn,nel,nlv,nvar
+	integer iunit
+
+	iunit = abs(iu)
+
+	call getnos(iunit,nvers,nkn,nel,nlv,nvar)
+
+	lmax = nlv
+
+	if( nvers .eq. 1 ) then
+	   ivar = 1
+	   read(iunit,end=88,err=98) it
+	else if( nvers .ge. 2 ) then
+	   if( nvers .ge. 4 ) then
+	     read(iunit,end=88,err=98) it,ivar,lmax
+	   else
+	     read(iunit,end=88,err=98) it,ivar
+	   end if
+	else
+	   write(6,*) 'nvers = ',nvers,'  iunit = ',iunit
+	   stop 'error stop nos_peek_record: internal error (1)'
+	end if
+
+	backspace(iu)
+
+	ierr=0
+
+	return
+   88	continue
+	ierr=-1
+	return
+   98	continue
+	write(6,*) 'nos_peek_record: Error while reading'
+	write(6,*) 'time record of NOS file'
+	ierr=98
+	return
+	end
+
+c************************************************************
 c************************************************************
 c************************************************************
 

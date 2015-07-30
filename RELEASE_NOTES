@@ -1,4 +1,30 @@
 
+30.07.2015    VERS_7_1_83
+
+	transition to allocatable objects finished
+	new names for some routines
+		ht	->	shyfem
+		vp	->	shypre
+		ousinf	->	shyelab
+		nosinf	->	shyelab
+	routines now want input files on command line
+		(example: shyfem nador.str)
+	post processing routines are still not completely ready
+	please have a look at shyelab for dealing with NOS and OUS files
+	plotting is still through plots
+
+c ./fem3d/shyfem.f:
+c 30.07.2015    ggu     routine renamed from ht to shyfem
+c
+c ./fem3d/subcst.f:
+c 30.07.2015    ggu     read str-file from command line
+c
+c ./fem3d/shypre.f:
+c 30.07.2015    ggu     vp renamed to shypre
+c
+c ./fem3d/shyelab.f:
+c 30.07.2015    ggu     shyelab started
+
 24.07.2015    VERS_7_1_82
 
 	only dependency on fixed dimensions is nbcdim

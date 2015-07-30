@@ -178,7 +178,7 @@ SOBJS   = \
 
 	  #mod_bnd.o
 
-# general objects for 3D model ht
+# general objects for 3D model shyfem
 
 HTOBJS = \
 	subver.o \
@@ -225,7 +225,7 @@ HTOBJS = \
 	$(GRDOBJS) \
 	subxi.o
 
-# objects for pre-processor vp
+# objects for pre-processor shypre
 
 VPOBJS = \
 	subver.o \
@@ -236,7 +236,7 @@ VPOBJS = \
         subsrt.o \
         subsss.o subscn.o subnsu.o \
 	subapn.o subnsa.o subnls.o subsys.o subdum.o \
-	$(GRDOBJS)
+	$(GRDOBJS) subclo.o
 
 	#newdum_basin.o \
 
@@ -254,7 +254,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subvintp.o subver.o sigmautil.o suboutput.o \
 	  subclo.o \
 	  mod_depth.o mod_hydro.o mod_geom.o mod_hydro_print.o \
-	  mod_bound_geom.o mod_bnd.o newlevels.o \
+	  mod_bound_geom.o mod_bnd.o mod_hydro_baro.o newlevels.o \
 	  $(GRDOBJS) subsrt.o
 
 	  #newdum.o newdum_basin.o newdum_levels.o
@@ -266,8 +266,10 @@ BASEXTRA = subgeo.o sublnka.o links.o sublnku.o \
 		subinterpol.o subinterpol1.o subnos.o
 
 GENOBJS = newlevels.o
-NOSOBJS = subnos.o nosutil.o genutil.o subeos.o
-OUSOBJS = subous.o ousutil.o genutil.o
+NOSOBJS = subnos.o nosutil.o genutil.o subeos.o elabutil.o noselab1.o
+OUSOBJS = subous.o ousutil.o genutil.o elabutil.o ouselab1.o
+SHYOBJS = subous.o ousutil.o subnos.o nosutil.o subeos.o genutil.o elabutil.o \
+		noselab1.o ouselab1.o
 ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
 		genutil.o
@@ -326,25 +328,24 @@ LAGINTP = submir.o
 
 #------------------------------------------------
 
-EXEMAIN  = ht vp
+EXEMAIN  = shyfem shypre
 
-EXEINFO  = ousinf flxinf basinf nosinf extinf rstinf \
+EXEINFO  = flxinf basinf extinf rstinf \
 		feminf tsinf filetype \
-		offinf lgrinf etsinf
-EXESPLIT = nossplit splitext splitflx splitets
+		offinf lgrinf etsinf \
+		noselab ouselab shyelab nosextr_nodes
+EXESPLIT = splitext splitflx splitets
 EXELAP   =  
 EXEBAS   = bastreat basbathy scalintp
-EXEVAR   = nosinit nosresidence scal_intp bashsigma
+EXEVAR   = nosresidence scal_intp bashsigma
 EXEUTIL  = bc2fem
 
-NOSVAR   = nos_elab nossum nosdiff noswrite nosadmin noselab
-NOSAVER  = nosaver_basin nosaver_vert nosaver_time
-NOSEXTR  = nosextr_nodes nosextr_gis nosextr_records nosextr_custom \
-		nosextr_cat
+NOSVAR   = 
+NOSAVER  = 
+NOSEXTR  = 
 NOSALL   = $(NOSEXTR) $(NOSAVER) $(NOSVAR)
 
-OUSEXTR  = ousextr_nodes ousextr_records ousextr_gis \
-		ousextr_cat
+OUSEXTR  = 
 
 EXEEXTRA = \
 		basproj baswork eosinf \
@@ -381,10 +382,10 @@ links:
 bedload:  bedload.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
 	$(LINKER) -o $@ $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS)
 
-ht:  ht.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
+shyfem:  shyfem.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
 	$(LINKER) -o $@ $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS)
 
-vp:  vp.o $(VPOBJS)
+shypre:  shypre.o $(VPOBJS)
 	$(LINKER) -o $@ $(LFLAGS) $@.o $(VPOBJS)
 
 #------------------------------------------------
@@ -466,35 +467,8 @@ scal_intp:  scal_intp.o subgeo.o $(OUTOBJS) $(LAPLACE)
 bascomp:  bascomp.o subgeo.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subgeo.o $(OUTOBJS) -o $@
 
-ousinf:  ousinf.o $(OUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
-
-ouswork:  ouswork.o $(OUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
-
-ouswork1:  ouswork1.o $(OUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
-
-ousintp:  ousintp.o $(OUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
-
-ousaver:  ousaver.o $(OUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
-
-ouswrite:  ouswrite.o $(OUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
-
-ousvdiff:  ousvdiff.o $(OUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
-
 etsinf:  etsinf.o $(ETSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(ETSOBJS) $(OUTOBJS) -o $@
-
-nosinf:  nosinf.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-nosinf2:  nosinf2.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 filetype:  filetype.o $(NOSOUSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
@@ -509,12 +483,6 @@ femelab:  femelab.o $(NOSOBJS) $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 bc2fem:  bc2fem.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-nossum:  nossum.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-noselab_time:  noselab_time.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 check_debug: check_debug.o
@@ -547,60 +515,18 @@ offinf: offinf.o
 
 .PHONY: nosextr ousextr nosaver nos
 
-ousextr: $(OUSEXTR)
-
-ousextr_nodes:  ousextr_nodes.o $(OUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
-
-ousextr_records:  ousextr_records.o $(OUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
-
-ousextr_gis:  ousextr_gis.o $(OUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
-
-ousextr_cat:  ousextr_cat.o $(OUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
-
 nos: $(NOSALL)
 
-nosextr: $(NOSEXTR)
-
-nosextr_nodes:  nosextr_nodes.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-nosextr_gis:  nosextr_gis.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-nosextr_records:  nosextr_records.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-nosextr_custom:  nosextr_custom.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-nosextr_cat:  nosextr_cat.o $(NOSOUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
-
-nosextr_fluxes:  nosextr_fluxes.o $(NOSOUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
+ouselab: ouselab.o $(OUSOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
 
 noselab: noselab.o $(NOSOBJS) $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nosaver: $(NOSAVER)
+shyelab: shyelab.o $(SHYOBJS) $(OUTOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) -o $@
 
-nosaver_basin:  nosaver_basin.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-nosaver_vert:  nosaver_vert.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-nosaver_time:  nosaver_time.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-noswrite:  noswrite.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-nosadmin:  nosadmin.o $(NOSOBJS) $(OUTOBJS) 
+nosextr_nodes:  nosextr_nodes.o $(NOSOBJS) $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 #-------------------------------------------------------
@@ -608,25 +534,7 @@ nosadmin:  nosadmin.o $(NOSOBJS) $(OUTOBJS)
 map_influence:  map_influence.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
-nossplit:  nossplit.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
 nosresidence:  nosresidence.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-nosmaniq:  nosmaniq.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-nostransf:  nostransf.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-nosdiff:  nosdiff.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-nosinit:  nosinit.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
-
-nos_elab:  nos_elab.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 lgrelab:  lgrelab.o $(NOSOBJS) $(OUTOBJS) 
@@ -860,6 +768,8 @@ bio3d.o: param.h ../femlib/mod/levels.mod ../femlib/mod/basin.mod \
 bio3d_util.o: ../femlib/mod/levels.mod param.h \
 		../femlib/mod/basin.mod donata.h 
 debug.o: debug_aux1.h
+../femlib/mod/elabutil.mod: elabutil.o
+elabutil.o: param.h ../femlib/mod/clo.mod ../femlib/mod/basin.mod
 eosinf.o: param.h
 etsinf.o: param.h ../femlib/mod/ets.mod
 femelab.o: ../femlib/mod/clo.mod
@@ -867,43 +777,7 @@ feminf.o: ../femlib/mod/clo.mod
 filetype.o: ../femlib/mod/clo.mod
 flxinf.o: param.h
 gotm3d.o: gotmturb.i debug_aux1.h
-grdtest.o: ../femlib/mod/basin.mod ../femlib/mod/grd.mod
 grdutil.o: ../femlib/mod/basin.mod ../femlib/mod/grd.mod
-ht.o: ../femlib/mod/mod_area.mod \
-		../femlib/mod/mod_geom_dynamic.mod \
-		../femlib/mod/mod_depth.mod \
-		../femlib/mod/mod_fluidmud.mod \
-		../femlib/mod/mod_bound_geom.mod \
-		../femlib/mod/mod_tides.mod volcomp.h \
-		../femlib/mod/mod_hydro_baro.mod \
-		../femlib/mod/mod_roughness.mod param.h \
-		../femlib/mod/mod_bclfix.mod \
-		../femlib/mod/mod_internal.mod \
-		../femlib/mod/evgeom.mod \
-		../femlib/mod/mod_conz.mod pkonst.h \
-		../femlib/mod/mod_hydro_print.mod \
-		../femlib/mod/mod_nudging.mod \
-		../femlib/mod/mod_bnd_aux.mod \
-		../femlib/mod/mod_bnd.mod \
-		../femlib/mod/mod_diff_aux.mod extra.h \
-		../femlib/mod/mod_waves.mod \
-		../femlib/mod/mod_ts.mod \
-		../femlib/mod/mod_nohyd.mod \
-		../femlib/mod/mod_layer_thickness.mod mkonst.h \
-		simul.h ../femlib/mod/mod_bndo.mod \
-		../femlib/mod/mod_geom.mod bound_names.h \
-		../femlib/mod/basin.mod \
-		../femlib/mod/mod_aux_array.mod femtime.h \
-		../femlib/mod/mod_gotm_aux.mod \
-		../femlib/mod/mod_bound_dynamic.mod \
-		../femlib/mod/mod_hydro_vel.mod \
-		../femlib/mod/levels.mod ../femlib/mod/mod_tvd.mod \
-		../femlib/mod/mod_sinking.mod \
-		../femlib/mod/mod_diff_visc_fric.mod \
-		../femlib/mod/mod_hydro.mod \
-		../femlib/mod/mod_meteo.mod \
-		../femlib/mod/mod_turbulence.mod \
-		../femlib/mod/intp_fem_file.mod 
 intp.o: param.h ../femlib/mod/basin.mod \
 		../femlib/mod/mod_hydro.mod 
 lagrange_back.o: ../femlib/mod/mod_depth.mod param.h \
@@ -1018,8 +892,7 @@ new3di.o: ../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_meteo.mod 
-newbcl.o: param.h bound_names.h ../femlib/mod/basin.mod \
-		../femlib/mod/mod_ts.mod \
+newbcl.o: param.h ../femlib/mod/basin.mod ../femlib/mod/mod_ts.mod \
 		../femlib/mod/mod_aux_array.mod mkonst.h femtime.h \
 		../femlib/mod/mod_layer_thickness.mod pkonst.h \
 		../femlib/mod/levels.mod \
@@ -1061,7 +934,7 @@ newcon.o: ../femlib/mod/mod_area.mod ../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_diff_aux.mod 
-newconz.o: param.h ../femlib/mod/mod_ts.mod bound_names.h \
+newconz.o: param.h ../femlib/mod/mod_ts.mod \
 		../femlib/mod/basin.mod \
 		../femlib/mod/mod_aux_array.mod \
 		../femlib/mod/mod_layer_thickness.mod mkonst.h \
@@ -1094,7 +967,7 @@ newexpl.o: ../femlib/mod/mod_geom_dynamic.mod param.h \
 		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_geom.mod 
-newfix.o: ../femlib/mod/mod_geom_dynamic.mod param.h bound_names.h \
+newfix.o: ../femlib/mod/mod_geom_dynamic.mod param.h \
 		../femlib/mod/basin.mod \
 		../femlib/mod/mod_internal.mod \
 		../femlib/mod/mod_bclfix.mod \
@@ -1142,36 +1015,14 @@ nos2nc.o: param.h ../femlib/mod/levels.mod \
 		../femlib/mod/basin.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/evgeom.mod 
-nos_elab.o: param.h ../femlib/mod/basin.mod
-nosadmin.o: param.h
-nosaver_basin.o: param.h ../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod 
-nosaver_time.o: param.h
-nosaver_vert.o: param.h ../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod 
-nosdiff.o: param.h
-noselab.o: param.h ../femlib/mod/clo.mod ../femlib/mod/basin.mod
-nosextr_cat.o: param.h
-nosextr_custom.o: param.h ../femlib/mod/basin.mod
-nosextr_fluxes.o: param.h ../femlib/mod/basin.mod simul.h
-nosextr_gis.o: param.h ../femlib/mod/basin.mod
+noselab1.o: param.h ../femlib/mod/clo.mod ../femlib/mod/basin.mod \
+		../femlib/mod/elabutil.mod 
 nosextr_nodes.o: param.h ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/basin.mod ../femlib/mod/evgeom.mod 
-nosextr_records.o: param.h
-nosinf.o: param.h ../femlib/mod/clo.mod
-nosinit.o: param.h ../femlib/mod/basin.mod
-nosintp.o: param.h ../femlib/mod/basin.mod
-nosmaniq.o: param.h ../femlib/mod/basin.mod
 nosresidence.o: param.h ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/basin.mod ../femlib/mod/evgeom.mod 
-nossplit.o: param.h
-nossum.o: param.h ../femlib/mod/basin.mod
-noswrite.o: param.h ../femlib/mod/levels.mod \
-		../femlib/mod/basin.mod \
-		../femlib/mod/mod_hydro_print.mod \
-		../femlib/mod/mod_hydro.mod simul.h 
 optintp.o: param.h ../femlib/mod/clo.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/basin.mod ../femlib/mod/evgeom.mod 
@@ -1180,57 +1031,12 @@ ous2nc.o: param.h ../femlib/mod/levels.mod \
 		../femlib/mod/basin.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/evgeom.mod 
-ousaver.o: param.h ../femlib/mod/levels.mod \
-		../femlib/mod/basin.mod \
-		../femlib/mod/mod_hydro_print.mod \
-		../femlib/mod/mod_hydro.mod simul.h 
-ousextr_cat.o: param.h ../femlib/mod/levels.mod \
-		../femlib/mod/mod_hydro_vel.mod \
-		../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod \
+ouselab1.o: ../femlib/mod/mod_depth.mod ../femlib/mod/clo.mod \
+		../femlib/mod/basin.mod ../femlib/mod/elabutil.mod \
+		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_hydro_baro.mod \
 		../femlib/mod/mod_hydro.mod 
-ousextr_gis.o: param.h ../femlib/mod/levels.mod \
-		../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod \
-		../femlib/mod/mod_hydro.mod 
-ousextr_nodes.o: param.h ../femlib/mod/levels.mod \
-		../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod \
-		../femlib/mod/mod_hydro_print.mod \
-		../femlib/mod/mod_hydro.mod \
-		../femlib/mod/evgeom.mod 
-ousextr_records.o: param.h ../femlib/mod/levels.mod \
-		../femlib/mod/mod_hydro_vel.mod \
-		../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod \
-		../femlib/mod/mod_hydro.mod 
-ousinf.o: param.h ../femlib/mod/levels.mod \
-		../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod \
-		../femlib/mod/mod_hydro.mod \
-		../femlib/mod/evgeom.mod simul.h 
-ousintp.o: param.h ../femlib/mod/levels.mod \
-		../femlib/mod/basin.mod \
-		../femlib/mod/mod_hydro_print.mod \
-		../femlib/mod/mod_hydro.mod simul.h 
 ousutil.o: ../femlib/mod/evgeom.mod
-ousvdiff.o: param.h ../femlib/mod/levels.mod \
-		../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod simul.h 
-ouswork.o: param.h ../femlib/mod/levels.mod \
-		../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod \
-		../femlib/mod/mod_hydro.mod \
-		../femlib/mod/evgeom.mod simul.h 
-ouswork1.o: param.h ../femlib/mod/levels.mod \
-		../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod \
-		../femlib/mod/mod_hydro.mod \
-		../femlib/mod/evgeom.mod simul.h 
-ouswrite.o: param.h ../femlib/mod/levels.mod \
-		../femlib/mod/basin.mod \
-		../femlib/mod/mod_hydro_print.mod \
-		../femlib/mod/mod_hydro.mod simul.h 
 readext.o: param.h ../femlib/mod/basin.mod
 scal_intp.o: param.h ../femlib/mod/basin.mod \
 		../femlib/mod/evgeom.mod 
@@ -1246,13 +1052,49 @@ sedi3d.o: ../femlib/mod/mod_area.mod \
 		../femlib/mod/mod_bound_geom.mod \
 		../femlib/mod/mod_roughness.mod \
 		../femlib/mod/mod_geom.mod param.h \
-		../femlib/mod/basin.mod bound_names.h \
+		../femlib/mod/basin.mod \
 		../femlib/mod/mod_aux_array.mod \
 		../femlib/mod/evgeom.mod sed_param.h \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/levels.mod \
+		../femlib/mod/mod_diff_visc_fric.mod \
+		../femlib/mod/mod_hydro.mod 
+shyelab.o: ../femlib/mod/clo.mod ../femlib/mod/elabutil.mod
+shyfem.o: ../femlib/mod/mod_area.mod \
+		../femlib/mod/mod_geom_dynamic.mod \
+		../femlib/mod/mod_depth.mod \
+		../femlib/mod/mod_fluidmud.mod \
+		../femlib/mod/mod_bound_geom.mod \
+		../femlib/mod/mod_tides.mod \
+		../femlib/mod/mod_hydro_baro.mod \
+		../femlib/mod/mod_roughness.mod param.h \
+		../femlib/mod/mod_bclfix.mod \
+		../femlib/mod/mod_internal.mod \
+		../femlib/mod/evgeom.mod \
+		../femlib/mod/mod_conz.mod pkonst.h \
+		../femlib/mod/mod_hydro_print.mod \
+		../femlib/mod/mod_nudging.mod \
+		../femlib/mod/mod_bnd_aux.mod \
+		../femlib/mod/mod_bnd.mod \
+		../femlib/mod/mod_diff_aux.mod \
+		../femlib/mod/mod_waves.mod \
+		../femlib/mod/mod_ts.mod \
+		../femlib/mod/mod_nohyd.mod \
+		../femlib/mod/mod_layer_thickness.mod mkonst.h \
+		../femlib/mod/mod_bndo.mod \
+		../femlib/mod/mod_geom.mod ../femlib/mod/basin.mod \
+		../femlib/mod/mod_aux_array.mod femtime.h \
+		../femlib/mod/mod_gotm_aux.mod \
+		../femlib/mod/mod_bound_dynamic.mod \
+		../femlib/mod/mod_hydro_vel.mod \
+		../femlib/mod/levels.mod ../femlib/mod/mod_tvd.mod \
+		../femlib/mod/mod_sinking.mod \
+		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/mod_hydro.mod \
-		../femlib/mod/mod_diff_visc_fric.mod 
+		../femlib/mod/mod_meteo.mod \
+		../femlib/mod/mod_turbulence.mod \
+		../femlib/mod/intp_fem_file.mod 
+shypre.o: ../femlib/mod/clo.mod param.h ../femlib/mod/basin.mod
 sigmautil.o: sigma.h
 simsys_lp.o: param.h ../femlib/mod/mod_system.mod \
 		../femlib/mod/basin.mod 
@@ -1265,7 +1107,7 @@ splitflx.o: param.h
 subapn.o: ../femlib/mod/basin.mod
 ../femlib/mod/basin.mod: subbas.o
 subbas.o: param.h
-subbfm.o: param.h ../femlib/mod/mod_depth.mod bound_names.h \
+subbfm.o: param.h ../femlib/mod/mod_depth.mod \
 		../femlib/mod/basin.mod ../femlib/mod/mod_ts.mod \
 		pkonst.h ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro_print.mod \
@@ -1440,7 +1282,7 @@ submeteo2.o: param.h ../femlib/mod/mod_depth.mod \
 		femtime.h ../femlib/mod/levels.mod \
 		../femlib/mod/mod_meteo.mod \
 		../femlib/mod/intp_fem_file.mod 
-submud.o: ../femlib/mod/mod_depth.mod param.h bound_names.h \
+submud.o: ../femlib/mod/mod_depth.mod param.h \
 		../femlib/mod/basin.mod ../femlib/mod/mod_ts.mod \
 		../femlib/mod/mod_fluidmud.mod \
 		../femlib/mod/mod_gotm_aux.mod \
@@ -1584,7 +1426,6 @@ ts2nc.o: param.h ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/evgeom.mod simul.h 
 tsinf.o: ../femlib/mod/clo.mod
-vp.o: param.h ../femlib/mod/basin.mod
 weutro.o: donata.h weutro.h
 weutro_sedim.o: donata.h weutro.h
 zinit.o: param.h ../femlib/mod/basin.mod simul.h

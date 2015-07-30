@@ -28,8 +28,6 @@ NPOBJS  = supbas.o supiso.o supdep.o supano.o supcol.o \
 		suplin.o suplin1.o \
 		mod_plot2d.o mod_plot3d.o mod_hydro_plot.o \
 
-		#supdum.o 
-
 LPOBJS = subfil.o subbas.o links.o sublnku.o subnsu.o	# not used anymore
 LPOBJS = 
 
@@ -208,7 +206,6 @@ supdep.o: ../femlib/mod/levels.mod param.h \
 		../femlib/mod/mod_plot2d.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/evgeom.mod 
-supdum.o: param.h
 supint.o: param.h ../femlib/mod/levels.mod
 supiso.o: color.h param.h ../femlib/mod/basin.mod
 suplag.o: color.h param.h ../femlib/mod/basin.mod \

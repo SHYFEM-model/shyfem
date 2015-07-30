@@ -38,8 +38,8 @@ c***********************************************************
 
         integer, save :: nkndi = 0
         integer, save :: neldi = 0
-        integer, save :: ngrdi = 0
-        integer, save :: mbwdi = 0
+        !integer, save :: ngrdi = 0
+        !integer, save :: mbwdi = 0
 
         real, save :: dcorbas = 0.
         real, save :: dirnbas = 0.

@@ -151,8 +151,6 @@ c
       integer itanf,nvar
       double precision dtime0,dtime
 
-	include 'bound_names.h'
-
       double precision hzoff
       real salref,temref		!salinity [psu] and temperature [C]
 

@@ -95,10 +95,6 @@ c common
 	include 'pkonst.h'
 	include 'mkonst.h'
 
-
-                      
-	include 'bound_names.h'
-
 c local
 	logical debug
 	logical badvect
@@ -114,6 +110,7 @@ c local
 	integer idtext,itmext
 	integer imin,imax
 	integer nintp,nvar
+	integer nbc
 	real cdef(1),t
 	real xmin,xmax
         integer itemp,isalt
@@ -138,6 +135,7 @@ c	real sigma
 	real getpar
 	double precision scalcont,dq
 	integer iround
+	integer nbnds
 	logical has_restart,has_output,next_output
 
 	integer tid
@@ -149,8 +147,7 @@ c save
         integer ia_out(4)
         save ia_out
 
-	integer idtemp(nbcdim),idsalt(nbcdim)
-	save idtemp,idsalt
+	integer, save, allocatable :: idtemp(:),idsalt(:)
 
         integer ninfo
         save ninfo
@@ -232,6 +229,12 @@ c		--------------------------------------------
 c		--------------------------------------------
 c		initialize open boundary conditions
 c		--------------------------------------------
+
+		nbc = nbnds()
+		allocate(idtemp(nbc))
+		allocate(idsalt(nbc))
+		idtemp = 0
+		idsalt = 0
 
 		dtime0 = itanf
                 nintp = 2

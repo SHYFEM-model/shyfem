@@ -1069,6 +1069,50 @@ c local
 	end
 
 c************************************************************
+
+        subroutine ous_peek_record(iu,it,ierr)
+
+c peeks into data record of OUS file
+
+        implicit none
+
+c arguments
+        integer iu,it
+        integer ierr
+c local
+        integer l,k,lmax
+        integer nvers,nkn,nel,nlv,nvar
+        integer iunit
+
+        iunit = abs(iu)
+
+        call getous(iunit,nvers,nkn,nel,nlv)
+
+        lmax = nlv
+
+        if( nvers .ge. 1 ) then
+           read(iunit,end=88,err=98) it
+        else
+           write(6,*) 'nvers = ',nvers,'  iunit = ',iunit
+           stop 'error stop ous_peek_record: internal error (1)'
+        end if
+
+        backspace(iu)
+
+        ierr=0
+
+        return
+   88   continue
+        ierr=-1
+        return
+   98   continue
+        write(6,*) 'ous_peek_record: Error while reading'
+        write(6,*) 'time record of NOS file'
+        ierr=98
+        return
+        end
+
+c************************************************************
 c************************************************************
 c************************************************************
 

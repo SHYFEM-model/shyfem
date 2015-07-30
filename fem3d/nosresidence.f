@@ -31,6 +31,7 @@ c analyzes CON file for residence time
 c--------------------------------------------------
 
 	character*80 title
+
 	real cv3(nlvdim,nkndim)		!conz read
 	real cv3d(nlvdim,nkndim)	!conz of last step
 	real cv2(nkndim)		!conz 2d
@@ -44,8 +45,6 @@ c--------------------------------------------------
 	real hev2(neldim)
 	real hlv2(nlvdim)
 	real hl(nlvdim)
-
-
 
 	logical bminmax,balways,breset
 	logical blog,badj,bvol
@@ -127,6 +126,11 @@ c---------------------------------------------------------------
 
 	if(iapini(3,nkndim,neldim,0).eq.0) then
 		stop 'error stop : iapini'
+	end if
+
+	if( nkn > nkndim .or. nel > neldim ) then
+	  write(6,*) nkn,nkndim,nel,neldim
+	  stop 'error stop: dimensions'
 	end if
 
 	call set_ev
