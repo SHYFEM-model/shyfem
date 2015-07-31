@@ -30,6 +30,7 @@
 	integer, save :: tmax
 
 	logical, save :: bnode
+	logical, save :: bnodes
 	logical, save :: boutput
 	logical, save :: bneedbasin
 	logical, save :: btrans
@@ -50,6 +51,7 @@
 
         character*80, save :: infile
         character*80, save :: stmin,stmax
+        character*80, save :: nodefile
 
 !====================================================
 	contains
@@ -116,6 +118,8 @@
         call clo_add_sep('additional options')
 
         call clo_add_option('node n',0,'extract vars of node number n')
+        call clo_add_option('nodes file',' '
+     +				,'extract vars at nodes given in file')
 	call clo_add_option('freq n',0.,'frequency for aver/sum/min/max')
         call clo_add_option('tmin time',' '
      +                          ,'only process starting from time')
@@ -146,6 +150,7 @@
         call clo_get_option('2d',b2d)
 
         call clo_get_option('node',nodesp)
+        call clo_get_option('nodes',nodefile)
 
         call clo_get_option('mem',bmem)
         call clo_get_option('ask',bask)
@@ -176,11 +181,12 @@
         end if
 
         bnode = nodesp > 0
+        bnodes = nodefile .ne. ' '
 
         boutput = bout .or. bsplit .or. b2d
         !btrans is added later
 
-        bneedbasin = b2d .or. baverbas .or. bnode
+        bneedbasin = b2d .or. baverbas .or. bnode .or. bnodes
 
         modeb = 2
         if( bneedbasin ) modeb = 3
@@ -369,7 +375,12 @@ c       computes statistics on levels
 
 c***************************************************************
 
-       subroutine convert_internal_node(node)
+        subroutine convert_internal_node(node)
+	integer node
+	stop 'error stop convert_internal_node: not supported'
+	end
+
+        subroutine convert_internal_nodes(n,nodes)
 
         use basin
 
@@ -377,23 +388,88 @@ c***************************************************************
 
         include 'param.h'
 
-        integer node
+        integer n
+        integer nodes(n)
 
-        integer ni
+        integer ne,ni,i
         integer ipint
 
-        if( node <= 0 ) return
+        if( n <= 0 ) return
 
-        ni = ipint(node)
+	do i=1,n
+	  ne = nodes(i)
+          if( ne <= 0 ) goto 99
+          ni = ipint(ne)
+          if( ni <= 0 ) goto 98
+	  nodes(i) = ni
+        end do
 
-        if( ni <= 0 ) then
-          write(6,*) 'cannot find node: ',node
-          stop 'error stop convert_internal_node: no such node'
-        end if
-
-        node = ni
-
+	return
+   98	continue
+        write(6,*) 'cannot find node: ',ne
+        stop 'error stop convert_internal_nodes: no such node'
+   99	continue
+        write(6,*) 'cannot convert node: ',ne
+        stop 'error stop convert_internal_nodes: no such node'
         end
+
+c***************************************************************
+
+	subroutine get_node_list(file,n,nodes)
+
+c for n == 0 only checks how many nodes to read
+c for n > 0 reads nodes into nodes() (error if n is too small)
+
+	implicit none
+
+	character*(*) file
+	integer n
+	integer nodes(n)
+
+	integer nin,ios,node,ndim
+	logical btest
+
+	integer ifileo
+
+	nin = ifileo(0,file,'form','old')
+	if( nin .le. 0 ) goto 99
+
+	ndim = n
+	btest = ndim == 0
+
+	n = 0
+	do
+	  read(nin,*,iostat=ios) node
+	  if( ios > 0 ) goto 98
+	  if( ios < 0 ) exit
+	  if( node .le. 0 ) exit
+	  n = n + 1
+	  if( .not. btest ) then
+	    if( n > ndim ) goto 96
+	    nodes(n) = node
+	  end if
+	end do
+
+	if( n == 0 ) goto 97
+
+	close(nin)
+
+	return
+   96	continue
+	write(6,*) 'n,ndim :',n,ndim
+	write(6,*) 'file: ',trim(file)
+	stop 'error stop get_node_list: dimension error'
+   97	continue
+	write(6,*) 'no data in file ',trim(file)
+	stop 'error stop get_node_list: read error'
+   98	continue
+	write(6,*) 'read error in record ',n
+	write(6,*) 'in file ',trim(file)
+	stop 'error stop get_node_list: read error'
+   99	continue
+	write(6,*) 'file: ',trim(file)
+	stop 'error stop get_node_list: cannot open file'
+	end
 
 c***************************************************************
 c***************************************************************
@@ -533,21 +609,42 @@ c writes basin average to file
 
 c***************************************************************
 
-        subroutine write_node(node,nlvddi,cv3,it,ivar,lmax)
+        subroutine write_node(i,node,cv3,it,ivar)
+
+	use levels
+	use mod_depth
 
         implicit none
 
+        integer i
         integer node
-        integer nlvddi
-        real cv3(nlvddi,*)
+        real cv3(nlvdi,*)
         integer it
         integer ivar
-        integer lmax
 
-        integer l
+        integer ki,ke
+        integer l,lmax
+	real z,h
+	character*40 format
+	real hl(nlvdi)
 
-        write(88,*) it,node,ivar,lmax
-        write(88,*) (cv3(l,node),l=1,lmax)
+	integer ipext
+
+	ki = node
+	ke = ipext(ki)
+	lmax = ilhkv(ki)
+
+        write(4,*) it,i,ke,ki,lmax,ivar
+        write(4,*) (cv3(l,ki),l=1,lmax)
+
+        write(3,*) it,i,ke,ki,lmax,ivar
+        write(format,'(a,i4,a)') '(',lmax,'(f12.4))'
+        write(3,format) (cv3(l,ki),l=1,lmax)
+
+        z = 0.
+        h = hkv(ki)
+        call write_profile_c(it,i,ki,ke,lmax,ivar,h,z
+     +				,cv3(1,ki),hlv,hl)
 
         end
 
@@ -564,6 +661,40 @@ c***************************************************************
         integer i
 
         write(89,*) it,(cv(i),i=1,nvar)
+
+        end
+
+c***************************************************************
+
+        subroutine write_profile_c(it,i,ki,ke,lmax,ivar,h,z,c,hlv,hl)
+
+        implicit none
+
+        integer it,i,ki,ke
+        integer lmax
+        integer ivar
+        real z,h
+        real c(1)
+        real hlv(1)
+        real hl(1)
+
+        logical bcenter
+        integer l
+        integer nlvaux,nsigma
+        real hsigma
+        real uv
+
+        bcenter = .true.        !depth at center of layer ?
+
+        call get_sigma_info(nlvaux,nsigma,hsigma)
+
+        call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)
+        call get_bottom_of_layer(bcenter,lmax,z,hl,hl)  !orig hl is overwritten
+
+        write(2,*) it,i,ke,ki,lmax,ivar
+        do l=1,lmax
+          write(2,*) hl(l),c(l)
+        end do
 
         end
 

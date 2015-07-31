@@ -28,7 +28,7 @@
 	parameter ( mbwdim = 1 )
 	parameter ( ngrdim = 1 )
 
-	parameter ( nbcdim = 100 )
+	parameter ( nbcdim = 1 )
 	parameter ( nrbdim = 1 )
 	parameter ( nb3dim = 1 )
 

@@ -171,7 +171,7 @@ c	---------------------------------------------------------
 
 	  z = 0.
 	  h = hkv(k)
-	  call write_profile_c(it,k,ke,lmax,ivar,h,z
+	  call write_profile_c(it,i,k,ke,lmax,ivar,h,z
      +				,cv3(1,k),hlv,hl)
 	end do
 
@@ -261,39 +261,4 @@ c handles unit numbers for files of single variables
 	end
 
 c***************************************************************
-
-	subroutine write_profile_c(it,k,ke,lmax,ivar,h,z,c,hlv,hl)
-
-	implicit none
-
-	integer it,k,ke
-	integer lmax
-	integer ivar
-	real z,h
-	real c(1)
-	real hlv(1)
-	real hl(1)
-
-	logical bcenter
-	integer l
-	integer nlvaux,nsigma
-	real hsigma
-	real uv
-	
-	bcenter = .true.	!depth at center of layer ?
-
-        call get_sigma_info(nlvaux,nsigma,hsigma)
-
-	call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)
-	call get_bottom_of_layer(bcenter,lmax,z,hl,hl)	!orig hl is overwritten
-
-        write(82,*) it,ke,k,lmax,ivar
-	do l=1,lmax
-          write(82,*) hl(l),c(l)
-	end do
-
-	end
-
-c***************************************************************
-
 

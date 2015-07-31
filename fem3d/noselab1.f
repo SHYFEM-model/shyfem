@@ -17,9 +17,13 @@ c**************************************************************
 
 	subroutine noselab
 
-	use basin
 	use clo
 	use elabutil
+
+        use basin
+        use mod_depth
+        use evgeom
+        use levels
 
 c elaborates nos file
 
@@ -33,27 +37,22 @@ c elaborates nos file
 	real, allocatable :: cv2(:)
 	real, allocatable :: cv3(:,:)
 	real, allocatable :: cv3all(:,:,:)
-	real, allocatable :: cv(:)
 	real, allocatable :: vol3(:,:)
 
 	integer, allocatable :: ivars(:)
+	integer, allocatable :: nodes(:)
 
 	integer, allocatable :: naccu(:)
 	double precision, allocatable :: accum(:,:,:)
 
-	integer, allocatable :: ilhkv(:)
-	real, allocatable :: hlv(:)
 	real, allocatable :: hl(:)
-	real, allocatable :: hev(:)
-	real, allocatable :: hkv(:)
 
 	integer nread,nelab,nrec,nin
 	integer nvers
-	integer nknnos,nelnos,nlv,nvar,nlvdi
-	integer invar,lmaxsp
+	integer nknnos,nelnos,nvar
 	integer ierr
 	integer it,ivar,itvar,itnew,itold,iaux
-	integer i,l,k,lmax
+	integer i,j,l,k,lmax,nnodes,node
 	integer ip,nb,naccum
 	character*80 title,name
 	character*20 dline
@@ -89,43 +88,51 @@ c--------------------------------------------------------------
 
 	call peek_nos_header(nin,nknnos,nelnos,nlv,nvar)
 
-	nlvdi = nlv
-
-	allocate(cv2(nknnos))
-	allocate(cv3(nlv,nknnos))
-	allocate(vol3(nlv,nknnos))
-
-	allocate(ivars(nvar))
-	allocate(cv3all(nlv,nknnos,nvar))
-
-	allocate(ilhkv(nknnos))
-	allocate(hlv(nlv))
-	allocate(hl(nlv))
-	allocate(hev(nelnos))
-	allocate(hkv(nknnos))
-
-	call read_nos_header(nin,nknnos,nelnos,nlvdi,ilhkv,hlv,hev)
-	call nos_get_params(nin,nknnos,nelnos,nlv,nvar)
-
-	call init_sigma_info(nlv,hlv)
-
 	if( bneedbasin ) then
 	  if( nkn /= nknnos .or. nel /= nelnos ) goto 92
-	  call outfile_make_hkv(nkn,nel,nen3v,hev,hkv)
-	  call init_volume(nlvdi,nkn,nel,nlv,nen3v,ilhkv
-     +                          ,hlv,hev,hl,vol3)
 	else
 	  nkn = nknnos
 	  nel = nelnos
 	end if
 
+        call mod_depth_init(nkn,nel)
+        call levels_init(nkn,nel,nlv)
+
+	allocate(cv2(nkn))
+	allocate(cv3(nlv,nkn))
+	allocate(vol3(nlv,nkn))
+	allocate(cv3all(nlv,nkn,nvar))
+        allocate(hl(nlv))
+	allocate(ivars(nvar))
+
+	nlvdi = nlv
+	call read_nos_header(nin,nkn,nel,nlvdi,ilhkv,hlv,hev)
+	call nos_get_params(nin,nkn,nel,nlv,nvar)
+
+	call init_sigma_info(nlv,hlv)
+
+	if( bneedbasin ) then
+	  call outfile_make_hkv(nkn,nel,nen3v,hev,hkv)
+	  call init_volume(nlvdi,nkn,nel,nlv,nen3v,ilhkv
+     +                          ,hlv,hev,hl,vol3)
+	end if
+
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
 
-	if( bnode ) then
-	  call convert_internal_node(nodesp)
-	  invar = 0
-	  lmaxsp = ilhkv(nodesp)
-	  allocate(cv(nvar))
+	if( bnodes .or. bnode ) then
+	  if( bnodes ) then
+	    nnodes = 0
+	    call get_node_list(nodefile,nnodes,nodes)
+	    allocate(nodes(nnodes))
+	    call get_node_list(nodefile,nnodes,nodes)
+	  else
+	    nnodes = 1
+	    allocate(nodes(nnodes))
+	    nodes(1) = nodesp
+	  end if
+	  write(6,*) 'nodes: ',nnodes,(nodes(i),i=1,nnodes)
+	  call convert_internal_nodes(nnodes,nodes)
+	  bnodes = .true.
 	end if
 
 	!--------------------------------------------------------------
@@ -260,14 +267,11 @@ c--------------------------------------------------------------
             if( ierr .ne. 0 ) goto 99
 	  end if
 
-	  if( bnode ) then
-	    invar = invar + 1
-	    cv(invar) = cv3(1,nodesp)
-	    if( invar .eq. nvar ) then
-	      call write_node_2d(it,nvar,cv)
-	      invar = 0
-	    end if
-	    call write_node(nodesp,nlvdi,cv3,it,ivar,lmaxsp)
+	  if( bnodes ) then
+	    do j=1,nnodes
+	      node = nodes(j)
+	      call write_node(j,node,cv3,it,ivar)
+	    end do
 	  end if
 
 	 end do		!loop on ivar

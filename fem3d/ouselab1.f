@@ -83,27 +83,31 @@ c--------------------------------------------------------------
 
 	call peek_ous_header(nin,nknous,nelous,nlv)
 
-	call mod_hydro_baro_init(nelous)
-	call mod_depth_init(nknous,nelous)
-	allocate(u2v(nelous),v2v(nelous))
+	if( bneedbasin ) then
+	  if( nkn /= nknous .or. nel /= nelous ) goto 92
+	else
+	  nkn = nknous
+	  nel = nelous
+	end if
+
+	call mod_hydro_baro_init(nel)
+	call mod_depth_init(nkn,nel)
+	call levels_init(nkn,nel,nlv)
+	call mod_hydro_init(nkn,nel,nlv)
+
+	allocate(u2v(nel),v2v(nel))
 	allocate(hl(nlv))
-	call levels_init(nknous,nelous,nlv)
-	call mod_hydro_init(nknous,nelous,nlv)
 
 	nlvdi = nlv
-        call read_ous_header(nin,nknous,nelous,nlvdi,ilhv,hlv,hev)
-        call ous_get_params(nin,nknous,nelous,nlv)
+        call read_ous_header(nin,nkn,nel,nlvdi,ilhv,hlv,hev)
+        call ous_get_params(nin,nkn,nel,nlv)
 
 	call init_sigma_info(nlv,hlv)
 
 	if( bneedbasin ) then
-	  if( nkn /= nknous .or. nel /= nelous ) goto 92
 	  call outfile_make_hkv(nkn,nel,nen3v,hev,hkv)
 	  call ev_init(nelous)
           call set_ev
-	else
-	  nkn = nknous
-	  nel = nelous
 	end if
 
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)

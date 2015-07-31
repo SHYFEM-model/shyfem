@@ -80,7 +80,7 @@ c elems(1) is not used, etc..
 	real vmin,vmax
 	real vhmin,vhmax
 	real wscale,vv
-	real flux
+	real flux,area
 	real rrlmax,rrdmax,x,y,xtick,ytick,ylast,rdist,rmax,xs
 	real h1,h2,yb1,yb2,yt1,yt2,yt,yb
 	real ytaux,ymid
@@ -224,8 +224,8 @@ c----------------------------------------------------------------
 c compute fluxes
 c----------------------------------------------------------------
 
-	call integrate_flux(n,xy,lelems,helems,hlv,val,flux)
-	write(111,*) it,flux
+	call integrate_flux(n,xy,lelems,helems,hlv,val,flux,area)
+	!write(111,*) it,flux,area
 
 c----------------------------------------------------------------
 c set viewport
@@ -1096,7 +1096,7 @@ c modes: 0=use normal vel   1=use tangent vel   as scalar velocity
 
 c************************************************************************
 
-	subroutine integrate_flux(n,xy,lelems,helems,hlv,val,flux)
+	subroutine integrate_flux(n,xy,lelems,helems,hlv,val,flux,area)
 
 c computes flux through section
 
@@ -1113,15 +1113,17 @@ c computes flux through section
 	real hlv(*)			!depth structure
 	real val(0:2*nlvdi,n)		!scalar velocity for overlay (ret)
 	real flux			!computed flux (return)
+	real area
 
 	integer i,l,ltot,lc,ivert
 	real dx,dh1,dh2,thick,value,hvmax
 	real ya(2,0:nlvdi)
-	double precision acum
+	double precision acum,darea
 
 	ivert = 0
 	hvmax = 10000.
 	acum = 0.
+	darea = 0.
 
 	do i=2,n
 	  ltot = lelems(i)
@@ -1135,11 +1137,13 @@ c computes flux through section
 	    dh1 = ya(1,l) - ya(1,l-1)
 	    dh2 = ya(2,l) - ya(2,l-1)
 	    thick = 0.5 * dx * ( dh1 + dh2 )
+	    darea = darea + dx * thick
 	    acum = acum + thick * dx * value
 	  end do
 	end do
 
 	flux = acum
+	area = darea
 
 	end
 

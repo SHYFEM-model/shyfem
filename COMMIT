@@ -1,5 +1,28 @@
 ============================================================
 
+Fri Jul 31 17:04:00 CEST 2015
+
+minor changes
+
+ .gitignore              |    1 +
+ fem3d/Makefile          |   10 ++-
+ fem3d/elabutil.f        |  169 +++++++++++++++++++++++++++++++++++++++++-----
+ fem3d/noselab1.f        |   82 ++++++++++++-----------
+ fem3d/nosextr_nodes.f   |   37 +----------
+ fem3d/ouselab1.f        |   26 ++++---
+ fem3d/param.h           |    2 +-
+ fem3d/sigmautil.f       |    2 +-
+ fem3d/subcst.f          |    2 +
+ femadj/param.h          |    2 +-
+ femdoc/final/shyfem.pdf |  Bin 294949 -> 294950 bytes
+ femdoc/final/shyfem.ps  |   26 ++++----
+ femplot/param.h         |    2 +-
+ femplot/suplin.f        |   14 +++--
+ param.h                 |    2 +-
+ 15 files changed, 246 insertions(+), 131 deletions(-)
+
+============================================================
+
 Thu Jul 30 18:19:49 CEST 2015
 
 New version 7_1_83

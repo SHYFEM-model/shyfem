@@ -195,6 +195,8 @@ c reads files (str and bas)
         if( nc .gt. 0 ) call get_command_argument(1,strfile)
  
 	if( strfile == ' ' ) then
+	  write(6,*) 'Usage: shyfem str-file'
+	  stop
 	  nin = 5
 	else
 	  nin = ifileo(0,strfile,'form','old')

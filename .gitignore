@@ -164,6 +164,7 @@ fembin/ousinf
 fembin/rstinf
 fembin/splitext
 fembin/splitflx
+fembin/nosextr_nodes
 fembin/volinf
 fembin/vp
 fembin/wininf

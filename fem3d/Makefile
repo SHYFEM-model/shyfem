@@ -769,7 +769,9 @@ bio3d_util.o: ../femlib/mod/levels.mod param.h \
 		../femlib/mod/basin.mod donata.h 
 debug.o: debug_aux1.h
 ../femlib/mod/elabutil.mod: elabutil.o
-elabutil.o: param.h ../femlib/mod/clo.mod ../femlib/mod/basin.mod
+elabutil.o: ../femlib/mod/mod_depth.mod ../femlib/mod/levels.mod \
+		param.h ../femlib/mod/clo.mod \
+		../femlib/mod/basin.mod 
 eosinf.o: param.h
 etsinf.o: param.h ../femlib/mod/ets.mod
 femelab.o: ../femlib/mod/clo.mod
@@ -1015,8 +1017,10 @@ nos2nc.o: param.h ../femlib/mod/levels.mod \
 		../femlib/mod/basin.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/evgeom.mod 
-noselab1.o: param.h ../femlib/mod/clo.mod ../femlib/mod/basin.mod \
-		../femlib/mod/elabutil.mod 
+noselab1.o: param.h ../femlib/mod/levels.mod \
+		../femlib/mod/mod_depth.mod ../femlib/mod/clo.mod \
+		../femlib/mod/basin.mod ../femlib/mod/elabutil.mod \
+		../femlib/mod/evgeom.mod 
 nosextr_nodes.o: param.h ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/basin.mod ../femlib/mod/evgeom.mod 
