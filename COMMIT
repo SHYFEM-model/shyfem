@@ -1,5 +1,15 @@
 ============================================================
 
+Fri Jul 31 17:12:01 CEST 2015
+
+major release finished
+
+ RELEASE_NOTES  |   15 +++++++++++++++
+ fem3d/subver.f |    7 ++++---
+ 2 files changed, 19 insertions(+), 3 deletions(-)
+
+============================================================
+
 Fri Jul 31 17:06:14 CEST 2015
 
 new major release

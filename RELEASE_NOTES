@@ -1,4 +1,19 @@
 
+31.07.2015    VERS_7_2_1
+
+	major release
+
+	transition to allocatable objects finished
+	no need to change Rules.make, model should compile "out of the box"
+	some routines renamed (shyfem, shypre, shyelab)
+	routines now want input files on command line
+	post processing routines are still not completely ready
+	the following modules still do not work:
+		waves, sediments, lagrangian
+		fluidmud, atoxi
+		biological reactors (bio3d, aquabc, bfm)
+		boxes
+
 31.07.2015    VERS_7_1_84
 
 	minor changes
