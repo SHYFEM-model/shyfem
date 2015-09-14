@@ -12,6 +12,8 @@ c 08.11.2008    ggu     do not compute min/max in non-existing layers
 c 07.12.2010    ggu     write statistics on depth distribution (depth_stats)
 c 06.05.2015    ggu     noselab started
 c 05.06.2015    ggu     many more features added
+c 10.09.2015    ggu     std and rms for averaging implemented
+c 11.09.2015    ggu     write in gis format
 c
 c**************************************************************
 
@@ -44,6 +46,7 @@ c elaborates nos file
 
 	integer, allocatable :: naccu(:)
 	double precision, allocatable :: accum(:,:,:)
+	double precision, allocatable :: std(:,:,:,:)
 
 	real, allocatable :: hl(:)
 
@@ -85,6 +88,12 @@ c--------------------------------------------------------------
 	call ap_init(bask,modeb,0,0)
 
 	call open_nos_type('.nos','old',nin)
+
+	call nos_is_nos_file(nin,nvers)
+	if( nvers .le. 0 ) then
+	  write(6,*) 'nvers: ',nvers
+	  stop 'error stop noselab: not a valid nos file'
+	end if
 
 	call peek_nos_header(nin,nknnos,nelnos,nlv,nvar)
 
@@ -151,9 +160,11 @@ c--------------------------------------------------------------
 	if( btrans ) then
 	  allocate(naccu(istep))
 	  allocate(accum(nlvdi,nkn,istep))
+	  allocate(std(nlvdi,nkn,16,istep))	!also used for directions
 	  naccum = 0
 	  naccu = 0
 	  accum = 0.
+	  std = 0.
 	end if
 
 	!write(6,*) 'mode: ',mode,ifreq,istep
@@ -177,6 +188,8 @@ c--------------------------------------------------------------
           call write_nos_header(nb,ilhkv,hlv,hev)
 	end if
 
+	if( outformat == 'gis' ) call gis_write_connect
+
 c--------------------------------------------------------------
 c loop on data
 c--------------------------------------------------------------
@@ -197,7 +210,7 @@ c--------------------------------------------------------------
 	  if( i == 1 ) itvar = it
 	  if( itvar /= it ) goto 85
 	  ivars(i) = ivar
-	  cv3all(:,:,i) = cv3(:,:)
+	  cv3all(:,:,i) = cv3(:,:) * fact
 	  nread=nread+1
 	 end do
 
@@ -239,7 +252,7 @@ c--------------------------------------------------------------
 
 	  if( btrans ) then
 	    call nos_time_aver(mode,i,ifreq,istep,nkn,nlvdi
-     +					,naccu,accum,cv3,boutput)
+     +				,naccu,accum,std,threshold,cv3,boutput)
 	  end if
 
 	  if( baverbas ) then
@@ -260,9 +273,9 @@ c--------------------------------------------------------------
 	    if( bverb ) write(6,*) 'writing to output: ',ivar
 	    if( bsumvar ) ivar = 30
 	    if( b2d ) then
-              call nos_write_record(nb,it,ivar,1,ilhkv,cv2,ierr)
+              call noselab_write_record(nb,it,ivar,1,ilhkv,cv2,ierr)
 	    else
-              call nos_write_record(nb,it,ivar,nlvdi,ilhkv,cv3,ierr)
+              call noselab_write_record(nb,it,ivar,nlvdi,ilhkv,cv3,ierr)
 	    end if
             if( ierr .ne. 0 ) goto 99
 	  end if
@@ -293,7 +306,7 @@ c--------------------------------------------------------------
 	    if( naccum > 0 ) then
 	      write(6,*) 'final aver: ',ip,naccum
 	      call nos_time_aver(-mode,ip,ifreq,istep,nkn,nlvdi
-     +					,naccu,accum,cv3,boutput)
+     +				,naccu,accum,std,threshold,cv3,boutput)
 	      if( bsumvar ) ivar = 30
               call nos_write_record(nb,it,ivar,nlvdi,ilhkv,cv3,ierr)
               if( ierr .ne. 0 ) goto 99
@@ -351,9 +364,9 @@ c***************************************************************
 c***************************************************************
 
 	subroutine nos_time_aver(mode,nread,ifreq,istep,nkn,nlvddi
-     +					,naccu,accum,cv3,bout)
+     +				,naccu,accum,std,threshold,cv3,bout)
 
-c mode:  1:aver  2:sum  3:min  4:max
+c mode:  1:aver  2:sum  3:min  4:max  5:std  6:rms  7:thres  8:averdir
 c
 c mode negative: only transform, do not accumulate
 
@@ -364,11 +377,16 @@ c mode negative: only transform, do not accumulate
 	integer nkn,nlvddi
 	integer naccu(istep)
 	double precision accum(nlvddi,nkn,istep)
+	double precision std(nlvddi,nkn,16,istep)
+	double precision threshold
 	real cv3(nlvddi,nkn)
 	logical bout
 
-	integer ip,naccum
-	integer k,l
+	integer ip,naccum,mmode
+	integer k,l,id,idmax
+	double precision dmax
+
+	if( mode .eq. 0 ) return
 
 	bout = .false.
 	ip = mod(nread,istep)
@@ -377,7 +395,6 @@ c mode negative: only transform, do not accumulate
 	!write(6,*) 'ip: ',ip,istep,nread,mode
 
 	if( mode == 1 .or. mode == 2 ) then
-	  naccu(ip) = naccu(ip) + 1
 	  accum(:,:,ip) = accum(:,:,ip) + cv3(:,:)
 	else if( mode == 3 ) then
 	  do k=1,nkn
@@ -385,24 +402,67 @@ c mode negative: only transform, do not accumulate
 	      accum(l,k,ip) = min(accum(l,k,ip),cv3(l,k))
 	    end do
 	  end do
-	else if( mode == 3 ) then
+	else if( mode == 4 ) then
 	  do k=1,nkn
 	    do l=1,nlvddi
 	      accum(l,k,ip) = max(accum(l,k,ip),cv3(l,k))
 	    end do
 	  end do
+	else if( mode == 5 ) then
+	  accum(:,:,ip) = accum(:,:,ip) + cv3(:,:)
+	  std(:,:,1,ip) = std(:,:,1,ip) + cv3(:,:)**2
+	else if( mode == 6 ) then
+	  accum(:,:,ip) = accum(:,:,ip) + cv3(:,:)**2
+	else if( mode == 7 ) then
+	  where( cv3(:,:) >= threshold )
+	    accum(:,:,ip) = accum(:,:,ip) + 1.
+	  end where
+	else if( mode == 8 ) then
+	  do k=1,nkn
+	    do l=1,nlvddi
+	      id = nint( cv3(l,k)/22.5 )
+	      if( id == 0 ) id = 16
+	      if( id < 0 .or. id > 16 ) stop 'error stop: direction'
+	      std(l,k,id,ip) = std(l,k,id,ip) + 1.
+	    end do
+	  end do
 	end if
 
+	if( mode > 0 ) naccu(ip) = naccu(ip) + 1
+	!write(6,*) '... ',ifreq,mode,ip,istep,naccu(ip)
+
 	if( naccu(ip) == ifreq .or. mode < 0 ) then	!here ip == 1
-	  naccum = naccu(ip)
-	  if( abs(mode) > 1 ) naccum = 1
-	  write(6,*) 'averaging: ',ip,naccum
-	  bout = .true.
-	  if( naccum > 0 ) then
-	    cv3(:,:) = accum(:,:,ip)/naccum
+	  naccum = max(1,naccu(ip))
+	  mmode = abs(mode)
+	  if( mmode == 3 ) naccum = 1			!min
+	  if( mmode == 4 ) naccum = 1			!max
+	  if( mmode == 7 ) naccum = 1			!threshold
+	  if( naccum > 0 ) cv3(:,:) = accum(:,:,ip)/naccum
+	  if( mmode == 5 ) then
+	    cv3(:,:) = sqrt( std(:,:,1,ip)/naccum - cv3(:,:)**2 )
+	  else if( mmode == 6 ) then
+	    cv3(:,:) = sqrt( cv3(:,:) )
+	  else if( mmode == 8 ) then
+	    do k=1,nkn
+	      do l=1,nlvddi
+		dmax = 0.
+		idmax = 0
+	        do id=1,16
+		  if( std(l,k,id,ip) > dmax ) then
+		    idmax = id
+		    dmax = std(l,k,id,ip)
+		  end if
+		end do
+		if( idmax == 16 ) idmax = 0
+		cv3(l,k) = idmax * 22.5
+	      end do
+	    end do
 	  end if
+	  write(6,*) 'averaging: ',ip,naccum,naccu(ip)
+	  bout = .true.
 	  naccu(ip) = 0
 	  accum(:,:,ip) = 0.
+	  std(:,:,:,ip) = 0.
 	end if
 
 	end
@@ -448,3 +508,94 @@ c***************************************************************
 
 c***************************************************************
 
+	subroutine noselab_write_record(nb,it,ivar,nlvdi,ilhkv,cv,ierr)
+
+        use elabutil
+
+	implicit none
+
+	integer nb,it,ivar,nlvdi
+	integer ilhkv(nlvdi)
+	real cv(nlvdi,*)
+	integer ierr
+
+	if( outformat == 'nos' .or. outformat == 'native') then
+          call nos_write_record(nb,it,ivar,nlvdi,ilhkv,cv,ierr)
+	else if( outformat == 'gis' ) then
+          call gis_write_record(nb,it,ivar,nlvdi,ilhkv,cv)
+	else
+	  write(6,*) 'output format unknown: ',outformat
+	  stop 'error stop noselab_write_record: output format'
+	end if
+
+        end
+
+c***************************************************************
+
+        subroutine gis_write_record(nb,it,ivar,nlvdi,ilhkv,cv)
+
+c writes one record to file nb (3D)
+
+        use basin
+
+        implicit none
+
+        integer nb,it,ivar,nlvdi
+        integer ilhkv(nlvdi)
+        real cv(nlvdi,*)
+
+        integer k,l,lmax
+	integer nout
+        real x,y
+	character*80 format,name
+	character*20 line
+	character*3 var
+
+	integer ifileo
+
+	call dtsgf(it,line)
+	call i2s0(ivar,var)
+
+	name = 'extract_'//var//'_'//line//'.gis'
+        nout = ifileo(60,name,'form','new')
+	!write(6,*) 'writing: ',trim(name)
+
+        write(nout,*) it,nkn,ivar,line
+
+        do k=1,nkn
+          lmax = ilhkv(k)
+          x = xgv(k)
+          y = ygv(k)
+
+	  write(format,'(a,i5,a)') '(i10,2g14.6,i5,',lmax,'g14.6)'
+          write(nout,format) k,x,y,lmax,(cv(l,k),l=1,lmax)
+        end do
+
+	close(nout)
+
+        end
+
+c***************************************************************
+
+        subroutine gis_write_connect
+
+c writes connectivity
+
+        use basin
+
+        implicit none
+
+	integer ie,ii
+
+	open(1,file='connectivity.gis',form='formatted',status='unknown')
+
+	write(1,*) nel
+	do ie=1,nel
+	  write(1,*) ie,(nen3v(ii,ie),ii=1,3)
+	end do
+
+	close(1)
+
+	end
+
+c***************************************************************

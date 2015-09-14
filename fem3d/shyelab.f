@@ -4,6 +4,7 @@ c
 c 06.05.2015    ggu     noselab started
 c 05.06.2015    ggu     many more features added
 c 30.07.2015    ggu     shyelab started
+c 14.09.2015    ggu     support for ext files added
 c
 c**************************************************************
 
@@ -19,7 +20,7 @@ c elaborates output file
 	integer nc
 	character*80 file
 
-	logical check_nos_file,check_ous_file
+	logical check_nos_file,check_ous_file,check_ext_file
 
 c--------------------------------------------------------------
 
@@ -43,6 +44,9 @@ c--------------------------------------------------------------
 	else if( check_ous_file(file) ) then
 	  write(6,*) 'file is of OUS type'
 	  call ouselab
+	else if( check_ext_file(file) ) then
+	  write(6,*) 'file is of EXT type'
+	  call extelab
 	else
 	  write(6,*) 'cannot yet handle this file type'
 	end if

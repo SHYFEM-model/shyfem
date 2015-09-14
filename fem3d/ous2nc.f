@@ -47,8 +47,6 @@ c-------------------------------------------------
 	real v2v(neldim)
 
 	real haux(nkndim)
-	real weight(nlvdim,nkndim)
-	real hl(nlvdim)
 
 	real var3d(nlvdim*nkndim)
 
@@ -225,7 +223,7 @@ c     +          ,nen3v,zenv,znv,utlnv,vtlnv)
 
         call transp2vel(nel,nkn,nlv,nlvdim,hev,zenv,nen3v
      +                          ,ilhv,hlv,utlnv,vtlnv
-     +                          ,uprv,vprv,weight,hl)
+     +                          ,uprv,vprv)
 
 	iwrite = iwrite + 1
 	if ( maxrec .gt. 0 .and. iwrite .gt. maxrec ) goto 100

@@ -220,6 +220,14 @@ c the special name ivar# can be used to directtly give the variable number #
           iv = 3
         else if( string(is:ie4) .eq. 'bath' ) then
           iv = 5
+        else if( string(is:ie5) .eq. 'depth' ) then
+          iv = 5
+        else if( string(is:ie3) .eq. 'cur' ) then
+          iv = 6
+        else if( string(is:ie5) .eq. 'speed' ) then
+          iv = 6
+        else if( string(is:ie3) .eq. 'dir' ) then
+          iv = 7
         else if( string(is:ie4) .eq. 'conc' ) then
           iv = 10
         else if( string(is:ie4) .eq. 'conz' ) then
@@ -273,6 +281,7 @@ c the special name ivar# can be used to directtly give the variable number #
         else
           write(6,*) '*** string2ivar: cannot find string description: '
           write(6,*) string
+          write(6,*) is,isb,ie3,ie4,ie5
           !if( string(1:3) .eq. 'fem' ) stop 'error.....'
         end if
 

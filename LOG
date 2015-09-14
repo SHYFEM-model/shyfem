@@ -1,4 +1,35 @@
 
+14.09.2015
+
+c ./femplot/supsim.f:
+c 14.09.2015    ggu     prepared for plotting velocities given in fem file
+c
+c ./femplot/supout.f:
+c 14.09.2015  ggu     introduced bwind and bvel (for velocities)
+c
+c ./fem3d/optintp.f:
+c 14.09.2015    ggu     OI adapted to new modular structure
+c
+c ./fem3d/noselab1.f:
+c 10.09.2015    ggu     std and rms for averaging implemented
+c 11.09.2015    ggu     write in gis format
+c
+c ./fem3d/shyelab.f:
+c 14.09.2015    ggu     support for ext files added
+c
+c ./fem3d/ouselab1.f:
+c 11.09.2015    ggu     split feature added
+c
+c ./fem3d/subext.f:
+c 14.09.2015    ggu     some more helper routines
+c
+c ./fem3d/ousutil.f:
+c 11.09.2015    ggu     weight and hl are local, new velzeta2scal()
+c
+c ./fem3d/subsss.f:
+c 14.09.2015    ggu     new routine i2s0()
+
+
 30.07.2015
 
 c ./fem3d/shyfem.f:

@@ -255,21 +255,21 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subclo.o \
 	  mod_depth.o mod_hydro.o mod_geom.o mod_hydro_print.o \
 	  mod_bound_geom.o mod_bnd.o mod_hydro_baro.o newlevels.o \
-	  $(GRDOBJS) subsrt.o
+	  $(GRDOBJS) subsrt.o subgeo.o
 
 	  #newdum.o newdum_basin.o newdum_levels.o
 
 RSTOBJS = subrst.o ecological_dummy.o \
 	  mod_ts.o mod_conz.o mod_hydro_vel.o mod_geom_dynamic.o
 
-BASEXTRA = subgeo.o sublnka.o links.o sublnku.o \
+BASEXTRA = sublnka.o links.o sublnku.o \
 		subinterpol.o subinterpol1.o subnos.o
 
 GENOBJS = newlevels.o
 NOSOBJS = subnos.o nosutil.o genutil.o subeos.o elabutil.o noselab1.o
 OUSOBJS = subous.o ousutil.o genutil.o elabutil.o ouselab1.o
 SHYOBJS = subous.o ousutil.o subnos.o nosutil.o subeos.o genutil.o elabutil.o \
-		noselab1.o ouselab1.o
+		noselab1.o ouselab1.o subext.o extelab1.o
 ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
 		genutil.o
@@ -333,7 +333,7 @@ EXEMAIN  = shyfem shypre
 EXEINFO  = flxinf basinf extinf rstinf \
 		feminf tsinf filetype \
 		offinf lgrinf etsinf \
-		noselab ouselab shyelab nosextr_nodes
+		noselab ouselab shyelab nosextr_nodes extelab
 EXESPLIT = splitext splitflx splitets
 EXELAP   =  
 EXEBAS   = bastreat basbathy scalintp
@@ -461,8 +461,8 @@ bastreat:  bastreat.o $(BASEXTRA) $(OUTOBJS)
 scalintp:  scalintp.o $(OUTOBJS) $(BATHYOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(BATHYOBJS) -o $@
 
-scal_intp:  scal_intp.o subgeo.o $(OUTOBJS) $(LAPLACE)
-	$(LINKER) $(LFLAGS) $@.o subgeo.o $(OUTOBJS) $(LAPLACE) -o $@
+scal_intp:  scal_intp.o $(OUTOBJS) $(LAPLACE)
+	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(LAPLACE) -o $@
 
 bascomp:  bascomp.o subgeo.o $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o subgeo.o $(OUTOBJS) -o $@
@@ -490,16 +490,16 @@ check_debug: check_debug.o
 
 2nc: ous2nc nos2nc ts2nc
 
-ous2nc:  ous2nc.o $(OUSOBJS) $(OUTOBJS) $(NETCDF_OBJ)
-	$(LINKER) -o $@ $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) \
+ous2nc:  ous2nc.o $(SHYOBJS) $(OUTOBJS) $(NETCDF_OBJ)
+	$(LINKER) -o $@ $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) \
 			$(NETCDF_OBJ) $(LIBGS)
 
-nos2nc:  nos2nc.o $(NOSOBJS) $(OUTOBJS) $(NETCDF_OBJ)
-	$(LINKER) -o $@ $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) \
+nos2nc:  nos2nc.o $(SHYOBJS) $(OUTOBJS) $(NETCDF_OBJ)
+	$(LINKER) -o $@ $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) \
 			$(NETCDF_OBJ) $(LIBGS)
 
-ts2nc:  ts2nc.o $(NOSOBJS) $(OUTOBJS) $(NETCDF_OBJ)
-	$(LINKER) -o $@ $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) \
+ts2nc:  ts2nc.o $(SHYOBJS) $(OUTOBJS) $(NETCDF_OBJ)
+	$(LINKER) -o $@ $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) \
 			$(NETCDF_OBJ) $(LIBGS)
 
 eosinf:  eosinf.o $(NOSOBJS) $(OUTOBJS) 
@@ -517,11 +517,14 @@ offinf: offinf.o
 
 nos: $(NOSALL)
 
-ouselab: ouselab.o $(OUSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(OUSOBJS) $(OUTOBJS) -o $@
+ouselab: ouselab.o $(SHYOBJS) $(OUTOBJS) 
+	$(LINKER) $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) -o $@
 
-noselab: noselab.o $(NOSOBJS) $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+noselab: noselab.o $(SHYOBJS) $(OUTOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) -o $@
+
+extelab: extelab.o $(SHYOBJS) $(OUTOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) -o $@
 
 shyelab: shyelab.o $(SHYOBJS) $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) -o $@
@@ -774,6 +777,10 @@ elabutil.o: ../femlib/mod/mod_depth.mod ../femlib/mod/levels.mod \
 		../femlib/mod/basin.mod 
 eosinf.o: param.h
 etsinf.o: param.h ../femlib/mod/ets.mod
+extelab1.o: ../femlib/mod/levels.mod ../femlib/mod/mod_depth.mod \
+		../femlib/mod/clo.mod ../femlib/mod/basin.mod \
+		../femlib/mod/elabutil.mod \
+		../femlib/mod/evgeom.mod 
 femelab.o: ../femlib/mod/clo.mod
 feminf.o: ../femlib/mod/clo.mod
 filetype.o: ../femlib/mod/clo.mod

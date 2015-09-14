@@ -6,13 +6,17 @@
 	implicit none
 
 	logical, save, private :: binitialized = .false.
+	double precision, parameter :: flag = -999.
 
 	logical, save :: bout
 	logical, save :: baverbas
 	logical, save :: baver
+	logical, save :: baverdir
 	logical, save :: bsum
 	logical, save :: bmin
 	logical, save :: bmax
+	logical, save :: bstd
+	logical, save :: brms
 	logical, save :: bsumvar
 	logical, save :: bsplit
 	logical, save :: b2d
@@ -43,15 +47,23 @@
 	double precision, save :: atmin
 	double precision, save :: atmax
 
+	logical, save :: bthreshold
+	double precision, save :: threshold
+
+	real, save :: fact
+
 	integer, save :: istep
 	integer, save :: mode
 	integer, save :: modeb
 
-	integer, save :: date,time,datetime(2)
+	integer, save :: date = 0
+	integer, save :: time = 0
+	integer, save :: datetime(2)
 
         character*80, save :: infile
         character*80, save :: stmin,stmax
         character*80, save :: nodefile
+        character*10, save :: outformat
 
 !====================================================
 	contains
@@ -87,6 +99,8 @@
           call clo_init('noselab','nos-file','3.0')
 	else if( type == 'OUS' ) then
           call clo_init('ouselab','ous-file','3.0')
+	else if( type == 'EXT' ) then
+          call clo_init('extelab','ext-file','3.0')
 	else
 	  write(6,*) 'type : ',trim(type)
 	  stop 'error stop elabutil_set_options: unknown type'
@@ -99,12 +113,18 @@
         call clo_add_option('out',.false.,'writes new nos file')
         call clo_add_option('averbas',.false.,'average over basin')
         call clo_add_option('aver',.false.,'average over records')
+        call clo_add_option('averdir',.false.,'average for directions')
         call clo_add_option('sum',.false.,'sum over records')
         call clo_add_option('min',.false.,'minimum of records')
         call clo_add_option('max',.false.,'maximum of records')
+	call clo_add_option('std',.false.,'standard deviation of records')
+        call clo_add_option('rms',.false.,'root mean square of records')
         call clo_add_option('sumvar',.false.,'sum over variables')
         call clo_add_option('split',.false.,'split file for variables')
 	call clo_add_option('2d',.false.,'average vertically to 2d field')
+
+	call clo_add_option('threshold t',flag,'records over threshold t')
+	call clo_add_option('fact fact',1.,'multiply values by fact')
 
         call clo_add_sep('options in/output')
 
@@ -127,6 +147,8 @@
      +                          ,'only process up to time')
         call clo_add_option('inclusive',.false.,'include time period')
 
+        call clo_add_option('outformat form','native','output format')
+
 	end subroutine elabutil_set_options
 
 !************************************************************
@@ -142,12 +164,18 @@
         call clo_get_option('out',bout)
         call clo_get_option('averbas',baverbas)
         call clo_get_option('aver',baver)
+        call clo_get_option('averdir',baverdir)
         call clo_get_option('sum',bsum)
         call clo_get_option('min',bmin)
         call clo_get_option('max',bmax)
+        call clo_get_option('std',bstd)
+        call clo_get_option('rms',brms)
         call clo_get_option('sumvar',bsumvar)
         call clo_get_option('split',bsplit)
         call clo_get_option('2d',b2d)
+
+        call clo_get_option('threshold',threshold)
+        call clo_get_option('fact',fact)
 
         call clo_get_option('node',nodesp)
         call clo_get_option('nodes',nodefile)
@@ -163,6 +191,8 @@
         call clo_get_option('tmax',stmax)
         call clo_get_option('inclusive',binclusive)
 
+        call clo_get_option('outformat',outformat)
+
         if( .not. bask .and. .not. bmem ) call clo_check_files(1)
         call clo_get_file(1,infile)
         call ap_set_names(' ',infile)
@@ -174,6 +204,8 @@
             call shyfem_copyright('noselab - Elaborate NOS files')
 	  else if( type == 'OUS' ) then
             call shyfem_copyright('ouselab - Elaborate OUS files')
+	  else if( type == 'EXT' ) then
+            call shyfem_copyright('extelab - Elaborate EXT files')
 	  else
 	    write(6,*) 'type : ',trim(type)
 	    stop 'error stop elabutil_get_options: unknown type'
@@ -184,12 +216,17 @@
         bnodes = nodefile .ne. ' '
 
         boutput = bout .or. bsplit .or. b2d
+	boutput = boutput .or. outformat /= 'native'
         !btrans is added later
 
         bneedbasin = b2d .or. baverbas .or. bnode .or. bnodes
+	bneedbasin = bneedbasin .or. outformat == 'gis'
+	bneedbasin = bneedbasin .or. ( type == 'OUS' .and. bsplit )
 
         modeb = 2
         if( bneedbasin ) modeb = 3
+
+	bthreshold = ( threshold /= flag )
 
 	end subroutine elabutil_get_options
 
@@ -224,11 +261,14 @@
 	logical elabutil_check_time
 	integer it,itnew,itold
 
+	logical bdebug
 	logical btimew
 	double precision dtime,atime
 	double precision dtimenew,atimenew
 	double precision dtimeold,atimeold
 
+	bdebug = .true.
+	bdebug = .false.
         btimew = .true.
 
         dtime = it
@@ -238,6 +278,11 @@
         if( btmax ) btimew = btimew .and. atime <= atmax
 
 	elabutil_check_time = btimew
+
+	if( bdebug ) then
+	  write(6,*) 'exclusive..........',btimew,it,binclusive
+	  write(6,*) 'exclusive..........',atmin,atime,atmax
+	end if
 
 	if( .not. binclusive ) return
 
@@ -273,6 +318,10 @@
         if( bmin )  mode = 3
         if( bmax )  mode = 4
         if( bsumvar )  mode = 2
+        if( bstd )  mode = 5
+        if( brms )  mode = 6
+        if( bthreshold )  mode = 7
+        if( baverdir ) mode = 8
 
         if( mode > 0 ) then     !prepare for averaging
           btrans = .true.
@@ -697,6 +746,31 @@ c***************************************************************
         end do
 
         end
+
+c***************************************************************
+
+	subroutine ilhe2k(nkn,nel,nen3v,ilhv,ilhkv)
+
+	implicit none
+
+	integer nkn,nel
+	integer nen3v(3,nel)
+	integer ilhv(nel)
+	integer ilhkv(nkn)
+
+	integer ie,ii,k,l
+
+	ilhkv = 0
+
+	do ie=1,nel
+	  l = ilhv(ie)
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    ilhkv(k) = max(l,ilhkv(k))
+	  end do
+	end do
+
+	end
 
 c***************************************************************
 

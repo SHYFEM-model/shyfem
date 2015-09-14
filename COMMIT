@@ -1,5 +1,42 @@
 ============================================================
 
+Mon Sep 14 18:23:10 CEST 2015
+
+more options for post processing
+
+ .gitignore              |    2 +
+ LOG                     |   31 ++++
+ Makefile                |    1 +
+ RELEASE_NOTES           |    5 +
+ fem3d/Makefile          |   39 +++--
+ fem3d/elabutil.f        |   76 ++++++++++-
+ fem3d/extelab.f         |   25 ++++
+ fem3d/extelab1.f        |  353 +++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/noselab1.f        |  185 ++++++++++++++++++++++---
+ fem3d/optintp.f         |   20 ++-
+ fem3d/ous2nc.f          |    4 +-
+ fem3d/ouselab1.f        |   92 ++++++++++++-
+ fem3d/ousutil.f         |   55 +++++++-
+ fem3d/shyelab.f         |    6 +-
+ fem3d/subext.f          |  217 ++++++++++++++++++++++++++++-
+ fem3d/subgeo.f          |    3 +
+ fem3d/subnos.f          |    2 +
+ fem3d/subnsa.f          |    9 ++
+ fem3d/subous.f          |    2 +
+ fem3d/subsss.f          |   25 ++++
+ femdoc/final/shyfem.pdf |  Bin 294950 -> 294936 bytes
+ femdoc/final/shyfem.ps  |  123 ++++++++--------
+ femdummy/Makefile       |   19 +++
+ femplot/supout.f        |    8 +-
+ femplot/supsim.f        |   58 +++++++--
+ 25 files changed, 1236 insertions(+), 124 deletions(-)
+ new file:
+   fem3d/extelab.f
+   fem3d/extelab1.f
+   femdummy/Makefile
+
+============================================================
+
 Fri Jul 31 17:13:16 CEST 2015
 
 New version 7_2_1

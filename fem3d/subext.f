@@ -17,6 +17,7 @@ c revision log :
 c
 c 20.05.1998	ggu	cleaned up a bit
 c 04.02.2000	ggu	wrrc77 from newpr to here
+c 14.09.2015	ggu	some more helper routines
 c
 c notes :
 c
@@ -114,7 +115,217 @@ c*********************************************************
 c*********************************************************
 c*********************************************************
 c*********************************************************
-c
+
+	function check_ext_file(file)
+
+	implicit none
+
+        logical check_ext_file
+        character*(*) file
+
+        integer nb,nvers,knausm,ierr
+        integer ifileo
+
+        check_ext_file = .false.
+
+        nb = ifileo(0,file,'unform','old')
+        if( nb .le. 0 ) return
+	call ext_check_header(nb,nvers,knausm,ierr)
+        close(nb)
+
+        check_ext_file = ierr == 0
+
+	end
+
+c*********************************************************
+
+	subroutine ext_is_ext_file(iunit,nvers)
+
+	implicit none
+
+	integer iunit,nvers
+
+	integer knausm,ierr
+
+	call ext_check_header(iunit,nvers,knausm,ierr)
+
+	if( ierr .ne. 0 ) nvers = 0
+
+	rewind(iunit)
+
+	end
+
+c*********************************************************
+c*********************************************************
+c*********************************************************
+
+	subroutine ext_peek_header(iunit,nvers,knausm)
+
+	implicit none
+
+	integer iunit,knausm
+
+	integer nvers,ierr
+
+	call ext_check_header(iunit,nvers,knausm,ierr)
+	if( ierr .ne. 0 ) then
+	  stop 'error stop ext_peek_header: error reading header'
+	end if
+
+	rewind(iunit)
+
+	end
+
+c*********************************************************
+
+	subroutine ext_peek_record(iunit,nvers,it,ierr)
+
+	implicit none
+
+	integer iunit,nvers,it,ierr
+
+	integer, parameter :: nvermx = 6
+	integer ios
+	real tt
+
+	tt = 0
+	if(nvers.ge.1.and.nvers.le.2) then
+	  read(iunit,iostat=ios)  tt
+	  it = tt
+	else if(nvers.ge.3.and.nvers.le.nvermx) then
+	  read(iunit,iostat=ios)  it
+	end if
+	ierr = ios
+
+	backspace(iunit)
+
+	end
+
+c*********************************************************
+
+	subroutine ext_check_header(iunit,nvers,knausm,ierr)
+
+c checks version of ext file and returns number of points
+
+	implicit none
+
+	integer iunit,nvers,knausm,ierr
+
+	integer, parameter :: nvermx = 6
+	integer kaux,ios,i,it,j
+	real haux,tt,xaux
+	character*80 title
+
+	nvers = 0
+	knausm = 0
+	ierr = -1
+
+	read(iunit,iostat=ios) nvers
+	if( ios .ne. 0 ) return
+
+	if(nvers.ge.2.and.nvers.le.nvermx) then
+	  read(iunit,iostat=ios)   knausm
+     +                                  ,(kaux,j=1,knausm)
+     +                                  ,(haux,j=1,knausm)
+     +                                  ,haux
+     +                                  ,haux
+     +                                  ,title
+	else
+	  ios = 1
+	end if
+	if( ios .ne. 0 ) return
+
+	if(nvers.ge.1.and.nvers.le.2) then
+	  read(iunit,iostat=ios)  tt,(xaux,i=1,3*knausm)
+	else if(nvers.ge.3.and.nvers.le.nvermx) then
+	  read(iunit,iostat=ios)  it,(xaux,i=1,3*knausm)
+	end if
+	if( ios .ne. 0 ) return
+
+	ierr = 0
+
+	end
+
+c*********************************************************
+c*********************************************************
+c*********************************************************
+
+	subroutine ext_read_header(iunit,ndim,nvers,knausm,knaus,hdep
+     +                          ,href,hzmin,descrp)
+	implicit none
+	integer iunit,ndim,nvers,knausm
+	real href,hzmin
+	character*80 descrp
+	integer knaus(1)
+	real hdep(1)
+
+	integer ierr
+	real read7
+
+	ierr = read7(iunit,ndim,nvers,knausm,knaus,hdep
+     +                          ,href,hzmin,descrp)
+
+	if( ierr .ne. 0. ) then
+	  stop 'error stop read_ext_header: read error'
+	end if
+
+	end
+
+c*********************************************************
+
+	subroutine ext_read_record(iunit,nvers,it,knausm,xv,ierr)
+	implicit none
+	integer iunit,nvers,it,knausm,ierr
+	real xv(3,knausm)
+
+	real rdrc7
+
+	ierr = rdrc7(iunit,nvers,it,knausm,xv)
+
+	end
+
+c*********************************************************
+
+	subroutine ext_write_header(iunit,ndim,nvers,knausm,knaus,hdep
+     +                          ,href,hzmin,descrp)
+	implicit none
+	integer iunit,ndim,nvers,knausm
+	real href,hzmin
+	character*80 descrp
+	integer knaus(1)
+	real hdep(1)
+
+	integer ierr
+	real writ7
+
+	ierr = writ7(iunit,ndim,nvers,knausm,knaus,hdep
+     +                          ,href,hzmin,descrp)
+
+	end
+
+c*********************************************************
+
+	subroutine ext_write_record(iunit,nvers,it,knausm,xv)
+	implicit none
+	integer iunit,nvers,it,knausm
+	real xv(3,knausm)
+
+	integer ierr,i
+	integer knaus(knausm)
+	real wrrc7
+
+	do i=1,knausm
+	  knaus(i) = i
+	end do
+
+	ierr = wrrc7(iunit,nvers,it,knausm,knaus,xv)
+
+	end
+
+c*********************************************************
+c*********************************************************
+c*********************************************************
+
 	function read7(iunit,ndim,nvers,knausm,knaus,hdep
      +                          ,href,hzmin,descrp)
 c
@@ -139,11 +350,9 @@ c
 c first record
 c
 	read(iunit,iostat=ios) nvers
-c!lahey	read(iunit,iostat=ios) nvers,(knaus(j),j=1,nvers)
 c
 	if(ios.eq.0) then       ! no read error ==> first version
-c!lahey		knausm=nvers
-c!lahey		nvers=1
+!
 	else if(ios.lt.0) then  !eof
 		write(6,*) 'EOF encountered while reading'
 		write(6,*) 'first record of file 7 header'

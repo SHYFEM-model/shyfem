@@ -7,6 +7,7 @@ c 30.10.2003	ggu	subroutine prepare_bc_l included in this file
 c 04.03.2004	ggu	writes also number of variables (1)
 c 11.03.2009	ggu	bug fix -> declare hev() here
 c 07.02.2015	ggu	OI finished
+c 14.09.2015	ggu	OI adapted to new modular structure
 c
 c notes :
 c
@@ -69,7 +70,7 @@ c optimal interpolation interpolation
 	integer datetime(2)
 	character*30 string,format
 
-	character*80 file,basin
+	character*80 file,basnam
 	logical bback,bgeo,bcart,bquiet,blimit,breg,bnos,bmulti
 	integer k,ie,n,ndim
 	integer nobs,nback
@@ -120,7 +121,7 @@ c--------------------------------------------------------------
 
         call clo_parse_options(1)  !expecting (at least) 1 file after options
 
-        call clo_get_option('basin',basin)
+        call clo_get_option('basin',basnam)
         call clo_get_option('cart',bcart)
         call clo_get_option('quiet',bquiet)
         call clo_get_option('rl',rl)
@@ -141,10 +142,11 @@ c-----------------------------------------------------------------
 c read in basin
 c-----------------------------------------------------------------
 
-	call ap_set_names(basin,' ')
-	call ap_init(1,0,0)
+	call ap_set_names(basnam,' ')
+	call ap_init(.false.,1,0,0)
 
 	allocate(xback(nkn),yback(nkn),zback(nkn),zanal(nkn))
+	allocate(ilhkv(nkn),hd(nkn))
 	ndim = nkn
 
 	call bas_get_minmax(xmin,ymin,xmax,ymax)
@@ -173,6 +175,9 @@ c-----------------------------------------------------------------
 c set up ev and background grid
 c-----------------------------------------------------------------
 
+	call ev_init(nel)
+	call mod_depth_init(nkn,nel)
+
 	call set_ev
 	call check_ev
 
@@ -196,6 +201,7 @@ c-----------------------------------------------------------------
 	  end if
 	end if
 
+	write(6,*) 'ggu 1'
 	iformat = 0
 	format = 'unformatted'
 	ntype = 1
@@ -205,18 +211,24 @@ c-----------------------------------------------------------------
 	  ntype = ntype + 10
 	end if
 
+	write(6,*) 'ggu 2'
 	nvers = 0
 	nvar = 1
 	lmax = 1
 	nlvdi = 1
 	np = nback
+	write(6,*) 'ggu 2'
 	it = 0
 	datetime = 0
 	datetime(1) = 19970101
+	write(6,*) 'ggu 2'
 	hlv(1) = 10000.
+	write(6,*) 'ggu 2'
 	hd = 1.
 	ilhkv = 1
 	string = 'ice cover [0-1]'
+
+	write(6,*) 'ggu 3'
 
 c-----------------------------------------------------------------
 c open files

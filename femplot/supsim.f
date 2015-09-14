@@ -67,6 +67,7 @@ c 05.09.2013    ggu	endtime() and nplot introduced
 c 30.05.2014    ggu	flag no data points and do not plot
 c 20.10.2014    ggu	new time management
 c 05.06.2015    ggu	some plotting routines adjourned (flag)
+c 14.09.2015    ggu	prepared for plotting velocities given in fem file
 c
 c notes :
 c
@@ -83,7 +84,7 @@ c 3D concentrations
 
 	use mod_plot2d
 	use mod_plot3d
-	use levels, only : nlvdi,nlv
+	use levels, only : nlvdi,nlv,ilhkv
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
@@ -125,9 +126,11 @@ c 3D concentrations
 	    nplot = nplot + 1
             if( isect .eq. 0 ) then
 	      write(6,*) '..........horizontal plotting nodes ',nplot
-	      if( ivar .eq. 21 ) then	!wind
+	      if( ivar .eq. 21 .or. ivar .eq. 2 ) then	!wind or vel
 		ivel = 3		!wind
-		call set_uv(nlvdi,nkn,p3)
+		!if( ivar .eq. 2 ) ivel = 3
+		if( ivar .eq. 2 ) ivel = 5	!plot 2d vel field
+		call set_uvfem(nlvdi,nkn,level,ilhkv,p3)
 	        call reset_dry_mask
 	        call plovel(ivel)
 	      else
@@ -150,6 +153,38 @@ c 3D concentrations
    99	continue
 	write(6,*) 'ivar,ivaria: ',ivar,ivaria
 	stop 'error stop plofem: no such variable in file'
+	end
+
+c**********************************************************
+
+	subroutine set_uvfem(nlvddi,nkn,level,ilhkv,p3)
+
+	use mod_hydro_plot
+
+	implicit none
+
+	integer nlvddi
+	integer nkn
+	integer level
+	integer ilhkv(nkn)
+	real p3(nlvddi,nkn,2)
+
+	include 'param.h'
+
+	integer k,lev
+
+	lev = max(1,level)
+
+	do k=1,nkn
+	  if( level .le. ilhkv(k) ) then
+	    uv(k) = p3(lev,k,1)
+	    vv(k) = p3(lev,k,2)
+	  else
+	    uv(k) = 0.
+	    vv(k) = 0.
+	  end if
+	end do
+
 	end
 
 c**********************************************************
@@ -624,6 +659,9 @@ c**********************************************************
 	else if( ivel == 4 ) then
 	  write(6,*) 'plotting wave...'
 	  call plo2vel(ivel,'2D ')
+	else if( ivel == 5 ) then
+	  write(6,*) 'plotting velocities...'
+	  call plo2vel(ivel,'3D ')
 	else
 	  write(6,*) 'plotting 3d...'
 	  call plo3vel(ivel)
@@ -641,6 +679,7 @@ c ivel = 1	velocities
 c ivel = 2	transports
 c ivel = 3	wind
 c ivel = 4	waves
+c ivel = 5	velocities already prepared
 
 	use mod_hydro_plot
 	use mod_plot2d
@@ -656,10 +695,7 @@ c ivel = 4	waves
 	integer nxdim,nydim
 	parameter( nxdim = 300 , nydim = 300 )
 
-
 	include 'param.h'
-
-
 
 	real ureg(nxdim,nydim)
 	real vreg(nxdim,nydim)
@@ -669,7 +705,7 @@ c ivel = 4	waves
         logical bspecial
 	logical bdebug
 	logical bregular
-	logical bvel,btrans,bwind,bwave
+	logical bvel,btrans,bwind,bwave,bvelok
         character*80 line
         character*80 spcvel
 	integer ie,k
@@ -719,6 +755,7 @@ c	-----------------------------------------------------------
         btrans = ivel .eq. 2
         bwind  = ivel .eq. 3
         bwave  = ivel .eq. 4
+        bvelok = ivel .eq. 5
 
 	velref = getpar('velref')
 	velmin = getpar('velmin')
@@ -749,7 +786,7 @@ c	-----------------------------------------------------------
           line(4:) = 'wind velocity'
         else if( bwave ) then
           line(4:) = 'waves'
-        else if( bvel ) then
+        else if( bvel .or. bvelok ) then
           line(4:) = 'velocity'
         else if( btrans ) then
           line(4:) = 'transport'
@@ -794,7 +831,7 @@ c------------------------------------------------------------------
 	    uvnv(ie) = usnv(ie)
 	    vvnv(ie) = vsnv(ie)
 	  end do
-        else if( bwind .or. bwave ) then
+        else if( bwind .or. bwave .or. bvelok ) then
 	  !ok
 	else
 	  stop 'error stop plo2vel: internal error (77)'
@@ -804,7 +841,7 @@ c------------------------------------------------------------------
 c compute values on nodes -> 0 for dry nodes
 c------------------------------------------------------------------
 
-        if( bwind .or. bwave ) then
+        if( bwind .or. bwave .or. bvelok ) then
 	  call intpe(uv,uvnv,bwater)
 	  call intpe(vv,vvnv,bwater)
         else
@@ -989,6 +1026,7 @@ c handle level
 
 	level = getlev()
 	write(6,*) 'plo3vel: level = ',level,' ivel = ',ivel
+	write(6,*) 'nlvdi: ',nlvdi,'  nlv: ',nlv
 
 	if( ivel .eq. 3 .or. ivel .eq. 4 ) then	!wave or wind
 	  call plo2vel(ivel,'3D ')

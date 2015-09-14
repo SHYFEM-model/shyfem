@@ -45,6 +45,7 @@ c 26.01.2009	ggu	minor changes to avoid compiler warnings
 c 16.02.2011	ggu	new routine trimline()
 c 30.05.2014	ggu	new routine rnextsub()
 c 06.05.2015	ggu	new routine logvals() for logarithmic values
+c 14.09.2015	ggu	new routine i2s0()
 c
 c***********************************************************
 c
@@ -1451,6 +1452,30 @@ c idiv = 3      1 2 5 10 20 50 100
         write(6,*) 'idiv = ',idiv
         stop 'error stop logval_adjust: idiv'
         end
+
+c************************************************************
+
+	subroutine i2s0(number,string)
+
+c converts integer to string with blanks substituted by zeros
+
+	implicit none
+
+	integer number
+	character*(*) string
+
+	integer i,l
+	character*10 format
+
+	l = len(string)
+	write(format,'(a,i2,a)') '(i',l,')'
+	write(string,format) number
+
+	do i=1,l
+	  if( string(i:i) == ' ' ) string(i:i) = '0'
+	end do
+
+	end
 
 c************************************************************
 

@@ -14,12 +14,13 @@ c 21.01.2013    ggu     added two new routines comp_vel2d, comp_barotropic
 c 05.09.2013    ggu     new call to get_layer_thickness()
 c 20.01.2014    ggu     new helper routines
 c 29.04.2015    ggu     new helper routines for start/end time in file
+c 11.09.2015    ggu     weight and hl are local, new velzeta2scal()
 c
 c******************************************************************
 
         subroutine transp2vel(nel,nkn,nlv,nlvddi,hev,zenv,nen3v
      +				,ilhv,hlv,utlnv,vtlnv
-     +                          ,uprv,vprv,weight,hl)
+     +                          ,uprv,vprv)
 
 c transforms transports at elements to velocities at nodes
 
@@ -38,8 +39,9 @@ c transforms transports at elements to velocities at nodes
         real vtlnv(nlvddi,1)
         real uprv(nlvddi,1)
         real vprv(nlvddi,1)
-        real weight(nlvddi,1)		!aux variable for weights
-	real hl(1)			!aux variable for real level thickness
+
+        real weight(nlvddi,nkn)		!aux variable for weights
+	real hl(nlvddi)			!aux variable for real level thickness
 
 	logical bsigma
         integer ie,ii,k,l,lmax,nsigma,nlvaux
@@ -602,6 +604,53 @@ c***************************************************************
         check_ous_file = nvers > 0
         
         end
+
+c***************************************************************
+
+        subroutine velzeta2scal(nel,nkn,nlv,nlvddi,nen3v,ilhkv
+     +				,zenv,uprv,vprv
+     +                          ,zv,sv,dv)
+
+	implicit none
+
+	integer nkn,nel,nlv,nlvddi
+	integer nen3v(3,nel)
+	integer ilhkv(nkn)
+	real zenv(3,nel)
+	real uprv(nlvddi,nkn)
+	real vprv(nlvddi,nkn)
+	real zv(nkn)
+	real sv(nlvddi,nkn)
+	real dv(nlvddi,nkn)
+
+	integer ie,k,ii,l,lmax
+	real u,v,s,d
+
+	zv = 1.e+30
+	sv = 0.
+	dv = 0.
+
+	do ie=1,nel
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    zv(k) = min(zv(k),zenv(ii,ie))
+	  end do
+	end do
+
+	do k=1,nkn
+	  lmax = ilhkv(k)
+	  do l=1,lmax
+	    u = uprv(l,k)
+	    v = vprv(l,k)
+	    call c2p(u,v,s,d)	!d is meteo convention
+	    d = d + 180.
+	    if( d > 360. ) d = d - 360.
+	    sv(l,k) = s
+	    dv(l,k) = d
+	  end do
+	end do
+	
+	end
 
 c***************************************************************
 

@@ -126,6 +126,7 @@ fem3d/ousvdiff
 fem3d/zinit
 fem3d/noselab
 fem3d/ouselab
+fem3d/extelab
 fem3d/shyelab
 fem3d/shyfem
 fem3d/shypre
@@ -180,6 +181,7 @@ fembin/splitets
 fembin/bc2fem
 fembin/noselab
 fembin/ouselab
+fembin/extelab
 fembin/shyelab
 fembin/shyfem
 fembin/shypre

@@ -27,6 +27,7 @@ c 03.09.2013  ggu     level_k2e -> level_k2e_sh, level_e2k -> level_e2k_sh
 c 05.03.2014  ggu     new read for ous and nos files (use date)
 c 20.10.2014  ggu     deleted is2d() and out reading routines
 c 10.02.2015  ggu     use different file units (more than one can be opened)
+c 14.09.2015  ggu     introduced bwind and bvel (for velocities)
 c
 c**********************************************************
 c**********************************************************
@@ -1560,7 +1561,7 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	include 'param.h'
 	include 'supout.h'
 
-	logical bfound,bformat,breg
+	logical bfound,bformat,breg,bwind,bvel
 	integer ierr
 	integer i,iv,ip
 	integer nvers,np,lmax,nvar,ntype
@@ -1622,7 +1623,9 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	    if( ierr .ne. 0 ) goto 98
 	    call string2ivar(string,iv)
 	    bfound = iv .eq. ivar
-	    if( iv .eq. ivar .and. iv .eq. 21 ) then !wind -> must read y field
+	    bwind = iv .eq. 21
+	    bvel = iv .eq. 2
+	    if( bfound .and. ( bwind .or. bvel ) ) then
 	      ip = ip + 1
 	      if( ip .eq. 2 ) bfound = .false.
 	    end if
@@ -1631,6 +1634,7 @@ c reads next FEM record - is true if a record has been read, false if EOF
 
 	if( breg ) then
 	  write(6,*) 'interpolating from regular grid...'
+	  ip = min(2,ip)
 	  call fem_interpolate(nlvddi,nkn,np,ip,regpar,ilhkv,array)
 	  regp = regpar		!save for later
 	end if

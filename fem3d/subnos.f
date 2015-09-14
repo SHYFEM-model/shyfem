@@ -690,6 +690,8 @@ c nvers > 0	good nos file
 	if( ntype .ne. ftype ) nvers = 0
 	if( nvers .le. 0 .or. nvers .gt. maxvers ) nvers = -abs(nvers)
 
+	rewind(iunit)
+
     1	continue
 
 	end

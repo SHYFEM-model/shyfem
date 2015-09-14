@@ -711,6 +711,8 @@ c nvers > 0     good ous file
         if( ntype .ne. ftype ) nvers = 0
         if( nvers .le. 0 .or. nvers .gt. maxvers ) nvers = -abs(nvers)
 
+	rewind(iunit)
+
     1   continue
 
         end

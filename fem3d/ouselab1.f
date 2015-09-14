@@ -12,6 +12,7 @@ c 08.11.2008    ggu     do not compute min/max in non-existing layers
 c 07.12.2010    ggu     write statistics on depth distribution (depth_stats)
 c 06.05.2015    ggu     noselab started
 c 05.06.2015    ggu     many more features added
+c 11.09.2015    ggu     split feature added
 c
 c**************************************************************
 
@@ -33,6 +34,11 @@ c elaborates ous file
 
 	real, allocatable :: u2v(:)
 	real, allocatable :: v2v(:)
+	real, allocatable :: zv(:)
+	real, allocatable :: uprv(:,:)
+	real, allocatable :: vprv(:,:)
+	real, allocatable :: sv(:,:)
+	real, allocatable :: dv(:,:)
 
 	integer, allocatable :: naccu(:)
 	double precision, allocatable :: accum(:,:,:)
@@ -73,6 +79,9 @@ c--------------------------------------------------------------
 
 	call elabutil_init('OUS')
 
+	bneedbasin = bneedbasin .or. bsplit
+	if( bneedbasin ) modeb = 3
+
 	!--------------------------------------------------------------
 	! open input files
 	!--------------------------------------------------------------
@@ -80,6 +89,12 @@ c--------------------------------------------------------------
 	call ap_init(bask,modeb,0,0)
 
         call open_ous_type('.ous','old',nin)
+
+        call ous_is_ous_file(nin,nvers)
+        if( nvers .le. 0 ) then
+          write(6,*) 'nvers: ',nvers
+          stop 'error stop ouselab: not a valid ous file'
+        end if
 
 	call peek_ous_header(nin,nknous,nelous,nlv)
 
@@ -97,6 +112,11 @@ c--------------------------------------------------------------
 
 	allocate(u2v(nel),v2v(nel))
 	allocate(hl(nlv))
+	allocate(zv(nkn))
+	allocate(uprv(nlvdi,nkn))
+	allocate(vprv(nlvdi,nkn))
+	allocate(sv(nlvdi,nkn))
+	allocate(dv(nlvdi,nkn))
 
 	nlvdi = nlv
         call read_ous_header(nin,nkn,nel,nlvdi,ilhv,hlv,hev)
@@ -108,6 +128,7 @@ c--------------------------------------------------------------
 	  call outfile_make_hkv(nkn,nel,nen3v,hev,hkv)
 	  call ev_init(nelous)
           call set_ev
+	  call ilhe2k(nkn,nel,nen3v,ilhv,ilhkv)
 	end if
 
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
@@ -225,7 +246,14 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( bsplit ) then
-            !call get_split_iu(ndim,iusplit,ivar,nin,ilhkv,hlv,hev,nb)
+            call transp2vel(nel,nkn,nlv,nlvdi,hev,zenv,nen3v
+     +                          ,ilhv,hlv,utlnv,vtlnv
+     +                          ,uprv,vprv)
+	    call velzeta2scal(nel,nkn,nlv,nlvdi,nen3v,ilhkv
+     +				,zenv,uprv,vprv
+     +				,zv,sv,dv)
+            call write_split(nin,nlvdi,ilhkv,hlv,hev,it,zv,sv,dv)
+	    cycle
 	  end if
 
 	  if( boutput ) then
@@ -308,5 +336,67 @@ c--------------------------------------------------------------
 
 c***************************************************************
 c***************************************************************
+c***************************************************************
+
+c***************************************************************
+
+        subroutine write_split(nin,nlvddi,ilhkv,hlv,hev,it,zv,sv,dv)
+
+        implicit none
+
+        integer nin
+        integer nlvddi
+        integer ilhkv(1)
+        real hlv(1)
+        real hev(1)
+	integer it
+	real zv(*)
+	real sv(nlvddi,*)
+	real dv(nlvddi,*)
+
+        integer nkn,nel,nlv,nvar
+        integer ierr
+	integer date,time
+        character*80 name,title,femver
+
+	integer, save :: icall = 0
+	integer, save :: nz,ns,nd
+
+        if( icall == 0 ) then      !open file
+          call ous_get_params(nin,nkn,nel,nlv)
+	  call ous_get_date(nin,date,time)
+	  call ous_get_title(nin,title)
+	  call ous_get_femver(nin,femver)
+
+          call open_nos_file('zeta','new',nz)
+          call nos_init(nz,0)
+          call nos_set_params(nz,nkn,nel,1,1)
+	  call nos_set_date(nz,date,time)
+	  call nos_set_title(nz,title)
+	  call nos_set_femver(nz,femver)
+
+          call open_nos_file('speed','new',ns)
+          call nos_init(ns,0)
+	  call nos_clone_params(nz,ns)
+          call nos_set_params(ns,nkn,nel,nlv,1)
+
+          call open_nos_file('dir','new',nd)
+          call nos_init(nd,0)
+	  call nos_clone_params(nz,nd)
+          call nos_set_params(nd,nkn,nel,nlv,1)
+
+          call write_nos_header(nz,ilhkv,hlv,hev)
+          call write_nos_header(ns,ilhkv,hlv,hev)
+          call write_nos_header(nd,ilhkv,hlv,hev)
+        end if
+
+	icall = icall + 1
+
+	call nos_write_record(nz,it,1,1,ilhkv,zv,ierr)
+	call nos_write_record(ns,it,6,nlvddi,ilhkv,sv,ierr)
+	call nos_write_record(nd,it,7,nlvddi,ilhkv,dv,ierr)
+
+        end
+
 c***************************************************************
 

@@ -842,6 +842,9 @@ c**************************************************************
 	subroutine c2p(u,v,s,d)
 
 c converts cartesian to polar coordinates
+c
+c meteorological convention: 0 -> wind from north
+c if oceanographic convention is needed: d=d+180; if(d>360) d=d-360
 
 	implicit none
 
