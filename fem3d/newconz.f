@@ -239,25 +239,14 @@ c parameter
 	include 'femtime.h'
 	include 'mkonst.h'
 
-c--------------------------------------------
-c isabella
-c--------------------------------------------
-	integer ndim
-	!parameter (ndim=10)
-	!parameter (ndim=5)
-	parameter (ndim=7)
-	real massv(ndim)
-	real taupar(ndim)
-	save taupar
-        !data taupar /1.,1.,1.,1.,2.,2.,1.,0.5,0.1,3./
-        !data taupar /0.,0.,0.,0.,0./
+	integer, parameter :: ndim = 7
+	real, save :: taupar(ndim)
         data taupar /0.,0.,0.,0.,0.,0.,0./
-        !data taupar /1.,1.,1.,1.,1.,2.,2./
 
 c local
         integer istot
 	integer level
-	integer nintp,nvar,ivar,i,id
+	integer nintp,nvar,ivar,i,id,nmin
 	integer nbc
 	real cdef
         real cmin,cmax
@@ -266,6 +255,7 @@ c local
 	real t,dt
 	real, save, allocatable :: cdefs(:)
 	real, save, allocatable :: tauv(:)
+	real, save, allocatable :: massv(:)
 	double precision dtime,dtime0
 c function
 	integer nbnds
@@ -314,10 +304,10 @@ c-------------------------------------------------------------
 
           what = 'conz'
 
-	  allocate(tauv(nvar))
+	  allocate(tauv(nvar),cdefs(nvar),massv(nvar))
 	  tauv = contau
-	  tauv(1:ndim) = taupar(1:ndim)
-	  allocate(cdefs(nvar))
+	  nmin = min(ndim,nvar)
+	  tauv(1:nmin) = taupar(1:nmin)
 	  cdefs = 0.				!default boundary condition
 
           if( .not. has_restart(4) ) then	!no restart of conzentrations
@@ -362,35 +352,34 @@ c-------------------------------------------------------------
 !$OMP PARALLEL PRIVATE(i)
 !$OMP DO SCHEDULE(DYNAMIC)
 
+! !$OMP SINGLE
+	
 	do i=1,nvar
-            call scal_adv(what,i
+
+! !$OMP TASK FIRSTPRIVATE(i,rkpar,wsink,difhv,difv,difmol,idconz,what,
+! !$OMP&     dt,nlvdi,mass) SHARED(conzv,tauv,massv)  DEFAULT(NONE)
+ 
+          call scal_adv(what,i
      +                          ,conzv(1,1,i),idconz
      +                          ,rkpar,wsink
      +                          ,difhv,difv,difmol)
-	end do
+
+          call decay_conz(dt,tauv(i),conzv(1,1,i))
+	  call massconc(+1,conzv(1,1,i),nlvdi,massv(i))
+
+! !$OMP END TASK
+	end do	
+
+! !$OMP END SINGLE
+! !$OMP TASKWAIT
 
 !$OMP END DO NOWAIT
 !$OMP END PARALLEL
 
 c-------------------------------------------------------------
-c simulate decay
-c-------------------------------------------------------------
-
-	do i=1,nvar
-	  tau = tauv(i)
-	  !write(6,*) 'decay : ',i,tau
-          call decay_conz(dt,tau,conzv(1,1,i))
-          !call decay_conz_variable(dt,tau,e(1,1,i))
-	end do
-
-c-------------------------------------------------------------
 c write to file
 c-------------------------------------------------------------
 
-	do i=1,nvar
-	  call massconc(+1,conzv(1,1,i),nlvdi,mass)
-	  if( i .le. ndim ) massv(i) = mass
-	end do
 	!write(65,*) it,massv
 
 	if( next_output(ia_out) ) then

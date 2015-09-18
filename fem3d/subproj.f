@@ -171,6 +171,7 @@ c handles projection - converts lat/lon to x/y
 
 	call init_coords(iproj,c_param)
 	call convert_coords(mode,nkn,xcartv,ycartv,xgv,ygv)
+
 	xgeov = xgv
 	ygeov = ygv
 

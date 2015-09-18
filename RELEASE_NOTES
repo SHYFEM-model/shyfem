@@ -1,4 +1,15 @@
 
+18.09.2015    VERS_7_2_3
+
+	new names for hydro routines
+	more aux variables shifted into routines
+	advective terms stored in momentx/yv and not in aux arrays
+	austau() eliminated
+	code for subset creation integrated (eric)
+	two bug fixes:
+		zeqv was not always initialized in tideini
+		in coo_init n==0 was not checked
+
 14.09.2015    VERS_7_2_2
 
 	more options for shyelab, new file formats added
@@ -36,18 +47,6 @@
 	post processing routines are still not completely ready
 	please have a look at shyelab for dealing with NOS and OUS files
 	plotting is still through plots
-
-c ./fem3d/shyfem.f:
-c 30.07.2015    ggu     routine renamed from ht to shyfem
-c
-c ./fem3d/subcst.f:
-c 30.07.2015    ggu     read str-file from command line
-c
-c ./fem3d/shypre.f:
-c 30.07.2015    ggu     vp renamed to shypre
-c
-c ./fem3d/shyelab.f:
-c 30.07.2015    ggu     shyelab started
 
 24.07.2015    VERS_7_1_82
 

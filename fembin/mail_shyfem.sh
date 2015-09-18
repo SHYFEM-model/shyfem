@@ -14,7 +14,7 @@ link="https://drive.google.com/folderview?id=$shyfemdir&usp=sharing"
 tmpfile=tmp.tmp
 #fembin=./fembin
 
-emails="gmail shyfem shyfem_aux"
+emails="gmail shyfem shyfem_aux shyfem_user"
 
 #------------------------------------------------------------------
 

@@ -7,6 +7,7 @@ c revision log :
 c
 c 31.01.2009    ggu     cleaned, only generic coo routines here
 c 29.03.2012    ggu     in loccoo avoid call to coo_find (speed)
+c 18.09.2015    ggu     bug fix in coo_init - do not set ip/jp for n==0
 c
 !******************************************************************
 
@@ -54,8 +55,10 @@ c
 	do k=1,nnkn
 	  do m=-mmbw,mmbw
 	    n = iijp(m,k)
-	    jp(n) = k
-	    ip(n) = k + m
+	    if( n .ne. 0 ) then
+	      jp(n) = k
+	      ip(n) = k + m
+	    end if
 	  end do
 	end do
 

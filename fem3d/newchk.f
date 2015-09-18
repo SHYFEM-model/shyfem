@@ -13,7 +13,7 @@ c subroutine tsmass(ts,z,nlvdi,tstot)   computes mass of T/S or any conc. ts
 c subroutine debug_dry			writes debug information on dry areas
 c subroutine debug_node(k)		writes debug information on node k
 c subroutine mimafem(string)		writes some min/max values to stdout
-c subroutine mass_conserve(vf,va)	checks mass conservation
+c subroutine mass_conserve		checks mass conservation
 c
 c subroutine check_node(k)		debug info on node k
 c subroutine check_elem(ie)		debug info on element ie
@@ -54,6 +54,7 @@ c 12.07.2011    ggu     loop only over actual nodes/elements, not dimensions
 c 15.07.2011    ggu     new routines for CRC computation
 c 25.10.2011    ggu     hlhv eliminated
 c 15.05.2014    ggu     write mass error only for levdbg >= 3
+c 17.09.2015    ggu     in mass_conserve aux variables are local
 c
 c*************************************************************
 
@@ -617,7 +618,7 @@ c computes and writes total water volume
 
 c*************************************************************
 
-	subroutine mass_conserve(vf,va)
+	subroutine mass_conserve
 
 c checks mass conservation of single boxes (finite volumes)
 
@@ -630,11 +631,6 @@ c checks mass conservation of single boxes (finite volumes)
 	use basin
 
 	implicit none
-
-	include 'param.h'
-
-	real vf(nlvdi,1)
-	real va(nlvdi,1)
 
 	include 'mkonst.h'
 
@@ -652,6 +648,8 @@ c checks mass conservation of single boxes (finite volumes)
 	real vrwarn,vrerr
 	real qinput
 	double precision vtotmax,vvv,vvm
+	real, allocatable :: vf(:,:)
+	real, allocatable :: va(:,:)
 
 	real volnode,areanode,getpar
 
@@ -669,6 +667,8 @@ c----------------------------------------------------------------
 	vrerr = getpar('vrerr')
 	levdbg = nint(getpar('levdbg'))
 
+	if( levdbg .le. 1 ) return
+
 	mode = +1
         call getazam(azpar,ampar)
 	az = azpar
@@ -676,13 +676,9 @@ c----------------------------------------------------------------
         azt = 1. - az
 	call get_timestep(dt)
 
-	do k=1,nkn
-          lmax = ilhkv(k)
-	  do l=1,lmax
-	    vf(l,k) = 0.
-	    va(l,k) = 0.
-	  end do
-	end do
+	allocate(vf(nlvdi,nkn),va(nlvdi,nkn))
+	vf = 0.
+	va = 0.
 
 c----------------------------------------------------------------
 c compute horizontal divergence
@@ -882,6 +878,8 @@ c	vrlmax 		!relative error for each box
 	end if
 
 	write(ninfo,*) 'mass_balance: ',vbmax,vlmax,vrbmax,vrlmax
+
+	deallocate(vf,va)
 
 c----------------------------------------------------------------
 c end of routine

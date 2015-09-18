@@ -390,7 +390,7 @@ c computes residuum
 
 	real resi
         integer n
-        real zov(1),znv(1)
+        real zov(n),znv(n)
 
         integer i
         real res,var,epsr
@@ -417,7 +417,6 @@ c********************************************************************
 
 c computes average of scalar values
 
-	use mod_aux_array
 	use mod_ts
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
@@ -445,6 +444,7 @@ c save
 	real, save, allocatable :: tmax(:,:)
 	real, save, allocatable :: smin(:,:)
 	real, save, allocatable :: smax(:,:)
+	real, save, allocatable :: saux(:,:)
 
 	integer icall,nout,nr
 	integer idtsca,itmsca,itsca
@@ -498,14 +498,15 @@ c-------------------------------------------------------------
 	  allocate(tmax(nlvdi,nkn))
 	  allocate(smin(nlvdi,nkn))
 	  allocate(smax(nlvdi,nkn))
+	  allocate(saux(nlvdi,nkn))
 
 	  nr=0
 	  tacu = 0.
 	  sacu = 0.
-	  tmin = 0.
-	  tmax = 0.
-	  smin = 0.
-	  smax = 0.
+	  tmin = high
+	  tmax = high
+	  smin = -high
+	  smax = -high
 
 	end if
 
@@ -536,12 +537,6 @@ c-------------------------------------------------------------
 	  end do
 	end do
 
-	if( bdebug ) then
-	  l = 1
-	  k = 1000
-	  write(98,*) 'tsmed : ',saltv(l,k),sacu(l,k)/nr
-	end if
-
 	if( it .lt. itsca ) return
 
 c-------------------------------------------------------------
@@ -550,26 +545,14 @@ c-------------------------------------------------------------
 
 	if( bdebug ) write(6,*) 'tsmed : tsa file written ',it,nr
 
-	if( bdebug ) then
-	  l = 1
-	  k = 1000
-	  write(98,*) 'tsmed : ',sacu(l,k)/nr
-	end if
-
 	itsca=itsca+idtsca
 
 	rr=1./nr
 
-	do k=1,nkn
-	  nlev = ilhkv(k)
-	  do l=1,nlev
-	    saux1(l,k) = tacu(l,k) * rr
-	    saux2(l,k) = sacu(l,k) * rr
-	  end do
-	end do
-
-	call confil(nout,itmsca,idtsca,25,nlvdi,saux1)
-	call confil(nout,itmsca,idtsca,26,nlvdi,saux2)
+	saux = tacu * rr
+	call confil(nout,itmsca,idtsca,25,nlvdi,saux)
+	saux = sacu * rr
+	call confil(nout,itmsca,idtsca,26,nlvdi,saux)
 
 	call confil(nout,itmsca,idtsca,31,nlvdi,tmin)
 	call confil(nout,itmsca,idtsca,32,nlvdi,tmax)
@@ -577,23 +560,17 @@ c-------------------------------------------------------------
 	call confil(nout,itmsca,idtsca,36,nlvdi,smax)
 
 	nr=0
-	do k=1,nkn
-	  nlev = ilhkv(k)
-	  do l=1,nlev
-	    tacu(l,k) = 0.
-	    sacu(l,k) = 0.
-	    tmin(l,k) = high
-	    smin(l,k) = high
-	    tmax(l,k) = -high
-	    smax(l,k) = -high
-	  end do
-	end do
+	tacu = 0.
+	sacu = 0.
+	tmin = high
+	tmax = high
+	smin = -high
+	smax = -high
 
 c-------------------------------------------------------------
 c end of routine
 c-------------------------------------------------------------
 
-	return
 	end
 
 c********************************************************************
@@ -731,7 +708,6 @@ c
 c for 2D arrays call with nlvddi = 1
 c for 3D arrays call with nlvddi = nlvdi
 
-	use mod_aux_array
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
 
@@ -758,6 +734,7 @@ c local
 	real high
 	real c
 	double precision rr
+	real, allocatable :: saux(:,:)
 
 	high = 1.e+30
 
@@ -818,41 +795,26 @@ c-------------------------------------------------------------
 	itc=itc+idtc
 
 	rr=1./nr
+	allocate(saux(nlvdi,nkn))
 
 	do i=1,nvar
-	  do k=1,nkn
-	    nlev = min(nlvddi,ilhkv(k))
-	    do l=1,nlev
-	      saux1(l,k) = cmed(l,k,i) * rr     !needed because cmed is real*8
-              if( l .eq. 1 ) v3v(k) = saux1(l,k)
-	    end do
-	  end do
-          !if( nlvddi .eq. 1 ) then
-	  !  call confil(nout,itmc,idtc,id+1,nlvddi,v3v)
-          !else
-	  !  call confil(nout,itmc,idtc,id+1,nlvddi,saux1)
-          !end if
-	  call confil(nout,itmc,idtc,id+1,nlvddi,saux1)
+	  saux = cmed(:,:,i) * rr
+	  call confil(nout,itmc,idtc,id+1,nlvddi,saux)
 	  call confil(nout,itmc,idtc,id+2,nlvddi,cmin(1,1,i))
 	  call confil(nout,itmc,idtc,id+3,nlvddi,cmax(1,1,i))
 	  id = id + 3
 	end do
+
+	deallocate(saux)
 
 c	-------------------------------------------------------------
 c 	re-initialize
 c	-------------------------------------------------------------
 
 	nr=0
-	do i=1,nvar
-	  do k=1,nkn
-	    nlev = min(nlvddi,ilhkv(k))
-	    do l=1,nlev
-	      cmed(l,k,i) = 0.
-	      cmin(l,k,i) = high
-	      cmax(l,k,i) = -high
-	    end do
-	  end do
-	end do
+	cmed = 0.
+	cmin = high
+	cmax = -high
 
 	ivect(4) = nr
 	ivect(7) = itc

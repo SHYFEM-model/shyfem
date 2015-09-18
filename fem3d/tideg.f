@@ -12,6 +12,7 @@ c 05.02.2010    ccf     include new tideforc routine for tidal potential
 c 18.11.2011    ggu     excluded projection code from tide
 c 12.12.2011    ccf     new component (MSm) in tidal computation
 c 14.01.2015    ccf     small bug fix rounding date and time
+c 18.09.2015    ggu     zeqv is now initialized even without use of tides (bug)
 c
 c********************************************************************
 
@@ -38,6 +39,10 @@ c********************************************************************
         integer isphe          !if = 1  coordinates are in spherical system
         integer date,time
 
+	do k=1,nkn
+	  zeqv(k) = 0.
+	end do
+
 	rtide = dgetpar('rtide')
 
 	if( rtide .le. 0. ) return
@@ -51,14 +56,6 @@ c********************************************************************
 	  write(6,*) 'isphe or iproj must be set'
 	  stop 'error stop tideini: no lat/lon coordinates'
 	end if
-
-	do k=1,nkn
-	  zeqv(k) = 0.
-	end do
-
-	date = nint(dgetpar('date'))
-	time = nint(dgetpar('time'))
-	call dtsini(date,time)
 
 	write(6,*) 'Tidal potential active'
 

@@ -7,8 +7,7 @@ c contents :
 c
 c subroutine set_explicit
 c subroutine viscous_stability(ahpar,ahstab)	computes stability for viscosity
-c subroutine set_diff_horizontal_new1
-c subroutine set_diff_horizontal_new
+c subroutine set_diff_horizontal
 c subroutine set_advective
 c subroutine set_semi_lagrange
 c subroutine set_barocl
@@ -39,6 +38,8 @@ c 10.05.2013	dbf&ggu	new routines for non-hydro
 c 25.05.2013	ggu	new version for vertical advection (bvertadv)
 c 13.09.2013	dbf&ggu	new sigma layer adjustment integrated
 c 10.04.2014	ggu	use rlin and rdistv to determin advective contribution
+c 17.04.2015	ggu	only one routine set_diff_horizontal()
+c 18.09.2015	ggu	use momentx/yv to store advective terms, not aux arrays
 c
 c notes :
 c
@@ -98,7 +99,7 @@ c-------------------------------------------
 c horizontal diffusion
 c-------------------------------------------
 
-	call set_diff_horizontal_new1
+	call set_diff_horizontal
 
 c-------------------------------------------
 c advective (non-linear) terms
@@ -106,7 +107,7 @@ c-------------------------------------------
 
         if( ilin .eq. 0 ) then
           if( itlin .eq. 0 ) then
-	    call set_advective(rlin)	!saux1/2/3v must be preserved
+	    call set_advective(rlin)
 	  else if( itlin .eq. 1 ) then
 	    call set_semi_lagrange
 	  else
@@ -203,7 +204,7 @@ c stability is computed for dt == 1
 
 c******************************************************************
 
-	subroutine set_diff_horizontal_new1
+	subroutine set_diff_horizontal
 
 	use mod_geom
 	use mod_internal
@@ -214,11 +215,6 @@ c******************************************************************
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-        include 'param.h'
-
-
-
 
 	integer ie,ii,iei,l,lmax
 	integer noslip
@@ -284,124 +280,6 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine set_diff_horizontal_new
-
-	use mod_bound_geom
-	use mod_internal
-	use mod_geom_dynamic
-	use mod_aux_array
-	use mod_hydro
-	use evgeom
-	use levels
-	use basin
-
-	implicit none
-
-        include 'param.h'
-
-
-
-        real cb,cd 
-        real ahpar,khpar 
-        real vismol                     !constant vertical molecular viscosity
-
-
-	integer ie,k,ii,l,lmax
-	!logical bnoslip
-	real ao,u,v
-	real anu,rv,acux,acuy
-	real area,w,um,vm
-	real dt
-	real wm,wmax
-        real getpar
-
-	!logical is_material_boundary_node
-
-!	is_material_boundary_node(k) = inodv(k) .ne. 0 
-!     +					.and. iopbnd(k) .le. 0
-
-	call get_timestep(dt)
-
-        ahpar = getpar('ahpar')
-	anu = ahpar
-        !write(6,*)ahpar
-	if( anu .le. 0 ) return
-	!write(6,*) 'anu: ',anu
-        !bnoslip = nint(getpar('noslip')) .ne. 0
-
-	do k=1,nkn
-	  v1v(k) = 0.		!inverse area
-	  v2v(k) = 0.		!grade
-	  do l=1,nlv
-	    saux1(l,k) = 0.		!average u
-	    saux2(l,k) = 0.		!average v
-	  end do
-	end do
-
-	do ie=1,nel
-	  ao = ev(10,ie)
-	  area = 12. * ao
-	  lmax = ilhv(ie)
-	  do ii=1,3
-	    k = nen3v(ii,ie)
-	    v1v(k) = v1v(k) + anu / area
-	    v2v(k) = v2v(k) + 1.
-	    do l=1,lmax
-	      u = utlov(l,ie)
-	      v = vtlov(l,ie)
-	      saux1(l,k) = saux1(l,k) + u
-	      saux2(l,k) = saux2(l,k) + v
-	    end do
-	  end do
-	end do
-
-	do k=1,nkn
-	  rv = 1. / v2v(k)
-	  !if( bnoslip .and. is_material_boundary_node(k) ) rv = 0.
-	  lmax = ilhkv(k)
-	  do l=1,lmax
-	    saux1(l,k) = saux1(l,k) * rv
-	    saux2(l,k) = saux2(l,k) * rv
-	  end do
-	end do
-
-	wmax = 0.
-	do ie=1,nel
-
-	  wm = 0.
-	  do ii=1,3
-	    k = nen3v(ii,ie)
-	    wm = wm + v1v(k)
-	  end do
-	  wmax = max(wmax,wm)
-
-	  lmax = ilhv(ie)
-	  do l=1,lmax
-	    acux = 0.
-	    acuy = 0.
-	    u = utlov(l,ie)
-	    v = vtlov(l,ie)
-	    do ii=1,3
-	      k = nen3v(ii,ie)
-	      w = v1v(k)
-	      um = saux1(l,k)
-	      vm = saux2(l,k)
-	      acux = acux - w * u + w * um
-	      acuy = acuy - w * v + w * vm
-	    end do
-	    fxv(l,ie) = fxv(l,ie) - acux	!- because f is on left side
-	    fyv(l,ie) = fyv(l,ie) - acuy
-	  end do
-	end do
-
-	wmax = wmax * dt
-
-	!write(99,*) 'stability diffusion: ',wmax
-
-	end
-
-c******************************************************************
-
         subroutine set_momentum_flux
 
 c sets aux arrays saux1/2/3
@@ -410,17 +288,12 @@ c sets aux arrays saux1/2/3
 	use mod_aux_array
 	use mod_hydro_print
 	use mod_hydro
+	use mod_internal
 	use evgeom
 	use levels
 	use basin
 
         implicit none
-
-        include 'param.h'
-
-
-
-
 
         integer ii,ie,k,l,lmax
         real b,c
@@ -440,8 +313,8 @@ c---------------------------------------------------------------
 	  lmax = ilhkv(k)
 	  do l=1,lmax
             saux1(l,k) = 0.
-	    saux2(l,k) = 0.
-	    saux3(l,k) = 0.
+	    momentxv(l,k) = 0.
+	    momentyv(l,k) = 0.
 	  end do
 	end do
 
@@ -462,8 +335,8 @@ c---------------------------------------------------------------
                 f = ut * b + vt * c	! f>0 => flux into node
                 if( f .gt. 0. ) then
 		  saux1(l,k) = saux1(l,k) + f
-		  saux2(l,k) = saux2(l,k) + f * ut
-		  saux3(l,k) = saux3(l,k) + f * vt
+		  momentxv(l,k) = momentxv(l,k) + f * ut
+		  momentyv(l,k) = momentyv(l,k) + f * vt
                 end if
 	    end do
           end do
@@ -478,11 +351,11 @@ c---------------------------------------------------------------
 	  do l=1,lmax
             h = hdknv(l,k)
 	    if( saux1(l,k) .gt. 0 ) then	!flux into node
-	      saux2(l,k) = saux2(l,k) / saux1(l,k)
-	      saux3(l,k) = saux3(l,k) / saux1(l,k)
+	      momentxv(l,k) = momentxv(l,k) / saux1(l,k)
+	      momentyv(l,k) = momentyv(l,k) / saux1(l,k)
 	    else				!only flux out of node
-	      saux2(l,k) = uprv(l,k) * h
-	      saux3(l,k) = vprv(l,k) * h
+	      momentxv(l,k) = uprv(l,k) * h
+	      momentyv(l,k) = vprv(l,k) * h
 	    end if
 	  end do
 	end do
@@ -509,13 +382,7 @@ c******************************************************************
 
         implicit none
 
-        include 'param.h'
-
 	real rlin		!strength of advection terms - normally 1
-
-
-
-
 
 	logical bvertadv		! new vertical advection for momentum
 	real zxadv,zyadv
@@ -574,8 +441,8 @@ c	    ---------------------------------------------------------------
                 b = ev(3+ii,ie)
                 c = ev(6+ii,ie)
 		wbot = wbot + wlov(l,k)
-                up = saux2(l,k) / h		!NEW
-                vp = saux3(l,k) / h
+                up = momentxv(l,k) / h		!NEW
+                vp = momentyv(l,k) / h
                 f = ut * b + vt * c
                 if( f .lt. 0. ) then	!flux out of node => into element
                   xadv = xadv + f * ( up - uc )

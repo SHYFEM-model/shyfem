@@ -94,6 +94,7 @@ c 25.03.2014    ggu	new offline
 c 25.06.2014    ggu	new arrays hkv_min, hkv_max
 c 05.12.2014    ccf	new interface for waves
 c 30.07.2015    ggu	routine renamed from ht to shyfem
+c 18.09.2015    ggu	new routine scalar, call to hydro()
 c
 c*****************************************************************
 
@@ -130,6 +131,8 @@ c----------------------------------------------------------------
 	use levels
 	use basin
 	use intp_fem_file
+	use mod_subset
+!$	use omp_lib	!ERIC
 
 c----------------------------------------------------------------
 
@@ -145,10 +148,13 @@ c local variables
 	logical bdebout
 	integer iwhat,levdbg
 	integer date,time
+	double precision timer
 
 	real getpar
 
 	bdebout = .false.
+
+!$      timer = omp_get_wtime() 
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%% code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -198,6 +204,7 @@ c-----------------------------------------------------------
 	call adjust_spherical
 	call print_spherical
 	call set_geom
+	call domain_clusterization(nkn,nel)	!ERIC
 
 c-----------------------------------------------------------
 c inititialize time independent vertical arrays
@@ -255,7 +262,6 @@ c-----------------------------------------------------------
 	call make_new_depth
 	call copy_depth
 	call make_new_depth
-
 	!call check_max_depth
 
 c-----------------------------------------------------------
@@ -285,7 +291,7 @@ c-----------------------------------------------------------
 	call init_chezy
 	call init_nodal_area_code	!area codes on nodes
         call diffweight
-        call diff_h_set
+        call set_diffusivity
 	call tideini
 	call cstsetup
 	call sp136(ic)
@@ -332,8 +338,6 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	do while( it .lt. itend )
 
-	   !if( it .eq. 1429200 ) call test3d(66,100)
-
 	   call check_crc
 	   call set_dry
 
@@ -352,14 +356,11 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
            call read_wwm
 	   
-	   call sp259f			!hydro
+	   call hydro			!hydro
 
 	   call wrfvla			!write finite volume
 
-	   call tracer
-	   call barocl(1)		!baroclinic contribution
-
-	   !call compute_heat_flux
+	   call scalar
 
            call turb_closure
 
@@ -392,8 +393,6 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	   if( bdebout ) call debug_output(it)
 
-	   !if( it .gt. 50400 ) call test3d(66,100)
-
 	end do
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -404,6 +403,10 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	call check_parameter_values('after main')
 
 	call print_end_time
+
+!$      timer = omp_get_wtime() - timer
+!$      print *,"TIME TO SOLUTION = ",timer,"  s "
+
         !call ht_finished
 
 	!call pripar(15)
@@ -436,7 +439,7 @@ c*****************************************************************
 	use mod_depth
 	use mod_layer_thickness
 	use mod_gotm_aux
-	use mod_aux_array
+	!use mod_aux_array
 	use mod_ts
 	use mod_roughness
 	use mod_diff_visc_fric
@@ -449,7 +452,7 @@ c*****************************************************************
 
 	integer it
 
-	include 'param.h'
+	!include 'param.h'
 
 	write(66) it
 
@@ -491,8 +494,8 @@ c*****************************************************************
         call debug_output_record(nlvdi*nel,nlvdi,wavefy,'wavefy')
         call debug_output_record(nel,1,rfricv,'rfricv')
 
-        call debug_output_record(nlvdi*nkn,nlvdi,saux2,'saux2')
-        call debug_output_record(nlvdi*nkn,nlvdi,saux3,'saux3')
+        call debug_output_record(nlvdi*nkn,nlvdi,momentxv,'momentxv')
+        call debug_output_record(nlvdi*nkn,nlvdi,momentyv,'momentyv')
         call debug_output_record((nlvdi+1)*nkn,nlvdi+1,vts,'vts')
 
 	write(66) 0,0
@@ -524,11 +527,7 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
-
-
-
-
+	!include 'param.h'
 
 	integer k,l,lmax,ie
 	real hmax
@@ -560,10 +559,8 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
-
+	!include 'param.h'
 	include 'femtime.h'
-
 	
 	integer k,l,lmax
 
@@ -603,9 +600,9 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
+	!include 'param.h'
 
-	call mod_tides_init(nel)
+	call mod_tides_init(nkn)
 
 	call mod_hydro_baro_init(nel)
 	call mod_roughness_init(nkn)
@@ -656,7 +653,7 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
+	!include 'param.h'
 
 	integer nlvddi
 
@@ -711,3 +708,54 @@ c*****************************************************************
 
 c*****************************************************************
 
+	subroutine scalar()
+	
+	use mod_aux_array
+!$	use omp_lib	!ERIC
+	
+	implicit none
+	
+	real getpar
+	
+	integer :: nscal,itemp,isalt,iconz,itvd
+	
+	nscal = 0
+	
+	itemp = nint(getpar("itemp"))
+	isalt = nint(getpar("isalt"))
+	iconz = nint(getpar("iconz"))
+	itvd = nint(getpar("itvd"))
+	
+	call tvd_init(itvd)
+	
+	if(itemp .gt. 0) nscal = nscal +1
+	if(isalt .gt. 0) nscal = nscal +1
+	if(iconz .gt. 0) nscal = nscal + iconz
+
+!$      call omp_set_nested(.TRUE.)
+	
+! !$OMP PARALLEL
+! 
+! !$OMP SINGLE 
+! 
+! !$OMP TASKGROUP
+! 
+! !$OMP TASK 
+	
+	call barocl(1)
+	
+	!print *, " end barocl"
+! !$OMP END TASK
+! !$OMP TASK
+	 !print *, "tracer"
+	 call tracer
+	 !print *, "end tracer"
+! !$OMP END TASK
+! !$OMP END TASKGROUP	
+! !$OMP END SINGLE 
+
+! !$OMP END PARALLEL 	
+
+	end subroutine
+
+c*****************************************************************

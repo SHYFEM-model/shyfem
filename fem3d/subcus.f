@@ -3957,3 +3957,50 @@ c**********************************************************************
 
 c**********************************************************************
 
+        subroutine set_yaron
+
+c momentum input for yaron
+
+        use mod_internal
+        use mod_layer_thickness
+        use evgeom
+        use levels
+        use basin
+
+        implicit none
+
+        integer kin,lin,ie,ii,k,lmax,nelem
+        real rnx,rny,rfact,q,area,h,fact
+
+        kin = 3935
+        kin = 2088
+        kin = 0
+        lin = 8
+        nelem = 6
+        nelem = 4
+        rnx = -1
+        rny = 0.
+        rfact = 1.1
+        q = 10.
+
+        if( kin .le. 0 ) return
+
+        do ie=1,nel
+          lmax = ilhv(ie)
+          area = 12. * ev(10,ie)
+          do ii=1,3
+            k = nen3v(ii,ie)
+            if( k .eq. kin .and. lmax .le. lin ) then
+              h = hdeov(lin,ie)
+              fact = rfact * q*q / (h*area*sqrt(area)*nelem)
+              write(17,*) 'yaron: ',ie,k,fact,fxv(lin,ie)
+              fxv(lin,ie) = fxv(lin,ie) - fact * rnx
+              fyv(lin,ie) = fyv(lin,ie) - fact * rny
+            end if
+          end do
+        end do
+
+        end
+
+c*******************************************************************
+

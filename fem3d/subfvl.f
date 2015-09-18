@@ -12,29 +12,22 @@ c******************************************************************
 c write of finite volume data
 
 	use mod_layer_thickness
-	use mod_aux_array
 	use mod_area
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
-	include 'param.h'
-
-
-
-
 	integer k,l,lmax,id,nvar
 
 	real getpar
 	logical has_output,next_output
+	real saux(nlvdi,nkn)
 
 	integer ia_out(4)
 	save ia_out
 
-        integer icall
-        save icall
-        data icall /0/
+        integer, save :: icall = 0
 
 c start of code
 
@@ -63,12 +56,12 @@ c normal call
 	do k=1,nkn
 	  lmax = ilhkv(k)
 	  do l=1,lmax
-	    saux1(l,k) = areakv(l,k) * hdknv(l,k)
+	    saux(l,k) = areakv(l,k) * hdknv(l,k)
 	  end do
 	end do
 
         id = 66       			!for finite volume
-	call write_scalar_file(ia_out,id,nlvdi,saux1)
+	call write_scalar_file(ia_out,id,nlvdi,saux)
 
 	end
 

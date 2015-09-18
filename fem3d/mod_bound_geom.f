@@ -91,7 +91,7 @@ c----------------------------------------------------------------------
         end if
 
 	nrb_bound_geom = ndim
-	write(6,*) 'mod_irv_init: ',nrb,ndim
+	!write(6,*) 'mod_irv_init: ',nrb,ndim
 
         end subroutine mod_irv_init
 

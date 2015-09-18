@@ -234,30 +234,7 @@ c*****************************************************************
 c*****************************************************************
 
         subroutine mod_bound_geom_info
-
-	use mod_bnd
-	use mod_bound_geom
-	use basin, only : nkn,nel,ngr,mbw
-
-	include 'param.h'
-
-        integer iu,i
-
-        iu = 88
-
-        write(iu,*) 'mod_bound_geom_info: ',nkn,nrb
-        write(iu,*) 'irv: ',nrb,(irv(i),i=1,nrb)
-        write(iu,*) 'ierv: ',(ierv(1,i),i=1,nrb)
-        write(iu,*) 'ierv: ',(ierv(2,i),i=1,nrb)
-        write(iu,*) 'rhv: ',(rhv(i),i=1,nrb)
-        write(iu,*) 'rlv: ',(rlv(i),i=1,nrb)
-        write(iu,*) 'rrv: ',(rrv(i),i=1,nrb)
-        write(iu,*) 'iopbnd: '
-        do i=1,nkn
-          if( iopbnd(i) .ne. 0 ) write(iu,*) i,iopbnd(i)
-        end do
-        write(iu,*) 'mod_bound_geom_info end'
-
+	implicit none
         end subroutine mod_bound_geom_info
 
 c*****************************************************************

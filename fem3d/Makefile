@@ -126,7 +126,8 @@ MODULES = mod_tides.o newlevels.o \
 		mod_meteo.o mod_geom.o mod_conz.o \
 		mod_bound_geom.o mod_bnd.o \
 		mod_tvd.o mod_bndo.o mod_system.o \
-		mod_layer_thickness.o
+		mod_layer_thickness.o \
+		mod_subset.o
 
 NEWOBJS = \
 	  new3di.o \
@@ -865,6 +866,8 @@ map_influence.o: param.h ../femlib/mod/mod_depth.mod \
 ../femlib/mod/mod_nudging.mod: mod_nudging.o
 ../femlib/mod/mod_roughness.mod: mod_roughness.o
 ../femlib/mod/mod_sinking.mod: mod_sinking.o
+../femlib/mod/mod_subset.mod: mod_subset.o
+mod_subset.o: ../femlib/mod/basin.mod
 ../femlib/mod/mod_system.mod: mod_system.o
 ../femlib/mod/mod_tides.mod: mod_tides.o
 ../femlib/mod/mod_ts.mod: mod_ts.o
@@ -957,9 +960,6 @@ newcra.o: param.h ../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro_baro.mod \
 		../femlib/mod/mod_bnd_aux.mod \
 		../femlib/mod/mod_hydro.mod 
-newdum.o: param.h ../femlib/mod/basin.mod \
-		../femlib/mod/mod_bound_geom.mod \
-		../femlib/mod/mod_bnd.mod 
 newdum1.o: param.h ../femlib/mod/levels.mod
 newdum_basin.o: param.h
 newdum_levels.o: param.h ../femlib/mod/levels.mod
@@ -968,8 +968,7 @@ newexpl.o: ../femlib/mod/mod_geom_dynamic.mod param.h \
 		../femlib/mod/mod_internal.mod \
 		../femlib/mod/mod_aux_array.mod \
 		../femlib/mod/mod_layer_thickness.mod \
-		../femlib/mod/evgeom.mod \
-		../femlib/mod/mod_bound_geom.mod pkonst.h \
+		../femlib/mod/evgeom.mod pkonst.h \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro_print.mod \
@@ -1092,6 +1091,7 @@ shyfem.o: ../femlib/mod/mod_area.mod \
 		../femlib/mod/mod_ts.mod \
 		../femlib/mod/mod_nohyd.mod \
 		../femlib/mod/mod_layer_thickness.mod mkonst.h \
+		../femlib/mod/mod_subset.mod \
 		../femlib/mod/mod_bndo.mod \
 		../femlib/mod/mod_geom.mod ../femlib/mod/basin.mod \
 		../femlib/mod/mod_aux_array.mod femtime.h \
@@ -1174,8 +1174,7 @@ subcus.o: ../femlib/mod/mod_area.mod \
 		../femlib/mod/mod_meteo.mod 
 subdep.o: ../femlib/mod/mod_depth.mod param.h \
 		../femlib/mod/basin.mod 
-subdif.o: ../femlib/mod/mod_geom_dynamic.mod \
-		../femlib/mod/mod_depth.mod param.h \
+subdif.o: ../femlib/mod/mod_depth.mod param.h \
 		../femlib/mod/basin.mod \
 		../femlib/mod/mod_aux_array.mod femtime.h \
 		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
@@ -1229,9 +1228,8 @@ subflxa.o: param.h ../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod ../femlib/mod/nls.mod 
 subflxu.o: param.h ../femlib/mod/levels.mod \
 		../femlib/mod/mod_geom.mod 
-subfvl.o: ../femlib/mod/mod_area.mod param.h \
-		../femlib/mod/levels.mod ../femlib/mod/basin.mod \
-		../femlib/mod/mod_aux_array.mod \
+subfvl.o: ../femlib/mod/mod_area.mod ../femlib/mod/levels.mod \
+		../femlib/mod/basin.mod \
 		../femlib/mod/mod_layer_thickness.mod 
 subgotm.o: ../femlib/mod/mod_ts.mod \
 		../femlib/mod/mod_layer_thickness.mod \

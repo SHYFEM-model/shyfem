@@ -1,5 +1,45 @@
 ============================================================
 
+Fri Sep 18 18:01:43 CEST 2015
+
+changes eric integrated (except newcon.f)
+
+ BUG                     |    6 +
+ LOG                     |   29 +++
+ RELEASE_NOTES           |   23 +-
+ fem3d/Makefile          |   20 +-
+ fem3d/mod_aux_array.f   |   34 ---
+ fem3d/mod_bound_geom.f  |    2 +-
+ fem3d/mod_internal.f    |   30 +--
+ fem3d/mod_subset.f      |  332 +++++++++++++++++++++++++
+ fem3d/mod_ts.f          |   35 ---
+ fem3d/new3di.f          |  626 ++++++++---------------------------------------
+ fem3d/newbcl.f          |   57 +++--
+ fem3d/newchk.f          |   26 +-
+ fem3d/newconz.f         |   57 ++---
+ fem3d/newdum.f          |   25 +--
+ fem3d/newexpl.f         |  167 ++-----------
+ fem3d/newtra.f          |   12 +-
+ fem3d/newtvd.f          |   53 +++-
+ fem3d/shyfem.f          |  100 ++++++--
+ fem3d/subcoo.f          |    7 +-
+ fem3d/subcus.f          |   47 ++++
+ fem3d/subdif.f          |   84 +------
+ fem3d/subfvl.f          |   15 +-
+ fem3d/subproj.f         |    1 +
+ fem3d/subqfxt.f         |   37 ++--
+ fem3d/subres.f          |   90 ++-----
+ fem3d/subver.f          |    7 +-
+ fem3d/tideg.f           |   13 +-
+ fembin/mail_shyfem.sh   |    2 +-
+ femdoc/final/shyfem.pdf |  Bin 294936 -> 294936 bytes
+ femdoc/final/shyfem.ps  |   30 ++--
+ 30 files changed, 830 insertions(+), 1137 deletions(-)
+ new file:
+   fem3d/mod_subset.f
+
+============================================================
+
 Mon Sep 14 18:24:29 CEST 2015
 
 New version 7_2_2

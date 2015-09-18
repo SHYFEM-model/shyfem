@@ -185,7 +185,10 @@ c----------------------------------------------------------
 
 		ibarcl=iround(getpar('ibarcl'))
 		if(ibarcl.le.0) icall = -1
-		if(ibarcl.gt.4) goto 99
+		if(ibarcl.gt.4) then
+		  write(6,*) 'Value of ibarcl not allowed: ',ibarcl
+	          stop 'error stop barocl: ibarcl'
+		end if
 		if(icall.eq.-1) return
 
 		badvect = ibarcl .ne. 2
@@ -214,7 +217,7 @@ c		--------------------------------------------
 		  else if( ibarcl .eq. 4 ) then		!interpolate to T/S
 	  	    call ts_nudge(itanf,nlvdi,nlv,nkn,tempv,saltv)
 		  else
-		    goto 99
+	            stop 'error stop barocl: internal error (1)'
 		  end if
 		end if
 
@@ -326,53 +329,61 @@ c----------------------------------------------------------
 	  call openmp_get_thread_num(tid)
 	  !write(6,*) 'number of thread of temp: ',tid
 
+! !$OMP PARALLEL 	  
+! !$OMP SINGLE	  
+! 
+! !$OMP TASK PRIVATE(what,dtime) FIRSTPRIVATE(thpar,wsink,robs,itemp,it) 
+! !$OMP&     SHARED(idtemp,tempv,difhv,difv,difmol,tobsv) DEFAULT(NONE)
+! !$OMP&     IF(itemp > 0)
+
           if( itemp .gt. 0 ) then
 		what = 'temp'
 		dtime = it
 	        call bnds_read_new(what,idtemp,dtime)
-		!call check_layers(what//' after bnd',tempv)
                 call scal_adv_nudge(what,0
      +                          ,tempv,idtemp
      +                          ,thpar,wsink
      +                          ,difhv,difv,difmol,tobsv,robs)
-		!call check_layers(what//' after adv',tempv)
+		if( binfo ) then
+	  	  call tsmass(tempv,+1,nlvdi,ttot) 
+          	  call conmima(nlvdi,tempv,tmin,tmax)
+	  	  write(ninfo,*) 'temp: ',it,ttot,tmin,tmax
+		end if
 	  end if
+
+! !$OMP END TASK
 
 !$OMP SECTION
 
 	  call openmp_get_thread_num(tid)
 	  !write(6,*) 'number of thread of salt: ',tid
 
+! !$OMP TASK PRIVATE(what,dtime) FIRSTPRIVATE(shpar,wsink,robs,isalt,it) 
+! !$OMP&     SHARED(idsalt,saltv,difhv,difv,difmol,sobsv) DEFAULT(NONE)
+! !$OMP&     IF(isalt > 0)
+
           if( isalt .gt. 0 ) then
 		what = 'salt'
 		dtime = it
 	        call bnds_read_new(what,idsalt,dtime)
-		!call check_layers(what//' after bnd',tempv)
                 call scal_adv_nudge(what,0
      +                          ,saltv,idsalt
      +                          ,shpar,wsink
      +                          ,difhv,difv,difmol,sobsv,robs)
-		!call check_layers(what//' after adv',tempv)
+		if( binfo ) then
+	  	  call tsmass(saltv,+1,nlvdi,stot) 
+          	  call conmima(nlvdi,saltv,smin,smax)
+	  	  write(ninfo,*) 'salt: ',it,stot,smin,smax
+		end if
           end if
+
+! !$OMP END TASK
+! !$OMP END SINGLE	
+! !$OMP TASKWAIT
 
 !$OMP END SECTIONS NOWAIT
 !$OMP END PARALLEL
 
-	end if
-
-c----------------------------------------------------------
-c compute total mass
-c----------------------------------------------------------
-
-	if( binfo ) then
-	  call tsmass(saltv,+1,nlvdi,stot) 
-	  call tsmass(tempv,+1,nlvdi,ttot) 
-	  write(ninfo,*) 'total_mass_T/S: ',it,ttot,stot
-
-          call conmima(nlvdi,saltv,smin,smax)
-          call conmima(nlvdi,tempv,tmin,tmax)
-          write(ninfo,2020) 'tsmima: ',it,tmin,tmax,smin,smax
- 2020	  format(a,i10,4f8.2)
 	end if
 
 c----------------------------------------------------------
@@ -412,10 +423,6 @@ c----------------------------------------------------------
 c end of routine
 c----------------------------------------------------------
 
-	return
-   99	continue
-	write(6,*) 'Value of ibarcl not allowed: ',ibarcl
-	stop 'error stop barocl: ibarcl'
 	end
 
 c********************************************************

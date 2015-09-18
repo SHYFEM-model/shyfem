@@ -3,28 +3,6 @@
 
 	implicit none
 
-!	real rdistv(nkndim)
-!       common /rdistv/rdistv
-
-!       real fcorv(neldim)
-!       common /fcorv/fcorv
-!       real fxv(nlvdim,neldim)          !new HYDRO debora
-!       common /fxv/fxv
-!       real fyv(nlvdim,neldim)
-!       common /fyv/fyv
-
-!       save /rdistv/,/fcorv/,/fxv/,/fyv/
-
-!       integer iuvfix(neldim)
-!       common /iuvfix/iuvfix
-!       save /iuvfix/
-
-!       double precision ddxv(2*nlvdim,neldim)  !ASYM
-!       double precision ddyv(2*nlvdim,neldim)  !ASYM
-!       common /ddxv/ddxv, /ddyv/ddyv
-!       save /ddxv/, /ddyv/
-
-
         integer, private, save :: nkn_internal = 0
         integer, private, save :: nel_internal = 0
         integer, private, save :: nlv_internal = 0
@@ -33,6 +11,8 @@
         real, allocatable, save :: fcorv(:)
         real, allocatable, save :: fxv(:,:)
         real, allocatable, save :: fyv(:,:)
+        real, allocatable, save :: momentxv(:,:)
+        real, allocatable, save :: momentyv(:,:)
         real, allocatable, save :: iuvfix(:)
         double precision, allocatable, save :: ddxv(:,:)
         double precision, allocatable, save :: ddyv(:,:)
@@ -48,7 +28,7 @@
         integer nlv
 
         if( nkn == nkn_internal .and. nel == nel_internal
-     +  .and. nel == nel_internal) return
+     +  .and. nlv == nlv_internal) return
 
         if( nkn > 0 .or. nel > 0 .or. nlv > 0) then
           if( nkn == 0 .or. nel == 0 .or. nlv == 0) then
@@ -62,6 +42,8 @@
          deallocate(fcorv)
          deallocate(fxv)
          deallocate(fyv)
+         deallocate(momentxv)
+         deallocate(momentyv)
          deallocate(iuvfix)
          deallocate(ddxv)
          deallocate(ddyv)
@@ -77,6 +59,8 @@
          allocate (fcorv(nel))
          allocate (fxv(nlv,nel))
          allocate (fyv(nlv,nel))
+         allocate (momentxv(nlv,nkn))
+         allocate (momentyv(nlv,nkn))
          allocate (iuvfix(nel))
          allocate (ddxv(2*nlv,nel))
          allocate (ddyv(2*nlv,nel))

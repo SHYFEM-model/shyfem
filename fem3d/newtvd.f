@@ -380,6 +380,8 @@ c computes horizontal tvd fluxes for one element
         logical bdebug
 	integer ii,k
         integer ic,kc,id,kd,ip,iop
+	integer itot1,itot2
+	integer tet1
         real term,fact,grad
         real conc,cond,conf,conu
         real gcx,gcy,dx,dy
@@ -388,6 +390,8 @@ c computes horizontal tvd fluxes for one element
         real alfa,dis,aj
         real vel
         real gdx,gdy
+
+	integer smartdelta
 
 	bgradup = .true.
 	bgradup = itvd_type .eq. 2
@@ -405,24 +409,32 @@ c computes horizontal tvd fluxes for one element
 
 	  if( itot .lt. 1 .or. itot .gt. 2 ) return
 
+	  itot2 = itot - 1
+	  itot1 = 2 - itot
+
 	  u = ulnv(l,ie)
           v = vlnv(l,ie)
 	  aj = 24 * ev(10,ie)
 
             ip = isum
-            if( itot .eq. 2 ) ip = 6 - ip		!bug fix
+            !if( itot .eq. 2 ) ip = 6 - ip		!bug fix
+	    ip = itot2*(6-ip) + itot1*ip
 
             do ii=1,3
               if( ii .ne. ip ) then
-                if( itot .eq. 1 ) then			!flux out of one node
-                  ic = ip
-                  id = ii
-                  fact = 1.
-                else					!flux into one node
-                  id = ip
-                  ic = ii
-                  fact = -1.
-                end if
+                !if( itot .eq. 1 ) then			!flux out of one node
+                !  ic = ip
+                !  id = ii
+                !  fact = 1.
+                !else					!flux into one node
+                !  id = ip
+                !  ic = ii
+                !  fact = -1.
+                !end if
+                ic = itot2*ii + itot1*ip
+		id = itot2*ip + itot1*ii
+		fact = -itot2 + itot1
+
                 kc = nen3v(ic,ie)
                 conc = cl(l,ic)
                 kd = nen3v(id,ie)
@@ -433,13 +445,15 @@ c computes horizontal tvd fluxes for one element
                 !dis = sqrt(dx**2 +dy**2)
 		! next is bug fix for lat/lon
 		iop = 6 - (id+ic)			!opposite node of id,ic
+		tet1 = 1+mod(iop,3)
 		dx = aj * ev(6+iop,ie)
-		if( 1+mod(iop,3) .eq. id ) dx = -dx
+		!if( tet1 .eq. id ) dx = -dx
+		dx = -2*smartdelta(tet1,id) * dx + dx
 		dy = aj * ev(3+iop,ie)
-		if( 1+mod(iop,3) .eq. ic ) dy = -dy
+		!if( tet1 .eq. ic ) dy = -dy
+		dy = -2*smartdelta(tet1,ic) * dy + dy
 		dis = ev(16+iop,ie)
 
-                !vel = sqrt(u**2 + v**2)                !total velocity
                 vel = abs( u*dx + v*dy ) / dis          !projected velocity
                 alfa = ( dt * vel  ) / dis
 
@@ -672,6 +686,19 @@ c ------------------- l+2 -----------------------
 	end do
 
 	end
+
+c*****************************************************************
+
+	function smartdelta(a,b)
+
+	implicit none
+
+	integer smartdelta
+        integer, intent(in) :: a,b
+
+        smartdelta=int((float((a+b)-abs(a-b)))/(float((a+b)+abs(a-b))))
+
+	end function smartdelta
 
 c*****************************************************************
 

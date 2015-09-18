@@ -603,25 +603,23 @@ c******************************************************************
 
 c initializes uvz values from zenv, utlnv, vtlnv, hdenv
 
-	use mod_aux_array
+	use basin
 
 	implicit none
 
-	include 'param.h'
-
-
 	logical has_restart
+	real dzeta(nkn)
 
 	call ttov			!velocities from layer transports
 	call uvint			!barotropic transports
 
 	if( .not. has_restart(5) ) then
-	  call sp256w(v1v,saux1,saux2)	!vertical velocities
+	  call hydro_vertical(dzeta)	!vertical velocities
 	end if
 
-	call make_prvel		!nodal values
+	call make_prvel			!nodal values
 
-	call copy_uvz		!copy to old time step
+	call copy_uvz			!copy to old time step
 
 	end
 

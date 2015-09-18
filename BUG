@@ -1,4 +1,10 @@
 
+BUG_52	     ggu	7.2.3    19.09.2015
+	in coo_init n==0 was not checked
+
+BUG_51 	    ggu		7.2.3    19.09.2015
+	zeqv was not always initialized in tideini
+
 BUG_2010_50     ggu&deb	6.1.48   16.03.2012
 	use of sigma routines (supdep.f) and plotting (suputi.f)
 
