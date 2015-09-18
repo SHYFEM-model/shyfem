@@ -1,3 +1,42 @@
+version  7_2_3    18-09-2015    VERS_7_2_3
+
+========================================================== 18-09-2015 - 7_2_3
+
+c ./fem3d/shyfem.f:
+c 18.09.2015    ggu	new routine scalar, call to hydro()
+c
+c ./fem3d/subver.f:
+c 18.09.2015	ggu	version 7.2.3
+c
+c ./fem3d/newchk.f:
+c 17.09.2015    ggu     in mass_conserve aux variables are local
+c
+c ./fem3d/subqfxt.f:
+c 18.09.2015	ccf	do not compute heat fluxes in dry nodes
+c 18.09.2015	ccf	checks only for levdbg > 2
+c
+c ./fem3d/tideg.f:
+c 18.09.2015    ggu     zeqv is now initialized even without use of tides (bug)
+c
+c ./fem3d/new3di.f:
+c 17.09.2015    ggu	sp256w renamed to hydro_vertical
+c 17.09.2015    ggu	sp259f renamed to hydro
+c 18.09.2015    ggu	sp256 renamed to hydro_transports, file cleaned
+c
+c ./fem3d/mod_subset.f:
+c 18.09.2015	ggu	code integrated
+c
+c ./fem3d/newexpl.f:
+c 18.09.2015	ggu	use momentx/yv to store advective terms, not aux arrays
+c
+c ./fem3d/subdif.f:
+c 18.09.2015    ggu     austau() not used anymore - eliminated
+c
+c ./fem3d/subcoo.f:
+c 18.09.2015    ggu     bug fix in coo_init - do not set ip/jp for n==0
+
+==========================================================
+
 version  7_2_2    14-09-2015    VERS_7_2_2   commit_2015-09-18
 
 version  7_2_2    14-09-2015    VERS_7_2_2
