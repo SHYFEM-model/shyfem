@@ -282,10 +282,9 @@ c******************************************************************
 
         subroutine set_momentum_flux
 
-c sets aux arrays saux1/2/3
+c sets arrays momentx/yv
 
 	use mod_layer_thickness
-	use mod_aux_array
 	use mod_hydro_print
 	use mod_hydro
 	use mod_internal
@@ -305,18 +304,15 @@ c sets aux arrays saux1/2/3
 	real xadv,yadv
 	real area,vol
 
+	real saux(nlvdi,nkn)
+
 c---------------------------------------------------------------
 c initialization
 c---------------------------------------------------------------
 
-	do k=1,nkn
-	  lmax = ilhkv(k)
-	  do l=1,lmax
-            saux1(l,k) = 0.
-	    momentxv(l,k) = 0.
-	    momentyv(l,k) = 0.
-	  end do
-	end do
+	saux = 0.
+	momentxv = 0.
+	momentyv = 0.
 
 c---------------------------------------------------------------
 c accumulate momentum that flows into nodes (weighted by flux)
@@ -334,7 +330,7 @@ c---------------------------------------------------------------
                 c = ev(6+ii,ie)
                 f = ut * b + vt * c	! f>0 => flux into node
                 if( f .gt. 0. ) then
-		  saux1(l,k) = saux1(l,k) + f
+		  saux(l,k) = saux(l,k) + f
 		  momentxv(l,k) = momentxv(l,k) + f * ut
 		  momentyv(l,k) = momentyv(l,k) + f * vt
                 end if
@@ -350,9 +346,9 @@ c---------------------------------------------------------------
 	  lmax = ilhkv(k)
 	  do l=1,lmax
             h = hdknv(l,k)
-	    if( saux1(l,k) .gt. 0 ) then	!flux into node
-	      momentxv(l,k) = momentxv(l,k) / saux1(l,k)
-	      momentyv(l,k) = momentyv(l,k) / saux1(l,k)
+	    if( saux(l,k) .gt. 0 ) then		!flux into node
+	      momentxv(l,k) = momentxv(l,k) / saux(l,k)
+	      momentyv(l,k) = momentyv(l,k) / saux(l,k)
 	    else				!only flux out of node
 	      momentxv(l,k) = uprv(l,k) * h
 	      momentyv(l,k) = vprv(l,k) * h
@@ -372,7 +368,6 @@ c******************************************************************
 
 	use mod_internal
 	use mod_layer_thickness
-	use mod_aux_array
 	use mod_hydro_print
 	use mod_hydro_vel
 	use mod_hydro
@@ -411,7 +406,7 @@ c---------------------------------------------------------------
 c accumulate momentum that flows into nodes (weighted by flux)
 c---------------------------------------------------------------
 
-        call set_momentum_flux	!sets aux arrays saux1/2/3
+        call set_momentum_flux	!sets aux arrays momentx/yv
 
 c---------------------------------------------------------------
 c compute advective contribution

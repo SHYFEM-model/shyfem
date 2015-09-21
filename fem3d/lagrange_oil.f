@@ -23,21 +23,18 @@ c*******************************************************************
 
 	subroutine set_diff_oil
 
-	use mod_aux_array
 	use evgeom
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
-        include 'param.h'
         include 'lagrange.h'
-
-
-
 	include 'femtime.h'
 
 	real oil(nel)
 	real zfilm(nel)
+	real v1v(nkn)
+	real v2v(nkn)
 
 	integer ie,i
 	integer ioil,ifreq

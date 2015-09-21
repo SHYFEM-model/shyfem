@@ -372,7 +372,6 @@ c mode = 0		normal call, compute stability
 c mode = 1		error call, compute stability and write error message
 c mode = 2		eliminate elements with r>rindex
 
-	use mod_aux_array
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
 
@@ -384,12 +383,13 @@ c mode = 2		eliminate elements with r>rindex
         real dt			!time step to be used
         real rindex		!stability index (return)
 
-
-
 	integer ie,l,lmax,iweg
         real rkpar,azpar,ahpar,rlin
 	real dindex,aindex,tindex,sindex
 	real rmax
+
+	real, allocatable :: sauxe1(:,:)
+	real, allocatable :: sauxe2(:,:)
 
 	real getpar
 	logical is_i_nan
@@ -399,12 +399,9 @@ c mode = 2		eliminate elements with r>rindex
 	ahpar = getpar('ahpar')
 	rlin = getpar('rlin')
 
-	do ie=1,nel
-	  do l=1,nlv
-	    sauxe1(l,ie) = 0.
-	    sauxe2(l,ie) = 0.
-	  end do
-	end do
+	allocate(sauxe1(nlvdi,nel),sauxe2(nlvdi,nel))
+	sauxe1 = 0.
+	sauxe2 = 0.
 
 	rmax = 1.e+30
 	if( mode .eq. 2 ) rmax = rindex
@@ -447,6 +444,8 @@ c mode = 2		eliminate elements with r>rindex
 	end if
 
 	rindex = tindex
+
+	deallocate(sauxe1,sauxe2)
 
 	!write(6,*) 'rindex = ',rindex,aindex,dindex
 

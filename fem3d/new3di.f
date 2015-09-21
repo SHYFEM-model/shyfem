@@ -184,7 +184,6 @@ c written on 27.07.88 by ggu   (from sp159f)
 
 	use mod_depth
 	use mod_bound_dynamic
-	use mod_aux_array
 	use mod_area
 	use mod_hydro_baro
 	use mod_hydro_print

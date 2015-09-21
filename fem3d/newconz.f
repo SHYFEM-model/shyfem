@@ -62,7 +62,6 @@ c*********************************************************************
 c shell for conz (new version)
 
 	use mod_conz
-	use mod_aux_array
 	use mod_diff_visc_fric
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
@@ -87,6 +86,7 @@ c local
 	real wsink
 	real t,dt
 	double precision dtime0,dtime
+	real v1v(nkn)
 c function
 	logical has_restart,next_output,has_output
 	integer nbnds
@@ -227,7 +227,6 @@ c*********************************************************************
 c shell for conz with multi dimensions 
 
 	use mod_conz
-	use mod_aux_array
 	use mod_diff_visc_fric
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw

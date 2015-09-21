@@ -259,7 +259,6 @@ c*******************************************************************
 
 c flags elements which are in/out-side or at border of line
 
-	use mod_aux_array
 	use basin
 
 	implicit none
@@ -277,6 +276,7 @@ c flags elements which are in/out-side or at border of line
 	real xlmin,xlmax,ylmin,ylmax
 	real xmin,xmax,ymin,ymax
 	real xa,ya,xe(3),ye(3)
+	real v1v(nkn)
 
 	debug = .false.
 

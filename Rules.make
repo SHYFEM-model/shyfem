@@ -33,11 +33,23 @@
 #
 ##############################################
 
-export MBWDIM = 1
-export NGRDIM = 1
-export NLVDIM = 1
 export NKNDIM = 1
 export NELDIM = 1
+export NLVDIM = 1
+
+export MBWDIM = 1
+export NGRDIM = 1
+
+export NBCDIM = 1
+export NRBDIM = 1
+export NB3DIM = 1
+
+export NARDIM = 1
+export NEXDIM = 1
+export NFXDIM = 1
+export NCSDIM = 1
+
+export NBDYDIM = 100000
 
 ##############################################
 # Compiler
@@ -64,7 +76,7 @@ export NELDIM = 1
 
 #FORTRAN_COMPILER = GNU_G77
 FORTRAN_COMPILER = GNU_GFORTRAN
-FORTRAN_COMPILER = INTEL
+#FORTRAN_COMPILER = INTEL
 #FORTRAN_COMPILER = PORTLAND
 #FORTRAN_COMPILER = IBM
 

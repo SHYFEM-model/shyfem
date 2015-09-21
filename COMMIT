@@ -1,5 +1,60 @@
 ============================================================
 
+Mon Sep 21 14:01:47 CEST 2015
+
+auxiliary array module eliminated
+
+ .gitignore                 |    5 +-
+ Makefile                   |   24 +++-
+ Rules.make                 |   20 ++-
+ fem3d/Makefile             |   76 ++------
+ fem3d/bio3d.f              |    2 +-
+ fem3d/lagrange_init.f      |    2 +-
+ fem3d/lagrange_oil.f       |    7 +-
+ fem3d/mod_aux_array.f      |   69 --------
+ fem3d/new3di.f             |    1 -
+ fem3d/newbcl.f             |    1 -
+ fem3d/newcon.f             |   18 +--
+ fem3d/newconz.f            |    3 +-
+ fem3d/newdum.f             |  291 -------------------------------
+ fem3d/newdum1.f            |   23 ---
+ fem3d/newdum_basin.f       |   68 -------
+ fem3d/newdum_levels.f      |   52 ------
+ fem3d/newdum_out.f         |   17 --
+ fem3d/newexpl.f            |   27 ++--
+ fem3d/newfix.f             |   15 +--
+ fem3d/newstab.f            |   17 +-
+ fem3d/newtra.f             |    5 +-
+ fem3d/sedi3d.f             |   11 +-
+ fem3d/shyfem.f             |    7 +-
+ fem3d/subcus.f             |   15 +--
+ fem3d/subdif.f             |    4 +-
+ fem3d/subdry.f             |   10 +-
+ fem3d/subele.f             |    2 +-
+ fem3d/subexta.f            |    3 +-
+ fem3d/submet.f             |    2 +-
+ fem3d/subres.f             |    8 +-
+ fem3d/subvola.f            |   12 +-
+ fem3d/subwaves.f           |    2 +-
+ femcheck/check_software.sh |    4 +
+ femcheck/configure.pl      |   35 ++++
+ femcheck/configure.sh      |  415 ++++++++++++++++++++++++++++++++++++++++++++
+ femdoc/final/shyfem.pdf    |  Bin 294936 -> 294935 bytes
+ femdoc/final/shyfem.ps     |   10 +-
+ 37 files changed, 581 insertions(+), 702 deletions(-)
+ new file:
+   femcheck/configure.pl
+   femcheck/configure.sh
+ deleted:
+    fem3d/mod_aux_array.f
+    fem3d/newdum.f
+    fem3d/newdum1.f
+    fem3d/newdum_basin.f
+    fem3d/newdum_levels.f
+    fem3d/newdum_out.f
+
+============================================================
+
 Fri Sep 18 18:02:32 CEST 2015
 
 New version 7_2_3

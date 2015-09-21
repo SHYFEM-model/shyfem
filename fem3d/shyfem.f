@@ -118,7 +118,6 @@ c----------------------------------------------------------------
 	use mod_gotm_aux
 	use mod_diff_aux
 	use mod_bound_dynamic
-	use mod_aux_array
 	use mod_area
 	use mod_ts
 	use mod_roughness
@@ -439,7 +438,6 @@ c*****************************************************************
 	use mod_depth
 	use mod_layer_thickness
 	use mod_gotm_aux
-	!use mod_aux_array
 	use mod_ts
 	use mod_roughness
 	use mod_diff_visc_fric
@@ -641,7 +639,7 @@ c*****************************************************************
 	use mod_layer_thickness
 	use mod_gotm_aux
 	use mod_bound_dynamic
-	use mod_aux_array
+	!use mod_aux_array
 	use mod_area
 	use mod_ts
 	use mod_diff_visc_fric
@@ -669,7 +667,7 @@ c*****************************************************************
 
 	call mod_area_init(nkn,nlvddi)
 	call mod_bound_dynamic_init(nkn,nlvddi)
-	call mod_aux_array_init(nkn,nel,nlvddi)
+	!call mod_aux_array_init(nkn,nel,nlvddi)
 	call mod_gotm_aux_init(nkn,nlvddi)
 
 	call mod_layer_thickness_init(nkn,nel,nlvddi)
@@ -710,7 +708,6 @@ c*****************************************************************
 
 	subroutine scalar()
 	
-	use mod_aux_array
 !$	use omp_lib	!ERIC
 	
 	implicit none

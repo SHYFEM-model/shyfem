@@ -579,7 +579,6 @@ c****************************************************************
 c sets array znv from zenv
 
 	use mod_geom_dynamic
-	use mod_aux_array
 	use mod_hydro
 	use evgeom
 	use basin
@@ -594,6 +593,7 @@ c local
         integer ie,ii,k
         integer ntot
 	real z,area
+	real v1v(nkn),v2v(nkn)
 
 c-------------------------------------------------------------
 c initialize znv and counters
@@ -601,11 +601,9 @@ c-------------------------------------------------------------
 
         ntot = 0
 
-	do k=1,nkn
-	  znv(k) = flag
-	  v1v(k) = 0.
-	  v2v(k) = 0.
-	end do
+	znv = flag
+	v1v = 0.
+	v2v = 0.
 
 c-------------------------------------------------------------
 c set znv and accumulate

@@ -41,7 +41,7 @@ FEMBIN    = $(FEMDIR)/fembin
 TMPDIR    = $(HOME)/fem/tmp
 ACTFEMDIR = `pwd`
 
-REGRESSDIR = femregres/tests
+REGRESSDIR = femregress/tests
 
 SUBDIRS   = `ls -dF * | grep  '/' | sed -e 's/\///'`
 FEMLIBS   = femcheck post hcbs
@@ -88,7 +88,10 @@ FEMDIRS   = $(FEMLIBS) $(FEMEXTRA) $(FEMC) $(FEMPROG) $(FEMUTIL)
 # compiling and recursive targets
 #---------------------------------------------------------------
 
-default: fem
+default:
+	@echo "   shyfem - version $(VERSION) $(COMMIT)"
+	@echo '   run "make help" for more information'
+	@echo '   if you are new to shyfem run "make first_time"'
 
 all: fem doc
 
@@ -168,7 +171,9 @@ cleanbck:
 
 help:
 	@echo "help                this screen"
+	@echo "first_time          what to do for the first time"
 	@echo "install             installs the model"
+	@echo "configure           configures the model"
 	@echo "fem                 compiles everything"
 	@echo "clean, cleanall     cleans installation from tmp and obj files"
 	@echo "doc                 makes documentation"
@@ -178,6 +183,18 @@ help:
 	@echo "check_compilation   checks if all executables have compiled"
 	@echo "modified            finds files changed after installation"
 	@echo "changed_zip         zips files changed after installation"
+
+first_time:
+	@echo 'Recommended use if you see shyfem for the first time:'
+	@echo '   make help            gives overview of possible commands'
+	@echo 'Commands to run only for the first time:'
+	@echo '   make check_software  checks availability of software'
+	@echo '   make configure       configures the use of the model'
+	@echo '   make install         installs the model'
+	@echo '   make fem             compiles the model'
+	@echo 'Commands to run everytime you change something in the model:'
+	@echo '   make cleanall        cleans directories'
+	@echo '   make fem             compiles the model'
 
 version:
 	@echo $(VERSION) $(COMMIT)
@@ -212,6 +229,9 @@ info: version
 check: check_software
 check_software:
 	@cd femcheck; ./check_software.sh
+
+configure:
+	@cd femcheck; ./configure.sh
 
 check_compilation:
 	@femcheck/check_compilation.sh

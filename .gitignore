@@ -8,7 +8,7 @@ newtmp
 mod
 
 lib
-#bin
+bin
 #fem3d/bin
 bugs
 
@@ -16,6 +16,9 @@ femmpi
 rules
 stable
 femdoc/old/
+
+femsave
+femregress
 
 #-----------------------------------------------
 

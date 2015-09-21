@@ -242,7 +242,6 @@ c
 c
 c computes rms currents
 c
-	use mod_aux_array
 	use mod_hydro_baro
 	use mod_hydro
 	use basin
@@ -258,6 +257,7 @@ c local
 	double precision rr
 	integer ii,ie,k,id
 	real hm,u,v
+	real v1v(nkn),v2v(nkn)
 c function
 	integer iround
 c	integer wfnov,wrnov,ifileo
@@ -323,10 +323,8 @@ c       if time write output to rms file
 	    rms(ie)=sqrt(rms(ie)*rr)
 	  end do
 
-	  do k=1,nkn
-	    v1v(k)=0.
-	    v2v(k)=0.
-	  end do
+	  v1v=0.
+	  v2v=0.
 
 	  do ie=1,nel
 	    do ii=1,3

@@ -1448,7 +1448,6 @@ c DPGGU -> introduced double precision to stabilize solution
 	use mod_layer_thickness
 	use mod_diff_aux
 	use mod_bound_dynamic
-	use mod_aux_array
 	use mod_area
 	use mod_ts
 	use mod_hydro_vel
@@ -1474,16 +1473,6 @@ c arguments
 c common
 	include 'femtime.h'
 	include 'mkonst.h'
-
-	!include 'hydro_print.h'
-
-
-
- 
- 
-
-
-
 
 c local
 	logical bdebug,bdebug1,debug
@@ -1522,6 +1511,7 @@ c------------------------------------------------------------
 	double precision clow(nlvddi,nkn)
 	double precision chigh(nlvddi,nkn)
         real cwrite(nlvddi,nkn)
+        real saux(nlvddi,nkn)
 c------------------------------------------------------------
 c end of big arrays
 c------------------------------------------------------------
@@ -1865,7 +1855,7 @@ c-----------------------------------------------------------------
 		  cwrite(l,k) = aux1		!save for write
                   aux2 = chigh(l,k) / voltot
                   stabadv = max(stabadv,aux2)
-		  saux1(l,k) = aux2		!for adv. stab.
+		  saux(l,k) = aux2		!for adv. stab.
                   aux3 = clow(l,k) / voltot
                   stabdiff = max(stabdiff,aux3)
                   aux4 = cn(l,k) / voltot
@@ -1887,13 +1877,13 @@ c		  end if
 
             else
 		  cwrite(l,k) = 0
-		  saux1(l,k) = 0.
+		  saux(l,k) = 0.
             end if
 	   end do
           else
 	   do l=1,ilevel
 		  cwrite(l,k) = 0
-		  saux1(l,k) = 0.
+		  saux(l,k) = 0.
            end do
           end if
 	end do

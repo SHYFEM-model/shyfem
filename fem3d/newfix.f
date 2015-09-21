@@ -28,21 +28,16 @@ c initialization of bclfix routines
 
 	use mod_bclfix
 	use mod_internal
-	use mod_aux_array
 	use basin
 
         implicit none 
-
-        include 'param.h' 
-
-
-
 
 	real tnudge	!relaxation time for nudging [s]
 
         integer ie,l,i,ii,k,n,nn,nf
 	integer ibc,nodes
 	integer nbc
+	integer iflag(nkn)
        
 	integer nkbnds,kbnds,nbnds
 	integer ieext
@@ -81,13 +76,11 @@ c------------------------------------------------------------------
 	  ! flag boundary nodes
 	  !------------------------------------------------------------------
 
-          do k=1,nkn
-            v1v(k) = 0.
-          end do
+	  iflag = 0
 
 	  do i=1,nodes
 	    k = kbnds(ibc,i)
-	    v1v(k) = 1.
+	    iflag(k) = 1
 	  end do
 
 	  !------------------------------------------------------------------
@@ -99,7 +92,7 @@ c------------------------------------------------------------------
 	    n = 0
 	    do ii=1,3
 	      k = nen3v(ii,ie)
-	      if( v1v(k) .ne. 0. ) then
+	      if( iflag(k) .ne. 0 ) then
 	        n = n + 1
 	        ielfix(n,ie) = k
 	      end if

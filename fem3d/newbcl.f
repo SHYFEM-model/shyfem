@@ -76,7 +76,6 @@ c
 c written 09.01.94 by ggu  (from scratch)
 c
 	use mod_layer_thickness
-	use mod_aux_array
 	use mod_ts
 	use mod_diff_visc_fric
 	use mod_hydro_print

@@ -84,7 +84,6 @@ c
       subroutine sedi(it,dt)
 
 	use mod_depth
-	use mod_aux_array
 	use mod_diff_visc_fric
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
@@ -130,6 +129,7 @@ c
       real wsink(0:nlvdim,nkndim,nsdim)	!settling velocity for suspended sediment
       real gdx(nkndim),gdy(nkndim)	!slope gradients
       real tao(nkndim)                  !wave-current shear stress
+	real v1v(nkn)
       double precision riph(nkndim)     !ripple height [m]
       double precision ripl(nkndim)     !ripple length [m]
       double precision timedr		!Duration of call to Sedtrans (s)
@@ -3593,7 +3593,6 @@ c DOCS  END
 	use mod_geom_dynamic
 	use mod_depth
 	use mod_layer_thickness
-	use mod_aux_array
 	use mod_area
 	use mod_hydro
 	use basin
@@ -3602,16 +3601,16 @@ c DOCS  END
 
         include 'param.h'
 
-        double precision bdh(nkndim)          !total elevation change [>0depo,<0ero]
+        double precision bdh(nkn)          !total elevation change [>0depo,<0ero]
 
-        real hlhv(neldim)
-        common /hlhv/hlhv
+        real hlhv(nel)
+	real v1v(nkn)
 
         real dh
         real evdep				!element depth variation
         integer ie,ii,k,iw
 
-	real bdhrst(nkndim)
+	real bdhrst(nkn)
 	integer nkk,nv,iv
         character*80 name
 	integer icall

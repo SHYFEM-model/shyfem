@@ -990,7 +990,6 @@ c**************************************************************
 
 	use mod_meteo
 	use mod_waves
-	use mod_aux_array
 	use basin
 
         implicit none
@@ -1027,6 +1026,7 @@ c --- local variable
         real gh,gx,hg
 	real wis,wid
 	real wx,wy
+	real v1v(nkn)
         integer ie,icount,ii,k
 
         real g			!gravity acceleration [m2/s]

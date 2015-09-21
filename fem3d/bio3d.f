@@ -823,7 +823,6 @@ c
 c reactor must be commented
 c einit must be 1.
 
-	use mod_aux_array
 	use levels
 	use basin
 
@@ -844,6 +843,7 @@ c einit must be 1.
 	real e0,einit
 	real remnant
 	real secs_in_day
+	real v1v(nkn)
 
 	integer ifemop
 

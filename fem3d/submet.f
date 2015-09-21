@@ -17,7 +17,6 @@ c*********************************************************************
 c converts distributed source from [m/s] to [m**3/s]
 
 	use mod_bound_dynamic
-	use mod_aux_array
 	use evgeom
 	use basin
 
@@ -28,6 +27,7 @@ c converts distributed source from [m/s] to [m**3/s]
 
 	integer k,ie,ii
 	real area3
+	real v1v(nkn)
 
 	do k=1,nkn
 	  v1v(k) = 0.

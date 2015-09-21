@@ -156,6 +156,10 @@ CheckCommand g++ "g++ -v"
 CheckX11
 
 echo
+echo "... commodity programs (recommended)"
+CheckCommand dialog  "dialog --version"
+
+echo
 echo "... checking graphical routines (recommended)"
 
 CheckCommand "ghostview (gv)" "gv --version"

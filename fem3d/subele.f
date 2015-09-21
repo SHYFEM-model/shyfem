@@ -526,7 +526,6 @@ c***********************************************************
 
 c computes nodal values from element values (scalar)
 
-	use mod_aux_array
 	use mod_hydro
 	use basin
 
@@ -543,6 +542,7 @@ c computes nodal values from element values (scalar)
 	real h(10), s(10)
 	real area,vol
 	logical btype
+	real v1v(nkn)
 	
 	real areaele
 

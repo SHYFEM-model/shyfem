@@ -266,14 +266,13 @@ c ...depth has not to be passed but is computed in routine
 c ...pass only dummy vector
 c ...ndim is dummy argument
 
-	use mod_aux_array
-
 	implicit none
 
 	real writ7h
 	integer iunit,nvers
         integer knausm,knaus(1)
 	real href,hzmin
+	real v1v(knausm)
 
 	integer nmax
 	parameter(nmax=50)

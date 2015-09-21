@@ -584,12 +584,11 @@ c******************************************************************
 
 c makes print velocities and xv from new level arrays
 
-	use mod_aux_array
+	use basin
 
 	implicit none
 
-	include 'param.h'
-
+	real v1v(nkn)
 
 	call uvtopr(v1v)
 	call uvtop0(v1v)

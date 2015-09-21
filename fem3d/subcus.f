@@ -1287,7 +1287,6 @@ c*****************************************************************
 c computes residence time online - one value for whole lagoon
 
 	use mod_conz
-	use mod_aux_array
 	use levels
 	use basin
 
@@ -1312,6 +1311,7 @@ c computes residence time online - one value for whole lagoon
 	real restime,restime1,restimec
 	real remnant,rlast
 	real resmed,resstd
+	real v1v(nkn)
 
 	real getpar
 
@@ -1610,7 +1610,6 @@ c*****************************************************************
 c reset conz for fra
 
 	use mod_conz
-	use mod_aux_array
 	use levels
 	use basin
 
@@ -1701,7 +1700,6 @@ c*****************************************************************
         subroutine sedimt
 
 	use mod_conz
-	use mod_aux_array
 	use levels
 	use basin
 
@@ -1720,6 +1718,7 @@ c*****************************************************************
 	integer iunit
         logical bnoret
         real vol,conz,perc,wsink,dt,sed,h,r,cnew,rhos
+	real v1v(nkn)
         double precision mass,masss
         real volnode,depnode
 	real getpar
@@ -1934,7 +1933,6 @@ c*****************************************************************
 	subroutine init_kreis
 
 	use mod_depth
-	use mod_aux_array
 	use mod_area
 	use mod_hydro_vel
 	use mod_hydro
@@ -1943,16 +1941,11 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	integer k,ie,ii,l
 	real pi,dcori,z0,r0,f,omega,grav
 	real aux,r02,r2
 	real x,y,z,u,v
-
-
-
-
+	real v1v(nkn)
 
 	pi = 4.*atan(1.)
 	dcori = 45.
@@ -3034,7 +3027,6 @@ c********************************************************************
 c writes node list for Malta Coastal Model
 
 	use mod_depth
-	use mod_aux_array
 	use levels
 	use basin
 
@@ -3051,6 +3043,7 @@ c writes node list for Malta Coastal Model
 	real x0,y0,phi0
 	real pi,rad
 	real xfact,yfact
+	real v1v(nkn)
 
 	integer ibc,nnodes,kext
 	integer nkbnds,kbnds,ipext,nbnds

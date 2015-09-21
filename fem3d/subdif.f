@@ -459,7 +459,6 @@ c	0	constant
 c	1	variable with area ( ah = alpha * dx**(4/3) )
 c	2	smagorinsky (variable with area and time)
 
-	use mod_aux_array
 	use mod_diff_visc_fric
 	use evgeom
 	use levels
@@ -474,6 +473,9 @@ c	2	smagorinsky (variable with area and time)
         real dt
         real alpha,ahmax,area,ah
         real dhlen,dhpar,chpar,thpar,shpar,ahpar
+	real ve1v(nel)
+	real v1v(nkn)
+	real v2v(nkn)
 
         real getpar
 

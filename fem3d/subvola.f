@@ -851,7 +851,6 @@ c******************************************************************
 
 	subroutine wrtelem(iunit,n,ielems,ietype)
 
-	use mod_aux_array
 	use basin
 
 	implicit none
@@ -861,21 +860,14 @@ c******************************************************************
 	integer ielems(1)
 	integer ietype
 
-
-	include 'param.h'
-
-
-
-
 	integer k,i,ii,ie,nvert
 	integer kn(10)
 	real hmed
+	real v3v(nkn)
 
 	real depele
 
-	do k=1,nkn
-	  v3v(k) = 0.
-	end do
+	v3v = 0.
 
 	do i=1,n
 
