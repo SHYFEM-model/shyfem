@@ -47,7 +47,7 @@ SUBDIRS   = `ls -dF * | grep  '/' | sed -e 's/\///'`
 FEMLIBS   = femcheck post hcbs
 FEMC      = grid mesh
 FEMPROG   = fem3d femplot femadj femspline
-FEMUTIL   = femregres femdoc fembin femlib femanim
+FEMUTIL   = femregress femdoc fembin femlib femanim
 FEMOPT    = femgotm femersem
 FEMEXTRA  = 
 PARAMDIRS = fem3d femplot femadj #femspline
@@ -131,8 +131,8 @@ links:
 	-rm -f bin lib
 	-ln -sf fembin bin
 	-ln -sf femlib lib
-	#[ ! -d ./femregres ] && -ln -sf femdummy femregres
-	if test ! -d ./femregres; then ln -s femdummy femregres; fi
+	#[ ! -d ./femregress ] && -ln -sf femdummy femregress
+	if test ! -d ./femregress; then ln -s femdummy femregress; fi
 
 #---------------------------------------------------------------
 # cleaning

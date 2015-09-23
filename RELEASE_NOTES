@@ -1,4 +1,9 @@
 
+23.09.2015    VERS_7_2_4
+
+	in shyelab more files can be given now
+	time step (idt) can now be fractional
+
 18.09.2015    VERS_7_2_3
 
 	new names for hydro routines

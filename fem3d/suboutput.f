@@ -65,6 +65,7 @@ c 05.03.2014    ggu     new routines get_last/first_time()
 c 10.04.2014    ccf     new section "wrt" for water renewal time
 c 29.10.2014    ggu     do_() routines transfered from newpri.f
 c 10.11.2014    ggu     time management routines transfered to this file
+c 23.09.2015    ggu     new routine convert_time_d() for double
 c
 c************************************************************
 c
@@ -344,8 +345,27 @@ c converts time period to relative time difference
 	character*(*) name
 	integer idt
 
-	integer ierr
 	double precision didt
+
+	call convert_time_d(name,didt)
+
+	idt = nint(didt)
+
+	end
+
+c********************************************************************
+
+	subroutine convert_time_d(name,didt)
+
+c converts time period to relative time difference
+
+	implicit none
+
+	character*(*) name
+	double precision didt
+
+	integer idt
+	integer ierr
 	character*40 text
 	logical bdebug
 
@@ -359,21 +379,21 @@ c converts time period to relative time difference
 	if( bdebug ) write(6,*) 'converting time for ',name
 
 	if( text .ne. ' ' ) then
-	  call dtstimespan(idt,text,ierr)
+	  call dtstimespan(idt,text,ierr)	!still in integer
+	  didt = idt
 	  if( ierr .ne. 0 ) goto 99
 	  if( bdebug ) then
 	    write(6,*) 'time span as string found'
 	    write(6,*) name
 	    write(6,*) text
-	    write(6,*) idt
+	    write(6,*) didt
 	  end if
-	  didt = idt
 	  call dputpar(name,didt)
 	else
-	  idt = nint(dgetpar(name))
+	  didt = dgetpar(name)
 	end if
 
-	if( bdebug ) write(6,*) 'finished converting time: ',idt
+	if( bdebug ) write(6,*) 'finished converting time: ',didt
 
 	return
    99	continue

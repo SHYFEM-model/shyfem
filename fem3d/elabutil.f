@@ -1,3 +1,12 @@
+!
+! utility routines for shyelab: elabutil
+!
+! revision log :
+!
+! 15.07.2015	ggu	written from scratch
+! 22.09.2015	ggu	new routine open_shy_file()
+!
+!************************************************************
 
 !====================================================
 	module elabutil
@@ -771,6 +780,36 @@ c***************************************************************
 	end do
 
 	end
+
+c***************************************************************
+
+        subroutine open_shy_file(file,status,nunit)
+
+c open SHY file
+c
+c nunit is 0 if no other file exists
+
+	use clo
+
+        implicit none
+
+        character*(*) status
+        integer nunit
+
+        character*80 file
+        integer ifileo
+
+        nunit = 0
+        if( file == ' ' ) return
+
+        nunit = ifileo(0,file,'unform',status)
+
+        if( nunit .le. 0 ) then
+          write(6,*) 'file: ',trim(file)
+          stop 'error stop open_next_shy_file: opening file'
+        end if
+
+        end
 
 c***************************************************************
 

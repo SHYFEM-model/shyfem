@@ -12,6 +12,7 @@ c 10.02.2012    ggu     new routines to get initial/final time of records
 c 25.01.2013    ggu     new routines nos_get_vars()
 c 05.09.2013    ggu     new call to get_layer_thickness()
 c 20.01.2014    ggu     new helper routines
+c 23.09.2015    ggu     close files in nos_get_it_start() nos_get_it_end()
 c
 c***************************************************************
 
@@ -494,12 +495,17 @@ c gets it of first record
 	itstart = -1
 
 	call open_nos_file(file,'old',nunit)
+	if( nunit .le. 0 ) return
 	call nos_init(nunit,nvers)
 	call nos_skip_header(nunit,nvar,ierr)
-	if( ierr .ne. 0 ) return
+	if( ierr .ne. 0 ) goto 1
 	call nos_skip_record(nunit,it,ivar,ierr)
-	if( ierr .ne. 0 ) return
+	if( ierr .ne. 0 ) goto 1
 	itstart = it
+
+    1	continue
+	call nos_close(nunit)
+	close(nunit)
 
 	end
 
@@ -523,18 +529,22 @@ c gets it of last record
 	itlast = -1
 
 	call open_nos_file(file,'old',nunit)
+	if( nunit .le. 0 ) return
 	call nos_init(nunit,nvers)
 	call nos_skip_header(nunit,nvar,ierr)
-	if( ierr .ne. 0 ) return
+	if( ierr .ne. 0 ) goto 1
+
+	do
+	  call nos_skip_record(nunit,it,ivar,ierr)
+	  if( ierr .gt. 0 ) goto 1
+	  if( ierr .lt. 0 ) exit
+	  itlast = it
+	end do
+	itend = itlast
 
     1	continue
-	call nos_skip_record(nunit,it,ivar,ierr)
-	if( ierr .gt. 0 ) return
-	if( ierr .lt. 0 ) goto 2
-	itlast = it
-	goto 1
-    2	continue
-	itend = itlast
+	call nos_close(nunit)
+	close(nunit)
 
 	end
 

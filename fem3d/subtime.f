@@ -68,6 +68,7 @@ c 10.11.2014    ggu     time management routines transfered to this file
 c 19.12.2014    ggu     accept date also as string
 c 23.12.2014    ggu     fractional time step introduced
 c 07.01.2015    ggu     fractional time step without rounding (itsplt=3)
+c 23.09.2015    ggu     time step is now working with dt as double
 c
 c************************************************************
 c
@@ -122,13 +123,13 @@ c---------------------------------------------------------------
           nit1 = niter + (itend-it)/idt
 	  idtfrac = 0
 	else
-          nit1 = niter + nint((itend-it)/dt_act)
+          nit1 = niter + nint((itend-t_act)/dt_act)
 	  idtfrac = nint(1./dt_act)
 	end if
 
 	nit2 = nit1
 	if( it .gt. itanf ) then
-          nit2 = nint( niter * ( 1 + float(itend-it)/(it-itanf) ) )
+          nit2 = nint(niter*( 1 + (itend-t_act)/(t_act-itanf)))
 	end if
 
         nits = nit2
@@ -139,10 +140,14 @@ c write to terminal
 c---------------------------------------------------------------
 
 	if( dts_has_date() ) then
-	  if( mod(icall,50) .eq. 0 ) write(6,1003)
-!	  call dts2dt(it,year,month,day,hour,min,sec)
 	  call dtsgf(it,line)
-	  if( isplit == 3 ) then
+	else
+	  line = ' '
+	end if
+	if( mod(icall,50) .eq. 0 ) write(6,1003)
+	if( .true. ) then
+	  !write(6,*) isplit,idtorig,dt_act
+	  if( isplit == 3 .or. idtorig == 0 ) then
 	    dt = dt_act
             write(6,1007) it,line,dt,niter,nits,perc
 	  else if( idtfrac == 0 ) then
@@ -208,25 +213,29 @@ c setup and check time parameters
 
 	include 'femtime.h'
 
+	double precision didt
+
 	double precision dgetpar
 
 	call convert_date('itanf',itanf)
 	call convert_date('itend',itend)
-	call convert_time('idt',idt)
+	call convert_time_d('idt',didt)
 
-	if( idt .le. 0 .or. itanf+idt .gt. itend ) then
+	if( didt .le. 0 .or. itanf+didt .gt. itend ) then
 	   write(6,*) 'Error in compulsory time parameters'
-	   write(6,*) 'itanf,itend,idt :',itanf,itend,idt
+	   write(6,*) 'itanf,itend,idt :',itanf,itend,didt
 	   stop 'error stop : cktime'
 	end if
 
 	niter = 0
 	it = itanf
-	nits = (itend-itanf) / idt
+	nits = (itend-itanf) / didt
 
 	t_act = it
-	dt_act = idt
+	dt_act = didt
+	dt_orig = didt
 
+	idt = didt
 	itunit = nint(dgetpar('itunit'))
 	idtorig = idt
 
@@ -403,7 +412,7 @@ c----------------------------------------------------------------------
 	itloop = itloop + 1
 
         if( isplit .ge. 0 ) then
-          dt = idtorig
+          dt = dt_orig
           dtr = 1.
           call hydro_stability(dtr,rindex)
         else
@@ -417,6 +426,9 @@ c----------------------------------------------------------------------
         if( isplit .le. 0 ) then
           idts = 0
         else if( isplit .eq. 1 ) then
+	  if( idtorig <= 0 ) then
+	    stop 'error stop set_timestep: idtorig==0 and isplit==1'
+	  end if
           idts = idtorig
           if( mod(it-itanf,idtorig) .eq. 0 ) then      !end of macro timestep
 	    rindex = dt * rindex
@@ -437,16 +449,13 @@ c----------------------------------------------------------------------
         else if( isplit .eq. 2 .or. isplit .eq. 3 ) then
           idts = idtsync
 	  idtfrac = 0
-	  dt = idtorig
+	  dt = dt_orig
 	  if( rindex > 0 ) dt = cmax / rindex	! maximum allowed time step
-	  if( dt >= idtorig ) then
-	    idtnew = idtorig
-	    dt = idtnew
+	  if( dt >= dt_orig ) then
+	    dt = dt_orig
 	  else if( dt >= 1. ) then
-	    idtnew = dt
-	    if( isplit .eq. 2 ) dt = idtnew
+	    if( isplit .eq. 2 ) dt = int(dt)
 	  else
-	    idtnew = 0
 	    idtfrac = ceiling(1./dt)
 	    if( isplit .eq. 2 ) dt = 1. / idtfrac
 	    !write(6,*) '++++++++ fractional time step: ',dt,idtfrac,rindex
@@ -461,9 +470,9 @@ c----------------------------------------------------------------------
         end if
 
 c----------------------------------------------------------------------
-c idtnew is proposed new time step
+c dt	 is proposed new time step
 c idts   is time step with which to syncronize
-c dtmin is minimum time step allowed
+c dtmin  is minimum time step allowed
 c nits   is total number of time steps
 c rindex is computed stability index
 c ri     is used stability index
@@ -500,7 +509,7 @@ c----------------------------------------------------------------------
 	  dtr = dt
           call error_stability(dtr,rindex)
           write(6,*) 'dt is less than dtmin'
-          write(6,*) it,itanf,mod(it-itanf,idtorig)
+          !write(6,*) it,itanf,mod(it-itanf,idtorig)
           !write(6,*) idtnew,idtdone,idtrest,idtorig
           write(6,*) idtnew,idtorig,itnext
           write(6,*) idts,idtsync,itloop
@@ -515,32 +524,10 @@ c----------------------------------------------------------------------
 
 	irepeat = 0
 
-        !if( .not. bsync .and. dt .lt. dtmin ) then
-	!  rmax = (1./idtmin)*cmax
-	!  call eliminate_stability(rmax)
-	!  write(6,*) 'repeating time step for low idt (1): ',idtnew,rmax
-	!  irepeat = 1
-	!  goto 1	!eventually this should be commented
-	!end if
-
-        !if( .not. bsync .and. idtnew .lt. tfact*idtold ) then
-	!  write(6,*) 'repeating time step for low idt (2): ',idtnew,idtold
-	!  irepeat = 1
-	!end if
-
-	!if( irepeat .gt. 0 ) then
-	!  idtold = idtnew
-	!  write(6,*) 'We really should repeat this time step'
-	!  write(6,*) 'code not yet ready...'
-	!end if
-
 	riold = 0
-	!riold = idtold*ri/idtnew	!ri with old time step
 	idtold = idtnew
 
         niter=niter+1
-        !it=it+idtnew
-	!idt=idtnew
 
 	dt_act = dt
 	t_act = t_act + dt

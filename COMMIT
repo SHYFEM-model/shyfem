@@ -1,5 +1,26 @@
 ============================================================
 
+Wed Sep 23 14:10:57 CEST 2015
+
+fractioanl time step idt, shyelab with more files
+
+ LOG                     |   21 +++++++++++++
+ Makefile                |    6 ++--
+ RELEASE_NOTES           |    5 +++
+ fem3d/elabutil.f        |   39 ++++++++++++++++++++++++
+ fem3d/femtime.h         |    4 +-
+ fem3d/noselab1.f        |   64 +++++++++++++++++++++++++++++++++------
+ fem3d/nosutil.f         |   30 ++++++++++++------
+ fem3d/subnos.f          |   75 ++++++++++++++++++++++++++++++++++++++---------
+ fem3d/suboutput.f       |   32 ++++++++++++++++----
+ fem3d/subtime.f         |   73 +++++++++++++++++++---------------------------
+ fem3d/subver.f          |    9 +++--
+ femdoc/final/shyfem.pdf |  Bin 294935 -> 294937 bytes
+ femdoc/final/shyfem.ps  |   26 ++++++++--------
+ 13 files changed, 279 insertions(+), 105 deletions(-)
+
+============================================================
+
 Mon Sep 21 14:01:47 CEST 2015
 
 auxiliary array module eliminated

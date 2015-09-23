@@ -14,6 +14,7 @@ c 06.05.2015    ggu     noselab started
 c 05.06.2015    ggu     many more features added
 c 10.09.2015    ggu     std and rms for averaging implemented
 c 11.09.2015    ggu     write in gis format
+c 23.09.2015    ggu     handle more than one file (look for itstart)
 c
 c**************************************************************
 
@@ -50,14 +51,15 @@ c elaborates nos file
 
 	real, allocatable :: hl(:)
 
-	integer nread,nelab,nrec,nin
+	integer nwrite,nread,nelab,nrec,nin,nold
 	integer nvers
 	integer nknnos,nelnos,nvar
 	integer ierr
-	integer it,ivar,itvar,itnew,itold,iaux
+	integer it,ivar,itvar,itnew,itold,iaux,itstart
 	integer i,j,l,k,lmax,nnodes,node
 	integer ip,nb,naccum
-	character*80 title,name
+	integer ifile
+	character*80 title,name,file
 	character*20 dline
 	character*80 basnam,simnam
 	real rnull
@@ -69,6 +71,7 @@ c elaborates nos file
 c--------------------------------------------------------------
 
 	nread=0
+	nwrite=0
 	nelab=0
 	nrec=0
 	rnull=0.
@@ -87,7 +90,16 @@ c--------------------------------------------------------------
 
 	call ap_init(bask,modeb,0,0)
 
-	call open_nos_type('.nos','old',nin)
+	!call open_nos_type('.nos','old',nin)
+	ifile = 1
+	call clo_get_file(ifile,file)
+	call open_shy_file(file,'old',nin)
+	write(6,*) '================================'
+	write(6,*) 'reading file: ',trim(file)
+	write(6,*) '================================'
+	call clo_get_file(ifile+1,file)
+	itstart = -1
+	if( file /= ' ' ) call nos_get_it_start(file,itstart)
 
 	call nos_is_nos_file(nin,nvers)
 	if( nvers .le. 0 ) then
@@ -195,7 +207,7 @@ c loop on data
 c--------------------------------------------------------------
 
 	it = 0
-	if( .not. bquiet ) write(6,*)
+	!if( .not. bquiet ) write(6,*)
 
 	cv3 = 0.
 
@@ -214,7 +226,30 @@ c--------------------------------------------------------------
 	  nread=nread+1
 	 end do
 
-         if(ierr.ne.0) exit
+         if(ierr.ne.0) then	!EOF - see if we have to read another file
+	   it = itold
+	   if( itstart == -1 ) exit
+	   nold = nin
+	   ifile = ifile + 1
+	   call clo_get_file(ifile,file)
+	   call open_shy_file(file,'old',nin)
+	   write(6,*) '================================'
+	   write(6,*) 'reading file: ',trim(file)
+	   write(6,*) '================================'
+	   call read_nos_header(nin,nkn,nel,nlvdi,ilhkv,hlv,hev)
+	   call nos_check_compatibility(nin,nold)
+	   call nos_peek_record(nin,itnew,iaux,ierr)
+	   call nos_get_date(nin,date,time)
+	   call elabutil_date_and_time
+	   it = itold		!reset time of last successfully read record
+	   call nos_close(nold)
+	   close(nold)
+	   call clo_get_file(ifile+1,file)
+	   itstart = -1
+	   if( file /= ' ' ) call nos_get_it_start(file,itstart)
+	   cycle
+	 end if
+
 	 nrec = nrec + 1
 
 	 if( nrec == 1 ) itold = it
@@ -270,6 +305,7 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( boutput ) then
+	    nwrite = nwrite + 1
 	    if( bverb ) write(6,*) 'writing to output: ',ivar
 	    if( bsumvar ) ivar = 30
 	    if( b2d ) then
@@ -304,6 +340,7 @@ c--------------------------------------------------------------
 	    naccum = naccu(ip)
 	    !write(6,*) 'naccum: ',naccum
 	    if( naccum > 0 ) then
+	      nwrite = nwrite + 1
 	      write(6,*) 'final aver: ',ip,naccum
 	      call nos_time_aver(-mode,ip,ifreq,istep,nkn,nlvdi
      +				,naccu,accum,std,threshold,cv3,boutput)
@@ -319,21 +356,26 @@ c write final message
 c--------------------------------------------------------------
 
 	write(6,*)
-	write(6,*) nread,' records read'
-	write(6,*) nrec ,' unique time records read'
-	write(6,*) nelab,' records elaborated'
+	write(6,*) nread, ' records read'
+	write(6,*) nrec , ' unique time records read'
+	write(6,*) nelab, ' records elaborated'
+	write(6,*) ifile, ' files read'
+	write(6,*) nwrite,' records written'
 	write(6,*)
 
 	if( bsplit ) then
 	  write(6,*) 'output written to following files: '
 	  do ivar=1,ndim
-	    if( iusplit(ivar) .gt. 0 ) then
+	    nb = iusplit(ivar)
+	    if( nb .gt. 0 ) then
               write(name,'(i4)') ivar
 	      write(6,*) trim(adjustl(name))//'.nos'
+	      close(nb)
 	    end if
 	  end do
 	else if( boutput ) then
 	  write(6,*) 'output written to file out.nos'
+	  close(nb)
 	end if
 
 	call ap_get_names(basnam,simnam)
@@ -518,6 +560,8 @@ c***************************************************************
 	integer ilhkv(nlvdi)
 	real cv(nlvdi,*)
 	integer ierr
+
+	ierr = 0
 
 	if( outformat == 'nos' .or. outformat == 'native') then
           call nos_write_record(nb,it,ivar,nlvdi,ilhkv,cv,ierr)

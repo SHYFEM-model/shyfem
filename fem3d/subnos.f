@@ -29,6 +29,7 @@ c        subroutine nos_set_femver(iunit,femver)
 c        subroutine nos_get_params(iunit,nkn,nel,nlv,nvar)
 c        subroutine nos_set_params(iunit,nkn,nel,nlv,nvar)
 c        subroutine nos_clone_params(iu_from,iu_to)
+c        subroutine nos_check_compatibility(iu1,iu2)
 c
 c	 subroutine nos_is_nos_file(iunit,nvers)
 c
@@ -59,6 +60,7 @@ c 02.12.2012	ggu	restructured
 c 21.01.2013	ggu	code for next and back record
 c 18.01.2014	ggu	restructured, new date,time,femver (version 4+5)
 c 29.10.2014	ggu	new routine nos_is_nos_file()
+c 22.09.2015	ggu	new routine nos_check_compatibility()
 c
 c notes :
 c
@@ -663,6 +665,46 @@ c should be only used to write file -> nvers should be max version
 	end
 
 c************************************************************
+
+	subroutine nos_check_compatibility(iu1,iu2)
+
+c checks compatibility between two nos files
+c
+c second file must have already been opened and initialized with nos_init
+c should be only used to write file -> nvers should be max version
+
+	implicit none
+
+	include 'nosinf.h'
+
+	integer iu1,iu2
+
+	integer i,n1,n2
+
+	call findnos_err(iu1,'nos_check_compatibility'
+     +				,'Cannot find entry.',n1)
+	call findnos_err(iu2,'nos_check_compatibility'
+     +				,'Cannot find entry.',n2)
+
+	!unit and version are not checked (0,1)
+	!neither are date and time (6,7)
+
+	do i=2,5
+	  if( nosvar(i,n1) /= nosvar(i,n1) ) exit
+	end do
+
+	if( i > 5 ) return	!all ok
+
+	write(6,*) 'the two nos files are not compatible'
+	write(6,*) 'units: ',n1,n2
+	do i=0,nitdim
+	  write(6,*) i,nosvar(i,n1),nosvar(i,n2)
+	end do
+	stop 'error stop nos_check_compatibility: not compatible'
+
+	end
+
+c************************************************************
 c************************************************************
 c************************************************************
 
@@ -957,6 +999,8 @@ c local
 
 	call getnos(iunit,nvers,nkn,nel,nlv,nvar)
 
+	!it = -1
+	!ivar = 0
 	lmax = min(nlv,nlvddi)
 
 	if( nvers .eq. 1 ) then
@@ -994,6 +1038,7 @@ c local
 	ierr=-1
 	return
    98	continue
+	write(6,*) 'nvers,it,ivar,lmax: ',nvers,it,ivar,lmax
 	write(6,*) 'nos_read_record: Error while reading'
 	write(6,*) 'time record of NOS file'
 	ierr=98
@@ -1055,7 +1100,7 @@ c arguments
 c local
 	integer l,k,lmax
 	integer nvers,nkn,nel,nlv,nvar
-	integer iunit
+	integer iunit,ios
 
 	iunit = abs(iu)
 
@@ -1065,31 +1110,33 @@ c local
 
 	if( nvers .eq. 1 ) then
 	   ivar = 1
-	   read(iunit,end=88,err=98) it
+	   read(iunit,iostat=ios) it
 	else if( nvers .ge. 2 ) then
 	   if( nvers .ge. 4 ) then
-	     read(iunit,end=88,err=98) it,ivar,lmax
+	     read(iunit,iostat=ios) it,ivar,lmax
 	   else
-	     read(iunit,end=88,err=98) it,ivar
+	     read(iunit,iostat=ios) it,ivar
 	   end if
 	else
 	   write(6,*) 'nvers = ',nvers,'  iunit = ',iunit
 	   stop 'error stop nos_peek_record: internal error (1)'
 	end if
 
+	if( ios > 0 ) then
+	  write(6,*) 'nos_peek_record: Error while reading'
+	  write(6,*) 'time record of NOS file'
+	  ierr=98
+	  return
+	end if
+
 	backspace(iu)
 
-	ierr=0
+	if( ios < 0 ) then
+	  ierr=-1
+	else
+	  ierr=0
+	end if
 
-	return
-   88	continue
-	ierr=-1
-	return
-   98	continue
-	write(6,*) 'nos_peek_record: Error while reading'
-	write(6,*) 'time record of NOS file'
-	ierr=98
-	return
 	end
 
 c************************************************************
