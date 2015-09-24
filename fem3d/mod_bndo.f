@@ -30,16 +30,9 @@
 
 	integer ngr,nrb
 
-	integer nlk
+	integer nlk,naux
 
         if( ngr == ngr_bndo .and. nrb == nrb_bndo ) return
-
-        if( ngr > 0 .or. nrb > 0 ) then
-          if( ngr == 0 .or. nrb == 0 ) then
-            write(6,*) 'ngr,nrb: ',ngr,nrb
-            stop 'error stop mod_bndo_init: incompatible parameters'
-          end if
-        end if
 
         if( ngr_bndo > 0 ) then
           deallocate(nopnod)
@@ -59,13 +52,15 @@
 
 	if( ngr == 0 ) return
 
-        allocate(nopnod(nrb))
-        allocate(ibcnod(nrb))
-        allocate(kbcnod(nrb))
-        allocate(itynod(nrb))
-        allocate(nopnodes(ngr,nrb))
-        allocate(xynorm(2,nrb))
-        allocate(wopnodes(ngr,nrb))
+	naux = max(1,nrb)
+
+        allocate(nopnod(naux))
+        allocate(ibcnod(naux))
+        allocate(kbcnod(naux))
+        allocate(itynod(naux))
+        allocate(nopnodes(ngr,naux))
+        allocate(xynorm(2,naux))
+        allocate(wopnodes(ngr,naux))
 
 	end subroutine mod_bndo_init
 

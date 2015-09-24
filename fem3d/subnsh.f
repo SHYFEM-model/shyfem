@@ -77,6 +77,7 @@ c 10.04.2014    ccf     new section "wrt" for water renewal time
 c 29.10.2014    ggu     do_() routines transfered from newpri.f
 c 10.11.2014    ggu     shyfem time management routines to new file subtime.f
 c 01.12.2014    ccf     handle new section waves for wave module
+c 24.09.2015    ggu     call initialization for irv before reading STR file
 c
 c************************************************************
 
@@ -344,6 +345,7 @@ c	integer nrdsec,nrdveci,nrdvecr
 	if( bdebug ) write(6,*) 'start reading STR file'
 
 	call nrdini(iunit)
+	call mod_irv_initialize
 
 c read loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

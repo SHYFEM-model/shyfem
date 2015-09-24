@@ -1,5 +1,27 @@
 ============================================================
 
+Thu Sep 24 17:28:41 CEST 2015
+
+bug fix for basins without boundary
+
+ BUG                     |    3 ++
+ LOG                     |   15 ++++++++++++
+ cp_fem.sh               |   36 ------------------------------
+ fem3d/mod_bndo.f        |   25 ++++++++------------
+ fem3d/mod_bound_geom.f  |   33 ++++++++++++++++++----------
+ fem3d/subnsh.f          |    2 +
+ femdoc/final/shyfem.pdf |  Bin 294937 -> 294936 bytes
+ femdoc/final/shyfem.ps  |    6 ++--
+ prep_dirs.sh            |   55 -----------------------------------------------
+ prep_fem.sh             |   32 ---------------------------
+ 10 files changed, 54 insertions(+), 153 deletions(-)
+ deleted:
+    cp_fem.sh
+    prep_dirs.sh
+    prep_fem.sh
+
+============================================================
+
 Thu Sep 24 17:27:39 CEST 2015
 
 more on converting time to double
