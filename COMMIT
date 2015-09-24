@@ -1,5 +1,24 @@
 ============================================================
 
+Thu Sep 24 17:27:39 CEST 2015
+
+more on converting time to double
+
+ fem3d/Makefile     |    5 +-
+ fem3d/newbcl.f     |    2 +-
+ fem3d/subcon1.f    |   43 +++++-
+ fem3d/suboutput.f  |   32 +----
+ fem3d/suboutputd.f |  386 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 432 insertions(+), 36 deletions(-)
+ new file:
+   fem3d/suboutputd.f
+ deleted:
+    cp_fem.sh
+    prep_dirs.sh
+    prep_fem.sh
+
+============================================================
+
 Wed Sep 23 14:11:46 CEST 2015
 
 New version 7_2_4

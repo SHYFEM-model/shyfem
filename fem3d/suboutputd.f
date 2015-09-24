@@ -66,7 +66,7 @@ c 10.04.2014    ccf     new section "wrt" for water renewal time
 c 29.10.2014    ggu     do_() routines transfered from newpri.f
 c 10.11.2014    ggu     time management routines transfered to this file
 c 23.09.2015    ggu     new routine convert_time_d() for double
-c 24.09.2015    ggu     new file for double precision version
+c 24.09.2015    ggu     routines re-written for double precision
 c
 c************************************************************
 c
@@ -74,7 +74,7 @@ c**********************************************************************
 c**********************************************************************
 c**********************************************************************
 
-	subroutine adjust_itmidt(itmout,idtout,itout)
+	subroutine adjust_itmidt_d(itmout,idtout,itout)
 
 c sets-up output frequency and first output
 
@@ -82,13 +82,12 @@ c sets-up output frequency and first output
 
 	include 'femtime.h'
 
-	integer itmout		!minimum time for output
-	integer idtout		!time step for output
-	integer itout		!first output
+	double precision itmout		!minimum time for output
+	double precision idtout		!time step for output
+	double precision itout		!first output
 
-	if( itmout .eq. -1 ) itmout = itanf
+	if( itmout .eq. -1. ) itmout = itanf
 	if( itmout .lt. itanf ) itmout = itanf
-	!if( idtout .lt. idt .and. idtout .gt. 0 ) idtout = idt
 
 	itout = itmout
 	if( itmout .eq. itanf ) itout = itout + idtout
@@ -98,19 +97,19 @@ c sets-up output frequency and first output
 
 c********************************************************************
 
-	subroutine set_output_frequency(itmout,idtout,ia_out)
+	subroutine set_output_frequency_d(itmout,idtout,ia_out)
 
 c sets-up array for output frequency
 
 	implicit none
 
-	integer itmout		!minimum time for output
-	integer idtout		!time step for output
-	integer ia_out(4)	!array where info is stored
+	double precision itmout		!minimum time for output
+	double precision idtout		!time step for output
+	double precision ia_out(4)	!array where info is stored
 
-	integer itout
+	double precision itout
 
-	call adjust_itmidt(itmout,idtout,itout)
+	call adjust_itmidt_d(itmout,idtout,itout)
 
 	ia_out(1) = idtout	! time step of output
 	ia_out(2) = itmout	! first output
@@ -121,15 +120,15 @@ c sets-up array for output frequency
 
 c********************************************************************
 
-	subroutine assure_initial_output(ia_out)
+	subroutine assure_initial_output_d(ia_out)
 
 c makes sure that output will be done also for it == itanf
 
 	implicit none
 
-	integer ia_out(4)
+	double precision ia_out(4)
 
-	integer itmout,itout
+	double precision itmout,itout
 
 	itmout = ia_out(2)
 	itout  = ia_out(3)
@@ -142,17 +141,17 @@ c makes sure that output will be done also for it == itanf
 
 c********************************************************************
 
-	subroutine increase_output(ia_out)
+	subroutine increase_output_d(ia_out)
 
 c makes sure that itout > itmout
 
 	implicit none
 
-	integer ia_out(4)
+	double precision ia_out(4)
 
 	include 'femtime.h'
 
-	integer idtout,itmout,itout
+	double precision idtout,itmout,itout
 
 	idtout = ia_out(1)
 	itmout = ia_out(2)
@@ -170,140 +169,140 @@ c makes sure that itout > itmout
 
 c********************************************************************
 
-	function is_over_output(ia_out)
+	function is_over_output_d(ia_out)
 
 c checks if output phase has started (it > itmout)
 
 	implicit none
 
-	logical is_over_output
-	integer ia_out(4)
+	logical is_over_output_d
+	double precision ia_out(4)
 
 	include 'femtime.h'
 
-	is_over_output = it > ia_out(2)
+	is_over_output_d = t_act > ia_out(2)
 
 	end
 
 c********************************************************************
 
-	function is_in_output(ia_out)
+	function is_in_output_d(ia_out)
 
 c checks if we arrived at output phase (it >= itmout)
 
 	implicit none
 
-	logical is_in_output
-	integer ia_out(4)
+	logical is_in_output_d
+	double precision ia_out(4)
 
 	include 'femtime.h'
 
-	is_in_output = it >= ia_out(2)
+	is_in_output_d = it >= ia_out(2)
 
 	end
 
 c********************************************************************
 
-	function has_output(ia_out)
+	function has_output_d(ia_out)
 
 c checks if variable has any output at all
 
 	implicit none
 
-	logical has_output
-	integer ia_out(4)
+	logical has_output_d
+	double precision ia_out(4)
 
-	has_output = ia_out(1) > 0	!idtout > 0
+	has_output_d = ia_out(1) > 0	!idtout > 0
 
 	end
 
 c********************************************************************
 
-	function next_output(ia_out)
+	function next_output_d(ia_out)
 
 c checks if time has come for output
 
 	implicit none
 
-	logical next_output
-	integer ia_out(4)
+	logical next_output_d
+	double precision ia_out(4)
 
 	include 'femtime.h'
 
-	integer idtout,itout
+	double precision idtout,itout
 
-	next_output = .false.
+	next_output_d = .false.
 	idtout = ia_out(1)
 	itout  = ia_out(3)
 
 	if( idtout .le. 0 ) return
-	if( itout .gt. it ) return
+	if( itout .gt. t_act ) return
 
-	do while( itout .le. it )
+	do while( itout .le. t_act )
 	  itout = itout + idtout
 	end do
 
 	ia_out(3) = itout
-	next_output = .true.
+	next_output_d = .true.
 
 	end
 
 c********************************************************************
 
-	subroutine info_output(ia_out)
+	subroutine info_output_d(ia_out)
 
 c writes info on ia_output
 
 	implicit none
 
-	integer ia_out(4)
+	double precision ia_out(4)
 
 	include 'femtime.h'
 
-	logical has_output,next_output
+	logical has_output_d,next_output_d
 
 	write(6,*) '------ info_output start------'
 	write(6,*) ia_out
-	write(6,*) it
-	write(6,*) has_output(ia_out)
-	write(6,*) next_output(ia_out)
+	write(6,*) it,t_act
+	write(6,*) has_output_d(ia_out)
+	write(6,*) next_output_d(ia_out)
 	write(6,*) '------ info_output end ------'
 
 	end
 
 c********************************************************************
 
-	subroutine init_output(itmname,idtname,ia_out)
+	subroutine init_output_d(itmname,idtname,ia_out)
 
 c gets time values and transforms them
 
 	implicit none
 
 	character*(*) itmname,idtname	!names to parse
-	integer ia_out(4)		!array with time information
+	double precision ia_out(4)	!array with time information
 
-	integer itmout,idtout
+	double precision itmout,idtout
 
-	call convert_date(itmname,itmout)
-	call convert_time(idtname,idtout)
+	call convert_date_d(itmname,itmout)
+	call convert_time_d(idtname,idtout)
 
-	call set_output_frequency(itmout,idtout,ia_out)
+	call set_output_frequency_d(itmout,idtout,ia_out)
 
 	end
 
 c********************************************************************
 
-	subroutine convert_date(name,it)
+	subroutine convert_date_d(name,dit)
 
 c converts date to relative time
 
 	implicit none
 
 	character*(*) name
-	integer it
+	double precision dit
 
 	integer ierr
-	double precision dit
+	integer it
 	character*30 text
 	logical bdebug
 
@@ -326,7 +325,7 @@ c converts date to relative time
 	  dit = it
 	  call dputpar(name,dit)
 	else
-	  it = nint(dgetpar(name))
+	  dit = dgetpar(name)
 	end if
 
 	return
@@ -337,17 +336,17 @@ c converts date to relative time
 
 c********************************************************************
 
-	subroutine convert_time(name,idt)
+	subroutine convert_time_d(name,didt)
 
 c converts time period to relative time difference
 
 	implicit none
 
 	character*(*) name
-	integer idt
-
-	integer ierr
 	double precision didt
+
+	integer idt
+	integer ierr
 	character*40 text
 	logical bdebug
 
@@ -361,21 +360,21 @@ c converts time period to relative time difference
 	if( bdebug ) write(6,*) 'converting time for ',name
 
 	if( text .ne. ' ' ) then
-	  call dtstimespan(idt,text,ierr)
+	  call dtstimespan(idt,text,ierr)	!still in integer
+	  didt = idt
 	  if( ierr .ne. 0 ) goto 99
 	  if( bdebug ) then
 	    write(6,*) 'time span as string found'
 	    write(6,*) name
 	    write(6,*) text
-	    write(6,*) idt
+	    write(6,*) didt
 	  end if
-	  didt = idt
 	  call dputpar(name,didt)
 	else
-	  idt = nint(dgetpar(name))
+	  didt = dgetpar(name)
 	end if
 
-	if( bdebug ) write(6,*) 'finished converting time: ',idt
+	if( bdebug ) write(6,*) 'finished converting time: ',didt
 
 	return
    99	continue

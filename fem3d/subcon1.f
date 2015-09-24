@@ -390,6 +390,20 @@ c*************************************************************
 c*************************************************************
 
 	subroutine open_scalar_file(ia_out,nl,nvar,type)
+	implicit none
+	integer ia_out(4)	!time information		       (in/out)
+	integer nl		!vertical dimension of scalar          (in)
+	integer nvar		!total number of variables to write    (in)
+	character*(*) type	!extension of file		       (in)
+	double precision da_out(4)
+	da_out = ia_out
+	call open_scalar_file_d(da_out,nl,nvar,type)
+	ia_out = nint(da_out)
+	end
+
+c*************************************************************
+
+	subroutine open_scalar_file_d(da_out,nl,nvar,type)
 
 c opens (NOS) file
 
@@ -401,7 +415,7 @@ c on return iu = -1 means that no file has been opened and is not written
 
 	implicit none
 
-	integer ia_out(4)	!time information		       (in/out)
+	double precision da_out(4)	!time information	       (in/out)
 	integer nl		!vertical dimension of scalar          (in)
 	integer nvar		!total number of variables to write    (in)
 	character*(*) type	!extension of file		       (in)
@@ -425,7 +439,7 @@ c-----------------------------------------------------
 
 	iu = ifemop(type,'unformatted','new')
 	if( iu .le. 0 ) goto 98
-	ia_out(4) = iu
+	da_out(4) = iu
 
 c-----------------------------------------------------
 c initialize parameters
@@ -472,6 +486,20 @@ c-----------------------------------------------------
 c*************************************************************
 
 	subroutine write_scalar_file(ia_out,ivar,nlvddi,c)
+	implicit none
+	integer ia_out(4)	!time information
+	integer ivar		!id of variable to be written
+	integer nlvddi		!vertical dimension of c
+	real c(nlvddi,*)		!scalar to write
+	double precision da_out(4)
+	da_out = ia_out
+	call write_scalar_file_d(da_out,ivar,nlvddi,c)
+	ia_out = nint(da_out)
+	end
+
+c*************************************************************
+
+	subroutine write_scalar_file_d(da_out,ivar,nlvddi,c)
 
 c writes NOS file
 c
@@ -481,14 +509,13 @@ c the file must be open, the file will be written unconditionally
 
 	implicit none
 
-	integer ia_out(4)	!time information
-	integer ivar		!id of variable to be written
-	integer nlvddi		!vertical dimension of c
-	real c(nlvddi,1)		!scalar to write
+	double precision da_out(4)	!time information
+	integer ivar			!id of variable to be written
+	integer nlvddi			!vertical dimension of c
+	real c(nlvddi,*)		!scalar to write
 
 	include 'param.h'
 	include 'femtime.h'
-
 
 	logical binfo
 	integer iu,ierr
@@ -499,7 +526,7 @@ c-----------------------------------------------------
 c check if files has to be written
 c-----------------------------------------------------
 
-	iu = ia_out(4)
+	iu = nint(da_out(4))
 	if( iu .le. 0 ) return
 
 c-----------------------------------------------------

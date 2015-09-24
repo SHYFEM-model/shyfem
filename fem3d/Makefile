@@ -178,7 +178,7 @@ SOBJS   = \
 
 HTOBJS = \
 	subver.o \
-	subcst.o subsys.o subnsh.o subtime.o suboutput.o \
+	subcst.o subsys.o subnsh.o subtime.o suboutput.o suboutputd.o \
 	subbas.o subnev.o \
 	subnsu.o subn35.o subdep.o \
 	subdef.o subfil.o subnls.o \
@@ -243,7 +243,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subdts.o subdep.o \
 	  debug.o subreg.o subnev.o \
 	  subfemfile.o subtsfile.o \
-	  subvintp.o subver.o sigmautil.o suboutput.o \
+	  subvintp.o subver.o sigmautil.o suboutput.o suboutputd.o \
 	  subclo.o \
 	  mod_depth.o mod_hydro.o mod_geom.o mod_hydro_print.o \
 	  mod_bound_geom.o mod_bnd.o mod_hydro_baro.o newlevels.o \
@@ -1314,6 +1314,7 @@ subouta.o: param.h ../femlib/mod/basin.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_hydro.mod femtime.h simul.h 
 suboutput.o: femtime.h
+suboutputd.o: femtime.h
 ../femlib/mod/para.mod: subpar3.o
 subpard.o: ../femlib/mod/omp_lib.mod param.h \
 		../femlib/mod/mod_system.mod 
