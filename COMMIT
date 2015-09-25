@@ -1,5 +1,27 @@
 ============================================================
 
+Fri Sep 25 18:28:33 CEST 2015
+
+started nudging for velocities
+
+ LOG                       |   15 ++++
+ fem3d/mod_bound_dynamic.f |   33 ++++----
+ fem3d/mod_nudging.f       |   50 +++++++++---
+ fem3d/newchk.f            |    6 +-
+ fem3d/newexpl.f           |   19 +++--
+ fem3d/newnudge.f          |  202 +++++++++++++++++++++++++++++++++++----------
+ fem3d/shyfem.f            |   15 ++--
+ fem3d/subfemintp.f        |   69 ++++++++++++----
+ fem3d/subreg.f            |  113 +++++++++++++++++++++-----
+ fembin/gitinfo            |    2 +-
+ fembin/revision_last      |   18 ++++
+ femdoc/final/shyfem.pdf   |  Bin 294937 -> 294937 bytes
+ femdoc/final/shyfem.ps    |    6 +-
+ femplot/plotsim.f         |    2 +-
+ 14 files changed, 422 insertions(+), 128 deletions(-)
+
+============================================================
+
 Wed Sep 23 14:11:46 CEST 2015
 
 New version 7_2_4

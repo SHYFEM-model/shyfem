@@ -130,7 +130,7 @@ c----------------------------------------------
 	call get_date_time(date,time)
 	call ptime_set_date_time(date,time)
 	call ptime_min_max
-	call iff_init_global_2d(nkn,hkv,date,time)	!FIXME
+	call iff_init_global_2d(nkn,nel,hkv,hev,date,time)	!FIXME
 
 c----------------------------------------------
 c interactive set up

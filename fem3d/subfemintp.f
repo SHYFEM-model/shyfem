@@ -10,6 +10,7 @@
 ! 07.01.2015	ggu	bug fix in iff_populate_records() -> handle holes
 ! 08.01.2015	ggu	bug fix for parallel: make variables local
 ! 05.02.2015	ggu	iff_read_and_interpolate() introduced for parallel bug
+! 25.09.2015	ggu	prepared to interpolate from reg onto elements
 !
 !****************************************************************
 !
@@ -125,9 +126,12 @@
 	double precision, save :: atime0_fem = 0
 
 	integer, save :: nkn_fem = 0
+	integer, save :: nel_fem = 0
 	integer, save :: nlv_fem = 0
 	integer, save, allocatable :: ilhkv_fem(:)
-	real, save, allocatable :: hd_fem(:)
+	integer, save, allocatable :: ilhv_fem(:)
+	real, save, allocatable :: hk_fem(:)
+	real, save, allocatable :: he_fem(:)
 	real, save, allocatable :: hlv_fem(:)
 
 !================================================================
@@ -404,16 +408,20 @@
 !****************************************************************
 !****************************************************************
 
-	subroutine iff_init_global(nkn,nlv,ilhkv,hkv,hlv,date,time)
+	subroutine iff_init_global(nkn,nel,nlv,ilhkv,ilhv
+     +					,hkv,hev,hlv,date,time)
 
 ! passes params and arrays from fem needed for interpolation
 !
 ! should be only called once at the beginning of the simulation
 
 	integer nkn
+	integer nel
 	integer nlv
 	integer ilhkv(nkn)
+	integer ilhv(nel)
 	real hkv(nkn)
+	real hev(nel)
 	real hlv(nlv)
 	integer date,time
 
@@ -425,17 +433,25 @@
 	  end do
 	end if
 
-	if( nkn /= nkn_fem .or. nlv /= nlv_fem ) then
+	if( nkn /= nkn_fem .or. nel /= nel_fem 
+     +				.or. nlv /= nlv_fem ) then
 	  if( nkn_fem > 0 ) then
-	    deallocate(ilhkv_fem,hd_fem,hlv_fem)
+	    deallocate(ilhkv_fem,hk_fem)
+	    deallocate(ilhv_fem,he_fem)
+	    deallocate(hlv_fem)
 	  end if
-	  allocate(ilhkv_fem(nkn),hd_fem(nkn),hlv_fem(nlv))
+	  allocate(ilhkv_fem(nkn),hk_fem(nkn))
+	  allocate(ilhv_fem(nel),he_fem(nel))
+	  allocate(hlv_fem(nlv))
 	end if
 
 	nkn_fem = nkn
+	nel_fem = nel
 	nlv_fem = nlv
 	ilhkv_fem = ilhkv
-	hd_fem = hkv
+	ilhv_fem = ilhv
+	hk_fem = hkv
+	he_fem = hev
 	hlv_fem = hlv
 
 	call iff_init_global_date_internal(date,time)
@@ -501,7 +517,7 @@
 
 	if( nvar < 1 ) goto 97
 	if( nexp < 1 ) goto 97
-	if( nexp > nkn_fem ) goto 97
+	!if( nexp > nkn_fem ) goto 97
 	if( lexp < 0 ) goto 97
 	if( nintp < 1 ) goto 97
 
@@ -553,7 +569,8 @@
 	! get data description and allocate data structure
 	!---------------------------------------------------------
 
-	if( .not. breg .and. nexp > 0 .and. nexp /= nkn_fem ) then
+	if( .not. breg .and. nexp > 0 
+     +		.and. nexp /= nkn_fem .and. nexp /= nel_fem) then
 	  allocate(pinfo(id)%nodes(nexp))	!lateral BC
 	  pinfo(id)%nodes = nodes
 	end if
@@ -1282,6 +1299,7 @@ c interpolates in space all variables in data set id
 
 	integer ivar,nvar
 	integer nx,ny
+	integer nexp
 	integer ierr
 	real x0,y0,dx,dy,flag
 
@@ -1294,15 +1312,30 @@ c interpolates in space all variables in data set id
 	dx = pinfo(id)%regpar(5)
 	dy = pinfo(id)%regpar(6)
 	flag = pinfo(id)%regpar(7)
+        nexp = pinfo(id)%nexp
 
-	do ivar=1,nvar
-	  call intp_reg(nx,ny,x0,y0,dx,dy,flag
+	if( nexp == nkn_fem ) then
+	  do ivar=1,nvar
+	    call intp_reg_nodes(nx,ny,x0,y0,dx,dy,flag
      +			,pinfo(id)%data_file(1,1,ivar)
      +			,pinfo(id)%data(1,1,ivar,iintp)
      +			,ierr
      +		    )
-	  if( ierr .ne. 0 ) goto 99
-	end do
+	    if( ierr .ne. 0 ) goto 99
+	  end do
+	else if( nexp == nel_fem ) then
+	  do ivar=1,nvar
+	    call intp_reg_elems(nx,ny,x0,y0,dx,dy,flag
+     +			,pinfo(id)%data_file(1,1,ivar)
+     +			,pinfo(id)%data(1,1,ivar,iintp)
+     +			,ierr
+     +		    )
+	  end do
+	else
+	  write(6,*) 'nexp,nkn,nel: ',nexp,nkn_fem,nel_fem
+	  write(6,*) 'Cannot yet handle...'
+	  stop 'error stop iff_handle_regular_grid: nexp'
+	end if
 
 	return
    99	continue
@@ -1466,7 +1499,7 @@ c global lmax and lexp are > 1
 
 	z = 0.
 
-	hfem = hd_fem(ipl)
+	hfem = hk_fem(ipl)
 	h = pinfo(id)%hd_file(ip_from)
 	if( h < -990 ) h = pinfo(id)%hlv_file(lmax)	!take from hlv array
 
@@ -1961,25 +1994,29 @@ c opens file and inititializes array - simplified version
 
 !****************************************************************
 
-	subroutine iff_init_global_2d(nkn,hkv,date,time)
+	subroutine iff_init_global_2d(nkn,nel,hkv,hev,date,time)
 
 	use intp_fem_file
 
 	implicit none
 
-	integer nkn
+	integer nkn,nel
 	real hkv(nkn)
+	real hev(nel)
 	integer date,time
 
 	integer nlv
 	integer ilhkv(nkn)
+	integer ilhv(nel)
 	real hlv(1)
 
 	nlv = 1
 	ilhkv = 1
+	ilhv = 1
 	hlv(1) = 10000.
 
-	call iff_init_global(nkn,nlv,ilhkv,hkv,hlv,date,time)
+	call iff_init_global(nkn,nel,nlv,ilhkv,ilhv
+     +				,hkv,hev,hlv,date,time)
 
 	end
 

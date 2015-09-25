@@ -40,6 +40,7 @@ c 13.09.2013	dbf&ggu	new sigma layer adjustment integrated
 c 10.04.2014	ggu	use rlin and rdistv to determin advective contribution
 c 17.04.2015	ggu	only one routine set_diff_horizontal()
 c 18.09.2015	ggu	use momentx/yv to store advective terms, not aux arrays
+c 25.09.2015	ggu	new call to set_nudging()
 c
 c notes :
 c
@@ -82,12 +83,8 @@ c-------------------------------------------
 c initialization
 c-------------------------------------------
 
-	do ie=1,nel
-	  do l=1,nlv
-	    fxv(l,ie) = 0.
-	    fyv(l,ie) = 0.
-	  end do
-	end do
+	fxv = 0.
+	fyv = 0.
 
 c-------------------------------------------
 c fix or nudge boundary velocities
@@ -124,7 +121,17 @@ c-------------------------------------------
         !if( bbarcl ) call set_barocl_new
 	if( bbarcl ) call set_barocl_new_interface
 
+c-------------------------------------------
+c non-hydrostatic contribution (experimental)
+c-------------------------------------------
+
 	if( bnohyd ) call nonhydro_set_explicit
+
+c-------------------------------------------
+c nudging of water levels and velocities
+c-------------------------------------------
+
+	call set_nudging
 
 c-------------------------------------------
 c end of routine

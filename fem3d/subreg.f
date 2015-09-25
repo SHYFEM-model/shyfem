@@ -71,6 +71,7 @@ c 10.10.2012	ggu	new routine fm2am2d() and fm2am3d()
 c 26.10.2012	ggu	bug fix: do not access not existing storage
 c 30.05.2014	ggu	in av2amk() do not interpolate for flag values
 c 07.07.2014	ggu	new routine intp_reg()
+c 25.09.2015	ggu	new routines intp_reg_nodes(), intp_reg_elems()
 c
 c notes :
 c
@@ -725,17 +726,13 @@ c
 c
 	return
 	end
-c
+
+c****************************************************************
+c****************************************************************
 c****************************************************************
 
-	subroutine intp_reg(nx,ny,x0,y0,dx,dy,flag,regval,femval,ierr)
-
-c interpolation of regular array onto fem grid
-c
-c ierr:
-c		0	no errors
-c		< 0	interpolation out of domain (extrapolation)
-c		> 0	values of flag used in interpolation
+	subroutine intp_reg_nodes(nx,ny,x0,y0,dx,dy,flag,regval
+     +				,femval,ierr)
 
 	use basin
 
@@ -745,12 +742,78 @@ c		> 0	values of flag used in interpolation
 	real x0,y0,dx,dy
 	real flag
 	real regval(nx,ny)
-	real femval(*)		!interpolated values on fem grid (return)
+	real femval(nkn)	!interpolated values on fem grid (return)
+	integer ierr		!error code (return)
+
+	call intp_reg(nx,ny,x0,y0,dx,dy,flag,regval
+     +				,nkn,xgv,ygv,femval,ierr)
+
+	end
+
+c****************************************************************
+
+	subroutine intp_reg_elems(nx,ny,x0,y0,dx,dy,flag,regval
+     +				,femval,ierr)
+
+	use basin
+
+	implicit none
+
+	integer nx,ny
+	real x0,y0,dx,dy
+	real flag
+	real regval(nx,ny)
+	real femval(nel)	!interpolated values on fem grid (return)
+	integer ierr		!error code (return)
+
+	integer ie,ii,k
+	real x,y
+	real xp(nel),yp(nel)
+
+	do ie=1,nel
+	  x = 0.
+	  y = 0.
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    x = x + xgv(k)
+	    y = y + ygv(k)
+	  end do
+	  xp(ie) = x / 3.
+	  yp(ie) = y / 3.
+	end do
+
+	call intp_reg(nx,ny,x0,y0,dx,dy,flag,regval
+     +				,nel,xp,yp,femval,ierr)
+
+	end
+
+c****************************************************************
+
+	subroutine intp_reg(nx,ny,x0,y0,dx,dy,flag,regval
+     +				,np,xp,yp,femval,ierr)
+
+c interpolation of regular array onto fem grid
+c
+c ierr:
+c		0	no errors
+c		< 0	interpolation out of domain (extrapolation)
+c		> 0	flag found in interpolation data
+
+	implicit none
+
+	integer nx,ny
+	real x0,y0,dx,dy
+	real flag
+	real regval(nx,ny)
+	integer np		!number of fem points
+	real xp(np)
+	real yp(np)
+	real femval(np)		!interpolated values on fem grid (return)
 	integer ierr		!error code (return)
 
 	include 'param.h'
 
-	logical bextra
+	logical bextra,bout,bflag
 	integer k
 	integer imin,jmin
 	integer iflag,iout
@@ -763,9 +826,9 @@ c		> 0	values of flag used in interpolation
 	xn = x0 + (nx-1)*dx
 	yn = y0 + (ny-1)*dy
 
-	do k=1,nkn
-	    xx = xgv(k)
-	    yy = ygv(k)
+	do k=1,np
+	    xx = xp(k)
+	    yy = yp(k)
  
 	    femval(k) = flag
  
@@ -787,21 +850,31 @@ c		> 0	values of flag used in interpolation
 	    if( imin.lt.1 .or. jmin.lt.1 ) goto 99
 	    if( imin+1.gt.nx .or. jmin+1.gt.ny ) goto 99
 
-	    z1 = regval(imin,jmin)
-	    z2 = regval(imin+1,jmin)
-	    z3 = regval(imin+1,jmin+1)
-	    z4 = regval(imin,jmin+1)
-
-	    if( z1.eq.flag .or. z2.eq.flag ) iflag = iflag + 1
-	    if( z3.eq.flag .or. z4.eq.flag ) iflag = iflag + 1
-
 	    x1 = x0+(imin-1)*dx
 	    y1 = y0+(jmin-1)*dy
 	    t = (xx-x1)/dx
 	    u = (yy-y1)/dy
 
-	    if( u.gt.1. .or. u.lt.0. ) iout = iout + 1
-	    if( t.gt.1. .or. t.lt.0. ) iout = iout + 1
+	    bout = .false.
+	    if( u.gt.1. .or. u.lt.0. ) bout = .true.
+	    if( t.gt.1. .or. t.lt.0. ) bout = .true.
+	    if( bout ) then
+	      iout = iout +1
+	      cycle
+	    end if
+
+	    z1 = regval(imin,jmin)
+	    z2 = regval(imin+1,jmin)
+	    z3 = regval(imin+1,jmin+1)
+	    z4 = regval(imin,jmin+1)
+
+	    bflag = .false.
+	    if( z1.eq.flag .or. z2.eq.flag ) bflag = .true.
+	    if( z3.eq.flag .or. z4.eq.flag ) bflag = .true.
+	    if( bflag ) then
+	      iflag = iflag +1
+	      cycle
+	    end if
 
 	    femval(k)=(1-t)*(1-u)*z1+t*(1-u)*z2+t*u*z3+(1-t)*u*z4
 	end do

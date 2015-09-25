@@ -751,9 +751,8 @@ c----------------------------------------------------------------
 	vrmax = 0.
 	vmax = 0.
 	do k=1,nkn
-	 !if( is_inner(k) ) then
-	 if( rzv(k) .ne. flag ) cycle
-	 if( .not. is_external_boundary(k) ) then
+	  if( is_zeta_boundary(k) ) cycle
+	  if( is_external_boundary(k) ) cycle
 	  bdebug = k .eq. kss
 	  if( bdebug ) write(78,*) '============================='
 	  berror = .false.
@@ -785,7 +784,6 @@ c----------------------------------------------------------------
 		call check_node(k)
 		write(78,*) '============================'
 	  end if
-	 end if
 	end do
 
 	vlmax = vmax		!absolute error for each box

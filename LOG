@@ -1,4 +1,19 @@
 
+25.09.2015
+
+c ./fem3d/newnudge.f:
+c 25.09.2015    ggu     prepared for nudging velocities
+c
+c ./fem3d/subreg.f:
+c 25.09.2015    ggu     new routines intp_reg_nodes(), intp_reg_elems()
+c
+c ./fem3d/newexpl.f:
+c 25.09.2015    ggu     new call to set_nudging()
+c
+c ./fem3d/subfemintp.f:
+! 25.09.2015    ggu     prepared to interpolate from reg onto elements
+
+
 23.09.2015
 
 c ./fem3d/subnos.f:

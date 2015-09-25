@@ -1,22 +1,14 @@
 
+!==================================================================
         module mod_bound_dynamic
+!==================================================================
 
         implicit none
 
-        !real rzv(nkndim), rqv(nkndim)
-        !common /rzv/rzv, /rqv/rqv
-
-        !real rqpsv(nkndim), rqdsv(nkndim)
-        !common /rqpsv/rqpsv, /rqdsv/rqdsv
-        	!real evapv(nkndim)	!!!QUESTI ERANO PRECOMMENTATI
-        	!common /evapv/evapv	!!!VANNO MESSI O NO?
-        !real mfluxv(nlvdim,nkndim)
-        !common /mfluxv/mfluxv
-	!save /rzv/,/rqv/
-	!save /rqpsv/,/rqdsv/,/mfluxv/
-
         integer, private, save :: nkn_bound_dynamic = 0
         integer, private, save :: nlv_bound_dynamic = 0
+
+        real, parameter, private :: flag = -9988765.0
 
         real, allocatable, save :: rzv(:)
         real, allocatable, save :: rqv(:)
@@ -24,9 +16,9 @@
         real, allocatable, save :: rqdsv(:)
         real, allocatable, save :: mfluxv(:,:)
 
+!==================================================================
         contains
-
-!************************************************************
+!==================================================================
 
         subroutine mod_bound_dynamic_init(nkn,nlv)
 
@@ -64,8 +56,19 @@
 
         end subroutine mod_bound_dynamic_init
 
-!************************************************************
+!******************************************************************
 
+        function is_zeta_boundary(k)
+
+        logical is_zeta_boundary
+        integer k
+
+        is_zeta_boundary = rzv(k) /= flag
+
+        end function is_zeta_boundary
+
+!==================================================================
         end module mod_bound_dynamic
+!==================================================================
 
 

@@ -18,6 +18,7 @@ c 17.05.2011    ggu     changes in freqdep()
 c 12.07.2011    ggu     better treatment of freqdep()
 c 16.11.2011    ggu     basin.h introduced
 c 23.01.2012    ggu     new from basinf
+c 25.09.2015    ggu     prepared for nudging velocities
 c
 c****************************************************************
 
@@ -32,7 +33,9 @@ c****************************************************************
 
 	integer, save, private :: nkn_nudge = 0
 
-	integer, save :: nvar = 0
+	integer, save :: idsurf = 0
+
+	integer, save :: nvars = 0
 	real, save :: tramp = 0.
 
 	real, allocatable :: andg_data(:)		!data of observations
@@ -89,16 +92,13 @@ c****************************************************************
         end module mod_nudge
 !==================================================================
 
-	subroutine nudge_init
+	subroutine init_zeta_nudging
 
 	use mod_nudge
 	use mod_nudging
 	use basin
 
 	implicit none
-
-	include 'param.h'
-
 
 	logical binfl,binsert
 	integer nintp,nsize,ndim
@@ -110,9 +110,9 @@ c****************************************************************
 
 	integer ipint
 
-	nvar = 27
-	nvar = 30
-	nvar = 0
+	nvars = 27
+	nvars = 30
+	nvars = 0
 	file_obs='data_level_18-27_06_2008.dat'
 	file_stations='mareo_input.txt'
 	tramp = 43200
@@ -126,13 +126,11 @@ c****************************************************************
 
 	binfl = sigma .gt. 0.
 
-	do k=1,nkn
-	  andgzv(k) = 0.
-	end do
+	andgzv = 0.
 
-	if( nvar .gt. ndgdim ) stop 'error stop nudge_init: ndgdim'
+	if( nvars .gt. ndgdim ) stop 'error stop nudge_init: ndgdim'
 
-	if( nvar .le. 0 ) return
+	if( nvars .le. 0 ) return
 
 	call mod_nudge_init(nkn)
 
@@ -140,7 +138,7 @@ c****************************************************************
 	nsize = 1
 	ndim = ndgdatdim
 
-	call exffil(file_obs,nintp,nvar,nsize,ndim,andg_data)
+	call exffil(file_obs,nintp,nvars,nsize,ndim,andg_data)
 
 	ivar = 0
 	open(1,file='NUDGE',status='old',form='formatted',err=1)
@@ -148,7 +146,7 @@ c****************************************************************
 	close(1)
     1	continue
 
-	do i=1,nvar
+	do i=1,nvars
 	  ndg_use(i) = 1			! use all data
 	  !if( mod(i,2) .ne. 0 ) ndg_use(i) = 0	! only use even vars
 	  !if( i .eq. 10 ) ndg_use(i) = 0	! no Saline
@@ -156,8 +154,8 @@ c****************************************************************
 	end do
 
 	open(1,file=file_stations,status='old',form='formatted')
-	write(6,*) 'initializing zeta nudging... nvar = ',nvar
-	do i=1,nvar
+	write(6,*) 'initializing zeta nudging... nvars = ',nvars
+	do i=1,nvars
 	  read(1,'(a16,a4,i6)') cname,cdummy,node
 	  write(6,*) i,cname,node,ndg_use(i)
 	  k = ipint(node)
@@ -176,7 +174,7 @@ c****************************************************************
 	  ndg_area(k) = 0
 	end do
 
-	do i=1,nvar
+	do i=1,nvars
 	  binsert = ndg_use(i) .gt. 0
 	  if( binsert ) then
 	    k = ndg_nodelist(i)
@@ -200,7 +198,7 @@ c****************************************************************
 
 c****************************************************************
 
-	subroutine nudge_zeta
+	subroutine set_zeta_nudging
 
 	use mod_nudge
 	use mod_nudging
@@ -209,10 +207,7 @@ c****************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	include 'femtime.h'
-
 
 	integer i,k,kk,ia
 	integer nnudge,iuse,iu
@@ -221,7 +216,7 @@ c****************************************************************
 	real zeta(ndgdim)
 	real cont(ndgdim)
 
-	if( nvar .le. 0 ) return
+	if( nvars .le. 0 ) return
 
 	t = it
 
@@ -231,15 +226,15 @@ c****************************************************************
 	if( tramp .gt. 0. ) talpha = (it-itanf)/tramp
 	if( talpha .gt. 1. ) talpha = 1.
 
-	do i=1,nvar
+	do i=1,nvars
 	  k = ndg_nodelist(i)
 	  zeta(i) = zov(k)
 	end do
 
-	write(88,'(i10,50f7.3)') it,(rint(i),i=1,nvar)
-	write(89,'(i10,50f7.3)') it,(zeta(i),i=1,nvar)
+	write(88,'(i10,50f7.3)') it,(rint(i),i=1,nvars)
+	write(89,'(i10,50f7.3)') it,(zeta(i),i=1,nvars)
 
-	do i=1,nvar
+	do i=1,nvars
 	  k = ndg_nodelist(i)
 	  iuse = ndg_use(i)
 	  if( iuse .le. 0 ) then
@@ -268,17 +263,7 @@ c****************************************************************
 	end
 
 c*******************************************************************
-
-c        do ii=1,3
-c          fnudge(ii) = robs * rtau(l,ii) * ( cob(l,ii) - cl(l,ii) )
-c        end do
-c          cdummy = aj4 * ( hold(l,ii)*cl(l,ii)
-c     +                          + dt *  (
-c     +                                      hold(l,ii)*fnudge(ii)
-c          cn(l,k) = cn(l,k) + cdummy
-c
-c          co(l,k) = co(l,k) + dt * aj4 * hmed * robs * rtauv(l,k) !nudging
-
+c*******************************************************************
 c*******************************************************************
 
 	subroutine distance(ttau,sigma)
@@ -289,8 +274,6 @@ c sets up andg_dist and andg_weight
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	real ttau		!relaxation time
 	real sigma		!sigma distance
@@ -341,8 +324,6 @@ c sets up icol (local) and ndg_nodes and ndg_area
 
 	implicit none
 
-	include 'param.h'
-
 	integer icol(nkn)
 	integer icolaux(nkn)
 	real d(nkn)
@@ -357,7 +338,7 @@ c sets up icol (local) and ndg_nodes and ndg_area
 	  icolaux(k) = 0
 	end do
 
-	do i=1,nvar
+	do i=1,nvars
 	  binsert = ndg_use(i) .gt. 0
 	  if( binsert ) then
 	    k = ndg_nodelist(i)
@@ -443,4 +424,139 @@ c sets up icol (local) and ndg_nodes and ndg_area
 	end
 
 c*******************************************************************
+c*******************************************************************
+c*******************************************************************
 
+	subroutine init_velocity_nudging
+
+	use mod_nudge
+	use mod_nudging
+	use intp_fem_file
+	use basin
+
+	implicit none
+
+	integer nvar,nintp
+	real vconst(2)
+	double precision dtime0,dtime
+	character*10 what
+	character*80 windfile
+
+	integer np,lmax
+	integer nodes(1)
+
+	include 'femtime.h'
+
+	dtime0 = itanf
+
+	nodes = 0
+	nvar = 2
+	nintp = 2
+	np = nkn
+	lmax = 0
+	what = 'surfvel'
+	windfile = 'surface.fem'
+	windfile = ' '
+	vconst = (/0.,0./)
+
+        call iff_init(dtime0,windfile,nvar,np,lmax,nintp
+     +                          ,nodes,vconst,idsurf)
+        call iff_set_description(idsurf,0,'surface velocities')
+
+        !call velocity_nudging_set_data(idsurf,nvar)
+
+	lmax = 1
+	dtime = t_act
+        call iff_read_and_interpolate(idsurf,dtime0)
+        call iff_time_interpolate(idsurf,dtime,1,np,lmax,uobs)
+        call iff_time_interpolate(idsurf,dtime,2,np,lmax,vobs)
+
+	end
+
+c*******************************************************************
+
+	subroutine set_velocity_nudging
+
+	use mod_nudge
+	use mod_nudging
+	use basin
+	use levels
+	use mod_internal
+	use mod_hydro
+	use mod_layer_thickness
+	use intp_fem_file
+
+	implicit none
+
+	include 'femtime.h'
+
+	integer ie,l,lmax
+	real h,tau
+	double precision dtime
+
+	dtime = t_act
+	lmax = 1
+
+!------------------------------------------------------------------
+! read and interpolate
+!------------------------------------------------------------------
+
+	if( .not. iff_is_constant(idsurf) ) then
+          call iff_read_and_interpolate(idsurf,dtime)
+          call iff_time_interpolate(idsurf,dtime,1,nkn,lmax,uobs)
+          call iff_time_interpolate(idsurf,dtime,2,nkn,lmax,vobs)
+	end if
+
+!------------------------------------------------------------------
+! set relaxation time
+!------------------------------------------------------------------
+
+	tauvel(1,:) = 3600.
+
+!------------------------------------------------------------------
+! add contribution to explicit term
+!------------------------------------------------------------------
+
+        do ie=1,nel
+          lmax = ilhv(ie)
+          do l=1,lmax
+	    tau = tauvel(l,ie)
+	    if( tau > 0. ) then
+	      h = hdenv(l,ie)
+	      fxv(l,ie) = fxv(l,ie) - (h*uobs(l,ie)-utlnv(l,ie))/tau
+	      fyv(l,ie) = fyv(l,ie) - (h*vobs(l,ie)-utlnv(l,ie))/tau
+	    end if
+	  end do
+	end do
+
+!------------------------------------------------------------------
+! end of routine
+!------------------------------------------------------------------
+
+	end 
+
+c*******************************************************************
+c*******************************************************************
+c*******************************************************************
+
+	subroutine init_nudging
+
+	implicit none
+
+	call init_zeta_nudging
+	call init_velocity_nudging
+
+	end 
+
+c*******************************************************************
+
+	subroutine set_nudging
+
+	implicit none
+
+	call set_zeta_nudging
+	!call set_velocity_nudging
+
+	end 
+
+c*******************************************************************

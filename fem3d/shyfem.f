@@ -203,7 +203,7 @@ c-----------------------------------------------------------
 	call adjust_spherical
 	call print_spherical
 	call set_geom
-	call domain_clusterization(nkn,nel)	!ERIC
+	!call domain_clusterization(nkn,nel)	!ERIC
 
 c-----------------------------------------------------------
 c inititialize time independent vertical arrays
@@ -236,11 +236,11 @@ c-----------------------------------------------------------
 	call check_point('checking ht 2')
 
 	call get_date_time(date,time)
-	call iff_init_global(nkn,nlv,ilhkv,hkv_max,hlv,date,time)
+	!call iff_init_global(nkn,nlv,ilhkv,hkv_max,hlv,date,time)
+	call iff_init_global(nkn,nel,nlv,ilhkv,ilhv
+     +				,hkv_max,hev,hlv,date,time)
 
 	call sp111(1)           !here zenv, utlnv, vtlnv are initialized
-
-	!call handle_bsig_init	!initialize from sigma level data?
 
 c-----------------------------------------------------------
 c initialize depth arrays and barene data structure
@@ -318,7 +318,7 @@ c        call bclevvar_ini       	!chao debora
 	call offline(2)
 	call offline(1)
 
-	call nudge_init
+	call init_nudging
 
 	call do_init
 
@@ -351,7 +351,6 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	   call offline(2)		!read from offline file
 
 	   call sp111(2)		!boundary conditions
-	   call nudge_zeta
 
            call read_wwm
 	   
@@ -586,7 +585,6 @@ c*****************************************************************
 	use mod_bound_geom
 	use mod_geom
 	use mod_meteo
-	use mod_nudging
 	use mod_geom_dynamic
 	use mod_bnd_aux
 	use mod_diff_aux
@@ -608,7 +606,6 @@ c*****************************************************************
 
 	call mod_bnd_aux_init(nkn,nel)
 	call mod_geom_dynamic_init(nkn,nel)
-	call mod_nudging_init(nkn)
 
 	call mod_meteo_init(nkn)
 	call mod_geom_init(nkn,nel,ngr)
@@ -639,6 +636,7 @@ c*****************************************************************
 	use mod_layer_thickness
 	use mod_gotm_aux
 	use mod_bound_dynamic
+	use mod_nudging
 	!use mod_aux_array
 	use mod_area
 	use mod_ts
@@ -673,6 +671,7 @@ c*****************************************************************
 	call mod_layer_thickness_init(nkn,nel,nlvddi)
 	call mod_internal_init(nkn,nel,nlvddi)
 	call mod_nohyd_init(nkn,nlvddi)
+	call mod_nudging_init(nkn,nel,nlv)
 
 	call mod_bclfix_init(nkn,nel,nlvddi)
 	call mod_fluidmud_init(nkn,nlvddi)

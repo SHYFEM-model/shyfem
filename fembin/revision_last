@@ -17,6 +17,12 @@ tmpfile2=tmp2.tmp
 
 #----------------
 
+if [ ! -f $version_file ]; then
+  echo "No file $version_file"
+  echo "You must run this command in the main directory."
+  exit 1
+fi
+
 firstline=`head -1 $version_file | sed 's/ \{1,\}/ /g'`
 actdate=`echo $firstline | cut -d" " -f3`
 comparedate=`date2num $actdate`
@@ -27,6 +33,18 @@ revisionlog -after $comparedate $files > $tmpfile
 revisionlog_adjust.pl $tmpfile $version_file > $tmpfile2
 
 cat $tmpfile2
+
+if [ "$1" = "-log" ]; then	#add output to LOG
+  echo "adding revision log to file LOG"
+  date=`date +"%d.%m.%Y"`
+  cp LOG LOG.tmp
+  echo "" 		 > tmp.tmp
+  echo "$date"		>> tmp.tmp
+  echo "" 		>> tmp.tmp
+  cat $tmpfile2		>> tmp.tmp
+  echo "" 		>> tmp.tmp
+  cat LOG		>> tmp.tmp
+fi
 
 #----------------
 

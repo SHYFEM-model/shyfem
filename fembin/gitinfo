@@ -81,7 +81,7 @@ iterate:
 	make regress
 	make doc
 	make depend
-	revision_last	-> output should go into LOG, BUG and RELEASE_NOTES
+	revision_last [-log] -> output into LOG, BUG and RELEASE_NOTES
 	git add -u
 
 make check_var
