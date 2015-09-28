@@ -14,6 +14,21 @@ c ./fem3d/subfemintp.f:
 ! 25.09.2015    ggu     prepared to interpolate from reg onto elements
 
 
+24.09.2015
+
+c ./fem3d/subnsh.f:
+c 24.09.2015    ggu     call initialization for irv before reading STR file
+
+
+24.09.2015
+
+c ./fem3d/suboutput.f:
+c 24.09.2015    ggu     new file for double precision version
+c
+c ./fem3d/suboutputd.f:
+c 24.09.2015    ggu     routines re-written for double precision
+
+
 23.09.2015
 
 c ./fem3d/subnos.f:

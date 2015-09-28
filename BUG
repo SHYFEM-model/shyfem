@@ -1,4 +1,7 @@
 
+BUG_53	     ggu&dbf	7.2.5    24.09.2015
+	irv not initialized with no external boundaries
+
 BUG_52	     ggu	7.2.3    19.09.2015
 	in coo_init n==0 was not checked
 

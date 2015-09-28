@@ -1,5 +1,34 @@
 ============================================================
 
+Mon Sep 28 14:44:12 CEST 2015
+
+merging from master
+
+ BUG                    |    3 +
+ COMMIT                 |   41 +++++
+ LOG                    |   15 ++
+ VERSION                |    4 +
+ cp_fem.sh              |   36 -----
+ fem3d/Makefile         |    5 +-
+ fem3d/mod_bndo.f       |   25 ++--
+ fem3d/mod_bound_geom.f |   33 +++--
+ fem3d/newbcl.f         |    2 +-
+ fem3d/subcon1.f        |   43 +++++-
+ fem3d/subnsh.f         |    2 +
+ fem3d/suboutput.f      |   32 +---
+ fem3d/suboutputd.f     |  386 ++++++++++++++++++++++++++++++++++++++++++++++++
+ prep_dirs.sh           |   55 -------
+ prep_fem.sh            |   32 ----
+ 15 files changed, 528 insertions(+), 186 deletions(-)
+ new file:
+   fem3d/suboutputd.f
+ deleted:
+    cp_fem.sh
+    prep_dirs.sh
+    prep_fem.sh
+
+============================================================
+
 Fri Sep 25 18:28:33 CEST 2015
 
 started nudging for velocities
@@ -19,6 +48,47 @@ started nudging for velocities
  femdoc/final/shyfem.ps    |    6 +-
  femplot/plotsim.f         |    2 +-
  14 files changed, 422 insertions(+), 128 deletions(-)
+
+============================================================
+
+Thu Sep 24 17:28:41 CEST 2015
+
+bug fix for basins without boundary
+
+ BUG                     |    3 ++
+ LOG                     |   15 ++++++++++++
+ cp_fem.sh               |   36 ------------------------------
+ fem3d/mod_bndo.f        |   25 ++++++++------------
+ fem3d/mod_bound_geom.f  |   33 ++++++++++++++++++----------
+ fem3d/subnsh.f          |    2 +
+ femdoc/final/shyfem.pdf |  Bin 294937 -> 294936 bytes
+ femdoc/final/shyfem.ps  |    6 ++--
+ prep_dirs.sh            |   55 -----------------------------------------------
+ prep_fem.sh             |   32 ---------------------------
+ 10 files changed, 54 insertions(+), 153 deletions(-)
+ deleted:
+    cp_fem.sh
+    prep_dirs.sh
+    prep_fem.sh
+
+============================================================
+
+Thu Sep 24 17:27:39 CEST 2015
+
+more on converting time to double
+
+ fem3d/Makefile     |    5 +-
+ fem3d/newbcl.f     |    2 +-
+ fem3d/subcon1.f    |   43 +++++-
+ fem3d/suboutput.f  |   32 +----
+ fem3d/suboutputd.f |  386 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 432 insertions(+), 36 deletions(-)
+ new file:
+   fem3d/suboutputd.f
+ deleted:
+    cp_fem.sh
+    prep_dirs.sh
+    prep_fem.sh
 
 ============================================================
 

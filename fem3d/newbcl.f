@@ -282,7 +282,7 @@ c		--------------------------------------------
 		    if( isalt .gt. 0 ) then
 		      call write_scalar_file(ia_out,11,nlvdi,saltv)
 		    end if
-		    if( isalt .gt. 0 ) then
+		    if( itemp .gt. 0 ) then
 		      call write_scalar_file(ia_out,12,nlvdi,tempv)
 		    end if
 		  end if

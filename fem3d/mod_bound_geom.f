@@ -30,14 +30,9 @@ c----------------------------------------------------------------------
         integer nkn
         integer nrb
 
-        if( nkn == nkn_bound_geom .and. nrb == nrb_bound_geom ) return
+	integer naux
 
-        if( nkn > 0 .or. nrb > 0 ) then
-          if( nkn == 0 .or. nrb == 0 ) then
-            write(6,*) 'nkn,nrb: ',nkn,nrb
-            stop 'error stop mod_bound_geom_init: incompatible params'
-          end if
-        end if
+	if( nkn == nkn_bound_geom .and. nrb == nrb_bound_geom ) return
 
         if( nkn_bound_geom > 0 ) then
           deallocate(irv)
@@ -53,11 +48,13 @@ c----------------------------------------------------------------------
 
         if( nkn == 0 ) return
 
-        allocate(irv(nrb))
-        allocate(ierv(2,nrb))
-        allocate(rhv(nrb))
-        allocate(rlv(nrb))
-        allocate(rrv(nrb))
+	naux = max(1,nrb)
+
+        allocate(irv(naux))
+        allocate(ierv(2,naux))
+        allocate(rhv(naux))
+        allocate(rlv(naux))
+        allocate(rrv(naux))
         allocate(iopbnd(nkn))
 
 	irv = 0
@@ -201,4 +198,16 @@ c----------------------------------------------------------------------
 !==================================================================
         end module mod_bound_geom
 !==================================================================
+
+        subroutine mod_irv_initialize
+
+	use mod_bound_geom
+
+	implicit none
+
+        call mod_irv_init(0)
+
+	end subroutine mod_irv_initialize
+
+!***************************************************************
 
