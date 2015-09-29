@@ -1,3 +1,41 @@
+version  7_2_5    29-09-2015    VERS_7_2_5
+
+========================================================== 29-09-2015 - 7_2_5
+
+c ./fem3d/subnsh.f:
+c 24.09.2015    ggu     call initialization for irv before reading STR file
+c
+c ./fem3d/shyfem.f:
+c 29.09.2015    ccf	inverted set_spherical() and handle_projection()
+c
+c ./fem3d/newnudge.f:
+c 25.09.2015    ggu     prepared for nudging velocities
+c 29.09.2015    ggu     finished nudging velocities
+c
+c ./fem3d/suboutput.f:
+c 24.09.2015    ggu     new file for double precision version
+c
+c ./fem3d/subver.f:
+c 29.09.2015	ggu	version 7.2.5
+c
+c ./fem3d/suboutputd.f:
+c 24.09.2015    ggu     routines re-written for double precision
+c
+c ./fem3d/subreg.f:
+c 25.09.2015	ggu	new routines intp_reg_nodes(), intp_reg_elems()
+c
+c ./fem3d/subsys.f:
+c 29.09.2015	ggu	new boundary file surfvel
+c
+c ./fem3d/newexpl.f:
+c 25.09.2015	ggu	new call to set_nudging()
+c
+c ./fem3d/subfemintp.f:
+! 25.09.2015	ggu	prepared to interpolate from reg onto elements
+! 29.09.2015	ggu	in iff_interpolate() do not interpolate with flag
+
+==========================================================
+
 version  7_2_4    23-09-2015    VERS_7_2_4   commit_2015-09-29
 
 version  7_2_4    23-09-2015    VERS_7_2_4   commit_2015-09-29
