@@ -8,6 +8,7 @@ c 04.03.2004	ggu	writes also number of variables (1)
 c 11.03.2009	ggu	bug fix -> declare hev() here
 c 07.02.2015	ggu	OI finished
 c 14.09.2015	ggu	OI adapted to new modular structure
+c 29.09.2015	ggu	move some vars to custimize to the beginning of file
 c
 c notes :
 c
@@ -67,6 +68,7 @@ c optimal interpolation interpolation
 	double precision dtime
 	real hlv(1)
 	real regpar(7)
+	integer date
 	integer datetime(2)
 	character*30 string,format
 
@@ -137,6 +139,18 @@ c--------------------------------------------------------------
 
 	bback = .false.
 	call clo_get_file(1,file)
+
+c-----------------------------------------------------------------
+c set some variables
+c-----------------------------------------------------------------
+
+	ivar = 85		!what is in the observations - ice
+	string = 'ice cover [0-1]'
+	date = 19970101
+
+	ivar = 12		!what is in the observations - temperature
+	string = 'temperature [C]'
+	date = 20100101
 
 c-----------------------------------------------------------------
 c read in basin
@@ -220,13 +234,12 @@ c-----------------------------------------------------------------
 	write(6,*) 'ggu 2'
 	it = 0
 	datetime = 0
-	datetime(1) = 19970101
+	datetime(1) = date
 	write(6,*) 'ggu 2'
 	hlv(1) = 10000.
 	write(6,*) 'ggu 2'
 	hd = 1.
 	ilhkv = 1
-	string = 'ice cover [0-1]'
 
 	write(6,*) 'ggu 3'
 
@@ -235,9 +248,8 @@ c open files
 c-----------------------------------------------------------------
 
 	irec = 0
-	ivar = 85
+	drl = 0.05		!test different rl, distance drl
 	drl = 0.
-	drl = 0.05
 	if( bmulti ) drl = 0.
 	jmax = 0
 	if( drl > 0. ) jmax = 5
@@ -251,6 +263,7 @@ c-----------------------------------------------------------------
 
 	iuobs = 1
 	open(iuobs,file=file,status='old',form='formatted')
+	write(6,*) 'file with observations: ',trim(file)
 
 c-----------------------------------------------------------------
 c read observations and interpolate
@@ -383,6 +396,10 @@ c****************************************************************
 	  regpar(7) = flag
 	end if
 
+	if( nx > 0. ) then
+	  call write_reg_grid(nx,ny,x0,y0,dx,dy)
+	end if
+
 	return
    98	continue
 	write(6,*) nx,ny,nback,k,ndim
@@ -503,8 +520,39 @@ c	kn, valn
 	write(6,*) 'format should be: "k val" or "x y val"'
 	stop 'error stop read_observations: wrong format'
    99	continue
-	write(6,*) k,kn
+	write(6,*) 'k = ',k
 	stop 'error stop read_observations: no such node'
+	end
+
+c******************************************************************
+
+	subroutine write_reg_grid(nx,ny,x0,y0,dx,dy)
+
+	implicit none
+
+	integer nx,ny
+	real x0,y0
+	real dx,dy
+
+	integer iu
+	integer ix,iy,i
+	real x,y
+
+	iu = 9
+	open(iu,file='regfile.grd',form='formatted',status='unknown')
+
+	i = 0
+	do iy=0,ny
+	  do ix=0,nx
+	    i = i + 1
+	    x = x0 + ix*dx
+	    y = y0 + iy*dy
+	    write(iu,*) 1,i,0,x,y
+	  end do
+	end do
+
+	close(iu)
+
 	end
 
 c******************************************************************

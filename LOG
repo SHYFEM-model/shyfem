@@ -1,6 +1,12 @@
 
 29.09.2015
 
+c ./fem3d/optintp.f:
+c 29.09.2015	ggu	move some vars to custimize to the beginning of file
+
+
+29.09.2015
+
 c ./fem3d/newnudge.f:
 c 29.09.2015    ggu     finished nudging velocities
 c
