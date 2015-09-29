@@ -25,8 +25,8 @@ ps:
 	dvips -o $(DOC).ps $(DOC)
 
 final:
-	cp shyfem.ps final
 	cp shyfem.pdf final
+	#cp shyfem.ps final
 
 #--------------------------------
 

@@ -180,10 +180,7 @@ c DOCS  END
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
 
-	include 'param.h'
 	include 'femtime.h'
-
-
 
 	character*60 windfile,heatfile,rainfile,icefile
 	character*4 what

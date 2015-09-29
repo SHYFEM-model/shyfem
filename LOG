@@ -1,4 +1,16 @@
 
+29.09.2015
+
+c ./fem3d/newnudge.f:
+c 29.09.2015    ggu     finished nudging velocities
+c
+c ./fem3d/subsys.f:
+c 29.09.2015	ggu	new boundary file surfvel
+c
+c ./fem3d/subfemintp.f:
+! 29.09.2015	ggu	in iff_interpolate() do not interpolate with flag
+
+
 25.09.2015
 
 c ./fem3d/newnudge.f:

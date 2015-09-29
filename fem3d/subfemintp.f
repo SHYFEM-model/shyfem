@@ -11,6 +11,7 @@
 ! 08.01.2015	ggu	bug fix for parallel: make variables local
 ! 05.02.2015	ggu	iff_read_and_interpolate() introduced for parallel bug
 ! 25.09.2015	ggu	prepared to interpolate from reg onto elements
+! 29.09.2015	ggu	in iff_interpolate() do not interpolate with flag
 !
 !****************************************************************
 !
@@ -84,6 +85,9 @@
 	  integer :: ilast = 0		!last entry in time
 	  integer :: ireg = 0		!regular grid
 	  logical :: eof = .false.	!EOF encountered?
+
+	  real :: flag = -999.		!flag for value not available
+	  logical :: bneedall = .true.	!need values for all points
 
 	  integer :: datetime(2) = 0	!date and time parameters
 	  real :: regpar(7) = 0.	!parameters for regular grid
@@ -1232,7 +1236,6 @@ c interpolates in space all variables in data set id
 
 	if( ireg > 0 ) then
 	  if( lexp > 1 ) goto 96
-	  !if( ireg > 0 ) goto 97
 	  call iff_handle_regular_grid(id,iintp)
 	else if( bts ) then
           nvar = pinfo(id)%nvar
@@ -1297,6 +1300,7 @@ c interpolates in space all variables in data set id
 	integer id
 	integer iintp
 
+	logical bneedall
 	integer ivar,nvar
 	integer nx,ny
 	integer nexp
@@ -1313,6 +1317,8 @@ c interpolates in space all variables in data set id
 	dy = pinfo(id)%regpar(6)
 	flag = pinfo(id)%regpar(7)
         nexp = pinfo(id)%nexp
+	bneedall = pinfo(id)%bneedall
+	pinfo(id)%flag = flag		!use this in time_interpolate
 
 	if( nexp == nkn_fem ) then
 	  do ivar=1,nvar
@@ -1321,7 +1327,7 @@ c interpolates in space all variables in data set id
      +			,pinfo(id)%data(1,1,ivar,iintp)
      +			,ierr
      +		    )
-	    if( ierr .ne. 0 ) goto 99
+	    !if( bneedall .and. ierr .ne. 0 ) goto 99	!is handled later
 	  end do
 	else if( nexp == nel_fem ) then
 	  do ivar=1,nvar
@@ -1330,6 +1336,7 @@ c interpolates in space all variables in data set id
      +			,pinfo(id)%data(1,1,ivar,iintp)
      +			,ierr
      +		    )
+	    !if( bneedall .and. ierr .ne. 0 ) goto 99	!is handled later
 	  end do
 	else
 	  write(6,*) 'nexp,nkn,nel: ',nexp,nkn_fem,nel_fem
@@ -1339,7 +1346,9 @@ c interpolates in space all variables in data set id
 
 	return
    99	continue
-	write(6,*) 'error interpolating from regular grid: ',ierr
+	write(6,*) 'error interpolating from regular grid: '
+	write(6,*) 'ierr =  ',ierr
+	write(6,*) 'bneedall =  ',bneedall
 	stop 'error stop iff_handle_regular_grid: reg interpolate'
 	end subroutine iff_handle_regular_grid
 
@@ -1727,9 +1736,9 @@ c does the final interpolation in time
 	real value(ldim,ndim)
 
 	integer nintp,lexp,nexp,ilast
-	logical bonepoint,bconst,bnodes,b2d,bmulti
-	integer ipl,lfem,i,l,ip,j
-	real val,tr
+	logical bonepoint,bconst,bnodes,b2d,bmulti,bflag
+	integer ipl,lfem,i,l,ip,j,iflag
+	real val,tr,flag
 	double precision time(pinfo(id)%nintp)
 	!real time(pinfo(id)%nintp)
 	real vals(pinfo(id)%nintp)
@@ -1740,6 +1749,7 @@ c does the final interpolation in time
         lexp = max(1,pinfo(id)%lexp)
         nexp = pinfo(id)%nexp
         ilast = pinfo(id)%ilast
+        flag = pinfo(id)%flag
         bonepoint = pinfo(id)%bonepoint
 	bconst = nintp == 0
 	bmulti = .not. bonepoint
@@ -1747,21 +1757,26 @@ c does the final interpolation in time
 	bnodes = pinfo(id)%nexp /= nkn_fem	!use node pointer
 
 	tr = t		!real version of t
+	iflag = 0
 
 	if( bconst .or. bonepoint ) then
 	  if( bconst ) then
 	    val = pinfo(id)%data(1,1,ivar,1)
 	  else
 	    time = pinfo(id)%time
+	    bflag = .false.
+	    val = flag
 	    do j=1,nintp
 	      vals(j) = pinfo(id)%data(1,1,ivar,j)
+	      if( vals(j) == flag ) bflag = .true.
 	    end do
-	    val = rd_intp_neville(nintp,time,vals,t)
+	    if( .not. bflag ) val = rd_intp_neville(nintp,time,vals,t)
 	  end if
 	  do i=1,nexp
 	    do l=1,lexp
 	      if( bmulti ) val = pinfo(id)%data(l,i,ivar,1)
 	      value(l,i) = val
+	      if( val == flag ) iflag = iflag + 1
 	    end do
 	  end do
 	else
@@ -1771,22 +1786,34 @@ c does the final interpolation in time
 	      lfem = 1
 	    else
 	      ipl = i
-	      if( nexp /= nkn_fem ) ipl = pinfo(id)%nodes(i)
+	      if( nexp /= nkn_fem .and. nexp /= nel_fem ) then
+		ipl = pinfo(id)%nodes(i)
+	      end if
 	      lfem = ilhkv_fem(ipl)
 	    end if
 	    val = -888.		!just for check
 	    do l=1,lfem
+	      bflag = .false.
+	      val = flag
 	      do j=1,nintp
 	        vals(j) = pinfo(id)%data(l,i,ivar,j)
+	        if( vals(j) == flag ) bflag = .true.
 	      end do
-	      !val = intp_neville(nintp,time,vals,tr)	!real time version
-	      val = rd_intp_neville(nintp,time,vals,t)
+	      if( .not. bflag ) val = rd_intp_neville(nintp,time,vals,t)
 	      value(l,i) = val
+	      if( val == flag ) iflag = iflag + 1
 	    end do
 	    do l=lfem+1,ldim
 	      value(l,i) = val
+	      if( val == flag ) iflag = iflag + 1
 	    end do
 	  end do
+	end if
+
+	if( iflag > 0 .and. pinfo(id)%bneedall ) then
+	  write(6,*) 'flag values found: ',iflag
+	  write(6,*) 'we need all values for interpolation'
+	   stop 'error stop iff_interpolate: iflag'
 	end if
 
 	end subroutine iff_interpolate
@@ -1894,6 +1921,28 @@ c does the final interpolation in time
 	end if
 
 	end subroutine iff_assert
+
+!****************************************************************
+
+	subroutine iff_need_all_values(id,bneedall)
+
+	integer id
+	logical bneedall
+
+	pinfo(id)%bneedall = bneedall
+
+	end subroutine iff_need_all_values
+
+!****************************************************************
+
+	subroutine iff_get_flag(id,flag)
+
+	integer id
+	real flag
+
+	flag = pinfo(id)%flag
+
+	end subroutine iff_get_flag
 
 !================================================================
 	end module intp_fem_file

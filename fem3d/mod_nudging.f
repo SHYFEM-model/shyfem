@@ -10,6 +10,7 @@
 	integer, private, save :: nlv_nudging = 0
         
 	real, save :: anpar = 0.		!implicit parameter for nudging
+	real, save :: taudefvel = 0.		!default tau for velocities
 
         real, allocatable, save :: andgzv(:)	!contribution to zeta
         real, allocatable, save :: tauvel(:,:)	!weighting for vel

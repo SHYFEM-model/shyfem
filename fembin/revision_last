@@ -44,6 +44,7 @@ if [ "$1" = "-log" ]; then	#add output to LOG
   cat $tmpfile2		>> tmp.tmp
   echo "" 		>> tmp.tmp
   cat LOG		>> tmp.tmp
+  mv tmp.tmp LOG
 fi
 
 #----------------

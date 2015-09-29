@@ -969,9 +969,12 @@ newini.o: param.h ../femlib/mod/mod_internal.mod \
 		../femlib/mod/mod_roughness.mod 
 ../femlib/mod/levels.mod: newlevels.o
 ../femlib/mod/mod_nudge.mod: newnudge.o
-newnudge.o: param.h ../femlib/mod/basin.mod \
+newnudge.o: ../femlib/mod/mod_internal.mod ../femlib/mod/basin.mod \
+		../femlib/mod/mod_layer_thickness.mod femtime.h \
+		../femlib/mod/levels.mod \
 		../femlib/mod/mod_nudging.mod \
-		../femlib/mod/mod_hydro.mod femtime.h 
+		../femlib/mod/mod_hydro.mod \
+		../femlib/mod/intp_fem_file.mod 
 newrog.o: param.h ../femlib/mod/basin.mod
 newstab.o: param.h ../femlib/mod/levels.mod \
 		../femlib/mod/basin.mod \

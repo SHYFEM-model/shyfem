@@ -671,7 +671,7 @@ c*****************************************************************
 	call mod_layer_thickness_init(nkn,nel,nlvddi)
 	call mod_internal_init(nkn,nel,nlvddi)
 	call mod_nohyd_init(nkn,nlvddi)
-	call mod_nudging_init(nkn,nel,nlv)
+	call mod_nudging_init(nkn,nel,nlvddi)
 
 	call mod_bclfix_init(nkn,nel,nlvddi)
 	call mod_fluidmud_init(nkn,nlvddi)

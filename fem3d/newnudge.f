@@ -19,6 +19,7 @@ c 12.07.2011    ggu     better treatment of freqdep()
 c 16.11.2011    ggu     basin.h introduced
 c 23.01.2012    ggu     new from basinf
 c 25.09.2015    ggu     prepared for nudging velocities
+c 29.09.2015    ggu     finished nudging velocities
 c
 c****************************************************************
 
@@ -436,40 +437,51 @@ c*******************************************************************
 
 	implicit none
 
-	integer nvar,nintp
+	integer nvar,nintp,ibc
 	real vconst(2)
+	real uobs_surf(nel),vobs_surf(nel)
 	double precision dtime0,dtime
 	character*10 what
-	character*80 windfile
+	character*80 surffile
 
 	integer np,lmax
 	integer nodes(1)
 
 	include 'femtime.h'
 
+	real getpar
+
 	dtime0 = itanf
 
 	nodes = 0
 	nvar = 2
 	nintp = 2
-	np = nkn
+	np = nel
 	lmax = 0
+	ibc = 0				!no lateral boundary
 	what = 'surfvel'
-	windfile = 'surface.fem'
-	windfile = ' '
 	vconst = (/0.,0./)
 
-        call iff_init(dtime0,windfile,nvar,np,lmax,nintp
-     +                          ,nodes,vconst,idsurf)
-        call iff_set_description(idsurf,0,'surface velocities')
+	call getfnm(what,surffile)
+	if( surffile == ' ' ) return
 
-        !call velocity_nudging_set_data(idsurf,nvar)
+	taudefvel = getpar('tauvel')
+
+        call iff_init(dtime0,surffile,nvar,np,lmax,nintp
+     +                          ,nodes,vconst,idsurf)
+        call iff_set_description(idsurf,ibc,'surf vel')
+        call iff_need_all_values(idsurf,.false.)
+
+        call velocity_nudging_check_data(idsurf,nvar)
 
 	lmax = 1
 	dtime = t_act
         call iff_read_and_interpolate(idsurf,dtime0)
-        call iff_time_interpolate(idsurf,dtime,1,np,lmax,uobs)
-        call iff_time_interpolate(idsurf,dtime,2,np,lmax,vobs)
+        call iff_time_interpolate(idsurf,dtime,1,np,lmax,uobs_surf)
+        call iff_time_interpolate(idsurf,dtime,2,np,lmax,vobs_surf)
+
+	uobs(1,:) = uobs_surf(:)
+	vobs(1,:) = vobs_surf(:)
 
 	end
 
@@ -490,9 +502,14 @@ c*******************************************************************
 
 	include 'femtime.h'
 
-	integer ie,l,lmax
-	real h,tau
+	integer ie,l,lmax,iflag
+	real h,tau,taudef
+	real u,v,s,flag
+	real smax
+	real uobs_surf(nel),vobs_surf(nel)
 	double precision dtime
+
+	if( idsurf <= 0 ) return
 
 	dtime = t_act
 	lmax = 1
@@ -503,15 +520,37 @@ c*******************************************************************
 
 	if( .not. iff_is_constant(idsurf) ) then
           call iff_read_and_interpolate(idsurf,dtime)
-          call iff_time_interpolate(idsurf,dtime,1,nkn,lmax,uobs)
-          call iff_time_interpolate(idsurf,dtime,2,nkn,lmax,vobs)
+          call iff_time_interpolate(idsurf,dtime,1,nel,lmax,uobs_surf)
+          call iff_time_interpolate(idsurf,dtime,2,nel,lmax,vobs_surf)
+	  uobs(1,:) = uobs_surf(:)
+	  vobs(1,:) = vobs_surf(:)
 	end if
 
 !------------------------------------------------------------------
 ! set relaxation time
 !------------------------------------------------------------------
 
-	tauvel(1,:) = 3600.
+	taudef = taudefvel
+
+	tauvel(1,:) = 0.
+
+	call iff_get_flag(idsurf,flag)
+
+	iflag = 0
+	smax = 0.
+        do ie=1,nel
+	  u = uobs(1,ie)
+	  v = vobs(1,ie)
+	  if( u == flag .or. v == flag ) then
+	    iflag = iflag + 1
+	  else
+	    s = sqrt(u*u+v*v)
+	    smax = max(smax,s)
+	    tauvel(1,ie) = taudef	!good point - define tau
+	  end if
+	end do
+
+	!write(6,*) 'flags found.... ',iflag,nel,smax
 
 !------------------------------------------------------------------
 ! add contribution to explicit term
@@ -523,8 +562,8 @@ c*******************************************************************
 	    tau = tauvel(l,ie)
 	    if( tau > 0. ) then
 	      h = hdenv(l,ie)
-	      fxv(l,ie) = fxv(l,ie) - (h*uobs(l,ie)-utlnv(l,ie))/tau
-	      fyv(l,ie) = fyv(l,ie) - (h*vobs(l,ie)-utlnv(l,ie))/tau
+	      fxv(l,ie) = fxv(l,ie) - (h*uobs(l,ie)-utlov(l,ie))/tau
+	      fyv(l,ie) = fyv(l,ie) - (h*vobs(l,ie)-utlov(l,ie))/tau
 	    end if
 	  end do
 	end do
@@ -534,6 +573,80 @@ c*******************************************************************
 !------------------------------------------------------------------
 
 	end 
+
+c*******************************************************************
+
+        subroutine velocity_nudging_check_data(id,nvar)
+ 
+	use intp_fem_file
+
+	implicit none
+
+        integer id
+        integer nvar
+
+	integer ivtype
+        character*60 string1,string2
+
+!       ---------------------------------------------------------
+!       check nvar and get parameters
+!       ---------------------------------------------------------
+
+        if( nvar /= 2 ) then
+          write(6,*) 'no support for nvar = ',nvar
+          stop 'error stop velocity_nudging_check_data'
+        end if
+
+!       ---------------------------------------------------------
+!       handle velocities
+!       ---------------------------------------------------------
+
+        call iff_get_var_description(id,1,string1)
+        call iff_get_var_description(id,2,string2)
+
+	string1 = adjustl(string1)
+	string2 = adjustl(string2)
+
+        if( string1 == ' ' ) then        !TS file or constant
+          ivtype = 0
+          if( iff_has_file(id) ) ivtype = 1
+
+          if( ivtype == 1 ) then
+            call iff_set_var_description(id,1,'velocity x')
+            call iff_set_var_description(id,2,'velocity y')
+          end if
+        else
+          if( string1 == 'velocity x' 
+     +			.and. string2 == 'velocity y' ) then
+            ivtype = 1
+          else
+            write(6,*) 'description string for velocity not recognized:'
+            write(6,*) trim(string1)
+            write(6,*) trim(string2)
+            stop 'error stop velocity_nudging_check_data: description'
+          end if
+        end if
+
+!       ---------------------------------------------------------
+!       remember values and write to monitor
+!       ---------------------------------------------------------
+
+        if( ivtype == 0 ) then
+          write(6,*) 'no velocity file opened'
+        else
+          write(6,*) 'velocity file opened: ',ivtype
+          call iff_get_var_description(id,1,string1)
+          call iff_get_var_description(id,2,string2)
+          write(6,*) 'content: '
+          write(6,*) ' 1    ',trim(string1)
+          write(6,*) ' 2    ',trim(string2)
+        end if
+
+!       ---------------------------------------------------------
+!       end of routine
+!       ---------------------------------------------------------
+
+	end
 
 c*******************************************************************
 c*******************************************************************
@@ -555,7 +668,7 @@ c*******************************************************************
 	implicit none
 
 	call set_zeta_nudging
-	!call set_velocity_nudging
+	call set_velocity_nudging
 
 	end 
 

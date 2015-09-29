@@ -113,6 +113,7 @@ c 30.05.2014	ggu	new default for dragco, new metpnt
 c 20.10.2014	ggu	new default for date (-1)
 c 01.12.2014	ccf	wave parameters moved to subwave.f
 c 06.05.2015	ccf	new parameters itmoff and offlin
+c 29.09.2015	ggu	new boundary file surfvel
 c
 c************************************************************************
 
@@ -655,6 +656,20 @@ c		if you think there are stability problems. (Default 1)
 	call addpar('itvd',0.)		!horizontal TVD scheme?
 	call addpar('itvdv',0.)		!vertical TVD scheme?
 	call addpar('rstol',1.)		!limit time step to this Courant number
+
+cc------------------------------------------------------------------------
+
+c DOCS	VAR		Various parameters
+c
+c The next parameters describe various parameters not related to
+c the above parameters.
+
+c |tauvel|	If you have velocity observations given in file
+c		|surfvel| then you can specify the relaxation
+c		parameter $\tau$ in the variable |tauvel|. (Default 0,
+c		which means no assimilation of velocities)
+
+	call addpar('tauvel',0.)	!horizontal TVD scheme?
 
 cc------------------------------------------------------------------------
 
@@ -2143,6 +2158,8 @@ c |qflux|	File with heat flux data. This file must be in
 c		a special format to account for the various parameters
 c		that are needed by the heat flux module to run. Please
 c		refer to the information on the file |qflux|.
+c |surfvel|	File with surface velocities from observation. These
+c		data can be used for assimilation into the model.
 c |ice|		File with ice cover. The values range from 0 (no ice cover)
 c		to 1 (complete ice cover).
 c |restrt|	Name of the file if a restart is to be performed. The
@@ -2164,6 +2181,7 @@ c		with the parameter |idtoff| greater than 0.
 	call addfnm('wind',' ')
         call addfnm('rain',' ')
         call addfnm('qflux',' ')
+        call addfnm('surfvel',' ')
         call addfnm('ice',' ')
 
 	call addfnm('restrt',' ')

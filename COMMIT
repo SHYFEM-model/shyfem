@@ -1,5 +1,29 @@
 ============================================================
 
+Tue Sep 29 13:10:09 CEST 2015
+
+nudging velocities finished
+
+ LOG                     |   12 +
+ fem3d/Makefile          |    7 +-
+ fem3d/mod_nudging.f     |    1 +
+ fem3d/newnudge.f        |  149 +-
+ fem3d/shyfem.f          |    2 +-
+ fem3d/subfemintp.f      |   69 +-
+ fem3d/submeteo2.f       |    3 -
+ fem3d/subnsa.f          |    2 +
+ fem3d/subreg.f          |    6 +-
+ fem3d/subsys.f          |   18 +
+ fembin/revision_last    |    1 +
+ femdoc/Makefile         |    2 +-
+ femdoc/final/shyfem.pdf |  Bin 294937 -> 295286 bytes
+ femdoc/final/shyfem.ps  | 6416 -----------------------------------------------
+ 14 files changed, 234 insertions(+), 6454 deletions(-)
+ deleted:
+    femdoc/final/shyfem.ps
+
+============================================================
+
 Mon Sep 28 14:44:12 CEST 2015
 
 merging from master

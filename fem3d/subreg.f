@@ -859,7 +859,7 @@ c		> 0	flag found in interpolation data
 	    if( u.gt.1. .or. u.lt.0. ) bout = .true.
 	    if( t.gt.1. .or. t.lt.0. ) bout = .true.
 	    if( bout ) then
-	      iout = iout +1
+	      iout = iout + 1
 	      cycle
 	    end if
 
@@ -872,7 +872,7 @@ c		> 0	flag found in interpolation data
 	    if( z1.eq.flag .or. z2.eq.flag ) bflag = .true.
 	    if( z3.eq.flag .or. z4.eq.flag ) bflag = .true.
 	    if( bflag ) then
-	      iflag = iflag +1
+	      iflag = iflag + 1
 	      cycle
 	    end if
 
@@ -880,7 +880,7 @@ c		> 0	flag found in interpolation data
 	end do
  
 	ierr = 0
-	if( iout .gt. 0 ) ierr = -iout
+	if( iout .gt. 0 ) ierr = - iout - iflag
 	if( iflag .gt. 0 ) ierr = iflag
 
 	return

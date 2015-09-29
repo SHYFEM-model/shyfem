@@ -304,6 +304,8 @@ c******************************************************
           string = 'mass field'
         else if( iv .eq. 1 ) then
           string = 'water level'
+        else if( iv .eq. 2 ) then
+          string = 'velocity'
         else if( iv .eq. 5 ) then
           string = 'bathymetry'
         else if( iv .eq. 10 ) then
