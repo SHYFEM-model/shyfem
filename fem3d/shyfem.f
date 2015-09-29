@@ -95,6 +95,7 @@ c 25.06.2014    ggu	new arrays hkv_min, hkv_max
 c 05.12.2014    ccf	new interface for waves
 c 30.07.2015    ggu	routine renamed from ht to shyfem
 c 18.09.2015    ggu	new routine scalar, call to hydro()
+c 29.09.2015    ccf	inverted set_spherical() and handle_projection()
 c
 c*****************************************************************
 
@@ -197,8 +198,8 @@ c-----------------------------------------------------------
 c initialize triangles
 c-----------------------------------------------------------
 
-	call handle_projection
 	call set_spherical
+	call handle_projection
 	call set_ev
 	call adjust_spherical
 	call print_spherical

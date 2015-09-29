@@ -1,5 +1,16 @@
 ============================================================
 
+Tue Sep 29 14:11:55 CEST 2015
+
+two small bug fixes
+
+ BUG            |    3 +++
+ RELEASE_NOTES  |    7 +++++++
+ fem3d/shyfem.f |    3 ++-
+ 3 files changed, 12 insertions(+), 1 deletions(-)
+
+============================================================
+
 Tue Sep 29 13:10:09 CEST 2015
 
 nudging velocities finished

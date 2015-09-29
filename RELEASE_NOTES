@@ -1,4 +1,11 @@
 
+29.09.2015    VERS_7_2_5
+
+	nudging of surface velocities finished
+	bug fix with projection (not using isphe)
+	bug fix so shyfem can be used with no boundary
+	output now also double precision
+
 23.09.2015    VERS_7_2_4
 
 	in shyelab more files can be given now

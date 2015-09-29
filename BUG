@@ -1,4 +1,7 @@
 
+BUG_54	     ccf	7.2.5    29.09.2015
+	projection called before spherical initialization ... fixed
+
 BUG_53	     ggu&dbf	7.2.5    24.09.2015
 	irv not initialized with no external boundaries
 
