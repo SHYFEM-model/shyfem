@@ -1,4 +1,23 @@
 
+30.09.2015
+
+c ./fem3d/subbnds.f:
+c 30.09.2015    ggu     new routine iff_flag_ok() for ambient value
+c
+c ./fem3d/newcon.f:
+c 30.09.2015    ggu     routine cleaned, no reals in conz3d
+c
+c ./fem3d/optintp.f:
+c 29.09.2015	ggu	move some vars to custimize to the beginning of file
+c
+c ./fem3d/mod_subset.f:
+c 29.09.2015	ggu	new routine which is much faster
+c 30.09.2015	ggu	new routine domain_clusterization_dummy()
+c
+c ./fem3d/newcon_omp.f:
+c 30.09.2015    ggu     routine cleaned, no reals in conz3d
+
+
 29.09.2015
 
 c ./fem3d/optintp.f:

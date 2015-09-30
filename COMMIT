@@ -1,5 +1,26 @@
 ============================================================
 
+Wed Sep 30 15:52:44 CEST 2015
+
+omp version for scalars integrated
+
+ LOG                     |   19 ++
+ RELEASE_NOTES           |    7 +
+ fem3d/Makefile          |   17 +-
+ fem3d/mod_subset.f      |  250 +++++++++++++++-
+ fem3d/newcon.f          |   22 +-
+ fem3d/newcon_omp.f      |  739 +++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/optintp.f         |    3 +
+ fem3d/shyfem.f          |    2 +-
+ fem3d/subbnds.f         |    4 +-
+ fem3d/subfemintp.f      |   14 +
+ femdoc/final/shyfem.pdf |  Bin 295286 -> 295285 bytes
+ 11 files changed, 1047 insertions(+), 30 deletions(-)
+ new file:
+   fem3d/newcon_omp.f
+
+============================================================
+
 Tue Sep 29 15:43:45 CEST 2015
 
 optintp revisited

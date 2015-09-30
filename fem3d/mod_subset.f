@@ -9,6 +9,8 @@ c revision log :
 c
 c 01.09.2015	eps	code written from scratch
 c 18.09.2015	ggu	code integrated
+c 29.09.2015	ggu	new routine which is much faster
+c 30.09.2015	ggu	new routine domain_clusterization_dummy()
 c
 c***********************************************************
 c***********************************************************
@@ -20,11 +22,11 @@ c***********************************************************
 
         implicit none
 
-        integer, save :: subset_num
+        integer, save :: subset_num		!total number of subsets
         integer, save :: max_sharing_node  
 
-        integer,save,allocatable,dimension(:)   :: subset_el
-        integer,save,allocatable,dimension(:,:) :: indipendent_subset
+        integer,save,allocatable,dimension(:)   :: subset_el !elems in subset
+        integer,save,allocatable,dimension(:,:) :: indipendent_subset !elems
         integer,save,allocatable,dimension(:,:) :: nodes_map
         integer,save,allocatable,dimension(:,:) :: nodes_counter
 
@@ -32,14 +34,24 @@ c***********************************************************
         contains
 !==================================================================
 
-      subroutine domain_clusterization(nkn,nel)
+      subroutine domain_clusterization
+
+      use basin
+
+      !call domain_clusterization_eric
+      call domain_clusterization_ggu
+      !call domain_clusterization_dummy
+
+      end subroutine domain_clusterization
+
+c***********************************************************
+
+      subroutine domain_clusterization_eric
       
 !$	use omp_lib
-	use basin, only : nen3v
+	use basin
     	
       implicit none
-      
-      integer, intent(in) :: nkn,nel
       
       integer :: ie,ik,i,j,k,n,m,a,b,c
       integer :: row_cluster
@@ -56,6 +68,8 @@ c***********************************************************
       !! CREATE NODE COUNTER  
       !----------------------------------------------
       
+      print *,"  ----------- STARTING DOMAIN CLUSTERING -----------"
+
       allocate(nodes_counter(2,nkn))
             
       nodes_counter = 0
@@ -136,7 +150,7 @@ c***********************************************************
       call greedy_subset(start,numsubset,subset_lenght,subset,
      +                       nel,max_l,min_l)
       
-      print *,"  SUBSET = ",numsubset," LENGHT = ",subset_lenght
+      print *,"  SUBSET = ",numsubset," LENGTH = ",subset_lenght
       
       max_subset_lenght = MAX(max_subset_lenght,subset_lenght)
       sum_subset_lenght = sum_subset_lenght + subset_lenght
@@ -183,8 +197,8 @@ c***********************************************************
       enddo
       
       print *,"  NUM ITERATION GREEDY ALGO = ",numsubset
-      print *,"  SUM SUBSET LENGHT = ",sum_subset_lenght
-      print *,"  MAX LENGHT SUBSET = ",max_subset_lenght
+      print *,"  SUM SUBSET LENGTH = ",sum_subset_lenght
+      print *,"  MAX LENGTH SUBSET = ",max_subset_lenght
       print *,"  TIME GREEDY = ",timer
       
       !----------------------------------------------
@@ -197,8 +211,7 @@ c***********************************************************
       
       deallocate(subset)
      
-      
-      end subroutine domain_clusterization
+      end subroutine domain_clusterization_eric
 
 c***********************************************************
       
@@ -324,6 +337,219 @@ c***********************************************************
       print *,"  ALL SUBSETS ARE INDIPENDENT"
       
       end subroutine check_subset
+
+c***********************************************************
+
+	subroutine domain_clusterization_ggu
+
+	use basin
+
+	implicit none
+
+        !integer, save :: subset_num		!total number of subsets
+        !integer,save,allocatable,dimension(:)   :: subset_el !elems in subset
+        !integer,save,allocatable,dimension(:,:) :: indipendent_subset !elems
+
+	integer ie
+	integer icolor,ncol,nmax,ncolor
+	integer ic,n,ntot
+	integer colork(nkn)
+	integer color(nel)
+
+	icolor = 0
+	color = 0
+	nmax = 0
+
+        print *,"  ----------- STARTING DOMAIN CLUSTERING -----------"
+
+!	-------------------------------------------
+!	color elements
+!	-------------------------------------------
+
+	call compute_color(ncolor,nmax,color)
+	write(6,*) 'ncolor: ',ncolor
+
+!	-------------------------------------------
+!	set parameters and allocate arrays
+!	-------------------------------------------
+
+	subset_num = ncolor
+	allocate(subset_el(subset_num))
+	allocate(indipendent_subset(nmax,subset_num))
+	subset_el = 0
+	indipendent_subset = 0
+
+!	-------------------------------------------
+!	transfer information to arrays
+!	-------------------------------------------
+
+	do ie=1,nel
+	  ic = color(ie)
+	  n = subset_el(ic) + 1
+	  if( n > nmax ) then
+	    write(6,*) 'n,nmax: ',n,nmax
+	    stop 'error stop domain_clusterization_ggu: intern (1)'
+	  end if
+	  indipendent_subset(n,ic) = ie
+	  subset_el(ic) = n
+	end do
+
+!	-------------------------------------------
+!	write to terminal
+!	-------------------------------------------
+
+        print *,"  ---------- DOMAIN CLUSTERING INFORMATION ----------"
+        print *,"  NUM NODES = ",nkn," NUM ELEMENTS = ",nel
+        print *,"  NUMBER OF SUBSETS = ",subset_num
+        ntot = 0
+        do ic=1,subset_num
+  	  n = subset_el(ic)
+	  ntot = ntot + n
+          print *,"  SUBSET = ",ic," LENGTH = ",n
+        end do
+        print *,"  SUM SUBSET LENGTH = ",ntot
+
+!	-------------------------------------------
+!	end of routine
+!	-------------------------------------------
+
+	contains
+
+!***********************
+
+	subroutine compute_color(ncolor,nmax,color)
+
+	integer ncolor,nmax
+	integer color(nel)
+
+	integer ncol,icolor
+	integer ie
+	integer iestart,iestride,n
+
+	nmax = 0
+	icolor = 0
+	color = 0
+
+	iestart = 0
+	iestride = 1		!must be prime
+	ie = iestart
+
+	do 
+	  ncol = 0
+	  icolor = icolor + 1
+	  colork = 0
+	  !do ie=1,nel
+	  n = 0
+	  do
+	    n = n + 1
+	    if( n > nel ) exit
+	    ie = ie + iestride
+	    if( ie > nel ) ie = mod(ie,nel)
+	    if( may_color(ie) ) then
+	      ncol = ncol + 1
+	      call color_elem(ie,icolor)
+	    end if
+	  end do
+	  nmax = max(nmax,ncol)
+	  !write(6,*) icolor,ncol,nmax
+	  if( ncol == 0 ) exit		!everything colored
+	end do
+
+	ncolor = icolor - 1
+
+	end subroutine compute_color
+
+!***********************
+
+	function may_color(ie)
+
+	logical may_color
+	integer ie
+	integer ii,k
+
+	may_color = .false.
+
+	if( color(ie) /= 0 ) return
+	do ii=1,3
+	  k = nen3v(ii,ie)
+	  if( colork(k) /= 0 ) return
+	end do
+
+	may_color = .true.
+
+	end function may_color
+
+!***********************
+
+	subroutine color_elem(ie,icolor)
+
+	integer ie,icolor
+	integer ii,k
+
+	color(ie) = icolor
+	do ii=1,3
+	  k = nen3v(ii,ie)
+	  colork(k) = 1
+	end do
+
+	end subroutine color_elem
+
+!***********************
+
+	end subroutine domain_clusterization_ggu
+
+c***********************************************************
+
+	subroutine domain_clusterization_dummy
+
+	use basin
+
+	implicit none
+
+	integer nmax,ie,ic
+	integer ntot,n
+
+!	-------------------------------------------
+!	set parameters and allocate arrays
+!	-------------------------------------------
+
+	nmax = nel
+	subset_num = 1
+	allocate(subset_el(subset_num))
+	allocate(indipendent_subset(nmax,subset_num))
+	subset_el = 0
+	indipendent_subset = 0
+
+!	-------------------------------------------
+!	transfer information to arrays
+!	-------------------------------------------
+
+	ic = 1
+	do ie=1,nel
+	  indipendent_subset(ie,ic) = ie
+	end do
+	subset_el(ic) = nel
+
+!	-------------------------------------------
+!	write to terminal
+!	-------------------------------------------
+
+        print *,"  ---------- DOMAIN CLUSTERING INFORMATION ----------"
+        print *,"  NUM NODES = ",nkn," NUM ELEMENTS = ",nel
+        print *,"  NUMBER OF SUBSETS = ",subset_num
+        ntot = 0
+        do ic=1,subset_num
+  	  n = subset_el(ic)
+	  ntot = ntot + n
+          print *,"  SUBSET = ",ic," LENGTH = ",n
+        end do
+        print *,"  SUM SUBSET LENGTH = ",ntot
+
+!	-------------------------------------------
+!	end of routine
+!	-------------------------------------------
+
+	end subroutine domain_clusterization_dummy
 
 !==================================================================
         end module mod_subset

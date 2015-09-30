@@ -1,4 +1,11 @@
 
+30.09.2015    VERS_7_2_6
+
+	scalar computation now with new OMP code (Eric)
+	faster domain_clusterization
+	some fix in optintp.f
+	allow again for ambient value with scalars
+
 29.09.2015    VERS_7_2_5
 
 	nudging of surface velocities finished

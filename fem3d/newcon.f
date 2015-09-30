@@ -169,6 +169,7 @@ c 10.07.2014    ggu     only new file format allowed
 c 20.10.2014    ggu     accept ids from calling routines
 c 22.10.2014    ccf     load in call to scal3sh
 c 20.05.2015    ggu     accumulate over nodes (for parallel version)
+c 30.09.2015    ggu     routine cleaned, no reals in conz3d
 c
 c*********************************************************************
 
@@ -580,7 +581,8 @@ c-------------------------------------------------------------
 
 	  if( btvd1 ) call tvd_grad_3d(cnv,gradxv,gradyv,saux,nlvddi)
 
-          call conz3d(
+          call conz3d_omp(
+          !call conz3d_orig(
      +           cnv
      +          ,saux
      +          ,dt
@@ -628,7 +630,7 @@ c-------------------------------------------------------------
 
 c**************************************************************
 
-        subroutine conz3d(cn1,co1
+        subroutine conz3d_orig(cn1,co1
      +			,ddt
      +                  ,rkpar,difhv,difv
      +			,difmol,cbound
@@ -734,7 +736,8 @@ c arguments
 	real wsinkv(0:nlvddi,1)
 	real rload
         real load(nlvddi,1)                      !ccf_load
-        real ddt,rkpar,azpar,adpar,aapar			!$$azpar
+        real ddt,rkpar
+        real azpar,adpar,aapar			!$$azpar
 	integer istot,isact
 c common
 	include 'femtime.h'
@@ -757,8 +760,7 @@ c local
 	integer kn(3)
         integer ip(3,3)
         integer n,i,ipp
-        real rkmin,rkmax
-        real mflux,qflux,cconz
+        double precision mflux,qflux,cconz
 	double precision loading
 	double precision wws
 	double precision us,vs
@@ -817,16 +819,7 @@ c tvd
 	integer ic,kc,id,kd,ippp
 	integer ies
 	integer iext
-	real term,fact
-	real conc,cond,conf,conu
-	real gcx,gcy,dx,dy
-	real u,v
-	real rf,psi
-	real grad
 	double precision fls(3)
-        real alfa,dis
-        real vel
-        real gdx,gdy
 
 c functions
 c	integer ipint,ieint
@@ -1482,7 +1475,6 @@ c local
 	integer itot,isum	!$$flux
 	logical berror
 	integer kn(3)
-        real rkmin,rkmax
         real sindex,rstol
 	double precision us,vs
 	double precision az,azt

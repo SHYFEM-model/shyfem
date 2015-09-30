@@ -253,6 +253,9 @@ c-----------------------------------------------------------------
 	if( bmulti ) drl = 0.
 	jmax = 0
 	if( drl > 0. ) jmax = 5
+	if( jmax > 0 ) then
+	  write(6,*) 'trying multiple values for rl: ',drl,jmax
+	end if
 
 	if( bnos ) then
 	  call wrnos2d_open(iunos,'optintp','optimal interpolation')

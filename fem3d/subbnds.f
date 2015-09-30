@@ -33,13 +33,14 @@ c 25.06.2014    ggu     new routines bnds_init_new() and bnds_trans_new()
 c 10.07.2014    ggu     only new file format allowed
 c 05.02.2015    ggu     check for number of variables read
 c 10.02.2015    ggu     new routine bnds_read_new()
+c 30.09.2015    ggu     new routine iff_flag_ok() for ambient value
 c
 c******************************************************************
 
 	subroutine bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
      +					,cdef,ids)
 
-c initializes boundary condition
+c initializes boundary condition for scalars
 
 	use intp_fem_file
 
@@ -102,6 +103,7 @@ c initializes boundary condition
      +                          ,nodes,aconst,id)
 	  if( nvar /= nvar_orig ) goto 99
 	  call iff_set_description(id,ibc,what)
+	  call iff_flag_ok(id)		!can deal with ambient value
 
 	  ids(ibc) = id
 

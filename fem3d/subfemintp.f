@@ -1812,6 +1812,10 @@ c does the final interpolation in time
 
 	if( iflag > 0 .and. pinfo(id)%bneedall ) then
 	  write(6,*) 'flag values found: ',iflag
+	  write(6,*) id,bconst,bonepoint
+	  write(6,*) nintp, nexp,lexp
+	  write(6,*) val,flag
+	  call iff_print_file_info(id)
 	  write(6,*) 'we need all values for interpolation'
 	   stop 'error stop iff_interpolate: iflag'
 	end if
@@ -1932,6 +1936,16 @@ c does the final interpolation in time
 	pinfo(id)%bneedall = bneedall
 
 	end subroutine iff_need_all_values
+
+!****************************************************************
+
+	subroutine iff_flag_ok(id)
+
+	integer id
+
+	call iff_need_all_values(id,.false.)
+
+	end subroutine iff_flag_ok
 
 !****************************************************************
 

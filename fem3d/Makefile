@@ -135,7 +135,7 @@ NEWOBJS = \
 	  newbcl.o newbcl0.o \
 	  newini.o newtra.o \
 	  newchao.o \
-	  newcon.o newconz.o \
+	  newcon.o newconz.o newcon_omp.o \
 	  newchk.o newfix.o \
 	  newtvd.o newstab.o newsig.o \
 	  newnudge.o \
@@ -266,7 +266,9 @@ NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
 GRDOBJS = subgrd.o grdutil.o
 COORDOBJS = subcoord.o
 PROJOBJS = $(GRDOBJS) $(COORDOBJS)
+PROJOBJS = $(COORDOBJS)
 UTILOBJS = subsrt.o
+UTILOBJS = 
 
 BATHYOBJS = $(BASEXTRA)
 #BATHYOBJS = subgeo.o subgrd.o subsrt.o subinterpol.o subinterpol1.o \
@@ -929,6 +931,19 @@ newcon.o: ../femlib/mod/mod_area.mod ../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_diff_aux.mod 
+newcon_omp.o: ../femlib/mod/mod_area.mod \
+		../femlib/mod/mod_depth.mod \
+		../femlib/mod/basin.mod ../femlib/mod/mod_ts.mod \
+		../femlib/mod/mod_layer_thickness.mod \
+		../femlib/mod/evgeom.mod \
+		../femlib/mod/mod_bound_geom.mod \
+		../femlib/mod/mod_bound_dynamic.mod \
+		../femlib/mod/mod_subset.mod \
+		../femlib/mod/levels.mod \
+		../femlib/mod/mod_hydro_vel.mod \
+		../femlib/mod/mod_hydro.mod \
+		../femlib/mod/mod_diff_aux.mod \
+		../femlib/mod/mod_geom.mod 
 newconz.o: param.h ../femlib/mod/mod_ts.mod \
 		../femlib/mod/basin.mod \
 		../femlib/mod/mod_layer_thickness.mod mkonst.h \

@@ -204,7 +204,7 @@ c-----------------------------------------------------------
 	call adjust_spherical
 	call print_spherical
 	call set_geom
-	!call domain_clusterization(nkn,nel)	!ERIC
+	call domain_clusterization
 
 c-----------------------------------------------------------
 c inititialize time independent vertical arrays
