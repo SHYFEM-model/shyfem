@@ -1,3 +1,28 @@
+version  7_2_6    30-09-2015    VERS_7_2_6
+
+========================================================== 30-09-2015 - 7_2_6
+
+c ./fem3d/subbnds.f:
+c 30.09.2015    ggu     new routine iff_flag_ok() for ambient value
+c
+c ./fem3d/subver.f:
+c 30.09.2015	ggu	version 7.2.6
+c
+c ./fem3d/newcon.f:
+c 30.09.2015    ggu     routine cleaned, no reals in conz3d
+c
+c ./fem3d/optintp.f:
+c 29.09.2015	ggu	move some vars to custimize to the beginning of file
+c
+c ./fem3d/mod_subset.f:
+c 29.09.2015	ggu	new routine which is much faster
+c 30.09.2015	ggu	new routine domain_clusterization_dummy()
+c
+c ./fem3d/newcon_omp.f:
+c 30.09.2015    ggu     routine cleaned, no reals in conz3d
+
+==========================================================
+
 version  7_2_5    29-09-2015    VERS_7_2_5   commit_2015-09-30
 
 version  7_2_5    29-09-2015    VERS_7_2_5   commit_2015-09-29
