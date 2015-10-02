@@ -1,3 +1,28 @@
+version  7_3_1    02-10-2015    VERS_7_3_1
+
+========================================================== 02-10-2015 - 7_3_1
+
+c ./fem3d/shybas.f:
+c 30.09.2015    ggu     shybas started
+c 01.10.2015    ggu     shybas nearly finished
+c 02.10.2015    ggu     only basproj is missing
+c
+c ./fem3d/subver.f:
+c 02.10.2015	ggu	version 7.3.1	first of development branch
+c
+c ./fem3d/subgrd.f:
+c 02.10.2015    ggu     new routine is_grd_file()
+c 02.10.2015    ggu     now stopping on first error
+c
+c ./fem3d/basutil.f:
+! 01.10.2015	ggu	converted to basutil
+!
+c ./fem3d/subbas.f:
+c 02.10.2015	ggu	in basin_open_file eliminated double read (bug)
+c 02.10.2015	ggu	new routines is_depth_unique(), estimate_ngr()
+
+==========================================================
+
 version  7_2_6    30-09-2015    VERS_7_2_6   commit_2015-10-02
 
 version  7_2_6    30-09-2015    VERS_7_2_6   commit_2015-10-02
