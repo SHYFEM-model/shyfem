@@ -337,7 +337,7 @@ c******************************************************************
 
 	subroutine ets_setup
 
-	use mod_tides
+	use projection
 	use mod_depth
 	use levels
 	use ets

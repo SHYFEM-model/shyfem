@@ -103,7 +103,6 @@ c----------------------------------------------------------------
 
 	program shyfem
 
-	use mod_tides
 	use mod_bound_geom
 	use mod_geom
 	use mod_meteo
@@ -131,6 +130,9 @@ c----------------------------------------------------------------
 	use levels
 	use basin
 	use intp_fem_file
+	use tidef
+	use projection
+	use coordinates
 	use mod_subset
 !$	use omp_lib	!ERIC
 
@@ -292,7 +294,7 @@ c-----------------------------------------------------------
 	call init_nodal_area_code	!area codes on nodes
         call diffweight
         call set_diffusivity
-	call tideini
+	call tidefini
 	call cstsetup
 	call sp136(ic)
         call shdist(rdistv)
@@ -580,7 +582,6 @@ c*****************************************************************
 	subroutine allocate_2d_arrays
 
 	use mod_bndo
-	use mod_tides
 	use mod_tvd
 	use mod_bnd
 	use mod_bound_geom
@@ -593,13 +594,16 @@ c*****************************************************************
 	use mod_hydro_baro
 	use mod_depth
 	use evgeom
+	use tidef
+	use projection
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	!include 'param.h'
 
-	call mod_tides_init(nkn)
+	call tidef_init(nkn)
+	call projection_init(nkn)
 
 	call mod_hydro_baro_init(nel)
 	call mod_roughness_init(nkn)
