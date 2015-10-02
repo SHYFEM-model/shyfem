@@ -1,60 +1,24 @@
-c
-c $Id: bashsigma.f,v 1.20 2010-03-22 15:29:31 georg Exp $
-c
-c revision log :
-c
-c 16.11.2011    ggu     copied from basinf.f and newsig.f
-c
-c****************************************************************
 
-        program bashsigma
+c*******************************************************************
 
-c changes basin to conform with hsigma value
-c
-c needs continuous depth and produces continuous depth
+	subroutine bashsigma(hsigma)
 
-	use mod_depth
-	use evgeom
 	use basin
+	use mod_depth
 
 	implicit none
 
-	include 'param.h'
+	real hsigma
 
-
-	!include 'aux_array.h'
-	real haux(nkndim)
-
-	logical bnode,belem
 	integer idm,idp,iadjust
-	real hflag,hsigma
-
-	integer iapini
-
-c-----------------------------------------------------------------
-c read in basin
-c-----------------------------------------------------------------
-
-	hflag = -999.
-
-        if( iapini(1,nkndim,neldim,0) .le. 0 ) stop
-
-	call bas_info
-
-	write(6,*) 'Enter value for hsigma: '
-	read(5,*) hsigma
-	write(6,*) 'Vaue used for hsigma: ',hsigma
-
-	call set_ev
+	real :: hflag = -999.
+	real haux(nkn)
 
 c-----------------------------------------------------------------
 c check if depth values are continuous
 c-----------------------------------------------------------------
 
 	call check_depth(hflag)
-
-        call makehev(hev)
-        call makehkv(hkv,haux)
 
 	call check_continuous(hsigma,idm,idp)
 
@@ -89,10 +53,9 @@ c-----------------------------------------------------------------
 c write to file
 c-----------------------------------------------------------------
 
-        open(1,file='hsigma.grd',status='unknown',form='formatted')
-        call wrgrd_hsigma(1,hkv,hev,10000.)
-        close(1)
-	write(6,*) 'Basin written to file hsigma.grd'
+        call basin_to_grd
+        call grd_write('bashsigma.grd')
+	write(6,*) 'Basin written to file bashsigma.grd'
 
 c-----------------------------------------------------------------
 c end of routine
@@ -114,9 +77,6 @@ c checks for continuous depth
 	real hsigma
 	integer idm
 	integer idp
-
-	include 'param.h'
-
 
 	integer ie,ii,k
 	real h,hm
@@ -153,8 +113,6 @@ c checks for flag values
 
 	real hflag
 
-	include 'param.h'
-
 	integer ie,ii
 	integer iflag
 	real h,hmin,hmax
@@ -188,10 +146,6 @@ c checks and adjusts hsigma crossing
 
         real hsigma
         integer iadjust
-
-	include 'param.h'
-
-	!include 'aux_array.h'
 
         logical berror,bdebug
         integer k,ie,ii
@@ -308,122 +262,4 @@ c adjusts depth values for hybrid levels
 c*******************************************************************
 c*******************************************************************
 c*******************************************************************
-
-        function areatr(ie)
-
-c determination of area of element
-c
-c ie            number of element (internal)
-c areatr        element area (return value)
-
-	use basin
-
-	real areatr
-	integer ie
-
-	include 'param.h'
-
-	integer ii,i1,i2,k1,k2
-	double precision f,x(3),y(3)
-
-        do ii=1,3
-          k=nen3v(ii,ie)
-	  x(ii) = xgv(k)
-	  y(ii) = ygv(k)
-        end do
-
-	f = (x(2)-x(1))*(y(3)-y(1)) - (x(3)-x(1))*(y(2)-y(1))
-
-        areatr = f / 2.D0
-
-        end
-
-c*******************************************************************
-
-	subroutine write_grd_from_bas
-
-c writes grd file extracting info from bas file
-
-	use basin
-
-	implicit none
-
-	include 'param.h'
-
-	integer k,ie,ii,ia
-	real x,y,h
-
-	open(8,file='bas.grd',status='unknown',form='formatted')
-
-	do k=1,nkn
-	  x = xgv(k)
-	  y = ygv(k)
-	  !write(8,2000) 1,k,0,x,y
-	  write(8,2000) 1,ipv(k),0,x,y
-	end do
-
-	do ie=1,nel
-	  h = hm3v(1,ie)
-	  ia = iarv(ie)
-	  !write(8,2100) 2,ie,0,3,(nen3v(ii,ie),ii=1,3),h
-	  write(8,2100) 2,ipev(ie),ia,3,(ipv(nen3v(ii,ie)),ii=1,3),h
-	end do
-	  
-	close(8)
-
-	return
- 2000	format(i1,i10,i5,2e14.6)
- 2100	format(i1,i10,2i5,3i10,e14.6)
-	end
-
-c*******************************************************************
-
-        subroutine wrgrd_hsigma(iunit,hkv,hev,hsigma)
-
-c writes grd file from bas
-c
-c hev and hkv must be set
-
-	use basin
-
-        implicit none
-
-        integer iunit
-        real hsigma
-        real hkv(1)
-        real hev(1)
-
-        include 'param.h'
-
-        integer k,ie,ii
-        real h
-
-        do k=1,nkn
-          h = hkv(k)
-          if( h .gt. hsigma ) then
-            write(iunit,1000) 1,ipv(k),0,xgv(k),ygv(k)
-          else
-            write(iunit,1000) 1,ipv(k),0,xgv(k),ygv(k),hkv(k)
-          end if
-        end do
-
-        write(iunit,*)
-
-        do ie=1,nel
-          h = hev(ie)
-          if( h .gt. hsigma ) then
-            write(iunit,1100) 2,ipev(ie),iarv(ie)
-     +          ,3,(ipv(nen3v(ii,ie)),ii=1,3),hev(ie)
-          else
-            write(iunit,1100) 2,ipev(ie),iarv(ie)
-     +          ,3,(ipv(nen3v(ii,ie)),ii=1,3)
-          end if
-        end do
-
-        return
- 1000   format(i1,2i10,3e16.8)
- 1100   format(i1,2i10,i4,3i10,e16.8)
-        end
-
-c********************************************************************
 

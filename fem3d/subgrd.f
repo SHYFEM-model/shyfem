@@ -60,6 +60,8 @@ c 22.04.2009    ggu     changes from spline integrated (read lines)
 c 24.04.2009    ggu     newly restructured
 c 09.03.2012    ggu     handle dimension error more gracefully
 c 08.01.2015    ggu     common blocks in include file
+c 02.10.2015    ggu     new routine is_grd_file()
+c 02.10.2015    ggu     now stopping on first error
 c
 c**********************************************************
 
@@ -319,6 +321,62 @@ c-----------------------------------------------------------------
 
 c**********************************************************
 
+	function is_grd_file(gfile)
+
+	implicit none
+
+	logical is_grd_file
+        character*(*) gfile
+
+        logical bstop
+        integer nk,ne,nl,nne,nnl
+        integer ner,nco
+        integer nkndi0,neldi0,nlidi0,nendi0,nlndi0
+
+	integer ippnv(1),ippev(1),ipplv(1)
+	integer ianv(1),iaev(1),ialv(1)
+        real hhnv(1),hhev(1),hhlv(1)
+        real xv(1),yv(1)
+
+        integer ipntev0(0:0),inodev(1)
+        integer ipntlv0(0:0),inodlv(1)
+
+c-----------------------------------------------------------------
+c initialize parameters
+c-----------------------------------------------------------------
+
+        ner = 6
+        bstop = .false.
+
+        nkndi0 = 0
+        neldi0 = 0
+        nlidi0 = 0
+        nendi0 = 0
+        nlndi0 = 0
+
+c-----------------------------------------------------------------
+c read grd file
+c-----------------------------------------------------------------
+
+        call rdgrd(
+     +                   gfile
+     +                  ,bstop
+     +                  ,nco,nk,ne,nl,nne,nnl
+     +                  ,nkndi0,neldi0,nlidi0,nendi0,nlndi0
+     +                  ,ippnv,ippev,ipplv
+     +                  ,ianv,iaev,ialv
+     +                  ,hhnv,hhev,hhlv
+     +                  ,xv,yv
+     +                  ,ipntev0,inodev
+     +                  ,ipntlv0,inodlv
+     +                  )
+
+	is_grd_file = .not. bstop
+
+        end
+
+c**********************************************************
+
 	subroutine grd_close
 
 	use grd
@@ -497,6 +555,7 @@ c--------------------------------------------------------------------
 	  	call rdunknown(iwhat,bstop)
           end if
 
+	  if( bstop ) exit
         end do
 
 	call grd_internal_close

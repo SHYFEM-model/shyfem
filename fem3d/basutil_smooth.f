@@ -18,7 +18,7 @@ c 13.06.2013    ggu     copy_depth() renamed to transfer_depth()
 c
 c****************************************************************
 
-        program bastreat
+        subroutine bas_smooth
 
 c performs modifications on basin
 c
@@ -29,127 +29,53 @@ c takes care of lat/lon coordinates
 	use evgeom
 	use basin
 	use grd
+	use basutil
 
 	implicit none
 
-	include 'param.h'
+	integer niter
+	integer ike
+	real alpha
+	real f(4)
 
-        character*40 bfile,gfile,nfile
-        character*60 line
-	integer node,nit
-	integer mode,np,n,niter,i
-        integer ner,nco,nknh,nelh,nli
-	integer nlidim,nlndim
-	integer ike,idepth
-	integer nlkdi
-	real hmin,hmax
-	real f(5)
-	logical bstop
-
+	logical is_depth_unique
 	integer iscanf
-
-	hmin = -99999.
-	hmax = 99999.
 
 c-----------------------------------------------------------------
 c what to do
 c-----------------------------------------------------------------
 
-        write(6,*)
-        write(6,*) 'I need the name of the grid file '
-        write(6,*)
-	write(6,*) 'Enter file name: '
-	read(5,'(a)') gfile
-        if( gfile .eq. ' ' ) stop
-	write(6,*) 'grid is read from file : ', gfile
-        write(6,*)
+        !write(6,*)
+        !write(6,*) 'Enter parameters for smoothing:'
+        !write(6,*)
+        !write(6,*) 'Either alpha or a1,h1,a2,h2'
+        !write(6,*)
+	!write(6,*) 'Enter parameters: '
+	!read(5,'(a)') line
+	!n = iscanf(line,f,4)
+	!if( n .ne. 1 .and. n .ne. 4 ) goto 96
+	!if( n .eq. 1 ) then
+	!  f(3) = f(1)
+	!  f(2) = 0.
+	!  f(4) = 10000.
+	!end if
+	!write(6,*) 'parameters used :',(f(i),i=1,4)
+        !write(6,*)
 
-        write(6,*)
-        write(6,*) 'Limiting values for depth (<CR> for no limit):'
-        write(6,*)
-	write(6,*) 'Enter hmin,hmax: '
-	read(5,'(a)') line
-	n = iscanf(line,f,2)
-	if( n .lt. 0 ) goto 97
-	if( n .gt. 0 ) hmin = f(1)
-	if( n .gt. 1 ) hmax = f(2)
-	write(6,*) 'hmin,hmax :',hmin,hmax
-        write(6,*)
+	niter = iter
+	alpha = asmooth
 
-        write(6,*)
-        write(6,*) 'Number of iterations for smoothing:'
-        write(6,*)
-	write(6,*) 'Enter niter (<CR> for no smoothing): '
-	read(5,'(i10)') niter
-	write(6,*) 'niter :',niter
-        write(6,*)
-
-	if( niter .gt. 0 ) then
-
-        write(6,*)
-        write(6,*) 'Enter parameters for smoothing:'
-        write(6,*)
-        write(6,*) 'Either alpha or a1,h1,a2,h2'
-        write(6,*)
-	write(6,*) 'Enter parameters: '
-	read(5,'(a)') line
-	n = iscanf(line,f,4)
-	if( n .ne. 1 .and. n .ne. 4 ) goto 96
-	if( n .eq. 1 ) then
-	  f(3) = f(1)
-	  f(2) = 0.
-	  f(4) = 10000.
-	end if
-	write(6,*) 'parameters used :',(f(i),i=1,4)
-        write(6,*)
-
-	end if
+	f(1) = alpha
+	f(2) = 0.
+	f(3) = alpha
+	f(4) = 10000.
 
 c-----------------------------------------------------------------
-c read in grid
+c handling depth
 c-----------------------------------------------------------------
 
-        call grd_read(gfile)
-        call grd_to_basin
-
-c-----------------------------------------------------------------
-c handling depth and coordinates
-c-----------------------------------------------------------------
-
-	call ev_init(nel)
-	call check_spheric_ev                       !sets lat/lon flag
-	call set_ev
-
-	call mod_depth_init(nkn,nel)
-	call grd_get_depth(nkn,nel,hkv,hev)
-	call set_depth_check(nknh,nelh)
-
-	ike = 1
-	if( nknh .gt. 0 ) ike = 2
-	if( nknh .gt. 0 .and. nknh .ne. nkn ) goto 99
-	if( nelh .gt. 0 .and. nelh .ne. nel ) goto 99
-	if( nknh .eq. 0 .and. nelh .eq. 0 ) goto 99
-	if( nknh .gt. 0 .and. nelh .gt. 0 ) goto 99
-
-c-----------------------------------------------------------------
-c general info
-c-----------------------------------------------------------------
-
-        write(6,*)
-        write(6,*) ' nkn  = ',nkn, '  nel  = ',nel
-        write(6,*) ' nknh = ',nknh,'  nelh = ',nelh
-        write(6,*)
-
-c-----------------------------------------------------------------
-c node_test
-c-----------------------------------------------------------------
-
-	call node_test
-
-	nlkdi = 3*nel + 2*nkn
-        call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
-        call mklink(nkn,ilinkv,lenkv,linkv)
-        call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
+        ike = 1
+	if( is_depth_unique() ) ike = 2
 
 c-----------------------------------------------------------------
 c smooth
@@ -161,180 +87,27 @@ c-----------------------------------------------------------------
 	  call smooth_bathy(ike,niter,f)
 	end if
 
-	call transfer_depth2(ike)	!copy to nodes/elements
+	call transfer_depth(ike)	!copy to nodes/elements
 
 c-----------------------------------------------------------------
 c special
 c-----------------------------------------------------------------
 
-	call delete_elements(0.)
+	!call delete_elements(0.)
 
 c-----------------------------------------------------------------
 c write
 c-----------------------------------------------------------------
 
-        nfile = 'bastreat.grd'
-        open(1,file=nfile,status='unknown',form='formatted')
-        call wrgrd(1,ike)
-        close(1)
-        write(6,*) 'file has been written to ',nfile
+        call basin_to_grd
+        call grd_write('bassmooth.grd')
+        write(6,*) 'The basin has been written to bassmooth.grd'
 
 c-----------------------------------------------------------------
 c end of routine
 c-----------------------------------------------------------------
 
-	stop
-   96	continue
-	write(6,*) n,(f(i),i=1,n)
-	write(6,*) 'there must be either 1 or 4 parameters'
-	stop 'error stop bastreat: error in smoothing parameters'
-   97	continue
-	write(6,*) line
-	stop 'error stop bastreat: read error'
-   99	continue
-	write(6,*) 'nelh,nknh: ',nelh,nknh
-	stop 'error stop bastreat: error in parameters'
-	end
-
-c*******************************************************************
-
-	subroutine transfer_depth2(ike)
-
-c copies depth values from elems/nodes to nodes/elems
-
-	use mod_depth
-	use basin
-
-	implicit none
-
-	integer ike
-
-	include 'param.h'
-
-
-
-
-	integer k,ie,ii
-	real depth
-	integer ic(nkndim)
-
-	if( ike .eq. 1 ) then
-
-	  do k=1,nkn
-	    ic(k) = 0
-	    hkv(k) = 0.
-	  end do
-
-	  do ie=1,nel
-	    do ii=1,3
-	      k = nen3v(ii,ie)
-	      hkv(k) = hkv(k) + hev(ie)
-	    end do
-	  end do
-
-	  do k=1,nkn
-	    hkv(k) = hkv(k) / ic(k)
-	  end do
-
-	else
-
-	  do ie=1,nel
-	    depth = 0.
-	    do ii=1,3
-	      k = nen3v(ii,ie)
-	      depth = depth + hkv(k)
-	    end do
-	    hev(ie) = depth / 3.
-	  end do
-
-	end if
-
-	end
-
-c*******************************************************************
-
-	subroutine set_depth_check(nknh,nelh)
-
-c handles depth values
-
-	use mod_depth
-	use basin, only : nkn,nel,ngr,mbw
-
-	implicit none
-
-	integer idepth
-	integer nknh,nelh
-
-	include 'param.h'
-
-
-
-	integer k,ie
-
-	nknh = 0
-	nelh = 0
-
-	do k=1,nkn
-	  if( hkv(k) .gt. -990 ) nknh = nknh + 1
-	end do
-	do ie=1,nel
-	  if( hev(ie) .gt. -990 ) nelh = nelh + 1
-	end do
-
-	end
-
-c*******************************************************************
-
-        function areatr(ie)
-
-c determination of area of element
-c
-c ie            number of element (internal)
-c areatr        element area (return value)
-
-	use basin
-
-	real areatr
-	integer ie
-
-	include 'param.h'
-
-
-
-	real aj
-	integer ii,i1,i2,k1,k2
-
-        aj=0.
-        do ii=1,3
-          i1=mod(ii,3)+1
-          i2=mod(i1,3)+1
-          k1=nen3v(i1,ie)
-          k2=nen3v(i2,ie)
-          aj=aj+xgv(k1)*ygv(k2)-xgv(k2)*ygv(k1)
-        end do
-
-        areatr = aj / 2.
-
-        end
-
-c*******************************************************************
-
-	subroutine triab(x,y,area,x0,y0)
-
-c computes area and center point of triangle
-
-	implicit none
-
-	real x(3)
-	real y(3)
-	real area,x0,y0
-
-	area = 0.5 * ( (x(2)-x(1))*(y(3)-y(1)) 
-     +			- (x(3)-x(1))*(y(2)-y(1)) )
-
-	x0 = (x(1)+x(2)+x(3))/3.
-	y0 = (y(1)+y(2)+y(3))/3.
-
+	return
 	end
 
 c*******************************************************************
@@ -348,9 +121,6 @@ c*******************************************************************
 
 	integer ike
 	real hmin,hmax
-
-	include 'param.h'
-
 
 	integer ie,k
 
@@ -407,11 +177,6 @@ c smoothes depth values
 	integer niter
 	real f(4)
 
-	include 'param.h'
-
-
-
-
 	integer ie,ii,k,i,nok
 	real x,y,d,h,hold,hnew,ao
 	real hmin
@@ -419,8 +184,8 @@ c smoothes depth values
         real h1,h2,a1,a2
 	integer iaux,inum,ityp
 	real xt(3), yt(3)
-	real v1v(nkndim)
-	integer ihev(neldim)
+	real v1v(nkn)
+	integer ihev(nel)
 	logical inconvex
 
 c--------------------------------------------------------------
@@ -483,6 +248,7 @@ c	  -----------------------------------------------
             beta = min(beta,1.)
 
             alpha = a1 + beta * (a2-a1)
+            alpha = a1
 
 	    !call coords_ok(ie,alpha)	!customize to smooth on specific areas
 	    if( alpha .gt. 0. ) nok = nok + 1
@@ -555,14 +321,7 @@ c deletes elements with depth lower then hmin
 	integer nlkdi
 	real hmin
 
-	include 'param.h'
-
-
-
-
-
-
-	integer icon(neldim)
+	integer icon(nel)
 
 	integer icol,ibig,ie
 
@@ -573,10 +332,7 @@ c deletes elements with depth lower then hmin
 	call delete_elements_depth(hmin)
 
 	call set_ev
-	nlkdi = 3*nel + 2*nkn
-        call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
-        call mklink(nkn,ilinkv,lenkv,linkv)
-        call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
+	call set_geom
 
 	write(6,*)
 	write(6,*) 'checking connectivity of basin'
@@ -597,9 +353,7 @@ c deletes elements with depth lower then hmin
 	call delete_elements_depth(hmin)
 
 	call set_ev
-        call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
-        call mklink(nkn,ilinkv,lenkv,linkv)
-        call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
+	call set_geom
 
 	write(6,*)
 	write(6,*) 'final check'
@@ -626,14 +380,11 @@ c deletes elements with depth lower then hmin
 
 	real hmin
 
-	include 'param.h'
-
-
 	integer ie,ii,k
 	integer n,ieh,kh
 
-	integer ind(neldim)		!index for nodes/elements to substitute
-	integer rind(neldim)		!reverse index
+	integer ind(nel)	!index for nodes/elements to substitute
+	integer rind(nel)	!reverse index
 
 c-----------------------------------------
 c delete elements
@@ -759,31 +510,22 @@ c*******************************************************************
 
 	implicit none
 
-	include 'param.h'
-
-	integer icon(neldim)
+	integer icon(nel)
 	integer icol,ibig
-
 
 	integer ie
 	integer i,nc,ic
-	integer icolor(neldim)
-
-	do ie=1,nel
-	  icon(ie) = 0
-	end do
+	integer icolor(nel)
 
 	icol = 0
+	icon = 0
+	icolor = 0
 
 	do ie=1,nel
 	  if( icon(ie) .eq. 0 ) then
 	    icol = icol + 1
 	    call color_area(ie,icol,icon)
 	  end if
-	end do
-
-	do i=1,icol
-	  icolor(i) = 0
 	end do
 
 	do ie=1,nel
@@ -809,18 +551,16 @@ c*******************************************************************
 
 	subroutine color_area(iestart,icol,icon)
 
+	use basin
 	use mod_geom
 
 	implicit none
 
-	include 'param.h'
-
 	integer iestart,icol
-	integer icon(neldim)
-
+	integer icon(nel)
 
 	integer ip,ien,ii,ie
-	integer list(neldim)
+	integer list(nel)
 
 	ip = 1
 	list(ip) = iestart

@@ -1,4 +1,9 @@
 
+02.10.2015    VERS_7_2_7
+
+	new routine shybas now handling all info/elab on basin
+	some enhancements in subgrd.f
+
 30.09.2015    VERS_7_2_6
 
 	scalar computation now with new OMP code (Eric)
