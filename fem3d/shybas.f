@@ -16,53 +16,141 @@ c 17.05.2011    ggu     changes in freqdep()
 c 12.07.2011    ggu     better treatment of freqdep()
 c 16.11.2011    ggu     basin.h introduced
 c 10.02.2012    ggu     use angles in quality of basin (basqual)
+c 30.09.2015    ggu     shybas started
+c 01.10.2015    ggu     shybas nearly finished
+c 02.10.2015    ggu     only basproj is missing
+c
+c todo:
+c
+c reading grd file ngr is 1 too high
 c
 c****************************************************************
 
-        program basinf
+        program shybas
 
-c writes information on basin about nodes and elements
+c writes information and manipulates basin
 
 	use mod_depth
+	use mod_geom
 	use evgeom
 	use basin
+	use clo
+	use basutil
 
 	implicit none
 
-	include 'param.h'
-
-
 	real, allocatable :: haux(:)
 
-	logical bnode,belem
-	integer iapini
+	integer nc
+	character*80 file
 
 c-----------------------------------------------------------------
 c read in basin
 c-----------------------------------------------------------------
 
-        if( iapini(1,0,0,0) .le. 0 ) stop
+	call basutil_init('BAS')
 
-	allocate(haux(nkn))
+	call clo_get_file(1,file)
+        if( file == ' ' ) call clo_usage
+	call read_command_line_file(file)
+
+c-----------------------------------------------------------------
+c initialize modules
+c-----------------------------------------------------------------
 
 	call ev_init(nel)
 	call set_ev
 
+	call mod_geom_init(nkn,nel,ngr)
+	call set_geom
+
 	call mod_depth_init(nkn,nel)
+	allocate(haux(nkn))
 
-c-----------------------------------------------------------------
-c specific info
-c-----------------------------------------------------------------
-
-	call basstat
-	!call basqual		!grid quality
         call makehev(hev)
         call makehkv(hkv,haux)
-	call freqdep
 
 c-----------------------------------------------------------------
-c loop until no node and element is given
+c info on basin read
 c-----------------------------------------------------------------
+
+	if( .not. bquiet ) then
+	  call bas_info
+	  call basstat
+	end if
+
+        call node_test				!basic check
+	if( bcheck ) call bascheck		!extra check
+
+c-----------------------------------------------------------------
+c transformations and extra info on basin
+c-----------------------------------------------------------------
+
+	if( bfreq ) call freqdep
+	if( bquality ) call basqual		!grid quality
+	if( bresol ) call bas_resolution	!grid resolution
+
+	if( bcompare ) call bascompare		!compares 2 basins
+	if( hsigma > 0 ) call bashsigma(hsigma)	!creates hybrid layers
+	if( bfile /= ' ' ) call basbathy	!interpolate bathymetry
+	if( bsmooth ) call bas_smooth		!limit and smooth
+	if( bbox ) call basbox			!creates box index
+
+c-----------------------------------------------------------------
+c loop for interactive information on nodes and elems
+c-----------------------------------------------------------------
+
+	if( binter ) call basin_interactive
+
+c-----------------------------------------------------------------
+c write output files
+c-----------------------------------------------------------------
+
+	if( bgrd ) call write_grd_from_bas
+        if( bxyz ) call write_xy('bas.xyz',nkn,ipv,xgv,ygv)
+	if( bunique) call write_grd_with_unique_depth !for sigma levels
+
+c-----------------------------------------------------------------
+c end of routine
+c-----------------------------------------------------------------
+
+	end
+
+c*******************************************************************
+c*******************************************************************
+c*******************************************************************
+
+	subroutine read_command_line_file(file)
+
+	use basin
+
+	implicit none
+
+	character*(*) file
+	logical is_grd_file
+
+	if( basin_is_basin(file) ) then
+	  write(6,*) 'reading BAS file ',trim(file)
+	  call basin_read(file)
+	else if( is_grd_file(file) ) then
+	  write(6,*) 'reading GRD file ',trim(file)
+	  call grd_read(file)
+	  call grd_to_basin
+	  call estimate_ngr(ngr)
+	else
+	  write(6,*) 'Cannot read this file: ',trim(file)
+	  stop 'error stop read_given_file: format not recognized'
+	end if
+
+	end
+
+c*******************************************************************
+c*******************************************************************
+c*******************************************************************
+
+	subroutine basin_interactive
+
+	logical bnode,belem
 
 	bnode = .true.
 	belem = .true.
@@ -70,22 +158,12 @@ c-----------------------------------------------------------------
 	do while( bnode .or. belem )
 
 	   call nodeinfo(bnode)
-	   if( .not. bnode .and. .not. belem ) goto 1
+	   if( .not. bnode .and. .not. belem ) exit
 
 	   call eleminfo(belem)
-	   if( .not. bnode .and. .not. belem ) goto 1
+	   if( .not. bnode .and. .not. belem ) exit
 
 	end do
-
-c-----------------------------------------------------------------
-c end of routine
-c-----------------------------------------------------------------
-
-    1	continue
-
-	call write_grd_from_bas	!write grd from bas
-        !call write_xy('basinf.xyz',nkn,ipv,xgv,ygv)
-	!call write_grd_with_unique_depth	!prepare for sigma levels
 
 	end
 
@@ -230,6 +308,8 @@ c info on element number
  3000           format(1x,i6,2x,3i6,2x,3f8.2,2x,e10.2,2x,i5)
         end
 
+c*****************************************************************
+c*****************************************************************
 c*****************************************************************
 
 	subroutine basstat
@@ -426,6 +506,8 @@ c-----------------------------------------------------------------
 	end
 
 c*******************************************************************
+c*******************************************************************
+c*******************************************************************
 
 	subroutine freqdep
 
@@ -604,11 +686,13 @@ c writes grd file extracting info from bas file
 
 	implicit none
 
+        write(6,*) 'making unique depth...'
 	call make_unique_depth
 
         call basin_to_grd
 
-        call grd_write('bas.grd')
+        call grd_write('basunique.grd')
+        write(6,*) 'The basin has been written to basunique.grd'
 
 	end
 
@@ -623,6 +707,7 @@ c writes grd file extracting info from bas file
         call basin_to_grd
 
         call grd_write('bas.grd')
+        write(6,*) 'The basin has been written to bas.grd'
 
 	end
 
@@ -776,6 +861,180 @@ c end of routine
 c-----------------------------------------------------------------
 
 	end
+
+c*******************************************************************
+
+        subroutine bascheck
+
+c writes statistics on basin
+
+        use evgeom
+        use basin
+
+        implicit none
+
+        integer ie,ii,k,i
+        integer imin,imax
+        real area,amin,amax
+        real x(3),y(3)
+        real xmin,xmax,ymin,ymax
+        real dxmax,dymax
+        real h,w,eps
+        integer iang,ic
+
+	integer, parameter :: ndim = 20
+        integer icount(ndim)
+        integer count(nkn)
+
+        real areatr
+        integer ipext
+
+        eps = 1.e-5
+
+c-----------------------------------------------------------------
+c area code
+c-----------------------------------------------------------------
+
+	write(6,*) 'checking basin...'
+	write(6,*) '(node numbers are external)'
+
+        do k=1,nkn
+          count(k) = 0
+        end do
+
+        do ie=1,nel
+          do ii=1,3
+            k = nen3v(ii,ie)
+            count(k) = count(k) + 1
+          end do
+        end do
+
+        do k=1,nkn
+          if( count(k) .le. 1 ) then
+            write(6,*) 'low count for node ',ipext(k),' : ',count(k)
+          end if
+        end do
+
+c-----------------------------------------------------------------
+c angle
+c-----------------------------------------------------------------
+
+	icount = 0
+
+        do ie=1,nel
+          do ii=1,3
+            k = nen3v(ii,ie)
+            w = ev(10+ii,ie)
+            iang = (w-90.)/10. + 1. - eps
+	    if( iang > ndim ) stop 'error stop bascheck: iang'
+            if( iang .gt. 0 ) then
+              icount(iang) = icount(iang) + 1
+c             write(6,*) k,ii,w,iang
+            end if
+          end do
+        end do
+
+        do i=1,ndim
+          ic = icount(i)
+          if( ic .gt. 0 ) then
+            write(6,*) 'angle > ',80+10*i,' : ',ic
+          end if
+        end do
+
+        do ie=1,nel
+          do ii=1,3
+            k = nen3v(ii,ie)
+            w = ev(10+ii,ie)
+            if( w .gt. 120. ) then
+              write(6,*) 'big angle ',ipext(k),' : ',w
+            end if
+          end do
+        end do
+
+c-----------------------------------------------------------------
+c end of routine
+c-----------------------------------------------------------------
+
+        end
+
+c*******************************************************************
+
+	subroutine bascompare
+
+c compares two basins and writes delta depths to file
+
+	use basin
+	use evgeom
+	use clo
+
+	implicit none
+
+	integer nel_aux
+	real hm3v_aux(3,nel)
+	character*80 file
+
+	nel_aux = nel
+	hm3v_aux = hm3v
+
+	call clo_get_file(2,file)
+	if( file == ' ' ) then
+	  write(6,*) 'for -compare we need two bas files'
+	  stop 'error stop bascomp: missing second file'
+	end if
+	call basin_read(file)
+
+	if( nel /= nel_aux ) then
+	  write(6,*) 'dimension of basins incompatible: ',nel,nel_aux
+	  stop 'error stop bascomp: nel'
+	end if
+
+	call ev_init(nel)
+	call set_ev
+
+	hm3v = hm3v - hm3v_aux
+
+        call basin_to_grd
+        call grd_write('bascomp.grd')
+        write(6,*) 'The basin has been written to bascomp.grd'
+
+	end
+
+c*******************************************************************
+
+        subroutine node_test
+
+        use basin
+
+        implicit none
+
+        logical bstop
+        integer ie,ii,iii,k,k1
+
+        bstop = .false.
+
+        !write(6,*) 'node_test ... ',nel,nkn
+
+        do ie=1,nel
+          do ii=1,3
+            k = nen3v(ii,ie)
+            if( k .le. 0 ) then
+                write(6,*) ie,ii,k
+                bstop = .true.
+            end if
+            iii = mod(ii,3) + 1
+            k1 = nen3v(iii,ie)
+            if( k .eq. k1 ) then
+                write(6,*) ie,(nen3v(iii,ie),iii=1,3)
+                bstop = .true.
+            end if
+          end do
+        end do
+
+        !write(6,*) 'end of node_test ... '
+
+        if( bstop ) stop 'error stop node_test: errors'
+
+        end
 
 c*******************************************************************
 

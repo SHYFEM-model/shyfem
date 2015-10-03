@@ -29,10 +29,6 @@ c sets up geometrical arrays
 
         implicit none
 
-c common
-	include 'param.h'
-
-c local
 	logical bverbose
         integer i,n
         integer nli,nbn,nin,nis,ngrd,ngrd1,ngrd2
@@ -119,10 +115,6 @@ c checks geometrical arrays
 
         implicit none
 
-c common
-	include 'param.h'
-
-
 c-------------------------------------------------------------
 c check static arrays
 c-------------------------------------------------------------
@@ -151,9 +143,6 @@ c checks various subroutines
 	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
-
-	include 'param.h'
-
 
 	integer k,n,ne,ipf,ipl,ibase
 	integer nl,i,ip,ie1,ie2,nn,k1,k2
@@ -239,8 +228,6 @@ c-------------------------------------------------------------
 	stop 'error stop check_subs: total number of elements'
 	end
 
-c*****************************************************************
-
 c****************************************************************
 c****************************************************************
 c****************************************************************
@@ -253,8 +240,6 @@ c****************************************************************
 
         integer nkn
         real aux(nkn)
-
-	include 'param.h'
 
         integer ib,k,kn,kstart
 

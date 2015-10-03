@@ -50,7 +50,8 @@ verbose="YES"
 #CheckCommand vp ./fem3d/vp 
 CheckCommand shyfem ./fem3d/shyfem 
 CheckCommand shypre ./fem3d/shypre 
-CheckCommand basinf ./fem3d/basinf 
+CheckCommand basinf ./fem3d/shyelab 
+CheckCommand basinf ./fem3d/shybas 
 
 CheckCommand plotsim ./femplot/plotsim 
 

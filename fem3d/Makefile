@@ -252,6 +252,10 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 RSTOBJS = subrst.o ecological_dummy.o \
 	  mod_ts.o mod_conz.o mod_hydro_vel.o mod_geom_dynamic.o
 
+BASOBJS = basutil.o basutil_resol.o basutil_hsigma.o basutil_bathy.o \
+	  basutil_interp.o basutil_smooth.o basutil_box.o \
+	  subnos.o \
+	  sublnka.o sublnku.o links.o
 BASEXTRA = sublnka.o links.o sublnku.o \
 		subinterpol.o subinterpol1.o subnos.o
 
@@ -320,16 +324,16 @@ LAGINTP = submir.o
 
 #------------------------------------------------
 
-EXEMAIN  = shyfem shypre
+EXEMAIN  = shyfem shypre shybas
 
-EXEINFO  = flxinf basinf extinf rstinf \
+EXEINFO  = flxinf extinf rstinf \
 		feminf tsinf filetype \
 		offinf lgrinf etsinf \
 		noselab ouselab shyelab nosextr_nodes extelab
 EXESPLIT = splitext splitflx splitets
 EXELAP   =  
-EXEBAS   = bastreat basbathy scalintp
-EXEVAR   = nosresidence scal_intp bashsigma
+EXEBAS   = 
+EXEVAR   = nosresidence scal_intp
 EXEUTIL  = bc2fem
 
 NOSVAR   = 
@@ -422,6 +426,9 @@ cubic:   cubic.o $(OUTOBJS) $(BCTSOBJS) subssm.o
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) $(BCTSOBJS) subssm.o -o $@
 
 #------------------------------------------------
+
+shybas:  shybas.o $(BASOBJS) $(OUTOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(BASOBJS) $(OUTOBJS) -o $@
 
 basinf:  basinf.o $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(OUTOBJS) -o $@
@@ -732,28 +739,27 @@ aquabc_II_util.o: param.h
 atoxi3d.o: param.h ../femlib/mod/levels.mod \
 		../femlib/mod/basin.mod \
 		../femlib/mod/mod_diff_visc_fric.mod mkonst.h 
-basbathy.o: pkonst.h param.h ../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod ../femlib/mod/grd.mod \
-		../femlib/mod/evgeom.mod simul.h 
-basbox.o: param.h ../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
-		../femlib/mod/mod_geom.mod 
-baschk.o: pkonst.h param.h ../femlib/mod/basin.mod \
-		../femlib/mod/evgeom.mod simul.h 
-bascomp.o: param.h ../femlib/mod/basin.mod \
-		../femlib/mod/evgeom.mod 
-bashsigma.o: param.h ../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod ../femlib/mod/evgeom.mod 
-basinf.o: param.h ../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod ../femlib/mod/evgeom.mod 
 basproj.o: param.h ../femlib/mod/basin.mod
-basres.o: param.h ../femlib/mod/basin.mod
-bastreat.o: param.h ../femlib/mod/mod_depth.mod \
+../femlib/mod/basutil.mod: basutil.o
+basutil.o: ../femlib/mod/mod_depth.mod ../femlib/mod/clo.mod \
+		../femlib/mod/basin.mod 
+basutil_bathy.o: ../femlib/mod/basutil.mod \
+		../femlib/mod/mod_depth.mod \
 		../femlib/mod/basin.mod ../femlib/mod/grd.mod \
+		../femlib/mod/evgeom.mod 
+basutil_box.o: ../femlib/mod/mod_depth.mod ../femlib/mod/basin.mod \
 		../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod 
-baswork.o: param.h ../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
+basutil_hsigma.o: ../femlib/mod/mod_depth.mod \
+		../femlib/mod/basin.mod 
+basutil_interp.o: param.h ../femlib/mod/mod_depth.mod \
+		../femlib/mod/basin.mod 
+basutil_resol.o: ../femlib/mod/mod_depth.mod \
+		../femlib/mod/basin.mod 
+basutil_smooth.o: ../femlib/mod/basutil.mod \
+		../femlib/mod/mod_depth.mod \
+		../femlib/mod/basin.mod ../femlib/mod/grd.mod \
+		../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod 
 bdist.o: param.h ../femlib/mod/basin.mod \
 		../femlib/mod/mod_geom.mod 
@@ -1059,6 +1065,10 @@ sedi3d.o: ../femlib/mod/mod_area.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/mod_hydro.mod 
+shybas.o: param.h ../femlib/mod/basutil.mod ../femlib/mod/clo.mod \
+		../femlib/mod/mod_depth.mod \
+		../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
+		../femlib/mod/mod_geom.mod 
 shyelab.o: ../femlib/mod/clo.mod ../femlib/mod/elabutil.mod
 shyfem.o: ../femlib/mod/mod_area.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
@@ -1245,14 +1255,9 @@ subgotm_mud.o: ../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_turbulence.mod 
 ../femlib/mod/grd.mod: subgrd.o
 subhisto.o: histo.h
-subinterpol.o: param.h ../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod 
-subinterpol1.o: param.h ../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod 
 sublin.o: param.h ../femlib/mod/basin.mod \
 		../femlib/mod/mod_geom.mod 
-sublnka.o: param.h ../femlib/mod/basin.mod \
-		../femlib/mod/mod_geom.mod 
+sublnka.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
 sublnkd.o: ../femlib/mod/mod_geom_dynamic.mod param.h \
 		../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod 
