@@ -52,7 +52,7 @@ c*************************************************************************
         real*8 csr(csrdim)
         integer icsr(n+1),jcsr(csrdim)
 	integer iwork(2*csrdim)		!aux for sorting routine
-        real*8 ddum
+        real*8 ddum(n)
         !integer indu(n),iwk(n+1) !clean-csr vectors
 
 	integer precision
@@ -129,7 +129,6 @@ c*************************************************************************
 ! Solve matrix with pardiso routines
 
 !$      use omp_lib
-      use omp_lib
       implicit none
 !      external pardiso
 
@@ -172,7 +171,8 @@ c*************************************************************************
          !iparm(3) = 2 ! numbers of processors
 	 !call mkl_set_num_threads(1)
 	 !call omp_set_num_threads(1)
-	 iparm(3)= omp_get_max_threads() !OMP_NUM_THREADS envirom. var.
+	 iparm(3)= 0
+!$	 iparm(3)= omp_get_max_threads() !OMP_NUM_THREADS envirom. var.
          iparm(4) = precision	!use 0 for direct, else 31,61,91 etc..
          iparm(5) = 0 ! no user fill-in reducing permutation
          iparm(6) = 0 ! =0 solution on the first n compoments of x

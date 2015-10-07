@@ -1329,7 +1329,7 @@ suboutput.o: femtime.h
 suboutputd.o: femtime.h
 ../femlib/mod/para.mod: subpar3.o
 subpard.o: param.h ../femlib/mod/mod_system.mod \
-		../femlib/mod/omp_lib.mod ../femlib/mod/basin.mod 
+		$(MKLROOT)/../compiler/include/intel64/omp_lib.mod ../femlib/mod/basin.mod 
 subproj.o: ../femlib/mod/mod_tides.mod param.h \
 		../femlib/mod/basin.mod 
 subqfxf.o: subqfx.h
