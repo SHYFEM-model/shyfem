@@ -6,6 +6,7 @@ c*************************************************************************
 ! Initialize vector and matrix      
 
 	use mod_system
+        use basin
 
       implicit none
       include 'param.h'
@@ -36,19 +37,23 @@ c*************************************************************************
 
 c*************************************************************************
 
-	subroutine pard_solve_system
+	subroutine pard_solve_system(n,z)
 
 	use mod_system
 
 	implicit none
+
+        integer n
+        real z(n) !first guess
+
         include 'param.h'
 	integer k
 
         real*8 csr(csrdim)
-        integer icsr(nkn+1),jcsr(csrdim)
+        integer icsr(n+1),jcsr(csrdim)
 	integer iwork(2*csrdim)		!aux for sorting routine
         real*8 ddum
-        !integer indu(nkn),iwk(nkn+1) !clean-csr vectors
+        !integer indu(n),iwk(n+1) !clean-csr vectors
 
 	integer precision
 	logical bdirect		!iterative solver
@@ -56,6 +61,10 @@ c*************************************************************************
         integer icall
         data icall /0/
         save icall
+
+        integer nkn
+
+        nkn = n
 
 	precision = iprec	!precision - see common.h
 
@@ -119,6 +128,7 @@ c*************************************************************************
 
 ! Solve matrix with pardiso routines
 
+!$      use omp_lib
       use omp_lib
       implicit none
 !      external pardiso
