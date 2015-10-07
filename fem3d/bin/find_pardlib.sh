@@ -43,10 +43,10 @@ fi
 
 
 # Static linking. Warning: not sure if possible with GNU licence
-LIBG_MKL="-L$DIRLIB_MKL -I$MKLINCLUDE -Wl,--start-group $DIRLIB_MKL/lib${baselib}.a $DIRLIB_MKL/libmkl_intel_thread.a $DIRLIB_MKL/libmkl_core.a -Wl,--end-group -liomp5 -lpthread"
+#LIBG_MKL="-L$DIRLIB_MKL -I$MKLINCLUDE -Wl,--start-group $DIRLIB_MKL/lib${baselib}.a $DIRLIB_MKL/libmkl_intel_thread.a $DIRLIB_MKL/libmkl_core.a -Wl,--end-group -liomp5 -lpthread"
 
 # Dynamic linking
-#LIBG_MKL="-L$DIRLIB_MKL -I$MKLINCLUDE -l${baselib} -lmkl_intel_thread -lmkl_core -liomp5 -lpthread"
+LIBG_MKL="-L$DIRLIB_MKL -I$MKLINCLUDE -l${baselib} -lmkl_intel_thread -lmkl_core -liomp5 -lpthread"
 
 echo "$LIBG_MKL"
 
