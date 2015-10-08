@@ -37,14 +37,13 @@ c*************************************************************************
 
 c*************************************************************************
 
-	subroutine pard_solve_system(n,z)
+	subroutine pard_solve_system(n)
 
 	use mod_system
 
 	implicit none
 
-        integer n
-        real z(n) !first guess
+        integer n !dimension of x and b
 
         include 'param.h'
 	integer k
@@ -139,15 +138,15 @@ c*************************************************************************
       integer precision
       real*8 aa(*)
       integer iaa(nrow+1),jaa(*)
-      real*8 b(*)			!right hand side
-      real*8 x(*)			!result x
+      real*8 b(nrow)			!right hand side
+      real*8 x(nrow)			!result x
 
 ! Pardiso vars
       integer*8 pt(64)
       integer iparm(64),mtype
       integer maxfct,mnum,phase,nrhs,msglvl,error
-      real*8 ddum  !Double prec dummy
-      integer idum !Integer dummy
+      integer perm(nrow) !permutation vector or specifies elements used 
+                         !for computing a partial solution
       data nrhs /1/, maxfct /1/, mnum /1/
 
       integer i
@@ -168,7 +167,6 @@ c*************************************************************************
 	 iparm(2) = 0
 	 if( precision .gt. 0 ) iparm(2) = 2
          !iparm(2) = 2 ! fill-in reordering from METIS (suggested for symmetric)
-         !iparm(3) = 2 ! numbers of processors
 	 !call mkl_set_num_threads(1)
 	 !call omp_set_num_threads(1)
 	 iparm(3)= 0
@@ -202,7 +200,7 @@ c*************************************************************************
 
          phase = 11 
          call pardiso (pt,maxfct,mnum,mtype,phase,nrow,aa,iaa,jaa,
-     &                 idum,nrhs,iparm,msglvl,b,x,error)
+     &                 perm,nrhs,iparm,msglvl,b,x,error)
 	 return
      
       elseif (pcall.eq.1) then
@@ -210,7 +208,7 @@ c*************************************************************************
          !.. Numerical factorization, Solve, Iterative refinement
          phase = 23 
          call pardiso (pt,maxfct,mnum,mtype,phase,nrow,aa,iaa,jaa,
-     &                 idum,nrhs,iparm,msglvl,b,x,error)
+     &                 perm,nrhs,iparm,msglvl,b,x,error)
          !print*, 'Number of CG iterations: ',iparm(20)
          !print*, 'Number of perturbed pivots: ',iparm(7)
          !print*, 'Mflops for LU factorisation: ',iparm(19)
@@ -227,7 +225,7 @@ c*************************************************************************
          !.. Solve and iterative refinement
          phase = 33
          call pardiso (pt,maxfct,mnum,mtype,phase,nrow,aa,iaa,jaa,
-     &                 idum,nrhs,iparm,msglvl,b,x,error)
+     &                 perm,nrhs,iparm,msglvl,b,x,error)
          !write(*,*) 'Solve completed ... '
          if (error .ne. 0) then
             write(*,*) '2 The following ERROR was detected: ', error
@@ -238,8 +236,8 @@ c*************************************************************************
       elseif (pcall.eq.3) then ! Release memory
 
          phase = -1 ! release internal memory
-         call pardiso (pt,maxfct,mnum,mtype,phase,nrow,ddum,idum,idum,
-     &                 idum,nrhs,iparm,msglvl,ddum,ddum,error)
+         call pardiso (pt,maxfct,mnum,mtype,phase,nrow,aa,iaa,jaa,
+     &                 perm,nrhs,iparm,msglvl,b,x,error)
          !write(*,*) 'Release completed ... '
 	 return
 

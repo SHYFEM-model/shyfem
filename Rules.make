@@ -75,8 +75,8 @@ export NBDYDIM = 100000
 ##############################################
 
 #FORTRAN_COMPILER = GNU_G77
-#FORTRAN_COMPILER = GNU_GFORTRAN
-FORTRAN_COMPILER = INTEL
+FORTRAN_COMPILER = GNU_GFORTRAN
+#FORTRAN_COMPILER = INTEL
 #FORTRAN_COMPILER = PORTLAND
 #FORTRAN_COMPILER = IBM
 
@@ -134,8 +134,8 @@ PARALLEL=false
 ##############################################
 
 #SOLVER=GAUSS
-#SOLVER=SPARSKIT
-SOLVER=PARDISO
+SOLVER=SPARSKIT
+#SOLVER=PARDISO
 
 ##############################################
 # NetCDF library

@@ -49,7 +49,7 @@ c******************************************************************
         integer n
         real z(n)
 
-	call pard_solve_system(n,z)
+	call pard_solve_system(n)
 
 	end
 

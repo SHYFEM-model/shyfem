@@ -41,7 +41,16 @@ else
 	exit 1
 fi
 
+# This is not necessary if '!$' is used in pardiso_solve
+# before 'use omp_lib'
+#if [ -e $INTEL_INCL/omp_lib.mod ]; then
+#   cp $INTEL_INCL/omp_lib.mod ../femlib/mod
+#else
+#   echo "Module file omp_lib.mod not found"
+#   exit 1
+#fi
 
+######
 # Static linking. Warning: not sure if possible with GNU licence
 #LIBG_MKL="-L$DIRLIB_MKL -I$MKLINCLUDE -Wl,--start-group $DIRLIB_MKL/lib${baselib}.a $DIRLIB_MKL/libmkl_intel_thread.a $DIRLIB_MKL/libmkl_core.a -Wl,--end-group -liomp5 -lpthread"
 

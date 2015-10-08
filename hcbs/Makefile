@@ -111,7 +111,7 @@ zip: cleanall
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 general.o: general.h
-gustd.o: gustd.h general.h
-xgraph.o: graph.h xgraph.h generalx.h general.h
-xgraphf.o: graph.h gustd.h xgraph.h generalx.h general.h
+gustd.o: general.h gustd.h
+xgraph.o: xgraph.h general.h generalx.h graph.h
+xgraphf.o: gustd.h graph.h generalx.h xgraph.h general.h
 
