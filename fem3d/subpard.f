@@ -148,16 +148,15 @@ c*************************************************************************
       integer perm(nrow) !permutation vector or specifies elements used 
                          !for computing a partial solution
       data nrhs /1/, maxfct /1/, mnum /1/
-
       integer i
+      
+! Variables to save
+      save pt,iparm
       
       logical pdefault
       
       pdefault = .true.
-
-! Variables to save
-      save pt,iparm
-
+      
       mtype = 11 ! real unsymmetric
       error = 0 ! initialize error flag
       msglvl = 0 ! print statistical information
@@ -173,7 +172,7 @@ c*************************************************************************
                iparm(i) = 0
             end do
             iparm(1) = 1 ! no solver default
-	    iparm(2) = 3
+            iparm(2) = 3
             !iparm(2) = 2 ! fill-in reordering from METIS (suggested for symmetric)
             iparm(4) = precision	!use 0 for direct, else 31,61,91 etc..
             iparm(5) = 0 ! no user fill-in reducing permutation
