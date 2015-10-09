@@ -150,6 +150,10 @@ c*************************************************************************
       data nrhs /1/, maxfct /1/, mnum /1/
 
       integer i
+      
+      logical pdefault
+      
+      pdefault = .true.
 
 ! Variables to save
       save pt,iparm
@@ -160,46 +164,51 @@ c*************************************************************************
 
       if (pcall.eq.0) then  !Initialization
 
-         ! Set the input parameters if not using the default values
-         do i = 1, 64
-            iparm(i) = 0
-         end do
-         iparm(1) = 1 ! no solver default
-	 iparm(2) = 3
-         !iparm(2) = 2 ! fill-in reordering from METIS (suggested for symmetric)
-         iparm(4) = precision	!use 0 for direct, else 31,61,91 etc..
-         iparm(5) = 0 ! no user fill-in reducing permutation
-         iparm(6) = 0 ! =0 solution on the first n compoments of x
-         !iparm(7) = -1 ! number of iterative refinement steps (out)
-         iparm(8) = 0 ! max numbers of iterative refinement steps
-         iparm(10) = 13 ! perturbe the pivot elements with 1E-13
-         iparm(11) = 1 ! use nonsymmetric permutation and scaling MPS
-         iparm(12) = 0 ! Solve with transposed or conjugate transposed matrix A
-         iparm(13) = 1 ! improved accuracy using nonsymmetric matchings
-         !iparm(14) = 0 ! number of perturbed pivots (out)
-         !iparm(15) = 0 ! Peak memory on symbolic factorization (out)
-         !iparm(16) = 0 ! Permanent  memory on symbolic factorization (out)
-         !iparm(17) = 0 ! As 15 added with solution (out)
-         iparm(18) = -1 ! Report the number of nonzeros in the factor LU (in/out)
-         iparm(19) = 0 ! Report Mflops that are necessary to factor the matrix A (use 0 to speedup)
-         !iparm(20) = 0 ! Numbers of CG Iterations
-         iparm(21) = 1 ! pivoting
-         iparm(24) = 0 ! Parallel factorization control (use 1 with many threads > 8)
-         iparm(25) = 0 ! Parallel forward/backward solve control.
-         iparm(27) = 0 ! Matrix checker
-         iparm(28) = 0 ! Single or double precision of PARDISO (0 = double)
-         iparm(31) = 0 ! Partial solve and computing selected components of the solution vectors
-         iparm(34) = 0 ! Optimal number of OpenMP threads for conditional numerical reproducibility (CNR) mode
-         iparm(35) = 0 ! 1-based/0-based input data indexing (0 = fortran style)
-         iparm(36) = 0 ! Schur complement matrix computation control
-         iparm(56) = 0 ! Diagonal and pivoting control
-         iparm(60) = 0 ! PARDISO mode (2 holds the matrix factors in files)
-         
-         !.. Initiliaze the internal solver memory pointer. This is only
-         !   necessary for the FIRST call of the PARDISO solver.
-         do i = 1, 64
-            pt(i) = 0
-         end do
+        if( pdefault ) then
+            ! Set default values for nonsymmetric matrix
+            call pardisoinit(pt, 11, iparm)
+        else
+            ! Set the input parameters
+            do i = 1, 64
+               iparm(i) = 0
+            end do
+            iparm(1) = 1 ! no solver default
+	    iparm(2) = 3
+            !iparm(2) = 2 ! fill-in reordering from METIS (suggested for symmetric)
+            iparm(4) = precision	!use 0 for direct, else 31,61,91 etc..
+            iparm(5) = 0 ! no user fill-in reducing permutation
+            iparm(6) = 0 ! =0 solution on the first n compoments of x
+            !iparm(7) = -1 ! number of iterative refinement steps (out)
+            iparm(8) = 0 ! max numbers of iterative refinement steps
+            iparm(10) = 13 ! perturbe the pivot elements with 1E-13
+            iparm(11) = 1 ! use nonsymmetric permutation and scaling MPS
+            iparm(12) = 0 ! Solve with transposed or conjugate transposed matrix A
+            iparm(13) = 1 ! improved accuracy using nonsymmetric matchings
+            !iparm(14) = 0 ! number of perturbed pivots (out)
+            !iparm(15) = 0 ! Peak memory on symbolic factorization (out)
+            !iparm(16) = 0 ! Permanent  memory on symbolic factorization (out)
+            !iparm(17) = 0 ! As 15 added with solution (out)
+            iparm(18) = -1 ! Report the number of nonzeros in the factor LU (in/out)
+            iparm(19) = 0 ! Report Mflops that are necessary to factor the matrix A (use 0 to speedup)
+            !iparm(20) = 0 ! Numbers of CG Iterations
+            iparm(21) = 1 ! pivoting
+            iparm(24) = 0 ! Parallel factorization control (use 1 with many threads > 8)
+            iparm(25) = 0 ! Parallel forward/backward solve control.
+            iparm(27) = 0 ! Matrix checker
+            iparm(28) = 0 ! Single or double precision of PARDISO (0 = double)
+            iparm(31) = 0 ! Partial solve and computing selected components of the solution vectors
+            iparm(34) = 0 ! Optimal number of OpenMP threads for conditional numerical reproducibility (CNR) mode
+            iparm(35) = 0 ! 1-based/0-based input data indexing (0 = fortran style)
+            iparm(36) = 0 ! Schur complement matrix computation control
+            iparm(56) = 0 ! Diagonal and pivoting control
+            iparm(60) = 0 ! PARDISO mode (2 holds the matrix factors in files)
+            
+            !Initiliaze the internal solver memory pointer.
+            do i = 1, 64
+               pt(i) = 0
+            end do
+            
+        end if
 
          phase = 11 
          call pardiso (pt,maxfct,mnum,mtype,phase,nrow,aa,iaa,jaa,
