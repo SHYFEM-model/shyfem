@@ -6,6 +6,7 @@ c*************************************************************************
 ! Initialize vector and matrix      
 
 	use mod_system
+        use basin
 
       implicit none
       include 'param.h'
@@ -36,19 +37,22 @@ c*************************************************************************
 
 c*************************************************************************
 
-	subroutine pard_solve_system
+	subroutine pard_solve_system(n)
 
 	use mod_system
 
 	implicit none
+
+        integer n !dimension of x and b
+
         include 'param.h'
 	integer k
 
         real*8 csr(csrdim)
-        integer icsr(nkn+1),jcsr(csrdim)
+        integer icsr(n+1),jcsr(csrdim)
 	integer iwork(2*csrdim)		!aux for sorting routine
-        real*8 ddum
-        !integer indu(nkn),iwk(nkn+1) !clean-csr vectors
+        real*8 ddum(n)
+        !integer indu(n),iwk(n+1) !clean-csr vectors
 
 	integer precision
 	logical bdirect		!iterative solver
@@ -56,6 +60,10 @@ c*************************************************************************
         integer icall
         data icall /0/
         save icall
+
+        integer nkn
+
+        nkn = n
 
 	precision = iprec	!precision - see common.h
 
@@ -119,7 +127,7 @@ c*************************************************************************
 
 ! Solve matrix with pardiso routines
 
-      use omp_lib
+!$      use omp_lib
       implicit none
 !      external pardiso
 
@@ -130,69 +138,80 @@ c*************************************************************************
       integer precision
       real*8 aa(*)
       integer iaa(nrow+1),jaa(*)
-      real*8 b(*)			!right hand side
-      real*8 x(*)			!result x
+      real*8 b(nrow)			!right hand side
+      real*8 x(nrow)			!result x
 
 ! Pardiso vars
       integer*8 pt(64)
       integer iparm(64),mtype
       integer maxfct,mnum,phase,nrhs,msglvl,error
-      real*8 ddum  !Double prec dummy
-      integer idum !Integer dummy
+      integer perm(nrow) !permutation vector or specifies elements used 
+                         !for computing a partial solution
       data nrhs /1/, maxfct /1/, mnum /1/
-
       integer i
-
+      
 ! Variables to save
       save pt,iparm
-
+      
+      logical pdefault
+      
+      pdefault = .true.
+      
       mtype = 11 ! real unsymmetric
       error = 0 ! initialize error flag
       msglvl = 0 ! print statistical information
 
       if (pcall.eq.0) then  !Initialization
 
-         do i = 1, 64
-            iparm(i) = 0
-         end do
-         iparm(1) = 1 ! no solver default
-	 iparm(2) = 0
-	 if( precision .gt. 0 ) iparm(2) = 2
-         !iparm(2) = 2 ! fill-in reordering from METIS (suggested for symmetric)
-         !iparm(3) = 2 ! numbers of processors
-	 !call mkl_set_num_threads(1)
-	 !call omp_set_num_threads(1)
-	 iparm(3)= omp_get_max_threads() !OMP_NUM_THREADS envirom. var.
-         iparm(4) = precision	!use 0 for direct, else 31,61,91 etc..
-         iparm(5) = 0 ! no user fill-in reducing permutation
-         iparm(6) = 0 ! =0 solution on the first n compoments of x
-         iparm(7) = -1 ! number of iterative refinement steps
-         iparm(8) = 0 ! max numbers of iterative refinement steps
-         iparm(9) = 0 ! not in use
-         iparm(10) = 13 ! perturbe the pivot elements with 1E-13
-         iparm(11) = 1 ! use nonsymmetric permutation and scaling MPS
-         iparm(12) = 0 ! not in use
-         iparm(13) = 1 ! improved accuracy using nonsymmetric matchings
-         iparm(14) = 0 ! Output: number of perturbed pivots
-         iparm(15) = 0 ! not in use
-         iparm(16) = 0 ! not in use
-         iparm(17) = 0 ! not in use
-         iparm(18) = -1 ! Output: number of nonzeros in the factor LU
-         iparm(19) = -1 ! Output: Mflops for LU factorization
-         iparm(20) = 0 ! Output: Numbers of CG Iterations
-         iparm(21) = 1 ! pivoting
-         !iparm(23) = 1 ! 
-         !iparm(24) = 1 ! 
-
-         !.. Initiliaze the internal solver memory pointer. This is only
-         !   necessary for the FIRST call of the PARDISO solver.
-         do i = 1, 64
-            pt(i) = 0
-         end do
+        if( pdefault ) then
+            ! Set default values for nonsymmetric matrix
+            call pardisoinit(pt, 11, iparm)
+        else
+            ! Set the input parameters
+            do i = 1, 64
+               iparm(i) = 0
+            end do
+            iparm(1) = 1 ! no solver default
+            iparm(2) = 3
+            !iparm(2) = 2 ! fill-in reordering from METIS (suggested for symmetric)
+            iparm(4) = precision	!use 0 for direct, else 31,61,91 etc..
+            iparm(5) = 0 ! no user fill-in reducing permutation
+            iparm(6) = 0 ! =0 solution on the first n compoments of x
+            !iparm(7) = -1 ! number of iterative refinement steps (out)
+            iparm(8) = 0 ! max numbers of iterative refinement steps
+            iparm(10) = 13 ! perturbe the pivot elements with 1E-13
+            iparm(11) = 1 ! use nonsymmetric permutation and scaling MPS
+            iparm(12) = 0 ! Solve with transposed or conjugate transposed matrix A
+            iparm(13) = 1 ! improved accuracy using nonsymmetric matchings
+            !iparm(14) = 0 ! number of perturbed pivots (out)
+            !iparm(15) = 0 ! Peak memory on symbolic factorization (out)
+            !iparm(16) = 0 ! Permanent  memory on symbolic factorization (out)
+            !iparm(17) = 0 ! As 15 added with solution (out)
+            iparm(18) = -1 ! Report the number of nonzeros in the factor LU (in/out)
+            iparm(19) = 0 ! Report Mflops that are necessary to factor the matrix A (use 0 to speedup)
+            !iparm(20) = 0 ! Numbers of CG Iterations
+            iparm(21) = 1 ! pivoting
+            iparm(24) = 0 ! Parallel factorization control (use 1 with many threads > 8)
+            iparm(25) = 0 ! Parallel forward/backward solve control.
+            iparm(27) = 0 ! Matrix checker
+            iparm(28) = 0 ! Single or double precision of PARDISO (0 = double)
+            iparm(31) = 0 ! Partial solve and computing selected components of the solution vectors
+            iparm(34) = 0 ! Optimal number of OpenMP threads for conditional numerical reproducibility (CNR) mode
+            iparm(35) = 0 ! 1-based/0-based input data indexing (0 = fortran style)
+            iparm(36) = 0 ! Schur complement matrix computation control
+            iparm(56) = 0 ! Diagonal and pivoting control
+            iparm(60) = 0 ! PARDISO mode (2 holds the matrix factors in files)
+            
+            !Initiliaze the internal solver memory pointer.
+            do i = 1, 64
+               pt(i) = 0
+            end do
+            
+        end if
 
          phase = 11 
          call pardiso (pt,maxfct,mnum,mtype,phase,nrow,aa,iaa,jaa,
-     &                 idum,nrhs,iparm,msglvl,b,x,error)
+     &                 perm,nrhs,iparm,msglvl,b,x,error)
 	 return
      
       elseif (pcall.eq.1) then
@@ -200,7 +219,7 @@ c*************************************************************************
          !.. Numerical factorization, Solve, Iterative refinement
          phase = 23 
          call pardiso (pt,maxfct,mnum,mtype,phase,nrow,aa,iaa,jaa,
-     &                 idum,nrhs,iparm,msglvl,b,x,error)
+     &                 perm,nrhs,iparm,msglvl,b,x,error)
          !print*, 'Number of CG iterations: ',iparm(20)
          !print*, 'Number of perturbed pivots: ',iparm(7)
          !print*, 'Mflops for LU factorisation: ',iparm(19)
@@ -217,7 +236,7 @@ c*************************************************************************
          !.. Solve and iterative refinement
          phase = 33
          call pardiso (pt,maxfct,mnum,mtype,phase,nrow,aa,iaa,jaa,
-     &                 idum,nrhs,iparm,msglvl,b,x,error)
+     &                 perm,nrhs,iparm,msglvl,b,x,error)
          !write(*,*) 'Solve completed ... '
          if (error .ne. 0) then
             write(*,*) '2 The following ERROR was detected: ', error
@@ -228,8 +247,8 @@ c*************************************************************************
       elseif (pcall.eq.3) then ! Release memory
 
          phase = -1 ! release internal memory
-         call pardiso (pt,maxfct,mnum,mtype,phase,nrow,ddum,idum,idum,
-     &                 idum,nrhs,iparm,msglvl,ddum,ddum,error)
+         call pardiso (pt,maxfct,mnum,mtype,phase,nrow,aa,iaa,jaa,
+     &                 perm,nrhs,iparm,msglvl,b,x,error)
          !write(*,*) 'Release completed ... '
 	 return
 
