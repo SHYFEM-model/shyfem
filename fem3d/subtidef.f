@@ -41,8 +41,8 @@
 
         integer, private, save  :: nkn_tide = 0
 
-        integer, save           :: rtide	! call parameter to the tide model
-        integer, parameter      :: ntd = 12 	! number of tidal constituent
+        integer, save           :: rtide	! parameter to the tide model
+        integer, parameter      :: ntd = 12 	! number of tidal constituents
         real, allocatable, save :: zeqv(:)	! tidal equilibrium
 
 !==================================================================
@@ -69,6 +69,7 @@
 
 !********************************************************************
 ! This subroutine computes astronomical arguments chi (in rad)
+!********************************************************************
 
         subroutine get_chi(jd,iyear,chi)
 
