@@ -1,4 +1,12 @@
 
+10.10.2015    VERS_7_3_2
+
+	Pull request from Christian handled:
+	changes in tidal forcing integrated (tidef)
+	new module coordinates
+	new module projection
+	switched names between subcoord.f and subproj.f
+
 02.10.2015    VERS_7_3_1
 
 	this is the first release of the develop branch 7.3

@@ -1,4 +1,16 @@
 
+10.10.2015
+
+c ./fem3d/subproj.f:
+! 30.09.2015    ccf     introduced module projection
+!
+c ./fem3d/subcoord.f:
+! 30.09.2015    ccf     introduced module coordinates
+!
+c ./fem3d/subtidef.f:
+! 30.09.2015    ccf     converted previous routines to module
+! 01.10.2015    ccf     bug fix in hour, now handle negative time
+
 02.10.2015
 
 c ./fem3d/shybas.f:
