@@ -452,12 +452,10 @@ c		2 uses an f-plane approximation where the
 c		Coriolis parameter $f$ is kept constant over the
 c		whole domain. (Default 0)
 c |dlat|	Average latitude of the basin. This is used to
-c		compute the Coriolis parameter $f$. If not given
-c		the latitude in the basin file is used. If given
-c		the value of |dlat| in the input parameter file
-c		effectively substitues the value given in the
-c		basin file. This parameter is not used if spherical
-c		coordinates are used (|isphe|=1). (Default 0)
+c		compute the Coriolis parameter $f$. This parameter 
+c		is not used if spherical coordinates are used 
+c		(|isphe|=1) or if a coordinate 	projection is set 
+c		(|iproj| $>$0). (Default 0)
 c |isphe|	If 0 a cartesian coordinate system is used,
 c		if 1 the coordinates are in the spherical system (lat/lon).
 c		Please note that in case of spherical coordinates the
@@ -1069,26 +1067,69 @@ c************************************************************************
 
 	subroutine nlsinh_proj
 
-c Parameters for projection
-
 	implicit none
+
+c $proj section
+
+c DOCS  START   S_proj
+c
+c DOCS  COMPULS         Parameters for projection
+
+c The parameter sets in this section handle the projection from cartesian to
+c geographical coordinate system. If |iproj| $>$0 the projected geographical 
+c coordinates can be used for computing spatially variable Coriolis parameter 
+c and tidal potential even if the basin is in cartesian coordinate system 
+c (|isphe| = 0) .
+c
+c Please find all details here below.
 
         call sctpar('proj')             !sets default section
         call sctfnm('proj')
 
-cc iproj:  0=none  1=GB  2=UTM  3=CPP  4=non-std UTM
+c |iproj|	Switch that indicates the type of projection
+c		(default 0):
+c		\begin{description}
+c		\item[0] do nothing
+c		\item[1] Gauss-Boaga (GB)
+c		\item[2] Universal Transverse Mercator (UTM)
+c		\item[3] Equidistant cylindrical (CPP)
+c		\item[4] UTM non standard
+c		\end{description}
 
-	call addpar('iproj',0.)		!type of projection
+	call addpar('iproj',0.)
 
-	call addpar('c_fuse',0.)	!fuse for GB (1 or 2)
-	call addpar('c_zone',0.)	!zone for UTM (1-60)
-	call addpar('c_lamb',0.)	!central meridian for non-std UTM
-	call addpar('c_x0',0.)		!x0 for GB and UTM
-	call addpar('c_y0',0.)		!y0 for GB and UTM
-	call addpar('c_skal',0.9996)	!scale factor for non-std UTM
-	call addpar('c_phi',0.)		!central parallel for CPP
-	call addpar('c_lon0',0.)	!longitude origin for CPP
-	call addpar('c_lat0',0.)	!latitude origin for CPP
+c |c_fuse|	Fuse for GB (1 or 2, default 0)
+
+	call addpar('c_fuse',0.)
+
+c |c_zone|	Zone for UTM (1-60, default 0)
+
+	call addpar('c_zone',0.)
+
+c |c_lamb|	Central meridian for non-std UTM (default 0)
+
+	call addpar('c_lamb',0.)
+
+c |c_x0,c_y0|	x0 and y0 for GB and UTM (default 0)
+
+	call addpar('c_x0',0.)
+	call addpar('c_y0',0.)
+
+c |c_skal|	Scale factor for non-std UTM (default 0.9996)
+
+	call addpar('c_skal',0.9996)
+
+c |c_phi|	Central parallel for CPP (default 0.9996)
+
+	call addpar('c_phi',0.)
+
+c |c_lon0|	Longitude origin for CPP (default 0)
+	call addpar('c_lon0',0.)
+
+c |c_lat0|	Latitude origin for CPP (default 0)
+	call addpar('c_lat0',0.)
+
+c DOCS  END
 
 	end
 
@@ -2253,4 +2294,3 @@ cc for model aquabc (curonian)
         end
 
 c************************************************************************
-

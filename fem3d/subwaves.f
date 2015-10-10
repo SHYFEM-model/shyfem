@@ -1244,6 +1244,7 @@ c This subroutine computes the wind fetch for each element of the
 c grid given the wind direction.
 
 	use basin, only : nkn,nel,ngr,mbw
+	use coordinates,  only : baric_cart
 
         implicit none
   
@@ -1390,6 +1391,7 @@ c line and one of the border line of the element
 
 	use mod_geom
 	use basin
+	use coordinates, only	: getexy_cart
 
         implicit none
 
