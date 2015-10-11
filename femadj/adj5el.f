@@ -12,11 +12,18 @@ c			eliminates low grades
 c subroutine elim55(k,nkn,nel,ngrddi,ngrade,nbound,ngri,nen3v)
 c			eliminates 5-5 connections
 c
+c revision log :
+c
+c 11.10.2015    ggu     bug fix: fused node was not moved
+c
 c***********************************************************
 
 	subroutine elim5
 
-c eliminates low grades
+c eliminates 5-5 grades
+c
+c the two nodes with 5-5 are fused together
+c the two elements attached to these nodes are deleted
 
 	use mod_adj_grade
 	use basin
@@ -55,7 +62,7 @@ c eliminates 5-5 connections
 	integer k
 
 	logical bdebug
-        integer n,i,nc,nmax,ii
+        integer n,i,nc,nmax,ii,ks
 	integer ie1,ie2
 	integer ip1,ip2
 	integer np,nt,nn
@@ -63,6 +70,7 @@ c eliminates 5-5 connections
 	integer ngav(0:ngrdi+1)
 	integer ngrv(0:ngrdi+1)
 	integer nbav(0:ngrdi+1)
+	integer iplist(ngrdi)
 
 	integer ifindel
 
@@ -113,26 +121,38 @@ c check if exchange is possible
 
 	  if( nval .gt. nmax ) then
 	    nc = 1
-	    ip = i
+	    iplist(nc) = i
 	    nmax = nval
 	  else if( nval .eq. nmax ) then
 	    nc = nc + 1
+	    iplist(nc) = i
 	  end if
 	end do
 
 	if( nmax .lt. 3 ) return
 
+	ip = 0
+	do i=1,nc
+	  ip = iplist(i)
+	  if( nbav(ip) == 0 ) exit	!take the first non boundary node
+	end do
+
+	if( i > nc ) return		!no possible node
+
 	write(6,*) k,n,nmax,nc,ip
+
+	!bdebug = ( k == 49318 )
 
 c nc gives number of occurences of this value of nmax ...
 c ip is the pointer to the node to be exchanged
+c we know that is tis not a boundary node, so we can shift it
 c
-c we decide to take the first choice
-c
-c k is eliminated, ngav(ip) is retained (to account for boundary node)
+c k is eliminated, ngav(ip) is retained
+
+	ks = ngav(ip)		! node to be shifted
 
 	if( bdebug ) then
-	    write(6,*) 'exchanging with node ... ',ngav(ip)
+	    write(6,*) 'exchanging with node ... ',ks
 	    write(6,'(7i10)') (ngav(i),i=0,n+1)
 	    write(6,'(7i10)') (ngrv(i),i=0,n+1)
 	    write(6,'(7i10)') (nbav(i),i=0,n+1)
@@ -178,14 +198,12 @@ c delete elements
 
 c new coordinates for node
 
-	if( nbav(ip) .le. 0 ) then	!no boundary node
-	  xgv(k) = 0.5 * ( xgv(k) + xgv(ngav(ip)) )
-	  ygv(k) = 0.5 * ( ygv(k) + ygv(ngav(ip)) )
-	end if
+	xgv(ks) = 0.5 * ( xgv(k) + xgv(ks) )
+	ygv(ks) = 0.5 * ( ygv(k) + ygv(ks) )
 
-c substitute all occurrences of k with ngav(ip)
+c substitute all occurrences of k with ks
 
-	call subnod(k,ngav(ip))
+	call subnod(k,ks)
 
 	if( bdebug ) then
 	  write(6,*) 'after substitution...'
@@ -239,6 +257,9 @@ c adjourn grade index for ip and delete node k finally
 	  write(6,*) 'end of debug of node ',k
 	  write(6,*) '==============================================='
 	end if
+
+	!call checkarea('check area after 5 elim')	!for debug
+	! should only check elements around ks -> we need element index
 
 	end
 

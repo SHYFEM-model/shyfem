@@ -28,11 +28,11 @@ c eliminates high grades
 
 	implicit none
 
-        include 'param.h'
-
 	integer nmax
 
         integer k,n
+
+	if( nmax < 7 ) return
 
         write(6,*) 'eliminating grades for grades higher ... ',nmax
 
@@ -49,14 +49,12 @@ c***********************************************************
 
 	subroutine elim77(k)
 
-c eliminates high grades
+c eliminates high grades by switching diagonal
 
 	use mod_adj_grade
 	use basin
 
 	implicit none
-
-        include 'param.h'
 
 	integer k
 

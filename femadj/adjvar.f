@@ -45,7 +45,8 @@ c smoothing of internal nodes
 
 	do n=1,npass
 
-	  if( mod(n,10) .eq. 0 ) write(6,*) 'smoothing... pass ',n
+	  !if( mod(n,10) .eq. 0 ) write(6,*) 'smoothing... pass ',n
+	  if( mod(n,1) .eq. 0 ) write(6,*) 'smoothing... pass ',n
 
 c initialize
 
@@ -86,7 +87,7 @@ c change coordinate
 
 c check area
 
-	  call checkarea('while smoothing')
+	  call checkarea('during smoothing')
 
 	end do
 
@@ -366,6 +367,7 @@ c check if area is positive
             call eint2ext(ie,ieext)
 	    write(6,*) 'element ',ie,' (extern ',ieext
      +                          ,') has negative area...'
+	    call elem_info(ie)
 	    bstop = .true.
 	  end if
         end do
@@ -381,6 +383,28 @@ c check if area is positive
 
 c*******************************************************
 
+	subroutine elem_info(ie)
+
+	use mod_adj_grade
+	use basin
+
+        implicit none
+
+	integer ie,ieext,ii,k
+
+        call eint2ext(ie,ieext)
+
+	write(6,*) 'info on element ie = ',ie,' extern = ',ieext
+
+	do ii=1,3
+	  k = nen3v(ii,ie)
+	  call node_info(k)
+	end do
+
+	end
+
+c*******************************************************
+
 	subroutine node_info(k)
 
 c writes info on node
@@ -390,7 +414,7 @@ c writes info on node
 
         implicit none
 
-	integer k
+	integer k,kext
 
 	include 'param.h'
 
@@ -398,7 +422,9 @@ c writes info on node
 
 	if( k .le. 0 ) return
 
-	write(6,*) 'info on node k = ',k
+        call nint2ext(k,kext)
+
+	write(6,*) 'info on node k = ',k,' extern = ',kext
 	write(6,*) ngrade(k),nbound(k),xgv(k),ygv(k)
 	write(6,*) nkn,nel,ngrdi
 	write(6,*) (ngri(i,k),i=1,ngrade(k))

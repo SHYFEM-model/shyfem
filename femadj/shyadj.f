@@ -1,5 +1,5 @@
 c
-c $Id: adjele.f,v 1.21 2010-03-11 15:31:28 georg Exp $
+c $Id: shyadj.f,v 1.21 2010-03-11 15:31:28 georg Exp $
 c
 c description :
 c
@@ -7,7 +7,7 @@ c main for mesh adjustment
 c
 c contents :
 c
-c adjele			main
+c shyadj			main
 c
 c revision log :
 c
@@ -49,6 +49,8 @@ c------------------------------------------------------- local
 	integer ner,nc
 	integer nco,nknh,nli
 	integer nk,ne,nl,nne,nnl
+	integer nsmooth
+	real asmooth
 	logical bstop, bplot
 	character*80 file
 
@@ -62,16 +64,21 @@ c------------------------------------------------------- end declaration
 
 	kspecial = 0		!set to 0 for no debug
 
-	file = 'old.grd'
 	file = ' '
 	ner = 6
 	bstop = .false.
-	bplot = .false.		!for plotting of basin and grades
+
 	bplot = .true.		!for plotting of basin and grades
+	bplot = .false.		!for plotting of basin and grades
+
+	nsmooth = 0
+	nsmooth = 50
+	asmooth = 0.1
+	asmooth = 0.01
 
 c-------------------------------------------------------------------
 
-	call shyfem_copyright('adjele - regularize finite element grids')
+	call shyfem_copyright('shyadj - regularize finite element grids')
 
 c-------------------------------------------------------------------
 
@@ -79,8 +86,8 @@ c get file name from command line
 
         nc = command_argument_count()
         if( nc .ne. 1 ) then
-          write(6,*) 'Usage: adjele grd-file'
-          stop 'error stop adjele: no file given'
+          write(6,*) 'Usage: shyadj grd-file'
+          stop 'error stop shyadj: no file given'
         end if
 
         call get_command_argument(1,file)
@@ -140,6 +147,8 @@ c plot grade
 
 	if( bplot ) call plobas
 
+        !call smooth_grid(nsmooth,asmooth)	!only for debug
+
 c eliminate 4- grades
 
         write(6,*) '================================='
@@ -151,7 +160,7 @@ c eliminate 4- grades
 	call chkgrd('checking original grid')
 	call elimlow
 	if( bplot ) call plobas
-	call stats('4- grades')
+	call stats('first cycle - 4- grades')
 	call node_info(kspecial)
 
 c eliminate 8+ grades
@@ -159,7 +168,7 @@ c eliminate 8+ grades
 	call chkgrd('checking before 8+')
 	call elimhigh(8)
 	if( bplot ) call plobas
-	call stats('8+ grades')
+	call stats('first cycle - 8+ grades')
 
 	call chkgrd('checking after 8+')
 	call node_info(kspecial)
@@ -169,7 +178,7 @@ c eliminate 7+ grades
 	call chkgrd('checking before 7+')
 	call elimhigh(7)
 	if( bplot ) call plobas
-	call stats('7+ grades')
+	call stats('first cycle - 7+ grades')
 
 	call chkgrd('checking after 7+')
 	call node_info(kspecial)
@@ -178,7 +187,7 @@ c smoothing
 
 	!call write_grid('new_nosmooth.grd')
 
-        call smooth_grid(50,0.1)
+        call smooth_grid(nsmooth,asmooth)
 	if( bplot ) call plobas
 	call node_info(kspecial)
 
@@ -195,7 +204,7 @@ c again ...
 	call elimhigh(8)
 	call elimhigh(7)
 	if( bplot ) call plobas
-	call stats('one more time')
+	call stats('second cycle - after elimhigh')
 	call node_info(kspecial)
 
 c eliminate 5 grades
@@ -205,7 +214,7 @@ c eliminate 5 grades
 	call chkgrd('checking before 5')
 	call elim5
 	if( bplot ) call plobas
-	call stats('5 grades')
+	call stats('second cycle - 5 grades')
 
 	call chkgrd('checking after 5')
 	call node_info(kspecial)
@@ -217,7 +226,7 @@ c eliminate 5-5 grades
 	call elim57
 	!call write_grid('new_help2.grd')
 	if( bplot ) call plobas
-	call stats('5-5 grades')
+	call stats('second cycle - 5-5 grades')
 	call chkgrd('checking after 5-5')
 	call node_info(kspecial)
 
@@ -234,17 +243,19 @@ c one more time
         call elimhigh(7)
         call elim5
         call elim57
-        call stats('all again')
+        call stats('thrid cycle - end')
 	call chkgrd('checking after high, 5, 57')
 	call node_info(kspecial)
 
 c smoothing
 
+	call write_grid('final_before_smoothing.grd')
+
         write(6,*) '================================='
         write(6,*) 'final smoothing...'
         write(6,*) '================================='
 
-        call smooth_grid(50,0.1)
+        call smooth_grid(nsmooth,asmooth)
 	if( bplot ) call plobas
 	call node_info(kspecial)
 
@@ -255,6 +266,7 @@ c write to grd file
         write(6,*) '================================='
 
 	call chkgrd('final check')
+        call stats('final solution')
 	call node_info(kspecial)
 	call show_strange_grades
 	call write_grid('new.grd')

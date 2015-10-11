@@ -27,6 +27,7 @@
 
 void PsGraphInit( char *file );
 void PsGraphOpen( void );
+void PsGraphOpenFile( char *file );
 void PsGraphClose( void );
 void PsStartPage( void );
 void PsEndPage( void );

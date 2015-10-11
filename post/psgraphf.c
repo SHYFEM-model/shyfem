@@ -31,6 +31,7 @@
  *			E-Mail : georg.umgiesser@ismar.cnr.it		*
  *									*
  * Revision History:							*
+ * 11-Oct-2015: new routines qopenfile to open with given file name	*
  * 23-Feb-2010: new routines qcolor and qtdef				*
  * 14-Sep-2009: new routine qcm to get length in cm			*
  * 12-Jun-2009: new routines for scale factor and no clipping		*
@@ -54,6 +55,7 @@
  *	contents :
  *
  *	qopen()			opens output file / window
+ *	qopenfile(file)		opens output file file
  *	qclose()		closes output file / window
  *	qstart()		opens a new page (clears screen)
  *	qend()			closes a page (flushes the buffer)
@@ -160,6 +162,13 @@ void qopen_( void )
 {
 	testint();
 	PsGraphInit("plot.ps");
+}
+
+void qopenfile_( char *s , fint slen )
+
+{
+	testint();
+	PsGraphInit( convert_f2c(s,slen) );
 }
 
 void qclose_( void )
