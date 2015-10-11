@@ -8,10 +8,16 @@ c***************************************************************
 c handles horizontal resolution
 
 	use basin
+	use basutil
 
 	implicit none
 
 	real cvres(nkn)
+
+	if( .not. breadbas ) then
+	  write(6,*) 'for -resol we need a bas file'
+	  stop 'error stop bas_resolution: need a bas file'
+	end if
 
 	call compute_resolution(cvres)
 	call write_resolution(cvres)

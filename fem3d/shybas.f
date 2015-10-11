@@ -123,6 +123,7 @@ c*******************************************************************
 	subroutine read_command_line_file(file)
 
 	use basin
+	use basutil
 
 	implicit none
 
@@ -132,11 +133,13 @@ c*******************************************************************
 	if( basin_is_basin(file) ) then
 	  write(6,*) 'reading BAS file ',trim(file)
 	  call basin_read(file)
+	  breadbas = .true.
 	else if( is_grd_file(file) ) then
 	  write(6,*) 'reading GRD file ',trim(file)
 	  call grd_read(file)
 	  call grd_to_basin
 	  call estimate_ngr(ngr)
+	  breadbas = .false.
 	else
 	  write(6,*) 'Cannot read this file: ',trim(file)
 	  stop 'error stop read_given_file: format not recognized'
