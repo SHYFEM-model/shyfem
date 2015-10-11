@@ -33,7 +33,7 @@ c eliminates 5-7-5 grades
           n = ngrade(k)
           if( n .eq. 7 .and. nbound(k) .eq. 0 ) then
             call elim575(k)
-	    !call chkgrd(' ')
+	    !call chkgrd('checking in 575 grade')
           end if
         end do
 

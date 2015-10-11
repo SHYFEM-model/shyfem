@@ -33,8 +33,7 @@ c eliminates low grades
           n = ngrade(k)
           if( n .eq. 5 .and. nbound(k) .eq. 0 ) then
             call elim55(k)
-c	    call node_info(1290)
-	    call chkgrd(' ')
+	    !call chkgrd('checking in 5 grade')
           end if
         end do
 

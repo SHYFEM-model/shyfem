@@ -135,7 +135,8 @@ fem3d/shyfem
 fem3d/shypre
 fem3d/shybas
 
-femadj/adjele
+femadj/shyadj
+
 fembin/extDiff
 fembin/extMerge
 femplot/line_nodes

@@ -48,7 +48,7 @@ c iterate over 3 grades as long as there is no 3 grade node left
 	 end do
 	end do
 
-	call chkgrd(' ')
+	call chkgrd('checking after 3 grades')
 
 	write(6,*) 'eliminating 4 grades...'
 
@@ -57,10 +57,12 @@ c iterate over 3 grades as long as there is no 3 grade node left
 	    n = ngrade(k)
 	    if( n .eq. 4 ) then
 	      call elim4(k)
-	      call chkgrd(' ')	!FIXME
+	      !call chkgrd(' ')	!FIXME
 	    end if
 	  end if
 	end do
+
+	call chkgrd('checking after 4 grades')
 
 	end
 

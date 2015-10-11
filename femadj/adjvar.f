@@ -41,6 +41,8 @@ c smoothing of internal nodes
 
 	write(6,*) 'smoothing grid '
 
+	call checkarea('before smoothing')
+
 	do n=1,npass
 
 	  if( mod(n,10) .eq. 0 ) write(6,*) 'smoothing... pass ',n
@@ -84,11 +86,12 @@ c change coordinate
 
 c check area
 
-	  call checkarea
+	  call checkarea('while smoothing')
 
 	end do
 
 	write(6,*) 'smoothing finished - passes ',npass
+	call checkarea('after smoothing')
 
 	end
 
@@ -144,11 +147,14 @@ c checks consistency of node and grade index
 
 	integer nextgr
 
-	bstop = .false.
 	bverb = .true.
 	bverb = .false.
 
+	bstop = .false.
+
+c--------------------------------------------------
 c check element index for unknown nodes
+c--------------------------------------------------
 
 	if( text .ne. ' ' ) write(6,*) 'chkgrd: '//trim(text)
 
@@ -170,7 +176,9 @@ c check element index for unknown nodes
 		stop 'error stop chkgrd (1)'
 	end if
 
+c--------------------------------------------------
 c check grades for strange grades
+c--------------------------------------------------
 
         if( bverb ) write(6,*) 'checking for strange grades ...'
 
@@ -188,7 +196,9 @@ c check grades for strange grades
 		stop 'error stop chkgrd (2)'
 	end if
 
+c--------------------------------------------------
 c check grade index for unknown nodes
+c--------------------------------------------------
 
         if( bverb ) write(6,*) 'checking grade index for nodes ...'
 
@@ -209,8 +219,9 @@ c check grade index for unknown nodes
 		stop 'error stop chkgrd (3)'
 	end if
 
+c--------------------------------------------------
 c check consistency of grade index
-c ...still to be written
+c--------------------------------------------------
 
         if( bverb ) write(6,*) 'consistency check  ...'
 
@@ -236,7 +247,9 @@ c ...still to be written
 		stop 'error stop chkgrd (4)'
 	end if
 
+c--------------------------------------------------
 c is grade still ok?
+c--------------------------------------------------
 
         if( bverb ) write(6,*) 'checking for final grades ...'
 
@@ -276,6 +289,16 @@ c is grade still ok?
 		stop 'error stop chkgrd (5)'
 	end if
 
+c--------------------------------------------------
+c checking area
+c--------------------------------------------------
+
+	call checkarea(text)
+
+c--------------------------------------------------
+c end of routine
+c--------------------------------------------------
+
         if( bverb ) write(6,*) 'check ok ...'
 
 	end
@@ -308,7 +331,7 @@ c iau is auxiliary array
 
 c*******************************************************
 
-	subroutine checkarea
+	subroutine checkarea(text)
 
 c check if area is positive
 
@@ -316,17 +339,20 @@ c check if area is positive
 
         implicit none
 
-	include 'param.h'
+	character*(*), optional :: text
 
 	logical bstop
 	integer ie,ii,i1,i2,k1,k2
         integer ieext
 	real x1,y1,x2,y2,x3,y3
 	real aj				!is twice the area
+	character*80 string
 
 	real areat
 
 	bstop = .false.
+	string = ' '
+	if( present(text) ) string = text
 
 	do ie=1,nel
 	  x1 = xgv(nen3v(1,ie))
@@ -345,6 +371,7 @@ c check if area is positive
         end do
 
 	if( bstop ) then
+	    write(6,*) 'error while checking: ',trim(string)
 	    call wr0grd
 	    write(6,*) 'nkn,nel: ',nkn,nel
 	    stop 'error stop checkarea'
