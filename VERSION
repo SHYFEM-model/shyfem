@@ -1,3 +1,38 @@
+version  7_3_3    12-10-2015    VERS_7_3_3
+
+========================================================== 12-10-2015 - 7_3_3
+
+c ./femplot/supbas.f:
+c 12.10.2015  ggu     fix in rround() to handle rmaster==0 case
+c
+c ./fem3d/subtime.f:
+c 10.10.2015    ggu     use bsync as global to check for syncronization
+c
+c ./fem3d/subflx.f:
+c 10.10.2015	ggu	new routines for new flx framework
+c
+c ./fem3d/subnev.f:
+c 10.10.2015	ggu	bug fix in adjust_bc() - brown paper bag bug
+c
+c ./fem3d/shyfem.f:
+c 10.10.2015    ggu	fluid mud routines handled differently
+c
+c ./fem3d/elabutil.f:
+! 10.10.2015	ggu	code added to handle FLX routines
+!
+c ./fem3d/subver.f:
+c 12.10.2015	ggu	version 7.3.3
+c
+ * ./post/psgraphf.c:
+ * 11-Oct-2015: new routines qopenfile to open with given file name	*
+c ./tmp/subshy.f:
+! 10.10.2015    ggu     started routine
+!
+c ./femadj/adj5el.f:
+c 11.10.2015    ggu     bug fix: fused node was not moved
+
+==========================================================
+
 version  7_3_2    10-10-2015    VERS_7_3_2
 
 ========================================================== 10-10-2015 - 7_3_2
