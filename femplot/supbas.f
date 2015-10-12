@@ -53,6 +53,7 @@ c 13.06.2013  ggu     bug fix in spherical_fact() -> set fact to 1
 c 13.12.2013  ggu     new mode=4 for plotting gray grid over scalar variable
 c 30.05.2014  ggu     new metpnt for meteo points, imicro computed
 c 10.02.2015  ggu     also plot other points, also regular points
+c 12.10.2015  ggu     fix in rround() to handle rmaster==0 case
 c
 c notes:
 c
@@ -816,6 +817,11 @@ c negative values are respected
 
 	integer iaux
 	real raux
+
+	if( rmaster == 0. ) then	!FIXME
+	  rround = r
+	  return
+	end if
 
 	iaux = r/rmaster
 	raux = iaux * rmaster

@@ -20,6 +20,7 @@ LIBIFS  = $(DIRLIB)/lib$(LIBFEM).a
 #------------------------------------------------------
 
 OBJS =	subscn.o subfil.o subsss.o hash.o spline.o sort.o subver.o 
+OBJS =	subscn.o subfil.o subsss.o hash.o spline.o sort.o
 	
 SOBJS =  sgauss.o
 VOBJS =  subrnd.o

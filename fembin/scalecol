@@ -20,9 +20,11 @@ while(<>) {
 
   chomp;
   s/^\s*//;
+  $comment = 0;
+  $comment = 1 if /^\#/;
   @data = split;
   my $n = @data;
-  if( $n > 0 ) {
+  if( $n > 0 and not $comment ) {
     $data[$col] *= $fact;
     $data[$col] += $const;
     $_ = join(" ",@data);
