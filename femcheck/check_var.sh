@@ -30,6 +30,8 @@ CheckExe()
   popd > /dev/null
 }
 
-CheckExe $SHYFEMDIR/fembin
-CheckExe $SHYFEMDIR/femcheck
+#pwd
+
+CheckExe fembin
+CheckExe femcheck
 

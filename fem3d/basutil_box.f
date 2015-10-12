@@ -8,7 +8,7 @@ c 14.05.2013    ggu     subroutines cleaned
 c
 c****************************************************************
 
-        program basbox
+        subroutine basbox
 
 c reads grid with box information and writes index file boxes.txt
 
@@ -19,15 +19,7 @@ c reads grid with box information and writes index file boxes.txt
 
 	implicit none
 
-	include 'param.h'
-
-	integer ndim
-
-
-        real raux(neldim)
-        integer iaux(neldim)
-        integer ipaux(nkndim)
-
+	!integer ndim
 
         character*40 bfile,gfile,nfile
         character*60 line
@@ -37,55 +29,29 @@ c reads grid with box information and writes index file boxes.txt
 	integer nlidim,nlndim
 	integer ike,idepth
 	integer nlkdi
-	real f(5)
 	logical bstop
 
-	integer nbox
 	integer nbxdim,nlbdim
 	parameter(nbxdim=100,nlbdim=100)
+
+	integer nbox
 	integer nblink(nbxdim)
 	integer boxinf(3,nlbdim,nbxdim)
 	integer neib(nbxdim)
 	integer iaux1(2,nlbdim)
 	integer iaux2(nlbdim)
 
-	integer iscanf
-	integer iapini
-
-c-----------------------------------------------------------------
-c initialize
-c-----------------------------------------------------------------
-
-c-----------------------------------------------------------------
-c read in bathymetry file
-c-----------------------------------------------------------------
-
-        if( iapini(1,nkndim,neldim,0) .le. 0 ) stop
-
-	call bas_info
-
-c-----------------------------------------------------------------
-c set link structure
-c-----------------------------------------------------------------
-
-	call set_ev
-
-	nlkdi = 3*nel + 2*nkn
-        call mklenk(nlkdi,nkn,nel,nen3v,ilinkv,lenkv)
-        call mklink(nkn,ilinkv,lenkv,linkv)
-        call mkielt(nkn,nel,ilinkv,lenkv,linkv,ieltv)
-
 c-----------------------------------------------------------------
 c handle boxes
 c-----------------------------------------------------------------
 
-	call check_connection
+	call check_box_connection
 
 	call check_boxes(nbxdim,nbox,nblink)
 	call handle_boxes(nbxdim,nlbdim,nbox,nblink,boxinf)
 
 c-----------------------------------------------------------------
-c write
+c write index file boxes.txt
 c-----------------------------------------------------------------
 
 	open(69,file='boxes.txt',form='formatted',status='unknown')
@@ -104,17 +70,7 @@ c-----------------------------------------------------------------
 	write(6,*) 'finished writing files'
 	write(6,*) 'the index is in file boxes.txt'
 
-	stop
-   96	continue
-	write(6,*) n,(f(i),i=1,n)
-	write(6,*) 'there must be either 1 or 4 parameters'
-	stop 'error stop bastreat: error in smoothing parameters'
-   97	continue
-	write(6,*) line
-	stop 'error stop bastreat: read error'
-   99	continue
-	write(6,*) 'nelh,nknh: ',nelh,nknh
-	stop 'error stop bastreat: error in parameters'
+	return
 	end
 
 c*******************************************************************
@@ -137,8 +93,6 @@ c there are nblink(ib) node pairs in boxinf, so n=1,nblink(ib)
 
 	implicit none
 
-	include 'param.h'
-
 	integer nbxdim,nlbdim,nbox
 	integer nblink(nbxdim)
 	integer boxinf(3,nlbdim,nbxdim)
@@ -149,7 +103,7 @@ c there are nblink(ib) node pairs in boxinf, so n=1,nblink(ib)
 	integer jfill,j,ibb,nf,ns,nt,ntt
 	integer id
 
-	integer kantv(2,nkndim)
+	integer kantv(2,nkn)
 
 	nt = 0
 	ntt = 0
@@ -362,8 +316,6 @@ c*******************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	integer nbxdim,nlbdim,nbox
 	integer nblink(nbxdim)
 	integer boxinf(3,nlbdim,nbxdim)
@@ -400,8 +352,6 @@ c*******************************************************************
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	integer nbxdim,nbox
 	integer nblink(nbxdim)
@@ -445,15 +395,12 @@ c*******************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	integer nbxdim,nlbdim,nbox
 	integer nblink(nbxdim)
 	integer boxinf(3,nlbdim,nbxdim)
 
 	integer ib,ie,ien,ii,i1,i2
 	integer ia,ian,n
-
 
 	nbox = 0
 	do ib=1,nbxdim
@@ -498,7 +445,7 @@ c*******************************************************************
 c*******************************************************************
 c*******************************************************************
 
-	subroutine check_connection
+	subroutine check_box_connection
 
 c checks if all boxes are connected
 
@@ -507,15 +454,12 @@ c checks if all boxes are connected
 
 	implicit none
 
-	include 'param.h'
-
-
 	integer ie
 	integer i,nc,ic,nt
 	integer icol,ierr
 	integer nmin,nmax
-	integer icolor(neldim)
-	integer icon(neldim)
+	integer icolor(nel)
+	integer icon(nel)
 
 	ierr = 0
 	do ie=1,nel
@@ -525,7 +469,7 @@ c checks if all boxes are connected
 
 	do ie=1,nel
 	  if( icon(ie) .eq. 0 ) then
-	    call color_area(ie,icon,icol,nc)
+	    call color_box_area(ie,icon,icol,nc)
 	    write(6,*) icol,nc
 	    if( icol .gt. nel ) goto 99
 	    if( icolor(icol) .ne. 0 ) then
@@ -560,20 +504,20 @@ c checks if all boxes are connected
 	write(6,*) 
 
 	if( nel .ne. nt ) goto 98
-	if( ierr .gt. 0 ) stop 'error stop check_connection: errors'
+	if( ierr .gt. 0 ) stop 'error stop check_box_connection: errors'
 
 	return
    98	continue
 	write(6,*) 'nel,nt: ',nel,nt
-	stop 'error stop check_connection: internal error'
+	stop 'error stop check_box_connection: internal error'
    99	continue
 	write(6,*) 'icol = ',icol
-	stop 'error stop check_connection: color code too high'
+	stop 'error stop check_box_connection: color code too high'
 	end
 
 c*******************************************************************
 
-	subroutine color_area(iestart,icon,icol,nc)
+	subroutine color_box_area(iestart,icon,icol,nc)
 
 c colors all accessible elements starting from iestart
 c colors only elements with same area code
@@ -585,16 +529,13 @@ c area code 0 is not allowed !!!!
 
 	implicit none
 
-	include 'param.h'
-
 	integer iestart
-	integer icon(neldim)
+	integer icon(nel)
 	integer icol		!color used (return)
 	integer nc		!total number of elements colored (return)
 
-
 	integer ip,ien,ii,ie
-	integer list(neldim)
+	integer list(nel)
 
 	nc = 0
 	ip = 1
@@ -622,10 +563,10 @@ c area code 0 is not allowed !!!!
 	return
    98	continue
 	write(6,*) 'cannot color with icol < 1 : ',icol
-	stop 'error stop color_area: iarv'
+	stop 'error stop color_box_area: iarv'
    99	continue
 	write(6,*) ip,ie,ien,icol,icon(ien)
-	stop 'error stop color_area: internal error (1)'
+	stop 'error stop color_box_area: internal error (1)'
 	end
 
 c*******************************************************************

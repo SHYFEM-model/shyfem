@@ -1,4 +1,35 @@
 
+10.10.2015
+
+c ./fem3d/subproj.f:
+! 30.09.2015    ccf     introduced module projection
+!
+c ./fem3d/subcoord.f:
+! 30.09.2015    ccf     introduced module coordinates
+!
+c ./fem3d/subtidef.f:
+! 30.09.2015    ccf     converted previous routines to module
+! 01.10.2015    ccf     bug fix in hour, now handle negative time
+
+02.10.2015
+
+c ./fem3d/shybas.f:
+c 30.09.2015    ggu     shybas started
+c 01.10.2015    ggu     shybas nearly finished
+c 02.10.2015    ggu     only basproj is missing
+c
+c ./fem3d/subgrd.f:
+c 02.10.2015    ggu     new routine is_grd_file()
+c 02.10.2015    ggu     now stopping on first error
+c
+c ./fem3d/basutil.f:
+! 01.10.2015	ggu	converted to basutil
+!
+c ./fem3d/subbas.f:
+c 02.10.2015	ggu	in basin_open_file eliminated double read (bug)
+c 02.10.2015	ggu	new routines is_depth_unique(), estimate_ngr()
+
+
 30.09.2015
 
 c ./fem3d/subbnds.f:

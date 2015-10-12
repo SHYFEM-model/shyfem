@@ -133,6 +133,7 @@ fem3d/extelab
 fem3d/shyelab
 fem3d/shyfem
 fem3d/shypre
+fem3d/shybas
 
 femadj/adjele
 fembin/extDiff
@@ -188,6 +189,7 @@ fembin/extelab
 fembin/shyelab
 fembin/shyfem
 fembin/shypre
+fembin/shybas
 
 fembin/grid
 fembin/mesh

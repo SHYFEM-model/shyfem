@@ -255,8 +255,7 @@ c to do in time loop before time step
 
 	call modules(M_BEFOR)
 
-        !call tidenew(it)       !tidal potential
-        call tideforc(it)       !tidal potential !ccf
+        call tideforce(it)       !tidal potential !ccf
 
 	call adjust_chezy
 

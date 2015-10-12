@@ -1,52 +1,46 @@
-c
-c $Id: nos_elab.f,v 1.2 2009-04-07 10:43:57 georg Exp $
-c
-c revision log :
-c
-c 24.01.2011    ggu     written from scratch
-c
-c****************************************************************
 
-	program basres
+c***************************************************************
+c***************************************************************
+c***************************************************************
 
-c computes resolution in basin
+	subroutine bas_resolution
+
+c handles horizontal resolution
 
 	use basin
 
 	implicit none
 
-	include 'param.h'
+	real cvres(nkn)
 
-c--------------------------------------------------
-c--------------------------------------------------
+	call compute_resolution(cvres)
+	call write_resolution(cvres)
 
-	character*50 file
-	character*80 title
-	real cvres(nkndim)
-	real cvaux(nkndim)
+	end
 
-	integer ilhkv(nkndim)
-	real hlv(nlvdim)
-	real hev(neldim)
+c***************************************************************
+
+	subroutine write_resolution(cvres)
+
+c computes horizontal resolution
+
+	use basin
+	use mod_depth
+
+	implicit none
+
+	real cvres(nkn)
 
 	integer nb,ierr
+	integer ilhkv(1)
 	real rmin,rmax
+	real hlv(1)
+	character*80 file,title
 
-	integer iapini,ifileo
+	integer ifileo
 
-c---------------------------------------------------------------
-c open basin
-c---------------------------------------------------------------
-
-	if(iapini(1,nkndim,neldim,0).eq.0) then
-		stop 'error stop : iapini'
-	end if
-
-c---------------------------------------------------------------
-c initializing units and nodes to be extracted
-c---------------------------------------------------------------
-
-	call makehev(hev)
+	ilhkv(1) = 1
+	hlv(1) = 10000.
 
         call mkname(' ','basres','.nos',file)
         write(6,*) 'writing file ',file(1:50)
@@ -58,13 +52,6 @@ c---------------------------------------------------------------
         if( ierr .ne. 0 ) goto 97
         call wsnos(nb,ilhkv,hlv,hev,ierr)
         if( ierr .ne. 0 ) goto 97
-
-
-c---------------------------------------------------------------
-c compute and write resolution
-c---------------------------------------------------------------
-
-	call compute_resolution(cvres,cvaux)
 
 	call mima(cvres,nkn,rmin,rmax)
 	write(6,*) 'min/max resolution: ',rmin,rmax
@@ -94,7 +81,7 @@ c---------------------------------------------------------------
 
 c***************************************************************
 
-	subroutine compute_resolution(cvres,cvaux)
+	subroutine compute_resolution(cvres)
 
 c computes horizontal resolution
 
@@ -102,20 +89,16 @@ c computes horizontal resolution
 
 	implicit none
 
-	real cvres(1)
-	real cvaux(1)
-
-	include 'param.h'
+	real cvres(nkn)
 
 	integer k,ie,ii,iii,k1,k2
 	real dd
+	real cvaux(nkn)
 
 	real dist
 
-	do k=1,nkn
-	  cvres(k) = 0.
-	  cvaux(k) = 0.
-	end do
+	cvres = 0.
+	cvaux = 0.
 	
 	do ie=1,nel
 	  do ii=1,3
@@ -150,8 +133,6 @@ c computes distance between nodes
 	real dist
 	integer k1,k2
 
-	include 'param.h'
-
 	real x1,x2,y1,y2,dx,dy
 
 	x1 = xgv(k1)
@@ -167,3 +148,6 @@ c computes distance between nodes
 	end
 
 c***************************************************************
+c***************************************************************
+c***************************************************************
+

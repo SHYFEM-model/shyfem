@@ -20,6 +20,8 @@ c 23.10.2014	ggu	introduced ftype and nvers = 4
 c 04.01.2015	ggu	new routine sp13_get_par()
 c 31.03.2015	ggu	set iarnv on read
 c 25.05.2015	ggu	module introduced
+c 02.10.2015	ggu	in basin_open_file eliminated double read (bug)
+c 02.10.2015	ggu	new routines is_depth_unique(), estimate_ngr()
 c
 c***********************************************************
 c***********************************************************
@@ -124,10 +126,10 @@ c***********************************************************
 
 	basin_open_file = 0
 
-	iunit = ifileo(0,file,'form','old')
+	iunit = ifileo(0,file,'unform','old')
 	if( iunit .le. 0 ) return
-	open(iunit,file=file,status='old',form='unformatted',iostat=ios)
-	if( ios /= 0 ) return
+	!open(iunit,file=file,status='old',form='unformatted',iostat=ios)
+	!if( ios /= 0 ) return
 
 	basin_open_file = iunit
 
@@ -154,6 +156,8 @@ c***********************************************************
 
 	close(iunit)
 
+	write(6,*) 'finished reading basin: ',trim(file)
+
 	end subroutine basin_read_by_file
 
 c***********************************************************
@@ -170,7 +174,7 @@ c***********************************************************
 	call basin_init(nk,ne)			!here we set nkn, nel
 	rewind(iunit)
 	call sp13rr(iunit,nkn,nel)
-	write(6,*) 'finished basin_read (module)'
+	!write(6,*) 'finished basin_read (module)'
 
 	end subroutine basin_read_by_unit
 
@@ -328,6 +332,9 @@ c iunit		unit number of file to be read
 	integer nkn,nel,ngr,mbw
 
 	integer nvers
+	character*80 file
+
+	inquire(nb,name=file)
 
 	call sp13test(nb,nvers)
 
@@ -339,9 +346,11 @@ c iunit		unit number of file to be read
 	return
    99	continue
 	write(6,*) 'Cannot read bas file on unit :',nb
+	write(6,*) 'file name = ',trim(file)
 	stop 'error stop : sp13_get_par'
    98	continue
 	write(6,*) 'Cannot read version: nvers = ',-nvers
+	write(6,*) 'file name = ',trim(file)
 	stop 'error stop : sp13_get_par'
    97	continue
 
@@ -582,6 +591,69 @@ c*************************************************
 	end do
 
 	end
+
+c*************************************************
+
+        function is_depth_unique()
+
+	use basin
+
+	implicit none
+
+        logical is_depth_unique
+
+	integer ie,ii,k
+	real h
+        real :: flag = -999.
+        real haux(nkn)
+
+        haux = flag
+	is_depth_unique = .false.
+
+        do ie=1,nel
+          do ii=1,3
+            k = nen3v(ii,ie)
+            h = hm3v(ii,ie)
+            if( haux(k) == flag ) haux(k) = h
+	    if( h /= haux(k) ) return
+          end do
+        end do
+
+	is_depth_unique = .true.
+
+        end function is_depth_unique
+
+c*************************************************
+
+        subroutine estimate_ngr(ngrade)
+
+c estimates grade of basin - is probably too big by 1
+
+	use basin
+
+        implicit none
+
+	integer ngrade
+
+        integer ii,ie,k
+        integer ng(nkn)
+
+	ng = 0
+
+        do ie=1,nel
+          do ii=1,3
+            k = nen3v(ii,ie)
+            ng(k) = ng(k) + 1
+          end do
+        end do
+
+        ngrade = 0
+        do k=1,nkn
+          ngrade = max(ngrade,ng(k))
+        end do
+        ngrade = ngrade + 1           !account for boundary nodes
+
+        end
 
 c*************************************************
 
