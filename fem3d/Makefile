@@ -263,7 +263,8 @@ GENOBJS = newlevels.o
 NOSOBJS = subnos.o nosutil.o genutil.o subeos.o elabutil.o noselab1.o
 OUSOBJS = subous.o ousutil.o genutil.o elabutil.o ouselab1.o
 SHYOBJS = subous.o ousutil.o subnos.o nosutil.o subeos.o genutil.o elabutil.o \
-		noselab1.o ouselab1.o subext.o extelab1.o
+		noselab1.o ouselab1.o subext.o extelab1.o \
+		subflx.o flxelab1.o
 ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
 		genutil.o
@@ -327,7 +328,7 @@ EXEMAIN  = shyfem shypre shybas
 EXEINFO  = flxinf extinf rstinf \
 		feminf tsinf filetype \
 		offinf lgrinf etsinf \
-		noselab ouselab shyelab nosextr_nodes extelab
+		noselab ouselab shyelab nosextr_nodes extelab flxelab
 EXESPLIT = splitext splitflx splitets
 EXELAP   =  
 EXEBAS   = 
@@ -521,6 +522,9 @@ noselab: noselab.o $(SHYOBJS) $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) -o $@
 
 extelab: extelab.o $(SHYOBJS) $(OUTOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) -o $@
+
+flxelab: flxelab.o $(SHYOBJS) $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) -o $@
 
 shyelab: shyelab.o $(SHYOBJS) $(OUTOBJS)
