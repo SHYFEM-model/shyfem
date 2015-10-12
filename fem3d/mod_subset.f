@@ -11,6 +11,7 @@ c 01.09.2015	eps	code written from scratch
 c 18.09.2015	ggu	code integrated
 c 29.09.2015	ggu	new routine which is much faster
 c 30.09.2015	ggu	new routine domain_clusterization_dummy()
+c 05.10.2015	ggu	equilibrate subset filling
 c
 c***********************************************************
 c***********************************************************
@@ -339,6 +340,8 @@ c***********************************************************
       end subroutine check_subset
 
 c***********************************************************
+c***********************************************************
+c***********************************************************
 
 	subroutine domain_clusterization_ggu
 
@@ -351,14 +354,14 @@ c***********************************************************
         !integer,save,allocatable,dimension(:,:) :: indipendent_subset !elems
 
 	integer ie
-	integer icolor,ncol,nmax,ncolor
+	integer ncol,nmax,ncolor,naver
 	integer ic,n,ntot
 	integer colork(nkn)
 	integer color(nel)
 
-	icolor = 0
-	color = 0
 	nmax = 0
+	color = 0
+	colork = 0
 
         print *,"  ----------- STARTING DOMAIN CLUSTERING -----------"
 
@@ -366,8 +369,9 @@ c***********************************************************
 !	color elements
 !	-------------------------------------------
 
-	call compute_color(ncolor,nmax,color)
-	write(6,*) 'ncolor: ',ncolor
+	call compute_color(ncolor,nmax)
+	naver = nint(nel/float(ncolor))
+	write(6,*) 'ncolor=',ncolor,' average=',naver,' nmax=',nmax
 
 !	-------------------------------------------
 !	set parameters and allocate arrays
@@ -375,13 +379,30 @@ c***********************************************************
 
 	subset_num = ncolor
 	allocate(subset_el(subset_num))
+	subset_el = 0
+
+	call compute_subset_filling(nmax)	!sets subset_el
+
+!	-------------------------------------------
+!	adjust colors
+!	-------------------------------------------
+
+	call adjust_color
+
+!	-------------------------------------------
+!	check colors
+!	-------------------------------------------
+
+	call check_color
+
+!	-------------------------------------------
+!	transfer complete information to arrays
+!	-------------------------------------------
+
+	call compute_subset_filling(nmax)	!sets subset_el
 	allocate(indipendent_subset(nmax,subset_num))
 	subset_el = 0
 	indipendent_subset = 0
-
-!	-------------------------------------------
-!	transfer information to arrays
-!	-------------------------------------------
 
 	do ie=1,nel
 	  ic = color(ie)
@@ -409,6 +430,12 @@ c***********************************************************
         end do
         print *,"  SUM SUBSET LENGTH = ",ntot
 
+	if( ntot /= nel ) then
+	  write(6,*) 'ntot,nel: ',ntot,nel
+	  write(6,*) 'error in total length of subsets'
+	  stop 'error stop domain_clusterization_ggu: internal error (1)'
+	end if
+
 !	-------------------------------------------
 !	end of routine
 !	-------------------------------------------
@@ -417,62 +444,176 @@ c***********************************************************
 
 !***********************
 
-	subroutine compute_color(ncolor,nmax,color)
+	subroutine compute_ic_minmax(icmin,icmax)
 
-	integer ncolor,nmax
-	integer color(nel)
+	integer icmin,icmax
 
-	integer ncol,icolor
-	integer ie
-	integer iestart,iestride,n
+	integer ic,n
+	integer ncmin,ncmax
+
+	ncmin = nel
+	ncmax = 0
+	icmin = 0
+	icmax = 0
+
+	do ic=1,subset_num
+	  n = subset_el(ic)
+	  if( n > ncmax ) then
+	    ncmax = n
+	    icmax = ic
+	  end if
+	  if( n < ncmin ) then
+	    ncmin = n
+	    icmin = ic
+	  end if
+	end do
+
+	end subroutine compute_ic_minmax
+
+!***********************
+
+	subroutine compute_subset_filling(nmax)
+
+	integer nmax
+
+	integer ie,ic,n
 
 	nmax = 0
-	icolor = 0
-	color = 0
+	subset_el = 0
 
-	iestart = 0
-	iestride = 1		!must be prime
-	ie = iestart
+	do ie=1,nel
+	  ic = color(ie)
+	  n = subset_el(ic) + 1
+	  nmax = max(nmax,n)
+	  subset_el(ic) = n
+	end do
+
+	end subroutine compute_subset_filling
+
+!***********************
+
+	subroutine adjust_color
+
+	logical bdebug
+	integer ic
+	integer icmin,icmax,ncolor
+	integer ncmin,ncmax
+	integer naver,nemax
+	integer ie_start
+
+	bdebug = .true.
+	bdebug = .false.
+	ie_start = 0
+	ncolor = subset_num
+	naver = nint(nel/float(ncolor))
+	icmax = 1
+	icmin = ncolor
+
+	write(6,'(20i6)') (subset_el(ic),ic=1,ncolor)
+
+	do
+
+	  call compute_ic_minmax(icmin,icmax)
+	  ncmin = subset_el(icmin)
+	  ncmax = subset_el(icmax)
+	  nemax = min(ncmax-naver,naver-ncmin)
+	  if( bdebug ) write(6,*) 'exchanging colors: ',icmin,icmax
+	  if( bdebug ) write(6,*) 'aver and max changes: ',naver,nemax
+
+	  call apply_one_color(icmax,icmin,ie_start,nemax,ncol)
+
+	  call compute_subset_filling(nmax)	!sets subset_el
+
+	  write(6,'(20i6)') (subset_el(ic),ic=1,ncolor)
+	  if( bdebug ) write(6,*) 'changes done and max: ',ncol,nmax
+
+	  if( ncol == 0 ) exit
+
+	end do
+
+	write(6,*) 'difference in filling: ',ncmin,ncmax,ncmax-ncmin
+	end subroutine adjust_color
+
+!***********************
+
+	subroutine compute_color(ncolor,nmax)
+
+	integer ncolor,nmax
+
+	integer ncol,ic_new,ic_old
+	integer ie_start,nemax
+
+	nmax = 0
+	ic_new = 0
+	ic_old = 0
+	ie_start = 0
+	nemax = nel
+
+	color = 0
+	colork = 0
 
 	do 
-	  ncol = 0
-	  icolor = icolor + 1
-	  colork = 0
-	  !do ie=1,nel
-	  n = 0
-	  do
-	    n = n + 1
-	    if( n > nel ) exit
-	    ie = ie + iestride
-	    if( ie > nel ) ie = mod(ie,nel)
-	    if( may_color(ie) ) then
-	      ncol = ncol + 1
-	      call color_elem(ie,icolor)
-	    end if
-	  end do
+	  ic_new = ic_new + 1
+	  if( ic_new > 31 ) stop 'error stop compute_color: no more bytes'
+	  call apply_one_color(ic_old,ic_new,ie_start,nemax,ncol)
 	  nmax = max(nmax,ncol)
-	  !write(6,*) icolor,ncol,nmax
 	  if( ncol == 0 ) exit		!everything colored
 	end do
 
-	ncolor = icolor - 1
+	ncolor = ic_new - 1
 
 	end subroutine compute_color
 
 !***********************
 
-	function may_color(ie)
+	subroutine apply_one_color(ic_old,ic_new,ie_start,nemax,ncol)
+
+	integer ic_old,ic_new	!colors to use
+	integer ie_start	!starting point for ie
+	integer nemax		!at most color this number of elements
+	integer ncol		!how many elements colored
+
+	integer n,ie,iestride
+
+	ncol = 0
+	n = 0
+	ie = ie_start
+	iestride = 1
+
+	do
+	  n = n + 1
+	  if( n > nel ) exit
+	  if( ncol >= nemax ) exit
+	  ie = ie + iestride
+	  if( ie > nel ) ie = mod(ie,nel)
+	  if( may_color(ie,ic_old,ic_new) ) then
+	    ncol = ncol + 1
+	    call color_elem(ie,ic_new)
+	  end if
+	end do
+	
+	ie_start = ie
+
+	end subroutine apply_one_color
+
+!***********************
+
+	function may_color(ie,ic_from,ic_to)
 
 	logical may_color
-	integer ie
+	integer ic_from,ic_to
+
+	integer ie,ires
 	integer ii,k
 
 	may_color = .false.
 
-	if( color(ie) /= 0 ) return
+	if( color(ie) /= ic_from ) return
 	do ii=1,3
 	  k = nen3v(ii,ie)
-	  if( colork(k) /= 0 ) return
+	  ires = ibits(colork(k),ic_to,1)
+	  !if( colork(k) /= 0 ) return
+	  if( ires /= 0 ) return
 	end do
 
 	may_color = .true.
@@ -481,18 +622,64 @@ c***********************************************************
 
 !***********************
 
-	subroutine color_elem(ie,icolor)
+	subroutine color_elem(ie,ic_new)
 
-	integer ie,icolor
-	integer ii,k
+	integer ie,ic_new
 
-	color(ie) = icolor
+	integer ii,k,ic_old
+	integer col
+
+	ic_old = color(ie)
+	color(ie) = ic_new
 	do ii=1,3
 	  k = nen3v(ii,ie)
-	  colork(k) = 1
+	  col = colork(k)
+	  col = ibclr(col,ic_old)
+	  col = ibset(col,ic_new)
+	  colork(k) = col
 	end do
 
 	end subroutine color_elem
+
+!***********************
+
+	subroutine check_color
+
+	integer ie,ii,k
+	integer ic,col,ires
+	logical berror
+
+	berror = .false.
+
+	do ie=1,nel
+	  ic = color(ie)
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    col = colork(k)
+	    ires = ibits(col,ic,1)
+	    if( ires == 0 ) then
+	      write(6,*) 'no such color: ',ie,ii,k,ic
+	      berror = .true.
+	    end if
+	    col = ibclr(col,ic)
+	    colork(k) = col
+	  end do
+	end do
+
+	do k=1,nkn
+	  if( colork(k) /= 0 ) then
+	    write(6,*) 'still color on node: ',k,colork(k)
+	    berror = .true.
+	  end if
+	end do
+
+	if( berror ) then
+	  stop 'error stop check_color: internal error (1)'
+	else
+	  write(6,*) 'check_color passed...'
+	end if
+
+	end subroutine check_color
 
 !***********************
 
