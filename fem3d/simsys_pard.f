@@ -42,14 +42,14 @@ c******************************************************************
 
 	subroutine system_solve_z(n,z)
 
-	use mod_system
+	!use mod_system
 
 	implicit none
 
         integer n
         real z(n)
 
-	call pard_solve_system
+	call pard_solve_system(n)
 
 	end
 
