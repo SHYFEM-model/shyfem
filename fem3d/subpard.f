@@ -93,7 +93,8 @@ c*************************************************************************
 	       print*, 'Pardiso iterative solution: ',precision
 	     end if
 	   end if
-           call pardiso_solve(0,nkn,precision,csr,icsr,jcsr,ddum,ddum)
+           call pardiso_solve(0,nth,nkn,precision,csr,icsr,jcsr,
+     +          ddum,ddum)
            icall=1
         end if
 	
@@ -101,10 +102,11 @@ c*************************************************************************
 ! solving	
 !-----------------------------------------------------------------
 
-        call pardiso_solve(1,nkn,precision,csr,icsr,jcsr,rvec,raux)
+        call pardiso_solve(1,nth,nkn,precision,csr,icsr,jcsr,rvec,raux)
 
 	if( bdirect ) then
-          call pardiso_solve(3,nkn,precision,csr,icsr,jcsr,ddum,ddum)
+          call pardiso_solve(3,nth,nkn,precision,csr,icsr,jcsr,ddum,
+     +         ddum)
 	end if
 
 	do k=1,nkn
@@ -123,17 +125,17 @@ c*************************************************************************
 
 c*************************************************************************
 
-      subroutine pardiso_solve(pcall,nrow,precision,aa,iaa,jaa,b,x)
+      subroutine pardiso_solve(pcall,nth,nrow,precision,aa,iaa,jaa,b,x)
 
 ! Solve matrix with pardiso routines
 
-!$      use omp_lib
       implicit none
 !      external pardiso
 
 ! arguments
 
       integer pcall			!what to do
+      integer nth			!number of threads
       integer nrow
       integer precision
       real*8 aa(*)
@@ -155,9 +157,13 @@ c*************************************************************************
       
       logical pdefault
       
+      ! Set the number of threads for the MKL library
+      call mkl_set_num_threads(nth)
+
+      ! Choose if default values or custom
       pdefault = .true.
-      
       mtype = 11 ! real unsymmetric
+
       error = 0 ! initialize error flag
       msglvl = 0 ! print statistical information
 

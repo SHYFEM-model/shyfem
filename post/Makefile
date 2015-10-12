@@ -167,12 +167,12 @@ save:   cleanall
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 colorutil.o: general.h
-demopost.o: general.h pgraph.h
+demopost.o: pgraph.h general.h
 general.o: general.h
-gustd.o: general.h gustd.h
+gustd.o: gustd.h general.h
 pc.o: pspost.h
-pcalp.o: pgraph.h general.h
+pcalp.o: general.h pgraph.h
 pgraph.o: pgraph.h general.h
-psgraph.o: gustd.h general.h psgraph.h colorutil.h
+psgraph.o: psgraph.h colorutil.h general.h gustd.h
 psgraphf.o: psgraph.h general.h
 
