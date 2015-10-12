@@ -334,7 +334,8 @@ c iunit		unit number of file to be read
 	integer nvers
 	character*80 file
 
-	inquire(nb,name=file)
+	file = ' '
+	if( nb > 0 ) inquire(nb,name=file)
 
 	call sp13test(nb,nvers)
 
@@ -346,11 +347,11 @@ c iunit		unit number of file to be read
 	return
    99	continue
 	write(6,*) 'Cannot read bas file on unit :',nb
-	write(6,*) 'file name = ',trim(file)
+	if( nb > 0 ) write(6,*) 'file name = ',trim(file)
 	stop 'error stop : sp13_get_par'
    98	continue
 	write(6,*) 'Cannot read version: nvers = ',-nvers
-	write(6,*) 'file name = ',trim(file)
+	if( nb > 0 ) write(6,*) 'file name = ',trim(file)
 	stop 'error stop : sp13_get_par'
    97	continue
 

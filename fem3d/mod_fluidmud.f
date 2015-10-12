@@ -107,10 +107,16 @@
 
 !************************************************************
 
+        subroutine mod_fluidmud_dummy_init(nkn,nlv)
+
+	integer nkn,nlv
+
+        allocate(vts(0:nlv,nkn))
+	vts = 0.
+
+        end subroutine mod_fluidmud_dummy_init
+
+!************************************************************
+
         end module mod_fluidmud
-
-
-
-
-
 

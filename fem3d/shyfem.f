@@ -96,6 +96,7 @@ c 05.12.2014    ccf	new interface for waves
 c 30.07.2015    ggu	routine renamed from ht to shyfem
 c 18.09.2015    ggu	new routine scalar, call to hydro()
 c 29.09.2015    ccf	inverted set_spherical() and handle_projection()
+c 10.10.2015    ggu	fluid mud routines handled differently
 c
 c*****************************************************************
 
@@ -109,7 +110,6 @@ c----------------------------------------------------------------
 	use mod_waves
 	use mod_turbulence
 	use mod_sinking
-	use mod_fluidmud
 	use mod_nudging
 	use mod_internal
 	use mod_geom_dynamic
@@ -301,6 +301,7 @@ c-----------------------------------------------------------
 	call tracer
 	call renewal_time
 
+	call submud_init
 
 c-----------------------------------------------------------
 c write input values to log file and perform check
@@ -435,7 +436,6 @@ c*****************************************************************
 
 	use mod_meteo
 	use mod_waves
-	use mod_fluidmud
 	use mod_internal
 	use mod_depth
 	use mod_layer_thickness
@@ -496,7 +496,7 @@ c*****************************************************************
 
         call debug_output_record(nlvdi*nkn,nlvdi,momentxv,'momentxv')
         call debug_output_record(nlvdi*nkn,nlvdi,momentyv,'momentyv')
-        call debug_output_record((nlvdi+1)*nkn,nlvdi+1,vts,'vts')
+        !call debug_output_record((nlvdi+1)*nkn,nlvdi+1,vts,'vts')
 
 	write(66) 0,0
 
@@ -634,7 +634,7 @@ c*****************************************************************
 	use mod_waves
 	use mod_turbulence
 	use mod_sinking
-	use mod_fluidmud
+	!use mod_fluidmud
 	use mod_bclfix
 	use mod_nohyd
 	use mod_internal
@@ -642,7 +642,6 @@ c*****************************************************************
 	use mod_gotm_aux
 	use mod_bound_dynamic
 	use mod_nudging
-	!use mod_aux_array
 	use mod_area
 	use mod_ts
 	use mod_diff_visc_fric
@@ -670,7 +669,6 @@ c*****************************************************************
 
 	call mod_area_init(nkn,nlvddi)
 	call mod_bound_dynamic_init(nkn,nlvddi)
-	!call mod_aux_array_init(nkn,nel,nlvddi)
 	call mod_gotm_aux_init(nkn,nlvddi)
 
 	call mod_layer_thickness_init(nkn,nel,nlvddi)
@@ -679,7 +677,7 @@ c*****************************************************************
 	call mod_nudging_init(nkn,nel,nlvddi)
 
 	call mod_bclfix_init(nkn,nel,nlvddi)
-	call mod_fluidmud_init(nkn,nlvddi)
+	!call mod_fluidmud_init(nkn,nlvddi)
 	call mod_sinking_init(nkn,nlvddi)
 	call mod_turbulence_init(nkn,nlvddi)
 	call mod_waves_init(nkn,nel,nlvddi)
