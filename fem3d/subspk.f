@@ -94,6 +94,9 @@ c*************************************************************************
 
 	nkn = n
 
+	ipar = 0	!ggu
+	fpar = 0.
+
 !--------------------------------------------------
 ! CONVERSION AND SORTING
       call coocsr(nkn,nnzero,coo,icoo,jcoo,csr,jcsr,icsr)

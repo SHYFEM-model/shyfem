@@ -34,6 +34,9 @@
 
         double precision, allocatable, save :: amat(:)
 
+        double precision, parameter :: d_tiny = tiny(1.d+0)
+        double precision, parameter :: r_tiny = tiny(1.)
+
 !==================================================================
 	contains
 !==================================================================

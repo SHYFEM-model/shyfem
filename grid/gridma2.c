@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 07-Oct-2015: new routine MakeNewCenter()				*
  * 21-Feb-2014: new routine MakeGravityPoint() and InPoly()		*
  * 18-Feb-2014: new routines DelNodeLine(), InsertNodeLine()		*
  * 19-Nov-2003: write node info to stdout                               *
@@ -832,35 +833,55 @@ void MakeVectActive( int vect )
 	EvidenceVect(ActVect,EvidenceCol);
 }
 
+void MakeNewCenter(Rect *gp , float *x , float *y , float fact )
+
+{
+	float width,height;
+	float rx,ry;		/* relative coordinates */
+	float xl,yl;		/* new lower left coordinates */
+
+	width  = ( gp->high.x - gp->low.x ) * fact;
+	height = ( gp->high.y - gp->low.y ) * fact;
+
+	rx = ( *x - gp->low.x ) / ( gp->high.x - gp->low.x );
+	ry = ( *y - gp->low.y ) / ( gp->high.y - gp->low.y );
+
+	xl = *x - rx * width;
+	yl = *y - ry * height;
+
+	*x = xl + width/2.;
+	*y = yl + height/2.;
+}
+
 void ZoomInOut(Rect *gp , float x , float y , float fact )
 
 {
-		float width,height;
+	float width,height;
 
-		width  = ( gp->high.x - gp->low.x ) * fact;
-		height = ( gp->high.y - gp->low.y ) * fact;
-		gp->low.x  = x - width/2.;
-		gp->high.x = x + width/2;
-		gp->low.y  = y - height/2.;
-		gp->high.y = y + height/2;
+	width  = ( gp->high.x - gp->low.x ) * fact;
+	height = ( gp->high.y - gp->low.y ) * fact;
+	gp->low.x  = x - width/2.;
+	gp->high.x = x + width/2.;
+	gp->low.y  = y - height/2.;
+	gp->high.y = y + height/2.;
 }
 
 void MoveRelative(Rect *gp , float dx , float dy )
 
 {
-		gp->low.x  += dx;
-		gp->high.x += dx;
-		gp->low.y  += dy;
-		gp->high.y += dy;
+	gp->low.x  += dx;
+	gp->high.x += dx;
+	gp->low.y  += dy;
+	gp->high.y += dy;
 }
 
 void MoveToPoint( float x , float y )
 
 {
-		int horiz,verti;
+	int horiz,verti;
 
-		QScreenXY(x,y,&horiz,&verti);
-		MouseMove(horiz,verti);
+	QScreenXY(x,y,&horiz,&verti);
+	MouseMove(horiz,verti);
 }
 
 void MakeMidPoint( Line_type *pl , float *x , float *y )

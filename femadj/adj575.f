@@ -23,8 +23,6 @@ c eliminates 5-7-5 grades
 
 	implicit none
 
-        include 'param.h'
-
         integer k,n
 
         write(6,*) 'eliminating grades for grade 5-7-5... '
@@ -33,7 +31,7 @@ c eliminates 5-7-5 grades
           n = ngrade(k)
           if( n .eq. 7 .and. nbound(k) .eq. 0 ) then
             call elim575(k)
-	    !call chkgrd(' ')
+	    !call chkgrd('checking in 575 grade')
           end if
         end do
 
@@ -44,13 +42,13 @@ c***********************************************************
 	subroutine elim575(k)
 
 c eliminates 5-7-5 connections
+c
+c create one new node and two new elements
 
 	use mod_adj_grade
 	use basin
 
 	implicit none
-
-        include 'param.h'
 
 	integer k
 
@@ -126,7 +124,7 @@ c find out distance of 5 grades
 	idp = ip2 - ip1
 	if( idp .le. 2 .or. idp .ge. 5 ) return
 
-	write(6,*) 'elim575 possible exchange: ',ip1,ip2,idp
+	write(6,*) 'elim575: ',k,ip1,ip2,idp
 
 	if( bdebug ) then
 	  write(6,*) ngav(ip1),ngav(ip2)
@@ -224,7 +222,7 @@ c adjust coordinates
 
 c	call plosel2(nel-1,nel)
 
-	call node_debug(k,nkn,nel,nen3v,xgv,ygv)
+c	call node_debug(k,nkn,nel,nen3v,xgv,ygv)
 
 	end
 
@@ -249,4 +247,5 @@ c*******************************************************
 
 	end
 
+c*******************************************************
 

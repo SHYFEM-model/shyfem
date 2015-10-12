@@ -179,8 +179,8 @@ c
 	t5=t4*t1
 	s1=s
 	s2=s1*s1
-	s32=sqrt(real(s2*s1))
-c	s32=dsqrt(s2*s1)
+c	s32=sqrt(real(s2*s1))
+	s32=dsqrt(s2*s1)		!ggu
 	p1=p
 	p2=p1*p1
 c

@@ -21,6 +21,33 @@ at=at
 notify=dnotify
 #---------------------------------------------------------------
 
+Usage()
+{
+  echo "Usage: femrun [-h|-help] [options] STR-file"
+}
+
+FullUsage()
+{
+  Usage
+  echo ""
+  echo "Available options:"
+  echo "  -h|-help         this help"
+  echo "  -batch           run in batch mode"
+  echo "  -exe executable  use executable to run model (default shyfem)"
+  echo "  -time time-date  run model at given time-date"
+  echo ""
+  echo "   time     :  HH:MM, midnight, noon, 1am tomorrow"
+  echo "   date     :  Dec 12, MMDDYY, MM/DD/YY, DD.MM.YY"
+  echo "   relative :  now + # [minutes, hours, days, or weeks]"
+  echo "   (date must follow time, please enclose in apostrophes)"
+  echo ""
+}
+
+ErrorOption()
+{
+  echo "No such option : $1"
+}
+
 RunNotify()
 {
   local status
@@ -46,33 +73,33 @@ RunNotify()
   fi
 }
 
-####################################################### are there 2 arguments ?
+############################################################## read arguments ?
 
 batch="NO"
-if [ "$1" = "-b" ]; then
-  batch="YES"
-  shift
+hpfile=$BINDIR/shyfem
+attime="now+0minutes"
+
+while [ -n "$1" ]
+do
+   case $1 in
+        -batch)         batch="YES";;
+        -exe)           hpfile=$2; shift;;
+        -time)          attime=$2; shift;;
+        -h|-help)       FullUsage; exit 0;;
+        -*)             ErrorOption $1; exit 1;;
+        *)              break;;
+   esac
+   shift
+done
+
+if [ $# -le 0 ]; then
+  Usage
+  exit 0
 fi
 
-if [ $# -lt 2 ]; then
-	echo "Usage : femrun [-b]  HP-routine   STR-file   [time]"
-	echo "   time     :  HH:MM, midnight, noon, 1am tomorrow"
-	echo "   date     :  Dec 12, MMDDYY, MM/DD/YY, DD.MM.YY"
-	echo "   relative :  now + # [minutes, hours, days, or weeks]"
-	echo "   (date must follow time)"
-	exit 1
-fi
-
-if [ $# -gt 2 ]; then
-	givenattime=YES
-else
-	givenattime=NO
-fi
+strfile=$1
 
 ################################################################# set variables
-
-hpfile=$1
-strfile=$2
 
 strname=`basename $strfile .str`
 strdir=`dirname $strfile`
@@ -84,14 +111,6 @@ fi
 
 hostname=`hostname | sed -e 's/\..*//'`
 actdate=`date "+%d.%m.%y %H:%M:%S"`
-
-shift 2
-
-if [ $givenattime = "YES" ]; then
-	attime="$*"
-else
-	attime="now+0minutes"
-fi
 
 ##################################################### control if files do exist
 

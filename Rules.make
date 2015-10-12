@@ -150,7 +150,7 @@ SOLVER=SPARSKIT
 
 NETCDF=false
 #NETCDF=true
-NETCDFDIR = /usr/local/netcdf
+#NETCDFDIR = /usr/local/netcdf
 NETCDFDIR = /usr
 
 ##############################################
@@ -327,11 +327,17 @@ ifeq ($(WARNING),true)
   FGNU_WARNING = -Wall -pedantic
   FGNU_WARNING = -Wall -Wtabs -Wno-unused -Wno-uninitialized
   FGNU_WARNING = -Wall -Wtabs -Wno-unused
+  FGNU_WARNING = -Wall -Wtabs -Wno-unused \
+			-Wno-conversion -Wno-unused-dummy-argument
 endif
 
 FGNU_NOOPT = 
 ifeq ($(DEBUG),true)
+  TRAP_LIST = zero,invalid,overflow,underflow,denormal
+  TRAP_LIST = zero,invalid,overflow,denormal
+  TRAP_LIST = zero
   FGNU_NOOPT = -g
+  FGNU_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST)
 endif
 
 FGNU_OPT   = 

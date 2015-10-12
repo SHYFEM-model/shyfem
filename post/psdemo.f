@@ -53,7 +53,8 @@ c (these units are in pixel, all subsequent units are real values)
 
 c qopen opens the window - has to be called once at the beginning
 
-	call qopen
+	!call qopen
+	call qopenfile('demo.ps')
 
 c qgetvp returns the dimension of the viewport (terminal) in viewport coord.
 c (units of viewport coordinates are approx. in cm)

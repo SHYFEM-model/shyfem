@@ -325,7 +325,11 @@ get_lib_dir()
 
 is_lib_installed()
 {
-  n=$( ldconfig -p | grep $1 | wc -l )
+  ldaux=ldconfig
+  $ldaux > /dev/null 2>&1
+  [ $? -eq 127 ] && ldaux=/sbin/ldconfig
+
+  n=$( $ldaux -p | grep $1 | wc -l )
   result=false
   [ $n -ne 0 ] && result=true
 }

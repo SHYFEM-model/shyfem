@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 07-Oct-2015: implement smooth zoomin with wheel			*
  * 05-Mar-2014: new action for drag and mouse wheel			*
  * 02-Apr-1998: new LoopForEvents, ExitEventLoop() (used to exit loop)  *
  * 02-Apr-1998: ProcessMenuInput() called for new menu routines         *
@@ -70,6 +71,7 @@ void LoopForInput( void )
     static int verti_down = 0;
     static int button_orig = 0;		/* use original functionality */
     static int plot_on_move = 1;	/* replot while dragging */
+    Rect *gp;
 
     while( LoopForEvents ) {
 
@@ -167,9 +169,13 @@ void LoopForInput( void )
 			PlotFieldInput(horiz,verti,RIGHT_MOUSE_BUTTON);
 		} else if( button == QButtonWheelUp ) {
 			GetPlotCoord(horiz,verti,&ActX,&ActY);
+			gp = GetActPlotWindow();
+			MakeNewCenter(gp,&ActX,&ActY,0.5);
 			GfZoomIn();
 		} else if( button == QButtonWheelDown ) {
 			GetPlotCoord(horiz,verti,&ActX,&ActY);
+			gp = GetActPlotWindow();
+			MakeNewCenter(gp,&ActX,&ActY,2.0);
 			GfZoomOut();
 		}
 

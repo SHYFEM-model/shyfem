@@ -134,8 +134,10 @@ fem3d/shyelab
 fem3d/shyfem
 fem3d/shypre
 fem3d/shybas
+fem3d/flxelab
 
-femadj/adjele
+femadj/shyadj
+
 fembin/extDiff
 fembin/extMerge
 femplot/line_nodes
@@ -190,6 +192,7 @@ fembin/shyelab
 fembin/shyfem
 fembin/shypre
 fembin/shybas
+fembin/flxelab
 
 fembin/grid
 fembin/mesh

@@ -8,5 +8,8 @@
 	double precision t_act,dt_act,dt_orig
         common /femtimd/ t_act,dt_act,dt_orig
 
-        save /femtim/,/femtimu/,/femtimd/
+	logical bsync
+        common /femtiml/ bsync
+
+        save /femtim/,/femtimu/,/femtimd/,/femtiml/
 

@@ -39,6 +39,7 @@ c 21.01.2015	ggu	new routine compute_cartesian_coords()
 c 31.03.2015	ggu	new routines for internal coordinates
 c 19.04.2015	ggu	new routines for internal coordinates (distance)
 c 22.04.2015	ggu	bug fix in xi2xy - x/y were exchanged
+c 10.10.2015	ggu	bug fix in adjust_bc() - brown paper bag bug
 c
 c***********************************************************
 
@@ -105,6 +106,8 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 
 	include 'param.h'
 
+	logical bdebug
+	integer iedebug
 	integer ie,i,kn1,kn2,kn3
 	integer isphe
         double precision one,two,four,twofour,rad
@@ -124,6 +127,9 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	call check_spheric_ev	!checks and sets isphe_ev and init_ev
 	call get_coords_ev(isphe)
 
+	iedebug = 77
+	iedebug = 0
+
         one = 1.
         two = 2.
         four = 4.
@@ -135,6 +141,8 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
         rad = 180./pi
 
 	do ie=1,nel
+
+	bdebug = ( iedebug == ie )
 
 	kn1=nen3v(1,ie)
 	kn2=nen3v(2,ie)
@@ -160,6 +168,14 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	  y3=ygv(kn3)
 	end if
 
+	if( bdebug ) then
+	  write(6,*) '============ ev debug =================='
+	  write(6,*) ie,isphe
+	  write(6,*) x1,y1
+	  write(6,*) x2,y2
+	  write(6,*) x3,y3
+	end if
+
 	a1=x2*y3-x3*y2
 	a2=x3*y1-x1*y3
 	a3=x1*y2-x2*y1
@@ -177,10 +193,23 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	a3=a3*aji
 	!aj=aj/twofour		!bug 5.2.2010
 
+	if( bdebug ) then
+	  write(6,*) aji
+	  write(6,*) b1,b2,b3
+	  write(6,*) c1,c2,c3
+	end if
+
 c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 
 	call adjust_bc(b1,b2,b3)
 	call adjust_bc(c1,c2,c3)
+
+	if( bdebug ) then
+	  write(6,*) aji
+	  write(6,*) b1,b2,b3
+	  write(6,*) c1,c2,c3
+	  write(6,*) '============ ev debug end =================='
+	end if
 
 	if(aj.le.0.) goto 99
 
@@ -825,10 +854,10 @@ c adjusts b/c so that sum = 0
 	  v3 = -v2
 	else if( v2 .eq. 0. ) then
 	  v3 = v3 - vv/2.
-	  v1 = -v1
+	  v1 = -v3			!BUGFIX
 	else if( v3 .eq. 0. ) then
 	  v1 = v1 - vv/2.
-	  v2 = -v2
+	  v2 = -v1			!BUGFIX
 	else
 	  v1 = v1 - vv/3.
 	  v2 = v2 - vv/3.
