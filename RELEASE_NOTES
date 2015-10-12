@@ -1,4 +1,16 @@
 
+12.10.2015    VERS_7_3_4
+
+	Pull request Pardiso (Marco Bajo) handled
+
+12.10.2015    VERS_7_3_3
+
+	severe bug fix in adjust_bc() (subnev.f)
+	many fixes for floating point exceptions
+	fluid mud integrated
+	new post processing flx files
+	some bug fix in femadj
+
 10.10.2015    VERS_7_3_2
 
 	Pull request from Christian handled:
