@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 07-Oct-2015: new routine GetActPlotWindow()				*
  * 18-Feb-2014: new routines GfDelRemoveNodeLine(), GfInsertNodeLine()	*
  * 16-Feb-2011: use OpItemType for new items				*
  * 02-Apr-1998: new functio integrated -> no gridmu.h, no ActCommand    *
@@ -264,6 +265,8 @@ void SetActVect( int vect ) { ActVect = vect; }
 
 FP GetActFunction( void ) { return ActFunction; }
 void SetActFunction( FP fp ) { ActFunction = fp; }
+
+Rect *GetActPlotWindow( void ) { return &GbPlo; }
 
 /**********************************************************************/
 
