@@ -298,14 +298,14 @@ revision:
 	 $(FEMBIN)/revision_last
 
 rules_ggu:
-	cp -f rules/Rules.ggu ./Rules.make
+	cp -f arc/rules/Rules.ggu ./Rules.make
 
 rules_save:
-	cp -f rules/Rules.save ./Rules.make
+	cp -f arc/rules/Rules.save ./Rules.make
 
 dist: cleandist
-	mv --backup=numbered ./Rules.make rules/Rules.save
-	cp -f rules/Rules.dist ./Rules.make
+	mv --backup=numbered ./Rules.make arc/rules/Rules.save
+	cp -f femcheck/Rules.dist ./Rules.make
 	make doc; make clean
 
 stable:
