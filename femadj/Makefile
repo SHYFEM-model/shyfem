@@ -54,7 +54,7 @@ shyadj:  shyadj.o $(ADJOBJS) $(OBJS) $(LIBIFS) $(LIBIPS)
 
 #--------------------------------------------- clean
 
-cleanall: clean cleanzip cleangrd
+cleanall: clean cleanzip cleangrd cleandiff
 
 clean: cleanobj cleanexe cleanvar cleantex
 

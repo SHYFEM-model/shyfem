@@ -102,7 +102,7 @@ depend:
 
 #---------------------------
 
-cleanall : clean cleanlib cleanzip
+cleanall : clean cleanlib cleanzip cleandiff
 
 clean: cleanobj cleanexe cleanvar cleantex
 

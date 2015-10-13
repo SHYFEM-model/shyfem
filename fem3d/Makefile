@@ -695,10 +695,6 @@ param:
 	-@$(FEMBIN)/make_param.pl $(FEMDIR) param.h
 	-@$(FEMBIN)/param.sh $(FEMDIR) param.h
 
-diff:
-	@$(FEMBIN)/cvsdiff -norcs -ifdiff * > DIFFS
-	@echo "differences written to file DIFFS"
-
 list:
 	pwd; ls
 

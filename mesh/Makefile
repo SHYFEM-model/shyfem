@@ -99,7 +99,7 @@ depend:
 
 clean: cleanobj cleanexe cleanvar cleanlinks
 
-cleanall: clean cleangrd cleanzip
+cleanall: clean cleangrd cleanzip cleandiff
 
 cleanlinks:
 	@$(FEMBIN)/symlink -remove $(FEMBIN) mesh exgrd

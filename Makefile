@@ -5,10 +5,7 @@
 #
 # targets that should be in all Makefiles of SUBDIRS:
 #
-# fem all 
 # clean cleanall 
-# list
-# save zip
 #
 # really necessary are only: fem clean cleanall
 #
@@ -112,13 +109,10 @@ dirf:
 	@echo $(FEMDIRS)
 
 list:
-	$(FEMBIN)/recursivemake $@ $(SUBDIRS)
-
-diff:
-	$(FEMBIN)/recursivemake $@ $(SUBDIRS)
+	$(FEMBIN)/recursivemake $@ $(FEMDIRS)
 
 depend:
-	$(FEMBIN)/recursivemake $@ $(SUBDIRS)
+	$(FEMBIN)/recursivemake $@ $(FEMDIRS)
 
 param:
 	$(FEMBIN)/recursivemake $@ $(PARAMDIRS)
@@ -155,9 +149,6 @@ cleanall: cleanlocal cleanregress
 	$(FEMBIN)/recursivemake $@ $(SUBDIRS)
 
 cleandist: cleanall
-
-cleandiff:
-	$(FEMBIN)/recursivemake $@ $(SUBDIRS)
 
 cleanregress:
 	if [ -d $(REGRESSDIR) ]; then cd $(REGRESSDIR); make cleanall; fi
