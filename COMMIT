@@ -1,5 +1,18 @@
 ============================================================
 
+Tue Oct 13 20:02:30 CEST 2015
+
+bug fix for cartesian coords
+
+ .gitignore            |    3 +++
+ Makefile              |    4 ++--
+ fem3d/shyfem.f        |    2 +-
+ fem3d/subcoord.f      |    9 +++++++--
+ femcheck/check_var.sh |    2 ++
+ 5 files changed, 15 insertions(+), 5 deletions(-)
+
+============================================================
+
 Mon Oct 12 20:51:14 CEST 2015
 
 New version 7_3_4a

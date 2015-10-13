@@ -201,10 +201,10 @@ c initialize triangles
 c-----------------------------------------------------------
 
 	call set_spherical
-	call handle_projection
 	call set_ev
 	call adjust_spherical
 	call print_spherical
+	call handle_projection
 	call set_geom
 	call domain_clusterization
 

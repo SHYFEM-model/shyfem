@@ -22,6 +22,8 @@ CheckExe()
       :
     elif [ $file = INSTALL-LIST -o $file = README ]; then
       :
+    elif [ $file = Rules.dist ]; then
+      :
     else
       echo "*** file is not executable: $file"
     fi

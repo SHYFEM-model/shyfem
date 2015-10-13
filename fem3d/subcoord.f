@@ -71,8 +71,6 @@
 
         mode = 1	!from cartesian to lat/lon
 
-        iproj = nint(getpar('iproj'))
-
         select case (iproj)
           case ( 0 )				!no projection
           case ( 1 )				!Guass-Boaga
@@ -241,14 +239,21 @@
 
         logical 	:: bspheric
         logical 	:: is_spherical
+	real		:: getpar
 
         bspheric = is_spherical()
+        iproj = nint(getpar('iproj'))
+
+        write(6,*) 'start of handle_projection'
+	write(6,*) 'bspheric,iproj: ',bspheric,iproj
 
         if( bspheric ) then	!lat/lon -> cartesian
             call proj_geo2cart
         else			!cartesian -> lat/lon
             call proj_cart2geo
         end if
+
+        write(6,*) 'end of handle_projection'
 
         end subroutine handle_projection
 
