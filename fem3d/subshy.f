@@ -17,21 +17,44 @@
 
 	implicit none
 
+	integer, parameter, private :: shytype = 1617
+
+	integer, parameter, private :: minvers = 11
+	integer, parameter, private :: maxvers = 11
+
+	integer, parameter, private ::  no_type = 0
+	integer, parameter, private :: ous_type = 1
+	integer, parameter, private :: nos_type = 2
+	integer, parameter, private :: ext_type = 3
+	integer, parameter, private :: flx_type = 4
+
 	type, private :: entry
 
 	  integer :: iunit
 	  integer :: nvers
-	  integer :: itype
-	  double precision, allocatable :: array(:)
+	  integer :: ftype
+	  integer :: nkn,nel,nlv,nvar
+	  integer :: date,time
+	  character*80 :: title
+	  character*80 :: femver
+          integer, allocatable :: nen3v(:,:)
+          integer, allocatable :: ipev(:)
+          integer, allocatable :: ipv(:)
+          integer, allocatable :: iarv(:)
+          integer, allocatable :: iarnv(:)
+          real, allocatable :: xgv(:)
+          real, allocatable :: ygv(:)
+          real, allocatable :: hm3v(:,:)
+          integer, allocatable :: hlv(:)
+          integer, allocatable :: ilhv(:)
+          integer, allocatable :: ilhkv(:)
 
+	  logical :: is_allocated
 	end type entry
 
 	integer, save, private :: idlast = 0
 	integer, save, private :: ndim = 0
 	type(entry), save, allocatable :: pentry(:)
-
-	integer, parameter, private :: minvers = 11
-	integer, parameter, private :: maxvers = 11
 
 !==================================================================
 	contains
@@ -71,6 +94,8 @@
 	end subroutine shy_init_new_id
 
 !******************************************************************
+!******************************************************************
+!******************************************************************
 
 	subroutine shy_init_id(id)
 
@@ -82,9 +107,49 @@
 
 	pentry(id)%iunit = 0
 	pentry(id)%nvers = 0
-	pentry(id)%itype = 0
+	pentry(id)%ftype = 0
+	pentry(id)%nkn = 0
+	pentry(id)%nel = 0
+	pentry(id)%nlv = 0
+	pentry(id)%nvar = 0
+	pentry(id)%date = 0
+	pentry(id)%time = 0
+	pentry(id)%title = ' '
+	pentry(id)%femver = ' '
+
+	pentry(id)%is_allocated = .false.
 	
 	end subroutine shy_init_id
+
+!******************************************************************
+
+	subroutine shy_alloc_arrays(id)
+
+	integer id
+
+	integer nkn,nel,nlv
+
+	if( pentry(id)%is_allocated ) return
+
+	nkn = pentry(id)%nkn
+	nel = pentry(id)%nel
+	nlv = pentry(id)%nlv
+
+	allocate(pentry(id)%nen3v(3,nel))
+	allocate(pentry(id)%ipev(nel))
+	allocate(pentry(id)%ipv(nkn))
+	allocate(pentry(id)%iarv(nel))
+	allocate(pentry(id)%iarnv(nkn))
+	allocate(pentry(id)%xgv(nkn))
+	allocate(pentry(id)%ygv(nkn))
+	allocate(pentry(id)%hm3v(3,nel))
+	allocate(pentry(id)%hlv(nlv))
+	allocate(pentry(id)%ilhv(nel))
+	allocate(pentry(id)%ilhkv(nkn))
+
+	pentry(id)%is_allocated = .true.
+
+	end subroutine shy_alloc_arrays
 
 !******************************************************************
 
@@ -92,7 +157,21 @@
 
 	integer id
 
-	if( allocated(pentry(id)%array) ) deallocate(pentry(id)%array)
+	if( .not. pentry(id)%is_allocated ) return
+
+	deallocate(pentry(id)%nen3v)
+	deallocate(pentry(id)%ipev)
+	deallocate(pentry(id)%ipv)
+	deallocate(pentry(id)%iarv)
+	deallocate(pentry(id)%iarnv)
+	deallocate(pentry(id)%xgv)
+	deallocate(pentry(id)%ygv)
+	deallocate(pentry(id)%hm3v)
+	deallocate(pentry(id)%hlv)
+	deallocate(pentry(id)%ilhv)
+	deallocate(pentry(id)%ilhkv)
+
+	pentry(id)%is_allocated = .false.
 
 	end subroutine shy_dealloc_arrays
 
@@ -122,7 +201,7 @@
 
 !******************************************************************
 
-	subroutine shy_init(iunit,nversion,id)
+	subroutine shy_init(iunit,id)
 
 	integer iunit
 	integer nversion
@@ -136,15 +215,7 @@
 	  stop 'error stop shy_init: iunit'
 	end if
 
-	nvers = nversion
-	if( nvers .le. 0 ) nvers = maxvers
-
-	if( nvers < minvers .or. nvers > maxvers ) then
-	  write(6,*) 'Impossible version number: ',nvers
-	  stop 'error stop shy_init: nvers'
-	end if
-
-	nvers = maxvers	!always write with highest version
+	nvers = maxvers
 
 	idempty = 0
 	do id=1,idlast
@@ -177,11 +248,578 @@ c************************************************************
 
 	pentry(id)%iunit = 0
 	call shy_dealloc_arrays(id)
+	if( id == idlast ) idlast = idlast - 1
 
 	end subroutine shy_close
 
 c************************************************************
 
+	function shy_are_compatible(id1,id2)
+
+	logical shy_are_compatible
+	integer id1,id2
+
+	shy_are_compatible = .false.
+
+	if( pentry(id1)%nkn /= pentry(id2)%nkn ) return 
+	if( pentry(id1)%nel /= pentry(id2)%nel ) return 
+	if( pentry(id1)%nlv /= pentry(id2)%nlv ) return 
+	if( pentry(id1)%nvar /= pentry(id2)%nvar ) return 
+	if( pentry(id1)%date /= pentry(id2)%date ) return 
+	if( pentry(id1)%time /= pentry(id2)%time ) return 
+
+	if( .not. all(pentry(id1)%nen3v==pentry(id2)%nen3v) ) return
+	if( .not. all(pentry(id1)%xgv==pentry(id2)%xgv) ) return
+	if( .not. all(pentry(id1)%ygv==pentry(id2)%ygv) ) return
+	if( .not. all(pentry(id1)%hm3v==pentry(id2)%hm3v) ) return
+
+	!still to be finished
+	!deallocate(pentry(id)%ipev)
+	!deallocate(pentry(id)%ipv)
+	!deallocate(pentry(id)%iarv)
+	!deallocate(pentry(id)%iarnv)
+	!deallocate(pentry(id)%hlv)
+	!deallocate(pentry(id)%ilhv)
+	!deallocate(pentry(id)%ilhkv)
+
+	shy_are_compatible = .true.
+
+	end function shy_are_compatible
+
+c************************************************************
+
+	subroutine shy_clone(id_from,id_to)
+
+	integer id_from,id_to
+
+	integer iunit,nvers
+
+	iunit = pentry(id_to)%iunit
+	nvers = pentry(id_to)%nvers
+
+	pentry(id_to) = pentry(id_from)
+
+	pentry(id_to)%iunit = iunit
+	pentry(id_to)%nvers = nvers
+
+	end subroutine shy_clone
+
+c************************************************************
+
+	subroutine shy_info(id)
+
+	integer id
+
+        write(6,*) 'iunit     : ',pentry(id)%iunit
+        write(6,*) 'nvers     : ',pentry(id)%nvers
+        write(6,*) 'nkn,nel   : ',pentry(id)%nkn,pentry(id)%nel
+        write(6,*) 'nlv,nvar  : ',pentry(id)%nlv,pentry(id)%nvar
+        write(6,*) 'date,time : ',pentry(id)%date,pentry(id)%time
+        write(6,*) 'title     : ',pentry(id)%title
+        write(6,*) 'femver    : ',pentry(id)%femver
+
+	end subroutine shy_info
+
+c************************************************************
+c************************************************************
+c************************************************************
+
+	function shy_is_shy_file(iunit)
+
+	logical shy_is_shy_file
+	integer iunit
+
+	integer ntype,nvers,ios
+
+	shy_is_shy_file = .false.
+	if( iunit .le. 0 ) return
+
+	read(iunit,iostat=ios) ntype,nvers
+
+	if( ios /= 0 ) return
+	if( ntype .ne. shytype ) return
+	if( nvers .lt. minvers .or. nvers .gt. maxvers ) return
+
+	shy_is_shy_file = .true.
+	rewind(iunit)
+
+	end function shy_is_shy_file
+
+c************************************************************
+c************************************************************
+c************************************************************
+
+	subroutine shy_get_ftype(id,ftype)
+	integer id
+	integer ftype
+	ftype = pentry(id)%ftype
+	end subroutine shy_get_ftype
+
+	subroutine shy_set_ftype(id,ftype)
+	integer id
+	integer ftype
+	pentry(id)%ftype = ftype
+	end subroutine shy_set_ftype
+
+c************************************************************
+
+	subroutine shy_get_params(id,nkn,nel,nlv,nvar)
+	integer id
+	integer nkn,nel,nlv,nvar
+	nkn = pentry(id)%nkn
+	nel = pentry(id)%nel
+	nlv = pentry(id)%nlv
+	nvar = pentry(id)%nvar
+	end subroutine shy_get_params
+
+	subroutine shy_set_params(id,nkn,nel,nlv,nvar)
+	integer id
+	integer nkn,nel,nlv,nvar
+	pentry(id)%nkn = nkn
+	pentry(id)%nel = nel
+	pentry(id)%nlv = nlv
+	pentry(id)%nvar = nvar
+	end subroutine shy_set_params
+
+c************************************************************
+
+	subroutine shy_get_date(id,date,time)
+	integer id
+	integer date,time
+	date = pentry(id)%date
+	time = pentry(id)%time
+	end subroutine shy_get_date
+
+	subroutine shy_set_date(id,date,time)
+	integer id
+	integer date,time
+	pentry(id)%date = date
+	pentry(id)%time = time
+	end subroutine shy_set_date
+
+c************************************************************
+
+	subroutine shy_get_title(id,title)
+	integer id
+	character*(*) title
+	title = pentry(id)%title
+	end subroutine shy_get_title
+
+	subroutine shy_set_title(id,title)
+	integer id
+	character*(*) title
+	pentry(id)%title = title
+	end subroutine shy_set_title
+
+c************************************************************
+
+	subroutine shy_get_femver(id,femver)
+	integer id
+	character*(*) femver
+	femver = pentry(id)%femver
+	end subroutine shy_get_femver
+
+	subroutine shy_set_femver(id,femver)
+	integer id
+	character*(*) femver
+	pentry(id)%femver = femver
+	end subroutine shy_set_femver
+
+c************************************************************
+
+	subroutine shy_get_elemindex(id,nen3v)
+	integer id
+	integer nen3v(3,pentry(id)%nel)
+	nen3v = pentry(id)%nen3v
+	end subroutine shy_get_elemindex
+
+	subroutine shy_set_elemindex(id,nen3v)
+	integer id
+	integer nen3v(3,pentry(id)%nel)
+	pentry(id)%nen3v = nen3v
+	end subroutine shy_set_elemindex
+
+c************************************************************
+
+	subroutine shy_get_coords(id,xgv,ygv)
+	integer id
+	integer xgv(pentry(id)%nkn), ygv(pentry(id)%nkn)
+	xgv = pentry(id)%xgv
+	ygv = pentry(id)%ygv
+	end subroutine shy_get_coords
+
+	subroutine shy_set_coords(id,xgv,ygv)
+	integer id
+	integer xgv(pentry(id)%nkn), ygv(pentry(id)%nkn)
+	pentry(id)%xgv = xgv
+	pentry(id)%ygv = ygv
+	end subroutine shy_set_coords
+
+c************************************************************
+
+	subroutine shy_get_depth(id,hm3v)
+	integer id
+	integer hm3v(3,pentry(id)%nel)
+	hm3v = pentry(id)%hm3v
+	end subroutine shy_get_depth
+
+	subroutine shy_set_depth(id,hm3v)
+	integer id
+	integer hm3v(3,pentry(id)%nel)
+	pentry(id)%hm3v = hm3v
+	end subroutine shy_set_depth
+
+c************************************************************
+
+	subroutine shy_get_layers(id,hlv)
+	integer id
+	integer hlv(pentry(id)%nlv)
+	hlv = pentry(id)%hlv
+	end subroutine shy_get_layers
+
+	subroutine shy_set_layers(id,hlv)
+	integer id
+	integer hlv(pentry(id)%nlv)
+	pentry(id)%hlv = hlv
+	end subroutine shy_set_layers
+
+c************************************************************
+
+	subroutine shy_get_layerindex(id,ilhv,ilhkv)
+	integer id
+	integer ilhv(pentry(id)%nel), ilhkv(pentry(id)%nkn)
+	ilhv = pentry(id)%ilhv
+	ilhkv = pentry(id)%ilhkv
+	end subroutine shy_get_layerindex
+
+	subroutine shy_set_layerindex(id,ilhv,ilhkv)
+	integer id
+	integer ilhv(pentry(id)%nel), ilhkv(pentry(id)%nkn)
+	pentry(id)%ilhv = ilhv
+	pentry(id)%ilhkv = ilhkv
+	end subroutine shy_set_layerindex
+
+c************************************************************
+c************************************************************
+c************************************************************
+
+	subroutine shy_read_header(id,ierr)
+
+	integer id,ierr
+
+	call shy_read_header_1(id,ierr)
+	if( ierr /= 0 ) return
+	call shy_read_header_2(id,ierr)
+
+	end subroutine shy_read_header
+
+c************************************************************
+
+	subroutine shy_peek_header(id,ierr)
+
+	integer id,ierr
+
+	call shy_read_header_1(id,ierr)
+	if( ierr /= 0 ) return
+	rewind(pentry(id)%iunit)
+
+	end subroutine shy_peek_header
+
+c************************************************************
+
+	subroutine shy_skip_header(id,ierr)
+
+	integer id,ierr
+
+	call shy_read_header_1(id,ierr)
+	if( ierr /= 0 ) return
+	call shy_skip_header_2(id,ierr)
+
+	end subroutine shy_skip_header
+
+c************************************************************
+
+	subroutine shy_read_header_1(id,ierr)
+
+	integer id,ierr
+
+	integer ios,iunit
+	integer ntype,nvers
+	integer ftype
+	integer nkn,nel,nlv,nvar
+	integer date,time
+	character*80 title
+	character*80 femver
+
+	iunit = pentry(id)%iunit
+
+	ierr = 1
+        read(iunit,iostat=ios) ntype,nvers
+	if( ios /= 0 ) return
+
+	ierr = 91
+	if( ntype /= shytype ) return
+	ierr = 92
+	if( nvers < minvers .or. nvers > maxvers ) return
+	pentry(id)%nvers = nvers
+
+	ierr = 2
+        read(iunit,iostat=ios) ftype
+	if( ios /= 0 ) return
+	call shy_set_ftype(id,ftype)
+
+	ierr = 3
+        read(iunit,iostat=ios) nkn,nel,nlv,nvar
+	if( ios /= 0 ) return
+	call shy_set_params(id,nkn,nel,nlv,nvar)
+
+	ierr = 4
+        read(iunit,iostat=ios) date,time
+	if( ios /= 0 ) return
+	call shy_set_date(id,date,time)
+
+	ierr = 5
+        read(iunit,iostat=ios) title
+	if( ios /= 0 ) return
+	call shy_set_title(id,title)
+
+	ierr = 6
+        read(iunit,iostat=ios) femver
+	if( ios /= 0 ) return
+	call shy_set_femver(id,femver)
+
+	ierr = 0
+
+	end subroutine shy_read_header_1
+
+!**************************************************************
+
+	subroutine shy_read_header_2(id,ierr)
+
+	integer id,ierr
+
+	integer iunit
+
+	iunit = pentry(id)%iunit
+
+        read(iunit,err=99) pentry(id)%nen3v
+        read(iunit,err=99) pentry(id)%ipev
+        read(iunit,err=99) pentry(id)%ipv
+        read(iunit,err=99) pentry(id)%iarv
+        read(iunit,err=99) pentry(id)%iarnv
+        read(iunit,err=99) pentry(id)%xgv
+        read(iunit,err=99) pentry(id)%ygv
+        read(iunit,err=99) pentry(id)%hm3v
+        read(iunit,err=99) pentry(id)%hlv
+        read(iunit,err=99) pentry(id)%ilhv
+        read(iunit,err=99) pentry(id)%ilhkv
+
+	ierr = 0
+
+	return
+   99	continue
+	ierr = 21
+	return
+	end subroutine shy_read_header_2
+
+!**************************************************************
+
+	subroutine shy_skip_header_2(id,ierr)
+
+	integer id,ierr
+
+	integer iunit,i
+
+	iunit = pentry(id)%iunit
+
+	do i=1,11
+          read(iunit,err=99) 
+	end do
+
+	ierr = 0
+
+	return
+   99	continue
+	ierr = 31
+	return
+	end subroutine shy_skip_header_2
+
+!**************************************************************
+
+	subroutine shy_read_record(id,dtime,ivar,n,m,lmax,nlvddi,c,ierr)
+
+	integer id,ierr
+	double precision dtime
+	integer ivar
+	integer n,m
+	integer lmax
+	integer nlvddi
+	real c(nlvddi,*)
+
+	integer iunit
+	integer i,k,ie,l
+
+	iunit = pentry(id)%iunit
+
+	read(iunit,iostat=ierr) dtime,ivar,n,m,lmax
+	if( ierr /= 0 ) return
+
+	if( lmax <= 1 ) then
+	  read(iunit,iostat=ierr) (c(1,i),i=1,n*m)
+	else if( n == pentry(id)%nkn ) then
+	  read(iunit,iostat=ierr) ((c(l,k)
+     +			,l=1,m*pentry(id)%ilhkv(k)),k=1,n)
+	else if( n == pentry(id)%nel ) then
+	  read(iunit,iostat=ierr) ((c(l,ie)
+     +			,l=1,m*pentry(id)%ilhv(ie)),ie=1,n)
+	end if
+
+	end subroutine shy_read_record
+
+!**************************************************************
+
+	subroutine shy_peek_record(id,dtime,ivar,n,m,lmax,ierr)
+
+	integer id,ierr
+	double precision dtime
+	integer ivar
+	integer n,m
+	integer lmax
+
+	integer iunit
+
+	iunit = pentry(id)%iunit
+
+	read(iunit,iostat=ierr) dtime,ivar,n,m,lmax
+	if( ierr /= 0 ) return
+	rewind(iunit,iostat=ierr)
+
+	end subroutine shy_peek_record
+
+!**************************************************************
+
+	subroutine shy_skip_record(id,dtime,ivar,n,m,lmax,ierr)
+
+	integer id,ierr
+	double precision dtime
+	integer ivar
+	integer n,m
+	integer lmax
+
+	integer iunit
+
+	iunit = pentry(id)%iunit
+
+	read(iunit,iostat=ierr) dtime,ivar,n,m,lmax
+	if( ierr /= 0 ) return
+	read(iunit,iostat=ierr)
+
+	end subroutine shy_skip_record
+
+!**************************************************************
+
+	subroutine shy_back_record(id,ierr)
+
+	integer id,ierr
+
+	integer iunit
+
+	iunit = pentry(id)%iunit
+
+	backspace(iunit,iostat=ierr)
+	if( ierr /= 0 ) return
+	backspace(iunit,iostat=ierr)
+
+	end subroutine shy_back_record
+
+!**************************************************************
+!**************************************************************
+!**************************************************************
+
+	subroutine shy_write_header(id,ierr)
+
+	integer id,ierr
+
+	integer ios,iunit
+	integer ntype,nvers
+	integer ftype
+	integer nkn,nel,nlv,nvar
+	integer date,time
+	character*80 title
+	character*80 femver
+
+	iunit = pentry(id)%iunit
+	nvers = maxvers
+
+	call shy_get_ftype(id,ftype)
+	call shy_get_params(id,nkn,nel,nlv,nvar)
+	call shy_get_date(id,date,time)
+	call shy_get_title(id,title)
+	call shy_get_femver(id,femver)
+
+        write(iunit,err=99) shytype,nvers
+        write(iunit,err=99) ftype
+        write(iunit,err=99) nkn,nel,nlv,nvar
+        write(iunit,err=99) date,time
+        write(iunit,err=99) title
+        write(iunit,err=99) femver
+
+        write(iunit,err=99) pentry(id)%nen3v
+        write(iunit,err=99) pentry(id)%ipev
+        write(iunit,err=99) pentry(id)%ipv
+        write(iunit,err=99) pentry(id)%iarv
+        write(iunit,err=99) pentry(id)%iarnv
+        write(iunit,err=99) pentry(id)%xgv
+        write(iunit,err=99) pentry(id)%ygv
+        write(iunit,err=99) pentry(id)%hm3v
+        write(iunit,err=99) pentry(id)%hlv
+        write(iunit,err=99) pentry(id)%ilhv
+        write(iunit,err=99) pentry(id)%ilhkv
+
+	ierr = 0
+
+	return
+   99	continue
+	ierr = 51
+	return
+	end subroutine shy_write_header
+
+!**************************************************************
+
+	subroutine shy_write_record(id,dtime,ivar,n,m,lmax,nlvddi,c,ierr)
+
+	integer id,ierr
+	double precision dtime
+	integer ivar
+	integer n,m
+	integer lmax
+	integer nlvddi
+	real c(nlvddi,*)
+
+	integer iunit
+	integer i,k,ie,l
+
+	iunit = pentry(id)%iunit
+
+	write(iunit,iostat=ierr) dtime,ivar,n,m,lmax
+	if( ierr /= 0 ) return
+
+	if( lmax <= 1 ) then
+	  write(iunit,iostat=ierr) (c(1,i),i=1,n*m)
+	else if( n == pentry(id)%nkn ) then
+	  write(iunit,iostat=ierr) ((c(l,k)
+     +			,l=1,m*pentry(id)%ilhkv(k)),k=1,n)
+	else if( n == pentry(id)%nel ) then
+	  write(iunit,iostat=ierr) ((c(l,ie)
+     +			,l=1,m*pentry(id)%ilhv(ie)),ie=1,n)
+	end if
+
+	end subroutine shy_write_record
+
+!**************************************************************
+
+
+!**************************************************************
 
 !==================================================================
 	end module shyfile
@@ -193,1075 +831,8 @@ c************************************************************
 !**************************************************************
 
 
-c
-c        subroutine nos_init(iunit,nversion)
-c        subroutine nos_close(iunit)
-c        subroutine nos_check_dimension(iunit,nknddi,nelddi,nlvddi)
-c
-c        subroutine nos_get_date(iunit,date,time)
-c        subroutine nos_set_date(iunit,date,time)
-c        subroutine nos_get_title(iunit,title)
-c        subroutine nos_set_title(iunit,title)
-c        subroutine nos_get_femver(iunit,femver)
-c        subroutine nos_set_femver(iunit,femver)
-c        subroutine nos_get_params(iunit,nkn,nel,nlv,nvar)
-c        subroutine nos_set_params(iunit,nkn,nel,nlv,nvar)
-
-c        subroutine nos_clone_params(iu_from,iu_to)
-c        subroutine nos_check_compatibility(iu1,iu2)
-c
-c	 subroutine nos_is_nos_file(iunit,nvers)
-c
-c        subroutine nos_read_header(iunit,nkn,nel,nlv,nvar,ierr)
-c        subroutine nos_write_header(iunit,nkn,nel,nlv,nvar,ierr)
-c        subroutine nos_read_header2(iu,ilhkv,hlv,hev,ierr)
-c        subroutine nos_write_header2(iunit,ilhkv,hlv,hev,ierr)
-c        subroutine nos_read_record(iu,it,ivar,nlvddi,ilhkv,c,ierr)
-c        subroutine nos_write_record(iunit,it,ivar,nlvddi,ilhkv,c,ierr)
-c
-c        subroutine nos_back_record(iunit)
-c        subroutine nos_skip_header(iunit,nvar,ierr)
-c        subroutine nos_skip_record(iunit,it,ivar,ierr)
-c
-
 c************************************************************
 c************************************************************
-c************************************************************
-c public routines
-c************************************************************
-c************************************************************
-c************************************************************
-
-	subroutine nos_init(iunit,nversion)
-
-	implicit none
-
-	include 'nosinf.h'
-
-	integer iunit
-	integer nversion
-
-	integer n,nvers
-	integer findnos
-
-	!!call ininos
-
-	if( iunit .le. 0 ) then
-	  write(6,*) 'nos_init: Cannot initialize for this unit'
-	  write(6,*) 'iunit = ',iunit
-	  !call errnos(iunit,'nos_init','Impossible unit number.')
-	end if
-
-	nvers = nversion
-	if( nvers .le. 0 ) nvers = maxvers
-
-	if( nvers .gt. maxvers ) then
-	  write(6,*) 'nos_init: Impossible version number'
-	  write(6,*) 'nvers = ',nvers,'   maxvers = ',maxvers
-	  !call errnos(iunit,'nos_init','Impossible version number.')
-	end if
-
-	if( nvers .lt. maxcomp ) then
-	  write(6,*) 'nos_init: Old function call'
-	  write(6,*) 'nvers = ',nvers,'   maxcomp = ',maxcomp
-	  !call errnos(iunit,'nos_init','Old function call.')
-	end if
-
-	nvers = maxvers	!always write with highest version
-
-	!n = findnos(iunit)
-	if( n .ne. 0 ) then
-	  !call errnos(iunit,'nos_init','Unit already open.')
-	end if
-
-	!n = findnos(0)
-	if( n .eq. 0 ) then
-	  !call errnos(iunit,'nos_init','No space left (ndim).')
-	end if
-
-	nosvar(0,n) = iunit
-	nosvar(1,n) = nvers
-
-	rewind(iunit)
-
-	end
-
-c************************************************************
-
-	subroutine nos_close(iunit)
-
-	implicit none
-
-	integer iunit
-
-	!call delnos(iunit)
-
-	end
-
-c************************************************************
-
-	subroutine nos_check_dimension(iunit,nknddi,nelddi,nlvddi)
-
-	implicit none
-
-	integer iunit,nknddi,nelddi,nlvddi
-
-	!call dimnos(iunit,nknddi,nelddi,nlvddi)
-
-	end
-
-c************************************************************
-c************************************************************
-c************************************************************
-
-	subroutine nos_get_date(iunit,date,time)
-
-	implicit none
-
-	include 'nosinf.h'
-
-	integer iunit
-	integer date,time
-
-	integer n
-
-	!call findnos_err(iunit,'nos_get_date','Cannot find entry.',n)
-
-	date = nosvar(6,n)
-	time = nosvar(7,n)
-
-	end
-
-c************************************************************
-
-	subroutine nos_set_date(iunit,date,time)
-
-	implicit none
-
-	include 'nosinf.h'
-
-	integer iunit
-	integer date,time
-
-	integer n
-
-	!call findnos_err(iunit,'nos_set_date','Cannot find entry.',n)
-
-	nosvar(6,n) = date
-	nosvar(7,n) = time
-
-	end
-
-c************************************************************
-
-	subroutine nos_get_title(iunit,title)
-
-	implicit none
-
-	include 'nosinf.h'
-
-	integer iunit
-	character*(*) title
-
-	integer n
-
-	!call findnos_err(iunit,'nos_get_title','Cannot find entry.',n)
-
-	title = noschar(1,n)
-
-	end
-
-c************************************************************
-
-	subroutine nos_set_title(iunit,title)
-
-	implicit none
-
-	include 'nosinf.h'
-
-	integer iunit
-	character*(*) title
-
-	integer n
-
-	!call findnos_err(iunit,'nos_set_title','Cannot find entry.',n)
-
-	noschar(1,n) = title
-
-	end
-
-c************************************************************
-
-	subroutine nos_get_femver(iunit,femver)
-
-	implicit none
-
-	include 'nosinf.h'
-
-	integer iunit
-	character*(*) femver
-
-	integer n
-
-	!call findnos_err(iunit,'nos_get_femver','Cannot find entry.',n)
-
-	femver = noschar(2,n)
-
-	end
-
-c************************************************************
-
-	subroutine nos_set_femver(iunit,femver)
-
-	implicit none
-
-	include 'nosinf.h'
-
-	integer iunit
-	character*(*) femver
-
-	integer n
-
-	!call findnos_err(iunit,'nos_set_femver','Cannot find entry.',n)
-
-	noschar(2,n) = femver
-
-	end
-
-c************************************************************
-
-	subroutine nos_get_params(iunit,nkn,nel,nlv,nvar)
-
-	implicit none
-
-	include 'nosinf.h'
-
-	integer iunit
-	integer nkn,nel,nlv,nvar
-
-	integer nvers
-
-	!call getnos(iunit,nvers,nkn,nel,nlv,nvar)
-
-	end
-
-c************************************************************
-
-	subroutine nos_set_params(iunit,nkn,nel,nlv,nvar)
-
-	implicit none
-
-	include 'nosinf.h'
-
-	integer iunit
-	integer nkn,nel,nlv,nvar
-
-	!call setnos(iunit,0,nkn,nel,nlv,nvar)
-
-	end
-
-c************************************************************
-
-	subroutine nos_clone_params(iu_from,iu_to)
-
-c clones data from one to other file 
-c
-c second file must have already been opened and initialized with nos_init
-c should be only used to write file -> nvers should be max version
-
-	implicit none
-
-	include 'nosinf.h'
-
-	integer iu_from
-	integer iu_to
-
-	integer i,nf,nt
-
-	!call findnos_err(iu_from,'nos_clone_params'
-!     +				,'Cannot find entry.',nf)
-	!call findnos_err(iu_to,'nos_clone_params'
-!     +				,'Cannot find entry.',nt)
-
-	do i=2,nitdim		!unit and version are not cloned
-	  nosvar(i,nt) = nosvar(i,nf)
-	end do
-	do i=1,nchdim
-	  noschar(i,nt) = noschar(i,nf)
-	end do
-
-	end
-
-c************************************************************
-
-	subroutine nos_check_compatibility(iu1,iu2)
-
-c checks compatibility between two nos files
-c
-c second file must have already been opened and initialized with nos_init
-c should be only used to write file -> nvers should be max version
-
-	implicit none
-
-	include 'nosinf.h'
-
-	integer iu1,iu2
-
-	integer i,n1,n2
-
-	!call findnos_err(iu1,'nos_check_compatibility'
-   !  +				,'Cannot find entry.',n1)
-	!call findnos_err(iu2,'nos_check_compatibility'
-!     +				,'Cannot find entry.',n2)
-
-	!unit and version are not checked (0,1)
-	!neither are date and time (6,7)
-
-	do i=2,5
-	  if( nosvar(i,n1) /= nosvar(i,n1) ) exit
-	end do
-
-	if( i > 5 ) return	!all ok
-
-	write(6,*) 'the two nos files are not compatible'
-	write(6,*) 'units: ',n1,n2
-	do i=0,nitdim
-	  write(6,*) i,nosvar(i,n1),nosvar(i,n2)
-	end do
-	stop 'error stop nos_check_compatibility: not compatible'
-
-	end
-
-c************************************************************
-c************************************************************
-c************************************************************
-
-	subroutine nos_is_nos_file(iunit,nvers)
-
-c checks if iunit is open on nos file - returns nvers
-c
-c nvers == 0	no nos file (ntype is different) or read error
-c nvers < 0	version number is wrong
-c nvers > 0	good nos file
-
-	implicit none
-
-	include 'nosinf.h'
-
-	integer iunit,nvers
-
-	integer ntype
-
-	nvers = 0
-	if( iunit .le. 0 ) return
-
-	read(iunit,end=1,err=1) ntype,nvers
-
-	if( ntype .ne. ftype ) nvers = 0
-	if( nvers .le. 0 .or. nvers .gt. maxvers ) nvers = -abs(nvers)
-
-	rewind(iunit)
-
-    1	continue
-
-	end
-
-c************************************************************
-c************************************************************
-c************************************************************
-
-	subroutine nos_read_header(iunit,nkn,nel,nlv,nvar,ierr)
-
-c before this nos_init has to be called
-
-	implicit none
-
-	include 'nosinf.h'
-
-	integer iunit
-	integer nkn,nel,nlv,nvar
-	integer ierr
-
-	integer n,nvers
-	integer ntype,irec
-	integer date,time
-	character*80 line
-
-	!call ininos
-
-	!call findnos_err(iunit,'nos_read_header','Cannot find entry.',n)
-
-c first record - find out what version
-
-	irec = 1
-	read(iunit,end=91,err=99) ntype,nvers
-
-c control version number and type of file
-
-	if( ntype .ne. ftype ) goto 97
-	if( nvers .le. 0 .or. nvers .gt. maxvers ) goto 98
-
-c next records
-
-	date = 0
-	time = 0
-
-	irec = 2
-	if( nvers .eq. 1 ) then
-	  read(iunit,err=99) line
-	  read(iunit,err=99) nkn,nlv	!nvar is actually nlv
-	  nel = 0
-	  nvar = 1			!always only one variable
-	else if( nvers .eq. 2 ) then
-	  read(iunit,err=99)	 nkn,nlv,nvar
-	  read(iunit,err=99)	 line
-	  nel = 0
-	else if( nvers .ge. 3 ) then
-	  read(iunit,err=99)	 nkn,nel,nlv,nvar
-	  read(iunit,err=99)	 line
-	else
-	   stop 'error stop nos_read_header: internal error (1)'
-	end if
-
-	!call setnos(iunit,nvers,nkn,nel,nlv,nvar)
-	call nos_set_title(iunit,line)
-
-	irec = 3
-	if( nvers .ge. 4 ) then
-	  read(iunit,err=99)	 date,time
-	  call nos_set_date(iunit,date,time)
-	end if
-
-	irec = 4
-	if( nvers .ge. 5 ) then
-	  read(iunit,err=99)	 line
-	  call nos_set_femver(iunit,line)
-	end if
-
-	ierr=0
-
-	return
-   99	continue
-	write(6,*) 'nos_read_header: Error encountered while'
-	write(6,*) 'reading record number ',irec
-	write(6,*) 'of NOS file header'
-	write(6,*) 'nvers = ',nvers
-	ierr=99
-	return
-   98	continue
-	write(6,*) 'nos_read_header: Version not recognized : ',nvers
-	ierr=98
-	return
-   97	continue
-	write(6,*) 'nos_read_header: Wrong type of file : ',ntype
-	write(6,*) 'Expected ',ftype
-	ierr=97
-	return
-   91	continue
-	write(6,*) 'nos_read_header: File is empty'
-	ierr=91
-	return
-	end
-
-c********************************************************************
-
-	subroutine nos_write_header(iunit,nkn,nel,nlv,nvar,ierr)
-
-c writes first header of NOS file
-
-	implicit none
-
-	include 'nosinf.h'
-
-	integer iunit
-	integer nkn,nel,nlv,nvar
-	integer ierr
-
-	integer n,nvers
-	integer date,time
-	character*80 title,femver
-
-	!call ininos
-
-	!call findnos_err(iunit,'nos_write_header','Cannot find entry.',n)
-
-	nvers = maxvers
-	!call setnos(iunit,nvers,nkn,nel,nlv,nvar)
-
-	call nos_get_title(iunit,title)
-	call nos_get_date(iunit,date,time)
-	call nos_get_femver(iunit,femver)
-
-	write(iunit)		ftype,maxvers
-	write(iunit)		nkn,nel,nlv,nvar
-	write(iunit)		title
-	write(iunit)		date,time
-	write(iunit)		femver
-
-	ierr=0
-
-	end
-
-c************************************************************
-
-	subroutine nos_read_header2(iu,ilhkv,hlv,hev,ierr)
-
-c reads second record of NOS file
-
-	implicit none
-
-	integer iu
-	integer ilhkv(1)
-	real hlv(1)
-	real hev(1)
-	integer ierr
-
-	logical bdata
-	integer iunit
-	integer k,l,ie
-	integer nvers,nkn,nel,nlv,nvar
-
-	bdata = iu .gt. 0	!with negative unit number skip arrays
-	iunit = abs(iu)
-
-	!!call getnos(iunit,nvers,nkn,nel,nlv,nvar)
-
-	if( .not .bdata ) then	!do not read arrays
-	  nkn = 0
-	  nel = 0
-	  nlv = 0
-	else if( nlv .le. 1 ) then
-	  do k=1,nkn
-	    ilhkv(k) = 1
-	  end do
-	  hlv(1) = 10000.
-
-	  nkn = 0
-	  nlv = 0
-	end if
-
-c read records
-
-	if( nvers .eq. 1 ) then
-c	  no second header for version 1
-	else if( nvers .eq. 2 ) then
-	  if( nlv .ne. 0 ) then
-	    read(iunit,err=99) (ilhkv(k),k=1,nkn)
-	  end if
-	else if( nvers .ge. 3 ) then
-	  read(iunit,err=99) (ilhkv(k),k=1,nkn)
-	  read(iunit,err=99) (hlv(l),l=1,nlv)
-	  read(iunit,err=99) (hev(ie),ie=1,nel)
-	else
-	   stop 'error stop nos_read_header2: internal error (1)'
-	end if
-
-	ierr = 0
-
-	return
-   99	continue
-	write(6,*) 'nos_read_header2: Error encountered while'
-	write(6,*) 'reading second part of NOS file header'
-	ierr=99
-	return
-	end
-
-c************************************************************
-
-	subroutine nos_write_header2(iunit,ilhkv,hlv,hev,ierr)
-
-c writes second record of NOS file
-
-	implicit none
-
-	integer iunit
-	integer ilhkv(1)
-	real hlv(1)
-	real hev(1)
-	integer ierr
-
-	integer k,l,ie
-	integer nvers,nkn,nel,nlv,nvar
-
-	!call getnos(iunit,nvers,nkn,nel,nlv,nvar)
-
-c only one layer
-
-	if( nlv .le. 1 ) then
-	  nlv = 0
-	  nkn = 0
-	end if
-
-c write records
-
-	write(iunit) (ilhkv(k),k=1,nkn)
-	write(iunit) (hlv(l),l=1,nlv)
-	write(iunit) (hev(ie),ie=1,nel)
-
-	ierr = 0
-
-	end
-
-c************************************************************
-
-	subroutine nos_read_record(iu,it,ivar,nlvddi,ilhkv,c,ierr)
-
-c reads data record of NOS file
-
-	implicit none
-
-c arguments
-	integer iu,it,ivar
-	integer nlvddi
-	integer ilhkv(1)
-	real c(nlvddi,1)
-	integer ierr
-c local
-	integer l,k,lmax
-	integer nvers,nkn,nel,nlv,nvar
-	integer iunit
-	logical bdata
-
-	bdata = iu .gt. 0	!with negative unit number only time record
-	iunit = abs(iu)
-
-	!call getnos(iunit,nvers,nkn,nel,nlv,nvar)
-
-	!it = -1
-	!ivar = 0
-	lmax = min(nlv,nlvddi)
-
-	if( nvers .eq. 1 ) then
-	   ivar = 1
-	   read(iunit,end=88,err=98) it
-	   if( bdata ) then
-	     read(iunit,end=99,err=99) (c(1,k),k=1,nkn)
-	   else
-	     read(iunit,end=99,err=99)
-	   end if
-	else if( nvers .ge. 2 ) then
-	   if( nvers .ge. 4 ) then
-	     read(iunit,end=88,err=98) it,ivar,lmax
-	   else
-	     read(iunit,end=88,err=98) it,ivar
-	   end if
-	   if( bdata ) then
-	     if( lmax .le. 1 ) then
-               read(iunit,end=99,err=99) (c(1,k),k=1,nkn)
-	     else
-               read(iunit,end=99,err=99) ((c(l,k),l=1,ilhkv(k)),k=1,nkn)
-	     end if
-	   else
-	     read(iunit,end=99,err=99)
-	   end if
-	else
-	   write(6,*) 'nvers = ',nvers,'  iunit = ',iunit
-	   stop 'error stop nos_read_record: internal error (1)'
-	end if
-
-	ierr=0
-
-	return
-   88	continue
-	ierr=-1
-	return
-   98	continue
-	write(6,*) 'nvers,it,ivar,lmax: ',nvers,it,ivar,lmax
-	write(6,*) 'nos_read_record: Error while reading'
-	write(6,*) 'time record of NOS file'
-	ierr=98
-	return
-   99	continue
-	write(6,*) 'nos_read_record: Error while reading'
-	write(6,*) 'data record of NOS file'
-	write(6,*) 'it = ',it,'  ivar = ',ivar
-	ierr=99
-	return
-	end
-
-c************************************************************
-
-	subroutine nos_write_record(iunit,it,ivar,nlvddi,ilhkv,c,ierr)
-
-c writes data record of NOS file
-
-	implicit none
-
-c arguments
-	integer iunit,it,ivar
-	integer nlvddi
-	integer ilhkv(1)
-	real c(nlvddi,1)
-	integer ierr
-c local
-	integer l,k,lmax
-	integer nvers,nkn,nel,nlv,nvar
-
-	!call getnos(iunit,nvers,nkn,nel,nlv,nvar)
-
-	lmax = min(nlv,nlvddi)
-
-	write(iunit) it,ivar,lmax
-
-	if( lmax .le. 1 ) then
-	  write(iunit) (c(1,k),k=1,nkn)
-	else
-	  write(iunit) ((c(l,k),l=1,ilhkv(k)),k=1,nkn)
-	end if
-
-	ierr=0
-
-	return
-	end
-
-c************************************************************
-
-	subroutine nos_peek_record(iu,it,ivar,ierr)
-
-c peeks into data record of NOS file
-
-	implicit none
-
-c arguments
-	integer iu,it,ivar
-	integer ierr
-c local
-	integer l,k,lmax
-	integer nvers,nkn,nel,nlv,nvar
-	integer iunit,ios
-
-	iunit = abs(iu)
-
-	!call getnos(iunit,nvers,nkn,nel,nlv,nvar)
-
-	lmax = nlv
-
-	if( nvers .eq. 1 ) then
-	   ivar = 1
-	   read(iunit,iostat=ios) it
-	else if( nvers .ge. 2 ) then
-	   if( nvers .ge. 4 ) then
-	     read(iunit,iostat=ios) it,ivar,lmax
-	   else
-	     read(iunit,iostat=ios) it,ivar
-	   end if
-	else
-	   write(6,*) 'nvers = ',nvers,'  iunit = ',iunit
-	   stop 'error stop nos_peek_record: internal error (1)'
-	end if
-
-	if( ios > 0 ) then
-	  write(6,*) 'nos_peek_record: Error while reading'
-	  write(6,*) 'time record of NOS file'
-	  ierr=98
-	  return
-	end if
-
-	backspace(iu)
-
-	if( ios < 0 ) then
-	  ierr=-1
-	else
-	  ierr=0
-	end if
-
-	end
-
-c************************************************************
-c************************************************************
-c************************************************************
-
-	subroutine nos_back_record(iunit)
-
-c skips back one data record (contains two reads)
-
-	implicit none
-
-	integer iunit
-
-	backspace(iunit)
-	backspace(iunit)
-
-	end
-
-c************************************************************
-
-	subroutine nos_skip_header(iunit,nvar,ierr)
-
-	implicit none
-
-	integer iunit,nvar,ierr
-
-	integer nkn,nel,nlv
-	integer ilhkv(1)
-	real hlv(1)
-	real hev(1)
-
-	call nos_read_header(iunit,nkn,nel,nlv,nvar,ierr)
-	if( ierr .ne. 0 ) return
-	call nos_read_header2(-iunit,ilhkv,hlv,hev,ierr)
-
-	end
-
-c************************************************************
-
-	subroutine nos_skip_record(iunit,it,ivar,ierr)
-
-	implicit none
-
-	integer iunit,it,ivar,ierr
-
-	integer nlvddi
-	integer ilhkv(1)
-	real c(1,1)
-
-	nlvddi = 1
-	call nos_read_record(-iunit,it,ivar,nlvddi,ilhkv,c,ierr)
-
-	end
-
-c************************************************************
-c************************************************************
-c************************************************************
-c old routines
-c************************************************************
-c************************************************************
-c************************************************************
-
-	subroutine rhnos	(iunit,nvers
-     +				,nknddi,nelddi,nlvddi
-     +				,nkn,nel,nlv,nvar
-     +				,ilhkv,hlv,hev
-     +				,title
-     +				)
-
-c reads all headers of NOS file
-c
-c nvers		on entry maximal version that can be read
-c		-> must be an input, used to check the corectness
-c		.. of the call parameters
-c		on return actual version read
-
-	implicit none
-
-c arguments
-	integer iunit,nvers
-	integer nknddi,nelddi,nlvddi
-	integer nkn,nel,nlv,nvar
-	integer date,time
-	integer ilhkv(1)
-	real hlv(1)
-	real hev(1)
-	character*(*) title
-c local
-	integer ierr,l
-
-        call rfnos(iunit,nvers,nkn,nel,nlv,nvar,title,ierr)
-        if(ierr.ne.0) goto 99
-
-	call nos_get_date(iunit,date,time)
-
-        write(6,*) 'nvers    : ',nvers
-        write(6,*) 'nkn,nel  : ',nkn,nel
-        write(6,*) 'nlv,nvar : ',nlv,nvar
-        write(6,*) 'date,time: ',date,time
-        write(6,*) 'title    : ',title
-
-        !call dimnos(iunit,nknddi,nelddi,nlvddi)
-
-        call rsnos(iunit,ilhkv,hlv,hev,ierr)
-        if(ierr.ne.0) goto 98
-
-        write(6,*) 'Available levels: ',nlv
-        write(6,*) (hlv(l),l=1,nlv)
-
-	return
-   98	continue
-	write(6,*) 'ierr: ',ierr
-	stop 'error stop rhnos: error reading second header'
-   99	continue
-	write(6,*) 'ierr: ',ierr
-	stop 'error stop rhnos: error reading first header'
-	end
-
-c************************************************************
-
-        subroutine whnos        (iunit,nvers
-     +                          ,nkn,nel,nlv,nvar
-     +				,ilhkv,hlv,hev
-     +                          ,title
-     +                          )
-
-c writes all headers of NOS file
-c
-c nvers         on entry maximal version
-c               -> must be an input, used to check the corectness
-c               .. of the call parameters
-
-        implicit none
-
-c arguments
-        integer iunit,nvers
-        integer nkn,nel,nlv,nvar
-	integer ilhkv(1)
-	real hlv(1)
-	real hev(1)
-        character*(*) title
-
-        integer ierr
-
-        call wfnos(iunit,nvers,nkn,nel,nlv,nvar,title,ierr)
-        if(ierr.ne.0) goto 1
-
-	call wsnos(iunit,ilhkv,hlv,hev,ierr)
-        if(ierr.ne.0) goto 1
-
-	return
-    1	continue
-	write(6,*) 'ierr: ',ierr
-	stop 'error stop whnos'
-	end
-
-c************************************************************
-c************************************************************
-c************************************************************
-c compatibility
-c************************************************************
-c************************************************************
-c************************************************************
-
-	subroutine rfnos	(iunit,nvers
-     +				,nkn,nel,nlv,nvar
-     +				,title
-     +				,ierr
-     +				)
-
-	implicit none
-
-	integer iunit,nvers
-	integer nkn,nel,nlv,nvar
-	character*(*) title
-	integer ierr
-
-	write(6,*) 'rfnos: ',iunit,nvers
-	call nos_init(iunit,nvers)
-	call nos_read_header(iunit,nkn,nel,nlv,nvar,ierr)
-	call nos_get_title(iunit,title)
-
-	end
-
-c************************************************************
-
-	subroutine wfnos	(iunit,nvers
-     +				,nkn,nel,nlv,nvar
-     +				,title
-     +				,ierr
-     +				)
-
-	implicit none
-
-	integer iunit,nvers
-	integer nkn,nel,nlv,nvar
-	character*(*) title
-	integer ierr
-
-	call nos_init(iunit,nvers)
-	call nos_set_title(iunit,title)
-	call nos_write_header(iunit,nkn,nel,nlv,nvar,ierr)
-
-	end
-
-c************************************************************
-
-	subroutine rsnos(iunit,ilhkv,hlv,hev,ierr)
-
-	implicit none
-
-	integer iunit
-	integer ilhkv(1)
-	real hlv(1)
-	real hev(1)
-	integer ierr
-
-	call nos_read_header2(iunit,ilhkv,hlv,hev,ierr)
-
-	end
-
-c************************************************************
-
-	subroutine wsnos(iunit,ilhkv,hlv,hev,ierr)
-
-	implicit none
-
-	integer iunit
-	integer ilhkv(1)
-	real hlv(1)
-	real hev(1)
-	integer ierr
-
-	call nos_write_header2(iunit,ilhkv,hlv,hev,ierr)
-
-	end
-
-c************************************************************
-
-	subroutine rdnos(iunit,it,ivar,nlvddi,ilhkv,c,ierr)
-
-	implicit none
-
-	integer iunit,it,ivar
-	integer nlvddi
-	integer ilhkv(1)
-	real c(nlvddi,1)
-	integer ierr
-
-	call nos_read_record(iunit,it,ivar,nlvddi,ilhkv,c,ierr)
-
-	end
-
-c************************************************************
-
-	subroutine wrnos(iunit,it,ivar,nlvddi,ilhkv,c,ierr)
-
-	implicit none
-
-	integer iunit,it,ivar
-	integer nlvddi
-	integer ilhkv(1)
-	real c(nlvddi,1)
-	integer ierr
-
-	call nos_write_record(iunit,it,ivar,nlvddi,ilhkv,c,ierr)
-
-	end
-
-c************************************************************
-c************************************************************
-c************************************************************
-
-	subroutine infnos(ivar,name)
-
-c returns description of variable id
-
-	implicit none
-
-	integer ivar
-	character*(*) name
-
-	if( ivar .eq. 10 ) then
-	  name = 'Concentration []'
-	else if( ivar .eq. 11 ) then
-	  name = 'Salinity [psu]'
-	else if( ivar .eq. 12 ) then
-	  name = 'Temperature [C]'
-	else if( ivar .eq. 99 ) then
-	  name = 'Water residence time [days]'
-	else
-	  name = ''
-	end if
-
-	end
-
 c************************************************************
 
 	subroutine test_units
