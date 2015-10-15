@@ -173,6 +173,7 @@ SOBJS   = \
 	  nosutil.o ousutil.o subfemfile.o subvintp.o \
 	  genutil.o subfemintp.o subtsfile.o subxi.o \
 	  $(MODULES) \
+	  subshy.o subshyutil.o
 
 # general objects for 3D model shyfem
 
@@ -219,7 +220,7 @@ HTOBJS = \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ) $(PARALLEL_OBJ) \
 	$(GRDOBJS) \
-	subxi.o
+	subxi.o subshy.o subshyutil.o
 
 # objects for pre-processor shypre
 
@@ -1345,8 +1346,8 @@ subouta.o: param.h ../femlib/mod/basin.mod \
 suboutput.o: femtime.h
 suboutputd.o: femtime.h
 ../femlib/mod/para.mod: subpar3.o
-subpard.o: ../femlib/mod/omp_lib.mod param.h \
-		../femlib/mod/mod_system.mod 
+subpard.o: param.h ../femlib/mod/mod_system.mod \
+		../femlib/mod/basin.mod 
 ../femlib/mod/projection.mod: subproj.o
 subqfxf.o: subqfx.h
 subqfxm1.o: subqfxm.h
@@ -1373,6 +1374,9 @@ subrst.o: ../femlib/mod/mod_geom_dynamic.mod param.h \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod 
+../femlib/mod/shyfile.mod: subshy.o
+subshyutil.o: ../femlib/mod/levels.mod ../femlib/mod/shyfile.mod \
+		../femlib/mod/basin.mod simul.h 
 subspk.o: param.h ../femlib/mod/mod_system.mod \
 		../femlib/mod/basin.mod 
 ../femlib/mod/tidef.mod: subtidef.o
@@ -1402,19 +1406,20 @@ subwat.o: ../femlib/mod/levels.mod param.h ../femlib/mod/basin.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod 
-subwaves.o: ../femlib/mod/mod_depth.mod param.h \
-		../femlib/mod/mod_internal.mod \
-		../femlib/mod/basin.mod \
+subwaves.o: ../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_waves.mod \
 		../femlib/mod/mod_layer_thickness.mod \
-		../femlib/mod/evgeom.mod femtime.h pkonst.h \
-		../femlib/mod/mod_hydro_vel.mod \
-		../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro_baro.mod \
+		../femlib/mod/mod_roughness.mod \
+		../femlib/mod/mod_geom.mod param.h \
+		../femlib/mod/basin.mod \
+		../femlib/mod/mod_internal.mod femtime.h \
+		../femlib/mod/evgeom.mod pkonst.h \
+		../femlib/mod/levels.mod \
+		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_meteo.mod \
-		../femlib/mod/mod_roughness.mod \
-		../femlib/mod/mod_geom.mod 
+		../femlib/mod/coordinates.mod 
 ../femlib/mod/mod_renewal_time.mod: subwrt.o
 subwrt.o: param.h ../femlib/mod/mod_depth.mod \
 		../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \

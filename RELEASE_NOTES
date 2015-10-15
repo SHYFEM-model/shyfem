@@ -1,4 +1,8 @@
 
+13.10.2015    VERS_7_3_5
+
+	Bug fix introduced in 7.3.2 (handle_projection called too early)
+
 12.10.2015    VERS_7_3_4
 
 	Pull request Pardiso (Marco Bajo) handled

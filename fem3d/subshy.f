@@ -6,6 +6,7 @@
 ! revision log :
 !
 ! 10.10.2015    ggu     started routine
+! 15.10.2015    ggu     completed basic parts
 !
 !**************************************************************
 !**************************************************************
@@ -25,8 +26,9 @@
 	integer, parameter, private ::  no_type = 0
 	integer, parameter, private :: ous_type = 1
 	integer, parameter, private :: nos_type = 2
-	integer, parameter, private :: ext_type = 3
-	integer, parameter, private :: flx_type = 4
+	integer, parameter, private :: eos_type = 3
+	integer, parameter, private :: ext_type = 4
+	integer, parameter, private :: flx_type = 5
 
 	type, private :: entry
 
@@ -55,6 +57,10 @@
 	integer, save, private :: idlast = 0
 	integer, save, private :: ndim = 0
 	type(entry), save, allocatable :: pentry(:)
+
+        INTERFACE shy_is_shy_file
+        MODULE PROCEDURE shy_is_shy_file_by_name,shy_is_shy_file_by_unit
+        END INTERFACE
 
 !==================================================================
 	contains
@@ -179,9 +185,31 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine shy_get_file_unit(iu)
+	function shy_open_file(file)
 
-	integer iu
+	integer shy_open_file
+	character*(*) file
+
+	integer iunit,ios
+
+	shy_open_file = 0
+
+	call shy_get_file_unit(iunit)
+	if( iunit /= 0 ) return
+
+	open(iunit,file=file,status='unknown',form='unformatted'
+     +				,iostat=ios)
+	if( ios /= 0 ) return
+
+	shy_open_file = iunit
+
+	end function shy_open_file
+
+!******************************************************************
+
+	subroutine shy_get_file_unit(iunit)
+
+	integer iunit
 
 	integer, parameter :: iu_min = 20
 	integer, parameter :: iu_max = 1000
@@ -189,16 +217,18 @@
 	logical bopen
 	integer ios
 
-	do iu=iu_min,iu_max
-          inquire (unit=iu, opened=bopen, iostat=ios)
+	do iunit=iu_min,iu_max
+          inquire (unit=iunit, opened=bopen, iostat=ios)
           if ( ios /= 0 ) cycle
           if ( .not. bopen ) return
 	end do
 
-	iu = 0
+	iunit = 0
 
 	end subroutine shy_get_file_unit
 
+!******************************************************************
+!******************************************************************
 !******************************************************************
 
 	subroutine shy_init(iunit,id)
@@ -240,7 +270,7 @@
 
 	end subroutine shy_init
 
-c************************************************************
+!************************************************************
 
 	subroutine shy_close(id)
 
@@ -252,7 +282,7 @@ c************************************************************
 
 	end subroutine shy_close
 
-c************************************************************
+!************************************************************
 
 	function shy_are_compatible(id1,id2)
 
@@ -286,7 +316,7 @@ c************************************************************
 
 	end function shy_are_compatible
 
-c************************************************************
+!************************************************************
 
 	subroutine shy_clone(id_from,id_to)
 
@@ -304,7 +334,7 @@ c************************************************************
 
 	end subroutine shy_clone
 
-c************************************************************
+!************************************************************
 
 	subroutine shy_info(id)
 
@@ -320,18 +350,54 @@ c************************************************************
 
 	end subroutine shy_info
 
-c************************************************************
-c************************************************************
-c************************************************************
+!************************************************************
 
-	function shy_is_shy_file(iunit)
+	subroutine shy_get_filename(id,file)
 
-	logical shy_is_shy_file
+	integer id
+	character*(*) file
+
+	integer iunit,ios
+
+	file = ' '
+	iunit = pentry(id)%iunit
+	if( iunit == 0 ) return
+
+	inquire(iunit,name=file,iostat=ios)
+
+	end subroutine shy_get_filename
+
+!************************************************************
+!************************************************************
+!************************************************************
+
+	function shy_is_shy_file_by_name(file)
+
+	logical shy_is_shy_file_by_name
+	character*(*) file
+
+	integer iunit
+
+	shy_is_shy_file_by_name = .false.
+
+	iunit = shy_open_file(file)
+	if( iunit .le. 0 ) return
+
+	shy_is_shy_file_by_name = shy_is_shy_file_by_unit(iunit)
+	close(iunit)
+
+	end function shy_is_shy_file_by_name
+
+!************************************************************
+
+	function shy_is_shy_file_by_unit(iunit)
+
+	logical shy_is_shy_file_by_unit
 	integer iunit
 
 	integer ntype,nvers,ios
 
-	shy_is_shy_file = .false.
+	shy_is_shy_file_by_unit = .false.
 	if( iunit .le. 0 ) return
 
 	read(iunit,iostat=ios) ntype,nvers
@@ -340,14 +406,14 @@ c************************************************************
 	if( ntype .ne. shytype ) return
 	if( nvers .lt. minvers .or. nvers .gt. maxvers ) return
 
-	shy_is_shy_file = .true.
+	shy_is_shy_file_by_unit = .true.
 	rewind(iunit)
 
-	end function shy_is_shy_file
+	end function shy_is_shy_file_by_unit
 
-c************************************************************
-c************************************************************
-c************************************************************
+!************************************************************
+!************************************************************
+!************************************************************
 
 	subroutine shy_get_ftype(id,ftype)
 	integer id
@@ -361,7 +427,7 @@ c************************************************************
 	pentry(id)%ftype = ftype
 	end subroutine shy_set_ftype
 
-c************************************************************
+!************************************************************
 
 	subroutine shy_get_params(id,nkn,nel,nlv,nvar)
 	integer id
@@ -381,7 +447,7 @@ c************************************************************
 	pentry(id)%nvar = nvar
 	end subroutine shy_set_params
 
-c************************************************************
+!************************************************************
 
 	subroutine shy_get_date(id,date,time)
 	integer id
@@ -397,7 +463,7 @@ c************************************************************
 	pentry(id)%time = time
 	end subroutine shy_set_date
 
-c************************************************************
+!************************************************************
 
 	subroutine shy_get_title(id,title)
 	integer id
@@ -411,7 +477,7 @@ c************************************************************
 	pentry(id)%title = title
 	end subroutine shy_set_title
 
-c************************************************************
+!************************************************************
 
 	subroutine shy_get_femver(id,femver)
 	integer id
@@ -425,7 +491,7 @@ c************************************************************
 	pentry(id)%femver = femver
 	end subroutine shy_set_femver
 
-c************************************************************
+!************************************************************
 
 	subroutine shy_get_elemindex(id,nen3v)
 	integer id
@@ -439,37 +505,37 @@ c************************************************************
 	pentry(id)%nen3v = nen3v
 	end subroutine shy_set_elemindex
 
-c************************************************************
+!************************************************************
 
 	subroutine shy_get_coords(id,xgv,ygv)
 	integer id
-	integer xgv(pentry(id)%nkn), ygv(pentry(id)%nkn)
+	real xgv(pentry(id)%nkn), ygv(pentry(id)%nkn)
 	xgv = pentry(id)%xgv
 	ygv = pentry(id)%ygv
 	end subroutine shy_get_coords
 
 	subroutine shy_set_coords(id,xgv,ygv)
 	integer id
-	integer xgv(pentry(id)%nkn), ygv(pentry(id)%nkn)
+	real xgv(pentry(id)%nkn), ygv(pentry(id)%nkn)
 	pentry(id)%xgv = xgv
 	pentry(id)%ygv = ygv
 	end subroutine shy_set_coords
 
-c************************************************************
+!************************************************************
 
 	subroutine shy_get_depth(id,hm3v)
 	integer id
-	integer hm3v(3,pentry(id)%nel)
+	real hm3v(3,pentry(id)%nel)
 	hm3v = pentry(id)%hm3v
 	end subroutine shy_get_depth
 
 	subroutine shy_set_depth(id,hm3v)
 	integer id
-	integer hm3v(3,pentry(id)%nel)
+	real hm3v(3,pentry(id)%nel)
 	pentry(id)%hm3v = hm3v
 	end subroutine shy_set_depth
 
-c************************************************************
+!************************************************************
 
 	subroutine shy_get_layers(id,hlv)
 	integer id
@@ -483,7 +549,7 @@ c************************************************************
 	pentry(id)%hlv = hlv
 	end subroutine shy_set_layers
 
-c************************************************************
+!************************************************************
 
 	subroutine shy_get_layerindex(id,ilhv,ilhkv)
 	integer id
@@ -499,9 +565,41 @@ c************************************************************
 	pentry(id)%ilhkv = ilhkv
 	end subroutine shy_set_layerindex
 
-c************************************************************
-c************************************************************
-c************************************************************
+!************************************************************
+
+	subroutine shy_get_extnumbers(id,ipev,ipv)
+	integer id
+	integer ipev(pentry(id)%nel), ipv(pentry(id)%nkn)
+	ipev = pentry(id)%ipev
+	ipv = pentry(id)%ipv
+	end subroutine shy_get_extnumbers
+
+	subroutine shy_set_extnumbers(id,ipev,ipv)
+	integer id
+	integer ipev(pentry(id)%nel), ipv(pentry(id)%nkn)
+	pentry(id)%ipev = ipev
+	pentry(id)%ipv = ipv
+	end subroutine shy_set_extnumbers
+
+!************************************************************
+
+	subroutine shy_get_areacode(id,iarv,iarnv)
+	integer id
+	integer iarv(pentry(id)%nel), iarnv(pentry(id)%nkn)
+	iarv = pentry(id)%iarv
+	iarnv = pentry(id)%iarnv
+	end subroutine shy_get_areacode
+
+	subroutine shy_set_areacode(id,iarv,iarnv)
+	integer id
+	integer iarv(pentry(id)%nel), iarnv(pentry(id)%nkn)
+	pentry(id)%iarv = iarv
+	pentry(id)%iarnv = iarnv
+	end subroutine shy_set_areacode
+
+!************************************************************
+!************************************************************
+!************************************************************
 
 	subroutine shy_read_header(id,ierr)
 
@@ -509,11 +607,12 @@ c************************************************************
 
 	call shy_read_header_1(id,ierr)
 	if( ierr /= 0 ) return
+	call shy_alloc_arrays(id)
 	call shy_read_header_2(id,ierr)
 
 	end subroutine shy_read_header
 
-c************************************************************
+!************************************************************
 
 	subroutine shy_peek_header(id,ierr)
 
@@ -525,7 +624,7 @@ c************************************************************
 
 	end subroutine shy_peek_header
 
-c************************************************************
+!************************************************************
 
 	subroutine shy_skip_header(id,ierr)
 
@@ -537,7 +636,7 @@ c************************************************************
 
 	end subroutine shy_skip_header
 
-c************************************************************
+!************************************************************
 
 	subroutine shy_read_header_1(id,ierr)
 
@@ -660,6 +759,9 @@ c************************************************************
 	integer i,k,ie,l
 
 	iunit = pentry(id)%iunit
+
+	ierr = 55
+	if( .not. pentry(id)%is_allocated ) return
 
 	read(iunit,iostat=ierr) dtime,ivar,n,m,lmax
 	if( ierr /= 0 ) return
@@ -816,24 +918,13 @@ c************************************************************
 
 	end subroutine shy_write_record
 
-!**************************************************************
-
-
-!**************************************************************
-
 !==================================================================
 	end module shyfile
 !==================================================================
 
-
-!**************************************************************
-!**************************************************************
-!**************************************************************
-
-
-c************************************************************
-c************************************************************
-c************************************************************
+!************************************************************
+!************************************************************
+!************************************************************
 
 	subroutine test_units
 
@@ -858,15 +949,15 @@ c************************************************************
 
 	end
 
-c************************************************************
-c************************************************************
-c************************************************************
+!************************************************************
+!************************************************************
+!************************************************************
 
-	program shy_main
+	!program shy_main
 	!call test_units
-	end
+	!end
 
-c************************************************************
-c************************************************************
-c************************************************************
+!************************************************************
+!************************************************************
+!************************************************************
 
