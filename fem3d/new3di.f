@@ -708,7 +708,7 @@ c semi-implicit scheme for 3d model
 c
 c written on 18.02.91 by ggu  (from scratch)
 c
-	use mod_tides
+	use tidef
 	use mod_meteo
 	use mod_waves
 	use mod_fluidmud

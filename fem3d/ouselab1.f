@@ -156,10 +156,13 @@ c--------------------------------------------------------------
 	if( btrans ) then
 	  allocate(naccu(istep))
 	  allocate(accum(nlvdi,nkn,istep))
-	  naccum = 0
-	  naccu = 0
-	  accum = 0.
+	else
+	  allocate(naccu(1))
+	  allocate(accum(1,1,1))
 	end if
+	naccum = 0
+	naccu = 0
+	accum = 0.
 
 	!write(6,*) 'mode: ',mode,ifreq,istep
 

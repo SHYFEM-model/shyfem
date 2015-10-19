@@ -24,6 +24,7 @@ c
 c revision log :
 c
 c 18.10.2011	ggu	created from subnos.f
+c 10.10.2015	ggu	new routines for new flx framework
 c
 c************************************************************
 
@@ -39,14 +40,11 @@ c parameters
 c common
 	integer mtype,maxver,vers
 	common /flxcom/ mtype,maxver,vers
+	save /flxcom/
 c local
 	integer i,n
 c save
-	logical binit
-	save binit
-	save /flxcom/
-c data
-	data binit /.false./
+	logical, save :: binit = .false.
 
 	if( binit ) return
 
@@ -148,6 +146,257 @@ c next records
 	stop 'error stop rfflx: error 91'
 	end
 
+c************************************************************
+c************************************************************
+c************************************************************
+
+	function check_flx_file(file)
+
+	implicit none
+
+        logical check_flx_file
+        character*(*) file
+
+        integer nb,nvers,ierr
+	integer nsect,kfluxm,nlmax
+        integer ifileo
+
+        check_flx_file = .false.
+
+        nb = ifileo(0,file,'unform','old')
+        if( nb .le. 0 ) return
+	call flx_check_header(nb,nvers,nsect,kfluxm,nlmax,ierr)
+        close(nb)
+
+        check_flx_file = ierr == 0
+
+	end
+
+c*********************************************************
+
+	subroutine flx_is_flx_file(iunit,nvers)
+
+	implicit none
+
+	integer iunit,nvers
+
+	integer ierr
+	integer nsect,kfluxm,nlmax
+
+	call flx_check_header(iunit,nvers,nsect,kfluxm,nlmax,ierr)
+
+	if( ierr .ne. 0 ) nvers = 0
+
+	rewind(iunit)
+
+	end
+
+c*********************************************************
+c*********************************************************
+c*********************************************************
+
+	subroutine flx_peek_header(iunit,nvers,nsect,kfluxm,nlmax)
+
+	implicit none
+
+	integer iunit,nvers
+	integer nsect,kfluxm,nlmax
+
+	integer ierr
+
+	call flx_check_header(iunit,nvers,nsect,kfluxm,nlmax,ierr)
+	if( ierr .ne. 0 ) then
+	  stop 'error stop flx_peek_header: error reading header'
+	end if
+
+	rewind(iunit)
+
+	end
+
+c*********************************************************
+
+	subroutine flx_peek_record(iunit,nvers,it,ierr)
+
+	implicit none
+
+	integer iunit,nvers,it,ierr
+
+	integer ios
+
+	read(iunit,iostat=ios)  it
+	ierr = ios
+
+	backspace(iunit)
+
+	end
+
+c*********************************************************
+
+	subroutine flx_check_header(iunit,nvers,nsect,kfluxm,nlmax,ierr)
+
+c checks version of flx file and returns number of points
+
+	implicit none
+
+	integer iunit,nvers
+	integer nsect,kfluxm,nlmax
+	integer ierr
+
+	integer mtype,maxver,vers
+	common /flxcom/ mtype,maxver,vers
+
+	integer kaux,ios,i,it,j
+	integer iaux,idtflx,ntype
+	real haux,tt,xaux
+	character*80 title
+
+	call iniflx
+
+	nvers = 0
+	nsect = 0
+	kfluxm = 0
+	nlmax = 0
+	ierr = -1
+
+	read(iunit,iostat=ierr) ntype,nvers
+	if( ierr .ne. 0 ) return
+	!write(6,*) ierr,ntype,nvers
+
+	ierr = 97
+	if( ntype .ne. mtype ) return
+	ierr = 99
+	if( nvers .le. 0 .or. nvers .gt. maxver ) return
+	vers = nvers
+	!write(6,*) ierr,ntype,nvers
+
+c next records
+
+	if( nvers .le. 3 ) then
+	   read(iunit,iostat=ierr)	 nsect,kfluxm,idtflx
+	   nlmax = 0
+	else if( nvers .ge. 4 ) then
+	   read(iunit,iostat=ierr)	 nsect,kfluxm,idtflx,nlmax
+	else
+	   stop 'error stop flx_check_header: internal error (1)'
+	end if
+	!write(6,*) ierr,nsect,kfluxm,idtflx,nlmax
+	if( ierr .ne. 0 ) return
+
+	read(iunit,iostat=ierr)	(iaux,i=1,kfluxm)
+	if( ierr .ne. 0 ) return
+
+	if( nvers .le. 2 ) then
+	else if( nvers .eq. 3 ) then
+	  read(iunit,iostat=ierr)	nlmax,(iaux,i=1,nsect)
+	else if( nvers .ge. 4 ) then
+	  read(iunit,iostat=ierr)	(iaux,i=1,nsect)
+	end if
+	if( ierr .ne. 0 ) return
+
+	read(iunit,iostat=ierr)  it
+	if( ierr .ne. 0 ) return
+
+	ierr = 0
+
+	end
+
+c*********************************************************
+c*********************************************************
+c*********************************************************
+
+	subroutine flx_read_header(iunit,nscddi,nfxddi,nlvddi
+     +				,nvers
+     +				,nsect,kfluxm,idtflx,nlmax
+     +                          ,kflux,nlayers
+     +				)
+
+	implicit none
+
+	integer iunit
+	integer nscddi,nfxddi,nlvddi
+	integer nvers
+	integer nsect,kfluxm,idtflx,nlmax
+	integer kflux(1)
+	integer nlayers(1)
+
+	call iniflx
+
+	call rfflx		(iunit,nvers
+     +				,nscddi,nfxddi,nlvddi
+     +				,nsect,kfluxm,idtflx,nlmax
+     +				,kflux
+     +				,nlayers
+     +				)
+
+	end
+
+c*********************************************************
+
+	subroutine flx_read_record(iunit,nvers,it
+     +			,nlvddi,nsect,ivar
+     +			,nlayers,fluxes,ierr)
+
+	implicit none
+
+	integer iunit,nvers,it
+	integer nlvddi,nsect,ivar
+	integer nlayers(1)
+	real fluxes(0:nlvddi,3,1)
+	integer ierr
+
+	call rdflx(iunit,it,nlvddi,nsect,ivar,nlayers,fluxes,ierr)
+
+	end
+
+c*********************************************************
+
+	subroutine flx_write_header(iunit
+     +				,nvers
+     +				,nsect,kfluxm,idtflx,nlmax
+     +                          ,kflux,nlayers
+     +				)
+
+	implicit none
+
+	integer iunit
+	integer nvers
+	integer nsect,kfluxm,idtflx,nlmax
+	integer kflux(1)
+	integer nlayers(1)
+
+	call iniflx
+
+	call wfflx		(iunit,nvers
+     +				,nsect,kfluxm,idtflx,nlmax
+     +				,kflux
+     +				,nlayers
+     +				)
+
+	end
+
+c*********************************************************
+
+	subroutine flx_write_record(iunit,nvers,it
+     +				,nlvddi,nsect,ivar
+     +				,nlayers,fluxes)
+
+	implicit none
+
+	integer iunit,nvers,it
+	integer nlvddi,nsect,ivar
+	integer nlayers(1)
+	real fluxes(0:nlvddi,3,1)
+
+	call wrflx(iunit,it,nlvddi,nsect,ivar,nlayers,fluxes)
+
+	end
+
+c*********************************************************
+c*********************************************************
+c*********************************************************
+
+c************************************************************
+c************************************************************
 c************************************************************
 
 	subroutine rfflx	(iunit,nvers

@@ -101,9 +101,13 @@ c******************************************************************
 
         integer k
 
-        do k=1,n
-          z(k) = rvec(k)
-        end do
+	z = real(rvec)
+	!z = rvec
+
+        !do k=1,n
+        !  z(k) = rvec(k)
+        !  z(k) = rvec(k)
+        !end do
 
         end
 

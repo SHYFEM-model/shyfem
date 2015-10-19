@@ -39,6 +39,8 @@ c plots basin
 	call mima(xgv,nkn,xmin,xmax)
 	call mima(ygv,nkn,ymin,ymax)
 
+	write(6,*) 'start plotting basin...'
+
 	call qstart
 
 	call qworld(xmin,ymin,xmax,ymax)
@@ -67,6 +69,8 @@ c	    if( k .gt. 0 ) call qplot(xgv(k),ygv(k))	!HACK
 	end do
 
 	call qend
+
+	write(6,*) 'finished plotting basin...'
 
 	end
 

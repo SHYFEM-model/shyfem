@@ -900,8 +900,10 @@ c this routine works with Z and sigma layers
 
 c---------- DEB SIG
 	real hkk
-	real hkko(0:nlvdi,nkn)	!depth of interface at node
-	real hkkom(0:nlvdi,nkn)	!average depth of layer at node
+	!real hkko(0:nlvdi,nkn)	!depth of interface at node
+	!real hkkom(0:nlvdi,nkn)	!average depth of layer at node
+	real, allocatable :: hkko(:,:)	!depth of interface at node
+	real, allocatable :: hkkom(:,:)	!average depth of layer at node
 	real hele
 	real helei
 	real alpha,aux,bn,cn,bt,ct
@@ -933,6 +935,9 @@ c---------- DEB SIG
         raux=grav/rowass
 	psigma = 0.
 	
+	allocate(hkko(0:nlvdi,nkn))
+	allocate(hkkom(0:nlvdi,nkn))
+
 	if( bsigma .and. bsigadjust ) then	!-------------- DEB SIG
 	  do k=1,nkn
 	    lmax=ilhkv(k)
@@ -1129,6 +1134,9 @@ c---------- DEB SIG
           end do
         end do
         
+	deallocate(hkko)
+	deallocate(hkkom)
+
 	return
    99	continue
 	write(6,*) ie,k,ii

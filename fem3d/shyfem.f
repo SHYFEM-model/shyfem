@@ -96,6 +96,7 @@ c 05.12.2014    ccf	new interface for waves
 c 30.07.2015    ggu	routine renamed from ht to shyfem
 c 18.09.2015    ggu	new routine scalar, call to hydro()
 c 29.09.2015    ccf	inverted set_spherical() and handle_projection()
+c 10.10.2015    ggu	fluid mud routines handled differently
 c
 c*****************************************************************
 
@@ -103,14 +104,12 @@ c----------------------------------------------------------------
 
 	program shyfem
 
-	use mod_tides
 	use mod_bound_geom
 	use mod_geom
 	use mod_meteo
 	use mod_waves
 	use mod_turbulence
 	use mod_sinking
-	use mod_fluidmud
 	use mod_nudging
 	use mod_internal
 	use mod_geom_dynamic
@@ -131,6 +130,9 @@ c----------------------------------------------------------------
 	use levels
 	use basin
 	use intp_fem_file
+	use tidef
+	use projection
+	use coordinates
 	use mod_subset
 !$	use omp_lib	!ERIC
 
@@ -199,10 +201,10 @@ c initialize triangles
 c-----------------------------------------------------------
 
 	call set_spherical
-	call handle_projection
 	call set_ev
 	call adjust_spherical
 	call print_spherical
+	call handle_projection
 	call set_geom
 	call domain_clusterization
 
@@ -292,13 +294,14 @@ c-----------------------------------------------------------
 	call init_nodal_area_code	!area codes on nodes
         call diffweight
         call set_diffusivity
-	call tideini
+	call tidefini
 	call cstsetup
 	call sp136(ic)
         call shdist(rdistv)
 	call tracer
 	call renewal_time
 
+	call submud_init
 
 c-----------------------------------------------------------
 c write input values to log file and perform check
@@ -433,7 +436,6 @@ c*****************************************************************
 
 	use mod_meteo
 	use mod_waves
-	use mod_fluidmud
 	use mod_internal
 	use mod_depth
 	use mod_layer_thickness
@@ -494,7 +496,7 @@ c*****************************************************************
 
         call debug_output_record(nlvdi*nkn,nlvdi,momentxv,'momentxv')
         call debug_output_record(nlvdi*nkn,nlvdi,momentyv,'momentyv')
-        call debug_output_record((nlvdi+1)*nkn,nlvdi+1,vts,'vts')
+        !call debug_output_record((nlvdi+1)*nkn,nlvdi+1,vts,'vts')
 
 	write(66) 0,0
 
@@ -580,7 +582,6 @@ c*****************************************************************
 	subroutine allocate_2d_arrays
 
 	use mod_bndo
-	use mod_tides
 	use mod_tvd
 	use mod_bnd
 	use mod_bound_geom
@@ -593,13 +594,16 @@ c*****************************************************************
 	use mod_hydro_baro
 	use mod_depth
 	use evgeom
+	use tidef
+	use coordinates
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	!include 'param.h'
 
-	call mod_tides_init(nkn)
+	call tidef_init(nkn)
+	call coordinates_init(nkn)
 
 	call mod_hydro_baro_init(nel)
 	call mod_roughness_init(nkn)
@@ -630,7 +634,7 @@ c*****************************************************************
 	use mod_waves
 	use mod_turbulence
 	use mod_sinking
-	use mod_fluidmud
+	!use mod_fluidmud
 	use mod_bclfix
 	use mod_nohyd
 	use mod_internal
@@ -638,7 +642,6 @@ c*****************************************************************
 	use mod_gotm_aux
 	use mod_bound_dynamic
 	use mod_nudging
-	!use mod_aux_array
 	use mod_area
 	use mod_ts
 	use mod_diff_visc_fric
@@ -666,7 +669,6 @@ c*****************************************************************
 
 	call mod_area_init(nkn,nlvddi)
 	call mod_bound_dynamic_init(nkn,nlvddi)
-	!call mod_aux_array_init(nkn,nel,nlvddi)
 	call mod_gotm_aux_init(nkn,nlvddi)
 
 	call mod_layer_thickness_init(nkn,nel,nlvddi)
@@ -675,7 +677,7 @@ c*****************************************************************
 	call mod_nudging_init(nkn,nel,nlvddi)
 
 	call mod_bclfix_init(nkn,nel,nlvddi)
-	call mod_fluidmud_init(nkn,nlvddi)
+	!call mod_fluidmud_init(nkn,nlvddi)
 	call mod_sinking_init(nkn,nlvddi)
 	call mod_turbulence_init(nkn,nlvddi)
 	call mod_waves_init(nkn,nel,nlvddi)

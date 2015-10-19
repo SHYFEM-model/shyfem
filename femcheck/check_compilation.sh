@@ -57,7 +57,7 @@ CheckCommand plotsim ./femplot/plotsim
 
 #CheckCommand ggg ./fem3d/ggg 		#fake error
 
-CheckCommand adjele ./femadj/adjele 
+CheckCommand adjele ./femadj/shyadj 
 CheckCommand gridr ./femspline/gridr 
 
 CheckCommand grid ./grid/grid 

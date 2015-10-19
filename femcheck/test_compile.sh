@@ -101,10 +101,16 @@ Clean_before
 
 for comp in $compilers
 do
+
   echo "================================="
   echo "compiling with $comp"
   echo "================================="
   Rules "FORTRAN_COMPILER=$comp"
+
+  make compiler_version > /dev/null 2>&1
+
+  [ $? -ne 0 ] && continue
+  echo "compiler $comp is available..."
 
   Comp "ECOLOGICAL=NONE GOTM=true NETCDF=false SOLVER=SPARSKIT PARALLEL=false"
   #Comp "ECOLOGICAL=EUTRO GOTM=false SOLVER=PARDISO"

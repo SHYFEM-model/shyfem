@@ -18,6 +18,7 @@ c
 c 20.05.1998	ggu	cleaned up a bit
 c 04.02.2000	ggu	wrrc77 from newpr to here
 c 14.09.2015	ggu	some more helper routines
+c 05.10.2015	ggu	handle error in backspace smoothly
 c
 c notes :
 c
@@ -185,19 +186,24 @@ c*********************************************************
 	integer iunit,nvers,it,ierr
 
 	integer, parameter :: nvermx = 6
-	integer ios
 	real tt
 
 	tt = 0
+
 	if(nvers.ge.1.and.nvers.le.2) then
-	  read(iunit,iostat=ios)  tt
+	  read(iunit,iostat=ierr)  tt
 	  it = tt
 	else if(nvers.ge.3.and.nvers.le.nvermx) then
-	  read(iunit,iostat=ios)  it
+	  read(iunit,iostat=ierr)  it
+	else
+	  stop 'error stop ext_peek_record: internal error (1)'
 	end if
-	ierr = ios
 
-	backspace(iunit)
+	if( ierr /= 0 ) return
+
+	backspace(iunit,iostat=ierr)
+
+	if( ierr /= 0 ) ierr = -1	!fake end of file
 
 	end
 

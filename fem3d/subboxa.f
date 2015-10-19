@@ -1195,6 +1195,8 @@ c computes average velocity values (speed) for box
 	integer lmax,l,k
 	real vol,area3
 
+	velspeed = 0.
+
 	do ib=1,nbox
 	  do l=0,nlvdim
 	    vald(l,ib) = 0.

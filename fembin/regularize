@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-# runs adjele
+# runs shyadj
 
 FEMDIR=${SHYFEMDIR:=$HOME/shyfem}
 BINDIR=$FEMDIR/femadj
 
-adjele=$BINDIR/adjele
+shyadj=$BINDIR/shyadj
 
 Usage()
 {
@@ -36,10 +36,11 @@ echo "output file: $output"
 
 [ -f new.grd ] && rm -f new.grd
 
-$adjele < $input.grd
+#echo "running $shyadj"
+$shyadj $input.grd
 
 if [ ! -f new.grd ]; then
-  echo "*** error executing adjele ... aborting"
+  echo "*** error executing shyadj ... aborting"
   exit 1
 fi
 

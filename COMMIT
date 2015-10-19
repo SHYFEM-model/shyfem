@@ -1,71 +1,74 @@
 ============================================================
 
-Fri Oct  2 17:15:24 CEST 2015
+Tue Oct 13 20:05:32 CEST 2015
 
-New version 7_3_1
+New version 7_3_5
+
+
+============================================================
+
+Tue Oct 13 20:02:30 CEST 2015
+
+bug fix for cartesian coords
+
+ .gitignore            |    3 +++
+ Makefile              |    4 ++--
+ fem3d/shyfem.f        |    2 +-
+ fem3d/subcoord.f      |    9 +++++++--
+ femcheck/check_var.sh |    2 ++
+ 5 files changed, 15 insertions(+), 5 deletions(-)
+
+============================================================
+
+Mon Oct 12 20:51:14 CEST 2015
+
+New version 7_3_4a
 
 
 ============================================================
 
-Fri Oct  2 17:14:05 CEST 2015
+Mon Oct 12 18:31:58 CEST 2015
 
-new RELEASE_NOTES
+New version 7_3_4
 
- RELEASE_NOTES |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
 
 ============================================================
 
-Fri Oct  2 17:06:44 CEST 2015
+Mon Oct 12 18:26:58 CEST 2015
 
-new shybas and utilities
+new release
 
- .gitignore                    |    2 +
- LOG                           |   19 +
- RELEASE_NOTES                 |    5 +
- fem3d/Makefile                |   61 ++--
- fem3d/basbathy.f              |  316 -------------
- fem3d/basbox.f                |  632 -------------------------
- fem3d/baschk.f                |  190 --------
- fem3d/bascomp.f               |  650 -------------------------
- fem3d/bashsigma.f             |  429 -----------------
- fem3d/basinf.f                |  781 -------------------------------
- fem3d/basres.f                |  169 -------
- fem3d/bastreat.f              |  853 ---------------------------------
- fem3d/basutil.f               |  258 ++++++++++
- fem3d/basutil_bathy.f         |  285 +++++++++++
- fem3d/basutil_box.f           |  573 +++++++++++++++++++++++
- fem3d/basutil_hsigma.f        |  265 +++++++++++
- fem3d/basutil_interp.f        |  755 ++++++++++++++++++++++++++++++
- fem3d/basutil_resol.f         |  153 ++++++
- fem3d/basutil_smooth.f        |  593 +++++++++++++++++++++++
- fem3d/baswork.f               |  501 --------------------
- fem3d/mod_depth.f             |   10 +-
- fem3d/shybas.f                | 1040 +++++++++++++++++++++++++++++++++++++++++
- fem3d/subbas.f                |   80 +++-
- fem3d/subgrd.f                |   59 +++
- fem3d/subinterpol.f           |  755 ------------------------------
- fem3d/subinterpol1.f          |  387 ---------------
- fem3d/sublnka.f               |   15 -
- femcheck/check_compilation.sh |    3 +-
- femdoc/final/shyfem.pdf       |  Bin 295285 -> 295282 bytes
- 29 files changed, 4124 insertions(+), 5715 deletions(-)
- new file:
-   fem3d/basutil.f
-   fem3d/basutil_hsigma.f
- deleted:
-    fem3d/baschk.f
-    fem3d/bascomp.f
-    fem3d/bashsigma.f
-    fem3d/baswork.f
-    fem3d/subinterpol1.f
- renamed:
-    fem3d/basbathy.f -> fem3d/basutil_bathy.f
-    fem3d/basbox.f -> fem3d/basutil_box.f
-    fem3d/subinterpol.f -> fem3d/basutil_interp.f
-    fem3d/basres.f -> fem3d/basutil_resol.f
-    fem3d/bastreat.f -> fem3d/basutil_smooth.f
-    fem3d/basinf.f -> fem3d/shybas.f
+ BUG           |    3 +++
+ LOG           |   32 ++++++++++++++++++++++++++++++++
+ RELEASE_NOTES |   12 ++++++++++++
+ 3 files changed, 47 insertions(+), 0 deletions(-)
+
+============================================================
+
+Mon Oct 12 17:39:00 CEST 2015
+
+New version 7_3_3
+
+
+============================================================
+
+Sat Oct 10 12:27:28 CEST 2015
+
+New version 7_3_2
+
+
+============================================================
+
+Sat Oct 10 12:11:03 CEST 2015
+
+Pull request from Christian
+
+ LOG                   |   12 +++++++++
+ RELEASE_NOTES         |    8 ++++++
+ fem3d/Makefile        |   60 ++++++++++++++++++++++++------------------------
+ fembin/gitcommit      |    4 +++
+ femcheck/check_var.sh |    6 +++-
+ 5 files changed, 58 insertions(+), 32 deletions(-)
 
 ============================================================
 

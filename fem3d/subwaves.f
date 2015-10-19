@@ -278,6 +278,8 @@ c local
 !       Same time step, do read
 !       -----------------------------------------------
 
+	wtauw = 0.
+
         if (mod(it,idcoup) .eq. 0 ) then
  
 !         -----------------------------------------------
@@ -423,6 +425,7 @@ c local
 !         simulate smooth initial forcing
 !	  useful for test cases
 !         -----------------------------------------------
+
           if( tramp .gt. 0. ) then
             alpha = (it-itanf)/tramp
             if( alpha .gt. 1. ) alpha = 1.
@@ -490,10 +493,9 @@ c local
 !         Computes 3D layer depth array
 !         -----------------------------------------------
 
+	  ddl = 0.
+
           do k = 1,nkn
-	    do l = 1,nlvdim
-	      ddl(l,k) = 0.
-	    end do
 	    call dep3dnod(k,+1,nlev,h)
             ddl(1,k) = - 0.5 * h(1)
             do l = 2,nlev
@@ -1244,6 +1246,7 @@ c This subroutine computes the wind fetch for each element of the
 c grid given the wind direction.
 
 	use basin, only : nkn,nel,ngr,mbw
+	use coordinates
 
         implicit none
   
@@ -1390,6 +1393,7 @@ c line and one of the border line of the element
 
 	use mod_geom
 	use basin
+	use coordinates
 
         implicit none
 

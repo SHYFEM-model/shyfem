@@ -1075,6 +1075,7 @@ c sets coriolis parameter
 
 	use mod_internal
 	use basin
+        use coordinates
 
 	implicit none
 
@@ -1087,13 +1088,14 @@ c sets coriolis parameter
 	include 'mkonst.h'
 	include 'pkonst.h'
 
-
+	logical bgeo
 	integer k,ie,ii
 	integer icor
 	integer isphe
 	real yc,ym,y,ymin,ymax,dlat
 	real aux1,aux2,rad
 	real getpar
+	real, dimension(nkn)	:: yaux
 
 c if coordinates are cartesian (isphe=0) then icor determines 
 c how Coriolis is used:
@@ -1106,27 +1108,36 @@ c please note that in case of icor=1 or 2 also the parameter dlat (the average
 c latitude of the basin) has to be set
 c
 c with spherical coordinates (isphe=1) the default is to always use
-c Coriolis. If you really do not want to use Coriolis, then please set
-c icor = -1. The parameter dlat is not needed.
+c Coriolis with latitude read from basin. If you really do not want to 
+c use Coriolis, then please set icor = -1. The parameter dlat is not needed.
+
+c with cartesian coordinates (isphe=0) the default is to use a constant 
+c latitude (dlat) for Coriolis (icor > 0). If you want a spatially varying 
+c Coriolis parameter you have to convert the cartesian coordinates to 
+c spherical setting the basin projection (iproj > 0)
 
 	icor=nint(getpar('icor'))	!flag how to use Coriolis
 	call get_coords_ev(isphe)
 
 	rad = pi / 180.
 	dlat = dcor			! average latitude
+	fcorv = 0.
 
-	yc=0.
-	ymin=ygv(1)
-	ymax=ygv(1)
-	do k=1,nkn
-	  y = ygv(k)
-	  yc = yc + y
-	  ymin = min(y,ymin)
-	  ymax = max(y,ymax)
-	end do
-	yc=yc/nkn
+	if( icor < 0 ) return		! no coriolis
 
-	if( isphe .eq. 1 ) dlat = yc		! get directly from basin
+	bgeo = ( isphe .eq. 1 .or. iproj .ne. 0 )  !use geographical coords
+
+	if( bgeo ) then
+	  yaux = ygeov
+	else
+	  yaux = ygv
+	end if
+       
+	yc   = sum(yaux)/nkn
+	ymin = minval(yaux)
+	ymax = maxval(yaux)
+
+	if( bgeo ) dlat = yc		! get directly from basin
 
 	aux1 = 0.
 	aux2 = 0.
@@ -1149,18 +1160,14 @@ c icor = -1. The parameter dlat is not needed.
 	do ie=1,nel
 	  ym=0.
 	  do ii=1,3
-	    ym=ym+ygv(nen3v(ii,ie))
+	    ym=ym+yaux(nen3v(ii,ie))
 	  end do
 	  ym=ym/3.
-	  if( isphe .eq. 0 ) then	!cartesian
-	    fcorv(ie)=aux1+aux2*(ym-yc)
-	  else if( isphe .eq. 1 ) then	!spherical
-	    if( icor .lt. 0 ) then	! -> do not use
-	      fcorv(ie) = 0.
-	    else
-	      !fcorv(ie) = omega2*cos(ym*rad)	!BUG
-	      fcorv(ie) = omega2*sin(ym*rad)
-	    end if
+	  if( bgeo ) then			!spherical
+	    !fcorv(ie) = omega2*cos(ym*rad)	!BUG
+	    fcorv(ie) = omega2*sin(ym*rad)
+	  else if( isphe .eq. 0 ) then		!cartesian
+  	    fcorv(ie)=aux1+aux2*(ym-yc)
 	  else
 	    write(6,*) 'isphe = ',isphe
 	    if( isphe .eq. -1 ) write(6,*) '...not initialized'
