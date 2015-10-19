@@ -39,6 +39,8 @@ zip:	clean
 list:
 	pwd; ls
 
+depend:
+
 femsave: save
 	mv $(DIR).zip $(DISTDIR)
 

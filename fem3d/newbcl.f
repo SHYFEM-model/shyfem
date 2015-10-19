@@ -127,6 +127,7 @@ c local
 	integer isact,l,k,lmax
 	integer kspec
 	integer icrst
+	integer ishyff
 	real stot,ttot,smin,smax,tmin,tmax,rmin,rmax
 	double precision v1,v2,mm
 	character*80 file
@@ -137,7 +138,9 @@ c	real sigma
 	double precision scalcont,dq
 	integer iround
 	integer nbnds
-	logical has_restart,has_output,next_output,next_output_d
+	logical has_restart
+	logical has_output,next_output
+	logical has_output_d,next_output_d
 
 	integer tid
 	!integer openmp_get_thread_num
@@ -179,6 +182,7 @@ c----------------------------------------------------------
 	binitial_nos = .true.
 
 	dtime = t_act
+	ishyff = nint(getpar('ishyff'))
 
 c----------------------------------------------------------
 c initialization
@@ -278,22 +282,31 @@ c		--------------------------------------------
 		if( isalt .gt. 0 ) nvar = nvar + 1
 
 		call init_output('itmcon','idtcon',ia_out)
-		call init_output_d('itmcon','idtcon',da_out)
-		!call set_output_frequency(itmcon,idtcon,ia_out) !alternatively
-
+		if( ishyff == 1 ) ia_out = 0
 		if( has_output(ia_out) ) then
-		  call shy_make_output_name('.ts.shy',file)
-		  call shy_open_output_file(file,1,nlv,nvar,2,id)
-		  da_out(4) = id
 		  call open_scalar_file(ia_out,nlv,nvar,'nos')
 		  if( binitial_nos ) then
 		    if( isalt .gt. 0 ) then
-		      call shy_write_scalar_record(id,dtime,11,nlvdi,saltv)
 		      call write_scalar_file(ia_out,11,nlvdi,saltv)
 		    end if
 		    if( itemp .gt. 0 ) then
-		      call shy_write_scalar_record(id,dtime,12,nlvdi,tempv)
 		      call write_scalar_file(ia_out,12,nlvdi,tempv)
+		    end if
+		  end if
+		end if
+
+		call init_output_d('itmcon','idtcon',da_out)
+		if( ishyff == 0 ) da_out = 0
+		if( has_output_d(da_out) ) then
+		  call shy_make_output_name('.ts.shy',file)
+		  call shy_open_output_file(file,1,nlv,nvar,2,id)
+		  da_out(4) = id
+		  if( binitial_nos ) then
+		    if( isalt .gt. 0 ) then
+		      call shy_write_scalar_record(id,dtime,11,nlvdi,saltv)
+		    end if
+		    if( itemp .gt. 0 ) then
+		      call shy_write_scalar_record(id,dtime,12,nlvdi,tempv)
 		    end if
 		  end if
 		end if

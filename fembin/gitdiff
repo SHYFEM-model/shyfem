@@ -1,3 +1,50 @@
+#!/bin/sh
+#
+# shell for diffing
+#
+#--------------------------------------------------
 
-git difftool --tool=tkdiff --no-prompt $*
+#git difftool --tool=tkdiff --no-prompt $*
+
+what=diff
+options=""
+files=""
+file="NO"
+
+HandleFiles()
+{
+  if [ -f $1 ]; then
+    files="$files -- $1"
+    what=difftool
+    file="YES"
+  else
+    files="$files $1"
+  fi
+}
+
+#-------------------------------------------------
+
+branch=`git branch | grep '*' | sed -e 's/^\* //'`
+
+echo "We are on branch: $branch"
+
+while [ -n "$1" ]
+do
+   case $1 in
+        -tool)          what="difftool";;
+        --*)            options="$options $1";;
+        *)              HandleFiles $1;;
+  esac
+  shift
+done
+
+if [ $file = "YES" ]; then
+  what=difftool
+else
+  options="$options --stat"
+fi
+
+echo "what:$what  options:$options  files: $files"
+
+git $what $options $files
 

@@ -821,6 +821,9 @@ cc custom call
 	call addpar('icust',0.)		!call custom routine
 	call addpar('tcust',0.)		!time for custom routine
 
+	call addpar('ishyff',0.)	!shyfem file format
+					!0=old 1=new 2=both
+
 cc rain
 
 	call addpar('zdist',0.)		!distributed water level

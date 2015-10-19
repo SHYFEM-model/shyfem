@@ -35,3 +35,6 @@ save: zip
 zip: clean
 	-zip anim Makefile makeanim.sh rename.pl
 
+list:
+depend:
+

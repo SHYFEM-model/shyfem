@@ -340,7 +340,7 @@ c check if area is positive
 
         implicit none
 
-	character*(*), optional :: text
+	character*(*) text
 
 	logical bstop
 	integer ie,ii,i1,i2,k1,k2
@@ -352,8 +352,7 @@ c check if area is positive
 	real areat
 
 	bstop = .false.
-	string = ' '
-	if( present(text) ) string = text
+	string = text
 
 	do ie=1,nel
 	  x1 = xgv(nen3v(1,ie))

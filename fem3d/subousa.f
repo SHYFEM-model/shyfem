@@ -51,12 +51,14 @@ c writes and administers ous file
 
 	integer idtout,itout
 	integer icall,nbout,nvers
+	integer ishyff
 	integer, save :: ia_out(4)
 	double precision, save :: da_out(4)
 	save idtout,itout
 	save icall,nvers,nbout
 	data icall,nvers,nbout /0,2,0/
 
+	ishyff = nint(getpar('ishyff'))
 
 	if( icall .eq. -1 ) return
 
@@ -64,17 +66,23 @@ c writes and administers ous file
 		ia_out = 0
 		da_out = 0.
 		call init_output('itmout','idtout',ia_out)
+		if( ishyff == 1 ) ia_out = 0
 		call init_output_d('itmout','idtout',da_out)
+		if( ishyff == 0 ) da_out = 0
 
-		if( .not. has_output(ia_out) ) icall = -1
-		if( .not. has_output_d(da_out) ) icall = -1
+		if( .not. has_output(ia_out) .and. 
+     +			.not. has_output_d(da_out) ) icall = -1
 		if( icall .eq. -1 ) return
 		
-		nvar = 4
-		ftype = 1
-		call shy_make_output_name('.hydro.shy',file)
-		call shy_open_output_file(file,3,nlv,nvar,ftype,id)
-		da_out(4) = id
+		if( has_output_d(da_out) ) then
+		  nvar = 4
+		  ftype = 1
+		  call shy_make_output_name('.hydro.shy',file)
+		  call shy_open_output_file(file,3,nlv,nvar,ftype,id)
+		  da_out(4) = id
+		end if
+
+		if( has_output(ia_out) ) then
 
 		nbout = ifemop('.ous','unformatted','new')
 		if(nbout.le.0) goto 77
@@ -96,6 +104,8 @@ c writes and administers ous file
 	        if(ierr.gt.0) goto 78
 	        call ous_write_header2(nbout,ilhv,hlv,hev,ierr)
 	        if(ierr.gt.0) goto 75
+
+		end if
 	end if
 
 	icall = icall + 1

@@ -51,6 +51,8 @@
 
         character*80, save :: infile
 
+	logical, save :: breadbas	!internal - true if file read is bas
+
 !====================================================
 	contains
 !====================================================

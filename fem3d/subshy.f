@@ -947,7 +947,7 @@
 
 	integer iunit
 	integer i,k,ie,l,j
-	integer, pointer :: il(:)
+	integer, allocatable :: il(:)
 
 	iunit = pentry(id)%iunit
 
