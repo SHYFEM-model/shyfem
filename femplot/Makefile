@@ -100,7 +100,7 @@ line_nodes: line_nodes.o $(LPOBJS) $(LIBIFS)
 
 #------------------------------------------------------------
 
-cleanall: clean cleanzip
+cleanall: clean cleanzip cleandiff
 
 clean: cleanobj cleanexe cleanvar
 

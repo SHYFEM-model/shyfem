@@ -119,7 +119,7 @@ short: short.o general.o $(XOBDEVICE)
 
 clean: cleanobj cleanexe cleanvar cleanlinks
 
-cleanall: clean cleanzip
+cleanall: clean cleanzip cleandiff
 
 cleanlinks:
 	@$(FEMBIN)/symlink -remove $(FEMBIN) grid
