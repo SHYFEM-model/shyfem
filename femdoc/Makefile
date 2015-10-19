@@ -41,6 +41,10 @@ dvi:	tex latex bibtex
 
 post:	ps pdf
 
+list:
+	pwd; ls
+depend:
+
 #--------------------------------
 
 spell:

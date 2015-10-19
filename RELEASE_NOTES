@@ -1,4 +1,9 @@
 
+14.10.2015    VERS_7_3_6
+
+	new parts on shy file format introduced
+	minor modifications
+
 13.10.2015    VERS_7_3_5
 
 	Bug fix introduced in 7.3.2 (handle_projection called too early)

@@ -136,17 +136,11 @@ strip:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-adj4el.o: param.h ../femlib/mod/basin.mod \
-		../femlib/mod/mod_adj_grade.mod 
-adj575.o: param.h ../femlib/mod/basin.mod \
-		../femlib/mod/mod_adj_grade.mod 
+adj4el.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod
+adj575.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod
 adj5el.o: param.h ../femlib/mod/basin.mod \
 		../femlib/mod/mod_adj_grade.mod 
-adj7el.o: param.h ../femlib/mod/basin.mod \
-		../femlib/mod/mod_adj_grade.mod 
-shyadj.o: param.h ../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod \
-		../femlib/mod/mod_adj_grade.mod 
+adj7el.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod
 adjgrd.o: nbstatic.h
 adjneu.o: param.h ../femlib/mod/mod_depth.mod \
 		../femlib/mod/basin.mod \
@@ -156,4 +150,7 @@ adjplo.o: param.h ../femlib/mod/basin.mod \
 adjvar.o: param.h ../femlib/mod/basin.mod nbstatic.h \
 		../femlib/mod/mod_adj_grade.mod 
 ../femlib/mod/mod_adj_grade.mod: mod_adj_grade.o
+shyadj.o: param.h ../femlib/mod/mod_depth.mod \
+		../femlib/mod/basin.mod \
+		../femlib/mod/mod_adj_grade.mod 
 

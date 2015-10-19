@@ -1,5 +1,23 @@
 ============================================================
 
+Mon Oct 19 17:44:00 CEST 2015
+
+new shyfile routines integrated
+
+ LOG                     |   18 ++++++++++++++++++
+ Makefile                |    1 +
+ RELEASE_NOTES           |    5 +++++
+ Rules.make              |   28 +++++++++++++++++++++++-----
+ fem3d/Makefile          |   10 +++++++---
+ fem3d/newbcl.f          |    1 +
+ fem3d/subousa.f         |    1 +
+ femadj/Makefile         |   15 ++++++---------
+ femdoc/Makefile         |    4 ++++
+ femdoc/final/shyfem.pdf |  Bin 295282 -> 295214 bytes
+ 10 files changed, 66 insertions(+), 17 deletions(-)
+
+============================================================
+
 Tue Oct 13 20:05:32 CEST 2015
 
 New version 7_3_5

@@ -1,4 +1,22 @@
 
+19.10.2015
+
+c ./fem3d/subousa.f:
+c 15.10.2015    ggu     added new calls for shy file format
+c
+c ./fem3d/subshy.f:
+! 15.10.2015    ggu     completed basic parts
+!
+c ./fem3d/subshyutil.f:
+! 15.10.2015    ggu     started routine
+c
+c ./fem3d/newbcl.f:
+c 15.10.2015    ggu     added new calls for shy file format
+c
+c ./fem3d/shyelab1.f:
+! 16.10.2015    ggu     started shyelab
+
+
 12.10.2015
 
 c ./femplot/supbas.f:

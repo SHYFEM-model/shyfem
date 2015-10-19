@@ -1074,7 +1074,12 @@ shybas.o: param.h ../femlib/mod/basutil.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod 
-shyelab.o: ../femlib/mod/clo.mod ../femlib/mod/elabutil.mod
+shyelab.o: ../femlib/mod/shyfile.mod ../femlib/mod/clo.mod \
+		../femlib/mod/elabutil.mod 
+shyelab1.o: param.h ../femlib/mod/mod_depth.mod \
+		../femlib/mod/shyfile.mod ../femlib/mod/clo.mod \
+		../femlib/mod/basin.mod ../femlib/mod/elabutil.mod \
+		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod 
 shyfem.o: ../femlib/mod/mod_area.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
 		../femlib/mod/mod_depth.mod \
@@ -1336,8 +1341,7 @@ suboff.o: ../femlib/mod/mod_hydro_vel.mod param.h \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_hydro.mod femtime.h 
 subous.o: ousinf.h
-subousa.o: param.h ../femlib/mod/levels.mod \
-		../femlib/mod/mod_depth.mod \
+subousa.o: ../femlib/mod/levels.mod ../femlib/mod/mod_depth.mod \
 		../femlib/mod/basin.mod \
 		../femlib/mod/mod_hydro.mod femtime.h simul.h 
 subouta.o: param.h ../femlib/mod/basin.mod \

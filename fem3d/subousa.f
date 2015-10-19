@@ -15,6 +15,7 @@ c 02.09.2003	ggu	bug fix in wrousa: save nbout
 c 25.11.2004	ggu	in new file subousa.f
 c 18.05.2005	ggu	initial itmout is changed (now itanf)
 c 20.01.2014	ggu	new calls for ous writing implemented
+c 15.10.2015	ggu	added new calls for shy file format
 c
 c********************************************************
 

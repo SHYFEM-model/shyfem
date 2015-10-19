@@ -64,6 +64,7 @@ c 25.03.2014    ggu     new offline
 c 10.07.2014    ggu     only new file format allowed
 c 20.10.2014    ggu     pass ids to scal_adv()
 c 10.02.2015    ggu     call to bnds_read_new() introduced
+c 15.10.2015    ggu     added new calls for shy file format
 c
 c*****************************************************************
 

@@ -295,6 +295,7 @@ rules_save:
 	cp -f arc/rules/Rules.save ./Rules.make
 
 dist: cleandist
+	mkdir -p arc/rules
 	mv --backup=numbered ./Rules.make arc/rules/Rules.save
 	cp -f femcheck/Rules.dist ./Rules.make
 	make doc; make clean
