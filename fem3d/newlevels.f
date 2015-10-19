@@ -42,7 +42,7 @@
 	hlv = 0.
 	hldv = 0.
 
-	write(6,*) 'levels allocated: ',nkn,nel,nl
+	!write(6,*) 'levels allocated: ',nkn,nel,nl
 
 	end subroutine levels_init
 

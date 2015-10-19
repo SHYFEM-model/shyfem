@@ -44,7 +44,7 @@ c elaborates nos file
 	integer nknnos,nelnos,nvar
 	integer ierr
 	integer it,ivar,itvar,itnew,itold,iaux
-	integer ii,i,j,l,k,lmax,nnodes,node
+	integer ii,i,j,l,k,lmax,node
 	integer ip,nb,naccum
 	integer kfluxm
 	integer idtflx,nlmax,nsect

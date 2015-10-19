@@ -110,7 +110,8 @@ c local
 	integer imin,imax
 	integer nintp,nvar
 	integer nbc
-	real cdef(1),t
+	integer id
+	real cdef(1)
 	real xmin,xmax
         integer itemp,isalt
 	real salref,temref,sstrat,tstrat
@@ -128,6 +129,7 @@ c local
 	integer icrst
 	real stot,ttot,smin,smax,tmin,tmax,rmin,rmax
 	double precision v1,v2,mm
+	character*80 file
 	character*4 what
 c functions
 c	real sigma
@@ -135,7 +137,7 @@ c	real sigma
 	double precision scalcont,dq
 	integer iround
 	integer nbnds
-	logical has_restart,has_output,next_output
+	logical has_restart,has_output,next_output,next_output_d
 
 	integer tid
 	!integer openmp_get_thread_num
@@ -143,8 +145,8 @@ c	real sigma
 	double precision theatold,theatnew
 	double precision theatconv1,theatconv2,theatqfl1,theatqfl2
 c save
-        integer ia_out(4)
-        save ia_out
+        integer, save :: ia_out(4)
+        double precision, save :: da_out(4)
 
 	integer, save, allocatable :: idtemp(:),idsalt(:)
 
@@ -175,6 +177,8 @@ c----------------------------------------------------------
 	binfo = .true.
         bgdebug = .false.
 	binitial_nos = .true.
+
+	dtime = t_act
 
 c----------------------------------------------------------
 c initialization
@@ -274,15 +278,21 @@ c		--------------------------------------------
 		if( isalt .gt. 0 ) nvar = nvar + 1
 
 		call init_output('itmcon','idtcon',ia_out)
+		call init_output_d('itmcon','idtcon',da_out)
 		!call set_output_frequency(itmcon,idtcon,ia_out) !alternatively
 
 		if( has_output(ia_out) ) then
+		  call shy_make_output_name('.ts.shy',file)
+		  call shy_open_output_file(file,1,nlv,nvar,2,id)
+		  da_out(4) = id
 		  call open_scalar_file(ia_out,nlv,nvar,'nos')
 		  if( binitial_nos ) then
 		    if( isalt .gt. 0 ) then
+		      call shy_write_scalar_record(id,dtime,11,nlvdi,saltv)
 		      call write_scalar_file(ia_out,11,nlvdi,saltv)
 		    end if
 		    if( itemp .gt. 0 ) then
+		      call shy_write_scalar_record(id,dtime,12,nlvdi,tempv)
 		      call write_scalar_file(ia_out,12,nlvdi,tempv)
 		    end if
 		  end if
@@ -300,8 +310,6 @@ c----------------------------------------------------------
 c normal call
 c----------------------------------------------------------
 
-	t = it
-	dtime = t
 	wsink = 0.
 	robs = 0.
 	if( bobs ) robs = 1.
@@ -337,7 +345,6 @@ c----------------------------------------------------------
 
           if( itemp .gt. 0 ) then
 		what = 'temp'
-		dtime = it
 	        call bnds_read_new(what,idtemp,dtime)
                 call scal_adv_nudge(what,0
      +                          ,tempv,idtemp
@@ -363,7 +370,6 @@ c----------------------------------------------------------
 
           if( isalt .gt. 0 ) then
 		what = 'salt'
-		dtime = it
 	        call bnds_read_new(what,idsalt,dtime)
                 call scal_adv_nudge(what,0
      +                          ,saltv,idsalt
@@ -415,6 +421,16 @@ c----------------------------------------------------------
 	  end if
 	  if( itemp .gt. 0 ) then
 	    call write_scalar_file(ia_out,12,nlvdi,tempv)
+	  end if
+	end if
+
+	if( next_output_d(da_out) ) then
+	  id = nint(da_out(4))
+	  if( isalt .gt. 0 ) then
+	    call shy_write_scalar_record(id,dtime,11,nlvdi,saltv)
+	  end if
+	  if( itemp .gt. 0 ) then
+	    call shy_write_scalar_record(id,dtime,12,nlvdi,tempv)
 	  end if
 	end if
 

@@ -29,12 +29,8 @@ c writes and administers ous file
 
 	implicit none
 
-	include 'param.h'
-
 	include 'femtime.h'
-
 	include 'simul.h'
-
 
 	integer itmout,ierr
 	real href,hzoff
@@ -43,15 +39,20 @@ c writes and administers ous file
 
 	integer iround,ideffi
         integer wfout,wrout
+	integer nvar,ftype,id
+	double precision dtime
+	character*80 file
+
 	real getpar
 	double precision dgetpar
 	integer ifemop
 	logical has_output,next_output
+	logical has_output_d,next_output_d
 
 	integer idtout,itout
 	integer icall,nbout,nvers
-	integer ia_out(4)
-	save ia_out
+	integer, save :: ia_out(4)
+	double precision, save :: da_out(4)
 	save idtout,itout
 	save icall,nvers,nbout
 	data icall,nvers,nbout /0,2,0/
@@ -60,11 +61,21 @@ c writes and administers ous file
 	if( icall .eq. -1 ) return
 
 	if( icall .eq. 0 ) then
+		ia_out = 0
+		da_out = 0.
 		call init_output('itmout','idtout',ia_out)
+		call init_output_d('itmout','idtout',da_out)
 
 		if( .not. has_output(ia_out) ) icall = -1
+		if( .not. has_output_d(da_out) ) icall = -1
 		if( icall .eq. -1 ) return
 		
+		nvar = 4
+		ftype = 1
+		call shy_make_output_name('.hydro.shy',file)
+		call shy_open_output_file(file,3,nlv,nvar,ftype,id)
+		da_out(4) = id
+
 		nbout = ifemop('.ous','unformatted','new')
 		if(nbout.le.0) goto 77
 		ia_out(4) = nbout
@@ -89,11 +100,18 @@ c writes and administers ous file
 
 	icall = icall + 1
 
-	if( .not. next_output(ia_out) ) return
-
-	call ous_write_record(nbout,it,nlvdi,ilhv,znv,zenv
+	if( next_output(ia_out) ) then
+	  call ous_write_record(nbout,it,nlvdi,ilhv,znv,zenv
      +					,utlnv,vtlnv,ierr)
-	if(ierr.ne.0.) goto 79
+	  if(ierr.ne.0.) goto 79
+	end if
+
+	if( next_output_d(da_out) ) then
+	  id = nint(da_out(4))
+	  dtime = t_act
+	  call shy_write_hydro_records(id,dtime,nlvdi,znv,zenv
+     +					,utlnv,vtlnv)
+	end if
 
 	return
    77   continue

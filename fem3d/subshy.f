@@ -35,7 +35,7 @@
 	  integer :: iunit
 	  integer :: nvers
 	  integer :: ftype
-	  integer :: nkn,nel,nlv,nvar
+	  integer :: nkn,nel,npr,nlv,nvar
 	  integer :: date,time
 	  character*80 :: title
 	  character*80 :: femver
@@ -60,6 +60,10 @@
 
         INTERFACE shy_is_shy_file
         MODULE PROCEDURE shy_is_shy_file_by_name,shy_is_shy_file_by_unit
+        END INTERFACE
+
+        INTERFACE shy_init
+        MODULE PROCEDURE shy_init_by_unit,shy_init_by_file
         END INTERFACE
 
 !==================================================================
@@ -116,6 +120,7 @@
 	pentry(id)%ftype = 0
 	pentry(id)%nkn = 0
 	pentry(id)%nel = 0
+	pentry(id)%npr = 0
 	pentry(id)%nlv = 0
 	pentry(id)%nvar = 0
 	pentry(id)%date = 0
@@ -195,7 +200,7 @@
 	shy_open_file = 0
 
 	call shy_get_file_unit(iunit)
-	if( iunit /= 0 ) return
+	if( iunit == 0 ) return
 
 	open(iunit,file=file,status='unknown',form='unformatted'
      +				,iostat=ios)
@@ -231,28 +236,47 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine shy_init(iunit,id)
+	function shy_init_by_file(file)
+
+	integer shy_init_by_file
+	character*(*) file
 
 	integer iunit
-	integer nversion
-	integer id
 
+	shy_init_by_file = 0
+
+	iunit = shy_open_file(file)
+	if( iunit == 0 ) return
+
+	shy_init_by_file = shy_init_by_unit(iunit)
+
+	end function shy_init_by_file
+
+!******************************************************************
+
+	function shy_init_by_unit(iunit)
+
+	integer shy_init_by_unit
+	integer iunit
+
+	integer id
 	integer nvers
 	integer idempty
 
 	if( iunit .le. 0 ) then
 	  write(6,*) 'Impossible unit: ',iunit
-	  stop 'error stop shy_init: iunit'
+	  stop 'error stop shy_init_by_unit: iunit'
 	end if
 
 	nvers = maxvers
+	shy_init_by_unit = 0
 
 	idempty = 0
 	do id=1,idlast
 	  if( pentry(id)%iunit == 0 ) idempty = id
 	  if( pentry(id)%iunit == iunit ) then
 	    write(6,*) 'unit already initialized: ',iunit
-	    stop 'error stop shy_init: iunit used'
+	    stop 'error stop shy_init_by_unit: iunit used'
 	  end if
 	end do
 
@@ -268,7 +292,9 @@
 
 	rewind(iunit)
 
-	end subroutine shy_init
+	shy_init_by_unit = id
+
+	end function shy_init_by_unit
 
 !************************************************************
 
@@ -276,6 +302,7 @@
 
 	integer id
 
+	close(pentry(id)%iunit)
 	pentry(id)%iunit = 0
 	call shy_dealloc_arrays(id)
 	if( id == idlast ) idlast = idlast - 1
@@ -294,6 +321,7 @@
 	if( pentry(id1)%nkn /= pentry(id2)%nkn ) return 
 	if( pentry(id1)%nel /= pentry(id2)%nel ) return 
 	if( pentry(id1)%nlv /= pentry(id2)%nlv ) return 
+	if( pentry(id1)%npr /= pentry(id2)%npr ) return 
 	if( pentry(id1)%nvar /= pentry(id2)%nvar ) return 
 	if( pentry(id1)%date /= pentry(id2)%date ) return 
 	if( pentry(id1)%time /= pentry(id2)%time ) return 
@@ -343,10 +371,11 @@
         write(6,*) 'iunit     : ',pentry(id)%iunit
         write(6,*) 'nvers     : ',pentry(id)%nvers
         write(6,*) 'nkn,nel   : ',pentry(id)%nkn,pentry(id)%nel
-        write(6,*) 'nlv,nvar  : ',pentry(id)%nlv,pentry(id)%nvar
+        write(6,*) 'npr,nlv   : ',pentry(id)%npr,pentry(id)%nlv
+        write(6,*) 'nvar      : ',pentry(id)%nvar
         write(6,*) 'date,time : ',pentry(id)%date,pentry(id)%time
-        write(6,*) 'title     : ',pentry(id)%title
-        write(6,*) 'femver    : ',pentry(id)%femver
+        write(6,*) 'title     : ',trim(pentry(id)%title)
+        write(6,*) 'femver    : ',trim(pentry(id)%femver)
 
 	end subroutine shy_info
 
@@ -429,20 +458,22 @@
 
 !************************************************************
 
-	subroutine shy_get_params(id,nkn,nel,nlv,nvar)
+	subroutine shy_get_params(id,nkn,nel,npr,nlv,nvar)
 	integer id
-	integer nkn,nel,nlv,nvar
+	integer nkn,nel,npr,nlv,nvar
 	nkn = pentry(id)%nkn
 	nel = pentry(id)%nel
+	npr = pentry(id)%npr
 	nlv = pentry(id)%nlv
 	nvar = pentry(id)%nvar
 	end subroutine shy_get_params
 
-	subroutine shy_set_params(id,nkn,nel,nlv,nvar)
+	subroutine shy_set_params(id,nkn,nel,npr,nlv,nvar)
 	integer id
-	integer nkn,nel,nlv,nvar
+	integer nkn,nel,npr,nlv,nvar
 	pentry(id)%nkn = nkn
 	pentry(id)%nel = nel
+	pentry(id)%npr = npr
 	pentry(id)%nlv = nlv
 	pentry(id)%nvar = nvar
 	end subroutine shy_set_params
@@ -539,13 +570,13 @@
 
 	subroutine shy_get_layers(id,hlv)
 	integer id
-	integer hlv(pentry(id)%nlv)
+	real hlv(pentry(id)%nlv)
 	hlv = pentry(id)%hlv
 	end subroutine shy_get_layers
 
 	subroutine shy_set_layers(id,hlv)
 	integer id
-	integer hlv(pentry(id)%nlv)
+	real hlv(pentry(id)%nlv)
 	pentry(id)%hlv = hlv
 	end subroutine shy_set_layers
 
@@ -645,7 +676,7 @@
 	integer ios,iunit
 	integer ntype,nvers
 	integer ftype
-	integer nkn,nel,nlv,nvar
+	integer nkn,nel,npr,nlv,nvar
 	integer date,time
 	character*80 title
 	character*80 femver
@@ -668,9 +699,9 @@
 	call shy_set_ftype(id,ftype)
 
 	ierr = 3
-        read(iunit,iostat=ios) nkn,nel,nlv,nvar
+        read(iunit,iostat=ios) nkn,nel,npr,nlv,nvar
 	if( ios /= 0 ) return
-	call shy_set_params(id,nkn,nel,nlv,nvar)
+	call shy_set_params(id,nkn,nel,npr,nlv,nvar)
 
 	ierr = 4
         read(iunit,iostat=ios) date,time
@@ -756,7 +787,8 @@
 	real c(nlvddi,*)
 
 	integer iunit
-	integer i,k,ie,l
+	integer i,k,ie,l,j
+	integer, pointer :: il(:)
 
 	iunit = pentry(id)%iunit
 
@@ -766,14 +798,29 @@
 	read(iunit,iostat=ierr) dtime,ivar,n,m,lmax
 	if( ierr /= 0 ) return
 
-	if( lmax <= 1 ) then
-	  read(iunit,iostat=ierr) (c(1,i),i=1,n*m)
-	else if( n == pentry(id)%nkn ) then
-	  read(iunit,iostat=ierr) ((c(l,k)
-     +			,l=1,m*pentry(id)%ilhkv(k)),k=1,n)
+	if( n == pentry(id)%nkn ) then
+	  il = pentry(id)%ilhkv
 	else if( n == pentry(id)%nel ) then
-	  read(iunit,iostat=ierr) ((c(l,ie)
-     +			,l=1,m*pentry(id)%ilhv(ie)),ie=1,n)
+	  il = pentry(id)%ilhv
+	else
+	  write(6,*) n,pentry(id)%nkn,pentry(id)%nel
+	  write(6,*) 'cannot determine layer pointer'
+	  stop 'error stop shy_read_record: layer pointer'
+	end if
+
+	!write(6,*) id,ivar,n,m,lmax
+
+	if( lmax <= 1 ) then
+	  read(iunit,iostat=ierr) ( c(1,i),i=1,n*m )
+	else if( m == 1 ) then
+	  read(iunit,iostat=ierr) (( c(l,i)
+     +			,l=1,il(i) )
+     +			,i=1,n )
+	else
+	  read(iunit,iostat=ierr) ((( c(l,j+m*(i-1))
+     +			,l=1,il(i) )
+     +			,j=1,m )
+     +			,i=1,n )
 	end if
 
 	end subroutine shy_read_record
@@ -793,8 +840,8 @@
 	iunit = pentry(id)%iunit
 
 	read(iunit,iostat=ierr) dtime,ivar,n,m,lmax
-	if( ierr /= 0 ) return
-	rewind(iunit,iostat=ierr)
+	if( ierr > 0 ) return
+	backspace(iunit,iostat=ierr)
 
 	end subroutine shy_peek_record
 
@@ -845,7 +892,7 @@
 	integer ios,iunit
 	integer ntype,nvers
 	integer ftype
-	integer nkn,nel,nlv,nvar
+	integer nkn,nel,npr,nlv,nvar
 	integer date,time
 	character*80 title
 	character*80 femver
@@ -854,14 +901,14 @@
 	nvers = maxvers
 
 	call shy_get_ftype(id,ftype)
-	call shy_get_params(id,nkn,nel,nlv,nvar)
+	call shy_get_params(id,nkn,nel,npr,nlv,nvar)
 	call shy_get_date(id,date,time)
 	call shy_get_title(id,title)
 	call shy_get_femver(id,femver)
 
         write(iunit,err=99) shytype,nvers
         write(iunit,err=99) ftype
-        write(iunit,err=99) nkn,nel,nlv,nvar
+        write(iunit,err=99) nkn,nel,npr,nlv,nvar
         write(iunit,err=99) date,time
         write(iunit,err=99) title
         write(iunit,err=99) femver
@@ -899,21 +946,35 @@
 	real c(nlvddi,*)
 
 	integer iunit
-	integer i,k,ie,l
+	integer i,k,ie,l,j
+	integer, pointer :: il(:)
 
 	iunit = pentry(id)%iunit
 
 	write(iunit,iostat=ierr) dtime,ivar,n,m,lmax
 	if( ierr /= 0 ) return
 
-	if( lmax <= 1 ) then
-	  write(iunit,iostat=ierr) (c(1,i),i=1,n*m)
-	else if( n == pentry(id)%nkn ) then
-	  write(iunit,iostat=ierr) ((c(l,k)
-     +			,l=1,m*pentry(id)%ilhkv(k)),k=1,n)
+	if( n == pentry(id)%nkn ) then
+	  il = pentry(id)%ilhkv
 	else if( n == pentry(id)%nel ) then
-	  write(iunit,iostat=ierr) ((c(l,ie)
-     +			,l=1,m*pentry(id)%ilhv(ie)),ie=1,n)
+	  il = pentry(id)%ilhv
+	else
+	  write(6,*) n,pentry(id)%nkn,pentry(id)%nel
+	  write(6,*) 'cannot determine layer pointer'
+	  stop 'error stop shy_read_record: layer pointer'
+	end if
+
+	if( lmax <= 1 ) then
+	  write(iunit,iostat=ierr) ( c(1,i),i=1,n*m )
+	else if( m == 1 ) then
+	  write(iunit,iostat=ierr) (( c(l,i)
+     +			,l=1,il(i) )
+     +			,i=1,n )
+	else
+	  write(iunit,iostat=ierr) ((( c(l,j+m*(i-1))
+     +			,l=1,il(i) )
+     +			,j=1,m )
+     +			,i=1,n )
 	end if
 
 	end subroutine shy_write_record
@@ -924,6 +985,11 @@
 
 !************************************************************
 !************************************************************
+!************************************************************
+
+	subroutine test_shy
+	end
+
 !************************************************************
 
 	subroutine test_units
@@ -955,6 +1021,7 @@
 
 	!program shy_main
 	!call test_units
+	!call test_shy
 	!end
 
 !************************************************************
