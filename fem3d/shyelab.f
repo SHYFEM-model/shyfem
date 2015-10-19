@@ -13,6 +13,7 @@ c**************************************************************
 
 	use clo
 	use elabutil
+	use shyfile
 
 c elaborates output file
 
@@ -40,7 +41,10 @@ c--------------------------------------------------------------
 
         call clo_get_file(1,file)
 
-	if( check_nos_file(file) ) then
+	if( shy_is_shy_file(file) ) then
+	  write(6,*) 'file is of SHY type'
+	  call shyelab1
+	else if( check_nos_file(file) ) then
 	  write(6,*) 'file is of NOS type'
 	  call noselab
 	else if( check_ous_file(file) ) then

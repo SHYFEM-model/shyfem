@@ -33,12 +33,15 @@ c***********************************************************
 
         implicit none
 
+        integer, private, save :: nkn_basin = 0
+        integer, private, save :: nel_basin = 0
+
         integer, save :: nkn = 0
         integer, save :: nel = 0
         integer, save :: ngr = 0
         integer, save :: mbw = 0
 
-        integer, save :: nkndi = 0
+        integer, save :: nkndi = 0	!these are needed when nkn changes
         integer, save :: neldi = 0
         !integer, save :: ngrdi = 0
         !integer, save :: mbwdi = 0
@@ -74,7 +77,7 @@ c***********************************************************
 
 	integer nk,ne
 
-	if( nkn == nk .and. nel == ne ) return
+	if( nk == nkn_basin .and. ne == nel_basin ) return
 
         if( ne > 0 .or. nk > 0 ) then
           if( ne == 0 .or. nk == 0 ) then
@@ -83,7 +86,7 @@ c***********************************************************
           end if
         end if
 
-	if( nkn > 0 ) then
+	if( nkn_basin > 0 ) then
 	  deallocate(nen3v)
 	  deallocate(ipev)
 	  deallocate(ipv)
@@ -98,6 +101,8 @@ c***********************************************************
 	nel = ne
 	nkndi = nk
 	neldi = ne
+	nkn_basin = nk
+	nel_basin = ne
 
 	if( nk == 0 ) return
 

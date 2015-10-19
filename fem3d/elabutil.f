@@ -38,7 +38,6 @@
 	logical, save :: bquiet
 	logical, save :: bdate
 
-	integer, save :: nodesp
 	integer, save :: ifreq
 	integer, save :: tmin
 	integer, save :: tmax
@@ -60,6 +59,10 @@
 	logical, save :: bthreshold
 	double precision, save :: threshold
 
+	integer, save :: nodesp
+	integer, save :: nnodes = 0
+	integer, save, allocatable :: nodes(:)
+
 	real, save :: fact
 
 	integer, save :: istep
@@ -74,6 +77,10 @@
         character*80, save :: stmin,stmax
         character*80, save :: nodefile
         character*10, save :: outformat
+
+        INTERFACE elabutil_check_time
+        MODULE PROCEDURE elabutil_check_time_i,elabutil_check_time_d
+        END INTERFACE
 
 !====================================================
 	contains
@@ -245,6 +252,8 @@
 	end subroutine elabutil_get_options
 
 !************************************************************
+!************************************************************
+!************************************************************
 
 	subroutine elabutil_date_and_time
 
@@ -270,54 +279,85 @@
 
 !************************************************************
 
-	function elabutil_check_time(it,itnew,itold)
+	function elabutil_check_time_i(it,itnew,itold)
 
-	logical elabutil_check_time
+! integer version
+
+	logical elabutil_check_time_i
 	integer it,itnew,itold
+
+	double precision dtime,dtimenew,dtimeold
+
+        dtime = it
+	dtimenew = itnew
+	dtimeold = itold
+
+	elabutil_check_time_i = 
+     +		elabutil_check_time_d(dtime,dtimenew,dtimeold)
+
+	end function elabutil_check_time_i
+
+!************************************************************
+
+	function elabutil_check_time_d(dtime,dtimenew,dtimeold)
+
+! double version (relativ)
+
+	logical elabutil_check_time_d
+	double precision dtime,dtimenew,dtimeold
+
+	double precision atime,atimenew,atimeold
+
+        call fem_file_convert_time(datetime,dtime,atime)
+        call fem_file_convert_time(datetime,dtimenew,atimenew)
+        call fem_file_convert_time(datetime,dtimeold,atimeold)
+
+	elabutil_check_time_d =
+     +		elabutil_check_time_a(atime,atimenew,atimeold)
+
+	end function elabutil_check_time_d
+
+!************************************************************
+
+	function elabutil_check_time_a(atime,atimenew,atimeold)
+
+! double version (absolute)
+
+	logical elabutil_check_time_a
+	double precision atime,atimenew,atimeold
 
 	logical bdebug
 	logical btimew
-	double precision dtime,atime
-	double precision dtimenew,atimenew
-	double precision dtimeold,atimeold
 
 	bdebug = .true.
 	bdebug = .false.
         btimew = .true.
 
-        dtime = it
-        call fem_file_convert_time(datetime,dtime,atime)
-
         if( btmin ) btimew = btimew .and. atime >= atmin
         if( btmax ) btimew = btimew .and. atime <= atmax
 
-	elabutil_check_time = btimew
+	elabutil_check_time_a = btimew
 
 	if( bdebug ) then
-	  write(6,*) 'exclusive..........',btimew,it,binclusive
+	  write(6,*) 'exclusive..........',btimew,binclusive
 	  write(6,*) 'exclusive..........',atmin,atime,atmax
 	end if
 
 	if( .not. binclusive ) return
 
-	!write(6,*) 'inclusive..........',btimew,it,itnew
-
         if( btmin ) then
-          dtimenew = itnew
-          call fem_file_convert_time(datetime,dtimenew,atimenew)
-	  !write(6,*) 'checking min: ',atime,atmin,atimenew
 	  btimew = btimew .or. (atime < atmin .and. atmin < atimenew)
 	end if
         if( btmax ) then
-          dtimeold = itold
-          call fem_file_convert_time(datetime,dtimeold,atimeold)
 	  btimew = btimew .or. (atimeold < atmax .and. atmax < atime)
 	end if
 
-	elabutil_check_time = btimew
+	elabutil_check_time_a = btimew
 
-	end function elabutil_check_time
+	end function elabutil_check_time_a
 
+!************************************************************
+!************************************************************
 !************************************************************
 
 	subroutine elabutil_set_averaging(nvar)
@@ -355,9 +395,84 @@
 
 	end subroutine elabutil_set_averaging
 
+c***************************************************************
+
+	subroutine handle_nodes
+
+	integer i
+
+          if( bnodes ) then
+            nnodes = 0
+            call get_node_list(nodefile,nnodes,nodes)
+            allocate(nodes(nnodes))
+            call get_node_list(nodefile,nnodes,nodes)
+          else if( bnode ) then
+            nnodes = 1
+            allocate(nodes(nnodes))
+            nodes(1) = nodesp
+          end if
+
+          write(6,*) 'nodes: ',nnodes,(nodes(i),i=1,nnodes)
+          call convert_internal_nodes(nnodes,nodes)
+
+          if( bnode ) bnodes = .true.
+
+	end subroutine handle_nodes
+
+c***************************************************************
+
+	subroutine write_nodes(dtime,ivar,nlvddi,cv3)
+
+	double precision dtime
+	integer ivar
+	integer nlvddi
+	real cv3(nlvddi,*)
+
+	integer j,node,it
+
+        do j=1,nnodes
+          node = nodes(j)
+          it = dtime
+          call write_node(j,node,cv3,it,ivar)
+        end do
+
+	end subroutine write_nodes
+
 !====================================================
 	end module elabutil
 !====================================================
+
+c***************************************************************
+
+        subroutine outfile_make_depth(nkn,nel,nen3v,hm3v,hev,hkv)
+
+c averages vertically
+
+        implicit none
+
+        integer nkn,nel
+        integer nen3v(3,nel)
+        real hm3v(3,nel)
+        real hev(nel)
+        real hkv(nkn)
+
+        integer k,ie,ii
+        real h,hm
+
+	hkv = -huge(1.)
+
+        do ie=1,nel
+	  hm = 0.
+          do ii=1,3
+            k = nen3v(ii,ie)
+            h = hm3v(ii,ie)
+            hkv(k) = max(hkv(k),h)
+	    hm = hm + h
+          end do
+	  hev(ie) = hm / 3.
+        end do
+
+        end
 
 c***************************************************************
 

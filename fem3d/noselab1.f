@@ -43,7 +43,7 @@ c elaborates nos file
 	real, allocatable :: vol3(:,:)
 
 	integer, allocatable :: ivars(:)
-	integer, allocatable :: nodes(:)
+	!integer, allocatable :: nodes(:)
 
 	integer, allocatable :: naccu(:)
 	double precision, allocatable :: accum(:,:,:)
@@ -56,7 +56,7 @@ c elaborates nos file
 	integer nknnos,nelnos,nvar
 	integer ierr
 	integer it,ivar,itvar,itnew,itold,iaux,itstart
-	integer i,j,l,k,lmax,nnodes,node
+	integer i,j,l,k,lmax,node
 	integer ip,nb,naccum
 	integer ifile
 	character*80 title,name,file
@@ -140,21 +140,22 @@ c--------------------------------------------------------------
 
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
 
-	if( bnodes .or. bnode ) then
-	  if( bnodes ) then
-	    nnodes = 0
-	    call get_node_list(nodefile,nnodes,nodes)
-	    allocate(nodes(nnodes))
-	    call get_node_list(nodefile,nnodes,nodes)
-	  else
-	    nnodes = 1
-	    allocate(nodes(nnodes))
-	    nodes(1) = nodesp
-	  end if
-	  write(6,*) 'nodes: ',nnodes,(nodes(i),i=1,nnodes)
-	  call convert_internal_nodes(nnodes,nodes)
-	  bnodes = .true.
-	end if
+	call handle_nodes
+	!if( bnodes .or. bnode ) then
+	!  if( bnodes ) then
+	!    nnodes = 0
+	!    call get_node_list(nodefile,nnodes,nodes)
+	!    allocate(nodes(nnodes))
+	!    call get_node_list(nodefile,nnodes,nodes)
+	!  else
+	!    nnodes = 1
+	!    allocate(nodes(nnodes))
+	!    nodes(1) = nodesp
+	!  end if
+	!  write(6,*) 'nodes: ',nnodes,(nodes(i),i=1,nnodes)
+	!  call convert_internal_nodes(nnodes,nodes)
+	!  bnodes = .true.
+	!end if
 
 	!--------------------------------------------------------------
 	! time management
