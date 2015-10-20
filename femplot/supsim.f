@@ -68,6 +68,7 @@ c 30.05.2014    ggu	flag no data points and do not plot
 c 20.10.2014    ggu	new time management
 c 05.06.2015    ggu	some plotting routines adjourned (flag)
 c 14.09.2015    ggu	prepared for plotting velocities given in fem file
+c 20.10.2015    ccf	plotting element types
 c
 c notes :
 c
@@ -558,11 +559,11 @@ c plots node values
         call qcomm('Plotting isolines')
         call isoline(pa,nkn,0.,2)
 	call plot_dry_areas
-        call colsh
 
 	call bash(4)	! overlays grid
 
 	call bash(2)
+        call colsh
 	call qend
 
 	end
@@ -1204,9 +1205,22 @@ c bathymetry with grid (gray)
 	call bash(2)
 	call qend
 
-c special
+c element type with grid (gray)
+
+	call qstart
+	call bash(0)
+        call qcomm('Plotting element types')
 
 	call eltype0(nel,iarv)
+
+        call qcomm('before basin overlay');
+        call qlwidth(0.001)
+        call bash(3)    !gray grid
+        call colsh
+        call qcomm('after basin overlay');
+        call qlwidth(0.01)
+        call bash(2)
+        call qend
 
 c boundary line with net
 
@@ -1283,31 +1297,23 @@ c**************************************************************
 
 	implicit none
 
-	integer nel
-	integer iarv(1)
+	integer, intent(in)			:: nel
+	integer, dimension(nel), intent(in)	:: iarv
 
-	integer ie,ia
+	integer :: ie,ia
+	real	:: getcol,col
 
-	call qstart
-
-	call bash(0)
-
-        call qcomm('Plotting element types')
+! -----------------------------------------------
+! Assign color to each element in function of type
+! -----------------------------------------------
 
 	do ie=1,nel
 	  ia = iarv(ie)
-c	  if( ia .eq. 1 ) then					!channels
-c	  if( ia .ge. 3 .and. ia .le. 5 .or. ia .eq. 9 ) then	!inlets
-c	  if( ia .ne. 0 ) then					!special type
-c	  if( ia .ge. 3 .and. ia .le. 5 .or. ia .eq. 9 ) then	!inlets
-          if( ia .ge. 12 ) then                                 !valli pesca
-            call plotel(ie,0.4)
-          end if
+	  col = getcol(real(ia))
+          call plotel(ie,col)
 	end do
 
-        call bash(2)
-
-	call qend
+	return
 
 	end
 
