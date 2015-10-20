@@ -601,11 +601,11 @@ c plots element values
         call qcomm('Plotting element values')
         call isoline(pa,nel,0.,3)			!plot on elements
 	call plot_dry_areas
-        call colsh
 
 	call bash(4)	! overlays grid
-
 	call bash(2)
+        call colsh
+
 	call qend
 
 	end
@@ -967,6 +967,9 @@ c------------------------------------------------------------------
 	  end do
 	end if
 
+	call bash(4)
+	call bash(2)
+
 c------------------------------------------------------------------
 c plotting of color bar or scale arrow
 c------------------------------------------------------------------
@@ -983,8 +986,6 @@ c------------------------------------------------------------------
 c end of plot
 c------------------------------------------------------------------
 
-	call bash(4)
-	call bash(2)
 	call qend
 
 c------------------------------------------------------------------
@@ -1181,10 +1182,10 @@ c bathymetry with grid
         call qcomm('before basin overlay');
         call qlwidth(0.001)
 	call bash(1)    !black grid
-        call colsh
         call qcomm('after basin overlay');
         call qlwidth(0.01)
 	call bash(2)
+        call colsh
 	call qend
 
 c bathymetry with grid (gray)
@@ -1199,10 +1200,10 @@ c bathymetry with grid (gray)
         call qcomm('before basin overlay');
         call qlwidth(0.001)
 	call bash(3)    !gray grid
-        call colsh
         call qcomm('after basin overlay');
         call qlwidth(0.01)
 	call bash(2)
+        call colsh
 	call qend
 
 c element type with grid (gray)
@@ -1216,10 +1217,10 @@ c element type with grid (gray)
         call qcomm('before basin overlay');
         call qlwidth(0.001)
         call bash(3)    !gray grid
-        call colsh
         call qcomm('after basin overlay');
         call qlwidth(0.01)
         call bash(2)
+        call colsh
         call qend
 
 c boundary line with net
@@ -1283,9 +1284,9 @@ c**************************************************************
 
         call qcomm('Plotting isolines')
 	call isoline(hkv,nkn,0.,2)
-	call colsh
 
         call bash(2)
+	call colsh
 
 	call qend
 
