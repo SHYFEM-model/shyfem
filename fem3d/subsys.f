@@ -544,6 +544,54 @@ c \input{P_wind.tex}
 
 cc------------------------------------------------------------------------
 
+c DOCS  meteo                      Meteo and heat flux parameters
+
+c The next parameters deal with the heat and meteo forcing.
+
+c |iheat|	The type of heat flux algorithm (Default 1):
+c		\begin{description}
+c		\item[1] As in the AREG model
+c		\item[2] As in the POM model
+c		\item[3] Following A. Gill
+c		\item[4] Following Dejak
+c		\item[5] As in the GOTM model
+c		\item[6] Using the COARE3.0 module
+c		\item[7] Read  sensible, latent and longwave fluxes from file
+c		\end{description}
+
+	call addpar('iheat',1.)		!type of heat flux routine
+
+c |hdecay|	Depth of e-folding decay of radiation [m]. If |hdecay| = 0 
+c		everything is absorbed in first layer (Default 0).
+
+	call addpar('hdecay',0.)	!depth of e-folding decay of radiation
+
+c |botabs|	Heat absorption at bottom [fraction] (Default 0).
+c		\begin{description}
+c		\item[=0] everything is absorbed in last layer
+c		\item[=1] bottom absorbs remaining radiation
+c		\end{description}
+
+	call addpar('botabs',0.)	!heat absorption at bottom
+
+c |albedo|	General albedo (Default 0.06).
+
+	call addpar('albedo',0.06)	!general albedo
+
+c |albed4|	Albedo for temp below 4 degrees (Default 0.06).
+
+	call addpar('albed4',0.06)	!albedo for temp below 4 degrees
+
+c |imreg| 	Regular meteo data (Default 0).
+
+	call addpar('imreg',0.)		!regular meteo data
+
+c |ievap| 	Compute evaporation mass flux (Default 0).
+
+	call addpar('ievap',0.)		!compute evaporation mass flux
+
+cc------------------------------------------------------------------------
+
 c DOCS	3D			Parameters for 3d
 
 c The next parameters deal with the layer structure in 3D.
@@ -669,6 +717,12 @@ c		which means no assimilation of velocities)
 
 	call addpar('tauvel',0.)	!horizontal TVD scheme?
 
+c |rtide|	If |rtide| = 1 the model calculates equilibrium tidal 
+c		potential and load tides and uses these to force the 
+c		free surface (Default 0).
+
+	call addpar('rtide',0.)
+
 cc------------------------------------------------------------------------
 
 c DOCS	ST	Temperature and salinity
@@ -775,27 +829,6 @@ cc------------------------------------------------------------------------
 
 cc------------------------------------------------------------------------
 
-cc meteo and heat flux
-cc
-cc iheat         type of heat flux routine
-cc               1=areg  2=pom  3=gill  4=dejak  5=gotm
-cc hdecay        depth of e-folding decay of radiation [m]
-cc               0. ->   everything is absorbed in first layer
-cc botabs        heat absorption at bottom [fraction]
-cc               1. ->   bottom absorbs remaining radiation
-cc               0. ->   everything is absorbed in last layer
-
-	call addpar('imreg',0.)		!regular meteo data
-	call addpar('ievap',0.)		!compute evaporation mass flux
-
-	call addpar('iheat',1.)		!type of heat flux routine
-	call addpar('hdecay',0.)	!depth of e-folding decay of radiation
-	call addpar('botabs',0.)	!heat absorption at bottom
-	call addpar('albedo',0.06)	!general albedo
-	call addpar('albed4',0.06)	!albedo for temp below 4 degrees
-
-cc------------------------------------------------------------------------
-
 cc biological reactor
 
 	call addpar('ibio',0.)		!run biological reactor
@@ -805,10 +838,6 @@ cc toxicological routines from ARPAV
 	call addpar('itoxi',0.)		!run toxicological routines
 
 cc------------------------------------------------------------------------
-
-cc equilibrium tide
-
-	call addpar('rtide',0.)		!compute with equilibrium tide
 
 cc call routines in flux.f
 
@@ -840,11 +869,9 @@ c************************************************************************
 
 c $lagrg section
 
-c DOCS	START	S_lagrg
+c DOCS	START	P_lagrg
 c
-c DOCS	COMPULS		Lagrangian Module
-
-c This part describes the use of the Lagrangian Module.
+c This section describes the use of the Lagrangian Particle Module.
 c The lagrangian particles can be released inside a specified area with a
 c regular distribution. The area is defined in the file |lagra|.
 c The amount of particles released and the
@@ -964,11 +991,9 @@ c************************************************************************
 
 c $wrt section
 
-c DOCS  START   S_wrt
+c DOCS  START   P_wrt
 c
-c DOCS  COMPULS         Water Renewal Time module
-
-c Computes water renewal time online.
+c Parameters for computing water renewal time.
 c During runtime if writes a .jas file with timeseries of total tracer
 c concentration in the basin and WRT computed according to different methods.
 c Nodal values of computed WRT are written in the .wrt file.
@@ -1071,10 +1096,8 @@ c************************************************************************
 
 c $proj section
 
-c DOCS  START   S_proj
+c DOCS  START   P_proj
 c
-c DOCS  COMPULS         Parameters for projection
-
 c The parameter sets in this section handle the projection from cartesian to
 c geographical coordinate system. If |iproj| $>$0 the projected geographical 
 c coordinates can be used for computing spatially variable Coriolis parameter 
@@ -1098,35 +1121,38 @@ c		\end{description}
 
 	call addpar('iproj',0.)
 
-c |c_fuse|	Fuse for GB (1 or 2, default 0)
+c |c\_fuse|	Fuse for GB (1 or 2, default 0)
 
 	call addpar('c_fuse',0.)
 
-c |c_zone|	Zone for UTM (1-60, default 0)
+c |c\_zone|	Zone for UTM (1-60, default 0)
 
 	call addpar('c_zone',0.)
 
-c |c_lamb|	Central meridian for non-std UTM (default 0)
+c |c\_lamb|	Central meridian for non-std UTM (default 0)
 
 	call addpar('c_lamb',0.)
 
-c |c_x0,c_y0|	x0 and y0 for GB and UTM (default 0)
+c |c\_x0|	x0 for GB and UTM (default 0)
 
 	call addpar('c_x0',0.)
+
+c |c\_y0|	y0 for GB and UTM (default 0)
+
 	call addpar('c_y0',0.)
 
-c |c_skal|	Scale factor for non-std UTM (default 0.9996)
+c |c\_skal|	Scale factor for non-std UTM (default 0.9996)
 
 	call addpar('c_skal',0.9996)
 
-c |c_phi|	Central parallel for CPP (default 0.9996)
+c |c\_phi|	Central parallel for CPP (default 0.9996)
 
 	call addpar('c_phi',0.)
 
-c |c_lon0|	Longitude origin for CPP (default 0)
+c |c\_lon0|	Longitude origin for CPP (default 0)
 	call addpar('c_lon0',0.)
 
-c |c_lat0|	Latitude origin for CPP (default 0)
+c |c\_lat0|	Latitude origin for CPP (default 0)
 	call addpar('c_lat0',0.)
 
 c DOCS  END
@@ -1222,8 +1248,6 @@ c This subroutine defines the simulation wave parameter
 
 c DOCS  START   P_wave
 c
-c DOCS  COMPULS         Parameters in the waves section
-c 
 c The following parameters activate the wind wave module and define
 c which kind of wind wave model has to be used.
 !c |waves|      Wave module section name.
