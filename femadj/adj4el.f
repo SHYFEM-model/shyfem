@@ -23,8 +23,6 @@ c eliminates grade=4 nodes (and less)
 
 	implicit none
 
-	include 'param.h'
-
 	logical b3
 	integer k,n,nc
 
@@ -48,7 +46,7 @@ c iterate over 3 grades as long as there is no 3 grade node left
 	 end do
 	end do
 
-	call chkgrd(' ')
+	call chkgrd('checking after 3 grades')
 
 	write(6,*) 'eliminating 4 grades...'
 
@@ -57,10 +55,12 @@ c iterate over 3 grades as long as there is no 3 grade node left
 	    n = ngrade(k)
 	    if( n .eq. 4 ) then
 	      call elim4(k)
-	      call chkgrd(' ')	!FIXME
+	      !call chkgrd(' ')	!FIXME
 	    end if
 	  end if
 	end do
+
+	call chkgrd('checking after 4 grades')
 
 	end
 
@@ -68,19 +68,17 @@ c***********************************************************
 
 	subroutine elim3(k)
 
-c eliminates node
+c eliminates node and all attached elements
 
 	use mod_adj_grade
 	use basin
 
 	implicit none
 
-	include 'param.h'
-
 	integer k
 
 	integer i,n,kk,ie
-	integer neibs(30),ngneib(30)
+	integer neibs(ngr),ngneib(ngr)
 
 	integer ifindel
 
@@ -100,9 +98,7 @@ c delete grade from neibors
 
 	do i=1,n
 	  kk = neibs(i)
-c	  call prgr(kk,ngrdi,ngrade,ngri)
 	  call delgr(kk,k,ngrdi,ngrade,ngri)
-c	  call prgr(kk,ngrdi,ngrade,ngri)
 	end do
 
 c delete elements
@@ -136,13 +132,11 @@ c eliminates node
 
 	implicit none
 
-	include 'param.h'
-
 	integer k
 
 	integer i,n,k1,k2
 	integer ipos,ipos1,ipos2
-	integer neibs(30),ngneib(30)
+	integer neibs(ngr),ngneib(ngr)
 
 	logical bdebug
 	integer ie,ii,ip
@@ -194,7 +188,7 @@ c	can eliminate only if grade on both nodes is at least 6
 	end if
 
 	if( ipos .eq. 0 ) then
-		write(6,*) 'Cannot eliminate node.'
+		write(6,*) 'Cannot eliminate node: ',k
 c		write(6,*) (neibs(i),i=1,4)
 c		write(6,*) (ngneib(i),i=1,4)
 	else if( ipos1 .eq. ipos2 ) then

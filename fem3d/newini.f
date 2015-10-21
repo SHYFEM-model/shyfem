@@ -1088,6 +1088,7 @@ c sets coriolis parameter
 	include 'mkonst.h'
 	include 'pkonst.h'
 
+	logical bgeo
 	integer k,ie,ii
 	integer icor
 	integer isphe
@@ -1120,18 +1121,23 @@ c spherical setting the basin projection (iproj > 0)
 
 	rad = pi / 180.
 	dlat = dcor			! average latitude
+	fcorv = 0.
 
-	if( isphe .eq. 1 .or. iproj .ne. 0 ) then
+	if( icor < 0 ) return		! no coriolis
+
+	bgeo = ( isphe .eq. 1 .or. iproj .ne. 0 )  !use geographical coords
+
+	if( bgeo ) then
 	  yaux = ygeov
 	else
 	  yaux = ygv
 	end if
        
-	yc   = sum(yaux)/size(yaux)
+	yc   = sum(yaux)/nkn
 	ymin = minval(yaux)
 	ymax = maxval(yaux)
 
-	if( isphe .eq. 1 .or. iproj .ne. 0 ) dlat = yc		! get directly from basin
+	if( bgeo ) dlat = yc		! get directly from basin
 
 	aux1 = 0.
 	aux2 = 0.
@@ -1157,19 +1163,11 @@ c spherical setting the basin projection (iproj > 0)
 	    ym=ym+yaux(nen3v(ii,ie))
 	  end do
 	  ym=ym/3.
-	  if( isphe .eq. 0 ) then	!cartesian
-	    if (iproj .eq. 0) then	!xgeov not defined (no projection)
-  	      fcorv(ie)=aux1+aux2*(ym-yc)
-	    else			!xgeov defined
-	      fcorv(ie) = omega2*sin(ym*rad)
-	    end if
-	  else if( isphe .eq. 1 ) then	!spherical
-	    if( icor .lt. 0 ) then	! -> do not use
-	      fcorv(ie) = 0.
-	    else
-	      !fcorv(ie) = omega2*cos(ym*rad)	!BUG
-	      fcorv(ie) = omega2*sin(ym*rad)
-	    end if
+	  if( bgeo ) then			!spherical
+	    !fcorv(ie) = omega2*cos(ym*rad)	!BUG
+	    fcorv(ie) = omega2*sin(ym*rad)
+	  else if( isphe .eq. 0 ) then		!cartesian
+  	    fcorv(ie)=aux1+aux2*(ym-yc)
 	  else
 	    write(6,*) 'isphe = ',isphe
 	    if( isphe .eq. -1 ) write(6,*) '...not initialized'

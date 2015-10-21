@@ -464,6 +464,12 @@ void PsGraphOpen( void )
 	PsGraphInit("plot.ps");
 }
 
+void PsGraphOpenFile( char *file )
+
+{
+	PsGraphInit(file);
+}
+
 void PsGraphClose( void )
 
 {
@@ -1189,7 +1195,11 @@ void PsTextDimensions( char *s , float *width , float *height )
 	}
 
 	*height = SyVtoW * FontSize / (TFACTOR*POINTS_IN_CM);
-	*width  = (SxVtoW/SyVtoW) * empiric * (*height) * strlen(s);
+	if( SyVtoW > 0 ) {
+	  *width  = (SxVtoW/SyVtoW) * empiric * (*height) * strlen(s);
+	} else {
+	  *width = 0.;
+	}
 }
 
 void PsTextSetCenter( float hc , float vc )

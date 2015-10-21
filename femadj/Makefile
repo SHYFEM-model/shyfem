@@ -36,7 +36,7 @@ ADJOBJS	=	adj4el.o adj5el.o adj7el.o adj575.o \
 		adjplo.o adjgrd.o adjneu.o adjvar.o \
 		mod_adj_grade.o
 
-EXES	=	adjele
+EXES	=	shyadj
 
 SPECIAL =       Makefile TODO COMMIT VERSION
 SAVEFILES =     *.[fh] $(SPECIAL)
@@ -46,10 +46,10 @@ MAKEDEPEND = $(FEMBIN)/mkdp.pl
 #--------------------------------------------- EXES
 
 default: fem
-fem:	param adjele
+fem:	param shyadj
 all:	param $(EXES)
 
-adjele:  adjele.o $(ADJOBJS) $(OBJS) $(LIBIFS) $(LIBIPS)
+shyadj:  shyadj.o $(ADJOBJS) $(OBJS) $(LIBIFS) $(LIBIPS)
 	$(LINKER) $(LFLAGS) $@.o $(ADJOBJS) $(OBJS) $(LIBFS) $(LIBPS) -o $@
 
 #--------------------------------------------- clean
@@ -144,7 +144,7 @@ adj5el.o: param.h ../femlib/mod/basin.mod \
 		../femlib/mod/mod_adj_grade.mod 
 adj7el.o: param.h ../femlib/mod/basin.mod \
 		../femlib/mod/mod_adj_grade.mod 
-adjele.o: param.h ../femlib/mod/mod_depth.mod \
+shyadj.o: param.h ../femlib/mod/mod_depth.mod \
 		../femlib/mod/basin.mod \
 		../femlib/mod/mod_adj_grade.mod 
 adjgrd.o: nbstatic.h

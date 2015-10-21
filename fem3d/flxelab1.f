@@ -1,5 +1,5 @@
 c
-c $Id: noselab.f,v 1.8 2008-11-20 10:51:34 georg Exp $
+c $Id: flxelab.f,v 1.8 2008-11-20 10:51:34 georg Exp $
 c
 c revision log :
 c
@@ -12,11 +12,11 @@ c 08.11.2008    ggu     do not compute min/max in non-existing layers
 c 07.12.2010    ggu     write statistics on depth distribution (depth_stats)
 c 06.05.2015    ggu     noselab started
 c 05.06.2015    ggu     many more features added
-c 05.10.2015    ggu     variables in xv were used in the wromg order - fixed
+c 05.10.2015    ggu     started flxelab
 c
 c**************************************************************
 
-	subroutine extelab
+	subroutine flxelab
 
 	use clo
 	use elabutil
@@ -30,12 +30,11 @@ c elaborates nos file
 
 	implicit none
 
-	integer, allocatable :: iusplit(:,:)
+	integer, allocatable :: iusplit(:)
 
-	integer, allocatable :: knaus(:)
-	real, allocatable :: hdep(:)
-	real, allocatable :: xv(:,:)
-	real, allocatable :: speed(:)
+	integer, allocatable :: kflux(:)
+	integer, allocatable :: nlayers(:)
+	real, allocatable :: fluxes(:,:,:)
 
 	integer, allocatable :: naccu(:)
 	double precision, allocatable :: accum(:,:,:)
@@ -47,7 +46,9 @@ c elaborates nos file
 	integer it,ivar,itvar,itnew,itold,iaux
 	integer ii,i,j,l,k,lmax,nnodes,node
 	integer ip,nb,naccum
-	integer knausm
+	integer kfluxm
+	integer idtflx,nlmax,nsect
+	integer nscdi,nfxdi
 	character*80 title,name
 	character*20 dline
 	character*80 basnam,simnam
@@ -73,7 +74,7 @@ c--------------------------------------------------------------
 c set command line parameters
 c--------------------------------------------------------------
 
-	call elabutil_init('EXT')
+	call elabutil_init('FLX')
 
 	!--------------------------------------------------------------
 	! open input files
@@ -82,35 +83,42 @@ c--------------------------------------------------------------
 	modeb = 2
 	call ap_init(bask,modeb,0,0)
 
-	call open_nos_type('.ext','old',nin)
+	call open_nos_type('.flx','old',nin)
 
-        call ext_is_ext_file(nin,nvers)
+        call flx_is_flx_file(nin,nvers)
         if( nvers .le. 0 ) then
           write(6,*) 'nvers: ',nvers
-          stop 'error stop extelab: not a valid ext file'
+          stop 'error stop flxelab: not a valid flx file'
         end if
 
-	call ext_peek_header(nin,nvers,knausm)
-	nlv = 1
+	call flx_peek_header(nin,nvers,nsect,kfluxm,nlmax)
+	nscdi = nsect
+	nfxdi = kfluxm
+	nlvdi = nlmax
+	nlv = nlmax
 
-	allocate(knaus(knausm))
-	allocate(hdep(knausm))
-	allocate(xv(knausm,3))
-	allocate(speed(knausm))
-	allocate(iusplit(5,knausm))
+	allocate(kflux(kfluxm))
+	allocate(nlayers(nscdi))
+	allocate(fluxes(0:nlvdi,3,nscdi))
+	allocate(iusplit(nscdi))
 	iusplit = 0
 
-	call ext_read_header(nin,knausm,nvers,knausm,knaus,hdep
-     +                          ,href,hzmin,title)
+
+        call flx_read_header(nin,nscdi,nfxdi,nlvdi
+     +                          ,nvers
+     +                          ,nsect,kfluxm,idtflx,nlmax
+     +                          ,kflux,nlayers
+     +                          )
 
         write(6,*) 'nvers      : ',nvers
-        write(6,*) 'knausm     : ',knausm
-        write(6,*) 'href,hzmin : ',href,hzmin
-        write(6,*) 'title      : ',trim(title)
-        write(6,*) 'knaus      : '
-        write(6,*) (knaus(i),i=1,knausm)
-        write(6,*) 'hdep       : '
-        write(6,*) (hdep(i),i=1,knausm)
+        write(6,*) 'nsect      : ',nsect
+        write(6,*) 'kfluxm     : ',kfluxm
+        write(6,*) 'idtflx     : ',idtflx
+        write(6,*) 'nlmax      : ',nlmax
+        write(6,*) 'kflux      : '
+        write(6,*) (kflux(i),i=1,kfluxm)
+        write(6,*) 'nlayers       : '
+        write(6,*) (nlayers(i),i=1,nsect)
 
 	!--------------------------------------------------------------
 	! time management
@@ -130,12 +138,12 @@ c--------------------------------------------------------------
 	  allocate(naccu(istep))
 	  allocate(accum(nlvdi,nkn,istep))
 	else
-          allocate(naccu(1))
-          allocate(accum(1,1,1))
-        end if
-        naccum = 0
-        naccu = 0
-        accum = 0.
+	  allocate(naccu(1))
+	  allocate(accum(1,1,1))
+	end if
+	naccum = 0
+	naccu = 0
+	accum = 0.
 
 	!write(6,*) 'mode: ',mode,ifreq,istep
 
@@ -153,9 +161,9 @@ c--------------------------------------------------------------
 	end if
 
 	if( bopen ) then
-	  nb = ifileo(0,'out.ext','unform','new')
-	  call ext_write_header(nb,knausm,nvers,knausm,knaus,hdep
-     +                          ,href,hzmin,title)
+	  nb = ifileo(0,'out.flx','unform','new')
+	  call flx_write_header(nb,nvers,nsect,kfluxm
+     +			,idtflx,nlmax,kflux,nlayers)
 	end if
 
 c--------------------------------------------------------------
@@ -169,7 +177,8 @@ c--------------------------------------------------------------
 
 	 itold = it
 
-	 call ext_read_record(nin,nvers,it,knausm,xv,ierr)
+	 call flx_read_record(nin,nvers,it,nlvdi,nsect,ivar
+     +			,nlayers,fluxes,ierr)
          if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
          if(ierr.ne.0) exit
 	 nread=nread+1
@@ -178,7 +187,7 @@ c--------------------------------------------------------------
 	 nrec = nrec + 1
 
 	 if( nrec == 1 ) itold = it
-	 call ext_peek_record(nin,nvers,itnew,ierr)
+	 call flx_peek_record(nin,nvers,itnew,ierr)
 	 !write(6,*) 'peek: ',it,itnew,ierr
 	 if( ierr .ne. 0 ) itnew = it
 
@@ -195,16 +204,16 @@ c--------------------------------------------------------------
 	  if( bwrite ) then
 	    do l=1,nlv
 	      do ii=1,3
-	        call mimar(xv(:,ii),knausm,zmin,zmax,rnull)
-                call aver(xv(:,ii),knausm,zmed,rnull)
-	        write(6,*) what(ii),' min,max,aver : ',zmin,zmax,zmed
+	        !call mimar(xv(ii,:),kfluxm,zmin,zmax,rnull)
+                !call aver(xv(ii,:),kfluxm,zmed,rnull)
+	        !write(6,*) what(ii),' min,max,aver : ',zmin,zmax,zmed
 	      end do
-	      do ii=1,knausm
-	        speed(ii) = sqrt( xv(ii,1)**2 + xv(ii,2)**2 )
-	      end do
-	      call mimar(speed,knausm,zmin,zmax,rnull)
-              call aver(speed,knausm,zmed,rnull)
-	      write(6,*) what(4),' min,max,aver : ',zmin,zmax,zmed
+	      !do ii=1,kfluxm
+	      !  s(ii) = sqrt( xv(1,ii)**2 + xv(2,ii)**2 )
+	      !end do
+	      !call mimar(s,kfluxm,zmin,zmax,rnull)
+              !call aver(s,kfluxm,zmed,rnull)
+	      !write(6,*) what(4),' min,max,aver : ',zmin,zmax,zmed
 	    end do
 	  end if
 
@@ -224,12 +233,15 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( bsplit ) then
-            call split_xv(iusplit,it,knausm,what,xv)
+            call split_flx(it,nlvdi,nsect,ivar,iusplit,fluxes)
+            call fluxes_2d(it,nlvdi,nsect,ivar,fluxes)
+            call fluxes_3d(it,nlvdi,nsect,ivar,nlayers,fluxes)
 	  end if
 
 	  if( boutput ) then
 	    if( bverb ) write(6,*) 'writing to output: ',ivar
-            call ext_write_record(nb,nvers,it,knausm,xv)
+            call flx_write_record(nb,nvers,it
+     +			,nlvdi,nsect,ivar,nlayers,fluxes)	!FIXME
 	  end if
 
 	end do		!time do loop
@@ -270,15 +282,9 @@ c--------------------------------------------------------------
 
 	if( bsplit ) then
 	  write(6,*) 'output written to following files: '
-	  write(6,*) '   [zuvma].[1-9]'
-!	  do ivar=1,ndim
-!	    if( iusplit(ivar) .gt. 0 ) then
-!              write(name,'(i4)') ivar
-!	      write(6,*) trim(adjustl(name))//'.nos'
-!	    end if
-!	  end do
+	  write(6,*) '   p.[1-9]'
 	else if( boutput ) then
-	  write(6,*) 'output written to file out.ext'
+	  write(6,*) 'output written to file out.flx'
 	end if
 
 	call ap_get_names(basnam,simnam)
@@ -308,25 +314,25 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-        subroutine split_xv(iusplit,it,knausm,what,xv)
+        subroutine split_xv_0(iusplit,it,kfluxm,what,xv)
 
         implicit none
 
-        integer iusplit(5,knausm)
+        integer iusplit(5,kfluxm)
 	integer it
-        integer knausm
+        integer kfluxm
         character*1 what(5)
-        real xv(knausm,3)
+        real xv(3,kfluxm)
 
 	integer i,ii,iu
-	real speed
+	real s
         character*80 name
         character*70 numb
 
 	iu = 100
 
 	if( iusplit(1,1) == 0 ) then
-	  do i=1,knausm
+	  do i=1,kfluxm
 	    do ii=1,5
 	      iu = iu + 1
 	      iusplit(ii,i) = iu
@@ -339,19 +345,133 @@ c***************************************************************
 	  end do
 	end if
 
-	do i=1,knausm
+	do i=1,kfluxm
 	  do ii=1,3
 	    iu = iusplit(ii,i)
-	    write(iu,*) it,xv(i,ii)
+	    write(iu,*) it,xv(ii,i)
 	  end do
 	  iu = iusplit(4,i)
-	  speed = sqrt( xv(i,1)**2 + xv(i,2)**2 )
-	  write(iu,*) it,speed
+	  s = sqrt( xv(1,ii)**2 + xv(2,ii)**2 )
+	  write(iu,*) it,s
 	  iu = iusplit(5,i)
-	  write(iu,*) it,xv(i,3),xv(i,1),xv(i,2),speed
+	  write(iu,*) it,xv(3,i),xv(1,i),xv(2,i),s
 	end do
 
         end
 
 c***************************************************************
+
+        subroutine fluxes_2d(it,nlvddi,nsect,ivar,fluxes)
+
+c writes 2d fluxes to file (only for ivar=0)
+
+        implicit none
+
+        integer it                      !time
+        integer nlvddi                  !vertical dimension
+        integer nsect                   !total number of sections
+        integer ivar                    !type of variable (0: water fluxes)
+        real fluxes(0:nlvddi,3,nsect)   !fluxes
+
+        integer iunit,i,lmax,l,j
+        real ptot(4,nsect)
+
+        if( ivar .ne. 0 ) return
+
+        do i=1,nsect
+          ptot(1,i) = fluxes(0,1,i)                     !total
+          ptot(2,i) = fluxes(0,2,i)                     !positive
+          ptot(3,i) = fluxes(0,3,i)                     !negative
+          ptot(4,i) = fluxes(0,2,i) + fluxes(0,3,i)     !absolute
+        end do
+
+        write(66,'(i10,20f10.2)') it,(ptot(1,i),i=1,nsect)      !total
+        write(67,'(i10,20f10.2)') it,(ptot(2,i),i=1,nsect)      !positive
+        write(68,'(i10,20f10.2)') it,(ptot(3,i),i=1,nsect)      !negative
+        write(69,'(i10,20f10.2)') it,(ptot(4,i),i=1,nsect)      !absolute
+
+c next is box format for Ali
+
+        write(61,*) it
+        write(61,*) 0
+        write(61,*) nsect
+        do i=1,nsect
+          write(61,*) 0,0,(ptot(j,i),j=1,3)
+        end do
+
+        end
+
+c****************************************************************
+
+        subroutine fluxes_3d(it,nlvddi,nsect,ivar,nlayers,fluxes)
+
+c writes 3d fluxes to file
+
+        implicit none
+
+        integer it                      !time
+        integer nlvddi                  !vertical dimension
+        integer nsect                   !total number of sections
+        integer ivar                    !type of variable (0: water fluxes)
+        integer nlayers(nsect)          !max layers for section
+        real fluxes(0:nlvddi,3,nsect)   !fluxes
+
+        integer iunit,i,lmax,l,j
+
+        iunit = 160 + ivar
+
+        write(iunit,*) it,nsect,ivar
+        do i=1,nsect
+          lmax = nlayers(i)
+          write(iunit,*) i,lmax
+          do l=0,lmax
+            write(iunit,*) l,(fluxes(l,j,i),j=1,3)
+          end do
+        end do
+
+        end
+
+c****************************************************************
+
+        subroutine split_flx(it,nlvddi,nsect,ivar,iusplit,fluxes)
+
+c writes data to file name.number
+
+        implicit none
+
+        integer it
+	integer nlvddi
+	integer nsect
+	integer ivar
+        integer iusplit(nsect)
+        real fluxes(0:nlvddi,3,nsect)   !fluxes
+
+        integer i,ii,iu
+        integer in
+        character*80 numlin,file
+        integer ialfa,ifileo
+
+        if( ivar .ne. 0 ) return
+
+	do i=1,nsect
+	  iu = iusplit(i)
+	  if( iu == 0 ) then
+            in = ialfa(float(i),numlin,-1,-1)
+            file = 'p' // '.' // numlin(1:in)
+	    iu = ifileo(200,file,'form','new')
+	    if( iu <= 0 ) then
+	      write(6,*) 'cannot open file for writing: ',trim(file)
+	      stop 'error stop split_flx: cannot open file'
+	    end if
+	    iusplit(i) = iu
+	  end if
+
+	  !write(iu,*) it,(fluxes(0,ii,i),ii=1,3)
+	  write(iu,*) it,fluxes(0,1,i)
+	end do
+
+        end
+
+c*******************************************************************
+
 

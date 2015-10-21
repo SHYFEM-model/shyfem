@@ -69,6 +69,7 @@ c 19.12.2014    ggu     accept date also as string
 c 23.12.2014    ggu     fractional time step introduced
 c 07.01.2015    ggu     fractional time step without rounding (itsplt=3)
 c 23.09.2015    ggu     time step is now working with dt as double
+c 10.10.2015    ggu     use bsync as global to check for syncronization
 c
 c************************************************************
 c
@@ -89,17 +90,15 @@ c prints time after time step
         real perc,dt
 
 	integer year,month,day,hour,min,sec
-	integer isplit
-	save isplit
+	integer, save :: isplit
+	double precision daux
 
 	character*20 line
 	character*9 frac
 	double precision dgetpar
 	logical dts_has_date
 
-	integer icall
-	save icall
-	data icall /0/
+	integer, save :: icall = 0
 
 c---------------------------------------------------------------
 c set parameters and compute percentage of simulation
@@ -119,12 +118,34 @@ c---------------------------------------------------------------
 c compute total number of iterations
 c---------------------------------------------------------------
 
-	if( idt .gt. 0 ) then
+	nit1 = 0
+	idtfrac = 0
+
+	if( bsync ) then	!syncronization - do not count
+	  !
+	else if( idt .gt. 0 ) then
           nit1 = niter + (itend-it)/idt
-	  idtfrac = 0
+	else if( dt_act > 0 ) then
+          daux = (itend-t_act)/dt_act
+	  if( daux > 1000000000. ) then
+	    write(6,*) '******************************************'
+	    write(6,*) '******************************************'
+	    write(6,*) '******************************************'
+	    write(6,*) t_act,dt_act,itanf,itend
+	    write(6,*) daux
+	    write(6,*) niter,bsync
+	    write(6,*) '******************************************'
+	    write(6,*) '******************************************'
+	    write(6,*) '******************************************'
+	    stop 'error stop print_time: internal error'
+	  else
+            nit1 = niter + nint((itend-t_act)/dt_act)
+	    idtfrac = nint(1./dt_act)
+	  end if
 	else
-          nit1 = niter + nint((itend-t_act)/dt_act)
-	  idtfrac = nint(1./dt_act)
+	  write(6,*) 'idt,dt_act: ',idt,dt_act
+	  write(6,*) 'warning: time step was 0'
+	  stop 'error stop print_time: 0 time step'
 	end if
 
 	nit2 = nit1
@@ -342,7 +363,7 @@ c controls time step
 
 	include 'femtime.h'
 
-	logical bsync,bdebug
+	logical bdebug
         integer idtdone,idtrest,idts
 	integer irepeat
         integer iloop,itloop

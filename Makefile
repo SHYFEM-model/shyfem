@@ -47,7 +47,7 @@ SUBDIRS   = `ls -dF * | grep  '/' | sed -e 's/\///'`
 FEMLIBS   = femcheck post hcbs
 FEMC      = grid mesh
 FEMPROG   = fem3d femplot femadj femspline
-FEMUTIL   = femregress femdoc fembin femlib femanim
+FEMUTIL   = $(REGRESSDIR) femdoc fembin femlib femanim
 FEMOPT    = femgotm femersem
 FEMEXTRA  = 
 PARAMDIRS = fem3d femplot femadj #femspline
@@ -131,7 +131,7 @@ links:
 	-rm -f bin lib
 	-ln -sf fembin bin
 	-ln -sf femlib lib
-	#[ ! -d ./femregress ] && -ln -sf femdummy femregress
+	@#[ ! -d ./femregress ] && -ln -sf femdummy femregress
 	if test ! -d ./femregress; then ln -s femdummy femregress; fi
 
 #---------------------------------------------------------------
@@ -298,14 +298,14 @@ revision:
 	 $(FEMBIN)/revision_last
 
 rules_ggu:
-	cp -f rules/Rules.ggu ./Rules.make
+	cp -f arc/rules/Rules.ggu ./Rules.make
 
 rules_save:
-	cp -f rules/Rules.save ./Rules.make
+	cp -f arc/rules/Rules.save ./Rules.make
 
 dist: cleandist
-	mv --backup=numbered ./Rules.make rules/Rules.save
-	cp -f rules/Rules.dist ./Rules.make
+	mv --backup=numbered ./Rules.make arc/rules/Rules.save
+	cp -f femcheck/Rules.dist ./Rules.make
 	make doc; make clean
 
 stable:

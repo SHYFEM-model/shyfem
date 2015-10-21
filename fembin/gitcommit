@@ -4,6 +4,7 @@
 #
 #------------------------------------------------------------
 femdir=~/shyfem/
+femdir=.
 fembin=$femdir/fembin
 commit_file=./COMMIT
 version_file=./VERSION
@@ -38,7 +39,10 @@ GetSpecial()
 # cd to base dir and get info
 #------------------------------------------------------------
 
+#echo "going into $femdir"
 cd $femdir
+#actdir=$((pwd))
+#echo "now in $actdir"
 
 git status
 git diff --cached --stat

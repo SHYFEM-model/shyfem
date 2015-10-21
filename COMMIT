@@ -1,5 +1,77 @@
 ============================================================
 
+Tue Oct 13 20:05:32 CEST 2015
+
+New version 7_3_5
+
+
+============================================================
+
+Tue Oct 13 20:02:30 CEST 2015
+
+bug fix for cartesian coords
+
+ .gitignore            |    3 +++
+ Makefile              |    4 ++--
+ fem3d/shyfem.f        |    2 +-
+ fem3d/subcoord.f      |    9 +++++++--
+ femcheck/check_var.sh |    2 ++
+ 5 files changed, 15 insertions(+), 5 deletions(-)
+
+============================================================
+
+Mon Oct 12 20:51:14 CEST 2015
+
+New version 7_3_4a
+
+
+============================================================
+
+Mon Oct 12 18:31:58 CEST 2015
+
+New version 7_3_4
+
+
+============================================================
+
+Mon Oct 12 18:26:58 CEST 2015
+
+new release
+
+ BUG           |    3 +++
+ LOG           |   32 ++++++++++++++++++++++++++++++++
+ RELEASE_NOTES |   12 ++++++++++++
+ 3 files changed, 47 insertions(+), 0 deletions(-)
+
+============================================================
+
+Mon Oct 12 17:39:00 CEST 2015
+
+New version 7_3_3
+
+
+============================================================
+
+Sat Oct 10 12:27:28 CEST 2015
+
+New version 7_3_2
+
+
+============================================================
+
+Sat Oct 10 12:11:03 CEST 2015
+
+Pull request from Christian
+
+ LOG                   |   12 +++++++++
+ RELEASE_NOTES         |    8 ++++++
+ fem3d/Makefile        |   60 ++++++++++++++++++++++++------------------------
+ fembin/gitcommit      |    4 +++
+ femcheck/check_var.sh |    6 +++-
+ 5 files changed, 58 insertions(+), 32 deletions(-)
+
+============================================================
+
 Wed Sep 30 15:54:17 CEST 2015
 
 New version 7_2_6

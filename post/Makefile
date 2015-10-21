@@ -126,7 +126,7 @@ cleanvar:
 	-rm -f ggg hhh
 	-rm -f mon.out nohup.out
 	-rm -f fort.* *.tmp
-	-rm -f plot.ps plot.*.ps
+	-rm -f plot.ps plot.*.ps demo.ps
 	-rm -f plot.pdf plot.*.pdf
 	-rm -f out.ps out.*.ps
 	-rm -f *.stackdump
@@ -157,10 +157,10 @@ save:   cleanall
 #----------------------------
 
 .c.o:
-	$(CC)  -c $(CFLAGS) $<
+	$(CC)  -c -g $(CFLAGS) $<
 		 
 .f.o:
-	$(F77) -c $(FFLAGS) $<
+	$(F77) -c -g $(FFLAGS) $<
 
 #----------------------------
 

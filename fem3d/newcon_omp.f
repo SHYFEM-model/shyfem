@@ -221,7 +221,9 @@ c----------------------------------------------------------------
 
 !$OMP END PARALLEL 
 
-	cn1 = cn
+	!cn1 = 0.
+	!cn1 = cn
+	cn1 = real(cn)
 
 	DEALLOCATE(cn)
 	DEALLOCATE(co)
@@ -666,6 +668,9 @@ c*****************************************************************
 	integer :: l,ilevel,lstart,i,ii,ie,n,ibase
 	double precision :: mflux,qflux,cconz
 	double precision :: loading,aux
+
+	double precision, parameter :: d_tiny = tiny(1.d+0)
+	double precision, parameter :: r_tiny = tiny(1.)
       
 ! ----------------------------------------------------------------
 !  handle boundary (flux) conditions

@@ -22,6 +22,8 @@ CheckExe()
       :
     elif [ $file = INSTALL-LIST -o $file = README ]; then
       :
+    elif [ $file = Rules.dist ]; then
+      :
     else
       echo "*** file is not executable: $file"
     fi
@@ -30,6 +32,8 @@ CheckExe()
   popd > /dev/null
 }
 
-CheckExe $SHYFEMDIR/fembin
-CheckExe $SHYFEMDIR/femcheck
+#pwd
+
+CheckExe fembin
+CheckExe femcheck
 

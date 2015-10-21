@@ -5,6 +5,7 @@
 !
 ! 15.07.2015	ggu	written from scratch
 ! 22.09.2015	ggu	new routine open_shy_file()
+! 10.10.2015	ggu	code added to handle FLX routines
 !
 !************************************************************
 
@@ -110,12 +111,14 @@
           call clo_init('ouselab','ous-file','3.0')
 	else if( type == 'EXT' ) then
           call clo_init('extelab','ext-file','3.0')
+	else if( type == 'FLX' ) then
+          call clo_init('extelab','flx-file','3.0')
 	else
 	  write(6,*) 'type : ',trim(type)
 	  stop 'error stop elabutil_set_options: unknown type'
 	end if
 
-        call clo_add_info('returns info on or elaborates a nos file')
+        call clo_add_info('returns info on or elaborates a shy file')
 
         call clo_add_sep('what to do (only one of these may be given)')
 
@@ -215,6 +218,8 @@
             call shyfem_copyright('ouselab - Elaborate OUS files')
 	  else if( type == 'EXT' ) then
             call shyfem_copyright('extelab - Elaborate EXT files')
+	  else if( type == 'FLX' ) then
+            call shyfem_copyright('flxelab - Elaborate FLX files')
 	  else
 	    write(6,*) 'type : ',trim(type)
 	    stop 'error stop elabutil_get_options: unknown type'

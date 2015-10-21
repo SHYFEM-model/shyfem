@@ -40,7 +40,7 @@
 	real, save :: usfact
 	real, save :: uxfact
 
-	logical, save :: bsmooth		!internal - should I smooth
+	logical, save :: bsmooth	!internal - should I smooth
 	real, save :: hmin
 	real, save :: hmax
 	real, save :: asmooth
@@ -50,6 +50,8 @@
 	logical, save :: bquiet
 
         character*80, save :: infile
+
+	logical, save :: breadbas	!internal - true if file read is bas
 
 !====================================================
 	contains

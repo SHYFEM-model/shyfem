@@ -72,7 +72,7 @@ echo " "
 # run program
 #---------------------------------------------------
 
-$timecommand $program < $strfile
+$timecommand $program $strfile
 
 date=`$datecommand`
 

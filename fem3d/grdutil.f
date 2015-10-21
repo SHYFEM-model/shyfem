@@ -51,7 +51,7 @@
 	  ibase = ipntev(ie-1)
 	  n = ipntev(ie) - ipntev(ie-1)
 	  if( n .ne. 3 ) then
-	write(6,*) (ipntev(i),i=0,10)
+	    !write(6,*) (ipntev(i),i=0,10)
 	    write(6,*) 'element is not triangle: ',ie,ippev(ie)
 	    stop 'error stop grd_to_basin: not a triangle'
 	  end if
@@ -76,7 +76,22 @@
 
 	if( nhe > 0 .and. nhn > 0 ) then
 	  write(6,*) 'nhe,nhn: ',nhe,nhn
-	  stop 'error stop grd_to_basin: both nhe and nhn > 0'
+	  if( nhe == nel .and. nhn ==nkn ) then
+	    write(6,*) 'can use both depths...'
+	    write(6,*) '... using element values'
+	    nhn = 0
+	  else if( nhe == nel ) then
+	    write(6,*) 'depth on nodes incomplete...'
+	    write(6,*) '... using element values'
+	    nhn = 0
+	  else if( nhn == nkn ) then
+	    write(6,*) 'depth on elements incomplete...'
+	    write(6,*) '... using nodal values'
+	    nhe = 0
+	  else
+	    write(6,*) 'depth values are incomplete...'
+	    stop 'error stop grd_to_basin: depth incomplete'
+	  end if
 	end if
 
 	write(6,*) 'nhe,nhn: ',nhe,nhn

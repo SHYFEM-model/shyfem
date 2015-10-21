@@ -16,6 +16,7 @@
         integer, private, save :: mbw_amat = 0
 
 	integer, save :: iprec = 0
+	integer, save :: nthpard = 8	! Number of threads for Pardiso solver
 	integer, save :: nnzero = 0
 	integer, save :: csrdim = 0
 
@@ -33,6 +34,9 @@
         integer, allocatable, save :: ijp(:)
 
         double precision, allocatable, save :: amat(:)
+
+        double precision, parameter :: d_tiny = tiny(1.d+0)
+        double precision, parameter :: r_tiny = tiny(1.)
 
 !==================================================================
 	contains

@@ -2569,6 +2569,7 @@ c DOCS  END
         integer ie,k,ii
 
         high = 1.d30
+	bbe = 0.
 
         do ie=1,nel
           h = 0.d0
@@ -3706,8 +3707,9 @@ c DOCS  END
 
         integer k,kn,n,ibase,i,l
 
-
         if ( smooth .eq. 1.d0 ) return
+
+	baux = 0.
 
         do k = 1,nkn
           saux = 0.

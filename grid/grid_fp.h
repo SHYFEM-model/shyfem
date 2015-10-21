@@ -112,6 +112,8 @@ void SetActLine( int line ) ;
 int GetActVect( void ) ;
 void SetActVect( int vect ) ;
 
+Rect *GetActPlotWindow( void ) ;
+
 void PlotFieldInput( int horiz , int verti , int button );
 void MenuFieldInput( int horiz , int verti );
 void KeyboardInput( int c );
@@ -152,6 +154,8 @@ void MakeNodeActive( int node );
 void MakeElemActive( int elem );
 void MakeLineActive( int line );
 void MakeVectActive( int line );
+
+void MakeNewCenter( Rect *gp , float *x , float *y , float fact );
 
 void ZoomInOut(Rect *gp , float x , float y , float fact );
 void MoveRelative(Rect *gp , float dx , float dy );
