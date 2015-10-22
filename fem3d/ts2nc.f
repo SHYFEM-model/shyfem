@@ -94,15 +94,15 @@ c-----------------------------------------------------------------
         call nc_open_ts(ncid,nodes,date0,time0)
 	call nc_global(ncid,descrp)
 
-	std = 'sea_surface_height_correction_due_to_air_pressure_and_wind_at
-     +_high_frequency'
+	std = 'sea_surface_height_correction_due_to_air_pressure' //
+     +		'_and_wind_at_high_frequency'
 	units = 'm'
 	call nc_define_2d(ncid,'storm_surge',surge_id)
 	call nc_define_attr(ncid,'units',units,surge_id)
 	call nc_define_attr(ncid,'standard_name',std,surge_id)
 
-	std = 'sea_surface_height_amplitude_due_to_non_equilibrium_ocean_tid
-     +e'
+	std = 'sea_surface_height_amplitude_due_to_non_equilibrium' //
+     +		'_ocean_tide'
 	units = 'm'
 	call nc_define_2d(ncid,'astronomical_tide',tide_id)
 	call nc_define_attr(ncid,'units',units,tide_id)

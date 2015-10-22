@@ -659,13 +659,13 @@ c-------------------------------------------------------------
 
 	!tempo = openmp_get_wtime()
 
-! !$OMP PARALLEL 
-! !$OMP SINGLE
+!$OMP PARALLEL 
+!$OMP SINGLE
 
 	do ie=1,nel,250
-! !$OMP TASK FIRSTPRIVATE(ie,bcolin,baroc,az,am,af,at,radv
-! !$OMP& 	   ,vismol,rrho0,dt) PRIVATE(ies,iend)
-! !$OMP&     SHARED(nel)	 DEFAULT(NONE)
+!$OMP TASK FIRSTPRIVATE(ie,bcolin,baroc,az,am,af,at,radv
+!$OMP& 	   ,vismol,rrho0,dt) PRIVATE(ies,iend)
+!$OMP&     SHARED(nel)	 DEFAULT(NONE)
 	 
  	  iend = ie+249
  	  if(iend .gt. nel) iend = nel
@@ -674,12 +674,12 @@ c-------------------------------------------------------------
 	    call sp256v_intern(ies,bcolin,baroc,az,am,af,at,radv
      +			,vismol,rrho0,dt)
 	  end do
-! !$OMP END TASK
+!$OMP END TASK
 	end do
-! !$OMP END SINGLE
-! !$OMP TASKWAIT	
+!$OMP END SINGLE
+!$OMP TASKWAIT	
+!$OMP END PARALLEL      
 
-! !$OMP END PARALLEL      
 
 	!tempo = openmp_get_wtime() - tempo
 	!write(66,*) it,tempo

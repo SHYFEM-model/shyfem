@@ -798,6 +798,7 @@
 	read(iunit,iostat=ierr) dtime,ivar,n,m,lmax
 	if( ierr /= 0 ) return
 
+	allocate(il(n))
 	if( n == pentry(id)%nkn ) then
 	  il = pentry(id)%ilhkv
 	else if( n == pentry(id)%nel ) then
@@ -822,6 +823,7 @@
      +			,j=1,m )
      +			,i=1,n )
 	end if
+	deallocate(il)
 
 	end subroutine shy_read_record
 
@@ -954,6 +956,7 @@
 	write(iunit,iostat=ierr) dtime,ivar,n,m,lmax
 	if( ierr /= 0 ) return
 
+	allocate(il(n))
 	if( n == pentry(id)%nkn ) then
 	  il = pentry(id)%ilhkv
 	else if( n == pentry(id)%nel ) then
@@ -976,6 +979,7 @@
      +			,j=1,m )
      +			,i=1,n )
 	end if
+	deallocate(il)
 
 	end subroutine shy_write_record
 

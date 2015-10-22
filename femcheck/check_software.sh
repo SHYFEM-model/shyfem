@@ -23,10 +23,10 @@ CheckCommand()
   status=$?
 
   if [ $status -eq $error ]; then
-    echo "... $name is installed"
+    echo "... $name is ${green}installed${normal}"
   else
     if [ "$options" != "quiet" ]; then
-      echo "*** $name is not installed"
+      echo "*** $name is ${red}not installed${normal}"
     fi
     missing="$missing $name"
   fi
@@ -95,7 +95,8 @@ CheckFortranCompiler()
 
 CheckX11()
 {
-  CheckCommand X11 "gcc -L/usr/X11/lib -L/usr/X11R6/lib -lXt -lX11 test.c"
+  CheckCommand "X11-develop" \
+		"gcc -L/usr/X11/lib -L/usr/X11R6/lib -lXt -lX11 test.c"
 
   if [ $status -ne 0 ]; then
     echo "*** X11 development package must be installed"
@@ -133,61 +134,81 @@ GetMacro()	# gets macro from Rules.make file
   echo "$macro"
 }
 
+SetColors()
+{
+  ncolors=$(tput colors)
+  if test -n "$ncolors" && test $ncolors -ge 8; then
+        bold="$(tput bold)"
+        underline="$(tput smul)"
+        standout="$(tput smso)"
+        normal="$(tput sgr0)"
+        black="$(tput setaf 0)"
+        red="$(tput setaf 1)"
+        green="$(tput setaf 2)"
+        yellow="$(tput setaf 3)"
+        blue="$(tput setaf 4)"
+        magenta="$(tput setaf 5)"
+        cyan="$(tput setaf 6)"
+        white="$(tput setaf 7)"
+  fi
+}
+
 #---------------------------------------------------
 
+SetColors
 CreateInputFiles
 
 echo
-echo "... checking base applications... (needed)"
+echo "... ${bold}checking base applications... (needed)${normal}"
 
 CheckCommand make "make -v"
 CheckCommand bash "bash --version"
 CheckCommand perl "perl -v"
 
 echo
-echo "... checking Fortran compilers (needed)"
+echo "... ${bold}checking Fortran compilers (needed)${normal}"
 
 CheckFortranCompiler
 
 echo
-echo "... checking c compiler and X11 (needed)"
+echo "... ${bold}checking c compiler and X11 (needed)${normal}"
 
 CheckCommand gcc "gcc -v"
 CheckCommand g++ "g++ -v"
 CheckX11
 
 echo
-echo "... commodity programs (recommended)"
+echo "... ${bold}commodity programs (recommended)${normal}"
 CheckCommand dialog  "dialog --version"
 
 echo
-echo "... checking graphical routines (recommended)"
+echo "... ${bold}checking graphical routines (recommended)${normal}"
 
 CheckCommand "ghostview (gv)" "gv --version"
-CheckCommand ghostscript "gs -v"
+CheckCommand "ghostscript (gs)" "gs -v"
 CheckCommand gnuplot "gnuplot quit.tmp"
-CheckCommand ImageMagic "mogrify -version"
+CheckCommand "ImageMagick (imagemagick)" "mogrify -version"
 CheckCommand gifsicle "gifsicle --version"
 CheckNetcdf
 
 echo
-echo "... checking additional routines (not urgently needed)"
+echo "... ${bold}checking additional routines (not urgently needed)${normal}"
 
-CheckCommand latex "latex -v"
+CheckCommand "latex (texlive-full)" "latex -v"
 CheckCommand dvips "dvips -v"
 CheckCommand python "python -V"
 
 CheckCommand ssh "ssh -V"
 CheckCommand at "at -l"
-CheckCommand dnotify "dnotify --version"
 
-CheckCommand "Acrobat Reader" "acroread -help"
+#CheckCommand dnotify "dnotify --version"
+#CheckCommand "Acrobat Reader" "acroread -help"
 
 if [ -n "$missing" ]; then
   echo ""
-  echo "The following programs seem not be installed: "
+  echo "${bold}The following programs seem not be installed: ${normal}"
   echo ""
-  echo    "$missing"
+  echo    "${red}$missing${normal}"
   echo ""
   echo "Please see the messages above to find out if these programs"
   echo "are indispensable to run the model."
@@ -197,6 +218,10 @@ if [ -n "$missing" ]; then
   echo "tool that comes with your distribution."
   echo "Search for the keyword of the missing file and then install"
   echo "the files on your harddisk."
+  echo ""
+else
+  echo ""
+  echo    "${green}All programs installed${normal}"
   echo ""
 fi
 

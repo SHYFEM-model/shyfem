@@ -7,6 +7,12 @@
 compilers="GNU_GFORTRAN INTEL"
 #compilers="GNU_GFORTRAN"
 
+rules_arc_dir=./arc/rules
+rules_dist_dir=./femcheck
+
+rules_save=$rules_arc_dir/Rules.save
+rules_dist=./femcheck/Rules.dist
+
 #--------------------------------------------------------
 
 #trap Clean_up SIGHUP SIGINT SIGTERM
@@ -22,8 +28,8 @@ Clean_up()
 Clean_before()
 {
   rm -f *.out *.tmp
-  mv --backup=numbered ./Rules.make ./rules/Rules.save
-  cp ./rules/Rules.dist ./Rules.make
+  mv --backup=numbered ./Rules.make $rules_save
+  cp $rules_dist ./Rules.make
   [ -f allstdout.txt ] && rm allstdout.txt
   [ -f allstderr.txt ] && rm allstderr.txt
 }
@@ -32,15 +38,15 @@ Clean_after()
 {
   rm -f *.tmp
   rm -f stdout.out stderr.out
-  mv -f ./rules/Rules.save ./Rules.make
+  mv -f $rules_save ./Rules.make
   [ -f allstdout.txt ] && mv allstdout.txt allstdout.tmp
   [ -f allstderr.txt ] && mv allstderr.txt allstderr.tmp
 }
 
 SetUp()
 {
-  mkdir -p ./rules
-  [ -f ./rules/Rules.dist ] || cp ./Rules.make ./rules/Rules.dist
+  mkdir -p $rules_arc_dir $rules_dist_dir
+  [ -f $rules_dist ] || cp ./Rules.make $rules_dist
 }
 
 WrapUp()

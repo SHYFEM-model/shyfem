@@ -733,27 +733,27 @@ c*****************************************************************
 
 !$      call omp_set_nested(.TRUE.)
 	
-! !$OMP PARALLEL
-! 
-! !$OMP SINGLE 
-! 
-! !$OMP TASKGROUP
-! 
-! !$OMP TASK 
+!$OMP PARALLEL
+
+!$OMP SINGLE 
+
+!$OMP TASKGROUP
+
+!$OMP TASK 
 	
 	call barocl(1)
 	
 	!print *, " end barocl"
-! !$OMP END TASK
-! !$OMP TASK
+!$OMP END TASK
+!$OMP TASK
 	 !print *, "tracer"
 	 call tracer
 	 !print *, "end tracer"
-! !$OMP END TASK
-! !$OMP END TASKGROUP	
-! !$OMP END SINGLE 
+!$OMP END TASK
+!$OMP END TASKGROUP	
+!$OMP END SINGLE 
 
-! !$OMP END PARALLEL 	
+!$OMP END PARALLEL 	
 
 	end subroutine
 

@@ -67,6 +67,7 @@ c 29.10.2014    ggu     do_() routines transfered from newpri.f
 c 10.11.2014    ggu     time management routines transfered to this file
 c 23.09.2015    ggu     new routine convert_time_d() for double
 c 24.09.2015    ggu     new file for double precision version
+c 20.10.2015    ggu     new routines to set/get unit
 c
 c************************************************************
 c
@@ -268,6 +269,32 @@ c writes info on ia_output
 	write(6,*) has_output(ia_out)
 	write(6,*) next_output(ia_out)
 	write(6,*) '------ info_output end ------'
+
+	end
+
+c********************************************************************
+
+	subroutine set_unit_output(ia_out,iunit)
+
+	implicit none
+
+	integer ia_out(4)
+	integer iunit
+
+	ia_out(4) = iunit
+
+	end
+
+c********************************************************************
+
+	subroutine get_unit_output(ia_out,iunit)
+
+	implicit none
+
+	integer ia_out(4)
+	integer iunit
+
+	iunit = ia_out(4)
 
 	end
 

@@ -31,6 +31,7 @@ c 10.02.2012    ggu     write only last record, restart from last record
 c 16.02.2012    aac     write also ecological varibles
 c 28.08.2012    aac     bug fix for restart time = -1 (rdrst_record)
 c 11.12.2014    ccf     bug fix for atime
+c 20.10.2015    ggu     bug fix to get correct restart time (itanf)
 c
 c
 c notes :
@@ -57,13 +58,14 @@ c reads and initializes values from restart
 	common /rstrst/ iokrst,nvers,ibarcl,iconz,iwvert,ieco
 	save /rstrst/
 
-        integer itrst,iunit,ierr,ityrst,it
-	integer itanf,itend
+        integer itrst,iunit,ierr,ityrst
 	integer date,time
 	double precision dit
 	double precision atime,atime0,atrst
         character*80 name
         character*20 line
+
+	include 'femtime.h'
 
         real getpar
 	double precision dgetpar
@@ -130,8 +132,9 @@ c-----------------------------------------------------------------
 	  call dts_format_abs_time(atime,line)
 	  write(6,*) 'setting new initial time: ',it,line
 	  dit = it
+	  itanf = it
 	  call dputpar('itanf',dit)
-	  write(6,*) 'new itanf: ',it,line
+	  call putfnm('itanf',line)
 	end if
 
 	itanf = nint(dgetpar('itanf'))

@@ -343,19 +343,15 @@ c----------------------------------------------------------
 
 	if( badvect ) then
 
-!$OMP PARALLEL PRIVATE(tid)
-!$OMP SECTIONS
-!$OMP SECTION
-
 	  call openmp_get_thread_num(tid)
 	  !write(6,*) 'number of thread of temp: ',tid
 
-! !$OMP PARALLEL 	  
-! !$OMP SINGLE	  
-! 
-! !$OMP TASK PRIVATE(what,dtime) FIRSTPRIVATE(thpar,wsink,robs,itemp,it) 
-! !$OMP&     SHARED(idtemp,tempv,difhv,difv,difmol,tobsv) DEFAULT(NONE)
-! !$OMP&     IF(itemp > 0)
+!$OMP PARALLEL 	  
+!$OMP SINGLE	  
+ 
+!$OMP TASK PRIVATE(what,dtime) FIRSTPRIVATE(thpar,wsink,robs,itemp,it) 
+!$OMP&     SHARED(idtemp,tempv,difhv,difv,difmol,tobsv) DEFAULT(NONE)
+!$OMP&     IF(itemp > 0)
 
           if( itemp .gt. 0 ) then
 		what = 'temp'
@@ -364,23 +360,16 @@ c----------------------------------------------------------
      +                          ,tempv,idtemp
      +                          ,thpar,wsink
      +                          ,difhv,difv,difmol,tobsv,robs)
-		if( binfo ) then
-	  	  call tsmass(tempv,+1,nlvdi,ttot) 
-          	  call conmima(nlvdi,tempv,tmin,tmax)
-	  	  write(ninfo,*) 'temp: ',it,ttot,tmin,tmax
-		end if
 	  end if
 
-! !$OMP END TASK
+!$OMP END TASK
 
-!$OMP SECTION
+!	  call openmp_get_thread_num(tid)
+!	  !write(6,*) 'number of thread of salt: ',tid
 
-	  call openmp_get_thread_num(tid)
-	  !write(6,*) 'number of thread of salt: ',tid
-
-! !$OMP TASK PRIVATE(what,dtime) FIRSTPRIVATE(shpar,wsink,robs,isalt,it) 
-! !$OMP&     SHARED(idsalt,saltv,difhv,difv,difmol,sobsv) DEFAULT(NONE)
-! !$OMP&     IF(isalt > 0)
+!$OMP TASK PRIVATE(what,dtime) FIRSTPRIVATE(shpar,wsink,robs,isalt,it) 
+!$OMP&     SHARED(idsalt,saltv,difhv,difv,difmol,sobsv) DEFAULT(NONE)
+!$OMP&     IF(isalt > 0)
 
           if( isalt .gt. 0 ) then
 		what = 'salt'
@@ -389,20 +378,27 @@ c----------------------------------------------------------
      +                          ,saltv,idsalt
      +                          ,shpar,wsink
      +                          ,difhv,difv,difmol,sobsv,robs)
-		if( binfo ) then
-	  	  call tsmass(saltv,+1,nlvdi,stot) 
-          	  call conmima(nlvdi,saltv,smin,smax)
-	  	  write(ninfo,*) 'salt: ',it,stot,smin,smax
-		end if
           end if
 
-! !$OMP END TASK
-! !$OMP END SINGLE	
-! !$OMP TASKWAIT
+!$OMP END TASK
+!$OMP END SINGLE	
+!$OMP TASKWAIT
 
-!$OMP END SECTIONS NOWAIT
 !$OMP END PARALLEL
 
+	end if
+
+	if( binfo ) then
+          if( itemp .gt. 0 ) then
+  	    call tsmass(tempv,+1,nlvdi,ttot) 
+      	    call conmima(nlvdi,tempv,tmin,tmax)
+  	    write(ninfo,*) 'temp: ',it,ttot,tmin,tmax
+	  end if
+          if( isalt .gt. 0 ) then
+  	    call tsmass(saltv,+1,nlvdi,stot) 
+       	    call conmima(nlvdi,saltv,smin,smax)
+  	    write(ninfo,*) 'salt: ',it,stot,smin,smax
+	  end if
 	end if
 
 c----------------------------------------------------------

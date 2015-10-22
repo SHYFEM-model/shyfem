@@ -1,4 +1,20 @@
 
+22.10.2015
+
+c ./fem3d/suboutput.f:
+c 20.10.2015    ggu     new routines to set/get unit
+c
+c ./fem3d/subrst.f:
+c 20.10.2015    ggu     bug fix to get correct restart time (itanf)
+c
+c
+c ./fem3d/suboutputd.f:
+c 20.10.2015    ggu     new routines to set/get id
+c
+c ./fem3d/newstab.f:
+c 20.10.2015    ggu     in output_stability() bug that icall was not adjouned
+
+
 19.10.2015
 
 c ./fem3d/subousa.f:

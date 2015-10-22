@@ -174,59 +174,58 @@ list:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-mesh.o: mesh.h meshin.h meshfi.h meshge.h list.h meshbd.h meshut.h \
-		meshty.h stack.h meshcv.h gustd.h queue.h meshop.h \
-		meshck.h hash.h fund.h heap.h nlist.h meshhs.h \
-		general.h 
-exgrd.o: stack.h grdio.h queue.h gustd.h grdut.h hash.h exgrdop.h \
-		fund.h grdhs.h grd.h general.h 
-meshut.o: meshty.h queue.h hash.h mesh.h assert.h heap.h fund.h \
-		nlist.h meshge.h meshhs.h list.h meshut.h \
-		general.h 
-meshcv.o: meshty.h stack.h meshcv.h queue.h meshck.h hash.h mesh.h \
-		heap.h fund.h nlist.h meshhs.h list.h meshut.h \
-		general.h 
-meshfi.o: meshty.h meshgd.h queue.h gustd.h meshop.h hash.h mesh.h \
-		fund.h meshfi.h nlist.h meshhs.h list.h general.h \
-		meshut.h 
-meshck.o: mesh.h meshin.h meshge.h list.h meshut.h stack.h \
-		meshty.h gustd.h queue.h meshck.h meshop.h hash.h \
-		fund.h heap.h nlist.h meshhs.h general.h 
-meshin.o: mesh.h meshin.h meshge.h list.h meshut.h stack.h \
-		meshty.h queue.h meshck.h meshop.h hash.h heap.h \
-		fund.h nlist.h meshhs.h general.h 
-meshbd.o: mesh.h meshin.h meshge.h list.h meshbd.h meshut.h \
-		meshty.h stack.h queue.h meshop.h hash.h fund.h \
-		heap.h nlist.h meshhs.h general.h 
-meshge.o: queue.h gustd.h hash.h mesh.h heap.h fund.h meshfi.h \
-		nlist.h meshhs.h meshge.h list.h general.h 
-meshhs.o: queue.h fund.h list.h hash.h mesh.h
-meshop.o: queue.h gustd.h options.h meshop.h hash.h mesh.h fund.h \
-		list.h general.h 
-meshgd.o: meshgd.h queue.h gustd.h hash.h mesh.h fund.h nlist.h \
-		meshhs.h list.h meshut.h general.h args.h 
-meshty.o: meshty.h assert.h queue.h fund.h hash.h list.h mesh.h \
-		general.h 
+mesh.o: meshge.h meshhs.h meshbd.h queue.h heap.h hash.h meshut.h \
+		meshop.h meshfi.h meshty.h meshin.h list.h \
+		general.h meshcv.h nlist.h meshck.h gustd.h \
+		stack.h mesh.h fund.h 
+exgrd.o: queue.h exgrdop.h grd.h hash.h gustd.h stack.h grdut.h \
+		grdio.h grdhs.h general.h fund.h 
+meshut.o: queue.h heap.h nlist.h meshhs.h meshge.h meshty.h mesh.h \
+		list.h general.h fund.h meshut.h hash.h assert.h 
+meshcv.o: nlist.h heap.h meshcv.h queue.h meshhs.h fund.h list.h \
+		general.h meshty.h stack.h mesh.h meshck.h \
+		meshut.h hash.h 
+meshfi.o: meshhs.h nlist.h queue.h meshfi.h gustd.h meshop.h \
+		meshut.h hash.h general.h list.h fund.h meshgd.h \
+		meshty.h mesh.h 
+meshck.o: list.h general.h meshin.h meshty.h meshut.h meshop.h \
+		hash.h heap.h queue.h meshhs.h meshge.h fund.h \
+		stack.h mesh.h gustd.h meshck.h nlist.h 
+meshin.o: meshge.h meshhs.h queue.h heap.h hash.h meshut.h \
+		meshop.h meshty.h list.h meshin.h general.h \
+		nlist.h meshck.h stack.h mesh.h fund.h 
+meshbd.o: fund.h stack.h mesh.h nlist.h hash.h meshop.h meshut.h \
+		meshin.h list.h general.h meshty.h meshbd.h \
+		meshge.h meshhs.h heap.h queue.h 
+meshge.o: meshhs.h meshge.h nlist.h heap.h queue.h meshfi.h \
+		gustd.h hash.h list.h fund.h general.h mesh.h 
+meshhs.o: hash.h mesh.h queue.h fund.h list.h
+meshop.o: hash.h meshop.h gustd.h mesh.h list.h fund.h general.h \
+		options.h queue.h 
+meshgd.o: general.h list.h fund.h meshgd.h mesh.h gustd.h args.h \
+		meshut.h hash.h nlist.h queue.h meshhs.h 
+meshty.o: assert.h hash.h fund.h list.h general.h mesh.h meshty.h \
+		queue.h 
 general.o: general.h
 gustd.o: gustd.h general.h
-debug.o: debug.h general.h
-hash.o: hash.h general.h
-list.o: list.h general.h
+debug.o: general.h debug.h
+hash.o: general.h hash.h
+list.o: general.h list.h
 args.o: general.h
 queue.o: queue.h general.h
 heap.o: heap.h general.h
 stack.o: stack.h general.h
-nlist.o: nlist.h general.h
+nlist.o: general.h nlist.h
 assert.o: assert.h
-exgrdop.o: queue.h gustd.h grdut.h options.h hash.h exgrdop.h \
-		fund.h grd.h general.h 
-grdio.o: queue.h gustd.h grdut.h hash.h fund.h grd.h grdhs.h \
-		general.h args.h 
+exgrdop.o: options.h queue.h exgrdop.h grd.h hash.h gustd.h \
+		grdut.h fund.h general.h 
+grdio.o: queue.h fund.h general.h grdhs.h grdut.h gustd.h args.h \
+		hash.h grd.h 
 grdhs.o: queue.h fund.h grd.h hash.h
-grdut.o: queue.h fund.h grdut.h grdhs.h grd.h hash.h general.h
+grdut.o: hash.h grd.h general.h fund.h grdhs.h queue.h grdut.h
 gustd.o: gustd.h general.h
 args.o: general.h
-hash.o: hash.h general.h
+hash.o: general.h hash.h
 queue.o: queue.h general.h
 stack.o: stack.h general.h
 general.o: general.h

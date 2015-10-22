@@ -1,5 +1,37 @@
 ============================================================
 
+Thu Oct 22 17:16:33 CEST 2015
+
+minor improvements
+
+ LOG                        |   16 +
+ RELEASE_NOTES              |    5 +
+ fem3d/Makefile             | 1009 ++++++++++++++++++++++----------------------
+ fem3d/new3di.f             |   18 +-
+ fem3d/newbcl.f             |   60 ++-
+ fem3d/newcon_omp.f         |   24 +-
+ fem3d/newconz.f            |   18 +-
+ fem3d/newstab.f            |   46 +-
+ fem3d/shyfem.f             |   26 +-
+ fem3d/suboutput.f          |   27 ++
+ fem3d/suboutputd.f         |   27 ++
+ fem3d/subrst.f             |    9 +-
+ fem3d/subshy.f             |    4 +
+ fem3d/ts2nc.f              |    8 +-
+ femadj/Makefile            |   23 +-
+ fembin/restart.pl          |   49 ++-
+ femcheck/check_software.sh |   57 ++-
+ femcheck/test_compile.sh   |   16 +-
+ femdoc/final/shyfem.pdf    |  Bin 295214 -> 268932 bytes
+ femplot/Makefile           |   90 ++--
+ grid/Makefile              |  101 ++---
+ hcbs/Makefile              |    6 +-
+ mesh/Makefile              |   85 ++--
+ post/Makefile              |    8 +-
+ 24 files changed, 931 insertions(+), 801 deletions(-)
+
+============================================================
+
 Mon Oct 19 17:45:05 CEST 2015
 
 New version 7_3_6

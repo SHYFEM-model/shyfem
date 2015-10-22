@@ -17,6 +17,7 @@ c 14.07.2011    ggu     new routine output_stability_node()
 c 21.06.2012    ggu&ccf variable vertical sinking velocity integrated
 c 08.04.2014    ggu	use rlin to determine advective stability
 c 20.05.2015    ggu	always compute stability, call to conzstab changed
+c 20.10.2015    ggu	in output_stability() bug that icall was not adjouned
 c
 c*****************************************************************
 c*****************************************************************
@@ -559,9 +560,11 @@ c outputs stability index for hydro timestep (internal)
 
 	logical bnos
 	integer ie,ii,k,l,lmax
-	integer ia,id,it
+	integer ia,id
 	real sindex,smin
 	logical has_output,next_output,is_over_output
+
+	include 'femtime.h'
 
 	integer icall,iustab,ia_out(4)
 	save icall,iustab,ia_out
@@ -581,6 +584,8 @@ c outputs stability index for hydro timestep (internal)
 	  smax = 0.
 	end if
 
+	icall = icall + 1
+
 	if( .not. is_over_output(ia_out) ) return 
 
 	do k=1,nkn
@@ -592,19 +597,17 @@ c outputs stability index for hydro timestep (internal)
 	end do
 
 	if( next_output(ia_out) ) then
-	  smin = 1./dt
 	  do k=1,nkn				!convert to time step
-	    if( smax(k) .le. smin ) then
-	      smax(k) = dt
-	    else
+	    if( smax(k) > 0 ) then
 	      smax(k) = 1./smax(k)
-	    end if
+	      if( smax(k) > dt_orig ) smax(k) = dt_orig
+	    else
+	      smax(k) = dt_orig
+	    end if 
 	  end do
 	  call write_scalar_file(ia_out,778,1,smax)
 	  smax = 0.
 	end if
-
-	icall = icall + 1
 
 	end
 
@@ -629,13 +632,16 @@ c outputs stability index for hydro timestep (internal)
 
 	logical bnos
 	integer ie,ii,k,l,lmax
-	integer ia,id,it
+	integer ia,id
 	real sindex,smin
+	real sx,sn
 	logical next_output,has_output,is_over_output
 
-	integer icall,iustab,ia_out(4)
-	save icall,iustab,ia_out
-	data icall,iustab /0,0/
+	include 'femtime.h'
+
+	integer icall,ia_out(4)
+	save icall,ia_out
+	data icall /0/
 
 	real getpar
 
@@ -656,6 +662,10 @@ c	itmsti = -1
 	  smax = 0.
 	end if
 
+	icall = icall + 1
+
+	!write(111,*) 'sti: ',it,t_act,ia_out
+
 	if( .not. is_over_output(ia_out) ) return 
 
 	do ie=1,nel
@@ -670,19 +680,17 @@ c	itmsti = -1
 	end do
 
 	if( next_output(ia_out) ) then
-	  smin = 1./dt
 	  do k=1,nkn				!convert to time step
-	    if( smax(k) .le. smin ) then
-	      smax(k) = dt
-	    else
+	    if( smax(k) > 0 ) then
 	      smax(k) = 1./smax(k)
-	    end if
+	      if( smax(k) > dt_orig ) smax(k) = dt_orig
+	    else
+	      smax(k) = dt_orig
+	    end if 
 	  end do
 	  call write_scalar_file(ia_out,779,1,smax)
 	  smax = 0.
 	end if
-
-	icall = icall + 1
 
 	end
 

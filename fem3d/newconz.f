@@ -348,15 +348,13 @@ c-------------------------------------------------------------
 
 	call bnds_read_new(what,idconz,dtime)
 
-!$OMP PARALLEL PRIVATE(i)
-!$OMP DO SCHEDULE(DYNAMIC)
-
-! !$OMP SINGLE
+!$OMP PARALLEL
+!$OMP SINGLE
 	
 	do i=1,nvar
 
-! !$OMP TASK FIRSTPRIVATE(i,rkpar,wsink,difhv,difv,difmol,idconz,what,
-! !$OMP&     dt,nlvdi,mass) SHARED(conzv,tauv,massv)  DEFAULT(NONE)
+!$OMP TASK FIRSTPRIVATE(i,rkpar,wsink,difhv,difv,difmol,idconz,what,
+!$OMP&     dt,nlvdi,mass) SHARED(conzv,tauv,massv)  DEFAULT(NONE)
  
           call scal_adv(what,i
      +                          ,conzv(1,1,i),idconz
@@ -366,13 +364,11 @@ c-------------------------------------------------------------
           call decay_conz(dt,tauv(i),conzv(1,1,i))
 	  call massconc(+1,conzv(1,1,i),nlvdi,massv(i))
 
-! !$OMP END TASK
+!$OMP END TASK
 	end do	
 
-! !$OMP END SINGLE
-! !$OMP TASKWAIT
-
-!$OMP END DO NOWAIT
+!$OMP END SINGLE
+!$OMP TASKWAIT
 !$OMP END PARALLEL
 
 c-------------------------------------------------------------

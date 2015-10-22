@@ -143,7 +143,7 @@ c----------------------------------------------------------------
 	rsot=1.-rso
 	rsnt=1.-rsn
 
-	dt=ddt/istot
+	dt=ddt/rstot
 	
 	btvdv = itvdv .gt. 0
 	if( btvdv .and. aapar .ne. 0. ) then
@@ -161,15 +161,15 @@ c----------------------------------------------------------------
         clow=0.
         chigh=0.
  
-!$OMP PARALLEL  DEFAULT(NONE) 
-!$OMP& PRIVATE(i,j,k,ie,timer,timer1,myid,numthreads)
-!$OMP& PRIVATE(chunk,rest,j_init,j_end,k_init,k_end)
-!$OMP& SHARED(nlvddi,nlev,itvd,itvdv,istot,isact,aa)
-!$OMP& SHARED(difmol,robs,wsink,rload,ddt,rkpar,az,ad)
-!$OMP& SHARED(azt,adt,aat,rso,rsn,rsot,rsnt,dt,nkn)
-!$OMP& SHARED(cn,co,cdiag,clow,chigh,subset_el,cn1,co1) 
-!$OMP& SHARED(subset_num,indipendent_subset) 
-!$OMP& SHARED(difhv,cbound,gradxv,gradyv,cobs,load,difv,wsinkv) 
+! !$OMP PARALLEL  DEFAULT(NONE) 
+! !$OMP& PRIVATE(i,j,k,ie,timer,timer1,myid,numthreads)
+! !$OMP& PRIVATE(chunk,rest,j_init,j_end,k_init,k_end)
+! !$OMP& SHARED(nlvddi,nlev,itvd,itvdv,istot,isact,aa)
+! !$OMP& SHARED(difmol,robs,wsink,rload,ddt,rkpar,az,ad)
+! !$OMP& SHARED(azt,adt,aat,rso,rsn,rsot,rsnt,dt,nkn)
+! !$OMP& SHARED(cn,co,cdiag,clow,chigh,subset_el,cn1,co1) 
+! !$OMP& SHARED(subset_num,indipendent_subset) 
+! !$OMP& SHARED(difhv,cbound,gradxv,gradyv,cobs,load,difv,wsinkv) 
 
        myid = 0
 !$     myid = omp_get_thread_num()		!ERIC
@@ -201,7 +201,7 @@ c----------------------------------------------------------------
    
 	end do ! end loop over el in subset
       
-!$OMP BARRIER        
+! !$OMP BARRIER        
 
        end do ! end loop over subset
        	
@@ -219,7 +219,7 @@ c----------------------------------------------------------------
  	      
 	end do
 
-!$OMP END PARALLEL 
+! !$OMP END PARALLEL 
 
 	!cn1 = 0.
 	!cn1 = cn
