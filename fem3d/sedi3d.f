@@ -469,8 +469,6 @@ c
 
 c DOCS  START   P_sediment
 c
-c DOCS  COMPULS         Parameters in the sedtr section
-c 
 c The following parameters activate the sediment transport module 
 c and define the sediment grainsize classes to the simulated.
 !c |sedtr|	Sediment transport module section name.

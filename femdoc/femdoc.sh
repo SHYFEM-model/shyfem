@@ -25,6 +25,7 @@ Proc $BINDIR/subver.f
 Proc $BINDIR/bio3d.f
 Proc $BINDIR/sedi3d.f
 Proc $BINDIR/subwaves.f
+Proc $BINDIR/subtidef.f
 
 #---------------------------------------------------------
 
