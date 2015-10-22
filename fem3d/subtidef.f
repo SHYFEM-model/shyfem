@@ -4,33 +4,54 @@
 ! subroutines for computing tidal potential
 !
 !********************************************************************
-!*     Astronomical tidal force as body + earth + load               *
-!*********************************************************************
-!
-! The model cosiders these tidal costituents:
-!  - Semidiurnal Species:
-!    - M2  principal lunar
-!    - S2  principal solar
-!    - N2  elliptical lunar
-!    - K2  declination luni-solar
-!  - Diurnal Species:
-!    - K1  declination luni-solar
-!    - O1  principal lunar
-!    - P1  principal solar
-!    - Q1  elliptical lunar
-! - Long-Period Species:
-!    - Mf  fortnightly lunar
-!    - Mm  monthly lunar
-!    - Ssa semiannual solar
-!    - MSm S0-semiannual solar
-!
-!********************************************************************
 !
 ! revision log :
 !
 ! 30.09.2015    ccf     converted previous routines to module
 ! 01.10.2015    ccf     bug fix in hour, now handle negative time
+! 21.10.2015	ccf	documentation included
 !
+!********************************************************************
+c DOCS  START   S_tidef
+
+c SHYFEM includes an as\-tro\-no\-mi\-cal tidal model which can be
+c activated by setting the parameter |rtide| equal 1 in the |para| 
+c section.
+c
+c The model calculates equilibrium tidal potential ($\eta$) and load 
+c tides ($\beta$) and uses these to force the free surface. 
+c The term $\eta$ in the momentum equations is calculated as a sum
+c of the tidal potential of each tidal constituents multiplied by the
+c frequency-dependent elasticity factor. The factor $\beta$ accounts 
+c for the effect of the load tides, assuming that loading tides are
+c in-phase with the oceanic tide. 
+c
+c The model cosiders the following tidal costituents:
+c \begin{itemize}
+c \item Semidiurnal species:
+c    \begin{itemize}
+c    \item M2  principal lunar
+c    \item S2  principal solar
+c    \item N2  elliptical lunar
+c    \item K2  declination luni-solar
+c    \end{itemize}
+c \item Diurnal species:
+c    \begin{itemize}
+c    \item K1  declination luni-solar
+c    \item O1  principal lunar
+c    \item P1  principal solar
+c    \item Q1  elliptical lunar
+c    \end{itemize}
+c \item Long-Period species:
+c    \begin{itemize}
+c    \item Mf  fortnightly lunar
+c    \item Mm  monthly lunar
+c    \item Ssa semiannual solar
+c    \item MSm S0-semiannual solar
+c    \end{itemize}
+c \end{itemize}
+
+c DOCS  END
 !********************************************************************
 
 !==================================================================

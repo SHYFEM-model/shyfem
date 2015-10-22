@@ -271,11 +271,14 @@
 		\subsection{Wind waves}
 		\input{S_wave}
 
-%		\subsection{Meteo forcing}
-%		\todo{Debora}
+		\subsection{Tidal potential}
+		\input{S_tidef}
 
-%		\subsection{Lagrangian module}
-%		\todo{Andrea}
+		\subsection{Meteo forcing}
+		\input{meteo_forcing}
+
+		\subsection{Lagrangian particle module}
+		\input{lagrangian}
 
 %		\subsection{Large grids and projections}
 %		\todo{Debora}
@@ -398,18 +401,20 @@ integration time step. All other parameters are optional.
 
 \input{S_para_h.tex}
 
+\subsection{Section {\tt \$proj}}
+\input{P_proj.tex}
+
 \subsection{Section {\tt \$waves}}
-
-This section defines the parameters for the wind wave module.
-
 \input{P_wave.tex}
 
 \subsection{Section {\tt \$sedtr}}
-
-This section defines the parameters for the sediment 
-transport module.
-
 \input{P_sediment.tex}
+
+\subsection{Section {\tt \$wrt}}
+\input{P_wrt.tex}
+
+\subsection{Section {\tt \$lagrg}}
+\input{P_lagrg.tex}
 
 \subsection{Section {\tt \$name}}
 
