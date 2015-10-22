@@ -1,3 +1,25 @@
+version  7_3_7    22-10-2015    VERS_7_3_7
+
+========================================================== 22-10-2015 - 7_3_7
+
+c ./fem3d/suboutput.f:
+c 20.10.2015    ggu     new routines to set/get unit
+c
+c ./fem3d/subrst.f:
+c 20.10.2015    ggu     bug fix to get correct restart time (itanf)
+c
+c
+c ./fem3d/subver.f:
+c 22.10.2015	ggu	version 7.3.7	Tante Lores birthday release
+c
+c ./fem3d/suboutputd.f:
+c 20.10.2015    ggu     new routines to set/get id
+c
+c ./fem3d/newstab.f:
+c 20.10.2015    ggu	in output_stability() bug that icall was not adjouned
+
+==========================================================
+
 version  7_3_6    19-10-2015    VERS_7_3_6   commit_2015-10-22
 
 version  7_3_6    19-10-2015    VERS_7_3_6
