@@ -346,6 +346,15 @@ c----------------------------------------------------------
 	  call openmp_get_thread_num(tid)
 	  !write(6,*) 'number of thread of temp: ',tid
 
+          if( itemp .gt. 0 ) then
+		what = 'temp'
+	        call bnds_read_new(what,idtemp,dtime)
+	  end if
+          if( isalt .gt. 0 ) then
+		what = 'salt'
+	        call bnds_read_new(what,idsalt,dtime)
+	  end if
+	  
 !$OMP PARALLEL 	  
 !$OMP SINGLE	  
  
@@ -354,8 +363,6 @@ c----------------------------------------------------------
 !$OMP&     IF(itemp > 0)
 
           if( itemp .gt. 0 ) then
-		what = 'temp'
-	        call bnds_read_new(what,idtemp,dtime)
                 call scal_adv_nudge(what,0
      +                          ,tempv,idtemp
      +                          ,thpar,wsink
@@ -372,8 +379,6 @@ c----------------------------------------------------------
 !$OMP&     IF(isalt > 0)
 
           if( isalt .gt. 0 ) then
-		what = 'salt'
-	        call bnds_read_new(what,idsalt,dtime)
                 call scal_adv_nudge(what,0
      +                          ,saltv,idsalt
      +                          ,shpar,wsink

@@ -407,7 +407,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	call print_end_time
 
 !$      timer = omp_get_wtime() - timer
-!$      print *,"TIME TO SOLUTION = ",timer,"  s "
+!$      print *,"TIME TO SOLUTION = ",timer
 
         !call ht_finished
 

@@ -535,7 +535,7 @@ ifeq ($(DEBUG),true)
   FINTEL_NOOPT = -g -traceback -check all
   FINTEL_NOOPT = -g -traceback -check uninit -check bounds 
   FINTEL_NOOPT = -g -traceback -check uninit 
-  FINTEL_NOOPT = -g -traceback 
+  FINTEL_NOOPT = -g -traceback -O0
 endif
 
 # FINTEL_OPT   = -O -g -Mprof=time
@@ -553,6 +553,7 @@ endif
 FINTEL_OMP   =
 ifeq ($(PARALLEL),true)
   FINTEL_OMP   = -threads -openmp
+  FINTEL_OMP   = -openmp
 endif
 
 ifeq ($(FORTRAN_COMPILER),INTEL)
@@ -582,6 +583,7 @@ endif
 ifeq ($(C_COMPILER),INTEL)
   CC     = icc
   CFLAGS = -O -g -traceback -check-uninit
+  CFLAGS = -O -g -traceback
   LCFLAGS = -O 
   CINFOFLAGS = -v
 endif

@@ -389,6 +389,8 @@ c mode = 2		eliminate elements with r>rindex
 	real dindex,aindex,tindex,sindex
 	real rmax
 
+	logical openmp_in_parallel
+
 	real, allocatable :: sauxe1(:,:)
 	real, allocatable :: sauxe2(:,:)
 
@@ -413,7 +415,9 @@ c mode = 2		eliminate elements with r>rindex
 	call momentum_advective_stability(rlin,aindex,sauxe1)
 	call momentum_viscous_stability(ahpar,dindex,sauxe2)
 
-        call output_stability(dt,sauxe1,sauxe2)	!in case write to file
+	if( .not. openmp_in_parallel() ) then
+          call output_stability(dt,sauxe1,sauxe2)	!in case write to file
+	end if
 
 	aindex = aindex*dt
 	dindex = dindex*dt

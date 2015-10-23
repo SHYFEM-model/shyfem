@@ -146,9 +146,9 @@ c reads new boundary condition
 
 	implicit none
 
-	character*(*) text	!text for debug
-	integer ids(*)
-	double precision dtime
+	character*(*), intent(in)	:: text		!for debug
+	integer, intent(in)		:: ids(*)
+	double precision, intent(in)	:: dtime
 
 	integer nbc,ibc,id
 	integer nbnds

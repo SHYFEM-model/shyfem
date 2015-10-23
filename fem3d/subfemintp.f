@@ -1597,7 +1597,8 @@ c global lmax and lexp are > 1
 
 	if( iff_must_read(id,t) ) then
 	  write(6,*) 'warning: reading data in iff_time_interpolate'
-	  call iff_read_and_interpolate(id,t)
+	  stop 'error stop iff_time_interpolate: internal error (1)'
+	  !call iff_read_and_interpolate(id,t)
 	end if
 
 	!---------------------------------------------------------
@@ -1857,7 +1858,7 @@ c does the final interpolation in time
 	double precision t
 	integer nintp
 	integer ilast
-	double precision time(:)
+	double precision time(nintp)
 
 	integer n1,n2
 

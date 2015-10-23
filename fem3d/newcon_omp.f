@@ -172,9 +172,9 @@ c----------------------------------------------------------------
 ! !$OMP& SHARED(difhv,cbound,gradxv,gradyv,cobs,load,difv,wsinkv) 
 
        myid = 0
-!$     myid = omp_get_thread_num()		!ERIC
+! !$     myid = omp_get_thread_num()		!ERIC
        numthreads = 1
-!$     numthreads = omp_get_num_threads()
+! !$     numthreads = omp_get_num_threads()
 
       do i=1,subset_num 	! loop over indipendent subset
  

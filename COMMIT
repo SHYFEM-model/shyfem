@@ -1,5 +1,25 @@
 ============================================================
 
+Fri Oct 23 18:26:52 CEST 2015
+
+Parallel version running on scalars
+
+ Makefile                |  27 +++++++++++++++------------
+ Rules.make              |   4 +++-
+ fem3d/newbcl.f          |  13 +++++++++----
+ fem3d/newcon.f          |  16 ++++++----------
+ fem3d/newcon_omp.f      |   4 ++--
+ fem3d/newstab.f         |   6 +++++-
+ fem3d/shyfem.f          |   2 +-
+ fem3d/subbnds.f         |   6 +++---
+ fem3d/subfemintp.f      |   5 +++--
+ fembin/gitinfo          |   1 +
+ femcheck/Rules.dist     |   4 +++-
+ femdoc/final/shyfem.pdf | Bin 268932 -> 276346 bytes
+ 12 files changed, 51 insertions(+), 37 deletions(-)
+
+============================================================
+
 Thu Oct 22 17:44:55 CEST 2015
 
 New version 7_3_8

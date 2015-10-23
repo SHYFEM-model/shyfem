@@ -162,6 +162,7 @@ cleanbck:
 
 help:
 	@echo "help                this screen"
+	@echo "help_dev            more help for developers"
 	@echo "first_time          what to do for the first time"
 	@echo "install             installs the model"
 	@echo "configure           configures the model"
@@ -260,18 +261,20 @@ install_hard_reset: checkv
 #--------------------------------------------------------
 
 ggu_help: help_ggu
-help_ggu:
-	@echo "help_ggu            this screen"
-	@echo "test_compile        compiles model with different configs"
-	@echo "test_stable         compiles stable model with different configs"
-	@echo "regress             runs regression tests"
-	@echo "check_var           does various checks on distribution"
-	@echo "dist                prepares distribution (Rules.make)"
-	@echo "rules_save          copies back last Rules.make file"
-	@echo "rules_ggu           copies back my Rules.make file"
-	@echo "stable              makes stable distribution of last version"
-	@echo "compiler_version    info on compiler"
-	@echo "last_commit         name of last commit"
+help_ggu: help_dev
+	@echo "rules_ggu          copies back my Rules.make file"
+
+help_dev:
+	@echo "help_dev           this screen"
+	@echo "test_compile       compiles model with different configs"
+	@#echo "test_stable        compiles stable model with different configs"
+	@echo "regress            runs regression tests"
+	@echo "check_var          does various checks on distribution"
+	@#echo "stable             makes stable distribution of last version"
+	@echo "compiler_version   info on compiler"
+	@echo "last_commit        name of last commit"
+	@echo "dist               prepares distribution (Rules.make)"
+	@echo "rules_save         copies back last Rules.make file"
 
 test_compile:
 	@femcheck/test_compile.sh

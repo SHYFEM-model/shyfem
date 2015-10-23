@@ -90,6 +90,7 @@ git add -u
 gitcommit
 
 gittag
+git push origin develop --tags
 gittar
 
 mail_shyfem.sh tar-file

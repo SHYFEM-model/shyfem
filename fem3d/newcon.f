@@ -581,8 +581,8 @@ c-------------------------------------------------------------
 
 	  if( btvd1 ) call tvd_grad_3d(cnv,gradxv,gradyv,saux,nlvddi)
 
-          call conz3d_omp(
-          !call conz3d_orig(
+          !call conz3d_omp(
+          call conz3d_orig(
      +           cnv
      +          ,saux
      +          ,dt
@@ -603,9 +603,6 @@ c-------------------------------------------------------------
 
 	end do
 
-        !if( what .eq. 'salt' ) call check_scal_bounds(cnv,0.,60.,eps,.true.)
-        !if( what .eq. 'conz' ) call check_scal_bounds(cnv,0.,100.,eps,.true.)
-
 c-------------------------------------------------------------
 c check total mass
 c-------------------------------------------------------------
@@ -615,9 +612,6 @@ c-------------------------------------------------------------
 
 	write(iuinfo,1000) 'scal3sh_',what,':'
      +                          ,it,niter,mass,massold,massdiff
-
-	!check_set_unit(6)
-	!call check_elem(9914)
 
 c-------------------------------------------------------------
 c end of routine
@@ -1529,7 +1523,7 @@ c
         !save iustab
         !data iustab /0/
 c functions
-	logical is_zeta_bound
+	logical is_zeta_bound,openmp_in_parallel
 	real getpar
 
 	!write(6,*) 'conzstab called...'
@@ -1897,7 +1891,9 @@ c-----------------------------------------------------------------
         sindex = stabind
 
 	call get_orig_timestep(dtorig)
-	call output_stability_node(dtorig,cwrite)
+	if( .not. openmp_in_parallel() ) then
+	  call output_stability_node(dtorig,cwrite)
+	end if
 
 c        if( .false. ) then
 c        !if( idt .le. 3 ) then
