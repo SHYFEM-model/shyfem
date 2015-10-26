@@ -1,3 +1,22 @@
+version  7_3_10    26-10-2015    VERS_7_3_10
+
+========================================================== 26-10-2015 - 7_3_10
+
+c ./fem3d/subver.f:
+c 26.10.2015	ggu	version 7.3.10
+c
+c ./fem3d/newcon.f:
+c 26.10.2015    ggu     critical omp sections introduced (eliminated data race)
+c 26.10.2015    ggu     mass check only for levdbg > 2
+c
+c ./fem3d/newbcl.f:
+c 26.10.2015    ggu     bug fix for parallel code (what was not set)
+c
+c ./fem3d/subqfxt.f:
+c 26.10.2015    ggu     critical omp sections introduced (eliminated data race)
+
+==========================================================
+
 version  7_3_9    23-10-2015    VERS_7_3_9   commit_2015-10-26
 
 version  7_3_9    23-10-2015    VERS_7_3_9
