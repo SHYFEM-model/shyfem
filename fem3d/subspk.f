@@ -59,13 +59,11 @@ c*************************************************************************
 	integer n
 	real z(n)	!first guess
 
-      include 'param.h'
-      !include 'nbasin.h'
       integer k
 
-      real*8 csr(csrdim)
-      integer icsr(n+1),jcsr(csrdim)
-      integer iwork(2*csrdim)
+      !real*8 csr(csrdim)
+      !integer icsr(n+1),jcsr(csrdim)
+      !integer iwork(2*csrdim)
 
       external bcg
       external bcgstab
@@ -78,19 +76,30 @@ c*************************************************************************
 
       integer  itermax !Maximum number of iterations
       parameter (itermax=1000)
-      real*8   alu(csrdim*2), fpar(16), wilut(n+1)
+
+      real*8   fpar(16)
+      real*8   alu(csrdim*2), wilut(n+1)
       real*8   wksp(8*n)
       real*8   guess(n)
-	integer nkn
       integer  ju(n), jlu(2*csrdim), iperm(2*n)
-      integer  iw(n), jw(2*n), ipar(16)
+      integer  iw(n), jw(2*n)
+
+      integer  ipar(16)
+      integer nkn
       integer  ierr, lfil, iwk, itsol, itpre, mbloc
+
       double precision   droptol, permtol
       double precision   zero,one
 
       !ITPACK
       integer IPARIT(12),IWKSP(3*n), INW
       real*8  FPARIT(12),WKSPIT(6*n+4*itermax), INIU(n)
+
+      real*8, allocatable :: csr(:)
+      integer, allocatable :: icsr(:),jcsr(:)
+      integer, allocatable :: iwork(:)
+
+	allocate(csr(csrdim),icsr(n+1),jcsr(csrdim),iwork(2*csrdim))
 
 	nkn = n
 
@@ -190,6 +199,8 @@ c*************************************************************************
       do k=1,nkn
         rvec(k) = raux(k)
       end do
+
+	deallocate(csr,icsr,jcsr,iwork)
 
 	return
    99	continue

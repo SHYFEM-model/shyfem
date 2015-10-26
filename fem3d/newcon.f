@@ -1491,13 +1491,20 @@ c local
 c------------------------------------------------------------
 c big arrays
 c------------------------------------------------------------
-	double precision cn(nlvddi,nkn)		!DPGGU	!FIXME
-	double precision co(nlvddi,nkn)
-	double precision cdiag(nlvddi,nkn)
-	double precision clow(nlvddi,nkn)
-	double precision chigh(nlvddi,nkn)
-        real cwrite(nlvddi,nkn)
-        real saux(nlvddi,nkn)
+	!double precision cn(nlvddi,nkn)		!DPGGU	!FIXME
+	!double precision co(nlvddi,nkn)
+	!double precision cdiag(nlvddi,nkn)
+	!double precision clow(nlvddi,nkn)
+	!double precision chigh(nlvddi,nkn)
+        !real cwrite(nlvddi,nkn)
+        !real saux(nlvddi,nkn)
+	double precision, allocatable :: cn(:,:)
+	double precision, allocatable :: co(:,:)
+	double precision, allocatable :: cdiag(:,:)
+	double precision, allocatable :: clow(:,:)
+	double precision, allocatable :: chigh(:,:)
+        real, allocatable :: cwrite(:,:)
+        real, allocatable :: saux(:,:)
 c------------------------------------------------------------
 c end of big arrays
 c------------------------------------------------------------
@@ -1529,6 +1536,14 @@ c functions
 	!write(6,*) 'conzstab called...'
 
         if(nlv.ne.nlev) stop 'error stop conzstab: level'
+
+c-----------------------------------------------------------------
+c allocation
+c-----------------------------------------------------------------
+
+	allocate(cn(nlvddi,nkn),co(nlvddi,nkn),cdiag(nlvddi,nkn))
+	allocate(clow(nlvddi,nkn),chigh(nlvddi,nkn))
+	allocate(cwrite(nlvddi,nkn),saux(nlvddi,nkn))
 
 c-----------------------------------------------------------------
 c initialization
@@ -1902,6 +1917,14 @@ c          call conwrite(iustab,'.stb',1,777,nlvddi,cwrite)
 c        end if
 
 c        call stb_histo(it,nlvddi,nkn,ilhkv,cwrite)
+
+c-----------------------------------------------------------------
+c allocation
+c-----------------------------------------------------------------
+
+	deallocate(cn,co,cdiag)
+	deallocate(clow,chigh)
+	deallocate(cwrite,saux)
 
 c-----------------------------------------------------------------
 c end of routine
