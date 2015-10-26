@@ -32,6 +32,7 @@ c 16.06.2014	ccf	new routine heatcoare, which also update wind stress
 c 20.06.2014	ccf	new routine for computing sea surface skin temperature
 c 18.09.2015	ccf	do not compute heat fluxes in dry nodes
 c 18.09.2015	ccf	checks only for levdbg > 2
+c 26.10.2015    ggu     critical omp sections introduced (eliminated data race)
 c
 c notes :
 c
@@ -187,8 +188,10 @@ c---------------------------------------------------------
 	botabs = getpar('botabs')
 
 	if( icall .eq. 0 ) then
+!$OMP CRITICAL
 	  write(6,*) 'qflux3d: iheat,hdecay,botabs: '
      +				,iheat,hdecay,botabs  
+!$OMP END CRITICAL
 
 	  allocate(dtw(nkn))
 	  allocate(tws(nkn))

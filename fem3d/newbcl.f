@@ -65,6 +65,7 @@ c 10.07.2014    ggu     only new file format allowed
 c 20.10.2014    ggu     pass ids to scal_adv()
 c 10.02.2015    ggu     call to bnds_read_new() introduced
 c 15.10.2015    ggu     added new calls for shy file format
+c 26.10.2015    ggu     bug fix for parallel code (what was not set)
 c
 c*****************************************************************
 
@@ -363,6 +364,7 @@ c----------------------------------------------------------
 !$OMP&     IF(itemp > 0)
 
           if( itemp .gt. 0 ) then
+		what = 'temp'
                 call scal_adv_nudge(what,0
      +                          ,tempv,idtemp
      +                          ,thpar,wsink
@@ -379,6 +381,7 @@ c----------------------------------------------------------
 !$OMP&     IF(isalt > 0)
 
           if( isalt .gt. 0 ) then
+		what = 'salt'
                 call scal_adv_nudge(what,0
      +                          ,saltv,idsalt
      +                          ,shpar,wsink
@@ -397,12 +400,16 @@ c----------------------------------------------------------
           if( itemp .gt. 0 ) then
   	    call tsmass(tempv,+1,nlvdi,ttot) 
       	    call conmima(nlvdi,tempv,tmin,tmax)
+!$OMP CRITICAL
   	    write(ninfo,*) 'temp: ',it,ttot,tmin,tmax
+!$OMP END CRITICAL
 	  end if
           if( isalt .gt. 0 ) then
   	    call tsmass(saltv,+1,nlvdi,stot) 
        	    call conmima(nlvdi,saltv,smin,smax)
+!$OMP CRITICAL
   	    write(ninfo,*) 'salt: ',it,stot,smin,smax
+!$OMP END CRITICAL
 	  end if
 	end if
 

@@ -170,6 +170,8 @@ c 20.10.2014    ggu     accept ids from calling routines
 c 22.10.2014    ccf     load in call to scal3sh
 c 20.05.2015    ggu     accumulate over nodes (for parallel version)
 c 30.09.2015    ggu     routine cleaned, no reals in conz3d
+c 26.10.2015    ggu     critical omp sections introduced (eliminated data race)
+c 26.10.2015    ggu     mass check only for levdbg > 2
 c
 c*********************************************************************
 
@@ -221,12 +223,14 @@ c--------------------------------------------------------------
 c make identifier for variable
 c--------------------------------------------------------------
 
+!$OMP CRITICAL
 	whatvar = what
 	if( ivar .ne. 0 ) then
           write(whataux,'(i2)') ivar
           whatvar = what // '_' // whataux
 	end if
         iwhat = ichanm(whatvar)
+!$OMP END CRITICAL
 
 c--------------------------------------------------------------
 c transfer boundary conditions of var ivar to 3d matrix r3v
@@ -500,6 +504,7 @@ c local
 	integer itvd
 	integer itvdv
 	integer iuinfo
+	integer levdbg
         real dt
 	real eps
         real sindex
@@ -522,10 +527,13 @@ c-------------------------------------------------------------
 	aapar=getpar('aapar')
 	itvd=nint(getpar('itvd'))	!horizontal tvd scheme
 	itvdv=nint(getpar('itvdv'))	!vertical tvd scheme
+	levdbg = nint(getpar('levdbg'))
 	btvd = itvd .gt. 0
 	btvd1 = itvd .eq. 1
 
+!$OMP CRITICAL
         call getinfo(iuinfo)  !unit number of info file
+!$OMP END CRITICAL
 
 	eps = 1.e-5
 	eps = 1.e-4
@@ -540,7 +548,9 @@ c-------------------------------------------------------------
 	saux = 0.
 	call make_stability(dt,robs,wsink,wsinkv,rkpar,sindex,istot,saux)
 
+!$OMP CRITICAL
         write(iuinfo,*) 'stability_',what,':',it,sindex,istot
+!$OMP END CRITICAL
 
         if( istot .gt. istot_max ) then
 	    call info_stability(dt,robs,wsink,wsinkv,rkpar
@@ -607,11 +617,14 @@ c-------------------------------------------------------------
 c check total mass
 c-------------------------------------------------------------
 
-	call massconc(+1,cnv,nlvddi,mass)
-	massdiff = mass - massold
-
-	write(iuinfo,1000) 'scal3sh_',what,':'
+	if( levdbg > 2 ) then
+	  call massconc(+1,cnv,nlvddi,mass)
+	  massdiff = mass - massold
+!$OMP CRITICAL
+	  write(iuinfo,1000) 'scal3sh_',what,':'
      +                          ,it,niter,mass,massold,massdiff
+!$OMP END CRITICAL
+	end if
 
 c-------------------------------------------------------------
 c end of routine

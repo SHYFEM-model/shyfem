@@ -1,4 +1,16 @@
 
+26.10.2015    VERS_7_3_10
+
+	for parallel version data races eliminated
+
+23.10.2015    VERS_7_3_9
+
+	parallel code working (Eric)
+
+23.10.2015    VERS_7_3_8
+
+	documentation merged
+
 22.10.2015    VERS_7_3_7
 
 	minor improvements

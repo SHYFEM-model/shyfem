@@ -1,5 +1,19 @@
 ============================================================
 
+Mon Oct 26 17:42:25 CET 2015
+
+eliminated race conditions
+
+ LOG                     |  13 +++++++++++++
+ RELEASE_NOTES           |  12 ++++++++++++
+ fem3d/newbcl.f          |   7 +++++++
+ fem3d/newcon.f          |  21 +++++++++++++++++----
+ fem3d/subqfxt.f         |   3 +++
+ femdoc/final/shyfem.pdf | Bin 276346 -> 276349 bytes
+ 6 files changed, 52 insertions(+), 4 deletions(-)
+
+============================================================
+
 Fri Oct 23 18:28:08 CEST 2015
 
 New version 7_3_9

@@ -1,4 +1,17 @@
 
+26.10.2015
+
+c ./fem3d/newcon.f:
+c 26.10.2015    ggu     critical omp sections introduced (eliminated data race)
+c 26.10.2015    ggu     mass check only for levdbg > 2
+c
+c ./fem3d/newbcl.f:
+c 26.10.2015    ggu     bug fix for parallel code (what was not set)
+c
+c ./fem3d/subqfxt.f:
+c 26.10.2015    ggu     critical omp sections introduced (eliminated data race)
+
+
 22.10.2015
 
 c ./fem3d/suboutput.f:
