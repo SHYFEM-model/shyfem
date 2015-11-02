@@ -30,6 +30,7 @@
 \newcommand{\descrpsep}{\vspace{0.2cm}}
 \newcommand{\descrpitem}[1]{\descrpsep\parbox[t]{2cm}{#1}}
 \newcommand{\descrptext}[1]{\parbox[t]{10cm}{#1}\descrpsep}
+\newcommand{\descrp}[1]{\descrpsep\parbox[t]{4cm}{#1}}
 \newcommand{\densityunit}{kg\,m${}^{-3}$}
 \newcommand{\accelunit}{m\,s${}^{-2}$}
 \newcommand{\maccelunit}{m${}^{4}$\,s${}^{-2}$}
@@ -177,26 +178,26 @@
 	\section{Overview}
 	\input{grid_overview}
 
-	\section{Converting to {\tt GRD} format}
+	\section{Converting coastline and bathymetry to {\tt GRD} format}
 	\input{grid_convert}
 
 	\section{Boundary line: smoothing and reducing}
 	\input{grid_reduce}
 
-	\section{Other information}
-	\input{grid_else}
+%	\section{Other information}
+%	\input{grid_else}
 
-%	\section{Manipulating nodes, lines and elements: grid}
-%	\todo{Francesca}
+	\section{Manipulating nodes, lines and elements: grid}
+	\input{grid_prg}
 
-%	\section{Creating the mesh: mesh}
-%	\todo{Francesca}
+	\section{Creating the mesh: mesh}
+	\input{creating_mesh}
 
 %	\section{Other programs to create a mesh}
 %	\todo{Marco o Christian}
 
-%	\section{Interpolating the bathymetry}
-%	\todo{Francesca}
+	\section{Interpolating the bathymetry}
+	\input{bathy_interp}
 
 	\section{Creating the basin file}
 	\input{pre_basin}

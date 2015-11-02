@@ -1,51 +1,75 @@
 
 Before you can start using the model you have to create a numerical grid.
-Ths step is more difficult for models that work on unstructured grids
+This step is more difficult for models that work on unstructured grids
 (like finite element models) than for finite difference models, where
 often it is enough to have a regular gridded bathymetry to start running
 simulations.
 
-This chapter describes the steps that you have to take in order to be able
-to create a numerical grid for SHYFEM. If you are in the happy position
-to already have a numerical finite element grid, then you can jump ahead
-to the section on how to transform to/from other grid formats. You might
-still have to interpolate a bathymetry onto the numerical grid, so you
-will have to refer to the section on interpolating bathymetry. In any
-case, at the end you will have to create a (unformatted) basin file,
-so that SHYFEM is able to read in the information.
+This chapter describes the steps needed to create a numerical grid for SHYFEM.
+The GRID program is a graphic utility for the visualization and the manipulation of the GRD files.
 
-The steps that have to be carried out to create a numerical grid are
+The grid files used by SHYFEM are two:\\
+
+|filename.grd| formatted\\
+|filename.bas| unformatted\\
+
+Using the GRID program, the nodes, lines and elements can be modified by hand, 
+acting on the |GRD| file. The final aim is to create a (unformatted) basin 
+file |BAS| directly readable by SHYFEM.
+
+The |GRD| file can be composed of 3 different structures: Nodes, Elements, Lines.
+
+- Node section, containing the nodes information and coordinates\\
+- Element section, containing the elements information and the their nodes\\
+- Line section, containing the domain contour infomation and nodes\\
+
+The presence of these structures depends on type of GRD file, for example,
+in a boundary line the structures will be the line and its nodes.
+For more details on the format, please, refer to GRD file appendix B.1.\\
+
+In the following sections the steps that have to be carried out 
+to create a |GRD| file and a |BAS| file are described
 
 \begin{enumerate}
 
-\item obtain raw digital data of the coastline and the bathymetry
+\item obtain raw digital data of the coastline and the bathymetry and
+  convert them into a |GRD| format readabl by the provided routines
 
-\item convert the digital data into a format GRD that is read by the
-	provided routines
+\item smooth and reduce the coastline if needed
 
-\item prepare the coastline
-
-\item create the numerical grid with an automatic grid generator
+\item create the numerical grid with the automatic mesh generator
 
 \item regularize the grid
 
 \item interpolate bathymetry onto the created grid
 
-\item create the basin file (the finite element version of the grid file)
+\item create the unformatted basin file
 
 \end{enumerate}
 
-As mentioned above, some of the steps can be skipped if you already
+Some of these steps can be skipped if you already
 have a finite element grid. If you already have a grid with bathymetry
-information you can jump to point 7. However, you will have to convert
-your grid into the |GRD| format used by SHYFEM. The |GRD| format is
-documented in the appendix. For some of the most common unstructured grid
+information you can jump to point 6. However, you will have to convert
+your grid into the |GRD|format used by SHYFEM. 
+
+% UNDER CONSTRUCTION
+For some of the most common unstructured grid
 formats routines are available to convert between these formats and the
-|GRD| format. In any case, the |GRD| format is quite easy to parse and
+|GRD|format. In any case, the |GRD|format is quite easy to parse and
 write, so you might be able to write a transformation routine yourself.
+%%%%%%%%%%%%%%%%%%%%%%%
 
 In the following a description is given what you have to do if you start
 from scratch. Please refer to the section on other programs to create
 a grid for conversion routines.
 
 
+%old text
+
+%If you are in the happy position
+%to already have a numerical finite element grid, then you can jump ahead
+%to the section on how to transform to/from other grid formats (UNDER COSTRUCTION). 
+%You might still have to interpolate a bathymetry onto the numerical grid, so you
+%will have to refer to the section on interpolating bathymetry. In any
+%case, at the end you will have to create a (unformatted) basin file,
+%so that SHYFEM is able to read in the information.

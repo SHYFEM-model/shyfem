@@ -1,0 +1,211 @@
+
+The GRID program allows not only to visualize 
+the |GRD| files but also provide a graphical user interface 
+to manipulate the different items of the grid (Nodes, Elements, Lines).
+The command line and the options available for this program are following reported.
+
+\begin{verbatim}
+grid [-options] [files] 
+
+Options :
+  -o   do not outline elements       -f   fill elements with color  
+  -k   do extra checking             -u   check if nodes are used   
+  -T   show type instead of depth    -c#  use color descrple #         
+  -h   print this help screen        -a   ask for file names        
+  -d   display  (only X11)           -g   geometry (only X11)       
+  -M#  scale color to depth #        -S#  size of color descrple is #  
+  -N#  scale factor for nodes is #   -V#  scale factor for vectors is #
+  -C   color nodes and lines     
+\end{verbatim}
+
+\textbf{General GUI commands}\\
+	scroll 		zoom in and out \\
+	right click 	select item\\
+	left click	confirm item\\
+	up arrow	increase the node size\\
+	down arrow 	decrease the node size\\
+
+The main GUI menu is compsed by\\
+\descrp{|File|}\\
+\descrp{|View|}\\
+\descrp{|Show|}\\
+\descrp{|Node|}\\
+\descrp{|Element|}\\
+\descrp{|Line|}\\
+\descrp{|Change|}\\
+
+\textbf{File menu}\\
+\descrp{|Cancel|}
+\descrptext{%
+Obsolete command
+}
+\par
+\descrp{|Refresh|}
+\descrptext{%
+Refresh the screen view (to be done to view the last change to the grid)
+}
+\par
+\descrp{|Print|}
+\descrptext{%
+Create a Black and White PostScript of the grid |plot.ps|
+}
+\par
+\descrp{|Save|}
+\descrptext{%
+Save changes in |save.grd|
+}
+\par
+\descrp{|Exit|}
+\descrptext{%
+Quit GRID program
+}
+\par
+
+\textbf{View menu}\\
+\descrp{|Zoom Window|}
+\descrptext{%
+Zoom in a delimited window defined by left clicking two points (left-bottom and righ-top)  
+}
+\par
+\descrp{|Zoom in|}
+\descrptext{%
+Obsolete command replaced by mouse scroll
+}
+\par
+\descrp{|Zoom out|}\descrptext{%
+Obsolete command replaced by mouse scroll
+}
+\par
+\descrp{|Total View|}
+\descrptext{%
+Go back to the total view of the grid
+}
+\par
+\descrp{|Move|}
+\descrptext{%
+Obsolete command
+}
+\par
+
+\textbf{Show menu}\\
+\descrp{|Show Node|}
+\descrptext{%
+All the items selected by rigth clicking will be nodes
+}
+\par
+\descrp{|Show Element|}
+\descrptext{%
+All the items selected by rigth clicking will be elements
+}
+\par
+\descrp{|Show Line|}
+\descrptext{%
+All the items selected by rigth clicking will be lines
+}
+\par
+
+\textbf{Node menu}\\
+\descrp{|Make Node|}
+\descrptext{%
+Create a new node by left clicking
+}
+\par
+\descrp{|Del Node|}
+\descrptext{%
+Delete a node by selecting it (right click) and confirming it (left click). |Refresh| to see the changes.
+}
+\par
+\descrp{|Move Node|}
+\descrptext{%
+Move a node in a new position. 
+Select it (right click) and confirm it (left click), give the new position (left click). |Refresh| to see the changes.
+}
+\par
+\descrp{|Unify Node|}
+\descrptext{%
+Unify two different nodes. 
+Select the first node you want to unify (right click) and confirm it (left click), select the second node (left click). |Refresh| to see the changes.
+}
+\par
+
+\textbf{Element menu}\\
+\descrp{|Make Element|}
+Create a new element.
+Create new nodes (left click) or select and confirm (right-left click) each node of the new element, clicking twice on the last one to close the element. The element has to be created in anti-clockwise sense.
+\descrptext{%
+
+}
+\par
+\descrp{|Del Element|}
+Remove the element but not its nodes.
+\descrptext{%
+
+}
+\par
+\descrp{|Remove Element|}
+Remove the element and its nodes.
+\descrptext{%
+
+}
+\par
+
+\textbf{Line menu}\\
+\descrp{|Make Line|}
+\descrptext{%
+Create a new line.
+Create new nodes (left click) or select and confirm (right-left click) each node of the new line, clicking twice on the last one. In case of a close line it has to be created in anti-clockwise sense.
+}
+\par
+\descrp{|Del Line|}
+\descrptext{%
+Remove the line but not its nodes.
+}
+\par
+\descrp{|Remove Line|}
+\descrptext{%
+Remove the line and its nodes.
+}
+\par
+\descrp{|Split Line|}
+\descrptext{%
+Split the line in two parts.
+}
+\par
+\descrp{|Join Line|}
+\descrptext{%
+Join two lines in one.
+}
+\par
+\descrp{|Del Node|}
+\descrptext{%
+Delete the node from line but not from the domain.
+}
+\par
+\descrp{|Remove Node|}
+\descrptext{%
+Remove the node from line.
+}
+\par
+\descrp{|Insert Node|}
+\descrptext{%
+Insert a new node on the line.
+}
+\par
+
+\textbf{Change menu}\\
+\descrp{|Change Depth|}
+\descrptext{%
+Change the depth of the selected item.
+}
+\par
+\descrp{|Change Type|}
+\descrptext{%
+Change the type of the selected item.
+}
+\par
+
+
+
+
+
+
