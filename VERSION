@@ -1,3 +1,33 @@
+version  7_3_11    05-11-2015    VERS_7_3_11
+
+========================================================== 05-11-2015 - 7_3_11
+
+c ./fem3d/newnudge.f:
+c 04.11.2015    ggu     bug in velocitiy nudging fixed
+c
+c ./fem3d/suboutput.f:
+c 04.11.2015    ggu     allow for initial output in adjust_itmidt()
+c
+c ./fem3d/subrst.f:
+! 30.10.2015    ggu     new names, restructured
+!
+c ./fem3d/subver.f:
+c 05.11.2015	ggu	version 7.3.11
+c
+c ./fem3d/suboutputd.f:
+c 04.11.2015    ggu     allow for initial output in adjust_itmidt()
+c
+c ./fem3d/femelab.f:
+! 05.11.2015    ggu     new option chform to change format
+c
+c ./fem3d/suboff.f:
+c 05.11.2015    ggu     revisited and checked
+c
+c ./fem3d/newini.f:
+c 05.11.2015    ggu	can now initialize z,u,v from file
+
+==========================================================
+
 version  7_3_10    26-10-2015    VERS_7_3_10   commit_2015-11-05
 
 version  7_3_10    26-10-2015    VERS_7_3_10
