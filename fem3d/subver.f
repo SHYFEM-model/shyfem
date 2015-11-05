@@ -271,6 +271,7 @@ c 22.10.2015	ggu	version 7.3.8	Tante Lores birthday release again
 c 23.10.2015	ggu	version 7.3.9	after Eric
 c 26.10.2015	ggu	version 7.3.10
 c 05.11.2015	ggu	version 7.3.11
+c 05.11.2015	ggu	version 7.3.12
 c
 c*****************************************************************
 
@@ -278,15 +279,15 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.3.11}
-c \newcommand{\version}{7\_3\_11}
+c \newcommand{\VERSION}{7.3.12}
+c \newcommand{\version}{7\_3\_12}
 c
 c DOCS	END
 
         implicit none
 
         character*10 version
-        parameter (version='7.3.11')
+        parameter (version='7.3.12')
 
         character*30 string
         parameter (string='SHYFEM VERSION = '//version)
