@@ -1,5 +1,23 @@
 ============================================================
 
+Thu Nov  5 15:00:12 CET 2015
+
+manual integrated
+
+ femdoc/bathy_interp.tex  |  31 +++++++
+ femdoc/creating_mesh.tex | 156 +++++++++++++++++++++++++++++++++++
+ femdoc/final/shyfem.pdf  | Bin 276948 -> 283905 bytes
+ femdoc/grid_overview.tex |  68 ++++++++++-----
+ femdoc/grid_prg.tex      | 211 +++++++++++++++++++++++++++++++++++++++++++++++
+ femdoc/shyfem.tex        |  19 +++--
+ 6 files changed, 454 insertions(+), 31 deletions(-)
+ new file:
+   femdoc/bathy_interp.tex
+   femdoc/creating_mesh.tex
+   femdoc/grid_prg.tex
+
+============================================================
+
 Thu Nov  5 14:26:46 CET 2015
 
 New version 7_3_11
