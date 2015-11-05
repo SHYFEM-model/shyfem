@@ -202,7 +202,7 @@ c************************************************************
 
 	if( lmax .gt. 1 ) then
 	  if( iformat == 1 ) then
-	    write(iunit,*) (hlv(l),l=1,lmax)
+	    write(iunit,1000) (hlv(l),l=1,lmax)
 	  else
 	    write(iunit) (hlv(l),l=1,lmax)
 	  end if
@@ -216,6 +216,8 @@ c************************************************************
 	  end if
 	end if
 
+	return
+ 1000	format(5g14.6)
 	end
 
 c************************************************************
@@ -256,11 +258,11 @@ c writes data of the file
 	if( iformat == 1 ) then
 	  write(iunit,*) text
 	  if( b2d ) then
-	    write(iunit,*) (data(1,k),k=1,np)
+	    write(iunit,1000) (data(1,k),k=1,np)
 	  else
 	    do k=1,np
 	      lm = ilhkv(k)
-	      write(iunit,*) lm,hd(k),(data(l,k),l=1,lm)
+	      write(iunit,1010) lm,hd(k),(data(l,k),l=1,lm)
 	    end do
 	  end if
 	else
@@ -275,6 +277,9 @@ c writes data of the file
 	  end if
 	end if
 
+	return
+ 1000	format(5g14.6)
+ 1010	format(i8,(5g14.6))
 	end
 
 c************************************************************
@@ -1062,9 +1067,9 @@ c************************************************************
 
 	implicit none
 
+	integer fem_file_regular
 	integer ntype
 
-	integer fem_file_regular
 	integer itype(2)
 
 	call fem_file_make_type(ntype,2,itype)

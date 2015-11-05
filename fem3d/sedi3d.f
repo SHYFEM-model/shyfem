@@ -3853,7 +3853,7 @@ c DOCS  END
         real hsigma
 	logical bsigma
 
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dim in uvtopr'
+	if(nlvdim.ne.nlvdi) stop 'error stop : level dim in uvbott'
 
 	call get_sigma_info(nlv,nsigma,hsigma)
 	bsigma = nsigma .gt. 0

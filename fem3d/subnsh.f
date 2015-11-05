@@ -238,6 +238,7 @@ c to do before time loop
 	include 'femtime.h'
 
 	call wrboxa(it)
+	call wrousa
 
 	end
 

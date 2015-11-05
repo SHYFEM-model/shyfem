@@ -73,7 +73,7 @@ c*****************************************************************
 	logical bformat,b2d
 	integer date
 
-	logical bnew,bpres,bhlv
+	logical bnew,bpres,bhlv,bformin
 	integer ios,it,id,n,n0,nvar,nvar0,itanf,nkn,i,j,itend
 	integer iunit,nvers,ntype,lmax,np,nlvdi,iformat
 	integer irec,ifreq,nlen,l,lmax0
@@ -97,17 +97,32 @@ c*****************************************************************
 	if( bformat ) iformat = 1
 
 !-------------------------------------------------------------
+! check file
+!-------------------------------------------------------------
+
+	call check3dfield(infile,bformin,bhlv)
+
+!-------------------------------------------------------------
 ! open file
 !-------------------------------------------------------------
 
-        open(1,file=infile,form='formatted',status='old')
+	if( bformin ) then
+          open(1,file=infile,form='formatted',status='old')
+	else
+          open(1,file=infile,form='unformatted',status='old')
+	end if
 
 !-------------------------------------------------------------
 ! read header and see what file it is
 !-------------------------------------------------------------
 
-        read(1,*,iostat=ios) it,n,lmax,nvar
+	if( bformin ) then
+          read(1,*,iostat=ios) it,n,lmax,nvar
+	else
+          read(1,iostat=ios) it,n,lmax,nvar
+	end if
 
+	write(6,*) it,n,lmax,nvar,ios
         if( ios .ne. 0 ) goto 98
 	if( b2d .and. lmax .ne. 1 ) goto 97
 	if( nvar .ne. 1 ) goto 94
@@ -120,6 +135,8 @@ c*****************************************************************
 	write(6,*) 'points:     ',n
 	write(6,*) 'lmax:       ',lmax
 	write(6,*) 'nvar:       ',nvar
+	write(6,*) 'formatted:  ',bformin
+	write(6,*) 'has hlv:    ',bhlv
 
 	n0 = n
 	lmax0 = lmax
@@ -135,6 +152,7 @@ c*****************************************************************
 	if( lmax > 1 .and. .not. bhlv ) then
 	  call get_hlv(hlvfile,lmax,hlv)
 	end if
+	if( lmax <= 1 ) bhlv = .false.
 
 	if( bformat ) then
 	  open(2,file='out.fem',status='unknown',form='formatted')
@@ -159,7 +177,11 @@ c*****************************************************************
 !-------------------------------------------------------------
 
 	do
-          read(1,*,iostat=ios) it,n,lmax,nvar
+	  if( bformin ) then
+            read(1,*,iostat=ios) it,n,lmax,nvar
+	  else
+            read(1,iostat=ios) it,n,lmax,nvar
+	  end if
 	  if( ios .lt. 0 ) exit
 	  if( ios .gt. 0 ) goto 98
 	  if( b2d .and. lmax .ne. 1 ) goto 97
@@ -169,8 +191,13 @@ c*****************************************************************
 
 	  itend = it
 
-	  if( bhlv ) read(1,*) (hlv(l),l=1,lmax)
-	  read(1,*) ((data(l,i),l=1,lmax),i=1,n)
+	  if( bformin ) then
+	    if( bhlv ) read(1,*) (hlv(l),l=1,lmax)
+	    read(1,*) ((data(l,i),l=1,lmax),i=1,n)
+	  else
+	    if( bhlv ) read(1) (hlv(l),l=1,lmax)
+	    read(1) ((data(l,i),l=1,lmax),i=1,n)
+	  end if
 
 	  call convert_date_time(bdate0,it,dtime0,datetime,dtime)
 
@@ -206,21 +233,21 @@ c*****************************************************************
 	stop
    94	continue
 	write(6,*) 'cannot handle nvar different from 1: ',nvar
-	stop 'error stop scal2fem'
+	stop 'error stop field2fem'
    95	continue
 	write(6,*) 'error in data index: ',i,j
-	stop 'error stop scal2fem'
+	stop 'error stop field2fem'
    96	continue
 	write(6,*) 'number of points or levels changed: '
 	write(6,*) 'n,n0: ',n,n0
 	write(6,*) 'lmax,lmax0: ',lmax,lmax0
-	stop 'error stop scal2fem'
+	stop 'error stop field2fem'
    97	continue
 	write(6,*) 'error in lmax (2d requested): ',lmax
-	stop 'error stop scal2fem'
+	stop 'error stop field2fem'
    98	continue
 	write(6,*) 'read error: ',ios
-	stop 'error stop scal2fem'
+	stop 'error stop field2fem'
 	end
 
 c*****************************************************************
@@ -374,21 +401,21 @@ c*****************************************************************
 	stop
    94	continue
 	write(6,*) 'cannot handle nvar different from 1: ',nvar
-	stop 'error stop scal2fem'
+	stop 'error stop bc2fem'
    95	continue
 	write(6,*) 'error in data index: ',i,j
-	stop 'error stop scal2fem'
+	stop 'error stop bc2fem'
    96	continue
 	write(6,*) 'number of points or levels changed: '
 	write(6,*) 'n,n0: ',n,n0
 	write(6,*) 'lmax,lmax0: ',lmax,lmax0
-	stop 'error stop scal2fem'
+	stop 'error stop bc2fem'
    97	continue
 	write(6,*) 'error in lmax (2d requested): ',lmax
-	stop 'error stop scal2fem'
+	stop 'error stop bc2fem'
    98	continue
 	write(6,*) 'read error: ',ios
-	stop 'error stop scal2fem'
+	stop 'error stop bc2fem'
 	end
 
 c*****************************************************************
@@ -1183,5 +1210,52 @@ c sets up date and time management
 
 c*****************************************************************
 c*****************************************************************
+c*****************************************************************
+
+	subroutine check3dfield(file,bformat,bhashlv)
+
+	implicit none
+
+	character*(*) file
+	logical bformat,bhashlv
+
+	integer ios,iosf,iosu
+	integer it,n,lmax,nvar,l
+	real haux
+
+        open(1,file=file,form='formatted',status='old')
+        read(1,*,iostat=iosf) it,n,lmax,nvar
+	close(1)
+
+        open(1,file=file,form='unformatted',status='old')
+        read(1,iostat=iosu) it,n,lmax,nvar
+	close(1)
+
+	if( iosf == 0 .and. iosu == 0 ) then
+	  write(6,*) 'cannot decide if formatted or unformatted'
+	  write(6,*) 'file: ',trim(file)
+	  stop 'error stop check3dfield'
+	else if( iosf /= 0 .and. iosu /= 0 ) then
+	  write(6,*) 'cannot read both formatted or unformatted'
+	  write(6,*) 'file: ',trim(file)
+	  stop 'error stop check3dfield'
+	else if( iosf == 0 ) then
+	  bformat = .true.
+	else
+	  bformat = .false.
+	end if
+
+	if( bformat ) then
+	  bhashlv = .true.
+	else
+          open(1,file=file,form='unformatted',status='old')
+          read(1,iostat=ios) it,n,lmax,nvar
+	  read(1,iostat=ios) (haux,l=1,lmax+1) !read more to throw error
+	  close(1)
+	  bhashlv = (ios /= 0)
+	end if
+
+	end
+
 c*****************************************************************
 

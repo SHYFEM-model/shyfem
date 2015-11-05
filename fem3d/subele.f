@@ -835,9 +835,6 @@ c shell (helper) for setdepth
 
 	implicit none
 
-	include 'param.h'
-
-
 	call setdepth(nlvdi,hdknv,hdenv,zenv,areakv)
 
 	end

@@ -653,14 +653,18 @@ c********************************************************************
 	if( nbc .le. 0 ) return
 
 	write(6,*)
-	write(6,1003)
+	write(6,*) '====== info on open boundaries ========='
+	write(6,*)
+	write(6,*) ' inlet,type,intpol,nnodes ... nodes,files : '
 
 	do ibc=1,nbc
           call get_bnd_ipar(ibc,'ibtyp',ibtyp)
           call get_bnd_ipar(ibc,'intpol',intpol)
           call get_bnd_ipar(ibc,'kranf',kranf)
           call get_bnd_ipar(ibc,'krend',krend)
-	  write(6,1036) ibc,ibtyp,intpol,(ipext(irv(i)),i=kranf,krend)
+
+	  write(6,'(4i9)') ibc,ibtyp,intpol,krend-kranf+1
+	  write(6,'(8i9)') (ipext(irv(i)),i=kranf,krend)
 
 	  call print_filename(boundn(ibc))
 	  call print_filename(conzn(ibc))
@@ -678,9 +682,11 @@ c********************************************************************
 	  call print_filename(bfm3bc(ibc))
 	end do
 
+	write(6,*)
+	write(6,*) '========================================'
+	write(6,*)
+
 	return
- 1003   format(' inlet,type,intpol,file,nodes : ')
- 1036   format(i7,3x,i5,2x,i5/(10x,10i6))
 	end
 
 c********************************************************************

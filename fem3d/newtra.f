@@ -7,8 +7,8 @@ c contents :
 c
 c subroutine ttov			transforms transports to velocities
 c subroutine vtot			transforms velocities to transports
-c subroutine uvtop0(vv)			transforms bar. transp. to nod. veloc.
-c subroutine uvtopr(vv)			transforms velocities to nodal values
+c subroutine uvtop0			transforms bar. transp. to nod. veloc.
+c subroutine uvtopr			transforms velocities to nodal values
 c subroutine prtouv			transforms nodal values to element vel.
 c subroutine uvint			computation of barotropic transports
 c subroutine austau(vv)			computes aux vectors for austausch term
@@ -112,7 +112,7 @@ c local
 c
 c******************************************************************
 c
-	subroutine uvtop0(vv)
+	subroutine uvtop0
 c
 c transforms barotropic transports to nodal velocities
 c
@@ -127,7 +127,7 @@ c
 	implicit none
 c
 c arguments
-	real vv(1)
+	real vv(nkn)
 c common
 	include 'param.h'
 
@@ -178,7 +178,7 @@ c
 c
 c******************************************************************
 c
-	subroutine uvtopr(vv)
+	subroutine uvtopr
 c
 c transforms velocities to nodal values
 c
@@ -194,7 +194,7 @@ c
 c parameters
 	include 'param.h'
 c arguments
-	real vv(1)
+	real vv(nkn)
 c common
 
 c local
@@ -588,10 +588,8 @@ c makes print velocities and xv from new level arrays
 
 	implicit none
 
-	real v1v(nkn)
-
-	call uvtopr(v1v)
-	call uvtop0(v1v)
+	call uvtopr
+	call uvtop0
 	call setxv
 
 	end
@@ -606,13 +604,13 @@ c initializes uvz values from zenv, utlnv, vtlnv, hdenv
 
 	implicit none
 
-	logical has_restart
+	logical rst_use_restart
 	real dzeta(nkn)
 
 	call ttov			!velocities from layer transports
 	call uvint			!barotropic transports
 
-	if( .not. has_restart(5) ) then
+	if( .not. rst_use_restart(5) ) then
 	  call hydro_vertical(dzeta)	!vertical velocities
 	end if
 

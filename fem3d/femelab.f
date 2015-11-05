@@ -6,6 +6,7 @@
 ! 14.01.2015    ggu     adapted from feminf
 ! 20.05.2015    ggu     use bhuman to convert to human readable time
 ! 05.06.2015    ggu     iextract to extract nodal value
+! 05.11.2015    ggu     new option chform to change format
 !
 !******************************************************************
 
@@ -22,6 +23,7 @@ c writes info on fem file
 	double precision tmin,tmax
 	character*80 stmin,stmax
 	logical bdebug,bskip,bwrite,bout,btmin,btmax,bquiet
+	logical bchform
 
 	bdebug = .true.
 	bdebug = .false.
@@ -35,6 +37,7 @@ c--------------------------------------------------------------
 	call clo_add_info('elaborates and rewrites a fem file')
 	call clo_add_option('write',.false.,'write min/max of values')
 	call clo_add_option('out',.false.,'create output file out.fem')
+	call clo_add_option('chform',.false.,'change output format')
 	call clo_add_option('quiet',.false.,'do not be verbose')
 	call clo_add_option('tmin time',' '
      +				,'only process starting from time')
@@ -47,6 +50,7 @@ c--------------------------------------------------------------
 
 	call clo_get_option('write',bwrite)
 	call clo_get_option('out',bout)
+	call clo_get_option('chform',bchform)
 	call clo_get_option('quiet',bquiet)
 	call clo_get_option('tmin',stmin)
 	call clo_get_option('tmax',stmax)
@@ -108,13 +112,14 @@ c writes info on fem file
 	integer nfile
 	integer irec,i,ich,nrecs
 	integer itype(2)
-	integer iformat
+	integer iformat,iformout
 	integer datetime(2),dateanf(2),dateend(2)
 	integer iextract,it
 	real regpar(7)
 	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
 	logical bquiet,bhuman
-	character*50, allocatable :: strings(:)
+	logical bchform
+	character*80, allocatable :: strings(:)
 	character*20 line
 	character*80 stmin,stmax
 	real,allocatable :: data(:,:,:)
@@ -128,6 +133,7 @@ c writes info on fem file
 	bhuman = .true.
 
 	iextract = 5
+	iextract = 0
 	datetime = 0
 	datetime(1) = 19970101
 	dtime = 0.
@@ -139,11 +145,13 @@ c writes info on fem file
 
 	call clo_get_option('write',bwrite)
 	call clo_get_option('out',bout)
+	call clo_get_option('chform',bchform)
 	call clo_get_option('quiet',bquiet)
 	call clo_get_option('tmin',stmin)
 	call clo_get_option('tmax',stmax)
 
 	bskip = .not. bwrite
+	if( bchform ) bout = .true.
 	if( bout ) bskip = .false.
 
 	atmin = 0.
@@ -153,8 +161,8 @@ c writes info on fem file
 	if( btmin ) call fem_file_string2time(stmin,atmin)
 	if( btmax ) call fem_file_string2time(stmax,atmax)
 
-	write(6,*) stmin(1:len_trim(stmin)),btmin,atmin
-	write(6,*) stmax(1:len_trim(stmax)),btmax,atmax
+	!write(6,*) stmin(1:len_trim(stmin)),btmin,atmin
+	!write(6,*) stmax(1:len_trim(stmax)),btmax,atmax
 	
 c--------------------------------------------------------------
 c open file
@@ -175,9 +183,13 @@ c prepare for output if needed
 c--------------------------------------------------------------
 
         iout = 0
+	iformout = iformat
+	if( bchform ) iformout = 1 - iformat
+	if( iformout < 0 ) iformout = iformat
+
         if( bout ) then
           iout = iunit + 1
-          if( iformat .eq. 1 ) then
+          if( iformout .eq. 1 ) then
 	    open(iout,file='out.fem',status='unknown',form='formatted')
           else
 	    open(iout,file='out.fem',status='unknown',form='unformatted')
@@ -292,7 +304,7 @@ c--------------------------------------------------------------
 	    if( bhuman ) then
 	      call fem_file_convert_atime(datetime,dtime,atime)
 	    end if
-            call fem_file_write_header(iformat,iout,dtime
+            call fem_file_write_header(iformout,iout,dtime
      +                          ,nvers,np,lmax,nvar,ntype,lmax
      +                          ,hlv,datetime,regpar)
           end if
@@ -312,7 +324,7 @@ c--------------------------------------------------------------
 	    if( ierr .ne. 0 ) goto 97
 	    if( string .ne. strings(i) ) goto 95
             if( boutput ) then
-              call fem_file_write_data(iformat,iout
+              call fem_file_write_data(iformout,iout
      +                          ,nvers,np,lmax
      +                          ,string
      +                          ,ilhkv,hd
@@ -361,6 +373,10 @@ c--------------------------------------------------------------
 	close(iunit)
 	if( iout > 0 ) close(iout)
 
+	if( bout ) then
+	  write(6,*) 'output written to file out.fem'
+	end if
+
 	if( iextract > 0 ) then
 	  write(6,*) '********** warning **************'
 	  write(6,*) 'iextract = ',iextract
@@ -374,8 +390,8 @@ c--------------------------------------------------------------
 	return
    95	continue
 	write(6,*) 'variable ',i
-	write(6,*) string
-	write(6,*) strings(i)
+	write(6,*) trim(string)
+	write(6,*) trim(strings(i))
 	write(6,*) 'cannot change description of variables'
 	stop 'error stop femelab'
    96	continue

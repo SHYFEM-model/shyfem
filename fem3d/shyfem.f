@@ -383,6 +383,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            if( niter .eq. 1 ) then
 	     call useunit(200)
 	     call iff_print_info(0)
+	     write(6,*) '--------------------------------'
 	   end if
 
 	   call print_time			!output to terminal

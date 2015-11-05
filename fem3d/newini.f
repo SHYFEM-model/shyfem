@@ -63,6 +63,7 @@ c 23.08.2013    ggu	depth routines to subdep.f
 c 05.09.2013    ggu	in adjust_levels() allow for nlv==1
 c 31.10.2014    ccf	initi_z0 for zos and zob
 c 25.05.2015    ggu	file cleaned and prepared for module
+c 05.11.2015    ggu	can now initialize z,u,v from file
 c
 c notes :
 c
@@ -107,10 +108,6 @@ c------------------------------------------------------------------
 	  deallocate(hlv_aux)
 	end if
 
-	!write(6,*) nlv,nlvdi,nlv_est
-	!call levels_reinit(nlv_est)
-	!write(6,*) nlv,nlvdi,nlv_est
-
 c------------------------------------------------------------------
 c levels read in from $levels section
 c------------------------------------------------------------------
@@ -121,11 +118,8 @@ c------------------------------------------------------------------
 c set up layer vectors
 c------------------------------------------------------------------
 
-	write(6,*) '... ',nlv
 	call set_ilhv		!sets nlv, ilhv (elemental)
-	write(6,*) '... ',nlv
 	call set_last_layer	!adjusts nlv, ilhv, hm3v
-	write(6,*) '... ',nlv
 	call set_ilhkv		!sets ilhkv (nodal)
 	call set_min_levels	!sets ilmkv and ilmv
 
@@ -281,7 +275,7 @@ c*****************************************************************
 	integer l
 
 	write(6,*) 'check_hlv: ',nlv,nlvdi
-	write(6,*) (hlv(l),l=1,nlv)
+	write(6,'(5g14.6)') (hlv(l),l=1,nlv)
 
 	end
 
@@ -513,8 +507,8 @@ c--------------------------------------------------------------
 
 	write(6,*) 'adjust_levels: '
 	write(6,*) 'nlv,nsigma,hsigma: ',nlv,nsigma,hsigma
-	write(6,*) 'hlv:  ',(hlv(l),l=1,nlv)
-	write(6,*) 'hldv: ',(hldv(l),l=1,nlv)
+	write(6,'(5g14.6)') 'hlv:  ',(hlv(l),l=1,nlv)
+	write(6,'(5g14.6)') 'hldv: ',(hldv(l),l=1,nlv)
 
 c--------------------------------------------------------------
 c check hlv and hldv values
@@ -723,15 +717,15 @@ c local
 
 	write(6,*) 'finished setting ilhv and nlv'
 	write(6,*) 'nsigma,hsigma: ',nsigma,hsigma
-	write(6,*) 'lmax,hmax: ',lmax,hmax
-	write(6,*) 'nlv,hlv: ',nlv,(hlv(l),l=1,nlv)
+	write(6,*) 'nlv,lmax,hmax: ',nlv,lmax,hmax
+	write(6,'(5g14.6)') (hlv(l),l=1,nlv)
 
 	return
    99	continue
 	write(6,*) ie,l,nlv,h,hlv(nlv)
 	write(6,*) 'maximum basin depth: ',hmax
 	write(6,*) 'maximum layer depth: ',hlv(nlv)
-	write(6,*) 'nlv,hlv: ',nlv,(hlv(l),l=1,nlv)
+	write(6,'(5g14.6)') (hlv(l),l=1,nlv)
 	stop 'error stop set_ilhv: not enough layers'
 	end
 
@@ -1269,18 +1263,25 @@ c initializes nodal value variable from file (2D version)
 	end
 
 c*****************************************************************
+c*****************************************************************
+c*****************************************************************
 
 	subroutine init_z(const)
 
-c initializes variables
+c initializes water levels (znv and zenv)
 
 	implicit none
 
 	real const		!constant z value to impose
 
-	include 'param.h'
-
 	character*80 name
+	logical rst_use_restart
+
+c--------------------------------------------------------
+c see if we already have hydro restart data
+c--------------------------------------------------------
+
+	if( rst_use_restart(1) ) return
 
 c--------------------------------------------------------
 c get name of file
@@ -1352,38 +1353,50 @@ c initializes water level from file
 
 	use mod_hydro
 	use basin, only : nkn,nel,ngr,mbw
+	use intp_fem_file
 
 	implicit none
 
+	include 'femtime.h'
+
 	character*(*) name	!file name
 
-	include 'param.h'
-
-
-
 	integer nb,k
-	integer ifileo
+	integer nvar,nintp,np,lmax,ibc
+	integer idzeta
+	double precision dtime
+	integer nodes(1)
+	real zconst(1)
+	character*10 what
 
-	nb=ifileo(10,name,'unform','old')
-	if(nb.le.0) goto 81
-	read(nb,err=82,end=82) (znv(k),k=1,nkn)
-	close(nb)
+	dtime = itanf
+        nodes = 0
+        nvar = 1
+        nintp = 2
+        np = nkn
+        lmax = 0
+        ibc = 0                         !no lateral boundary
+        what = 'zeta init'
+        zconst = 0.
+
+	write(6,*) 'Initializing water levels...'
+        call iff_init(dtime,name,nvar,np,lmax,nintp
+     +                          ,nodes,zconst,idzeta)
+        call iff_set_description(idzeta,ibc,what)
+
+        lmax = 1
+        call iff_read_and_interpolate(idzeta,dtime)
+        call iff_time_interpolate(idzeta,dtime,1,np,lmax,znv)
+
+	call iff_forget_file(idzeta)
 
 	write(6,*) 'Initial water levels read from file : '
-	write(6,*) name
+	write(6,*) trim(name)
 
-	return
-   81	continue
-	write(6,*) 'Error opening initial water level file :'
-	write(6,*) name
-	write(6,*) 'on unit ',nb
-	stop 'error stop init_file_z'
-   82	continue
-	write(6,*) 'Error reading from initial water level file'
-	write(6,*) name
-	stop 'error stop init_file_z'
 	end
 
+c*******************************************************************
+c*******************************************************************
 c*******************************************************************
 
 	subroutine init_uvt
@@ -1394,13 +1407,121 @@ c initializes transport in levels
 
 	implicit none
 
-	include 'param.h'
+	character*80 name
+	logical rst_use_restart
 
-	utlnv = 0.
-	vtlnv = 0.
+c--------------------------------------------------------
+c see if we already have hydro restart data
+c--------------------------------------------------------
+
+	if( rst_use_restart(1) ) return
+
+c--------------------------------------------------------
+c get name of file
+c--------------------------------------------------------
+
+        call getfnm('uvinit',name)
+
+c--------------------------------------------------------
+c initialize from file or with constant
+c--------------------------------------------------------
+
+	if(name.ne.' ') then
+	  call init_file_uv(name)
+	  call vtot
+	else
+	  utlnv = 0.
+	  vtlnv = 0.
+	  call ttov
+	end if
+
+c--------------------------------------------------------
+c end of routine
+c--------------------------------------------------------
 
 	end
 
+c*******************************************************************
+
+	subroutine init_file_uv(name)
+
+c initializes water level from file
+
+	use mod_hydro
+	use mod_hydro_vel
+	use mod_hydro_print
+	use basin, only : nkn,nel,ngr,mbw
+	use intp_fem_file
+	use levels
+
+	implicit none
+
+	include 'femtime.h'
+
+	character*(*) name	!file name
+
+	integer nb,k
+	integer nvar,nintp,np,lmax,ibc
+	integer ntype,iformat
+	integer idvel
+	double precision dtime
+	integer nodes(1)
+	real uvconst(2)
+	character*10 what
+
+	integer fem_file_regular
+
+	dtime = itanf
+        nodes = 0
+        nvar = 2
+        nintp = 2
+        np = nkn			!velocities must be on node - relax later
+        lmax = nlvdi
+        ibc = 0                         !no lateral boundary
+        what = 'uv init'
+        uvconst = 0.
+
+	write(6,*) 'Initializing velocities...'
+
+	call fem_file_test_formatted(name,np,nvar,ntype,iformat)
+	if( nvar /= 2 ) then
+	  write(6,*) 'expecting 2 variables, found ',nvar
+	  write(6,*) 'read error from file ',trim(name)
+	  stop 'error stop init_file_uv: nvar'
+	end if
+	if( fem_file_regular(ntype) > 0 ) then
+	  np = nel
+	else if( np /= nkn .and. np /= nel ) then
+	  write(6,*) 'unexpected value for np found ',np
+	  write(6,*) 'possible values: ',nkn,nel
+	  write(6,*) 'read error from file ',trim(name)
+	  stop 'error stop init_file_uv: np'
+	end if
+
+        call iff_init(dtime,name,nvar,np,lmax,nintp
+     +                          ,nodes,uvconst,idvel)
+        call iff_set_description(idvel,ibc,what)
+
+        call iff_read_and_interpolate(idvel,dtime)
+	if( np == nkn ) then
+          call iff_time_interpolate(idvel,dtime,1,np,lmax,uprv)
+          call iff_time_interpolate(idvel,dtime,2,np,lmax,vprv)
+	  call prtouv
+	else
+          call iff_time_interpolate(idvel,dtime,1,np,lmax,ulnv)
+          call iff_time_interpolate(idvel,dtime,2,np,lmax,vlnv)
+	  call uvtopr
+	end if
+
+	call iff_forget_file(idvel)
+
+	write(6,*) 'Initial velocities read from file : '
+	write(6,*) trim(name)
+
+	end
+
+c*******************************************************************
+c*******************************************************************
 c*******************************************************************
 
 	subroutine init_z0
@@ -1411,10 +1532,6 @@ c initializes surface z0sk(k) and bottom z0bn(k) roughness
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
-
-
 
 	integer k
 

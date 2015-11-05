@@ -311,6 +311,7 @@ c	...the variables that have to be set are zenv, utlnv, vtlnv
 c	-----------------------------------------------------
 
 	call init_z(const)	!initializes zenv
+	call make_new_depth	!initializes layer thickness
 	call init_uvt		!initializes utlnv, vtlnv
 	call init_z0		!initializes surface and bottom roughness
 

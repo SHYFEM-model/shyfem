@@ -433,7 +433,7 @@ c other variables are stored internally
         if( ierr .ne. 0 ) goto 99
 
         write(6,*) 'Available levels: ',nlv
-        write(6,*) (hlv(l),l=1,nlv)
+        write(6,'(5g14.6)') (hlv(l),l=1,nlv)
 
         return
    99   continue

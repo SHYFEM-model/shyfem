@@ -1945,7 +1945,7 @@ c*****************************************************************
 	real pi,dcori,z0,r0,f,omega,grav
 	real aux,r02,r2
 	real x,y,z,u,v
-	real v1v(nkn)
+	!real v1v(nkn)
 
 	pi = 4.*atan(1.)
 	dcori = 45.
@@ -1988,8 +1988,8 @@ c*****************************************************************
 
 	call vtot
 	call uvint
-	call uvtop0(v1v)
-	call uvtopr(v1v)
+	call uvtop0
+	call uvtopr
 
 	end
 

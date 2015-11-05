@@ -1084,7 +1084,7 @@ c arguments
 c local
         integer l,k,lmax
         integer nvers,nkn,nel,nlv,nvar
-        integer iunit
+        integer iunit,ios
 
         iunit = abs(iu)
 
@@ -1093,25 +1093,27 @@ c local
         lmax = nlv
 
         if( nvers .ge. 1 ) then
-           read(iunit,end=88,err=98) it
+           read(iunit,iostat=ios) it
         else
            write(6,*) 'nvers = ',nvers,'  iunit = ',iunit
            stop 'error stop ous_peek_record: internal error (1)'
         end if
 
+        if( ios > 0 ) then
+          write(6,*) 'ous_peek_record: Error while reading'
+          write(6,*) 'time record of OUS file'
+          ierr=98
+          return
+        end if
+
         backspace(iu)
 
-        ierr=0
+        if( ios < 0 ) then
+          ierr=-1
+        else
+          ierr=0
+        end if
 
-        return
-   88   continue
-        ierr=-1
-        return
-   98   continue
-        write(6,*) 'ous_peek_record: Error while reading'
-        write(6,*) 'time record of NOS file'
-        ierr=98
-        return
         end
 
 c************************************************************

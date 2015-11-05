@@ -120,8 +120,8 @@ c----------------------------------------------------------------------
 	irv(1:nrb) = irv_aux(1:nrb)
 	deallocate(irv_aux)
 
-	write(6,*) 'mod_bound_geom_reinit: '
-	write(6,*) nrb,irv
+	!write(6,*) 'mod_bound_geom_reinit: ',nrb
+	!write(6,'(8i9)') irv
 
         end subroutine mod_bound_geom_reinit
 

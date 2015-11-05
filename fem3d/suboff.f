@@ -10,6 +10,7 @@ c 17.06.2013    ggu     eliminated compiler warnings
 c 25.03.2014    ggu     new offline (for T/S)
 c 06.05.2015    ccf     write offline to .off file
 c 06.05.2015    ccf     read offline from offlin file in section name
+c 05.11.2015    ggu     revisited and checked
 c
 c****************************************************************
 
@@ -22,9 +23,13 @@ c****************************************************************
 	integer, parameter :: nintp = 4		!2 (linear) or 4 (cubic)
 
 	integer, save :: ioffline = 0
-	integer, save :: idtoff,itmoff,iwhat
-	integer, save :: iunit,itoff
+	integer, save :: idtoff,itmoff,itoff
+	integer, save :: iwhat			!0 (none), 1 (write), 2 (read)
+	integer, save :: iread
+	integer, save :: iunit
 	integer, save :: icall = 0
+	logical, save :: bfirst = .true.
+	logical, save :: bdebug = .false.
 
 	double precision, save :: dtr = 0.
 	integer, save :: time(nintp)
@@ -106,7 +111,7 @@ c-----------------------------------------------------
 
 	integer mode
 
-	integer itstart,iread
+	integer itstart
 	integer ierr,ig,iu
 	real dt
 	character*60 name,status
@@ -119,13 +124,19 @@ c-------------------------------------------------------------
 c initialize
 c-------------------------------------------------------------
 
-	if( icall .eq. 0 ) then
+	if( bfirst ) then
 	  ioffline = 0
 
           call convert_date('itmoff',itmoff)
           call convert_time('idtoff',idtoff)
 
-	  if( it .lt. itmoff ) return
+	  call adjust_itmidt(itmoff,idtoff,itoff)
+	  itoff = itmoff + idtoff
+
+	  write(6,*) 'offline init:',itmoff,idtoff,it,itoff
+
+	  call mod_offline_init(nkn,nel,nlvdi)
+	  call off_init
 
   	  if( idtoff .eq. 0 ) iwhat = 0		!nothing
 	  if( idtoff .gt. 0 ) iwhat = 1		!write
@@ -134,23 +145,22 @@ c-------------------------------------------------------------
 	  if( iwhat .le. 0 ) icall = -1
 	  if( idtoff .eq. 0 ) icall = -1
 	  if( icall .lt. 0 ) return
+
 	  if( iwhat .eq. 1 ) then
-            if (iunit .le. 0 ) then
-              iu = ifemop('.off','unform','new') !writing offline
-              if( iu .le. 0 ) then
-                write(6,*) 'iu = ',iu
-                stop 'error stop offline: cannot open output file'
-              end if
-	      iunit = iu
-	      write(6,*) 'Start writing offline file'
+            iu = ifemop('.off','unform','new') !writing offline
+            if( iu .le. 0 ) then
+              write(6,*) 'iu = ',iu
+              stop 'error stop offline: cannot open output file'
             end if
+	    iunit = iu
+	    write(6,*) 'Start writing offline file'
 	  else
             call getfnm('offlin',name)
             iu = ifileo(1,name,'unformatted','old')
             if( iu .le. 0 ) then
               write(6,*) '*** Cannot find offline file: '
-              write(6,*) name
-              stop
+              write(6,*) trim(name)
+              stop 'error stop offline: cannot open input file'
             end if
 	    iunit = iu
             write(6,*) '---------------------------------------------'
@@ -158,11 +168,12 @@ c-------------------------------------------------------------
             write(6,*) name
             write(6,*) '---------------------------------------------'
 	  end if
-	  call mod_offline_init(nkn,nel,nlvdi)
-	  call off_init
-	  itoff = itmoff + idtoff
+
 	  ioffline = -idtoff
+	  bfirst = .false.
 	end if
+
+	if( it < itmoff ) return
 
 c-------------------------------------------------------------
 c do different modes
@@ -179,7 +190,8 @@ c	  -------------------------------------------------------------
 	  call get_timestep(dt)
 	  call off_accum(dt)
 
-	  if( icall .eq. 0 ) then
+	  if( icall .eq. 0 ) then	!write first record
+	    if( bdebug ) write(6,*) 'offline writing: ',itmoff,mode,icall
 	    call off_aver
 	    call off_write(iunit,itmoff)
 	    call off_init
@@ -201,10 +213,10 @@ c	  -------------------------------------------------------------
 
 	  if( icall .eq. 0 ) then
 	    do ig=1,nintp
-	      call off_read(iunit,ig,ierr,iread)
+	      call off_read(iunit,ig,ierr)
 	      if( ierr .ne. 0 ) goto 97
 	    end do
-	    call can_do_offline(iread)
+	    call can_do_offline
 	    if( it .lt. time(1) ) goto 99
 	    call get_timestep(dt)
 	    if( it .eq. itmoff ) then
@@ -253,30 +265,28 @@ c****************************************************************
 c type: 1 hydro, 2 T/S, 4 turb, combinations are possible: 3,7
 c type == 0 -> any offline
 
+	use mod_offline
+
 	implicit none
 
 	integer type	!should we use this offline data?
 	logical boff	!data is available and should be used (return)
 
-	integer ioffline
-	common /ioffline/ioffline
-	save /ioffline/
+	integer ineed
 
-	integer iwhat
+	ineed = ioffline		!this is what we want (from idtoff)
 
-	iwhat = ioffline		!this is what we want (from idtoff)
-
-	if( iwhat .le. 0 ) then		!no offline
+	if( ineed .le. 0 ) then		!no offline
 	  boff = .false.
 	else if( type .eq. 0 ) then	!general
 	  boff = .true.
-	  !boff = iwhat .gt. 0
+	  !boff = ineed .gt. 0
 	else if( type .eq. 1 ) then	!hydro
-	  boff = mod(iwhat/1,2) .ne. 0
+	  boff = mod(ineed/1,2) .ne. 0
 	else if( type .eq. 2 ) then	!T/S
-	  boff = mod(iwhat/2,2) .ne. 0
+	  boff = mod(ineed/2,2) .ne. 0
 	else if( type .eq. 4 ) then	!turbulence
-	  boff = mod(iwhat/4,2) .ne. 0
+	  boff = mod(ineed/4,2) .ne. 0
 	else
 	  write(6,*) 'value for type not allowed: ',type
 	  stop 'error stop is_offline: type'
@@ -286,26 +296,22 @@ c type == 0 -> any offline
 
 c****************************************************************
 
-	subroutine can_do_offline(iread)
+	subroutine can_do_offline
+
+	use mod_offline
 
 	implicit none
 
-	integer iread		!this is what we get
+	logical bneed,bread
+	integer ineed,i
 
-	integer ioffline
-	common /ioffline/ioffline
-	save /ioffline/
-
-	logical bwhat,bread
-	integer iwhat,i
-
-	iwhat = ioffline	!this is what we want
+	ineed = ioffline	!this is what we want
 
 	i = 1
 	do while( i .le. 4 )
-	  bwhat = mod(iwhat/i,2) .ne. 0
+	  bneed = mod(ineed/i,2) .ne. 0
 	  bread = mod(iread/i,2) .ne. 0
-	  if( bwhat .and. .not. bread ) goto 99
+	  if( bneed .and. .not. bread ) goto 99
 	  i = i * 2
 	end do
 
@@ -335,10 +341,8 @@ c****************************************************************
 	integer iu
 	integer it
 
-	include 'param.h'
-
 	logical boff,bhydro,bts
-	integer ierr,iread
+	integer ierr
 	integer ip,i,itnext
 
 	integer ieof
@@ -363,12 +367,13 @@ c	---------------------------------------------------------
 	  call off_next_record(iu,itnext,ieof)
 	  if( ieof .ne. 0 ) exit
 	  call off_copy
-	  call off_read(iu,nintp,ierr,iread)
+	  call off_read(iu,nintp,ierr)
 	end do
 
 	if( it .gt. time(nintp) ) goto 99
 
 	!write(67,*) it,(time(i),i=1,nintp)
+	!write(6,*) it,bhydro,bts,iwhat
 
 c	---------------------------------------------------------
 c	pre processing
@@ -489,8 +494,6 @@ c****************************************************************
 
 	integer it
 
-	include 'param.h'
-
 	integer ie,ii,k,l,lmax,i,nintpol
 	real x(4),y(4),t
 
@@ -553,8 +556,6 @@ c****************************************************************
 
 	integer it
 
-	include 'param.h'
-
 	integer ie,ii,k,l,lmax
 	integer it1,it2
 	double precision rr,rt
@@ -598,8 +599,6 @@ c****************************************************************
 	use mod_offline
 
 	implicit none
-
-	include 'param.h'
 
 	integer ie,ii,k,l,lmax
 	integer ito,ifrom
@@ -647,8 +646,6 @@ c****************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	integer ie,ii,k,l,lmax
 
 	dtr = 0.
@@ -691,8 +688,6 @@ c****************************************************************
 	implicit none
 
 	real dt
-
-	include 'param.h'
 
 	integer ie,ii,k,l,lmax
 	double precision dtt
@@ -743,8 +738,6 @@ c****************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	integer ie,ii,k,l,lmax
 	double precision rr
 
@@ -791,8 +784,6 @@ c****************************************************************
 	implicit none
 
 	integer ig
-
-	include 'param.h'
 
 	integer ie,ii,k,l,lmax
 	integer ierr
@@ -879,8 +870,6 @@ c****************************************************************
 
 	integer iu,it
 
-	include 'param.h'
-
 	integer ie,ii,k,l,lmax
 
 	write(iu) it,nkn,nel,3
@@ -894,11 +883,14 @@ c****************************************************************
 	write(iu) ((sn(l,k,1),l=1,ilhkv(k)),k=1,nkn)
 	write(iu) ((tn(l,k,1),l=1,ilhkv(k)),k=1,nkn)
 
+	!write(122,*) it,ilhkv(1)
+	!write(122,'(5g14.6)') (tn(l,1,1),l=1,5)
+
 	end
 
 c****************************************************************
 
-	subroutine off_read(iu,ig,ierr,iread)
+	subroutine off_read(iu,ig,ierr)
 
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
@@ -908,9 +900,6 @@ c****************************************************************
 
 	integer iu,ig
 	integer ierr
-	integer iread
-
-	include 'param.h'
 
 	integer ie,ii,k,l,lmax,it
 	integer nknaux,nelaux
@@ -922,7 +911,7 @@ c****************************************************************
 	read(iu,err=99,end=98) it,nknaux,nelaux,iread
 	if( nkn .ne. nknaux .or. nel .ne. nelaux ) goto 97
 	if( iread .ne. 3 ) goto 96
-	!write(6,*) 'offline record read: ',it,ig
+	!write(6,*) 'offline record read: ',it,ig,iread
 	time(ig) = it
 	read(iu) (ilhaux(ie),ie=1,nel)
 	read(iu) (ilhkaux(k),k=1,nkn)

@@ -264,39 +264,34 @@ c is time ok?
 	include 'timlim.h'
 
 	integer it
-
-        double precision atimeold
-	save atimeold
-
-	integer icall
-	save icall
-	data icall /0/
-
-	if( icall .eq. 0 ) then
-	  icall = icall + 1
-	  nrec = nrec + 1
-	  atimeold = atimeact
-	end if
-
-	if( atimeact .ne. atimeold ) then !increase for new time
-	  nrec = nrec + 1
-	  atimeold = atimeact
-	end if
-
-	it = atimeact - atime0
-c        write(6,*) 'ptime_ok: ',nrec,itfreq,it,atimeact
+        double precision, save :: atimeold = -1
+	logical, save :: bdebug = .false.
+	character*20 line
 
 	ptime_ok = .false.
 
 	if( atimeact < atimemin ) return
 	if( atimeact > atimemax ) return
 	
+	if( atimeact .ne. atimeold ) then !increase for new time
+	  nrec = nrec + 1
+	  atimeold = atimeact
+	end if
+
+	it = atimeact - atime0
+
 	if( itfreq .gt. 0 .and. mod(nrec,itfreq) .eq. 0 ) then
 	  ptime_ok = .true.
 	else if( itfreq .eq. 0 ) then
 	  ptime_ok = .true.
 	else if( itfreq .lt. 0 .and. mod(nrec-1,-itfreq) .eq. 0 ) then
 	  ptime_ok = .true.
+	end if
+
+	if( bdebug ) then
+	  call dts_format_abs_time(atimeact,line)
+	  write(6,*) 'testing: ',line,'  ',ptime_ok
+	  write(6,*) 'ptime_ok: ',nrec,itfreq,it,atimeact
 	end if
 
 	end

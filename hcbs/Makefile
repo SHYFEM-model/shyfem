@@ -112,6 +112,6 @@ zip: cleanall
 
 general.o: general.h
 gustd.o: general.h gustd.h
-xgraph.o: graph.h generalx.h xgraph.h general.h
-xgraphf.o: general.h generalx.h xgraph.h graph.h gustd.h
+xgraph.o: generalx.h general.h xgraph.h graph.h
+xgraphf.o: xgraph.h generalx.h general.h gustd.h graph.h
 

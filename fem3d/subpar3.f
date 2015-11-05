@@ -745,7 +745,8 @@ c**************************************************************
 
         integer iunit
 
-        call pripar1(iunit)
+        !call pripar1(iunit)
+        call pripar3(iunit)
         !call pripar4(iunit)
 
         end
@@ -754,7 +755,7 @@ c*****************************************************
 
         subroutine pripar1(iunit)
 
-c prints parameter values
+c prints parameter values (1 column)
 
 	use para
 
@@ -780,11 +781,52 @@ c prints parameter values
 
 	end
 
+c*****************************************************
+
+        subroutine pripar3(iunit)
+
+c prints parameter values (3 columns)
+
+	use para
+
+        implicit none
+
+        integer iunit
+
+        character*6 name,section
+        character*8 nameii(3)
+	character*80 string
+        integer idfill,id,itype,ii
+        double precision dvalue
+        double precision valueii(3)
+        real value
+
+	call para_get_fill(idfill)
+
+	ii = 0
+        do id=1,idfill
+	  call para_get_info(id,name,section,itype,dvalue,string)
+	  value = dvalue
+	  if(itype.eq.1) then
+	    ii = ii + 1
+	    nameii(ii) = name
+	    valueii(ii) = value
+	  end if
+	  if( ii == 3 ) then
+            write(iunit,1000) (nameii(ii),' = ',valueii(ii),ii=1,3)
+	    ii = 0
+	  end if
+        end do
+
+	return
+ 1000	format(3(a8,a3,g14.6,2x))
+	end
+
 c**************************************************************
 
 	subroutine pripar4(iunit)
 
-c prints parameter values
+c prints parameter values (4 columns)
 
 	use para
 

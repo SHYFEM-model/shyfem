@@ -140,7 +140,7 @@ c	real sigma
 	double precision scalcont,dq
 	integer iround
 	integer nbnds
-	logical has_restart
+	logical rst_use_restart
 	logical has_output,next_output
 	logical has_output_d,next_output_d
 
@@ -175,6 +175,7 @@ c----------------------------------------------------------
 	if(icall.eq.-1) return
 
         call is_offline(2,boff)
+        !if( boff ) write(6,*) 'TS reading from offline...'
         if( boff ) return
 
 	levdbg = nint(getpar('levdbg'))
@@ -215,7 +216,7 @@ c		--------------------------------------------
 c		initialize saltv,tempv
 c		--------------------------------------------
 
-		if( .not. has_restart(3) ) then	!no restart of T/S values
+		if( .not. rst_use_restart(3) ) then	!no restart of T/S values
 		  call conini(nlvdi,saltv,salref,sstrat,hdkov)
 		  call conini(nlvdi,tempv,temref,tstrat,hdkov)
 
@@ -287,7 +288,7 @@ c		--------------------------------------------
 		if( ishyff == 1 ) ia_out = 0
 		if( has_output(ia_out) ) then
 		  call open_scalar_file(ia_out,nlv,nvar,'nos')
-		  if( binitial_nos ) then
+		  if( next_output(ia_out) ) then
 		    if( isalt .gt. 0 ) then
 		      call write_scalar_file(ia_out,11,nlvdi,saltv)
 		    end if
@@ -303,7 +304,7 @@ c		--------------------------------------------
 		  call shy_make_output_name('.ts.shy',file)
 		  call shy_open_output_file(file,1,nlv,nvar,2,id)
 		  da_out(4) = id
-		  if( binitial_nos ) then
+		  if( next_output_d(da_out) ) then
 		    if( isalt .gt. 0 ) then
 		      call shy_write_scalar_record(id,dtime,11,nlvdi,saltv)
 		    end if

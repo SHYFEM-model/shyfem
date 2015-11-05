@@ -230,6 +230,7 @@ c offline
 c-----------------------------------------------------------------
 
 	call is_offline(1,boff)
+	!if( boff ) write(6,*) 'hydro reading from offline...'
 	if( boff ) return
 
 c-----------------------------------------------------------------

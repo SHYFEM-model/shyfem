@@ -1,4 +1,10 @@
 
+02.11.2015
+
+c ./fem3d/subrst.f:
+! 30.10.2015    ggu     new names, restructured
+
+
 26.10.2015
 
 c ./fem3d/newcon.f:

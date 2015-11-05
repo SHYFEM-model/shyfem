@@ -1,5 +1,65 @@
 ============================================================
 
+Thu Nov  5 14:25:14 CET 2015
+
+minor changes, restart and offline, uvz init
+
+ .gitignore              |    1 +
+ LOG                     |    6 +
+ RELEASE_NOTES           |    8 +
+ fem3d/Makefile          | 1049 ++++++++++++++++++++++++-----------------------
+ fem3d/bc2fem.f          |  106 ++++-
+ fem3d/femelab.f         |   34 +-
+ fem3d/mod_bound_geom.f  |    4 +-
+ fem3d/new3di.f          |    1 +
+ fem3d/newbcl.f          |    9 +-
+ fem3d/newini.f          |  205 +++++++--
+ fem3d/newnudge.f        |    3 +-
+ fem3d/newtra.f          |   22 +-
+ fem3d/offinf.f          |   54 ++-
+ fem3d/ousutil.f         |    2 +-
+ fem3d/rstinf.f          |   95 +++--
+ fem3d/sedi3d.f          |    2 +-
+ fem3d/shyfem.f          |    1 +
+ fem3d/subbit10.f        |  184 +++++++++
+ fem3d/subbnd.f          |   14 +-
+ fem3d/subcoord.f        |   28 +-
+ fem3d/subcus.f          |    6 +-
+ fem3d/subdts.f          |    4 +-
+ fem3d/subele.f          |    3 -
+ fem3d/subfemfile.f      |   13 +-
+ fem3d/subfemintp.f      |   14 +-
+ fem3d/subn11.f          |    1 +
+ fem3d/subnsh.f          |    1 +
+ fem3d/suboff.f          |  127 +++---
+ fem3d/subous.f          |   28 +-
+ fem3d/suboutput.f       |   10 +-
+ fem3d/suboutputd.f      |    9 +-
+ fem3d/subpar3.f         |   48 ++-
+ fem3d/subrst.f          |  602 +++++++++++++++------------
+ fem3d/subsys.f          |   19 +-
+ femadj/Makefile         |   17 +-
+ fembin/gitdiffall       |   17 -
+ fembin/gitdifffile      |  144 -------
+ fembin/gitfileversion   |  144 +++++++
+ femdoc/final/shyfem.pdf |  Bin 276349 -> 276948 bytes
+ femplot/Makefile        |   80 ++--
+ femplot/supout.f        |    2 +-
+ femplot/suptim.f        |   31 +-
+ grid/Makefile           |  102 ++---
+ hcbs/Makefile           |    4 +-
+ mesh/Makefile           |   95 ++---
+ post/Makefile           |    6 +-
+ 46 files changed, 2006 insertions(+), 1349 deletions(-)
+ new file:
+   fem3d/subbit10.f
+ deleted:
+    fembin/gitdiffall
+ renamed:
+    fembin/gitdifffile -> fembin/gitfileversion
+
+============================================================
+
 Mon Oct 26 17:44:48 CET 2015
 
 New version 7_3_10

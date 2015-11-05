@@ -1597,7 +1597,7 @@ c reads next FEM record - is true if a record has been read, false if EOF
 
 	if( breg ) then
 	  write(6,*) 'plotting regular grid...'
-	  write(6,*) 'not yet ready for regular grid...'
+	  !write(6,*) 'not yet ready for regular grid...'
 	  !stop
 	end if
 

@@ -54,12 +54,16 @@
 !
 ! iff_init_global		intializes module
 ! iff_init(...,id)		initializes and gets file id
-!	-> iff_populate_records
+!	iff_populate_records
+!		iff_read_next_record
+!		iff_peek_next_record
+!		iff_allocate_fem_data_structure
+!		iff_space_interpolate
 ! iff_read_and_interpolate
-!	-> iff_read_next_record
-!	-> iff_space_interpolate
-! iff_time_interpolate(id,...)	interpolates for new time (and reads from file)
-!	-> iff_interpolate	interpolates in time
+!	iff_read_next_record
+!	iff_space_interpolate
+! iff_time_interpolate		interpolates for new time
+!	iff_interpolate		interpolates in time
 !
 !****************************************************************
 

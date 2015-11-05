@@ -196,6 +196,7 @@ fembin/shybas
 fembin/flxelab
 fembin/shyadj
 fembin/adjele
+fembin/femelab
 
 fembin/grid
 fembin/mesh

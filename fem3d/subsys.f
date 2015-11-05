@@ -114,6 +114,7 @@ c 20.10.2014	ggu	new default for date (-1)
 c 01.12.2014	ccf	wave parameters moved to subwave.f
 c 06.05.2015	ccf	new parameters itmoff and offlin
 c 29.09.2015	ggu	new boundary file surfvel
+c 29.09.2015	ggu	new initial file uvinit, new flgrst
 c
 c************************************************************************
 
@@ -220,11 +221,24 @@ c			first time record after |itrst|. Therefore, the
 c			value of 2 will guarantee that the program will not
 c			abort and continue running, but it might not
 c			be doing what you intended. (Default 0)
+c |flgrst|		This variable indicateswhich variables are read
+c			from the restart file. By default all available
+c			variables are read and used. If some variables
+c			are not wanted (because, e.g., you want to restart
+c			from a different T/S field), this fact can be indicated
+c			in |flgrst|. 1 indicates restart of hydro values,
+c			10 the depth values, 100 T/S values, 1000 the tracer
+c			concentration, 10000 vertical velocities and
+c			100000 the ecological variables. Therefore, a value
+c			of 10111 indicates a restart of everything except
+c			the tracer and the ecological values. The default
+c			value for |flgrst| is -1, which means 111111.
 
 	call addpar('idtrst',0.)
 	call addpar('itmrst',-1.)
 	call addpar('itrst',0.)
 	call addpar('ityrst',0.)
+	call addpar('flgrst',-1.)
 
 c |idtres|, |itmres|	Time step and start time for writing to file RES,
 c			the file containing residual hydrodynamic data.
@@ -2207,7 +2221,8 @@ c
 c The following strings enable the specification of files
 c that account for initial conditions or forcing.
 c
-c |zinit|	File with initial water level distribution.
+c |zinit|	Name of file containing initial conditions for water level
+c |uvinit|	Name of file containing initial conditions for velocity
 c |wind|	File with wind data. The file may be either
 c		formatted or unformatted. For the format of the unformatted
 c		file please see the section where the WIN
@@ -2246,6 +2261,8 @@ c		with the parameter |idtoff| greater than 0.
 
 
 	call addfnm('zinit',' ')
+        call addfnm('uvinit',' ')
+
 	call addfnm('wind',' ')
         call addfnm('rain',' ')
         call addfnm('qflux',' ')

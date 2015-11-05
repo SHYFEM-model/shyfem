@@ -105,17 +105,17 @@
         write(6,*) 'mode  = ',mode
         write(6,*) 'iproj = ',iproj
 
-        write(6,*) (xgv(i),i=1,5)
-        write(6,*) (ygv(i),i=1,5)
-        write(6,*) (xgeov(i),i=1,5)
-        write(6,*) (ygeov(i),i=1,5)
-        write(6,*) (xcartv(i),i=1,5)
-        write(6,*) (ycartv(i),i=1,5)
+        write(6,1000) (xgv(i),i=1,5)
+        write(6,1000) (ygv(i),i=1,5)
+        write(6,1000) (xgeov(i),i=1,5)
+        write(6,1000) (ygeov(i),i=1,5)
+        write(6,1000) (xcartv(i),i=1,5)
+        write(6,1000) (ycartv(i),i=1,5)
 
         write(6,*) 'end of proj_cart2geo'
 
 	return
-
+1000	format(5g14.6)
         end subroutine proj_cart2geo
 
 !****************************************************************
@@ -159,15 +159,17 @@
         write(6,*) 'mode  = ',mode
         write(6,*) 'iproj = ',iproj
 
-        write(6,*) (xgv(i),i=1,5)
-        write(6,*) (ygv(i),i=1,5)
-        write(6,*) (xgeov(i),i=1,5)
-        write(6,*) (ygeov(i),i=1,5)
-        write(6,*) (xcartv(i),i=1,5)
-        write(6,*) (ycartv(i),i=1,5)
+        write(6,1000) (xgv(i),i=1,5)
+        write(6,1000) (ygv(i),i=1,5)
+        write(6,1000) (xgeov(i),i=1,5)
+        write(6,1000) (ygeov(i),i=1,5)
+        write(6,1000) (xcartv(i),i=1,5)
+        write(6,1000) (ycartv(i),i=1,5)
 
         write(6,*) 'end of proj_geo2cart'
 
+	return
+1000	format(5g14.6)
         end subroutine proj_geo2cart
 
 !****************************************************************

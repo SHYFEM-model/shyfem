@@ -68,6 +68,7 @@ c 10.11.2014    ggu     time management routines transfered to this file
 c 23.09.2015    ggu     new routine convert_time_d() for double
 c 24.09.2015    ggu     routines re-written for double precision
 c 20.10.2015    ggu     new routines to set/get id
+c 04.11.2015    ggu     allow for initial output in adjust_itmidt()
 c
 c************************************************************
 c
@@ -87,12 +88,16 @@ c sets-up output frequency and first output
 	double precision idtout		!time step for output
 	double precision itout		!first output
 
+        logical binit
+
+        binit = ( itmout /= -1. )                !output initial time?
+
 	if( itmout .eq. -1. ) itmout = itanf
 	if( itmout .lt. itanf ) itmout = itanf
 
 	itout = itmout
-	if( itmout .eq. itanf ) itout = itout + idtout
-	if( itout .gt. itend ) idtout = 0
+	if( itmout .eq. itanf .and. .not. binit ) itout = itout + idtout
+	if( itout .gt. itend .and. idtout .gt. 0 ) idtout = 0
 
 	end
 

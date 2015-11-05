@@ -20,6 +20,7 @@ c 16.11.2011    ggu     basin.h introduced
 c 23.01.2012    ggu     new from basinf
 c 25.09.2015    ggu     prepared for nudging velocities
 c 29.09.2015    ggu     finished nudging velocities
+c 04.11.2015    ggu     bug in velocitiy nudging fixed
 c
 c****************************************************************
 
@@ -563,7 +564,7 @@ c*******************************************************************
 	    if( tau > 0. ) then
 	      h = hdenv(l,ie)
 	      fxv(l,ie) = fxv(l,ie) - (h*uobs(l,ie)-utlov(l,ie))/tau
-	      fyv(l,ie) = fyv(l,ie) - (h*vobs(l,ie)-utlov(l,ie))/tau
+	      fyv(l,ie) = fyv(l,ie) - (h*vobs(l,ie)-vtlov(l,ie))/tau
 	    end if
 	  end do
 	end do
