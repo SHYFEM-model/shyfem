@@ -1,4 +1,16 @@
 
+09.11.2015
+
+c ./femplot/supsim.f:
+c 06.11.2015    ggu     set valref to 1 if vel field == 0
+c
+c ./fem3d/mod_conz.f:
+! 09.11.2015    ggu     restructured with global values
+!
+c ./fem3d/newconz.f:
+c 09.11.2015    ggu     newly structured in init, compute and write
+
+
 05.11.2015
 
 c ./fem3d/newnudge.f:

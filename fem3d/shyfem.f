@@ -298,7 +298,7 @@ c-----------------------------------------------------------
 	call cstsetup
 	call sp136(ic)
         call shdist(rdistv)
-	call tracer
+	call tracer_init
 	call renewal_time
 
 	call submud_init
@@ -386,6 +386,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	     write(6,*) '--------------------------------'
 	   end if
 
+	   call tracer_write
 	   call print_time			!output to terminal
 
 	   call total_energy
@@ -732,7 +733,7 @@ c*****************************************************************
 	if(isalt .gt. 0) nscal = nscal +1
 	if(iconz .gt. 0) nscal = nscal + iconz
 
-!$      call omp_set_nested(.TRUE.)
+!$      !!!call omp_set_nested(.TRUE.)
 	
 !$OMP PARALLEL
 
@@ -748,7 +749,7 @@ c*****************************************************************
 !$OMP END TASK
 !$OMP TASK
 	 !print *, "tracer"
-	 call tracer
+	 call tracer_compute
 	 !print *, "end tracer"
 !$OMP END TASK
 !$OMP END TASKGROUP	

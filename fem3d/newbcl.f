@@ -357,9 +357,6 @@ c----------------------------------------------------------
 	        call bnds_read_new(what,idsalt,dtime)
 	  end if
 	  
-!$OMP PARALLEL 	  
-!$OMP SINGLE	  
- 
 !$OMP TASK PRIVATE(what,dtime) FIRSTPRIVATE(thpar,wsink,robs,itemp,it) 
 !$OMP&     SHARED(idtemp,tempv,difhv,difv,difmol,tobsv) DEFAULT(NONE)
 !$OMP&     IF(itemp > 0)
@@ -390,10 +387,7 @@ c----------------------------------------------------------
           end if
 
 !$OMP END TASK
-!$OMP END SINGLE	
 !$OMP TASKWAIT
-
-!$OMP END PARALLEL
 
 	end if
 

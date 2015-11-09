@@ -1,5 +1,37 @@
 ============================================================
 
+Mon Nov  9 13:09:10 CET 2015
+
+new tracer
+
+ LOG                     |  12 +
+ RELEASE_NOTES           |   5 +
+ fem3d/Makefile          | 994 +++++++++++++++++++++++-------------------------
+ fem3d/mod_conz.f        |  35 ++
+ fem3d/newbcl.f          |   6 -
+ fem3d/newcon.f          |   2 +
+ fem3d/newconz.f         | 442 +++++++++++++--------
+ fem3d/newstab.f         |   2 +-
+ fem3d/shyfem.f          |   7 +-
+ fem3d/subboxa.f         |   2 +-
+ fem3d/subcus.f          |   2 +-
+ fem3d/subflxa.f         |   4 +-
+ fem3d/suboff.f          |   6 +-
+ fem3d/subrst.f          |   2 +-
+ fem3d/subwrt.f          |   2 +-
+ femadj/Makefile         |  24 +-
+ fembin/mail_shyfem.sh   |   3 +
+ femdoc/final/shyfem.pdf | Bin 283905 -> 283899 bytes
+ femplot/Makefile        |  91 +++--
+ femplot/supsim.f        |   2 +
+ grid/Makefile           |  95 +++--
+ hcbs/Makefile           |   6 +-
+ mesh/Makefile           |  88 ++---
+ post/Makefile           |   6 +-
+ 24 files changed, 995 insertions(+), 843 deletions(-)
+
+============================================================
+
 Thu Nov  5 15:02:11 CET 2015
 
 New version 7_3_12

@@ -456,7 +456,7 @@
 
 ! writes one record of restart data
 
-	use mod_conz
+	use mod_conz, only : cnv, conzv
 	use mod_geom_dynamic
 	use mod_ts
 	use mod_hydro_vel

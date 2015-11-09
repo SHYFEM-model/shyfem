@@ -316,7 +316,7 @@ c******************************************************************
 
 c administers writing of flux data
 
-	use mod_conz
+	use mod_conz, only : cnv
 	use mod_ts
 	use levels, only : nlvdi,nlv
 	use flux
@@ -530,7 +530,7 @@ c iconz		how many parameters actually needed
 c csc		new extension for file
 c ivar_base	base of variable numbering
 
-	use mod_conz
+	use mod_conz, only : conzv
 	use levels, only : nlvdi,nlv
 	use flux
 

@@ -135,9 +135,6 @@ c-------------------------------------------------------------
 
 	  write(6,*) 'offline init:',itmoff,idtoff,it,itoff
 
-	  call mod_offline_init(nkn,nel,nlvdi)
-	  call off_init
-
   	  if( idtoff .eq. 0 ) iwhat = 0		!nothing
 	  if( idtoff .gt. 0 ) iwhat = 1		!write
 	  if( idtoff .lt. 0 ) iwhat = 2		!read
@@ -145,6 +142,9 @@ c-------------------------------------------------------------
 	  if( iwhat .le. 0 ) icall = -1
 	  if( idtoff .eq. 0 ) icall = -1
 	  if( icall .lt. 0 ) return
+
+	  call mod_offline_init(nkn,nel,nlvdi)
+	  call off_init
 
 	  if( iwhat .eq. 1 ) then
             iu = ifemop('.off','unform','new') !writing offline

@@ -95,7 +95,7 @@ c------------------------------------------------------------
 
         subroutine renewal_time
 
-	use mod_conz
+	use mod_conz, only : cnv
 	use mod_depth
 	use levels
 	use basin

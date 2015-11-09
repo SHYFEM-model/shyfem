@@ -230,7 +230,7 @@ c******************************************************************
 
 c administers writing of flux data
 
-	use mod_conz
+	use mod_conz, only : cnv
 	use mod_ts
 	use mod_diff_visc_fric
 	use mod_hydro_vel

@@ -68,6 +68,7 @@ c 30.05.2014    ggu	flag no data points and do not plot
 c 20.10.2014    ggu	new time management
 c 05.06.2015    ggu	some plotting routines adjourned (flag)
 c 14.09.2015    ggu	prepared for plotting velocities given in fem file
+c 06.11.2015    ggu	set valref to 1 if vel field == 0
 c
 c notes :
 c
@@ -917,6 +918,7 @@ c------------------------------------------------------------------
 	    end if
 	end if
 	typsca = typls * typlsf
+	if( valref <= 0. ) valref = 1		!if vel field == 0
 
 	write(6,*) 'plo2vel: '
 	write(6,*) 'scale (type): ',typls,typlsf,ioverl

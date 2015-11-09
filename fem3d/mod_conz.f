@@ -1,3 +1,15 @@
+!
+! routines for generic concentration
+!
+! contents :
+!
+! subroutine mod_conz_init(ncs,nkn,nlv)
+!
+! revision log :
+!
+! 09.11.2015    ggu     restructured with global values
+!
+!******************************************************************
 
 !==================================================================
         module mod_conz
@@ -11,6 +23,29 @@
 
         real, allocatable, save :: conzv(:,:,:)
         real, allocatable, save :: cnv(:,:)
+
+	integer, save :: iconz = 0
+        integer, save :: icall_conz = 0
+        integer, save :: ninfo = 0
+        integer, save :: level = 0
+        integer, save :: iprogr = 0
+
+        logical, save :: binfo = .true.
+
+        real, save :: cref,rkpar,difmol,contau
+
+        integer, save, allocatable :: idconz(:)
+        integer, save :: ia_out(4)
+
+        real, save, allocatable :: cdefs(:)
+        real, save, allocatable :: tauv(:)
+        real, save, allocatable :: massv(:)
+
+	character*4, save :: what = 'conz'
+
+        integer, parameter :: ndim_tau = 7
+        real, save :: taupar(ndim_tau)
+        data taupar /0.,0.,0.,0.,0.,0.,0./
 
 !==================================================================
 	contains

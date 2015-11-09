@@ -1286,7 +1286,7 @@ c*****************************************************************
 
 c computes residence time online - one value for whole lagoon
 
-	use mod_conz
+	use mod_conz, only : cnv
 	use levels
 	use basin
 

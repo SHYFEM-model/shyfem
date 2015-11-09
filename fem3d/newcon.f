@@ -2156,6 +2156,8 @@ c---------------------------------------------------------------
 	  lmax = ilhkv(k)
 	  do l=1,lmax
 	    c = cnv(l,k)
+	    !rm1 = rmin(l,k)
+	    !rm2 = rmax(l,k)
 	    if( c .lt. rmin(l,k) .or. c .gt. rmax(l,k) ) then
 	      amin = rmin(l,k)
 	      amax = rmax(l,k)

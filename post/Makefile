@@ -171,8 +171,8 @@ demopost.o: pgraph.h general.h
 general.o: general.h
 gustd.o: gustd.h general.h
 pc.o: pspost.h
-pcalp.o: general.h pgraph.h
+pcalp.o: pgraph.h general.h
 pgraph.o: general.h pgraph.h
-psgraph.o: psgraph.h gustd.h general.h colorutil.h
-psgraphf.o: general.h psgraph.h
+psgraph.o: general.h gustd.h psgraph.h colorutil.h
+psgraphf.o: psgraph.h general.h
 

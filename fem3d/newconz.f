@@ -19,22 +19,57 @@ c 13.02.2014    ggu     routines for reading initial condition
 c 10.07.2014    ggu     only new file format allowed
 c 20.10.2014    ggu     pass ids to scal_adv routines
 c 10.02.2015    ggu     call to bnds_read_new() introduced
+c 09.11.2015    ggu     newly structured in init, compute and write
 c
 c*********************************************************************
 
-	subroutine tracer
+	subroutine tracer_compute
 
 	use mod_conz
+
+	implicit none
+
+	if( iconz < 0 ) return
+
+	if( iconz == 1 ) then
+	  !call conz3sh
+	  call tracer_compute_single
+	else
+	  !call conzm3sh
+	  call tracer_compute_multi
+	end if
+
+	icall_conz = icall_conz + 1
+
+	end
+
+c*********************************************************************
+
+	subroutine tracer_init
+
+c initializes tracer computation
+
+	use mod_conz
+	!use mod_diff_visc_fric
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
-	include 'param.h'
+	include 'femtime.h'
 
-	integer, save :: iconz = 0
+	integer nvar,nbc,nintp,i
+	integer nmin
+	real cdef(1)
+	double precision dtime0
 
+	logical has_restart,has_output
+	integer nbnds
 	real getpar
+
+c-------------------------------------------------------------
+c initialization of module
+c-------------------------------------------------------------
 
 	if( iconz < 0 ) return
 
@@ -44,17 +79,246 @@ c*********************************************************************
           if( iconz < 0 ) return
 
           call mod_conz_init(iconz,nkn,nlvdi)
+
           write(6,*) 'tracer initialized: ',iconz,nkn,nlvdi
         end if
 
-	if( iconz == 1 ) then
-	  call conz3sh
-	else
-	  call conzm3sh
+c-------------------------------------------------------------
+c initialization of parameters
+c-------------------------------------------------------------
+
+	cref=getpar('conref')
+	rkpar=getpar('chpar')
+	difmol=getpar('difmol')
+	contau = getpar('contau')
+
+	nvar = iconz
+	allocate(tauv(nvar),cdefs(nvar),massv(nvar))
+	tauv = contau
+	nmin = min(ndim_tau,nvar)
+	tauv(1:nmin) = taupar(1:nmin)
+
+        if( .not. has_restart(4) ) then	!no restart of conzentrations
+	  if( nvar == 1 ) then 
+	    call conini0(nlvdi,cnv,cref)
+	    call conz_init(itanf,nlvdi,nlv,nkn,cnv) !read from file
+	  else
+	    do i=1,nvar
+	      call conini0(nlvdi,conzv(1,1,i),cref)
+	    end do
+	  end if
 	end if
+
+        call init_output('itmcon','idtcon',ia_out)
+	if( has_output(ia_out) ) then
+          call open_scalar_file(ia_out,nlv,nvar,'con')
+	end if
+
+        call getinfo(ninfo)
+
+        nbc = nbnds()
+        allocate(idconz(nbc))
+        idconz = 0
+
+	dtime0 = itanf
+	nintp = 2
+	cdefs = 0.				!default boundary condition
+        call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
+     +				,cdefs,idconz)
+
+	iprogr = nint(getpar('iprogr'))
+	if( level .le. 0 ) iprogr = 0
 
 	end
 
+c*********************************************************************
+
+	subroutine tracer_compute_single
+
+	use mod_conz
+	use mod_diff_visc_fric
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
+
+	implicit none
+
+	include 'femtime.h'
+	include 'mkonst.h'
+
+	real wsink
+	real dt
+	double precision dtime
+
+c-------------------------------------------------------------
+c initialization
+c-------------------------------------------------------------
+
+	if( iconz < 0 ) return
+
+	if( it .eq. itanf ) stop 'tracer_compute_single: internal error'
+	!if( it .eq. itanf ) return
+
+c-------------------------------------------------------------
+c normal call
+c-------------------------------------------------------------
+
+	wsink = 0.
+	dtime = it
+	dt = idt
+
+	call bnds_read_new(what,idconz,dtime)
+
+        call scal_adv(what,0
+     +                          ,cnv,idconz
+     +                          ,rkpar,wsink
+     +                          ,difhv,difv,difmol)
+
+c-------------------------------------------------------------
+c simulate decay
+c-------------------------------------------------------------
+
+        call decay_conz(dt,contau,cnv)
+	call massconc(+1,cnv,nlvdi,massv(1))
+
+c-------------------------------------------------------------
+c end of routine
+c-------------------------------------------------------------
+
+	end
+
+c*********************************************************************
+
+	subroutine tracer_compute_multi
+
+	use mod_conz
+	use mod_diff_visc_fric
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
+
+	implicit none
+
+	include 'femtime.h'
+	include 'mkonst.h'
+
+	integer nvar,i
+	real wsink
+	real dt
+	double precision dtime
+
+c-------------------------------------------------------------
+c initialization
+c-------------------------------------------------------------
+
+	if( iconz < 0 ) return
+
+	if( it .eq. itanf ) stop 'tracer_compute_multi: internal error'
+	!if( it .eq. itanf ) return
+
+c-------------------------------------------------------------
+c normal call
+c-------------------------------------------------------------
+
+	nvar = iconz
+	wsink = 0.
+	dtime = it
+	dt = idt
+
+	call bnds_read_new(what,idconz,dtime)
+
+	do i=1,nvar
+
+!$OMP TASK FIRSTPRIVATE(i,rkpar,wsink,difhv,difv,difmol,idconz,what,
+!$OMP&     dt,nlvdi) SHARED(conzv,tauv,massv)  DEFAULT(NONE)
+ 
+          call scal_adv(what,i
+     +                          ,conzv(1,1,i),idconz
+     +                          ,rkpar,wsink
+     +                          ,difhv,difv,difmol)
+
+          call decay_conz(dt,tauv(i),conzv(1,1,i))
+	  call massconc(+1,conzv(1,1,i),nlvdi,massv(i))
+
+!$OMP END TASK
+
+	end do	
+
+!$OMP TASKWAIT
+
+c-------------------------------------------------------------
+c end of routine
+c-------------------------------------------------------------
+
+	end
+
+c*********************************************************************
+
+	subroutine tracer_write
+
+	use mod_conz
+	use levels, only : nlvdi,nlv
+	use basin, only : nkn,nel,ngr,mbw
+
+	implicit none
+
+	include 'femtime.h'
+
+	integer id,nvar,i
+        real cmin,cmax,ctot
+	real v1v(nkn)
+
+	logical next_output
+
+	if( iconz < 0 ) return
+
+c-------------------------------------------------------------
+c write to file
+c-------------------------------------------------------------
+
+	if( next_output(ia_out) ) then
+	  if( iconz == 1 ) then
+            id = 10       !for tracer
+	    call write_scalar_file(ia_out,id,nlvdi,cnv)
+	  else if( iconz > 1 ) then
+	    nvar = iconz
+	    do i=1,nvar
+	      id = 30 + i
+	      call write_scalar_file(ia_out,id,nlvdi,conzv(1,1,i))
+	    end do
+	  end if
+	end if
+
+c-------------------------------------------------------------
+c write to info file
+c-------------------------------------------------------------
+
+	if( iconz == 1 ) then
+	  if( iprogr .gt. 0 .and. mod(icall_conz,iprogr) .eq. 0 ) then
+	    call extract_level(nlvdi,nkn,level,cnv,v1v)
+	    call wrnos2d_index(it,icall_conz,'conz','concentration',v1v)
+	  end if
+
+          if( binfo ) then
+	    ctot = massv(1)
+            call conmima(nlvdi,cnv,cmin,cmax)
+            write(ninfo,2021) 'conzmima: ',it,cmin,cmax,ctot
+ 2021       format(a,i10,2f10.4,e14.6)
+          end if
+	else
+	  !write(65,*) it,massv
+	end if
+
+c-------------------------------------------------------------
+c end of routine
+c-------------------------------------------------------------
+
+	end
+
+c*********************************************************************
+c*********************************************************************
+c*********************************************************************
+C old routines ... not used anymore
+c*********************************************************************
+c*********************************************************************
 c*********************************************************************
 
 	subroutine conz3sh
@@ -68,16 +332,12 @@ c shell for conz (new version)
 
 	implicit none
 
-c parameter
-        include 'param.h'
 c common
 	include 'femtime.h'
 	include 'mkonst.h'
 
 c local
-	logical binfo
         integer istot
-	integer level
 	integer nintp,nvar,ivar,id
 	integer nbc
 	real cdef(1)
@@ -91,81 +351,15 @@ c function
 	logical has_restart,next_output,has_output
 	integer nbnds
 	real getpar
-c save & data
-        character*4 what
-        save what
-	integer iconz
-	save iconz
-	real cref,rkpar
-	save cref,rkpar
-	real difmol
-	save difmol
-	real tau
-	save tau
-        integer ninfo
-        save ninfo
-        integer iprogr
-        save iprogr
-	integer, save, allocatable :: idconz(:)
-	integer ia_out(4)
-	save ia_out
 
-	integer icall
-	save icall
-	data icall /0/
-
-	if(icall.eq.-1) return
-
-	binfo = .true.		! writes info to info file
-	level = 0		! level > 0 -> writes level to extra file
+	if(icall_conz.eq.-1) return
 
 c-------------------------------------------------------------
 c initialization
 c-------------------------------------------------------------
 
-	if(icall.eq.0) then
-	  iconz=nint(getpar('iconz'))
-	  if( iconz .ne. 1 ) icall=-1
-	  if(icall.eq.-1) return
-
-	  cref=getpar('conref')
-	  rkpar=getpar('chpar')
-	  difmol=getpar('difmol')
-	  tau = getpar('contau')
-
-          what = 'conz'
-
-          if( .not. has_restart(4) ) then	!no restart of conzentrations
-	    call conini0(nlvdi,cnv,cref)
-	  end if
-	  call conz_init(itanf,nlvdi,nlv,nkn,cnv) !read from file if name given
-
-	  nvar = 1
-          call init_output('itmcon','idtcon',ia_out)
-	  if( has_output(ia_out) ) then
-            call open_scalar_file(ia_out,nlv,nvar,'con')
-	  end if
-
-          call getinfo(ninfo)
-
-          nbc = nbnds()
-          allocate(idconz(nbc))
-          idconz = 0
-
-	  dtime0 = itanf
-	  nintp = 2
-	  nvar = 1
-	  cdef(1) = 0.
-          call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
-     +				,cdef,idconz)
-
-	  iprogr = nint(getpar('iprogr'))
-	  if( level .le. 0 ) iprogr = 0
-	end if
-
-	icall=icall+1
-
-	if( it .eq. itanf ) return
+	if( it .eq. itanf ) stop 'conz3sh: internal error'
+	!if( it .eq. itanf ) return
 
 c-------------------------------------------------------------
 c normal call
@@ -187,7 +381,7 @@ c-------------------------------------------------------------
 c simulate decay
 c-------------------------------------------------------------
 
-        call decay_conz(dt,tau,cnv)
+        call decay_conz(dt,contau,cnv)
 
 c-------------------------------------------------------------
 c write to file
@@ -198,9 +392,9 @@ c-------------------------------------------------------------
 	  call write_scalar_file(ia_out,id,nlvdi,cnv)
 	end if
 
-	if( iprogr .gt. 0 .and. mod(icall,iprogr) .eq. 0 ) then
+	if( iprogr .gt. 0 .and. mod(icall_conz,iprogr) .eq. 0 ) then
 	  call extract_level(nlvdi,nkn,level,cnv,v1v)
-	  call wrnos2d_index(it,icall,'conz','concentration',v1v)
+	  call wrnos2d_index(it,icall_conz,'conz','concentration',v1v)
 	end if
 
 c-------------------------------------------------------------
@@ -234,105 +428,29 @@ c shell for conz with multi dimensions
 	implicit none
 
 c parameter
-        include 'param.h'
 	include 'femtime.h'
 	include 'mkonst.h'
 
-	integer, parameter :: ndim = 7
-	real, save :: taupar(ndim)
-        data taupar /0.,0.,0.,0.,0.,0.,0./
-
 c local
         integer istot
-	integer level
 	integer nintp,nvar,ivar,i,id,nmin
 	integer nbc
 	real cdef
         real cmin,cmax
         real sindex
-	real wsink,tau,mass
+	real wsink,mass
 	real t,dt
-	real, save, allocatable :: cdefs(:)
-	real, save, allocatable :: tauv(:)
-	real, save, allocatable :: massv(:)
 	double precision dtime,dtime0
 c function
 	integer nbnds
 	logical has_restart,next_output
 	real getpar
-c save & data
-        character*5 what
-        save what
-	integer iconz
-	save iconz
-	real cref,rkpar
-	save cref,rkpar
-	real difmol
-	save difmol
-	real contau
-	save contau
-        integer ninfo
-        save ninfo
-        integer iprogr
-        save iprogr
-	integer, save, allocatable :: idconz(:)
-	integer ia_out(4)
-	save ia_out
 
-	integer icall
-	save icall
-	data icall /0/
-
-	if(icall.eq.-1) return
+	if(icall_conz.eq.-1) return
 
 c-------------------------------------------------------------
 c initialization
 c-------------------------------------------------------------
-
-	if(icall.eq.0) then
-	  iconz=nint(getpar('iconz'))
-	  if( iconz .le. 1 ) icall=-1
-	  if(icall.eq.-1) return
-
-	  nvar = iconz
-
-	  cref=getpar('conref')
-	  rkpar=getpar('chpar')
-	  difmol=getpar('difmol')
-	  contau = getpar('contau')
-
-          what = 'conz'
-
-	  allocate(tauv(nvar),cdefs(nvar),massv(nvar))
-	  tauv = contau
-	  nmin = min(ndim,nvar)
-	  tauv(1:nmin) = taupar(1:nmin)
-	  cdefs = 0.				!default boundary condition
-
-          if( .not. has_restart(4) ) then	!no restart of conzentrations
-	    do i=1,nvar
-	      call conini0(nlvdi,conzv(1,1,i),cref)
-	    end do
-	  end if
-
-          call init_output('itmcon','idtcon',ia_out)
-          call open_scalar_file(ia_out,nlv,nvar,'con')
-
-          call getinfo(ninfo)
-
-          nbc = nbnds()
-          allocate(idconz(nbc))
-          idconz = 0
-
-	  dtime0 = itanf
-	  nintp = 2
-	  cdefs = 0.
-          call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
-     +				,cdefs,idconz)
-
-	end if
-
-	icall=icall+1
 
 	if( it .eq. itanf ) return
 
@@ -390,6 +508,8 @@ c-------------------------------------------------------------
 
 	end
 
+c*********************************************************************
+c*********************************************************************
 c*********************************************************************
 
         subroutine decay_conz(dt,tau,e)

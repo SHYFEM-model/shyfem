@@ -49,7 +49,7 @@ c*****************************************************************
 
 c computes stability index
 
-	use mod_conz
+	!use mod_conz
 	use mod_diff_visc_fric
 	use levels, only : nlvdi,nlv
 	use basin

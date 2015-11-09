@@ -11,6 +11,7 @@ fembin=$FEMDIR/fembin
 subject="new SHYFEM file $file"
 shyfemdir="0B742mznAzyDPbGF2em5NMjZYdHc"
 link="https://drive.google.com/folderview?id=$shyfemdir&usp=sharing"
+gitlink="https://github.com/SHYFEM-model/shyfem"
 tmpfile=tmp.tmp
 #fembin=./fembin
 
@@ -51,6 +52,8 @@ echo ""								>> $tmpfile
 echo "a new shyfem file $file is available for download."	>> $tmpfile
 echo "Please use the following link to download the file:"	>> $tmpfile
 echo "$link"							>> $tmpfile
+echo "Alternatively you can get the code directly from:"	>> $tmpfile
+echo "$gitlink"							>> $tmpfile
 echo ""								>> $tmpfile
 echo "Release notes:"						>> $tmpfile
 $fembin/extract_release.pl $FEMDIR/RELEASE_NOTES		>> $tmpfile
