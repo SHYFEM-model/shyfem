@@ -1,3 +1,21 @@
+version  7_3_13    09-11-2015    VERS_7_3_13
+
+========================================================== 09-11-2015 - 7_3_13
+
+c ./femplot/supsim.f:
+c 06.11.2015    ggu	set valref to 1 if vel field == 0
+c
+c ./fem3d/mod_conz.f:
+! 09.11.2015    ggu     restructured with global values
+!
+c ./fem3d/subver.f:
+c 09.11.2015	ggu	version 7.3.13	the wall release
+c
+c ./fem3d/newconz.f:
+c 09.11.2015    ggu     newly structured in init, compute and write
+
+==========================================================
+
 version  7_3_12    05-11-2015    VERS_7_3_12   commit_2015-11-09
 
 version  7_3_12    05-11-2015    VERS_7_3_12
