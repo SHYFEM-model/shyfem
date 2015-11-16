@@ -169,10 +169,10 @@ save:   cleanall
 colorutil.o: general.h
 demopost.o: pgraph.h general.h
 general.o: general.h
-gustd.o: gustd.h general.h
+gustd.o: general.h gustd.h
 pc.o: pspost.h
 pcalp.o: pgraph.h general.h
-pgraph.o: general.h pgraph.h
-psgraph.o: general.h gustd.h psgraph.h colorutil.h
+pgraph.o: pgraph.h general.h
+psgraph.o: general.h psgraph.h colorutil.h gustd.h
 psgraphf.o: psgraph.h general.h
 

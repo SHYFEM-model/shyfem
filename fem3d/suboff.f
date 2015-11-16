@@ -156,6 +156,10 @@ c-------------------------------------------------------------
 	    write(6,*) 'Start writing offline file'
 	  else
             call getfnm('offlin',name)
+	    if( name == ' ' ) then
+              write(6,*) '*** No offline file given'
+              stop 'error stop offline: cannot open input file'
+	    end if
             iu = ifileo(1,name,'unformatted','old')
             if( iu .le. 0 ) then
               write(6,*) '*** Cannot find offline file: '

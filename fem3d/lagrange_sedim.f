@@ -47,12 +47,12 @@ c
 
 	subroutine lgr_sediment(it)
 
+	use mod_lagrange
 	use levels
 
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 
 	integer, intent(in)   :: it
 	integer               :: i,ie,lb,lmax

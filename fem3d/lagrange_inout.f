@@ -13,6 +13,7 @@ c 28.03.2014    ggu	bug fix for insert with ie=0, area in concentrations
 c 23.04.2014    ggu	new 3d insertion, new version of lgr file, new copy
 c 06.05.2015    ccf	write relative total depth and type to output
 c 07.05.2015    ccf	assign settling velocity to particles
+c 07.10.2015    mic	seed 3d between surface and l_bot 
 c
 c*******************************************************************
 
@@ -24,11 +25,12 @@ c this is the ultimate routine that is called for insertion
 c
 c tin is insert time - compute with rtime
 c z = 0.5 (corresponding to larva in water) 
+
+	use mod_lagrange
+        use basin, only : neldi,iarv
  
 	implicit none
 
-	include 'param.h'
-	include 'lagrange.h'
 	include 'femtime.h'
 
 	integer ie	!element of particle - if unknown use 0
@@ -41,6 +43,8 @@ c z = 0.5 (corresponding to larva in water)
 	integer pt	!particle type
 	real pc		!custom property
 	double precision ps		!settling velocity of particle [m/s]
+	logical bdebug
+	logical lmytype			!use element type for particle type
 
 c rtime is the relative time position when the particle is inserted
 c 0 inserts at the beginning of the time step - advection for full time step
@@ -49,10 +53,15 @@ c 1 inserts at end of time step - no advection for this time step needed
 	integer ip
 	double precision xx,yy,xi(3)
 
+	bdebug = .true.
+	bdebug = .false.
+	lmytype = .true.
+
 	nbdy = nbdy + 1
 	idbdy = idbdy + 1
 
-	if( nbdy .gt. nbdydim ) goto 99
+	if( nbdymax > 0 .and. nbdy .gt. nbdymax ) goto 99
+	call mod_lagrange_handle_alloc(nbdy)
 
         lgr_ar(nbdy)%tin = t_act - dt_act*(1.-rtime)
         !tin(nbdy) = it - real(idt)*(1.-rtime)
@@ -84,13 +93,25 @@ c 1 inserts at end of time step - no advection for this time step needed
 	  call xy2xi(ie,xx,yy,xi)
 	  lgr_ar(nbdy)%xi(:) = xi
 	end if
-
+	if( bdebug ) then
+	  write(6,*) 'debug insert particle: ',nbdy
+	  write(6,*) ie,idbdy
+	  write(6,*) x,y,z
+	  write(6,*) ity,lb,rtime
+	  write(6,*) lgr_ar(nbdy)%xst
+	  write(6,*) lgr_ar(nbdy)%yst
+	  write(6,*) lgr_ar(nbdy)%xi
+	end if
 	lgr_ar(nbdy)%id = idbdy
 
-	lgr_bitmap_in(nbdy) = 0
-	lgr_bitmap_out(nbdy) = 0
+	lgr_ar(nbdy)%bitmap_in = 0
+	lgr_ar(nbdy)%bitmap_out = 0
 
-	pt = ity
+	pt = ity 	!by default use boundary number
+	if( lmytype ) then
+	  pt = iarv(ie) !use type of element ie
+	end if 
+
 	call lgr_set_properties(bsedim,blarvae,boilsim,pt,ps,pc)
 
 	lgr_ar(nbdy)%ty = pt
@@ -101,9 +122,9 @@ c 1 inserts at end of time step - no advection for this time step needed
 
 	return
    99	continue
-	write(6,*) 'nbdydim = ',nbdydim
-	write(6,*) 'Cannot insert more than nbdydim particles'
-	write(6,*) 'Please change nbdydim in param.h and recompile'
+	write(6,*) 'nbdymax = ',nbdymax
+	write(6,*) 'Cannot insert more than nbdymax particles'
+	write(6,*) 'Please change nbdymax in STR file'
 	stop 'error stop insert_particle: nbdy'
 	end
 
@@ -111,36 +132,51 @@ c*******************************************************************
 
 	subroutine insert_particle_3d(ie,ity,rtime,x,y)
 
-	use levels, only : nlvdi,nlv
+	use mod_lagrange
+	use levels
 
 	implicit none
 
-	integer ie	!element of particle - if unknown use 0
-	integer ity	!type of particle to be inserted
-	real rtime	!fraction of time step to be inserted (0 for all) [0-1]
-	real x,y	!coordinates of particle to be inserted
+	integer ::  ie	!element of particle - if unknown use 0
+	integer :: ity	!type of particle to be inserted
+	real :: rtime	!fraction of time step to be inserted (0 for all) [0-1]
+	real :: x,y	!coordinates of particle to be inserted
 
 c n = abs(itype)
-c itype == 0	realase one particle in surface layer
-c itype > 0	realase n particles regularly
-c itype < 0	realase n particles randomly
+c itype == 0	release one particle in surface layer
+c itype > 0	release n particles regularly
+c itype < 0	release n particles randomly
 
 	include 'param.h'
-	include 'lagrange.h'
 
 	logical b2d,bdebug
 	integer n,lmax,l,i
 	real h,dh,hact,r
 	integer itype	!type of vertical distribution
 	integer lb	!layer [1-lmax]
+	integer linf	!bottom layer [1-lmax]
 	real z		!vertical (relative) coordinate [0-1]
 	real hl(nlv)
 
 	bdebug = .true.
 	bdebug = .false.
 
+	lmax = ilhv(ie)
+	linf = linbot	 
 	itype = ipvert
 	b2d = nlv <= 1
+
+	if( itype /= 0 ) then
+	  if(linf.gt.lmax)then 
+	    write(6,*)'WARMING WRONG bottom layer: ',linf,lmax
+	    write(6,*)'imposing linf=lmax'
+	    linf=lmax 
+	  else if (linf.eq.0)then 
+	    write(6,*)'WARNING no bottom layer: ',linf,' use: ',lmax 
+	    linf = lmax 
+	  endif	
+	  write(6,*)'releasing bottom layer: ',linf,lmax 
+	end if
 
 	!-------------------------------------------------
 	! handle 2d or surface situation
@@ -158,10 +194,10 @@ c itype < 0	realase n particles randomly
 	!-------------------------------------------------
 
 	n = abs(itype)
-	lmax = nlv
 	call lagr_layer_thickness(ie,lmax,hl)
 	h = 0.
-	do l=1,lmax
+
+	do l=1,linf 
 	  h = h + hl(l)
 	end do
 	dh = h / n
@@ -171,9 +207,9 @@ c itype < 0	realase n particles randomly
 
 	do i=1,n
 	  if( itype > 0 ) then
-	    hact = hact + dh
+	    hact = hact + dh		!regular subdivision
 	  else
-	    call random_number(r)
+	    call random_number(r)	!randomly seed
 	    hact = r*h
 	  end if
 	  call find_vertical_position(lmax,hl,hact,lb,z)
@@ -227,6 +263,7 @@ c finds vertical position for depth hact
 
 	hbot = 0.
 	htop = 0.
+
 	do l=1,lmax
 	  hbot = hbot + hl(l)
 	  if( hbot >= hact ) exit
@@ -235,7 +272,9 @@ c finds vertical position for depth hact
 	if( l > lmax ) goto 99
 
 	lb = l
-	z = (hact-htop)/(hbot-htop)
+	z = (hact-htop)/(hbot-htop) 	!relative position
+
+	!write(6,*) 'lb,z,hl: ',lb,z,hl
 
 	return
    99	continue
@@ -250,10 +289,11 @@ c*******************************************************************
 
 c copies particle from ifrom to ito
 
+	use mod_lagrange
+
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 
 	integer ifrom,ito
 
@@ -282,8 +322,8 @@ c copies particle from ifrom to ito
 	
         lgr_ar(ito)%xi(:)  = lgr_ar(ifrom)%xi(:)
 
-	lgr_bitmap_in(ito) = lgr_bitmap_in(ifrom)
-	lgr_bitmap_out(ito) = lgr_bitmap_out(ifrom)
+	!lgr_bitmap_in(ito) = lgr_bitmap_in(ifrom)
+	!lgr_bitmap_out(ito) = lgr_bitmap_out(ifrom)
 
 	end
 
@@ -293,10 +333,11 @@ c*******************************************************************
 
 c deletes particle ip
 
+	use mod_lagrange
+
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 
 	integer ip
 
@@ -311,10 +352,11 @@ c*******************************************************************
 
 c returns total number of particles
 
+	use mod_lagrange
+
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 
 	integer ntot
 
@@ -347,7 +389,7 @@ c*******************************************************************
 	pc = 0.
 	
 	if ( bsedim ) call lgr_set_sedim(pt,ps,pc)
-	!if ( blarvae ) call lgr_set_larvae(pt,ps,pc) 	!TODO ccf
+	!if ( blarvae ) call lgr_set_larvae(pt,ps,pc) 	!pc=length 
 	!if ( boilsim ) call lgr_set_boilsim(pt,ps,pc) 	!TODO ccf
 
         end subroutine lgr_set_properties
@@ -361,13 +403,17 @@ c
 c if body has exited the element number is negativ (last element)
 c once it has been written to output with negative ie, it is set to 0
 
+c mic : 15/10/2015 write in v.5  hl = effective absolute depth 
+c mic : need to add more start info: level depth custom 
+c mic : suggests to write for each release a small file_ini.lgr
+
+	use mod_lagrange
 	use mod_layer_thickness
 	use levels
 
 	implicit none
 
         include 'param.h'
-        include 'lagrange.h'
 
 	integer iu,it
 
@@ -428,18 +474,7 @@ c----------------------------------------------------------------
           zst = lgr_ar(i)%zst
 	  tin = lgr_ar(i)%tin
 
-	  hl = 0.
-	  ht = 0.
-	  hr = 0.
-	  do l = 1,lb-1
-	    hl = hl + hdenv(l,ie)
-	    ht = ht + hdenv(l,ie)
-	  end do
-	  hl = hl + z*hdenv(lb,ie)
-	  do l = lb,ilhv(ie)
-	    ht = ht + hdenv(l,ie)
-	  end do
-	  hr = hl / ht
+	  call lgr_compute_depths(ie,lb,z,hl,ht,hr)
 
 	  if( ie .ne. 0 ) then
 	    if( nvers .eq. 3 ) then
@@ -465,17 +500,55 @@ c----------------------------------------------------------------
 
 c*******************************************************************
 
+	subroutine lgr_compute_depths(ie,lb,z,hl,ht,hr)
+
+	use mod_layer_thickness
+	use levels
+
+	implicit none
+
+	integer ie
+	integer lb
+	real z
+	real hl,ht,hr
+
+	integer ieh,l
+
+	hl = 0. !absolute depth in water column
+	ht = 0. !absolute depth to bottom of water column
+	hr = 0. !relative depth in water column 
+
+	ieh = abs(ie)
+	if( ieh == 0 ) return
+
+	do l = 1,lb-1
+	  hl = hl + hdenv(l,ieh)
+	  ht = ht + hdenv(l,ieh)
+	end do
+
+	hl = hl + z*hdenv(lb,ieh)
+
+	do l = lb,ilhv(ieh)
+	  ht = ht + hdenv(l,ieh)
+	end do
+
+	hr = hl / ht
+
+	end
+
+c*******************************************************************
+
         subroutine lgr_output_concentrations
 
 c outputs particles as density (concentration) to NOS file
 
+	use mod_lagrange
 	use evgeom
 	use basin
 
         implicit none
 
         include 'param.h'
-        include 'lagrange.h'
 
 	include 'femtime.h'
 
@@ -572,10 +645,11 @@ c*******************************************************************
 
 c writes element numbers of particles to terminal
 
+	use mod_lagrange
+
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 
 	character*(*) text
 
@@ -595,10 +669,11 @@ c*******************************************************************
 
 c deletes particles not in system and compresses array
 
+	use mod_lagrange
+
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 
 	include 'femtime.h'
 
@@ -656,6 +731,8 @@ c--------------------------------------------------------------
 	    stop 'error stop compress_particles: structure'
 	  end if
 	end do
+
+	call mod_lagrange_handle_alloc(nbdy)
 
 	end
 

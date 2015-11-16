@@ -19,10 +19,11 @@ c******************************************************************
 
         subroutine lag_diff(ie,bdy,x,y)
 
+	use mod_lagrange
+
         implicit none
         
         include 'param.h'
-        include 'lagrange.h' 
         
 	include 'femtime.h'
         real dt,ttime

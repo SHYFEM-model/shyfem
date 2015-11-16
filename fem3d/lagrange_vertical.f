@@ -238,17 +238,18 @@ c************************************************************
 
 	subroutine track_xi(id,iel,lb,sv,xi,z,time)
 
+	use mod_lagrange
+
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 
 	integer id
 	integer iel
 	integer lb
 	double precision sv		!sinking velocity
 	double precision xi(3)
-	double precision z
+	double precision z		!rel vert pos: 0=top, 1=bottom
 	real time
 
 	logical bdebug
@@ -284,7 +285,7 @@ c************************************************************
 	!-----------------------------------------------
 
 	call track_xi_get_vertical(id,iel,lb,lmax,hd,w)
-	w = w - sv
+	w = w - sv				!total vertical velocity
 
 	!-----------------------------------------------
 	! handle particles on surface or on bottom
@@ -497,6 +498,7 @@ c************************************************************
 
 c copies internal coordinates to new element - avoid falling on vertex
 
+	use mod_lagrange
 	use mod_geom
 
 	implicit none
@@ -505,7 +507,6 @@ c copies internal coordinates to new element - avoid falling on vertex
 	double precision xi(3)
 
 	include 'param.h'
-	include 'lagrange.h'
 
 	logical bdebug
 	integer ii,in,it
@@ -692,6 +693,7 @@ c************************************************************
 
 c gets flux and vel information for element and layer
 
+	use mod_lagrange
 	use mod_geom
 	use mod_hydro_vel
 
@@ -704,7 +706,6 @@ c gets flux and vel information for element and layer
 	double precision vel		!velocity in element (always positive)
 
 	include 'param.h'
-	include 'lagrange.h'
 
 	logical bdebug
 	integer ii,in,io,nn,no,inext,imax

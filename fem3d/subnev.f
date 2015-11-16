@@ -40,6 +40,7 @@ c 31.03.2015	ggu	new routines for internal coordinates
 c 19.04.2015	ggu	new routines for internal coordinates (distance)
 c 22.04.2015	ggu	bug fix in xi2xy - x/y were exchanged
 c 10.10.2015	ggu	bug fix in adjust_bc() - brown paper bag bug
+c 16.11.2015	ggu	new routine adjust_xi()
 c
 c***********************************************************
 
@@ -494,8 +495,76 @@ c given x/y returns internal coordinates xi
 	  xi(ii) = a(ii) + b(ii)*x + c(ii)*y
 	end do
 
+	call adjust_xi(xi)
+
 	end
 	
+c***********************************************************
+
+	subroutine adjust_xi(xi)
+
+c adjusts internal coodinates xi
+
+	implicit none
+
+	double precision xi(3)
+
+	integer ii,it,is
+	double precision xisum,xiso,xiadj
+	double precision xiorig(3)
+
+	xisum = 0.
+	xiso = 0.
+	is = 0
+	it = 0
+
+	do ii=1,3
+	  xiorig(ii) = xi(ii)
+	  xiso = xiso + xi(ii)
+	  if( xi(ii) < 0. ) xi(ii) = 0.
+	  if( xi(ii) > 1. ) xi(ii) = 1.
+	  if( xi(ii) == 0. ) then
+	    is = is + ii
+	    it = it + 1
+	  end if
+	  xisum = xisum + xi(ii)
+	end do
+
+	if( it == 3 .or. abs(xiso-1.) > 1.e-8 ) then
+	  write(6,*) 'xi is wrong... cannot adjust'
+	  write(6,*) xiorig
+	  stop 'error stop adjust_xi'
+	end if
+
+	xiadj = (xisum-1.)/(3-it)
+
+	if( it == 2 ) then
+	  is = 6 - is
+	  xi(is) = 1.
+	else			!both for it == 1 and 2
+	  do ii=1,3
+	    if( ii /= is ) xi(ii) = xi(ii) - xiadj
+	  end do
+	end if
+
+	xiso = 0.
+	do ii=1,3
+	  xiso = xiso + xi(ii)
+	end do
+
+	if( abs(xiso-1.) > 1.e-8 ) then
+	  write(6,*) 'xi is still wrong... cannot adjust'
+	  write(6,*) xiorig
+	  stop 'error stop adjust_xi'
+	end if
+
+	!write(6,*) 'xi_adjust start...'
+	!write(6,*) xiorig
+	!write(6,*) xi
+	!write(6,*) 'xi_adjust end...'
+
+	end
+
 c***********************************************************
 
 	subroutine xi2xy(ie,x,y,xi)

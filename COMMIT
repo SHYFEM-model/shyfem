@@ -1,5 +1,48 @@
 ============================================================
 
+Mon Nov 16 17:38:57 CET 2015
+
+new module for lagrangian
+
+ LOG                       |    6 +
+ RELEASE_NOTES             |    5 +
+ fem3d/Makefile            | 1007 +++++++++++++++++++++++----------------------
+ fem3d/bin/fortran.pm      |    6 +-
+ fem3d/bin/newsubst.pl     |  106 ++---
+ fem3d/lagrange.h          |   15 +-
+ fem3d/lagrange_back.f     |   10 +-
+ fem3d/lagrange_cont.f     |   84 +++-
+ fem3d/lagrange_decay.f    |   12 +-
+ fem3d/lagrange_dif.f      |    3 +-
+ fem3d/lagrange_flux.f     |   17 +-
+ fem3d/lagrange_init.f     |    2 +-
+ fem3d/lagrange_inout.f    |  169 +++++---
+ fem3d/lagrange_larve.f    |    3 +-
+ fem3d/lagrange_main.f     |  201 +++++++--
+ fem3d/lagrange_oil.f      |    4 +-
+ fem3d/lagrange_sedim.f    |    2 +-
+ fem3d/lagrange_track.f    |    4 +-
+ fem3d/lagrange_vertical.f |   11 +-
+ fem3d/mod_lagrange.f      |  221 ++++++++++
+ fem3d/mod_subset.f        |    7 +-
+ fem3d/subfemintp.f        |   22 +-
+ fem3d/subnev.f            |   69 ++++
+ fem3d/suboff.f            |    4 +
+ fem3d/subsys.f            |   22 +-
+ femadj/Makefile           |   22 +-
+ femdoc/final/shyfem.pdf   |  Bin 283899 -> 284202 bytes
+ femplot/Makefile          |   88 ++--
+ femplot/col.f             |    6 +-
+ grid/Makefile             |   99 ++---
+ hcbs/Makefile             |    4 +-
+ mesh/Makefile             |   86 ++--
+ post/Makefile             |    6 +-
+ 33 files changed, 1483 insertions(+), 840 deletions(-)
+ new file:
+   fem3d/mod_lagrange.f
+
+============================================================
+
 Mon Nov  9 13:10:32 CET 2015
 
 New version 7_3_13

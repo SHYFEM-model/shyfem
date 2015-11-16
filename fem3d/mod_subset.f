@@ -158,15 +158,14 @@ c***********************************************************
       
       stop_criterion = .false.
       
-      start_el_loop: 
-     +	do a=1,nel
+     	do a=1,nel
 	  IF(subset(a) == 0) then
 	      start = a
 	      stop_criterion = .true.
 	      numsubset = numsubset + 1
-	      exit start_el_loop 
+	      exit
 	  endif
-        end do start_el_loop 
+        end do 
             
       end do
       

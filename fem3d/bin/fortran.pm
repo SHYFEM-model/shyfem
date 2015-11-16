@@ -220,10 +220,10 @@ sub read_routine {
     $name = "" unless $name;
     my $cont = $self->{contains};
     unless( $cont ) {
-      die "end found but no contain... aborting\n";
+      die "end found but no contains ... aborting\n";
     }
     print STDERR "closing contains statement of $cont\n" if $self->{debug};
-    $self->{contains} = "";
+    $self->{contains}--;
     $name = "end" . "_" . $cont;
     $name = $self->make_section_name($name);
     return ($name,$type,\@code);
@@ -251,7 +251,7 @@ sub read_routine {
     next if $in_interface;
     
     if( /^CONTAINS$/i ) { 
-      $self->{contains} = $name;
+      $self->{contains}++;
       last;
     }
 

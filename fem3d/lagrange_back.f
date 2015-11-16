@@ -19,12 +19,12 @@ c**********************************************************************
 
 c handles lagrangian backtracing
 
+	use mod_lagrange
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
         include 'param.h'
-        include 'lagrange.h'
 
                 
 	real uadv(1), vadv(1)
@@ -48,10 +48,11 @@ c****************************************************************
 
 c initializes particles at baricenter
 
+	use mod_lagrange
+
         implicit none
         
         include 'param.h'
-        include 'lagrange.h'
 
         integer i
         real xb,yb
@@ -69,10 +70,11 @@ c**********************************************************************
 
 	subroutine drogue_back
 
+	use mod_lagrange
+
 	implicit none
 	
         include 'param.h'
-	include 'lagrange.h'
 
 	integer i,ie,id,lb
 	real x,y,z
@@ -108,6 +110,7 @@ c**********************************************************************
 
 c interpolation of velocities on the points that have been backtraced
         
+	use mod_lagrange
 	use mod_depth
 	use mod_hydro_print
 	use mod_hydro
@@ -116,7 +119,6 @@ c interpolation of velocities on the points that have been backtraced
         implicit none
 
         include 'param.h'
-        include 'lagrange.h'
         
 	real uadv(1), vadv(1)
 

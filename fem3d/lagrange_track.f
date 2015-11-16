@@ -21,6 +21,7 @@ c fino al successivo punto interno allo stesso elemento
 c se entro il time step il body esce dall''elemento 
 c si passa alla successiva subroutine con time
 
+	use mod_lagrange
 	use mod_geom
 	use mod_hydro_vel
 	use levels, only : nlvdi,nlv
@@ -29,7 +30,6 @@ c si passa alla successiva subroutine con time
         implicit none
         
 	include 'param.h' 
-	include 'lagrange.h'
  
 	real time	!total time to travel
 	integer bdy	!number of body
@@ -626,6 +626,7 @@ c da un punto sul lato dell''elemento ie
 c questa subroutine e'' chiamata ogni qualvolta un body
 c nello stesso timestep arriva in un nuovo elemento
 
+	use mod_lagrange
 	use mod_geom
 	use mod_hydro_vel
 	use levels
@@ -634,7 +635,6 @@ c nello stesso timestep arriva in un nuovo elemento
         implicit none
         
 	include 'param.h' 
-	include 'lagrange.h' 
 
 	real time	!total time to travel
 	integer bdy	!number of body

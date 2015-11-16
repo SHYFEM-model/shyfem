@@ -293,7 +293,7 @@ c sets up color table in automatic mode
 	real amin,amax
         real fact,val,fdec,eps
         integer ndec,idec,ipllog
-	real rfiso
+	real rfiso,ddval
 
 	real getpar
 	real rnext,rnexta
@@ -389,7 +389,9 @@ c	  ----------------------------------------
 c	  be sure values computed make sense
 c	  ----------------------------------------
 
-	  eps = dval/max(abs(valmax),abs(valmin))
+	  ddval = max(abs(valmax),abs(valmin))
+	  eps = 0.
+	  if( ddval > 0. ) eps = dval/ddval
 	  if( eps .lt. 1.e-4 ) then
 	    dval = 1.
 	    niso = 1

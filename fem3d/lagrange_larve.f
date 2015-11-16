@@ -13,12 +13,13 @@ c*******************************************************************
 
 c manages larvae
 
+	use mod_lagrange
+
 	implicit none
 
 	integer it
 
 	include 'param.h'
-	include 'lagrange.h'
 
 	integer i,ie
 	real rlinit,x,y,z,rl

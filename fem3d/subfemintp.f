@@ -75,6 +75,7 @@
 
 	type, private :: info
 	  integer :: iunit = 0
+	  integer :: id0 = 0		!take fdata from this id - not working
 	  integer :: iformat = 0
 	  integer :: nvers = 0
 	  integer :: ntype = 0
@@ -545,6 +546,17 @@
 	boperr = iformat == iform_error_opening		!error opening
 	berror = iformat == iform_error			!error file
 
+	id0 = 0
+	if( boperr ) then	!see if we can take data from other file
+	  id0 = iff_find_id_to_file(file)
+	  id0 = 0		!not working
+	  if( id0 > 0 ) then
+	    boperr = .false.
+	    iformat = pinfo(id0)%iformat
+	    ntype = pinfo(id0)%ntype
+	  end if
+	end if
+
 	bts = iformat == iform_ts			!file is TS
 	bfem = iformat >= 0 .and. iformat <= 2
 
@@ -567,10 +579,13 @@
 	pinfo(id)%iunit = -1
 	pinfo(id)%nvar = nvar
 	pinfo(id)%nintp = nintp
-	pinfo(id)%iformat = iformat
 	pinfo(id)%file = file
 	pinfo(id)%nexp = nexp
 	pinfo(id)%lexp = lexp
+
+	pinfo(id)%id0 = id0
+	pinfo(id)%iformat = iformat
+	pinfo(id)%ntype = ntype
 	pinfo(id)%ireg = itype(2)
 
 	!---------------------------------------------------------
@@ -585,7 +600,10 @@
 
 	allocate(pinfo(id)%strings_file(nvar))
 
-	if( bfem ) then
+	if( id0 > 0 ) then
+	  pinfo(id)%strings_file = pinfo(id0)%strings_file
+	  pinfo(id)%bonepoint = pinfo(id0)%bonepoint
+	else if( bfem ) then
           call fem_file_get_data_description(file
      +				,pinfo(id)%strings_file,ierr)
 	  if( ierr /= 0 ) goto 98

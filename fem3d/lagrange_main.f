@@ -9,7 +9,7 @@ c subroutine lagrange
 c
 c       read str
 c       subroutine set_input
-c       subroutien nbody
+c       subroutine nbody
 c       subroutine setup_fluxes         initializes flux2d
 c
 c       subroutine drogue(it)           compute trajectories
@@ -82,19 +82,18 @@ c****************************************************************
 
 c lagranian main routine
 
+	use mod_lagrange
 	use basin, only : nkn,nel,ngr,mbw
+	use levels
         use lgr_sedim_module
 
 	implicit none
 
         include 'param.h'
-        include 'lagrange.h'
 
 	include 'femtime.h'
 
 	logical brelease
-	logical bcompres
-	save brelease,bcompres
 
         integer itlanf,itlend
 	integer idtl,itranf,itrend,itrnext
@@ -130,9 +129,7 @@ c
 c tdecay	ldecay
 c boilsim	ioil
 c blarvae	ilarv
-
-	bcompres = .true.	!compress particles
-	bcompres = .false.	!compress particles
+c bconnect	iconnect
 
 c---------------------------------------------------------------
 c initialization
@@ -153,9 +150,18 @@ c---------------------------------------------------------------
 	  call convert_date('itrend',itrend)   !time of final continuous release
 
           ldecay =  getpar('ldecay')           !decay time for particles
+
           boilsim = nint(getpar('ioil')).gt.0  !activate oil module if true
           blarvae = nint(getpar('ilarv')).gt.0 !activate larvae module if true
 	  bsedim  = nint(getpar('ised')).gt.0  !activate sediment module if true
+
+          nbdymax = nint(getpar('nbdymax'))
+	  if( nbdymax < 0 ) then
+	    write(6,*) 'parameter nbdymax is not set'
+	    stop 'error stop lagrange: nbdymax'
+	  end if
+	  call mod_lagrange_init(nel,nlv)
+	  call mod_lagrange_handle_alloc(0)
 
 	  if ( bsedim ) call lgr_sedim_init
 
@@ -212,6 +218,10 @@ c---------------------------------------------------------------
 
 	bback = .false.		!do not do backtracking
 
+c -------------------------------------------
+c check for initialization from file.lgr 
+c---------------------------------------------
+
 c---------------------------------------------------------------
 c new release of particles (more release event, homogeneous or lines)
 c---------------------------------------------------------------
@@ -234,6 +244,7 @@ c	if( boilsim ) call set_diff_oil
 
 c---------------------------------------------------------------
 c continuous release from boundary or points
+c lgrpps or lgrppv defined in boundary section
 c---------------------------------------------------------------
 
 	brelease = it .ge. itranf .and. it .le. itrend
@@ -259,10 +270,6 @@ c---------------------------------------------------------------
 	end if
 
 c---------------------------------------------------------------
-c connectivity module ?
-c---------------------------------------------------------------
-
-c---------------------------------------------------------------
 c larval module
 c---------------------------------------------------------------
 
@@ -286,11 +293,16 @@ c---------------------------------------------------------------
 	  itmnext = itmnext + idtlgr
 	end if
 
+!        if(it.eq.itlend)then
+!          call lagr_count_out_eos(it)
+!          call lagr_count_out(it,itlend)
+!        end if
+
 c---------------------------------------------------------------
 c compress to save space: only in contiunous release mode! 
 c---------------------------------------------------------------
 
-	if( bcompres ) then 
+	if( bcompress ) then 
 	  call compress_particles	!only after output of particles
 	endif 
 
@@ -306,10 +318,11 @@ c**********************************************************************
 
 c initializes common block
 
+	use mod_lagrange
+
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 
 	real getpar
 	integer ifemop
@@ -341,11 +354,15 @@ c ilagr = 3	3d lagrangian
 
 c vertical distribution of particles
 c n = abs(ipvert)
-c ipvert == 0    realase one particle in surface layer
-c ipvert > 0     realase n particles regularly
-c ipvert < 0     realase n particles randomly
+c ipvert == 0    release one particle in surface layer
+c ipvert > 0     release n particles regularly
+c ipvert < 0     release n particles randomly
 
         ipvert = nint(getpar('ipvert'))
+
+c lintop and linbot= top and bottom layer between perform the release
+c       lintop =  getpar('lintop') 
+        linbot =  getpar('linbot')   
 
 	end
 
@@ -353,10 +370,11 @@ c**********************************************************************
 
 	subroutine drogue
 
+	use mod_lagrange
+
 	implicit none
 	
         include 'param.h'
-	include 'lagrange.h'
 
 	integer nf,i,ii,n
 	integer chunk
@@ -419,10 +437,11 @@ c**********************************************************************
 
 c advection of particles
 
+	use mod_lagrange
+
 	implicit none
 	
         include 'param.h'
-	include 'lagrange.h'
 
 	include 'femtime.h'
 
@@ -432,7 +451,7 @@ c advection of particles
 	double precision xi(3)
 	real dt,ttime,tmax
                 
-c       call lagr_func(i)		!varying the variable typ(i)
+c       call lagr_func(i) !lcust in str varying the variable typ(i) to check
 c	call lagr_surv(i)
 
 	x  = lgr_ar(i)%x
@@ -453,7 +472,7 @@ c	call lagr_surv(i)
 
 	tmax = it - lgr_ar(i)%tin 
 	if( tmax .lt. 0. ) stop 'error stop drogue: internal error'
-	ttime = min(tmax,dt)
+	ttime = min(tmax,dt) !residual time for particle
 
 	if( lb > 0 ) then
 	  if( blgrxi ) then		!use internal coordinates
@@ -480,12 +499,12 @@ c**********************************************************************
 
 c tracks one particle - uses internal coordinates
 
+	use mod_lagrange
 	use basin
 
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 	
 	integer i		!particle number
 	integer id		!particle id
@@ -497,9 +516,10 @@ c tracks one particle - uses internal coordinates
 	integer iel		!element number
 	integer lb 		!layer 
 	real ttime		!time to advect
-	
         
 	integer n
+	integer iendx,ieorig,ieold
+	real torig
 	double precision xx,yy,zz
 
         if(iel.le.0) return	!particle out of domain
@@ -515,8 +535,20 @@ c---------------------------------------------------------------
 c track particle
 c---------------------------------------------------------------
 
+	iendx = 0 	!flag for counting
+
 	do while ( ttime.gt.0 .and. n > 0 )
-          call track_xi(id,iel,lb,sv,xi,zz,ttime)
+	  torig = ttime 		!time do advect
+	  ieorig =iel 			!start element 
+          call track_xi(id,iel,lb,sv,xi,zz,ttime) !advection 
+	  ieold=iel !if advection changed element= different start el
+
+	  if ( bconnect ) then
+	    call lagr_connect_count(i,ieold,ieorig,torig-ttime,iendx)
+	    call lagr_count(i,ieold,ttime,iendx)
+	    iendx = 1 
+	  endif
+
 	  if( iel < 1 ) exit
 	  if( lb < 1 ) exit
 	  n = n - 1
@@ -537,7 +569,7 @@ c---------------------------------------------------------------
 c special treatment and finish up
 c---------------------------------------------------------------
 
-	if( ttime > 0. ) then
+	if( ttime > 0. ) then 		!not finished advecting
 	  if( n == 0 ) then
 	    write(6,*) 'killing particle ',id,iel,n,ttime
 	    iel = -iel
@@ -570,12 +602,12 @@ c TRACK_ORIG if the particle is inside an element (first call)
 c
 c TRACK_LINE if the particle is on one side (normal situation)
 
+	use mod_lagrange
 	use basin
 
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 	
 	integer i		!particle number
 	integer id		!particle id
@@ -640,9 +672,11 @@ c---------------------------------------------------------------
 	do while ( ttime.gt.0 .and. iel.eq.ieold )
           call track_orig(ttime,id,iel,xn,yn,zn,ly,ltbdy)
 	end do
-
-	call lagr_connect_count(i,ieold,ieorig,torig-ttime,0)
-	call lagr_count(i,ieold,torig-ttime,0)
+	
+	if( bconnect ) then
+	  call lagr_connect_count(i,ieold,ieorig,torig-ttime,0)
+	  call lagr_count(i,ieold,torig-ttime,0)
+	end if 
 
 	do while ( ttime.gt.0. .and. iel.gt.0 .and. nl.gt.0 )
 	  torig = ttime
@@ -652,9 +686,11 @@ c---------------------------------------------------------------
             call track_orig(ttime,id,iel,xn,yn,zn,ly,ltbdy)
           end do
           nl = nl - 1
-	  call lagr_connect_count(i,ieold,ieorig,torig-ttime,1)
-	  call lagr_count(i,ieold,torig-ttime,1)
-	  ieorig = ieold
+	  if(  bconnect  )  then
+	    call lagr_connect_count(i,ieold,ieorig,torig-ttime,1)
+	    call lagr_count(i,ieold,torig-ttime,1)
+	    ieorig = ieold
+	  endif 
         end do
 
 	end if
@@ -678,8 +714,10 @@ c---------------------------------------------------------------
 	  ! the time spent in elemets due to diffusion is not considered
 	  ttime = 0.
 	  ieorig = iel
-          call lag_diff(iel,id,xn,yn)
+          call lag_diff(iel,id,xn,yn)	
+	  if( bconnect ) then
 	  call lagr_connect_count(i,iel,ieorig,ttime,1)
+	  endif
         end if     
 
 c---------------------------------------------------------------
@@ -707,12 +745,12 @@ c**********************************************************************
 
 	subroutine lagr_count_init
 
+	use mod_lagrange
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 
 	integer ie
 
@@ -728,10 +766,11 @@ c**********************************************************************
 
 	subroutine lagr_count(i,ie,time,icc)
 
+	use mod_lagrange
+
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 
 	integer i
 	integer ie
@@ -747,33 +786,111 @@ c**********************************************************************
 
 c**********************************************************************
 
-	subroutine lagr_count_out(it)
+	subroutine lagr_count_out(it,itlend)
 
+	use mod_lagrange
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 
-	integer it
+	integer it,itlend
 
 	integer ie,iu
 	character*80 file
-
 
 	iu = 237
 	file = 'lagr_count_out.txt'
 	open(iu,file=file,status='unknown',form='formatted')
 	write(iu,*) it,nel
 	do ie=1,nel
-	  i_count(ie) = 0
-	  t_count(ie) = 0.
-	  write(iu,*) ie,i_count(ie),t_count(ie)
+c	  i_count(ie) = 0
+c	  t_count(ie) = 0
+	  write(iu,*) ie,i_count(ie),(t_count(ie)/86400.)
 	end do
-	close(iu)
+
+        if(it.ge.itlend)then
+         close(iu)
+        endif
 
 	end
+
+c**********************************************************************
+
+	subroutine lagr_count_out_eos(it)
+
+	use mod_lagrange
+	use basin, only : nkn,nel,ngr,mbw
+
+        implicit none
+
+        include 'param.h'
+
+        integer ie,iu
+        character*80 file,title
+        save file,title
+
+        integer ilhv(neldim)
+        common /ilhv/ilhv
+        real hev(neldim)
+        common /hev/hev
+        real hlv(1)
+        common /hlv/hlv
+
+        real aux(neldim)
+        real aux_t(neldim)
+        real aux_r(neldim)
+
+
+        integer nvers,nlv,nlvdimi
+        integer nvar,ivar,iunit,it,ierr
+
+        integer ifileo
+        integer icall
+        data icall /0/
+        save icall
+
+        nvers = 3
+        nlv = 1
+        nvar = 1
+
+        do ie=1,nel
+          aux(ie) = i_count(ie)
+          aux_t(ie) = t_count(ie)/86400
+          if (aux(ie).ne.0)then
+          aux_r(ie) = aux_t(ie)/aux(ie)
+          else
+          aux_r(ie) = 0
+          end if
+        end do
+
+        if (icall.eq.0) then
+        file = 'particle_traj.eos'
+        iunit = ifileo(0,file,'unform','new')
+
+        title ='particle in element '
+        call wheos(iunit,nvers
+     +             ,nkn,nel,nlv,nvar
+     +             ,ilhv,hlv,hev
+     +             ,title
+     +             )
+        endif
+
+        icall = 1
+        ivar = 901
+        nlvdimi=1
+        call wreos(iunit,it,ivar,nlvdimi,ilhv,aux,ierr)
+        if( ierr .ne. 0 ) stop 'error stop: wreos'
+        call wreos(iunit,it,ivar,nlvdimi,ilhv,aux_t,ierr)
+        if( ierr .ne. 0 ) stop 'error stop: wreos'
+        call wreos(iunit,it,ivar,nlvdimi,ilhv,aux_r,ierr)
+        if( ierr .ne. 0 ) stop 'error stop: wreos'
+
+        do ie=1,nel
+         write(99,*) ie,i_count(ie),t_count(ie)
+        enddo
+        end
 
 c**********************************************************************
 

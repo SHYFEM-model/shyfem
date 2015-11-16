@@ -927,6 +927,14 @@ c		\end{description}
 
 	call addpar('ilagr',0.)         !LAGR
 
+c |nbdymax|	Maximum numbers of particles that can be in the domain.
+c		This should be the maximum number of particles
+c		that can be created and inserted. Use 0 to not limit
+c		the number of particles (on your own risk). This
+c		parameter must be set and has no default.
+
+        call addpar('nbdymax',0.)
+
 c |nbdy|	Total numbers of particles to be released in the domain each
 c		time a release of particles takes place. 
 c		(Default 0)
@@ -968,12 +976,20 @@ c			whole lagrangian simulation period.
 
 c |ipvert|	Set the vertical distribution of particles:
 c		\begin{description}
-c		\item[0] realase one particle in surface layer
-c		\item[$>$0] realase n particles regularly
-c		\item[$<$0] realase n particles randomly
+c		\item[0] releases one particles only in surface layer
+c		\item[$>$0] release n particles regularly
+c		\item[$<$0] release n particles randomly
 c		\end{description}
 
         call addpar('ipvert',0.)
+
+c |linbot| Set the bottom layer for vertical releases
+
+         call addpar('linbot',0.)
+
+cc |lintop| Set the top layer for vertical releases
+
+cc        call addpar('lintop',0.) !todo
 
 c |lagra|	File name that contains closed lines of the area where
 c		the particles have to be released. If not given, the particles

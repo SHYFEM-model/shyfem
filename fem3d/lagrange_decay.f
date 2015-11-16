@@ -46,10 +46,11 @@ c**********************************************************************
 
 c applies decay to all particles
 
+	use mod_lagrange
+
         implicit none
 
         include 'param.h'
-        include 'lagrange.h'
 
 	real ldecay
 
@@ -86,10 +87,11 @@ c Con Random Walk determino numero casuale tra 0-1,
 c se tale numero cade nell'intervallo di mortalita'
 c allora la particella sparisce dal calcolo
 
+	use mod_lagrange
+
         implicit none
 
         include 'param.h'
-        include 'lagrange.h'
 
 	include 'femtime.h'
 
@@ -119,10 +121,11 @@ c*********************************************************************
 
         subroutine lagr_conc(i)
 
+	use mod_lagrange
+
         implicit none
 
         include 'param.h'
-        include 'lagrange.h'
 
 	include 'femtime.h'
         
@@ -153,10 +156,11 @@ c**********************************************************************
 
 c particles older than tdead are eliminated
 
+	use mod_lagrange
+
         implicit none
 
         include 'param.h'
-        include 'lagrange.h'
 
 	include 'femtime.h'
 

@@ -34,12 +34,12 @@ c****************************************************************
 
 c initializes length of element sides
 
+	use mod_lagrange
 	use basin
 
 	implicit none
 	
 	include 'param.h'
-	include 'lagrange.h'
 
 	
 
@@ -84,6 +84,7 @@ c******************************************************************
 
 c sets up fluxes in 3d - has to be done every time step
 
+	use mod_lagrange
 	use mod_geom
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
@@ -91,7 +92,6 @@ c sets up fluxes in 3d - has to be done every time step
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 	
 
 
@@ -157,13 +157,13 @@ c******************************************************************
 
 c sets up fluxes - has to be done every time step
 
+	use mod_lagrange
 	use mod_geom
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 	
 
 	integer k,ie,ii,i
@@ -360,6 +360,8 @@ c**********************************************************************
 
 c computes fluxes in element
 
+	use mod_lagrange
+
         implicit none
 
         integer k,n,ne
@@ -367,7 +369,6 @@ c computes fluxes in element
 	integer elems(1)
 
         include 'param.h'
-	include 'lagrange.h'
 
         integer i,ie,ip,ii
         integer j,n1,n2
@@ -418,13 +419,13 @@ c
 c maybe not existing fluxes are set in flux3d
 c we do not use lkmax, but lmax
 
+	use mod_lagrange
 	use mod_geom
 	use levels
 
         implicit none
 
         include 'param.h'
-	include 'lagrange.h'
 
         integer k,lkmax,n
 	real tflux(nlvdi,1)       !fluxes across sides of element
@@ -460,6 +461,7 @@ c******************************************************************
 
 c computes fluxes in element
 
+	use mod_lagrange
 	use mod_geom
 
         implicit none
@@ -469,7 +471,6 @@ c computes fluxes in element
 	real flux2d_loc(3,1)
 
         include 'param.h'
-	include 'lagrange.h'
 
         integer i,ie,ne
         integer j,n1,n2
@@ -516,6 +517,7 @@ c		= dH + (z1+z2-2*z3)/6
 c
 c all this has to be revised for sigma layers
 
+	use mod_lagrange
 	use mod_layer_thickness
 	use mod_hydro
 	use levels
@@ -524,7 +526,6 @@ c all this has to be revised for sigma layers
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 
 
 
@@ -590,6 +591,7 @@ c		= dH + (z1+z2-2*z3)/6
 c
 c all this has to be revised for sigma layers
 
+	use mod_lagrange
 	use mod_layer_thickness
 	use mod_hydro
 	use basin, only : nkn,nel,ngr,mbw
@@ -597,7 +599,6 @@ c all this has to be revised for sigma layers
 	implicit none
 
 	include 'param.h'
-	include 'lagrange.h'
 
 
 

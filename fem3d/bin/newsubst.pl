@@ -44,54 +44,56 @@ $fortran->parse_files($::quiet);
 #----------------------------------------------------------------
 
 if( $::subst ) {
-  subst_femtim($fortran);
-  subst_konst($fortran);
-  subst_ts($fortran);
-  subst_levels($fortran);
-  subst_depth($fortran);
-  subst_meteo($fortran);
-  subst_hydro($fortran);
-  subst_hydro_vel($fortran);
-  subst_hydro_print($fortran);
-  subst_hydro_plot($fortran);
-  subst_plot_aux($fortran);
-  subst_plot_supout($fortran);
-  subst_basin($fortran);
-  subst_geom_dynamic($fortran);
-  subst_geom($fortran);
-  subst_tides($fortran);
-  subst_diff_visc_fric($fortran);
-  subst_waves($fortran);
-  subst_bound_geom($fortran);
-  subst_hydro_baro($fortran);
-  subst_sinking($fortran);
-  subst_simul($fortran);
-  subst_area($fortran);
-  subst_aux_array($fortran);
-  subst_turbulence($fortran);
-  subst_bound_dynamic($fortran);
-  subst_bound_names($fortran);
-  subst_roughness($fortran);
-  subst_internal($fortran);
-  subst_diff_aux($fortran);
-  subst_bnd_aux($fortran);
-  subst_fluidmud($fortran);
-  subst_volcomp($fortran);
-  subst_nudging($fortran);
-  subst_gotm($fortran);
-  subst_conz($fortran);
-  subst_nohyd($fortran);
-  subst_extra($fortran);
-  subst_const_aux($fortran);
-  subst_debug($fortran);
-  subst_coords($fortran);
-  subst_sigma($fortran);
-  subst_histo($fortran);
-  subst_stab($fortran);
-  subst_grd($fortran);
-  subst_semi($fortran);
-  subst_subnls($fortran);
-  subst_reg($fortran);
+  #subst_femtim($fortran);
+  #subst_konst($fortran);
+  #subst_ts($fortran);
+  #subst_levels($fortran);
+  #subst_depth($fortran);
+  #subst_meteo($fortran);
+  #subst_hydro($fortran);
+  #subst_hydro_vel($fortran);
+  #subst_hydro_print($fortran);
+  #subst_hydro_plot($fortran);
+  #subst_plot_aux($fortran);
+  #subst_plot_supout($fortran);
+  #subst_basin($fortran);
+  #subst_geom_dynamic($fortran);
+  #subst_geom($fortran);
+  #subst_tides($fortran);
+  #subst_diff_visc_fric($fortran);
+  #subst_waves($fortran);
+  #subst_bound_geom($fortran);
+  #subst_hydro_baro($fortran);
+  #subst_sinking($fortran);
+  #subst_simul($fortran);
+  #subst_area($fortran);
+  #subst_aux_array($fortran);
+  #subst_turbulence($fortran);
+  #subst_bound_dynamic($fortran);
+  #subst_bound_names($fortran);
+  #subst_roughness($fortran);
+  #subst_internal($fortran);
+  #subst_diff_aux($fortran);
+  #subst_bnd_aux($fortran);
+  #subst_fluidmud($fortran);
+  #subst_volcomp($fortran);
+  #subst_nudging($fortran);
+  #subst_gotm($fortran);
+  #subst_conz($fortran);
+  #subst_nohyd($fortran);
+  #subst_extra($fortran);
+  #subst_const_aux($fortran);
+  #subst_debug($fortran);
+  #subst_coords($fortran);
+  #subst_sigma($fortran);
+  #subst_histo($fortran);
+  #subst_stab($fortran);
+  #subst_grd($fortran);
+  #subst_semi($fortran);
+  #subst_subnls($fortran);
+  #subst_reg($fortran);
+
+  subst_lagr($fortran);
 
   treat_includes($fortran);
   #check_common($fortran);
@@ -538,10 +540,16 @@ sub subst_konst {
   subst_common($fortran,"nkonst","nbasin.h");
   subst_common($fortran,"level","nlevel.h");
 }
+
 sub subst_femtim {
   my $fortran = shift;
   subst_common($fortran,"femtim","femtime.h");
   subst_common($fortran,"femtimu","femtime.h");
+}
+
+sub subst_lagr {
+  my $fortran = shift;
+  subst_common($fortran,"lagrange","mod_lagrange.h");
 }
 
 #----------------------------------------------------------------
@@ -1271,6 +1279,8 @@ sub inc2use {
   include2use($fortran,"common_amat.h","mod_system");
 
   include2use($fortran,"grade.h","mod_adj_grade");
+
+  include2use($fortran,"lagrange.h","mod_lagrange");
 }
 
 #--------------------------------------------------------------

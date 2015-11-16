@@ -20,8 +20,8 @@ c--------------------------------------------------
 	logical blgrxi				!new version with xi coords
 	parameter (blgrxi=.true.)
 
-	logical blgrdebug,blgrsurf
-	common /lagr_b/blgrdebug,blgrsurf
+	logical blgrdebug,blgrsurf,bconnect
+	common /lagr_b/blgrdebug,blgrsurf,bconnect
 	save /lagr_b/
 
         integer ilagr				!type of lagrangian simulation
@@ -29,7 +29,8 @@ c--------------------------------------------------
         integer idbdy				!max id used
         integer lunit				!unit for messages
         integer ipvert				!vertical release
-        common /lagr_i/ilagr,nbdy,idbdy,lunit,ipvert
+        integer linbot				!bottom layer for vert release
+        common /lagr_i/ilagr,nbdy,idbdy,lunit,ipvert,linbot
 	save /lagr_i/
 
 c--------------------------------------------------
@@ -66,6 +67,8 @@ c--------------------------------------------------
 	  sequence
 	  double precision :: xi(3)		!internal coordinate
           double precision :: sv  		!sinking velocity
+	integer*8 :: bitmap_in 			!bitmap for entry
+	integer*8 :: bitmap_out 		!bitmap for leave
           real    :: xst			!initial x-coordinate
           real    :: yst			!initial y-coordinate
           real    :: zst			!initial z-coordinate
@@ -145,9 +148,9 @@ c--------------------------------------------------
 
 c--------------------------------------------------
 
-	integer*8 lgr_bitmap_in(nbdydim)	!bitmap for entry
-	integer*8 lgr_bitmap_out(nbdydim)	!bitmap for leave
-	common /lgr_bitmap/lgr_bitmap_in,lgr_bitmap_out
+	!integer*8 lgr_bitmap_in(nbdydim)	!bitmap for entry
+	!integer*8 lgr_bitmap_out(nbdydim)	!bitmap for leave
+	!common /lgr_bitmap/lgr_bitmap_in,lgr_bitmap_out
 
 c--------------------------------------------------
 

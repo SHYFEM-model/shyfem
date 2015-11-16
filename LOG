@@ -1,4 +1,10 @@
 
+16.11.2015
+
+c ./fem3d/subnev.f:
+c 16.11.2015    ggu     new routine adjust_xi()
+
+
 09.11.2015
 
 c ./femplot/supsim.f:

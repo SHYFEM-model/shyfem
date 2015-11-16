@@ -431,6 +431,7 @@ c*******************************************************************
 
 c release in partial area
 
+	use mod_lagrange
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
@@ -441,7 +442,6 @@ c release in partial area
 	real x(1),y(1)
 
 	include 'param.h'
-	include 'lagrange.h'
 
 	integer iflag(nel)
 
