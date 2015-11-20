@@ -1,3 +1,18 @@
+version  7_3_15    20-11-2015    VERS_7_3_15
+
+========================================================== 20-11-2015 - 7_3_15
+
+c ./fem3d/subver.f:
+c 20.11.2015	ggu	version 7.3.15	pre Madonna della Salute release
+c
+c ./fem3d/new3di.f:
+c 20.11.2015    ggu&erp chunk size introduced, omp finalized
+c
+c ./fem3d/newcon_omp.f:
+c 20.11.2015    ggu&erp chunk size introduced, omp finalized
+
+==========================================================
+
 version  7_3_14    16-11-2015    VERS_7_3_14   commit_2015-11-20
 
 version  7_3_14    16-11-2015    VERS_7_3_14
