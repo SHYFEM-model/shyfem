@@ -394,7 +394,8 @@ c be sure particle is in an element
 	i = 1 + n*ggrand(77)
 	if( i > n ) i = n
 
-	ie = ielist(i)
+	iee = ielist(i)
+	ie = iee
 
 	xs = 0.
 	ys = 0.

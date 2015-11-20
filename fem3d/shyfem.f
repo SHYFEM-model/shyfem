@@ -150,12 +150,17 @@ c local variables
 	logical bdebout
 	integer iwhat,levdbg
 	integer date,time
+	integer nthreads
+	integer*8 count1,count2, count_rate, count_max
+	real time1,time2
 	double precision timer
 
 	real getpar
 
 	bdebout = .false.
 
+	call cpu_time(time1)
+	call system_clock(count1, count_rate, count_max)
 !$      timer = omp_get_wtime() 
 
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -408,8 +413,25 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	call print_end_time
 
+!$OMP PARALLEL
+!$OMP MASTER
+	nthreads = 1
+!$	nthreads = omp_get_num_threads()
+        print *,"NUMBER OF THREADS USED  = ",nthreads
+!$OMP END MASTER
+!$OMP END PARALLEL
+
 !$      timer = omp_get_wtime() - timer
-!$      print *,"TIME TO SOLUTION = ",timer
+!$      print *,"TIME TO SOLUTION (OMP)  = ",timer
+
+	call system_clock(count2, count_rate, count_max)
+	count2 = count2-count1
+	timer = count2
+	timer = timer / count_rate
+	print *,"TIME TO SOLUTION (WALL) = ",timer
+
+	call cpu_time(time2)
+	print *,"TIME TO SOLUTION (CPU)  = ",time2-time1
 
         !call ht_finished
 

@@ -3,6 +3,7 @@ c revision log :
 c
 c 20.05.2015    erp     transformed for OMP
 c 30.09.2015    ggu     routine cleaned, no reals in conz3d
+c 20.11.2015    ggu&erp chunk size introduced, omp finalized
 c
 c**************************************************************
 
@@ -15,8 +16,9 @@ c**************************************************************
      +			,wsink,wsinkv
      +			,rload,load
      +			,azpar,adpar,aapar
-     +			,istot,isact,nlvddi,nlev)
-c
+     +			,istot,isact,nlvddi
+     +                  ,nlev)
+     
 c computes concentration
 c
 c cn     new concentration
@@ -101,17 +103,27 @@ c DPGGU -> introduced double precision to stabilize solution
 	real,dimension(nlvddi,nkn),intent(in) :: gradxv,gradyv
 	real,dimension(nlvddi,nkn),intent(in) :: cobs,load
 	real,dimension(0:nlvddi,nkn),intent(in) :: difv,wsinkv
-          
+        !double precision,dimension(nlvddi,nkn),intent(out) :: cn
+        
 	logical :: btvdv
 	integer :: ie,k,ilevel,ibase,ii,l,n,i,j,x,ies,iend,kl,kend
-	integer :: myid,numthreads,j_init,j_end,k_init,k_end
+	integer :: myid,numthreads,j_init,j_end,knod,k_end,jel
 	integer,allocatable,dimension(:) :: subset_l
+	real :: time1,time2
+	double precision :: dtime1,dtime2
+	integer :: nchunk,nthreads,nelems,nnodes
 	double precision :: dt
 	double precision :: az,ad,aa,azt,adt,aat
 	double precision :: rstot,rso,rsn,rsot,rsnt
 	double precision :: timer,timer1,chunk,rest
 	
-	double precision,dimension(:,:),allocatable :: cn
+! 	double precision,dimension(nlvddi,nkn) :: cn
+! 	double precision,dimension(nlvddi,nkn) :: co        
+!         double precision,dimension(nlvddi,nkn) :: cdiag
+! 	double precision,dimension(nlvddi,nkn) :: clow
+! 	double precision,dimension(nlvddi,nkn) :: chigh
+	
+	double precision,dimension(:,:),allocatable :: cn        
 	double precision,dimension(:,:),allocatable :: co        
         double precision,dimension(:,:),allocatable :: cdiag
 	double precision,dimension(:,:),allocatable :: clow
@@ -123,6 +135,9 @@ c----------------------------------------------------------------
 c initialize variables and parameters
 c----------------------------------------------------------------
 
+!	call cpu_time(time1)
+!!$	dtime1 = omp_get_wtime()
+	
 	ALLOCATE(cn(nlvddi,nkn))
 	ALLOCATE(co(nlvddi,nkn))
 	ALLOCATE(cdiag(nlvddi,nkn))
@@ -155,38 +170,37 @@ c----------------------------------------------------------------
 	  stop 'error stop conz3d: vertical tvd scheme'
 	end if
 
-	co=cn1
         cn=0.
+	co=cn1
         cdiag=0.
         clow=0.
         chigh=0.
+
+        nchunk = 1
+	nthreads = 1
+!$	nthreads = omp_get_num_threads()
  
-! !$OMP PARALLEL  DEFAULT(NONE) 
-! !$OMP& PRIVATE(i,j,k,ie,timer,timer1,myid,numthreads)
-! !$OMP& PRIVATE(chunk,rest,j_init,j_end,k_init,k_end)
-! !$OMP& SHARED(nlvddi,nlev,itvd,itvdv,istot,isact,aa)
-! !$OMP& SHARED(difmol,robs,wsink,rload,ddt,rkpar,az,ad)
-! !$OMP& SHARED(azt,adt,aat,rso,rsn,rsot,rsnt,dt,nkn)
-! !$OMP& SHARED(cn,co,cdiag,clow,chigh,subset_el,cn1,co1) 
-! !$OMP& SHARED(subset_num,indipendent_subset) 
-! !$OMP& SHARED(difhv,cbound,gradxv,gradyv,cobs,load,difv,wsinkv) 
-
-       myid = 0
-! !$     myid = omp_get_thread_num()		!ERIC
-       numthreads = 1
-! !$     numthreads = omp_get_num_threads()
-
       do i=1,subset_num 	! loop over indipendent subset
- 
-       chunk = subset_el(i) / numthreads
-       rest  = MOD(subset_el(i),numthreads) 
-       j_init = (myid * chunk)+1
-       j_end = j_init + chunk-1
-       if(myid .eq. numthreads-1) j_end = subset_el(i)
+       
+!$     nchunk = subset_el(i) / ( nthreads * 10 )
+       nchunk = max(nchunk,1)
 
-       do j=j_init,j_end 	! loop over elements in subset
+!$OMP TASKGROUP 
+       do jel=1,subset_el(i),nchunk
+
+!$OMP TASK FIRSTPRIVATE(jel,i) DEFAULT(NONE)
+!$OMP& PRIVATE(j,ie)
+!$OMP& SHARED(nlvddi,nlev,itvd,itvdv,istot,isact,aa,nchunk)
+!$OMP& SHARED(difmol,robs,wsink,rload,ddt,rkpar,az,ad)
+!$OMP& SHARED(azt,adt,aat,rso,rsn,rsot,rsnt,dt,nkn)
+!$OMP& SHARED(cn,co,cdiag,clow,chigh,subset_el,cn1,co1) 
+!$OMP& SHARED(subset_num,indipendent_subset) 
+!$OMP& SHARED(difhv,cbound,gradxv,gradyv,cobs,load,difv,wsinkv)
+
+       do j=jel,jel+nchunk-1 	! loop over elements in subset
+		if(j .le. subset_el(i)) then
 	        ie = indipendent_subset(j,i)
-	        
+	        !print *,i,ie
                 call conz3d_element(ie,cdiag,clow,chigh,cn,cn1
      +			,dt
      +                  ,rkpar,difhv,difv
@@ -198,39 +212,49 @@ c----------------------------------------------------------------
      +			,az,ad,aa,azt,adt,aat
      +			,rso,rsn,rsot,rsnt
      +			,nlvddi,nlev)
-   
+		end if
 	end do ! end loop over el in subset
-      
-! !$OMP BARRIER        
+!$OMP END TASK
+      end do
+
+!$OMP END TASKGROUP       
 
        end do ! end loop over subset
-       	
-       chunk = nkn / numthreads
-       rest  = MOD(nkn,numthreads) 
-       k_init = (myid * chunk)+1
-       k_end = k_init + chunk-1
-       if(myid .eq. numthreads-1) k_end = nkn
+       
+!$     nchunk = nkn / ( nthreads * 10 )
+       nchunk = max(nchunk,1)
 
-       do k=k_init,k_end
-
+!$OMP TASKGROUP
+       do knod=1,nkn,nchunk
+!$OMP TASK FIRSTPRIVATE(knod) PRIVATE(k) DEFAULT(NONE)
+!$OMP& SHARED(cn,cdiag,clow,chigh,cn1,cbound,load,nchunk,
+!$OMP&           rload,ad,aa,dt,nlvddi,nkn)
+	 do k=knod,knod+nchunk-1
+	 if(k .le. nkn) then
 	   call conz3d_nodes(k,cn,cdiag(:,k),clow(:,k),chigh(:,k),
      +                          cn1,cbound,load,rload,
      +                          ad,aa,dt,nlvddi)
- 	      
+         endif
+         enddo
+!$OMP END TASK 	      
 	end do
 
-! !$OMP END PARALLEL 
+!$OMP END TASKGROUP
 
 	!cn1 = 0.
 	!cn1 = cn
 	cn1 = real(cn)
-
+	
 	DEALLOCATE(cn)
 	DEALLOCATE(co)
 	DEALLOCATE(cdiag)
 	DEALLOCATE(clow)
 	DEALLOCATE(chigh)
 	
+!	call cpu_time(time2)
+!!$	dtime2 = omp_get_wtime()
+!	write(6,*) time2-time1,dtime2-dtime1
+
 c----------------------------------------------------------------
 c end of routine
 c----------------------------------------------------------------
@@ -292,13 +316,13 @@ c*****************************************************************
         double precision :: flux_tot,flux_tot1,flux_top,flux_bot
         double precision :: rstot,hn,ho,cdummy,alow,adiag,ahigh
         double precision :: rkmin,rkmax,cconz
-      double precision,dimension(:),allocatable :: fw,fd,fl,fnudge
-      double precision,dimension(:),allocatable :: b,c,f,wdiff
-      double precision,dimension(:),allocatable :: hdv,haver,presentl
-      double precision,dimension(:,:),allocatable :: hnew,htnew,rtau,cob
-      double precision,dimension(:,:),allocatable :: hold,htold,vflux,wl
-      double precision,dimension(:,:),allocatable :: cl
-      double precision,dimension(:,:),allocatable :: clc,clm,clp,cle
+      double precision,dimension(3) :: fw,fd,fl,fnudge
+      double precision,dimension(3) :: b,c,f,wdiff
+      double precision,dimension(0:nlvddi+1) :: hdv,haver,presentl
+      double precision,dimension(0:nlvddi+1,3) :: hnew,htnew,rtau,cob
+      double precision,dimension(0:nlvddi+1,3) :: hold,htold,vflux,wl
+      double precision,dimension(0:nlvddi+1,3) :: cl
+      double precision,dimension(nlvddi,3) :: clc,clm,clp,cle
 	
 	if(nlv.ne.nlev) stop 'error stop conzstab: level'
 
@@ -316,17 +340,17 @@ c*****************************************************************
 ! global arrays for accumulation of implicit terms
 ! ----------------------------------------------------------------
 
-	 ALLOCATE(fw(3),fd(3),fl(3),fnudge(3),wdiff(3))
-	 ALLOCATE(b(3),c(3),f(3))
-	 ALLOCATE(hdv(0:nlvddi+1),haver(0:nlvddi+1))
-	 ALLOCATE(presentl(0:nlvddi+1))
-	 ALLOCATE(hnew(0:nlvddi+1,3),htnew(0:nlvddi+1,3))
-	 ALLOCATE(rtau(0:nlvddi+1,3),cob(0:nlvddi+1,3))
-	 ALLOCATE(hold(0:nlvddi+1,3),htold(0:nlvddi+1,3))
-	 ALLOCATE(vflux(0:nlvddi+1,3),wl(0:nlvddi+1,3))
-	 ALLOCATE(cl(0:nlvddi+1,3))
-	 ALLOCATE(clc(nlvddi,3),clm(nlvddi,3))
-	 ALLOCATE(clp(nlvddi,3),cle(nlvddi,3))
+! 	 ALLOCATE(fw(3),fd(3),fl(3),fnudge(3),wdiff(3))
+! 	 ALLOCATE(b(3),c(3),f(3))
+! 	 ALLOCATE(hdv(0:nlvddi+1),haver(0:nlvddi+1))
+! 	 ALLOCATE(presentl(0:nlvddi+1))
+! 	 ALLOCATE(hnew(0:nlvddi+1,3),htnew(0:nlvddi+1,3))
+! 	 ALLOCATE(rtau(0:nlvddi+1,3),cob(0:nlvddi+1,3))
+! 	 ALLOCATE(hold(0:nlvddi+1,3),htold(0:nlvddi+1,3))
+! 	 ALLOCATE(vflux(0:nlvddi+1,3),wl(0:nlvddi+1,3))
+! 	 ALLOCATE(cl(0:nlvddi+1,3))
+! 	 ALLOCATE(clc(nlvddi,3),clm(nlvddi,3))
+! 	 ALLOCATE(clp(nlvddi,3),cle(nlvddi,3))
 	 
           hdv = 0.		!layer thickness
           haver = 0.
@@ -621,13 +645,13 @@ c*****************************************************************
 !  end of loop over l
 ! ----------------------------------------------------------------
 
-	deallocate(fw,fd,fl,fnudge)
-	deallocate(b,c,f,wdiff)
-	deallocate(hdv,haver,presentl)
-	deallocate(hnew,htnew,rtau,cob)
-	deallocate(hold,htold,vflux,wl,cl)
-	deallocate(clc,clm,clp,cle)
-	
+! 	deallocate(fw,fd,fl,fnudge)
+! 	deallocate(b,c,f,wdiff)
+! 	deallocate(hdv,haver,presentl)
+! 	deallocate(hnew,htnew,rtau,cob)
+! 	deallocate(hold,htold,vflux,wl,cl)
+! 	deallocate(clc,clm,clp,cle)
+! 	
 ! ----------------------------------------------------------------
 !  end of routine
 ! ----------------------------------------------------------------

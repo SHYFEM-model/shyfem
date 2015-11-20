@@ -933,7 +933,7 @@ c		that can be created and inserted. Use 0 to not limit
 c		the number of particles (on your own risk). This
 c		parameter must be set and has no default.
 
-        call addpar('nbdymax',0.)
+        call addpar('nbdymax',-1.)
 
 c |nbdy|	Total numbers of particles to be released in the domain each
 c		time a release of particles takes place. 

@@ -74,8 +74,10 @@ c opens T/S file
 	nodes = 0
 	vconst = 0.
 
+!$OMP CRITICAL
 	call iff_init(dtime,file,nvar,nexp,lexp,nintp
      +                                  ,nodes,vconst,id)
+!$OMP END CRITICAL
 
 	iunit(1) = id
 

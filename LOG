@@ -1,4 +1,13 @@
 
+20.11.2015
+
+c ./fem3d/new3di.f:
+c 20.11.2015    ggu&erp chunk size introduced, omp finalized
+c
+c ./fem3d/newcon_omp.f:
+c 20.11.2015    ggu&erp chunk size introduced, omp finalized
+
+
 16.11.2015
 
 c ./fem3d/subnev.f:

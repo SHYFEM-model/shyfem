@@ -1,4 +1,10 @@
 
+16.11.2015    VERS_7_3_15
+
+	omp version finalized
+	some update to lagrangian module
+	after testing this will become stable 7.4.0 and testing 7.5.0
+
 16.11.2015    VERS_7_3_14
 
 	new module for lagrangian (not completely finished)

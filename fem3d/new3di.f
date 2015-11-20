@@ -173,6 +173,7 @@ c 20.05.2015    ggu&erp sp256v parallelized
 c 17.09.2015    ggu	sp256w renamed to hydro_vertical
 c 17.09.2015    ggu	sp259f renamed to hydro
 c 18.09.2015    ggu	sp256 renamed to hydro_transports, file cleaned
+c 20.11.2015    ggu&erp chunk size introduced, omp finalized
 c
 c******************************************************************
 
@@ -583,6 +584,7 @@ c******************************************************************
 	subroutine hydro_transports
 
 	use basin, only : nkn,nel,ngr,mbw
+	use omp_lib
 
 	implicit none
 
@@ -596,6 +598,7 @@ c******************************************************************
 	integer ibaroc
 	integer ilin,itlin
 	integer num_threads,myid,el_do,rest_do,init_do,end_do
+	integer nchunk,nthreads
 	logical bcolin,baroc
 	real az,am,af,at,av,azpar,ampar
 	real rlin,radv
@@ -654,6 +657,12 @@ ccc	nt = 2
 ccc	call openmp_set_num_threads(nt)
 ccc	chunk = 1 + nel/nt
 
+	nthreads = 1
+!$      nthreads = omp_get_num_threads()
+	nchunk = 1
+!$      nchunk = nel / ( nthreads * 10 )
+        nchunk = max(nchunk,1)
+
 c-------------------------------------------------------------
 c loop over elements
 c-------------------------------------------------------------
@@ -663,24 +672,27 @@ c-------------------------------------------------------------
 !$OMP PARALLEL 
 !$OMP SINGLE
 
-	do ie=1,nel,250
+	do ie=1,nel,nchunk
+
 !$OMP TASK FIRSTPRIVATE(ie,bcolin,baroc,az,am,af,at,radv
 !$OMP& 	   ,vismol,rrho0,dt) PRIVATE(ies,iend)
-!$OMP&     SHARED(nel)	 DEFAULT(NONE)
+!$OMP&     SHARED(nel,nchunk)	 DEFAULT(NONE)
 	 
- 	  iend = ie+249
+ 	  iend = ie+nchunk-1
  	  if(iend .gt. nel) iend = nel
+
  	  do ies=ie,iend
-	  !print *,ie," ",ies," ",nel
 	    call sp256v_intern(ies,bcolin,baroc,az,am,af,at,radv
      +			,vismol,rrho0,dt)
 	  end do
+
 !$OMP END TASK
+
 	end do
+
 !$OMP END SINGLE
 !$OMP TASKWAIT	
 !$OMP END PARALLEL      
-
 
 	!tempo = openmp_get_wtime() - tempo
 	!write(66,*) it,tempo

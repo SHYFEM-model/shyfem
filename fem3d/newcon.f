@@ -591,8 +591,8 @@ c-------------------------------------------------------------
 
 	  if( btvd1 ) call tvd_grad_3d(cnv,gradxv,gradyv,saux,nlvddi)
 
-          !call conz3d_omp(
-          call conz3d_orig(
+          call conz3d_omp(
+          !call conz3d_orig(
      +           cnv
      +          ,saux
      +          ,dt

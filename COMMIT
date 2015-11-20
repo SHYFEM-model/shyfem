@@ -1,5 +1,27 @@
 ============================================================
 
+Fri Nov 20 17:45:24 CET 2015
+
+omp version finalized
+
+ LOG                     |   9 +++
+ RELEASE_NOTES           |   6 ++
+ fem3d/debug.f           |  15 ++++
+ fem3d/lagrange_cont.f   |   3 +-
+ fem3d/lagrange_main.f   |   6 +-
+ fem3d/new3di.f          |  22 ++++--
+ fem3d/newcon.f          |   4 +-
+ fem3d/newcon_omp.f      | 164 +++++++++++++++++++++++------------------
+ fem3d/shyfem.f          |  24 +++++-
+ fem3d/subdts.f          |   1 +
+ fem3d/subsys.f          |   2 +-
+ fem3d/subtsuvfile.f     |   2 +
+ femdoc/final/shyfem.pdf | Bin 284202 -> 284201 bytes
+ femplot/suplag.f        | 189 +++++++++++++++++++++++++++---------------------
+ 14 files changed, 279 insertions(+), 168 deletions(-)
+
+============================================================
+
 Mon Nov 16 17:41:26 CET 2015
 
 New version 7_3_14

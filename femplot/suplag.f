@@ -97,6 +97,67 @@ c**********************************************************
 
 c**********************************************************
 
+	subroutine lag_peek_xy_header(iunit,it,nb,nn,nout)
+
+	read(iunit,end=100,err=99) it,nbdy,nn,nout
+	backspace(iunit)
+
+	return
+  100	continue
+	backspace(iunit)
+	n = -1
+	return
+   99	continue
+	stop 'error stop lag_get_xy_new: error reading time record'
+	end
+
+c**********************************************************
+
+	subroutine lag_alloc(nn
+     +		,xlag,ylag,zlag,llag,hlag,tlag,alag,clag,rlag,iplot)
+
+	implicit none
+
+	integer nn
+
+	real, allocatable :: xlag(:),ylag(:)	
+	real, allocatable :: zlag(:)		
+	real, allocatable :: hlag(:)		
+	integer, allocatable :: llag(:)		
+	integer, allocatable :: tlag(:)		
+	real, allocatable :: alag(:) 		
+        real, allocatable :: clag(:)            
+        real, allocatable :: rlag(:)            
+        integer, allocatable :: iplot(:)            
+
+	if( allocated(zlag) ) then
+	  deallocate(xlag)
+	  deallocate(ylag)
+	  deallocate(zlag)
+	  deallocate(hlag)
+	  deallocate(llag)
+	  deallocate(tlag)
+	  deallocate(alag)
+	  deallocate(clag)
+	  deallocate(rlag)
+	  deallocate(iplot)
+	end if
+
+	allocate(xlag(nn))
+	allocate(ylag(nn))
+	allocate(zlag(nn))
+	allocate(hlag(nn))
+	allocate(llag(nn))
+	allocate(tlag(nn))
+	allocate(alag(nn))
+	allocate(clag(nn))
+	allocate(rlag(nn))
+	allocate(iplot(nn))
+
+	end
+
+c**********************************************************
+
 	subroutine lag_get_xy_new(iunit,nvers,ndim,it,n
      +			,xlag,ylag,zlag,llag,hlag,tlag,alag,clag)
 
@@ -184,78 +245,6 @@ c**********************************************************
 
 c**********************************************************
 
-	subroutine lag_get_xy(iunit,ndim,it,n,xlag,ylag,zlag)
-
-c old subroutine - do not use anymore
-
-	implicit none
-
-	integer iunit
-	integer ndim
-	integer it
-	integer n
-	real xlag(1),ylag(1),zlag(1)
-
-	integer nout
-	real rnout
-	real x,y
-	real wint,wx,wy
-
-c-----------------------------------------------------
-c read in particles
-c-----------------------------------------------------
-
-	!write(6,*) 'reading lgr: ',iunit,ndim
-
-	n = 0
-
-    1	continue
-
-          read(iunit,*,end=2,err=99) x,y
-
-          if(x.eq.0 .and. y.eq.0) goto 3
-
-	  n = n + 1
-	  if( n .gt. ndim ) goto 97
-	  xlag(n) = x
-	  ylag(n) = y
-	  zlag(n) = 0.5
-
-	goto 1
-
-c-----------------------------------------------------
-c read in header
-c-----------------------------------------------------
-
-    3	continue
-
-	!write(6,*) 'finished reading particles ',n
-
-	read(iunit,*) rnout
-	read(iunit,*) it
-	read(iunit,*) wint
-	read(iunit,*) wx,wy
-
-	return
-
-c-----------------------------------------------------
-c end of read
-c-----------------------------------------------------
-
-    2	continue
-
-	n = -1
-
-	return
-   97	continue
-	stop 'error stop lag_get_xy: ndim too small'
-   99	continue
-	write(6,*) n,x,y
-	stop 'error stop lag_get_xy: read error'
-	end
-
-c**********************************************************
-
 	subroutine plolagr
 
 	use mod_plot2d
@@ -270,23 +259,50 @@ c**********************************************************
 	parameter(ndim=nbdydim)
 
 	integer iunit,it,i,n,nvers,lmax,l
-        real xlag(ndim),ylag(ndim) !particle position
-        real zlag(ndim)            !relative depth of particle on level l [0-1]
-        real hlag(ndim)            !absolute relative depth of particle [0-1]
-        integer llag(ndim)         !verical laver of particle
-        integer tlag(ndim)         !particle type
-        real alag(ndim)            !age of particle [s]
-        real clag(ndim)            !custom property of particle
+	real, allocatable :: xlag(:),ylag(:)	
+	real, allocatable :: zlag(:)		
+	real, allocatable :: hlag(:)		
+	integer, allocatable :: llag(:)		
+	integer, allocatable :: tlag(:)		
+	real, allocatable :: alag(:) 		
+        real, allocatable :: clag(:)            
+        real, allocatable :: rlag(:)            
+        integer, allocatable :: iplot(:)            
 
-	real rlag(ndim)		   !aux array for plotting
+        !real xlag(ndim),ylag(ndim) !particle position
+        !real zlag(ndim)            !relative depth of particle on level l [0-1]
+        !real hlag(ndim)            !absolute relative depth of particle [0-1]
+        !integer llag(ndim)         !verical laver of particle
+        !integer tlag(ndim)         !particle type
+        !real alag(ndim)            !age of particle [s]
+        !real clag(ndim)            !custom property of particle
+
+	!real rlag(ndim)		   !aux array for plotting
+	!integer iplot(ndim)
 
         character*80 name
-	integer iplot(ndim)
 	logical ptime_ok,ptime_end
 	integer nrec
+	integer nb,nout
         integer level
         integer ifemop
         integer getlev,getvar
+
+	INTERFACE
+	subroutine lag_alloc(nn
+     +		,xlag,ylag,zlag,llag,hlag,tlag,alag,clag,rlag,iplot)
+	integer nn
+	real, allocatable :: xlag(:),ylag(:)	
+	real, allocatable :: zlag(:)		
+	real, allocatable :: hlag(:)		
+	integer, allocatable :: llag(:)		
+	integer, allocatable :: tlag(:)		
+	real, allocatable :: alag(:) 		
+        real, allocatable :: clag(:)            
+        real, allocatable :: rlag(:)            
+        integer, allocatable :: iplot(:)            
+	end subroutine
+	END INTERFACE
 
 c----------------------------------------------------------------
 c open lgr file and read header
@@ -305,8 +321,13 @@ c----------------------------------------------------------------
 c read lgr data
 c----------------------------------------------------------------
 
-	call lag_get_xy_new(iunit,nvers,ndim,it,n,
-     +                      xlag,ylag,zlag,llag,hlag,tlag,alag,clag)
+	call lag_peek_xy_header(iunit,it,nb,n,nout)
+	if( n .lt. 0 ) goto 2
+	call lag_alloc(n
+     +		,xlag,ylag,zlag,llag,hlag,tlag,alag,clag,rlag,iplot)
+
+	call lag_get_xy_new(iunit,nvers,n,it,n
+     +                     ,xlag,ylag,zlag,llag,hlag,tlag,alag,clag)
 
 	if( n .lt. 0 ) goto 2
         nrec = nrec + 1

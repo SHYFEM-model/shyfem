@@ -160,6 +160,8 @@ c---------------------------------------------------------------
 	    write(6,*) 'parameter nbdymax is not set'
 	    stop 'error stop lagrange: nbdymax'
 	  end if
+	  write(6,*) 'nbdymax = ',nbdymax
+
 	  call mod_lagrange_init(nel,nlv)
 	  call mod_lagrange_handle_alloc(0)
 
@@ -465,10 +467,6 @@ c	call lagr_surv(i)
 	do ii=1,3
 	  xi(ii) = lgr_ar(i)%xi(ii)
 	end do
-
-	!if( mod(i,100) .eq. 0 ) then
-	!  write(56,*) 'gguuaa: ',i,ie,lb,x,y,z
-	!end if
 
 	tmax = it - lgr_ar(i)%tin 
 	if( tmax .lt. 0. ) stop 'error stop drogue: internal error'
