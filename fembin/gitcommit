@@ -44,6 +44,11 @@ cd $femdir
 #actdir=$((pwd))
 #echo "now in $actdir"
 
+if [ ! -f VERSION ]; then
+  echo "*** not in base directory... aborting"
+  exit 1
+fi
+
 git status
 git diff --cached --stat
 GetSpecial "new file:"

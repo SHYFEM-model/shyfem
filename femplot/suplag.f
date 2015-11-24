@@ -186,8 +186,6 @@ c-----------------------------------------------------
 
 	read(iunit,end=100,err=99) it,nbdy,nn,nout
 
-	!write(6,*) 'reading lgr: ',iunit,ndim
-
 	n = 0
 
         do i=1,nn
@@ -233,18 +231,6 @@ c**********************************************************
 c**********************************************************
 c**********************************************************
 
-	subroutine lag_get_header(iunit,nvers)
-
-	implicit none
-
-	integer iunit,nvers
-
-	nvers = 1
-
-	end
-
-c**********************************************************
-
 	subroutine plolagr
 
 	use mod_plot2d
@@ -253,10 +239,6 @@ c**********************************************************
 	implicit none
 
 	include 'param.h'
-
-
-	integer ndim
-	parameter(ndim=nbdydim)
 
 	integer iunit,it,i,n,nvers,lmax,l
 	real, allocatable :: xlag(:),ylag(:)	
@@ -268,17 +250,6 @@ c**********************************************************
         real, allocatable :: clag(:)            
         real, allocatable :: rlag(:)            
         integer, allocatable :: iplot(:)            
-
-        !real xlag(ndim),ylag(ndim) !particle position
-        !real zlag(ndim)            !relative depth of particle on level l [0-1]
-        !real hlag(ndim)            !absolute relative depth of particle [0-1]
-        !integer llag(ndim)         !verical laver of particle
-        !integer tlag(ndim)         !particle type
-        !real alag(ndim)            !age of particle [s]
-        !real clag(ndim)            !custom property of particle
-
-	!real rlag(ndim)		   !aux array for plotting
-	!integer iplot(ndim)
 
         character*80 name
 	logical ptime_ok,ptime_end
@@ -346,7 +317,8 @@ c----------------------------------------------------------------
 	else if( name .eq. 'depth' ) then   !absolute realtive depth
 	   rlag = hlag
 	else if( name .eq. 'age' ) then	    !age [s]
-	   rlag = alag
+	   !rlag = alag
+	   rlag = alag / 86400.		    !age [d]
 	else if( name .eq. 'custom' ) then  !custom
 	   rlag = clag
         else

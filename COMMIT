@@ -1,5 +1,15 @@
 ============================================================
 
+Tue Nov 24 14:44:21 CET 2015
+
+small changes in lagrange output
+
+ fem3d/subnsa.f   |  4 ++++
+ femplot/suplag.f | 32 ++------------------------------
+ 2 files changed, 6 insertions(+), 30 deletions(-)
+
+============================================================
+
 Fri Nov 20 17:46:53 CET 2015
 
 New version 7_3_15

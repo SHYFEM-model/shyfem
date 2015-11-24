@@ -260,6 +260,8 @@ c the special name ivar# can be used to directtly give the variable number #
           iv = 80
         else if( string(is:ie3) .eq. 'ice' ) then
           iv = 85
+!        else if( string(is:ie3) .eq. 'age' ) then
+!          iv = 98
         else if( string(is:ie3) .eq. 'wrt' ) then
           iv = 99
         else if( string(is:ie5) .eq. 'renew' ) then
@@ -322,6 +324,8 @@ c******************************************************
           string = 'rain'
         else if( iv .eq. 85 ) then
           string = 'ice cover'
+!        else if( iv .eq. 98 ) then
+!          string = 'age'
         else if( iv .eq. 99 ) then
           string = 'renewal time'
         else if( iv .eq. 335 ) then

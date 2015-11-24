@@ -4,7 +4,7 @@
 
 #########################################################
 
-FEMDIR=${FEMDIR:-$HOME/fem}
+FEMDIR=${FEMDIR:-$HOME/shyfem}
 export FEMDIR
 version_file="VERSION"
 commit_file="COMMIT"
@@ -105,10 +105,10 @@ tmpfile2=tmp2.tmp
 cd $FEMDIR
 
 if [ ! -f $version_file ]; then
-  #echo "No file $version_file -> please create first"
-  #exit 2
-  echo "Creating file $version_file ..."
-  touch $version_file
+  echo "No file $version_file... maybe in wrong directory"
+  exit 2
+  #echo "Creating file $version_file ..."
+  #touch $version_file
 else
   firstline=`head -1 $version_file | sed 's/ \{1,\}/ /g'`
 fi
