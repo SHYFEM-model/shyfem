@@ -1577,9 +1577,13 @@ c*******************************************************************
 
         subroutine print_spherical
 
+	use shympi
+
         implicit none
 
         integer isphe
+
+	if( .not. shympi_output() ) return
 
 	call get_coords_ev(isphe)
 

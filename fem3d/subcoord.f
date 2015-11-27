@@ -125,6 +125,7 @@
 ! handles projection - converts lat/lon to x/y
 
         use basin
+	use shympi
 
         implicit none
 
@@ -136,10 +137,15 @@
         mode = -1		!from lat/lon to cartesian
         iproj = 3		!always use cpp
 
-        xmin = MINVAL(xgv)
-        ymin = MINVAL(ygv)
-        xmax = MAXVAL(xgv)
-        ymax = MAXVAL(ygv)
+        !xmin = MINVAL(xgv)
+        !ymin = MINVAL(ygv)
+        !xmax = MAXVAL(xgv)
+        !ymax = MAXVAL(ygv)
+	call shympi_reduce_r('min',xgv,xmin)
+	call shympi_reduce_r('min',ygv,ymin)
+	call shympi_reduce_r('max',xgv,xmax)
+	call shympi_reduce_r('max',ygv,ymax)
+	write(6,*) 'min/max: ',xmin,ymin,xmax,ymax
 
         c_phi  = 0.5*(ymax-ymin)
         c_lat0 = 0.5*(ymax-ymin)
@@ -236,6 +242,7 @@
 ! handles projection
 
         use coordinates
+        use shympi
 
         implicit none
 
@@ -255,8 +262,14 @@
             call proj_cart2geo
         end if
 
+	call shympi_check_2d_node(xgeov)
+	call shympi_check_2d_node(ygeov)
+	call shympi_check_2d_node(xcartv)
+	call shympi_check_2d_node(ycartv)
+
         write(6,*) 'end of handle_projection'
 
         end subroutine handle_projection
 
 !****************************************************************
+

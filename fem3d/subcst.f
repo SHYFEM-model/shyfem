@@ -151,7 +151,7 @@ c	call ckoxy	!oxygen
 
 	call modules(M_CHECK)
 
-	call ckcori	!set coriolis parameter
+	call ckcori	!sets dlat for  coriolis parameter
 
 	end
 

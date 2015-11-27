@@ -340,6 +340,7 @@ c checks if coordinates are lat/lon
 
 	use basin
 	use evgeom
+	use shympi
 
 	implicit none
 
@@ -391,6 +392,11 @@ c checks if coordinates are lat/lon
 	  end if
 	  isphe = isphe_ev	!take desired value
 	end if
+
+	call shympi_gather_i(isphe)
+	isphe = 1
+	if( any(ival==0) ) isphe = 0
+	call shympi_bcast_i(isphe)
 
 	isphe_ev = isphe
 	init_ev = .true.

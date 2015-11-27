@@ -584,7 +584,7 @@ c******************************************************************
 	subroutine hydro_transports
 
 	use basin, only : nkn,nel,ngr,mbw
-	use omp_lib
+!$	use omp_lib
 
 	implicit none
 
