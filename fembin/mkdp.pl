@@ -54,7 +54,10 @@ sub handle_file {
   my $fh;
   my %modules_in_file = ();
 
-  open($fh,"$file") || die "Cannot open file $file\n";
+  if( not open($fh,"$file") ) {
+    print STDERR "*** Cannot open file $file ... ignoring\n";
+    return;
+  }
 
   while( <$fh> ) {
     s/\s*\!.*$//;		# get rid of trailing comments
