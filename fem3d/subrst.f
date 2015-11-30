@@ -33,6 +33,7 @@
 ! 11.12.2014    ccf     bug fix for atime
 ! 20.10.2015    ggu     bug fix to get correct restart time (itanf)
 ! 30.10.2015    ggu     new names, restructured
+! 30.11.2015    ggu     allocate cnv/conzv before read
 !
 ! notes :
 !
@@ -701,8 +702,10 @@
 	    if( iconz_rst > 0 .and. .not. rst_want_restart(4) ) then
               read(iunit)
 	    else if( iconz_rst .eq. 1 ) then
+	      call mod_conz_init(1,nkn,nlvdi)
               read(iunit) ((cnv(l,k),l=1,nlv),k=1,nkn)
 	    else if( iconz_rst .gt. 1 ) then
+	      call mod_conz_init(iconz_rst,nkn,nlvdi)
 	      read(iunit) (((conzv(l,k,i),l=1,nlv),k=1,nkn),i=1,iconz_rst)
 	    end if
 	  end if

@@ -107,7 +107,7 @@ c write output files
 c-----------------------------------------------------------------
 
 	if( bgrd ) call write_grd_from_bas
-        if( bxyz ) call write_xy('bas.xyz',nkn,ipv,xgv,ygv)
+        if( bxyz ) call write_xy('bas.xyz',nkn,ipv,xgv,ygv,hkv)
 	if( bunique) call write_grd_with_unique_depth !for sigma levels
 
 c-----------------------------------------------------------------
@@ -837,9 +837,9 @@ c-----------------------------------------------------------------
 
 c*******************************************************************
 
-        subroutine write_xy(nfile,nkn,ipv,xgv,ygv)
+        subroutine write_xy(nfile,nkn,ipv,xgv,ygv,hkv)
 
-c writes xy as data to file
+c writes xy as data to file (format is gis format)
 
         implicit none
 
@@ -848,13 +848,14 @@ c writes xy as data to file
         integer ipv(nkn)
         real xgv(nkn)
         real ygv(nkn)
+        real hkv(nkn)
 
         integer k
 
         open(1,file=nfile,status='unknown',form='formatted')
-        write(1,*) nkn
+        write(1,*) 0,nkn,5,'0'
         do k=1,nkn
-          write(1,*) k,ipv(k),xgv(k),ygv(k)
+          write(1,*) k,xgv(k),ygv(k),1,hkv(k)
         end do
         close(1)
         write(6,*) 'The coordinates have been written to ',nfile
