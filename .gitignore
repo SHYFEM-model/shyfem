@@ -136,6 +136,9 @@ fem3d/shypre
 fem3d/shybas
 fem3d/flxelab
 
+fem3d/basmpi
+fem3d/shympi
+
 femadj/shyadj
 femadj/adjele
 

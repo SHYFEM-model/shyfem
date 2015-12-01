@@ -61,8 +61,7 @@ c-----------------------------------------------------------------
 
 	call shympi_init
 	call shympi_elab
-	call shympi_finalize
-	stop 'mpi finished'
+	call shympi_stop('mpi finished')
 
 	call ev_init(nel)
 	call set_ev

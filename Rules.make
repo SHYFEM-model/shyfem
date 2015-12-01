@@ -49,7 +49,7 @@ export NEXDIM = 1
 export NFXDIM = 1
 export NCSDIM = 1
 
-export NBDYDIM = 100000
+export NBDYDIM = 1
 
 ##############################################
 # Compiler
@@ -119,7 +119,7 @@ PARALLEL_OMP = false
 #PARALLEL_OMP = true
 
 PARALLEL_MPI = false
-#PARALLEL_MPI = true
+PARALLEL_MPI = true
 
 ##############################################
 # Solver for matrix solution
@@ -220,7 +220,7 @@ FLUID_MUD = false
 # DEFINE VERSION
 ##############################################
 
-RULES_MAKE_VERSION = 1.3
+RULES_MAKE_VERSION = 1.4
 DISTRIBUTION_TYPE = experimental
 
 ##############################################

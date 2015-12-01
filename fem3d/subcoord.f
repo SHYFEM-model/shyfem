@@ -262,10 +262,10 @@
             call proj_cart2geo
         end if
 
-	call shympi_check_2d_node(xgeov)
-	call shympi_check_2d_node(ygeov)
-	call shympi_check_2d_node(xcartv)
-	call shympi_check_2d_node(ycartv)
+	call shympi_check_2d_node(xgeov,'xgeov')
+	call shympi_check_2d_node(ygeov,'ygeov')
+	call shympi_check_2d_node(xcartv,'xcartv')
+	call shympi_check_2d_node(ycartv,'ycartv')
 
         write(6,*) 'end of handle_projection'
 

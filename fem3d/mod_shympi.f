@@ -23,11 +23,11 @@
 	integer,save :: my_id = 0
 	integer,save :: my_unit = 0
 
-	integer,save :: nkn_global = 0
+	integer,save :: nkn_global = 0		!total basin
 	integer,save :: nel_global = 0
-	integer,save :: nkn_local = 0
+	integer,save :: nkn_local = 0		!this domain
 	integer,save :: nel_local = 0
-	integer,save :: nkn_inner = 0
+	integer,save :: nkn_inner = 0		!only proper, no ghost
 	integer,save :: nel_inner = 0
 
 	integer,save :: n_ghost_areas = 0
@@ -41,6 +41,8 @@
 
 	integer,save,allocatable :: i_buffer_in(:,:)
 	integer,save,allocatable :: i_buffer_out(:,:)
+	integer,save,allocatable :: r_buffer_in(:,:)
+	integer,save,allocatable :: r_buffer_out(:,:)
 	
 	integer,save,allocatable :: node_area(:)	!global
 	integer,save,allocatable :: request(:)		!for exchange
@@ -79,7 +81,7 @@
 
 	use basin
 
-	integer ierr
+	integer ierr,size
 	character*10 cunit
 	character*80 file
 
@@ -94,10 +96,12 @@
 
 	bmpi = n_threads > 1
 
+	call shympi_get_status_size_internal(size)
+
 	allocate(node_area(nkn_global))
 	allocate(ival(n_threads))
-	!allocate(request(2*n_threads))
-	!allocate(status(MPI_STATUS_SIZE,2*n_threads))
+	allocate(request(2*n_threads))
+	allocate(status(size,2*n_threads))
 
 	if( bmpi ) then
 	  write(cunit,'(i10)') my_id
@@ -108,8 +112,11 @@
 	end if
 
 	write(6,*) 'shympi initialized: ',my_id,n_threads
+	flush(6)
 
-	call shympi_barrier
+	call shympi_barrier_internal
+	call shympi_syncronize_initial
+	call shympi_syncronize_internal
 
 	end subroutine shympi_init
 
@@ -135,21 +142,45 @@
 
 	subroutine shympi_barrier
 
-	integer ierr
-
 	call shympi_barrier_internal
 
 	end subroutine shympi_barrier
 
 !******************************************************************
 
-	subroutine shympi_finalize
+	subroutine shympi_stop(text)
 
-	integer ierr
+	character*(*) text
+
+	call shympi_finalize_internal
+	write(6,*) text
+	stop 'shympi_stop'
+
+	end subroutine shympi_stop
+
+!******************************************************************
+
+	subroutine shympi_finalize
 
 	call shympi_finalize_internal
 
 	end subroutine shympi_finalize
+
+!******************************************************************
+
+	subroutine shympi_syncronize
+
+	call shympi_syncronize_internal
+
+	end subroutine shympi_syncronize
+
+!******************************************************************
+
+	subroutine shympi_abort
+
+	call shympi_abort_internal
+
+	end subroutine shympi_abort
 
 !******************************************************************
 !******************************************************************
@@ -188,7 +219,8 @@
 
 	integer val(nlvdi,nkn)
 
-	call shympi_exchange_internal_i(nlvdi,nkn,ilhkv,val)
+	call shympi_exchange_internal_i(nlvdi,nkn,ilhkv
+     +			,ghost_nodes_in,ghost_nodes_out,val)
 
 	end subroutine shympi_exchange_node_i
 
@@ -227,33 +259,150 @@
 
 	integer val(nkn)
 
-	call shympi_exchange_internal_i(1,nkn,ilhkv,val)
+	call shympi_exchange_internal_i(1,nkn,ilhkv
+     +			,ghost_nodes_in,ghost_nodes_out,val)
 
 	end subroutine shympi_exchange_2d_node_i
 
 !******************************************************************
+
+	subroutine shympi_exchange_2d_elem_i(val)
+
+	use basin
+	use levels
+
+	integer val(nel)
+
+	call shympi_exchange_internal_i(1,nel,ilhv
+     +			,ghost_elems,ghost_elems,val)
+
+	end subroutine shympi_exchange_2d_elem_i
+
+!******************************************************************
 !******************************************************************
 !******************************************************************
 
-	subroutine shympi_check_2d_node_r(val)
+        subroutine count_buffer(nlvddi,n,nc,il,nodes,nb)
+
+        integer nlvddi,n,nc
+        integer il(n)
+        integer nodes(nc)
+        integer nb
+
+        integer i,k,l,lmax
+
+        if( nlvddi == 1 ) then
+          nb = nc
+        else
+          nb = 0
+          do i=1,nc
+            k = nodes(i)
+            lmax = il(k)
+            nb = nb + lmax
+          end do
+        end if
+
+        end subroutine count_buffer
+
+!******************************************************************
+
+        subroutine to_buffer_i(nlvddi,n,nc,il,nodes,val,nb,i_buffer)
+
+        integer nlvddi,n,nc
+        integer il(n)
+        integer nodes(nc)
+        integer val(nlvddi,n)
+        integer nb
+        integer i_buffer(:)
+
+        integer i,k,l,lmax
+
+        if( nlvddi == 1 ) then
+          do i=1,nc
+            k = nodes(i)
+            i_buffer(i) = val(1,k)
+          end do
+          nb = nc
+        else
+          nb = 0
+          do i=1,nc
+            k = nodes(i)
+            lmax = il(k)
+            do l=1,lmax
+              nb = nb + 1
+              i_buffer(nb) = val(l,k)
+            end do
+          end do
+        end if
+
+        end subroutine to_buffer_i
+
+!******************************************************************
+
+        subroutine from_buffer_i(nlvddi,n,nc,il,nodes,val,nb,i_buffer)
+
+        integer nlvddi,n,nc
+        integer il(n)
+        integer nodes(nc)
+        integer val(nlvddi,n)
+        integer nb
+        integer i_buffer(:)
+
+        integer i,k,l,lmax
+
+        if( nlvddi == 1 ) then
+          do i=1,nc
+            k = nodes(i)
+            val(1,k) = i_buffer(i)
+          end do
+          nb = nc
+        else
+          nb = 0
+          do i=1,nc
+            k = nodes(i)
+            lmax = il(k)
+            do l=1,lmax
+              nb = nb + 1
+              val(l,k) = i_buffer(nb)
+            end do
+          end do
+        end if
+
+        end subroutine from_buffer_i
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine shympi_check_2d_node_r(val,text)
 
 	use basin
 
 	real val(nkn)
+	character*(*) text
 
-        stop 'error stop shympi_check_2d_node_r: not ready'
+	real aux(nkn)
+
+	aux = val
+	call shympi_exchange_2d_node_r(aux)
+	call shympi_check_array_r(nkn,val,aux,text)
 
 	end subroutine shympi_check_2d_node_r
 
 !*******************************
 
-	subroutine shympi_check_2d_node_d(val)
+	subroutine shympi_check_2d_node_d(val,text)
 
 	use basin
 
 	double precision val(nkn)
+	character*(*) text
 
-        stop 'error stop shympi_check_2d_node_d: not ready'
+	double precision aux(nkn)
+
+	aux = val
+	call shympi_exchange_2d_node_d(aux)
+	call shympi_check_array_d(nkn,val,aux,text)
 
 	end subroutine shympi_check_2d_node_d
 
@@ -266,17 +415,102 @@
 	integer val(nkn)
 	character*(*) text
 
-	integer iaux(nkn)
+	integer aux(nkn)
 
-	iaux = ival
-	call shympi_exchange_2d_node_i(iaux)
-
-        if( .not. all( val == iaux ) ) then
-          write(6,*) 'arrays are different: ' // text
-          stop 'error stop shympi_check_2d_node_i'
-        end if
+	aux = val
+	call shympi_exchange_2d_node_i(aux)
+	call shympi_check_array_i(nkn,val,aux,text)
 
 	end subroutine shympi_check_2d_node_i
+
+!******************************************************************
+
+	subroutine shympi_check_2d_elem_i(val,text)
+
+	use basin
+
+	integer val(nel)
+	character*(*) text
+
+	integer aux(nel)
+
+	aux = val
+	call shympi_exchange_2d_elem_i(aux)
+	call shympi_check_array_i(nel,val,aux,text)
+
+	end subroutine shympi_check_2d_elem_i
+
+!******************************************************************
+
+	subroutine shympi_check_array_i(n,a1,a2,text)
+
+	integer n
+	integer a1(n),a2(n)
+	character*(*) text
+
+	integer i
+
+        if( .not. all( a1 == a2 ) ) then
+          write(6,*) 'arrays are different: ' // text
+          write(6,*) 'process: ',my_id
+	  do i=1,n
+	    if( a1(i) /= a2(i) ) then
+	      write(6,*) i,a1(i),a2(i)
+	    end if
+	  end do
+	  call shympi_finalize
+          stop 'error stop shympi_check_array_i'
+        end if
+
+	end subroutine shympi_check_array_i
+
+!*******************************
+
+	subroutine shympi_check_array_r(n,a1,a2,text)
+
+	integer n
+	real a1(n),a2(n)
+	character*(*) text
+
+	integer i
+
+        if( .not. all( a1 == a2 ) ) then
+          write(6,*) 'arrays are different: ' // text
+          write(6,*) 'process: ',my_id
+	  do i=1,n
+	    if( a1(i) /= a2(i) ) then
+	      write(6,*) i,a1(i),a2(i)
+	    end if
+	  end do
+	  call shympi_finalize
+          stop 'error stop shympi_check_array_i'
+        end if
+
+	end subroutine shympi_check_array_r
+
+!*******************************
+
+	subroutine shympi_check_array_d(n,a1,a2,text)
+
+	integer n
+	double precision a1(n),a2(n)
+	character*(*) text
+
+	integer i
+
+        if( .not. all( a1 == a2 ) ) then
+          write(6,*) 'arrays are different: ' // text
+          write(6,*) 'process: ',my_id
+	  do i=1,n
+	    if( a1(i) /= a2(i) ) then
+	      write(6,*) i,a1(i),a2(i)
+	    end if
+	  end do
+	  call shympi_finalize
+          stop 'error stop shympi_check_array_i'
+        end if
+
+	end subroutine shympi_check_array_d
 
 !******************************************************************
 !******************************************************************
@@ -286,8 +520,7 @@
 
 	integer val
 
-!	MPI_GATHER	-> gather into ival
-	ival(1) = val
+	call shympi_gather_i_internal(val)
 
 	end subroutine shympi_gather_i
 
@@ -297,7 +530,7 @@
 
 	integer val
 
-!	MPI_BCAST	-> broadcast value to all tasks
+	call shympi_bcast_i_internal(val)
 
 	end subroutine shympi_bcast_i
 
@@ -328,9 +561,19 @@
 
 	logical shympi_output
 
-	shympi_output = .true.
+	shympi_output = my_id == 0
 
 	end function shympi_output
+
+!******************************************************************
+
+	function shympi_is_master()
+
+	logical shympi_is_master
+
+	shympi_is_master = my_id == 0
+
+	end function shympi_is_master
 
 !==================================================================
         end module shympi

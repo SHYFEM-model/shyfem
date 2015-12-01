@@ -15,13 +15,7 @@
 	integer nindex(nkn)
 	integer eindex(nel)
 
-	do k=1,nkn
-	  if( ygv(k) > 3100.  ) then
-	    node_area(k) = 1
-	  else
-	    node_area(k) = 0
-	  end if
-	end do
+	call make_domain_area
 
 	call make_domain(my_id,node_area,nodes,elems,nc)
 
@@ -34,8 +28,8 @@
 	call make_index(my_id,nkn,n_lk,nodes,nindex)
 	call make_index(my_id,nel,n_le,elems,eindex)
 
-	write(6,*) 'nodes in domain: ',n_lk
-	write(6,*) 'elems in domain: ',n_le
+	!write(6,*) 'nodes in domain: ',n_lk
+	!write(6,*) 'elems in domain: ',n_le
 
 	nkn_local = n_lk
 	nel_local = n_le
@@ -64,8 +58,110 @@
 	call ghost_check
 	call ghost_write
 
+	write(6,'(a,9i7)') 'domain: ',my_id,n_ghost_areas,nkn_global
+     +			,nkn_local,nkn_inner,nkn_local-nkn_inner
+     +			,nel_local,nel_inner,nel_local-nel_inner
+
+	call shympi_syncronize
+
 	call ghost_buffer
 	call ghost_exchange
+
+	end
+
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
+
+	subroutine make_domain_area
+
+	use basin
+	use shympi
+
+	implicit none
+
+	node_area = 0
+
+	if( nkn /= 225 .or. nel /= 384 ) then
+	  write(6,*) 'nkn,nel: ',nkn,nel
+	  write(6,*) 'expecting: ',225,384
+	  stop 'error stop make_domain_area: wrong basin'
+	end if
+
+	if( n_threads == 1 ) then
+	  return
+	else if( n_threads == 2 ) then
+	  call make_domain_area_2
+	else if( n_threads == 3 ) then
+	  call make_domain_area_3
+	else if( n_threads == 4 ) then
+	  call make_domain_area_4
+	else
+	  write(6,*) 'n_threads = ',n_threads
+	  stop 'error stop make_domain_area: cannot handle'
+	end if
+
+	end
+
+!*****************************************************************
+
+	subroutine make_domain_area_2
+
+	use basin
+	use shympi
+
+	implicit none
+
+	integer k
+
+	do k=1,nkn
+	  if( ygv(k) > 3100.  ) then
+	    node_area(k) = 1
+	  end if
+	end do
+
+	end
+
+!*****************************************************************
+
+	subroutine make_domain_area_3
+
+	use basin
+	use shympi
+
+	implicit none
+
+	integer k
+
+	do k=1,nkn
+	  if( ygv(k) > 4100.  ) then
+	    node_area(k) = 2
+	  else if( ygv(k) > 2100.  ) then
+	    node_area(k) = 1
+	  end if
+	end do
+
+	end
+
+!*****************************************************************
+
+	subroutine make_domain_area_4
+
+	use basin
+	use shympi
+
+	implicit none
+
+	integer k
+
+	do k=1,nkn
+	  if( ygv(k) > 3100.  ) then
+	    node_area(k) = 2
+	  end if
+	  if( xgv(k) > 100.  ) then
+	    node_area(k) = node_area(k) + 1
+	  end if
+	end do
 
 	end
 
@@ -162,9 +258,7 @@
 	  stop 'error stop make_domain:  internal error (2)'
 	end if
 
-	write(6,*) 'my_id = ',my_id
-	write(6,*) 'n_my = ',n_my
-	write(6,*) 'n_ghost = ',n_ghost
+	!write(6,*) 'domain = ',my_id,n_my,n_ghost
 
 	deallocate(ncs)
 
@@ -419,34 +513,10 @@
 	    i = i + 1
 	    ncsmax = max(ncsmax,ncs(n))
 	    ghost_areas(1,i) = n	!what id
-	    ghost_areas(2,i) = ncs(n)	!how many outer ghost nodes
 	  end if
 	end do
 
-	n_ghost_nodes_max = ncsmax
-
-!	--------------------------------------------------
-!	set up list of outer ghost nodes
-!	--------------------------------------------------
-
-	allocate(ghost_nodes_out(ncsmax,n_ghost_areas))
-	ghost_nodes_out = 0
-
-	do ia=1,n_ghost_areas
-	  ic = ghost_areas(1,ia)
-	  nc = 0
-	  do k=1,nkn
-	    id = id_node(k)
-	    if( id /= ic ) cycle
-	    nc = nc + 1
-	    if( nc > ncsmax ) then
-	      write(6,*) ia,id,nc,ncsmax
-	      stop 'error stop ghost_make: internal error (1)'
-	    end if
-	    ghost_nodes_out(nc,ia) = k
-	  end do
-	  ghost_areas(2,ia) = nc
-	end do
+	n_ghost_nodes_max = ncsmax	!outer ghost nodes
 
 !	--------------------------------------------------
 !	find maximum of inner ghost nodes
@@ -476,11 +546,65 @@
 	n_ghost_nodes_max = max(n_ghost_nodes_max,ncsmax)
 
 !	--------------------------------------------------
-!	set up list of inner ghost nodes
+!	find maximum of ghost elements
 !	--------------------------------------------------
+
+	ncs = 0
+	do ie=1,nel
+	  do i=1,2
+	    id = id_elem(i,ie)
+	    if( id /= my_id .and. id /= -1 ) then
+	      ncs(id) = ncs(id) + 1
+	    end if
+	  end do
+	end do
+
+	ncsmax = 0
+	do ia=1,n_ghost_areas
+	  ic = ghost_areas(1,ia)
+	  ncsmax = max(ncsmax,ncs(ic))
+	end do
+	n_ghost_elems_max = ncsmax
+
+!	--------------------------------------------------
+!	allocate ghost arrays
+!	--------------------------------------------------
+
+	n_ghost_max = max(n_ghost_nodes_max,n_ghost_elems_max)
+	ncsmax = n_ghost_max
+
+	allocate(ghost_nodes_out(ncsmax,n_ghost_areas))
+	ghost_nodes_out = 0
 
 	allocate(ghost_nodes_in(ncsmax,n_ghost_areas))
 	ghost_nodes_in = 0
+
+	allocate(ghost_elems(ncsmax,n_ghost_areas))
+	ghost_elems = 0
+
+!	--------------------------------------------------
+!	set up list of outer ghost nodes
+!	--------------------------------------------------
+
+	do ia=1,n_ghost_areas
+	  ic = ghost_areas(1,ia)
+	  nc = 0
+	  do k=1,nkn
+	    id = id_node(k)
+	    if( id /= ic ) cycle
+	    nc = nc + 1
+	    if( nc > ncsmax ) then
+	      write(6,*) ia,id,nc,ncsmax
+	      stop 'error stop ghost_make: internal error (1)'
+	    end if
+	    ghost_nodes_out(nc,ia) = k
+	  end do
+	  ghost_areas(2,ia) = nc
+	end do
+
+!	--------------------------------------------------
+!	set up list of inner ghost nodes
+!	--------------------------------------------------
 
 	do ia=1,n_ghost_areas
 	  ic = ghost_areas(1,ia)
@@ -508,29 +632,8 @@
 	end do
 
 !	--------------------------------------------------
-!	set up list of element nodes
+!	set up list of ghost elements
 !	--------------------------------------------------
-
-	ncs = 0
-	do ie=1,nel
-	  do i=1,2
-	    id = id_elem(i,ie)
-	    if( id /= my_id .and. id /= -1 ) then
-	      ncs(id) = ncs(id) + 1
-	    end if
-	  end do
-	end do
-
-	ncsmax = 0
-	do ia=1,n_ghost_areas
-	  ic = ghost_areas(1,ia)
-	  ncsmax = max(ncsmax,ncs(ic))
-	end do
-	n_ghost_elems_max = ncsmax
-
-	n_ghost_nodes_max = ncsmax
-	allocate(ghost_elems(ncsmax,n_ghost_areas))
-	ghost_elems = 0
 
 	do ia=1,n_ghost_areas
 	  ic = ghost_areas(1,ia)
@@ -552,8 +655,6 @@
 !	--------------------------------------------------
 !	end of routine
 !	--------------------------------------------------
-
-	n_ghost_max = max(n_ghost_nodes_max,n_ghost_elems_max)
 
 	deallocate(ncs)
 
@@ -648,6 +749,9 @@
 	allocate(i_buffer_in(n_ghost_max,n_ghost_areas))
 	allocate(i_buffer_out(n_ghost_max,n_ghost_areas))
 
+	allocate(r_buffer_in(n_ghost_max,n_ghost_areas))
+	allocate(r_buffer_out(n_ghost_max,n_ghost_areas))
+
 	end
 
 !*****************************************************************
@@ -659,20 +763,23 @@
 
 	implicit none
 
+	integer i
 	integer num_elems(nel)
 	integer num_nodes(nkn)
 
 	num_elems = ipev
 	num_nodes = ipv
 
+	call shympi_exchange_2d_elem_i(ipev)
 	call shympi_exchange_2d_node_i(ipv)
 
-	write(6,*) 'finished exchange...'
+	call shympi_check_2d_elem_i(ipev,'ghost ipev')
+	call shympi_check_2d_node_i(ipv,'ghost ipv')
 
-	if( .not. all( ipv == num_nodes ) ) then
-	  write(6,*) 'arrays are different: ipv'
-	  stop 'error stop ghost_exchange: not equal'
-	end if
+	call shympi_check_array_i(nel,num_elems,ipev,'ghost ipev')
+	call shympi_check_array_i(nkn,num_nodes,ipv,'ghost ipv')
+
+	write(6,*) 'finished exchange...'
 
 	end
 

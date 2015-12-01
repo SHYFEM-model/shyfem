@@ -34,6 +34,16 @@
 
 !******************************************************************
 
+	subroutine shympi_abort_internal
+
+	implicit none
+
+	integer ierr
+
+	end subroutine shympi_abort_internal
+
+!******************************************************************
+
 	subroutine shympi_finalize_internal
 
 	implicit none
@@ -41,6 +51,38 @@
 	integer ierr
 
 	end subroutine shympi_finalize_internal
+
+!******************************************************************
+
+        subroutine shympi_get_status_size_internal(size)
+
+        implicit none
+
+        integer size
+
+        size = 1
+
+        end subroutine shympi_get_status_size_internal
+
+!******************************************************************
+
+	subroutine shympi_syncronize_internal
+
+	implicit none
+
+	integer ierr
+
+	end subroutine shympi_syncronize_internal
+
+!******************************************************************
+
+	subroutine shympi_syncronize_initial
+
+	implicit none
+
+	integer ierr
+
+	end subroutine shympi_syncronize_initial
 
 !******************************************************************
 !******************************************************************
@@ -64,8 +106,6 @@
 	integer il(n)
 	real val(nlvddi,n)
 
-        stop 'error stop shympi_exchange_internal_r: not ready'
-
 	end subroutine shympi_exchange_internal_r
 
 !******************************************************************
@@ -75,8 +115,6 @@
 	integer nlvddi,n
 	integer il(n)
 	double precision val(nlvddi,n)
-
-        stop 'error stop shympi_exchange_internal_d: not ready'
 
 	end subroutine shympi_exchange_internal_d
 

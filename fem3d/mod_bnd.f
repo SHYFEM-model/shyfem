@@ -22,6 +22,8 @@
 
         integer nb
 
+	!write(6,*) 'mod_bnd_init: ',nb,nb,nbc_bnd
+
         if( nb == nbc_bnd ) return
 
         if( nbc_bnd > 0 ) then
@@ -45,6 +47,8 @@
         integer ndim
         real, allocatable :: bnd_aux(:,:)
 
+	!write(6,*) 'mod_bnd_adjust: ',nb,nbc_bnd
+
         ndim = nbc_bnd
 
         if( ndim == 0 ) then
@@ -66,22 +70,35 @@
         subroutine mod_bnd_reinit(nb)
 
         integer nb
+	integer nbb
 
 	real, allocatable :: bnd_aux(:,:)
+
+	!write(6,*) 'mod_bnd_reinit: ',nb,nbc_bnd
 
 	if( nb > nbc_bnd ) then
 	  write(6,*) 'nb,nbc_bnd: ',nb,nbc_bnd
 	  stop 'error stop mod_bnd_reinit: nb > nbc_bnd'
 	end if
 
-	allocate(bnd_aux(nbvdim,nb))
-	bnd_aux(:,1:nb) = bnd(:,1:nb)
+	nbb = nb
+	if( nbc_bnd == 0 ) then		!no boundary, also nb == 0
+	  nbb = 1
+	  nbc_bnd = nbb
+          allocate(bnd(nbvdim,nbb))
+	  bnd = 0
+	end if
 
-        call mod_bnd_init(nb)
+	allocate(bnd_aux(nbvdim,nbb))
+	bnd_aux(:,1:nbb) = bnd(:,1:nbb)
+
+        call mod_bnd_init(nbb)
 
 	bnd = 0
-	bnd(:,1:nb) = bnd_aux(:,1:nb)
+	bnd(:,1:nbb) = bnd_aux(:,1:nbb)
 	deallocate(bnd_aux)
+
+	nbc_bnd = nbb
 
         end subroutine mod_bnd_reinit
 

@@ -394,9 +394,13 @@ c checks if coordinates are lat/lon
 	end if
 
 	call shympi_gather_i(isphe)
-	isphe = 1
-	if( any(ival==0) ) isphe = 0
+	if( shympi_is_master() ) then
+	  !write(6,*) 'isphe mpi: ',my_id,ival
+	  isphe = 1
+	  if( any(ival==0) ) isphe = 0
+	end if
 	call shympi_bcast_i(isphe)
+	call shympi_syncronize
 
 	isphe_ev = isphe
 	init_ev = .true.
