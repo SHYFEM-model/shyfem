@@ -20,8 +20,6 @@ c 20.05.2015    ggu     new call to mklenkii to set up lenkiiv
 c
 c*****************************************************************
 
-c*****************************************************************
-
 	subroutine update_geom
 
 c updates geometrical array (ieltv)
@@ -52,10 +50,8 @@ c-------------------------------------------------------------
 
 c*****************************************************************
 
-c*****************************************************************
-c
         subroutine setnod
-c
+
 c sets (dynamic) array inodv
 c
 c inodv 
@@ -65,38 +61,28 @@ c       -1: boundary node
 c	-2: out of system
 c
 c if open boundary node, inodv(k) is number of boundary (ggu 15.11.2001)
-c
+
 	use mod_geom_dynamic
 	use evgeom
 	use basin
 
         implicit none
-c
-c parameter
-	real winmax
-	parameter(winmax=359.8)
-c common
-	include 'param.h'
-c local
+
+	double precision, parameter :: winmax = 359.99
         integer ie,ii,k,n
         integer ibc,ibtyp
 	integer nbc
-c functions
+        double precision winkv(nkn)
+
         integer ipext
 	integer itybnd,nkbnds,kbnds,nbnds
-c equivalence
-        real winkv(nkn)
 
-	ii = 0
-c
 c initialize array to hold angles
-c
-        do k=1,nkn
-          winkv(k)=0.
-        end do
-c
+
+	winkv = 0.
+
 c sum angles
-c
+
         do ie=1,nel
           if(iwegv(ie).eq.0) then !element is in system
             do ii=1,3
@@ -105,9 +91,9 @@ c
             end do
           end if
 	end do
-c
+
 c set up inodv
-c
+
         do k=1,nkn
           if(winkv(k).gt.winmax) then     !internal node
             inodv(k)=0
@@ -117,9 +103,9 @@ c
             inodv(k)=-1
           end if
         end do
-c
+
 c now mark open boundary nodes
-c
+
 	nbc = nbnds()
 
 	do ibc=1,nbc
@@ -138,7 +124,7 @@ c
             end do
           end if
         end do
-c
+
         return
    99   continue
         write(6,*) 'error for open boundary node'

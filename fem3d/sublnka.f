@@ -146,6 +146,8 @@ c checks various subroutines
 
 	integer k,n,ne,ipf,ipl,ibase
 	integer nl,i,ip,ie1,ie2,nn,k1,k2
+	integer nodes(maxlnk)
+	integer elems(maxlnk)
 
 c-------------------------------------------------------------
 c check element index
@@ -154,7 +156,7 @@ c-------------------------------------------------------------
 	do k=1,nkn
 	  call get_elem_linkp(k,ipf,ipl)
 	  call get_elem_links(k,n,ibase)
-	  call set_elem_links(k,ne)
+	  call get_elems_around(k,maxlnk,ne,elems)
 	  nl = ipl-ipf+1
 	  if( n .ne. ne .or. nl .ne. ne ) goto 99
 	  if( ipf .ne. ibase + 1 ) goto 96
@@ -163,7 +165,7 @@ c-------------------------------------------------------------
 	    ip = ipf + i - 1
 	    if( ibase + i .ne. ip ) goto 98
 	    ie1 = lenkv(ibase+i)
-	    ie2 = lnk_elems(i)
+	    ie2 = elems(i)
 	    if( ie1 .ne. ie2 ) goto 97
 	  end do
 	end do
@@ -175,7 +177,7 @@ c-------------------------------------------------------------
 	do k=1,nkn
 	  call get_node_linkp(k,ipf,ipl)
 	  call get_node_links(k,n,ibase)
-	  call set_node_links(k,nn)
+	  call get_nodes_around(k,maxlnk,nn,nodes)
 	  nl = ipl-ipf+1
 	  if( n .ne. nn .or. nl .ne. nn ) goto 89
 	  if( ipf .ne. ibase + 1 ) goto 86
@@ -184,7 +186,7 @@ c-------------------------------------------------------------
 	    ip = ipf + i - 1
 	    if( ibase + i .ne. ip ) goto 88
 	    k1 = linkv(ibase+i)
-	    k2 = lnk_nodes(i)
+	    k2 = nodes(i)
 	    if( k1 .ne. k2 ) goto 87
 	  end do
 	end do

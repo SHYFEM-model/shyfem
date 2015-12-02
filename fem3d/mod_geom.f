@@ -22,9 +22,6 @@
 	real, allocatable, save :: dxv(:)
 	real, allocatable, save :: dyv(:)
 
-	integer, allocatable, save :: lnk_nodes(:)
-	integer, allocatable, save :: lnk_elems(:)
-
 !==================================================================
 	contains
 !==================================================================
@@ -54,8 +51,6 @@
           deallocate(kantv)
           deallocate(dxv)
           deallocate(dyv)
-          deallocate(lnk_nodes)
-          deallocate(lnk_elems)
         end if
 
 	nlk = 3*nel + 2*nkn
@@ -76,8 +71,6 @@
         allocate(kantv(2,nkn))
         allocate(dxv(nkn))
         allocate(dyv(nkn))
-        allocate(lnk_nodes(ngr))
-        allocate(lnk_elems(ngr))
 
 	end subroutine mod_geom_init
 

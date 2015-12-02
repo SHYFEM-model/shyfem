@@ -339,14 +339,13 @@ c gets number of internal section in link index of k1
 
 	integer igtnsc
 	integer k1,k2
-
-	include 'param.h'
+	integer elems(maxlnk)
 
 	integer k,i,n,ie
 
 	integer knext,kbhnd
 
-	call set_elem_links(k1,n)
+	call get_elems_around(k1,maxlnk,n,elems)
 
 c	deal with no section given
 
@@ -357,7 +356,7 @@ c	section in the middle
 
 	do i=1,n
 	  igtnsc = i
-	  ie = lnk_elems(i)
+	  ie = elems(i)
 	  k = knext(k1,ie)
 	  if( k .eq. k2 ) return
 	end do
@@ -366,7 +365,7 @@ c	in case we are on the boundary
 
 	i = n
 	igtnsc = igtnsc + 1
-	ie = lnk_elems(i)
+	ie = elems(i)
 	k = kbhnd(k1,ie)
 	if( k .eq. k2 ) return
 
@@ -374,10 +373,10 @@ c	no node found
 
 	write(6,*) k1,k2
 	write(6,*) k1,n
-	write(6,*) (lnk_elems(i),i=1,n)
-	call set_elem_links(k2,n)
+	write(6,*) (elems(i),i=1,n)
+	call get_elems_around(k2,maxlnk,n,elems)
 	write(6,*) k2,n
-	write(6,*) (lnk_elems(i),i=1,n)
+	write(6,*) (elems(i),i=1,n)
 	stop 'error stop igtnsc: internal error (2)'
 	end
 	      

@@ -136,6 +136,7 @@ c tests for adjacency between nodes
 
 	logical iskadj
 	integer k1,k2
+	integer elems(maxlnk)
 
 	include 'param.h'
 
@@ -143,10 +144,10 @@ c tests for adjacency between nodes
 
 	iskadj = .true.
 
-	call set_elem_links(k1,n)
+	call get_elems_around(k1,maxlnk,n,elems)
 
 	do i = 1,n
-	  ie = lnk_elems(i)
+	  ie = elems(i)
 	  do ii=1,3
 	    if( nen3v(ii,ie) .eq. k2 ) return
 	  end do

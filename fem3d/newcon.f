@@ -748,15 +748,6 @@ c arguments
 	integer istot,isact
 c common
 	include 'femtime.h'
-	!include 'hydro_print.h'
-
-
- 
- 
-
-
-
-
 c local
 	logical bdebug,bdebug1,debug,btvdv
 	integer k,ie,ii,l,iii,ll,ibase
@@ -767,6 +758,7 @@ c local
 	integer kn(3)
         integer ip(3,3)
         integer n,i,ipp
+	integer elems(maxlnk)
         double precision mflux,qflux,cconz
 	double precision loading
 	double precision wws
@@ -831,7 +823,7 @@ c tvd
 c functions
 c	integer ipint,ieint
 	integer ipext
-
+	integer ithis
 
         if(nlv.ne.nlev) stop 'error stop conzstab: level'
 
@@ -1273,18 +1265,11 @@ c----------------------------------------------------------------
 ! cn(l),clow(l),chigh(l),cdiag(l) (one dimensional arrays over the vertical)
 
 	do k=1,nkn
-	  n = ilinkv(k+1)-ilinkv(k)
-	  ibase = ilinkv(k)
-	  if( lenkv(ibase+n) .le. 0 ) n = n - 1
+	  call get_elems_around(k,maxlnk,n,elems)
 	  ilevel = ilhkv(k)
 	  do i=1,n
-	    ie = lenkv(ibase+i)
-	    !ii = lenkiiv(ibase+i)
-	    !the next 4 lines are a hack, they will disappear in the new dist
-	    ii = 0
-	    if( nen3v(1,ie) == k ) ii = 1
-	    if( nen3v(2,ie) == k ) ii = 2
-	    if( nen3v(3,ie) == k ) ii = 3
+	    ie = elems(i)
+	    ii = ithis(k,ie)
 	    if( ii == 0 .or. nen3v(ii,ie) /= k ) then
 	      stop 'error stop: cannot find ii...'
 	    end if

@@ -138,6 +138,7 @@ c example: neibors of rdist=1 nodes have rdist=2 etc.
         integer k,kk,i
         integer n
         integer idact,idnew,nfound
+	integer nodes(maxlnk)
         real r,d,d2
 
 c----------------------------------------------------------
@@ -161,10 +162,10 @@ c----------------------------------------------------------
           do k=1,nkn
             if( idist(k) .eq. idact ) then
 
-	      call set_node_links(k,n)
+	      call get_nodes_around(k,maxlnk,n,nodes)
 
               do i=1,n
-                kk = lnk_nodes(i)
+                kk = nodes(i)
                 if( idist(kk) .eq. 0 ) then
                   idist(kk) = idnew
                   nfound = nfound + 1
@@ -235,6 +236,7 @@ c example: neibors of rdist=1 nodes have rdist=2 etc.
         integer k,kk,ka,i,ks
         integer n,na,nanew
         integer idact,idnew,nfound
+	integer nodes(maxlnk)
 	real r
 
 c----------------------------------------------------------
@@ -265,9 +267,9 @@ c----------------------------------------------------------
 	    do while( na .gt. 0 )
 	      do ka=1,nkn
                 if( idist(ka) .eq. na .and. rdist(ka) .ge. 0. ) then
-	          call set_node_links(ka,n)
+	          call get_nodes_around(ka,maxlnk,n,nodes)
                   do i=1,n
-                    kk = lnk_nodes(i)
+                    kk = nodes(i)
 		    r = 1. - (na-1)/float(nanew)
 		    r = int(r)
 		    r = max(0.,r)

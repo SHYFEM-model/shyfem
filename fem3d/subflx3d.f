@@ -42,7 +42,7 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	subroutine flx2d_k(k,istype,az,n,transp)
+	subroutine flx2d_k(k,istype,az,n,transp,ne,elems)
 
 c computes fluxes through finite volume k (2D version)
 c
@@ -67,12 +67,14 @@ c for a boundary node, transp(n) = 0
 	integer istype		!type of node (>1 => boundary node)
 	integer n		!dimension/size of transp (entry/return)
 	real transp(1)		!fluxes into elements (flux corrected, return) 
+	integer ne		!total number of elements in elems
+	integer elems(ne)	!elements around k
 
 	include 'param.h'
 
 
 	logical bdebug
-	integer i,ie,ii,ne,ndim
+	integer i,ie,ii,ndim
 	real aj,area,dz,dt
 	real dvdt,div
 	real uv,uvn,uvo
@@ -93,12 +95,6 @@ c---------------------------------------------------------
 	azt = 1. - az
 
 c---------------------------------------------------------
-c get pointer into link structure
-c---------------------------------------------------------
-
-	call set_elem_links(k,ne)
-
-c---------------------------------------------------------
 c initialize variables
 c---------------------------------------------------------
 
@@ -114,7 +110,7 @@ c computed transports are divergence corrected
 c---------------------------------------------------------
 
 	do i=1,ne
-	  ie = lnk_elems(i)
+	  ie = elems(i)
 	  ii = ithis(k,ie)
 	  b = ev(3+ii,ie)
 	  c = ev(6+ii,ie)
@@ -158,18 +154,14 @@ c passed in are pointers to these section in lnk structure
 	real az			!time weighting parameter
 	real flux		!flux computed (return)
 
-	integer ndim		!must be at least ngr
-	parameter (ndim=100)
-
-	include 'param.h'
-
 	logical bdebug
-	integer i,n
+	integer i,n,ne
 	real tt
 
-	real transp(ndim)
-	real weight(ndim)
-	real weight1(ndim)
+	integer elems(maxlnk)
+	real transp(maxlnk)
+	real weight(maxlnk)
+	real weight1(maxlnk)
 
 	bdebug = k .eq. 6615
 	bdebug = k .eq. 0
@@ -178,8 +170,9 @@ c---------------------------------------------------------
 c compute transport through finite volume k
 c---------------------------------------------------------
 
-	n = ndim
-	call flx2d_k(k,istype,az,n,transp)
+	n = maxlnk
+	call get_elems_around(k,maxlnk,ne,elems)
+	call flx2d_k(k,istype,az,n,transp,ne,elems)
 
 	if( bdebug ) then
 	  write(88,*) '2d ',k,n
@@ -217,7 +210,7 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	subroutine flx3d_k(k,istype,az,lkmax,n,transp)
+	subroutine flx3d_k(k,istype,az,lkmax,n,transp,ne,elems)
 
 c computes fluxes through finite volume k (3D version)
 c
@@ -243,9 +236,11 @@ c -> has been done - other sources of mfluxv (rain, etc.) are also eliminated
 	integer lkmax		!maximum layer in finite volume k (return)
 	integer n		!dimension/size of transp (entry/return)
 	real transp(nlvdi,1)	!computed fluxes (return)
+	integer ne		!total number of elements in elems
+	integer elems(ne)	!elements around k
 
 	logical bdebug
-	integer i,ie,ii,ne,ndim
+	integer i,ie,ii,ndim
 	integer l,lmax
 	real aj,area,dz,dt
 	real uv,uvn,uvo
@@ -271,12 +266,6 @@ c---------------------------------------------------------
 	azt = 1. - az
 
 c---------------------------------------------------------
-c get pointer into link structure
-c---------------------------------------------------------
-
-	call set_elem_links(k,ne)
-
-c---------------------------------------------------------
 c initialize variables
 c---------------------------------------------------------
 
@@ -299,7 +288,7 @@ c note: lkmax is always greater or equal than lmax
 c---------------------------------------------------------
 
 	do i=1,ne
-	  ie = lnk_elems(i)
+	  ie = elems(i)
 	  ii = ithis(k,ie)
 	  b = ev(3+ii,ie)
 	  c = ev(6+ii,ie)
@@ -358,12 +347,13 @@ c passed in are pointers to these section in lnk structure
 	real flux(nlvdi)	!computed fluxes (return)
 
 	logical bdebug
-	integer i,n
+	integer i,n,ne
 	integer l
 	real ttot
 
 	real tt(nlvdi)
 
+	integer elems(maxlnk)
 	real transp(nlvdi,ngr)
 	real weight(ngr)
 	real weight1(ngr)
@@ -375,8 +365,9 @@ c---------------------------------------------------------
 c compute transport through finite volume k
 c---------------------------------------------------------
 
-	n = ngr
-	call flx3d_k(k,istype,az,lkmax,n,transp)
+	n = maxlnk
+	call get_elems_around(k,maxlnk,ne,elems)
+	call flx3d_k(k,istype,az,lkmax,n,transp,ne,elems)
 
 	if( bdebug ) then
 	  write(88,*) '3d ',k,lkmax,n

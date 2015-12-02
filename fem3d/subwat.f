@@ -59,14 +59,15 @@ c local
 	real area
 	integer ie,i,ii,nl
 	integer ibase
+	integer elems(maxlnk)
 
 	integer ithis
 
-	call set_elem_links(k,nl)
+	call get_elems_around(k,maxlnk,nl,elems)
 
 	area=0.
 	do i=1,nl
-	  ie=lnk_elems(i)
+	  ie=elems(i)
 	  if(ie.le.0) stop 'error stop volnod: internal error'
 	  area=area+ev(10,ie)
 	end do
@@ -75,7 +76,7 @@ c local
 	dz=vol/area
 
 	do i=1,nl
-	  ie=lnk_elems(i)
+	  ie=elems(i)
 	  ii = ithis(k,ie)
 	  zenv(ii,ie)=zenv(ii,ie)+dz
 	  zeov(ii,ie)=zeov(ii,ie)+dz		!FIXME ?????
@@ -194,6 +195,7 @@ c common
 c local
 	integer ie,i,ii,nl
 	integer ibase
+	integer elems(maxlnk)
 	real depth
 	real area,vol,dvol,voltot,cnew
 	real massold,massnew
@@ -201,7 +203,7 @@ c local
 
 	integer ithis
 
-	call set_elem_links(k,nl)
+	call get_elems_around(k,maxlnk,nl,elems)
 
 	voltot = 0.
 	dvoltot = 0.
@@ -210,7 +212,7 @@ c local
 	massnew = 0.
 
 	do i=1,nl
-	  ie=lnk_elems(i)
+	  ie=elems(i)
 	  if(ie.le.0) stop 'error stop connod: internal error'
 	  ii = ithis(k,ie)
 	  area = 4. * ev(10,ie)
@@ -224,7 +226,7 @@ c local
 	end do
 
 	do i=1,nl
-	  ie=lnk_elems(i)
+	  ie=elems(i)
 	  ii = ithis(k,ie)
 	  coe(ii,ie) = cnew / voltot
 	end do
@@ -235,7 +237,7 @@ c	write(6,*) 'ggu1: ',massold,massnew,massnew-massold
 
 	massnew = 0.
 	do i=1,nl
-	  ie=lnk_elems(i)
+	  ie=elems(i)
 	  ii = ithis(k,ie)
 	  area = 4. * ev(10,ie)
 	  depth=hm3v(ii,ie)+zenv(ii,ie)		!$$lumpc
