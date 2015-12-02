@@ -142,6 +142,7 @@ c common
 c local
 	logical blink
 	integer ie,ii,i,nl
+	integer elems(maxlnk)
 	real area
 
 	blink = .true.
@@ -149,10 +150,10 @@ c local
 
 	if( blink ) then
 
-	  call set_elem_links(k,nl)
+	  call get_elems_around(k,maxlnk,nl,elems)
 
           do i=1,nl
-            ie=lnk_elems(i)
+            ie=elems(i)
             area=area+ev(10,ie)
           end do
 
@@ -199,6 +200,7 @@ c common
 c local
         real flux
         integer i,nl,ie,ii
+	integer elems(maxlnk)
         logical blink
 c function
         integer ithis
@@ -212,10 +214,10 @@ c statement function
 
         if( blink ) then
 
-	  call set_elem_links(k,nl)
+	  call get_elems_around(k,maxlnk,nl,elems)
 
           do i=1,nl
-            ie=lnk_elems(i)
+            ie=elems(i)
             ii=ithis(k,ie)
             flux = flux + fflux(ii,ie)
           end do

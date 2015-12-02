@@ -64,6 +64,7 @@ c common
 	include 'param.h'
 c local
         integer k,ie,n,i,ne
+	integer elems(maxlnk)
         logical bin
 c statement functions
         logical iskbnd,iskins,iseins
@@ -73,13 +74,13 @@ c statement functions
 
         nnod=0
         do k=1,nkn
-	  call set_elem_links(k,ne)
+	  call get_elems_around(k,maxlnk,ne,elems)
 
           n=0
-	  ie = lnk_elems(ne)
+	  ie = elems(ne)
           bin=iseins(ie)
           do i=1,ne
-	    ie = lnk_elems(i)
+	    ie = elems(i)
             if( iseins(ie) ) then
               if( .not. bin ) n=n+1
             end if
@@ -175,15 +176,16 @@ c common
 	include 'param.h'
 c local
         integer i,n,ie
+	integer elems(maxlnk)
         real w
 c functions
         integer ithis
 
-	call set_elem_links(k,n)
+	call get_elems_around(k,maxlnk,n,elems)
 
         w=0.
         do i=1,n
-          ie=lnk_elems(i)
+          ie=elems(i)
           if( iwegv(ie).eq.0 ) then
             w = w + ev(10+ithis(k,ie),ie)
           end if

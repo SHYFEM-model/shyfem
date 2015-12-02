@@ -18,13 +18,18 @@ c subroutine get_elem_linkp(k,ipf,ipl)	gets pointer to elements around k
 c subroutine get_node_linkp(k,ipf,ipl)	gets pointer to nodes around k
 c subroutine get_elem_links(k,n,ibase)	gets pointer to elements around k
 c subroutine get_node_links(k,n,ibase)	gets pointer to nodes around k
-c subroutine set_elem_links(k,n)	copies elements around k to lnk_elems
-c subroutine set_node_links(k,n)	copies nodes around k to lnk_nodes
+c
 c subroutine get_elems_around(k,ndim,n,elems) returns all elems around node k
 c subroutine get_nodes_around(k,ndim,n,nodes) returns all nodes around node k
 c
 c subroutine find_elems_to_segment(k1,k2,ie1,ie2) finds elements to segment
 c
+c notes :
+c
+c the preferred way to get nodes/elems around node k is through
+c	get_elems_around()
+c	get_nodes_around()
+c 
 c revision log :
 c
 c 01.08.2003	ggu	created from sublnk.f
@@ -35,6 +40,7 @@ c 28.08.2009	ggu	new routines get_elems_around, get_nodes_around
 c 09.09.2009	ggu	bug fix in find_elems_to_segment (BUGip2)
 c 20.10.2011	ggu	check dimension in set_elem_links(), set_node_links()
 c 16.12.2011	ggu	in lnk_elems at boundary set last value to 0
+c 02.12.2015	ggu	lnk_elems and lnk_nodes eliminated
 c
 c****************************************************************
 
@@ -129,7 +135,7 @@ c****************************************************************
 c
         function ithis(k,ie)
 c
-c gets i of k in ie
+c gets i of k in ie (might also use lenkiiv for this)
 c
 c k     actual node
 c ie    element
@@ -355,77 +361,6 @@ c       end do
 	ibase = ilinkv(k)
 
         end
-
-c****************************************************************
-
-	subroutine set_elem_links(k,n)
-
-c copies elements around k to lnk_elems (defined in links.h)
-c
-c to loop over the neibor elements, use similar:
-c
-c       call set_elem_links(k,n)
-c       do i=1,n
-c         ien = lnk_elems(ibase+i)          !ien is number of neibor element
-c       end do
-
-	use mod_geom
-
-	implicit none
-
-	integer k,n
-	integer i,ibase
-
-	include 'param.h'
-
-	n = ilinkv(k+1)-ilinkv(k)
-	ibase = ilinkv(k)
-
-	if( lenkv(ibase+n) .eq. 0 ) then
-	  lnk_elems(n) = 0
-	  n = n - 1
-	end if
-
-	if( n .gt. maxlnk ) stop 'error stop set_elem_links: maxlnk'
-
-	do i=1,n
-	  lnk_elems(i) = lenkv(ibase+i)
-	end do
-
-        end
-
-c****************************************************************
-
-	subroutine set_node_links(k,n)
-
-c copies nodes around k to lnk_nodes (defined in links.h)
-c
-c to loop over the neibor nodes, use similar:
-c
-c       call set_node_links(k,n)
-c       do i=1,n
-c         kn = lnk_nodes(ibase+i)          !kn is number of neibor node
-c       end do
-
-	use mod_geom
-
-	implicit none
-
-	integer k,n
-	integer i,ibase
-
-	include 'param.h'
-
-	n = ilinkv(k+1)-ilinkv(k)
-	ibase = ilinkv(k)
-
-	if( n .gt. maxlnk ) stop 'error stop set_node_links: maxlnk'
-
-	do i=1,n
-	  lnk_nodes(i) = linkv(ibase+i)
-	end do
-
-	end
 
 c****************************************************************
 

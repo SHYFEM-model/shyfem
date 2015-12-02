@@ -1,4 +1,10 @@
-
+!
+! module for boundary information
+!
+! revision log :
+!
+! 01.12.2015    ggu     ready to accept no open boundary (bug fix)
+!
 !==================================================================
         module mod_bnd
 !==================================================================

@@ -12,6 +12,7 @@ c 18.10.2005    ggu	more debug output, new routines get_link, get_lenk
 c 06.04.2009    ggu	changed nlidim to nlkddi
 c 30.03.2011    ggu	bverbose introduced
 c 30.05.2015    ggu	new subroutine mklenkii to compute lenkiiv
+c 02.12.2015    ggu	routines get_link() and get_lenk() deleted
 c
 c****************************************************************
 c****************************************************************
@@ -831,62 +832,6 @@ c------------------------------------------------------------------
 c-------------------------------------------------------------------
 c end of routine
 c-------------------------------------------------------------------
-
-	end
-
-c****************************************************************
-c****************************************************************
-c****************************************************************
-
-	subroutine get_link(k,ilinkv,linkv,n,ibase)
-
-c returns number of neibor-nodes and base pointer into linkv
-c
-c to loop over the neibor nodes, use similar:
-c
-c	call get_link(k,ilinkv,linkv,n,ibase)
-c	do i=1,n
-c	  kn = linkv(ibase+i)		!kn is number of neibor node
-c	end do
-
-	implicit none
-
-	integer k
-        integer ilinkv(1)
-        integer linkv(1)
-	integer n		!return
-	integer ibase		!return
-
-	n = ilinkv(k+1)-ilinkv(k)
-	ibase = ilinkv(k)
-
-	end
-
-c****************************************************************
-
-	subroutine get_lenk(k,ilinkv,lenkv,n,ibase)
-
-c returns number of neibor-elements and base pointer into lenkv
-c
-c to loop over the neibor elements, use similar:
-c
-c	call get_lenk(k,ilinkv,lenkv,n,ibase)
-c	do i=1,n
-c	  ien = lenkv(ibase+i)		!ien is number of neibor element
-c	end do
-
-	implicit none
-
-	integer k
-        integer ilinkv(1)
-        integer lenkv(1)
-	integer n		!return
-	integer ibase		!return
-
-	n = ilinkv(k+1)-ilinkv(k)
-	ibase = ilinkv(k)
-
-	if( lenkv(ibase+n) .le. 0 ) n = n - 1
 
 	end
 

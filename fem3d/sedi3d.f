@@ -3704,6 +3704,7 @@ c DOCS  END
         real saux,aaux,smm
 
         integer k,kn,n,ibase,i,l
+	integer nodes(maxlnk)
 
         if ( smooth .eq. 1.d0 ) return
 
@@ -3718,9 +3719,9 @@ c DOCS  END
 
           if (dabs(kdiff(k)).gt.1d-5) then
             if(ksl.ge.real(angrep)) smm = 0.5
-            call get_link(k,ilinkv,linkv,n,ibase)
+	    call get_nodes_around(k,maxlnk,n,nodes)
             do i = 1,n
-              kn = linkv(ibase+i)           !kn is number of neibor node
+              kn = nodes(i)           !kn is number of neibor node
               l = ilhkv(kn)
               area = areanode(l,kn)
               saux = saux + kvalue(kn)*area
