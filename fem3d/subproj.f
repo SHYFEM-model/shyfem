@@ -11,6 +11,7 @@
 ! 16.02.2011    ggu     new proj=4 (non standard UTM) implemented
 ! 18.11.2011    ggu     in CCP changed order of params in c_param
 ! 30.09.2015    ccf     introduced module projection
+! 03.12.2015    ggu     bug fix because arrays were defined length 1
 !
 ! usage :
 !
@@ -1190,8 +1191,8 @@
 
         integer, intent(in)  :: mode		! +1: cart to geo  -1: geo to cart
         integer, intent(in)  :: n		! number of points
-        real, intent(inout)  :: xc(1),yc(1)	! cartesian coordinates
-        real, intent(inout)  :: xg(1),yg(1)	! geographical coordinates
+        real, intent(inout)  :: xc(n),yc(n)	! cartesian coordinates
+        real, intent(inout)  :: xg(n),yg(n)	! geographical coordinates
 
         write(6,*) 'using projection = ',proj
 
@@ -1247,8 +1248,8 @@
         implicit none
 
         integer, intent(in) :: n
-        real, intent(in)    :: xs(1), ys(1)
-        real, intent(out)   :: xt(1), yt(1)
+        real, intent(in)    :: xs(n), ys(n)
+        real, intent(out)   :: xt(n), yt(n)
         external sub
 
         integer :: i

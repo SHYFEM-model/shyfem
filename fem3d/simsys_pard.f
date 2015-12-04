@@ -9,6 +9,7 @@ c******************************************************************
         subroutine system_initialize
 
 	use mod_system
+	use levels
 	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
@@ -20,7 +21,7 @@ c******************************************************************
         write(6,*) 'using Pardiso routines'
         write(6,*) '----------------------------------------'
 
-        call mod_system_init(nkn,nel,mbw)
+        call mod_system_init(nkn,nel,ngr,mbw,nlv)
 
         end
 
@@ -55,13 +56,13 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine system_assemble(n,m,kn,mass,rhs)
+	subroutine system_assemble(ie,n,m,kn,mass,rhs)
 
 	use mod_system
 
 	implicit none
 
-	integer n,m
+	integer ie,n,m
 	integer kn(3)
 	real mass(3,3)
 	real rhs(3)

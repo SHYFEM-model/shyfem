@@ -8,7 +8,195 @@ c
 c 31.01.2009    ggu     cleaned, only generic coo routines here
 c 29.03.2012    ggu     in loccoo avoid call to coo_find (speed)
 c 18.09.2015    ggu     bug fix in coo_init - do not set ip/jp for n==0
+c 04.12.2015    ggu     new approach for constructing matrix - also 3d
 c
+!******************************************************************
+
+	subroutine coo_init_new
+
+! construct pointers for co matrix
+!
+! 3d system will have size: nkn * (nlv+2)
+
+	use mod_system
+	use basin
+	use mod_geom
+	use levels
+
+	implicit none
+
+	logical bnohydro
+	integer k,n,i,ie,ii,m,l
+	integer kn(3),ki,kj,j
+	integer ipp,ipp0
+	integer nn
+	integer nodes(maxlnk+1)
+
+	integer loccoo3d
+
+	bnohydro = .true.
+
+!------------------------------------------------------------------
+! contruct grades
+!------------------------------------------------------------------
+
+	ntg(0) = 0
+	nt3g(0) = 0
+
+	do k=1,nkn
+	  call get_nodes_around(k,maxlnk,n,nodes)
+	  n = n + 1
+	  nodes(n) = k				!add diagonal node
+	  ng(k) = n
+	  ntg(k) = ntg(k-1) + n
+	  nn = (n-1)*nlv + 2 + 3*nlv		!3d entries in row k
+	  n3g(k) = nn
+	  nt3g(k) = nt3g(k-1) + nn
+	  call sort_int(n,nodes)
+	  iorder(1:n,k) = nodes(1:n)
+	  do i=1,n
+	    if( nodes(i) == k ) exit
+	  end do
+	  if( i > n ) goto 99
+	  diag(k) = i
+	end do
+
+!------------------------------------------------------------------
+! contruct 2d pointer
+!------------------------------------------------------------------
+
+	n2zero = ntg(nkn)	!set global 2d value
+	ijp_ie = 0
+
+	do ie=1,nel
+	  do ii=1,3
+	    kn(ii) = nen3v(ii,ie)
+	  end do
+	  do i=1,3
+	    ki = kn(i)				!row
+	    ipp0 = ntg(ki-1)			!last entry in row ki-1
+	    n = ng(ki)				!entries in row ki
+	    nodes(1:n) = iorder(1:n,ki)		!nodes of row ki
+	    do j=1,3
+	      kj = kn(j)			!col
+	      do m=1,n
+	        if( nodes(m) == kj ) exit	!find kj in nodes
+	      end do
+	      if( m > n ) goto 98
+	      ipp = ipp0 + m
+	      if( ipp > n2zero ) goto 97
+	      ijp_ie(i,j,ie) = ipp
+	      i2coo(ipp) = ki
+	      j2coo(ipp) = kj
+	    end do
+	  end do
+	end do
+
+	if( .not. bnohydro ) return
+
+!------------------------------------------------------------------
+! contruct 3d pointer
+!------------------------------------------------------------------
+
+	n3zero = (ntg(nkn)-nkn)*nlv + nkn*(2+3*nlv)	!set global 3d value
+	if( n3zero /= nt3g(nkn) ) goto 91
+	if( n3zero > n3max ) goto 91
+
+	do ie=1,nel
+	  do ii=1,3
+	    kn(ii) = nen3v(ii,ie)
+	  end do
+	  do i=1,3
+	    ki = kn(i)				!row
+	    do j=1,3
+	      kj = kn(j)			!col
+	      do l=1,nlv
+		ipp = loccoo3d(i,j,kn,l,ie)
+	        if( ipp > n3max ) goto 96
+	        i3coo(ipp) = (ki-1)*(nlv+2) + l + 1
+	        j3coo(ipp) = (kj-1)*(nlv+2) + l + 1
+	      end do
+	    end do
+	  end do
+	end do
+
+!------------------------------------------------------------------
+! end of routine
+!------------------------------------------------------------------
+
+	return
+   91	continue
+	write(6,*) n3zero,nt3g(nkn),n3max
+	stop 'error stop coo_init_new: internal error (5)'
+   96	continue
+	write(6,*) ipp,n3zero
+	stop 'error stop coo_init_new: internal error (4)'
+   97	continue
+	write(6,*) ipp,n2zero,i,j,ki,kj,n,m,nodes(1:n)
+	stop 'error stop coo_init_new: internal error (3)'
+   98	continue
+	write(6,*) n,kj,nodes(1:n)
+	stop 'error stop coo_init_new: internal error (2)'
+   99	continue
+	write(6,*) n,k,nodes(1:n)
+	stop 'error stop coo_init_new: internal error (1)'
+	end
+
+!******************************************************************
+
+	subroutine coo_adjust
+
+! adjusts zero values in matrix
+
+	use mod_system
+	use basin
+	use mod_geom
+	use levels
+
+	implicit none
+
+	integer ie,ii,k,i,j,l,ipp
+	integer kn(3)
+
+	integer loccoo3d
+
+!------------------------------------------------------------------
+! adjusts zero values in case not all layers are in system
+!------------------------------------------------------------------
+
+	do ie=1,nel
+	  do ii=1,3
+	    kn(ii) = nen3v(ii,ie)
+	  end do
+	  do i=1,3
+	    do j=1,3
+	      do l=1,nlv
+		ipp = loccoo3d(i,j,kn,l,ie)
+	        if( c3coo(ipp) == 0. ) then
+		  c3coo(ipp) = 1.
+		end if
+	      end do
+	    end do
+	  end do
+	end do
+
+!------------------------------------------------------------------
+! adjusts zero values for layer 0 and nlv+1
+!------------------------------------------------------------------
+
+	do k=1,nkn
+	  ipp = nt3g(k-1) + 1
+	  c3coo(ipp) = 1.
+	  ipp = nt3g(k)
+	  c3coo(ipp) = 1.
+	end do
+
+!------------------------------------------------------------------
+! end of routine
+!------------------------------------------------------------------
+
+	end
+
 !******************************************************************
 
 	subroutine coo_init(nnel,nnkn,mmbw,nnen3v,ndim,nnot0,iijp,ip,jp)
@@ -18,7 +206,6 @@ c
 	use mod_system
 
 	implicit none
-	include 'param.h'
 
 	integer nnel,nnkn,mmbw		!size of elements, nodes, bandwidth
 	integer nnen3v(3,1)		!element index
@@ -30,13 +217,8 @@ c
 
 	integer k,m,n,ie,ii,ii1,k1,k2
 
-	do k=1,nnkn
-	  do m=-mmbw,mmbw
-	    iijp(m,k) = 0
-	  end do
-	end do
-
 	n = 0
+	iijp = 0
 
 	do ie=1,nnel
 	  do ii=1,3
@@ -228,6 +410,36 @@ c
 	  
 !******************************************************************
 
+	function loccoo3d(i,j,kn,l,ie)
+
+c localize for COO routines
+
+	use mod_system
+
+	implicit none
+
+	integer loccoo3d		!position
+	integer i,j,l,ie		!row and col
+	integer kn(3)
+
+	integer ki,idiag,irel,icorr
+	integer ipp1,ipp2,ipp3
+
+	ki = kn(i)
+	ipp1 = nt3g(ki-1)		!before row i
+	ipp2 = 1 + (l-1) * (ng(ki)+2)	!in row i before level l
+	idiag = diag(ki)
+	irel = ijp_ie(i,j,ie) - ijp_ie(i,i,ie)	!diff kj - diag
+	icorr = 0
+	if( irel /= 0 ) icorr = irel/abs(irel)	!icorr is -1,0,+1
+	ipp3 = idiag + irel + icorr + 1	!1 is for 3 block
+
+	loccoo3d = ipp1 + ipp2 + ipp3
+
+	end
+
+!******************************************************************
+
 	function loccoo(i,j,nnkn,mmbw)
 
 c localize for COO routines
@@ -235,7 +447,6 @@ c localize for COO routines
 	use mod_system
 
 	implicit none
-	include 'param.h'
 
 	integer loccoo			!position
 	integer i,j			!row and col
@@ -244,10 +455,14 @@ c localize for COO routines
 
 	integer ip,loccoo1
 
+	stop 'error stop loccoo: do not call'
+
 	!loccoo = ijp(i-j,j)
-	ip = j*(2*mmbw+1)+i-j-mmbw
 	!ip = j*(2*mmbw)+i-mmbw
-	loccoo=ijp(ip)
+
+	!ip = j*(2*mmbw+1)+i-j-mmbw
+	!loccoo=ijp(ip)
+	loccoo = 0
 
 	!call coo_find(i,j,mmbw,ijp,loccoo1)
 

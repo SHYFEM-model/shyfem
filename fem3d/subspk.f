@@ -19,30 +19,40 @@ c*************************************************************************
 	use basin
 
       implicit none
-      include 'param.h'
 
-      integer n
+      integer n,i
+	integer nozero
+	integer nozero_max
 
-      integer icall_coo
-      data icall_coo /0/
-      save icall_coo
-
-      do n=1,nkn
-         rvec(n) = 0.
-         raux(n) = 0.
-      end do
+      integer, save :: icall_coo = 0
 
       if (icall_coo.eq.0) then		! only first time
+
+         !call coo_init(nel,nkn,mbw,nen3v,csrdim,nnzero,ijp,icoo,jcoo)
+
+	 call coo_init_new
+
+	 nnzero = n2zero
+
+	 if( n2zero > n2max ) then
+	   stop 'error stop spk_init_system: non zero 2d max'
+	 end if
+	 if( n3zero > n3max ) then
+	   stop 'error stop spk_init_system: non zero 3d max'
+	 end if
+
 	 write(6,*) 'SOLVER: Sparskit'
-         call coo_init(nel,nkn,mbw,nen3v,csrdim,nnzero,ijp,icoo,jcoo)
          print*, 'coo-matrix initialisation...'
-         print*, 'Number of non-zeros: ',nnzero
+         print*, 'Number of non-zeros: ',nnzero,n2max
+
          icall_coo=1
       end if
 
-      do n=1,nnzero
-         coo(n) = 0.
-      end do
+      rvec = 0.
+      raux = 0.
+      !coo = 0.
+      c2coo = 0.
+      c3coo = 0.
 
       end
 
@@ -108,7 +118,10 @@ c*************************************************************************
 
 !--------------------------------------------------
 ! CONVERSION AND SORTING
-      call coocsr(nkn,nnzero,coo,icoo,jcoo,csr,jcsr,icsr)
+!--------------------------------------------------
+
+      !call coocsr(nkn,nnzero,coo,icoo,jcoo,csr,jcsr,icsr)	!COOGGU
+      call coocsr(nkn,nnzero,c2coo,i2coo,j2coo,csr,jcsr,icsr)	!COOGGU
       
       if( nnzero .gt. csrdim .or. nkn+1 .gt. 2*csrdim ) goto 99
 

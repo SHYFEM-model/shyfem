@@ -25,6 +25,7 @@ c 22.10.2012    ggu     dxmin introduced to plot arrow every dxmin distance
 c 24.10.2012    ggu     bsmooth introduced for smooth bottom plotting
 c 05.03.2014    ggu     bug fix for reference vector
 c 22.12.2014    ggu     new routine integrate_flux()
+c 02.12.2015    ggu     bug fix in integrate_flux() - dx was used twice
 c
 c************************************************************************
 
@@ -1137,8 +1138,8 @@ c computes flux through section
 	    dh1 = ya(1,l) - ya(1,l-1)
 	    dh2 = ya(2,l) - ya(2,l-1)
 	    thick = 0.5 * dx * ( dh1 + dh2 )
-	    darea = darea + dx * thick
-	    acum = acum + thick * dx * value
+	    darea = darea + thick
+	    acum = acum + thick * value
 	  end do
 	end do
 
