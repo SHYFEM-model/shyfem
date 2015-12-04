@@ -1,7 +1,7 @@
 
 !*****************************************************************
 
-	subroutine shympi_elab
+	subroutine shympi_setup
 
 	use basin
 	use shympi
@@ -64,7 +64,7 @@
 
 	call shympi_syncronize
 
-	call ghost_buffer
+	call shympi_alloc_buffer(n_ghost_max)
 	call ghost_exchange
 
 	end
@@ -80,12 +80,17 @@
 
 	implicit none
 
+	integer ie,ii
+	real r,h
+
 	node_area = 0
 
 	if( nkn /= 225 .or. nel /= 384 ) then
-	  write(6,*) 'nkn,nel: ',nkn,nel
-	  write(6,*) 'expecting: ',225,384
-	  stop 'error stop make_domain_area: wrong basin'
+	  if( n_threads > 1 ) then
+	    write(6,*) 'nkn,nel: ',nkn,nel
+	    write(6,*) 'expecting: ',225,384
+	    stop 'error stop make_domain_area: wrong basin'
+	  end if
 	end if
 
 	if( n_threads == 1 ) then
@@ -100,6 +105,16 @@
 	  write(6,*) 'n_threads = ',n_threads
 	  stop 'error stop make_domain_area: cannot handle'
 	end if
+
+	do ie=1,nel
+	  do ii=1,3
+	    call random_number(r)
+	    h = 10.* r
+	    h = 2.* r
+	    hm3v(ii,ie) = h
+	    !write(6,*) ie,ii,r,h
+	  end do
+	end do
 
 	end
 
@@ -360,6 +375,8 @@
 
 	subroutine transfer_domain(n_lk,n_le,nindex,eindex)
 
+! transfers global domain to local domain
+
 	use basin
 	use shympi
 
@@ -472,6 +489,8 @@
 
 	subroutine ghost_make
 
+! makes list of ghost nodes
+
 	use basin
 	use shympi
 
@@ -480,6 +499,7 @@
 	integer nc,k,id,i,n,ncsmax,ia,ic,ie,ii,id1,id2
 	integer iaux(nkn)
 	integer, allocatable :: ncs(:)
+	integer, allocatable :: ga(:)
 
 !	--------------------------------------------------
 !	find total number of neibor ghost areas
@@ -503,8 +523,8 @@
 !	collect info on neibor ghost areas
 !	--------------------------------------------------
 
-	allocate(ghost_areas(4,n_ghost_areas))
-	ghost_areas = 0
+	allocate(ga(n_ghost_areas))	!temporary
+	ga = 0
 
 	i = 0
 	ncsmax = 0
@@ -512,7 +532,7 @@
 	  if( ncs(n) > 0 ) then
 	    i = i + 1
 	    ncsmax = max(ncsmax,ncs(n))
-	    ghost_areas(1,i) = n	!what id
+	    ga(i) = n	!what id
 	  end if
 	end do
 
@@ -524,7 +544,7 @@
 
 	ncsmax = 0
 	do ia=1,n_ghost_areas
-	  ic = ghost_areas(1,ia)
+	  ic = ga(ia)
 	  iaux = 0
 	  do ie=1,nel
 	    if( is_inner_elem(ie) ) cycle
@@ -561,7 +581,7 @@
 
 	ncsmax = 0
 	do ia=1,n_ghost_areas
-	  ic = ghost_areas(1,ia)
+	  ic = ga(ia)
 	  ncsmax = max(ncsmax,ncs(ic))
 	end do
 	n_ghost_elems_max = ncsmax
@@ -571,16 +591,9 @@
 !	--------------------------------------------------
 
 	n_ghost_max = max(n_ghost_nodes_max,n_ghost_elems_max)
-	ncsmax = n_ghost_max
-
-	allocate(ghost_nodes_out(ncsmax,n_ghost_areas))
-	ghost_nodes_out = 0
-
-	allocate(ghost_nodes_in(ncsmax,n_ghost_areas))
-	ghost_nodes_in = 0
-
-	allocate(ghost_elems(ncsmax,n_ghost_areas))
-	ghost_elems = 0
+	call shympi_alloc_ghost(n_ghost_max)
+	ghost_areas(1,:) = ga(:)
+	deallocate(ga)
 
 !	--------------------------------------------------
 !	set up list of outer ghost nodes
@@ -738,22 +751,108 @@
 	end
 
 !*****************************************************************
+!*****************************************************************
+!*****************************************************************
 
-	subroutine ghost_buffer
+	subroutine print_ghost_nodes_r(val,text)
 
 	use shympi
 	use basin
 
 	implicit none
 
-	allocate(i_buffer_in(n_ghost_max,n_ghost_areas))
-	allocate(i_buffer_out(n_ghost_max,n_ghost_areas))
+	real val(nkn)
+	character*(*) text
 
-	allocate(r_buffer_in(n_ghost_max,n_ghost_areas))
-	allocate(r_buffer_out(n_ghost_max,n_ghost_areas))
+	integer ia,ic,nc,k,i
+
+	write(my_unit,*) 'printing ghost nodes: ' // text
+	write(my_unit,*) 'n_ghost_areas = ',n_ghost_areas,my_id
+
+	do ia=1,n_ghost_areas
+	  ic = ghost_areas(1,ia)
+	  nc = ghost_areas(2,ia)
+	  write(my_unit,*) 'outer: ',ic,nc
+	  do i=1,nc
+	    k = ghost_nodes_out(i,ia)
+	    write(my_unit,*) k,ipv(k),val(k)
+	  end do
+	  nc = ghost_areas(3,ia)
+	  write(my_unit,*) 'inner: ',ic,nc
+	  do i=1,nc
+	    k = ghost_nodes_in(i,ia)
+	    write(my_unit,*) k,ipv(k),val(k)
+	  end do
+	end do
 
 	end
 
+!*****************************************************************
+
+	subroutine print_ghost_nodes_i(val,text)
+
+	use shympi
+	use basin
+
+	implicit none
+
+	integer val(nkn)
+	character*(*) text
+
+	integer ia,ic,nc,k,i
+
+	write(my_unit,*) 'printing ghost nodes: ' // text
+	write(my_unit,*) 'n_ghost_areas = ',n_ghost_areas,my_id
+
+	do ia=1,n_ghost_areas
+	  ic = ghost_areas(1,ia)
+	  nc = ghost_areas(2,ia)
+	  write(my_unit,*) 'outer: ',ic,nc
+	  do i=1,nc
+	    k = ghost_nodes_out(i,ia)
+	    write(my_unit,*) k,ipv(k),val(k)
+	  end do
+	  nc = ghost_areas(3,ia)
+	  write(my_unit,*) 'inner: ',ic,nc
+	  do i=1,nc
+	    k = ghost_nodes_in(i,ia)
+	    write(my_unit,*) k,ipv(k),val(k)
+	  end do
+	end do
+
+	end
+
+!*****************************************************************
+
+	subroutine print_ghost_elems_i(val,text)
+
+	use shympi
+	use basin
+
+	implicit none
+
+	integer val(nel)
+	character*(*) text
+
+	integer ia,ic,nc,k,i,ie
+
+	write(my_unit,*) 'printing ghost elems: ' // text
+	write(my_unit,*) 'n_ghost_areas = ',n_ghost_areas,my_id
+
+	do ia=1,n_ghost_areas
+	  ic = ghost_areas(1,ia)
+	  nc = ghost_areas(4,ia)
+	  write(my_unit,*) 'elems: ',ic,nc
+	  do i=1,nc
+	    ie = ghost_elems(i,ia)
+	    write(my_unit,*) ie,ipev(ie),val(ie)
+	  end do
+	end do
+
+	end
+
+!*****************************************************************
+!*****************************************************************
 !*****************************************************************
 
 	subroutine ghost_exchange
@@ -770,7 +869,7 @@
 	num_elems = ipev
 	num_nodes = ipv
 
-	call shympi_exchange_2d_elem_i(ipev)
+	!call shympi_exchange_2d_elem_i(ipev)
 	call shympi_exchange_2d_node_i(ipv)
 
 	call shympi_check_2d_elem_i(ipev,'ghost ipev')

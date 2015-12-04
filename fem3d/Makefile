@@ -148,7 +148,7 @@ MODULES = newlevels.o \
 		mod_bound_geom.o mod_bnd.o \
 		mod_tvd.o mod_bndo.o mod_system.o \
 		mod_layer_thickness.o \
-		mod_subset.o mod_lagrange.o
+		mod_subset.o mod_lagrange.o mod_random.o
 
 NEWOBJS = \
 	  new3di.o \

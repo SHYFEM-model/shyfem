@@ -182,7 +182,7 @@ c-----------------------------------------------------------
 	call cstfile				!read STR and basin
 
 	call shympi_init
-	call shympi_elab
+	call shympi_setup
 
 	call allocate_2d_arrays
 
@@ -212,7 +212,6 @@ c-----------------------------------------------------------
 	call adjust_spherical
 	call print_spherical
 	call handle_projection
-	if( bmpi ) call shympi_stop('mpi finished')
 	call set_geom
 	call domain_clusterization
 
@@ -228,7 +227,7 @@ c allocates arrays
 c-----------------------------------------------------------
 
 	call allocate_3d_arrays
-	call set_depth		!makes hev,hkv
+	call set_depth			!makes hev,hkv and exchanges
 
 	call check_point('checking ht 1')
 
@@ -236,7 +235,6 @@ c-----------------------------------------------------------
 c initialize barene data structures
 c-----------------------------------------------------------
 
-	call setweg(-1,n)
 	call setnod
 	call update_geom	!update ieltv - needs inodv
 
@@ -247,9 +245,9 @@ c-----------------------------------------------------------
 	call check_point('checking ht 2')
 
 	call get_date_time(date,time)
-	!call iff_init_global(nkn,nlv,ilhkv,hkv_max,hlv,date,time)
 	call iff_init_global(nkn,nel,nlv,ilhkv,ilhv
      +				,hkv_max,hev,hlv,date,time)
+	if( bmpi ) call shympi_stop('mpi finished')
 
 	call sp111(1)           !here zenv, utlnv, vtlnv are initialized
 

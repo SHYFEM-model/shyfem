@@ -1,17 +1,9 @@
+
+!==================================================================
         module mod_geom_dynamic
+!==================================================================
 
         implicit none
-
-	
-!       integer iwegv(neldim)
-!       common /iwegv/iwegv
-!       integer iwetv(neldim)
-!       common /iwetv/iwetv
-!       integer inodv(nkndim)
-!       common /inodv/inodv
-
-!	save /iwegv/,/iwetv/,/inodv/
-
 
 	integer, private, save :: nkn_geom_dynamic = 0
         integer, private, save :: nel_geom_dynamic = 0
@@ -20,9 +12,9 @@
 	integer, allocatable, save :: iwetv(:)
 	integer, allocatable, save :: inodv(:)
 
+!==================================================================
 	contains
-
-!******************************************************
+!==================================================================
 
 	subroutine mod_geom_dynamic_init(nkn,nel)
 
@@ -55,11 +47,15 @@
 	allocate(iwetv(nel))
 	allocate(inodv(nkn))
 	
+	iwegv = 0
+	iwetv = 0
+	inodv = 0
+
        	end subroutine mod_geom_dynamic_init	
 
-!*****************************************************
-
+!==================================================================
 	end module mod_geom_dynamic
+!==================================================================
 
 
 	

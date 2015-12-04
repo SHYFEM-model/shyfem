@@ -29,24 +29,23 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	blockdata sigma_out
+	module sigma_out
 
 	implicit none
 
-	include 'sigma.h'
+        integer, save :: nlv_com = -1
+        integer, save :: nsigma_com = -1
+        real, save :: hsigma_com = 10000.
 
-	data nlv_com,nsigma_com /-1,-1/
-	data hsigma_com /10000./
-
-	end
+	end module sigma_out
 
 c******************************************************************
 
 	subroutine check_sigma_initialized
 
-	implicit none
+	use sigma_out
 
-	include 'sigma.h'
+	implicit none
 
 	if( nlv_com .le. 0 ) then
 	  write(6,*) 'nlv_com: ',nlv_com
@@ -59,13 +58,13 @@ c******************************************************************
 
 	subroutine get_sigma_info(nlv,nsigma,hsigma)
 
+	use sigma_out
+
 	implicit none
 
 	integer nlv
 	integer nsigma
 	real hsigma
-
-	include 'sigma.h'
 
 	call check_sigma_initialized
 
@@ -79,13 +78,13 @@ c******************************************************************
 
 	subroutine set_sigma_info(nlv,nsigma,hsigma)
 
+	use sigma_out
+
 	implicit none
 
 	integer nlv
 	integer nsigma
 	real hsigma
-
-	include 'sigma.h'
 
 	nlv_com    = nlv
 	nsigma_com = nsigma

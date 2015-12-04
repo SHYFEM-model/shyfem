@@ -26,21 +26,56 @@ c updates geometrical array (ieltv)
 
 	use mod_geom
 	use mod_geom_dynamic
-	use basin, only : nkn,nel,ngr,mbw
+	!use basin, only : nkn,nel,ngr,mbw
+	use basin
+	use shympi
 
         implicit none
 
-c common
-	include 'param.h'
-
 c local
-        integer n
+        integer ie,ii
+	integer iaux(3,nel)
+	integer iiaux(nel)
+	integer i,ia,ic,nc
 
 c-------------------------------------------------------------
 c update ieltv
 c-------------------------------------------------------------
 
         call update_ielt(nel,inodv,ieltv)
+
+	return
+
+	iiaux(:) = ieltv(1,:)
+	call shympi_exchange_2d_elem(iiaux)
+	iaux(1,:) = iiaux(:)
+	iiaux(:) = ieltv(2,:)
+	call shympi_exchange_2d_elem(iiaux)
+	iaux(2,:) = iiaux(:)
+	iiaux(:) = ieltv(3,:)
+	call shympi_exchange_2d_elem(iiaux)
+	iaux(3,:) = iiaux(:)
+
+        write(my_unit,*) 'printing ghost elems: ' // 'ieltv'
+        write(my_unit,*) 'n_ghost_areas = ',n_ghost_areas,my_id
+
+        do ia=1,n_ghost_areas
+          ic = ghost_areas(1,ia)
+          nc = ghost_areas(4,ia)
+          write(my_unit,*) 'elems: ',ic,nc
+          do i=1,nc
+            ie = ghost_elems(i,ia)
+            write(my_unit,*) ie,ipev(ie),(ieltv(ii,ie),ii=1,3)
+          end do
+        end do
+
+	do ie=1,nel
+	  do ii=1,3
+	    if( ieltv(ii,ie) /= iaux(ii,ie) ) then
+	      write(my_unit,*) 'ieltv: ',ie,ieltv(ii,ie),iaux(ii,ie)
+	    end if
+	  end do
+	end do
 
 c-------------------------------------------------------------
 c end of routine
@@ -65,6 +100,7 @@ c if open boundary node, inodv(k) is number of boundary (ggu 15.11.2001)
 	use mod_geom_dynamic
 	use evgeom
 	use basin
+	use shympi
 
         implicit none
 
@@ -125,6 +161,8 @@ c now mark open boundary nodes
           end if
         end do
 
+	call shympi_exchange_2d_node(inodv)
+
         return
    99   continue
         write(6,*) 'error for open boundary node'
@@ -142,7 +180,6 @@ c now mark open boundary nodes
         stop 'error stop setnod : open boundary node'
         end
 
-c****************************************************************
 c****************************************************************
 c****************************************************************
 c****************************************************************

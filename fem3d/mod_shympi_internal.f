@@ -156,7 +156,7 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine shympi_exchange_internal_i(nlvddi,n,il
+	subroutine shympi_exchange_internal_i(belem,nlvddi,n,il
      +						,g_in,g_out,val)
 
 	use shympi
@@ -165,6 +165,7 @@
 
 	include "mpif.h"
 
+	logical belem
 	integer nlvddi,n
 	integer il(n)
 	integer g_in(n_ghost_max,n_ghost_areas)
@@ -174,14 +175,25 @@
 	integer tag,ir,ia,id
 	integer i,k,nc,ierr
 	integer nb
+	integer iout,iin
 
         tag=1234
 	ir = 0
 
+	iout = 2
+	iin = 3
+	if( belem ) then
+	  iout = 4
+	  iin = 4
+	end if
+
+	nb = nlvddi *  n_ghost_max
+	call shympi_alloc_buffer(nb)
+
 	do ia=1,n_ghost_areas
 	  ir = ir + 1
 	  id = ghost_areas(1,ia)
-	  nc = ghost_areas(2,ia)
+	  nc = ghost_areas(iout,ia)
 	  call count_buffer(nlvddi,n,nc,il,g_out(:,ia),nb)
 	  !write(6,*) 'ex1: ',my_id,ia,id,nc,n,nb
           call MPI_Irecv(i_buffer_out(:,ia),nb,MPI_INTEGER,id
@@ -191,7 +203,7 @@
 	do ia=1,n_ghost_areas
 	  ir = ir + 1
 	  id = ghost_areas(1,ia)
-	  nc = ghost_areas(3,ia)
+	  nc = ghost_areas(iin,ia)
 	  call to_buffer_i(nlvddi,n,nc,il
      +		,g_in(:,ia),val,nb,i_buffer_in(:,ia))
           call MPI_Isend(i_buffer_in(:,ia),nb,MPI_INTEGER,id
@@ -202,12 +214,79 @@
 
 	do ia=1,n_ghost_areas
 	  id = ghost_areas(1,ia)
-	  nc = ghost_areas(2,ia)
+	  nc = ghost_areas(iout,ia)
 	  call from_buffer_i(nlvddi,n,nc,il
      +		,g_out(:,ia),val,nb,i_buffer_out(:,ia))
 	end do
 
 	end subroutine shympi_exchange_internal_i
+
+!******************************************************************
+
+	subroutine shympi_exchange_internal_r(belem,nlvddi,n,il
+     +						,g_in,g_out,val)
+
+	use shympi
+
+	implicit none
+
+	include "mpif.h"
+
+	logical belem
+	integer nlvddi,n
+	integer il(n)
+	integer g_in(n_ghost_max,n_ghost_areas)
+	integer g_out(n_ghost_max,n_ghost_areas)
+	real val(nlvddi,n)
+
+	integer tag,ir,ia,id
+	integer i,k,nc,ierr
+	integer nb
+	integer iout,iin
+
+        tag=1234
+	ir = 0
+
+	iout = 2
+	iin = 3
+	if( belem ) then
+	  iout = 4
+	  iin = 4
+	end if
+
+	nb = nlvddi * n_ghost_max
+	call shympi_alloc_buffer(nb)
+
+	do ia=1,n_ghost_areas
+	  ir = ir + 1
+	  id = ghost_areas(1,ia)
+	  nc = ghost_areas(iout,ia)
+	  call count_buffer(nlvddi,n,nc,il,g_out(:,ia),nb)
+	  !write(6,*) 'ex1: ',my_id,ia,id,nc,n,nb
+          call MPI_Irecv(r_buffer_out(:,ia),nb,MPI_REAL,id
+     +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
+	end do
+
+	do ia=1,n_ghost_areas
+	  ir = ir + 1
+	  id = ghost_areas(1,ia)
+	  nc = ghost_areas(iin,ia)
+	  call to_buffer_r(nlvddi,n,nc,il
+     +		,g_in(:,ia),val,nb,r_buffer_in(:,ia))
+          call MPI_Isend(r_buffer_in(:,ia),nb,MPI_REAL,id
+     +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
+	end do
+
+        call MPI_WaitAll(ir,request,status,ierr)
+
+	do ia=1,n_ghost_areas
+	  id = ghost_areas(1,ia)
+	  nc = ghost_areas(iout,ia)
+	  call from_buffer_r(nlvddi,n,nc,il
+     +		,g_out(:,ia),val,nb,r_buffer_out(:,ia))
+	end do
+
+	end subroutine shympi_exchange_internal_r
 
 !******************************************************************
 
@@ -220,61 +299,6 @@
         stop 'error stop shympi_exchange_internal_d: not ready'
 
 	end subroutine shympi_exchange_internal_d
-
-!******************************************************************
-
-	subroutine shympi_exchange_internal_r(nlvddi,n,il
-     +						,g_in,g_out,val)
-
-	use shympi
-
-	implicit none
-
-	include "mpif.h"
-
-	integer nlvddi,n
-	integer il(n)
-	integer g_in(n_ghost_max,n_ghost_areas)
-	integer g_out(n_ghost_max,n_ghost_areas)
-	real val(nlvddi,n)
-
-	integer tag,ir,ia,id
-	integer i,k,nc,ierr
-	integer nb
-
-        tag=1234
-	ir = 0
-
-	do ia=1,n_ghost_areas
-	  ir = ir + 1
-	  id = ghost_areas(1,ia)
-	  nc = ghost_areas(2,ia)
-	  call count_buffer(nlvddi,n,nc,il,g_out(:,ia),nb)
-	  !write(6,*) 'ex1: ',my_id,ia,id,nc,n,nb
-          call MPI_Irecv(r_buffer_out(:,ia),nb,MPI_INTEGER,id
-     +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
-	end do
-
-	do ia=1,n_ghost_areas
-	  ir = ir + 1
-	  id = ghost_areas(1,ia)
-	  nc = ghost_areas(3,ia)
-!	  call to_buffer_r(nlvddi,n,nc,il
-!     +		,g_in(:,ia),val,nb,r_buffer_in(:,ia))
-          call MPI_Isend(r_buffer_in(:,ia),nb,MPI_INTEGER,id
-     +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
-	end do
-
-        call MPI_WaitAll(ir,request,status,ierr)
-
-	do ia=1,n_ghost_areas
-	  id = ghost_areas(1,ia)
-	  nc = ghost_areas(2,ia)
-!	  call from_buffer_r(nlvddi,n,nc,il
-!     +		,g_out(:,ia),val,nb,r_buffer_out(:,ia))
-	end do
-
-	end subroutine shympi_exchange_internal_r
 
 !******************************************************************
 !******************************************************************
@@ -313,6 +337,35 @@
         call MPI_BCAST(val,1,MPI_INT,0,MPI_COMM_WORLD,ierr)
 
         end subroutine shympi_bcast_i_internal
+
+!*******************************
+
+	subroutine shympi_reduce_r_internal(what,val)
+
+	implicit none
+
+	character*(*) what
+	real val
+
+	include "mpif.h"
+
+        integer ierr
+	real valout
+
+        if( what == 'min' ) then
+	  call MPI_ALLREDUCE(val,valout,1,MPI_REAL,MPI_MIN
+     +				,MPI_COMM_WORLD,ierr)
+	  val = valout
+        else if( what == 'max' ) then
+	  call MPI_ALLREDUCE(val,valout,1,MPI_REAL,MPI_MAX
+     +				,MPI_COMM_WORLD,ierr)
+	  val = valout
+        else
+          write(6,*) 'what = ',what
+          stop 'error stop shympi_reduce_r_internal: not ready'
+        end if
+
+	end subroutine shympi_reduce_r_internal
 
 !******************************************************************
 !******************************************************************

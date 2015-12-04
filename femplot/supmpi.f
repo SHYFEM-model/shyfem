@@ -32,3 +32,9 @@
 	subroutine mpi_gather
 	end
 
+	subroutine mpi_bcast
+	end
+
+	subroutine mpi_allreduce
+	end
+

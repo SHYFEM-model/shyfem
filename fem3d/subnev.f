@@ -84,6 +84,8 @@ c  1	spherical (lat/lon)
 	  allocate(ev(evdim,nel))
 	end if
 
+	ev = 0.
+
 	end subroutine ev_init
 
 !==================================================================

@@ -232,6 +232,8 @@ c check if all depth values are available
 	end
 
 c********************************************************************
+c********************************************************************
+c********************************************************************
 
         subroutine makehev(hev)
 
@@ -364,6 +366,8 @@ c-------------------------------------------------------
         end
 
 c********************************************************************
+c********************************************************************
+c********************************************************************
 
 	subroutine depadj(hmin,hmax,href)
 
@@ -375,23 +379,8 @@ c adjusts depth to reference and min/max values - only hm3v is changed
 
 	real hmin,hmax,href
 
-	include 'param.h'
-
 	integer iaux,ie,ii
 	real hmed
-
-c adjust depth to constant in element %%%%%%%%%%%%%%%%%%%%%%
-
-c        do ie=1,nel
-c          hmed=0.
-c          do ii=1,3
-c            hmed=hmed+hm3v(ii,ie)
-c          end do
-c          hmed=hmed/3.
-c          do ii=1,3
-c            hm3v(ii,ie)=hmed
-c          end do
-c        end do
 
 c adjust depth to minimum depth %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -471,6 +460,28 @@ c       call bocche     !FIXME
 	end
 
 c********************************************************************
+c********************************************************************
+c********************************************************************
+
+	subroutine get_hmax_global(hmax)
+
+	use basin
+	use shympi
+
+	implicit none
+
+	real hmax,haux(1)
+
+	haux(1) = maxval(hm3v)
+	call shympi_reduce_r('max',haux,hmax)
+
+	write(6,*) 'hmax: ',my_id,haux(1),hmax
+
+	end
+
+c********************************************************************
+c********************************************************************
+c********************************************************************
 
 	subroutine set_depth
 
@@ -495,19 +506,45 @@ c sets up depth arrays
 	call make_hev
 	call make_hkv
 
+	call exchange_depth
+
+	end
+
+c********************************************************************
+
+	subroutine exchange_depth
+
+c exchanges nodal depth values between domains
+
+	use mod_depth
+	use shympi
+	use basin
+	use mod_random
+
+	implicit none
+
+	call shympi_exchange_2d_node(hkv)
+	call shympi_exchange_2d_node(hkv_min)
+	call shympi_exchange_2d_node(hkv_max)
+
+	call shympi_check_2d_elem(hev,'hev')
+	call shympi_check_2d_node(hkv,'hkv')
+	call shympi_check_2d_node(hkv_min,'hkv_min')
+	call shympi_check_2d_node(hkv_max,'hkv_max')
+
 	end
 
 c********************************************************************
 
 	subroutine flatten_hm3v(hsigma)
 
+c flattens bottom below hsigma - only hsigma is used, hm3v is changed
+
 	use basin
 
 	implicit none
 
 	real hsigma
-
-	include 'param.h'
 
 	integer ie,ii
 	real hm
@@ -564,6 +601,8 @@ c adjusts elemental depth values
 
 	end
 
+c********************************************************************
+c********************************************************************
 c********************************************************************
 
 	subroutine adjourne_depth_from_hm3v

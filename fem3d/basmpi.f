@@ -60,7 +60,7 @@ c initialize modules
 c-----------------------------------------------------------------
 
 	call shympi_init
-	call shympi_elab
+	call shympi_setup
 	call shympi_stop('mpi finished')
 
 	call ev_init(nel)

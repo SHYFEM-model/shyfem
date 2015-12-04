@@ -102,6 +102,8 @@
 
 	subroutine shympi_exchange_internal_r(nlvddi,n,il,val)
 	
+	implicit none
+
 	integer nlvddi,n
 	integer il(n)
 	real val(nlvddi,n)
@@ -112,6 +114,8 @@
 
 	subroutine shympi_exchange_internal_d(nlvddi,n,il,val)
 	
+	implicit none
+
 	integer nlvddi,n
 	integer il(n)
 	double precision val(nlvddi,n)
@@ -120,5 +124,16 @@
 
 !******************************************************************
 !******************************************************************
+!******************************************************************
+
+        subroutine shympi_reduce_r_internal(what,val)
+        
+        implicit none
+
+        character*(*) what
+        real val
+
+        end subroutine shympi_reduce_r_internal
+
 !******************************************************************
 

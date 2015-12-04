@@ -765,7 +765,7 @@ c local
 	integer kn(3)
 	integer kk,ii,l,ju,jv
 	integer ngl,mbb
-	integer ilevel,ier,ilevmin
+	integer ilevel,ier
 	integer lp,lm
 	integer k1,k2,k3,k
 	real b(3),c(3)
@@ -830,7 +830,6 @@ c dimensions of vertical system
 c-------------------------------------------------------------
 
 	ilevel=ilhv(ie)
-	!ilevmin=ilmv(ie)
 	ngl=2*ilevel
 	mbb=2
 	if(ngl.eq.2) mbb=1

@@ -137,14 +137,11 @@
         mode = -1		!from lat/lon to cartesian
         iproj = 3		!always use cpp
 
-        !xmin = MINVAL(xgv)
-        !ymin = MINVAL(ygv)
-        !xmax = MAXVAL(xgv)
-        !ymax = MAXVAL(ygv)
 	call shympi_reduce_r('min',xgv,xmin)
 	call shympi_reduce_r('min',ygv,ymin)
 	call shympi_reduce_r('max',xgv,xmax)
 	call shympi_reduce_r('max',ygv,ymax)
+
 	write(6,*) 'min/max: ',xmin,ymin,xmax,ymax
 
         c_phi  = 0.5*(ymax-ymin)
@@ -261,6 +258,8 @@
         else			!cartesian -> lat/lon
             call proj_cart2geo
         end if
+
+! check results - values must be equal over domains
 
 	call shympi_check_2d_node(xgeov,'xgeov')
 	call shympi_check_2d_node(ygeov,'ygeov')

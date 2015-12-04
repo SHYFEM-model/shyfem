@@ -83,6 +83,8 @@ c set up time independent vertical vectors
 	include 'param.h'
 
 	integer nlv_est,nlv_read,nlv_final
+	integer nlv_e,nlv_k
+	real hmax
 	real, allocatable :: hlv_aux(:)
 
 	write(6,*) 'setting up vertical structure'
@@ -91,8 +93,11 @@ c------------------------------------------------------------------
 c sanity check
 c------------------------------------------------------------------
 
+	call get_hmax_global(hmax)
+	write(6,*) 'maximum depth: ',hmax
+
 	nlv_est = nlv
-	call estimate_nlv(nlv_est)
+	call estimate_nlv(nlv_est,hmax)
 	write(6,*) 'nlv,nlv_est,nlvdi: ',nlv,nlv_est,nlvdi
 
 	call check_nlv
@@ -112,7 +117,7 @@ c------------------------------------------------------------------
 c levels read in from $levels section
 c------------------------------------------------------------------
 
-	call adjust_levels	!sets hlv, hldv, nlv
+	call adjust_levels(hmax)	!sets hlv, hldv, nlv, sigma_info, etc.
 
 c------------------------------------------------------------------
 c set up layer vectors
@@ -121,14 +126,23 @@ c------------------------------------------------------------------
 	call set_ilhv		!sets nlv, ilhv (elemental)
 	call set_last_layer	!adjusts nlv, ilhv, hm3v
 	call set_ilhkv		!sets ilhkv (nodal)
-	call set_min_levels	!sets ilmkv and ilmv
+	call set_ilmkv		!sets ilmkv (nodal)
+	call exchange_levels	!copies from other domains and sets nlv
+	call set_ilmv		!sets ilmv (elemental)
+
+c------------------------------------------------------------------
+c compute final nlv
+c------------------------------------------------------------------
+
+	nlv_e = maxval(ilhv)
+	nlv_k = maxval(ilhkv)
+	nlv = max(nlv_e,nlv_k)
 
 c------------------------------------------------------------------
 c check data structure
 c------------------------------------------------------------------
 
 	nlv_final = nlv
-	!nlv_final = nlvdim		!to be removed later
 	call levels_reinit(nlv_final)
 
 	call check_vertical
@@ -253,12 +267,20 @@ c*****************************************************************
 
 c checks arrays containing vertical structure
 
+	use levels
+	use shympi
+
 	implicit none
 
 	call check_nlv
 	call check_hlv
 	call check_levels
 	call check_ilevels
+
+	call shympi_check_2d_node(ilhkv,'ilhkv')
+	call shympi_check_2d_node(ilmkv,'ilmkv')
+	call shympi_check_2d_elem(ilhv,'ilhv')
+	call shympi_check_2d_elem(ilmv,'ilmv')
 
 	end
 
@@ -289,12 +311,7 @@ c checks nlv and associated parameters
 
 	implicit none
 
-	include 'param.h'
-
-
-	write(6,*) 'check_nlv : '
-	write(6,*) '    nlvdi : ',nlvdi
-	write(6,*) '      nlv : ',nlv
+	write(6,*) 'check_nlv : ',nlvdi,nlv
 
 	if(nlv.gt.nlvdi) stop 'error stop check_nlv: level dimension'
 
@@ -302,7 +319,7 @@ c checks nlv and associated parameters
 
 c*****************************************************************
 
-	subroutine estimate_nlv(nlv_est)
+	subroutine estimate_nlv(nlv_est,hmax)
 
 c estimates maximum value for nlv
 
@@ -311,23 +328,15 @@ c estimates maximum value for nlv
 	implicit none
 
 	integer nlv_est		!nlv_read on entry, estimate on return
+	real hmax		!maximum depth
 
 	include 'param.h'
 
 	integer ie,ii
 	integer nsigma,nreg
-	real hsigma,hmax,dzreg
+	real hsigma,dzreg
 
 	real getpar
-
-	hmax = 0.
-	do ie=1,nel
-	  do ii=1,3
-	    hmax = max(hmax,hm3v(ii,ie))
-	  end do
-	end do
-
-	write(6,*) 'maximum depth: ',hmax
 
 	dzreg = getpar('dzreg')
 	call get_sigma(nsigma,hsigma)
@@ -343,7 +352,7 @@ c estimates maximum value for nlv
 
 c*****************************************************************
 
-	subroutine adjust_levels
+	subroutine adjust_levels(hmax)
 
 c adjusts levels read in from $levels section
 c
@@ -372,31 +381,16 @@ c sigma and zeta levels and hsigma	hybrid levels
 
 	implicit none
 
-c common
-	include 'param.h'
+	real hmax
 
-c local
 	logical bsigma,bhybrid,bzeta
 	integer l,ie,ii,nsigma,second
-	real dzreg,hl,fact,hsigma
-	real hmax,hbot,htop
+	real dzreg,h,hl,fact,hsigma
+	real hbot,htop
 
 	real getpar
 
 	write(6,*) 'adjust layer structure'
-
-c--------------------------------------------------------------
-c get maximum depth
-c--------------------------------------------------------------
-
-	hmax = 0.
-	do ie=1,nel
-	  do ii=1,3
-	    hmax = max(hmax,hm3v(ii,ie))
-	  end do
-	end do
-
-	write(6,*) 'maximum depth: ',hmax
 
 c--------------------------------------------------------------
 c create hlv values
@@ -416,6 +410,7 @@ c--------------------------------------------------------------
 	if( nlv .le. 0 ) then		! hlv not set -> must set
 
 	  if( bsigma ) then		!sigma layers
+	    if( nsigma > nlvdi ) goto 86
 	    call make_sigma_levels(nsigma,hlv)
 	    nlv = nsigma
 	  end if
@@ -466,10 +461,9 @@ c--------------------------------------------------------------
 	    if( bzeta ) goto 97
 	    if( .not. bhybrid ) goto 88
 	    do l=2,nlv
-	      if( hlv(l) .gt. hlv(l-1) ) goto 1
+	      if( hlv(l) .gt. hlv(l-1) ) exit
 	    end do
-	    goto 93
-    1	    continue
+	    if( l > nlv ) goto 93	!not found
 	    if( hlv(l-1) .eq. -1. ) then
 	      nsigma = l-1
 	      hlv(l-1) = hsigma
@@ -514,6 +508,9 @@ c--------------------------------------------------------------
 c check hlv and hldv values
 c--------------------------------------------------------------
 
+	hbot = hlv(nlv)
+	if( hbot /= -1. .and. hmax > hbot ) goto 87
+
 	call check_levels
 
 	write(6,*) 'finished adjusting layer structure ',nlv
@@ -523,6 +520,12 @@ c end of routine
 c--------------------------------------------------------------
 
 	return
+   86	continue
+	write(6,*) 'nsigma,nlvdi: ',nsigma,nlvdi
+	stop 'error stop adjust_levels: dimension too small'
+   87	continue
+	write(6,*) 'nlv,hlv(nlv),hmax: ',nlv,hlv(nlv),hmax
+	stop 'error stop adjust_levels: hlv too low'
    88	continue
 	write(6,*) 'hsigma: ',hsigma
 	write(6,*) 'for hybrid levels hsigma must be set'
@@ -658,6 +661,22 @@ c--------------------------------------------------------------
 
 c*****************************************************************
 
+	subroutine exchange_levels
+
+c exchanges level info with other domains - sets nlv
+
+	use levels
+	use shympi
+
+	implicit none
+
+	call shympi_exchange_2d_node_i(ilhkv)
+	call shympi_exchange_2d_node_i(ilmkv)
+
+	end
+
+c*****************************************************************
+
 	subroutine set_ilhv
 
 c sets nlv and ilhv - only needs hm3v and hlv, hev is temporary array
@@ -667,17 +686,12 @@ c sets nlv and ilhv - only needs hm3v and hlv, hev is temporary array
 
 	implicit none
 
-	include 'param.h'
-
-c local
 	logical bsigma
 	integer ie,ii,l,lmax,nsigma
 	real hsigma
 
 	real h,hmax,hm
 	real hev(nel)		!local
-	!double precision h,hmax,hm
-	!double precision hev(nel)		!local
 
 	lmax=0
 	hmax = 0.
@@ -699,7 +713,7 @@ c local
 
 	  h=hev(ie)
 
-	  if( bsigma .and. h .le. hsigma ) then
+	  if( bsigma .and. h .le. hsigma ) then		!only sigma levels
 	    l = nsigma
 	  else
 	    do l=nsigma+1,nlv
@@ -740,8 +754,6 @@ c set ilhkv array - only needs ilhv
 
 	implicit none
 
-	include 'param.h'
-
 	integer ie,ii,k,l
 
 	do k=1,nkn
@@ -756,33 +768,23 @@ c set ilhkv array - only needs ilhv
 	  end do
 	end do
 
-	!do k=1,nkn
-	!  if( ilhkv(k) .eq. 2 ) then
-	!    write(6,*) '2 layer node: ',k,ilhkv(k)
-	!  end if
-	!end do
-
 	end
 
 c*****************************************************************
 
-	subroutine set_min_levels
+	subroutine set_ilmkv
 
-c set minimum number of levels for node and element
+c set minimum number of levels for node
 
 	use levels
 	use basin
 
 	implicit none
 
-	include 'param.h'
-
 	integer ie,ii,k,l
 	integer lmin,lmax
 
-	do k=1,nkn
-	  ilmkv(k) = 99999
-	end do
+	ilmkv = huge(1)
 
 	do ie=1,nel
 	  l=ilhv(ie)
@@ -798,18 +800,30 @@ c set minimum number of levels for node and element
 	  if( lmin .gt. lmax .or. lmin .le. 0 ) then
 	    stop 'error stop set_min_levels: lmin'
 	  end if
-	  !write(6,*) 'set_min_levels (nodes): ',k,lmin,lmax
 	end do
+
+	end
+
+c*****************************************************************
+
+	subroutine set_ilmv
+
+c set minimum number of levels for elems
+
+	use levels
+	use basin
+
+	implicit none
+
+	integer ie,ii,k,lmin
 
 	do ie=1,nel
 	  lmin = 99999
-	  lmax = ilhv(ie)
 	  do ii=1,3
 	    k=nen3v(ii,ie)
 	    if(lmin.gt.ilmkv(k)) lmin = ilmkv(k)
 	  end do
 	  ilmv(ie) = lmin
-	  !write(6,*) 'set_min_levels (elems): ',ie,lmin,lmax
 	end do
 
 	end
@@ -825,9 +839,6 @@ c checks arrays ilhv and ilhkv
 
 	implicit none
 
-
-	include 'param.h'
-
 	logical bsigma,bspure
 	integer nsigma
 	integer ie,ii,k,lmax,lk
@@ -839,10 +850,10 @@ c checks arrays ilhv and ilhkv
 	hmax = 0.
 	do ie=1,nel
 	  lmax = ilhv(ie)
+	  if( lmax .le. 0 ) goto 99
 	  do ii=1,3
 	    hmax = max(hmax,hm3v(ii,ie))
 	  end do
-	  if( lmax .le. 0 ) goto 99
 	end do
 
 	bspure = bsigma .and. hmax .le. hsigma	!pure sigma coordinates

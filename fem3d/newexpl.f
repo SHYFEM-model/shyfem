@@ -749,7 +749,7 @@ c cannot use this for sigma levels
 
 
 	logical bsigma
-        integer k,l,ie,ii,lmax,lmin
+        integer k,l,ie,ii,lmax
         double precision hlayer,hhi
         double precision xbcl,ybcl
         double precision raux,rhop,presbcx,presbcy
@@ -765,7 +765,6 @@ c cannot use this for sigma levels
         do ie=1,nel
           presbcx = 0.
           presbcy = 0.
-	  lmin = ilmv(ie)
           lmax = ilhv(ie)
           do l=1,lmax
             hhi = hdeov(l,ie)
@@ -818,7 +817,7 @@ c do not use this routine !
 	include 'pkonst.h'
 
 
-        integer k,l,ie,ii,lmax,lmin
+        integer k,l,ie,ii,lmax
         double precision hlayer,hhi
         double precision xbcl,ybcl
         double precision raux,rhop,presbcx,presbcy
@@ -834,7 +833,6 @@ c do not use this routine !
         do ie=1,nel
           presbcx = 0.
           presbcy = 0.
-	  lmin = ilmv(ie)
           lmax = ilhv(ie)
 
 	  px(0) = presbcx
@@ -916,7 +914,7 @@ c---------- DEB SIG
 c---------- DEB SIG
 
 	logical bsigma,bsigadjust
-        integer k,l,ie,ii,lmax,lmin,nsigma
+        integer k,l,ie,ii,lmax,nsigma
 	real hsigma,hdep
         double precision hlayer,hint,hhk,hh,hhup,htint
 	double precision dzdx,dzdy,zk
@@ -956,7 +954,6 @@ c---------- DEB SIG
         do ie=1,nel
           presbcx = 0.
           presbcy = 0.
-	  lmin = ilmv(ie)
           lmax = ilhv(ie)
 	  brup=0.
 	  crup=0.

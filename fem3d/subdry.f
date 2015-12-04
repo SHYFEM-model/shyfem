@@ -582,6 +582,7 @@ c sets array znv from zenv
 	use mod_hydro
 	use evgeom
 	use basin
+	use shympi
 
         implicit none
 
@@ -641,6 +642,12 @@ c-------------------------------------------------------------
 	    znv(k) = v1v(k) / v2v(k)
 	  end if
 	end do
+
+c-------------------------------------------------------------
+c exchange znv
+c-------------------------------------------------------------
+
+	call shympi_exchange_2d_node(znv)
 
 c-------------------------------------------------------------
 c write debug status
