@@ -326,7 +326,7 @@ c        call bclevvar_ini       	!chao debora
 
 	call system_initialize		!matrix inversion routines
 
-	call poisson_2d
+	call poisson_compute
 
 	call offline(2)
 	call offline(1)

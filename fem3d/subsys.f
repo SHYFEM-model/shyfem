@@ -867,6 +867,8 @@ cc custom call
 	call addpar('ishyff',0.)	!shyfem file format
 					!0=old 1=new 2=both
 
+	call addpar('ipoiss',0.)	!solve poisson equation
+
 cc rain
 
 	call addpar('zdist',0.)		!distributed water level

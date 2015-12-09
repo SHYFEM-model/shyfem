@@ -22,7 +22,6 @@
 	integer, save :: iprec = 0
 	integer, save :: nthpard = 8	! Number of threads for Pardiso solver
 	integer, save :: csrdim = 0
-	integer, save :: nnzero = 0	!old - should be eliminated
 
 	integer, save :: n2zero = 0
 	integer, save :: n3zero = 0
@@ -30,7 +29,6 @@
 	integer, save :: n3max = 0
 
         double precision, allocatable, save :: vs1v(:)
-        double precision, allocatable, save :: vs2v(:)
         double precision, allocatable, save :: vs3v(:)
         integer, allocatable, save :: is2v(:)
 
@@ -58,6 +56,8 @@
         integer, allocatable, save :: j3coo(:)
         double precision, allocatable, save :: c3coo(:)
 
+        integer, allocatable, save :: back3coo(:,:)
+
         double precision, allocatable, save :: amat(:)
 
         double precision, parameter :: d_tiny = tiny(1.d+0)
@@ -75,7 +75,7 @@
         integer  :: mbw
         integer  :: nlv
 
-        integer  :: csr,mat
+	integer ngl
 
         if( mbw == mbw_system .and. nel == nel_system .and.
      +      nkn == nkn_system .and. ngr == ngr_system ) return
@@ -88,26 +88,25 @@
         end if
 
         if( nkn_system > 0 ) then
-          deallocate(vs1v)
-          deallocate(vs2v)
+          deallocate(vs1v)			!next three only used in lp
           deallocate(vs3v)
           deallocate(is2v)
+
           deallocate(rvec)
           deallocate(raux)
-
-          !deallocate(coo)
-          !deallocate(icoo)
-          !deallocate(jcoo)
-          !deallocate(ijp)
 
 	  deallocate(ng,ntg,n3g,nt3g,diag)
 	  deallocate(iorder)			!prob not needed
 	  deallocate(ijp_ie)
+
           deallocate(i2coo)
           deallocate(j2coo)
+          deallocate(c2coo)
+
           deallocate(i3coo)
           deallocate(j3coo)
           deallocate(c3coo)
+          deallocate(back3coo)
         end if
 
         nkn_system = nkn
@@ -120,25 +119,20 @@
 	n3max = 6*nkn*nlv + nkn*(2+3*nlv)
 	if( .not. bsys3d ) n3max = 1
 
-	csrdim = 9 * nel		!old
+	!csrdim = 9 * nel		!old
 	csrdim = n2max
 
-	csr = csrdim
-	mat = nkn*(1+3*mbw)
+	ngl = nkn
+	if( bsys3d ) ngl = nkn*(nlv+2)
 
         if( nkn == 0 ) return
 
         allocate(vs1v(nkn))
-        allocate(vs2v(nkn))
         allocate(vs3v(nkn))
         allocate(is2v(nkn))
-        allocate(rvec(nkn))
-        allocate(raux(nkn))
 
-        !allocate(coo(csr))		!old arrays - do not use
-        !allocate(icoo(csr))
-        !allocate(jcoo(csr))
-        !allocate(ijp(mat))
+        allocate(rvec(ngl))
+        allocate(raux(ngl))
 
         allocate(ng(nkn))
         allocate(ntg(0:nkn))
@@ -155,6 +149,7 @@
         allocate(i3coo(n3max))
         allocate(j3coo(n3max))
         allocate(c3coo(n3max))
+        allocate(back3coo(3,n3max))
 
         end subroutine mod_system_init
 
