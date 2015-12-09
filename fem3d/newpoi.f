@@ -389,17 +389,47 @@ c******************************************************************
 	include 'mkonst.h'
 
 	integer k
+	integer ipoiss
+	real bnd
+	real getpar
+
+	ipoiss = nint(getpar('ipoiss'))
 
 	pvar = flag
 
 	do k=1,nkn
-          if( ipv(k) .ge. 1 .and. ipv(k) .le. 9 ) then
-	    pvar(:,k) = 10.
-          else if( ipv(k) .ge. 3601 .and. ipv(k) .le. 3609 ) then
-          !else if( ipv(k) .ge. 217 .and. ipv(k) .le. 225 ) then
-	    pvar(:,k) = 20.
+	  bnd = 0.
+	  if( ipoiss == 1 ) then
+            if( ipv(k) .ge. 1 .and. ipv(k) .le. 9 ) then
+		bnd = 10.
+            else if( ipv(k) .ge. 3601 .and. ipv(k) .le. 3609 ) then
+		bnd = 20.
+	    end if
+	  else if( ipoiss == 2 ) then
+            if( ipv(k) .ge. 1 .and. ipv(k) .le. 9 ) then
+		bnd = 10.
+            else if( ipv(k) .ge. 217 .and. ipv(k) .le. 225 ) then
+		bnd = 20.
+	    end if
+	  else if( ipoiss == 3 ) then
+            if( ipv(k) .ge. 1 .and. ipv(k) .le. 2 ) then
+		bnd = 10.
+            else if( ipv(k) .ge. 5 .and. ipv(k) .le. 6 ) then
+		bnd = 20.
+	    end if
+	  else if( ipoiss == 4 ) then
+            if( ipv(k) .ge. 1 .and. ipv(k) .le. 2 ) then
+		bnd = 10.
+            else if( ipv(k) .ge. 7 .and. ipv(k) .le. 8 ) then
+		bnd = 20.
+	    end if
+	  else
+	    write(6,*) 'ipoiss = ',ipoiss
+	    stop 'error stop poisson_set_obc'
 	  end if
+	  if( bnd /= 0. ) pvar(:,k) = bnd
 	end do
+	write(6,*) 'poisson boundary: ',pvar
 
 	end
 
@@ -421,6 +451,8 @@ c******************************************************************
 	l = (nlvdi+1)/2
 	iu = 635
 	if( nlvdi /= 1 ) iu = 666
+
+	write(6,*) 'poisson writing: ',nlvdi,l,iu,nkn
 
         do k = 1,nkn
           if ( xgv(k) .eq. 0.0 ) then

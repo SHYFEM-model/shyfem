@@ -270,14 +270,14 @@ c checks important variables
 	call check2Dr(3,3,nel,zeov,-10.,+10.,text,'zeov')
 	call check2Dr(3,3,nel,zenv,-10.,+10.,text,'zenv')
 
-	call check1Dr(nkn,unv,-10000.,+10000.,text,'unv')
-	call check1Dr(nkn,vnv,-10000.,+10000.,text,'vnv')
+	call check1Dr(nel,unv,-10000.,+10000.,text,'unv')
+	call check1Dr(nel,vnv,-10000.,+10000.,text,'vnv')
 
-	call check2Dr(nlvdi,nlv,nkn,utlnv,-10000.,+10000.,text,'utlnv')
-	call check2Dr(nlvdi,nlv,nkn,vtlnv,-10000.,+10000.,text,'vtlnv')
+	call check2Dr(nlvdi,nlv,nel,utlnv,-10000.,+10000.,text,'utlnv')
+	call check2Dr(nlvdi,nlv,nel,vtlnv,-10000.,+10000.,text,'vtlnv')
 
-	call check2Dr(nlvdi,nlv,nkn,ulnv,-10.,+10.,text,'ulnv')
-	call check2Dr(nlvdi,nlv,nkn,vlnv,-10.,+10.,text,'vlnv')
+	call check2Dr(nlvdi,nlv,nel,ulnv,-10.,+10.,text,'ulnv')
+	call check2Dr(nlvdi,nlv,nel,vlnv,-10.,+10.,text,'vlnv')
 
 	call check2Dr(nlvdi,nlv,nkn,tempv,-30.,+70.,text,'tempv')
 	call check2Dr(nlvdi,nlv,nkn,saltv,-1.,+50.,text,'saltv')

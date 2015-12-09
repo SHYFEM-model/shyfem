@@ -26,8 +26,9 @@ c
 	implicit none
 
 	logical bnohydro
-	integer k,n,i,ie,ii,m,l
+	integer k,n,i,ie,ii,m,l,iii
 	integer kn(3),ki,kj,j
+	integer kic,kjc,kijc,iiis,iiie
 	integer ipp,ipp0
 	integer nn
 	integer nodes(maxlnk+1)
@@ -65,6 +66,8 @@ c
 
 	n2zero = ntg(nkn)	!set global 2d value
 	ijp_ie = 0
+	i2coo = 0
+	j2coo = 0
 
 	do ie=1,nel
 	  do ii=1,3
@@ -100,6 +103,10 @@ c
 	if( n3zero /= nt3g(nkn) ) goto 91
 	if( n3zero > n3max ) goto 91
 
+	i3coo = -99
+	j3coo = -99
+	back3coo = -88
+
 	do ie=1,nel
 	  do ii=1,3
 	    kn(ii) = nen3v(ii,ie)
@@ -111,11 +118,45 @@ c
 	      do l=1,nlv
 		ipp = loccoo3d(i,j,kn,l,ie)
 	        if( ipp > n3max ) goto 96
-	        i3coo(ipp) = (ki-1)*(nlv+2) + l + 1
-	        j3coo(ipp) = (kj-1)*(nlv+2) + l + 1
+	        if( ipp < 0 ) goto 96
+	        kic = (ki-1)*(nlv+2) + l + 1
+	        kjc = (kj-1)*(nlv+2) + l + 1
+		iiis = 0
+		iiie = 0
+		if( i == j ) then
+		  iiis = -1
+		  iiie = +1
+		end if
+		do iii=iiis,iiie
+	          i3coo(ipp+iii) = kic
+	          j3coo(ipp+iii) = kjc + iii
+		  back3coo(1,ipp+iii) = ki
+		  back3coo(2,ipp+iii) = kj
+		  back3coo(3,ipp+iii) = l
+		  back3coo(4,ipp+iii) = iii
+		end do
 	      end do
 	    end do
 	  end do
+	end do
+
+	do k=1,nkn
+	  ipp = nt3g(k-1) + 1
+	        kijc = (k-1)*(nlv+2) + 1
+	          i3coo(ipp) = kijc
+	          j3coo(ipp) = kijc
+		  back3coo(1,ipp) = k
+		  back3coo(2,ipp) = k
+		  back3coo(3,ipp) = 0
+		  back3coo(4,ipp) = 0
+	  ipp = nt3g(k)
+	        kijc = (k-1)*(nlv+2) + nlv + 2
+	          i3coo(ipp) = kijc
+	          j3coo(ipp) = kijc
+		  back3coo(1,ipp) = k
+		  back3coo(2,ipp) = k
+		  back3coo(3,ipp) = nlv + 1
+		  back3coo(4,ipp) = 0
 	end do
 
 !------------------------------------------------------------------

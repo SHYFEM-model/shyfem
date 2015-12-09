@@ -68,6 +68,15 @@
         allocate(wlov(0:nlv,nkn))
         allocate(wlnv(0:nlv,nkn))
 
+	!ulnv = -999.
+	!vlnv = -999.
+	!ulov = -999.
+	!vlov = -999.
+	ulnv = 0.
+	vlnv = 0.
+	ulov = 0.
+	vlov = 0.
+
         end subroutine mod_hydro_vel_init
 
 !************************************************************

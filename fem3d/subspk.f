@@ -68,7 +68,7 @@ c*************************************************************************
 	integer n		!dimension of system (unknowns)
 	real z(n)		!first guess
 
-      integer k
+      integer k,i
 
       external bcg
       external bcgstab
@@ -118,6 +118,10 @@ c*************************************************************************
       !call coocsr(nkn,nnzero,coo,icoo,jcoo,csr,jcsr,icsr)	!COOGGU
 	if( buse3d ) then
 	  nnzero = n3zero
+	do i=1,nnzero
+	  !write(6,*) i,i3coo(i),j3coo(i),c3coo(i)
+	  write(6,'(7i8)') i,i3coo(i),j3coo(i),back3coo(:,i)
+	end do
           call coocsr(ngl,nnzero,c3coo,i3coo,j3coo,csr,jcsr,icsr)!COOGGU
 	else
 	  nnzero = n2zero

@@ -149,7 +149,7 @@
         allocate(i3coo(n3max))
         allocate(j3coo(n3max))
         allocate(c3coo(n3max))
-        allocate(back3coo(3,n3max))
+        allocate(back3coo(4,n3max))
 
         end subroutine mod_system_init
 

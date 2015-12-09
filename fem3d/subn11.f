@@ -315,6 +315,9 @@ c	-----------------------------------------------------
 	call init_uvt		!initializes utlnv, vtlnv
 	call init_z0		!initializes surface and bottom roughness
 
+	call uvint
+	call copy_uvz
+
 c	-----------------------------------------------------
 c       finish
 c	-----------------------------------------------------
