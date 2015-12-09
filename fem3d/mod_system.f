@@ -17,6 +17,8 @@
         integer, private, save :: nkn_amat = 0
         integer, private, save :: mbw_amat = 0
 
+	logical, save :: bsys3d = .false.
+
 	integer, save :: iprec = 0
 	integer, save :: nthpard = 8	! Number of threads for Pardiso solver
 	integer, save :: csrdim = 0
@@ -116,7 +118,7 @@
 
 	n2max = 7*nkn
 	n3max = 6*nkn*nlv + nkn*(2+3*nlv)
-	if( nlv == 0 ) n3max = 1
+	if( .not. bsys3d ) n3max = 1
 
 	csrdim = 9 * nel		!old
 	csrdim = n2max

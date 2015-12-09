@@ -150,7 +150,7 @@ NEWOBJS = \
 	  newcon.o newconz.o newcon_omp.o \
 	  newchk.o newfix.o \
 	  newtvd.o newstab.o newsig.o \
-	  newnudge.o \
+	  newnudge.o newpoi.o \
 	  $(MODULES) \
 
 # objects for library
