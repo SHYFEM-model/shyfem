@@ -1,3 +1,65 @@
+version  7_3_16    16-12-2015    VERS_7_3_16
+
+========================================================== 16-12-2015 - 7_3_16
+
+c ./femplot/suplin.f:
+c 02.12.2015    ggu     bug fix in integrate_flux() - dx was used twice
+c
+c ./fem3d/simsys_spk.f:
+! 09.12.2015	ggu	adapted to new pointers and 3d matrix
+! 15.12.2015	ggu&deb	finsihed and validated
+c
+c ./fem3d/newtra.f:
+c 03.12.2015	ccf&ggu	code optimized
+c
+c ./fem3d/mod_system.f:
+! 15.12.2015    ggu&deb     adapted to 3d case (poisson)
+!
+c ./fem3d/simsys_pard.f:
+c 15.12.2015    deb     adjusted for new 3d framework
+c
+c ./fem3d/subrst.f:
+! 30.11.2015    ggu     allocate cnv/conzv before read
+!
+c ./fem3d/subver.f:
+c 20.11.2015	ggu	version 7.3.16
+c
+c ./fem3d/subgotm.f:
+c 03.12.2015    ccf     levdbg introduced for checka
+c
+c ./fem3d/newpoi.f:
+! 15.12.2015    ggu&deb&wmk     written from scratch
+!
+c ./fem3d/simsys_lp.f:
+c 15.12.2015	ggu	added dummy subroutines for 3d case
+c
+c ./fem3d/subspk.f:
+c 15.12.2015    ggu&deb adapted to new 3d framework
+c
+c ./fem3d/subpard.f:
+c 15.12.2015    deb     adjusted for new 3d framework
+c
+c ./fem3d/sublnku.f:
+c 02.12.2015	ggu	lnk_elems and lnk_nodes eliminated
+c
+c ./fem3d/mod_bnd.f:
+! 01.12.2015    ggu     ready to accept no open boundary (bug fix)
+!
+c ./fem3d/links.f:
+c 02.12.2015    ggu	routines get_link() and get_lenk() deleted
+c
+c ./fem3d/subproj.f:
+! 03.12.2015    ggu     bug fix because arrays were defined length 1
+!
+c ./fem3d/arc/mod_shympi.f:
+! 24.11.2015    ggu     project started
+!
+c ./fem3d/subcoo.f:
+c 04.12.2015    ggu     new approach for constructing matrix - also 3d
+c 15.12.2015    ggu&deb finished and validated 3d approach
+
+==========================================================
+
 version  7_3_15    20-11-2015    VERS_7_3_15   commit_2015-12-16
 
 version  7_3_15    20-11-2015    VERS_7_3_15
