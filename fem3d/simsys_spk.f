@@ -5,6 +5,7 @@
 ! 31.03.2009	ggu	call renamed to spk_*
 ! 25.05.2015	ggu	some calls changed (pass array in)
 ! 09.12.2015	ggu	adapted to new pointers and 3d matrix
+! 15.12.2015	ggu&deb	finsihed and validated
 !
 !******************************************************************
 
@@ -78,6 +79,7 @@
 
 	integer i,k,l
 	real p((nlv+2)*n)
+	integer nn !DEB
 
 	i = 0
 
@@ -92,7 +94,9 @@
 	  p(i) = 0.
 	end do
 
-	call spk_solve_system(.true.,n3max,n,p)
+	nn = n*(nlv + 2) !DEB
+	!call spk_solve_system(.true.,n3max,n,p)
+	call spk_solve_system(.true.,n3max,nn,p) !DEB
 
 	end
 
@@ -123,7 +127,7 @@
             kk=ijp_ie(i,j,ie)			!COOGGU
             if(kk.gt.0) c2coo(kk) = c2coo(kk) + mass(i,j)
           end do
-          rvec(kn(i)) = rvec(kn(i)) + rhs(i)
+          rvec2d(kn(i)) = rvec2d(kn(i)) + rhs(i)
         end do
 
 	end
@@ -152,15 +156,15 @@
           do j=1,3
 	    kk = loccoo3d(i,j,kn,l,ie)
             if(kk.gt.0) then
-	      c3coo(kk-1) = c3coo(kk-1) + mass(-1,i,j)
-	      c3coo(kk) = c3coo(kk) + mass(0,i,j)
-	      c3coo(kk+1) = c3coo(kk+1) + mass(+1,i,j)
+	       c3coo(kk-1) = c3coo(kk-1) + mass(-1,i,j)
+	       c3coo(kk) = c3coo(kk) + mass(0,i,j)
+	       c3coo(kk+1) = c3coo(kk+1) + mass(+1,i,j)
 	    end if
           end do
 	  kk = (nlv+2)*(kn(i)-1) + l + 1
-          rvec(kk) = rvec(kk) + rhs(i)
+          rvec3d(kk) = rvec3d(kk) + rhs(i) !DEB
         end do
-
+	
 	end
 
 !******************************************************************
@@ -178,7 +182,7 @@
 
         integer k
 
-	z = real(rvec)
+	z = real(rvec2d)
 
         end
 
@@ -203,7 +207,7 @@
 	  i = i + 1
 	  do l=1,nlv
 	    i = i + 1
-	    z(l,k) = real(rvec(i))
+	    z(l,k) = real(rvec3d(i)) !DEB
 	  end do
 	  i = i + 1
 	end do
@@ -229,8 +233,18 @@
         integer k
 
         do k=1,n
-          rvec(k) = rvec(k) + dt * array(k)
+          rvec2d(k) = rvec2d(k) + dt * array(k)
         end do
+
+        end
+
+!******************************************************************
+
+        subroutine system_adjust_matrix_3d
+
+        implicit none
+
+        call coo_adjust
 
         end
 

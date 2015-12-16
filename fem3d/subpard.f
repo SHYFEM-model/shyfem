@@ -1,4 +1,12 @@
-
+c
+c system routines for Pardiso solver
+c
+c revision log :
+c
+c 12.01.2009    ggu     new file for system routines
+c 31.03.2009    ggu     call renamed to pard_*
+c 15.12.2015    deb     adjusted for new 3d framework
+c
 c*************************************************************************
 
       subroutine pard_init_system
@@ -9,63 +17,77 @@ c*************************************************************************
         use basin
 
       implicit none
-      include 'param.h'
 
-      integer n
+      integer, save :: icall_coo = 0
 
-      integer icall
-      data icall /0/
-      save icall
+      if (icall_coo.eq.0) then                ! only first time
 
-      do n=1,nkn
-         rvec(n) = 0.
-      end do
+	call coo_init_new 
 
-      if (icall.eq.0) then		! only first time
-	 write(6,*) 'SOLVER: Pardiso'
-         call coo_init(nel,nkn,mbw,nen3v,csrdim,nnzero,ijp,icoo,jcoo)
-         print*, 'coo-matrix initialisation...'
-         print*, 'Number of non-zeros: ',nnzero
-         icall=1
-      end if
+        if( n2zero > n2max ) then
+	      stop 'error stop spk_init_system: non zero 2d max'
+        end if
+        if( n3zero > n3max ) then
+	      stop 'error stop spk_init_system: non zero 3d max'
+        end if
 
-      do n=1,nnzero
-         coo(n) = 0.
-      end do
+        write(6,*) 'SOLVER: Pardiso'
+        print*, 'coo-matrix initialisation...'
+        print*, 'Number of non-zeros 2d:',n2zero,n2max
+        print*, 'Number of non-zeros 3d:',n3zero,n3max
+
+        icall_coo=1
+
+      endif
+
+      rvec2d = 0.
+      raux2d = 0.
+      rvec3d = 0.
+      raux3d = 0.
+
+      c2coo = 0.
+      c3coo = 0.
 
       end
 
 c*************************************************************************
 
-	subroutine pard_solve_system(n)
+	subroutine pard_solve_system(buse3d,nndim,n,z)
 
 	use mod_system
 
 	implicit none
 
-        integer n !dimension of x and b
+	logical buse3d
+        integer nndim           !dimension of non zeros in system
+	integer n               !dimension of system(unknowns)
+	real z(n)               !first guess
 
-        include 'param.h'
-	integer k
+	integer k,i
 
-        real*8 csr(csrdim)
-        integer icsr(n+1),jcsr(csrdim)
-	integer iwork(2*csrdim)		!aux for sorting routine
-        real*8 ddum(n)
-        !integer indu(n),iwk(n+1) !clean-csr vectors
+        real*8, allocatable :: csr(:)
+        real*8, allocatable :: rvec(:)
+        real*8, allocatable :: raux(:)
+        real*8, allocatable :: ddum(:)
 
+        integer, allocatable :: icsr(:),jcsr(:)
+        integer, allocatable :: iwork(:)
+			      
 	integer precision
 	integer nth		!number of threads for pardiso
 	logical bdirect		!iterative solver
+	integer ngl,nnzero
 
-        integer icall
-        data icall /0/
-        save icall
 
-        integer nkn
+	integer, save :: icall_coo = 0
 
-        nkn = n
+	allocate(csr(nndim),icsr(n+1),jcsr(nndim),iwork(2*nndim))!DEB
+        allocate(rvec(nndim),raux(nndim))!DEB
+
+        ngl = n
 	nth = nthpard
+        rvec = 0.
+        raux = 0.
 
 	precision = iprec	!precision - see common.h
 
@@ -74,46 +96,67 @@ c*************************************************************************
 !-----------------------------------------------------------------
 ! coo to csr conversion and sorting	
 !-----------------------------------------------------------------
+      
+      if( buse3d ) then
+           nnzero = n3zero
+	   write(6,*)'nnzero',nnzero,'ngl',ngl
+           call coocsr(ngl,nnzero,c3coo,i3coo,j3coo,csr,jcsr,icsr)!COOGGU
+      else
+	   nnzero = n2zero
+	   write(6,*)'2D nnzero',nnzero,'n',n
+	   call coocsr(ngl,nnzero,c2coo,i2coo,j2coo,csr,jcsr,icsr)!COOGGU
+      endif
+      if( nnzero .gt. nndim .or. ngl+1 .gt. 2*nndim ) goto 99
 
-	call coocsr(nkn,nnzero,coo,icoo,jcoo,csr,jcsr,icsr)
-	!nnzero = icsr(nkn+1)-1		!already in common.h
-	if( nnzero .gt. csrdim .or. nkn+1 .gt. 2*csrdim ) goto 99
-
-        call csort (nkn,csr,jcsr,icsr,iwork,.true.)
-	!call clncsr(3,1,nkn,csr,jcsr,icsr,indu,iwk)
+      call csort (ngl,csr,jcsr,icsr,iwork,.true.)
 
 !-----------------------------------------------------------------
 ! initialization
 !-----------------------------------------------------------------
 
-        if ( bdirect .or. icall .eq. 0 ) then
-           if( icall .eq. 0 ) then
-	     print*, 'Pardiso initialisation'
-	     if( bdirect ) then
-	       print*, 'Pardiso direct solution: ',precision
-	     else
-	       print*, 'Pardiso iterative solution: ',precision
-	     end if
-	   end if
-           call pardiso_solve(0,nth,nkn,precision,csr,icsr,jcsr,
+	if (bdirect .or. icall_coo.eq.0) then 
+          if(icall_coo.eq.0) then
+		  print*, 'Pardiso initialisation'
+		  if( bdirect ) then
+		  print*, 'Pardiso direct solution: ',precision
+		  else
+		  print*, 'Pardiso iterative solution: ',precision
+		  end if
+          endif
+          call pardiso_solve(0,nth,ngl,precision,csr,icsr,jcsr,
      +          ddum,ddum)
-           icall=1
+	  icall_coo = 1
         end if
-	
+
 !-----------------------------------------------------------------
 ! solving	
 !-----------------------------------------------------------------
 
-        call pardiso_solve(1,nth,nkn,precision,csr,icsr,jcsr,rvec,raux)
+        if( buse3d ) then
+          rvec = rvec3d
+          raux = raux3d
+	else
+          rvec = rvec2d
+          raux = raux2d
+        end if
+
+        call pardiso_solve(1,nth,ngl,precision,csr,icsr,jcsr,
+     .		rvec,raux)
 
 	if( bdirect ) then
-          call pardiso_solve(3,nth,nkn,precision,csr,icsr,jcsr,ddum,
+          call pardiso_solve(3,nth,ngl,precision,csr,icsr,jcsr,ddum,
      +         ddum)
 	end if
 
-	do k=1,nkn
-	  rvec(k) = raux(k)
-	end do
+        if( buse3d ) then
+	       rvec3d(1:ngl) = raux(1:ngl)
+	else
+	       rvec2d(1:ngl) = raux(1:ngl)
+        endif
+
+
+        deallocate(csr,icsr,jcsr,iwork)
+        deallocate(raux,rvec)
 
 !-----------------------------------------------------------------
 ! end of routine
@@ -121,7 +164,7 @@ c*************************************************************************
 
 	return
    99	continue
-	write(6,*) nnzero,nkn+1,csrdim
+	write(6,*) nnzero,ngl+1,nndim
 	stop 'error stop pard_solve_system: dimension iwork'
 	end
 
@@ -269,4 +312,3 @@ c*************************************************************************
       end
 
 c*************************************************************************
-

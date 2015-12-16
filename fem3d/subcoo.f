@@ -9,6 +9,7 @@ c 31.01.2009    ggu     cleaned, only generic coo routines here
 c 29.03.2012    ggu     in loccoo avoid call to coo_find (speed)
 c 18.09.2015    ggu     bug fix in coo_init - do not set ip/jp for n==0
 c 04.12.2015    ggu     new approach for constructing matrix - also 3d
+c 15.12.2015    ggu&deb finished and validated 3d approach
 c
 !******************************************************************
 
@@ -208,14 +209,12 @@ c
 	    kn(ii) = nen3v(ii,ie)
 	  end do
 	  do i=1,3
-	    do j=1,3
 	      do l=1,nlv
-		ipp = loccoo3d(i,j,kn,l,ie)
+		ipp = loccoo3d(i,i,kn,l,ie)
 	        if( c3coo(ipp) == 0. ) then
 		  c3coo(ipp) = 1.
 		end if
 	      end do
-	    end do
 	  end do
 	end do
 
@@ -467,11 +466,11 @@ c localize for COO routines
 	ki = kn(i)
 	ipp1 = nt3g(ki-1)		!before row i
 	ipp2 = 1 + (l-1) * (ng(ki)+2)	!in row i before level l
-	idiag = diag(ki)
+	idiag = diag(ki) + 1
 	irel = ijp_ie(i,j,ie) - ijp_ie(i,i,ie)	!diff kj - diag
 	icorr = 0
 	if( irel /= 0 ) icorr = irel/abs(irel)	!icorr is -1,0,+1
-	ipp3 = idiag + irel + icorr + 1	!1 is for 3 block
+	ipp3 = idiag + irel + icorr
 
 	loccoo3d = ipp1 + ipp2 + ipp3
 
@@ -1201,4 +1200,3 @@ c localize for COO routines
       end
 
 c*************************************************************************
-

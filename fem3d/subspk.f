@@ -8,6 +8,7 @@ c
 c 05.06.2009    ggu     some routines cleaned
 c 22.03.2010    ggu     change of some parameters
 c 29.03.2012    ggu     introduce zero and one as double (bug, was int before)
+c 15.12.2015    ggu&deb adapted to new 3d framework
 c
 c*************************************************************************
 
@@ -45,9 +46,10 @@ c*************************************************************************
           icall_coo=1
 	end if
 
-	rvec = 0.
-	raux = 0.
-	!coo = 0.
+	rvec2d = 0.
+	raux2d = 0.
+	rvec3d = 0.
+	raux3d = 0.
 	c2coo = 0.
 	c3coo = 0.
 
@@ -101,36 +103,48 @@ c*************************************************************************
       real*8  FPARIT(12),WKSPIT(6*n+4*itermax), INIU(n)
 
       real*8, allocatable :: csr(:)
+      real*8, allocatable :: rvec(:)
+      real*8, allocatable :: raux(:)
+
       integer, allocatable :: icsr(:),jcsr(:)
       integer, allocatable :: iwork(:)
+	integer ii,nn
 
 	allocate(csr(nndim),icsr(n+1),jcsr(nndim),iwork(2*nndim))
+	allocate(rvec(nndim),raux(nndim))
 
 	ngl = n
 
 	ipar = 0	!ggu
 	fpar = 0.
 
+	rvec = 0.
+	raux = 0.
+
 !--------------------------------------------------
 ! CONVERSION AND SORTING
 !--------------------------------------------------
 
-      !call coocsr(nkn,nnzero,coo,icoo,jcoo,csr,jcsr,icsr)	!COOGGU
 	if( buse3d ) then
 	  nnzero = n3zero
-	do i=1,nnzero
-	  !write(6,*) i,i3coo(i),j3coo(i),c3coo(i)
-	  write(6,'(7i8)') i,i3coo(i),j3coo(i),back3coo(:,i)
-	end do
-          call coocsr(ngl,nnzero,c3coo,i3coo,j3coo,csr,jcsr,icsr)!COOGGU
+          write(6,*)'3D nnzero',nnzero,ngl
+          call coocsr(ngl,nnzero,c3coo,i3coo,j3coo,csr,jcsr,icsr)
+	  !call coo_show(ngl,nnzero,i3coo,j3coo,c3coo)
+	  !call csr_show(ngl,nnzero,icsr,jcsr,csr)
+	  !call coo_print(ngl,nnzero,i3coo,j3coo,c3coo,rvec3d)
 	else
 	  nnzero = n2zero
-          call coocsr(ngl,nnzero,c2coo,i2coo,j2coo,csr,jcsr,icsr)!COOGGU
+          write(6,*)'2D nnzero',nnzero,ngl
+          call coocsr(ngl,nnzero,c2coo,i2coo,j2coo,csr,jcsr,icsr)
+	  !call coo_show(ngl,nnzero,i2coo,j2coo,c2coo)
+	  !call csr_show(ngl,nnzero,icsr,jcsr,csr)
+	  !call coo_print(ngl,nnzero,i2coo,j2coo,c2coo,rvec)
 	end if
       
       if( nnzero .gt. nndim .or. ngl+1 .gt. 2*nndim ) goto 99
 
       call csort (ngl,csr,jcsr,icsr,iwork,.true.)
+
 !--------------------------------------------------
 
       lfil    = 5	! Number of largest elements, in absolute 
@@ -143,6 +157,9 @@ c*************************************************************************
       itpre   = 2	! either 2 or 3
       itsol   = 3	! 3 is probably best
 
+      !itpre   = 3	! either 2 or 3
+      !itsol   = 2	! 3 is probably best
+
       zero = 0.
       one = 1.
 
@@ -150,6 +167,7 @@ c*************************************************************************
 
 !--------------------------------------------------
 ! PRECONDITIONERS
+!--------------------------------------------------
       if (itpre .eq. 1) then
         call ilu0(ngl, csr, jcsr, icsr, alu, jlu, ju, iw, ierr)
       else if (itpre .eq. 2) then
@@ -169,6 +187,7 @@ c*************************************************************************
 
 !--------------------------------------------------
 ! SOLVERS
+!--------------------------------------------------
       ipar(1) = 0      		! always 0 to start an iterative solver
       ipar(2) = 1  		! right preconditioning
       ipar(3) = 1      		! use convergence test scheme 1
@@ -182,6 +201,16 @@ c*************************************************************************
       fpar(2) = 1.0E-8		! absolute tolerance 1.0E-1
 
 	guess = z
+	!guess = 0.
+	
+      if( buse3d ) then
+	rvec = rvec3d
+	raux = raux3d
+      else
+	rvec = rvec2d
+	raux = raux2d
+      end if
+
 
        if (itsol .eq. 1) then
          call runrc(ngl,rvec,raux,ipar,fpar,wksp,guess,csr,jcsr,icsr,
@@ -211,9 +240,14 @@ c*************************************************************************
        
 !-----------------------------------------------------------------
 
-	rvec(1:ngl) = raux(1:ngl)
+        if( buse3d ) then
+	  rvec3d(1:ngl) = raux(1:ngl)
+	else
+	  rvec2d(1:ngl) = raux(1:ngl)
+	endif
 
 	deallocate(csr,icsr,jcsr,iwork)
+	deallocate(raux,rvec)
 
 	return
    99	continue

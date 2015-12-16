@@ -933,9 +933,6 @@ c local
 	    imin=imin+1
 	    jmin=jmin+1
 
-	    !if( imin.lt.1 .or. jmin.lt.1 ) goto 1
-	    !if( imin+1.gt.ip .or. jmin+1.gt.jp ) goto 1
-
 	    if( bextra ) then
 	      if( imin.lt.1 ) imin = 1
 	      if( jmin.lt.1 ) jmin = 1
@@ -959,8 +956,16 @@ c local
 	    t=(xx-x1)/pxdreg
 	    u=(yy-y1)/pydreg
 
-	if( u.gt.1. .or. u.lt.0. ) write(6,*) 'error am2av',u,t,k
-	if( t.gt.1. .or. t.lt.0. ) write(6,*) 'error am2av',u,t,k
+	    if( u.gt.1. .or. u.lt.0. ) then
+	      write(6,*) 'error am2av',u,t,k
+	      u = min(1.,u)
+	      u = max(0.,u)
+	    end if
+	    if( t.gt.1. .or. t.lt.0. ) then
+	      write(6,*) 'error am2av',u,t,k
+	      t = min(1.,t)
+	      t = max(0.,t)
+	    end if
 
 	    av(k)=(1-t)*(1-u)*z1+t*(1-u)*z2+t*u*z3+(1-t)*u*z4
 

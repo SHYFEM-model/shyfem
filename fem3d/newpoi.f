@@ -1,13 +1,37 @@
+!
+! module for solving poisson equation in 2d and 3d
+!
+! revision log :
+!
+! 15.12.2015    ggu&deb&wmk     written from scratch
+!
+! notes :
+!
+! depth values are not used
+! the equation is scaled vertically to be compatible with horizontal scale
+!
+!========================================================
+	module poisson
+!========================================================
 
-c******************************************************************
+	implicit none
+
+	integer, save :: ipoiss = 0
+	logical, save :: bpoi3d = .false.
+
+!========================================================
+	end module poisson
+!========================================================
+
+!******************************************************************
 
 	subroutine poisson_init
 
 	use mod_system
+	use poisson
 
 	implicit none
 
-	integer ipoiss
 	real getpar
 
 	ipoiss = nint(getpar('ipoiss'))
@@ -17,18 +41,14 @@ c******************************************************************
 
 	end
 
-c******************************************************************
+!******************************************************************
 
 	subroutine poisson_compute
 
 	use basin
+	use poisson
 
 	implicit none
-
-	integer ipoiss
-	real getpar
-
-	ipoiss = nint(getpar('ipoiss'))
 
 	if( ipoiss == 0 ) return
 
@@ -38,17 +58,20 @@ c******************************************************************
 	stop 'end of poisson case'
 	end
 
-c******************************************************************
-c******************************************************************
-c******************************************************************
+!******************************************************************
+!******************************************************************
+!******************************************************************
 
 	subroutine poisson_2d
 
 	use basin
+	use poisson
 
 	implicit none
 
 	real pvar(nkn)
+
+	bpoi3d = .false.
 
 	call poisson_set_obc(1,pvar)
 	call poisson_2d_solve(pvar)
@@ -56,7 +79,7 @@ c******************************************************************
 
 	end
 
-c******************************************************************
+!******************************************************************
 
 	subroutine poisson_2d_solve(pvar)
 
@@ -78,24 +101,23 @@ c******************************************************************
 
 	end
 
-c******************************************************************
+!******************************************************************
 
 	subroutine poisson_2d_assemble(pvar)
 
-c assembles linear system matrix
-c
-c vqv		flux boundary condition vector
-c
-c semi-implicit scheme for 3d model
-c
-c written on 18.02.91 by ggu  (from scratch)
-c changed on 04.06.91 by ggu  (c=(1) : friction term has been corrected)
-c changed on 01.10.92 by ggu  (staggered FE - completely restructured)
-c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
+! assembles linear system matrix
+!
+! vqv		flux boundary condition vector
+!
+! semi-implicit scheme for 3d model
+!
+! written on 18.02.91 by ggu  (from scratch)
+! changed on 04.06.91 by ggu  (c=(1) : friction term has been corrected)
+! changed on 01.10.92 by ggu  (staggered FE - completely restructured)
+! 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 
 	use mod_internal
 	use mod_depth
-	use mod_area !WILL DEB
 	use evgeom
 	use levels
 	use basin
@@ -126,15 +148,15 @@ c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 	integer locsps,loclp,iround
 	real getpar
 
-c-------------------------------------------------------------
-c loop over elements
-c-------------------------------------------------------------
+!-------------------------------------------------------------
+! loop over elements
+!-------------------------------------------------------------
 
 	do ie=1,nel
 
-c	  ------------------------------------------------------
-c	  initialize element values
-c	  ------------------------------------------------------
+!	  ------------------------------------------------------
+!	  initialize element values
+!	  ------------------------------------------------------
 
 	  aj=ev(10,ie)
           aj4=4.*aj
@@ -146,9 +168,9 @@ c	  ------------------------------------------------------
 	    c(i)=ev(i+6,ie)
 	  end do
 
-c	  ------------------------------------------------------
-c	  set element matrix and RHS
-c	  ------------------------------------------------------
+!	  ------------------------------------------------------
+!	  set element matrix and RHS
+!	  ------------------------------------------------------
 
 	  do n=1,3
 	    do m=1,3
@@ -157,9 +179,9 @@ c	  ------------------------------------------------------
 	    hik(n) = 0.
 	  end do
 
-c	  ------------------------------------------------------
-c	  boundary conditions
-c	  ------------------------------------------------------
+!	  ------------------------------------------------------
+!	  boundary conditions
+!	  ------------------------------------------------------
 
 	  do i=1,3
 	    if( pvar(kn(i)) .ne. flag ) then
@@ -172,37 +194,40 @@ c	  ------------------------------------------------------
 	    end if
 	  end do
 
-c	  ------------------------------------------------------
-c	  in hia(i,j),hik(i),i,j=1,3 is system
-c	  ------------------------------------------------------
+!	  ------------------------------------------------------
+!	  in hia(i,j),hik(i),i,j=1,3 is system
+!	  ------------------------------------------------------
 
 	  !call system_assemble(ie,nkn,mbw,kn,hia,hik)
 	  call system_assemble(ie,kn,hia,hik)
 
 	end do
 
-c-------------------------------------------------------------
-c end of loop over elements
-c-------------------------------------------------------------
+!-------------------------------------------------------------
+! end of loop over elements
+!-------------------------------------------------------------
 
-c-------------------------------------------------------------
-c end of routine
-c-------------------------------------------------------------
+!-------------------------------------------------------------
+! end of routine
+!-------------------------------------------------------------
 
 	end
 
-c******************************************************************
-c******************************************************************
-c******************************************************************
+!******************************************************************
+!******************************************************************
+!******************************************************************
 
 	subroutine poisson_3d
 
 	use basin
 	use levels
+	use poisson
 
 	implicit none
 
 	real pvar(nlvdi,nkn)
+
+	bpoi3d = .true.
 
 	call poisson_set_obc(nlvdi,pvar)
 	call poisson_3d_solve(nlvdi,pvar)
@@ -210,7 +235,7 @@ c******************************************************************
 
 	end
 
-c******************************************************************
+!******************************************************************
 
 	subroutine poisson_3d_solve(nlvdi,pvar)
 
@@ -234,24 +259,24 @@ c******************************************************************
 
 	end
 
-c******************************************************************
+!******************************************************************
 
 	subroutine poisson_3d_assemble(pvar)
 
-c assembles linear system matrix
-c
-c vqv		flux boundary condition vector
-c
-c semi-implicit scheme for 3d model
-c
-c written on 18.02.91 by ggu  (from scratch)
-c changed on 04.06.91 by ggu  (c=(1) : friction term has been corrected)
-c changed on 01.10.92 by ggu  (staggered FE - completely restructured)
-c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
+! assembles linear system matrix
+!
+! vqv		flux boundary condition vector
+!
+! semi-implicit scheme for 3d model
+!
+! written on 18.02.91 by ggu  (from scratch)
+! changed on 04.06.91 by ggu  (c=(1) : friction term has been corrected)
+! changed on 01.10.92 by ggu  (staggered FE - completely restructured)
+! 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 
 	use mod_internal
 	use mod_depth
-	use mod_area !WILL DEB
+	use mod_layer_thickness
 	use evgeom
 	use levels
 	use basin
@@ -268,36 +293,46 @@ c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 	include 'femtime.h'
  
 	integer kn(3)
-	integer ie,i,j,j1,j2,n,m,kk,l,k
+	integer ie,i,j,j1,j2,n,m,kk,l,k,iii
 	integer ngl
 	integer ilevel
 	integer lmax
 	real aj,aj4,aj12
 	real ht
 	real h11,hh999
-	real delta
+	real delta,r,hh
 	real hia(3,3),hik(3),amatr(3,3)
 	real hia3d(-1:+1,3,3)
 	real b(3),c(3),z(3)
+	double precision darea
+	real dist
 
 	real hd,hdm,hdp,rhm,rhp,rhc
-	real hldaux(0:nlv+1)
+	real hldaux(0:nlvdi+1)
 
 	integer locsps,loclp,iround
-	real getpar
 
 	hldaux = 0.
-	hldaux(1:nlv) = hldv(:)
 
-c-------------------------------------------------------------
-c loop over elements
-c-------------------------------------------------------------
+!-------------------------------------------------------------
+! scaling of vertical distances
+!-------------------------------------------------------------
+
+	darea = 0.
+	do ie=1,nel
+	  darea = darea + 12 * ev(10,ie)
+	end do
+	dist = sqrt(darea/nel)
+	
+!-------------------------------------------------------------
+! loop over elements
+!-------------------------------------------------------------
 
 	do ie=1,nel
 
-c	  ------------------------------------------------------
-c	  initialize element values
-c	  ------------------------------------------------------
+!	  ------------------------------------------------------
+!	  initialize element values
+!	  ------------------------------------------------------
 
 	  aj=ev(10,ie)
           aj4=4.*aj
@@ -309,17 +344,25 @@ c	  ------------------------------------------------------
 	    c(i)=ev(i+6,ie)
 	  end do
 
-c	  ------------------------------------------------------
-c	  set element matrix and RHS
-c	  ------------------------------------------------------
+!	  ------------------------------------------------------
+!	  set element matrix and RHS
+!	  ------------------------------------------------------
 
 	  lmax = ilhv(ie)
+	  hldaux(1:lmax) = hdenv(1:lmax,ie)
+	  hldaux(lmax+1:nlv) = 0.
 
 	  do l=1,lmax
 
-	  hd = hldaux(l)
-	  hdm = hldaux(l-1)
-	  hdp = hldaux(l+1)
+	  hia3d = 0.
+
+	  hh = dist
+	  hd = hh
+	  hdm = hh
+	  hdp = hh
+	  !hd = hldaux(l)
+	  !hdm = hldaux(l-1)
+	  !hdp = hldaux(l+1)
 
 	  rhm = 2. / ( hd + hdm )
 	  if( l == 1 ) rhm = 0.
@@ -330,56 +373,64 @@ c	  ------------------------------------------------------
 	  do n=1,3
 	    do m=1,3
 	      hia3d(0,n,m) = -aj12 * hd * ( b(n) * b(m) + c(n) * c(m) )
-	      hia3d(0,n,m) = hia3d(0,n,m) - aj4 * rhc
-	      hia3d(-1,n,m) = aj4 * rhm
-	      hia3d(+1,n,m) = aj4 * rhp
+	      if ( n .eq. m ) then
+	        hia3d(0,n,m) = hia3d(0,n,m) - aj4 * rhc
+	        hia3d(-1,n,m) = aj4 * rhm
+	        hia3d(+1,n,m) = aj4 * rhp
+              end if
 	    end do
 	    hik(n) = 0.
 	  end do
 
-c	  ------------------------------------------------------
-c	  boundary conditions
-c	  ------------------------------------------------------
+!	  ------------------------------------------------------
+!	  boundary conditions
+!	  ------------------------------------------------------
 
 	  do i=1,3
 	    if( pvar(l,kn(i)) .ne. flag ) then
+	      r = 1.
+	      r = hia3d(0,i,i)
 	      j1=mod(i,3)+1
 	      j2=mod(i+1,3)+1
-              hia3d(0,i,i)=1.
+              hia3d(-1,i,i)=0.
+              hia3d(+1,i,i)=0.
+              hia3d(0,i,i)=r
               hia3d(0,i,j1)=0.
               hia3d(0,i,j2)=0.
-              hik(i)=pvar(l,kn(i))
+              hik(i)=pvar(l,kn(i)) * r
 	    end if
 	  end do
 
-c	  ------------------------------------------------------
-c	  in hia(i,j),hik(i),i,j=1,3 is system
-c	  ------------------------------------------------------
+!	  ------------------------------------------------------
+!	  in hia(i,j),hik(i),i,j=1,3 is system
+!	  ------------------------------------------------------
 
-	  !call system_assemble(ie,nkn,mbw,kn,hia,hik)
 	  call system_assemble_3d(ie,l,nlv,kn,hia3d,hik)
 
 	  end do
 
 	end do
 
-c-------------------------------------------------------------
-c end of loop over elements
-c-------------------------------------------------------------
+!-------------------------------------------------------------
+! end of loop over elements
+!-------------------------------------------------------------
 
-c-------------------------------------------------------------
-c end of routine
-c-------------------------------------------------------------
+	call system_adjust_matrix_3d
+
+!-------------------------------------------------------------
+! end of routine
+!-------------------------------------------------------------
 
 	end
 
-c******************************************************************
-c******************************************************************
-c******************************************************************
+!******************************************************************
+!******************************************************************
+!******************************************************************
 
 	subroutine poisson_set_obc(nlvdi,pvar)
 
 	use basin
+	use poisson
 
 	implicit none
 
@@ -388,12 +439,13 @@ c******************************************************************
 
 	include 'mkonst.h'
 
-	integer k
-	integer ipoiss
+	integer k,l
 	real bnd
-	real getpar
 
-	ipoiss = nint(getpar('ipoiss'))
+	if( ipoiss < 1 .or. ipoiss > 6 ) then
+	  write(6,*) 'ipoiss = ',ipoiss
+	  stop 'error stop poisson_set_obc'
+	end if
 
 	pvar = flag
 
@@ -423,21 +475,53 @@ c******************************************************************
             else if( ipv(k) .ge. 7 .and. ipv(k) .le. 8 ) then
 		bnd = 20.
 	    end if
-	  else
-	    write(6,*) 'ipoiss = ',ipoiss
-	    stop 'error stop poisson_set_obc'
 	  end if
 	  if( bnd /= 0. ) pvar(:,k) = bnd
 	end do
-	write(6,*) 'poisson boundary: ',pvar
+
+	do l=1,nlvdi
+	  bnd = 0.
+	  if( ipoiss == 5 ) then
+	    if( l == 1 ) then
+	      bnd = 10.
+	    else if( l == nlvdi ) then
+	      bnd = 20.
+	    end if
+	  else if( ipoiss == 6 ) then
+	    if( l == 1 ) then
+	      bnd = 10.
+	      pvar(l,:) = bnd
+	    else if( l == nlvdi ) then
+	      bnd = 20.
+	      pvar(l,:) = bnd
+	    else
+	      do k=1,nkn
+	        bnd = 0.
+                if( ipv(k) .ge. 1 .and. ipv(k) .le. 9 ) then
+	  	  bnd = 10.
+                else if( ipv(k) .ge. 217 .and. ipv(k) .le. 225 ) then
+		  bnd = 20.
+	        end if
+	        if( bnd /= 0. ) pvar(l,k) = bnd
+	      end do
+	    end if
+	  end if
+	end do
+
+	!write(6,*) 'poisson boundary: ',pvar
+	do k=1,nkn
+	  write(6,*) k
+	  write(6,'(5f15.4)') pvar(:,k)
+	end do
 
 	end
 
-c******************************************************************
+!******************************************************************
 
 	subroutine poisson_write(nlvdi,pvar)
 
 	use basin
+	use poisson
 
 	implicit none
 
@@ -450,18 +534,22 @@ c******************************************************************
 
 	l = (nlvdi+1)/2
 	iu = 635
-	if( nlvdi /= 1 ) iu = 666
+	if( bpoi3d ) iu = 666
 
-	write(6,*) 'poisson writing: ',nlvdi,l,iu,nkn
+	write(6,*) 'poisson writing: ',bpoi3d,nlvdi,l,iu,nkn
 
         do k = 1,nkn
           if ( xgv(k) .eq. 0.0 ) then
-            write(iu,*) ygv(k),pvar(l,k)
+            write(iu,*) ygv(k),pvar(l,k),xgv(k) 
           end if
         end do
 	flush(iu)
 
-	if( nlvdi == 1 ) then
+	do l=1,nlvdi
+	  write(iu+1,'(i6,5f12.4)') l,(pvar(l,k),k=1,nkn,nkn/5)
+	end do
+
+	if( nlvdi == 0 ) then
 	  call conwrite(iu2d,'.p2d',1,10,nlvdi,pvar)
 	  flush(iu2d)
 	else
@@ -471,7 +559,7 @@ c******************************************************************
 
 	end
 
-c******************************************************************
-c******************************************************************
-c******************************************************************
+!******************************************************************
+!******************************************************************
+!******************************************************************
 

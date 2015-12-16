@@ -1,5 +1,42 @@
 ============================================================
 
+Wed Dec 16 16:22:52 CET 2015
+
+3d matrix routines finished
+
+ LOG                     |   74 ++++
+ RELEASE_NOTES           |   11 +
+ Rules.make              |   30 --
+ fem3d/Makefile          | 1026 ++++++++++++++++++++++++-----------------------
+ fem3d/mod_bnd.f         |    2 +
+ fem3d/mod_system.f      |   48 ++-
+ fem3d/newpoi.f          |  318 +++++++++------
+ fem3d/newtra.f          |  277 ++++---------
+ fem3d/simsys_lp.f       |   69 ++++
+ fem3d/simsys_pard.f     |  138 ++++++-
+ fem3d/simsys_spk.f      |   34 +-
+ fem3d/subcoo.f          |   10 +-
+ fem3d/subcooutil.f      |  266 ++++++++++++
+ fem3d/subgotm.f         |  109 ++---
+ fem3d/subpard.f         |  158 +++++---
+ fem3d/subreg.f          |   15 +-
+ fem3d/subspk.f          |   56 ++-
+ femadj/Makefile         |   34 +-
+ fembin/revision_last    |    7 +
+ fembin/revisionlog      |    4 +
+ femcheck/Rules.dist     |   30 --
+ femdoc/final/shyfem.pdf |  Bin 284201 -> 284195 bytes
+ femplot/Makefile        |   99 +++--
+ grid/Makefile           |  100 ++---
+ hcbs/Makefile           |    4 +-
+ mesh/Makefile           |   84 ++--
+ post/Makefile           |    6 +-
+ 27 files changed, 1747 insertions(+), 1262 deletions(-)
+ new file:
+   fem3d/subcooutil.f
+
+============================================================
+
 Tue Nov 24 14:44:21 CET 2015
 
 small changes in lagrange output

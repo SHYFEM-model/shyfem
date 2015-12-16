@@ -1,11 +1,19 @@
-
-!==================================================================
-        module mod_system
-!==================================================================
-
+!
+! module for solving system matrix
+!
+! revision log :
+!
+! 15.12.2015    ggu&deb     adapted to 3d case (poisson)
+!
+! notes :
+!
 ! use 61 91 121 etc..  61 indicates 10E-6 of precision etc..
 ! best choice is 121 for iterative
 ! use 0 for direct solver - this should be a save choice if in doubt
+!
+!==================================================================
+        module mod_system
+!==================================================================
 
         implicit none
 
@@ -21,7 +29,6 @@
 
 	integer, save :: iprec = 0
 	integer, save :: nthpard = 8	! Number of threads for Pardiso solver
-	integer, save :: csrdim = 0
 
 	integer, save :: n2zero = 0
 	integer, save :: n3zero = 0
@@ -32,8 +39,10 @@
         double precision, allocatable, save :: vs3v(:)
         integer, allocatable, save :: is2v(:)
 
-        double precision, allocatable, save :: rvec(:)
-        double precision, allocatable, save :: raux(:)
+        double precision, allocatable, save :: rvec2d(:)
+        double precision, allocatable, save :: raux2d(:)
+        double precision, allocatable, save :: rvec3d(:)
+        double precision, allocatable, save :: raux3d(:)
 
         !double precision, allocatable, save :: coo(:)
         !integer, allocatable, save :: icoo(:)
@@ -75,7 +84,8 @@
         integer  :: mbw
         integer  :: nlv
 
-	integer ngl
+	integer ngl2d
+	integer ngl3d
 
         if( mbw == mbw_system .and. nel == nel_system .and.
      +      nkn == nkn_system .and. ngr == ngr_system ) return
@@ -92,8 +102,10 @@
           deallocate(vs3v)
           deallocate(is2v)
 
-          deallocate(rvec)
-          deallocate(raux)
+          deallocate(rvec2d)
+          deallocate(raux2d)
+          deallocate(rvec3d)
+          deallocate(raux3d)
 
 	  deallocate(ng,ntg,n3g,nt3g,diag)
 	  deallocate(iorder)			!prob not needed
@@ -119,11 +131,9 @@
 	n3max = 6*nkn*nlv + nkn*(2+3*nlv)
 	if( .not. bsys3d ) n3max = 1
 
-	!csrdim = 9 * nel		!old
-	csrdim = n2max
-
-	ngl = nkn
-	if( bsys3d ) ngl = nkn*(nlv+2)
+	ngl2d = nkn
+	ngl3d = nkn*(nlv+2)
+	if( .not. bsys3d ) ngl3d = 1
 
         if( nkn == 0 ) return
 
@@ -131,8 +141,10 @@
         allocate(vs3v(nkn))
         allocate(is2v(nkn))
 
-        allocate(rvec(ngl))
-        allocate(raux(ngl))
+        allocate(rvec2d(ngl2d))
+        allocate(raux2d(ngl2d))
+        allocate(rvec3d(ngl3d))
+        allocate(raux3d(ngl3d))
 
         allocate(ng(nkn))
         allocate(ntg(0:nkn))

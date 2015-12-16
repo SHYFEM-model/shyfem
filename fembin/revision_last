@@ -28,7 +28,14 @@ actdate=`echo $firstline | cut -d" " -f3`
 comparedate=`date2num $actdate`
 
 files=`find . -name "*.[cfFh]"`
+
 #revisionlog -check $files
+#for file in $files
+#do
+#  nnn=$(echo $file | sed '/\/tmp\//'d)
+#  [ -z "$nnn" ] && echo "*** not looking for: $file"
+#done
+
 revisionlog -after $comparedate $files > $tmpfile
 revisionlog_adjust.pl $tmpfile $version_file > $tmpfile2
 

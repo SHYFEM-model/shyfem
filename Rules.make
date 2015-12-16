@@ -18,38 +18,8 @@
 # Here you should set all your application 
 # specific parameters. The ones below are
 # usually the only ones you have to bother.
-# However, if you have special needs you can
-# also set all the other parameters. Please see
-# param.h for more details.
-#
-# NKNDIM	total number of nodes in domain
-# NELDIM	total number of elements in domain
-# NGRDIM	maximum number of elements attached to one vertex (node)
-# MBWDIM	dimension of bandwidth for system matrix (see output from vpgrd)
-# NLVDIM	total number of vertical layers for application (1 for 2D)
-# NBDYDIM	maximum number of particles for lagrangian model
-#
-# N.B.: the parameters set here may be bigger than the actual application
 #
 ##############################################
-
-export NKNDIM = 1
-export NELDIM = 1
-export NLVDIM = 1
-
-export MBWDIM = 1
-export NGRDIM = 1
-
-export NBCDIM = 1
-export NRBDIM = 1
-export NB3DIM = 1
-
-export NARDIM = 1
-export NEXDIM = 1
-export NFXDIM = 1
-export NCSDIM = 1
-
-export NBDYDIM = 100000
 
 ##############################################
 # Compiler
