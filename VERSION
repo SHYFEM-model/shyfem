@@ -1,3 +1,24 @@
+version  7_3_17    18-12-2015    VERS_7_3_17
+
+========================================================== 18-12-2015 - 7_3_17
+
+ * ./grid/gridma1.c:
+ * 17-Dec-2015: delete node only if use is 0				*
+c ./fem3d/subver.f:
+c 16.12.2015	ggu	version 7.3.16
+c 18.12.2015	ggu	version 7.3.17	Christmas 2015 release
+c
+c ./fem3d/basutil_interp.f:
+c 16.12.2015	ggu	depth ht is now passed in for square interpol
+c
+c ./fem3d/subfemintp.f:
+! 18.12.2015	ggu	in iff_peek_next_record() adjust date only if ierr==0
+!
+c ./fem3d/basutil_bathy.f:
+c 16.12.2015    ggu     depth ht is now passed in for square interpol
+
+==========================================================
+
 version  7_3_16    16-12-2015    VERS_7_3_16   commit_2015-12-18
 
 version  7_3_16    16-12-2015    VERS_7_3_16
