@@ -135,16 +135,10 @@ c		2 : read in b.c.
 
 	implicit none
 
-        include 'param.h'
-
 	integer mode
 
 	include 'femtime.h'
-
 	include 'mkonst.h'
-
-
-
 
 	real rwv2(nkn)
 	integer, save, allocatable :: ids(:)		!id values for BC
@@ -493,9 +487,7 @@ c	nodes are linearly interpolated between start-ktilt and ktilt-end
 
 	implicit none
 
-	include 'param.h'
 	include 'femtime.h'
-
 
 	integer ibc,ibtyp,ktilt
 	integer nbc
@@ -571,14 +563,9 @@ c if ktilt is not given nothing is tilted
 
 	implicit none
 
-	include 'param.h'
 	include 'femtime.h'
-
 	include 'pkonst.h'
 	include 'mkonst.h'
-
-
-
 
 	integer ibc,ibtyp,kranf,krend,ktilt,k,kn1,kn2
 	integer nbc
@@ -694,8 +681,6 @@ c initializes flux boundary
 	implicit none
 
         integer ibc
-
-	include 'param.h'
 
 	integer kranf,krend
 	integer ie,i,k1,k2,kk1,kk2,ii1,ii2
@@ -817,9 +802,6 @@ c sets up (water) mass flux array mfluxv (3d) and rqv (vertically integrated)
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
-
 
 	logical debug
 	integer i,k,l,lmin,lmax,nk,ibc,mode
@@ -954,10 +936,6 @@ c adjusts mass flux for dry nodes
 
 	implicit none
 
-	include 'param.h'
-
-
-
 	integer k,l
 
         logical iskout
@@ -987,13 +965,11 @@ c computes scalar flux from fluxes and concentrations
 
 	implicit none
 
-	include 'param.h'
-
 	character*(*) what
-	real r3v(nlvdi,1)	!concentration for boundary condition
-	real scal(nlvdi,1)	!concentration of scalar
-	real sflux(nlvdi,1)	!mass flux for each finite volume (return)
-	real sconz(nlvdi,1)	!concentration for each finite volume (return)
+	real r3v(nlvdi,nkn)	!concentration for boundary condition
+	real scal(nlvdi,nkn)	!concentration of scalar
+	real sflux(nlvdi,nkn)	!mass flux for each finite volume (return)
+	real sconz(nlvdi,nkn)	!concentration for each finite volume (return)
 	real ssurf		!value of scalar for surface flux
 
 	include 'mkonst.h'
@@ -1060,15 +1036,12 @@ c**********************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	character*(*) what
-	real mfluxv(nlvdi,1)	!mass flux
-	real sflux(nlvdi,1)	!scalar flux
-	real sconz(nlvdi,1)	!concentration for each finite volume
+	real mfluxv(nlvdi,nkn)	!mass flux
+	real sflux(nlvdi,nkn)	!scalar flux
+	real sconz(nlvdi,nkn)	!concentration for each finite volume
 
 	include 'femtime.h'
-
 
 	integer k,l,lmax
 	integer ifemop
@@ -1109,11 +1082,9 @@ c checks scalar flux
 
 	implicit none
 
-	include 'param.h'
-
 	character*(*) what
-	real scal(nlvdi,1)	!concentration of scalar
-	real sconz(nlvdi,1)	!concentration for each finite volume
+	real scal(nlvdi,nkn)	!concentration of scalar
+	real sconz(nlvdi,nkn)	!concentration for each finite volume
 
 	include 'mkonst.h'
 	include 'femtime.h'
@@ -1154,8 +1125,6 @@ c initializes array for scalar boundary condition
 
 	implicit none
 
-	include 'param.h'
-
 	real r3v(nlvdi,nkn)
 
 	include 'mkonst.h'
@@ -1181,8 +1150,6 @@ c multiplies array for scalar boundary condition with value
 
 	implicit none
 
-	include 'param.h'
-
 	real r3v(nlvdi,nkn)
 	real value
 
@@ -1203,13 +1170,15 @@ c*******************************************************************
 
 	subroutine dist_3d(nlvddi,r3v,kn,nbdim,values)
 
+	use basin, only : nkn,nel,ngr,mbw
+
 	implicit none
 
 	integer nlvddi
-	real r3v(nlvddi,1)
+	real r3v(nlvddi,nkn)
 	integer kn
 	integer nbdim
-	real values(1)
+	real values(nkn)
 
 	integer l,lmax
 
@@ -1237,7 +1206,7 @@ c**********************************************************************
 	implicit none
 
 	integer nlvddi
-	real r3v(nlvddi,1)
+	real r3v(nlvddi,n)
 	integer n
 	real value
 
@@ -1256,7 +1225,7 @@ c**********************************************************************
         implicit none
 
         integer nlvddi
-        real r3v(nlvddi,1)
+        real r3v(nlvddi,n)
         integer n
         real value
 
@@ -1280,8 +1249,6 @@ c prints non-flag entries of array for scalar boundary condition
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
 
 	real r3v(nlvdi,nkn)
 
@@ -1314,8 +1281,6 @@ c returns boundary flux of node k
 	integer k	!node
 	real flux	!flux in node k (return)
 
-	include 'param.h'
-
 	flux = rqv(k)
 
 	end
@@ -1334,8 +1299,6 @@ c compute discharge from water level
 	integer levflx		!type of function
 	integer kn		!node number
 	real rw			!discharge computed
-
-	include 'param.h'
 
 	real z,a,b,c,z0
 
@@ -1460,8 +1423,6 @@ c for z-boundaries 0 is returned
 
 	real get_discharge
 	integer ibc
-
-	include 'param.h'
 
 	integer itype,nk,i,k
 	real acc

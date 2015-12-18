@@ -39,10 +39,7 @@ c   rdist:   0   0  1/4 2/4 3/4  1   1   1   ...
 
 	implicit none
 
-	include 'param.h'
-
-        real rdist(1)
-
+        real rdist(nkn)
 
 c local variables
 
@@ -130,10 +127,8 @@ c example: neibors of rdist=1 nodes have rdist=2 etc.
 
         integer nadist
         integer nkn
-        integer idist(1)
-        real rdist(1)
-
-	include 'param.h'
+        integer idist(nkn)
+        real rdist(nkn)
 
         integer k,kk,i
         integer n
@@ -227,10 +222,8 @@ c example: neibors of rdist=1 nodes have rdist=2 etc.
         implicit none
 
         integer nkn
-        integer idist(1)
-        real rdist(1)
-
-	include 'param.h'
+        integer idist(nkn)
+        real rdist(nkn)
 
 	logical bdebug
         integer k,kk,ka,i,ks

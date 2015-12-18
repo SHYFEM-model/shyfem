@@ -54,9 +54,9 @@ c******************************************************************
 	implicit none
 
 	integer nlvddi,nsect
-	integer nlayers(1)
+	integer nlayers(nsect)
 	integer nr
-	real masst(0:nlvddi,3,1)
+	real masst(0:nlvddi,3,nsect)
 
 	integer i,l,lmax
 
@@ -79,10 +79,10 @@ c******************************************************************
 	implicit none
 
 	integer nlvddi,nsect
-	integer nlayers(1)
+	integer nlayers(nsect)
 	integer nr
-	real masst(0:nlvddi,3,1)
-	real fluxes(0:nlvddi,3,1)
+	real masst(0:nlvddi,3,nsect)
+	real fluxes(0:nlvddi,3,nsect)
 
 	integer i,l,lmax
 
@@ -105,10 +105,10 @@ c******************************************************************
 	implicit none
 
 	integer nlvddi,nsect
-	integer nlayers(1)
+	integer nlayers(nsect)
 	integer nr
-	real masst(0:nlvddi,3,1)
-	real fluxes(0:nlvddi,3,1)
+	real masst(0:nlvddi,3,nsect)
+	real fluxes(0:nlvddi,3,nsect)
 
 	integer i,l,lmax
 	real rr
@@ -141,15 +141,13 @@ c flux are divided into total, positive and negative
 
 	implicit none
 
-	include 'param.h'
-
 	integer kfluxm
-	integer kflux(1)
-	integer iflux(3,1)
+	integer kflux(kfluxm)
+	integer iflux(3,kfluxm)
 	real az
-	real fluxes(0:nlvdi,3,1)	!computed fluxes (return)
+	real fluxes(0:nlvdi,3,*)	!computed fluxes (return)
 	integer is			!type of scalar (0=mass)
-	real scalar(nlvdi,1)
+	real scalar(nlvdi,*)
 
 	integer nnode,ifirst,ilast,ntotal
 	integer ns
@@ -178,15 +176,13 @@ c computes flux through one section
 
 	implicit none
 
-	include 'param.h'
-
 	integer n
-	integer kflux(1)
-	integer iflux(3,1)
+	integer kflux(n)
+	integer iflux(3,n)
 	real az
 	real fluxes(0:nlvdi,3)		!computed fluxes (return)
 	integer is			!type of scalar (0=mass)
-	real scalar(nlvdi,1)
+	real scalar(nlvdi,*)
 
 	integer i,k,l,lkmax
 	integer istype,iafter,ibefor
@@ -254,9 +250,9 @@ c sets up array iflux
 	implicit none
 
         integer kfluxm		!total number of nodes in kflux
-        integer kflux(1)	!nodes in sections
+        integer kflux(kfluxm)	!nodes in sections
 	integer nsect		!number of section (return)
-	integer iflux(3,1)	!internal array for flux computation (return)
+	integer iflux(3,*)	!internal array for flux computation (return)
 
 	integer ifirst,ilast,nnode,ntotal
 
@@ -301,8 +297,8 @@ c sets up info structure iflux(3,1) for one section
 	implicit none
 
 	integer n
-	integer kflux(1)
-	integer iflux(3,1)
+	integer kflux(n)
+	integer iflux(3,n)
 
 	integer i,k
 	integer ktype
@@ -393,11 +389,9 @@ c**********************************************************************
 	implicit none
 
 	integer kfluxm
-	integer kflux(1)
-	integer nlayers(1)
+	integer kflux(*)
+	integer nlayers(*)
 	integer nlmax
-
-	include 'param.h'
 
 	integer ns
 	integer nnode,ifirst,ilast

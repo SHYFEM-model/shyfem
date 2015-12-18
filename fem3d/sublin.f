@@ -38,7 +38,7 @@ c checks compatibility of kline -> returns number of lines or -1 (error)
 
 	integer klineck
 	integer n		!size of kline
-	integer kline(1)
+	integer kline(n)
 
 	integer nnode,ifirst,ilast,ntotal
 	integer nlines
@@ -71,7 +71,7 @@ c tests for uniqueness
 	implicit none
 
 	integer n
-	integer kline(1)
+	integer kline(n)
 	logical bstop
 
 	integer i,k,j
@@ -103,7 +103,7 @@ c tests for adjacency
 	implicit none
 
 	integer n
-	integer kline(1)
+	integer kline(n)
 	logical bstop
 
 	integer i,k1,k2
@@ -177,7 +177,7 @@ c leading and trailing zeros are allowed
 	implicit none
 
 	logical nextline	!true if new line found
-	integer inode(1)	!list of nodes that define line    (in)
+	integer inode(ndim)	!list of nodes that define line    (in)
 	integer ndim		!total number of nodes given in node() (in)
 	integer nnode		!start/end of line in inode()       (in/out)
 	integer ifirst		!start of line in inode()           (out)
@@ -188,6 +188,8 @@ c leading and trailing zeros are allowed
 	iw = -1				! -1 befor  0 in   +1 after line
 	if( nnode .le. 0 ) nnode = 1
 	i = nnode
+	ifirst = 0
+	ilast = 0
 
 	do while( i .le. ndim .and. iw .ne. 1 )
 	    node = inode(i)
@@ -233,7 +235,7 @@ c           inode(ilast)  is last  node of line
 	implicit none
 
 	logical extrline	!true if new line found
-	integer inode(1)	!list of nodes that define line    	(in)
+	integer inode(ndim)	!list of nodes that define line    	(in)
 	integer ndim		!total number of nodes given in node() 	(in)
 	integer nline		!number of line to extract		(in)
 	integer ifirst		!start of line in inode()           	(out)
@@ -268,7 +270,7 @@ c reverses line
 	implicit none
 
 	integer n		!total number of nodes
-	integer kline(1)	!nodes in line
+	integer kline(n)	!nodes in line
 
 	integer i,ihigh,kmem
 

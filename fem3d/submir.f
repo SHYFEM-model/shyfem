@@ -41,7 +41,7 @@ c********************************************************************
 
       SUBROUTINE LEQT1B (A,N,NLC,NUC,IA,B,M,IB,IJOB,XL,IER)
 C
-      DIMENSION          A(IA,1),XL(N,1),B(IB,1)
+      DIMENSION          A(IA,*),XL(N,*),B(IB,*)
       DATA               ZERO/0./,ONE/1.0/
 C                                  FIRST EXECUTABLE STATEMENT
       IER = 0
@@ -181,7 +181,7 @@ c********************************************************************
 C
       SUBROUTINE LEQT2B (A,N,NLC,NUC,IA,B,M,IB,IJOB,U,IU,XL,IER)
 C
-      DIMENSION          A(IA,1),U(IU,1),XL(N,1),B(IB,1)
+      DIMENSION          A(IA,*),U(IU,*),XL(N,*),B(IB,*)
       DOUBLE PRECISION   SUM
       DATA               ZERO/0.0/,ITMAX/50/
 C                                  FIRST EXECUTABLE STATEMENT
@@ -259,7 +259,7 @@ c********************************************************************
 C
       SUBROUTINE LEQ1PB (A,N,NC,IA,B,IB,M,IDGT,D1,D2,IER)
 C
-      REAL               A(IA,1),B(IB,1),D1,D2
+      REAL               A(IA,*),B(IB,*),D1,D2
 C                                  FIRST EXECUTABLE STATEMENT
       IER = 0*IDGT
 C                                  DECOMPOSITION OF MATRIX A INTO
@@ -280,7 +280,7 @@ c********************************************************************
 C
       SUBROUTINE LEQ2PB (A,N,NC,IA,B,IB,M,IDGT,D1,D2,WK,IER)
 C
-      REAL               A(IA,1),B(IB,1),WK(N,1),D1,D2
+      REAL               A(IA,*),B(IB,*),WK(N,*),D1,D2
 C                                  FIRST EXECUTABLE STATEMENT
       IER = 0
       K = NC+2
@@ -306,7 +306,7 @@ c********************************************************************
 C
       SUBROUTINE LUDAPB (A,N,NC,IA,UL,IU,D1,D2,IER)
 C
-      REAL               ZERO,A(IA,1),UL(IU,1),D1,D2,ONE,SUM,
+      REAL               ZERO,A(IA,*),UL(IU,*),D1,D2,ONE,SUM,
      +                   RN,FOUR,SIXTN,SIXTH
       DATA               ZERO/0.0/,FOUR/4.0/,SIXTN/16./,
      +                   SIXTH/.0625/,ONE/1.0/
@@ -371,7 +371,7 @@ c********************************************************************
 C
       SUBROUTINE LUELPB (UL,B,N,NC,IA,X)
 C
-      REAL               UL(IA,1),B(1),X(1),ZERO,SUM
+      REAL               UL(IA,*),B(*),X(*),ZERO,SUM
       DATA               ZERO/0.0/
 C                                  FIRST EXECUTABLE STATEMENT
 C                                  SOLUTION LY = B
@@ -418,7 +418,7 @@ c********************************************************************
 C
       SUBROUTINE LUREPB (A,N,NC,IA,UL,IU,B,X,IDGT,RES,IER)
 C
-      REAL               A(IA,1),B(1),UL(IU,1),RES(1),X(1),XNORM,
+      REAL               A(IA,*),B(*),UL(IU,*),RES(*),X(*),XNORM,
      +                   ZERO,DXNORM
       DOUBLE PRECISION   SUM
       DATA               ITMAX/50/
@@ -479,7 +479,7 @@ C
 	implicit integer (i-n)
 	implicit double precision (a-h)
 	implicit double precision (o-z)
-      DIMENSION          A(IA,1),XL(N,1),B(IB,1)
+      DIMENSION          A(IA,*),XL(N,*),B(IB,*)
       DATA               ZERO/0./,ONE/1.0/
 C                                  FIRST EXECUTABLE STATEMENT
       IER = 0
@@ -622,7 +622,7 @@ C
 	implicit integer (i-n)
 	implicit double precision (a-h)
 	implicit double precision (o-z)
-      DIMENSION          A(IA,1),U(IU,1),XL(N,1),B(IB,1)
+      DIMENSION          A(IA,*),U(IU,*),XL(N,*),B(IB,*)
       DOUBLE PRECISION   SUM
       DATA               ZERO/0.0/,ITMAX/50/
 C                                  FIRST EXECUTABLE STATEMENT
@@ -706,7 +706,7 @@ C
 	implicit integer (i-n)
 	implicit double precision (a-h)
 	implicit double precision (o-z)
-      double precision               A(IA,1),B(IB,1),D1,D2
+      double precision               A(IA,*),B(IB,*),D1,D2
 C                                  FIRST EXECUTABLE STATEMENT
       IER = 0*IDGT
 C                                  DECOMPOSITION OF MATRIX A INTO
@@ -732,7 +732,7 @@ C
 	implicit integer (i-n)
 	implicit double precision (a-h)
 	implicit double precision (o-z)
-      double precision          A(IA,1),B(IB,1),WK(N,1),D1,D2
+      double precision          A(IA,*),B(IB,*),WK(N,*),D1,D2
 C                                  FIRST EXECUTABLE STATEMENT
       IER = 0
       K = NC+2
@@ -764,7 +764,7 @@ C
 	implicit integer (i-n)
 	implicit double precision (a-h)
 	implicit double precision (o-z)
-      double precision    ZERO,A(IA,1),UL(IU,1),D1,D2,ONE,SUM,
+      double precision    ZERO,A(IA,*),UL(IU,*),D1,D2,ONE,SUM,
      +                   RN,FOUR,SIXTN,SIXTH
       DATA               ZERO/0.0/,FOUR/4.0/,SIXTN/16./,
      +                   SIXTH/.0625/,ONE/1.0/
@@ -832,7 +832,7 @@ C
 	implicit integer (i-n)
 	implicit double precision (a-h)
 	implicit double precision (o-z)
-      double precision               UL(IA,1),B(1),X(1),ZERO,SUM
+      double precision               UL(IA,*),B(*),X(*),ZERO,SUM
       DATA               ZERO/0.0/
 C                                  FIRST EXECUTABLE STATEMENT
 C                                  SOLUTION LY = B
@@ -882,7 +882,7 @@ C
 	implicit integer (i-n)
 	implicit double precision (a-h)
 	implicit double precision (o-z)
-      double precision      A(IA,1),B(1),UL(IU,1),RES(1),X(1),XNORM,
+      double precision      A(IA,*),B(*),UL(IU,*),RES(*),X(*),XNORM,
      +                   ZERO,DXNORM
       DOUBLE PRECISION   SUM
       DATA               ITMAX/50/
@@ -1035,7 +1035,7 @@ c********************************************************************
 C
 	SUBROUTINE GELB(R,A,M,N,MUD,MLD,EPS,IER)
 C
-	DIMENSION R(1),A(1)
+	DIMENSION R(*),A(*)
 	J=0
 	JJ=0
 	IF(MLD)47,1,1
@@ -1173,7 +1173,7 @@ c********************************************************************
 C
 	SUBROUTINE DGELB(R,A,M,N,MUD,MLD,EPS,IER)
 C
-	DIMENSION R(1),A(1)
+	DIMENSION R(*),A(*)
 	DOUBLE PRECISION R,A,PIV,TB,TOL
 	J=0
 	JJ=0
@@ -1312,7 +1312,7 @@ c******************************************************************
 c
 	SUBROUTINE MCHB(R,A,M,N,MUD,IOP,EPS,IER)
 c
-        DIMENSION R(1),A(1)
+        DIMENSION R(*),A(*)
 	DOUBLE PRECISION TOL,SUM,PIV
 	PIV=0.
 	IF(IABS(IOP)-3)1,1,43
@@ -1429,7 +1429,7 @@ c******************************************************************
 c
 	SUBROUTINE DMCHB(R,A,M,N,MUD,IOP,EPS,IER)
 c
-        DIMENSION R(1),A(1)
+        DIMENSION R(*),A(*)
 	DOUBLE PRECISION TOL,SUM,PIV,R,A
 	PIV=0.
 	IF(IABS(IOP)-3)1,1,43
@@ -1708,3 +1708,6 @@ c
 c
         return
         end
+
+c*************************************************************************
+

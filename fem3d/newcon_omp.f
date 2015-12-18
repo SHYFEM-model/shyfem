@@ -99,7 +99,8 @@ c DPGGU -> introduced double precision to stabilize solution
 	real, intent(in) :: difmol,robs,wsink,rload,ddt,rkpar
 	real, intent(in) :: azpar,adpar,aapar
 	real,dimension(nlvddi,nkn),intent(inout) :: cn1
-	real,dimension(nlvddi,nkn),intent(in) :: co1,difhv,cbound
+	real,dimension(nlvddi,nkn),intent(in) :: co1,cbound
+	real,dimension(nlvddi,nel),intent(in) :: difhv
 	real,dimension(nlvddi,nkn),intent(in) :: gradxv,gradyv
 	real,dimension(nlvddi,nkn),intent(in) :: cobs,load
 	real,dimension(0:nlvddi,nkn),intent(in) :: difv,wsinkv
@@ -294,7 +295,8 @@ c*****************************************************************
       
       integer,intent(in) :: ie,nlvddi,nlev,itvd,itvdv
       real,intent(in) :: difmol,robs,wsink,rload,rkpar
-      real,dimension(nlvddi,nkn),intent(in) :: cn1,difhv,cbound
+      real,dimension(nlvddi,nkn),intent(in) :: cn1,cbound
+      real,dimension(nlvddi,nel),intent(in) :: difhv
       real,dimension(nlvddi,nkn),intent(in) :: gradxv,gradyv,cobs,load
       real,intent(in),dimension(0:nlvddi,nkn) :: wsinkv,difv
       double precision,intent(in) :: dt

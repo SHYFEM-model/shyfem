@@ -1,4 +1,11 @@
 
+18.12.2015    VERS_7_3_17
+
+	shybas interpolation is working now
+	grid can now delete double node in line
+	distribution prepared for bounds check
+	changes in compiler options in Rules.make
+
 16.12.2015    VERS_7_3_16
 
 	3d matrix solution routines introduced

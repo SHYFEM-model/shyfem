@@ -214,6 +214,9 @@ c
 
 c end reading ----------------------------------------------------
 
+	nknddi = nkn
+	nelddi = nel
+
 	call ketest(nel,nen3v)
 	call gtest('end read',nelddi,nkn,nel,nen3v)
 
@@ -480,7 +483,10 @@ c controlls uniqueness of elements (shell for equale)
         do while(ie1.le.nel)
           ie2=ie1+1
 c          write(6,*) nel,ie1,ie2,index(ie1),index(ie2)
-          do while(ie2.le.nel.and.iaux(index(ie1)).eq.iaux(index(ie2)))
+          !do while(ie2.le.nel.and.iaux(index(ie1)).eq.iaux(index(ie2)))
+          do
+	    if( ie2 > nel ) exit
+	    if( iaux(index(ie1)) /= iaux(index(ie2)) ) exit
             ie2=ie2+1
           end do
           if(ie2-ie1.gt.1) then
@@ -897,7 +903,7 @@ c reverses numbering of nodes
 	implicit none
 
 	integer nkn
-	integer iphv(1), kphv(1)
+	integer iphv(nkn), kphv(nkn)
 
 	integer i
 
@@ -919,7 +925,7 @@ c initializes numbering of nodes
 	implicit none
 
 	integer nkn
-	integer iphv(1), kphv(1)
+	integer iphv(nkn), kphv(nkn)
 
 	integer i
 
@@ -939,7 +945,7 @@ c zeros numbering of nodes
 	implicit none
 
 	integer nkn
-	integer iphv(1), kphv(1)
+	integer iphv(nkn), kphv(nkn)
 
 	integer i
 
@@ -1323,6 +1329,7 @@ c**********************************************************
 	berror = .false.
 
 	write(6,*) 'testing ... ',text
+	write(6,*) nelddi,nkn,nel
 
 	do ie=1,nel
 	  do ii=1,3
@@ -1349,9 +1356,9 @@ c**********************************************************
 
 	character*(*) text
 	integer nkn
-	integer ipv(1)
-	integer iphv(1)
-	integer kphv(1)
+	integer ipv(nkn)
+	integer iphv(nkn)
+	integer kphv(nkn)
 
 	integer i
 
@@ -1385,7 +1392,7 @@ c checks uniquness of nodes in elements
 	implicit none
 
 	integer nel
-	integer nen3v(3,1)
+	integer nen3v(3,nel)
 
 	integer ie,ii
 	integer kn1,kn2,kn3

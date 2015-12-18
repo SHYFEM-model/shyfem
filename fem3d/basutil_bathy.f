@@ -20,6 +20,7 @@ c 01.06.2012	ggu	some more changes
 c 13.06.2013	ggu	copy_depth() renamed to transfer_depth()
 c 13.02.2014	ggu	new data written, can read also bas file
 c 05.03.2014	ggu	subroutines copied to other routine
+c 16.12.2015    ggu     depth ht is now passed in for square interpol
 c
 c****************************************************************
 
@@ -44,7 +45,7 @@ c takes care of lat/lon coordinates
 	real, allocatable :: ap(:)
 
 	integer node,nit
-	integer n,i
+	integer n,i,nn
 	integer nk,ne,nl,nne,nnl
         integer ner,nco,nknh,nelh,nli
 	integer isphe
@@ -175,7 +176,8 @@ c-----------------------------------------------------------------
 c allocate arrays for basin
 c-----------------------------------------------------------------
 
-	allocate(xt(nel),yt(nel),at(nel),ht(nel))
+	nn = max(nkn,nel)
+	allocate(xt(nn),yt(nn),at(nn),ht(nn))
 
 c-----------------------------------------------------------------
 c handling of depth and coordinates
@@ -206,7 +208,7 @@ c-----------------------------------------------------------------
 	if( mode .eq. 1 ) then
 	  call interpole(np,xp,yp,dp,nt,xt,yt,at,ht,umfact,nminimum)
         else if( mode .eq. 2 ) then
-	  call interpolq(np,xp,yp,dp)
+	  call interpolq(np,xp,yp,dp,ht)
 	else if( mode .eq. 3 ) then
 	  call make_auto_corr(np,xp,yp,dp,ap,ufact)
 	  call interpola(np,xp,yp,dp,ap,nt,xt,yt,at,ht)

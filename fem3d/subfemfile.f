@@ -528,7 +528,7 @@ c returns data description for first record
 	implicit none
 
 	character*(*) file		!file name
-	character*80 strings(1)		!return - must have dimension nvar
+	character*80 strings(*)		!return - must have dimension nvar
 	integer ierr
 
 	integer iformat

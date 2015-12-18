@@ -127,15 +127,15 @@ c*************************************************************************
 
 	if( buse3d ) then
 	  nnzero = n3zero
-          write(6,*)'3D nnzero',nnzero,ngl
           call coocsr(ngl,nnzero,c3coo,i3coo,j3coo,csr,jcsr,icsr)
+          !write(6,*)'3D nnzero',nnzero,ngl
 	  !call coo_show(ngl,nnzero,i3coo,j3coo,c3coo)
 	  !call csr_show(ngl,nnzero,icsr,jcsr,csr)
 	  !call coo_print(ngl,nnzero,i3coo,j3coo,c3coo,rvec3d)
 	else
 	  nnzero = n2zero
-          write(6,*)'2D nnzero',nnzero,ngl
           call coocsr(ngl,nnzero,c2coo,i2coo,j2coo,csr,jcsr,icsr)
+          !write(6,*)'2D nnzero',nnzero,ngl
 	  !call coo_show(ngl,nnzero,i2coo,j2coo,c2coo)
 	  !call csr_show(ngl,nnzero,icsr,jcsr,csr)
 	  !call coo_print(ngl,nnzero,i2coo,j2coo,c2coo,rvec)

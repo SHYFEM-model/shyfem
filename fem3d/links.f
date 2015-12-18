@@ -36,9 +36,9 @@ c arguments
         integer nlkddi
         integer nkn
         integer nel
-        integer nen3v(3,1)
-        integer ilinkv(1)
-        integer lenkv(1)
+        integer nen3v(3,nel)
+        integer ilinkv(nkn+1)
+        integer lenkv(*)
 c local
         logical binside
         integer nloop
@@ -237,9 +237,9 @@ c checks structure of lenkv
 
 c arguments
         integer nkn
-        integer ilinkv(1)
-        integer lenkv(1)
-	integer nen3v(3,1)
+        integer ilinkv(nkn+1)
+        integer lenkv(*)
+	integer nen3v(3,*)
 c local
 	integer nbnd,nnull
 	integer k,k0,k1,ie,ie0,ie1
@@ -336,10 +336,10 @@ c arguments
         integer nlkddi
         integer nkn
         integer nel
-        integer nen3v(3,1)
-        integer ilinkv(1)
-        integer lenkv(1)
-        integer lenkiiv(1)
+        integer nen3v(3,nel)
+        integer ilinkv(nkn+1)
+        integer lenkv(*)
+        integer lenkiiv(*)
 c local
         integer ie,i,n,k,ii,ibase
 
@@ -395,9 +395,9 @@ c linkv     link to node numbers
 
 c arguments
         integer nkn
-        integer ilinkv(1)
-        integer lenkv(1)
-        integer linkv(1)
+        integer ilinkv(nkn+1)
+        integer lenkv(*)
+        integer linkv(*)
 c local
         integer ie,k
         integer ip,ip0,ip1
@@ -452,8 +452,8 @@ c checks structure of lenkv
 
 c arguments
         integer nkn
-        integer ilinkv(1)
-        integer linkv(1)
+        integer ilinkv(nkn+1)
+        integer linkv(*)
 c local
 	integer k,k1,i
 	integer ip,ip0,ip1
@@ -522,10 +522,10 @@ c makes vector kantv
 
 c arguments
         integer nkn
-        integer ilinkv(1)
-        integer lenkv(1)
-        integer linkv(1)
-        integer kantv(2,1)
+        integer ilinkv(nkn+1)
+        integer lenkv(*)
+        integer linkv(*)
+        integer kantv(2,nkn)
 c local
 	integer k
 	integer ip,ip0,ip1
@@ -566,7 +566,7 @@ c checks structure of kantv
 
 c arguments
         integer nkn
-        integer kantv(2,1)
+        integer kantv(2,nkn)
 c local
 	integer k,k1,k2
 	integer nbnd,nint
@@ -623,10 +623,10 @@ c makes vector ieltv (without open boundary nodes)
 
 c arguments
         integer nkn,nel
-        integer ilinkv(1)
-        integer lenkv(1)
-        integer linkv(1)
-        integer ieltv(3,1)
+        integer ilinkv(nkn+1)
+        integer lenkv(*)
+        integer linkv(*)
+        integer ieltv(3,nel)
 c local
 	integer k,ie,ii
 	integer ip,ip0,ip1
@@ -688,7 +688,7 @@ c checks structure of ieltv
 
 c arguments
         integer nel
-        integer ieltv(3,1)
+        integer ieltv(3,nel)
 c local
 	integer k,ie,ii
 	integer kn,inn,ien,ienn
@@ -769,8 +769,8 @@ c updates vector ieltv with open boundary nodes
 
 c arguments
         integer nel
-        integer ibound(1)	! >0 => open boundary node
-        integer ieltv(3,1)
+        integer ibound(*)	! >0 => open boundary node
+        integer ieltv(3,nel)
 c local
 	integer k,ie,ii,i
 	integer ip,ip0,ip1
@@ -814,7 +814,7 @@ c initializes dxv,dyv
 
 c arguments
         integer nkn
-	real dxv(1),dyv(1)
+	real dxv(nkn),dyv(nkn)
 c local
 	integer k,ie,ii,i
 	integer ip,ip0,ip1

@@ -637,6 +637,8 @@ c************************************************************************
         real k(0:1),eps(0:1),len(0:1),rkm(0:1),rkt(0:1)
         real kold(0:1),epsold(0:1),lenold(0:1),rkmold(0:1),rktold(0:1)
 
+	lmax = 1
+
 	call kepsin(lmax,k,eps,len,rkm,rkt
      +			,kold,epsold,lenold,rkmold,rktold)
 	call keps(lmax,dt,rho0,taus,taub,dl,u,v,rho,rkm,rkt,k,eps)

@@ -170,7 +170,7 @@ c tests array for nan
 	implicit none
 
 	integer n
-	real a(1)
+	real a(n)
 	character*(*) text
 
 	integer i
@@ -197,7 +197,7 @@ c tests array for nan - use other routines below
 
 	integer nlv,n
 	real valmin,valmax
-	real a(1)
+	real a(nlv*n)
 	character*(*) textgen,text
 
 	integer i
@@ -233,7 +233,7 @@ c tests array for nan and strange values
 	implicit none
 
 	integer n
-	real a(1)
+	real a(n)
 	real vmin,vmax
 	character*(*) textgen,text
 
@@ -281,7 +281,7 @@ c tests array for nan and strange values
 	implicit none
 
 	integer ndim,nlv,n
-	real a(ndim,1)
+	real a(ndim,n)
 	real vmin,vmax
 	character*(*) textgen,text
 

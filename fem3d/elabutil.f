@@ -508,11 +508,9 @@ c       computes statistics on levels
 
         implicit none
 
-        include 'param.h'
-
         integer nkn
         integer nlvddi
-        integer ilhkv(1)
+        integer ilhkv(nkn)
 
         integer count(nlvddi)
         integer ccount(nlvddi)
@@ -563,8 +561,6 @@ c***************************************************************
         use basin
 
         implicit none
-
-        include 'param.h'
 
         integer n
         integer nodes(n)
@@ -852,9 +848,9 @@ c***************************************************************
         integer lmax
         integer ivar
         real z,h
-        real c(1)
-        real hlv(1)
-        real hl(1)
+        real c(lmax)
+        real hlv(lmax)
+        real hl(lmax)
 
         logical bcenter
         integer l

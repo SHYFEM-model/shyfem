@@ -123,7 +123,7 @@ c******************************************************************
 	implicit none
 
 	integer nlv		!total number of layers
-	real hlv(1)		!layer structure
+	real hlv(nlv)		!layer structure
 	integer nsigma		!total number of sigma layers (return)
 	real hsigma		!closing depth of hybrid layers (return)
 
@@ -189,8 +189,8 @@ c in this case the last values for hl are 0
 	real hsigma		!closing depth of hybrid layers
 	real z			!water level
 	real h			!total depth
-	real hlv(1)		!layer structure
-	real hdl(1)		!layer thickness computed (return)
+	real hlv(lmax)		!layer structure
+	real hdl(lmax)		!layer thickness computed (return)
 
 	logical bdebug,berror
 	integer ii,l

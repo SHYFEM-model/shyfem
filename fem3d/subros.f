@@ -71,6 +71,7 @@ c
 	nvert=0
         ms=nkn+1
 	ngr=ngrddi
+	kmerk = 0
 c
         do while (true)
 c

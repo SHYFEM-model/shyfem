@@ -5,6 +5,7 @@ c revision log :
 c
 c 21.02.2014	ggu	subroutines copied from basbathy
 c 06.05.2015	ggu	set number of max iterations (imax)
+c 16.12.2015	ggu	depth ht is now passed in for square interpol
 c
 c****************************************************************
 
@@ -64,9 +65,9 @@ c*******************************************************************
 c*******************************************************************
 c*******************************************************************
 
-	subroutine interpolq(np,xp,yp,dp)
+	subroutine interpolq(np,xp,yp,dp,ht)
 
-c interpolates depth values
+c interpolates depth values - works only on elements
 
 	use mod_depth
 	use basin
@@ -77,11 +78,10 @@ c interpolates depth values
 	real xp(np)
 	real yp(np)
 	real dp(np)
-
-	include 'param.h'
+	real ht(max(nkn,nel))
 
 	integer ie,ii,k
-	integer netot
+	integer netot,nnone
 	integer imax
 	real x,y,d
 	real depth
@@ -130,7 +130,8 @@ c-----------------------------------------------------------------
 	  end if
 	end do
 
-	write(6,*) 'Elements without depth (start): ',nel-netot,nel
+	nnone = nel-netot
+	write(6,*) 'Elements without depth (start): ',nnone,'/',nel
 
 c-----------------------------------------------------------------
 c initial interpolation -> point in element
@@ -172,7 +173,10 @@ c-----------------------------------------------------------------
 	  end if
 	end do
 
-	write(6,*) 'Elements without depth (convex): ',nel-netot,nel
+	write(6,*) 'Elements without depth (start):  ',nnone,'/',nel
+	write(6,*) 'Elements without depth (convex): ',nel-netot,'/',nel
+	write(6,'(a)') 'interpol      iter   without      with     total'
+	write(6,1000) 'convex: ',-1,nel-netot,netot,nel
 
 c-----------------------------------------------------------------
 c next interpolation -> point in square
@@ -220,7 +224,7 @@ c-----------------------------------------------------------------
 	    netot = netot + 1
 	  end if
 	 end do
-	 write(6,*) 'Elements without depth (quad): ',i,nel-netot,nel
+	 write(6,1000) 'square: ',i,nel-netot,netot,nel
 	 i = i + 1
 	end do
 
@@ -247,9 +251,17 @@ c-----------------------------------------------------------------
 	write(6,*) 'Elements without depth (end): ',nel-netot,nel
 
 c-----------------------------------------------------------------
+c copy interpolated depths to ht
+c-----------------------------------------------------------------
+
+	ht(1:nel) = hev(1:nel)
+
+c-----------------------------------------------------------------
 c end of routine
 c-----------------------------------------------------------------
 
+	return
+ 1000	format(a,4i10)
 	end
 
 c*******************************************************************

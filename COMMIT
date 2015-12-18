@@ -1,5 +1,81 @@
 ============================================================
 
+Fri Dec 18 11:37:12 CET 2015
+
+small bugs and bounds check
+
+ .gitignore              |    2 +
+ LOG                     |   33 +-
+ RELEASE_NOTES           |    7 +
+ Rules.make              |   92 ++++-
+ fem3d/Makefile          | 1031 +++++++++++++++++++++++------------------------
+ fem3d/basutil_bathy.f   |    8 +-
+ fem3d/basutil_interp.f  |   28 +-
+ fem3d/bc2fem.f          |    1 +
+ fem3d/bdist.f           |   17 +-
+ fem3d/debug.f           |    8 +-
+ fem3d/elabutil.f        |   12 +-
+ fem3d/kepsd.f           |    2 +
+ fem3d/links.f           |   56 +--
+ fem3d/newcon.f          |   52 +--
+ fem3d/newcon_omp.f      |    6 +-
+ fem3d/newpoi.f          |    2 +
+ fem3d/newtra.f          |   24 +-
+ fem3d/nonhydro_lp.f     |   11 -
+ fem3d/nonhydro_pard.f   |    9 -
+ fem3d/nonhydro_spk.f    |    5 -
+ fem3d/noselab1.f        |   12 +-
+ fem3d/sedi3d.f          |    1 +
+ fem3d/shypre.f          |   23 +-
+ fem3d/sigmautil.f       |    6 +-
+ fem3d/subbnd.f          |    4 +-
+ fem3d/subbndo.f         |   63 ++-
+ fem3d/subcmv.f          |    6 +-
+ fem3d/subcon1.f         |   31 +-
+ fem3d/subcus.f          |    2 +-
+ fem3d/subdep.f          |   49 +--
+ fem3d/subele.f          |   96 +----
+ fem3d/subext.f          |   53 +--
+ fem3d/subexta.f         |    5 +-
+ fem3d/subfemfile.f      |    2 +-
+ fem3d/subfemintp.f      |   13 +-
+ fem3d/subflx.f          |   32 +-
+ fem3d/subflx3d.f        |   16 +-
+ fem3d/subflxu.f         |   48 +--
+ fem3d/subgotm.f         |   31 +-
+ fem3d/subgrd.f          |   12 +-
+ fem3d/sublin.f          |   14 +-
+ fem3d/sublnks.f         |    4 +-
+ fem3d/submir.f          |   39 +-
+ fem3d/subn11.f          |   69 +---
+ fem3d/subnos.f          |   52 +--
+ fem3d/subous.f          |   64 +--
+ fem3d/subqfxt.f         |    3 +-
+ fem3d/subreg.f          |    3 +
+ fem3d/subros.f          |    1 +
+ fem3d/subscn.f          |    8 +-
+ fem3d/subspk.f          |    4 +-
+ fem3d/subuti.f          |   23 +-
+ femadj/Makefile         |   23 +-
+ femcheck/Rules.dist     |   92 ++++-
+ femdoc/final/shyfem.pdf |  Bin 284195 -> 284195 bytes
+ femplot/Makefile        |   93 +++--
+ femplot/col.f           |    3 +
+ femplot/supint.f        |    2 +
+ femplot/suplin.f        |    2 +
+ grid/Makefile           |   98 ++---
+ grid/gridma1.c          |    6 +-
+ hcbs/Makefile           |    6 +-
+ mesh/Makefile           |   90 ++---
+ post/Makefile           |    8 +-
+ 64 files changed, 1264 insertions(+), 1354 deletions(-)
+ deleted:
+    fem3d/nonhydro_lp.f
+    fem3d/nonhydro_pard.f
+    fem3d/nonhydro_spk.f
+
+============================================================
+
 Wed Dec 16 16:24:31 CET 2015
 
 New version 7_3_16

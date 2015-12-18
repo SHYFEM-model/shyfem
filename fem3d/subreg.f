@@ -823,6 +823,9 @@ c		> 0	flag found in interpolation data
 	iflag = 0	!used flag for interpolation
 	iout = 0	!used outside point for interpolation
 
+	imin = 0
+	jmin = 0
+
 	xn = x0 + (nx-1)*dx
 	yn = y0 + (ny-1)*dy
 

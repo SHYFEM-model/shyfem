@@ -1,26 +1,23 @@
 
+18.12.2015
+
+ * ./grid/gridma1.c:
+ * 17-Dec-2015: delete node only if use is 0				*
+
+c ./fem3d/basutil_interp.f:
+c 16.12.2015	ggu	depth ht is now passed in for square interpol
+c
+c ./fem3d/basutil_bathy.f:
+c 16.12.2015    ggu     depth ht is now passed in for square interpol
+
+c ./fem3d/subfemintp.f:
+! 18.12.2015    ggu     in iff_peek_next_record() adjust date only if ierr==0
+
+
 16.12.2015
 
-c ./femplot/tmp/suplin.f:
-c 02.12.2015    ggu     bug fix in integrate_flux() - dx was used twice
-c
 c ./femplot/suplin.f:
 c 02.12.2015    ggu     bug fix in integrate_flux() - dx was used twice
-c
-c ./fem3d/tmp/coo/subcoo.f:
-c 04.12.2015    ggu     new approach for constructing matrix - also 3d
-c
-c ./fem3d/tmp/poisson/tmp/deb_poi/simsys_spk.f:
-! 09.12.2015	ggu	adapted to new pointers and 3d matrix
-c
-c ./fem3d/tmp/poisson/tmp/deb_poi/subcoo.f:
-c 04.12.2015    ggu     new approach for constructing matrix - also 3d
-c
-c ./fem3d/tmp/poisson/deb_poi/done/simsys_spk.f:
-! 09.12.2015	ggu	adapted to new pointers and 3d matrix
-c
-c ./fem3d/tmp/poisson/deb_poi/done/subcoo.f:
-c 04.12.2015    ggu     new approach for constructing matrix - also 3d
 c
 c ./fem3d/simsys_spk.f:
 ! 09.12.2015	ggu	adapted to new pointers and 3d matrix

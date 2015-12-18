@@ -484,8 +484,10 @@
 	  if( ipoiss == 5 ) then
 	    if( l == 1 ) then
 	      bnd = 10.
+	      pvar(l,:) = bnd
 	    else if( l == nlvdi ) then
 	      bnd = 20.
+	      pvar(l,:) = bnd
 	    end if
 	  else if( ipoiss == 6 ) then
 	    if( l == 1 ) then

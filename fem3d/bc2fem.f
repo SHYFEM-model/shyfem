@@ -671,6 +671,7 @@ c*****************************************************************
 	  if( n0 .eq. 0 ) then
 	    n0 = np
 	    allocate(data(n0))
+	    data = 0.
 	  end if
 	  if( nvar0 .eq. 0 ) nvar0 = nvar
 	  if( itanf .eq. -1 ) itanf = it

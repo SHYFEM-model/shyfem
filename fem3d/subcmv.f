@@ -166,7 +166,7 @@ c gets min/max grades to use for a starting point minimization
 	implicit none
 
 	integer ngr,nkn
-	integer ng(1)
+	integer ng(nkn)
 	integer jgrmin,jgrmax
 
 	real f(10)
@@ -212,7 +212,7 @@ c gets first level interactively
 	implicit none
 
 	integer nkn
-	integer iphv(1), kphv(1)
+	integer iphv(nkn), kphv(nkn)
 	integer knum
 
 	integer ianz
@@ -260,7 +260,7 @@ c initializes numbering of nodes for first node
         implicit none
 
         integer nkn
-        integer iphv(1), kphv(1)
+        integer iphv(nkn), kphv(nkn)
 	integer node,knum
 
         integer i

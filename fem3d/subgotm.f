@@ -135,6 +135,7 @@ c------------------------------------------------------
 
 	do k=1,nkn
 
+	    nlev = nlvdi
 	    call dep3dnod(k,mode,nlev,h)
 
 	    do l=1,nlev-1
@@ -261,14 +262,23 @@ c------------------------------------------------------
 	if( icall .lt. 0 ) return
 
 	if( icall .eq. 0 ) then
-	  write(*,*) 'starting GOTM turbulence model'
 
 	  czdef = getpar('czdef')
 	  bwave = has_waves()
 
+	  visv = 0.
+	  difv = 0.
+
+	  if( nlvdi <= 1 ) then
+	    icall = -1
+	    return
+	  end if
+
 c         --------------------------------------------------------
 c         Initializes gotm arrays 
 c         --------------------------------------------------------
+
+	  write(*,*) 'starting GOTM turbulence model'
 
 	  call gotm_init
 
@@ -312,6 +322,7 @@ c------------------------------------------------------
 
 	do k=1,nkn
 
+	    nlev = nlvdi
 	    call dep3dnod(k,+1,nlev,h)
 
             if( nlev .eq. 1 ) goto 1
@@ -454,15 +465,12 @@ c           ------------------------------------------------------
 	      visv(l,k) = num(laux)
 	      difv(l,k) = nuh(laux)
 	    end do
-	!write(84,*) k,nlev,(visv(l,k),l=0,nlev
 
     1     continue
 	end do
 
 	if( levdbg >= 2 ) call checka(nlvdi,shearf2,buoyf2,taub)
  
-	!write(70,*) 'rlmax: ',it,rlmax,nltot
-
 	ks = 0			!internal node number
 	ioutfreq = 3600		!output frequency
 	if( ks .gt. 0 .and. mod(it,ioutfreq) .eq. 0 ) then
@@ -735,8 +743,8 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 	implicit none
 
 	integer nldim
-	real buoyf2(nldim,1)
-	real shearf2(nldim,1)
+	real buoyf2(nldim,nkn)
+	real shearf2(nldim,nkn)
 
 	include 'pkonst.h'
 	include 'femtime.h'
@@ -757,6 +765,7 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 	n2max = 0.
  
         do k=1,nkn
+	  nlev = nldim
           call dep3dnod(k,+1,nlev,h)
           do l=1,nlev-1
             dh = 0.5 * ( h(l) + h(l+1) )
@@ -822,8 +831,8 @@ c taub (stress at bottom) is accumulated and weighted by area
 	implicit none
 
 	real czdef
-	real taub(1)
-	real areaac(1)
+	real taub(nkn)
+	real areaac(nkn)
 
 	integer k,ie,ii,n,nlev
 	real aj,taubot
@@ -883,9 +892,9 @@ c checks arrays for nan or other strange values
 	implicit none
 
 	integer nldim
-	real buoyf2(nldim,1)
-	real shearf2(nldim,1)
-	real taub(1)
+	real buoyf2(nldim,nkn)
+	real shearf2(nldim,nkn)
+	real taub(nkn)
 
 	call nantest(nkn*nldim,shearf2,'shearf2')
 	call nantest(nkn*nldim,buoyf2,'buoyf2')

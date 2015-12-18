@@ -447,6 +447,8 @@ c integrate over water column
 	integer i,l,lmax
 	real value
 
+	lmax = 0
+
 	do i=1,n
 	  lmax = ilv(i)
 	  if( lmax .eq. 1 ) then	!2d

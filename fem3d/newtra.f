@@ -533,9 +533,9 @@ c (2D version)
 	implicit none
 
 c arguments
-        real elv(1)     !array with element values (in)
-        real nov(1)     !array with nodal values (out)
-        real aux(1)     !aux array (nkn)
+        real elv(nel)     !array with element values (in)
+        real nov(nkn)     !array with nodal values (out)
+        real aux(nkn)     !aux array (nkn)
 
 c local
         integer k,ie,ii
@@ -590,9 +590,9 @@ c (3D version)
 
 c arguments
 	integer nlvddi
-        real elv(nlvddi,1)     !array with element values (in)
-        real nov(nlvddi,1)     !array with nodal values (out)
-        real aux(nlvddi,1)     !aux array (nkn)
+        real elv(nlvddi,nel)     !array with element values (in)
+        real nov(nlvddi,nkn)     !array with nodal values (out)
+        real aux(nlvddi,nkn)     !aux array (nkn)
 
 c local
         integer k,ie,ii,l,lmax
@@ -652,8 +652,8 @@ c (3D version)
 c arguments
 	integer mode		!min (-1) or max (+1)
 	integer nlvddi		!vertical dimension
-        real elv(nlvddi,1)      !array with element values (in)
-        real nov(nlvddi,1)      !array with nodal values (out)
+        real elv(nlvddi,nel)      !array with element values (in)
+        real nov(nlvddi,nkn)      !array with nodal values (out)
 
 c local
         integer k,ie,ii,l,lmax
@@ -712,8 +712,8 @@ c (2D version)
 
         implicit none
 
-        real nov(1)     !array with nodal values (in)
-        real elv(1)     !array with element values (out)
+        real nov(nkn)     !array with nodal values (in)
+        real elv(nel)     !array with element values (out)
 
         integer k,ie,ii
         real acu,value
@@ -753,8 +753,8 @@ c (3D version)
 
 c arguments
         integer nlvddi		!vertical dimension of arrays
-        real nov(nlvddi,1)	!array with nodal values (in)
-        real elv(nlvddi,1)	!array with element values (out)
+        real nov(nlvddi,nkn)	!array with nodal values (in)
+        real elv(nlvddi,nel)	!array with element values (out)
 
 c local
         integer k,ie,ii,l,lmax

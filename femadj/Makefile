@@ -136,19 +136,18 @@ strip:
 
 adj4el.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod
 adj575.o: ../femlib/mod/mod_adj_grade.mod ../femlib/mod/basin.mod
-adj5el.o: ../femlib/mod/mod_adj_grade.mod ../femlib/mod/basin.mod \
-		param.h 
-adj7el.o: ../femlib/mod/mod_adj_grade.mod ../femlib/mod/basin.mod
+adj5el.o: param.h ../femlib/mod/mod_adj_grade.mod \
+		../femlib/mod/basin.mod 
+adj7el.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod
 adjgrd.o: nbstatic.h
-adjneu.o: param.h ../femlib/mod/mod_depth.mod \
-		../femlib/mod/basin.mod \
-		../femlib/mod/mod_adj_grade.mod 
-adjplo.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod \
-		param.h 
+adjneu.o: ../femlib/mod/mod_depth.mod \
+		../femlib/mod/mod_adj_grade.mod \
+		../femlib/mod/basin.mod param.h 
+adjplo.o: param.h ../femlib/mod/mod_adj_grade.mod \
+		../femlib/mod/basin.mod 
 adjvar.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod \
-		param.h nbstatic.h 
+		nbstatic.h param.h 
 ../femlib/mod/mod_adj_grade.mod: mod_adj_grade.o
-shyadj.o: param.h ../femlib/mod/mod_adj_grade.mod \
-		../femlib/mod/basin.mod \
-		../femlib/mod/mod_depth.mod 
+shyadj.o: ../femlib/mod/mod_adj_grade.mod ../femlib/mod/basin.mod \
+		param.h ../femlib/mod/mod_depth.mod 
 

@@ -15,11 +15,26 @@
 # Parameters
 ##############################################
 #
-# Here you should set all your application 
-# specific parameters. The ones below are
-# usually the only ones you have to bother.
+# For the new version of SHYFEM no
+# parameters have to be set anymore.
+# Please leave this section empty.
 #
 ##############################################
+
+##############################################
+# compiler profile
+##############################################
+#
+# You can either compile with maximum speed
+# or with checks enabled, depending on your
+# application.
+# If in doubt, please leave as it is.
+#
+##############################################
+
+COMPILER_PROFILE = NORMAL
+#COMPILER_PROFILE = CHECK
+#COMPILER_PROFILE = SPEED
 
 ##############################################
 # Compiler
@@ -245,6 +260,7 @@ endif
 # PROFILE      insert profiling instructions
 # OPTIMIZE     optimize program for speed
 # WARNING      generate compiler warnings for unusual constructs
+# BOUNDS       generate bounds check during run
 
 #PROFILE = true
 PROFILE = false
@@ -252,11 +268,31 @@ PROFILE = false
 DEBUG = true
 #DEBUG = false
 
-OPTIMIZE = true
-#OPTIMIZE = false
+OPTIMIZE = MEDIUM
+#OPTIMIZE = HIGH
+#OPTIMIZE = NONE
 
 WARNING = true
 #WARNING = false
+
+#BOUNDS = true
+BOUNDS = false
+
+ifeq ($(COMPILER_PROFILE),CHECK)
+  PROFILE = true
+  DEBUG = true
+  OPTIMIZE = NONE
+  WARNING = true
+  BOUNDS = true
+endif
+
+ifeq ($(COMPILER_PROFILE),SPEED)
+  PROFILE = false
+  DEBUG = false
+  OPTIMIZE = HIGH
+  WARNING = false
+  BOUNDS = false
+endif
 
 ##############################################
 #
@@ -301,19 +337,27 @@ ifeq ($(WARNING),true)
 			-Wno-conversion -Wno-unused-dummy-argument
 endif
 
+FGNU_BOUNDS = 
+ifeq ($(BOUNDS),true)
+  FGNU_BOUNDS = -fbounds-check
+endif
+
 FGNU_NOOPT = 
 ifeq ($(DEBUG),true)
   TRAP_LIST = zero,invalid,overflow,underflow,denormal
   TRAP_LIST = zero,invalid,overflow,denormal
   TRAP_LIST = zero
   FGNU_NOOPT = -g
-  FGNU_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST)
+  #FGNU_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST)
+  FGNU_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST) $(FGNU_BOUNDS)
 endif
 
-FGNU_OPT   = 
-ifeq ($(OPTIMIZE),true)
+FGNU_OPT   = -O
+ifeq ($(OPTIMIZE),HIGH)
   FGNU_OPT   = -O3
-  FGNU_OPT   = -O
+endif
+ifeq ($(OPTIMIZE),NONE)
+  FGNU_OPT   = 
 endif
 
 FGNU_OMP   =
@@ -372,9 +416,11 @@ ifeq ($(DEBUG),true)
   FIBM_NOOPT =
 endif
 
-FIBM_OPT   = 
-ifeq ($(OPTIMIZE),true)
-# FIBM_OPT   = -O3 
+FIBM_OPT   = -O
+ifeq ($(OPTIMIZE),HIGH)
+  FIBM_OPT   = -O3
+endif
+ifeq ($(OPTIMIZE),NONE)
   FIBM_OPT   = 
 endif
 
@@ -415,10 +461,12 @@ ifeq ($(DEBUG),true)
   FPG_NOOPT = -g
 endif
 
-FPG_OPT   = 
-ifeq ($(OPTIMIZE),true)
-  FPG_OPT   = -O
+FPG_OPT   = -O
+ifeq ($(OPTIMIZE),HIGH)
   FPG_OPT   = -O3
+endif
+ifeq ($(OPTIMIZE),NONE)
+  FPG_OPT   = 
 endif
 
 FPG_OMP   =
@@ -513,11 +561,15 @@ endif
 # FINTEL_OPT   = -O3 -g -axAVX -mcmodel=medium -shared-intel
 # FINTEL_OPT   = -O -g -fp-model precise -no-prec-div
 
-FINTEL_OPT   = 
-ifeq ($(OPTIMIZE),true)
-  FINTEL_OPT   = -O 
-  #FINTEL_OPT   = -O -mcmodel=medium
-  #FINTEL_OPT   = -O -mcmodel=large
+FINTEL_OPT   = -O -mcmodel=large
+FINTEL_OPT   = -O 
+ifeq ($(OPTIMIZE),HIGH)
+  FINTEL_OPT   = -O3
+  #FINTEL_OPT   = -O3 -mcmodel=medium
+  #FINTEL_OPT   = -O3 -mcmodel=large
+endif
+ifeq ($(OPTIMIZE),NONE)
+  FINTEL_OPT   = 
 endif
 
 FINTEL_OMP   =

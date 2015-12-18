@@ -579,6 +579,9 @@ c adjusts color table (only hsb and gray)
 
         real cfast
 
+	x = 0.
+	y = 0.
+
 	if( icolor .eq. 0 ) then
 c	  gray original
 	else if( icolor .eq. 1 ) then

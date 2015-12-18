@@ -20,6 +20,8 @@ femdoc/old/
 femsave
 femregress
 
+gmon.out
+
 #-----------------------------------------------
 
 *.o

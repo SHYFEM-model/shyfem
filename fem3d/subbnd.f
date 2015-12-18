@@ -664,7 +664,9 @@ c********************************************************************
           call get_bnd_ipar(ibc,'krend',krend)
 
 	  write(6,'(4i9)') ibc,ibtyp,intpol,krend-kranf+1
-	  write(6,'(8i9)') (ipext(irv(i)),i=kranf,krend)
+	  if( kranf > 0 .and. krend > 0 ) then
+	    write(6,'(8i9)') (ipext(irv(i)),i=kranf,krend)
+	  end if
 
 	  call print_filename(boundn(ibc))
 	  call print_filename(conzn(ibc))
