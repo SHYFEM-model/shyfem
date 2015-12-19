@@ -126,6 +126,34 @@
 !******************************************************************
 !******************************************************************
 
+        subroutine shympi_gather_i_internal(val)
+
+        use shympi
+
+        implicit none
+
+        integer val
+
+	ival(1) = val
+
+        end subroutine shympi_gather_i_internal
+
+!******************************************************************
+
+        subroutine shympi_bcast_i_internal(val)
+
+        use shympi
+
+        implicit none
+
+        integer val
+
+        end subroutine shympi_bcast_i_internal
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
         subroutine shympi_reduce_r_internal(what,val)
         
         implicit none

@@ -205,6 +205,7 @@ c written on 27.07.88 by ggu   (from sp159f)
 	integer nmat
 	integer kspecial
 	integer iwhat
+	real azpar,ampar
 	real res
 	real dzeta(nkn)
 
@@ -225,6 +226,11 @@ c-----------------------------------------------------------------
 
         inohyd = nint(getpar('inohyd'))
 	bnohyd = inohyd .eq. 1
+
+	azpar = getpar('azpar')
+	ampar = getpar('ampar')
+	if( azpar == 0. .and. ampar == 1. ) call system_set_explicit
+	if( azpar == 1. .and. ampar == 0. ) call system_set_explicit
 
 c-----------------------------------------------------------------
 c offline
@@ -269,6 +275,7 @@ c-----------------------------------------------------------------
 	  call system_adjust_z(nkn,znv)	!copies solution to new z
 
 	  call setweg(1,iw)		!controll intertidal flats
+	  !write(6,*) 'ggu: iw = ',iw
 	  if( iw == 0 ) exit
 
 	end do

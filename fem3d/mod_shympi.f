@@ -120,7 +120,9 @@
 	  write(cunit,'(i10)') my_id
 	  cunit = adjustl(cunit)
 	  file = 'mpi_debug_' // trim(cunit) // '.txt'
-	  open(newunit=my_unit,file=file,status='unknown')
+	  call shympi_get_new_unit(my_unit)
+	  open(unit=my_unit,file=file,status='unknown')
+	  !open(newunit=my_unit,file=file,status='unknown')
 	  write(my_unit,*) 'shympi initialized: ',my_id,n_threads
 	end if
 
@@ -195,6 +197,37 @@
         allocate(r_buffer_out(n_buffer,n_ghost_areas))
 
         end subroutine shympi_alloc_buffer
+
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	subroutine shympi_get_new_unit(iunit)
+
+	integer iunit
+
+	integer iu,iumin,iumax,iostat
+        logical opened
+
+	return
+
+	iumin = 20
+	iumax = 1000
+
+	do iu=iumin,iumax
+          inquire (unit=iu, opened=opened, iostat=iostat)
+          if (iostat.ne.0) cycle
+          if (.not.opened) exit
+	end do
+
+	if( iu > iumax ) then
+	  iu = 0
+	  stop 'error stop shympi_get_new_unit: no new unit'
+	end if
+
+	iunit = iu
+
+	end subroutine shympi_get_new_unit
 
 !******************************************************************
 !******************************************************************

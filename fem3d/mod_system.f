@@ -26,6 +26,7 @@
         integer, private, save :: mbw_amat = 0
 
 	logical, save :: bsys3d = .false.
+	logical, save :: bsysexpl = .false.
 
 	integer, save :: iprec = 0
 	integer, save :: nthpard = 8	! Number of threads for Pardiso solver

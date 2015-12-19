@@ -7,12 +7,14 @@
 
 	logical, save :: binit = .false.
 
+	integer, parameter :: int64 = 8
+
 !============================================================
 	contains
 !============================================================
 
 	    subroutine init_random_seed()
-            use iso_fortran_env, only: int64
+            !use iso_fortran_env, only: int64
             implicit none
             integer, allocatable :: seed(:)
             integer :: i, n, un, istat, dt(8), pid
@@ -23,10 +25,14 @@
 
             call random_seed(size = n)
             allocate(seed(n))
+
             ! First try if the OS provides a random number generator
-            open(newunit=un, file="/dev/urandom", access="stream" 
-     +                 	,form="unformatted", action="read"
-     +			,status="old", iostat=istat)
+
+	    istat = -1
+!            open(newunit=un, file="/dev/urandom", access="stream" 
+!     +                 	,form="unformatted", action="read"
+!     +			,status="old", iostat=istat)
+
             if (istat == 0) then
                read(un) seed
                close(un)
@@ -59,7 +65,7 @@
             ! This simple PRNG might not be good enough for real work, but is
             ! sufficient for seeding a better PRNG.
             function lcg(s)
-              use iso_fortran_env, only: int64
+              !use iso_fortran_env, only: int64
               integer :: lcg
               integer(int64) :: s
               if (s == 0) then

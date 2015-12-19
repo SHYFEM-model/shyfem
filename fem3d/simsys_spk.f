@@ -40,7 +40,24 @@
 
 	implicit none
 
-	call spk_init_system
+	if( bsysexpl ) then
+	  rvec2d = 0.
+	  raux2d = 0.
+	else
+	  call spk_init_system
+	end if
+
+	end
+
+!******************************************************************
+
+	subroutine system_set_explicit
+
+	use mod_system
+
+	implicit none
+
+	bsysexpl = .true.
 
 	end
 
@@ -59,8 +76,12 @@
 	integer n
 	real z(n)
 
-	call spk_solve_system(.false.,n2max,n,z)
-	!call spk_solve_system(n,z)
+	if( bsysexpl ) then
+	  !write(6,*) 'solving explicitly...'
+	  rvec2d = rvec2d / raux2d	!GGUEXPL
+	else
+	  call spk_solve_system(.false.,n2max,n,z)
+	end if
 
 	end
 
@@ -117,18 +138,20 @@
 
 	integer i,j,kk
 
-	integer loclp,loccoo
-	external loclp,loccoo
-
-        do i=1,3
+	if( bsysexpl ) then
+          do i=1,3
+            raux2d(kn(i)) = raux2d(kn(i)) + mass(i,i)	!GGUEXPL
+            rvec2d(kn(i)) = rvec2d(kn(i)) + rhs(i)
+	  end do
+	else
+         do i=1,3
           do j=1,3
-            !kk=loccoo(kn(i),kn(j),n,m)		!COOGGU	
-            !if(kk.gt.0) coo(kk) = coo(kk) + mass(i,j)
             kk=ijp_ie(i,j,ie)			!COOGGU
             if(kk.gt.0) c2coo(kk) = c2coo(kk) + mass(i,j)
           end do
           rvec2d(kn(i)) = rvec2d(kn(i)) + rhs(i)
-        end do
+         end do
+	end if
 
 	end
 
