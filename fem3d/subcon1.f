@@ -60,7 +60,7 @@ c sets initial conditions (no stratification)
 	implicit none
 
 	integer nlvddi		!vertical dimension of c
-	real c(nlvddi,1)		!variable to initialize
+	real c(nlvddi,nkn)	!variable to initialize
 	real cref		!reference value
 c common
 c local
@@ -86,10 +86,10 @@ c sets initial conditions (with stratification)
 	implicit none
 
 	integer nlvddi		!vertical dimension of c
-	real c(nlvddi,1)		!variable to initialize
+	real c(nlvddi,nkn)	!variable to initialize
 	real cref		!reference value
 	real cstrat		!stratification [conc/km]
-	real hdko(nlvddi,1)	!layer thickness
+	real hdko(nlvddi,nkn)	!layer thickness
 c common
 c local
 	integer k,l
@@ -120,10 +120,9 @@ c implements boundary condition (simplicistic version)
 
 c arguments
 	integer nlvddi		!vertical dimension of c
-	real c(nlvddi,1)		!concentration (cconz,salt,temp,...)
-	real rbc(1)		!boundary condition
+	real c(nlvddi,nkn)	!concentration (cconz,salt,temp,...)
+	real rbc(nkn)		!boundary condition
 c common
-	include 'param.h'
 	include 'mkonst.h'
 c local
 	integer k,l,lmax
@@ -156,11 +155,10 @@ c implements boundary condition (simplicistic 3D version)
 
 c arguments
 	integer nlvddi		!vertical dimension of c
-	real c(nlvddi,1)		!concentration (cconz,salt,temp,...)
+	real c(nlvddi,nkn)	!concentration (cconz,salt,temp,...)
 	integer nlvbnd		!vertical dimension of boundary conditions
-	real rbc(nlvbnd,1)	!boundary condition
+	real rbc(nlvbnd,nkn)	!boundary condition
 c common
-	include 'param.h'
 	include 'mkonst.h'
 c local
 	integer k,l,lmax
@@ -220,7 +218,6 @@ c on return iu = -1 means that no file has been opened and is not written
 	integer nvar		!total number of variables to write    (in)
 	character*(*) type	!extension of file		       (in)
 
-	include 'param.h'
 	include 'simul.h'
 	include 'femtime.h'
 
@@ -308,9 +305,8 @@ c writes NOS file
 	integer idtcon		!time intervall of writes
 	integer ivar		!id of variable to be written
 	integer nlvddi		!vertical dimension of c
-	real c(nlvddi,1)		!scalar to write
+	real c(nlvddi,*)		!scalar to write
 
-	include 'param.h'
 	include 'femtime.h'
 
 	logical binfo
@@ -366,7 +362,7 @@ c shell for writing file unconditionally to disk
 	integer nvar		!total number of variables
 	integer ivar		!id of variable to be written
 	integer nlvddi		!vertical dimension of c
-	real c(nlvddi,1)	!concentration to write
+	real c(nlvddi,*)	!concentration to write
 
 	include 'femtime.h'
 
@@ -420,7 +416,6 @@ c on return iu = -1 means that no file has been opened and is not written
 	integer nvar		!total number of variables to write    (in)
 	character*(*) type	!extension of file		       (in)
 
-	include 'param.h'
 	include 'femtime.h'
 
 	include 'simul.h'
@@ -514,7 +509,6 @@ c the file must be open, the file will be written unconditionally
 	integer nlvddi			!vertical dimension of c
 	real c(nlvddi,*)		!scalar to write
 
-	include 'param.h'
 	include 'femtime.h'
 
 	logical binfo
@@ -569,10 +563,8 @@ c computes min/max for scalar field
 
 c arguments
 	integer nlvddi		!vertical dimension of c
-	real c(nlvddi,1)		!concentration (cconz,salt,temp,...)
+	real c(nlvddi,nkn)		!concentration (cconz,salt,temp,...)
         real cmin,cmax
-c common
-	include 'param.h'
 c local
 	integer k,l,lmax
 	real cc
@@ -622,10 +614,9 @@ c computes min/max for scalar field -> writes some info
 
 c arguments
 	integer nlvddi		!vertical dimension of c
-	real c(nlvddi,1)		!concentration (cconz,salt,temp,...)
+	real c(nlvddi,nkn)		!concentration (cconz,salt,temp,...)
         real cmin,cmax
 c common
-	include 'param.h'
 	include 'femtime.h'
 c local
 	integer k,l,lmax

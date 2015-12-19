@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 17-Dec-2015: delete node only if use is 0				*
  * 07-Oct-2015: new routine GetActPlotWindow()				*
  * 18-Feb-2014: new routines GfDelRemoveNodeLine(), GfInsertNodeLine()	*
  * 16-Feb-2011: use OpItemType for new items				*
@@ -684,7 +685,7 @@ void GfDelNode( void )
                 ActString = StringNodeInUse;
             } else {
                 EvidenceNode(ActNode,PlotWinCol);
-                DeleteNode(pn);
+		if( GetUseN(pn) == 0 ) DeleteNode(pn);
                 ActNode=0;
                 ActString = StringDelNode;
             }
@@ -1087,13 +1088,14 @@ static void GfDelRemoveNodeLine( int delete_node )
                 ShowMode = NODEMODE;
             }
         } else if( ActString == StringDelNodeLine2 ) {
+		printf("Actual line done: \n");
             if( ActNode != 0 ) {
                 pl=FindLine(HLI,ActLine1);
 		EvidenceLine(ActLine1,PlotWinCol);
                 DelNodeLine(HLI,pl,ActNode);
 		if( delete_node == 1 ) {
                   pn=FindNode(HNN,ActNode);
-                  DeleteNode(pn);
+		  if( GetUseN(pn) == 0 ) DeleteNode(pn);
 		} else {
                   EvidenceNode(ActNode,PlotCol);
 		}

@@ -51,9 +51,7 @@ c revised 29.06.97 by ggu	$$ndim - dimension of f is passed
 
 	integer igtdep
 	integer k,ndim
-	real f(1)
-
-	include 'param.h'
+	real f(ndim)
 
 	integer iact,ie,i,ii
 
@@ -103,12 +101,10 @@ c               -1      error
 
 	integer igtdpa
 	integer mode
-	real h(1)
+	real h(nkn)
 
 	real high
 	parameter(high=1.e+30)
-
-	include 'param.h'
 
 	logical buniq
 	integer ie,ii,i,k
@@ -174,11 +170,8 @@ c hkv            array with unique depth values
 
 	implicit none
 
-	real hev(1)
-	real hkv(1)
-
-
-	include 'param.h'
+	real hev(nel)
+	real hkv(nkn)
 
 	integer ie,ii,k
 	logical bstop
@@ -244,9 +237,7 @@ c makes hev (elementwise depth)
         implicit none
 
 c arguments
-        real hev(1)
-c common
-	include 'param.h'
+        real hev(nel)
 c local
         integer ie,ii
 	real hm
@@ -272,10 +263,8 @@ c makes hkv (nodewise depth)
         implicit none
 
 c arguments
-        real hkv(1)
-        real haux(1)   !aux array -> bug - was integer
-c common
-	include 'param.h'
+        real hkv(nkn)
+        real haux(nkn)   !aux array -> bug - was integer
 c local
         integer ie,ii,k,kn
 	real weight
@@ -314,12 +303,9 @@ c itype:  -1: min  0: aver  +1: max
 
         implicit none
 
-        real hkv(1)
-        real haux(1)
+        real hkv(nkn)
+        real haux(nkn)
         integer itype
-
-
-	include 'param.h'
 
         integer k,ie,ii
         real hinit,h
@@ -575,8 +561,6 @@ c adjusts nodal depth values
 
 	implicit none
 
-	include 'param.h'
-
 	real v1v(nkn)
 
         call makehkv(hkv,v1v)		!computes hkv as average
@@ -594,8 +578,6 @@ c adjusts elemental depth values
 	use mod_depth
 
 	implicit none
-
-	include 'param.h'
 
         call makehev(hev)
 
@@ -628,9 +610,6 @@ c adjourns hev and hkv from hm3v (if it has been changed)
 
 	implicit none
 
-
-	include 'param.h'
-
 	integer ie,ii
 
 	do ie=1,nel
@@ -656,8 +635,6 @@ c uses information about sigma layers and hsigma (hybrid)
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	logical berror
 	integer k,ie,ii
@@ -763,8 +740,6 @@ c********************************************************************
 
 	character*(*) file
 
-	include 'param.h'
-
 	integer ie
 
 	open(1,file=file,status='old',form='formatted')
@@ -787,8 +762,6 @@ c********************************************************************
 	use basin, only : nkn,nel,ngr,mbw
 
 	character*(*) file
-
-	include 'param.h'
 
 	integer ie
 

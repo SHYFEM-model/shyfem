@@ -11,6 +11,7 @@
 ! 16.02.2011    ggu     new proj=4 (non standard UTM) implemented
 ! 18.11.2011    ggu     in CCP changed order of params in c_param
 ! 30.09.2015    ccf     introduced module projection
+! 03.12.2015    ggu     bug fix because arrays were defined length 1
 !
 ! usage :
 !

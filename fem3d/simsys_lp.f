@@ -7,6 +7,8 @@ c revision log :
 c
 c 12.01.2009	ggu	new file for system routines
 c 31.01.2009	ggu	prepared for double precision, new aux vect vs1v,...
+c 31.01.2009	ggu	prepared for double precision, new aux vect vs1v,...
+c 15.12.2015	ggu	added dummy subroutines for 3d case
 c
 c******************************************************************
 c
@@ -18,6 +20,7 @@ c******************************************************************
 	subroutine system_initialize
 
 	use mod_system
+	use levels
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
@@ -29,7 +32,7 @@ c******************************************************************
 	write(6,*) 'using Gaussian elimination'
 	write(6,*) '----------------------------------------'
 
-	call mod_system_init(nkn,nel,mbw)
+	call mod_system_init(nkn,nel,ngr,mbw,nlv)
 	call mod_system_amat_init(nkn,mbw)
 
 	end
@@ -71,13 +74,13 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine system_assemble(n,m,kn,mass,rhs)
+	subroutine system_assemble(ie,n,m,kn,mass,rhs)
 
 	use mod_system
 
 	implicit none
 
-	integer n,m
+	integer ie,n,m
 	integer kn(3)
 	real mass(3,3)
 	real rhs(3)
@@ -142,5 +145,72 @@ c******************************************************************
 
         end
 
+c******************************************************************
+c******************************************************************
+c******************************************************************
+c 3d case ... not ready
+c******************************************************************
+c******************************************************************
+c******************************************************************
+
+	subroutine system_solve_3d(n,nlvdi,nlv,z)
+
+        use mod_system
+
+        implicit none
+
+        integer n,nlvdi,nlv
+        real z(nlvdi,n)
+
+	stop 'error stop: gauss elimination 3d not ready'
+
+	end
+
+c******************************************************************
+
+        subroutine system_assemble_3d(ie,l,nlv,kn,mass,rhs)
+
+! assembles element matrix into system matrix
+
+        use mod_system
+
+        implicit none
+
+        integer ie,l,nlv
+        integer kn(3)
+        real mass(-1:1,3,3)
+        real rhs(3)
+
+	stop 'error stop: gauss elimination 3d not ready'
+
+	end
+
+c******************************************************************
+
+	subroutine system_adjust_3d(n,nlvdi,nlv,z)
+
+! copies solution back to z
+
+        use mod_system
+
+        implicit none
+
+        integer n,nlvdi,nlv
+        real z(nlvdi,n)
+
+	stop 'error stop: gauss elimination 3d not ready'
+
+	end
+
+c******************************************************************
+
+	subroutine system_adjust_matrix_3d
+
+	stop 'error stop: gauss elimination 3d not ready'
+
+	end
+
+c******************************************************************
+c******************************************************************
 c******************************************************************
 

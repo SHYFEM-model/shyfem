@@ -205,63 +205,63 @@ list:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-gridma1.o: hash.h keybd.h general.h mouse.h graph.h fund.h menu.h \
-		grid.h grid_df.h events.h queue.h grid_ex.h \
-		gridhs.h list.h grid_fp.h screen.h gridky.h \
-		grid_ty.h gustd.h 
-gridma2.o: grid_ty.h gustd.h screen.h gridky.h list.h grid_fp.h \
-		gridnl.h gridhs.h queue.h grid_ex.h fund.h \
-		grid_df.h menu.h grid.h general.h graph.h mouse.h \
-		keybd.h hash.h 
-gridfi.o: grid_df.h menu.h grid.h fund.h psgraph.h grid_ex.h \
-		args.h queue.h keybd.h hash.h general.h screen.h \
-		grid_fp.h list.h gustd.h grid_ty.h gridhs.h 
-gridge.o: grid_ty.h queue.h gustd.h grid_ex.h fund.h menu.h \
-		grid_fp.h list.h grid.h screen.h grid_df.h \
-		general.h hash.h gridhs.h 
-gridhs.o: fund.h list.h grid_df.h grid_ty.h queue.h grid_ex.h \
-		gridnl.h hash.h keybd.h gridhs.h general.h 
-gridlo.o: hash.h keybd.h mouse.h graph.h general.h menu.h grid.h \
-		events.h grid_df.h fund.h grid_ex.h queue.h \
-		gridhs.h grid_fp.h list.h screen.h gustd.h \
-		grid_ty.h 
-gridop.o: generalx.h gridhs.h xgraph.h screen.h list.h grid_fp.h \
-		gustd.h grid_ty.h hash.h graph.h general.h \
-		grid_df.h menu.h grid.h fund.h grid_ex.h queue.h 
-gridpl.o: mouse.h graph.h general.h gridhs.h hash.h grid_ex.h \
-		grid_ty.h queue.h grid_fp.h menu.h grid.h list.h \
-		grid_df.h screen.h fund.h 
-gridut.o: fund.h grid.h menu.h grid_fp.h list.h grid_df.h screen.h \
-		grid_ty.h queue.h grid_ex.h hash.h gridhs.h \
-		general.h 
-gridwi.o: queue.h grid_ty.h grid_ex.h fund.h grid_df.h screen.h \
-		menu.h grid_fp.h list.h grid.h general.h mouse.h \
-		graph.h hash.h gridhs.h 
-gridps.o: grid_ty.h gustd.h screen.h list.h grid_fp.h gridhs.h \
-		queue.h args.h psgraph.h grid_ex.h fund.h \
-		grid_df.h menu.h grid.h general.h keybd.h hash.h 
-gridky.o: hash.h gridhs.h general.h graph.h fund.h grid_df.h \
-		screen.h menu.h list.h grid_fp.h grid.h queue.h \
-		grid_ty.h grid_ex.h gustd.h 
-gridco.o: gridhs.h screen.h list.h grid_fp.h gustd.h grid_ty.h \
-		hash.h graph.h color.h general.h grid_df.h menu.h \
-		grid.h fund.h grid_ex.h queue.h 
-gridnl.o: general.h fund.h gridnl.h list.h
-menu.o: events.h screen.h menu.h stack.h assert.h mouse.h graph.h \
-		general.h 
+gridma1.o: gridky.h gridhs.h grid_fp.h events.h hash.h grid.h \
+		mouse.h screen.h general.h gustd.h grid_df.h \
+		grid_ty.h queue.h list.h grid_ex.h fund.h keybd.h \
+		menu.h graph.h 
+gridma2.o: general.h screen.h hash.h mouse.h grid.h grid_fp.h \
+		gridhs.h gridnl.h gridky.h graph.h keybd.h menu.h \
+		queue.h grid_ty.h grid_ex.h list.h fund.h gustd.h \
+		grid_df.h 
+gridfi.o: general.h screen.h grid.h hash.h grid_fp.h gridhs.h \
+		psgraph.h args.h menu.h keybd.h grid_ex.h fund.h \
+		list.h grid_ty.h queue.h grid_df.h gustd.h 
+gridge.o: screen.h hash.h grid.h general.h grid_fp.h gustd.h \
+		grid_df.h gridhs.h menu.h grid_ty.h queue.h fund.h \
+		grid_ex.h list.h 
+gridhs.o: general.h hash.h keybd.h grid_ex.h list.h fund.h \
+		grid_ty.h queue.h grid_df.h gridhs.h gridnl.h 
+gridlo.o: graph.h menu.h keybd.h fund.h grid_ex.h list.h queue.h \
+		grid_ty.h grid_df.h gustd.h general.h screen.h \
+		grid.h mouse.h hash.h events.h grid_fp.h gridhs.h 
+gridop.o: gridhs.h grid_fp.h general.h hash.h grid.h screen.h \
+		grid_ty.h queue.h grid_ex.h list.h fund.h \
+		generalx.h menu.h gustd.h grid_df.h graph.h \
+		xgraph.h 
+gridpl.o: graph.h general.h screen.h hash.h grid.h mouse.h menu.h \
+		queue.h grid_ty.h grid_ex.h fund.h list.h \
+		grid_fp.h gridhs.h grid_df.h 
+gridut.o: general.h grid.h hash.h screen.h grid_ex.h fund.h list.h \
+		queue.h grid_ty.h menu.h grid_df.h gridhs.h \
+		grid_fp.h 
+gridwi.o: grid_fp.h grid_df.h gridhs.h menu.h grid_ty.h queue.h \
+		grid_ex.h list.h fund.h screen.h hash.h grid.h \
+		mouse.h graph.h general.h 
+gridps.o: grid_fp.h gridhs.h general.h screen.h grid.h hash.h \
+		menu.h keybd.h grid_ex.h fund.h list.h grid_ty.h \
+		queue.h grid_df.h gustd.h psgraph.h args.h 
+gridky.o: screen.h hash.h grid.h graph.h general.h grid_fp.h \
+		gustd.h grid_df.h gridhs.h menu.h grid_ty.h \
+		queue.h grid_ex.h list.h fund.h 
+gridco.o: queue.h grid_ty.h grid_ex.h list.h fund.h menu.h gustd.h \
+		color.h grid_df.h graph.h gridhs.h grid_fp.h \
+		general.h hash.h grid.h screen.h 
+gridnl.o: general.h fund.h list.h gridnl.h
+menu.o: screen.h mouse.h general.h graph.h stack.h menu.h assert.h \
+		events.h 
 stack.o: general.h stack.h
-screen.o: general.h graph.h
+screen.o: graph.h general.h
 general.o: general.h
 gustd.o: gustd.h general.h
-debug.o: debug.h general.h
+debug.o: general.h debug.h
 color.o: general.h graph.h
-hash.o: hash.h general.h
+hash.o: general.h hash.h
 list.o: list.h general.h
 args.o: general.h
-queue.o: queue.h general.h
-psgraph.o: psgraph.h gustd.h general.h
+queue.o: general.h queue.h
+psgraph.o: general.h psgraph.h gustd.h
 xmouse.o: mouse.h
-xgraph.o: graph.h xgraph.h general.h generalx.h
-xevents.o: events.h generalx.h debug.h general.h xgraph.h
-xkeybd.o: general.h keybd.h
+xgraph.o: xgraph.h graph.h generalx.h general.h
+xevents.o: events.h generalx.h general.h xgraph.h debug.h
+xkeybd.o: keybd.h general.h
 

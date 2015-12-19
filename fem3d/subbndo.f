@@ -86,9 +86,6 @@ c sets up bndo data structure
 
 	implicit none
 
-	include 'param.h'
-
-
 	logical bexternal
 	logical berror
 	integer k,nodes,itype
@@ -160,22 +157,30 @@ c	  -------------------------------
 	  if( iopbnd(k) .ne. i ) then
 	    stop 'internal error bndo (0)'
 	  end if
-	  if( inext .gt. 0 .and. kbcnod(inext) .ne. knext ) then
+	  if( inext .gt. 0 ) then
+	   if( kbcnod(inext) .ne. knext ) then
 	    stop 'internal error bndo (1)'
+	   end if
 	  end if
-	  if( ilast .gt. 0 .and. kbcnod(ilast) .ne. klast ) then
+	  if( ilast .gt. 0 ) then
+	   if( kbcnod(ilast) .ne. klast ) then
 	    stop 'internal error bndo (2)'
+	   end if
 	  end if
 
 c	  -------------------------------
 c	  adjacent boundary nodes must be of same boundary
 c	  -------------------------------
 
-	  if( inext .gt. 0 .and. ibcnod(inext) .ne. ibc ) then
+	  if( inext .gt. 0 ) then
+	   if( ibcnod(inext) .ne. ibc ) then
 	    goto 98
+	   end if
 	  end if
-	  if( ilast .gt. 0 .and. ibcnod(ilast) .ne. ibc ) then
+	  if( ilast .gt. 0 ) then
+	   if( ibcnod(ilast) .ne. ibc ) then
 	    goto 98
+	   end if
 	  end if
 
 c	  -------------------------------
@@ -294,8 +299,6 @@ c inserts node kn with weight area into list (internal routine)
 	real area		!weight
 	integer kn		!node number to insert
 
-	include 'param.h'
-
 	integer nb,j,k
 
 	nb = nopnod(ib)
@@ -353,10 +356,6 @@ c writes info on open boundary nodes to terminal
 
         integer iunit
 
-	include 'param.h'
-
-
-
 	integer i,k,ibc,nb,j,iu
 	integer itybnd,ipext
 
@@ -402,9 +401,6 @@ c checks if node k is a zeta boundary
 	logical is_zeta_bound
 	integer k
 
-	include 'param.h'
-
-
 	integer ip
 
 	is_zeta_bound = .false.
@@ -426,15 +422,17 @@ c sets open boundary condition for level boundaries
 c
 c simply calls bndo_impbc() and bndo_adjbc()
 
+	use basin
+
         implicit none
 
         integer it
         character*(*) what      !conz/temp/salt or else
         integer nlvddi
-        real cv(nlvddi,1)
-        real rbc(nlvddi,1)	!boundary condition (3D)
-	real uprv(nlvddi,1)
-	real vprv(nlvddi,1)
+        real cv(nlvddi,nkn)
+        real rbc(nlvddi,nkn)	!boundary condition (3D)
+	real uprv(nlvddi,nkn)
+	real vprv(nlvddi,nkn)
 
 c----------------------------------------------------------
 c simply imposes whatever is in rbc
@@ -470,12 +468,8 @@ c imposes boundary conditions on open boundary
         integer it
         character*(*) what      !conz/temp/salt or else
         integer nlvddi
-        real cv(nlvddi,1)
-        real rbc(nlvddi,1)	!boundary condition (3D)
-
-	include 'param.h'
-
-
+        real cv(nlvddi,nkn)
+        real rbc(nlvddi,nkn)	!boundary condition (3D)
 
         logical bgrad0
         logical bdebug
@@ -535,13 +529,9 @@ c adjusts for ambient value, no gradient or outgoing flow
 	integer it
         character*(*) what	!conz/temp/salt or else
 	integer nlvddi
-	real cv(nlvddi,1)
-	real uprv(nlvddi,1)
-	real vprv(nlvddi,1)
-
-	include 'param.h'
-
-
+	real cv(nlvddi,nkn)
+	real uprv(nlvddi,nkn)
+	real vprv(nlvddi,nkn)
 
 	logical bgrad0
 	logical blevel
@@ -661,12 +651,7 @@ c imposes radiation condition for levels
 	implicit none
 
 	integer it
-	real rzv(1)
-
-	include 'param.h'
-
-
-
+	real rzv(nkn)
 
 	logical bdebug
 	integer i,j,k,l

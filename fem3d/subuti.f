@@ -45,8 +45,6 @@ c gets coordinates x/y for node k
 	integer k
 	real x,y
 
-	include 'param.h'
-
 	x = xgv(k)
 	y = ygv(k)
 
@@ -66,8 +64,6 @@ c gets coordinates x/y for element ie
 	real x(3), y(3)
 
 	integer k,ii
-
-	include 'param.h'
 
 	do ii=1,3
 	  k = nen3v(ii,ie)
@@ -92,8 +88,6 @@ c double precision version - bug fix 07.07.2011
 c arguments
 	real areael
 	integer ie
-c common
-	include 'param.h'
 c local
 	integer kn1,kn2,kn3
 	real*8 x1,x2,x3,y1,y2,y3
@@ -137,8 +131,6 @@ c area for finite volume k
 c arguments
 	real areavl
 	integer k
-c common
-	include 'param.h'
 c local
 	logical blink
 	integer ie,ii,i,nl
@@ -195,8 +187,6 @@ c volume difference:         dV = dt * Q
 c arguments
         real flxnod
         integer k
-c common
-	include 'param.h'
 c local
         real flux
         integer i,nl,ie,ii
@@ -259,7 +249,6 @@ c	kin = (1/2) * rho * area * (U*U+V*V)/H
 	real kenerg		!kinetic energy (return)
 	real penerg		!potential energy relative to z=0 (return)
 
-	include 'param.h'
 	include 'pkonst.h'
 
 	integer ie,ii,ie1,ie2
@@ -313,7 +302,6 @@ c	kin = (1/2) * rho * area * (U*U+V*V)/H
 	real penergy		!potential energy relative to z=0 (return)
 	integer ia_ignore	!area code to be ignored
 
-	include 'param.h'
 	include 'pkonst.h'
 
 	integer ie,ii,l,lmax,ia,k
@@ -372,8 +360,8 @@ c computes min/max of 3d field
 
 c arguments
         integer nkn,nlvddi
-        real a(nlvddi,1)
-        integer ilhkv(1)
+        real a(nlvddi,nkn)
+        integer ilhkv(nkn)
         real amin,amax
 c local
         integer lmax,k,l
@@ -403,11 +391,8 @@ c copies concentrations from node value to element value (only wet areas)
 
         implicit none
 
-        real cn(1)
-        real ce(3,1)
-
-
-	include 'param.h'
+        real cn(nkn)
+        real ce(3,nel)
 
         integer ie,ii,k
 

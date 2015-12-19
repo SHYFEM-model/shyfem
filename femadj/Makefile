@@ -46,8 +46,8 @@ MAKEDEPEND = $(FEMBIN)/mkdp.pl
 #--------------------------------------------- EXES
 
 default: fem
-fem:	param shyadj
-all:	param $(EXES)
+fem:	shyadj
+all:	$(EXES)
 
 shyadj:  shyadj.o $(ADJOBJS) $(OBJS) $(LIBIFS) $(LIBIPS)
 	$(LINKER) $(LFLAGS) $@.o $(ADJOBJS) $(OBJS) $(LIBFS) $(LIBPS) -o $@
@@ -96,8 +96,6 @@ cleangrd:
 #--------------------------------------------- various
 
 param:
-	-@$(FEMBIN)/make_param.pl $(FEMDIR) param.h
-	-@$(FEMBIN)/param.sh $(FEMDIR) param.h
 
 diff:
 	@$(FEMBIN)/cvsdiff -norcs -ifdiff * > DIFFS
@@ -136,21 +134,20 @@ strip:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-adj4el.o: ../femlib/mod/mod_adj_grade.mod ../femlib/mod/basin.mod
+adj4el.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod
 adj575.o: ../femlib/mod/mod_adj_grade.mod ../femlib/mod/basin.mod
-adj5el.o: param.h ../femlib/mod/basin.mod \
-		../femlib/mod/mod_adj_grade.mod 
+adj5el.o: param.h ../femlib/mod/mod_adj_grade.mod \
+		../femlib/mod/basin.mod 
 adj7el.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod
 adjgrd.o: nbstatic.h
 adjneu.o: ../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_adj_grade.mod \
 		../femlib/mod/basin.mod param.h 
-adjplo.o: ../femlib/mod/mod_adj_grade.mod param.h \
+adjplo.o: param.h ../femlib/mod/mod_adj_grade.mod \
 		../femlib/mod/basin.mod 
-adjvar.o: ../femlib/mod/mod_adj_grade.mod nbstatic.h param.h \
-		../femlib/mod/basin.mod 
+adjvar.o: ../femlib/mod/basin.mod ../femlib/mod/mod_adj_grade.mod \
+		nbstatic.h param.h 
 ../femlib/mod/mod_adj_grade.mod: mod_adj_grade.o
-shyadj.o: ../femlib/mod/mod_adj_grade.mod \
-		../femlib/mod/mod_depth.mod param.h \
-		../femlib/mod/basin.mod 
+shyadj.o: ../femlib/mod/mod_adj_grade.mod ../femlib/mod/basin.mod \
+		param.h ../femlib/mod/mod_depth.mod 
 

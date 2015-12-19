@@ -239,12 +239,14 @@ c
               n1=n1+1
 c              write(6,*) ieo,iwegv(ieo),i,ien,iwegv(ien)
 c              read(5,'(i10)') n
-              if(ien.gt.0.and.iwegv(ien).lt.3) then !possible to enter
+              if(ien.gt.0) then !possible to enter
+               if(iwegv(ien).lt.3) then !possible to enter
                 if(iwegv(ien).eq.0.or.iwegv(ieo).eq.3) then !may enter
                   i=inext( nen3v(mod(i,3)+1,ieo) , ien )
                   ieo=ien
                   n2=n2+1
                 end if
+               end if
               end if
             end do
             nar=nar+1

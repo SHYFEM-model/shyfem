@@ -38,6 +38,7 @@ c 01.03.2010	ggu	new version of n2e3d()
 c 11.03.2010	ggu	new routine check_volume(); init w only if no restart
 c 16.02.2011	ggu	new routine e2n3d() and e2n3d_minmax()
 c 27.01.2012	deb&ggu	routines adapted for sigma levels
+c 03.12.2015	ccf&ggu	code optimized
 c
 c****************************************************************************
 c
@@ -52,11 +53,7 @@ c
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-c
-c parameters
-	include 'param.h'
-c common
-c local
+
 	integer ie,l,ilevel
 	real h,rh
 
@@ -89,10 +86,6 @@ c transforms velocities to transports
 
 	implicit none
 
-c parameters
-	include 'param.h'
-c common
-c local
 	integer ie,l,ilevel
 	real h
 
@@ -125,30 +118,24 @@ c
 	use basin
 
 	implicit none
-c
-c arguments
-	real vv(nkn)
-c common
-	include 'param.h'
 
 c local
 	logical bcolin
 	integer ie,k,ii
 	real aj,zm,hm
+	real vv(nkn)
 c function
 	real getpar
 	integer iround
 c
 	bcolin=iround(getpar('iclin')).ne.0
 c
-	do k=1,nkn
-	  up0v(k)=0.
-	  vp0v(k)=0.
-	  vv(k)=0.
-	end do
+	up0v = 0.
+	vp0v = 0.
+	vv   = 0.
 c
 	do ie=1,nel
-	 if( iwegv(ie) .eq. 0 ) then
+	  if( iwegv(ie) /= 0 ) cycle
 	  aj=ev(10,ie)
 	  zm=0.
 	  do ii=1,3
@@ -163,16 +150,13 @@ c
 	    up0v(k)=up0v(k)+aj*unv(ie)/hm
 	    vp0v(k)=vp0v(k)+aj*vnv(ie)/hm
 	  end do
-	 end if
 	end do
-c
-	do k=1,nkn
-	  if(vv(k).gt.0.) then
-	    up0v(k)=up0v(k)/vv(k)
-	    vp0v(k)=vp0v(k)/vv(k)
-	  end if
-	end do
-c
+
+	where ( vv > 0. ) 
+          up0v = up0v / vv
+          vp0v = vp0v / vv
+	end where
+
 	return
 	end
 c
@@ -190,63 +174,44 @@ c
 	use basin
 
 	implicit none
-c
-c parameters
-	include 'param.h'
-c arguments
-	real vv(nkn)
-c common
 
-c local
 	integer ie,l,k,ii
+	integer lmax
 	real aj
-c
-	do k=1,nkn
-	  do l=1,nlv
-	    uprv(l,k)=0.
-	    vprv(l,k)=0.
-	  end do
-	end do
+	real vv(nlvdi,nkn)
+
+	uprv = 0.
+	vprv = 0.
+	vv   = 0.
 c
 c baroclinic part
 c
-	do l=1,nlv
-c
-	  do k=1,nkn
-	    vv(k)=0.
+	do ie=1,nel
+	  if ( iwegv(ie) /= 0 ) cycle
+          lmax = ilhv(ie)
+	  aj=ev(10,ie)
+	  do l=1,lmax
+	    do ii=1,3
+	      k=nen3v(ii,ie)
+	      vv(l,k)=vv(l,k)+aj
+	      uprv(l,k)=uprv(l,k)+aj*ulnv(l,ie)
+	      vprv(l,k)=vprv(l,k)+aj*vlnv(l,ie)
+	    end do
 	  end do
-c
-	  do ie=1,nel
-	   if( iwegv(ie) .eq. 0 ) then
-	    if(l.le.ilhv(ie)) then
-	      aj=ev(10,ie)
-	      do ii=1,3
-	        k=nen3v(ii,ie)
-	        vv(k)=vv(k)+aj
-	        uprv(l,k)=uprv(l,k)+aj*ulnv(l,ie)
-	        vprv(l,k)=vprv(l,k)+aj*vlnv(l,ie)
-	      end do
-	    end if
-	   end if
-	  end do
-c
-	  do k=1,nkn
-	    if(vv(k).gt.0.) then
-	      uprv(l,k)=uprv(l,k)/vv(k)
-	      vprv(l,k)=vprv(l,k)/vv(k)
-	    end if
-	  end do
-c
 	end do
+c
+	where ( vv > 0. ) 
+	  uprv = uprv / vv
+	  vprv = vprv / vv
+	end where
 c
 c vertical velocities -> we compute average over one layer
 c
-	do k=1,nkn
-	  do l=nlv,1,-1
-	    wprv(l,k)=0.5*(wlnv(l,k)+wlnv(l-1,k))
-	  end do
-	  wprv(0,k)=0.
+	do l=1,nlv
+	  wprv(l,:)=0.5*(wlnv(l,:)+wlnv(l-1,:))
 	end do
+
+	wprv(0,:) = 0.
 c
 	return
 	end
@@ -264,11 +229,7 @@ c
 	use basin
 
 	implicit none
-c
-c parameters
-	include 'param.h'
-c common
-c local
+
 	integer ie,l,k,ii
 	real u,v
 c
@@ -288,20 +249,16 @@ c
 	    vlnv(l,ie)=v/3.
 	  end do
 	 else
-	  do l=1,ilhv(ie)
-	    ulnv(l,ie)=0.
-	    vlnv(l,ie)=0.
-	  end do
+	    ulnv(:,ie)=0.
+	    vlnv(:,ie)=0.
 	 end if
 	end do
 c
 c vertical velocities -> from layer average to interface values
 c
-	do k=1,nkn
-	  wlnv(nlv,k)=0.
-	  do l=nlv-1,0,-1
-	    wlnv(l,k)=2.*wprv(l,k)-wlnv(l+1,k)
-	  end do
+	wlnv(nlv,:) = 0.
+	do l=nlv-1,0,-1
+	  wlnv(l,:)=2.*wprv(l,:)-wlnv(l+1,:)
 	end do
 c
 	return
@@ -319,11 +276,7 @@ c
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-c
-c parameter
-	include 'param.h'
-c common
-c local
+
 	integer ie,l
 	real u,v
 c
@@ -355,11 +308,6 @@ c only first layer has to be checked
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-c parameters
-	include 'param.h'
-c common
-
 
 	logical bstop,bsigma
 	integer nsigma
@@ -430,10 +378,6 @@ c distribute barotropic velocities onto layers (only in dry elements)
 
 	implicit none
 
-c parameters
-	include 'param.h'
-c common
-c local
 	logical bsigma
 	integer nsigma
 	integer ie,ilevel,ii,l
@@ -480,16 +424,9 @@ c sets obsolete data structure xv
 
 	implicit none
 
-c common
-	include 'param.h'
-c local
-	integer k
-
-	do k=1,nkn
-	  xv(1,k) = up0v(k)
-	  xv(2,k) = vp0v(k)
-	  xv(3,k) = znv(k)
-	end do
+	xv(1,:) = up0v(:)
+	xv(2,:) = vp0v(:)
+	xv(3,:) = znv(:)
 
 	end
 
@@ -506,10 +443,6 @@ c accessor routine to get velocities u/v
         integer l,k
         real u,v
 
-c parameters
-	include 'param.h'
-c common
-
         u = uprv(l,k)
         v = vprv(l,k)
 
@@ -525,56 +458,20 @@ c copies u/v/z to old time step
 	use mod_hydro_print
 	use mod_hydro_vel
 	use mod_hydro
-	use levels, only : nlvdi,nlv
-	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
 
-	include 'param.h'
-
-
-
-
-
-
-
-
-
-	integer k,ie,ii,l
-
-	do k=1,nkn
-	  zov(k)=znv(k)
-          do l = 1,nlv
-            upro(l,k) = uprv(l,k)
-            vpro(l,k) = vprv(l,k)
-	  end do
-	end do
-
-	do ie=1,nel				!ZEONV
-	  do ii=1,3
-	    zeov(ii,ie) = zenv(ii,ie)
-	  end do
-	end do
-
-	do ie=1,nel
-	  uov(ie)=unv(ie)			!$$UVBARO
-	  vov(ie)=vnv(ie)
-	end do
-
-	do ie=1,nel
-	 do l=1,nlv
-	  ulov(l,ie)=ulnv(l,ie)
-	  vlov(l,ie)=vlnv(l,ie)
-	  utlov(l,ie)=utlnv(l,ie)
-	  vtlov(l,ie)=vtlnv(l,ie)
-	 end do
-	end do
-
-	do k=1,nkn
-	 do l=0,nlv
-	  wlov(l,k)=wlnv(l,k)
-	 end do
-	end do
+	zov   = znv
+        upro  = uprv
+        vpro  = vprv
+	zeov  = zenv
+	uov   = unv			!$$UVBARO
+	vov   = vnv
+	ulov  = ulnv
+	vlov  = vlnv
+	utlov = utlnv
+	vtlov = vtlnv
+	wlov  = wlnv
 
 	end
 
@@ -636,12 +533,9 @@ c (2D version)
 	implicit none
 
 c arguments
-        real elv(1)     !array with element values (in)
-        real nov(1)     !array with nodal values (out)
-        real aux(1)     !aux array (nkn)
-
-c common
-	include 'param.h'
+        real elv(nel)     !array with element values (in)
+        real nov(nkn)     !array with nodal values (out)
+        real aux(nkn)     !aux array (nkn)
 
 c local
         integer k,ie,ii
@@ -651,10 +545,8 @@ c-----------------------------------------------------------
 c initialize arrays
 c-----------------------------------------------------------
 
-        do k=1,nkn
-          nov(k) = 0.
-          aux(k) = 0.
-        end do
+        nov = 0.
+        aux = 0.
 
 c-----------------------------------------------------------
 c accumulate values
@@ -674,11 +566,7 @@ c-----------------------------------------------------------
 c compute final value
 c-----------------------------------------------------------
 
-        do k=1,nkn
-          if( aux(k) .gt. 0. ) then
-            nov(k) = nov(k) / aux(k)
-          end if
-        end do
+        nov = nov / aux
 
 c-----------------------------------------------------------
 c end of routine
@@ -702,12 +590,9 @@ c (3D version)
 
 c arguments
 	integer nlvddi
-        real elv(nlvddi,1)     !array with element values (in)
-        real nov(nlvddi,1)     !array with nodal values (out)
-        real aux(nlvddi,1)     !aux array (nkn)
-
-c common
-	include 'param.h'
+        real elv(nlvddi,nel)     !array with element values (in)
+        real nov(nlvddi,nkn)     !array with nodal values (out)
+        real aux(nlvddi,nkn)     !aux array (nkn)
 
 c local
         integer k,ie,ii,l,lmax
@@ -717,13 +602,8 @@ c-----------------------------------------------------------
 c initialize arrays
 c-----------------------------------------------------------
 
-        do k=1,nkn
-	  lmax = ilhkv(k)
-	  do l=1,lmax
-            nov(l,k) = 0.
-            aux(l,k) = 0.
-	  end do
-        end do
+        nov = 0.
+        aux = 0.
 
 c-----------------------------------------------------------
 c accumulate values
@@ -746,14 +626,9 @@ c-----------------------------------------------------------
 c compute final value
 c-----------------------------------------------------------
 
-        do k=1,nkn
-	  lmax = ilhkv(k)
-	  do l=1,lmax
-            if( aux(l,k) .gt. 0. ) then
-              nov(l,k) = nov(l,k) / aux(l,k)
-            end if
-	  end do
-        end do
+	where ( aux > 0. ) 
+	  nov = nov / aux
+	end where
 
 c-----------------------------------------------------------
 c end of routine
@@ -777,11 +652,8 @@ c (3D version)
 c arguments
 	integer mode		!min (-1) or max (+1)
 	integer nlvddi		!vertical dimension
-        real elv(nlvddi,1)      !array with element values (in)
-        real nov(nlvddi,1)      !array with nodal values (out)
-
-c common
-	include 'param.h'
+        real elv(nlvddi,nel)      !array with element values (in)
+        real nov(nlvddi,nkn)      !array with nodal values (out)
 
 c local
         integer k,ie,ii,l,lmax
@@ -799,12 +671,7 @@ c-----------------------------------------------------------
 	  stop 'error stop e2n3d_minmax: unknown mode'
 	end if
 
-        do k=1,nkn
-	  lmax = ilhkv(k)
-	  do l=1,lmax
-            nov(l,k) = rinit
-	  end do
-        end do
+        nov = rinit
 
 c-----------------------------------------------------------
 c accumulate values
@@ -845,11 +712,8 @@ c (2D version)
 
         implicit none
 
-        real nov(1)     !array with nodal values (in)
-        real elv(1)     !array with element values (out)
-
-
-	include 'param.h'
+        real nov(nkn)     !array with nodal values (in)
+        real elv(nel)     !array with element values (out)
 
         integer k,ie,ii
         real acu,value
@@ -889,11 +753,8 @@ c (3D version)
 
 c arguments
         integer nlvddi		!vertical dimension of arrays
-        real nov(nlvddi,1)	!array with nodal values (in)
-        real elv(nlvddi,1)	!array with element values (out)
-
-c common
-	include 'param.h'
+        real nov(nlvddi,nkn)	!array with nodal values (in)
+        real elv(nlvddi,nel)	!array with element values (out)
 
 c local
         integer k,ie,ii,l,lmax

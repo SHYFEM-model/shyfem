@@ -244,7 +244,7 @@ c****************************************************************
 
 	integer iscand
 	character*(*) line
-	double precision d(1)
+	double precision d(*)
 	integer max
 
 	integer i,inumb,iret,maxf
@@ -291,7 +291,7 @@ c****************************************************************
 
 	integer iscanf
 	character*(*) line
-	real f(1)
+	real f(*)
 	integer max
 
 	integer i,inumb,iret,maxf
@@ -339,7 +339,7 @@ c****************************************************************
 	integer iscan
 	character*(*) line
 	integer ioff
-	real f(1)
+	real f(*)
 
 	integer iscanf
 
@@ -922,7 +922,7 @@ c computes positions after decimal point
 
 	character*(*) line
 	integer max
-	real f(1)
+	real f(*)
 
 	integer i,k
 	integer iscanf

@@ -187,8 +187,6 @@ c shell for scalar (for parallel version)
 
 	implicit none
 
-        include 'param.h'
-
         character*(*) what
 	integer ivar
         real scal(nlvdi,nkn)
@@ -271,8 +269,6 @@ c shell for scalar with nudging (for parallel version)
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-        include 'param.h'
 
         character*(*) what
 	integer ivar
@@ -357,8 +353,6 @@ c special version with factor for BC, variable sinking velocity and loads
 
 	implicit none
 
-        include 'param.h'
-
         character*(*) what
 	integer ivar
 	real fact			!factor for boundary condition
@@ -436,8 +430,6 @@ c sets boundary conditions for scalar - not used anymore - to be deleted
 
 	implicit none
 
-        include 'param.h'
-
         character*(*) what
 	real t
 	real bnd3(1,1)
@@ -464,8 +456,6 @@ c shell for scalar T/D
 
 	implicit none
 
-c parameter
-        include 'param.h'
 c arguments
         character*(*) what
         real cnv(nlvddi,nkn)
@@ -724,25 +714,23 @@ c DPGGU -> introduced double precision to stabilize solution
 
 	implicit none
 c
-c parameters
-        include 'param.h'
 c arguments
 	integer nlvddi,nlev
-        real cn1(nlvddi,1),co1(nlvddi,1)		!DPGGU
-        real difv(0:nlvddi,1)
-        real difhv(nlvddi,1)
+        real cn1(nlvddi,nkn),co1(nlvddi,nkn)		!DPGGU
+        real difv(0:nlvddi,nkn)
+        real difhv(nlvddi,nel)
 	real difmol
-        real cbound(nlvddi,1)
+        real cbound(nlvddi,nkn)
 	integer itvd
 	integer itvdv
-	real gradxv(nlvddi,1)
-	real gradyv(nlvddi,1)
-	real cobs(nlvddi,1)
+	real gradxv(nlvddi,nkn)
+	real gradyv(nlvddi,nkn)
+	real cobs(nlvddi,nkn)
 	real robs
 	real wsink
-	real wsinkv(0:nlvddi,1)
+	real wsinkv(0:nlvddi,nkn)
 	real rload
-        real load(nlvddi,1)                      !ccf_load
+        real load(nlvddi,nkn)                      !ccf_load
         real ddt,rkpar
         real azpar,adpar,aapar			!$$azpar
 	integer istot,isact
@@ -1443,17 +1431,15 @@ c DPGGU -> introduced double precision to stabilize solution
 
 	implicit none
 c
-c parameters
-        include 'param.h'
 c arguments
 	integer nlvddi,nlev
-        !real cn1(nlvddi,1),co1(nlvddi,1)		!DPGGU
-        real difv(0:nlvddi,1)
-        real difhv(nlvddi,1)
+        !real cn1(nlvddi,nkn),co1(nlvddi,nkn)		!DPGGU
+        real difv(0:nlvddi,nkn)
+        real difhv(nlvddi,nel)
 	real difmol
         real ddt,rkpar,azpar,adpar,aapar			!$$azpar
 	real robs,wsink
-	real wsinkv(0:nlvddi,1)
+	real wsinkv(0:nlvddi,nkn)
 	integer istot,isact
 c common
 	include 'femtime.h'
@@ -1949,10 +1935,8 @@ c computes total mass of conc
 c arguments
 	integer mode
 	integer nlvddi
-	real cn(nlvddi,1)
+	real cn(nlvddi,nkn)
 	real mass
-c parameter
-        include 'param.h'
 c common
 	include 'femtime.h'
 c local
@@ -1989,8 +1973,6 @@ c checks if scalar is out of bounds
 	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
-
-        include 'param.h'
 
         real cnv(nlvdi,nkn)
         real cmin,cmax
@@ -2041,8 +2023,6 @@ c checks min/max property
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
         real cnv(nlvdi,nkn)			!new concentration
         real cov(nlvdi,nkn)			!old concentration
@@ -2194,8 +2174,8 @@ c writes histogram info about stability index
 
         integer it
         integer nlvddi,nkn
-        integer ilhkv(1)
-        real cwrite(nlvddi,1)
+        integer ilhkv(nkn)
+        real cwrite(nlvddi,nkn)
 
         integer ndim
         parameter(ndim=11)

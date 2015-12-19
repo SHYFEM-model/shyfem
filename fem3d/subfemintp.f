@@ -12,6 +12,7 @@
 ! 05.02.2015	ggu	iff_read_and_interpolate() introduced for parallel bug
 ! 25.09.2015	ggu	prepared to interpolate from reg onto elements
 ! 29.09.2015	ggu	in iff_interpolate() do not interpolate with flag
+! 18.12.2015	ggu	in iff_peek_next_record() adjust date only if ierr==0
 !
 !****************************************************************
 !
@@ -977,13 +978,17 @@ c	 2	time series
 	else if( bts ) then
 	  nvar = 0
 	  call ts_peek_next_record(iunit,nvar,dtime,f,datetime,ierr)
-	  if( datetime(1) > 0 ) pinfo(id)%datetime = datetime
-	  call iff_adjust_datetime(id,pinfo(id)%datetime,dtime)
+	  if( ierr == 0 ) then
+	    if( datetime(1) > 0 ) pinfo(id)%datetime = datetime
+	    call iff_adjust_datetime(id,pinfo(id)%datetime,dtime)
+	  end if
 	else
           call fem_file_peek_params(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
-	  pinfo(id)%datetime = datetime
-	  call iff_adjust_datetime(id,pinfo(id)%datetime,dtime)
+	  if( ierr == 0 ) then
+	    pinfo(id)%datetime = datetime
+	    call iff_adjust_datetime(id,pinfo(id)%datetime,dtime)
+	  end if
 	end if
 
 	iff_peek_next_record = ( ierr == 0 )

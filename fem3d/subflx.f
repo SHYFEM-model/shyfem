@@ -316,8 +316,8 @@ c*********************************************************
 	integer nscddi,nfxddi,nlvddi
 	integer nvers
 	integer nsect,kfluxm,idtflx,nlmax
-	integer kflux(1)
-	integer nlayers(1)
+	integer kflux(kfluxm)
+	integer nlayers(nsect)
 
 	call iniflx
 
@@ -340,8 +340,8 @@ c*********************************************************
 
 	integer iunit,nvers,it
 	integer nlvddi,nsect,ivar
-	integer nlayers(1)
-	real fluxes(0:nlvddi,3,1)
+	integer nlayers(nsect)
+	real fluxes(0:nlvddi,3,nsect)
 	integer ierr
 
 	call rdflx(iunit,it,nlvddi,nsect,ivar,nlayers,fluxes,ierr)
@@ -361,8 +361,8 @@ c*********************************************************
 	integer iunit
 	integer nvers
 	integer nsect,kfluxm,idtflx,nlmax
-	integer kflux(1)
-	integer nlayers(1)
+	integer kflux(kfluxm)
+	integer nlayers(nsect)
 
 	call iniflx
 
@@ -384,8 +384,8 @@ c*********************************************************
 
 	integer iunit,nvers,it
 	integer nlvddi,nsect,ivar
-	integer nlayers(1)
-	real fluxes(0:nlvddi,3,1)
+	integer nlayers(nsect)
+	real fluxes(0:nlvddi,3,nsect)
 
 	call wrflx(iunit,it,nlvddi,nsect,ivar,nlayers,fluxes)
 
@@ -419,8 +419,8 @@ c arguments
 	integer iunit,nvers
 	integer nscddi,nfxddi,nlvddi
 	integer nsect,kfluxm,idtflx,nlmax
-	integer kflux(1)
-	integer nlayers(1)
+	integer kflux(kfluxm)
+	integer nlayers(nsect)
 c common
 	integer mtype,maxver,vers
 	common /flxcom/ mtype,maxver,vers
@@ -535,8 +535,8 @@ c		.. of the call parameters
 c arguments
 	integer iunit,nvers
 	integer nsect,kfluxm,idtflx,nlmax
-	integer kflux(1)
-	integer nlayers(1)
+	integer kflux(kfluxm)
+	integer nlayers(nsect)
 c common
 	integer mtype,maxver,vers
 	common /flxcom/ mtype,maxver,vers
@@ -577,8 +577,8 @@ c arguments
 	integer nlvddi
 	integer nsect
 	integer ivar
-	integer nlayers(1)
-	real fluxes(0:nlvddi,3,1)
+	integer nlayers(nsect)
+	real fluxes(0:nlvddi,3,nsect)
 	integer ierr
 c common
 	integer mtype,maxver,vers
@@ -635,8 +635,8 @@ c arguments
 	integer nlvddi
 	integer nsect
 	integer ivar
-	integer nlayers(1)
-	real fluxes(0:nlvddi,3,1)
+	integer nlayers(nsect)
+	real fluxes(0:nlvddi,3,nsect)
 c common
 	integer mtype,maxver,vers
 	common /flxcom/ mtype,maxver,vers

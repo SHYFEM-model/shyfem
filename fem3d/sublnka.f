@@ -34,6 +34,7 @@ c sets up geometrical arrays
         integer nli,nbn,nin,nis,ngrd,ngrd1,ngrd2
         integer nlkdi
 
+	bverbose = .true.
 	bverbose = .false.
 
 c-------------------------------------------------------------

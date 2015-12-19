@@ -66,12 +66,9 @@ c for a boundary node, transp(n) = 0
 	real az			!time weighting parameter
 	integer istype		!type of node (>1 => boundary node)
 	integer n		!dimension/size of transp (entry/return)
-	real transp(1)		!fluxes into elements (flux corrected, return) 
+	real transp(n)		!fluxes into elements (flux corrected, return) 
 	integer ne		!total number of elements in elems
 	integer elems(ne)	!elements around k
-
-	include 'param.h'
-
 
 	logical bdebug
 	integer i,ie,ii,ndim
@@ -228,14 +225,12 @@ c -> has been done - other sources of mfluxv (rain, etc.) are also eliminated
 
 	implicit none
 
-	include 'param.h'
-
 	integer k		!node number of finite volume
 	integer istype		!type of node (see flxtype)
 	real az			!time weighting parameter
 	integer lkmax		!maximum layer in finite volume k (return)
 	integer n		!dimension/size of transp (entry/return)
-	real transp(nlvdi,1)	!computed fluxes (return)
+	real transp(nlvdi,n)	!computed fluxes (return)
 	integer ne		!total number of elements in elems
 	integer elems(ne)	!elements around k
 
@@ -336,7 +331,6 @@ c passed in are pointers to these section in lnk structure
 
 	implicit none
 
-	include 'param.h'
 	include 'femtime.h'
 
 	integer k		!node number of finite volume
@@ -446,7 +440,7 @@ c weigth	weights (return)
 	implicit none
 
 	integer n,istype,is
-	real weight(1)
+	real weight(n)
 
 	integer it,i
 	real start,fact,dw
@@ -529,8 +523,6 @@ c else uses kantv
 	integer flxtype		!type of node (1=int,2=bnd,3=BOO,4=OOB,5=OOO)
 	integer k		!node number of finite volume
 
-	include 'param.h'
-
 	integer ktype
 	integer kafter,kbefor
 
@@ -580,8 +572,6 @@ c if on boundary (itype>1) rflux(n) is not used (because not defined)
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	integer k		!node
 	integer itype		!type of node (1=int,2=bnd,3=BOO,4=OOB,5=OOO)

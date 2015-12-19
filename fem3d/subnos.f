@@ -883,9 +883,9 @@ c reads second record of NOS file
 	implicit none
 
 	integer iu
-	integer ilhkv(1)
-	real hlv(1)
-	real hev(1)
+	integer ilhkv(*)
+	real hlv(*)
+	real hev(*)
 	integer ierr
 
 	logical bdata
@@ -947,9 +947,9 @@ c writes second record of NOS file
 	implicit none
 
 	integer iunit
-	integer ilhkv(1)
-	real hlv(1)
-	real hev(1)
+	integer ilhkv(*)
+	real hlv(*)
+	real hev(*)
 	integer ierr
 
 	integer k,l,ie
@@ -985,8 +985,8 @@ c reads data record of NOS file
 c arguments
 	integer iu,it,ivar
 	integer nlvddi
-	integer ilhkv(1)
-	real c(nlvddi,1)
+	integer ilhkv(*)
+	real c(nlvddi,*)
 	integer ierr
 c local
 	integer l,k,lmax
@@ -1062,8 +1062,8 @@ c writes data record of NOS file
 c arguments
 	integer iunit,it,ivar
 	integer nlvddi
-	integer ilhkv(1)
-	real c(nlvddi,1)
+	integer ilhkv(*)
+	real c(nlvddi,*)
 	integer ierr
 c local
 	integer l,k,lmax
@@ -1221,9 +1221,9 @@ c arguments
 	integer nknddi,nelddi,nlvddi
 	integer nkn,nel,nlv,nvar
 	integer date,time
-	integer ilhkv(1)
-	real hlv(1)
-	real hev(1)
+	integer ilhkv(*)
+	real hlv(*)
+	real hev(*)
 	character*(*) title
 c local
 	integer ierr,l
@@ -1275,9 +1275,9 @@ c               .. of the call parameters
 c arguments
         integer iunit,nvers
         integer nkn,nel,nlv,nvar
-	integer ilhkv(1)
-	real hlv(1)
-	real hev(1)
+	integer ilhkv(*)
+	real hlv(*)
+	real hev(*)
         character*(*) title
 
         integer ierr
@@ -1350,9 +1350,9 @@ c************************************************************
 	implicit none
 
 	integer iunit
-	integer ilhkv(1)
-	real hlv(1)
-	real hev(1)
+	integer ilhkv(*)
+	real hlv(*)
+	real hev(*)
 	integer ierr
 
 	call nos_read_header2(iunit,ilhkv,hlv,hev,ierr)
@@ -1366,9 +1366,9 @@ c************************************************************
 	implicit none
 
 	integer iunit
-	integer ilhkv(1)
-	real hlv(1)
-	real hev(1)
+	integer ilhkv(*)
+	real hlv(*)
+	real hev(*)
 	integer ierr
 
 	call nos_write_header2(iunit,ilhkv,hlv,hev,ierr)
@@ -1383,8 +1383,8 @@ c************************************************************
 
 	integer iunit,it,ivar
 	integer nlvddi
-	integer ilhkv(1)
-	real c(nlvddi,1)
+	integer ilhkv(*)
+	real c(nlvddi,*)
 	integer ierr
 
 	call nos_read_record(iunit,it,ivar,nlvddi,ilhkv,c,ierr)
@@ -1399,8 +1399,8 @@ c************************************************************
 
 	integer iunit,it,ivar
 	integer nlvddi
-	integer ilhkv(1)
-	real c(nlvddi,1)
+	integer ilhkv(*)
+	real c(nlvddi,*)
 	integer ierr
 
 	call nos_write_record(iunit,it,ivar,nlvddi,ilhkv,c,ierr)

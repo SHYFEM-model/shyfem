@@ -119,14 +119,13 @@ c computes new temperature (forced by heat flux) - 3d version
 
 	implicit none
 
-        include 'param.h'
         include 'subqfxm.h'
 
 	integer it
 	real dt
 	integer nkn
 	integer nlvddi
-	real temp(nlvddi,1)
+	real temp(nlvddi,nkn)
 	double precision dq	!total energy introduced [(W/m**2)*dt*area = J]
 
 

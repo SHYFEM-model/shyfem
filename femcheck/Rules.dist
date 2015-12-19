@@ -15,41 +15,26 @@
 # Parameters
 ##############################################
 #
-# Here you should set all your application 
-# specific parameters. The ones below are
-# usually the only ones you have to bother.
-# However, if you have special needs you can
-# also set all the other parameters. Please see
-# param.h for more details.
-#
-# NKNDIM	total number of nodes in domain
-# NELDIM	total number of elements in domain
-# NGRDIM	maximum number of elements attached to one vertex (node)
-# MBWDIM	dimension of bandwidth for system matrix (see output from vpgrd)
-# NLVDIM	total number of vertical layers for application (1 for 2D)
-# NBDYDIM	maximum number of particles for lagrangian model
-#
-# N.B.: the parameters set here may be bigger than the actual application
+# For the new version of SHYFEM no
+# parameters have to be set anymore.
+# Please leave this section empty.
 #
 ##############################################
 
-export NKNDIM = 1
-export NELDIM = 1
-export NLVDIM = 1
+##############################################
+# compiler profile
+##############################################
+#
+# You can either compile with maximum speed
+# or with checks enabled, depending on your
+# application.
+# If in doubt, please leave as it is.
+#
+##############################################
 
-export MBWDIM = 1
-export NGRDIM = 1
-
-export NBCDIM = 1
-export NRBDIM = 1
-export NB3DIM = 1
-
-export NARDIM = 1
-export NEXDIM = 1
-export NFXDIM = 1
-export NCSDIM = 1
-
-export NBDYDIM = 1
+COMPILER_PROFILE = NORMAL
+#COMPILER_PROFILE = CHECK
+#COMPILER_PROFILE = SPEED
 
 ##############################################
 # Compiler
@@ -108,18 +93,10 @@ C_COMPILER = GNU_GCC
 #
 #       export KMP_STACKSIZE=32M
 #
-# There are two ways of parallelizing. One is OMP
-# and the other is MPI. Please note that MPI is
-# highly experimental and not recommended to be used
-# in this stage.
-#
 ##############################################
 
-PARALLEL_OMP = false
-#PARALLEL_OMP = true
-
-PARALLEL_MPI = false
-#PARALLEL_MPI = true
+PARALLEL=false
+#PARALLEL=true
 
 ##############################################
 # Solver for matrix solution
@@ -141,9 +118,9 @@ PARALLEL_MPI = false
 #
 ##############################################
 
-#SOLVER = GAUSS
-SOLVER = SPARSKIT
-#SOLVER = PARDISO
+#SOLVER=GAUSS
+SOLVER=SPARSKIT
+#SOLVER=PARDISO
 
 ##############################################
 # NetCDF library
@@ -156,8 +133,8 @@ SOLVER = SPARSKIT
 #
 ##############################################
 
-NETCDF = false
-#NETCDF = true
+NETCDF=false
+#NETCDF=true
 #NETCDFDIR = /usr/local/netcdf
 NETCDFDIR = /usr
 
@@ -176,8 +153,8 @@ NETCDFDIR = /usr
 #
 ##############################################
 
-#GOTM = false
-GOTM = true
+#GOTM=false
+GOTM=true
 
 ##############################################
 # Ecological models
@@ -220,7 +197,7 @@ FLUID_MUD = false
 # DEFINE VERSION
 ##############################################
 
-RULES_MAKE_VERSION = 1.4
+RULES_MAKE_VERSION = 1.3
 DISTRIBUTION_TYPE = experimental
 
 ##############################################
@@ -247,13 +224,9 @@ ifeq ($(FORTRAN_COMPILER),GNU_G77)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
     RULES_MAKE_MESSAGE = "g77 compiler and GOTM=true are incompatible"
   endif
-  ifeq ($(PARALLEL_OMP),true)
+  ifeq ($(PARALLEL),true)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
-    RULES_MAKE_MESSAGE = "g77 and PARALLEL_OMP=true are incompatible"
-  endif
-  ifeq ($(PARALLEL_MPI),true)
-    RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
-    RULES_MAKE_MESSAGE = "g77 and PARALLEL_MPI=true are incompatible"
+    RULES_MAKE_MESSAGE = "g77 compiler and PARALLEL=true are incompatible"
   endif
 endif
 
@@ -287,6 +260,7 @@ endif
 # PROFILE      insert profiling instructions
 # OPTIMIZE     optimize program for speed
 # WARNING      generate compiler warnings for unusual constructs
+# BOUNDS       generate bounds check during run
 
 #PROFILE = true
 PROFILE = false
@@ -294,11 +268,31 @@ PROFILE = false
 DEBUG = true
 #DEBUG = false
 
-OPTIMIZE = true
-#OPTIMIZE = false
+OPTIMIZE = MEDIUM
+#OPTIMIZE = HIGH
+#OPTIMIZE = NONE
 
 WARNING = true
 #WARNING = false
+
+#BOUNDS = true
+BOUNDS = false
+
+ifeq ($(COMPILER_PROFILE),CHECK)
+  PROFILE = true
+  DEBUG = true
+  OPTIMIZE = NONE
+  WARNING = true
+  BOUNDS = true
+endif
+
+ifeq ($(COMPILER_PROFILE),SPEED)
+  PROFILE = false
+  DEBUG = false
+  OPTIMIZE = HIGH
+  WARNING = false
+  BOUNDS = false
+endif
 
 ##############################################
 #
@@ -343,23 +337,31 @@ ifeq ($(WARNING),true)
 			-Wno-conversion -Wno-unused-dummy-argument
 endif
 
+FGNU_BOUNDS = 
+ifeq ($(BOUNDS),true)
+  FGNU_BOUNDS = -fbounds-check
+endif
+
 FGNU_NOOPT = 
 ifeq ($(DEBUG),true)
   TRAP_LIST = zero,invalid,overflow,underflow,denormal
   TRAP_LIST = zero,invalid,overflow,denormal
   TRAP_LIST = zero
   FGNU_NOOPT = -g
-  FGNU_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST)
+  #FGNU_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST)
+  FGNU_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST) $(FGNU_BOUNDS)
 endif
 
-FGNU_OPT   = 
-ifeq ($(OPTIMIZE),true)
+FGNU_OPT   = -O
+ifeq ($(OPTIMIZE),HIGH)
   FGNU_OPT   = -O3
-  FGNU_OPT   = -O
+endif
+ifeq ($(OPTIMIZE),NONE)
+  FGNU_OPT   = 
 endif
 
 FGNU_OMP   =
-ifeq ($(PARALLEL_OMP),true)
+ifeq ($(PARALLEL),true)
   FGNU_OMP   =  -fopenmp
 endif
 
@@ -396,7 +398,7 @@ endif
 # if you use xlf95  "-qnosave" is a default option
 # xlf_r is thread safe
 # all the compiler options are included in FIBM_OMP
-# set PARALLEL_OMP = TRUE
+# set PARALLEL = TRUE
 ##############################################
 
 FIBM_PROFILE = 
@@ -414,14 +416,16 @@ ifeq ($(DEBUG),true)
   FIBM_NOOPT =
 endif
 
-FIBM_OPT   = 
-ifeq ($(OPTIMIZE),true)
-# FIBM_OPT   = -O3 
+FIBM_OPT   = -O
+ifeq ($(OPTIMIZE),HIGH)
+  FIBM_OPT   = -O3
+endif
+ifeq ($(OPTIMIZE),NONE)
   FIBM_OPT   = 
 endif
 
 FIBM_OMP   =
-ifeq ($(PARALLEL_OMP),true)
+ifeq ($(PARALLEL),true)
      FIBM_OMP    = -qsmp=omp -qnosave -q64 -qmaxmem=-1 -NS32648 -qextname -qsource -qcache=auto -qstrict -O3 -qarch=pwr6 -qtune=pwr6
 endif
 
@@ -457,14 +461,16 @@ ifeq ($(DEBUG),true)
   FPG_NOOPT = -g
 endif
 
-FPG_OPT   = 
-ifeq ($(OPTIMIZE),true)
-  FPG_OPT   = -O
+FPG_OPT   = -O
+ifeq ($(OPTIMIZE),HIGH)
   FPG_OPT   = -O3
+endif
+ifeq ($(OPTIMIZE),NONE)
+  FPG_OPT   = 
 endif
 
 FPG_OMP   =
-ifeq ($(PARALLEL_OMP),true)
+ifeq ($(PARALLEL),true)
   FPG_OMP   =  -mp
 endif
 
@@ -555,15 +561,19 @@ endif
 # FINTEL_OPT   = -O3 -g -axAVX -mcmodel=medium -shared-intel
 # FINTEL_OPT   = -O -g -fp-model precise -no-prec-div
 
-FINTEL_OPT   = 
-ifeq ($(OPTIMIZE),true)
-  FINTEL_OPT   = -O 
-  #FINTEL_OPT   = -O -mcmodel=medium
-  #FINTEL_OPT   = -O -mcmodel=large
+FINTEL_OPT   = -O -mcmodel=large
+FINTEL_OPT   = -O 
+ifeq ($(OPTIMIZE),HIGH)
+  FINTEL_OPT   = -O3
+  #FINTEL_OPT   = -O3 -mcmodel=medium
+  #FINTEL_OPT   = -O3 -mcmodel=large
+endif
+ifeq ($(OPTIMIZE),NONE)
+  FINTEL_OPT   = 
 endif
 
 FINTEL_OMP   =
-ifeq ($(PARALLEL_OMP),true)
+ifeq ($(PARALLEL),true)
   FINTEL_OMP   = -threads -openmp
   FINTEL_OMP   = -openmp
 endif

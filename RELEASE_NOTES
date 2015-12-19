@@ -1,4 +1,22 @@
 
+18.12.2015    VERS_7_3_17
+
+	shybas interpolation is working now
+	grid can now delete double node in line
+	distribution prepared for bounds check
+	changes in compiler options in Rules.make
+
+16.12.2015    VERS_7_3_16
+
+	3d matrix solution routines introduced
+	poisson equation setup
+	code optimization (newtra.f and subgotm.f)
+	in restart routines allocate conz data structures
+	lnk_elems and lnk_nodes eliminated
+	no open boundaries case is now ok
+	small bug fixes
+	mpi project started
+
 16.11.2015    VERS_7_3_15
 
 	omp version finalized

@@ -195,8 +195,6 @@ c writes and administers ext file
 
 	integer it
 
-	include 'param.h'
-
 	integer nbext
 	real err,href,hzoff
 	integer iround,ideffi
@@ -270,14 +268,13 @@ c ...ndim is dummy argument
 
 	real writ7h
 	integer iunit,nvers
-        integer knausm,knaus(1)
+        integer knausm,knaus(knausm)
 	real href,hzmin
 	real v1v(knausm)
 
 	integer nmax
 	parameter(nmax=50)
 
-	include 'param.h'
 	include 'simul.h'
 
 	integer i,n,ndim

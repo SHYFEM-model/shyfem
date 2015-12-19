@@ -63,6 +63,16 @@
           allocate(bpresxv(nlv,nkn))
           allocate(bpresyv(nlv,nkn))
 
+	rhov = 0.
+	saltv = 0.
+	tempv = 0.
+	sobsv = 0.
+	tobsv = 0.
+	rtauv = 0.
+	bpresv = 0.
+	bpresxv = 0.
+	bpresyv = 0.
+
         end subroutine mod_ts_init
 
 !************************************************************

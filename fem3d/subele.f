@@ -134,11 +134,7 @@ c computes (average) depth of element ie for all layers
 	integer ie	!number of element
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
 	integer nlev	!total number of levels
-	real h(1)	!depth of layers
-
-	include 'param.h'
-
-
+	real h(nlev)	!depth of layers
 
 	integer l
 
@@ -172,11 +168,7 @@ c computes depth of node k for all layers
 	integer k	!number of node
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
 	integer nlev	!total number of levels
-	real h(1)	!depth of layers
-
-	include 'param.h'
-
-
+	real h(nlev)	!depth of layers
 
 	integer l
 
@@ -206,12 +198,9 @@ c computes (average) zeta of element ie
 
 	implicit none
 
-	include 'param.h'
-
 	real zetaele	!depth (return)
 	integer ie	!number of element
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
-
 
 	integer ii,n
 	real hmed
@@ -272,7 +261,6 @@ c computes area of element ie
         integer ie      !number of element
         real areaele    !volume (return)
 
-
 	areaele = 12. * ev(10,ie)
 
 	end
@@ -287,12 +275,9 @@ c returns node index for one element
 
 	implicit none
 
-	include 'param.h'
-
 	integer ie      !number of element
 	integer n	!total number of nodes in element (3 for triangle)
 	integer kn(1)	!node index
-
 
 	integer ii
 
@@ -315,11 +300,8 @@ c sets depth for element ie
 
 	implicit none
 
-	include 'param.h'
-
 	integer ie      !number of element
 	real h		!depth to use
-
 
 	integer ii,n
 
@@ -343,13 +325,10 @@ c computes depth of vertices in element ie
 
 	implicit none
 
-	include 'param.h'
-
 	integer ie	!number of element
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
 	integer n	!total number of vertices (return)
-	real h(1)	!depth at vertices (return)
-
+	real h(3)	!depth at vertices (return)
 
 	integer ii
 
@@ -383,13 +362,10 @@ c computes total depth in vertex ii of element ie
 
 	implicit none
 
-	include 'param.h'
-
 	real depfvol
 	integer ie	!number of element
 	integer ii	!number of vertex
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
-
 
 	integer n
 	real h
@@ -421,7 +397,7 @@ c returns average of scalar sev in element ie
 
 	real scalele
 	integer ie
-	real sev(3,1)
+	real sev(3,*)
 
 	integer ii
 	real sm
@@ -444,9 +420,9 @@ c returns scalar value s of vertices in element ie
 	implicit none
 
 	integer ie	!number of element
-	real sv(3,1)	!array of scalar value
+	real sv(3,*)	!array of scalar value
 	integer n	!total number of vertices (return)
-	real s(1)	!scalar values at vertices (return)
+	real s(3)	!scalar values at vertices (return)
 
 	integer ii
 
@@ -468,7 +444,7 @@ c sets scalar values sev to s in element ie
 	implicit none
 
 	integer ie
-	real sev(3,1)
+	real sev(3,*)
 	real s
 
 	integer ii
@@ -488,7 +464,7 @@ c adds scalar value s to sev in element ie
 	implicit none
 
 	integer ie
-	real sev(3,1)
+	real sev(3,*)
 	real s
 
 	integer ii
@@ -530,8 +506,6 @@ c computes nodal values from element values (scalar)
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	real sev(3,nel)
 	real sv(nkn)
@@ -626,11 +600,8 @@ c sets up area for nodes
 
 	implicit none
 
-	include 'param.h'
-
 	integer levdim
-	real area(levdim,1)
-
+	real area(levdim,nkn)
 
 	integer k,l,ie,ii
 	integer nlev,n
@@ -684,9 +655,6 @@ c returns depth, volume and area of node k on level l
 	real vol	!volume of node k and layer l
 	real area	!area of node k and layer l
 
-	include 'param.h'
-
-
 	if( mode .gt. 0 ) then
 	  dep = hdknv(l,k)
 	else if( mode .lt. 0 ) then
@@ -715,9 +683,6 @@ c returns depth of node k on level l
 	integer l
 	integer k
 	integer mode
-
-	include 'param.h'
-
 
 	if( mode .gt. 0 ) then
 	  depnode = hdknv(l,k)
@@ -763,9 +728,6 @@ c returns area of node k on level l
 	integer l
 	integer k
 
-	include 'param.h'
-
-
 	areanode = areakv(l,k)
 
 	end
@@ -781,11 +743,10 @@ c sets up depth array for nodes
 	implicit none
 
 	integer levdim
-	real hdkn(levdim,1)	!depth at node, new time level
-	real hdko(levdim,1)	!depth at node, old time level
-	real hden(levdim,1)	!depth at element, new time level
-	real hdeo(levdim,1)	!depth at element, old time level
-
+	real hdkn(levdim,nkn)	!depth at node, new time level
+	real hdko(levdim,nkn)	!depth at node, old time level
+	real hden(levdim,nel)	!depth at element, new time level
+	real hdeo(levdim,nel)	!depth at element, old time level
 
 	integer k,ie,l
 
@@ -815,8 +776,6 @@ c shell (helper) for copydepth
 	use levels, only : nlvdi,nlv
 
 	implicit none
-
-	include 'param.h'
 
 	call copydepth(nlvdi,hdknv,hdkov,hdenv,hdeov)
 
@@ -852,9 +811,6 @@ c shell (helper) for setdepth
 
 	implicit none
 
-	include 'param.h'
-
-
 	call setdepth(nlvdi,hdkov,hdeov,zeov,areakv)
 
 	end
@@ -870,8 +826,6 @@ c checks differences between old and new depth values (debug)
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
 
 	integer k,ie,l,idiff
 
@@ -906,15 +860,11 @@ c sets up depth array for nodes
 
 	implicit none
 
-	include 'param.h'
-
 	integer levdim
-	real hdkn(levdim,1)	!depth at node, new time level
-	real hden(levdim,1)	!depth at element, new time level
-	real zenv(3,1)    	!water level at new time level
-	real area(levdim,1)
-
-
+	real hdkn(levdim,nkn)	!depth at node, new time level
+	real hden(levdim,nel)	!depth at element, new time level
+	real zenv(3,nel)    	!water level at new time level
+	real area(levdim,nkn)
 
         logical bdebug
         logical bsigma
@@ -1072,12 +1022,8 @@ c computes content of water mass in total domain
 
         implicit none
 
-	include 'param.h'
-
 	double precision masscont
 	integer mode
-
-
 
 	integer k,l,nlev
 	double precision total
@@ -1106,8 +1052,6 @@ c computes content of scalar in total domain
 	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
-
-	include 'param.h'
 
 	double precision scalcont
 	integer mode
@@ -1146,8 +1090,6 @@ c computes content of scalar at node k
 
         implicit none
 
-        include 'param.h'
- 
         double precision scalcontk
         integer mode,k
         real scal(nlvdi,nkn)
@@ -1177,8 +1119,6 @@ c computes content of scalar at node k (with given depth)
 	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
-
-        include 'param.h'
 
         double precision scalcontkh
         integer k
@@ -1210,8 +1150,6 @@ c this routine into another file... FIXME
 	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
-
-        include 'param.h'
 
         real scal(nlvdi,nkn)        !scalar field for which to compute mass
         real depth                      !depth of column

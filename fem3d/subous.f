@@ -858,9 +858,9 @@ c reads second record of OUS file
         include 'ousinf.h'
 
 	integer iu
-	integer ilhv(1)
-	real hlv(1)
-	real hev(1)
+	integer ilhv(*)
+	real hlv(*)
+	real hev(*)
 	integer ierr
 
 	logical bdata
@@ -919,9 +919,9 @@ c writes second record of OUS file
         include 'ousinf.h'
 
 	integer iunit
-	integer ilhv(1)
-	real hlv(1)
-	real hev(1)
+	integer ilhv(*)
+	real hlv(*)
+	real hev(*)
 	integer ierr
 
 	integer l,ie,neli
@@ -959,11 +959,11 @@ c reads data record of OUS file
 
 	integer iu,it
 	integer nlvddi
-	integer ilhv(1)
-	real z(1)
-	real ze(1)
-	real ut(nlvddi,1)
-	real vt(nlvddi,1)
+	integer ilhv(*)
+	real z(*)
+	real ze(*)
+	real ut(nlvddi,*)
+	real vt(nlvddi,*)
 	integer ierr
 
 	integer l,k,ie,i,lmax
@@ -1035,11 +1035,11 @@ c writes data record of OUS file
 c arguments
 	integer iunit,it
 	integer nlvddi
-	integer ilhv(1)
-	real z(1)
-	real ze(1)
-	real ut(nlvddi,1)
-	real vt(nlvddi,1)
+	integer ilhv(*)
+	real z(*)
+	real ze(*)
+	real ut(nlvddi,*)
+	real vt(nlvddi,*)
 	integer ierr
 c local
 	integer l,k,ie,i
@@ -1244,9 +1244,9 @@ c************************************************************
 	implicit none
 
 	integer iunit
-	integer ilhv(1)
-	real hlv(1)
-	real hev(1)
+	integer ilhv(*)
+	real hlv(*)
+	real hev(*)
 	integer ierr
 
 	call ous_read_header2(iunit,ilhv,hlv,hev,ierr)
@@ -1260,9 +1260,9 @@ c************************************************************
 	implicit none
 
 	integer iunit
-	integer ilhv(1)
-	real hlv(1)
-	real hev(1)
+	integer ilhv(*)
+	real hlv(*)
+	real hev(*)
 	integer ierr
 
 	call ous_write_header2(iunit,ilhv,hlv,hev,ierr)
@@ -1277,11 +1277,11 @@ c************************************************************
 
 	integer iunit,it
 	integer nlvddi
-	integer ilhv(1)
-	real z(1)
-	real ze(1)
-	real ut(nlvddi,1)
-	real vt(nlvddi,1)
+	integer ilhv(*)
+	real z(*)
+	real ze(*)
+	real ut(nlvddi,*)
+	real vt(nlvddi,*)
 	integer ierr
 
 	call ous_read_record(iunit,it,nlvddi,ilhv,z,ze,ut,vt,ierr)
@@ -1296,11 +1296,11 @@ c************************************************************
 
 	integer iunit,it
 	integer nlvddi
-	integer ilhv(1)
-	real z(1)
-	real ze(1)
-	real ut(nlvddi,1)
-	real vt(nlvddi,1)
+	integer ilhv(*)
+	real z(*)
+	real ze(*)
+	real ut(nlvddi,*)
+	real vt(nlvddi,*)
 	integer ierr
 
 	call ous_write_record(iunit,it,nlvddi,ilhv,z,ze,ut,vt,ierr)

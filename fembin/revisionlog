@@ -68,6 +68,10 @@ fi
 
 for file in $files
 do
+  faux=$(echo $file | sed '/\/tmp\//'d)
+  #[ -z "$faux" ] && echo "*** skipping $file"
+  [ -z "$faux" ] && continue
+
   getheader.pl $file | revisionlog.pl \
 		$options -file $file -after $after -befor $befor
 done

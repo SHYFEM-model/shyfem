@@ -892,7 +892,7 @@ c*****************************************************************
 
 	integer iunit
 	integer it,n
-	real val(1)
+	real val(n)
 
 	integer i
 

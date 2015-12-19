@@ -333,10 +333,10 @@ c end of routine
 c-----------------------------------------------------------------
 
 	return
-   99	continue
-	write(6,*) 'Error in inverting matrix for water level'
-	write(6,*) 'it, ier : ',it,ier
-	stop 'error stop : hydro'
+!   99	continue
+!	write(6,*) 'Error in inverting matrix for water level'
+!	write(6,*) 'it, ier : ',it,ier
+!	stop 'error stop : hydro'
 	end
 
 c******************************************************************
@@ -563,7 +563,8 @@ c	------------------------------------------------------
 c	in hia(i,j),hik(i),i,j=1,3 is system
 c	------------------------------------------------------
 
-	  call system_assemble(nkn,mbw,kn,hia,hik)
+	  !call system_assemble(ie,nkn,mbw,kn,hia,hik)
+	  call system_assemble(ie,kn,hia,hik)
 
 	end do
 

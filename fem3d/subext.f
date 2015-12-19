@@ -262,8 +262,8 @@ c*********************************************************
 	integer iunit,ndim,nvers,knausm
 	real href,hzmin
 	character*80 descrp
-	integer knaus(1)
-	real hdep(1)
+	integer knaus(knausm)
+	real hdep(knausm)
 
 	integer ierr
 	real read7
@@ -282,7 +282,7 @@ c*********************************************************
 	subroutine ext_read_record(iunit,nvers,it,knausm,xv,ierr)
 	implicit none
 	integer iunit,nvers,it,knausm,ierr
-	real xv(3,knausm)
+	real xv(3*knausm)
 
 	real rdrc7
 
@@ -298,8 +298,8 @@ c*********************************************************
 	integer iunit,ndim,nvers,knausm
 	real href,hzmin
 	character*80 descrp
-	integer knaus(1)
-	real hdep(1)
+	integer knaus(knausm)
+	real hdep(knausm)
 
 	integer ierr
 	real writ7
@@ -314,7 +314,7 @@ c*********************************************************
 	subroutine ext_write_record(iunit,nvers,it,knausm,xv)
 	implicit none
 	integer iunit,nvers,it,knausm
-	real xv(3,knausm)
+	real xv(3*knausm)
 
 	integer ierr,i
 	integer knaus(knausm)
@@ -340,8 +340,8 @@ c
 c error codes 11 21 31 35 41 61 71
 c
 	character*80 descrp
-	integer knaus(1)
-	real hdep(1)
+	integer knaus(ndim)
+	real hdep(ndim)
 c
 	nvermx = 6
 c
@@ -424,8 +424,8 @@ c error codes 11
 c ndim is dummy argument
 c
 	character*80 descrp
-	integer knaus(1)
-	real hdep(1)
+	integer knaus(ndim)
+	real hdep(ndim)
 c
 	idummy=ndim        
 	idummy=2*idummy
@@ -465,7 +465,7 @@ c
 c error codes 11 35
 c EOF -1
 c
-	real xv(1)
+	real xv(3*knausm)
 c
 	nvermx = 6
 c
@@ -508,7 +508,7 @@ c
 c error codes 11 35
 c EOF -1
 c
-	real xv(1)
+	real xv(3*knausm)
 c
 	idummy=knausm        
 	dummy=xv(1)
@@ -550,8 +550,8 @@ c writes data record of float tracking file
 c
 c error codes 11
 c
-	integer knaus(1)
-	real xv(1)
+	integer knaus(knausm)
+	real xv(*)
 c
 	nvermx = 6
 c
@@ -584,7 +584,7 @@ c writes data record of extra point file
 c
 c error codes 11
 c
-        dimension knaus(1),u(1),v(1),z(1)
+        dimension knaus(*),u(*),v(*),z(knausm)
 c
                 write(iunit)    it
      +                          ,( u(knaus(j)),j=1,knausm )
@@ -793,10 +793,10 @@ c reads second record of EXT file
 
 c arguments
 	integer iunit
-	integer kpoint(1)
-	integer ipoint(1)
-	real hdep(1)
-	real x(1),y(1)
+	integer kpoint(npoext)
+	integer ipoint(npoext)
+	real hdep(npoext)
+	real x(npoext),y(npoext)
 	integer ierr
 c common
 	integer mtype,maxver,nverso,npoext
@@ -832,10 +832,10 @@ c writes second record of EXT file
 
 c arguments
 	integer iunit
-	integer kpoint(1)
-	integer ipoint(1)
-	real hdep(1)
-	real x(1),y(1)
+	integer kpoint(npoext)
+	integer ipoint(npoext)
+	real hdep(npoext)
+	real x(npoext),y(npoext)
 	integer ierr
 c common
 	integer mtype,maxver,nverso,npoext
@@ -866,7 +866,7 @@ c reads data record of EXT file
 
 c arguments
 	integer iunit,it
-	real u(1),v(1),z(1)
+	real u(npoext),v(npoext),z(npoext)
 	integer ierr
 c common
 	integer mtype,maxver,nverso,npoext
@@ -915,7 +915,7 @@ c writes data record of EXT file
 
 c arguments
 	integer iunit,it
-	real u(1),v(1),z(1)
+	real u(npoext),v(npoext),z(npoext)
 	integer ierr
 c common
 	integer mtype,maxver,nverso,npoext
@@ -935,3 +935,6 @@ c local
 
 	return
 	end
+
+c************************************************************
+

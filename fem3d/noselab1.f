@@ -174,11 +174,15 @@ c--------------------------------------------------------------
 	  allocate(naccu(istep))
 	  allocate(accum(nlvdi,nkn,istep))
 	  allocate(std(nlvdi,nkn,16,istep))	!also used for directions
-	  naccum = 0
-	  naccu = 0
-	  accum = 0.
-	  std = 0.
+	else
+	  allocate(naccu(1))
+	  allocate(accum(1,1,1))
+	  allocate(std(1,1,1,1))	!also used for directions
 	end if
+	naccum = 0
+	naccu = 0
+	accum = 0.
+	std = 0.
 
 	!write(6,*) 'mode: ',mode,ifreq,istep
 

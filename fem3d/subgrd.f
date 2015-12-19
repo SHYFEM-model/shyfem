@@ -590,13 +590,13 @@ c reads comment
 
 	ner = 6
 
-	if(i.gt.0.and.line(i:i).eq.'0') then
+	if(i.le.0) then
+	  !blank line
+	else if(line(i:i).eq.'0') then
 	  nco=nco+1
 	  if(i.lt.n) then
 	    call fempar(line(i+1:))
 	  end if
-	else if(i.le.0) then
-	  !blank line
 	else
 	  write(ner,*) 'Read error on line ',iline
 	  write(ner,*) line
@@ -687,7 +687,7 @@ c reads elements from .grd file
 	logical bstop
         integer ipev(nelddi),iaev(nelddi)
 	integer ipntev(0:nelddi)
-	integer inodev(nenddi)
+	integer inodev(max(1,nenddi))
 	real hev(nelddi)
 
 	logical bread
@@ -785,7 +785,7 @@ c reads lines from .grd file
 	logical bstop
         integer iplv(nliddi),ialv(nliddi)
 	integer ipntlv(0:nliddi)		!pointer into inodlv
-	integer inodlv(nlnddi)			!node numbers of lines
+	integer inodlv(max(1,nlnddi))
 	real hlv(nliddi)
 
 	logical bread
@@ -862,7 +862,7 @@ c reads node list
 
 	integer nvert		!number of vertices to read
 	integer istart
-	integer nodes(1)
+	integer nodes(abs(nvert))
 	real depth
 
 	logical bread,bline
