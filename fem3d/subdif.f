@@ -573,7 +573,7 @@ c       ------------------------------------------------
           stop 'error stop diff_h_set: Horizontal diffusion'
         end if
 
-        icall = -1
+        icall = -1		!this guarantees that it is not called anymore
         if( idhtyp .ge. 2 ) then
 	  icall = 1
 	  call smagorinsky
@@ -741,6 +741,7 @@ c ieltv:  >0 element  0: boundary  -1: open boundary
 
 	include 'param.h'
 
+! shympi FIXME : will not work with mpi
 
 	integer k,i,ii,iii,ienb,i1,i2
 	real dl(3)

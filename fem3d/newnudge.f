@@ -134,6 +134,10 @@ c****************************************************************
 
 	if( nvars .le. 0 ) return
 
+	if( shympi_is_parallel() ) then
+	  stop 'error stop init_velocity_nudging: no mpi yet'
+	end if
+
 	call mod_nudge_init(nkn)
 
 	nintp = 4
@@ -465,6 +469,10 @@ c*******************************************************************
 
 	call getfnm(what,surffile)
 	if( surffile == ' ' ) return
+
+	if( shympi_is_parallel() ) then
+	  stop 'error stop init_velocity_nudging: no mpi yet'
+	end if
 
 	taudefvel = getpar('tauvel')
 

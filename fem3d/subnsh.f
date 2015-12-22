@@ -97,6 +97,8 @@ c writes output to terminal or log file
         integer nrb,nbc
         integer nkbnd,nbnds
 
+	if( shympi_is_master() ) then
+
         nrb = nkbnd()
         nbc = nbnds()
 
@@ -156,6 +158,10 @@ c	call prlgr		!prints float coordinates
 	write(6,*)
 	write(6,1030)
 	write(6,*)
+
+	end if
+
+	call shympi_syncronize
 
 	return
  1030   format(1x,78('='))

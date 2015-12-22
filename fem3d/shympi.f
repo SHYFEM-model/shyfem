@@ -247,7 +247,6 @@ c-----------------------------------------------------------
 	call get_date_time(date,time)
 	call iff_init_global(nkn,nel,nlv,ilhkv,ilhv
      +				,hkv_max,hev,hlv,date,time)
-	if( bmpi ) call shympi_stop('mpi finished')
 
 	call sp111(1)           !here zenv, utlnv, vtlnv are initialized
 
@@ -317,10 +316,8 @@ c-----------------------------------------------------------
 
 	call check_fem
 	call check_values
-c	call listdim
 	call prilog
 
-c        call bclevvar_ini       	!chao debora
 	call bclfix_ini
 
 	call system_initialize		!matrix inversion routines
@@ -331,8 +328,7 @@ c        call bclevvar_ini       	!chao debora
 	call init_nudging
 
 	call do_init
-
-	!call custom(it)		!call for initialization
+	if( bmpi ) call shympi_stop('mpi finished')
 
 	write(6,*) 'starting time loop'
 	call print_time

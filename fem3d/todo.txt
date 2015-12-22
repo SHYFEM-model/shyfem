@@ -1,0 +1,47 @@
+
+subdry.f:
+
+transfer setzev zetznv from subdry to newtra or similar
+delete zuniq
+znv exchanged in setznv
+
+prtouv
+uvtopr
+uvtop0
+make_prvel	->	calls uvtopr, uvtop0
+init_uv		->	difference to init_uvt
+
+setnod:
+	indicate also ghost nodes (not boundary)
+	exchange is already done
+
+setarea:
+	why also called in sedi3d?
+	exchanges
+
+check if rhov, bpresv have to be exchanged
+	probably no
+	bpresv may be eliminated
+
+init_coriolis
+	must exchange for aver, min, max
+
+subdif:
+	smagorinski needs uprv, vprv
+	green will not work -> need neigboring element
+
+tracer:
+	with tracer adjust set_advect...
+	massconc -> only run over inner nodes
+		then exchange
+
+system:
+	check that we are running explicit
+
+
+
+
+
+
+
+

@@ -327,6 +327,8 @@ c interpolates area codes from elements to nodes (min or max)
 	  end do
 	end do
 
+	call shympi_exchange_2d_node(iarnv)
+
 	end
 
 c***********************************************************

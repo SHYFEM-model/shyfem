@@ -809,6 +809,16 @@
 
 	end function shympi_is_master
 
+!******************************************************************
+
+	function shympi_is_parallel()
+
+	logical shympi_is_parallel
+
+	shympi_is_parallel = bmpi
+
+	end function shympi_is_parallel
+
 !==================================================================
         end module shympi
 !==================================================================

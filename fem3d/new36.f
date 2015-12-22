@@ -192,6 +192,10 @@ c---------------------------------------------------------------
 	iclose=iround(getpar('iclose'))
 	if(iclose.le.0) return		!no closing enabled
 c
+	if( shympi_is_parallel() ) then
+	  stop 'error stop sp136: cannot run in mpi mode'
+	end if
+
 	if(iclose.gt.0.and.iclose.ne.4) then
 	  iclose=2  !$$1 - for new model close only thru flux
 	end if

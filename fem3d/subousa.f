@@ -75,6 +75,8 @@ c writes and administers ous file
      +			.not. has_output_d(da_out) ) icall = -1
 		if( icall .eq. -1 ) return
 		
+		if( shympi GGU...
+
 		if( has_output_d(da_out) ) then
 		  nvar = 4
 		  ftype = 1

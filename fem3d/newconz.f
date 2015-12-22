@@ -91,6 +91,7 @@ c-------------------------------------------------------------
 	rkpar=getpar('chpar')
 	difmol=getpar('difmol')
 	contau = getpar('contau')
+	levdbg = nint(getpar('levdbg'))
 
 	nvar = iconz
 	allocate(tauv(nvar),cdefs(nvar),massv(nvar))
@@ -115,6 +116,7 @@ c-------------------------------------------------------------
 	end if
 
         call getinfo(ninfo)
+	binfo = levdbg > 0
 
         nbc = nbnds()
         allocate(idconz(nbc))
@@ -178,7 +180,7 @@ c simulate decay
 c-------------------------------------------------------------
 
         call decay_conz(dt,contau,cnv)
-	call massconc(+1,cnv,nlvdi,massv(1))
+	if( binfo ) call massconc(+1,cnv,nlvdi,massv(1))
 
 c-------------------------------------------------------------
 c end of routine
@@ -236,7 +238,7 @@ c-------------------------------------------------------------
      +                          ,difhv,difv,difmol)
 
           call decay_conz(dt,tauv(i),conzv(1,1,i))
-	  call massconc(+1,conzv(1,1,i),nlvdi,massv(i))
+	  if( binfo ) call massconc(+1,conzv(1,1,i),nlvdi,massv(i))
 
 !$OMP END TASK
 
@@ -300,6 +302,7 @@ c-------------------------------------------------------------
           if( binfo ) then
 	    ctot = massv(1)
             call conmima(nlvdi,cnv,cmin,cmax)
+!	    shympi FIXME : here exchange and reduce
             write(ninfo,2021) 'conzmima: ',it,cmin,cmax,ctot
  2021       format(a,i10,2f10.4,e14.6)
           end if

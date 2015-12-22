@@ -608,15 +608,10 @@ c sets up area for nodes
 	real areael,areafv
 	real areaele
 
-	do k=1,nkn
-	  do l=1,levdim
-	    area(l,k) = 0.
-	  end do
-	end do
+	area = 0.
 
 	do ie=1,nel
 
-	  !call elebase(ie,n,ibase)
 	  n = 3
 	  areael = areaele(ie)
 	  areafv = areael / n
@@ -634,6 +629,8 @@ c sets up area for nodes
 	  end do
 
 	end do
+
+	call shympi_exchange_2d_node(area)
 
 	end
 
@@ -882,17 +879,8 @@ c----------------------------------------------------------------
 c initialize and copy
 c----------------------------------------------------------------
 
-	do k=1,nkn
-	  do l=1,levdim
-	    hdkn(l,k) = 0.
-	  end do
-	end do
-
-	do ie=1,nel
-	  do l=1,levdim
-	    hden(l,ie) = 0.
-	  end do
-	end do
+	hdkn = 0.
+	hden = 0.
 
 c----------------------------------------------------------------
 c compute volumes at node
@@ -989,11 +977,16 @@ c----------------------------------------------------------------
 	    if( areafv .gt. 0. ) then
 	      hdkn(l,k) = hdkn(l,k) / areafv
 	    else
-	      goto 1		!no more layers
+	      exit
 	    end if
 	  end do
-    1	  continue
 	end do
+
+c----------------------------------------------------------------
+c echange nodal values
+c----------------------------------------------------------------
+
+	call shympi_exchange_3d_node(hdkn)
 
 c----------------------------------------------------------------
 c end of routine

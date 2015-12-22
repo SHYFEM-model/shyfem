@@ -206,12 +206,8 @@ c------------------------------------------------------------------
 c set eddy coefficient
 c------------------------------------------------------------------
 
-	do k=1,nkn
-	  do l=0,nlv
-	    visv(l,k)=vistur
-	    difv(l,k)=diftur
-	  end do
-	end do
+	visv=vistur
+	difv=diftur
 
 c------------------------------------------------------------------
 c end of routine
@@ -1138,6 +1134,8 @@ c spherical setting the basin projection (iproj > 0)
 	  yaux = ygv
 	end if
        
+c next must be handled differently - shympi FIXME
+
 	yc   = sum(yaux)/nkn
 	ymin = minval(yaux)
 	ymax = maxval(yaux)
