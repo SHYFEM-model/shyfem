@@ -1,7 +1,7 @@
 c
 c $Id: ht.f,v 1.76 2010-03-11 15:36:38 georg Exp $
 c
-c finite element model ht (version 3D)
+c finite element model shympi (MPI version)
 c
 c original version from march 1991
 c
@@ -102,7 +102,7 @@ c*****************************************************************
 
 c----------------------------------------------------------------
 
-	program shyfem
+	program shympi
 
 	use mod_bound_geom
 	use mod_geom
@@ -801,13 +801,20 @@ c*****************************************************************
 
 	use basin
 	use mod_hydro
+	use shympi
 
 	implicit none
 
+	integer i
+
 	call shympi_check_2d_node(zov,'zov')
 	call shympi_check_2d_node(znv,'znv')
-	call shympi_check_2d_var(3*nel,zeov,'zeov')
-	call shympi_check_2d_var(3*nel,zenv,'zenv')
+
+	do i=1,3
+	  call shympi_check_2d_elem(zeov(i,:),'zeov')
+	  call shympi_check_2d_elem(zenv(i,:),'zenv')
+	end do
+
 	call shympi_check_3d_elem(utlnv,'utlnv')
 	call shympi_check_3d_elem(vtlnv,'vtlnv')
 	call shympi_check_3d_elem(utlov,'utlov')
@@ -820,6 +827,7 @@ c*****************************************************************
 	subroutine shympi_check_hydro_baro
 
 	use mod_hydro_baro
+	use shympi
 
 	implicit none
 
@@ -837,6 +845,7 @@ c*****************************************************************
 	use basin
 	use levels
 	use mod_hydro_vel
+	use shympi
 
 	implicit none
 
@@ -844,8 +853,8 @@ c*****************************************************************
 	call shympi_check_3d_elem(vlov,'vlov')
 	call shympi_check_3d_elem(ulnv,'ulnv')
 	call shympi_check_3d_elem(vlnv,'vlnv')
-	call shympi_check_var(nlvdi+1,nkn,wlnv,'wlnv')
-	call shympi_check_var(nlvdi+1,nkn,wlov,'wlov')
+	!call shympi_check_var(nlvdi+1,nkn,wlnv,'wlnv')
+	!call shympi_check_var(nlvdi+1,nkn,wlov,'wlov')
 
 	end
 
@@ -856,17 +865,89 @@ c*****************************************************************
 	use basin
 	use levels
 	use mod_hydro_print
+	use shympi
 
 	implicit none
+
+	integer i
 
 	call shympi_check_3d_node(uprv,'uprv')
 	call shympi_check_3d_node(vprv,'vprv')
 	call shympi_check_3d_node(upro,'upro')
 	call shympi_check_3d_node(vpro,'vpro')
-	call shympi_check_var(nlvdi+1,nkn,wprv,'wprv')
+	!call shympi_check_var(nlvdi+1,nkn,wprv,'wprv')
 	call shympi_check_2d_node(up0v,'up0v')
 	call shympi_check_2d_node(vp0v,'vp0v')
-	call shympi_check_2d_var(3*nkn,xv,'xv')
+
+	do i=1,3
+	  call shympi_check_2d_node(xv(i,:),'xv')
+	end do
+
+	end
+
+c*****************************************************************
+
+	subroutine shympi_check_depth
+
+	use mod_depth
+	use shympi
+
+	implicit none
+
+	call shympi_check_2d_elem(hev,'hev')
+	call shympi_check_2d_node(hkv,'hkv')
+	call shympi_check_2d_node(hkv_min,'hkv_min')
+	call shympi_check_2d_node(hkv_max,'hkv_max')
+
+	end
+
+c*****************************************************************
+
+	subroutine shympi_check_geom_dynamic
+
+	use evgeom
+	use mod_geom_dynamic
+	use shympi
+
+	implicit none
+
+	call shympi_check_2d_elem(iwegv,'iwegv')
+	call shympi_check_2d_elem(iwetv,'iwetv')
+	call shympi_check_2d_node(inodv,'inodv')	!FIXME - not working
+
+	end
+
+c*****************************************************************
+
+	subroutine shympi_check_geom_static
+
+	use evgeom
+	use mod_geom
+	use shympi
+
+	implicit none
+
+	integer i
+
+	do i=1,evdim
+	  call shympi_check_2d_elem(ev(i,:),'ev')
+	end do
+
+	end
+
+c*****************************************************************
+
+	subroutine shympi_check_levels
+
+	use levels
+	use shympi
+
+	implicit none
+
+	call shympi_check_2d_elem(ilhv,'ilhv')
+	call shympi_check_2d_elem(ilmv,'ilmv')
+	call shympi_check_2d_node(ilhkv,'ilhkv')
+	call shympi_check_2d_node(ilmkv,'ilmkv')
 
 	end
 

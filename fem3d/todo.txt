@@ -39,15 +39,16 @@ system:
 	check that we are running explicit
 
 check:
-	wprv(0:nlv) ?
-	upro, vpro used?
-	xv used?
+	wprv(0:nlv)?		probably can do without 0
+	upro, vpro used? 	used in gotm
+	xv used?		try to eliminate
 
 still to check with shympi_check:
-	depth
-	levels
-	geom, geom_dynamic
-	evgeom
+	* depth
+	* levels
+	geom		impossible
+	* geom_dynamic
+	* evgeom
 
 
 

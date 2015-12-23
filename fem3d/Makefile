@@ -73,7 +73,7 @@ endif
 #  NETCDF_OBJ       = netcdf.o netcdf_util.o \
 #			/usr/lib/x86_64-linux-gnu/libnetcdff.so
 
-MPI_OBJ = mod_shympi.o mod_shympi_dummy.o
+MPI_OBJ = mod_shympi.o mod_shympi_dummy.o basin_mpi.o
 ifeq ($(PARALLEL_MPI),true)
   MPI_OBJ = mod_shympi.o mod_shympi_internal.o basin_mpi.o
   MPI_COMPILE_FLAGS = $(shell mpif90 --showme:compile)

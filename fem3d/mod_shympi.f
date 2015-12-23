@@ -57,33 +57,52 @@
 	integer,save,allocatable :: id_elem(:,:)
 
         INTERFACE shympi_exchange_3d_node
-        MODULE PROCEDURE  shympi_exchange_3d_node_r
+        	MODULE PROCEDURE  
+     +			  shympi_exchange_3d_node_r
      +                   ,shympi_exchange_3d_node_d
      +                   ,shympi_exchange_3d_node_i
         END INTERFACE
 
         INTERFACE shympi_exchange_2d_node
-        MODULE PROCEDURE  shympi_exchange_2d_node_r
+        	MODULE PROCEDURE  
+     +			  shympi_exchange_2d_node_r
      +                   ,shympi_exchange_2d_node_d
      +                   ,shympi_exchange_2d_node_i
         END INTERFACE
 
         INTERFACE shympi_exchange_2d_elem
-        MODULE PROCEDURE  shympi_exchange_2d_elem_r
+        	MODULE PROCEDURE  
+     +			  shympi_exchange_2d_elem_r
      +                   ,shympi_exchange_2d_elem_d
      +                   ,shympi_exchange_2d_elem_i
         END INTERFACE
 
         INTERFACE shympi_check_2d_node
-        MODULE PROCEDURE  shympi_check_2d_node_r
+        	MODULE PROCEDURE  
+     +			  shympi_check_2d_node_r
      +                   ,shympi_check_2d_node_d
      +                   ,shympi_check_2d_node_i
         END INTERFACE
 
         INTERFACE shympi_check_2d_elem
-        MODULE PROCEDURE  shympi_check_2d_elem_r
+        	MODULE PROCEDURE  
+     +			  shympi_check_2d_elem_r
      +                   ,shympi_check_2d_elem_d
      +                   ,shympi_check_2d_elem_i
+        END INTERFACE
+
+        INTERFACE shympi_check_3d_node
+        	MODULE PROCEDURE  
+     +			  shympi_check_3d_node_r
+!     +                   ,shympi_check_3d_node_d
+!     +                   ,shympi_check_3d_node_i
+        END INTERFACE
+
+        INTERFACE shympi_check_3d_elem
+        	MODULE PROCEDURE  
+     +			  shympi_check_3d_elem_r
+!     +                   ,shympi_check_3d_elem_d
+!     +                   ,shympi_check_3d_elem_i
         END INTERFACE
 
 !==================================================================
@@ -321,6 +340,21 @@
      +			,ghost_nodes_in,ghost_nodes_out,val)
 
 	end subroutine shympi_exchange_3d_node_d
+
+!******************************************************************
+
+	subroutine shympi_exchange_3d_elem_r(val)
+
+	use basin
+	use levels
+
+	real val(nlvdi,nel)
+	logical, parameter :: belem = .true.
+
+	call shympi_exchange_internal_r(belem,nlvdi,nel,ilhv
+     +			,ghost_elems,ghost_elems,val)
+
+	end subroutine shympi_exchange_3d_elem_r
 
 !******************************************************************
 
@@ -625,6 +659,24 @@
 
 !******************************************************************
 
+	subroutine shympi_check_3d_node_r(val,text)
+
+	use basin
+	use levels
+
+	real val(nlvdi,nkn)
+	character*(*) text
+
+	real aux(nlvdi,nkn)
+
+	aux = val
+	call shympi_exchange_3d_node_r(aux)
+	call shympi_check_array_r(nlvdi*nkn,val,aux,text)
+
+	end subroutine shympi_check_3d_node_r
+
+!******************************************************************
+
 	subroutine shympi_check_2d_elem_i(val,text)
 
 	use basin
@@ -674,6 +726,26 @@
 
 	end subroutine shympi_check_2d_elem_d
 
+!******************************************************************
+
+	subroutine shympi_check_3d_elem_r(val,text)
+
+	use basin
+	use levels
+
+	real val(nlvdi,nel)
+	character*(*) text
+
+	real aux(nlvdi,nel)
+
+	aux = val
+	call shympi_exchange_3d_elem_r(aux)
+	call shympi_check_array_r(nlvdi*nel,val,aux,text)
+
+	end subroutine shympi_check_3d_elem_r
+
+!******************************************************************
+!******************************************************************
 !******************************************************************
 
 	subroutine shympi_check_array_i(n,a1,a2,text)
