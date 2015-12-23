@@ -26,6 +26,7 @@ c writes and administers ous file
 	use mod_depth
 	use mod_hydro
 	use levels
+	use shympi
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
@@ -75,7 +76,9 @@ c writes and administers ous file
      +			.not. has_output_d(da_out) ) icall = -1
 		if( icall .eq. -1 ) return
 		
-		if( shympi GGU...
+		if( shympi_is_parallel() ) then
+		  stop 'error stop wrousa: not mpi ready'
+		end if
 
 		if( has_output_d(da_out) ) then
 		  nvar = 4

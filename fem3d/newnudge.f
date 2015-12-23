@@ -98,6 +98,7 @@ c****************************************************************
 
 	use mod_nudge
 	use mod_nudging
+	use shympi
 	use basin
 
 	implicit none
@@ -438,6 +439,7 @@ c*******************************************************************
 	use mod_nudge
 	use mod_nudging
 	use intp_fem_file
+	use shympi
 	use basin
 
 	implicit none

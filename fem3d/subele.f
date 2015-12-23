@@ -597,6 +597,7 @@ c sets up area for nodes
 
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 
@@ -630,7 +631,7 @@ c sets up area for nodes
 
 	end do
 
-	call shympi_exchange_2d_node(area)
+	call shympi_exchange_3d_node(area)
 
 	end
 
@@ -854,6 +855,7 @@ c sets up depth array for nodes
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 

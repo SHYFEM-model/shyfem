@@ -298,6 +298,7 @@ c***********************************************************
 c interpolates area codes from elements to nodes (min or max)
 
 	use basin
+	use shympi
 
 	implicit none
 

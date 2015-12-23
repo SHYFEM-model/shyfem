@@ -360,6 +360,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
            call read_wwm
 	   
+	   call shympi_check_all
+
 	   call hydro			!hydro
 
 	   call wrfvla			!write finite volume
@@ -779,3 +781,94 @@ c*****************************************************************
 	end subroutine
 
 c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine shympi_check_all
+
+	implicit none
+
+	call shympi_check_hydro
+	call shympi_check_hydro_baro
+	call shympi_check_hydro_vel
+	call shympi_check_hydro_print
+
+	end
+
+c*****************************************************************
+
+	subroutine shympi_check_hydro
+
+	use basin
+	use mod_hydro
+
+	implicit none
+
+	call shympi_check_2d_node(zov,'zov')
+	call shympi_check_2d_node(znv,'znv')
+	call shympi_check_2d_var(3*nel,zeov,'zeov')
+	call shympi_check_2d_var(3*nel,zenv,'zenv')
+	call shympi_check_3d_elem(utlnv,'utlnv')
+	call shympi_check_3d_elem(vtlnv,'vtlnv')
+	call shympi_check_3d_elem(utlov,'utlov')
+	call shympi_check_3d_elem(vtlov,'vtlov')
+
+	end
+
+c*****************************************************************
+
+	subroutine shympi_check_hydro_baro
+
+	use mod_hydro_baro
+
+	implicit none
+
+	call shympi_check_2d_elem(unv,'unv')
+	call shympi_check_2d_elem(vnv,'vnv')
+	call shympi_check_2d_elem(uov,'uov')
+	call shympi_check_2d_elem(vov,'vov')
+
+	end
+
+c*****************************************************************
+
+	subroutine shympi_check_hydro_vel
+
+	use basin
+	use levels
+	use mod_hydro_vel
+
+	implicit none
+
+	call shympi_check_3d_elem(ulov,'ulov')
+	call shympi_check_3d_elem(vlov,'vlov')
+	call shympi_check_3d_elem(ulnv,'ulnv')
+	call shympi_check_3d_elem(vlnv,'vlnv')
+	call shympi_check_var(nlvdi+1,nkn,wlnv,'wlnv')
+	call shympi_check_var(nlvdi+1,nkn,wlov,'wlov')
+
+	end
+
+c*****************************************************************
+
+	subroutine shympi_check_hydro_print
+
+	use basin
+	use levels
+	use mod_hydro_print
+
+	implicit none
+
+	call shympi_check_3d_node(uprv,'uprv')
+	call shympi_check_3d_node(vprv,'vprv')
+	call shympi_check_3d_node(upro,'upro')
+	call shympi_check_3d_node(vpro,'vpro')
+	call shympi_check_var(nlvdi+1,nkn,wprv,'wprv')
+	call shympi_check_2d_node(up0v,'up0v')
+	call shympi_check_2d_node(vp0v,'vp0v')
+	call shympi_check_2d_var(3*nkn,xv,'xv')
+
+	end
+
+c*****************************************************************
+

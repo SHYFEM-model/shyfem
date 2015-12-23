@@ -85,6 +85,8 @@ c************************************************************
 
 c writes output to terminal or log file
 
+	use shympi
+
 	implicit none
 
 	include 'param.h'

@@ -38,7 +38,16 @@ tracer:
 system:
 	check that we are running explicit
 
+check:
+	wprv(0:nlv) ?
+	upro, vpro used?
+	xv used?
 
+still to check with shympi_check:
+	depth
+	levels
+	geom, geom_dynamic
+	evgeom
 
 
 

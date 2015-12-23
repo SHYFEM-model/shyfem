@@ -100,6 +100,7 @@ c------------------------------------------------------------
 	use levels
 	use basin
 	use mod_renewal_time
+	use shympi
 
         implicit none
 

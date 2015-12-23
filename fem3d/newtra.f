@@ -116,6 +116,7 @@ c
 	use mod_hydro
 	use evgeom
 	use basin
+	use shympi
 
 	implicit none
 
@@ -175,6 +176,7 @@ c
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 

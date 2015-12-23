@@ -103,6 +103,7 @@ c vdate		velocity variable used in mode
 	use mod_bound_dynamic
 	use mod_diff_visc_fric
 	use mod_hydro_print
+	use shympi
 	use basin
 
 	implicit none

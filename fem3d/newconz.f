@@ -59,6 +59,7 @@ c initializes tracer computation
 	include 'femtime.h'
 
 	integer nvar,nbc,nintp,i
+	integer levdbg
 	integer nmin
 	real cdef(1)
 	double precision dtime0

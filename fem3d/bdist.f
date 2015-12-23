@@ -220,6 +220,7 @@ c other nodes are > 1 (integer)
 c example: neibors of rdist=1 nodes have rdist=2 etc.
 
 	use mod_geom
+	use shympi
 
         implicit none
 
