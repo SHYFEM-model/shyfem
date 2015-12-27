@@ -718,10 +718,10 @@
 	use basin
 	use levels
 
-	real val(nlvdi,nkn)
+	real val(0:nlvdi,nkn)
 	character*(*) text
 
-	real aux(nlvdi,nkn)
+	real aux(0:nlvdi,nkn)
 
 	aux = val
 	call shympi_exchange_3d0_node_r(aux)
@@ -812,7 +812,7 @@
 
         if( .not. all( a1 == a2 ) ) then
           write(6,*) 'arrays are different: ' // text
-          write(6,*) 'process: ',my_id
+          write(6,*) 'process id: ',my_id
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
 	      write(6,*) i,a1(i),a2(i)
@@ -836,14 +836,14 @@
 
         if( .not. all( a1 == a2 ) ) then
           write(6,*) 'arrays are different: ' // text
-          write(6,*) 'process: ',my_id
+          write(6,*) 'process id: ',my_id
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
 	      write(6,*) i,a1(i),a2(i)
 	    end if
 	  end do
 	  call shympi_finalize
-          stop 'error stop shympi_check_array_i'
+          stop 'error stop shympi_check_array_r'
         end if
 
 	end subroutine shympi_check_array_r
@@ -860,14 +860,14 @@
 
         if( .not. all( a1 == a2 ) ) then
           write(6,*) 'arrays are different: ' // text
-          write(6,*) 'process: ',my_id
+          write(6,*) 'process id: ',my_id
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
 	      write(6,*) i,a1(i),a2(i)
 	    end if
 	  end do
 	  call shympi_finalize
-          stop 'error stop shympi_check_array_i'
+          stop 'error stop shympi_check_array_d'
         end if
 
 	end subroutine shympi_check_array_d
