@@ -490,12 +490,15 @@ c******************************************************************
 c makes print velocities and xv from new level arrays
 
 	use basin
+	use shympi
 
 	implicit none
 
-	call uvtopr
-	call uvtop0
-	call setxv
+	call uvtopr	!computes uprv,vprv
+	call uvtop0	!computes up0v,vp0v
+	call setxv	!sets xv from up0v,vp0v,znv
+
+	call shympi_barrier
 
 	end
 

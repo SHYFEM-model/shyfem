@@ -328,7 +328,6 @@ c-----------------------------------------------------------
 	call init_nudging
 
 	call do_init
-	if( bmpi ) call shympi_stop('mpi finished')
 
 	write(6,*) 'starting time loop'
 	call print_time
@@ -343,6 +342,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	do while( it .lt. itend )
 
+	   call shympi_check_all
+
 	   call check_crc
 	   call set_dry
 
@@ -352,6 +353,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            call get_timestep(dt)
 	   !call compute_stability_stats(1,aux)
 
+	   if( bmpi ) call shympi_stop('mpi finished')
 	   call do_befor
 
 	   call offline(2)		!read from offline file
@@ -364,7 +366,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	   call hydro			!hydro
 
-	   call wrfvla			!write finite volume
+	   !call wrfvla			!write finite volume - shympi FIXME
 
 	   call scalar
 
@@ -788,6 +790,31 @@ c*****************************************************************
 
 	implicit none
 
+	call shympi_check_all_static
+	call shympi_check_all_dynamic
+
+	end
+
+c*****************************************************************
+
+	subroutine shympi_check_all_static
+
+	implicit none
+
+	call shympi_check_depth
+	call shympi_check_geom_static
+	call shympi_check_levels
+
+	end
+
+c*****************************************************************
+
+	subroutine shympi_check_all_dynamic
+
+	implicit none
+
+	call shympi_check_geom_dynamic
+
 	call shympi_check_hydro
 	call shympi_check_hydro_baro
 	call shympi_check_hydro_vel
@@ -853,8 +880,8 @@ c*****************************************************************
 	call shympi_check_3d_elem(vlov,'vlov')
 	call shympi_check_3d_elem(ulnv,'ulnv')
 	call shympi_check_3d_elem(vlnv,'vlnv')
-	!call shympi_check_var(nlvdi+1,nkn,wlnv,'wlnv')
-	!call shympi_check_var(nlvdi+1,nkn,wlov,'wlov')
+	call shympi_check_3d0_node(wlnv,'wlnv')
+	call shympi_check_3d0_node(wlov,'wlov')
 
 	end
 
@@ -875,7 +902,7 @@ c*****************************************************************
 	call shympi_check_3d_node(vprv,'vprv')
 	call shympi_check_3d_node(upro,'upro')
 	call shympi_check_3d_node(vpro,'vpro')
-	!call shympi_check_var(nlvdi+1,nkn,wprv,'wprv')
+	call shympi_check_3d0_node(wprv,'wprv')
 	call shympi_check_2d_node(up0v,'up0v')
 	call shympi_check_2d_node(vp0v,'vp0v')
 

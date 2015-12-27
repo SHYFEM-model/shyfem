@@ -184,6 +184,7 @@ c computes turbulent quantities with GOTM model
 	use mod_hydro_print
 	use levels, only : nlvdi,nlv
 	use basin
+	use shympi
 
 	implicit none
 
@@ -304,6 +305,7 @@ c set up bottom stress on nodes
 c------------------------------------------------------
 
 	call bnstress(czdef,taub,areaac)
+	call shympi_exchange_2d_node(taub)
 
 c------------------------------------------------------
 c set up buoyancy frequency and shear frequency
@@ -316,6 +318,8 @@ c------------------------------------------------------
 c------------------------------------------------------
 c call gotm for each water column
 c------------------------------------------------------
+
+	call shympi_barrier
 
 	rlmax = 0.
 	nltot = 0

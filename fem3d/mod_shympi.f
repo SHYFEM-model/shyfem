@@ -63,6 +63,20 @@
      +                   ,shympi_exchange_3d_node_i
         END INTERFACE
 
+        INTERFACE shympi_exchange_3d0_node
+        	MODULE PROCEDURE  
+     +			  shympi_exchange_3d0_node_r
+!     +                   ,shympi_exchange_3d0_node_d
+!     +                   ,shympi_exchange_3d0_node_i
+        END INTERFACE
+
+        INTERFACE shympi_exchange_3d_elem
+        	MODULE PROCEDURE  
+     +			  shympi_exchange_3d_elem_r
+!     +                   ,shympi_exchange_3d_elem_d
+!     +                   ,shympi_exchange_3d_elem_i
+        END INTERFACE
+
         INTERFACE shympi_exchange_2d_node
         	MODULE PROCEDURE  
      +			  shympi_exchange_2d_node_r
@@ -96,6 +110,13 @@
      +			  shympi_check_3d_node_r
 !     +                   ,shympi_check_3d_node_d
 !     +                   ,shympi_check_3d_node_i
+        END INTERFACE
+
+        INTERFACE shympi_check_3d0_node
+        	MODULE PROCEDURE  
+     +			  shympi_check_3d0_node_r
+!     +                   ,shympi_check_3d0_node_d
+!     +                   ,shympi_check_3d0_node_i
         END INTERFACE
 
         INTERFACE shympi_check_3d_elem
@@ -340,6 +361,21 @@
      +			,ghost_nodes_in,ghost_nodes_out,val)
 
 	end subroutine shympi_exchange_3d_node_d
+
+!******************************************************************
+
+	subroutine shympi_exchange_3d0_node_r(val)
+
+	use basin
+	use levels
+
+	real val(0:nlvdi,nkn)
+	logical, parameter :: belem = .false.
+
+	call shympi_exchange_internal_r(belem,nlvdi+1,nkn,ilhkv
+     +			,ghost_nodes_in,ghost_nodes_out,val)
+
+	end subroutine shympi_exchange_3d0_node_r
 
 !******************************************************************
 
@@ -674,6 +710,24 @@
 	call shympi_check_array_r(nlvdi*nkn,val,aux,text)
 
 	end subroutine shympi_check_3d_node_r
+
+!******************************************************************
+
+	subroutine shympi_check_3d0_node_r(val,text)
+
+	use basin
+	use levels
+
+	real val(nlvdi,nkn)
+	character*(*) text
+
+	real aux(nlvdi,nkn)
+
+	aux = val
+	call shympi_exchange_3d0_node_r(aux)
+	call shympi_check_array_r((nlvdi+1)*nkn,val,aux,text)
+
+	end subroutine shympi_check_3d0_node_r
 
 !******************************************************************
 

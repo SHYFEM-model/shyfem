@@ -50,8 +50,32 @@ still to check with shympi_check:
 	* geom_dynamic
 	* evgeom
 
+check set_timestep
+	how is dt set
+
+check
+        module mod_bound_dynamic
+        real, allocatable, save :: rzv(:)
+        real, allocatable, save :: rqv(:)
+        real, allocatable, save :: rqpsv(:)
+        real, allocatable, save :: rqdsv(:)
+        real, allocatable, save :: mfluxv(:,:)
+
+compute_heat_flux
+	should go into meteo forcing
+
+total_energy
+	reduce element value
+
+check:
+	ppv
+	tauxnv,tauynv
+	rdistv
 
 
+===================================================================
 
+ivan:
+	togliere spazi davanti a descrizione variabile file
 
 

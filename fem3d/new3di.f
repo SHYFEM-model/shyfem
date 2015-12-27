@@ -10,7 +10,6 @@ c subroutine hydro_zeta(vqv)		assemble matrix
 c subroutine hydro_transports		computes transports (temporary)
 c subroutine hydro_transports_final	computes transports (final)
 c subroutine hydro_vertical(dzeta)	computes vertical velocities
-c subroutine correct_zeta(dzeta)	corrects zeta values
 c
 c notes :
 c
@@ -206,11 +205,10 @@ c written on 27.07.88 by ggu   (from sp159f)
 	integer kspecial
 	integer iwhat
 	real azpar,ampar
-	real res
 	real dzeta(nkn)
 
 	integer iround
-	real getpar,resi
+	real getpar
 	integer inohyd
 	logical bnohyd
 
@@ -294,8 +292,6 @@ c-----------------------------------------------------------------
 	call check_volume		!checks for negative volume 
         call arper
 
-	res=resi(zov,znv,nkn)
-
 c-----------------------------------------------------------------
 c vertical velocities and non-hydrostatic step
 c-----------------------------------------------------------------
@@ -314,7 +310,7 @@ c-----------------------------------------------------------------
 	bzcorr = .true.
 	bzcorr = .false.
 	if( bzcorr ) then
-	  call correct_zeta(dzeta)
+	  znv = znv + dzeta
           call setzev     !znv -> zenv
 	  call make_new_depth
 	  call hydro_vertical(dzeta)		!$$VERVEL
@@ -1395,6 +1391,12 @@ c statement functions
 	!logical isein
         !isein(ie) = iwegv(ie).eq.0
 
+c 2d -> nothing to be done
+
+	dzeta = 0.
+	wlnv = 0.
+	if( nlvdi == 1 ) return
+
 c initialize
 
 	call getazam(azpar,ampar)
@@ -1406,7 +1408,6 @@ c initialize
 	allocate(vf(nlvdi,nkn),va(nlvdi,nkn))
 	vf = 0.
 	va = 0.
-	wlnv = 0.
 
 c compute difference of velocities for each layer
 c
@@ -1491,35 +1492,12 @@ c FIXME	-> only for ibtyp = 1,2 !!!!
 	do k=1,nkn
             !if( is_external_boundary(k) ) then	!bug fix 10.03.2010
             if( is_zeta_bound(k) ) then
-	      do l=0,nlv
-		wlnv(l,k) = 0.
-	      end do
+	      wlnv(:,k) = 0.
 	      dzeta(k) = 0.
             end if
 	end do
 
 	deallocate(vf,va)
-
-	end
-
-c*******************************************************************
-
-	subroutine correct_zeta(dzeta)
-
-	use mod_hydro
-	use basin, only : nkn,nel,ngr,mbw
-
-	implicit none
-
-	real dzeta(nkn)		!zeta correction
-
-	include 'param.h'
-
-	integer k
-
-	do k=1,nkn
-	  znv(k) = znv(k) + dzeta(k)
-	end do
 
 	end
 
