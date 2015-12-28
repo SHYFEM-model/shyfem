@@ -189,6 +189,7 @@ c written on 27.07.88 by ggu   (from sp159f)
 	use mod_hydro_print
 	use mod_hydro_vel
 	use mod_hydro
+	use shympi
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
 
@@ -251,9 +252,9 @@ c-----------------------------------------------------------------
 
 	call copy_uvz		!copies uvz to old time level
 	call nonhydro_copy	!copies non hydrostatic pressure terms
-	call copy_depth
+	call copy_depth		!copies layer structure
 
-	call set_diffusivity	!horizontal viscosity and diffusivity
+	call set_diffusivity	!horizontal viscosity/diffusivity (needs uvprv)
 
 c-----------------------------------------------------------------
 c solve for hydrodynamic variables
@@ -264,13 +265,16 @@ c-----------------------------------------------------------------
 	  call hydro_transports		!compute intermediate transports
 
 	  call setnod			!set info on dry nodes
-	  call set_link_info
+	  call set_link_info		!information on areas, islands, etc..
 	  call adjust_mass_flux		!cope with dry nodes
 
 	  call system_init		!initializes matrix
 	  call hydro_zeta(rqv)		!assemble system matrix for z
 	  call system_solve_z(nkn,znv)	!solves system matrix for z
 	  call system_adjust_z(nkn,znv)	!copies solution to new z
+
+	  call shympi_exchange_2d_node(znv)
+	  call shympi_barrier
 
 	  call setweg(1,iw)		!controll intertidal flats
 	  !write(6,*) 'ggu: iw = ',iw

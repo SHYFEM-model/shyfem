@@ -137,7 +137,7 @@ c save
 
         if(n88.eq.0) call getinfo(n88)          !get unit number
 
-        call setnod
+        !call setnod
 
         call nknel(nnkn,nnel,nnbn,nnli,nnis,nnod)
 
