@@ -18,6 +18,7 @@
 	public
 
 	logical, save :: bmpi = .false.
+	logical, save :: bmpi_debug = .false.
 
 	integer,save :: n_threads = 1
 	integer,save :: my_id = 0
@@ -934,6 +935,18 @@
 	shympi_is_master = my_id == 0
 
 	end function shympi_is_master
+
+!******************************************************************
+
+	subroutine shympi_comment(text)
+
+	character*(*) text
+
+	if( bmpi_debug .and. my_id == 0 ) then
+	  write(6,*) 'shympi_comment: ' // trim(text)
+	end if
+
+	end subroutine shympi_comment
 
 !******************************************************************
 

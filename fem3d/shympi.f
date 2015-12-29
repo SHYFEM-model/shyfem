@@ -264,7 +264,7 @@ c-----------------------------------------------------------
 
 	call setnod
 
-	call setarea(nlvdi,areakv)
+	call set_area
 
 	call make_new_depth
 	call copy_depth

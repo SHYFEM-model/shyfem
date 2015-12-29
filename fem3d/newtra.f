@@ -158,8 +158,10 @@ c
           vp0v = vp0v / vv
 	end where
 
+	call shympi_comment('exchanging up0v, vp0v')
 	call shympi_exchange_2d_node(up0v)
 	call shympi_exchange_2d_node(vp0v)
+	call shympi_barrier
 
 	return
 	end
@@ -210,8 +212,10 @@ c
 	  vprv = vprv / vv
 	end where
 
+	call shympi_comment('exchanging uprv, vprv')
 	call shympi_exchange_3d_node(uprv)
 	call shympi_exchange_3d_node(vprv)
+	call shympi_barrier
 c
 c vertical velocities -> we compute average over one layer
 c

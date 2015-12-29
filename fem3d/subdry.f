@@ -647,7 +647,9 @@ c-------------------------------------------------------------
 c exchange znv
 c-------------------------------------------------------------
 
+	call shympi_comment('exchanging znv in setznv ')
 	call shympi_exchange_2d_node(znv)
+	call shympi_barrier
 
 c-------------------------------------------------------------
 c write debug status

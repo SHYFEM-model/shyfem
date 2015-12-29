@@ -42,7 +42,7 @@ c subroutine ele2node(sev,sv)
 c       computes nodal values from element values (scalar)
 c subroutine elebase(ie,n,ibase)
 c       returns number of vertices and pointer into element array
-c subroutine setarea(levdim,area)
+c subroutine set_area
 c       sets up area for nodes
 c subroutine dvanode(l,k,mode,dep,vol,area)
 c       returns depth, volume and area of node k on level l
@@ -591,25 +591,23 @@ c***********************************************************
 c***********************************************************
 c***********************************************************
 
-	subroutine setarea(levdim,area)
+	subroutine set_area
 
 c sets up area for nodes
 
+	use mod_area
 	use levels
 	use basin
 	use shympi
 
 	implicit none
 
-	integer levdim
-	real area(levdim,nkn)
-
 	integer k,l,ie,ii
 	integer nlev,n
 	real areael,areafv
 	real areaele
 
-	area = 0.
+	areakv = 0.
 
 	do ie=1,nel
 
@@ -624,14 +622,16 @@ c sets up area for nodes
 	    k = nen3v(ii,ie)
 
 	    do l=1,nlev
-	      area(l,k) = area(l,k) + areafv
+	      areakv(l,k) = areakv(l,k) + areafv
 	    end do
 
 	  end do
 
 	end do
 
-	call shympi_exchange_3d_node(area)
+	call shympi_comment('exchanging areakv')
+	call shympi_exchange_3d_node(areakv)
+	call shympi_barrier
 
 	end
 
@@ -988,6 +988,7 @@ c----------------------------------------------------------------
 c echange nodal values
 c----------------------------------------------------------------
 
+	call shympi_comment('exchanging hdkn')
 	call shympi_exchange_3d_node(hdkn)
 	call shympi_barrier
 

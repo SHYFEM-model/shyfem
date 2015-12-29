@@ -3667,7 +3667,6 @@ c DOCS  END
         call makehkv(hkv,v1v)         !computes hkv as average
 
 	call setweg(3,iw)
-        call setarea(nlvdim,areakv)
         call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)
 
 !       ------------------------------------------------------------------

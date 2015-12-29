@@ -273,6 +273,7 @@ c-----------------------------------------------------------------
 	  call system_solve_z(nkn,znv)	!solves system matrix for z
 	  call system_adjust_z(nkn,znv)	!copies solution to new z
 
+	  call shympi_comment('exchanging znv')
 	  call shympi_exchange_2d_node(znv)
 	  call shympi_barrier
 

@@ -305,7 +305,10 @@ c set up bottom stress on nodes
 c------------------------------------------------------
 
 	call bnstress(czdef,taub,areaac)
+
+	call shympi_comment('exchanging taub')
 	call shympi_exchange_2d_node(taub)
+	call shympi_barrier
 
 c------------------------------------------------------
 c set up buoyancy frequency and shear frequency
