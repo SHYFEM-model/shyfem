@@ -158,11 +158,6 @@ c
           vp0v = vp0v / vv
 	end where
 
-	call shympi_comment('exchanging up0v, vp0v')
-	call shympi_exchange_2d_node(up0v)
-	call shympi_exchange_2d_node(vp0v)
-	call shympi_barrier
-
 	return
 	end
 c
@@ -212,11 +207,6 @@ c
 	  vprv = vprv / vv
 	end where
 
-	call shympi_comment('exchanging uprv, vprv')
-	call shympi_exchange_3d_node(uprv)
-	call shympi_exchange_3d_node(vprv)
-	call shympi_barrier
-c
 c vertical velocities -> we compute average over one layer
 c
 	do l=1,nlv
@@ -494,6 +484,7 @@ c******************************************************************
 c makes print velocities and xv from new level arrays
 
 	use basin
+	use mod_hydro_print
 	use shympi
 
 	implicit none
@@ -502,6 +493,11 @@ c makes print velocities and xv from new level arrays
 	call uvtop0	!computes up0v,vp0v
 	call setxv	!sets xv from up0v,vp0v,znv
 
+	call shympi_comment('exchanging uprv, vprv, up0v, vp0v')
+	call shympi_exchange_3d_node(uprv)
+	call shympi_exchange_3d_node(vprv)
+	call shympi_exchange_2d_node(up0v)
+	call shympi_exchange_2d_node(vp0v)
 	call shympi_barrier
 
 	end

@@ -337,7 +337,7 @@ c        call bclevvar_ini       	!chao debora
 
 	call do_init
 
-	!call custom(it)		!call for initialization
+	call custom(it)		!call for initialization
 
 	write(6,*) 'starting time loop'
 	call print_time

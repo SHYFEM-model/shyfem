@@ -1521,8 +1521,9 @@ c initializes water level from file
 	else
           call iff_time_interpolate(idvel,dtime,1,np,lmax,ulnv)
           call iff_time_interpolate(idvel,dtime,2,np,lmax,vlnv)
-	  call uvtopr
 	end if
+
+	call make_prvel
 
 	call iff_forget_file(idvel)
 

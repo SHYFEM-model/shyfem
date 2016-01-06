@@ -113,6 +113,8 @@ c custom routines
 	if( icall .eq. 94 ) call diffus2d
         if( icall .eq. 95 ) call ggu_ginevra
 	if( icall .eq. 101 ) call black_sea_nudge
+	if( icall .eq. 110 ) call mpi_test_basin(1)
+	if( icall .eq. 111 ) call mpi_test_basin(2)
 	if( icall .eq. 201 ) call conz_decay_curonian
         if( icall .eq. 883 ) call debora(it)
         if( icall .eq. 884 ) call tsinitdebora(it)
@@ -1988,8 +1990,7 @@ c*****************************************************************
 
 	call vtot
 	call uvint
-	call uvtop0
-	call uvtopr
+	call make_prvel
 
 	end
 
@@ -3994,6 +3995,86 @@ c momentum input for yaron
         end do
 
         end
+
+c*******************************************************************
+
+	subroutine mpi_test_basin(mode)
+
+	use mod_meteo
+	use basin
+	use mod_hydro
+
+	implicit none
+
+	include 'femtime.h'
+
+	integer mode
+
+	logical :: bwind
+	logical :: bzeta
+	integer k,ie,ii,i,kk
+	real z,dz,y,dy,pi
+	real, save :: cd = 2.5e-3
+	real, save :: wind = 10.
+	real, save :: wfact = 1.025/1000.
+	real :: stress
+	integer, save :: icall = 0
+
+	integer, parameter :: ndim = 5
+	integer, save :: nodes(5) = (/5,59,113,167,221/)
+
+	integer ipext
+
+	if( mode < 1 .or. mode > 2 ) then
+	 stop 'error stop mpi_test_basin: mode'
+	end if
+	bwind = mode == 1
+	bzeta = mode == 2
+
+	if( icall .eq. 0 ) then
+
+	  if( bwind ) then
+	    stress = wfact * cd * wind * wind
+	    wxv = 0.
+	    wyv = wind
+	    metws = wind
+	    ppv = 0.
+	    tauxnv = 0.
+	    tauynv = stress
+	  else if( bzeta ) then
+	    dz = 0.1
+	    dy = 3000.
+	    pi = 4.*atan(1.)
+	    do k=1,nkn
+	      y = ygv(k) - dy
+	      z = dz * (y/dy)
+	      z = dz * sin( (pi/2.) * (y/dy) )
+	      znv(k) = z
+	    end do
+	    call setzev
+	    call make_new_depth
+	  end if
+
+	  do i=1,ndim
+	    k = nodes(i)
+	    kk = ipext(k)
+	    if( kk .le. 0 ) then
+	      write(6,*) k,kk
+	      stop 'error stop mpi_test_basin: no such node'
+	    end if
+	    nodes(i) = kk
+	  end do
+
+	end if
+
+	icall = icall + 1
+
+	do i=1,ndim
+	  k = nodes(i)
+	  write(500+i,*) it,znv(k)
+	end do
+	
+	end
 
 c*******************************************************************
 

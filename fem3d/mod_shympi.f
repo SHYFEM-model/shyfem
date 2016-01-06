@@ -942,6 +942,7 @@
 
 	character*(*) text
 
+	!if( bmpi .and. bmpi_debug .and. my_id == 0 ) then
 	if( bmpi_debug .and. my_id == 0 ) then
 	  write(6,*) 'shympi_comment: ' // trim(text)
 	end if
