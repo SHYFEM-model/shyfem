@@ -329,6 +329,8 @@ c-----------------------------------------------------------
 
 	call do_init
 
+	call custom(it)
+
 	write(6,*) 'starting time loop'
 	call print_time
 
@@ -353,7 +355,6 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            call get_timestep(dt)
 	   !call compute_stability_stats(1,aux)
 
-	   if( bmpi ) call shympi_stop('mpi finished')
 	   call do_befor
 
 	   call offline(2)		!read from offline file
@@ -791,7 +792,7 @@ c*****************************************************************
 	implicit none
 
 	call shympi_check_all_static
-	call shympi_check_all_dynamic
+	!call shympi_check_all_dynamic
 
 	end
 
@@ -801,9 +802,9 @@ c*****************************************************************
 
 	implicit none
 
-	call shympi_check_depth
-	call shympi_check_geom_static
-	call shympi_check_levels
+	!call shympi_check_depth
+	!call shympi_check_geom_static
+	!call shympi_check_levels
 
 	end
 
@@ -833,13 +834,16 @@ c*****************************************************************
 	implicit none
 
 	integer i
+	real aux(nel)
 
 	call shympi_check_2d_node(zov,'zov')
 	call shympi_check_2d_node(znv,'znv')
 
 	do i=1,3
-	  call shympi_check_2d_elem(zeov(i,:),'zeov')
-	  call shympi_check_2d_elem(zenv(i,:),'zenv')
+	  aux = zeov(i,:)
+	  call shympi_check_2d_elem(aux,'zeov')
+	  aux = zenv(i,:)
+	  call shympi_check_2d_elem(aux,'zenv')
 	end do
 
 	call shympi_check_3d_elem(utlnv,'utlnv')
@@ -880,8 +884,8 @@ c*****************************************************************
 	call shympi_check_3d_elem(vlov,'vlov')
 	call shympi_check_3d_elem(ulnv,'ulnv')
 	call shympi_check_3d_elem(vlnv,'vlnv')
-	call shympi_check_3d0_node(wlnv,'wlnv')
-	call shympi_check_3d0_node(wlov,'wlov')
+	!call shympi_check_3d0_node(wlnv,'wlnv')
+	!call shympi_check_3d0_node(wlov,'wlov')
 
 	end
 
@@ -897,17 +901,19 @@ c*****************************************************************
 	implicit none
 
 	integer i
+	real aux(nkn)
 
 	call shympi_check_3d_node(uprv,'uprv')
 	call shympi_check_3d_node(vprv,'vprv')
 	call shympi_check_3d_node(upro,'upro')
 	call shympi_check_3d_node(vpro,'vpro')
-	call shympi_check_3d0_node(wprv,'wprv')
+	!call shympi_check_3d0_node(wprv,'wprv')
 	call shympi_check_2d_node(up0v,'up0v')
 	call shympi_check_2d_node(vp0v,'vp0v')
 
 	do i=1,3
-	  call shympi_check_2d_node(xv(i,:),'xv')
+	  aux = xv(i,:)
+	  call shympi_check_2d_node(aux,'xv')
 	end do
 
 	end
@@ -948,6 +954,7 @@ c*****************************************************************
 
 	subroutine shympi_check_geom_static
 
+	use basin
 	use evgeom
 	use mod_geom
 	use shympi
@@ -955,9 +962,11 @@ c*****************************************************************
 	implicit none
 
 	integer i
+	real aux(nel)
 
 	do i=1,evdim
-	  call shympi_check_2d_elem(ev(i,:),'ev')
+	  aux = ev(i,:)
+	  call shympi_check_2d_elem(aux,'ev')
 	end do
 
 	end

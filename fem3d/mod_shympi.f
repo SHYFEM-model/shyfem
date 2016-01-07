@@ -92,6 +92,8 @@
      +                   ,shympi_exchange_2d_elem_i
         END INTERFACE
 
+!---------------------
+
         INTERFACE shympi_check_2d_node
         	MODULE PROCEDURE  
      +			  shympi_check_2d_node_r
