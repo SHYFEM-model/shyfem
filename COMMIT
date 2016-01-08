@@ -1,5 +1,27 @@
 ============================================================
 
+Fri Jan  8 16:27:24 CET 2016
+
+bug fix for "no wind bug"
+
+ .gitignore              |   3 +
+ BUG                     |   3 +
+ LOG                     |   6 +
+ RELEASE_NOTES           |   6 +
+ fem3d/Makefile          | 982 ++++++++++++++++++++++++------------------------
+ fem3d/submeteo2.f       |   8 +-
+ femadj/Makefile         |  20 +-
+ fembin/gitinfo          |   3 +
+ femdoc/final/shyfem.pdf | Bin 284195 -> 284195 bytes
+ femplot/Makefile        |  91 +++--
+ grid/Makefile           |  99 +++--
+ hcbs/Makefile           |   6 +-
+ mesh/Makefile           |  94 ++---
+ post/Makefile           |   6 +-
+ 14 files changed, 685 insertions(+), 642 deletions(-)
+
+============================================================
+
 Fri Dec 18 11:39:27 CET 2015
 
 New version 7_3_17

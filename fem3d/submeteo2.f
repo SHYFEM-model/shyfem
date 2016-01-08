@@ -22,6 +22,7 @@ c 20.05.2014    ggu	new routines for new file format
 c 30.04.2015    ggu	ice integrated
 c 04.05.2015    ggu	bug in ice eliminated
 c 12.05.2015    ggu	introduced ia_icefree for icefree elements
+c 08.01.2016    ggu	bug fix in meteo_convert_wind_data() - no wind bug
 c
 c notes :
 c
@@ -540,7 +541,12 @@ c DOCS  END
 !	---------------------------------------------------------
 
         if( bnowind ) then              !no wind
-	  !nothing to be done
+	  ws = 0.
+	  wx = 0.
+	  wy = 0.
+	  tx = 0.
+	  ty = 0.
+	  pp = pstd
         else if( bstress ) then         !data is stress -> normalize it
           if( cd .le. 0 ) cd = dstd
           do k=1,n

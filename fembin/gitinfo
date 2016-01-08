@@ -72,6 +72,9 @@ gittag			tags actual commit writing to VERSION
 gittags			shows commits and corresponding tags
 gittar			makes tar file for given version
 
+git fetch origin
+git merge origin/develop
+
 todo for a new version:
 
 iterate:
