@@ -1,4 +1,8 @@
 
+08.01.2016    VERS_7_4_0
+
+	new stable major version
+
 08.01.2016    VERS_7_3_18
 
 	severe bug fix in meteo_convert_wind_data() - no wind bug
