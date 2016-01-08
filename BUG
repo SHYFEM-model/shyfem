@@ -1,4 +1,7 @@
 
+BUG_56	     ggu	7.3.18   08.01.2016
+	severe bug fix in meteo_convert_wind_data() (submeteo2.f) - no wind bug
+
 BUG_55	     ggu	7.3.3    12.10.2015
 	severe bug fix in adjust_bc() (subnev.f)
 

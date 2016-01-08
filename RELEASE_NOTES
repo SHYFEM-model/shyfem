@@ -1,4 +1,18 @@
 
+08.01.2016    VERS_7_5_0
+
+	new develop version opened
+
+08.01.2016    VERS_7_4_0
+
+	new stable major version
+
+08.01.2016    VERS_7_3_18
+
+	severe bug fix in meteo_convert_wind_data() - no wind bug
+	minor enhancements
+	continued mpi development
+
 18.12.2015    VERS_7_3_17
 
 	shybas interpolation is working now

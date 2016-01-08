@@ -1,4 +1,10 @@
 
+08.01.2016
+
+c ./fem3d/submeteo2.f:
+c 08.01.2016    ggu     bug fix in meteo_convert_wind_data() - no wind bug
+
+
 18.12.2015
 
  * ./grid/gridma1.c:
