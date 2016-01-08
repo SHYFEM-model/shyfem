@@ -914,7 +914,7 @@ map_influence.o: ../femlib/mod/basin.mod \
 ../femlib/mod/shympi.mod: mod_shympi.o
 mod_shympi.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
 mod_shympi_dummy.o: ../femlib/mod/shympi.mod
-mod_shympi_internal.o: mpif.h ../femlib/mod/shympi.mod
+mod_shympi_internal.o:  ../femlib/mod/shympi.mod
 ../femlib/mod/mod_sinking.mod: mod_sinking.o
 ../femlib/mod/mod_subset.mod: mod_subset.o
 mod_subset.o: ../femlib/mod/basin.mod
@@ -924,7 +924,7 @@ mod_subset.o: ../femlib/mod/basin.mod
 ../femlib/mod/mod_turbulence.mod: mod_turbulence.o
 ../femlib/mod/mod_tvd.mod: mod_tvd.o
 ../femlib/mod/mod_waves.mod: mod_waves.o
-mpi_test.o: mpif.h
+mpi_test.o: 
 netcdf.o: netcdf.inc netcdf.h param.h ../femlib/mod/basin.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod 
