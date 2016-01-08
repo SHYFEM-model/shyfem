@@ -584,12 +584,12 @@ c writes data record of extra point file
 c
 c error codes 11
 c
-        dimension knaus(*),u(*),v(*),z(knausm)
+        dimension knaus(knausm),u(knausm),v(knausm),z(knausm)
 c
                 write(iunit)    it
-     +                          ,( u(knaus(j)),j=1,knausm )
-     +                          ,( v(knaus(j)),j=1,knausm )
-     +                          ,( z(knaus(j)),j=1,knausm )
+     +                          ,( u(j),j=1,knausm )
+     +                          ,( v(j),j=1,knausm )
+     +                          ,( z(j),j=1,knausm )
 c
         wrrc77=0.
 c

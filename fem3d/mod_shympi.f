@@ -133,9 +133,11 @@
         contains
 !==================================================================
 
-	subroutine shympi_init
+	subroutine shympi_init(b_use_mpi)
 
 	use basin
+
+	logical b_use_mpi
 
 	integer ierr,size
 	character*10 cunit
@@ -158,6 +160,9 @@
 	allocate(ival(n_threads))
 	allocate(request(2*n_threads))
 	allocate(status(size,2*n_threads))
+
+	node_area = 0
+	if( .not. b_use_mpi ) call shympi_alloc
 
 	if( bmpi ) then
 	  write(cunit,'(i10)') my_id
@@ -183,6 +188,8 @@
 	subroutine shympi_alloc
 
 	use basin
+
+	write(6,*) 'shympi_alloc: ',nkn,nel
 
 	allocate(is_inner_node(nkn))
 	allocate(is_inner_elem(nel))
@@ -298,6 +305,7 @@
 
 	subroutine shympi_finalize
 
+	call shympi_barrier_internal
 	call shympi_finalize_internal
 
 	end subroutine shympi_finalize

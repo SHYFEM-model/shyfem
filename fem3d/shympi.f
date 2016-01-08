@@ -102,7 +102,7 @@ c*****************************************************************
 
 c----------------------------------------------------------------
 
-	program shympi
+	program shympi_main
 
 	use mod_bound_geom
 	use mod_geom
@@ -181,7 +181,8 @@ c-----------------------------------------------------------
 	call cstinit
 	call cstfile				!read STR and basin
 
-	call shympi_init
+	call setup_omp_parallel
+	call shympi_init(.true.)
 	call shympi_setup
 
 	call allocate_2d_arrays
@@ -196,8 +197,6 @@ c-----------------------------------------------------------
 c-----------------------------------------------------------
 c check parameters read and set time and Coriolis
 c-----------------------------------------------------------
-
-	call setup_parallel
 
 	call cstcheck
 
@@ -294,6 +293,7 @@ c-----------------------------------------------------------
 c initialize modules
 c-----------------------------------------------------------
 
+
 	call init_others
 	call init_chezy
 	call init_nodal_area_code	!area codes on nodes
@@ -342,9 +342,11 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+	!if( bmpi ) call shympi_stop('scheduled stop')
+
 	do while( it .lt. itend )
 
-	   call shympi_check_all
+	   !call shympi_check_all
 
 	   call check_crc
 	   call set_dry
@@ -363,7 +365,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
            call read_wwm
 	   
-	   call shympi_check_all
+	   !call shympi_check_all
 
 	   call hydro			!hydro
 
@@ -415,31 +417,34 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	call print_end_time
 
+        print *,"NUMBER OF MPI THREADS USED  = ",n_threads
+
 !$OMP PARALLEL
 !$OMP MASTER
 	nthreads = 1
 !$	nthreads = omp_get_num_threads()
-        print *,"NUMBER OF THREADS USED  = ",nthreads
+        print *,"NUMBER OF OMP THREADS USED  = ",nthreads
 !$OMP END MASTER
 !$OMP END PARALLEL
 
 !$      timer = omp_get_wtime() - timer
-!$      print *,"TIME TO SOLUTION (OMP)  = ",timer
+!$      print *,"TIME TO SOLUTION (OMP)      = ",timer
 
 	call system_clock(count2, count_rate, count_max)
 	count2 = count2-count1
 	timer = count2
 	timer = timer / count_rate
-	print *,"TIME TO SOLUTION (WALL) = ",timer
+	print *,"TIME TO SOLUTION (WALL)     = ",timer
 
 	call cpu_time(time2)
-	print *,"TIME TO SOLUTION (CPU)  = ",time2-time1
+	print *,"TIME TO SOLUTION (CPU)      = ",time2-time1
 
         !call ht_finished
 
 	!call pripar(15)
 	!call prifnm(15)
 
+	call shympi_finalize
 	call exit(99)
 
         end
@@ -792,7 +797,7 @@ c*****************************************************************
 	implicit none
 
 	call shympi_check_all_static
-	!call shympi_check_all_dynamic
+	call shympi_check_all_dynamic
 
 	end
 
@@ -802,9 +807,9 @@ c*****************************************************************
 
 	implicit none
 
-	!call shympi_check_depth
-	!call shympi_check_geom_static
-	!call shympi_check_levels
+	call shympi_check_depth
+	call shympi_check_geom_static
+	call shympi_check_levels
 
 	end
 
@@ -913,7 +918,7 @@ c*****************************************************************
 
 	do i=1,3
 	  aux = xv(i,:)
-	  call shympi_check_2d_node(aux,'xv')
+	  !call shympi_check_2d_node(aux,'xv')
 	end do
 
 	end

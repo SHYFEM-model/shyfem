@@ -186,10 +186,6 @@ c------------------------------------------------------------
 
         if( icall .eq. 0 ) then
           write(6,*) 'Initialization of WRT routine renewal time'
-	  if( shympi_is_parallel() ) then
-	    stop 'error stop renewal_time: not ready for mpi'
-	  end if
-
 	  call convert_time('idtwrt',idtwrt)
 
 	  call convert_date('itmin',itmin)
@@ -201,6 +197,10 @@ c------------------------------------------------------------
 	    icall = -1
             write(6,*) 'No renewal time computation'
 	    return
+	  end if
+
+	  if( shympi_is_parallel() ) then
+	    stop 'error stop renewal_time: not ready for mpi'
 	  end if
 
 	  iadim = 0

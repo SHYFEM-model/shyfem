@@ -81,6 +81,8 @@ c**********************************************************************
 
 c prints time after time step
 
+	use shympi
+
 	implicit none
 
 	include 'femtime.h'
@@ -156,9 +158,13 @@ c---------------------------------------------------------------
         nits = nit2
         if( naver .gt. 0 ) nits = ( 1*nit1 + (naver-1)*nit2 ) / naver
 
+	icall = icall + 1
+
 c---------------------------------------------------------------
 c write to terminal
 c---------------------------------------------------------------
+
+	if( .not. shympi_is_master() ) return
 
 	if( dts_has_date() ) then
 	  call dtsgf(it,line)
@@ -188,8 +194,6 @@ c---------------------------------------------------------------
           write(6,1001) it,idt,niter,nits,perc
 	end if
 
-	icall = icall + 1
-
 c---------------------------------------------------------------
 c end of routine
 c---------------------------------------------------------------
@@ -212,9 +216,13 @@ c********************************************************************
 
 c prints stats after last time step
 
+	use shympi
+
 	implicit none
 
 	include 'femtime.h'
+
+	if( .not. shympi_is_master() ) return
 
 	write(6,1035) it,niter
  1035   format(' program stop at time =',i10,' seconds'/

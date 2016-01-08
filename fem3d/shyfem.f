@@ -181,7 +181,8 @@ c-----------------------------------------------------------
 	call cstinit
 	call cstfile				!read STR and basin
 
-!	call bas_get_para(nkn,nel,ngr,mbw)	!to be deleted later
+	call setup_omp_parallel
+	call shympi_init(.false.)
 
 	call allocate_2d_arrays
 
@@ -195,9 +196,6 @@ c-----------------------------------------------------------
 c-----------------------------------------------------------
 c check parameters read and set time and Coriolis
 c-----------------------------------------------------------
-
-	call setup_parallel
-	call shympi_init
 
 	call cstcheck
 

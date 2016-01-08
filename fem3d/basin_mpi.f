@@ -34,31 +34,38 @@
 	nkn_local = n_lk
 	nel_local = n_le
 
-	write(my_unit,*) 'nodes in domain: ',nkn_local
-	write(my_unit,'(10i7)') (nindex(i),i=1,nkn_local)
-	write(my_unit,*) 'elems in domain: ',nel_local
-	write(my_unit,'(10i7)') (eindex(i),i=1,nel_local)
+	if( my_unit > 0 ) then
+	  write(my_unit,*) 'nodes in domain: ',nkn_local
+	  write(my_unit,'(10i7)') (nindex(i),i=1,nkn_local)
+	  write(my_unit,*) 'elems in domain: ',nel_local
+	  write(my_unit,'(10i7)') (eindex(i),i=1,nel_local)
+	end if
 
-	call shympi_alloc
 	call transfer_domain(nkn_local,nel_local,nindex,eindex)
+	call shympi_alloc
+	call set_id_node(nkn_local,nindex)
 	id_elem = -1
 	call make_domain_final
 
-	write(my_unit,*) 'my_id: ',my_id
-	write(my_unit,*) 'nkn,nel :',nkn,nel
-	write(my_unit,*) 'nkn_inner,nel_inner :',nkn_inner,nel_inner
-	do k=1,nkn
-	  write(my_unit,*) k,ipv(k),id_node(k)
-	end do
-	do ie=1,nel
-	  write(my_unit,*) ie,ipev(ie),id_elem(:,ie)
-	end do
+	if( my_unit > 0 ) then
+	  write(my_unit,*) 'my_id: ',my_id
+	  write(my_unit,*) 'nkn,nel :',nkn,nel
+	  write(my_unit,*) 'nkn_inner,nel_inner :',nkn_inner,nel_inner
+	  do k=1,nkn
+	    write(my_unit,*) k,ipv(k),id_node(k)
+	  end do
+	  do ie=1,nel
+	    write(my_unit,*) ie,ipev(ie),id_elem(:,ie)
+	  end do
+	end if
 
 	call ghost_make
 	call ghost_check
 	call ghost_write
 
-	write(6,'(a,9i7)') 'domain: ',my_id,n_ghost_areas,nkn_global
+	write(6,*) 'mpi my_unit: ',my_unit
+	write(6,'(a,9i7)') ' mpi domain: '
+     +			,my_id,n_ghost_areas,nkn_global
      +			,nkn_local,nkn_inner,nkn_local-nkn_inner
      +			,nel_local,nel_inner,nel_local-nel_inner
 
@@ -111,7 +118,7 @@
 	    call random_number(r)
 	    h = 10.* r
 	    h = 2.* r
-	    hm3v(ii,ie) = h
+	    !hm3v(ii,ie) = h
 	    !write(6,*) ie,ii,r,h
 	  end do
 	end do
@@ -373,6 +380,27 @@
 
 !*****************************************************************
 
+	subroutine set_id_node(n_lk,nindex)
+
+	use basin
+	use shympi
+
+	implicit none
+
+	integer n_lk
+	integer nindex(n_lk)
+
+	integer i,k
+
+	do i=1,n_lk
+	  k = nindex(i)
+	  id_node(i) = node_area(k)
+	end do
+
+	end
+
+!*****************************************************************
+
 	subroutine transfer_domain(n_lk,n_le,nindex,eindex)
 
 ! transfers global domain to local domain
@@ -445,7 +473,7 @@
 	  iarnv_aux(i) = iarnv(k)
 	  xgv_aux(i) = xgv(k)
 	  ygv_aux(i) = ygv(k)
-	  id_node(i) = node_area(k)
+	  !id_node(i) = node_area(k)
 	end do
 
 !	----------------------------------

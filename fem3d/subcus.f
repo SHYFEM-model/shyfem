@@ -4003,6 +4003,7 @@ c*******************************************************************
 	use mod_meteo
 	use basin
 	use mod_hydro
+	use shympi
 
 	implicit none
 
@@ -4023,7 +4024,7 @@ c*******************************************************************
 	integer, parameter :: ndim = 5
 	integer, save :: nodes(5) = (/5,59,113,167,221/)
 
-	integer ipext
+	integer ipint
 
 	if( mode < 1 .or. mode > 2 ) then
 	 stop 'error stop mpi_test_basin: mode'
@@ -4057,10 +4058,15 @@ c*******************************************************************
 
 	  do i=1,ndim
 	    k = nodes(i)
-	    kk = ipext(k)
+	    kk = ipint(k)
 	    if( kk .le. 0 ) then
-	      write(6,*) k,kk
-	      stop 'error stop mpi_test_basin: no such node'
+	      write(6,*) '**** ignoring not existing node ',k,kk,my_id
+	      !stop 'error stop mpi_test_basin: no such node'
+	    else if( .not. is_inner_node(kk) ) then
+	      write(6,*) '**** ignoring ghost node ',k,kk,my_id
+	      kk = 0
+	    else
+	      write(6,*) '**** register node ',k,kk,my_id
 	    end if
 	    nodes(i) = kk
 	  end do
@@ -4071,6 +4077,7 @@ c*******************************************************************
 
 	do i=1,ndim
 	  k = nodes(i)
+	  if( k .le. 0 ) cycle
 	  write(500+i,*) it,znv(k)
 	end do
 	

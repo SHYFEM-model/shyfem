@@ -189,9 +189,10 @@ c written on 27.07.88 by ggu   (from sp159f)
 	use mod_hydro_print
 	use mod_hydro_vel
 	use mod_hydro
-	use shympi
 	use levels, only : nlvdi,nlv
-	use basin, only : nkn,nel,ngr,mbw
+	!use basin, only : nkn,nel,ngr,mbw
+	use basin
+	use shympi
 
 	implicit none
 
@@ -201,7 +202,7 @@ c written on 27.07.88 by ggu   (from sp159f)
 	logical bzcorr
 	integer i,l,k,ie,ier,ii
 	integer nrand
-	integer iw,iwa
+	integer iw,iwa,iloop
 	integer nmat
 	integer kspecial
 	integer iwhat
@@ -260,9 +261,13 @@ c-----------------------------------------------------------------
 c solve for hydrodynamic variables
 c-----------------------------------------------------------------
 
+	iloop = 0
+
 	do 				!loop over changing domain
 
-	  call hydro_transports		!compute intermediate transports
+	  iloop = iloop + 1
+
+ 	  call hydro_transports		!compute intermediate transports
 
 	  call setnod			!set info on dry nodes
 	  call set_link_info		!information on areas, islands, etc..
@@ -278,7 +283,7 @@ c-----------------------------------------------------------------
 	  call shympi_barrier
 
 	  call setweg(1,iw)		!controll intertidal flats
-	  !write(6,*) 'ggu: iw = ',iw
+	  !write(6,*) 'hydro: iw = ',iw,iloop,my_id
 	  if( iw == 0 ) exit
 
 	end do
@@ -519,6 +524,11 @@ c	------------------------------------------------------
 	  andg = 4.*aj*dt*zndg(n)
 	  !hia(n,n) = hia(n,n) + 4 * dt * aj / tau
 	  hik(n) = acu + andg + 12.*aj*dt*( ut*b(n) + vt*c(n) )	!ZNEW
+	!write(my_unit,*) '======== zeta'
+	!write(my_unit,*) ie,n
+	!write(my_unit,*) uold,vold,uhat,vhat
+	!write(my_unit,*) ut,vt,z(n),acu
+	!write(my_unit,*) andg,delta,b(n),c(n)
 	end do
 
 c	------------------------------------------------------
@@ -802,6 +812,7 @@ c	real bb,bbt,cc,cct,aa,aat,ppx,ppy,aux,aux1,aux2
         real xadv,yadv,fm,uc,vc,f,um,vm,up,vp
 	real bpres,cpres
 	real vis
+	logical, parameter :: debug_mpi = .false.
         
 	real rraux,cdf
 	real ss
@@ -1068,6 +1079,19 @@ c	------------------------------------------------------
 	ppy = ppy + aat*vvi - bbt*vvip - cct*vvim + gammat*uui 
      +			+ grav*hhi*cz + (hhi/rowass)*cpres + yexpl 
      +  		+ wavefy(l,ie)
+
+	!if( debug_mpi ) then
+	!write(my_unit,*) '======== transports'
+	!write(my_unit,*) ie,aux,gammat,grav
+	!write(my_unit,*) xexpl,yexpl
+	!write(my_unit,*) ppx,ppy
+	!write(my_unit,*) uui,uuip,uuim,vvi
+	!write(my_unit,*) hhi,bpres,cpres
+	!write(my_unit,*) wavefx(l,ie),wavefy(l,ie)
+	!write(my_unit,*) bz,cz,rowass
+	!write(my_unit,*) aat,bbt,cct
+	!write(my_unit,*) taux,tauy
+	!end if
 
 c	------------------------------------------------------
 c	set up matrix A

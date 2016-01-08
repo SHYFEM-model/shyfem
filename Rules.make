@@ -33,7 +33,7 @@
 ##############################################
 
 COMPILER_PROFILE = NORMAL
-#COMPILER_PROFILE = CHECK
+COMPILER_PROFILE = CHECK
 #COMPILER_PROFILE = SPEED
 
 ##############################################
@@ -104,7 +104,7 @@ PARALLEL_OMP = false
 #PARALLEL_OMP = true
 
 PARALLEL_MPI = false
-#PARALLEL_MPI = true
+PARALLEL_MPI = true
 
 ##############################################
 # Solver for matrix solution

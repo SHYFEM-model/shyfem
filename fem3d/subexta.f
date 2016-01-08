@@ -121,6 +121,7 @@ c******************************************************************
 	subroutine ckexta
 
 	use extra
+	use shympi
 
 	implicit none
 
@@ -134,8 +135,12 @@ c******************************************************************
         do k=1,knausm
            knode=ipint(knaus(k))                !$$EXTINW
            if(knode.le.0) then
+	     if( .not. bmpi ) then
                 write(6,*) 'section EXTRA : node not found ',knaus(k)
                 bstop=.true.
+	     end if
+	   else if( .not. is_inner_node(knode) ) then
+	     knode = 0
            end if
            knaus(k)=knode
         end do
@@ -190,17 +195,22 @@ c writes and administers ext file
 
 	use mod_hydro_print
 	use extra
+	use shympi
 
 	implicit none
 
 	integer it
 
 	integer nbext
+	integer i,k
 	real err,href,hzoff
 	integer iround,ideffi
+	real u(knausm)
+	real v(knausm)
+	real z(knausm)
 	real getpar
 	double precision dgetpar
-	real writ7h,wrrc7
+	real writ7h,wrrc7,wrrc77
 	logical has_output,next_output
 
 	integer ia_out(4)
@@ -227,17 +237,32 @@ c writes and administers ext file
 		hzoff = getpar('hzoff')
                 err=writ7h(nbext,nvers,knausm,knaus,href,hzoff)
                 if(err.ne.0.) goto 78
+		write(199,*) 'mpi icall first: ',my_id,icall,it
         end if
 
 	icall = icall + 1
+	write(199,*) 'mpi icall: ',my_id,icall,it
 
 c write file ext
 
         if( .not. next_output(ia_out) ) return
 
         nbext = ia_out(4)
+	write(199,*) 'mpi writing: ',my_id,nbext,it
 
-        err=wrrc7(nbext,nvers,it,knausm,knaus,xv)
+	u = 0.
+	v = 0.
+	z = 0.
+	do i=1,knausm
+	  k = knaus(i)
+	  if( k .le. 0 ) cycle
+	  u(i) = xv(1,k)
+	  v(i) = xv(2,k)
+	  z(i) = xv(3,k)
+	end do
+
+        !err=wrrc7(nbext,nvers,it,knausm,knaus,xv)
+        err=wrrc77(nbext,nvers,it,knausm,knaus,u,v,z)
         if(err.ne.0.) goto 79
 
 	return
@@ -284,7 +309,10 @@ c ...ndim is dummy argument
 	integer igtdep
 	real writ7
 
+	v1v = 0.
+
         do i=1,knausm
+	  if( knaus(i) .le. 0 ) cycle
           n=igtdep(knaus(i),f,nmax)
           call mima(f,n,hmin,hmax)
           v1v(i)=hmax+href

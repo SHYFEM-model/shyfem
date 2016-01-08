@@ -849,6 +849,7 @@ c prints parameter values (4 columns)
 
 	line=' '
 	bflag=.false.
+	flag = -999.
 
 	call para_get_fill(idfill)
 	npara=idfill
@@ -857,8 +858,8 @@ c prints parameter values (4 columns)
 	do id=1,npara
 	  call para_get_info(id,name,section,itype,dvalue,string)
 	  value = dvalue
-	  if(itype.ne.1) goto 1
-	  if(bflag.and.value.eq.flag) goto 1
+	  if(itype.ne.1) cycle
+	  if(bflag.and.value.eq.flag) cycle
 	  imod=imod+1
 	  ianf=20*(imod-1)+1
 	  iend=20*imod
@@ -880,7 +881,6 @@ c prints parameter values (4 columns)
 		line=' '
 		imod=0
 	  end if
-    1     continue
 	end do
 
 	if(imod.ne.4) write(iunit,*) line

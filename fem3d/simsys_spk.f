@@ -64,6 +64,26 @@
 !******************************************************************
 !******************************************************************
 !******************************************************************
+!
+!	subroutine system_show_internal
+!
+!	use basin
+!	use mod_system
+!	use shympi
+!
+!        write(my_unit,*) 'system internal: ',my_id,bsysexpl
+!
+!        do k=1,nkn
+!          write(my_unit,1234) k,ipv(k),id_node(k),xgv(k),ygv(k)
+!     +                          ,rvec2d(k),raux2d(k)
+! 1234     format(3i5,4f12.4)
+!        end do
+!
+!	end
+!
+!******************************************************************
+!******************************************************************
+!******************************************************************
 
 	subroutine system_solve_z(n,z)
 
@@ -142,6 +162,12 @@
           do i=1,3
             raux2d(kn(i)) = raux2d(kn(i)) + mass(i,i)	!GGUEXPL
             rvec2d(kn(i)) = rvec2d(kn(i)) + rhs(i)
+	    do j=1,3
+	      if( i /= j .and. mass(i,j) /= 0. ) then
+	        write(6,*) ie,kn(i),i,j,mass(i,j)
+		stop 'error stop system_assemble: non diag elems /= 0'
+	      end if
+	    end do
 	  end do
 	else
          do i=1,3

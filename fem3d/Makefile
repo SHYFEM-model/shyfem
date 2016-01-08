@@ -912,7 +912,6 @@ map_influence.o: param.h ../femlib/mod/mod_depth.mod \
 ../femlib/mod/mod_roughness.mod: mod_roughness.o
 ../femlib/mod/shympi.mod: mod_shympi.o
 mod_shympi.o: ../femlib/mod/levels.mod ../femlib/mod/basin.mod
-mod_shympi_internal.o: ../femlib/mod/shympi.mod mpif.h
 ../femlib/mod/mod_sinking.mod: mod_sinking.o
 ../femlib/mod/mod_subset.mod: mod_subset.o
 mod_subset.o: ../femlib/mod/basin.mod
