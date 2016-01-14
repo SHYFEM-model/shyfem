@@ -137,7 +137,7 @@ c
 c
 	do ie=1,nel
 	  if( iwegv(ie) /= 0 ) cycle
-	  aj=ev(10,ie)
+	  aj=4.*ev(10,ie)
 	  zm=0.
 	  do ii=1,3
 	    zm=zm+zenv(ii,ie)
@@ -152,6 +152,9 @@ c
 	    vp0v(k)=vp0v(k)+aj*vnv(ie)/hm
 	  end do
 	end do
+
+!       shympi_elem: exchange up0v, vp0v
+!       use only areakv(1,k) for weighting (surface layer)
 
 	where ( vv > 0. ) 
           up0v = up0v / vv
@@ -191,7 +194,7 @@ c
 	do ie=1,nel
 	  if ( iwegv(ie) /= 0 ) cycle
           lmax = ilhv(ie)
-	  aj=ev(10,ie)
+	  aj=4.*ev(10,ie)
 	  do l=1,lmax
 	    do ii=1,3
 	      k=nen3v(ii,ie)
@@ -201,7 +204,9 @@ c
 	    end do
 	  end do
 	end do
-c
+
+!       shympi_elem: exchange uprv, vprv
+
 	where ( vv > 0. ) 
 	  uprv = uprv / vv
 	  vprv = vprv / vv
@@ -498,7 +503,7 @@ c makes print velocities and xv from new level arrays
 	call shympi_exchange_3d_node(vprv)
 	call shympi_exchange_2d_node(up0v)
 	call shympi_exchange_2d_node(vp0v)
-	call shympi_barrier
+	!call shympi_barrier
 
 	end
 

@@ -241,14 +241,14 @@ c writes and administers ext file
         end if
 
 	icall = icall + 1
-	write(199,*) 'mpi icall: ',my_id,icall,it
+	!write(199,*) 'mpi icall: ',my_id,icall,it
 
 c write file ext
 
         if( .not. next_output(ia_out) ) return
 
         nbext = ia_out(4)
-	write(199,*) 'mpi writing: ',my_id,nbext,it
+	!write(199,*) 'mpi writing: ',my_id,icall,nbext,it
 
 	u = 0.
 	v = 0.

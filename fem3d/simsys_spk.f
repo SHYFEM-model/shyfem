@@ -98,6 +98,7 @@
 
 	if( bsysexpl ) then
 	  !write(6,*) 'solving explicitly...'
+!         shympi_elem: exchange rvec2d, raux2d
 	  rvec2d = rvec2d / raux2d	!GGUEXPL
 	else
 	  call spk_solve_system(.false.,n2max,n,z)

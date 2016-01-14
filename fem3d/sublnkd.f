@@ -56,7 +56,7 @@ c-------------------------------------------------------------
 	iiaux(:) = ieltv(3,:)
 	call shympi_exchange_2d_elem(iiaux)
 	iaux(3,:) = iiaux(:)
-	call shympi_barrier
+	!call shympi_barrier
 
         write(my_unit,*) 'printing ghost elems: ' // 'ieltv'
         write(my_unit,*) 'n_ghost_areas = ',n_ghost_areas,my_id
@@ -165,7 +165,7 @@ c now mark open boundary nodes
 
 	call shympi_comment('exchanging inodv')
 	call shympi_exchange_2d_node(inodv)
-	call shympi_barrier
+	!call shympi_barrier
 
         return
    99   continue

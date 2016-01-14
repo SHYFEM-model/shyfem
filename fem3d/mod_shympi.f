@@ -338,7 +338,7 @@
 	integer val(nlvdi,nkn)
 	logical, parameter :: belem = .false.
 
-	call shympi_exchange_internal_i(belem,nlvdi,nkn,ilhkv
+	call shympi_exchange_internal_i(belem,1,nlvdi,nkn,ilhkv
      +			,ghost_nodes_in,ghost_nodes_out,val)
 
 	end subroutine shympi_exchange_3d_node_i
@@ -353,7 +353,7 @@
 	real val(nlvdi,nkn)
 	logical, parameter :: belem = .false.
 
-	call shympi_exchange_internal_r(belem,nlvdi,nkn,ilhkv
+	call shympi_exchange_internal_r(belem,1,nlvdi,nkn,ilhkv
      +			,ghost_nodes_in,ghost_nodes_out,val)
 
 	end subroutine shympi_exchange_3d_node_r
@@ -368,7 +368,7 @@
 	double precision val(nlvdi,nkn)
 	logical, parameter :: belem = .false.
 
-	call shympi_exchange_internal_d(belem,nlvdi,nkn,ilhkv
+	call shympi_exchange_internal_d(belem,1,nlvdi,nkn,ilhkv
      +			,ghost_nodes_in,ghost_nodes_out,val)
 
 	end subroutine shympi_exchange_3d_node_d
@@ -383,7 +383,7 @@
 	real val(0:nlvdi,nkn)
 	logical, parameter :: belem = .false.
 
-	call shympi_exchange_internal_r(belem,nlvdi+1,nkn,ilhkv
+	call shympi_exchange_internal_r(belem,0,nlvdi,nkn,ilhkv
      +			,ghost_nodes_in,ghost_nodes_out,val)
 
 	end subroutine shympi_exchange_3d0_node_r
@@ -398,7 +398,7 @@
 	real val(nlvdi,nel)
 	logical, parameter :: belem = .true.
 
-	call shympi_exchange_internal_r(belem,nlvdi,nel,ilhv
+	call shympi_exchange_internal_r(belem,1,nlvdi,nel,ilhv
      +			,ghost_elems,ghost_elems,val)
 
 	end subroutine shympi_exchange_3d_elem_r
@@ -413,7 +413,7 @@
 	integer val(nkn)
 	logical, parameter :: belem = .false.
 
-	call shympi_exchange_internal_i(belem,1,nkn,ilhkv
+	call shympi_exchange_internal_i(belem,1,1,nkn,ilhkv
      +			,ghost_nodes_in,ghost_nodes_out,val)
 
 	end subroutine shympi_exchange_2d_node_i
@@ -428,7 +428,7 @@
 	real val(nkn)
 	logical, parameter :: belem = .false.
 
-	call shympi_exchange_internal_r(belem,1,nkn,ilhkv
+	call shympi_exchange_internal_r(belem,1,1,nkn,ilhkv
      +			,ghost_nodes_in,ghost_nodes_out,val)
 
 	end subroutine shympi_exchange_2d_node_r
@@ -443,7 +443,7 @@
 	double precision val(nkn)
 	logical, parameter :: belem = .false.
 
-	call shympi_exchange_internal_d(belem,1,nkn,ilhkv
+	call shympi_exchange_internal_d(belem,1,1,nkn,ilhkv
      +			,ghost_nodes_in,ghost_nodes_out,val)
 
 	end subroutine shympi_exchange_2d_node_d
@@ -458,7 +458,7 @@
 	integer val(nel)
 	logical, parameter :: belem = .true.
 
-	call shympi_exchange_internal_i(belem,1,nel,ilhv
+	call shympi_exchange_internal_i(belem,1,1,nel,ilhv
      +			,ghost_elems,ghost_elems,val)
 
 	end subroutine shympi_exchange_2d_elem_i
@@ -473,7 +473,7 @@
 	real val(nel)
 	logical, parameter :: belem = .true.
 
-	call shympi_exchange_internal_r(belem,1,nel,ilhv
+	call shympi_exchange_internal_r(belem,1,1,nel,ilhv
      +			,ghost_elems,ghost_elems,val)
 
 	end subroutine shympi_exchange_2d_elem_r
@@ -488,7 +488,7 @@
 	double precision val(nel)
 	logical, parameter :: belem = .true.
 
-	call shympi_exchange_internal_d(belem,1,nel,ilhv
+	call shympi_exchange_internal_d(belem,1,1,nel,ilhv
      +			,ghost_elems,ghost_elems,val)
 
 	end subroutine shympi_exchange_2d_elem_d
@@ -497,9 +497,9 @@
 !******************************************************************
 !******************************************************************
 
-        subroutine count_buffer(nlvddi,n,nc,il,nodes,nb)
+        subroutine count_buffer(n0,nlvddi,n,nc,il,nodes,nb)
 
-        integer nlvddi,n,nc
+        integer n0,nlvddi,n,nc
         integer il(n)
         integer nodes(nc)
         integer nb
@@ -507,13 +507,13 @@
         integer i,k,l,lmax
 
         if( nlvddi == 1 ) then
-          nb = nc
+          nb = nc * (2-n0)
         else
           nb = 0
           do i=1,nc
             k = nodes(i)
             lmax = il(k)
-            nb = nb + lmax
+            nb = nb + lmax - n0 + 1
           end do
         end if
 
@@ -521,18 +521,18 @@
 
 !******************************************************************
 
-        subroutine to_buffer_i(nlvddi,n,nc,il,nodes,val,nb,buffer)
+        subroutine to_buffer_i(n0,nlvddi,n,nc,il,nodes,val,nb,buffer)
 
-        integer nlvddi,n,nc
+        integer n0,nlvddi,n,nc
         integer il(n)
         integer nodes(nc)
-        integer val(nlvddi,n)
+        integer val(n0:nlvddi,n)
         integer nb
         integer buffer(:)
 
         integer i,k,l,lmax
 
-        if( nlvddi == 1 ) then
+        if( nlvddi == 1 .and. n0 == 1 ) then
           do i=1,nc
             k = nodes(i)
             buffer(i) = val(1,k)
@@ -543,7 +543,7 @@
           do i=1,nc
             k = nodes(i)
             lmax = il(k)
-            do l=1,lmax
+            do l=n0,lmax
               nb = nb + 1
               buffer(nb) = val(l,k)
             end do
@@ -554,18 +554,18 @@
 
 !******************************************************************
 
-        subroutine from_buffer_i(nlvddi,n,nc,il,nodes,val,nb,buffer)
+        subroutine from_buffer_i(n0,nlvddi,n,nc,il,nodes,val,nb,buffer)
 
-        integer nlvddi,n,nc
+        integer n0,nlvddi,n,nc
         integer il(n)
         integer nodes(nc)
-        integer val(nlvddi,n)
+        integer val(n0:nlvddi,n)
         integer nb
         integer buffer(:)
 
         integer i,k,l,lmax
 
-        if( nlvddi == 1 ) then
+        if( nlvddi == 1 .and. n0 == 1 ) then
           do i=1,nc
             k = nodes(i)
             val(1,k) = buffer(i)
@@ -576,7 +576,7 @@
           do i=1,nc
             k = nodes(i)
             lmax = il(k)
-            do l=1,lmax
+            do l=n0,lmax
               nb = nb + 1
               val(l,k) = buffer(nb)
             end do
@@ -587,18 +587,18 @@
 
 !******************************************************************
 
-        subroutine to_buffer_r(nlvddi,n,nc,il,nodes,val,nb,buffer)
+        subroutine to_buffer_r(n0,nlvddi,n,nc,il,nodes,val,nb,buffer)
 
-        integer nlvddi,n,nc
+        integer n0,nlvddi,n,nc
         integer il(n)
         integer nodes(nc)
-        real val(nlvddi,n)
+        real val(n0:nlvddi,n)
         integer nb
         real buffer(:)
 
         integer i,k,l,lmax
 
-        if( nlvddi == 1 ) then
+        if( nlvddi == 1 .and. n0 == 1 ) then
           do i=1,nc
             k = nodes(i)
             buffer(i) = val(1,k)
@@ -609,7 +609,7 @@
           do i=1,nc
             k = nodes(i)
             lmax = il(k)
-            do l=1,lmax
+            do l=n0,lmax
               nb = nb + 1
               buffer(nb) = val(l,k)
             end do
@@ -620,18 +620,18 @@
 
 !******************************************************************
 
-        subroutine from_buffer_r(nlvddi,n,nc,il,nodes,val,nb,buffer)
+        subroutine from_buffer_r(n0,nlvddi,n,nc,il,nodes,val,nb,buffer)
 
-        integer nlvddi,n,nc
+        integer n0,nlvddi,n,nc
         integer il(n)
         integer nodes(nc)
-        real val(nlvddi,n)
+        real val(n0:nlvddi,n)
         integer nb
         real buffer(:)
 
         integer i,k,l,lmax
 
-        if( nlvddi == 1 ) then
+        if( nlvddi == 1 .and. n0 == 1 ) then
           do i=1,nc
             k = nodes(i)
             val(1,k) = buffer(i)
@@ -642,7 +642,7 @@
           do i=1,nc
             k = nodes(i)
             lmax = il(k)
-            do l=1,lmax
+            do l=n0,lmax
               nb = nb + 1
               val(l,k) = buffer(nb)
             end do
@@ -826,10 +826,10 @@
           write(6,*) 'process id: ',my_id
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
-	      write(6,*) i,a1(i),a2(i)
+	      write(6,*) my_id,i,a1(i),a2(i)
 	    end if
 	  end do
-	  call shympi_finalize
+	  call shympi_abort
           stop 'error stop shympi_check_array_i'
         end if
 
@@ -850,10 +850,10 @@
           write(6,*) 'process id: ',my_id
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
-	      write(6,*) i,a1(i),a2(i)
+	      write(6,*) my_id,i,a1(i),a2(i)
 	    end if
 	  end do
-	  call shympi_finalize
+	  call shympi_abort
           stop 'error stop shympi_check_array_r'
         end if
 
@@ -874,10 +874,10 @@
           write(6,*) 'process id: ',my_id
 	  do i=1,n
 	    if( a1(i) /= a2(i) ) then
-	      write(6,*) i,a1(i),a2(i)
+	      write(6,*) my_id,i,a1(i),a2(i)
 	    end if
 	  end do
-	  call shympi_finalize
+	  call shympi_abort
           stop 'error stop shympi_check_array_d'
         end if
 
@@ -955,6 +955,7 @@
 	!if( bmpi .and. bmpi_debug .and. my_id == 0 ) then
 	if( bmpi_debug .and. my_id == 0 ) then
 	  write(6,*) 'shympi_comment: ' // trim(text)
+	  write(299,*) 'shympi_comment: ' // trim(text)
 	end if
 
 	end subroutine shympi_comment

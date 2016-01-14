@@ -453,6 +453,7 @@ c shell for scalar T/D
 	use mod_hydro_print
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
+        use shympi
 
 	implicit none
 
@@ -602,6 +603,14 @@ c-------------------------------------------------------------
           call bndo_setbc(it,what,nlvddi,cnv,rcv,uprv,vprv)
 
 	end do
+
+        if( shympi_is_parallel() .and. istot > 1 ) then
+          write(6,*) 'cannot handle istot>1 with mpi yet'
+          stop 'error stop scal3sh: istot>1'
+        end if
+        call shympi_comment('exchanging scalar: '//trim(what))
+        call shympi_exchange_3d_node(cnv)
+        !call shympi_barrier
 
 c-------------------------------------------------------------
 c check total mass

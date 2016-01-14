@@ -4002,8 +4002,11 @@ c*******************************************************************
 
 	use mod_meteo
 	use basin
+	use levels
 	use mod_hydro
+	use mod_hydro_print
 	use shympi
+        use mod_conz
 
 	implicit none
 
@@ -4013,8 +4016,11 @@ c*******************************************************************
 
 	logical :: bwind
 	logical :: bzeta
+	logical :: bconz
+	logical :: breinit
 	integer k,ie,ii,i,kk
-	real z,dz,y,dy,pi
+        integer lsup,linf
+	real z,dz,y,dy,pi,dc,x,dx
 	real, save :: cd = 2.5e-3
 	real, save :: wind = 10.
 	real, save :: wfact = 1.025/1000.
@@ -4032,6 +4038,15 @@ c*******************************************************************
 	bwind = mode == 1
 	bzeta = mode == 2
 
+        bconz = mod_conz_is_initialized()
+        breinit = it == 43200
+
+	dz = 0.1
+	dy = 3000.
+	dx = 1000.
+	dc = 10.
+	pi = 4.*atan(1.)
+
 	if( icall .eq. 0 ) then
 
 	  if( bwind ) then
@@ -4043,9 +4058,6 @@ c*******************************************************************
 	    tauxnv = 0.
 	    tauynv = stress
 	  else if( bzeta ) then
-	    dz = 0.1
-	    dy = 3000.
-	    pi = 4.*atan(1.)
 	    do k=1,nkn
 	      y = ygv(k) - dy
 	      z = dz * (y/dy)
@@ -4054,6 +4066,18 @@ c*******************************************************************
 	    end do
 	    call setzev
 	    call make_new_depth
+          end if
+
+          if( bconz ) then
+            write(6,*) 'initializing concentration from subcus...'
+	    do k=1,nkn
+              x = xgv(k)
+	      y = ygv(k) - dy
+	      z = dc * (1.+y/dy) + dc * (1.+x/dx)
+              z = 10.
+              if( y/dy > 0 ) z = 20.
+	      cnv(:,k) = z
+	    end do
 	  end if
 
 	  do i=1,ndim
@@ -4073,12 +4097,36 @@ c*******************************************************************
 
 	end if
 
+          if( bconz .and. breinit ) then
+            write(6,*) 're-initializing concentration from subcus...'
+	    do k=1,nkn
+              x = xgv(k)
+	      y = ygv(k) - dy
+	      z = dc * (1.+y/dy) + dc * (1.+x/dx)
+              z = 10.
+              if( y/dy > 0 ) z = 20.
+	      cnv(:,k) = z
+	    end do
+	  end if
+
+        !write(6,*) 'nodes: ',ndim,nodes
+        !flush(6)
+
 	icall = icall + 1
+
+        lsup = min(2,nlv)
+        linf = max(nlv-1,1)
 
 	do i=1,ndim
 	  k = nodes(i)
 	  if( k .le. 0 ) cycle
 	  write(500+i,*) it,znv(k)
+	  write(600+i,*) it,vprv(lsup,k)
+	  write(700+i,*) it,vprv(linf,k)
+          if( bconz ) then
+	  write(800+i,*) it,cnv(lsup,k)
+	  write(900+i,*) it,cnv(linf,k)
+          end if
 	end do
 	
 	end

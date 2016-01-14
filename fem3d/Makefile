@@ -76,8 +76,8 @@ endif
 MPI_OBJ = mod_shympi.o mod_shympi_dummy.o basin_mpi.o
 ifeq ($(PARALLEL_MPI),true)
   MPI_OBJ = mod_shympi.o mod_shympi_internal.o basin_mpi.o
-  MPI_COMPILE_FLAGS = $(shell mpif90 --showme:compile)
-  MPI_LINK_FLAGS = $(shell mpif90 --showme:link)
+  #MPI_COMPILE_FLAGS = $(shell mpif90 --showme:compile)
+  #MPI_LINK_FLAGS = $(shell mpif90 --showme:link)
   FFLAGS += $(MPI_COMPILE_FLAGS)
   LFLAGS += $(MPI_LINK_FLAGS)
 endif
@@ -350,7 +350,7 @@ LAGINTP = submir.o
 
 #------------------------------------------------
 
-EXEMAIN  = shyfem shypre shybas
+EXEMAIN  = shyfem shypre shybas shympi
 
 EXEINFO  = flxinf extinf rstinf \
 		feminf tsinf filetype \

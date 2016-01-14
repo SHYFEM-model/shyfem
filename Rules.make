@@ -33,7 +33,7 @@
 ##############################################
 
 COMPILER_PROFILE = NORMAL
-COMPILER_PROFILE = CHECK
+#COMPILER_PROFILE = CHECK
 #COMPILER_PROFILE = SPEED
 
 ##############################################
@@ -104,7 +104,7 @@ PARALLEL_OMP = false
 #PARALLEL_OMP = true
 
 PARALLEL_MPI = false
-PARALLEL_MPI = true
+#PARALLEL_MPI = true
 
 ##############################################
 # Solver for matrix solution
@@ -141,8 +141,8 @@ SOLVER=SPARSKIT
 #
 ##############################################
 
-NETCDF=false
-#NETCDF=true
+NETCDF = false
+#NETCDF = true
 #NETCDFDIR = /usr/local/netcdf
 NETCDFDIR = /usr
 
@@ -161,8 +161,8 @@ NETCDFDIR = /usr
 #
 ##############################################
 
-#GOTM=false
-GOTM=true
+#GOTM = false
+GOTM = true
 
 ##############################################
 # Ecological models
@@ -393,6 +393,10 @@ endif
 ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
   FGNU		= gfortran
   FGNU95	= gfortran
+  ifeq ($(PARALLEL_MPI),true)
+    FGNU	= mpif90
+    FGNU95	= mpif90
+  endif
   F77		= $(FGNU)
   F95		= $(FGNU95)
   LINKER	= $(F77)
@@ -410,7 +414,7 @@ endif
 # if you use xlf95  "-qnosave" is a default option
 # xlf_r is thread safe
 # all the compiler options are included in FIBM_OMP
-# set PARALLEL_OMP = TRUE
+# set PARALLEL_OMP = true
 ##############################################
 
 FIBM_PROFILE = 
@@ -555,6 +559,7 @@ ifeq ($(WARNING),true)
   FINTEL_WARNING =
   FINTEL_WARNING = -w
   FINTEL_WARNING = -warn interfaces,nouncalled -gen-interfaces
+  FINTEL_WARNING =
 endif
 
 FINTEL_NOOPT = 
@@ -592,6 +597,9 @@ endif
 
 ifeq ($(FORTRAN_COMPILER),INTEL)
   FINTEL	= ifort
+  ifeq ($(PARALLEL_MPI),true)
+    FINTEL	= mpiifort
+  endif
   F77		= $(FINTEL)
   F95     	= $(F77)
   LINKER	= $(F77)

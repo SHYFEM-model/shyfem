@@ -9,15 +9,25 @@
 !
 !******************************************************************
 
+        module shympi_aux
+
+        use mpi
+
+        implicit none
+
+        !include 'mpif.h'
+
+        end module shympi_aux
+
+!********************************
+
 	subroutine shympi_init_internal(my_id,n_threads)
 
-	!use shympi
+	use shympi_aux
 
 	implicit none
 
 	integer my_id,n_threads
-
-	include "mpif.h"
 
 	integer ierr
 
@@ -31,9 +41,9 @@
 
 	subroutine shympi_barrier_internal
 
-	implicit none
+	use shympi_aux
 
-	include "mpif.h"
+	implicit none
 
 	integer ierr
 
@@ -45,13 +55,14 @@
 
         subroutine shympi_abort_internal
 
+	use shympi_aux
+
         implicit none
 
-	include "mpif.h"
+        integer ierr,ierr_code
 
-        integer ierr
-
-	call MPI_ABORT(MPI_COMM_WORLD,ierr)
+        ierr_code = 33
+	call MPI_ABORT(MPI_COMM_WORLD,ierr_code,ierr)
 
         end subroutine shympi_abort_internal
 
@@ -59,9 +70,9 @@
 
         subroutine shympi_finalize_internal
 
-        implicit none
+	use shympi_aux
 
-	include "mpif.h"
+        implicit none
 
         integer ierr
 
@@ -74,9 +85,9 @@
 
         subroutine shympi_get_status_size_internal(size)
 
-        implicit none
+	use shympi_aux
 
-	include "mpif.h"
+        implicit none
 
         integer size
 
@@ -88,9 +99,9 @@
 
 	subroutine shympi_syncronize_internal
 
-	implicit none
+	use shympi_aux
 
-	include "mpif.h"
+	implicit none
 
 	integer ierr
 
@@ -105,9 +116,9 @@
 
 	subroutine shympi_syncronize_initial
 
-        implicit none
+	use shympi_aux
 
-	include "mpif.h"
+        implicit none
 
 	integer my_id,nt
 	integer root,ierr,i
@@ -156,21 +167,21 @@
 !******************************************************************
 !******************************************************************
 
-	subroutine shympi_exchange_internal_i(belem,nlvddi,n,il
+	subroutine shympi_exchange_internal_i(belem,n0,nlvddi,n,il
      +						,g_in,g_out,val)
+
+	use shympi_aux
 
 	use shympi
 
 	implicit none
 
-	include "mpif.h"
-
 	logical belem
-	integer nlvddi,n
+	integer n0,nlvddi,n
 	integer il(n)
 	integer g_in(n_ghost_max,n_ghost_areas)
 	integer g_out(n_ghost_max,n_ghost_areas)
-	integer val(nlvddi,n)
+	integer val(n0:nlvddi,n)
 
 	integer tag,ir,ia,id
 	integer i,k,nc,ierr
@@ -187,14 +198,14 @@
 	  iin = 4
 	end if
 
-	nb = nlvddi *  n_ghost_max
+	nb = (nlvddi-n0+1) * n_ghost_max
 	call shympi_alloc_buffer(nb)
 
 	do ia=1,n_ghost_areas
 	  ir = ir + 1
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iout,ia)
-	  call count_buffer(nlvddi,n,nc,il,g_out(:,ia),nb)
+	  call count_buffer(n0,nlvddi,n,nc,il,g_out(:,ia),nb)
 	  !write(6,*) 'ex1: ',my_id,ia,id,nc,n,nb
           call MPI_Irecv(i_buffer_out(:,ia),nb,MPI_INTEGER,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
@@ -204,7 +215,7 @@
 	  ir = ir + 1
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iin,ia)
-	  call to_buffer_i(nlvddi,n,nc,il
+	  call to_buffer_i(n0,nlvddi,n,nc,il
      +		,g_in(:,ia),val,nb,i_buffer_in(:,ia))
           call MPI_Isend(i_buffer_in(:,ia),nb,MPI_INTEGER,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
@@ -215,7 +226,7 @@
 	do ia=1,n_ghost_areas
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iout,ia)
-	  call from_buffer_i(nlvddi,n,nc,il
+	  call from_buffer_i(n0,nlvddi,n,nc,il
      +		,g_out(:,ia),val,nb,i_buffer_out(:,ia))
 	end do
 
@@ -223,21 +234,21 @@
 
 !******************************************************************
 
-	subroutine shympi_exchange_internal_r(belem,nlvddi,n,il
+	subroutine shympi_exchange_internal_r(belem,n0,nlvddi,n,il
      +						,g_in,g_out,val)
+
+	use shympi_aux
 
 	use shympi
 
 	implicit none
 
-	include "mpif.h"
-
 	logical belem
-	integer nlvddi,n
+	integer n0,nlvddi,n
 	integer il(n)
 	integer g_in(n_ghost_max,n_ghost_areas)
 	integer g_out(n_ghost_max,n_ghost_areas)
-	real val(nlvddi,n)
+	real val(n0:nlvddi,n)
 
 	integer tag,ir,ia,id
 	integer i,k,nc,ierr
@@ -254,14 +265,14 @@
 	  iin = 4
 	end if
 
-	nb = nlvddi * n_ghost_max
+	nb = (nlvddi-n0+1) * n_ghost_max
 	call shympi_alloc_buffer(nb)
 
 	do ia=1,n_ghost_areas
 	  ir = ir + 1
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iout,ia)
-	  call count_buffer(nlvddi,n,nc,il,g_out(:,ia),nb)
+	  call count_buffer(n0,nlvddi,n,nc,il,g_out(:,ia),nb)
 	  !write(6,*) 'ex1: ',my_id,ia,id,nc,n,nb
           call MPI_Irecv(r_buffer_out(:,ia),nb,MPI_REAL,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
@@ -271,7 +282,7 @@
 	  ir = ir + 1
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iin,ia)
-	  call to_buffer_r(nlvddi,n,nc,il
+	  call to_buffer_r(n0,nlvddi,n,nc,il
      +		,g_in(:,ia),val,nb,r_buffer_in(:,ia))
           call MPI_Isend(r_buffer_in(:,ia),nb,MPI_REAL,id
      +	          ,tag,MPI_COMM_WORLD,request(ir),ierr)
@@ -282,7 +293,7 @@
 	do ia=1,n_ghost_areas
 	  id = ghost_areas(1,ia)
 	  nc = ghost_areas(iout,ia)
-	  call from_buffer_r(nlvddi,n,nc,il
+	  call from_buffer_r(n0,nlvddi,n,nc,il
      +		,g_out(:,ia),val,nb,r_buffer_out(:,ia))
 	end do
 
@@ -290,11 +301,18 @@
 
 !******************************************************************
 
-	subroutine shympi_exchange_internal_d(nlvddi,n,il,val)
+	subroutine shympi_exchange_internal_d(belem,n0,nlvddi,n,il
+     +						,g_in,g_out,val)
+
+	use shympi_aux
+	use shympi
 	
-	integer nlvddi,n
+	logical belem
+	integer n0,nlvddi,n
 	integer il(n)
-	double precision val(nlvddi,n)
+	integer g_in(n_ghost_max,n_ghost_areas)
+	integer g_out(n_ghost_max,n_ghost_areas)
+	double precision val(n0:nlvddi,n)
 
         stop 'error stop shympi_exchange_internal_d: not ready'
 
@@ -306,13 +324,13 @@
 
         subroutine shympi_gather_i_internal(val)
 
+	use shympi_aux
+
 	use shympi
 
 	implicit none
 
         integer val
-
-	include "mpif.h"
 
         integer ierr
 
@@ -326,11 +344,11 @@
 
         subroutine shympi_bcast_i_internal(val)
 
+	use shympi_aux
+
 	implicit none
 
         integer val
-
-	include "mpif.h"
 
         integer ierr
 
@@ -342,12 +360,12 @@
 
 	subroutine shympi_reduce_r_internal(what,val)
 
+	use shympi_aux
+
 	implicit none
 
 	character*(*) what
 	real val
-
-	include "mpif.h"
 
         integer ierr
 	real valout

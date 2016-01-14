@@ -285,6 +285,8 @@ c local
           end do
         end do
 
+!       shympi_elem: exchange hkv, haux
+
         do k=1,nkn
           hkv(k) = hkv(k) / haux(k)
         end do
@@ -344,6 +346,8 @@ c-------------------------------------------------------
             end if
           end do
         end do
+
+!       shympi_elem: exchange hkv,min,max
 
 c-------------------------------------------------------
 c end of routine
@@ -513,7 +517,7 @@ c exchanges nodal depth values between domains
 	call shympi_exchange_2d_node(hkv)
 	call shympi_exchange_2d_node(hkv_min)
 	call shympi_exchange_2d_node(hkv_max)
-	call shympi_barrier
+	!call shympi_barrier
 
 	call shympi_check_2d_elem(hev,'hev')
 	call shympi_check_2d_node(hkv,'hkv')

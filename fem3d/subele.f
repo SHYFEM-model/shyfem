@@ -631,7 +631,9 @@ c sets up area for nodes
 
 	call shympi_comment('exchanging areakv')
 	call shympi_exchange_3d_node(areakv)
-	call shympi_barrier
+	!call shympi_barrier
+
+!       shympi_elem: exchange areakv
 
 	end
 
@@ -937,6 +939,8 @@ c	  -------------------------------------------------------
 
 	  end do
 
+!         in hdkn is volume of finite volume
+
 c	  -------------------------------------------------------
 c	  element values
 c	  -------------------------------------------------------
@@ -968,6 +972,8 @@ c	  -------------------------------------------------------
 
 	end do
 
+!       shympi_elem: exchange hdkn
+
 c----------------------------------------------------------------
 c compute depth at nodes
 c----------------------------------------------------------------
@@ -990,7 +996,7 @@ c----------------------------------------------------------------
 
 	call shympi_comment('exchanging hdkn')
 	call shympi_exchange_3d_node(hdkn)
-	call shympi_barrier
+	!call shympi_barrier
 
 c----------------------------------------------------------------
 c end of routine

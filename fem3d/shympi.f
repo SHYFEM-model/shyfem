@@ -332,6 +332,7 @@ c-----------------------------------------------------------
 	call custom(it)
 
 	write(6,*) 'starting time loop'
+        call shympi_comment('starting time loop...')
 	call print_time
 
 	call check_parameter_values('before main')
@@ -346,7 +347,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	do while( it .lt. itend )
 
-	   !call shympi_check_all
+           call shympi_comment('new time iteration -----------------')
+	   call shympi_check_all
 
 	   call check_crc
 	   call set_dry
@@ -365,7 +367,7 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
            call read_wwm
 	   
-	   !call shympi_check_all
+	   call shympi_check_all
 
 	   call hydro			!hydro
 
@@ -798,6 +800,7 @@ c*****************************************************************
 
 	call shympi_check_all_static
 	call shympi_check_all_dynamic
+	call shympi_check_all_scalar
 
 	end
 
@@ -825,6 +828,25 @@ c*****************************************************************
 	call shympi_check_hydro_baro
 	call shympi_check_hydro_vel
 	call shympi_check_hydro_print
+
+	end
+
+c*****************************************************************
+
+	subroutine shympi_check_all_scalar
+
+        use mod_conz
+        use mod_ts
+        use shympi
+
+	implicit none
+
+        if( mod_conz_is_initialized() ) then
+	  call shympi_check_3d_node(cnv,'cnv')
+        end if
+	call shympi_check_3d_node(saltv,'saltv')
+	call shympi_check_3d_node(tempv,'tempv')
+	call shympi_check_3d_node(rhov,'rhov')
 
 	end
 
@@ -889,8 +911,8 @@ c*****************************************************************
 	call shympi_check_3d_elem(vlov,'vlov')
 	call shympi_check_3d_elem(ulnv,'ulnv')
 	call shympi_check_3d_elem(vlnv,'vlnv')
-	!call shympi_check_3d0_node(wlnv,'wlnv')
-	!call shympi_check_3d0_node(wlov,'wlov')
+	call shympi_check_3d0_node(wlnv,'wlnv')
+	call shympi_check_3d0_node(wlov,'wlov')
 
 	end
 
@@ -912,7 +934,7 @@ c*****************************************************************
 	call shympi_check_3d_node(vprv,'vprv')
 	call shympi_check_3d_node(upro,'upro')
 	call shympi_check_3d_node(vpro,'vpro')
-	!call shympi_check_3d0_node(wprv,'wprv')
+	call shympi_check_3d0_node(wprv,'wprv')
 	call shympi_check_2d_node(up0v,'up0v')
 	call shympi_check_2d_node(vp0v,'vp0v')
 

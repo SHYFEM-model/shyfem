@@ -19,6 +19,7 @@
             integer, allocatable :: seed(:)
             integer :: i, n, un, istat, dt(8), pid
             integer(int64) :: t
+            integer getpid
           
 	    if( binit ) return
 	    binit = .true.

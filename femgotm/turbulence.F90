@@ -393,7 +393,9 @@
 
    ! read the variables from the namelist file
 
-   open(namlst,file=fn,status='old',action='read',err=80)
+   open(namlst,file=fn,status='old',action='read'   &
+                ,position='rewind',form='formatted',err=80)
+   rewind(namlst)
 
    LEVEL2 'reading turbulence namelists..'
 
@@ -597,7 +599,7 @@
 
    return
 
-80 FATAL 'I could not open GOTM parameter file ',fn	!ggu
+80 FATAL 'I could not open GOTM parameter file ',fn	!GGU
    stop 'init_turbulence'
 81 FATAL 'I could not read "turbulence" namelist'
    stop 'init_turbulence'

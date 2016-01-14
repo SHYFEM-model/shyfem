@@ -173,7 +173,7 @@ help:
 	@echo "info                general options from Rules.make"
 	@echo "check_software      checks needed software"
 	@echo "check_compilation   checks if all executables have compiled"
-	@echo "modified            finds files changed after installation"
+	@echo "changed             finds files changed after installation"
 	@echo "changed_zip         zips files changed after installation"
 
 first_time:

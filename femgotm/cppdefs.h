@@ -12,7 +12,8 @@
 
 ! Handy for writing
 #define STDOUT write(stdout,*)
-#define STDERR write(stderr,*)
+!####define STDERR write(stderr,*)	#GGU
+#define STDERR write(stdout,*)
 #define LEVEL0 STDERR
 #define LEVEL1 STDERR '   ',
 #define LEVEL2 STDERR '       ',

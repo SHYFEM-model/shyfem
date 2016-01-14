@@ -83,6 +83,16 @@
 
         end subroutine mod_conz_init
 
+!*****************************************************
+
+        function mod_conz_is_initialized()
+
+        logical mod_conz_is_initialized
+
+        mod_conz_is_initialized = ( nkn_conz > 0 )
+
+        end function mod_conz_is_initialized
+
 !==================================================================
         end module mod_conz
 !==================================================================

@@ -331,6 +331,8 @@ c interpolates area codes from elements to nodes (min or max)
 	call shympi_comment('exchanging iarnv')
 	call shympi_exchange_2d_node(iarnv)
 
+!       shympi_elem:   exchange min or max
+
 	end
 
 c***********************************************************

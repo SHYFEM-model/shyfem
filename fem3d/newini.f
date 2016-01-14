@@ -669,7 +669,7 @@ c exchanges level info with other domains - sets nlv
 	call shympi_comment('exchanging ilhkv, ilmkv')
 	call shympi_exchange_2d_node_i(ilhkv)
 	call shympi_exchange_2d_node_i(ilmkv)
-	call shympi_barrier
+	!call shympi_barrier
 
 	end
 
@@ -766,6 +766,8 @@ c set ilhkv array - only needs ilhv
 	  end do
 	end do
 
+!       shympi_elem: exchange ilhkv - max
+
 	end
 
 c*****************************************************************
@@ -791,6 +793,8 @@ c set minimum number of levels for node
 	    if(l.lt.ilmkv(k)) ilmkv(k)=l
 	  end do
 	end do
+
+!       shympi_elem: exchange ilmkv - min
 
 	do k=1,nkn
 	  lmin = ilmkv(k)

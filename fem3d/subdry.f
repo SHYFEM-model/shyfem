@@ -637,6 +637,8 @@ c-------------------------------------------------------------
 c compute znv for dry areas
 c-------------------------------------------------------------
 
+!       shympi_elem: exchange v1v, v2v
+
 	do k=1,nkn
 	  if( znv(k) .eq. flag ) then		!out of system
 	    znv(k) = v1v(k) / v2v(k)
@@ -649,7 +651,7 @@ c-------------------------------------------------------------
 
 	call shympi_comment('exchanging znv in setznv ')
 	call shympi_exchange_2d_node(znv)
-	call shympi_barrier
+	!call shympi_barrier
 
 c-------------------------------------------------------------
 c write debug status

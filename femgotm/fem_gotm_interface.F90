@@ -119,7 +119,7 @@
 
    write(iu,*) ' '
    write(iu,*) '--------------------------------------------------------'
-   write(iu,*) 'You are using the k-epsilon model'
+   write(iu,*) 'You are using the k-epsilon model (modified ggu)'
    write(iu,*) 'with the following properties:'
    write(iu,*) ' '
    write(iu,*) 'ce1                                  =', ce1

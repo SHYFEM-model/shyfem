@@ -280,7 +280,7 @@ c-----------------------------------------------------------------
 
 	  call shympi_comment('exchanging znv')
 	  call shympi_exchange_2d_node(znv)
-	  call shympi_barrier
+	  !call shympi_barrier
 
 	  call setweg(1,iw)		!controll intertidal flats
 	  !write(6,*) 'hydro: iw = ',iw,iloop,my_id
@@ -1394,6 +1394,7 @@ c 20.08.1998	ggu	some documentation
 	use evgeom
 	use levels
 	use basin
+	use shympi
 
 	implicit none
 
@@ -1463,6 +1464,8 @@ c aj * ff -> [m**3/s]     ( ff -> [m/s]   aj -> [m**2]    b,c -> [1/m] )
 	 !end if
 	end do
 
+!       shympi_elem: exchange vf
+
 c from vel difference get absolute velocity (w_bottom = 0)
 c	-> wlnv(nlv,k) is already in place !
 c	-> wlnv(nlv,k) = 0 + wlnv(nlv,k)
@@ -1527,6 +1530,10 @@ c FIXME	-> only for ibtyp = 1,2 !!!!
 	end do
 
 	deallocate(vf,va)
+
+	call shympi_comment('exchanging wlnv')
+        call shympi_exchange_3d0_node(wlnv)
+	!call shympi_barrier
 
 	end
 

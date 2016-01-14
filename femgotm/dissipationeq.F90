@@ -194,7 +194,7 @@
    end do
 
 # ifdef GGU_ZERO_DISEQ
-        Qsour(0) = 0.   !ggu !BUG
+        Qsour(0) = 0.   !GGU !BUG
         Lsour(0) = 0.
         Qsour(nlev) = 0.
         Lsour(nlev) = 0.

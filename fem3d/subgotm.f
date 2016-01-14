@@ -213,6 +213,7 @@ c---------------------------------------------------------------
 	real areaac(nkn)
 
 	integer ioutfreq,ks
+        integer iunit,id
 	integer k,l
 	integer laux
 	integer nlev
@@ -279,7 +280,7 @@ c         --------------------------------------------------------
 c         Initializes gotm arrays 
 c         --------------------------------------------------------
 
-	  write(*,*) 'starting GOTM turbulence model'
+	  write(*,*) 'starting initializing GOTM turbulence model'
 
 	  call gotm_init
 
@@ -288,10 +289,12 @@ c         Get file name containing GOTM turbulence model parameters
 c         --------------------------------------------------------
 
           call getfnm('gotmpa',fn)
-
-	  call init_gotm_turb(10,fn,nlvdi)
+          iunit = 10
+	  call init_gotm_turb(iunit,fn,nlvdi)
 
           levdbg = nint(getpar('levdbg'))
+
+	  write(*,*) 'finished initializing GOTM turbulence model'
 
 	  icall = 1
 	end if
@@ -308,7 +311,7 @@ c------------------------------------------------------
 
 	call shympi_comment('exchanging taub')
 	call shympi_exchange_2d_node(taub)
-	call shympi_barrier
+	!call shympi_barrier
 
 c------------------------------------------------------
 c set up buoyancy frequency and shear frequency
@@ -861,7 +864,7 @@ c	---------------------------------------------------
  
           !call elebase(ie,n,ibase)
 	  n = 3
-          aj = ev(10,ie)
+          aj = 4. * ev(10,ie)
 	  nlev = ilhv(ie)
 
           taubot = czdef * ( ulnv(nlev,ie)**2 + vlnv(nlev,ie)**2 )
@@ -872,6 +875,9 @@ c	---------------------------------------------------
           end do
 
 	end do
+
+!       shympi_elem: exchange taub
+!       for area as weight use surface value areakv(1,k)
 
 c	---------------------------------------------------
 c	compute bottom stress
