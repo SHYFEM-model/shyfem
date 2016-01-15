@@ -1246,6 +1246,8 @@ c----------------------------------------------------------------
 c end of loop over elements
 c----------------------------------------------------------------
 
+!	shympi_elem: exchange...
+
 c in cdiag, chigh, clow is matrix (implicit part)
 c if explicit calculation, chigh=clow=0 and in cdiag is volume of node [m**3]
 c in cnv is mass of node [kg]

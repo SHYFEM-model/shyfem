@@ -386,6 +386,35 @@
 	end subroutine shympi_reduce_r_internal
 
 !******************************************************************
+
+	subroutine shympi_reduce_i_internal(what,val)
+
+	use shympi_aux
+
+	implicit none
+
+	character*(*) what
+	integer val
+
+        integer ierr
+	integer valout
+
+        if( what == 'min' ) then
+	  call MPI_ALLREDUCE(val,valout,1,MPI_INTEGER,MPI_MIN
+     +				,MPI_COMM_WORLD,ierr)
+	  val = valout
+        else if( what == 'max' ) then
+	  call MPI_ALLREDUCE(val,valout,1,MPI_INTEGER,MPI_MAX
+     +				,MPI_COMM_WORLD,ierr)
+	  val = valout
+        else
+          write(6,*) 'what = ',what
+          stop 'error stop shympi_reduce_i_internal: not ready'
+        end if
+
+	end subroutine shympi_reduce_i_internal
+
+!******************************************************************
 !******************************************************************
 !******************************************************************
 

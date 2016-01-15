@@ -220,6 +220,8 @@ c----------------------------------------------------------------
 
 !$OMP END TASKGROUP       
 
+!	shympi_elem: exchange...
+
        end do ! end loop over subset
        
 !$     nchunk = nkn / ( nthreads * 10 )

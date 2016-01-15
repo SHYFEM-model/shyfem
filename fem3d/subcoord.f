@@ -137,10 +137,14 @@
         mode = -1		!from lat/lon to cartesian
         iproj = 3		!always use cpp
 
-	call shympi_reduce_r('min',xgv,xmin)
-	call shympi_reduce_r('min',ygv,ymin)
-	call shympi_reduce_r('max',xgv,xmax)
-	call shympi_reduce_r('max',ygv,ymax)
+	!call shympi_reduce_r('min',xgv,xmin)
+	!call shympi_reduce_r('min',ygv,ymin)
+	!call shympi_reduce_r('max',xgv,xmax)
+	!call shympi_reduce_r('max',ygv,ymax)
+	xmin = shympi_min(xgv)
+	ymin = shympi_min(ygv)
+	xmax = shympi_max(xgv)
+	ymax = shympi_max(ygv)
 
 	write(6,*) 'min/max: ',xmin,ymin,xmax,ymax
 

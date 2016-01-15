@@ -129,6 +129,20 @@
 !     +                   ,shympi_check_3d_elem_i
         END INTERFACE
 
+        INTERFACE shympi_min
+        	MODULE PROCEDURE  
+     +			   shympi_min_r
+     +			  ,shympi_min_i
+!     +			  ,shympi_min_d
+        END INTERFACE
+
+        INTERFACE shympi_max
+        	MODULE PROCEDURE  
+     +			   shympi_max_r
+     +			  ,shympi_max_i
+!     +			  ,shympi_max_d
+        END INTERFACE
+
 !==================================================================
         contains
 !==================================================================
@@ -926,6 +940,70 @@
 
 	end subroutine shympi_reduce_r
 
+!******************************************************************
+!******************************************************************
+!******************************************************************
+
+	function shympi_min_r(vals)
+
+	real shympi_min_r
+	real vals(:)
+	real val
+
+	val = MINVAL(vals)
+	call shympi_reduce_r_internal('min',val)
+
+	shympi_min_r = val
+
+	end function shympi_min_r
+
+!******************************************************************
+
+	function shympi_min_i(vals)
+
+	integer shympi_min_i
+	integer vals(:)
+	integer val
+
+	val = MINVAL(vals)
+	call shympi_reduce_i_internal('min',val)
+
+	shympi_min_i = val
+
+	end function shympi_min_i
+
+!******************************************************************
+
+	function shympi_max_r(vals)
+
+	real shympi_max_r
+	real vals(:)
+	real val
+
+	val = MINVAL(vals)
+	call shympi_reduce_r_internal('max',val)
+
+	shympi_max_r = val
+
+	end function shympi_max_r
+
+!******************************************************************
+
+	function shympi_max_i(vals)
+
+	integer shympi_max_i
+	integer vals(:)
+	integer val
+
+	val = MINVAL(vals)
+	call shympi_reduce_i_internal('max',val)
+
+	shympi_max_i = val
+
+	end function shympi_max_i
+
+!******************************************************************
+!******************************************************************
 !******************************************************************
 
 	function shympi_output()

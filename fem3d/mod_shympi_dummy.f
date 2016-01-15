@@ -165,3 +165,14 @@
 
 !******************************************************************
 
+        subroutine shympi_reduce_i_internal(what,val)
+        
+        implicit none
+
+        character*(*) what
+        integer val
+
+        end subroutine shympi_reduce_i_internal
+
+!******************************************************************
+
