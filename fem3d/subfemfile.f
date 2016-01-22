@@ -17,6 +17,7 @@ c 20.10.2014	ggu	second version (date record is just after first record)
 c 29.10.2014	ggu	new routine fem_file_is_fem_file()
 c 09.01.2015	ggu	new routine fem_file_get_format_description()
 c 14.01.2015	ggu	new routine fem_file_string2time()
+c 21.01.2016	ggu	read and write string without leading blanks
 c
 c notes :
 c
@@ -251,12 +252,12 @@ c writes data of the file
 	nv = nvers
 	if( nv .eq. 0 ) nv = 1	!default
 
-	text = string
+	text = trim(string)
 	textu = string
 	b2d = lmax .le. 1
 
 	if( iformat == 1 ) then
-	  write(iunit,*) text
+	  write(iunit,'(a)') text
 	  if( b2d ) then
 	    write(iunit,1000) (data(1,k),k=1,np)
 	  else
@@ -871,7 +872,7 @@ c reads data of the file
 	  end do
 	end if
 
-	string = text
+	string = trim(text)
 
 	return
    13	continue

@@ -6,20 +6,17 @@
 #
 #--------------------------------------------------------------
 
-$basedir = "~/fem/";
-$tagdir   = ".git/refs/tags";
+@tags = `git show-ref --tags`;
 
-$dir = $basedir . $tagdir;
-
-$tags = `cd $dir; ls *`;
-@tags = split(/\s+/,$tags);
-
-foreach $tag (@tags) {
-  $ref = `cat $dir/$tag`;
-  chomp $ref;
-  $tags{$ref} = $tag;
-  #print "$ref  $tag\n";
+foreach $line (@tags) {
+  chomp $line;
+  my ($hash,$tag) = split(/\s+/,$line);
+  $tag =~ s|^refs/tags/||;
+  $tags{$hash} = $tag;
+  #print "$hash  $tag\n";
 }
+
+#exit;
 
 $coms = `git log --pretty=oneline`;
 @coms = split(/\n+/,$coms);
@@ -56,18 +53,5 @@ sub format_tag {
   my $line = sprintf("%12s",$tag);
 
   return $line;
-}
-
-sub get_object {
-
-  my $tag = shift;
-
-  open(TAG,"<$dir/$tag") || die "cannot open file: $dir/$tag";
-  my $ref = <TAG>;
-  close(TAG);
-
-  chomp($ref);
-
-  return $ref;
 }
 

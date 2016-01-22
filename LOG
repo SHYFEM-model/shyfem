@@ -1,4 +1,16 @@
 
+22.01.2016
+
+c ./fem3d/subspk.f:
+c 13.01.2016    ggu&ivn bug in allocation of rvec and raux (n instead nndim)
+c
+c ./fem3d/subfemfile.f:
+c 21.01.2016    ggu     read and write string without leading blanks
+c
+c ./fem3d/subqfxm5.f:
+! 22.01.2016    ggu     bug fix for COARE integrated (L gets infinite)
+
+
 08.01.2016
 
 c ./fem3d/submeteo2.f:

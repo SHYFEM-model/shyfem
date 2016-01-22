@@ -20,6 +20,10 @@ commit			commit changes that have been added (staged)
 commit -a		same as: add -u; commit
 tag <tag>		tags with <tag>, if no <tag> shows tags
 
+git clone https://github.com/SHYFEM-model/shyfem.git
+git checkout -b develop origin/develop
+git config --global alias.co checkout
+
 git commit --amend	integrate into last commit
 git reset HEAD <file>	unstage file
 git reset --hard HEAD	undo all changes, restore last committed version

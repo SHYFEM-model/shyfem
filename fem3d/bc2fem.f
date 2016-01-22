@@ -7,18 +7,36 @@
 
 	character*132 infile
 	character*50 what,var,hlvfile
-	logical bformat
+	logical bforceformat,bformat
 	logical formatted,unformatted
 	logical b2d,b3d
 	integer date
+
+!--------------------------------------------------------------
+! you may customize the next lines, otherwise default is used
+!--------------------------------------------------------------
+
+	bforceformat = .false.		!if .false. default is used
+	bformat = .true.		!ignored unless bforceformat == .true.
+	bformat = .false.		!ignored unless bforceformat == .true.
+
+!--------------------------------------------------------------
+! do not change anything below here
+!--------------------------------------------------------------
 
 	formatted = .true.
 	unformatted = .false.
 	b2d = .true.
 	b3d = .false.
 
-	bformat = .true.
-	bformat = .false.
+	if( bforceformat ) then		!force to format bformat
+	  formatted = bformat
+	  unformatted = bformat
+	end if
+
+!--------------------------------------------------------------
+! command line
+!--------------------------------------------------------------
 
 	call parse_command_line(what,var,infile,hlvfile,date)
 
@@ -36,6 +54,10 @@
 	  write(6,*) 'please set date explicitly to 0'
 	  stop 'error stop bc2fem_main: date'
 	end if
+
+!--------------------------------------------------------------
+! see what to do
+!--------------------------------------------------------------
 
 	if( what .eq. 'meteo' ) then
 	  call win2fem(infile,unformatted,date)
@@ -58,6 +80,10 @@
 	else
 	  write(6,*) 'unknown option: ',what
 	end if
+
+!--------------------------------------------------------------
+! end of routine
+!--------------------------------------------------------------
 
 	end
 
@@ -811,6 +837,11 @@ c*****************************************************************
 	write(6,*) 'new format: ',bnew
 	if( id .eq. 1001 ) then
 	  write(6,*) 'pressure  : ',bpres
+	end if
+
+	if( n0 == 0 ) then
+	  write(6,*) 'file contains no data'
+	  stop 'error stop: no data'
 	end if
 
 	allocate(data(n0,nvar))

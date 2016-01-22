@@ -9,6 +9,7 @@ c 05.06.2009    ggu     some routines cleaned
 c 22.03.2010    ggu     change of some parameters
 c 29.03.2012    ggu     introduce zero and one as double (bug, was int before)
 c 15.12.2015    ggu&deb adapted to new 3d framework
+c 13.01.2016    ggu&ivn bug in allocation of rvec and raux (n instead nndim)
 c
 c*************************************************************************
 
@@ -111,7 +112,8 @@ c*************************************************************************
 	integer ii,nn
 
 	allocate(csr(nndim),icsr(n+1),jcsr(nndim),iwork(2*nndim))
-	allocate(rvec(nndim),raux(nndim))
+	!allocate(rvec(nndim),raux(nndim))
+	allocate(rvec(n),raux(n))
 
 	ngl = n
 

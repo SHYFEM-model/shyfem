@@ -26,6 +26,7 @@
 ! revision log :
 !
 ! 11.06.2014    ccf     heat module from COARE integrated
+! 22.01.2016    ggu     bug fix for COARE integrated (L gets infinite)
 
 !***********************************************************************
 
@@ -701,6 +702,11 @@
 	real 	:: hsb,hlb,qout,dels,qcol,alq,xlamx
 	real 	:: tau,dwat,dtmp,alfac,RF
 	real 	:: Ch,Ce
+
+	integer :: iunit
+	integer :: itact
+	real	:: zetaux
+
 ! function
 	real    :: psi
 
@@ -769,6 +775,21 @@
 	else 
 	  zetu=CC*Ribu*(1+27/9*Ribu/CC)
 	endif 
+
+	zetaux = zetu
+	if( abs(zetaux) < eps ) then
+	  call get_act_time(itact)
+	  call getinfo(iunit)
+	  write(iunit,*) '====================== COARE error 1'
+	  write(iunit,*) itact,zetaux,zu
+	  write(iunit,*) sst,airt,ws,rain
+	  write(iunit,*) Rns,Rnl,Qs,Q,rhoa
+	  write(iunit,*) '======================'
+	  flush(iunit)
+	end if
+
+	if( abs(zetu) < eps ) zetu = sign(eps,zetu)
+
 	L10=zu/zetu 
 	if (zetu .GT. 50) then 
 	  nits=1 
@@ -802,6 +823,21 @@
 	  if (jwave .EQ. 2) zo=1200*hwave*(hwave/lwave)**4.5+0.11*
      &                         visa/usr 	!Taylor and Yelland
 	  rr=zo*usr/visa 
+
+	zetaux = zet
+	if( abs(zetaux) < eps ) then
+	  call get_act_time(itact)
+	  call getinfo(iunit)
+	  write(iunit,*) '====================== COARE error 2'
+	  write(iunit,*) itact,zetaux,zu
+	  write(iunit,*) sst,airt,ws,rain
+	  write(iunit,*) Rns,Rnl,Qs,Q,rhoa
+	  write(iunit,*) '======================'
+	  flush(iunit)
+	end if
+
+	if( abs(zet) < eps ) zet = sign(eps,zet)
+
 	  L=zu/zet
 	  zoq=min(1.15e-4,5.5e-5/rr**.6) 
 	  zot=zoq 

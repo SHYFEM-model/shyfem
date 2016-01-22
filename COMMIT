@@ -1,5 +1,22 @@
 ============================================================
 
+Fri Jan 22 12:39:13 CET 2016
+
+bug fixes for subspk and COARE
+
+ LOG                     |  12 ++++++++++++
+ RELEASE_NOTES           |   4 ++++
+ fem3d/bc2fem.f          |  37 ++++++++++++++++++++++++++++++++++---
+ fem3d/subfemfile.f      |   7 ++++---
+ fem3d/subqfxm5.f        |  36 ++++++++++++++++++++++++++++++++++++
+ fem3d/subspk.f          |   4 +++-
+ fembin/gitinfo          |   4 ++++
+ fembin/gittags          |  36 ++++++++++--------------------------
+ femdoc/final/shyfem.pdf | Bin 284195 -> 284182 bytes
+ 9 files changed, 107 insertions(+), 33 deletions(-)
+
+============================================================
+
 Fri Jan  8 17:01:15 CET 2016
 
 New version 7_5_0
