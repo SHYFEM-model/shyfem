@@ -1,3 +1,21 @@
+version  7_5_1    22-01-2016    VERS_7_5_1
+
+========================================================== 22-01-2016 - 7_5_1
+
+c ./fem3d/subver.f:
+c 22.01.2016	ggu	version 7.5.1
+c
+c ./fem3d/subspk.f:
+c 13.01.2016    ggu&ivn bug in allocation of rvec and raux (n instead nndim)
+c
+c ./fem3d/subfemfile.f:
+c 21.01.2016	ggu	read and write string without leading blanks
+c
+c ./fem3d/subqfxm5.f:
+! 22.01.2016    ggu     bug fix for COARE integrated (L gets infinite)
+
+==========================================================
+
 version  7_5_0    08-01-2016    VERS_7_5_0   commit_2016-01-22
 
 version  7_5_0    08-01-2016    VERS_7_5_0
