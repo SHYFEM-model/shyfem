@@ -94,6 +94,26 @@
 
 !---------------------
 
+        INTERFACE shympi_check_elem
+        	MODULE PROCEDURE  
+     +			  shympi_check_2d_elem_r
+     +                   ,shympi_check_2d_elem_d
+     +                   ,shympi_check_2d_elem_i
+     +			 ,shympi_check_3d_elem_r
+!     +                   ,shympi_check_3d_elem_d
+!     +                   ,shympi_check_3d_elem_i
+        END INTERFACE
+
+        INTERFACE shympi_check_node
+        	MODULE PROCEDURE  
+     +			  shympi_check_2d_node_r
+     +                   ,shympi_check_2d_node_d
+     +                   ,shympi_check_2d_node_i
+     +			 ,shympi_check_3d_node_r
+!     +                   ,shympi_check_3d_node_d
+!     +                   ,shympi_check_3d_node_i
+        END INTERFACE
+
         INTERFACE shympi_check_2d_node
         	MODULE PROCEDURE  
      +			  shympi_check_2d_node_r
@@ -140,6 +160,8 @@
         	MODULE PROCEDURE  
      +			   shympi_max_r
      +			  ,shympi_max_i
+!     +			  ,shympi_max_0_r
+     +			  ,shympi_max_0_i
 !     +			  ,shympi_max_d
         END INTERFACE
 
@@ -1001,6 +1023,19 @@
 	shympi_max_i = val
 
 	end function shympi_max_i
+
+!******************************************************************
+
+	function shympi_max_0_i(val)
+
+	integer shympi_max_0_i
+	integer val
+
+	call shympi_reduce_i_internal('max',val)
+
+	shympi_max_0_i = val
+
+	end function shympi_max_0_i
 
 !******************************************************************
 !******************************************************************
