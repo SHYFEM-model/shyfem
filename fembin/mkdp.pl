@@ -29,7 +29,7 @@ foreach my $file (@ARGV) {
   handle_file($file,$rlist,\@lines);
 
   my $line = write_inc($file,$rlist);
-  print "$line\n" if $line;
+  print "$line\n" if ($line and $::debug);
   push(@lines,$line) if $line;
 }
 
@@ -38,11 +38,16 @@ if( not $::make ) {
   exit 0;
 }
 
-print STDERR "changing Makefile...\n";
 my $mfile = change_makefile(\@lines);
 
-rename("$mfile","$mfile.bak");
-rename("$mfile.new","$mfile");
+if( is_different("$mfile","$mfile.new") ) {
+  print STDERR "Makefile changed... substituting\n";
+  rename("$mfile","$mfile.bak");
+  rename("$mfile.new","$mfile");
+} else {
+  print STDERR "Makefile did not change... not substituting\n";
+  rename("$mfile.new","$mfile.bak");
+}
 
 #----------------------------------------------------------
 
@@ -90,7 +95,9 @@ sub handle_file {
     } elsif( $mfile ) {
       print STDERR "module found: $mfile\n" if $::debug;
       if( $modules_in_file{$mfile} ) {
-	print STDERR "*** avoid circular reference for module: $mfile\n";
+	if( $::debug ) {
+	  print STDERR "*** avoid circular reference for module: $mfile\n";
+	}
       } else {
         $mfile = "$::moddir/$mfile" if $::moddir;
         insert_inc($rlist,$mfile);
@@ -125,7 +132,7 @@ sub change_makefile {
 
   while(<MAKE>) {
     if( /^$mkdp/ ) {
-        print STDERR "make line found...\n";
+        print STDERR "make line found...\n" if $::debug;
 	$mkdp_found = 1;
         last;
     }
@@ -243,6 +250,17 @@ sub get_part {
     }
     return ($part,$rest);
   }
+}
+
+sub is_different {
+
+  my ($f1,$f2) = @_;
+
+  system("cmp $f1 $f2");
+  my $status = $?;
+  #print STDERR "exit code is $status\n";
+
+  return $status;
 }
 
 #-----------------------------------------------------------------------
