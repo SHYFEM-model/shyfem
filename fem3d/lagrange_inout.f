@@ -56,6 +56,7 @@ c 1 inserts at end of time step - no advection for this time step needed
 	bdebug = .true.
 	bdebug = .false.
 	lmytype = .true.
+	lmytype = .false.
 
 	nbdy = nbdy + 1
 	idbdy = idbdy + 1

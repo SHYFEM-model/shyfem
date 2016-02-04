@@ -109,6 +109,10 @@ do
       exit 1
     else
       exists="YES"
+      date=$( git log $tag | head -3 | tail -1 )
+      line=$( echo $date | sed -e 's/Date: *//' | sed -e 's/+.*//' )
+      date=$( date -u -d "$line" +"%F::%T" )
+      echo -n " $date "
     fi
     write="NO"
     if [ $exists = "YES" ]; then

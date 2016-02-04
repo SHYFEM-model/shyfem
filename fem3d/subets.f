@@ -922,12 +922,12 @@ c writes second record of ETS file
 	implicit none
 
 	integer iunit
-	integer ilhkv(1)
-	real hlv(1)
-	real hkv(1)
-	integer nodes(1)
-	real xg(1),yg(1)
-	character*80 desc(1)
+	integer ilhkv(*)
+	real hlv(*)
+	real hkv(*)
+	integer nodes(*)
+	real xg(*),yg(*)
+	character*80 desc(*)
 	integer ierr
 
 	integer k,l

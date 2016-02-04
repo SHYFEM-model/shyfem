@@ -196,6 +196,7 @@ fembin/ouselab
 fembin/extelab
 fembin/shyelab
 fembin/shyfem
+fembin/shympi
 fembin/shypre
 fembin/shybas
 fembin/flxelab

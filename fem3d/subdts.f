@@ -885,7 +885,7 @@ c converts date to julian days
  
 	if( month .lt. 1 .or. month .gt. 12 ) then
 	  write(6,*) 'year,month,day: ',year,month,day
-	  call divide_by_zero(jd)
+	  !call divide_by_zero(jd)
 	  stop 'error stop date2j: month'
         else if( day .lt. 1 .or. day .gt. idmon(year,month) ) then
 	  write(6,*) 'year,month,day: ',year,month,day

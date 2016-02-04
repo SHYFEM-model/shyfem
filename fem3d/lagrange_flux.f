@@ -228,7 +228,7 @@ c we do not use lkmax, but lmax
         implicit none
 
         integer k,lkmax,n
-	real tflux(nlvdi,1)       !fluxes across sides of element
+	real tflux(nlvdi,ne)      !fluxes across sides of element
         integer ne                !total number of elements in elems
         integer elems(ne)         !elements around k
 
@@ -265,8 +265,8 @@ c computes fluxes in element
         implicit none
 
         integer k,n
-        real tflux(1)
-	real flux2d_loc(3,1)
+        real tflux(ne)
+	real flux2d_loc(3,ne)
         integer ne              !total number of elements in elems
         integer elems(ne)       !elements around k
 

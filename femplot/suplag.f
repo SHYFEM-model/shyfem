@@ -258,6 +258,7 @@ c**********************************************************
         integer level
         integer ifemop
         integer getlev,getvar
+	real rmin,rmax
 
 	INTERFACE
 	subroutine lag_alloc(nn
@@ -324,6 +325,10 @@ c----------------------------------------------------------------
         else
             goto 99
 	end if
+
+	rmax = maxval(rlag)
+	rmin = minval(rlag)
+	write(6,*) 'plotting rlag: ',trim(name),rmin,rmax
 
 c----------------------------------------------------------------
 c set vertical level to plot with option lev3d in plots
