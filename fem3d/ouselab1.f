@@ -27,6 +27,7 @@ c**************************************************************
         use mod_hydro_baro
         use evgeom
         use levels
+        use shyutil
 
 c elaborates ous file
 
@@ -40,12 +41,14 @@ c elaborates ous file
 	real, allocatable :: sv(:,:)
 	real, allocatable :: dv(:,:)
 
-	integer, allocatable :: naccu(:)
-	double precision, allocatable :: accum(:,:,:)
+	real, allocatable :: vars(:,:,:)
+	real, allocatable :: vars2d(:,:,:)
+	integer, allocatable :: idims(:,:)
 
 	real, allocatable :: hl(:)
 
 	integer nread,nelab,nrec,nin
+	integer nndim,nvar,iv
 	integer nvers
 	integer nknous,nelous
 	integer invar,lmaxsp
@@ -150,19 +153,28 @@ c--------------------------------------------------------------
 	! averaging
 	!--------------------------------------------------------------
 
-	!call elabutil_set_averaging(nvar)
-	btrans = .false.			!FIXME
+	call elabutil_set_averaging(nvar)
+	!btrans = .false.			!FIXME
+	nndim = max(3*nel,nkn)
+	nvar = 4
+	allocate(vars(nlvdi,nndim,nvar))
+	allocate(vars2d(1,nndim,nvar))
+	allocate(idims(4,nvar))			!n,m,lmax,nvar
+
+	idims(1,:) = nel
+	idims(1,1) = nkn
+	idims(2,:) = 1
+	idims(2,2) = 3
+	idims(3,:) = 1
+	idims(3,3) = nlvdi
+	idims(3,4) = nlvdi
+	idims(4,:) = 0		!not used
 
 	if( btrans ) then
-	  allocate(naccu(istep))
-	  allocate(accum(nlvdi,nkn,istep))
+	  call shyutil_init_accum(nlvdi,nndim,nvar,istep)
 	else
-	  allocate(naccu(1))
-	  allocate(accum(1,1,1))
+	  call shyutil_init_accum(1,1,1,1)
 	end if
-	naccum = 0
-	naccu = 0
-	accum = 0.
 
 	!write(6,*) 'mode: ',mode,ifreq,istep
 
@@ -195,8 +207,7 @@ c--------------------------------------------------------------
 
 	  itold = it
 
-          call ous_read_record(nin,it,nlvdi,ilhv,znv,zenv
-     +                          ,utlnv,vtlnv,ierr)
+	  call new_read_record(nb,it,nlvdi,nndim,nvar,vars,ierr)
 
           if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
           if(ierr.ne.0) exit
@@ -220,8 +231,9 @@ c--------------------------------------------------------------
 
 	  if( bwrite ) then
 
+	    call convert_2d(nlvdi,nndim,nvar,vars,vars2d)
+	    call transfer_uvz(1,nndim,nvar,vars2d,znv,zenv,unv,vnv)
 	    call mimar(znv,nkn,zmin,zmax,rnull)
-            call comp_barotropic(nel,nlvdi,ilhv,utlnv,vtlnv,unv,vnv)
             call comp_vel2d(nel,hev,zenv,unv,vnv,u2v,v2v
      +                          ,umin,vmin,umax,vmax)
             !call compute_volume(nel,zenv,hev,volume)
@@ -234,8 +246,10 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( btrans ) then
-!	    call nos_time_aver(mode,i,ifreq,istep,nkn,nlvdi
-!     +					,naccu,accum,cv3,boutput)
+	    do iv=1,nvar
+	      call shy_time_aver(mode,iv,nread,ifreq,istep,nndim
+     +                   ,idims(:,iv),threshold,vars(:,:,iv),boutput)
+	    end do
 	  end if
 
 	  if( baverbas ) then
@@ -245,7 +259,7 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( b2d ) then
-            call comp_barotropic(nel,nlvdi,ilhv,utlnv,vtlnv,unv,vnv)
+	    call convert_2d(nlvdi,nndim,nvar,vars,vars2d)
 	  end if
 
 	  if( bsplit ) then
@@ -263,11 +277,9 @@ c--------------------------------------------------------------
 	    if( bverb ) write(6,*) 'writing to output: ',ivar
 	    if( bsumvar ) ivar = 30
 	    if( b2d ) then
-              call ous_write_record(nb,it,1,ilhv
-     +			,znv,zenv,unv,vnv,ierr)
+	      call new_write_record(nb,it,1,nndim,nvar,vars2d,ierr)
 	    else
-              call ous_write_record(nb,it,nlvdi,ilhv
-     +			,znv,zenv,utlnv,vtlnv,ierr)
+	      call new_write_record(nb,it,nlvdi,nndim,nvar,vars,ierr)
 	    end if
             if( ierr .ne. 0 ) goto 99
 	  end if
@@ -290,16 +302,20 @@ c--------------------------------------------------------------
 	if( btrans ) then
 	  !write(6,*) 'istep,naccu: ',istep,naccu
 	  do ip=1,istep
-	    naccum = naccu(ip)
+	   boutput = .false.
+	   do iv=1,nvar
+	    naccum = naccu(iv,ip)
 	    !write(6,*) 'naccum: ',naccum
 	    if( naccum > 0 ) then
 	      write(6,*) 'final aver: ',ip,naccum
-!	      call nos_time_aver(-mode,ip,ifreq,istep,nkn,nlvdi
-!     +					,naccu,accum,cv3,boutput)
-!	      if( bsumvar ) ivar = 30
-!              call nos_write_record(nb,it,ivar,nlvdi,ilhkv,cv3,ierr)
+	      call shy_time_aver(-mode,iv,ip,ifreq,istep,nndim
+     +                   ,idims(:,iv),threshold,vars(:,:,iv),boutput)
               if( ierr .ne. 0 ) goto 99
 	    end if
+	   end do
+	   if( boutput ) then
+	    call new_write_record(nb,it,nlvdi,nndim,nvar,vars,ierr)
+	   end if
 	  end do
 	end if
 
@@ -402,4 +418,110 @@ c***************************************************************
         end
 
 c***************************************************************
+c***************************************************************
+c***************************************************************
 
+	subroutine new_read_record(nb,it,nlvddi,nndim,nvar,vars,ierr)
+
+	use basin
+	use levels
+
+	implicit none
+
+	integer nb
+	integer it
+	integer nlvddi,nndim,nvar
+	real vars(nlvddi,nndim,nvar)
+	integer ierr
+
+	real znv(nkn)
+	real zenv(3*nel)
+	real utlnv(nlvddi,nel)
+	real vtlnv(nlvddi,nel)
+
+        call ous_read_record(nb,it,nlvddi,ilhv,znv,zenv
+     +                          ,utlnv,vtlnv,ierr)
+
+	vars(1,1:nkn,1)   = znv(1:nkn)
+	vars(1,1:3*nel,2) = zenv(3*nel)
+	vars(:,1:nel,3)   = utlnv(:,1:nel)
+	vars(:,1:nel,4)   = vtlnv(:,1:nel)
+
+	end
+
+c***************************************************************
+
+	subroutine new_write_record(nb,it,nlvddi,nndim,nvar,vars,ierr)
+
+	use basin
+	use levels
+
+	implicit none
+
+	integer nb
+	integer it
+	integer nlvddi,nndim,nvar
+	real vars(nlvddi,nndim,nvar)
+	integer ierr
+
+	real znv(nkn)
+	real zenv(3*nel)
+	real utlnv(nlvdi,nel)
+	real vtlnv(nlvdi,nel)
+
+	ierr = 0
+
+	znv(1:nkn)     = vars(1,1:nkn,1)
+	zenv(1:3*nel)  = vars(1,1:3*nel,2)
+	utlnv(:,1:nel) = vars(:,1:nel,3)
+	vtlnv(:,1:nel) = vars(:,1:nel,4)
+
+        call ous_write_record(nb,it,nlvdi,ilhv
+     +			,znv,zenv,utlnv,vtlnv,ierr)
+
+	end
+
+c***************************************************************
+
+	subroutine convert_2d(nlvddi,nndim,nvar,vars,vars2d)
+
+	implicit none
+
+	integer nlvddi,nndim,nvar
+	real vars(nlvddi,nndim,nvar)
+	real vars2d(1,nndim,nvar)
+
+	vars2d(1,:,1) = vars(1,:,1)
+	vars2d(1,:,2) = vars(1,:,2)
+	vars2d(1,:,3) = sum(vars(:,:,3),1)
+	vars2d(1,:,4) = sum(vars(:,:,4),1)
+
+	end
+
+c***************************************************************
+
+	subroutine transfer_uvz(nlvddi,nndim,nvar,vars,znv,zenv,uv,vv)
+
+	use basin
+
+	implicit none
+
+	integer nlvddi,nndim,nvar
+	real vars(nlvddi,nndim,nvar)
+	real znv(nkn)
+	real zenv(3*nel)
+	real uv(nlvddi,nel)
+	real vv(nlvddi,nel)
+
+	znv(1:nkn)     = vars(1,1:nkn,1)
+	zenv(1:3*nel)  = vars(1,1:3*nel,2)
+	uv(:,1:nel)    = vars(:,1:nel,3)
+	vv(:,1:nel)    = vars(:,1:nel,4)
+
+	end
+
+c***************************************************************
+
+c***************************************************************
+c***************************************************************
+c***************************************************************

@@ -788,7 +788,7 @@
 
 	integer iunit
 	integer i,k,ie,l,j
-	integer, pointer :: il(:)
+	integer, allocatable :: il(:)
 
 	iunit = pentry(id)%iunit
 
@@ -818,10 +818,9 @@
      +			,l=1,il(i) )
      +			,i=1,n )
 	else
-	  read(iunit,iostat=ierr) ((( c(l,j+m*(i-1))
-     +			,l=1,il(i) )
-     +			,j=1,m )
-     +			,i=1,n )
+	  read(iunit,iostat=ierr) (( c(l,i)
+     +			,l=1,il(1+(i-1)/m) )
+     +			,i=1,n*m )
 	end if
 	deallocate(il)
 
@@ -974,10 +973,9 @@
      +			,l=1,il(i) )
      +			,i=1,n )
 	else
-	  write(iunit,iostat=ierr) ((( c(l,j+m*(i-1))
-     +			,l=1,il(i) )
-     +			,j=1,m )
-     +			,i=1,n )
+	  write(iunit,iostat=ierr) (( c(l,i)
+     +			,l=1,il(1+(i-1)/m) )
+     +			,i=1,n*m )
 	end if
 	deallocate(il)
 

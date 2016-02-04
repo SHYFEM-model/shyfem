@@ -185,7 +185,7 @@ SOBJS   = \
 	  nosutil.o ousutil.o subfemfile.o subvintp.o \
 	  genutil.o subfemintp.o subtsfile.o subxi.o \
 	  $(MODULES) \
-	  subshy.o subshyutil.o subbit10.o
+	  subshy.o subshyutil.o subbit10.o shyutil.o
 
 # general objects for 3D model shyfem
 
@@ -232,7 +232,7 @@ HTOBJS = \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ) $(PARALLEL_OBJ) \
 	$(GRDOBJS) \
-	subxi.o subshy.o subshyutil.o subbit10.o
+	subxi.o subshy.o subshyutil.o subbit10.o shyutil.o
 
 # objects for pre-processor shypre
 
@@ -279,7 +279,7 @@ OUSOBJS = subous.o ousutil.o genutil.o elabutil.o ouselab1.o
 SHYOBJS = subous.o ousutil.o subnos.o nosutil.o subeos.o genutil.o elabutil.o \
 		noselab1.o ouselab1.o subext.o extelab1.o \
 		shyelab1.o subshy.o subshyutil.o \
-		subflx.o flxelab1.o
+		subflx.o flxelab1.o shyutil.o
 ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
 		genutil.o
@@ -803,6 +803,7 @@ last:
 ../femlib/mod/poisson.mod: newpoi.o
 ../femlib/mod/projection.mod: subproj.o
 ../femlib/mod/shyfile.mod: subshy.o
+../femlib/mod/shyutil.mod: shyutil.o
 ../femlib/mod/tidef.mod: subtidef.o
 aquabc_II.o: ../femlib/mod/aquabc_II_sed_ini.mod \
 		../femlib/mod/para_aqua.mod param.h 
@@ -1111,7 +1112,8 @@ ouselab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
-		../femlib/mod/mod_hydro_baro.mod 
+		../femlib/mod/mod_hydro_baro.mod \
+		../femlib/mod/shyutil.mod 
 ousutil.o: ../femlib/mod/evgeom.mod
 readext.o: ../femlib/mod/basin.mod param.h
 rstinf.o: ../femlib/mod/clo.mod
@@ -1144,7 +1146,8 @@ shyelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
-		../femlib/mod/shyfile.mod param.h 
+		../femlib/mod/shyfile.mod \
+		../femlib/mod/shyutil.mod param.h 
 shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/evgeom.mod \
 		../femlib/mod/intp_fem_file.mod \
@@ -1183,6 +1186,9 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/tidef.mod femtime.h mkonst.h param.h \
 		pkonst.h 
 shypre.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod param.h
+shyutil.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
+		../femlib/mod/levels.mod \
+		../femlib/mod/mod_depth.mod 
 sigmautil.o: sigma.h
 simsys_lp.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_system.mod param.h 

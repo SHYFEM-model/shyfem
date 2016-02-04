@@ -444,17 +444,19 @@ c mode negative: only transform, do not accumulate
 	if( mode == 1 .or. mode == 2 ) then
 	  accum(:,:,ip) = accum(:,:,ip) + cv3(:,:)
 	else if( mode == 3 ) then
-	  do k=1,nkn
-	    do l=1,nlvddi
-	      accum(l,k,ip) = min(accum(l,k,ip),cv3(l,k))
-	    end do
-	  end do
+	  accum(:,:,ip) = min(accum(:,:,ip),cv3(:,:))
+	  !do k=1,nkn
+	  !  do l=1,nlvddi
+	  !    accum(l,k,ip) = min(accum(l,k,ip),cv3(l,k))
+	  !  end do
+	  !end do
 	else if( mode == 4 ) then
-	  do k=1,nkn
-	    do l=1,nlvddi
-	      accum(l,k,ip) = max(accum(l,k,ip),cv3(l,k))
-	    end do
-	  end do
+	  accum(:,:,ip) = max(accum(:,:,ip),cv3(:,:))
+	  !do k=1,nkn
+	  !  do l=1,nlvddi
+	  !    accum(l,k,ip) = max(accum(l,k,ip),cv3(l,k))
+	  !  end do
+	  !end do
 	else if( mode == 5 ) then
 	  accum(:,:,ip) = accum(:,:,ip) + cv3(:,:)
 	  std(:,:,1,ip) = std(:,:,1,ip) + cv3(:,:)**2

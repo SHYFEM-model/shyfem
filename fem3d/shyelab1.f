@@ -24,6 +24,7 @@
 	use clo
 	use elabutil
 	use shyfile
+	use shyutil
 
         use basin
         use mod_depth
@@ -40,16 +41,9 @@
 	real, allocatable :: cv2(:)
 	real, allocatable :: cv3(:,:)
 	real, allocatable :: cv3all(:,:,:)
-	real, allocatable :: vol3(:,:)
 
-	real, allocatable :: znv(:)
-	real, allocatable :: zenv(:,:)
-
-	integer, allocatable :: ivars(:)
-
-	integer, allocatable :: naccu(:)
-	double precision, allocatable :: accum(:,:,:)
-	double precision, allocatable :: std(:,:,:,:)
+	integer, allocatable :: ivars(:,:)
+	integer, allocatable :: il(:)
 
 	real, allocatable :: hl(:)
 
@@ -61,13 +55,13 @@
 	!integer it,itvar,itnew,itold,itstart
 	integer it
 	integer ivar,iaux
-	integer i,j,l,k,lmax,node
-	integer ip,nb,naccum
+	integer iv,j,l,k,lmax,node
+	integer ip,nb
 	integer ifile,ftype
 	integer id,idout,idold
-	integer n,m,nndim
+	integer n,m,nndim,nn
+	integer naccum
 	character*80 title,name,file
-	character*20 dline
 	character*80 basnam,simnam
 	real rnull
 	real cmin,cmax,cmed,vtot
@@ -88,6 +82,7 @@
 	rnull=0.
 	rnull=-1.
 	bopen = .false.
+	bzeta = .false.		!file has zeta information
 
 	!--------------------------------------------------------------
 	! set command line parameters
@@ -111,30 +106,41 @@
 	call shy_get_params(id,nkn,nel,npr,nlv,nvar)
 	call shy_get_ftype(id,ftype)
 
-	if( ftype < 1 .or. ftype > 2 ) goto 76	!relax later
-	nndim = nkn
-	if( ftype == 1 ) nndim = 3*nel	!needed for zenv
+	if( ftype == 1 ) then		!OUS
+	  if( nvar /= 4 ) goto 71
+	  nndim = 3*nel
+	  allocate(il(nel))
+	  il = ilhv
+	else if( ftype == 2 ) then	!NOS
+	  nndim = nkn
+	  allocate(il(nkn))
+	  il = ilhkv
+	else
+	  goto 76	!relax later
+	end if
 
 	call shy_info(id)
 
         call basin_init(nkn,nel)
         call levels_init(nkn,nel,nlv)
         call mod_depth_init(nkn,nel)
+	call set_ev
 	call shy_copy_basin_from_shy(id)
 	call shy_copy_levels_from_shy(id)
 
 	allocate(cv2(nndim))
 	allocate(cv3(nlv,nndim))
-	allocate(vol3(nlv,nndim))
-	allocate(cv3all(nlv,nndim,nvar))
+	allocate(cv3all(nlv,nndim,0:nvar))
+
         allocate(hl(nlv))
-	allocate(ivars(nvar))
+	allocate(ivars(4,nvar))
+
+	call shyutil_init(nkn,nel,nlv)
 
 	call init_sigma_info(nlv,hlv)
 
+	call shy_make_area
 	call outfile_make_depth(nkn,nel,nen3v,hm3v,hev,hkv)
-	call init_volume(nlvdi,nkn,nel,nlv,nen3v,ilhkv
-     +                          ,hlv,hev,hl,vol3)
 
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
 
@@ -151,21 +157,13 @@
 	! averaging
 	!--------------------------------------------------------------
 
-	call elabutil_set_averaging(nvar)
+	call elabutil_set_averaging(nvar)	!sets btrans
 
 	if( btrans ) then
-	  allocate(naccu(istep))
-	  allocate(accum(nlvdi,nndim,istep))
-	  allocate(std(nlvdi,nndim,16,istep))	!also used for directions
+	  call shyutil_init_accum(nlvdi,nndim,nvar,istep)
 	else
-	  allocate(naccu(1))
-	  allocate(accum(1,1,1))
-	  allocate(std(1,1,1,1))	!also used for directions
+	  call shyutil_init_accum(1,1,1,1)
 	end if
-	naccum = 0
-	naccu = 0
-	accum = 0.
-	std = 0.
 
 	!write(6,*) 'mode: ',mode,ifreq,istep
 
@@ -200,12 +198,13 @@
 	call fem_file_convert_time(datetime,dtime,atime)
 
 	cv3 = 0.
+	cv3all = 0.
 
 	do
 
 	 atold = atime
 
-	 call read_records(id,dtime,nvar,nndim,ivars,nlvdi
+	 call read_records(id,dtime,nvar,nndim,nlvdi,ivars
      +				,cv3,cv3all,ierr)
 
          if(ierr.ne.0) then	!EOF - see if we have to read another file
@@ -221,7 +220,7 @@
 	   cycle
 	 end if
 
-	 nread=nread+nvar
+	 nread = nread + nvar
 	 nrec = nrec + 1
 	 call fem_file_convert_time(datetime,dtime,atime)
 
@@ -231,46 +230,40 @@
 
 	 if( .not. elabutil_check_time_a(atime,atnew,atold) ) cycle
 
-	 do i=1,nvar
+	 call shy_make_zeta(ftype)
+	 call shy_make_volume
 
-	  ivar = ivars(i)
-	  cv3(:,:) = cv3all(:,:,i)
+	 do iv=1,nvar
+
+	  ivar = ivars(4,iv)
+	  lmax = ivars(3,iv)
+	  nn = ivars(1,iv) * ivars(2,iv)
+
+	  cv3(:,:) = cv3all(:,:,iv)
 
 	  nelab=nelab+1
 
 	  if( .not. bquiet ) then
-	    dline = ' '
-	    !if( bdate ) call dtsgf(it,dline)
-	    if( bdate ) call dts_format_abs_time(atime,dline)
-	    write(6,*) 'time : ',dtime,' ',dline,'  ivar : ',ivar
+	    call shy_write_time(bdate,dtime,atime,ivar)
 	  end if
 
 	  if( bwrite ) then
-	    do l=1,nlv
-	      do k=1,nkn
-	        cv2(k)=cv3(l,k)
-	        if( l .gt. ilhkv(k) ) cv2(k) = rnull
-	      end do
-	      call mimar(cv2,nkn,cmin,cmax,rnull)
-              call aver(cv2,nkn,cmed,rnull)
-              call check1Dr(nkn,cv2,0.,-1.,"NaN check","cv2")
-	      write(6,*) 'l,min,max,aver : ',l,cmin,cmax,cmed
-	    end do
+	    call shy_write_min_max(nlvdi,nn,lmax,cv3)
 	  end if
 
 	  if( btrans ) then
-	    call nos_time_aver(mode,i,ifreq,istep,nkn,nlvdi
-     +				,naccu,accum,std,threshold,cv3,boutput)
+	    call shy_time_aver(mode,iv,nrec,ifreq,istep,nndim
+     +			,ivars,threshold,cv3,boutput)
 	  end if
 
 	  if( baverbas ) then
-	    call make_aver(nlvdi,nkn,ilhkv,cv3,vol3
+	    call shy_make_aver(ivars(:,iv),nndim,cv3
      +                          ,cmin,cmax,cmed,vtot)
 	    !call write_aver(it,ivar,cmin,cmax,cmed,vtot)
 	  end if
 
 	  if( b2d ) then
-	    call make_vert_aver(nlvdi,nkn,ilhkv,cv3,vol3,cv2)
+	    call shy_make_vert_aver(ivars(:,iv),nndim,cv3,cv2)
 	  end if
 
 	  if( bsplit ) then
@@ -309,7 +302,7 @@
 	if( btrans ) then
 	  !write(6,*) 'istep,naccu: ',istep,naccu
 	  do ip=1,istep
-	    naccum = naccu(ip)
+	    naccum = naccu(iv,ip)
 	    !write(6,*) 'naccum: ',naccum
 	    if( naccum > 0 ) then
 	      nwrite = nwrite + 1
@@ -359,6 +352,10 @@
 !--------------------------------------------------------------
 
 	stop
+   71	continue
+	write(6,*) 'ftype = ',ftype,'  nvar = ',nvar
+	write(6,*) 'nvar should be 4'
+	stop 'error stop shyelab: ftype,nvar'
    74	continue
 	stop 'error stop shyelab: general error...'
    75	continue
@@ -366,14 +363,14 @@
 	write(6,*) 'file = ',trim(file)
 	stop 'error stop shyelab: writing header'
    76	continue
-	write(6,*) 'ftype = ',ftype,'  expecting ',2
+	write(6,*) 'ftype = ',ftype,'  expecting 1 or 2'
 	stop 'error stop shyelab: ftype'
    77	continue
 	write(6,*) 'error reading header, ierr = ',ierr
 	write(6,*) 'file = ',trim(file)
 	stop 'error stop shyelab: reading header'
    85	continue
-	write(6,*) 'dtime,dtvar,i,ivar,nvar: ',dtime,dtvar,i,ivar,nvar
+	write(6,*) 'dtime,dtvar,iv,ivar,nvar: ',dtime,dtvar,iv,ivar,nvar
 	stop 'error stop shyelab: time mismatch'
    92	continue
 	write(6,*) 'incompatible basin: '
@@ -383,6 +380,51 @@
    99	continue
 	write(6,*) 'error writing to file unit: ',nb
 	stop 'error stop shyelab: write error'
+	end
+
+!***************************************************************
+!***************************************************************
+!***************************************************************
+
+	subroutine shy_write_time(bdate,dtime,atime,ivar)
+
+	implicit none
+
+	logical bdate
+	double precision dtime,atime
+	integer ivar
+
+	character*20 dline
+
+	dline = ' '
+	!if( bdate ) call dtsgf(it,dline)
+	if( bdate ) call dts_format_abs_time(atime,dline)
+	write(6,*) 'time : ',dtime,' ',dline,'  ivar : ',ivar
+
+	end
+
+!***************************************************************
+
+	subroutine shy_write_min_max(nlvdi,nn,lmax,cv3)
+
+	implicit none
+
+	integer nlvdi,nn,lmax
+	real cv3(nlvdi,nn)
+
+	integer l
+	real rnull
+	real cmin,cmax,cmed
+	real cv2(nn)
+
+	do l=1,lmax
+	  cv2=cv3(l,:)
+	  call mimar(cv2,nn,cmin,cmax,rnull)
+          call aver(cv2,nn,cmed,rnull)
+          call check1Dr(nn,cv2,0.,-1.,"NaN check","cv2")
+	  write(6,*) 'l,min,max,aver : ',l,cmin,cmax,cmed
+	end do
+
 	end
 
 !***************************************************************
@@ -465,48 +507,71 @@
 	end 
 
 !***************************************************************
+!***************************************************************
+!***************************************************************
 
-	subroutine read_records(id,dtime,nvar,nndim,ivars,nlvddi
-     +				,cv3,cv3all,ierr)
+	subroutine read_records(id,dtime,nvar,nndim,nlvddi
+     +				,ivars,cv3,cv3all,ierr)
 
 	use elabutil
 	use shyfile
+	use shyutil
 
 	implicit none
 
 	integer id
 	double precision dtime
 	integer nvar,nndim
-	integer ivars(nvar)
 	integer nlvddi
+	integer nkn,nel
+	integer ivars(4,nvar)
 	real cv3(nlvddi,nndim)
-	real cv3all(nlvddi,nndim,nvar)
+	real cv3all(nlvddi,nndim,0:nvar)
 	integer ierr
 
-	integer idims(3,nvar)
 	integer nexp
 
-	integer i
+	integer iv
 	integer ivar,n,m,lmax
+	logical bfirst
 	double precision dtvar
 
-	do i=1,nvar
+	shy_znv = 0.
+	shy_zenv = 0.
+
+	iv = 0
+	bfirst = .true.
+	bzeta = .false.
+
+	do
+	  iv = iv + 1
+	  if( iv > nvar ) exit
 	  call shy_read_record(id,dtime,ivar,n,m,lmax,nlvddi,cv3,ierr)
 	  nexp = n * m
-	  idims(1,i) = n
-	  idims(2,i) = m
-	  idims(3,i) = lmax
+	  bzeta = ivar == -1
+	  if( bzeta ) iv = iv - 1
+	  ivars(1,iv) = n
+	  ivars(2,iv) = m
+	  ivars(3,iv) = lmax
 	  if( nexp > nndim ) goto 74
 	  if( lmax > nlvddi ) goto 74
           if( ierr .gt. 0 ) goto 75
           if( ierr .ne. 0 ) exit
-	  if( i == 1 ) dtvar = dtime
+	  if( bfirst ) dtvar = dtime
 	  if( dtvar /= dtime ) goto 85
-	  ivars(i) = ivar
-	  cv3all(:,:,i) = cv3(:,:) * fact
+	  ivars(4,iv) = ivar
+	  cv3all(:,:,iv) = cv3(:,:) * fact
+	  if( abs(ivar) == 1 ) then		! water level
+	    if( ivar == -1 .or. iv == 1 ) then
+	      shy_znv = cv3(1,1:n)
+	    else
+	      !zenv = cv3(1,1:3*n)
+	      shy_zenv = reshape(cv3(1,1:3*n),(/3,n/))	!FIXME
+	    end if
+	  end if
 	end do
 
-	if( ierr /= 0 .and. i .ne. 1 ) goto 76
+	if( ierr /= 0 .and. iv .ne. 1 ) goto 76
 
 	return
    74	continue
@@ -519,118 +584,12 @@
         write(6,*) 'end of file between variables'
 	stop 'error stop shyelab: EOF unexpected'
    85	continue
-	write(6,*) 'dtime,dtvar,i,ivar,nvar: ',dtime,dtvar,i,ivar,nvar
+	write(6,*) 'dtime,dtvar,iv,ivar,nvar: ',dtime,dtvar,iv,ivar,nvar
 	stop 'error stop shyelab: time mismatch'
 	end
 
 !***************************************************************
 !***************************************************************
-!***************************************************************
-
-	subroutine nos_time_aver0(mode,nread,ifreq,istep,nkn,nlvddi
-     +				,naccu,accum,std,threshold,cv3,bout)
-
-! mode:  1:aver  2:sum  3:min  4:max  5:std  6:rms  7:thres  8:averdir
-!
-! mode negative: only transform, do not accumulate
-
-	implicit none
-
-	integer mode
-	integer nread,ifreq,istep
-	integer nkn,nlvddi
-	integer naccu(istep)
-	double precision accum(nlvddi,nkn,istep)
-	double precision std(nlvddi,nkn,16,istep)
-	double precision threshold
-	real cv3(nlvddi,nkn)
-	logical bout
-
-	integer ip,naccum,mmode
-	integer k,l,id,idmax
-	double precision dmax
-
-	if( mode .eq. 0 ) return
-
-	bout = .false.
-	ip = mod(nread,istep)
-	if( ip .eq. 0 ) ip = istep
-
-	!write(6,*) 'ip: ',ip,istep,nread,mode
-
-	if( mode == 1 .or. mode == 2 ) then
-	  accum(:,:,ip) = accum(:,:,ip) + cv3(:,:)
-	else if( mode == 3 ) then
-	  do k=1,nkn
-	    do l=1,nlvddi
-	      accum(l,k,ip) = min(accum(l,k,ip),cv3(l,k))
-	    end do
-	  end do
-	else if( mode == 4 ) then
-	  do k=1,nkn
-	    do l=1,nlvddi
-	      accum(l,k,ip) = max(accum(l,k,ip),cv3(l,k))
-	    end do
-	  end do
-	else if( mode == 5 ) then
-	  accum(:,:,ip) = accum(:,:,ip) + cv3(:,:)
-	  std(:,:,1,ip) = std(:,:,1,ip) + cv3(:,:)**2
-	else if( mode == 6 ) then
-	  accum(:,:,ip) = accum(:,:,ip) + cv3(:,:)**2
-	else if( mode == 7 ) then
-	  where( cv3(:,:) >= threshold )
-	    accum(:,:,ip) = accum(:,:,ip) + 1.
-	  end where
-	else if( mode == 8 ) then
-	  do k=1,nkn
-	    do l=1,nlvddi
-	      id = nint( cv3(l,k)/22.5 )
-	      if( id == 0 ) id = 16
-	      if( id < 0 .or. id > 16 ) stop 'error stop: direction'
-	      std(l,k,id,ip) = std(l,k,id,ip) + 1.
-	    end do
-	  end do
-	end if
-
-	if( mode > 0 ) naccu(ip) = naccu(ip) + 1
-	!write(6,*) '... ',ifreq,mode,ip,istep,naccu(ip)
-
-	if( naccu(ip) == ifreq .or. mode < 0 ) then	!here ip == 1
-	  naccum = max(1,naccu(ip))
-	  mmode = abs(mode)
-	  if( mmode == 3 ) naccum = 1			!min
-	  if( mmode == 4 ) naccum = 1			!max
-	  if( mmode == 7 ) naccum = 1			!threshold
-	  if( naccum > 0 ) cv3(:,:) = accum(:,:,ip)/naccum
-	  if( mmode == 5 ) then
-	    cv3(:,:) = sqrt( std(:,:,1,ip)/naccum - cv3(:,:)**2 )
-	  else if( mmode == 6 ) then
-	    cv3(:,:) = sqrt( cv3(:,:) )
-	  else if( mmode == 8 ) then
-	    do k=1,nkn
-	      do l=1,nlvddi
-		dmax = 0.
-		idmax = 0
-	        do id=1,16
-		  if( std(l,k,id,ip) > dmax ) then
-		    idmax = id
-		    dmax = std(l,k,id,ip)
-		  end if
-		end do
-		if( idmax == 16 ) idmax = 0
-		cv3(l,k) = idmax * 22.5
-	      end do
-	    end do
-	  end if
-	  write(6,*) 'averaging: ',ip,naccum,naccu(ip)
-	  bout = .true.
-	  naccu(ip) = 0
-	  accum(:,:,ip) = 0.
-	  std(:,:,:,ip) = 0.
-	end if
-
-	end
-
 !***************************************************************
 
         subroutine get_split_iu0(ndim,iu,ivar,nin,ilhkv,hlv,hev,nb)

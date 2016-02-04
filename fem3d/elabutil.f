@@ -760,6 +760,31 @@ c rnull         invalid value
 
 c***************************************************************
 
+        subroutine shy_write_aver(dtime,ivar,cmin,cmax,cmed,vtot)
+
+c writes basin average to file
+
+        implicit none
+
+        double precision dtime
+        integer ivar
+        real cmin,cmax,cmed,vtot
+
+        real totmass
+
+        totmass = cmed * vtot
+
+        write(6,1234) dtime,ivar,cmin,cmed,cmax,totmass
+        write(100+ivar,1235) dtime,cmin,cmed,cmax,totmass
+        write(100,'(i10,e14.6)') dtime,vtot
+
+ 1234   format(f15.2,i10,3f12.4,e14.6)
+ 1235   format(f15.2,3f12.4,e14.6)
+ 1236   format(f15.2,e14.6)
+        end
+
+c***************************************************************
+
         subroutine write_aver(it,ivar,cmin,cmax,cmed,vtot)
 
 c writes basin average to file
