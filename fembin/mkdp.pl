@@ -5,6 +5,7 @@
 # handles recursive includes
 #
 # 26.02.2015	ggu	adapted for f90 files
+# 04.01.2016	ggu	sort targets and dependencies alphabetically
 #
 #------------------------------------------------------
 
@@ -135,7 +136,9 @@ sub change_makefile {
   print NEW "$mkdp\n";
   print NEW "\n";
 
-  $ra = fit_line($ra);
+  #$ra = fit_line($ra);
+  my @list = sort(@$ra);
+  $ra = fit_line(\@list);
 
   foreach my $line (@$ra) {
     print NEW "$line\n";
@@ -154,7 +157,8 @@ sub write_inc {
 
   my ($file,$rlist) = @_;
   
-  my @list = keys %$rlist;
+  #my @list = keys %$rlist;
+  my @list = sort keys %$rlist;
 
   return unless scalar @list;
 
