@@ -14,7 +14,7 @@ fi
 for file
 do
 
-echo "$file"
+#echo "$file"
 
 ##################### extract bounding box information
 

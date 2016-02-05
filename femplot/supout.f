@@ -84,10 +84,32 @@ c resets mask data structure
 
 	implicit none
 
-	include 'param.h'
+        bwater = .true.
+        bkwater = .true.
 
-        call init_dry_mask(bwater)
-	call make_dry_node_mask(bwater,bkwater)
+        end
+
+c******************************************************
+
+        subroutine adjust_no_plot_area
+
+        use basin
+	use mod_plot2d
+
+        implicit none
+
+        integer ie
+        integer ianopl
+	real getpar
+
+        ianopl = nint(getpar('ianopl'))
+	if( ianopl < 0 ) return
+
+        write(6,*) 'applying no plot mask for area code = ',ianopl
+
+        do ie=1,nel
+          if( iarv(ie) == ianopl ) bwater(ie) = .false.
+        end do
 
         end
 
@@ -102,8 +124,6 @@ c prepares simulation for use - computes wet and dry areas
 	use levels
 
 	implicit none
-
-	include 'param.h'
 
 	logical bshowdry
 	integer level
@@ -158,6 +178,10 @@ c set bshowdry = .false. if you want to plot all areas
 
 	end if
 
+        call adjust_no_plot_area
+	call make_dry_node_mask(bwater,bkwater)	!copy elem to node mask
+        call info_dry_mask(bwater,bkwater)
+
 c---------------------------------------------------
 c end of routine
 c---------------------------------------------------
@@ -176,10 +200,6 @@ c******************************************************
 
 	logical bkw(1)
 	real hdry
-
-	include 'param.h'
-
-
 
 	integer k,idry
 	real vol,area,h
@@ -225,10 +245,6 @@ c	znv,utlnv,vtlnv 	-> set zenv, usnv, vsnv
 	use basin
 
 	implicit none
-
-	include 'param.h'
-
-
 
 	integer k,ie,ii,l,lmax
 	real utot,vtot
@@ -282,9 +298,6 @@ c	xv,zenv,usnv,vsnv -> set znv
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
-
 
 	integer k,ie
 
@@ -349,10 +362,7 @@ c******************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	include 'simul.h'
-
 	include 'supout.h'
 
 	integer nknaux,nelaux,nlvaux
@@ -414,10 +424,7 @@ c******************************************************
 	logical wavenext
 	integer it
 
-	include 'param.h'
 	include 'supout.h'
-
-
 
         integer ierr,nlvddi,ivar
 	real v1v(nkn)
@@ -582,12 +589,8 @@ c opens OUS file and reads header
 
 	implicit none
 
-	include 'param.h'
-
 	include 'supout.h'
-
 	include 'simul.h'
-
 
 	character*80 file
 
@@ -662,8 +665,6 @@ c reads next OUS record - is true if a record has been read, false if EOF
 
 	logical ousnext		!true if record read, flase if EOF
 	integer it		!time of record
-
-        include 'param.h'
 
 	include 'supout.h'
 
@@ -751,14 +752,10 @@ c opens NOS file and reads header
 
 	implicit none
 
-	include 'param.h'
-
 	character*(*) type
 
 	include 'supout.h'
-
 	include 'simul.h'
-
 
 	character*80 file
 
@@ -776,7 +773,11 @@ c initialize routines
 
 c open file
 
-        call open_nos_type('.nos','old',nunit)
+	if( type /= ' ' ) then
+          call open_nos_type(type,'old',nunit)
+	else
+          call open_nos_type('.nos','old',nunit)
+	end if
 
 	call peek_nos_header(nunit,nknnos,nelnos,nlvnos,nvar)
 	if( nkn .ne. nknnos ) goto 99
@@ -831,7 +832,6 @@ c reads next NOS record - is true if a record has been read, false if EOF
 	integer nlvddi		!dimension of vertical coordinate
 	real array(nlvddi,1)	!values for variable
 
-	include 'param.h'
 	include 'supout.h'
 
 	integer ierr
@@ -940,12 +940,8 @@ c opens FVL file and reads header
 
 	character*(*) type
 
-        include 'param.h'
-
 	include 'supout.h'
-
 	include 'simul.h'
-
 
         real hlv1(nlv), hev1(nel)
         integer ilhkv1(nkn)
@@ -1040,7 +1036,6 @@ c reads next FVL record
 	integer nlvddi		!dimension of vertical coordinate
 	real array(nlvddi,1)	!values for variable
 
-	include 'param.h'
 	include 'supout.h'
 
 	integer ierr
@@ -1158,11 +1153,8 @@ c opens EOS file and reads header
 
 	character*(*) type
 
-	include 'param.h'
 	include 'supout.h'
-
 	include 'simul.h'
-
 
 	character*80 file
 
@@ -1250,7 +1242,6 @@ c reads next EOS record - is true if a record has been read, false if EOF
 	integer nlvddi		!dimension of vertical coordinate
 	real array(nlvddi,1)	!values for variable
 
-	include 'param.h'
 	include 'supout.h'
 
 	integer ierr
@@ -1295,9 +1286,6 @@ c computes max level at nodes from elements
 
 	implicit none
 
-
-	include 'param.h'
-
 	call level_e2k(nkn,nel,nen3v,ilhv,ilhkv)
 
 	end
@@ -1312,9 +1300,6 @@ c computes level at elems from nodes (not exact)
 	use basin
 
 	implicit none
-
-
-	include 'param.h'
 
 	call level_k2e(nkn,nel,nen3v,ilhkv,ilhv)
 
@@ -1434,11 +1419,8 @@ c opens FEM file and reads header
 
 	character*(*) type
 
-	include 'param.h'
 	include 'supout.h'
-
 	include 'simul.h'
-
 
 	character*80 file
 
@@ -1558,7 +1540,6 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	integer nkn			!number of points needed
 	real array(nlvddi,nkn,1)	!values for variable
 
-	include 'param.h'
 	include 'supout.h'
 
 	logical bfound,bformat,breg,bwind,bvel

@@ -34,6 +34,7 @@ FullUsage()
   echo "  -h|-help         this help"
   echo "  -batch           run in batch mode"
   echo "  -exe executable  use executable to run model (default shyfem)"
+  echo "  -num n           run on processor n with numactl"
   echo "  -time time-date  run model at given time-date"
   echo ""
   echo "   time     :  HH:MM, midnight, noon, 1am tomorrow"
@@ -85,6 +86,7 @@ do
         -batch)         batch="YES";;
         -exe)           hpfile=$2; shift;;
         -time)          attime=$2; shift;;
+        -num)           num=$2; shift;;			#processore number
         -h|-help)       FullUsage; exit 0;;
         -*)             ErrorOption $1; exit 1;;
         *)              break;;
@@ -138,12 +140,20 @@ logfile=$simulation.log
 
 ######################################################## echo names to terminal
 
+prefix=""
+if [ "$num" != "" ]; then
+  prefix="numactl --cpunodebind=$num --membind=$num"
+fi
+
+######################################################## echo names to terminal
+
 echo " "
 echo "FEM routine          : " $hpfile
 echo "input parameter file : " $strfile
 echo "name of simulation   : " $simulation
 echo "name of log file     : " $logfile
 echo "time                 : " $attime
+echo "num                  : " $prefix
 echo " "
 
 ##################################################### write to overall log file
@@ -169,7 +179,8 @@ fi
   if [ $batch = "NO" ]; then
     tmpfil=$tmpdir/hpat/hpat.$aux.$$
     echo "cd $actdir" > $tmpfil
-    echo "nohup $fembat $tmpfil $hpfile $strfile > $logfile 2>&1 &" >> $tmpfil
+    command="$prefix nohup $fembat $tmpfil $hpfile $strfile"
+    echo "$command > $logfile 2>&1 &" >> $tmpfil
 
     $at -f $tmpfil $attime > /dev/null 2>&1
 
@@ -179,7 +190,9 @@ fi
 
     tmpfil=$tmpdir/hpbatch/hpbatch.$aux.$$
     echo "cd $actdir" > $tmpfil
-    echo "nohup $fembat $tmpfil $hpfile $strfile > $logfile 2>&1 &" >> $tmpfil
+    command="$prefix nohup $fembat $tmpfil $hpfile $strfile"
+    echo "$command > $logfile 2>&1 &" >> $tmpfil
+    #echo "nohup $fembat $tmpfil $hpfile $strfile > $logfile 2>&1 &" >> $tmpfil
 
     $fembatch
 

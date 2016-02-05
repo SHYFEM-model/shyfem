@@ -169,6 +169,10 @@ c--------------------------------------------------------------
 	!--------------------------------------------------------------
 
 	call elabutil_set_averaging(nvar)
+        !write(6,*) 'ggu: ',ifreq,istep
+        if( btrans .and. nvar > 1 ) then
+          stop 'error stop noselab: only one variable with averaging'
+        end if
 
 	if( btrans ) then
 	  allocate(naccu(istep))
@@ -291,7 +295,7 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( btrans ) then
-	    call nos_time_aver(mode,i,ifreq,istep,nkn,nlvdi
+	    call nos_time_aver(mode,nread,ifreq,istep,nkn,nlvdi
      +				,naccu,accum,std,threshold,cv3,boutput)
 	  end if
 
@@ -326,6 +330,10 @@ c--------------------------------------------------------------
 	      node = nodes(j)
 	      call write_node(j,node,cv3,it,ivar)
 	    end do
+	    if( .not. b2d ) then	!still to average
+	      call make_vert_aver(nlvdi,nkn,ilhkv,cv3,vol3,cv2)
+	    end if
+	    call write_2d_all_nodes(nnodes,nodes,cv2,it,ivar)
 	  end if
 
 	 end do		!loop on ivar
@@ -346,7 +354,7 @@ c--------------------------------------------------------------
 	    !write(6,*) 'naccum: ',naccum
 	    if( naccum > 0 ) then
 	      nwrite = nwrite + 1
-	      write(6,*) 'final aver: ',ip,naccum
+	      !write(6,*) 'final aver: ',ip,naccum
 	      call nos_time_aver(-mode,ip,ifreq,istep,nkn,nlvdi
      +				,naccu,accum,std,threshold,cv3,boutput)
 	      if( bsumvar ) ivar = 30
@@ -439,7 +447,7 @@ c mode negative: only transform, do not accumulate
 	ip = mod(nread,istep)
 	if( ip .eq. 0 ) ip = istep
 
-	!write(6,*) 'ip: ',ip,istep,nread,mode
+	!write(6,*) 'ip1: ',mode,ifreq,istep,nread,ip,naccu(ip)
 
 	if( mode == 1 .or. mode == 2 ) then
 	  accum(:,:,ip) = accum(:,:,ip) + cv3(:,:)
@@ -478,7 +486,7 @@ c mode negative: only transform, do not accumulate
 	end if
 
 	if( mode > 0 ) naccu(ip) = naccu(ip) + 1
-	!write(6,*) '... ',ifreq,mode,ip,istep,naccu(ip)
+	!write(6,*) 'ip2: ',mode,ifreq,istep,nread,ip,naccu(ip)
 
 	if( naccu(ip) == ifreq .or. mode < 0 ) then	!here ip == 1
 	  naccum = max(1,naccu(ip))

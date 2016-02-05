@@ -16,6 +16,8 @@ if [ $# -ne 3 ]; then
 	exit 1
 fi
 
+. $HOME/.bash_profile		# for curonian
+
 tmpfile=$1
 program=$2
 strfile=$3
@@ -67,6 +69,11 @@ echo " "
 echo "FEM routine          :  $program"
 echo "input parameter file :  $strfile"
 echo " "
+echo "compiler version     :"
+$FEMDIR/femcheck/identify_compiler.sh
+echo " "
+
+#strings $program | grep -i "intel fortran" | head -1
 
 #---------------------------------------------------
 # run program

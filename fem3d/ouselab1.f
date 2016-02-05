@@ -47,7 +47,7 @@ c elaborates ous file
 
 	real, allocatable :: hl(:)
 
-	integer nread,nelab,nrec,nin
+	integer nread,nelab,nrec,nin,nwrite
 	integer nndim,nvar,iv
 	integer nvers
 	integer nknous,nelous
@@ -55,6 +55,7 @@ c elaborates ous file
 	integer ierr
 	integer it,ivar,itvar,itnew,itold,iaux
 	integer i,l,k,lmax
+	integer iano,ks
 	integer ip,nb,naccum
 	character*80 title,name
 	character*20 dline
@@ -62,19 +63,23 @@ c elaborates ous file
 	real rnull
 	real zmin,zmax
 	real umin,umax,vmin,vmax
-	real volume
+	real volume,area
 
 	integer iapini
 	integer ifem_open_file
 
 c--------------------------------------------------------------
 
+        nwrite = 0
 	nread=0
 	nelab=0
 	nrec=0
 	rnull=0.
 	rnull=-999.
 	bopen = .false.
+
+	ks = -1			!write special node
+	iano = -1		!no computation for this area code
 
 c--------------------------------------------------------------
 c set command line parameters
@@ -199,6 +204,7 @@ c--------------------------------------------------------------
 c loop on data
 c--------------------------------------------------------------
 
+	area = 0.
 	volume = 0.
 	it = 0
 	if( .not. bquiet ) write(6,*)
@@ -207,7 +213,7 @@ c--------------------------------------------------------------
 
 	  itold = it
 
-	  call new_read_record(nb,it,nlvdi,nndim,nvar,vars,ierr)
+	  call new_read_record(nin,it,nlvdi,nndim,nvar,vars,ierr)
 
           if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
           if(ierr.ne.0) exit
@@ -237,11 +243,14 @@ c--------------------------------------------------------------
             call comp_vel2d(nel,hev,zenv,unv,vnv,u2v,v2v
      +                          ,umin,vmin,umax,vmax)
             !call compute_volume(nel,zenv,hev,volume)
+            call compute_volume_ia(iano,zenv,volume,area)
 
             write(6,*) 'zmin/zmax : ',zmin,zmax
             write(6,*) 'umin/umax : ',umin,umax
             write(6,*) 'vmin/vmax : ',vmin,vmax
-            write(6,*) 'volume    : ',volume
+            write(6,*) 'volume    : ',volume,area
+
+	    if( ks > 0 ) write(666,*) it,znv(ks),volume,area
 
 	  end if
 
@@ -269,13 +278,15 @@ c--------------------------------------------------------------
 	    call velzeta2scal(nel,nkn,nlv,nlvdi,nen3v,ilhkv
      +				,zenv,uprv,vprv
      +				,zv,sv,dv)
-            call write_split(nin,nlvdi,ilhkv,hlv,hev,it,zv,sv,dv)
+            call write_split(nin,nlvdi,ilhkv,hlv,hev,it
+     +				,zv,sv,dv,uprv,vprv)
 	    cycle
 	  end if
 
 	  if( boutput ) then
 	    if( bverb ) write(6,*) 'writing to output: ',ivar
 	    if( bsumvar ) ivar = 30
+            nwrite = nwrite + 1
 	    if( b2d ) then
 	      call new_write_record(nb,it,1,nndim,nvar,vars2d,ierr)
 	    else
@@ -303,17 +314,19 @@ c--------------------------------------------------------------
 	  !write(6,*) 'istep,naccu: ',istep,naccu
 	  do ip=1,istep
 	   boutput = .false.
+           ierr = 0
 	   do iv=1,nvar
 	    naccum = naccu(iv,ip)
 	    !write(6,*) 'naccum: ',naccum
 	    if( naccum > 0 ) then
-	      write(6,*) 'final aver: ',ip,naccum
+	      !write(6,*) 'final aver: ',ip,naccum
 	      call shy_time_aver(-mode,iv,ip,ifreq,istep,nndim
      +                   ,idims(:,iv),threshold,vars(:,:,iv),boutput)
               if( ierr .ne. 0 ) goto 99
 	    end if
 	   end do
 	   if( boutput ) then
+            nwrite = nwrite + 1
 	    call new_write_record(nb,it,nlvdi,nndim,nvar,vars,ierr)
 	   end if
 	  end do
@@ -327,6 +340,7 @@ c--------------------------------------------------------------
 	write(6,*) nread,' total records read'
 	!write(6,*) nrec ,' unique time records read'
 	write(6,*) nelab,' records elaborated'
+	write(6,*) nwrite,' records written'
 	write(6,*)
 
 	if( boutput ) then
@@ -359,7 +373,8 @@ c***************************************************************
 
 c***************************************************************
 
-        subroutine write_split(nin,nlvddi,ilhkv,hlv,hev,it,zv,sv,dv)
+        subroutine write_split(nin,nlvddi,ilhkv,hlv,hev,it
+     +				,zv,sv,dv,uv,vv)
 
         implicit none
 
@@ -372,6 +387,8 @@ c***************************************************************
 	real zv(*)
 	real sv(nlvddi,*)
 	real dv(nlvddi,*)
+	real uv(nlvddi,*)
+	real vv(nlvddi,*)
 
         integer nkn,nel,nlv,nvar
         integer ierr
@@ -379,7 +396,7 @@ c***************************************************************
         character*80 name,title,femver
 
 	integer, save :: icall = 0
-	integer, save :: nz,ns,nd
+	integer, save :: nz,ns,nd,nu,nv
 
         if( icall == 0 ) then      !open file
           call ous_get_params(nin,nkn,nel,nlv)
@@ -404,9 +421,21 @@ c***************************************************************
 	  call nos_clone_params(nz,nd)
           call nos_set_params(nd,nkn,nel,nlv,1)
 
+          call open_nos_file('uvel','new',nu)
+          call nos_init(nu,0)
+	  call nos_clone_params(nz,nu)
+          call nos_set_params(nu,nkn,nel,nlv,1)
+
+          call open_nos_file('vvel','new',nv)
+          call nos_init(nv,0)
+	  call nos_clone_params(nz,nv)
+          call nos_set_params(nv,nkn,nel,nlv,1)
+
           call write_nos_header(nz,ilhkv,hlv,hev)
           call write_nos_header(ns,ilhkv,hlv,hev)
           call write_nos_header(nd,ilhkv,hlv,hev)
+          call write_nos_header(nu,ilhkv,hlv,hev)
+          call write_nos_header(nv,ilhkv,hlv,hev)
         end if
 
 	icall = icall + 1
@@ -414,6 +443,8 @@ c***************************************************************
 	call nos_write_record(nz,it,1,1,ilhkv,zv,ierr)
 	call nos_write_record(ns,it,6,nlvddi,ilhkv,sv,ierr)
 	call nos_write_record(nd,it,7,nlvddi,ilhkv,dv,ierr)
+	call nos_write_record(nd,it,2,nlvddi,ilhkv,uv,ierr)
+	call nos_write_record(nd,it,2,nlvddi,ilhkv,vv,ierr)
 
         end
 

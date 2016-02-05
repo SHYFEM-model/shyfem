@@ -46,6 +46,8 @@ FullUsage()
   echo ""
   echo "Available options:"
   echo "  -h|-help         this help"
+  echo "  -verbose         be verbose"
+  echo "  -quiet           be quiet"
   echo "  -split           split ps file into single pages"
   echo "  -pages range     extract single pages (range: 1,3,4-8)"
   echo "  -eps             convert ps files into eps files"
@@ -118,7 +120,7 @@ ReduceGif()
     base=`Basename $file`
     target=$base$newext
 
-    echo "reducing  $target"
+    [ $quiet = "NO" ] && echo "reducing  $target"
 
     #gifcrop -o $target > tmp.gif
     #[ $? -eq 0 ] && mv tmp.gif $target
@@ -141,7 +143,7 @@ Convert()
     source=$base$ext
     target=$base$newext
 
-    echo "$source  ->  $target"
+    [ $quiet = "NO" ] && echo "$source  ->  $target"
     #echo "options: $dpi $rotate $format"
 
     rotate=`RotateEps $source $ext`	# this rotates Landscape ps/eps files
@@ -164,7 +166,7 @@ ConvertPDF()
     source=$base$ext
     target=$base$newext
 
-    echo "$source  ->  $target"
+    [ $quiet = "NO" ] && echo "$source  ->  $target"
 
     epstopdf $source
   done
@@ -180,6 +182,8 @@ ConvertPDF()
 
 ######################################################### defaults
 
+verbose="NO"
+quiet="NO"
 split="NO"
 pages=""
 eps="NO"
@@ -195,6 +199,8 @@ dpi=""
 while [ -n "$1" ]
 do
    case $1 in
+	-quiet)		quiet="YES";;
+	-verbose)	verbose="YES";;
 	-split)		split="YES";;
 	-pages)		pages=$2; shift;;
 	-eps)		eps="YES";;
@@ -237,7 +243,7 @@ if [ $split = "YES" -o -n "$pages" ]; then
       parr -A -o $pages $file
     fi
     newfile=`ls -m $filename.[0-9]*.ps`
-    echo "$file -> $newfile"
+    [ $quiet = "NO" ] && echo "$file -> $newfile"
     newfiles="$newfiles $newfile"
   done
 else
@@ -246,7 +252,7 @@ fi
 
 newfiles=`echo $newfiles | sed -e 's/,/ /g' | sed -e 's/  */ /g'`
 
-echo "$newfiles"
+[ $verbose = "YES" ] && echo "$newfiles"
 
 ######################################################### look for 0 size files
 
@@ -272,7 +278,7 @@ if [ $eps = "YES" ]; then
     psfile=$basefile$ext
     epsfile=$basefile.eps
 
-    echo "$psfile  ->  $epsfile"
+    [ $quiet = "NO" ] && echo "$psfile  ->  $epsfile"
 
     #ps2eps $psfile -o$epsfile  2> /dev/null
     gps2eps $psfile > $epsfile

@@ -175,7 +175,6 @@ c parameter
 	double precision eps
 	parameter ( eps = 1.d-14 )
 c common
-	include 'param.h'
 	include 'reg.h'
 c local
 	integer i,j,ii,iii,ie,k,kn,iin
@@ -285,7 +284,6 @@ c parameter
 	double precision eps
 	parameter ( eps = 1.d-14 )
 c common
-	include 'param.h'
 	include 'reg.h'
 c local
 	integer i,j,ii,iii,ie,k,kn,iin
@@ -433,7 +431,6 @@ c parameter
 	double precision eps
 	parameter ( eps = 1.d-14 )
 c common
-	include 'param.h'
 c pxareg,pyareg         coordinates of lower left point of matrix
 c pxdreg,pydreg         grid size of matrix
 c pzlreg                value of z for land points
@@ -560,8 +557,6 @@ c interpolation 3d of fem values to regular grid using fm matrix
         integer nlv,nx,ny		!dimension of regular matrix
         real fm(4,nx,ny)		!interpolation matrix
         real am(nlv,nx,ny)		!interpolated values (return)
-
-	include 'param.h'
 
 	include 'reg.h'
 
@@ -811,8 +806,6 @@ c		> 0	flag found in interpolation data
 	real femval(np)		!interpolated values on fem grid (return)
 	integer ierr		!error code (return)
 
-	include 'param.h'
-
 	logical bextra,bout,bflag
 	integer k
 	integer imin,jmin
@@ -915,7 +908,6 @@ c arguments
 	real av(1)
 	real am(ip,jp)
 c common
-	include 'param.h'
 	include 'reg.h'
 c local
 	logical bextra
@@ -1070,7 +1062,6 @@ c arguments
 	real av(1)
 	real am(ip,jp)
 c common
-	include 'param.h'
 	include 'reg.h'
 c local
 c	integer i,j,ii,iii,ie,k,kn,iin
@@ -1144,11 +1135,9 @@ c bwater is elementwise mask:	true = water point
 	implicit none
 
 c arguments
-	logical bwater(1)
-	real zv(1)
+	logical bwater(nel)
+	real zv(nkn)
 	real href,hzoff
-c common
-	include 'param.h'
 c local
 	integer itot,itot1
 	integer ie,ii
@@ -1167,33 +1156,10 @@ c local
             if(zv(nen3v(ii,ie)).eq.zenv(ii,ie)) itot1=itot1+1
           end do
 
-          if(itot.ne.3.or.itot1.ne.3)  bwater(ie) = .false.
+          !if(itot.ne.3.or.itot1.ne.3)  bwater(ie) = .false.
+          if(itot.ne.3.and.itot1.ne.3)  bwater(ie) = .false.
 
         end do
-
-	end
-
-c******************************************************
-
-	subroutine init_dry_mask(bwater)
-
-c initializes mask for water points
-c
-c bwater is elementwise mask:	true = water point
-
-	use basin, only : nkn,nel,ngr,mbw
-
-	implicit none
-
-c arguments
-	logical bwater(1)
-c common
-c local
-	integer ie
-
-	do ie=1,nel
-	  bwater(ie) = .true.
-	end do
 
 	end
 
@@ -1210,10 +1176,9 @@ c bwater is elementwise mask:	true = water point
 	implicit none
 
 c arguments
-	logical bwater(1)
-	integer ilhv(1)
+	logical bwater(nel)
+	integer ilhv(nel)
 	integer level
-c common
 c local
 	integer ie,nedry
 
@@ -1226,7 +1191,7 @@ c local
 	  end if
 	end do
 
-	write(6,*) 'levelmask: no such level =',nedry,nel,level
+	write(6,*) 'level exist  (dry/wet/total): ',nedry,nel-nedry,nel
 
 	end
 
@@ -1243,20 +1208,16 @@ c bwater is elementwise mask:	true = water point
 	implicit none
 
 c arguments
-	logical bwater(1)
-	logical bkwater(1)
+	logical bwater(nel)
+	logical bkwater(nkn)
 c common
-	include 'param.h'
-c local
 	integer ie,ii,k
 	integer nndry,nedry
 
 	nndry = 0
 	nedry = 0
 
-	do k=1,nkn
-	  bkwater(k) = .false.
-	end do
+	bkwater = .false.
 
 	do ie=1,nel
 	  if( bwater(ie) ) then
@@ -1265,16 +1226,8 @@ c local
 	      bkwater(k) = .true.
 	    end do
 	  else
-	    nedry = nedry + 1
 	  end if
 	end do
-
-	do k=1,nkn
-	  if( .not. bkwater(k) ) nndry = nndry + 1
-	end do
-
-	write(6,*) 'make_dry_node_mask: dry elements =',nedry,nel
-	write(6,*) 'make_dry_node_mask: dry nodes    =',nndry,nkn
 
 	end
 
@@ -1291,19 +1244,13 @@ c bwater is elementwise mask:	true = water point
 	implicit none
 
 c arguments
-	logical bwater(1)
-	logical bkwater(1)
-c common
-	include 'param.h'
+	logical bwater(nel)
+	logical bkwater(nkn)
 c local
 	integer ie,ii,k
 	integer nedry
 
-	nedry = 0
-
-	do ie=1,nel
-	  bwater(ie) = .true.
-	end do
+        bwater = .true.
 
 	do ie=1,nel
 	  do ii=1,3
@@ -1312,12 +1259,32 @@ c local
 	      bwater(ie) = .false.
 	    end if
 	  end do
-	  if( .not. bwater(ie) ) nedry = nedry + 1
 	end do
 
-	write(6,*) 'make_dry_elem_mask: dry elements =',nedry,nel
-
 	end
+
+c******************************************************
+
+        subroutine info_dry_mask(bwater,bkwater)
+
+        use basin
+
+        implicit none
+
+	logical bwater(nel)
+	logical bkwater(nkn)
+        
+        integer nedry,nndry,newet,nnwet
+
+        newet = count(bwater)
+        nnwet = count(bkwater)
+        nedry = nel - newet
+        nndry = nkn - nnwet
+
+	write(6,*) 'dry elements (dry/wet/total): ',nedry,newet,nel
+	write(6,*) 'dry nodes    (dry/wet/total): ',nndry,nnwet,nkn
+
+        end
 
 c******************************************************
 c******************************************************
@@ -1516,8 +1483,6 @@ c uses data structure ev and ieltv
 
 	implicit none
 
-	include 'param.h'
-
 	integer ieold
 	real xp,yp
 	integer ielem	!element number on return
@@ -1706,8 +1671,6 @@ c checks if point (xp,yp) is in element ie
 	integer ie
 	real xp,yp
 
-	include 'param.h'
-
 	integer ii,k,in
 	real xmin,ymin,xmax,ymax
 	real x(3),y(3)
@@ -1749,8 +1712,6 @@ c returns x,y of vertices of element ie
 	integer ie
 	real x(3), y(3)
 
-	include 'param.h'
-
 	integer ii,k
 
 	do ii=1,3
@@ -1774,8 +1735,6 @@ c returns s at vertices of element ie
 	integer ie
 	real sv(1)
 	real s(3)
-
-	include 'param.h'
 
 	integer ii,k
 

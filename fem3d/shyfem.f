@@ -765,7 +765,8 @@ c*****************************************************************
 
 !$OMP SINGLE 
 
-!$OMP TASKGROUP
+!$OMP TASKWAIT
+!!!$OMP TASKGROUP
 
 !$OMP TASK 
 	
@@ -778,7 +779,8 @@ c*****************************************************************
 	 call tracer_compute
 	 !print *, "end tracer"
 !$OMP END TASK
-!$OMP END TASKGROUP	
+!!!$OMP END TASKGROUP	
+!$OMP TASKWAIT	
 !$OMP END SINGLE 
 
 !$OMP END PARALLEL 	

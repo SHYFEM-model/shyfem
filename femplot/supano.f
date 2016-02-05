@@ -119,12 +119,7 @@ c--------------------------------------------------------------
 	  call ptime_get_atime(atime)
 	  call dts_format_abs_time(atime,line)
 	  call dts_get_date(date,time)
-	write(6,*) '*****************************************'
-	write(6,*) '*****************************************'
-	write(6,*) date,time
-	write(6,*) atime,line(1:20)
-	write(6,*) '*****************************************'
-	write(6,*) '*****************************************'
+	write(6,*) 'time: ',date,time,atime,line(1:20)
 	else
 	  call makehm(it,line)    !makes time and date
 	end if

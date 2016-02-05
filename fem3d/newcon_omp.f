@@ -186,7 +186,8 @@ c----------------------------------------------------------------
 !$     nchunk = subset_el(i) / ( nthreads * 10 )
        nchunk = max(nchunk,1)
 
-!$OMP TASKGROUP 
+!$OMP TASKWAIT 
+!!!$OMP TASKGROUP 
        do jel=1,subset_el(i),nchunk
 
 !$OMP TASK FIRSTPRIVATE(jel,i) DEFAULT(NONE)
@@ -218,14 +219,16 @@ c----------------------------------------------------------------
 !$OMP END TASK
       end do
 
-!$OMP END TASKGROUP       
+!!!$OMP END TASKGROUP       
+!$OMP TASKWAIT       
 
        end do ! end loop over subset
        
 !$     nchunk = nkn / ( nthreads * 10 )
        nchunk = max(nchunk,1)
 
-!$OMP TASKGROUP
+!$OMP TASKWAIT
+!!!$OMP TASKGROUP
        do knod=1,nkn,nchunk
 !$OMP TASK FIRSTPRIVATE(knod) PRIVATE(k) DEFAULT(NONE)
 !$OMP& SHARED(cn,cdiag,clow,chigh,cn1,cbound,load,nchunk,
@@ -240,7 +243,8 @@ c----------------------------------------------------------------
 !$OMP END TASK 	      
 	end do
 
-!$OMP END TASKGROUP
+!!!$OMP END TASKGROUP
+!$OMP TASKWAIT       
 
 	!cn1 = 0.
 	!cn1 = cn

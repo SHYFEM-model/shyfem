@@ -228,6 +228,7 @@ c**************************************************************
 	integer id
 
 	id = para_get_id(name,' ')
+	!call para_info_id(id)
 	if( id == 0 ) then
 	  section = ' '
 	else
@@ -351,7 +352,9 @@ c**************************************************************
 	value = pentry(id)%value
 	string = pentry(id)%string
 
-	write(6,*) id,itype,trim(name),value,trim(string)
+	!write(6,*) id,itype,trim(name),value,trim(string)
+	write(6,1000) id,itype,trim(section),trim(name),value,trim(string)
+ 1000   format(2i4,2(1x,a),g14.6,1x,a)
 
 	end subroutine para_info_id
 

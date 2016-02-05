@@ -115,6 +115,7 @@ c 01.12.2014	ccf	wave parameters moved to subwave.f
 c 06.05.2015	ccf	new parameters itmoff and offlin
 c 29.09.2015	ggu	new boundary file surfvel
 c 29.09.2015	ggu	new initial file uvinit, new flgrst
+c 01.02.2016	ggu	some plot params shifted to para section (bbgray, etc.)
 c
 c************************************************************************
 
@@ -1613,6 +1614,30 @@ c			(Default 0)
 	call addpar('ioverl',0.)	!overlay in color
 	call addpar('inorm',0.)		!vertical velocity as overlay
 
+c The next parameters give the choice to selectively avoid to plot areas
+c of the basin and to apply different gray tones for the boundary and
+c net lines when plotting the basin.
+c Please remember that when working with gray tones the value should
+c be between 0 (black) and 1 (white).
+c
+c |ianopl|	Area code for which no plot has to be produced. Normally 
+c		the whole basin is plotted, but with this parameter some
+c		areas can be excluded. (Default -1)
+c		the bathymetry. (Default 0.8)
+c |bgray|	Gray value used for the finite element grid when plotting
+c		the bathymetry. (Default 0.8)
+c |bbgray|	Gray value used for the boundary of the finite element grid.
+c		(Default 0)
+c |bsgray|	Gray value used to plot the finite element grid over
+c		a scalar or velocity plot. This is basically useful
+c		for debugging reasons. The default is to not plot
+c		the grid (Default -1.0)
+
+        call addpar('ianopl',-1.)      !do not plot these areas
+	call addpar('bgray',0.8)       !gray value for bathymetry
+	call addpar('bbgray',0.0)      !gray value for boundary
+	call addpar('bsgray',-1.0)     !gray value for plotting maps
+
 c DOCS	END
 
 cc not documented
@@ -1799,19 +1824,11 @@ c |isoinp|	Normally inside elements the values are interpolated.
 c		Sometimes it is usefull to just plot the value of the
 c		node without interpolation inside the element. This can
 c		be accomplished by setting |isoinp=0|. (Default 1)
-c |bgray|	Gray value used for the finite element grid when plotting
-c		the bathymetry. (Default 0.8)
-c |bsgray|	Gray value used to plot the finite element grid over
-c		a scalar or velocity plot. This is basically useful
-c		for debugging reasons. The default is to not plot
-c		the grid (Default -1.0)
 
         call addpar('nisomx',20.)      !maximum number of isovalues allowed
         call addpar('nctick',0.)       !default number of ticks to use
         call addpar('isolin',0.)       !plot isolines with color ?
         call addpar('isoinp',1.)       !interpolate inside elements
-	call addpar('bgray',0.8)       !gray value for bathymetry
-	call addpar('bsgray',-1.0)     !gray value for plotting maps
 
 c DOCS	END
 

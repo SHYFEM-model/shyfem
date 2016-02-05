@@ -554,6 +554,7 @@ ifeq ($(DEBUG),true)
   FINTEL_NOOPT = -g -traceback -check uninit -check bounds 
   FINTEL_NOOPT = -g -traceback -check uninit 
   FINTEL_NOOPT = -g -traceback -O0
+  FINTEL_NOOPT = -g -traceback
 endif
 
 # FINTEL_OPT   = -O -g -Mprof=time
@@ -565,6 +566,7 @@ FINTEL_OPT   = -O -mcmodel=large
 FINTEL_OPT   = -O 
 ifeq ($(OPTIMIZE),HIGH)
   FINTEL_OPT   = -O3
+  FINTEL_OPT   = -O3 -xhost
   #FINTEL_OPT   = -O3 -mcmodel=medium
   #FINTEL_OPT   = -O3 -mcmodel=large
 endif

@@ -280,14 +280,18 @@ c	4: net in gray (for scalar and velocities - use bsgray)
 	  call bpixel
 	else if( mode .eq. 2 ) then			!plot boundary
 	  call qgray(0.)
-	  do k=1,nkn
+	  gray = getpar('bbgray')
+	  if( gray < 1. ) then
+	   call qgray(gray)
+	   do k=1,nkn
 	    if( kantv(1,k) .ne. 0 ) then
 	      kn=kantv(1,k)
 	      if( kn .gt. k ) call qline(xgv(k),ygv(k),xgv(kn),ygv(kn))
 	      kn=kantv(2,k)
 	      if( kn .gt. k ) call qline(xgv(k),ygv(k),xgv(kn),ygv(kn))
 	    end if
-	  end do
+	   end do
+	  end if
 	else if( mode .gt. 0 .and. mode .le. 4 ) then	!plot grid
 	  call qgray(0.)
 	  if( mode .eq. 3 ) then

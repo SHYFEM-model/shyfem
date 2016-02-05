@@ -52,7 +52,7 @@ if ($signFlag && $order) {
 $noutfile = @ARGV;
 $outfile = $ARGV[0];
 
-print STDERR "$noutfile     $outfile\n";
+#print STDERR "$noutfile     $outfile\n";
 
 if( $noutfile == 1 ) { 		#exactly one file name
   $outfile =~ s/\.ps$//;
@@ -61,7 +61,7 @@ if( $noutfile == 1 ) { 		#exactly one file name
   $outfile = "plot"
 }
 
-print STDERR "$noutfile     $outfile\n";
+#print STDERR "$noutfile     $outfile\n";
 
 ##############################
 
@@ -204,7 +204,8 @@ print "%%Pages: $count\n%%EOF\n";
 
 if( $all ) {
   foreach $page (@order) {
-	print STDERR "$page\n";
+	#print STDERR "$page\n";
+	print STDERR " $page";
 	open(OUT,">$outfile.$page.ps");
 
 		open(file,"$TMPDIR/p$$.header");
@@ -236,6 +237,7 @@ if( $all ) {
 
 	close(OUT);
   }
+  print STDERR "\n";
 }
 
 ###########################################################################

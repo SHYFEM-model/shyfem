@@ -849,6 +849,27 @@ c***************************************************************
 
 c***************************************************************
 
+        subroutine write_2d_all_nodes(nnodes,nodes,cv2,it,ivar)
+
+        implicit none
+
+	integer nnodes
+	integer nodes(nnodes)
+        real cv2(*)
+        integer it
+        integer ivar
+
+        integer iunit,i
+
+	iunit = 200 + ivar
+
+        write(iunit,1000) it,(cv2(nodes(i)),i=1,nnodes)
+ 1000	format(i11,30g14.6)
+
+        end
+
+c***************************************************************
+
         subroutine write_node_2d(it,nvar,cv)
 
         implicit none

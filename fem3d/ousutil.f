@@ -246,7 +246,6 @@ c***************************************************************
 
 	implicit none
 
-
 	integer nel
 	real zenv(3,1)
 	real hev(1)
@@ -273,6 +272,45 @@ c***************************************************************
 	end do
 
 	volume = voltot
+
+	end
+
+c***************************************************************
+
+	subroutine compute_volume_ia(ia,zenv,volume,areaall)
+
+	use evgeom
+	use basin
+
+	implicit none
+
+	integer ia		!area code for which not to compute volume
+	real zenv(3,1)
+	real volume,areaall
+
+	integer ie,ii
+	real h,area
+	double precision vol,voltot,areatot
+
+	real area_elem
+
+	voltot = 0.
+
+	do ie=1,nel
+	  if( iarv(ie) == ia ) cycle
+	  h = 0.
+	  do ii=1,3
+	    h = h + hm3v(ii,ie) + zenv(ii,ie)
+	  end do
+	  h = h / 3.
+	  area = area_elem(ie)
+	  vol = area * h
+	  voltot = voltot + vol
+	  areatot = areatot + area
+	end do
+
+	volume = voltot
+	areaall = areatot
 
 	end
 

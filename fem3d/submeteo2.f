@@ -598,7 +598,7 @@ c DOCS  END
 
 	if( wslim > 0 .and. wxymax > wslim ) then !artificially limit wind speed
 	  call get_act_time(itact)
-	  write(111,*) 'limiting wind speed: ',itact,wxymax
+	  !write(111,*) 'limiting wind speed: ',itact,wxymax
           do k=1,n
 	    fice = 1. - cice(k)
             wspeed = ws(k)

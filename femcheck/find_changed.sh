@@ -7,6 +7,8 @@
 files=$(find . -newer VERSION -type f | 
 	grep -v '/arc/' | \
 	grep -v '/.git/' | \
+	grep -v '/femlib/mod/' | \
+	grep -v '__genmod\.f90' | \
 	grep -v '\.o' | \
 	grep -v '\.a' | \
 	grep -v '\.swp' | \

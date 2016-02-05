@@ -90,8 +90,6 @@ c 3D concentrations
 
 	implicit none
 
-	include 'param.h'
-
 	character*(*) type
 	integer ivarin
 
@@ -125,8 +123,11 @@ c 3D concentrations
 	  if( ptime_end() ) exit	!FIXME
 	  if( ptime_ok() ) then
 	    nplot = nplot + 1
+            write(6,*) '==================================='
+            write(6,*) 'creating new plot with plofem... ',nplot
+            write(6,*) '==================================='
             if( isect .eq. 0 ) then
-	      write(6,*) '..........horizontal plotting nodes ',nplot
+	      write(6,*) '..........horizontal plotting nodes '
 	      if( ivar .eq. 21 .or. ivar .eq. 2 ) then	!wind or vel
 		ivel = 3		!wind
 		!if( ivar .eq. 2 ) ivel = 3
@@ -140,9 +141,12 @@ c 3D concentrations
 	        call ploval(nkn,parray,line)
 	      end if
             else
-	      write(6,*) '..........vertical plotting nodes ',nplot
+	      write(6,*) '..........vertical plotting nodes '
               call plot_sect(.false.,p3)
             end if
+            write(6,*) '==================================='
+            write(6,*) 'end of plot'
+            write(6,*) '==================================='
 	  end if
 	end do
 
@@ -169,8 +173,6 @@ c**********************************************************
 	integer level
 	integer ilhkv(nkn)
 	real p3(nlvddi,nkn,2)
-
-	include 'param.h'
 
 	integer k,lev
 
@@ -200,8 +202,6 @@ c**********************************************************
 	integer nkn
 	real p3(nlvddi,nkn,2)
 
-	include 'param.h'
-
 	integer k
 
 	do k=1,nkn
@@ -223,8 +223,6 @@ c 3D concentrations
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
 
 	character*(*) type	!default extension for file
 	integer ivar_in		!desired variable id
@@ -257,15 +255,21 @@ c 3D concentrations
 	  if( ptime_end() ) exit
 	  if( ptime_ok() .and. okvar(ivaria) ) then
 	    nplot = nplot + 1
+            write(6,*) '==================================='
+            write(6,*) 'creating new plot with plonos... ',nplot
+            write(6,*) '==================================='
             if( isect .eq. 0 ) then
-	      write(6,*) '..........horizontal plotting nodes ',nplot
+	      write(6,*) '..........horizontal plotting nodes '
 	      call extnlev(level,nlvdi,nkn,p3,parray)
 	      call prepare_dry_mask
 	      call ploval(nkn,parray,line)
             else
-	      write(6,*) '..........vertical plotting nodes ',nplot
+	      write(6,*) '..........vertical plotting nodes '
               call plot_sect(.false.,p3)
             end if
+            write(6,*) '==================================='
+            write(6,*) 'end of plot'
+            write(6,*) '==================================='
 	  end if
 	end do
 
@@ -287,8 +291,6 @@ c 3D concentrations (element values)
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
 
 	character*(*) type	!default extension for file
 	integer ivar_in		!desired variable id
@@ -318,8 +320,11 @@ c 3D concentrations (element values)
 	  if( ptime_end() ) exit
 	  if( ptime_ok() .and. okvar(ivaria) ) then
 	    nplot = nplot + 1
+            write(6,*) '==================================='
+            write(6,*) 'creating new plot with ploeos... ',nplot
+            write(6,*) '==================================='
             if( isect .eq. 0 ) then
-	      write(6,*) '..........horizontal plotting elements ',nplot
+	      write(6,*) '..........horizontal plotting elements '
 	      !call extelev(level,nlvdi,nkn,p3,parray)
 	      call extelev(level,nlvdi,nel,p3,parray)
 	      call prepare_dry_mask
@@ -328,6 +333,9 @@ c 3D concentrations (element values)
 	      write(6,*) '..........no vertical plotting for elements'
 	      nplot = nplot - 1
             end if
+            write(6,*) '==================================='
+            write(6,*) 'end of plot'
+            write(6,*) '==================================='
 	  end if
 	end do
 
@@ -369,8 +377,6 @@ c**********************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	integer nrec,it,k,nplot
 	logical ousnext,ptime_ok,ptime_end
 
@@ -407,8 +413,6 @@ c plots barene
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
 
 	integer nrec,it,k,nplot
 	logical ousnext,ptime_ok,ptime_end
@@ -478,8 +482,6 @@ c**********************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	logical bvel
 
 	integer nrec,it,nplot
@@ -507,15 +509,21 @@ c**********************************************************
 	  if( ptime_end() ) exit
 	  if( ptime_ok() ) then
 	    nplot = nplot + 1
+            write(6,*) '==================================='
+            write(6,*) 'creating new plot with plosim... ',nplot
+            write(6,*) '==================================='
             if( isect .eq. 0 ) then
-	      write(6,*) '..........horizontal plotting ',nplot
+	      write(6,*) '..........horizontal plotting '
 	      call prepare_dry_mask
 	      call plovel(ivel)
             else
-	      write(6,*) '..........vertical plotting ',nplot
+	      write(6,*) '..........vertical plotting '
 	      call prepare_vel(p3)
               call plot_sect(.true.,p3)
             end if
+            write(6,*) '==================================='
+            write(6,*) 'end of plot'
+            write(6,*) '==================================='
 	  end if
 	end do
 
@@ -538,8 +546,6 @@ c plots node values
 	integer nkn
 	real pa(1)
         character*(*) title
-
-	include 'param.h'
 
 	real pmin,pmax,flag
 	real getpar
@@ -582,8 +588,6 @@ c plots element values
 	real pa(1)
         character*(*) title
 
-	include 'param.h'
-
 	real pmin,pmax,flag
 	real getpar
 
@@ -618,8 +622,6 @@ c**********************************************************
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	logical bdry
 	integer ie,ii,k
@@ -695,8 +697,6 @@ c ivel = 5	velocities already prepared
 
 	integer nxdim,nydim
 	parameter( nxdim = 300 , nydim = 300 )
-
-	include 'param.h'
 
 	real ureg(nxdim,nydim)
 	real vreg(nxdim,nydim)
@@ -975,7 +975,8 @@ c------------------------------------------------------------------
 	if( boverl ) then			!plot color scale
 	  call colsh
 	end if
-	if( .not. bnorm ) then	                !vel arrows are still in scale
+	!if( .not. bnorm ) then	                !vel arrows are still in scale
+	if( inorm == 0 ) then	                !vel arrows are still in scale
 	  scale = typsca / valref		!arrows are in scale
 	  call velsh(ivel,scale,valref)
 	end if
@@ -1007,8 +1008,6 @@ c**********************************************************
 	implicit none
 
 	integer ivel
-
-	include 'param.h'
 
 	integer ie,ii,k,l
 	integer level,lmax,lact
@@ -1124,10 +1123,6 @@ c**********************************************************
 	use basin
 
 	implicit none
-
-	include 'param.h'
-
-
 
 	logical bnumber,belem
         real pmin,pmax
@@ -1428,8 +1423,6 @@ c**************************************************************
 	integer ie
 	real color
 
-	include 'param.h'
-
 	integer ii,k
 	real xp(3),yp(3)
 
@@ -1488,9 +1481,6 @@ c sets values on boundary to val
 
 	real a(1)
 	real val
-
-	include 'param.h'
-
 
 	integer k
 
@@ -1561,7 +1551,7 @@ c computes modulus for velocity vector and maximum and average
 	implicit none
 
 	integer n
-	real u(1), v(1), uv(1)
+	real u(n), v(n), uv(n)
 	real uvmax
 	real uvmed
 
@@ -1589,7 +1579,8 @@ c computes modulus for velocity vector and maximum and average
 	end do
 
 	uvmax = rmax
-	uvmed = rmed / nn
+        uvmed = 0.
+	if( nn > 0 ) uvmed = rmed / nn
 
 	end
 
@@ -1631,9 +1622,6 @@ c compute elemental values vev()
 	real vev(1)
 	logical bwater(1)
 
-
-	include 'param.h'
-
 	integer ie,ii,k,iflag
 	real sum,flag
 
@@ -1670,9 +1658,6 @@ c compute nodal values vnv()
 	real vev(1)
         real vnv(1)
 	logical bwater(1)
-
-
-	include 'param.h'
 
 	integer ie,ii,k
 	real r,flag
@@ -1941,8 +1926,6 @@ c plots node values
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
 
 	integer ie
 	real dgray
