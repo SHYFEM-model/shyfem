@@ -78,7 +78,7 @@ c 25.06.2014    ggu	new routine exists_bnd_name()
 c 29.10.2014    ccf	include vel3dn boundary file
 c 03.11.2014    ggu	nbdim deleted
 c 23.06.2015    ggu	setbc() deleted, nrz,nrq eliminated
-c 15.02.2015    ggu	check if boundary is given twice
+c 15.02.2016    ggu	check if boundary is given twice
 c
 c************************************************************************
 

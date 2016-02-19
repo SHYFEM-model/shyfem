@@ -15,6 +15,7 @@ c 05.06.2015    ggu     many more features added
 c 10.09.2015    ggu     std and rms for averaging implemented
 c 11.09.2015    ggu     write in gis format
 c 23.09.2015    ggu     handle more than one file (look for itstart)
+c 19.02.2016    ggu     bug fixes for bsumvar and mode==2 (sum)
 c
 c**************************************************************
 
@@ -171,7 +172,9 @@ c--------------------------------------------------------------
 	call elabutil_set_averaging(nvar)
         !write(6,*) 'ggu: ',ifreq,istep
         if( btrans .and. nvar > 1 ) then
-          stop 'error stop noselab: only one variable with averaging'
+	  if( .not. bsumvar ) then
+            stop 'error stop noselab: only one variable with averaging'
+	  end if
         end if
 
 	if( btrans ) then
@@ -205,6 +208,9 @@ c--------------------------------------------------------------
           call nos_clone_params(nin,nb)
 	  if( b2d ) then
 	    call nos_set_params(nb,0,0,1,0)
+	  end if
+	  if( bsumvar ) then
+	    call nos_set_params(nb,0,0,0,1)
 	  end if
           call write_nos_header(nb,ilhkv,hlv,hev)
 	end if
@@ -316,7 +322,8 @@ c--------------------------------------------------------------
 	  if( boutput ) then
 	    nwrite = nwrite + 1
 	    if( bverb ) write(6,*) 'writing to output: ',ivar
-	    if( bsumvar ) ivar = 30
+	    if( bsumvar ) ivar = 10
+	    if( bthreshold ) ivar = 199
 	    if( b2d ) then
               call noselab_write_record(nb,it,ivar,1,ilhkv,cv2,ierr)
 	    else
@@ -357,7 +364,8 @@ c--------------------------------------------------------------
 	      !write(6,*) 'final aver: ',ip,naccum
 	      call nos_time_aver(-mode,ip,ifreq,istep,nkn,nlvdi
      +				,naccu,accum,std,threshold,cv3,boutput)
-	      if( bsumvar ) ivar = 30
+	      if( bsumvar ) ivar = 10
+	      if( bthreshold ) ivar = 199
               call nos_write_record(nb,it,ivar,nlvdi,ilhkv,cv3,ierr)
               if( ierr .ne. 0 ) goto 99
 	    end if
@@ -491,6 +499,7 @@ c mode negative: only transform, do not accumulate
 	if( naccu(ip) == ifreq .or. mode < 0 ) then	!here ip == 1
 	  naccum = max(1,naccu(ip))
 	  mmode = abs(mode)
+	  if( mmode == 2 ) naccum = 1			!sum
 	  if( mmode == 3 ) naccum = 1			!min
 	  if( mmode == 4 ) naccum = 1			!max
 	  if( mmode == 7 ) naccum = 1			!threshold

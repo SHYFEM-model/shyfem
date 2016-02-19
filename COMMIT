@@ -1,5 +1,29 @@
 ============================================================
 
+Fri Feb 19 17:55:07 CET 2016
+
+small bug fixes
+
+ LOG                       |  42 ++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES             |  10 ++++++++++
+ Rules.make                |   3 ++-
+ fem3d/Makefile            |   6 +++---
+ fem3d/elabutil.f          |   2 ++
+ fem3d/lagrange_vertical.f |   3 ++-
+ fem3d/mod_conz.f          |   5 +++--
+ fem3d/newconz.f           |   2 +-
+ fem3d/noselab1.f          |  15 ++++++++++++---
+ fem3d/ousutil.f           |   3 ++-
+ fem3d/subbnd.f            |   2 +-
+ fembin/gitinfo            |   1 +
+ femcheck/Rules.dist       |   5 ++++-
+ femdoc/final/shyfem.pdf   | Bin 284182 -> 284588 bytes
+ femplot/Makefile          |   5 ++---
+ grid/Makefile             |   2 +-
+ 16 files changed, 88 insertions(+), 18 deletions(-)
+
+============================================================
+
 Fri Feb 19 13:53:37 CET 2016
 
 New version 7_5_2

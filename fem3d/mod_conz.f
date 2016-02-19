@@ -8,6 +8,7 @@
 ! revision log :
 !
 ! 09.11.2015    ggu     restructured with global values
+! 19.02.2016    ggu     set default decay to zero
 !
 !******************************************************************
 
@@ -43,9 +44,9 @@
 
 	character*4, save :: what = 'conz'
 
-        integer, parameter :: ndim_tau = 7
+        integer, parameter :: ndim_tau = 0
         real, save :: taupar(ndim_tau)
-        data taupar /0.,0.,0.,0.,0.,0.,0./
+!        data taupar /0.,0.,0.,0.,0.,0.,0./
 
 !==================================================================
 	contains

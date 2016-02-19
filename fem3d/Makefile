@@ -918,7 +918,7 @@ lagrange_vertical.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_geom.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_vel.mod \
-		../femlib/mod/mod_lagrange.mod param.h 
+		../femlib/mod/mod_lagrange.mod 
 lgrelab.o: ../femlib/mod/basin.mod ../femlib/mod/mod_depth.mod \
 		param.h 
 lgrinf.o: param.h
@@ -1114,7 +1114,7 @@ ouselab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_baro.mod \
 		../femlib/mod/shyutil.mod 
-ousutil.o: ../femlib/mod/evgeom.mod
+ousutil.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod
 readext.o: ../femlib/mod/basin.mod param.h
 rstinf.o: ../femlib/mod/clo.mod
 scal_intp.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
@@ -1424,7 +1424,7 @@ subqfxt.o: ../femlib/mod/levels.mod ../femlib/mod/mod_meteo.mod \
 subqfxu4.o: subqfxm.h
 subreg.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod \
-		../femlib/mod/mod_hydro.mod param.h reg.h 
+		../femlib/mod/mod_hydro.mod reg.h 
 subres.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \

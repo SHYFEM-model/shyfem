@@ -1,4 +1,14 @@
 
+19.02.2016    VERS_7_5_3
+
+	bug fix in noselab1.f (sum, bsumvar)
+
+19.02.2016    VERS_7_5_2
+
+	handle lagrangian particles on vertical wall gracefully
+	new lagrangian release type ipvert = -1
+	some plot params shifted to para section (bbgray, etc.)
+
 22.01.2016    VERS_7_5_1
 
 	bug fixes in subspk and COARE heat module

@@ -750,8 +750,9 @@ c************************************************************
 
 	logical bdebug
 	integer ierror
-	integer nlvaux,nsigma,hsigma
+	integer nlvaux,nsigma
 	integer lmax1,lmax2,l
+	real hsigma
 	real hl1(nlv)
 	real hl2(nlv)
 	real hp,hp1,hp2,hd

@@ -285,7 +285,7 @@ c***************************************************************
 	implicit none
 
 	integer ia		!area code for which not to compute volume
-	real zenv(3,1)
+	real zenv(3,nel)
 	real volume,areaall
 
 	integer ie,ii
@@ -295,6 +295,7 @@ c***************************************************************
 	real area_elem
 
 	voltot = 0.
+	areatot = 0.
 
 	do ie=1,nel
 	  if( iarv(ie) == ia ) cycle

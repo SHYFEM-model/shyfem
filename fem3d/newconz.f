@@ -96,7 +96,7 @@ c-------------------------------------------------------------
 	allocate(tauv(nvar),cdefs(nvar),massv(nvar))
 	tauv = contau
 	nmin = min(ndim_tau,nvar)
-	tauv(1:nmin) = taupar(1:nmin)
+	if( nmin > 0 ) tauv(1:nmin) = taupar(1:nmin)
 
         if( .not. has_restart(4) ) then	!no restart of conzentrations
 	  if( nvar == 1 ) then 

@@ -334,7 +334,8 @@ ifeq ($(WARNING),true)
   FGNU_WARNING = -Wall -Wtabs -Wno-unused -Wno-uninitialized
   FGNU_WARNING = -Wall -Wtabs -Wno-unused
   FGNU_WARNING = -Wall -Wtabs -Wno-unused \
-			-Wno-conversion -Wno-unused-dummy-argument
+			-Wno-conversion -Wno-unused-dummy-argument \
+			-Wno-zerotrip
 endif
 
 FGNU_BOUNDS = 

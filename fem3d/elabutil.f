@@ -833,6 +833,8 @@ c***************************************************************
 	ke = ipext(ki)
 	lmax = ilhkv(ki)
 
+	write(1,*) it,cv3(1,ki)
+
         write(4,*) it,i,ke,ki,lmax,ivar
         write(4,*) (cv3(l,ki),l=1,lmax)
 

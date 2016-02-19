@@ -16,7 +16,7 @@ include ../Rules.make
 
 #---------------------------------------------
 
-FEMBIN = $(FEMDIR)/bin
+FEMBIN = $(FEMDIR)/fembin
 
 OBJECTS =	gridma1.o gridma2.o \
 		gridfi.o gridge.o \

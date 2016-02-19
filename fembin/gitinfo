@@ -76,6 +76,7 @@ gittag			tags actual commit writing to VERSION
 gittags			shows commits and corresponding tags
 gittar			makes tar file for given version
 
+git clone https://github.com/SHYFEM-model/shyfem.git
 git fetch origin
 git merge origin/develop
 

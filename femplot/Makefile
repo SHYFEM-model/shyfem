@@ -223,8 +223,7 @@ supout.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro_plot.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_plot2d.mod \
-		../femlib/mod/mod_plot3d.mod param.h simul.h \
-		supout.h 
+		../femlib/mod/mod_plot3d.mod simul.h supout.h 
 supsim.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_geom.mod \
@@ -232,7 +231,7 @@ supsim.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro_plot.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_plot2d.mod \
-		../femlib/mod/mod_plot3d.mod param.h 
+		../femlib/mod/mod_plot3d.mod 
 suptim.o: timlim.h
 supver.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
