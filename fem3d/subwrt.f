@@ -14,6 +14,7 @@ c 10.05.2014	ccf	parameters from the str file
 c 31.03.2015	ggu	compute res time for different areas
 c 20.05.2015	ggu	rinside computed only once, bug fix for conz==0
 c 05.06.2015	ggu	new routine to limit concentration between 0 and c0
+c 01.02.2016	ggu	implemented custom reset
 c
 c******************************************************************
 c Parameters to be set in section $wrt of the parameter input file
@@ -103,13 +104,8 @@ c------------------------------------------------------------
 
         implicit none
 
-        include 'param.h'
         include 'femtime.h'
-
 	include 'simul.h'
-
-
-	!include 'aux_array.h'
 
 	integer ndim
 	parameter (ndim=100)
@@ -274,6 +270,7 @@ c belab		elaborates (accumulates) concentrations
 	  if( it-it0 .ge. idtwrt ) breset = .true.
 	end if
 	if( it .eq. itmax ) breset = .true.	!last time step
+	call custom_reset(it,breset)
 
 	belab = .not. binit
 	bcompute = .not. binit
@@ -1104,5 +1101,63 @@ c**********************************************************************
 c**********************************************************************
 c**********************************************************************
 c**********************************************************************
+c**********************************************************************
+
+	subroutine custom_reset(it,breset)
+
+	implicit none
+
+	integer it
+	logical breset
+
+	integer i,itres
+	integer date,time
+	integer year,month,day,hour,min,sec
+
+	integer, save :: idate = 0
+
+	integer, parameter :: ndate = 0
+	integer, save :: resdate(ndate)
+
+!	integer, parameter :: ndate = 5
+!	integer, save :: resdate(ndate) = (/20150101,20150301
+!     +				,20150601,20150901,20160101/)
+
+c---------------------------------------------------------------
+c initialize - convert date to relative time
+c---------------------------------------------------------------
+
+	if( idate == 0 ) then
+	  time = 0
+	  call unpacktime(time,hour,min,sec)
+	  do i=1,ndate
+	    date = resdate(i)
+	    call unpackdate(date,year,month,day)
+	    call dts2it(itres,year,month,day,hour,min,sec)
+	    resdate(i) = itres		!insert relative time
+	  end do
+	  idate = 1
+	end if
+
+c---------------------------------------------------------------
+c see if we have to reset
+c---------------------------------------------------------------
+
+	if( idate > ndate ) return
+	if( it < resdate(idate) ) return
+
+c---------------------------------------------------------------
+c ok, reset needed - advance to next reset time
+c---------------------------------------------------------------
+
+	idate = idate + 1
+	breset = .true.
+
+c---------------------------------------------------------------
+c end of routine
+c---------------------------------------------------------------
+
+	end
+
 c**********************************************************************
 
