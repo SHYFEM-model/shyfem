@@ -281,6 +281,7 @@ c 08.01.2016	ggu	version 7.3.18
 c 08.01.2016	ggu	version 7.4.0	major stable version
 c 08.01.2016	ggu	version 7.5.0	new develop version opened
 c 22.01.2016	ggu	version 7.5.1
+c 19.02.2016	ggu	version 7.5.2
 c
 c*****************************************************************
 
@@ -288,15 +289,15 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.5.1}
-c \newcommand{\version}{7\_5\_1}
+c \newcommand{\VERSION}{7.5.2}
+c \newcommand{\version}{7\_5\_2}
 c
 c DOCS	END
 
         implicit none
 
         character*10 version
-        parameter (version='7.5.1')
+        parameter (version='7.5.2')
 
         character*30 string
         parameter (string='SHYFEM VERSION = '//version)
@@ -352,7 +353,7 @@ c writes copyright and version/dimension
         write(6,*) ' ----------------------------------------------'
         write(6,*)
         write(6,*) ' SHYFEM - Finite Element Model for coastal seas'
-        write(6,*) ' Copyright (c) The Shyfem Team 1985-2015'
+        write(6,*) ' Copyright (c) The Shyfem Team 1985-2016'
         write(6,*)
         write(6,*) ' version: ',vers
         write(6,*) ' routine: ',routine
