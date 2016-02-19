@@ -13,6 +13,7 @@
 ! 25.09.2015	ggu	prepared to interpolate from reg onto elements
 ! 29.09.2015	ggu	in iff_interpolate() do not interpolate with flag
 ! 18.12.2015	ggu	in iff_peek_next_record() adjust date only if ierr==0
+! 15.02.2016	ggu	if dtime==-1 do not check time, changes in exffil
 !
 !****************************************************************
 !
@@ -498,7 +499,7 @@
 ! nvar is return value (if file can be read)
 
 	integer iformat,iunit
-	integer ierr,np,i,il
+	integer ierr,np,i
 	integer nvar_orig
 	integer datetime(2)
 	integer ntype,itype(2)
@@ -522,8 +523,6 @@
 	!---------------------------------------------------------
 	! check input parameters
 	!---------------------------------------------------------
-
-	il = len_trim(file)
 
 	if( nvar < 1 ) goto 97
 	if( nexp < 1 ) goto 97
@@ -643,7 +642,7 @@
 	if( iunit < 0 ) goto 99
 	pinfo(id)%iunit = iunit
 
-	write(6,*) 'file opened: ',id,file(1:il)
+	write(6,*) 'file opened: ',id,trim(file)
 
 	!---------------------------------------------------------
 	! populate data base
@@ -657,7 +656,7 @@
 
 	return
    91	continue
-	write(6,*) 'error opening file: ',file(1:il)
+	write(6,*) 'error opening file: ',trim(file)
 	id0 = iff_find_id_to_file(file)
 	if( id0 > 0 ) then
 	  ibc = pinfo(id0)%ibc
@@ -667,7 +666,7 @@
 	end if
 	stop 'error stop iff_init'
    93	continue
-	write(6,*) 'error in file: ',file(1:il)
+	write(6,*) 'error in file: ',trim(file)
 	write(6,*) 'iformat = ',iformat
 	stop 'error stop iff_init'
    96	continue
@@ -676,7 +675,7 @@
 	call iff_print_file_info(id)
 	stop 'error stop iff_init'
    97	continue
-	write(6,*) 'error in input parameters of file: ',file(1:il)
+	write(6,*) 'error in input parameters of file: ',trim(file)
 	write(6,*) 'nvar: ',nvar
 	write(6,*) 'nexp,lexp: ',nexp,lexp
 	write(6,*) 'nintp: ',nintp
@@ -684,11 +683,11 @@
 	call iff_print_file_info(id)
 	stop 'error stop iff_init'
    98	continue
-	write(6,*) 'error reading data description of file: ',file(1:il)
+	write(6,*) 'error reading data description of file: ',trim(file)
 	call iff_print_file_info(id)
 	stop 'error stop iff_init'
    99	continue
-	write(6,*) 'no such file: ',file(1:il)
+	write(6,*) 'no such file: ',trim(file)
 	write(6,*) 'iformat = ',iformat
 	stop 'error stop iff_init'
 	end subroutine iff_init
@@ -841,6 +840,7 @@ c	 2	time series
                 !end do
 
 	        do
+		  if( dtime0 == -1. ) exit	! no real time given
 		  bok = iff_peek_next_record(id,dtime2)
                   if( .not. bok ) goto 97
 		  if( dtime2 >= dtime0 ) exit
@@ -849,8 +849,10 @@ c	 2	time series
 		  dtimelast = dtime
 		end do
 
-		if( dtime0 < dtimefirst ) goto 91
-		if( dtime0 > dtime2 ) goto 91
+		if( dtime0 /= -1. ) then
+		  if( dtime0 < dtimefirst ) goto 91
+		  if( dtime0 > dtime2 ) goto 91
+		end if
 		!write(6,*) 'populate: ',dtimefirst,dtime,dtime2,dtime0
 
 		call iff_allocate_fem_data_structure(id)
@@ -2015,12 +2017,15 @@ c everything needed is in array (unit, vars etc...)
 	integer nexp,lexp
 	integer nodes(1)
 	double precision dtime
-	real vconst(1)
+	real vconst(nvar)
 
 	dtime = -1
-	nexp = 0
+	nexp = 1
 	lexp = 0
-	vconst(1) = 0.
+	vconst = 0.
+	nodes = 0
+	nv = nvar
+	if( ndim < 2 ) stop 'error stop exffil: ndim'
 	
 	call iff_init(dtime,file,nvar,nexp,lexp,nintp
      +					,nodes,vconst,id)
@@ -2031,6 +2036,7 @@ c everything needed is in array (unit, vars etc...)
 	end if
 
 	array(1) = id
+	array(2) = nvar
 
 	end
 
@@ -2068,18 +2074,20 @@ c opens file and inititializes array - simplified version
 
         real array(*)           !array with information from set-up
         real t                  !t value for which to interpolate
-        real rint(1)            !interpolated values
+        real rint(*)            !interpolated values
 
-	integer id,ldim,ndim,ivar
+	integer id,ldim,ndim,ivar,nvar
 	double precision dtime
 
 	id = nint(array(1))
+	nvar = nint(array(2))
 	dtime = t
 	ldim = 1
 	ndim = 1
-	ivar = 1
 
-	call iff_time_interpolate(id,dtime,ivar,ndim,ldim,rint)
+	do ivar=1,nvar
+	  call iff_time_interpolate(id,dtime,ivar,ndim,ldim,rint(ivar))
+	end do
 
         end
 

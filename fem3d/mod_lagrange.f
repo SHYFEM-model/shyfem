@@ -209,7 +209,8 @@
 	end if
 
 	call cpu_time(time2)
-	write(lunit,*) 'alloc_lagr: ',nbdy,nbdy_lagr,time2-time1
+	!write(lunit,*) 'alloc_lagr: ',nbdy,nbdy_lagr,time2-time1
+	write(6,*) 'alloc_lagr: ',nbdy,nbdy_lagr,time2-time1
 
         nbdy_lagr = nbdy
 

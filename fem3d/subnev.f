@@ -41,6 +41,7 @@ c 19.04.2015	ggu	new routines for internal coordinates (distance)
 c 22.04.2015	ggu	bug fix in xi2xy - x/y were exchanged
 c 10.10.2015	ggu	bug fix in adjust_bc() - brown paper bag bug
 c 16.11.2015	ggu	new routine adjust_xi()
+c 15.02.2016	ggu	more debug code, assure xi is in bounds
 c
 c***********************************************************
 
@@ -61,6 +62,8 @@ c  1	spherical (lat/lon)
 	integer, save, private :: nel_alloc = 0
 	integer, save :: isphe_ev = -1
 	logical, save :: init_ev = .false.
+
+	logical, save :: bdebug_internal = .false.
 
 	double precision, allocatable :: ev(:,:)
 
@@ -505,13 +508,18 @@ c***********************************************************
 
 c adjusts internal coodinates xi
 
+	use evgeom
+
 	implicit none
 
 	double precision xi(3)
 
+	logical bdebug
 	integer ii,it,is
 	double precision xisum,xiso,xiadj
 	double precision xiorig(3)
+
+	bdebug = bdebug_internal
 
 	xisum = 0.
 	xiso = 0.
@@ -538,12 +546,21 @@ c adjusts internal coodinates xi
 
 	xiadj = (xisum-1.)/(3-it)
 
+	if( bdebug ) then
+	  write(6,*) it,is,xisum,xiadj
+	  write(6,*) xi
+	end if
+
 	if( it == 2 ) then
 	  is = 6 - is
 	  xi(is) = 1.
 	else			!both for it == 1 and 2
 	  do ii=1,3
-	    if( ii /= is ) xi(ii) = xi(ii) - xiadj
+	    if( ii /= is ) then
+	      xi(ii) = xi(ii) - xiadj
+	      if( xi(ii) < 0. ) xi(ii) = 0.
+	      if( xi(ii) > 1. ) xi(ii) = 1.
+	    end if
 	  end do
 	end if
 
@@ -551,6 +568,11 @@ c adjusts internal coodinates xi
 	do ii=1,3
 	  xiso = xiso + xi(ii)
 	end do
+
+	if( bdebug ) then
+	  write(6,*) it,is,xiso,xiso-1.
+	  write(6,*) xi
+	end if
 
 	if( abs(xiso-1.) > 1.e-8 ) then
 	  write(6,*) 'xi is still wrong... cannot adjust'
@@ -1221,6 +1243,18 @@ c---------------------------------------------------------
 c---------------------------------------------------------
 c end of routine
 c---------------------------------------------------------
+
+	end
+
+c***********************************************************
+
+	subroutine ev_set_debug(bdebug)
+
+	use evgeom
+
+	logical bdebug
+
+	bdebug_internal = bdebug
 
 	end
 

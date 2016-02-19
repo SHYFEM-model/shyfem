@@ -1,5 +1,25 @@
 ============================================================
 
+Fri Feb 19 13:51:04 CET 2016
+
+changes in 3D lagrangian
+
+ fem3d/lagrange_init.f     |   6 ++
+ fem3d/lagrange_inout.f    |  24 ++++--
+ fem3d/lagrange_main.f     |  20 ++++-
+ fem3d/lagrange_track.f    |   6 +-
+ fem3d/lagrange_vertical.f | 200 +++++++++++++++++++++++++++++++++++++++-------
+ fem3d/mod_lagrange.f      |   3 +-
+ fem3d/sigmautil.f         |   2 +
+ fem3d/subbnd.f            |   7 ++
+ fem3d/subfemintp.f        |  44 +++++-----
+ fem3d/subnev.f            |  36 ++++++++-
+ femplot/supano.f          |   2 +-
+ grid/Makefile             |   2 +
+ 12 files changed, 291 insertions(+), 61 deletions(-)
+
+============================================================
+
 Fri Jan 22 12:40:24 CET 2016
 
 New version 7_5_1

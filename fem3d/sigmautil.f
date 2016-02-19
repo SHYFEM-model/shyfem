@@ -16,6 +16,7 @@ c 17.05.2013	ggu	layer_thickness for elem and node, general routine
 c 17.05.2013	ggu	new routine get_bottom_of_layer()
 c 05.09.2013	ggu	new call interface to get_layer_thickness()
 c 25.06.2014	ggu	error stop if computed layer thickness is <= 0
+c 15.02.2015	ggu	in get_layer_thickness() handle last layer correctly
 c
 c notes :
 c
@@ -237,6 +238,7 @@ c---------------------------------------------------------
 	      hdl(l) = hbot - htop
 	      if( hdl(l) .le. 0. ) berror = .true.
 	    end do
+	    if( htot > hbot ) hdl(lmax) = hdl(lmax) + htot - hbot
 	  end if
 	end if
 

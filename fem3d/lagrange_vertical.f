@@ -7,6 +7,7 @@ c 23.04.2015    ggu     internal coodinates finished
 c 06.05.2015    ccf     included settling velocity for lagrangian
 c 08.05.2015    ggu&ccf bug fix in track_xi_next_element
 c 14.05.2015    ccf     bug fix in track_xi
+c 15.02.2016    ggu     handle particles on vertical wall gracefully
 c
 c******************************************************
 
@@ -73,8 +74,6 @@ c returns vertical velocity at point given by ie,l0,is,a
 	real a		!relative postion of side
 	real w		!computed vertical velocity for ie and l0 (return)
 
-	include 'param.h'
-
 	integer ii,k1,k2
 	real wo1,wo2,wn1,wn2
 	real w1,w2
@@ -115,7 +114,7 @@ c returns vertical velocity at point given by ie,l0,is,a
 
 c******************************************************
 
-	subroutine lagr_layer_thickness(ie,lmax,hl)
+	subroutine lagr_layer_thickness(ie,lmax,hl,htot,htotz)
 
 c computes layer thickness for element ie
 
@@ -128,8 +127,7 @@ c computes layer thickness for element ie
 	integer ie		!element number
 	integer lmax		!max number of layers (dimension in, actual out)
 	real hl(lmax)		!layer thickness (return)
-
-	include 'param.h'
+	real htot,htotz		!total depth without and with zeta (return)
 
 	integer nlev,nsigma,ii,lmax_act
 	real hsigma
@@ -150,6 +148,8 @@ c computes layer thickness for element ie
 	z = z / 6.
 
         call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)
+	htot = h
+	htotz = h + z
 
 	return
    99	continue
@@ -242,8 +242,6 @@ c************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	integer id
 	integer iel
 	integer lb
@@ -265,14 +263,17 @@ c************************************************************
 	double precision xie(3)
 
 	logical track_xi_on_material_boundary
+	logical track_xi_has_layer
 
 	blgrdebug = id == 172
 	blgrdebug = id == 1
 	blgrdebug = id == 0
+	!blgrdebug = id == 9939
 	!blgrdebug = .true.
 	bdebug = .false.
 	bdebug = .true.
 	bdebug = blgrdebug
+	!bdebug = id == 9939
 
 	ieorig = iel
 	lborig = lb
@@ -332,11 +333,13 @@ c************************************************************
 	th = 2.*time
 
 	if( bdebug ) then
+	  write(6,*) '======================================='
 	  write(6,*) 'track_xi start debugging: ',id
-	  write(6,*) iel,lb,iflux
+	  write(6,*) '======================================='
+	  write(6,*) iel,lb,lmax,iflux
 	  write(6,*) alpha,vel,z
 	  write(6,*) xi
-	  call track_xi_info_element(iel)
+	  !call track_xi_info_element(iel)
 	end if
 
 	if( vel > 0. ) then
@@ -385,7 +388,7 @@ c************************************************************
 	t = min(th,tv,tt)
 
 	if( bdebug ) then
-	  write(6,*) 'times...'
+	  write(6,*) 'times for advection'
 	  write(6,*) th,tv,tt
 	  write(6,*) dist,s,dh
 	  write(6,*) xis
@@ -420,12 +423,28 @@ c************************************************************
 	  call track_xi_check('before advection track_xi 2',id,xi)
 	  call track_xi_next_element(iel,xi)
 	  call track_xi_check('after advection track_xi 2',id,xi)
+	  if( .not. track_xi_has_layer(iel,lb) ) then	!just do vert adv
+	    iel = ieorig
+	    xi = xie
+	    if( th == 0. ) then
+	      t = min(tv,tt)	!just advect vertically
+	      !if( id == 31690 ) then
+	      if( id == -1 ) then
+	        write(6,*) 'waiting for vertical: ',id
+	        write(6,*) 'waiting... ',t,tt
+	        write(6,*) 'waiting... ',iel,w
+	        write(6,*) 'waiting... ',lb,z
+	      end if
+	    end if
+	  end if
 	end if
 
 	call track_xi_check('after advection track_xi',id,xi)
 
 	if( bdebug ) then
-	  write(6,*) 'final...'
+	  write(6,*) 'after horizontal advection'
+	  write(6,*) ieorig,iel
+	  write(6,*) lborig,lb,lmax
 	  write(6,*) th,t,iel
 	  write(6,*) s
 	  write(6,*) xi
@@ -456,18 +475,26 @@ c************************************************************
 	  end if
 	end if
 
+	if( bdebug ) then
+	  write(6,*) 'after vertical advection'
+	  write(6,*) ieorig,iel
+	  write(6,*) lborig,lb,lmax
+	  write(6,*) w,z
+	end if
+
 	!-----------------------------------------------
 	! compute remaining time and check for error
 	!-----------------------------------------------
 
 	if( iel .ne. ieorig .and. iel > 0 ) then
-	  call track_xi_adjust_layer(iel,lb,z)
+	  call track_xi_adjust_layer(id,ieorig,iel,lb,z)
 	end if
 
 	time = tt - t
 
 	if( bdebug ) then
 	  write(6,*) 'final time: ',time
+	  write(6,*) iel,lb,z
 	  write(6,*) 'track_xi end debugging'
 	end if
 
@@ -505,8 +532,6 @@ c copies internal coordinates to new element - avoid falling on vertex
 
 	integer ie
 	double precision xi(3)
-
-	include 'param.h'
 
 	logical bdebug
 	integer ii,in,it
@@ -644,8 +669,6 @@ c checks if particle is on material boundary
 	integer ie
 	double precision xi(3)
 
-	include 'param.h'
-
 	integer ii
 
 	track_xi_on_material_boundary = .false.
@@ -660,7 +683,22 @@ c checks if particle is on material boundary
 
 c************************************************************
 
-	subroutine track_xi_adjust_layer(iel,lb,z)
+	function track_xi_has_layer(iel,lb)
+
+	use levels
+
+	implicit none
+
+	logical track_xi_has_layer
+	integer iel,lb
+
+	track_xi_has_layer = ( ilhv(iel) >= lb )
+
+	end
+
+c************************************************************
+
+	subroutine track_xi_adjust_layer(id,ieorig,iel,lb,z)
 
 c adjusts layer when passing from one element to the next
 c
@@ -670,23 +708,135 @@ c is only temporary - must also adjust w
 
 	implicit none
 
+	integer id
+	integer ieorig
 	integer iel
 	integer lb
 	double precision z
 
-	include 'param.h'
+	integer lb2
+	double precision z2
 
 	integer lmax
 
 	lmax = ilhv(iel)
 
+	!call track_new_vert_pos(id,ieorig,iel,lb,lb2,z,z2)
+	!lb = lb2
+	!z = z2
+
 	if( lb > lmax ) then
 	  lb = lmax
 	  z = 1.
+	  write(6,*) 'warning: wrong layer: ',iel,lb,lmax
 	end if
 
 	end
 
+c************************************************************
+c************************************************************
+c************************************************************
+
+	subroutine track_new_vert_pos(id,ie1,ie2,lb1,lb2,z1,z2)
+
+	use levels
+
+	implicit none
+
+	integer id
+	integer ie1,ie2
+	integer lb1,lb2
+	double precision z1,z2
+
+	logical bdebug
+	integer ierror
+	integer nlvaux,nsigma,hsigma
+	integer lmax1,lmax2,l
+	real hl1(nlv)
+	real hl2(nlv)
+	real hp,hp1,hp2,hd
+	real htot1,htot2,htotz1,htotz2
+
+	real, parameter :: eps = 1.e-5
+
+	call get_sigma_info(nlvaux,nsigma,hsigma)
+
+	if( hsigma < 10000 ) then
+	  stop 'error stop track_layer_thickness: hsigma'
+	end if
+	if( nsigma > 0 ) then
+	  lb2 = lb1
+	  z2 = z1
+	  return
+	end if
+
+	bdebug = id == 341
+
+	lmax1 = nlv
+	call lagr_layer_thickness(ie1,lmax1,hl1,htot1,htotz1)
+	if( lb1 > lmax1 ) goto 99
+	if( z1 < 0. .or. z1 > 1. ) goto 99
+
+	hd = 0.
+	do l=1,lb1-1
+	  hd = hd + hl1(l)
+	end do
+	hp1 = hd + hl1(lb1)*z1
+
+	lmax2 = nlv
+	call lagr_layer_thickness(ie2,lmax2,hl2,htot2,htotz2)
+
+	hp2 = hp1 * (htotz2/htotz1)
+
+	if( hp2 < 0 .or. hp2 > htot2 ) goto 99
+
+	hd = 0.
+	do l=1,lmax2
+	  if( hd + hl2(l) >= hp2 ) exit
+	  hd = hd + hl2(l)
+	end do
+
+	lb2 = l
+	if( lb2 > lmax2 ) then	!HACK
+	  z2 = -1.
+	else
+	  z2 = (hp2-hd)/hl2(l)
+	end if
+
+	if( lb2 > lmax2 .and. abs(z1-1.) < eps ) then
+	  lb2 = lmax2
+	  z2 = 0.
+	else if( z2 > 1. .and. abs(z1-1.) < eps ) then
+	  z2 = 1.
+	end if
+	if( z2 > 1. .and. abs(z2-1.) < eps ) z2 = 1.
+
+	if( z2 < 0. .or. z2 > 1. ) goto 99
+	if( lb2 > lmax2 ) goto 99
+	!if( bdebug ) goto 99
+
+	return
+   99	continue
+	ierror = 0
+	write(6,*) 'debug track_new_vert_pos: ',id
+	write(6,*) ie1,lb1,lmax1,z1
+	write(6,*) ie2,lb2,lmax2,z2
+	write(6,*) (hl1(l),l=1,lmax1)
+	write(6,*) (hl2(l),l=1,lmax2)
+	write(6,*) hd
+	write(6,*) hp1,htot1,htotz1
+	write(6,*) hp2,htot2,htotz2
+	if( lb1 > lmax1 .or. lb2 > lmax2 ) ierror = 1
+	if( hp1 < 0. .or. hp1 > htotz1 ) ierror = 2
+	if( hp2 < 0. .or. hp2 > htotz2 ) ierror = 2
+	if( z1 < 0. .or. z1 > 1. ) ierror = 3
+	if( z2 < 0. .or. z2 > 1. ) ierror = 3
+	write(6,*) 'internal error: ',ierror
+	stop 'error stop track_new_vert_pos: internal error'
+	end
+
+c************************************************************
+c************************************************************
 c************************************************************
 
 	subroutine track_xi_get_flux(iel,lb,iflux,alpha,vel)
@@ -704,8 +854,6 @@ c gets flux and vel information for element and layer
 	integer iflux			!node of flux line
 	double precision alpha		!fraction of opsosite side
 	double precision vel		!velocity in element (always positive)
-
-	include 'param.h'
 
 	logical bdebug
 	integer ii,in,io,nn,no,inext,imax
@@ -829,14 +977,13 @@ c************************************************************
 	double precision hd		!layer thickness (return)
 	double precision w		!vertical velocity (return)
 
-	include 'param.h'
-
 	integer ii,k
 	real wo,wn
 	real hl(nlv)
+	real htot,htotz
 
 	lmax = nlv
-	call lagr_layer_thickness(iel,lmax,hl)
+	call lagr_layer_thickness(iel,lmax,hl,htot,htotz)
 
 	if( lb > lmax ) goto 99
 
@@ -907,10 +1054,9 @@ c prints information on element
 
 	integer ie
 
-	include 'param.h'
-
 	integer ii,k,lmax,l
 	real hl(nlv)
+	real htot,htotz
 
 	write(6,*) 'info on element ',ie
 
@@ -922,8 +1068,8 @@ c prints information on element
 	write(6,*) (ieltv(ii,ie),ii=1,3)
 
 	lmax = nlv
-	call lagr_layer_thickness(ie,lmax,hl)
-	write(6,*) lmax
+	call lagr_layer_thickness(ie,lmax,hl,htot,htotz)
+	write(6,*) lmax,htot,htotz
 	write(6,*) (hl(l),l=1,lmax)
 
 	write(6,*) (ulov(l,ie),l=1,lmax)

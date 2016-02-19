@@ -1329,7 +1329,7 @@ c plots wind vector
         real t,sc,r
         real wind(2)
         integer it,nintp,nvar,nread
-        character*40 file,text
+        character*80 file,text
 
         real array(ndim)
         save array

@@ -14,6 +14,7 @@ c 23.04.2014    ggu	new 3d insertion, new version of lgr file, new copy
 c 06.05.2015    ccf	write relative total depth and type to output
 c 07.05.2015    ccf	assign settling velocity to particles
 c 07.10.2015    mic	seed 3d between surface and l_bot 
+c 15.02.2016    ggu&fra	new release type ipvert=-1
 c
 c*******************************************************************
 
@@ -94,6 +95,7 @@ c 1 inserts at end of time step - no advection for this time step needed
 	  call xy2xi(ie,xx,yy,xi)
 	  lgr_ar(nbdy)%xi(:) = xi
 	end if
+	call track_xi_check('insert particle',idbdy,xi)
 	if( bdebug ) then
 	  write(6,*) 'debug insert particle: ',nbdy
 	  write(6,*) ie,idbdy
@@ -147,6 +149,7 @@ c n = abs(itype)
 c itype == 0	release one particle in surface layer
 c itype > 0	release n particles regularly
 c itype < 0	release n particles randomly
+c itype == -1	release particles in every layer
 
 	include 'param.h'
 
@@ -158,6 +161,7 @@ c itype < 0	release n particles randomly
 	integer linf	!bottom layer [1-lmax]
 	real z		!vertical (relative) coordinate [0-1]
 	real hl(nlv)
+	real htot,htotz
 
 	bdebug = .true.
 	bdebug = .false.
@@ -168,15 +172,11 @@ c itype < 0	release n particles randomly
 	b2d = nlv <= 1
 
 	if( itype /= 0 ) then
-	  if(linf.gt.lmax)then 
-	    write(6,*)'WARMING WRONG bottom layer: ',linf,lmax
-	    write(6,*)'imposing linf=lmax'
-	    linf=lmax 
-	  else if (linf.eq.0)then 
-	    write(6,*)'WARNING no bottom layer: ',linf,' use: ',lmax 
+	  if( linf .gt. lmax ) then 
 	    linf = lmax 
-	  endif	
-	  write(6,*)'releasing bottom layer: ',linf,lmax 
+	  else if (linf.eq.0)then 
+	    linf = lmax 
+	  end if	
 	end if
 
 	!-------------------------------------------------
@@ -190,12 +190,20 @@ c itype < 0	release n particles randomly
 	  return
 	end if
 
+	if( itype == -1 ) then	! realease one particle in every layer
+	  do l=1,linf
+	    z = 0.5
+	    call insert_particle(ie,ity,l,rtime,x,y,z)
+	  end do
+	  return
+	end if
+
 	!-------------------------------------------------
 	! handle 3d situation
 	!-------------------------------------------------
 
 	n = abs(itype)
-	call lagr_layer_thickness(ie,lmax,hl)
+	call lagr_layer_thickness(ie,lmax,hl,htot,htotz)
 	h = 0.
 
 	do l=1,linf 

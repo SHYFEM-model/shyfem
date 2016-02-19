@@ -517,8 +517,14 @@ c tracks one particle - uses internal coordinates
         
 	integer n
 	integer iendx,ieorig,ieold
+	integer iperc
 	real torig
+	real perc
 	double precision xx,yy,zz
+
+	integer, save :: nk = 0
+	integer, save :: nl = 0
+	integer, save :: nu = 0
 
         if(iel.le.0) return	!particle out of domain
 
@@ -569,12 +575,19 @@ c---------------------------------------------------------------
 
 	if( ttime > 0. ) then 		!not finished advecting
 	  if( n == 0 ) then
-	    write(6,*) 'killing particle ',id,iel,n,ttime
+	    nk = nk + 1
+	    perc = (100.*nk)/idbdy
+	    write(6,1000) 'killing particle ',id,iel,n,ttime,perc
+	!if( id == 9939 ) stop
 	    iel = -iel
 	  else if( iel < 1 ) then
-	    write(6,*) 'loosing particle ',id,iel,n,ttime
+	    nl = nl + 1
+	    perc = (100.*nl)/idbdy
+	    write(6,1000) 'loosing particle ',id,iel,n,ttime,perc
 	  else
-	    write(6,*) 'unknown error ',id,iel,n,ttime
+	    nu = nu + 1
+	    perc = (100.*nu)/idbdy
+	    write(6,1000) 'unknown error ',id,iel,n,ttime,perc
 	  end if
 	end if
 
@@ -586,6 +599,7 @@ c---------------------------------------------------------------
 c end of routine
 c---------------------------------------------------------------
 
+ 1000	format(a,3i10,2f10.2)
 	end
 
 c**********************************************************************

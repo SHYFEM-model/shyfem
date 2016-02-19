@@ -192,6 +192,8 @@ stub:
 list:
 	@ls
 
+.PHONY: links
+
 # Rules ------------------
 
 .c.o:

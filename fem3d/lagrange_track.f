@@ -85,6 +85,7 @@ c variabili di servizio
 	real dstbdy ! distanza tra lato entrata e uscita lungo la traiettoria
         real bdx ! distanza (frazione) del body da estremo piu vicno retta entrata
 	real gf !precision along the side
+	real htot,htotz
         integer pbdx,gbdx ! numero interno dell'estremo piu vicino e piu lontano dal body
         integer ps,ng,nl,nnm,i1,i2
 	data nnm/0/
@@ -512,7 +513,7 @@ c          write(lunit,*) 'track orig',bdy
          call getzvel(ie,zn0,l0,l_int,l_out,a_int,a_out,w)
 	 if( blgrsurf ) w = 0.
 	 lmax = nlvdi
-         call lagr_layer_thickness(ie,lmax,hl)
+         call lagr_layer_thickness(ie,lmax,hl,htot,htotz)
          layd=hl(l0)
 
 ! check for new body position 
@@ -692,6 +693,7 @@ c variabili di servizio
 	integer pbdx,gbdx ! numero interno dell'estremo piu vicino e piu lontano dal body
         integer ps,ng,nl,i1,i2
         real gf !precision along the side
+	real htot,htotz
 c inizializzazione parametri
         data idum/947437/
         save idum
@@ -1008,7 +1010,7 @@ c calcolo distanza massima percorribile all''interno di elemento
         call getzvel(ie,zn0,l0,l_int,l_out,a_int,a_out,w)
 	if( blgrsurf ) w = 0.
 	lmax = nlvdi
-        call lagr_layer_thickness(ie,lmax,hl)
+        call lagr_layer_thickness(ie,lmax,hl,htot,htotz)
         layd=hl(l0)
 
 c=====================================================================
