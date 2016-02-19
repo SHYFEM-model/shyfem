@@ -1,3 +1,18 @@
+version  7_5_3    19-02-2016    VERS_7_5_3
+
+========================================================== 19-02-2016 - 7_5_3
+
+c ./fem3d/noselab1.f:
+c 19.02.2016    ggu     bug fixes for bsumvar and mode==2 (sum)
+c
+c ./fem3d/subver.f:
+c 19.02.2016	ggu	version 7.5.3
+c
+c ./fem3d/mod_conz.f:
+! 19.02.2016    ggu     set default decay to zero
+
+==========================================================
+
 version  7_5_2    19-02-2016    VERS_7_5_2   commit_2016-02-19
 
 version  7_5_2    19-02-2016    VERS_7_5_2
