@@ -16,6 +16,7 @@ c 10.09.2015    ggu     std and rms for averaging implemented
 c 11.09.2015    ggu     write in gis format
 c 23.09.2015    ggu     handle more than one file (look for itstart)
 c 19.02.2016    ggu     bug fixes for bsumvar and mode==2 (sum)
+c 22.02.2016    ggu     handle catmode
 c
 c**************************************************************
 
@@ -68,6 +69,7 @@ c elaborates nos file
 
 	integer iapini
 	integer ifem_open_file
+	logical concat_cycle
 
 c--------------------------------------------------------------
 
@@ -142,21 +144,6 @@ c--------------------------------------------------------------
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
 
 	call handle_nodes
-	!if( bnodes .or. bnode ) then
-	!  if( bnodes ) then
-	!    nnodes = 0
-	!    call get_node_list(nodefile,nnodes,nodes)
-	!    allocate(nodes(nnodes))
-	!    call get_node_list(nodefile,nnodes,nodes)
-	!  else
-	!    nnodes = 1
-	!    allocate(nodes(nnodes))
-	!    nodes(1) = nodesp
-	!  end if
-	!  write(6,*) 'nodes: ',nnodes,(nodes(i),i=1,nnodes)
-	!  call convert_internal_nodes(nnodes,nodes)
-	!  bnodes = .true.
-	!end if
 
 	!--------------------------------------------------------------
 	! time management
@@ -272,6 +259,7 @@ c--------------------------------------------------------------
 	 !write(6,*) 'peek: ',it,itnew,ierr
 	 if( ierr .ne. 0 ) itnew = it
 
+	 if( concat_cycle(it,itold,itstart,nrec) ) cycle
 	 if( .not. elabutil_check_time(it,itnew,itold) ) cycle
 
 	 do i=1,nvar

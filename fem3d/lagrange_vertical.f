@@ -321,7 +321,7 @@ c************************************************************
 	call track_xi_get_flux(iel,lb,iflux,alpha,vel)
 
 	if( vel < 0.d0 ) then
-	  write(6,*) 'vel is 0'
+	  write(6,*) 'vel < 0'
 	  write(6,*) vel,iel,lb,lmax
 	  write(6,*) (flux3d(lb,ii,iel),ii=1,3)
 	end if
@@ -385,7 +385,10 @@ c************************************************************
 	!-----------------------------------------------
 
 	tt = time
-	t = min(th,tv,tt)
+	t = tt
+	if( th > 0. ) t = min(t,th)
+	if( tv > 0. ) t = min(t,tv)
+	!t = min(th,tv,tt)
 
 	if( bdebug ) then
 	  write(6,*) 'times for advection'
@@ -412,7 +415,9 @@ c************************************************************
 	! handle horizontal advection
 	!-----------------------------------------------
 
-	if( th > t ) then		!body remains in element
+	if( th == 0. ) then		!body not moving
+	  !
+	else if( th > t ) then		!body remains in element
 	  ds = (1.-s)*t/th
 	  s = s + ds
 	  if( s > 1. ) goto 97
@@ -428,8 +433,7 @@ c************************************************************
 	    xi = xie
 	    if( th == 0. ) then
 	      t = min(tv,tt)	!just advect vertically
-	      !if( id == 31690 ) then
-	      if( id == -1 ) then
+	      if( bdebug ) then
 	        write(6,*) 'waiting for vertical: ',id
 	        write(6,*) 'waiting... ',t,tt
 	        write(6,*) 'waiting... ',iel,w
@@ -454,7 +458,9 @@ c************************************************************
 	! handle vertical advection
 	!-----------------------------------------------
 
-	if( tv > t ) then		!body remains in layer
+	if( tv == 0. ) then		!body not moving
+	  !
+	else if( tv > t ) then		!body remains in layer
 	  dz = w*t/hd
 	  z = z - dz
 	else

@@ -134,6 +134,7 @@ c----------------------------------------------------------------
 	use projection
 	use coordinates
 	use mod_subset
+	use mod_bfm
 !$	use omp_lib	!ERIC
 
 c----------------------------------------------------------------
@@ -306,6 +307,7 @@ c-----------------------------------------------------------
 	call sp136(ic)
         call shdist(rdistv)
 	call tracer_init
+	call bfm_init
 	call renewal_time
 
 	call submud_init
@@ -740,6 +742,8 @@ c*****************************************************************
 	
 !$	use omp_lib	!ERIC
 	
+	use mod_bfm
+
 	implicit none
 	
 	real getpar
@@ -765,22 +769,24 @@ c*****************************************************************
 
 !$OMP SINGLE 
 
-!$OMP TASKWAIT
-!!!$OMP TASKGROUP
+!!!$OMP TASKWAIT
+!$OMP TASKGROUP
 
 !$OMP TASK 
-	
 	call barocl(1)
-	
-	!print *, " end barocl"
 !$OMP END TASK
-!$OMP TASK
-	 !print *, "tracer"
+
+!$OMP TASK IF ( iconz > 0 )
 	 call tracer_compute
-	 !print *, "end tracer"
 !$OMP END TASK
-!!!$OMP END TASKGROUP	
-!$OMP TASKWAIT	
+
+!$OMP TASK IF ( ibfm > 0 )
+	 call bfm_compute
+!$OMP END TASK
+
+!$OMP END TASKGROUP	
+!!!$OMP TASKWAIT	
+
 !$OMP END SINGLE 
 
 !$OMP END PARALLEL 	

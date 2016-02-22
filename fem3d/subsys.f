@@ -116,6 +116,7 @@ c 06.05.2015	ccf	new parameters itmoff and offlin
 c 29.09.2015	ggu	new boundary file surfvel
 c 29.09.2015	ggu	new initial file uvinit, new flgrst
 c 01.02.2016	ggu	some plot params shifted to para section (bbgray, etc.)
+c 22.02.2016	ggu	new file for initial conditions bfmini
 c
 c************************************************************************
 
@@ -2290,6 +2291,7 @@ c		GOTM turbulence model (iturb = 1).
 c |saltin|	Name of file containing initial conditions for salinity
 c |tempin|	Name of file containing initial conditions for temperature
 c |conzin|	Name of file containing initial conditions for concentration
+c |bfmini|	Name of file containing initial conditions for bfm
 c |offlin|	Name of the file if a offline is to be performed. The
 c		file has to be produced by a previous run
 c		with the parameter |idtoff| greater than 0.
@@ -2310,6 +2312,7 @@ c		with the parameter |idtoff| greater than 0.
         call addfnm('saltin',' ')
         call addfnm('tempin',' ')
         call addfnm('conzin',' ')
+        call addfnm('bfmini',' ')
 	call addfnm('offlin',' ')
 
 c DOCS	END

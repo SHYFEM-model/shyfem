@@ -6,6 +6,7 @@
 ! 15.07.2015	ggu	written from scratch
 ! 22.09.2015	ggu	new routine open_shy_file()
 ! 10.10.2015	ggu	code added to handle FLX routines
+! 22.02.2016	ggu	handle catmode
 !
 !************************************************************
 
@@ -72,6 +73,8 @@
 	integer, save :: date = 0
 	integer, save :: time = 0
 	integer, save :: datetime(2)
+
+	integer, save :: catmode = 0
 
         character*80, save :: infile
         character*80, save :: stmin,stmax
@@ -168,6 +171,8 @@
 
         call clo_add_option('outformat form','native','output format')
 
+        call clo_add_option('catmode cmode',0.,'concatenation mode')
+
 	end subroutine elabutil_set_options
 
 !************************************************************
@@ -211,6 +216,8 @@
         call clo_get_option('inclusive',binclusive)
 
         call clo_get_option('outformat',outformat)
+
+        call clo_get_option('catmode',catmode)
 
         if( .not. bask .and. .not. bmem ) call clo_check_files(1)
         call clo_get_file(1,infile)
@@ -974,6 +981,39 @@ c nunit is 0 if no other file exists
         end if
 
         end
+
+c***************************************************************
+
+	function concat_cycle(it,itold,itstart,nrec)
+
+	use elabutil
+
+c decides if with concatenation we have to use record or not
+
+	implicit none
+
+	logical concat_cycle
+	integer it,itold,itstart
+	integer nrec
+
+	concat_cycle = .false.
+
+        write(66,*) 'ggu: ',it,itold,itstart,nrec
+
+        if( catmode < 0 .and. nrec /= 1 ) then
+          if( it <= itold ) then
+            write(6,*) 'skipping record: ',it
+            it = itold
+	    concat_cycle = .true.
+          end if
+        else if( catmode > 0 .and. itstart /= -1 ) then
+          if( it >= itstart ) then
+            write(6,*) 'skipping record: ',it
+	    concat_cycle = .true.
+          end if
+        end if
+
+	end
 
 c***************************************************************
 

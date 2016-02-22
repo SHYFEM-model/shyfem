@@ -79,6 +79,7 @@ c 29.10.2014    ccf	include vel3dn boundary file
 c 03.11.2014    ggu	nbdim deleted
 c 23.06.2015    ggu	setbc() deleted, nrz,nrq eliminated
 c 15.02.2016    ggu	check if boundary is given twice
+c 22.02.2016    ggu	new files bfmbcn integrated
 c
 c************************************************************************
 
@@ -152,6 +153,8 @@ c reads boundary info from STR file
 	    bfm1bc(i) = ' '
 	    bfm2bc(i) = ' '
 	    bfm3bc(i) = ' '
+
+	    bfmbcn(i) = ' '
 
 	  end do
 	  icall = 1
@@ -347,6 +350,8 @@ cc File name for OB condition in ERSEM MODULE - undocumented
 	call addfnm('bfm2bc',' ')
 	call addfnm('bfm3bc',' ')
 
+	call addfnm('bfmbcn',' ')
+
 c |intpol|	Order of interpolation for the boundary values read
 c		through files. Use for 1 for stepwise (no) interpolation,
 c		2 for linear and 4 for cubic interpolation. 
@@ -485,6 +490,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccc
 	call getfnm('bfm1bc',bfm1bc(ibc))
 	call getfnm('bfm2bc',bfm2bc(ibc))
 	call getfnm('bfm3bc',bfm3bc(ibc))
+
+	call getfnm('bfmbcn',bfmbcn(ibc))
 
 	!call check_bnd_entries(ibc)
 
@@ -689,6 +696,7 @@ c********************************************************************
 	  call print_filename(bfm1bc(ibc))
 	  call print_filename(bfm2bc(ibc))
 	  call print_filename(bfm3bc(ibc))
+	  call print_filename(bfmbcn(ibc))
 	end do
 
 	write(6,*)
@@ -742,6 +750,7 @@ c********************************************************************
           write(6,*) lam2dn(j)
 	  write(6,*) tox3dn(j)
 	  write(6,*) bfm1bc(j),bfm2bc(j),bfm3bc(j)
+	  write(6,*) bfmbcn(j)
 	  write(6,*) (bnd(i,j),i=1,nbvdim)
 	end do
 
@@ -1157,6 +1166,8 @@ c********************************************************************
           file = bfm2bc(ibc)
         else if( what .eq. 'bfm3' ) then
           file = bfm3bc(ibc)
+        else if( what .eq. 'bfm' ) then
+          file = bfmbcn(ibc)
         else
           write(6,*) 'keyword not recognized: ',what
           stop 'error stop get_boundary_file'

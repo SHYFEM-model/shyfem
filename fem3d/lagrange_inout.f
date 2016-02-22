@@ -93,6 +93,7 @@ c 1 inserts at end of time step - no advection for this time step needed
 	  xx = x
 	  yy = y
 	  call xy2xi(ie,xx,yy,xi)
+	  call xi_move_inside(ie,xi)
 	  lgr_ar(nbdy)%xi(:) = xi
 	end if
 	call track_xi_check('insert particle',idbdy,xi)
@@ -129,6 +130,53 @@ c 1 inserts at end of time step - no advection for this time step needed
 	write(6,*) 'Cannot insert more than nbdymax particles'
 	write(6,*) 'Please change nbdymax in STR file'
 	stop 'error stop insert_particle: nbdy'
+	end
+
+c*******************************************************************
+
+	subroutine xi_move_inside(ie,xi)
+
+c moves particle a small distance inside the element
+c this is done to not fall onto the side or vertex
+
+	integer ie
+	double precision xi(3)
+
+	integer is,it,i
+	double precision dist,disttot
+	double precision, parameter :: eps = 1.e-5
+
+	is = 0
+	in = 0
+	do i=1,3
+	  if( xi(i) == 0. ) then
+	    is = is + i
+	    in = in + 1
+	  end if
+	end do
+
+	if( in == 0 ) return
+
+	if( in == 1 ) then		!particle on side
+	  disttot = 0.
+	  do i=1,3
+	    if( i /= is ) then
+	      dist = eps*xi(i)
+	      xi(i) =  xi(i) - dist
+	      disttot = disttot + dist
+	    end if
+	  end do
+	  xi(is) = xi(is) + disttot
+	else if( in == 2 ) then		!particle on vertex
+	  is = 6 - is
+	  xi(is) = 1. - 2.*eps
+	  do i=1,3
+	    if( i /= is ) xi(i) = xi(i) + eps
+	  end do
+	else
+	  stop 'error stop xi_move_inside: internal error'
+	end if
+
 	end
 
 c*******************************************************************

@@ -16,6 +16,7 @@
         character*80 bfm2bc(nbc_dim)
         character*80 bfm3bc(nbc_dim)
         character*80 vel3dn(nbc_dim)
+        character*80 bfmbcn(nbc_dim)
 
         common /boundn/ boundn
         common /conzn/ conzn
@@ -31,9 +32,10 @@
         common /bfm2bc/ bfm2bc
         common /bfm3bc/ bfm3bc
         common /vel3dn/ vel3dn
+        common /bfmbcn/ bfmbcn
 
 	save /boundn/,/conzn/,/saltn/,/tempn/
 	save /bio2dn/,/sed2dn/,/mud2dn/,/lam2dn/,/dmf2dn/,/tox3dn/
 	save /bfm1bc/,/bfm2bc/,/bfm3bc/
-	save /vel3dn/
+	save /vel3dn/,/bfmbcn/
 

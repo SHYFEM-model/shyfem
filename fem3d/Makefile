@@ -150,7 +150,7 @@ NEWOBJS = \
 	  newcon.o newconz.o newcon_omp.o \
 	  newchk.o newfix.o \
 	  newtvd.o newstab.o newsig.o \
-	  newnudge.o newpoi.o \
+	  newnudge.o newpoi.o newbfm.o \
 	  $(MODULES) \
 
 # objects for library
@@ -761,6 +761,7 @@ last:
 ../femlib/mod/meteo_forcing_module.mod: submeteo2.o
 ../femlib/mod/mod_area.mod: mod_area.o
 ../femlib/mod/mod_bclfix.mod: mod_bclfix.o
+../femlib/mod/mod_bfm.mod: newbfm.o
 ../femlib/mod/mod_bnd.mod: mod_bnd.o
 ../femlib/mod/mod_bnd_aux.mod: mod_bnd_aux.o
 ../femlib/mod/mod_bndo.mod: mod_bndo.o
@@ -964,6 +965,9 @@ newbcl.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_ts.mod femtime.h mkonst.h \
 		param.h pkonst.h 
+newbfm.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_diff_visc_fric.mod femtime.h \
+		mkonst.h param.h 
 newchao.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_baro.mod femtime.h param.h 
@@ -1154,6 +1158,7 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_area.mod \
 		../femlib/mod/mod_bclfix.mod \
+		../femlib/mod/mod_bfm.mod \
 		../femlib/mod/mod_bnd.mod \
 		../femlib/mod/mod_bnd_aux.mod \
 		../femlib/mod/mod_bndo.mod \

@@ -10,6 +10,7 @@ c 29.10.2012    ggu     created from scratch
 c 17.06.2013    ggu     do not pass function into subroutine
 c 02.07.2014    ggu     new framework finished
 c 10.07.2014    ggu     only new file format allowed
+c 22.02.2016    ggu&eps new files for generic tracer (nvar>1)
 c
 c*******************************************************************	
 c*******************************************************************	
@@ -165,12 +166,145 @@ c closes T/S file
 c*******************************************************************	
 c*******************************************************************	
 c*******************************************************************	
-c****** old routines ***********************************************	
+c****** new routines ***********************************************	
 c*******************************************************************	
 c*******************************************************************	
 c*******************************************************************	
 
+	subroutine tracer_file_open(file,it,nvar,np,nlv,iunit)
 
+c opens tracer file
+
+	use intp_fem_file
+
+	implicit none
+
+	include 'param.h'
+
+	character*(*) file		!name of file
+	integer it
+	integer nvar
+	integer np			!number of points expected
+	integer nlv
+	integer iunit(3)		!unit number (return)
+
+	integer nexp,lexp,nintp
+	integer id
+	double precision dtime
+	integer nodes(nvar)
+	real vconst(nvar)
+
+	dtime = it
+	nexp = np
+	lexp = nlv
+	nintp = 2
+	nodes = 0
+	vconst = 0.
+
+!$OMP CRITICAL
+	call iff_init(dtime,file,nvar,nexp,lexp,nintp
+     +                                  ,nodes,vconst,id)
+!$OMP END CRITICAL
+
+	iunit(1) = id
+
+	return
+   99	continue
+	write(6,*) 'Cannot open file: ',file
+	stop 'error stop ts_file_open: error file open'
+	end
+
+c*******************************************************************	
+
+	subroutine tracer_next_record(it,iunit,nvar,nlvddi,nkn,nlv,value)
+
+c reads next record of tracer
+
+	use intp_fem_file
+
+	implicit none
+
+	include 'param.h'
+
+	integer it
+	integer iunit(3)
+	integer nvar
+	integer nlvddi
+	integer nkn
+	integer nlv
+	real value(nlvddi,nkn,nvar)
+
+	integer id,ldim,ndim,ivar
+	double precision dtime
+	character*80 string
+
+c--------------------------------------------------------------
+c initialize
+c--------------------------------------------------------------
+
+	id = iunit(1)
+
+c--------------------------------------------------------------
+c read new data
+c--------------------------------------------------------------
+
+	dtime = it
+	ndim = nkn
+	ldim = nlvddi
+
+	!write(6,*)'reading tracer values', it,dtime
+
+	call iff_read_and_interpolate(id,dtime)
+	do ivar=1,nvar
+	  call iff_time_interpolate(id,dtime,ivar,ndim,ldim
+     +					,value(:,:,ivar))
+	end do
+
+c--------------------------------------------------------------
+c end of routine
+c--------------------------------------------------------------
+
+	end
+
+c*******************************************************************	
+
+	subroutine tracer_file_descrp(iunit,name)
+
+c sets description for file
+
+	use intp_fem_file
+
+	implicit none
+
+	integer iunit(3)
+	character*(*) name
+
+	call iff_set_description(iunit(1),0,name)
+
+	end
+
+c*******************************************************************	
+
+	subroutine tracer_file_close(iunit)
+
+c closes tracer file
+
+	use intp_fem_file
+
+	implicit none
+
+	integer iunit(3)
+
+	integer id
+
+	id = iunit(1)
+	call iff_forget_file(id)
+
+	end
+
+c*******************************************************************	
+c*******************************************************************	
+c*******************************************************************	
 c*******************************************************************	
 c*******************************************************************	
 c*******************************************************************	

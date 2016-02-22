@@ -1,5 +1,29 @@
 ============================================================
 
+Mon Feb 22 19:02:52 CET 2016
+
+new bfm implemented
+
+ LOG                       |  21 ++++
+ RELEASE_NOTES             |   6 +
+ fem3d/Makefile            |   7 +-
+ fem3d/bound_names.h       |   4 +-
+ fem3d/elabutil.f          |  40 ++++++
+ fem3d/lagrange_inout.f    |  48 ++++++++
+ fem3d/lagrange_vertical.f |  18 ++-
+ fem3d/newbfm.f            | 307 ++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/noselab1.f          |  18 +--
+ fem3d/shyfem.f            |  26 ++--
+ fem3d/subbnd.f            |  11 ++
+ fem3d/subsys.f            |   3 +
+ fem3d/subtsuvfile.f       | 136 +++++++++++++++++++-
+ femdoc/final/shyfem.pdf   | Bin 284588 -> 284587 bytes
+ 14 files changed, 611 insertions(+), 34 deletions(-)
+ new file:
+   fem3d/newbfm.f
+
+============================================================
+
 Fri Feb 19 17:56:08 CET 2016
 
 New version 7_5_3

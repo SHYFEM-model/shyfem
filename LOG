@@ -1,4 +1,25 @@
 
+22.02.2016
+
+c ./fem3d/elabutil.f:
+! 22.02.2016	ggu	handle catmode
+!
+c ./fem3d/subtsuvfile.f:
+c 22.02.2016    ggu&eps new files for generic tracer (nvar>1)
+c
+c ./fem3d/noselab1.f:
+c 22.02.2016    ggu     handle catmode
+c
+c ./fem3d/subbnd.f:
+c 22.02.2016    ggu	new files bfmbcn integrated
+c
+c ./fem3d/subsys.f:
+c 22.02.2016	ggu	new file for initial conditions bfmini
+c
+c ./fem3d/newbfm.f:
+c 22.02.2016    ggu&eps     new bfm routines created from newconz
+
+
 19.02.2016
 
 c ./fem3d/noselab1.f:
