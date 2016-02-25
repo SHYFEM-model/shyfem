@@ -3,19 +3,59 @@
 This is the README file for the SHYFEM model
 ============================================
 
-    Copyright (c) 1992-2012 by Georg Umgiesser
+    Copyright (c) 1992-2016 by 
 
-    Comments and additions should be sent to the author:
+    Georg Umgiesser
+    Oceanography, ISMAR-CNR
+    Arsenale Tesa 104, Castello 2737/F
+    30122 Venezia
+    Italy
 
-      Georg Umgiesser                                  
-      Oceanography, ISMAR-CNR
-      Arsenale Tesa 104, Castello 2737/F
-      30122 Venezia
-      Italy
+    Tel.   : +39-041-2407943
+    Fax    : +39-041-2407940
+    E-Mail : georg.umgiesser@ismar.cnr.it
 
-      Tel.   : ++39-041-2407943
-      Fax    : ++39-041-2407940
-      E-Mail : georg.umgiesser@ismar.cnr.it
+
+    The software is also supported by various institutions:
+
+
+    CNR - ISMAR (Istituto di Scienze Marine)
+    ---------
+	Georg Umgiesser, system engineering
+	Christian Ferrarin, renewal times, sediment transport
+	Marco Bajo, system solvers, assimilation
+	Debora Bellafiore, non-hydrostatic modeling, fluid mud
+	Michol Ghezzo, ecological modeling, lagrangian model
+	Francesca De Pascalis, lagrangian model
+
+    CNR - IAMC (Istituto di Ambiente Marino Costiero)
+    ---------
+	Andrea Cucco, lagrangian model, renewal times
+
+    OGS (Istituto Nazionale di Oceanografia e di Geofisica Sperimentale)
+    ---------
+	Cosimo Solidoro, ecological modeling, BFM
+	Donata Melaku Canu, ecological modeling, EUTRO
+	Eric Pascolo, OMP parallelization
+ 
+    APC (Open Access center for Marine Research, Klaipeda University, Lithuania)
+    ---------
+	Petras Zemlys, ecological modeling, AquaBC
+	
+    Istanbul University
+    ---------
+	Ali Erturk, ecological modeling, AquaBC
+ 
+    Fondazione CMCC (Centro Mediterraneno per i cambiamenti climatici)
+    ---------
+	Silvia Mocavero, MPI parallization
+	Giorgio Micaletto, MPI parallization
+	
+	
+    Comments and issues should be posted in the Issues section 
+    on the GitHub repository:
+
+    https://github.com/SHYFEM-model/
 
 
     This file is part of SHYFEM.
