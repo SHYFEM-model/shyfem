@@ -1,3 +1,25 @@
+version  7_5_5    11-03-2016    VERS_7_5_5
+
+========================================================== 11-03-2016 - 7_5_5
+
+c ./fem3d/subfemintp.f:
+! 07.03.2016	ggu	bug fix in iff_read_header(): no time adjust if ierr/=0
+!
+c ./fem3d/subwaves.f:
+! 10.03.2016	ggu	in parametric wave module fix segfault (allocatable)
+!
+c ./fem3d/new3di.f:
+c 10.03.2016    ggu	in sp256v_intern() b/cpres in double precision
+c 11.03.2016    ggu	most variables passed in double precision
+c
+c ./fem3d/subver.f:
+c 11.03.2016	ggu	version 7.5.5
+c
+c ./fem3d/submeteo2.f:
+c 10.03.2016    ggu	check for pressure to be in reasonable bounds
+
+==========================================================
+
 version  7_5_4    22-02-2016    VERS_7_5_4   commit_2016-03-11
 
 version  7_5_4    22-02-2016    VERS_7_5_4
