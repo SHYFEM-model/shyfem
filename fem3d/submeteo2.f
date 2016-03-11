@@ -23,6 +23,7 @@ c 30.04.2015    ggu	ice integrated
 c 04.05.2015    ggu	bug in ice eliminated
 c 12.05.2015    ggu	introduced ia_icefree for icefree elements
 c 08.01.2016    ggu	bug fix in meteo_convert_wind_data() - no wind bug
+c 10.03.2016    ggu	check for pressure to be in reasonable bounds
 c
 c notes :
 c
@@ -469,6 +470,7 @@ c DOCS  END
 	if( nvar == 3 ) then
 	  call iff_get_var_description(id,3,string)
 	  if( string == ' ' ) string = papa
+	  call iff_set_var_description(id,3,string)
 	  if( string == papa ) then
 	    pfact = 1.
 	  else if( string == pamb ) then
@@ -529,6 +531,7 @@ c DOCS  END
 	integer k
 	integer itact
 	real cd,wxymax,txy,wspeed,wdir,fact,fice
+	real pmin,pmax
 
 	bnowind = iwtype == 0
 	bstress = iwtype == 2
@@ -634,10 +637,17 @@ c DOCS  END
 !	convert pressure
 !	---------------------------------------------------------
 
-	if( pfact /= 1. ) then
-          do k=1,n
-	    pp(k) = pfact * pp(k)
-	  end do
+	if( pfact /= 1. ) pp = pfact * pp
+
+	pmin = minval(pp)
+	pmax = maxval(pp)
+
+	if( pmin /= 0 .or. pmax /= 0. ) then
+	  if( pmin < 85000 .or. pmax > 110000 ) then
+	    write(6,*) 'pmin,pmax: ',pmin,pmax
+	    write(6,*) 'pressure values out of range'
+	    stop 'error stop meteo_convert_wind_data: pressure'
+	  end if
 	end if
 
 !	---------------------------------------------------------

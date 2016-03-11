@@ -174,6 +174,8 @@ c 17.09.2015    ggu	sp256w renamed to hydro_vertical
 c 17.09.2015    ggu	sp259f renamed to hydro
 c 18.09.2015    ggu	sp256 renamed to hydro_transports, file cleaned
 c 20.11.2015    ggu&erp chunk size introduced, omp finalized
+c 10.03.2016    ggu	in sp256v_intern() b/cpres in double precision
+c 11.03.2016    ggu	most variables passed in double precision
 c
 c******************************************************************
 
@@ -369,7 +371,7 @@ c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 
 	real vqv(nkn)
 
-	real drittl
+	double precision drittl
 	parameter (drittl=1./3.)
 
 	include 'mkonst.h'
@@ -377,7 +379,6 @@ c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 	include 'femtime.h'
 
         integer afix            !chao deb
-
 	logical bcolin
 	logical bdebug
 	integer kn(3)
@@ -385,19 +386,36 @@ c 12.01.2001    ggu     solve for znv and not level difference (ZNEW)
 	integer ngl
 	integer ilevel
 	integer ju,jv
-	real az,am,af,azpar,ampar
-	real dt,aj,rw
-	real zm
-	real ut,vt,uhat,vhat
-	real ht
-	real h11,hh999
-	real delta
-	real hia(3,3),hik(3),amatr(3,3)
-	real b(3),c(3),z(3)
-	real andg,zndg(3)
-	real acu
-	real uold,vold
-	real dbb,dbc,dcb,dcc,abn,acn
+
+	real azpar,ampar
+	real dt
+	real hia(3,3),hik(3)
+
+	!real az,am,af
+	!real zm
+	!real ht
+	!real amatr(3,3)
+	!real delta,h11,hh999
+	!real z(3)
+	!real andg,zndg(3)
+	!real b(3),c(3)
+	!real acu
+	!real uold,vold
+	!real ut,vt,uhat,vhat
+	!real dbb,dbc,dcb,dcc,abn,acn
+
+	double precision aj,rw,ddt
+	double precision amatr(3,3)
+	double precision delta,h11,hh999
+	double precision z(3)
+	double precision andg,zndg(3)
+	double precision zm
+	double precision az,am,af
+	double precision b(3),c(3)
+	double precision acu
+	double precision uold,vold
+	double precision ut,vt,uhat,vhat
+	double precision dbb,dbc,dcb,dcc,abn,acn
 
 c	data amatr / 2.,1.,1.,1.,2.,1.,1.,1.,2. /	!original
 	data amatr / 4.,0.,0.,0.,4.,0.,0.,0.,4. /	!lumped
@@ -421,6 +439,7 @@ c-------------------------------------------------------------
 	am=ampar
 	af=getpar('afpar')
 	call get_timestep(dt)
+	ddt = dt
 
 	ngl=nkn
 
@@ -448,17 +467,17 @@ c	------------------------------------------------------
 
 	zm=zm*drittl
 
-	if(bcolin) then
-		ht=hev(ie)
-	else
-		ht=hev(ie)+zm
-	end if
+	!if(bcolin) then
+	!	ht=hev(ie)
+	!else
+	!	ht=hev(ie)+zm
+	!end if
 
 	ilevel=ilhv(ie)
 	aj=ev(10,ie)
         afix=1-iuvfix(ie)      !chao deb
 
-        delta=dt*dt*az*am*grav*afix         !ASYM_OPSPLT        !chao deb
+        delta=ddt*ddt*az*am*grav*afix         !ASYM_OPSPLT        !chao deb
 
 c	------------------------------------------------------
 c	compute contribution from H^x and H^y
@@ -508,9 +527,9 @@ c	------------------------------------------------------
 	    hia(n,m) = aj * (amatr(n,m) + 12.*h11)
 	  end do
 	  acu = hia(n,1)*z(1) + hia(n,2)*z(2) + hia(n,3)*z(3)
-	  andg = 4.*aj*dt*zndg(n)
-	  !hia(n,n) = hia(n,n) + 4 * dt * aj / tau
-	  hik(n) = acu + andg + 12.*aj*dt*( ut*b(n) + vt*c(n) )	!ZNEW
+	  andg = 4.*aj*ddt*zndg(n)
+	  !hia(n,n) = hia(n,n) + 4 * ddt * aj / tau
+	  hik(n) = acu + andg + 12.*aj*ddt*( ut*b(n) + vt*c(n) )	!ZNEW
 	end do
 
 c	------------------------------------------------------
@@ -748,7 +767,7 @@ c
 	real dt
 
 c parameters
-	real drittl
+	double precision drittl
 	parameter (drittl=1./3.)
 c common
 	include 'mkonst.h'
@@ -769,35 +788,38 @@ c local
 	integer ilevel,ier,ilevmin
 	integer lp,lm
 	integer k1,k2,k3,k
-	real b(3),c(3)
-	real zz
-	real hlh,hlh_new
-c	real ht
-c	real bz,cz,dbz,dcz,zm
-	real bz,cz,zm,zmm
+        integer imin,imax
+	!real b(3),c(3)
+	real hlh
+	!real bz,cz,zm,zmm,zz
 	real xbcl,ybcl
         real xexpl,yexpl
-c	real beta
-	real ulm,vlm,taux,tauy
+	real ulm,vlm
+	!real taux,tauy
 	real gamma,gammat
         real hhi,hhim,hhip,uui,uuim,uuip,vvi,vvim,vvip
-c	real bb,bbt,cc,cct,aa,aat,ppx,ppy,aux,aux1,aux2
 	real bb,bbt,cc,cct,aa,aat,aux
 	real aust
 	real fact                       !$$BCHAO - not used
-	real uuadv,uvadv,vuadv,vvadv
+	!real uuadv,uvadv,vuadv,vvadv
         real rhp,rhm,aus
 	real hzg,gcz
         real xmin,xmax
-        integer imin,imax
-        real rdist
+        !real rdist
         real xadv,yadv,fm,uc,vc,f,um,vm,up,vp
-	real bpres,cpres
-	real vis
-        
+	!real bpres,cpres
+	!real vis
 	real rraux,cdf
 	real ss
 
+	double precision b(3),c(3)
+	double precision bpres,cpres
+	double precision zz,zm,zmm
+	double precision bz,cz
+	double precision taux,tauy,rdist
+	double precision vis
+	double precision uuadv,uvadv,vuadv,vvadv
+        
 c-----------------------------------------
 	real hact(0:nlvdi+1)
 	real rhact(0:nlvdi+1)
@@ -857,7 +879,7 @@ c-------------------------------------------------------------
 
 	  zz = zeov(ii,ie) - zeqv(kk)	!tide
 
-          zm=zm+zz
+          zm = zm + zz
 	  zmm = zmm + zeov(ii,ie)		!ZEONV
 
 	  bz=bz+zz*b(ii)
@@ -1218,28 +1240,20 @@ c
 	use basin
 
 	implicit none
-c
-c parameters
-	include 'param.h'
-	real drittl
-	parameter (drittl=1./3.)
-c common
+
 	include 'mkonst.h'
 	include 'pkonst.h'
 	include 'femtime.h'
 
-        integer afix            !chao deb
-
-
-
-c local
 	logical bcolin,bdebug
 	integer ie,ii,l,kk
 	integer ilevel
 	integer ju,jv
-	real az,am,dt,beta,azpar,ampar
-	real bz,cz,um,vm,dz,zm
-	real du,dv
+        integer afix            !chao deb
+	real dt,azpar,ampar
+	double precision az,am,beta
+	double precision bz,cz,um,vm,dz,zm
+	double precision du,dv
 c function
 	integer iround
 	real getpar

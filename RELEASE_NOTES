@@ -1,4 +1,11 @@
 
+11.03.2016	VERS_7_5_5
+
+	bug fix in iff_read_header - check for ierr/=0
+	in parametric wave module fix segfault
+	check for pressure to be in reasonable bounds
+	most variables passed in double precision (bug pressure)
+
 22.02.2016	VERS_7_5_4
 
 	new bfm implemented

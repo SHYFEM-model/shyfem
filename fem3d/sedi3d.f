@@ -2740,7 +2740,7 @@ c DOCS  END
 	  flx = max(flx,-0.01)
 
 !         -------------------------------------------------------------------
-!         Multiply by morphological accelaration factor
+!         Multiply by morphological acceleration factor
 !         -------------------------------------------------------------------
 
           !flx = flx * morpho

@@ -1,5 +1,25 @@
 ============================================================
 
+Fri Mar 11 10:44:57 CET 2016
+
+some bug fixes, double precision in new3di
+
+ CHANGES                  |  16 ++++++
+ LOG                      |  16 ++++++
+ RELEASE_NOTES            |   7 +++
+ fem3d/new3di.f           | 124 ++++++++++++++++++++++++++---------------------
+ fem3d/sedi3d.f           |   2 +-
+ fem3d/subfemintp.f       |  15 ++++--
+ fem3d/submeteo2.f        |  18 +++++--
+ fem3d/subwaves.f         |  33 ++++++++-----
+ femcheck/test_compile.sh |   2 +-
+ femdoc/final/shyfem.pdf  | Bin 284587 -> 284588 bytes
+ 10 files changed, 155 insertions(+), 78 deletions(-)
+ new file:
+   CHANGES
+
+============================================================
+
 Mon Feb 22 19:04:16 CET 2016
 
 New version 7_5_4

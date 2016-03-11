@@ -13,6 +13,7 @@
 ! 04.11.2014	ccf	rewritten
 ! 21.01.2015	ggu	computing fetch for geographical coordinates (bug fix)
 ! 10.02.2015	ggu	randomixe change of coordinates if on node (bug fix)
+! 10.03.2016	ggu	in parametric wave module fix segfault (allocatable)
 !
 !**************************************************************
 c DOCS  START   S_wave
@@ -1002,10 +1003,14 @@ c**************************************************************
 
 
 c --- input variable
-        real winds(neldim)	!wind speed at 10m [m/s]
-        real windd(neldim)	!wind direction [degree north]
-        real fet(neldim)        !wind fetch length [m]
-        real daf(neldim)        !averaged depth along the fetch [m]
+        !real winds(neldim)	!wind speed at 10m [m/s]
+        !real windd(neldim)	!wind direction [degree north]
+        !real fet(neldim)        !wind fetch length [m]
+        !real daf(neldim)        !averaged depth along the fetch [m]
+        real, save, allocatable :: winds(:) !wind speed at 10m [m/s]
+        real, save, allocatable :: windd(:) !wind direction [degree north]
+        real, save, allocatable :: fet(:)   !wind fetch length [m]
+        real, save, allocatable :: daf(:)   !averaged depth along the fetch [m]
 
 c --- output variable
 
@@ -1015,9 +1020,9 @@ c --- output variable
 c        common /waeh/waeh, /waep/waep, /waed/waed
 
 c --- stress variables
-        real tcv(neldim)
-        real twv(neldim)
-        real tmv(neldim)
+        !real tcv(neldim)
+        !real twv(neldim)
+        !real tmv(neldim)
 
 
 c --- local variable
@@ -1078,12 +1083,12 @@ c         --------------------------------------------------
 	  allocate(waeh(nel))
 	  allocate(waep(nel))
 	  allocate(waed(nel))
+          waeh = 0.
+          waep = 0.
+          waed = 0.
 
-          do ie = 1,nel
-            waeh(ie) = 0.
-            waep(ie) = 0.
-            waed(ie) = 0.
-          end do
+	  allocate(winds(nel),windd(nel))
+	  allocate(fet(nel),daf(nel))
 
           iwave = nint(getpar('iwave'))
           if( iwave .le. 0 ) icall = -1
@@ -1218,7 +1223,7 @@ c --- limiting wave height
 
         end do
 
-        call make_stress(waeh,waep,z0,tcv,twv,tmv)
+        !call make_stress(waeh,waep,z0,tcv,twv,tmv)
 
 c       -------------------------------------------------------------------
 c       write of results (file WAV)
@@ -1235,6 +1240,8 @@ c       -------------------------------------------------------------------
           call write_scalar_file(ia_out,32,1,wavep)
           call write_scalar_file(ia_out,33,1,waved)
         end if
+
+        !write(6,*) 'computations with parametric wave model finished...'
 
         end
 

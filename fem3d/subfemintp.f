@@ -14,6 +14,7 @@
 ! 29.09.2015	ggu	in iff_interpolate() do not interpolate with flag
 ! 18.12.2015	ggu	in iff_peek_next_record() adjust date only if ierr==0
 ! 15.02.2016	ggu	if dtime==-1 do not check time, changes in exffil
+! 07.03.2016	ggu	bug fix in iff_read_header(): no time adjust if ierr/=0
 !
 !****************************************************************
 !
@@ -1025,6 +1026,8 @@ c	 2	time series
 	iformat = pinfo(id)%iformat
 	bts = iformat == iform_ts
 	bnofile = iformat < 0
+	dtime = 0.
+	datetime = 0
 
 	if( bnofile ) return		!no header to read
 
@@ -1033,13 +1036,17 @@ c	 2	time series
 	if( bts ) then
 	  nvar = pinfo(id)%nvar
 	  call ts_read_next_record(iunit,nvar,dtime,f,datetime,ierr)
-	  if( datetime(1) > 0 ) pinfo(id)%datetime = datetime
-	  call iff_adjust_datetime(id,pinfo(id)%datetime,dtime)
+	  if( ierr == 0 ) then
+	    if( datetime(1) > 0 ) pinfo(id)%datetime = datetime
+	    call iff_adjust_datetime(id,pinfo(id)%datetime,dtime)
+	  end if
 	else
           call fem_file_read_params(iformat,iunit,dtime
      +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
-	  pinfo(id)%datetime = datetime
-	  call iff_adjust_datetime(id,pinfo(id)%datetime,dtime)
+	  if( ierr == 0 ) then
+	    pinfo(id)%datetime = datetime
+	    call iff_adjust_datetime(id,pinfo(id)%datetime,dtime)
+	  end if
 	end if
 
 	if( ierr < 0 ) return

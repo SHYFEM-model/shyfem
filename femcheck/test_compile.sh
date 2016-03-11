@@ -69,7 +69,7 @@ Comp()
 {
   Rules "$1"
 
-  echo "start compiling in ",`pwd`
+  echo "start compiling in" `pwd`
   rm -f stdout.out stderr.out
   touch stdout.out stderr.out
   make cleanall > tmp.tmp 2> tmp.tmp
