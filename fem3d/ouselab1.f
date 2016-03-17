@@ -13,6 +13,7 @@ c 07.12.2010    ggu     write statistics on depth distribution (depth_stats)
 c 06.05.2015    ggu     noselab started
 c 05.06.2015    ggu     many more features added
 c 11.09.2015    ggu     split feature added
+c 17.03.2016    ggu     outformat git added
 c
 c**************************************************************
 
@@ -200,6 +201,8 @@ c--------------------------------------------------------------
           call write_ous_header(nb,ilhv,hlv,hev)
 	end if
 
+	if( outformat == 'gis' ) call gis_write_connect
+
 c--------------------------------------------------------------
 c loop on data
 c--------------------------------------------------------------
@@ -242,8 +245,10 @@ c--------------------------------------------------------------
 	    call mimar(znv,nkn,zmin,zmax,rnull)
             call comp_vel2d(nel,hev,zenv,unv,vnv,u2v,v2v
      +                          ,umin,vmin,umax,vmax)
-            !call compute_volume(nel,zenv,hev,volume)
-            call compute_volume_ia(iano,zenv,volume,area)
+	    if( bneedbasin ) then
+              !call compute_volume(nel,zenv,hev,volume)
+              call compute_volume_ia(iano,zenv,volume,area)
+	    end if
 
             write(6,*) 'zmin/zmax : ',zmin,zmax
             write(6,*) 'umin/umax : ',umin,umax
@@ -287,10 +292,19 @@ c--------------------------------------------------------------
 	    if( bverb ) write(6,*) 'writing to output: ',ivar
 	    if( bsumvar ) ivar = 30
             nwrite = nwrite + 1
-	    if( b2d ) then
-	      call new_write_record(nb,it,1,nndim,nvar,vars2d,ierr)
+	    if( outformat == 'gis' ) then
+	      call transfer_uvz(nlvdi,nndim,nvar,vars
+     +				,znv,zenv,utlnv,vtlnv)
+              call transp2vel(nel,nkn,nlv,nlvdi,hev,zenv,nen3v
+     +                          ,ilhv,hlv,utlnv,vtlnv
+     +                          ,uprv,vprv)
+	      call gis_write_hydro(it,nlvdi,ilhkv,znv,uprv,vprv)
 	    else
+	     if( b2d ) then
+	      call new_write_record(nb,it,1,nndim,nvar,vars2d,ierr)
+	     else
 	      call new_write_record(nb,it,nlvdi,nndim,nvar,vars,ierr)
+	     end if
 	    end if
             if( ierr .ne. 0 ) goto 99
 	  end if

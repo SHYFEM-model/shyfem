@@ -1016,4 +1016,127 @@ c decides if with concatenation we have to use record or not
 	end
 
 c***************************************************************
+c***************************************************************
+c***************************************************************
 
+        subroutine gis_write_record(nb,it,ivar,nlvdi,ilhkv,cv)
+
+c writes one record to file nb (3D)
+
+        use basin
+
+        implicit none
+
+        integer nb,it,ivar,nlvdi
+        integer ilhkv(nlvdi)
+        real cv(nlvdi,*)
+
+        integer k,l,lmax
+	integer nout
+        real x,y
+	character*80 format,name
+	character*20 line
+	character*3 var
+
+	integer ifileo
+
+	call dtsgf(it,line)
+	call i2s0(ivar,var)
+
+	name = 'extract_'//var//'_'//line//'.gis'
+        nout = ifileo(60,name,'form','new')
+	!write(6,*) 'writing: ',trim(name)
+
+        write(nout,*) it,nkn,ivar,line
+
+        do k=1,nkn
+          lmax = ilhkv(k)
+          x = xgv(k)
+          y = ygv(k)
+
+	  write(format,'(a,i5,a)') '(i10,2g14.6,i5,',lmax,'g14.6)'
+          write(nout,format) k,x,y,lmax,(cv(l,k),l=1,lmax)
+        end do
+
+	close(nout)
+
+        end
+
+c***************************************************************
+
+        subroutine gis_write_hydro(it,nlvdi,ilhkv,zv,uv,vv)
+
+c writes one record to file (3D)
+
+        use basin
+
+        implicit none
+
+        integer it,nlvdi
+        integer ilhkv(nlvdi)
+        real zv(nkn)
+        real uv(nlvdi,nkn)
+        real vv(nlvdi,nkn)
+
+        integer k,l,lmax,nn,i
+	integer nout
+        real x,y
+	character*80 format,name
+	character*20 line,dateline
+	character*3 var
+
+	integer ifileo
+
+	call dtsgf(it,line)
+
+	dateline=line
+	do i=1,len(line)
+	  if( line(i:i) == ':' ) line(i:i) = '_'
+	  if( line(i:i) == ' ' ) line(i:i) = '_'
+	end do
+
+	name = 'extract_hydro_'//line//'.gis'
+        nout = ifileo(60,name,'form','new')
+	!write(6,*) 'writing: ',trim(name)
+
+        write(nout,*) it,nkn,0,dateline
+
+        do k=1,nkn
+          lmax = ilhkv(k)
+          x = xgv(k)
+          y = ygv(k)
+
+	  nn = 1 + 2*lmax
+	  write(format,'(a,i5,a)') '(i10,2g14.6,i5,',nn,'g14.6)'
+          write(nout,format) k,x,y,lmax,zv(k)
+     +			,(uv(l,k),vv(l,k),l=1,lmax)
+        end do
+
+	close(nout)
+
+        end
+
+c***************************************************************
+
+        subroutine gis_write_connect
+
+c writes connectivity
+
+        use basin
+
+        implicit none
+
+	integer ie,ii
+
+	open(1,file='connectivity.gis',form='formatted',status='unknown')
+
+	write(1,*) nel
+	do ie=1,nel
+	  write(1,*) ie,(nen3v(ii,ie),ii=1,3)
+	end do
+
+	close(1)
+
+	end
+
+c***************************************************************
