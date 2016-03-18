@@ -19,6 +19,7 @@ c 10.02.2012    ggu     use angles in quality of basin (basqual)
 c 30.09.2015    ggu     shybas started
 c 01.10.2015    ggu     shybas nearly finished
 c 02.10.2015    ggu     only basproj is missing
+c 17.03.2016    ggu     new routine write_depth_from_bas()
 c
 c todo:
 c
@@ -108,6 +109,7 @@ c-----------------------------------------------------------------
 
 	if( bgrd ) call write_grd_from_bas
         if( bxyz ) call write_xy('bas.xyz',nkn,ipv,xgv,ygv,hkv)
+        if( bdepth ) call write_depth_from_bas
 	if( bunique) call write_grd_with_unique_depth !for sigma levels
 
 c-----------------------------------------------------------------
@@ -1037,6 +1039,50 @@ c*******************************************************************
         !write(6,*) 'end of node_test ... '
 
         if( bstop ) stop 'error stop node_test: errors'
+
+        end
+
+c*******************************************************************
+
+        subroutine write_depth_from_bas
+
+! writes depth values of elements to file
+
+        use basin
+
+        implicit none
+
+        integer ie,ii,k
+        double precision xm,ym,hm
+
+	open(1,file='depth.grd',status='unknown',form='formatted')
+	open(2,file='depth.xyz',status='unknown',form='formatted')
+
+        do ie=1,nel
+
+          xm = 0.
+          ym = 0.
+          hm = 0.
+          do ii=1,3
+            k = nen3v(ii,ie)
+            xm = xm + xgv(k)
+            ym = ym + ygv(k)
+            hm = hm + hm3v(ii,ie)
+          end do
+          xm = xm / 3.
+          ym = ym / 3.
+          hm = hm / 3.
+
+          write(2,*) xm,ym,hm
+          write(1,1000) 1,ie,0,xm,ym,hm
+ 1000     format(i1,2i10,3g18.8)
+
+        end do
+
+	close(1)
+	close(2)
+
+        write(6,*) 'The depth values have been written to depth.grd/xyz'
 
         end
 

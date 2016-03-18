@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 18-Mar-2016: -a option also changes versus in line			*
  * 01-Feb-2012: bug in choosing lines -> no selection on depth was made	*
  * 08-Oct-2010: new routines for purging nodes after unifying		*
  * 17-Jan-98: algorithm changed for UnifyNodes()                        *
@@ -890,10 +891,36 @@ float AreaElement( Hashtable_type H , Elem_type *pe )
         return 0.5 * (float) area;
 }
 
+float AreaLine( Hashtable_type H , Line_type *pl )
+
+/* should work for closed and not closed lines */
+
+{
+        int i,nvert;
+        double area=0.;
+        Point *co,*cn;
+        Node_type *pn;
+
+        nvert=pl->vertex;
+
+        pn = RetrieveByNodeNumber(H,pl->index[nvert-1]);
+        co = &pn->coord;
+        for(i=0;i<nvert;i++) {
+                pn = RetrieveByNodeNumber(H,pl->index[i]);
+                cn = &pn->coord;
+                /* area += co->x * cn->y - cn->x * co->y; */
+                area += (co->x + cn->x) * (cn->y - co->y);
+                co = cn;
+        }
+
+        return 0.5 * (float) area;
+}
+
 void MakeAntiClockwise( void )
 
 {
         Elem_type *pe;
+        Line_type *pl;
 
 	if( !OpMakeAntiClockwise ) return;
 
@@ -903,6 +930,15 @@ void MakeAntiClockwise( void )
                         printf("Element %d in clockwise sense: changed.\n",
                                                 pe->number);
                         InvertIndex(pe->index,pe->vertex);
+                }
+        }
+
+        ResetHashTable(HLI);
+        while( (pl = VisitHashTableL(HLI)) != NULL ) {
+                if( AreaLine( HNN , pl ) < 0 ) {
+                        printf("Line %d in clockwise sense: changed.\n",
+                                                pl->number);
+                        InvertIndex(pl->index,pl->vertex);
                 }
         }
 }

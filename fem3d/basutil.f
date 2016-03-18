@@ -22,6 +22,7 @@
 
 	logical, save :: bgrd
 	logical, save :: bxyz
+	logical, save :: bdepth
 	logical, save :: bunique
 
 	logical, save :: bquality
@@ -99,6 +100,7 @@
 
         call clo_add_option('grd',.false.,'writes grd file')
         call clo_add_option('xyz',.false.,'writes xyz file')
+        call clo_add_option('depth',.false.,'writes depth values')
         call clo_add_option('unique',.false.
      +				,'writes grd file with unique depths')
         call clo_add_option('hsigma',-1,'creates hybrid depth level')
@@ -156,6 +158,7 @@
 
         call clo_get_option('grd',bgrd)
         call clo_get_option('xyz',bxyz)
+        call clo_get_option('depth',bdepth)
         call clo_get_option('unique',bunique)
 
         call clo_get_option('quality',bquality)

@@ -92,7 +92,7 @@ default:
 
 all: fem doc
 
-fem: checkv directories links
+fem: checkv directories links test_executable
 	$(FEMBIN)/recursivemake $@ $(FEMDIRS)
 	@femcheck/check_compilation.sh -quiet
 
@@ -328,6 +328,18 @@ compiler_version:
 
 last_commit:
 	@gittags | tail -1
+
+#---------------------------------------------------------------
+# check if routines are executable
+#---------------------------------------------------------------
+
+test_executable:
+	@if [ ! -x fembin/make_executable.sh ]; then make make_executable; fi
+
+make_executable:
+	@echo "making programs executable"
+	chmod +x fembin/*
+	fembin/make_executable.sh
 
 #---------------------------------------------------------------
 # compatibility checks
