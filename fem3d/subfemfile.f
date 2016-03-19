@@ -66,10 +66,12 @@ c np		number of horizontal points given
 c lmax		maximum number of layers given
 c nvar		number of variables in time record
 c ntype		type of data, defines extra data to follow
-c hlv		layer depths
+c date		reference date (integer)
+c time		reference time (integer)
+c hlv		layer depths (the bottom of each layer is given)
 c string 	string with description of data
 c hd(k)		total depth in node k
-c data(l,k)	data for variable
+c data(l,k)	data for variable at level l and node k
 c lm		total number of vertical data provided for point k
 c k,l		index for horizontal/vertical dimension
 c nx,ny		size of regular grid
@@ -86,7 +88,7 @@ c 20		rotated regular grid, information on extra line (not yet ready)
 c
 c combinations are possible, example:
 c
-c 21		date/time and regular rotated grid
+c 11		date/time and regular grid
 c
 c************************************************************
 c************************************************************

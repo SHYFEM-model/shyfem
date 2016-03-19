@@ -243,7 +243,7 @@ static void Help( void )
 	fprintf(stderr,"  -u   unify nodes                   ");
 	fprintf(stderr,"  -o#  tollerance for unify (def=0)\n");
 	fprintf(stderr,"  -C   compress numbers              ");
-	fprintf(stderr,"  -a   make elements anti-clockwise\n");
+	fprintf(stderr,"  -a   make items anti-clockwise   \n");
 	fprintf(stderr,"  -x   delete degenerate elements  \n");
 	fprintf(stderr,"\n");
 }

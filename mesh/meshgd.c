@@ -91,6 +91,32 @@ static char *getnewline( void )
 static int gettotlines( void ) { return FpLine; }
 static void closefile( void ) { if(FpFile) fclose(FpFile); }
 
+static char *stripext( char *s , char *ext ) /* strips ext from file name */
+
+{
+        int ls;
+        char *t;
+
+        ls = strlen(s);
+        ls -= 4;
+
+        if( ls > 0 ) {
+                t = &s[ls];
+                if( !strcmp(t,ext) ) {
+                        t[0] = '\0';
+                }
+        }
+
+        return s;
+}
+
+static char *makefilename( char *name , char *ext )
+{
+        name = stripext(name,ext);
+        name = strcat(name,ext);
+        return name;
+}
+
 /**************************************************************************/
 
 
@@ -105,6 +131,8 @@ void ReadStandard( char *fname , Hashtable_type HN , Hashtable_type HE
 	int narg,what,n;
 	char *s,*t;
 
+printf("...opening file %s\n",fname);
+	fname = makefilename(fname,".grd");
 	if( openfile(fname,"r") )
 		printf("Reading file %s\n",fname);
 	else

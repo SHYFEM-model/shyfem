@@ -31,6 +31,7 @@
  *			E-Mail : georg@lagoon.isdgm.ve.cnr.it		*
  *									*
  * Revision History:							*
+ * 19-Mar-2016: program now accepts filename with and without .grd	*
  * 15-Oct-97: in WriteFile: write also lines with type L_NONE           *
  * 08-Oct-97: routine ReadBnd deleted                                   *
  *            if depth is given -> write it                             *
@@ -101,7 +102,7 @@ void ReadFiles( int argc , char *argv[] )
 
 	while( OpArgc < argc ) {
 		s=strcpy(sfile,argv[OpArgc++]);
-		s=strcat(s,".grd");
+		/* s=strcat(s,".grd"); */
 		ReadStandard(s,HNN,HEL,HLI,CM); 
 	}
 }
