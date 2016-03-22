@@ -175,6 +175,7 @@ help:
 	@echo "check_compilation   checks if all executables have compiled"
 	@echo "modified            finds files changed after installation"
 	@echo "changed_zip         zips files changed after installation"
+	@echo "make_executable     makes scripts executable"
 
 first_time:
 	@echo 'Recommended use if you see shyfem for the first time:'

@@ -1,4 +1,12 @@
 
+22.03.2016	VERS_7_5_6
+
+	make scripts executable if downloaded from GitHub
+	mesh accepts filename w/o .grd extension
+	exgrd -a changes versus of items (elems/lines)
+	ouselab writes also with gis format
+	shybas -depth writes out depth values from basin
+
 11.03.2016	VERS_7_5_5
 
 	bug fix in iff_read_header - check for ierr/=0

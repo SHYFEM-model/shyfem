@@ -1,4 +1,17 @@
 
+22.03.2016
+
+ * ./mesh/exgrd.c:
+ * 18-Mar-2016: -a option also changes versus in line			*
+ * ./mesh/meshfi.c:
+ * 19-Mar-2016: program now accepts filename with and without .grd	*
+c ./fem3d/ouselab1.f:
+c 17.03.2016    ggu     outformat git added
+c
+c ./fem3d/shybas.f:
+c 17.03.2016    ggu     new routine write_depth_from_bas()
+
+
 11.03.2016
 
 c ./fem3d/subfemintp.f:
