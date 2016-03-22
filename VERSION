@@ -1,3 +1,22 @@
+version  7_5_6    22-03-2016    VERS_7_5_6
+
+========================================================== 22-03-2016 - 7_5_6
+
+ * ./mesh/exgrd.c:
+ * 18-Mar-2016: -a option also changes versus in line			*
+ * ./mesh/meshfi.c:
+ * 19-Mar-2016: program now accepts filename with and without .grd	*
+c ./fem3d/ouselab1.f:
+c 17.03.2016    ggu     outformat git added
+c
+c ./fem3d/subver.f:
+c 22.03.2016	ggu	version 7.5.6	Alessandra's birthday release '
+c
+c ./fem3d/shybas.f:
+c 17.03.2016    ggu     new routine write_depth_from_bas()
+
+==========================================================
+
 version  7_5_5    11-03-2016    VERS_7_5_5   commit_2016-03-22
 
 version  7_5_5    11-03-2016    VERS_7_5_5
