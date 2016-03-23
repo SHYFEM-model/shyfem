@@ -119,6 +119,7 @@ param:
 
 directories:
 	-mkdir -p tmp
+	if [ ! -f ./tmp/Makefile ]; then cp ./femdummy/Makefile ./tmp; fi
 	-mkdir -p femlib/mod
 
 links:

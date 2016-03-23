@@ -126,7 +126,7 @@ c==========================================================
         
 c_________________________________________________________
 c CASO [A]: 1 flusso >0 (entrante), 2 flussi <0 (uscenti).
-c Il lato di entrata è quello il cui flusso >0.
+c Il lato di entrata e'' quello il cui flusso >0.
 c - individuare fascio di rette traiettoria
 c - individuare traiettoria del body
 c - individuare lato di uscita
@@ -145,7 +145,7 @@ c	  write(lunit,*) 'CASO [A] TRACK_ORIG'
          endif                               
          
          
-c calcolo retta del lato da cui è entrato il body
+c calcolo retta del lato da cui e'' entrato il body
          
          i1=mod(l_int,3)+1
          i2=mod(i1,3)+1
@@ -234,19 +234,19 @@ c	 write(lunit,*) 'CASO [A] TRACK_ORIG'
         end if
 
         
-c determinazione velocità di entrata v_ent del body v_ent
+c determinazione velocita'' di entrata v_ent del body v_ent
                 
         v_out=vel_ie(l_out,ie)
 
         if(v_out.gt.0)then
-c         write(lunit,*) 'STOP!! ERRORE VELOCITÀ DI USCITA POSITIVA'
+c         write(lunit,*) 'STOP!! ERRORE VELOCITA'' DI USCITA POSITIVA'
 c	 write(lunit,*) 'CASO [A] TRACK_ORIG'	 
 	 !stop
 	 time=0
          ie = -ie
 	 return
         elseif(v_out.eq.0)then
-c         write(lunit,*) 'STOP!! ERRORE VELOCITÀ DI USCITA NULLA'
+c         write(lunit,*) 'STOP!! ERRORE VELOCITA'' DI USCITA NULLA'
 c	 write(lunit,*) 'CASO [A] TRACK_ORIG'
 	 !stop
 	 time=0
@@ -281,7 +281,7 @@ c calcolo punto intercetto tra retta traiettoria - retta uscita
 c___________________________________________________________
 c CASO [B]: 2 flussi >0 (entranti) o 1 flusso >0
 c 1 flusso =0, 1 flusso <0 (uscente).
-c Il lato di uscita è quello il cui flusso <0.
+c Il lato di uscita e'' quello il cui flusso <0.
 c - individuare fascio di rette traiettoria
 c - individuare traiettoria del body
 c - individuare lato di entrata
@@ -301,7 +301,7 @@ c         write(lunit,*) 'CASO [B] TRACK_ORIG'
 	 return
         endif
 
-c calcolo retta del lato da cui uscirà il body
+c calcolo retta del lato da cui uscira'' il body
 
 	i1=mod(l_out,3)+1
         i2=mod(i1,3)+1
@@ -409,19 +409,19 @@ c calcolo punto intercetto tra retta traiettoria - retta entrata
         in_dm=pbdx
         in_dx=gbdx
 
-c determinazione velocità di entrata v_ent del body v_ent
+c determinazione velocita'' di entrata v_ent del body v_ent
          
         v_int=vel_ie(l_int,ie)
                 
         if(v_int.lt.0)then
-c         write(lunit,*) 'STOP!! ERRORE VELOCITÀ DI ENTRATA NEGATIVA'
+c         write(lunit,*) 'STOP!! ERRORE VELOCITA'' DI ENTRATA NEGATIVA'
 c         write(lunit,*) 'CASO [B] TRACK_ORIG'
 	 !stop
 	 time=0
          ie = -ie
 	 return
         elseif(v_int.eq.0)then
-c         write(lunit,*) 'STOP!! ERRORE VELOCITÀ DI ENTRATA NULLA'
+c         write(lunit,*) 'STOP!! ERRORE VELOCITA'' DI ENTRATA NULLA'
 c	 write(lunit,*) 'CASO [B] TRACK_ORIG'
 	 !stop
 	 time=0
@@ -430,7 +430,7 @@ c	 write(lunit,*) 'CASO [B] TRACK_ORIG'
         endif
 c____________________________________________________________________________
 c CASO [C]:tutti i flussi sono entranti >0 O NULLI =0
-c Errore il campo di moto è convergente, problemi con l''eliminazione delle componenti
+c Errore il campo di moto e'' convergente, problemi con l''eliminazione delle componenti
 c DIVERGENTI FERMARE IL CILO
 
        elseif((ps.eq.3).or.(nl.eq.3))then
@@ -497,7 +497,7 @@ c se si rimane nell''elemento (3 iflogico) allora calcolo le nuove coordinate
 c (pnt_inside) e passo al tstep successivo
 
 c Se il body finisce a 0.1 m dalla linea decido si farlo passare al
-c elemento ad una distanza di 0.1 m. Questa è la precisione da me 
+c elemento ad una distanza di 0.1 m. Questa e'' la precisione da me 
 c imposta
         gf=dvert(1,ie)/100000 
         if(abs(nwdist-dstbdy).lt.gf)then      ! body dista meno di 0.1m dal lato
@@ -725,7 +725,7 @@ c su cui si trova il body
                                           
 	call retta(exi,icy,icx,ib,ie)
 
-c velocità di entrata v_int 
+c velocita'' di entrata v_int 
 
 	v_int=vel_ie(l_int,ie)
 
@@ -931,14 +931,14 @@ c velocita di percorso v_ent pari alla media v_int, v_out
          v_out=vel_ie(l_out,ie)
         
          if(v_out.gt.0)then
-c          write(lunit,*) 'STOP!! ERRORE VELOCITÀ DI USCITA POSITIVA'
+c          write(lunit,*) 'STOP!! ERRORE VELOCITA'' DI USCITA POSITIVA'
 c          write(lunit,*) 'track line'
 	  !stop
 	  time=0
           ie = -ie
 	  return
          elseif(v_out.eq.0)then
-c          write(lunit,*) 'STOP!! ERRORE VELOCITÀ DI USCITA NULLA'
+c          write(lunit,*) 'STOP!! ERRORE VELOCITA'' DI USCITA NULLA'
 c          write(lunit,*) 'track line'
 	  !stop
 	  time=0
@@ -948,7 +948,7 @@ c          write(lunit,*) 'track line'
 
         elseif((fpb(1).ge.0).and.(fpb(2).ge.0))then
 c________________________________________________________________________________
-c CASO [C] tutti i flussi sono entranti o nulli. Errore il campo di moto è
+c CASO [C] tutti i flussi sono entranti o nulli. Errore il campo di moto e''
 c convergente, problemi con l''eliminazione delle componenti DIVERGENTI
 c FERMARE IL CILO
 
@@ -1026,7 +1026,7 @@ c se si rimane nell''elemento (3 iflogico) allora calcolo le nuove coordinate
 c (pnt_inside) e passo al tstep successivo
 
 c Se il body finisce a 0.1 m dalla linea decido si farlo passare al
-c elemento ad una distanza di 0.1 m. Questa è la precisione da me
+c elemento ad una distanza di 0.1 m. Questa e'' la precisione da me
 c imposta
 
         gf=dvert(1,ie)/100000    

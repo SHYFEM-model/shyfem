@@ -1637,7 +1637,7 @@
         where ((WhichKs/=6 .and. WhichKs /= 7 .and. WhichKs/=8) .and. &
                (WhoseKSO4==3 .or. WhoseKSO4==4))    !If user opted for the new Lee values
 		    ! Lee, Kim, Byrne, Millero, Feely, Yong-Ming Liu. 2010.
-	 	    ! Geochimica Et Cosmochimica Acta 74 (6): 1801–1811.
+	 	    ! Geochimica Et Cosmochimica Acta 74 (6): 1801-1811.
 		    TB =  0.0004326D0 * (Sal/35.0D0) ! in mol/kg-SW
         end where
         ! End of calculate TB - Total Borate
@@ -2095,7 +2095,7 @@
 	        ! Data used in this work is from:
 	        ! K1: Merhback (1973) for S>15, for S<15: Mook and Keone (1975)
 	        ! K2: Merhback (1973) for S>20, for S<20: Edmond and Gieskes (1970)
-	        ! Sigma of residuals between fits and above data: Â±0.015, +0.040 for K1 and K2, respectively.
+	        ! Sigma of residuals between fits and above data: +-0.015, +0.040 for K1 and K2, respectively.
 	        ! Sal 0-40, Temp 0.2-30
             ! Limnol. Oceanogr. 43(4) (1998) 657-668
 	        ! On the NBS scale
@@ -2203,7 +2203,7 @@
 
         where(WhichKs==14);
             ! From Millero, 2010, also for estuarine use.
-            ! Marine and Freshwater Research, v. 61, p. 139â€“142.
+            ! Marine and Freshwater Research, v. 61, p. 139-142.
             ! Fits through compilation of real seawater titration results:
             ! Mehrbach et al. (1973), Mojica-Prieto & Millero (2002), Millero et al. (2006)
             ! Constants for K's on the SWS;

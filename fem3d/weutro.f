@@ -1464,7 +1464,7 @@ C
 
 c if surface element and not completly covered with ice
 
-c elimino rear e rearsg perché non ci interessano, sono una time function 
+c elimino rear e rearsg perche'' non ci interessano, sono una time function 
 c e una segment specific reareation rate, ma noi usiamo la reareation from
 c  kawind o kahydra o imponendo un valore della costante di reareazione
 

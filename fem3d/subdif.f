@@ -622,8 +622,8 @@ c
 c subroutines for computing Smagorinsky Horizontal Diffusion
 c               Coefficient AHG, AMG
 c
-c       Ahg=[(CD*Size/Pi)²ABS(DD)]
-c       DD=SQRT[DT²+DS²]
+c       Ahg=[(CD*Size/Pi)**2ABS(DD)]
+c       DD=SQRT[DT**2+DS**2]
 c       DT=Ux-Vy
 c       DS=Uy+Vx
 c

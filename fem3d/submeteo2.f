@@ -530,7 +530,7 @@ c DOCS  END
 	logical bnowind,bstress,bspeed
 	integer k
 	integer itact
-	real cd,wxymax,txy,wspeed,wdir,fact,fice
+	real cd,wxymax,txy,wspeed,wdir,fact,fice,aice
 	real pmin,pmax
 
 	bnowind = iwtype == 0
@@ -538,6 +538,7 @@ c DOCS  END
 	bspeed = iwtype > 2
 	cd = dragco
 	wxymax = 0.
+	aice = 1.       !ice cover for momentum: 1: use  0: do not use
 	
 !	---------------------------------------------------------
 !	convert wind
@@ -553,7 +554,7 @@ c DOCS  END
         else if( bstress ) then         !data is stress -> normalize it
           if( cd .le. 0 ) cd = dstd
           do k=1,n
-	    fice = 1. - cice(k)
+	    fice = 1. - aice*cice(k)
             tx(k) = fice * wfact * wx(k)
             ty(k) = fice * wfact * wy(k)
             txy = sqrt( tx(k)**2 + ty(k)**2 )
@@ -579,7 +580,7 @@ c DOCS  END
 	  end if
 
           do k=1,n
-	    fice = 1. - cice(k)
+	    fice = 1. - aice*cice(k)
 	    !if( k .eq. 1000 ) write(6,*) 'ice: ',k,fice
             wspeed = ws(k)
             wxymax = max(wxymax,wspeed)
@@ -603,7 +604,7 @@ c DOCS  END
 	  call get_act_time(itact)
 	  !write(111,*) 'limiting wind speed: ',itact,wxymax
           do k=1,n
-	    fice = 1. - cice(k)
+	    fice = 1. - aice*cice(k)
             wspeed = ws(k)
 	    if( wspeed <= wslim ) cycle
 	    ws(k) = wslim

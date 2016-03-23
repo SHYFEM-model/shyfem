@@ -56,10 +56,10 @@
 !   \label{vni}
 !   \begin{array}{rcl}
 !     n_0 &=& 36 a_1 {\cal N}^2 {\cal N}_b^2                       \comma \\[3mm]
-!     n_1 &=&-12 a_5 a_{b3} (a_{b1}+a_{b2}) {\cal N}^2
+!     n_1 &=&-12 a_5 a_{b3} (a_{b1}+a_{b2}) {\cal N}^2
 !           -  8 a_5 a_{b3} (-6 a_1+a_2+3 a_3) {\cal N} {\cal N}_b \comma \\[3mm]
 !     n_2 &=& 9 a_1 (a_{b2}^2 - a_{b1}^2){\cal N}^2                \comma \\[3mm]
-!     n_3 &=& 36 a_5 a_{b4} (a_{b1}+a_{b2}) {\cal N}^2
+!     n_3 &=& 36 a_5 a_{b4} (a_{b1}+a_{b2}) {\cal N}^2
 !           + 24 a_5 a_{b4} (a_2+3 a_3) {\cal N} {\cal N}_b        \comma
 !   \end{array}
 !  \end{equation}
@@ -68,7 +68,7 @@
 !   \begin{array}{rcl}
 !     n_{b0} &=& 12 a_{b3} {\cal N}^3 {\cal N}_b                   \comma \\[3mm]
 !     n_{b1} &=& 12 a_5 a_{b3}^2 {\cal N}^2                        \comma \\[3mm]
-!     n_{b2} &=&  9 a_1 a_{b3} (a_{b1}-a_{b2}) {\cal N}^2
+!     n_{b2} &=&  9 a_1 a_{b3} (a_{b1}-a_{b2}) {\cal N}^2
 !              +    a_{b3} (6 a_1 (a_2-3 a_3)
 !              -    4 (a_2^2-3 a_3^2) ) {\cal N} {\cal N}_b        \comma
 !   \end{array}

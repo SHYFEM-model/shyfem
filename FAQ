@@ -40,7 +40,7 @@ Questions about "mesh":
 mesh: CircumCicle error
 
 
-Thanks for the reply. I’ve adjusted the nodal distance on the perimeter
+Thanks for the reply. I have adjusted the nodal distance on the perimeter
 input grd file form 10 to 20 meters and mesh run without errors.  There
 was nothing wrong specific with the nodes mentioned in the previous error
 message. It could have been any node because the distance between the
@@ -53,13 +53,13 @@ How do I get a nice transition of the mesh close to the boundary line?
 
 Still the mesh I got (see picture) is not showing a gradual change in
 nodal distance from edge to centre, so the question remains how to use
-the –g command in mesh to get the nice transition like in the example,
-you’ve sent, of the coast of israel.
+the -g command in mesh to get the nice transition like in the example,
+you have sent, of the coast of israel.
 
 How to include internal islands?
 
 Do you have an manual available of  mesh ? Because I also want to included
-internal islands and I haven’t got a clue how to do that.
+internal islands and I have not got a clue how to do that.
 
 Internal islands: just put them as closed lines inside the outer coast
 line. The only thing is, you have to look out that the lines have the

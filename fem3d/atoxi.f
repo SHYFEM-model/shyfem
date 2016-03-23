@@ -86,7 +86,7 @@ c*************************************************************
         implicit none
 
         real kol        !coefficiente globale di scambio di materia [m/s]
-        real T       	!Temperatura acqua [C°]
+        real T       	!Temperatura acqua [C]
 	real caux	
 
 
@@ -94,9 +94,9 @@ c*************************************************************
                         !liquida [m/s]
         real kl         !coefficiente di trasferimento di massa in fase
                         !gas [m/s]
-        real H          !COSTANTE DI HENRY a 25 C°[Atm m3/mole]
+        real H          !COSTANTE DI HENRY a 25 C [Atm m3/mole]
         real R          !COSTANTE DEI GAS [Atm m3/mole K]
-        real kelvin     !Lo 0 C° in K
+        real kelvin     !Lo 0 C in K
         real Tw         !Temperatura acqua [K]
 
 
@@ -141,7 +141,7 @@ c*************************************************************
 !
 !       tetab   coefficiente di temperatura per la biodegr. da 1.047 a 1.072
 
-!       T0      temperatura di riferimento [C°]
+!       T0      temperatura di riferimento [C]
 
 !       kbt0    costante di biodegradazione a T0 [1/day]
 !               (cambia per ogni sostanza) Acrilonitrile = 0.0462

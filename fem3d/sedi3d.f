@@ -1424,7 +1424,7 @@ c DOCS  END
 ! cohesive
         DOUBLE PRECISION AULVA		!PERCENTAGE OF AREA COVERED BY THE ALGAE 'ULVA' (%)
 	real sload(nkndim,nsdim)	!suspended sediment load [kg/s]
-	real sloads(nsdim)	  	!suspended sediment load [kg/m²s]
+	real sloads(nsdim)	  	!suspended sediment load [kg/m**2 s]
 
 	real ukbot(nkndim),vkbot(nkndim)
 	real ddl(nkndim)
@@ -1572,7 +1572,7 @@ c DOCS  END
         double precision sflx(nsdim)    !flux of suspend sediment [m3/m2]
         double precision ws(nsdim)      !SETTLING VELOCITY FOR NON-COHESIVE SEDIMENT (M/SEC)
         real tao			!wave-current shear stress
-	real sload(nsdim)	  	!suspended sediment load [kg/m²s]
+	real sload(nsdim)	  	!suspended sediment load [kg/m**2 s]
 
 ! ------------ LOCAL VARIABLES -----------------
         double precision bmix		!thickness of active layer
@@ -2341,7 +2341,7 @@ c DOCS  END
          C0AI = C0A * pers(is)
 
 !        -------------------------------------------------------------------
-!        Compute load for suspended concentration [kg/m²s]
+!        Compute load for suspended concentration [kg/m**2 s]
 !        -------------------------------------------------------------------
 
          sload(is) = ws(is)*(C0AI - scn(is))
@@ -2365,7 +2365,7 @@ c DOCS  END
          end if
 
 !        -------------------------------------------------------------------
-!        Compute deposition or erosion [m³/m²]
+!        Compute deposition or erosion [m**3/m**2]
 !        -------------------------------------------------------------------
 
 	 sflux(is) =  -sload(is) * timedr / rhos

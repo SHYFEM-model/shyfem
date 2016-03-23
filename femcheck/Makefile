@@ -21,6 +21,8 @@ links:
 list:
 	pwd; ls
 
+depend:
+
 save:
 	zip $(DIR) *
 

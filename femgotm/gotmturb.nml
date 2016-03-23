@@ -85,7 +85,7 @@
  /
 
 !-------------------------------------------------------------------------------
-! What turbulence parameters have been described?
+! What turbulence parameters have been described?
 !
 ! cm0_fix          ->   value of cm0 for turb_method=2
 ! Prandtl0_fix     ->   value of the turbulent Prandtl-number for stab_method=1-4
