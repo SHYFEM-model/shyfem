@@ -414,7 +414,7 @@ c writes information on file from header
 	else if( id .ne. idfem ) then
 	  write(6,*) 'file is not a FEM file: ',id,idfem
 	else
-	  write(6,*) it,nvers,id,np,lmax,nvar,ntype
+	  write(6,'(7i10)') it,nvers,id,np,lmax,nvar,ntype
 	end if
 
 	close(iunit)

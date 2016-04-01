@@ -1273,7 +1273,7 @@ c gets id given a parameter name
         end do
 
 	if( berror ) then
-          write(6,*) 'unknown name for boundary: ',name
+          write(6,*) 'unknown parameter name for boundary: ',name
           stop 'error stop iget_bnd_par_id: name'
 	end if
 
@@ -1480,7 +1480,7 @@ c gets id given a file name
         end do
 
 	if( berror ) then
-          write(6,*) 'unknown name for boundary: ',name
+          write(6,*) 'unknown file name for boundary: ',name
           stop 'error stop iget_bnd_file_id: name'
 	end if
 

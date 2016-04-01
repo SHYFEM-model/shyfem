@@ -15,6 +15,7 @@
 ! 18.12.2015	ggu	in iff_peek_next_record() adjust date only if ierr==0
 ! 15.02.2016	ggu	if dtime==-1 do not check time, changes in exffil
 ! 07.03.2016	ggu	bug fix in iff_read_header(): no time adjust if ierr/=0
+! 01.04.2016	ggu	bug fix in iff_init(): open file with np and not nexp
 !
 !****************************************************************
 !
@@ -632,7 +633,8 @@
 	if( bnofile ) then
 	  return
 	else if( bfem ) then
-	  call fem_file_read_open(file,nexp,iunit,iformat)
+	  !call fem_file_read_open(file,nexp,iunit,iformat)
+	  call fem_file_read_open(file,np,iunit,iformat)
 	else if( bts ) then
 	  call ts_open_file(file,nvar,datetime,iunit)
 	  pinfo(id)%datetime = datetime
@@ -641,6 +643,7 @@
 	end if
 
 	if( iunit < 0 ) goto 99
+	if( iunit == 0 ) goto 90
 	pinfo(id)%iunit = iunit
 
 	write(6,*) 'file opened: ',id,trim(file)
@@ -656,6 +659,10 @@
 	!---------------------------------------------------------
 
 	return
+   90	continue
+	write(6,*) 'error in opening file: ',trim(file)
+	write(6,*) 'iformat = ',iformat
+	stop 'error stop iff_init'
    91	continue
 	write(6,*) 'error opening file: ',trim(file)
 	id0 = iff_find_id_to_file(file)
