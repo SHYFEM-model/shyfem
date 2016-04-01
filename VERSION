@@ -1,3 +1,27 @@
+version  7_5_7    01-04-2016    VERS_7_5_7
+
+========================================================== 01-04-2016 - 7_5_7
+
+c ./fem3d/newcon.f:
+c 01.04.2016    ggu     most big arrays moved from stack to allocatable
+c
+c ./fem3d/mod_bnd.f:
+! 01.04.2016    ggu     parameter and file names transfered to here
+!
+c ./fem3d/subver.f:
+c 01.04.2016	ggu	version 7.5.7	no April joke
+c
+c ./fem3d/subetsa.f:
+c 01.04.2016    ggu     bug fix for waves
+c
+c ./fem3d/subbnd.f:
+c 01.04.2016    ggu	restructured - arrays transfered to mod_bnd.f
+c
+c ./fem3d/sedi3d.f:
+c 01.04.2016    ccf&ggu adapted to new model version
+
+==========================================================
+
 version  7_5_6    22-03-2016    VERS_7_5_6   commit_2016-04-01
 
 version  7_5_6    22-03-2016    VERS_7_5_6
