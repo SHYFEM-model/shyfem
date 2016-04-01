@@ -66,7 +66,7 @@ c initializes boundary condition for scalars
 
 	integer nbnds,nkbnds,ifileo,kbnds
 	integer nvar_orig
-	logical exists_bnd_name
+	logical exists_bnd_par
 	logical bdebug
 
 	bdebug = .true.
@@ -94,7 +94,7 @@ c initializes boundary condition for scalars
 	  call get_boundary_file(ibc,what,file)
 
 	  aconst = cdef
-	  if( exists_bnd_name(what) ) then
+	  if( exists_bnd_par(what) ) then
 	    call get_bnd_par(ibc,what,val)
 	    aconst = val
 	  end if
@@ -108,7 +108,7 @@ c initializes boundary condition for scalars
 	  ids(ibc) = id
 
 	  if( bdebug ) then
-            write(6,*) 'boundary: ',ibc,id
+            write(6,*) 'boundary: ',ibc,id,what
             if( file .ne. ' ' ) then
 	      write(6,*) '  file: ',file(1:60)
 	    else

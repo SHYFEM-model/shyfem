@@ -7,6 +7,7 @@ c revision log :
 c
 c 24.01.2014    ggu     copied from subexta.f
 c 30.05.2015    ggu     new read from STR file, using module ets
+c 01.04.2016    ggu     bug fix for waves
 c
 c******************************************************************
 c******************************************************************
@@ -202,7 +203,7 @@ c writes and administers ets file
 
 	implicit none
 
-	include 'param.h'
+	include 'simul.h'
 
 	integer it
 
@@ -211,11 +212,8 @@ c writes and administers ets file
 	integer nvers,nvar,ivar
 	character*80 title,femver
 
-	include 'simul.h'
-
-
-	real waves(4,nkn)
-        integer il4kv(nkn)
+	real, allocatable :: waves(:,:)
+        integer, allocatable :: il4kv(:)
 
 	integer ifemop
 	real getpar
@@ -247,6 +245,7 @@ c writes and administers ets file
 		ia_out(4) = nbext
 
 		allocate( outets(nlvdi,nets) )
+		allocate( out4ets(4,nets) )
 
 		nvers = 1
 		nvar = 5
@@ -285,14 +284,16 @@ c writes and administers ets file
 	if ( bwave ) then
   	  ivar = 31
 	  nvars = 4
+	  allocate(waves(4,nkn),il4kv(nkn))
 	  waves(1,:) = waveh
 	  waves(2,:) = wavep
 	  waves(3,:) = wavepp
 	  waves(4,:) = waved
 	  il4kv = nvars
-	  call routets(nvars,il4kv,waves,outets)
-          call ets_write_record(nbext,it,ivar,nvars,ilets,outets,ierr)
+	  call routets(nvars,il4kv,waves,out4ets)
+          call ets_write_record(nbext,it,ivar,nvars,il4ets,out4ets,ierr)
           if(ierr.ne.0.) goto 79
+	  deallocate(waves,il4kv)
         end if
 
 	ivar = 6
@@ -344,15 +345,13 @@ c******************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	integer i,k
-
 
 	do i=1,nets
 	  k = nkets(i)
 	  ilets(i) = ilhkv(k)
 	end do
+	il4ets = 4
 
 	call routets(1,ilhkv,hkv,hets)
 	call routets(1,ilhkv,xgeov,xets)

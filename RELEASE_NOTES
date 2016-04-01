@@ -1,4 +1,11 @@
 
+01.04.2016	VERS_7_5_7
+
+	most big arrays moved from stack to allocatable (newcon.f)
+	sediment transport routine adapted to new model structure
+	subbnd restructured
+	bug fix for ets files
+
 22.03.2016	VERS_7_5_6
 
 	make scripts executable if downloaded from GitHub

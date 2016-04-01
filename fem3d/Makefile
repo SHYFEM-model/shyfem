@@ -891,7 +891,7 @@ lagrange_flux.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_lagrange.mod \
 		../femlib/mod/mod_layer_thickness.mod 
 lagrange_init.o: ../femlib/mod/basin.mod \
-		../femlib/mod/mod_lagrange.mod param.h 
+		../femlib/mod/mod_lagrange.mod 
 lagrange_inout.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/lgr_sedim_module.mod \
@@ -1127,6 +1127,7 @@ scalintp.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_depth.mod param.h pkonst.h \
 		simul.h 
 sedi3d.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
+		../femlib/mod/intp_fem_file.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_area.mod \
 		../femlib/mod/mod_bound_geom.mod \
@@ -1214,8 +1215,7 @@ subbfm.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_ts.mod bfm_common.h param.h \
 		pkonst.h 
 subbnd.o: ../femlib/mod/mod_bnd.mod \
-		../femlib/mod/mod_bound_geom.mod bound_names.h \
-		param.h 
+		../femlib/mod/mod_bound_geom.mod 
 subbndo.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_bndo.mod \
 		../femlib/mod/mod_bound_geom.mod \
@@ -1291,7 +1291,7 @@ subetsa.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_ts.mod \
 		../femlib/mod/mod_waves.mod ../femlib/mod/nls.mod \
-		femtime.h modules.h param.h simul.h 
+		femtime.h modules.h simul.h 
 subexta.o: ../femlib/mod/mod_hydro_print.mod ../femlib/mod/nls.mod \
 		femtime.h modules.h simul.h 
 subflx3d.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \

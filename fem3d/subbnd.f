@@ -31,8 +31,13 @@ c notes :
 c
 c for scalars: -999. uses ambient value
 c
-c nbndim is the maximum dimension used for boundary information 
-c nbvdim is the actual filling of the variables
+c what to do when adding a new parameter to boundary section:
+c	add parameter in rdbnds() with description
+c	add parameter to array in mod_bnd.f
+c what to do when adding a new file name to boundary section:
+c	add file name in rdbnds() with description
+c	add file name to array in mod_bnd.f
+c	if needed add file name in get_boundary_file()
 c
 c revision log :
 c
@@ -80,6 +85,7 @@ c 03.11.2014    ggu	nbdim deleted
 c 23.06.2015    ggu	setbc() deleted, nrz,nrq eliminated
 c 15.02.2016    ggu	check if boundary is given twice
 c 22.02.2016    ggu	new files bfmbcn integrated
+c 01.04.2016    ggu	restructured - arrays transfered to mod_bnd.f
 c
 c************************************************************************
 
@@ -90,7 +96,6 @@ c initializes boundary parameters
 	use mod_bnd
 
 	implicit none
-
 
 	nbc = 0
 	nrb = 0
@@ -110,69 +115,42 @@ c reads boundary info from STR file
 
 	integer ibc
 
-	include 'param.h'
-
-	include 'bound_names.h'
-!AR mud
-
-	character*80 name,text
+	character*80 name,text,file
 	double precision dvalue
 	real value
 	integer n
-	integer nbcdi
 	integer i,kranf,krend,kref
 	integer iweich,id,nbnd
 	integer nrdpar
+	logical ball
 
 	real getpar
 
-	integer icall
-	save icall
-	data icall / 0 /
-
-	nbcdi = nbc_dim
-
-	if( icall .eq. 0 ) then		!initialize bnd array
-	  do i=1,nbcdi
-
-	    !call bnd_init(i)
-
-	    boundn(i) = ' '
-	    conzn(i) = ' '
-	    tempn(i) = ' '
-	    saltn(i) = ' '
-	    vel3dn(i) = ' '
-
-	    bio2dn(i) = ' '
-	    sed2dn(i) = ' '
-	    mud2dn(i) = ' '
-	    dmf2dn(i) = ' '
-	    lam2dn(i) = ' '
-	    tox3dn(i) = ' '
-
-	    bfm1bc(i) = ' '
-	    bfm2bc(i) = ' '
-	    bfm3bc(i) = ' '
-
-	    bfmbcn(i) = ' '
-
-	  end do
-	  icall = 1
-	end if
+!------------------------------------------------------
+! add new elements to boundary arrays
+!------------------------------------------------------
 
 	n = max(nbc,ibc)	!allow for non contiguous numbering
-	if(n.gt.nbcdi) goto 77
 	call mod_bnd_adjust(n)
 	do i=nbc+1,n
-	  call bnd_init(i)
+	  call init_bnd_par(i)
+	  call init_bnd_file(i)
 	end do
 	nbc = n
+
+!------------------------------------------------------
+! check if boundary section is unique
+!------------------------------------------------------
 
         call get_bnd_ipar(ibc,'kranf',kranf)
 	if( kranf > 0 ) then
 	  write(6,*) 'ibc = ',ibc
 	  stop 'error stop rdbnds: boundary defined twice'
 	end if
+
+!------------------------------------------------------
+! start initializing boundary section
+!------------------------------------------------------
 
 	call sctpar('bound')
 	call sctfnm('bound')
@@ -231,7 +209,8 @@ c		setting |iqual = i| copies all the values of
 c		boundary |i| to the actual boundary. Note that the
 c		value of |iqual| must be smaller than the number
 c		of the actual boundary, i.e., boundary |i| must have
-c		been defined before.
+c		been defined before. (This feature is temporarily
+c		not working; please do not use.)
 
 	call addpar('ibtyp',1.)
 	call addpar('iqual',0.)
@@ -284,7 +263,7 @@ c		distributes from the bottom to this level.
 	call addpar('levmin',0.)
 	call addpar('levmax',0.)
 
-c |conzn, tempn, saltn|	File name that contains values for the respective
+c |conzn, tempn, saltn|	File names that contain values for the respective
 c			boundary condition, i.e., for concentration,
 c			temperature and salinity. The format is the same
 c			as for file |boundn|. The unit of the values
@@ -337,18 +316,21 @@ c		to be implemented).
 c |tox3dn|	File name that contains values for the toxicological
 c		module.
 
-	call addfnm('bio2dn',' ')       !HACK
-	call addfnm('sed2dn',' ')       !HACK
-	call addfnm('mud2dn',' ')       !HACK
-	call addfnm('lam2dn',' ')       !HACK
-	call addfnm('dmf2dn',' ')       !HACK
-	call addfnm('tox3dn',' ')       !HACK
+	call addfnm('bio2dn',' ')
+	call addfnm('sed2dn',' ')
+	call addfnm('mud2dn',' ')
+	call addfnm('lam2dn',' ')
+	call addfnm('dmf2dn',' ')
+	call addfnm('tox3dn',' ')
 
 cc File name for OB condition in ERSEM MODULE - undocumented
+cc ... will be removed sooner or later ...
 
 	call addfnm('bfm1bc',' ')
 	call addfnm('bfm2bc',' ')
 	call addfnm('bfm3bc',' ')
+
+c |bfmbcn|	File name that contains values for the bfm module.
 
 	call addfnm('bfmbcn',' ')
 
@@ -385,7 +367,7 @@ c variables of concentration, temperature and salinity. In this case
 c no file with boundary values has to be supplied. The default for all
 c values is 0, i.e., if no file with boundary values is supplied and
 c no constant is set the value of 0 is imposed on the open boundary.
-c A special value of -999 is also allwoed. In this case the value
+c A special value of -999 is also allowed. In this case the value
 c imposed is the ambient value of the parameter close to the boundary.
 
 c |conz, temp, salt|	Constant boundary values for concentration,
@@ -412,33 +394,96 @@ c the file |boundn|. In this case the file |boundn| must contain
 c three columns, the first for the time, and the other two for
 c the momentum input in $x,y$ direction.
 c
+c Please note that this feature is temporarily not available.
+c
 c |umom, vmom|		Constant values for momentum input. (Default 0)
 
 	call addpar('umom',0.)
 	call addpar('vmom',0.)
 
-cc undocumented
+c The next two values can be used
+c to achieve the tilting of the open boundary if only one water level value
+c is given. If only |ktilt| is given then the boundary values
+c are tilted to be in equilibrium with the Coriolis force. This may avoid
+c artificial currents along the boundary. |ktilt| must be a boundary node
+c on the boundary.
+c
+c If |ztilt| is given the tilting of the boundary is explicitly set
+c to this value. The tilting of the first node of the boundary is set 
+c to $-|ztilt|$
+c and the last one to $+|ztilt|$. The total amount of tilting is
+c therefore is $2 \cdot |ztilt|$. If |ktilt| is not specified
+c then a linear interpolation between the first and the last boundary
+c node will be carried out. If also |ktilt| is specified then
+c the boundary values are arranged that the water levels are 
+c tilted around |ktilt|, e.g., $-|ztilt|$ at the first boundary node,
+c 0 at |ktilt|, and $+|ztilt|$ at the last boundary node.
+c
+c |ktilt|		Node of boundary around which tilting should
+c			take place. (Default 0, i.e., no tilting)
+c |ztilt|		Explicit value for tilting (unit meters).
+c			(Default 0)
 
 	call addpar('ktilt',0.)
 	call addpar('ztilt',0.)
-	call addpar('kref',0.)
+
+c Other parameters:
+
+c |igrad0|		If different from 0 a zero gradient boundary
+c			condition will be implemented. This is already the
+c			case for scalars under outflowing conditions. However,
+c			with |igrad0| different from 0 this conditions
+c			will be used also for inflow conditions. (Default 0)
+
 	call addpar('igrad0',0.)	!use 0 gradient for scalars
 
+c |tramp|		Use this value to start smoothly a discharge
+c			boundary condition. If set it indicates the
+c			time (seconds) that will be used to increase
+c			a discharge from 0 to the desired value (Default 0)
+
 	call addpar('tramp',0.)		!start smoothly for discharge
+
+c |levflx|		If discharge is depending on the water level
+c			(e.g., lake outflow) then this parameter indicates to
+c			use one of the possible outflow curves. Please
+c			note that the flow dependence on the water level
+c			must be programmed in the routine $|level\_flux()|$.
+c			(Default 0)
+
 	call addpar('levflx',0.)	!use level-discharge relationship
+
+c |nad|			On the open boundaries it is sometimes convenient
+c			to not compute the non-linear terms in the momentum
+c			equation because instabilities may occur. Setting 
+c			the parameter |nad| to a value different from 0
+c			indicates that in the first |nad| nodes from the
+c			boundary the non linear terms are switched off.
+c			(Default 0)
+
 	call addpar('nad',-1.)		!no advective terms for this boundary
+
+c |lgrpps|		Indicates the number of particles released at
+c			the boundary for the lagrangian module. If positive
+c			it is the number of particles per second released
+c			along the boundary. If negative its absolute
+c			value indicates the particles per volume flux
+c			(unit \dischargeunit) released along the boundary.
+c			(Default 0)
+
 	call addpar('lgrpps',0.)	!parts per second for lagrange
 					!if negative parts per volume flux
 
 c DOCS	END
 
+cc undocumented
+	call addpar('kref',0.)		!not working...
 c here add dummy variables
-
 	call addpar('zval',0.)
 
-cccccccccccccccccccccccccccccccccccccccccccccccccc
-c here we start the reading loop
-cccccccccccccccccccccccccccccccccccccccccccccccccc
+!------------------------------------------------------
+! start reading loop
+!------------------------------------------------------
 
 	kranf = nrb + 1
 	call set_bnd_ipar(ibc,'kranf',kranf)	!position of starting node
@@ -446,7 +491,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccc
 
 	iweich=1
 	do while(iweich.ne.0)
-	    !iweich=nrdpar('bound',name,value,text)
 	    iweich=nrdpar('bound',name,dvalue,text)
 	    value = dvalue
 	    if( iweich .lt. 0 ) goto 92
@@ -457,7 +501,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccc
 		call mod_irv_init(nrb)
 		irv(nrb)=nint(value)
 	    else if( iweich .eq. 3 ) then	!file name
-	        ! must be handeled later
+                call set_bnd_file(ibc,name,text)
 	    else if( iweich .ne. 0 ) then
                 call set_bnd_par(ibc,name,value)
 	    end if
@@ -467,43 +511,34 @@ cccccccccccccccccccccccccccccccccccccccccccccccccc
 	call set_bnd_ipar(ibc,'krend',krend)	!position of end node
 	call addpar('krend',float(krend))
 
-	call get_bnd_nbnd(nbnd)
-	do id=1,nbnd
-	  call get_bnd_name(id,name)
-	  value = getpar(name)
-          call set_bnd_par(ibc,name,value)
-	end do
+!------------------------------------------------------
+! copy all values and files to private boundary arrays
+!------------------------------------------------------
 
-	call getfnm('boundn',boundn(ibc))
-	call getfnm('conzn',conzn(ibc))
-	call getfnm('tempn',tempn(ibc))
-	call getfnm('saltn',saltn(ibc))
-	call getfnm('vel3dn',vel3dn(ibc))
+	call copy_bnd_par(ibc)
+	call copy_bnd_file(ibc)
 
-	call getfnm('bio2dn',bio2dn(ibc))
-	call getfnm('sed2dn',sed2dn(ibc))
-	call getfnm('mud2dn',mud2dn(ibc))
-        call getfnm('dmf2dn',dmf2dn(ibc))
-        call getfnm('lam2dn',lam2dn(ibc))
-	call getfnm('tox3dn',tox3dn(ibc))
+!------------------------------------------------------
+! write out all values of boundary section (only for debug)
+!------------------------------------------------------
 
-	call getfnm('bfm1bc',bfm1bc(ibc))
-	call getfnm('bfm2bc',bfm2bc(ibc))
-	call getfnm('bfm3bc',bfm3bc(ibc))
+	ball = .true.
+        !call check_bnd_par_entries(ibc,ball)
+        !call check_bnd_file_entries(ibc,ball)
 
-	call getfnm('bfmbcn',bfmbcn(ibc))
-
-	!call check_bnd_entries(ibc)
+!------------------------------------------------------
+! delete public section
+!------------------------------------------------------
 
 	call check_parameter_values('before deleting section')
 	call delete_section('bound')
 	call check_parameter_values('after deleting section')
 
+!------------------------------------------------------
+! end of routine
+!------------------------------------------------------
+
 	return
-   77	continue
-	write(6,*) 'Dimension error for nbc_dim'
-	write(6,*) 'nbc_dim :',nbcdi
-	stop 'error stop : rdbnds'
    92	continue
 	write(6,*) 'Error in name list read : ',iweich
 	stop 'error stop : rdbnds'
@@ -525,8 +560,6 @@ c checks boundary information read from STR
 	use mod_bound_geom
 
 	implicit none
-
-	include 'param.h'
 
 	logical bstop
 	integer i,k,ibc
@@ -654,68 +687,38 @@ c********************************************************************
 
 	implicit none
 
-	include 'param.h'
-
-	include 'bound_names.h'
-
-
 	integer i,ibc
 	integer ibtyp,kranf,krend
 	integer intpol
 	integer ipext
+	logical, parameter :: ball = .false.	!write all file names
 
 	if( nbc .le. 0 ) return
 
 	write(6,*)
 	write(6,*) '====== info on open boundaries ========='
 	write(6,*)
-	write(6,*) ' inlet,type,intpol,nnodes ... nodes,files : '
 
 	do ibc=1,nbc
-          call get_bnd_ipar(ibc,'ibtyp',ibtyp)
-          call get_bnd_ipar(ibc,'intpol',intpol)
           call get_bnd_ipar(ibc,'kranf',kranf)
           call get_bnd_ipar(ibc,'krend',krend)
 
-	  write(6,'(4i9)') ibc,ibtyp,intpol,krend-kranf+1
+	  write(6,'(a,i9)') 'boundary: ',ibc
 	  if( kranf > 0 .and. krend > 0 ) then
+	    write(6,'(a,i9)') ' boundary nodes: ',krend-kranf+1
 	    write(6,'(8i9)') (ipext(irv(i)),i=kranf,krend)
 	  end if
 
-	  call print_filename(boundn(ibc))
-	  call print_filename(conzn(ibc))
-	  call print_filename(tempn(ibc))
-	  call print_filename(saltn(ibc))
-	  call print_filename(vel3dn(ibc))
-	  call print_filename(bio2dn(ibc))
-	  call print_filename(sed2dn(ibc))
-	  call print_filename(mud2dn(ibc))
-          call print_filename(lam2dn(ibc))
-          call print_filename(dmf2dn(ibc))
-	  call print_filename(tox3dn(ibc))
-	  call print_filename(bfm1bc(ibc))
-	  call print_filename(bfm2bc(ibc))
-	  call print_filename(bfm3bc(ibc))
-	  call print_filename(bfmbcn(ibc))
+	  call check_bnd_par_entries(ibc,ball)
+	  call check_bnd_file_entries(ibc,ball)
 	end do
 
 	write(6,*)
-	write(6,*) '========================================'
+	write(6,*) '==== end info on open boundaries ======='
 	write(6,*)
 
 	return
 	end
-
-c********************************************************************
-
-	subroutine print_filename(name)
-	character*(*) name
-	character*79 local
-	local = name
-        if( local .ne. ' ' ) then
-                write(6,'(a79)') local
-        end if
-	end 
 
 c********************************************************************
 
@@ -726,32 +729,14 @@ c********************************************************************
 
 	implicit none
 
-	include 'param.h'
-
-	include 'bound_names.h'
-
-
-
-	integer j,i
+	integer j,ibc
+	logical, parameter :: ball = .true.	!write all file names
 
 	write(6,*) '/bnd/'
 	write(6,*) nbc
-	do j=1,nbc
-	  write(6,*) 'ibc = ',j
-	  write(6,*) boundn(j)
-	  write(6,*) conzn(j)
-	  write(6,*) tempn(j)
-	  write(6,*) saltn(j)
-	  write(6,*) vel3dn(j)
-	  write(6,*) bio2dn(j)
-	  write(6,*) sed2dn(j)
-	  write(6,*) mud2dn(j)
-          write(6,*) dmf2dn(j)
-          write(6,*) lam2dn(j)
-	  write(6,*) tox3dn(j)
-	  write(6,*) bfm1bc(j),bfm2bc(j),bfm3bc(j)
-	  write(6,*) bfmbcn(j)
-	  write(6,*) (bnd(i,j),i=1,nbvdim)
+	do ibc=1,nbc
+	  call check_bnd_par_entries(ibc,ball)
+	  call check_bnd_file_entries(ibc,ball)
 	end do
 
 	write(6,*) '/irv/'
@@ -896,8 +881,6 @@ c returns i th node of all boundary nodes
 	integer kbnd
 	integer i
 
-	include 'param.h'
-
         if( i .gt. nrb ) then
             write(6,*) 'i, nrb, nbc : ',i,nrb,nbc
             stop 'error stop kbnd: i out of bounds'
@@ -969,8 +952,6 @@ c returns i th node of boundary ibc
 	integer ibc
 	integer i
 
-	include 'param.h'
-
 	integer kranf,krend,n
 
         call chkibc(ibc,'kbnds:')
@@ -1003,8 +984,6 @@ c returns nodes of boundary ibc (maximum ndim)
 	integer ndim			!dimension of nodes()     (in)
 	integer idim			!total number of nodes    (out)
 	integer nodes(1)		!boundary nodes           (out)
-
-	include 'param.h'
 
 	integer i,imaxi
 	integer kranf,krend
@@ -1048,8 +1027,6 @@ c sets boundary ibc to value in barray (apparently not used)
 	real value
 	real barray(1)
 
-	include 'param.h'
-
 	integer kranf,krend,k,kn
 
         call chkibc(ibc,'setbnd:')
@@ -1076,7 +1053,6 @@ c checks if ibc is in bounds
  
         integer ibc
 	character*(*) errtext
- 
  
         if( ibc .lt. 1 .or. ibc .gt. nbc ) then
 	    write(6,*) errtext
@@ -1112,13 +1088,13 @@ c********************************************************************
 
 c********************************************************************
 
-	subroutine get_oscil(ibc,rit,zval)
+	subroutine get_oscil(ibc,rit,zvalue)
 
 	implicit none
 
 	integer ibc
 	real rit
-	real zval
+	real zvalue
 
         real pi
         parameter( pi=3.141592653 )
@@ -1127,57 +1103,21 @@ c********************************************************************
 
 	call ksinget(ibc,ampli,period,phase,zref)
 
-        zval = zref+ampli*sin(2.*pi*(rit+phase)/period)
+        zvalue = zref+ampli*sin(2.*pi*(rit+phase)/period)
 
 	end
 
 c********************************************************************
-
-	subroutine get_boundary_file(ibc,what,file)
-
-	implicit none
-
-	integer ibc
-	character*(*) what
-	character*(*) file
-
-	include 'param.h'
-	include 'bound_names.h'
-
-        if( what .eq. 'zeta' ) then
-          file = boundn(ibc)
-        else if( what .eq. 'conz' ) then
-          file = conzn(ibc)
-        else if( what .eq. 'temp' ) then
-          file = tempn(ibc)
-        else if( what .eq. 'salt' ) then
-          file = saltn(ibc)
-        else if( what .eq. 'vel' ) then
-          file = vel3dn(ibc)
-        else if( what .eq. 'sedt' ) then
-          file = sed2dn(ibc)
-        else if( what .eq. 'lagvebio' ) then
-          file = bio2dn(ibc)
-        else if( what .eq. 'toxi' ) then
-          file = tox3dn(ibc)
-        else if( what .eq. 'bfm1' ) then
-          file = bfm1bc(ibc)
-        else if( what .eq. 'bfm2' ) then
-          file = bfm2bc(ibc)
-        else if( what .eq. 'bfm3' ) then
-          file = bfm3bc(ibc)
-        else if( what .eq. 'bfm' ) then
-          file = bfmbcn(ibc)
-        else
-          write(6,*) 'keyword not recognized: ',what
-          stop 'error stop get_boundary_file'
-        end if
-
-	end
-
+c********************************************************************
+c********************************************************************
+c
+c routines dealing with parameter values
+c
+c********************************************************************
+c********************************************************************
 c********************************************************************
 
-	subroutine bnd_init(ibc)
+	subroutine init_bnd_par(ibc)
 
 c initializes boundary ibc
 
@@ -1187,18 +1127,10 @@ c initializes boundary ibc
 
 	integer ibc
 
-	include 'param.h'
-
-	integer i
-
-	do i=1,nbvdim
-	  bnd(i,ibc) = 0.
-	end do
+	bnd(:,ibc) = 0.
 
 	end
 
-c********************************************************************
-c********************************************************************
 c********************************************************************
 
         subroutine setget_bnd_par(ibc,ientry,name,value,bset)
@@ -1215,11 +1147,9 @@ c sets/gets value at entry ientry
         real value
         logical bset
 
-	include 'param.h'
-
         call chkibc(ibc,'setget_bnd_par:')
 
-        if( ientry .le. 0 ) then
+        if( ientry < 1 .or. ientry > nbvdim ) then
           write(6,*) 'no such entry: ',ientry,ibc,name
 	  stop 'error stop setget_bnd_par: no such entry'
         end if
@@ -1236,41 +1166,59 @@ c********************************************************************
  
         subroutine set_bnd_par(ibc,name,value)
         character*(*) name
-        id = iget_bnd_id(name,.true.)
+        id = iget_bnd_par_id(name,.true.)
         call setget_bnd_par(ibc,id,name,value,.true.)
         end
 
         subroutine get_bnd_par(ibc,name,value)
         character*(*) name
-        id = iget_bnd_id(name,.true.)
+        id = iget_bnd_par_id(name,.true.)
         call setget_bnd_par(ibc,id,name,value,.false.)
         end
 
         subroutine set_bnd_ipar(ibc,name,ivalue)
         character*(*) name
-        id = iget_bnd_id(name,.true.)
+        id = iget_bnd_par_id(name,.true.)
 	value = ivalue
         call setget_bnd_par(ibc,id,name,value,.true.)
         end
 
         subroutine get_bnd_ipar(ibc,name,ivalue)
         character*(*) name
-        id = iget_bnd_id(name,.true.)
+        id = iget_bnd_par_id(name,.true.)
         call setget_bnd_par(ibc,id,name,value,.false.)
 	ivalue = nint(value)
         end
 
 c********************************************************************
-c********************************************************************
-c********************************************************************
-c
-c to insert new parameter increase nbvdim below and insert name in data
-c
-c********************************************************************
-c********************************************************************
+
+	subroutine copy_bnd_par(ibc)
+
+c copies parameter values
+
+	use mod_bnd
+
+	implicit none
+
+	integer ibc
+
+	integer id
+	real value
+	character*6 name
+
+	real getpar
+
+	do id=1,nbvdim
+	  call get_bnd_par_name(id,name)
+	  value = getpar(name)
+          call set_bnd_par(ibc,name,value)
+	end do
+
+	end
+
 c********************************************************************
 
-	subroutine get_bnd_nbnd(nbnd)
+	subroutine get_bnd_npar(nbnd)
 
 	use mod_bnd
 
@@ -1278,68 +1226,66 @@ c********************************************************************
 
 	integer nbnd
 
-
 	nbnd = nbvdim
 
 	end
 
 c********************************************************************
 
-        function exists_bnd_name(name)
+        function exists_bnd_par(name)
+
+c tests if parameter name exists
 
         implicit none
 
-        logical exists_bnd_name
+        logical exists_bnd_par
         character*(*) name
 
-	integer iget_bnd_id
+	integer iget_bnd_par_id
 
-	exists_bnd_name = iget_bnd_id(name,.false.) > 0
+	exists_bnd_par = iget_bnd_par_id(name,.false.) > 0
 
 	end
 
 c********************************************************************
 
-        function iget_bnd_id(name,berror)
+        function iget_bnd_par_id(name,berror)
+
+c gets id given a parameter name
 
 	use mod_bnd
 
         implicit none
 
-        integer iget_bnd_id
+        integer iget_bnd_par_id
         character*(*) name
 	logical berror		!raises error if name not existing
-
 
         integer id
         character*6 bname
 
         do id=1,nbvdim
-	  call get_bnd_name(id,bname)
+	  call get_bnd_par_name(id,bname)
           if( bname .eq. name ) then
-            iget_bnd_id = id
+            iget_bnd_par_id = id
             return
           end if
         end do
 
 	if( berror ) then
           write(6,*) 'unknown name for boundary: ',name
-          stop 'error stop iget_bnd_id: name'
+          stop 'error stop iget_bnd_par_id: name'
 	end if
 
-	iget_bnd_id = 0
+	iget_bnd_par_id = 0
 
         end
 
 c********************************************************************
 
-	subroutine get_bnd_name(id,name)
+	subroutine get_bnd_par_name(id,name)
 
-c all variables used in section bound
-c
-c to add a variable:
-c	add to names
-c	increase nbvdim (more instances in file)
+c gets parameter name given id
 
 	use mod_bnd
 
@@ -1348,29 +1294,55 @@ c	increase nbvdim (more instances in file)
 	integer id
         character*(*) name
 
-
-        character*6 names(nbvdim)
-        save names
-        data names      /
-     +                   'iqual','ibtyp','kranf','krend','zval'
-     +                  ,'ampli','period','phase','zref','ktilt'
-     +                  ,'intpol','levmax','igrad0','zfact'
-     +			,'conz','temp','salt','levmin','kref'
-     +			,'ztilt','tramp','levflx','nad','lgrpps'
-     +			,'tnudge'
-     +                  /
-
-	if( id .gt. nbvdim ) then
+	if( id < 1 .or. id > nbvdim ) then
 	  name = ' '
 	else
-	  name = names(id)
+	  name = bnd_par_names(id)
 	end if
 
 	end
 
 c********************************************************************
 
-	subroutine check_bnd_entries(ibc)
+	subroutine check_bnd_par_entries(ibc,ball)
+
+c writes parameter values for given boundary
+
+	use mod_bnd
+
+	implicit none
+
+	integer ibc
+	logical ball	!write all parameter names
+
+        integer i
+	real value
+	character*6 name
+
+	!write(6,*) 'check_bnd_par_entries: ',ibc
+        do i=1,nbvdim
+	  call get_bnd_par_name(i,name)
+          call setget_bnd_par(ibc,i,' ',value,.false.)
+	  if( ball .or. value /= 0. ) then
+	    write(6,*) name,value
+	  end if
+	end do
+
+        end
+
+c********************************************************************
+c********************************************************************
+c********************************************************************
+c
+c routines dealing with file names
+c
+c********************************************************************
+c********************************************************************
+c********************************************************************
+
+	subroutine init_bnd_file(ibc)
+
+c initializes boundary ibc
 
 	use mod_bnd
 
@@ -1378,17 +1350,248 @@ c********************************************************************
 
 	integer ibc
 
+	bnd_file(:,ibc) = ' '
+
+	end
+
+c********************************************************************
+
+        subroutine setget_bnd_file(ibc,ientry,name,file,bset)
+
+c sets/gets file at entry ientry
+
+	use mod_bnd
+
+        implicit none
+
+        integer ibc
+        integer ientry
+	character*(*) name
+	character*(*) file
+        logical bset
+
+        call chkibc(ibc,'setget_bnd_file:')
+
+        if( ientry < 1 .or. ientry > nbfdim ) then
+          write(6,*) 'no such entry: ',ientry,ibc,name
+	  stop 'error stop setget_bnd_file: no such entry'
+        end if
+
+        if( bset ) then
+          bnd_file(ientry,ibc) = file
+        else
+          file = bnd_file(ientry,ibc)
+        end if
+
+        end
+
+c********************************************************************
+ 
+        subroutine set_bnd_file(ibc,name,file)
+        character*(*) name,file
+        id = iget_bnd_file_id(name,.true.)
+        call setget_bnd_file(ibc,id,name,file,.true.)
+        end
+
+        subroutine get_bnd_file(ibc,name,file)
+        character*(*) name,file
+        id = iget_bnd_file_id(name,.true.)
+        call setget_bnd_file(ibc,id,name,file,.false.)
+        end
+
+c********************************************************************
+
+	subroutine copy_bnd_file(ibc)
+
+c copies file names
+
+	use mod_bnd
+
+	implicit none
+
+	integer ibc
+
+	integer id
+	character*80 file
+	character*6 name
+
+	do id=1,nbfdim
+	  call get_bnd_file_name(id,name)
+	  call getfnm(name,file)
+          call set_bnd_file(ibc,name,file)
+	end do
+
+	end
+
+c********************************************************************
+
+	subroutine get_bnd_nfile(nbnd)
+
+	use mod_bnd
+
+        implicit none
+
+	integer nbnd
+
+	nbnd = nbfdim
+
+	end
+
+c********************************************************************
+
+        function exists_bnd_file(name)
+
+c tests if file name exists
+
+        implicit none
+
+        logical exists_bnd_file
+        character*(*) name
+
+	integer iget_bnd_file_id
+
+	exists_bnd_file = iget_bnd_file_id(name,.false.) > 0
+
+	end
+
+c********************************************************************
+
+        function iget_bnd_file_id(name,berror)
+
+c gets id given a file name
+
+	use mod_bnd
+
+        implicit none
+
+        integer iget_bnd_file_id
+        character*(*) name
+	logical berror		!raises error if name not existing
+
+        integer id
+        character*6 bname
+
+        do id=1,nbfdim
+	  call get_bnd_file_name(id,bname)
+          if( bname .eq. name ) then
+            iget_bnd_file_id = id
+            return
+          end if
+        end do
+
+	if( berror ) then
+          write(6,*) 'unknown name for boundary: ',name
+          stop 'error stop iget_bnd_file_id: name'
+	end if
+
+	iget_bnd_file_id = 0
+
+        end
+
+c********************************************************************
+
+	subroutine get_bnd_file_name(id,name)
+
+c gets file name given id
+
+	use mod_bnd
+
+	implicit none
+
+	integer id
+        character*(*) name
+
+	if( id < 1 .or. id > nbfdim ) then
+	  name = ' '
+	else
+	  name = bnd_file_names(id)
+	end if
+
+	end
+
+c********************************************************************
+
+	subroutine check_bnd_file_entries(ibc,ball)
+
+c writes file names for given boundary
+
+	use mod_bnd
+
+	implicit none
+
+	integer ibc
+	logical ball	!write all file names
 
         integer i
-	real value
+	character*6 name
+	character*80 file
 
-	write(6,*) 'check_bnd_entries: ',ibc
-        do i=1,nbvdim
-          call setget_bnd_par(ibc,i,' ',value,.false.)
-	  write(6,*) i,value
+	!write(6,*) 'check_bnd_file_entries: ',ibc
+        do i=1,nbfdim
+	  call get_bnd_file_name(i,name)
+          call setget_bnd_file(ibc,i,' ',file,.false.)
+	  if( ball .or. file /= ' ' ) then
+	    write(6,*) name,'  ',trim(file)
+	  end if
 	end do
 
         end
 
+c********************************************************************
+c********************************************************************
+c********************************************************************
+
+	subroutine get_boundary_file(ibc,what,file)
+
+	implicit none
+
+	integer ibc
+	character*(*) what
+	character*(*) file
+
+	character*6 name
+
+	logical exists_bnd_file
+
+        if( what .eq. 'zeta' ) then
+	  name = 'boundn'
+        else if( what .eq. 'conz' ) then
+	  name = 'conzn'
+        else if( what .eq. 'temp' ) then
+	  name = 'tempn'
+        else if( what .eq. 'salt' ) then
+	  name = 'saltn'
+        else if( what .eq. 'vel' ) then
+	  name = 'vel3dn'
+        else if( what .eq. 'sedt' ) then
+	  name = 'sed2dn'
+        else if( what .eq. 'lagvebio' ) then
+	  name = 'bio2dn'
+        else if( what .eq. 'toxi' ) then
+	  name = 'tox3dn'
+        else if( what .eq. 'bfm1' ) then
+	  name = 'bfm1bc'
+        else if( what .eq. 'bfm2' ) then
+	  name = 'bfm2bc'
+        else if( what .eq. 'bfm3' ) then
+	  name = 'bfm3bc'
+        else if( what .eq. 'bfm' ) then
+	  name = 'bfmbcn'
+        else
+          if( exists_bnd_file(what) ) then	!use name given in what
+	    name = what
+	  else
+            write(6,*) 'keyword not recognized: ',what
+            write(6,*) 'boundary: ',ibc
+            stop 'error stop get_boundary_file'
+	  end if
+        end if
+
+        call get_bnd_file(ibc,name,file)
+
+	end
+
+c********************************************************************
+c********************************************************************
 c********************************************************************
 

@@ -29,6 +29,9 @@ c******************************************************************
 
         real, save, allocatable :: outets(:,:)		!aux array
 
+        integer, save, allocatable :: il4ets(:)		!layers
+        real, save, allocatable :: out4ets(:,:)		!aux array
+
 !==================================================================
         contains
 !==================================================================
@@ -45,6 +48,7 @@ c******************************************************************
         allocate(xets(n))
         allocate(yets(n))
         allocate(ilets(n))
+        allocate(il4ets(n))
         allocate(hets(n))
 
 	end subroutine ets_init_module

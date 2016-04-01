@@ -7,7 +7,7 @@
         PARAMETER (NLBDIM=20)
 
         INTEGER NSDIM             !number of grainsize classes
-        PARAMETER (NSDIM=12)
+        PARAMETER (NSDIM=9)
 
 
         COMMON /CSEDI3D/ KCOES,LIMCOH,SMOOTH,ANGREP,MORPHO,RHOSED,

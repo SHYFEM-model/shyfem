@@ -273,8 +273,6 @@ c flags elements which are in/out-side or at border of line
 	real x(1),y(1)
 	integer iflag(1)
 
-	include 'param.h'
-
 	logical inpoly
 	logical debug
 	integer ie,k,ii,iin
@@ -447,8 +445,6 @@ c release in partial area
 	integer n
 	real x(1),y(1)
 
-	include 'param.h'
-
 	integer iflag(nel)
 
 	integer ie,i,j
@@ -552,9 +548,6 @@ c release in total area
 	implicit none
 
 	real dxy
-
-	!include 'param.h'
-	!include 'lagrange.h'
 
 	integer ie,i,j
 	integer nin,iin

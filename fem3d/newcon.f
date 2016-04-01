@@ -172,6 +172,7 @@ c 20.05.2015    ggu     accumulate over nodes (for parallel version)
 c 30.09.2015    ggu     routine cleaned, no reals in conz3d
 c 26.10.2015    ggu     critical omp sections introduced (eliminated data race)
 c 26.10.2015    ggu     mass check only for levdbg > 2
+c 01.04.2016    ggu     most big arrays moved from stack to allocatable
 c
 c*********************************************************************
 
@@ -199,18 +200,20 @@ c shell for scalar (for parallel version)
 
 	include 'femtime.h'
 
-	!include 'const_aux.h'
-
-        real r3v(nlvdi,nkn)
-        real caux(0:nlvdi,nkn)
-	real load(nlvdi,nkn)	!load [kg/s]
-	real cobs(nlvdi,nkn)	!load [kg/s]
+        real, allocatable :: r3v(:,:)
+        real, allocatable :: caux(:,:)
+	real, allocatable :: load(:,:)	!load [kg/s]
+	real, allocatable :: cobs(:,:)	!load [kg/s]
 
 	double precision dtime
 	real robs,rload
         integer iwhat,ichanm
 	character*10 whatvar,whataux
 
+	allocate(r3v(nlvdi,nkn),load(nlvdi,nkn))
+	allocate(caux(0:nlvdi,nkn),cobs(nlvdi,nkn))
+
+	r3v = 0.
 	robs = 0.
 	rload = 0.
 	caux = 1.
@@ -249,6 +252,9 @@ c--------------------------------------------------------------
      +				,rkpar,wsink,caux,rload,load
      +                          ,difhv,difv,difmol)
 
+	deallocate(r3v,load)
+	deallocate(caux,cobs)
+
 c--------------------------------------------------------------
 c end of routine
 c--------------------------------------------------------------
@@ -284,11 +290,9 @@ c shell for scalar with nudging (for parallel version)
 
 	include 'femtime.h'
 
-	!include 'const_aux.h'
-
-        real r3v(nlvdi,nkn)
-        real caux(0:nlvdi,nkn)
-	real load(nlvdi,nkn)	!load [kg/s]
+        real, allocatable :: r3v(:,:)
+        real, allocatable :: caux(:,:)
+	real, allocatable :: load(:,:)	!load [kg/s]
 
 	integer ierr,l,k,lmax
 	real eps
@@ -297,7 +301,11 @@ c shell for scalar with nudging (for parallel version)
         integer iwhat,ichanm
 	character*10 whatvar,whataux
 
+	allocate(r3v(nlvdi,nkn),load(nlvdi,nkn))
+	allocate(caux(0:nlvdi,nkn))
+
 	rload = 0.
+	r3v = 0.
 	caux = 1.
 	load = 1.
 
@@ -330,6 +338,9 @@ c--------------------------------------------------------------
      +                          ,r3v,sobs,robs
      +				,rkpar,wsink,caux,rload,load
      +                          ,difhv,difv,difmol)
+
+	deallocate(r3v,load)
+	deallocate(caux)
 
 c--------------------------------------------------------------
 c end of routine
@@ -369,14 +380,17 @@ c special version with factor for BC, variable sinking velocity and loads
 
 	include 'femtime.h'
 
-        real r3v(nlvdi,nkn)
+        real, allocatable :: r3v(:,:)
 
 	double precision dtime
 	real robs
         integer iwhat,ichanm
 	character*20 whatvar,whataux
 
+	allocate(r3v(nlvdi,nkn))
+
 	robs = 0.
+	r3v = 0.
 
 c--------------------------------------------------------------
 c make identifier for variable
@@ -415,6 +429,8 @@ c--------------------------------------------------------------
      +                          ,r3v,scal,robs
      +				,rkpar,wsink,wsinkv,rload,load
      +                          ,difhv,difv,difmol)
+
+	deallocate(r3v)
 
 c--------------------------------------------------------------
 c end of routine
@@ -482,11 +498,11 @@ c common
 	include 'mkonst.h'
 
 c local
-        real saux(nlvddi,nkn)		!aux array
-        real sbflux(nlvddi,nkn)		!flux boundary conditions
-        real sbconz(nlvddi,nkn)		!conz boundary conditions
-	real gradxv(nlvddi,nkn)		!gradient in x for tvd
-	real gradyv(nlvddi,nkn)		!gradient in y for tvd
+        real, allocatable :: saux(:,:)		!aux array
+        real, allocatable :: sbflux(:,:)	!flux boundary conditions
+        real, allocatable :: sbconz(:,:)	!conz boundary conditions
+	real, allocatable :: gradxv(:,:)	!gradient in x for tvd
+	real, allocatable :: gradyv(:,:)	!gradient in y for tvd
 
 	logical btvd,btvd1
 	integer isact
@@ -520,6 +536,16 @@ c-------------------------------------------------------------
 	levdbg = nint(getpar('levdbg'))
 	btvd = itvd .gt. 0
 	btvd1 = itvd .eq. 1
+
+	allocate(saux(nlvddi,nkn))
+	allocate(sbflux(nlvddi,nkn),sbconz(nlvddi,nkn))
+	allocate(gradxv(nlvddi,nkn),gradyv(nlvddi,nkn))
+
+	saux = 0.
+	sbflux = 0.
+	sbconz = 0.
+	gradxv = 0.
+	gradyv = 0.
 
 !$OMP CRITICAL
         call getinfo(iuinfo)  !unit number of info file
@@ -615,6 +641,10 @@ c-------------------------------------------------------------
      +                          ,it,niter,mass,massold,massdiff
 !$OMP END CRITICAL
 	end if
+
+	deallocate(saux)
+	deallocate(sbflux,sbconz)
+	deallocate(gradxv,gradyv)
 
 c-------------------------------------------------------------
 c end of routine

@@ -1,4 +1,22 @@
 
+01.04.2016
+
+c ./fem3d/newcon.f:
+c 01.04.2016    ggu     most big arrays moved from stack to allocatable
+c
+c ./fem3d/mod_bnd.f:
+! 01.04.2016    ggu     parameter and file names transfered to here
+!
+c ./fem3d/subetsa.f:
+c 01.04.2016    ggu     bug fix for waves
+c
+c ./fem3d/subbnd.f:
+c 01.04.2016    ggu	restructured - arrays transfered to mod_bnd.f
+c
+c ./fem3d/sedi3d.f:
+c 01.04.2016    ccf&ggu adapted to new model version
+
+
 22.03.2016
 
  * ./mesh/exgrd.c:

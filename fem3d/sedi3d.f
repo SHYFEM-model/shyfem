@@ -11,7 +11,7 @@
 !
 C 16/11/2004 Christian Ferrarin ISMAR-CNR
 C
-C Revision Log :
+c revision log :
 C
 C Mar, 2005     ccf     (sedi3d_f1.f) coming from sedi3d_e3_multi7.f
 C                       	new cohesive routine
@@ -78,15 +78,16 @@ c 20.06.2011    ccf     load for erosion deposition for both cohesive and non-co
 c 20.06.2011	ccf	deleted suspco routine
 c 19.01.2015    ccf     ia_out1/2 introduced
 c 10.02.2015    ggu     new read for constants
+c 01.04.2016    ccf&ggu adapted to new model version
 c
 !****************************************************************************
 
       subroutine sedi(it,dt)
 
-	use mod_depth
-	use mod_diff_visc_fric
-	use levels
-	use basin, only : nkn,nel,ngr,mbw
+      use mod_depth
+      use mod_diff_visc_fric
+      use levels
+      use basin, only : nkn,nel,ngr,mbw
 
       implicit none
 
@@ -116,37 +117,46 @@ c
       integer is,k,l			!counters
       integer nintp
 
-      double precision gs(nsdim)	!SEDIMENT GRAIN DIAMETER (M)
-      double precision bdh(nkndim)      !total elevation change [>0depo,<0ero]
-      real bh(nkndim)		    	!bottom height variation [m]
-      real tcn(nlvdim,nkndim) 		!total sediment concentration [kg/m3]
-      real gskm(nkndim)			!AVERAGE SEDIMENT GRAIN DIAMETER ON NODES (M)
-      real sbound(nsdim)                !boundary vector [kg/m3]
-      real scn(nlvdim,nkndim,nsdim)     !suspended sediment conc (kg/m3)
-      real eps(0:nlvdim,nkndim,nsdim)	!vertical mixing coefficient
+      real, allocatable, save :: bh(:)    	!bottom height variation [m]
+      real, allocatable, save :: tcn(:,:) 	!total sediment concentration [kg/m3]
+      real, allocatable, save :: gskm(:) 	!AVERAGE SEDIMENT GRAIN DIAMETER ON NODES (M)
+      real, allocatable, save :: sbound(:)      !boundary vector [kg/m3]
+      real, allocatable, save :: scn(:,:,:)     !suspended sediment conc (kg/m3)
+      real, allocatable, save :: eps(:,:,:)	!vertical mixing coefficient
+      real, allocatable, save :: wsink(:,:,:) 	!settling velocity for suspended sediment
+      real, allocatable, save :: gdx(:) 
+      real, allocatable, save :: gdy(:) 	!slope gradients
+      real, allocatable, save :: tao(:)         !wave-current shear stress
+      real, allocatable, save :: totbed(:) 		!total bedload transport (kg/ms)
+      real, allocatable, save :: v1v(:) 
+      real, allocatable, save :: sload(:,:) 		!suspended sediment load [kg/s]
+      real, allocatable, save :: load(:,:)
+      double precision, allocatable, save :: bdh(:)   !total elevation change [>0depo,<0ero]
+      double precision, allocatable, save :: gs(:) 	!SEDIMENT GRAIN DIAMETER (M)
+      double precision, allocatable, save :: riph(:)    !ripple height [m]
+      double precision, allocatable, save :: ripl(:)    !ripple length [m]
+      double precision, allocatable, save :: sflx(:,:) 	!flux of suspend sediment [m3/m2]
+      double precision, allocatable, save :: sedx(:,:) 	!x bedload component [kg/ms]
+      double precision, allocatable, save :: sedy(:,:)  !y bedload component [kg/ms]
+      double precision, allocatable, save :: bflx(:,:) 	!flux of bedload sediment [m3/m2]
+      double precision, allocatable, save :: percbd(:,:,:) !fraction of sediment [0,1]
+      double precision, allocatable, save :: bedn(:,:,:) !bed characteristics in 3 column table
+                                                ! (1) depth below sediment surface (m)
+                                                ! (2) critical erosion stress (Pa)
+                                                ! (3) dry bulk density (kg/m**3)
+
       real thick			!initial thickness [m]
       real conref			!initial concentration [kg/m3]
-      real wsink(0:nlvdim,nkndim,nsdim)	!settling velocity for suspended sediment
-      real gdx(nkndim),gdy(nkndim)	!slope gradients
-      real tao(nkndim)                  !wave-current shear stress
-	real v1v(nkn)
-      double precision riph(nkndim)     !ripple height [m]
-      double precision ripl(nkndim)     !ripple length [m]
       double precision timedr		!Duration of call to Sedtrans (s)
-      double precision sflx(nsdim,nkndim)	!flux of suspend sediment [m3/m2]
-      double precision bflx(nsdim,nkndim)	!flux of bedload sediment [m3/m2]
-      double precision sedx(nsdim,nkndim)	!x bedload component [kg/ms]
-      double precision sedy(nsdim,nkndim)       !y bedload component [kg/ms]
-      integer adjtime				!time for initialization [s]
-      integer nsclsc				!number of grainsize classes for adv-dif
+      integer adjtime			!time for initialization [s]
+      integer nsclsc			!number of grainsize classes for adv-dif
 
       real sedpa(7)                     !sediment parameter vector
       common /sedpa/sedpa
       real gsc(nsdim)                   !grainsize class
       common /gsc/gsc
 
-      integer idsedi(nbcdim)            !information on boundaries
-      save idsedi
+      integer, allocatable, save :: idsedi(:)      !information on boundaries
 
       integer itanf,nvar
       double precision dtime0,dtime
@@ -156,23 +166,16 @@ c
 
       character*10 what
       real tsec
-      real totbed(nkndim)		!total bedload transport (kg/ms)
-      double precision percbd(nlbdim,nsdim,nkndim)        !fraction of sediment [0,1]
-      double precision bedn(nlbdim,3,nkndim)	!bed characteristics in 3 column table
-                                                ! (1) depth below sediment surface (m)
-                                                ! (2) critical erosion stress (Pa)
-                                                ! (3) dry bulk density (kg/m**3)
-
       real fact
       parameter ( fact = 1. )
-      real load(nlvdim,nkndim)
       integer itmsed,idtsed 		!output parameter
       integer ia_out1(4),ia_out2(4)
+
+      integer nbc,nbnds
 
 ! function
       integer iround
       real getpar
-      real sload(nkndim,nsdim)	  !suspended sediment load [kg/s]
       logical has_output,next_output
 
 ! save and data
@@ -180,17 +183,8 @@ c
       save what
       save itmsed,idtsed
       save sedkpar,difmol
-      save gs,sbound
       save nscls,adjtime,nsclsc
       save hzoff
-      save tcn,bh
-      save riph,ripl
-      save scn,eps
-      save wsink,sload
-      save sflx,sedx,sedy
-      save gdx,gdy
-      save tao,gskm
-      save bedn,percbd
       save salref,temref
       save /gsc/
       save /sedpa/
@@ -249,12 +243,41 @@ c
           temref = getpar('temref')
           salref = getpar('salref')
 
-          do is = 1,nsdim
-           gs(is) = 0.
-          end do
+!         --------------------------------------------------
+!	  Allocate array
+!         --------------------------------------------------
+          allocate(bh(nkn))
+          allocate(tcn(nlvdi,nkn))
+          allocate(gskm(nkn))
+          allocate(sbound(nsdim))
+          allocate(scn(nlvdi,nkn,nsdim))
+          allocate(eps(0:nlvdi,nkn,nsdim))
+          allocate(wsink(0:nlvdi,nkn,nsdim))
+          allocate(gdx(nkn))
+          allocate(gdy(nkn))
+          allocate(tao(nkn))
+          allocate(totbed(nkn))
+          allocate(v1v(nkn))
+          allocate(sload(nkn,nsdim))
+          allocate(bdh(nkn))
+          allocate(gs(nsdim))
+          allocate(riph(nkn))
+          allocate(ripl(nkn))
+          allocate(sflx(nsdim,nkn))
+          allocate(sedx(nsdim,nkn))
+          allocate(sedy(nsdim,nkn))
+          allocate(bflx(nsdim,nkn))
+          allocate(percbd(nlbdim,nsdim,nkn))
+          allocate(bedn(nlbdim,3,nkn))
+	  allocate(load(nlvdi,nkn))
+
+	  nbc = nbnds()
+	  allocate(idsedi(nbc))
+
+          gs = 0.
 
 	  nbcc = 0
-          do is = 1,nscls
+          do is = 1,nsdim
            gs(is) = gsc(is)
 	   sbound(is) = 0.
 	   if (gs(is) .lt. limcoh) nbcc = nbcc + 1
@@ -262,30 +285,22 @@ c
 	  nsclsc = nscls
           if (gs(nscls) .ge. 0.10D0) nsclsc = nscls - 1
 
-          do k = 1,nkn
-            bh(k) = 0.
-            gdx(k) = 0.
-            gdy(k) = 0.
-	    riph(k) = 0.d0
-	    ripl(k) = 0.d0
-	    totbed(k) = 0.
-            do l=1,nlvdim
-              tcn(l,k) = 0.			!total suspended sediment
-	      load(l,k) = 0.
-            end do
-            do is=1,nsdim
-              sedx(is,k) = 0.d0		!bedload
-              sedy(is,k) = 0.d0		!bedload
-              sload(k,is) = 0.		!suspended sediment load
-              do l=1,nlvdim
-                scn(l,k,is) = conref	!suspended sediment (sand)
-                wsink(l,k,is) = 0.	!settling velocity
-                eps(l,k,is) = 0.	!vertical diffusion for sand
-              end do
-              eps(0,k,is) = 0.		!vertical diffusion
-              wsink(0,k,is) = 0.	!settling velocity
-	    end do
-	  end do
+          bh     = 0.
+          gdx    = 0.
+          gdy    = 0.
+	  riph   = 0.d0
+	  ripl   = 0.d0
+	  totbed = 0.
+          tcn    = 0.			!total suspended sediment
+	  load   = 0.
+          sedx   = 0.d0		!bedload
+          sedy   = 0.d0		!bedload
+          sload  = 0.		!suspended sediment load
+          scn    = conref	!suspended sediment (sand)
+          wsink  = 0.	!settling velocity
+          eps    = 0.	!vertical diffusion for sand
+          eps    = 0.		!vertical diffusion
+          wsink  = 0.	!settling velocity
 
 !         --------------------------------------------------
 !         Initialize bed configuration
@@ -302,7 +317,7 @@ c
           nintp = 2
           nvar = nscls
           what = 'sedt'
-          call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
+          call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlvdi
      +                          ,sbound,idsedi)
 
 !         --------------------------------------------------
@@ -316,7 +331,7 @@ c
              call open_scalar_file(ia_out1,1,5,'sed')
           end if
           if( has_output(ia_out2) ) then
-             call open_scalar_file(ia_out2,nlv,1,'sco')
+             call open_scalar_file(ia_out2,nlvdi,1,'sco')
           end if
 
           write(6,*) 'sediment model initialized...'
@@ -340,7 +355,7 @@ c
 !       Compute bed slope gradient
 !       -------------------------------------------------------------
 
-        call tvd_grad_2d(hkv,gdx,gdy,v1v)
+!        call tvd_grad_2d(hkv,gdx,gdy,v1v)
 
 !       -------------------------------------------------------------------
 !       Compute sediment transport on nodes
@@ -988,6 +1003,16 @@ c DOCS  END
         include 'param.h'
         include 'sed_param.h'
 
+        double precision gs(nsdim)              !sediment grain diameter (m)
+        integer nscls				!number of grainsize classes
+        integer nbed				!initial number of bed layers
+        real thick				!initial thickness [m]
+        real gskm(nkn)			!average grainsize per node [m]
+        double precision percbd(nlbdim,nsdim,nkn)        !fraction of sediment [0,1]
+        double precision bedn(nlbdim,3,nkn)  !bed characteristics in 3 column table
+                                                ! (1) depth below sediment surface (m)
+                                                ! (2) critical erosion stress (Pa)
+                                                ! (3) dry bulk density (kg/m**3)
 
         real sedpa(7)	                        !sediment parameter vector
         common /sedpa/sedpa
@@ -995,24 +1020,14 @@ c DOCS  END
         common /prin/prin
         real tue(nsdim)             		!initial erosion threshold/density
         common /tue/tue
-        double precision gs(nsdim)              !sediment grain diameter (m)
-        double precision percbd(nlbdim,nsdim,nkndim)        !fraction of sediment [0,1]
-        double precision bedn(nlbdim,3,nkndim)  !bed characteristics in 3 column table
-                                                ! (1) depth below sediment surface (m)
-                                                ! (2) critical erosion stress (Pa)
-                                                ! (3) dry bulk density (kg/m**3)
-        integer nscls				!number of grainsize classes
-        integer nbed				!initial number of bed layers
-        real thick				!initial thickness [m]
-        real gskm(nkndim)			!average grainsize per node [m]
         double precision gsa,gss
 	double precision ptot
         double precision rhosa			!initial erosion threshold
         double precision rhossand		!function for density from % sand
         double precision pcoes			!% of fine sediments
         integer itype   	                !element code number
-        real pers(nkndim,nsdim)			!percbd initialized from file
-        real tuek(nkndim,1)			!tauce initialized from file
+        real pers(nkn,nsdim)			!percbd initialized from file
+        real tuek(nkn,1)			!tauce initialized from file
         integer npi
         integer k,ib,is,ie,ii
 
@@ -1042,8 +1057,8 @@ c DOCS  END
 !       Initialize sediment fraction and tuek from external file
 !       -------------------------------------------------------------------
 
-        call inic2fil('sedp',pers,nscls)
-        call inic2fil('sedt',tuek,1)
+	call init_file_txt('sedp',nkn,nscls,pers)
+	call init_file_txt('sedt',nkn,1,tuek)
 
 !       -------------------------------------------------------------------
 !       Initialize bed thickness if thick .ne. 0
@@ -1097,6 +1112,88 @@ c DOCS  END
         stop 'error stop : percbd'
 
         end
+
+! *******************************************************
+! Initilize array from file txt
+
+	subroutine init_file_txt(name,nkn,nvar,var)
+
+        implicit none
+
+        character*(*) name      !file name
+	integer nkn
+	integer nvar
+	real var(nkn,nvar)
+
+	integer k,j
+
+        character*80 file
+
+        call getfnm(name,file)
+        if( file .eq. ' ' ) return      !nothing to initialize
+	write(6,*) 'Reading sediment from file: ',file
+
+	open(199,file=file,form='formatted')
+
+	do k = 1,nkn
+  	  read(199,*) (var(k,j),j=1,nvar)
+	end do
+
+        end
+
+! *******************************************************
+! Initilize array from file
+
+	subroutine init_file_sed(name,nkn,nvar,var)
+
+        use intp_fem_file
+
+        implicit none
+
+	include 'sed_param.h'
+
+        character*(*) name      !file name
+	integer nkn
+	integer nvar
+	real var(nkn,nvar)
+
+        integer nb,k
+        integer nintp,np,lmax,ibc
+        integer idsed
+        double precision dtime
+        integer nodes(1)
+        real sconst(1)
+        character*10 what
+        character*80 file
+
+        dtime = 0
+        nodes = 0
+        nintp = 2
+        np = nkn
+        lmax = 0
+        ibc = 0                         !no lateral boundary
+        what = 'sedp init'
+        sconst = 0.
+
+        call getfnm(name,file)
+        if( file .eq. ' ' ) return      !nothing to initialize
+
+        write(6,*) 'Initializing sediment grainsize...'
+        call iff_init(dtime,file,nvar,np,lmax,nintp
+     +                          ,nodes,sconst,idsed)
+        call iff_set_description(idsed,ibc,what)
+
+        lmax = 1
+        call iff_read_and_interpolate(idsed,dtime)
+        call iff_time_interpolate(idsed,dtime,0,np,lmax,var)
+
+        call iff_forget_file(idsed)
+
+        write(6,*) 'Initial sediment grainsize read from file : '
+        write(6,*) trim(name)
+
+        end
+
 
 ! *******************************************************
 ! FUNCTION RHOSSAND
@@ -1212,6 +1309,8 @@ c DOCS  END
         subroutine vmixcoef(dtype,l,dep,h,wsink,ustc,ustcw,ub,dcw,ht,
      +			    per,dx,difv,visv,eps)
 
+        use levels
+
         implicit none
 
         include 'param.h'
@@ -1220,7 +1319,7 @@ c DOCS  END
 
 	integer dtype			!type of diffusion algoritm
         integer l			!number of levels
-        real dep(nlvdim)		!thickness of layer [m]
+        real dep(nlvdi)		!thickness of layer [m]
         double precision h		!total water depth [m]
         double precision wsink		!settling velocity [m/s]
         double precision ustc		!current shear velocity [m/s]
@@ -1230,12 +1329,12 @@ c DOCS  END
         double precision ht		!significant wave height [m]
         double precision per		!significant wave persion [s]
         double precision dx		!dimensionless particle diameter
-        real visv(0:nlvdim)		!water viscosity [from GOTM] 
-        real difv(0:nlvdim)		!water diffusivity [from GOTM] 
+        real visv(0:nlvdi)		!water viscosity [from GOTM] 
+        real difv(0:nlvdi)		!water diffusivity [from GOTM] 
 
 ! --- output variables
 
-        real eps(0:nlvdim)
+        real eps(0:nlvdi)
 
 ! --- local variables
 
@@ -1310,7 +1409,8 @@ c DOCS  END
 !	  Beta is function of settling velocity and shear velocity
 !         ------------------------------------------------------------
 
-          bet = 1.d0 + 2.d0* (wsink/ustcw)**2
+	  bet = 1.
+          if( ustcw /= 0. ) bet = 1.d0 + 2.d0* (wsink/ustcw)**2
           bet = dmax1(bet,1.d0)
           bet = dmin1(bet,1.5d0)
 	  do m = 0,l
@@ -1373,27 +1473,27 @@ c DOCS  END
         double precision dl		!thickness of bottom layer 
         double precision gs(nsdim)	!SEDIMENT GRAIN DIAMETER (M)
         double precision ws(nsdim)	!SETTLING VELOCITY FOR NON-COHESIVE SEDIMENT (M/SEC)
-        real scn(nlvdim,nkndim,nsdim)   !cohesive suspended sediment conc (kg/m3)
-        double precision riph(nkndim)	!ripple height [m]
-        double precision ripl(nkndim)	!ripple length [m]
-        real gskm(nkndim)		!AVERAGE SEDIMENT GRAIN DIAMETER ON NODES (M)
-        real eps(0:nlvdim,nkndim,nsdim)	!vertical mixing coefficient
+        real scn(nlvdi,nkn,nsdim)   !cohesive suspended sediment conc (kg/m3)
+        double precision riph(nkn)	!ripple height [m]
+        double precision ripl(nkn)	!ripple length [m]
+        real gskm(nkn)		!AVERAGE SEDIMENT GRAIN DIAMETER ON NODES (M)
+        real eps(0:nlvdi,nkn,nsdim)	!vertical mixing coefficient
         real u,v			!x and y current components
-        real gdx(nkndim),gdy(nkndim)	!slope gradients
-        real tao(nkndim)		!wave-current shear stress
-        double precision sflx(nsdim,nkndim)     !flux of suspend sediment [m3/m2]
-        double precision sedx(nsdim,nkndim)	!x bedload component [kg/ms]
-        double precision sedy(nsdim,nkndim)    	!y bedload component [kg/ms]
-        double precision percbd(nlbdim,nsdim,nkndim)        !fraction of sediment [0,1]
-        double precision bedn(nlbdim,3,nkndim)	!bed characteristics in 3 column table
+        real gdx(nkn),gdy(nkn)	!slope gradients
+        real tao(nkn)		!wave-current shear stress
+        double precision sflx(nsdim,nkn)     !flux of suspend sediment [m3/m2]
+        double precision sedx(nsdim,nkn)	!x bedload component [kg/ms]
+        double precision sedy(nsdim,nkn)    	!y bedload component [kg/ms]
+        double precision percbd(nlbdim,nsdim,nkn)        !fraction of sediment [0,1]
+        double precision bedn(nlbdim,3,nkn)	!bed characteristics in 3 column table
                                                 ! (1) depth below sediment surface (m)
                                                 ! (2) critical erosion stress (Pa)
                                                 ! (3) dry bulk density (kg/m**3)
         double precision scnd(nsdim)    	!suspended sediment conc (kg/m3)
 	double precision hzoff
-	real totbed(nkndim)			!total bedload transport (kg/ms)
+	real totbed(nkn)			!total bedload transport (kg/ms)
         real salref,temref			!salinity [psu] and temperature [C]
-        real wsink(0:nlvdim,nkndim,nsdim)       !settling velocity for suspended sediment
+        real wsink(0:nlvdi,nkn,nsdim)       !settling velocity for suspended sediment
 
 ! -------------------------------------------------------------
 ! fem variables
@@ -1423,11 +1523,11 @@ c DOCS  END
 
 ! cohesive
         DOUBLE PRECISION AULVA		!PERCENTAGE OF AREA COVERED BY THE ALGAE 'ULVA' (%)
-	real sload(nkndim,nsdim)	!suspended sediment load [kg/s]
-	real sloads(nsdim)	  	!suspended sediment load [kg/m**2 s]
+	real sload(nkn,nsdim)	!suspended sediment load [kg/s]
+	real sloads(nsdim)	  	!suspended sediment load [kg/m²s]
 
-	real ukbot(nkndim),vkbot(nkndim)
-	real ddl(nkndim)
+	real ukbot(nkn),vkbot(nkn)
+	real ddl(nkn)
 	real areanode,area
 
 !       -------------------------------------------------------------
@@ -1530,6 +1630,8 @@ c DOCS  END
 	use mod_depth
 	use mod_layer_thickness
 	use mod_diff_visc_fric
+        use levels
+        use basin, only : nkn,nel,ngr,mbw
 
         implicit none
 
@@ -1572,7 +1674,7 @@ c DOCS  END
         double precision sflx(nsdim)    !flux of suspend sediment [m3/m2]
         double precision ws(nsdim)      !SETTLING VELOCITY FOR NON-COHESIVE SEDIMENT (M/SEC)
         real tao			!wave-current shear stress
-	real sload(nsdim)	  	!suspended sediment load [kg/m**2 s]
+	real sload(nsdim)	  	!suspended sediment load [kg/m²s]
 
 ! ------------ LOCAL VARIABLES -----------------
         double precision bmix		!thickness of active layer
@@ -1618,7 +1720,7 @@ c DOCS  END
         integer lmax,is,k		!counters
         real gdx,gdy			!slope gradients
         double precision alph           !slope effect
-        real eps(0:nlvdim,nkndim,nsdim)	!vertical mixing coefficient
+        real eps(0:nlvdi,nkn,nsdim)	!vertical mixing coefficient
 	double precision uslim
 	double precision pcoes		!% of  fine sediments
 	logical cohes
@@ -2341,7 +2443,7 @@ c DOCS  END
          C0AI = C0A * pers(is)
 
 !        -------------------------------------------------------------------
-!        Compute load for suspended concentration [kg/m**2 s]
+!        Compute load for suspended concentration [kg/m²s]
 !        -------------------------------------------------------------------
 
          sload(is) = ws(is)*(C0AI - scn(is))
@@ -2365,7 +2467,7 @@ c DOCS  END
          end if
 
 !        -------------------------------------------------------------------
-!        Compute deposition or erosion [m**3/m**2]
+!        Compute deposition or erosion [m³/m²]
 !        -------------------------------------------------------------------
 
 	 sflux(is) =  -sload(is) * timedr / rhos
@@ -2394,17 +2496,17 @@ c DOCS  END
 
 ! --- input variables
         integer nscls				!number grainsize classes
-        double precision sedx(nsdim,nkndim)	!bedload transport in x direction [kg/ms]
-        double precision sedy(nsdim,nkndim)	!bedload transport in y direction [kg/ms]
+        double precision sedx(nsdim,nkn)	!bedload transport in x direction [kg/ms]
+        double precision sedy(nsdim,nkn)	!bedload transport in y direction [kg/ms]
 	real dt					!time step
-        real bh(nkndim)			    	!bottom height variation [m]
+        real bh(nkn)			    	!bottom height variation [m]
 
 ! --- output variables
-        double precision bflx(nsdim,nkndim)	!flux of bedload sediment [m3/m2]
+        double precision bflx(nsdim,nkn)	!flux of bedload sediment [m3/m2]
 
 ! --- local variables
         integer k,ie,ii,is
-	double precision v2v(nkndim)
+	double precision v2v(nkn)
         double precision bflux
         double precision sexe(nsdim)           	!element transport in x direction
         double precision seye(nsdim)           	!element transport in x direction
@@ -2499,13 +2601,13 @@ c DOCS  END
         include 'sed_param.h'
 
         integer nscls				!number of grainsize class
-        double precision bflx(nsdim,nkndim)	!bedload sediment contribution [m3/m2]
-        real bh(nkndim)				!bed elevation
+        double precision bflx(nsdim,nkn)	!bedload sediment contribution [m3/m2]
+        real bh(nkn)				!bed elevation
 
 	integer k,is
-	double precision bbhh(nkndim)
-	double precision baux(nkndim)
-	double precision frac(nsdim,nkndim)
+	double precision bbhh(nkn)
+	double precision baux(nkn)
+	double precision frac(nsdim,nkn)
 	double precision bbk
 
 !       -------------------------------------------------------------------
@@ -2560,8 +2662,8 @@ c DOCS  END
         include 'param.h'
 
 
-        double precision v1v(nkndim),v2v(nkndim),v3v(nkndim),v4v(nkndim)
-	double precision bbk(nkndim),bbe(neldim)
+        double precision v1v(nkn),v2v(nkn),v3v(nkn),v4v(nkn)
+	double precision bbk(nkn),bbe(nel)
 
         double precision high,hmed,h
 	double precision ao
@@ -2687,18 +2789,18 @@ c DOCS  END
         integer nscls				!number of grainsize class
         double precision gs(nsdim)		!grainsize class
         double precision timedr                	!time step [s]
-        double precision bflux(nsdim,nkndim)	!bedload sediment contribution [m3/m2]
-        double precision sflux(nsdim,nkndim)	!suspended sediment contribution [m3/m2]
-        real bh(nkndim)				!bed elevation
-        real gskm(nkndim)			!average sediment grainsize in node k
+        double precision bflux(nsdim,nkn)	!bedload sediment contribution [m3/m2]
+        double precision sflux(nsdim,nkn)	!suspended sediment contribution [m3/m2]
+        real bh(nkn)				!bed elevation
+        real gskm(nkn)			!average sediment grainsize in node k
 
-        double precision percbd(nlbdim,nsdim,nkndim)        !fraction of sediment [0,1]
-        double precision bedn(nlbdim,3,nkndim)  !bed characteristics in 3 column table
+        double precision percbd(nlbdim,nsdim,nkn)        !fraction of sediment [0,1]
+        double precision bedn(nlbdim,3,nkn)  !bed characteristics in 3 column table
                                                 ! (1) depth below sediment surface (m)
                                                 ! (2) critical erosion stress (Pa)
                                                 ! (3) dry bulk density (kg/m**3)
 
-	double precision bdh(nkndim)		!total elevation change [>0depo,<0ero]
+	double precision bdh(nkn)		!total elevation change [>0depo,<0ero]
         double precision dzco			!elevation variation due to compaction [m]
         double precision flx 			!bedload + suspended flux [m]
         double precision timecomp		!time step for compaction
@@ -3545,8 +3647,8 @@ c DOCS  END
 
 	real rhos,conc
         integer nscls				!number of grainsize class
-        real scn(nlvdim,nkndim,nsdim)  		!suspended concentration
-        real tcon(nlvdim,nkndim)		!total concentration
+        real scn(nlvdi,nkn,nsdim)  		!suspended concentration
+        real tcon(nlvdi,nkn)		!total concentration
 
         integer k,l,is,lmax
 
@@ -3580,7 +3682,7 @@ c DOCS  END
          end do
         end do
 
-        call nantest(nkn*nlvdim,rhov,'rhov')
+        call nantest(nkn*nlvdi,rhov,'rhov')
             
         end
 
@@ -3596,6 +3698,8 @@ c DOCS  END
 	use mod_area
 	use mod_hydro
 	use basin
+        use levels
+
 
         implicit none
 
@@ -3667,8 +3771,8 @@ c DOCS  END
         call makehkv(hkv,v1v)         !computes hkv as average
 
 	call setweg(3,iw)
-        call setarea(nlvdim,areakv)
-        call setdepth(nlvdim,hdknv,hdenv,zenv,areakv)
+        call setarea(nlvdi,areakv)
+        call setdepth(nlvdi,hdknv,hdenv,zenv,areakv)
 
 !       ------------------------------------------------------------------
 !       Set up velocity
@@ -3694,14 +3798,14 @@ c DOCS  END
 
         include 'param.h'
 
-        real kvalue(nkndim)             !variable
-        double precision kdiff(nkndim)	!istantaneous variable difference
+        real kvalue(nkn)             !variable
+        double precision kdiff(nkn)	!istantaneous variable difference
         double precision smooth		!smoothing factor for morphodynamic [0-1]
-        real gdx(nkndim),gdy(nkndim)	!slope gradients
+        real gdx(nkn),gdy(nkn)	!slope gradients
         double precision angrep		!angle of repose [rad]
         real ksl                        !node slope angle [radian]
         real areanode,area
-        real baux(nkndim)
+        real baux(nkn)
         real saux,aaux,smm
 
         integer k,kn,n,ibase,i,l
@@ -3749,6 +3853,7 @@ c DOCS  END
 
         subroutine resetsedi(it,adjtime,bh,scn)
 
+        use levels
 	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
@@ -3759,8 +3864,8 @@ c DOCS  END
 
 	integer it                      !time in seconds
 	integer adjtime			!time for initialization [s]
-	real bh(nkndim)                 !bottom height variation [m]
-        real scn(nlvdim,nkndim,nsdim)   !suspended sediment conc (kg/m3)
+	real bh(nkn)                 !bottom height variation [m]
+        real scn(nlvdi,nkn,nsdim)   !suspended sediment conc (kg/m3)
 
         integer k,l,is
 
@@ -3770,7 +3875,7 @@ c DOCS  END
 	  write(6,*)'sediment characteristics and bathymetry'
           do k = 1,nkn
 	    bh(k) = 0.
-	    do l = 1,nlvdim
+	    do l = 1,nlvdi
 	      do is = 1,nsdim
 		scn(l,k,is) = 0.
 	      end do
@@ -3784,6 +3889,7 @@ c DOCS  END
 
         subroutine sedcons(it,tcon,bh,bedn)
 
+        use levels
 	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
@@ -3792,14 +3898,14 @@ c DOCS  END
         include 'sed_param.h'
 
 
-        double precision bedn(nlbdim,3,nkndim)  !bed characteristics in 3 column table
+        double precision bedn(nlbdim,3,nkn)  !bed characteristics in 3 column table
                                                 ! (1) depth below sediment surface (m)
                                                 ! (2) critical erosion stress (Pa)
                                                 ! (3) dry bulk density (kg/m**3)
 
 	integer it
-        real tcon(nlvdim,nkndim)		!total concentration
-        real bh(nkndim)				!bed elevation
+        real tcon(nlvdi,nkn)		!total concentration
+        real bh(nkn)				!bed elevation
 	real net,ccc,bbb
         real areanode,area
         real volnode,vol
@@ -3839,23 +3945,21 @@ c DOCS  END
 ! parameters
 	include 'param.h'
 ! arguments
-	real vv(nkndim)
-	real vv1(nkndim)
+	real vv(nkn)
+	real vv1(nkn)
 ! common
 
 
 
 ! local
-	real ukbot(nkndim),vkbot(nkndim)
+	real ukbot(nkn),vkbot(nkn)
 	real u,v
-	real ddl(nkndim)
+	real ddl(nkn)
 	integer ie,lmax,k,ii
 	real aj,vol,depth
 	integer nsigma
         real hsigma
 	logical bsigma
-
-	if(nlvdim.ne.nlvdi) stop 'error stop : level dim in uvbott'
 
 	call get_sigma_info(nlv,nsigma,hsigma)
 	bsigma = nsigma .gt. 0
@@ -3919,6 +4023,9 @@ c DOCS  END
 
         subroutine set_settling(k,lmax,nscls,ws,scn,wsink)
 
+        use levels
+        use basin, only : nkn,nel,ngr,mbw
+
         implicit none
 
         include 'param.h'
@@ -3927,8 +4034,8 @@ c DOCS  END
 	integer k,lmax
         integer nscls				!number of grainsize class
         double precision ws(nsdim)      	!SETTLING VELOCITY FOR NON-COHESIVE SEDIMENT (M/SEC)
-        real scn(nlvdim,nkndim,nsdim)  		!suspended concentration
-        real wsink(0:nlvdim,nkndim,nsdim)       !settling velocity for suspended sediment
+        real scn(nlvdi,nkn,nsdim)  		!suspended concentration
+        real wsink(0:nlvdi,nkn,nsdim)       !settling velocity for suspended sediment
 
 	double precision conc(nsdim)
         real salt,temp			!salinity [psu] and temperature [C]
@@ -3977,10 +4084,10 @@ c DOCS  END
 
 	implicit none
 
-	real sload(1)
+	real sload(nkn)
 	integer nkn
 	integer nlvdi
-        integer ilhkv(1)             !number of element and node level
+        integer ilhkv(nkn)             !number of element and node level
 
 	real load(nlvdi,1)
 

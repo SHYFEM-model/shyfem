@@ -1,5 +1,29 @@
 ============================================================
 
+Fri Apr  1 18:18:18 CEST 2016
+
+fixes for sediment transport
+
+ LOG                     |  18 ++
+ RELEASE_NOTES           |   7 +
+ fem3d/Makefile          |   8 +-
+ fem3d/lagrange.h        | 157 -----------
+ fem3d/lagrange_init.f   |   7 -
+ fem3d/mod_bnd.f         |  40 ++-
+ fem3d/newcon.f          |  64 +++--
+ fem3d/sed_param.h       |   2 +-
+ fem3d/sedi3d.f          | 429 +++++++++++++++++-----------
+ fem3d/subbnd.f          | 733 +++++++++++++++++++++++++++++++-----------------
+ fem3d/subbnds.f         |   6 +-
+ fem3d/subetsa.f         |  21 +-
+ fem3d/subetsm.f         |   4 +
+ femdoc/final/shyfem.pdf | Bin 284589 -> 287021 bytes
+ 14 files changed, 868 insertions(+), 628 deletions(-)
+ deleted:
+    fem3d/lagrange.h
+
+============================================================
+
 Tue Mar 22 09:39:17 CET 2016
 
 New version 7_5_6
