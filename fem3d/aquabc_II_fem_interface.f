@@ -447,6 +447,8 @@
       integer STRANGERS   ! Function checks for NaNs and Inf
       integer idump       !indicator of dump for repeated runs
 
+	real alight,aair        !for Rasa
+
        idump = 1
 !      idump = 0
 
@@ -778,6 +780,29 @@
 
          call get_ice(k,ice_cover)
          ice_cover_fast(k) =  ice_cover 
+
+! code for Rasa ========================================
+
+         !ice_cover is fraction of area covered with ice
+         !   0 no ice cover
+         !   1 completely ice covered
+
+         !alight is fraction of light blocked: 
+         !   0 all light is transmitted
+         !   1 all light is blocked when ice covered
+
+         !aair is re-aeration coefficient (should be either 0 or 1)
+         !   0 re-aeration is not blocked by ice
+         !   1 re-aeration is blocked by ice
+
+         alight = 1     !fraction of light blocked
+         aair = 1       !re-aeration blocked
+
+         light_fast  (k)  = ITOT * (1.-ice_cover*alight)
+         ice_cover_fast(k) = ice_cover * aair
+
+! code for Rasa ========================================
+
          FDAY = 1. !used only for old equations compatibility 
 
 !cccccccccccccccccccccccc

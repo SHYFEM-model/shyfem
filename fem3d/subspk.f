@@ -10,6 +10,7 @@ c 22.03.2010    ggu     change of some parameters
 c 29.03.2012    ggu     introduce zero and one as double (bug, was int before)
 c 15.12.2015    ggu&deb adapted to new 3d framework
 c 13.01.2016    ggu&ivn bug in allocation of rvec and raux (n instead nndim)
+c 04.04.2016    ggu	make some big arrays allocatable and not on stack
 c
 c*************************************************************************
 
@@ -86,10 +87,15 @@ c*************************************************************************
       parameter (itermax=1000)
 
       real*8   fpar(16)
-      real*8   alu(nndim*2), wilut(n+1)
-      real*8   wksp(8*n)
+      real*8   wilut(n+1)
       real*8   guess(n)
-      integer  ju(n), jlu(2*nndim), iperm(2*n)
+      !real*8   wksp(8*n)
+      !real*8   alu(nndim*2)
+      !integer  jlu(2*nndim)
+      real*8, allocatable ::   wksp(:)
+      real*8, allocatable ::   alu(:)
+      integer, allocatable ::  jlu(:)
+      integer  ju(n), iperm(2*n)
       integer  iw(n), jw(2*n)
 
       integer  ipar(16)
@@ -100,8 +106,13 @@ c*************************************************************************
       double precision   zero,one
 
       !ITPACK
-      integer IPARIT(12),IWKSP(3*n), INW
-      real*8  FPARIT(12),WKSPIT(6*n+4*itermax), INIU(n)
+      integer IPARIT(12), INW
+      !integer IWKSP(3*n)
+      integer, allocatable :: IWKSP(:)
+      real*8  FPARIT(12)
+      real*8  INIU(n)
+      !real*8  WKSPIT(6*n+4*itermax)
+      real*8, allocatable ::  WKSPIT(:)
 
       real*8, allocatable :: csr(:)
       real*8, allocatable :: rvec(:)
@@ -112,8 +123,9 @@ c*************************************************************************
 	integer ii,nn
 
 	allocate(csr(nndim),icsr(n+1),jcsr(nndim),iwork(2*nndim))
-	!allocate(rvec(nndim),raux(nndim))
 	allocate(rvec(n),raux(n))
+	allocate(IWKSP(3*n),WKSPIT(6*n+4*itermax))
+	allocate(wksp(8*n),alu(nndim*2),jlu(2*nndim))
 
 	ngl = n
 
@@ -250,6 +262,8 @@ c*************************************************************************
 
 	deallocate(csr,icsr,jcsr,iwork)
 	deallocate(raux,rvec)
+	deallocate(IWKSP,WKSPIT)
+	deallocate(wksp,alu,jlu)
 
 	return
    99	continue

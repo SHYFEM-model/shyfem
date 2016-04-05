@@ -159,13 +159,13 @@ c
 
 	return
 	end
-c
+
 c******************************************************************
-c
+
 	subroutine uvtopr
-c
+
 c transforms velocities to nodal values
-c
+
 	use mod_geom_dynamic
 	use mod_hydro_print
 	use mod_hydro_vel
@@ -178,14 +178,16 @@ c
 	integer ie,l,k,ii
 	integer lmax
 	real aj
-	real vv(nlvdi,nkn)
+	!real vv(nlvdi,nkn)
+	real, allocatable :: vv(:,:)
 
+	allocate(vv(nlvdi,nkn))
 	uprv = 0.
 	vprv = 0.
 	vv   = 0.
-c
+
 c baroclinic part
-c
+
 	do ie=1,nel
 	  if ( iwegv(ie) /= 0 ) cycle
           lmax = ilhv(ie)
@@ -199,23 +201,24 @@ c
 	    end do
 	  end do
 	end do
-c
+
 	where ( vv > 0. ) 
 	  uprv = uprv / vv
 	  vprv = vprv / vv
 	end where
-c
+
 c vertical velocities -> we compute average over one layer
-c
+
 	do l=1,nlv
 	  wprv(l,:)=0.5*(wlnv(l,:)+wlnv(l-1,:))
 	end do
 
 	wprv(0,:) = 0.
-c
-	return
+
+	deallocate(vv)
+
 	end
-c
+
 c******************************************************************
 c
 	subroutine prtouv

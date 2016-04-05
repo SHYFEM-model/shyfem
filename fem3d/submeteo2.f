@@ -810,7 +810,7 @@ c convert ice data (nothing to do)
 
 	integer id
 	integer n
-	real r(n)
+	real r(n)	!ice concentration
 
 	include 'param.h'
 	include 'femtime.h'
