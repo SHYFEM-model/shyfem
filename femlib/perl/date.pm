@@ -222,7 +222,7 @@ sub init_date		#helper function
 	if( $date =~ /^\'(.*)\'$/  ) {		#string
 	  $date = $1;
 	  ($year,$month,$day,$hour,$min,$sec)=$self->unformat_time_date($date);
-	} elsif( $date =~ /:/  ) {		#string
+	} elsif( $date =~ /[:-]/  ) {		#string
 	  ($year,$month,$day,$hour,$min,$sec)=$self->unformat_time_date($date);
 	} elsif( $date < 10000 ) {
 	  $year = $date; $month = 1; $day = 1;
@@ -230,6 +230,7 @@ sub init_date		#helper function
 	  ($year,$month,$day) = $self->unpack_date($date);
 	}
 
+	#print STDERR "init date: $year,$month,$day,$hour,$min,$sec\n";
 	$self->init_it($year,$month,$day,$hour,$min,$sec);
 }
 
@@ -549,12 +550,17 @@ sub unformat_time_date
         my ($self,$line) = @_;
 
 	my ($date,$time) = split("::",$line);
+	$date = '' unless $date;
+	$time = '' unless $time;
+
 	my ($year,$month,$day) = split("-",$date);
 	my ($hour,$min,$sec) = split(":",$time);
 
 	$year = 0 unless $year;
 	$month = 0 unless $month;
+	$month = 1 if $month == 0 and $year > 0;
 	$day = 0 unless $day;
+	$day = 1 if $day == 0 and $year > 0;
 	$hour = 0 unless $hour;
 	$min = 0 unless $min;
 	$sec = 0 unless $sec;

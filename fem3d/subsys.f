@@ -117,6 +117,7 @@ c 29.09.2015	ggu	new boundary file surfvel
 c 29.09.2015	ggu	new initial file uvinit, new flgrst
 c 01.02.2016	ggu	some plot params shifted to para section (bbgray, etc.)
 c 22.02.2016	ggu	new file for initial conditions bfmini
+c 05.04.2016	ggu	new parameter iaicef for ice free areas
 c
 c************************************************************************
 
@@ -879,6 +880,10 @@ cc rain
 	call addpar('itmbox',-1.)
 
 	call addpar('inohyd',0.)	!for non-hydrostatic model
+
+cc ice
+
+	call addpar('iaicef',-99.)	!area code for ice free condition
 
 	end
 

@@ -39,6 +39,7 @@ c 11.03.2010	ggu	new routine check_volume(); init w only if no restart
 c 16.02.2011	ggu	new routine e2n3d() and e2n3d_minmax()
 c 27.01.2012	deb&ggu	routines adapted for sigma levels
 c 03.12.2015	ccf&ggu	code optimized
+c 07.04.2016	ggu	new routine aver_nodal()
 c
 c****************************************************************************
 c
@@ -779,6 +780,59 @@ c-----------------------------------------------------------
             elv(l,ie) = acu / 3.
           end do
 	end do
+
+c-----------------------------------------------------------
+c end of routine
+c-----------------------------------------------------------
+
+        end
+
+c******************************************************************
+
+	subroutine aver_nodal(val,aver)
+
+c computes average of val (defined on nodes) over total basin
+
+	use evgeom
+	use basin
+
+	implicit none
+
+        real val(nkn)     !array with element values (in)
+	real aver	  !average (out)
+
+        integer k,ie,ii
+        double precision area,value
+        double precision accum,area_tot
+
+c-----------------------------------------------------------
+c initialize arrays
+c-----------------------------------------------------------
+
+	accum = 0.
+	area_tot = 0.
+
+c-----------------------------------------------------------
+c accumulate values
+c-----------------------------------------------------------
+
+        do ie=1,nel
+          area = 4.*ev(10,ie)
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+            value = val(k)
+	    accum = accum + value * area
+	    area_tot = area_tot + area
+          end do
+        end do
+
+c-----------------------------------------------------------
+c compute final value
+c-----------------------------------------------------------
+
+	if ( area_tot > 0. ) accum = accum / area_tot
+
+	aver = accum
 
 c-----------------------------------------------------------
 c end of routine

@@ -111,11 +111,17 @@ c		Depending on the value of |ireib| the coefficient $\lambda$
 c		is describing linear friction, constant drag coefficient
 c		or a Chezy or Strickler
 c		form of friction (default 0).
-c |iczv|	Normally $R$ is evaluated at every time step (|iczv| = 1).
+c |iczv|	Normally the bottom friction coefficient 
+c		(Strickler, Chezy, etc.)
+c		is evaluated at every time step (|iczv| = 1).
 c		If for some reason this behavior is not desirable,
-c		|iczv| = 0 evaluates the value of $R$ only before the
+c		|iczv| = 0 evaluates this value only before the
 c		first time step, keeping it constant for the
-c		rest of the simulation. (default 1)
+c		rest of the simulation. Please note that this is
+c		only relevant if you have given more than one bottom
+c		friction value (inflow/outflow) for an area. The
+c		final value of $R$ is computed at every time step
+c		anyway. (default 1)
 c
 c The value of $\lambda$ may be specified for the whole basin through
 c the value of |czdef|. For more control over the friction parameter

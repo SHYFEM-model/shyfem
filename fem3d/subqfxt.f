@@ -33,6 +33,7 @@ c 20.06.2014	ccf	new routine for computing sea surface skin temperature
 c 18.09.2015	ccf	do not compute heat fluxes in dry nodes
 c 18.09.2015	ccf	checks only for levdbg > 2
 c 26.10.2015    ggu     critical omp sections introduced (eliminated data race)
+c 07.04.2016    ggu     compute total evaporation
 c
 c notes :
 c
@@ -128,10 +129,10 @@ c computes new temperature (forced by heat flux) - 3d version
 	real temp(nlvddi,nkn)
 	double precision dq	!total energy introduced [(W/m**2)*dt*area = J]
 
-
 c local
         integer levdbg
 	logical bdebug
+	logical baverevap
 	integer k
 	integer l,lmax,kspec
 	integer mode
@@ -146,6 +147,7 @@ c local
 	real qsens,qlat,qlong,evap,qrad
 	real ev,eeff
 	real area
+	real evaver
 
 	double precision ddq
 
@@ -181,6 +183,8 @@ c		0. ->	everything is absorbed in first layer
 c botabs	1. ->	bottom absorbs remaining radiation
 c		0. ->	everything is absorbed in last layer
 c---------------------------------------------------------
+
+	baverevap = .false.
 
 	iheat = nint(getpar('iheat'))
 	hdecay = getpar('hdecay')
@@ -228,7 +232,7 @@ c---------------------------------------------------------
 
 	do k=1,nkn
 
-	  if (is_dry_node(k)) then	!do not compute is node is dry
+	  if (is_dry_node(k)) then	!do not compute if node is dry
 	    dtw(k)   = 0.
 	    tws(k)   = temp(1,k)
 	    evapv(k) = 0.
@@ -318,6 +322,15 @@ c	  ---------------------------------------------------------
 	end do
 
 	dq = ddq
+
+c---------------------------------------------------------
+c compute total evaporation
+c---------------------------------------------------------
+
+	if( baverevap ) then
+	  call aver_nodal(evapv,evaver)	!in evaver is average of evaporation m/s
+	  write(678,*) it,evaver
+	end if
 
 c---------------------------------------------------------
 c special output

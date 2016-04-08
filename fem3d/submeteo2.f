@@ -136,6 +136,7 @@ c DOCS  END
 	integer, save :: irtype
 	integer, save :: ihtype
 	integer, save :: ictype
+	integer, save :: ia_icefree		!area type which is ice free
 	real, save :: wsmax,wslim,dragco,roluft,rowass
 	real, save :: pfact = 1.
 	real, save :: wfact = 1.
@@ -746,6 +747,8 @@ c convert rain from mm/day to m/s
 
 	character*60 string
 
+	real getpar
+
 !	---------------------------------------------------------
 !	check nvar and get parameters
 !	---------------------------------------------------------
@@ -777,6 +780,24 @@ c convert rain from mm/day to m/s
 	    write(6,*) string
 	    write(6,*) 'expecting: ',trim(ice)
 	    stop 'error stop meteo_set_ice_data: ice description'
+	  end if
+	end if
+
+!	---------------------------------------------------------
+!	handle ice free areas
+!	---------------------------------------------------------
+
+	ia_icefree = -1		!this does not change ice cover
+
+	if( ictype /= 0 ) then	!ice file has been opened
+	  ia_icefree = nint(getpar('iaicef'))
+	  if( ia_icefree == -99 ) then
+	    write(6,*) 'ice file has been opened'
+	    write(6,*) 'but parameter iaicef has not been set'
+	    write(6,*) 'please set iaicef to the area code that'
+	    write(6,*) 'indicates ice free conditions'
+	    write(6,*) 'if no such areas exist please set iaicef=-1'
+	    stop 'error stop meteo_set_ice_data: iaicef'
 	  end if
 	end if
 
@@ -816,12 +837,8 @@ c convert ice data (nothing to do)
 	include 'femtime.h'
 
 	integer k,ie,ii,ia
-	integer ia_icefree
 	double precision racu,rorig
 	double precision rice,rarea,area
-
-	ia_icefree = -1		!this does not change ice cover
-	ia_icefree = 0
 
 	racu = 0.
 	do k=1,n

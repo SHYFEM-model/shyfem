@@ -5,6 +5,7 @@
 !
 ! 14.01.2015    ggu     finished and cleaned
 ! 10.02.2015    ggu     option for not complaining about changed time step
+! 07.04.2016    ggu     option node added to extract value at node
 !
 !******************************************************************
 
@@ -27,9 +28,10 @@ c--------------------------------------------------------------
 c parameters and command line options
 c--------------------------------------------------------------
 
-	call clo_init('feminf','fem-file(s)','1.2')
+	call clo_init('feminf','fem-file(s)','1.3')
 
 	call clo_add_info('returns info on a fem file')
+	call clo_add_option('node node',-1,'extract value for node')
 	call clo_add_option('write',.false.,'write min/max of values')
 	call clo_add_option('quiet',.false.,'do not be verbose')
 	call clo_add_option('no_dt',.false.
@@ -86,6 +88,7 @@ c writes info on fem file
 	double precision dtime,tmin,tmax
 	double precision atime,atimeold,atimeanf,atimeend
 	real dmin,dmax
+	integer node
 	integer ierr
 	integer nfile
 	integer irec,i,ich,nrecs
@@ -93,6 +96,7 @@ c writes info on fem file
 	integer iformat
 	integer datetime(2),dateanf(2),dateend(2)
 	real regpar(7)
+	real value
 	logical bdebug,bfirst,bskip,bwrite
 	logical bquiet,bnodt,bcheckdt
 	character*50, allocatable :: strings(:)
@@ -108,11 +112,12 @@ c writes info on fem file
         datetime = 0
         irec = 0
 
+	call clo_get_option('node',node)
 	call clo_get_option('write',bwrite)
 	call clo_get_option('quiet',bquiet)
 	call clo_get_option('no_dt',bnodt)
 
-	bskip = .not. bwrite
+	bskip = .not. bwrite .and. node < 0
 	bcheckdt = .not. bnodt
 
 c--------------------------------------------------------------
@@ -241,15 +246,25 @@ c--------------------------------------------------------------
 	      write(6,1100) irec,i,atime,dmin,dmax,aline
  1100	      format(i6,i3,f15.2,2g16.5,1x,a20)
 	    end if
+	    if( node >= 0 .and. node <= np ) then
+	      if( node > 0 ) then
+		value = data(1,node,i)
+	      else
+		value = sum(data(1,:,i))/np
+	      end if
+	      write(33,*) atime,i,value
+	    end if
 	  end do
 
 	  if( irec > 1 ) then
 	    if( irec == 2 ) idt = nint(atime-atimeold)
 	    idtact = nint(atime-atimeold)
-	    if( bcheckdt. and. idtact .ne. idt ) then
+	    if( idtact .ne. idt ) then
 	      ich = ich + 1
-	      write(6,*) '* change in time step: '
+	      if( bcheckdt ) then
+	        write(6,*) '* change in time step: '
      +				,irec,idt,idtact,aline
+	      end if
 	      idt = idtact
 	    end if
 	    if( idt <= 0 ) then
@@ -270,7 +285,11 @@ c--------------------------------------------------------------
 	write(6,*) 'start time: ',atimeanf,aline
 	call dts_format_abs_time(atimeend,aline)
 	write(6,*) 'end time:   ',atimeend,aline
-	write(6,*) 'idt:    ',idt
+	if( ich == 0 ) then
+	  write(6,*) 'idt:    ',idt
+	else
+	  write(6,*) 'idt:     irregular'
+	end if
 
 	if( ich .gt. 0 ) then
 	  write(6,*) '* warning: time step changed: ',ich

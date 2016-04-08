@@ -6,6 +6,7 @@ c
 c 06.04.1999	ggu	cosmetic changes
 c 21.04.2010	ggu	comments, write all files
 c 19.10.2011	ggu	new 3D write
+c 07.04.2016	ggu	bug fix for allocation of arrays
 c
 c notes :
 c
@@ -65,13 +66,11 @@ c reads flx files
 
 	implicit none
 
-	include 'param.h'
-
 	integer nin
 	integer idfile,nvers,nsect,kfluxm,nlmax
 	integer nfxdi,nlvdi
 	integer i,it,idtflx
-	integer j,l,lmax,ierr,ivar,irec
+	integer j,l,lmax,ierr,ivar,irec,ns
 	integer, allocatable :: kflux(:)
 	integer, allocatable :: nlayers(:)
 	real, allocatable :: ptot(:,:)
@@ -96,13 +95,13 @@ c---------------------------------------------------------------
      +                          ,nsect,kfluxm,idtflx,nlmax
      +                          )
 
-	allocate(kflux(kfluxm))
-	allocate(nlayers(kfluxm))
-	allocate(ptot(4,kfluxm))
-	allocate(fluxes(0:nlmax,3,kfluxm))
-
 	nfxdi = kfluxm
 	nlvdi = nlmax
+
+	allocate(kflux(nfxdi))
+	allocate(nlayers(nsect))
+	allocate(ptot(4,nsect))
+	allocate(fluxes(0:nlvdi,3,nsect))
 
         call rfflx        (nin,nvers
      +                          ,nfxdi,nfxdi,nlvdi
@@ -111,28 +110,31 @@ c---------------------------------------------------------------
      +                          ,nlayers
      +                          )
 
+	write(6,*) '    version    sections       nodes      layers'
 	write(6,*) nvers,nsect,kfluxm,nlmax
 
 c---------------------------------------------------------------
 c loop on data
 c---------------------------------------------------------------
 
+	ns = min(10,nsect)
 	irec = 0
+	write(6,*) 'looping on data...'
 
 	do while(.true.)
 
-          call rdflx(nin,it,nlvdim,nsect,ivar,nlayers,fluxes,ierr)
+          call rdflx(nin,it,nlvdi,nsect,ivar,nlayers,fluxes,ierr)
 	  if( ierr .ne. 0 ) goto 2
 
 	  if( ivar .eq. 0 ) then
 	   irec = irec + 1
 	   if( mod(irec,100) .eq. 0 ) then
-	    write(6,'(i10,10i7)') it,(nint(fluxes(0,1,i)),i=1,nsect)
+	    write(6,'(i10,10i7)') it,(nint(fluxes(0,1,i)),i=1,ns)
 	   end if
 	  end if
 
-	  call fluxes_2d(it,nlvdim,nsect,ivar,ptot,fluxes)
-	  call fluxes_3d(it,nlvdim,nsect,ivar,nlayers,fluxes)
+	  call fluxes_2d(it,nlvdi,nsect,ivar,ptot,fluxes)
+	  call fluxes_3d(it,nlvdi,nsect,ivar,nlayers,fluxes)
 
     1	  continue
 	end do
@@ -155,12 +157,19 @@ c writes 2d fluxes to file (only for ivar=0)
 	integer nlvdim			!vertical dimension
 	integer nsect			!total number of sections
 	integer ivar			!type of variable (0: water fluxes)
-	real ptot(4,1)			!aux array
-	real fluxes(0:nlvdim,3,1)	!fluxes
+	real ptot(4,nsect)		!aux array
+	real fluxes(0:nlvdim,3,nsect)	!fluxes
 
 	integer iunit,i,lmax,l,j
+	character*80, save :: format = ' '
 
 	if( ivar .ne. 0 ) return
+
+	if( format == ' ' ) then
+	  !write(format,'(a,i4,a)') '(i10,',nsect,'f10.2)'
+	  write(format,'(a,i4,a)') '(i10,',nsect,'g12.4)'
+	  !write(6,*) 'using format: ',trim(format)
+	end if
 
 	do i=1,nsect
 	  ptot(1,i) = fluxes(0,1,i)			!total
@@ -169,10 +178,10 @@ c writes 2d fluxes to file (only for ivar=0)
 	  ptot(4,i) = fluxes(0,2,i) + fluxes(0,3,i)	!absolute
 	end do
 
-	write(66,'(i10,20f10.2)') it,(ptot(1,i),i=1,nsect)	!total
-	write(67,'(i10,20f10.2)') it,(ptot(2,i),i=1,nsect)	!positive
-	write(68,'(i10,20f10.2)') it,(ptot(3,i),i=1,nsect)	!negative
-        write(69,'(i10,20f10.2)') it,(ptot(4,i),i=1,nsect)	!absolute
+	write(66,format) it,(ptot(1,i),i=1,nsect)	!total
+	write(67,format) it,(ptot(2,i),i=1,nsect)	!positive
+	write(68,format) it,(ptot(3,i),i=1,nsect)	!negative
+	write(69,format) it,(ptot(4,i),i=1,nsect)	!absolute
 
 c next is box format for Ali
 
@@ -197,8 +206,8 @@ c writes 3d fluxes to file
 	integer nlvdim			!vertical dimension
 	integer nsect			!total number of sections
 	integer ivar			!type of variable (0: water fluxes)
-	integer nlayers(1)		!max layers for section
-	real fluxes(0:nlvdim,3,1)	!fluxes
+	integer nlayers(nsect)		!max layers for section
+	real fluxes(0:nlvdim,3,nsect)	!fluxes
 
 	integer iunit,i,lmax,l,j
 

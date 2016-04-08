@@ -50,14 +50,14 @@ verbose="YES"
 #CheckCommand vp ./fem3d/vp 
 CheckCommand shyfem ./fem3d/shyfem 
 CheckCommand shypre ./fem3d/shypre 
-CheckCommand basinf ./fem3d/shyelab 
-CheckCommand basinf ./fem3d/shybas 
+CheckCommand shyelab ./fem3d/shyelab 
+CheckCommand shybas ./fem3d/shybas 
 
 CheckCommand plotsim ./femplot/plotsim 
 
 #CheckCommand ggg ./fem3d/ggg 		#fake error
 
-CheckCommand adjele ./femadj/shyadj 
+CheckCommand shyadj ./femadj/shyadj 
 CheckCommand gridr ./femspline/gridr 
 
 CheckCommand grid ./grid/grid 
