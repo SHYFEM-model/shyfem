@@ -338,6 +338,10 @@ c writes statistics on basin
 	real h
         real xx,yy
         real dist,distmin
+	logical bflag
+	real dtot,dptot
+	real hk
+	real, parameter :: hflag = -999.
         integer i,k1,k2
 
 	real areatr
@@ -401,13 +405,18 @@ c-----------------------------------------------------------------
 	  amin = min(amin,area)
 	  amax = max(amax,area)
           h = 0.
+	  bflag = .false.
           do ii=1,3
-            h = h + hm3v(ii,ie)
+	    hk = hm3v(ii,ie)
+            h = h + hk
+	    bflag = hk == hflag
           end do
-          vtot = vtot + area * h / 3.
+	  h = h / 3.
+	  if( bflag ) h = 0.
+          vtot = vtot + area * h
 	  if( h .gt. 0. ) then		!only positive depths
 	    aptot = aptot + area
-            vptot = vptot + area * h / 3.
+            vptot = vptot + area * h
 	  end if
 	end do
 
@@ -474,8 +483,12 @@ c-----------------------------------------------------------------
 	  amax = max(amax,h)
 	end do
 
+	dtot = vtot/atot
+	dptot = 0.
+	if( aptot > 0. ) dptot = vptot/aptot
+
 	write(6,*) 'Depth min/max:          ',amin,amax
-	write(6,*) 'Depth average:          ',vtot/atot,vptot/aptot
+	write(6,*) 'Depth average:          ',dtot,dptot
 
 c-----------------------------------------------------------------
 c minimum distance of nodes

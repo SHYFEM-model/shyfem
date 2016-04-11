@@ -126,8 +126,10 @@
      +				,'interpolate in all elements')
         call clo_add_option('node',.false.,'interpolate to nodes')
         call clo_add_option('bmode mode',1,'mode of interpolation')
-        call clo_add_option('usfact fact',1,'factor for std')
-        call clo_add_option('uxfact fact',3,'factor for max radius')
+        call clo_add_option('usfact fact',1,'factor for std '//
+     +				 '(Default 1)')
+        call clo_add_option('uxfact fact',3,'factor for max radius '//
+     +				 '(Default 3)')
 
         call clo_add_sep('limiting and smoothing bathymetry:')
         call clo_add_option('hmin val',-99999.,'minimum depth')

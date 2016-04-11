@@ -6,6 +6,7 @@ c
 c 21.02.2014	ggu	subroutines copied from basbathy
 c 06.05.2015	ggu	set number of max iterations (imax)
 c 16.12.2015	ggu	depth ht is now passed in for square interpol
+c 11.04.2016    ggu     meaning of ufact has changed, expo interp working
 c
 c****************************************************************
 
@@ -68,6 +69,8 @@ c*******************************************************************
 	subroutine interpolq(np,xp,yp,dp,ht)
 
 c interpolates depth values - works only on elements
+c
+c interpolation on squares
 
 	use mod_depth
 	use basin
@@ -293,29 +296,24 @@ c*******************************************************************
 
 	subroutine interpole(np,xp,yp,dp,nt,xt,yt,at,ht,umfact,nminimum)
 
-c interpolates depth values
+c interpolates depth values - exponential interpolation
 
 	use mod_depth
 	use basin
 
 	implicit none
 
-	integer np
+	integer np		!single bathymetry points
 	real xp(np)
 	real yp(np)
 	real dp(np)
-	integer nt
+	integer nt		!points on which to interpolate
 	real xt(np)
 	real yt(np)
-	real at(np)
-	real ht(np)
-	real umfact
+	real at(np)		!area - used as standard deviation
+	real ht(np)		!interpolated depth values (return)
+	real umfact		!factor for maximum radius
 	integer nminimum	!how many points needed for interpolation
-
-	include 'param.h'
-
-
-
 
 	integer k
 	integer netot
@@ -387,6 +385,8 @@ c-----------------------------------------------------------------
 
           sigma2 = fact*sig2    	 !standard deviation grows
           r2max = (umfact**2)*sigma2     !maximum radius to look for points
+
+	  !write(6,*) i,sig2,sigma2,r2max
 
 	  if( ok(i) ) then
 	    ntot = ntot + 1
@@ -475,13 +475,8 @@ c prepares xt,yt,at,ht on nodes
 	real ht(1)	!depth
 	real ufact	!sigma or factor to be used
 
-c if ufact < 0: use as factor times area of elem/node
-c if ufact > 0: use it directly as sigma
-
-	include 'param.h'
-
-
-
+c if ufact > 0: use as factor times area of elem/node
+c if ufact < 0: use it directly as sigma
 
 	integer ie,ii,k
 	real area,x0,y0,fact,sigma2
@@ -507,7 +502,7 @@ c if ufact > 0: use it directly as sigma
 	  xt(ie) = x0
 	  yt(ie) = y0
 	  at(ie) = fact*area
-	  if( ufact .gt. 0. ) at(ie) = sigma2
+	  if( ufact < 0. ) at(ie) = sigma2
 	  ht(ie) = hev(ie)
 
 	end do
@@ -532,13 +527,8 @@ c prepares xt,yt,at,ht on nodes
 	real ht(1)
 	real ufact	!sigma or factor to be used
 
-c if ufact < 0: use as factor times area of elem/node
-c if ufact > 0: use it directly as sigma
-
-	include 'param.h'
-
-
-
+c if ufact > 0: use as factor times area of elem/node
+c if ufact < 0: use it directly as sigma
 
 	integer ie,ii,k
 	real area,fact,sigma2
@@ -571,7 +561,7 @@ c if ufact > 0: use it directly as sigma
 	  xt(k) = xgv(k)
 	  yt(k) = ygv(k)
 	  at(k) = fact*at(k)
-	  if( ufact .gt. 0. ) at(k) = sigma2
+	  if( ufact < 0. ) at(k) = sigma2
 	  ht(k) = hkv(k)
 	end do
 
@@ -742,6 +732,11 @@ c there are margins for improving this
 	double precision dm
 
 	real dist2 
+
+	if( ufact <= 0. ) then
+	  write(6,*) 'ufact = ',ufact
+	  stop 'error stop make_auto_corr: ufact'
+	end if
 
 	write(6,*) 'computing auto correlation... ',np
 
