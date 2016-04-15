@@ -1,37 +1,9 @@
 
+!==================================================================
         module mod_waves
+!==================================================================
 
         implicit none
-
-	!integer iwave			!call for wave model
-	!integer iwwm			!call for coupling with wwm
-	!integer idcoup			!time step for syncronizing with wwm [s]
-	!common /wavcst/ iwave,iwwm,idcoup
-
-        !real waveh(nkndim)      	!sign. wave height [m]
-        !common /waveh/ waveh
-
-        !real wavep(nkndim)      	!mean wave period [s]
-	!common /wavep/ wavep
-
-        !real wavepp(nkndim)      	!peak wave period [s]
-	!common /wavepp/ wavepp
-
-        !real waved(nkndim)      	!mean wave direction
-	!common /waved/ waved
-
-        !real waveov(nkndim)     	!wave orbital velocity
-	!common /waveov/ waveov
-
-        !real wavefx(nlvdim,neldim)      !wave forcing terms
-	!common /wavefx/ wavefx
-
-        !real wavefy(nlvdim,neldim)
-	!common /wavefy/ wavefy
-
-	!save /wavcst/
-	!save /waveh/,/wavep/,/wavepp/,/waved/
-	!save /waveov/,/wavefx/,/wavefy/
 
         integer, private, save  :: nkn_waves = 0
         integer, private, save  :: nlv_waves = 0
@@ -41,18 +13,18 @@
         integer, save  :: iwwm   = 0	! type of shyfem-wwm coupling
         integer, save  :: idcoup = 0	! shyfem-wwm coupling time step [s]
 
-        real, allocatable, save :: waveh(:)	! significant wave height [m]
-        real, allocatable, save :: wavep(:)	! wave mean period [s]
-        real, allocatable, save :: wavepp(:)	! wave peak period [s]
-        real, allocatable, save :: waved(:)	! mean wave direction [deg]
-        real, allocatable, save :: waveov(:)	! wave bottom orbital velocity [m/s]
+        real, allocatable, save :: waveh(:)  !significant wave height [m]
+        real, allocatable, save :: wavep(:)  !wave mean period [s]
+        real, allocatable, save :: wavepp(:) !wave peak period [s]
+        real, allocatable, save :: waved(:)  !mean wave direction [deg]
+        real, allocatable, save :: waveov(:) !wave bottom orbital velocity [m/s]
 
         real, allocatable, save :: wavefx(:,:)	! wave forcing term in x
         real, allocatable, save :: wavefy(:,:)	! wave forcing term in y
 
+!==================================================================
         contains
-
-!************************************************************
+!==================================================================
 
         subroutine mod_waves_init(nkn,nel,nlv)
 
@@ -94,11 +66,17 @@
         allocate(wavefx(nlv,nel))
         allocate(wavefy(nlv,nel))
 
+	waveh = 0.
+	wavep = 0.
+	wavepp = 0.
+	waved = 0.
+	waveov = 0.
+	wavefx = 0.
+	wavefy = 0.
+
         end subroutine mod_waves_init
 
-!************************************************************
-
+!==================================================================
         end module mod_waves
-
-
+!==================================================================
 

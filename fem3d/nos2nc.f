@@ -13,6 +13,7 @@ c 23.03.2011    ggu     compute real u/v-min/max of first level
 c 21.01.2013    ggu     restructured
 c 25.01.2013    ggu     regular and fem outout in one routine
 c 20.02.2013    ggu     choose period implemented
+c 15.04.2016    ggu     ndim eliminated (allocatable)
 c
 c***************************************************************
 
@@ -32,8 +33,8 @@ c reads nos file and writes NetCDF file
 
 c-------------------------------------------------
 
-	integer ndim
-	parameter (ndim=100)
+	integer, save, allocatable :: ivars(:)
+	integer, save, allocatable :: var_ids(:)
 
 	integer nxdim,nydim
 	parameter (nxdim=400,nydim=400)
@@ -41,11 +42,6 @@ c-------------------------------------------------
 	character*80 title
 
 	real cv3(nlvdim,nkndim)
-	integer ivars(ndim)
-	integer var_ids(ndim)
-
-
-
 	real uprv(nlvdim,nkndim)
 	real vprv(nlvdim,nkndim)
 	real ut2v(neldim)
@@ -171,12 +167,12 @@ c-----------------------------------------------------------------
 	end if
 
 	if( nkn .ne. nknnos .or. nel .ne. nelnos ) goto 94
-	if( nvar .gt. ndim ) goto 95
 
 	call init_sigma_info(nlv,hlv)
 	call level_k2e(nkn,nel,nen3v,ilhkv,ilhv)
 	call compute_iztype(iztype)
 
+	allocate(ivars(nvar),var_ids(nvar))
 	call nos_get_vars(nin,nvar,ivars)
 
         write(6,*) 'Available variables: ',nvar
@@ -284,9 +280,6 @@ c-----------------------------------------------------------------
         write(6,*) 'nkn: ',nkn,nknnos
         write(6,*) 'nel: ',nel,nelnos
         stop 'error stop nos2nc: nkn,nel'
-   95   continue
-        write(6,*) 'nvar,ndim: ',nvar,ndim
-        stop 'error stop nos2nc: ndim'
         end
 
 c******************************************************************

@@ -43,7 +43,6 @@ c******************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -250,7 +249,6 @@ c******************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -649,7 +647,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -673,7 +670,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -702,7 +698,6 @@ c*****************************************************************
 
         implicit none
 
-        include 'param.h'
         include 'netcdf.inc'
         include 'netcdf.h'
 
@@ -723,7 +718,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -744,7 +738,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -769,7 +762,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -837,7 +829,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -873,7 +864,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -908,7 +898,6 @@ c returns var_id = 0 if not found (no error)
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -933,7 +922,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -954,7 +942,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -974,7 +961,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -999,7 +985,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -1037,7 +1022,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -1055,7 +1039,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -1082,7 +1065,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -1103,7 +1085,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -1127,7 +1108,6 @@ c reads time record trec of variable name
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -1503,7 +1483,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 
@@ -1555,7 +1534,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
 	include 'netcdf.inc'
 	include 'netcdf.h'
 

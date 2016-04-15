@@ -16,6 +16,18 @@ server="nemunas.ku.lt"
 
 #---------------------------------------------------------
 
+Debug()
+{
+  if [ $debug -ne 0 ]; then
+    >&2 echo "debug: $1"
+  fi
+}
+
+Print()
+{
+  >&2 echo "print: $1"
+}
+
 Convert_to_seconds()
 {
   date -u -d "$1" +"%s"
@@ -31,17 +43,17 @@ Convertsecs()
 
 CheckLogfile()
 {
-  check=$( echo $1 | sed -e s'/.* - //' )
-  #>&2 echo "check: $check"
-  if [ "$check" = $server ]; then
-    date=$( echo $1 | sed -e s'/ - .*//' )
-    echo "$date"
+  # checks if 3rd line is in the format: Mon Apr 11 16:39:19 CEST 2016 - lagoon
+
+  date=$( echo $1 | sed -e s'/ - .*//' )
+  date -u -d "$date" +"%s" 2> /dev/null
+  status=$?
+  Debug "date: $date  status: $status"
+
+  if [ $status -eq 0 ]; then
+    echo $date
   else
-    #>&2 echo "cannot parse date line: $1"
-    #echo "error"
-    #try anyway...
-    date=$( echo $1 | sed -e s'/ - .*//' )
-    echo "$date"
+    echo "error"
   fi
 }
 
@@ -49,6 +61,9 @@ Get_last_line()
 {
   last_line=$( tail -5 $file | head -1 )
   final_date=$( CheckLogfile "$last_line" )
+
+  Debug "last_line: $last_line"
+  Debug "final_date: $final_date"
 
   if [ "$final_date" = "error" ]; then		#still running
     finished="NO"

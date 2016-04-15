@@ -232,7 +232,8 @@ HTOBJS = \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ) $(PARALLEL_OBJ) \
 	$(GRDOBJS) \
-	subxi.o subshy.o subshyutil.o subbit10.o shyutil.o
+	subxi.o subshy.o subshyutil.o subbit10.o shyutil.o \
+	subfloodfill.o
 
 # objects for pre-processor shypre
 
@@ -870,7 +871,6 @@ flxelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod 
-flxinf.o: param.h
 gotm3d.o: debug_aux1.h gotmturb.i
 grdutil.o: ../femlib/mod/basin.mod ../femlib/mod/grd.mod
 intp.o: ../femlib/mod/basin.mod ../femlib/mod/mod_hydro.mod \
@@ -929,9 +929,8 @@ map_influence.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_depth.mod param.h 
 mod_subset.o: ../femlib/mod/basin.mod
 netcdf.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
-		../femlib/mod/mod_depth.mod netcdf.h netcdf.inc \
-		param.h 
-netcdf_util.o: ../femlib/mod/basin.mod param.h
+		../femlib/mod/mod_depth.mod netcdf.h netcdf.inc 
+netcdf_util.o: ../femlib/mod/basin.mod
 new36.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_bound_dynamic.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
@@ -1294,6 +1293,7 @@ subetsa.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		femtime.h modules.h simul.h 
 subexta.o: ../femlib/mod/mod_hydro_print.mod ../femlib/mod/nls.mod \
 		femtime.h modules.h simul.h 
+subfloodfill.o: ../femlib/mod/basin.mod
 subflx3d.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_bound_dynamic.mod \
@@ -1303,9 +1303,10 @@ subflx3d.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_baro.mod \
 		../femlib/mod/mod_hydro_vel.mod femtime.h 
-subflxa.o: ../femlib/mod/levels.mod ../femlib/mod/mod_conz.mod \
+subflxa.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/mod_conz.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/nls.mod \
-		femtime.h modules.h param.h 
+		femtime.h modules.h 
 subflxu.o: ../femlib/mod/levels.mod ../femlib/mod/mod_geom.mod
 subfvl.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_area.mod \
@@ -1485,8 +1486,7 @@ subwaves.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 subwrt.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod \
-		../femlib/mod/mod_depth.mod femtime.h param.h \
-		simul.h 
+		../femlib/mod/mod_depth.mod femtime.h simul.h 
 ts2nc.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \

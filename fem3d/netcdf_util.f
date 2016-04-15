@@ -195,14 +195,10 @@ c gets dimensions for reguar grid
 
 	implicit none
 
-	include 'param.h'
-
 	integer nxdim,nydim,nx,ny
 	real x0,y0,dx,dy
 	real xlon(nxdim)
 	real ylat(nydim)
-
-
 
 	integer i,n
 	real x1,y1,dxy
@@ -219,20 +215,6 @@ c gets dimensions for reguar grid
 	write(6,*) 'min/max of domain:'
 	write(6,*) 'xmin/xmax: ',xmin,xmax
 	write(6,*) 'ymin/ymax: ',ymin,ymax
-
-	nx = min(100,nxdim)
-	ny = min(100,nydim)
-	dx = (xmax - xmin) / nx
-	dy = (ymax - ymin) / ny
-	dxy = max(dx,dy)
-	dxy = rnext(dxy,3)
-	x0 = xmin
-	y0 = ymin
-	x1 = xmax
-	y1 = ymax
-
-	!write(6,*) 'Default for dx/dy: ',dx,dy,dxy
-	!write(6,*) 'Default for dx/dy: ',dxy
 
 	write(6,*)
 	write(6,*) 'Enter dx[,dy]: (return for unstructured output)'

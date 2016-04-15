@@ -51,6 +51,8 @@ c******************************************************************
 
 	subroutine fluxes_init(nlvddi,nsect,nlayers,nr,masst)
 
+c initializes nr and masst
+
 	implicit none
 
 	integer nlvddi,nsect
@@ -61,20 +63,15 @@ c******************************************************************
 	integer i,l,lmax
 
         nr = 0
-        do i=1,nsect
-	  lmax = nlayers(i)
-	  do l=0,lmax
-            masst(l,1,i) = 0.
-            masst(l,2,i) = 0.
-            masst(l,3,i) = 0.
-          end do
-        end do
+	masst = 0.
 
 	end
 
 c******************************************************************
 
 	subroutine fluxes_accum(nlvddi,nsect,nlayers,nr,masst,fluxes)
+
+c accumulates fluxes into masst
 
 	implicit none
 
@@ -101,6 +98,8 @@ c******************************************************************
 c******************************************************************
 
 	subroutine fluxes_aver(nlvddi,nsect,nlayers,nr,masst,fluxes)
+
+c averages masst and puts result into fluxes
 
 	implicit none
 
@@ -133,7 +132,7 @@ c******************************************************************
 
 	subroutine flxscs(kfluxm,kflux,iflux,az,fluxes,is,scalar)
 
-c computes flux through all sections and returns them in flux
+c computes flux through all sections and returns them in fluxes
 c
 c flux are divided into total, positive and negative
 
@@ -170,7 +169,7 @@ c******************************************************************
 
 	subroutine flxsec(n,kflux,iflux,az,fluxes,is,scalar)
 
-c computes flux through one section
+c computes flux through one section and returns it in fluxes
 
 	use levels, only : nlvdi,nlv
 
@@ -189,11 +188,7 @@ c computes flux through one section
 	real port,ptot,port2d,sport,sptot
 	real flux(nlvdi)
 
-	do l=0,nlvdi
-	  fluxes(l,1) = 0.
-	  fluxes(l,2) = 0.
-	  fluxes(l,3) = 0.
-	end do
+	fluxes = 0.
 
 	do i=1,n
 		k = kflux(i)
@@ -384,14 +379,16 @@ c**********************************************************************
 
 	subroutine get_nlayers(kfluxm,kflux,nlayers,nlmax)
 
+c computes maximum numer of layers for sections
+
 	use levels
 
 	implicit none
 
 	integer kfluxm
 	integer kflux(*)
-	integer nlayers(*)
-	integer nlmax
+	integer nlayers(*)	!total number of layers for sections (return)
+	integer nlmax		!maximum layers for all sections (return)
 
 	integer ns
 	integer nnode,ifirst,ilast

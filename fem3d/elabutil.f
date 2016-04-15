@@ -7,6 +7,7 @@
 ! 22.09.2015	ggu	new routine open_shy_file()
 ! 10.10.2015	ggu	code added to handle FLX routines
 ! 22.02.2016	ggu	handle catmode
+! 15.04.2016	ggu	handle gis files with substitution of colon
 !
 !************************************************************
 
@@ -1035,19 +1036,20 @@ c writes one record to file nb (3D)
 	integer nout
         real x,y
 	character*80 format,name
-	character*20 line
+	character*20 line,dateline
 	character*3 var
 
 	integer ifileo
 
-	call dtsgf(it,line)
+	call dtsgf(it,dateline)
+	call gis_subst_colon(dateline,line)
 	call i2s0(ivar,var)
 
 	name = 'extract_'//var//'_'//line//'.gis'
         nout = ifileo(60,name,'form','new')
 	!write(6,*) 'writing: ',trim(name)
 
-        write(nout,*) it,nkn,ivar,line
+        write(nout,*) it,nkn,ivar,dateline
 
         do k=1,nkn
           lmax = ilhkv(k)
@@ -1087,13 +1089,8 @@ c writes one record to file (3D)
 
 	integer ifileo
 
-	call dtsgf(it,line)
-
-	dateline=line
-	do i=1,len(line)
-	  if( line(i:i) == ':' ) line(i:i) = '_'
-	  if( line(i:i) == ' ' ) line(i:i) = '_'
-	end do
+	call dtsgf(it,dateline)
+	call gis_subst_colon(dateline,line)
 
 	name = 'extract_hydro_'//line//'.gis'
         nout = ifileo(60,name,'form','new')
@@ -1115,6 +1112,26 @@ c writes one record to file (3D)
 	close(nout)
 
         end
+
+c***************************************************************
+
+	subroutine gis_subst_colon(line_old,line_new)
+
+	implicit none
+
+	character*(*) line_old,line_new
+
+	integer n,i
+
+	n = min(len(line_old),len(line_new))
+	line_new = line_old
+
+	do i=1,n
+	  if( line_new(i:i) == ':' ) line_new(i:i) = '_'
+	  if( line_new(i:i) == ' ' ) line_new(i:i) = '_'
+	end do
+
+	end
 
 c***************************************************************
 

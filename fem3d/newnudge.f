@@ -21,6 +21,7 @@ c 23.01.2012    ggu     new from basinf
 c 25.09.2015    ggu     prepared for nudging velocities
 c 29.09.2015    ggu     finished nudging velocities
 c 04.11.2015    ggu     bug in velocitiy nudging fixed
+c 15.04.2016    ggu     started cleaning module
 c
 c****************************************************************
 
@@ -283,7 +284,7 @@ c sets up andg_dist and andg_weight
 	integer k,kk,iu
 	real dx,dy,dist,dist2,w,s
 
-	real d(nkn)
+	real dd(nkn)
 	real dw(nkn)
 
 	s = 2.*sigma*sigma
@@ -295,16 +296,15 @@ c sets up andg_dist and andg_weight
 	  dist2 = dx*dx+dy*dy
 	  dist = sqrt(dist2)
 	  andg_dist(k) = dist2
-	  d(k) = dist			!only for output
-
 	  w = exp(-dist2/s)
-	  dw(k) = w
-
 	  andg_weight(k) = w / ttau
+
+	  dd(k) = dist			!only for output
+	  dw(k) = w
 	end do
 
 	iu = 0
-	call conwrite(iu,'.dst',1,988,1,d)
+	call conwrite(iu,'.dst',1,988,1,dd)
 	call nos_close(iu)
 	close(iu)
 
@@ -319,7 +319,7 @@ c*******************************************************************
 
 	subroutine nudge_influence
 
-c sets up icol (local) and ndg_nodes and ndg_area
+c sets up ndg_nodes and ndg_area (influence of nodes)
 
 	use mod_nudge
 	use basin
@@ -327,18 +327,13 @@ c sets up icol (local) and ndg_nodes and ndg_area
 	implicit none
 
 	integer icol(nkn)
-	integer icolaux(nkn)
 	real d(nkn)
 
 	logical binsert
-	integer k,ie,ii,it,is,ic,isc,i
+	integer k,ic,i
 	integer iu
-	integer ngood
 
-	do k=1,nkn
-	  icol(k) = 0
-	  icolaux(k) = 0
-	end do
+	icol = 0
 
 	do i=1,nvars
 	  binsert = ndg_use(i) .gt. 0
@@ -348,65 +343,7 @@ c sets up icol (local) and ndg_nodes and ndg_area
 	  end if
 	end do
 
-	ngood = 0
-	do k=1,nkn
-	  if( icol(k) .gt. 0 ) ngood = ngood + 1
-	end do
-
-	do while( ngood .lt. nkn )
-
-	  write(6,*) 'influence: ',ngood,nkn
-
-	  do ie=1,nel
-
-	    it = 0
-	    is = 0
-	    do ii=1,3
-	      k = nen3v(ii,ie)
-	      if( icol(k) .gt. 0 ) then
-	        it = it + 1
-	        is = is + ii
-	      end if
-	    end do
-	
-	    if( it .eq. 1 ) then
-	      k = nen3v(is,ie)
-	      ic = icol(k)
-	      do ii=1,3
-	        k = nen3v(ii,ie)
-	        icolaux(k) = ic
-	      end do
-	    else if( it .eq. 2 ) then
-	      is = 6 - is
-	      isc = mod(is,3) + 1
-	      k = nen3v(isc,ie)
-	      ic = icol(k)
-	      k = nen3v(is,ie)
-	      icolaux(k) = ic
-	    end if
-
-	    if( it .gt. 0 ) then	!check
-	      do ii=1,3
-	        k = nen3v(ii,ie)
-	        if( icol(k) .le. 0 .and. icolaux(k) .le. 0 ) then
-		  write(6,*) 'internal error...... '
-		  write(6,*) ie,it,is
-		  stop 'error stop: internal error'
-	        end if
-	      end do
-	    end if
-
-	  end do
-
-	  ngood = 0
-	  do k=1,nkn
-	    if( icolaux(k) .gt. 0 ) then
-		if( icol(k) .le. 0 ) icol(k) = icolaux(k)
-	    end if
-	    if( icol(k) .gt. 0 ) ngood = ngood + 1
-	  end do
-
-	end do
+	call flood_fill(icol)
 
 	do k=1,nkn
 	  ic = icol(k)
@@ -414,9 +351,7 @@ c sets up icol (local) and ndg_nodes and ndg_area
 	  ndg_nodes(k) = ndg_nodelist(ic)
 	end do
 
-	do k=1,nkn
-	  d(k) = icol(k)
-	end do
+	d = icol
 
 	iu = 0
 	call conwrite(iu,'.col',1,987,1,d)

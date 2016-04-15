@@ -46,6 +46,8 @@ c 19.10.2011    ggu     added T/S variables, created fluxes_*() routines
 c 19.10.2011    ggu     added conz variables, created fluxes_template()
 c 10.05.2013    ggu     introduced subflxa.h, common routines to subflxu.f
 c 20.05.2015    ggu     modules introduced
+c 12.04.2016    ggu     fluxes_template adjourned
+c 15.04.2016    ggu     fluxes_template debugged and finished
 c
 c notes :
 c
@@ -68,6 +70,9 @@ c******************************************************************
 
         implicit none
 
+	integer, save :: nl_flux = 0
+	integer, save :: ns_flux = 0
+
         integer, save :: nsect = -1
         integer, save :: kfluxm = 0
         integer, save, allocatable :: kflux(:)
@@ -80,9 +85,6 @@ c******************************************************************
         real, save, allocatable :: saltt(:,:,:)
         real, save, allocatable :: tempt(:,:,:)
         real, save, allocatable :: conzt(:,:,:)
-
-        integer, save, allocatable :: nrcc(:)
-        real, save, allocatable :: cflux(:,:,:,:)
 
 !==================================================================
         contains
@@ -121,7 +123,28 @@ c******************************************************************
 	integer nl	!layers
 	integer ns	!sections
 
-	if( ns <= 0 ) return
+	if( nl == nl_flux .and. ns == ns_flux ) return
+
+	if( nl > 0 .or. ns > 0 ) then
+	  if( nl == 0 .or. ns == 0 ) then
+            write(6,*) 'nl,ns: ',nl,ns
+            stop 'error stop flux_alloc_arrays: incompatible parameters'
+	  end if
+	end if
+
+	if( ns_flux > 0 ) then
+          deallocate(nlayers)
+          deallocate(fluxes)
+          deallocate(masst)
+          deallocate(saltt)
+          deallocate(tempt)
+          deallocate(conzt)
+	end if
+
+	nl_flux = nl
+	ns_flux = ns
+
+	if( ns == 0 ) return
 
         allocate(nlayers(ns))
         allocate(fluxes(0:nl,3,ns))
@@ -130,25 +153,6 @@ c******************************************************************
         allocate(saltt(0:nl,3,ns))
         allocate(tempt(0:nl,3,ns))
         allocate(conzt(0:nl,3,ns))
-
-	end
-
-c******************************************************************
-
-        subroutine flux_alloc_conz_arrays(nl,ns,nc)
-
-	use flux
-
-	implicit none
-
-	integer nl	!layers
-	integer ns	!sections
-	integer nc	!number of concentrations
-
-	if( ns <= 0 .or. nc <= 0 ) return
-
-        allocate(nrcc(nc))
-        allocate(cflux(0:nl,3,ns,nc))
 
 	end
 
@@ -240,17 +244,27 @@ c******************************************************************
 
 c initialize vectors (not strictly necessary)
 
-	do k=1,kfluxm
-	  do ii=1,3
-	    iflux(ii,k) = 0
-	  end do
-	end do
+	if( kfluxm > 0 ) iflux = 0
 
 c the real set up is done in flxini
 c but since at this stage we do not have all the arrays set up
 c we post-pone it until later
 
         end
+
+c******************************************************************
+
+	subroutine flxini
+
+c initializes flux routines finally (wrapper for flx_init)
+
+	use flux
+
+	implicit none
+
+	call flx_init(kfluxm,kflux,nsect,iflux)
+
+	end
 
 c******************************************************************
 
@@ -323,8 +337,6 @@ c administers writing of flux data
 
 	implicit none
 
-	include 'param.h'
-
 	integer it
 
 	integer itend
@@ -332,23 +344,15 @@ c administers writing of flux data
 	integer idtflx
 	real az,azpar,rr
 
-
 	integer ifemop
 	real getpar
 	double precision dgetpar
 	logical has_output,next_output,is_over_output
 
-        integer nrm,nrs,nrt,nrc
-	save nrm,nrs,nrt,nrc
-
-        integer ia_out(4)
-        save ia_out
-        integer nbflx
-        save nbflx
-	integer ibarcl,iconz
-	save ibarcl,iconz
-
-        data nbflx /0/
+        integer, save :: nrm,nrs,nrt,nrc
+        integer, save :: ia_out(4)
+        integer, save :: nbflx = 0
+	integer, save :: ibarcl,iconz
 
 c-----------------------------------------------------------------
 c start of code
@@ -371,15 +375,10 @@ c-----------------------------------------------------------------
                 if( nbflx .eq. -1 ) return
 
         	call flux_alloc_arrays(nlvdi,nsect)
-
-                !if( nsect .gt. nscflxdim ) then
-                !  stop 'error stop wrflxa: dimension nscflxdim'
-                !end if
+		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
 
 		ibarcl = nint(getpar('ibarcl'))
 		iconz = nint(getpar('iconz'))
-
-		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
 
 		call fluxes_init(nlvdi,nsect,nlayers,nrm,masst)
 		if( ibarcl .gt. 0 ) then
@@ -489,69 +488,55 @@ c-----------------------------------------------------------------
 
 	end
 
-c******************************************************************
-c******************************************************************
-c******************************************************************
-c******************************************************************
-c******************************************************************
-
-	subroutine flxini
-
-c initializes flux routines finally (wrapper for flx_init)
-
-	use flux
-
-	implicit none
-
-	call flx_init(kfluxm,kflux,nsect,iflux)
-
-	end
-
 c**********************************************************************
 c**********************************************************************
 c**********************************************************************
 c**********************************************************************
 c**********************************************************************
 
-	subroutine fluxes_template(it)
+	subroutine fluxes_template(it,nscal,scal)
 
 c administers writing of flux data
 c
 c serves as a template for new variables
 c please copy to extra file and adapt to your needs
 c
-c in this version multiple concentrations are written
+c this routine must be called after the other fluxes have already been set up
+c
+c here the number of scalars and the scalar values are passed into the routine
+c you can also import them through other means (modules, etc..)
 c
 c to change for adaptation:
 c
-c ncsdim	dimension of parameter arrays (here in param.h)
-c conzv		parameters to be computed
-c iconz		how many parameters actually needed
-c csc		new extension for file
+c ext		extension for file
 c ivar_base	base of variable numbering
 
-	use mod_conz, only : conzv
 	use levels, only : nlvdi,nlv
+	use basin, only : nkn
 	use flux
 
 	implicit none
 
-	integer it
-
-	include 'param.h'
+	integer it			!time
+	integer nscal			!how many tracers to compute/write
+	real scal(nlvdi,nkn,nscal)	!tracer
 
 	integer itend
-	integer j,i,k,l,lmax,nlmax,ivar,nvers,ivar_base
-	integer iconz
-	real az,azpar,rr
+	integer i,nlmax,ivar,nvers
+	integer idtflx
+	real az,azpar
 
-        integer idtflx,itflx,itmflx,nbflx
-        save idtflx,itflx,itmflx,nbflx
+        integer, save :: ia_out(4)
+        integer, save :: nbflx = 0
 
-        data nbflx /0/
+	integer, parameter :: ivar_base = 200	!base of variable numbering
+	character*4, parameter :: ext = '.csc'	!extension for file
+
+	integer, save, allocatable :: nrs(:)
+	real, save, allocatable :: scalt(:,:,:,:)	!accumulator array
 
 	integer ifemop
-	real getpar
+	logical has_output,next_output,is_over_output
 	double precision dgetpar
 
 c-----------------------------------------------------------------
@@ -566,41 +551,31 @@ c-----------------------------------------------------------------
 
         if( nbflx .eq. 0 ) then
 
-                idtflx = nint(dgetpar('idtflx'))
-                itmflx = nint(dgetpar('itmflx'))
-                itend = nint(dgetpar('itend'))
-		iconz = nint(dgetpar('iconz'))	!computing concentrations?
+                call init_output('itmflx','idtflx',ia_out)
+                call increase_output(ia_out)
+                if( .not. has_output(ia_out) ) nbflx = -1
 
                 if( kfluxm .le. 0 ) nbflx = -1
                 if( nsect .le. 0 ) nbflx = -1
-                if( idtflx .le. 0 ) nbflx = -1
-                if( itmflx .gt. itend ) nbflx = -1
-                if( iconz .le. 0 ) nbflx = -1
                 if( nbflx .eq. -1 ) return
 
-		!be sure that other arrays are already allocated!!!!
-        	call flux_alloc_conz_arrays(nlvdi,nsect,iconz)
+        	allocate(nrs(nscal))
+        	allocate(scalt(0:nlvdi,3,nsect,nscal))
 
-                !if( nsect .gt. nscflxdim ) then
-                !  stop 'error stop fluxes_template: dimension nscflxdim'
-                !end if
-
-                itflx = itmflx + idtflx
-		itmflx = itmflx + 1	!start from next time step
-
+        	call flux_alloc_arrays(nlvdi,nsect)
 		call get_nlayers(kfluxm,kflux,nlayers,nlmax)
 
-		do k=1,iconz
+		do i=1,nscal
 		  call fluxes_init(nlvdi,nsect,nlayers
-     +				,nrcc(k),cflux(0,1,1,k))
+     +				,nrs(i),scalt(0,1,1,i))
 		end do
 
-                nbflx=ifemop('.csc','unform','new')
-                if(nbflx.le.0) then
-        	   stop 'error stop wrflxa : Cannot open csc file'
-		end if
+                nbflx = ifemop(ext,'unform','new')
+                if( nbflx .le. 0 ) goto 99
+		write(6,*) 'flux file opened: ',nbflx,' ',ext
 
 	        nvers = 5
+		idtflx = ia_out(1)
                 call wfflx      (nbflx,nvers
      +                          ,nsect,kfluxm,idtflx,nlmax
      +                          ,kflux
@@ -613,39 +588,36 @@ c-----------------------------------------------------------------
 c normal call
 c-----------------------------------------------------------------
 
-        if( it .lt. itmflx ) return
+        if( .not. is_over_output(ia_out) ) return
 
-	iconz = nint(getpar('iconz'))
 	call getaz(azpar)
 	az = azpar
-	ivar_base = 200		!base of variable numbering
 
 c	-------------------------------------------------------
 c	accumulate results
 c	-------------------------------------------------------
 
-	do k=1,iconz
-	  ivar = ivar_base + k
-	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,conzv(1,1,k))
+	do i=1,nscal
+	  ivar = ivar_base + i
+	  call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,scal(1,1,i))
 	  call fluxes_accum(nlvdi,nsect,nlayers
-     +			,nrcc(k),cflux(0,1,1,k),fluxes)
+     +			,nrs(i),scalt(0,1,1,i),fluxes)
 	end do
 
 c	-------------------------------------------------------
 c	time for output?
 c	-------------------------------------------------------
 
-        if( it .lt. itflx ) return
-        itflx=itflx+idtflx
+        if( .not. next_output(ia_out) ) return
 
 c	-------------------------------------------------------
 c	average and write results
 c	-------------------------------------------------------
 
-	do k=1,iconz
-	  ivar = ivar_base + k
+	do i=1,nscal
+	  ivar = ivar_base + i
 	  call fluxes_aver(nlvdi,nsect,nlayers
-     +			,nrcc(k),cflux(0,1,1,k),fluxes)
+     +			,nrs(i),scalt(0,1,1,i),fluxes)
 	  call wrflx(nbflx,it,nlvdi,nsect,ivar,nlayers,fluxes)
 	end do
 
@@ -653,15 +625,19 @@ c	-------------------------------------------------------
 c	reset variables
 c	-------------------------------------------------------
 
-	do k=1,iconz
+	do i=1,nscal
 	  call fluxes_init(nlvdi,nsect,nlayers
-     +			,nrcc(k),cflux(0,1,1,k))
+     +			,nrs(i),scalt(0,1,1,i))
 	end do
 
 c-----------------------------------------------------------------
 c end of routine
 c-----------------------------------------------------------------
 
+	return
+   99	continue
+	write(6,*) 'extension: ',ext
+        stop 'error stop fluxes_template: Cannot open fluxes file'
 	end
 
 c******************************************************************

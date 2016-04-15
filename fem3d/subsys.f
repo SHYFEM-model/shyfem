@@ -1104,6 +1104,17 @@ c		(Default 0).
 
         call addpar('ccut',0.)
 
+c |wrtrst|	If reset times are not regularly distributed (e.g., 1 month)
+c		it is possible to give the exact times when a reset should
+c		take place. |wrtrst| is a file name where these reset times
+c		are specified, one for each line. For every line two integers
+c		indicating date and time for the reset must be specified.
+c		If only one value is given, time is taken to be 0. The format
+c		of date is "YYYYMMDD" and for time "hhmmss". If the file
+c		wrtrst is given |idtwrt| should be 0.
+
+        call addfnm('wrtrst',' ')
+
 c DOCS  END
 
         end

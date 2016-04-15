@@ -15,6 +15,7 @@ c 31.03.2015	ggu	compute res time for different areas
 c 20.05.2015	ggu	rinside computed only once, bug fix for conz==0
 c 05.06.2015	ggu	new routine to limit concentration between 0 and c0
 c 01.02.2016	ggu	implemented custom reset
+c 15.04.2016	ggu	new input file for custom reset
 c
 c******************************************************************
 c Parameters to be set in section $wrt of the parameter input file
@@ -127,6 +128,7 @@ c------------------------------------------------------------
         double precision mass,volume
 	
 	character*80 title
+	character*20 line
 	integer nvers	
 
 	integer ifemop
@@ -259,7 +261,7 @@ c breset	resets concentration
 c bcompute	computes residence times and writes to file
 c belab		elaborates (accumulates) concentrations
 
-	binit = .false.
+	binit = .false.		!only true for first call
 	if( nrepl .lt. 0 ) then
 	  nrepl = 0
 	  binit = .true.
@@ -319,7 +321,9 @@ c------------------------------------------------------------
 
         if( breset ) then		!reset concentrations to c0
 
-       	  write(6,*) 'resetting concentrations for renewal time ',it
+	  call dtsgf(it,line)
+       	  write(6,*) 'resetting concentrations for renewal time '
+     +				,it,' ',line
 
 c------------------------------------------------------------
 c reset variables to compute renewal time (and write to file)
@@ -398,8 +402,6 @@ c on return rinside(k) = 1 for nodes inside domain
 
 	implicit none
 
-	include 'param.h'
-
 	real rinside(nkn)
 	integer iaout		!area code for outside elements
 
@@ -432,8 +434,6 @@ c resets concentration for start of new computation
 
 	implicit none
 
-	include 'param.h'
-
 	real c0				!concentration for nodes inside domain
 	real cnv(nlvdi,nkn)
 	real rinside(nkn)		!flag if node is inside domain
@@ -462,8 +462,6 @@ c simulates stirred tank
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
 
 	real c0				!concentration to impose
 	real cnv(nlvdi,nkn)
@@ -525,13 +523,11 @@ c computes masses for different areas
 
 	implicit none
 
-	include 'param.h'
-
-	integer ndim
-	real cnv(nlvdi,nkn)
-	double precision massa(0:ndim)
-	double precision vola(0:ndim)
-	double precision conza(0:ndim)
+	integer ndim				!dimension of massa,vola,conza
+	real cnv(nlvdi,nkn)			!scalar for which to compute
+	double precision massa(0:ndim)		!total mass of scalar
+	double precision vola(0:ndim)		!total volume
+	double precision conza(0:ndim)		!average conc of scalar
 
 	integer ie,k,ii,ia,l,lmax,nlev
 	real v,conz,area,hdep
@@ -543,6 +539,7 @@ c computes masses for different areas
 
 	massa = 0.
 	vola = 0.
+	conza = 0.
 
 	do ie=1,nel
 	  ia = iarv(ie)
@@ -563,7 +560,7 @@ c computes masses for different areas
 	  end do
 	end do
 
-	conza = massa / vola
+	where( vola > 0. ) conza = massa / vola
 
 	return
    98	continue
@@ -584,8 +581,6 @@ c limits concentration between 0 and c0
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
 
 	real c0
 	real cnv(nlvdi,nkn)		!concentration
@@ -612,8 +607,6 @@ c computes mass and volume on internal nodes
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
 
 	real cnv(nlvdi,nkn)		!concentration
 	real rinside(nkn)		!flag if node is inside domain
@@ -654,8 +647,6 @@ c sets concentration to zero outside of domain
 
 	implicit none
 
-	include 'param.h'
-
         real cnv(nlvdi,nkn)
 	real rinside(nkn)		!flag if node is inside domain
 
@@ -683,8 +674,6 @@ c resets acumulated value
 
 	implicit none
 
-	include 'param.h'
-
 	double precision cvacu(nlvdi,nkn)
 
 	integer k,lmax,l
@@ -706,8 +695,6 @@ c***************************************************************
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
 
 	logical blog				!use logarithm to compute
 	integer it
@@ -772,8 +759,6 @@ c compute renewal time and write to file
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
 
 	integer ia_out(4)
 	logical blog,badj
@@ -940,8 +925,6 @@ c write histogram
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
 
 	integer iu
 	integer it
@@ -1116,26 +1099,24 @@ c**********************************************************************
 
 	integer, save :: idate = 0
 
-	integer, parameter :: ndate = 0
-	integer, save :: resdate(ndate)
+	integer, save :: ndate,ndim
+	integer, save, allocatable :: restime(:)
 
-!	integer, parameter :: ndate = 5
-!	integer, save :: resdate(ndate) = (/20150101,20150301
-!     +				,20150601,20150901,20160101/)
+	character*80 file
 
 c---------------------------------------------------------------
 c initialize - convert date to relative time
 c---------------------------------------------------------------
 
+	if( idate == -1 ) return
+
 	if( idate == 0 ) then
-	  time = 0
-	  call unpacktime(time,hour,min,sec)
-	  do i=1,ndate
-	    date = resdate(i)
-	    call unpackdate(date,year,month,day)
-	    call dts2it(itres,year,month,day,hour,min,sec)
-	    resdate(i) = itres		!insert relative time
-	  end do
+	  idate = -1
+	  call getfnm('wrtrst',file)
+	  if( file == ' ' ) return			!no file given
+	  call get_reset_time(file,-1,ndim,restime)
+	  allocate(restime(ndim))
+	  call get_reset_time(file,ndim,ndate,restime)
 	  idate = 1
 	end if
 
@@ -1144,7 +1125,7 @@ c see if we have to reset
 c---------------------------------------------------------------
 
 	if( idate > ndate ) return
-	if( it < resdate(idate) ) return
+	if( it < restime(idate) ) return
 
 c---------------------------------------------------------------
 c ok, reset needed - advance to next reset time
@@ -1156,6 +1137,106 @@ c---------------------------------------------------------------
 c---------------------------------------------------------------
 c end of routine
 c---------------------------------------------------------------
+
+	end
+
+c**********************************************************************
+
+	subroutine get_reset_time(file,ndim,n,restime)
+
+c gets custom reset time from file
+
+	implicit none
+
+	character*(*) file
+	integer ndim		!ndim==0 => check how many dates are given
+	integer n
+	integer restime(n)
+
+	integer ianz,ios,nline,i
+	integer date,time
+	integer year,month,day,hour,min,sec
+	integer itres,itold
+	double precision d(2)
+	character*80 line
+	logical bdebug
+
+	integer iscand
+
+	n = 0
+	nline = 0
+	bdebug = .true.
+	if( ndim == -1 ) bdebug = .false.
+
+	open(1,file=file,status='old',form='formatted',iostat=ios)
+
+	if( bdebug ) then
+	  if( ios /= 0 ) then
+	    write(6,*) 'cannot open custom reset file: ',trim(file)
+	    stop 'error stop get_reset_time: opening file'
+	  else
+	    write(6,*) 'reading custom reset file: ',trim(file)
+	  end if
+	end if
+	if( ios /= 0 ) return
+
+	do
+	  read(1,'(a)',iostat=ios) line
+	  nline = nline + 1
+	  if( ios /= 0 ) exit
+	  ianz = iscand(line,d,2)
+	  if( ianz == 0 ) then
+	    cycle
+	  else if( ianz == 1 ) then
+	    date = nint(d(1))
+	    time = 0
+	  else if( ianz == 2 ) then
+	    date = nint(d(1))
+	    time = nint(d(2))
+	  else
+	    write(6,*) 'parse error: ',ianz
+	    write(6,*) 'line: ',trim(line)
+	    write(6,*) 'file: ',trim(file)
+	    stop 'error stop get_reset_time: parse error'
+	  end if
+
+	  n = n + 1
+	  if( ndim == -1 ) cycle
+	  if( n > ndim ) then
+	    write(6,*) 'n,ndim: ',n,ndim
+	    stop 'error stop get_reset_time: dimension error ndim'
+	  end if
+
+	  call unpacktime(time,hour,min,sec)
+	  call unpackdate(date,year,month,day)
+	  call dts2it(itres,year,month,day,hour,min,sec)
+
+	  restime(n) = itres		!insert relative time
+	end do
+
+	if( ios > 0 ) then
+	  write(6,*) 'read error...'
+	  write(6,*) 'file: ',trim(file)
+	  write(6,*) 'line number: ',nline
+	  stop 'error stop get_reset_time: read error'
+	end if
+
+	if( bdebug ) then
+	  write(6,*) 'custom reset times: ',n
+	  itold = restime(1) - 1
+	  do i=1,n
+	    itres = restime(i)
+	    call dts2dt(itres,year,month,day,hour,min,sec)
+	    write(6,1000) i,itres,year,month,day,hour,min,sec
+ 1000	    format(i5,i12,6i5)
+	    if( itres <= itold ) then
+	      write(6,*) 'times in custom reset must be ascending...'
+	      stop 'error stop get_reset_time: wrong order'
+	    end if
+	  end do
+	end if
+
+	close(1)
 
 	end
 

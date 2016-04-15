@@ -14,6 +14,7 @@
 ! 21.01.2015	ggu	computing fetch for geographical coordinates (bug fix)
 ! 10.02.2015	ggu	randomixe change of coordinates if on node (bug fix)
 ! 10.03.2016	ggu	in parametric wave module fix segfault (allocatable)
+! 15.04.2016	ggu	parametric wave module cleaned
 !
 !**************************************************************
 c DOCS  START   S_wave
@@ -94,8 +95,6 @@ c**************************************************************
 
 	implicit none
 
-        include 'param.h'
-
 	integer itdrag		!drag coefficient type
 	real getpar		!get parameter function
 	integer k,ie,l
@@ -109,6 +108,7 @@ c**************************************************************
 
         waveh = 0.
         wavep = 0.
+        wavepp = 0.
         waved = 0.
         waveov = 0.
 
@@ -204,16 +204,10 @@ c**************************************************************
 
         implicit none
 
-c parameters
-        include 'param.h'
-
 c common
+	include 'param.h'
 	include 'femtime.h'
-
-
 	include 'pkonst.h'
-
-
 
 c local
         integer k,l, ie
@@ -467,12 +461,8 @@ c local
 
         implicit none
 
-c parameters
-        include 'param.h'
+	include 'param.h'
 
-c common
-
-c local
         integer it              !time [s]
         integer k,l,nlev,lmax
 	real ddl(nlvdim,nkndim)		!3D layer depth (in the middle of layer)
@@ -584,9 +574,6 @@ c local
 	use basin
 
         implicit none
-
-	include 'param.h'
-
 
 	integer i,knode,nn,ibc,nbc
 	integer nbnds,nkbnds,kbnds
@@ -834,7 +821,7 @@ c arguments
         real va(nlvdim,nkndim)		!auxiliary array
 	real stxe(nlvdim,neldim)	!x stokes transport on elements
 	real stye(nlvdim,neldim)	!y stokes transport on elements
-	real auxstz(nlvdim,nkndim) 	!z stokes velocity on node k for plotting
+	real auxstz(nlvdim,nkndim) 	!z stokes velocity on node k for plot
 	real stokesze(0:nlvdim,neldim)	!z stokes velocity on elements
 
 c common
@@ -944,6 +931,10 @@ c-----------------------------------------------------------
         end
 
 c******************************************************************
+c******************************************************************
+c******************************************************************
+c******************************************************************
+c******************************************************************
 c
 c This routine is used to calculate the wave height and period
 c from wind speed, fetch and depth using the EMPIRICAL PREDICTION
@@ -997,16 +988,10 @@ c**************************************************************
 
         implicit none
 
-        include 'param.h'
-
         integer it
 
-
 c --- input variable
-        !real winds(neldim)	!wind speed at 10m [m/s]
-        !real windd(neldim)	!wind direction [degree north]
-        !real fet(neldim)        !wind fetch length [m]
-        !real daf(neldim)        !averaged depth along the fetch [m]
+
         real, save, allocatable :: winds(:) !wind speed at 10m [m/s]
         real, save, allocatable :: windd(:) !wind direction [degree north]
         real, save, allocatable :: fet(:)   !wind fetch length [m]
@@ -1016,16 +1001,14 @@ c --- output variable
 
         real, save, allocatable :: waeh(:)	!wave height [m]
         real, save, allocatable :: waep(:)	!wave period [s]
-        real, save, allocatable :: waed(:)	!wave direction (same as wind
-c        common /waeh/waeh, /waep/waep, /waed/waed
+        real, save, allocatable :: waed(:)	!wave direction (same as wind)
 
-c --- stress variables
-        !real tcv(neldim)
-        !real twv(neldim)
-        !real tmv(neldim)
+c --- aux variable
 
+        real, save, allocatable :: v1v(:)	!aux variable
 
 c --- local variable
+
 	logical debug
         real depele             !element depth function [m]
         real hbr		!limiting wave height [m]
@@ -1033,17 +1016,14 @@ c --- local variable
         real gh,gx,hg
 	real wis,wid
 	real wx,wy
-	real v1v(nkn)
+        real auxh,auxh1,auxt,auxt1
         integer ie,icount,ii,k
 
-        real g			!gravity acceleration [m2/s]
-        parameter (g=9.81)
-        real z0
-        parameter (z0=5.e-4)
+        real, parameter :: g = 9.81		!gravity acceleration [m2/s]
+        real, parameter :: z0 = 5.e-4
+
         real ah1,ah2,ah3,eh1,eh2,eh3,eh4
         real at1,at2,at3,et1,et2,et3,et4
-        real auxh,auxh1,auxt,auxt1
-
 c------------------------------------------------------ Hurdle and Stive
 c        parameter(ah1=0.25,ah2=0.6,eh1=0.75)
 c        parameter(eh2=0.5,ah3=4.3e-05,eh3=1.,eh4=2.)
@@ -1054,6 +1034,7 @@ c------------------------------------------------------ SPM
         parameter(eh2=1.,ah3=0.00565,eh3=1./2.,eh4=1.)
         parameter(at1=7.54,at2=0.833,et1=3./8.)
         parameter(et2=1.,at3=0.0379,et3=1./3.,et4=1.)
+c------------------------------------------------------
 
         real getpar
 
@@ -1061,12 +1042,10 @@ c------------------------------------------------------ SPM
         save ia_out
         logical has_output,next_output
 
-        integer icall		!initialization parameter
-        save icall
-        data icall /0/
+        integer, save :: icall = 0		!initialization parameter
 
-	debug = .false.
 	debug = .true.
+	debug = .false.
 
 c ----------------------------------------------------------
 c Initialization
@@ -1080,6 +1059,11 @@ c         --------------------------------------------------
 c         Initialize state variables
 c         --------------------------------------------------
 
+          iwave = nint(getpar('iwave'))
+          if( iwave .le. 0 ) icall = -1
+          if( iwave .gt. 1 ) icall = -1
+          if( icall .le. -1 ) return
+
 	  allocate(waeh(nel))
 	  allocate(waep(nel))
 	  allocate(waed(nel))
@@ -1089,11 +1073,7 @@ c         --------------------------------------------------
 
 	  allocate(winds(nel),windd(nel))
 	  allocate(fet(nel),daf(nel))
-
-          iwave = nint(getpar('iwave'))
-          if( iwave .le. 0 ) icall = -1
-          if( iwave .gt. 1 ) icall = -1
-          if( icall .le. -1 ) return
+	  allocate(v1v(nkn))
 
 c         --------------------------------------------------
 c         Initialize output
@@ -1113,7 +1093,9 @@ c -------------------------------------------------------------------
 c normal call
 c -------------------------------------------------------------------
 
-c --- get the wind speed and direction
+c       -------------------------------------------------------------
+c	get wind speed and direction
+c       -------------------------------------------------------------
 
 	do ie=1,nel
 	  wx = 0.
@@ -1128,7 +1110,9 @@ c --- get the wind speed and direction
           call c2p(wx,wy,winds(ie),windd(ie))
 	end do
 
-c --- get the wind fetch
+c       -------------------------------------------------------------
+c	get wind fetch
+c       -------------------------------------------------------------
 
         call fetch(windd,fet,daf)
 
@@ -1149,14 +1133,19 @@ c       -------------------------------------------------------------------
         do ie = 1,nel
 
           icount = 1
-c --- get averaged depth along the fetch
+
+c         -----------------------------------------------------------------
+c	  get averaged depth along the fetch
+c         -----------------------------------------------------------------
 
           dep = daf(ie)
           depe = depele(ie,+1)
           dep = depele(ie,+1)
 10        continue
 
-c --- calculate the wave height, period and direction
+c         -----------------------------------------------------------------
+c	  calculate wave height, period and direction
+c         -----------------------------------------------------------------
 
 	  wis = winds(ie)
 	  wid = windd(ie)
@@ -1168,7 +1157,9 @@ c --- calculate the wave height, period and direction
           auxt = at2*gh**et1
           auxt1 = ah2*gx**eh1
 
-C method of SPM
+c         -----------------------------------------------------------------
+c	  method of SPM
+c         -----------------------------------------------------------------
 
           waeh(ie) = (tanh(auxh))**eh4
           waeh(ie) = (ah3*gx**eh3) / waeh(ie)
@@ -1191,7 +1182,9 @@ c     %            tanh((0.0379*(gx**(1./3.)))/
 c     %            (tanh(0.833*(gh**(3./8.)))))*(wis/g)
 c
 
-C method of hurdle and stive
+c         -----------------------------------------------------------------
+c	  method of hurdle and stive
+c         -----------------------------------------------------------------
 
 c          waeh(ie) = (tanh(auxh))**eh4
 c          waeh(ie) = (ah3*gx**eh3) / waeh(ie)
@@ -1207,7 +1200,9 @@ c          waep(ie) = waep(ie) * wis / g
 
           waed(ie) = wid
 
-c --- limiting wave height
+c         -----------------------------------------------------------------
+c	  limiting wave height
+c         -----------------------------------------------------------------
 
           hbr = 0.50*depe
           if( waeh(ie).gt.hbr ) then
@@ -1223,10 +1218,8 @@ c --- limiting wave height
 
         end do
 
-        !call make_stress(waeh,waep,z0,tcv,twv,tmv)
-
 c       -------------------------------------------------------------------
-c       write of results (file WAV)
+c       copy to global values and write of results (file WAV)
 c       -------------------------------------------------------------------
 
         call e2n2d(waeh,waveh,v1v)
@@ -1243,6 +1236,10 @@ c       -------------------------------------------------------------------
 
         !write(6,*) 'computations with parametric wave model finished...'
 
+c       -------------------------------------------------------------------
+c       end of routine
+c       -------------------------------------------------------------------
+
         end
 
 c**************************************************************
@@ -1257,12 +1254,9 @@ c grid given the wind direction.
 
         implicit none
   
-        include 'param.h'
-
-
-        real windd(neldim)	!wind direction [degree north]
-        real fet(neldim)        !wind fetch length [m]
-        real daf(neldim)	!averaged depth along the fetch [m]
+        real windd(nel)		!wind direction [degree north]
+        real fet(nel)		!wind fetch length [m] (return)
+        real daf(nel)		!averaged depth along the fetch [m] (return)
 
         real xe,ye		!element point coordinates [m]
 	real fff,ddd
@@ -1297,6 +1291,7 @@ c --- loop over elements
 	    write(6,*) 'warning: iteration exceeded: ',ie
 	    ierr = 1
 	    wddir = wdir
+	    write(156,*) 'iterations in parametric wave model: '
 	    write(156,*) 0,0
 	    write(156,*) ie,wddir
 	    call fetch_element(ie,xe,ye,wdir,fff,ddd,ierr)
@@ -1308,7 +1303,7 @@ c --- loop over elements
 	end do
 
 	icaver = icaver/nel
-	write(156,*) icaver,icmax
+	write(156,*) 'stats parametric wave model: ',icaver,icmax
 
 	end
 
@@ -1316,20 +1311,21 @@ c**************************************************************
 
         subroutine fetch_element(ie,xein,yein,wdir,fff,ddd,ierr)
 
-c This subroutine computes the wind fetch for each element of the
-c grid given the wind direction.
+c This subroutine computes the wind fetch for element ie
+c given the wind direction.
 
 	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
   
-        include 'param.h'
-
-	integer ie
-	real xein,yein
-	real wdir
-	real fff,ddd
-	integer ierr
+	integer ie		!element
+	real xein,yein		!initial point
+	real wdir		!wind direction
+	real fff		!fetch computed (return)
+	real ddd 		!average depth computed (return)
+	integer ierr		!error code
+				!on entry if >0 write debug information
+				!on return number of iterations executed
 
         real xe,ye		!element point coordinates [m]
         real xnew,ynew		!new coordinates [m]
@@ -1411,8 +1407,6 @@ c line and one of the border line of the element
         real xn,yn		!intersection coordinates [m] (return)
 	integer ieold
 	logical bdebug
-
-	include 'param.h'
 
         real x0(3),y0(3)        !element vertices coordinates [m]
         real xg0(3),yg0(3)      !element vertices coordinates [degrees]
@@ -1511,13 +1505,12 @@ c computes stress parameters
 
         implicit none
 
-        include 'param.h'
-
+        real waeh(nel)	!wave height [m]
+        real waep(nel)	!wave period [s]
         real z0
-        real tcv(1)
-        real twv(1)
-        real tmv(1)
-
+        real tcv(nel)
+        real twv(nel)
+        real tmv(nel)
 
         real pi,karm,rho,g
         real depth,ux,uy,uc2
@@ -1528,10 +1521,6 @@ c computes stress parameters
         real tc,tw,tm
 
         integer ie
-
-        real waeh(neldim)	!wave height [m]
-        real waep(neldim)	!wave period [s]
-
 
         real depele
         logical is_r_nan
@@ -1606,8 +1595,6 @@ c mean wave direction
 
         implicit none
 
-	include 'param.h'
-
         integer k
         real wh                 !sign. wave height [m]
         real wmp                !mean wave period [s]
@@ -1630,8 +1617,6 @@ c gives indication if waves are computed
 	use mod_waves
 
         implicit none
-
-	include 'param.h'
 
         logical has_waves
 

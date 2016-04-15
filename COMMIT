@@ -1,5 +1,31 @@
 ============================================================
 
+Fri Apr 15 18:26:27 CEST 2016
+
+fluxes adjusted
+
+ LOG                     |  49 +++++++++++
+ fem3d/Makefile          |  18 ++--
+ fem3d/elabutil.f        |  37 ++++++---
+ fem3d/mod_waves.f       |  60 +++++---------
+ fem3d/netcdf.f          |  22 -----
+ fem3d/netcdf_util.f     |  18 ----
+ fem3d/newnudge.f        |  87 +++-----------------
+ fem3d/nos2nc.f          |  15 +---
+ fem3d/subfloodfill.f    |  90 ++++++++++++++++++++
+ fem3d/subflxa.f         | 214 +++++++++++++++++++++---------------------------
+ fem3d/subflxu.f         |  31 ++++---
+ fem3d/subsys.f          |  11 +++
+ fem3d/subwaves.f        | 163 +++++++++++++++++-------------------
+ fem3d/subwrt.f          | 169 ++++++++++++++++++++++++++++----------
+ fembin/estimate_log.sh  |  35 +++++---
+ femdoc/final/shyfem.pdf | Bin 287021 -> 287626 bytes
+ 16 files changed, 553 insertions(+), 466 deletions(-)
+ new file:
+   fem3d/subfloodfill.f
+
+============================================================
+
 Fri Apr  1 18:19:44 CEST 2016
 
 New version 7_5_7

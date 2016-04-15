@@ -1,4 +1,53 @@
 
+15.04.2016
+
+c ./fem3d/elabutil.f:
+! 15.04.2016    ggu     handle gis files with substitution of colon
+!
+c ./fem3d/subfemintp.f:
+! 01.04.2016    ggu     bug fix in iff_init(): open file with np and not nexp
+!
+c ./fem3d/basutil_interp.f:
+c 11.04.2016    ggu     meaning of ufact has changed, expo interp working
+c
+c ./fem3d/basutil_bathy.f:
+c 11.04.2016    ggu     meaning of ufact has changed
+c
+c ./fem3d/newnudge.f:
+c 15.04.2016    ggu     started cleaning module
+c
+c ./fem3d/subwaves.f:
+! 15.04.2016    ggu     parametric wave module cleaned
+!
+c ./fem3d/nos2nc.f:
+c 15.04.2016    ggu     ndim eliminated (allocatable)
+c
+c ./fem3d/subwrt.f:
+c 15.04.2016    ggu     new input file for custom reset
+c
+c ./fem3d/feminf.f:
+! 07.04.2016    ggu     option node added to extract value at node
+c
+c ./fem3d/newtra.f:
+c 07.04.2016    ggu     new routine aver_nodal()
+c
+c ./fem3d/subflxa.f:
+c 12.04.2016    ggu     fluxes_template adjourned
+c 15.04.2016    ggu     fluxes_template debugged and finished
+c
+c ./fem3d/flxinf.f:
+c 07.04.2016    ggu     bug fix for allocation of arrays
+c
+c ./fem3d/subspk.f:
+c 04.04.2016    ggu     make some big arrays allocatable and not on stack
+c
+c ./fem3d/subsys.f:
+c 05.04.2016    ggu     new parameter iaicef for ice free areas
+c
+c ./fem3d/subqfxt.f:
+c 07.04.2016    ggu     compute total evaporation
+
+
 01.04.2016
 
 c ./fem3d/newcon.f:
