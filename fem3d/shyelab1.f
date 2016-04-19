@@ -283,7 +283,7 @@
 	  end if
 
 	  if( bnodes ) then
-	    call write_nodes(dtime,ivar,nlvdi,cv3)
+	    call write_nodes(dtime,ivar,cv3)
 	  end if
 
 	 end do		!loop on ivar

@@ -66,6 +66,7 @@ c elaborates nos file
 	character*80 basnam,simnam
 	real rnull
 	real cmin,cmax,cmed,vtot
+	double precision dtime
 
 	integer iapini
 	integer ifem_open_file
@@ -321,10 +322,8 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( bnodes ) then
-	    do j=1,nnodes
-	      node = nodes(j)
-	      call write_node(j,node,cv3,it,ivar)
-	    end do
+	    dtime = it
+	    call write_nodes(dtime,ivar,cv3)
 	    if( .not. b2d ) then	!still to average
 	      call make_vert_aver(nlvdi,nkn,ilhkv,cv3,vol3,cv2)
 	    end if

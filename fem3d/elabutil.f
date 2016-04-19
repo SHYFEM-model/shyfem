@@ -64,6 +64,7 @@
 	integer, save :: nodesp
 	integer, save :: nnodes = 0
 	integer, save, allocatable :: nodes(:)
+	integer, save, allocatable :: nodese(:)
 
 	real, save :: fact
 
@@ -417,9 +418,11 @@ c***************************************************************
           else if( bnode ) then
             nnodes = 1
             allocate(nodes(nnodes))
+            allocate(nodese(nnodes))
             nodes(1) = nodesp
           end if
 
+	  nodese = nodes
           write(6,*) 'nodes: ',nnodes,(nodes(i),i=1,nnodes)
           call convert_internal_nodes(nnodes,nodes)
 
@@ -429,22 +432,63 @@ c***************************************************************
 
 c***************************************************************
 
-	subroutine write_nodes(dtime,ivar,nlvddi,cv3)
+	subroutine write_nodes(dtime,ivar,cv3)
+
+	use levels
 
 	double precision dtime
 	integer ivar
-	integer nlvddi
-	real cv3(nlvddi,*)
+	real cv3(nlvdi,*)
 
 	integer j,node,it
 
         do j=1,nnodes
           node = nodes(j)
-          it = dtime
+          it = nint(dtime)
           call write_node(j,node,cv3,it,ivar)
         end do
 
 	end subroutine write_nodes
+
+c***************************************************************
+
+	subroutine write_nodes_vel(dtime,znv,uprv,vprv)
+
+	use levels
+	use mod_depth
+
+	double precision dtime
+	real znv(*)
+	real uprv(nlvdi,*)
+	real vprv(nlvdi,*)
+
+	integer j,ki,ke,lmax,it,l,k
+	real z,h
+	real hl(nlvdi)
+	real u(nlvdi),v(nlvdi)
+
+        do j=1,nnodes
+          ki = nodes(j)
+          ke = nodese(j)
+	  lmax = ilhkv(ki)
+          it = nint(dtime)
+          write(79,*) it,j,ke,ki,lmax
+          write(79,*) znv(ki)
+          write(79,*) (uprv(l,ki),l=1,lmax)
+          write(79,*) (vprv(l,ki),l=1,lmax)
+
+          z = 0.
+          z = znv(ki)
+          h = hkv(ki)
+	  u = uprv(:,ki)
+	  v = vprv(:,ki)
+          call write_profile_uv(it,j,ki,ke,lmax,h,z
+     +				,u,v,hlv,hl)
+        end do
+
+	write(80,*) it,(znv(nodes(k)),k=1,nnodes)
+
+	end subroutine write_nodes_vel
 
 !====================================================
 	end module elabutil
@@ -896,11 +940,17 @@ c***************************************************************
 
 c***************************************************************
 
-        subroutine write_profile_c(it,i,ki,ke,lmax,ivar,h,z,c,hlv,hl)
+	subroutine write_node_vel
+
+	end
+
+c***************************************************************
+
+        subroutine write_profile_c(it,j,ki,ke,lmax,ivar,h,z,c,hlv,hl)
 
         implicit none
 
-        integer it,i,ki,ke
+        integer it,j,ki,ke
         integer lmax
         integer ivar
         real z,h
@@ -921,9 +971,44 @@ c***************************************************************
         call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)
         call get_bottom_of_layer(bcenter,lmax,z,hl,hl)  !orig hl is overwritten
 
-        write(2,*) it,i,ke,ki,lmax,ivar
+        write(2,*) it,j,ke,ki,lmax,ivar
         do l=1,lmax
           write(2,*) hl(l),c(l)
+        end do
+
+        end
+
+c***************************************************************
+
+        subroutine write_profile_uv(it,j,ki,ke,lmax,h,z,u,v,hlv,hl)
+
+        implicit none
+
+        integer it,j,ki,ke
+        integer lmax
+        real z,h
+        real u(1)
+        real v(1)
+        real hlv(1)
+        real hl(1)
+
+        logical bcenter
+        integer l
+        integer nlvaux,nsigma
+        real hsigma
+        real uv
+
+        bcenter = .true.        !depth at center of layer ?
+
+        call get_sigma_info(nlvaux,nsigma,hsigma)
+
+        call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)
+        call get_bottom_of_layer(bcenter,lmax,z,hl,hl)  !orig hl is overwritten
+
+        write(82,*) it,j,ke,ki,lmax,z
+        do l=1,lmax
+          uv = sqrt( u(l)**2 + v(l)**2 )
+          write(82,*) hl(l),u(l),v(l),uv
         end do
 
         end

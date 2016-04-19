@@ -52,7 +52,7 @@ c elaborates ous file
 	integer nndim,nvar,iv
 	integer nvers
 	integer nknous,nelous
-	integer invar,lmaxsp
+	integer invar
 	integer ierr
 	integer it,ivar,itvar,itnew,itold,iaux
 	integer i,l,k,lmax
@@ -65,6 +65,7 @@ c elaborates ous file
 	real zmin,zmax
 	real umin,umax,vmin,vmax
 	real volume,area
+	double precision dtime
 
 	integer iapini
 	integer ifem_open_file
@@ -142,11 +143,7 @@ c--------------------------------------------------------------
 
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
 
-	if( bnode ) then
-	  call convert_internal_node(nodesp)
-	  invar = 0
-	  lmaxsp = ilhkv(nodesp)
-	end if
+	call handle_nodes
 
 	!--------------------------------------------------------------
 	! time management
@@ -246,7 +243,6 @@ c--------------------------------------------------------------
             call comp_vel2d(nel,hev,zenv,unv,vnv,u2v,v2v
      +                          ,umin,vmin,umax,vmax)
 	    if( bneedbasin ) then
-              !call compute_volume(nel,zenv,hev,volume)
               call compute_volume_ia(iano,zenv,volume,area)
 	    end if
 
@@ -277,6 +273,8 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( bsplit ) then
+	    call transfer_uvz(nlvdi,nndim,nvar,vars
+     +				,znv,zenv,utlnv,vtlnv)
             call transp2vel(nel,nkn,nlv,nlvdi,hev,zenv,nen3v
      +                          ,ilhv,hlv,utlnv,vtlnv
      +                          ,uprv,vprv)
@@ -309,9 +307,15 @@ c--------------------------------------------------------------
             if( ierr .ne. 0 ) goto 99
 	  end if
 
-	  if( bnode ) then
+	  if( bnodes ) then
+	    call transfer_uvz(nlvdi,nndim,nvar,vars
+     +				,znv,zenv,utlnv,vtlnv)
+            call transp2vel(nel,nkn,nlv,nlvdi,hev,zenv,nen3v
+     +                          ,ilhv,hlv,utlnv,vtlnv
+     +                          ,uprv,vprv)
 	    ivar = 1
-	    !call write_node(nodesp,nlvdi,cv3,it,ivar,lmaxsp)
+	    dtime = it
+	    call write_nodes_vel(dtime,znv,uprv,vprv)
 	  end if
 
 	end do		!time do loop
