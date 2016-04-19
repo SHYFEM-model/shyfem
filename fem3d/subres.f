@@ -44,9 +44,7 @@ c
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-c
-c parameter
-        include 'param.h'
+
 c common
 	include 'simul.h'
 	include 'femtime.h'
@@ -247,9 +245,7 @@ c
 	use basin
 
 	implicit none
-c
-c parameter
-	include 'param.h'
+
 c common
 	include 'simul.h'
 	include 'femtime.h'
@@ -421,10 +417,6 @@ c computes average of scalar values
 
 	implicit none
 
-c parameter
-
-	include 'param.h'
-
 c common
 	include 'femtime.h'
 
@@ -588,7 +580,6 @@ c for 3D arrays call with nlvddi = nlvdi
 
 c parameter
 
-	include 'param.h'
 	include 'femtime.h'
 
 	character*(*) ext	!extension of file
@@ -713,7 +704,6 @@ c for 3D arrays call with nlvddi = nlvdi
 
 c parameter
 
-	include 'param.h'
 	include 'femtime.h'
 
 	integer nlvddi		                !number of layers (nlvdi or 1)
@@ -833,9 +823,6 @@ c********************************************************************
 
 	implicit none
 
-c parameter
-
-	include 'param.h'
 c local
 	integer idtc,itmc,itsmed
 	integer id,nvar

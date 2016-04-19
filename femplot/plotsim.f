@@ -106,7 +106,7 @@ c----------------------------------------------
 c set up elements
 c----------------------------------------------
 
-	call allocate_2d_arrays
+	call allocate_2d_arrays(nel)
 
 	isphe = nint(getpar('isphe'))
 	call set_coords_ev(isphe)
@@ -284,7 +284,7 @@ c*****************************************************************
 
 c*****************************************************************
 
-	subroutine allocate_2d_arrays
+	subroutine allocate_2d_arrays(npd)
 
 	use mod_hydro_plot
 	use mod_plot2d
@@ -295,25 +295,47 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
+	integer npd
 
+	integer np
 
+	np = max(nel,npd)
 
 	call ev_init(nel)
 	call mod_geom_init(nkn,nel,ngr)
 
 	call mod_depth_init(nkn,nel)
 
-	call mod_plot2d_init(nkn,nel)
+	call mod_plot2d_init(nkn,nel,np)
 	call mod_hydro_plot_init(nkn,nel)
 
-	write(6,*) 'allocate_2d_arrays: ',nkn,nel,ngr
+	write(6,*) 'allocate_2d_arrays: ',nkn,nel,ngr,np
 
 	end
 
 c*****************************************************************
 
-	subroutine allocate_simulation
+	subroutine reallocate_2d_arrays(npd)
+
+	use mod_plot2d
+	use basin, only : nkn,nel,ngr,mbw
+
+	implicit none
+
+	integer npd
+
+	integer np
+
+	np = max(nel,npd)
+	call mod_plot2d_init(nkn,nel,np)
+
+	write(6,*) 'reallocate_2d_arrays: ',nkn,nel,np
+
+	end
+
+c*****************************************************************
+
+	subroutine allocate_simulation(npd)
 
 	use mod_plot3d
 	use mod_hydro_print
@@ -324,27 +346,26 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
+	integer npd
 
-
-
-
+	integer np
 	real flag
 
 	nlvdi = nlv
+	np = max(2*nel,npd)
 
 	call levels_init(nkn,nel,nlvdi)
 	call mod_hydro_init(nkn,nel,nlvdi)
 	call mod_hydro_vel_init(nkn,nel,nlvdi)
 	call mod_hydro_print_init(nkn,nlvdi)
-	call mod_plot3d_init(nkn,nel,nlvdi)
+	call mod_plot3d_init(nkn,nel,nlvdi,np)
 
 	call mkareafvl			!area of finite volumes
 
         call get_flag(flag)
 	p3 = flag
 
-	write(6,*) 'allocate_simulation: ',nkn,nel,nlvdi
+	write(6,*) 'allocate_simulation: ',nkn,nel,nlvdi,np
 
 	end
 

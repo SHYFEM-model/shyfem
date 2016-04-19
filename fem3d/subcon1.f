@@ -62,7 +62,6 @@ c sets initial conditions (no stratification)
 	integer nlvddi		!vertical dimension of c
 	real c(nlvddi,nkn)	!variable to initialize
 	real cref		!reference value
-c common
 c local
 	integer k,l
 	real depth,hlayer
@@ -90,7 +89,6 @@ c sets initial conditions (with stratification)
 	real cref		!reference value
 	real cstrat		!stratification [conc/km]
 	real hdko(nlvddi,nkn)	!layer thickness
-c common
 c local
 	integer k,l
 	real depth,hlayer

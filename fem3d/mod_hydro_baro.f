@@ -3,12 +3,6 @@
 
 	implicit none
 
-        !real uov(neldim), vov(neldim)
-        !common /uov/uov, /vov/vov
-        !real unv(neldim), vnv(neldim)
-        !common /unv/unv, /vnv/vnv
-        !save /uov/,/vov/,/unv/,/vnv/
-
 	integer, private, save :: nel_hydro_baro = 0
 
 	real, allocatable, save :: uov(:), vov(:)

@@ -4,13 +4,9 @@
 
         implicit none
 
-        !real wdifhv(3,3,neldim)       !weights for horizontal diff.
-        !common /wdifhv/wdifhv
-	!save /wdifhv/
-
         integer, private, save :: nel_diff_aux = 0
 
-        real, allocatable, save :: wdifhv(:,:,:)
+        real, allocatable, save :: wdifhv(:,:,:)  !weights for horizontal diff
 
         contains
 

@@ -1,4 +1,13 @@
 
+15.04.2016	VERS_7_5_8
+
+	shybas has been updated
+	parametric wave module cleaned
+	custom reset in WRT
+	fluxes_template adjourned
+	new parameter iaicef for ice free areas
+	big arrays allocatable and not on stack
+
 01.04.2016	VERS_7_5_7
 
 	most big arrays moved from stack to allocatable (newcon.f)

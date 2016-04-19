@@ -3,21 +3,12 @@
 
 	implicit none
 
-!	real ruv(nkndim), rvv(nkndim)       !momentum input (2D)
-!       common /ruv/ruv, /rvv/rvv
-
-!       real crad(neldim)                       !$$GWI (radiation)
-!       common /crad/crad
-
-!       save /ruv/,/rvv/,/crad/
-
-
 	integer, private, save :: nkn_bnd_aux = 0
         integer, private, save :: nel_bnd_aux = 0
         
-        real, allocatable, save :: rvv(:)
+        real, allocatable, save :: rvv(:)	!momentum input (2D)
         real, allocatable, save :: ruv(:)
-        real, allocatable, save :: crad(:)
+        real, allocatable, save :: crad(:)	!radiation condition
 
 	contains
 

@@ -2,17 +2,6 @@
 
         implicit none
 
-	
-!       integer iwegv(neldim)
-!       common /iwegv/iwegv
-!       integer iwetv(neldim)
-!       common /iwetv/iwetv
-!       integer inodv(nkndim)
-!       common /inodv/inodv
-
-!	save /iwegv/,/iwetv/,/inodv/
-
-
 	integer, private, save :: nkn_geom_dynamic = 0
         integer, private, save :: nel_geom_dynamic = 0
 	

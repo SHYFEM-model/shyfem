@@ -3,20 +3,6 @@
 
         implicit none
 
-        !integer ielfix(0:3,neldim)
-        !common /ielfix/ielfix
-        !save /ielfix/
-
-        !integer tnudgev(neldim)
-        !common /tnudgev/tnudgev
-        !save /tnudgev/
-
-        !real ubound(nlvdim,nkndim)
-        !real vbound(nlvdim,nkndim)
-        !common /ubound/ubound
-        !common /vbound/vbound
-	!save /ubound/,/vbound/
-
         integer, private, save :: nel_bclfix = 0
         integer, private, save :: nkn_bclfix = 0
         integer, private, save :: nlv_bclfix = 0

@@ -60,8 +60,6 @@ c nli < 2*nkn + nel
 
 c arguments
         integer nnkn,nnel,nnbn,nnli,nnis,nnod
-c common
-	include 'param.h'
 c local
         integer k,ie,n,i,ne
 	integer elems(maxlnk)
@@ -121,8 +119,6 @@ c ... iwegv has already been set
 
         implicit none
 
-c common
-	include 'param.h'
 	include 'femtime.h'
 c local
         character*80 nam,dir,file
@@ -172,8 +168,6 @@ c
 c arguments
 	real winkk
         integer k
-c common
-	include 'param.h'
 c local
         integer i,n,ie
 	integer elems(maxlnk)
@@ -211,8 +205,6 @@ c
 c
 c arguments
         integer nar
-c common
-	include 'param.h'
 c local
         integer i,ie,ieo,ien,n1,n2
         logical btest
@@ -285,8 +277,6 @@ c
 c
 c arguments
         real wink
-c common
-	include 'param.h'
 c local
         integer ie,ii,k
         real w
@@ -325,8 +315,6 @@ c
 
         implicit none
 c
-c common
-	include 'param.h'
 	include 'femtime.h'
 c local
         real arin,arout,artot,area

@@ -80,13 +80,8 @@ c nn	number of first array elements to be printed
 c argument
 	integer iunit
 	integer nn
-c parameter
-	include 'param.h'
 c common
 	include 'femtime.h'
-
-
-
 
 c local
 	logical bmeteo
@@ -328,8 +323,6 @@ c writes debug information on dry areas
 
 	implicit none
 
-	include 'param.h'
-
 c common
 	include 'femtime.h'
 
@@ -363,8 +356,6 @@ c writes debug information on final volume around node k (internal)
 	implicit none
 
 	integer k
-
-	include 'param.h'
 
 c common
 	include 'femtime.h'
@@ -478,15 +469,9 @@ c writes some min/max values to stdout
 
         implicit none
 
-	include 'param.h'
-
         character*(*) string
 c common
 	include 'femtime.h'
-
-
-
-
 
 c local
 	integer ie,l,k
@@ -1060,15 +1045,10 @@ c writes debug information on node k
 
 	integer k
 
-	include 'param.h'
-
 	integer iucheck
 	common /iucheck/iucheck
 
 	include 'femtime.h'
-
-
-
 
 	integer iu
 	integer l,lmax,kk
@@ -1119,18 +1099,10 @@ c writes debug information on element ie
 	integer iunit
 	integer ie
 
-	include 'param.h'
-
 	integer iucheck
 	common /iucheck/iucheck
 
 	include 'femtime.h'
-
-
-
-
-
-
 
 	integer iu
 	integer l,lmax,ii
@@ -1177,8 +1149,6 @@ c writes debug information on nodes in element ie
 	integer iucheck
 	common /iucheck/iucheck
 
-	include 'param.h'
-
 	integer ii,k,iu
 	integer ieext
 
@@ -1209,9 +1179,6 @@ c writes debug information on elements around node k
 
 	integer iucheck
 	common /iucheck/iucheck
-
-
-	include 'param.h'
 
 	integer ie,ii,kk,iu
 	logical bdebug

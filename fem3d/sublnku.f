@@ -58,8 +58,6 @@ c ie    element
 c arguments
 	integer kthis
         integer i,ie
-c common
-	include 'param.h'
 
 	kthis = nen3v(i,ie)
 
@@ -81,8 +79,6 @@ c
 c arguments
 	integer knext
         integer k,ie
-c common
-	include 'param.h'
 c local
         integer i
 c
@@ -114,8 +110,6 @@ c
 c arguments
 	integer kbhnd
         integer k,ie
-c common
-	include 'param.h'
 c local
         integer i
 c
@@ -147,8 +141,6 @@ c
 c arguments
 	integer ithis
         integer k,ie
-c common
-	include 'param.h'
 c local
         integer i
 c
@@ -180,8 +172,6 @@ c
 c arguments
 	integer inext
         integer k,ie
-c common
-	include 'param.h'
 c local
         integer i
 c
@@ -213,8 +203,6 @@ c
 c arguments
 	integer ibhnd
         integer k,ie
-c common
-	include 'param.h'
 c local
         integer i
 c
@@ -245,8 +233,6 @@ c returns filling of linkv
 
 c arguments
         integer n       !filling of linkv (return)
-c common
-	include 'param.h'
 
         n = ilinkv(nkn+1)
 
@@ -272,8 +258,6 @@ c       end do
 	implicit none
 
 	integer k,ipf,ipl
-
-	include 'param.h'
 
         ipf = ilinkv(k)+1
         ipl = ilinkv(k+1)
@@ -301,8 +285,6 @@ c       end do
 
 	integer k,ipf,ipl
 
-	include 'param.h'
-
         ipf = ilinkv(k)+1
         ipl = ilinkv(k+1)
 
@@ -326,8 +308,6 @@ c       end do
 	implicit none
 
 	integer k,n,ibase
-
-	include 'param.h'
 
 	n = ilinkv(k+1)-ilinkv(k)
 	ibase = ilinkv(k)
@@ -355,8 +335,6 @@ c       end do
 
 	integer k,n,ibase
 
-	include 'param.h'
-
 	n = ilinkv(k+1)-ilinkv(k)
 	ibase = ilinkv(k)
 
@@ -378,8 +356,6 @@ c returns all elems around node k
         integer elems(ndim)     !elems around k (return)
 
 	integer i,ibase
-
-	include 'param.h'
 
 	n = ilinkv(k+1)-ilinkv(k)
 	ibase = ilinkv(k)
@@ -408,8 +384,6 @@ c returns all nodes around node k
         integer nodes(ndim)     !nodes around k (return)
 
 	integer i,ibase
-
-	include 'param.h'
 
 	n = ilinkv(k+1)-ilinkv(k)
 	ibase = ilinkv(k)
@@ -440,8 +414,6 @@ c if no such segment, both ie are zero
 
 c arguments
         integer k1,k2,ie1,ie2
-c common
-	include 'param.h'
 
         integer k,ipf,ipl,ip,ip2
 
@@ -492,8 +464,6 @@ c ipl   last  element (return)
 
 c arguments
         integer k,ipf,ipl
-c common
-	include 'param.h'
 
         ipf=ilinkv(k)+1
         ipl=ilinkv(k+1)
@@ -518,8 +488,6 @@ c attention - this is really CPU intensive
 c arguments
         integer ie              !element
         integer ip(3,3)         !pointer into linkv
-c common
-	include 'param.h'
 
         integer ii,iii,k,kn,i
         integer ipf,ipl

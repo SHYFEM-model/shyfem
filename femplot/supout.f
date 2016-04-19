@@ -382,7 +382,7 @@ c open file
 	if( nkn .ne. nknaux ) goto 99
 	if( nel .ne. nelaux ) goto 99
         nlv = nlvaux
-	call allocate_simulation
+	call allocate_simulation(0)
 	call get_dimension_post(nknddi,nelddi,nlvddi)
         call read_nos_header(nunit,nknddi,nelddi,nlvddi,ilhkv,hlv,hev)
 
@@ -616,7 +616,7 @@ c open and read header
 	if( nkn .ne. nknous ) goto 99
 	if( nel .ne. nelous ) goto 99
         nlv = nlvous
-	call allocate_simulation
+	call allocate_simulation(0)
 	call get_dimension_post(nknddi,nelddi,nlvddi)
         call read_ous_header(nunit,nknddi,nelddi,nlvddi,ilhv,hlv,hev)
 
@@ -783,7 +783,7 @@ c open file
 	if( nkn .ne. nknnos ) goto 99
 	if( nel .ne. nelnos ) goto 99
         nlv = nlvnos
-	call allocate_simulation
+	call allocate_simulation(0)
 	call get_dimension_post(nknddi,nelddi,nlvddi)
         call read_nos_header(nunit,nknddi,nelddi,nlvddi,ilhkv,hlv,hev)
 
@@ -1201,7 +1201,7 @@ c read first header
 	if( nelaux .ne. 0 .and. nel .ne. nelaux ) goto 99
 
 	nlv = nlvaux
-	call allocate_simulation
+	call allocate_simulation(0)
 	call get_dimension_post(nknddi,nelddi,nlvddi)
 	if( nlvddi .lt. nlv ) goto 99
 
@@ -1451,7 +1451,7 @@ c open file
                 write(6,*) 'File opened :'
                 inquire(nunit,name=file)
                 write(6,*) file
-                write(6,*) 'Reading file ...'
+                write(6,*) 'Reading FEM file ...'
 	end if
 
 c read first header
@@ -1477,11 +1477,12 @@ c read first header
 	end if
 
 	if( .not. breg .and. nkn .ne. np ) goto 99
-	if( nkn .lt. np ) goto 99
+	!if( nkn .lt. np ) goto 99
 	if( breg .and. lmax > 1 ) goto 98
 
         nlv = lmax
-	call allocate_simulation
+	call allocate_simulation(nel)
+	!if( breg ) call reallocate_2d_arrays(np) !re-allocate with minimum np
 	call get_dimension_post(nknddi,nelddi,nlvddi)
 	if( nlvddi .lt. lmax ) goto 99
 
@@ -1548,9 +1549,11 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	integer nvers,np,lmax,nvar,ntype
 	integer datetime(2)
 	real regpar(7)
-	real v1v(nkn)
 	double precision dtime
+	real, allocatable :: p3read(:,:,:)
+	real, allocatable :: v1v(:)
 	real fact
+	real vmin,vmax
 	character*80 string
 
 	integer fem_file_regular
@@ -1575,12 +1578,18 @@ c reads next FEM record - is true if a record has been read, false if EOF
 
 	breg = fem_file_regular(ntype) > 0
 	if( .not. breg .and. np .ne. nkn ) goto 99
+	if( breg .and. lmax > 1 ) goto 98
 
 	if( breg ) then
 	  write(6,*) 'plotting regular grid...'
 	  !write(6,*) 'not yet ready for regular grid...'
 	  !stop
+	  allocate(p3read(nlvddi,np,2),v1v(np))
+	else
+	  allocate(p3read(nlvddi,nkn,2),v1v(nkn))
 	end if
+	write(6,*) 'p3read allocated: ',nlvddi,nkn,np,2
+	p3read = 0.
 
 	!it = nint(dtime)
 	call ptime_set_date_time(datetime(1),datetime(2))
@@ -1596,11 +1605,12 @@ c reads next FEM record - is true if a record has been read, false if EOF
      +                          ,string,ierr)
 	    if( ierr .ne. 0 ) goto 98
 	  else
+	    write(6,*) 'reading data: ',breg,nlvddi,nkn,np,ip
             call fem_file_read_data(iformat,nunit
      +                          ,nvers,np,lmax
      +				,string
      +                          ,ilhkv,v1v
-     +                          ,nlvddi,array(1,1,ip),ierr)
+     +                          ,nlvddi,p3read(1,1,ip),ierr)
 	    if( ierr .ne. 0 ) goto 98
 	    call string2ivar(string,iv)
 	    bfound = iv .eq. ivar
@@ -1613,12 +1623,24 @@ c reads next FEM record - is true if a record has been read, false if EOF
 	  end if
 	end do
 
-	if( breg ) then
-	  write(6,*) 'interpolating from regular grid...'
-	  ip = min(2,ip)
-	  call fem_interpolate(nlvddi,nkn,np,ip,regpar,ilhkv,array)
-	  regp = regpar		!save for later
+	if( ip == 3 ) then
+	  v1v = sqrt( p3read(1,:,1)**2 + p3read(1,:,2)**2 )
+	  vmin = minval(v1v)
+	  vmax = maxval(v1v)
+	  write(6,*) 'speed: ',vmin,vmax
 	end if
+
+	if( breg ) then
+	  write(6,*) 'interpolating from regular grid... ',ip
+	  ip = min(2,ip)
+	  call fem_interpolate(nlvddi,nkn,np,ip,regpar,ilhkv
+     +					,p3read,array)
+	  regp = regpar		!save for later
+	else
+	  array = p3read
+	end if
+
+	deallocate(p3read,v1v)
 
 	if( bfound ) then
 	  call level_k2e_sh
@@ -1644,8 +1666,10 @@ c end
 
 	return
    98	continue
-	write(6,*) 'error reading or skipping data'
-	stop 'error stop femnext: read error'
+	write(6,*) 'error in parameters : regular - lmax'
+	write(6,*) 'the file is regular and 3D'
+	write(6,*) 'Cannot handle interpolation yet'
+	stop 'error stop femopen'
    99	continue
 	write(6,*) 'nkn,np: ',nkn,np
 	stop 'error stop femnext: np different from nkn'
@@ -1673,7 +1697,8 @@ c******************************************************
 
 c******************************************************
 
-	subroutine fem_interpolate(nlvddi,nkn,np,ip,regpar,ilhkv,array)
+	subroutine fem_interpolate(nlvddi,nkn,np,ip,regpar,ilhkv
+     +			,p3reg,array)
 
 c interpolates from a regular grid (only for 2D)
 
@@ -1682,9 +1707,10 @@ c interpolates from a regular grid (only for 2D)
 	integer nlvddi,nkn,np,ip
 	real regpar(7)
 	integer ilhkv(nkn)
+	real p3reg(nlvddi,np,ip)
 	real array(nlvddi,nkn,ip)
 
-	integer i,ivar
+	integer i,ivar,j
 	integer nx,ny
 	real x0,y0,dx,dy,flag
 	real areg(np)
@@ -1700,17 +1726,19 @@ c interpolates from a regular grid (only for 2D)
 	ilhkv = 1		!works only for 2D
 
 	call setgeo(x0,y0,dx,dy,flag)
-
+	
 	do ivar=1,ip
 	  do i=1,np
-	    areg(i) = array(1,i,ivar)
+	    areg(i) = p3reg(1,i,ivar)
 	  end do
+	  !write(6,*) 'reg: ',(areg(j),j=1,np,np/10)
 
 	  call am2av(areg,afem,nx,ny)
 
 	  do i=1,nkn
 	    array(1,i,ivar) = afem(i)
 	  end do
+	  !write(6,*) 'fem: ',(afem(j),j=1,nkn,nkn/10)
 	end do
 
 	end

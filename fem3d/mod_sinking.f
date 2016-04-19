@@ -3,10 +3,6 @@
 
         implicit none
 
-        !real wsinkv(0:nlvdim,nkndim)  ! if we need it globally
-        !common /wsinkv/wsinkv
-	!save /wsinkv/
-
         integer, private, save  :: nkn_sink = 0
         integer, private, save  :: nlv_sink = 0
 

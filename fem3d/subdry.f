@@ -61,8 +61,6 @@ c sets dry elements
 
 	integer ie
 
-	include 'param.h'
-
 	if( iwegv(ie) .eq. 0 ) then
 	  iwegv(ie) = 3
 	  iwetv(ie) = 0
@@ -114,8 +112,6 @@ c
 
 c arguments
         integer iweich,iw
-c common
-	include 'param.h'
 c local
         integer ie,ii,iwh,iweg,k,iu
         integer iespec,iwait,iwet
@@ -328,8 +324,6 @@ c
 
         implicit none
 c
-c common
-	include 'param.h'
 	include 'femtime.h'
 c local
         integer ie,ii,i1,i2,isum,itot
@@ -557,8 +551,6 @@ c sets array zenv from znv
 
         implicit none
 
-c common
-	include 'param.h'
 c local
         integer ie,ii
 
@@ -585,8 +577,6 @@ c sets array znv from zenv
 
         implicit none
 
-c common
-	include 'param.h'
 	include 'mkonst.h'
 
 c local
@@ -682,8 +672,6 @@ c
 c
 c arguments
         real zv(1),av(1)
-c common
-	include 'param.h'
 c local
         integer ie,i,k
         real aomega

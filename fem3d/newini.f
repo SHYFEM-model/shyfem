@@ -80,8 +80,6 @@ c set up time independent vertical vectors
 
 	implicit none
 
-	include 'param.h'
-
 	integer nlv_est,nlv_read,nlv_final
 	real, allocatable :: hlv_aux(:)
 
@@ -172,10 +170,6 @@ c sets vertical eddy coefficient
 
 	implicit none
 
-	include 'param.h'
-
-
-
 	integer k,l
 	real vistur,diftur
 
@@ -216,10 +210,6 @@ c checks vertical eddy coefficient
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
-
-
 
 	integer k,l
 	real v,d
@@ -270,8 +260,6 @@ c*****************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	integer l
 
 	write(6,*) 'check_hlv: ',nlv,nlvdi
@@ -288,9 +276,6 @@ c checks nlv and associated parameters
 	use levels, only : nlvdi,nlv
 
 	implicit none
-
-	include 'param.h'
-
 
 	write(6,*) 'check_nlv : '
 	write(6,*) '    nlvdi : ',nlvdi
@@ -311,8 +296,6 @@ c estimates maximum value for nlv
 	implicit none
 
 	integer nlv_est		!nlv_read on entry, estimate on return
-
-	include 'param.h'
 
 	integer ie,ii
 	integer nsigma,nreg
@@ -371,9 +354,6 @@ c sigma and zeta levels and hsigma	hybrid levels
 	use basin
 
 	implicit none
-
-c common
-	include 'param.h'
 
 c local
 	logical bsigma,bhybrid,bzeta
@@ -581,9 +561,6 @@ c checks arrays hlv and hldv
 
 	implicit none
 
-c common
-	include 'param.h'
-
 c local
 	logical bstop,bsigma
 	integer l,nsigma,levmin
@@ -667,8 +644,6 @@ c sets nlv and ilhv - only needs hm3v and hlv, hev is temporary array
 
 	implicit none
 
-	include 'param.h'
-
 c local
 	logical bsigma
 	integer ie,ii,l,lmax,nsigma
@@ -740,8 +715,6 @@ c set ilhkv array - only needs ilhv
 
 	implicit none
 
-	include 'param.h'
-
 	integer ie,ii,k,l
 
 	do k=1,nkn
@@ -774,8 +747,6 @@ c set minimum number of levels for node and element
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	integer ie,ii,k,l
 	integer lmin,lmax
@@ -824,9 +795,6 @@ c checks arrays ilhv and ilhkv
 	use basin
 
 	implicit none
-
-
-	include 'param.h'
 
 	logical bsigma,bspure
 	integer nsigma
@@ -893,8 +861,6 @@ c adjusts nlv, hm3v, ilhv
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	logical bwrite
 	logical badjust,b2d,bsigma,binsigma
@@ -1078,7 +1044,6 @@ c sets coriolis parameter
 	real rearth	!radius of earth
 	parameter ( rearth = 6371000. )
 
-	include 'param.h'
 	include 'mkonst.h'
 	include 'pkonst.h'
 
@@ -1182,9 +1147,6 @@ c checks coriolis parameter
 
 	implicit none
 
-	include 'param.h'
-
-
 	integer ie
 	real f,fmax
 
@@ -1213,8 +1175,6 @@ c initializes nodal value variable from file
 
 	implicit none
 
-	include 'param.h'
-
 	character*(*) name		!name of variable
 	real var(nlvdi,nkn,1)		!variable to set
         integer nvar
@@ -1241,8 +1201,6 @@ c initializes nodal value variable from file (2D version)
 	use basin, only : nkn,nel,ngr,mbw
 
 	implicit none
-
-	include 'param.h'
 
 	character*(*) name		!name of variable
 	real var(nkn,1)			!variable to set
@@ -1323,9 +1281,6 @@ c initializes water level with constant
 	implicit none
 
 	real const		!constant z value to impose
-
-	include 'param.h'
-
 
 	integer k,ie,ii
 

@@ -1210,7 +1210,7 @@ c bwater is elementwise mask:	true = water point
 c arguments
 	logical bwater(nel)
 	logical bkwater(nkn)
-c common
+
 	integer ie,ii,k
 	integer nndry,nedry
 

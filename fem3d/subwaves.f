@@ -824,8 +824,6 @@ c arguments
 	real auxstz(nlvdim,nkndim) 	!z stokes velocity on node k for plot
 	real stokesze(0:nlvdim,neldim)	!z stokes velocity on elements
 
-c common
-
 c local
 	real stokesz(0:nlvdim,nkndim) 	!z stokes velocity on node k
         logical debug

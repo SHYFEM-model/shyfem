@@ -53,8 +53,6 @@ c revised 04.12.97 by ggu   concentration not adjusted anymore
 c arguments
 	integer k
 	real vol,dz
-c common
-	include 'param.h'
 c local
 	real area
 	integer ie,i,ii,nl
@@ -99,8 +97,6 @@ c dz		rise of water level to achieve
 
 c arguments
 	real dz
-c common
-	include 'param.h'
 c local
 	integer ie,ii,k
 
@@ -138,8 +134,6 @@ c revised 04.12.97 by ggu   concentration not adjusted anymore
 c arguments
 	integer ielem
 	real dz
-c common
-	include 'param.h'
 c local
 	integer ie,ii
 	integer ie1,ie2
@@ -190,8 +184,6 @@ c arguments
 	integer k
 	real con,dz
 	real coe(3,1)
-c common
-	include 'param.h'
 c local
 	integer ie,i,ii,nl
 	integer ibase
@@ -272,8 +264,6 @@ c arguments
 	integer ielem
 	real dz,con
 	real coe(3,1)
-c common
-	include 'param.h'
 c local
 	real depth
 	integer ie,ii
@@ -318,8 +308,6 @@ c revised 06.08.97 by ggu   use zenv for water level
 c arguments
 	integer k
 	real dvol
-c common
-	include 'param.h'
 c local
         integer ie,ii
         real area,zz
@@ -369,8 +357,6 @@ c arguments
 	real vol		!total volume of column			(out)
 	real vol0		!volume of first layer			(out)
 	real svol		!total mass of s in column		(out)
-c common
-	include 'param.h'
 c local
 	integer l,ilevel,nlev
 	integer mode
@@ -415,8 +401,6 @@ c arguments
 	real s(nlvddi,1)	!variable (temperature, salinity,...)
 	real dvol		!change in water volume (whole time step)
 	real dcon		!concentration of new volume dvol
-c common
-	include 'param.h'
 c local
 	logical debug
 	integer l,nlev

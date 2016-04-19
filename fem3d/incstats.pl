@@ -3,6 +3,7 @@
 use strict;
 
 my %count = ();
+my %files = ();
 
 while(<>) {
 
@@ -14,6 +15,7 @@ while(<>) {
     my $inc = $1;
     #print "$inc\n";
     $count{$inc}++;
+    $files{$inc} .= "$ARGV ";
   }
 }
 
@@ -24,8 +26,11 @@ my $incs = 0;
 
 foreach my $key (@f) {
   my $c = $count{$key};
+  my $file = $files{$key};
+  my $cf = count_files($file);
   my $line = get_dims($key);
-  print "$c   $key";
+  #print "$c  $cf  $key ($file)";
+  print "$c  $cf  $key";
   if( $line ) {
     print "    ($line)";
     $tcdim++;
@@ -70,5 +75,20 @@ sub get_dims {
   my $line = join(" ",@keys);
 
   return $line;
+}
+
+sub count_files
+{
+  my $file = shift;
+
+  my %files = ();
+  my @f = split(/\s+/,$file);
+  foreach (@f) {
+    $files{$_}++;
+  }
+  my @files = keys %files;
+  my $nf = @files;
+
+  return $nf;
 }
 

@@ -30,9 +30,6 @@ c updates geometrical array (ieltv)
 
         implicit none
 
-c common
-	include 'param.h'
-
 c local
         integer n
 
@@ -156,8 +153,6 @@ c****************************************************************
 	logical is_internal_node
 	integer k
 
-	include 'param.h'
-
 	is_internal_node = inodv(k) .eq. 0
 
 	end
@@ -172,8 +167,6 @@ c****************************************************************
 
 	logical is_boundary_node
 	integer k
-
-	include 'param.h'
 
 	is_boundary_node = inodv(k) .ne. 0 .and. inodv(k) .ne. -2
 
@@ -190,8 +183,6 @@ c****************************************************************
 	logical is_open_boundary_node
 	integer k
 
-	include 'param.h'
-
 	is_open_boundary_node = inodv(k) .gt. 0
 
 	end
@@ -206,8 +197,6 @@ c****************************************************************
 
 	logical is_dry_node
 	integer k
-
-	include 'param.h'
 
 	is_dry_node = inodv(k) .eq. -2
 

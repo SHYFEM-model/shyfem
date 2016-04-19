@@ -93,7 +93,6 @@ c 3D concentrations
 	character*(*) type
 	integer ivarin
 
-
         character*80 line
 	integer nrec,ivel,nplot
 	integer ivaria,ivar

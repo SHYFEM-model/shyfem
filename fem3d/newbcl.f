@@ -87,8 +87,6 @@ c
 
 	implicit none
 c
-c parameter
-	include 'param.h'
 c arguments
 	integer mode
 c common
@@ -519,14 +517,9 @@ c brespv() and rhov() are given at node and layer interface
 	implicit none
 
 	real resid
-c parameter
-	include 'param.h'
 c common
-
 	include 'femtime.h'
-
 	include 'pkonst.h'
-
 
 c local
 	logical bdebug,debug,bsigma

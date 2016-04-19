@@ -31,6 +31,13 @@ endif
 
 #---------------------------------------------------------------
 
+ifndef ($(SHYFEMDIR))
+        SHYFEMDIR := $(HOME)/shyfem
+endif
+export SHYFEMDIR
+
+#---------------------------------------------------------------
+
 FEMDIR    = .
 DIRLIB    = $(FEMDIR)/femlib
 FEMSRC    = $(FEMDIR)/fem3d
@@ -84,6 +91,10 @@ FEMDIRS   = $(FEMLIBS) $(FEMEXTRA) $(FEMC) $(FEMPROG) $(FEMUTIL)
 #---------------------------------------------------------------
 # compiling and recursive targets
 #---------------------------------------------------------------
+
+ggu:
+	@echo "shyfemdir: $(SHYFEMDIR)"
+	@echo "ggushyfemdir: $(GGUSHYFEMDIR)"
 
 default:
 	@echo "   shyfem - version $(VERSION) $(COMMIT)"
