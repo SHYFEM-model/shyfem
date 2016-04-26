@@ -81,10 +81,11 @@ CheckFortranCompiler()
 
   if [ -n "$fortran_available" ]; then
     echo "... the following Fortran compilers are available:"
-    echo "          $fortran_available"
+    echo "          ${green}$fortran_available${normal}"
     echo "... please set COMPILER in Rules.make to one of the compilers above"
   else
-    echo "*** No Fortran compiler found... please install a fortran compiler"
+    echo "*** ${red}No Fortran compiler found${normal}"
+    echo "    ... please install a fortran compiler"
     echo "    (on Linux you can easily install gfortran)"
     missing_save="$missing_save g77 gfortran ifort"
   fi

@@ -92,10 +92,6 @@ FEMDIRS   = $(FEMLIBS) $(FEMEXTRA) $(FEMC) $(FEMPROG) $(FEMUTIL)
 # compiling and recursive targets
 #---------------------------------------------------------------
 
-ggu:
-	@echo "shyfemdir: $(SHYFEMDIR)"
-	@echo "ggushyfemdir: $(GGUSHYFEMDIR)"
-
 default:
 	@echo "   shyfem - version $(VERSION) $(COMMIT)"
 	@echo '   run "make help" for more information'
@@ -137,8 +133,8 @@ links:
 	-rm -f bin lib
 	-ln -sf fembin bin
 	-ln -sf femlib lib
-	@#[ ! -d ./femregress ] && -ln -sf femdummy femregress
-	if test ! -d ./femregress; then ln -s femdummy femregress; fi
+	@#[ ! -d ./femregress ] && -ln -fs femdummy femregress
+	if test ! -d ./femregress; then ln -fs femdummy femregress; fi
 
 #---------------------------------------------------------------
 # cleaning
@@ -341,6 +337,9 @@ compiler_version:
 
 last_commit:
 	@gittags | tail -1
+
+shyfemdir:
+	@echo "shyfemdir: $(SHYFEMDIR)"
 
 #---------------------------------------------------------------
 # check if routines are executable

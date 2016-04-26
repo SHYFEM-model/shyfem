@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# sets up git
+#
+#---------------------------------------------------------------
+
+tool=meld
+tool=kdiff3
+tool=tkdiff
+tool=xxdiff
+
+if [ "$1" = --force ]; then
+  echo "...setting up git"
+else
+  echo "You have to run this only once when setting up git"
+  echo "run with 'git-setup --force' to force execution"
+  echo "difftool will be set to $tool"
+  exit 0
+fi
+
+#git config --global user.name "Georg Umgiesser"
+#git config --global user.email georg.umgiesser@ismar.cnr.it
+
+git config --global diff.tool $tool
+git config --global merge.tool $tool
+git config --global difftool.prompt false
+git config --global mergetool.prompt false
+git config --global mergetool.$tool.keepbackup false
+git config --global mergetool.$tool.trustexitcode false
+
+git config --global core.editor vi
+
+git config --global alias.co checkout
+git config --global alias.cm commit
+git config --global alias.s status
+git config --global alias.br branch
+
+git config --global alias.hist 'log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short'
+
+git config --global alias.type 'cat-file -t'
+git config --global alias.dump 'cat-file -p'
+
