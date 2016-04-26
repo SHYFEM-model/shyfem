@@ -123,9 +123,9 @@ c computes ilhkv from ilhv
 	implicit none
 
 	integer nkn,nel
-	integer nen3v(3,1)
-	integer ilhv(1)
-	integer ilhkv(1)
+	integer nen3v(3,*)
+	integer ilhv(*)
+	integer ilhkv(*)
 
 	integer k,ie,ii,lmax
 
