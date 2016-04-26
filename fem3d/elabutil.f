@@ -66,7 +66,7 @@
 	integer, save, allocatable :: nodes(:)
 	integer, save, allocatable :: nodese(:)
 
-	real, save :: fact
+	real, save :: fact			= 1
 
 	integer, save :: istep
 	integer, save :: mode
@@ -74,14 +74,15 @@
 
 	integer, save :: date = 0
 	integer, save :: time = 0
-	integer, save :: datetime(2)
+	integer, save :: datetime(2) = 0
 
 	integer, save :: catmode = 0
 
-        character*80, save :: infile
-        character*80, save :: stmin,stmax
-        character*80, save :: nodefile
-        character*10, save :: outformat
+        character*80, save :: infile		= ' '
+        character*80, save :: stmin		= ' '
+        character*80, save :: stmax		= ' '
+        character*80, save :: nodefile		= ' '
+        character*10, save :: outformat		= ' '
 
         INTERFACE elabutil_check_time
         MODULE PROCEDURE elabutil_check_time_i,elabutil_check_time_d

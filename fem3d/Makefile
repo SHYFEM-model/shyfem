@@ -277,10 +277,16 @@ BASEXTRA = sublnka.o links.o sublnku.o \
 GENOBJS = newlevels.o
 NOSOBJS = subnos.o nosutil.o genutil.o subeos.o elabutil.o noselab1.o
 OUSOBJS = subous.o ousutil.o genutil.o elabutil.o ouselab1.o
-SHYOBJS = subous.o ousutil.o subnos.o nosutil.o subeos.o genutil.o elabutil.o \
-		noselab1.o ouselab1.o subext.o extelab1.o \
-		shyelab1.o subshy.o subshyutil.o \
-		subflx.o flxelab1.o shyutil.o
+SHYOBJS = genutil.o \
+		subous.o ousutil.o \
+		subnos.o nosutil.o subeos.o \
+		subflx.o flxelab1.o \
+		subext.o extelab1.o \
+		noselab1.o ouselab1.o \
+		shyelab1.o \
+		elabutil.o \
+		subshy.o subshyutil.o \
+		shyutil.o
 ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
 		genutil.o
