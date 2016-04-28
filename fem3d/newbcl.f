@@ -128,6 +128,7 @@ c local
 	integer kspec
 	integer icrst
 	integer ishyff
+	integer ftype
 	real stot,ttot,smin,smax,tmin,tmax,rmin,rmax
 	double precision v1,v2,mm
 	character*80 file
@@ -299,8 +300,11 @@ c		--------------------------------------------
 		call init_output_d('itmcon','idtcon',da_out)
 		if( ishyff == 0 ) da_out = 0
 		if( has_output_d(da_out) ) then
+		  ftype = 2
 		  call shy_make_output_name('.ts.shy',file)
-		  call shy_open_output_file(file,1,nlv,nvar,2,id)
+		  call shy_open_output_file(file,1,nlv,nvar,ftype,id)
+		  call shy_set_simul_params(id)
+		  call shy_make_header(id)
 		  da_out(4) = id
 		  if( next_output_d(da_out) ) then
 		    if( isalt .gt. 0 ) then

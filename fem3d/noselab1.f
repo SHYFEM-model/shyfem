@@ -122,6 +122,8 @@ c--------------------------------------------------------------
 
         call mod_depth_init(nkn,nel)
         call levels_init(nkn,nel,nlv)
+        call ev_init(nel)
+        call set_ev
 
 	allocate(cv2(nkn))
 	allocate(cv3(nlv,nkn))
@@ -261,6 +263,7 @@ c--------------------------------------------------------------
 	 if( ierr .ne. 0 ) itnew = it
 
 	 if( concat_cycle(it,itold,itstart,nrec) ) cycle
+	 !if( elabutil_over_time_a(atime,atnew,atold) ) exit
 	 if( .not. elabutil_check_time(it,itnew,itold) ) cycle
 
 	 do i=1,nvar
@@ -285,7 +288,8 @@ c--------------------------------------------------------------
 	      call mimar(cv2,nkn,cmin,cmax,rnull)
               call aver(cv2,nkn,cmed,rnull)
               call check1Dr(nkn,cv2,0.,-1.,"NaN check","cv2")
-	      write(6,*) 'l,min,max,aver : ',l,cmin,cmax,cmed
+	      write(6,1000) 'l,min,max,aver : ',l,cmin,cmax,cmed
+ 1000	      format(a,i5,3g16.6)
 	    end do
 	  end if
 

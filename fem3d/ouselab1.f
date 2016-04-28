@@ -246,10 +246,15 @@ c--------------------------------------------------------------
               call compute_volume_ia(iano,zenv,volume,area)
 	    end if
 
-            write(6,*) 'zmin/zmax : ',zmin,zmax
-            write(6,*) 'umin/umax : ',umin,umax
-            write(6,*) 'vmin/vmax : ',vmin,vmax
-            write(6,*) 'volume    : ',volume,area
+            !write(6,*) 'zmin/zmax : ',zmin,zmax
+            !write(6,*) 'umin/umax : ',umin,umax
+            !write(6,*) 'vmin/vmax : ',vmin,vmax
+            !write(6,*) 'volume    : ',volume,area
+
+	    call shy_write_min_max2(nlvdi,nkn,1,vars(1,1,1))
+	    call shy_write_min_max2(nlvdi,3*nel,1,vars(1,1,2))
+	    call shy_write_min_max2(nlvdi,nel,nlvdi,vars(1,1,3))
+	    call shy_write_min_max2(nlvdi,nel,nlvdi,vars(1,1,4))
 
 	    if( ks > 0 ) write(666,*) it,znv(ks),volume,area
 
@@ -313,7 +318,6 @@ c--------------------------------------------------------------
             call transp2vel(nel,nkn,nlv,nlvdi,hev,zenv,nen3v
      +                          ,ilhv,hlv,utlnv,vtlnv
      +                          ,uprv,vprv)
-	    ivar = 1
 	    dtime = it
 	    call write_nodes_vel(dtime,znv,uprv,vprv)
 	  end if
@@ -492,7 +496,7 @@ c***************************************************************
      +                          ,utlnv,vtlnv,ierr)
 
 	vars(1,1:nkn,1)   = znv(1:nkn)
-	vars(1,1:3*nel,2) = zenv(3*nel)
+	vars(1,1:3*nel,2) = zenv(1:3*nel)
 	vars(:,1:nel,3)   = utlnv(:,1:nel)
 	vars(:,1:nel,4)   = vtlnv(:,1:nel)
 
@@ -570,6 +574,29 @@ c***************************************************************
 	end
 
 c***************************************************************
+
+        subroutine shy_write_min_max2(nlvdi,nn,lmax,cv3)
+
+        implicit none
+
+        integer nlvdi,nn,lmax
+        real cv3(nlvdi,nn)
+
+        integer l
+        real rnull
+        real cmin,cmax,cmed
+        real cv2(nn)
+
+        do l=1,lmax
+          cv2=cv3(l,:)
+          call mimar(cv2,nn,cmin,cmax,rnull)
+          call aver(cv2,nn,cmed,rnull)
+          call check1Dr(nn,cv2,0.,-1.,"NaN check","cv2")
+          write(6,1000) 'l,min,max,aver : ',l,cmin,cmax,cmed
+        end do
+
+ 1000   format(a,i5,3g16.6)
+        end
 
 c***************************************************************
 c***************************************************************

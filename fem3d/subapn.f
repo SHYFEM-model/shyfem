@@ -173,6 +173,16 @@ c*************************************************************
 c*************************************************************
 c*************************************************************
 
+	subroutine ap_init_basin
+
+c shell for just reading basin
+
+	call ap_init(.false.,1,0,0)
+
+	end
+
+c*************************************************************
+
 	subroutine ap_init(bask,mode,nknddi,nelddi)
 
 c initializes post processing

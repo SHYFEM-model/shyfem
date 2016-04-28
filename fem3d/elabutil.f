@@ -92,15 +92,21 @@
 	contains
 !====================================================
 
-	subroutine elabutil_init(type)
+	subroutine elabutil_init(type,what)
 
 	use clo
 
 	character*(*) type
+	character*(*), optional :: what
 
-	call elabutil_set_options(type)
+	character*80 program
+
+	program = 'shyelab'
+	if( present(what) ) program = what
+
+	call elabutil_set_options(type,program)
 	call clo_parse_options
-	call elabutil_get_options(type)
+	call elabutil_get_options(type,program)
 
 	binitialized = .true.
 
@@ -108,24 +114,25 @@
 
 !************************************************************
 
-	subroutine elabutil_set_options(type)
+	subroutine elabutil_set_options(type,program)
 
 	use clo
 
 	character*(*) type
+	character*(*) program
 
 	if( binitialized ) return
 
 	if( type == 'SHY' ) then
-          call clo_init('shyelab','shy-file','3.0')
+          call clo_init(program,'shy-file','3.0')
 	else if( type == 'NOS' ) then
-          call clo_init('noselab','nos-file','3.0')
+          call clo_init(program,'nos-file','3.0')
 	else if( type == 'OUS' ) then
-          call clo_init('ouselab','ous-file','3.0')
+          call clo_init(program,'ous-file','3.0')
 	else if( type == 'EXT' ) then
-          call clo_init('extelab','ext-file','3.0')
+          call clo_init(program,'ext-file','3.0')
 	else if( type == 'FLX' ) then
-          call clo_init('extelab','flx-file','3.0')
+          call clo_init(program,'flx-file','3.0')
 	else
 	  write(6,*) 'type : ',trim(type)
 	  stop 'error stop elabutil_set_options: unknown type'
@@ -180,11 +187,12 @@
 
 !************************************************************
 
-	subroutine elabutil_get_options(type)
+	subroutine elabutil_get_options(type,program)
 
 	use clo
 
 	character*(*) type
+	character*(*) program
 
 	if( binitialized ) return
 
@@ -367,6 +375,41 @@
 	end function elabutil_check_time_a
 
 !************************************************************
+
+	function elabutil_over_time_a(atime,atimenew,atimeold)
+
+! double version (absolute)
+
+	logical elabutil_over_time_a
+	double precision atime,atimenew,atimeold
+
+	logical bdebug
+	logical btimew
+
+	bdebug = .true.
+	bdebug = .false.
+        btimew = .true.
+
+        if( btmax ) btimew = btimew .and. atime <= atmax
+
+	elabutil_over_time_a = .not. btimew
+
+	if( bdebug ) then
+	  write(6,*) 'exclusive..........',btimew,binclusive
+	  write(6,*) 'exclusive..........',atmin,atime,atmax
+	end if
+
+	if( .not. binclusive ) return
+
+        if( btmax ) then
+	  btimew = btimew .or. (atimeold < atmax .and. atmax < atime)
+	end if
+
+	elabutil_over_time_a = .not. btimew
+
+	end function elabutil_over_time_a
+
+!************************************************************
 !************************************************************
 !************************************************************
 
@@ -415,6 +458,7 @@ c***************************************************************
             nnodes = 0
             call get_node_list(nodefile,nnodes,nodes)
             allocate(nodes(nnodes))
+            allocate(nodese(nnodes))
             call get_node_list(nodefile,nnodes,nodes)
           else if( bnode ) then
             nnodes = 1
@@ -423,6 +467,8 @@ c***************************************************************
             nodes(1) = nodesp
           end if
 
+	  if( nnodes <= 0 ) return
+ 
 	  nodese = nodes
           write(6,*) 'nodes: ',nnodes,(nodes(i),i=1,nnodes)
           call convert_internal_nodes(nnodes,nodes)
@@ -442,6 +488,8 @@ c***************************************************************
 	real cv3(nlvdi,*)
 
 	integer j,node,it
+
+	if( nnodes <= 0 ) return
 
         do j=1,nnodes
           node = nodes(j)
@@ -467,6 +515,8 @@ c***************************************************************
 	real z,h
 	real hl(nlvdi)
 	real u(nlvdi),v(nlvdi)
+
+	if( nnodes <= 0 ) return
 
         do j=1,nnodes
           ki = nodes(j)
@@ -916,6 +966,8 @@ c***************************************************************
 
         integer iunit,i
 
+	if( nnodes <= 0 ) return
+
 	iunit = 200 + ivar
 
         write(iunit,1000) it,(cv2(nodes(i)),i=1,nnodes)
@@ -1085,7 +1137,7 @@ c decides if with concatenation we have to use record or not
 
 	concat_cycle = .false.
 
-        write(66,*) 'ggu: ',it,itold,itstart,nrec
+        !write(66,*) 'ggu: ',it,itold,itstart,nrec
 
         if( catmode < 0 .and. nrec /= 1 ) then
           if( it <= itold ) then

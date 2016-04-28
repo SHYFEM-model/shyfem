@@ -80,6 +80,8 @@ c writes and administers ous file
 		  ftype = 1
 		  call shy_make_output_name('.hydro.shy',file)
 		  call shy_open_output_file(file,3,nlv,nvar,ftype,id)
+                  call shy_set_simul_params(id)
+                  call shy_make_header(id)
 		  da_out(4) = id
 		end if
 

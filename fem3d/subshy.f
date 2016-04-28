@@ -47,7 +47,7 @@
           real, allocatable :: xgv(:)
           real, allocatable :: ygv(:)
           real, allocatable :: hm3v(:,:)
-          integer, allocatable :: hlv(:)
+          real, allocatable :: hlv(:)
           integer, allocatable :: ilhv(:)
           integer, allocatable :: ilhkv(:)
 
@@ -190,19 +190,24 @@
 !******************************************************************
 !******************************************************************
 
-	function shy_open_file(file)
+	function shy_open_file(file,status)
 
 	integer shy_open_file
 	character*(*) file
+	character*(*), optional :: status
 
 	integer iunit,ios
+	character*20 stat
+
+	stat = 'unknown'
+	if( present(status) ) stat = status
 
 	shy_open_file = 0
 
 	call shy_get_file_unit(iunit)
 	if( iunit == 0 ) return
 
-	open(iunit,file=file,status='unknown',form='unformatted'
+	open(iunit,file=file,status=stat,form='unformatted'
      +				,iostat=ios)
 	if( ios /= 0 ) return
 
@@ -336,6 +341,7 @@
 	!deallocate(pentry(id)%ipv)
 	!deallocate(pentry(id)%iarv)
 	!deallocate(pentry(id)%iarnv)
+	if( .not. all(pentry(id1)%hlv==pentry(id2)%hlv) ) return
 	!deallocate(pentry(id)%hlv)
 	!deallocate(pentry(id)%ilhv)
 	!deallocate(pentry(id)%ilhkv)
@@ -377,6 +383,8 @@
         write(6,*) 'title     : ',trim(pentry(id)%title)
         write(6,*) 'femver    : ',trim(pentry(id)%femver)
 
+        write(6,*) 'hlv       : ',pentry(id)%hlv
+
 	end subroutine shy_info
 
 !************************************************************
@@ -398,6 +406,25 @@
 
 !************************************************************
 !************************************************************
+!************************************************************
+
+	function shy_exist_file(file)
+
+	logical shy_exist_file
+	character*(*) file
+
+	integer iunit
+
+	shy_exist_file = .false.
+
+	iunit = shy_open_file(file,'old')
+	if( iunit .le. 0 ) return
+
+	shy_exist_file = .true.
+	close(iunit)
+
+	end function shy_exist_file
+
 !************************************************************
 
 	function shy_is_shy_file_by_name(file)
@@ -439,6 +466,25 @@
 	rewind(iunit)
 
 	end function shy_is_shy_file_by_unit
+
+!************************************************************
+!************************************************************
+!************************************************************
+
+	subroutine shy_convert_2d(id)
+
+	integer id
+
+	pentry(id)%nlv = 1
+
+	deallocate(pentry(id)%hlv)
+	allocate(pentry(id)%hlv(1))
+
+	pentry(id)%hlv(1) = 10000.
+	pentry(id)%ilhv = 1
+	pentry(id)%ilhkv = 1
+
+	end subroutine shy_convert_2d
 
 !************************************************************
 !************************************************************

@@ -114,7 +114,7 @@
 	real cv3(nlvdi,nndim)
 	real cv2(nndim)
 
-	integer ivar,lmax,nn
+	integer ivar,lmax,nn,ie
 	real cmin,cmax,cmed,vtot
 	real vol2(nndim)
 
@@ -124,6 +124,10 @@
 
 	if( lmax == 1 ) then
 	  cv2(:) = cv3(1,:)
+	else if( ivar == 3 ) then	!transports - must sum
+	  do ie=1,nel
+	    cv2(ie) = sum( cv3(1:ilhv(ie),ie) )
+	  end do
 	else
 	  if( nn == nkn ) then
 	    call make_aver_3d(nlvdi,nn,cv3,vol3k,ilhkv
@@ -133,10 +137,7 @@
      +				,cmin,cmax,cmed,vtot,cv2,vol2)
 	  else
 	    write(6,*) ivar,nn,nkn,nel
-	    stop 'error stop shy_make_aver: not possible'
-	  end if
-	  if( ivar == 3 ) then		!transports - must sum
-	    cv2 = cv2 * vol2
+	    stop 'error stop shy_make_vert_aver: not possible'
 	  end if
 	end if
 
@@ -144,7 +145,7 @@
 
 !***************************************************************
 
-	subroutine shy_make_aver(idims,nndim,cv3
+	subroutine shy_make_basin_aver(idims,nndim,cv3
      +				,cmin,cmax,cmed,vtot)
 
 	use basin
@@ -171,7 +172,7 @@
 	if( abs(ivar) == 1 ) then		! water level - 2D
 	  if( lmax /= 1 ) then
 	    write(6,*) ivar,nn,lmax,nkn,nel
-	    stop 'error stop shy_make_aver: level must have lmax=1'
+	    stop 'error stop shy_make_basin_aver: level must have lmax=1'
 	  end if
 	  if( nn == nkn ) then
 	    call make_aver_2d(nlvdi,nn,cv3,areak
@@ -186,7 +187,7 @@
      +				,cmin,cmax,cmed,vtot)
 	  else
 	    write(6,*) ivar,nn,nkn,nel
-	    stop 'error stop shy_make_aver: not possible'
+	    stop 'error stop shy_make_basin_aver: not possible'
 	  end if
 	else
 	  if( nn == nkn ) then
@@ -197,7 +198,7 @@
      +				,cmin,cmax,cmed,vtot,cv2,vol2)
 	  else
 	    write(6,*) ivar,nn,nkn,nel
-	    stop 'error stop shy_make_aver: not possible'
+	    stop 'error stop shy_make_basin_aver: not possible'
 	  end if
 	end if
 
@@ -217,7 +218,7 @@
 	real cmin,cmax,cmed,vtot
 
 	integer i
-	real c,v
+	double precision c,v
 	double precision cctot,vvtot
 
 	cmin = cv3(1,1)
@@ -256,7 +257,7 @@
 	real vol2(nn)
 
 	integer i,l,lmax
-	real c,v
+	double precision c,v
 	double precision cctot,vvtot
 	double precision c2tot,v2tot
 
@@ -408,33 +409,48 @@
 
 	implicit none
 
-	logical bsigma
 	integer ie,ii,k,l,lmax,nsigma,nlvaux
-	real a,z,v,h,v3,hsigma
+	real z,h,hsigma
+	double precision a,v,v3
+	double precision, allocatable :: vole(:,:),volk(:,:)
 	real hl(nlv)		!aux vector for layer thickness
 
         call get_sigma_info(nlvaux,nsigma,hsigma)
-        bsigma = nsigma .gt. 0
 
 	vol3e = 0.
 	vol3k = 0.
+	allocate(vole(nlvdi,nel))
+	allocate(volk(nlvdi,nkn))
+	vole = 0.
+	volk = 0.
 
 	do ie=1,nel
 	  a = areae(ie)
 	  z = shy_zeta(ie)
+	  !z = 0.		!use water level 0
 	  h = hev(ie)
 	  call get_layer_thickness(nlv,nsigma,hsigma,z,h,hlv,hl)
 	  lmax = ilhv(ie)
 	  do l=1,lmax
 	    v = a * hl(l)
 	    v3 = v / 3.
-	    vol3e(l,ie) = vol3e(l,ie) + v
+	    vole(l,ie) = vole(l,ie) + v
 	    do ii=1,3
 	      k = nen3v(ii,ie)
-	      vol3k(l,k) = vol3k(l,k) + v3
+	      volk(l,k) = volk(l,k) + v3
 	    end do
 	  end do
 	end do
+
+	vol3e = vole
+	vol3k = volk
+
+	deallocate(vole,volk)
+
+	!do k=1,nkn,nkn/10
+	!  write(66,*) k
+	!  write(66,*) vol3k(:,k)
+	!end do
 
 	end
 

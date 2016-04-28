@@ -19,7 +19,7 @@
 !
 !**************************************************************
 
-	subroutine shyelab1
+	program shydiff
 
 	use clo
 	use elabutil
@@ -38,9 +38,10 @@
 	integer, parameter :: ndim = 1000
 	integer iusplit(ndim)
 
-	real, allocatable :: cv2(:)
 	real, allocatable :: cv3(:,:)
+	real, allocatable :: cv4(:,:)
 	real, allocatable :: cv3all(:,:,:)
+	real, allocatable :: cv4all(:,:,:)
 
 	integer, allocatable :: ivars(:,:)
 	integer, allocatable :: il(:)
@@ -48,8 +49,9 @@
 	real, allocatable :: hl(:)
 
 	logical bnextfile
-	integer nwrite,nread,nelab,nrec,nin,nold
+	integer nwrite,nread,nelab,nrec,nin,nold,ndiff
 	integer nvers
+	integer nexit
 	integer nknnos,nelnos,nvar,npr
 	integer ierr
 	!integer it,itvar,itnew,itold,itstart
@@ -58,14 +60,14 @@
 	integer iv,j,l,k,lmax,node
 	integer ip,nb
 	integer ifile,ftype
-	integer id,idout,idold
+	integer id,idout,idold,id2
 	integer n,m,nndim,nn
 	integer naccum
 	character*80 title,name,file
 	character*80 basnam,simnam
 	real rnull
 	real cmin,cmax,cmed,vtot
-	double precision dtime,dtstart,dtnew,dtvar
+	double precision dtime,dtime2,dtstart,dtnew,dtvar
 	double precision atime,atstart,atold,atnew
 
 	integer iapini
@@ -79,6 +81,7 @@
 	nwrite=0
 	nelab=0
 	nrec=0
+	ndiff = 0
 	rnull=0.
 	rnull=-1.
 	bopen = .false.
@@ -88,16 +91,21 @@
 	! set command line parameters
 	!--------------------------------------------------------------
 
-	call elabutil_init('SHY')
+	call elabutil_init('SHY','shydiff')
 
 	!--------------------------------------------------------------
 	! open input files
 	!--------------------------------------------------------------
 
 	ifile = 1
-	idold = 0
-	call open_next_file(ifile,idold,id)
-	call get_start_of_next_file(ifile+1,atstart,bnextfile)
+	call open_next_file(ifile,0,id)
+	ifile = 2
+        call clo_get_file(ifile,file)
+        if( file == ' ' ) then
+	  write(6,*) 'need two files for shydiff'
+	  stop 'error stop shydiff: two files needed'
+	end if
+	call open_next_file(ifile,id,id2)
 
 	!--------------------------------------------------------------
 	! set up params and arrays
@@ -105,7 +113,6 @@
 
 	call shy_get_params(id,nkn,nel,npr,nlv,nvar)
 	call shy_get_ftype(id,ftype)
-	!write(6,*) id,nkn,nel,npr,nlv,nvar,ftype
 
 	call shy_info(id)
 
@@ -130,9 +137,10 @@
 	  goto 76	!relax later
 	end if
 
-	allocate(cv2(nndim))
 	allocate(cv3(nlv,nndim))
+	allocate(cv4(nlv,nndim))
 	allocate(cv3all(nlv,nndim,0:nvar))
+	allocate(cv4all(nlv,nndim,0:nvar))
 
         allocate(hl(nlv))
 	allocate(ivars(4,nvar))
@@ -146,49 +154,12 @@
 
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
 
-	call handle_nodes	!single node output
-
 	!--------------------------------------------------------------
 	! time management
 	!--------------------------------------------------------------
 
 	call shy_get_date(id,date,time)
 	call elabutil_date_and_time	!this also sets datetime
-
-	!--------------------------------------------------------------
-	! averaging
-	!--------------------------------------------------------------
-
-	call elabutil_set_averaging(nvar)	!sets btrans
-
-	if( btrans ) then
-	  call shyutil_init_accum(nlvdi,nndim,nvar,istep)
-	else
-	  call shyutil_init_accum(1,1,1,1)
-	end if
-
-	!write(6,*) 'mode: ',mode,ifreq,istep
-
-	!--------------------------------------------------------------
-	! open output file
-	!--------------------------------------------------------------
-
-	iusplit = 0
-
-	boutput = boutput .or. btrans
-	bopen = boutput .and. .not. bsplit
-
-	if( bopen ) then
-	  idout = shy_init('out.shy')
-          call shy_clone(id,idout)
-	  if( b2d ) then
-	    call shy_convert_2d(idout)
-	  end if
-          call shy_write_header(idout,ierr)
-	  if( ierr /= 0 ) goto 75
-	end if
-
-	if( outformat == 'gis' ) call gis_write_connect
 
 !--------------------------------------------------------------
 ! loop on data
@@ -200,7 +171,9 @@
 	call fem_file_convert_time(datetime,dtime,atime)
 
 	cv3 = 0.
+	cv4 = 0.
 	cv3all = 0.
+	cv4all = 0.
 
 	do
 
@@ -208,19 +181,16 @@
 
 	 call read_records(id,dtime,nvar,nndim,nlvdi,ivars
      +				,cv3,cv3all,ierr)
+         if(ierr.ne.0) exit
 
-         if(ierr.ne.0) then	!EOF - see if we have to read another file
-	   if( ierr > 0 ) exit
-	   if( .not. bnextfile ) exit
-	   idold = id
-	   ifile = ifile + 1
-	   call open_next_file(ifile,idold,id)
-	   call shy_close(idold)
-	   call get_start_of_next_file(ifile+1,atstart,bnextfile)
-	   call nos_get_date(nin,date,time)
-	   call elabutil_date_and_time
-	   atime = atold	!reset time of last successfully read record
-	   cycle
+	 call read_records(id2,dtime2,nvar,nndim,nlvdi,ivars
+     +				,cv4,cv4all,ierr)
+         if(ierr.ne.0) exit
+
+	 if( dtime /= dtime2 ) then
+	   ndiff = ndiff + 1
+	   write(6,*) '*** time is different: ',dtime,dtime2
+	   exit
 	 end if
 
 	 nread = nread + nvar
@@ -234,18 +204,11 @@
 	 if( elabutil_over_time_a(atime,atnew,atold) ) exit
 	 if( .not. elabutil_check_time_a(atime,atnew,atold) ) cycle
 
-	 call shy_make_zeta(ftype)
-	 call shy_make_volume
-
 	 do iv=1,nvar
 
-	  n = ivars(1,iv)
-	  m = ivars(2,iv)
-	  lmax = ivars(3,iv)
 	  ivar = ivars(4,iv)
-	  nn = n * m
-
-	  cv3(:,:) = cv3all(:,:,iv)
+	  lmax = ivars(3,iv)
+	  nn = ivars(1,iv) * ivars(2,iv)
 
 	  nelab=nelab+1
 
@@ -254,48 +217,13 @@
 	  end if
 
 	  if( bwrite ) then
-	    !write(6,*) ivar,ivars(1,iv),ivars(2,iv),lmax,nn
 	    call shy_write_min_max(nlvdi,nn,lmax,cv3)
 	  end if
 
-	  if( btrans ) then
-	    call shy_time_aver(mode,iv,nrec,ifreq,istep,nndim
-     +			,ivars,threshold,cv3,boutput)
-	  end if
+	  cv3(:,:) = cv3all(:,:,iv)
+	  cv4(:,:) = cv4all(:,:,iv)
 
-	  if( baverbas ) then
-	    call shy_make_basin_aver(ivars(:,iv),nndim,cv3
-     +                          ,cmin,cmax,cmed,vtot)
-	    !call write_aver(it,ivar,cmin,cmax,cmed,vtot)
-	  end if
-
-	  if( b2d ) then
-	    call shy_make_vert_aver(ivars(:,iv),nndim,cv3,cv2)
-	  end if
-
-	  if( bsplit ) then
-            call get_split_iu(ndim,iusplit,ivar,nin,ilhkv,hlv,hev,nb)
-	  end if
-
-	  if( boutput ) then
-	    nwrite = nwrite + 1
-	    if( bverb ) write(6,*) 'writing to output: ',ivar
-	    if( bsumvar ) ivar = 30
-	    if( b2d ) then
-	      !call shy_write_scalar_record2d(idout,dtime,ivar,cv2)
-	      call shy_write_output_record(idout,dtime,ivar,n,m
-     +						,1,1,cv2)
-	    else
-	      !call shy_write_scalar_record(idout,dtime,ivar,nlvdi,cv3)
-	      call shy_write_output_record(idout,dtime,ivar,n,m
-     +						,nlv,nlv,cv3)
-	    end if
-            if( ierr .ne. 0 ) goto 99
-	  end if
-
-	  if( bnodes ) then
-	    call write_nodes(dtime,ivar,cv3)
-	  end if
+	  call diff_shy(nlv,nn,cv3,cv4,ndiff)
 
 	 end do		!loop on ivar
 	end do		!time do loop
@@ -308,24 +236,6 @@
 ! final write of variables
 !--------------------------------------------------------------
 
-! next not working for b2d ... FIXME
-
-	if( btrans ) then
-	  !write(6,*) 'istep,naccu: ',istep,naccu
-	  do ip=1,istep
-	    naccum = naccu(iv,ip)
-	    !write(6,*) 'naccum: ',naccum
-	    if( naccum > 0 ) then
-	      nwrite = nwrite + 1
-	      write(6,*) 'final aver: ',ip,naccum
-	      call nos_time_aver(-mode,ip,ifreq,istep,nkn,nlvdi
-     +				,naccu,accum,std,threshold,cv3,boutput)
-	      if( bsumvar ) ivar = 30
-	      call shy_write_scalar_record(idout,dtime,ivar,nlvdi,cv3)
-	    end if
-	  end do
-	end if
-
 !--------------------------------------------------------------
 ! write final message
 !--------------------------------------------------------------
@@ -335,28 +245,17 @@
 	write(6,*) nrec , ' unique time records read'
 	write(6,*) nelab, ' records elaborated'
 	write(6,*) ifile, ' files read'
-	write(6,*) nwrite,' records written'
+	write(6,*) ndiff, ' different records found'
 	write(6,*)
-
-	if( bsplit ) then
-	  write(6,*) 'output written to following files: '
-	  do ivar=1,ndim
-	    nb = iusplit(ivar)
-	    if( nb .gt. 0 ) then
-              write(name,'(i4)') ivar
-	      write(6,*) trim(adjustl(name))//'.nos'
-	      close(nb)
-	    end if
-	  end do
-	else if( boutput ) then
-	  write(6,*) 'output written to file out.shy'
-	  close(nb)
+	if( ndiff == 0 ) then
+	  nexit = 99
+	  write(6,*) 'files are equal'
+	else
+	  nexit = 0
+	  write(6,*) '*** files are different'
 	end if
-
-	!call ap_get_names(basnam,simnam)
-	!write(6,*) 'names used: '
-	!write(6,*) 'basin: ',trim(basnam)
-	!write(6,*) 'simul: ',trim(simnam)
+	write(6,*)
+	call exit(nexit)
 
 !--------------------------------------------------------------
 ! end of routine
@@ -395,5 +294,29 @@
 
 !***************************************************************
 !***************************************************************
+!***************************************************************
+
+	subroutine diff_shy(nlvddi,nn,cv3,cv4,ndiff)
+
+	implicit none
+
+	integer nlvddi,nn
+	real cv3(nlvddi,nn)
+	real cv4(nlvddi,nn)
+	integer ndiff
+
+	real, parameter :: eps = 1.e-6
+	!real, parameter :: eps = 0.
+	real diff
+
+	diff = maxval( abs(cv3-cv4) )
+
+	if( diff > eps ) then
+	  ndiff = ndiff + 1
+	  write(6,*) '*** record differing: ',diff
+	end if
+
+	end
+
 !***************************************************************
 

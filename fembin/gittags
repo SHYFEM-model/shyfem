@@ -71,6 +71,6 @@ sub format_date {
   $mon = "0$mon" if $mon < 10;
   $day = "0$day" if $day < 10;
 
-  $date = "$year.$mon.$day";
+  $date = "$year-$mon-$day";
 }
 

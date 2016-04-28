@@ -62,7 +62,7 @@ c***************************************************************
 	real cmin,cmax,cmed,vtot
 
 	integer k,l,lmax
-	real c,v
+	double precision c,v
 	double precision cctot,vvtot
 
 	cmin = cv3(1,1)
@@ -328,33 +328,44 @@ c we could do better using information on node area and depth structure
 
 	logical bsigma
 	integer ie,ii,k,l,lmax,nsigma,nlvaux
-	real area,hsigma
-	real zeta
+	real z,h,hsigma
+	double precision area,v,v3
+	double precision, allocatable :: volk(:,:)
 
 	real weight_elem
 
         call get_sigma_info(nlvaux,nsigma,hsigma)
         bsigma = nsigma .gt. 0
-	zeta = 0.			!do not use water level
+	z = 0.			!do not use water level
 
-	do k=1,nkn
-	  lmax = ilhkv(k)
-	  do l=1,nlv
-	    vol3(l,k) = 0.
-	  end do
-	end do
+	vol3 = 0.
+        allocate(volk(nlvddi,nkn))
+	volk = 0.
 
 	do ie=1,nel
 	  area = 4. * weight_elem(ie)
-	  call get_layer_thickness(nlv,nsigma,hsigma,zeta,hev(ie),hlv,hl)
+	  h = hev(ie)
+	  call get_layer_thickness(nlv,nsigma,hsigma,z,h,hlv,hl)
 	  do ii=1,3
 	    k = nen3v(ii,ie)
 	    lmax = ilhkv(k)
 	    do l=1,lmax
-	      vol3(l,k) = vol3(l,k) + area * hl(l)
+	      v3 = area * hl(l)
+	      volk(l,k) = volk(l,k) + v3
 	    end do
 	  end do
 	end do
+
+	vol3 = volk
+
+	deallocate(volk)
+
+	!if( nlv > 1 ) then
+        !do k=1,nkn,nkn/10
+        !  write(67,*) k
+        !  write(67,*) vol3(:,k)
+        !end do
+	!end if
 
 	end
 

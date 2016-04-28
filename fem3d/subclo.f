@@ -53,7 +53,7 @@
 
 	type, private :: entry
 
-	  character*20 :: name		! name of option
+	  character*80 :: name		! name of option
 	  integer :: itype		! type (1: number  2: flag  3: string)
 	  double precision :: value	! value if number
 	  logical :: flag		! flag if flag
@@ -235,7 +235,7 @@
 	character*(*) name
 	character*(*) text
 
-	write(6,*) 'option ',name,' error: ',text
+	write(6,*) 'option ',trim(name),' error: ',trim(text)
 
 	stop 'error stop clo_error'
 	end subroutine clo_error
@@ -396,7 +396,7 @@
 	if( id /= 0 ) call clo_error(name1,'option already existing')
 	call clo_init_new_id(id)
 
-	pentry(id)%name = name1(1:20)
+	pentry(id)%name = name1
 	pentry(id)%itype = 1
 	pentry(id)%value = value
 	pentry(id)%textra = name2
@@ -450,7 +450,7 @@
 	if( id /= 0 ) call clo_error(name1,'option already existing')
 	call clo_init_new_id(id)
 
-	pentry(id)%name = name1(1:20)
+	pentry(id)%name = name1
 	pentry(id)%itype = 3
 	pentry(id)%string = string
 	pentry(id)%textra = name2
