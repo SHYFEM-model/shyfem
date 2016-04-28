@@ -1,4 +1,13 @@
 
+28.04.2016
+
+c ./fem3d/nos2nc.f:
+c 27.04.2016    mbj     adapted to new framework
+c
+c ./fem3d/ous2nc.f:
+c 27.04.2016    mbj     adapted to new framework
+
+
 15.04.2016
 
 c ./fem3d/elabutil.f:

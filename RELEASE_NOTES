@@ -1,4 +1,11 @@
 
+28.04.2016	VERS_7_5_9
+
+	nos2nc, ous2nc adapted to new framework
+	ouselab allows nodes output
+	more work on shy files
+	shyelab nearly ready for production
+
 15.04.2016	VERS_7_5_8
 
 	shybas has been updated

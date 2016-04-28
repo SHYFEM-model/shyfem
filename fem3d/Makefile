@@ -1110,7 +1110,7 @@ newtvd.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 nos2nc.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
-		../femlib/mod/mod_hydro.mod param.h 
+		../femlib/mod/mod_hydro.mod 
 nos2shy.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
@@ -1133,7 +1133,7 @@ optintp.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 ous2nc.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
-		../femlib/mod/mod_hydro.mod param.h 
+		../femlib/mod/mod_hydro.mod 
 ous2shy.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/elabutil.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \

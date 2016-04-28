@@ -77,8 +77,8 @@ fi
 [ -f input.tmp ] && rm -f input.tmp
 touch input.tmp
 
-echo ""					>> input.tmp
-echo ""					>> input.tmp
+#echo ""					>> input.tmp
+#echo ""					>> input.tmp
 echo "$date"				>> input.tmp
 echo "$dxy"				>> input.tmp
 if [ -n "$dxy" ]; then

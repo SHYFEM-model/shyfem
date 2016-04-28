@@ -14,6 +14,7 @@ c 21.01.2013    ggu     restructured
 c 25.01.2013    ggu     regular and fem outout in one routine
 c 20.02.2013    ggu     choose period implemented
 c 15.04.2016    ggu     ndim eliminated (allocatable)
+c 27.04.2016    mbj     adapted to new framework
 c
 c***************************************************************
 
@@ -29,31 +30,24 @@ c reads nos file and writes NetCDF file
 
 	implicit none
 
-        include 'param.h'
-
 c-------------------------------------------------
-
-	integer, save, allocatable :: ivars(:)
-	integer, save, allocatable :: var_ids(:)
-
-	integer nxdim,nydim
-	parameter (nxdim=400,nydim=400)
 
 	character*80 title
 
-	real cv3(nlvdim,nkndim)
-	real uprv(nlvdim,nkndim)
-	real vprv(nlvdim,nkndim)
-	real ut2v(neldim)
-	real vt2v(neldim)
-	real u2v(neldim)
-	real v2v(neldim)
+	integer, allocatable :: ivars(:)
+	integer, allocatable :: var_ids(:)
 
-	real haux(nkndim)
-	real weight(nlvdim,nkndim)
-	real hl(nlvdim)
+	real, allocatable :: uprv(:,:)
+	real, allocatable :: vprv(:,:)
+	real, allocatable :: ut2v(:)
+	real, allocatable :: vt2v(:)
+	real, allocatable :: u2v(:)
+	real, allocatable :: v2v(:)
 
-	real var3d(nlvdim*nkndim)
+	real, allocatable :: haux(:)
+	real, allocatable :: var3d(:)
+
+	real, allocatable :: cv3(:,:)
 
         integer nvers,nin,lmax,l
         integer itanf,itend,idt
@@ -70,14 +64,14 @@ c-------------------------------------------------
 	real vmin,vmax
 	real flag
 
-	integer nx,ny
-	real xlon(nxdim)
-	real ylat(nydim)
-	real depth(nxdim,nydim)
-	real value2d(nxdim,nydim)
-	real value3d(nlvdim,nxdim,nydim)
-	real vnc3d(nxdim,nydim,nlvdim)
-	real fm(4,nxdim,nydim)
+	integer nx,ny,nxymax
+	real, allocatable :: xlon(:)
+	real, allocatable :: ylat(:)
+	real, allocatable :: depth(:,:)
+	real, allocatable :: value2d(:,:)
+	real, allocatable :: fm(:,:,:)
+	real, allocatable :: value3d(:,:,:)
+	real, allocatable :: vnc3d(:,:,:)
 	real x0,y0,dx,dy
 
 	logical breg
@@ -106,6 +100,8 @@ c-----------------------------------------------------------------
 
 	maxrec = 2		!max number of records to be written
 	maxrec = 0		!max number of records to be written (0 -> all)
+	nxymax = 0		!max size of regular grid (0 -> any)
+	nxymax = 400		!max size of regular grid (0 -> any)
 
 	it0 = 0			!subtract from it (hack)
 
@@ -122,9 +118,14 @@ c-----------------------------------------------------------------
 	irec = 0
 	iwrite = 0
 
-	if(iapini(3,nkndim,neldim,0).eq.0) then
-		stop 'error stop : iapini'
-	end if
+	call ap_init(.false.,3,0,0)
+
+c-----------------------------------------------------------------
+c Init modules
+c-----------------------------------------------------------------
+
+	call ev_init(nel)
+	call mod_depth_init(nkn,nel)
 
 	call set_ev
 
@@ -138,11 +139,15 @@ c-----------------------------------------------------------------
 	if( bdate ) call read_date_and_time(date0,time0)
 	call dtsini(date0,time0)
 
-        call get_dimensions(nxdim,nydim,nx,ny,x0,y0,dx,dy,xlon,ylat)
+        call get_dimensions(nx,ny,x0,y0,dx,dy)
         breg = nx .gt. 0 .and. ny .gt. 0          !regular output
-        write(6,*) 'breg: ',breg
         if( breg ) then
 	  write(6,*) 'NETCDF output: regular ',dx,dy,nx,ny
+	  if( nxymax > 0 .and. max(nx,ny) > nxymax ) goto 95
+	  allocate(xlon(nx),ylat(ny))
+	  allocate(depth(nx,ny),value2d(nx,ny))
+	  allocate(fm(4,nx,ny))
+	  call set_reg_xy(nx,ny,x0,y0,dx,dy,xlon,ylat)
           call setgeo(x0,y0,dx,dy,flag)
           call av2fm(fm,nx,ny)
 	else
@@ -152,21 +157,48 @@ c-----------------------------------------------------------------
 	call get_period(iperiod,its,ite,nfreq)
 
 c-----------------------------------------------------------------
+c first read of nos file to get the dimensions
+c-----------------------------------------------------------------
+
+	call open_nos_type('.nos','old',nin)
+
+	call nos_is_nos_file(nin,nvers)
+	if( nvers .le. 0 ) then
+          write(6,*) 'nvers: ',nvers
+          stop 'error stop noselab: not a valid nos file'
+        end if
+
+	call peek_nos_header(nin,nknnos,nelnos,nlv,nvar)
+
+        if( nkn /= nknnos .or. nel /= nelnos ) goto 94
+
+c-----------------------------------------------------------------
+c allocate arrays
+c-----------------------------------------------------------------
+
+	call levels_init(nkn,nel,nlv)
+
+	allocate(uprv(nlv,nkn),vprv(nlv,nkn))
+	allocate(ut2v(nel),vt2v(nel),u2v(nel),v2v(nel))
+	allocate(haux(nkn))
+	allocate(var3d(nlv*nkn))
+	allocate(cv3(nlv,nkn))
+
+	if( breg ) allocate(value3d(nlv,nx,ny),vnc3d(nx,ny,nlv))
+
+c-----------------------------------------------------------------
 c read header of simulation
 c-----------------------------------------------------------------
 
-        call open_nos_type('.nos','old',nin)
-
-        call read_nos_header(nin,nkndim,neldim,nlvdim,ilhkv,hlv,hev)
+        call read_nos_header(nin,nkn,nel,nlv,ilhkv,hlv,hev)
         call nos_get_params(nin,nknnos,nelnos,nlv,nvar)
+	call nos_get_title(nin,title)
 	call nos_get_date(nin,date,time)
 	if( date .gt. 0 ) then
 	  date0 = date
 	  time0 = time
 	  call dtsini(date0,time0)
 	end if
-
-	if( nkn .ne. nknnos .or. nel .ne. nelnos ) goto 94
 
 	call init_sigma_info(nlv,hlv)
 	call level_k2e(nkn,nel,nen3v,ilhkv,ilhv)
@@ -209,7 +241,7 @@ c-----------------------------------------------------------------
 
   300   continue
 
-	call rdnos(nin,it,ivar,nlvdim,ilhkv,cv3,ierr)
+	call rdnos(nin,it,ivar,nlv,ilhkv,cv3,ierr)
 
 	it = it - it0
 
@@ -242,11 +274,11 @@ c-----------------------------------------------------------------
 	write(6,*) '   writing: ',ivar,i,irec,nread,iwrite
 
 	if( breg ) then
-	  call fm2am3d(nlvdim,ilhv,cv3,lmax,nx,ny,fm,value3d)
+	  call fm2am3d(nlv,ilhv,cv3,lmax,nx,ny,fm,value3d)
 	  call nc_rewrite_3d_reg(lmax,nx,ny,value3d,vnc3d)
 	  call nc_write_data_3d_reg(ncid,var_id,iwrite,lmax,nx,ny,vnc3d)
 	else
-	  call nc_compact_3d(nlvdim,nlv,nkn,cv3,var3d)
+	  call nc_compact_3d(nlv,nlv,nkn,cv3,var3d)
           call nc_write_data_3d(ncid,var_id,iwrite,nlv,nkn,var3d)
 	end if
 
@@ -276,10 +308,15 @@ c-----------------------------------------------------------------
         write(6,*) 'read: ',ivar,'   expected: ',ivars(i)
         stop 'error stop nos2nc: variables'
    94   continue
-        write(6,*) 'incompatible simulation and basin'
-        write(6,*) 'nkn: ',nkn,nknnos
-        write(6,*) 'nel: ',nel,nelnos
-        stop 'error stop nos2nc: nkn,nel'
+        write(6,*) 'incompatible basin and simulation'
+        write(6,*) 'nkn,nknnos: ',nkn,nknnos
+        write(6,*) 'nel,nelnos: ',nel,nelnos
+        stop 'error stop nos2nc: parameter mismatch'
+   95   continue
+        write(6,*) 'regular grid too big'
+        write(6,*) 'nx,ny: ',nx,ny,'   nxymax: ',nxymax
+        write(6,*) 'please increase nxymax or set to zero for any size'
+        stop 'error stop nos2nc: size regular grid'
         end
 
 c******************************************************************

@@ -123,9 +123,9 @@ c computes ilhkv from ilhv
 	implicit none
 
 	integer nkn,nel
-	integer nen3v(3,*)
-	integer ilhv(*)
-	integer ilhkv(*)
+	integer nen3v(3,nel)
+	integer ilhv(nel)
+	integer ilhkv(nkn)
 
 	integer k,ie,ii,lmax
 
@@ -152,9 +152,9 @@ c computes ilhv from ilhkv - is not exact (need hev to do better)
 	implicit none
 
 	integer nkn,nel
-	integer nen3v(3,1)
-	integer ilhkv(1)
-	integer ilhv(1)
+	integer nen3v(3,nel)
+	integer ilhkv(nkn)
+	integer ilhv(nel)
 
 	integer k,ie,ii,lmax,lmin
 
@@ -181,7 +181,7 @@ c******************************************************************
 	implicit none
 
 	integer ie
-	real zenv(3,1)
+	real zenv(3,*)
 	real zeta
 
 	integer ii
@@ -217,8 +217,8 @@ c (nen3v(ii,ie),ii=1,3) element connectivity - nodes of element ie
         implicit none
 
         integer nkn,nel
-        integer nen3v(3,1)
-        real xgv(1), ygv(1)
+        integer nen3v(3,nel)
+        real xgv(nkn), ygv(nkn)
 
         integer k,ie,ii
 
