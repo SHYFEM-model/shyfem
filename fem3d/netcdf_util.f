@@ -34,13 +34,14 @@ c******************************************************************
 	integer ierr
 	character*20 line
 
+	write(line,'(i8,a2,i6)') date,'    ',time
 	write(6,*)
 	write(6,*) 'You can specify a date for fem-time 0'
 	write(6,*) 'This is only used if the simulation does not'
 	write(6,*) 'contain a date and time stamp.'
 	if( date > 0 ) then
-	  call dtsunform_pack(date,time,line,ierr)
-	  write(6,*) 'Default for date: ',line
+	  call dtsunform_pack(date,time,trim(line),ierr)
+	  write(6,*) 'Default for date: ',trim(line)
 	else
 	  write(6,*) 'There is no default date... using 0'
 	end if
