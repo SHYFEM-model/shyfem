@@ -15,7 +15,7 @@ gitlink="https://github.com/SHYFEM-model/shyfem"
 tmpfile=tmp.tmp
 #fembin=./fembin
 
-emails="gmail shyfem shyfem_aux shyfem_user"
+emails="gmail shyfem_g shyfem_d shyfem_u"
 
 #------------------------------------------------------------------
 
