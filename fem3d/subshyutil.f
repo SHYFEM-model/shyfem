@@ -112,6 +112,7 @@
 	call shy_skip_record(id,dtime,ivar,n,m,lmax,ierr)
 	if( ierr /= 0 ) return
 
+	call shy_close(id)
 	bok = .true.
 	
 	end
@@ -149,6 +150,7 @@
 	end do
 	if( ierr > 0 ) return
 
+	call shy_close(id)
 	bok = .true.
 
 	end

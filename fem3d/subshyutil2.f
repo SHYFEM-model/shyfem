@@ -47,6 +47,43 @@
 !***************************************************************
 !***************************************************************
 
+	subroutine open_new_file(ifile,id,atstart)
+
+	use shyfile
+	use elabutil
+
+! opens a new file, closing the old one and checking the next file
+!
+! ifile gives number of old file on command line
+!	should be 0 for first call, is incremented at return
+! id is the id of the old opened file
+!	should be 0 for first call, is id of new file
+! atstart is absolute time of next file that should be opened
+!	is -1 if no next file exists
+
+	implicit none
+
+	integer ifile			!number of old file on command line
+	integer id			!id of old (in) and new (out) file
+	double precision atstart	!absolute time of start of next file
+
+	integer idold
+
+	ifile = ifile + 1
+	idold = id
+
+        call open_next_file(ifile,idold,id)
+        call shy_close(idold)
+
+        call get_start_of_next_file(ifile+1,atstart)
+
+        call shy_get_date(id,date,time)
+        call elabutil_date_and_time     !this also sets datetime
+
+	end
+
+!***************************************************************
+
 	subroutine open_next_file(ifile,idold,id)
 
 	use shyfile
@@ -104,7 +141,7 @@
 
 !***************************************************************
 
-	subroutine get_start_of_next_file(ifile,atstart,bok)
+	subroutine get_start_of_next_file(ifile,atstart)
 
 	use clo
 
@@ -112,8 +149,8 @@
 
 	integer ifile
 	double precision atstart
-	logical bok
 
+	logical bok
 	integer datetime(2)
 	double precision dtime
 	character*80 file
@@ -215,138 +252,5 @@
 
 !***************************************************************
 !***************************************************************
-!***************************************************************
-
-        subroutine get_split_iu0(ndim,iu,ivar,nin,ilhkv,hlv,hev,nb)
-
-        implicit none
-
-        integer ndim
-        integer iu(ndim)
-        integer ivar
-        integer nin
-        integer ilhkv(1)
-        real hlv(1)
-        real hev(1)
-	integer nb		!unit to use for writing (return)
-
-        integer nkn,nel,nlv,nvar
-        integer ierr
-        character*80 name
-
-        if( ivar > ndim ) then
-          write(6,*) 'ndim,ivar: ',ndim,ivar
-          stop 'error stop: ndim'
-        end if
-
-        if( iu(ivar) .le. 0 ) then      !open file
-          write(name,'(i4)') ivar
-          call open_nos_file(name,'new',nb)
-          call nos_init(nb,0)
-          call nos_clone_params(nin,nb)
-          call nos_get_params(nb,nkn,nel,nlv,nvar)
-          call nos_set_params(nb,nkn,nel,nlv,1)
-          call write_nos_header(nb,ilhkv,hlv,hev)
-          iu(ivar) = nb
-        end if
-
-        nb = iu(ivar)
-
-        end
-
-!***************************************************************
-
-	subroutine noselab_write_record0(nb,it,ivar,nlvdi,ilhkv,cv,ierr)
-
-        use elabutil
-
-	implicit none
-
-	integer nb,it,ivar,nlvdi
-	integer ilhkv(nlvdi)
-	real cv(nlvdi,*)
-	integer ierr
-
-	ierr = 0
-
-	if( outformat == 'nos' .or. outformat == 'native') then
-          call nos_write_record(nb,it,ivar,nlvdi,ilhkv,cv,ierr)
-	else if( outformat == 'gis' ) then
-          call gis_write_record(nb,it,ivar,nlvdi,ilhkv,cv)
-	else
-	  write(6,*) 'output format unknown: ',outformat
-	  stop 'error stop noselab_write_record: output format'
-	end if
-
-        end
-
-!***************************************************************
-
-        subroutine gis_write_record0(nb,it,ivar,nlvdi,ilhkv,cv)
-
-! writes one record to file nb (3D)
-
-        use basin
-
-        implicit none
-
-        integer nb,it,ivar,nlvdi
-        integer ilhkv(nlvdi)
-        real cv(nlvdi,*)
-
-        integer k,l,lmax
-	integer nout
-        real x,y
-	character*80 format,name
-	character*20 line
-	character*3 var
-
-	integer ifileo
-
-	call dtsgf(it,line)
-	call i2s0(ivar,var)
-
-	name = 'extract_'//var//'_'//line//'.gis'
-        nout = ifileo(60,name,'form','new')
-	!write(6,*) 'writing: ',trim(name)
-
-        write(nout,*) it,nkn,ivar,line
-
-        do k=1,nkn
-          lmax = ilhkv(k)
-          x = xgv(k)
-          y = ygv(k)
-
-	  write(format,'(a,i5,a)') '(i10,2g14.6,i5,',lmax,'g14.6)'
-          write(nout,format) k,x,y,lmax,(cv(l,k),l=1,lmax)
-        end do
-
-	close(nout)
-
-        end
-
-!***************************************************************
-
-        subroutine gis_write_connect0
-
-! writes connectivity
-
-        use basin
-
-        implicit none
-
-	integer ie,ii
-
-	open(1,file='connectivity.gis',form='formatted',status='unknown')
-
-	write(1,*) nel
-	do ie=1,nel
-	  write(1,*) ie,(nen3v(ii,ie),ii=1,3)
-	end do
-
-	close(1)
-
-	end
-
 !***************************************************************
 

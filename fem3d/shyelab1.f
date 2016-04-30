@@ -33,8 +33,6 @@
 
 	implicit none
 
-	include 'param.h'
-
 	integer, parameter :: ndim = 1000
 	integer iusplit(ndim)
 
@@ -45,12 +43,13 @@
 	integer, allocatable :: ivars(:,:)
 	integer, allocatable :: il(:)
 
-	real, allocatable :: hl(:)
+	real, allocatable :: znv(:)
+	real, allocatable :: uprv(:,:)
+	real, allocatable :: vprv(:,:)
 
-	logical bnextfile
 	integer nwrite,nread,nelab,nrec,nin,nold
 	integer nvers
-	integer nknnos,nelnos,nvar,npr
+	integer nvar,npr
 	integer ierr
 	!integer it,itvar,itnew,itold,itstart
 	integer it
@@ -58,15 +57,15 @@
 	integer iv,j,l,k,lmax,node
 	integer ip,nb
 	integer ifile,ftype
-	integer id,idout,idold
+	integer id,idout
 	integer n,m,nndim,nn
 	integer naccum
 	character*80 title,name,file
 	character*80 basnam,simnam
 	real rnull
 	real cmin,cmax,cmed,vtot
-	double precision dtime,dtstart,dtnew,dtvar
-	double precision atime,atstart,atold,atnew
+	double precision dtime,dtstart,dtnew
+	double precision atime,atstart,atnew,atold
 
 	integer iapini
 	integer ifem_open_file
@@ -83,6 +82,8 @@
 	rnull=-1.
 	bopen = .false.
 	bzeta = .false.		!file has zeta information
+	ifile = 0
+	id = 0
 
 	!--------------------------------------------------------------
 	! set command line parameters
@@ -94,10 +95,7 @@
 	! open input files
 	!--------------------------------------------------------------
 
-	ifile = 1
-	idold = 0
-	call open_next_file(ifile,idold,id)
-	call get_start_of_next_file(ifile+1,atstart,bnextfile)
+	call open_new_file(ifile,id,atstart)
 
 	!--------------------------------------------------------------
 	! set up params and arrays
@@ -133,9 +131,8 @@
 	allocate(cv2(nndim))
 	allocate(cv3(nlv,nndim))
 	allocate(cv3all(nlv,nndim,0:nvar))
-
-        allocate(hl(nlv))
 	allocate(ivars(4,nvar))
+	allocate(znv(nkn),uprv(nlv,nkn),vprv(nlv,nkn))
 
 	call shyutil_init(nkn,nel,nlv)
 
@@ -146,14 +143,11 @@
 
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
 
+	!--------------------------------------------------------------
+	! setup node handling
+	!--------------------------------------------------------------
+
 	call handle_nodes	!single node output
-
-	!--------------------------------------------------------------
-	! time management
-	!--------------------------------------------------------------
-
-	call shy_get_date(id,date,time)
-	call elabutil_date_and_time	!this also sets datetime
 
 	!--------------------------------------------------------------
 	! averaging
@@ -166,8 +160,6 @@
 	else
 	  call shyutil_init_accum(1,1,1,1)
 	end if
-
-	!write(6,*) 'mode: ',mode,ifreq,istep
 
 	!--------------------------------------------------------------
 	! open output file
@@ -194,7 +186,6 @@
 ! loop on data
 !--------------------------------------------------------------
 
-	dtvar = 0.
 	dtime = 0.
 	call shy_peek_record(id,dtime,iaux,iaux,iaux,iaux,ierr)
 	call fem_file_convert_time(datetime,dtime,atime)
@@ -210,16 +201,8 @@
      +				,cv3,cv3all,ierr)
 
          if(ierr.ne.0) then	!EOF - see if we have to read another file
-	   if( ierr > 0 ) exit
-	   if( .not. bnextfile ) exit
-	   idold = id
-	   ifile = ifile + 1
-	   call open_next_file(ifile,idold,id)
-	   call shy_close(idold)
-	   call get_start_of_next_file(ifile+1,atstart,bnextfile)
-	   call nos_get_date(nin,date,time)
-	   call elabutil_date_and_time
-	   atime = atold	!reset time of last successfully read record
+	   if( ierr > 0 .or. atstart == -1. ) exit
+	   call open_new_file(ifile,id,atstart)
 	   cycle
 	 end if
 
@@ -228,8 +211,8 @@
 	 call fem_file_convert_time(datetime,dtime,atime)
 
 	 call shy_peek_record(id,dtnew,iaux,iaux,iaux,iaux,ierr)
+	 if( ierr .ne. 0 ) dtnew = dtime
 	 call fem_file_convert_time(datetime,dtnew,atnew)
-	 if( ierr .ne. 0 ) atnew = atime
 
 	 if( elabutil_over_time_a(atime,atnew,atold) ) exit
 	 if( .not. elabutil_check_time_a(atime,atnew,atold) ) cycle
@@ -254,7 +237,6 @@
 	  end if
 
 	  if( bwrite ) then
-	    !write(6,*) ivar,ivars(1,iv),ivars(2,iv),lmax,nn
 	    call shy_write_min_max(nlvdi,nn,lmax,cv3)
 	  end if
 
@@ -282,22 +264,25 @@
 	    if( bverb ) write(6,*) 'writing to output: ',ivar
 	    if( bsumvar ) ivar = 30
 	    if( b2d ) then
-	      !call shy_write_scalar_record2d(idout,dtime,ivar,cv2)
 	      call shy_write_output_record(idout,dtime,ivar,n,m
      +						,1,1,cv2)
 	    else
-	      !call shy_write_scalar_record(idout,dtime,ivar,nlvdi,cv3)
 	      call shy_write_output_record(idout,dtime,ivar,n,m
      +						,nlv,nlv,cv3)
 	    end if
             if( ierr .ne. 0 ) goto 99
 	  end if
 
-	  if( bnodes ) then
+	  if( bnodes .and. ftype == 2 ) then	!scalar output
 	    call write_nodes(dtime,ivar,cv3)
 	  end if
 
 	 end do		!loop on ivar
+
+	 if( bnodes .and. ftype == 1 ) then	!hydro output
+	   call write_nodes_vel(dtime,znv,uprv,vprv)
+	 end if
+ 
 	end do		!time do loop
 
 !--------------------------------------------------------------
@@ -344,7 +329,7 @@
 	    nb = iusplit(ivar)
 	    if( nb .gt. 0 ) then
               write(name,'(i4)') ivar
-	      write(6,*) trim(adjustl(name))//'.nos'
+	      write(6,*) trim(adjustl(name))//'.shy'
 	      close(nb)
 	    end if
 	  end do
@@ -380,14 +365,6 @@
 	write(6,*) 'error reading header, ierr = ',ierr
 	write(6,*) 'file = ',trim(file)
 	stop 'error stop shyelab: reading header'
-   85	continue
-	write(6,*) 'dtime,dtvar,iv,ivar,nvar: ',dtime,dtvar,iv,ivar,nvar
-	stop 'error stop shyelab: time mismatch'
-   92	continue
-	write(6,*) 'incompatible basin: '
-	write(6,*) 'nkn,nknnos: ',nkn,nknnos
-	write(6,*) 'nel,nelnos: ',nel,nelnos
-	stop 'error stop shyelab: parameter mismatch'
    99	continue
 	write(6,*) 'error writing to file unit: ',nb
 	stop 'error stop shyelab: write error'
@@ -395,5 +372,42 @@
 
 !***************************************************************
 !***************************************************************
+!***************************************************************
+
+	subroutine prepare_hydro(nndim,cv3all,znv,uprv,vprv)
+
+	use basin
+	use levels
+	use mod_depth
+	
+	implicit none
+
+	integer nndim
+	real cv3all(nlvdi,nndim,0:4)
+	real znv(nkn)
+	real uprv(nlvdi,nkn)
+	real vprv(nlvdi,nkn)
+
+	real, allocatable :: zenv(:)
+	real, allocatable :: uv(:,:)
+	real, allocatable :: vv(:,:)
+
+	allocate(zenv(3*nel))
+	allocate(uv(nlvdi,nel))
+	allocate(vv(nlvdi,nel))
+
+        znv(1:nkn)     = cv3all(1,1:nkn,1)
+        zenv(1:3*nel)  = cv3all(1,1:3*nel,2)
+        uv(:,1:nel)    = cv3all(:,1:nel,3)
+        vv(:,1:nel)    = cv3all(:,1:nel,4)
+
+	call transp2vel_new(nel,nkn,nlv,nlvdi,hev,zenv,nen3v
+     +                          ,ilhv,hlv,uv,vv
+     +                          ,uprv,vprv)
+
+	deallocate(zenv,uv,vv)
+
+	end
+
 !***************************************************************
 

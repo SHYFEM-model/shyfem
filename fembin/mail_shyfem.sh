@@ -57,7 +57,11 @@ echo "$gitlink"							>> $tmpfile
 echo ""								>> $tmpfile
 echo "Release notes:"						>> $tmpfile
 $fembin/extract_release.pl $FEMDIR/RELEASE_NOTES		>> $tmpfile
-echo "Other information can be found in RELEASE_NOTES."		>> $tmpfile
+echo "Other information can be found in:"			>> $tmpfile
+echo "    RELEASE_NOTES, LOG, COMMIT, VERSION, BUG"		>> $tmpfile
+echo ""								>> $tmpfile
+echo "If you do not want to obtain these kind of messages"	>> $tmpfile
+echo "please let me know and I will delete you from this list."	>> $tmpfile
 echo ""								>> $tmpfile
 echo "Best regards, Georg"					>> $tmpfile
 echo ""								>> $tmpfile

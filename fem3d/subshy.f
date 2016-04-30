@@ -307,6 +307,8 @@
 
 	integer id
 
+	if( id <= 0 ) return
+
 	close(pentry(id)%iunit)
 	pentry(id)%iunit = 0
 	call shy_dealloc_arrays(id)
