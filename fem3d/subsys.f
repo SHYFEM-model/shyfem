@@ -638,12 +638,12 @@ c		adds the layer thickness to the layer above if it is smaller
 c		than |hlvmin|. Therefore, 1 and 2 might change the
 c		total depth and layer structure, while 3 only might
 c		change the layer structure. The value of 1 will always
-c		give you full layers at the bottom.
+c		give you full layers at the bottom. (Default 3)
 c |hlvmin|	Minimum layer thickness for last (bottom) layer used when
 c		|ilytyp| is 2 or 3. The unit is fractions of the nominal
 c		layer thickness. Therefore, a value of 0.5 indicates that
 c		the last layer should be at least half of the full
-c		layer.
+c		layer. (Default 0.25)
 
 	call addpar('ilytyp',3.00)	!type of depth adjustment
 	call addpar('hlvmin',0.25)	!min percentage of last layer thickness

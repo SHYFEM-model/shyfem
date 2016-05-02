@@ -30,17 +30,22 @@ c***************************************************************
 	integer k,l,lmax
 	double precision c,v
 	double precision cctot,vvtot
+	integer :: ks = 3096
+	logical bdebug
 
 	do k=1,nkn
 	  cctot = 0.
 	  vvtot = 0.
 	  lmax = ilhkv(k)
+	  bdebug = k == ks
 	  do l=1,lmax
 	    c = cv3(l,k)
 	    v = vol3(l,k)
 	    cctot = cctot + c*v
 	    vvtot = vvtot + v
+	    if( bdebug ) write(42,*) l,v,c
 	  end do
+	  if( bdebug ) write(42,*) lmax,vvtot,cctot,real(cctot/vvtot)
 	  cctot = cctot / vvtot
 	  cv2(k) = cctot
 	end do
@@ -326,16 +331,20 @@ c we could do better using information on node area and depth structure
 	real hl(nlv)		!aux vector for layer thickness
 	real vol3(nlvddi,nkn)
 
-	logical bsigma
-	integer ie,ii,k,l,lmax,nsigma,nlvaux
+	logical bvolwrite,bdebug
+	integer ie,ii,k,l,lmax,nsigma,nlvaux,ks
 	real z,h,hsigma
-	double precision area,v,v3
+	double precision ak,vk,ve
 	double precision, allocatable :: volk(:,:)
 
 	real weight_elem
 
+        bvolwrite = .false.
+        bvolwrite = .true.
+	ks = 2985
+	ks = 3096
+
         call get_sigma_info(nlvaux,nsigma,hsigma)
-        bsigma = nsigma .gt. 0
 	z = 0.			!do not use water level
 
 	vol3 = 0.
@@ -343,29 +352,39 @@ c we could do better using information on node area and depth structure
 	volk = 0.
 
 	do ie=1,nel
-	  area = 4. * weight_elem(ie)
+	  ak = 4. * weight_elem(ie)	!area of vertex
 	  h = hev(ie)
 	  call get_layer_thickness(nlv,nsigma,hsigma,z,h,hlv,hl)
 	  do ii=1,3
 	    k = nen3v(ii,ie)
+	    bdebug = k == ks .and. nlv > 1
 	    lmax = ilhkv(k)
 	    do l=1,lmax
-	      v3 = area * hl(l)
-	      volk(l,k) = volk(l,k) + v3
+	      vk = ak * hl(l)
+	      volk(l,k) = volk(l,k) + vk
+	      if( bdebug ) write(82,*) ie,ii,lmax,l,vk,ak,hl(l),h
 	    end do
 	  end do
+          if( bvolwrite .and. mod(ie,nel/nel) == -1 ) then
+	   if( nlv > 1 ) then
+            write(62,*) ie,h
+            write(62,*) hl
+           end if
+          end if
 	end do
 
 	vol3 = volk
 
 	deallocate(volk)
 
-	!if( nlv > 1 ) then
-        !do k=1,nkn,nkn/10
-        !  write(67,*) k
-        !  write(67,*) vol3(:,k)
-        !end do
-	!end if
+	if( nlv <= 1 ) bvolwrite = .false.
+	if( bvolwrite ) then
+	write(72,*) 'volume from init_volume'
+        do k=1,nkn,nkn/10
+          write(72,*) k
+          write(72,*) vol3(:,k)
+        end do
+	end if
 
 	end
 

@@ -323,34 +323,61 @@
 	logical shy_are_compatible
 	integer id1,id2
 
+	integer nk,ne
+	character*20 serr
+
 	shy_are_compatible = .false.
+	nk = pentry(id1)%nkn
+	ne = pentry(id1)%nel
 
-	if( pentry(id1)%nkn /= pentry(id2)%nkn ) return 
-	if( pentry(id1)%nel /= pentry(id2)%nel ) return 
-	if( pentry(id1)%nlv /= pentry(id2)%nlv ) return 
-	if( pentry(id1)%npr /= pentry(id2)%npr ) return 
-	if( pentry(id1)%nvar /= pentry(id2)%nvar ) return 
-	if( pentry(id1)%date /= pentry(id2)%date ) return 
-	if( pentry(id1)%time /= pentry(id2)%time ) return 
+	serr = 'parameters'
+	if( pentry(id1)%nkn /= pentry(id2)%nkn ) goto 99 
+	if( pentry(id1)%nel /= pentry(id2)%nel ) goto 99 
+	if( pentry(id1)%nlv /= pentry(id2)%nlv ) goto 99 
+	if( pentry(id1)%npr /= pentry(id2)%npr ) goto 99 
+	if( pentry(id1)%nvar /= pentry(id2)%nvar ) goto 99 
+	if( pentry(id1)%date /= pentry(id2)%date ) goto 99 
+	if( pentry(id1)%time /= pentry(id2)%time ) goto 99 
 
-	if( .not. all(pentry(id1)%nen3v==pentry(id2)%nen3v) ) return
-	if( .not. all(pentry(id1)%xgv==pentry(id2)%xgv) ) return
-	if( .not. all(pentry(id1)%ygv==pentry(id2)%ygv) ) return
-	if( .not. all(pentry(id1)%hm3v==pentry(id2)%hm3v) ) return
+	serr = 'nen3v'
+	if( .not. all(pentry(id1)%nen3v==pentry(id2)%nen3v) ) goto 99
+	serr = 'xgv'
+	if( .not. all(pentry(id1)%xgv==pentry(id2)%xgv) ) goto 99
+	serr = 'ygv'
+	if( .not. all(pentry(id1)%ygv==pentry(id2)%ygv) ) goto 99
+	serr = 'hm3v'
+	!call shy_diff_internal_r(3*ne,pentry(id1)%hm3v,pentry(id2)%hm3v)
+	!if( .not. all(pentry(id1)%hm3v==pentry(id2)%hm3v) ) goto 99
 
 	!still to be finished
 	!deallocate(pentry(id)%ipev)
 	!deallocate(pentry(id)%ipv)
 	!deallocate(pentry(id)%iarv)
 	!deallocate(pentry(id)%iarnv)
-	if( .not. all(pentry(id1)%hlv==pentry(id2)%hlv) ) return
+	serr = 'hlv'
+	if( .not. all(pentry(id1)%hlv==pentry(id2)%hlv) ) goto 99
 	!deallocate(pentry(id)%hlv)
 	!deallocate(pentry(id)%ilhv)
 	!deallocate(pentry(id)%ilhkv)
 
 	shy_are_compatible = .true.
 
+	return
+  99	continue
+	write(6,*) 'error checking ',serr
+	return
 	end function shy_are_compatible
+
+!************************************************************
+
+	subroutine shy_diff_internal_r(n,r1,r2)
+	integer n
+	real r1(n),r2(n)
+	integer i
+	do i=1,n
+	  write(6,*) r1(i),r2(i),r2(i)-r1(i)
+	end do
+	end
 
 !************************************************************
 

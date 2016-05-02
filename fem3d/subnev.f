@@ -128,6 +128,8 @@ c revised on 28.01.92 by ggu (double precision, implicit none)
 	double precision xlon1,ylat1,xlon2,ylat2,xlon3,ylat3	!lat/long [rad]
 	double precision dlat0,dlon0			!center of projection
 
+	if( .not. basin_has_basin() ) goto 97
+
 	call check_spheric_ev	!checks and sets isphe_ev and init_ev
 	call get_coords_ev(isphe)
 
@@ -259,6 +261,9 @@ c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
 	!write(68,*) 'maxmax: ',maxmax
 
 	return
+   97	continue
+        write(6,*) 'no basin has been read'
+	stop 'error stop set_ev: no basin'
    99	continue
         write(6,*) 'set_ev : nodes not in anticlockwise sense'
         write(6,*) 'elem = ',ie,'  area = ',aj/2.,'  aj = ',aj
@@ -266,7 +271,7 @@ c natural coordinates in triangle:   xi(i) = a(i) + b(i)*x + c(i)*y    i=1,3
         write(6,*) kn1,x1,y1
         write(6,*) kn2,x2,y2
         write(6,*) kn3,x3,y3
-	stop 'error stop set_ev'
+	stop 'error stop set_ev: clockwise'
 	end
 
 c****************************************************************

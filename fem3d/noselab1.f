@@ -122,8 +122,10 @@ c--------------------------------------------------------------
 
         call mod_depth_init(nkn,nel)
         call levels_init(nkn,nel,nlv)
-        call ev_init(nel)
-        call set_ev
+	if( bneedbasin ) then
+          call ev_init(nel)
+          call set_ev
+	end if
 
 	allocate(cv2(nkn))
 	allocate(cv3(nlv,nkn))
@@ -140,8 +142,11 @@ c--------------------------------------------------------------
 
 	if( bneedbasin ) then
 	  call outfile_make_hkv(nkn,nel,nen3v,hev,hkv)
+	  call ilhk2e(nkn,nel,nen3v,ilhkv,ilhv)
+	  call adjust_layer_index(nel,nlv,hev,hlv,ilhv)
 	  call init_volume(nlvdi,nkn,nel,nlv,nen3v,ilhkv
      +                          ,hlv,hev,hl,vol3)
+	  !vol3=1.
 	end if
 
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)

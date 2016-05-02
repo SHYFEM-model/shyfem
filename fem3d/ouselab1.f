@@ -43,6 +43,7 @@ c elaborates ous file
 	real, allocatable :: dv(:,:)
 
 	real, allocatable :: vars(:,:,:)
+	real, allocatable :: varsaux(:,:,:)
 	real, allocatable :: vars2d(:,:,:)
 	integer, allocatable :: idims(:,:)
 
@@ -120,15 +121,16 @@ c--------------------------------------------------------------
 	call levels_init(nkn,nel,nlv)
 	call mod_hydro_init(nkn,nel,nlv)
 
+	if( nlv /= nlvdi ) stop 'error stop: problem.... nlv,nlvdi'
+
 	allocate(u2v(nel),v2v(nel))
-	allocate(hl(nlv))
+	allocate(hl(nlvdi))
 	allocate(zv(nkn))
 	allocate(uprv(nlvdi,nkn))
 	allocate(vprv(nlvdi,nkn))
 	allocate(sv(nlvdi,nkn))
 	allocate(dv(nlvdi,nkn))
 
-	nlvdi = nlv
         call read_ous_header(nin,nkn,nel,nlvdi,ilhv,hlv,hev)
         call ous_get_params(nin,nkn,nel,nlv)
 
@@ -161,8 +163,13 @@ c--------------------------------------------------------------
 	nndim = max(3*nel,nkn)
 	nvar = 4
 	allocate(vars(nlvdi,nndim,nvar))
+	allocate(varsaux(nlvdi,nndim,nvar))
 	allocate(vars2d(1,nndim,nvar))
 	allocate(idims(4,nvar))			!n,m,lmax,nvar
+
+	vars = 0.
+	vars2d = 0.
+	idims = 0
 
 	idims(1,:) = nel
 	idims(1,1) = nkn
@@ -212,6 +219,7 @@ c--------------------------------------------------------------
 	do
 
 	  itold = it
+	  vars = 0.
 
 	  call new_read_record(nin,it,nlvdi,nndim,nvar,vars,ierr)
 
@@ -237,14 +245,14 @@ c--------------------------------------------------------------
 
 	  if( bwrite ) then
 
-	    call convert_2d(nlvdi,nndim,nvar,vars,vars2d)
-	    call transfer_uvz(1,nndim,nvar,vars2d,znv,zenv,unv,vnv)
-	    call mimar(znv,nkn,zmin,zmax,rnull)
-            call comp_vel2d(nel,hev,zenv,unv,vnv,u2v,v2v
-     +                          ,umin,vmin,umax,vmax)
-	    if( bneedbasin ) then
-              call compute_volume_ia(iano,zenv,volume,area)
-	    end if
+	    !call convert_2d(nlvdi,nndim,nvar,vars,vars2d)
+	    !call transfer_uvz(1,nndim,nvar,vars2d,znv,zenv,unv,vnv)
+	    !call mimar(znv,nkn,zmin,zmax,rnull)
+            !call comp_vel2d(nel,hev,zenv,unv,vnv,u2v,v2v
+!     +                          ,umin,vmin,umax,vmax)
+	    !if( bneedbasin ) then
+            !  call compute_volume_ia(iano,zenv,volume,area)
+	    !end if
 
             !write(6,*) 'zmin/zmax : ',zmin,zmax
             !write(6,*) 'umin/umax : ',umin,umax
@@ -492,6 +500,8 @@ c***************************************************************
 	real utlnv(nlvddi,nel)
 	real vtlnv(nlvddi,nel)
 
+	utlnv = 0.
+	vtlnv = 0.
         call ous_read_record(nb,it,nlvddi,ilhv,znv,zenv
      +                          ,utlnv,vtlnv,ierr)
 
@@ -519,8 +529,8 @@ c***************************************************************
 
 	real znv(nkn)
 	real zenv(3*nel)
-	real utlnv(nlvdi,nel)
-	real vtlnv(nlvdi,nel)
+	real utlnv(nlvddi,nel)
+	real vtlnv(nlvddi,nel)
 
 	ierr = 0
 
@@ -529,7 +539,7 @@ c***************************************************************
 	utlnv(:,1:nel) = vars(:,1:nel,3)
 	vtlnv(:,1:nel) = vars(:,1:nel,4)
 
-        call ous_write_record(nb,it,nlvdi,ilhv
+        call ous_write_record(nb,it,nlvddi,ilhv
      +			,znv,zenv,utlnv,vtlnv,ierr)
 
 	end
@@ -538,16 +548,22 @@ c***************************************************************
 
 	subroutine convert_2d(nlvddi,nndim,nvar,vars,vars2d)
 
+	use basin
+
 	implicit none
 
 	integer nlvddi,nndim,nvar
 	real vars(nlvddi,nndim,nvar)
 	real vars2d(1,nndim,nvar)
 
+	integer i
+
 	vars2d(1,:,1) = vars(1,:,1)
 	vars2d(1,:,2) = vars(1,:,2)
-	vars2d(1,:,3) = sum(vars(:,:,3),1)
-	vars2d(1,:,4) = sum(vars(:,:,4),1)
+	do i=1,nel
+	  vars2d(1,i,3) = sum(vars(:,i,3),1)
+	  vars2d(1,i,4) = sum(vars(:,i,4),1)
+	end do
 
 	end
 

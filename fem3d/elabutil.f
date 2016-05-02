@@ -1093,6 +1093,34 @@ c***************************************************************
 
 c***************************************************************
 
+	subroutine ilhk2e(nkn,nel,nen3v,ilhkv,ilhv)
+
+c create ilhv -> result is not exact and must be adjusted
+
+	implicit none
+
+	integer nkn,nel
+	integer nen3v(3,nel)
+	integer ilhkv(nkn)
+	integer ilhv(nel)
+
+	integer ie,ii,k,lmax
+
+	ilhv = 0
+
+	do ie=1,nel
+	  lmax = 0
+	  do ii=1,3
+	    k = nen3v(ii,ie)
+	    lmax = max(lmax,ilhkv(k))
+	  end do
+	  ilhv(ie) = lmax
+	end do
+
+	end
+
+c***************************************************************
+
         subroutine open_shy_file(file,status,nunit)
 
 c open SHY file
@@ -1116,7 +1144,7 @@ c nunit is 0 if no other file exists
 
         if( nunit .le. 0 ) then
           write(6,*) 'file: ',trim(file)
-          stop 'error stop open_next_shy_file: opening file'
+          stop 'error stop open_shy_file: opening file'
         end if
 
         end

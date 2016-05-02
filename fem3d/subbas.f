@@ -22,6 +22,7 @@ c 31.03.2015	ggu	set iarnv on read
 c 25.05.2015	ggu	module introduced
 c 02.10.2015	ggu	in basin_open_file eliminated double read (bug)
 c 02.10.2015	ggu	new routines is_depth_unique(), estimate_ngr()
+c 01.05.2016	ggu	new routines basin_has_basin()
 c
 c***********************************************************
 c***********************************************************
@@ -182,6 +183,18 @@ c***********************************************************
 	!write(6,*) 'finished basin_read (module)'
 
 	end subroutine basin_read_by_unit
+
+c***********************************************************
+
+	function basin_has_basin()
+
+! checks if basin has been read
+
+	logical basin_has_basin
+
+	basin_has_basin = nkn_basin > 0 .and. nel_basin > 0
+
+	end function basin_has_basin
 
 c***********************************************************
 

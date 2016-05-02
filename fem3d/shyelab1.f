@@ -162,6 +162,13 @@
 	end if
 
 	!--------------------------------------------------------------
+	! initialize volume
+	!--------------------------------------------------------------
+
+	shy_zeta = 0.
+	call shy_make_volume
+
+	!--------------------------------------------------------------
 	! open output file
 	!--------------------------------------------------------------
 
@@ -218,7 +225,9 @@
 	 if( .not. elabutil_check_time_a(atime,atnew,atold) ) cycle
 
 	 call shy_make_zeta(ftype)
-	 call shy_make_volume
+	 !call shy_make_volume		!comment for constant volume
+	  !vol3e=1.
+	  !vol3k=1.
 
 	 do iv=1,nvar
 

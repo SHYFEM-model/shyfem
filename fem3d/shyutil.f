@@ -260,6 +260,8 @@
 	double precision c,v
 	double precision cctot,vvtot
 	double precision c2tot,v2tot
+        integer :: ks = 3096
+        logical bdebug
 
 	cmin = cv3(1,1)
 	cmax = cv3(1,1)
@@ -270,6 +272,7 @@
 	  lmax = il(i)
 	  c2tot = 0.
 	  v2tot = 0.
+	  bdebug = i == ks
 	  do l=1,lmax
 	    c = cv3(l,i)
 	    v = vol(l,i)
@@ -277,11 +280,13 @@
 	    cmax = max(cmax,c)
 	    c2tot = c2tot + c*v
 	    v2tot = v2tot + v
+	    if( bdebug ) write(41,*) l,v,c
 	  end do
 	  cv2(i) = c2tot / v2tot
 	  vol2(i) = v2tot
 	  cctot = cctot + c2tot
 	  vvtot = vvtot + v2tot
+	  if( bdebug ) write(41,*) lmax,v2tot,c2tot,cv2(i)
 	end do
 
 	cmed = cctot / vvtot
@@ -409,11 +414,17 @@
 
 	implicit none
 
-	integer ie,ii,k,l,lmax,nsigma,nlvaux
+	logical bvolwrite,bdebug
+	integer ie,ii,k,l,lmax,nsigma,nlvaux,ks
 	real z,h,hsigma
-	double precision a,v,v3
+	double precision ak,vk,ve
 	double precision, allocatable :: vole(:,:),volk(:,:)
 	real hl(nlv)		!aux vector for layer thickness
+
+	bvolwrite = .false.
+	bvolwrite = .true.
+	ks = 2985
+	ks = 3096
 
         call get_sigma_info(nlvaux,nsigma,hsigma)
 
@@ -425,21 +436,26 @@
 	volk = 0.
 
 	do ie=1,nel
-	  a = areae(ie)
+	  ak = areae(ie) / 3.	!area of vertex
 	  z = shy_zeta(ie)
-	  !z = 0.		!use water level 0
 	  h = hev(ie)
-	  call get_layer_thickness(nlv,nsigma,hsigma,z,h,hlv,hl)
 	  lmax = ilhv(ie)
+	  call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)
 	  do l=1,lmax
-	    v = a * hl(l)
-	    v3 = v / 3.
-	    vole(l,ie) = vole(l,ie) + v
+	    vk = ak * hl(l)
+	    ve = 3. * vk
+	    vole(l,ie) = vole(l,ie) + ve
 	    do ii=1,3
 	      k = nen3v(ii,ie)
-	      volk(l,k) = volk(l,k) + v3
+	      bdebug = k == ks
+	      volk(l,k) = volk(l,k) + vk
+	      if( bdebug ) write(81,*) ie,ii,lmax,l,vk,ak,hl(l),h
 	    end do
 	  end do
+	  if( bvolwrite .and. mod(ie,nel/nel) == -1 ) then
+	    write(61,*) ie,h
+	    write(61,*) hl
+	  end if
 	end do
 
 	vol3e = vole
@@ -447,10 +463,14 @@
 
 	deallocate(vole,volk)
 
-	!do k=1,nkn,nkn/10
-	!  write(66,*) k
-	!  write(66,*) vol3k(:,k)
-	!end do
+	if( nlv <= 1 ) bvolwrite = .false.
+	if( bvolwrite ) then
+	write(71,*) 'volume from shy_make_volume'
+	do k=1,nkn,nkn/10
+	  write(71,*) k
+	  write(71,*) vol3k(:,k)
+	end do
+	end if
 
 	end
 

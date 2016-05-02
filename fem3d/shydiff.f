@@ -245,7 +245,7 @@
 	write(6,*) nrec , ' unique time records read'
 	write(6,*) nelab, ' records elaborated'
 	write(6,*) ifile, ' files read'
-	write(6,*) ndiff, ' different records found'
+	write(6,*) ndiff, ' differing records found'
 	write(6,*)
 	if( ndiff == 0 ) then
 	  nexit = 99
@@ -308,12 +308,14 @@
 	real, parameter :: eps = 1.e-6
 	!real, parameter :: eps = 0.
 	real diff
+	integer iloc(2)
 
 	diff = maxval( abs(cv3-cv4) )
 
 	if( diff > eps ) then
 	  ndiff = ndiff + 1
-	  write(6,*) '*** record differing: ',diff
+	  iloc = maxloc( abs(cv3-cv4) )
+	  write(6,*) '*** record differing: ',diff,iloc
 	end if
 
 	end
