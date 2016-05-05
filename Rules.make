@@ -60,13 +60,13 @@ COMPILER_PROFILE = NORMAL
 ##############################################
 
 #FORTRAN_COMPILER = GNU_G77
-FORTRAN_COMPILER = GNU_GFORTRAN
-#FORTRAN_COMPILER = INTEL
+#FORTRAN_COMPILER = GNU_GFORTRAN
+FORTRAN_COMPILER = INTEL
 #FORTRAN_COMPILER = PORTLAND
 #FORTRAN_COMPILER = IBM
 
-C_COMPILER = GNU_GCC
-#C_COMPILER = INTEL
+#C_COMPILER = GNU_GCC
+C_COMPILER = INTEL
 #C_COMPILER = IBM
 
 ##############################################
@@ -133,10 +133,11 @@ SOLVER=SPARSKIT
 #
 ##############################################
 
-NETCDF=false
-#NETCDF=true
+#NETCDF=false
+NETCDF=true
 #NETCDFDIR = /usr/local/netcdf
-NETCDFDIR = /usr
+#NETCDFDIR = /usr
+NETCDFDIR = /users/home/opt/netcdf/netcdf-4.2.1.1
 
 ##############################################
 # GOTM library
@@ -265,15 +266,15 @@ endif
 #PROFILE = true
 PROFILE = false
 
-DEBUG = true
-#DEBUG = false
+#DEBUG = true
+DEBUG = false
 
 OPTIMIZE = MEDIUM
 #OPTIMIZE = HIGH
 #OPTIMIZE = NONE
 
-WARNING = true
-#WARNING = false
+#WARNING = true
+WARNING = false
 
 #BOUNDS = true
 BOUNDS = false
@@ -334,8 +335,7 @@ ifeq ($(WARNING),true)
   FGNU_WARNING = -Wall -Wtabs -Wno-unused -Wno-uninitialized
   FGNU_WARNING = -Wall -Wtabs -Wno-unused
   FGNU_WARNING = -Wall -Wtabs -Wno-unused \
-			-Wno-conversion -Wno-unused-dummy-argument \
-			-Wno-zerotrip
+			-Wno-conversion -Wno-unused-dummy-argument
 endif
 
 FGNU_BOUNDS = 
@@ -555,7 +555,6 @@ ifeq ($(DEBUG),true)
   FINTEL_NOOPT = -g -traceback -check uninit -check bounds 
   FINTEL_NOOPT = -g -traceback -check uninit 
   FINTEL_NOOPT = -g -traceback -O0
-  FINTEL_NOOPT = -g -traceback
 endif
 
 # FINTEL_OPT   = -O -g -Mprof=time
@@ -567,7 +566,6 @@ FINTEL_OPT   = -O -mcmodel=large
 FINTEL_OPT   = -O 
 ifeq ($(OPTIMIZE),HIGH)
   FINTEL_OPT   = -O3
-  FINTEL_OPT   = -O3 -xhost
   #FINTEL_OPT   = -O3 -mcmodel=medium
   #FINTEL_OPT   = -O3 -mcmodel=large
 endif

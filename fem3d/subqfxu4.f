@@ -17,7 +17,7 @@ c 01.06.2011    ggu     use constant albedo
 c
 c*****************************************************************************
 
-        subroutine heat2t(dt,dh,qs,qrad,albedo,ts,tsnew)
+        subroutine heat2t(dt,dh,qs,qrad,ts,tsnew)
 
 c computes new sea temperature
 c
@@ -31,25 +31,21 @@ c radiation is positive if into the water
         real dh                 !layer depth
         real qs                 !solar radiation
         real qrad               !other radiation
-	real albedo             !albedo to be used
         real ts                 !old temperature
         real tsnew              !new temperature
 
         real ct
-        real qseff
 
 c--------------------------------------------------
 c general constants
 c--------------------------------------------------
-
         ct = cpw*rhow*dh          !heat capacity
 
 c--------------------------------------------------
 c new temperature
 c--------------------------------------------------
 
-        qseff = qs * ( 1. - albedo )
-        tsnew = ts + (qseff+qrad)*dt/ct
+        tsnew = ts + (qs+qrad)*dt/ct
 
 c--------------------------------------------------
 c end of routine
