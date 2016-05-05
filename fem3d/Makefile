@@ -60,13 +60,13 @@ endif
 EXENC = 
 NETCDF_OBJ = 
 DIRLIB_NETCDF = $(NETCDFDIR)/lib/
-DIRLIB_NETCDF = $(NETCDFDIR)/lib/x86_64-linux-gnu
+#DIRLIB_NETCDF = $(NETCDFDIR)/lib/x86_64-linux-gnu
 DIRINC_NETCDF = $(NETCDFDIR)/include
 ifeq ($(NETCDF),true)
   NETCDF_OBJ       = netcdf.o netcdf_util.o 
   LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDF)
   LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDF).a
-  #INCL_NETCDF      = -I$(DIRINC_NETCDF)
+  INCL_NETCDF      = -I$(DIRINC_NETCDF)
   EXENC            = nos2nc ous2nc ts2nc
 endif
 
@@ -318,6 +318,7 @@ LAGRANGE =	lagrange_main.o \
 
 QFLUX = subqfxt.o subqfxf.o \
 	subqfxm1.o subqfxm2.o subqfxm3.o subqfxm4.o subqfxm5.o \
+        subqfxm6.o \
 	subqfxu1.o subqfxu2.o subqfxu3.o subqfxu4.o
 
 QFLUX_TEST = subqfxf.o \

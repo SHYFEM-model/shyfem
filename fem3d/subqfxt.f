@@ -117,16 +117,24 @@ c computes new temperature (forced by heat flux) - 3d version
 	use mod_meteo
 	use mod_ts
 	use levels
+        use basin, only : xgv,ygv !ivan
+        use mod_hydro_print !ivan
+
 
 	implicit none
 
+        include 'param.h' !ivan
         include 'subqfxm.h'
 
 	integer it
 	real dt
 	integer nkn
 	integer nlvddi
-	real temp(nlvddi,nkn)
+        real temp(nlvddi,1)!ivan
+        real uua(nlvddi,1) !ivan
+        real vva(nlvddi,1) !ivan
+        real uub,vvb       !ivan
+	!real temp(nlvddi,nkn)  !ivan
 	double precision dq	!total energy introduced [(W/m**2)*dt*area = J]
 
 c local
@@ -138,13 +146,17 @@ c local
 	integer mode
         integer yes
 	integer iheat
+	integer isolp
 	real tm,tnew,hm
 	real salt,tfreeze
 	real albedo
 	real hdecay,adecay,qsbottom,botabs
 	real rtot
         real qs,ta,tb,uw,cc,ur,p,e,r,q
+        real ddlon,ddlat !ivan
+        real dp,uuw,vvw !ivan
 	real qsens,qlat,qlong,evap,qrad
+        real qswa !ivan
 	real ev,eeff
 	real area
 	real evaver
@@ -156,8 +168,11 @@ c local
 
 	real hb			!depth of modelled T in first layer [m]
 	real usw		!surface friction velocity [m/s]
-	real rad		!Net shortwave flux 
+	!real rad		!Net shortwave flux 
 	real cd			!wind drag coefficient
+
+        integer iy,im,id,ih,imn,isec  !ivan
+        integer days,jdmon !ivan
 
 	integer itdrag
 c functions
@@ -187,6 +202,9 @@ c---------------------------------------------------------
 	baverevap = .false.
 
 	iheat = nint(getpar('iheat'))
+
+        isolp = nint(getpar('isolp'))  !ivan
+        
 	hdecay = getpar('hdecay')
 	botabs = getpar('botabs')
 
@@ -202,12 +220,17 @@ c---------------------------------------------------------
 	  tws(:) = temp(1,:)
 
           itdrag = nint(getpar('itdrag'))
-	  bwind = itdrag .eq. 4
-	  if ( bwind .and. iheat .ne. 6 ) then
-            write(6,*) 'Erroneous value for itdrag = ',itdrag
-            write(6,*) 'Use itdrag = 4 only with iheat = 6'
-            stop 'error stop qflux3d: itdrag'
-	  end if
+          bwind = itdrag .eq. 4
+          if ( bwind ) then  !ivan
+            if ( iheat .eq. 6 .or. iheat .eq. 8 ) then  !ivan
+               write(6,*) 'itdrag = ',itdrag
+               write(6,*) 'iheat = ',iheat
+              else
+               write(6,*) 'Erroneous value for itdrag = ',itdrag
+               write(6,*) 'Use itdrag = 4 only with iheat = 6 or 8'
+               stop 'error stop qflux3d: itdrag'
+            end if
+          end if
 
           levdbg = nint(getpar('levdbg'))
 	  bdebug = levdbg .ge. 2 
@@ -223,6 +246,15 @@ c---------------------------------------------------------
 
 	adecay = 0.
 	if( hdecay .gt. 0. ) adecay = 1. / hdecay
+
+
+c---------------------------------------------------------
+c set date parameters for iheat=8  !ivan
+c---------------------------------------------------------
+
+        call dts2dt(it,iy,im,id,ih,imn,isec)
+        days=id-1+jdmon(iy,im-1)
+
 
 c---------------------------------------------------------
 c loop over nodes
@@ -240,56 +272,102 @@ c---------------------------------------------------------
 	  end if
 
 	  tm = temp(1,k)
+
 	  salt = saltv(1,k)
 	  tfreeze = -0.0575*salt
 	  area = areanode(1,k)
 	  lmax = ilhkv(k)
-	  if( hdecay .le. 0. ) lmax = 1
+	  if( isolp .eq. 0 .and. hdecay .le. 0. ) lmax = 1
 
-          call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
-	  call make_albedo(tm,albedo)
-	  rad = qs * (1. - albedo)
+          !ivan
+          !call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	  !call make_albedo(tm,albedo)
+	  !qs = qs * (1. - albedo)
+          ! call in if (iheat .eq. ...) 
 
 	  if( iheat .eq. 1 ) then
+            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	    call make_albedo(tm,albedo)
+	    qs = qs * (1. - albedo)
 	    call heatareg (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 2 ) then
+            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	    call make_albedo(tm,albedo)
+	    qs = qs * (1. - albedo)
 	    call heatpom  (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 3 ) then
+            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	    call make_albedo(tm,albedo)
+	    qs = qs * (1. - albedo)
 	    call heatgill (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 4 ) then
+            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	    call make_albedo(tm,albedo)
+	    qs = qs * (1. - albedo)
 	    call heatlucia(ta,p,uw,tb,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 5 ) then
+            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	    call make_albedo(tm,albedo)
+	    qs = qs * (1. - albedo)
 	    call heatgotm (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 6 ) then
+            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	    call make_albedo(tm,albedo)
+	    qs = qs * (1. - albedo)
 	    call get_pe_values(k,r,ev,eeff)
-	    call heatcoare(ta,p,uw,ur,cc,tws(k),r,rad,qsens,qlat,
+	    call heatcoare(ta,p,uw,ur,cc,tws(k),r,qs,qsens,qlat,
      +                     qlong,evap,cd)
 	    if ( bwind ) windcd(k) = cd
 	  else if( iheat .eq. 7 ) then
+            call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
+	    call make_albedo(tm,albedo)
+	    qs = qs * (1. - albedo)
 	    qsens = ta
 	    qlat  = ur
 	    qlong = -cc		!change sign of long wave radiation given by ISAC
 	    evap  = qlat / (2.5008e6 - 2.3e3 * tm)	!pom, gill, gotm
+	  else if( iheat .eq. 8 ) then
+            ddlon = xgv(k)  !ivan 
+            ddlat = ygv(k)  !ivan
+            uub = uprv(1,k) !ivan
+            vvb = vprv(1,k) !ivan
+            call meteo_get_heat_values1(k,ta,dp,uuw,vvw,uw,cc,p) !ivan
+            call heatmfsbulk(days,im,ih,ddlon,ddlat,ta,p,uuw,vvw,dp,
+     +                   cc,tm,uub,vvb,qsens,qlat,qlong,evap,qswa,
+     +                   cd)  !ivan
+            !albedo already in qshort1   
+            qs=qswa
+            if ( bwind ) windcd(k) = cd  !ivan
 	  else
 	    write(6,*) 'iheat = ',iheat
 	    stop 'error stop qflux3d: value for iheat not allowed'
 	  end if
 
 	  if (bdebug) call check_heat(k,tm,qsens,qlat,qlong,evap)
-
           qrad = - ( qlong + qlat + qsens )
 	  rtot = qs + qrad
-
 	  do l=1,lmax
 	    hm = depnode(l,k,mode)
 	    tm = temp(l,k)
-	    if( hdecay .le. 0. ) then
-		qsbottom = 0.
-	    else
-		qsbottom = qs * exp( -adecay*hm )
-		if( l .eq. lmax ) qsbottom = botabs * qsbottom
-	    end if
-            call heat2t(dt,hm,qs-qsbottom,qrad,albedo,tm,tnew)
+            if (isolp == 0) then !ivan
+	       if( hdecay .le. 0. ) then
+	          qsbottom = 0.
+	       else
+                  qsbottom = qs * exp( -adecay*hm )
+                  if( l .eq. lmax ) qsbottom = botabs * qsbottom
+               end if
+             else if (isolp == 1) then
+                  !Jerlov classification (1976) type I
+                  qsbottom = qs * (0.58  *exp(-2.8571 * hm ) 
+     +                           + 0.42 * exp(-0.0435 * hm ))
+                  if( l .eq. lmax ) qsbottom = botabs * qsbottom
+            else
+               write(6,*) 'Erroneous value for isolp = ',isolp
+               write(6,*) 'Use isolp = 0 (hdecay) or 1 (Jerlov)'
+               stop 'error stop qflux3d: isolp' 
+            end if
+            !call heat2t(dt,hm,qs-qsbottom,qrad,albedo,tm,tnew)
+            call heat2t(dt,hm,qs-qsbottom,qrad,tm,tnew)
             if (bdebug) call check_heat2(k,l,qs,qsbottom,qrad,
      +					 albedo,tm,tnew)
 	    tnew = max(tnew,tfreeze)
@@ -297,6 +375,7 @@ c---------------------------------------------------------
 	    albedo = 0.
 	    qrad = 0.
 	    qs = qsbottom
+
 	  end do
 
 c         ---------------------------------------------------------
@@ -307,7 +386,7 @@ c         ---------------------------------------------------------
 	  hb   = depnode(1,k,mode) * 0.5
           usw  = max(1.e-5, sqrt(sqrt(tauxnv(k)**2 + tauynv(k)**2)))
           qrad =  -(qlong + qlat + qsens)
-	  call tw_skin(rad,qrad,tm,hb,usw,dt,dtw(k),tws(k))
+	  call tw_skin(qs,qrad,tm,hb,usw,dt,dtw(k),tws(k)) !ivan
 
 c	  ---------------------------------------------------------
 c	  evap is in [kg/(m**2 s)] -> convert it to [m/s]
@@ -316,7 +395,6 @@ c	  ---------------------------------------------------------
 
 	  evap = evap / rhow			!evaporation in m/s
 	  evapv(k) = evap			!positive if loosing mass
-
           ddq = ddq + rtot * dt * area
 
 	end do

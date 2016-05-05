@@ -5,8 +5,10 @@
         common /ppv/ppv
 
         real metrad(nkndim),methum(nkndim)
+        real metdew(nkndim) !ivan
         real mettair(nkndim),metcc(nkndim)
         common /metrad/metrad, /methum/methum
+        common /metdew/metdew !ivan
         common /mettair/mettair, /metcc/metcc
 
         real metrain(nkndim)

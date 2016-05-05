@@ -165,6 +165,7 @@ c DOCS  END
         character*80, save :: rhum = 'humidity [%]'
         character*80, save :: ccov = 'cloud cover [0-1]'
         character*80, save :: wbtm = 'wet bulb temperature [C]'
+        character*80, save :: dewp = 'dew point temperature [C]'   !ivan
 
 !================================================================
         contains
@@ -194,6 +195,8 @@ c DOCS  END
 	integer nvarm,nid,nlev
 	integer i
 	!integer it0
+        integer iheat !ivan
+        real getpar !ivan
 	double precision dtime0,dtime
 	real flag
 	real val0,val1,val2
@@ -255,7 +258,12 @@ c DOCS  END
 
 	  call meteo_set_rain_data(idrain,nvar)
 
-	  nvar = 4
+          !iheat = nint(getpar('iheat')) !ivan
+          !if( iheat .eq. 8 ) then !ivan     
+          !    nvar = 3
+          !else
+              nvar = 4
+          !end if
 	  nintp = 2
 	  what = 'heat'
 	  vconst = (/ 0., 0., 50., 0. /)
@@ -305,13 +313,19 @@ c DOCS  END
 	  call iff_time_interpolate(idrain,dtime,1,nkn,lmax,metrain)
 	end if
 
-	if( .not. iff_is_constant(idheat) .or. icall == 1 ) then
-	  call iff_read_and_interpolate(idheat,dtime)
-	  call iff_time_interpolate(idheat,dtime,1,nkn,lmax,metrad)
-	  call iff_time_interpolate(idheat,dtime,2,nkn,lmax,mettair)
-	  call iff_time_interpolate(idheat,dtime,3,nkn,lmax,methum)
-	  call iff_time_interpolate(idheat,dtime,4,nkn,lmax,metcc)
-	end if
+        iheat = nint(getpar('iheat')) !ivan
+
+        if( .not. iff_is_constant(idheat) .or. icall == 1 ) then
+          call iff_read_and_interpolate(idheat,dtime)
+          call iff_time_interpolate(idheat,dtime,1,nkn,lmax,metrad)
+          call iff_time_interpolate(idheat,dtime,2,nkn,lmax,mettair)
+          if( iheat .eq. 8 ) then !ivan     
+            call iff_time_interpolate(idheat,dtime,3,nkn,lmax,metdew)
+          else
+            call iff_time_interpolate(idheat,dtime,3,nkn,lmax,methum)
+          end if
+          call iff_time_interpolate(idheat,dtime,4,nkn,lmax,metcc)
+        end if
 
 !------------------------------------------------------------------
 ! extra treatment of data
@@ -329,10 +343,12 @@ c DOCS  END
 !	write(166,*) (wxv(i),wyv(i),windcd(i),tauxnv(i),tauynv(i)
 !     +			,i=1,nkn,nkn/20)
 
-	if( .not. iff_is_constant(idheat) .or. icall == 1 ) then
-	  call meteo_convert_heat_data(idheat,nkn
-     +			,mettair,methum,metwbt)
-	end if
+        if( .not. iff_is_constant(idheat) .or. icall == 1 ) then
+          if( iheat .ne. 8 ) then !ivan     
+            call meteo_convert_heat_data(idheat,nkn
+     +                       ,mettair,methum,metwbt)
+          end if
+        end if
 
 	if( .not. iff_is_constant(idrain) .or. icall == 1 ) then
 	  call meteo_convert_rain_data(idrain,nkn,metrain)
@@ -884,6 +900,8 @@ c convert ice data (nothing to do)
 
 	integer id
 	integer nvar
+        integer iheat !ivan
+        real getpar !ivan
 
 	character*60 string,strings(4)
 	integer i
@@ -898,9 +916,10 @@ c convert ice data (nothing to do)
 	  write(6,*) 'sol_rad t_air humidity cloud_cover'
 	  write(6,*) 'no support for nvar = ',nvar
 	  stop 'error stop meteo_forcing_fem: heat'
-	else if( nvar /= 4 ) then
-	  write(6,*) 'no support for nvar = ',nvar
-	  stop 'error stop meteo_set_heat_data: heat'
+        !else if( nvar .gt. 5 .or. nvar .lt. 3) then !ivan
+        else if( nvar /= 4 ) then
+          write(6,*) 'no support for nvar = ',nvar
+          stop 'error stop meteo_set_heat_data: heat'
 	end if
 
 !	---------------------------------------------------------
@@ -911,36 +930,46 @@ c convert ice data (nothing to do)
 	  call iff_get_var_description(id,i,strings(i))
 	end do
 
-	if( strings(1) == ' ' ) then	!TS file or constant
-	  ihtype = 0
-	  if( iff_has_file(id) ) ihtype = 1
 
-	  if( ihtype == 1 ) then
-	    call iff_set_var_description(id,1,srad)
-	    call iff_set_var_description(id,2,tair)
-	    call iff_set_var_description(id,3,rhum)
-	    call iff_set_var_description(id,4,ccov)
-	  end if
-	else
-	  do i=1,nvar
-	    call iff_get_var_description(id,i,strings(i))
-	  end do
-	  if( strings(1) == srad ) then
-	    if( strings(2) == tair .and. strings(4) == ccov ) then
-	      if( strings(3) == rhum ) then
-	        ihtype = 1
-	      else if( strings(3) == wbtm ) then
-	        ihtype = 2
-	      else
-	        ihtype = -3
-	      end if
-	    else
-	      ihtype = -2
-	    end if
-	  else
-	    ihtype = -1
-	  end if
-	end if
+        iheat = nint(getpar('iheat')) !ivan
+
+        if( strings(1) == ' ' ) then    !TS file or constant
+          ihtype = 0
+          if( iff_has_file(id) ) ihtype = 1
+
+          if( ihtype == 1 ) then
+            call iff_set_var_description(id,1,srad)
+            call iff_set_var_description(id,2,tair)
+            if( iheat == 8) then
+                call iff_set_var_description(id,3,dewp) !ivan
+            else
+                call iff_set_var_description(id,3,rhum)
+            end if  
+            call iff_set_var_description(id,4,ccov)
+          end if
+        else
+          do i=1,nvar
+            call iff_get_var_description(id,i,strings(i))
+          end do
+          if( strings(1) == srad ) then
+            if( strings(2) == tair .and. strings(4) == ccov ) then
+              if( strings(3) == rhum ) then
+                ihtype = 1
+            else if( strings(3) == wbtm .or. strings(3) == dewp ) then !ivan
+                  ihtype = 2
+                  !else if( strings(3) == dewp ) then !ivan
+                  !  ihtype = 3
+              else
+                ihtype = -3
+              end if
+            else
+              ihtype = -2
+            end if
+          else
+            ihtype = -1
+          end if
+        end if
+
 
 	if( ihtype < 0 ) then
 	  write(6,*) 'description string for heat not recognized: '
@@ -1155,6 +1184,42 @@ c convert ice data (nothing to do)
 	p = 0.01 * p					  !Pascal to mb
 
 	end subroutine meteo_get_heat_values
+
+!*********************************************************************
+        subroutine meteo_get_heat_values1(k,ta,dp,uuw,vvw,uw,cc,p)
+
+!ivan
+! returns meteo parameters for one node
+!
+! pressure is returned in [mb]
+
+        use mod_meteo
+
+        implicit none
+
+        include 'param.h'
+
+        integer k                       !node number
+        real ta                         !air temperature [Celsius]
+        real dp                         !dew point temperature [Celsius] !ivan
+        real uw                         !wind speed [m/s]
+        real uuw                        !u-component wind speed [m/s]
+        real vvw                        !v-component wind speed [m/s]
+        real cc                         !cloud cover [0-1]
+        real p                          !atmospheric pressure [mbar, hPa]
+
+        ta  = mettair(k)
+        dp  = metdew(k) !ivan
+        uuw = wxv(k)
+        vvw = wyv(k)
+        uw  = metws(k)
+        cc  = metcc(k)
+        cc = max(0.,cc)
+        cc = min(1.,cc)
+        p = ppv(k)
+        p = 0.01 * p                                      !Pascal to mb
+
+        end subroutine meteo_get_heat_values1
 
 !*********************************************************************
 
