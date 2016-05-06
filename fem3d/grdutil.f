@@ -226,7 +226,7 @@
 	if( bconst .and. bunique ) then		!constant depth
 	  hhev = hm3v(1,1)
 	  hhnv = flag
-	else if( bunique ) then			!uniqie depth at nodes
+	else if( bunique ) then			!unique depth at nodes
 	  hhev = flag
 	else
 	  hhnv = flag

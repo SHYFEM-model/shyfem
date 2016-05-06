@@ -33,20 +33,21 @@
 
 	implicit none
 
-	integer, parameter :: ndim = 1000
-	integer iusplit(ndim)
-
 	real, allocatable :: cv2(:)
 	real, allocatable :: cv3(:,:)
 	real, allocatable :: cv3all(:,:,:)
 
-	integer, allocatable :: ivars(:,:)
+	integer, allocatable :: idims(:,:)
 	integer, allocatable :: il(:)
 
 	real, allocatable :: znv(:)
 	real, allocatable :: uprv(:,:)
 	real, allocatable :: vprv(:,:)
+	real, allocatable :: sv(:,:)
+	real, allocatable :: dv(:,:)
 
+	logical bhydro,bscalar
+	logical blastrecord
 	integer nwrite,nread,nelab,nrec,nin,nold
 	integer nvers
 	integer nvar,npr
@@ -55,7 +56,7 @@
 	integer it
 	integer ivar,iaux
 	integer iv,j,l,k,lmax,node
-	integer ip,nb
+	integer ip
 	integer ifile,ftype
 	integer id,idout
 	integer n,m,nndim,nn
@@ -95,15 +96,14 @@
 	! open input files
 	!--------------------------------------------------------------
 
-	call open_new_file(ifile,id,atstart)
+	call open_new_file(ifile,id,atstart)	!atstart=-1 if no new file
 
 	!--------------------------------------------------------------
-	! set up params and arrays
+	! set up params and modules
 	!--------------------------------------------------------------
 
 	call shy_get_params(id,nkn,nel,npr,nlv,nvar)
 	call shy_get_ftype(id,ftype)
-	!write(6,*) id,nkn,nel,npr,nlv,nvar,ftype
 
 	call shy_info(id)
 
@@ -115,12 +115,19 @@
         call ev_init(nel)
 	call set_ev
 
-	if( ftype == 1 ) then		!OUS
+	!--------------------------------------------------------------
+	! set dimensions and allocate arrays
+	!--------------------------------------------------------------
+
+	bhydro = ftype == 1
+	bscalar = ftype == 2
+
+	if( bhydro ) then		!OUS
 	  if( nvar /= 4 ) goto 71
 	  nndim = 3*nel
 	  allocate(il(nel))
 	  il = ilhv
-	else if( ftype == 2 ) then	!NOS
+	else if( bscalar ) then		!NOS
 	  nndim = nkn
 	  allocate(il(nkn))
 	  il = ilhkv
@@ -131,8 +138,13 @@
 	allocate(cv2(nndim))
 	allocate(cv3(nlv,nndim))
 	allocate(cv3all(nlv,nndim,0:nvar))
-	allocate(ivars(4,nvar))
+	allocate(idims(4,nvar))
 	allocate(znv(nkn),uprv(nlv,nkn),vprv(nlv,nkn))
+	allocate(sv(nlv,nkn),dv(nlv,nkn))
+
+	!--------------------------------------------------------------
+	! set up aux arrays, sigma info and depth values
+	!--------------------------------------------------------------
 
 	call shyutil_init(nkn,nel,nlv)
 
@@ -150,10 +162,11 @@
 	call handle_nodes	!single node output
 
 	!--------------------------------------------------------------
-	! averaging
+	! time averaging
 	!--------------------------------------------------------------
 
 	call elabutil_set_averaging(nvar)	!sets btrans
+	call elabutil_check_options		!see if b2d and btrans
 
 	if( btrans ) then
 	  call shyutil_init_accum(nlvdi,nndim,nvar,istep)
@@ -172,17 +185,13 @@
 	! open output file
 	!--------------------------------------------------------------
 
-	iusplit = 0
-
 	boutput = boutput .or. btrans
-	bopen = boutput .and. .not. bsplit
+	bopen = boutput .or. bsumvar
 
 	if( bopen ) then
 	  idout = shy_init('out.shy')
           call shy_clone(id,idout)
-	  if( b2d ) then
-	    call shy_convert_2d(idout)
-	  end if
+	  if( b2d ) call shy_convert_2d(idout)
           call shy_write_header(idout,ierr)
 	  if( ierr /= 0 ) goto 75
 	end if
@@ -204,7 +213,11 @@
 
 	 atold = atime
 
-	 call read_records(id,dtime,nvar,nndim,nlvdi,ivars
+	 !--------------------------------------------------------------
+	 ! read new data set
+	 !--------------------------------------------------------------
+
+	 call read_records(id,dtime,nvar,nndim,nlvdi,idims
      +				,cv3,cv3all,ierr)
 
          if(ierr.ne.0) then	!EOF - see if we have to read another file
@@ -213,12 +226,18 @@
 	   cycle
 	 end if
 
-	 nread = nread + nvar
-	 nrec = nrec + 1
 	 call fem_file_convert_time(datetime,dtime,atime)
+
+	 nread = nread + 1
+	 nrec = nrec + nvar
+
+	 !--------------------------------------------------------------
+	 ! look for new record and see if we are in time window
+	 !--------------------------------------------------------------
 
 	 call shy_peek_record(id,dtnew,iaux,iaux,iaux,iaux,ierr)
 	 if( ierr .ne. 0 ) dtnew = dtime
+	 blastrecord = ierr < 0 .and. atstart == -1
 	 call fem_file_convert_time(datetime,dtnew,atnew)
 
 	 if( elabutil_over_time_a(atime,atnew,atold) ) exit
@@ -226,20 +245,22 @@
 
 	 call shy_make_zeta(ftype)
 	 !call shy_make_volume		!comment for constant volume
-	  !vol3e=1.
-	  !vol3k=1.
+
+	 !--------------------------------------------------------------
+	 ! loop over single variables
+	 !--------------------------------------------------------------
 
 	 do iv=1,nvar
 
-	  n = ivars(1,iv)
-	  m = ivars(2,iv)
-	  lmax = ivars(3,iv)
-	  ivar = ivars(4,iv)
+	  n = idims(1,iv)
+	  m = idims(2,iv)
+	  lmax = idims(3,iv)
+	  ivar = idims(4,iv)
 	  nn = n * m
 
 	  cv3(:,:) = cv3all(:,:,iv)
 
-	  nelab=nelab+1
+	  nelab = nelab + 1
 
 	  if( .not. bquiet ) then
 	    call shy_write_time(.true.,dtime,atime,ivar)
@@ -250,48 +271,74 @@
 	  end if
 
 	  if( btrans ) then
-	    call shy_time_aver(mode,iv,nrec,ifreq,istep,nndim
-     +			,ivars,threshold,cv3,boutput)
+	    call shy_time_aver(mode,iv,nread,ifreq,istep,nndim
+     +			,idims,threshold,cv3,boutput)
 	  end if
 
-	  if( baverbas ) then
-	    call shy_make_basin_aver(ivars(:,iv),nndim,cv3
+	  if( baverbas .and. bscalar ) then
+	    call shy_make_basin_aver(idims(:,iv),nndim,cv3
      +                          ,cmin,cmax,cmed,vtot)
-	    !call write_aver(it,ivar,cmin,cmax,cmed,vtot)
+	    call shy_write_aver(dtime,ivar,cmin,cmax,cmed,vtot)
 	  end if
 
 	  if( b2d ) then
-	    call shy_make_vert_aver(ivars(:,iv),nndim,cv3,cv2)
+	    call shy_make_vert_aver(idims(:,iv),nndim,cv3,cv2)
 	  end if
 
-	  if( bsplit ) then
-            call get_split_iu(ndim,iusplit,ivar,nin,ilhkv,hlv,hev,nb)
+	  if( bsplit .and. bscalar ) then
+	    call shy_split_id(ivar,iv,id,idout)
 	  end if
 
-	  if( boutput ) then
+	  if( boutput .and. idout > 0 ) then
 	    nwrite = nwrite + 1
 	    if( bverb ) write(6,*) 'writing to output: ',ivar
 	    if( bsumvar ) ivar = 30
 	    if( b2d ) then
-	      call shy_write_output_record(idout,dtime,ivar,n,m
-     +						,1,1,cv2)
+	      call shyelab_write_record(id,idout,dtime,ivar,n,m
+     +						,1,1,cv3)
 	    else
-	      call shy_write_output_record(idout,dtime,ivar,n,m
-     +						,nlv,nlv,cv3)
+	      call shyelab_write_record(id,idout,dtime,ivar,n,m
+     +						,nlv,nlvdi,cv3)
 	    end if
-            if( ierr .ne. 0 ) goto 99
+!FIXME - should be wrong for hydro (zeta) output
 	  end if
 
-	  if( bnodes .and. ftype == 2 ) then	!scalar output
+	  if( bnodes .and. bscalar ) then	!scalar output
 	    call write_nodes(dtime,ivar,cv3)
 	  end if
 
 	 end do		!loop on ivar
 
-	 if( bnodes .and. ftype == 1 ) then	!hydro output
+	 !--------------------------------------------------------------
+	 ! finished loop over single variables - handle hydro file
+	 !--------------------------------------------------------------
+
+	 if( baverbas .and. bhydro ) then
+           call shy_make_hydro_aver(dtime,nndim,cv3all
+     +                  ,znv,uprv,vprv,sv,dv)
+	 end if
+
+	 if( bsplit .and. bhydro ) then
+	   call prepare_hydro(nndim,cv3all,znv,uprv,vprv)
+	   call convert_to_speed(uprv,vprv,sv,dv)
+	   call shy_split_hydro(id,dtime,znv,uprv,vprv,sv,dv)
+	 end if
+
+	 if( bnodes .and. bhydro ) then	!hydro output
+	   call prepare_hydro(nndim,cv3all,znv,uprv,vprv)
 	   call write_nodes_vel(dtime,znv,uprv,vprv)
 	 end if
  
+	 if( bsumvar .and. bscalar ) then
+	   cv3all(:,:,0) = 0.
+	   cv3 = sum(cv3all,dim=3)	   
+	   nwrite = nwrite + 1
+	   if( bverb ) write(6,*) 'writing to output: ',ivar
+	   ivar = 30
+	   call shyelab_write_record(id,idout,dtime,ivar,n,m
+     +						,nlv,nlvdi,cv3)
+	 end if
+
 	end do		!time do loop
 
 !--------------------------------------------------------------
@@ -302,21 +349,19 @@
 ! final write of variables
 !--------------------------------------------------------------
 
-! next not working for b2d ... FIXME
-
 	if( btrans ) then
-	  !write(6,*) 'istep,naccu: ',istep,naccu
 	  do ip=1,istep
+	   do iv=1,nvar
 	    naccum = naccu(iv,ip)
-	    !write(6,*) 'naccum: ',naccum
 	    if( naccum > 0 ) then
 	      nwrite = nwrite + 1
-	      write(6,*) 'final aver: ',ip,naccum
-	      call nos_time_aver(-mode,ip,ifreq,istep,nkn,nlvdi
-     +				,naccu,accum,std,threshold,cv3,boutput)
-	      if( bsumvar ) ivar = 30
+	      write(6,*) 'final aver: ',ip,iv,naccum
+	      call shy_time_aver(-mode,iv,ip,0,istep,nndim
+     +			,idims,threshold,cv3,boutput)
 	      call shy_write_scalar_record(idout,dtime,ivar,nlvdi,cv3)
+!FIXME - should be wrong for hydro (zeta) output
 	    end if
+	   end do
 	  end do
 	end if
 
@@ -325,32 +370,19 @@
 !--------------------------------------------------------------
 
 	write(6,*)
-	write(6,*) nread, ' records read'
-	write(6,*) nrec , ' unique time records read'
+	write(6,*) nrec,  ' records read'
+	write(6,*) nread, ' unique time records read'
 	write(6,*) nelab, ' records elaborated'
-	write(6,*) ifile, ' files read'
+	write(6,*) ifile, ' file(s) read'
 	write(6,*) nwrite,' records written'
 	write(6,*)
 
 	if( bsplit ) then
 	  write(6,*) 'output written to following files: '
-	  do ivar=1,ndim
-	    nb = iusplit(ivar)
-	    if( nb .gt. 0 ) then
-              write(name,'(i4)') ivar
-	      write(6,*) trim(adjustl(name))//'.shy'
-	      close(nb)
-	    end if
-	  end do
+	  write(6,*) '...not yet ready'
 	else if( boutput ) then
 	  write(6,*) 'output written to file out.shy'
-	  close(nb)
 	end if
-
-	!call ap_get_names(basnam,simnam)
-	!write(6,*) 'names used: '
-	!write(6,*) 'basin: ',trim(basnam)
-	!write(6,*) 'simul: ',trim(simnam)
 
 !--------------------------------------------------------------
 ! end of routine
@@ -374,13 +406,42 @@
 	write(6,*) 'error reading header, ierr = ',ierr
 	write(6,*) 'file = ',trim(file)
 	stop 'error stop shyelab: reading header'
-   99	continue
-	write(6,*) 'error writing to file unit: ',nb
-	stop 'error stop shyelab: write error'
 	end
 
 !***************************************************************
 !***************************************************************
+!***************************************************************
+
+	subroutine convert_to_speed(uprv,vprv,sv,dv)
+
+	use basin
+	use levels
+	
+	implicit none
+
+	real uprv(nlvdi,nkn)
+	real vprv(nlvdi,nkn)
+	real sv(nlvdi,nkn)
+	real dv(nlvdi,nkn)
+
+	integer k,lmax,l
+	real u,v,s,d
+
+        do k=1,nkn
+          lmax = ilhkv(k)
+          do l=1,lmax
+            u = uprv(l,k)
+            v = vprv(l,k)
+            call c2p(u,v,s,d)   !d is meteo convention
+            d = d + 180.
+            if( d > 360. ) d = d - 360.
+            sv(l,k) = s
+            dv(l,k) = d
+          end do
+        end do
+
+	end
+
 !***************************************************************
 
 	subroutine prepare_hydro(nndim,cv3all,znv,uprv,vprv)
@@ -410,12 +471,247 @@
         uv(:,1:nel)    = cv3all(:,1:nel,3)
         vv(:,1:nel)    = cv3all(:,1:nel,4)
 
-	call transp2vel_new(nel,nkn,nlv,nlvdi,hev,zenv,nen3v
+	call shy_transp2vel(nel,nkn,nlv,nlvdi,hev,zenv,nen3v
      +                          ,ilhv,hlv,uv,vv
      +                          ,uprv,vprv)
 
 	deallocate(zenv,uv,vv)
 
+	end
+
+!***************************************************************
+
+        subroutine shy_make_hydro_aver(dtime,nndim,cv3all
+     +                  ,znv,uprv,vprv,sv,dv)
+
+        use basin
+        use levels
+        use mod_depth
+
+        implicit none
+
+        integer, parameter :: nvar = 4
+        double precision dtime
+        integer nndim
+        integer idims(4,nvar)
+        real cv3all(nlvdi,nndim,0:nvar)
+        real znv(nkn)
+        real uprv(nlvdi,nkn)
+        real vprv(nlvdi,nkn)
+        real sv(nlvdi,nkn)
+        real dv(nlvdi,nkn)
+
+        integer ivar,idim(4)
+        real cmin,cmax,cmed,vtot
+
+        call prepare_hydro(nndim,cv3all,znv,uprv,vprv)
+        call convert_to_speed(uprv,vprv,sv,dv)
+
+        ivar = 1
+        idim = (/nkn,1,1,ivar/)
+        call shy_make_basin_aver(idim,nkn,znv
+     +                          ,cmin,cmax,cmed,vtot)
+	vtot = 0.
+        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,vtot)
+
+        ivar = 2
+        idim = (/nkn,1,nlv,ivar/)
+        call shy_make_basin_aver(idim,nkn,uprv
+     +                          ,cmin,cmax,cmed,vtot)
+	vtot = 0.
+        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,vtot)
+
+        call shy_make_basin_aver(idim,nkn,vprv
+     +                          ,cmin,cmax,cmed,vtot)
+	vtot = 0.
+        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,vtot)
+
+        ivar = 6
+        idim = (/nkn,1,nlv,ivar/)
+        call shy_make_basin_aver(idim,nkn,sv
+     +                          ,cmin,cmax,cmed,vtot)
+	vtot = 0.
+        call shy_write_aver(dtime,ivar,cmin,cmax,cmed,vtot)
+
+        end
+
+!***************************************************************
+!***************************************************************
+!***************************************************************
+
+	subroutine shy_split_hydro(id,dtime,znv,uprv,vprv,sv,dv)
+
+	use basin
+	use levels
+
+	implicit none
+
+	integer id
+	double precision dtime
+	real znv(nkn)
+	real uprv(nlvdi,nkn)
+	real vprv(nlvdi,nkn)
+	real sv(nlvdi,nkn)
+	real dv(nlvdi,nkn)
+
+	integer, save :: icall = 0
+	integer, save :: idz,idu,idv,ids,idd
+
+	if( icall == 0 ) then
+	  call shy_split_internal(id,'z.shy',.true.,idz)
+	  call shy_split_internal(id,'u.shy',.false.,idu)
+	  call shy_split_internal(id,'v.shy',.false.,idv)
+	  call shy_split_internal(id,'s.shy',.false.,ids)
+	  call shy_split_internal(id,'d.shy',.false.,idd)
+	  icall = 1
+	end if
+
+	call shyelab_write_record(id,idz,dtime,1,nkn,1,1,1,znv)
+	call shyelab_write_record(id,idu,dtime,2,nkn,1,nlv,nlv,uprv)
+	call shyelab_write_record(id,idv,dtime,2,nkn,1,nlv,nlv,vprv)
+	call shyelab_write_record(id,ids,dtime,6,nkn,1,nlv,nlv,sv)
+	call shyelab_write_record(id,idd,dtime,7,nkn,1,nlv,nlv,dv)
+
+	end
+
+!***************************************************************
+
+	subroutine shy_split_internal(id,file,b2d,id_out)
+
+	use shyfile
+
+	implicit none
+
+	integer id
+	character*(*) file
+	logical b2d
+	integer id_out		!id of output file (return)
+
+	integer ierr
+	integer nk,ne,np,nl,nv
+
+	id_out = shy_init(file)
+	if( id_out <= 0 ) goto 99
+
+        call shy_clone(id,id_out)
+	call shy_get_params(id_out,nk,ne,np,nl,nv)
+	call shy_set_params(id_out,nk,ne,1,nl,1)
+	if( b2d ) call shy_convert_2d(id_out)
+	call shy_set_ftype(id_out,2)
+
+        call shy_write_header(id_out,ierr)
+	if( ierr /= 0 ) goto 98
+
+
+	return
+   98	continue
+	stop 'error stop shy_split_internal: cannot write header'
+   99	continue
+	stop 'error stop shy_split_internal: cannot open file'
+	end
+
+!***************************************************************
+
+	subroutine shy_split_id(ivar,iv,id_in,id_out)
+
+	use shyfile
+
+	implicit none
+
+	integer ivar,iv
+	integer id_in
+	integer id_out
+
+	integer, save :: nsplit = 0
+	integer, save, allocatable :: iusplit(:)
+	integer, allocatable :: iuaux(:)
+	integer ierr,ip
+	character*80 name
+
+        if( nsplit == 0 ) then
+	  nsplit = max(ivar,100)
+	  allocate(iusplit(nsplit))
+	  iusplit = 0
+	end if
+
+        if( ivar > nsplit ) then
+          allocate(iuaux(2*ivar))
+	  iuaux = 0
+          iuaux(1:nsplit) = iusplit(1:nsplit)
+          call move_alloc(iuaux,iusplit)
+	  nsplit = 2*ivar
+        end if
+
+	id_out = iusplit(ivar)
+	write(6,*) 'shy_split_id: ',ivar,id_out
+
+	if( id_out == 0 ) then
+	  write(name,'(i4,a)') ivar,'.shy'
+	  id_out = shy_init(adjustl(name))
+	  if( id_out <= 0 ) goto 99
+          call shy_clone(id_in,id_out)
+	  call shy_convert_1var(id_out)
+          call shy_write_header(id_out,ierr)
+	  if( ierr /= 0 ) goto 98
+	  iusplit(ivar) = id_out
+	end if
+
+	return
+   98	continue
+	stop 'error stop shy_split_id: cannot write header'
+   99	continue
+	stop 'error stop shy_split_id: cannot open file'
+	end
+
+!***************************************************************
+!***************************************************************
+!***************************************************************
+
+	subroutine shyelab_write_record(id,idout,dtime,ivar,n,m
+     +						,nlv,nlvdi,cv3)
+
+	use basin
+	use shyfile
+	use elabutil
+
+	implicit none
+
+	integer id,idout
+	double precision dtime
+	integer ivar,n,m
+	integer nlv,nlvdi
+	real cv3(nlvdi,n*m)
+
+	integer it,nb
+	integer ilhv(nel)
+	integer ilhkv(nkn)
+
+	nb = 0
+	it = nint(dtime)
+
+	if( outformat == 'shy' .or. outformat == 'native') then
+	  call shy_write_output_record(idout,dtime,ivar,n,m
+     +						,nlv,nlv,cv3)
+        else if( outformat == 'gis' ) then
+	  if( ivar == 1 .or. ivar == 3 ) goto 99
+	  if( n /= nkn .or. m /= 1 ) goto 98
+	  call shy_get_layerindex(id,ilhv,ilhkv)
+          call gis_write_record(nb,it,ivar,nlvdi,ilhkv,cv3)
+	else
+          write(6,*) 'output format unknown: ',outformat
+          stop 'error stop shyelab_write_record: output format'
+	end if
+
+	return
+   98	continue
+	write(6,*) 'output format = ',trim(outformat)
+	write(6,*) 'n,m = ',n,m
+	write(6,*) 'nkn,nel = ',nkn,nel
+	stop 'error stop shyelab_write_record: cannot handle'
+   99	continue
+	write(6,*) 'output format = ',trim(outformat)
+	write(6,*) 'ivar = ',ivar
+	stop 'error stop shyelab_write_record: cannot handle'
 	end
 
 !***************************************************************

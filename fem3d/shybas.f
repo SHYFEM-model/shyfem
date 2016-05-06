@@ -111,6 +111,7 @@ c-----------------------------------------------------------------
         if( bxyz ) call write_xy('bas.xyz',nkn,ipv,xgv,ygv,hkv)
         if( bdepth ) call write_depth_from_bas
 	if( bunique) call write_grd_with_unique_depth !for sigma levels
+	if( bdelem) call write_grd_with_elem_depth !for sigma levels
 
 c-----------------------------------------------------------------
 c end of routine
@@ -698,6 +699,59 @@ c makes unique depth
 
 c*******************************************************************
 
+	subroutine make_constant_depth
+
+c makes constant depth 
+
+	use evgeom
+	use basin
+
+	implicit none
+
+	integer ie,ii
+	double precision h,hm
+
+	do ie=1,nel
+	  hm = 0.
+	  do ii=1,3
+	    h = hm3v(ii,ie)
+	    hm = hm + h
+	  end do
+	  hm = hm / 3.
+	  hm3v(:,ie) = hm
+	end do
+
+	end
+
+c*******************************************************************
+
+	subroutine round_depth(hd)
+
+c rounds depth values to nearest given value
+
+	use basin
+
+	implicit none
+
+	real hd
+
+	integer ie,ii,i
+	real h
+
+	do ie=1,nel
+	  do ii=1,3
+	    h = hm3v(ii,ie)
+	    i = nint(h/hd)
+	    if( i <= 0 ) i = 1
+	    h = i * hd
+	    hm3v(ii,ie) = h
+	  end do
+	end do
+
+	end
+
+c*******************************************************************
+
 	subroutine write_grd_with_unique_depth
 
 c writes grd file extracting info from bas file
@@ -708,9 +762,28 @@ c writes grd file extracting info from bas file
 	call make_unique_depth
 
         call basin_to_grd
-
         call grd_write('basunique.grd')
+
         write(6,*) 'The basin has been written to basunique.grd'
+
+	end
+
+c*******************************************************************
+
+	subroutine write_grd_with_elem_depth
+
+c writes grd file extracting info from bas file
+
+	implicit none
+
+        write(6,*) 'making constant elem depth...'
+	call make_constant_depth
+	!call round_depth(2.)
+
+        call basin_to_grd
+
+        call grd_write('baselem.grd')
+        write(6,*) 'The basin has been written to baselem.grd'
 
 	end
 

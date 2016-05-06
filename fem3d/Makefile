@@ -823,6 +823,7 @@ last:
 ../femlib/mod/para_aqua.mod: aquabc_II_apara.o
 ../femlib/mod/poisson.mod: newpoi.o
 ../femlib/mod/projection.mod: subproj.o
+../femlib/mod/regular.mod: subreg.o
 ../femlib/mod/shyfile.mod: subshy.o
 ../femlib/mod/shyutil.mod: shyutil.o
 ../femlib/mod/tidef.mod: subtidef.o
@@ -1189,7 +1190,7 @@ shyelab1.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/evgeom.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/shyfile.mod \
-		../femlib/mod/shyutil.mod param.h 
+		../femlib/mod/shyutil.mod 
 shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/evgeom.mod \
 		../femlib/mod/intp_fem_file.mod \
@@ -1466,7 +1467,7 @@ subqfxt.o: ../femlib/mod/levels.mod ../femlib/mod/mod_meteo.mod \
 subqfxu4.o: subqfxm.h
 subreg.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod \
-		../femlib/mod/mod_hydro.mod reg.h 
+		../femlib/mod/mod_hydro.mod 
 subres.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
@@ -1480,8 +1481,7 @@ subrst.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_ts.mod femtime.h 
 subshyutil.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shyfile.mod simul.h 
-subshyutil2.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
-		../femlib/mod/elabutil.mod \
+subshyutil2.o: ../femlib/mod/clo.mod ../femlib/mod/elabutil.mod \
 		../femlib/mod/shyfile.mod \
 		../femlib/mod/shyutil.mod 
 subspk.o: ../femlib/mod/basin.mod ../femlib/mod/mod_system.mod

@@ -34,6 +34,8 @@ c 18.09.2015	ccf	do not compute heat fluxes in dry nodes
 c 18.09.2015	ccf	checks only for levdbg > 2
 c 26.10.2015    ggu     critical omp sections introduced (eliminated data race)
 c 07.04.2016    ggu     compute total evaporation
+c 04.05.2016    ccf     do not pass albedo into heat2t
+c 04.05.2016    ggu     include effect of ice cover
 c
 c notes :
 c
@@ -142,9 +144,10 @@ c local
 	real salt,tfreeze
 	real albedo
 	real hdecay,adecay,qsbottom,botabs
-	real rtot
+	real qtot
         real qs,ta,tb,uw,cc,ur,p,e,r,q
 	real qsens,qlat,qlong,evap,qrad
+	real cice,aice,fice
 	real ev,eeff
 	real area
 	real evaver
@@ -156,7 +159,7 @@ c local
 
 	real hb			!depth of modelled T in first layer [m]
 	real usw		!surface friction velocity [m/s]
-	real rad		!Net shortwave flux 
+	real qss		!Net shortwave flux 
 	real cd			!wind drag coefficient
 
 	integer itdrag
@@ -185,6 +188,7 @@ c		0. ->	everything is absorbed in last layer
 c---------------------------------------------------------
 
 	baverevap = .false.
+	aice = 0.	!ice cover for heat: 1: use  0: do not use
 
 	iheat = nint(getpar('iheat'))
 	hdecay = getpar('hdecay')
@@ -241,6 +245,8 @@ c---------------------------------------------------------
 
 	  tm = temp(1,k)
 	  salt = saltv(1,k)
+	  call get_ice(k,cice)
+	  fice = 1. - aice*cice		!fice = 0 if fully ice covered
 	  tfreeze = -0.0575*salt
 	  area = areanode(1,k)
 	  lmax = ilhkv(k)
@@ -248,7 +254,7 @@ c---------------------------------------------------------
 
           call meteo_get_heat_values(k,qs,ta,ur,tb,uw,cc,p)
 	  call make_albedo(tm,albedo)
-	  rad = qs * (1. - albedo)
+	  qss = fice * qs * (1. - albedo)
 
 	  if( iheat .eq. 1 ) then
 	    call heatareg (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
@@ -262,13 +268,13 @@ c---------------------------------------------------------
 	    call heatgotm (ta,p,uw,ur,cc,tm,qsens,qlat,qlong,evap)
 	  else if( iheat .eq. 6 ) then
 	    call get_pe_values(k,r,ev,eeff)
-	    call heatcoare(ta,p,uw,ur,cc,tws(k),r,rad,qsens,qlat,
+	    call heatcoare(ta,p,uw,ur,cc,tws(k),r,qss,qsens,qlat,
      +                     qlong,evap,cd)
 	    if ( bwind ) windcd(k) = cd
 	  else if( iheat .eq. 7 ) then
 	    qsens = ta
 	    qlat  = ur
-	    qlong = -cc		!change sign of long wave radiation given by ISAC
+	    qlong = -cc	  !change sign of long wave radiation given by ISAC
 	    evap  = qlat / (2.5008e6 - 2.3e3 * tm)	!pom, gill, gotm
 	  else
 	    write(6,*) 'iheat = ',iheat
@@ -277,8 +283,8 @@ c---------------------------------------------------------
 
 	  if (bdebug) call check_heat(k,tm,qsens,qlat,qlong,evap)
 
-          qrad = - ( qlong + qlat + qsens )
-	  rtot = qs + qrad
+          qrad = - fice * ( qlong + qlat + qsens )
+	  qtot = qss + qrad
 
 	  do l=1,lmax
 	    hm = depnode(l,k,mode)
@@ -286,17 +292,17 @@ c---------------------------------------------------------
 	    if( hdecay .le. 0. ) then
 		qsbottom = 0.
 	    else
-		qsbottom = qs * exp( -adecay*hm )
+		qsbottom = qss * exp( -adecay*hm )
 		if( l .eq. lmax ) qsbottom = botabs * qsbottom
 	    end if
-            call heat2t(dt,hm,qs-qsbottom,qrad,albedo,tm,tnew)
-            if (bdebug) call check_heat2(k,l,qs,qsbottom,qrad,
+            call heat2t(dt,hm,qss-qsbottom,qrad,tm,tnew)
+            if (bdebug) call check_heat2(k,l,qss,qsbottom,qrad,
      +					 albedo,tm,tnew)
 	    tnew = max(tnew,tfreeze)
 	    temp(l,k) = tnew
 	    albedo = 0.
 	    qrad = 0.
-	    qs = qsbottom
+	    qss = qsbottom
 	  end do
 
 c         ---------------------------------------------------------
@@ -307,7 +313,7 @@ c         ---------------------------------------------------------
 	  hb   = depnode(1,k,mode) * 0.5
           usw  = max(1.e-5, sqrt(sqrt(tauxnv(k)**2 + tauynv(k)**2)))
           qrad =  -(qlong + qlat + qsens)
-	  call tw_skin(rad,qrad,tm,hb,usw,dt,dtw(k),tws(k))
+	  call tw_skin(qss,qrad,tm,hb,usw,dt,dtw(k),tws(k))
 
 c	  ---------------------------------------------------------
 c	  evap is in [kg/(m**2 s)] -> convert it to [m/s]
@@ -317,7 +323,7 @@ c	  ---------------------------------------------------------
 	  evap = evap / rhow			!evaporation in m/s
 	  evapv(k) = evap			!positive if loosing mass
 
-          ddq = ddq + rtot * dt * area
+          ddq = ddq + qtot * dt * area
 
 	end do
 

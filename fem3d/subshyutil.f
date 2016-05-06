@@ -307,6 +307,7 @@ c-----------------------------------------------------
 	if( ierr /= 0 ) then
 	  write(6,*) 'error writing output file ',ierr
 	  call shy_get_filename(id,file)
+	  write(6,*) 'id: ',id
 	  write(6,*) 'file name: ',trim(file)
 	  stop 'error stop shy_write_output_file: writing record'
 	end if

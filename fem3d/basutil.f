@@ -6,6 +6,7 @@
 ! 15.07.2015	ggu	written from scratch
 ! 22.09.2015	ggu	new routine open_shy_file()
 ! 01.10.2015	ggu	converted to basutil
+! 01.05.2016	ggu	new routine to convert depth from node to elem
 !
 !************************************************************
 
@@ -24,6 +25,7 @@
 	logical, save :: bxyz
 	logical, save :: bdepth
 	logical, save :: bunique
+	logical, save :: bdelem
 
 	logical, save :: bquality
 	logical, save :: bresol
@@ -102,7 +104,9 @@
         call clo_add_option('xyz',.false.,'writes xyz file')
         call clo_add_option('depth',.false.,'writes depth values')
         call clo_add_option('unique',.false.
-     +				,'writes grd file with unique depths')
+     +		,'writes grd file with unique depths')
+        call clo_add_option('delem',.false.
+     +		,'writes grd file with constant depths on elements')
         call clo_add_option('hsigma',-1,'creates hybrid depth level')
 
         call clo_add_sep('what to do:')
@@ -162,6 +166,7 @@
         call clo_get_option('xyz',bxyz)
         call clo_get_option('depth',bdepth)
         call clo_get_option('unique',bunique)
+        call clo_get_option('delem',bdelem)
 
         call clo_get_option('quality',bquality)
         call clo_get_option('resol',bresol)

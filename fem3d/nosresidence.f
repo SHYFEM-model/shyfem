@@ -236,7 +236,8 @@ c---------------------------------------------------------------
 
 	  nused = nused + 1
 
-	  call make_aver(nlvdim,nkn,ilhkv,cv3,vol3,cmin,cmax,cmed,vtot)
+	  call make_basin_aver(nlvdim,nkn,ilhkv,cv3,vol3
+     +				,cmin,cmax,cmed,vtot)
 	  conz = cmed
 	  write(68,*) it,cmin,cmed,cmax
 
@@ -464,7 +465,8 @@ c---------------------------------------------------------------
 
 	write(6,*) 'basin wide residence times:'
 
-	call make_aver(nlvdim,nkn,ilhkv,cv3,vol3,cmin,cmax,cmed,vtot)
+	call make_basin_aver(nlvdim,nkn,ilhkv,cv3,vol3
+     +				,cmin,cmax,cmed,vtot)
 	call make_vert_aver(nlvdim,nkn,ilhkv,cv3,vol3,cv2)
 
 	write(6,*) ' (aver/min/max): ',cmed,cmin,cmax
@@ -523,7 +525,8 @@ c---------------------------------------------------------------
 
 	write(6,*) 'basin wide residence times (average):'
 
-	call make_aver(nlvdim,nkn,ilhkv,cv3,vol3,cmin,cmax,cmed,vtot)
+	call make_basin_aver(nlvdim,nkn,ilhkv,cv3,vol3
+     +				,cmin,cmax,cmed,vtot)
 	call make_vert_aver(nlvdim,nkn,ilhkv,cv3,vol3,cv2)
 
 	write(6,*) ' (aver/min/max): ',cmed,cmin,cmax

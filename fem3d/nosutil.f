@@ -54,7 +54,7 @@ c***************************************************************
 
 c***************************************************************
 
-	subroutine make_aver(nlvddi,nkn,ilhkv,cv3,vol3
+	subroutine make_basin_aver(nlvddi,nkn,ilhkv,cv3,vol3
      +				,cmin,cmax,cmed,vtot)
 
 	implicit none
@@ -339,10 +339,11 @@ c we could do better using information on node area and depth structure
 
 	real weight_elem
 
-        bvolwrite = .false.
         bvolwrite = .true.
+        bvolwrite = .false.
 	ks = 2985
 	ks = 3096
+	ks = 0
 
         call get_sigma_info(nlvaux,nsigma,hsigma)
 	z = 0.			!do not use water level

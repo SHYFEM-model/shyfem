@@ -14,10 +14,11 @@ c 16.08.2004    ggu     heat2t copied from subqfxt.f
 c 23.03.2006    ggu     changed time step to real
 c 11.11.2009    ggu     new routine make_albedo(), pass albedo to heat2t
 c 01.06.2011    ggu     use constant albedo
+c 04.05.2016    ccf     do not pass albedo into heat2t
 c
 c*****************************************************************************
 
-        subroutine heat2t(dt,dh,qs,qrad,albedo,ts,tsnew)
+        subroutine heat2t(dt,dh,qs,qrad,ts,tsnew)
 
 c computes new sea temperature
 c
@@ -29,9 +30,8 @@ c radiation is positive if into the water
 
         real dt                 !time step
         real dh                 !layer depth
-        real qs                 !solar radiation
+        real qs                 !solar radiation corrected
         real qrad               !other radiation
-	real albedo             !albedo to be used
         real ts                 !old temperature
         real tsnew              !new temperature
 
@@ -48,8 +48,7 @@ c--------------------------------------------------
 c new temperature
 c--------------------------------------------------
 
-        qseff = qs * ( 1. - albedo )
-        tsnew = ts + (qseff+qrad)*dt/ct
+        tsnew = ts + (qs+qrad)*dt/ct
 
 c--------------------------------------------------
 c end of routine

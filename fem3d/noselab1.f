@@ -304,7 +304,7 @@ c--------------------------------------------------------------
 	  end if
 
 	  if( baverbas ) then
-	    call make_aver(nlvdi,nkn,ilhkv,cv3,vol3
+	    call make_basin_aver(nlvdi,nkn,ilhkv,cv3,vol3
      +                          ,cmin,cmax,cmed,vtot)
 	    call write_aver(it,ivar,cmin,cmax,cmed,vtot)
 	  end if

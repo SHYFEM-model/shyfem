@@ -8,7 +8,7 @@ c tests qflux routines for a 0-D basin
 	integer idt,ityear,iyears,nmax,i,it,itstart,ier
 	real dt,dh,t0,ts,tsnew
 	real qs,ta,tb,uw,cc,ur,p,e,r,q
-	real qsens,qlat,qlong,evap,qrad
+	real qsens,qlat,qlong,evap,qrad,qss
 	real albedo
 	character*70 file
 
@@ -71,7 +71,8 @@ c------------------------------------------------------------------
           !call heatlucia(ta,p,uw,tb,cc,ts,qsens,qlat,qlong,evap)
 
 	  qrad = - ( qlong + qlat + qsens )
-	  call heat2t(dt,dh,qs,qrad,albedo,ts,tsnew)
+	  qss = qs * (1. - albedo )
+	  call heat2t(dt,dh,qss,qrad,ts,tsnew)
 
 	  write(66,*) it,ts
           write(6,1000) 'qfnext: ',it,qs,ta,tb,uw,cc,ur,p,e,r,q

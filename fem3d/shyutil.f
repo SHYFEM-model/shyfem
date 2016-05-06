@@ -260,7 +260,8 @@
 	double precision c,v
 	double precision cctot,vvtot
 	double precision c2tot,v2tot
-        integer :: ks = 3096
+        integer :: ks = 0
+        !integer :: ks = 3096
         logical bdebug
 
 	cmin = cv3(1,1)
@@ -421,10 +422,11 @@
 	double precision, allocatable :: vole(:,:),volk(:,:)
 	real hl(nlv)		!aux vector for layer thickness
 
-	bvolwrite = .false.
 	bvolwrite = .true.
+	bvolwrite = .false.
 	ks = 2985
 	ks = 3096
+	ks = 0
 
         call get_sigma_info(nlvaux,nsigma,hsigma)
 
@@ -497,27 +499,46 @@
 	integer nndim
 	integer idims(4)
 	double precision threshold
-	real cv3(nlvdi,nndim)
-	logical bout
+	real cv3(nlvdi,nndim)	!input for accumulation, output if transformed
+	logical bout		!.true. if in cv3 are transformed results
 
 	integer ip,naccum,mmode
 	integer k,l,id,idmax
 	integer ivar,lmax,nn
 	double precision dmax
 
+!---------------------------------------------------------------
+! see if we have to do something
+!---------------------------------------------------------------
+
 	if( mode .eq. 0 ) return
 
-! either istep == 1 or ifreq == 0
+!---------------------------------------------------------------
+! prepare for accumulation
+!---------------------------------------------------------------
 
-	bout = .false.
+	! either istep == 1 or ifreq == 0
+
+	if( istep < 1 .or. istep > 1 .and. ifreq > 0 ) then
+	  write(6,*) 'istep,ifreq: ',istep,ifreq
+	  stop 'error stop shy_time_aver: error in parameters'
+	end if
+
 	ip = mod(nread,istep)
 	if( ip .eq. 0 ) ip = istep
+
+	!write(6,*) 'ip: ',ip,istep,nread,mode
+	!write(6,*) '... ',ifreq,mode,ip,istep,naccu(iv,ip)
 
         ivar = idims(4)
         lmax = idims(3)
         nn = idims(1) * idims(2)
 
-	!write(6,*) 'ip: ',ip,istep,nread,mode
+!---------------------------------------------------------------
+! accumulate
+!---------------------------------------------------------------
+
+	if( mode > 0 ) naccu(iv,ip) = naccu(iv,ip) + 1
 
 	if( mode == 1 .or. mode == 2 ) then
 	  accum(:,:,iv,ip) = accum(:,:,iv,ip) + cv3(:,:)
@@ -535,53 +556,102 @@
 	    accum(:,:,iv,ip) = accum(:,:,iv,ip) + 1.
 	  end where
 	else if( mode == 8 ) then
-	  do k=1,nn
-	    do l=1,lmax
-	      id = nint( cv3(l,k)/adir )
-	      if( id == 0 ) id = idir
-	      if( id < 0 .or. id > idir ) stop 'error stop: direction'
-	      dir(l,k,id,iv,ip) = dir(l,k,id,iv,ip) + 1.
-	    end do
-	  end do
+	  call shy_accum_dir(nlvdi,lmax,nn,iv,ip,cv3)
 	end if
 
-	if( mode > 0 ) naccu(iv,ip) = naccu(iv,ip) + 1
-	!write(6,*) '... ',ifreq,mode,ip,istep,naccu(iv,ip)
+!---------------------------------------------------------------
+! transform (average)
+!---------------------------------------------------------------
 
-	if( naccu(iv,ip) == ifreq .or. mode < 0 ) then
-	  naccum = max(1,naccu(iv,ip))
-	  mmode = abs(mode)
-	  if( mmode == 3 ) naccum = 1			!min
-	  if( mmode == 4 ) naccum = 1			!max
-	  if( mmode == 7 ) naccum = 1			!threshold
-	  if( naccum > 0 ) cv3(:,:) = accum(:,:,iv,ip)/naccum
-	  if( mmode == 5 ) then
-	    cv3(:,:) = sqrt( std(:,:,iv,ip)/naccum - cv3(:,:)**2 )
-	  else if( mmode == 6 ) then
-	    cv3(:,:) = sqrt( cv3(:,:) )
-	  else if( mmode == 8 ) then
-	    do k=1,nn
-	      do l=1,lmax
-		dmax = 0.
-		idmax = 0
-	        do id=1,idir
-		  if( dir(l,k,id,iv,ip) > dmax ) then
-		    idmax = id
-		    dmax = dir(l,k,id,iv,ip)
-		  end if
-		end do
+	bout = ( naccu(iv,ip) == ifreq .or. mode < 0 )
+
+	if( .not. bout ) return
+
+	naccum = max(1,naccu(iv,ip))
+	mmode = abs(mode)
+	if( mmode == 2 ) naccum = 1			!sum
+	if( mmode == 3 ) naccum = 1			!min
+	if( mmode == 4 ) naccum = 1			!max
+	if( mmode == 7 ) naccum = 1			!threshold
+	if( naccum > 0 ) cv3(:,:) = accum(:,:,iv,ip)/naccum
+	if( mmode == 5 ) then
+	  cv3(:,:) = sqrt( std(:,:,iv,ip)/naccum - cv3(:,:)**2 )
+	else if( mmode == 6 ) then
+	  cv3(:,:) = sqrt( cv3(:,:) )
+	else if( mmode == 8 ) then
+	  call shy_elab_dir(nlvdi,lmax,nn,iv,ip,cv3)
+	end if
+
+	write(6,*) 'averaging: ',ip,naccum,naccu(iv,ip)
+
+	naccu(iv,ip) = 0
+	accum(:,:,iv,ip) = 0.
+	std(:,:,iv,ip) = 0.
+
+!---------------------------------------------------------------
+! end of routine
+!---------------------------------------------------------------
+
+	end
+
+!***************************************************************
+
+	subroutine shy_accum_dir(nlvddi,lmax,nn,iv,ip,cv3)
+
+	use shyutil
+
+	implicit none
+
+	integer nlvddi
+	integer nn,lmax
+	integer iv,ip
+	real cv3(nlvddi,nn)
+
+	integer k,l,id
+
+	do k=1,nn
+	  do l=1,lmax
+	    id = nint( cv3(l,k)/adir )
+	    if( id == 0 ) id = idir
+	    if( id < 0 .or. id > idir ) stop 'error stop: direction'
+	    dir(l,k,id,iv,ip) = dir(l,k,id,iv,ip) + 1.
+	  end do
+	end do
+
+	end
+
+!***************************************************************
+
+	subroutine shy_elab_dir(nlvddi,lmax,nn,iv,ip,cv3)
+
+	use shyutil
+
+	implicit none
+
+	integer nlvddi
+	integer nn,lmax
+	integer iv,ip
+	real cv3(nlvddi,nn)
+
+	integer k,l,id,idmax
+	double precision dmax
+
+	do k=1,nn
+	  do l=1,lmax
+	    dmax = 0.
+	    idmax = 0
+	    do id=1,idir
+	      if( dir(l,k,id,iv,ip) > dmax ) then
+	        idmax = id
+	        dmax = dir(l,k,id,iv,ip)
+	      end if
+	    end do
 		if( idmax == idir ) idmax = 0
 		cv3(l,k) = idmax * adir
-	      end do
-	    end do
-	  end if
-	  write(6,*) 'averaging: ',ip,naccum,naccu(iv,ip)
-	  bout = .true.
-	  naccu(iv,ip) = 0
-	  accum(:,:,iv,ip) = 0.
-	  std(:,:,iv,ip) = 0.
-	  if( allocated(dir) ) dir(:,:,:,iv,ip) = 0.
-	end if
+	  end do
+	end do
+
+	dir(:,:,:,iv,ip) = 0.
 
 	end
 
@@ -589,7 +659,7 @@
 !***************************************************************
 !***************************************************************
 
-        subroutine transp2vel_new(nel,nkn,nlv,nlvddi,hev,zenv,nen3v
+        subroutine shy_transp2vel(nel,nkn,nlv,nlvddi,hev,zenv,nen3v
      +                          ,ilhv,hlv,utlnv,vtlnv
      +                          ,uprv,vprv)
 
@@ -633,9 +703,8 @@ c transforms transports at elements to velocities at nodes
 
           area = area_elem(ie)
           lmax = ilhv(ie)
-          call compute_levels_on_element_new(ie,zenv,zeta)
+	  zeta = sum(zenv(:,ie)) / 3.	!average of zeta on element
 	  call get_layer_thickness(lmax,nsigma,hsigma,zeta,hev(ie),hlv,hl)
-          !call get_layer_thickness_e(ie,lmax,bzeta,nsigma,hsigma,hl)
 
           do l=1,lmax
             hmed = hl(l)
@@ -654,28 +723,6 @@ c transforms transports at elements to velocities at nodes
 	  uprv = uprv / weight
 	  vprv = vprv / weight
 	end where
-
-        end
-
-c******************************************************************
-
-        subroutine compute_levels_on_element_new(ie,zenv,zeta)
-
-        implicit none
-
-        integer ie
-        real zenv(3,*)
-        real zeta
-
-        integer ii
-        real z
-
-        z = 0.
-        do ii=1,3
-          z = z + zenv(ii,ie)
-        end do
-
-        zeta = z / 3.
 
         end
 

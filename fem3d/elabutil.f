@@ -33,8 +33,8 @@
 	logical, save :: bsplit
 	logical, save :: b2d
 
-	logical, save :: bmem
-	logical, save :: bask
+	logical, save :: bmem		= .false.
+	logical, save :: bask		= .false.
 	logical, save :: bverb
 	logical, save :: bwrite
 	logical, save :: bquiet
@@ -142,7 +142,7 @@
 
         call clo_add_sep('what to do (only one of these may be given)')
 
-        call clo_add_option('out',.false.,'writes new nos file')
+        call clo_add_option('out',.false.,'writes new shy file')
         call clo_add_option('averbas',.false.,'average over basin')
         call clo_add_option('aver',.false.,'average over records')
         call clo_add_option('averdir',.false.,'average for directions')
@@ -161,8 +161,8 @@
         call clo_add_sep('options in/output')
 
         !call clo_add_option('basin name',' ','name of basin to be used')
-	call clo_add_option('mem',.false.,'if no file given use memory')
-        call clo_add_option('ask',.false.,'ask for simulation')
+	!call clo_add_option('mem',.false.,'if no file given use memory')
+        !call clo_add_option('ask',.false.,'ask for simulation')
         call clo_add_option('verb',.false.,'be more verbose')
         call clo_add_option('write',.false.,'write min/max of values')
         call clo_add_option('quiet',.false.,'do not be verbose')
@@ -174,10 +174,11 @@
      +				,'extract vars at nodes given in file')
 	call clo_add_option('freq n',0.,'frequency for aver/sum/min/max')
         call clo_add_option('tmin time',' '
-     +                          ,'only process starting from time')
+     +                  ,'only process starting from time')
         call clo_add_option('tmax time',' '
-     +                          ,'only process up to time')
-        call clo_add_option('inclusive',.false.,'include time period')
+     +                  ,'only process up to time')
+        call clo_add_option('inclusive',.false.
+     +			,'output includes whole time period given')
 
         call clo_add_option('outformat form','native','output format')
 
@@ -215,8 +216,8 @@
         call clo_get_option('node',nodesp)
         call clo_get_option('nodes',nodefile)
 
-        call clo_get_option('mem',bmem)
-        call clo_get_option('ask',bask)
+        !call clo_get_option('mem',bmem)
+        !call clo_get_option('ask',bask)
         call clo_get_option('verb',bverb)
         call clo_get_option('write',bwrite)
         call clo_get_option('quiet',bquiet)
@@ -254,9 +255,10 @@
         bnode = nodesp > 0
         bnodes = nodefile .ne. ' '
 
-        boutput = bout .or. bsplit .or. b2d
+        boutput = bout .or. b2d
 	boutput = boutput .or. outformat /= 'native'
         !btrans is added later
+	if( bsumvar ) boutput = .false.
 
         bneedbasin = b2d .or. baverbas .or. bnode .or. bnodes
 	bneedbasin = bneedbasin .or. outformat == 'gis'
@@ -268,6 +270,24 @@
 	bthreshold = ( threshold /= flag )
 
 	end subroutine elabutil_get_options
+
+!************************************************************
+
+	subroutine elabutil_check_options
+
+	integer ic
+
+	ic = count( (/b2d,bsplit,bsumvar,btrans/) )
+
+	if( ic > 1 ) then
+	  write(6,*) 'Only one of the following options can be given:'
+	  write(6,*) '-2d -split -sumvar'
+	  write(6,*) '-aver -sum -min -max -std -rms'
+	  write(6,*) '-threshold -averdir'
+	  stop 'error stop elabutil_check_options: incompatible options'
+	end if
+
+	end subroutine elabutil_check_options
 
 !************************************************************
 !************************************************************
@@ -417,33 +437,54 @@
 
 	integer nvar
 
+	integer ic
+
         mode = 0
         btrans = .false.
+
+	ic = count( (/baver,bsum,bmin,bmax,bstd,brms
+     +				,bthreshold,baverdir/) )
+
+	if( ic > 1 ) then
+	  write(6,*) 'Only one of the following options can be given:'
+	  write(6,*) '-aver -sum -min -max -std -rms'
+	  write(6,*) '-threshold -averdir'
+	  stop 'error stop elabutil_set_averaging: incompatible options'
+	end if
 
         if( baver ) mode = 1
         if( bsum )  mode = 2
         if( bmin )  mode = 3
         if( bmax )  mode = 4
-        if( bsumvar )  mode = 2
         if( bstd )  mode = 5
         if( brms )  mode = 6
         if( bthreshold )  mode = 7
         if( baverdir ) mode = 8
 
-        if( mode > 0 ) then     !prepare for averaging
+        if( mode > 0 ) then             !prepare for averaging
           btrans = .true.
           if( bsumvar ) then            !sum over variables
+	    if( ifreq /= 0 ) then
+	      write(6,*) 'For option -sumvar cannot use value for -freq'
+	      write(6,*) 'freq = ',ifreq
+	      stop 'error stop elabutil_set_averaging: freq'
+	    end if
             istep = 1
-            ifreq = nvar
-          else if( nvar > 1 ) then
-            write(6,*) 'file contains different variables: ',nvar
-	    stop 'error stop noselab: averaging only with one variable'
           else if( ifreq .ge. 0 ) then  !normal averaging
             istep = 1
           else                          !accumulate every -ifreq record
             istep = -ifreq
             ifreq = 0
           end if
+	end if
+
+        if( bsumvar ) then            !sum over variables
+	  if( ifreq /= 0 ) then
+	    write(6,*) 'For option -sumvar cannot use value for -freq'
+	    write(6,*) 'freq = ',ifreq
+	    stop 'error stop elabutil_set_averaging: freq'
+	  end if
+          istep = 1
 	end if
 
 	end subroutine elabutil_set_averaging
@@ -873,17 +914,27 @@ c writes basin average to file
         integer ivar
         real cmin,cmax,cmed,vtot
 
+	integer it
         real totmass
 
+	it = nint(dtime)
         totmass = cmed * vtot
 
-        write(6,1234) dtime,ivar,cmin,cmed,cmax,totmass
-        write(100+ivar,1235) dtime,cmin,cmed,cmax,totmass
-        write(100,'(i10,e14.6)') dtime,vtot
+        !write(6,1234) it,ivar,cmin,cmed,cmax,totmass
+        write(100+ivar,1235) it,cmin,cmed,cmax,totmass
+        write(100,1236) it,vtot
 
- 1234   format(f15.2,i10,3f12.4,e14.6)
- 1235   format(f15.2,3f12.4,e14.6)
- 1236   format(f15.2,e14.6)
+        write(6,2234) dtime,ivar,cmin,cmed,cmax,totmass
+        write(200+ivar,2235) dtime,cmin,cmed,cmax,totmass
+        write(200,2236) dtime,vtot
+
+	return
+ 1234   format(i10,i10,3f12.4,e14.6)
+ 1235   format(i10,3f12.4,e14.6)
+ 1236   format(i10,e14.6)
+ 2234   format(f15.2,i10,3f12.4,e14.6)
+ 2235   format(f15.2,3f12.4,e14.6)
+ 2236   format(f15.2,e14.6)
         end
 
 c***************************************************************
@@ -903,10 +954,12 @@ c writes basin average to file
 
         write(6,1234) it,ivar,cmin,cmed,cmax,totmass
         write(100+ivar,1235) it,cmin,cmed,cmax,totmass
-        write(100,'(i10,e14.6)') it,vtot
+        write(100,1236) it,vtot
 
- 1234   format(2i10,3f12.4,e14.6)
+	return
+ 1234   format(i10,i10,3f12.4,e14.6)
  1235   format(i10,3f12.4,e14.6)
+ 1236   format(i10,e14.6)
         end
 
 c***************************************************************

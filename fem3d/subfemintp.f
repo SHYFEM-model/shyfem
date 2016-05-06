@@ -16,6 +16,7 @@
 ! 15.02.2016	ggu	if dtime==-1 do not check time, changes in exffil
 ! 07.03.2016	ggu	bug fix in iff_read_header(): no time adjust if ierr/=0
 ! 01.04.2016	ggu	bug fix in iff_init(): open file with np and not nexp
+! 05.05.2016	ggu	new functionality for 3d matrices
 !
 !****************************************************************
 !
@@ -1278,8 +1279,11 @@ c interpolates in space all variables in data set id
 	if( nintp == 0 .and. iintp > 1 ) goto 99
 
 	if( ireg > 0 ) then
-	  if( lexp > 1 ) goto 96
-	  call iff_handle_regular_grid(id,iintp)
+	  if( lexp > 1 ) then
+	    call iff_handle_regular_grid_3d(id,iintp)
+	  else
+	    call iff_handle_regular_grid_2d(id,iintp)
+	  end if
 	else if( bts ) then
           nvar = pinfo(id)%nvar
 	  do ivar=1,nvar
@@ -1338,7 +1342,7 @@ c interpolates in space all variables in data set id
 
 !****************************************************************
 
-	subroutine iff_handle_regular_grid(id,iintp)
+	subroutine iff_handle_regular_grid_2d(id,iintp)
 
 	integer id
 	integer iintp
@@ -1384,7 +1388,7 @@ c interpolates in space all variables in data set id
 	else
 	  write(6,*) 'nexp,nkn,nel: ',nexp,nkn_fem,nel_fem
 	  write(6,*) 'Cannot yet handle...'
-	  stop 'error stop iff_handle_regular_grid: nexp'
+	  stop 'error stop iff_handle_regular_grid_2d: nexp'
 	end if
 
 	return
@@ -1392,8 +1396,90 @@ c interpolates in space all variables in data set id
 	write(6,*) 'error interpolating from regular grid: '
 	write(6,*) 'ierr =  ',ierr
 	write(6,*) 'bneedall =  ',bneedall
-	stop 'error stop iff_handle_regular_grid: reg interpolate'
-	end subroutine iff_handle_regular_grid
+	stop 'error stop iff_handle_regular_grid_2d: reg interpolate'
+	end subroutine iff_handle_regular_grid_2d
+
+!****************************************************************
+
+	subroutine iff_handle_regular_grid_3d(id,iintp)
+
+	integer id
+	integer iintp
+
+	logical bneedall
+	integer ivar,nvar
+	integer nx,ny
+	integer nexp,lexp
+	integer np,ip,l,lmax
+	integer ierr
+	real x0,y0,dx,dy,flag
+	real, allocatable :: fr(:,:)
+	real, allocatable :: data(:,:,:)
+	real, allocatable :: data2dreg(:)
+	real, allocatable :: data2dfem(:)
+	real, allocatable :: hfem(:)
+
+        nvar = pinfo(id)%nvar
+
+	nx = nint(pinfo(id)%regpar(1))
+	ny = nint(pinfo(id)%regpar(2))
+	x0 = pinfo(id)%regpar(3)
+	y0 = pinfo(id)%regpar(4)
+	dx = pinfo(id)%regpar(5)
+	dy = pinfo(id)%regpar(6)
+	flag = pinfo(id)%regpar(7)
+        nexp = pinfo(id)%nexp
+        np = pinfo(id)%np
+        lexp = pinfo(id)%lexp
+        lmax = pinfo(id)%lmax		!vertical size of data
+	bneedall = pinfo(id)%bneedall
+	pinfo(id)%flag = flag		!use this in time_interpolate
+
+	if( np /= nx*ny ) goto 95
+	if( nexp /= nkn_fem .and. nexp /= nel_fem ) goto 98
+
+	allocate(fr(4,nexp))
+	allocate(data(lmax,nexp,nvar))
+	allocate(data2dreg(np),data2dfem(nexp))
+	allocate(hfem(nexp))
+
+	call intp_reg_setup_fr(nx,ny,x0,y0,dx,dy,nexp,fr)
+	call intp_reg_intp_fr(nx,ny,flag,pinfo(id)%hd_file
+     +                          ,nexp,fr,hfem,ierr)
+
+	do ivar=1,nvar
+	  do l=1,lmax
+	    data2dreg = pinfo(id)%data_file(l,:,ivar)
+	    call intp_reg_intp_fr(nx,ny,flag,data2dreg
+     +                          ,nexp,fr,data2dfem,ierr)
+	    data(l,:,ivar) = data2dfem
+	  end do
+	end do
+
+	do ip=1,nexp
+	  call iff_interpolate_vertical_int(id,iintp
+     +				,lmax,hfem(ip),data(:,ip,:),ip)
+	end do
+
+	return
+   95	continue
+	write(6,*) 'np,nx*ny: ',np,nx*ny
+	stop 'error stop iff_handle_regular_grid_3d: internal error (1)'
+   96	continue
+	write(6,*) 'regular grid only for 2d field'
+	write(6,*) 'lexp: ',lexp
+	!call iff_print_file_info(id)
+	stop 'error stop iff_handle_regular_grid_3d: not ready'
+   98	continue
+	write(6,*) 'nexp,nkn,nel: ',nexp,nkn_fem,nel_fem
+	write(6,*) 'Cannot yet handle...'
+	stop 'error stop iff_handle_regular_grid_3d: nexp'
+   99	continue
+	write(6,*) 'error interpolating from regular grid: '
+	write(6,*) 'ierr =  ',ierr
+	write(6,*) 'bneedall =  ',bneedall
+	stop 'error stop iff_handle_regular_grid_3d: reg interpolate'
+	end subroutine iff_handle_regular_grid_3d
 
 !****************************************************************
 
@@ -1436,6 +1522,24 @@ c interpolates in space all variables in data set id
 	integer iintp
 	integer ip_from,ip_to
 
+	real data(pinfo(id)%nvar)
+
+	data = pinfo(id)%data_file(1,ip_from,:)
+	call iff_distribute_vertical_int(id,iintp,data,ip_to)
+
+	end subroutine iff_distribute_vertical
+
+!****************************************************************
+
+	subroutine iff_distribute_vertical_int(id,iintp,data,ip_to)
+
+! lmax must be 1
+
+	integer id
+	integer iintp
+	real data(pinfo(id)%nvar)
+	integer ip_to
+
 	integer lfem,l,ipl,lexp
 	integer ivar,nvar
 	real value
@@ -1452,13 +1556,13 @@ c interpolates in space all variables in data set id
 	end if
 
 	do ivar=1,nvar
-	  value = pinfo(id)%data_file(1,ip_from,ivar)
+	  value = data(ivar)
 	  do l=1,lfem
 	    pinfo(id)%data(l,ip_to,ivar,iintp) = value
 	  end do
 	end do
 
-	end subroutine iff_distribute_vertical
+	end subroutine iff_distribute_vertical_int
 
 !****************************************************************
 
@@ -1470,18 +1574,41 @@ c interpolates in space all variables in data set id
 	integer iintp
 	integer ip_from,ip_to
 
-	integer lmax,l
+	integer lmax
+	real h
+	real data(pinfo(id)%lmax,pinfo(id)%nvar)
+
+	lmax = pinfo(id)%ilhkv_file(ip_from)
+	h = pinfo(id)%hd_file(ip_from)
+	data = pinfo(id)%data_file(:,ip_from,:)
+
+	call iff_integrate_vertical_int(id,iintp,lmax,h,data,ip_to)
+
+	end subroutine iff_integrate_vertical
+
+!****************************************************************
+
+	subroutine iff_integrate_vertical_int(id,iintp,lmax,h,data,ip_to)
+
+! lexp/lfem must be 1
+
+	integer id
+	integer iintp
+	integer lmax
+	real h
+	real data(pinfo(id)%lmax,pinfo(id)%nvar)
+	integer ip_to
+
+	integer l
 	integer ivar,nvar
 	integer nsigma
 	double precision acum,htot
-	real h,z
+	real z
 	real hsigma
 	real value,hlayer
 	real hl(pinfo(id)%lmax)
 
         nvar = pinfo(id)%nvar
-	lmax = pinfo(id)%ilhkv_file(ip_from)
-	h = pinfo(id)%hd_file(ip_from)
 	if( h < -990 ) h = pinfo(id)%hlv_file(lmax)	!take from hlv array
 	z = 0.
 
@@ -1493,7 +1620,7 @@ c interpolates in space all variables in data set id
 	  acum = 0.
 	  htot = 0.
 	  do l=1,lmax
-	    value = pinfo(id)%data_file(l,ip_from,ivar)
+	    value = data(l,ivar)
 	    hlayer = hl(l)
 	    acum = acum + value*hlayer
 	    htot = htot + hlayer
@@ -1501,7 +1628,7 @@ c interpolates in space all variables in data set id
 	  pinfo(id)%data(1,ip_to,ivar,iintp) = acum / htot
 	end do
 
-	end subroutine iff_integrate_vertical
+	end subroutine iff_integrate_vertical_int
 
 !****************************************************************
 
@@ -1513,12 +1640,48 @@ c global lmax and lexp are > 1
 	integer iintp
 	integer ip_from,ip_to
 
+	integer lmax,lfem,ipl
+	real h
+	real data(pinfo(id)%lmax,pinfo(id)%nvar)
+
+	lmax = pinfo(id)%ilhkv_file(ip_from)
+	h = pinfo(id)%hd_file(ip_from)
+	data = pinfo(id)%data_file(:,ip_from,:)
+
+	ipl = ip_to
+	if( pinfo(id)%nexp /= nkn_fem ) ipl = pinfo(id)%nodes(ip_to)
+	lfem = ilhkv_fem(ipl)
+
+	if( lmax <= 1 ) then
+	  call iff_distribute_vertical_int(id,iintp,data(1,:),ip_to)
+	else if( lfem <= 1 ) then
+	  call iff_integrate_vertical_int(id,iintp,lmax,h,data,ip_to)
+	else
+	  call iff_interpolate_vertical_int(id,iintp,lmax,h,data,ip_to)
+	end if
+
+	end subroutine iff_interpolate_vertical
+
+!****************************************************************
+
+	subroutine iff_interpolate_vertical_int(id,iintp,lmax,h,data
+     +						,ip_to)
+
+c global lmax and lexp are > 1
+
+	integer id
+	integer iintp
+	integer lmax
+	real h
+	real data(pinfo(id)%lmax,pinfo(id)%nvar)
+	integer ip_to
+
 	logical bcenter,bcons
-	integer lmax,l,ipl,lfem
+	integer l,ipl,lfem
 	integer ivar,nvar
 	integer nsigma
 	double precision acum,htot
-	real h,z,hfem
+	real z,hfem,hfile
 	real hsigma
 	real value,hlayer
 	real hl(pinfo(id)%lmax)
@@ -1535,28 +1698,27 @@ c global lmax and lexp are > 1
 	bdebug = .false.
 
         nvar = pinfo(id)%nvar
-	lmax = pinfo(id)%ilhkv_file(ip_from)
 
 	ipl = ip_to
 	if( pinfo(id)%nexp /= nkn_fem ) ipl = pinfo(id)%nodes(ip_to)
 	lfem = ilhkv_fem(ipl)
 
 	if( lmax <= 1 ) then
-	  call iff_distribute_vertical(id,iintp,ip_from,ip_to)
+	  call iff_distribute_vertical_int(id,iintp,data(1,:),ip_to)
 	  return
 	else if( lfem <= 1 ) then
-	  call iff_integrate_vertical(id,iintp,ip_from,ip_to)
+	  call iff_integrate_vertical_int(id,iintp,lmax,h,data,ip_to)
 	  return
 	end if
 
 	z = 0.
 
 	hfem = hk_fem(ipl)
-	h = pinfo(id)%hd_file(ip_from)
-	if( h < -990 ) h = pinfo(id)%hlv_file(lmax)	!take from hlv array
+	hfile = h
+	if( hfile < -990 ) hfile = pinfo(id)%hlv_file(lmax) !take from hlv array
 
 	call compute_sigma_info(lmax,pinfo(id)%hlv_file,nsigma,hsigma)
-	call get_layer_thickness(lmax,nsigma,hsigma,z,h
+	call get_layer_thickness(lmax,nsigma,hsigma,z,hfile
      +					,pinfo(id)%hlv_file,hl)
 	call get_bottom_of_layer(bcenter,lmax,z,hl,hz_file(1))
 	hz_file(0) = z
@@ -1570,8 +1732,8 @@ c global lmax and lexp are > 1
 	if( bdebug ) then
 	  write(6,*) 'iff_interpolate_vertical: -------------------'
 	  write(6,*) id
-	  write(6,*) ip_from,ip_to
-	  write(6,*) h,hfem
+	  write(6,*) ip_to
+	  write(6,*) hfile,hfem
 	  write(6,*) lmax,lfem
 	  write(6,*) 'hlv_file: ',(pinfo(id)%hlv_file(l),l=1,lmax)
 	  write(6,*) 'hlv_fem: ',(hlv_fem(l),l=1,lfem)
@@ -1583,13 +1745,9 @@ c global lmax and lexp are > 1
 	end if
 
 	do ivar=1,nvar
-	  do l=1,lmax
-	    val_file(l) = pinfo(id)%data_file(l,ip_from,ivar)
-	  end do
+	  val_file(1:lmax) = data(1:lmax,ivar)
 	  call intp_vert(bcons,lmax,hz_file,val_file,lfem,hz_fem,val_fem)
-	  do l=1,lfem
-	    pinfo(id)%data(l,ip_to,ivar,iintp) = val_fem(l)
-	  end do
+	  pinfo(id)%data(1:lfem,ip_to,ivar,iintp) = val_fem(1:lfem)
 	  if( bdebug ) then
 	    write(6,*) 'iff_interpolate_vertical - ivar = : ',ivar
 	    write(6,*) (val_file(l),l=1,lmax)
@@ -1598,7 +1756,7 @@ c global lmax and lexp are > 1
 	  end if
 	end do
 
-	end subroutine iff_interpolate_vertical
+	end subroutine iff_interpolate_vertical_int
 
 !****************************************************************
 !****************************************************************

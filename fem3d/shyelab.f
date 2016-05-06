@@ -46,16 +46,20 @@ c--------------------------------------------------------------
 	  call shyelab1
 	else if( check_nos_file(file) ) then
 	  write(6,*) 'file is of NOS type'
-	  call noselab
+	  write(6,*) 'please convert to SHY format or use noselab'
+	  stop 'error stop shyelab'
 	else if( check_ous_file(file) ) then
 	  write(6,*) 'file is of OUS type'
-	  call ouselab
+	  write(6,*) 'please convert to SHY format or use ouselab'
+	  stop 'error stop shyelab'
 	else if( check_ext_file(file) ) then
 	  write(6,*) 'file is of EXT type'
-	  call extelab
+	  write(6,*) 'please use extelab, splitext, extinf'
+	  stop 'error stop shyelab'
 	else if( check_flx_file(file) ) then
 	  write(6,*) 'file is of FLX type'
-	  call flxelab
+	  write(6,*) 'please use flxelab, splitflx, flxinf'
+	  stop 'error stop shyelab'
 	else
 	  write(6,*) 'cannot yet handle this file type'
 	end if

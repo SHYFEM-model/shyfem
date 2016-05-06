@@ -226,6 +226,7 @@ c--------------------------------------------------------------
           if(ierr.gt.0) write(6,*) 'error in reading file : ',ierr
           if(ierr.ne.0) exit
 
+	  dtime = it
 	  nread=nread+1
 	  nrec = nrec + 1
 
@@ -326,7 +327,6 @@ c--------------------------------------------------------------
             call transp2vel(nel,nkn,nlv,nlvdi,hev,zenv,nen3v
      +                          ,ilhv,hlv,utlnv,vtlnv
      +                          ,uprv,vprv)
-	    dtime = it
 	    call write_nodes_vel(dtime,znv,uprv,vprv)
 	  end if
 
@@ -473,8 +473,8 @@ c***************************************************************
 	call nos_write_record(nz,it,1,1,ilhkv,zv,ierr)
 	call nos_write_record(ns,it,6,nlvddi,ilhkv,sv,ierr)
 	call nos_write_record(nd,it,7,nlvddi,ilhkv,dv,ierr)
-	call nos_write_record(nd,it,2,nlvddi,ilhkv,uv,ierr)
-	call nos_write_record(nd,it,2,nlvddi,ilhkv,vv,ierr)
+	call nos_write_record(nu,it,2,nlvddi,ilhkv,uv,ierr)
+	call nos_write_record(nv,it,2,nlvddi,ilhkv,vv,ierr)
 
         end
 
@@ -617,3 +617,53 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 c***************************************************************
+
+	subroutine make_hydro_basin_aver(dtime,nndim,vars
+     +			,znv,uprv,vprv,sv)
+
+c not finished...
+
+	use basin
+	use levels
+	use mod_depth
+
+	implicit none
+
+	integer, parameter :: nvar = 4
+	double precision dtime
+	integer nndim
+	real vars(nlvdi,nndim,nvar)
+	real znv(nkn)
+	real uprv(nlvdi,nkn)
+	real vprv(nlvdi,nkn)
+	real sv(nlvdi,nkn)
+
+	integer it
+	real zv(nkn)
+	real zenv(3*nel)
+	real utlnv(nlvdi,nel)
+	real vtlnv(nlvdi,nel)
+	real dv(nlvdi,nkn)
+
+	call transfer_uvz(nlvdi,nndim,nvar,vars
+     +				,znv,zenv,utlnv,vtlnv)
+        call transp2vel(nel,nkn,nlv,nlvdi,hev,zenv,nen3v
+     +                          ,ilhv,hlv,utlnv,vtlnv
+     +                          ,uprv,vprv)
+	call velzeta2scal(nel,nkn,nlv,nlvdi,nen3v,ilhkv
+     +				,zenv,uprv,vprv
+     +				,zv,sv,dv)
+
+!	    call make_aver(nlvdi,nkn,ilhkv,cv3,vol3
+!     +                          ,cmin,cmax,cmed,vtot)
+!	    call write_aver(it,ivar,cmin,cmax,cmed,vtot)
+
+!	    call make_aver(nlvdi,nkn,ilhkv,cv3,vol3
+!     +                          ,cmin,cmax,cmed,vtot)
+!	    call write_aver(it,ivar,cmin,cmax,cmed,vtot)
+
+	end
+
+c***************************************************************
+
+
