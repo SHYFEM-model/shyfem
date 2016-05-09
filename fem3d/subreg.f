@@ -316,7 +316,7 @@ c************************************************
 
 	subroutine av2fm(fm,ip,jp)
 
-c computation of interpolation matrix of regular net (nodal values)
+c computation of interpolation matrix (nodal values to regular grid) with mask
 
 	use basin
 
@@ -337,7 +337,7 @@ c************************************************
 
 	subroutine av2fmk(bwater,fm,ip,jp)
 
-c computation of interpolation matrix of regular net (nodal values) with mask
+c computation of interpolation matrix (nodal values to regular grid) with mask
 c
 c the interpolation can be carried out as
 c

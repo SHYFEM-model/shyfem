@@ -667,7 +667,7 @@
 !***************************************************************
 !***************************************************************
 
-	subroutine shyelab_write_record(id,idout,dtime,ivar,n,m
+	subroutine shyelab_write_record_000(id,idout,dtime,ivar,n,m
      +						,nlv,nlvdi,cv3)
 
 	use basin

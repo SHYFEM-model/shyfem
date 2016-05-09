@@ -288,7 +288,7 @@ SHYOBJS = genutil.o \
 		shyelab1.o \
 		elabutil.o \
 		subshy.o subshyutil.o subshyutil2.o \
-		shyutil.o
+		shyutil.o shyelab_output.o
 SHYNOBJS = genutil.o elabutil.o subshy.o subshyutil.o subshyutil2.o shyutil.o
 ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
