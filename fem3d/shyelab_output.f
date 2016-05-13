@@ -1,118 +1,402 @@
 
+!==================================================================
+        module shyelab_out
+!==================================================================
+
+	implicit none
+
+
+	integer, save :: nwrite = 0
+
+	integer, save :: iformat = 1
+	integer, save :: ntype = 1
+	real, save :: regpar(7) = 0.
+	logical, save :: breg = .false.
+
+	integer, save, allocatable :: il(:)
+	real, save, allocatable :: hd(:)
+	real, save, allocatable :: reg(:,:)
+
+!==================================================================
+        end module shyelab_out
+!==================================================================
+
 !***************************************************************
 !***************************************************************
 !***************************************************************
 
-	subroutine shyelab_write_record(id,idout,dtime,nvar,iv,ivar,n,m
-     +						,nlv,nlvddi,cv3)
+	subroutine shyelab_init_output(id,idout)
+
+! initializes in case of btrans, bout, bsplit, bsumvar
+!
+! in case of bout also distinguishes between output formats
 
 	use basin
-	use shyfile
+	use levels
 	use elabutil
+	use shyelab_out
+	use shyfile
+
+	implicit none
+
+	integer id,idout
+
+	integer ierr,iunit,n
+	integer nx,ny
+	character*60 file,form
+	character*80 string
+	integer ifileo
+
+	if( .not. boutput ) return
+
+	string = ' '
+	call fem_regular_parse(string,regpar,nx,ny)
+	if( nx > 0 .and. ny > 0 ) then
+	  allocate(reg(nx,ny))
+	  breg = .true.
+	  ntype = ntype + 10
+	end if
+
+	if( bsplit ) then
+	  ! nothing to initialize ... is done later
+	else
+	  if( outformat == 'shy' .or. outformat == 'native') then
+	    file = 'out.shy'
+            idout = shy_init(file)
+	    if( idout <= 0 ) goto 74
+            call shy_clone(id,idout)
+            if( b2d ) call shy_convert_2d(idout)
+	    if( bsumvar ) call shy_convert_1var(idout)
+            call shy_write_header(idout,ierr)
+            if( ierr /= 0 ) goto 75
+	  else if( outformat == 'gis' ) then
+	    call gis_write_connect
+	  else if( outformat == 'fem' ) then
+	    if( iformat == 0 ) then
+	      form='unformatted'
+	    else
+	      form='formatted'
+	    end if
+	    file = 'out.fem'
+	    iunit = ifileo(60,file,form,'unknown')
+	    if( iunit <= 0 ) goto 74
+	    idout = iunit
+	    n = nkn
+            allocate(il(n),hd(n))
+	    call fem_setup_arrays(id,n,il,hd)		!only for nodes
+	  else
+	    write(6,*) 'outformat = ',trim(outformat)
+	    stop 'error stop: outformat not recognized'
+	  end if
+	end if
+
+	return
+   74	continue
+        write(6,*) 'error opening file ',trim(file)
+        stop 'error stop shyelab_init_output: opening file'
+   75	continue
+        write(6,*) 'error writing header, ierr = ',ierr
+        write(6,*) 'file = ',trim(file)
+        stop 'error stop shyelab_init_output: writing header'
+	end
+
+!***************************************************************
+
+	subroutine shyelab_header_output(id,idout,dtime,nvar)
+
+! initializes record in case of btrans, bout, bsplit, bsumvar
+
+	use basin
+	use levels
+	use elabutil
+	use shyelab_out
+	use shyfile
 
 	implicit none
 
 	integer id,idout
 	double precision dtime
-	integer nvar,iv,ivar,n,m
-	integer nlv,nlvddi
-	real cv3(nlvddi,n*m)
+	integer nvar,ftype
+	logical bscalar,bhydro
 
-	integer it,nb
-	integer iunit,nvers
-	integer, save, allocatable :: il(:)
-	real, save, allocatable :: hlv(:)
-	real, save, allocatable :: hd(:)
+	integer ierr,iunit,n,nvers,lmax
 
-	integer ilhv(nel)
-	integer ilhkv(nkn)
+	if( .not. boutput ) return
 
-	integer, save :: iformat = 0
-	integer, save :: ntype = -1
-	real, save :: regpar(7) = 0.
-	integer, save :: icall = 0
-	character*60 string
+	call shy_get_ftype(id,ftype)
+        bhydro = ftype == 1
+        bscalar = ftype == 2
 
-	nb = 0
-	it = nint(dtime)
+	if( bhydro ) return
 
-	if( outformat == 'shy' .or. outformat == 'native') then
-	  call shy_write_output_record(idout,dtime,ivar,n,m
-     +						,nlv,nlv,cv3)
-        else if( outformat == 'gis' ) then
-	  if( ivar == 1 .or. ivar == 3 ) goto 99
-	  if( n /= nkn .or. m /= 1 ) goto 98
-	  call shy_get_layerindex(id,ilhv,ilhkv)
-          call gis_write_record(nb,it,ivar,nlvddi,ilhkv,cv3)
-        else if( outformat == 'fem' ) then
-	  if( icall == 0 ) then
-	    call fem_setup_params(iformat,idout,ntype,regpar)
-	    allocate(hlv(nlvddi),il(n),hd(n))
-	    call fem_setup_arrays(id,nlvddi,n,hlv,il,hd)
-	  end if
-	  if( n /= nkn .or. m /= 1 ) goto 98
-	  iunit = idout
-	  nvers = 0
-	  if( iv == 1 ) then
-            call fem_file_write_header(iformat,iunit,dtime
-     +                          ,nvers,n,nlv
-     +                          ,nvar,ntype
-     +                          ,nlvddi,hlv,datetime,regpar)
-	  end if
-	  call get_string_description(ivar,string)
-          call fem_file_write_data(iformat,iunit
-     +                          ,nvers,n,nlv
-     +                          ,string
-     +                          ,il,hd
-     +                          ,nlvddi,cv3)
+	if( bsplit ) then
+	  ! nothing to be done
 	else
-          write(6,*) 'output format unknown: ',outformat
-          stop 'error stop shyelab_write_record: output format'
+	  if( outformat == 'shy' .or. outformat == 'native') then
+	    ! nothing to be done
+	  else if( outformat == 'gis' ) then
+	    ! nothing to be done
+	  else if( outformat == 'fem' ) then
+	    iunit = idout
+	    nvers = 0
+	    n = nkn
+	    lmax = nlv
+	    if( b2d ) lmax = 1
+            call fem_file_write_header(iformat,iunit,dtime
+     +                          ,nvers,n,lmax
+     +                          ,nvar,ntype
+     +                          ,nlvdi,hlv,datetime,regpar)
+	  else
+	    write(6,*) 'outformat = ',trim(outformat)
+	    stop 'error stop: outformat not recognized'
+	  end if
 	end if
 
-	icall = icall + 1
-
-	return
-   98	continue
-	write(6,*) 'output format = ',trim(outformat)
-	write(6,*) 'n,m = ',n,m
-	write(6,*) 'nkn,nel = ',nkn,nel
-	stop 'error stop shyelab_write_record: cannot handle'
-   99	continue
-	write(6,*) 'output format = ',trim(outformat)
-	write(6,*) 'ivar = ',ivar
-	stop 'error stop shyelab_write_record: cannot handle'
 	end
 
 !***************************************************************
 
-	subroutine fem_setup_params(iformat,iunit,ntype,regpar)
+	subroutine shyelab_record_output(id,idout,dtime,ivar,n,m
+     +					,lmax,nlvddi,cv3)
+
+! initializes record in case of btrans, bout, bsplit, bsumvar
+
+	use basin
+	use levels
+	use elabutil
+	use shyelab_out
+	use shyfile
 
 	implicit none
 
-	integer iformat
-	integer iunit,ntype
-	real regpar(7)
+	integer id,idout
+	double precision dtime
+	integer ivar,n,m
+	integer lmax,nlvddi
+	real cv3(nlvddi,n*m)
 
-	character*20 form
-	integer ifileo
+	integer ierr,iunit,nvers
+	integer it,nb
+	integer id_out
+	integer ftype
+	logical bscalar,bhydro,bshy
+	character*60 string
 
-	ntype = 0
-	regpar = 0.
+	if( .not. boutput ) return
+	if( bsumvar ) return
 
-	if( iformat == 0 ) then
-	  form='unformatted'
+	call shy_get_ftype(id,ftype)
+        bhydro = ftype == 1
+        bscalar = ftype == 2
+	bshy = ( outformat == 'shy' .or. outformat == 'native' )
+
+	if( bhydro .and. .not. bshy ) return
+
+	if( bverb ) write(6,*) 'writing to output: ',ivar
+
+	if( bsplit ) then
+	  call shy_split_id(ivar,id,id_out)
+	  call shy_write_output_record(id_out,dtime,ivar,n,m
+     +						,lmax,nlvddi,cv3)
 	else
-	  form='formatted'
+	  if( bshy ) then
+	    call shy_write_output_record(idout,dtime,ivar,n,m
+     +						,lmax,nlvddi,cv3)
+	  else if( outformat == 'gis' ) then
+	    if( ivar == 1 .or. ivar == 3 ) goto 99
+	    if( n /= nkn .or. m /= 1 ) goto 98
+	    nb = 0
+	    it = nint(dtime)
+            call gis_write_record(nb,it,ivar,nlvddi,ilhkv,cv3)
+	  else if( outformat == 'fem' ) then
+	    iunit = idout
+	    nvers = 0
+	    n = nkn
+	    call get_string_description(ivar,string)
+            call fem_file_write_data(iformat,iunit
+     +                          ,nvers,n,lmax
+     +                          ,string
+     +                          ,il,hd
+     +                          ,nlvddi,cv3)
+	  else
+	    write(6,*) 'outformat = ',trim(outformat)
+	    stop 'error stop: outformat not recognized'
+	  end if
 	end if
 
-	iunit = ifileo(60,'out.fem',form,'unknown')
+	nwrite = nwrite + 1
+
+	return
+   98   continue
+        write(6,*) 'output format = ',trim(outformat)
+        write(6,*) 'n,m = ',n,m
+        write(6,*) 'nkn,nel = ',nkn,nel
+        stop 'error stop shyelab_record_output: cannot handle'
+   99   continue
+        write(6,*) 'output format = ',trim(outformat)
+        write(6,*) 'ivar = ',ivar
+        stop 'error stop shyelab_record_output: cannot handle'
+	end
+
+!***************************************************************
+
+	subroutine shyelab_post_output(id,idout,dtime,nvar,n,m,nndim
+     +					,lmax,nlvddi,cv3all)
+
+! initializes record in case of btrans, bout, bsplit, bsumvar
+
+	use basin
+	use levels
+	use elabutil
+	use shyelab_out
+	use shyfile
+
+	implicit none
+
+	integer id,idout
+	double precision dtime
+	integer nvar,n,m,nndim
+	integer lmax,nlvddi
+	real cv3all(nlvddi,nndim,0:nvar)
+
+	integer ierr,iunit,nvers
+	integer it,nb,ivar
+	integer id_out
+	integer ftype
+	logical bscalar,bhydro,bshy
+	character*60 string
+
+        real, allocatable :: znv(:)
+        real, allocatable :: uprv(:,:)
+        real, allocatable :: vprv(:,:)
+        real, allocatable :: sv(:,:)
+        real, allocatable :: dv(:,:)
+
+	if( .not. boutput ) return
+
+	call shy_get_ftype(id,ftype)
+        bhydro = ftype == 1
+        bscalar = ftype == 2
+	bshy = ( outformat == 'shy' .or. outformat == 'native' )
+
+	if( bscalar .and. .not. bsumvar ) return
+
+	if( bhydro ) then
+	  allocate(znv(nkn),uprv(nlvddi,nkn),vprv(nlvddi,nkn))
+	  allocate(sv(nlvddi,nkn),dv(nlvddi,nkn))
+          call prepare_hydro(nndim,cv3all,znv,uprv,vprv)
+          call convert_to_speed(uprv,vprv,sv,dv)
+	end if
+
+	if( bsplit ) then
+	  if( bhydro ) then
+            call shy_split_hydro(id,dtime,znv,uprv,vprv,sv,dv)
+	  end if
+	else
+	  if( bshy ) then
+	    if( bhydro ) then
+	      ! nothing to be done
+	    else if( bsumvar ) then
+              cv3all(:,:,0) = 0.
+              cv3all(:,:,0) = sum(cv3all,dim=3)
+              ivar = 30
+	      call shy_write_output_record(idout,dtime,ivar,n,m
+     +					,lmax,nlvddi,cv3all(:,:,0))
+	    else
+	      stop 'error stop shyelab_post_output: internal error (1)'
+	    end if
+	  else if( outformat == 'gis' ) then
+	    it = nint(dtime)
+	    call gis_write_hydro(it,nlvddi,ilhkv,znv,uprv,vprv)
+	  else if( outformat == 'fem' ) then
+	    call fem_write_hydro(idout,dtime,nlvddi,znv,uprv,vprv)
+	  else
+	    write(6,*) 'outformat = ',trim(outformat)
+	    stop 'error stop: outformat not recognized'
+	  end if
+          if( .not. (bshy.and.bhydro) ) nwrite = nwrite + 1
+	end if
+
+	if( bhydro ) deallocate(znv,uprv,vprv,sv,dv)
 
 	end
 
 !***************************************************************
 
-	subroutine fem_setup_arrays(id,nlvddi,n,hlv,il,hd)
+	subroutine shyelab_final_output(id,idout,nvar)
+
+	use basin
+	use levels
+	use elabutil
+	use shyelab_out
+	use shyfile
+
+	implicit none
+
+	integer id,idout
+	integer nvar
+
+	integer ierr,iunit,nvers
+	integer it,nb,ivar
+	integer id_out
+	integer ftype
+	logical bscalar,bhydro,bshy
+	character*80 file
+
+	if( .not. boutput ) return
+
+	write(6,*) 'output written to following files: '
+
+	call shy_get_ftype(id,ftype)
+        bhydro = ftype == 1
+        bscalar = ftype == 2
+	bshy = ( outformat == 'shy' .or. outformat == 'native' )
+
+	if( bsplit ) then
+	  if( bhydro ) then
+	    write(6,*) 'z.shy'
+	    write(6,*) 'u.shy'
+	    write(6,*) 'v.shy'
+	    write(6,*) 's.shy'
+	    write(6,*) 'd.shy'
+	  else if( bscalar ) then
+	    ivar = 0
+	    do
+	      ivar = ivar - 1
+	      call shy_split_id(ivar,id,idout)
+	      if( idout < 0 ) exit		!no more variables
+	      if( idout > 0 ) then
+		call shy_get_filename(idout,file)
+	        write(6,*) trim(file)
+	      end if
+	    end do
+	  end if
+	else
+	  if( bshy ) then
+	    write(6,*) 'out.shy'
+	  else if( outformat == 'gis' ) then
+	    write(6,*) 'connectivity.gis'
+	    write(6,*) 'extract_*.gis'
+	  else if( outformat == 'fem' ) then
+	    write(6,*) 'out.fem'
+	  else
+	    write(6,*) 'outformat = ',trim(outformat)
+	    stop 'error stop: outformat not recognized'
+	  end if
+	end if
+
+	end
+
+!***************************************************************
+!***************************************************************
+!***************************************************************
+
+
+!***************************************************************
+!***************************************************************
+!***************************************************************
+
+	subroutine fem_setup_arrays(id,n,il,hd)
 
 	use basin, only : nkn,nel,nen3v
 	use shyfile
@@ -120,9 +404,7 @@
 	implicit none
 
 	integer id
-	integer nlvddi
 	integer n
-	real hlv(nlvddi)
 	integer il(n)
 	real hd(n)
 
@@ -135,12 +417,6 @@
 	  stop 'error stop fem_setup_arrays: internal error'
 	end if
 
-	if( nlvddi == 1 ) then
-	  il = 1
-	  hlv(1) = 10000.
-	  call shy_get_depth(id,hm3v)
-	else
-	  call shy_get_layers(id,hlv)
 	  call shy_get_layerindex(id,ilhv,ilhkv)
 	  if( n == nkn ) then
 	    il = ilhkv
@@ -148,7 +424,6 @@
 	    il = ilhv
 	  end if
 	  call shy_get_depth(id,hm3v)
-	end if
 
 	if( n == nel ) then
 	  do ie=1,nel
@@ -163,6 +438,66 @@
 	    end do
 	  end do
 	end if
+
+	end
+
+!***************************************************************
+
+	subroutine fem_write_hydro(idout,dtime,nlvddi,znv,uprv,vprv)
+
+	use basin
+	use levels
+	use shyfile
+	use elabutil
+	use shyelab_out
+
+	implicit none
+
+	integer idout
+	double precision dtime
+	integer nndim
+	integer nlvddi
+	real znv(nkn)
+	real uprv(nlvddi,nkn)
+	real vprv(nlvddi,nkn)
+
+	integer iunit,nvers,n,lmax,nvar,ivar
+	character*60 string
+
+	iunit = idout
+	nvers = 0
+	n = nkn
+	lmax = nlv
+	nvar = 3
+
+        call fem_file_write_header(iformat,iunit,dtime
+     +                          ,nvers,n,lmax
+     +                          ,nvar,ntype
+     +                          ,nlvdi,hlv,datetime,regpar)
+
+	ivar = 1
+	lmax = 1
+	call get_string_description(ivar,string)
+        call fem_file_write_data(iformat,iunit
+     +                          ,nvers,n,lmax
+     +                          ,string
+     +                          ,il,hd
+     +                          ,1,znv)
+
+	ivar = 2
+	lmax = nlv
+	call get_string_description(ivar,string)
+
+        call fem_file_write_data(iformat,iunit
+     +                          ,nvers,n,lmax
+     +                          ,string
+     +                          ,il,hd
+     +                          ,nlvddi,uprv)
+        call fem_file_write_data(iformat,iunit
+     +                          ,nvers,n,lmax
+     +                          ,string
+     +                          ,il,hd
+     +                          ,nlvddi,vprv)
 
 	end
 

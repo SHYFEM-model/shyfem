@@ -18,10 +18,17 @@ c 29.10.2014	ggu	new routine fem_file_is_fem_file()
 c 09.01.2015	ggu	new routine fem_file_get_format_description()
 c 14.01.2015	ggu	new routine fem_file_string2time()
 c 21.01.2016	ggu	read and write string without leading blanks
+c 13.05.2016	ggu	nvers = 3 -> add data size to records
 c
 c notes :
 c
-c format for file (nvers == 2)
+c versions:
+c
+c nvers == 1		outdated, not supported
+c nvers == 2		complete specification
+c nvers == 3		write np,lmax for each record -> can mix 2d/3d records
+c
+c format for file (nvers == 3)
 c
 c	time record 1
 c	time record 2
@@ -46,9 +53,11 @@ c format for data record
 c
 c	if( lmax == 1 )
 c		string
+c		np,lmax				only for nvers > 2
 c		(data(1,k),k=1,np)
 c	if( lmax > 1 )
 c		string
+c		np,lmax				only for nvers > 2
 c		do k=1,np
 c		  lm,hd(k),(data(l,k),l=1,lm)
 c		end do
@@ -153,8 +162,8 @@ c writes first header of fem file
 	integer(kind=8) :: itlong
 
 	nv = nvers
-	if( nv .eq. 0 ) nv = 2	!default
-	if( nv .lt. 2 .or. nv .gt. 2 ) goto 99
+	if( nv .eq. 0 ) nv = 3	!default
+	if( nv .lt. 3 .or. nv .gt. 3 ) goto 99
 	if( lmax < 1 ) goto 98
 
 	if( iformat == 1 ) then
@@ -252,7 +261,7 @@ c writes data of the file
 	character*80 textu	!we need 80 chars for unformatted write
 
 	nv = nvers
-	if( nv .eq. 0 ) nv = 1	!default
+	if( nv .eq. 0 ) nv = 3	!default
 
 	text = trim(string)
 	textu = string
@@ -260,6 +269,7 @@ c writes data of the file
 
 	if( iformat == 1 ) then
 	  write(iunit,'(a)') text
+	  if( nv >= 3 ) write(iunit,*) np,lmax
 	  if( b2d ) then
 	    write(iunit,1000) (data(1,k),k=1,np)
 	  else
@@ -270,6 +280,7 @@ c writes data of the file
 	  end if
 	else
 	  write(iunit) textu
+	  if( nv >= 3 ) write(iunit) np,lmax
 	  if( b2d ) then
 	    write(iunit) (data(1,k),k=1,np)
 	  else
@@ -698,7 +709,7 @@ c reads and checks params of next header
 	ierr = 11
 	if( id .ne. idfem ) goto 9
 	ierr = 13
-	if( nvers .lt. 1 .or. nvers .gt. 2 ) goto 9
+	if( nvers .lt. 1 .or. nvers .gt. 3 ) goto 9
 	ierr = 15
 	if( np .le. 0 ) goto 9
 	ierr = 17
@@ -837,15 +848,19 @@ c reads data of the file
 	integer ierr		!return error code
 
 	logical b2d
-	integer k,lm,l
+	integer k,lm,l,npp
 	real hdepth
 	character*80 text
 
 	ierr = 0
-	b2d = lmax .le. 1
+	npp = np
 
 	if( iformat == 1 ) then
 	  read(iunit,'(a)',err=13) text
+	  if( nvers >= 3 ) read(iunit,*,err=11) npp,lmax
+	  if( lmax > nlvddi ) goto 97
+	  if( np /= npp ) goto 96
+	  b2d = lmax .le. 1
 	  if( b2d ) then
 	    read(iunit,*,err=15) (data(1,k),k=1,np)
 	  else
@@ -857,6 +872,10 @@ c reads data of the file
 	  end if
 	else
 	  read(iunit,err=13) text
+	  if( nvers >= 3 ) read(iunit,err=11) npp,lmax
+	  if( lmax > nlvddi ) goto 97
+	  if( np /= npp ) goto 96
+	  b2d = lmax .le. 1
 	  if( b2d ) then
 	    read(iunit,err=15) (data(1,k),k=1,np)
 	  else
@@ -869,14 +888,16 @@ c reads data of the file
 	end if
 
 	if( b2d ) then
-	  do k=1,np
-	    ilhkv(k) = 1
-	    hd(k) = 10000.
-	  end do
+	  ilhkv = 1
+	  hd = 10000.
 	end if
 
 	string = trim(text)
 
+	return
+   11	continue
+	write(6,*) 'error reading data size'
+	ierr = 11
 	return
    13	continue
 	write(6,*) 'error reading string description'
@@ -885,6 +906,16 @@ c reads data of the file
    15	continue
 	write(6,*) 'error reading data record'
 	ierr = 15
+	return
+   96	continue
+	write(6,*) 'error reading data record: size mismatch'
+	write(6,*) 'np,npp: ',np,npp
+	ierr = 96
+	return
+   97	continue
+	write(6,*) 'error reading data record: lmax > nlvddi'
+	write(6,*) 'lmax,nlvddi: ',lmax,nlvddi
+	ierr = 97
 	return
    99	continue
 	write(6,*) 'error reading data record: too much vertical data'
@@ -912,15 +943,18 @@ c skips one record of data of the file
 	integer ierr		!return error code
 
 	logical b2d
-	integer k,lm,l
+	integer k,lm,l,npp
 	real aux
 	character*80 text
 
 	ierr = 0
-	b2d = lmax .le. 1
+	npp = np
 
 	if( iformat  == 1 ) then
 	  read(iunit,'(a)',err=13) text
+	  if( nvers >= 3 ) read(iunit,*,err=11) npp,lmax
+	  if( np /= npp ) goto 96
+	  b2d = lmax .le. 1
 	  if( b2d ) then
 	    read(iunit,*,err=15) (aux,k=1,np)
 	  else
@@ -931,6 +965,9 @@ c skips one record of data of the file
 	  end if
 	else
 	  read(iunit,err=13) text
+	  if( nvers >= 3 ) read(iunit,err=11) npp,lmax
+	  if( np /= npp ) goto 96
+	  b2d = lmax .le. 1
 	  if( b2d ) then
 	    read(iunit,err=15) (aux,k=1,np)
 	  else
@@ -944,6 +981,10 @@ c skips one record of data of the file
 	string = text
 
 	return
+   11	continue
+	write(6,*) 'error reading data size'
+	ierr = 11
+	return
    13	continue
 	write(6,*) 'error reading string description'
 	ierr = 13
@@ -951,6 +992,11 @@ c skips one record of data of the file
    15	continue
 	write(6,*) 'error skipping data record'
 	ierr = 15
+	return
+   96	continue
+	write(6,*) 'error reading data record: size mismatch'
+	write(6,*) 'np,npp: ',np,npp
+	ierr = 96
 	return
    99	continue
 	write(6,*) 'error reading data record: too much vertical data'

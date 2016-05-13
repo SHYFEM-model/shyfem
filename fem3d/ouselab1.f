@@ -304,6 +304,7 @@ c--------------------------------------------------------------
 	    if( bverb ) write(6,*) 'writing to output: ',ivar
 	    if( bsumvar ) ivar = 30
             nwrite = nwrite + 1
+	    ierr = 0
 	    if( outformat == 'gis' ) then
 	      call transfer_uvz(nlvdi,nndim,nvar,vars
      +				,znv,zenv,utlnv,vtlnv)

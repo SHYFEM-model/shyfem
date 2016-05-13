@@ -1239,7 +1239,7 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-        subroutine gis_write_record(nb,it,ivar,nlvdi,ilhkv,cv)
+        subroutine gis_write_record(nb,it,ivar,nlvddi,ilhkv,cv)
 
 c writes one record to file nb (3D)
 
@@ -1247,9 +1247,9 @@ c writes one record to file nb (3D)
 
         implicit none
 
-        integer nb,it,ivar,nlvdi
-        integer ilhkv(nlvdi)
-        real cv(nlvdi,*)
+        integer nb,it,ivar,nlvddi
+        integer ilhkv(nlvddi)
+        real cv(nlvddi,*)
 
         integer k,l,lmax
 	integer nout
@@ -1270,8 +1270,10 @@ c writes one record to file nb (3D)
 
         write(nout,*) it,nkn,ivar,dateline
 
+	lmax = 1
+
         do k=1,nkn
-          lmax = ilhkv(k)
+          if( nlvddi > 1 ) lmax = ilhkv(k)
           x = xgv(k)
           y = ygv(k)
 
@@ -1285,7 +1287,7 @@ c writes one record to file nb (3D)
 
 c***************************************************************
 
-        subroutine gis_write_hydro(it,nlvdi,ilhkv,zv,uv,vv)
+        subroutine gis_write_hydro(it,nlvddi,ilhkv,zv,uv,vv)
 
 c writes one record to file (3D)
 
@@ -1293,11 +1295,11 @@ c writes one record to file (3D)
 
         implicit none
 
-        integer it,nlvdi
-        integer ilhkv(nlvdi)
+        integer it,nlvddi
+        integer ilhkv(nlvddi)
         real zv(nkn)
-        real uv(nlvdi,nkn)
-        real vv(nlvdi,nkn)
+        real uv(nlvddi,nkn)
+        real vv(nlvddi,nkn)
 
         integer k,l,lmax,nn,i
 	integer nout
@@ -1317,8 +1319,10 @@ c writes one record to file (3D)
 
         write(nout,*) it,nkn,0,dateline
 
+	lmax = 1
+
         do k=1,nkn
-          lmax = ilhkv(k)
+          if( nlvddi > 1 ) lmax = ilhkv(k)
           x = xgv(k)
           y = ygv(k)
 

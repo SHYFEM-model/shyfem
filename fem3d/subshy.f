@@ -403,6 +403,11 @@
 
 	integer id
 
+	character*80 file
+
+	call shy_get_filename(id,file)
+
+        write(6,*) 'filename  : ',trim(file)
         write(6,*) 'iunit     : ',pentry(id)%iunit
         write(6,*) 'nvers     : ',pentry(id)%nvers
         write(6,*) 'nkn,nel   : ',pentry(id)%nkn,pentry(id)%nel
@@ -894,6 +899,7 @@
 	else
 	  write(6,*) n,pentry(id)%nkn,pentry(id)%nel
 	  write(6,*) 'cannot determine layer pointer'
+	  call shy_info(id)
 	  stop 'error stop shy_read_record: layer pointer'
 	end if
 

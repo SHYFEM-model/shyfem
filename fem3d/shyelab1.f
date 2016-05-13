@@ -185,18 +185,9 @@
 	! open output file
 	!--------------------------------------------------------------
 
-	boutput = boutput .or. btrans
-	bopen = boutput .or. bsumvar
+	boutput = boutput .or. btrans .or. bsplit .or. bsumvar
 
-	if( bopen ) then
-	  idout = shy_init('out.shy')
-          call shy_clone(id,idout)
-	  if( b2d ) call shy_convert_2d(idout)
-          call shy_write_header(idout,ierr)
-	  if( ierr /= 0 ) goto 75
-	end if
-
-	if( outformat == 'gis' ) call gis_write_connect
+	call shyelab_init_output(id,idout)
 
 !--------------------------------------------------------------
 ! loop on data
@@ -247,6 +238,12 @@
 	 !call shy_make_volume		!comment for constant volume
 
 	 !--------------------------------------------------------------
+	 ! initialize record header for output
+	 !--------------------------------------------------------------
+
+	 call shyelab_header_output(id,idout,dtime,nvar)
+
+	 !--------------------------------------------------------------
 	 ! loop over single variables
 	 !--------------------------------------------------------------
 
@@ -275,32 +272,19 @@
      +			,idims,threshold,cv3,boutput)
 	  end if
 
+	  if( b2d ) then
+	    call shy_make_vert_aver(idims(:,iv),nndim,cv3,cv2)
+	    call shyelab_record_output(id,idout,dtime,ivar,n,m
+     +						,1,1,cv2)
+	  else
+	    call shyelab_record_output(id,idout,dtime,ivar,n,m
+     +						,nlv,nlvdi,cv3)
+	  end if
+
 	  if( baverbas .and. bscalar ) then
 	    call shy_make_basin_aver(idims(:,iv),nndim,cv3
      +                          ,cmin,cmax,cmed,vtot)
 	    call shy_write_aver(dtime,ivar,cmin,cmax,cmed,vtot)
-	  end if
-
-	  if( b2d ) then
-	    call shy_make_vert_aver(idims(:,iv),nndim,cv3,cv2)
-	  end if
-
-	  if( bsplit .and. bscalar ) then
-	    call shy_split_id(ivar,iv,id,idout)
-	  end if
-
-	  if( boutput .and. idout > 0 ) then
-	    nwrite = nwrite + 1
-	    if( bverb ) write(6,*) 'writing to output: ',ivar
-	    if( bsumvar ) ivar = 30
-	    if( b2d ) then
-	      call shyelab_write_record(id,idout,dtime,ivar,n,m
-     +						,1,1,cv3)
-	    else
-	      call shyelab_write_record(id,idout,dtime,ivar,n,m
-     +						,nlv,nlvdi,cv3)
-	    end if
-!FIXME - should be wrong for hydro (zeta) output
 	  end if
 
 	  if( bnodes .and. bscalar ) then	!scalar output
@@ -318,26 +302,13 @@
      +                  ,znv,uprv,vprv,sv,dv)
 	 end if
 
-	 if( bsplit .and. bhydro ) then
-	   call prepare_hydro(nndim,cv3all,znv,uprv,vprv)
-	   call convert_to_speed(uprv,vprv,sv,dv)
-	   call shy_split_hydro(id,dtime,znv,uprv,vprv,sv,dv)
-	 end if
-
 	 if( bnodes .and. bhydro ) then	!hydro output
 	   call prepare_hydro(nndim,cv3all,znv,uprv,vprv)
 	   call write_nodes_vel(dtime,znv,uprv,vprv)
 	 end if
  
-	 if( bsumvar .and. bscalar ) then
-	   cv3all(:,:,0) = 0.
-	   cv3 = sum(cv3all,dim=3)	   
-	   nwrite = nwrite + 1
-	   if( bverb ) write(6,*) 'writing to output: ',ivar
-	   ivar = 30
-	   call shyelab_write_record(id,idout,dtime,ivar,n,m
-     +						,nlv,nlvdi,cv3)
-	 end if
+	 call shyelab_post_output(id,idout,dtime,nvar,n,m,nndim
+     +                                  ,lmax,nlvdi,cv3all)
 
 	end do		!time do loop
 
@@ -358,8 +329,12 @@
 	      write(6,*) 'final aver: ',ip,iv,naccum
 	      call shy_time_aver(-mode,iv,ip,0,istep,nndim
      +			,idims,threshold,cv3,boutput)
-	      call shy_write_scalar_record(idout,dtime,ivar,nlvdi,cv3)
-!FIXME - should be wrong for hydro (zeta) output
+	      n = idims(1,iv)
+	      m = idims(2,iv)
+	      lmax = idims(3,iv)
+	      ivar = idims(4,iv)
+	      call shyelab_record_output(id,idout,dtime,ivar,n,m
+     +						,lmax,nlvdi,cv3)
 	    end if
 	   end do
 	  end do
@@ -377,12 +352,7 @@
 	write(6,*) nwrite,' records written'
 	write(6,*)
 
-	if( bsplit ) then
-	  write(6,*) 'output written to following files: '
-	  write(6,*) '...not yet ready'
-	else if( boutput ) then
-	  write(6,*) 'output written to file out.shy'
-	end if
+	call shyelab_final_output(id,idout,nvar)
 
 !--------------------------------------------------------------
 ! end of routine
@@ -566,11 +536,11 @@
 	  icall = 1
 	end if
 
-	call shyelab_write_record(id,idz,dtime,1,nkn,1,1,1,znv)
-	call shyelab_write_record(id,idu,dtime,2,nkn,1,nlv,nlv,uprv)
-	call shyelab_write_record(id,idv,dtime,2,nkn,1,nlv,nlv,vprv)
-	call shyelab_write_record(id,ids,dtime,6,nkn,1,nlv,nlv,sv)
-	call shyelab_write_record(id,idd,dtime,7,nkn,1,nlv,nlv,dv)
+	call shy_write_output_record(idz,dtime,1,nkn,1,1,1,znv)
+	call shy_write_output_record(idu,dtime,2,nkn,1,nlv,nlv,uprv)
+	call shy_write_output_record(idv,dtime,2,nkn,1,nlv,nlv,vprv)
+	call shy_write_output_record(ids,dtime,6,nkn,1,nlv,nlv,sv)
+	call shy_write_output_record(idd,dtime,7,nkn,1,nlv,nlv,dv)
 
 	end
 
@@ -612,13 +582,13 @@
 
 !***************************************************************
 
-	subroutine shy_split_id(ivar,iv,id_in,id_out)
+	subroutine shy_split_id(ivar,id_in,id_out)
 
 	use shyfile
 
 	implicit none
 
-	integer ivar,iv
+	integer ivar
 	integer id_in
 	integer id_out
 
@@ -641,6 +611,15 @@
           call move_alloc(iuaux,iusplit)
 	  nsplit = 2*ivar
         end if
+
+	if( ivar < 0 ) then	!just check - do not open
+	  if( -ivar > nsplit ) then
+	    id_out = -1
+	  else
+	    id_out = iusplit(-ivar)
+	  end if
+	  return
+	end if
 
 	id_out = iusplit(ivar)
 	write(6,*) 'shy_split_id: ',ivar,id_out
@@ -665,54 +644,5 @@
 
 !***************************************************************
 !***************************************************************
-!***************************************************************
-
-	subroutine shyelab_write_record_000(id,idout,dtime,ivar,n,m
-     +						,nlv,nlvdi,cv3)
-
-	use basin
-	use shyfile
-	use elabutil
-
-	implicit none
-
-	integer id,idout
-	double precision dtime
-	integer ivar,n,m
-	integer nlv,nlvdi
-	real cv3(nlvdi,n*m)
-
-	integer it,nb
-	integer ilhv(nel)
-	integer ilhkv(nkn)
-
-	nb = 0
-	it = nint(dtime)
-
-	if( outformat == 'shy' .or. outformat == 'native') then
-	  call shy_write_output_record(idout,dtime,ivar,n,m
-     +						,nlv,nlv,cv3)
-        else if( outformat == 'gis' ) then
-	  if( ivar == 1 .or. ivar == 3 ) goto 99
-	  if( n /= nkn .or. m /= 1 ) goto 98
-	  call shy_get_layerindex(id,ilhv,ilhkv)
-          call gis_write_record(nb,it,ivar,nlvdi,ilhkv,cv3)
-	else
-          write(6,*) 'output format unknown: ',outformat
-          stop 'error stop shyelab_write_record: output format'
-	end if
-
-	return
-   98	continue
-	write(6,*) 'output format = ',trim(outformat)
-	write(6,*) 'n,m = ',n,m
-	write(6,*) 'nkn,nel = ',nkn,nel
-	stop 'error stop shyelab_write_record: cannot handle'
-   99	continue
-	write(6,*) 'output format = ',trim(outformat)
-	write(6,*) 'ivar = ',ivar
-	stop 'error stop shyelab_write_record: cannot handle'
-	end
-
 !***************************************************************
 
