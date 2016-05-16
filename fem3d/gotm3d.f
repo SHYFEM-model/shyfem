@@ -348,10 +348,9 @@ c***************************************************************
         implicit none
  
         logical istdebug
+        logical isdebug
  
-	include 'debug_aux1.h'
- 
-        istdebug = debug	!GGU
+        !istdebug = isdebug()
         istdebug = .true.
         istdebug = .false.
  

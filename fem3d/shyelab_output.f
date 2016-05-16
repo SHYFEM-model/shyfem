@@ -10,12 +10,16 @@
 
 	integer, save :: iformat = 1
 	integer, save :: ntype = 1
+	integer, save :: nxreg = 0
+	integer, save :: nyreg = 0
 	real, save :: regpar(7) = 0.
 	logical, save :: breg = .false.
 
 	integer, save, allocatable :: il(:)
 	real, save, allocatable :: hd(:)
-	real, save, allocatable :: reg(:,:)
+	real, save, allocatable :: svalue(:,:)
+	real, save, allocatable :: s2dvalue(:)
+	real, save, allocatable :: fm(:,:)
 
 !==================================================================
         end module shyelab_out
@@ -42,19 +46,36 @@
 	integer id,idout
 
 	integer ierr,iunit,n
-	integer nx,ny
+	integer nxy
+	logical bshy
 	character*60 file,form
 	character*80 string
 	integer ifileo
 
 	if( .not. boutput ) return
 
+	bshy = ( outformat == 'shy' .or. outformat == 'native' )
+
 	string = ' '
-	call fem_regular_parse(string,regpar,nx,ny)
-	if( nx > 0 .and. ny > 0 ) then
-	  allocate(reg(nx,ny))
+	call fem_regular_parse(string,regpar,nxreg,nyreg)
+	if( nxreg > 0 .and. nyreg > 0 ) then
+	  nxy = nxreg * nyreg
+	  allocate(svalue(nlvdi,nxy),s2dvalue(nxy),fm(4,nxy))
+	  call fem_regular_setup_fm(nxreg,nyreg,fm)
 	  breg = .true.
 	  ntype = ntype + 10
+	else
+	  allocate(svalue(nlvdi,nkn),s2dvalue(nkn)) !only for nodal values
+	end if
+
+	if( breg .and. ( bsplit .or. bshy ) ) then
+	  write(6,*) 'regular output only for format gis, fem, nc'
+	  stop 'error stop shyelab_init_output: regular output'
+	end if
+
+	if( breg .and. outformat == 'gis' ) then
+	  write(6,*) 'regular output for gis not yet ready'
+	  stop 'error stop shyelab_init_output: gis not ready'
 	end if
 
 	if( bsplit ) then
@@ -140,6 +161,7 @@
 	    iunit = idout
 	    nvers = 0
 	    n = nkn
+	    if( breg ) n = nxreg*nyreg
 	    lmax = nlv
 	    if( b2d ) lmax = 1
             call fem_file_write_header(iformat,iunit,dtime
@@ -194,6 +216,12 @@
 
 	if( bverb ) write(6,*) 'writing to output: ',ivar
 
+	if( breg ) then
+	  call fem_regular_interpolate(nlvdi,cv3,svalue)
+	else
+	  svalue(:,1:nkn) = cv3(:,1:nkn)
+	end if
+
 	if( bsplit ) then
 	  call shy_split_id(ivar,id,id_out)
 	  call shy_write_output_record(id_out,dtime,ivar,n,m
@@ -207,17 +235,18 @@
 	    if( n /= nkn .or. m /= 1 ) goto 98
 	    nb = 0
 	    it = nint(dtime)
-            call gis_write_record(nb,it,ivar,nlvddi,ilhkv,cv3)
+            call gis_write_record(nb,it,ivar,nlvddi,ilhkv,svalue)
 	  else if( outformat == 'fem' ) then
 	    iunit = idout
 	    nvers = 0
 	    n = nkn
+	    if( breg ) n = nxreg*nyreg
 	    call get_string_description(ivar,string)
             call fem_file_write_data(iformat,iunit
      +                          ,nvers,n,lmax
      +                          ,string
      +                          ,il,hd
-     +                          ,nlvddi,cv3)
+     +                          ,nlvddi,svalue)
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'
@@ -307,6 +336,7 @@
 	    end if
 	  else if( outformat == 'gis' ) then
 	    it = nint(dtime)
+	    if( breg ) stop 'ggguuu: gis not yet ready'
 	    call gis_write_hydro(it,nlvddi,ilhkv,znv,uprv,vprv)
 	  else if( outformat == 'fem' ) then
 	    call fem_write_hydro(idout,dtime,nlvddi,znv,uprv,vprv)
@@ -467,6 +497,7 @@
 	iunit = idout
 	nvers = 0
 	n = nkn
+	if( breg ) n = nxreg*nyreg
 	lmax = nlv
 	nvar = 3
 
@@ -477,27 +508,45 @@
 
 	ivar = 1
 	lmax = 1
+	if( breg ) then
+	  call fem_regular_interpolate(lmax,znv,s2dvalue)
+	else
+	  s2dvalue = znv
+	end if
 	call get_string_description(ivar,string)
         call fem_file_write_data(iformat,iunit
      +                          ,nvers,n,lmax
      +                          ,string
      +                          ,il,hd
-     +                          ,1,znv)
+     +                          ,lmax,s2dvalue)
 
 	ivar = 2
 	lmax = nlv
 	call get_string_description(ivar,string)
 
+	if( breg ) then
+	  call fem_regular_interpolate(nlvddi,uprv,svalue)
+	else
+	  svalue = uprv
+	end if
+
         call fem_file_write_data(iformat,iunit
      +                          ,nvers,n,lmax
      +                          ,string
      +                          ,il,hd
-     +                          ,nlvddi,uprv)
+     +                          ,nlvddi,svalue)
+
+	if( breg ) then
+	  call fem_regular_interpolate(nlvddi,vprv,svalue)
+	else
+	  svalue = vprv
+	end if
+
         call fem_file_write_data(iformat,iunit
      +                          ,nvers,n,lmax
      +                          ,string
      +                          ,il,hd
-     +                          ,nlvddi,vprv)
+     +                          ,nlvddi,svalue)
 
 	end
 
@@ -599,22 +648,28 @@
 
 !***************************************************************
 
-	subroutine fem_regular_interpolate(nx,ny,nlvddi
-     +					,nlv,ilhv,cv3,fm,am)
+	subroutine fem_regular_interpolate(lmax,cv3,am)
 
         use basin
+	use levels
+	use shyelab_out
 
         implicit none
 
-	integer nx,ny
-        integer nlvddi                  !vertical dimension of fem array
-        integer nlv                     !vertical dimension of regular array
-        integer ilhv(nel)               !vertical discretization (element!!)
-        real cv3(nlvddi,nkn)            !values of fem array
-        real fm(4,nx,ny)                !interpolation matrix
-        real am(nlv,nx,ny)              !interpolated values (return)
+        integer lmax                   !vertical dimension of regular array
+        real cv3(nlvdi,nkn)            !values of fem array
+        real am(nlvdi,nxreg*nyreg)     !interpolated values (return)
 
-	call fm2am3d(nlvddi,ilhv,cv3,nlv,nx,ny,fm,am)
+	real fem2d(nkn)
+	real am2d(nxreg*nyreg)
+
+	if( lmax <= 1 ) then
+	  fem2d = cv3(1,:)
+	  call fm2am2d(fem2d,nxreg,nyreg,fm,am2d)
+	  am(1,:) = am2d
+	else
+	  call fm2am3d(nlvdi,ilhv,cv3,nlvdi,nxreg,nyreg,fm,am)
+	end if
 
 	end
 

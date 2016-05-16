@@ -19,12 +19,13 @@ c 09.01.2015	ggu	new routine fem_file_get_format_description()
 c 14.01.2015	ggu	new routine fem_file_string2time()
 c 21.01.2016	ggu	read and write string without leading blanks
 c 13.05.2016	ggu	nvers = 3 -> add data size to records
+c 14.05.2016	ggu	new module to collect global parameters
 c
 c notes :
 c
 c versions:
 c
-c nvers == 1		outdated, not supported
+c nvers == 1		no regular grid allowed
 c nvers == 2		complete specification
 c nvers == 3		write np,lmax for each record -> can mix 2d/3d records
 c
@@ -44,7 +45,7 @@ c	data record for variable nvar
 c
 c format for header record
 c
-c	dtime,nvers,id,np,lmax,nvar,ntype
+c	dtime,nvers,idfem,np,lmax,nvar,ntype
 c	date,time				only if ntype odd
 c	(hlv(l),l=1,lmax)			only if( lmax > 1 )
 c	other lines depending on ntype
@@ -70,7 +71,7 @@ c legend
 c
 c dtime		time stamp (double precision, seconds)
 c nvers		version of file format
-c id		id to identify fem file (must be 957839)
+c idfem		id to identify fem file (must be 957839)
 c np		number of horizontal points given
 c lmax		maximum number of layers given
 c nvar		number of variables in time record
@@ -99,6 +100,21 @@ c combinations are possible, example:
 c
 c 11		date/time and regular grid
 c
+
+!==================================================================
+        module fem_file
+!==================================================================
+
+	implicit none
+
+	integer, save :: nvmax = 3	!newest version
+	integer, save :: nvmin = 1	!oldest supported version
+	integer, save :: idfem = 957839	!fem file id - do not change
+
+!==================================================================
+        end module fem_file
+!==================================================================
+
 c************************************************************
 c************************************************************
 c************************************************************
@@ -142,10 +158,9 @@ c************************************************************
 
 c writes first header of fem file
 
-        implicit none
+	use fem_file
 
-	integer idfem
-	parameter ( idfem = 957839 )
+        implicit none
 
 	integer iformat		!formatted or unformatted
 	integer iunit		!file unit
@@ -162,8 +177,8 @@ c writes first header of fem file
 	integer(kind=8) :: itlong
 
 	nv = nvers
-	if( nv .eq. 0 ) nv = 3	!default
-	if( nv .lt. 3 .or. nv .gt. 3 ) goto 99
+	if( nv .eq. 0 ) nv = nvmax	!default
+	if( nv .ne. nvmax ) goto 99
 	if( lmax < 1 ) goto 98
 
 	if( iformat == 1 ) then
@@ -242,6 +257,8 @@ c************************************************************
 
 c writes data of the file
 
+	use fem_file
+
         implicit none
 
 	integer iformat		!formatted or unformatted
@@ -261,7 +278,7 @@ c writes data of the file
 	character*80 textu	!we need 80 chars for unformatted write
 
 	nv = nvers
-	if( nv .eq. 0 ) nv = 3	!default
+	if( nv .eq. 0 ) nv = nvmax	!default
 
 	text = trim(string)
 	textu = string
@@ -383,13 +400,12 @@ c************************************************************
 
 c writes information on file from header
 
+	use fem_file
+
 	implicit none
 
 	character*(*) file	!file name
 	integer iformat		!is formatted?
-
-	integer idfem
-	parameter ( idfem = 957839 )
 
 	integer iunit
 	double precision dtime
@@ -693,6 +709,8 @@ c************************************************************
 
 c reads and checks params of next header
 
+	use fem_file
+
         implicit none
 
 	integer nvers		!version of file format
@@ -703,13 +721,10 @@ c reads and checks params of next header
 	integer ntype		!type of information contained
 	integer ierr		!return error code
 
-	integer idfem
-	parameter ( idfem = 957839 )
-
 	ierr = 11
 	if( id .ne. idfem ) goto 9
 	ierr = 13
-	if( nvers .lt. 1 .or. nvers .gt. 3 ) goto 9
+	if( nvers .lt. nvmin .or. nvers .gt. nvmax ) goto 9
 	ierr = 15
 	if( np .le. 0 ) goto 9
 	ierr = 17

@@ -1505,29 +1505,3 @@ c**************************************************************
 
 c**************************************************************
 
-	subroutine set_debug_ggu( debug )
-
-	implicit none
-
-	logical debug
-	include 'debug_aux2.h'
-
-	bdebug = debug
-
-	end
-
-c**************************************************************
-
-	subroutine get_debug_ggu( debug )
-
-	implicit none
-
-	logical debug
-	include 'debug_aux2.h'
-
-	debug = bdebug
-
-	end
-
-c**************************************************************
-

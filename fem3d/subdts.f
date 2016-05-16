@@ -30,6 +30,27 @@ c subroutine dtsyear(year)		    initializes dts routines (for year)
 c subroutine dts2dt(it,year,month,day,hour,min,sec) converts it to date and time
 c subroutine dts2it(it,year,month,day,hour,min,sec) converts date and time to it
 
+!==================================================================
+        module dts
+!==================================================================
+
+	implicit none
+
+	integer, save :: date0 = 0
+	integer, save :: time0 = 0
+        integer, save :: year0 = 0
+        integer, save :: month0 = 0
+        integer, save :: day0 = 0
+        integer, save :: hour0 = 0
+        integer, save :: min0 = 0
+        integer, save :: sec0 = 0
+        integer, save :: last = 0
+        integer, save :: dinit = 0
+
+!==================================================================
+        end module dts
+!==================================================================
+
 c************************************************************************
 c************************************************************************
 c************************************************************************
@@ -544,13 +565,13 @@ c************************************************************************
 
 c converts it to date and time
 
+	use dts
+
 	implicit none
 
 	integer it
         integer year,month,day
         integer hour,min,sec
-
-	include 'subdts.h'
 
 	last = it
 
@@ -573,6 +594,8 @@ c************************************************************************
 
 c converts date and time to it
 
+	use dts
+
 	implicit none
 
 	integer it
@@ -580,8 +603,6 @@ c converts date and time to it
         integer hour,min,sec
 
 	integer days,days0,secs,secs0
-
-	include 'subdts.h'
 
 	call date2days(days,year,month,day)
 	call date2days(days0,year0,month0,day0)
@@ -601,12 +622,12 @@ c************************************************************************
 
 c sets date and time for 0 fem time
 
+	use dts
+
 	implicit none
 
 	integer date,time
 	logical bdebug
-
-	include 'subdts.h'
 
 	bdebug = .true.
 	bdebug = .false.
@@ -661,11 +682,11 @@ c************************************************************************
 
 	subroutine dts_get_date(date,time)
 
+	use dts
+
 	implicit none
 
         integer date,time
-
-	include 'subdts.h'
 
 	date = date0
 	time = time0
@@ -676,12 +697,12 @@ c************************************************************************
 
 	subroutine dts_get_init(year,month,day,hour,min,sec)
 
+	use dts
+
 	implicit none
 
         integer year,month,day
         integer hour,min,sec
-
-	include 'subdts.h'
 
 	year = year0
 	month = month0
@@ -698,11 +719,11 @@ c************************************************************************
 
 c checks if dts routines are already initialized
 
+	use dts
+
 	implicit none
 
 	logical dts_initialized
-
-	include 'subdts.h'
 
 	if( dinit .eq. 0 ) then
 	  dts_initialized = .false.
@@ -718,11 +739,11 @@ c************************************************************************
 
 c checks if dts routines have a valid date
 
+	use dts
+
 	implicit none
 
 	logical dts_has_date
-
-	include 'subdts.h'
 
 	if( date0 .eq. 0 ) then
 	  dts_has_date = .false.
@@ -1118,20 +1139,6 @@ c************************************************************************
 c************************************************************************
 c************************************************************************
 c************************************************************************
-
-        block data dts_blockdata
-
-        implicit none
-
-	include 'subdts.h'
-
-        data     date0,time0
-     +		,year0,month0,day0
-     +		,hour0,min0,sec0
-     +		,last,dinit
-     +		 /0,0,0,0,0,0,0,0,0,0/
-
-        end
 
 c************************************************************************
 c************************************************************************

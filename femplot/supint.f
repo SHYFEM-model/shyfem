@@ -23,7 +23,9 @@ c**********************************************************
 c**********************************************************
 c**********************************************************
 
-	subroutine inilev
+!==================================================================
+        module mod_plot
+!==================================================================
 
 c initializes actual level
 c
@@ -33,47 +35,45 @@ c >0	level
 
 	implicit none
 
-	integer level3
-	common /level3/level3
+	integer, save :: level3 = 0
+	integer, save :: ivsect = 0
+	integer, save :: ivar3 = 0
+	real, save :: flagco = -999.
 
-	real getpar
+	integer, save :: icall = 0
 
-	integer icall
-	save icall
-	data icall /0/
+!==================================================================
+        end module mod_plot
+!==================================================================
 
-	if( icall .gt. 0 ) return
-	icall = 1
+	subroutine init_plot
 
-	level3 = nint(getpar('level'))
-
-	end
-
-c**********************************************************
-
-	subroutine asklev
-
-c asks for actual level
+	use mod_plot
 
 	implicit none
 
-	integer level3
-	common /level3/level3
-
-	integer iauto
-
-	integer ideflt
+	integer ivar
+	character*80 name,vsect
 	real getpar
 
-	call inilev
+	if( icall > 0 ) return
 
-	iauto = nint(getpar('iauto'))
+	level3 = nint(getpar('level'))
 
-	if( iauto .eq. 0 ) then
-	  level3 = ideflt(level3,'Enter level : ')
-	else
-	  write(6,*) 'Level used : ',level3
+	call getfnm('vsect',vsect)
+	ivsect = 0
+	if( vsect .ne. ' ' ) ivsect = 1
+
+	ivar = nint(getpar('ivar'))
+	call getfnm('varnam',name)
+	if( ivar > 0 .and. name /= ' ' ) then
+	  write(6,*) 'You cannot give both ivar and varnam'
+	  stop 'error stop init_plot: non compatible variables'
 	end if
+	if( name .ne. ' ' ) call string2ivar(name,ivar)
+	ivar3 = ivar
+
+	icall = 1
 
 	end
 
@@ -83,14 +83,11 @@ c**********************************************************
 
 c set actual level
 
+	use mod_plot
+
 	implicit none
 
 	integer level
-
-	integer level3
-	common /level3/level3
-
-	call inilev
 
 	level3 = level
 
@@ -102,13 +99,11 @@ c**********************************************************
 
 c get actual level
 
+	use mod_plot
+
 	implicit none
 
 	integer getlev
-	integer level3
-	common /level3/level3
-
-	call inilev
 
 	getlev = level3
 
@@ -122,16 +117,13 @@ c**********************************************************
 
 c is it a vertical section
 
+	use mod_plot
+
         implicit none
 
         integer getisec
-	real getpar
-	character*80 vsect
 
-	call getfnm('vsect',vsect)
-	!getisec = nint(getpar('isect'))
-	getisec = 0
-	if( vsect .ne. ' ' ) getisec = 1
+	getisec = ivsect
 
         end
 
@@ -139,138 +131,15 @@ c**********************************************************
 c**********************************************************
 c**********************************************************
 
-	subroutine inivar
-
-c initializes actual variable to be plotted (internal routine)
-
-	implicit none
-
-	integer ivar3
-	common /ivar3/ivar3
-	save /ivar3/
-
-	integer ivar,ivar_name
-	character*80 name
-	real getpar
-
-	integer icall
-	save icall
-	data icall /0/
-
-	if( icall .gt. 0 ) return
-	icall = 1
-
-	ivar = nint(getpar('ivar'))
-	ivar_name = 0
-	name = ' '
-	call getfnm('varnam',name)
-	if( name .ne. ' ' ) then
-	  call string2ivar(name,ivar_name)
-	end if
-
-	write(6,*) 'var name: ',name(1:50)
-	write(6,*) 'var id  : ',ivar_name
-
-	if( ivar .gt. 0 .and. ivar_name .gt. 0 ) then
-	  if( ivar .ne. ivar_name ) then
-	    write(6,*) 'You cannot give both ivar and varnam'
-	    write(6,*) 'ivar = ',ivar
-	    write(6,*) 'varnam = ',name(1:30)
-	    write(6,*) 'ivar_name = ',ivar_name
-	    stop 'error stop inivar: non compatible variables required'
-	  end if
-	end if
-
-	if( ivar .gt. 0 ) then
-	  ivar3 = ivar
-	else if( ivar_name .gt. 0 ) then
-	  ivar3 = ivar_name
-	else
-	  ivar3 = 0
-	end if
-
-	end
-
-c**********************************************************
-
-	subroutine askvar
-
-c asks for actual variable
-
-	implicit none
-
-	integer ivar3
-	common /ivar3/ivar3
-
-	integer iauto
-	integer ideflt
-	real getpar
-
-	call inivar
-
-	iauto = nint(getpar('iauto'))
-
-	if( iauto .eq. 0 ) then
-	  ivar3 = ideflt(ivar3,'Enter variable id: ')
-	end if
-
-	write(6,*) 'askvar: Variable used = ',ivar3
-	write(6,*)
-
-	end
-
-c**********************************************************
-
-	subroutine checkvar(ivar)
-
-c checks what variable has to be plotted
-c returns in ivar the variable to be plotted
-
-	implicit none
-
-	integer ivar
-
-	integer ivar3
-	integer getvar
-
-	call inivar
-
-	if( ivar .gt. 0 ) then	!ivar given - must be equal to ivar3
-	  ivar3 = getvar()
-	  if( ivar3 .gt. 0 .and. ivar3 .ne. ivar ) goto 99
-          call setvar(ivar)
-        else
-          call askvar
-          ivar3 = getvar()
-          ivar = getvar()
-        end if
-
-	if( ivar .le. 0 ) then
-	  write(6,*) 'Do not know what to plot: ivar = ',ivar
-	  stop 'error stop checkvar: no ivar given'
-	end if
-
-	return
-   99	continue
-	write(6,*) 'ivar3 = ',ivar3
-	write(6,*) 'ivar  = ',ivar
-	stop 'error stop checkvar: different values of ivar3 and ivar'
-	end
-
-c**********************************************************
-
 	subroutine setvar(ivar)
 
 c set actual variable
 
+	use mod_plot
+
 	implicit none
 
 	integer ivar
-
-	integer ivar3
-	common /ivar3/ivar3
-
-	call inivar
 
 	ivar3 = ivar
 
@@ -282,13 +151,11 @@ c**********************************************************
 
 c get actual variable
 
+	use mod_plot
+
 	implicit none
 
 	integer getvar
-	integer ivar3
-	common /ivar3/ivar3
-
-	call inivar
 
 	getvar = ivar3
 
@@ -300,15 +167,12 @@ c**********************************************************
 
 c shall we plot this variable ?
 
+	use mod_plot
+
 	implicit none
 
 	logical okvar
         integer ivar
-
-	integer ivar3
-	common /ivar3/ivar3
-
-	call inivar
 
 	okvar = ivar3 .eq. ivar .or. ivar3 .le. 0
 
@@ -316,30 +180,37 @@ c shall we plot this variable ?
 
 c**********************************************************
 
-	function read_var()
+       subroutine checkvar(ivar)
 
-c reads number or string from STDIN - converts string to number
-c is not used actually
+c checks what variable has to be plotted
+c returns in ivar the variable to be plotted
 
-	implicit none
+       implicit none
 
-	integer read_var
+       integer ivar
 
-	integer ivar,ios
-	character*60 line
+       integer ivar3
+       integer getvar
 
-	write(6,*) 'Enter variable : '
-	read(5,'(a)') line
+       if( ivar .gt. 0 ) then  !ivar given - must be equal to ivar3
+         ivar3 = getvar()
+         if( ivar3 .gt. 0 .and. ivar3 .ne. ivar ) goto 99
+         call setvar(ivar)
+       else
+         ivar = getvar()
+       end if
 
-	read(line,'(i10)',iostat=ios) ivar
+       if( ivar .le. 0 ) then
+         write(6,*) 'Do not know what to plot: ivar = ',ivar
+         stop 'error stop checkvar: no ivar given'
+       end if
 
-	if( ios .ne. 0 ) then
-	  call string2ivar(line,ivar)
-	end if
-
-	read_var = ivar
-
-	end
+       return
+   99  continue
+       write(6,*) 'ivar3 = ',ivar3
+       write(6,*) 'ivar  = ',ivar
+       stop 'error stop checkvar: different values of ivar3 and ivar'
+       end
 
 c**********************************************************
 c**********************************************************
@@ -358,8 +229,6 @@ c extract level from 3d array (nodes)
 	integer nkn		!number of nodes
 	real p3(nlvddi,nkn)	!3d array
 	real p2(nkn)		!2d array filled on return
-
-	include 'param.h'
 
 	call extlev(level,nlvddi,nkn,ilhkv,p3,p2)
 
@@ -380,8 +249,6 @@ c extract level from 3d array (elements)
 	integer nel		!number of elements
 	real p3(nlvddi,nel)	!3d array
 	real p2(nel)		!2d array filled on return
-
-	include 'param.h'
 
 	call extlev(level,nlvddi,nel,ilhv,p3,p2)
 
@@ -476,13 +343,11 @@ c**********************************************************
 
 	subroutine set_flag(flag)
 
+	use mod_plot
+
 	implicit none
 
 	real flag
-
-	real flagco
-	common /flagco/flagco
-	save /flagco/
 
 	flagco = flag
 
@@ -490,13 +355,11 @@ c**********************************************************
 
 	subroutine get_flag(flag)
 
+	use mod_plot
+
 	implicit none
 
 	real flag
-
-	real flagco
-	common /flagco/flagco
-	save /flagco/
 
 	flag = flagco
 

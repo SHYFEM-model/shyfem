@@ -1743,5 +1743,86 @@ c interpolates from a regular grid (only for 2D)
 
 	end
 
-c******************************************************
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine allocate_simulation(npd)
+
+	use mod_plot3d
+	use mod_hydro_print
+	use mod_hydro_vel
+	use mod_hydro
+	use levels
+	use basin, only : nkn,nel,ngr,mbw
+
+	implicit none
+
+	integer npd
+
+	integer np
+	real flag
+
+	nlvdi = nlv
+	np = max(2*nel,npd)
+
+	call levels_init(nkn,nel,nlvdi)
+	call mod_hydro_init(nkn,nel,nlvdi)
+	call mod_hydro_vel_init(nkn,nel,nlvdi)
+	call mod_hydro_print_init(nkn,nlvdi)
+	call mod_plot3d_init(nkn,nel,nlvdi,np)
+
+	call mkareafvl			!area of finite volumes
+
+        call get_flag(flag)
+	p3 = flag
+
+	write(6,*) 'allocate_simulation: ',nkn,nel,nlvdi,np
+
+	end
+
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine get_dimension_post(nknddi,nelddi,nlvddi)
+
+	implicit none
+
+	integer nknddi,nelddi,nlvddi
+
+	call get_dimension_post_2d(nknddi,nelddi)
+	call get_dimension_post_3d(nlvddi)
+
+	end
+
+c*****************************************************************
+
+	subroutine get_dimension_post_2d(nknddi,nelddi)
+
+	use basin
+
+	implicit none
+
+	integer nknddi,nelddi
+
+	call basin_get_dimension(nknddi,nelddi)
+
+	end
+
+c*****************************************************************
+
+	subroutine get_dimension_post_3d(nlvddi)
+
+	use levels
+
+	implicit none
+
+	integer nlvddi
+
+	call levels_get_dimension(nlvddi)
+
+	end
+
+c*****************************************************************
 

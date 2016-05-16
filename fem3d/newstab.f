@@ -44,6 +44,20 @@ c				momentum_viscous_stability	newexpl
 c
 c*****************************************************************
 
+!==================================================================
+        module stab
+!==================================================================
+
+	implicit none
+
+	integer, parameter :: ndim_stab = 50
+	integer, save :: nentry = 0
+	real, save :: rkind(2,ndim_stab) = 0.
+
+!==================================================================
+        end module stab
+!==================================================================
+
 	subroutine compute_stability(robs,wsink,wsinkv
      +					,rkpar,azpar,rindex,saux)
 
@@ -55,8 +69,6 @@ c computes stability index
 	use basin
 
 	implicit none
-
-        include 'param.h'
 
 	real robs
 	real wsink
@@ -115,8 +127,6 @@ c gets stability index (if necessary computes it)
 
         implicit none
 
-	include 'param.h'
-
 	real dt
 	real robs
 	real wsink
@@ -173,8 +183,6 @@ c gets stability index (if necessary computes it)
 	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
-
-	include 'param.h'
 
         real dt
 	real robs
@@ -238,9 +246,9 @@ c*****************************************************************
 
 c rests stability index
 
-        implicit none
+	use stab
 
-	include 'stab.h'
+        implicit none
 
 	nentry = 0
 
@@ -252,11 +260,11 @@ c**********************************************************************
 
 c inserts stability index
 
+	use stab
+
 	implicit none
 
 	real rkpar,rindex
-
-	include 'stab.h'
 
 	integer i
 
@@ -285,12 +293,12 @@ c**********************************************************************
 
 c tests if stability index has already been computed and returns it
 
+	use stab
+
 	implicit none
 
 	logical exist_stability
 	real rkpar,rindex
-
-	include 'stab.h'
 
 	integer i
 
@@ -377,8 +385,6 @@ c mode = 2		eliminate elements with r>rindex
 	use basin, only : nkn,nel,ngr,mbw
 
         implicit none
-
-	include 'param.h'
 
 	integer mode		!0: normal call  1:error output
         real dt			!time step to be used
@@ -467,8 +473,6 @@ c outputs stability index for hydro timestep (internal) (error handling)
 
         implicit none
 
-	include 'param.h'
-
         real dt
 	real sauxe1(nlvdi,nel)
 	real sauxe2(nlvdi,nel)
@@ -555,8 +559,6 @@ c outputs stability index for hydro timestep (internal)
 
         implicit none
 
-	include 'param.h'
-
         real dt
 	real cwrite(nlvdi,nkn)
 
@@ -625,8 +627,6 @@ c outputs stability index for hydro timestep (internal)
 	use basin
 
         implicit none
-
-	include 'param.h'
 
         real dt
 	real sauxe1(nlvdi,nel)	!advective stability index
@@ -710,8 +710,6 @@ c tests parallel implementation
 	use basin
 
 	implicit none
-
-	include 'param.h'
 
 	real dt,rkpar,azpar,rindex
 	real robs,wsink

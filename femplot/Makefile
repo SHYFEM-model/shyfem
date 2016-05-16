@@ -27,6 +27,7 @@ NPOBJS  = supbas.o supiso.o supdep.o supano.o supcol.o \
 		supint.o supver.o col.o suplag.o \
 		suplin.o suplin1.o \
 		mod_plot2d.o mod_plot3d.o mod_hydro_plot.o \
+		plotutil.o
 
 LPOBJS = subfil.o subbas.o links.o sublnku.o subnsu.o	# not used anymore
 LPOBJS = 
@@ -58,6 +59,9 @@ default: fem
 fem: plotsim line_nodes
 
 all: $(EXES)
+
+shyplot:  shyplot.o $(PSOBJS) $(LIBIFS) $(LIBIPS)
+	$(LINKER) $(LFLAGS) $@.o $(PSOBJS) $(LIBFS) $(LIBPS) -o $@
 
 plotsim:  plotsim.o $(PSOBJS) $(LIBIFS) $(LIBIPS)
 	$(LINKER) $(LFLAGS) $@.o $(PSOBJS) $(LIBFS) $(LIBPS) -o $@

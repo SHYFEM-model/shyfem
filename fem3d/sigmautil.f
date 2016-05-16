@@ -18,6 +18,7 @@ c 05.09.2013	ggu	new call interface to get_layer_thickness()
 c 25.06.2014	ggu	error stop if computed layer thickness is <= 0
 c 15.02.2015	ggu	in get_layer_thickness() handle last layer correctly
 c 01.05.2016	ggu	changes in get_layer_thickness(): exit from loop
+c 14.05.2016	ggu	substitute blockdata/common with module
 c
 c notes :
 c
@@ -31,24 +32,27 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	blockdata sigma_out
+!==================================================================
+        module sigma
+!==================================================================
 
 	implicit none
 
-	include 'sigma.h'
+	integer, save :: nlv_com    = -1
+	integer, save :: nsigma_com = -1
+	real, save ::    hsigma_com = 10000.
 
-	data nlv_com,nsigma_com /-1,-1/
-	data hsigma_com /10000./
-
-	end
+!==================================================================
+        end module sigma
+!==================================================================
 
 c******************************************************************
 
 	subroutine check_sigma_initialized
 
-	implicit none
+	use sigma
 
-	include 'sigma.h'
+	implicit none
 
 	if( nlv_com .le. 0 ) then
 	  write(6,*) 'nlv_com: ',nlv_com
@@ -61,13 +65,13 @@ c******************************************************************
 
 	subroutine get_sigma_info(nlv,nsigma,hsigma)
 
+	use sigma
+
 	implicit none
 
 	integer nlv
 	integer nsigma
 	real hsigma
-
-	include 'sigma.h'
 
 	call check_sigma_initialized
 
@@ -81,13 +85,13 @@ c******************************************************************
 
 	subroutine set_sigma_info(nlv,nsigma,hsigma)
 
+	use sigma
+
 	implicit none
 
 	integer nlv
 	integer nsigma
 	real hsigma
-
-	include 'sigma.h'
 
 	nlv_com    = nlv
 	nsigma_com = nsigma

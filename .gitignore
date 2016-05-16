@@ -149,9 +149,12 @@ femadj/adjele
 
 fembin/extDiff
 fembin/extMerge
+
 femplot/line_nodes
 femplot/plotsim
+femplot/shyplot
 femplot/lagxitest
+
 femspline/gridr
 grid/grid
 mesh/exgrd
@@ -209,6 +212,7 @@ fembin/femelab
 fembin/nos2shy
 fembin/ous2shy
 fembin/shydiff
+fembin/shyplot
 
 fembin/grid
 fembin/mesh
