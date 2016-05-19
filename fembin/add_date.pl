@@ -13,6 +13,7 @@ use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
 use strict;
 use date;
 
+$::maxcol = 0 unless $::maxcol;
 $::date0 = 0 unless $::date0;
 $::h = 0 unless $::h;
 $::help = 0 unless $::help;
@@ -43,11 +44,15 @@ while(<>) {
 
   (@res) = $date->convert_from_it($time);
   (@res) = format_numbers(@res);
-  my $line = $date->format_time_date(@res);
+  my $dateline = $date->format_time_date(@res);
 
   #print STDERR "$time  ->  $line\n";
 
-  $_ .= "  $line";
+  if( $::maxcol > 0 ) {
+    @f = @f[0 .. $::maxcol];	#add extra time column
+    $_ = join(" ",@f);
+  }
+  $_ .= "  $dateline";
   print "$_\n";
 }
 
@@ -63,8 +68,9 @@ sub Usage {
 
   print STDERR "Usage: add_date.pl -date0=date0 file\n";
   print STDERR "  adds date column to time series file\n";
-  print STDERR "  date0:     reference date (YYYY-MM-DD::hh:mm:ss)\n";
-  print STDERR "             date may be shortened, e.g. 1997 or 1997-01-01\n";
+  print STDERR "  maxcol    only print up to maxcol columns\n";
+  print STDERR "  date0     reference date (YYYY-MM-DD::hh:mm:ss)\n";
+  print STDERR "            date may be shortened, e.g. 1997 or 1997-01-01\n";
 }
 
 #--------------------------------------

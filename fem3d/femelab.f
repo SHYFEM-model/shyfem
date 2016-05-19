@@ -23,7 +23,7 @@ c writes info on fem file
 	double precision tmin,tmax
 	character*80 stmin,stmax
 	logical bdebug,bskip,bwrite,bout,btmin,btmax,bquiet
-	logical bchform
+	logical bchform,bcheckdt
 
 	bdebug = .true.
 	bdebug = .false.
@@ -37,8 +37,11 @@ c--------------------------------------------------------------
 	call clo_add_info('elaborates and rewrites a fem file')
 	call clo_add_option('write',.false.,'write min/max of values')
 	call clo_add_option('out',.false.,'create output file out.fem')
+        call clo_add_option('node node',-1,'extract value for node')
 	call clo_add_option('chform',.false.,'change output format')
 	call clo_add_option('quiet',.false.,'do not be verbose')
+        call clo_add_option('checkdt',.false.
+     +                          ,'check for change of time step')
 	call clo_add_option('tmin time',' '
      +				,'only process starting from time')
 	call clo_add_option('tmax time',' '
@@ -52,6 +55,7 @@ c--------------------------------------------------------------
 	call clo_get_option('out',bout)
 	call clo_get_option('chform',bchform)
 	call clo_get_option('quiet',bquiet)
+        call clo_get_option('checkdt',bcheckdt)
 	call clo_get_option('tmin',stmin)
 	call clo_get_option('tmax',stmax)
 
@@ -110,17 +114,19 @@ c writes info on fem file
 	real dmin,dmax
 	integer ierr
 	integer nfile
-	integer irec,i,ich,nrecs
+	integer irec,i,ich,isk,nrecs,iu88
 	integer itype(2)
 	integer iformat,iformout
 	integer datetime(2),dateanf(2),dateend(2)
 	integer iextract,it
+	integer ie,nx,ny,ix,iy
 	real regpar(7)
 	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
 	logical bquiet,bhuman
-	logical bchform
+	logical bchform,bcheckdt,bdtok,bextract,breg,bintime
 	character*80, allocatable :: strings(:)
-	character*20 line
+	character*20 line,aline
+	character*40 eformat
 	character*80 stmin,stmax
 	real,allocatable :: data(:,:,:)
 	real,allocatable :: dext(:)
@@ -128,12 +134,14 @@ c writes info on fem file
 	real,allocatable :: hlv(:)
 	integer,allocatable :: ilhkv(:)
 
+	integer ifileo
+
 	bdebug = .true.
 	bdebug = .false.
 	bhuman = .true.
 
-	iextract = 5
 	iextract = 0
+	iu88 = 0
 	datetime = 0
 	datetime(1) = 19970101
 	dtime = 0.
@@ -145,14 +153,16 @@ c writes info on fem file
 
 	call clo_get_option('write',bwrite)
 	call clo_get_option('out',bout)
+        call clo_get_option('node',iextract)
 	call clo_get_option('chform',bchform)
 	call clo_get_option('quiet',bquiet)
+        call clo_get_option('checkdt',bcheckdt)
 	call clo_get_option('tmin',stmin)
 	call clo_get_option('tmax',stmax)
 
-	bskip = .not. bwrite
 	if( bchform ) bout = .true.
 	if( bout ) bskip = .false.
+	bextract = iextract > 0
 
 	atmin = 0.
 	atmax = 0.
@@ -227,16 +237,33 @@ c--------------------------------------------------------------
 	if( itype(1) .gt. 0 .and. .not. bquiet ) then
 	  write(6,*) 'date and time: ',datetime
 	end if
+	breg = .false.
 	if( itype(2) .gt. 0 .and. .not. bquiet ) then
+	  breg = .true.
 	  write(6,*) 'regpar: ',regpar
 	end if
 
 	call fem_file_convert_time(datetime,dtime,atime)
 	atime0 = atime		!absolute time of first record
 
-	if( iextract > 0 ) then
+	if( bextract ) then
 	  bskip = .false.
-	  write(88,'(a,2i10)') '#date: ',datetime
+	  if( iextract > np ) goto 91
+	  if( breg ) then
+	    ie = iextract
+	    nx = nint(regpar(1))
+	    ny = nint(regpar(2))
+	    iy = 1 + (ie-1) / nx
+	    ix = ie - (iy-1)*nx
+	    write(6,*) 'regular grid:     ',nx,ny
+	    write(6,*) 'extracting point: ',ix,iy
+	  else
+	    write(6,*) 'extracting point: ',iextract
+	  end if
+	  iu88 = ifileo(88,'out.txt','form','new')
+	  write(iu88,'(a,2i10)') '#date: ',datetime
+	  write(eformat,'(a,i3,a)') '(i12,',nvar,'g14.6,a2,a20)'
+	  write(6,*) 'using format: ',trim(eformat)
 	end if
 
 	nvar0 = nvar
@@ -273,6 +300,7 @@ c--------------------------------------------------------------
 	irec = 0
 	idt = 0
 	ich = 0
+	isk = 0
 	atimeanf = atime
 	atimeend = atime
 	atimeold = atime - 1
@@ -296,9 +324,14 @@ c--------------------------------------------------------------
      +			,hlv,regpar,ierr)
 	  if( ierr .ne. 0 ) goto 98
 
-          boutput = bout .and. atime > atimeold
-	  if( btmin ) boutput = boutput .and. atime >= atmin
-	  if( btmax ) boutput = boutput .and. atime <= atmax
+	  bdtok = atime > atimeold
+          boutput = bout .and. bdtok
+	  bskip = .not. bwrite .and. .not. bextract
+	  bintime = .true.
+	  if( btmin ) bintime = bintime .and. atime >= atmin
+	  if( btmax ) bintime = bintime .and. atime <= atmax
+	  boutput = boutput .and. bintime
+	  if( .not. bintime ) bskip = .true.
 
           if( boutput ) then
 	    if( bhuman ) then
@@ -335,23 +368,22 @@ c--------------------------------------------------------------
 	      write(6,1100) irec,i,atime,dmin,dmax,line
  1100	      format(i6,i3,f15.2,2g16.5,1x,a20)
 	    end if
-	    if( iextract > 0 ) then
+	    if( bextract ) then
 	      dext(i) = data(1,iextract,i)
 	    end if
 	  end do
 
-	  if( iextract > 0 ) then
+	  if( bextract .and. bdtok .and. bintime ) then
 	    it = nint(atime-atime0)
 	    it = nint(atime-atime1997)
-	    write(88,*) it,dext
+	    call dts_format_abs_time(atime,aline)
+	    write(iu88,eformat) it,dext,'  ',aline
 	  end if
 
-	  if( atime <= atimeold ) then
-	    ich = ich + 1
-	    write(6,*) '*** time of record is before last one... skipping'
-	  else
-	    atimeold = atime
-	  end if
+	  call check_dt(atime,atimeold,bcheckdt,irec,idt,ich,isk)
+	  atimeold = atime
+	  if( .not. bdtok ) cycle
+
 	  atimeend = atime
 	end do
 
@@ -366,8 +398,14 @@ c--------------------------------------------------------------
 	call dts_format_abs_time(atimeend,line)
 	write(6,*) 'end time:   ',atimeend,line
 
-	if( ich .gt. 0 ) then
-	  write(6,*) '* warning: records eliminated: ',ich
+        if( ich == 0 ) then
+          write(6,*) 'idt:    ',idt
+        else
+          write(6,*) 'idt:     irregular ',ich,isk
+        end if
+
+	if( isk .gt. 0 ) then
+	  write(6,*) '*** warning: records eliminated: ',isk
 	end if
 
 	close(iunit)
@@ -377,23 +415,20 @@ c--------------------------------------------------------------
 	  write(6,*) 'output written to file out.fem'
 	end if
 
-	if( iextract > 0 ) then
-	  write(6,*) '********** warning **************'
+	if( bextract ) then
 	  write(6,*) 'iextract = ',iextract
-	  write(6,*) 'data written to fort.88'
-	  write(6,*) '********** warning **************'
+	  write(6,*) 'data written to out.txt'
 	end if
+
 c--------------------------------------------------------------
 c end of routine
 c--------------------------------------------------------------
 
 	return
+   91	continue
    95	continue
-	write(6,*) 'variable ',i
-	write(6,*) trim(string)
-	write(6,*) trim(strings(i))
-	write(6,*) 'cannot change description of variables'
-	stop 'error stop femelab'
+	write(6,*) 'iectract,np: ',iextract,np
+	stop 'error stop femelab: no such node'
    96	continue
 	write(6,*) 'nvar,nvar0: ',nvar,nvar0
 	write(6,*) 'lmax,lmax0: ',lmax,lmax0	!this might be relaxed
@@ -445,6 +480,41 @@ c*****************************************************************
         !write(86,*) 'min/max: ',it,vmin,vmax
 
         end
+
+c*****************************************************************
+
+	subroutine check_dt(atime,atimeold,bcheckdt,irec,idt,ich,isk)
+
+	implicit none
+
+	double precision atime,atimeold
+	logical bcheckdt
+	integer irec,idt,ich,isk
+
+	integer idtact
+	character*20 aline
+
+          if( irec > 1 ) then
+            if( irec == 2 ) idt = nint(atime-atimeold)
+            idtact = nint(atime-atimeold)
+            if( idtact .ne. idt ) then
+              ich = ich + 1
+              if( bcheckdt ) then
+		call dts_format_abs_time(atime,aline)
+                write(6,'(a,3i10,a,a)') '* change in time step: '
+     +                          ,irec,idt,idtact,'  ',aline
+              end if
+              idt = idtact
+            end if
+            if( idt <= 0 ) then
+	      isk = isk + 1
+	      call dts_format_abs_time(atime,aline)
+              write(6,*) '*** zero or negative time step: ',irec,idt
+     +                          ,atime,atimeold,'  ',aline
+            end if
+          end if
+
+	end
 
 c*****************************************************************
 

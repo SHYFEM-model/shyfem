@@ -141,6 +141,12 @@
 
 !***************************************************************
 
+	!subroutine open_shy_file(file)
+
+	!end
+
+!***************************************************************
+
 	subroutine get_start_of_next_file(ifile,atstart)
 
 	use clo

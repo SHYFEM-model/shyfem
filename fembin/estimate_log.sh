@@ -133,6 +133,7 @@ echo "$file  total: $total  done: $done  todo: $todo"
 
 for file in $*
 do
+  [ $file = '*.log' ] && exit 1
   #echo "estimating $file"
   Estimate $file
 done

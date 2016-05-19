@@ -61,7 +61,7 @@ c--------------------------------------------------------------
 	  write(6,*) 'please use flxelab, splitflx, flxinf'
 	  stop 'error stop shyelab'
 	else
-	  write(6,*) 'cannot yet handle this file type'
+	  write(6,*) 'unknown file type: ',trim(file)
 	end if
 	
         end

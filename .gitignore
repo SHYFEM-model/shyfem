@@ -213,6 +213,8 @@ fembin/nos2shy
 fembin/ous2shy
 fembin/shydiff
 fembin/shyplot
+fembin/plotsim
+fembin/line_nodes
 
 fembin/grid
 fembin/mesh

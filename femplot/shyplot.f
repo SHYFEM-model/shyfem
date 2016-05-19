@@ -22,7 +22,8 @@
 	program shyplot
 
 	use clo
-	use elabutil
+	!use elabutil
+	use plotutil
 	use shyfile
 	use shyutil
 
@@ -39,6 +40,8 @@
 
 	integer, allocatable :: idims(:,:)
 	integer, allocatable :: il(:)
+	integer, allocatable :: ivars(:)
+	character*80, allocatable :: strings(:)
 
 	real, allocatable :: znv(:)
 	real, allocatable :: uprv(:,:)
@@ -58,11 +61,12 @@
 	integer iv,j,l,k,lmax,node
 	integer ip
 	integer ifile,ftype
-	integer id,idout
+	integer id,idout,idold
 	integer n,m,nndim,nn
 	integer naccum
+	integer isphe
 	character*80 title,name,file
-	character*80 basnam,simnam
+	character*80 basnam,simnam,varline
 	real rnull
 	real cmin,cmax,cmed,vtot
 	double precision dtime,dtstart,dtnew
@@ -70,6 +74,7 @@
 
 	integer iapini
 	integer ifem_open_file
+	real getpar
 
 !--------------------------------------------------------------
 ! initialize everything
@@ -85,18 +90,27 @@
 	bzeta = .false.		!file has zeta information
 	ifile = 0
 	id = 0
+	idold = 0
 
 	!--------------------------------------------------------------
 	! set command line parameters
 	!--------------------------------------------------------------
 
-	!call elabutil_init('SHY')
+	call plotutil_init('SHY')
+	call classify_files
+	call init_nls_fnm
+	call read_str_files(-1)
+	call read_str_files(ivar3)
+	write(6,*) 'icolor: ',nint(getpar('icolor'))
 
 	!--------------------------------------------------------------
 	! open input files
 	!--------------------------------------------------------------
 
-	!call open_new_file(ifile,id,atstart)	!atstart=-1 if no new file
+	ifile = 1
+	call open_next_file(ifile,idold,id)
+	!id = shy_init(shyfilename)
+	!if( id == 0 ) stop
 
 	!--------------------------------------------------------------
 	! set up params and modules
@@ -112,8 +126,25 @@
         call mod_depth_init(nkn,nel)
 	call shy_copy_basin_from_shy(id)
 	call shy_copy_levels_from_shy(id)
-        call ev_init(nel)
-	call set_ev
+
+	call allocate_2d_arrays(nel)
+
+        isphe = nint(getpar('isphe'))
+        call set_coords_ev(isphe)
+        call set_ev
+        call set_geom
+        call get_coords_ev(isphe)
+        call putpar('isphe',float(isphe))
+
+	!--------------------------------------------------------------
+	! set time
+	!--------------------------------------------------------------
+
+        call ptime_init
+	call shy_get_date(id,date,time)
+        call ptime_set_date_time(date,time)
+        !call ptime_min_max
+        !call iff_init_global_2d(nkn,nel,hkv,hev,date,time)      !FIXME
 
 	!--------------------------------------------------------------
 	! set dimensions and allocate arrays
@@ -146,7 +177,8 @@
 	! set up aux arrays, sigma info and depth values
 	!--------------------------------------------------------------
 
-	!call shyutil_init(nkn,nel,nlv)
+
+	call shyutil_init(nkn,nel,nlv)
 
 	call init_sigma_info(nlv,hlv)
 
@@ -156,11 +188,49 @@
 	if( bverb ) call depth_stats(nkn,nlvdi,ilhkv)
 
 	!--------------------------------------------------------------
+	! initialize plot
+	!--------------------------------------------------------------
+
+	call init_plot
+
+	allocate(ivars(nvar),strings(nvar))
+	call shy_get_string_descriptions(id,nvar,ivars,strings)
+	write(6,*) 'available variables: ',nvar
+	do ivar=1,nvar
+	  write(6,*) ivar,ivars(ivar),trim(strings(ivar))
+	end do
+
+        if( ivar3 <= 0 ) then
+          write(6,*) 'no variable given to be plotted: ',ivar3
+          stop 'error stop shyplot'
+        end if
+	if( layer > nlv ) then
+          write(6,*) 'no such layer: ',layer
+          write(6,*) 'maximum layer available: ',nlv
+          stop 'error stop shyplot'
+	end if
+
+	call mkvarline(ivar3,varline)
+	write(6,*) 'varline: ',trim(varline)
+	write(6,*) 'ivar3: ',ivar3
+	write(6,*) 'layer: ',layer
+	call setlev(layer)
+
+
+	!--------------------------------------------------------------
 	! initialize volume
 	!--------------------------------------------------------------
 
 	shy_zeta = 0.
 	call shy_make_volume
+
+	!--------------------------------------------------------------
+	! initialize plot
+	!--------------------------------------------------------------
+
+        call initialize_color
+
+	call qopen
 
 !--------------------------------------------------------------
 ! loop on data
@@ -181,8 +251,8 @@
 	 ! read new data set
 	 !--------------------------------------------------------------
 
-!	 call read_records(id,dtime,nvar,nndim,nlvdi,idims
-!     +				,cv3,cv3all,ierr)
+	 call read_records(id,dtime,nvar,nndim,nlvdi,idims
+     +				,cv3,cv3all,ierr)
 
          if(ierr.ne.0) exit
 
@@ -206,6 +276,10 @@
 	 call shy_make_zeta(ftype)
 	 !call shy_make_volume		!comment for constant volume
 
+	 if( ifreq > 0 .and. mod(nread,ifreq) == 0 ) cycle
+
+	 call ptime_set_dtime(dtime)
+
 	 !--------------------------------------------------------------
 	 ! loop over single variables
 	 !--------------------------------------------------------------
@@ -218,16 +292,43 @@
 	  ivar = idims(4,iv)
 	  nn = n * m
 
+	  if( ivar /= ivar3 ) cycle
+
 	  cv3(:,:) = cv3all(:,:,iv)
 
 	  nelab = nelab + 1
 
 	  if( .not. bquiet ) then
-	    !call shy_write_time(.true.,dtime,atime,ivar)
+	    call shy_write_time(.true.,dtime,atime,ivar)
 	  end if
 
 	  if( b2d ) then
 	    call shy_make_vert_aver(idims(:,iv),nndim,cv3,cv2)
+	  else
+	    if( m /= 1 ) stop 'error stop: m/= 1'
+	    if( n == nkn ) then
+	      call extnlev(layer,nlvdi,nkn,cv3,cv2)
+	    else if( n == nel ) then
+	      call extelev(layer,nlvdi,nkn,cv3,cv2)
+	    else
+	      write(6,*) 'n,nkn,nel: ',n,nkn,nel
+	      stop 'error stop: n'
+	    end if
+	  end if
+
+	  write(6,*) 'plotting: ',ivar,layer
+
+          !call prepare_dry_mask
+	  !call reset_dry_mask
+	  call make_mask(layer)
+	  if( m /= 1 ) stop 'error stop: m/= 1'
+	  if( n == nkn ) then
+            call ploval(nkn,cv2,varline)
+	  else if( n == nel ) then
+            call ploeval(nel,cv2,varline)
+	  else
+	    write(6,*) 'n,nkn,nel: ',n,nkn,nel
+	    stop 'error stop: n'
 	  end if
 
 	 end do		!loop on ivar
@@ -241,6 +342,9 @@
 !--------------------------------------------------------------
 ! end of loop on data
 !--------------------------------------------------------------
+
+	call qclose
+	write(6,*) 'total number of plots: ',nelab
 
 !--------------------------------------------------------------
 ! final write of variables
@@ -314,8 +418,77 @@
 
 !***************************************************************
 
+	subroutine make_mask(level)
+
+	use levels
+        use mod_plot2d
+        !use mod_hydro
+
+	implicit none
+
+	integer level
+
+        call reset_dry_mask
+
+        call set_level_mask(bwater,ilhv,level)        !element has this level
+        call make_dry_node_mask(bwater,bkwater)       !copy elem to node mask
+
+        call adjust_no_plot_area
+        call make_dry_node_mask(bwater,bkwater) !copy elem to node mask
+        call info_dry_mask(bwater,bkwater)
+
+	end
 
 !***************************************************************
 !***************************************************************
 !***************************************************************
+
+        subroutine initialize_color
+
+        implicit none
+
+        integer icolor
+        real getpar
+
+        call colsetup
+        icolor = nint(getpar('icolor'))
+        call set_color_table( icolor )
+        call set_default_color_table( icolor )
+
+        end
+
+!***************************************************************
+
+c*****************************************************************
+
+        subroutine allocate_2d_arrays(npd)
+
+        use mod_hydro_plot
+        use mod_plot2d
+        use mod_geom
+        use mod_depth
+        use evgeom
+        use basin, only : nkn,nel,ngr,mbw
+
+        implicit none
+
+        integer npd
+
+        integer np
+
+        np = max(nel,npd)
+
+        call ev_init(nel)
+        call mod_geom_init(nkn,nel,ngr)
+
+        call mod_depth_init(nkn,nel)
+
+        call mod_plot2d_init(nkn,nel,np)
+        call mod_hydro_plot_init(nkn,nel)
+
+        write(6,*) 'allocate_2d_arrays: ',nkn,nel,ngr,np
+
+        end
+
+c*****************************************************************
 

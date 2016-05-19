@@ -697,9 +697,18 @@ c********************************************************************
 
 	character*(*) file
 
-	integer ie
+	integer ie,ios
+	logical, save :: berror = .true.	!throw error if not found
 
-	open(1,file=file,status='old',form='formatted')
+	open(1,file=file,status='old',form='formatted',iostat=ios)
+
+	if( ios /= 0 ) then
+	  write(6,*) '*** cannot open file: ',trim(file)
+	  write(6,*) '...not initializing hev'
+	  if( berror ) stop 'error stop read_in_hev'
+	  return
+	end if
+
 	read(1,*) nelaux
 	if( nel .ne. nelaux ) stop 'error stop read_in_hev: nel'
 	read(1,*) (hev(ie),ie=1,nel)

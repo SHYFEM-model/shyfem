@@ -109,13 +109,9 @@ c vdate		velocity variable used in mode
 
 	integer ic		!0 if no change in configuration   (out)
 
-	include 'param.h'
 	include 'close.h'
-
-c common
 	include 'femtime.h'
 	include 'mkonst.h'
-
 
 c local
 	logical bclos,bopen,bimm,bact

@@ -49,6 +49,7 @@ c >0	level
 	subroutine init_plot
 
 	use mod_plot
+	use para
 
 	implicit none
 
@@ -58,14 +59,24 @@ c >0	level
 
 	if( icall > 0 ) return
 
-	level3 = nint(getpar('level'))
+	if( para_has_name('level') ) then
+	  level3 = nint(getpar('level'))
+	end if
 
-	call getfnm('vsect',vsect)
-	ivsect = 0
-	if( vsect .ne. ' ' ) ivsect = 1
+	if( para_has_name('vsect') ) then
+	  call getfnm('vsect',vsect)
+	  ivsect = 0
+	  if( vsect .ne. ' ' ) ivsect = 1
+	end if
 
-	ivar = nint(getpar('ivar'))
-	call getfnm('varnam',name)
+	ivar = 0
+	name = ' '
+	if( para_has_name('ivar') ) then
+	  ivar = nint(getpar('ivar'))
+	end if
+	if( para_has_name('varnam') ) then
+	  call getfnm('varnam',name)
+	end if
 	if( ivar > 0 .and. name /= ' ' ) then
 	  write(6,*) 'You cannot give both ivar and varnam'
 	  stop 'error stop init_plot: non compatible variables'

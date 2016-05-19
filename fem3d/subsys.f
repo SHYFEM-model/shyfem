@@ -1252,6 +1252,7 @@ cc experimental stuff
         !call addpar('nbsig',0.)         !sigma layers to read in for OBC
 
         call addpar('sedim',0.)         !sedimentation for theseus
+        call addfnm('hsedim',' ')         !sedimentation hev file for theseus
 
         call addpar('nomp',0.)          !number of threads to use
 

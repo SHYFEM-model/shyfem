@@ -40,13 +40,14 @@ c 16.02.2011	ggu	new routine e2n3d() and e2n3d_minmax()
 c 27.01.2012	deb&ggu	routines adapted for sigma levels
 c 03.12.2015	ccf&ggu	code optimized
 c 07.04.2016	ggu	new routine aver_nodal()
+c 19.05.2016	ggu	use where construct where possible
 c
 c****************************************************************************
-c
+
 	subroutine ttov
-c
+
 c transforms transports to velocities
-c
+
 	use mod_layer_thickness
 	use mod_hydro_vel
 	use mod_hydro
@@ -55,21 +56,10 @@ c
 
 	implicit none
 
-	integer ie,l,ilevel
-	real h,rh
-
-	do ie=1,nel
-
-	  ilevel=ilhv(ie)
-
-	  do l=1,ilevel
-	    h = hdenv(l,ie)
-	    rh = 1. / h
-	    ulnv(l,ie)=utlnv(l,ie)*rh
-	    vlnv(l,ie)=vtlnv(l,ie)*rh
-	  end do
-
-	end do
+	where( hdenv > 0 )
+	  ulnv = utlnv / hdenv
+	  vlnv = vtlnv / hdenv
+	end where
 
 	end
 
@@ -87,23 +77,11 @@ c transforms velocities to transports
 
 	implicit none
 
-	integer ie,l,ilevel
-	real h
-
-	do ie=1,nel
-
-	  ilevel=ilhv(ie)
-
-	  do l=1,ilevel
-	    h = hdenv(l,ie)
-	    utlnv(l,ie)=ulnv(l,ie)*h
-	    vtlnv(l,ie)=vlnv(l,ie)*h
-	  end do
-
-	end do
+	utlnv = ulnv * hdenv
+	vtlnv = vlnv * hdenv
 
 	end
-c
+
 c******************************************************************
 c
 	subroutine uvtop0

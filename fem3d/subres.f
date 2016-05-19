@@ -31,6 +31,7 @@ c 10.08.2004	ggu	cmed_init, cmed_accum adjusted also for 2D
 c 25.11.2004	ggu	resid converted to 3D (not tested)
 c 09.10.2008    ggu     new call to confop
 c 20.01.2014    ggu     new calls to ous routines
+c 17.05.2016    ggu     in ts_shell() save isvect/itvect
 c
 c********************************************************************
 c
@@ -349,32 +350,6 @@ c rms velocity is in v1v
 	end
 
 c********************************************************************
-c
-c	subroutine dischar
-c
-c computes discharge -> old, use section flux instead
-c
-c parameter
-c	integer npdim,nedim
-c	parameter (npdim=83,nedim=1000)
-c+++++++++++++++++++++++++++++++++++++++++++++++
-c        data node /
-c     +           -149,150,173,172,151,-152,0                      !chioggia
-c     +          ,-4310,4311,4315,4314,4309,-4308,0                !mala
-c     +          ,-2749,2750,2757,2758,2751,-2752,0                !lido
-c     +          ,-4358,3293,3371,3370,3269,-3270,0                !treporti
-c     +          ,-3742,3741,3785,3229,3247,3244,3176,3177
-c     +          ,3178,3256,3259,3020,-3301,0                     !lido-nord
-c     +          ,-2173,2172,2332,2333,2409,2261,2260,2418,1890
-c     +          ,2014,2010,2008,1932,1933,1934,2053,2024
-c     +          ,-2023,0                                         !mala-lido
-c     +          ,-4330,4329,921,1138,1139,1133,1125,1123,1122
-c     +          ,1121,1426,1403,878,880,886,893,890,772,773,618
-c     +          ,-617,0                                          !mala-chio
-c     +          /
-c+++++++++++++++++++++++++++++++++++++++++++++++
-c
-c********************************************************************
 
         function resi(zov,znv,n)
 
@@ -406,163 +381,7 @@ c computes residuum
         end
 
 c********************************************************************
-
-	subroutine tsmed
-
-c computes average of scalar values
-
-	use mod_ts
-	use levels
-	use basin, only : nkn,nel,ngr,mbw
-
-	implicit none
-
-c common
-	include 'femtime.h'
-
-c local
-	double precision rr
-	real tact,sact
-	integer k,l,nvar,nlev
-	integer itsmed
-c function
-	real getpar
-c save
-	double precision, save, allocatable :: tacu(:,:)
-	double precision, save, allocatable :: sacu(:,:)
-	real, save, allocatable :: tmin(:,:)
-	real, save, allocatable :: tmax(:,:)
-	real, save, allocatable :: smin(:,:)
-	real, save, allocatable :: smax(:,:)
-	real, save, allocatable :: saux(:,:)
-
-	integer icall,nout,nr
-	integer idtsca,itmsca,itsca
-	real high
-	logical bdebug
-	save icall,nout,nr
-	save idtsca,itmsca,itsca
-	save high
-	save bdebug
-
-	data icall / 0 /
-	data high  / 1.e+30 /
-
-c-------------------------------------------------------------
-c must compute ?
-c-------------------------------------------------------------
-
-	if( icall .eq. -1 ) return
-
-c-------------------------------------------------------------
-c first call
-c-------------------------------------------------------------
-
-	if(icall.eq.0) then
-
-	  bdebug = .false.
-	  bdebug = .true.
-
-	  itsmed=nint(getpar('itsmed'))
-	  idtsca=nint(getpar('idtcon'))
-	  itmsca=nint(getpar('itmcon'))
-
-	  if(itmsca.lt.itanf) itmsca=itanf
-	  if( itsmed .le. 0 ) icall=-1
-	  if(idtsca.le.0) icall=-1
-	  if(itmsca+idtsca.gt.itend) icall=-1
-
-	  if(icall.eq.-1) return
-
-	  nout = 0
-	  nvar = 6
-          call confop(nout,itmsca,idtsca,nlv,nvar,'tsa')
-
-	  if( bdebug ) write(6,*) 'tsmed : tsa file opened ',it
-
-	  itsca=itmsca+idtsca
-
-	  allocate(tacu(nlvdi,nkn))
-	  allocate(sacu(nlvdi,nkn))
-	  allocate(tmin(nlvdi,nkn))
-	  allocate(tmax(nlvdi,nkn))
-	  allocate(smin(nlvdi,nkn))
-	  allocate(smax(nlvdi,nkn))
-	  allocate(saux(nlvdi,nkn))
-
-	  nr=0
-	  tacu = 0.
-	  sacu = 0.
-	  tmin = high
-	  tmax = high
-	  smin = -high
-	  smax = -high
-
-	end if
-
-c-------------------------------------------------------------
-c normal call
-c-------------------------------------------------------------
-
-	icall = icall + 1
-
-	if( it .le. itmsca ) return
-
-c-------------------------------------------------------------
-c accumulate results
-c-------------------------------------------------------------
-
-	nr=nr+1
-	do k=1,nkn
-	  nlev = ilhkv(k)
-	  do l=1,nlev
-	    tact = tempv(l,k)
-	    sact = saltv(l,k)
-	    tacu(l,k) = tacu(l,k) + tact
-	    sacu(l,k) = sacu(l,k) + sact
-	    if( tact .lt. tmin(l,k) ) tmin(l,k) = tact
-	    if( sact .lt. smin(l,k) ) smin(l,k) = sact
-	    if( tact .gt. tmax(l,k) ) tmax(l,k) = tact
-	    if( sact .gt. smax(l,k) ) smax(l,k) = sact
-	  end do
-	end do
-
-	if( it .lt. itsca ) return
-
-c-------------------------------------------------------------
-c write output to file
-c-------------------------------------------------------------
-
-	if( bdebug ) write(6,*) 'tsmed : tsa file written ',it,nr
-
-	itsca=itsca+idtsca
-
-	rr=1./nr
-
-	saux = tacu * rr
-	call confil(nout,itmsca,idtsca,25,nlvdi,saux)
-	saux = sacu * rr
-	call confil(nout,itmsca,idtsca,26,nlvdi,saux)
-
-	call confil(nout,itmsca,idtsca,31,nlvdi,tmin)
-	call confil(nout,itmsca,idtsca,32,nlvdi,tmax)
-	call confil(nout,itmsca,idtsca,35,nlvdi,smin)
-	call confil(nout,itmsca,idtsca,36,nlvdi,smax)
-
-	nr=0
-	tacu = 0.
-	sacu = 0.
-	tmin = high
-	tmax = high
-	smin = -high
-	smax = -high
-
-c-------------------------------------------------------------
-c end of routine
-c-------------------------------------------------------------
-
-	end
-
+c********************************************************************
 c********************************************************************
 
 	subroutine cmed_init(ext,id,nvar,nlvddi,idtc,itmc
@@ -588,9 +407,9 @@ c parameter
 	integer nlvddi		!number of layers (either nlvdi or 1)
 	integer idtc		!frequency of file to be written
 	integer itmc		!start time for accumulation
-	double precision cmed(nlvddi,nkndi,nvar)	!average
-	real cmin(nlvddi,nkndi,nvar)		!minimum
-	real cmax(nlvddi,nkndi,nvar)		!maximum
+	double precision cmed(nlvddi,nkn,nvar)	!average
+	real cmin(nlvddi,nkn,nvar)		!minimum
+	real cmax(nlvddi,nkn,nvar)		!maximum
 	integer ivect(8)	!info array that is set up
 
 c local
@@ -613,9 +432,7 @@ c-------------------------------------------------------------
 	  write(6,*) id,nvar,nlvddi,idtc,itmc,itanf,itend,idt
 	end if
 
-	do i=1,8
-	  ivect(i) = 0
-	end do
+	ivect = 0
 
 c-------------------------------------------------------------
 c check levels
@@ -658,16 +475,9 @@ c initialize arrays array
 c-------------------------------------------------------------
 
 	nr=0
-	do i=1,nvar
-	  do k=1,nkn
-	    nlev = min(nlvddi,ilhkv(k))
-	    do l=1,nlev
-	      cmed(l,k,i) = 0.
-	      cmin(l,k,i) = high
-	      cmax(l,k,i) = -high
-	    end do
-	  end do
-	end do
+	cmed = 0.
+	cmin = high
+	cmax = -high
 
 c-------------------------------------------------------------
 c set parameter array
@@ -707,10 +517,10 @@ c parameter
 	include 'femtime.h'
 
 	integer nlvddi		                !number of layers (nlvdi or 1)
-	real cvec(nlvddi,nkn,1)			!array with concentration
-	double precision cmed(nlvddi,nkn,1)	!average
-	real cmin(nlvddi,nkn,1)			!minimum
-	real cmax(nlvddi,nkn,1)			!maximum
+	real cvec(nlvddi,nkn,*)			!array with concentration
+	double precision cmed(nlvddi,nkn,*)	!average
+	real cmin(nlvddi,nkn,*)			!minimum
+	real cmax(nlvddi,nkn,*)			!maximum
 	integer ivect(8)                	!info array that is set up
 
 c local
@@ -800,9 +610,11 @@ c 	re-initialize
 c	-------------------------------------------------------------
 
 	nr=0
-	cmed = 0.
-	cmin = high
-	cmax = -high
+	do i=1,nvar
+	  cmed(:,:,i) = 0.
+	  cmin(:,:,i) = high
+	  cmax(:,:,i) = -high
+	end do
 
 	ivect(4) = nr
 	ivect(7) = itc
@@ -835,13 +647,10 @@ c save
 	real, save, allocatable :: tmax(:,:)
 	real, save, allocatable :: smin(:,:)
 	real, save, allocatable :: smax(:,:)
-	integer itvect(8)
-	integer isvect(8)
+	integer, save :: itvect(8)
+	integer, save :: isvect(8)
 
-	integer icall
-	save icall
-
-	data icall / 0 /
+	integer, save :: icall = 0
 
 	if( icall .lt. 0 ) return
 

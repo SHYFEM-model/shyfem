@@ -26,7 +26,7 @@ c 06.06.2014	ggu	deleted sp158k() and sp158kk()
 c
 c**********************************************
 c
-	subroutine nlsa(iunit,ivar)
+	subroutine nlsa(iu,ivar)
 c
 c read of parameter file for post processing routines
 c
@@ -34,7 +34,7 @@ c iunit		unit number of file
 
 	implicit none
 
-	integer iunit		!unit where file is open
+	integer iu		!unit where file is open
 	integer ivar		!what type of section to read
 
 	character*80 name,line,section,extra
@@ -44,6 +44,7 @@ c iunit		unit number of file
 	integer num
 	integer nrdsec,nrdlin,ichanm
 	integer iv_in,iv_read
+	integer iunit
 	real getpar
 
 	include 'param.h'
@@ -51,18 +52,19 @@ c iunit		unit number of file
 
 	bdebug = .true.
 	bdebug = .false.
-	bverbose = .false.
 	bverbose = .true.
+	bverbose = .false.
 
 	iv_in = ivar
 
-	if(iunit.le.0) then
+	if(iu.eq.0) then
 c		write(6,*) 'error reading parameter file'
 c		write(6,*) 'parameters initialized to default values'
 		return
 	end if
 
-	call nrdini(iunit)
+	if( iu > 0 ) call nrdini(iu)
+	iunit = abs(iu)
 
 c loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -182,7 +184,7 @@ c************************************************************************
 c************************************************************************
 c************************************************************************
 
-        subroutine string2ivar(string,iv)
+        subroutine string2ivar_0(string,iv)
 
 c interprets string to associate a variable number iv
 c
@@ -293,13 +295,14 @@ c the special name ivar# can be used to directtly give the variable number #
 
 c******************************************************
 
-        subroutine ivar2string(iv,string)
+        subroutine ivar2string_0(iv,string)
 
         implicit none
 
         integer iv
         character*(*) string
 
+	!call shy_ivar2string(iv,string)
         string = ' '
 
         if( iv .eq. 0 ) then
@@ -331,6 +334,7 @@ c******************************************************
         else if( iv .eq. 335 ) then
           string = 'time over threshold'
         else
+          string = '*** cannot find description'
           write(6,*) '*** cannot find description for variable: '
           write(6,*) iv
 	  !stop 'error stop ivar2string: no description'

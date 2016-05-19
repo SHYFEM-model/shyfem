@@ -185,8 +185,9 @@ SOBJS   = \
 	  nosutil.o ousutil.o subfemfile.o subvintp.o \
 	  genutil.o subfemintp.o subtsfile.o subxi.o \
 	  $(MODULES) \
-	  subshy.o subshyutil.o \
-	  subbit10.o shyutil.o subclo.o
+	  subshy.o shyutil.o subshyutil.o subshyutil2.o \
+	  subbit10.o shyutil.o subclo.o substrings.o subpar3.o \
+	  elabutil.o
 
 # general objects for 3D model shyfem
 
@@ -233,7 +234,7 @@ HTOBJS = \
 	$(ECOLOGICAL_OBJ) \
 	$(NETCDF_OBJ) $(PARALLEL_OBJ) \
 	$(GRDOBJS) \
-	subxi.o subshy.o subshyutil.o \
+	subxi.o subshy.o subshyutil.o substrings.o \
 	subbit10.o shyutil.o \
 	subfloodfill.o
 
@@ -248,7 +249,7 @@ VPOBJS = \
         subsrt.o \
         subsss.o subscn.o subnsu.o \
 	subapn.o subnsa.o subnls.o subsys.o subdum.o \
-	$(GRDOBJS) subclo.o
+	$(GRDOBJS) subclo.o substrings.o
 
 # objects for output routines
 
@@ -263,7 +264,7 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subscn.o \
 	  subclo.o \
 	  mod_depth.o mod_hydro.o mod_geom.o mod_hydro_print.o \
 	  mod_bound_geom.o mod_bnd.o mod_hydro_baro.o newlevels.o \
-	  $(GRDOBJS) subsrt.o subgeo.o
+	  $(GRDOBJS) subsrt.o subgeo.o substrings.o
 
 RSTOBJS = subrst.o ecological_dummy.o \
 	  mod_ts.o mod_conz.o mod_hydro_vel.o mod_geom_dynamic.o \
@@ -351,7 +352,7 @@ LAGINTP = submir.o
 EXEMAIN  = shyfem shypre shybas
 
 EXEINFO  = flxinf extinf rstinf \
-		feminf tsinf filetype \
+		tsinf filetype \
 		offinf lgrinf etsinf \
 		noselab ouselab shyelab nosextr_nodes extelab flxelab \
 		femelab \
@@ -498,8 +499,8 @@ etsinf:  etsinf.o $(ETSOBJS) $(OUTOBJS)
 filetype:  filetype.o $(NOSOUSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOUSOBJS) $(OUTOBJS) -o $@
 
-feminf:  feminf.o $(NOSOBJS) $(OUTOBJS) 
-	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
+#feminf:  feminf.o $(NOSOBJS) $(OUTOBJS) 
+#	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
 
 tsinf:  tsinf.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@

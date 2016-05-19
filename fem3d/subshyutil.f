@@ -24,6 +24,8 @@
 	call shy_get_extnumbers(id,ipev,ipv)
 	call shy_get_areacode(id,iarv,iarnv)
 
+	call estimate_ngr(ngr)
+
 	end
 
 !****************************************************************
@@ -283,6 +285,58 @@ c-----------------------------------------------------
 	end
 
 !****************************************************************
+
+	subroutine shy_get_string_descriptions(id,nvar,ivars,strings)
+
+	use shyfile
+
+	implicit none
+
+	integer id
+	integer nvar
+	integer ivars(nvar)
+	character*(*) strings(nvar)
+
+	integer irec,nrec,ierr,i
+	integer ftype
+	integer ivar,n,m,lmax
+	double precision dtime
+
+	call shy_get_ftype(id,ftype)
+
+	if( ftype == 1 ) then		!hydro
+	  ivars(1) = 1
+	  ivars(2) = 1
+	  ivars(3) = 3
+	  ivars(4) = 3
+	  strings(1) = 'water level'
+	  strings(2) = 'water level'
+	  strings(3) = 'transport - velocity'
+	  strings(4) = 'transport - velocity'
+	else
+	  irec = 0
+	  nrec = 0
+	  do
+	    call shy_skip_record(id,dtime,ivar,n,m,lmax,ierr)
+	    if( ierr /= 0 ) goto 99
+	    nrec = nrec + 1
+	    if( ivar < 0 ) cycle
+	    irec = irec + 1
+	    ivars(irec) = ivar
+	    call ivar2string(ivar,strings(irec))
+	    if( irec == nvar ) exit
+	  end do
+	  do i=1,nrec
+	    call shy_back_record(id,ierr)
+	  end do
+	end if
+
+	return
+   99	continue
+	stop 'error stop shy_get_string_descriptions: reading record'
+	end
+
+!****************************************************************
 !****************************************************************
 !****************************************************************
 
@@ -384,5 +438,7 @@ c-----------------------------------------------------
 
 	end
 
+!****************************************************************
+!****************************************************************
 !****************************************************************
 

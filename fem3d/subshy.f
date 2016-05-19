@@ -492,6 +492,8 @@
 
 	read(iunit,iostat=ios) ntype,nvers
 
+	!write(6,*) 'shy_is_shy_file: ',ios,ntype,nvers
+
 	if( ios /= 0 ) return
 	if( ntype .ne. shytype ) return
 	if( nvers .lt. minvers .or. nvers .gt. maxvers ) return

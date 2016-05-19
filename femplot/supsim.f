@@ -543,7 +543,7 @@ c plots node values
 	implicit none
 
 	integer nkn
-	real pa(1)
+	real pa(nkn)
         character*(*) title
 
 	real pmin,pmax,flag
@@ -584,7 +584,7 @@ c plots element values
 	implicit none
 
 	integer nel
-	real pa(1)
+	real pa(nel)
         character*(*) title
 
 	real pmin,pmax,flag

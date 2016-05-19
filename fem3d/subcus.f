@@ -3574,10 +3574,7 @@ c time of inundation for theseus
 
 	implicit none
 
-	include 'param.h'
-
 	include 'femtime.h'
-
 
 	logical binit,blast
 	integer ie,n,k,ii
@@ -3586,21 +3583,24 @@ c time of inundation for theseus
 	real sedim,smed,s
 	real sedim_reed,sedim_salt
 	real sfact
+	character*80 file
 
 	integer, save, allocatable :: idry(:)
 	double precision, save, allocatable :: salt_aver_k(:)
 	real, save, allocatable :: salt_aver_e(:)
 
-	real sedim_save
-	save sedim_save
-	integer isum
-	save isum
+	real, save :: sedim_save = 0.
+	integer, save :: isum = 0
+	integer, save :: iu122 = 0
+	integer, save :: iu123 = 0
+	integer, save :: iu124 = 0
+	integer, save :: iu127 = 0
+	integer, save :: iu128 = 0
+
+	integer, save :: icall = 0
 
 	real getpar
-
-	integer icall
-	save icall
-	data icall /0/
+	integer ifemop
 
 	binit = .false.
 	blast = it .eq. itend
@@ -3626,8 +3626,10 @@ c-----------------------------------------
 	    area = area + ev(10,ie)
 	  end do
 	  area = area * 12.
-	  write(122,*) icall,nel,area
-	  write(122,*) (12.*ev(10,ie),ie=1,nel)
+	  if( iu122 == 0 ) iu122 = ifemop('.122','form','new')
+	  write(iu122,*) icall,nel,area
+	  write(iu122,*) (12.*ev(10,ie),ie=1,nel)
+	  close(iu122)
 	  sedim_save = getpar('sedim')	! sedimentation in [mm/y]
 	  if( sedim_save .lt. 0. ) then
 	    sedim_save = -sedim_save
@@ -3658,8 +3660,9 @@ c write to file
 c-----------------------------------------
 
 	if( mod(it,idtwrite) .eq. 0 ) then
-	  write(124,*) icall,nel,it,idtwrite
-	  write(124,*) (idry(ie),ie=1,nel)
+	  if( iu124 == 0 ) iu124 = ifemop('.124','form','new')
+	  write(iu124,*) icall,nel,it,idtwrite
+	  write(iu124,*) (idry(ie),ie=1,nel)
 
 	  do k=1,nkn
 	    salt_aver_k(k) = salt_aver_k(k) / isum
@@ -3672,10 +3675,12 @@ c-----------------------------------------
 	    end do
 	    salt_aver_e(ie) = s / 3.
 	  end do
-	  write(127,*) icall,nel,it,idtwrite
-	  write(127,*) (salt_aver_e(ie),ie=1,nel)
-	  write(128,*) icall,nkn,it,idtwrite
-	  write(128,*) (salt_aver_k(k),k=1,nkn)
+	  if( iu127 == 0 ) iu127 = ifemop('.127','form','new')
+	  if( iu128 == 0 ) iu128 = ifemop('.128','form','new')
+	  write(iu127,*) icall,nel,it,idtwrite
+	  write(iu127,*) (salt_aver_e(ie),ie=1,nel)
+	  write(iu128,*) icall,nkn,it,idtwrite
+	  write(iu128,*) (salt_aver_k(k),k=1,nkn)
 	  do k=1,nkn
 	    salt_aver_k(k) = 0.
 	  end do
@@ -3683,8 +3688,9 @@ c-----------------------------------------
 	end if
 
 	if( blast ) then
-	  write(123,*) icall,nel,it,0
-	  write(123,*) (idry(ie),ie=1,nel)
+	  if( iu123 == 0 ) iu123 = ifemop('.123','form','new')
+	  write(iu123,*) icall,nel,it,0
+	  write(iu123,*) (idry(ie),ie=1,nel)
 	end if
 
 c-----------------------------------------
@@ -3730,7 +3736,9 @@ c-----------------------------------------
 
 	if( binit ) then	! initialize hev
 	  write(6,*) 'hev initialized'
-	  call read_in_hev('in_hev.dat')
+	  call getfnm('hsedim',file)
+	  if( file == ' ' ) stop 'error stop wet_dry: no init file'
+	  call read_in_hev(file)
 	  call adjourn_depth_from_hev
 	  call set_last_layer
           call setweg(0,n)
@@ -3738,7 +3746,8 @@ c-----------------------------------------
 	end if
 
 	if( blast ) then	! last time step -> write out
-	  call write_out_hev('out_hev.dat')
+	  call def_make('.120',file)
+	  call write_out_hev(file)
 	  write(6,*) 'sedim used: ',sedim_save,binit
 	end if
 

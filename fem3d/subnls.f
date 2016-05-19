@@ -151,6 +151,40 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
+	function nls_is_nls_file(file)
+
+	logical nls_is_nls_file
+	character*(*) file
+
+	integer nsect,iunit
+	integer ifileo
+	integer num
+	character*80 section		!section name
+	character*80 extra		!extra information
+
+	nls_is_nls_file = .false.
+	nsect = 0
+
+	iunit = ifileo(0,file,'form','old')
+	if( iunit <= 0 ) return
+
+	call nls_init(iunit)
+
+	do while( nls_next_section(section,num,extra) )
+	  call nls_skip_section
+	  nsect = nsect + 1
+	end do
+
+	close(iunit)
+
+	nls_is_nls_file = ( nsect > 0 )
+
+	end function nls_is_nls_file
+
+c******************************************************************
+c******************************************************************
+c******************************************************************
+
 	subroutine nls_init(iunit)
 
 c initializes unit number for name list read
