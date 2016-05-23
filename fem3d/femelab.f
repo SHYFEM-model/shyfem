@@ -168,8 +168,8 @@ c writes info on fem file
 	atmax = 0.
 	btmin = stmin .ne. ' '
 	btmax = stmax .ne. ' '
-	if( btmin ) call fem_file_string2time(stmin,atmin)
-	if( btmax ) call fem_file_string2time(stmax,atmax)
+	if( btmin ) call dts_string2time(stmin,atmin)
+	if( btmax ) call dts_string2time(stmax,atmax)
 
 	!write(6,*) stmin(1:len_trim(stmin)),btmin,atmin
 	!write(6,*) stmax(1:len_trim(stmax)),btmax,atmax

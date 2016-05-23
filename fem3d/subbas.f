@@ -23,6 +23,7 @@ c 25.05.2015	ggu	module introduced
 c 02.10.2015	ggu	in basin_open_file eliminated double read (bug)
 c 02.10.2015	ggu	new routines is_depth_unique(), estimate_ngr()
 c 01.05.2016	ggu	new routines basin_has_basin()
+c 20.05.2016	ggu	estimate_ngr() returns exact ngr
 c
 c***********************************************************
 c***********************************************************
@@ -643,10 +644,12 @@ c*************************************************
         end function is_depth_unique
 
 c*************************************************
+c*************************************************
+c*************************************************
 
         subroutine estimate_ngr(ngrade)
 
-c estimates grade of basin - is probably too big by 1
+c estimates grade of basin - estimate is exact
 
 	use basin
 
@@ -654,8 +657,28 @@ c estimates grade of basin - is probably too big by 1
 
 	integer ngrade
 
-        integer ii,ie,k
         integer ng(nkn)
+
+	call compute_ng(ngrade,ng)
+
+	end
+
+c*************************************************
+
+        subroutine compute_ng(ngrade,ng)
+
+c computes grade of basin and nuber of grades per node
+
+	use basin
+
+        implicit none
+
+	integer ngrade
+        integer ng(nkn)
+
+        integer ii,ie,k
+	integer k1,k2,n
+	integer, allocatable :: ngv(:,:)
 
 	ng = 0
 
@@ -666,11 +689,62 @@ c estimates grade of basin - is probably too big by 1
           end do
         end do
 
-        ngrade = 0
-        do k=1,nkn
-          ngrade = max(ngrade,ng(k))
-        end do
-        ngrade = ngrade + 1           !account for boundary nodes
+	ngrade = maxval(ng) + 1			!first guess
+
+	allocate(ngv(0:2*ngrade,nkn))
+	ngv = 0
+
+        do ie=1,nel
+          do ii=1,3
+            k1 = nen3v(ii,ie)
+            k2 = nen3v(mod(ii,3)+1,ie)
+	    call ng_insert(k1,k2,ngrade,nkn,ngv)
+	  end do
+	end do
+
+	do k=1,nkn
+	  n = ngv(0,k)
+	  if( n == 0 ) then			!inner node
+	    !nothing to do
+	  else if( n == 2 ) then		!boundary node
+	    ng(k) = ng(k) + 1
+	  else
+	    write(6,*) 'wrong connectivity: ',k,n
+	    stop 'error stop estimate_ngr: internal error'
+	  end if
+	end do
+
+	deallocate(ngv)
+
+	ngrade = maxval(ng)
+
+        end
+
+c*************************************************
+
+	subroutine ng_insert(k1,k2,ng,nkn,ngv)
+
+	implicit none
+
+	integer k1,k2
+	integer ng,nkn
+	integer ngv(0:2*ng,nkn)
+
+	integer i,n
+
+	n = ngv(0,k1)
+
+	do i=1,n
+	  if( ngv(i,k1) == k2 ) then
+	    ngv(i,k1) = ngv(n,k1)
+	    ngv(0,k1) = ngv(0,k1) - 1
+	    return
+	  end if
+	end do
+
+	n = n + 1
+	ngv(0,k1) = n
+	ngv(n,k1) = k2
 
         end
 

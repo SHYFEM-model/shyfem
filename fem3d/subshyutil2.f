@@ -86,7 +86,6 @@
 
 	subroutine open_next_file(ifile,idold,id)
 
-	use shyfile
 	use clo
 
 	implicit none
@@ -94,10 +93,26 @@
 	integer ifile
 	integer idold,id
 
-	integer ierr
 	character*80 file
 
 	call clo_get_file(ifile,file)
+	call open_next_file_by_name(file,idold,id)
+
+	end
+
+!***************************************************************
+
+	subroutine open_next_file_by_name(file,idold,id)
+
+	use shyfile
+
+	implicit none
+
+	character*80 file
+	integer idold,id
+
+	integer ierr
+
 	if( .not. shy_exist_file(file) ) then
 	  write(6,*) 'file: ',trim(file)
 	  stop 'error stop shyelab: file not existing'

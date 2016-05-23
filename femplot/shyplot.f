@@ -21,6 +21,33 @@
 
 	program shyplot
 
+	use plotutil
+
+	implicit none
+
+	call plotutil_init('SHY')
+	call classify_files
+
+	if( shyfilename /= ' ' ) then
+	  call plot_shy_file
+	else if( basfilename /= ' ' ) then
+	  call plot_bas_file
+	end if
+
+	end
+
+!**************************************************************
+
+	subroutine plot_bas_file
+
+	write(6,*) 'not yet ready...'
+
+	end
+
+!**************************************************************
+
+	subroutine plot_shy_file
+
 	use clo
 	!use elabutil
 	use plotutil
@@ -96,8 +123,6 @@
 	! set command line parameters
 	!--------------------------------------------------------------
 
-	call plotutil_init('SHY')
-	call classify_files
 	call init_nls_fnm
 	call read_str_files(-1)
 	call read_str_files(ivar3)
@@ -107,10 +132,8 @@
 	! open input files
 	!--------------------------------------------------------------
 
-	ifile = 1
-	call open_next_file(ifile,idold,id)
-	!id = shy_init(shyfilename)
-	!if( id == 0 ) stop
+	call open_next_file_by_name(shyfilename,idold,id)
+	if( id == 0 ) stop
 
 	!--------------------------------------------------------------
 	! set up params and modules
@@ -143,8 +166,6 @@
         call ptime_init
 	call shy_get_date(id,date,time)
         call ptime_set_date_time(date,time)
-        !call ptime_min_max
-        !call iff_init_global_2d(nkn,nel,hkv,hev,date,time)      !FIXME
 
 	!--------------------------------------------------------------
 	! set dimensions and allocate arrays
@@ -176,7 +197,6 @@
 	!--------------------------------------------------------------
 	! set up aux arrays, sigma info and depth values
 	!--------------------------------------------------------------
-
 
 	call shyutil_init(nkn,nel,nlv)
 

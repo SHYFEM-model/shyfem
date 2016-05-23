@@ -1023,8 +1023,12 @@ c skips one record of data of the file
 c************************************************************
 c************************************************************
 c************************************************************
+c next three routines should be deleted 	FIXME
+c************************************************************
+c************************************************************
+c************************************************************
 
-	subroutine fem_file_string2time(string,atime)
+	subroutine fem_file_string2time0(string,atime)
 
 c converts string to time stamp
 c
@@ -1062,7 +1066,7 @@ c or a relative time (integer)
 
 c************************************************************
 
-	subroutine fem_file_convert_time(datetime,dtime,atime)
+	subroutine fem_file_convert_time0(datetime,dtime,atime)
 
 	implicit none
 
@@ -1083,7 +1087,7 @@ c************************************************************
 
 c************************************************************
 
-	subroutine fem_file_convert_atime(datetime,dtime,atime)
+	subroutine fem_file_convert_atime0(datetime,dtime,atime)
 
 c converts from atime to datetime and dtime (only if in atime is real date)
 

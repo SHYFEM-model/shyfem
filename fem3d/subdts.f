@@ -617,6 +617,8 @@ c converts date and time to it
 	end
 
 c************************************************************************
+c************************************************************************
+c************************************************************************
 
 	subroutine dtsini(date,time)
 
@@ -1236,6 +1238,98 @@ c formats date and time given absolute time
 	  call dtsform(year,month,day,hour,min,sec,line)
 	else
 	  call dtsform(0,0,days,hour,min,sec,line)
+	end if
+
+	end
+
+c************************************************************************
+c************************************************************************
+c************************************************************************
+c
+c extra atime routines
+c
+c************************************************************************
+c************************************************************************
+c************************************************************************
+
+	subroutine dts_string2time(string,atime)
+
+c converts string to time stamp
+c
+c string can be an absolute date (YYYY-MM-DD[::hh:mm:ss])
+c or a relative time (integer)
+
+	implicit none
+
+	character*(*) string		!string indicating date
+	double precision atime		!absolute time (return)
+
+	integer year,month,day,hour,min,sec
+	integer date,time,it
+	integer ierr
+
+	call dtsunform(year,month,day,hour,min,sec,string,ierr)
+
+	if( ierr > 0 ) then
+	  read(string,'(i10)',err=9) it
+	  atime = it
+	else
+          call packdate(date,year,month,day)
+          call packtime(time,hour,min,sec)
+	  call dts_to_abs_time(date,time,atime)
+	end if
+
+	return
+    9	continue
+        write(6,*) '*** cannot parse date: ',ierr,string(1:20)
+        write(6,*) '    format should be YYYY-MM-DD::hh:mm:ss'
+        write(6,*) '    possible also YYYY-MM-DD[::hh[:mm[:ss]]]'
+        write(6,*) '    or it should be an integer (relative time)'
+	stop 'error stop dts_string2time: conversion error'
+	end
+
+c************************************************************
+
+	subroutine dts_convert_to_atime(datetime,dtime,atime)
+
+	implicit none
+
+	integer datetime(2)		!reference date
+	double precision dtime		!relative time
+	double precision atime		!absolute time (return)
+
+	double precision dtime0
+
+	if( datetime(1) > 0 ) then
+	  call dts_to_abs_time(datetime(1),datetime(2),dtime0)
+	  atime = dtime0 + dtime
+	else
+	  atime = dtime
+	end if
+
+	end
+
+c************************************************************
+
+	subroutine dts_convert_from_atime(datetime,dtime,atime)
+
+c converts from atime to datetime and dtime (only if in atime is real date)
+
+	implicit none
+
+	integer datetime(2)		!reference date (return)
+	double precision dtime		!relative time (return)
+	double precision atime		!absolute time (in)
+
+	double precision atime1000	!1000 year limit
+	parameter (atime1000 = 1000*365*86400.)
+
+	if( atime > atime1000 ) then	!real date
+	  call dts_from_abs_time(datetime(1),datetime(2),atime)
+	  dtime = 0.
+	else				!no date - keep relative time
+	  datetime = 0
+	  dtime = atime
 	end if
 
 	end
