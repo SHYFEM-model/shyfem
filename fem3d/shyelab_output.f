@@ -130,6 +130,7 @@
 	use basin
 	use levels
 	use elabutil
+	use elabtime
 	use shyelab_out
 	use shyfile
 
@@ -167,7 +168,7 @@
             call fem_file_write_header(iformat,iunit,dtime
      +                          ,nvers,n,lmax
      +                          ,nvar,ntype
-     +                          ,nlvdi,hlv,datetime,regpar)
+     +                          ,nlvdi,hlv,datetime_elab,regpar)
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'
@@ -313,7 +314,7 @@
 	if( bhydro ) then
 	  allocate(znv(nkn),uprv(nlvddi,nkn),vprv(nlvddi,nkn))
 	  allocate(sv(nlvddi,nkn),dv(nlvddi,nkn))
-          call prepare_hydro(nndim,cv3all,znv,uprv,vprv)
+          call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
           call convert_to_speed(uprv,vprv,sv,dv)
 	end if
 
@@ -479,6 +480,7 @@
 	use levels
 	use shyfile
 	use elabutil
+	use elabtime
 	use shyelab_out
 
 	implicit none
@@ -504,7 +506,7 @@
         call fem_file_write_header(iformat,iunit,dtime
      +                          ,nvers,n,lmax
      +                          ,nvar,ntype
-     +                          ,nlvdi,hlv,datetime,regpar)
+     +                          ,nlvdi,hlv,datetime_elab,regpar)
 
 	ivar = 1
 	lmax = 1

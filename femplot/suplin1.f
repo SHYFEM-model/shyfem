@@ -30,7 +30,7 @@ c*******************************************************************
 	real u,v,w
 	real href
 
-	call vertical		!compute wlnv from utlnv,vtlnv
+	call make_vertical_velocity	!compute wlnv from utlnv,vtlnv
 
 	href = 0.
 	call mkht3(nlvdi,het3v,href)

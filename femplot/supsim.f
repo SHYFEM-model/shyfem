@@ -29,8 +29,7 @@ c subroutine basplc( nel , color , line , descrr )
 c
 c subroutine bnd2val(a,val)			sets values on boundary to val
 c subroutine moduv(u,v,uv,n,uvmax)		computes modulus and maximum
-c subroutine normuv(uvnv,vvnv,vv,n)		normalize horizontal velocities
-c subroutine intpn(vev,vnv,bwater)		compute nodal values vnv()
+c subroutine normuv(u,v,vv,n)			normalize horizontal velocities
 c subroutine apply_dry_mask(bmask,value,n,flag)	aplies mask to nodes
 c
 c revision log :
@@ -179,11 +178,11 @@ c**********************************************************
 
 	do k=1,nkn
 	  if( level .le. ilhkv(k) ) then
-	    uv(k) = p3(lev,k,1)
-	    vv(k) = p3(lev,k,2)
+	    uvnode(k) = p3(lev,k,1)
+	    vvnode(k) = p3(lev,k,2)
 	  else
-	    uv(k) = 0.
-	    vv(k) = 0.
+	    uvnode(k) = 0.
+	    vvnode(k) = 0.
 	  end if
 	end do
 
@@ -204,8 +203,8 @@ c**********************************************************
 	integer k
 
 	do k=1,nkn
-	  uv(k) = p3(1,k,1)
-	  vv(k) = p3(1,k,2)
+	  uvnode(k) = p3(1,k,1)
+	  vvnode(k) = p3(1,k,2)
 	end do
 
 	end
@@ -682,6 +681,9 @@ c ivel = 2	transports
 c ivel = 3	wind
 c ivel = 4	waves
 c ivel = 5	velocities already prepared
+c
+c for ivel == 1,2:	utrans,vtrans must be set
+c for other values:	uvnode,vvnode must be set
 
 	use mod_hydro_plot
 	use mod_plot2d
@@ -694,22 +696,17 @@ c ivel = 5	velocities already prepared
 	integer ivel			!what to plot
         character*(*) title
 
-	integer nxdim,nydim
-	parameter( nxdim = 300 , nydim = 300 )
-
-	real ureg(nxdim,nydim)
-	real vreg(nxdim,nydim)
-	real v1v(nkn)
+	real uvmod(nkn)
 
 	logical boverl,bnode,bbound,bnorm
         logical bspecial
 	logical bdebug
 	logical bregular
 	logical bvel,btrans,bwind,bwave,bvelok
-        character*80 line
+        character*80 anoline
         character*80 spcvel
 	integer ie,k
-	integer i,j
+	integer i,j,nnn
 	integer level
 	integer ioverl,inorm
 	real u,v,xm,ym
@@ -727,11 +724,12 @@ c ivel = 5	velocities already prepared
 	real fscale
 	integer nx,ny
 
+	character*13, save :: varname(5) = (/'velocity     '
+     +				,'transport    ','wind velocity'
+     +				,'waves        ','velocity     '/)
+
 	real getpar,getcol
 	integer getlev
-
-	bdebug = .true.
-	bdebug = .false.
 
 c------------------------------------------------------------------
 c set up parameters
@@ -741,6 +739,8 @@ c	-----------------------------------------------------------
 c	locally defined parameters (please change here)
 c	-----------------------------------------------------------
 
+	bdebug = .true.
+	bdebug = .false.
 	bnode = .true.		!plot arrows on nodes
 	bnode = .false.		!plot arrows on nodes
 	bbound = .true. 	!plot arrows on boundary nodes
@@ -756,6 +756,10 @@ c	-----------------------------------------------------------
         bwind  = ivel .eq. 3
         bwave  = ivel .eq. 4
         bvelok = ivel .eq. 5
+
+	if( ivel < 1 .or. ivel > 5 ) then
+          stop 'error stop plo2vel: internal error (3)'
+        end if
 
 	velref = getpar('velref')
 	velmin = getpar('velmin')
@@ -773,49 +777,24 @@ c	-----------------------------------------------------------
 	boverl = ioverl .ne. 0			!overlay color
 	bnorm  =  inorm .eq. 1			!normalize vectors
 
-c	-----------------------------------------------------------
-c	last initializations and start plotting
-c	-----------------------------------------------------------
+        anoline = title//varname(ivel)
 
 	if( bvel .or. btrans ) call mkht(hetv,href)
 
-	call qstart
+c	-----------------------------------------------------------
+c	start plotting
+c	-----------------------------------------------------------
 
-        line = title
-        if( bwind ) then
-          line(4:) = 'wind velocity'
-        else if( bwave ) then
-          line(4:) = 'waves'
-        else if( bvel .or. bvelok ) then
-          line(4:) = 'velocity'
-        else if( btrans ) then
-          line(4:) = 'transport'
-        else
-          stop 'error stop plo2vel: internal error (3)'
-        end if
-	call annotes(line)
+	call qstart
+	call annotes(anoline)
 	call bash(0)
 
 c------------------------------------------------------------------
 c see if regular grid
 c------------------------------------------------------------------
 
-	call getgeo(x0,y0,dx,dy,flag)
-	bregular = dx .gt. 0. .and. dy .gt. 0.
-	if( bregular ) then
-	  x0 = x0 - dx
-	  y0 = y0 - dy
-	  call getbas(xmin,ymin,xmax,ymax)
-	  nx = nint((xmax-xmin)/dx)
-	  ny = nint((ymax-ymin)/dy)
-	  !write(6,*) 'ggu: x0,y0,dx,dy ',x0,y0,dx,dy,nx,ny
-	  !write(6,*) 'ggu: ',xmin,ymin,xmax,ymax
-	  if( nx .gt. nxdim .or. ny .gt. nydim ) then
-	    write(6,*) '*** Warning: regular plot may not be complete'
-	    write(6,*) ' nxdim, nydim : ',nxdim,nydim
-	    write(6,*) ' nx   , ny    : ',nx   ,ny   
-	  end if
-	end if
+	call getgeoflag(flag)
+	call make_regular(nx,ny,bregular)
 
 c------------------------------------------------------------------
 c prepare for velocity or transport
@@ -825,12 +804,10 @@ c------------------------------------------------------------------
 	valmin = velmin
 
 	if( bvel ) then
-	  call por2vel(nel,usnv,vsnv,uvnv,vvnv,hetv)
+	  call por2vel(nel,utrans,vtrans,uvelem,vvelem,hetv)
         else if( btrans ) then
-	  do ie=1,nel
-	    uvnv(ie) = usnv(ie)
-	    vvnv(ie) = vsnv(ie)
-	  end do
+	  uvelem = utrans
+	  vvelem = vtrans
         else if( bwind .or. bwave .or. bvelok ) then
 	  !ok
 	else
@@ -842,11 +819,27 @@ c compute values on nodes -> 0 for dry nodes
 c------------------------------------------------------------------
 
         if( bwind .or. bwave .or. bvelok ) then
-	  call intpe(uv,uvnv,bwater)
-	  call intpe(vv,vvnv,bwater)
+	  call intp2elem(uvnode,uvelem,bwater)
+	  call intp2elem(vvnode,vvelem,bwater)
         else
-	  call intpn(uvnv,uv,bwater)
-	  call intpn(vvnv,vv,bwater)
+	  call intp2node(uvelem,uvnode,bwater)
+	  call intp2node(vvelem,vvnode,bwater)
+        end if
+
+	nnn = 0
+        if( nnn > 0 ) then
+          write(112,*) 'writing uvelem ',nel
+          write(112,*) (uvelem(i),i=1,nel,nnn)
+          write(112,*) 'writing vvelem ',nel
+          write(112,*) (vvelem(i),i=1,nel,nnn)
+          write(112,*) 'writing utrans ',nel
+          write(112,*) (utrans(i),i=1,nel,nnn)
+          write(112,*) 'writing vtrans ',nel
+          write(112,*) (vtrans(i),i=1,nel,nnn)
+          write(112,*) 'writing uvnode ',nkn
+          write(112,*) (uvnode(i),i=1,nkn,nnn)
+          write(112,*) 'writing vvnode ',nkn
+          write(112,*) (vvnode(i),i=1,nkn,nnn)
         end if
 
 c------------------------------------------------------------------
@@ -854,52 +847,45 @@ c regular interpolation
 c------------------------------------------------------------------
 
 	if( bregular ) then
-	  call av2amk(bwater,uv,ureg,nxdim,nydim)
-	  call av2amk(bwater,vv,vreg,nxdim,nydim)
+	  call av2amk(bwater,uvnode,ureg,nx,ny)
+	  call av2amk(bwater,vvnode,vreg,nx,ny)
 	end if
 
 c------------------------------------------------------------------
 c compute modulus and maximum of velocity
 c------------------------------------------------------------------
 
-	call moduv(uv,vv,v1v,nkn,uvmax,uvmed)	!compute modulus, max, aver
+	call moduv(uvnode,vvnode,uvmod,nkn,uvmax,uvmed) !compute mod/max/aver
 
 	if( .not. bbound ) then		!set boundary vectors to 0
-	  call bnd2val(uv,0.)	
-	  call bnd2val(vv,0.)	
+	  call bnd2val(uvnode,0.)	
+	  call bnd2val(vvnode,0.)	
 	end if
-
-c	v1v is used for overlay plot
 
 c------------------------------------------------------------------
 c underlying color 
-c -> create ve1v/v1v (v1v is modulus of vel/tra) and plot
 c------------------------------------------------------------------
 
 	if( boverl ) then
-	  if( ioverl .eq. 2 ) then		!vertical velocities
-	    do k=1,nkn
-	      v1v(k) = wsnv(k)
-	    end do
+	  if( ioverl .eq. 1 ) then		!horizontal velocities
+	    uvover = uvmod
+	  else if( ioverl .eq. 2 ) then		!vertical velocities
+	    uvover = wsnv
           else if( ioverl .eq. 3 ) then		!water levels
-	    do k=1,nkn
-	      v1v(k) = znv(k)
-	    end do
+	    uvover = znv
           else if( ioverl .eq. 4 ) then		!bathymetry
-	    do k=1,nkn
-	      v1v(k) = hkv(k)
-	    end do
-          else if( ioverl .ne. 1 ) then		!not horizontal velocity
+	    uvover = hkv
+	  else
             write(6,*) 'ioverl = ',ioverl
             stop 'error stop plo2vel: value not allowed for ioverl'
 	  end if
-	  !call mima(v1v,nkn,pmin,pmax)
-	  call get_minmax_flag(v1v,nkn,pmin,pmax)
-	  call apply_dry_mask(bkwater,v1v,nkn,flag)
+	  !call mima(uvover,nkn,pmin,pmax)
+	  call get_minmax_flag(uvover,nkn,pmin,pmax)
+	  call apply_dry_mask(bkwater,uvover,nkn,flag)
 	  call colauto(pmin,pmax)
 	  write(6,*) 'plotting overlay color... ',pmin,pmax
           call qcomm('Plotting overlay')
-          call isoline(v1v,nkn,0.,2)
+          call isoline(uvover,nkn,0.,2)
 	end if
 
 	call plot_dry_areas
@@ -931,16 +917,17 @@ c------------------------------------------------------------------
 
 	if( bspecial ) then
 	  scale = typsca / valref
-          call aspecial(spcvel,xgv,ygv,uv,vv,scale)
+          call aspecial(spcvel,xgv,ygv,uvnode,vvnode,scale)
         else if( bregular ) then
+	  call getgeo(x0,y0,dx,dy,flag)
 	  write(6,*) 'regular grid: ',dx,dy,nx,ny
-	  do j=1,nydim				!FIXME -> maybe nx,ny is enough
-	    do i=1,nxdim
+	  do j=1,ny				!FIXME -> maybe nx,ny is enough
+	    do i=1,nx
 	      u = ureg(i,j)
 	      v = vreg(i,j)
 	      if( u > flag .and. v > flag ) then
-		xm = x0 + i * dx
-		ym = y0 + j * dy
+		xm = x0 + (i-1) * dx
+		ym = y0 + (j-1) * dy
 		call comp_scale(inorm,typsca,valmin,valref,u,v,scale)
 	        call pfeil(xm,ym,ureg(i,j),vreg(i,j),scale)
 	      end if
@@ -948,8 +935,8 @@ c------------------------------------------------------------------
 	  end do
 	else if( bnode ) then
 	  do k=1,nkn
-	    u = uv(k)
-	    v = vv(k)
+	    u = uvnode(k)
+	    v = vvnode(k)
 	    if( u > flag .and. v > flag ) then
 	      call comp_scale(inorm,typsca,valmin,valref,u,v,scale)
 	      call pfeil(xgv(k),ygv(k),u,v,scale)
@@ -958,8 +945,8 @@ c------------------------------------------------------------------
 	else
 	  do ie=1,nel
 	    call baric(ie,xm,ym)
-	    u = uvnv(ie)
-	    v = vvnv(ie)
+	    u = uvelem(ie)
+	    v = vvelem(ie)
 	    if( u > flag .and. v > flag ) then
 	      call comp_scale(inorm,typsca,valmin,valref,u,v,scale)
 	      call pfeil(xm,ym,u,v,scale)
@@ -1020,13 +1007,15 @@ c**********************************************************
 
 c make vertical velocities
 
-	call vertical
+	call make_vertical_velocity
 
 c handle level
 
 	level = getlev()
 	write(6,*) 'plo3vel: level = ',level,' ivel = ',ivel
 	write(6,*) 'nlvdi: ',nlvdi,'  nlv: ',nlv
+
+	wsnv = 0.
 
 	if( ivel .eq. 3 .or. ivel .eq. 4 ) then	!wave or wind
 	  call plo2vel(ivel,'3D ')
@@ -1044,8 +1033,8 @@ c handle level
               utot = utot + utlnv(l,ie)
               vtot = vtot + vtlnv(l,ie)
             end do
-            usnv(ie) = utot
-            vsnv(ie) = vtot
+            utrans(ie) = utot
+            vtrans(ie) = vtot
           end do
 	  do k=1,nkn
 	    wsnv(k) = wlnv(level,k)
@@ -1057,11 +1046,11 @@ c handle level
 	    if( lact .eq. -1 ) lact = lmax
 
 	    if( level .gt. lmax ) then	!no such layer
-	      usnv(ie) = 0.
-	      vsnv(ie) = 0.
+	      utrans(ie) = 0.
+	      vtrans(ie) = 0.
 	    else
-	      usnv(ie) = utlnv(lact,ie)
-	      vsnv(ie) = vtlnv(lact,ie)
+	      utrans(ie) = utlnv(lact,ie)
+	      vtrans(ie) = vtlnv(lact,ie)
 	    end if
 	  end do
 	  do k=1,nkn
@@ -1077,7 +1066,7 @@ c debug
 	if( bdebug ) then
 	  ie = 100
 	  write(6,*) 'debugging 3d routine...'
-	  write(6,*) ie,level,ilhv(ie),usnv(ie),vsnv(ie)
+	  write(6,*) ie,level,ilhv(ie),utrans(ie),vtrans(ie)
 	  do l=1,ilhv(ie)
 	    write(6,*) l,utlnv(l,ie),vtlnv(l,ie)
 	  end do
@@ -1096,21 +1085,15 @@ c**********************************************************
 	implicit none
 
 	integer n
-	real up(1),vp(1),uv(1),vv(1),ht(1)
+	real up(n),vp(n),uv(n),vv(n),ht(n)
 
-	integer i
-	real r
-
-	do i=1,n
-	  if( ht(i) .gt. 0. ) then
-	    r = 1. / ht(i)
-	    uv(i) = up(i) * r
-	    vv(i) = vp(i) * r
-	  else
-	    uv(i) = 0.
-	    vv(i) = 0.
-	  end if
-	end do
+	where( ht > 0. )
+	  uv = up / ht
+	  vv = vp / ht
+	else where
+	  uv = 0.
+	  vv = 0.
+	end where
 
 	end
 
@@ -1585,31 +1568,25 @@ c computes modulus for velocity vector and maximum and average
 
 c*****************************************************************
 
-	subroutine normuv(uvnv,vvnv,vv,n)
+	subroutine normuv(u,v,vv,n)
 
 c normalize horizontal velocities
 
 	implicit none
 
 	integer n
-	real uvnv(1), vvnv(1), vv(1)
+	real u(n), v(n), vv(n)
 
-	integer i
-	real rmod
-
-	do i=1,n
-	  rmod = vv(i)
-	  if( rmod .gt. 0. ) then
-	    uvnv(i) = uvnv(i) / rmod
-	    vvnv(i) = vvnv(i) / rmod
-	  end if
-	end do
+	where( vv > 0. )
+	  u = u / vv
+	  v = v / vv
+	end where
 
 	end
 
 c*****************************************************************
 
-	subroutine intpe(vnv,vev,bwater)
+	subroutine intp2elem(vnv,vev,bwater)
 
 c compute elemental values vev()
 
@@ -1617,9 +1594,9 @@ c compute elemental values vev()
 
 	implicit none
 
-        real vnv(1)
-	real vev(1)
-	logical bwater(1)
+        real vnv(nkn)
+	real vev(nel)
+	logical bwater(nel)
 
 	integer ie,ii,k,iflag
 	real sum,flag
@@ -1646,7 +1623,7 @@ c compute elemental values vev()
 
 c*****************************************************************
 
-	subroutine intpn(vev,vnv,bwater)
+	subroutine intp2node(vev,vnv,bwater)
 
 c compute nodal values vnv()
 
@@ -1654,9 +1631,9 @@ c compute nodal values vnv()
 
 	implicit none
 
-	real vev(1)
-        real vnv(1)
-	logical bwater(1)
+	real vev(nel)
+        real vnv(nkn)
+	logical bwater(nel)
 
 	integer ie,ii,k
 	real r,flag
@@ -1944,6 +1921,37 @@ c plots node values
 	end do
 
 	call qgray(0.)
+
+	end
+
+c*****************************************************************
+
+	subroutine make_regular(nx,ny,bregular)
+
+	use mod_hydro_plot
+
+	implicit none
+
+	integer nx,ny
+	logical bregular
+
+	real x0,y0,dx,dy,flag
+	real xmin,ymin,xmax,ymax
+
+	nx = 0
+	ny = 0
+	call getgeo(x0,y0,dx,dy,flag)
+	bregular = dx .gt. 0. .and. dy .gt. 0.
+	if( .not. bregular ) return
+	
+	call getbas(xmin,ymin,xmax,ymax)
+	nx = nint((xmax-xmin)/dx)
+	ny = nint((ymax-ymin)/dy)
+
+	call hydro_plot_regular(nx,ny)	!nx,ny may be changed here
+
+	!write(6,*) 'ggu: x0,y0,dx,dy ',x0,y0,dx,dy,nx,ny
+	!write(6,*) 'ggu: ',xmin,ymin,xmax,ymax
 
 	end
 

@@ -659,7 +659,8 @@
 !***************************************************************
 !***************************************************************
 
-        subroutine shy_transp2vel(nel,nkn,nlv,nlvddi,hev,zenv,nen3v
+        subroutine shy_transp2vel(bvel,nel,nkn,nlv,nlvddi
+     +				,hev,zenv,nen3v
      +                          ,ilhv,hlv,utlnv,vtlnv
      +                          ,uprv,vprv)
 
@@ -667,6 +668,7 @@ c transforms transports at elements to velocities at nodes
 
         implicit none
 
+	logical bvel			!if true compute velocities
         integer nel
         integer nkn
         integer nlv
@@ -698,13 +700,17 @@ c transforms transports at elements to velocities at nodes
 	weight = 0.
 	uprv = 0.
 	vprv = 0.
+	hl = 1.		!in case of transports
 
         do ie=1,nel
 
           area = area_elem(ie)
           lmax = ilhv(ie)
-	  zeta = sum(zenv(:,ie)) / 3.	!average of zeta on element
-	  call get_layer_thickness(lmax,nsigma,hsigma,zeta,hev(ie),hlv,hl)
+	  if( bvel ) then
+	    zeta = sum(zenv(:,ie)) / 3.	!average of zeta on element
+	    call get_layer_thickness(lmax,nsigma,hsigma
+     +				,zeta,hev(ie),hlv,hl)
+	  end if
 
           do l=1,lmax
             hmed = hl(l)

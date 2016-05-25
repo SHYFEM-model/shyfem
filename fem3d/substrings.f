@@ -104,7 +104,7 @@
         else
           write(6,*) '*** string2ivar: cannot find string description: '
           write(6,*) string
-          write(6,*) is,isb,ie3,ie4,ie5
+          !write(6,*) is,isb,ie3,ie4,ie5
           !if( string(1:3) .eq. 'fem' ) stop 'error.....'
         end if
 
@@ -129,6 +129,8 @@
           string = 'water level'
         else if( iv .eq. 2 ) then
           string = 'velocity'
+        else if( iv .eq. 3 ) then
+          string = 'transport'
         else if( iv .eq. 5 ) then
           string = 'bathymetry'
         else if( iv .eq. 10 ) then
@@ -152,9 +154,9 @@
         else if( iv .eq. 335 ) then
           string = 'time over threshold'
         else
-          string = '*** cannot find description'
-          write(6,*) '*** cannot find description for variable: '
-          write(6,*) iv
+          !string = '*** cannot find description'
+          !write(6,*) '*** cannot find description for variable: '
+          !write(6,*) iv
 	  !stop 'error stop ivar2string: no description'
         end if
 

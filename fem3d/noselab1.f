@@ -24,6 +24,7 @@ c**************************************************************
 
 	use clo
 	use elabutil
+	use elabtime
 
         use basin
         use mod_depth
@@ -61,6 +62,7 @@ c elaborates nos file
 	integer i,j,l,k,lmax,node
 	integer ip,nb,naccum
 	integer ifile
+	integer date,time
 	character*80 title,name,file
 	character*20 dline
 	character*80 basnam,simnam
@@ -158,7 +160,7 @@ c--------------------------------------------------------------
 	!--------------------------------------------------------------
 
 	call nos_get_date(nin,date,time)
-	call elabutil_date_and_time
+	call elabtime_date_and_time(date,time)
 
 	!--------------------------------------------------------------
 	! averaging
@@ -250,7 +252,7 @@ c--------------------------------------------------------------
 	   call nos_check_compatibility(nin,nold)
 	   call nos_peek_record(nin,itnew,iaux,ierr)
 	   call nos_get_date(nin,date,time)
-	   call elabutil_date_and_time
+	   call elabtime_date_and_time(date,time)
 	   it = itold		!reset time of last successfully read record
 	   call nos_close(nold)
 	   close(nold)
@@ -269,7 +271,7 @@ c--------------------------------------------------------------
 
 	 if( concat_cycle(it,itold,itstart,nrec) ) cycle
 	 !if( elabutil_over_time_a(atime,atnew,atold) ) exit
-	 if( .not. elabutil_check_time(it,itnew,itold) ) cycle
+	 if( .not. elabtime_check_time(it,itnew,itold) ) cycle
 
 	 do i=1,nvar
 

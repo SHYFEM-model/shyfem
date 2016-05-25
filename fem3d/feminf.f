@@ -169,7 +169,7 @@ c--------------------------------------------------------------
 	  write(6,*) 'regpar: ',regpar
 	end if
 
-	call fem_file_convert_time(datetime,dtime,atime)
+	call dts_convert_to_atime(datetime,dtime,atime)
 
 	nvar0 = nvar
 	lmax0 = lmax
@@ -218,7 +218,7 @@ c--------------------------------------------------------------
 	  if( lmax .ne. lmax0 ) goto 96
 	  if( np .ne. np0 ) goto 96
 
-	  call fem_file_convert_time(datetime,dtime,atime)
+	  call dts_convert_to_atime(datetime,dtime,atime)
 	  call dts_format_abs_time(atime,aline)
 
 	  if( bdebug ) write(6,*) irec,atime,aline

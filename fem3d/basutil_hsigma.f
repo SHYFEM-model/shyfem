@@ -12,7 +12,6 @@ c*******************************************************************
 
 	integer idm,idp,iadjust
 	real :: hflag = -999.
-	real haux(nkn)
 
 c-----------------------------------------------------------------
 c check if depth values are continuous
@@ -46,7 +45,7 @@ c finalize depth values
 c-------------------------------------------------------
 
         call makehev(hev)
-        call makehkv_minmax(hkv,haux,-1)	!use minimum depth
+        call makehkv_minmax(hkv,-1)	!use minimum depth
 	call check_depth(hflag)
 
 c-----------------------------------------------------------------

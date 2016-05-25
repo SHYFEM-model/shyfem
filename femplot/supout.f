@@ -224,94 +224,6 @@ c******************************************************
 	end
 
 c******************************************************
-
-	subroutine from3to2
-
-c sets up 2D data structures from 3D
-c
-c -> do not use anymore !!!!! (outdated) , may be deleted
-c
-c	nlv,nlvdi    		nlv=1 for 2d
-c	hlv			hlv(1) = 10000 for 2d
-c
-c	hev			is set after basin read, newly set by 3d read
-c	ilhv			ilhv(ie) = 1 for 2d
-c	znv,utlnv,vtlnv 	-> set zenv, usnv, vsnv
-
-	use mod_hydro_plot
-	use mod_hydro_print
-	use mod_hydro
-	use levels
-	use basin
-
-	implicit none
-
-	integer k,ie,ii,l,lmax
-	real utot,vtot
-
-c we do not use xv anymore
-
-	do k=1,nkn
-	  xv(1,k) = 0.
-	  xv(2,k) = 0.
-	  xv(3,k) = znv(k)
-	end do
-
-c we already have read zenv from file ous
-
-	do ie=1,nel
-	  do ii=1,3
-	    k = nen3v(ii,ie)
-	    zenv(ii,ie) = znv(k)
-	  end do
-	end do
-
-c interpolation is now done in plo3vel
-
-	do ie=1,nel
-	  utot = 0.
-	  vtot = 0.
-	  lmax = ilhv(ie)
-	  do l=1,lmax
-	    utot = utot + utlnv(l,ie)
-	    vtot = vtot + vtlnv(l,ie)
-	  end do
-	  usnv(ie) = utot
-	  vsnv(ie) = vtot
-	end do
-
-	end
-
-c******************************************************
-
-	subroutine from2to3
-
-c sets up 3D data structures from 2D
-c
-c outdated -> do not call - arrays are set in outnext()
-c
-c	xv,zenv,usnv,vsnv -> set znv
-
-	use mod_hydro_print
-	use mod_hydro
-	use levels
-	use basin, only : nkn,nel,ngr,mbw
-
-	implicit none
-
-	integer k,ie
-
-	do k=1,nkn
-	  znv(k) = xv(3,k)
-	end do
-
-	do ie=1,nel
-	  ilhv(ie) = 1
-	end do
-
-	end
-
-c******************************************************
 c******************************************************
 c******************************************************
 
@@ -453,9 +365,9 @@ c******************************************************
 	wavenext = .true.
 
 	if( iwave .eq. 0 ) then
-	  call polar2xy(nkn,v1v,v3v,uv,vv)
+	  call polar2xy(nkn,v1v,v3v,uvnode,vvnode)
 	else
-	  call polar2xy(nkn,v2v,v3v,uv,vv)
+	  call polar2xy(nkn,v2v,v3v,uvnode,vvnode)
 	end if
 
 	call ptime_set_itime(it)

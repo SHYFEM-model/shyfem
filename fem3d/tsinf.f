@@ -137,7 +137,7 @@ c--------------------------------------------------------------
 	  write(6,*) 'date and time: ',datetime
 	end if
 
-	call fem_file_convert_time(datetime,dtime,atime)
+	call dts_convert_to_atime(datetime,dtime,atime)
 
 c--------------------------------------------------------------
 c close and re-open file
@@ -170,7 +170,7 @@ c--------------------------------------------------------------
 
 	  if( nvar .ne. nvar0 ) goto 96
 
-	  call fem_file_convert_time(datetime,dtime,atime)
+	  call dts_convert_to_atime(datetime,dtime,atime)
 	  call dts_format_abs_time(atime,line)
 
 	  if( bdebug ) write(6,*) irec,atime,line

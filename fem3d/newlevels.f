@@ -28,6 +28,8 @@
 
 	if( nl == 0 ) stop 'error stop levels_init: nl == 0'
 
+	if( nl == nlv_alloc ) return
+
 	nlvdi = nl
 	nlv_alloc = nl
 

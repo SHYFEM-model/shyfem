@@ -40,7 +40,43 @@
 
 	subroutine plot_bas_file
 
+        use mod_depth
+        use mod_geom
+        use evgeom
+        use basin
+        use plotutil
+
+	implicit none
+
+	integer ivar
+
 	write(6,*) 'not yet ready...'
+
+        call read_command_line_file(basfilename)
+
+        call ev_init(nel)
+        call set_ev
+
+        call mod_geom_init(nkn,nel,ngr)
+        call set_geom
+
+        call mod_depth_init(nkn,nel)
+
+        call makehev(hev)
+        call makehkv(hkv)
+        call allocate_2d_arrays(nel)
+
+        call init_plot
+
+	ivar = 5			!bathymetry
+	call init_nls_fnm
+	call read_str_files(-1)
+	call read_str_files(ivar)
+        call initialize_color
+
+        call qopen
+	call plobas
+        call qclose
 
 	end
 
@@ -51,13 +87,18 @@
 	use clo
 	!use elabutil
 	use plotutil
+	use elabtime
 	use shyfile
 	use shyutil
 
         use basin
-        use mod_depth
-        use evgeom
         use levels
+        use evgeom
+        use mod_depth
+	use mod_hydro_plot
+        use mod_hydro
+        use mod_hydro_vel
+        use mod_hydro_print
 
 	implicit none
 
@@ -70,9 +111,9 @@
 	integer, allocatable :: ivars(:)
 	character*80, allocatable :: strings(:)
 
-	real, allocatable :: znv(:)
-	real, allocatable :: uprv(:,:)
-	real, allocatable :: vprv(:,:)
+	!real, allocatable :: znv(:)
+	!real, allocatable :: uprv(:,:)
+	!real, allocatable :: vprv(:,:)
 	real, allocatable :: sv(:,:)
 	real, allocatable :: dv(:,:)
 
@@ -81,10 +122,10 @@
 	integer nwrite,nread,nelab,nrec,nin,nold
 	integer nvers
 	integer nvar,npr
-	integer ierr
+	integer ierr,ivel,iarrow
 	!integer it,itvar,itnew,itold,itstart
 	integer it
-	integer ivar,iaux
+	integer ivar,iaux,nv
 	integer iv,j,l,k,lmax,node
 	integer ip
 	integer ifile,ftype
@@ -92,6 +133,7 @@
 	integer n,m,nndim,nn
 	integer naccum
 	integer isphe
+	integer date,time
 	character*80 title,name,file
 	character*80 basnam,simnam,varline
 	real rnull
@@ -146,11 +188,14 @@
 
         call basin_init(nkn,nel)
         call levels_init(nkn,nel,nlv)
-        call mod_depth_init(nkn,nel)
+
 	call shy_copy_basin_from_shy(id)
 	call shy_copy_levels_from_shy(id)
 
+        call mod_depth_init(nkn,nel)
 	call allocate_2d_arrays(nel)
+	call allocate_simulation(0)
+	call mod_hydro_plot_init(nkn,nel)
 
         isphe = nint(getpar('isphe'))
         call set_coords_ev(isphe)
@@ -191,7 +236,7 @@
 	allocate(cv3(nlv,nndim))
 	allocate(cv3all(nlv,nndim,0:nvar))
 	allocate(idims(4,nvar))
-	allocate(znv(nkn),uprv(nlv,nkn),vprv(nlv,nkn))
+	!allocate(znv(nkn),uprv(nlv,nkn),vprv(nlv,nkn))
 	allocate(sv(nlv,nkn),dv(nlv,nkn))
 
 	!--------------------------------------------------------------
@@ -216,11 +261,24 @@
 	allocate(ivars(nvar),strings(nvar))
 	call shy_get_string_descriptions(id,nvar,ivars,strings)
 	write(6,*) 'available variables: ',nvar
-	do ivar=1,nvar
-	  write(6,*) ivar,ivars(ivar),trim(strings(ivar))
+	nv = 0
+	do iv=1,nvar
+	  ivar = ivars(iv)
+	  write(6,*) iv,ivar,trim(strings(iv))
+	  if( ivar3 == ivars(iv) ) nv = nv + 1
+	  if( ivar3 == 2 .and. ivars(iv) == 3 ) nv = nv + 1
 	end do
 
-        if( ivar3 <= 0 ) then
+        if( ivar3 > 0 ) then
+	  if( nv == 0 ) then
+	    call ivar2string(ivar3,varline)
+            write(6,*) 'no such variable in file: ',ivar3,varline
+            stop 'error stop shyplot'
+	  end if
+	else if( nvar == 1 ) then
+	  ivar3 = ivars(1)
+	  call read_str_files(ivar3)
+        else
           write(6,*) 'no variable given to be plotted: ',ivar3
           stop 'error stop shyplot'
         end if
@@ -236,6 +294,13 @@
 	write(6,*) 'layer: ',layer
 	call setlev(layer)
 
+	ivel = 0
+	if( ivar3 == 2 ) ivel = 1
+	if( ivar3 == 3 ) ivel = 2
+	if( ivel > 0 .and. nv /= 2 ) then
+	  write(6,*) 'could not read all data for arrow: ',ivel,nv
+          stop 'error stop shyplot'
+	end if
 
 	!--------------------------------------------------------------
 	! initialize volume
@@ -258,7 +323,7 @@
 
 	dtime = 0.
 	call shy_peek_record(id,dtime,iaux,iaux,iaux,iaux,ierr)
-	call fem_file_convert_time(datetime,dtime,atime)
+	call dts_convert_to_atime(datetime_elab,dtime,atime)
 
 	cv3 = 0.
 	cv3all = 0.
@@ -276,8 +341,9 @@
 
          if(ierr.ne.0) exit
 
-	 call fem_file_convert_time(datetime,dtime,atime)
+	 call dts_convert_to_atime(datetime_elab,dtime,atime)
 
+	 iarrow = 0
 	 nread = nread + 1
 	 nrec = nrec + nvar
 
@@ -288,10 +354,10 @@
 	 call shy_peek_record(id,dtnew,iaux,iaux,iaux,iaux,ierr)
 	 if( ierr .ne. 0 ) dtnew = dtime
 	 blastrecord = ierr < 0 .and. atstart == -1
-	 call fem_file_convert_time(datetime,dtnew,atnew)
+	 call dts_convert_to_atime(datetime_elab,dtnew,atnew)
 
-	 if( elabutil_over_time_a(atime,atnew,atold) ) exit
-	 if( .not. elabutil_check_time_a(atime,atnew,atold) ) cycle
+	 if( elabtime_over_time_a(atime,atnew,atold) ) exit
+	 if( .not. elabtime_check_time_a(atime,atnew,atold) ) cycle
 
 	 call shy_make_zeta(ftype)
 	 !call shy_make_volume		!comment for constant volume
@@ -312,7 +378,9 @@
 	  ivar = idims(4,iv)
 	  nn = n * m
 
-	  if( ivar /= ivar3 ) cycle
+	  if( ivar /= ivar3 .and. ivel == 0 ) cycle
+	  if( ivar == 1 .and. m == 3 ) cycle	!water level in element
+	  if( ivar == 1 .and. ivel > 0 ) cycle	!want to plot vel/trans
 
 	  cv3(:,:) = cv3all(:,:,iv)
 
@@ -326,15 +394,26 @@
 	    call shy_make_vert_aver(idims(:,iv),nndim,cv3,cv2)
 	  else
 	    if( m /= 1 ) stop 'error stop: m/= 1'
-	    if( n == nkn ) then
+	    if( n == nkn .and. ivar == 1 ) then
+	      cv2(:) = cv3(1,:)
+	    else if( n == nkn ) then
 	      call extnlev(layer,nlvdi,nkn,cv3,cv2)
 	    else if( n == nel ) then
-	      call extelev(layer,nlvdi,nkn,cv3,cv2)
+	      call extelev(layer,nlvdi,nel,cv3,cv2)
 	    else
 	      write(6,*) 'n,nkn,nel: ',n,nkn,nel
 	      stop 'error stop: n'
 	    end if
 	  end if
+
+	  if( ivel > 0 .and. ivar == 3 ) then
+	    iarrow = iarrow + 1
+	    if( iarrow == 1 ) utrans(1:nel) = cv2(1:nel)
+	    if( iarrow == 2 ) vtrans(1:nel) = cv2(1:nel)
+	    !if( iarrow == 2 ) call make_vertical_velocity
+	    if( iarrow == 2 ) wsnv = 0.	!FIXME - no vertical velocity
+	  end if
+	  if( ivel > 0 .and. iarrow /= 2 ) cycle
 
 	  write(6,*) 'plotting: ',ivar,layer
 
@@ -342,7 +421,9 @@
 	  !call reset_dry_mask
 	  call make_mask(layer)
 	  if( m /= 1 ) stop 'error stop: m/= 1'
-	  if( n == nkn ) then
+	  if( ivel > 0 ) then
+	    call plo2vel(ivel,'3D ')
+	  else if( n == nkn ) then
             call ploval(nkn,cv2,varline)
 	  else if( n == nel ) then
             call ploeval(nel,cv2,varline)
@@ -401,7 +482,7 @@
 
 !***************************************************************
 
-	subroutine prepare_hydro(nndim,cv3all,znv,uprv,vprv)
+	subroutine prepare_hydro(bvel,nndim,cv3all,znv,uprv,vprv)
 
 	use basin
 	use levels
@@ -409,6 +490,7 @@
 	
 	implicit none
 
+	logical bvel
 	integer nndim
 	real cv3all(nlvdi,nndim,0:4)
 	real znv(nkn)
@@ -428,7 +510,7 @@
         uv(:,1:nel)    = cv3all(:,1:nel,3)
         vv(:,1:nel)    = cv3all(:,1:nel,4)
 
-	call shy_transp2vel(nel,nkn,nlv,nlvdi,hev,zenv,nen3v
+	call shy_transp2vel(bvel,nel,nkn,nlv,nlvdi,hev,zenv,nen3v
      +                          ,ilhv,hlv,uv,vv
      +                          ,uprv,vprv)
 
@@ -507,6 +589,35 @@ c*****************************************************************
         call mod_hydro_plot_init(nkn,nel)
 
         write(6,*) 'allocate_2d_arrays: ',nkn,nel,ngr,np
+
+        end
+
+c*****************************************************************
+
+        subroutine read_command_line_file(file)
+
+        use basin
+        !use basutil
+
+        implicit none
+
+        character*(*) file
+        logical is_grd_file
+
+        if( basin_is_basin(file) ) then
+          write(6,*) 'reading BAS file ',trim(file)
+          call basin_read(file)
+          !breadbas = .true.
+        else if( is_grd_file(file) ) then
+          write(6,*) 'reading GRD file ',trim(file)
+          call grd_read(file)
+          call grd_to_basin
+          call estimate_ngr(ngr)
+          !breadbas = .false.
+        else
+          write(6,*) 'Cannot read this file: ',trim(file)
+          stop 'error stop read_given_file: format not recognized'
+        end if
 
         end
 

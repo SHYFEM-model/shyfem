@@ -9,7 +9,7 @@ c function igtdep(k,f)                  get depth for node
 c function igtdpa(mode,h)               gets unique depth for all nodes
 c subroutine huniqu(hev,hkv)            make depth unique for every node
 c subroutine makehev(hev)		makes hev (elementwise depth)
-c subroutine makehkv(hkv,haux)		makes hkv (nodewise depth)
+c subroutine makehkv(hkv)		makes hkv (nodewise depth)
 c subroutine depadj(hmin,hmax,href)	adjusts depth to ref/min/max values
 c
 c revision log :
@@ -252,7 +252,7 @@ c local
 
 c********************************************************************
 
-        subroutine makehkv(hkv,haux)
+        subroutine makehkv(hkv)
 
 c makes hkv (nodewise depth)
 
@@ -262,10 +262,10 @@ c makes hkv (nodewise depth)
 
 c arguments
         real hkv(nkn)
-        real haux(nkn)   !aux array -> bug - was integer
 c local
         integer ie,ii,k,kn
 	real weight
+        real haux(nkn)   !aux array -> bug - was integer
 
 	real weight_elem
 
@@ -291,7 +291,7 @@ c local
 
 c********************************************************************
 
-        subroutine makehkv_minmax(hkv,haux,itype)
+        subroutine makehkv_minmax(hkv,itype)
 
 c makes hkv (nodewise depth)
 c
@@ -302,7 +302,6 @@ c itype:  -1: min  0: aver  +1: max
         implicit none
 
         real hkv(nkn)
-        real haux(nkn)
         integer itype
 
         integer k,ie,ii
@@ -313,7 +312,7 @@ c initialize
 c-------------------------------------------------------
 
 	if( itype .eq. 0 ) then
-          call makehkv(hkv,haux)
+          call makehkv(hkv)
 	  return
 	end if
 
@@ -520,11 +519,9 @@ c adjusts nodal depth values
 
 	implicit none
 
-	real v1v(nkn)
-
-        call makehkv(hkv,v1v)		!computes hkv as average
-        call makehkv_minmax(hkv_min,v1v,-1)
-        call makehkv_minmax(hkv_max,v1v,+1)
+        call makehkv(hkv)		!computes hkv as average
+        call makehkv_minmax(hkv_min,-1)
+        call makehkv_minmax(hkv_max,+1)
 
 	end
 

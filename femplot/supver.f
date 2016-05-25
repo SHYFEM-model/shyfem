@@ -9,7 +9,7 @@ c 26.03.2010    ggu     HACK for bwater -> compute always
 c
 c******************************************************************
 
-        subroutine vertical
+        subroutine make_vertical_velocity
 
 c computes vertical velocities
 c
@@ -53,14 +53,6 @@ c 20.08.1998    ggu     some documentation
 
         implicit none
 
-c parameters
-        include 'param.h'
-c common
-
-
-
-
-c local
 	logical byaron
         integer k,ie,ii,kk,l
         integer ilevel

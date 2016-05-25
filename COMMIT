@@ -1,5 +1,53 @@
 ============================================================
 
+Wed May 25 18:55:46 CEST 2016
+
+big changes in post processing
+
+ LOG                      |  40 +++++++
+ RELEASE_NOTES            |  10 ++
+ fem3d/Makefile           |  26 ++++-
+ fem3d/basutil_hsigma.f   |   3 +-
+ fem3d/elabtime.f         |  71 ++++++------
+ fem3d/elabutil.f         |  18 ++-
+ fem3d/extelab1.f         |   8 +-
+ fem3d/femelab.f          |   8 +-
+ fem3d/feminf.f           |   4 +-
+ fem3d/flxelab1.f         |   8 +-
+ fem3d/newlevels.f        |   2 +
+ fem3d/nos2nc.f           |   4 +-
+ fem3d/nos2shy.f          |   4 +-
+ fem3d/noselab1.f         |   8 +-
+ fem3d/nosextr_nodes.f    |   4 +-
+ fem3d/ous2nc.f           |   4 +-
+ fem3d/ous2shy.f          |   4 +-
+ fem3d/ouselab1.f         |   6 +-
+ fem3d/sedi3d.f           |   8 +-
+ fem3d/shybas.f           |   5 +-
+ fem3d/shydiff.f          |  14 ++-
+ fem3d/shyelab1.f         |  21 ++--
+ fem3d/shyelab_output.f   |   8 +-
+ fem3d/shyutil.f          |  12 +-
+ fem3d/subbas.f           |   1 +
+ fem3d/subdep.f           |  19 ++--
+ fem3d/subgrd.f           |  43 +++++++-
+ fem3d/subshyutil2.f      |   7 +-
+ fem3d/substrings.f       |  10 +-
+ fem3d/tsinf.f            |   4 +-
+ femdoc/final/shyfem.pdf  | Bin 287629 -> 287639 bytes
+ femplot/Makefile         |  12 +-
+ femplot/mod_hydro_plot.f |  84 ++++++++++----
+ femplot/plotutil.f       | 198 +++++++--------------------------
+ femplot/shyplot.f        | 157 ++++++++++++++++++++++----
+ femplot/supdep.f         |  20 +---
+ femplot/suplin1.f        |   2 +-
+ femplot/supout.f         |  92 +---------------
+ femplot/supsim.f         | 278 ++++++++++++++++++++++++-----------------------
+ femplot/supver.f         |  10 +-
+ 40 files changed, 648 insertions(+), 589 deletions(-)
+
+============================================================
+
 Thu Apr 28 18:10:58 CEST 2016
 
 New version 7_5_9

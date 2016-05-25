@@ -102,6 +102,8 @@ c**********************************************************
         integer, save, allocatable :: ipntev(:),inodev(:)
         integer, save, allocatable :: ipntlv(:),inodlv(:)
 
+	logical, save :: berror = .true.	!writes error if found
+
 !==============================================================
 	contains
 !==============================================================
@@ -192,6 +194,36 @@ c**********************************************************
 	end module grd
 !==============================================================
 
+c*****************************************************************
+
+	subroutine grd_set_error(berr)
+
+	use grd
+
+	implicit none
+
+	logical berr
+
+	berror = berr
+
+	end subroutine grd_set_error
+
+c*****************************************************************
+
+	function grd_write_error()
+
+	use grd
+
+	implicit none
+
+	logical grd_write_error
+
+	grd_write_error = berror
+
+	end function grd_write_error
+
+c*****************************************************************
+c*****************************************************************
 c*****************************************************************
 
 	subroutine grd_get_params(nk,ne,nl,nne,nnl)
@@ -354,6 +386,8 @@ c-----------------------------------------------------------------
         nendi0 = 0
         nlndi0 = 0
 
+	call grd_set_error(.false.)	!do not write errors to terminal
+
 c-----------------------------------------------------------------
 c read grd file
 c-----------------------------------------------------------------
@@ -370,6 +404,8 @@ c-----------------------------------------------------------------
      +                  ,ipntev0,inodev
      +                  ,ipntlv0,inodlv
      +                  )
+
+	call grd_set_error(.true.)	!original behavior
 
 	is_grd_file = .not. bstop
 
@@ -582,6 +618,7 @@ c reads comment
 	character*132 line
 
 	integer ifstch
+	logical grd_write_error
 
 	call grd_line_info(iline,line)
 
@@ -598,8 +635,10 @@ c reads comment
 	    call fempar(line(i+1:))
 	  end if
 	else
-	  write(ner,*) 'Read error on line ',iline
-	  write(ner,*) line
+	  if( grd_write_error() ) then
+	    write(ner,*) 'Read error on line ',iline
+	    write(ner,*) line
+	  end if
           bstop=.true.
 	end if
 

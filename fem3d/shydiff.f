@@ -23,6 +23,7 @@
 
 	use clo
 	use elabutil
+	use elabtime
 	use shyfile
 	use shyutil
 
@@ -63,6 +64,7 @@
 	integer id,idout,idold,id2
 	integer n,m,nndim,nn
 	integer naccum
+	integer date,time
 	character*80 title,name,file
 	character*80 basnam,simnam
 	real rnull
@@ -159,7 +161,7 @@
 	!--------------------------------------------------------------
 
 	call shy_get_date(id,date,time)
-	call elabutil_date_and_time	!this also sets datetime
+	call elabtime_date_and_time(date,time)
 
 !--------------------------------------------------------------
 ! loop on data
@@ -168,7 +170,7 @@
 	dtvar = 0.
 	dtime = 0.
 	call shy_peek_record(id,dtime,iaux,iaux,iaux,iaux,ierr)
-	call fem_file_convert_time(datetime,dtime,atime)
+	call dts_convert_to_atime(datetime_elab,dtime,atime)
 
 	cv3 = 0.
 	cv4 = 0.
@@ -195,14 +197,14 @@
 
 	 nread = nread + nvar
 	 nrec = nrec + 1
-	 call fem_file_convert_time(datetime,dtime,atime)
+	 call dts_convert_to_atime(datetime_elab,dtime,atime)
 
 	 call shy_peek_record(id,dtnew,iaux,iaux,iaux,iaux,ierr)
-	 call fem_file_convert_time(datetime,dtnew,atnew)
+	 call dts_convert_to_atime(datetime_elab,dtnew,atnew)
 	 if( ierr .ne. 0 ) atnew = atime
 
-	 if( elabutil_over_time_a(atime,atnew,atold) ) exit
-	 if( .not. elabutil_check_time_a(atime,atnew,atold) ) cycle
+	 if( elabtime_over_time_a(atime,atnew,atold) ) exit
+	 if( .not. elabtime_check_time_a(atime,atnew,atold) ) cycle
 
 	 do iv=1,nvar
 

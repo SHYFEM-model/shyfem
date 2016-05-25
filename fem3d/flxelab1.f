@@ -20,6 +20,7 @@ c**************************************************************
 
 	use clo
 	use elabutil
+	use elabtime
 
         use basin
         use mod_depth
@@ -49,6 +50,7 @@ c elaborates nos file
 	integer kfluxm
 	integer idtflx,nlmax,nsect
 	integer nscdi,nfxdi
+	integer date,time
 	character*80 title,name
 	character*20 dline
 	character*80 basnam,simnam
@@ -125,7 +127,9 @@ c--------------------------------------------------------------
 	!--------------------------------------------------------------
 
 	!call nos_get_date(nin,date,time)
-	call elabutil_date_and_time
+	date = 0
+	time = 0
+	call elabtime_date_and_time(date,time)
 
 	!--------------------------------------------------------------
 	! averaging
@@ -191,7 +195,7 @@ c--------------------------------------------------------------
 	 !write(6,*) 'peek: ',it,itnew,ierr
 	 if( ierr .ne. 0 ) itnew = it
 
-	 if( .not. elabutil_check_time(it,itnew,itold) ) cycle
+	 if( .not. elabtime_check_time(it,itnew,itold) ) cycle
 
 	  nelab=nelab+1
 

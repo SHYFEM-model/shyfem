@@ -24,6 +24,7 @@ c**************************************************************
 
 	use clo
 	use elabutil
+	use elabtime
 	use shyfile
 
         use basin
@@ -56,6 +57,7 @@ c elaborates nos file
 	integer ip,nb,naccum
 	integer ifile
 	integer id,ftype
+	integer date,time
 	character*80 title,name,file
 	character*80 sfile
 	character*20 dline
@@ -145,7 +147,7 @@ c--------------------------------------------------------------
 	!--------------------------------------------------------------
 
 	call nos_get_date(nin,date,time)
-	call elabutil_date_and_time
+	call elabtime_date_and_time(date,time)
 
 	!--------------------------------------------------------------
 	! open output file

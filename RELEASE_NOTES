@@ -1,4 +1,14 @@
 
+25.05.2016	VERS_7_5_10
+
+	big changes in post processing routines and plot
+	read 3d matrices from fem files (still experimental)
+	format enhancement for fem files
+	restructured regular file treatment
+	change albedo treatment (small bug)
+	exact estimation of ngr 
+	started new eutro and mercury routines
+
 28.04.2016	VERS_7_5_9
 
 	nos2nc, ous2nc adapted to new framework

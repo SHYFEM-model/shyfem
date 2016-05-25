@@ -3700,15 +3700,11 @@ c DOCS  END
 	use basin
         use levels
 
-
         implicit none
 
-        include 'param.h'
-
-        double precision bdh(nkn)          !total elevation change [>0depo,<0ero]
+        double precision bdh(nkn)    !total elevation change [>0 depo, <0 ero]
 
         real hlhv(nel)
-	real v1v(nkn)
 
         real dh
         real evdep				!element depth variation
@@ -3768,7 +3764,7 @@ c DOCS  END
 !       Set up depth vectors
 !       ------------------------------------------------------------------
 
-        call makehkv(hkv,v1v)         !computes hkv as average
+        call makehkv(hkv)         !computes hkv as average
 
 	call setweg(3,iw)
         call setarea(nlvdi,areakv)

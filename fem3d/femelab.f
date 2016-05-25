@@ -145,7 +145,7 @@ c writes info on fem file
 	datetime = 0
 	datetime(1) = 19970101
 	dtime = 0.
-	call fem_file_convert_time(datetime,dtime,atime)
+	call dts_convert_to_atime(datetime,dtime,atime)
 	atime1997 = atime
 
         datetime = 0
@@ -243,7 +243,7 @@ c--------------------------------------------------------------
 	  write(6,*) 'regpar: ',regpar
 	end if
 
-	call fem_file_convert_time(datetime,dtime,atime)
+	call dts_convert_to_atime(datetime,dtime,atime)
 	atime0 = atime		!absolute time of first record
 
 	if( bextract ) then
@@ -315,7 +315,7 @@ c--------------------------------------------------------------
 	  if( lmax .ne. lmax0 ) goto 96
 	  if( np .ne. np0 ) goto 96
 
-	  call fem_file_convert_time(datetime,dtime,atime)
+	  call dts_convert_to_atime(datetime,dtime,atime)
 	  call dts_format_abs_time(atime,line)
 
 	  if( bdebug ) write(6,*) irec,atime,line
@@ -335,7 +335,7 @@ c--------------------------------------------------------------
 
           if( boutput ) then
 	    if( bhuman ) then
-	      call fem_file_convert_atime(datetime,dtime,atime)
+	      call dts_convert_from_atime(datetime,dtime,atime)
 	    end if
             call fem_file_write_header(iformout,iout,dtime
      +                          ,nvers,np,lmax,nvar,ntype,lmax

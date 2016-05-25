@@ -23,6 +23,7 @@
 
 	use clo
 	use elabutil
+	use elabtime
 	use shyfile
 	use shyutil
 
@@ -52,6 +53,7 @@
 	integer nvers
 	integer nvar,npr
 	integer ierr
+	integer date,time
 	!integer it,itvar,itnew,itold,itstart
 	integer it
 	integer ivar,iaux
@@ -195,7 +197,7 @@
 
 	dtime = 0.
 	call shy_peek_record(id,dtime,iaux,iaux,iaux,iaux,ierr)
-	call fem_file_convert_time(datetime,dtime,atime)
+	call dts_convert_to_atime(datetime_elab,dtime,atime)
 
 	cv3 = 0.
 	cv3all = 0.
@@ -217,7 +219,7 @@
 	   cycle
 	 end if
 
-	 call fem_file_convert_time(datetime,dtime,atime)
+	 call dts_convert_to_atime(datetime_elab,dtime,atime)
 
 	 nread = nread + 1
 	 nrec = nrec + nvar
@@ -229,10 +231,10 @@
 	 call shy_peek_record(id,dtnew,iaux,iaux,iaux,iaux,ierr)
 	 if( ierr .ne. 0 ) dtnew = dtime
 	 blastrecord = ierr < 0 .and. atstart == -1
-	 call fem_file_convert_time(datetime,dtnew,atnew)
+	 call dts_convert_to_atime(datetime_elab,dtnew,atnew)
 
-	 if( elabutil_over_time_a(atime,atnew,atold) ) exit
-	 if( .not. elabutil_check_time_a(atime,atnew,atold) ) cycle
+	 if( elabtime_over_time_a(atime,atnew,atold) ) exit
+	 if( .not. elabtime_check_time_a(atime,atnew,atold) ) cycle
 
 	 call shy_make_zeta(ftype)
 	 !call shy_make_volume		!comment for constant volume
@@ -303,7 +305,7 @@
 	 end if
 
 	 if( bnodes .and. bhydro ) then	!hydro output
-	   call prepare_hydro(nndim,cv3all,znv,uprv,vprv)
+	   call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
 	   call write_nodes_vel(dtime,znv,uprv,vprv)
 	 end if
  
@@ -414,7 +416,7 @@
 
 !***************************************************************
 
-	subroutine prepare_hydro(nndim,cv3all,znv,uprv,vprv)
+	subroutine prepare_hydro(bvel,nndim,cv3all,znv,uprv,vprv)
 
 	use basin
 	use levels
@@ -422,6 +424,7 @@
 	
 	implicit none
 
+	logical bvel
 	integer nndim
 	real cv3all(nlvdi,nndim,0:4)
 	real znv(nkn)
@@ -441,7 +444,7 @@
         uv(:,1:nel)    = cv3all(:,1:nel,3)
         vv(:,1:nel)    = cv3all(:,1:nel,4)
 
-	call shy_transp2vel(nel,nkn,nlv,nlvdi,hev,zenv,nen3v
+	call shy_transp2vel(bvel,nel,nkn,nlv,nlvdi,hev,zenv,nen3v
      +                          ,ilhv,hlv,uv,vv
      +                          ,uprv,vprv)
 
@@ -474,7 +477,7 @@
         integer ivar,idim(4)
         real cmin,cmax,cmed,vtot
 
-        call prepare_hydro(nndim,cv3all,znv,uprv,vprv)
+        call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
         call convert_to_speed(uprv,vprv,sv,dv)
 
         ivar = 1

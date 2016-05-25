@@ -35,7 +35,6 @@ c--------------------------------------------------
 
 
 	real, allocatable :: hl(:)
-	real, allocatable :: haux(:)
 	real, allocatable :: cv(:)
 	real, allocatable :: cv3(:,:)
 
@@ -105,7 +104,6 @@ c---------------------------------------------------------------
 	nlvdi = nlv
 
 	allocate(hl(nlvdi))
-	allocate(haux(nkn))
 	allocate(cv(nkn))
 	allocate(cv3(nlvdi,nkn))
 
@@ -117,7 +115,7 @@ c---------------------------------------------------------------
 
         call init_sigma_info(nlv,hlv)
         call makehev(hev)
-	call makehkv_minmax(hkv,haux,+1)
+	call makehkv_minmax(hkv,+1)
 
 	write(6,*) 'Available levels: ',nlv
 	write(6,*) (hlv(l),l=1,nlv)

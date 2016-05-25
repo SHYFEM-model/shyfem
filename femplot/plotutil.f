@@ -38,7 +38,7 @@
 	logical, save :: bverb
 	logical, save :: bwrite
 	logical, save :: bquiet
-	logical, save :: bdate
+	!logical, save :: bdate
 
 	integer, save :: ifreq
 	integer, save :: tmin
@@ -52,11 +52,11 @@
 
 	logical, save :: bopen
 
-	logical, save :: btmin
-	logical, save :: btmax
-	logical, save :: binclusive
-	double precision, save :: atmin
-	double precision, save :: atmax
+	!logical, save :: btmin
+	!logical, save :: btmax
+	!logical, save :: binclusive
+	!double precision, save :: atmin
+	!double precision, save :: atmax
 
 	logical, save :: bthreshold
 	double precision, save :: threshold
@@ -72,9 +72,9 @@
 	integer, save :: mode
 	integer, save :: modeb
 
-	integer, save :: date = 0
-	integer, save :: time = 0
-	integer, save :: datetime(2) = 0
+	!integer, save :: date = 0
+	!integer, save :: time = 0
+	!integer, save :: datetime(2) = 0
 
 	integer, save :: catmode = 0
 
@@ -92,10 +92,7 @@
 
         character*80, save :: shyfilename = ' '
         character*80, save :: basfilename = ' '
-
-        INTERFACE elabutil_check_time
-        MODULE PROCEDURE elabutil_check_time_i,elabutil_check_time_d
-        END INTERFACE
+        character*80, save :: basintype = ' '
 
 !====================================================
 	contains
@@ -137,7 +134,7 @@
 	if( binitialized ) return
 
 	if( type == 'SHY' ) then
-          call clo_init(program,'shy-file','3.0')
+          call clo_init(program,'shy-file|bas-file|str-file','3.0')
 	else
 	  write(6,*) 'type : ',trim(type)
 	  stop 'error stop plotutil_set_options: unknown type'
@@ -201,7 +198,7 @@
 
         if( .not. bquiet ) then
 	  if( type == 'SHY' ) then
-            call shyfem_copyright('shyelab - Elaborate SHY files')
+            call shyfem_copyright('shyplot - Plot SHY files')
 	  else
 	    write(6,*) 'type : ',trim(type)
 	    stop 'error stop plotutil_get_options: unknown type'
@@ -215,10 +212,10 @@
 
 	if( name .ne. ' ' ) call string2ivar(name,ivar3)
 
-	!if( ivar3 <= 0 ) then
-        !  write(6,*) 'no variable given to be plotted: ',ivar3
-        !  stop 'error stop plotutil_get_options'
-	!end if
+	if( ivar3 < 0 ) then
+          write(6,*) 'variable name unknown: ',trim(name)
+          stop 'error stop plotutil_get_options'
+	end if
 
 	call setlev(layer)
 	call setvar(ivar3)
@@ -252,142 +249,6 @@
 !************************************************************
 !************************************************************
 
-	subroutine elabutil_date_and_time
-
-        bdate = date .gt. 0
-        if( bdate ) call dtsini(date,time)
-        datetime(1) = date
-        datetime(2) = time
-
-        atmin = 0.
-        atmax = 0.
-        btmin = stmin .ne. ' '
-        btmax = stmax .ne. ' '
-        if( btmin ) call fem_file_string2time(stmin,atmin)
-        if( btmax ) call fem_file_string2time(stmax,atmax)
-
-        if( bverb ) then
-          write(6,*) 'time limits: '
-          write(6,*) stmin(1:len_trim(stmin)),btmin,atmin
-          write(6,*) stmax(1:len_trim(stmax)),btmax,atmax
-        end if
-
-	end subroutine elabutil_date_and_time
-
-!************************************************************
-
-	function elabutil_check_time_i(it,itnew,itold)
-
-! integer version
-
-	logical elabutil_check_time_i
-	integer it,itnew,itold
-
-	double precision dtime,dtimenew,dtimeold
-
-        dtime = it
-	dtimenew = itnew
-	dtimeold = itold
-
-	elabutil_check_time_i = 
-     +		elabutil_check_time_d(dtime,dtimenew,dtimeold)
-
-	end function elabutil_check_time_i
-
-!************************************************************
-
-	function elabutil_check_time_d(dtime,dtimenew,dtimeold)
-
-! double version (relativ)
-
-	logical elabutil_check_time_d
-	double precision dtime,dtimenew,dtimeold
-
-	double precision atime,atimenew,atimeold
-
-        call fem_file_convert_time(datetime,dtime,atime)
-        call fem_file_convert_time(datetime,dtimenew,atimenew)
-        call fem_file_convert_time(datetime,dtimeold,atimeold)
-
-	elabutil_check_time_d =
-     +		elabutil_check_time_a(atime,atimenew,atimeold)
-
-	end function elabutil_check_time_d
-
-!************************************************************
-
-	function elabutil_check_time_a(atime,atimenew,atimeold)
-
-! double version (absolute)
-
-	logical elabutil_check_time_a
-	double precision atime,atimenew,atimeold
-
-	logical bdebug
-	logical btimew
-
-	bdebug = .true.
-	bdebug = .false.
-        btimew = .true.
-
-        if( btmin ) btimew = btimew .and. atime >= atmin
-        if( btmax ) btimew = btimew .and. atime <= atmax
-
-	elabutil_check_time_a = btimew
-
-	if( bdebug ) then
-	  write(6,*) 'exclusive..........',btimew,binclusive
-	  write(6,*) 'exclusive..........',atmin,atime,atmax
-	end if
-
-	if( .not. binclusive ) return
-
-        if( btmin ) then
-	  btimew = btimew .or. (atime < atmin .and. atmin < atimenew)
-	end if
-        if( btmax ) then
-	  btimew = btimew .or. (atimeold < atmax .and. atmax < atime)
-	end if
-
-	elabutil_check_time_a = btimew
-
-	end function elabutil_check_time_a
-
-!************************************************************
-
-	function elabutil_over_time_a(atime,atimenew,atimeold)
-
-! double version (absolute)
-
-	logical elabutil_over_time_a
-	double precision atime,atimenew,atimeold
-
-	logical bdebug
-	logical btimew
-
-	bdebug = .true.
-	bdebug = .false.
-        btimew = .true.
-
-        if( btmax ) btimew = btimew .and. atime <= atmax
-
-	elabutil_over_time_a = .not. btimew
-
-	if( bdebug ) then
-	  write(6,*) 'exclusive..........',btimew,binclusive
-	  write(6,*) 'exclusive..........',atmin,atime,atmax
-	end if
-
-	if( .not. binclusive ) return
-
-        if( btmax ) then
-	  btimew = btimew .or. (atimeold < atmax .and. atmax < atime)
-	end if
-
-	elabutil_over_time_a = .not. btimew
-
-	end function elabutil_over_time_a
-
 !************************************************************
 !************************************************************
 !************************************************************
@@ -403,12 +264,15 @@ c***************************************************************
 
 	character*80 file
 	integer i
-	integer nshy,nbas,nstr,nunk
+	integer nshy,nbas,nstr,nunk,ngrd
+
+	logical is_grd_file
 
 	nshy = 0
 	nbas = 0
 	nstr = 0
 	nunk = 0
+	ngrd = 0
 
 	nfile = clo_number_of_files()
 	allocate(file_type(nfile))
@@ -426,6 +290,12 @@ c***************************************************************
 	    file_type(i) = 'bas'
 	    nbas = nbas + 1
 	    basfilename = file
+	    basintype = 'bas'
+	  else if( is_grd_file(file) ) then
+	    file_type(i) = 'grd'
+	    ngrd = ngrd + 1
+	    basfilename = file
+	    basintype = 'grd'
 	  else if( nls_is_nls_file(file) ) then
 	    file_type(i) = 'str'
 	    nstr = nstr + 1
@@ -435,15 +305,25 @@ c***************************************************************
 	  end if
 	end do
 
-	write(6,*) 'classify_files: ',nshy,nbas,nstr,nunk
+	!write(6,*) 'classify_files: ',nshy,nbas,nstr,nunk
 
 	if( nunk > 0 ) stop 'error stop classify_files'
 	if( nshy > 1 ) then
 	  write(6,*) 'cannot plot more than one SHY file'
 	  stop 'error stop classify_files'
 	end if
-	if( nbas > 0 ) then
-	  write(6,*) 'basin given but not needed... ignoring'
+	if( nbas > 0 .and. ngrd > 0 ) then
+	  write(6,*) 'both BAS and GRD files given... cannot handle'
+	  stop 'error stop classify_files'
+	end if
+	if( nshy > 0 ) then
+	  if( nbas > 0 .or. ngrd > 0 ) then
+	    write(6,*) 'basin given but not needed... ignoring'
+	  end if
+	end if
+	if( shyfilename == ' ' .and. basfilename == ' ' ) then
+	  write(6,*) 'no file given for plot...'
+	  call clo_usage
 	end if
 
 	end subroutine classify_files

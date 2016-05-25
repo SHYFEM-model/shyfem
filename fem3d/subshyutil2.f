@@ -50,7 +50,7 @@
 	subroutine open_new_file(ifile,id,atstart)
 
 	use shyfile
-	use elabutil
+	use elabtime
 
 ! opens a new file, closing the old one and checking the next file
 !
@@ -68,6 +68,7 @@
 	double precision atstart	!absolute time of start of next file
 
 	integer idold
+	integer date,time
 
 	ifile = ifile + 1
 	idold = id
@@ -78,7 +79,7 @@
         call get_start_of_next_file(ifile+1,atstart)
 
         call shy_get_date(id,date,time)
-        call elabutil_date_and_time     !this also sets datetime
+        call elabtime_date_and_time(date,time) 
 
 	end
 
@@ -184,7 +185,7 @@
 	call shy_get_tstart(file,datetime,dtime,bok)
 	if( .not. bok ) return
 
-	call fem_file_convert_time(datetime,dtime,atstart)
+	call dts_convert_to_atime(datetime,dtime,atstart)
 
 	end 
 

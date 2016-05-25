@@ -36,9 +36,6 @@ c makes hkv (nodewise depth)
 
 	implicit none
 
-c common
-	include 'param.h'
-c local
 	integer ie,ii,k,kn
 	real v1v(nkn)
 
@@ -73,9 +70,6 @@ c makes hev (elementwise depth)
 
 	implicit none
 
-c common
-	include 'param.h'
-c local
 	integer ie,ii
 	real h
 
@@ -105,13 +99,9 @@ c uses level to decide what to do
 
 	implicit none
 
-c arguments
-	real hetv(1)
+	real hetv(nel)
 	real href
-c common
-	include 'param.h'
 
-c local
 	logical bdebug
 	integer ie,ii
 	integer level,lmax
@@ -119,7 +109,7 @@ c local
 	integer nsigma,nlvaux
 	real hsigma
         real hl(nlv)
-c functions
+
 	integer getlev
 	real hlthick
 
@@ -141,7 +131,6 @@ c-------------------------------------------------------------------
 	  lmax = ilhv(ie)
 	  call compute_levels_on_element(ie,zenv,zeta)
 	  call get_layer_thickness(lmax,nsigma,hsigma,zeta,hev(ie),hlv,hl)
-	  !call get_layer_thickness_e(ie,lmax,bzeta,nsigma,hsigma,hl)
 	  hetv(ie) = hlthick(level,lmax,hl)
 	end do
 
@@ -181,8 +170,6 @@ c arguments
 	integer nlvddi
 	real het3v(nlvddi,1)
 	real href
-c common
-	include 'param.h'
 c local
 	logical bdebug
 	integer ie,ii
@@ -265,9 +252,6 @@ c makes area of finite volume
 
 	implicit none
 
-c common
-	include 'param.h'
-c local
 	integer ie,ii,k
 	real afvl
 

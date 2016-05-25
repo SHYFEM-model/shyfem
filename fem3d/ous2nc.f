@@ -40,7 +40,6 @@ c-------------------------------------------------
 	real, allocatable :: u2v(:)
 	real, allocatable :: v2v(:)
 
-	real, allocatable :: haux(:)
 	real, allocatable :: var3d(:)
 
         integer nvers,nin,lmax,l
@@ -121,7 +120,7 @@ c-----------------------------------------------------------------
 
 	call set_ev
 
-	call makehkv_minmax(hkv,haux,1)
+	call makehkv_minmax(hkv,1)
 	call makehev(hev)
 
 c-----------------------------------------------------------------
@@ -173,7 +172,6 @@ c-----------------------------------------------------------------
 
 	allocate(uprv(nlv,nkn),vprv(nlv,nkn))
 	allocate(ut2v(nel),vt2v(nel),u2v(nel),v2v(nel))
-	allocate(haux(nkn))
 	allocate(var3d(nlv*nkn))
 
 	if( breg ) allocate(value3d(nlv,nx,ny),vnc3d(nx,ny,nlv))

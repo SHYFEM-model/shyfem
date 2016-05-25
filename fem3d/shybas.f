@@ -40,8 +40,6 @@ c writes information and manipulates basin
 
 	implicit none
 
-	real, allocatable :: haux(:)
-
 	integer nc
 	character*80 file
 
@@ -66,10 +64,9 @@ c-----------------------------------------------------------------
 	call set_geom
 
 	call mod_depth_init(nkn,nel)
-	allocate(haux(nkn))
 
         call makehev(hev)
-        call makehkv(hkv,haux)
+        call makehkv(hkv)
 
 c-----------------------------------------------------------------
 c info on basin read

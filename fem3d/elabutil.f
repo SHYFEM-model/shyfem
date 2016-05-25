@@ -52,11 +52,11 @@
 
 	logical, save :: bopen
 
-	logical, save :: btmin
-	logical, save :: btmax
+	!logical, save :: btmin
+	!logical, save :: btmax
 	logical, save :: binclusive
-	double precision, save :: atmin
-	double precision, save :: atmax
+	!double precision, save :: atmin
+	!double precision, save :: atmax
 
 	logical, save :: bthreshold
 	double precision, save :: threshold
@@ -72,9 +72,9 @@
 	integer, save :: mode
 	integer, save :: modeb
 
-	integer, save :: date = 0
-	integer, save :: time = 0
-	integer, save :: datetime(2) = 0
+	!integer, save :: date = 0
+	!integer, save :: time = 0
+	!integer, save :: datetime(2) = 0
 
 	integer, save :: catmode = 0
 
@@ -83,10 +83,6 @@
         character*80, save :: stmax		= ' '
         character*80, save :: nodefile		= ' '
         character*10, save :: outformat		= ' '
-
-        INTERFACE elabutil_check_time
-        MODULE PROCEDURE elabutil_check_time_i,elabutil_check_time_d
-        END INTERFACE
 
 !====================================================
 	contains
