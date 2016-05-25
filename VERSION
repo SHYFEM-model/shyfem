@@ -1,3 +1,49 @@
+version  7_5_10    25-05-2016    VERS_7_5_10
+
+========================================================== 25-05-2016 - 7_5_10
+
+c ./fem3d/mercury.f:
+c 15.05.2016    ggu     started mercury from bio3d
+c
+c ./fem3d/subres.f:
+c 17.05.2016    ggu     in ts_shell() save isvect/itvect
+c
+c ./fem3d/subfemintp.f:
+! 05.05.2016	ggu	new functionality for 3d matrices
+!
+c ./fem3d/basutil.f:
+! 01.05.2016	ggu	new routine to convert depth from node to elem
+!
+c ./fem3d/subqfxu4.f:
+c 04.05.2016    ccf     do not pass albedo into heat2t
+c
+c ./fem3d/subver.f:
+c 25.05.2016	ggu	version 7.5.10	for Leslie
+c
+c ./fem3d/subbas.f:
+c 01.05.2016	ggu	new routines basin_has_basin()
+c 20.05.2016	ggu	estimate_ngr() returns exact ngr
+c
+c ./fem3d/subreg.f:
+c 05.05.2016	ggu	file restructured (module)
+c
+c ./fem3d/sigmautil.f:
+c 01.05.2016	ggu	changes in get_layer_thickness(): exit from loop
+c 14.05.2016	ggu	substitute blockdata/common with module
+c
+c ./fem3d/newtra.f:
+c 19.05.2016	ggu	use where construct where possible
+c
+c ./fem3d/subqfxt.f:
+c 04.05.2016    ccf     do not pass albedo into heat2t
+c 04.05.2016    ggu     include effect of ice cover
+c
+c ./fem3d/subfemfile.f:
+c 13.05.2016	ggu	nvers = 3 -> add data size to records
+c 14.05.2016	ggu	new module to collect global parameters
+
+==========================================================
+
 version  7_5_9    28-04-2016    VERS_7_5_9   commit_2016-05-25
 
 version  7_5_9    28-04-2016    VERS_7_5_9
