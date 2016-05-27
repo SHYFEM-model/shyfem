@@ -113,8 +113,8 @@ c----------------------------------------------
 c make depth on nodes and elements
 c----------------------------------------------
 
-	call mkhkv
-	call mkhev
+	call makehev(hev)
+	call makehkv(hkv)
 
 c----------------------------------------------
 c time management

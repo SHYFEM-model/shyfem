@@ -4,6 +4,7 @@
 ! revision log :
 !
 ! 15.10.2015    ggu     started routine
+! 26.05.2016    ggu     new routines for opening and writing scalar file
 !
 !****************************************************************
 !****************************************************************
@@ -76,8 +77,24 @@
 
 	integer id
 
-	call shy_set_layers(id,hlv)
-	call shy_set_layerindex(id,ilhv,ilhkv)
+	integer iaux,nkn,nel,nl
+	real haux(1)
+	integer, allocatable :: ile(:),ilk(:)
+
+	call shy_get_params(id,nkn,nel,iaux,nl,iaux)
+
+	if( nl > 1 ) then
+	  call shy_set_layers(id,hlv)
+	  call shy_set_layerindex(id,ilhv,ilhkv)
+	else		!2d
+	  haux(1) = -1.
+	  allocate(ile(nel),ilk(nkn))
+	  ile = 1.
+	  ilk = 1.
+	  call shy_set_layers(id,haux)
+	  call shy_set_layerindex(id,ile,ilk)
+	  deallocate(ile,ilk)
+	end if
 
 	end
 
@@ -159,6 +176,36 @@
 
 !****************************************************************
 !****************************************************************
+!****************************************************************
+
+        subroutine shyfem_init_scalar_file(type,nvar,b2d,id)
+
+        use levels
+
+        implicit none
+
+        character*(*) type      !type of file, e.g., hydro, ts, wave
+        integer nvar
+        logical b2d
+        integer id
+
+        integer ftype,npr,nl
+        character*80 file,ext,aux
+
+        aux = adjustl(type)
+        ext = '.' // trim(aux) // '.shy'        !no blanks in ext
+        ftype = 2
+        npr = 1
+        nl = nlv
+        if( b2d ) nl = 1
+
+        call shy_make_output_name(trim(ext),file)
+        call shy_open_output_file(file,npr,nl,nvar,ftype,id)
+        call shy_set_simul_params(id)
+        call shy_make_header(id)
+
+        end
+
 !****************************************************************
 
 	subroutine shy_make_output_name(ext,file)
@@ -435,6 +482,34 @@ c-----------------------------------------------------
 	ivar = 3
 	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,u)
 	call shy_write_output_record(id,dtime,ivar,nel,1,nlv,nlvddi,v)
+
+	end
+
+!****************************************************************
+!****************************************************************
+!****************************************************************
+
+        subroutine shyfem_write_scalar(id,type,dtime,nvar,ivar,nlvddi,c)
+
+! unconditionally writes to file (first call id must be 0)
+
+	implicit none
+
+	integer id
+	character*(*) type
+	double precision dtime
+	integer nvar,ivar
+	integer nlvddi
+	real c(nlvddi,*)
+
+	logical b2d
+
+	if( id == 0 ) then
+	  b2d = nlvddi == 1
+          call shyfem_init_scalar_file(type,nvar,b2d,id)
+	end if
+
+	call shy_write_scalar_record(id,dtime,ivar,nlvddi,c)
 
 	end
 

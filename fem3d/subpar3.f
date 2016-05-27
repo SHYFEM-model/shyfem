@@ -987,6 +987,7 @@ c**********************************************************
 	call para_get_fill(idfill)
 
 	write(iunit,*) '--------------------------------'
+	write(iunit,*) 'start of print in check_parameter_values'
 	write(iunit,*) 'info on parameters: ',text
 	call chkparam(iunit)
 	write(iunit,*) '--------------------------------'
@@ -994,7 +995,8 @@ c**********************************************************
         call pripar(iunit)
 	write(iunit,*) '...printing with prifnm...'
         call prifnm(iunit)
-	write(iunit,*) '...end of printing in check_parameter_values'
+	write(iunit,*) 'end info on parameters: ',text
+	write(iunit,*) 'end of print in check_parameter_values'
 
 	end
 

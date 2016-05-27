@@ -17,6 +17,8 @@
 	real, allocatable, save :: vvelem(:)	!variable in y on elemen
 	real, allocatable, save :: utrans(:)	!transport in x on element
 	real, allocatable, save :: vtrans(:)	!transport in y on element
+	real, allocatable, save :: uvspeed(:)	!speed on node (aux)
+	real, allocatable, save :: uvdir(:)	!direction on node (aux)
 	real, allocatable, save :: uvover(:)	!scalar for overlay
 	real, allocatable, save :: wsnv(:)
 
@@ -47,6 +49,8 @@
           deallocate(vvelem)
           deallocate(utrans)
           deallocate(vtrans)
+          deallocate(uvspeed)
+          deallocate(uvdir)
           deallocate(uvover)
           deallocate(wsnv)
         end if
@@ -62,6 +66,8 @@
         allocate(vvelem(nel))
         allocate(utrans(nel))
         allocate(vtrans(nel))
+        allocate(uvspeed(nkn))
+        allocate(uvdir(nkn))
         allocate(uvover(nkn))
         allocate(wsnv(nkn))
 

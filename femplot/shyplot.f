@@ -116,8 +116,10 @@
 	!real, allocatable :: vprv(:,:)
 	real, allocatable :: sv(:,:)
 	real, allocatable :: dv(:,:)
+	real, allocatable :: sv2(:)
+	real, allocatable :: dv2(:)
 
-	logical bhydro,bscalar
+	logical bhydro,bscalar,bsect
 	logical blastrecord
 	integer nwrite,nread,nelab,nrec,nin,nold
 	integer nvers
@@ -126,6 +128,7 @@
 	!integer it,itvar,itnew,itold,itstart
 	integer it
 	integer ivar,iaux,nv
+	integer ivarplot(2)
 	integer iv,j,l,k,lmax,node
 	integer ip
 	integer ifile,ftype
@@ -143,6 +146,7 @@
 
 	integer iapini
 	integer ifem_open_file
+	integer getisec
 	real getpar
 
 !--------------------------------------------------------------
@@ -155,7 +159,6 @@
 	nrec=0
 	rnull=0.
 	rnull=-1.
-	bopen = .false.
 	bzeta = .false.		!file has zeta information
 	ifile = 0
 	id = 0
@@ -168,7 +171,6 @@
 	call init_nls_fnm
 	call read_str_files(-1)
 	call read_str_files(ivar3)
-	write(6,*) 'icolor: ',nint(getpar('icolor'))
 
 	!--------------------------------------------------------------
 	! open input files
@@ -211,6 +213,8 @@
         call ptime_init
 	call shy_get_date(id,date,time)
         call ptime_set_date_time(date,time)
+        call elabtime_date_and_time(date,time)
+        call elabtime_minmax(stmin,stmax)
 
 	!--------------------------------------------------------------
 	! set dimensions and allocate arrays
@@ -238,6 +242,7 @@
 	allocate(idims(4,nvar))
 	!allocate(znv(nkn),uprv(nlv,nkn),vprv(nlv,nkn))
 	allocate(sv(nlv,nkn),dv(nlv,nkn))
+	allocate(sv2(nkn),dv2(nkn))
 
 	!--------------------------------------------------------------
 	! set up aux arrays, sigma info and depth values
@@ -260,47 +265,51 @@
 
 	allocate(ivars(nvar),strings(nvar))
 	call shy_get_string_descriptions(id,nvar,ivars,strings)
-	write(6,*) 'available variables: ',nvar
-	nv = 0
-	do iv=1,nvar
-	  ivar = ivars(iv)
-	  write(6,*) iv,ivar,trim(strings(iv))
-	  if( ivar3 == ivars(iv) ) nv = nv + 1
-	  if( ivar3 == 2 .and. ivars(iv) == 3 ) nv = nv + 1
-	end do
 
-        if( ivar3 > 0 ) then
-	  if( nv == 0 ) then
-	    call ivar2string(ivar3,varline)
-            write(6,*) 'no such variable in file: ',ivar3,varline
-            stop 'error stop shyplot'
-	  end if
-	else if( nvar == 1 ) then
+	if( nvar == 1 .and. ivar3 == 0 ) then
 	  ivar3 = ivars(1)
 	  call read_str_files(ivar3)
-        else
+	end if
+        if( ivar3 == 0 ) then
           write(6,*) 'no variable given to be plotted: ',ivar3
           stop 'error stop shyplot'
         end if
+
+	write(6,*) 
+	write(6,*) 'varid to be plotted:       ',ivar3
+	write(6,*) 'total number of variables: ',nvar
+	write(6,*) '   number     varid    varname'
+	nv = 0
+	do iv=1,nvar
+	  ivar = ivars(iv)
+	  write(6,'(2i10,4x,a)') iv,ivar,trim(strings(iv))
+	  if( ivar == ivar3 ) nv = nv + 1
+	end do
+
+	call directional_init(nvar,ivars,ivar3,bdir,ivarplot)
+
+	if( nv == 0 .and. .not. bdir ) then
+	  call ivar2string(ivar3,varline)
+          write(6,*) 'no such variable in file: ',ivar3,varline
+          stop 'error stop shyplot'
+        end if
+
 	if( layer > nlv ) then
           write(6,*) 'no such layer: ',layer
           write(6,*) 'maximum layer available: ',nlv
           stop 'error stop shyplot'
 	end if
 
+	bsect = getisec() /= 0
+
 	call mkvarline(ivar3,varline)
+	write(6,*) 
+	write(6,*) 'information for plotting:'
 	write(6,*) 'varline: ',trim(varline)
 	write(6,*) 'ivar3: ',ivar3
 	write(6,*) 'layer: ',layer
+	write(6,*) 
 	call setlev(layer)
-
-	ivel = 0
-	if( ivar3 == 2 ) ivel = 1
-	if( ivar3 == 3 ) ivel = 2
-	if( ivel > 0 .and. nv /= 2 ) then
-	  write(6,*) 'could not read all data for arrow: ',ivel,nv
-          stop 'error stop shyplot'
-	end if
 
 	!--------------------------------------------------------------
 	! initialize volume
@@ -343,6 +352,10 @@
 
 	 call dts_convert_to_atime(datetime_elab,dtime,atime)
 
+	  if( .not. bquiet ) then
+	    call shy_write_time(.true.,dtime,atime,0)
+	  end if
+
 	 iarrow = 0
 	 nread = nread + 1
 	 nrec = nrec + nvar
@@ -362,7 +375,7 @@
 	 call shy_make_zeta(ftype)
 	 !call shy_make_volume		!comment for constant volume
 
-	 if( ifreq > 0 .and. mod(nread,ifreq) == 0 ) cycle
+	 if( ifreq > 0 .and. mod(nread,ifreq) /= 0 ) cycle
 
 	 call ptime_set_dtime(dtime)
 
@@ -378,9 +391,10 @@
 	  ivar = idims(4,iv)
 	  nn = n * m
 
-	  if( ivar /= ivar3 .and. ivel == 0 ) cycle
+	  if( ivar /= ivar3 .and. .not. bdir ) cycle
 	  if( ivar == 1 .and. m == 3 ) cycle	!water level in element
-	  if( ivar == 1 .and. ivel > 0 ) cycle	!want to plot vel/trans
+	  if( ivar == 1 .and. bdir ) cycle	!want to plot vel/trans
+	  if( m /= 1 ) stop 'error stop: m/= 1'
 
 	  cv3(:,:) = cv3all(:,:,iv)
 
@@ -390,10 +404,12 @@
 	    call shy_write_time(.true.,dtime,atime,ivar)
 	  end if
 
-	  if( b2d ) then
+	  if( bsect ) then
+	    if( ivar == 3 .and. iv == 3 ) utlnv(:,1:nel) = cv3(:,1:nel)
+	    if( ivar == 3 .and. iv == 4 ) vtlnv(:,1:nel) = cv3(:,1:nel)
+	  else if( b2d ) then
 	    call shy_make_vert_aver(idims(:,iv),nndim,cv3,cv2)
 	  else
-	    if( m /= 1 ) stop 'error stop: m/= 1'
 	    if( n == nkn .and. ivar == 1 ) then
 	      cv2(:) = cv3(1,:)
 	    else if( n == nkn ) then
@@ -406,22 +422,23 @@
 	    end if
 	  end if
 
-	  if( ivel > 0 .and. ivar == 3 ) then
-	    iarrow = iarrow + 1
-	    if( iarrow == 1 ) utrans(1:nel) = cv2(1:nel)
-	    if( iarrow == 2 ) vtrans(1:nel) = cv2(1:nel)
-	    !if( iarrow == 2 ) call make_vertical_velocity
-	    if( iarrow == 2 ) wsnv = 0.	!FIXME - no vertical velocity
-	  end if
-	  if( ivel > 0 .and. iarrow /= 2 ) cycle
+	  call make_mask(layer)
 
-	  write(6,*) 'plotting: ',ivar,layer
+	  call directional_insert(bdir,ivar,ivar3,ivarplot,cv2,ivel)
+	  if( bdir .and. ivel == 0 ) cycle
+
+	  write(6,*) 'plotting: ',ivar,layer,n,ivel
 
           !call prepare_dry_mask
 	  !call reset_dry_mask
-	  call make_mask(layer)
-	  if( m /= 1 ) stop 'error stop: m/= 1'
-	  if( ivel > 0 ) then
+	  if( bsect ) then
+	    if( ivel > 0 ) then
+	      call prepare_vel(cv3)
+	      call plot_sect(.true.,cv3)
+	    else
+	      call plot_sect(.false.,cv3)
+	    end if
+	  else if( ivel > 0 ) then
 	    call plo2vel(ivel,'3D ')
 	  else if( n == nkn ) then
             call ploval(nkn,cv2,varline)
@@ -620,6 +637,112 @@ c*****************************************************************
         end if
 
         end
+
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+c routines for directional plots
+c*****************************************************************
+c*****************************************************************
+c*****************************************************************
+
+	subroutine directional_init(nvar,ivars,ivar3,bdir,ivarplot)
+
+	implicit none
+
+	integer nvar
+	integer ivars(nvar)
+	integer ivar3
+	logical bdir
+	integer ivarplot(2)
+
+	logical bvel,bwave
+	integer ivar,iv,nv,ivel
+
+	ivarplot = ivar3
+
+	bwave = ivar3 > 230 .and. ivar3 < 240		!wave plot
+	bvel = ivar3 >= 2 .and. ivar3 <= 3		!velocity/transport
+
+	bdir = bdir .or. bvel				!bvel implies bdir
+	if( .not. bwave .and. .not. bvel ) bdir = .false.
+
+	if( .not. bdir ) return
+
+	if( bvel ) ivarplot = 3
+	if( bwave ) ivarplot = (/ivar3,233/)
+
+	nv = 0
+	do iv=1,nvar
+	  ivar = ivars(iv)
+	  if( ivar3 == ivar .or. any( ivarplot == ivar ) ) then
+	    nv = nv + 1
+	  end if
+	end do
+
+	if( bdir .and. nv /= 2 ) then
+	  write(6,*) 'file does not contain needed varid: ',ivar3
+          stop 'error stop shyplot'
+	end if
+
+	end
+
+c*****************************************************************
+
+	subroutine directional_insert(bdir,ivar,ivar3,ivarplot,cv2,ivel)
+
+	use basin
+	use mod_hydro_plot
+
+	implicit none
+
+	logical bdir
+	integer ivar
+	integer ivar3
+	integer ivarplot(2)
+	real cv2(*)
+	integer ivel		!on return indicates if and what to plot
+
+	logical bwave,bvel
+	integer, save :: iarrow = 0
+
+	ivel = 0
+
+	if( .not. bdir ) return
+
+	bwave = ivar3 > 230 .and. ivar3 < 240		!wave plot
+	bvel = ivar3 >= 2 .and. ivar3 <= 3		!velocity/transport
+
+	if( bvel ) then
+	  if( ivar == 3 ) then
+	    iarrow = iarrow + 1
+	    if( iarrow == 1 ) utrans(1:nel) = cv2(1:nel)
+	    if( iarrow == 2 ) vtrans(1:nel) = cv2(1:nel)
+	  end if
+	  if( iarrow == 2 ) then
+	    ivel = ivar3 - 1
+	    !call make_vertical_velocity
+	    wsnv = 0.		!FIXME
+	  end if
+	end if
+
+	if( bwave ) then
+	  if( ivarplot(1) == ivar ) then
+	    iarrow = iarrow + 1
+	    uvspeed(1:nkn) = cv2(1:nkn)
+	  else if( ivarplot(2) == ivar ) then
+	    iarrow = iarrow + 1
+	    uvdir(1:nkn) = cv2(1:nkn)
+	  end if
+	  if( iarrow == 2 ) then
+	    ivel = 4
+	    call polar2xy(nkn,uvspeed,uvdir,uvnode,vvnode)
+	  end if
+	end if
+
+	if( ivel > 0 ) iarrow = 0
+
+	end
 
 c*****************************************************************
 

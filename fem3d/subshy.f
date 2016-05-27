@@ -377,7 +377,7 @@
 	do i=1,n
 	  write(6,*) r1(i),r2(i),r2(i)-r1(i)
 	end do
-	end
+	end subroutine shy_diff_internal_r
 
 !************************************************************
 
@@ -417,7 +417,9 @@
         write(6,*) 'title     : ',trim(pentry(id)%title)
         write(6,*) 'femver    : ',trim(pentry(id)%femver)
 
-        write(6,*) 'hlv       : ',pentry(id)%hlv
+	if( pentry(id)%nlv > 1 ) then
+          write(6,*) 'hlv       : ',pentry(id)%hlv
+	end if
 
 	end subroutine shy_info
 

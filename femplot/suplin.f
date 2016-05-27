@@ -26,6 +26,12 @@ c 24.10.2012    ggu     bsmooth introduced for smooth bottom plotting
 c 05.03.2014    ggu     bug fix for reference vector
 c 22.12.2014    ggu     new routine integrate_flux()
 c 02.12.2015    ggu     bug fix in integrate_flux() - dx was used twice
+c 27.05.2016    ggu     some restructuring to lower dependencies
+c
+c notes :
+c
+c hydrodynamic variables are passed to proj_velox() through mod_hydro_print
+c needed are uprv,vprv,wprv
 c
 c************************************************************************
 
@@ -33,13 +39,10 @@ c************************************************************************
 
 c plots section
 
-	use mod_depth
 	use levels
 	use basin
 
 	implicit none
-
-        include 'param.h'
 
 	logical bvel			!plot velocities
 	real sv(nlvdi,nkn)		!scalar to be plotted
@@ -47,18 +50,20 @@ c plots section
 	integer nldim
 	parameter (nldim=200)
 
-
 c elems(1) is not used, etc..
 
 	real val(0:2*nlvdi,nldim)	!scalar value along line
 	real vel(3,0:2*nlvdi,nldim)	!projected velocities along line
-	integer nodes(nldim)		!nodes along line
-	integer elems(nldim)		!elements along line
-	integer lelems(nldim)		!levels in element
-	integer lnodes(nldim)		!levels in nodes
-	real helems(2,nldim)		!depth in elements (for both nodes)
-	real dxy(2,nldim)		!direction of projection line
-	real xy(nldim)			!linear distance
+
+	integer, save :: nodes(nldim)	!nodes along line
+	integer, save :: elems(nldim)	!elements along line
+	integer, save :: lnodes(nldim)	!levels in nodes
+	integer, save :: lelems(nldim)	!levels in element
+	real, save :: helems(2,nldim)	!depth in elements (for both nodes)
+	real, save :: dxy(2,nldim)	!direction of projection line
+	real, save :: xy(nldim)		!linear distance
+
+	real, save, allocatable :: hev(:)
 
 	real ya(2,0:nlvdi)
 	real xbot(2*nldim+2)
@@ -96,29 +101,19 @@ c elems(1) is not used, etc..
 	real scale
 	real xlast
 
-	integer n,ib
-	save n,nodes,elems,helems,lelems,lnodes,dxy,xy
+	integer, save :: n,ib
 
-	integer llmax,lvmax
-	save llmax,lvmax
-	real rlmax,rdmax,hvmax
-	save rlmax,rdmax,hvmax
-	logical bgrid
-	integer ivert
-	save bgrid,ivert
+	integer, save :: llmax,lvmax
+	real, save :: rlmax,rdmax,hvmax
+	logical, save :: bgrid
+	integer, save :: ivert
 
-	character*80 vtitle,xtitle,ytitle,ltitle,rtitle
-	save vtitle,xtitle,ytitle,ltitle,rtitle
-	real ascale,rscale,stip,rwscal
-	save ascale,rscale,stip,rwscal
-	integer vmode
-	save vmode
-	real faccol
-	save faccol
-	real rxscal,ryscal
-	save rxscal,ryscal
-	real dxmin
-	save dxmin
+	character*80, save :: vtitle,xtitle,ytitle,ltitle,rtitle
+	real, save :: ascale,rscale,stip,rwscal
+	integer, save :: vmode
+	real, save :: faccol
+	real, save :: rxscal,ryscal
+	real, save :: dxmin
 
 	logical inboxdim_noabs
 	logical bdebug,bdebug_scalar
@@ -126,9 +121,7 @@ c elems(1) is not used, etc..
 	real getpar
 	real hlog,divdist,roundm
 
-	integer icall
-	save icall
-	data icall / 0 /
+	integer, save :: icall = 0
 
 c----------------------------------------------------------------
 c initialize
@@ -140,6 +133,8 @@ c----------------------------------------------------------------
 	if( icall .eq. 0 ) then
 	  call getfnm('vsect',file)
 	  isphe = nint(getpar('isphe'))
+	  allocate(hev(nel))
+	  call makehev(hev)
 	  call line_read_nodes(file,nldim,n,nodes)
 	  call line_find_elements(n,nodes,nlv,nen3v,hev,hm3v,hlv
      +			,elems,helems,lelems,lnodes)
@@ -1033,8 +1028,6 @@ c modes: 0=use normal vel   1=use tangent vel   as scalar velocity
 
 	implicit none
 
-	include 'param.h'
-
 	integer mode			!what to use as scalar vel
 	integer n			!total number of nodes
 	integer nodes(n)		!node numbers
@@ -1106,8 +1099,6 @@ c computes flux through section
 	use levels, only : nlvdi,nlv
 
 	implicit none
-
-	include 'param.h'
 
 	integer n			!total number of nodes
 	real xy(n)			!coordinates along section
@@ -1181,8 +1172,6 @@ c inserts scalar values into matrix section
 	use levels, only : nlvdi,nlv
 
 	implicit none
-
-	include 'param.h'
 
 	integer n
 	integer nodes(n)

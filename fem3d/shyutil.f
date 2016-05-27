@@ -442,6 +442,7 @@
 	  z = shy_zeta(ie)
 	  h = hev(ie)
 	  lmax = ilhv(ie)
+	  !write(6,*) ie,lmax,nlv,nlvdi
 	  call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)
 	  do l=1,lmax
 	    vk = ak * hl(l)

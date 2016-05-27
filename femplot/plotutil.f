@@ -20,69 +20,20 @@
 	logical, save, private :: binitialized = .false.
 	double precision, parameter :: flag = -999.
 
-	logical, save :: bout
-	logical, save :: baverbas
-	logical, save :: baver
-	logical, save :: baverdir
-	logical, save :: bsum
-	logical, save :: bmin
-	logical, save :: bmax
-	logical, save :: bstd
-	logical, save :: brms
-	logical, save :: bsumvar
-	logical, save :: bsplit
 	logical, save :: b2d
+	logical, save :: bdir
 
-	logical, save :: bmem		= .false.
-	logical, save :: bask		= .false.
 	logical, save :: bverb
 	logical, save :: bwrite
 	logical, save :: bquiet
-	!logical, save :: bdate
 
 	integer, save :: ifreq
 	integer, save :: tmin
 	integer, save :: tmax
 
-	logical, save :: bnode
-	logical, save :: bnodes
-	logical, save :: boutput
-	logical, save :: bneedbasin
-	logical, save :: btrans
-
-	logical, save :: bopen
-
-	!logical, save :: btmin
-	!logical, save :: btmax
-	!logical, save :: binclusive
-	!double precision, save :: atmin
-	!double precision, save :: atmax
-
-	logical, save :: bthreshold
-	double precision, save :: threshold
-
-	integer, save :: nodesp
-	integer, save :: nnodes = 0
-	integer, save, allocatable :: nodes(:)
-	integer, save, allocatable :: nodese(:)
-
-	real, save :: fact			= 1
-
-	integer, save :: istep
-	integer, save :: mode
-	integer, save :: modeb
-
-	!integer, save :: date = 0
-	!integer, save :: time = 0
-	!integer, save :: datetime(2) = 0
-
-	integer, save :: catmode = 0
-
         character*80, save :: infile		= ' '
         character*80, save :: stmin		= ' '
         character*80, save :: stmax		= ' '
-        character*80, save :: nodefile		= ' '
-        character*10, save :: outformat		= ' '
 
 	integer, save :: layer = 0
 	integer, save :: ivar3 = 0
@@ -148,6 +99,8 @@
 	call clo_add_option('layer l',0,'plot layer l')
 	call clo_add_option('varid id',0,'plot variable id')
 	call clo_add_option('varname name',' ','plot variable name')
+	call clo_add_option('dir',.false.
+     +			,'for directional variable plot arrow')
 
         call clo_add_sep('options in/output')
 
@@ -175,14 +128,15 @@
 	character*(*) program
 
 	integer ivar
-	character*80 name
+	character*80 varname
 
 	if( binitialized ) return
 
-        call clo_get_option('2d',b2d)
         call clo_get_option('layer',layer)
         call clo_get_option('varid',ivar3)
-        call clo_get_option('varname',name)
+        call clo_get_option('varname',varname)
+        call clo_get_option('2d',b2d)
+        call clo_get_option('dir',bdir)
 
         call clo_get_option('verb',bverb)
         call clo_get_option('write',bwrite)
@@ -192,7 +146,7 @@
         call clo_get_option('tmin',stmin)
         call clo_get_option('tmax',stmax)
 
-        if( .not. bask .and. .not. bmem ) call clo_check_files(1)
+        call clo_check_files(1)
         call clo_get_file(1,infile)
         call ap_set_names(' ',infile)
 
@@ -205,15 +159,15 @@
 	  end if
 	end if
 
-        if( ivar3 > 0 .and. name /= ' ' ) then
+        if( ivar3 > 0 .and. varname /= ' ' ) then
           write(6,*) 'You cannot give both varid and varname'
           stop 'error stop plotutil_get_options'
         end if
 
-	if( name .ne. ' ' ) call string2ivar(name,ivar3)
+	if( varname .ne. ' ' ) call string2ivar(varname,ivar3)
 
 	if( ivar3 < 0 ) then
-          write(6,*) 'variable name unknown: ',trim(name)
+          write(6,*) 'variable name unknown: ',trim(varname)
           stop 'error stop plotutil_get_options'
 	end if
 
@@ -229,21 +183,9 @@
 !************************************************************
 !************************************************************
 
-	subroutine elabutil_check_options
+	subroutine plotutil_check_options
 
-	integer ic
-
-	ic = count( (/b2d,bsplit,bsumvar,btrans/) )
-
-	if( ic > 1 ) then
-	  write(6,*) 'Only one of the following options can be given:'
-	  write(6,*) '-2d -split -sumvar'
-	  write(6,*) '-aver -sum -min -max -std -rms'
-	  write(6,*) '-threshold -averdir'
-	  stop 'error stop elabutil_check_options: incompatible options'
-	end if
-
-	end subroutine elabutil_check_options
+	end subroutine plotutil_check_options
 
 !************************************************************
 !************************************************************

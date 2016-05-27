@@ -503,9 +503,12 @@ c if nn is negatice and ilog is not zero - use logarithmic scale
 	real da
 	integer ilog		!logarithmic scale
 
-	logical bfunc
+	logical bfunc,bdebug
 	integer i,n
 	real dval,r,rn,val
+
+	bdebug = .true.
+	bdebug = .false.
 
 	bfunc = nn .lt. 0
 	n = abs(nn)
@@ -553,8 +556,10 @@ c if nn is negatice and ilog is not zero - use logarithmic scale
 	  end do
 	end if
 
-	write(6,*) 'mkval: ',n,da
-	write(6,*) (array(i),i=1,n)
+	if( bdebug ) then
+	  write(6,*) 'mkval: ',n,da
+	  write(6,*) (array(i),i=1,n)
+	end if
 
 	end
 

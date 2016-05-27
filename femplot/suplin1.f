@@ -19,12 +19,7 @@ c*******************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	real pp3(nlvdi,nkn)
-
-
-
 
 	integer k,l
 	real u,v,w
@@ -53,6 +48,8 @@ c*******************************************************************
 
 	subroutine make_vel_from_tra(het3v)
 
+c from transports to velocities (on elements)
+
 	use mod_hydro_vel
 	use mod_hydro
 	use levels
@@ -60,11 +57,7 @@ c*******************************************************************
 
 	implicit none
 
-	include 'param.h'
-
-        real het3v(nlvdi,nel)
-
-
+        real het3v(nlvdi,nel)		!layer depth at elements
 
 	integer ie,l,lmax
 	real h,rh
@@ -90,6 +83,9 @@ c*******************************************************************
 
 	subroutine vel_to_node
 
+c transfers velocities at elements to nodes 
+c and vertical velocities to center of layer
+
 	use mod_hydro_print
 	use mod_hydro_vel
 	use evgeom
@@ -97,13 +93,6 @@ c*******************************************************************
 	use basin
 
 	implicit none
-
-	include 'param.h'
-
-
-
-
-
 
 	integer ie,ii,k,l,lmax
 	real aj

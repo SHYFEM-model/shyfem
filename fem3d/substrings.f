@@ -16,94 +16,113 @@
         character*(*) string
         integer iv
 
-	integer is,isb
-	integer ie3,ie4,ie5
+	integer is,isb,i
+	integer ie3,ie4,ie5,ie6,ie8
 	integer ichafs
+	character*80 s
 
         iv = -1
 
-	is = ichafs(string)
+	s = string
+	do i=1,len(string)
+	  if( s(i:i) == '_' ) s(i:i) = ' '	!convert '_' to ' '
+	end do
+	!write(6,*) 'checking: ',trim(s)
+
+	is = ichafs(s)
 	if( is .le. 0 ) is = 1
 	isb = is - 1
 	ie3 = isb + 3
 	ie4 = isb + 4
 	ie5 = isb + 5
+	ie6 = isb + 6
+	ie8 = isb + 8
 
-        if( string(is:ie4) .eq. 'mass' ) then
+        if( s(is:ie4) .eq. 'mass' ) then
           iv = 0
-        else if( string(is:ie5) .eq. 'level' ) then
+        else if( s(is:ie5) .eq. 'level' ) then
           iv = 1
-        else if( string(is:ie4) .eq. 'zeta' ) then
+        else if( s(is:ie4) .eq. 'zeta' ) then
           iv = 1
-        else if( string(is:ie3) .eq. 'vel' ) then
+        else if( s(is:ie3) .eq. 'vel' ) then
           iv = 2
-        else if( string(is:ie5) .eq. 'trans' ) then
+        else if( s(is:ie5) .eq. 'trans' ) then
           iv = 3
-        else if( string(is:ie4) .eq. 'bath' ) then
+        else if( s(is:ie4) .eq. 'bath' ) then
           iv = 5
-        else if( string(is:ie5) .eq. 'depth' ) then
+        else if( s(is:ie5) .eq. 'depth' ) then
           iv = 5
-        else if( string(is:ie3) .eq. 'cur' ) then
+        else if( s(is:ie3) .eq. 'cur' ) then
           iv = 6
-        else if( string(is:ie5) .eq. 'speed' ) then
+        else if( s(is:ie5) .eq. 'speed' ) then
           iv = 6
-        else if( string(is:ie3) .eq. 'dir' ) then
+        else if( s(is:ie3) .eq. 'dir' ) then
           iv = 7
-        else if( string(is:ie4) .eq. 'conc' ) then
+        else if( s(is:ie4) .eq. 'conc' ) then
           iv = 10
-        else if( string(is:ie4) .eq. 'conz' ) then
+        else if( s(is:ie4) .eq. 'conz' ) then
           iv = 10
-        else if( string(is:ie3) .eq. 'sal' ) then
+        else if( s(is:ie3) .eq. 'sal' ) then
           iv = 11
-        else if( string(is:ie4) .eq. 'temp' ) then
+        else if( s(is:ie4) .eq. 'temp' ) then
           iv = 12
-        else if( string(is:ie4) .eq. 'oxyg' ) then
+        else if( s(is:ie4) .eq. 'oxyg' ) then
           iv = 15
-        else if( string(is:ie3) .eq. 'rms' ) then
+        else if( s(is:ie3) .eq. 'rms' ) then
           iv = 18
-        else if( string(is:ie4) .eq. 'pres' ) then
+        else if( s(is:ie4) .eq. 'pres' ) then
           iv = 20
-        else if( string(is:ie4) .eq. 'wind' ) then
+        else if( s(is:ie4) .eq. 'wind' ) then
           iv = 21
-        else if( string(is:ie4) .eq. 'sola' ) then
+        else if( s(is:ie4) .eq. 'sola' ) then
           iv = 22
-        else if( string(is:ie3) .eq. 'air' ) then
+        else if( s(is:ie3) .eq. 'air' ) then
           iv = 23
-        else if( string(is:ie4) .eq. 'humi' ) then
+        else if( s(is:ie4) .eq. 'humi' ) then
           iv = 24
-        else if( string(is:ie4) .eq. 'clou' ) then
+        else if( s(is:ie4) .eq. 'clou' ) then
           iv = 25
-        else if( string(is:ie4) .eq. 'rain' ) then
+        else if( s(is:ie4) .eq. 'rain' ) then
           iv = 26
-        else if( string(is:ie4) .eq. 'evap' ) then
+        else if( s(is:ie4) .eq. 'evap' ) then
           iv = 27
-        else if( string(is:ie3) .eq. 'lgr' ) then
+        else if( s(is:ie3) .eq. 'lgr' ) then
           iv = 80
-        else if( string(is:ie3) .eq. 'ice' ) then
+        else if( s(is:ie3) .eq. 'ice' ) then
           iv = 85
-!        else if( string(is:ie3) .eq. 'age' ) then
+!        else if( s(is:ie3) .eq. 'age' ) then
 !          iv = 98
-        else if( string(is:ie3) .eq. 'wrt' ) then
+        else if( s(is:ie3) .eq. 'wrt' ) then
           iv = 99
-        else if( string(is:ie5) .eq. 'renew' ) then
+        else if( s(is:ie5) .eq. 'renew' ) then
           iv = 99
-        else if( string(is:ie4) .eq. 'resi' ) then
+        else if( s(is:ie4) .eq. 'resi' ) then
           iv = 99
-        else if( string(is:ie4) .eq. 'ivar' ) then
-	  read(string(ie4+1:),'(i5)') iv
-        else if( string(is:ie3) .eq. 'var' ) then
-	  read(string(ie3+1:),'(i5)') iv
-        else if( string(is:ie3) .eq. 'nos' ) then
+        else if( s(is:ie6) .eq. 'wave h' ) then
+          iv = 231
+        else if( s(is:ie8) .eq. 'wave per' ) then
+          iv = 232
+        else if( s(is:ie6) .eq. 'wave d' ) then
+          iv = 233
+        else if( s(is:ie6) .eq. 'wave o' ) then
+          iv = 234
+        else if( s(is:ie8) .eq. 'wave pea' ) then
+          iv = 235
+        else if( s(is:ie4) .eq. 'ivar' ) then
+	  read(s(ie4+1:),'(i5)') iv
+        else if( s(is:ie3) .eq. 'var' ) then
+	  read(s(ie3+1:),'(i5)') iv
+        else if( s(is:ie3) .eq. 'nos' ) then
           !generic - no id
-        else if( string(is:ie3) .eq. 'fem' ) then
+        else if( s(is:ie3) .eq. 'fem' ) then
           !generic - no id
-        else if( string(is:ie4) .eq. 'elem' ) then
+        else if( s(is:ie4) .eq. 'elem' ) then
           !generic - no id
-        else if( string .eq. ' ' ) then
+        else if( s .eq. ' ' ) then
           write(6,*) '*** string2ivar: no string given'
         else
           write(6,*) '*** string2ivar: cannot find string description: '
-          write(6,*) string
+          write(6,*) s
           !write(6,*) is,isb,ie3,ie4,ie5
           !if( string(1:3) .eq. 'fem' ) stop 'error.....'
         end if
@@ -151,6 +170,16 @@
 !          string = 'age'
         else if( iv .eq. 99 ) then
           string = 'renewal time'
+        else if( iv .eq. 231 ) then
+          string = 'wave height (significant)'
+        else if( iv .eq. 232 ) then
+          string = 'wave period (mean)'
+        else if( iv .eq. 233 ) then
+          string = 'wave direction'
+        else if( iv .eq. 234 ) then
+          string = 'wave orbital velocity'
+        else if( iv .eq. 235 ) then
+          string = 'wave peak period'
         else if( iv .eq. 335 ) then
           string = 'time over threshold'
         else

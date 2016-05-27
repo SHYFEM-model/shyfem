@@ -5,8 +5,6 @@ c routines for averaging depth
 c
 c contents :
 c
-c subroutine mkhkv(hkv,auxv,nkn,nel)	makes hkv (nodewise depth)
-c subroutine mkhev(hev,nel)		makes hev (elementwise depth)
 c subroutine mkht(hetv,href)		makes hetv (elem depth of actual layer)
 c subroutine mkht3(nlvddi,het3v,href)	makes het3v (3D depth structure)
 c function hlthick(l,lmax,hl)		layer thickness
@@ -24,66 +22,8 @@ c 23.02.2012    ccf     bug fix in mkht (get_layer_thicknes, get_sigma_info)
 c 16.03.2012    deb     bug fix in mkht3 (get_layer_thicknes, get_sigma_info)
 c 10.06.2013    ggu     bug fix in mkht,mkht3 (get_layer_thicknes_e)
 c 05.09.2013    ggu     adapt to new get_layer_thickness()
+c 27.05.2016    ggu     mkhkv,mkhev deleted
 c
-c******************************************************************
-
-	subroutine mkhkv
-
-c makes hkv (nodewise depth)
-
-	use mod_depth
-	use basin
-
-	implicit none
-
-	integer ie,ii,k,kn
-	real v1v(nkn)
-
-        do k=1,nkn
-          hkv(k) = 0.
-	  v1v(k) = 0.
-        end do
-
-        do ie=1,nel
-          do ii=1,3
-            kn=nen3v(ii,ie)
-            hkv(kn)=hkv(kn)+hm3v(ii,ie)
-	    v1v(kn)=v1v(kn)+1.
-          end do
-        end do
-
-        do k=1,nkn
-          hkv(k) = hkv(k) / v1v(k)
-        end do
-
-	return
-	end
-
-c******************************************************************
-
-	subroutine mkhev
-
-c makes hev (elementwise depth)
-
-	use mod_depth
-	use basin
-
-	implicit none
-
-	integer ie,ii
-	real h
-
-        do ie=1,nel
-	  h=0.
-          do ii=1,3
-            h=h+hm3v(ii,ie)
-          end do
-	  hev(ie) = h / 3.
-        end do
-
-	return
-	end
-
 c******************************************************************
 
 	subroutine mkht(hetv,href)

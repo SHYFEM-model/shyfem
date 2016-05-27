@@ -36,9 +36,9 @@ c model require additional software which is not described here.
 c
 c The wave module writes in the WAV file the following output:
 c \begin{itemize}
-c \item significant wave height [m], variable 31
-c \item mean wave perios [s], variable 32
-c \item mean wave direction [deg], variable 33
+c \item significant wave height [m], variable 231
+c \item mean wave period [s], variable 232
+c \item mean wave direction [deg], variable 233
 c \end{itemize}
 c
 c The time step and start time for writing to file WAV 
@@ -55,19 +55,19 @@ c \item SHYFEM sends to WWMIII:
 c  \begin{itemize}
 c   \item surface velocities
 c   \item water level
-c   \item bathymetry e number of vertical layers
+c   \item bathymetry and number of vertical layers
 c   \item 3D layer depths
 c   \item wind components$^{**}$
 c  \end{itemize}
 c \item SHYFEM reads from WWMIII:
 c  \begin{itemize}
 c   \item gradient of the radiation stresses
-c   \item significant wave heigh
+c   \item significant wave height
 c   \item mean period
 c   \item significant wave direction
 c   \item wave supported stress
 c   \item peak period
-c   \item wave lenght
+c   \item wave length
 c   \item orbital velocity
 c   \item stokes velocities
 c   \item wind drag coefficient
@@ -439,9 +439,9 @@ c local
 !       -----------------------------------------------
 
         if( next_output(ia_out) ) then
-          call write_scalar_file(ia_out,31,1,waveh)
-          call write_scalar_file(ia_out,32,1,wavep)
-          call write_scalar_file(ia_out,33,1,waved)
+          call write_scalar_file(ia_out,231,1,waveh)
+          call write_scalar_file(ia_out,232,1,wavep)
+          call write_scalar_file(ia_out,233,1,waved)
         end if
             
         end
@@ -980,6 +980,8 @@ c**************************************************************
 
         subroutine parwaves(it)
 
+c called for iwave == 1
+
 	use mod_meteo
 	use mod_waves
 	use basin
@@ -1016,6 +1018,9 @@ c --- local variable
 	real wx,wy
         real auxh,auxh1,auxt,auxt1
         integer ie,icount,ii,k
+	integer id,nvar
+	integer ishyff
+	double precision dtime
 
         real, parameter :: g = 9.81		!gravity acceleration [m2/s]
         real, parameter :: z0 = 5.e-4
@@ -1036,9 +1041,11 @@ c------------------------------------------------------
 
         real getpar
 
-        integer ia_out(4)
-        save ia_out
+        integer, save :: ia_out(4) = 0
+        double precision, save :: da_out(4) = 0
+
         logical has_output,next_output
+        logical has_output_d,next_output_d
 
         integer, save :: icall = 0		!initialization parameter
 
@@ -1050,6 +1057,8 @@ c Initialization
 c ----------------------------------------------------------
 
         if( icall .le. -1 ) return
+
+	ishyff = nint(getpar('ishyff'))
 
         if( icall .eq. 0 ) then
 
@@ -1077,14 +1086,23 @@ c         --------------------------------------------------
 c         Initialize output
 c         --------------------------------------------------
 
+	  nvar = 3
+
           call init_output('itmwav','idtwav',ia_out)
+          if( ishyff == 1 ) ia_out = 0
           if( has_output(ia_out) ) then
-            call open_scalar_file(ia_out,1,3,'wav')
+            call open_scalar_file(ia_out,1,nvar,'wav')
+          end if
+
+          call init_output_d('itmwav','idtwav',da_out)
+          if( ishyff == 0 ) da_out = 0
+          if( has_output_d(da_out) ) then
+	    call shyfem_init_scalar_file('wave',nvar,.true.,id)
+	    da_out(4) = id
           end if
 
           write(6,*) 'parametric wave model initialized...'
           icall = 1
-
         endif
 
 c -------------------------------------------------------------------
@@ -1227,10 +1245,19 @@ c       -------------------------------------------------------------------
 	wavepp = wavep
 
         if( next_output(ia_out) ) then
-          call write_scalar_file(ia_out,31,1,waveh)
-          call write_scalar_file(ia_out,32,1,wavep)
-          call write_scalar_file(ia_out,33,1,waved)
+          call write_scalar_file(ia_out,231,1,waveh)
+          call write_scalar_file(ia_out,232,1,wavep)
+          call write_scalar_file(ia_out,233,1,waved)
         end if
+
+	dtime = it
+        if( next_output_d(da_out) ) then
+	  id = nint(da_out(4))
+	  call shy_write_scalar_record(id,dtime,231,1,waveh)
+	  call shy_write_scalar_record(id,dtime,232,1,wavep)
+	  call shy_write_scalar_record(id,dtime,233,1,waved)
+          !write(6,*) 'results for parametric wave model written...'
+	end if
 
         !write(6,*) 'computations with parametric wave model finished...'
 
