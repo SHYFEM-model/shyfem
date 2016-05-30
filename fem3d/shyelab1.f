@@ -190,6 +190,7 @@
 	call shy_get_date(id,date,time)
 	call elabtime_date_and_time(date,time)
 	call elabtime_minmax(stmin,stmax)
+	call elabtime_set_inclusive(binclusive)
 	
 	!--------------------------------------------------------------
 	! open output file
@@ -241,8 +242,8 @@
 	 blastrecord = ierr < 0 .and. atstart == -1
 	 call dts_convert_to_atime(datetime_elab,dtnew,atnew)
 
-	 if( elabtime_over_time_a(atime,atnew,atold) ) exit
-	 if( .not. elabtime_check_time_a(atime,atnew,atold) ) cycle
+	 if( elabtime_over_time(atime,atnew,atold) ) exit
+	 if( .not. elabtime_in_time(atime,atnew,atold) ) cycle
 
 	 call shy_make_zeta(ftype)
 	 !call shy_make_volume		!comment for constant volume

@@ -114,13 +114,12 @@
 	!real, allocatable :: znv(:)
 	!real, allocatable :: uprv(:,:)
 	!real, allocatable :: vprv(:,:)
-	real, allocatable :: sv(:,:)
-	real, allocatable :: dv(:,:)
-	real, allocatable :: sv2(:)
-	real, allocatable :: dv2(:)
+	!real, allocatable :: sv(:,:)
+	!real, allocatable :: dv(:,:)
+	!real, allocatable :: sv2(:)
+	!real, allocatable :: dv2(:)
 
 	logical bhydro,bscalar,bsect
-	logical blastrecord
 	integer nwrite,nread,nelab,nrec,nin,nold
 	integer nvers
 	integer nvar,npr
@@ -141,8 +140,8 @@
 	character*80 basnam,simnam,varline
 	real rnull
 	real cmin,cmax,cmed,vtot
-	double precision dtime,dtstart,dtnew
-	double precision atime,atstart,atnew,atold
+	double precision dtime
+	double precision atime
 
 	integer iapini
 	integer ifem_open_file
@@ -210,11 +209,12 @@
 	! set time
 	!--------------------------------------------------------------
 
-        call ptime_init
+        !call ptime_init
 	call shy_get_date(id,date,time)
-        call ptime_set_date_time(date,time)
+        !call ptime_set_date_time(date,time)
         call elabtime_date_and_time(date,time)
         call elabtime_minmax(stmin,stmax)
+	call elabtime_set_inclusive(.false.)
 
 	!--------------------------------------------------------------
 	! set dimensions and allocate arrays
@@ -240,9 +240,10 @@
 	allocate(cv3(nlv,nndim))
 	allocate(cv3all(nlv,nndim,0:nvar))
 	allocate(idims(4,nvar))
+	allocate(ivars(nvar),strings(nvar))
 	!allocate(znv(nkn),uprv(nlv,nkn),vprv(nlv,nkn))
-	allocate(sv(nlv,nkn),dv(nlv,nkn))
-	allocate(sv2(nkn),dv2(nkn))
+	!allocate(sv(nlv,nkn),dv(nlv,nkn))
+	!allocate(sv2(nkn),dv2(nkn))
 
 	!--------------------------------------------------------------
 	! set up aux arrays, sigma info and depth values
@@ -263,52 +264,10 @@
 
 	call init_plot
 
-	allocate(ivars(nvar),strings(nvar))
 	call shy_get_string_descriptions(id,nvar,ivars,strings)
-
-	if( nvar == 1 .and. ivar3 == 0 ) then
-	  ivar3 = ivars(1)
-	  call read_str_files(ivar3)
-	end if
-        if( ivar3 == 0 ) then
-          write(6,*) 'no variable given to be plotted: ',ivar3
-          stop 'error stop shyplot'
-        end if
-
-	write(6,*) 
-	write(6,*) 'varid to be plotted:       ',ivar3
-	write(6,*) 'total number of variables: ',nvar
-	write(6,*) '   number     varid    varname'
-	nv = 0
-	do iv=1,nvar
-	  ivar = ivars(iv)
-	  write(6,'(2i10,4x,a)') iv,ivar,trim(strings(iv))
-	  if( ivar == ivar3 ) nv = nv + 1
-	end do
-
-	call directional_init(nvar,ivars,ivar3,bdir,ivarplot)
-
-	if( nv == 0 .and. .not. bdir ) then
-	  call ivar2string(ivar3,varline)
-          write(6,*) 'no such variable in file: ',ivar3,varline
-          stop 'error stop shyplot'
-        end if
-
-	if( layer > nlv ) then
-          write(6,*) 'no such layer: ',layer
-          write(6,*) 'maximum layer available: ',nlv
-          stop 'error stop shyplot'
-	end if
+	call choose_var(nvar,ivars,strings,varline,ivarplot) !set bdir, ivar3
 
 	bsect = getisec() /= 0
-
-	call mkvarline(ivar3,varline)
-	write(6,*) 
-	write(6,*) 'information for plotting:'
-	write(6,*) 'varline: ',trim(varline)
-	write(6,*) 'ivar3: ',ivar3
-	write(6,*) 'layer: ',layer
-	write(6,*) 
 	call setlev(layer)
 
 	!--------------------------------------------------------------
@@ -331,15 +290,13 @@
 !--------------------------------------------------------------
 
 	dtime = 0.
-	call shy_peek_record(id,dtime,iaux,iaux,iaux,iaux,ierr)
-	call dts_convert_to_atime(datetime_elab,dtime,atime)
+	!call shy_peek_record(id,dtime,iaux,iaux,iaux,iaux,ierr)
+	!call dts_convert_to_atime(datetime_elab,dtime,atime)
 
 	cv3 = 0.
 	cv3all = 0.
 
 	do
-
-	 atold = atime
 
 	 !--------------------------------------------------------------
 	 ! read new data set
@@ -352,32 +309,25 @@
 
 	 call dts_convert_to_atime(datetime_elab,dtime,atime)
 
-	  if( .not. bquiet ) then
-	    call shy_write_time(.true.,dtime,atime,0)
-	  end if
+	 if( .not. bquiet ) call shy_write_time(.true.,dtime,atime,0)
 
 	 iarrow = 0
 	 nread = nread + 1
 	 nrec = nrec + nvar
 
 	 !--------------------------------------------------------------
-	 ! look for new record and see if we are in time window
+	 ! see if we are in time window
 	 !--------------------------------------------------------------
 
-	 call shy_peek_record(id,dtnew,iaux,iaux,iaux,iaux,ierr)
-	 if( ierr .ne. 0 ) dtnew = dtime
-	 blastrecord = ierr < 0 .and. atstart == -1
-	 call dts_convert_to_atime(datetime_elab,dtnew,atnew)
-
-	 if( elabtime_over_time_a(atime,atnew,atold) ) exit
-	 if( .not. elabtime_check_time_a(atime,atnew,atold) ) cycle
+	 if( elabtime_over_time(atime) ) exit
+	 if( .not. elabtime_in_time(atime) ) cycle
 
 	 call shy_make_zeta(ftype)
 	 !call shy_make_volume		!comment for constant volume
 
 	 if( ifreq > 0 .and. mod(nread,ifreq) /= 0 ) cycle
 
-	 call ptime_set_dtime(dtime)
+	 !call ptime_set_dtime(dtime)
 
 	 !--------------------------------------------------------------
 	 ! loop over single variables
@@ -741,6 +691,69 @@ c*****************************************************************
 	end if
 
 	if( ivel > 0 ) iarrow = 0
+
+	end
+
+c*****************************************************************
+
+	subroutine choose_var(nvar,ivars,strings,varline,ivarplot)
+
+	use plotutil
+	use levels
+
+c choses variable to be plotted
+
+	implicit none
+
+	integer nvar
+	integer ivars(nvar)
+	character*80 strings(nvar)
+	character*80 varline
+	integer ivarplot(2)
+
+	integer nv,iv,ivar
+
+	if( nvar == 1 .and. ivar3 == 0 ) then
+	  ivar3 = ivars(1)
+	  call read_str_files(ivar3)
+	end if
+        if( ivar3 == 0 ) then
+          write(6,*) 'no variable given to be plotted: ',ivar3
+          stop 'error stop shyplot'
+        end if
+
+	write(6,*) 
+	write(6,*) 'varid to be plotted:       ',ivar3
+	write(6,*) 'total number of variables: ',nvar
+	write(6,*) '   number     varid    varname'
+	nv = 0
+	do iv=1,nvar
+	  ivar = ivars(iv)
+	  write(6,'(2i10,4x,a)') iv,ivar,trim(strings(iv))
+	  if( ivar == ivar3 ) nv = nv + 1
+	end do
+
+	call directional_init(nvar,ivars,ivar3,bdir,ivarplot)
+
+	if( nv == 0 .and. .not. bdir ) then
+	  call ivar2string(ivar3,varline)
+          write(6,*) 'no such variable in file: ',ivar3,varline
+          stop 'error stop shyplot'
+        end if
+
+	if( layer > nlv ) then
+          write(6,*) 'no such layer: ',layer
+          write(6,*) 'maximum layer available: ',nlv
+          stop 'error stop shyplot'
+	end if
+
+	call mkvarline(ivar3,varline)
+	write(6,*) 
+	write(6,*) 'information for plotting:'
+	write(6,*) 'varline: ',trim(varline)
+	write(6,*) 'ivar3: ',ivar3
+	write(6,*) 'layer: ',layer
+	write(6,*) 
 
 	end
 
