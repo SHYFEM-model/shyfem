@@ -52,11 +52,7 @@
 
 	logical, save :: bopen
 
-	!logical, save :: btmin
-	!logical, save :: btmax
 	logical, save :: binclusive
-	!double precision, save :: atmin
-	!double precision, save :: atmax
 
 	logical, save :: bthreshold
 	double precision, save :: threshold
@@ -72,16 +68,13 @@
 	integer, save :: mode
 	integer, save :: modeb
 
-	!integer, save :: date = 0
-	!integer, save :: time = 0
-	!integer, save :: datetime(2) = 0
-
 	integer, save :: catmode = 0
 
         character*80, save :: infile		= ' '
         character*80, save :: stmin		= ' '
         character*80, save :: stmax		= ' '
         character*80, save :: nodefile		= ' '
+        character*80, save :: regstring		= ' '
         character*10, save :: outformat		= ' '
 
 !====================================================
@@ -166,9 +159,10 @@
         call clo_add_sep('additional options')
 
         call clo_add_option('node n',0,'extract vars of node number n')
-        call clo_add_option('nodes file',' '
-     +				,'extract vars at nodes given in file')
-	call clo_add_option('freq n',0.,'frequency for aver/sum/min/max')
+        call clo_add_option('nodes nfile',' '
+     +			,'extract vars at nodes given in file nfile')
+	call clo_add_option('freq n',0.
+     +			,'frequency for aver/sum/min/max/std/rms')
         call clo_add_option('tmin time',' '
      +                  ,'only process starting from time')
         call clo_add_option('tmax time',' '
@@ -177,8 +171,23 @@
      +			,'output includes whole time period given')
 
         call clo_add_option('outformat form','native','output format')
-
         call clo_add_option('catmode cmode',0.,'concatenation mode')
+        call clo_add_option('reg rstring',' ','regular interpolation')
+
+	call clo_add_sep('additional information')
+	call clo_add_com('  nfile is file with nodes to extract')
+	call clo_add_com('  time is either integer for relative time or')
+	call clo_add_com('    format is YYYY-MM-DD[::hh[:mm[:ss]]]')
+	call clo_add_com('  possible output formats are: shy|gis|fem|nc')
+	call clo_add_com('  possible values for cmode are: -1,0,+1')
+	call clo_add_com('    -1: all of first file, '//
+     +					'then remaining of second')
+	call clo_add_com('     0: simply concatenate files')
+	call clo_add_com('    +1: first file until start of second, '//
+     +					'then all of second')
+	call clo_add_com('  rstring is: dx[,dy[,x0,y0,x1,y1]]')
+	call clo_add_com('    if only dx is given -> dy=dx')
+	call clo_add_com('    if only dx,dy are given -> bounds computed')
 
 	end subroutine elabutil_set_options
 
@@ -224,8 +233,8 @@
         call clo_get_option('inclusive',binclusive)
 
         call clo_get_option('outformat',outformat)
-
         call clo_get_option('catmode',catmode)
+        call clo_get_option('reg',regstring)
 
         if( .not. bask .and. .not. bmem ) call clo_check_files(1)
         call clo_get_file(1,infile)
@@ -1100,144 +1109,3 @@ c***************************************************************
 c***************************************************************
 c***************************************************************
 
-        subroutine gis_write_record(nb,it,ivar,nlvddi,ilhkv,cv)
-
-c writes one record to file nb (3D)
-
-        use basin
-
-        implicit none
-
-        integer nb,it,ivar,nlvddi
-        integer ilhkv(nlvddi)
-        real cv(nlvddi,*)
-
-        integer k,l,lmax
-	integer nout
-        real x,y
-	character*80 format,name
-	character*20 line,dateline
-	character*3 var
-
-	integer ifileo
-
-	call dtsgf(it,dateline)
-	call gis_subst_colon(dateline,line)
-	call i2s0(ivar,var)
-
-	name = 'extract_'//var//'_'//line//'.gis'
-        nout = ifileo(60,name,'form','new')
-	!write(6,*) 'writing: ',trim(name)
-
-        write(nout,*) it,nkn,ivar,dateline
-
-	lmax = 1
-
-        do k=1,nkn
-          if( nlvddi > 1 ) lmax = ilhkv(k)
-          x = xgv(k)
-          y = ygv(k)
-
-	  write(format,'(a,i5,a)') '(i10,2g14.6,i5,',lmax,'g14.6)'
-          write(nout,format) k,x,y,lmax,(cv(l,k),l=1,lmax)
-        end do
-
-	close(nout)
-
-        end
-
-c***************************************************************
-
-        subroutine gis_write_hydro(it,nlvddi,ilhkv,zv,uv,vv)
-
-c writes one record to file (3D)
-
-        use basin
-
-        implicit none
-
-        integer it,nlvddi
-        integer ilhkv(nlvddi)
-        real zv(nkn)
-        real uv(nlvddi,nkn)
-        real vv(nlvddi,nkn)
-
-        integer k,l,lmax,nn,i
-	integer nout
-        real x,y
-	character*80 format,name
-	character*20 line,dateline
-	character*3 var
-
-	integer ifileo
-
-	call dtsgf(it,dateline)
-	call gis_subst_colon(dateline,line)
-
-	name = 'extract_hydro_'//line//'.gis'
-        nout = ifileo(60,name,'form','new')
-	!write(6,*) 'writing: ',trim(name)
-
-        write(nout,*) it,nkn,0,dateline
-
-	lmax = 1
-
-        do k=1,nkn
-          if( nlvddi > 1 ) lmax = ilhkv(k)
-          x = xgv(k)
-          y = ygv(k)
-
-	  nn = 1 + 2*lmax
-	  write(format,'(a,i5,a)') '(i10,2g14.6,i5,',nn,'g14.6)'
-          write(nout,format) k,x,y,lmax,zv(k)
-     +			,(uv(l,k),vv(l,k),l=1,lmax)
-        end do
-
-	close(nout)
-
-        end
-
-c***************************************************************
-
-	subroutine gis_subst_colon(line_old,line_new)
-
-	implicit none
-
-	character*(*) line_old,line_new
-
-	integer n,i
-
-	n = min(len(line_old),len(line_new))
-	line_new = line_old
-
-	do i=1,n
-	  if( line_new(i:i) == ':' ) line_new(i:i) = '_'
-	  if( line_new(i:i) == ' ' ) line_new(i:i) = '_'
-	end do
-
-	end
-
-c***************************************************************
-
-        subroutine gis_write_connect
-
-c writes connectivity
-
-        use basin
-
-        implicit none
-
-	integer ie,ii
-
-	open(1,file='connectivity.gis',form='formatted',status='unknown')
-
-	write(1,*) nel
-	do ie=1,nel
-	  write(1,*) ie,(nen3v(ii,ie),ii=1,3)
-	end do
-
-	close(1)
-
-	end
-
-c***************************************************************

@@ -187,7 +187,7 @@ SOBJS   = \
 	  $(MODULES) \
 	  subshy.o shyutil.o subshyutil.o subshyutil2.o \
 	  subbit10.o shyutil.o subclo.o substrings.o subpar3.o \
-	  elabutil.o elabtime.o
+	  elabutil.o elabtime.o elab_gis.o
 
 # general objects for 3D model shyfem
 
@@ -278,8 +278,10 @@ BASEXTRA = sublnka.o links.o sublnku.o \
 		subinterpol.o subinterpol1.o subnos.o
 
 GENOBJS = newlevels.o
-NOSOBJS = subnos.o nosutil.o genutil.o subeos.o elabutil.o noselab1.o elabtime.o
-OUSOBJS = subous.o ousutil.o genutil.o elabutil.o ouselab1.o elabtime.o
+NOSOBJS = subnos.o nosutil.o genutil.o subeos.o elabutil.o noselab1.o \
+		elabtime.o elab_gis.o
+OUSOBJS = subous.o ousutil.o genutil.o elabutil.o ouselab1.o \
+		elabtime.o elab_gis.o
 SHYOBJS = genutil.o \
 		subous.o ousutil.o \
 		subnos.o nosutil.o subeos.o \
@@ -287,7 +289,7 @@ SHYOBJS = genutil.o \
 		subext.o extelab1.o \
 		noselab1.o ouselab1.o \
 		shyelab1.o \
-		elabutil.o elabtime.o \
+		elabutil.o elabtime.o elab_gis.o \
 		subshy.o subshyutil.o subshyutil2.o \
 		shyutil.o shyelab_output.o
 SHYNOBJS = genutil.o elabutil.o subshy.o subshyutil.o subshyutil2.o shyutil.o
@@ -882,6 +884,7 @@ bio3d.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		param.h 
 bio3d_util.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		donata.h param.h 
+elab_gis.o: ../femlib/mod/basin.mod
 elabutil.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod 

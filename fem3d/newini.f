@@ -64,6 +64,7 @@ c 05.09.2013    ggu	in adjust_levels() allow for nlv==1
 c 31.10.2014    ccf	initi_z0 for zos and zob
 c 25.05.2015    ggu	file cleaned and prepared for module
 c 05.11.2015    ggu	can now initialize z,u,v from file
+c 30.05.2016    ggu	changes in set_last_layer(), possible bug fix ilytyp==1
 c
 c notes :
 c
@@ -863,7 +864,8 @@ c adjusts nlv, hm3v, ilhv
 	implicit none
 
 	logical bwrite
-	logical badjust,b2d,bsigma,binsigma
+	logical b2d,bsigma,binsigma
+	logical bdepth,blayer
 	integer ie,l,ii
 	integer ihtot,lmax
 	integer ilytyp
@@ -927,56 +929,67 @@ c------------------------------------------------------------
 
 	do ie=1,nel
 
-	  hm = 0.
-	  do ii=1,3
-	    hm = hm + hm3v(ii,ie)
-	  end do
-	  hm = hm / 3.
+	  !hm = 0.
+	  !do ii=1,3
+	  !  hm = hm + hm3v(ii,ie)
+	  !end do
+	  !hm = hm / 3.
+	  hm = sum(hm3v(:,ie))/3.
 
 	  l = ilhv(ie)
 	  binsigma = l .le. nsigma
 	  hold = hm				!original depth of element
 	  hnew = hold
 	  h = hold
-	  if( l .gt. 1 ) h = h - hlv(l-1)	!actual layer thickness
+	  if( l .gt. 1 ) h = h - hlv(l-1)	!actual last layer thickness
 	  if( binsigma ) h = -hold*hldv(l)	!sigma layer
-	  hlast = hldv(l)			!regular layer thickness
+	  hlast = hldv(l)			!regular last layer thickness
 	  hmin = hlvmin * hlast
 
 	  if( l .gt. 1 .and. h .le. 0. ) goto 99
 
-	  badjust = .false.
+	  bdepth = .false.			!adjust depth? (implies blayer)
+	  blayer = .false.			!adjust layer?
 
 	  if( l .gt. 1 ) then			!only for more than 1 layer
 	    if( ilytyp .eq. 0 ) then
 c		no adjustment
-	    else if( h .le. hmin ) then		!take away layer
-		badjust = .true.
-		l = l-1
 	    else if( ilytyp .eq. 1 ) then
-		badjust = .true.
+	      if( h < hlast ) then		!last layer not full layer
+		bdepth = .true.
+	      end if
+	    else if( ilytyp .eq. 2 ) then
+	      if( h < hmin ) then		!last layer too small
+		bdepth = .true.
+	      end if
+	    else if( ilytyp .eq. 3 ) then
+	      if( h < hmin ) then		!add to layer above
+		blayer = .true.
+	      end if
+	    else
+	      write(6,*) 'ilytyp = ',ilytyp
+	      stop 'error stop set_last_layer: internal error (9)'
 	    end if
 	  end if
 
-	  if( ilytyp .eq. 1 ) badjust = .true.	!adjust in any case
-	  if( b2d ) badjust = .false.		!but never for 2D application
-	  if( l .le. nsigma ) badjust = .false.	!we are in sigma layer
+	  if( b2d .or. binsigma ) then		!dont for 2D or in sigma layer
+	    bdepth = .false.
+	    blayer = .false.
+	  end if
 
-	  if( badjust ) then
-	    if( ilytyp .le. 2 ) then		!adjust depth
-		h = hldv(l)
-		hnew = hlv(l)
-		do ii=1,3
-		  hm3v(ii,ie) = hnew
-		end do
-	    else if( ilytyp .eq. 3 ) then
-		h = hldv(l) + h
-	    else
-		stop 'error stop set_last_layer: internal error (7)'
-	    end if
+	  if( blayer .or. bdepth ) l = l -1
 
-	    ilhv(ie) = l
+	  if( bdepth ) then		!depth and layer have changed
+	    h = hldv(l)
+	    hnew = hlv(l)
+	    hm3v(:,ie) = hnew
+	  else if( blayer ) then	!only layer has changed
+	    h = hldv(l) + h
+	  end if
 
+	  ilhv(ie) = l
+
+	  if( blayer .or. bdepth ) then		!write to terminal
 	    if( bwrite ) then
 	      if( ihtot .eq. 0 ) then
 		  write(6,*) 'set_last_layer: Adjustment of depth values'

@@ -15,10 +15,15 @@
 	real, save :: regpar(7) = 0.
 	logical, save :: breg = .false.
 
-	integer, save, allocatable :: il(:)
-	real, save, allocatable :: hd(:)
-	real, save, allocatable :: svalue(:,:)
 	real, save, allocatable :: s2dvalue(:)
+	real, save, allocatable :: zvalue(:)
+	real, save, allocatable :: svalue(:,:)
+	real, save, allocatable :: uvalue(:,:)
+	real, save, allocatable :: vvalue(:,:)
+	integer, save, allocatable :: ilcoord(:)
+	real, save, allocatable :: xcoord(:)
+	real, save, allocatable :: ycoord(:)
+	real, save, allocatable :: hcoord(:)
 	real, save, allocatable :: fm(:,:)
 
 !==================================================================
@@ -45,7 +50,7 @@
 
 	integer id,idout
 
-	integer ierr,iunit,n
+	integer ierr,iunit,np
 	integer nxy
 	logical bshy
 	character*60 file,form
@@ -56,16 +61,26 @@
 
 	bshy = ( outformat == 'shy' .or. outformat == 'native' )
 
-	string = ' '
+	string = regstring
 	call fem_regular_parse(string,regpar,nxreg,nyreg)
 	if( nxreg > 0 .and. nyreg > 0 ) then
 	  nxy = nxreg * nyreg
-	  allocate(svalue(nlvdi,nxy),s2dvalue(nxy),fm(4,nxy))
-	  call fem_regular_setup_fm(nxreg,nyreg,fm)
+	  allocate(svalue(nlvdi,nxy),s2dvalue(nxy))
+	  allocate(zvalue(nxy),uvalue(nlvdi,nxy),vvalue(nlvdi,nxy))
+	  allocate(ilcoord(nxy),xcoord(nxy),ycoord(nxy),hcoord(nxy))
+	  allocate(fm(4,nxy))
+	  call fem_regular_setup(nxreg,nyreg,regpar,ilhv,hm3v
+     +				,fm,ilcoord,xcoord,ycoord,hcoord)
 	  breg = .true.
 	  ntype = ntype + 10
 	else
 	  allocate(svalue(nlvdi,nkn),s2dvalue(nkn)) !only for nodal values
+	  allocate(zvalue(nkn),uvalue(nlvdi,nkn),vvalue(nlvdi,nkn))
+	  allocate(ilcoord(nkn),xcoord(nkn),ycoord(nkn),hcoord(nkn))
+	  xcoord = xgv
+	  ycoord = ygv
+	  ilcoord = ilhkv
+	  call makehkv_minmax(hcoord,+1)
 	end if
 
 	if( breg .and. ( bsplit .or. bshy ) ) then
@@ -76,6 +91,11 @@
 	if( breg .and. outformat == 'gis' ) then
 	  write(6,*) 'regular output for gis not yet ready'
 	  stop 'error stop shyelab_init_output: gis not ready'
+	end if
+
+	if( breg .and. outformat == 'nc' ) then
+	  write(6,*) 'regular output for nc not yet ready'
+	  stop 'error stop shyelab_init_output: nc not ready'
 	end if
 
 	if( bsplit ) then
@@ -102,9 +122,6 @@
 	    iunit = ifileo(60,file,form,'unknown')
 	    if( iunit <= 0 ) goto 74
 	    idout = iunit
-	    n = nkn
-            allocate(il(n),hd(n))
-	    call fem_setup_arrays(id,n,il,hd)		!only for nodes
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'
@@ -141,7 +158,7 @@
 	integer nvar,ftype
 	logical bscalar,bhydro
 
-	integer ierr,iunit,n,nvers,lmax
+	integer ierr,iunit,np,nvers,lmax
 
 	if( .not. boutput ) return
 
@@ -161,12 +178,12 @@
 	  else if( outformat == 'fem' ) then
 	    iunit = idout
 	    nvers = 0
-	    n = nkn
-	    if( breg ) n = nxreg*nyreg
+	    np = nkn
+	    if( breg ) np = nxreg*nyreg
 	    lmax = nlv
 	    if( b2d ) lmax = 1
             call fem_file_write_header(iformat,iunit,dtime
-     +                          ,nvers,n,lmax
+     +                          ,nvers,np,lmax
      +                          ,nvar,ntype
      +                          ,nlvdi,hlv,datetime_elab,regpar)
 	  else
@@ -199,7 +216,7 @@
 	real cv3(nlvddi,n*m)
 
 	integer ierr,iunit,nvers
-	integer it,nb
+	integer np
 	integer id_out
 	integer ftype
 	logical bscalar,bhydro,bshy
@@ -218,9 +235,22 @@
 	if( bverb ) write(6,*) 'writing to output: ',ivar
 
 	if( breg ) then
+	  if( n /= nkn ) goto 98
+	  np = nxreg * nyreg
 	  call fem_regular_interpolate(nlvdi,cv3,svalue)
-	else
+	else if( n == nkn ) then
+	  np = nkn
 	  svalue(:,1:nkn) = cv3(:,1:nkn)
+	else if( n == nel ) then
+	  !convert from nel to nkn
+	  stop 'error stop shyelab_record_output: n==nel not ready'
+	else if( .not. bsplit .and. .not. bshy ) then
+	  goto 98
+	end if
+
+	if( .not. bsplit .and. .not. bshy ) then
+	  if( ivar == 1 .or. ivar == 3 ) goto 99
+	  if( m /= 1 ) goto 98
 	end if
 
 	if( bsplit ) then
@@ -232,21 +262,16 @@
 	    call shy_write_output_record(idout,dtime,ivar,n,m
      +						,lmax,nlvddi,cv3)
 	  else if( outformat == 'gis' ) then
-	    if( ivar == 1 .or. ivar == 3 ) goto 99
-	    if( n /= nkn .or. m /= 1 ) goto 98
-	    nb = 0
-	    it = nint(dtime)
-            call gis_write_record(nb,it,ivar,nlvddi,ilhkv,svalue)
+            call gis_write_record(dtime,ivar,np,nlvddi,ilcoord
+     +					,svalue,xcoord,ycoord)
 	  else if( outformat == 'fem' ) then
 	    iunit = idout
 	    nvers = 0
-	    n = nkn
-	    if( breg ) n = nxreg*nyreg
 	    call get_string_description(ivar,string)
             call fem_file_write_data(iformat,iunit
-     +                          ,nvers,n,lmax
+     +                          ,nvers,np,lmax
      +                          ,string
-     +                          ,il,hd
+     +                          ,ilcoord,hcoord
      +                          ,nlvddi,svalue)
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
@@ -290,7 +315,7 @@
 	real cv3all(nlvddi,nndim,0:nvar)
 
 	integer ierr,iunit,nvers
-	integer it,nb,ivar
+	integer it,nb,ivar,np
 	integer id_out
 	integer ftype
 	logical bscalar,bhydro,bshy
@@ -316,7 +341,18 @@
 	  allocate(sv(nlvddi,nkn),dv(nlvddi,nkn))
           call prepare_hydro(.true.,nndim,cv3all,znv,uprv,vprv)
           call convert_to_speed(uprv,vprv,sv,dv)
-	end if
+	  if( breg ) then
+	    np = nxreg * nyreg
+	    call fem_regular_interpolate(1,znv,zvalue)
+	    call fem_regular_interpolate(nlvddi,uprv,uvalue)
+	    call fem_regular_interpolate(nlvddi,vprv,vvalue)
+	  else
+	    np = nkn
+	    zvalue = znv
+	    uvalue = uprv
+	    vvalue = vprv
+	  end if
+	end if	
 
 	if( bsplit ) then
 	  if( bhydro ) then
@@ -336,11 +372,11 @@
 	      stop 'error stop shyelab_post_output: internal error (1)'
 	    end if
 	  else if( outformat == 'gis' ) then
-	    it = nint(dtime)
-	    if( breg ) stop 'ggguuu: gis not yet ready'
-	    call gis_write_hydro(it,nlvddi,ilhkv,znv,uprv,vprv)
-	  else if( outformat == 'fem' ) then
-	    call fem_write_hydro(idout,dtime,nlvddi,znv,uprv,vprv)
+	    call gis_write_hydro(dtime,np,nlvddi,ilcoord
+     +				,zvalue,uvalue,vvalue,xcoord,ycoord)
+	  else if( outformat == 'fem' ) then	!also covers breg
+	    call fem_write_hydro(idout,dtime,np,nlvddi
+     +					,zvalue,uvalue,vvalue)
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'
@@ -427,59 +463,9 @@
 !***************************************************************
 !***************************************************************
 
-	subroutine fem_setup_arrays(id,n,il,hd)
+	subroutine fem_write_hydro(idout,dtime,np,nlvddi,zv,uv,vv)
 
-	use basin, only : nkn,nel,nen3v
-	use shyfile
-
-	implicit none
-
-	integer id
-	integer n
-	integer il(n)
-	real hd(n)
-
-	integer ie,ii,k
-	integer ilhv(nel)
-	integer ilhkv(nkn)
-	real hm3v(3,nel)
-
-	if( n /= nkn .and. n /= nel ) then
-	  stop 'error stop fem_setup_arrays: internal error'
-	end if
-
-	  call shy_get_layerindex(id,ilhv,ilhkv)
-	  if( n == nkn ) then
-	    il = ilhkv
-	  else if( n == nel ) then
-	    il = ilhv
-	  end if
-	  call shy_get_depth(id,hm3v)
-
-	if( n == nel ) then
-	  do ie=1,nel
-	    hd(ie) = sum(hm3v(:,ie))/3.
-	  end do
-	else
-	  hd = -1.e+30
-	  do ie=1,nel
-	    do ii=1,3
-	      k = nen3v(ii,ie)
-	      hd(k) = max(hd(k),hm3v(ii,ie))
-	    end do
-	  end do
-	end if
-
-	end
-
-!***************************************************************
-
-	subroutine fem_write_hydro(idout,dtime,nlvddi,znv,uprv,vprv)
-
-	use basin
 	use levels
-	use shyfile
-	use elabutil
 	use elabtime
 	use shyelab_out
 
@@ -487,68 +473,51 @@
 
 	integer idout
 	double precision dtime
+	integer np
 	integer nndim
 	integer nlvddi
-	real znv(nkn)
-	real uprv(nlvddi,nkn)
-	real vprv(nlvddi,nkn)
+	real zv(np)
+	real uv(nlvddi,np)
+	real vv(nlvddi,np)
 
-	integer iunit,nvers,n,lmax,nvar,ivar
+	integer iunit,nvers,lmax,nvar,ivar
 	character*60 string
 
 	iunit = idout
 	nvers = 0
-	n = nkn
-	if( breg ) n = nxreg*nyreg
 	lmax = nlv
 	nvar = 3
 
         call fem_file_write_header(iformat,iunit,dtime
-     +                          ,nvers,n,lmax
+     +                          ,nvers,np,lmax
      +                          ,nvar,ntype
      +                          ,nlvdi,hlv,datetime_elab,regpar)
 
 	ivar = 1
 	lmax = 1
-	if( breg ) then
-	  call fem_regular_interpolate(lmax,znv,s2dvalue)
-	else
-	  s2dvalue = znv
-	end if
 	call get_string_description(ivar,string)
+
         call fem_file_write_data(iformat,iunit
-     +                          ,nvers,n,lmax
+     +                          ,nvers,np,lmax
      +                          ,string
-     +                          ,il,hd
-     +                          ,lmax,s2dvalue)
+     +                          ,ilcoord,hcoord
+     +                          ,lmax,zv)
 
 	ivar = 2
 	lmax = nlv
 	call get_string_description(ivar,string)
 
-	if( breg ) then
-	  call fem_regular_interpolate(nlvddi,uprv,svalue)
-	else
-	  svalue = uprv
-	end if
+        call fem_file_write_data(iformat,iunit
+     +                          ,nvers,np,lmax
+     +                          ,string
+     +                          ,ilcoord,hcoord
+     +                          ,nlvddi,uv)
 
         call fem_file_write_data(iformat,iunit
-     +                          ,nvers,n,lmax
+     +                          ,nvers,np,lmax
      +                          ,string
-     +                          ,il,hd
-     +                          ,nlvddi,svalue)
-
-	if( breg ) then
-	  call fem_regular_interpolate(nlvddi,vprv,svalue)
-	else
-	  svalue = vprv
-	end if
-
-        call fem_file_write_data(iformat,iunit
-     +                          ,nvers,n,lmax
-     +                          ,string
-     +                          ,il,hd
-     +                          ,nlvddi,svalue)
+     +                          ,ilcoord,hcoord
+     +                          ,nlvddi,vv)
 
 	end
 
@@ -585,6 +554,7 @@
 
 	integer ianz
 	real dx,dy,x0,y0,x1,y1
+	real ddx,ddy
 	double precision d(6)
 	integer iscand
 	real, parameter :: flag = -999.
@@ -626,6 +596,12 @@
 
         nx = 1 + nint((x1-x0)/dx)
         ny = 1 + nint((y1-y0)/dy)
+	if( ianz == 2 ) then		!correct x0/y0
+	  ddx = (nx-1)*dx - (x1-x0)
+	  if( ddx > 0. ) x0 = x0 - ddx/2.
+	  ddy = (ny-1)*dy - (y1-y0)
+	  if( ddy > 0. ) y0 = y0 - ddy/2.
+	end if
         x1 = x0 + (nx-1)*dx
         y1 = y0 + (ny-1)*dy
 
@@ -637,14 +613,47 @@
 
 !***************************************************************
 
-	subroutine fem_regular_setup_fm(nx,ny,fm)
+	subroutine fem_regular_setup(nx,ny,regpar,ilhv,hm3v
+     +				,fm,ilcoord,xcoord,ycoord,hcoord)
 
 	implicit none
 
 	integer nx,ny
+	real regpar(7)
+	integer ilhv(*)
+	real hm3v(3,*)
 	real fm(4,nx,ny)
+	integer ilcoord(nx,ny)
+	real xcoord(nx,ny)
+	real ycoord(nx,ny)
+	real hcoord(nx,ny)
+
+	integer ix,iy,ie
+	real dx,dy,x0,y0,x,y
 
 	call av2fm(fm,nx,ny)
+
+	ilcoord = 0
+	hcoord = 0.
+	
+	dx = regpar(3)
+	dy = regpar(4)
+	x0 = regpar(5)
+	y0 = regpar(6)
+
+	do iy=1,ny
+	  y = y0 + (iy-1)*dy
+	  do ix=1,nx
+	    x = x0 + (ix-1)*dx
+	    xcoord(ix,iy) = x
+	    ycoord(ix,iy) = y
+	    ie = fm(4,ix,iy)
+	    if( ie > 0 ) then
+	      ilcoord(ix,iy) = ilhv(ie)
+	      hcoord(ix,iy) = sum(hm3v(:,ie))/3.	!average in element
+	    end if
+	  end do
+	end do
 
 	end
 

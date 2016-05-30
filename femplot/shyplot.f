@@ -111,20 +111,11 @@
 	integer, allocatable :: ivars(:)
 	character*80, allocatable :: strings(:)
 
-	!real, allocatable :: znv(:)
-	!real, allocatable :: uprv(:,:)
-	!real, allocatable :: vprv(:,:)
-	!real, allocatable :: sv(:,:)
-	!real, allocatable :: dv(:,:)
-	!real, allocatable :: sv2(:)
-	!real, allocatable :: dv2(:)
-
 	logical bhydro,bscalar,bsect
 	integer nwrite,nread,nelab,nrec,nin,nold
 	integer nvers
 	integer nvar,npr
 	integer ierr,ivel,iarrow
-	!integer it,itvar,itnew,itold,itstart
 	integer it
 	integer ivar,iaux,nv
 	integer ivarplot(2)
@@ -241,9 +232,6 @@
 	allocate(cv3all(nlv,nndim,0:nvar))
 	allocate(idims(4,nvar))
 	allocate(ivars(nvar),strings(nvar))
-	!allocate(znv(nkn),uprv(nlv,nkn),vprv(nlv,nkn))
-	!allocate(sv(nlv,nkn),dv(nlv,nkn))
-	!allocate(sv2(nkn),dv2(nkn))
 
 	!--------------------------------------------------------------
 	! set up aux arrays, sigma info and depth values
@@ -290,9 +278,6 @@
 !--------------------------------------------------------------
 
 	dtime = 0.
-	!call shy_peek_record(id,dtime,iaux,iaux,iaux,iaux,ierr)
-	!call dts_convert_to_atime(datetime_elab,dtime,atime)
-
 	cv3 = 0.
 	cv3all = 0.
 

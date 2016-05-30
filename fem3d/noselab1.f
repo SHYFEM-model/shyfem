@@ -574,6 +574,7 @@ c***************************************************************
 
 	subroutine noselab_write_record(nb,it,ivar,nlvdi,ilhkv,cv,ierr)
 
+	use basin
         use elabutil
 
 	implicit none
@@ -583,12 +584,16 @@ c***************************************************************
 	real cv(nlvdi,*)
 	integer ierr
 
+	double precision dtime
+
 	ierr = 0
 
 	if( outformat == 'nos' .or. outformat == 'native') then
           call nos_write_record(nb,it,ivar,nlvdi,ilhkv,cv,ierr)
 	else if( outformat == 'gis' ) then
-          call gis_write_record(nb,it,ivar,nlvdi,ilhkv,cv)
+	  dtime = it
+          call gis_write_record(dtime,ivar,nkn,nlvdi
+     +				,ilhkv,cv,xgv,ygv)
 	else
 	  write(6,*) 'output format unknown: ',outformat
 	  stop 'error stop noselab_write_record: output format'

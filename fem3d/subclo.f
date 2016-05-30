@@ -10,6 +10,7 @@
 ! 26.01.2015    ggu     new routine clo_check_files()
 ! 08.02.2015    ggu     bug fix in clo_get_option, new routine clo_info
 ! 28.05.2015    ggu     new routine clo_add_sep()
+! 30.05.2016    ggu     new routine clo_add_com() (identical to clo_add_sep)
 !
 ! notes :
 !
@@ -473,6 +474,22 @@
 	pentry(id)%text = text
 
 	end subroutine clo_add_sep
+
+!******************************************************************
+
+	subroutine clo_add_com(text)
+
+	character*(*) text
+
+	integer id
+
+	call clo_init_new_id(id)
+
+	pentry(id)%name = ' '
+	pentry(id)%itype = 4
+	pentry(id)%text = text
+
+	end subroutine clo_add_com
 
 !******************************************************************
 !******************************************************************

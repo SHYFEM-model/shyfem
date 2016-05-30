@@ -1,4 +1,25 @@
 
+30.05.2016
+
+c ./femplot/supdep.f:
+c 27.05.2016    ggu     mkhkv,mkhev deleted
+c
+c ./femplot/suplin.f:
+c 27.05.2016    ggu     some restructuring to lower dependencies
+c
+c ./fem3d/subnsh.f:
+c 26.05.2016    ggu     new check for sections: count_sections()
+c
+c ./fem3d/newini.f:
+c 30.05.2016    ggu     changes in set_last_layer(), possible bug fix ilytyp==1
+c
+c ./fem3d/subclo.f:
+! 30.05.2016    ggu     new routine clo_add_com() (identical to clo_add_sep)
+!
+c ./fem3d/subshyutil.f:
+! 26.05.2016    ggu     new routines for opening and writing scalar file
+
+
 25.05.2016
 
 c ./fem3d/mercury.f:

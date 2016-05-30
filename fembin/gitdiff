@@ -11,6 +11,23 @@ options=""
 files=""
 file="NO"
 
+Help()
+{
+  echo "Usage: gitdiff [-h|-help] [tag(s)] [file]"
+}
+
+FullHelp()
+{
+  Help
+
+  echo "  gitdiff                  diff stats between actual and last commit"
+  echo "  gitdiff tag              diff stats between actual and tag"
+  echo "  gitdiff tag1 tag2        diff stats between tag1 and tag2"
+  echo "  gitdiff file             difference of file to last commit"
+  echo "  gitdiff tag file         difference of file to commit tag"
+  echo "  gitdiff tag1 tag2 file   difference of file between commit tag1 tag2"
+}
+
 HandleFiles()
 {
   if [ -f $1 ]; then
@@ -31,12 +48,18 @@ echo "We are on branch: $branch"
 while [ -n "$1" ]
 do
    case $1 in
+        -h)             FullHelp; exit 0;;
+        -help)          FullHelp; exit 0;;
         -tool)          what="difftool";;
         --*)            options="$options $1";;
         *)              HandleFiles $1;;
   esac
   shift
 done
+
+if [ -z "$files" ]; then
+  Help
+fi
 
 if [ $file = "YES" ]; then
   what=difftool

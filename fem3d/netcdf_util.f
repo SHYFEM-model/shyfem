@@ -179,7 +179,7 @@ c computes max lmax for regular domain
 	do j=1,ny
 	  do i=1,nx
 	    ie = nint(fm(4,i,j))
-	    lmax = max(lmax,ilhv(ie))
+	    if( ie > 0 ) lmax = max(lmax,ilhv(ie))
 	  end do
 	end do
 

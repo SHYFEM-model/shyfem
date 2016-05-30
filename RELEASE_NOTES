@@ -1,4 +1,11 @@
 
+30.05.2016	VERS_7_5_11
+
+	code cleaning
+	output routines and section plot revisted
+	check STR file for not unique sections
+	possible bug fix in set_last_layer() for ilytyp==1
+
 25.05.2016	VERS_7_5_10
 
 	big changes in post processing routines and plot

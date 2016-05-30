@@ -54,7 +54,6 @@
 	integer nvar,npr
 	integer ierr
 	integer date,time
-	!integer it,itvar,itnew,itold,itstart
 	integer it
 	integer ivar,iaux
 	integer iv,j,l,k,lmax,node

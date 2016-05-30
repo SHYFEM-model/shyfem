@@ -234,15 +234,14 @@ supiso.o: ../femlib/mod/basin.mod color.h param.h
 suplag.o: ../femlib/mod/basin.mod ../femlib/mod/mod_plot2d.mod \
 		color.h param.h 
 suplin.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
-		../femlib/mod/mod_depth.mod \
-		../femlib/mod/mod_hydro_print.mod color.h param.h 
+		../femlib/mod/mod_hydro_print.mod color.h 
 suplin1.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_plot2d.mod \
-		../femlib/mod/mod_plot3d.mod param.h 
+		../femlib/mod/mod_plot3d.mod 
 supout.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_hydro.mod \
