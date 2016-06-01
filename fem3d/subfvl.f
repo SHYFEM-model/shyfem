@@ -18,7 +18,7 @@ c write of finite volume data
 
 	implicit none
 
-	integer k,l,lmax,id,nvar
+	integer k,l,lmax,id,nvar,ishyff
 
 	real getpar
 	logical has_output,next_output
@@ -37,8 +37,9 @@ c initialization
 
         if( icall .eq. 0 ) then
 
+	  ishyff = nint(getpar('ishyff'))
 	  call init_output('itmcon','idtcon',ia_out)
-
+	  if( ishyff == 1 ) icall = -1
 	  if( .not. has_output(ia_out) ) icall = -1
 	  if( icall .le. -1 ) return
 

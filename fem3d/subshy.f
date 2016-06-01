@@ -365,6 +365,10 @@
 	return
   99	continue
 	write(6,*) 'error checking ',serr
+	if( serr == 'hlv' ) then
+	  write(6,*) id1,pentry(id1)%hlv
+	  write(6,*) id2,pentry(id2)%hlv
+	end if
 	return
 	end function shy_are_compatible
 

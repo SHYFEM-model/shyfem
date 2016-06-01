@@ -59,11 +59,13 @@ endif
 
 EXENC = 
 NETCDF_OBJ = 
+NETCDF_ELAB = elab_nc_dummy.o
 DIRLIB_NETCDF = $(NETCDFDIR)/lib/
 DIRLIB_NETCDF = $(NETCDFDIR)/lib/x86_64-linux-gnu
 DIRINC_NETCDF = $(NETCDFDIR)/include
 ifeq ($(NETCDF),true)
-  NETCDF_OBJ       = netcdf.o netcdf_util.o 
+  NETCDF_OBJ       = netcdf.o netcdf_util.o
+  NETCDF_ELAB      = netcdf.o netcdf_util.o elab_nc.o
   LIBG_NETCDF      = -L$(DIRLIB_NETCDF) -l$(LIBNETCDF)
   LIBF_NETCDF      = $(DIRLIB_NETCDF)/lib$(LIBNETCDF).a
   #INCL_NETCDF      = -I$(DIRINC_NETCDF)
@@ -232,11 +234,13 @@ HTOBJS = \
 	subets.o subetsa.o subetsm.o \
 	$(IFF_FILES) \
 	$(ECOLOGICAL_OBJ) \
-	$(NETCDF_OBJ) $(PARALLEL_OBJ) \
+	$(PARALLEL_OBJ) \
 	$(GRDOBJS) \
 	subxi.o subshy.o subshyutil.o substrings.o \
 	subbit10.o shyutil.o \
 	subfloodfill.o
+
+	#$(NETCDF_OBJ) \
 
 # objects for pre-processor shypre
 
@@ -288,10 +292,10 @@ SHYOBJS = genutil.o \
 		subflx.o flxelab1.o \
 		subext.o extelab1.o \
 		noselab1.o ouselab1.o \
-		shyelab1.o \
 		elabutil.o elabtime.o elab_gis.o \
 		subshy.o subshyutil.o subshyutil2.o \
-		shyutil.o shyelab_output.o
+		shyutil.o
+SHYELAB = shyelab1.o shyelab_output.o $(NETCDF_ELAB)
 SHYNOBJS = genutil.o elabutil.o subshy.o subshyutil.o subshyutil2.o shyutil.o
 ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
@@ -405,13 +409,13 @@ links:
 #--------------------------------------------- EXES
 
 bedload:  bedload.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
-	$(LINKER) -o $@ $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS)
+	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS) -o $@
 
 shyfem:  shyfem.o $(NEWOBJS) $(HTOBJS) $(LIBFS)
-	$(LINKER) -o $@ $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS)
+	$(LINKER) $(LFLAGS) $@.o $(NEWOBJS) $(HTOBJS) $(LIBGS) -o $@
 
 shypre:  shypre.o $(VPOBJS)
-	$(LINKER) -o $@ $(LFLAGS) $@.o $(VPOBJS)
+	$(LINKER) $(LFLAGS) $@.o $(VPOBJS) -o $@
 
 #------------------------------------------------
 
@@ -518,17 +522,16 @@ check_debug: check_debug.o
 
 2nc: ous2nc nos2nc ts2nc
 
+OBJS_NC = $(SHYOBJS) $(OUTOBJS) $(NETCDF_OBJ) $(LIBGS)
+
 ous2nc:  ous2nc.o $(SHYOBJS) $(OUTOBJS) $(NETCDF_OBJ)
-	$(LINKER) -o $@ $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) \
-			$(NETCDF_OBJ) $(LIBGS)
+	$(LINKER) $(LFLAGS) $@.o $(OBJS_NC) -o $@
 
 nos2nc:  nos2nc.o $(SHYOBJS) $(OUTOBJS) $(NETCDF_OBJ)
-	$(LINKER) -o $@ $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) \
-			$(NETCDF_OBJ) $(LIBGS)
+	$(LINKER) $(LFLAGS) $@.o $(OBJS_NC) -o $@
 
 ts2nc:  ts2nc.o $(SHYOBJS) $(OUTOBJS) $(NETCDF_OBJ)
-	$(LINKER) -o $@ $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) \
-			$(NETCDF_OBJ) $(LIBGS)
+	$(LINKER) $(LFLAGS) $@.o $(OBJS_NC) -o $@
 
 eosinf:  eosinf.o $(NOSOBJS) $(OUTOBJS) 
 	$(LINKER) $(LFLAGS) $@.o $(NOSOBJS) $(OUTOBJS) -o $@
@@ -563,8 +566,10 @@ extelab: extelab.o $(SHYOBJS) $(OUTOBJS)
 flxelab: flxelab.o $(SHYOBJS) $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) -o $@
 
-shyelab: shyelab.o $(SHYOBJS) $(OUTOBJS)
-	$(LINKER) $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) -o $@
+SHYELAB_ALL = $(SHYOBJS) $(OUTOBJS) $(SHYELAB) $(LIBGS)
+
+shyelab: shyelab.o $(SHYOBJS) $(OUTOBJS) $(SHYELAB)
+	$(LINKER) $(LFLAGS) $@.o $(SHYELAB_ALL) -o $@
 
 shydiff: shydiff.o $(SHYNOBJS) $(OUTOBJS)
 	$(LINKER) $(LFLAGS) $@.o $(SHYOBJS) $(OUTOBJS) -o $@
@@ -825,6 +830,7 @@ last:
 ../femlib/mod/mod_turbulence.mod: mod_turbulence.o
 ../femlib/mod/mod_tvd.mod: mod_tvd.o
 ../femlib/mod/mod_waves.mod: mod_waves.o
+../femlib/mod/netcdf.mod: netcdf.o
 ../femlib/mod/nls.mod: subnls.o
 ../femlib/mod/para.mod: subpar3.o
 ../femlib/mod/para_aqua.mod: aquabc_II_apara.o
@@ -885,6 +891,10 @@ bio3d.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 bio3d_util.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		donata.h param.h 
 elab_gis.o: ../femlib/mod/basin.mod
+elab_nc.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/shyelab_out.mod 
+elab_nc_dummy.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+		../femlib/mod/shyelab_out.mod 
 elabutil.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod 
@@ -964,7 +974,7 @@ mercury.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		param.h 
 mod_subset.o: ../femlib/mod/basin.mod
 netcdf.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
-		../femlib/mod/mod_depth.mod netcdf.h netcdf.inc 
+		../femlib/mod/mod_depth.mod netcdf.inc 
 netcdf_util.o: ../femlib/mod/basin.mod
 new36.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_bound_dynamic.mod \

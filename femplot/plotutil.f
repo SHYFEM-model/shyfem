@@ -85,7 +85,7 @@
 	if( binitialized ) return
 
 	if( type == 'SHY' ) then
-          call clo_init(program,'shy-file|bas-file|str-file','3.0')
+          call clo_init(program,'file(s)','3.0')
 	else
 	  write(6,*) 'type : ',trim(type)
 	  stop 'error stop plotutil_set_options: unknown type'
@@ -115,6 +115,14 @@
      +                  ,'only process starting from time')
         call clo_add_option('tmax time',' '
      +                  ,'only process up to time')
+
+        call clo_add_sep('additional information')
+	call clo_add_com('  time is either integer for relative time or')
+        call clo_add_com('    format is YYYY-MM-DD[::hh[:mm[:ss]]]')
+        call clo_add_com('  file can be the following:')
+        call clo_add_com('    shy-file to plot results')
+        call clo_add_com('    bas-file to plot bathymetry and grid')
+        call clo_add_com('    one or more str-files for instructions')
 
 	end subroutine plotutil_set_options
 

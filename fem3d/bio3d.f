@@ -51,19 +51,19 @@ c
 c weutro:
 c
 c       cambiamenti dei parametri adesso sono in param_venezia
-c       -> param non va piu' cambiato
+c       -> param non va piu'' cambiato
 c       -> bisogna scommentare la routine param_venezia
-c       rlim e' stato cambiato da Donata e Isabella
+c       rlim e'' stato cambiato da Donata e Isabella
 c       -> ho fatto il meglio per tenere tutte le versioni, ma
 c               prima o poi dobbiamo sistemarlo
 c       dt in source e dtl (weutro.h) non vengono utilizzati -> tolto
 c       cambiamenti di Donata sono segnati come LIGHTFIX
 c       -> il cambiamento in rlim non capisco
-c       luxlen legge da file lux.dat -> la cosa migliore e' di 
+c       luxlen legge da file lux.dat -> la cosa migliore e'' di 
 c               creare un link dal file che si vuole utilizzare
 c               sul file lux.dat, percio:
 c               ln -s ../input/kjmqday01.dat lux.dat
-c               in questa maniera non bisogna piu' cambiare il programma
+c               in questa maniera non bisogna piu'' cambiare il programma
 c       cambiamento in rintens (LIGHTFIX) non capisco
 c
 c bio3d:

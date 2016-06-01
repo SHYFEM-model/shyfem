@@ -174,6 +174,10 @@
         call clo_add_option('catmode cmode',0.,'concatenation mode')
         call clo_add_option('reg rstring',' ','regular interpolation')
 
+        call clo_add_option('area grd-file',' '
+     +			,'line delimiting area for -averbas option')
+	call clo_hide_option('area')
+
 	call clo_add_sep('additional information')
 	call clo_add_com('  nfile is file with nodes to extract')
 	call clo_add_com('  time is either integer for relative time or')
@@ -490,7 +494,7 @@ c averages vertically
 
 c***************************************************************
 
-        subroutine outfile_make_hkv(nkn,nel,nen3v,hev,hkv)
+        subroutine outfile_make_hkv(nkn,nel,nen3v,hm3v,hev,hkv)
 
 c averages vertically
 
@@ -498,6 +502,7 @@ c averages vertically
 
         integer nkn,nel
         integer nen3v(3,nel)
+        real hm3v(3,nel)
         real hev(nel)
         real hkv(nkn)
 
@@ -505,9 +510,10 @@ c averages vertically
         real h
 
         do ie=1,nel
-          h = hev(ie)
+          h = hev(ie)			!old way
           do ii=1,3
             k = nen3v(ii,ie)
+            h = hm3v(ii,ie)		!new way
             hkv(k) = max(hkv(k),h)
           end do
         end do
@@ -870,6 +876,7 @@ c***************************************************************
 
         z = 0.
         h = hkv(ki)
+	!write(6,*) 'ggguuu: ',z,h
         call write_profile_c(it,i,ki,ke,lmax,ivar,h,z
      +				,cv3(1,ki),hlv,hl)
 
@@ -947,6 +954,7 @@ c***************************************************************
         call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)
         call get_bottom_of_layer(bcenter,lmax,z,hl,hl)  !orig hl is overwritten
 
+	write(6,*) 'ggguuu: ',z,h,hl
         write(2,*) it,j,ke,ki,lmax,ivar
         do l=1,lmax
           write(2,*) hl(l),c(l)

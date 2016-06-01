@@ -10,6 +10,7 @@ c 21.01.2013    ggu	routines for handling scalar variables
 c 25.01.2013    ggu	new part for nos variable initialization
 c 28.01.2013    dbf	different types of vertical coordinates
 c 25.09.2013    ggu	new routines for writing time series
+c 31.05.2016    ggu	changed time variable to double precision
 c
 c notes :
 c
@@ -35,16 +36,37 @@ c	get file name
 c
 c******************************************************************
 c******************************************************************
+c module
+c******************************************************************
+c******************************************************************
+
+!==================================================================
+	module netcdf
+!==================================================================
+
+        integer, save :: dimids_2d(5)	!dimensions for 2D case
+        integer, save :: dimids_3d(5)	!dimensions for 3D case
+
+        integer, save :: rec_varid	!id for time
+        integer, save :: coord_varid(9)	!ids for coordinates
+
+!==================================================================
+	end module netcdf
+!==================================================================
+
+c******************************************************************
+c******************************************************************
 c open routines
 c******************************************************************
 c******************************************************************
 
 	subroutine nc_open_reg(ncid,nx,ny,nlv,flag,date0,time0,iztype)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
         integer ncid            !identifier (return)
 	integer nx,ny,nlv	!size of arrays
@@ -72,6 +94,7 @@ c-----------------------------------------
 
 	file_name = 'netcdf_reg.nc'
 	file_name = 'netcdf.nc'
+	file_name = 'out.nc'
 
 c-----------------------------------------
 C Create the file.
@@ -197,7 +220,10 @@ c---------------------
 
 c---------------------
 
-	retval = nf_def_var(ncid, 'time', NF_INT, 1, rec_dimid
+!	retval = nf_def_var(ncid, 'time', NF_INT, 1, rec_dimid
+!     +				,rec_varid)
+
+	retval = nf_def_var(ncid, 'time', NF_DOUBLE, 1, rec_dimid
      +				,rec_varid)
 	call nc_handle_err(retval)
 	varid = rec_varid
@@ -247,10 +273,11 @@ c******************************************************************
 
 	subroutine nc_open(ncid,nkn,nel,nlv,date0,time0,iztype)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid		!identifier (return)
 	integer nkn,nel,nlv	!size of arrays
@@ -277,6 +304,7 @@ C initialize parameters
 c-----------------------------------------
 
 	file_name = 'netcdf.nc'
+	file_name = 'out.nc'
 
 c-----------------------------------------
 C Create the file.
@@ -430,7 +458,10 @@ c---------------------
 
 c---------------------
 
-	retval = nf_def_var(ncid, 'time', NF_INT, 1, rec_dimid
+!	retval = nf_def_var(ncid, 'time', NF_INT, 1, rec_dimid
+!     +				,rec_varid)
+
+	retval = nf_def_var(ncid, 'time', NF_DOUBLE, 1, rec_dimid
      +				,rec_varid)
 	call nc_handle_err(retval)
 	varid = rec_varid
@@ -482,10 +513,11 @@ c******************************************************************
 
 c opens nc file for time series write
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	integer node		!total number of nodes for ts
@@ -567,12 +599,15 @@ c---------------------
 	text = 'latitude'
 	call nc_define_attr(ncid,what,text,varid)
 
-	retval = nf_def_var(ncid, 'time', NF_INT, 1, rec_dimid
+c---------------------
+
+!	retval = nf_def_var(ncid, 'time', NF_INT, 1, rec_dimid
+!     +				,rec_varid)
+
+	retval = nf_def_var(ncid, 'time', NF_DOUBLE, 1, rec_dimid
      +				,rec_varid)
 	call nc_handle_err(retval)
 	varid = rec_varid
-
-c---------------------
 
 	what = 'units'
 	call nc_convert_date(date0,time0,date)
@@ -645,10 +680,11 @@ c*****************************************************************
 
 	subroutine nc_open_read(ncid,file)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid		!identifier (return)
 	character*(*) file
@@ -668,10 +704,11 @@ c*****************************************************************
 
 	subroutine nc_dims_info(ncid)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 
@@ -696,10 +733,11 @@ c*****************************************************************
 
         subroutine nc_get_dim_name(ncid,dim_id,name)
 
+	use netcdf
+
         implicit none
 
-        include 'netcdf.inc'
-        include 'netcdf.h'
+	include 'netcdf.inc'
 
         integer ncid
         integer dim_id
@@ -716,10 +754,11 @@ c*****************************************************************
 
 	subroutine nc_get_dim_id(ncid,name,dim_id)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	character*(*) name
@@ -736,10 +775,11 @@ c*****************************************************************
 
 	subroutine nc_get_dim_len(ncid,dim_id,dim_len)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	integer dim_id
@@ -760,10 +800,11 @@ c*****************************************************************
 
 	subroutine nc_get_time_rec(ncid,irec,t)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	integer irec			!number of record
@@ -827,10 +868,11 @@ c*****************************************************************
 
 	subroutine nc_get_time_recs(ncid,trecs)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	integer trecs
@@ -862,10 +904,11 @@ c*****************************************************************
 
 	subroutine nc_vars_info(ncid)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 
@@ -896,10 +939,11 @@ c*****************************************************************
 
 c returns var_id = 0 if not found (no error)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	character*(*) name
@@ -920,10 +964,11 @@ c*****************************************************************
 
 	subroutine nc_get_var_name(ncid,var_id,name)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	integer var_id
@@ -940,10 +985,11 @@ c*****************************************************************
 
 	subroutine nc_get_var_totnum(ncid,nvars)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	integer nvars
@@ -959,10 +1005,11 @@ c*****************************************************************
 
 	subroutine nc_get_var_ndims(ncid,var_id,ndims,dimids)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	integer var_id
@@ -983,10 +1030,11 @@ c*****************************************************************
 
 	subroutine nc_check_var_type(ncid,var_id,type)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	integer var_id
@@ -1020,10 +1068,11 @@ c*****************************************************************
 
 	subroutine nc_get_global_attr(ncid,aname,atext)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	character*(*) aname
@@ -1037,10 +1086,11 @@ c*****************************************************************
 
 	subroutine nc_get_var_attr(ncid,var_id,aname,atext)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	integer var_id
@@ -1063,10 +1113,11 @@ c*****************************************************************
 
 	subroutine nc_get_var_int(ncid,var_id,data)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	integer var_id
@@ -1083,10 +1134,11 @@ c*****************************************************************
 
 	subroutine nc_get_var_real(ncid,var_id,data)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	integer var_id
@@ -1106,10 +1158,11 @@ c*****************************************************************
 
 c reads time record trec of variable name
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	character*(*) name	!name of variable to read
@@ -1205,10 +1258,11 @@ c*****************************************************************
 
 	subroutine nc_define_2d_reg(ncid,what,var_id)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	character*(*) what
@@ -1226,10 +1280,11 @@ c*****************************************************************
 
 	subroutine nc_define_3d_reg(ncid,what,var_id)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	character*(*) what
@@ -1247,10 +1302,11 @@ c*****************************************************************
 
 	subroutine nc_define_2d(ncid,what,var_id)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	character*(*) what
@@ -1268,10 +1324,11 @@ c*****************************************************************
 
 	subroutine nc_define_3d(ncid,what,var_id)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	character*(*) what
@@ -1293,10 +1350,11 @@ c*****************************************************************
 
 	subroutine nc_define_attr(ncid,what,def,var_id)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	character*(*) what,def
@@ -1318,10 +1376,11 @@ c*****************************************************************
 
 	subroutine nc_define_attr_real(ncid,what,value,var_id)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	character*(*) what
@@ -1342,10 +1401,11 @@ c*****************************************************************
 
 	subroutine nc_define_range(ncid,rmin,rmax,flag,var_id)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	real rmin,rmax,flag
@@ -1480,11 +1540,11 @@ c*****************************************************************
 	subroutine nc_write_coords_reg(ncid,nx,ny,xlon,ylat,depth)
 
 	use levels
+	use netcdf
 
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	integer nx,ny
@@ -1531,11 +1591,11 @@ c*****************************************************************
 	use mod_depth
 	use levels
 	use basin
+	use netcdf
 
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 
@@ -1583,10 +1643,11 @@ c*****************************************************************
 
 	subroutine nc_write_coords_ts(ncid,lon,lat)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
         real lon(1), lat(1)
@@ -1621,18 +1682,42 @@ c*****************************************************************
 
 	subroutine nc_write_time(ncid,irec,it)
 
+	use netcdf
+
 	implicit none
 
 	include 'netcdf.inc'
-	include 'netcdf.h'
 
 	integer ncid
 	integer irec
 	integer it
 
 	integer retval
+	double precision dtime
 
-	retval = nf_put_vara_int(ncid, rec_varid, irec, 1, it)
+	dtime = it
+	retval = nf_put_vara_double(ncid, rec_varid, irec, 1, dtime)
+	call nc_handle_err(retval)
+
+	end
+
+c*****************************************************************
+
+	subroutine nc_write_dtime(ncid,irec,dtime)
+
+	use netcdf
+
+	implicit none
+
+	include 'netcdf.inc'
+
+	integer ncid
+	integer irec
+	double precision dtime
+
+	integer retval
+
+	retval = nf_put_vara_double(ncid, rec_varid, irec, 1, dtime)
 	call nc_handle_err(retval)
 
 	end
@@ -2207,14 +2292,14 @@ c*****************************************************************
 	else if( ivar .eq. 367 ) then	! generic tracer
 	  name = 'tracer'
 	  what = 'long_name'
-	  std = 'river influence index'
+	  std = 'river_influence_index'
 	  units = '1'
 	  cmin = 0.
 	  cmax = 20.
 	else if( ivar .eq. 10 ) then	! generic tracer
 	  name = 'tracer'
 	  what = 'long_name'
-	  std = 'generic tracer'
+	  std = 'generic_tracer'
 	  units = '1'
 	  cmin = 0.
 	  cmax = 110.
@@ -2237,7 +2322,7 @@ c*****************************************************************
 	  stop 'error stop descr_var'
 	end if
 
-	write(6,*) 'writing description for variable ',ivar,name(1:30)
+	write(6,*) 'writing description for variable ',ivar,trim(name)
 
 	if( dim .eq. 2 ) then
 	  if( breg ) then

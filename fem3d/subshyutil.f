@@ -88,6 +88,7 @@
 	  call shy_set_layerindex(id,ilhv,ilhkv)
 	else		!2d
 	  haux(1) = -1.
+	  haux(1) = 10000.
 	  allocate(ile(nel),ilk(nkn))
 	  ile = 1.
 	  ilk = 1.

@@ -133,7 +133,7 @@ c--------------------------------------------------------------
 	call init_sigma_info(nlv,hlv)
 
 	if( bneedbasin ) then
-	  call outfile_make_hkv(nkn,nel,nen3v,hev,hkv)
+	  call outfile_make_hkv(nkn,nel,nen3v,hm3v,hev,hkv)
           call ilhk2e(nkn,nel,nen3v,ilhkv,ilhv)
           call adjust_layer_index(nel,nlv,hev,hlv,ilhv)
 	  call init_volume(nlvdi,nkn,nel,nlv,nen3v,ilhkv

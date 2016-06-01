@@ -5,15 +5,16 @@
 
 	implicit none
 
-
 	integer, save :: nwrite = 0
 
 	integer, save :: iformat = 1
 	integer, save :: ntype = 1
+
+	logical, save :: breg = .false.
 	integer, save :: nxreg = 0
 	integer, save :: nyreg = 0
+	integer, save :: lmaxreg = 0
 	real, save :: regpar(7) = 0.
-	logical, save :: breg = .false.
 
 	real, save, allocatable :: s2dvalue(:)
 	real, save, allocatable :: zvalue(:)
@@ -24,7 +25,18 @@
 	real, save, allocatable :: xcoord(:)
 	real, save, allocatable :: ycoord(:)
 	real, save, allocatable :: hcoord(:)
-	real, save, allocatable :: fm(:,:)
+	real, save, allocatable :: fmreg(:,:)
+	real, save, allocatable :: xlon(:)
+	real, save, allocatable :: ylat(:)
+
+	! arrays for nc routines
+
+	integer, save :: iwrite_nc = 0
+	integer, save, allocatable :: var_ids(:)
+	real, save, allocatable :: var3d(:)
+	real, save, allocatable :: value2d(:,:)
+	real, save, allocatable :: value3d(:,:,:)
+	real, save, allocatable :: vnc3d(:,:,:)
 
 !==================================================================
         end module shyelab_out
@@ -34,7 +46,7 @@
 !***************************************************************
 !***************************************************************
 
-	subroutine shyelab_init_output(id,idout)
+	subroutine shyelab_init_output(id,idout,nvar,ivars)
 
 ! initializes in case of btrans, bout, bsplit, bsumvar
 !
@@ -49,12 +61,14 @@
 	implicit none
 
 	integer id,idout
+	integer nvar
+	integer ivars(nvar)
 
-	integer ierr,iunit,np
+	integer ierr,iunit,np,ncid
 	integer nxy
 	logical bshy
 	character*60 file,form
-	character*80 string
+	character*80 string,title
 	integer ifileo
 
 	if( .not. boutput ) return
@@ -68,9 +82,11 @@
 	  allocate(svalue(nlvdi,nxy),s2dvalue(nxy))
 	  allocate(zvalue(nxy),uvalue(nlvdi,nxy),vvalue(nlvdi,nxy))
 	  allocate(ilcoord(nxy),xcoord(nxy),ycoord(nxy),hcoord(nxy))
-	  allocate(fm(4,nxy))
-	  call fem_regular_setup(nxreg,nyreg,regpar,ilhv,hm3v
-     +				,fm,ilcoord,xcoord,ycoord,hcoord)
+	  allocate(fmreg(4,nxy))
+	  allocate(xlon(nxreg),ylat(nyreg))
+	  call fem_regular_setup(nxreg,nyreg,regpar,ilhv
+     +				,fmreg,ilcoord,xcoord,ycoord,hcoord
+     +				,xlon,ylat)
 	  breg = .true.
 	  ntype = ntype + 10
 	else
@@ -88,15 +104,15 @@
 	  stop 'error stop shyelab_init_output: regular output'
 	end if
 
-	if( breg .and. outformat == 'gis' ) then
-	  write(6,*) 'regular output for gis not yet ready'
-	  stop 'error stop shyelab_init_output: gis not ready'
-	end if
+	!if( breg .and. outformat == 'gis' ) then
+	!  write(6,*) 'regular output for gis not yet ready'
+	!  stop 'error stop shyelab_init_output: gis not ready'
+	!end if
 
-	if( breg .and. outformat == 'nc' ) then
-	  write(6,*) 'regular output for nc not yet ready'
-	  stop 'error stop shyelab_init_output: nc not ready'
-	end if
+	!if( breg .and. outformat == 'nc' ) then
+	!  write(6,*) 'regular output for nc not yet ready'
+	!  stop 'error stop shyelab_init_output: nc not ready'
+	!end if
 
 	if( bsplit ) then
 	  ! nothing to initialize ... is done later
@@ -122,6 +138,10 @@
 	    iunit = ifileo(60,file,form,'unknown')
 	    if( iunit <= 0 ) goto 74
 	    idout = iunit
+	  else if( outformat == 'nc' ) then
+	    call shy_get_title(id,title)
+	    call nc_output_init(ncid,title,nvar,ivars)
+	    idout = ncid
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'
@@ -155,7 +175,7 @@
 
 	integer id,idout
 	double precision dtime
-	integer nvar,ftype
+	integer nvar,ftype,ncid
 	logical bscalar,bhydro
 
 	integer ierr,iunit,np,nvers,lmax
@@ -166,8 +186,6 @@
         bhydro = ftype == 1
         bscalar = ftype == 2
 
-	if( bhydro ) return
-
 	if( bsplit ) then
 	  ! nothing to be done
 	else
@@ -176,6 +194,7 @@
 	  else if( outformat == 'gis' ) then
 	    ! nothing to be done
 	  else if( outformat == 'fem' ) then
+	    if( bhydro ) return
 	    iunit = idout
 	    nvers = 0
 	    np = nkn
@@ -186,6 +205,9 @@
      +                          ,nvers,np,lmax
      +                          ,nvar,ntype
      +                          ,nlvdi,hlv,datetime_elab,regpar)
+	  else if( outformat == 'nc' ) then
+	    ncid = idout
+	    call nc_output_time(ncid,dtime)
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'
@@ -196,7 +218,7 @@
 
 !***************************************************************
 
-	subroutine shyelab_record_output(id,idout,dtime,ivar,n,m
+	subroutine shyelab_record_output(id,idout,dtime,ivar,iv,n,m
      +					,lmax,nlvddi,cv3)
 
 ! initializes record in case of btrans, bout, bsplit, bsumvar
@@ -211,7 +233,7 @@
 
 	integer id,idout
 	double precision dtime
-	integer ivar,n,m
+	integer ivar,iv,n,m,ncid,var_id
 	integer lmax,nlvddi
 	real cv3(nlvddi,n*m)
 
@@ -242,8 +264,10 @@
 	  np = nkn
 	  svalue(:,1:nkn) = cv3(:,1:nkn)
 	else if( n == nel ) then
-	  !convert from nel to nkn
-	  stop 'error stop shyelab_record_output: n==nel not ready'
+	  if( .not. bhydro ) then
+	    !convert from nel to nkn
+	    stop 'error stop shyelab_record_output: n==nel not ready'
+	  end if
 	else if( .not. bsplit .and. .not. bshy ) then
 	  goto 98
 	end if
@@ -273,6 +297,10 @@
      +                          ,string
      +                          ,ilcoord,hcoord
      +                          ,nlvddi,svalue)
+	  else if( outformat == 'nc' ) then
+	    ncid = idout
+	    var_id = var_ids(iv)
+	    call nc_output_record(ncid,var_id,cv3)
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'
@@ -315,7 +343,7 @@
 	real cv3all(nlvddi,nndim,0:nvar)
 
 	integer ierr,iunit,nvers
-	integer it,nb,ivar,np
+	integer it,nb,ivar,np,ncid
 	integer id_out
 	integer ftype
 	logical bscalar,bhydro,bshy
@@ -377,6 +405,9 @@
 	  else if( outformat == 'fem' ) then	!also covers breg
 	    call fem_write_hydro(idout,dtime,np,nlvddi
      +					,zvalue,uvalue,vvalue)
+	  else if( outformat == 'nc' ) then
+	    ncid = idout
+	    call nc_output_hydro(ncid,znv,uprv,vprv)
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'
@@ -404,7 +435,7 @@
 	integer nvar
 
 	integer ierr,iunit,nvers
-	integer it,nb,ivar
+	integer it,nb,ivar,ncid
 	integer id_out
 	integer ftype
 	logical bscalar,bhydro,bshy
@@ -446,6 +477,10 @@
 	    write(6,*) 'extract_*.gis'
 	  else if( outformat == 'fem' ) then
 	    write(6,*) 'out.fem'
+	  else if( outformat == 'nc' ) then
+	    ncid = idout
+	    call nc_output_final(ncid)
+	    write(6,*) 'out.nc'
 	  else
 	    write(6,*) 'outformat = ',trim(outformat)
 	    stop 'error stop: outformat not recognized'
@@ -594,14 +629,23 @@
 	  y1 = maxval(ygv)
 	end if
 
+	if( ianz /= 6 ) then		!correct x0/y0
+          x0 = dx * (int(x0/dx))
+          y0 = dy * (int(y0/dy))
+          x1 = dx * (int(x1/dx)+1)
+          y1 = dy * (int(y1/dy)+1)
+	end if
+
         nx = 1 + nint((x1-x0)/dx)
         ny = 1 + nint((y1-y0)/dy)
-	if( ianz == 2 ) then		!correct x0/y0
-	  ddx = (nx-1)*dx - (x1-x0)
-	  if( ddx > 0. ) x0 = x0 - ddx/2.
-	  ddy = (ny-1)*dy - (y1-y0)
-	  if( ddy > 0. ) y0 = y0 - ddy/2.
-	end if
+
+	!if( ianz /= 6 ) then		!correct x0/y0
+	!  ddx = (nx-1)*dx - (x1-x0)
+	!  if( ddx > 0. ) x0 = x0 - ddx/2.
+	!  ddy = (ny-1)*dy - (y1-y0)
+	!  if( ddy > 0. ) y0 = y0 - ddy/2.
+	!end if
+
         x1 = x0 + (nx-1)*dx
         y1 = y0 + (ny-1)*dy
 
@@ -613,25 +657,31 @@
 
 !***************************************************************
 
-	subroutine fem_regular_setup(nx,ny,regpar,ilhv,hm3v
-     +				,fm,ilcoord,xcoord,ycoord,hcoord)
+	subroutine fem_regular_setup(nx,ny,regpar,ilhv
+     +				,fmreg,ilcoord,xcoord,ycoord,hcoord
+     +				,xlon,ylat)
+
+	use basin
 
 	implicit none
 
 	integer nx,ny
 	real regpar(7)
-	integer ilhv(*)
-	real hm3v(3,*)
-	real fm(4,nx,ny)
+	integer ilhv(nel)
+	real fmreg(4,nx,ny)
 	integer ilcoord(nx,ny)
 	real xcoord(nx,ny)
 	real ycoord(nx,ny)
 	real hcoord(nx,ny)
+	real xlon(nx)
+	real ylat(ny)
 
 	integer ix,iy,ie
 	real dx,dy,x0,y0,x,y
+	real hkv(nkn)
 
-	call av2fm(fm,nx,ny)
+	call makehkv_minmax(hkv,+1)
+	call av2fm(fmreg,nx,ny)
 
 	ilcoord = 0
 	hcoord = 0.
@@ -647,12 +697,26 @@
 	    x = x0 + (ix-1)*dx
 	    xcoord(ix,iy) = x
 	    ycoord(ix,iy) = y
-	    ie = fm(4,ix,iy)
+	    ie = fmreg(4,ix,iy)
 	    if( ie > 0 ) then
 	      ilcoord(ix,iy) = ilhv(ie)
 	      hcoord(ix,iy) = sum(hm3v(:,ie))/3.	!average in element
 	    end if
 	  end do
+	end do
+
+	! the next way to compute depth is compatible with nos/ous2nc
+
+	call fm2am2d(hkv,nx,ny,fmreg,hcoord)	!other way to compute depth
+
+	do ix=1,nx
+	  x = x0 + (ix-1)*dx
+	  xlon(ix) = x
+	end do
+
+	do iy=1,ny
+	  y = y0 + (iy-1)*dy
+	  ylat(iy) = y
 	end do
 
 	end
@@ -676,10 +740,10 @@
 
 	if( lmax <= 1 ) then
 	  fem2d = cv3(1,:)
-	  call fm2am2d(fem2d,nxreg,nyreg,fm,am2d)
+	  call fm2am2d(fem2d,nxreg,nyreg,fmreg,am2d)
 	  am(1,:) = am2d
 	else
-	  call fm2am3d(nlvdi,ilhv,cv3,nlvdi,nxreg,nyreg,fm,am)
+	  call fm2am3d(nlvdi,ilhv,cv3,nlvdi,nxreg,nyreg,fmreg,am)
 	end if
 
 	end

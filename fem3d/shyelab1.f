@@ -39,6 +39,8 @@
 	real, allocatable :: cv3all(:,:,:)
 
 	integer, allocatable :: idims(:,:)
+	integer, allocatable :: ivars(:)
+	character*80, allocatable :: strings(:)
 	integer, allocatable :: il(:)
 
 	real, allocatable :: znv(:)
@@ -116,6 +118,8 @@
         call ev_init(nel)
 	call set_ev
 
+	if( bverb ) write(6,*) 'hlv: ',nlv,hlv
+
 	!--------------------------------------------------------------
 	! set dimensions and allocate arrays
 	!--------------------------------------------------------------
@@ -140,6 +144,7 @@
 	allocate(cv3(nlv,nndim))
 	allocate(cv3all(nlv,nndim,0:nvar))
 	allocate(idims(4,nvar))
+        allocate(ivars(nvar),strings(nvar))
 	allocate(znv(nkn),uprv(nlv,nkn),vprv(nlv,nkn))
 	allocate(sv(nlv,nkn),dv(nlv,nkn))
 
@@ -197,7 +202,8 @@
 
 	boutput = boutput .or. btrans .or. bsplit .or. bsumvar
 
-	call shyelab_init_output(id,idout)
+        call shy_get_string_descriptions(id,nvar,ivars,strings)
+	call shyelab_init_output(id,idout,nvar,ivars)
 
 !--------------------------------------------------------------
 ! loop on data
@@ -284,10 +290,10 @@
 
 	  if( b2d ) then
 	    call shy_make_vert_aver(idims(:,iv),nndim,cv3,cv2)
-	    call shyelab_record_output(id,idout,dtime,ivar,n,m
+	    call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
      +						,1,1,cv2)
 	  else
-	    call shyelab_record_output(id,idout,dtime,ivar,n,m
+	    call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
      +						,nlv,nlvdi,cv3)
 	  end if
 
@@ -343,7 +349,7 @@
 	      m = idims(2,iv)
 	      lmax = idims(3,iv)
 	      ivar = idims(4,iv)
-	      call shyelab_record_output(id,idout,dtime,ivar,n,m
+	      call shyelab_record_output(id,idout,dtime,ivar,iv,n,m
      +						,lmax,nlvdi,cv3)
 	    end if
 	   end do

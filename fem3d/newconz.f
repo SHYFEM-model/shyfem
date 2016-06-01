@@ -58,12 +58,15 @@ c initializes tracer computation
 
 	include 'femtime.h'
 
-	integer nvar,nbc,nintp,i
+	integer nvar,nbc,nintp,i,id,idc
+	integer ishyff
 	integer nmin
 	real cdef(1)
-	double precision dtime0
+	double precision dtime,dtime0
 
-	logical has_restart,has_output
+	logical has_restart
+	logical has_output,next_output
+	logical has_output_d,next_output_d
 	integer nbnds
 	real getpar
 
@@ -91,7 +94,9 @@ c-------------------------------------------------------------
 	rkpar=getpar('chpar')
 	difmol=getpar('difmol')
 	contau = getpar('contau')
+	ishyff = nint(getpar('ishyff'))
 
+	dtime = t_act
 	nvar = iconz
 	allocate(tauv(nvar),cdefs(nvar),massv(nvar))
 	tauv = contau
@@ -110,9 +115,40 @@ c-------------------------------------------------------------
 	end if
 
         call init_output('itmcon','idtcon',ia_out)
+	if( ishyff == 1 ) ia_out = 0
 	if( has_output(ia_out) ) then
           call open_scalar_file(ia_out,nlv,nvar,'con')
+	  if( next_output(ia_out) ) then
+	    if( nvar == 1 ) then
+              idc = 10       !for tracer
+	      call write_scalar_file(ia_out,idc,nlvdi,cnv)
+	    else if( nvar > 1 ) then
+	      do i=1,nvar
+	        idc = 30 + i
+	        call write_scalar_file(ia_out,idc,nlvdi,conzv(1,1,i))
+	      end do
+	    end if
+	  end if
 	end if
+
+        call init_output_d('itmcon','idtcon',da_out)
+        if( ishyff == 0 ) da_out = 0
+        if( has_output_d(da_out) ) then
+	  call shyfem_init_scalar_file('conz',nvar,.false.,id)
+          da_out(4) = id
+          if( next_output_d(da_out) ) then
+	    if( nvar == 1 ) then
+	      idc = 10
+	      call shy_write_scalar_record(id,dtime,idc,nlvdi,cnv)
+	    else
+	      do i=1,nvar
+	        idc = 30 + i
+	        call shy_write_scalar_record(id,dtime,idc,nlvdi
+     +						,conzv(1,1,i))
+	      end do
+            end if
+          end if
+        end if
 
         call getinfo(ninfo)
 
@@ -262,11 +298,12 @@ c*********************************************************************
 
 	include 'femtime.h'
 
-	integer id,nvar,i
+	integer id,nvar,i,idc
         real cmin,cmax,ctot
 	real v1v(nkn)
+	double precision dtime
 
-	logical next_output
+	logical next_output,next_output_d
 
 	if( iconz < 0 ) return
 
@@ -274,18 +311,36 @@ c-------------------------------------------------------------
 c write to file
 c-------------------------------------------------------------
 
+	dtime = t_act
+	nvar = iconz
+
 	if( next_output(ia_out) ) then
-	  if( iconz == 1 ) then
-            id = 10       !for tracer
-	    call write_scalar_file(ia_out,id,nlvdi,cnv)
-	  else if( iconz > 1 ) then
-	    nvar = iconz
+	  if( nvar == 1 ) then
+            idc = 10       !for tracer
+	    call write_scalar_file(ia_out,idc,nlvdi,cnv)
+	  else if( nvar > 1 ) then
 	    do i=1,nvar
-	      id = 30 + i
-	      call write_scalar_file(ia_out,id,nlvdi,conzv(1,1,i))
+	      idc = 30 + i
+	      call write_scalar_file(ia_out,idc,nlvdi,conzv(1,1,i))
 	    end do
 	  end if
 	end if
+
+        if( next_output_d(da_out) ) then
+	  id = nint(da_out(4))
+	  if( nvar == 1 ) then
+            idc = 10       !for tracer
+	    call shy_write_scalar_record(id,dtime,idc,nlvdi,cnv)
+	  else if( nvar > 1 ) then
+	    do i=1,nvar
+	      idc = 30 + i
+	      call shy_write_scalar_record(id,dtime,idc,nlvdi
+     +						,conzv(1,1,i))
+	    end do
+          end if
+        end if
+
+        call getinfo(ninfo)
 
 c-------------------------------------------------------------
 c write to info file

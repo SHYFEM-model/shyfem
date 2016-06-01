@@ -134,7 +134,7 @@ SOLVER=SPARSKIT
 ##############################################
 
 NETCDF=false
-#NETCDF=true
+NETCDF=true
 #NETCDFDIR = /usr/local/netcdf
 NETCDFDIR = /usr
 
@@ -170,7 +170,7 @@ GOTM=true
 ##############################################
 
 ECOLOGICAL = NONE
-#ECOLOGICAL = EUTRO
+ECOLOGICAL = EUTRO
 #ECOLOGICAL = ERSEM
 #ECOLOGICAL = AQUABC
 

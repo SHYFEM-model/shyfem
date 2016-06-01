@@ -139,7 +139,7 @@ c--------------------------------------------------------------
 	call init_sigma_info(nlv,hlv)
 
 	if( bneedbasin ) then
-	  call outfile_make_hkv(nkn,nel,nen3v,hev,hkv)
+	  call outfile_make_hkv(nkn,nel,nen3v,hm3v,hev,hkv)
 	  call ev_init(nelous)
           call set_ev
 	  call ilhe2k(nkn,nel,nen3v,ilhv,ilhkv)

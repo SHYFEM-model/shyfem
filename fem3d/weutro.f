@@ -1006,7 +1006,7 @@ C
 C
 C        Initialize internal clock for Dick Smith Light Formulation
 C
-C             Convert IC'S for Phyt from ug/L to mg C/L
+C             Convert IC''S for Phyt from ug/L to mg C/L
 C             Set all SOD Thetas to 1.0 if equal 0
 C
 c      DO 1010 ISEG = 1, NOSEG
@@ -1892,7 +1892,7 @@ C*
 C* Using the method presented in:
 C*
 C*           Jour. of Env Eng, Vol. 109, NO.3,PP.731-752,
-C*           June 1983, Author: D.J.O'Connor, TITLE: "Wind Effects on
+C*           June 1983, Author: D.J.O''Connor, TITLE: "Wind Effects on
 C*           Gas- Liquid Transfer Coefficients"
 C*
 C*====================================================================
@@ -1910,13 +1910,13 @@ C*   Parameters used in the model include:
 C*
 C*        Transitional Shear Velocity - UT(cm/sec)
 C*        Critical Shear Velocity - UC (cm/sec)
-C*        Vonkarman's Constant (KARMAN)
+C*        Vonkarman''s Constant (KARMAN)
 C*        Equilibrium Roughness - ZE (cm)
-C*        1/LAM Is a Reynold's Number
+C*        1/LAM Is a Reynold''s Number
 C*        GAM is a a Nondimensional Coefficient Dependent on
 C*        Water Body Size (WTYPE).
 C*        LAM, GAM, UT, UC and ZE are Dependent on Water Body
-C*        Size (See O'Conners Paper for Table of Values).
+C*        Size (See O''Conners Paper for Table of Values).
 C*
 C*       UT       UC      ZE    LAM     GAM
 C*       10.0     11.    .35    3.0     5.          Large Scale
@@ -2130,7 +2130,7 @@ C         to depth and velocity terms and assign value to REAK
 C
       IF (AVDEPE .GT. 0.61) GO TO 1000
 C
-C          Use Owen's formulation for reaeration
+C          Use Owen''s formulation for reaeration
 C
       REAK = 5.349
       EXPREV = 0.67
