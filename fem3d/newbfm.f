@@ -10,6 +10,7 @@ c						shell for conz (new version)
 c revision log :
 c
 c 22.02.2016    ggu&eps     new bfm routines created from newconz
+c 06.06.2016    ggu         initialization from file changed
 c
 c*********************************************************************
 
@@ -128,7 +129,7 @@ c-------------------------------------------------------------
 
         if( .not. has_restart(4) ) then	!no restart of conzentrations
 	  do i=1,nvar
-	    call conini0(nlvdi,bfmv(1,1,i),bfm_defs(i))
+	    bfmv(:,:,i) = bfm_defs(i)
 	  end do
 	  call bfm_init_file(itanf,nvar,nlvdi,nlv,nkn,bfmv) !read from file
 	end if
@@ -264,37 +265,37 @@ c*********************************************************************
 
 c*********************************************************************
 
-        subroutine bfm_init_file(it,nvar,nlvddi,nlv,nkn,cnv)
+        subroutine bfm_init_file(it,nvar,nlvddi,nlv,nkn,val)
 
 c initialization of bfm from file
 
         implicit none
-
-        include 'param.h'
 
         integer it
         integer nvar
         integer nlvddi
         integer nlv
         integer nkn
-        real cnv(nlvddi,nkn)
+        real val(nlvddi,nkn,nvar)
 
+        integer id
+	double precision dtime
+	real val0(nvar)
         character*80 bfm_file
-
-        integer itc
-        integer iubfm(3)
 
         call getfnm('bfmini',bfm_file)
 
-	itc = it
+	dtime = it
+	val0 = 0.	!default initial conditions
+	val = 0.	!set variables to zero
 
         if( bfm_file .ne. ' ' ) then
-          write(6,*) 'bfm_init_file: opening file for concentration'
-          call tracer_file_open(bfm_file,it,nvar,nkn,nlv,iubfm)
-	  call tracer_file_descrp(iubfm,'bfm init')
-          call tracer_next_record(itc,iubfm,nvar,nlvddi,nkn,nlv,bfmv)
-          call tracer_file_close(iubfm)
-          write(6,*) 'bfm variables initialized from file ',bfm_file
+          write(6,*) 'bfm_init_file: opening file for bfm'
+          call tracer_file_open(bfm_file,dtime,nvar,nkn,nlv,val0,id)
+	  call tracer_file_descrp(id,'bfm init')
+	  call tracer_file_next_record(dtime,id,nvar,nlvddi,nkn,nlv,val)
+          call tracer_file_close(id)
+	  write(6,*) 'bfm variables initialized from file ',trim(bfm_file)
         end if
 
 	end subroutine bfm_init_file

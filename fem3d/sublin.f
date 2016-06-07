@@ -21,6 +21,7 @@ c 19.11.1999    ggu	isolated from subflxa
 c 02.12.1999    ggu	new routine extrline, nextline substitutes extrli
 c 20.01.2000    ggu	new routine revline
 c 28.04.2009    ggu     links re-structured
+c 06.06.2016    ggu     module added, new routines for bnd and grd lines
 c
 c note :
 c
@@ -28,6 +29,261 @@ c line nodes are stored consecutive in inode (dimension ndim)
 c a value of zero devides lines from each other
 c any number of zeros between lines (and leading and trailing) are allowed
 c
+c******************************************************************
+c******************************************************************
+c******************************************************************
+
+!==================================================================
+	module lines
+!==================================================================
+
+        implicit none
+
+        type, private :: entry
+
+          integer :: nlines
+          integer :: nnodes
+          integer :: nfill
+          integer, allocatable :: inum(:)
+          integer, allocatable :: itype(:)
+          integer, allocatable :: start(:)
+          integer, allocatable :: end(:)
+          real, allocatable :: depth(:)
+          integer, allocatable :: nodes(:)
+          real, allocatable :: xv(:)
+          real, allocatable :: yv(:)
+
+        end type entry
+
+        integer, save, private :: idlast = 0
+        integer, save, private :: ndim = 0
+        type(entry), save, private, allocatable :: pentry(:)
+
+!==================================================================
+	contains
+!==================================================================
+
+        subroutine lines_init_alloc
+
+        type(entry), allocatable :: paux(:)
+
+        if( ndim == 0 ) then
+          ndim = 10
+          allocate(pentry(ndim))
+          return
+        else
+          ndim = ndim*2
+          allocate(paux(ndim))
+          paux(1:ndim/2) = pentry(1:ndim/2)
+          call move_alloc(paux,pentry)
+        end if
+
+        end subroutine lines_init_alloc
+
+!******************************************************************
+
+        subroutine lines_init_new_id(id)
+
+        integer id
+
+        idlast = idlast + 1
+        if( idlast > ndim ) then
+          call lines_init_alloc
+        end if
+        id = idlast
+
+        call lines_init_id(id)
+
+        end subroutine lines_init_new_id
+
+!******************************************************************
+
+        subroutine lines_init_id(id)
+
+        integer id
+
+        if( id > ndim ) then
+          stop 'error stop lines_init_id: ndim'
+        end if
+
+        pentry(id)%nlines = 0
+
+        end subroutine lines_init_id
+
+!******************************************************************
+
+        subroutine lines_init_new_lines(id,nli,nnodes)
+
+        integer id
+        integer nli
+        integer nnodes
+
+        call lines_init_new_id(id)
+
+        pentry(id)%nlines = nli
+        pentry(id)%nnodes = nnodes
+        pentry(id)%nfill = 0
+
+	allocate(pentry(id)%inum(nli))
+	allocate(pentry(id)%itype(nli))
+	allocate(pentry(id)%start(nli))
+	allocate(pentry(id)%end(nli))
+	allocate(pentry(id)%depth(nli))
+
+	allocate(pentry(id)%nodes(nnodes))
+	allocate(pentry(id)%xv(nnodes))
+	allocate(pentry(id)%yv(nnodes))
+
+        end subroutine lines_init_new_lines
+
+!******************************************************************
+
+	subroutine lines_set_line(id,il,in,it,n,d,nodes,x,y)
+
+        integer id
+        integer il
+        integer in,it
+	real d
+	integer n
+	integer nodes(n)
+	real x(n)
+	real y(n)
+
+	integer ibase
+	integer nli
+	integer nnodes
+
+	nli = pentry(id)%nlines
+	nnodes = pentry(id)%nnodes
+	ibase = pentry(id)%nfill
+
+	if( il < 1 .or. il > nli ) then
+	  write(6,*) 'il,nli: ',il,nli
+	  stop 'error stop lines_set_line: il out of range'
+	end if
+
+	if( ibase + n > nnodes ) then
+	  write(6,*) 'ibase,n,nnodes: ',ibase,n,nnodes
+	  stop 'error stop lines_set_line: too many nodes'
+	end if
+
+	pentry(id)%nfill = ibase + n
+
+	pentry(id)%inum(il) = in
+	pentry(id)%itype(il) = it
+	pentry(id)%start(il) = ibase + 1
+	pentry(id)%end(il) = ibase + n
+	pentry(id)%depth(il) = d
+
+	pentry(id)%nodes(ibase+1:ibase+n) = nodes
+	pentry(id)%xv(ibase+1:ibase+n) = x
+	pentry(id)%yv(ibase+1:ibase+n) = y
+
+	end subroutine lines_set_line
+
+!******************************************************************
+
+	subroutine lines_get_line(id,il,in,it,d,n,nodes,x,y)
+
+        integer id
+        integer il
+        integer in,it
+	real d
+	integer n
+	integer nodes(n)
+	real x(n)
+	real y(n)
+
+	integer is,ie
+
+	in = pentry(id)%inum(il)
+	it = pentry(id)%itype(il)
+	is = pentry(id)%start(il)
+	ie = pentry(id)%end(il)
+	d = pentry(id)%depth(il)
+
+	nodes = pentry(id)%nodes(is:ie)
+	x = pentry(id)%xv(is:ie)
+	y = pentry(id)%yv(is:ie)
+
+	end subroutine lines_get_line
+
+!******************************************************************
+
+	subroutine lines_make_node_list(id,nnodes,nlist)
+
+	integer id,nnodes,nlist
+
+	logical binline
+	integer nli,i,n
+
+	!-----------------------------------
+	! count lines in list (one or more 0 are used to seperate lines)
+	!-----------------------------------
+
+	nli = 0
+	binline = .false.
+	do i=1,nnodes
+	  n = nlist(i)
+	  if( n > 0 ) then
+	    if( .not. binline ) then
+	      nli = nli + 1
+	      binline = .true.
+	    end if
+	  else
+	    if( binline ) then
+	      binline = .false.
+	    end if
+	  end if
+	end do
+
+	!-----------------------------------
+	! initialize new list
+	!-----------------------------------
+
+        call lines_init_new_lines(id,nli,nnodes)
+
+	pentry(id)%itype(:) = 0
+	pentry(id)%depth(:) = 0.
+	pentry(id)%xv(:) = 0.
+	pentry(id)%yv(:) = 0.
+
+	!-----------------------------------
+	! insert in list
+	!-----------------------------------
+
+	nli = 0
+	binline = .false.
+	do i=1,nnodes
+	  n = nlist(i)
+	  if( n > 0 ) then
+	    if( .not. binline ) then
+	      nli = nli + 1
+	      binline = .true.
+	      pentry(id)%inum(nli) = nli
+	      pentry(id)%start(nli) = i
+	    end if
+	  else
+	    if( binline ) then
+	      binline = .false.
+	      pentry(id)%end(nli) = i-1
+	    end if
+	  end if
+	end do
+	if( binline ) pentry(id)%end(nli) = nnodes
+
+	!-----------------------------------
+	! end of routine
+	!-----------------------------------
+
+	end subroutine lines_make_node_list
+
+!==================================================================
+	end module lines
+!==================================================================
+
+c******************************************************************
+c******************************************************************
 c******************************************************************
 
 	function klineck(n,kline)
@@ -137,8 +393,6 @@ c tests for adjacency between nodes
 	logical iskadj
 	integer k1,k2
 	integer elems(maxlnk)
-
-	include 'param.h'
 
 	integer n,i,ie,ii
 
@@ -281,6 +535,206 @@ c reverses line
 	  kline(i) = kmem
 	end do
 
+	end
+
+c**********************************************************************
+c**********************************************************************
+c**********************************************************************
+
+	subroutine bnd_internal_file(file,binsert,nli,nnodes,xv,yv,ind)
+
+	implicit none
+
+	character*(*) file
+	logical binsert
+	integer nli		!number of lines in file, -1 for error
+	integer nnodes		!total number of nodes (x,y)
+	real xv(nnodes)
+	real yv(nnodes)
+	integer ind(nnodes)
+
+	integer i,iunit,ios
+	real x,y
+	integer ifileo
+
+	iunit = ifileo(0,file,'form','old')
+	if( iunit <= 0 ) goto 99
+
+	nli = 0
+	nnodes = 0
+	do
+	  read(iunit,*,iostat=ios) x,y,i
+	  if( ios < 0 ) return
+	  if( ios > 0 ) goto 99
+	  if( i /= 0 .and. i /= 1 ) goto 99
+	  if( i == 1 ) nli = nli + 1
+	  nnodes = nnodes + 1
+	  if( binsert ) then
+	    xv(nnodes) = x
+	    yv(nnodes) = y
+	    if( i == 1 ) ind(nli) = nnodes
+	  end if
+	end do
+
+	return
+   99	continue
+	nli = -1
+	end
+
+c**********************************************************************
+
+	subroutine bnd_read_file(file,nli,nnodes,xv,yv,ind)
+
+	implicit none
+
+	character*(*) file
+	integer nli		!number of lines in file, -1 for error
+	integer nnodes		!total number of nodes (x,y)
+	real xv(nnodes)
+	real yv(nnodes)
+	integer ind(nnodes)
+
+	call bnd_internal_file(file,.true.,nli,nnodes,xv,yv,ind)
+
+	end
+
+c**********************************************************************
+
+	subroutine bnd_test_file(file,nli,nnodes)
+
+	implicit none
+
+	character*(*) file
+	integer nli		!number of lines in file, -1 for error
+	integer nnodes		!total number of nodes (x,y)
+
+	real xv(1)
+	real yv(1)
+	integer ind(1)
+
+	call bnd_internal_file(file,.false.,nli,nnodes,xv,yv,ind)
+
+	end
+
+c**********************************************************************
+
+	function bnd_is_bnd_file(file)
+
+	implicit none
+
+	logical bnd_is_bnd_file
+	character*(*) file
+
+	integer nli		!number of lines in file, -1 for error
+	integer nnodes		!total number of nodes (x,y)
+
+	call bnd_test_file(file,nli,nnodes)
+
+	bnd_is_bnd_file = nli > 0
+
+	end
+
+c**********************************************************************
+c**********************************************************************
+c**********************************************************************
+
+	subroutine bnd_insert_lines(file,id)
+
+	use lines
+
+	implicit none
+
+	character*(*) file
+	integer id
+
+	integer nli,nnodes
+	integer is,n,il,it
+	real d
+	real, allocatable :: xv(:)
+	real, allocatable :: yv(:)
+	integer, allocatable :: nodes(:)
+	integer, allocatable :: ind(:)
+
+	id = -1
+	call bnd_test_file(file,nli,nnodes)
+	if( nli <= 0 ) return
+
+	allocate(xv(nnodes),yv(nnodes),nodes(nnodes),ind(nnodes+1))
+        call lines_init_new_lines(id,nli,nnodes)
+
+	call bnd_read_file(file,nli,nnodes,xv,yv,ind)
+        call lines_init_new_lines(id,nli,nnodes)
+	ind(nli+1) = nnodes + 1
+	nodes = 0
+	it = 0
+	d = 0.
+
+	do il=1,nli
+	  is = ind(il)
+	  n = ind(il+1) - is
+	  call lines_set_line(id,il,il,it,n,d
+     +				,nodes,xv(is:),yv(is:))
+	end do
+
+	deallocate(xv,yv,nodes,ind)
+
+	end
+
+c**********************************************************************
+
+	subroutine grd_insert_lines(file,id)
+
+	use lines
+
+	implicit none
+
+	character*(*) file
+	integer id
+
+	integer nli,nnodes
+	integer il,in,it,n
+	real d
+	real, allocatable :: xv(:)
+	real, allocatable :: yv(:)
+	integer, allocatable :: nodes(:)
+
+	call grd_read(file)
+
+	call grd_get_total_lines(nli)
+	call grd_get_total_nodes(nnodes)	!maximum
+
+	allocate(xv(nnodes),yv(nnodes),nodes(nnodes))
+
+	do il=1,nli
+	  call grd_get_line_params(il,in,it,n,d)
+	  call grd_get_line_array(il,n,nodes,xv,yv)
+	  call lines_set_line(id,il,in,it,n,d,nodes,xv,yv)
+	end do
+
+	deallocate(xv,yv,nodes)
+
+	end
+
+c**********************************************************************
+
+	subroutine read_lines(file,id)
+
+	implicit none
+
+	character*(*) file
+	integer id
+
+	logical bnd_is_bnd_file,is_grd_file
+
+	id = 0
+	if( file == ' ' ) return
+
+	if( bnd_is_bnd_file(file) ) then
+	  call bnd_insert_lines(file,id)
+	else if( is_grd_file(file) ) then
+	  call grd_insert_lines(file,id)
+	end if
+	
 	end
 
 c**********************************************************************

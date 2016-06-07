@@ -1,4 +1,11 @@
 
+06.06.2016	VERS_7_5_12
+
+	finished framework for mercury routines
+	file initialization changed
+	new routines to deal with lines (grd and bnd)
+	netcdf routines revised
+
 30.05.2016	VERS_7_5_11
 
 	code cleaning

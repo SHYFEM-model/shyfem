@@ -11,6 +11,7 @@ c 17.06.2013    ggu     do not pass function into subroutine
 c 02.07.2014    ggu     new framework finished
 c 10.07.2014    ggu     only new file format allowed
 c 22.02.2016    ggu&eps new files for generic tracer (nvar>1)
+c 06.06.2016    ggu	tracer_file routines changed
 c
 c*******************************************************************	
 c*******************************************************************	
@@ -30,7 +31,6 @@ c*******************************************************************
 	end
 
 	subroutine ts_next_record(it,iunit,nlvddi,nkn,nlv,value)
-	include 'param.h'
 	integer iunit(3)
 	real value(nlvddi,nkn)
 	  call ts_next_record_1(it,iunit,nlvddi,nkn,nlv,value)
@@ -52,8 +52,6 @@ c opens T/S file
 	use intp_fem_file
 
 	implicit none
-
-	include 'param.h'
 
 	character*(*) file		!name of file
 	integer it
@@ -95,8 +93,6 @@ c*******************************************************************
 	use intp_fem_file
 
 	implicit none
-
-	include 'param.h'
 
 	integer it
 	integer iunit(3)
@@ -171,7 +167,7 @@ c*******************************************************************
 c*******************************************************************	
 c*******************************************************************	
 
-	subroutine tracer_file_open(file,it,nvar,np,nlv,iunit)
+	subroutine tracer_file_open(file,dtime,nvar,np,nlv,val0,id)
 
 c opens tracer file
 
@@ -179,44 +175,38 @@ c opens tracer file
 
 	implicit none
 
-	include 'param.h'
-
 	character*(*) file		!name of file
-	integer it
-	integer nvar
+	double precision dtime		!time
+	integer nvar			!number of (state) variables
 	integer np			!number of points expected
-	integer nlv
-	integer iunit(3)		!unit number (return)
+	integer nlv			!number of vertical levels
+	real val0(nvar)			!default initial condition
+	integer id			!id of file (return)
 
 	integer nexp,lexp,nintp
-	integer id
-	double precision dtime
 	integer nodes(nvar)
-	real vconst(nvar)
 
-	dtime = it
 	nexp = np
 	lexp = nlv
 	nintp = 2
 	nodes = 0
-	vconst = 0.
 
 !$OMP CRITICAL
 	call iff_init(dtime,file,nvar,nexp,lexp,nintp
-     +                                  ,nodes,vconst,id)
+     +                                  ,nodes,val0,id)
 !$OMP END CRITICAL
 
-	iunit(1) = id
+	if( id <= 0 ) then
+	  write(6,*) 'Cannot open file: ',file
+	  stop 'error stop ts_file_open: error file open'
+	end if
 
-	return
-   99	continue
-	write(6,*) 'Cannot open file: ',file
-	stop 'error stop ts_file_open: error file open'
 	end
 
 c*******************************************************************	
 
-	subroutine tracer_next_record(it,iunit,nvar,nlvddi,nkn,nlv,value)
+	subroutine tracer_file_next_record(dtime,id
+     +					,nvar,nlvddi,nkn,nlv,value)
 
 c reads next record of tracer
 
@@ -224,35 +214,25 @@ c reads next record of tracer
 
 	implicit none
 
-	include 'param.h'
-
-	integer it
-	integer iunit(3)
+	double precision dtime
+	integer id
 	integer nvar
 	integer nlvddi
 	integer nkn
 	integer nlv
 	real value(nlvddi,nkn,nvar)
 
-	integer id,ldim,ndim,ivar
-	double precision dtime
+	integer ldim,ndim,ivar
 	character*80 string
-
-c--------------------------------------------------------------
-c initialize
-c--------------------------------------------------------------
-
-	id = iunit(1)
 
 c--------------------------------------------------------------
 c read new data
 c--------------------------------------------------------------
 
-	dtime = it
 	ndim = nkn
 	ldim = nlvddi
 
-	!write(6,*)'reading tracer values', it,dtime
+	!write(6,*)'reading tracer values: ',dtime
 
 	call iff_read_and_interpolate(id,dtime)
 	do ivar=1,nvar
@@ -268,7 +248,7 @@ c--------------------------------------------------------------
 
 c*******************************************************************	
 
-	subroutine tracer_file_descrp(iunit,name)
+	subroutine tracer_file_descrp(id,text)
 
 c sets description for file
 
@@ -276,16 +256,16 @@ c sets description for file
 
 	implicit none
 
-	integer iunit(3)
-	character*(*) name
+	integer id
+	character*(*) text
 
-	call iff_set_description(iunit(1),0,name)
+	call iff_set_description(id,0,text)
 
 	end
 
 c*******************************************************************	
 
-	subroutine tracer_file_close(iunit)
+	subroutine tracer_file_close(id)
 
 c closes tracer file
 
@@ -293,11 +273,8 @@ c closes tracer file
 
 	implicit none
 
-	integer iunit(3)
-
 	integer id
 
-	id = iunit(1)
 	call iff_forget_file(id)
 
 	end

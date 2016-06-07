@@ -260,18 +260,14 @@ c		--------------------------------------------
      +					,cdef,idsalt)
 
 c		--------------------------------------------
-c		initialize rhov, bpresv (we call it twice since
+c		initialize rhov, bpresv
 c		--------------------------------------------
 
 c		rhov depends on bpresv and viceversa
-c		-> we iterate to the real solution)
+c		-> we iterate to the real solution
 
-		do k=1,nkn
-		  do l=1,nlvdi
-		    rhov(l,k) = 0.	!rhov is rho^prime => 0/
-		    bpresv(l,k) = 0.
-                  end do
-		end do
+		rhov = 0.		!rhov is rho^prime => 0
+		bpresv = 0.
 
 		call rhoset_shell
 

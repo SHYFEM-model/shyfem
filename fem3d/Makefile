@@ -238,7 +238,7 @@ HTOBJS = \
 	$(GRDOBJS) \
 	subxi.o subshy.o subshyutil.o substrings.o \
 	subbit10.o shyutil.o \
-	subfloodfill.o
+	subfloodfill.o mercury.o
 
 	#$(NETCDF_OBJ) \
 
@@ -335,8 +335,8 @@ QFLUX_TEST = subqfxf.o \
 # experimental stuff
 
 #PARMOD = subpar.o subfnm.o		# old parameter modules
-#PARMOD = subpar1.o			# new parameter modules
-PARMOD = subpar3.o			# newest parameter modules
+#PARMOD = subpar1.o			# newer parameter modules
+PARMOD = subpar3.o
 IFF_FILES = 
 IFF_FILES = subfemintp.o subtsfile.o submeteo2.o
 

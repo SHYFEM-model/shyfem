@@ -2339,6 +2339,7 @@ cc non-documented -> try first	HACK	-> initial conditions
         call addfnm('bio',' ')
         call addfnm('bios',' ')
         call addfnm('toxi',' ')
+        call addfnm('mercin',' ')
 
 cc ACQUBC
 

@@ -1,4 +1,28 @@
 
+06.06.2016
+
+c ./fem3d/subgrd.f:
+c 06.06.2016    ggu     bstop substituted with berr, new accessor routines
+c
+c ./fem3d/subtsuvfile.f:
+c 06.06.2016    ggu	tracer_file routines changed
+c
+c ./fem3d/netcdf.f:
+c 31.05.2016    ggu	changed time variable to double precision
+c
+c ./fem3d/subclo.f:
+! 01.06.2016    ggu     new routine clo_hide_option() and -hh,-fullhelp
+!
+c ./fem3d/newconz.f:
+c 06.06.2016    ggu     initialization from file changed
+c
+c ./fem3d/sublin.f:
+c 06.06.2016    ggu     module added, new routines for bnd and grd lines
+c
+c ./fem3d/newbfm.f:
+c 06.06.2016    ggu         initialization from file changed
+
+
 30.05.2016
 
 c ./femplot/supdep.f:

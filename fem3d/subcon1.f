@@ -51,31 +51,6 @@ c 20.01.2014    ggu	new writing format for nos files in confop, confil
 c
 c*****************************************************************
 
-	subroutine conini0(nlvddi,c,cref)
-
-c sets initial conditions (no stratification)
-
-	use basin, only : nkn,nel,ngr,mbw
-
-	implicit none
-
-	integer nlvddi		!vertical dimension of c
-	real c(nlvddi,nkn)	!variable to initialize
-	real cref		!reference value
-c local
-	integer k,l
-	real depth,hlayer
-
-	do k=1,nkn
-	  do l=1,nlvddi
-	    c(l,k) = cref
-	  end do
-	end do
-
-	end
-
-c*****************************************************************
-
 	subroutine conini(nlvddi,c,cref,cstrat,hdko)
 
 c sets initial conditions (with stratification)
