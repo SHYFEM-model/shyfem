@@ -1,3 +1,33 @@
+version  7_5_13    10-06-2016    VERS_7_5_13
+
+========================================================== 10-06-2016 - 7_5_13
+
+c ./femplot/shyplot.f:
+! 10.06.2016    ggu     shyplot now plots fem files
+c
+c ./fem3d/subfemintp.f:
+! 07.06.2016	ggu	check if file has desired number of variables nvar
+! 08.06.2016	ggu	handle case where no depth is given in file and sigma
+! 09.06.2016	ggu	integrate_vertical eliminated (use interpolate)
+! 10.06.2016	ggu	handle iff_init() call with nvar == 0
+!
+c ./fem3d/subnsa.f:
+c 07.06.2016	ggu	use both varid and varname to decide on section reading
+c
+c ./fem3d/newconz.f:
+c 10.06.2016    ggu     some more re-formatting
+c
+c ./fem3d/subver.f:
+c 10.06.2016	ggu	version 7.5.13
+c
+c ./fem3d/subbas.f:
+c 10.06.2016	ggu	new routine for inserting regular grid
+c
+c ./fem3d/newbcl.f:
+c 10.06.2016    ggu     not used routines deleted
+
+==========================================================
+
 version  7_5_12    07-06-2016    VERS_7_5_12   commit_2016-06-10
 
 version  7_5_12    07-06-2016    VERS_7_5_12
