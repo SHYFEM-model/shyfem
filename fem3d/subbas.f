@@ -24,6 +24,7 @@ c 02.10.2015	ggu	in basin_open_file eliminated double read (bug)
 c 02.10.2015	ggu	new routines is_depth_unique(), estimate_ngr()
 c 01.05.2016	ggu	new routines basin_has_basin()
 c 20.05.2016	ggu	estimate_ngr() returns exact ngr
+c 10.06.2016	ggu	new routine for inserting regular grid
 c
 c***********************************************************
 c***********************************************************
@@ -642,6 +643,107 @@ c*************************************************
 	is_depth_unique = .true.
 
         end function is_depth_unique
+
+c*************************************************
+c*************************************************
+c*************************************************
+
+	subroutine bas_insert_regular(regpar)
+
+	use basin
+
+c inserts regular basin (boxes) into basin structure
+
+	implicit none
+
+	real regpar(7)
+
+	integer nx,ny,ix,iy
+	integer k,ie,nk,ne
+	integer k1,k2,k3,k4,km
+	real x0,y0,dx,dy
+	integer, allocatable :: indexv(:,:)
+	integer, allocatable :: indexm(:,:)
+
+        nx = nint(regpar(1))
+        ny = nint(regpar(2))
+        x0 = regpar(3)
+        y0 = regpar(4)
+        dx = regpar(5)
+        dy = regpar(6)
+
+	nk = nx*ny + (nx-1)*(ny-1)
+	ne = 4*(nx-1)*(ny-1)
+
+	allocate(indexv(nx,ny))
+	allocate(indexm(nx,ny))
+
+	call basin_init(nk,ne)
+
+	mbw = 0
+	descrr = 'regular generated grid'
+	iarv = 0
+	iarnv = 0
+	hm3v = 0.
+
+	k = 0
+        do iy=1,ny
+          do ix=1,nx
+	    k = k + 1
+	    ipv(k) = k
+	    indexv(ix,iy) = k
+	    xgv(k) = x0 + (ix-1)*dx
+	    ygv(k) = y0 + (iy-1)*dy
+          end do
+        end do
+
+        do iy=2,ny
+          do ix=2,nx
+	    k = k + 1
+	    ipv(k) = k
+	    indexm(ix,iy) = k
+	    xgv(k) = x0 + (ix-1.5)*dx
+	    ygv(k) = y0 + (iy-1.5)*dy
+          end do
+        end do
+
+	ie = 0
+        do iy=2,ny
+          do ix=2,nx
+	    k1 = indexv(ix-1,iy-1)
+	    k2 = indexv(ix,iy-1)
+	    k3 = indexv(ix,iy)
+	    k4 = indexv(ix-1,iy)
+	    km = indexm(ix,iy)
+	    ie = ie + 1
+	    ipev(ie) = ie
+	    nen3v(1,ie) = km
+	    nen3v(2,ie) = k1
+	    nen3v(3,ie) = k2
+	    ie = ie + 1
+	    ipev(ie) = ie
+	    nen3v(1,ie) = km
+	    nen3v(2,ie) = k2
+	    nen3v(3,ie) = k3
+	    ie = ie + 1
+	    ipev(ie) = ie
+	    nen3v(1,ie) = km
+	    nen3v(2,ie) = k3
+	    nen3v(3,ie) = k4
+	    ie = ie + 1
+	    ipev(ie) = ie
+	    nen3v(1,ie) = km
+	    nen3v(2,ie) = k4
+	    nen3v(3,ie) = k1
+          end do
+        end do
+
+        call estimate_ngr(ngr)
+
+	deallocate(indexv)
+	deallocate(indexm)
+
+	end
 
 c*************************************************
 c*************************************************

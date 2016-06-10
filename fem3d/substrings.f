@@ -182,6 +182,8 @@
           string = 'wave peak period'
         else if( iv .eq. 335 ) then
           string = 'time over threshold'
+        else if( iv > 30 .and. iv < 50 ) then
+          string = 'concentration (multi)'
         else
           !string = '*** cannot find description'
           !write(6,*) '*** cannot find description for variable: '
@@ -193,5 +195,25 @@
 
 !****************************************************************
 !****************************************************************
+!****************************************************************
+
+	subroutine get_vars_from_string(nvar,strings,ivars)
+
+c gets var numbers from string description
+
+	implicit none
+
+	integer nvar
+	character*(*) strings(nvar)
+	integer ivars(nvar)
+
+	integer i
+
+	do i=1,nvar
+          call string2ivar(strings(i),ivars(i))
+	end do
+
+	end
+
 !****************************************************************
 

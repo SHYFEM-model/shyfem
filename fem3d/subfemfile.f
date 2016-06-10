@@ -317,7 +317,26 @@ c************************************************************
 c************************************************************
 c************************************************************
 
-	subroutine fem_file_is_fem_file(file,iformat)
+	function fem_file_is_fem_file(file)
+
+c checks if file is fem file
+
+	implicit none
+
+	logical fem_file_is_fem_file
+	character*(*) file	!file name
+
+	integer iformat		!is formatted? -1 for no fem file (return)
+
+	call fem_file_test_fem_file(file,iformat)
+
+	fem_file_is_fem_file = iformat >= 0
+
+	end
+
+c************************************************************
+
+	subroutine fem_file_test_fem_file(file,iformat)
 
 c tries to open fem file for read
 c
@@ -331,7 +350,7 @@ c returns -1 in iformat if no fem file, else iformat indicates format
 	integer nvar,np,ntype
 	logical filex
 
-	iformat = 0
+	iformat = -1
 
 	if( .not. filex(file) ) then
 	  write(6,*) 'file does not exist: ',file

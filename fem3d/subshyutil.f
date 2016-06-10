@@ -381,6 +381,8 @@ c-----------------------------------------------------
 
 	return
    99	continue
+	write(6,*) irec,nrec,nvar,ierr
+	if( nrec == 0 ) write(6,*) 'no valid records in file'
 	stop 'error stop shy_get_string_descriptions: reading record'
 	end
 

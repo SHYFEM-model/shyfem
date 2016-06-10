@@ -23,6 +23,7 @@ c 13.06.2013	ggu     read also varnam to decide what to plot and read
 c 22.08.2013	ggu     new string2ivar() and similar changes
 c 05.09.2013	ggu     nlsa now wants integer, better handling of what to read
 c 06.06.2014	ggu	deleted sp158k() and sp158kk()
+c 07.06.2016	ggu	use both varid and varname to decide on section reading
 c
 c**********************************************
 c
@@ -40,11 +41,13 @@ c iunit		unit number of file
 	character*80 name,line,section,extra
 	character*20 what0,whatin
 	character*6 sect
-	logical bdebug,bread,bverbose,bskip
-	integer num
+	logical bdebug,bverbose,bskip
+	logical bread_str,bread_iv,bread
+	integer num,lstr,lstr_in,lstr_read
 	integer nrdsec,nrdlin,ichanm
 	integer iv_in,iv_read
 	integer iunit
+	character*80 str_read,str_in
 	real getpar
 
 	include 'param.h'
@@ -56,6 +59,8 @@ c iunit		unit number of file
 	bverbose = .false.
 
 	iv_in = ivar
+	call ivar2string(iv_in,str_in)
+	lstr_in = len_trim(str_in)
 
 	if(iu.eq.0) then
 c		write(6,*) 'error reading parameter file'
@@ -76,11 +81,21 @@ c loop over sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		end if
 
 		iv_read = -1
+		lstr = 0
 		if( extra .ne. ' ' ) then
-		  call string2ivar(extra,iv_read)
+		  str_read = extra
+		  lstr_read = len_trim(str_read)
+		  lstr = min(lstr_in,lstr_read)
+		  call string2ivar(str_read,iv_read)
 		end if
 
-		bread = iv_read .eq. iv_in
+		bread_iv = iv_read .eq. iv_in
+		bread_str = .false.
+		if( lstr > 0 ) then
+		  bread_str = str_read(1:lstr) == str_in(1:lstr)
+		end if
+
+		bread = bread_iv .or. bread_str
 		bskip = .not. bread
 		if( bverbose ) then
 		  write(6,*) 'nlsa : ',bread,sect,iv_in,iv_read

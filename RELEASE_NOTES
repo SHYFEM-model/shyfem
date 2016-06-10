@@ -1,4 +1,11 @@
 
+10.06.2016	VERS_7_5_13
+
+	shyfem now plots shy and fem files
+	file interpolate handles nvar==0 and no depth, no integration
+	tracer write of shy files simplified
+	mercury framework (really) finished
+
 06.06.2016	VERS_7_5_12
 
 	finished framework for mercury routines

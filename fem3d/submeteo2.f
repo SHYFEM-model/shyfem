@@ -226,6 +226,7 @@ c DOCS  END
 	  dtime0 = itanf
 
 	  nvar = 3
+	  nvar = 0	!not sure if 2 or 3
 	  nintp = 2
 	  what = 'wind'
 	  vconst = (/ 0., 0., pstd, 0. /)
@@ -389,9 +390,11 @@ c DOCS  END
 !	check nvar and get parameters
 !	---------------------------------------------------------
 
-	if( nvar /= 2 .and. nvar /= 3 ) then
+	if( iff_has_file(id) ) then
+	 if( nvar /= 2 .and. nvar /= 3 ) then
 	  write(6,*) 'no support for nvar = ',nvar
 	  stop 'error stop meteo_set_wind_data: wind'
+	 end if
 	end if
 
         iwtype = nint(getpar('iwtype'))
@@ -411,7 +414,11 @@ c DOCS  END
 	call iff_get_var_description(id,1,string1)
 	call iff_get_var_description(id,2,string2)
 
-	if( string1 == ' ' ) then	!TS file or constant
+	if( .not. iff_has_file(id) ) then
+
+	  iwtype = 0
+
+	else if( string1 == ' ' ) then	!TS file or constant
 
 	  if( iff_has_file(id) ) then
 	    if( iwtype .le. 0 ) then

@@ -110,18 +110,25 @@
 	character*(*) type
 	character*(*) program
 
+        character*10 vers
+        character*80 version
+
 	if( binitialized ) return
 
+        call get_shyfem_version(vers)
+	version = '4.0' // ' (SHYFEM version ' // trim(vers) // ')'
+	!write(6,*) 'ggguuu version: ',trim(version)
+
 	if( type == 'SHY' ) then
-          call clo_init(program,'shy-file','3.0')
+          call clo_init(program,'shy-file',version)
 	else if( type == 'NOS' ) then
-          call clo_init(program,'nos-file','3.0')
+          call clo_init(program,'nos-file',version)
 	else if( type == 'OUS' ) then
-          call clo_init(program,'ous-file','3.0')
+          call clo_init(program,'ous-file',version)
 	else if( type == 'EXT' ) then
-          call clo_init(program,'ext-file','3.0')
+          call clo_init(program,'ext-file',version)
 	else if( type == 'FLX' ) then
-          call clo_init(program,'flx-file','3.0')
+          call clo_init(program,'flx-file',version)
 	else
 	  write(6,*) 'type : ',trim(type)
 	  stop 'error stop elabutil_set_options: unknown type'
@@ -182,13 +189,15 @@
 	call clo_add_com('  nfile is file with nodes to extract')
 	call clo_add_com('  time is either integer for relative time or')
 	call clo_add_com('    format is YYYY-MM-DD[::hh[:mm[:ss]]]')
-	call clo_add_com('  possible output formats are: shy|gis|fem|nc')
-	call clo_add_com('  possible values for cmode are: -1,0,+1')
-	call clo_add_com('    -1: all of first file, '//
-     +					'then remaining of second')
+	call clo_add_com('  possible output formats are: shy|gis|fem|nc'
+     +				// ' (Default shy)')
+	call clo_add_com('  possible values for cmode are: -1,0,+1'
+     +				// ' (Default 0)')
+	call clo_add_com('    -1: all of first file, '
+     +				// 'then remaining of second')
 	call clo_add_com('     0: simply concatenate files')
-	call clo_add_com('    +1: first file until start of second, '//
-     +					'then all of second')
+	call clo_add_com('    +1: first file until start of second, '
+     +				// 'then all of second')
 	call clo_add_com('  rstring is: dx[,dy[,x0,y0,x1,y1]]')
 	call clo_add_com('    if only dx is given -> dy=dx')
 	call clo_add_com('    if only dx,dy are given -> bounds computed')
@@ -954,7 +963,7 @@ c***************************************************************
         call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)
         call get_bottom_of_layer(bcenter,lmax,z,hl,hl)  !orig hl is overwritten
 
-	write(6,*) 'ggguuu: ',z,h,hl
+	!write(6,*) 'ggguuu: ',z,h,hl
         write(2,*) it,j,ke,ki,lmax,ivar
         do l=1,lmax
           write(2,*) hl(l),c(l)

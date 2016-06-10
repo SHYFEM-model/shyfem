@@ -1543,7 +1543,15 @@ c			1 (white) will achieve this. A negative value
 c			will not fill dry areas with gray color.
 c			(Default -1)
 
+c |hgray|		Whereas |dgray| is normally only coloring
+c			elements that are dry, you can also color elements
+c			shallower than a given depth |hgray|. E.g., a value
+c			for |hgray| of -0.5 will plot in gray all
+c			elements with depth lower than -0.5 m (salt
+c			marshes). (Default -10000)
+
 	call addpar('dgray',-1.)
+	call addpar('hgray',-10000.)	!gray all elems with h < hgray
 
 c |dxygrd|		Grid size if the results are interpolated on
 c			a regular grid. A value of 0 does

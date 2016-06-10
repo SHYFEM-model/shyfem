@@ -108,9 +108,7 @@ c	  -----------------------------------------
 	  do ie=1,nel
 	    call set_fxy_vals(ie,flag,val,f,x,y,inull)
 	    if( mode .eq. 3 ) then				!element values
-	      do ii=1,3
-		f(ii) = val(ie)
-	      end do
+	      f = val(ie)
 	      call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
 	    else if( isoinp .gt. 0 ) then			!interpolate
 	      call plcol(x,y,f,ciso,fiso,isoanz+1,fnull)
@@ -160,6 +158,146 @@ c--------------------------------------------------------------------
 c--------------------------------------------------------------------
 c	end of routine
 c--------------------------------------------------------------------
+
+	end
+
+c****************************************************
+
+	subroutine isoreg(regval,nval,regpar,dis,mode)
+
+c plots color and isolines of regular grid
+c
+c if isoanz in /isolin/ is 0 dis is used to determine isolines
+c ...else isoanz gives number of isolines on fiso
+c
+c val           array with values
+c nval          dimension of val
+c dis           distance of isolines (dis>0)
+c mode		0: isolines with dis  1: isolines in /isolin/
+c		2: color  3: color on element values
+
+	use basin
+
+	implicit none
+
+c argument
+	integer nval
+	real regval(nval)
+	real regpar(7)
+	real dis
+	integer mode
+c common
+
+c color
+	include 'color.h'
+c local
+	character*80 line
+	real x(4),y(4),z(4)
+	real dist,flag
+	integer ie,ii,kn
+	integer inull
+	integer isolin
+	integer isoinp
+	integer icsave
+	integer nx,ny,ix,iy
+	integer ierr
+	real x0,y0,dx,dy
+	real, allocatable :: femval(:)
+
+        real getpar
+c       logical is_r_nan
+
+c--------------------------------------------------------------------
+c initialization
+c--------------------------------------------------------------------
+
+        isolin = nint(getpar('isolin'))	!plot isoline also for color
+        isoinp = nint(getpar('isoinp'))	!interpolate in element?
+
+c--------------------------------------------------------------------
+c find isolines to be plotted
+c--------------------------------------------------------------------
+
+	if( mode .eq. 0 ) then
+		dist = dis
+	else
+		dist = 0.
+	end if
+
+	nx = nint(regpar(1))
+	ny = nint(regpar(2))
+	x0 = regpar(3)
+	y0 = regpar(4)
+	dx = regpar(5)
+	dy = regpar(6)
+	flag = regpar(7)
+
+	fnull = flag
+
+c--------------------------------------------------------------------
+c loop over elements
+c--------------------------------------------------------------------
+
+	write(6,*) 'isoline: isoanz... ',isoanz,mode
+
+	if( mode .eq. 2 ) then
+
+c	  -----------------------------------------
+c	  color plot
+c	  -----------------------------------------
+
+	  call qcomm('plotting regular grid')
+	  call get_color_table(icsave)
+	  call set_color_table(-1)
+
+	  do iy=2,ny
+	    do ix=2,nx
+	      call set_box_val(nx,ny,ix,iy,x0,y0,dx,dy,regval,x,y,z)
+	      call plot_box_val(x,y,z,ciso,fiso,isoanz+1,fnull)
+	    end do
+	  end do
+
+	  call set_color_table(icsave)
+	  call qcomm('finished plotting regular grid')
+
+	else if( mode .eq. 4 ) then		!interpolate to fem grid
+
+
+	end if
+
+	end
+
+c***************************************************************
+
+	subroutine set_box_val(nx,ny,ix,iy,x0,y0,dx,dy,val,x,y,z)
+
+	implicit none
+
+	integer nx,ny,ix,iy
+	real x0,y0,dx,dy
+	real val(nx,ny)
+	real x(4),y(4),z(4)
+
+	real xl,yl,xh,yh
+
+	xl = x0 + (ix-2)*dx
+	yl = y0 + (iy-2)*dy
+	xh = x0 + (ix-1)*dx
+	yh = y0 + (iy-1)*dy
+
+	x(1) = xl
+	x(2) = xh
+	x(3) = xh
+	x(4) = xl
+	y(1) = yl
+	y(2) = yl
+	y(3) = yh
+	y(4) = yh
+
+	z(1) = val(ix-1,iy-1)
+	z(2) = val(ix,iy-1)
+	z(3) = val(ix,iy)
+	z(4) = val(ix-1,iy)
 
 	end
 
@@ -730,6 +868,62 @@ c fnull		null value -> do not interpolate
             call fill_area(idebug,"no_intp",ip,xp,yp,col)
 	  end if
 	end do
+
+	end
+
+c***************************************************************
+
+	subroutine plot_box_val(x,y,z,ciso,fiso,ncol,fnull)
+
+	implicit none
+
+	integer ncol
+	real fnull
+	real x(4),y(4),z(4)
+	real ciso(ncol),fiso(ncol-1)
+
+	real xx(5),yy(5),zz(5)
+	real xxx(3),yyy(3),zzz(3)
+
+	xx(1:4) = x
+	yy(1:4) = y
+	zz(1:4) = z
+	xx(5) = sum(x)/4.
+	yy(5) = sum(y)/4.
+	zz(5) = sum(z)/4.
+
+	if( count( zz == fnull ) > 0 ) zz = fnull
+
+	call set_tria_val(xx,yy,zz,5,1,2,xxx,yyy,zzz)
+	call plcol(xxx,yyy,zzz,ciso,fiso,ncol,fnull)
+	call set_tria_val(xx,yy,zz,5,2,3,xxx,yyy,zzz)
+	call plcol(xxx,yyy,zzz,ciso,fiso,ncol,fnull)
+	call set_tria_val(xx,yy,zz,5,3,4,xxx,yyy,zzz)
+	call plcol(xxx,yyy,zzz,ciso,fiso,ncol,fnull)
+	call set_tria_val(xx,yy,zz,5,4,1,xxx,yyy,zzz)
+	call plcol(xxx,yyy,zzz,ciso,fiso,ncol,fnull)
+
+	end
+
+c***************************************************************
+
+	subroutine set_tria_val(xx,yy,zz,i1,i2,i3,xxx,yyy,zzz)
+
+	implicit none
+
+	integer i1,i2,i3
+	real xx(5),yy(5),zz(5)
+	real xxx(3),yyy(3),zzz(3)
+
+	xxx(1) = xx(i1)
+	xxx(2) = xx(i2)
+	xxx(3) = xx(i3)
+	yyy(1) = yy(i1)
+	yyy(2) = yy(i2)
+	yyy(3) = yy(i3)
+	zzz(1) = zz(i1)
+	zzz(2) = zz(i2)
+	zzz(3) = zz(i3)
 
 	end
 

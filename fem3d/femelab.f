@@ -114,7 +114,7 @@ c writes info on fem file
 	real dmin,dmax
 	integer ierr
 	integer nfile
-	integer irec,i,ich,isk,nrecs,iu88
+	integer irec,iv,ich,isk,nrecs,iu88,l,i
 	integer itype(2)
 	integer iformat,iformout
 	integer datetime(2),dateanf(2),dateend(2)
@@ -122,7 +122,7 @@ c writes info on fem file
 	integer ie,nx,ny,ix,iy
 	real regpar(7)
 	logical bdebug,bfirst,bskip,bwrite,bout,btmin,btmax,boutput
-	logical bquiet,bhuman
+	logical bquiet,bhuman,blayer
 	logical bchform,bcheckdt,bdtok,bextract,breg,bintime
 	character*80, allocatable :: strings(:)
 	character*20 line,aline
@@ -130,6 +130,7 @@ c writes info on fem file
 	character*80 stmin,stmax
 	real,allocatable :: data(:,:,:)
 	real,allocatable :: dext(:)
+	real,allocatable :: d3dext(:,:)
 	real,allocatable :: hd(:)
 	real,allocatable :: hlv(:)
 	integer,allocatable :: ilhkv(:)
@@ -138,7 +139,9 @@ c writes info on fem file
 
 	bdebug = .true.
 	bdebug = .false.
-	bhuman = .true.
+	bhuman = .true.		!convert time in written fem file to dtime=0
+	blayer = .true.		!write layer structure - should be given by CLO
+	blayer = .false.
 
 	iextract = 0
 	iu88 = 0
@@ -271,16 +274,17 @@ c--------------------------------------------------------------
 	np0 = np
 	allocate(strings(nvar))
 	allocate(dext(nvar))
+	allocate(d3dext(lmax,nvar))
 	allocate(data(lmax,np,nvar))
 	allocate(hd(np))
 	allocate(ilhkv(np))
 
-	do i=1,nvar
+	do iv=1,nvar
 	  call fem_file_skip_data(iformat,iunit
      +                          ,nvers,np,lmax,string,ierr)
 	  if( ierr .ne. 0 ) goto 97
-	  if( .not. bquiet ) write(6,*) 'data:   ',i,'  ',trim(string)
-	  strings(i) = string
+	  if( .not. bquiet ) write(6,*) 'data:   ',iv,'  ',trim(string)
+	  strings(iv) = string
 	end do
 
 c--------------------------------------------------------------
@@ -326,7 +330,7 @@ c--------------------------------------------------------------
 
 	  bdtok = atime > atimeold
           boutput = bout .and. bdtok
-	  bskip = .not. bwrite .and. .not. bextract
+	  bskip = .not. bwrite .and. .not. bextract .and. .not. boutput
 	  bintime = .true.
 	  if( btmin ) bintime = bintime .and. atime >= atmin
 	  if( btmax ) bintime = bintime .and. atime <= atmax
@@ -342,7 +346,7 @@ c--------------------------------------------------------------
      +                          ,hlv,datetime,regpar)
           end if
 
-	  do i=1,nvar
+	  do iv=1,nvar
 	    if( bskip ) then
 	      call fem_file_skip_data(iformat,iunit
      +                          ,nvers,np,lmax,string,ierr)
@@ -351,25 +355,34 @@ c--------------------------------------------------------------
      +                          ,nvers,np,lmax
      +                          ,string
      +                          ,ilhkv,hd
-     +                          ,lmax,data(1,1,i)
+     +                          ,lmax,data(1,1,iv)
      +                          ,ierr)
 	    end if
 	    if( ierr .ne. 0 ) goto 97
-	    if( string .ne. strings(i) ) goto 95
+	    if( string .ne. strings(iv) ) goto 95
             if( boutput ) then
               call fem_file_write_data(iformout,iout
      +                          ,nvers,np,lmax
      +                          ,string
      +                          ,ilhkv,hd
-     +                          ,lmax,data(1,1,i))
+     +                          ,lmax,data(1,1,iv))
             end if
 	    if( bwrite ) then
-              call minmax_data(lmax,np,ilhkv,data(1,1,i),dmin,dmax)
-	      write(6,1100) irec,i,atime,dmin,dmax,line
+	     if( blayer ) then
+	      do l=1,lmax
+               call minmax_data(l,lmax,np,ilhkv,data(1,1,iv),dmin,dmax)
+	       write(6,1200) irec,iv,l,atime,dmin,dmax,line
+ 1200	       format(i6,i3,i4,f15.2,2g14.5,1x,a20)
+	      end do
+	     else
+              call minmax_data(0,lmax,np,ilhkv,data(1,1,iv),dmin,dmax)
+	      write(6,1100) irec,iv,atime,dmin,dmax,line
  1100	      format(i6,i3,f15.2,2g16.5,1x,a20)
+	     end if
 	    end if
 	    if( bextract ) then
-	      dext(i) = data(1,iextract,i)
+	      dext(iv) = data(1,iextract,iv)
+	      d3dext(:,iv) = data(:,iextract,iv)
 	    end if
 	  end do
 
@@ -426,9 +439,13 @@ c--------------------------------------------------------------
 
 	return
    91	continue
-   95	continue
 	write(6,*) 'iectract,np: ',iextract,np
 	stop 'error stop femelab: no such node'
+   95	continue
+	write(6,*) 'strings not in same sequence: ',iv
+        write(6,*) string
+        write(6,*) strings(iv)
+	stop 'error stop femelab: strings'
    96	continue
 	write(6,*) 'nvar,nvar0: ',nvar,nvar0
 	write(6,*) 'lmax,lmax0: ',lmax,lmax0	!this might be relaxed
@@ -453,24 +470,29 @@ c*****************************************************************
 c*****************************************************************
 c*****************************************************************
 
-        subroutine minmax_data(nlvddi,np,ilhkv,data,vmin,vmax)
+        subroutine minmax_data(level,nlvddi,np,ilhkv,data,vmin,vmax)
 
         implicit none
 
+	integer level		!level for which minmax to compute (0 for all)
         integer nlvddi,np
         integer ilhkv(1)
         real data(nlvddi,1)
 	real vmin,vmax
 
-        integer k,l,lmax
+        integer k,l,lmin,lmax,lm
         real v
+
+	lmin = max(1,level)
+	lmax = level
+	if( level == 0 ) lmax = nlvddi
 
         vmin = data(1,1)
         vmax = data(1,1)
 
         do k=1,np
-          lmax = ilhkv(k)
-          do l=1,lmax
+          lm = min(ilhkv(k),lmax)
+          do l=lmin,lm
             v = data(l,k)
             vmax = max(vmax,v)
             vmin = min(vmin,v)
@@ -513,6 +535,58 @@ c*****************************************************************
      +                          ,atime,atimeold,'  ',aline
             end if
           end if
+
+	end
+
+c*****************************************************************
+
+	subroutine write_extract(atime,atime0,datetime
+     +					,nvar,lmax,dext,d3dext)
+
+	implicit none
+
+	double precision atime,atime0
+	integer datetime(2)
+	integer nvar,lmax
+	real dext(nvar)
+	real d3dext(lmax,nvar)
+
+	integer, save :: iu2d = 0
+	integer, save :: iu3d = 0
+
+	integer it
+	double precision dtime
+	character*80 eformat
+	character*20 aline
+
+	integer ifileo
+
+	if( iu2d == 0 ) then
+	  iu2d = ifileo(88,'out.txt','form','new')
+	  write(iu2d,'(a,2i10)') '#date: ',datetime
+	  write(eformat,'(a,i3,a)') '(i12,',nvar,'g14.6,a2,a20)'
+	  write(6,*) 'using format: ',trim(eformat)
+	end if
+	if( iu2d == 0 ) then
+	  iu3d = ifileo(89,'out.fem','form','new')
+	end if
+
+	dtime = atime-atime0
+	it = nint(dtime)
+	!it = nint(atime-atime1997)
+	call dts_format_abs_time(atime,aline)
+	write(iu2d,eformat) it,dext,'  ',aline
+
+!	nvers
+!        call fem_file_write_header(iformat,iu3d,dtime
+!     +                          ,nvers,np,lmax
+!     +                          ,nvar,ntype
+!     +                          ,nlvddi,hlv,datetime,regpar)
+!        call fem_file_write_data(iformat,iu3d
+!     +                          ,nvers,np,lmax
+!     +                          ,string
+!     +                          ,ilhkv,hd
+!     +                          ,nlvddi,temp1)
 
 	end
 

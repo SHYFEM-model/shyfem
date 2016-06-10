@@ -1462,6 +1462,20 @@ c**************************************************************
 c**************************************************************
 c**************************************************************
 
+        subroutine setreg_grid(regpar)
+
+        implicit none
+
+        include 'supout.h'
+
+        real regpar(7)
+
+        regp = regpar
+
+        end
+
+c**************************************************************
+
 	subroutine plot_regular_points
 
 c plots regular points
@@ -1475,9 +1489,14 @@ c plots regular points
 
 	integer nx,ny
 	real ddx,ddy,dxy
-	real x0,y0,dx,dy,flag
+	real x0,y0,x1,y1,dx,dy,flag
 	real fact,afact
 	real x,y
+	real fplus,eps
+
+	fplus = 0.3		!relative size of plus sign
+	fplus = 0.1		!relative size of plus sign
+	eps = 1.e-5
 
         nx = nint(regp(1))
         ny = nint(regp(2))
@@ -1494,19 +1513,28 @@ c plots regular points
 	write(6,*) x0,y0,dx,dy,flag
 	write(6,*) xmin,ymin,xmax,ymax
 
+	x1 = x0 + (nx-1)*dx
+	y1 = y0 + (ny-1)*dy
+
 	do while( x0 + dx < xmin )
 	  x0 = x0 + dx
 	end do
 	do while( y0 + dy < ymin )
 	  y0 = y0 + dy
 	end do
+	do while( x1 - dx > xmax )
+	  x1 = x1 - dx
+	end do
+	do while( y1 - dy > ymax )
+	  y1 = y1 - dy
+	end do
 
 	nx = (xmax-xmin)/dx
 	ny = (ymax-ymin)/dy
-	nx = max(nx,20)
-	ny = max(ny,20)
-	ddx = 0.3*(xmax-xmin)/(nx-1)
-	ddy = 0.3*(ymax-ymin)/(ny-1)
+	!nx = max(nx,20)
+	!ny = max(ny,20)
+	ddx = fplus*(xmax-xmin)/(nx-1)
+	ddy = fplus*(ymax-ymin)/(ny-1)
 	dxy = min(ddx,ddy)
 	call spherical_fact(fact,afact)
 	ddx = dxy/fact
@@ -1517,9 +1545,9 @@ c plots regular points
 	call qgray(0.)
 
 	y = y0
-	do while( y <= ymax )
+	do while( y <= y1 + eps )
 	  x = x0
-	  do while( x <= xmax )
+	  do while( x <= x1 + eps )
 	    call plot_plus(x,y,ddx,ddy)
 	    x = x + dx
 	  end do

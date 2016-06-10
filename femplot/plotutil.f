@@ -27,6 +27,8 @@
 	logical, save :: bwrite
 	logical, save :: bquiet
 
+	logical, save :: bregall
+
 	integer, save :: ifreq
 	integer, save :: tmin
 	integer, save :: tmax
@@ -37,11 +39,13 @@
 
 	integer, save :: layer = 0
 	integer, save :: ivar3 = 0
+	integer, save :: ivnum = 0
 	
 	integer, save :: nfile = 0
 	character*10, save, allocatable :: file_type(:)
 
         character*80, save :: shyfilename = ' '
+        character*80, save :: femfilename = ' '
         character*80, save :: basfilename = ' '
         character*80, save :: basintype = ' '
 
@@ -98,9 +102,12 @@
 	call clo_add_option('2d',.true.,'plot vertical average (default)')
 	call clo_add_option('layer l',0,'plot layer l')
 	call clo_add_option('varid id',0,'plot variable id')
+	call clo_add_option('varnum i',0,'plot i''th variable of file')
 	call clo_add_option('varname name',' ','plot variable name')
 	call clo_add_option('dir',.false.
      +			,'for directional variable plot arrow')
+	call clo_add_option('regall',.false.
+     +			,'for regular fem files plot whole grid')
 
         call clo_add_sep('options in/output')
 
@@ -119,6 +126,7 @@
         call clo_add_sep('additional information')
 	call clo_add_com('  time is either integer for relative time or')
         call clo_add_com('    format is YYYY-MM-DD[::hh[:mm[:ss]]]')
+	call clo_add_com('  varid,varnum,varname are mutually exclusive')
         call clo_add_com('  file can be the following:')
         call clo_add_com('    shy-file to plot results')
         call clo_add_com('    bas-file to plot bathymetry and grid')
@@ -136,15 +144,18 @@
 	character*(*) program
 
 	integer ivar
+	logical bvarid,bvarnum,bvarname
 	character*80 varname
 
 	if( binitialized ) return
 
         call clo_get_option('layer',layer)
         call clo_get_option('varid',ivar3)
+        call clo_get_option('varnum',ivnum)
         call clo_get_option('varname',varname)
         call clo_get_option('2d',b2d)
         call clo_get_option('dir',bdir)
+        call clo_get_option('regall',bregall)
 
         call clo_get_option('verb',bverb)
         call clo_get_option('write',bwrite)
@@ -167,8 +178,11 @@
 	  end if
 	end if
 
-        if( ivar3 > 0 .and. varname /= ' ' ) then
-          write(6,*) 'You cannot give both varid and varname'
+	bvarid = ivar3 > 0
+	bvarnum = ivnum > 0
+	bvarname = varname /= ' '
+        if( count( (/bvarid,bvarnum,bvarname/) ) > 1 ) then
+	  write(6,*) 'You can give only one of varid, varnum and varname'
           stop 'error stop plotutil_get_options'
         end if
 
@@ -212,13 +226,19 @@ c***************************************************************
 	use basin
 	use nls
 
+	logical bdebug
 	character*80 file
 	integer i
-	integer nshy,nbas,nstr,nunk,ngrd
+	integer nshy,nfem,nbas,nstr,nunk,ngrd
 
 	logical is_grd_file
+	logical fem_file_is_fem_file
+
+	bdebug = .true.
+	bdebug = .false.
 
 	nshy = 0
+	nfem = 0
 	nbas = 0
 	nstr = 0
 	nunk = 0
@@ -236,6 +256,10 @@ c***************************************************************
 	    file_type(i) = 'shy'
 	    nshy = nshy + 1
 	    shyfilename = file
+	  else if( fem_file_is_fem_file(file) ) then
+	    file_type(i) = 'fem'
+	    nfem = nfem + 1
+	    femfilename = file
 	  else if( basin_is_basin(file) ) then
 	    file_type(i) = 'bas'
 	    nbas = nbas + 1
@@ -255,15 +279,32 @@ c***************************************************************
 	  end if
 	end do
 
-	!write(6,*) 'classify_files: ',nshy,nbas,nstr,nunk
+	if( bdebug ) then
+	  write(6,*) 'classify_files: ',nshy,nfem,nbas,nstr,nunk
+	  write(6,*) 'shyfilename: ',trim(shyfilename)
+	  write(6,*) 'femfilename: ',trim(femfilename)
+	  write(6,*) 'basfilename: ',trim(basfilename)
+	  write(6,*) 'basintype: ',trim(basintype)
+	  do i=1,nfile
+	    write(6,*) i,file_type(i)
+	  end do
+	end if
 
 	if( nunk > 0 ) stop 'error stop classify_files'
 	if( nshy > 1 ) then
 	  write(6,*) 'cannot plot more than one SHY file'
 	  stop 'error stop classify_files'
 	end if
+	if( nfem > 1 ) then
+	  write(6,*) 'cannot plot more than one FEM file'
+	  stop 'error stop classify_files'
+	end if
 	if( nbas > 0 .and. ngrd > 0 ) then
 	  write(6,*) 'both BAS and GRD files given... cannot handle'
+	  stop 'error stop classify_files'
+	end if
+	if( nshy > 0 .and. nfem > 0 ) then
+	  write(6,*) 'both SHY and FEM files given... cannot handle'
 	  stop 'error stop classify_files'
 	end if
 	if( nshy > 0 ) then
@@ -271,7 +312,11 @@ c***************************************************************
 	    write(6,*) 'basin given but not needed... ignoring'
 	  end if
 	end if
-	if( shyfilename == ' ' .and. basfilename == ' ' ) then
+	if( 
+     +			      shyfilename == ' ' 
+     +			.and. femfilename == ' ' 
+     +			.and. basfilename == ' '
+     +	  ) then
 	  write(6,*) 'no file given for plot...'
 	  call clo_usage
 	end if

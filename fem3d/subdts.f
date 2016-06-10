@@ -1321,12 +1321,20 @@ c converts from atime to datetime and dtime (only if in atime is real date)
 	double precision dtime		!relative time (return)
 	double precision atime		!absolute time (in)
 
+	double precision atime0
 	double precision atime1000	!1000 year limit
 	parameter (atime1000 = 1000*365*86400.)
 
 	if( atime > atime1000 ) then	!real date
 	  call dts_from_abs_time(datetime(1),datetime(2),atime)
+	  call dts_to_abs_time(datetime(1),datetime(2),atime0)
 	  dtime = 0.
+	  dtime = atime - atime0
+	  if( dtime /= 0. ) then	!can be deleted - security check
+	    write(6,*) 'dts_convert_from_atime: dtime not 0'
+	    write(6,*) 'are you dealing with sub second units?'
+	    write(6,*) dtime,atime,atime0,datetime
+	  end if
 	else				!no date - keep relative time
 	  datetime = 0
 	  dtime = atime

@@ -167,6 +167,48 @@ c flag                value for land points
 	end
 
 c******************************************************
+
+	subroutine setreg(regpar,nx,ny,x0,y0,dx,dy,flag)
+
+	implicit none
+
+	real regpar(7)
+	integer nx,ny
+	real x0,y0,dx,dy
+	real flag
+
+	regpar(1) = nx
+	regpar(2) = ny
+	regpar(3) = x0
+	regpar(4) = y0
+	regpar(5) = dx
+	regpar(6) = dy
+	regpar(7) = flag
+
+	end
+
+c******************************************************
+
+	subroutine getreg(regpar,nx,ny,x0,y0,dx,dy,flag)
+
+	implicit none
+
+	real regpar(7)
+	integer nx,ny
+	real x0,y0,dx,dy
+	real flag
+
+	nx = nint(regpar(1))
+	ny = nint(regpar(2))
+	x0 = regpar(3)
+	y0 = regpar(4)
+	dx = regpar(5)
+	dy = regpar(6)
+	flag = regpar(7)
+
+	end
+
+c******************************************************
 c******************************************************
 c******************************************************
 

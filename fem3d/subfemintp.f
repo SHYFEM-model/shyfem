@@ -17,6 +17,10 @@
 ! 07.03.2016	ggu	bug fix in iff_read_header(): no time adjust if ierr/=0
 ! 01.04.2016	ggu	bug fix in iff_init(): open file with np and not nexp
 ! 05.05.2016	ggu	new functionality for 3d matrices
+! 07.06.2016	ggu	check if file has desired number of variables nvar
+! 08.06.2016	ggu	handle case where no depth is given in file and sigma
+! 09.06.2016	ggu	integrate_vertical eliminated (use interpolate)
+! 10.06.2016	ggu	handle iff_init() call with nvar == 0
 !
 !****************************************************************
 !
@@ -503,7 +507,7 @@
 
 	integer iformat,iunit
 	integer ierr,np,i
-	integer nvar_orig
+	integer nvar_orig,nvar_read
 	integer datetime(2)
 	integer ntype,itype(2)
 	integer id0,ibc
@@ -527,7 +531,7 @@
 	! check input parameters
 	!---------------------------------------------------------
 
-	if( nvar < 1 ) goto 97
+	!if( nvar < 1 ) goto 97
 	if( nexp < 1 ) goto 97
 	!if( nexp > nkn_fem ) goto 97
 	if( lexp < 0 ) goto 97
@@ -539,7 +543,7 @@
 
 	nvar_orig = nvar
 
-	call iff_get_file_info(file,np,nvar,ntype,iformat)
+	call iff_get_file_info(file,np,nvar_read,ntype,iformat)
 
 	bnofile = iformat == iform_none			!no file given
 	bfile = .not. bnofile				!file has been given
@@ -573,7 +577,12 @@
 	if( bfile .and. np < 1 ) goto 96
 	if( .not. breg .and. np > 1 .and. np /= nexp ) goto 96
 
-	if( nvar <= 0 ) nvar = nvar_orig
+	write(6,*) 'ggguuu: ',nvar_orig, nvar_read, nvar
+
+	if( nvar_orig == 0 ) nvar = nvar_read		!set nvar
+	if( nvar_orig > 0 ) then
+	  if( nvar > 0 .and. nvar /= nvar_orig ) goto 92
+	end if
 
 	!---------------------------------------------------------
 	! store information
@@ -673,6 +682,12 @@
 	else 
 	  write(6,*) 'iformat = ',iformat
 	end if
+	stop 'error stop iff_init'
+   92	continue
+	write(6,*) 'error in file: ',trim(file)
+	write(6,*) 'file does not contain correct number of variables'
+	write(6,*) 'nvar file = ',nvar
+	write(6,*) 'nvar expected = ',nvar_orig
 	stop 'error stop iff_init'
    93	continue
 	write(6,*) 'error in file: ',trim(file)
@@ -1406,7 +1421,7 @@ c interpolates in space all variables in data set id
 	integer id
 	integer iintp
 
-	logical bneedall
+	logical bneedall,bdebug
 	integer ivar,nvar
 	integer nx,ny
 	integer nexp,lexp
@@ -1418,6 +1433,9 @@ c interpolates in space all variables in data set id
 	real, allocatable :: data2dreg(:)
 	real, allocatable :: data2dfem(:)
 	real, allocatable :: hfem(:)
+
+	bdebug = .true.
+	bdebug = .false.
 
         nvar = pinfo(id)%nvar
 
@@ -1445,7 +1463,7 @@ c interpolates in space all variables in data set id
 
 	call intp_reg_setup_fr(nx,ny,x0,y0,dx,dy,nexp,fr)
 	call intp_reg_intp_fr(nx,ny,flag,pinfo(id)%hd_file
-     +                          ,nexp,fr,hfem,ierr)
+     +            ,nexp,fr,hfem,ierr)	!interpolate depth from reg to fem
 
 	do ivar=1,nvar
 	  do l=1,lmax
@@ -1455,6 +1473,8 @@ c interpolates in space all variables in data set id
 	    data(l,:,ivar) = data2dfem
 	  end do
 	end do
+
+	! data has values on same levels as regular file
 
 	do ip=1,nexp
 	  call iff_interpolate_vertical_int(id,iintp
@@ -1497,9 +1517,10 @@ c interpolates in space all variables in data set id
 	if( lmax == 1 ) then		!2D field given
 	  call iff_distribute_vertical(id,iintp,ip_from,ip_to)
 	else
-	  if( lexp < 1 ) goto 99	!3D field given but 2D needed
-	  if( lexp == 1 ) then
-	    call iff_integrate_vertical(id,iintp,ip_from,ip_to)
+	  if( lexp < 1 ) then
+	    goto 99	!3D field given but 2D needed
+	  !else if( lexp == 1 ) then
+	  !  call iff_integrate_vertical(id,iintp,ip_from,ip_to)
 	  else
 	    call iff_interpolate_vertical(id,iintp,ip_from,ip_to)
 	  end if
@@ -1609,7 +1630,8 @@ c interpolates in space all variables in data set id
 	real hl(pinfo(id)%lmax)
 
         nvar = pinfo(id)%nvar
-	if( h < -990 ) h = pinfo(id)%hlv_file(lmax)	!take from hlv array
+	if( h < -990. ) h = pinfo(id)%hlv_file(lmax)	!take from hlv array
+	if( h < 0. ) h = 1.				!hlv is sigma -> any h
 	z = 0.
 
 	call compute_sigma_info(lmax,pinfo(id)%hlv_file,nsigma,hsigma)
@@ -1645,7 +1667,7 @@ c global lmax and lexp are > 1
 	real data(pinfo(id)%lmax,pinfo(id)%nvar)
 
 	lmax = pinfo(id)%ilhkv_file(ip_from)
-	h = pinfo(id)%hd_file(ip_from)
+	h = pinfo(id)%hd_file(ip_from)			!depth of node in file
 	data = pinfo(id)%data_file(:,ip_from,:)
 
 	ipl = ip_to
@@ -1654,8 +1676,8 @@ c global lmax and lexp are > 1
 
 	if( lmax <= 1 ) then
 	  call iff_distribute_vertical_int(id,iintp,data(1,:),ip_to)
-	else if( lfem <= 1 ) then
-	  call iff_integrate_vertical_int(id,iintp,lmax,h,data,ip_to)
+	!else if( lfem <= 1 ) then
+	!  call iff_integrate_vertical_int(id,iintp,lmax,h,data,ip_to)
 	else
 	  call iff_interpolate_vertical_int(id,iintp,lmax,h,data,ip_to)
 	end if
@@ -1672,7 +1694,7 @@ c global lmax and lexp are > 1
 	integer id
 	integer iintp
 	integer lmax
-	real h
+	real h		!depth of data to be interpolated
 	real data(pinfo(id)%lmax,pinfo(id)%nvar)
 	integer ip_to
 
@@ -1680,6 +1702,7 @@ c global lmax and lexp are > 1
 	integer l,ipl,lfem
 	integer ivar,nvar
 	integer nsigma
+	integer iu
 	double precision acum,htot
 	real z,hfem,hfile
 	real hsigma
@@ -1696,6 +1719,8 @@ c global lmax and lexp are > 1
 	bcons = .false.
 	bdebug = .true.
 	bdebug = .false.
+	!bdebug = ip_to == 100
+	iu = 66
 
         nvar = pinfo(id)%nvar
 
@@ -1706,16 +1731,17 @@ c global lmax and lexp are > 1
 	if( lmax <= 1 ) then
 	  call iff_distribute_vertical_int(id,iintp,data(1,:),ip_to)
 	  return
-	else if( lfem <= 1 ) then
-	  call iff_integrate_vertical_int(id,iintp,lmax,h,data,ip_to)
-	  return
+	!else if( lfem <= 1 ) then
+	!  call iff_integrate_vertical_int(id,iintp,lmax,h,data,ip_to)
+	!  return
 	end if
 
 	z = 0.
 
 	hfem = hk_fem(ipl)
 	hfile = h
-	if( hfile < -990 ) hfile = pinfo(id)%hlv_file(lmax) !take from hlv array
+	if( hfile < -990. ) hfile = pinfo(id)%hlv_file(lmax) !take from hlv
+	if( hfile == -1. ) hfile = hfem 		!hlv is sigma -> hfem
 
 	call compute_sigma_info(lmax,pinfo(id)%hlv_file,nsigma,hsigma)
 	call get_layer_thickness(lmax,nsigma,hsigma,z,hfile
@@ -1730,18 +1756,18 @@ c global lmax and lexp are > 1
 	hz_fem(0) = z
 
 	if( bdebug ) then
-	  write(6,*) 'iff_interpolate_vertical: -------------------'
-	  write(6,*) id
-	  write(6,*) ip_to
-	  write(6,*) hfile,hfem
-	  write(6,*) lmax,lfem
-	  write(6,*) 'hlv_file: ',(pinfo(id)%hlv_file(l),l=1,lmax)
-	  write(6,*) 'hlv_fem: ',(hlv_fem(l),l=1,lfem)
-	  write(6,*) (hl(l),l=1,lmax)
-	  write(6,*) (hl_fem(l),l=1,lfem)
-	  write(6,*) (hz_file(l),l=0,lmax)
-	  write(6,*) (hz_fem(l),l=0,lfem)
-	  write(6,*) 'end iff_interpolate_vertical: ----------------'
+	  write(iu,*) 'iff_interpolate_vertical: -------------------'
+	  write(iu,*) id
+	  write(iu,*) ip_to
+	  write(iu,*) hfile,hfem
+	  write(iu,*) lmax,lfem
+	  write(iu,*) 'hlv_file: ',(pinfo(id)%hlv_file(l),l=1,lmax)
+	  write(iu,*) 'hlv_fem: ',(hlv_fem(l),l=1,lfem)
+	  write(iu,*) (hl(l),l=1,lmax)
+	  write(iu,*) (hl_fem(l),l=1,lfem)
+	  write(iu,*) (hz_file(l),l=0,lmax)
+	  write(iu,*) (hz_fem(l),l=0,lfem)
+	  write(iu,*) 'end iff_interpolate_vertical: ----------------'
 	end if
 
 	do ivar=1,nvar
@@ -1749,12 +1775,14 @@ c global lmax and lexp are > 1
 	  call intp_vert(bcons,lmax,hz_file,val_file,lfem,hz_fem,val_fem)
 	  pinfo(id)%data(1:lfem,ip_to,ivar,iintp) = val_fem(1:lfem)
 	  if( bdebug ) then
-	    write(6,*) 'iff_interpolate_vertical - ivar = : ',ivar
-	    write(6,*) (val_file(l),l=1,lmax)
-	    write(6,*) (val_fem(l),l=1,lfem)
-	    write(6,*) 'end iff_interpolate_vertical - ivar = : ',ivar
+	    write(iu,*) 'iff_interpolate_vertical - ivar = : ',ivar
+	    write(iu,*) (val_file(l),l=1,lmax)
+	    write(iu,*) (val_fem(l),l=1,lfem)
+	    write(iu,*) 'end iff_interpolate_vertical - ivar = : ',ivar
 	  end if
 	end do
+
+	if( bdebug ) flush(iu)
 
 	end subroutine iff_interpolate_vertical_int
 
@@ -2017,6 +2045,9 @@ c does the final interpolation in time
 	  write(6,*) id,bconst,bonepoint
 	  write(6,*) nintp, nexp,lexp
 	  write(6,*) val,flag
+	  write(6,*) 'This means that some values are not available.'
+	  write(6,*) 'If you read from a regular grid, check the size'
+	  write(6,*) 'of the grid. It must cover the whole basin.'
 	  call iff_print_file_info(id)
 	  write(6,*) 'we need all values for interpolation'
 	   stop 'error stop iff_interpolate: iflag'

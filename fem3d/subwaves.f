@@ -1328,7 +1328,8 @@ c --- loop over elements
 	end do
 
 	icaver = icaver/nel
-	write(156,*) 'stats parametric wave model: ',icaver,icmax
+
+	!write(156,*) 'stats parametric wave model: ',icaver,icmax
 
 	end
 

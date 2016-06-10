@@ -84,7 +84,8 @@ c eco-model cosimo
 
 ! next array specifies boundary conditions if non are given
 
-	real, save :: epbound(npstate) = (/0.,0.,0./)
+	real, save :: epbound(npstate) = (/0.,0.,0./)	!default bound cond.
+	real, save :: epinit(npstate) = (/0.,0.,0./)	!default initial cond.
 
         real tpstot(npstate)              !for mass test
         real tsstot(nsstate)
@@ -150,6 +151,8 @@ c-------------------------------------------------------------------
 	  ishyff = nint(getpar('ishyff'))
 	  ishyff = 2	!force writing of old and new file format
 
+          dtime0 = itanf
+
 c         --------------------------------------------------
 c	  initialize state variables
 c         --------------------------------------------------
@@ -165,7 +168,7 @@ c	  initial conditions (only for pelagic part)
 c         --------------------------------------------------
 
 	  nvar = npstate
-	  call mercury_initial(itanf,nvar,nlvdi,nlv,nkn,emp)
+	  call mercury_init_file(dtime0,nvar,nlvdi,nlv,nkn,epinit,emp)
 
 c         --------------------------------------------------
 c	  set boundary conditions for all state variables
@@ -176,7 +179,6 @@ c         --------------------------------------------------
           idmerc = 0
 
 	  call get_first_time(itanf)
-          dtime0 = itanf
           nintp = 2
 	  nvar = npstate
           call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
@@ -380,38 +382,22 @@ c*************************************************************
 
 c*************************************************************
 
-        subroutine mercury_initial(it,nvar,nlvddi,nlv,nkn,val)
+	subroutine mercury_init_file(dtime,nvar,nlvddi,nlv,nkn,val0,val)
 
 c initialization of mercury from file
 
         implicit none
 
-        integer it
+        double precision dtime
         integer nvar
         integer nlvddi
         integer nlv
         integer nkn
+        real val0(nvar)
         real val(nlvddi,nkn,nvar)
 
-        integer id
-        double precision dtime
-        real val0(nvar)
-        character*80 merc_file
-
-        call getfnm('mercin',merc_file)
-
-        dtime = it
-        val0 = 0.       !default initial conditions
-        val = 0.        !set variables to zero
-
-        if( merc_file .ne. ' ' ) then
-          write(6,*) 'mercury_initial: opening file for mercury'
-          call tracer_file_open(merc_file,dtime,nvar,nkn,nlv,val0,id)
-          call tracer_file_descrp(id,'mercury init')
-          call tracer_file_next_record(dtime,id,nvar,nlvddi,nkn,nlv,val)
-          call tracer_file_close(id)
-          write(6,*) 'mercury initialized from file ',trim(merc_file)
-        end if
+        call tracer_file_init('mercury init','mercin',dtime
+     +                          ,nvar,nlvddi,nlv,nkn,val0,val)
 
         end
 

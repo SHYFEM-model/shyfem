@@ -202,8 +202,23 @@
 
 	boutput = boutput .or. btrans .or. bsplit .or. bsumvar
 
+	call shy_peek_record(id,dtime,iaux,iaux,iaux,iaux,ierr)
+	if( ierr > 0 ) goto 99
+	if( ierr < 0 ) goto 98
         call shy_get_string_descriptions(id,nvar,ivars,strings)
 	call shyelab_init_output(id,idout,nvar,ivars)
+
+	!--------------------------------------------------------------
+	! write info to terminal
+	!--------------------------------------------------------------
+
+        write(6,*) 'available variables contained in file: '
+        write(6,*) 'total number of variables: ',nvar
+        write(6,*) '   varnum     varid    varname'
+        do iv=1,nvar
+          ivar = ivars(iv)
+          write(6,'(2i10,4x,a)') iv,ivar,trim(strings(iv))
+        end do
 
 !--------------------------------------------------------------
 ! loop on data
@@ -392,6 +407,14 @@
 	write(6,*) 'error reading header, ierr = ',ierr
 	write(6,*) 'file = ',trim(file)
 	stop 'error stop shyelab: reading header'
+   98	continue
+	write(6,*) 'error reading file, ierr = ',ierr
+	write(6,*) 'file = ',trim(file)
+	stop 'error stop shyelab: file contains no data'
+   99	continue
+	write(6,*) 'error reading file, ierr = ',ierr
+	write(6,*) 'file = ',trim(file)
+	stop 'error stop shyelab: reading first record'
 	end
 
 !***************************************************************
@@ -639,7 +662,8 @@
 	end if
 
 	id_out = iusplit(ivar)
-	write(6,*) 'shy_split_id: ',ivar,id_out
+
+	!write(6,*) 'shy_split_id: ',ivar,id_out
 
 	if( id_out == 0 ) then
 	  write(name,'(i4,a)') ivar,'.shy'

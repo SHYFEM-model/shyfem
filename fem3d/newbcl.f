@@ -66,6 +66,7 @@ c 20.10.2014    ggu     pass ids to scal_adv()
 c 10.02.2015    ggu     call to bnds_read_new() introduced
 c 15.10.2015    ggu     added new calls for shy file format
 c 26.10.2015    ggu     bug fix for parallel code (what was not set)
+c 10.06.2016    ggu     not used routines deleted
 c
 c*****************************************************************
 
@@ -600,9 +601,6 @@ c checks values of t/s/rho
 
 	implicit none
 
-	include 'param.h'
-
-
 	real smin,smax,tmin,tmax,rmin,rmax
 	character*30 text
 
@@ -630,8 +628,6 @@ c*******************************************************************
 	subroutine ts_diag(it,nlvddi,nlv,nkn,tempv,saltv)
 
 	implicit none
-
-	include 'param.h'
 
 	integer it
 	integer nlvddi
@@ -671,8 +667,6 @@ c*******************************************************************
 
 	implicit none
 
-	include 'param.h'
-
 	integer it
 	integer nlvddi
 	integer nlv
@@ -707,120 +701,11 @@ c*******************************************************************
 
 c*******************************************************************	
 
-	subroutine ts_intp(it,nlvddi,nlv,nkn,tobsv,sobsv,tempf,saltf)
-
-	implicit none
-
-	include 'param.h'
-
-	integer it
-	integer nlvddi
-	integer nlv
-	integer nkn
-	real tobsv(nlvddi,1)
-	real sobsv(nlvddi,1)
-	character*80 tempf,saltf
-
-	integer iutemp(3),iusalt(3)
-	save iutemp,iusalt
-	integer ittold,itsold,ittnew,itsnew
-	save ittold,itsold,ittnew,itsnew
-
-	real, save, allocatable :: toldv(:,:)
-	real, save, allocatable :: soldv(:,:)
-	real, save, allocatable :: tnewv(:,:)
-	real, save, allocatable :: snewv(:,:)
-
-	logical bdebug
-	integer icall
-	save icall
-	data icall / 0 /
-
-	if( icall .eq. -1 ) return
-
-	bdebug = .true.
-	bdebug = .false.
-
-c-------------------------------------------------------------
-c initialization (open files etc...)
-c-------------------------------------------------------------
-
-	if( icall .eq. 0 ) then
-	  write(6,*) 'ts_intp: opening files for T/S'
-	  call ts_file_open(tempf,it,nkn,nlv,iutemp)
-	  call ts_file_open(saltf,it,nkn,nlv,iusalt)
-
-	  allocate(toldv(nlvddi,nkn))
-	  allocate(soldv(nlvddi,nkn))
-	  allocate(tnewv(nlvddi,nkn))
-	  allocate(snewv(nlvddi,nkn))
-
-	  write(6,*) 'ts_intp: initializing T/S'
-	  call ts_next_record(ittold,iutemp,nlvddi,nkn,nlv,toldv)
-	  call ts_next_record(itsold,iusalt,nlvddi,nkn,nlv,soldv)
-	  write(6,*) 'ts_intp: first record read ',ittold,itsold
-
-	  call ts_next_record(ittnew,iutemp,nlvddi,nkn,nlv,tnewv)
-	  call ts_next_record(itsnew,iusalt,nlvddi,nkn,nlv,snewv)
-	  write(6,*) 'ts_intp: second record read ',ittnew,itsnew
-
-	  if( ittold .ne. itsold ) goto 98
-	  if( ittnew .ne. itsnew ) goto 98
-	  if( it .lt. ittold ) goto 99
-
-	  icall = 1
-	end if
-
-c-------------------------------------------------------------
-c read new files if necessary
-c-------------------------------------------------------------
-
-	do while( it .gt. ittnew )
-
-	  ittold = ittnew
-	  call copy_record(nkn,nlvddi,nlv,toldv,tnewv)
-	  itsold = itsnew
-	  call copy_record(nkn,nlvddi,nlv,soldv,snewv)
-
-	  call ts_next_record(ittnew,iutemp,nlvddi,nkn,nlv,tnewv)
-	  call ts_next_record(itsnew,iusalt,nlvddi,nkn,nlv,snewv)
-	  write(6,*) 'ts_intp: new record read ',ittnew,itsnew
-
-	  if( ittnew .ne. itsnew ) goto 98
-
-	end do
-
-c-------------------------------------------------------------
-c interpolate to new time step
-c-------------------------------------------------------------
-
-	call intp_record(nkn,nlvddi,nlv,ittold,ittnew,it
-     +				,toldv,tnewv,tobsv)
-	call intp_record(nkn,nlvddi,nlv,itsold,itsnew,it
-     +				,soldv,snewv,sobsv)
-
-c-------------------------------------------------------------
-c end of routine
-c-------------------------------------------------------------
-
-	return
-   98	continue
-	write(6,*) ittold,itsold,ittnew,itsnew
-	stop 'error stop ts_intp: mismatch time of temp/salt records'
-   99	continue
-	write(6,*) it,ittold
-	stop 'error stop ts_intp: no file for start of simulation'
-	end
-
-c*******************************************************************	
-
 	subroutine ts_init(it0,nlvddi,nlv,nkn,tempv,saltv)
 
 c initialization of T/S from file
 
 	implicit none
-
-	include 'param.h'
 
         integer it0
         integer nlvddi
@@ -860,56 +745,6 @@ c initialization of T/S from file
 	end
 
 c*******************************************************************	
-
-	subroutine intp_record(nkn,nlvddi,nlv,itold,itnew,it
-     +				,voldv,vnewv,vintpv)
-
-c interpolates records to actual time
-
-	implicit none
-
-	integer nkn,nlvddi,nlv
-	integer itold,itnew,it
-	real voldv(nlvddi,1)
-	real vnewv(nlvddi,1)
-	real vintpv(nlvddi,1)
-
-	integer k,l
-	real rt
-
-        rt = (it-itold) / float(itnew-itold)
-
-	do k=1,nkn
-	  do l=1,nlv
-	    vintpv(l,k) = voldv(l,k) + rt * (vnewv(l,k) - voldv(l,k))
-	  end do
-	end do
-
-	end
-
-c*******************************************************************	
-
-	subroutine copy_record(nkn,nlvddi,nlv,voldv,vnewv)
-
-c copies new record to old one
-
-	implicit none
-
-	integer nkn,nlvddi,nlv
-	real voldv(nlvddi,1)
-	real vnewv(nlvddi,1)
-
-	integer k,l
-
-	do k=1,nkn
-	  do l=1,nlv
-	    voldv(l,k) = vnewv(l,k)
-	  end do
-	end do
-
-	end
-
-c*******************************************************************	
 c*******************************************************************	
 c*******************************************************************	
 
@@ -924,47 +759,12 @@ c accessor routine to get T/S
         integer k,l
         real t,s
 
-	include 'param.h'
-
-
         t = tempv(l,k)
         s = saltv(l,k)
 
         end
 
 c******************************************************************
-
-	subroutine check_layers(what,vals)
-
-	use levels
-	use basin, only : nkn,nel,ngr,mbw
-
-	implicit none
-
-	include 'param.h'
-
-	character*(*) what
-	real vals(nlvdi,nkn)
-
-	integer l,k,lmax
-	real valmin,valmax
-
-	write(6,*) 'checking layer structure : ',what
-
-            do l=1,nlv
-              valmin = +999.
-              valmax = -999.
-              do k=1,nkn
-                lmax = ilhkv(k)
-                if( l .le. lmax ) then
-                  valmin = min(valmin,vals(l,k))
-                  valmax = max(valmax,vals(l,k))
-                end if
-              end do
-              write(6,*) l,valmin,valmax
-            end do
-
-	end
-
+c*******************************************************************	
 c*******************************************************************	
 

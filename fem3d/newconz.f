@@ -21,6 +21,7 @@ c 20.10.2014    ggu     pass ids to scal_adv routines
 c 10.02.2015    ggu     call to bnds_read_new() introduced
 c 09.11.2015    ggu     newly structured in init, compute and write
 c 06.06.2016    ggu     initialization from file changed
+c 10.06.2016    ggu     some more re-formatting
 c
 c*********************************************************************
 
@@ -100,17 +101,16 @@ c-------------------------------------------------------------
 	dtime = t_act
 	nvar = iconz
 	allocate(tauv(nvar),cdefs(nvar),massv(nvar))
+	cdefs = cref
 	tauv = contau
 	nmin = min(ndim_tau,nvar)
 	if( nmin > 0 ) tauv(1:nmin) = taupar(1:nmin)
 
         if( .not. has_restart(4) ) then	!no restart of conzentrations
 	  if( nvar == 1 ) then 
-	    cnv = cref
-	    call conz_init(itanf,nvar,nlvdi,nlv,nkn,cnv) !read from file
+	    call conz_init_file(dtime,nvar,nlvdi,nlv,nkn,cdefs,cnv)
 	  else
-	    conzv = cref
-	    call conz_init(itanf,nvar,nlvdi,nlv,nkn,conzv) !read from file
+	    call conz_init_file(dtime,nvar,nlvdi,nlv,nkn,cdefs,conzv)
 	  end if
 	end if
 
@@ -657,38 +657,22 @@ c simulates decay for concentration
 
 c*********************************************************************
 
-        subroutine conz_init(it,nvar,nlvddi,nlv,nkn,cnv)
+        subroutine conz_init_file(dtime,nvar,nlvddi,nlv,nkn,val0,val)
 
 c initialization of conz from file
 
-        implicit none
+	implicit none
 
-        integer it
+	double precision dtime
 	integer nvar
         integer nlvddi
         integer nlv
         integer nkn
-        real cnv(nlvddi,1)
-
-        integer id
-        double precision dtime
         real val0(nvar)
-        character*80 conz_file
+        real val(nlvddi,nkn,nvar)
 
-        call getfnm('conzin',conz_file)
-
-	dtime = it
-	val0 = 0.
-	cnv = 0.
-
-        if( conz_file .ne. ' ' ) then
-          write(6,*) 'conz_init: opening file for conz ',nvar
-          call tracer_file_open(conz_file,dtime,nvar,nkn,nlv,val0,id)
-          call tracer_file_descrp(id,'conz init')
-          call tracer_file_next_record(dtime,id,nvar,nlvddi,nkn,nlv,cnv)
-          call tracer_file_close(id)
-	  write(6,*) 'conz initialized from file ',trim(conz_file)
-        end if
+        call tracer_file_init('conz init','conzin',dtime
+     +                          ,nvar,nlvddi,nlv,nkn,val0,val)
 
 	end
 

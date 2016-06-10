@@ -1,6 +1,4 @@
 !
-! $Id: noselab.f,v 1.8 2008-11-20 10:51:34 georg Exp $
-!
 ! revision log :
 !
 ! 18.11.1998    ggu     check dimensions with dimnos
@@ -16,6 +14,7 @@
 ! 11.09.2015    ggu     write in gis format
 ! 23.09.2015    ggu     handle more than one file (look for itstart)
 ! 16.10.2015    ggu     started shyelab
+! 10.06.2016    ggu     shyplot now plots fem files
 !
 !**************************************************************
 
@@ -30,6 +29,8 @@
 
 	if( shyfilename /= ' ' ) then
 	  call plot_shy_file
+	else if( femfilename /= ' ' ) then
+	  call plot_fem_file
 	else if( basfilename /= ' ' ) then
 	  call plot_bas_file
 	end if
@@ -49,8 +50,6 @@
 	implicit none
 
 	integer ivar
-
-	write(6,*) 'not yet ready...'
 
         call read_command_line_file(basfilename)
 
@@ -431,7 +430,339 @@
 !***************************************************************
 !***************************************************************
 
+	subroutine plot_fem_file
 
+	use clo
+	!use elabutil
+	use plotutil
+	use elabtime
+	use shyfile
+	use shyutil
+
+        use basin
+        use levels
+        use evgeom
+        use mod_depth
+        use mod_geom
+
+	implicit none
+
+	logical bhasbasin,breg
+	logical bsect,bskip
+	logical bintp,bplotreg
+	integer i,ierr,iformat,irec,l
+	integer isphe,iunit,lmax,lmax0,np,np0
+	integer ntype,nvar,nvar0,nvers
+	integer date,time
+	integer datetime(2)
+	integer itype(2)
+	integer ivarplot(2)
+	real regpar(7)
+	double precision dtime,atime,atime0
+	character*80 line,string,varline
+        real,allocatable :: data2d(:)
+        real,allocatable :: data(:,:,:)
+        real,allocatable :: dext(:)
+        real,allocatable :: hd(:)
+        !real,allocatable :: hlv(:)
+        !integer,allocatable :: ilhkv(:)
+        integer,allocatable :: ivars(:)
+        character*80, allocatable :: strings(:)
+
+	integer getisec
+	real getpar
+
+        !--------------------------------------------------------------
+        ! set command line parameters
+        !--------------------------------------------------------------
+
+        call init_nls_fnm
+        call read_str_files(-1)
+        call read_str_files(ivar3)
+
+        !--------------------------------------------------------------
+        ! open input files
+        !--------------------------------------------------------------
+
+	infile = femfilename
+        if( infile .eq. ' ' ) stop
+
+        np = 0
+        call fem_file_read_open(infile,np,iunit,iformat)
+        if( iunit .le. 0 ) stop
+
+        write(6,*) 'file name: ',infile(1:len_trim(infile))
+        call fem_file_get_format_description(iformat,line)
+        write(6,*) 'format: ',iformat,"  (",line(1:len_trim(line)),")"
+
+        !--------------------------------------------------------------
+        ! set up params and modules
+        !--------------------------------------------------------------
+
+
+
+	!--------------------------------------------------------------
+	! read first record
+	!--------------------------------------------------------------
+
+        call fem_file_read_params(iformat,iunit,dtime
+     +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
+
+        if( ierr .ne. 0 ) goto 99
+
+        if( .not. bquiet ) then
+          write(6,*) 'nvers:  ',nvers
+          write(6,*) 'np:     ',np
+          write(6,*) 'lmax:   ',lmax
+          write(6,*) 'nvar:   ',nvar
+          write(6,*) 'ntype:  ',ntype
+        end if
+
+	nlv = lmax
+        call levels_init(np,np,nlv)	!first call - will be changed later
+        call fem_file_make_type(ntype,2,itype)
+
+        call fem_file_read_2header(iformat,iunit,ntype,lmax
+     +                  ,hlv,regpar,ierr)
+        if( ierr .ne. 0 ) goto 98
+
+        if( lmax > 1 .and. .not. bquiet ) then
+          write(6,*) 'vertical layers: ',lmax
+          write(6,*) hlv
+        end if
+        if( itype(1) .gt. 0 .and. .not. bquiet ) then
+          write(6,*) 'date and time: ',datetime
+        end if
+        breg = .false.
+        if( itype(2) .gt. 0 .and. .not. bquiet ) then
+          breg = .true.
+          write(6,*) 'regpar: ',regpar
+        end if
+
+        !--------------------------------------------------------------
+        ! configure basin
+        !--------------------------------------------------------------
+
+	bhasbasin = basfilename /= ' '
+
+	if( bhasbasin ) then
+          call read_command_line_file(basfilename)
+	else if( breg ) then
+	  call bas_insert_regular(regpar)
+	end if
+
+	if( bhasbasin .or. breg ) then
+          call ev_init(nel)
+          isphe = nint(getpar('isphe'))
+          call set_coords_ev(isphe)
+          call set_ev
+          call get_coords_ev(isphe)
+          call putpar('isphe',float(isphe))
+
+          call mod_geom_init(nkn,nel,ngr)
+          call set_geom
+
+          call levels_init(nkn,nel,nlv)
+          call mod_depth_init(nkn,nel)
+
+          call makehev(hev)
+          call makehkv(hkv)
+          call allocate_2d_arrays(nel)
+	end if
+
+	if( breg ) then
+	  bplotreg = .true.
+	  bintp = .false.
+	  if( bhasbasin ) bintp = .true.
+	  if( bregall ) bintp = .false.
+	else
+	  bplotreg = .false.
+	  bintp = .true.
+	  if( bhasbasin ) then
+	    if( nkn /= np ) goto 93
+	    if( basintype /= 'bas' ) goto 92
+	  else
+	    !goto 94
+	  end if
+	end if
+
+        nvar0 = nvar
+        lmax0 = lmax
+        np0 = np
+        allocate(strings(nvar))
+        allocate(ivars(nvar))
+        allocate(dext(nvar))
+        allocate(data(lmax,np,nvar))
+        allocate(data2d(np))
+        allocate(hd(np))
+        !allocate(ilhkv(np))
+
+	!--------------------------------------------------------------
+	! choose variable to plot
+	!--------------------------------------------------------------
+
+        do i=1,nvar
+          call fem_file_skip_data(iformat,iunit
+     +                          ,nvers,np,lmax,string,ierr)
+          if( ierr .ne. 0 ) goto 97
+          strings(i) = string
+        end do
+
+	call get_vars_from_string(nvar,strings,ivars)
+	call choose_var(nvar,ivars,strings,varline,ivarplot) !set bdir, ivar3
+
+	if( .not. breg .and. .not. bhasbasin ) goto 94
+
+	!--------------------------------------------------------------
+	! close and re-open file
+	!--------------------------------------------------------------
+
+        close(iunit)
+
+        np = 0
+        call fem_file_read_open(infile,np,iunit,iformat)
+        if( iunit .le. 0 ) stop
+
+        !--------------------------------------------------------------
+        ! set time
+        !--------------------------------------------------------------
+
+        call dts_convert_to_atime(datetime,dtime,atime)
+        atime0 = atime          !absolute time of first record
+
+	date = datetime(1)
+	time = datetime(2)
+        call elabtime_date_and_time(date,time)
+        call elabtime_minmax(stmin,stmax)
+        call elabtime_set_inclusive(.false.)
+
+	!--------------------------------------------------------------
+	! initialize plot
+	!--------------------------------------------------------------
+
+        call init_plot
+
+	bsect = getisec() /= 0
+	call setlev(layer)
+	b2d = layer == 0
+
+        call initialize_color
+
+	call qopen
+
+        !--------------------------------------------------------------
+        ! loop on records
+        !--------------------------------------------------------------
+
+        irec = 0
+
+        do
+          irec = irec + 1
+          call fem_file_read_params(iformat,iunit,dtime
+     +                          ,nvers,np,lmax,nvar,ntype,datetime,ierr)
+          if( ierr .lt. 0 ) exit
+          if( ierr .gt. 0 ) goto 99
+          if( nvar .ne. nvar0 ) goto 96
+          if( lmax .ne. lmax0 ) goto 96
+          if( np .ne. np0 ) goto 96
+
+          call dts_convert_to_atime(datetime,dtime,atime)
+          call dts_format_abs_time(atime,line)
+
+          if( bdebug ) write(6,*) irec,atime,line
+
+          call fem_file_read_2header(iformat,iunit,ntype,lmax
+     +                  ,hlv,regpar,ierr)
+          if( ierr .ne. 0 ) goto 98
+	  call init_sigma_info(lmax,hlv)
+
+	  bskip = .false.
+	  if( elabtime_over_time(atime) ) exit
+	  if( .not. elabtime_in_time(atime) ) bskip = .true.
+	  if( ifreq > 0 .and. mod(irec,ifreq) /= 0 ) bskip = .true.
+
+	  write(6,*) irec,atime,line
+
+          do i=1,nvar
+            if( bskip ) then
+              call fem_file_skip_data(iformat,iunit
+     +                          ,nvers,np,lmax,string,ierr)
+            else
+              call fem_file_read_data(iformat,iunit
+     +                          ,nvers,np,lmax
+     +                          ,string
+     +                          ,ilhkv,hd
+     +                          ,lmax,data(1,1,i)
+     +                          ,ierr)
+            end if
+            if( ierr .ne. 0 ) goto 97
+            if( string .ne. strings(i) ) goto 95
+          end do
+
+	  if( b2d ) then
+	    write(6,*) 'b2d not ready...'
+	    write(6,*) 'please choose a layer to plot with -layer l'
+	    stop 'error stop shyplot: b2d not ready...'
+	  else
+	    l = layer
+	    if( l == -1 ) l = lmax		!FIXME - not the right way
+	    data2d(:) = data(l,:,ivnum)
+	  end if
+
+	  if( bplotreg ) then
+	    call ploreg(np,data2d,regpar,varline,bintp,.true.)
+	  else
+            !call outfile_make_hkv(nkn,nel,nen3v,hm3v,hev,hkv)
+            call ilhk2e(nkn,nel,nen3v,ilhkv,ilhv)
+            call adjust_layer_index(nel,nlv,hev,hlv,ilhv)
+	    call make_mask(l)
+	    call ploval(np,data2d,varline)
+	  end if
+
+	end do
+
+        !--------------------------------------------------------------
+        ! end of routine
+        !--------------------------------------------------------------
+
+	return
+   92   continue
+        write(6,*) 'for non regular file we need bas, not grd file'
+        stop 'error stop plot_fem_file: basin'
+   93   continue
+        write(6,*) 'incompatible node numbers: ',nkn,np
+        stop 'error stop plot_fem_file: basin'
+   94   continue
+        write(6,*) 'fem file with non regular data needs basin'
+        write(6,*) 'please specify basin on command line'
+        stop 'error stop plot_fem_file: basin'
+   95   continue
+        write(6,*) 'strings not in same sequence: ',i
+        write(6,*) string
+        write(6,*) strings(i)
+        stop 'error stop plot_fem_file: strings'
+   96   continue
+        write(6,*) 'nvar,nvar0: ',nvar,nvar0
+        write(6,*) 'lmax,lmax0: ',lmax,lmax0    !this might be relaxed
+        write(6,*) 'np,np0:     ',np,np0        !this might be relaxed
+        write(6,*) 'cannot change number of variables'
+        stop 'error stop plot_fem_file'
+   97   continue
+        write(6,*) 'record: ',irec
+        write(6,*) 'cannot read data record of file'
+        stop 'error stop plot_fem_file'
+   98   continue
+        write(6,*) 'record: ',irec
+        write(6,*) 'cannot read second header of file'
+        stop 'error stop plot_fem_file'
+   99   continue
+        write(6,*) 'record: ',irec
+        write(6,*) 'cannot read header of file'
+        stop 'error stop plot_fem_file'
+	end
+
+!***************************************************************
+!***************************************************************
 !***************************************************************
 
 	subroutine prepare_hydro(bvel,nndim,cv3all,znv,uprv,vprv)
@@ -698,8 +1029,27 @@ c choses variable to be plotted
 
 	integer nv,iv,ivar
 
+	write(6,*) 'available variables to be plotted: '
+	write(6,*) 'total number of variables: ',nvar
+	write(6,*) '   varnum     varid    varname'
+	do iv=1,nvar
+	  ivar = ivars(iv)
+	  write(6,'(2i10,4x,a)') iv,ivar,trim(strings(iv))
+	end do
+
+	if( ivnum > 0 ) then
+	  if( ivnum > nvar ) then
+	    write(6,*) 'ivnum too big for nvar'
+	    write(6,*) 'ivnum,nvar: ',ivnum,nvar
+            stop 'error stop shyplot'
+	  end if
+	  ivar3 = ivars(ivnum)
+	  call read_str_files(ivar3)
+	end if
+
 	if( nvar == 1 .and. ivar3 == 0 ) then
-	  ivar3 = ivars(1)
+	  ivnum = 1
+	  ivar3 = ivars(ivnum)
 	  call read_str_files(ivar3)
 	end if
         if( ivar3 == 0 ) then
@@ -709,13 +1059,14 @@ c choses variable to be plotted
 
 	write(6,*) 
 	write(6,*) 'varid to be plotted:       ',ivar3
-	write(6,*) 'total number of variables: ',nvar
-	write(6,*) '   number     varid    varname'
+	!write(6,*) 'total number of variables: ',nvar
+	!write(6,*) '   varnum     varid    varname'
 	nv = 0
 	do iv=1,nvar
 	  ivar = ivars(iv)
-	  write(6,'(2i10,4x,a)') iv,ivar,trim(strings(iv))
+	  !write(6,'(2i10,4x,a)') iv,ivar,trim(strings(iv))
 	  if( ivar == ivar3 ) nv = nv + 1
+	  if( ivnum == 0 .and. ivar == ivar3 ) ivnum = iv
 	end do
 
 	call directional_init(nvar,ivars,ivar3,bdir,ivarplot)
@@ -736,6 +1087,7 @@ c choses variable to be plotted
 	write(6,*) 
 	write(6,*) 'information for plotting:'
 	write(6,*) 'varline: ',trim(varline)
+	write(6,*) 'ivnum: ',ivnum
 	write(6,*) 'ivar3: ',ivar3
 	write(6,*) 'layer: ',layer
 	write(6,*) 

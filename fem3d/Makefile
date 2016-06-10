@@ -360,13 +360,14 @@ EXEMAIN  = shyfem shypre shybas
 EXEINFO  = flxinf extinf rstinf \
 		tsinf filetype \
 		offinf lgrinf etsinf \
-		noselab ouselab shyelab nosextr_nodes extelab flxelab \
+		noselab ouselab shyelab extelab flxelab \
 		femelab \
 		nos2shy ous2shy shydiff
 EXESPLIT = splitext splitflx splitets
 EXELAP   =  
 EXEBAS   = 
 EXEVAR   = nosresidence scal_intp
+EXEVAR   = scal_intp
 EXEUTIL  = bc2fem
 
 NOSVAR   = 
@@ -789,6 +790,7 @@ last:
 ../femlib/mod/intp_fem_file.mod: subfemintp.o
 ../femlib/mod/levels.mod: newlevels.o
 ../femlib/mod/lgr_sedim_module.mod: lagrange_sedim.o
+../femlib/mod/lines.mod: sublin.o
 ../femlib/mod/meteo_forcing_module.mod: submeteo2.o
 ../femlib/mod/mod_area.mod: mod_area.o
 ../femlib/mod/mod_bclfix.mod: mod_bclfix.o
@@ -970,8 +972,7 @@ loading.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 map_influence.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_depth.mod param.h 
 mercury.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
-		../femlib/mod/mod_diff_visc_fric.mod mkonst.h \
-		param.h 
+		../femlib/mod/mod_diff_visc_fric.mod femtime.h 
 mod_subset.o: ../femlib/mod/basin.mod
 netcdf.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod netcdf.inc 
@@ -1008,10 +1009,10 @@ newbcl.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro_print.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_ts.mod femtime.h mkonst.h \
-		param.h pkonst.h 
+		pkonst.h 
 newbfm.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod femtime.h \
-		mkonst.h param.h 
+		mkonst.h 
 newchao.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_baro.mod femtime.h param.h 
@@ -1062,8 +1063,7 @@ newconz.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/mod_layer_thickness.mod \
-		../femlib/mod/mod_ts.mod femtime.h mkonst.h \
-		param.h 
+		../femlib/mod/mod_ts.mod femtime.h mkonst.h 
 newcra.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_bnd_aux.mod \
 		../femlib/mod/mod_bound_dynamic.mod \
@@ -1411,8 +1411,7 @@ subgotm_mud.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_turbulence.mod femtime.h param.h \
 		pkonst.h 
 subhisto.o: histo.h
-sublin.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod \
-		param.h 
+sublin.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
 sublnka.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
 sublnkd.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_geom.mod \
@@ -1527,7 +1526,7 @@ subtrace.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_hydro_baro.mod \
 		../femlib/mod/mod_hydro_vel.mod femtime.h param.h 
-subtsuvfile.o: ../femlib/mod/intp_fem_file.mod param.h
+subtsuvfile.o: ../femlib/mod/intp_fem_file.mod
 subuti.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_depth.mod \

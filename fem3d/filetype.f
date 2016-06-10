@@ -38,7 +38,7 @@ c-------------------------------------------------------------
 c FEM file
 c-------------------------------------------------------------
 
-	call fem_file_is_fem_file(file,iformat)
+	call fem_file_test_fem_file(file,iformat)
 	if( iformat >= 0 ) then
 	  write(6,*) 'file format is FEM'
 	  stop

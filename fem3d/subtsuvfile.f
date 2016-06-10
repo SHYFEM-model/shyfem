@@ -282,6 +282,48 @@ c closes tracer file
 c*******************************************************************	
 c*******************************************************************	
 c*******************************************************************	
+
+	subroutine tracer_file_init(what,file_init,dtime
+     +				,nvar,nlvddi,nlv,nkn,val0,val)
+
+c initialization of tracer from file
+
+        implicit none
+
+	character*(*) what
+	character*(*) file_init
+        double precision dtime
+        integer nvar
+        integer nlvddi
+        integer nlv
+        integer nkn
+        real val0(nvar)			!default for vals if no file is given
+        real val(nlvddi,nkn,nvar)
+
+        integer id,ivar
+        character*80 file
+
+        call getfnm(file_init,file)
+
+	do ivar=1,nvar
+          val(:,:,ivar) = val0(ivar)
+	end do
+
+        if( file == ' ' ) return
+
+        write(6,*) 'tracer_init: opening file for ',trim(what)
+        write(6,*) '   file name: ',trim(file)
+        write(6,*) '   variables: ',nvar
+
+        call tracer_file_open(file,dtime,nvar,nkn,nlv,val0,id)
+        call tracer_file_descrp(id,what)
+        call tracer_file_next_record(dtime,id,nvar,nlvddi,nkn,nlv,val)
+        call tracer_file_close(id)
+
+	write(6,*) 'tracer_init: successful init for ',trim(what)
+
+	end
+
 c*******************************************************************	
 c*******************************************************************	
 c*******************************************************************	

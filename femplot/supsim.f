@@ -533,6 +533,71 @@ c**********************************************************
 
 c**********************************************************
 
+	subroutine ploreg(nreg,preg,regpar,title,bintp,bgrid)
+
+c plots node values
+
+	use basin
+	use mod_plot2d
+
+	implicit none
+
+	integer nreg
+	real preg(nreg)
+	real regpar(7)
+        character*(*) title
+	logical bintp		!interpolate on fem grid
+	logical bgrid		!overlay regular grid
+
+	integer nx,ny
+	integer ierr
+	real x0,y0,dx,dy
+	real pmin,pmax,flag
+	integer np
+	real, allocatable :: pa(:)
+
+	if( bintp ) then
+	  np = nkn
+	  allocate(pa(np))
+	  call getreg(regpar,nx,ny,x0,y0,dx,dy,flag)
+          call intp_reg_nodes(nx,ny,x0,y0,dx,dy,flag,preg
+     +                          ,pa,ierr)
+	  if( ierr /= 0 ) stop 'error stop ploreg: interpolation'
+	else
+	  np = nreg
+	  allocate(pa(np))
+	  pa = preg
+	end if
+
+	call setreg_grid(regpar)
+
+	call qstart
+        call annotes(title)
+	call bash(0)
+
+	call get_minmax_flag(pa,np,pmin,pmax)
+        write(6,*) 'min/max: ',np,pmin,pmax
+	call count_flag(pa,np,flag)
+	call colauto(pmin,pmax)
+
+	if( bintp ) then
+          call qcomm('Plotting interpolated regular grid')
+          call isoline(pa,np,0.,2)
+	else
+          call qcomm('Plotting regular grid')
+          call isoreg(pa,np,regpar,0.,2)
+	end if
+
+        call colsh
+	call bash(4)	! overlays grid
+	call bash(2)
+
+	call qend
+
+	end
+
+c**********************************************************
+
 	subroutine ploval(nkn,pa,title)
 
 c plots node values
@@ -1689,7 +1754,7 @@ c counts total number of flagged nodes
 	  if( value(i) .eq. flag ) iflag = iflag + 1
 	end do
 
-	write(6,*) 'flagged values: ',iflag,n,flag
+	write(6,*) 'flagged values: (',flag,')',iflag,' of ',n
 
 	end
 
@@ -1899,23 +1964,25 @@ c*****************************************************************
 c plots node values
 
 	use mod_plot2d
-	use basin, only : nkn,nel,ngr,mbw
+	use basin
 
 	implicit none
 
 	integer ie
-	real dgray
+	real dgray,hgray,h
 	real x(3),y(3)
 
 	double precision dgetpar
 
 	dgray = dgetpar('dgray')
+	hgray = dgetpar('hgray')
 	if( dgray < 0 ) return
 
 	call qgray(dgray)
 
 	do ie=1,nel
-	  if( bwater(ie) ) cycle
+	  h = sum(hm3v(:,ie))/3.
+	  if( bwater(ie) .and. h > hgray ) cycle
 	  call set_xy(ie,x,y)
 	  call qafill(3,x,y)
 	end do

@@ -38,7 +38,8 @@ c*********************************************************************
         integer, save, allocatable :: idbfm(:)
         integer, save :: ia_out(4)
 
-        real, save, allocatable :: bfm_defs(:)
+        real, save, allocatable :: bfminit(:)
+        real, save, allocatable :: bfmbound(:)
 
 	character*3, save :: what = 'bfm'
 
@@ -122,16 +123,16 @@ c-------------------------------------------------------------
 	!cref=getpar('conref')
 	rkpar=getpar('chpar')
 	difmol=getpar('difmol')
+	dtime0 = itanf
 
 	nvar = ibfm_state
-	allocate(bfm_defs(nvar))
-	bfm_defs = 0.				!default boundary condition
+	allocate(bfminit(nvar))
+	allocate(bfmbound(nvar))
+	bfminit = 0.				!default initial condition
+	bfmbound = 0.				!default boundary condition
 
         if( .not. has_restart(4) ) then	!no restart of conzentrations
-	  do i=1,nvar
-	    bfmv(:,:,i) = bfm_defs(i)
-	  end do
-	  call bfm_init_file(itanf,nvar,nlvdi,nlv,nkn,bfmv) !read from file
+	  call bfm_init_file(dtime0,nvar,nlvdi,nlv,nkn,bfminit,bfmv)
 	end if
 
         call init_output('itmcon','idtcon',ia_out)
@@ -145,10 +146,9 @@ c-------------------------------------------------------------
         allocate(idbfm(nbc))
         idbfm = 0
 
-	dtime0 = itanf
 	nintp = 2
         call bnds_init_new(what,dtime0,nintp,nvar,nkn,nlv
-     +				,bfm_defs,idbfm)
+     +				,bfmbound,idbfm)
 
 	end subroutine bfm_init
 
@@ -265,38 +265,22 @@ c*********************************************************************
 
 c*********************************************************************
 
-        subroutine bfm_init_file(it,nvar,nlvddi,nlv,nkn,val)
+        subroutine bfm_init_file(dtime,nvar,nlvddi,nlv,nkn,val0,val)
 
 c initialization of bfm from file
 
         implicit none
 
-        integer it
+	double precision dtime
         integer nvar
         integer nlvddi
         integer nlv
         integer nkn
+	real val0(nvar)
         real val(nlvddi,nkn,nvar)
 
-        integer id
-	double precision dtime
-	real val0(nvar)
-        character*80 bfm_file
-
-        call getfnm('bfmini',bfm_file)
-
-	dtime = it
-	val0 = 0.	!default initial conditions
-	val = 0.	!set variables to zero
-
-        if( bfm_file .ne. ' ' ) then
-          write(6,*) 'bfm_init_file: opening file for bfm'
-          call tracer_file_open(bfm_file,dtime,nvar,nkn,nlv,val0,id)
-	  call tracer_file_descrp(id,'bfm init')
-	  call tracer_file_next_record(dtime,id,nvar,nlvddi,nkn,nlv,val)
-          call tracer_file_close(id)
-	  write(6,*) 'bfm variables initialized from file ',trim(bfm_file)
-        end if
+        call tracer_file_init('bfm init','bfmini',dtime
+     +                          ,nvar,nlvddi,nlv,nkn,val0,val)
 
 	end subroutine bfm_init_file
 
