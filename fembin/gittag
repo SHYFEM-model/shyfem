@@ -116,6 +116,7 @@ fi
 if [ $# -ne 1 ]; then
   Usage $firstline
   git tag
+  Usage $firstline
   exit 1
 else
   newvers=$1
