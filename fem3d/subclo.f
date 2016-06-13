@@ -678,6 +678,20 @@
 
 !******************************************************************
 
+	function clo_exist_file(i)
+
+	logical clo_exist_file
+	integer i
+
+	character*80 file
+
+	call clo_get_file(i,file)
+	clo_exist_file = (file /= ' ' )
+
+	end function clo_exist_file
+
+!******************************************************************
+
 	subroutine clo_get_file(i,file)
 
 	integer i

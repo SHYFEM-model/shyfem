@@ -54,6 +54,9 @@
 
 	logical, save :: binclusive
 
+	logical, save :: bdiff
+	real, save :: deps
+
 	logical, save :: bthreshold
 	double precision, save :: threshold
 
@@ -153,6 +156,8 @@
 
 	call clo_add_option('threshold t',flag,'records over threshold t')
 	call clo_add_option('fact fact',1.,'multiply values by fact')
+	call clo_add_option('diff eps',-1.
+     +			,'files differ by more than eps')
 
         call clo_add_sep('options in/output')
 
@@ -201,6 +206,8 @@
 	call clo_add_com('  rstring is: dx[,dy[,x0,y0,x1,y1]]')
 	call clo_add_com('    if only dx is given -> dy=dx')
 	call clo_add_com('    if only dx,dy are given -> bounds computed')
+	call clo_add_com('  -diff needs two files, exits at difference')
+	call clo_add_com('    with -out writes difference to out file')
 
 	end subroutine elabutil_set_options
 
@@ -230,6 +237,7 @@
 
         call clo_get_option('threshold',threshold)
         call clo_get_option('fact',fact)
+        call clo_get_option('diff',deps)
 
         call clo_get_option('node',nodesp)
         call clo_get_option('nodes',nodefile)
@@ -272,6 +280,7 @@
 
         bnode = nodesp > 0
         bnodes = nodefile .ne. ' '
+	bdiff = deps >= 0.
 
         boutput = bout .or. b2d
 	boutput = boutput .or. outformat /= 'native'

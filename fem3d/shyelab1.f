@@ -16,6 +16,7 @@
 ! 11.09.2015    ggu     write in gis format
 ! 23.09.2015    ggu     handle more than one file (look for itstart)
 ! 16.10.2015    ggu     started shyelab
+! 10.06.2016    ggu     shydiff included
 !
 !**************************************************************
 
@@ -37,6 +38,7 @@
 	real, allocatable :: cv2(:)
 	real, allocatable :: cv3(:,:)
 	real, allocatable :: cv3all(:,:,:)
+	real, allocatable :: cv3diff(:,:,:)
 
 	integer, allocatable :: idims(:,:)
 	integer, allocatable :: ivars(:)
@@ -61,14 +63,14 @@
 	integer iv,j,l,k,lmax,node
 	integer ip
 	integer ifile,ftype
-	integer id,idout
+	integer id,idout,iddiff
 	integer n,m,nndim,nn
 	integer naccum
 	character*80 title,name,file
 	character*80 basnam,simnam
 	real rnull
 	real cmin,cmax,cmed,vtot
-	double precision dtime,dtstart,dtnew
+	double precision dtime,dtstart,dtnew,ddtime
 	double precision atime,atstart,atnew,atold
 
 	integer iapini
@@ -100,6 +102,13 @@
 	!--------------------------------------------------------------
 
 	call open_new_file(ifile,id,atstart)	!atstart=-1 if no new file
+
+	if( bdiff ) then
+	  if( .not. clo_exist_file(ifile+1) ) goto 66
+	  if( clo_exist_file(ifile+2) ) goto 66
+	  call open_next_file(ifile+1,id,iddiff)
+	  atstart = -1
+	end if
 
 	!--------------------------------------------------------------
 	! set up params and modules
@@ -147,6 +156,12 @@
         allocate(ivars(nvar),strings(nvar))
 	allocate(znv(nkn),uprv(nlv,nkn),vprv(nlv,nkn))
 	allocate(sv(nlv,nkn),dv(nlv,nkn))
+	if( bdiff ) then
+	  allocate(cv3diff(nlv,nndim,0:nvar))
+	else
+	  allocate(cv3diff(1,1,0:1))
+	end if
+	cv3diff = 0.
 
 	!--------------------------------------------------------------
 	! set up aux arrays, sigma info and depth values
@@ -249,6 +264,20 @@
 	 end if
 
 	 call dts_convert_to_atime(datetime_elab,dtime,atime)
+
+	 !--------------------------------------------------------------
+	 ! handle diffs
+	 !--------------------------------------------------------------
+
+	 if( bdiff ) then
+	   call read_records(iddiff,ddtime,nvar,nndim,nlvdi,idims
+     +				,cv3,cv3diff,ierr)
+	   if( ierr /= 0 ) goto 62
+	   if( dtime /= ddtime ) goto 61
+	   cv3all = cv3all - cv3diff
+	   call check_diff(nlv,nndim,nvar,cv3all,deps,ierr)
+	   if( ierr /= 0 .and. .not. boutput ) goto 60
+	 end if
 
 	 nread = nread + 1
 	 nrec = nrec + nvar
@@ -385,11 +414,28 @@
 
 	call shyelab_final_output(id,idout,nvar)
 
+	if( bdiff ) call exit(99)	!99 means no difference
+
 !--------------------------------------------------------------
 ! end of routine
 !--------------------------------------------------------------
 
 	stop
+   60	continue
+	write(6,*) 'difference found > ',deps
+	write(6,*) '*** files are different'
+	call exit(1)
+	stop 'stop shyelab: difference'
+   61	continue
+	write(6,*) 'difference of time between files'
+	write(6,*) 'time1,time2: ',dtime,ddtime
+	stop 'error stop shyelab: time record in diffing'
+   62	continue
+	write(6,*) 'cannot read record in diff file'
+	stop 'error stop shyelab: no record in diffing'
+   66	continue
+	write(6,*) 'for computing difference need exactly 2 files'
+	stop 'error stop shyelab: need 2 files'
    71	continue
 	write(6,*) 'ftype = ',ftype,'  nvar = ',nvar
 	write(6,*) 'nvar should be 4'
@@ -685,5 +731,29 @@
 
 !***************************************************************
 !***************************************************************
+!***************************************************************
+
+	subroutine check_diff(nlv,nn,nvar,cv3all,deps,ndiff)
+
+        implicit none
+
+        integer nlv,nn,nvar
+        real cv3all(nlv,nn,0:nvar)
+	real deps
+        integer ndiff
+
+        real diff
+        integer iloc(3)
+
+        diff = maxval( abs(cv3all) )
+
+        if( diff > deps ) then
+          ndiff = ndiff + 1
+          iloc = maxloc( abs(cv3all) )
+          write(6,*) '*** record differing: ',diff,iloc
+        end if
+
+	end
+
 !***************************************************************
 
