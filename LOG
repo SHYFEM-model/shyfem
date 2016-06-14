@@ -1,4 +1,19 @@
 
+14.06.2016
+
+c ./femplot/shyplot.f:
+! 13.06.2016    ggu     shyplot now plots barotropic vars (layer==0)
+c
+c ./fem3d/shyelab1.f:
+! 10.06.2016    ggu     shydiff included
+c
+c ./fem3d/newexpl.f:
+c 14.06.2016    dbf     diff. vertical momentum advection schemes implemented
+c
+c ./fem3d/newbcl.f:
+c 14.06.2016    ggu     open and write of file in own subroutine
+
+
 10.06.2016
 
 c ./femplot/shyplot.f:

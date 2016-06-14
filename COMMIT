@@ -1,5 +1,39 @@
 ============================================================
 
+Tue Jun 14 16:14:09 CEST 2016
+
+shyplot near feature complete
+
+ LOG                     |  15 +++++
+ RELEASE_NOTES           |   9 ++-
+ fem3d/Makefile          |   3 +-
+ fem3d/mod_nohyd.f       |  21 +++----
+ fem3d/new3di.f          |   4 +-
+ fem3d/newbcl.f          | 155 ++++++++++++++++++++++++++++++------------------
+ fem3d/newchk.f          |   5 ++
+ fem3d/newexpl.f         | 100 +++++++++++++++++--------------
+ fem3d/newnohydro.f      |  55 +++++++++++++----
+ fem3d/prep_fem3d.sh     |  32 ----------
+ fem3d/shyelab_output.f  |  11 ++--
+ fem3d/shyfem.f          |   2 -
+ fem3d/subbas.f          |   9 +++
+ fem3d/subfemfile.f      |   3 +-
+ fem3d/subfemintp.f      |   2 -
+ fem3d/subgrd.f          |   2 +
+ fem3d/subreg.f          | 102 ++++++++++++++++++++++++++++++-
+ fem3d/subshy.f          |   2 +-
+ fem3d/substrings.f      |   6 ++
+ fem3d/subsys.f          |  32 +++++++++-
+ femdoc/final/shyfem.pdf | Bin 288180 -> 288178 bytes
+ femplot/plotutil.f      |  14 ++++-
+ femplot/shyplot.f       |  91 +++++++++++++++++++++++++---
+ femplot/supsim.f        |   7 ++-
+ 24 files changed, 495 insertions(+), 187 deletions(-)
+ deleted:
+    fem3d/prep_fem3d.sh
+
+============================================================
+
 Fri Jun 10 14:27:36 CEST 2016
 
 New version 7_5_13

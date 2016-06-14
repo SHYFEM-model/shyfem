@@ -212,7 +212,6 @@ c written on 27.07.88 by ggu   (from sp159f)
 
 	integer iround
 	real getpar,resi
-	integer inohyd
 	logical bnohyd
 
         real epseps
@@ -225,8 +224,7 @@ c-----------------------------------------------------------------
 c set parameter for hydro or non hydro 
 c-----------------------------------------------------------------
 
-        inohyd = nint(getpar('inohyd'))
-	bnohyd = inohyd .eq. 1
+	call nonhydro_get_flag(bnohyd)
 
 c-----------------------------------------------------------------
 c offline

@@ -1040,6 +1040,8 @@ c writes debug information on node k
 	use mod_hydro
 	use levels
 	use basin
+	use mod_hydro_print
+        use mod_nohyd
 
 	implicit none
 
@@ -1075,6 +1077,9 @@ c writes debug information on node k
 	write(iu,*) 'saltv:         ',(saltv(l,k),l=1,lmax)
 	write(iu,*) 'visv:          ',(visv(l,k),l=1,lmax)
 	write(iu,*) 'difv:          ',(difv(l,k),l=1,lmax)
+	write(iu,*) 'qpnv:          ',(qpnv(l,k),l=1,lmax)
+	write(iu,*) 'uprv:          ',(uprv(l,k),l=1,lmax)
+	write(iu,*) 'vprv:          ',(vprv(l,k),l=1,lmax)
 	write(iu,*) '-------------------------------------------'
 
 	end

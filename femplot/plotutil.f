@@ -18,7 +18,7 @@
 	implicit none
 
 	logical, save, private :: binitialized = .false.
-	double precision, parameter :: flag = -999.
+	double precision, parameter :: dflag = -999.
 
 	logical, save :: b2d
 	logical, save :: bdir
@@ -233,6 +233,7 @@ c***************************************************************
 
 	logical is_grd_file
 	logical fem_file_is_fem_file
+	logical filex
 
 	bdebug = .true.
 	bdebug = .false.
@@ -252,6 +253,16 @@ c***************************************************************
 
 	do i=1,nfile
 	  call clo_get_file(i,file)
+	  if( .not. filex(file) ) then
+	    if( file(1:1) == '-' ) then
+	      write(6,*) 'option ',trim(file),' in wrong place'
+	      write(6,*) 'all options must lead files'
+	      stop 'error stop classify_files'
+	    else
+	      write(6,*) 'file not existing: ',trim(file)
+	      stop 'error stop classify_files'
+	    end if
+	  end if
 	  if( shy_is_shy_file(file) ) then
 	    file_type(i) = 'shy'
 	    nshy = nshy + 1
@@ -279,6 +290,7 @@ c***************************************************************
 	  end if
 	end do
 
+	if( nunk > 0 ) bdebug = .true.
 	if( bdebug ) then
 	  write(6,*) 'classify_files: ',nshy,nfem,nbas,nstr,nunk
 	  write(6,*) 'shyfilename: ',trim(shyfilename)

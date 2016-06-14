@@ -560,9 +560,14 @@ c plots node values
 	  np = nkn
 	  allocate(pa(np))
 	  call getreg(regpar,nx,ny,x0,y0,dx,dy,flag)
+	  call setregextend(.false.)
+	  call setregextend(.true.)
           call intp_reg_nodes(nx,ny,x0,y0,dx,dy,flag,preg
      +                          ,pa,ierr)
-	  if( ierr /= 0 ) stop 'error stop ploreg: interpolation'
+	  if( ierr /= 0 ) then
+	    write(6,*) 'intp_reg_nodes ierr = ',ierr
+	    !stop 'error stop ploreg: interpolation'
+	  end if
 	else
 	  np = nreg
 	  allocate(pa(np))

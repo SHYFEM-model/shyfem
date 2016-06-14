@@ -15,6 +15,7 @@
 ! 23.09.2015    ggu     handle more than one file (look for itstart)
 ! 16.10.2015    ggu     started shyelab
 ! 10.06.2016    ggu     shyplot now plots fem files
+! 13.06.2016    ggu     shyplot now plots barotropic vars (layer==0)
 !
 !**************************************************************
 
@@ -458,9 +459,11 @@
 	integer itype(2)
 	integer ivarplot(2)
 	real regpar(7)
+	real flag
 	double precision dtime,atime,atime0
 	character*80 line,string,varline
         real,allocatable :: data2d(:)
+        real,allocatable :: data3d(:,:)
         real,allocatable :: data(:,:,:)
         real,allocatable :: dext(:)
         real,allocatable :: hd(:)
@@ -592,8 +595,9 @@
         allocate(strings(nvar))
         allocate(ivars(nvar))
         allocate(dext(nvar))
-        allocate(data(lmax,np,nvar))
         allocate(data2d(np))
+        allocate(data3d(lmax,np))
+        allocate(data(lmax,np,nvar))
         allocate(hd(np))
         !allocate(ilhkv(np))
 
@@ -699,14 +703,16 @@
             if( string .ne. strings(i) ) goto 95
           end do
 
+	  data3d = data(:,:,ivnum)
+
+	  flag = dflag
+	  call adjust_levels_with_flag(nlvdi,np,ilhkv,flag,data3d)
+
 	  if( b2d ) then
-	    write(6,*) 'b2d not ready...'
-	    write(6,*) 'please choose a layer to plot with -layer l'
-	    stop 'error stop shyplot: b2d not ready...'
+	    call fem_average_vertical(nlvdi,np,lmax,ilhkv,hlv,hd
+     +					,data3d,data2d)
 	  else
-	    l = layer
-	    if( l == -1 ) l = lmax		!FIXME - not the right way
-	    data2d(:) = data(l,:,ivnum)
+	    call extlev(layer,nlvdi,np,ilhkv,data3d,data2d)
 	  end if
 
 	  if( bplotreg ) then
@@ -1091,6 +1097,77 @@ c choses variable to be plotted
 	write(6,*) 'ivar3: ',ivar3
 	write(6,*) 'layer: ',layer
 	write(6,*) 
+
+	end
+
+c*****************************************************************
+
+	subroutine fem_average_vertical(nlvddi,np,lmax,ilhkv,hlv,hd
+     +					,data,data2d)
+
+	implicit none
+
+	integer nlvddi
+	integer np,lmax
+	integer ilhkv(np)
+	real hlv(nlvddi)
+	real hd(np)
+	real data(nlvddi,np)
+	real data2d(np)
+
+	real hl(nlvddi)
+	integer nsigma,k,lm,l,nlv
+	real zeta,hsigma,h,hh
+	double precision vacu,dacu
+
+        call get_sigma_info(nlv,nsigma,hsigma)
+	zeta = 0.
+
+	do k=1,np
+
+	  lm = min(lmax,ilhkv(k))
+	  if( lm <= 1 ) then
+	    data2d(k) = data(1,k)
+	    cycle
+	  end if
+	  h = hd(k)
+	  if( h < -990. ) h = hlv(lm)
+	  if( h == -1. ) h = 1.
+          call get_layer_thickness(lm,nsigma,hsigma
+     +                          ,zeta,h,hlv,hl)
+
+	  vacu = 0.
+	  dacu = 0.
+	  do l=1,lm
+	    hh = hl(l)
+	    vacu = vacu + data(l,k)*hh
+	    dacu = dacu + hh
+	  end do
+	  data2d(k) = vacu / dacu
+
+	end do
+
+	end
+
+c*****************************************************************
+
+	subroutine adjust_levels_with_flag(nlvddi,np,ilhkv,flag,data3d)
+
+	implicit none
+
+	integer nlvddi,np
+	integer ilhkv(np)
+	real flag
+	real data3d(nlvddi,np)
+
+	integer i
+
+	do i=1,np
+	  if( ilhkv(i) <= 0 ) then
+	    ilhkv(i) = 1
+	    data3d(1,i) = flag
+	  end if
+	end do
 
 	end
 

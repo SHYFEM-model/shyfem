@@ -476,7 +476,7 @@
 
 	shy_is_shy_file_by_name = .false.
 
-	iunit = shy_open_file(file)
+	iunit = shy_open_file(file,'old')
 	if( iunit .le. 0 ) return
 
 	shy_is_shy_file_by_name = shy_is_shy_file_by_unit(iunit)

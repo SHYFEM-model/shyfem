@@ -577,8 +577,6 @@
 	if( bfile .and. np < 1 ) goto 96
 	if( .not. breg .and. np > 1 .and. np /= nexp ) goto 96
 
-	write(6,*) 'ggguuu: ',nvar_orig, nvar_read, nvar
-
 	if( nvar_orig == 0 ) nvar = nvar_read		!set nvar
 	if( nvar_orig > 0 ) then
 	  if( nvar > 0 .and. nvar /= nvar_orig ) goto 92

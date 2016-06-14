@@ -3,12 +3,6 @@
 
 	implicit none
 
-!        double precision qpnv(nlvdim,nkndim)
-!        common /qpnv/qpnv
-!        double precision qpov(nlvdim,nkndim)
-!        common /qpov/qpov
-!        save /qpnv/,/qpov/
-
         integer, private, save :: nkn_nohyd = 0
         integer, private, save :: nlv_nohyd = 0
         
@@ -34,17 +28,20 @@
         end if
 
 	if( nkn_nohyd > 0 ) then
-         deallocate(qpnv)
-	 deallocate(qpov)
+          deallocate(qpnv)
+	  deallocate(qpov)
         end if
 
-         nkn_nohyd = nkn 
-         nlv_nohyd = nlv       
+        nkn_nohyd = nkn 
+        nlv_nohyd = nlv       
         
         if( nkn == 0 ) return
         
-         allocate (qpnv(nlv,nkn))
-         allocate (qpov(nlv,nkn))
+        allocate (qpnv(nlv,nkn))
+        allocate (qpov(nlv,nkn))
+
+	qpnv = 0.
+	qpov = 0.
         
         end subroutine mod_nohyd_init 
 

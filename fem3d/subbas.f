@@ -658,6 +658,7 @@ c inserts regular basin (boxes) into basin structure
 
 	real regpar(7)
 
+	logical bdebug
 	integer nx,ny,ix,iy
 	integer k,ie,nk,ne
 	integer k1,k2,k3,k4,km
@@ -742,6 +743,14 @@ c inserts regular basin (boxes) into basin structure
 
 	deallocate(indexv)
 	deallocate(indexm)
+
+	bdebug = .true.
+	if( bdebug ) then
+	  write(6,*) 'regular basin inserted: ',nk,ne
+	  write(6,*) nx,ny,x0,y0,dx,dy
+	  write(6,*) minval(xgv),maxval(xgv)
+	  write(6,*) minval(ygv),maxval(ygv)
+	end if
 
 	end
 

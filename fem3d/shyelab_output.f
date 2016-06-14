@@ -89,6 +89,7 @@
      +				,xlon,ylat)
 	  breg = .true.
 	  ntype = ntype + 10
+	  !write(6,*) 'regular setup: ',regpar
 	else
 	  allocate(svalue(nlvdi,nkn),s2dvalue(nkn)) !only for nodal values
 	  allocate(zvalue(nkn),uvalue(nlvdi,nkn),vvalue(nlvdi,nkn))
@@ -649,7 +650,7 @@
         x1 = x0 + (nx-1)*dx
         y1 = y0 + (ny-1)*dy
 
-	regpar = (/float(nx),float(ny),dx,dy,x0,y0,flag/)
+	regpar = (/float(nx),float(ny),x0,y0,dx,dy,flag/)
 
 	call setgeo(x0,y0,dx,dy,flag)
 
@@ -686,10 +687,10 @@
 	ilcoord = 0
 	hcoord = 0.
 	
-	dx = regpar(3)
-	dy = regpar(4)
-	x0 = regpar(5)
-	y0 = regpar(6)
+	x0 = regpar(3)
+	y0 = regpar(4)
+	dx = regpar(5)
+	dy = regpar(6)
 
 	do iy=1,ny
 	  y = y0 + (iy-1)*dy

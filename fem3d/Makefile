@@ -1031,6 +1031,7 @@ newchk.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_internal.mod \
 		../femlib/mod/mod_layer_thickness.mod \
 		../femlib/mod/mod_meteo.mod \
+		../femlib/mod/mod_nohyd.mod \
 		../femlib/mod/mod_ts.mod femtime.h mkonst.h \
 		param.h 
 newcon.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
@@ -1081,7 +1082,7 @@ newexpl.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_hydro_vel.mod \
 		../femlib/mod/mod_internal.mod \
 		../femlib/mod/mod_layer_thickness.mod \
-		../femlib/mod/mod_ts.mod param.h pkonst.h 
+		../femlib/mod/mod_ts.mod pkonst.h 
 newfix.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_bclfix.mod \
 		../femlib/mod/mod_geom_dynamic.mod \

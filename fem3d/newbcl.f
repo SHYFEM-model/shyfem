@@ -67,6 +67,7 @@ c 10.02.2015    ggu     call to bnds_read_new() introduced
 c 15.10.2015    ggu     added new calls for shy file format
 c 26.10.2015    ggu     bug fix for parallel code (what was not set)
 c 10.06.2016    ggu     not used routines deleted
+c 14.06.2016    ggu     open and write of file in own subroutine
 c
 c*****************************************************************
 
@@ -114,7 +115,7 @@ c local
 	integer id
 	real cdef(1)
 	real xmin,xmax
-        integer itemp,isalt
+        integer itemp,isalt,irho
 	real salref,temref,sstrat,tstrat
 	real shpar,thpar
 	real difmol
@@ -128,7 +129,6 @@ c local
 	integer isact,l,k,lmax
 	integer kspec
 	integer icrst
-	integer ishyff
 	integer ftype
 	real stot,ttot,smin,smax,tmin,tmax,rmin,rmax
 	double precision v1,v2,mm
@@ -185,7 +185,6 @@ c----------------------------------------------------------
 	binitial_nos = .true.
 
 	dtime = t_act
-	ishyff = nint(getpar('ishyff'))
 
 c----------------------------------------------------------
 c initialization
@@ -211,6 +210,7 @@ c----------------------------------------------------------
 		difmol=getpar('difmol')
                 itemp=iround(getpar('itemp'))
                 isalt=iround(getpar('isalt'))
+                irho=iround(getpar('irho'))
 
 c		--------------------------------------------
 c		initialize saltv,tempv
@@ -276,42 +276,8 @@ c		--------------------------------------------
 c		initialize output files
 c		--------------------------------------------
 
-		nvar = 0
-		if( itemp .gt. 0 ) nvar = nvar + 1
-		if( isalt .gt. 0 ) nvar = nvar + 1
-
-		call init_output('itmcon','idtcon',ia_out)
-		if( ishyff == 1 ) ia_out = 0
-		if( has_output(ia_out) ) then
-		  call open_scalar_file(ia_out,nlv,nvar,'nos')
-		  if( next_output(ia_out) ) then
-		    if( isalt .gt. 0 ) then
-		      call write_scalar_file(ia_out,11,nlvdi,saltv)
-		    end if
-		    if( itemp .gt. 0 ) then
-		      call write_scalar_file(ia_out,12,nlvdi,tempv)
-		    end if
-		  end if
-		end if
-
-		call init_output_d('itmcon','idtcon',da_out)
-		if( ishyff == 0 ) da_out = 0
-		if( has_output_d(da_out) ) then
-		  ftype = 2
-		  call shy_make_output_name('.ts.shy',file)
-		  call shy_open_output_file(file,1,nlv,nvar,ftype,id)
-		  call shy_set_simul_params(id)
-		  call shy_make_header(id)
-		  da_out(4) = id
-		  if( next_output_d(da_out) ) then
-		    if( isalt .gt. 0 ) then
-		      call shy_write_scalar_record(id,dtime,11,nlvdi,saltv)
-		    end if
-		    if( itemp .gt. 0 ) then
-		      call shy_write_scalar_record(id,dtime,12,nlvdi,tempv)
-		    end if
-		  end if
-		end if
+		call bcl_open_output(ia_out,da_out,itemp,isalt,irho)
+		call bcl_write_output(dtime,ia_out,da_out,itemp,isalt,irho)
 
                 call getinfo(ninfo)
 
@@ -431,24 +397,7 @@ c----------------------------------------------------------
 c write results to file
 c----------------------------------------------------------
 
-	if( next_output(ia_out) ) then
-	  if( isalt .gt. 0 ) then
-	    call write_scalar_file(ia_out,11,nlvdi,saltv)
-	  end if
-	  if( itemp .gt. 0 ) then
-	    call write_scalar_file(ia_out,12,nlvdi,tempv)
-	  end if
-	end if
-
-	if( next_output_d(da_out) ) then
-	  id = nint(da_out(4))
-	  if( isalt .gt. 0 ) then
-	    call shy_write_scalar_record(id,dtime,11,nlvdi,saltv)
-	  end if
-	  if( itemp .gt. 0 ) then
-	    call shy_write_scalar_record(id,dtime,12,nlvdi,tempv)
-	  end if
-	end if
+	call bcl_write_output(dtime,ia_out,da_out,itemp,isalt,irho)
 
 c----------------------------------------------------------
 c end of routine
@@ -740,6 +689,98 @@ c initialization of T/S from file
           call ts_next_record(its,iusalt,nlvddi,nkn,nlv,saltv)
 	  call ts_file_close(iusalt)
           write(6,*) 'salinity initialized from file ',saltf
+	end if
+
+	end
+
+c*******************************************************************	
+c*******************************************************************	
+c*******************************************************************	
+
+	subroutine bcl_open_output(ia_out,da_out,itemp,isalt,irho)
+
+c opens output of T/S
+
+	use levels
+
+	implicit none
+
+	integer ia_out(4)
+	double precision da_out(4)
+	integer itemp,isalt,irho
+
+	integer nvar,id,ishyff
+	logical has_output
+	logical has_output_d
+	real getpar
+
+	ishyff = nint(getpar('ishyff'))
+
+	nvar = 0
+	if( itemp .gt. 0 ) nvar = nvar + 1
+	if( isalt .gt. 0 ) nvar = nvar + 1
+	if( irho  .gt. 0 ) nvar = nvar + 1
+
+	call init_output('itmcon','idtcon',ia_out)
+	if( ishyff == 1 ) ia_out = 0
+
+	if( has_output(ia_out) ) then
+	  call open_scalar_file(ia_out,nlv,nvar,'nos')
+	end if
+
+	call init_output_d('itmcon','idtcon',da_out)
+	if( ishyff == 0 ) da_out = 0
+
+	if( has_output_d(da_out) ) then
+	  call shyfem_init_scalar_file('ts',nvar,.false.,id)
+	  da_out(4) = id
+	end if
+
+	end
+
+c*******************************************************************	
+
+	subroutine bcl_write_output(dtime,ia_out,da_out,itemp,isalt,irho)
+
+c writes output of T/S
+
+	use levels
+	use mod_ts
+
+	implicit none
+
+	double precision dtime
+	integer ia_out(4)
+	double precision da_out(4)
+	integer itemp,isalt,irho
+
+	integer id
+	logical next_output
+	logical next_output_d
+
+	if( next_output(ia_out) ) then
+	  if( isalt .gt. 0 ) then
+	    call write_scalar_file(ia_out,11,nlvdi,saltv)
+	  end if
+	  if( itemp .gt. 0 ) then
+	    call write_scalar_file(ia_out,12,nlvdi,tempv)
+	  end if
+	  if( irho  .gt. 0 ) then
+	    call write_scalar_file(ia_out,13,nlvdi,rhov)
+	  end if
+	end if
+
+	if( next_output_d(da_out) ) then
+	  id = nint(da_out(4))
+	  if( isalt .gt. 0 ) then
+	    call shy_write_scalar_record(id,dtime,11,nlvdi,saltv)
+	  end if
+	  if( itemp .gt. 0 ) then
+	    call shy_write_scalar_record(id,dtime,12,nlvdi,tempv)
+	  end if
+	  if( irho  .gt. 0 ) then
+	    call shy_write_scalar_record(id,dtime,13,nlvdi,rhov)
+	  end if
 	end if
 
 	end

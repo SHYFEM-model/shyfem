@@ -41,6 +41,7 @@ c 10.04.2014	ggu	use rlin and rdistv to determin advective contribution
 c 17.04.2015	ggu	only one routine set_diff_horizontal()
 c 18.09.2015	ggu	use momentx/yv to store advective terms, not aux arrays
 c 25.09.2015	ggu	new call to set_nudging()
+c 14.06.2016	dbf	diff. vertical momentum advection schemes implemented
 c
 c notes :
 c
@@ -56,15 +57,12 @@ c******************************************************************
 
 	implicit none
         
-        include 'param.h'
-
 	integer ie,l
         
         logical bbarcl
         integer ilin,itlin,ibarcl
 	real rlin
         real getpar
-	integer inohyd
 	logical bnohyd
 
 c-------------------------------------------
@@ -76,8 +74,7 @@ c-------------------------------------------
         itlin = nint(getpar('itlin'))
         ibarcl = nint(getpar('ibarcl'))
         bbarcl = ibarcl .gt. 0 .and. ibarcl .ne. 3
-	inohyd = nint(getpar('inohyd'))
-	bnohyd = inohyd .eq. 1
+	call nonhydro_get_flag(bnohyd)
 	
 c-------------------------------------------
 c initialization
@@ -155,8 +152,6 @@ c stability is computed for dt == 1
 	use basin
 
 	implicit none
-
-        include 'param.h'
 
 	real ahpar
 	real rindex
@@ -328,7 +323,7 @@ c---------------------------------------------------------------
 	do ie=1,nel
 	  lmax = ilhv(ie)
 	  do l=1,lmax
-            h = hdenv(l,ie)
+            h = hdeov(l,ie)
 	    ut = utlov(l,ie)
 	    vt = vtlov(l,ie)
             do ii=1,3
@@ -352,7 +347,7 @@ c---------------------------------------------------------------
 	do k=1,nkn
 	  lmax = ilhkv(k)
 	  do l=1,lmax
-            h = hdknv(l,k)
+            h = hdkov(l,k)
 	    if( saux(l,k) .gt. 0 ) then		!flux into node
 	      momentxv(l,k) = momentxv(l,k) / saux(l,k)
 	      momentyv(l,k) = momentyv(l,k) / saux(l,k)
@@ -386,10 +381,10 @@ c******************************************************************
 
 	real rlin		!strength of advection terms - normally 1
 
-	logical bvertadv		! new vertical advection for momentum
 	real zxadv,zyadv
 	real wtop,wbot
 
+        integer ihwadv  	! vertical advection for momentum
         integer ii,ie,k,l,lmax
         real b,c
         real ut,vt
@@ -399,6 +394,8 @@ c******************************************************************
         real f,h
 	real xadv,yadv
 	real area,vol
+        real getpar
+        real wlay,dzbb,dz,dztt,ubot,utop,vbot,vtop
 
 	!write(6,*) 'set_advective called...'
 
@@ -406,8 +403,7 @@ c---------------------------------------------------------------
 c initialization
 c---------------------------------------------------------------
 
-	bvertadv = .true. ! vertical advection computed
-	bvertadv = .false. ! vertical advection not computed
+        ihwadv = nint(getpar('ihwadv'))
 
 c---------------------------------------------------------------
 c accumulate momentum that flows into nodes (weighted by flux)
@@ -420,6 +416,7 @@ c compute advective contribution
 c---------------------------------------------------------------
 
 	do ie=1,nel
+          wtop = 0.0
 	  lmax = ilhv(ie)
 	  do l=1,lmax
 
@@ -428,7 +425,7 @@ c	    horizontal advection
 c	    ---------------------------------------------------------------
 
 	    area = 12. * ev(10,ie)
-            h = hdenv(l,ie)
+            h = hdeov(l,ie)
 	    vol = area * h
   	    ut = utlov(l,ie)
   	    vt = vtlov(l,ie)
@@ -459,24 +456,54 @@ c	    ---------------------------------------------------------------
 c	    vertical advection
 c	    ---------------------------------------------------------------
 
-	    if ( bvertadv ) then
+	    if( ihwadv > 0 ) then	!compute vertical momentum advection
 	      wbot = wbot / 3.
 	      if( l .eq. lmax ) wbot = 0.
 
-	      if (wtop.ge.0.) then
-	        zxadv = wtop * ulov(l,ie)
-	        zyadv = wtop * vlov(l,ie)
-              else
-	        zxadv = wtop * ulov(l-1,ie)
-	        zyadv = wtop * vlov(l-1,ie)
-              end if
+              if(ihwadv == 1) then	!use upwind scheme
+  	        if(wtop.gt.0.) then
+    	          zxadv = wtop * ulov(l,ie)
+	          zyadv = wtop * vlov(l,ie)
+                else
+	          zxadv = wtop * ulov(l-1,ie)
+	          zyadv = wtop * vlov(l-1,ie)
+                end if
 
-	      if (wbot.gt.0.) then
-	        zxadv = zxadv - wbot * ulov(l+1,ie)
-	        zyadv = zyadv - wbot * vlov(l+1,ie)
-              else
-	        zxadv = zxadv - wbot * ulov(l,ie)
-	        zyadv = zyadv - wbot * vlov(l,ie)
+	        if(wbot.gt.0.) then
+	          zxadv = zxadv - wbot * ulov(l+1,ie)
+	          zyadv = zyadv - wbot * vlov(l+1,ie)
+                else
+	          zxadv = zxadv - wbot * ulov(l,ie)
+                  zyadv = zyadv - wbot * vlov(l,ie)
+                end if
+              else if(ihwadv == 2) then	!use centered scheme
+                dz = hdeov(l,ie)
+                if (l .eq. 1) then
+                  dzbb = hdeov(l+1,ie)
+                  utop = 0.0
+                  ubot = (ulov(l,ie)*dz+ulov(l+1,ie)*dzbb)/(dz+dzbb)
+                  vtop = 0.0
+                  vbot = (vlov(l,ie)*dz+vlov(l+1,ie)*dzbb)/(dz+dzbb)
+                else if (l .eq. lmax) then
+                  dztt = hdeov(l-1,ie)
+                  utop = (ulov(l-1,ie)*dztt+ulov(l,ie)*dz)/(dztt+dz)
+                  ubot = 0.0
+                  vtop = (vlov(l-1,ie)*dztt+vlov(l,ie)*dz)/(dztt+dz)
+                  vbot = 0.0
+                else
+                  dztt = hdeov(l-1,ie)
+                  dzbb = hdeov(l+1,ie)
+                  utop = (ulov(l-1,ie)*dztt+ulov(l,ie)*dz)/(dztt+dz)
+                  ubot = (ulov(l,ie)*dz+ulov(l+1,ie)*dzbb)/(dz+dzbb)
+                  vtop = (vlov(l-1,ie)*dztt+vlov(l,ie)*dz)/(dztt+dz)
+                  vbot = (vlov(l,ie)*dz+vlov(l+1,ie)*dzbb)/(dz+dzbb)
+                end if
+                wlay = (wtop + wbot)/2.0
+                zxadv = zxadv + wlay * (utop - ubot)
+                zyadv = zyadv + wlay * (vtop - vbot)
+	      else
+		write(6,*) 'ihwadv = ',ihwadv
+		stop 'error stop set_advective: ihwadv not supported'
               end if
 	      wtop = wbot
 	    end if
@@ -485,8 +512,8 @@ c	    ---------------------------------------------------------------
 c	    total contribution
 c	    ---------------------------------------------------------------
 
-	    fxv(l,ie) = fxv(l,ie) + rlin*xadv + zxadv
-	    fyv(l,ie) = fyv(l,ie) + rlin*yadv + zyadv
+	    fxv(l,ie) = fxv(l,ie) + rlin * (xadv + zxadv)
+	    fyv(l,ie) = fyv(l,ie) + rlin * (yadv + zyadv)
 	  end do
 	end do
 
@@ -513,8 +540,6 @@ c stability is computed for dt == 1
 	use basin
 
 	implicit none
-
-        include 'param.h'
 
 	real rlin		   !factor for advective terms - normally 1
 	real rindex		   !stability index (return)
@@ -619,8 +644,6 @@ c******************************************************************
 
         implicit none
          
-        include 'param.h'
-        
 	integer ie,l
 	real xadv,yadv,dt
         real uadv(nel),vadv(nel)
@@ -654,8 +677,6 @@ c******************************************************************
 
         implicit none
          
-        include 'param.h'
-        
 	include 'pkonst.h'
         !integer itanf,itend,idt,nits,niter,it
         !real k,l,ie,ii				!BUG
@@ -743,10 +764,7 @@ c cannot use this for sigma levels
 
         implicit none
          
-        include 'param.h'
-        
 	include 'pkonst.h'
-
 
 	logical bsigma
         integer k,l,ie,ii,lmax,lmin
@@ -813,10 +831,7 @@ c do not use this routine !
 
         implicit none
          
-        include 'param.h'
-        
 	include 'pkonst.h'
-
 
         integer k,l,ie,ii,lmax,lmin
         double precision hlayer,hhi
@@ -893,10 +908,7 @@ c this routine works with Z and sigma layers
 
         implicit none
          
-        include 'param.h'
-        
 	include 'pkonst.h'
-
 
 c---------- DEB SIG
 	real hkk

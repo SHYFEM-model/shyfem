@@ -1,7 +1,14 @@
 
+14.06.2016	VERS_7_5_14
+
+	shyplot now near feature complete
+	shydiff included in shyelab
+	possible to choose between vertical momentum advection schemes
+	newbcl cleanup (prepared for non-hydrostatic model)
+
 10.06.2016	VERS_7_5_13
 
-	shyfem now plots shy and fem files
+	shyplot now plots shy and fem files
 	file interpolate handles nvar==0 and no depth, no integration
 	tracer write of shy files simplified
 	mercury framework (really) finished

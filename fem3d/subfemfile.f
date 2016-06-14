@@ -330,6 +330,8 @@ c checks if file is fem file
 
 	call fem_file_test_fem_file(file,iformat)
 
+	!write(6,*) 'fem_file_is_fem_file: ',trim(file),iformat
+
 	fem_file_is_fem_file = iformat >= 0
 
 	end
@@ -560,7 +562,6 @@ c------------------------------------------------------
 	nvar = 0
 	ntype = 0
 	iformat = -1
-	iformat = -ierr
 
 c------------------------------------------------------
 c end of routine

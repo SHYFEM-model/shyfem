@@ -136,6 +136,7 @@ c initializes the parameter file for the main FE model
 	call nlsinh_georg
 	call nlsinh_unused
 	call nlsinh_waves
+	call nlsinh_nonhydro
 
 	end
 
@@ -759,6 +760,7 @@ c		and diffusion of the salinity. (Default 1)
 
 	call addpar('itemp',1.)		!compute temperature ?
 	call addpar('isalt',1.)		!compute salinity ?
+	call addpar('irho',0.)		!write rho ?
 
 c The next parameters set the initial conditions for temperature and salinity.
 c Both the average value and and a stratification can be specified.
@@ -879,7 +881,7 @@ cc rain
 	call addpar('idtbox',0.)	!for boxes
 	call addpar('itmbox',-1.)
 
-	call addpar('inohyd',0.)	!for non-hydrostatic model
+	call addpar('ihwadv',0.)        !vert advection of horiz momentum
 
 cc ice
 
@@ -1345,6 +1347,32 @@ c DOCS  END
 c
 
         end
+
+c************************************************************************
+
+	subroutine nlsinh_nonhydro
+
+c parameters for non hydrostatic model (experimental)
+
+	implicit none
+
+        call sctpar('nonhyd')             !sets default section
+
+	call addpar('inohyd',0.)	!for non-hydrostatic model
+
+        call addpar('aqpar',0.5)
+        call addpar('salval',1.3592)
+
+	call addpar('islope',0.)	!type of grid for poisson equation
+
+        call addpar('ivwadv',0.)        !vert advection of vert momentum
+        call addpar('inhflx',0.)        !flux upwind for horiz advect of w
+	call addpar('inhadj',0.)        !choice for correction of U,V,eta
+	call addpar('iwvolc',0.)        !correct w based on volume change
+        call addpar('inhwrt',0.)        !output every inhwrt timesteps
+        call addpar('inhbnd',0.)        !exclude NH dynamics for boundaries
+
+	end
 
 c************************************************************************
 c************************************************************************
@@ -2347,7 +2375,7 @@ cc non-documented -> try first	HACK	-> initial conditions
         call addfnm('bio',' ')
         call addfnm('bios',' ')
         call addfnm('toxi',' ')
-        call addfnm('mercin',' ')
+        call addfnm('mercin',' ')	!mercury
 
 cc ACQUBC
 

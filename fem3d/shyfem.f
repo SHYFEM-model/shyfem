@@ -685,8 +685,6 @@ c*****************************************************************
 
 	implicit none
 
-	!include 'param.h'
-
 	integer nlvddi
 
 	nlvddi = nlvdi

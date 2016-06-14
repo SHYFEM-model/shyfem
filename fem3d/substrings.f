@@ -66,6 +66,10 @@
           iv = 11
         else if( s(is:ie4) .eq. 'temp' ) then
           iv = 12
+        else if( s(is:ie3) .eq. 'rho' ) then
+          iv = 13
+        else if( s(is:ie4) .eq. 'dens' ) then
+          iv = 13
         else if( s(is:ie4) .eq. 'oxyg' ) then
           iv = 15
         else if( s(is:ie3) .eq. 'rms' ) then
@@ -160,6 +164,8 @@
           string = 'salinity'
         else if( iv .eq. 12 ) then
           string = 'temperature'
+        else if( iv .eq. 13 ) then
+          string = 'density'
         else if( iv .eq. 20 ) then
           string = 'atmospheric pressure'
         else if( iv .eq. 26 ) then
